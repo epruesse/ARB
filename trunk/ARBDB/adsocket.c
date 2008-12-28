@@ -522,9 +522,8 @@ GB_ULONG GB_time_of_file(const char *path)
     return gb_global_stt.st_mtime;
 }
 
-long GB_size_of_file(const char *path)
-{
-    if (path) if (stat(path, &gb_global_stt)) return -1;
+long GB_size_of_file(const char *path) {
+    if (!path || stat(path, &gb_global_stt)) return -1;
     return gb_global_stt.st_size;
 }
 
@@ -568,6 +567,28 @@ GB_BOOL GB_is_executablefile(const char *path) {
     return executable;
 }
 
+GB_BOOL GB_is_privatefile(const char *path, GB_BOOL read_private) {
+    // return GB_TRUE, if nobody but user has write permission
+    // if 'read_private' is true, only return GB_TRUE if nobody but user has read permission
+    //
+    // Note: Always returns GB_TRUE for missing files!
+    //
+    // GB_is_privatefile is mainly used to assert that files generated in /tmp have secure permissions
+    
+    struct stat stt;
+    GB_BOOL     isprivate = GB_TRUE;
+
+    if (stat(path, &stt) == 0) {
+        if (read_private) {
+            isprivate = (stt.st_mode & (S_IWGRP|S_IWOTH|S_IRGRP|S_IROTH)) == 0;
+        }
+        else {
+            isprivate = (stt.st_mode & (S_IWGRP|S_IWOTH)) == 0;
+        }
+    }
+    return isprivate;
+}
+
 GB_BOOL GB_is_readablefile(const char *filename) {
     FILE *in = fopen(filename, "r");
 
@@ -581,14 +602,6 @@ GB_BOOL GB_is_readablefile(const char *filename) {
 GB_BOOL GB_is_directory(const char *path) {
     struct stat stt;
     return stat(path, &stt) == 0 && S_ISDIR(stt.st_mode);
-}
-
-long GB_getuid(){
-    return getuid();
-}
-
-long GB_getpid(){
-    return getpid();
 }
 
 long GB_getuid_of_file(char *path){
@@ -605,8 +618,7 @@ int GB_unlink(const char *path)
     */
     if (unlink(path)) {
         if (errno == ENOENT) return 1;
-        perror(0);
-        GB_export_error("Cannot remove %s",path);
+        GB_export_IO_error("remove", path);
         return -1;
     }
     return 0;
@@ -663,39 +675,52 @@ GB_ERROR GB_rename_file(const char *oldpath,const char *newpath){
 /********************************************************************************************
                     read a file to memory
 ********************************************************************************************/
-char *GB_read_file(const char *path)
-{
-    FILE *input;
-    char *epath = 0;
-    long data_size;
-    char *buffer = 0;
+char *GB_read_fp(FILE *in) {
+    // like GB_read_file, but works on already open file (useful together with GB_fopen_tempfile)
+    // Note: File should be opened in text-mode (e.g. "rt")  
 
-    if (!strcmp(path,"-")) {
-        /* stdin; */
-        int c;
-        void *str = GBS_stropen(1000);
-        c = getc(stdin);
-        while (c!= EOF) {
-            GBS_chrcat(str,c);
-            c = getc(stdin);
+    struct GBS_strstruct *buf = GBS_stropen(4096);
+    int            c;
+
+    while (EOF != (c = getc(in))) {
+        GBS_chrcat(buf, c);
+    }
+    return GBS_strclose(buf);
+}
+
+char *GB_read_file(const char *path) {
+    // read content of file 'path' into string (heap-copy)
+    // 
+    // if path is '-', read from STDIN
+    // return NULL in case of error (which is exported then)
+    
+    char *result = 0;
+
+    if (strcmp(path, "-") == 0) {
+        result = GB_read_fp(stdin);
+    }
+    else {
+        char *epath = GBS_eval_env(path);
+
+        if (epath) {
+            FILE *in = fopen(epath, "rt");
+
+            if (!in) GB_export_IO_error("reading", epath);
+            else {
+                long data_size = GB_size_of_file(epath);
+
+                if (data_size >= 0) {
+                    result = (char*)malloc(data_size+1);
+
+                    data_size         = fread(result, 1, data_size, in);
+                    result[data_size] = 0;
+                }
+                fclose(in);
+            }
         }
-        return GBS_strclose(str);
-    }
-    epath = GBS_eval_env(path);
-
-    if ((input = fopen(epath, "r")) == NULL) {
-        GB_export_error("File %s=%s not found",path,epath);
         free(epath);
-        return NULL;
-    }else{
-        data_size = GB_size_of_file(epath);
-        buffer =  (char *)malloc((size_t)(data_size+1));
-        data_size = fread(buffer,1,(size_t)data_size,input);
-        buffer[data_size] = 0;
-        fclose(input);
     }
-    free(epath);
-    return buffer;
+    return result;
 }
 
 char *GB_map_FILE(FILE *in,int writeable){
@@ -783,7 +808,9 @@ GB_ERROR GB_system(const char *system_command) {
     int      res   = system(system_command);
     GB_ERROR error = NULL;
     if (res) {
-        error = GBS_global_string("System call '%s' failed (result=%i)", system_command, res);
+        error = GBS_global_string("System call failed (result=%i)\n"
+                                  "System call was '%s'\n"
+                                  "(Note: console window may contain additional information)", res, system_command);
     }
     return error;
 }
@@ -1187,6 +1214,21 @@ GB_ULONG GB_get_physical_memory(void) {
 static int  path_toggle = 0;
 static char path_buf[2][PATH_MAX];
 
+GB_CSTR GB_append_suffix(const char *name, const char *suffix) {
+    // if suffix != NULL -> append .suffix
+    // (automatically removes duplicated '.'s)
+    
+    GB_CSTR result = name;
+    if (suffix) {
+        while (suffix[0] == '.') suffix++;
+        if (suffix[0]) {
+            path_toggle = 1-path_toggle; // use 2 buffers in turn
+            result = GBS_global_string_to_buffer(path_buf[path_toggle], PATH_MAX, "%s.%s", name, suffix);
+        }
+    }
+    return result;
+}
+
 GB_CSTR GB_get_full_path(const char *anypath) {
     // expands '~' '..' etc in 'anypath'
 
@@ -1267,6 +1309,99 @@ GB_CSTR GB_path_in_ARBLIB(const char *relative_path_left, const char *anypath_ri
     }
 }
 
+#ifdef P_tmpdir
+#define GB_PATH_TMP P_tmpdir
+#else
+#define GB_PATH_TMP "/tmp"
+#endif
+
+FILE *GB_fopen_tempfile(const char *filename, const char *fmode, char **res_fullname) {
+    // fopens a tempfile
+    // 
+    // Returns
+    // - NULL in case of error (which is exported then)
+    // - otherwise returns open filehandle
+    //
+    // Always sets
+    // - heap-copy of used filename in 'res_fullname' (if res_fullname != NULL)
+    // (even if fopen failed)
+
+    GB_CSTR   file  = GB_concat_path(GB_PATH_TMP, filename);
+    GB_BOOL   write = strpbrk(fmode, "wa") != 0;
+    GB_ERROR  error = 0;
+    FILE     *fp    = 0;
+
+    fp = fopen(file, fmode);
+    if (fp) {
+        // make file private
+        if (fchmod(fileno(fp), S_IRUSR|S_IWUSR) != 0) { 
+            error = GB_export_IO_error("changing permissions", file);
+        }
+    }
+    else {
+        error = GB_export_IO_error(GBS_global_string("open(%s) tempfile", write ? "write" : "read"), file);
+    }
+
+    if (res_fullname) {
+        *res_fullname = file ? strdup(file) : 0;
+    }
+
+    if (error) {
+        // dont care if anything fails here..
+        if (fp) { fclose(fp); fp = 0; }
+        if (file) { unlink(file); file = 0; }
+        GB_export_error(error);
+    }
+
+    return fp;
+}
+
+char *GB_create_tempfile(const char *name) {
+    // creates a tempfile and returns full name of created file
+    // returns NULL in case of error (which is exported then)
+
+    char *fullname;
+    FILE *out = GB_fopen_tempfile(name, "wt", &fullname);
+
+    if (out) fclose(out);
+    return fullname;
+}
+
+char *GB_unique_filename(const char *name_prefix, const char *suffix) {
+    // generates a unique (enough) filename
+    //
+    // scheme: name_prefix_USER_PID_COUNT.suffix
+    
+    static int counter = 0;
+    return GBS_global_string_copy("%s_%s_%i_%i.%s",
+                                  name_prefix,
+                                  GB_getenvUSER(), getpid(), counter++,
+                                  suffix);
+}
+
+static GB_HASH *files_to_remove_on_exit = 0;
+static long exit_remove_file(const char *key, long val) {
+    GBUSE(val);
+    if (unlink(key) != 0) {
+        fprintf(stderr, "Warning: %s\n", GB_export_IO_error("remove", key));
+    }
+    return 0;
+}
+static void exit_removal() {
+    if (files_to_remove_on_exit) {
+        GBS_hash_do_loop(files_to_remove_on_exit, exit_remove_file);
+    }
+}
+void GB_remove_on_exit(const char *filename) {
+    // mark a file for removal on exit
+
+    if (!files_to_remove_on_exit) {
+        files_to_remove_on_exit = GBS_create_hash(20, GB_MIND_CASE);
+        atexit(exit_removal);
+    }
+    GBS_write_hash(files_to_remove_on_exit, filename, 1);
+}
+
 void GB_split_full_path(const char *fullpath, char **res_dir, char **res_fullname, char **res_name_only, char **res_suffix) {
     // Takes a file (or directory) name and splits it into "path/name.suffix".
     // If result pointers (res_*) are non-NULL, they are assigned heap-copies of the splitted parts.
@@ -1289,7 +1424,7 @@ void GB_split_full_path(const char *fullpath, char **res_dir, char **res_fullnam
         if (res_dir)       *res_dir       = lslash ? GB_strpartdup(fullpath, lslash-1) : NULL;
         if (res_fullname)  *res_fullname  = GB_strpartdup(name_start, terminal-1);
         if (res_name_only) *res_name_only = GB_strpartdup(name_start, ldot ? ldot-1 : terminal-1);
-        if (res_suffix)    *res_suffix    = ldot ? GB_strpartdup(ldot+1, terminal-1) : strdup(name_start);
+        if (res_suffix)    *res_suffix    = ldot ? GB_strpartdup(ldot+1, terminal-1) : NULL;
     }
     else {
         if (res_dir)       *res_dir       = NULL;

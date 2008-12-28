@@ -347,24 +347,19 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
                 aww->get_root()->awar(AP_AWAR_CSP_DIRECTORY)->touch(); // reload file selection box
 
                 if (mode == 1) { // run gnuplot ?
-                    char command_file[100];
-#if defined(ASSERTION_USED)
-                    int  printed =
-#endif // ASSERTION_USED
-                        sprintf(command_file,"/tmp/arb_gnuplot_commands_%s_%i",GB_getenv("USER"), getpid());
-                    nt_assert(printed<100);
+                    char *command_file;
+                    char *command_name = GB_unique_filename("arb", "gnuplot");
 
-                    char *smooth  = aww->get_root()->awar(AP_AWAR_CSP_SMOOTH_GNUPLOT)->read_string();
-                    out = fopen(command_file, "wt");
-                    if (!out) {
-                        error = GB_export_error("Can't create gnuplot command file '%s'", command_file);
-                    }
+                    out = GB_fopen_tempfile(command_name, "wt", &command_file);
+                    if (!out) error = GB_get_error();
                     else {
-                        bool plotted = false; // set to true after first 'plot' command (other plots use 'replot')
-                        const char *plot_command[] = { "plot", "replot" };
+                        char *smooth      = aww->get_root()->awar(AP_AWAR_CSP_SMOOTH_GNUPLOT)->read_string();
                         char *found_files = get_overlay_files(aww->get_root(), fname, error);
 
                         fprintf(out, "set samples 1000\n");
+
+                        bool plotted = false; // set to true after first 'plot' command (other plots use 'replot')
+                        const char *plot_command[] = { "plot", "replot" };
 
                         if (found_files) {
                             for (char *name = strtok(found_files, "*"); name; name = strtok(0, "*")) {
@@ -382,17 +377,18 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
                         out = 0;
 
                         if (mode == 1) {
-                            printf("command_file='%s'\n", command_file);
                             char *script = GB_strdup(GBS_global_string("gnuplot %s && rm -f %s", command_file, command_file));
                             GB_xcmd(script, GB_TRUE, GB_TRUE);
                             free(script);
                         }
                         else {
                             nt_assert(mode == 2);
-                            unlink(command_file);
+                            if (GB_unlink(command_file)<0) error = GB_get_error();
                         }
+                        free(smooth);
                     }
-                    free(smooth);
+                    free(command_file);
+                    free(command_name);
                 }
             }
         }

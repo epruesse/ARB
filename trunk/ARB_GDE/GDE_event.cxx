@@ -485,6 +485,15 @@ static void GDE_export(NA_Alignment *dataset,char *align,long oldnumelements)
     if(isdefaultalign) delete align;
 }
 
+static char *preCreateTempfile(const char *name) {
+    // creates a tempfile and returns heapcopy of fullpath
+    // exits in case of error
+    char *fullname = GB_create_tempfile(name);
+
+    if (!fullname) Error(GBS_global_string("preCreateTempfile: %s", GB_get_error())); // exits
+    return fullname;
+}
+
 void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
 {
     long oldnumelements=0;
@@ -504,10 +513,15 @@ void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
     aw_openstatus(current_item->label);
     aw_status((double)0);
 
-    int i,j,k,flag,select_mode =0;
-    static int fileindx = 0;
-    char *Action,buffer[GBUFSIZ];
-    i=0;k=0;
+    int         j,flag;
+    char       *Action,buffer[GBUFSIZ];
+
+    static int fileindx    = 0;
+    int        select_mode = 0;
+    int        i           = 0;
+    int        k           = 0;
+    int        stop        = 0;
+
     if (current_item->numinputs>0) {
         DataSet->gb_main = GLOBAL_gb_main;
         GB_begin_transaction(DataSet->gb_main);
@@ -517,7 +531,6 @@ void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
         alignment_name = strdup(DataSet->alignment_name);
 
         aw_status("reading database");
-        int stop;
         if (gde_cgss.get_sequences) {
             stop = ReadArbdb2(DataSet, filter2, compress, cutoff_stop_codon);
         }
@@ -526,140 +539,144 @@ void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
         }
         GB_commit_transaction(DataSet->gb_main);
 
-        if(stop) goto startaction_end;
-
-        if (DataSet->numelements==0) {
+        if (!stop && DataSet->numelements==0) {
             aw_message("no sequences selected");
-            goto startaction_end;
+            stop = 1;
         }
     }
 
-    flag = AW_FALSE;
-    for(j=0;j<current_item->numinputs;j++) {
-        if(current_item->input[j].format != STATUS_FILE) {
-            flag = AW_TRUE;
+    if (!stop) {
+        flag = AW_FALSE;
+        for(j=0;j<current_item->numinputs;j++) {
+            if(current_item->input[j].format != STATUS_FILE) {
+                flag = AW_TRUE;
+            }
         }
-    }
-    if(flag && DataSet) select_mode = ALL; //TestSelection();
+        if(flag && DataSet) select_mode = ALL; // TestSelection();
 
-    //chdir(current_dir);
-    for(j=0;j<current_item->numinputs;j++) {
-        sprintf(buffer,"/tmp/gde%d_%d",(int)getpid(),fileindx++);
-        current_item->input[j].name = String(buffer);
-        switch(current_item->input[j].format) {
-            case COLORMASK:     WriteCMask(DataSet,buffer,select_mode, current_item->input[j].maskable); break;
-            case GENBANK:       WriteGen(DataSet,buffer,select_mode, current_item->input[j].maskable); break;
-            case NA_FLAT:       WriteNA_Flat(DataSet,buffer,select_mode, current_item->input[j].maskable); break;
-            case STATUS_FILE:   WriteStatus(DataSet,buffer,select_mode); break;
-            case GDE:           WriteGDE(DataSet,buffer,select_mode, current_item->input[j].maskable); break;
-            default: break;
+        int pid = getpid();
+
+        for(j=0;j<current_item->numinputs;j++) {
+            GfileFormat& gfile = current_item->input[j];
+
+            sprintf(buffer,"gde%d_%d", pid, fileindx++);
+            gfile.name = preCreateTempfile(buffer);
+
+            switch(gfile.format) {
+                case COLORMASK:   WriteCMask  (DataSet, buffer, select_mode, gfile.maskable); break;
+                case GENBANK:     WriteGen    (DataSet, buffer, select_mode, gfile.maskable); break;
+                case NA_FLAT:     WriteNA_Flat(DataSet, buffer, select_mode, gfile.maskable); break;
+                case STATUS_FILE: WriteStatus (DataSet, buffer, select_mode)                ; break;
+                case GDE:         WriteGDE    (DataSet, buffer, select_mode, gfile.maskable); break;
+                default: break;
+            }
         }
-    }
 
-    for(j=0;j<current_item->numoutputs;j++)
-    {
-        sprintf(buffer,"/tmp/gde%d_%d",(int)getpid(),fileindx++);
-        current_item->output[j].name = String(buffer);
-    }
+        for(j=0;j<current_item->numoutputs;j++) {
+            sprintf(buffer,"gde%d_%d", pid, fileindx++);
+            current_item->output[j].name = preCreateTempfile(buffer);
+        }
 
-    /*
-     *  Create the command line for external the function call
-     */
-    Action = (char*)strdup(current_item->method);
-    if(Action == NULL) Error("DO(): Error in duplicating method string");
+        /*
+         *  Create the command line for external the function call
+         */
+        Action = (char*)strdup(current_item->method);
+        if(Action == NULL) Error("DO(): Error in duplicating method string");
 
-    while (1) {
-        char *oldAction = strdup(Action);
+        while (1) {
+            char *oldAction = strdup(Action);
 
-        for(j=0;j<current_item->numargs;j++) Action = ReplaceArgs(aw_root,Action,AWinfo,j);
-        bool changed = strcmp(oldAction, Action) != 0;
-        free(oldAction);
+            for(j=0;j<current_item->numargs;j++) Action = ReplaceArgs(aw_root,Action,AWinfo,j);
+            bool changed = strcmp(oldAction, Action) != 0;
+            free(oldAction);
 
-        if (!changed) break;
-    }
+            if (!changed) break;
+        }
 
-    for(j=0;j<current_item->numinputs;j++) Action = ReplaceFile(Action,current_item->input[j]);
-    for(j=0;j<current_item->numoutputs;j++) Action = ReplaceFile(Action,current_item->output[j]);
+        for(j=0;j<current_item->numinputs;j++) Action = ReplaceFile(Action,current_item->input[j]);
+        for(j=0;j<current_item->numoutputs;j++) Action = ReplaceFile(Action,current_item->output[j]);
 
-    filter_name = AWT_get_combined_filter_name(aw_root, "gde");
-    Action = ReplaceString(Action,"$FILTER",filter_name);
+        filter_name = AWT_get_combined_filter_name(aw_root, "gde");
+        Action = ReplaceString(Action,"$FILTER",filter_name);
 
-    /*
-     *  call and go...
-     */
+        /*
+         *  call and go...
+         */
 
-    aw_status("calling external program");
-    printf("Action: %s\n",Action);
-    system(Action);
-    free(Action);
+        aw_status("calling external program");
+        printf("Action: %s\n",Action);
+        system(Action);
+        free(Action);
 
-    oldnumelements=DataSet->numelements;
+        oldnumelements=DataSet->numelements;
 
-    BlockInput = AW_FALSE;
+        BlockInput = AW_FALSE;
 
-    for(j=0;j<current_item->numoutputs;j++)
-    {
-        if(current_item->output[j].overwrite)
+        for(j=0;j<current_item->numoutputs;j++)
         {
-            if(current_item->output[j].format == GDE)
-                OVERWRITE = AW_TRUE;
-            else
-                Warning("Overwrite mode only available for GDE format");
+            if(current_item->output[j].overwrite)
+            {
+                if(current_item->output[j].format == GDE)
+                    OVERWRITE = AW_TRUE;
+                else
+                    Warning("Overwrite mode only available for GDE format");
+            }
+            switch(current_item->output[j].format)
+            {
+                /*
+                 *     The LoadData routine must be reworked so that
+                 *     OpenFileName uses it, and so I can remove the
+                 *     major kluge in OpenFileName().
+                 */
+                case GENBANK:
+                case NA_FLAT:
+                case GDE:
+                    /*ARB-change:*/
+                    /*OpenFileName(current_item->output[j].name,NULL);*/
+                    LoadData(current_item->output[j].name);
+                    break;
+                case COLORMASK:
+                    ReadCMask(current_item->output[j].name);
+                    break;
+                case STATUS_FILE:
+                    ReadStatus(current_item->output[j].name);
+                    break;
+                default:
+                    break;
+            }
+            OVERWRITE = AW_FALSE;
         }
-        switch(current_item->output[j].format)
+        for(j=0;j<current_item->numoutputs;j++)
         {
-            /*
-             *     The LoadData routine must be reworked so that
-             *     OpenFileName uses it, and so I can remove the
-             *     major kluge in OpenFileName().
-             */
-            case GENBANK:
-            case NA_FLAT:
-            case GDE:
-                /*ARB-change:*/
-                /*OpenFileName(current_item->output[j].name,NULL);*/
-                LoadData(current_item->output[j].name);
-                break;
-            case COLORMASK:
-                ReadCMask(current_item->output[j].name);
-                break;
-            case STATUS_FILE:
-                ReadStatus(current_item->output[j].name);
-                break;
-            default:
-                break;
+            if(!current_item->output[j].save)
+            {
+                unlink(current_item->output[j].name);
+            }
         }
-        OVERWRITE = AW_FALSE;
+
+        for(j=0;j<current_item->numinputs;j++)
+        {
+            if(!current_item->input[j].save)
+            {
+                unlink(current_item->input[j].name);
+            }
+        }
+
+        aw_closestatus();
+        GDE_export(DataSet,alignment_name,oldnumelements);
     }
-    for(j=0;j<current_item->numoutputs;j++)
-    {
-        if(!current_item->output[j].save)
-        {
-            unlink(current_item->output[j].name);
-        }
+    else {
+        aw_closestatus();
     }
 
-    for(j=0;j<current_item->numinputs;j++)
-    {
-        if(!current_item->input[j].save)
-        {
-            unlink(current_item->input[j].name);
-        }
-    }
-
-    aw_closestatus();
-    GDE_export(DataSet,alignment_name,oldnumelements);
-
- startaction_end:
-    aw_closestatus();
     free(alignment_name);
     delete filter2;
     free(filter_name);
 
     GDE_freeali(DataSet);
     free(DataSet);
-    DataSet=0;
-    DataSet = (NA_Alignment *) Calloc(1,sizeof(NA_Alignment));
+    DataSet             = 0;
+    DataSet             = (NA_Alignment *) Calloc(1,sizeof(NA_Alignment));
     DataSet->rel_offset = 0;
 
     //     aw->hide();

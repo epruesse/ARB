@@ -270,77 +270,83 @@ GB_ERROR AWT_species_set_root::copy_node_infos(FILE *log, AW_BOOL delete_old_nod
 }
 
 void AWT_move_info(GBDATA *gb_main, const char *tree_source,const char *tree_dest,const char *log_file, AW_BOOL compare_node_info, AW_BOOL delete_old_nodes, AW_BOOL nodes_with_marked_only) {
-    GB_ERROR error = 0;
-    GB_begin_transaction(gb_main);
-    FILE *log = 0;
-    if (log_file){
-        log = fopen(log_file,"w");
+    GB_ERROR  error = 0;
+    FILE     *log   = 0;
+
+    if (log_file) {
+        log = fopen(log_file, "w");
         fprintf(log,
-                "**********************************************************************\n"
-                "       LOGFILE: %s Node Info From Tree '%s' to Tree '%s'\n"
-                "**********************************************************************\n\n",
+                "LOGFILE: %s node info\n"
+                "\n"
+                "     Source tree '%s'\n"
+                "Destination tree '%s'\n"
+                "\n", 
                 delete_old_nodes ? "Moving" : "Adding",
-                tree_source,tree_dest);
+                tree_source, tree_dest);
     }
 
-    AP_tree *source= 0;
-    AP_tree *dest= 0;
+    GB_begin_transaction(gb_main);
 
-    source = new AP_tree(0);
-    dest = new AP_tree(0);
-
-    AP_tree_root *rsource= new AP_tree_root(gb_main,source,tree_source);
-    AP_tree_root *rdest= new AP_tree_root(gb_main,dest,tree_dest);
+    AP_tree      *source  = new AP_tree(0);
+    AP_tree      *dest    = new AP_tree(0);
+    AP_tree_root *rsource = new AP_tree_root(gb_main, source, tree_source);
+    AP_tree_root *rdest   = new AP_tree_root(gb_main, dest, tree_dest);
 
     aw_openstatus("Comparing Topologies");
-    do {
-        aw_status("Load Tree 1");
-        error = source->load(rsource, 1, GB_FALSE, GB_FALSE, 0, 0); // link to database
-        if (error) break;
+
+    aw_status("Load Tree 1");
+    error = source->load(rsource, 1, GB_FALSE, GB_FALSE, 0, 0); // link to database
+    if (!error) {
         aw_status("Load Tree 2");
         error = dest->load(rdest, 1, GB_FALSE, GB_FALSE, 0, 0); // link also
-        if (error) break;
+        if (!error) {
+            long                  nspecies = dest->arb_tree_leafsum2();
+            AWT_species_set_root *ssr      = new AWT_species_set_root(gb_main, nspecies);
 
-        long nspecies = dest->arb_tree_leafsum2();
-        AWT_species_set_root *ssr = new AWT_species_set_root(gb_main,nspecies);
+            aw_status("Building Search Table for Tree 2");
+            ssr->move_tree_2_ssr(dest);
 
-        aw_status("Building Search Table for Tree 2");
-        ssr->move_tree_2_ssr(dest);
+            aw_status("Compare Both Trees");
+            ssr->mstatus = source->arb_tree_leafsum2() * 2;
+            ssr->status  = 0;
 
-        aw_status("Compare Both Trees");
-        ssr->mstatus = source->arb_tree_leafsum2()*2; ssr->status = 0;
-        if(ssr->mstatus<2) {
-            error = GB_export_error("Destination tree has less than 3 species");
-            break;
+            if (ssr->mstatus < 2) error = GB_export_error("Destination tree has less than 3 species");
+            else {
+                AWT_species_set *root_setl = ssr->find_best_matches_info(source->leftson,  log, compare_node_info);
+                AWT_species_set *root_setr = ssr->find_best_matches_info(source->rightson, log, compare_node_info);
+
+                if (!compare_node_info) {
+                    aw_status("Copy Node Informations");
+                    ssr->copy_node_infos(log, delete_old_nodes, nodes_with_marked_only);
+                }
+                
+                long             dummy         = 0;
+                AWT_species_set *new_root_setl = ssr->search(root_setl, &dummy);
+                AWT_species_set *new_root_setr = ssr->search(root_setr, &dummy);
+                AP_tree         *new_rootl     = (AP_tree *) new_root_setl->node;
+                AP_tree         *new_rootr     = (AP_tree *) new_root_setr->node;
+
+                new_rootl->set_root(); // set root correctly
+                new_rootr->set_root(); // set root correctly
+
+                aw_status("Save Tree");
+                
+                AP_tree *root             = new_rootr;
+                while (root->father) root = root->father;
+
+                error             = GBT_write_tree(gb_main, rdest->gb_tree, 0, root->get_gbt_tree());
+                if (!error) error = GBT_write_tree(gb_main, rsource->gb_tree, 0, source->get_gbt_tree());
+            }
         }
-
-        AWT_species_set *root_setl = ssr->find_best_matches_info(source->leftson,log,compare_node_info);
-        AWT_species_set *root_setr = ssr->find_best_matches_info(source->rightson,log,compare_node_info);
-
-        if (!compare_node_info){
-            aw_status("Copy Node Informations");
-            ssr->copy_node_infos(log, delete_old_nodes, nodes_with_marked_only);
-        }
-        long dummy = 0;
-        AWT_species_set *new_root_setl = ssr->search(root_setl,&dummy);
-        AWT_species_set *new_root_setr = ssr->search(root_setr,&dummy);
-        AP_tree *new_rootl = (AP_tree *)new_root_setl->node;
-        AP_tree *new_rootr = (AP_tree *)new_root_setr->node;
-        new_rootl->set_root();  // set root correctly
-        new_rootr->set_root();  // set root correctly
-        aw_status("Save Tree");
-        AP_tree *root = new_rootr;
-        while (root->father) root = root->father;
-        error = GBT_write_tree(gb_main,rdest->gb_tree,0,root->get_gbt_tree());
-        if (!error) error = GBT_write_tree(gb_main,rsource->gb_tree,0,source->get_gbt_tree());
-    }while(0);
-
-    if (log){
-#if !defined(DEBUG)
-        fclose(log);
-#endif // DEBUG
     }
+
+    if (log) {
+        if (error) fprintf(log, "\nError: %s\n", error);       // write error to log as well
+        fclose(log);
+    }
+
     aw_closestatus();
+
     delete source;
     delete dest;
     delete rsource;
@@ -348,3 +354,4 @@ void AWT_move_info(GBDATA *gb_main, const char *tree_source,const char *tree_des
 
     GB_end_transaction_show_error(gb_main, error, aw_message);
 }
+

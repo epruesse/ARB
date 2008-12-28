@@ -536,13 +536,12 @@ AW_window *NT_create_tree_setting(AW_root *aw_root)
 }
 
 void NT_submit_mail(AW_window *aww, AW_CL cl_awar_base) {
-    char     *mail_file = GBS_global_string_copy("/tmp/arb_bugreport_%s", GB_getenvUSER());
-    FILE     *mail      = fopen(mail_file, "w");
+    char     *mail_file;
+    char     *mail_name = GB_unique_filename("arb_bugreport", "txt");
+    FILE     *mail      = GB_fopen_tempfile(mail_name, "wt", &mail_file);
     GB_ERROR  error     = 0;
 
-    if (!mail) {
-        error = GBS_global_string("Cannot write file '%s'", mail_file);
-    }
+    if (!mail) error = GB_get_error();
     else {
         char *awar_base    = (char *)cl_awar_base;
         char *address      = aww->get_root()->awar(GBS_global_string("%s/address", awar_base))->read_string();
@@ -562,10 +561,10 @@ void NT_submit_mail(AW_window *aww, AW_CL cl_awar_base) {
         system(GBS_global_string("date  >>%s", mail_file));
         const char *command = GBS_global_string("mail '%s' <%s", plainaddress, mail_file);
 
-        printf("%s\n", command);
-        system(command);
-        
-        GB_unlink(mail_file);
+        gb_assert(GB_is_privatefile(mail_file, GB_FALSE));
+
+        error = GB_system(command);
+        if (GB_unlink(mail_file)<0 && !error) error = GB_get_error();
 
         free(plainaddress);
         free(text);
@@ -575,6 +574,7 @@ void NT_submit_mail(AW_window *aww, AW_CL cl_awar_base) {
     aww->hide_or_notify(error);
 
     free(mail_file);
+    free(mail_name);
 }
 
 
@@ -668,7 +668,8 @@ void NT_modify_cb(AW_window *aww,AW_CL cd1,AW_CL cd2)
 }
 
 void NT_primer_cb(void) {
-    GB_xcmd("arb_primer",GB_TRUE, GB_FALSE);
+    GB_ERROR error = GB_xcmd("arb_primer",GB_TRUE, GB_FALSE);
+    if (error) aw_message(error);
 }
 
 

@@ -157,22 +157,11 @@ void AWT_write_file(const char *filename,const char *file){
 }
 
 void awt_aps_go(AW_window *aww){
-    AW_root *awr = aww->get_root();
-    int text_width = awr->awar(AWAR_APRINT_SX)->read_int();
-    int text_height = awr->awar(AWAR_APRINT_SY)->read_int();
-
-    int mag = awr->awar(AWAR_APRINT_MAGNIFICATION)->read_int();
-    int default_lpp = awt_aps_get_default_lines_per_page(awr);
-    double xy_ratio = awt_aps_get_xy_ratio(awr);
-    int default_cpp = int(default_lpp * xy_ratio);
-
-    default_cpp = default_cpp * 100 / mag;
-    default_lpp = default_lpp * 100 / mag;
-
-    char *text = awr->awar(AWAR_APRINT_TEXT)->read_string();
+    AW_root *awr  = aww->get_root();
+    char    *text = awr->awar(AWAR_APRINT_TEXT)->read_string();
     {
         char *rtext = GBS_replace_tabs_by_spaces(text);
-        delete text;
+        free(text);
         text = rtext;
     }
 
@@ -180,119 +169,145 @@ void awt_aps_go(AW_window *aww){
     if (dest == AWT_APRINT_DEST_AFILE){
         char *file = awr->awar(AWAR_APRINT_FILE)->read_string();
         AWT_write_file(file,text);
-        delete file;
-        return;
+        free(file);
     }
-
-
-    int x;
-    int y;
-    char *tmp_file = GBS_eval_env("/tmp/arb_aprint_$(USER)_$(ARB_PID).txt");
-    char *tmp_file2 = GBS_eval_env("/tmp/arb_aprint_$(USER)_$(ARB_PID).ps");
-    FILE *tmpf = fopen(tmp_file,"w");
-    if (!tmpf){
-        aw_message(GB_export_error("Sorry, couldn't open '%s'",tmp_file));
-        delete text;
-        return;
-    }
-    char *y_begin = text;
-    int last_y = 0;
-
-    for (y = 0; y < text_height; y+= default_lpp){
-        while(last_y < y){
-            last_y ++;
-            y_begin = strchr(y_begin,'\n');
-            if (!y_begin) break;
-            y_begin++;
+    else {
+        char *tmp_file;
+        FILE *tmpf;
+        {
+            char *name = GB_unique_filename("arb_aprint", "txt");
+            tmpf = GB_fopen_tempfile(name, "wt", &tmp_file);
+            free(name);
         }
-        if (!y_begin) break;
 
-        for (x = 0; x < text_width; x+= default_cpp){
-            char *line = y_begin;
-            int i;
-            for (i=0;i<default_lpp;i++){
-                if (line){
-                    char *next_line = strchr(line,'\n');
-                    int line_length;
-                    if (next_line){
-                        line_length = next_line - line; // exclusive '\n'
-                        next_line ++;
-                    }else{
-                        line_length = strlen(line);
-                    }
-                    if (line_length > x + default_cpp){
-                        line_length = x + default_cpp;
-                    }
-                    if (line_length > x) {
-                        fwrite(line + x, sizeof(char), line_length - x, tmpf);
-                    }
-                    line = next_line;
+        GB_ERROR error = NULL;
+        if (!tmpf){
+            error = GBS_global_string("awt_aps_go: %s", GB_get_error());
+        }
+        else {
+            char *y_begin = text;
+            int last_y = 0;
+
+            double xy_ratio = awt_aps_get_xy_ratio(awr);
+            int    mag      = awr->awar(AWAR_APRINT_MAGNIFICATION)->read_int();
+
+            int default_lpp = awt_aps_get_default_lines_per_page(awr);
+            int default_cpp = int(default_lpp * xy_ratio);
+            default_cpp     = default_cpp * 100 / mag;
+            default_lpp     = default_lpp * 100 / mag;
+
+            int text_width  = awr->awar(AWAR_APRINT_SX)->read_int();
+            int text_height = awr->awar(AWAR_APRINT_SY)->read_int();
+
+            int x;
+            int y;
+
+            for (y = 0; y < text_height; y+= default_lpp){
+                while(last_y < y){
+                    last_y ++;
+                    y_begin = strchr(y_begin,'\n');
+                    if (!y_begin) break;
+                    y_begin++;
                 }
-                fprintf(tmpf,"\n");
+                if (!y_begin) break;
+
+                for (x = 0; x < text_width; x+= default_cpp){
+                    char *line = y_begin;
+                    int i;
+                    for (i=0;i<default_lpp;i++){
+                        if (line){
+                            char *next_line = strchr(line,'\n');
+                            int line_length;
+                            if (next_line){
+                                line_length = next_line - line; // exclusive '\n'
+                                next_line ++;
+                            }else{
+                                line_length = strlen(line);
+                            }
+                            if (line_length > x + default_cpp){
+                                line_length = x + default_cpp;
+                            }
+                            if (line_length > x) {
+                                fwrite(line + x, sizeof(char), line_length - x, tmpf);
+                            }
+                            line = next_line;
+                        }
+                        fprintf(tmpf,"\n");
+                    }
+                }
             }
+            fclose(tmpf);
+
+            char *a2ps_call = 0;
+            {
+                AWT_asciiprint_orientation ori = AWT_asciiprint_orientation(awr->awar(AWAR_APRINT_ORIENTATION)->read_int());
+                const char *oristring = "";
+                switch (ori){
+                    case AWT_APRINT_ORIENTATION_PORTRAIT:
+                        oristring = "-p -1 ";
+                        break;
+                    case AWT_APRINT_ORIENTATION_LANDSCAPE:
+                        oristring = "-l -1 ";
+                        break;
+                    case AWT_APRINT_ORIENTATION_DOUBLE_PORTRAIT:
+                        oristring = "-p -2 ";
+                        break;
+                }
+                char *header = awr->awar(AWAR_APRINT_TITLE)->read_string();
+                a2ps_call = GBS_global_string_copy("arb_a2ps -ns -nP '-H%s' %s -l%i %s",
+                                                   header, oristring, default_lpp, tmp_file);
+                free(header);
+            }
+
+            const char *scall = 0;
+            switch(dest){
+                case AWT_APRINT_DEST_PRINTER: {
+                    char *printer = awr->awar(AWAR_APRINT_PRINTER)->read_string();
+                    scall = GBS_global_string("%s |%s; rm -f %s", a2ps_call, printer, tmp_file);
+                    free(printer);
+                    break;
+                }
+                case AWT_APRINT_DEST_FILE: {
+                    char *file = awr->awar(AWAR_APRINT_FILE)->read_string();
+                    scall = GBS_global_string("%s >%s;rm -f %s", a2ps_call, file, tmp_file);
+                    free(file);
+                    break;
+                }
+                case AWT_APRINT_DEST_PREVIEW: {
+                    char *tmp_file2;
+                    {
+                        char *name_only;
+                        GB_split_full_path(tmp_file, NULL, NULL, &name_only, NULL);
+                        tmp_file2 = GB_create_tempfile(GBS_global_string("%s.ps", name_only));
+                        free(name_only);
+                    }
+
+                    if (!tmp_file2) error = GB_get_error();
+                    else {
+                        scall = GBS_global_string("%s >%s;(%s %s;rm -f %s %s)&",
+                                                  a2ps_call, tmp_file2,
+                                                  GB_getenvARB_GS(), tmp_file2,
+                                                  tmp_file,tmp_file2);
+                        free(tmp_file2);
+                    }
+                    break;
+                }
+                default:
+                    gb_assert(0);
+                    break;
+            }
+
+            if (scall) {
+                GB_information("executing '%s'", scall);
+                if (system(scall) != 0) error = GBS_global_string("Error while calling '%s'", scall);
+            }
+
+            free(a2ps_call);
         }
+        if (error) aw_message(error);
+        free(tmp_file);
     }
-    fclose(tmpf);
-
-    char *a2ps_call = 0;
-    {
-        //      AWT_asciiprint_paper_size psize = (AWT_asciiprint_paper_size)awr->awar(AWAR_APRINT_PAPER_SIZE)->read_int();
-        AWT_asciiprint_orientation ori = AWT_asciiprint_orientation(awr->awar(AWAR_APRINT_ORIENTATION)->read_int());
-        const char *oristring = "";
-        switch (ori){
-            case AWT_APRINT_ORIENTATION_PORTRAIT:
-                oristring = "-p -1 ";
-                break;
-            case AWT_APRINT_ORIENTATION_LANDSCAPE:
-                oristring = "-l -1 ";
-                break;
-            case AWT_APRINT_ORIENTATION_DOUBLE_PORTRAIT:
-                oristring = "-p -2 ";
-                break;
-        }
-        char *header = awr->awar(AWAR_APRINT_TITLE)->read_string();
-        a2ps_call = GBS_global_string_copy("arb_a2ps -ns -nP '-H%s' %s -l%i %s",
-                                           header, oristring, default_lpp, tmp_file);
-        delete header;
-    }
-
-
-
-    const char *scall = 0;
-    switch(dest){
-        case AWT_APRINT_DEST_PRINTER:{
-            char *printer = awr->awar(AWAR_APRINT_PRINTER)->read_string();
-            scall = GBS_global_string("%s |%s; rm -f %s",a2ps_call,printer,tmp_file);
-            delete printer;
-        }
-            break;
-        case AWT_APRINT_DEST_FILE:{
-            char *file = awr->awar(AWAR_APRINT_FILE)->read_string();
-            scall = GBS_global_string("%s >%s;rm -f %s",a2ps_call,file,tmp_file);
-            delete file;
-        }
-            break;
-        case AWT_APRINT_DEST_PREVIEW:
-            scall = GBS_global_string("rm -f %s;%s >%s;(%s %s;rm -f %s %s)&",tmp_file2,
-                                      a2ps_call,tmp_file2,
-                                      GB_getenvARB_GS(),tmp_file2,
-                                      tmp_file,tmp_file2);
-            break;
-        default:
-            scall = "echo hello world asdfas";
-            break;
-    }
-    if (scall){
-        GB_information("executing '%s'", scall);
-        if (system(scall)){
-            aw_message(GB_export_error("Error while calling '%s'",scall));
-        }
-    }
-    delete a2ps_call;
-
-    delete tmp_file;
-    delete tmp_file2;
-    delete text;
+    free(text);
 }
 
 void AWT_create_ascii_print_window(AW_root *awr, const char *text_to_print,const char *title){

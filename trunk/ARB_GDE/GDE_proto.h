@@ -51,7 +51,6 @@ void ErrorOut5(int code, const char *string);
 char *Calloc(int count, int size);
 char *Realloc(char *block, int size);
 void Cfree(char *block);
-char *String(char *str);
 void LoadData(char *filen);
 void AppendNA(NA_Base *buffer, int len, NA_Sequence *seq);
 void Ascii2NA(char *buffer, int len, int matrix[16 ]);

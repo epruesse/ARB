@@ -1775,87 +1775,98 @@ static void aw_help_browse(AW_window *aww) {
 }
 
 static void aw_help_search(AW_window *aww) {
-    char *searchtext = aww->get_root()->awar("tmp/aw_window/search_expression")->read_string();
+    GB_ERROR  error      = 0;
+    char     *searchtext = aww->get_root()->awar("tmp/aw_window/search_expression")->read_string();
 
     if (searchtext[0]==0) {
-        aw_message("Enter a searchstring");
+        error = "Empty searchstring";
     }
     else {
         char        *helpfilename = 0;
-        static char *last_help;
+        static char *last_help; // tempfile containing last search result 
 
+        // replace all spaces in 'searchtext' by '.*'
         {
-            char *searchtext2 = GBS_string_eval(searchtext, " =.*", 0); // replace all spaces by '.*'
+            char *searchtext2 = GBS_string_eval(searchtext, " =.*", 0); 
             if (searchtext2) {
                 free(searchtext);
                 searchtext = searchtext2;
             }
         }
 
+        // grep .hlp for occurances of 'searchtext'.
+        // write filenames of matching files into 'helpfilename'
         {
-            static int counter;
-            char buffer[1024];
-            sprintf(buffer, "/tmp/arb_tmp_%s_%i_%i.hlp", GB_getenv("USER"), getpid(), ++counter);
-            helpfilename = strdup(buffer);
-
-            sprintf(buffer,
-                    "cd %s;grep -i '%s' `find . -name \"*.hlp\"` | sed -e \"s/:.*//g\" -e \"s/^\\.\\///g\" | sort | uniq > %s",
-                    GB_getenvDOCPATH(), searchtext, helpfilename);
-
-            printf("%s\n", buffer);
-            system(buffer);
-        }
-
-        char *result = GB_read_file(helpfilename);
-        if (result) {
-            // write temporary helpfile:
-            FILE *helpfp = fopen(helpfilename, "wt");
-            if (!helpfp) {
-                aw_message(GBS_global_string("Can't create tempfile '%s'", helpfilename));
+            {
+                char *helpname = GB_unique_filename("arb", "hlp");
+                helpfilename   = GB_create_tempfile(helpname);
+                free(helpname);
             }
+
+            if (!helpfilename) error = GB_get_error();
             else {
-                fprintf(helpfp, "\nUP arb.hlp\n");
-                if (last_help) fprintf(helpfp, "UP %s\n", last_help);
-                fputc('\n', helpfp);
+                const char *gen_help_tmpl = "cd %s;grep -i '^[^#]*%s' `find . -name \"*.hlp\"` | sed -e 'sI:.*IIg' -e 'sI^\\./IIg' | sort | uniq > %s";
+                char       *gen_help_cmd  = GBS_global_string_copy(gen_help_tmpl, GB_getenvDOCPATH(), searchtext, helpfilename);
 
-                int results = 0;
-                char *rp = result;
-                while (1) {
-                    char *eol = strchr(rp, '\n');
-                    if (!eol) {
-                        eol = rp;
-                        while (*eol) ++eol;
-                    }
-                    if (eol>rp) {
-                        char old = eol[0];
-                        eol[0] = 0;
-                        fprintf(helpfp, "SUB %s\n", rp);
-                        results++;
-                        eol[0] = old;
-                    }
-                    if (eol[0]==0) break; // all results inserted
-                    rp = eol+1;
-                }
+                error = GB_system(gen_help_cmd);
 
-                fprintf(helpfp,"\nTITLE\t\tResult of search for '%s'\n\n", searchtext);
-                if (results>0)  fprintf(helpfp, "\t\t%i results are shown as subtopics\n",  results);
-                else            fprintf(helpfp, "\t\tThere are no results.\n");
-
-                if (results>0) {
-                    if (last_help) free(last_help);
-                    last_help = strdup(helpfilename);
-                }
-
-                fclose(helpfp);
-                aww->get_root()->awar("tmp/aw_window/helpfile")->write_string(helpfilename); // display results in helpwindow
+                free(gen_help_cmd);
+                GB_remove_on_exit(helpfilename);
             }
-            free(result);
         }
-        else {
-            aw_message("Can't read search results");
+
+        if (!error) {
+            char *result = GB_read_file(helpfilename);
+            if (!result) error = GB_get_error();
+            else {
+                // write temporary helpfile containing links to matches as subtopics
+
+                FILE *helpfp       = fopen(helpfilename, "wt");
+                if (!helpfp) error = GB_export_IO_error("write helpfile", helpfilename);
+                else {
+                    fprintf(helpfp, "\nUP arb.hlp\n");
+                    if (last_help) fprintf(helpfp, "UP %s\n", last_help);
+                    fputc('\n', helpfp);
+
+                    int   results = 0;
+                    char *rp      = result;
+                    while (1) {
+                        char *eol = strchr(rp, '\n');
+                        if (!eol) {
+                            eol = rp;
+                            while (*eol) ++eol;
+                        }
+                        if (eol>rp) {
+                            char old = eol[0];
+                            eol[0] = 0;
+                            fprintf(helpfp, "SUB %s\n", rp);
+                            results++;
+                            eol[0] = old;
+                        }
+                        if (eol[0]==0) break; // all results inserted
+                        rp = eol+1;
+                    }
+
+                    fprintf(helpfp,"\nTITLE\t\tResult of search for '%s'\n\n", searchtext);
+                    if (results>0)  fprintf(helpfp, "\t\t%i results are shown as subtopics\n",  results);
+                    else            fprintf(helpfp, "\t\tThere are no results.\n");
+
+                    if (results>0) {
+                        if (last_help) free(last_help);
+                        last_help = strdup(helpfilename);
+                    }
+
+                    fclose(helpfp);
+                    aww->get_root()->awar("tmp/aw_window/helpfile")->write_string(helpfilename); // display results in helpwindow
+                }
+                free(result);
+            }
         }
         free(helpfilename);
     }
+
+    if (error) aw_message(error);
+    
     free(searchtext);
 }
 

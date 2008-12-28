@@ -7,9 +7,6 @@
 #include "ali_misc.hxx"
 #include "ali_pt.hxx"
 
-#define TMP_FILE "/tmp/.pt_client_%i"
-
-   
 /*
  * Initialize the communication with the pt server
  */

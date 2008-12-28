@@ -119,20 +119,6 @@ void Cfree(char *block)
 }
 
 
-/*
- *   same as strdup
- */
-char *String(char *str)
-{
-    /*char *temp;
-
-    temp = Calloc(strlen(str)+1,sizeof(char));
-    strcpy(temp,str);
-    return(temp);*/
-    return((char *)strdup(str));
-}
-
-
 static void ReadNA_Flat(char *filename,char *dataset,int type)
 {
     size_t j;

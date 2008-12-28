@@ -53,46 +53,62 @@ static char *awtc_fgets(char *s, int size, FILE *stream) {
     return s;
 }
 
-AW_BOOL  awtc_read_string_pair(FILE *in, char *&s1,char *&s2)
-{
-    const int BUFSIZE = 8000;
-    char buffer[BUFSIZE];
-    char *res = awtc_fgets(&buffer[0], BUFSIZE-1, in);
-    free(s1);
-    free(s2);
+AW_BOOL awtc_read_string_pair(FILE *in, char *&s1, char *&s2, size_t& lineNr) {
+    // helper function to read import/export filters.
+    // returns AW_TRUE if sucessfully read
+    // 
+    // 's1' is set to a heap-copy of the first token on line
+    // 's2' is set to a heap-copy of the rest of the line (or NULL if only one token is present)
+    // 'lineNr' is incremented with each line read
+
     s1 = 0;
     s2 = 0;
-    if (!res) return AW_TRUE;
 
-    char *p = buffer;
-    while (*p == ' ' || *p == '\t') p++;
-    if (*p == '#') return AW_FALSE;
+    const int  BUFSIZE = 8000;
+    char       buffer[BUFSIZE];
+    char      *res;
 
-    int len = strlen(p)-1;
-    while  (len >= 0 && (
-                         p[len] == '\n' || p[len] == ' ' || p[len] == '\t' || p[len] == 13) ) p[len--] = 0;
+    do {
+        res = awtc_fgets(&buffer[0], BUFSIZE-1, in);
+        if (res)  {
+            char *p = buffer;
 
-    if (!*p) return AW_FALSE;
-    char *e = 0;
-    e = strpbrk(p," \t");
+            lineNr++;
 
-    if (e) {
-        *(e++) = 0;
-        s1 = strdup(p);
-        while (*e == ' ' || *e == '\t') e++;
-        if (*e == '"') {
-            char *k = strrchr(e,'"');
-            if (k!=e) {
-                e++;
-                *k=0;
+            while (*p == ' ' || *p == '\t') p++;
+            if (*p != '#') {
+                int len = strlen(p)-1;
+                while  (len >= 0 && strchr("\t \n\r", p[len])) {
+                    p[len--] = 0;
+                }
+
+                if (*p) {
+                    char *e = strpbrk(p," \t");
+
+                    if (e) {
+                        *(e++) = 0;
+                        s1     = strdup(p);
+
+                        e += strspn(e, " \t"); // skip whitespace
+
+                        if (*e == '"') {
+                            char *k = strrchr(e,'"');
+                            if (k!=e) {
+                                e++;
+                                *k=0;
+                            }
+                        }
+                        s2 = strdup(e);
+                    }
+                    else { 
+                        s1 = strdup(p);
+                    }
+                }
             }
         }
-        s2 = strdup(e);
-    }else{
-        s1 = strdup(p);
-    }
+    } while (res && !s1); // read until EOF or something found
 
-    return AW_FALSE;
+    return res;
 }
 
 
@@ -100,22 +116,20 @@ GB_ERROR awtc_read_import_format(char *file) {
     GB_ERROR  error    = 0;
     char     *fullfile = AWT_unfold_path(file,"ARBHOME");
     FILE     *in       = fopen(fullfile,"r");
-    
+
     if (!in) error = GBS_global_string("Form not readable ('%s')", fullfile);
     else {
         struct input_format_struct   *ifo;
         struct input_format_per_line *pl = 0;
-        char                         *s1 = 0,*s2=0;
+        
 
         if (awtcig.ifo) { delete awtcig.ifo; awtcig.ifo = 0; }
         ifo = awtcig.ifo = new input_format_struct;
 
-        int lineNumber = 0;
-
-        while (!error && !awtc_read_string_pair(in,s1,s2)) {
-            lineNumber++;
-            if (!s1) continue;
-            else if (!strcmp(s1,"AUTODETECT"))               { ifo->autodetect     = s2; s2 = 0; }
+        char   *s1, *s2;
+        size_t  lineNumber = 0;
+        while (!error && awtc_read_string_pair(in, s1, s2, lineNumber)) {
+            if      (!strcmp(s1,"AUTODETECT"))               { ifo->autodetect     = s2; s2 = 0; }
             else if (!strcmp(s1,"SYSTEM"))                   { ifo->system         = s2; s2 = 0; }
             else if (!strcmp(s1,"NEW_FORMAT"))               { ifo->new_format     = s2; s2 = 0; }
             else if (!strcmp(s1,"KEYWIDTH"))                 { ifo->tab            = atoi(s2); }
@@ -160,10 +174,10 @@ GB_ERROR awtc_read_import_format(char *file) {
             else {
                 error = GBS_global_string("Unknown%s command '%s'\n", (pl ? "" : " (or wrong placed)"), s1);
             }
-        }
 
-        free(s2);
-        free(s1);
+            free(s1);
+            free(s2);
+        }
 
         // reverse order of match list (was appended backwards during creation)
         if (ifo->pl) ifo->pl = ifo->pl->reverse(0);
@@ -314,70 +328,98 @@ void awtc_check_input_format(AW_window *aww)
     GBT_free_names(files);
 }
 
-static const char *awtc_next_file(void){
+static int awtc_next_file(void) {
     if (awtcig.in) fclose(awtcig.in);
     if (!awtcig.current_file) awtcig.current_file = awtcig.filenames;
-    while (*awtcig.current_file) {
-        char *origin_file_name;
-        origin_file_name = *(awtcig.current_file++);
-        char *sorigin= strrchr(origin_file_name,'/');
-        if (!sorigin) sorigin= origin_file_name;
+
+    int result = 1;
+    while (result == 1 && *awtcig.current_file) {
+        const char *origin_file_name = *(awtcig.current_file++);
+        const char *sorigin          = strrchr(origin_file_name,'/');
+        if (!sorigin) sorigin  = origin_file_name;
         else sorigin++;
-        char mid_file_name[1024];
-        char dest_file_name[1024];
-        char srt[1024];
 
-        if (awtcig.ifo2 && awtcig.ifo2->system){
+        GB_ERROR  error          = 0;
+        char     *mid_file_name  = 0;
+        char     *dest_file_name = 0;
+
+        if (awtcig.ifo2 && awtcig.ifo2->system) {
             {
-                const char *sorigin_nameonly        = strrchr(sorigin, '/');
+                const char *sorigin_nameonly            = strrchr(sorigin, '/');
                 if (!sorigin_nameonly) sorigin_nameonly = sorigin;
-                sprintf(mid_file_name,"/tmp/%s_%i",sorigin_nameonly, getpid());
+
+                char *mid_name = GB_unique_filename(sorigin_nameonly, "tmp");
+                mid_file_name  = GB_create_tempfile(mid_name);
+                free(mid_name);
+
+                if (!mid_file_name) error = GB_get_error();
             }
-            sprintf(srt,"$<=%s:$>=%s",origin_file_name, mid_file_name);
-            char *sys = GBS_string_eval(awtcig.ifo2->system,srt,0);
-            sprintf(AW_ERROR_BUFFER,"exec '%s'",awtcig.ifo2->system);
-            aw_status(AW_ERROR_BUFFER);
-            if (system(sys)) {
-                sprintf(AW_ERROR_BUFFER,"Error in '%s'",sys);
-                aw_message();
-                delete sys; continue;
+
+            if (!error) {
+                char *srt = GBS_global_string_copy("$<=%s:$>=%s", origin_file_name, mid_file_name);
+                char *sys = GBS_string_eval(awtcig.ifo2->system, srt, 0);
+
+                aw_status(GBS_global_string("exec '%s'", awtcig.ifo2->system));
+
+                error                        = GB_system(sys);
+                if (!error) origin_file_name = mid_file_name;
+
+                free(sys);
+                free(srt);
             }
-            free(sys);
-            origin_file_name = mid_file_name;
-        }else{
-            mid_file_name[0] = 0;
         }
 
-        if (awtcig.ifo->system){
+        if (!error && awtcig.ifo->system) {
             {
-                const char *sorigin_nameonly        = strrchr(sorigin, '/');
+                const char *sorigin_nameonly            = strrchr(sorigin, '/');
                 if (!sorigin_nameonly) sorigin_nameonly = sorigin;
-                sprintf(dest_file_name,"/tmp/%s_2_%i",sorigin, getpid());
+
+                char *dest_name = GB_unique_filename(sorigin_nameonly, "tmp");
+                dest_file_name  = GB_create_tempfile(dest_name);
+                free(dest_name);
+
+                if (!dest_file_name) error = GB_get_error();
             }
-            sprintf(srt,"$<=%s:$>=%s",origin_file_name, dest_file_name);
-            char *sys = GBS_string_eval(awtcig.ifo->system,srt,0);
-            sprintf(AW_ERROR_BUFFER,"Converting File %s",awtcig.ifo->system);
-            aw_status(AW_ERROR_BUFFER);
-            if (system(sys)) {
-                sprintf(AW_ERROR_BUFFER,"Error in '%s'",sys);
-                aw_message();
-                delete sys; continue;
+            
+            if (!error) {
+                char *srt = GBS_global_string_copy("$<=%s:$>=%s", origin_file_name, dest_file_name);
+                char *sys = GBS_string_eval(awtcig.ifo->system, srt, 0);
+
+                aw_status(GBS_global_string("Converting File %s", awtcig.ifo->system));
+
+                error                        = GB_system(sys);
+                if (!error) origin_file_name = dest_file_name;
+
+                free(sys);
+                free(srt);
             }
-            delete sys;
-            origin_file_name = dest_file_name;
-        }else{
-            dest_file_name[0] = 0;
         }
 
-        awtcig.in = fopen(origin_file_name,"r");
-        if (strlen(mid_file_name)) unlink(mid_file_name);
-        if (strlen(dest_file_name)) unlink(dest_file_name);
+        if (!error) {
+            awtcig.in = fopen(origin_file_name,"r");   
 
-        if (awtcig.in) return 0;
-        sprintf(AW_ERROR_BUFFER,"Error: Cannot open file %s\n",awtcig.current_file[-1]);
-        aw_message();
+            if (awtcig.in) {
+                result = 0;
+            }
+            else {
+                error = GBS_global_string("Error: Cannot open file %s\n", awtcig.current_file[-1]);
+            }
+        }
+
+        if (mid_file_name)  {
+            gb_assert(GB_is_privatefile(mid_file_name, GB_FALSE));
+            if (GB_unlink(mid_file_name)<0 && !error) error = GB_get_error();
+            free(mid_file_name);
+        }
+        if (dest_file_name) {
+            if (GB_unlink(dest_file_name)<0 && !error) error = GB_get_error();
+            free(dest_file_name);
+        }
+
+        if (error) aw_message(error);
     }
-    return "last file reached";
+
+    return result;
 }
 char *awtc_read_line(int tab,char *sequencestart, char *sequenceend){
     /* two modes:   tab == 0 -> read single lines,
@@ -781,9 +823,8 @@ GB_ERROR awtc_read_data(char *ali_name)
 
 void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing database
 {
-    char     buffer[1024];
     AW_root *awr         = aww->get_root();
-    bool      is_genom_db = false;
+    bool     is_genom_db = false;
     {
         bool           read_genom_db = (awr->awar(AWAR_READ_GENOM_DB)->read_int() != IMP_PLAIN_SEQUENCE);
         GB_transaction ta(GB_MAIN);

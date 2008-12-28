@@ -30,12 +30,12 @@
 #define AWAR_MACRO_RECORDING_MACRO_TEXT AWAR_MACRO_BASE"/button_label"
 
 static void awt_delete_macro_cb(AW_window *aww){
-    AW_root *awr   = aww->get_root();
-    char    *mn    = awt_get_selected_fullname(awr, AWAR_MACRO_BASE);
-    int      error = GB_unlink(mn);
+    AW_root *awr = aww->get_root();
+    char    *mn  = awt_get_selected_fullname(awr, AWAR_MACRO_BASE);
 
-    if (error) aw_message(GB_export_IO_error("deleting", mn));
-    awt_refresh_selection_box(awr, AWAR_MACRO_BASE);
+    if (GB_unlink(mn)<0) aw_message(GB_get_error());
+    else awt_refresh_selection_box(awr, AWAR_MACRO_BASE);
+
     free(mn);
 }
 

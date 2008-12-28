@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
+#include <unistd.h>
 /* #include <malloc.h> */
 #include <ctype.h>
 #include <sys/stat.h>
@@ -125,8 +126,8 @@ GB_ERROR gb_delete_reference(const char *master){
     char *fullmaster = gb_full_path(master);
     const char *fullref = gb_reffile_name(fullmaster);
     free(fullmaster);
-    if ( GB_unlink(fullref) <0){
-        return GB_export_error("Cannot delete file '%s'",fullref);
+    if (GB_unlink(fullref)<0) {
+        return GB_get_error();
     }
     return 0;
 }
@@ -178,16 +179,16 @@ GB_ERROR gb_remove_quick_saved(GB_MAIN_TYPE *Main, const char *path)
     int i;
     GB_ERROR error = 0;
 
-    for (i=0; i< GB_MAX_QUICK_SAVE_INDEX; i++)
-    {
-        if (GB_unlink(gb_quicksaveName(path,i))<0)
+    for (i=0; i<GB_MAX_QUICK_SAVE_INDEX && !error; i++) {
+        if (GB_unlink(gb_quicksaveName(path,i))<0) {
             error = GB_get_error();
+        }
     }
 
-    for (i=0; i< 10; i++)
-    {
-        if (GB_unlink(gb_oldQuicksaveName(path,i))<0)
+    for (i=0; i<10 && !error; i++) {
+        if (GB_unlink(gb_oldQuicksaveName(path,i))<0) {
             error = GB_get_error();
+        }
     }
 
     if (Main) {
@@ -258,32 +259,26 @@ static GB_ERROR renameQuicksaves(GB_MAIN_TYPE *Main)
     return error;
 }
 
-static GB_ERROR deleteSuperfluousQuicksaves(GB_MAIN_TYPE *Main)
-{
-    int cnt = 0,
-        i;
-    char *path = Main->path;
+static GB_ERROR deleteSuperfluousQuicksaves(GB_MAIN_TYPE *Main) {
+    int       cnt   = 0;
+    int       i;
+    char     *path  = Main->path;
+    GB_ERROR  error = 0;
 
-    for (i=0; i<GB_MAX_QUICK_SAVE_INDEX; i++)
-    {
-        GB_CSTR qsave = gb_quicksaveName(path,i);
-
-        if (GB_is_regularfile(qsave))
-            cnt++;
+    for (i=0; i<GB_MAX_QUICK_SAVE_INDEX; i++) {
+        GB_CSTR qsave = gb_quicksaveName(path, i);
+        if (GB_is_regularfile(qsave)) cnt++;
     }
 
-    for (i=0; cnt>GB_MAX_QUICK_SAVES && i<GB_MAX_QUICK_SAVE_INDEX; i++)
-    {
-        GB_CSTR qsave = gb_quicksaveName(path,i);
-
-        if (GB_is_regularfile(qsave))
-        {
-            cnt--;
-            GB_unlink(qsave);
+    for (i=0; cnt>GB_MAX_QUICK_SAVES && i<GB_MAX_QUICK_SAVE_INDEX && !error; i++) {
+        GB_CSTR qsave = gb_quicksaveName(path, i);
+        if (GB_is_regularfile(qsave)) {
+            if (GB_unlink(qsave)<0) error = GB_get_error();
+            else cnt--;
         }
     }
 
-    return NULL;
+    return error;
 }
 
 
@@ -1107,14 +1102,10 @@ GB_ERROR gb_check_quick_save(GBDATA *gb_main, char *refpath)
     return 0;
 }
 
-GB_ERROR GB_delete_database(GB_CSTR filename)
-{
-    if (GB_unlink(filename)==-1)
+GB_ERROR GB_delete_database(GB_CSTR filename) {
+    if (GB_unlink(filename)<0 ||
+        gb_remove_all_but_main(0, filename))
     {
-        return GB_get_error();
-    }
-
-    if (gb_remove_all_but_main(0,filename)){
         return GB_get_error();
     }
     return NULL;
@@ -1185,7 +1176,7 @@ GB_ERROR GB_save_quick_as(GBDATA *gb_main, char *path)
         free(full_path_of_source);
         return GB_get_error();
     }
-    if (GB_getuid_of_file(full_path_of_source) != GB_getuid()){
+    if ((uid_t)GB_getuid_of_file(full_path_of_source) != getuid()){
         GB_warning( "**** WARNING ******\n"
                     "   You now using a file '%s'\n"
                     "   which is owned by another user\n"
@@ -1280,9 +1271,7 @@ GB_ERROR GB_save_quick(GBDATA *gb, char *refpath)
     Main->last_saved_transaction = GB_read_clock(gb);
     Main->last_saved_time = GB_time_of_day();
 
-    deleteSuperfluousQuicksaves(Main);
-
-    return NULL;
+    return deleteSuperfluousQuicksaves(Main);
 }
 
 /********************************************************************************************
