@@ -173,7 +173,7 @@ GB_ERROR create_nt_window(AW_root *aw_root){
     AW_window *aww;
     GB_ERROR error = GB_request_undo_type(GLOBAL_gb_main, GB_UNDO_NONE);
     if (error) aw_message(error);
-    create_all_awars(aw_root,AW_ROOT_DEFAULT);
+    nt_create_all_awars(aw_root,AW_ROOT_DEFAULT);
     if (GB_NOVICE){
         aw_root->set_sensitive(AWM_BASIC);
     }
@@ -408,9 +408,13 @@ int main(int argc, char **argv)
     aw_root = new AW_root;
     nt.awr  = aw_root;
     AD_set_default_root(aw_root); // set default for AD_map_viewer (as long as no info-box was opened)
+    
     aw_default = aw_root->open_default(".arb_prop/ntree.arb");
     aw_root->init_variables(aw_default);
     aw_root->init("ARB_NT");
+
+    // create some early awars
+    // Note: normally you don't like to add your awar-init-function here, but into nt_create_all_awars()
 
     aw_create_selection_box_awars(aw_root, AWAR_DB, "", ".arb", "noname.arb", aw_default);
     aw_root->awar_string( AWAR_DB"type", "b", aw_default);
@@ -419,9 +423,7 @@ int main(int argc, char **argv)
     aw_root->awar_string(AWAR_DB_NAME, "noname.arb", aw_default);
     aw_root->awar(AWAR_DB_PATH)->add_callback(AWAR_DB_PATH_changed_cb);
 
-    init_Advisor(aw_root, AW_ROOT_DEFAULT);
-
-    NT_createConcatenationAwars(aw_root, aw_default); // creating AWARS for concatenation and merge simlar species function
+    init_Advisor(aw_root, aw_default);
 
     if (argc==3) {              // looks like merge
         if (argv[1][0] != '-') { // not if first argument is a switch 
