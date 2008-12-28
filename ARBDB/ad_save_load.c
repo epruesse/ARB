@@ -890,7 +890,7 @@ GB_ERROR GB_create_directory(const char *path) {
 
         if (!error && !GB_is_directory(path)) {
             int res = mkdir(path, ACCESSPERMS);
-            if (res) error = GB_export_IO_error("mkdir", path);
+            if (res) error = GB_export_IO_error("creating directory", path);
         }
 
         gb_assert(error || GB_is_directory(path));

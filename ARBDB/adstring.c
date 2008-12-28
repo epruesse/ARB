@@ -203,6 +203,18 @@ void GB_raise_critical_error(const char *msg) {
     exit(-1);
 }
 
+#if defined(DEVEL_RALF)
+#warning redesign GB_export_error et al
+/* To clearly distinguish between the two ways of error handling
+ * (which are: return GB_ERROR
+ *  and:       export the error)
+ * 
+ * GB_export_error() shall only export, not return the error message.
+ * if only used for formatting GBS_global_string shall be used.
+ *
+ * GB_export_IO_error() shall not export and be renamed into GB_IO_error()
+ */
+#endif /* DEVEL_RALF */
 
 static char *GB_error_buffer = 0;
 
@@ -246,8 +258,8 @@ GB_ERROR GB_export_IO_error(const char *action, const char *filename) {
         char buffer[GBS_GLOBAL_STRING_SIZE];
 
         if (action) {
-            if (filename) sprintf(buffer, "ARB ERROR: When %s '%s': %s", action, filename, error_message);
-            else sprintf(buffer, "ARB ERROR: When %s <unknown file>: %s", action, error_message);
+            if (filename) sprintf(buffer, "ARB ERROR: While %s '%s': %s", action, filename, error_message);
+            else sprintf(buffer, "ARB ERROR: While %s <unknown file>: %s", action, error_message);
         }
         else {
             if (filename) sprintf(buffer, "ARB ERROR: Concerning '%s': %s", filename, error_message);
