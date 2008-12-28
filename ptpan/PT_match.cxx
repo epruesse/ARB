@@ -543,9 +543,20 @@ void CreateHitsGUIList(struct SearchQuery *sq)
         {
             if (code == '.')                                // if we got a dot in sequence
             {                                               // the hit is bogus
-                pg->pg_Bench.ts_DotsKilled++;
-                good = FALSE;
-                break;
+#ifdef ALLOWDOTSINMATCH
+                if (count <= MAXDOTSINMATCH)
+                {
+                    for (int i = 0; ((i < count) && (cnt < tarlen)); ++i)
+                    {
+                        sq->sq_SourceSeq[cnt++] = '.';          // fill in 'count' dots
+                    }
+                } else
+#endif                
+                {
+                    pg->pg_Bench.ts_DotsKilled++;
+                    good = FALSE;
+                    break;
+                }
             }
         }
     }
