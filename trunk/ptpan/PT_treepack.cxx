@@ -684,7 +684,6 @@ ULONG CalcPackedLeafSize(struct PTPanPartition *pp, ULONG pos)
       {
         if((val < -(1L << 20)) || (val > ((1L << 20) - 1)))
         {
-#ifdef DEVEL_JB        
           if((val < -(1L << 27)) || (val > ((1L << 27) - 1)))
           {
             /* five bytes */
@@ -693,10 +692,6 @@ ULONG CalcPackedLeafSize(struct PTPanPartition *pp, ULONG pos)
             /* four bytes */
             sdleafsize += 4;
           }
-#else
-          /* four bytes */
-          sdleafsize += 4;
-#endif          
         } else {
           /* three bytes */
           sdleafsize += 3;
@@ -757,7 +752,6 @@ ULONG CalcPackedLeafSize(struct PTPanPartition *pp, ULONG pos)
       {
         if((val < -(1L << 20)) || (val > ((1L << 20) - 1)))
         {
-#ifdef DEVEL_JB        
           if((val < -(1L << 27)) || (val > ((1L << 27) - 1)))
           {
             /* five bytes */
@@ -766,10 +760,6 @@ ULONG CalcPackedLeafSize(struct PTPanPartition *pp, ULONG pos)
             /* four bytes */
             leafsize += 4;
           }
-#else
-          /* four bytes */
-          leafsize += 4;
-#endif          
         } else {
           /* three bytes */
           leafsize += 3;
@@ -1309,7 +1299,6 @@ struct TreeNode * ReadPackedLeaf(struct PTPanPartition *pp, ULONG pos)
   ULONG cnt;
   ULONG *lptr;
   LONG val;
-#ifdef DEVEL_JB
   /* compression:
        msb == {1}    -> 1 byte offset (-   63 -     63)
        msb == {01}   -> 2 byte offset (- 8192 -   8191)
@@ -1317,14 +1306,6 @@ struct TreeNode * ReadPackedLeaf(struct PTPanPartition *pp, ULONG pos)
        msb == {0001} -> 4 byte offset (- 2^27 - 2^27-1)
        msb == {0000} -> 5 byte offset (- 2^35 - 2^35-1)
   */
-#else  
-  /* compression:
-       msb == {1}   -> 1 byte offset (-   63 -     63)
-       msb == {01}  -> 2 byte offset (- 8192 -   8191)
-       msb == {001} -> 3 byte offset (- 2^20 - 2^20-1)
-       msb == {000} -> 4 byte offset (- 2^28 - 2^28-1)
-  */
-#endif 
 
   /* get number of leaves first */
   while((code = *treeptr) != 0xff)
@@ -1340,7 +1321,6 @@ struct TreeNode * ReadPackedLeaf(struct PTPanPartition *pp, ULONG pos)
       /* 2 bytes */
       treeptr += 2;
     }
-#ifdef DEVEL_JB
     else if(code >> 5) /* {001} */
     {
       /* 3 bytes */
@@ -1354,16 +1334,6 @@ struct TreeNode * ReadPackedLeaf(struct PTPanPartition *pp, ULONG pos)
       /* 5 bytes */
       treeptr += 5;
     }
-#else
-    else if(code >> 5) /* {001} */
-    {
-      /* 3 bytes */
-      treeptr += 3;
-    } else {
-      /* 4 bytes */
-      treeptr += 4;
-    }
-#endif    
   }
   treeptr++;
   tn = (struct TreeNode *) calloc(sizeof(struct TreeNode) +
@@ -1393,7 +1363,6 @@ struct TreeNode * ReadPackedLeaf(struct PTPanPartition *pp, ULONG pos)
       val |= *treeptr++;
       *lptr++ = val - 8192;
     }
-#ifdef DEVEL_JB
     else if(code >> 5) /* {001} */
     {
       /* 3 bytes */
@@ -1425,26 +1394,6 @@ struct TreeNode * ReadPackedLeaf(struct PTPanPartition *pp, ULONG pos)
       val |= *treeptr++;
       *lptr++ = val - (1L << 35);
     }
-#else
-    else if(code >> 5) /* {001} */
-    {
-      /* 3 bytes */
-      val = (code & 0x1f) << 8;
-      val |= *treeptr++;
-      val <<= 8;
-      val |= *treeptr++;
-      *lptr++ = val - (1L << 20);
-    } else {
-      /* 4 bytes */
-      val = (code & 0x1f) << 8;
-      val |= *treeptr++;
-      val <<= 8;
-      val |= *treeptr++;
-      val <<= 8;
-      val |= *treeptr++;
-      *lptr++ = val - (1L << 28);
-    }
-#endif    
   }
   /* double delta decode */
 #ifdef DOUBLEDELTAOPTIONAL
@@ -1648,7 +1597,6 @@ ULONG WritePackedLeaf(struct PTPanPartition *pp, ULONG pos, UBYTE *buf)
       {
         if((val < -(1L << 20)) || (val > ((1L << 20) - 1)))
         {
-#ifdef DEVEL_JB        
           if((val < -(1L << 27)) || (val > ((1L << 27) - 1)))
           {
             /* five bytes */
@@ -1657,10 +1605,6 @@ ULONG WritePackedLeaf(struct PTPanPartition *pp, ULONG pos, UBYTE *buf)
             /* four bytes */
             sdleafsize += 4;
           }
-#else
-          /* four bytes */
-          sdleafsize += 4;
-#endif          
         } else {
           /* three bytes */
           sdleafsize += 3;
@@ -1690,7 +1634,6 @@ ULONG WritePackedLeaf(struct PTPanPartition *pp, ULONG pos, UBYTE *buf)
   }
 #endif
 
-#ifdef DEVEL_JB
   /* compression:
        msb == {1}    -> 1 byte offset (-   63 -     63)
        msb == {01}   -> 2 byte offset (- 8192 -   8191)
@@ -1702,18 +1645,6 @@ ULONG WritePackedLeaf(struct PTPanPartition *pp, ULONG pos, UBYTE *buf)
      This means the upper limit is currently 512 MB for raw sequence data
      (this can be changed though: Just introduce another opcode)
   */
-#else  
-  /* compression:
-       msb == {1}   -> 1 byte offset (-   63 -     63)
-       msb == {01}  -> 2 byte offset (- 8192 -   8191)
-       msb == {001} -> 3 byte offset (- 2^20 - 2^20-1)
-       msb == {000} -> 4 byte offset (- 2^28 - 2^28-1)
-     special opcodes:
-       0xff      -> end of array
-     This means the upper limit is currently 512 MB for raw sequence data
-     (this can be changed though: Just introduce another opcode)
-  */
-#endif
 
   for(cnt = 0; cnt < leafcnt; cnt++)
   {
@@ -1724,7 +1655,6 @@ ULONG WritePackedLeaf(struct PTPanPartition *pp, ULONG pos, UBYTE *buf)
       {
         if((val < -(1L << 20)) || (val > ((1L << 20) - 1)))
         {
-#ifdef DEVEL_JB        
           if((val < -(1L << 27)) || (val > ((1L << 27) - 1)))
           {
             /* five bytes */
@@ -1749,19 +1679,6 @@ ULONG WritePackedLeaf(struct PTPanPartition *pp, ULONG pos, UBYTE *buf)
             *buf++ = val;
             leafsize += 4;
           }
-#else
-          /* four bytes */
-          if((val < -(1L << 28)) || (val > ((1L << 28) - 1)))
-          {
-            printf("ERROR: %ld: %ld, %ld out of range\n", pos, cnt, val);
-          }
-          val += 1L << 28;
-          *buf++ = (val >> 24) & 0x1f;
-          *buf++ = (val >> 16);
-          *buf++ = (val >> 8);
-          *buf++ = val;
-          leafsize += 4;
-#endif          
         } else {
           /* three bytes */
           val += 1L << 20;
@@ -1803,33 +1720,24 @@ ULONG WritePackedLeaf(struct PTPanPartition *pp, ULONG pos, UBYTE *buf)
         {
           if((val < -(1L << 20)) || (val > ((1L << 20) - 1)))
           {
-#ifdef DEVEL_JB        
-          if((val < -(1L << 27)) || (val > ((1L << 27) - 1)))
-          {
-            /* five bytes */
-            val += 1L << 35;
-            *buf++ = (val >> 32) & 0x0f;
-            *buf++ = (val >> 24);
-            *buf++ = (val >> 16);
-            *buf++ = (val >> 8);
-            *buf++ = val;
+              if((val < -(1L << 27)) || (val > ((1L << 27) - 1)))
+              {
+                /* five bytes */
+                val += 1L << 35;
+                *buf++ = (val >> 32) & 0x0f;
+                *buf++ = (val >> 24);
+                *buf++ = (val >> 16);
+                *buf++ = (val >> 8);
+                *buf++ = val;
+              } else {
+                /* four bytes */
+                val += 1L << 27;
+                *buf++ = ((val >> 24) & 0x0f) | 0x10;
+                *buf++ = (val >> 16);
+                *buf++ = (val >> 8);
+                *buf++ = val;
+              }
           } else {
-            /* four bytes */
-            val += 1L << 27;
-            *buf++ = ((val >> 24) & 0x0f) | 0x10;
-            *buf++ = (val >> 16);
-            *buf++ = (val >> 8);
-            *buf++ = val;
-          }
-#else
-          /* four bytes */
-          val += 1L << 28;
-          *buf++ = (val >> 24) & 0x1f;
-          *buf++ = (val >> 16);
-          *buf++ = (val >> 8);
-          *buf++ = val;
-#endif          
-            } else {
             /* three bytes */
             val += 1L << 20;
             *buf++ = ((val >> 16) & 0x1f) | 0x20;
