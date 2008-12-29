@@ -478,9 +478,7 @@ ARCHS = \
 			ARBDB2/libARBDB.a \
 			ARBDBPP/libARBDBPP.a \
 			ARBDBS/libARBDB.a \
-			ARBDB_COMPRESS/ARBDB_COMPRESS.a \
 			ARB_GDE/ARB_GDE.a \
-			AWDEMO/AWDEMO.a \
 			AWT/libAWT.a \
 			AWTC/AWTC.a \
 			AWTI/AWTI.a \
@@ -518,7 +516,6 @@ ARCHS = \
 			SERVERCNTRL/SERVERCNTRL.a \
 			SL/SL.a \
 			STAT/STAT.a \
-			TEST/TEST.a \
 			TOOLS/TOOLS.a \
 			TREEGEN/TREEGEN.a \
 			TRS/TRS.a \
@@ -801,23 +798,7 @@ $(NAMES): $(ARCHS_NAMES:.a=.dummy) shared_libs
 		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) $(SYSLIBS) ; \
 		)
 
-#***********************************	TEST SECTION  **************************************
-AWDEMO = tb/awdemo
-ARCHS_AWDEMO = \
-		AWDEMO/AWDEMO.a \
-
-$(AWDEMO): $(ARCHS_AWDEMO:.a=.dummy) shared_libs
-	@echo $(SEP) Link $@
-	$(LINK_EXECUTABLE) $@ $(ARCHS_AWDEMO) $(LIBS)
-
-TEST = tb/dbtest
-ARCHS_TEST = \
-		TEST/TEST.a \
-		XML/XML.a \
-
-$(TEST): $(ARCHS_TEST:.a=.dummy) shared_libs
-	@echo $(SEP) Link $@
-	$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_TEST)  -lAWT $(LIBS)
+#***********************************	OTHER EXECUTABLES   ********************************************
 
 ALIV3 = bin/aliv3
 ARCHS_ALIV3 = \
@@ -827,32 +808,6 @@ ARCHS_ALIV3 = \
 $(ALIV3): $(ARCHS_ALIV3:.a=.dummy) shared_libs
 	@echo $(SEP) Link $@
 	$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_ALIV3) $(ARBDB_LIB) $(SYSLIBS) $(CCPLIBS)
-
-
-ACORR = tb/acorr
-ARCHS_ACORR = \
-		DIST/DIST.a \
-		SERVERCNTRL/SERVERCNTRL.a \
-		FINDCORRASC/FINDCORRASC.a \
-		FINDCORRMATH/FINDCORRMATH.a \
-		FINDCORRWIN/FINDCORRWIN.a \
-		XML/XML.a \
-
-$(ACORR): $(ARCHS_ACORR:.a=.dummy) shared_libs
-	@echo $(SEP) Link $@
-	$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_ACORR) -lAWT $(ARBDBPP_LIB) $(LIBS)
-
-
-ARBDB_COMPRESS = tb/arbdb_compress
-ARCHS_ARBDB_COMPRESS = \
-		ARBDB_COMPRESS/ARBDB_COMPRESS.a \
-
-$(ARBDB_COMPRESS): $(ARCHS_ARBDB_COMPRESS:.a=.dummy) shared_libs
-	@echo $(SEP) Link $@
-	$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_ARBDB_COMPRESS) $(ARBDB_LIB)
-
-#***********************************	OTHER EXECUTABLES   ********************************************
-
 
 #***********************************	SHARED LIBRARIES SECTION  **************************************
 
@@ -873,7 +828,7 @@ lib/lib%.$(SHARED_LIB_SUFFIX): LIBLINK/lib%.$(SHARED_LIB_SUFFIX)
 # 	cp $< $@
 
 #***************************************************************************************
-#			Rekursiv calls to submakefiles
+#			Recursive calls to submakefiles
 #***************************************************************************************
 
 %.depends:
@@ -1005,8 +960,6 @@ show:
 		@echo ' other targets:'
 		@echo ''
 		@echo '  help   recompile help files'
-		@echo '  test   test arbdb (needs fix)'
-		@echo '  demo   GUI demo (needs fix)'
 		@echo '  tools  make small tools used by arb'
 		@echo ''
 		@echo ' optional targets (not build by make all)'
@@ -1075,12 +1028,7 @@ pd:	PROBE_DESIGN/PROBE_DESIGN.dummy
 na:	$(NAMES)
 sq:	SEQ_QUALITY/SEQ_QUALITY.dummy
 
-ac:	$(ARBDB_COMPRESS) # unused? does not compile
-
-test:	$(TEST)
-demo:	$(AWDEMO)
-
-sec: SECEDIT/SECEDIT.dummy
+sec:	SECEDIT/SECEDIT.dummy
 
 e4:	$(EDIT4)
 gi:	GENOM_IMPORT/GENOM_IMPORT.dummy
