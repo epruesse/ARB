@@ -75,9 +75,10 @@ static int  inquote             = 0;   /* in a quote?? */
 static int  newline_seen        = 1;   /* are we at the start of a line */
 static int  glastc              = ' '; /* last char. seen by getsym() */
 
-static char *current_file = 0;  /* name of current file */
-static char *current_dir  = 0;  /* name of current directory */
-static long  linenum      = 1L; /* line number in current file */
+static char *current_file   = 0;  /* name of current file */
+static char *current_dir    = 0;  /* name of current directory */
+static char *header_comment = 0;  /* comment written into header */
+static long  linenum        = 1L; /* line number in current file */
 
 static char const *macro_name = "P_";  /*   macro to use for prototypes */
 static char const *ourname;            /* our name, from argv[] array */
@@ -1236,27 +1237,39 @@ static void getdecl(FILE *f, const char *header) {
 }
 
 static void Usage(void){
-    fprintf(stderr, "Usage: %s [flags] [files ...]\n", ourname);
-
-    fputs("Supported flags:\n",stderr);
-    fputs("   -a: make a funcion list for aisc_includes\n",stderr);
-    fputs("   -e: put an explicit \"extern\" keyword in declarations\n", stderr);
-    fputs("   -n: put line numbers of declarations as comments\n",stderr);
-    fputs("   -p sym: use \"sym\" as the prototype macro (default \"P_\")\n", stderr);
-    fputs("   -s: include declarations for static functions\n", stderr);
-    fputs("   -i: include declarations for inline functions\n", stderr);
-    fputs("   -x: omit parameter names in prototypes\n", stderr);
-    fputs("   -z: omit prototype macro definition\n", stderr);
-    fputs("   -A: omit prototype macro; header files are strict ANSI\n", stderr);
-    fputs("   -V: print version number\n", stderr);
-    fputs("   -W: don't promote types in old style declarations\n", stderr);
-    fputs("   -F sym_part[,sym_part]*: create prototypes only for function-names containing one of the sym_parts\n", stderr);
-    fputs("   -C: insert 'extern \"C\"'\n", stderr);
-    fputs("   -E: promote 'extern \"C\"' to prototype\n", stderr);
-    fputs("   -m: promote 'main()' (default is to skip it)\n", stderr);
-    fputs("   -g: search for GNU extension __attribute__ in comment behind function header\n", stderr);
-    fputs("   -G: search for ARB macro     __ATTR__      in comment behind function header\n", stderr);
-    fputs("   -P: promote /*AISC_MKPT_PROMOTE:forHeader*/ to header\n", stderr);
+    fprintf(stderr, "Usage: %s [flags] [files ...]", ourname);
+    fputs("\nSupported flags:"
+          "\n   -a               make a funcion list for aisc_includes (default: generate C prototypes)"
+          "\n"
+          "\n   -e               put an explicit \"extern\" keyword in declarations"
+          "\n"
+          "\n   -n               put line numbers of declarations as comments" 
+          "\n"
+          "\n   -s               promote declarations for static functions"
+          "\n   -i               promote declarations for inline functions"
+          "\n   -m               promote declaration of 'main()' (default is to skip it)"
+          "\n   -F part[,part]*  only promote declarations for functionnames containing one of the parts"
+          "\n"
+          "\n   -W               don't promote types in old style declarations"
+          "\n   -x               omit parameter names in prototypes"
+          "\n"
+          "\n   -p sym           use \"sym\" as the prototype macro (default \"P_\")" 
+          "\n   -z               omit prototype macro definition"
+          "\n   -A               omit prototype macro; header files are strict ANSI"
+          "\n"
+          "\n   -C               insert 'extern \"C\"'"
+          "\n   -E               prefix 'extern \"C\"' at prototype"
+          "\n"
+          "\n   -g               search for GNU extension __attribute__ in comment behind function header"
+          "\n   -G               search for ARB macro     __ATTR__      in comment behind function header"
+          "\n"
+          "\n   -P               promote /*AISC_MKPT_PROMOTE:forHeader*/ to header"
+          "\n"
+          "\n   -c \"text\"      add text as comment into header"
+          "\n"
+          "\n   -V               print version number"
+          "\n"
+          , stderr);
     exit(EXIT_FAILURE);
 }
 
@@ -1303,12 +1316,16 @@ int main(int argc, char **argv){
                 macro_name = t;
                 break;
             }
+            else if (*t == 'c') {
+                t = *argv++; --argc;
+                if (!t) Usage();
+                header_comment = t;
+                break;
+            }
             else if (*t == 'F') {
                 t = *argv++; --argc;
                 if (!t) Usage();
                 addSymParts(t);
-/*                 sym_part = t; */
-/*                 sym_part_len = strlen(sym_part); */
                 break;
             }
             else if (*t == 'V') {
@@ -1321,7 +1338,7 @@ int main(int argc, char **argv){
     }
 
     if (search__ATTR__ && search__attribute__) {
-        fprintf(stderr, "Either use option -g or -G (not both)");
+        fputs("Either use option -g or -G (not both)", stderr);
         exit(EXIT_FAILURE);
     }
 
@@ -1330,56 +1347,65 @@ int main(int argc, char **argv){
     }
 
     if (aisc) {
-        printf("# *********************************************************\n");
-        printf("# This file is generated by aisc_mkpt.\n");
-        printf("# Any changes you make here will be overwritten later!\n");
-        printf("# *********************************************************\n");
-        printf("\n");
-        printf("@FUNCTION_TYPE, @FUNCTION, @FUNCTION_REF;");
+        if (header_comment) {
+            fputs("# *********************************************************\n", stdout);
+            printf("# %s\n", header_comment);
+        }
+        fputs("# *********************************************************\n"
+              "# This file is generated by aisc_mkpt.\n"
+              "# Any changes you make here will be overwritten later!\n"
+              "# *********************************************************\n"
+              "\n"
+              "@FUNCTION_TYPE, @FUNCTION, @FUNCTION_REF;", stdout);
     }
     else {
-        printf("/*\n");
-        printf(" * This file is generated by aisc_mkpt.\n");
-        printf(" * Any changes you make here will be overwritten later!\n");
-        printf(" *\n");
-        printf(" */\n\n");
+        fputs("/*\n", stdout);
+        if (header_comment) printf(" * %s.\n *\n", header_comment);
+        fputs(" * This file is generated by aisc_mkpt.\n"
+              " * Any changes you make here will be overwritten later!\n"
+              " *\n"
+              " */\n\n", stdout);
 
         if (use_macro) {
             if (define_macro) {
-                printf("#ifndef %s\n",macro_name);
-                printf("# if defined(__STDC__) || defined(__cplusplus)\n");
-                printf("#  define %s(s) s\n", macro_name);
-                printf("# else\n");
-                printf("#  define %s(s) ()\n", macro_name);
-                printf("# endif\n");
-                printf("#else\n");
-                printf("# error %s already defined elsewhere\n", macro_name);
-                printf("#endif\n\n");
+                fprintf(stdout,
+                        "#ifndef %s\n"
+                        "# if defined(__STDC__) || defined(__cplusplus)\n"
+                        "#  define %s(s) s\n"
+                        "# else\n"
+                        "#  define %s(s) ()\n"
+                        "# endif\n"
+                        "#else\n"
+                        "# error %s already defined elsewhere\n"
+                        "#endif\n\n",
+                        macro_name, macro_name, macro_name, macro_name);
             }
             else {
-                printf("#ifndef %s\n",macro_name);
-                printf("# error %s is not defined\n", macro_name);
-                printf("#endif\n\n");
+                fprintf(stdout,
+                        "#ifndef %s\n"
+                        "# error %s is not defined\n"
+                        "#endif\n\n",
+                        macro_name, macro_name);
             }
         }
         if (search__attribute__) {
-            printf("/* hide __attribute__'s for non-gcc compilers: */\n");
-            printf("#ifndef __GNUC__\n");
-            printf("# ifndef __attribute__\n");
-            printf("#  define __attribute__(x)\n");
-            printf("# endif\n");
-            printf("#endif\n\n");
+            fputs("/* hide __attribute__'s for non-gcc compilers: */\n"
+                  "#ifndef __GNUC__\n"
+                  "# ifndef __attribute__\n"
+                  "#  define __attribute__(x)\n"
+                  "# endif\n"
+                  "#endif\n\n", stdout);
         }
         if (search__ATTR__) {
-            printf("/* define ARB attributes: */\n");
-            printf("#ifndef ATTRIBUTES_H\n");
-            printf("# include <attributes.h>\n");
-            printf("#endif\n\n");
+            fputs("/* define ARB attributes: */\n"
+                  "#ifndef ATTRIBUTES_H\n"
+                  "# include <attributes.h>\n"
+                  "#endif\n\n", stdout);
         }
         if (cansibycplus) {
-            printf("#ifdef __cplusplus\n");
-            printf("extern \"C\" {\n");
-            printf("#endif\n\n");
+            fputs("#ifdef __cplusplus\n"
+                  "extern \"C\" {\n"
+                  "#endif\n\n", stdout);
         }
     }
     
@@ -1415,9 +1441,9 @@ int main(int argc, char **argv){
     }
     else {
         if (cansibycplus) {
-            printf("\n#ifdef __cplusplus\n");
-            printf("}\n");
-            printf("#endif\n");
+            fputs("\n#ifdef __cplusplus\n"
+                  "}\n"
+                  "#endif\n", stdout);
         }
         if (use_macro && define_macro) {
             printf("\n#undef %s\n", macro_name);    /* clean up namespace */
@@ -1431,9 +1457,6 @@ int main(int argc, char **argv){
     return EXIT_SUCCESS;
 }
 
-
-#include "patchlev.h"
-
 static void Version(void) {
-    fprintf(stderr, "%s 1.0 patchlevel %d\n", ourname, PATCHLEVEL);
+    fprintf(stderr, "%s 1.1 ARB\n", ourname);
 }

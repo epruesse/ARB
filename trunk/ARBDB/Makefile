@@ -17,19 +17,19 @@ proto:	pro tpro lproto
 lproto: lpro tlpro
 
 lpro: $(GB_O:.o=.c)
-	../MAKEBIN/aisc_mkpt -G -z -C -F gb $(GB_O:.o=.c) >ad_lpro.h.tmp
+	../MAKEBIN/aisc_mkpt -c "Internal database interface" -G -z -C -F gb $(GB_O:.o=.c) >ad_lpro.h.tmp
 	../SOURCE_TOOLS/mv_if_diff ad_lpro.h.tmp ad_lpro.h
 
 tlpro: $(GB_T:.o=.c)
-	../MAKEBIN/aisc_mkpt -G -z -C -F gb $(GB_T:.o=.c) >ad_t_lpro.h.tmp
+	../MAKEBIN/aisc_mkpt -c "Internal toolkit" -G -z -C -F gb $(GB_T:.o=.c) >ad_t_lpro.h.tmp
 	../SOURCE_TOOLS/mv_if_diff ad_t_lpro.h.tmp ad_t_lpro.h
 
 pro: $(GB_O:.o=.c)
-	../MAKEBIN/aisc_mkpt -G -z -C -F GB,GEN,EXP $(GB_O:.o=.c) >ad_prot.h.tmp
+	../MAKEBIN/aisc_mkpt -c "ARB database interface" -G -z -C -F GB,GEN,EXP $(GB_O:.o=.c) >ad_prot.h.tmp
 	../SOURCE_TOOLS/mv_if_diff ad_prot.h.tmp ad_prot.h
 
 tpro: $(GB_T:.o=.c)
-	../MAKEBIN/aisc_mkpt -G -z -C -F GB,GEN,EXP $(GB_T:.o=.c) >ad_t_prot.h.tmp
+	../MAKEBIN/aisc_mkpt -c "ARB toolkit" -G -z -C -F GB,GEN,EXP $(GB_T:.o=.c) >ad_t_prot.h.tmp
 	../SOURCE_TOOLS/mv_if_diff ad_t_prot.h.tmp ad_t_prot.h
 
 wc:
