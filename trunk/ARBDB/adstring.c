@@ -416,9 +416,13 @@ static GB_CSTR gbs_vglobal_string(const char *templat, va_list parg, int allow_r
     return buffer[my_idx];
 }
 
+static char *gbs_vglobal_string_copy(const char *templat, va_list parg) {
+    GB_CSTR gstr = gbs_vglobal_string(templat, parg, 1);
+    return GB_strduplen(gstr, last_global_string_size);
+}
+
 void GBS_reuse_buffer(GB_CSTR global_buffer) {
     /* If you've just shortely used a buffer, you can put it back here */
-
     gbs_vglobal_string(global_buffer, 0, -1);
 }
 
@@ -439,13 +443,13 @@ char *GBS_global_string_copy(const char *templat, ...) {
     /* goes to header: __ATTR__FORMAT(1)  */
 
     va_list parg;
-    GB_CSTR result;
+    char *result;
 
     va_start(parg,templat);
-    result = gbs_vglobal_string(templat, parg, 1);
+    result = gbs_vglobal_string_copy(templat, parg);
     va_end(parg);
 
-    return GB_strduplen(result, last_global_string_size);
+    return result;
 }
 
 #if defined(DEVEL_RALF)
@@ -998,6 +1002,11 @@ char *GBS_unescape_string(const char *str, const char *escaped_chars, char escap
                     String streams
 ********************************************************************************************/
 
+#if defined(DEBUG)
+// # define DUMP_STRSTRUCT_MEMUSE
+#endif /* DEBUG */
+
+
 struct GBS_strstruct {
     char *GBS_strcat_data;
     long  GBS_strcat_data_size;
@@ -1014,9 +1023,9 @@ struct GBS_strstruct *GBS_stropen(long init_size)   { /* opens a memory file */
         last_used = 0;
     }
     else {
-#if defined(DEBUG) && 0
+#if defined(DUMP_STRSTRUCT_MEMUSE)
         printf("allocating new GBS_strstruct (size = %li)\n", init_size);
-#endif /* DEBUG */
+#endif /* DUMP_STRSTRUCT_MEMUSE */
         strstr                       = (struct GBS_strstruct *)malloc(sizeof(struct GBS_strstruct));
         strstr->GBS_strcat_data_size = init_size;
         strstr->GBS_strcat_data      = (char *)malloc((size_t)strstr->GBS_strcat_data_size);
@@ -1049,16 +1058,28 @@ void GBS_strforget(struct GBS_strstruct *strstr) {
             last_used                 = strstr;
             strstr                    = tmp;
         }
-#if defined(DEBUG) && 0
+    }
+    else {
+        static short oversized_counter = 0;
+
+        if (strstr->GBS_strcat_pos*10 < strstr->GBS_strcat_data_size) oversized_counter++;
+        else oversized_counter = 0;
+
+        if (oversized_counter<10) {
+            // keep strstruct for next call
+            last_used = strstr;
+            strstr    = 0;
+        }
+        // otherwise the current strstruct was oversized 10 times -> free it
+    }
+
+    if (strstr) {
+#if defined(DUMP_STRSTRUCT_MEMUSE)
         printf("freeing GBS_strstruct (size = %li)\n", strstr->GBS_strcat_data_size);
-#endif /* DEBUG */
+#endif /* DUMP_STRSTRUCT_MEMUSE */
         free(strstr->GBS_strcat_data);
         free(strstr);
     }
-    else {
-        last_used = strstr;
-    }
-
 }
 
 GB_BUFFER GBS_mempntr(struct GBS_strstruct *strstr) {
@@ -1082,9 +1103,9 @@ static void gbs_strensure_mem(struct GBS_strstruct *strstr,long len) {
     if (strstr->GBS_strcat_pos + len + 2 >= strstr->GBS_strcat_data_size) {
         strstr->GBS_strcat_data_size = (strstr->GBS_strcat_pos+len+2)*3/2;
         strstr->GBS_strcat_data      = (char *)realloc((MALLOC_T)strstr->GBS_strcat_data,(size_t)strstr->GBS_strcat_data_size);
-#if defined(DEBUG) && 0
+#if defined(DUMP_STRSTRUCT_MEMUSE)
         printf("re-allocated GBS_strstruct to size = %li\n", strstr->GBS_strcat_data_size);
-#endif /* DEBUG */
+#endif /* DUMP_STRSTRUCT_MEMUSE */
     }
 }
 
@@ -1126,12 +1147,9 @@ void GBS_strnprintf(struct GBS_strstruct *strstr, long len, const char *templat,
 #else
     psize = vsprintf(buffer,templat,parg);
 #endif
-    if (psize == -1 || psize>len) {
-        ad_assert(0);
-        GB_CORE;
-    }
 
-    strstr->GBS_strcat_pos += strlen(buffer);
+    assert_or_exit(psize >= 0 && psize <= len);
+    strstr->GBS_strcat_pos += psize;
 }
 
 void GBS_chrcat(struct GBS_strstruct *strstr,char ch) {
@@ -1867,7 +1885,7 @@ void GB_internal_error(const char *templat, ...) {
 #endif /* DEBUG */
 }
 
-void GB_warning( const char *templat, ...) {    /* max 4000 characters */
+void GB_warning(const char *templat, ...) {
     /* goes to header: __ATTR__FORMAT(1)  */
 
     /* If program uses GUI, the message is printed via aw_message, otherwise it goes to stdout
@@ -1876,16 +1894,18 @@ void GB_warning( const char *templat, ...) {    /* max 4000 characters */
 
     va_list parg;
 
-    if ( gb_warning_func ) {
-        char buffer[4000];memset(&buffer[0],0,4000);
-        va_start(parg,templat);
-        vsprintf(buffer,templat,parg);
-        gb_warning_func(buffer);
-    }else{
-        va_start(parg,templat);
-        vfprintf(stdout,templat,parg);
-        fprintf(stdout,"\n");
+    va_start(parg,templat);
+    char *message = gbs_vglobal_string_copy(templat, parg);
+    va_end(parg);
+
+    if (gb_warning_func) {
+        gb_warning_func(message);
     }
+    else {
+        fputs(message, stdout);
+        fputc('\n', stdout);
+    }
+    free(message);
 }
 
 NOT4PERL void GB_install_warning(gb_warning_func_type warn){
