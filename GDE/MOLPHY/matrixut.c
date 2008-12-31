@@ -10,7 +10,9 @@
 
 #include <stdio.h>
 #include <stddef.h>
-#include "mo_assert.h"
+
+#define SIMPLE_ARB_ASSERT
+#include                "mo_assert.h"
 #define mo_assert(cond) arb_assert(cond)
 
 #include "matrixut.h"

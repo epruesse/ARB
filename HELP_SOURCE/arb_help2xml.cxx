@@ -12,8 +12,6 @@
 //                                                                       //
 //  ==================================================================== //
 
-// #include "arb_help2xml.h"
-
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif

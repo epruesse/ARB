@@ -1356,6 +1356,8 @@ GBDATA *GB_login(const char *cpath,const char *opent,const char *user)
     char                *path                = strdup(cpath);
     GB_BOOL              dbCreated           = GB_FALSE;
 
+    GBK_install_SIGSEGV_handler(GB_TRUE);
+
     if (!opent) opentype = gb_open_all;
     else if (strchr(opent, 'w')) opentype = gb_open_all;
     else if (strchr(opent, 's')) opentype = gb_open_read_only_all;

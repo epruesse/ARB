@@ -164,22 +164,25 @@ only few functions can be used, when the tree is reloaded (stage 3):
 
 /********************* Read and write to memory ***********************/
 
-#define PT_READ_INT(ptr,my_int_i) do {                                      \
-    (my_int_i)=(unsigned int)bswap_32(*(unsigned int*)(ptr));  \
-} while(0)
+#define PT_READ_INT(ptr,my_int_i)                                       \
+    do {                                                                \
+        (my_int_i)=(unsigned int)bswap_32(*(unsigned int*)(ptr));       \
+    } while(0)
 
-#define PT_WRITE_INT(ptr,my_int_i) do {                 \
-    *(unsigned int*)(ptr) = bswap_32((unsigned int)(my_int_i)); \
-} while(0)
+#define PT_WRITE_INT(ptr,my_int_i)                                      \
+    do {                                                                \
+        *(unsigned int*)(ptr) = bswap_32((unsigned int)(my_int_i));     \
+    } while(0)
 
-#define PT_READ_SHORT(ptr,my_int_i)                 \
-do {                                                \
-    (my_int_i) = bswap_16(*(unsigned short*)(ptr)); \
-} while(0)
+#define PT_READ_SHORT(ptr,my_int_i)                     \
+    do {                                                \
+        (my_int_i) = bswap_16(*(unsigned short*)(ptr)); \
+    } while(0)
 
-#define PT_WRITE_SHORT(ptr,my_int_i) do {           \
-    *(unsigned short*)(ptr) = bswap_16((unsigned short)(my_int_i)); \
-} while(0)
+#define PT_WRITE_SHORT(ptr,my_int_i)                                    \
+    do {                                                                \
+        *(unsigned short*)(ptr) = bswap_16((unsigned short)(my_int_i)); \
+    } while(0)
 
 #define PT_WRITE_CHAR(ptr,my_int_i) do { *(unsigned char *)(ptr) = my_int_i; } while(0)
 
@@ -189,16 +192,16 @@ do {                                                \
 
 #ifdef ARB_64
 
-# define PT_READ_PNTR(ptr,my_int_i)                                                 \
-do {                                                                                \
-    if (sizeof(my_int_i)==4) GB_CORE;                                               \
-    (my_int_i) = (unsigned long)bswap_64(*(unsigned long*)(ptr));                   \
-} while(0)
+# define PT_READ_PNTR(ptr,my_int_i)                                     \
+    do {                                                                \
+        pt_assert(sizeof(my_int_i)==4);                                 \
+        (my_int_i) = (unsigned long)bswap_64(*(unsigned long*)(ptr));   \
+    } while(0)
 
-# define PT_WRITE_PNTR(ptr,my_int_i)                              \
-do {                                                              \
-    *(unsigned long*)(ptr)=bswap_64((unsigned long)(my_int_i));  \
-} while(0)
+# define PT_WRITE_PNTR(ptr,my_int_i)                                    \
+    do {                                                                \
+        *(unsigned long*)(ptr)=bswap_64((unsigned long)(my_int_i));     \
+    } while(0)
 
 
 #else
@@ -211,28 +214,29 @@ do {                                                              \
 
 
 
-#define PT_WRITE_NAT(ptr,i) do {                \
-    if (i<0) GB_CORE;                           \
-    if (i>= 0x7FFE)                             \
-    {                                           \
-        PT_WRITE_INT(ptr,i|0x80000000);         \
-        ptr += sizeof(int);                     \
-    }                                           \
-    else                                        \
-    {                                           \
-        PT_WRITE_SHORT(ptr,i);                  \
-        ptr += sizeof(short);                   \
-    }                                           \
-} while (0)
+#define PT_WRITE_NAT(ptr,i)                     \
+    do {                                        \
+        pt_assert(i >= 0);                      \
+        if (i>= 0x7FFE)                         \
+        {                                       \
+            PT_WRITE_INT(ptr,i|0x80000000);     \
+            ptr += sizeof(int);                 \
+        }                                       \
+        else                                    \
+        {                                       \
+            PT_WRITE_SHORT(ptr,i);              \
+            ptr += sizeof(short);               \
+        }                                       \
+    } while (0)
 
-#define PT_READ_NAT(ptr,i)                                      \
-do {                                                            \
-    if (*ptr & 0x80) {                                          \
-        PT_READ_INT(ptr,i); ptr+= sizeof(int); i &= 0x7fffffff; \
-    }else{                                                      \
-        PT_READ_SHORT(ptr,i); ptr+= sizeof(short);              \
-    }                                                           \
-} while(0)
+#define PT_READ_NAT(ptr,i)                                              \
+    do {                                                                \
+        if (*ptr & 0x80) {                                              \
+            PT_READ_INT(ptr,i); ptr+= sizeof(int); i &= 0x7fffffff;     \
+        }else{                                                          \
+            PT_READ_SHORT(ptr,i); ptr+= sizeof(short);                  \
+        }                                                               \
+    } while(0)
 
 
 /********************* PT_READ_CHAIN_ENTRY ***********************/
@@ -361,10 +365,9 @@ GB_INLINE POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
 #ifdef DEVEL_JB
         if (sec & LONG_SONS) {
             if (sec & INT_SONS) {                                   // undefined -> error
-                printf("Your pt-server search tree is corrupt! You can not use it anymore.\n");
-                printf("Error: ((sec & LONG_SON) && (sec & INT_SONS)) == true\n");
-                printf("       this combination of both flags is not implemented\n");
-                GB_CORE;
+                GBK_terminate("Your pt-server search tree is corrupt! You can not use it anymore.\n"
+                              "Error: ((sec & LONG_SON) && (sec & INT_SONS)) == true\n"
+                              "       this combination of both flags is not implemented\n");
             } else {                                                // long/int
                 printf("Warning: A search tree of this size is not tested.\n"); 
                 printf("         (sec & LONG_SON) == true\n"); 

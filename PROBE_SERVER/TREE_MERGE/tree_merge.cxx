@@ -22,7 +22,6 @@
 #include <arb_assert.h>
 #define tm_assert(cond) arb_assert(cond)
 
-#include <arbdb.h>
 #include <arbdbt.h>
 #include <smartptr.h>
 

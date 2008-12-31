@@ -78,7 +78,7 @@ extern "C" {
 #endif
 
 # include <ad_t_prot.h>
-# ifdef GBL_INCLUDED
+# ifdef ADLOCAL_H
 #  include <ad_t_lpro.h>
 # endif
 

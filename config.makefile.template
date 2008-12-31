@@ -1,4 +1,4 @@
-# --------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------                                         -*-Mode: Makefile;-*- (emacs)
 # If this file is named config.makefile.template then copy it to config.makefile
 # DO NOT EDIT config.makefile.template
 # --------------------------------------------------------------------------------
@@ -9,6 +9,8 @@ DEVELOPER=ANY
 
 DEBUG=0# build with debug information
 DEBUG_GRAPHICS=0# force instant graphic update
+
+TRACESYM=1# insert symbols for meaningful backtraces into executables 
 
 # Include features using OPENGL? 
 OPENGL=1
@@ -35,7 +37,7 @@ LINUX = 1
 # REDHAT = 1 # uncomment for REDHAT systems
 
 # ------------
-# Section: Max OSX
+# Section: Mac OSX
 
 # MACH   = DARWIN#
 # DARWIN = 1

@@ -774,7 +774,7 @@ const char *di_protdist::makedists()
                             tt = m/(double)n;
                             break;
                         default:
-                            GB_CORE;
+                            di_assert(0);
                             break;
                     }
                 }

@@ -13,6 +13,8 @@
 #include <dirent.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <execinfo.h>
+#include <signal.h>
 
 #ifdef NO_REGEXPR
 int regerrno;
@@ -213,6 +215,11 @@ void GB_raise_critical_error(const char *msg) {
  * if only used for formatting GBS_global_string shall be used.
  *
  * GB_export_IO_error() shall not export and be renamed into GB_IO_error()
+ *
+ * GB_export_error() shall fail if there is already an exported error
+ * (maybe always remember a stack trace of last error export (try whether copy of backtrace-array works))
+ *
+ * use GB_get_error() to import AND clear the error
  */
 #endif /* DEVEL_RALF */
 
@@ -325,9 +332,8 @@ GB_ERROR GB_failedTo_error(const char *do_something, const char *special, GB_ERR
 #define PRINT2BUFFER_CHECKED(printed, buffer, bufsize, templat, parg)   \
     (printed) = PRINT2BUFFER(buffer, bufsize, templat, parg);           \
     if ((printed) < 0 || (size_t)(printed) >= (bufsize)) {              \
-        fprintf(stderr, "Internal buffer overflow (buffersize=%zu, printed=%zi)\n", (bufsize), (printed)); \
-        gb_assert(0);                                                   \
-        GB_CORE;                                                        \
+        GBK_terminate("Internal buffer overflow (size=%zu, used=%zi)\n", \
+                     (bufsize), (printed));                             \
     }
     
 /* -------------------------------------------------------------------------------- */
@@ -1824,24 +1830,6 @@ char *GBS_extract_words( const char *source,const char *chars, float minlen, GB_
     return GBS_strclose(strstruct);
 }
 
-int GBS_do_core(void)
-{
-    static char *flagfile = 0;
-    static int result;
-    FILE *f;
-    if (flagfile) return result;
-    flagfile = GBS_eval_env("$(ARBHOME)/do_core");
-    f = fopen(flagfile,"r");
-    if (f) {
-        fclose(f);
-        result = 1;
-    }else{
-        result = 0;
-    }
-
-    return result;
-}
-
 /* ----------------------- */
 /*      Error handler      */
 
@@ -1855,37 +1843,98 @@ NOT4PERL void GB_install_error_handler(gb_error_handler_type aw_message_handler)
     gb_error_handler = aw_message_handler;
 }
 
+/* --------------------- */
+/*      Backtracing      */
+
+#define MAX_BACKTRACE 66
+
+void GBK_dump_backtrace(FILE *out, GB_ERROR error) {
+    void   *array[MAX_BACKTRACE];
+    size_t  size = backtrace(array, MAX_BACKTRACE); // get void*'s for all entries on the stack
+
+    if (!out) out = stderr;
+
+    // print out all the frames to out
+    fprintf(out, "\n-------------------- ARB-backtrace for '%s':\n", error);
+    backtrace_symbols_fd(array, size, fileno(out));
+    if (size == MAX_BACKTRACE) fputs("[stack truncated to avoid deadlock]\n", out);
+    fputs("-------------------- End of backtrace\n", out);
+    fflush(out);
+}
+
+/* ----------------------- */
+/*      catch SIGSEGV      */
+
+static void sigsegv_handler_exit(int sig) {
+    fprintf(stderr, "[Terminating with signal %i]\n", sig);
+    exit(EXIT_FAILURE);
+}
+void sigsegv_handler_dump(int sig) {
+    /* sigsegv_handler is intentionally global, to show it in backtrace! */
+    GBK_dump_backtrace(stderr, GBS_global_string("received signal %i", sig));
+    sigsegv_handler_exit(sig);
+}
+
+void GBK_install_SIGSEGV_handler(GB_BOOL install) {
+    signal(SIGSEGV, install ? sigsegv_handler_dump : sigsegv_handler_exit);
+}
+
+/* ------------------------------------------- */
+/*      Error/notification functions           */
 
 void GB_internal_error(const char *templat, ...) {
     /* goes to header: __ATTR__FORMAT(1)  */
-
     va_list parg;
-    GB_CSTR message;
-    GB_CSTR full_message;
+
+    /* Use GB_internal_error, when something goes badly wrong
+     * but you want to give the user a chance to save his database
+     * 
+     * Note: it's NOT recommended to use this function!
+     */
 
     va_start(parg, templat);
-    message = gbs_vglobal_string(templat, parg, 0);
+    GB_CSTR message = gbs_vglobal_string(templat, parg, 0);
     va_end(parg);
 
-    full_message = GBS_global_string("Internal ARB Error: %s", message);
+    char *full_message = GBS_global_string_copy("Internal ARB Error: %s", message);
     gb_error_handler(full_message);
     gb_error_handler("ARB is most likely unstable now (due to this error).\n"
                      "If you've made changes to the database, consider to save it using a different name.\n"
                      "Try to fix the cause of the error and restart ARB.");
 
-    if (GBS_do_core()) {
-        GB_CORE;
-    }
-#if defined(DEBUG)
-    else {
-        gb_assert(0);
-        fprintf(stderr,"Debug file %s not found -> continuing operation \n",
-                "$(ARBHOME)/do_core");
-    }
-#endif /* DEBUG */
+    GBK_dump_backtrace(stderr, full_message);
+    gb_assert(0);                            // internal errors shall not happen, go fix it
+    
+    free(full_message);
 }
 
-void GB_warning(const char *templat, ...) {
+void GBK_terminate(const char *templat, ...) {
+    /* goes to header: __ATTR__FORMAT(1)  */
+
+    /* GBK_terminate is the emergency exit!
+     * only used if no other way to recover
+     */
+    
+    va_list parg;
+
+    va_start(parg,templat);
+    GB_CSTR error = gbs_vglobal_string(templat, parg, 0);
+    va_end(parg);
+
+    fprintf(stderr, "Error: '%s'\n", error);
+    fputs("Can't continue - terminating..\n", stderr);
+    GBK_dump_backtrace(stderr, "GBK_terminate");
+    
+    fflush(stderr);
+    gb_assert(0); // GBK_terminate shall not be called, fix reason
+    exit(EXIT_FAILURE);
+}
+
+GB_ERROR GBK_assert_msg(const char *assertion, const char *file, int linenr) {
+    return GBS_global_string("assertion '%s' failed in %s #%i", assertion, file, linenr);
+}
+
+void GB_warning(const char *templat, ...) { 
     /* goes to header: __ATTR__FORMAT(1)  */
 
     /* If program uses GUI, the message is printed via aw_message, otherwise it goes to stdout

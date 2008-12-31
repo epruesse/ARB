@@ -1,7 +1,6 @@
 #include <stdio.h>
 
 #include <aw_root.hxx>
-#include <arbdb.h>
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 

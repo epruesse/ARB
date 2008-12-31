@@ -147,8 +147,10 @@ symlink ../ARBDB/adGene.h INCLUDE/adGene.h &&
 symlink ../ARBDB/ad_prot.h INCLUDE/ad_prot.h &&
 symlink ../ARBDB/ad_config.h INCLUDE/ad_config.h &&
 symlink ../ARBDB/ad_t_prot.h INCLUDE/ad_t_prot.h &&
+symlink ../ARBDB/ad_k_prot.h INCLUDE/ad_k_prot.h &&
 symlink ../ARBDB/arb_assert.h INCLUDE/arb_assert.h &&
 symlink ../ARBDB/arbdb.h INCLUDE/arbdb.h &&
+symlink ../ARBDB/arbdb_base.h INCLUDE/arbdb_base.h &&
 symlink ../ARBDB/arbdbt.h INCLUDE/arbdbt.h &&
 symlink ../ARBDBPP/adtools.hxx INCLUDE/adtools.hxx &&
 symlink ../ARBDBPP/arbdb++.hxx INCLUDE/arbdb++.hxx &&

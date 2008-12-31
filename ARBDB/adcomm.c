@@ -144,14 +144,6 @@ void *gbcms_sighup(void){
         char *newline           = strchr(db_panic, '\n');
         if (newline) newline[0] = 0;
 
-        if (strcmp(db_panic, "core") == 0) {
-            fprintf(stderr,
-                    "- core dump requested"
-                    "[crashing]\n");
-            fflush(stderr);
-            GB_CORE;
-        }
-
         GB_MAIN_TYPE *Main       = GBCONTAINER_MAIN(gbcms_gb_main);
         int           translevel = Main->transaction;
 
@@ -206,7 +198,6 @@ GB_ERROR GBCMS_open(const char *path,long timeout,GBDATA *gb_main)
         return err;
     }
 
-    /*  signal(SIGSEGV,(SIG_PF)gbcm_sig_violation); */
     signal(SIGPIPE,(SIG_PF)gbcms_sigpipe);
     signal(SIGHUP,(SIG_PF)gbcms_sighup);
 
@@ -1393,12 +1384,13 @@ long gbcm_read_bin(int socket,GBCONTAINER *gbd, long *buffer, long mode, GBDATA 
         if (mode >=0)   gb2->info.i = buffer[i++];
     } else {
         if (mode >=0) {
-            long realsize = buffer[i++];
-            long memsize = buffer[i++];
+            long  realsize = buffer[i++];
+            long  memsize  = buffer[i++];
             char *data;
             /* GB_FREEDATA(gb2); */
-            GB_INDEX_CHECK_OUT(gb2);                        \
-            if (gb2->flags2.extern_data && GB_EXTERN_DATA_DATA(gb2->info.ex)) GB_CORE;
+            GB_INDEX_CHECK_OUT(gb2);
+
+            assert_or_exit(!(gb2->flags2.extern_data && GB_EXTERN_DATA_DATA(gb2->info.ex)));
 
             if (GB_CHECKINTERN(realsize,memsize)) {
                 GB_SETINTERN(gb2);
@@ -2074,7 +2066,7 @@ GB_ERROR gbcm_logout(GBCONTAINER *gb_main,char *user)
     return GB_export_error("User '%s' not logged in",user);
 }
 
-GB_CSTR GBC_get_hostname(void){
+GB_CSTR GB_get_hostname(void){
     static char *hn = 0;
     if (!hn){
         char buffer[4096];

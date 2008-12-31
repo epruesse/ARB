@@ -1,5 +1,21 @@
-#ifndef awt_nei_hxx_included
-#define awt_nei_hxx_included
+// ================================================================ //
+//                                                                  //
+//   File      : awt_nei.hxx                                        //
+//   Purpose   :                                                    //
+//                                                                  //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
+
+#ifndef AWT_NEI_HXX
+#define AWT_NEI_HXX
+
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
+
+#define ph_assert(cond) arb_assert(cond)
 
 class PH_NEIGHBOUR_DIST {
 public:
@@ -7,8 +23,8 @@ public:
     long    i,j;
     AP_FLOAT val;
     PH_NEIGHBOUR_DIST *next, *previous;
-    void remove(void){
-        if (!previous) GB_CORE; // already removed
+    void remove(void) {
+        ph_assert(previous); // already removed
         if (next) {next->previous = previous;}
         previous->next = next;previous = 0;
     };
@@ -49,5 +65,6 @@ public:
     AP_FLOAT get_dist(long i, long j);
 };
 
-
-#endif
+#else
+#error awt_nei.hxx included twice
+#endif // AWT_NEI_HXX

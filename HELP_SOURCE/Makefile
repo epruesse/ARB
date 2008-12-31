@@ -248,14 +248,11 @@ $(HELP2XML): $(LIBS)
 $(XML_DEPEND) : arb_help2xml.cxx
 	touch $(XML_DEPEND)
 
-$(HELP2XML): arb_help2xml.cxx
-	$(CPP) $(cflags) -o $@ $< $(CPPINCLUDES) $(LIBS)
+%.o: %.cxx
+	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
 
-$(ARBHOME)/bin/%: %.c
-	$(ACC) $(cflags) -o $@ $< $(AINCLUDES)
-
-$(ARBHOME)/bin/%: %.cxx
-	$(CPP) $(cflags) -o $@ $< $(CPPINCLUDES) $(LIB2)
+$(HELP2XML): arb_help2xml.o $(LIBS)
+	$(LINK_EXECUTABLE) $@ $< $(LIBS) $(LIBPATH) -lARBDB
 
 DEPENDS = $(TOOL_OBJECT:.o=.depend)
 depends: $(DEPENDS)
@@ -274,6 +271,8 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
+arb_help2xml.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_help2xml.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/xml.hxx

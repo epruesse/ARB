@@ -1,7 +1,7 @@
 #ifndef __ADMAP_H
 #define __ADMAP_H
 
-#ifndef GBL_INCLUDED
+#ifndef ADLOCAL_H
 #include "adlocal.h"
 #endif
 

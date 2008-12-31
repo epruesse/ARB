@@ -38,9 +38,8 @@ int AW_repeated_question::get_answer(const char *question, const char *buttons, 
         buttons_used = strdup(buttons);
     }
     else {
-        if (strcmp(buttons_used, buttons) != 0) {
-            GB_CORE; // Do not use the same instance of AW_repeated_question with different buttons
-        }
+        // do not use the same instance of AW_repeated_question with different buttons!
+        assert_or_exit(strcmp(buttons_used, buttons) == 0);
     }
 
     if (answer == -1 || dont_ask_again == false) {

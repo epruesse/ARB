@@ -1,30 +1,25 @@
 #ifndef ARBDB_H
 #define ARBDB_H
 
-#ifndef _STDIO_H
-#include <stdio.h>
-#endif
 #ifndef _STDINT_H
 #include <stdint.h>
 #endif
 
-#define NOT4PERL
-/* function definitions starting with NOT4PERL are not included into the ARB-perl-interface */
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
+#endif
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
 #define gb_assert(bed) arb_assert(bed)
 
-typedef const char *GB_CSTR;    /* this is read-only! */
-typedef const char *GB_ERROR;   /* memory management is controlled by the ARBDB lib */
-typedef char       *GB_BUFFER;  /* points to a piece of mem (writeable, but don't free!)*/
-typedef const char *GB_CBUFFER; /* points to a piece of mem (readable only)*/
+#define NOT4PERL
+/* function definitions starting with NOT4PERL are not included into the ARB-perl-interface */
 
 #define GB_PATH_MAX 1024
 #define GBS_GLOBAL_STRING_SIZE 64000
 
-#define GB_CORE *(long *)0 =0
 #define GB_KEY_LEN_MAX  64 /* max. length of a key (a whole key path may be longer) */
 #define GB_KEY_LEN_MIN  2
 
@@ -41,7 +36,7 @@ typedef const float GB_CFLOAT;
 
 /* ---------------------------------------- need some stuff if adlocal.h is not included */
 
-#ifndef GBL_INCLUDED
+#ifndef ADLOCAL_H
 typedef enum gb_call_back_type {
     GB_CB_DELETE = 1,
     GB_CB_CHANGED = 2,
@@ -117,10 +112,8 @@ typedef enum { GB_IGNORE_CASE = 0 , GB_MIND_CASE = 1, GB_CASE_UNDEFINED = 2 } GB
 
 struct gb_transaction_save;
 
-#endif /*GBL_INCLUDED*/
+#endif /*ADLOCAL_H*/
 // --------------------------------------------------------------------------------
-
-typedef enum { GB_FALSE = 0 , GB_TRUE = 1 } GB_BOOL;
 
 typedef int GB_COMPRESSION_MASK;
 
@@ -272,9 +265,9 @@ extern "C" {
 # define P_(s) s
 
 #include <ad_prot.h>
-#ifdef GBL_INCLUDED
+#ifdef ADLOCAL_H
 #include <ad_lpro.h>
-#endif /*GBL_INCLUDED*/
+#endif /*ADLOCAL_H*/
 
 #undef P_
 
@@ -313,9 +306,6 @@ public:
 
 int GB_info(struct gb_data_base_type2 *gbd);
 
-// #define GB_INLINE inline
-#else
-// #define GB_INLINE
 #endif /*__cplusplus*/
 
 #define GB_INLINE inline

@@ -31,6 +31,11 @@
 
 #include <list>
 
+#if defined(DEBUG)
+# define TEST_FUNCTIONS
+#endif // DEBUG
+
+
 using namespace std;
 
 AW_HEADER_MAIN
@@ -934,6 +939,7 @@ static void NT_quick_add(AW_window * aww, AWT_canvas *ntw, int what) {
 
 // test versions :
 
+#if defined(TEST_FUNCTIONS)
 static void NT_add_test(AW_window * aww, AWT_canvas *ntw, int what) {
     // what == 0 marked  ==1 selected
     nt_add(aww,ntw,what,AP_FALSE,1);
@@ -943,6 +949,7 @@ static void NT_quick_add_test(AW_window * aww, AWT_canvas *ntw, int what) {
     // what == 0 marked  ==1 selected
     nt_add(aww,ntw,what,AP_TRUE,1);
 }
+#endif // TEST_FUNCTIONS
 
 // -----------------------------------------
 //      remove and add marked / selected
@@ -982,6 +989,7 @@ static void NT_rquick_add(AW_window * aww, AWT_canvas *ntw, int what) {
 
 // test versions :
 
+#if defined(TEST_FUNCTIONS)
 static void NT_radd_test(AW_window * aww, AWT_canvas *ntw, int what) {
     // what == 0 marked  ==1 selected
     NT_radd_internal(aww, ntw, what, AP_FALSE, 1);
@@ -991,6 +999,7 @@ static void NT_rquick_add_test(AW_window * aww, AWT_canvas *ntw, int what) {
     // what == 0 marked  ==1 selected
     NT_radd_internal(aww, ntw, what, AP_TRUE, 1);
 }
+#endif // TEST_FUNCTIONS
 
 // --------------------------------------------------------------------------------
 // Add Partial sequences
@@ -1129,6 +1138,7 @@ static void PA_focus_cb(AW_window *,GBDATA *gb_main_par)
     Test-Funktionen
 ******************************************************/
 
+#if defined(TEST_FUNCTIONS)
 static void refreshTree(AWT_canvas *ntw)
 {
     GB_transaction gb_dummy(ntw->gb_main);
@@ -1225,6 +1235,7 @@ static void TEST_testWholeTree(AW_window *, AWT_canvas *)
     cout << "Nodes tested: " << nodes << '\n'
          << "Edges tested: " << edges << '\n';
 }
+#endif // TEST_FUNCTIONS
 
 static int dumpNodes(AP_tree_nlen *node)
 {
@@ -1243,6 +1254,7 @@ static int dumpNodes(AP_tree_nlen *node)
     return cnt;
 }
 
+#if defined(TEST_FUNCTIONS)
 static void TEST_dumpNodes(AW_window *, AWT_canvas *)
 {
     AP_tree_nlen *root = (AP_tree_nlen*)*ap_main->tree_root;
@@ -1252,6 +1264,7 @@ static void TEST_dumpNodes(AW_window *, AWT_canvas *)
     cnt = dumpNodes(root);
     cout << "----- " << cnt << "nodes dumped!\n";
 }
+#endif // TEST_FUNCTIONS
 
 static void setBranchlens(AP_tree_nlen *node,double newLen)
 {
@@ -1263,6 +1276,7 @@ static void setBranchlens(AP_tree_nlen *node,double newLen)
         setBranchlens(node->Rightson(),newLen);
     }
 }
+#if defined(TEST_FUNCTIONS)
 static void TEST_setBranchlen(AW_window *, AWT_canvas *ntw)
 {
     AP_tree_nlen *root = (AP_tree_nlen*)*ap_main->tree_root;
@@ -1270,6 +1284,7 @@ static void TEST_setBranchlen(AW_window *, AWT_canvas *ntw)
     setBranchlens(root,1.0);
     refreshTree(ntw);
 }
+#endif // TEST_FUNCTIONS
 
 /*
 static AP_tree_nlen *getRandomSonOf(AP_tree_nlen *daddy, int innerNodeAllowed,int rootAllowed)
@@ -1325,6 +1340,7 @@ static void TEST_performRandomMoves(AW_window *aww,AWT_canvas *ntw)
 }
 */
 
+#if defined(TEST_FUNCTIONS)
 static void TEST_mixTree(AW_window *, AWT_canvas *ntw)
 {
     rootEdge()->mixTree(100);
@@ -1375,7 +1391,7 @@ static void init_TEST_menu(AW_window_menu_modes *awm,AWT_canvas *ntw)
     awm->insert_menu_topic(0, "Add selected species",       "", "pa_quick_sel.hlp", AWM_ALL, (AW_CB)NT_quick_add_test, (AW_CL)ntw, 1);
     awm->insert_menu_topic(0, "Add selected species + NNI", "", "pa_add_sel.hlp",   AWM_ALL, (AW_CB)NT_add_test,       (AW_CL)ntw, 1);
 }
-
+#endif // TEST_FUNCTIONS
 
 static GB_ERROR pars_check_size(AW_root *awr){
     char *tree_name = awr->awar(AWAR_TREE)->read_string();
@@ -1573,9 +1589,9 @@ static void pars_start_cb(AW_window *aww)
         awm->insert_menu_topic("tree_remove_remark",          "Remove Bootstrap Values",  "V","trm_boot.hlp", AWM_TREE,   (AW_CB)NT_remove_bootstrap,     (AW_CL)ntw, 0 );
     }
 
-    if (GBS_do_core()) {
-        init_TEST_menu(awm,ntw);
-    }
+#if defined(TEST_FUNCTIONS)
+    init_TEST_menu(awm,ntw);
+#endif // TEST_FUNCTIONS
 
     awm->create_menu("props","Properties","r","properties.hlp", AWM_ALL);
     {

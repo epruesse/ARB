@@ -52,7 +52,6 @@
 #include "aw_xfig.hxx"
 #include "aw_xfigfont.hxx"
 #include "aw_window.hxx"
-#include <arbdb.h>              // hash functions
 #include "awt.hxx"
 
 #include <inline.h>

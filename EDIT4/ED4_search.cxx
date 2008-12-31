@@ -151,8 +151,8 @@ public:
     static void set_report(reportMatch r, int *u2r)     { report = r; uni2real = u2r; }
     static void set_mismatches(int minMis, int maxMis)  
     { 
-        assert_or_exit(maxMis <= MAX_MISMATCHES);
-        assert_or_exit(minMis <= maxMis);
+        e4_assert(maxMis <= MAX_MISMATCHES);
+        e4_assert(minMis <= maxMis);
         min_mismatches = minMis; 
         max_mismatches = maxMis; 
     }

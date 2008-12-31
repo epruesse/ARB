@@ -8,7 +8,6 @@
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 
-#include <arbdb.h>
 #include <arbdbt.h>
 #include <awt.hxx>
 #include <awt_changekey.hxx>

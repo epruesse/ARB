@@ -121,7 +121,8 @@ void AP_filter::enable_simplify(AWT_FILTER_SIMPLIFY type){
             simplify[(unsigned char)'T'] = 'C';
             break;
         case AWT_FILTER_SIMPLIFY_PROTEIN:
-            GB_CORE;
+            awt_assert(0);
+            break;
         case AWT_FILTER_SIMPLIFY_NONE:
             break;
     }
@@ -267,12 +268,12 @@ void AP_matrix::set_description(const char *xstring,const char *ystring){
     x_description = (char **)GB_calloc(sizeof(char *),size);
     y_description = (char **)GB_calloc(sizeof(char *),size);
     for (t=strtok(x," ,;\n");t;t = strtok(0," ,;\n")){
-        if(xpos>=size) GB_CORE;
+        awt_assert(xpos<size);
         x_description[xpos++] = strdup(t);
     }
     int ypos = 0;
     for (t=strtok(y," ,;\n");t;t = strtok(0," ,;\n")){
-        if(ypos>=size) GB_CORE;
+        awt_assert(ypos<size);
         x_description[ypos++] = strdup(t);
     }
     free(x);

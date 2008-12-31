@@ -1154,9 +1154,9 @@ bool ED4_char_table::ok() const
 //      void ED4_char_table::test() const
 //  ------------------------------------------
 void ED4_char_table::test() const {
+    
     if (!ok()) {
-        fprintf(stderr, "ED4_char_table::test() failed");
-        GB_CORE;
+        GBK_terminate("ED4_char_table::test() failed");
     }
 }
 

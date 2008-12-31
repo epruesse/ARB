@@ -1061,7 +1061,7 @@ int aw_question(const char *msg, const char *buttons, bool fixedSizeButtons, con
 
     switch ( aw_message_cb_result ) {
         case -1: /* exit with core */
-            GB_CORE;
+            ARB_SIGSEGV;
             break;
         case -2: /* exit without core */
             exit( -1 );
@@ -1940,11 +1940,10 @@ void AW_POPUP_HELP(AW_window *aw,AW_CL /*char */ helpcd)
     helpwindow->show();
 }
 
-/***********************************************************************/
-/**********************     HELP WINDOW ************************/
-/***********************************************************************/
 
-
+#if defined(DEVEL_RALF)
+#warning Check where AW_ERROR is used and maybe use one of the GB_error/terminate functions
+#endif // DEVEL_RALF
 
 void AW_ERROR( const char *templat, ...) {
     char buffer[10000];
@@ -1958,11 +1957,6 @@ void AW_ERROR( const char *templat, ...) {
     vsprintf(p,templat,parg);
     fprintf(stderr,"%s\n",buffer);
 
-    if (GBS_do_core()){
-        GB_CORE;
-    }else{
-        gb_assert(0);
-        fprintf(stderr,"Debug file $ARBHOME/do_core not found -> continuing operation \n");
-    }
     aw_message(buffer);
+    gb_assert(0);
 }

@@ -50,7 +50,7 @@ AP_ERR::AP_ERR (const char *pntr,const char *pntr2,const int core)
     text = pntr2;
     cout << "\n*** FATAL ERROR *** " << core << " in " <<pntr << "\n" << text <<"\n";
     cout.flush();
-    GB_CORE;
+    GBK_terminate("AP_ERR[1]");
 }
 
 AP_ERR::AP_ERR (const char *pntr, const int core)
@@ -60,7 +60,7 @@ AP_ERR::AP_ERR (const char *pntr, const int core)
     text = pntr;
     cout << "\n*** FATAL ERROR *** " << core << "\n" << text << "\n";
     cout.flush();
-    GB_CORE;    // -segmantation Fault
+    GBK_terminate("AP_ERR[2]");
 }
 
 const char *AP_ERR::show()

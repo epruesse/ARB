@@ -76,7 +76,6 @@ long GBS_gcgchecksum P_((const char *seq));
 uint32_t GB_checksum P_((const char *seq, long length, int ignore_case, const char *exclude));
 uint32_t GBS_checksum P_((const char *seq, int ignore_case, const char *exclude));
 char *GBS_extract_words P_((const char *source, const char *chars, float minlen, GB_BOOL sort_output));
-int GBS_do_core P_((void));
 NOT4PERL void GB_install_error_handler P_((gb_error_handler_type aw_message_handler));
 void GB_internal_error P_((const char *templat, ...)) __ATTR__FORMAT(1);
 void GB_warning P_((const char *templat, ...)) __ATTR__FORMAT(1);
@@ -319,7 +318,7 @@ GB_BOOL GB_is_client P_((GBDATA *gbd));
 GBDATA *GBCMC_find P_((GBDATA *gbd, const char *key, GB_TYPES type, const char *str, GB_CASE case_sens, enum gb_search_types gbs));
 int GBCMC_system P_((GBDATA *gbd, const char *ss));
 GB_ERROR GB_tell_server_dont_wait P_((GBDATA *gbd));
-GB_CSTR GBC_get_hostname P_((void));
+GB_CSTR GB_get_hostname P_((void));
 GB_ERROR GB_install_pid P_((int mode));
 
 /* adhash.c */

@@ -41,7 +41,7 @@ FORCEMASK = umask 002
 # ---------------------- [unconditionally used options]
 
 GCC:=gcc
-GPP:=g++ -fmessage-length=0 -funit-at-a-time
+GPP:=g++ 
 CPPreal:=cpp
 
 ifdef DARWIN
@@ -168,6 +168,8 @@ ifdef DARWIN
 endif
 
 cflags += -pipe
+cflags += -fmessage-length=0# dont wrap compiler output
+cflags += -funit-at-a-time
 
 #---------------------- X11 location
 
@@ -209,13 +211,24 @@ ifdef DARWIN
 SYSLIBS += -lstdc++
 endif
 
+#---------------------- include symbols?
+
+cdynamic=
+ldynamic=
+
+ifeq ($(TRACESYM),1)
+cdynamic += -rdynamic
+ldynamic += --export-dynamic 
+endif
+
 # ------------------------------------------------------------------------- 
 #	Don't put any machine/version/etc conditionals below!
 #	(instead define variables above)
 # -------------------------------------------------------------------------
 
-cflags += -W -Wall $(dflags) $(extended_warnings)
-cppflags := $(extended_cpp_warnings)
+cflags += -W -Wall $(dflags) $(extended_warnings) $(cdynamic)
+
+cppflags := $(extended_cpp_warnings) 
 
 # compiler settings:
 
@@ -228,9 +241,11 @@ PP := $(CPPreal)# preprocessor
 
 SHARED_LIB_SUFFIX = so# shared lib suffix (can be set to 'a' to link statically)
 
+lflags += $(ldynamic)
+
 LINK_STATIC_LIB := ld $(lflags) -r -o# link static lib
 LINK_SHARED_LIB := $(GPP) $(lflags) -shared -o# link shared lib
-LINK_EXECUTABLE := $(GPP) $(lflags) -o# link executable (c++)
+LINK_EXECUTABLE := $(GPP) $(lflags) $(cdynamic) -o# link executable (c++)
 
 # other used tools
 
@@ -298,12 +313,12 @@ config.makefile : config.makefile.template
 		@echo --------------------------------------------------------------------------------
 ifeq ($(strip $(CONFIG_MAKEFILE_FOUND)),)
 		@cp $< $@
-		@echo '$@:1: has been generated.'
+		@echo '$(ARBHOME)/$@:1: has been generated.'
 		@echo 'Please edit $@ to configure your system!'
 		@echo '(not needed for linux systems - simply type "make all")'
 else
-		@echo '$<:1: is more recent than'
-		@echo '$@:1:'
+		@echo '$(ARBHOME)/$<:1: is more recent than'
+		@echo '$(ARBHOME)/$@:1:'
 		@ls -al config.makefile*
 		@echo "you may either:"
 		@echo "- ignore it and touch $@"
@@ -1106,7 +1121,7 @@ GDE:		gde
 agde: 		ARB_GDE/ARB_GDE.dummy
 tools:		TOOLS/TOOLS.dummy
 trs:		TRS/TRS.dummy
-convert:	SL/FILE_BUFFER/FILE_BUFFER.dummy
+convert:	SL/FILE_BUFFER/FILE_BUFFER.dummy shared_libs
 	$(MAKE) CONVERTALN/CONVERTALN.dummy
 
 readseq:	READSEQ/READSEQ.dummy
