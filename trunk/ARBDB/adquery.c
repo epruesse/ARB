@@ -35,10 +35,7 @@ const char *GB_get_GBDATA_path(GBDATA *gbd) {
     buffer                    = orgbuffer;
 
     build_GBDATA_path(gbd, &buffer);
-
-    if ((buffer-orgbuffer) >= BUFFERSIZE) {
-        GB_CORE; // buffer overflow
-    }
+    assert_or_exit((buffer-orgbuffer) < BUFFERSIZE); // buffer overflow
 
     return orgbuffer;
 }

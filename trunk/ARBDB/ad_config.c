@@ -19,8 +19,10 @@
 #include "arbdbt.h"
 #include "ad_config.h"
 
-/********************************************************************************************
-                    editor configurations
+#define ad_assert(cond) arb_assert(cond)
+
+/* *******************************************************************************************
+   editor configurations
 ********************************************************************************************/
 
 char **GBT_get_configuration_names_and_count(GBDATA *gb_main, int *countPtr) {
@@ -232,29 +234,26 @@ GB_ERROR GBT_parse_next_config_item(GBT_config_parser *parser, GBT_config_item *
 void GBT_append_to_config_string(const GBT_config_item *item, void *strstruct) {
     /* strstruct has to be created by GBS_stropen() */
 
-    if (item->type & (CI_UNKNOWN|CI_END_OF_CONFIG)) {
-        GB_CORE;
+    ad_assert((item->type & (CI_UNKNOWN|CI_END_OF_CONFIG)) == 0);
+
+    char prefix[] = "\1?";
+    if (item->type == CI_CLOSE_GROUP) {
+        prefix[1] = 'E';
+        GBS_strcat(strstruct, prefix);
     }
     else {
-        char prefix[] = "\1?";
-        if (item->type == CI_CLOSE_GROUP) {
-            prefix[1] = 'E';
-            GBS_strcat(strstruct, prefix);
-        }
-        else {
-            char label = 0;
-            switch (item->type) {
-                case CI_SPECIES:      label = 'L'; break;
-                case CI_SAI:          label = 'S'; break;
-                case CI_GROUP:        label = 'G'; break;
-                case CI_FOLDED_GROUP: label = 'F'; break;
+        char label = 0;
+        switch (item->type) {
+            case CI_SPECIES:      label = 'L'; break;
+            case CI_SAI:          label = 'S'; break;
+            case CI_GROUP:        label = 'G'; break;
+            case CI_FOLDED_GROUP: label = 'F'; break;
 
-                default : GB_CORE; break;
-            }
-            prefix[1] = label;
-            GBS_strcat(strstruct, prefix);
-            GBS_strcat(strstruct, item->name);
+            default : ad_assert(0); break;
         }
+        prefix[1] = label;
+        GBS_strcat(strstruct, prefix);
+        GBS_strcat(strstruct, item->name);
     }
 }
 

@@ -242,7 +242,7 @@ void gbm_init_mem(void)
         {
             char *someMem = (char*)calloc(1,(size_t)i);
 
-            if (someMem) gbb_put_memblk(someMem,i);
+            if (someMem) gbm_put_memblk(someMem,i);
         }
     }
 #endif
@@ -314,7 +314,7 @@ static int getClusterIndex(size_t size) /* searches the index of the
     return l;
 }
 
-void gbb_put_memblk(char *memblk, size_t size) /* gives any memory block (allocated or not)
+void gbm_put_memblk(char *memblk, size_t size) /* gives any memory block (allocated or not)
                                                   into the responsibility of this module;
                                                   the block has to be aligned!!! */
 {
@@ -349,7 +349,7 @@ void gbb_put_memblk(char *memblk, size_t size) /* gives any memory block (alloca
     TEST();
 }
 
-static char *gbb_get_memblk(size_t size)
+static char *gbm_get_memblk(size_t size)
 {
     struct gbb_data  *block = NULL;
     int           trials = GBB_MAX_TRIALS,
@@ -440,7 +440,7 @@ char *gbm_get_mem(size_t size, long index)
         ggi->extern_data_size += nsize;
         ggi->extern_data_items++;
 
-        erg = gbb_get_memblk((size_t)nsize);
+        erg = gbm_get_memblk((size_t)nsize);
         return erg;
     }
 
@@ -508,7 +508,7 @@ void gbm_free_mem(char *data, size_t size, long index)
             /* printf("put mapped Block (size=%li)\n", size); */
 
             if (size>=(GBB_HEADER_SIZE+GBB_MINSIZE))
-                gbb_put_memblk((char*)block, size);
+                gbm_put_memblk((char*)block, size);
 
         }
         else
@@ -529,7 +529,7 @@ void gbm_free_mem(char *data, size_t size, long index)
             {
                 /* printf("put unused block (size=%li block->size=%li)\n",
                    size,block->size); */
-                gbb_put_memblk((char*)block,block->size + GBB_HEADER_SIZE);
+                gbm_put_memblk((char*)block,block->size + GBB_HEADER_SIZE);
             }
         }
     }

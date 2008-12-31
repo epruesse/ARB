@@ -331,10 +331,8 @@ static void awt_pro_a_nucs_debug(const AWT_translator *translator, const AWT_dis
         // check bits should not be present in distpad
         if (s<realmax_aa) {
             for (int i=0; i<2; i++) {
-                // assertion: bit is set in patd[i] => bit is clear in patd[i+1]
-                if ( dist->patd[i] & ~dist->patd[i+1]) {
-                    GB_CORE;
-                }
+                // assertion: bit is set in patd[i] -> bit is clear in patd[i+1]
+                assert_or_exit((dist->patd[i] & ~dist->patd[i+1]) == 0);
             }
         }
         printf("Base %c[%i]: Dist to ", translator->Index2Spro(s), s);

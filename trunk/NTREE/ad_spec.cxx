@@ -130,12 +130,12 @@ void create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL) {
         } else if ( !(sec_struct = GB_read_string(gb_species_sec_struct)) ) {
             error = "Couldn't read field \"sec_struct\". Is it empty?";
         } else {
-            // generate default name and name input field for the new SAI 
-            char sai_default_name[256];
-            assert_or_exit(strlen(species_name) + strlen("_pfold") < 256);
-            strcpy(sai_default_name, species_name);
-            if (!strstr(sai_default_name, "_pfold")) strcat(sai_default_name, "_pfold");
-            sai_name = aw_input("Name of SAI to create:", 0, sai_default_name);
+            // generate default name and name input field for the new SAI
+            {
+                char *sai_default_name = GBS_global_string_copy("%s%s", species_name, strstr(species_name, "_pfold") ? "" : "_pfold");
+                sai_name         = aw_input("Name of SAI to create:", 0, sai_default_name);
+                free(sai_default_name);
+            }
 
             if (!sai_name) {
                 canceled = true;

@@ -162,7 +162,7 @@ AP_tree_edge* AP_tree_nlen::edgeTo(const AP_tree_nlen *neighbour) const
         }
     }
     cout << "AP_tree_nlen::edgeTo: " << *this << "\nhas no edge to " << *neighbour << '\n';
-    GB_CORE;
+    ap_assert(0);
     return NULL;
 }
 

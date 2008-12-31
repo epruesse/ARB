@@ -618,8 +618,7 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node, long *r_po
             }
             mysize+= sizeof(PT_PNTR);
             if (PT_GET_TYPE(sons) != PT_NT_SAVED) {
-                fprintf(stderr,"Internal Error: Son not saved: There is no help\n");
-                GB_CORE;
+                GBK_terminate("Internal Error: Son not saved: There is no help");
             }
             if ( (sons->flags & 0xf) == 0) {
                 PT_READ_INT((&sons->data)+sizeof(PT_PNTR),memsize);
@@ -783,10 +782,6 @@ long PTD_write_leafs_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos
                 }
             }else{
                 son_size[i] = 0;
-            }
-            {
-                // ?????????????????????
-                //  if (r_poss[0] && r_poss[0] == r_poss[1]){ GB_warning("Scheisse");GB_CORE;}
             }
         }
         if (block[0] ) {    /* son wrote a block */

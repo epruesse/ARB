@@ -29,10 +29,7 @@ GB_BOOL GEN_is_genome_db(GBDATA *gb_main, int default_value) {
     GBDATA *gb_genom_db = GB_entry(gb_main, GENOM_DB_TYPE);
 
     if (!gb_genom_db) {         // no DB-type entry -> create one with default
-        if (default_value == -1) {
-            GB_CORE;
-        }
-
+        assert_or_exit(default_value != -1); // first call to GEN_is_genome_db has to provide a 'default_value'
         gb_genom_db = GB_create(gb_main, GENOM_DB_TYPE, GB_INT);
         GB_write_int(gb_genom_db, default_value);
     }

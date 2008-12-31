@@ -126,7 +126,6 @@ GB_TYPES GBP_gb_types P_((char *type_name));
 /* adsocket.c */
 GB_ERROR gbcm_test_address P_((long *address, long key));
 long gbcm_test_address_end P_((void));
-void *gbcm_sig_violation P_((long sig, long code, long *scpin, char *addr));
 void *gbcms_sigpipe P_((void));
 void gbcm_read_flush P_((int socket));
 long gbcm_read_buffered P_((int socket, char *ptr, long size));
@@ -257,7 +256,7 @@ GB_CBUFFER gb_uncompress_data P_((GBDATA *gbd, GB_CBUFFER source, long size));
 
 /* admalloc.c */
 void gbm_init_mem P_((void));
-void gbb_put_memblk P_((char *memblk, size_t size));
+void gbm_put_memblk P_((char *memblk, size_t size));
 char *gbm_get_mem P_((size_t size, long index));
 void gbm_free_mem P_((char *data, size_t size, long index));
 void gbm_debug_mem P_((GB_MAIN_TYPE *Main));

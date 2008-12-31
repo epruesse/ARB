@@ -3,6 +3,7 @@
  * Copyright (C) 1992-1996 J. Adachi & M. Hasegawa. All rights reserved.
  */
 
+#define SIMPLE_ARB_ASSERT 
 #include "../../INCLUDE/arb_assert.h"
 #define mo_assert(cond) arb_assert(cond)
 

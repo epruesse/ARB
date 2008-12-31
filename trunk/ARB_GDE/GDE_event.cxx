@@ -518,8 +518,6 @@ void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
 
     static int fileindx    = 0;
     int        select_mode = 0;
-    int        i           = 0;
-    int        k           = 0;
     int        stop        = 0;
 
     if (current_item->numinputs>0) {

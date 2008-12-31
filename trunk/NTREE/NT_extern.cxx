@@ -1502,8 +1502,6 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
                 SEP________________________SEP();
                 AWMIMT("xterm",         "Start XTERM",             "X",0   ,       AWM_EXP, (AW_CB)GB_xterm, (AW_CL)0, 0 );
             }
-            if (GBS_do_core()){
-            }
         }
 #if defined(DEBUG)
         awm->create_menu(0,"Debugging","D","", AWM_ALL);

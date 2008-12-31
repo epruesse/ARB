@@ -16,7 +16,9 @@
 #define ARB_ASSERT_H
 
 /* ------------------------------------------------------------
- *
+ * Define SIMPLE_ARB_ASSERT before including this header
+ * to avoid ARBDB dependency!
+ * 
  * ASSERT_CRASH if assert fails debugger stops at assert makro
  * ASSERT_ERROR assert prints an error and ARB exits
  * ASSERT_PRINT assert prints a message (anyway) and ARB continues
@@ -45,8 +47,8 @@
 #if defined(DEBUG) && !defined(DEVEL_RELEASE)
 
 /* assert that raises SIGSEGV (recommended for DEBUG version!) */
-# define ASSERT_CRASH
-//# define ASSERT_PRINT_AND_CRASH
+// # define ASSERT_CRASH
+# define ASSERT_BACKTRACE_AND_CRASH
 /* test if a bug has to do with assertion code */
 /* # define ASSERT_NONE */
 
@@ -61,28 +63,73 @@
 
 #endif
 
+/* -------------------------------------------------------------------------------
+ * Provoke a SIGSEGV (which will stop the debugger or terminated the application)
+ * Do backtrace manually here and uninstall SIGSEGV-handler
+ * (done because automatic backtrace on SIGSEGV lacks name of current function) 
+ */
+
+#define ARB_SIGSEGV do {                                \
+        GBK_dump_backtrace(NULL, "ARB_SIGSEGV");        \
+        GBK_install_SIGSEGV_handler(GB_FALSE);          \
+        *(int *)0 = 0;                                  \
+    } while(0)
+
 /* ------------------------------------------------------------ */
 
 /* use ASSERTION_USED for code needed for assertions */
 #define ASSERTION_USED
 
-#ifdef ASSERT_CRASH
-/* this assigns zero to zero-pointer (-> SIGSEGV) */
-# define arb_assert(cond) do { if (!(cond)) *(int *)0=0; } while (0)
+/* ------------------------------------------------------------ */
+
+#if defined(SIMPLE_ARB_ASSERT)
+
+#ifndef ASSERT_NONE
+# define arb_assert(cond)                                               \
+    do  {                                                               \
+        if (!(cond)) {                                                  \
+                fprintf(stderr, "Assertion '%s' failed in '%s' #%i\n",  \
+                        #cond, __FILE__, __LINE__);                     \
+            *(int *)0 = 0;                                              \
+        }                                                               \
+    } while (0)
 #endif
 
-#ifdef ASSERT_PRINT_AND_CRASH
-/* this assigns zero to zero-pointer (-> SIGSEGV) */
-# define arb_assert(cond) do { if (!(cond)) { fprintf(stderr, "assertion '%s' failed in %s #%i\n", #cond, __FILE__, __LINE__); fflush(stderr); *(int *)0=0; } } while (0)
+/* ------------------------------------------------------------ */
+#else
+
+#ifdef ASSERT_CRASH
+# define arb_assert(cond)                       \
+    do {                                        \
+        if (!(cond)) ARB_SIGSEGV;               \
+    } while (0)
+#endif
+
+#ifdef ASSERT_BACKTRACE_AND_CRASH
+# define arb_assert(cond)                                               \
+    do {                                                                \
+        if (!(cond)) {                                                  \
+            fputs(GBK_assert_msg(#cond, __FILE__, __LINE__), stderr);   \
+            fflush(stderr);                                             \
+            ARB_SIGSEGV;                                                \
+        }                                                               \
+    } while (0)
 #endif
 
 #ifdef ASSERT_ERROR
-# define arb_assert(cond) do { if (!(cond)) { fprintf(stderr, "assertion '%s' failed in %s #%i\n", #cond, __FILE__, __LINE__); fflush(stderr); exit(EXIT_FAILURE); } } while (0)
+# define arb_assert(cond) assert_or_exit(cond)
 #endif
 
 #ifdef ASSERT_PRINT
-# define arb_assert(cond) do { fprintf(stderr, "at %s #%i\n", __FILE__, __LINE__); if (!(cond)) { fprintf(stderr, "assertion '%s' failed!\n", #cond); } fflush(stderr); } while (0)
+# define arb_assert(cond)                                               \
+    do {                                                                \
+        fprintf(stderr, "at %s #%i\n", __FILE__, __LINE__);             \
+        if (!(cond)) fprintf(stderr, "assertion '%s' failed!\n", #cond); \
+        fflush(stderr);                                                 \
+    } while (0)
 #endif
+
+#endif // SIMPLE_ARB_ASSERT
 
 #ifdef ASSERT_NONE
 # undef ASSERTION_USED
@@ -90,6 +137,7 @@
 #endif
 
 #undef ASSERT_CRASH
+#undef ASSERT_BACKTRACE_AND_CRASH
 #undef ASSERT_ERROR
 #undef ASSERT_PRINT
 #undef ASSERT_NONE
@@ -98,12 +146,14 @@
 # error arb_assert has not been defined -- check ASSERT_xxx definitions
 #endif
 
+#if !defined(SIMPLE_ARB_ASSERT)
 #define assert_or_exit(cond)                                            \
-do {                                                                    \
-    if (!(cond)) {                                                      \
-        GB_internal_error(GBS_global_string("Assertion '%s' failed at %s:%i", #cond, __FILE__, __LINE__)); \
-    }                                                                   \
- } while(0)
+    do {                                                                \
+        if (!(cond)) {                                                  \
+            GBK_terminate(GBK_assert_msg(#cond, __FILE__, __LINE__));   \
+        }                                                               \
+    } while(0)
+#endif // SIMPLE_ARB_ASSERT
 
 /* ------------------------------------------------------------ */
 /* use the following macros for parameters etc. only appearing in one version */
@@ -125,6 +175,14 @@ do {                                                                    \
 #endif
 
 /* ------------------------------------------------------------ */
+
+#if !defined(SIMPLE_ARB_ASSERT)
+#ifndef ADLOCAL_H
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
+#endif
+#endif
+#endif // SIMPLE_ARB_ASSERT
 
 #else
 #error arb_assert.h included twice

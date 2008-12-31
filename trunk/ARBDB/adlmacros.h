@@ -220,8 +220,7 @@ inline GB_BOOL GB_COMPRESSION_ENABLED(GBDATA *gbd, long size) { return (!GB_MAIN
 
 inline void GB_TEST_TRANSACTION(GBDATA *gbd) {
     if (!GB_MAIN(gbd)->transaction) {
-        GB_internal_error("no running transaction\nuse GB_transaction(gb_main)\n");
-        GB_CORE;
+        GBK_terminate("No running transaction");
     }
 }
 
@@ -229,18 +228,16 @@ inline void GB_TEST_TRANSACTION(GBDATA *gbd) {
 
 #define GB_COMPRESSION_ENABLED(gbd,size) ((!GB_MAIN(gbd)->compression_mask) && (size)>=GBTUM_SHORT_STRING_SIZE)
 
-#define GB_TEST_TRANSACTION(gbd)                                                            \
-do {                                                                                        \
-    if (!GB_MAIN(gbd)->transaction)                                                         \
-    {                                                                                       \
-        GB_internal_error("no running transaction\ncall GB_begin_transaction(gb_main)\n");  \
-        GB_CORE;                                                                            \
-    }                                                                                       \
-} while(0)
+#define GB_TEST_TRANSACTION(gbd)                        \
+    do {                                                \
+        if (!GB_MAIN(gbd)->transaction) {               \
+            GBK_terminate("No running transaction");    \
+        }                                               \
+    } while(0)
 
 #endif // __cplusplus
 
-#define GB_TEST_READ(gbd,ty,error)                                                  \
+#define GB_TEST_READ(gbd,ty,error)                                      \
     do {                                                                            \
         GB_TEST_TRANSACTION(gbd);                                                   \
         if (GB_ARRAY_FLAGS(gbd).changed == gb_deleted) {                            \
@@ -264,13 +261,11 @@ do {                                                                            
             return gb_security_error(gbd);                                          \
     } while(0)
 
-#define GB_TEST_NON_BUFFER(x,gerror)                                            \
-    do {                                                                        \
-        if ( (x)== gb_local->buffer) {                                          \
-            GB_export_error("%s:%s", gerror,                                    \
-            "you are not allowed to write any data, which you get by pntr");    \
-            GB_print_error();                                                   \
-            GB_CORE; }                                                          \
+#define GB_TEST_NON_BUFFER(x,gerror)                                    \
+    do {                                                                \
+        if ( (x)== gb_local->buffer) {                                  \
+            GBK_terminate("%s: you are not allowed to write any data, which you get by pntr", gerror); \
+        }                                                               \
     } while(0)
 
 /********************* INDEX CHECK  ******************/

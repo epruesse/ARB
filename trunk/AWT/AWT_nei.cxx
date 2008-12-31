@@ -58,7 +58,7 @@ void PH_NEIGHBOURJOINING::add_taxa_to_dist_list(long i) // O(n/2)
         }else{
             nd = &(dist_matrix[j][i]);
         }
-        if (nd->previous) GB_CORE;
+        ph_assert(!nd->previous);
         pos = (int)(nd->val*dist_list_corr);
         if (pos>= dist_list_size) {
             pos = dist_list_size-1;

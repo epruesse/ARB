@@ -10,7 +10,6 @@
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
 
-#include <arbdb.h>
 #include <arbdbt.h>
 #include <awt.hxx>
 

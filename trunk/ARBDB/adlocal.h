@@ -2,8 +2,8 @@
 #error Please do not include "arbdb.h" yourself when also including "adlocal.h"
 #endif
 
-#ifndef GBL_INCLUDED
-#define GBL_INCLUDED
+#ifndef ADLOCAL_H
+#define ADLOCAL_H
 
 #ifndef _STDINT_H
 #include <stdint.h>
@@ -30,8 +30,8 @@ void ad_use(int dummy, ...);
 
 #if (MEMORY_TEST==1)
 
-#define gbb_put_memblk(block,size)
-#define gbb_get_memblk(size)            (char*)(GB_calloc(1,size))
+#define gbm_put_memblk(block,size)
+#define gbm_get_memblk(size)            (char*)(GB_calloc(1,size))
 #define gbm_get_mem(size,index)         (char*)(GB_calloc(1,size))
 #define gbm_free_mem(block,size,index)  do { free(block); ADUSE(index); } while(0)
 #define fread(block,size,nelem,stream) (memset(block,0,size*nelem), (fread)(block,size,nelem,stream))

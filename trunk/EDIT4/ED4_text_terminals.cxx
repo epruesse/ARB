@@ -725,7 +725,7 @@ ED4_returncode ED4_text_terminal::draw( int /*only_text*/ )
             ED4_ROOT->get_device()->text( ED4_G_SEQUENCES, db_pointer, text_x, text_y, 0, 1, 0, 0, 0);
         }
         else{
-            GB_CORE;
+            e4_assert(0); // unknown terminal type
         }
 
         free(db_pointer);

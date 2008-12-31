@@ -95,28 +95,6 @@ long gbcm_test_address_end()
 }
 
 
-void *gbcm_sig_violation(long sig,long code,long *scpin,char *addr)
-{
-    struct sigcontext *scp= (struct sigcontext *)scpin;
-#ifdef SUN4
-    const long a = (const long)gbcm_test_address;
-    const long e = (const long)gbcm_test_address_end;
-    gbcm_sig_violation_flag =1;
-
-    if ( (scp->sc_pc<a) || (scp->sc_pc>e) ){
-        signal(SIGSEGV,SIG_DFL);        /* make core */
-        return 0;
-    }
-    scp->sc_pc = scp->sc_npc;
-#else
-    GBUSE(scp);
-#endif
-    sig = sig;
-    code = code;
-    addr = addr;
-    return 0;
-}
-
 /**************************************************************************************
 ********************************    valid memory tester (end) *************************
 ***************************************************************************************/
@@ -410,7 +388,6 @@ struct gbcmc_comm *gbcmc_open(const char *path)
         }
         return 0;
     }
-    /*  signal(SIGSEGV, (SIG_PF) gbcm_sig_violation); */
     signal(SIGPIPE, (SIG_PF) gbcm_sigio);
     gb_local->iamclient = 1;
     return link;
@@ -1124,9 +1101,9 @@ GB_CSTR GB_getenv(const char *env){
 
 int GB_host_is_local(const char *hostname){
     /* returns 1 if host is local */
-    if (strcmp(hostname,"localhost")        == 0) return 1;
-    if (strcmp(hostname,GBC_get_hostname()) == 0) return 1;
-    if (strstr(hostname, "127.0.0.")        == hostname) return 1;
+    if (strcmp(hostname,"localhost")       == 0) return 1;
+    if (strcmp(hostname,GB_get_hostname()) == 0) return 1;
+    if (strstr(hostname, "127.0.0.")       == hostname) return 1;
     return 0;
 }
 
