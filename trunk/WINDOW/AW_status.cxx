@@ -1654,22 +1654,42 @@ static void aw_help_new_helpfile(AW_root *awr) {
     char *help_file = get_full_qualified_help_file_name(awr);
 
     if (!strlen(help_file)) {
-        awr->awar("tmp/aw_window/helptext")->write_string("no help\0");
+        awr->awar("tmp/aw_window/helptext")->write_string("no help");
     }
     else if (GBS_string_matches(help_file,"*.ps",GB_IGNORE_CASE) ){ // Postscript file
         struct stat st;
+        GB_ERROR    error = 0;
         char        sys[1024];
-
+        
         sys[0] = 0;
 
         if (stat(help_file, &st) == 0) { // *.ps exists
-            sprintf(sys,"%s %s &",GB_getenvARB_GS(), help_file);
+            GBS_global_string_to_buffer(sys, sizeof(sys), "%s %s &", GB_getenvARB_GS(), help_file);
         }
         else {
             char *compressed = GBS_global_string_copy("%s.gz", help_file);
 
             if (stat(compressed, &st) == 0) { // *.ps.gz exists
-                sprintf(sys,"(gunzip <%s | %s -) &", compressed, GB_getenvARB_GS());
+                char *name_ps;
+                GB_split_full_path(compressed, NULL, NULL, &name_ps, NULL);
+                // 'name_ps' contains xxx.ps
+                char *name, *suffix;
+                GB_split_full_path(name_ps, NULL, NULL, &name, &suffix);
+
+                char *tempname     = GB_unique_filename(name, suffix);
+                char *uncompressed = GB_create_tempfile(tempname);
+                
+                GBS_global_string_to_buffer(sys, sizeof(sys),
+                                            "(gunzip <%s >%s ; %s %s ; rm %s) &",
+                                            compressed, uncompressed,
+                                            GB_getenvARB_GS(), uncompressed,
+                                            uncompressed);
+
+                free(uncompressed);
+                free(tempname);
+                free(name);
+                free(suffix);
+                free(name_ps);
             }
             else {
                 sprintf(AW_ERROR_BUFFER, "Neither %s nor %s where found", help_file, compressed);
@@ -1678,11 +1698,8 @@ static void aw_help_new_helpfile(AW_root *awr) {
             free(compressed);
         }
 
-        GB_information("executing '%s'", sys);
-        if (system(sys)){
-            sprintf(AW_ERROR_BUFFER,"Error calling: %s",sys);
-            aw_message();
-        }
+        if (sys[0] && !error) error = GB_system(sys);
+        if (error) aw_message(error);
     }
     else{
         if (aw_help_global.history){
