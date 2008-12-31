@@ -43,7 +43,10 @@ island_hopping.o: defs.h
 island_hopping.o: i-hopper.h
 island_hopping.o: island_hopping.h
 island_hopping.o: memory.h
+island_hopping.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 island_hopping.o: $(ARBHOME)/INCLUDE/arb_assert.h
+island_hopping.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+island_hopping.o: $(ARBHOME)/INCLUDE/attributes.h
 
 trnsprob.o: defs.h
 trnsprob.o: memory.h

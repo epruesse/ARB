@@ -36,10 +36,12 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
 tree_merge.o: ../common.h
+tree_merge.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 tree_merge.o: $(ARBHOME)/INCLUDE/ad_prot.h
 tree_merge.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 tree_merge.o: $(ARBHOME)/INCLUDE/arb_assert.h
 tree_merge.o: $(ARBHOME)/INCLUDE/arbdb.h
+tree_merge.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 tree_merge.o: $(ARBHOME)/INCLUDE/arbdbt.h
 tree_merge.o: $(ARBHOME)/INCLUDE/attributes.h
 tree_merge.o: $(ARBHOME)/INCLUDE/smartptr.h

@@ -39,8 +39,10 @@ psw_main.o: ../common.h
 psw_main.o: ../global_defs.h
 psw_main.o: ../mapping.h
 psw_main.o: ../path_code.h
+psw_main.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 psw_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 psw_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 psw_main.o: $(ARBHOME)/INCLUDE/arbdb.h
+psw_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 psw_main.o: $(ARBHOME)/INCLUDE/attributes.h
 psw_main.o: $(ARBHOME)/INCLUDE/smartptr.h

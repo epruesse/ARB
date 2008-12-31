@@ -41,10 +41,12 @@ pgd_main.o: ../global_defs.h
 pgd_main.o: ../mapping.h
 pgd_main.o: ../path_code.h
 pgd_main.o: ../read_config.h
+pgd_main.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 pgd_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 pgd_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 pgd_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 pgd_main.o: $(ARBHOME)/INCLUDE/arbdb.h
+pgd_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 pgd_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 pgd_main.o: $(ARBHOME)/INCLUDE/attributes.h
 pgd_main.o: $(ARBHOME)/INCLUDE/client.h

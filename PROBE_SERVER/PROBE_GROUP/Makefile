@@ -38,10 +38,12 @@ depend.init:
 
 pg_db.o: pg_db.hxx
 pg_db.o: pg_def.hxx
+pg_db.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 pg_db.o: $(ARBHOME)/INCLUDE/ad_prot.h
 pg_db.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 pg_db.o: $(ARBHOME)/INCLUDE/arb_assert.h
 pg_db.o: $(ARBHOME)/INCLUDE/arbdb.h
+pg_db.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 pg_db.o: $(ARBHOME)/INCLUDE/arbdbt.h
 pg_db.o: $(ARBHOME)/INCLUDE/attributes.h
 
@@ -52,10 +54,12 @@ pg_main.o: ../read_config.h
 pg_main.o: pg_db.hxx
 pg_main.o: pg_def.hxx
 pg_main.o: pg_search.hxx
+pg_main.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 pg_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 pg_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 pg_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 pg_main.o: $(ARBHOME)/INCLUDE/arbdb.h
+pg_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 pg_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 pg_main.o: $(ARBHOME)/INCLUDE/attributes.h
 pg_main.o: $(ARBHOME)/INCLUDE/config_parser.h
@@ -66,9 +70,11 @@ pg_search.o: ../global_defs.h
 pg_search.o: pg_db.hxx
 pg_search.o: pg_def.hxx
 pg_search.o: pg_search.hxx
+pg_search.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 pg_search.o: $(ARBHOME)/INCLUDE/ad_prot.h
 pg_search.o: $(ARBHOME)/INCLUDE/arb_assert.h
 pg_search.o: $(ARBHOME)/INCLUDE/arbdb.h
+pg_search.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 pg_search.o: $(ARBHOME)/INCLUDE/attributes.h
 pg_search.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 pg_search.o: $(ARBHOME)/INCLUDE/aw_device.hxx

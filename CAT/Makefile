@@ -29,9 +29,11 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
 CAT_tree.o: cat_tree.hxx
+CAT_tree.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 CAT_tree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 CAT_tree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 CAT_tree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 CAT_tree.o: $(ARBHOME)/INCLUDE/arbdb.h
+CAT_tree.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 CAT_tree.o: $(ARBHOME)/INCLUDE/arbdbt.h
 CAT_tree.o: $(ARBHOME)/INCLUDE/attributes.h

@@ -36,9 +36,11 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
 AW_helix.o: AW_helix.hxx
+AW_helix.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AW_helix.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_helix.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_helix.o: $(ARBHOME)/INCLUDE/arbdb.h
+AW_helix.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_helix.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx

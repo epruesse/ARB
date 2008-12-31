@@ -29,10 +29,12 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
 names.o: names.h
+names.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 names.o: $(ARBHOME)/INCLUDE/ad_prot.h
 names.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
 names.o: $(ARBHOME)/INCLUDE/arb_assert.h
 names.o: $(ARBHOME)/INCLUDE/arbdb.h
+names.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 names.o: $(ARBHOME)/INCLUDE/attributes.h
 names.o: $(ARBHOME)/INCLUDE/client.h
 names.o: $(ARBHOME)/INCLUDE/names_client.h
