@@ -67,10 +67,12 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
+ad_ali.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ad_ali.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ad_ali.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ad_ali.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_ali.o: $(ARBHOME)/INCLUDE/arbdb.h
+ad_ali.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ad_ali.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ad_ali.o: $(ARBHOME)/INCLUDE/attributes.h
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -82,10 +84,12 @@ ad_ali.o: $(ARBHOME)/INCLUDE/awt.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 
+ad_ext.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ad_ext.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ad_ext.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ad_ext.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_ext.o: $(ARBHOME)/INCLUDE/arbdb.h
+ad_ext.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ad_ext.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ad_ext.o: $(ARBHOME)/INCLUDE/attributes.h
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -101,10 +105,12 @@ ad_ext.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
 ad_spec.o: ad_spec.hxx
 ad_spec.o: nt_internal.h
 ad_spec.o: ntree.hxx
+ad_spec.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ad_spec.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ad_spec.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arbdb.h
+ad_spec.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ad_spec.o: $(ARBHOME)/INCLUDE/attributes.h
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -128,10 +134,12 @@ ad_spec.o: $(ARBHOME)/INCLUDE/awtlocal.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/probe_design.hxx
 
+ad_transpro.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/arbdb.h
+ad_transpro.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/attributes.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -147,10 +155,12 @@ ad_transpro.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/awt_translate.hxx
 
+ad_trees.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ad_trees.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ad_trees.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ad_trees.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_trees.o: $(ARBHOME)/INCLUDE/arbdb.h
+ad_trees.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ad_trees.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ad_trees.o: $(ARBHOME)/INCLUDE/attributes.h
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -166,10 +176,12 @@ ad_trees.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/awt_tree_cmp.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/cat_tree.hxx
 
+AP_consensus.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/arbdb.h
+AP_consensus.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -181,10 +193,12 @@ AP_consensus.o: $(ARBHOME)/INCLUDE/awt.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 
 AP_conservProfile2Gnuplot.o: ap_conservProfile2Gnuplot.hxx
+AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/arbdb.h
+AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -201,10 +215,12 @@ AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/awt_csp.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 
+AP_cprofile.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/arbdb.h
+AP_cprofile.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -218,10 +234,12 @@ AP_cprofile.o: $(ARBHOME)/INCLUDE/awt.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 
 AP_csp_2_gnuplot.o: ap_csp_2_gnuplot.hxx
+AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/arbdb.h
+AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -239,10 +257,12 @@ AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 
 AP_pos_var_pars.o: ap_pos_var_pars.hxx
+AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/arbdb.h
+AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -256,10 +276,12 @@ AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 
+ETC_check_gcg.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ETC_check_gcg.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ETC_check_gcg.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ETC_check_gcg.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ETC_check_gcg.o: $(ARBHOME)/INCLUDE/arbdb.h
+ETC_check_gcg.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ETC_check_gcg.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ETC_check_gcg.o: $(ARBHOME)/INCLUDE/attributes.h
 ETC_check_gcg.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -274,10 +296,12 @@ NT_cb.o: ad_trees.hxx
 NT_cb.o: nt_cb.hxx
 NT_cb.o: nt_internal.h
 NT_cb.o: ntree.hxx
+NT_cb.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 NT_cb.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_cb.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_cb.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_cb.o: $(ARBHOME)/INCLUDE/arbdb.h
+NT_cb.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 NT_cb.o: $(ARBHOME)/INCLUDE/arbdbt.h
 NT_cb.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -296,10 +320,12 @@ NT_cb.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 
 NT_concatenate.o: nt_concatenate.hxx
 NT_concatenate.o: nt_sort.hxx
+NT_concatenate.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/arbdb.h
+NT_concatenate.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/arbdbt.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/arbtools.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -321,11 +347,13 @@ NT_concatenate.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/awtlocal.hxx
 
 NT_dbrepair.o: NT_dbrepair.hxx
+NT_dbrepair.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/adGene.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/arbdb.h
+NT_dbrepair.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/arbdbt.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -338,10 +366,12 @@ NT_dbrepair.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 NT_edconf.o: nt_edconf.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/ad_config.h
+NT_edconf.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/arbdb.h
+NT_edconf.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/arbdbt.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -375,6 +405,7 @@ NT_extern.o: nt_join.hxx
 NT_extern.o: nt_sort.hxx
 NT_extern.o: NT_trackAliChanges.h
 NT_extern.o: ntree.hxx
+NT_extern.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 NT_extern.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_extern.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_extern.o: $(ARBHOME)/INCLUDE/adGene.h
@@ -382,6 +413,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_extern.o: $(ARBHOME)/INCLUDE/arb_build.h
 NT_extern.o: $(ARBHOME)/INCLUDE/arb_version.h
 NT_extern.o: $(ARBHOME)/INCLUDE/arbdb.h
+NT_extern.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 NT_extern.o: $(ARBHOME)/INCLUDE/arbdbt.h
 NT_extern.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -424,11 +456,13 @@ NT_extern.o: $(ARBHOME)/INCLUDE/svn_revision.h
 NT_import.o: ad_spec.hxx
 NT_import.o: nt_import.hxx
 NT_import.o: nt_internal.h
+NT_import.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 NT_import.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_import.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_import.o: $(ARBHOME)/INCLUDE/adGene.h
 NT_import.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_import.o: $(ARBHOME)/INCLUDE/arbdb.h
+NT_import.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 NT_import.o: $(ARBHOME)/INCLUDE/arbdbt.h
 NT_import.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_import.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -441,10 +475,12 @@ NT_import.o: $(ARBHOME)/INCLUDE/awti_import.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/GEN.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/mg_merge.hxx
 
+NT_ins_col.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/arbdb.h
+NT_ins_col.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/arbdbt.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -454,10 +490,12 @@ NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 
+NT_join.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 NT_join.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_join.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_join.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_join.o: $(ARBHOME)/INCLUDE/arbdb.h
+NT_join.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 NT_join.o: $(ARBHOME)/INCLUDE/arbdbt.h
 NT_join.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_join.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -474,6 +512,7 @@ NT_main.o: nt_cb.hxx
 NT_main.o: nt_concatenate.hxx
 NT_main.o: NT_dbrepair.hxx
 NT_main.o: ntree.hxx
+NT_main.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 NT_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_main.o: $(ARBHOME)/INCLUDE/adGene.h
@@ -481,6 +520,7 @@ NT_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_main.o: $(ARBHOME)/INCLUDE/arb_build.h
 NT_main.o: $(ARBHOME)/INCLUDE/arb_version.h
 NT_main.o: $(ARBHOME)/INCLUDE/arbdb.h
+NT_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 NT_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 NT_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 NT_main.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -504,9 +544,11 @@ NT_main.o: $(ARBHOME)/INCLUDE/mg_merge.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/servercntrl.h
 NT_main.o: $(ARBHOME)/INCLUDE/svn_revision.h
 
+NT_MAUS.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 NT_MAUS.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_MAUS.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_MAUS.o: $(ARBHOME)/INCLUDE/arbdb.h
+NT_MAUS.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 NT_MAUS.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_MAUS.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_MAUS.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -516,10 +558,12 @@ NT_MAUS.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_MAUS.o: $(ARBHOME)/INCLUDE/awt.hxx
 
 NT_sort.o: nt_sort.hxx
+NT_sort.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 NT_sort.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_sort.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arbdb.h
+NT_sort.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arbdbt.h
 NT_sort.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -532,10 +576,12 @@ NT_sort.o: $(ARBHOME)/INCLUDE/awt.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
 
 NT_trackAliChanges.o: NT_trackAliChanges.h
+NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/arbdb.h
+NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/arbdbt.h
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -546,10 +592,12 @@ NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/awt.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 
+NT_validManual.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 NT_validManual.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_validManual.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_validManual.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_validManual.o: $(ARBHOME)/INCLUDE/arbdb.h
+NT_validManual.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 NT_validManual.o: $(ARBHOME)/INCLUDE/arbdbt.h
 NT_validManual.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -563,10 +611,12 @@ NT_validManual.o: $(ARBHOME)/INCLUDE/awt.hxx
 NT_validNameParser.o: nt_validNameParser.hxx
 
 NT_validNames.o: nt_validNameParser.hxx
+NT_validNames.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 NT_validNames.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_validNames.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_validNames.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_validNames.o: $(ARBHOME)/INCLUDE/arbdb.h
+NT_validNames.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 NT_validNames.o: $(ARBHOME)/INCLUDE/arbdbt.h
 NT_validNames.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_validNames.o: $(ARBHOME)/INCLUDE/aw_awars.hxx

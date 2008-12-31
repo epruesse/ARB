@@ -31,10 +31,12 @@ depend.init:
 
 AWTI_export.o: awti_exp_local.hxx
 AWTI_export.o: awti_export.hxx
+AWTI_export.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arbdb.h
+AWTI_export.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/attributes.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -54,11 +56,13 @@ AWTI_export.o: $(ARBHOME)/INCLUDE/xml.hxx
 
 AWTI_import.o: awti_imp_local.hxx
 AWTI_import.o: awti_import.hxx
+AWTI_import.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/adGene.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arbdb.h
+AWTI_import.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/attributes.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_device.hxx

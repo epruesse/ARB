@@ -31,10 +31,12 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
 ST_ml.o: st_ml.hxx
+ST_ml.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ST_ml.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ST_ml.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ST_ml.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ST_ml.o: $(ARBHOME)/INCLUDE/arbdb.h
+ST_ml.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ST_ml.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ST_ml.o: $(ARBHOME)/INCLUDE/attributes.h
 ST_ml.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -47,10 +49,12 @@ ST_ml.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 ST_quality.o: st_ml.hxx
 ST_quality.o: st_quality.hxx
 ST_quality.o: st_window.hxx
+ST_quality.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ST_quality.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ST_quality.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arbdb.h
+ST_quality.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ST_quality.o: $(ARBHOME)/INCLUDE/attributes.h
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -64,10 +68,12 @@ ST_quality.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ST_window.o: st_ml.hxx
 ST_window.o: st_quality.hxx
 ST_window.o: st_window.hxx
+ST_window.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ST_window.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ST_window.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ST_window.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ST_window.o: $(ARBHOME)/INCLUDE/arbdb.h
+ST_window.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ST_window.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ST_window.o: $(ARBHOME)/INCLUDE/attributes.h
 ST_window.o: $(ARBHOME)/INCLUDE/aw_awars.hxx

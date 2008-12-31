@@ -36,9 +36,11 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
 BI_helix.o: BI_helix.hxx
+BI_helix.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 BI_helix.o: $(ARBHOME)/INCLUDE/ad_prot.h
 BI_helix.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 BI_helix.o: $(ARBHOME)/INCLUDE/arb_assert.h
 BI_helix.o: $(ARBHOME)/INCLUDE/arbdb.h
+BI_helix.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 BI_helix.o: $(ARBHOME)/INCLUDE/arbdbt.h
 BI_helix.o: $(ARBHOME)/INCLUDE/attributes.h

@@ -44,10 +44,12 @@ a3.o: a3_helix.hxx
 a3.o: a3_ptree.hxx
 a3.o: a3_seq.hxx
 a3.o: a3_types.h
+a3.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 a3.o: $(ARBHOME)/INCLUDE/ad_prot.h
 a3.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 a3.o: $(ARBHOME)/INCLUDE/arb_assert.h
 a3.o: $(ARBHOME)/INCLUDE/arbdb.h
+a3.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 a3.o: $(ARBHOME)/INCLUDE/arbdbt.h
 a3.o: $(ARBHOME)/INCLUDE/attributes.h
 a3.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
@@ -60,10 +62,12 @@ a3_ali.o: a3_seq.hxx
 a3_ali.o: a3_types.h
 
 a3_arbdb.o: a3_arbdb.hxx
+a3_arbdb.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 a3_arbdb.o: $(ARBHOME)/INCLUDE/ad_prot.h
 a3_arbdb.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 a3_arbdb.o: $(ARBHOME)/INCLUDE/arb_assert.h
 a3_arbdb.o: $(ARBHOME)/INCLUDE/arbdb.h
+a3_arbdb.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 a3_arbdb.o: $(ARBHOME)/INCLUDE/arbdbt.h
 a3_arbdb.o: $(ARBHOME)/INCLUDE/attributes.h
 
@@ -97,8 +101,10 @@ a3_ptree2.o: $(ARBHOME)/INCLUDE/inline.h
 a3_seq.o: a3_basen.h
 a3_seq.o: a3_seq.hxx
 a3_seq.o: a3_types.h
+a3_seq.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 a3_seq.o: $(ARBHOME)/INCLUDE/ad_prot.h
 a3_seq.o: $(ARBHOME)/INCLUDE/arb_assert.h
 a3_seq.o: $(ARBHOME)/INCLUDE/arbdb.h
+a3_seq.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 a3_seq.o: $(ARBHOME)/INCLUDE/attributes.h
 a3_seq.o: $(ARBHOME)/INCLUDE/inline.h

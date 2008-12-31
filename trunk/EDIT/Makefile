@@ -30,11 +30,13 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
 ed_conf.o: edit.hxx
+ed_conf.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ed_conf.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ed_conf.o: $(ARBHOME)/INCLUDE/adtools.hxx
 ed_conf.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ed_conf.o: $(ARBHOME)/INCLUDE/arbdb++.hxx
 ed_conf.o: $(ARBHOME)/INCLUDE/arbdb.h
+ed_conf.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ed_conf.o: $(ARBHOME)/INCLUDE/attributes.h
 ed_conf.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ed_conf.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -44,12 +46,14 @@ ed_conf.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 
 edit.o: ed_conf.hxx
 edit.o: edit.hxx
+edit.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 edit.o: $(ARBHOME)/INCLUDE/ad_prot.h
 edit.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 edit.o: $(ARBHOME)/INCLUDE/adtools.hxx
 edit.o: $(ARBHOME)/INCLUDE/arb_assert.h
 edit.o: $(ARBHOME)/INCLUDE/arbdb++.hxx
 edit.o: $(ARBHOME)/INCLUDE/arbdb.h
+edit.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 edit.o: $(ARBHOME)/INCLUDE/arbdbt.h
 edit.o: $(ARBHOME)/INCLUDE/attributes.h
 edit.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -67,10 +71,12 @@ edit.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 edit.o: $(ARBHOME)/INCLUDE/gde.hxx
 edit.o: $(ARBHOME)/INCLUDE/st_window.hxx
 
+edit_naligner.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 edit_naligner.o: $(ARBHOME)/INCLUDE/ad_prot.h
 edit_naligner.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 edit_naligner.o: $(ARBHOME)/INCLUDE/arb_assert.h
 edit_naligner.o: $(ARBHOME)/INCLUDE/arbdb.h
+edit_naligner.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 edit_naligner.o: $(ARBHOME)/INCLUDE/arbdbt.h
 edit_naligner.o: $(ARBHOME)/INCLUDE/attributes.h
 edit_naligner.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -83,11 +89,13 @@ edit_naligner.o: $(ARBHOME)/INCLUDE/awt.hxx
 edit_naligner.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 
 edit_tools.o: edit.hxx
+edit_tools.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 edit_tools.o: $(ARBHOME)/INCLUDE/ad_prot.h
 edit_tools.o: $(ARBHOME)/INCLUDE/adtools.hxx
 edit_tools.o: $(ARBHOME)/INCLUDE/arb_assert.h
 edit_tools.o: $(ARBHOME)/INCLUDE/arbdb++.hxx
 edit_tools.o: $(ARBHOME)/INCLUDE/arbdb.h
+edit_tools.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 edit_tools.o: $(ARBHOME)/INCLUDE/attributes.h
 edit_tools.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 edit_tools.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx

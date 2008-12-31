@@ -51,11 +51,13 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
 GAARB.o: GAARB.h
+GAARB.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 GAARB.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GAARB.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GAARB.o: $(ARBHOME)/INCLUDE/adGene.h
 GAARB.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GAARB.o: $(ARBHOME)/INCLUDE/arbdb.h
+GAARB.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 GAARB.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GAARB.o: $(ARBHOME)/INCLUDE/attributes.h
 GAARB.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -70,11 +72,13 @@ GADDBJ.o: GAARB.h
 GADDBJ.o: GADDBJ.h
 GADDBJ.o: GAFile.h
 GADDBJ.o: GALogger.h
+GADDBJ.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 GADDBJ.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GADDBJ.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GADDBJ.o: $(ARBHOME)/INCLUDE/adGene.h
 GADDBJ.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GADDBJ.o: $(ARBHOME)/INCLUDE/arbdb.h
+GADDBJ.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 GADDBJ.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GADDBJ.o: $(ARBHOME)/INCLUDE/attributes.h
 GADDBJ.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -89,11 +93,13 @@ GAEmbl.o: GAARB.h
 GAEmbl.o: GAEmbl.h
 GAEmbl.o: GAFile.h
 GAEmbl.o: GALogger.h
+GAEmbl.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 GAEmbl.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GAEmbl.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GAEmbl.o: $(ARBHOME)/INCLUDE/adGene.h
 GAEmbl.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GAEmbl.o: $(ARBHOME)/INCLUDE/arbdb.h
+GAEmbl.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 GAEmbl.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GAEmbl.o: $(ARBHOME)/INCLUDE/attributes.h
 GAEmbl.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -107,11 +113,13 @@ GAEmbl.o: $(ARBHOME)/INCLUDE/awt.hxx
 GAFile.o: GAARB.h
 GAFile.o: GAFile.h
 GAFile.o: GALogger.h
+GAFile.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 GAFile.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GAFile.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GAFile.o: $(ARBHOME)/INCLUDE/adGene.h
 GAFile.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GAFile.o: $(ARBHOME)/INCLUDE/arbdb.h
+GAFile.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 GAFile.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GAFile.o: $(ARBHOME)/INCLUDE/attributes.h
 GAFile.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -126,11 +134,13 @@ GAGenBank.o: GAARB.h
 GAGenBank.o: GAFile.h
 GAGenBank.o: GAGenBank.h
 GAGenBank.o: GALogger.h
+GAGenBank.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 GAGenBank.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GAGenBank.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GAGenBank.o: $(ARBHOME)/INCLUDE/adGene.h
 GAGenBank.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GAGenBank.o: $(ARBHOME)/INCLUDE/arbdb.h
+GAGenBank.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 GAGenBank.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GAGenBank.o: $(ARBHOME)/INCLUDE/attributes.h
 GAGenBank.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -148,11 +158,13 @@ GAGenomImport.o: GAFile.h
 GAGenomImport.o: GAGenBank.h
 GAGenomImport.o: GALogger.h
 GAGenomImport.o: GASourceFileSwitcher.h
+GAGenomImport.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 GAGenomImport.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GAGenomImport.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GAGenomImport.o: $(ARBHOME)/INCLUDE/adGene.h
 GAGenomImport.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GAGenomImport.o: $(ARBHOME)/INCLUDE/arbdb.h
+GAGenomImport.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 GAGenomImport.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GAGenomImport.o: $(ARBHOME)/INCLUDE/attributes.h
 GAGenomImport.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -164,11 +176,13 @@ GAGenomImport.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GAGenomImport.o: $(ARBHOME)/INCLUDE/awt.hxx
 
 GALogger.o: GALogger.h
+GALogger.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 GALogger.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GALogger.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GALogger.o: $(ARBHOME)/INCLUDE/adGene.h
 GALogger.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GALogger.o: $(ARBHOME)/INCLUDE/arbdb.h
+GALogger.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 GALogger.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GALogger.o: $(ARBHOME)/INCLUDE/attributes.h
 GALogger.o: $(ARBHOME)/INCLUDE/aw_device.hxx

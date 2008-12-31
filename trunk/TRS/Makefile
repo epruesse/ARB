@@ -40,9 +40,11 @@ depend.init:
 
 tree_lib.o: tree_lib.hxx
 tree_lib.o: trs_proto.h
+tree_lib.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 tree_lib.o: $(ARBHOME)/INCLUDE/ad_prot.h
 tree_lib.o: $(ARBHOME)/INCLUDE/arb_assert.h
 tree_lib.o: $(ARBHOME)/INCLUDE/arbdb.h
+tree_lib.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 tree_lib.o: $(ARBHOME)/INCLUDE/attributes.h
 tree_lib.o: $(ARBHOME)/INCLUDE/cat_tree.hxx
 
