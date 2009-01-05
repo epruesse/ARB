@@ -5,7 +5,7 @@ UP	arb_edit.hlp
 UP	extended.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-SUB	consensus.ps
+SUB	consensus_def.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
@@ -17,50 +17,21 @@ OCCURRENCE	ARB_NT/SAI/Consensus
 DESCRIPTION	Calculates consensus for marked or all sequences.
 
 		1. Choose an 'alignment' (see LINK{glossary.hlp}) from the
-			'Alignment' subwindow.
+                   'Alignment' subwindow.
 
 		2. Define whether 'marked' (see LINK{glossary.hlp}) or all
-			sequences should be used by pressing the respective
-			checkbox after the 'species' prompt.
+                   sequences should be used by pressing the respective
+                   checkbox after the 'species' prompt.
 
-		3. Define whether to use or to ignore gaps entirely. If you count
-			gaps and the gap frequency exceeds 'threshold for gaps', the
-			result will be shown as '-'. If the switch is 'off',
-			the algorithm will virtually remove all gaps.
-			That means if you have a coloumn with two 'A's
-			and 500 gaps the program thinks
-			of 100% 'A'. If the switch would be 'on', the relative
-			number of 'A's would be 2%.
+                3. See LINK{consensus_def.hlp} for consensus details. 
 
-		4. Define whether the most frequent base or the IUPAC code
-			(more then one base) should be shown at the particular
-			position by pressing the respective checkbox after the
-			'simplify' prompt.
-			The IUPAC codes are displayed after pressing the <show
-			IUPAC> button.
-			Characters are used for IUPAC encoding only if their
-			frequency exceeds 'threshold for character'.
-			Example:
-			If you have 40% 'A', 10% 'C', 40% 'G' and 10% 'T' and
-			'threshold for character' is set to 20%, the
-			program looks for a iupac code only for 'A' and 'G'.
-
-		5. Define a name for the consensus sequence by selecting one
-			from the 'SAI' subwindow or by typing it to the
-			'Name of New SAI' field.
+		4. Define a name for the consensus sequence by selecting one
+                   from the 'SAI' subwindow or by typing it to the
+                   'Name of New SAI' field.
 
 NOTES		The consensus sequence is stored within the database as an 'SAI'
 		entry and automatically edited with 'ARB_EDIT'.
 
-		Display detailed help in postscript format by choosing
-		'Postscript: Consensus.ps' from the 'Main Topic' subwindow.
-
-		If a column contains only gaps the result will be shown as '='.
-
 EXAMPLES	None
 
-BUGS		Our postscript viewer cannot show 'Postscript: Consensus.ps'
-		You may print it on your printer: $ARBHOME/lib/ps/Consensus.ps
-
-
-BUGS		IUPAC symbols in source sequences are ignored.
+BUGS		No bugs known

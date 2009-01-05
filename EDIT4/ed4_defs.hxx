@@ -7,6 +7,9 @@
 #ifndef AW_WINDOW_HXX
 #include <aw_window.hxx>
 #endif
+#ifndef ARBDB_H
+#include <arbdb.h>
+#endif
 
 
 //needed prototype classes

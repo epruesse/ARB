@@ -31,6 +31,7 @@
 #include "ed4_awars.hxx"
 #include "ed4_tools.hxx"
 #include "ed4_block.hxx"
+#include "ed4_dots.hxx"
 #include "ed4_nds.hxx"
 #include "ed4_secedit.hxx"
 #include "ed4_visualizeSAI.hxx"
@@ -1553,6 +1554,8 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->insert_menu_topic("align_sequence","Old Aligner From ARB_EDIT", "O","ne_align_seq.hlp", AWM_ALL,AW_POPUP, (AW_CL)create_naligner_window, 0 );
     awmm->insert_menu_topic("graph_aligner","SILVA Aligner (SINA)", "", "galign_main.hlp", galign_mask(), show_galigner_window, (AW_CL)&faligner_client_data, 0);
     awmm->insert_menu_topic("del_ali_tmp", "Remove All Aligner Entries", "R", 0, AWM_ALL, ED4_remove_faligner_entries, 1, 0);
+    SEP________________________SEP;
+    awmm->insert_menu_topic("missing_bases", "Dot potentially missing bases", "D", "missbase.hlp", AWM_ALL, ED4_popup_dot_missing_bases_window, 0, 0);
     SEP________________________SEP;
     awmm->insert_menu_topic("sec_edit", "Edit Secondary Structure", "", 0, AWM_ALL, ED4_SECEDIT_start, (AW_CL)GLOBAL_gb_main, 0);
 

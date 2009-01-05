@@ -1135,7 +1135,9 @@ public:
             e4_assert(aww);
             tmp_aww    = aww;
             tmp_device = aww->get_device(AW_MIDDLE_AREA);
-            tmp_ed4w   = first_window->get_matching_ed4w(aww);
+            e4_assert(tmp_device);
+            tmp_ed4w = first_window->get_matching_ed4w(aww);
+            e4_assert(tmp_ed4w);
         }
     }
     void use_window(ED4_window *ed4w) {
@@ -1143,6 +1145,7 @@ public:
         tmp_ed4w   = ed4w;
         tmp_aww    = ed4w->aww;
         tmp_device = tmp_aww->get_device(AW_MIDDLE_AREA);
+        e4_assert(tmp_device);
     }
     void use_first_window() { use_window(first_window); }
 

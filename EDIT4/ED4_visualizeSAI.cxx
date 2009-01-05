@@ -29,11 +29,35 @@
 #include "ed4_class.hxx"
 #include "ed4_visualizeSAI.hxx"
 
+                   // --------------------------------------------------------------------------------
+
+#define AWAR_SAI_CLR_TAB              "saicolors/"
+#define AWAR_SAI_SELECT               AWAR_SAI_CLR_TAB "select" // current visualized SAI
+#define AWAR_SAI_CLR_DEF              AWAR_SAI_CLR_TAB "clr_trans_tab/" // container for definitions
+#define AWAR_SAI_ENABLE               AWAR_SAI_CLR_TAB "enable" // global enable of visualization
+#define AWAR_SAI_ALL_SPECIES          AWAR_SAI_CLR_TAB "all_species" // 1 = all / 0 = marked
+#define AWAR_SAI_AUTO_SELECT          AWAR_SAI_CLR_TAB "auto_select" // 1 = auto select / 0 = manual select
+#define AWAR_SAI_CLR_TRANS_TABLE      AWAR_SAI_CLR_TAB "clr_trans_table" // current translation table
+#define AWAR_SAI_CLR_TRANS_TAB_NAMES  AWAR_SAI_CLR_TAB "clr_trans_tab_names" // ;-seperated list of existing translation tables
+#define AWAR_SAI_CLR_TRANS_TAB_REL    AWAR_SAI_CLR_TAB "sai_relation/" // container to store trans tables for each SAI
+#define AWAR_SAI_CLR_DEFAULTS_CREATED AWAR_SAI_CLR_TAB "defaults_created" // whether defaults have been created (create only once)
+
+#define AWAR_SAI_CLR_TRANS_TAB_NEW_NAME "tmp/sai/clr_trans_tab_new_name" // textfield to enter translation table name
+#define AWAR_SAI_CLR                    "tmp/sai/color_0" // the definition of the current translation table (number runs from 0 to 9)
+#define AWAR_SAI_CLR_COUNT              10
+
+#define ED4_VIS_CREATE  1
+#define ED4_VIS_COPY    0
+
+// --------------------------------------------------------------------------------
+
 extern GBDATA *GLOBAL_gb_main;
 
 static bool clrDefinitionsChanged       = false;
 static bool inCallback                  = false; // used to avoid multiple refreshs
 static bool in_colorDefChanged_callback = false; // used to avoid colorDef correction
+
+// --------------------------------------------------------------------------------
 
 #define BUFSIZE 100
 static const char *getAwarName(int awarNo) {
@@ -692,24 +716,45 @@ static AW_window *create_editColorTranslationTable_window(AW_root *aw_root){  //
     return (AW_window *)aws;
 }
 
-static AW_window *ED4_openSelectSAI_window(AW_root *aw_root){
-    static AW_window_simple *aws = 0;
-    if(aws) return (AW_window *)aws;
+static AW_window *openSelectSAI_window(AW_root *aw_root, AW_CL cl_awar_name){
+    const char *awar_name = reinterpret_cast<const char *>(cl_awar_name);
 
-    aws = new AW_window_simple;
-    aws->init( aw_root, "SELECT_SAI", "SELECT SAI");
-    aws->load_xfig("selectSAI.fig");
+    static GB_HASH *SAI_window_hash = 0;
+    if (!SAI_window_hash) SAI_window_hash = GBS_create_hash(10, GB_MIND_CASE);
 
-    aws->at("selection");
-    aws->callback((AW_CB0)AW_POPDOWN);
-    awt_create_selection_list_on_extendeds(GLOBAL_gb_main,(AW_window *)aws,AWAR_SAI_SELECT);
+    AW_window_simple *aws = reinterpret_cast<AW_window_simple *>(GBS_read_hash(SAI_window_hash, awar_name));
 
-    aws->at("close");
-    aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");
+    if (!aws) {
+        aws = new AW_window_simple;
+        aws->init( aw_root, "SELECT_SAI", "SELECT SAI");
+        aws->load_xfig("selectSAI.fig");
 
-    aws->window_fit();
-    return (AW_window *)aws;
+        aws->at("selection");
+        aws->callback((AW_CB0)AW_POPDOWN);
+        awt_create_selection_list_on_extendeds(GLOBAL_gb_main, (AW_window *)aws, awar_name);
+
+        aws->at("close");
+        aws->callback(AW_POPDOWN);
+        aws->create_button("CLOSE","CLOSE","C");
+
+        aws->window_fit();
+
+        GBS_write_hash(SAI_window_hash, awar_name, reinterpret_cast<long>(aws));
+    }
+    
+    return aws;
+}
+
+void ED4_create_SAI_selection_button(AW_window *aws, const char *cawar_name) {
+    char *awar_name         = strdup(cawar_name);
+    int   old_button_length = aws->get_button_length();
+
+    aws->button_length(30);
+
+    aws->callback(AW_POPUP, (AW_CL)openSelectSAI_window, (AW_CL)awar_name);
+    aws->create_button("SELECT_SAI", awar_name);
+    
+    aws->button_length(old_button_length);
 }
 
 AW_window *ED4_createVisualizeSAI_window(AW_root *aw_root) {
@@ -733,9 +778,7 @@ AW_window *ED4_createVisualizeSAI_window(AW_root *aw_root) {
     aws->create_toggle(AWAR_SAI_ENABLE);
 
     aws->at("sai");
-    aws->callback(AW_POPUP,(AW_CL)ED4_openSelectSAI_window,(AW_CL)0);
-    aws->button_length(25);
-    aws->create_button("SELECT_SAI", AWAR_SAI_SELECT);
+    ED4_create_SAI_selection_button(aws, AWAR_SAI_SELECT);
 
     aws->at("auto_select");
     aws->create_toggle(AWAR_SAI_AUTO_SELECT);
