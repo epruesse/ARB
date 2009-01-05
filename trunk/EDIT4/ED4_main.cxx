@@ -30,6 +30,7 @@
 #include "ed4_visualizeSAI.hxx"
 #include "ed4_ProteinViewer.hxx"
 #include "ed4_protein_2nd_structure.hxx"
+#include "ed4_dots.hxx"
 
 #include "edit_naligner.hxx"
 #include "graph_aligner_gui.hxx"
@@ -435,6 +436,7 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
     root->awar_int(ED4_AWAR_CREATE_FROM_CONS_DATA_SOURCE, 0);
 
     ED4_createVisualizeSAI_Awars(root,AW_ROOT_DEFAULT);
+    ED4_create_dot_missing_bases_awars(root,AW_ROOT_DEFAULT);
 
     // Create Awars To Be Used In Protein Viewer
     if(ED4_ROOT->alignment_type == GB_AT_DNA) {

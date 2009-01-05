@@ -1062,16 +1062,17 @@ ED4_base *ED4_base::get_parent(ED4_level lev) const
     return temp_parent;
 }
 
-char *ED4_base::get_name_of_species(){
-    GB_transaction dummy(GLOBAL_gb_main);
-    ED4_species_manager *temp_species_manager   = get_parent( ED4_L_SPECIES )->to_species_manager();
-    if (!temp_species_manager) return 0;
-    ED4_species_name_terminal *species_name = 0;
-    species_name = temp_species_manager->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
-    char *name= 0;
-    if (species_name){
-        if (species_name->get_species_pointer()){
-            name = GB_read_as_string(species_name->get_species_pointer());
+char *ED4_base::get_name_of_species() {
+    char                *name        = 0;
+    ED4_species_manager *species_man = get_parent( ED4_L_SPECIES )->to_species_manager();
+    if (species_man) {
+        ED4_species_name_terminal *species_name = species_man->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
+        if (species_name){
+            GBDATA *gb_name   = species_name->get_species_pointer();
+            if (gb_name) {
+                GB_transaction ta(gb_name);
+                name = GB_read_as_string(gb_name);
+            }
         }
     }
     return name;

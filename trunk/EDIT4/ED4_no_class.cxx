@@ -1581,7 +1581,7 @@ AW_window *ED4_create_level_1_options_window(AW_root *root){
     aws->label("Announce all checksum changes\ncaused by editing commands.");
     aws->create_toggle(ED4_AWAR_ANNOUNCE_CHECKSUM_CHANGES);
 
-    return (AW_window *)aws;
+    return aws;
 }
 
 /* Open window to show IUPAC tables */
@@ -1595,57 +1595,61 @@ static AW_window * CON_showgroupswin_cb( AW_root *aw_root)
     aws->at("ok");aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE","CLOSE","O");
 
-    return (AW_window *)aws;
+    return aws;
 }
 
 
 AW_window *ED4_create_consensus_definition_window(AW_root *root) {
-    AW_window_simple *aws = new AW_window_simple;
+    static AW_window_simple *aws = 0;
 
-    aws->init(root, "EDIT4_CONSENSUS", "EDIT4 Consensus Definition");
-    aws->load_xfig("edit4/consensus.fig");
+    if (!aws) {
+        aws = new AW_window_simple;
 
-    aws->callback((AW_CB0)AW_POPDOWN);
-    aws->at("close");
-    aws->create_button("CLOSE", "CLOSE","C");
+        aws->init(root, "EDIT4_CONSENSUS", "EDIT4 Consensus Definition");
+        aws->load_xfig("edit4/consensus.fig");
 
-    aws->callback( AW_POPUP_HELP,(AW_CL)"e4_consensus.hlp");
-    aws->at("help");
-    aws->create_button("HELP","HELP","H");
+        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->at("close");
+        aws->create_button("CLOSE", "CLOSE","C");
 
-    aws->button_length(10);
-    aws->at("showgroups");aws->callback(AW_POPUP,(AW_CL)CON_showgroupswin_cb,0);
-    aws->create_button("SHOW_IUPAC", "show\nIUPAC...","s");
+        aws->callback( AW_POPUP_HELP,(AW_CL)"e4_consensus.hlp");
+        aws->at("help");
+        aws->create_button("HELP","HELP","H");
 
-    aws->at("countgaps");
-    aws->create_toggle_field(ED4_AWAR_CONSENSUS_COUNTGAPS);
-    aws->insert_toggle("on","1", 1);
-    aws->insert_default_toggle("off","0", 0);
-    aws->update_toggle_field();
+        aws->button_length(10);
+        aws->at("showgroups");aws->callback(AW_POPUP,(AW_CL)CON_showgroupswin_cb,0);
+        aws->create_button("SHOW_IUPAC", "show\nIUPAC...","s");
 
-    aws->at("gapbound");
-    aws->create_input_field(ED4_AWAR_CONSENSUS_GAPBOUND, 4);
+        aws->at("countgaps");
+        aws->create_toggle_field(ED4_AWAR_CONSENSUS_COUNTGAPS);
+        aws->insert_toggle("on","1", 1);
+        aws->insert_default_toggle("off","0", 0);
+        aws->update_toggle_field();
 
-    aws->at("group");
-    aws->create_toggle_field(ED4_AWAR_CONSENSUS_GROUP);
-    aws->insert_toggle("on", "1", 1);
-    aws->insert_default_toggle("off", "0", 0);
-    aws->update_toggle_field();
+        aws->at("gapbound");
+        aws->create_input_field(ED4_AWAR_CONSENSUS_GAPBOUND, 4);
 
-    aws->at("considbound");
-    aws->create_input_field(ED4_AWAR_CONSENSUS_CONSIDBOUND, 4);
+        aws->at("group");
+        aws->create_toggle_field(ED4_AWAR_CONSENSUS_GROUP);
+        aws->insert_toggle("on", "1", 1);
+        aws->insert_default_toggle("off", "0", 0);
+        aws->update_toggle_field();
 
-    aws->at("upper");
-    aws->create_input_field(ED4_AWAR_CONSENSUS_UPPER, 4);
+        aws->at("considbound");
+        aws->create_input_field(ED4_AWAR_CONSENSUS_CONSIDBOUND, 4);
 
-    aws->at("lower");
-    aws->create_input_field(ED4_AWAR_CONSENSUS_LOWER, 4);
+        aws->at("upper");
+        aws->create_input_field(ED4_AWAR_CONSENSUS_UPPER, 4);
 
-    aws->at("show");
-    aws->label("Display consensus?");
-    aws->create_toggle(ED4_AWAR_CONSENSUS_SHOW);
+        aws->at("lower");
+        aws->create_input_field(ED4_AWAR_CONSENSUS_LOWER, 4);
 
-    return (AW_window*)aws;
+        aws->at("show");
+        aws->label("Display consensus?");
+        aws->create_toggle(ED4_AWAR_CONSENSUS_SHOW);
+    }
+
+    return aws;
 }
 
 void ED4_create_consensus_awars(AW_root *aw_root)
