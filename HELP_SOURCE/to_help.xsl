@@ -95,7 +95,12 @@
 
     <xsl:choose>
       <xsl:when test="string-length(substring-before($doc,'.ps'))&gt;0"> <!--it's a postscript link-->
-        <value-of select="{concat($postscriptpath,$doc,'.gz')}"/>
+        <xsl:text>Postscript: </xsl:text>
+        <xsl:value-of select="$doc"/>
+      </xsl:when>
+      <xsl:when test="string-length(substring-before($doc,'.pdf'))&gt;0"> <!--it's a PDF link-->
+        <xsl:text>PDF: </xsl:text>
+        <xsl:value-of select="$doc"/>
       </xsl:when>
       <xsl:otherwise>
           <xsl:choose>
@@ -120,8 +125,10 @@
     <xsl:param name="dest"/>
 
     <xsl:value-of select="$dest"/>
-    <xsl:if test="substring-before($dest,'.ps')=''"> <!-- not postscript: add .hlp -->
-      <xsl:text>.hlp</xsl:text>
+    <xsl:if test="substring-before($dest,'.ps')=''"> <!-- not postscript .. -->
+      <xsl:if test="substring-before($dest,'.pdf')=''"> <!-- .. or pdf .. -->
+        <xsl:text>.hlp</xsl:text> <!-- .. -> add .hlp -->
+      </xsl:if>
     </xsl:if>
     <xsl:text>&br;</xsl:text>
   </xsl:template>

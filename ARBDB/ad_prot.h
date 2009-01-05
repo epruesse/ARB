@@ -290,6 +290,7 @@ GB_CSTR GB_getenvARBMACRO P_((void));
 GB_CSTR GB_getenvARBMACROHOME P_((void));
 GB_CSTR GB_getenvPATH P_((void));
 GB_CSTR GB_getenvARB_GS P_((void));
+GB_CSTR GB_getenvARB_PDFVIEW P_((void));
 GB_CSTR GB_getenvARB_TEXTEDIT P_((void));
 GB_CSTR GB_getenvDOCPATH P_((void));
 GB_CSTR GB_getenvHTMLDOCPATH P_((void));

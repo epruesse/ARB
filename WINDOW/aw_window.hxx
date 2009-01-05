@@ -277,7 +277,7 @@ public:
     //      The real public section
     // --------------------------------
     
-    AW_root *get_root(void) { return root; };
+    AW_root *get_root(void) { return root; }
 
     //******************* Global layout functions **********************
     void    show(void);         // bring hidden window to front of screen

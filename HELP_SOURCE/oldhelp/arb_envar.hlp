@@ -63,6 +63,11 @@ DESCRIPTION     Arb is aware of several environment variables:
                             name of postscript viewer used by ARB
                             (default: 'gv' or 'ghostview')
 
+                    ARB_PDFVIEW
+
+                            name of pdf viewer used by ARB
+                            (default: 'epdfview' or 'acroread' or 'gv')
+
                     ARB_WORKDIR
 
                             extra directory appearing in ARB-File-Browsers
@@ -70,8 +75,8 @@ DESCRIPTION     Arb is aware of several environment variables:
 
                     ARB_DOC
 
-                            directory where ARB searches for *.ps or *.ps.gz
-                            (default: $ARBHOME/lib/help)
+                            directory where ARB searches for *.ps, *.ps.gz, *.pdf
+                            and *.pdf.gz (default: $ARBHOME/lib/help)
 
 NOTES		Short description of how to set an environment variable:
 

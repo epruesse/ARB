@@ -1047,6 +1047,15 @@ GB_CSTR GB_getenvARB_GS(void) {
     return gs;
 }
 
+GB_CSTR GB_getenvARB_PDFVIEW(void) {
+    static const char *pdfview = 0;
+    if (!pdfview) {
+        pdfview = getenv_executable("ARB_PDFVIEW"); // doc in arb_envar.hlp
+        if (!pdfview) pdfview = GB_find_executable("PDF viewer", "epdfview", "xpdf", "kpdf", "acroread", "gv", NULL);
+    }
+    return pdfview;
+}
+
 GB_CSTR GB_getenvARB_TEXTEDIT(void) {
     static const char *editor = 0;
     if (!editor) {
@@ -1086,6 +1095,7 @@ GB_CSTR GB_getenv(const char *env){
         if (strcmp(env, "ARBMACRO")     == 0) return GB_getenvARBMACRO();
         if (strcmp(env, "ARBHOME")      == 0) return GB_getenvARBHOME();
         if (strcmp(env, "ARB_GS")       == 0) return GB_getenvARB_GS();
+        if (strcmp(env, "ARB_PDFVIEW")  == 0) return GB_getenvARB_PDFVIEW();
         if (strcmp(env, "ARB_DOC")      == 0) return GB_getenvDOCPATH();
         if (strcmp(env, "ARB_TEXTEDIT") == 0) return GB_getenvARB_TEXTEDIT();
     }
