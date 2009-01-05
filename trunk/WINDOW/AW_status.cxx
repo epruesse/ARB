@@ -1518,40 +1518,41 @@ static char *get_full_qualified_help_file_name(const char *helpfile, bool path_f
     else {
         if (!rel_path) rel_path = helpfile;
 
-        if (path_for_edit) {
+        if (rel_path[0]) {
+            if (path_for_edit) {
 #if defined(DEBUG)
-            char *gen_doc_path = GB_strdup(GB_path_in_ARBHOME("HELP_SOURCE/genhelp", NULL));
+                char *gen_doc_path = GB_strdup(GB_path_in_ARBHOME("HELP_SOURCE/genhelp", NULL));
 
-            char *devel_source = GBS_global_string_copy("%s/%s", devel_doc_path, rel_path);
-            char *gen_source   = GBS_global_string_copy("%s/%s", gen_doc_path, rel_path);
+                char *devel_source = GBS_global_string_copy("%s/%s", devel_doc_path, rel_path);
+                char *gen_source   = GBS_global_string_copy("%s/%s", gen_doc_path, rel_path);
 
-            int devel_size = GB_size_of_file(devel_source);
-            int gen_size   = GB_size_of_file(gen_source);
+                int devel_size = GB_size_of_file(devel_source);
+                int gen_size   = GB_size_of_file(gen_source);
 
-            gb_assert(devel_size <= 0 || gen_size <= 0); // only one of them shall exist
+                gb_assert(devel_size <= 0 || gen_size <= 0); // only one of them shall exist
 
-            if (gen_size>0) {
-                result = GBS_global_string("%s", gen_source); // edit generated doc
+                if (gen_size>0) {
+                    result = GBS_global_string("%s", gen_source); // edit generated doc
+                }
+                else {
+                    result = GBS_global_string("%s", devel_source); // use normal help source (may be non-existing)
+                }
+
+                free(gen_source);
+                free(devel_source);
+                free(gen_doc_path);
+#else            
+                result = GBS_global_string("%s/%s", GB_getenvDOCPATH(), rel_path); // use real help file in RELEASE
+#endif // DEBUG
             }
             else {
-                result = GBS_global_string("%s", devel_source); // use normal help source (may be non-existing)
+                result = GBS_global_string("%s/%s", GB_getenvDOCPATH(), rel_path);
             }
-
-            free(gen_source);
-            free(devel_source);
-            free(gen_doc_path);
-#else            
-            result = GBS_global_string("%s/%s", GB_getenvDOCPATH(), rel_path); // use real help file in RELEASE
-#endif // DEBUG
         }
         else {
-            result = GBS_global_string("%s/%s", GB_getenvDOCPATH(), rel_path);
+            result = "";
         }
     }
-
-#if defined(DEBUG)
-    printf("Helpfile='%s'\n", result);
-#endif // DEBUG
 
     free(devel_doc_path);
     free(user_doc_path);
@@ -1650,66 +1651,114 @@ static char *aw_ref_to_title(char *ref) {
     return result;
 }
 
-static void aw_help_new_helpfile(AW_root *awr) {
+static void aw_help_select_newest_in_history(AW_root *aw_root) {
+    char *history = aw_help_global.history;
+    if (history) {
+        const char *sep      = strchr(history, '#');
+        char       *lastHelp = sep ? GB_strpartdup(history, sep-1) : strdup(history);
+
+        aw_root->awar("tmp/aw_window/helpfile")->write_string(lastHelp);
+        free(lastHelp);
+    }
+}
+
+static void aw_help_back(AW_root *aw_root) {
+    char *history = aw_help_global.history;
+    if (history) {
+        const char *sep = strchr(history, '#');
+        if (sep) {
+            char *first   = GB_strpartdup(history, sep-1);
+            char *newhist = GBS_global_string_copy("%s#%s", sep+1, first); // wrap first to end
+
+            free(aw_help_global.history);
+            aw_help_global.history = newhist;
+
+            free(first);
+            
+            aw_help_select_newest_in_history(aw_root);
+        }
+    }
+}
+static void aw_help_back(AW_window *aww) { aw_help_back(aww->get_root()); }
+
+static GB_ERROR aw_help_show_external_format(const char *help_file, const char *viewer) {
+    // Called to show *.ps or *.pdf in external viewer.
+    // Can as well show *.suffix.gz (decompresses to temporary *.suffix)
+    
+    struct stat st;
+    GB_ERROR    error = NULL;
+    char        sys[1024];
+
+    sys[0] = 0;
+
+    if (stat(help_file, &st) == 0) { // *.ps exists
+        GBS_global_string_to_buffer(sys, sizeof(sys), "%s %s &", viewer, help_file);
+    }
+    else {
+        char *compressed = GBS_global_string_copy("%s.gz", help_file);
+
+        if (stat(compressed, &st) == 0) { // *.ps.gz exists
+            char *name_ext;
+            GB_split_full_path(compressed, NULL, NULL, &name_ext, NULL);
+            // 'name_ext' contains xxx.ps or xxx.pdf
+            char *name, *suffix;
+            GB_split_full_path(name_ext, NULL, NULL, &name, &suffix);
+
+            char *tempname     = GB_unique_filename(name, suffix);
+            char *uncompressed = GB_create_tempfile(tempname);
+                
+            GBS_global_string_to_buffer(sys, sizeof(sys),
+                                        "(gunzip <%s >%s ; %s %s ; rm %s) &",
+                                        compressed, uncompressed,
+                                        viewer, uncompressed,
+                                        uncompressed);
+
+            free(uncompressed);
+            free(tempname);
+            free(name);
+            free(suffix);
+            free(name_ext);
+        }
+        else {
+            error = GBS_global_string("Neither %s nor %s exists", help_file, compressed);
+        }
+        free(compressed);
+    }
+
+    if (sys[0] && !error) error = GB_system(sys);
+
+    return error;
+}
+
+static void aw_help_helpfile_changed_cb(AW_root *awr) {
     char *help_file = get_full_qualified_help_file_name(awr);
 
     if (!strlen(help_file)) {
         awr->awar("tmp/aw_window/helptext")->write_string("no help");
     }
     else if (GBS_string_matches(help_file,"*.ps",GB_IGNORE_CASE) ){ // Postscript file
-        struct stat st;
-        GB_ERROR    error = 0;
-        char        sys[1024];
-        
-        sys[0] = 0;
-
-        if (stat(help_file, &st) == 0) { // *.ps exists
-            GBS_global_string_to_buffer(sys, sizeof(sys), "%s %s &", GB_getenvARB_GS(), help_file);
-        }
-        else {
-            char *compressed = GBS_global_string_copy("%s.gz", help_file);
-
-            if (stat(compressed, &st) == 0) { // *.ps.gz exists
-                char *name_ps;
-                GB_split_full_path(compressed, NULL, NULL, &name_ps, NULL);
-                // 'name_ps' contains xxx.ps
-                char *name, *suffix;
-                GB_split_full_path(name_ps, NULL, NULL, &name, &suffix);
-
-                char *tempname     = GB_unique_filename(name, suffix);
-                char *uncompressed = GB_create_tempfile(tempname);
-                
-                GBS_global_string_to_buffer(sys, sizeof(sys),
-                                            "(gunzip <%s >%s ; %s %s ; rm %s) &",
-                                            compressed, uncompressed,
-                                            GB_getenvARB_GS(), uncompressed,
-                                            uncompressed);
-
-                free(uncompressed);
-                free(tempname);
-                free(name);
-                free(suffix);
-                free(name_ps);
-            }
-            else {
-                sprintf(AW_ERROR_BUFFER, "Neither %s nor %s where found", help_file, compressed);
-                aw_message();
-            }
-            free(compressed);
-        }
-
-        if (sys[0] && !error) error = GB_system(sys);
+        GB_ERROR error = aw_help_show_external_format(help_file, GB_getenvARB_GS());
         if (error) aw_message(error);
+        aw_help_select_newest_in_history(awr);
+    }
+    else if (GBS_string_matches(help_file,"*.pdf",GB_IGNORE_CASE) ){ // PDF file
+        GB_ERROR error = aw_help_show_external_format(help_file, GB_getenvARB_PDFVIEW());
+        if (error) aw_message(error);
+        aw_help_select_newest_in_history(awr);
     }
     else{
         if (aw_help_global.history){
-            if (strncmp(help_file,aw_help_global.history,strlen(help_file))){
-                char comm[1024];
-                char *h;
-                sprintf(comm,"*=%s#*1",help_file);
-                h = GBS_string_eval(aw_help_global.history,comm,0);
+            if (strncmp(help_file,aw_help_global.history,strlen(help_file)) != 0) {
+                // remove current help from history (if present) and prefix it to history
+                char *comm = GBS_global_string_copy("*#%s*=*1*2:*=%s#*1", help_file, help_file);
+                char *h    = GBS_string_eval(aw_help_global.history,comm,0);
+
+                aw_assert(h);
+
                 free(aw_help_global.history);
                 aw_help_global.history = h;
+
+                free(comm);
             }
         }
         else {
@@ -1765,17 +1814,6 @@ static void aw_help_new_helpfile(AW_root *awr) {
         }
     }
     free(help_file);
-}
-
-static void aw_help_back(AW_window *aww) {
-    if (!aw_help_global.history) return;
-    if (!strchr(aw_help_global.history,'#') ) return;
-    char *newhist = GBS_string_eval(aw_help_global.history,"*#*=*2",0); // delete first
-    free(aw_help_global.history);
-    aw_help_global.history = newhist;
-    char *helpfile = GBS_string_eval(aw_help_global.history,"*#*=*1",0);    // first word
-    aww->get_root()->awar("tmp/aw_window/helpfile")->write_string(helpfile);
-    free(helpfile);
 }
 
 static void aw_help_browse(AW_window *aww) {
@@ -1887,22 +1925,19 @@ static void aw_help_search(AW_window *aww) {
     free(searchtext);
 }
 
-void AW_POPUP_HELP(AW_window *aw,AW_CL /*char */ helpcd)
-{
-    AW_root *awr=aw->get_root();
-    static AW_window_simple *helpwindow=0;
+void AW_POPUP_HELP(AW_window *aw,AW_CL /*char */ helpcd) {
+    static AW_window_simple *helpwindow = 0;
 
+    AW_root *awr       = aw->get_root();
+    char    *help_file = (char*)helpcd;
 
-    char *help_file= (char*)helpcd;
-
-
-    if(!helpwindow) {
+    if (!helpwindow) {
         awr->awar_string( "tmp/aw_window/helptext", "" , AW_ROOT_DEFAULT);
         awr->awar_string( "tmp/aw_window/search_expression", "" , AW_ROOT_DEFAULT);
         awr->awar_string( "tmp/aw_window/helpfile", "" , AW_ROOT_DEFAULT);
-        awr->awar("tmp/aw_window/helpfile")->add_callback(aw_help_new_helpfile);
+        awr->awar("tmp/aw_window/helpfile")->add_callback(aw_help_helpfile_changed_cb);
 
-        helpwindow=new AW_window_simple;
+        helpwindow = new AW_window_simple;
         helpwindow->init(awr,"HELP","HELP WINDOW");
         helpwindow->load_xfig("help.fig");
 
@@ -1948,13 +1983,16 @@ void AW_POPUP_HELP(AW_window *aw,AW_CL /*char */ helpcd)
         helpwindow->create_button("EDIT", "EDIT","E");
 
     }
-    free(aw_help_global.history);
-    aw_help_global.history = 0;
 
-    awr->awar("tmp/aw_window/helpfile")->write_string("");
-    if(help_file) awr->awar("tmp/aw_window/helpfile")->write_string(help_file);
-    if (GBS_string_matches(help_file,"*.ps",GB_IGNORE_CASE)) return;// dont open help if postscript file
-    helpwindow->show();
+    aw_assert(help_file);
+
+    awr->awar("tmp/aw_window/helpfile")->write_string(help_file);
+    
+    if (!GBS_string_matches(help_file,"*.ps",GB_IGNORE_CASE) &&
+        !GBS_string_matches(help_file,"*.pdf",GB_IGNORE_CASE))
+    { // dont open help if postscript or pdf file
+        helpwindow->show();
+    }
 }
 
 

@@ -36,6 +36,7 @@
   <xsl:variable name="postscriptpath">
     <xsl:value-of select="$rootpath"/><xsl:text>../help/</xsl:text>
   </xsl:variable>
+  <xsl:variable name="pdfpath"><xsl:value-of select="$postscriptpath"/></xsl:variable>
 
   <xsl:variable name="tableBorder">0</xsl:variable>
 
@@ -146,6 +147,11 @@
       <xsl:when test="string-length(substring-before($doc,'.ps'))&gt;0"> <!--it's a postscript link-->
         <A href="{concat($postscriptpath,$doc,'.gz')}">
           <xsl:value-of select="$doc"/> (Postscript)
+        </A>
+      </xsl:when>
+      <xsl:when test="string-length(substring-before($doc,'.pdf'))&gt;0"> <!--it's a pdf link-->
+        <A href="{concat($pdfpath,$doc,'.gz')}">
+          <xsl:value-of select="$doc"/> (PDF)
         </A>
       </xsl:when>
       <xsl:otherwise>

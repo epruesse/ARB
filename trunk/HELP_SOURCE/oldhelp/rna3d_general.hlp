@@ -1,14 +1,14 @@
 #Please insert up references in the next lines (line starts with keyword UP)
 UP	arb.hlp
 UP	glossary.hlp
-UP  rna3d_manual.ps
+UP      rna3d_manual.pdf
 
 #Please insert subtopic references  (line starts with keyword SUB)
 #SUB	subtopic.hlp
-SUB rna3d_dispMolecule.hlp
-SUB rna3d_dispBases.hlp
-SUB rna3d_dispHelices.hlp
-SUB rna3d_mapSeqData.hlp
+SUB     rna3d_dispMolecule.hlp
+SUB     rna3d_dispBases.hlp
+SUB     rna3d_dispHelices.hlp
+SUB     rna3d_mapSeqData.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
