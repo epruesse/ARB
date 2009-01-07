@@ -10,7 +10,6 @@ CPP_OBJECTS = \
 	AP_csp_2_gnuplot.o \
 	AP_pos_var_pars.o \
 	ETC_check_gcg.o \
-	NT_MAUS.o \
 	NT_cb.o \
 	NT_concatenate.o \
 	NT_dbrepair.o \
@@ -543,19 +542,6 @@ NT_main.o: $(ARBHOME)/INCLUDE/awti_import.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/mg_merge.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/servercntrl.h
 NT_main.o: $(ARBHOME)/INCLUDE/svn_revision.h
-
-NT_MAUS.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
-NT_MAUS.o: $(ARBHOME)/INCLUDE/ad_prot.h
-NT_MAUS.o: $(ARBHOME)/INCLUDE/arb_assert.h
-NT_MAUS.o: $(ARBHOME)/INCLUDE/arbdb.h
-NT_MAUS.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-NT_MAUS.o: $(ARBHOME)/INCLUDE/attributes.h
-NT_MAUS.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-NT_MAUS.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-NT_MAUS.o: $(ARBHOME)/INCLUDE/aw_position.hxx
-NT_MAUS.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-NT_MAUS.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-NT_MAUS.o: $(ARBHOME)/INCLUDE/awt.hxx
 
 NT_sort.o: nt_sort.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/ad_k_prot.h

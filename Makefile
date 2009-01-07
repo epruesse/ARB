@@ -1064,6 +1064,8 @@ depends: com_all
 	$(MAKE) $(ARCHS:.a=.depends) \
 			HELP_SOURCE/HELP_SOURCE.depends \
 
+depend: depends
+
 proto_tools: AISC_MKPTPS/AISC_MKPTPS.dummy
 
 proto: proto_tools TOOLS/TOOLS.dummy 

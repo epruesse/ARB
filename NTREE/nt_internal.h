@@ -32,10 +32,6 @@ AW_window *AP_open_csp_2_gnuplot_window(AW_root *root);
 void AP_calc_pos_var_pars(AW_window *aww);
 AW_window *AP_open_pos_var_pars_window(AW_root *root);
 
-/* NT_MAUS.cxx */
-void NT_create_MAUS_awars(AW_root *aw_root, AW_default aw_def, AW_default gb_def);
-AW_window *NT_create_MAUS_window(AW_root *aw_root, AW_CL dummy_1x);
-
 /* NT_cb.cxx */
 void NT_delete_mark_all_cb(void *, AWT_canvas *ntw);
 AW_window *NT_open_select_tree_window(AW_root *awr, char *awar_tree);
