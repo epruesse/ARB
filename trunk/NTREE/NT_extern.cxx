@@ -228,7 +228,6 @@ void nt_create_all_awars(AW_root *awr, AW_default def) {
 
     ARB_init_global_awars(awr, def, GLOBAL_gb_main);
     awt_create_aww_vars(awr,def);
-    NT_create_MAUS_awars(awr, def, GLOBAL_gb_main);
 }
 
 
@@ -1141,9 +1140,6 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             {
                 AWMIMT("import_seq", "Import sequences and fields","I","arb_import.hlp",AWM_ALL, NT_import_sequences,0,0);
                 GDE_load_menu(awm,"import");
-#if defined(DEVEL_LOTHAR) || defined(DEVEL_RALF)
-                AWMIMT("MAUS", "Filter through MAUS..", "M", "MAUS.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_create_MAUS_window, 0);
-#endif // DEVEL_LOTHAR
             }
             awm->close_sub_menu();
 
