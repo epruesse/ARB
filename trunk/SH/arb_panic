@@ -3,13 +3,13 @@
 umask 066 # user read/write
 
 seperator() {
-        echo "*************************************** $*"
+    echo "*************************************** $*"
 }
 
 err () {
-        seperator ERROR 1>&2
-        echo "`basename $0`: $@" 1>&2
-        exit 1
+    seperator ERROR 1>&2
+    echo "`basename $0`: $@" 1>&2
+    exit 1
 }
 
 
@@ -21,7 +21,7 @@ echo "  There may be more than one database server (ARB_NT):"
 echo "          --------------------------------"
 
 for i in $chooser ; do
-        /bin/echo "             - >" `ls $i` "<";
+    /bin/echo "             - >" `ls $i` "<";
 done
 echo "          --------------------------------"
 
@@ -30,7 +30,7 @@ echo "Please choose one line and enter the rightmost number"
 
 read ARB_PID
 if [ ! -f /tmp/arb_pids_${USER}_${ARB_PID} ]; then
-        err "Incorrect Choice"
+    err "Incorrect Choice"
 fi
 
 seperator
@@ -42,16 +42,16 @@ rm -f $panicfile
 echo "$FILE" >$panicfile
 ok=false
 for i in `cat /tmp/arb_pids_${USER}_${ARB_PID}`; do
-	echo "[Sending SIGHUP to pid $i]"
-        if kill -HUP $i 2>/dev/null; then
-                ok=true
-                echo "[Process $i accepted HUP]"
-                break
-        fi
+    echo "[Sending SIGHUP to pid $i]"
+    if kill -HUP $i 2>/dev/null; then
+        ok=true
+        echo "[Process $i accepted HUP]"
+        break
+    fi
 done
 
 if [ "$ok" = "false" ]; then
-        err "Sorry could not find a running server"
+    err "Sorry could not find a running server"
 fi
 seperator
 echo "Wait until database is saved (or press <ctrl-c> to abort)"
@@ -83,5 +83,5 @@ if [ "$ki" = "kill" ] ; then
     kill -TERM $i
 fi
 if [ "$ki" = "killall" ] ; then
-        arb_clean
+    arb_clean
 fi
