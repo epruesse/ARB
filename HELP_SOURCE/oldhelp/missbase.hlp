@@ -18,8 +18,8 @@ DESCRIPTION     This function changes all gaps ('-') where bases are possibly
                 It applies to all (or all marked) sequences of one group.
                 The cursor has to be placed on the consensus of the group.
 
-                In columns where the group consensus shows an uppercase standard base
-                (i.e. one of 'ACGTU'), all gaps get replaced by dots.
+                In columns where the group consensus shows an uppercase base,
+                all gaps get replaced by dots.
 
                 Additionally an SAI can be used to restrict the affected columns:
 
