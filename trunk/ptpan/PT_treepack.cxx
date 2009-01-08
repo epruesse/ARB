@@ -8,6 +8,7 @@
 #include "probe.h"
 #include "pt_prototypes.h"
 #include <sys/mman.h>
+#include <math.h>
 
 /* /// "WriteIndexHeader()" */
 BOOL WriteIndexHeader(struct PTPanGlobal *pg)
@@ -2958,7 +2959,7 @@ BOOL FindSequenceMatchRec(struct SearchQuery *sq, struct QueryHit *qh, STRPTR ta
     }
   }
   /* check, if more errors are tolerable. */
-  if(sq->sq_State.sqs_ErrorCount > qh->qh_ErrorCount)
+  if ((sq->sq_State.sqs_ErrorCount - EPSILON) > qh->qh_ErrorCount) // don't compare floats directly!
   {
     /* too many errors, do not recurse */
     ignore = TRUE;
@@ -2978,7 +2979,7 @@ BOOL FindSequenceMatchRec(struct SearchQuery *sq, struct QueryHit *qh, STRPTR ta
     if(check)
     {
       /* check error count */
-      if((sq->sq_State.sqs_ErrorCount == qh->qh_ErrorCount) &&
+      if((fabs(sq->sq_State.sqs_ErrorCount - qh->qh_ErrorCount) < EPSILON) &&  // don't compare floats directly!
     (sq->sq_State.sqs_ReplaceCount == qh->qh_ReplaceCount) &&
     (sq->sq_State.sqs_InsertCount == qh->qh_InsertCount) &&
     (sq->sq_State.sqs_DeleteCount == qh->qh_DeleteCount))

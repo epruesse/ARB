@@ -53,11 +53,15 @@
 // in succession will be converted to SEQCODE_N. In ps_SeqDataCompressed,
 // they will be saved as dots. One replaced dot will add the same mismatch
 // as a replaced N. (So 0.1 at the moment)
+// This feature is not well testet, yet!
 //#define ALLOWDOTSINMATCH
 
 // Number of allowed dots in succession
 #define MAXDOTSINMATCH 5
 
+
+// Allowed error when comparing floats
+#define EPSILON 0.000001
 
 
 
