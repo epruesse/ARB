@@ -458,38 +458,58 @@ void CreateHitsGUIList(struct SearchQuery *sq)
     ULONG bitpos = 0;
     ULONG count;
     /* given an absolute sequence position, search for the relative one,
-       e.g. abspos 2 on "-----UU-C-C" will yield 8 */
+       e.g. abspos 2 on "-----UU-C-C" will yield 8 
+            abspos:           01 2 3
+            relpos:      0123456789a     */
+/*            
+if (strcmp(ps->ps_Name, "BclSp114") == 0)
+{
+    printf("qh_AbsPos: %li\t\tps_AbsOffset: %li\t\tabspos:%li\n", 
+           qh->qh_AbsPos, ps->ps_AbsOffset, abspos);
+    while ((code = GetNextCharacter(pg, ps->ps_SeqDataCompressed, bitpos, count)) != 0xff)
+    {
+        if (count > 1) printf("%li%c", count, code);
+                  else printf("%c", code);
+    }
+    printf("\n");
+    bitpos = 0;
+}
+/**/
     while (bitpos < ps->ps_SeqDataCompressedSize)           // get relpos and store prefix
     {
         code = GetNextCharacter(pg, ps->ps_SeqDataCompressed, bitpos, count);
-/*        
-    if (strcmp(ps->ps_Name, "RcnComm4") == 0)
-        printf("prefix: %9s  postfix: %9s  abspos: %i  relpos: %i  code: %c  count: %i\n", 
-               prefix, postfix, abspos, relpos, code, count);        
-*/
+
         if (pg->pg_SeqCodeValidTable[code])
-        {           // it's a validchar
-            if (!(abspos--)) break;                         // position found
-            if (abspos <= 8) prefix[8-abspos] = code;       // store prefix
+        {                                                       // it's a valid char
+            if (!(abspos--)) break;                             // position found
+            if (abspos <= 8) prefix[8-abspos] = code;           // store prefix
             ++relpos;
         } else
-        {
+        {                                                       // it's not a valid char
             arb_assert((code == '.') || (code == '-'));
+            
+#ifdef ALLOWDOTSINMATCH
+            if ((code == '.') && (count == 1))                  // check for dots in match
+            {
+                if (!(abspos--)) break;                         // position found
+                if (abspos <= 8) prefix[8-abspos] = code;       // store prefix
+            }
+#endif
             relpos += count;
-            if ((code == '.') && (abspos <= 9))             // fill prefix with '.'
-            {                                               // TODO: decide if we really want to fill the
-                for (int i = 0; i < (9 - abspos); ++i)      //       whole prefix or just 'count' dots
+            if ((code == '.') && (abspos <= 9))                 // fill prefix with '.'
+            {                                                   // TODO: decide if we really want to fill the
+                for (int i = 0; i < (9 - abspos); ++i)          //       whole prefix or just 'count' dots
                 {
                     prefix[i] = '.';
                 }
             }
         }
     }
-    arb_assert(bitpos <= ps->ps_SeqDataCompressedSize);
+    arb_assert(bitpos < ps->ps_SeqDataCompressedSize);
     bitpos -= 3;      // bitpos now points to the first character of found seq
-    
+//printf("%c, %li, %li, %li\n", code, ((unsigned long)code), count, bitpos);    
     tarlen = sq->sq_QueryLen - qh->qh_DeleteCount + qh->qh_InsertCount;
-    for (cnt = 0; cnt < tarlen;)
+    for (cnt = 0; cnt < tarlen;)                                // copy found string into sq->sq_SourceSeq[]
     {
         if (bitpos >= ps->ps_SeqDataCompressedSize)
         {
@@ -502,18 +522,15 @@ void CreateHitsGUIList(struct SearchQuery *sq)
         if (pg->pg_SeqCodeValidTable[code])                 // valid character
         {
             sq->sq_SourceSeq[cnt++] = code;
-            if(code == 'N') nmismatch++;
+            if (code == 'N') nmismatch++;
         } else
         {
             if (code == '.')                                // if we got a dot in sequence
             {                                               // the hit is bogus
 #ifdef ALLOWDOTSINMATCH
-                if (count <= MAXDOTSINMATCH)
+                if (count == 1)
                 {
-                    for (int i = 0; ((i < count) && (cnt < tarlen)); ++i)
-                    {
-                        sq->sq_SourceSeq[cnt++] = '.';          // fill in 'count' dots
-                    }
+                    sq->sq_SourceSeq[cnt++] = '.';
                 } else
 #endif                
                 {
