@@ -518,6 +518,7 @@ BOOL WriteStdSuffixTreeToDisk(struct PTPanPartition *pp)
 }
 /* \\\ */
 
+
 /* /// "BuildPTPanIndex()" */
 /* build a whole new fresh and tidy index (main routine) */
 BOOL BuildPTPanIndex(struct PTPanGlobal *pg)
@@ -661,10 +662,8 @@ BOOL BuildMergedDatabase(struct PTPanGlobal *pg)
     while((code = GetNextCharacter(pg, ps->ps_SeqDataCompressed, bitpos, count)) != 0xff)
     {
 #ifdef ALLOWDOTSINMATCH
-      if (code == '.')
+      if ((code == '.') && (count == 1))
       {
-        if (count <= MAXDOTSINMATCH)
-        {
 #if 1       // debug        
             ULONG tmpbitpos = bitpos;
             ULONG tmpcount;
@@ -679,10 +678,7 @@ BOOL BuildMergedDatabase(struct PTPanGlobal *pg)
             printf("\n");
 #endif            
             code = 'N';
-        } else count = 0;   // to many '.', so don't insert them...
       }
-      while (count-- > 0)   // insert code count times
-      {
 #endif
       if(pg->pg_SeqCodeValidTable[code])
       {
@@ -710,9 +706,6 @@ BOOL BuildMergedDatabase(struct PTPanGlobal *pg)
           }
         }
       }
-#ifdef ALLOWDOTSINMATCH
-      } // while (count-- > 0)
-#endif
     }
     if(verlen != ps->ps_RawDataSize)
     {
