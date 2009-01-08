@@ -12,7 +12,7 @@
 
 typedef void           *APTR;       /* 32-bit untyped pointer */
 typedef long long       LLONG;      /* signed 64-bit quantity */
-typedef unsigned long   ULLONG;     /* unsigned 64-bit quantity */
+typedef unsigned long long  ULLONG;     /* unsigned 64-bit quantity */
 typedef long            LONG;       /* signed 32-bit quantity */
 typedef unsigned long   ULONG;      /* unsigned 32-bit quantity */
 typedef unsigned long   LONGBITS;   /* 32 bits manipulated individually */
