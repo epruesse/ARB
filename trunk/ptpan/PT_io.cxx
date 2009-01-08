@@ -86,7 +86,7 @@ void BenchOutput(struct  PTPanGlobal *pg)
   }
 
   printf("gDAT: (n s lb np t idxsize memusedmax node# nodespc leaf# leafcnt outl Total CollDB MergeDB PScan MemTree Stats LDPre LDBuild Reloc Disk)\n"
-    "%ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %s GDAT\n",
+    "%lld %ld %ld %d %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %s GDAT\n",
     pg->pg_TotalRawSize,
     pg->pg_NumSpecies,
     pg->pg_MaxBaseLength,
@@ -115,32 +115,35 @@ void BenchOutput(struct  PTPanGlobal *pg)
 #endif
 
 /* /// "GetSequenceRelPos()" */
+/*
 ULONG GetSequenceRelPos(struct PTPanGlobal *pg, STRPTR srcseq, ULONG abspos)
 {
   ULONG relpos = 0;
-  /* given an absolute sequence position, search for the relative one,
-     e.g. abspos 2 on "-----UU-C-C" will yield 8 */
+  // given an absolute sequence position, search for the relative one,
+  //   e.g. abspos 2 on "-----UU-C-C" will yield 8
   while(*srcseq)
   {
     if(pg->pg_SeqCodeValidTable[*srcseq++])
     {
       if(!(abspos--))
       {
-    break; /* position found */
+    break; // position found
       }
     }
     relpos++;
   }
   return(relpos);
 }
+*/
 /* \\\ */
 
 /* /// "GetSequenceAbsPos()" */
+/*
 ULONG GetSequenceAbsPos(struct PTPanGlobal *pg, STRPTR srcseq, ULONG relpos)
 {
   ULONG abspos = 0;
-  /* given an absolute sequence position, search for the relative one,
-     e.g. relpos 8 on "-----UU-C-C" will yield 3 */
+  // given an absolute sequence position, search for the relative one,
+  //   e.g. relpos 8 on "-----UU-C-C" will yield 3
   while(*srcseq && relpos--)
   {
     if(pg->pg_SeqCodeValidTable[*srcseq++])
@@ -150,6 +153,7 @@ ULONG GetSequenceAbsPos(struct PTPanGlobal *pg, STRPTR srcseq, ULONG relpos)
   }
   return(abspos);
 }
+*/
 /* \\\ */
 
 /* /// "CalcLengthForFilteredSequence()" */
@@ -394,7 +398,7 @@ LONG DecompressSequencePartTo(struct PTPanGlobal *pg,
   ULONG off = seqpos / MAXCODEFITLONG;
   UWORD codeoff = seqpos % MAXCODEFITLONG;
   UWORD cnt;
-  ULONG len;
+  ULONG len = 0;
   ULONG pval;
   BOOL lastlong;
   BOOL first;
@@ -444,7 +448,7 @@ LONG DecompressSequencePartTo(struct PTPanGlobal *pg,
 /* /// "GetNextCharacter()" */
 UBYTE GetNextCharacter(struct PTPanGlobal *pg, UBYTE* buffer, ULONG &bitpos, ULONG &count)
 {
-    UBYTE character;                                                        // return the next character of 
+    UBYTE character = 0xff;                                                 // return the next character of 
     UBYTE code;                                                             // sequence or 0xff if end flag found
                                                                             // increase bitpos by consumed bits
     code = ReadBits(buffer, bitpos, 3);                                     // set count to the number of
@@ -556,7 +560,7 @@ ULONG CompressSequenceWithDotsAndHyphens(struct PTPanGlobal *pg, struct PTPanSpe
 {
     ULONG len     = 0;          // len is the count of characters inserted into ps_RawData
     ULONG bitpos  = 0;          // ...ps_RawDataSize will be set to len later
-    STRPTR ptr    = ps->ps_SeqData;
+    UBYTE* ptr    = (UBYTE*) ps->ps_SeqData;
     UBYTE* buffer = (UBYTE*) malloc((ps->ps_SeqDataSize * 3 / 8) + 1);  // TODO: look over it and find a good
     if (buffer == NULL)                                                 //       estimation of needed size
     {                                                                   // TODO: what is faster, precount or
@@ -568,25 +572,38 @@ ULONG CompressSequenceWithDotsAndHyphens(struct PTPanGlobal *pg, struct PTPanSpe
     {
         arb_assert(((bitpos >> 3) + 1 < ps->ps_SeqDataSize));
         if (*ptr == '.')
-        {                                                       // found a '.'
+        {                                                                       // found a '.'
             ULONG count;
             for (count = 0; *ptr == '.'; ++count, ++ptr) { }                    // count all '.'
-            bitpos = WriteManyChars(buffer, bitpos, SEQCODE_DOT, count);        // write all '.'
 #ifdef ALLOWDOTSINMATCH
-            if (count <= MAXDOTSINMATCH) len += count;
+            if (count <= MAXDOTSINMATCH) 
+            {
+                len += count;
+                while (count-- > 0)                                             // write 'count'
+                {                                                               // times one '.'
+                    bitpos = WriteManyChars(buffer, bitpos, SEQCODE_DOT, 1);
+                }
+            } else bitpos = WriteManyChars(buffer, bitpos, SEQCODE_DOT, count); // write all '.'
+#else  
+            bitpos = WriteManyChars(buffer, bitpos, SEQCODE_DOT, count);        // write all '.'
 #endif            
         } else if (*ptr == '-')
-        {                                                       // found a '-'
+        {                                                                       // found a '-'
             ULONG count;
             for (count = 0; *ptr == '-'; ++count, ++ptr) { }                    // count all '-'
             bitpos = WriteManyChars(buffer, bitpos, SEQCODE_HYPHEN, count);     // write all '-'
-        } else
-        {                                                       // found a valid character
+        } else if (pg->pg_SeqCodeValidTable[*ptr])
+        {                                                                       // found a valid character
             UBYTE seqcode = pg->pg_CompressTable[*ptr];
             arb_assert(seqcode <= SEQCODE_T);
-            bitpos = WriteBits(buffer, bitpos, seqcode, 3);     // write valid char
+            bitpos = WriteBits(buffer, bitpos, seqcode, 3);                     // write valid char
             ++ptr;
             ++len;
+        } else
+        {                                                                       // found an unknown char
+//          printf("Found an unknown char in Species Sequence - ignoring\n");
+            bitpos = WriteManyChars(buffer, bitpos, SEQCODE_HYPHEN, 1);         // write one '-'
+            ++ptr;
         }
     }
     bitpos = WriteBits(buffer, bitpos, 0x07, 3);                // write end flag (111)
@@ -710,8 +727,8 @@ BOOL LoadEcoliSequence(struct PTPanGlobal *pg)
       if(pg->pg_EcoliBaseTable)
       {
         srcseq = pg->pg_EcoliSeq;
-        posptr = pg->pg_EcoliBaseTable;
-        while(*srcseq)
+        posptr = pg->pg_EcoliBaseTable;                     // TODO: check if this works well 
+        while(*srcseq)                                      //       with ALLOWDOTSINMATCH
         {
           *posptr++ = abspos;
           if(pg->pg_SeqCodeValidTable[*srcseq++])
@@ -926,7 +943,7 @@ BOOL LoadSpecies(struct PTPanGlobal *pg)
     ps->ps_RawDataSize = CompressSequenceWithDotsAndHyphens(pg, ps);
     free(ps->ps_SeqData);
     ps->ps_SeqData = NULL;
-    if (ps->ps_RawDataSize < 0)
+    if (ps->ps_RawDataSize < 0)                                 // TODO: problem, ps_RawDataSize is unsigned...
     {
         printf("%s is corrupt, ignoring!\n", ps->ps_Name);
         ignorecount++;
@@ -963,7 +980,7 @@ BOOL LoadSpecies(struct PTPanGlobal *pg)
     printf(".");
     fflush(stdout);
       } else {
-    printf(".%6ld (%6ld KB)\n", pg->pg_NumSpecies, (ps->ps_AbsOffset >> 10));
+    printf(".%6ld (%6lld KB)\n", pg->pg_NumSpecies, (ps->ps_AbsOffset >> 10));
       }
     }
   }
@@ -981,7 +998,7 @@ BOOL LoadSpecies(struct PTPanGlobal *pg)
   printf("\nLongest sequence was %ld bases (alignment size %ld).\n\n",
     pg->pg_MaxBaseLength, longestali);
   printf("Database contains %ld valid species (%ld ignored).\n"
-    "%ld bytes alignment data (%ld bases).\n",
+    "%lld bytes alignment data (%lld bases).\n",
     pg->pg_NumSpecies, ignorecount, pg->pg_TotalSeqSize, pg->pg_TotalRawSize);
 
   printf("Compressed sequence data (with dots and hyphens): %llu byte (%llu kb, %llu mb)\n",
@@ -1166,7 +1183,7 @@ BOOL LoadIndexHeader(struct PTPanGlobal *pg)
     printf(".");
     fflush(stdout);
       } else {
-    printf(".%6ld (%6ld KB)\n", numspec, (ps->ps_AbsOffset>>10));
+    printf(".%6ld (%6lld KB)\n", numspec, (ps->ps_AbsOffset>>10));
       }
     }
   }
@@ -1192,7 +1209,7 @@ BOOL LoadIndexHeader(struct PTPanGlobal *pg)
   }
 
   printf("\n\nDatabase contains %ld valid species (%ld ignored).\n"
-    "%ld bytes alignment data (%ld bases).\n",
+    "%lld bytes alignment data (%lld bases).\n",
     pg->pg_NumSpecies, ignorecount, pg->pg_TotalSeqSize, pg->pg_TotalRawSize);
   printf("Compressed sequence data (with dots and hyphens): %llu byte (%llu kb, %llu mb)\n",
     pg->pg_TotalSeqCompressedSize, pg->pg_TotalSeqCompressedSize >> 10, pg->pg_TotalSeqCompressedSize >> 20);
