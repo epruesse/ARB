@@ -2911,8 +2911,9 @@ BOOL FindSequenceMatchRec(struct SearchQuery *sq, struct QueryHit *qh, STRPTR ta
     if (sq->sq_SourceSeq[sq->sq_State.sqs_SourcePos] == '.')
     {
         sq->sq_State.sqs_ReplaceCount++;
-        misweight = 0.1;                            // TODO: add * sq->sq_PosWeight[sq->sq_State.sqs_QueryPos]
-        sq->sq_State.sqs_ErrorCount += misweight;   //       and 0.1 should not be hard coded
+        misweight = sq->sq_MismatchWeights->mw_Replace[(seqcode2 * ALPHASIZE) + SEQCODE_N]  // '.' in match
+                    * sq->sq_PosWeight[sq->sq_State.sqs_QueryPos];                          // will be treated
+        sq->sq_State.sqs_ErrorCount += misweight;                                           // as 'N'
         if(tarptr)
         {
           *tarptr++ = '.';
