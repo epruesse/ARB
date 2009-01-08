@@ -49,11 +49,13 @@
 #define PROBE_MISM_DEC 0.2
 
 
-// TODO: comment
+// Allow dots in match. When building the tree, up to MAXDOTSINMATCH dots 
+// in succession will be converted to SEQCODE_N. In ps_SeqDataCompressed,
+// they will be saved as dots. One replaced dot will add the same mismatch
+// as a replaced N. (So 0.1 at the moment)
 //#define ALLOWDOTSINMATCH
 
-
-// TODO: comment
+// Number of allowed dots in succession
 #define MAXDOTSINMATCH 5
 
 
