@@ -2,7 +2,6 @@
 //                                                                  //
 //   File      : ED4_dots.cxx                                       //
 //   Purpose   : Insert dots where bases may be missing             //
-//   Time-stamp: <Mon Jan/05/2009 12:38 MET Coder@ReallySoft.de>    //
 //                                                                  //
 //   Coded by Ralf Westram (coder@reallysoft.de) in December 2008   //
 //   Institute of Microbiology (Technical University Munich)        //
@@ -22,8 +21,6 @@ using namespace std;
 #define AWAR_DOT_SAI       AWAR_DOT_BASE "sai"    // selected SAI
 #define AWAR_DOT_SAI_CHARS AWAR_DOT_BASE "chars"  // handle columns where SAI contains one of these chars
 #define AWAR_DOT_MARKED    AWAR_DOT_BASE "marked" // handle marked only?
-
-#define DOT_IF_CONSENSUS_HAS "ACGTU" // only dot where consensus contains any of these
 
 struct dot_insert_stat {
     size_t  pos_count;
@@ -128,12 +125,12 @@ static void dot_missing_bases(AW_window *aww) {
 
         ED4_group_manager *group_manager = selected->get_parent(ED4_L_GROUP)->to_group_manager();
         {
-            // build list of positions where consensus contains DOT_IF_CONSENSUS_HAS:
+            // build list of positions where consensus contains upper case characters:
             char *consensus = group_manager->table().build_consensus_string();
             for (int pass = 1; pass <= 2; pass++) {
                 stat.pos_count = 0;
                 for (int pos = 0; consensus[pos]; pos++) {
-                    if (strchr(DOT_IF_CONSENSUS_HAS, consensus[pos]) != NULL) {
+                    if (isupper(consensus[pos])) {
                         if (pass == 2) stat.position[stat.pos_count] = pos;
                         stat.pos_count++;
                     }
@@ -145,7 +142,7 @@ static void dot_missing_bases(AW_window *aww) {
         }
 
         if (!stat.pos_count) {
-            error = "No consensus column contains '" DOT_IF_CONSENSUS_HAS "'";
+            error = "No consensus column contains upper case characters";
         }
         else {
             // if SAI is selected, reduce list of affected positions
