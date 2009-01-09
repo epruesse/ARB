@@ -59,10 +59,7 @@ static char *gbt_nonexisting_alignment(GBDATA *gbMain) {
 
     for (counter = 1; !ali_other; ++counter) {
         ali_other = GBS_global_string_copy("ali_x%i", counter);
-        if (GBT_get_alignment(gbMain, ali_other) != 0) {
-            free(ali_other);
-            ali_other = 0;
-        }
+        if (GBT_get_alignment(gbMain, ali_other) != 0) freeset(ali_other, 0); // exists -> continue
     }
 
     return ali_other;
@@ -574,7 +571,7 @@ char *gbt_insert_delete(const char *source, long len, long destlen, long *newsiz
     newval[*newsize] = 0;                   /* only for strings */
 
     if (pos>len){       /* no place to insert / delete */
-        GB_MEMCPY(newval,source,(size_t)len);
+        memcpy(newval,source,(size_t)len);
         return NULL;
     }
 
@@ -583,12 +580,12 @@ char *gbt_insert_delete(const char *source, long len, long destlen, long *newsiz
     }
 
     if (nchar > 0)  {                   /* insert */
-        GB_MEMCPY(newval,source,(size_t)pos);
+        memcpy(newval,source,(size_t)pos);
         memset(newval+pos,insert_what,(size_t)nchar);
-        GB_MEMCPY(newval+pos+nchar,source+pos,(size_t)(len-pos));
+        memcpy(newval+pos+nchar,source+pos,(size_t)(len-pos));
     }else{
-        GB_MEMCPY(newval,source,(size_t)pos);
-        GB_MEMCPY(newval+pos,source+pos-nchar, (size_t)(len - pos + nchar));
+        memcpy(newval,source,(size_t)pos);
+        memcpy(newval+pos,source+pos-nchar, (size_t)(len - pos + nchar));
     }
     return newval;
 }
@@ -861,19 +858,21 @@ GB_ERROR GBT_delete_tree(GBT_TREE *tree)
      /* frees a tree only in memory (not in the database)
         to delete the tree in Database
         just call GB_delete((GBDATA *)gb_tree);
-    */
+     */
 {
-    GB_ERROR error;
-    if (tree->name)  free(tree->name);
-    if (tree->remark_branch) free(tree->remark_branch);
+    free(tree->name);
+    free(tree->remark_branch);
+
     if (tree->is_leaf == 0) {
+        GB_ERROR error;
+        
         gb_assert(tree->leftson);
         gb_assert(tree->rightson);
         if ( (error=GBT_delete_tree( tree->leftson) ) ) return error;
         if ( (error=GBT_delete_tree( tree->rightson)) ) return error;
     }
     if (!tree->father || !tree->tree_is_one_piece_of_memory){
-        free((char *)tree);
+        free(tree);
     }
     return 0;
 }
@@ -1479,7 +1478,7 @@ static char gbt_get_char(TreeReader *reader) {
 static TreeReader *newTreeReader(FILE *input, const char *file_name) {
     TreeReader *reader = GB_calloc(1, sizeof(*reader));
 
-    reader->tree_file_name      = GB_strdup(file_name);
+    reader->tree_file_name      = strdup(file_name);
     reader->in                  = input;
     reader->tree_comment        = GBS_stropen(2048);
     reader->max_found_branchlen = -1;
@@ -1609,11 +1608,11 @@ static void setBranchName(TreeReader *reader, GBT_TREE *node, char *name) {
         }
 
         assert(node->remark_branch == 0);
-        node->remark_branch  = GB_strdup(GBS_global_string("%i%%", (int)bootstrap));
+        node->remark_branch  = GBS_global_string_copy("%i%%", (int)bootstrap);
 
         if (end[0] != 0) {      // sth behind bootstrap value
             if (end[0] == ':') ++end; // ARB format for nodes with bootstraps AND node name is 'bootstrap:nodename'
-            node->name = GB_strdup(end);
+            node->name = strdup(end);
         }
         free(name);
     }
@@ -1721,7 +1720,7 @@ static GBT_TREE *gbt_load_tree_rek(TreeReader *reader, int structuresize, GBT_LE
                             setReaderError(reader, "Expected one of ',)'");
                         }
                         
-                        if (right) GB_FREE(right);
+                        free(right);
 
                         break;
                     }
@@ -1735,7 +1734,7 @@ static GBT_TREE *gbt_load_tree_rek(TreeReader *reader, int structuresize, GBT_LE
                 ad_assert(reader->error);
             }
 
-            if (left) GB_FREE(left);
+            free(left);
         }
     }
     else { /* single node */
@@ -1775,12 +1774,11 @@ void GBT_scale_tree(GBT_TREE *tree, double length_scale, double bootstrap_scale)
         double      bootstrap    = strtod(tree->remark_branch, (char**)&end);
         GB_BOOL     is_bootstrap = end[0] == '%' && end[1] == 0;
 
-        free(tree->remark_branch);
-        tree->remark_branch = 0;
+        freeset(tree->remark_branch, 0);
 
         if (is_bootstrap) {
             bootstrap = bootstrap*bootstrap_scale+0.5;
-            tree->remark_branch  = GB_strdup(GBS_global_string("%i%%", (int)bootstrap));
+            tree->remark_branch  = GBS_global_string_copy("%i%%", (int)bootstrap);
         }
     }
 }
@@ -1912,8 +1910,7 @@ char *GBT_find_largest_tree(GBDATA *gb_main){
     {
         long *nnodes = GBT_read_int(gb_tree, "nnodes");
         if (nnodes && *nnodes>maxnodes) {
-            free(largest);
-            largest = GB_read_key(gb_tree);
+            freeset(largest, GB_read_key(gb_tree));
             maxnodes = *nnodes;
         }
     }
@@ -3063,8 +3060,7 @@ GB_ERROR gbt_rename_tree_rek(GBT_TREE *tree,int tree_index){
                 else {
                     newname = &rns->data[0];
                 }
-                free(tree->name);
-                tree->name = GB_STRDUP(newname);
+                freedup(tree->name, newname);
                 rns->used_by = tree_index;
             }
         }
@@ -3139,21 +3135,15 @@ GB_ERROR GBT_commit_rename_session(int (*show_status)(double gauge), int (*show_
                             if (item->type == CI_SPECIES) {
                                 struct gbt_renamed_struct *rns = (struct gbt_renamed_struct *)GBS_read_hash(gbtrst.renamed_hash, item->name);
                                 if (rns) { // species was renamed
-                                    const char *newname = &rns->data[0];
-
-                                    free(item->name);
-                                    item->name = GB_STRDUP(newname);
-                                    need_save  = 1;
+                                    freedup(item->name, rns->data);
+                                    need_save = 1;
                                 }
                             }
                             GBT_append_to_config_string(item, strstruct);
                             error = GBT_parse_next_config_item(parser, item);
                         }
 
-                        if (!error) {
-                            free(*configStrPtr);
-                            *configStrPtr = GBS_strclose(strstruct);
-                        }
+                        if (!error) freeset(*configStrPtr, GBS_strclose(strstruct));
 
                         GBT_free_config_item(item);
                         GBT_free_config_parser(parser);
@@ -3691,10 +3681,7 @@ char *GBT_read_gene_sequence(GBDATA *gb_gene, GB_BOOL use_revComplement) {
                 if (!error) GBT_reverseComplementNucSequence(result, resultlen, T_or_U);
             }
         }
-        if (error)  {
-            free(result);
-            result = 0;
-        }
+        if (error) freeset(result, 0);
     }
 
     if (error) {

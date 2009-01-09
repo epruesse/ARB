@@ -12,10 +12,9 @@ PHDATA::PHDATA(AW_root *awr) {
 char *PHDATA::unload(void) {
     struct PHENTRY *phentry;
 
-    free(use);
-    use = 0;
-    for(phentry=entries;phentry;phentry=phentry->next)
-    { free(phentry->name);
+    freeset(use, 0);
+    for (phentry=entries;phentry;phentry=phentry->next) {
+        free(phentry->name);
         free(phentry->full_name);
         free((char *) phentry);
     }

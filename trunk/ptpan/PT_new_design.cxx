@@ -372,8 +372,7 @@ struct DesignHit * AddDesignHit(struct DesignQuery *dq)
             //printf("Up\n");
             parenttn = tn->tn_Parent;
             seqcode = tn->tn_ParentSeq + 1;
-            free(tn);
-            tn = parenttn;
+            freeset(tn, parenttn);
         }
     } while (! done);
 
@@ -788,8 +787,7 @@ BOOL FindProbeInPartition(struct DesignQuery *dq)
                 }
                 parenttn = tn->tn_Parent;
                 seqcode  = tn->tn_ParentSeq + 1;
-                free(tn);
-                tn = parenttn;
+                freeset(tn, parenttn);
                 if (! tn)
                 {
                     /* we're done with this partition */
@@ -838,8 +836,7 @@ BOOL FindProbeInPartition(struct DesignQuery *dq)
         }
         parenttn = tn->tn_Parent;
         seqcode  = tn->tn_ParentSeq + 1;
-        free(tn);
-        tn = parenttn;
+        freeset(tn, parenttn);
     } while (TRUE);
 
     if (nohits)

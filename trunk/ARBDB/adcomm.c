@@ -83,10 +83,9 @@ struct Socinf {
 };
 
 void g_bcms_delete_Socinf(struct Socinf *THIS){
-    if (THIS->username) free(THIS->username);
-    THIS->username = NULL;
+    freeset(THIS->username, NULL);
     THIS->next = 0;
-    free ((char *)THIS);
+    free(THIS);
 }
 
 struct Hs_struct {
@@ -227,12 +226,11 @@ GB_ERROR GBCMS_shutdown(GBDATA *gbd){
     shutdown(hs->hso, 2);
     if (hs->unix_name){
         unlink(hs->unix_name);
-        free(hs->unix_name);
-        hs->unix_name = 0;
+        freeset(hs->unix_name, NULL);
     }
     close(hs->hso);
-    free((char *)Main->server_data);
-    Main->server_data = 0;
+    freeset(Main->server_data, NULL);
+
     return 0;
 }
 
@@ -2014,7 +2012,7 @@ GB_ERROR gbcm_login(GBCONTAINER *gb_main,const char *user)
     for (i = 0; i<GB_MAX_USERS; i++) {
         if (Main->users[i]) continue;
         Main->users[i] = (struct gb_user_struct *) GB_calloc(sizeof(struct gb_user_struct),1);
-        Main->users[i]->username = GB_STRDUP(user);
+        Main->users[i]->username = strdup(user);
         Main->users[i]->userid = i;
         Main->users[i]->userbit = 1<<i;
         Main->users[i]->nusers = 1;
@@ -2056,8 +2054,7 @@ GB_ERROR gbcm_logout(GBCONTAINER *gb_main,char *user)
             Main->users[i]->nusers--;
             if (Main->users[i]->nusers<=0) {/* kill user and his projects */
                 free(Main->users[i]->username);
-                free((char *)Main->users[i]);
-                Main->users[i] = 0;
+                freeset(Main->users[i], NULL);
                 fprintf(stdout,"The User %s has logged out\n",user);
             }
             return 0;

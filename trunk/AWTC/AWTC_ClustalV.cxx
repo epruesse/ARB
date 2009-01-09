@@ -511,11 +511,11 @@ static void init_show_pair(long max_seq_length)
 
 void exit_show_pair(void)
 {
-    free(zzd);   zzd   = 0;
-    free(zzc);   zzc   = 0;
-    free(zzb);   zzb   = 0;
-    free(zza);   zza   = 0;
-    free(displ); displ = 0;
+    freeset(zzd, 0);
+    freeset(zzc, 0);
+    freeset(zzb, 0);
+    freeset(zza, 0);
+    freeset(displ, 0);
 }
 
 static inline void add(int v)           // insert 'v' gaps into master ???
@@ -574,11 +574,10 @@ static MAXN_2(inline) int calc_weight(int iat,int jat,int v1,int v2)
 
 #ifdef MATRIX_DUMP
 
-static unsigned char *lstr_ss = 0;
-static inline const unsigned char *lstr(const unsigned char *s, int len)
-{
-    if (lstr_ss) free(lstr_ss);
-    lstr_ss = (unsigned char*)strndup((const char*)s,len);
+static inline const unsigned char *lstr(const unsigned char *s, int len) {
+    static unsigned char *lstr_ss = 0;
+
+    freeset(lstr_ss, (unsigned char*)strndup((const char*)s,len));
     return lstr_ss;
 }
 

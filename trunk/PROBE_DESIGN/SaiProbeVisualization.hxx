@@ -76,8 +76,7 @@ public:
     }
     void setHeadline(const char *hline) {
         sai_assert(hline);
-        free(headline);
-        headline = strdup(hline);
+        freedup(headline, hline);
     }
 };
 

@@ -43,8 +43,7 @@ char *TRS_export_error(const char *templat, ...) {
 
     vsprintf(p,templat,parg);
 
-    if (TRS_error_buffer) free(TRS_error_buffer);
-    TRS_error_buffer = strdup(buffer);
+    freedup(TRS_error_buffer, buffer);
     return TRS_error_buffer;
 }
 

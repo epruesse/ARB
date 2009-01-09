@@ -696,16 +696,8 @@ BOOL LoadEcoliSequence(struct PTPanGlobal *pg)
   free(defaultref);
 
   /* free memory if previously allocated */
-  if(pg->pg_EcoliSeq)
-  {
-    free(pg->pg_EcoliSeq);
-    pg->pg_EcoliSeq = NULL;
-  }
-  if(pg->pg_EcoliBaseTable)
-  {
-    free(pg->pg_EcoliBaseTable);
-    pg->pg_EcoliBaseTable = NULL;
-  }
+  freeset(pg->pg_EcoliSeq, NULL);
+  freeset(pg->pg_EcoliBaseTable, NULL);
 
   /* prepare ecoli sequence */
   if(gb_extdata)
@@ -759,8 +751,7 @@ void FreeAllSpecies(struct PTPanGlobal *pg)
     Remove(&ps->ps_Node);
     free(ps->ps_Name);
     free(ps->ps_FullName);
-    free(ps);
-    ps = (struct PTPanSpecies *) pg->pg_Species.lh_Head;
+    freeset(ps, (struct PTPanSpecies *) pg->pg_Species.lh_Head);
   }
   FreeBinTree(pg->pg_SpeciesBinTree);
   pg->pg_SpeciesBinTree = NULL;
@@ -795,8 +786,7 @@ BOOL CacheSpeciesUnload(struct CacheHandler *, struct PTPanSpecies *ps)
   if(ps->ps_SeqData)
   {
     /* load alignment data */
-    free(ps->ps_SeqData);
-    ps->ps_SeqData = NULL;
+    freeset(ps->ps_SeqData, NULL);
     return(TRUE);
   }
   return(FALSE);
@@ -941,8 +931,7 @@ BOOL LoadSpecies(struct PTPanGlobal *pg)
 #endif
 
     ps->ps_RawDataSize = CompressSequenceWithDotsAndHyphens(pg, ps);
-    free(ps->ps_SeqData);
-    ps->ps_SeqData = NULL;
+    freeset(ps->ps_SeqData, NULL);
     if (ps->ps_RawDataSize < 0)                                 // TODO: problem, ps_RawDataSize is unsigned...
     {
         printf("%s is corrupt, ignoring!\n", ps->ps_Name);
@@ -1079,16 +1068,8 @@ BOOL LoadIndexHeader(struct PTPanGlobal *pg)
 
   // read Ecoli Sequence
   /* free memory if previously allocated */
-  if(pg->pg_EcoliSeq)
-  {
-    free(pg->pg_EcoliSeq);
-    pg->pg_EcoliSeq = NULL;
-  }
-  if(pg->pg_EcoliBaseTable)
-  {
-    free(pg->pg_EcoliBaseTable);
-    pg->pg_EcoliBaseTable = NULL;
-  }
+  freeset(pg->pg_EcoliSeq, NULL);
+  freeset(pg->pg_EcoliBaseTable, NULL);
 
   fread(&pg->pg_EcoliSeqSize, sizeof(pg->pg_EcoliSeqSize), 1, fh);
   if (pg->pg_EcoliSeqSize > 0)
@@ -1298,8 +1279,7 @@ void FreeAllPartitions(struct PTPanGlobal *pg)
     FreeHuffmanTree(pp->pp_BranchTree);
     FreeHuffmanTree(pp->pp_ShortEdgeTree);
     FreeHuffmanTree(pp->pp_LongEdgeLenTree);
-    free(pp);
-    pp = (struct PTPanPartition *) pg->pg_Partitions.lh_Head;
+    freeset(pp, (struct PTPanPartition *) pg->pg_Partitions.lh_Head);
   }
   pg->pg_NumPartitions = 0;
 }

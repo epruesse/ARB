@@ -220,10 +220,10 @@ AWT_translator::AWT_translator(int arb_protein_code_nr) :
     AWT_initialize_codon_tables();
 
     {
-        char *D_codons = GB_strdup(AWT_get_codons('D', code_nr));
-        char *N_codons = GB_strdup(AWT_get_codons('N', code_nr));
-        char *E_codons = GB_strdup(AWT_get_codons('E', code_nr));
-        char *Q_codons = GB_strdup(AWT_get_codons('Q', code_nr));
+        char *D_codons = strdup(AWT_get_codons('D', code_nr));
+        char *N_codons = strdup(AWT_get_codons('N', code_nr));
+        char *E_codons = strdup(AWT_get_codons('E', code_nr));
+        char *Q_codons = strdup(AWT_get_codons('Q', code_nr));
 
         char protein;
         for (protein='*'; protein<='Z'; protein = (protein=='*' ? 'A' : protein+1)) {

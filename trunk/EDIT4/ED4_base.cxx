@@ -888,8 +888,7 @@ int ED4_multi_species_manager::count_all_children_and_set_group_id() // counts a
     name[i] = '\0';
     sprintf(name, "%s (%d)",name, counter);
 
-    free(consensus_name_terminal->id);
-    consensus_name_terminal->id = name;
+    freeset(consensus_name_terminal->id, name);
 
     //    update_species_counters();
     return counter;

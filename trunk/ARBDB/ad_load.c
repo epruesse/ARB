@@ -356,7 +356,7 @@ static GB_ERROR set_protection_level(GB_MAIN_TYPE *Main, GBDATA *gbd, const char
         lu = atoi(p+4);
 
         for (i=Main->last_updated; i<=lu; ++i) {
-            Main->dates[i] = GB_STRDUP("unknown date");
+            Main->dates[i] = strdup("unknown date");
             Main->last_updated = lu+1;
         }
     }
@@ -1143,10 +1143,9 @@ long gb_read_bin(FILE *in,GBCONTAINER *gbd, int diff_file_allowed)
             }
             *(p++) = c;
         }
-        *p=0;
+        *p = 0;
         if (p == buffer) break;
-        if (Main->dates[j]) free(Main->dates[j]);
-        Main->dates[j] = GB_STRDUP(buffer);
+        freedup(Main->dates[j], buffer);
     }
     if (j>=255) {
         gb_read_bin_error(in,(GBDATA *)gbd,"more then 255 dates are not allowed");
@@ -1386,7 +1385,7 @@ GBDATA *GB_login(const char *cpath,const char *opent,const char *user)
             quickFile = gb_quicksaveName(path, loadedQuickIndex);
             if (strchr(opent,'R'))      ignoreMissingMaster = 1;
         }else {
-            char *base = GB_STRDUP(path);
+            char *base = strdup(path);
             char *ext = gb_findExtension(base);
             {
                 struct gb_scandir dir;
@@ -1492,8 +1491,7 @@ GBDATA *GB_login(const char *cpath,const char *opent,const char *user)
 #if defined(DEBUG)
                             fprintf(stderr, "Using properties from %s\n", found_path);
 #endif /* DEBUG */
-                            free(path);
-                            path  = found_path;
+                            freeset(path, found_path);
                             input = fopen(path, "rb");
                         }
                     }

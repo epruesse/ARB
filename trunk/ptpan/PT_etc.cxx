@@ -58,8 +58,7 @@ extern "C" bytestring *PT_unknown_names(struct_PT_pdc *pdc)
 
   printf("EXTERN: PT_unknown_names\n");
   /* free old string and allocate minimum buffer */
-  free(pg->pg_UnknownSpecies.data);
-  pg->pg_UnknownSpecies.data = (STRPTR) malloc(allocsize);
+  freeset(pg->pg_UnknownSpecies.data, (STRPTR) malloc(allocsize));
   *pg->pg_UnknownSpecies.data = 0;
   namestart = specnames = pdc->names.data;
   do

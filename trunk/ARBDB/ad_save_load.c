@@ -229,8 +229,8 @@ static GB_ERROR renameQuicksaves(GB_MAIN_TYPE *Main)
             {
                 if (i!=j)         /* otherwise the filename is correct */
                 {
-                    char *qdup = GB_STRDUP((char *)qsave);
-                    GB_CSTR qnew = gb_quicksaveName(path,j);
+                    char    *qdup = strdup(qsave);
+                    GB_CSTR  qnew = gb_quicksaveName(path,j);
 
                     GB_rename_file(qdup,qnew);
                     free(qdup);
@@ -872,8 +872,7 @@ GB_ERROR GB_save(GBDATA *gb,const char *path,const char *savetype)
 {
     if (path && strchr(savetype, 'S') == 0) // 'S' dumps to stdout -> do not change path
     {
-        free(GB_MAIN(gb)->path);
-        GB_MAIN(gb)->path = GB_STRDUP(path);
+        freedup(GB_MAIN(gb)->path, path);
     }
     return GB_save_as(gb,path,savetype);
 }
@@ -967,7 +966,7 @@ GB_ERROR GB_save_as(GBDATA *gb,const char *path,const char *savetype)
 
     if (gb_check_saveable(gb,path,savetype)) goto error;
 
-    sec_path = GB_STRDUP(gb_overwriteName(path));
+    sec_path = strdup(gb_overwriteName(path));
 
     if (strchr(savetype,'S')) {
         out = stdout;
@@ -1000,10 +999,8 @@ GB_ERROR GB_save_as(GBDATA *gb,const char *path,const char *savetype)
     {
         fprintf(out,"/*ARBDB ASCII*/\n");
         erg = gb_write_rek(out,(GBCONTAINER *)gb,0,1);
-        if (erg==0)
-        {
-            if (Main->qs.quick_save_disabled) free(Main->qs.quick_save_disabled);
-            Main->qs.quick_save_disabled = strdup("Database saved in ASCII mode");
+        if (erg==0) {
+            freedup(Main->qs.quick_save_disabled, "Database saved in ASCII mode");
             if (deleteQuickAllowed && gb_remove_all_but_main(Main,path)) goto error;
         }
     }
@@ -1027,8 +1024,7 @@ GB_ERROR GB_save_as(GBDATA *gb,const char *path,const char *savetype)
 
         if (erg==0){
             if (!strchr(savetype,'f')){             /* allow quick saving unless saved in 'f' mode */
-                if (Main->qs.quick_save_disabled) free(Main->qs.quick_save_disabled);
-                Main->qs.quick_save_disabled = 0; /* and allow quicksaving */
+                freeset(Main->qs.quick_save_disabled, NULL); /* delete reason, why quicksaving is disallowed */
             }
             if (deleteQuickAllowed && gb_remove_quick_saved(Main,path)) goto error;
         }
@@ -1071,7 +1067,7 @@ GB_ERROR GB_save_as(GBDATA *gb,const char *path,const char *savetype)
             goto error;
         }
     }
-    free(sec_path);sec_path = 0;
+    freeset(sec_path, NULL);
     if (!strchr(savetype,'f')){ /* reset values unless out of order save */
         Main->last_saved_transaction = GB_read_clock(gb);
         Main->last_main_saved_transaction = GB_read_clock(gb);
@@ -1143,7 +1139,7 @@ GB_ERROR GB_save_quick_as(GBDATA *gb_main, char *path)
     if (S_ISLNK(mode)){
         org_master = GB_follow_unix_link(Main->path);
     }else{
-        org_master = GB_STRDUP(Main->path);
+        org_master = strdup(Main->path);
     }
 
     if( gb_remove_all_but_main(Main,path))
@@ -1168,7 +1164,7 @@ GB_ERROR GB_save_quick_as(GBDATA *gb_main, char *path)
         /* dest or source in different directory */
         full_path_of_source = gb_full_path(org_master);
     }else{
-        full_path_of_source = GB_STRDUP(org_master);
+        full_path_of_source = strdup(org_master);
     }
 
     if (GB_symlink(full_path_of_source,path)){
@@ -1188,8 +1184,7 @@ GB_ERROR GB_save_quick_as(GBDATA *gb_main, char *path)
         GB_warning("%s",GB_get_error());
     }
 
-    free(Main->path);       /* Symlink created -> rename allowed */
-    Main->path = GB_STRDUP(path);
+    freedup(Main->path, path); /* Symlink created -> rename allowed */
 
     free(full_path_of_source);
     free(org_master);
@@ -1283,12 +1278,12 @@ GB_ERROR GB_save_quick(GBDATA *gb, char *refpath)
 char *gb_full_path(const char *path) {
     const char *cwd;
     char *res;
-    if (path[0] == '/') return GB_STRDUP(path);
+    if (path[0] == '/') return strdup(path);
 
     cwd = GB_getcwd();
 
-    if (path[0] == 0) return GB_STRDUP(cwd);
-    res = GB_STRDUP(GBS_global_string("%s/%s",cwd,path));
+    if (path[0] == 0) return strdup(cwd);
+    res = GBS_global_string_copy("%s/%s",cwd,path);
 
     return res;
 }

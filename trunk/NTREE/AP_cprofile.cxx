@@ -199,13 +199,8 @@ static void CPRO_readandallocate(char **&speciesdata,GBDATA **&speciesdatabase,
 // frees memory allocated by function CPRO_readandallocate
 static void CPRO_deallocate(char **&speciesdata,GBDATA **&speciesdatabase)
 {
-    for (long i=0;i<CPRO.numspecies;i++) {
-        if (speciesdata[i]) {
-            free(speciesdata[i]);
-            speciesdata[i]=0;
-        }
-    }
-    free(speciesdata); speciesdata=0;
+    for (long i=0;i<CPRO.numspecies;i++) freeset(speciesdata[i], 0);
+    freeset(speciesdata, 0);
 
     free(speciesdatabase);
     free(CPRO.agonist);
@@ -225,13 +220,9 @@ static void CPRO_allocstatistic(unsigned char which_statistic)
 static void CPRO_freestatistic(unsigned char which_statistic)
 {
     for(long j=0;j<CPRO.result[which_statistic].resolution*3;j++) {
-        if(CPRO.result[which_statistic].statistic[j]) {
-            delete(CPRO.result[which_statistic].statistic[j]);
-            CPRO.result[which_statistic].statistic[j]=0;
-        }
+        freeset(CPRO.result[which_statistic].statistic[j], 0);
     }
-    free(CPRO.result[which_statistic].statistic);
-    CPRO.result[which_statistic].statistic=0;
+    freeset(CPRO.result[which_statistic].statistic, 0);
 }
 
 // memory not used is given back to system
@@ -262,27 +253,14 @@ static void CPRO_workupstatistic(unsigned char which_statistic)
                 colmax=column;
             }
         }
-        if(hits) {
-            memneeded+=CPRO.result[which_statistic].maxalignlen;
-        }
-        else {
-            free(CPRO.result[which_statistic].statistic[base+0]);
-            CPRO.result[which_statistic].statistic[base+0]=0;
-        }
-        if (group) {
-            memneeded+=CPRO.result[which_statistic].maxalignlen;
-        }
-        else {
-            free(CPRO.result[which_statistic].statistic[base+1]);
-            CPRO.result[which_statistic].statistic[base+1]=0;
-        }
-        if(different) {
-            memneeded+= CPRO.result[which_statistic].maxalignlen;
-        }
-        else {
-            free(CPRO.result[which_statistic].statistic[base+2]);
-            CPRO.result[which_statistic].statistic[base+2]=0;
-        }
+        if (hits) memneeded += CPRO.result[which_statistic].maxalignlen;
+        else freeset(CPRO.result[which_statistic].statistic[base+0], 0);
+
+        if (group) memneeded += CPRO.result[which_statistic].maxalignlen;
+        else freeset(CPRO.result[which_statistic].statistic[base+1], 0);
+
+        if (different) memneeded += CPRO.result[which_statistic].maxalignlen;
+        else freeset(CPRO.result[which_statistic].statistic[base+2], 0);
     }
     if(!CPRO.result[which_statistic].maxaccu) CPRO.result[which_statistic].maxaccu=1;
     CPRO.result[which_statistic].memneeded=memneeded;

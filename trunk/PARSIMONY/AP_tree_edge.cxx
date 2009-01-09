@@ -673,19 +673,13 @@ void ap_calc_bootstrap_remark(AP_tree_nlen *son_node,AP_BL_MODE mode){
         else {
             text = "100%";
         }
-        delete son_node->remark_branch;
-        delete son_node->Brother()->remark_branch;
-        son_node->remark_branch = GB_strdup(text);
-        son_node->Brother()->remark_branch = GB_strdup(text);
+        freedup(son_node->remark_branch, text);
+        freedup(son_node->Brother()->remark_branch, text);
     }
-    delete AP_sequence::static_mutation_per_site[0];
-    delete AP_sequence::static_mutation_per_site[1];
-    delete AP_sequence::static_mutation_per_site[2];
-
-    AP_sequence::static_mutation_per_site[0] = 0;
-    AP_sequence::static_mutation_per_site[1] = 0;
-    AP_sequence::static_mutation_per_site[2] = 0;
-
+    
+    freeset(AP_sequence::static_mutation_per_site[0], NULL);
+    freeset(AP_sequence::static_mutation_per_site[1], NULL);
+    freeset(AP_sequence::static_mutation_per_site[2], NULL);
 }
 
 

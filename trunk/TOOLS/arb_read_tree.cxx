@@ -19,10 +19,7 @@ void show_error(GBDATA *gb_main) {
 
 void add_bootstrap(GBT_TREE *node, double hundred) {
     if (node->is_leaf) {
-        if (node->remark_branch) {
-            free(node->remark_branch);
-            node->remark_branch = 0;
-        }
+        freeset(node->remark_branch, 0);
         return;
     }
 

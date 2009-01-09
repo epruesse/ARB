@@ -201,7 +201,7 @@ GB_BUFFER gb_increase_buffer(long size){
     if (size < gb_local->bufsize) return    gb_local->buffer;
     old_buffer = gb_local->buffer;
     gb_local->buffer = (char *)GB_calloc((size_t)size,1);
-    GB_MEMCPY(gb_local->buffer,old_buffer, gb_local->bufsize);
+    memcpy(gb_local->buffer,old_buffer, gb_local->bufsize);
     gb_local->bufsize = size;
     free(old_buffer);
     return gb_local->buffer;
@@ -379,7 +379,7 @@ GB_CSTR GB_read_pntr(GBDATA *gbd) {
                 
                 if (da) {
                     ca = gb_alloc_cache_index(gbd,size);
-                    GB_MEMCPY(ca,da,size);
+                    memcpy(ca,da,size);
                 }
             }
             data = ca;
@@ -456,7 +456,7 @@ GB_CSTR GB_read_bits_pntr(GBDATA *gbd,char c_0, char c_1)
         ca = gb_alloc_cache_index(gbd,size+1);
         da = gb_uncompress_bits(data,size,c_0,c_1);
         if (ca) {
-            GB_MEMCPY(ca,da,size+1);
+            memcpy(ca,da,size+1);
             return ca;
         }else{
             return da;
@@ -1380,8 +1380,7 @@ char* GB_get_subfields(GBDATA *gbd)
                     *p++ = ';';
                     p[0] = 0;
 
-                    free(result);
-                    result = neu_result;
+                    freeset(result, neu_result);
                     result_length += keylen+1;
                 }
                 else {
@@ -1399,7 +1398,7 @@ char* GB_get_subfields(GBDATA *gbd)
         }
     }
     else {
-        result = GB_strdup(";");
+        result = strdup(";");
     }
 
     return result;
@@ -2042,11 +2041,8 @@ int GB_nsons(GBDATA *gbd) {
     return ((GBCONTAINER *)gbd)->d.size;
 }
 
-GB_ERROR GB_disable_quicksave(GBDATA *gbd,const char *reason){
-    GB_MAIN_TYPE * Main = GB_MAIN(gbd);
-    if (Main->qs.quick_save_disabled) free(Main->qs.quick_save_disabled);
-    Main->qs.quick_save_disabled = strdup(reason);
-    return 0;
+void GB_disable_quicksave(GBDATA *gbd,const char *reason) {
+    freedup(GB_MAIN(gbd)->qs.quick_save_disabled, reason);
 }
 /********************************************************************************************
                     Resort data base
@@ -2123,7 +2119,7 @@ GB_ERROR GB_resort_system_folder_to_top(GBDATA *gb_main){
         } while(gb_first == gb_system);
     }
     error = GB_resort_data_base(gb_main,new_order_list,len);
-    GB_FREE(new_order_list);
+    free(new_order_list);
     return error;
 }
 

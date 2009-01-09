@@ -583,21 +583,14 @@ NameInformation::NameInformation(AN_local *locs) {
     an_autocaps(parsed_name);
 
     parsed_sym = GBS_string_eval(full_name, "\t= :* * *sym*=S",0);
-    if (strlen(parsed_sym)>1) {
-        free(parsed_sym);
-        parsed_sym = strdup("");
-    }
+    if (strlen(parsed_sym)>1) freedup(parsed_sym, "");
 
     parsed_acc      = make_alnum(locs->acc);
     parsed_add_id   = make_alnum(locs->add_id);
     first_name      = GBS_string_eval(parsed_name,"* *=*1",0);
     rest_of_name    = make_alnum(parsed_name+strlen(first_name));
 
-    {
-        char *first_name_an = make_alnum(first_name);
-        free(first_name);
-        first_name = first_name_an;
-    }
+    freeset(first_name, make_alnum(first_name));
 
     assert_alnum(parsed_acc);
     assert_alnum(first_name);
@@ -648,10 +641,8 @@ extern "C" aisc_string get_short(AN_local *locs)
 /* get the short name from the previously set names */
 {
     static char *shrt = 0;
-    if (shrt) {
-        free(shrt);
-        shrt = 0;
-    }
+
+    freeset(shrt, 0);
 
     NameInformation  info(locs);
     AN_shorts       *an_shorts = lookup_an_shorts(aisc_main, info.get_id());
@@ -705,8 +696,7 @@ extern "C" aisc_string get_short(AN_local *locs)
 
             gb_assert(first_short);
             if (first_short[0] == 0) { // empty?
-                free(first_short);
-                first_short = strdup("Xxx");
+                freedup(first_short, "Xxx");
             }
             first_len = strlen(first_short);
         }
@@ -745,11 +735,9 @@ extern "C" aisc_string get_short(AN_local *locs)
 
         int both_len = first_len+second_len;
         if (both_len<8) {
-            char *new_second  = GBS_global_string_copy("%s00000000", second_short);
-            free(second_short);
-            second_short      = new_second;
-            second_len       += 8;
-            both_len         += 8;
+            freeset(second_short, GBS_global_string_copy("%s00000000", second_short));
+            second_len += 8;
+            both_len   += 8;
         }
 
         if (both_len>8) {

@@ -136,10 +136,7 @@ static const char *parse_word(const char *& line, int& wordlen) {
     gb_assert(wordlen);
 
     static char *word_buffer = 0;
-    if (word_buffer) free(word_buffer);
-    word_buffer              = (char*)malloc(wordlen+1);
-    memcpy(word_buffer, line, wordlen);
-    word_buffer[wordlen]     = 0;
+    freeset(word_buffer, GB_strndup(line, wordlen));
 
     line = behind_word;
 

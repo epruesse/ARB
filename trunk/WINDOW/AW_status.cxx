@@ -630,9 +630,8 @@ static void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
 #if defined(TRACE_STATUS)
                 fprintf(stderr, "received AW_STATUS_CMD_GAUGE\n"); fflush(stdout);
 #endif // TRACE_STATUS
-                free(gauge);
-                gauge = str;
-                str   = 0;
+
+                reassign(gauge, str);
 
                 if (gaugeValue>0) {
                     long sec_elapsed   = time(0)-aw_stg.last_start;
@@ -693,10 +692,7 @@ void aw_clear_message_cb(AW_window *aww)
 {
     int i;
     AW_root *awr = aww->get_root();
-    for (i = 0; i< AW_MESSAGE_LINES; i++){
-        free(aw_stg.lines[i]);
-        aw_stg.lines[i] = 0;
-    };
+    for (i = 0; i< AW_MESSAGE_LINES; i++) freeset(aw_stg.lines[i], 0);
     awr->awar(AWAR_ERROR_MESSAGES)->write_string("" );
 }
 
@@ -952,10 +948,12 @@ int aw_question(const char *msg, const char *buttons, bool fixedSizeButtons, con
     static GB_HASH    *hash_windows = 0;
 
     if (button_list[0] == 0) {
-        // aw_assert(0);           // empty button_list
-        free(button_list);
-        button_list = strdup("Maybe ok,EXIT");
-        msg         = GBS_global_string_copy("%s\n(Program error - Unsure what happens when you click ok)", msg);
+        freedup(button_list, "Maybe ok,EXIT");
+        GBK_dump_backtrace(stderr, "Empty buttonlist");
+        msg = GBS_global_string_copy("%s\n"
+                                     "(Program error - Unsure what happens when you click ok\n"
+                                     " Check console for backtrace and report error)",
+                                     msg);
     }
 
     if (!hash_windows) hash_windows = GBS_create_hash(256, GB_MIND_CASE);
@@ -1150,8 +1148,7 @@ void modify_input_cb( AW_window *aw, AW_CL cl_mode, AW_CL cl_Default) {
             content[0] = 0;
             break;
         case MAKE_DEFAULT:
-            free(content);
-            content    = strdup(Default);
+            freedup(content, Default);
             break;
         case MAKE_UNKNOWN:
             break;
@@ -1323,7 +1320,7 @@ char *aw_string_selection(const char *title, const char *prompt, const char *awa
         // aw_msg->at_attach(AW_FALSE, AW_TRUE); // attach buttons to Y (at_attach does not work)
 
         if (buttons)  {
-            char *but    = GB_strdup(buttons);
+            char *but    = strdup(buttons);
             char *word;
             int   result = 0;
 
@@ -1357,7 +1354,7 @@ char *aw_string_selection(const char *title, const char *prompt, const char *awa
     aw_assert(sel);
     aw_msg->clear_selection_list(sel);
     {
-        char *values = GB_strdup(value_list);
+        char *values = strdup(value_list);
         char *word;
 
         for (word = strtok(values, ";"); word; word = strtok(0, ";")) {
@@ -1391,9 +1388,7 @@ char *aw_string_selection(const char *title, const char *prompt, const char *awa
                     free(corrected_input);
                 }
             }
-            free(last_input);
-            last_input = this_input;
-            this_input = 0;
+            reassign(last_input, this_input);
         }
         free(this_input);
 
@@ -1499,7 +1494,7 @@ struct aw_help_global_struct {
 static char *get_full_qualified_help_file_name(const char *helpfile, bool path_for_edit = false) {
     GB_CSTR   result             = 0;
     char     *user_doc_path      = strdup(GB_getenvDOCPATH());
-    char     *devel_doc_path     = GB_strdup(GB_path_in_ARBHOME("HELP_SOURCE/oldhelp", NULL));
+    char     *devel_doc_path     = strdup(GB_path_in_ARBHOME("HELP_SOURCE/oldhelp", NULL));
     size_t    user_doc_path_len  = strlen(user_doc_path);
     size_t    devel_doc_path_len = strlen(devel_doc_path);
 
@@ -1521,7 +1516,7 @@ static char *get_full_qualified_help_file_name(const char *helpfile, bool path_f
         if (rel_path[0]) {
             if (path_for_edit) {
 #if defined(DEBUG)
-                char *gen_doc_path = GB_strdup(GB_path_in_ARBHOME("HELP_SOURCE/genhelp", NULL));
+                char *gen_doc_path = strdup(GB_path_in_ARBHOME("HELP_SOURCE/genhelp", NULL));
 
                 char *devel_source = GBS_global_string_copy("%s/%s", devel_doc_path, rel_path);
                 char *gen_source   = GBS_global_string_copy("%s/%s", gen_doc_path, rel_path);
@@ -1584,8 +1579,7 @@ static char *get_local_help_url(AW_root *awr) {
             strcpy(result+result_len-5, ".html");
         }
         else {
-            free(result);
-            result = 0;
+            freeset(result, 0);
             GB_export_error("Can't browse that file type.");
         }
     }
@@ -1637,10 +1631,7 @@ static char *aw_ref_to_title(char *ref) {
 
     if (file) {
         result = GBS_string_eval(file,"*\nTITLE*\n*=*2:\t=",0);
-        if (strcmp(file, result)==0) {
-            free(result);
-            result = 0;
-        }
+        if (strcmp(file, result)==0) freeset(result, 0);
         free(file);
     }
 
@@ -1667,14 +1658,10 @@ static void aw_help_back(AW_root *aw_root) {
     if (history) {
         const char *sep = strchr(history, '#');
         if (sep) {
-            char *first   = GB_strpartdup(history, sep-1);
-            char *newhist = GBS_global_string_copy("%s#%s", sep+1, first); // wrap first to end
-
-            free(aw_help_global.history);
-            aw_help_global.history = newhist;
-
-            free(first);
+            char *first = GB_strpartdup(history, sep-1);
             
+            freeset(aw_help_global.history, GBS_global_string_copy("%s#%s", sep+1, first)); // wrap first to end
+            free(first);
             aw_help_select_newest_in_history(aw_root);
         }
     }
@@ -1754,10 +1741,7 @@ static void aw_help_helpfile_changed_cb(AW_root *awr) {
                 char *h    = GBS_string_eval(aw_help_global.history,comm,0);
 
                 aw_assert(h);
-
-                free(aw_help_global.history);
-                aw_help_global.history = h;
-
+                freeset(aw_help_global.history, h);
                 free(comm);
             }
         }
@@ -1833,21 +1817,13 @@ static void aw_help_search(AW_window *aww) {
     GB_ERROR  error      = 0;
     char     *searchtext = aww->get_root()->awar("tmp/aw_window/search_expression")->read_string();
 
-    if (searchtext[0]==0) {
-        error = "Empty searchstring";
-    }
+    if (searchtext[0]==0) error = "Empty searchstring";
     else {
         char        *helpfilename = 0;
         static char *last_help; // tempfile containing last search result 
 
         // replace all spaces in 'searchtext' by '.*'
-        {
-            char *searchtext2 = GBS_string_eval(searchtext, " =.*", 0); 
-            if (searchtext2) {
-                free(searchtext);
-                searchtext = searchtext2;
-            }
-        }
+        freeset(searchtext, GBS_string_eval(searchtext, " =.*", 0));
 
         // grep .hlp for occurances of 'searchtext'.
         // write filenames of matching files into 'helpfilename'
@@ -1906,10 +1882,7 @@ static void aw_help_search(AW_window *aww) {
                     if (results>0)  fprintf(helpfp, "\t\t%i results are shown as subtopics\n",  results);
                     else            fprintf(helpfp, "\t\tThere are no results.\n");
 
-                    if (results>0) {
-                        if (last_help) free(last_help);
-                        last_help = strdup(helpfilename);
-                    }
+                    if (results>0) freedup(last_help, helpfilename);
 
                     fclose(helpfp);
                     aww->get_root()->awar("tmp/aw_window/helpfile")->write_string(helpfilename); // display results in helpwindow

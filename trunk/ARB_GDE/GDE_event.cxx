@@ -138,11 +138,9 @@ static char *ReplaceArgs(AW_root *awr,char *Action,AWwindowinfo *AWinfo,int numb
             strncat(temp,Action,i-1);
             strncat(temp,textvalue,strlen(textvalue));
             strcat( temp,&(Action[i+strlen(symbol)]) );
-            free(Action);
-            Action = temp;
+            freeset(Action, temp);
         }
-        else
-        {
+        else {
             if (warned_about.find(symbol) == warned_about.end()) {
                 fprintf(stderr,
                         "old arb version converted '%s' to '%s' (now only '$%s' is converted)\n",
@@ -150,16 +148,6 @@ static char *ReplaceArgs(AW_root *awr,char *Action,AWwindowinfo *AWinfo,int numb
                 conversion_warning++;
                 warned_about.insert(symbol);
             }
-            //             newlen = strlen(Action)-strlen(symbol)
-            //                 +strlen(method)+1;
-            //             temp   = (char *)calloc(newlen,1);
-            //             if (temp == NULL)
-            //                 Error("ReplaceArgs():Error in calloc");
-            //             strncat(temp,Action,i);
-            //             strncat(temp,method,strlen(method));
-            //             strcat( temp,&(Action[i+strlen(symbol)]) );
-            //             free(Action);
-            //             Action = temp;
         }
     }
 
@@ -182,27 +170,9 @@ static long LMAX(long a,long b)
     return b;
 }
 
-static void GDE_free(void **p)
-{
-    if(*p!=0)
-    {
-        //delete *p;
-        free(*p);
-        *p=0;
-    }
+static void GDE_free(void **p) {
+    freeset(*p, NULL);
 }
-
-/*void GDE_freemask(GMask *mask)
-  {
-  if(mask==0) return;
-  GDE_free((void**)&mask->name);
-  for(long i=0;i<mask->listlen;i++)
-  {
-  NumList numl=mask->list[i];
-  GDE_free((void**)&numl.valu);
-  }
-  GDE_free((void**)&mask->list);
-  }*/
 
 static char *ReplaceFile(char *Action,GfileFormat file)
 {
@@ -220,8 +190,7 @@ static char *ReplaceFile(char *Action,GfileFormat file)
         strncat(temp,Action,i);
         strncat(temp,method,strlen(method));
         strcat( temp,&(Action[i+strlen(symbol)]) );
-        free(Action);
-        Action = temp;
+        freeset(Action, temp);
     }
     return(Action);
 }
@@ -245,54 +214,33 @@ static char *ReplaceString(char *Action,const char *old,const char *news)
         strncat(temp,Action,i);
         strncat(temp,method,strlen(method));
         strcat( temp,&(Action[i+strlen(symbol)]) );
-        free(Action);
-        Action = temp;
+        freeset(Action, temp);
     }
     return(Action);
 }
 
 
-static void GDE_freesequ(NA_Sequence *sequ)
-{
-    if(sequ==0) return;
-    GDE_free((void**)&sequ->comments);
-    /* GDE_free((void**)&sequ->col_lut);    OLIVER STRUNK       */
-    GDE_free((void**)&sequ->cmask);
-    /*GDE_freemask(sequ->mask);*/
-    GDE_free((void**)&sequ->baggage);
-    GDE_free((void**)&sequ->sequence);
-    /*if(sequ->groupf)
-      {
-      GDE_freesequ(sequ->groupf);
-      GDE_free((void**)&sequ->groupf);
-      }*/
+static void GDE_freesequ(NA_Sequence *sequ) {
+    if (sequ) {
+        GDE_free((void**)&sequ->comments);
+        GDE_free((void**)&sequ->cmask);
+        GDE_free((void**)&sequ->baggage);
+        GDE_free((void**)&sequ->sequence);
+    }
 }
 
-static void GDE_freeali(NA_Alignment *dataset)
-{
-    if(dataset==0) return;
-    GDE_free((void**)&dataset->id);
-    GDE_free((void**)&dataset->description);
-    GDE_free((void**)&dataset->authority);
-    GDE_free((void**)&dataset->cmask);
-    GDE_free((void**)&dataset->selection_mask);
-    GDE_free((void**)&dataset->alignment_name);
+static void GDE_freeali(NA_Alignment *dataset) {
+    if (dataset) {
+        GDE_free((void**)&dataset->id);
+        GDE_free((void**)&dataset->description);
+        GDE_free((void**)&dataset->authority);
+        GDE_free((void**)&dataset->cmask);
+        GDE_free((void**)&dataset->selection_mask);
+        GDE_free((void**)&dataset->alignment_name);
 
-    /* maybe not correct:
-       GMask *mask=dataset->mask;
-       GDE_freemask(dataset->mask);
-       GDE_free((void**)&dataset->mask);*/
-
-    unsigned long i;
-    // **maybe not correct:
-    //NA_Sequence **group=dataset->group;
-    //for(long i=0;i<dataset->numgroups;i++)
-    //  GDE_freesequ(dataset->group[i]);
-    //GDE_free((void**)&dataset->group);
-    // **correction: this was not correct
-
-    for(i=0;i<dataset->numelements;i++)
-        GDE_freesequ(&(dataset->element[i]));
+        unsigned long i;
+        for(i=0;i<dataset->numelements;i++) GDE_freesequ(&(dataset->element[i]));
+    }
 }
 
 static void GDE_export(NA_Alignment *dataset,char *align,long oldnumelements)
@@ -523,10 +471,8 @@ void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
     if (current_item->numinputs>0) {
         DataSet->gb_main = GLOBAL_gb_main;
         GB_begin_transaction(DataSet->gb_main);
-        delete DataSet->alignment_name;
-        DataSet->alignment_name = GBT_get_default_alignment(DataSet->gb_main);
-        free(alignment_name);
-        alignment_name = strdup(DataSet->alignment_name);
+        freeset(DataSet->alignment_name, GBT_get_default_alignment(DataSet->gb_main));
+        freedup(alignment_name, DataSet->alignment_name);
 
         aw_status("reading database");
         if (gde_cgss.get_sequences) {
@@ -672,11 +618,7 @@ void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
     free(filter_name);
 
     GDE_freeali(DataSet);
-    free(DataSet);
-    DataSet             = 0;
-    DataSet             = (NA_Alignment *) Calloc(1,sizeof(NA_Alignment));
+    freeset(DataSet, (NA_Alignment *)Calloc(1,sizeof(NA_Alignment)));
     DataSet->rel_offset = 0;
-
-    //     aw->hide();
 }
 

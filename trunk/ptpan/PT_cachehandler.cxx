@@ -34,16 +34,14 @@ void FreeCacheHandler(struct CacheHandler *ch)
   while(cn->cn_Node.ln_Succ)
   {
     Remove(&cn->cn_Node);
-    free(cn);
-    cn = (struct CacheNode *) ch->ch_UsedNodes.lh_Head;
+    freeset(cn, (struct CacheNode *) ch->ch_UsedNodes.lh_Head);
   }
   /* free memory in free node cache */
   cn = (struct CacheNode *) ch->ch_FreeNodes.lh_Head;
   while(cn->cn_Node.ln_Succ)
   {
     Remove(&cn->cn_Node);
-    free(cn);
-    cn = (struct CacheNode *) ch->ch_FreeNodes.lh_Head;
+    freeset(cn, (struct CacheNode *) ch->ch_FreeNodes.lh_Head);
   }
   /* free structure itself */
   free(ch);

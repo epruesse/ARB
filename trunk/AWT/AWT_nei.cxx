@@ -132,14 +132,7 @@ PH_NEIGHBOURJOINING::PH_NEIGHBOURJOINING(AP_FLOAT **m, long isize)
 
 PH_NEIGHBOURJOINING::~PH_NEIGHBOURJOINING(void)
 {
-//     long i;
-//     for (i=0;i<size;i++) {
-//         free(dist_matrix[i]);
-//         dist_matrix[i] = 0;
-//     }
     delete [] dist_matrix;
-
-//     free((char *)dist_list);
     delete [] dist_list;
     free((char *)net_divergence);
     delete [] swap_tab;

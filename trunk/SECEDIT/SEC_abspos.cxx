@@ -17,10 +17,7 @@
 using namespace std;
 
 void XString::set_length(size_t len) {
-    if (number_found && x_string_len<len) {
-        free(number_found);
-        number_found = 0;
-    }
+    if (number_found && x_string_len<len) freeset(number_found, 0);
     x_string_len = len;
     initialized  = false;
 }
@@ -72,10 +69,7 @@ void XString::initialize()
         sec_assert(len == x_string_len);
 
         if (abspos) { // re-initialization
-            if (x_count<x) { // abspos array too small
-                free(abspos);
-                abspos = 0;
-            }
+            if (x_count<x) freeset(abspos, 0); // abspos array too small
         }
         x_count = x;
     }
@@ -134,13 +128,8 @@ const char *XString::get_x_string() const {
 
     size_t bufsize = x_string_len+1; 
 
-    if (copy && copy_alloc<bufsize) {
-        free(copy);
-        copy = 0;
-    }
-
-    if (!copy) {
-        copy       = (char*)malloc(bufsize);
+    if (!copy || copy_alloc<bufsize) {
+        freeset(copy, (char*)malloc(bufsize));
         copy_alloc = bufsize;
     }
 

@@ -1184,10 +1184,12 @@ static void group_species(int use_field, AW_window *use_as_main_window) {
         }
     }
     else {
-        const char *field_name = ED4_ROOT->aw_root->awar(AWAR_FIELD_CHOSEN)->read_string();
-        char *doneContents = strdup(";");
-        int tryAgain = 1;
-        int foundField = 0;
+        const char *field_name   = ED4_ROOT->aw_root->awar(AWAR_FIELD_CHOSEN)->read_string();
+        char       *doneContents = strdup(";");
+        size_t      doneLen      = 1;
+
+        int tryAgain     = 1;
+        int foundField   = 0;
         int foundSpecies = 0;
 
         while (tryAgain && !error) {
@@ -1208,11 +1210,13 @@ static void group_species(int use_field, AW_window *use_as_main_window) {
                         int type = gb_field->flags.type;
 
                         if (type==GB_STRING) {
-                            char *field_content = GB_read_as_string(gb_field);
+                            char   *field_content     = GB_read_as_string(gb_field);
+                            size_t  field_content_len = strlen(field_content);
 
                             foundField = 1;
-                            if (strlen(field_content)>SIGNIFICANT_FIELD_CHARS) {
+                            if (field_content_len>SIGNIFICANT_FIELD_CHARS) {
                                 field_content[SIGNIFICANT_FIELD_CHARS] = 0;
+                                field_content_len                      = SIGNIFICANT_FIELD_CHARS;
                             }
 
                             char with_semi[SIGNIFICANT_FIELD_CHARS+2+1];
@@ -1221,11 +1225,12 @@ static void group_species(int use_field, AW_window *use_as_main_window) {
                             if (strstr(doneContents, with_semi)==0) { // field_content was not used yet
                                 createGroupFromSelected(field_content, field_name, field_content);
                                 tryAgain = 1;
-                                int len = strlen(field_content);
-                                char *newDone = new char[strlen(doneContents)+len+1+1];
-                                sprintf(newDone, "%s%s;", doneContents, field_content);
-                                free(doneContents);
-                                doneContents = newDone;
+
+                                int newlen = doneLen + field_content_len + 1;
+                                char *newDone = (char*)malloc(newlen+1);
+                                GBS_global_string_to_buffer(newDone, newlen, "%s%s;", doneContents, field_content);
+                                freeset(doneContents, newDone);
+                                doneLen = newlen;
                             }
                             free(field_content);
                         }
@@ -1823,13 +1828,10 @@ static int SpeciesMergeListLength(SpeciesMergeList sml)
 
     return length;
 }
-static void freeSpeciesMergeList(SpeciesMergeList sml)
-{
+static void freeSpeciesMergeList(SpeciesMergeList sml) {
     while (sml) {
-        SpeciesMergeList next = sml->next;
         free(sml->species_name);
-        free(sml);
-        sml = next;
+        freeset(sml, sml->next);
     }
 }
 
@@ -1910,11 +1912,7 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
                 if (!error) {   // name was created
                     if (!nameIsUnique(new_species_name, gb_species_data)) {
                         if (!existingNames) existingNames = new UniqueNameDetector(gb_species_data);
-                        
-                        char *uniqueName = AWTC_makeUniqueShortName(new_species_name, *existingNames);
-                        free(new_species_name);
-                        new_species_name = uniqueName;
-
+                        freeset(new_species_name, AWTC_makeUniqueShortName(new_species_name, *existingNames));
                         if (!new_species_name) error = "No short name created.";
                     }
                 }
@@ -2144,8 +2142,7 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
 
                                                         free(content);
 
-                                                        free(new_content);
-                                                        new_content = whole;
+                                                        freeset(new_content, whole);
                                                         new_content_len = strlen(new_content);
                                                     }
                                                 }
@@ -2167,8 +2164,7 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
                                         char *new_doneFields = (char*)malloc(doneLen+fieldLen+1+1);
                                         sprintf(new_doneFields, "%s%s;", doneFields, fieldName);
                                         doneLen += fieldLen+1;
-                                        free(doneFields);
-                                        doneFields = new_doneFields;
+                                        freeset(doneFields, new_doneFields);
 
                                         fieldEnd[0] = ';';
                                     }

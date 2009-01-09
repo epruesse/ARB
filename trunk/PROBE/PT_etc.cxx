@@ -22,10 +22,9 @@ void set_table_for_PT_N_mis()
     for (i=6; i<=PT_POS_TREE_HEIGHT; i++)
         psg.w_N_mismatches[i] = i;
 }
-void pt_export_error(PT_local *locs, const char *error)
-{
-    if (locs->ls_error) free(locs->ls_error);
-    locs->ls_error = strdup(error);
+
+void pt_export_error(PT_local *locs, const char *error) {
+    freedup(locs->ls_error, error);
 }
 
 static const gene_struct *get_gene_struct_by_internal_gene_name(const char *gene_name) {
@@ -217,10 +216,7 @@ char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checks
     }
 
     char *result = not_found ? GBS_strclose(not_found) : 0;
-    if (error) {
-        free(result);
-        result = 0;
-    }
+    if (error) freeset(result, 0);
     return result;
 }
 

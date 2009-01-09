@@ -76,8 +76,8 @@ public:
     {
         AW_root *root = ED4_ROOT->aw_root;
 
-        free(pattern);
-        pattern        = root->awar(awarList->pattern)->read_string();
+        freeset(pattern, root->awar(awarList->pattern)->read_string());
+
         min_mismatches = root->awar(awarList->min_mismatches)->read_int();
         max_mismatches = root->awar(awarList->max_mismatches)->read_int();
         case_sensitive = ED4_SEARCH_CASE(root->awar(awarList->case_sensitive)->read_int());
@@ -178,14 +178,14 @@ SearchTreeNode::SearchTreeNode(GB_CSTR pattern, GB_CSTR pattern_comment)
         }
         else {
             son = &FOUND;
-            comment = GB_strdup(pattern_comment);
+            comment = nulldup(pattern_comment);
         }
     }
     else {
         e4_assert(this==&FOUND);
         c = 0;
         son = 0;
-        comment = GB_strdup(pattern_comment);
+        comment = nulldup(pattern_comment);
     }
     brother = 0;
 }

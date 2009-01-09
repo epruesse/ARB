@@ -260,10 +260,13 @@ void AWT_reference::init() {
 void AWT_reference::expand_to_length(int len){
     if (len > ref_len){
         char *ref2 = (char *)GB_calloc(sizeof(char),len+1);
-        if (reference ) strcpy(ref2,reference);
-        free(reference);
+        
+        if (reference) {
+            strcpy(ref2,reference);
+            free(reference);
+        }
         reference = ref2;
-        ref_len = len;
+        ref_len   = len;
     }
 }
 

@@ -116,8 +116,7 @@ void AW_window::d_callback( AW_cb_struct * /*owner*/awcbs ) {
 }
 
 void AW_window::label( const char *Label ) {
-    free(_at->label_for_inputfield);
-    _at->label_for_inputfield = strdup(Label);
+    freedup(_at->label_for_inputfield, Label);
 }
 
 
@@ -316,9 +315,9 @@ void AW_window::unset_at_commands( void ) {
     _at->to_position_exists    = AW_FALSE;
     _at->highlight             = AW_FALSE;
 
-    free(_at->id_for_next_button)      ; _at->id_for_next_button       = 0;
-    free(_at->helptext_for_next_button); _at->helptext_for_next_button = 0;
-    free(_at->label_for_inputfield)    ; _at->label_for_inputfield     = 0;
+    freeset(_at->id_for_next_button, 0);
+    freeset(_at->helptext_for_next_button, 0);
+    freeset(_at->label_for_inputfield, 0);
     
     _at->background_color = 0;
 }

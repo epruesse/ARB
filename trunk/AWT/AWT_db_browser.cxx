@@ -560,9 +560,7 @@ static void update_browser_selection_list(AW_root *aw_root, AW_CL cl_aww, AW_CL 
 
             if (strlen(content)>(ENTRY_MAX_LENGTH+15)) {
                 content[ENTRY_MAX_LENGTH] = 0;
-                char *shortened_content   = GBS_global_string_copy("%s [rest skipped]", content);
-                free(content);
-                content                   = shortened_content;
+                freeset(content, GBS_global_string_copy("%s [rest skipped]", content));
             }
 
             entry.content = content;

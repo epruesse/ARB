@@ -789,8 +789,7 @@ GB_ERROR awtc_read_data(char *ali_name)
             if (ifo->sequencesrt) {
                 char *h = GBS_string_eval(sequence,ifo->sequencesrt,gb_species);
                 if (!h) return GB_get_error();
-                free(sequence);
-                sequence = h;
+                freeset(sequence, h);
             }
 
             if (ifo->sequenceaci) {

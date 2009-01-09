@@ -302,9 +302,7 @@ GB_ERROR PG_tree_change_node_info(GBT_TREE *node) {
             fullname = GB_read_string(gb_fullname);
             convert_commas_to_underscores(fullname);
         }
-        else {
-            error = GBS_global_string("no 'full_name' for species '%s'", node->name);
-        }
+        else error = GBS_global_string("no 'full_name' for species '%s'", node->name);
 
         if (!error) {
             GBDATA *gb_acc = GB_entry(node->gb_node, "acc");
@@ -312,19 +310,12 @@ GB_ERROR PG_tree_change_node_info(GBT_TREE *node) {
                 acc = GB_read_string(gb_acc);
                 convert_commas_to_underscores(acc);
             }
-            else {
-                error = GBS_global_string("no 'acc' for species '%s'", node->name);
-            }
+            else error = GBS_global_string("no 'acc' for species '%s'", node->name);
         }
     }
-    else {
-        error = "Unlinked leaf node";
-    }
+    else error = "Unlinked leaf node";
 
-    if (!error) {
-        free(node->name);
-        node->name = encodeTreeNode(GBS_global_string("%i,%s,%s", id, fullname, acc));
-    }
+    if (!error) freeset(node->name, encodeTreeNode(GBS_global_string("%i,%s,%s", id, fullname, acc)));
 
     free(acc);
     free(fullname);
@@ -843,8 +834,7 @@ static GB_ERROR findExactSubtrees(GBT_TREE *gbt_tree, GBDATA *pb_main, GBDATA *p
 
 static void unlinkTreeAndFreeNodeInfo(GBT_TREE *tree) {
     tree->gb_node = 0;
-    free(tree->name);
-    tree->name    = 0;
+    freeset(tree->name, 0);
 
     if (!tree->is_leaf) {
         unlinkTreeAndFreeNodeInfo(tree->leftson);

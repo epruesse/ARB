@@ -340,8 +340,7 @@ static GB_ERROR create_splitted_gene(GBDATA *gb_species_data2, PositionPairList&
             else { // last part
                 next_split_pos_list = GBS_global_string_copy("%s,%i", split_pos_list, genome_pos);
             }
-            free(split_pos_list);
-            split_pos_list = next_split_pos_list;
+            freeset(split_pos_list, next_split_pos_list);
         }
     }
 

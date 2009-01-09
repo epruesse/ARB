@@ -215,8 +215,7 @@ static int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned c
             }
             {
                 AppendNA((NA_Base *)sequfilt[number],strlen((const char *)sequfilt[number]),this_elem);
-                free(sequfilt[number]);
-                sequfilt[number] = 0;
+                freeset(sequfilt[number], 0);
             }
 
             this_elem->comments = strdup("no comments");

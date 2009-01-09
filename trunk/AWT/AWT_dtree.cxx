@@ -670,8 +670,7 @@ void AWT_graphic_tree::toggle_group(AP_tree * at)
                 case 0: {
                     char *new_gname = aw_input("Rename group", 0, at->name);
                     if (new_gname) {
-                        free(at->name);
-                        at->name = new_gname;
+                        freeset(at->name, new_gname);
                         GB_write_string(gb_name, new_gname);
                     }
                     return;
@@ -2513,8 +2512,7 @@ void AWT_graphic_tree::show(AW_device *device)  {
     circle_max_size    = aw_root->awar(AWAR_DTREE_CIRCLE_MAX_SIZE)->read_float();
     use_ellipse        = aw_root->awar(AWAR_DTREE_USE_ELLIPSE)->read_int();
 
-    free(species_name);
-    species_name = aw_root->awar(AWAR_SPECIES_NAME)->read_string();
+    freeset(species_name, aw_root->awar(AWAR_SPECIES_NAME)->read_string());
 
     x_cursor = y_cursor = 0.0;
 

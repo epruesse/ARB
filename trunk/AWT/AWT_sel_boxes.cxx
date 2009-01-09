@@ -509,14 +509,10 @@ char *awt_create_string_on_configurations(GBDATA *gb_main) {
             GB_write_string(gb_name, "unnamed_config");
         }
         const char *name = GB_read_char_pntr(gb_name);
-        if (result) {
-            char *neu = GB_strdup(GBS_global_string("%s;%s", result, name));
-            free(result);
-            result    = neu;
-        }
-        else {
-            result = GB_strdup(name);
-        }
+        awt_assert(name);
+        
+        if (result) freeset(result, GBS_global_string_copy("%s;%s", result, name));
+        else result = strdup(name);
     }
     GB_pop_transaction(gb_main);
     return result;

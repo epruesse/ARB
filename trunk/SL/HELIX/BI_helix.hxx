@@ -80,8 +80,8 @@ protected:
 public:
 
     static char *get_error() { return helix_error; }
-    static void clear_error() { free(helix_error); helix_error = 0; }
-    static void set_error(const char *err) { free(helix_error); helix_error = err ? strdup(err) : 0; }
+    static void clear_error() { freeset(helix_error, NULL); }
+    static void set_error(const char *err) { freedup(helix_error, err); }
 
     BI_helix(void);
     ~BI_helix(void);

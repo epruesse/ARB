@@ -176,8 +176,8 @@ static void g_b_opti_freeGbdByKey(GB_MAIN_TYPE *Main, O_gbdByKey *gbk)
 {
     int idx;
     GBUSE(Main);
-    for (idx=0; idx<gbdByKey_cnt; idx++) GB_FREE(gbk[idx].gbds);
-    GB_FREE(gbk);
+    for (idx=0; idx<gbdByKey_cnt; idx++) free(gbk[idx].gbds);
+    free(gbk);
 }
 
 /******************** Convert old compression style to new style *******************/
@@ -2406,7 +2406,7 @@ static GB_ERROR readAndWrite(O_gbdByKey *gbkp) {
                 char *d = (char*)get_data_n_size(gbd, &size);
 
                 data = gbm_get_mem(size, GBM_DICT_INDEX);
-                GB_MEMCPY(data, d, size);
+                memcpy(data, d, size);
                 ad_assert(data[size-1] == 0);
             }
 
@@ -2544,7 +2544,7 @@ GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
                         for (n=0; n<dict->words; n++) *nint++ = htonl(dict->offsets[n]);
                         for (n=0; n<dict->words; n++) *nint++ = htonl(dict->resort[n]);
 
-                        GB_MEMCPY(nint, dict->text, dict->textlen);
+                        memcpy(nint, dict->text, dict->textlen);
                     }
 
                     error = gb_load_dictionary_data(gb_main, Main->keys[idx].key, &old_dict_buffer, &old_dict_buffer_size);

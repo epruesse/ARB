@@ -761,8 +761,7 @@ void awt_do_pars_list(void *dummy, struct adaqbsstruct *cbs)
             {
                 long use_tag = cbs->aws->get_root()->awar(cbs->awar_use_tag)->read_int();
                 if (!use_tag || !strlen(tag)) {
-                    free(tag);
-                    tag = 0;
+                    freeset(tag, 0);
                 }
             }
             int double_pars = cbs->aws->get_root()->awar(cbs->awar_double_pars)->read_int();
@@ -1118,8 +1117,7 @@ static GB_ERROR restore_colorset_representation(const color_save_data *csd, cons
         int size = equal-colorset;
         if (size >= buffersize) {
             buffersize = int(size*1.5);
-            free(buffer);
-            buffer     = (char*)malloc(buffersize);
+            freeset(buffer, (char*)malloc(buffersize));
         }
 
         awt_assert(buffer && buffersize>size);
@@ -1343,7 +1341,7 @@ static AW_window *create_awt_colorizer_window(AW_root *aw_root, GBDATA *gb_main,
     if (mode == AWT_COL_COLORIZE_LISTED)    aws->callback(awt_colorize_listed, (AW_CL)cbs);
     else                                    aws->callback(awt_colorize_marked, (AW_CL)cmd);
 
-    aws->create_autosize_button("COLORIZE", GB_strdup(GBS_global_string("Set color of %s %s to ...", what, Sel->items_name)), "S", 2);
+    aws->create_autosize_button("COLORIZE", GBS_global_string_copy("Set color of %s %s to ...", what, Sel->items_name), "S", 2);
 
     {
         int color_group;
@@ -1369,15 +1367,15 @@ static AW_window *create_awt_colorizer_window(AW_root *aw_root, GBDATA *gb_main,
     if (mode == AWT_COL_COLORIZE_MARKED) {
         aws->at("mark");
         aws->callback(awt_mark_colored, (AW_CL)cmd, (AW_CL)1);
-        aws->create_autosize_button("MARK_COLORED", GB_strdup(GBS_global_string("Mark all %s of ...", Sel->items_name)), "M", 2);
+        aws->create_autosize_button("MARK_COLORED", GBS_global_string_copy("Mark all %s of ...", Sel->items_name), "M", 2);
 
         aws->at("unmark");
         aws->callback(awt_mark_colored, (AW_CL)cmd, (AW_CL)0);
-        aws->create_autosize_button("UNMARK_COLORED", GB_strdup(GBS_global_string("Unmark all %s of ...", Sel->items_name)), "U", 2);
+        aws->create_autosize_button("UNMARK_COLORED", GBS_global_string_copy("Unmark all %s of ...", Sel->items_name), "U", 2);
 
         aws->at("invert");
         aws->callback(awt_mark_colored, (AW_CL)cmd, (AW_CL)2);
-        aws->create_autosize_button("INVERT_COLORED", GB_strdup(GBS_global_string("Invert all %s of ...", Sel->items_name)), "I", 2);
+        aws->create_autosize_button("INVERT_COLORED", GBS_global_string_copy("Invert all %s of ...", Sel->items_name), "I", 2);
     }
 
     aws->at_newline();
@@ -1393,41 +1391,6 @@ AW_window *create_awt_listed_items_colorizer(AW_root *aw_root, struct adaqbsstru
 AW_window *awt_create_item_colorizer(AW_root *aw_root, GBDATA *gb_main, const ad_item_selector *sel) {
     return create_awt_colorizer_window(aw_root, gb_main, 0, sel);
 }
-
-//     AW_window_simple *aws = new AW_window_simple;
-
-//     {
-//         char *macro_name = GB_strdup(GBS_global_string("COLORIZE_%s", sel->items_name));
-//         char *title      = GB_strdup(GBS_global_string("Colorize and mark %s", sel->items_name));
-
-//         aws->init(aw_root, macro_name, title, 100, 100);
-
-//         free(title);
-//         free(macro_name);
-//     }
-
-//     aws->load_xfig("colorize.fig");
-
-//     aws->at("close");
-//     aws->callback((AW_CB0)AW_POPDOWN);
-//     aws->create_button("CLOSE","CLOSE","C");
-
-//     aws->at("help");
-//     aws->callback( AW_POPUP_HELP,(AW_CL)"colorize_items.hlp");
-//     aws->create_button("HELP","HELP","H");
-
-// #if 0
-//     aws->at("color");
-//     aws->create_option_menu(AWAR_CURRENT_COLOR);
-//     for (int i = 1; i <= AW_COLOR_GROUPS; ++i) {
-//         aws->insert_option(AW_get_color_group_name(aw_root, i), 0, i);
-//     }
-//     aws->update_option_menu();
-// #endif
-
-//     return aws;
-// }
-
 
 AW_window *create_awt_open_parser(AW_root *aw_root, struct adaqbsstruct *cbs)
 {
@@ -1514,10 +1477,7 @@ void awt_do_set_list(void *, struct adaqbsstruct *cbs, long append) {
     }
 
     char *value = cbs->aws->get_root()->awar(cbs->awar_setvalue)->read_string();
-    if (value[0] == 0) {
-        free(value);
-        value = 0;
-    }
+    if (value[0] == 0) freeset(value, 0);
 
     GB_begin_transaction(cbs->gb_main);
 

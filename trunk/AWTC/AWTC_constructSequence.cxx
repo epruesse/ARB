@@ -47,8 +47,7 @@ static inline int inversBasesMatch(char c1, char c2)
     return c1==c2;
 }
 
-static inline char *strndup(const char *seq, int length)
-{
+static inline char *strndup(const char *seq, int length) {
     char *neu = new char[length+1];
 
     memcpy(neu, seq, length);
@@ -56,11 +55,10 @@ static inline char *strndup(const char *seq, int length)
 
     return neu;
 }
-static char *lstr_ss = 0;
-static inline const char *lstr(const char *s, int len)
-{
-    if (lstr_ss) free(lstr_ss);
-    lstr_ss = strndup(s,len);
+static inline const char *lstr(const char *s, int len) {
+    static char *lstr_ss = 0;
+
+    freeset(lstr_ss, strndup(s,len));
     return lstr_ss;
 }
 #ifdef DEBUG

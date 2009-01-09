@@ -18,7 +18,7 @@ double GB_log_fak(int n){
     if (n >= max_n){
         double sum = 0;
         int i;
-        GB_DELETE(res);
+        freeset(res, NULL);
         max_n = n + 100;
         res = (double *)GB_calloc(sizeof(double),max_n);
         for (i=1;i<max_n;i++){

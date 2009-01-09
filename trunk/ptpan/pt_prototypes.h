@@ -37,8 +37,6 @@ extern "C" int broadcast P_((PT_main *main, int dummy_1x));
 /* PT_io.cxx */
 ULONG BenchTimePassed P_((struct PTPanGlobal *pg));
 void BenchOutput P_((struct PTPanGlobal *pg));
-ULONG GetSequenceRelPos P_((struct PTPanGlobal *pg, STRPTR srcseq, ULONG abspos));
-ULONG GetSequenceAbsPos P_((struct PTPanGlobal *pg, STRPTR srcseq, ULONG relpos));
 ULONG CalcLengthForFilteredSequence P_((struct PTPanGlobal *pg, STRPTR srcseq));
 ULONG FilterSequenceTo P_((struct PTPanGlobal *pg, STRPTR srcstr, STRPTR filtptr));
 STRPTR FilterSequence P_((struct PTPanGlobal *pg, STRPTR srcseq));

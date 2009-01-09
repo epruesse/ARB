@@ -80,7 +80,7 @@ GB_DICTIONARY *gb_create_dict(GBDATA *gb_dict){
 }
 
 void delete_gb_dictionary(GB_DICTIONARY *dict){
-    GB_FREE(dict);
+    free(dict);
 }
 
 void gb_system_key_changed_cb(GBDATA *gbd,int *cl, GB_CB_TYPE type){

@@ -344,8 +344,7 @@ void primer_design_event_init( AW_window *aww, AW_CL cl_from_gene) {
             memcpy(gene_sequence, sequence+gene_start, gene_length);
             gene_sequence[gene_length] = 0;
 
-            free(sequence);
-            sequence   = gene_sequence;
+            freeset(sequence, gene_sequence);
             length     = gene_length;
             add_offset = gene_start;
         }

@@ -263,8 +263,7 @@ void PH_save_ml_multiline_cb(AW_window *aww) {
         memcpy(digit_appended, fname, fname_len);
         strcpy(digit_appended+fname_len, "0");
 
-        free(fname);
-        fname = digit_appended;
+        freeset(fname, digit_appended);
     }
     GBDATA *gb_sai[3];
     int i;

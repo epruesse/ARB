@@ -71,7 +71,7 @@ int main(int argc, char **argv)
     char          *type      = 0;
 
     for (tok = strtok(data,";\n");tok;tok = strtok(0,";\n")) {
-        if (type) { free(type); type = 0; }
+        freeset(type, 0);
 
 #if defined(DEBUG)
 //         fprintf(stderr,"tok='%s'\n",tok);
@@ -169,23 +169,16 @@ int main(int argc, char **argv)
 
         /* check type */
         GB_BOOL const_char = GB_FALSE;
-        GB_BOOL free_flag = GB_FALSE;
-        if (!strcmp(type,"char*"))     const_char = GB_TRUE;
-        if (!strncmp(type,"schar",5)){
-            free_flag     = GB_TRUE;
-            char *newtype = strdup(type+1);
-            free(type);
-            type          = newtype;
+        GB_BOOL free_flag  = GB_FALSE;
+
+        if (strcmp(type,"char*") == 0) const_char = GB_TRUE;
+        if (strncmp(type,"schar",5) == 0) {
+            free_flag = GB_TRUE;
+            freedup(type, type+1);
         }
 
-        if (!strcmp(type,"float")) {
-            free(type);
-            type = strdup("double");
-        }
-        if (!strcmp(type,"GB_alignment_type")) {
-            free(type);
-            type = strdup("double");
-        }
+        if (strcmp(type,"float")             == 0) freedup(type, "double");
+        if (strcmp(type,"GB_alignment_type") == 0) freedup(type, "double");
 
         tok = sp;
         while (tok[0] == ' ' || tok[0] == '*') ++tok;

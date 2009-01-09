@@ -468,7 +468,7 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag
             GB_internal_error("Path Length '%i' exceeded by '%s'",GB_PATH_MAX,str);
             return NULL;
         }
-        GB_MEMCPY(buffer,str,len);
+        memcpy(buffer,str,len);
     }
 
     gbp = gbd;
@@ -1044,19 +1044,11 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
 
                             for (j = 0; j<args.cparam; ++j) {
                                 if (!paramlist) paramlist = strdup(args.vparam[j].str);
-                                else {
-                                    char *conc = GBS_global_string_copy("%s,%s", paramlist, args.vparam[j].str);
-                                    free(paramlist);
-                                    paramlist  = conc;
-                                }
+                                else freeset(paramlist, GBS_global_string_copy("%s,%s", paramlist, args.vparam[j].str));
                             }
                             for (j = 0; j<args.cinput; ++j) {
                                 if (!inputstreams) inputstreams = strdup(args.vinput[j].str);
-                                else {
-                                    char *conc   = GBS_global_string_copy("%s;%s", inputstreams, args.vinput[j].str);
-                                    free(inputstreams);
-                                    inputstreams = conc;
-                                }
+                                else freeset(inputstreams, GBS_global_string_copy("%s;%s", inputstreams, args.vinput[j].str));
                             }
 
                             if (paramlist) {

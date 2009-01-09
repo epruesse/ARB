@@ -528,8 +528,7 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
             if (fontst == NULL) {
                 fprintf(stderr, "ARB fontpackage: Unexpectedly couldn't load font '%s', falling back to '%s' (f=%i, s=%i)\n", nf->fname, NORMAL_FONT, f, s);
                 fontst = XLoadQueryFont(tool_d, NORMAL_FONT); // @@@ may return 0!
-                free(nf->fname);
-                nf->fname = strdup(NORMAL_FONT);    /* store actual name */
+                freedup(nf->fname, NORMAL_FONT);    /* store actual name */
             }
             /* put the structure in the list */
             nf->fstruct = fontst;

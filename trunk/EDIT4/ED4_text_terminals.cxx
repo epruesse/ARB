@@ -235,9 +235,7 @@ ED4_returncode ED4_AA_sequence_terminal::draw( int /*only_text*/ )
         }
         int i;
         for (i=0;i<ED4_G_DRAG;i++){
-            free(colored_strings[i]);
-            colored_strings[i] = (char *)malloc(sizeof(char) * (len_of_colored_strings+1));
-
+            freeset(colored_strings[i], (char *)malloc(sizeof(char) * (len_of_colored_strings+1)));
             memset(colored_strings[i],' ',len_of_colored_strings);
             colored_strings[i][len_of_colored_strings] = 0;
         }
@@ -396,9 +394,7 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
         }
         int i;
         for (i=0;i<ED4_G_DRAG;i++){
-            free(colored_strings[i]);
-            colored_strings[i] = (char *)malloc(sizeof(char) * (len_of_colored_strings+1));
-
+            freeset(colored_strings[i], (char *)malloc(sizeof(char) * (len_of_colored_strings+1)));
             memset(colored_strings[i],' ',len_of_colored_strings);
             colored_strings[i][len_of_colored_strings] = 0;
         }

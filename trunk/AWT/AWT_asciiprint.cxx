@@ -159,11 +159,8 @@ void AWT_write_file(const char *filename,const char *file){
 void awt_aps_go(AW_window *aww){
     AW_root *awr  = aww->get_root();
     char    *text = awr->awar(AWAR_APRINT_TEXT)->read_string();
-    {
-        char *rtext = GBS_replace_tabs_by_spaces(text);
-        free(text);
-        text = rtext;
-    }
+
+    freeset(text, GBS_replace_tabs_by_spaces(text));
 
     AWT_asciiprint_destination dest = (AWT_asciiprint_destination)awr->awar(AWAR_APRINT_PRINTTO)->read_int();
     if (dest == AWT_APRINT_DEST_AFILE){

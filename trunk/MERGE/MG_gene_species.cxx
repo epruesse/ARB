@@ -103,8 +103,7 @@ inline const char *field_awar(const char *field_name, const char *subfield) {
 inline const char *current_field_awar(AW_root *aw_root, const char *subfield) {
     static char *cur_field = 0;
 
-    if (cur_field) { free(cur_field); cur_field = 0; }
-    cur_field = aw_root->awar(AWAR_MERGE_GENE_SPECIES_CURRENT_FIELD)->read_string();
+    freeset(cur_field, aw_root->awar(AWAR_MERGE_GENE_SPECIES_CURRENT_FIELD)->read_string());
 
     if (cur_field[0]) return field_awar(cur_field, subfield);
     return 0; // no field definition selected
@@ -167,31 +166,19 @@ static char *MG_create_field_content(GBDATA *gb_species, CreationMethod method, 
         if (method == MG_CREATE_USING_ACI_ONLY) {
             mg_assert(!result);
             aci_result = GB_command_interpreter(GLOBAL_gb_merge, "", aci, gb_species, 0);
-            if (!aci_result) {
-                error = GB_get_error();
-                mg_assert(error);
-            }
+            if (!aci_result) error = GB_expect_error();
         }
         else {
             if (aci && aci[0]) {
                 aci_result = GB_command_interpreter(GLOBAL_gb_merge, result ? result : "", aci, gb_origin, 0);
-                if (!aci_result) {
-                    error = GB_get_error();
-                    mg_assert(error); 
-                }
+                if (!aci_result) error = GB_expect_error();
             }
         }
 
-        if (aci_result) {
-            free(result);
-            result = aci_result;
-        }
+        if (aci_result) freeset(result, aci_result);
     }
 
-    if (error) {
-        free(result);
-        result = 0;
-    }
+    if (error) freeset(result, 0);
 
     mg_assert(result||error);
     return result;
@@ -277,17 +264,12 @@ static char *MG_create_current_field_content(AW_root *aw_root, GBDATA *gb_specie
     return result;
 }
 
-// ---------------------------------------------------------
-//      static void MG_update_example(AW_root *aw_root)
-// ---------------------------------------------------------
 static void MG_update_example(AW_root *aw_root) {
     char     *result       = 0;
     GB_ERROR  error        = 0;
     char     *curr_species = aw_root->awar(MG_left_AWAR_SPECIES_NAME())->read_string();
 
-    if (!curr_species || !curr_species[0]) {
-        error = "No species selected.";
-    }
+    if (!curr_species || !curr_species[0]) error = "No species selected.";
     else {
         GB_transaction  dummy(GLOBAL_gb_merge);
         GBDATA         *gb_species = GBT_find_species(GLOBAL_gb_merge, curr_species);
@@ -300,35 +282,23 @@ static void MG_update_example(AW_root *aw_root) {
     }
 
     if (!error && !result) error = "no result";
-    if (error) {
-        free(result);
-        result = GBS_global_string_copy("<%s>", error);
-    }
+    if (error) freeset(result, GBS_global_string_copy("<%s>", error));
 
     aw_root->awar(AWAR_MERGE_GENE_SPECIES_EXAMPLE)->write_string(result);
 
     free(result);
 }
-// -----------------------------------------------------------------------
-//      static void check_and_correct_current_field(char*& cur_field)
-// -----------------------------------------------------------------------
+
 static void check_and_correct_current_field(char*& cur_field) {
     if (ARB_stricmp(cur_field, "name") == 0 || ARB_stricmp(cur_field, "acc") == 0) {
         aw_message("rules writing to 'name' or 'acc' are not allowed.");
-
-        char *new_cur_field = new char[strlen(cur_field)+3];
-        sprintf(new_cur_field, "%s_2", cur_field);
-        free(cur_field);
-        cur_field           = new_cur_field;
+        freeset(cur_field, GBS_global_string_copy("%s_not_allowed", cur_field));
     }
 }
 
 
 static bool allow_callbacks = true;
 
-// -----------------------------------------------------------------------
-//      static void MG_current_field_def_changed_cb(AW_root *aw_root)
-// -----------------------------------------------------------------------
 static void MG_current_field_def_changed_cb(AW_root *aw_root) {
     if (allow_callbacks) {
         allow_callbacks = false;

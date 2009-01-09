@@ -81,7 +81,7 @@ GB_ERROR AW_select_nameserver(GBDATA *gb_main, GBDATA *gb_other_main) {
                 char **fieldNames = (char **)malloc(serverCount*sizeof(*fieldNames));
                 for (int c = 0; c<serverCount; c++) {
                     const char *ipport = GBS_read_arb_tcp(nameservers[c]);
-                    fieldNames[c]      = GB_strdup(GBS_scan_arb_tcp_param(ipport, "-f")); // may return 0
+                    fieldNames[c]      = nulldup(GBS_scan_arb_tcp_param(ipport, "-f")); // may return 0
                 }
 
                 if (serverCount == 1) { // exactly 1 server defined -> don't ask
@@ -532,10 +532,7 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status, bool *isWarningPtr)
                 }
                 if (!err) {
                     char *newshrt = AWTC_create_numbered_suffix(hash, shrt, warning);
-                    if (newshrt) {
-                        free(shrt);
-                        shrt = newshrt;
-                    }
+                    if (newshrt) freeset(shrt, newshrt);
 
                     GBS_incr_hash(hash,shrt);
                     err = GBT_rename_species(name, shrt, GB_TRUE);

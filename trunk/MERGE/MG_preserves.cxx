@@ -50,10 +50,7 @@ static char **get_global_alignments() {
 
     for (i = 0; src_ali_names[i]; ++i) {
         GBDATA *gb_ali_name = GB_find_string(gb_presets, "alignment_name", src_ali_names[i], GB_IGNORE_CASE, down_2_level);
-        if (!gb_ali_name) {
-            free(src_ali_names[i]);
-            src_ali_names[i] = 0;
-        }
+        if (!gb_ali_name) freeset(src_ali_names[i], 0);
     }
 
     int k = 0;

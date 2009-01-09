@@ -109,12 +109,18 @@ NOT4PERL void *GB_calloc(unsigned int nelem, unsigned int elsize)
     return mem;
 }
 
-
+#if defined(DEVEL_RALF)
+char *GB_deprStrdup(const char *p) {
+    /* goes to header: __ATTR__DEPRECATED  */
+    return strdup(p);
+}
+#endif /* DEVEL_RALF */
 
 char *GB_strdup(const char *p) {
-    /* does strdup(), but working with NULL */
-    if (p) return GB_STRDUP(p);
-    return NULL;
+    /* does strdup(), but working with NULL
+     * (Note: use nulldup() instead!)  
+     */
+    return p ? strdup(p) : NULL;
 }
 
 char *GB_strduplen(const char *p, unsigned len) {
@@ -154,7 +160,7 @@ char *GB_strpartdup(const char *start, const char *end) {
         }
     }
     else { /* end = 0 -> return copy of complete string */
-        result = GB_strdup(start);
+        result = nulldup(start);
     }
 
     return result;
@@ -478,7 +484,7 @@ char *gbm_get_mem(size_t size, long index)
     }
 
     ggi->useditems[pos]++;
-    GB_MEMSET(erg,0,nsize);
+    memset(erg,0,nsize);
 
     return erg;
 }

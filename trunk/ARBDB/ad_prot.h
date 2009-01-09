@@ -204,7 +204,7 @@ GB_ERROR GB_ensure_callback P_((GBDATA *gbd, enum gb_call_back_type type, GB_CB 
 GB_ERROR GB_release P_((GBDATA *gbd));
 int GB_testlocal P_((GBDATA *gbd));
 int GB_nsons P_((GBDATA *gbd));
-GB_ERROR GB_disable_quicksave P_((GBDATA *gbd, const char *reason));
+void GB_disable_quicksave P_((GBDATA *gbd, const char *reason));
 GB_ERROR GB_resort_data_base P_((GBDATA *gb_main, GBDATA **new_order_list, long listsize));
 GB_ERROR GB_resort_system_folder_to_top P_((GBDATA *gb_main));
 GB_ERROR GB_write_usr_public P_((GBDATA *gbd, long flags));
@@ -392,6 +392,7 @@ GB_BOOL GB_is_directory_compressed P_((GBDATA *gbd));
 
 /* admalloc.c */
 NOT4PERL void *GB_calloc P_((unsigned int nelem, unsigned int elsize));
+char *GB_deprStrdup P_((const char *p)) __ATTR__DEPRECATED;
 char *GB_strdup P_((const char *p));
 char *GB_strduplen P_((const char *p, unsigned len));
 char *GB_strpartdup P_((const char *start, const char *end));

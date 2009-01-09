@@ -148,8 +148,7 @@ char *probe_read_string_append_point(GBDATA *gb_data,int *psize)
         buffer = (char *)calloc(sizeof(char),len+2);
         strcpy(buffer,data);
         buffer[len++] = '.';
-        free(data);
-        data = buffer;
+        freeset(data, buffer);
     }
     *psize = len;
     return data;

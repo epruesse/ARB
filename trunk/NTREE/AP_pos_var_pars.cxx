@@ -336,7 +336,7 @@ AW_window *AP_open_pos_var_pars_window( AW_root *root ){
     char *largest_tree = GBT_find_largest_tree(GLOBAL_gb_main);
     root->awar_string(AWAR_PVP_TREE, "tree_full",AW_ROOT_DEFAULT);
     root->awar(AWAR_PVP_TREE)->write_string(largest_tree);
-    free(largest_tree); largest_tree = 0;
+    freeset(largest_tree, 0);
 
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE","CLOSE","C");

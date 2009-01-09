@@ -102,9 +102,7 @@ int main(int argc, char **argv){
                     if (!command_char) continue; // skip empty arguments
 
                     if (APPEARS_IN_HEADER(command_char)) {
-                        char *neu = GB_strdup(GBS_global_string("%s %c", firstline, command_char));
-                        free(firstline);
-                        firstline = neu;
+                        freeset(firstline, GBS_global_string_copy("%s %c", firstline, command_char));
                     }
                 }
 
@@ -179,8 +177,7 @@ int main(int argc, char **argv){
 
                 seq_len = ali_len;
 
-                free(weight[int('1')]);
-                weight[int('1')] = strdup(" 1");
+                freedup(weight[int('1')], " 1");
             }
 
             for (i=0; i<seq_len; i++) {

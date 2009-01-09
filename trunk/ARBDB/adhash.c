@@ -436,7 +436,7 @@ static long write_hash(GB_HASH *hs, char *key, GB_BOOL copyKey, long val) {
         // create new hash entry
         e       = (struct gbs_hash_entry *)gbm_get_mem(sizeof(struct gbs_hash_entry),GBM_HASH_INDEX);
         e->next = hs->entries[i];
-        e->key  = copyKey ? GB_STRDUP(key) : key;
+        e->key  = copyKey ? strdup(key) : key;
         e->val  = val;
 
         hs->entries[i] = e;
@@ -472,7 +472,7 @@ long GBS_incr_hash(GB_HASH *hs,const char *key) {
     else {
         e       = (struct gbs_hash_entry *)gbm_get_mem(sizeof(struct gbs_hash_entry),GBM_HASH_INDEX);
         e->next = hs->entries[i];
-        e->key  = (char *)GB_STRDUP(key);
+        e->key  = strdup(key);
         e->val  = 1;
         
         hs->entries[i] = e;
@@ -963,8 +963,7 @@ char *gb_read_cache(GBDATA *gbd) {
     cs->entries[p].next = n;
     /* check validity */
     if (GB_GET_EXT_UPDATE_DATE(gbd) > cs->entries[i].clock) {
-        free( cs->entries[i].data) ;
-        cs->entries[i].data = 0;
+        freeset(cs->entries[i].data, NULL);
         cs->sum_data_size -= cs->entries[i].sizeof_data;
 
         gbd->cache_index = 0;
@@ -999,8 +998,7 @@ void *gb_free_cache(GB_MAIN_TYPE *Main, GBDATA *gbd) {
     cs->entries[p].next = n;
 
     /* free cache */
-    free( cs->entries[i].data) ;
-    cs->entries[i].data = 0;
+    freeset(cs->entries[i].data, NULL);
     cs->sum_data_size -= cs->entries[i].sizeof_data;
 
     gbd->cache_index = 0;

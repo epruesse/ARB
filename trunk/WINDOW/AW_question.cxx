@@ -23,13 +23,7 @@ using namespace std;
 // start of implementation of class AW_repeated_question:
 
 void AW_repeated_question::add_help(const char *help_file) {
-    if (helpfile) {
-        free(helpfile);
-        helpfile = 0;
-    }
-    if (help_file) {
-        helpfile = strdup(help_file);
-    }
+    freedup(helpfile, help_file);
 }
 
 int AW_repeated_question::get_answer(const char *question, const char *buttons, const char *to_all, bool add_abort)

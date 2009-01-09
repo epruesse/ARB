@@ -1547,9 +1547,7 @@ static void modify_target_string(AW_window *aww, AW_CL cl_mod_mode) {
     char     *target_string = root->awar(AWAR_TARGET_STRING)->read_string();
     GB_ERROR  error         = 0;
 
-    if (mod_mode == TS_MOD_CLEAR) {
-        target_string[0] = 0;
-    }
+    if (mod_mode == TS_MOD_CLEAR) target_string[0] = 0;
     else {
         GB_transaction dummy(GLOBAL_gb_main);
         GB_alignment_type ali_type = GBT_get_alignment_type(GLOBAL_gb_main, GBT_get_default_alignment(GLOBAL_gb_main));
@@ -1561,20 +1559,12 @@ static void modify_target_string(AW_window *aww, AW_CL cl_mod_mode) {
         else if (mod_mode == TS_MOD_COMPL) {
             char T_or_U;
             error = GBT_determine_T_or_U(ali_type, &T_or_U, "complement");
-            if (!error) {
-                char *new_target_string = GBT_complementNucSequence(target_string, strlen(target_string), T_or_U);
-                free(target_string);
-                target_string           = new_target_string;
-            }
+            if (!error) freeset(target_string, GBT_complementNucSequence(target_string, strlen(target_string), T_or_U));
         }
     }
 
-    if (error) {
-        aw_message(error);
-    }
-    else {
-        root->awar(AWAR_TARGET_STRING)->write_string(target_string);
-    }
+    if (error) aw_message(error);
+    else root->awar(AWAR_TARGET_STRING)->write_string(target_string);
     free(target_string);
 }
 
@@ -2075,10 +2065,8 @@ static void create_probe_group_result_sel_box(AW_root *aw_root, AW_window *aws) 
 
     if (pg_global.pg_main) {
         GB_close(pg_global.pg_main);
-        free(pg_global.pg_filename);
-
         pg_global.pg_main = 0;
-        pg_global.pg_filename = 0;
+        freeset(pg_global.pg_filename, 0);
     }
 
     pg_global.aw_root = aw_root;
@@ -2143,8 +2131,7 @@ static void create_probe_group_result_sel_box(AW_root *aw_root, AW_window *aws) 
     }
     else {
         error = GB_export_error("Can't open database '%s'", file_name);
-        free(pg_global.pg_filename);
-        pg_global.pg_filename = 0;
+        freeset(pg_global.pg_filename, 0);
     }
 
     free(file_name);
@@ -2189,11 +2176,7 @@ static void create_probe_group_groups_window(AW_window *aww) {
 //     AW_window *create_probe_group_result_window(AW_root *awr, AW_default cl_AW_canvas_ntw)
 // --------------------------------------------------------------------------------
 AW_window *create_probe_group_result_window(AW_root *awr, AW_default cl_AW_canvas_ntw){
-    if (pg_global.awar_pg_result_filename) {
-        free(pg_global.awar_pg_result_filename);
-        pg_global.awar_pg_result_filename = 0;
-    }
-
+    freeset(pg_global.awar_pg_result_filename, 0);
     pg_global.ntw = (AWT_canvas*)cl_AW_canvas_ntw;
 
     return awt_create_load_box(awr, "arb_probe_group result", "arb", &pg_global.awar_pg_result_filename,

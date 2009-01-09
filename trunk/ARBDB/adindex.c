@@ -366,7 +366,7 @@ GB_ERROR g_b_undo_entry(GB_MAIN_TYPE *Main,struct g_b_undo_entry_struct *ue){
                         gbd->flags              = ue->d.ts->flags;
                         gbd->flags2.extern_data = ue->d.ts->flags2.extern_data;
 
-                        GB_MEMCPY(&gbd->info,&ue->d.ts->info,sizeof(gbd->info)); /* restore old information */
+                        memcpy(&gbd->info,&ue->d.ts->info,sizeof(gbd->info)); /* restore old information */
                         if (type >= GB_BITS) {
                             if (gbd->flags2.extern_data){
                                 SET_GB_EXTERN_DATA_DATA(gbd->info.ex, ue->d.ts->info.ex.data); /* set relative pointers correctly */

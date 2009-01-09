@@ -36,7 +36,7 @@ int regerrno;
 
 GB_ERROR gb_scan_directory(char *basename, struct gb_scandir *sd) { /* goes to header: __ATTR__USERESULT */
     /* look for quick saves (basename = yyy/xxx no arb ending !!!!) */
-    char *path = GB_STRDUP(basename);
+    char *path = strdup(basename);
     const char *fulldir = ".";
     char *file = strrchr(path,'/');
     DIR *dirp;
@@ -135,12 +135,10 @@ char *GB_find_all_files(const char *dir,const char *mask, GB_BOOL filename_only)
                 if (stat(buffer,&st) == 0  && S_ISREG(st.st_mode)) { // regular file ?
                     if (filename_only) strcpy(buffer, dp->d_name);
                     if (result) {
-                        char *neu = GB_strdup(GBS_global_string("%s*%s", result, buffer));
-                        free(result);
-                        result    = neu;
+                        freeset(result, GBS_global_string_copy("%s*%s", result, buffer));
                     }
                     else {
-                        result = GB_strdup(buffer);
+                        result = strdup(buffer);
                     }
                 }
             }
@@ -169,8 +167,7 @@ char *GB_find_latest_file(const char *dir,const char *mask) {
                 if (stat(buffer,&st) == 0){
                     if ((GB_ULONG)st.st_mtime > newest){
                         newest = st.st_mtime;
-                        if (result) free(result);
-                        result = GB_STRDUP(&dp->d_name[0]);
+                        freedup(result, dp->d_name);
                     }
                 }
             }
@@ -238,8 +235,7 @@ GB_ERROR GB_export_error(const char *templat, ...) {
 
     vsprintf(p,templat,parg);
 
-    if (GB_error_buffer) free(GB_error_buffer);
-    GB_error_buffer = GB_STRDUP(buffer);
+    freedup(GB_error_buffer, buffer);
     return GB_error_buffer;
 }
 
@@ -273,8 +269,7 @@ GB_ERROR GB_export_IO_error(const char *action, const char *filename) {
             else sprintf(buffer, "ARB ERROR: %s", error_message);
         }
 
-        if (GB_error_buffer) free(GB_error_buffer);
-        GB_error_buffer = GB_STRDUP(buffer);
+        freedup(GB_error_buffer, buffer);
     }
     return GB_error_buffer;
 }
@@ -298,8 +293,7 @@ GB_ERROR GB_expect_error() {
 }
 
 void GB_clear_error() {         /* clears the error buffer */
-    free(GB_error_buffer);
-    GB_error_buffer = 0;
+    freeset(GB_error_buffer, 0);
 }
 
 #if defined(DEVEL_RALF)
@@ -499,7 +493,7 @@ char *GBS_string_2_key_with_exclusions(const char *str, const char *additional)
     }
     for (;i<GB_KEY_LEN_MIN;i++) buf[i] = '_';
     buf[i] = 0;
-    return GB_STRDUP(buf);
+    return strdup(buf);
 }
 
 char *GBS_string_2_key(const char *str) /* converts any string to a valid key */
@@ -542,7 +536,7 @@ char *gbs_malloc_copy(const char *source, long len)
 {
     char *dest;
     dest = (char *)malloc((size_t)len);
-    GB_MEMCPY(dest,source,(int)len);
+    memcpy(dest,source,(int)len);
     return dest;
 }
 
@@ -862,7 +856,7 @@ char *gbs_compress_command(const char *com) /* replaces all '=' by GBS_SET
     char *result,*s,*d;
     int   ch;
 
-    s = d = result = GB_STRDUP(com);
+    s = d = result = strdup(com);
     while ( (ch = *(s++)) ){
         switch (ch) {
             case '=':   *(d++) = GBS_SET;break;
@@ -898,7 +892,7 @@ char *GBS_remove_escape(char *com)  /* \ is the escape charakter
     char *result,*s,*d;
     int   ch;
 
-    s = d = result = GB_STRDUP(com);
+    s = d = result = strdup(com);
     while ( (ch = *(s++)) ){
         switch (ch) {
             case '\\':
@@ -1120,7 +1114,7 @@ void GBS_strcat(struct GBS_strstruct *strstr,const char *ptr) {
     long len = strlen(ptr);
 
     gbs_strensure_mem(strstr,len);
-    GB_MEMCPY(strstr->GBS_strcat_data+strstr->GBS_strcat_pos,ptr,(int)len);
+    memcpy(strstr->GBS_strcat_data+strstr->GBS_strcat_pos,ptr,(int)len);
     strstr->GBS_strcat_pos += len;
     strstr->GBS_strcat_data[strstr->GBS_strcat_pos]  = 0;
 }
@@ -1130,7 +1124,7 @@ void GBS_strncat(struct GBS_strstruct *strstr,const char *ptr,long len) {
      * (caution : copies zero byte and things behind!)
      */
     gbs_strensure_mem(strstr,len+2);
-    GB_MEMCPY(strstr->GBS_strcat_data+strstr->GBS_strcat_pos,ptr,(int)len);
+    memcpy(strstr->GBS_strcat_data+strstr->GBS_strcat_pos,ptr,(int)len);
     strstr->GBS_strcat_pos += len;
     strstr->GBS_strcat_data[strstr->GBS_strcat_pos] = 0;
 }
@@ -1224,7 +1218,7 @@ ATTRIBUTED(__ATTR__USERESULT,
 
                         if (!gb_entry || gb_entry == gb_container) {
                             GBS_reference_not_found = 1;
-                            entry=GB_STRDUP("");
+                            entry = strdup("");
                         }else{
                             entry = GB_read_as_string(gb_entry);
                         }
@@ -1362,10 +1356,10 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
     void *strstruct;
     char *command;
 
-    if (!icommand || !icommand[0]) return GB_STRDUP(insource);
+    if (!icommand || !icommand[0]) return strdup(insource);
 
     command = gbs_compress_command(icommand);
-    in = GB_STRDUP(insource);               /* copy insource to allow to destroy it */
+    in = strdup(insource);               /* copy insource to allow to destroy it */
 
     for (doppelpunkt = command; doppelpunkt; doppelpunkt = nextdp) {    /* loop over command string */
         /* in is in , strstruct is out */
@@ -1394,9 +1388,8 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
 
         if ( (!*in) && doppelpunkt[0] == GBS_MWILD && doppelpunkt[1] == 0) {    /* empty string -> pars myself */
             /* * matches empty string !!!!  */
-            mwildcard[max_mwildcard++] = GB_STRDUP("");
-            gbs_build_replace_string(strstruct,bar,wildcard, max_wildcard,
-                                     mwildcard, max_mwildcard,gb_container);
+            mwildcard[max_mwildcard++] = strdup("");
+            gbs_build_replace_string(strstruct,bar,wildcard, max_wildcard, mwildcard, max_mwildcard,gb_container);
             goto gbs_pars_unsuccessfull;    /* successfull search*/
         }
 
@@ -1411,7 +1404,7 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
 
                         start_of_wildcard = search;
                         if ( !(c = *(search++) ) ) {    /* last character is a wildcard -> that was it */
-                            mwildcard[max_mwildcard++] = GB_STRDUP(source);
+                            mwildcard[max_mwildcard++] = strdup(source);
                             source += strlen(source);
                             goto gbs_pars_successfull;      /* successfull search and end wildcard*/
                         }
@@ -1473,11 +1466,11 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
                                              mwildcard, max_mwildcard,gb_container);
             already_transferred = source;
 
-            for (i = 0; i < max_mwildcard; i++){
-                free (mwildcard[i]);
-                mwildcard[i] = 0;
+            for (i = 0; i < max_mwildcard; i++) {
+                freeset(mwildcard[i], 0);
             }
-            max_wildcard = 0; max_mwildcard = 0;
+            max_wildcard  = 0;
+            max_mwildcard = 0;
 
             if (error) {
                 free(GBS_strclose(strstruct));
@@ -1491,13 +1484,12 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
         GBS_strcat(strstruct,already_transferred);  /* cat the rest data */
 
         for (i = 0; i < max_mwildcard; i++){
-            free (mwildcard[i]);
-            mwildcard[i] = 0;
+            freeset(mwildcard[i], 0);
         }
-        max_wildcard = 0; max_mwildcard = 0;
+        max_wildcard  = 0;
+        max_mwildcard = 0;
 
-        free(in);
-        in = GBS_strclose(strstruct);
+        freeset(in, GBS_strclose(strstruct));
     }
     free(command);
     return in;
@@ -1602,7 +1594,7 @@ char **GBS_read_dir(const char *dir, const char *mask) {
 
     gb_assert(dir);             // dir == NULL was allowed before 12/2008, forbidden now!
 
-    char  *fulldir   = GB_strdup(GB_get_full_path(dir));
+    char  *fulldir   = nulldup(GB_get_full_path(dir));
     DIR   *dirstream = opendir(fulldir);
     char **names     = NULL;
 
@@ -1786,7 +1778,7 @@ uint32_t GBS_checksum(const char *seq, int ignore_case, const char *exclude)
 */
 
 char *GBS_extract_words( const char *source,const char *chars, float minlen, GB_BOOL sort_output ) {
-    char  *s         = GB_STRDUP(source);
+    char  *s         = strdup(source);
     char **ps        = (char **)GB_calloc(sizeof(char *), (strlen(source)>>1) + 1);
     void  *strstruct = GBS_stropen(1000);
     char  *f         = s;
@@ -2081,24 +2073,25 @@ GB_CSTR GBS_regsearch(GB_CSTR in, const char *regexprin){
     static char *regexpr = 0;
     char        *res;
     int          rl      = strlen(regexprin)-2;
+    
     if (regexprin[0] != '/' || regexprin[rl+1] != '/') {
         GB_export_error("RegExprSyntax: '/searchterm/'");
         GB_print_error();
         return 0;
     }
-    if (regexpr && !strncmp( regexpr, regexprin+1, rl))
-        goto already_compiled;
-    if (regexpr) free(regexpr);
-    regexpr = GB_STRDUP(regexprin+1);
-    regexpr[rl] = 0;
 
-    regerrno = 0;
-    res = compile(regexpr,&expbuf[0],&expbuf[8000],0);
-    if (!res|| regerrno){
-        gbs_regerror(regerrno);
-        return 0;
+    if (!regexpr || strncmp(regexpr, regexprin+1, rl) != 0) { // first or new regexpr
+        freedup(regexpr, regexprin+1);
+        regexpr[rl] = 0;
+        regerrno    = 0;
+        
+        res = compile(regexpr,&expbuf[0],&expbuf[8000],0);
+        if (!res|| regerrno){
+            gbs_regerror(regerrno);
+            return 0;
+        }
     }
- already_compiled:
+
     if (step((char *)in,expbuf)) return loc1;
     return 0;
 }
@@ -2117,7 +2110,7 @@ char *GBS_regreplace(const char *in, const char *regexprin, GBDATA *gb_species){
         return 0;
     }
     /* Copy regexpr and remove leading + trailing '/' */
-    regexpr = GB_STRDUP(regexprin+1);
+    regexpr = strdup(regexprin+1);
     regexpr[rl] = 0;
 
     /* Search seperating '/' */
@@ -2199,13 +2192,11 @@ static GB_CSTR gb_compile_regexpr(GB_CSTR regexprin,char **subsout){
     }
 
     regerrno = 0;
-    if (!old_reg_expr || strcmp (old_reg_expr ,regexpr)){
-        if (expbuf) free(expbuf);
-        expbuf = compile(regexpr,0,0);
+    if (!old_reg_expr || strcmp(old_reg_expr ,regexpr) != 0) {
+        freeset(expbuf, compile(regexpr,0,0));
     }
-    if (old_reg_expr) free(old_reg_expr);
-    old_reg_expr = regexpr;
-    regexpr = 0;
+
+    reassign(old_reg_expr, regexpr);
 
     if (regerrno){
         gbs_regerror(regerrno);
@@ -2416,8 +2407,8 @@ static char *g_bs_get_string_of_tag_hash(GB_HASH *tag_hash){
                  * if s1 than delete all tags replace2 in string2 */
 
 char *GBS_merge_tagged_strings(const char *s1, const char *tag1, const char *replace1, const char *s2, const char *tag2, const char *replace2){
-    char *str1 = GB_STRDUP(s1);
-    char *str2 = GB_STRDUP(s2);
+    char *str1 = strdup(s1);
+    char *str2 = strdup(s2);
     char *t1 = GBS_string_2_key(tag1);
     char *t2 = GBS_string_2_key(tag2);
     char *result = 0;
@@ -2441,7 +2432,7 @@ char *GBS_merge_tagged_strings(const char *s1, const char *tag1, const char *rep
 }
 
 char *GBS_string_eval_tagged_string(GBDATA *gb_main,const char *s, const char *dt, const char *tag, const char *srt, const char *aci, GBDATA *gbd){
-    char *str = GB_STRDUP(s);
+    char *str = strdup(s);
     char *default_tag = GBS_string_2_key(dt);
     GB_HASH *hash = GBS_create_hash(16, GB_MIND_CASE);
     GB_ERROR error = 0;
@@ -2502,7 +2493,8 @@ char *GB_read_as_tagged_string(GBDATA *gbd, const char *tagi){
     }
  notfound:
     /* Nothing found */
-    free(buf); s = 0;
+    free(buf);
+    s = 0;
  found:
     free(tag);
     return s;
@@ -2526,8 +2518,8 @@ void GB_add_set(GBDATA_SET *set, GBDATA *item){
 }
 
 void GB_delete_set(GBDATA_SET *set){
-    GB_FREE(set->items);
-    GB_FREE(set);
+    free(set->items);
+    free(set);
 }
 
 /* be CAREFUL : this function is used to save ARB ASCII database (i.e. properties)
