@@ -384,8 +384,7 @@ static char *lstr(const char *s, int len)
     static int alloc;
     static char *buffer;
 
-    if (alloc<(len+1))
-    {
+    if (alloc<(len+1)) {
         if (alloc) free(buffer);
         buffer = (char*)malloc(alloc=len+100);
     }
@@ -1458,9 +1457,7 @@ static void appendNameAndUsedBasePositions(char **toString, GBDATA *gb_species, 
         currInfo  = 0; // dont free
     }
 
-    free(*toString);
-    *toString = newString;
-    
+    freeset(*toString, newString);
     free(currInfo);
 }
 
@@ -1519,8 +1516,7 @@ static GB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
 
         while (next_relatives) {
             next_relatives--;
-            free(nearestRelative[next_relatives]);
-            nearestRelative[next_relatives] = 0;
+            freeset(nearestRelative[next_relatives], 0);
         }
 
         {
@@ -1670,10 +1666,8 @@ static GB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
                     }
                 }
 
-                for (; i<next_relatives; ++i) { // delete superfluous relatives
-                    free(nearestRelative[i]);
-                    nearestRelative[i] = 0;
-                }
+                // delete superfluous relatives
+                for (; i<next_relatives; ++i) freeset(nearestRelative[i], 0);
 
                 if (next_relatives>relSearch.maxRelatives) {
                     next_relatives = relSearch.maxRelatives;
@@ -1805,10 +1799,7 @@ static GB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
 
     delete toAlignSequence;
 
-    for (i=0; i<next_relatives; i++) {
-        free(nearestRelative[i]);
-        nearestRelative[i] = 0;
-    }
+    for (i=0; i<next_relatives; i++) freeset(nearestRelative[i], 0);
     delete [] nearestRelative;
 
     return error;

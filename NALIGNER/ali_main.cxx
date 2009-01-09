@@ -306,14 +306,13 @@ int main(int argc, char **argv)
                 ALI_PROFILE *align_profile;
                 align_profile = new ALI_PROFILE(align_sequence,&aligs.prof_context);
 
-                /*
+                /* 
                  * write information about the profile to the database
                  */
                 aligs.arbdb.begin_transaction();
                 char *String = align_profile->cheapest_sequence();
                 aligs.arbdb.put_extended("ALI_CON",String);
-                free(String);
-                String = align_profile->borders_sequence();
+                freeset(String, align_profile->borders_sequence());
                 //                              aligs.arbdb.put_extended("ALI_BOR",string,0);
                 free(String);
                 aligs.arbdb.commit_transaction();
@@ -342,8 +341,7 @@ int main(int argc, char **argv)
                 aligs.arbdb.begin_transaction();
                 String = align_pre_sequence_i->string();
                 aligs.arbdb.put_extended("ALI_PRE_I",String);
-                free(String);
-                String = align_pre_sequence->string();
+                freeset(String, align_pre_sequence->string());
                 aligs.arbdb.put_extended("ALI_PRE",String);
                 free(String);
                 aligs.arbdb.commit_transaction();

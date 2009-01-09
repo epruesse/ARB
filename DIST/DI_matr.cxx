@@ -225,16 +225,13 @@ DI_MATRIX::DI_MATRIX(GBDATA *gb_maini,AW_root *awr)
 
 char *DI_MATRIX::unload(void)
 {
-    free(use);
-    use = 0;
+    freeset(use, 0);
     long i;
     for (i=0;i<nentries;i++){
         delete entries[i];
     }
     delete tree_root;
-//     delete [] entries;
-    free(entries);
-    entries = 0;
+    freeset(entries, 0);
     nentries = 0;
     return 0;
 }

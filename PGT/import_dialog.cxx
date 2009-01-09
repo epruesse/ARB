@@ -1092,14 +1092,8 @@ void importDialog::copyHeaderEntries()
     for(int i= 0; i < columns; i++)
     {
         // CLEAR OLD HEADER, IF AVAILABLE
-        if(header[i])
-        {
-            free(header[i]);
-            header[i]= NULL;
-        }
-
         // CLEAN STRING FOR USAGE AS ARB KEY
-        header[i]= GBS_string_2_key(cell[i]);
+        freeset(header[i], GBS_string_2_key(cell[i]));
     }
 
     m_table->hasHeader= true;

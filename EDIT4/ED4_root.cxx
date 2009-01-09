@@ -1366,8 +1366,7 @@ void ED4_init_faligner_data(AWTC_faligner_cd *faligner_data) {
     long size2        = GBT_get_alignment_len(GLOBAL_gb_main,alignment_name);
     if (size2<=0) err = (char *)GB_get_error();
 
-    free(faligner_data->helix_string);
-    faligner_data->helix_string = 0;
+    freeset(faligner_data->helix_string, 0);
     
     if (!err) {
         GBDATA *gb_helix_con = GBT_find_SAI_rel_exdata(gb_extended_data, helix_name);

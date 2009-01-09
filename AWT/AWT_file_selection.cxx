@@ -145,7 +145,7 @@ char *AWT_extract_directory(const char *path) {
     char *lslash = strrchr(path, '/');
     if (!lslash) return 0;
 
-    char *result        = GB_strdup(path);
+    char *result        = strdup(path);
     result[lslash-path] = 0;
 
     return result;
@@ -303,8 +303,7 @@ static void awt_create_selection_box_cb(void *dummy, struct adawcbstruct *cbs) {
     }
 
     if (name[0] == '/' && AWT_is_dir(name)) {
-        free(fulldir);
-        fulldir   = strdup(name);
+        freedup(fulldir, name);
         name_only = "";
     }
 
@@ -473,13 +472,11 @@ static void awt_selection_box_changed_filename(void *, struct adawcbstruct *cbs)
                         aw_root->awar(cbs->def_name)->write_string(with_previous_name);
                     }
                     else {
-                        free(cbs->previous_filename);
-                        cbs->previous_filename = 0;
+                        freeset(cbs->previous_filename, 0);
                         aw_root->awar(cbs->def_name)->write_string(newName);
                     }
 
-                    free(newName);
-                    newName = aw_root->awar(cbs->def_name)->read_string();
+                    freeset(newName, aw_root->awar(cbs->def_name)->read_string());
                 }
                 else {
                     aw_root->awar(cbs->def_name)->write_string("");
@@ -511,10 +508,7 @@ static void awt_selection_box_changed_filename(void *, struct adawcbstruct *cbs)
                             if (suffix && filter_has_changed) {
                                 if (suffix[-1] == '.') suffix[-1] = 0;
                             }
-
-                            char *n = set_suffix(newName, pfilter);
-                            free(newName);
-                            newName = n;
+                            freeset(newName, set_suffix(newName, pfilter));
                         }
                     }
                     free(filter);
@@ -523,9 +517,8 @@ static void awt_selection_box_changed_filename(void *, struct adawcbstruct *cbs)
                 if (strcmp(newName, fname) != 0) {
                     aw_root->awar(cbs->def_name)->write_string(newName); // loops back if changed !!!
                 }
-                
-                free(cbs->previous_filename);
-                cbs->previous_filename = newName; // this releases newName
+
+                freeset(cbs->previous_filename, newName);
             }
         }
         free(dir);
@@ -662,8 +655,7 @@ char *awt_get_selected_fullname(AW_root *awr, const char *awar_prefix) {
         char *dir = awar_dir->read_string();
         if (!dir[0]) {          // empty -> fillin current dir
             awar_dir->write_string(GB_getcwd());
-            free(dir);
-            dir = awar_dir->read_string();
+            freeset(dir, awar_dir->read_string());
         }
 
         char *full = strdup(GB_concat_full_path(dir, file));

@@ -45,21 +45,16 @@ static GB_ERROR split_stat_filename(const char *fname, char **dirPtr, char **nam
     char *dir         = strdup(fname);
     dir[lslash-fname] = 0; // cut off at last '/'
 
-    char *name_prefix  = GB_strdup(lslash+1);
+    char *name_prefix  = strdup(lslash+1);
     char *name_postfix = 0;
     char *ldot         = strrchr(name_prefix, '.');
+    
     if (ldot) {
         ldot[0]      = 0;
-        name_postfix = GB_strdup(ldot+1);
+        name_postfix = strdup(ldot+1);
     }
-    if (!ldot || name_prefix[0] == 0) { // no dot or empty name_prefix
-        free(name_prefix);
-        name_prefix = GB_strdup("*");
-    }
-    if (!name_postfix || name_postfix[0] == 0) {
-        free(name_postfix);
-        name_postfix = GB_strdup("*_gnu");
-    }
+    if (!ldot || name_prefix[0] == 0) freedup(name_prefix, "*"); // no dot or empty name_prefix
+    if (!name_postfix || name_postfix[0] == 0) freedup(name_postfix, "*_gnu");
 
     nt_assert(name_prefix);
     nt_assert(name_postfix);
@@ -84,17 +79,17 @@ static char * get_overlay_files(AW_root *awr, const char *fname, GB_ERROR& error
 
     char *found_files = 0;
     if (!error) {
-        char *mask               = GB_strdup(GBS_global_string("%s.*_gnu", name_prefix));
+        char *mask               = GBS_global_string_copy("%s.*_gnu", name_prefix);
         char *found_prefix_files = overlay_prefix ? GB_find_all_files(dir, mask, GB_FALSE) : 0;
         free(mask);
 
-        mask                      = GB_strdup(GBS_global_string("*.%s", name_postfix));
+        mask                      = GBS_global_string_copy("*.%s", name_postfix);
         char *found_postfix_files = overlay_postfix ? GB_find_all_files(dir, mask, GB_FALSE) : 0;
         free(mask);
 
         if (found_prefix_files) {
             if (found_postfix_files) {
-                found_files = GB_strdup(GBS_global_string("%s*%s", found_prefix_files, found_postfix_files));
+                found_files = GBS_global_string_copy("%s*%s", found_prefix_files, found_postfix_files);
             }
             else { // only found_prefix_files
                 found_files        = found_prefix_files;
@@ -189,8 +184,8 @@ static const char *makeTitle(const char *fname) {
     PlotType pt  = PT_UNKNOWN;
     if (rdot) pt = string2PlotType(rdot+1);
 
-    static char *title  = 0;
-    free(title); title = 0;
+    static char *title = 0;
+    freeset(title, 0);
 
     if (pt == PT_UNKNOWN) {
         title = GBS_global_string_copy("%s (unknown type)", name);
@@ -234,15 +229,9 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
 
     if (!error) {
         char *fname = aww->get_root()->awar(AP_AWAR_CSP_FILENAME)->read_string();
-        if (!strchr(fname, '/')) {
-            char *neu = GB_strdup(GBS_global_string("./%s", fname));
-            free(fname);
-            fname     = neu;
-        }
 
-        if (strlen(fname) < 1) {
-            error = "Please enter file name";
-        }
+        if (!strchr(fname, '/')) freeset(fname, GBS_global_string_copy("./%s", fname));
+        if (strlen(fname) < 1) error = "Please enter file name";
 
         if (mode == 2) {        // delete overlay files
             if (!error) {
@@ -377,7 +366,7 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
                         out = 0;
 
                         if (mode == 1) {
-                            char *script = GB_strdup(GBS_global_string("gnuplot %s && rm -f %s", command_file, command_file));
+                            char *script = GBS_global_string_copy("gnuplot %s && rm -f %s", command_file, command_file);
                             GB_xcmd(script, GB_TRUE, GB_TRUE);
                             free(script);
                         }

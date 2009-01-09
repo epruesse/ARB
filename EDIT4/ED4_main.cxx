@@ -225,21 +225,18 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
                     if (folded_group_man) { // we are in a folded group
                         if (folded_group_man==group_manager) { // we are the consensus of the folded group
                             if (folded_group_man->is_in_folded_group()) { // a folded group inside a folded group -> do not show
-                                free(seq);
-                                seq = 0;
+                                freeset(seq, 0);
                             }
                             else { // group folded but consensus shown -> add '-' before name
                                 char *new_name = (char*)GB_calloc(name_len+2, sizeof(char));
 
                                 sprintf(new_name, "-%s", name);
-                                free(name);
-                                name = new_name;
+                                freeset(name, new_name);
                                 name_len++;
                             }
                         }
                         else { // we are really inside a folded group -> don't show
-                            free(seq);
-                            seq = 0;
+                            freeset(seq, 0);
                         }
                     }
                 }

@@ -157,7 +157,7 @@ static GB_ERROR trace_params(int argc, const GBL *argv, struct gbl_param *ppara,
                 GBS_strcat(str,para->help_text);
                 GBS_strcat(str,"\n");
             }
-            GB_DELETE(params);
+            freeset(params, NULL);
             res = GBS_strclose(str);
             err = GB_export_error("Unknown Parameter '%s' in command '%s'\n\tPARAMETERS:\n%s",argv[i].str,com,res);
             free(res);
@@ -174,7 +174,7 @@ static GB_ERROR trace_params(int argc, const GBL *argv, struct gbl_param *ppara,
 
 static char *unEscapeString(const char *escapedString) {
     /* replaces all \x by x */
-    char *result = GB_strdup(escapedString);
+    char *result = nulldup(escapedString);
     char *to     = result;
     char *from   = result;
 
@@ -1762,9 +1762,9 @@ static const char *get_taxonomy(GBDATA *gb_species_or_group, const char *tree_na
                     }
                     else {
                         static char *parent = 0;
-                        if (parent) free(parent);
-                        parent              = get_taxonomy_string(tax_hash, parent_group, depth, error);
-                        result              = parent;
+                        
+                        freeset(parent, get_taxonomy_string(tax_hash, parent_group, depth, error));
+                        result = parent;
                     }
                 }
                 else {
@@ -1784,11 +1784,11 @@ static const char *get_taxonomy(GBDATA *gb_species_or_group, const char *tree_na
                     long     found    = GBS_read_hash(tax_hash, GBS_global_string(">>%p", gb_species_or_group));
 
                     if (found) {
-                        const char  *group_id   = (const char *)found;
                         static char *full_group = 0;
-                        if (full_group) free(full_group);
-                        full_group              = get_taxonomy_string(tax_hash, group_id, depth, error);
-                        result                  = full_group;
+                        const char  *group_id   = (const char *)found;
+
+                        freeset(full_group, get_taxonomy_string(tax_hash, group_id, depth, error));
+                        result = full_group;
                     }
                     else {
                         result = GBS_global_string("Group '%s' not in '%s'", group_name, tree_name);

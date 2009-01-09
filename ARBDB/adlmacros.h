@@ -2,18 +2,19 @@
 
 #define A_TO_I(c) if(c>'9') c-='A'-10; else c-='0';
 
-#   define GB_MEMALIGN(a,b)     memalign(a,b)
 
-# define GB_MEMCPY(d,s,n)       memcpy(d,s,n)
-# define GB_FREE(d)             free(d)
-# define GB_STRDUP(s)           strdup(s)
-# define GB_MEMSET(d,v,n)       memset(d,v,n)
-
-#define GB_DELETE(a)        if (a) GB_FREE(a); a = 0
+// GB_STRDUP does no longer exist!
+// its only here to avoid my own versioning problems.. will disappear soon
+#if defined(DEVEL_RALF)
+#define GB_STRDUP(str) GB_deprStrdup(str)
+#else
+#define GB_STRDUP(str) strdup(str)
+#endif // DEVEL_RALF
 
 #if defined(DIGITAL) || defined(DARWIN)
-# undef GB_MEMALIGN
 # define GB_MEMALIGN(a,b) malloc(b)
+#else
+# define GB_MEMALIGN(a,b) memalign(a,b)
 #endif
 
 #define GB_MIN(a,b) ( (a)>(b) ? (b):(a) )
@@ -23,11 +24,11 @@
 
 # define GB_GET_SECURITY_READ(gb)   ((gb)->flags.security_read)
 # define GB_GET_SECURITY_WRITE(gb)  ((gb)->flags.security_write)
-# define GB_GET_SECURITY_DELETE(gb)     ((gb)->flags.security_delete)
+# define GB_GET_SECURITY_DELETE(gb) ((gb)->flags.security_delete)
 
-# define GB_PUT_SECURITY_READ(gb,i)     do { (gb)->flags.security_read = (i); } while(0)
-# define GB_PUT_SECURITY_WRITE(gb,i)    do { (gb)->flags.security_write = (i); } while(0)
-# define GB_PUT_SECURITY_DELETE(gb,i)   do { (gb)->flags.security_delete = (i); } while(0)
+# define GB_PUT_SECURITY_READ(gb,i)   ((gb)->flags.security_read   = (i))
+# define GB_PUT_SECURITY_WRITE(gb,i)  ((gb)->flags.security_write  = (i))
+# define GB_PUT_SECURITY_DELETE(gb,i) ((gb)->flags.security_delete = (i))
 
 /********************* RELATIVE ADRESSING **********/
 
@@ -472,7 +473,7 @@ inline void GB_SETSMDMALLOC(GBDATA *gbd, long siz, long memsiz, char *dat) {
         GB_SETINTERN(gbd);
         gbd->info.istr.size = (unsigned char)siz;
         gbd->info.istr.memsize = (unsigned char)memsiz;
-        if (dat) GB_MEMCPY(&(gbd->info.istr.data[0]), (char *)dat, (size_t)(memsiz));
+        if (dat) memcpy(&(gbd->info.istr.data[0]), (char *)dat, (size_t)(memsiz));
     }else{
         char *exData;
         GB_SETEXTERN(gbd);
@@ -480,7 +481,7 @@ inline void GB_SETSMDMALLOC(GBDATA *gbd, long siz, long memsiz, char *dat) {
         gbd->info.ex.memsize = memsiz;
         exData = gbm_get_mem((size_t)memsiz,GB_GBM_INDEX(gbd));
         SET_GB_EXTERN_DATA_DATA(gbd->info.ex,exData);
-        if (dat) GB_MEMCPY(exData, (char *)dat, (size_t)(memsiz));
+        if (dat) memcpy(exData, (char *)dat, (size_t)(memsiz));
     }
     GB_INDEX_CHECK_IN(gbd);
 }
@@ -524,7 +525,7 @@ do {                                                                            
         GB_SETINTERN(gbd);                                                                  \
         (gbd)->info.istr.size = (unsigned char)(siz);                                       \
         (gbd)->info.istr.memsize = (unsigned char)(memsiz);                                 \
-        if (dat) GB_MEMCPY(&((gbd)->info.istr.data[0]), (char *)(dat), (size_t)(memsiz));   \
+        if (dat) memcpy(&((gbd)->info.istr.data[0]), (char *)(dat), (size_t)(memsiz));      \
     }else{                                                                                  \
         char *exData;                                                                       \
         GB_SETEXTERN(gbd);                                                                  \
@@ -532,7 +533,7 @@ do {                                                                            
         (gbd)->info.ex.memsize = (memsiz);                                                  \
         exData = gbm_get_mem((size_t)(memsiz),GB_GBM_INDEX(gbd));                           \
         SET_GB_EXTERN_DATA_DATA((gbd)->info.ex,exData);                                     \
-        if (dat) GB_MEMCPY(exData, (char *)(dat), (size_t)(memsiz));                        \
+        if (dat) memcpy(exData, (char *)(dat), (size_t)(memsiz));                           \
     }                                                                                       \
     GB_INDEX_CHECK_IN(gbd);                                                                 \
 }while(0)
@@ -577,7 +578,7 @@ inline void _GB_CHECK_IN_UNDO_MODIFY(GB_MAIN_TYPE *Main, GBDATA *gbd) {
 }
 inline void STATIC_BUFFER(char*& strvar, int minlen) {
     ad_assert(minlen > 0); 
-    if (strvar && (strlen(strvar) < (size_t)(minlen-1))) { free((void*)(strvar)); strvar=NULL; }
+    if (strvar && (strlen(strvar) < (size_t)(minlen-1))) { freeset(strvar, NULL); }
     if (!strvar) strvar=(char*)GB_calloc(minlen,1);
 }
 
@@ -599,12 +600,14 @@ do {                                                            \
     if ((Main)->undo_type) gb_check_in_undo_modify(Main,gbd);   \
 } while(0)
 
-#define STATIC_BUFFER(strvar,static_buffer_minlen)                                              \
-do {                                                                                            \
-    ad_assert(static_buffer_minlen > 0);                                                        \
-    size_t static_buffer_len = (static_buffer_minlen);                                          \
-    if ((strvar) && (strlen(strvar) < (static_buffer_len-1))) { free(strvar); (strvar)=NULL; }  \
-    if (!(strvar)) (strvar)=(char*)GB_calloc(static_buffer_len,1);                              \
+#define STATIC_BUFFER(strvar,static_buffer_minlen)                      \
+do {                                                                    \
+    ad_assert(static_buffer_minlen > 0);                                \
+    size_t static_buffer_len = (static_buffer_minlen);                  \
+    if ((strvar) && (strlen(strvar) < (static_buffer_len-1))) {         \
+        freeset(strvar, NULL);                                          \
+    }                                                                   \
+    if (!(strvar)) (strvar)=(char*)GB_calloc(static_buffer_len,1);      \
 } while(0)
 
 #endif

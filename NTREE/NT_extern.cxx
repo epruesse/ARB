@@ -756,8 +756,7 @@ static void relink_pseudo_species_to_organisms(GBDATA *&ref_gb_node, char *&ref_
                 char *name = GBT_read_string(gb_organism, "name");
 
                 if (name) {
-                    free(ref_name);
-                    ref_name    = name;
+                    freeset(ref_name, name);
                     ref_gb_node = gb_organism;
                 }
             }

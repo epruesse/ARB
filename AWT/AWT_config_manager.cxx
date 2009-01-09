@@ -104,11 +104,7 @@ void remove_from_configs(const string& config, string& existing_configs) {
 static char *correct_key_name(const char *name) {
     char *corrected = GBS_string_2_key(name);
 
-    if (strcmp(corrected, "__") == 0) {
-        free(corrected);
-        corrected = strdup("");
-    }
-
+    if (strcmp(corrected, "__") == 0) freedup(corrected, "");
     return corrected;
 }
 

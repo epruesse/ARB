@@ -832,8 +832,7 @@ void ED4_cursor::updateAwars()
                 if (cursor_manager->parent->flag.is_SAI) {
                     static char *last_set_SAI = 0;
                     if (!last_set_SAI || strcmp(last_set_SAI, species_name) != 0) {
-                        free(last_set_SAI);
-                        last_set_SAI = strdup(species_name);
+                        freedup(last_set_SAI, species_name);
 
                         ignore_selected_SAI_changes_cb = true;
                         GBT_write_string(GLOBAL_gb_main, AWAR_SAI_NAME, species_name);
@@ -843,8 +842,7 @@ void ED4_cursor::updateAwars()
                 else {
                     static char *last_set_species = 0;
                     if (!last_set_species || strcmp(last_set_species, species_name) != 0) {
-                        free(last_set_species);
-                        last_set_species = strdup(species_name);
+                        freedup(last_set_species, species_name);
 
                         ignore_selected_species_changes_cb = true;
                         GBT_write_string(GLOBAL_gb_main, AWAR_SPECIES_NAME, species_name);

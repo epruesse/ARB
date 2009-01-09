@@ -71,8 +71,7 @@ char *AW_awar::read_string(){
 }
 
 void AW_awar::get( char **p_string ) {
-    free(*p_string);
-    *p_string = read_string();
+    freeset(*p_string, read_string());
 }
 
 
@@ -600,8 +599,7 @@ AW_default AW_root::get_gbdata( const char *varname) {
 void Awar_Callback_Info::remap(const char *new_awar) {
     if (strcmp(awar_name, new_awar) != 0) {
         remove_callback();
-        free(awar_name);
-        awar_name = strdup(new_awar);
+        freedup(awar_name, new_awar);
         add_callback();
     }
 }

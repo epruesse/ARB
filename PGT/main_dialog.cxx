@@ -289,33 +289,17 @@ void mainDialog::createMainArea()
 void mainDialog::updateListEntries()
 {
     // GET AWAR CONTENT
-    char *species_AWAR=    get_species_AWAR();
-    char *experiment_AWAR= get_experiment_AWAR();
-    char *proteome_AWAR=   get_proteom_AWAR();
-    char *protein_AWAR=    get_protein_AWAR();
+    char *species_AWAR    = get_species_AWAR();
+    char *experiment_AWAR = get_experiment_AWAR();
+    char *proteome_AWAR   = get_proteom_AWAR();
+    char *protein_AWAR    = get_protein_AWAR();
 
     // SET DEFAULT CONTENT IF AWAR IS EMPTY
-    if(!species_AWAR || strlen(species_AWAR) == 0)
-    {
-        if(species_AWAR) free(species_AWAR);
-        species_AWAR= strdup("no selected species");
-    }
-    if(!experiment_AWAR || strlen(experiment_AWAR) == 0)
-    {
-        if(experiment_AWAR) free(experiment_AWAR);
-        experiment_AWAR= strdup("no selected experiment");
-    }
-    if(!proteome_AWAR || strlen(proteome_AWAR) == 0)
-    {
-        if(proteome_AWAR) free(proteome_AWAR);
-        proteome_AWAR= strdup("no selected proteome");
-    }
-    if(!protein_AWAR || strlen(protein_AWAR) == 0)
-    {
-        if(protein_AWAR) free(protein_AWAR);
-        protein_AWAR= strdup("no selected protein");
-    }
-
+    if (!species_AWAR    || !species_AWAR[0])    freedup(species_AWAR,    "no selected species");
+    if (!experiment_AWAR || !experiment_AWAR[0]) freedup(experiment_AWAR, "no selected experiment");
+    if (!proteome_AWAR   || !proteome_AWAR[0])   freedup(proteome_AWAR,   "no selected proteome");
+    if (!protein_AWAR    || !protein_AWAR[0])    freedup(protein_AWAR,    "no selected protein");
+    
     // SET TEXT FIELD ENTRIES
     XtVaSetValues(m_speciesText, XmNvalue, species_AWAR, NULL);
     XtVaSetValues(m_experimentText, XmNvalue, experiment_AWAR, NULL);

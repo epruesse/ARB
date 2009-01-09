@@ -366,10 +366,7 @@ GB_ERROR export_sequence_data::detectVerticalGaps() {
 
 const char *export_sequence_data::get_export_sequence(GBDATA *gb_species, size_t& seq_len, GB_ERROR& err) {
     if (gb_species != last_species_read) {
-        if (error) {
-            free(error);
-            error = 0;
-        }
+        freeset(error, 0);
 
         // read + filter a new species
         GB_ERROR             curr_error;
@@ -632,9 +629,8 @@ static GB_ERROR AWTI_export_format(AW_root *aw_root, const char *formname, const
             if (GB_unlink(*resulting_outname)<0) {
                 aw_message(GB_export_IO_error("deleting", *resulting_outname));
             }
-            free(*resulting_outname);
+            freeset(*resulting_outname, 0);
         }
-        *resulting_outname = 0;
     }
 
     export_depth--;
@@ -666,7 +662,7 @@ static GB_ERROR AWTI_export_format_multiple(AW_root *aw_root, const char *formna
                 const char *fname = GB_append_suffix(GBS_global_string("%s_%s", name, species_name), suffix);
                 aw_status(fname);
 
-                char *oname = GB_strdup(GB_concat_path(path, fname));
+                char *oname = strdup(GB_concat_path(path, fname));
                 char *res_oname;
 
                 esd->set_single_mode(gb_species); // means: only export 'gb_species'
@@ -678,9 +674,7 @@ static GB_ERROR AWTI_export_format_multiple(AW_root *aw_root, const char *formna
                 if (!*resulting_outname || // not set yet
                     (res_oname && strcmp(*resulting_outname, res_oname)>0)) // or smaller than set one
                 {
-                    free(*resulting_outname);
-                    *resulting_outname = res_oname;
-                    res_oname          = NULL;
+                    reassign(*resulting_outname, res_oname);
                 }
 
                 free(res_oname);
@@ -800,19 +794,10 @@ static void export_form_changed_cb(AW_root *aw_root) {
                     GB_split_full_path(exportname, &path, NULL, &nameOnly, &suffix);
 
                     if (suffix) {
-                        if (previous_suffix && ARB_stricmp(suffix, previous_suffix) == 0) { // remove old suffix
-                            free(suffix);
-                            suffix = GB_strdup(current_suffix);
-                        }
-                        else {  // don't know existing suffix -> append
-                            char *new_suffix = GB_strdup(GB_append_suffix(suffix, current_suffix));
-                            free(suffix);
-                            suffix = new_suffix;
-                        }
+                        if (previous_suffix && ARB_stricmp(suffix, previous_suffix) == 0) freedup(suffix, current_suffix); // remove old suffix
+                        else freedup(suffix, GB_append_suffix(suffix, current_suffix)); // don't know existing suffix -> append
                     }
-                    else {
-                        suffix = GB_strdup(current_suffix);
-                    }
+                    else suffix = strdup(current_suffix);
 
                     const char *new_exportname = GB_concat_path(path, GB_append_suffix(nameOnly, suffix));
                     if (new_exportname) awar_export->write_string(new_exportname);
@@ -827,9 +812,7 @@ static void export_form_changed_cb(AW_root *aw_root) {
                 awar_filter->write_string(current_suffix);
                 
                 // remember last applied suffix
-                free(previous_suffix);
-                previous_suffix = current_suffix;
-                current_suffix  = 0;
+                reassign(previous_suffix, current_suffix);
             }
 
             free(current_suffix);

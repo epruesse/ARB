@@ -768,11 +768,11 @@ ED4_ERROR *ED4_Edit_String::command( AW_key_mod keymod, AW_key_code keycode, cha
                                 }
                             }
 
-                            char *aligned_seq = GB_read_string(gb_data);        // read new sequence
-                            ad_err = GB_write_string(gb_data, seq);         // restore old sequence
-                            free(seq);
-                            seq = aligned_seq;                  // set new sequence
-                            changed_flag=1;                     // and mark changed
+                            char *aligned_seq = GB_read_string(gb_data); // read new sequence
+                            ad_err            = GB_write_string(gb_data, seq); // restore old sequence
+
+                            freeset(seq, aligned_seq); // set new sequence
+                            changed_flag = 1;       // and mark changed
 
                             {
                                 int basesLeftOf2   = 0;
@@ -818,16 +818,12 @@ ED4_ERROR *ED4_Edit_String::command( AW_key_mod keymod, AW_key_code keycode, cha
                         case 'J': { // CTRL-J = Jump to opposite helix position
                             AW_helix *helix = ED4_ROOT->helix;
 
-                            if (!helix->has_entries()) {
-                                ad_err = GB_strdup("Got no helix information");
-                            }
+                            if (!helix->has_entries()) ad_err = strdup("Got no helix information");
                             else if (helix->pairtype(seq_pos) != HELIX_NONE) {
                                 seq_pos = helix->opposite_position(seq_pos);
                                 cursor_jump = ED4_JUMP_KEEP_POSITION;
                             }
-                            else {
-                                ad_err = GB_strdup("Not at helix position");
-                            }
+                            else ad_err = strdup("Not at helix position");
                             break;
                         }
                         case 'K': { // Ctrl-K = Compression on/off
@@ -1148,8 +1144,7 @@ void ED4_Edit_String::edit(ED4_work_info *info)
                     info->out_seq_position = remap->screen_to_sequence(info->char_position);    // correct cursor_pos if protection error occurred
                 }
             }
-            free(seq);
-            seq = 0;
+            freeset(seq, 0);
         }
     }
 

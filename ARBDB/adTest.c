@@ -161,10 +161,9 @@ const char *GB_get_type_name(GBDATA *gbd) {
         case GB_FLOATS: { type_name = "GB_FLOATS"; break; }
         case GB_DB:     { type_name = "GB_DB"; break; }
         default: {
-            static char *unknownType;
-            if (unknownType) free(unknownType);
-            unknownType = strdup(GBS_global_string("<unknown GB_TYPE=%i>", type));
-            type_name   = unknownType;
+            static char *unknownType = 0;
+            freeset(unknownType, GBS_global_string_copy("<unknown GB_TYPE=%i>", type));
+            type_name = unknownType;
             break;
         }
     }
@@ -176,23 +175,13 @@ const char *GB_get_db_path(GBDATA *gbd) {
     GBDATA *gb_father = GB_get_father(gbd);
 
     if (gb_father) {
-        static char *result;
-        char        *father_path = strdup(GB_get_db_path(gb_father));
-        int          key_quark   = GB_KEY_QUARK(gbd);
+        char *father_path = strdup(GB_get_db_path(gb_father));
+        int   key_quark   = GB_KEY_QUARK(gbd);
 
-        if (result) {
-            free(result);
-            result = 0;
-        }
-
-        if (key_quark == 0) { // illegal
-            result = strdup(GBS_global_string("%s/<illegal quark=0>", father_path));
-        }
-        else {
-            const char *key = GB_KEY(gbd);
-            result = strdup(GBS_global_string("%s/%s", father_path, key));
-        }
-
+        static char *result; // careful! used recursively
+        freeset(result, GBS_global_string_copy("%s/%s", father_path, key_quark ? GB_KEY(gbd) : "<illegal quark=0>"));
+        free(father_path);
+        
         return result;
     }
     return "ROOT";
@@ -335,7 +324,7 @@ static void GB_dump_internal(GBDATA *gbd, int *lines_allowed) {
     if (gb_show_later) {
         if (!lines_allowed || (*lines_allowed)>0) {
             printf("%*s Showing %s:\n", indent, "", whatto_show_later);
-            free(whatto_show_later); whatto_show_later = 0;
+            freeset(whatto_show_later, NULL); 
             ++indent;
             GB_dump_internal(gb_show_later, lines_allowed);
             --indent;

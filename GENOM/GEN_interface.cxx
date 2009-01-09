@@ -30,7 +30,7 @@ using namespace std;
 // --------------------------------------------------------------------------------
 
 void GEN_select_gene(GBDATA* /*gb_main*/, AW_root *aw_root, const char *item_name) {
-    char *organism  = GB_strdup(item_name);
+    char *organism  = strdup(item_name);
     char *gene = strchr(organism, '/');
 
     if (gene) {
@@ -50,7 +50,7 @@ static char *gen_get_gene_id(GBDATA */*gb_main*/, GBDATA *gb_gene) {
 }
 
 static GBDATA *gen_find_gene_by_id(GBDATA *gb_main, const char *id) {
-    char   *organism = GB_strdup(id);
+    char   *organism = strdup(id);
     char   *gene     = strchr(organism, '/');
     GBDATA *result   = 0;
 
@@ -141,8 +141,7 @@ static GBDATA *GEN_get_next_gene_data(GBDATA *gb_gene_data, AWT_QUERY_RANGE rang
 
             if (!gb_organism && old_species_marks) { // got all -> clean up
                 GBT_restore_marked_species(GLOBAL_gb_main, old_species_marks);
-                free(old_species_marks);
-                old_species_marks = 0;
+                freeset(old_species_marks, 0);
             }
 
             break;

@@ -50,7 +50,7 @@ GBDATA* EXP_get_current_experiment_data(GBDATA *gb_main, AW_root *aw_root) {
 }
 
 static void EXP_select_experiment(GBDATA* /*gb_main*/, AW_root *aw_root, const char *item_name) {
-    char *name  = GB_strdup(item_name);
+    char *name  = strdup(item_name);
     char *slash = strchr(name, '/');
 
     if (slash) {
@@ -67,7 +67,7 @@ static char *EXP_get_experiment_id(GBDATA */*gb_main*/, GBDATA *gb_experiment) {
 }
 
 static GBDATA *EXP_find_experiment_by_id(GBDATA *gb_main, const char *id) {
-    char   *organism = GB_strdup(id);
+    char   *organism = strdup(id);
     char   *exp     = strchr(organism, '/');
     GBDATA *result   = 0;
 
@@ -145,8 +145,7 @@ static GBDATA *EXP_get_next_experiment_data(GBDATA *gb_experiment_data, AWT_QUER
 
             if (!gb_species && old_species_marks) { // got all -> clean up
                 GBT_restore_marked_species(GLOBAL_gb_main, old_species_marks);
-                free(old_species_marks);
-                old_species_marks = 0;
+                freeset(old_species_marks, 0);
             }
 
             break;

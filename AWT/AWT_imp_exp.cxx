@@ -105,7 +105,7 @@ static const char *awt_export_tree_node_print(GBDATA *gb_main, FILE *out, GBT_TR
                 
                 boot = GBS_global_string("%i", int(val+0.5));
             }
-            bootstrap = GB_strdup(boot);
+            bootstrap = strdup(boot);
         }
 
         if (tree->name && save_groupnames) buf = tree->name;
@@ -156,10 +156,9 @@ static const char *awt_export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tre
             if (boot[0] && boot[strlen(boot)-1] == '%') { // does remark_branch contain a bootstrap value ?
                 char   *end = 0;
                 double  val = strtod(boot, &end);
-                awt_assert(end[0] == '%'); // otherwise sth strange is contained in remark_branch
-                boot        = GBS_global_string("%i", int(val+0.5));
-
-                bootstrap = GB_strdup(boot);
+                
+                awt_assert(end[0] == '%');          // otherwise sth strange is contained in remark_branch
+                bootstrap = GBS_global_string_copy("%i", int(val+0.5));
             }
         }
         bool folded = false;
@@ -170,7 +169,7 @@ static const char *awt_export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tre
             else buf         = tree->name;
 
             awt_assert(buf);
-            groupname = GB_strdup(buf);
+            groupname = strdup(buf);
 
             GBDATA *gb_grouped = GB_entry(tree->gb_node, "grouped");
             if (gb_grouped) {
@@ -191,13 +190,11 @@ static const char *awt_export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tre
             }
             if (bootstrap) {
                 branch_tag.add_attribute("bootstrap", bootstrap);
-                free(bootstrap);
-                bootstrap = 0;
+                freeset(bootstrap, 0);
             }
             if (groupname) {
                 branch_tag.add_attribute("groupname", groupname);
-                free(groupname);
-                groupname = 0;
+                freeset(groupname, 0);
                 if (folded) branch_tag.add_attribute("folded", "1");
             }
             else {
@@ -316,7 +313,7 @@ GB_ERROR AWT_export_Newick_tree(GBDATA *gb_main, char *tree_name, AW_BOOL use_ND
                 GBDATA *tree_remark = GB_entry(tree_cont, "remark");
 
                 if (tree_remark) remark = GB_read_string(tree_remark);
-                else remark             = GB_strdup(GBS_global_string("ARB-tree '%s'", tree_name));
+                else remark             = GBS_global_string_copy("ARB-tree '%s'", tree_name);
 
                 {
                     char *escaped_remark = GBT_newick_comment(remark, GB_TRUE);

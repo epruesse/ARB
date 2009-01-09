@@ -132,7 +132,7 @@ long gbcm_read_buffered(int socket,char *ptr, long size)
         gb_local->write_free-=holding;
     }
     if (size>holding) size = holding;
-    GB_MEMCPY(ptr,gb_local->write_ptr,(int)size);
+    memcpy(ptr,gb_local->write_ptr,(int)size);
     gb_local->write_ptr += size;
     gb_local->write_free+= size;
     return size;
@@ -202,7 +202,7 @@ gbcm_write_flush(int socket)
 int gbcm_write(int socket,const char *ptr,long size) {
 
     while  (size >= gb_local->write_free){
-        GB_MEMCPY(gb_local->write_ptr, ptr, (int)gb_local->write_free);
+        memcpy(gb_local->write_ptr, ptr, (int)gb_local->write_free);
         gb_local->write_ptr += gb_local->write_free;
         size -= gb_local->write_free;
         ptr += gb_local->write_free;
@@ -210,7 +210,7 @@ int gbcm_write(int socket,const char *ptr,long size) {
         gb_local->write_free = 0;
         if (gbcm_write_flush(socket)) return GBCM_SERVER_FAULT;
     }
-    GB_MEMCPY(gb_local->write_ptr, ptr, (int)size);
+    memcpy(gb_local->write_ptr, ptr, (int)size);
     gb_local->write_ptr += size;
     gb_local->write_free -= size;
     return GBCM_SERVER_OK;
@@ -243,7 +243,7 @@ GB_ERROR gbcm_get_m_id(const char *path, char **m_name, long *id)
         if (!p) {
             return GB_export_error("OPEN_ARB_DB_CLIENT ERROR: missing ':' in %s",path);
         }
-        *m_name = GB_STRDUP(p+1);
+        *m_name = strdup(p+1);
         *id = -1;
         return 0;
     }
@@ -454,19 +454,19 @@ long gbcm_write_string(int socket, const char *key)
 char *gbcm_read_string(int socket)
 {
     char *key;
-    long  strlen = gbcm_read_long(socket);
+    long  len = gbcm_read_long(socket);
 
-    if (strlen) {
-        if (strlen>0) {
-            key = (char *)GB_calloc(sizeof(char), (size_t)strlen+1);
-            gbcm_read(socket, key, strlen);
+    if (len) {
+        if (len>0) {
+            key = (char *)GB_calloc(sizeof(char), (size_t)len+1);
+            gbcm_read(socket, key, len);
         }
         else {
             key = 0;
         }
     }
     else {
-        key = GB_strdup("");
+        key = strdup("");
     }
 
     return key;
@@ -609,16 +609,16 @@ char *GB_follow_unix_link(const char *path){    /* returns the real path of a fi
     int len = readlink(path,buffer,999);
     if (len<0) return 0;
     buffer[len] = 0;
-    if (path[0] == '/') return GB_STRDUP(buffer);
+    if (path[0] == '/') return strdup(buffer);
 
-    path2 = GB_STRDUP(path);
+    path2 = strdup(path);
     pos = strrchr(path2,'/');
     if (!pos){
         free(path2);
-        return GB_STRDUP(buffer);
+        return strdup(buffer);
     }
     *pos = 0;
-    res =  GB_STRDUP(GBS_global_string("%s/%s",path2,buffer));
+    res  = GBS_global_string_copy("%s/%s",path2,buffer);
     free(path2);
     return res;
 }
@@ -1171,13 +1171,7 @@ GB_ULONG GB_get_physical_memory(void) {
             }
         } while((step_size=step_size/2) > sizeof(void*));
 
-        while(head) {
-            void *tmp;
-            tmp=*(void**)head;
-            free(head);
-            head=tmp;
-        }
-
+        while (head) freeset(head, *(void**)head);
         max_malloc /= 1024;
     }
 

@@ -155,7 +155,7 @@ void GBT_free_configuration_data(GBT_config *data) {
 GBT_config_parser *GBT_start_config_parser(const char *config_string) {
     GBT_config_parser *parser = GB_calloc(1, sizeof(*parser));
 
-    parser->config_string = GB_strdup(config_string);
+    parser->config_string = nulldup(config_string);
     parser->parse_pos     = 0;
 
     return parser;
@@ -180,8 +180,7 @@ GB_ERROR GBT_parse_next_config_item(GBT_config_parser *parser, GBT_config_item *
     const char *str = parser->config_string;
     int         pos = parser->parse_pos;
 
-    free(item->name);
-    item->name = 0;
+    freeset(item->name, NULL);
     item->type = CI_END_OF_CONFIG;
 
     if (str[pos]) {             /* if not at 0-byte */

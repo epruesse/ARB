@@ -11,7 +11,7 @@
 static char *namesFilename(AW_CL cl_gb_main) {
     const char *field    = AW_get_nameserver_addid((GBDATA*)cl_gb_main);
     const char *filename = field[0] ? GBS_global_string("names_%s.dat", field) : "names_dat";
-    char       *fullname = GB_strdup(GB_path_in_ARBLIB("nas", filename));
+    char       *fullname = nulldup(GB_path_in_ARBLIB("nas", filename));
 
     return fullname;
 }

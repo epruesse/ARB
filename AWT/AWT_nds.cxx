@@ -556,8 +556,7 @@ void make_node_text_init(GBDATA *gb_main){
 
 
         if (at_leaf || at_group) {
-            if (awt_nds_ms->dkeys[count]) free(awt_nds_ms->dkeys[count]);
-            awt_nds_ms->dkeys[count] = GB_read_string(GB_entry(gbz, "key_text"));
+            freeset(awt_nds_ms->dkeys[count], GB_read_string(GB_entry(gbz, "key_text")));
 
             awt_nds_ms->rek[count]      = (GB_first_non_key_char(awt_nds_ms->dkeys[count]) != 0);
             awt_nds_ms->lengths[count]  = GB_read_int(GB_entry(gbz, "len1"));
@@ -565,10 +564,7 @@ void make_node_text_init(GBDATA *gb_main){
             awt_nds_ms->at_group[count] = at_group;
 
             gbe = GB_entry(gbz, "pars");
-            if (awt_nds_ms->parsing[count]) {
-                free(awt_nds_ms->parsing[count]);
-                awt_nds_ms->parsing[count] = 0;
-            }
+            freeset(awt_nds_ms->parsing[count], 0);
             if (gbe && GB_read_string_count(gbe)>1 ) awt_nds_ms->parsing[count] = GB_read_string(gbe);
             count++;
         }
@@ -672,15 +668,7 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode, GBT_TREE
             const char *aci_srt = awt_nds_ms->parsing[i];
             if (aci_srt) {
                 char *aci_result = GB_command_interpreter(gb_main, str, aci_srt, gbd, tree_name);
-                if (aci_result) {
-                    free(str);
-                    str = aci_result;
-                }
-                else {          // error
-                    error = GB_get_error();
-                    free(str);
-                    str   = GBS_global_string_copy("<error: %s>", error);
-                }
+                freeset(str, aci_result ? aci_result : GBS_global_string_copy("<error: %s>", GB_expect_error()));
             }
         }
 

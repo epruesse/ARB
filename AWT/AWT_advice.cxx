@@ -114,7 +114,7 @@ void AWT_advice(const char *message, int type, const char *title, const char *co
     awt_assert(initialized);
     size_t  message_len = strlen(message); awt_assert(message_len>0);
     long    crc32       = GB_checksum(message, message_len, true, " .,-!"); // checksum is used to test if advice was shown
-    char   *advice_id   = GB_strdup(GBS_global_string("%lx", crc32));
+    char   *advice_id   = GBS_global_string_copy("%lx", crc32);
 
     bool show_advice = !advice_disabled(advice_id);
 

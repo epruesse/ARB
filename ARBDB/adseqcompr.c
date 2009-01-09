@@ -250,11 +250,7 @@ static int maxCompressionSteps(GB_CTREE *node) {
     int right = maxCompressionSteps(node->rightson);
 
 #if defined(SAVE_COMPRESSION_TREE_TO_DB)
-    if (node->name) {
-        free(node->name);
-        node->name = 0;
-    }
-
+    freeset(node->name, 0);
     if (node->index2 != -1) {
         node->name = GBS_global_string_copy("master_%03i", node->index2);
     }
@@ -547,8 +543,8 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, const ch
                             sumold += sizen;
                             sumorg += seq_len;
 
-                            GB_FREE(seqm);
-                            GB_FREE(seq);
+                            free(seqm);
+                            free(seq);
                         }
 
                         if (GB_status((si+1)/(double)seqcount)) {
@@ -587,7 +583,7 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, const ch
 
                                 GB_write_string(gbd,"");
                                 GB_write_string(gbd,data);
-                                GB_FREE(data);
+                                free(data);
 
                                 sumold += size;
 
@@ -670,9 +666,9 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, const ch
                     }
 
                     if (!error) {
-                        char *sizeOrg = GB_STRDUP(GBS_readable_size(sumorg));
-                        char *sizeOld = GB_STRDUP(GBS_readable_size(sumold));
-                        char *sizeNew = GB_STRDUP(GBS_readable_size(sumnew));
+                        char *sizeOrg = strdup(GBS_readable_size(sumorg));
+                        char *sizeOld = strdup(GBS_readable_size(sumold));
+                        char *sizeNew = strdup(GBS_readable_size(sumnew));
 
                         GB_warning("Alignment '%s':\n"
                                    "    Uncompressed data:   %7s\n"
@@ -697,9 +693,9 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, const ch
                 }
 
                 // free data
-                GB_FREE(seqs);
-                for (si=0;si<mastercount;si++)GB_FREE(masters[si]);
-                GB_FREE(masters);
+                free(seqs);
+                for (si=0;si<mastercount;si++) free(masters[si]);
+                free(masters);
             }
         }
     }

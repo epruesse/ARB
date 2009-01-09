@@ -32,11 +32,7 @@ extern "C" int PT_find_exProb(PT_exProb *pep)
   printf("EXTERN: PT_find_exProb\n");
 
   /* free old result */
-  if(pep->result)
-  {
-    free(pep->result);
-    pep->result = NULL;
-  }
+  freeset(pep->result, NULL);
 
   /* do we need to start from scratch? */
   if(pep->restart)
@@ -104,8 +100,7 @@ extern "C" int PT_find_exProb(PT_exProb *pep)
         //printf("Up\n");
         parenttn = tn->tn_Parent;
         seqcode = tn->tn_ParentSeq + 1;
-        free(tn);
-        tn = parenttn;
+        freeset(tn, parenttn);
         if(!tn)
         {
         /* we're done with this partition */
@@ -149,8 +144,7 @@ extern "C" int PT_find_exProb(PT_exProb *pep)
 
     parenttn = tn->tn_Parent;
     seqcode = tn->tn_ParentSeq + 1;
-    free(tn);
-    tn = parenttn;
+    freeset(tn, parenttn);
   }
   *outptr = 0;
   pep->next_probe.data = (STRPTR) tn;

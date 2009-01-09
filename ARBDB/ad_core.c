@@ -242,7 +242,7 @@ struct gb_main_type *gb_make_gb_main_type(const char *path)
     struct gb_main_type *Main;
 
     Main = (struct gb_main_type *)gbm_get_mem(sizeof(struct gb_main_type),0);
-    if (path) Main->path = GB_STRDUP((char*)path);
+    if (path) Main->path = strdup((char*)path);
     Main->key_2_index_hash = GBS_create_hash(20000, GB_MIND_CASE);
     Main->compression_mask = -1;        /* allow all compressions */
     gb_init_cache(Main);
@@ -319,7 +319,7 @@ gb_make_entry(GBCONTAINER * father, const char *key, long index_pos, GBQUARK key
     {
         case GB_STRING_SHRT:    type = GB_STRING;
         case GB_STRING:
-            if (!buffer) buffer = GB_STRDUP("1234");
+            if (!buffer) buffer = strdup("1234");
             p = buffer;
             while ( !(++(*p) )) { (*p)++;p++; if (!(*p)) break; }
             GB_SETSMDMALLOC(gbd,5,5,buffer);
@@ -504,7 +504,7 @@ struct gb_transaction_save *gb_new_gb_transaction_save(GBDATA *gbd){
     }
     else
     {
-        GB_MEMCPY(&(ts->info), &(gbd->info), sizeof(gbd->info));
+        memcpy(&(ts->info), &(gbd->info), sizeof(gbd->info));
     }
 
     ts->refcount = 1;
@@ -561,7 +561,7 @@ void gb_abortdata(GBDATA *gbd)
     }
     else
     {
-        GB_MEMCPY(&(gbd->info), &(old->info),sizeof(old->info));
+        memcpy(&(gbd->info), &(old->info),sizeof(old->info));
     }
     gb_del_ref_and_extern_gb_transaction_save(old);
     gbd->ext->old = NULL;
@@ -687,7 +687,7 @@ long gb_create_key(GB_MAIN_TYPE *Main, const char *s, GB_BOOL create_gb_key) {
     Main->keys[index].nref = 0;
 
     if (s){
-        Main->keys[index].key = GB_STRDUP(s);
+        Main->keys[index].key = strdup(s);
         GBS_write_hash(Main->key_2_index_hash,s,index);
         if (Main->gb_key_data && create_gb_key){
             gb_load_single_key_data((GBDATA *)Main->data,(GBQUARK)index);
@@ -708,10 +708,9 @@ void gb_free_all_keys(GB_MAIN_TYPE *Main) {
     if (!Main->keys) return;
     for (index = 1; index < Main->keycnt; index++) {
         if (Main->keys[index].key){
-            GBS_write_hash(Main->key_2_index_hash,Main->keys[index].key,0);
-            free(Main->keys[index].key);
+            GBS_write_hash(Main->key_2_index_hash, Main->keys[index].key, 0);
+            freeset(Main->keys[index].key, 0);
         }
-        Main->keys[index].key = 0;
         Main->keys[index].nref = 0;
         Main->keys[index].next_free_key = 0;
     }

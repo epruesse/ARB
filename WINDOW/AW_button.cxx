@@ -325,7 +325,7 @@ void     aw_attach_widget(Widget scrolledWindowText,AW_at *_at,int default_width
 /****************************************************************************************************************************/
 
 static char *pixmapPath(const char *pixmapName) {
-    return GB_strdup(GB_path_in_ARBLIB("pixmaps", pixmapName));
+    return nulldup(GB_path_in_ARBLIB("pixmaps", pixmapName));
 }
 
 
@@ -893,8 +893,8 @@ void AW_window::create_toggle(const char *var_name,const char *no, const char *y
 void AW_window::create_text_toggle(const char *var_name, const char *noText, const char *yesText, int buttonWidth) {
     aw_toggle_data *tdata  = new aw_toggle_data;
     tdata->isTextToggle    = true;
-    tdata->bitmapOrText[0] = GB_strdup(noText);
-    tdata->bitmapOrText[1] = GB_strdup(yesText);
+    tdata->bitmapOrText[0] = strdup(noText);
+    tdata->bitmapOrText[1] = strdup(yesText);
     tdata->buttonWidth     = buttonWidth;
 
     create_toggle(var_name, tdata);
@@ -1419,16 +1419,12 @@ const char *AW_window::get_list_entry_displayed() {
 
 void AW_window::set_list_entry_char_value(const char *new_char_value) {
     if (!current_list_table) AW_ERROR("No Selection List Iterator");
-
-    free(current_list_table->char_value);
-    current_list_table->char_value = AW_select_table_struct::copy_string(new_char_value);
+    freeset(current_list_table->char_value, AW_select_table_struct::copy_string(new_char_value));
 }
 
 void AW_window::set_list_entry_displayed(const char *new_displayed) {
     if (!current_list_table) AW_ERROR("No Selection List Iterator");
-
-    free(current_list_table->displayed);
-    current_list_table->displayed = AW_select_table_struct::copy_string(new_displayed);
+    freeset(current_list_table->displayed, AW_select_table_struct::copy_string(new_displayed));
 }
 
 /*

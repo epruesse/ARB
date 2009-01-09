@@ -80,8 +80,7 @@ static void freeContent() {
     if (ATD_content) {
         int c;
         for (c = 0; ATD_content[c]; c++) free(ATD_content[c]);
-        free(ATD_content);
-        ATD_content = 0;
+        freeset(ATD_content, 0);
     }
 }
 
@@ -129,7 +128,7 @@ static GB_ERROR read_arb_tcp_dat(const char *filename, int *versionFound) {
             while ((tok = strtok(lp, " \t\n"))) {
                 if (tok[0] == '#') break; /* EOL comment -> stop */
                 if (tokCount >= MAXTOKENS) { error = "Too many tokens"; break; }
-                tokens[tokCount] = tokCount ? GBS_eval_env(tok) : GB_strdup(tok);
+                tokens[tokCount] = tokCount ? GBS_eval_env(tok) : strdup(tok);
                 if (!tokens[tokCount]) { error = GB_get_error(); break; }
                 tokCount++;
                 lp = 0;
@@ -178,14 +177,8 @@ static GB_ERROR read_arb_tcp_dat(const char *filename, int *versionFound) {
                 }
             }
 
-            if (error) {
-                error = GBS_global_string("%s (in line %i of '%s')", error, lineNumber, filename);
-            }
-
-            for (t = 0; t<tokCount; t++) {
-                free(tokens[t]);
-                tokens[t] = 0;
-            }
+            if (error) error = GBS_global_string("%s (in line %i of '%s')", error, lineNumber, filename);
+            for (t = 0; t<tokCount; t++) freeset(tokens[t], 0);
         }
 
         ATD_content = realloc(entry, (entries+1)*sizeof(*entry));
@@ -318,9 +311,7 @@ const char *GBS_read_arb_tcp(const char *env) {
 
     if (strchr(env,':')){
         static char *resBuf = 0;
-
-        free(resBuf);
-        resBuf = GB_STRDUP(env);
+        freedup(resBuf, env);
         result = resBuf;
     }
     else {
@@ -371,8 +362,7 @@ const char * const *GBS_get_arb_tcp_entries(const char *matching) {
         while (ATD_content[count]) count++;
 
         if (matchingEntriesSize != count) {
-            free(matchingEntries);
-            matchingEntries     = malloc((count+1)*sizeof(*matchingEntries));
+            freeset(matchingEntries, malloc((count+1)*sizeof(*matchingEntries)));
             matchingEntriesSize = count;
         }
 
@@ -398,7 +388,7 @@ const char * const *GBS_get_arb_tcp_entries(const char *matching) {
 const char *GBS_ptserver_logname() {
     static char *serverlog = 0;
     if (!serverlog) {
-        serverlog = GB_strdup(GB_path_in_ARBLIB("pts/ptserver.log", NULL));
+        serverlog = nulldup(GB_path_in_ARBLIB("pts/ptserver.log", NULL));
         gb_assert(serverlog);
     }
     return serverlog;
@@ -435,12 +425,12 @@ char *GBS_ptserver_id_to_choice(int i, int showBuild) {
         else nameOnly = file;       /* otherwise show complete file */
 
         {
-            char *remote      = GB_strdup(ipPort);
+            char *remote      = strdup(ipPort);
             char *colon       = strchr(remote, ':');
             if (colon) *colon = 0; /* hide port */
 
             if (strcmp(remote, "localhost") == 0) { /* hide localhost */
-                result = GB_strdup(nameOnly);
+                result = nulldup(nameOnly);
             }
             else {
                 result = GBS_global_string_copy("%s: %s", remote, nameOnly);
@@ -477,7 +467,7 @@ char *GBS_ptserver_id_to_choice(int i, int showBuild) {
                     free(serverDB_duringBuild);
                 }
 
-                if (newResult) { free(result); result = newResult; }
+                if (newResult) freeset(result, newResult);
                 free(serverDB);
             }
         }

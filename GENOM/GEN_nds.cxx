@@ -64,8 +64,7 @@ void GEN_make_node_text_init(GBDATA *gb_main) {
     for (gbz = GB_entry(gb_arb_presets, "gene_viewkey"); gbz; gbz  = GB_nextEntry(gbz)) {
         /* toggle set ? */
         if (GB_read_int(GB_entry(gbz, sf))) {
-            if (gen_nds_ms->dkeys[count]) free(gen_nds_ms->dkeys[count]);
-            gen_nds_ms->dkeys[count] = GB_read_string(GB_entry(gbz, "key_text"));
+            freeset(gen_nds_ms->dkeys[count], GB_read_string(GB_entry(gbz, "key_text")));
             if (GB_first_non_key_char(gen_nds_ms->dkeys[count])) {
                 gen_nds_ms->rek[count] = 1;
             }
@@ -75,10 +74,7 @@ void GEN_make_node_text_init(GBDATA *gb_main) {
             gen_nds_ms->lengths[count] = GB_read_int(GB_entry(gbz, sl));
             //          gen_nds_ms->inherit[count] = GB_read_int(GB_entry(gbz, "inherit"));
             gbe = GB_entry(gbz, "pars");
-            if (gen_nds_ms->parsing[count]) {
-                free(gen_nds_ms->parsing[count]);
-                gen_nds_ms->parsing[count] = 0;
-            }
+            freeset(gen_nds_ms->parsing[count], 0);
             if (gbe && GB_read_string_count(gbe)>1 ) gen_nds_ms->parsing[count] = GB_read_string(gbe);
             count++;
         }

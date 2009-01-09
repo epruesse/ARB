@@ -435,7 +435,7 @@ int main(int argc, char **argv)
 
     bool  abort            = false;
     bool  start_db_browser = true;
-    char *browser_startdir = GB_strdup(".");
+    char *browser_startdir = strdup(".");
 
     if (argc>=2) {
         start_db_browser = false;
@@ -528,19 +528,12 @@ int main(int argc, char **argv)
                     break;
                 }
                 case 2: {        // Browse
-                    char *dir = GB_strdup(full_path);
-                    while (dir && !AWT_is_dir(dir)) {
-                        char *updir = AWT_extract_directory(dir);
-                        free(dir);
-                        dir         = updir;
-                    }
+                    char *dir = nulldup(full_path);
+                    while (dir && !AWT_is_dir(dir)) freeset(dir, AWT_extract_directory(dir));
 
                     if (dir) {
                         nt_assert(AWT_is_dir(dir));
-
-                        free(browser_startdir);
-                        browser_startdir = dir;
-                        dir              = 0;
+                        reassign(browser_startdir, dir);
                         start_db_browser = true;
                     }
                     free(dir);

@@ -180,15 +180,14 @@ static GB_ERROR PG_init_pt_server(GBDATA *gb_main, const char *servername) {
     else {
         GLOBAL_out.put("Search a free running pt-server..");
         indent i(GLOBAL_out);
-        current_server_name            = GB_strdup(PGD_probe_pt_look_for_server(gb_main,servername,error));
+        current_server_name = nulldup(PGD_probe_pt_look_for_server(gb_main,servername,error));
         if (!error) server_initialized = true;
     }
     return error;
 }
 
 static void PG_exit_pt_server(void) {
-    free(current_server_name);
-    current_server_name = 0;
+    freeset(current_server_name, 0);
     server_initialized  = false;
 }
 
@@ -588,11 +587,7 @@ static GB_ERROR PGD_decodeBranchNames(GBT_TREE *node) {
                 }
                 else {
                     *acc++ = 0;
-
-                    char *newName2 = GBS_global_string_copy("n=%s,f=%s,a=%s", shortname.c_str(), fullname, acc);
-
-                    free(newName);
-                    newName = newName2;
+                    freeset(newName, GBS_global_string_copy("n=%s,f=%s,a=%s", shortname.c_str(), fullname, acc));
                 }
             }
         }
@@ -602,24 +597,20 @@ static GB_ERROR PGD_decodeBranchNames(GBT_TREE *node) {
             return error;
         }
 
-        free(node->name);
-        node->name = newName;
+        freeset(node->name, newName);
         return 0;
     }
 
     // not leaf:
     if (node->remark_branch) { // if remark_branch then it is a group name
         char *groupName = decodeTreeNode(node->remark_branch, error);
-        if (error) return error;
-
-        char *newName = GBS_global_string_copy("g=%s", groupName);
+        if (!error) {
+            freeset(node->remark_branch, 0);
+            freeset(node->name, GBS_global_string_copy("g=%s", groupName));
+        }
         free(groupName);
-
-        free(node->remark_branch);
-        node->remark_branch = 0;
-
-        free(node->name);
-        node->name = newName;
+        
+        if (error) return error;
     }
 
     error             = PGD_decodeBranchNames(node->leftson);
@@ -628,9 +619,7 @@ static GB_ERROR PGD_decodeBranchNames(GBT_TREE *node) {
 }
 static GB_ERROR PGD_encodeBranchNames(GBT_TREE *node) {
     if (node->name) { // all nodes
-        char *newName = encodeTreeNode(node->name);
-        free(node->name);
-        node->name    = newName;
+        freeset(node->name, encodeTreeNode(node->name));
     }
 
     if (node->is_leaf) {

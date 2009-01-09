@@ -275,7 +275,7 @@ static long write_IFS(struct gb_index_files_struct *ifs, FILE *out, long *offset
         ad_assert(ALIGN(sizeof(*ie))==sizeof(*ie));
 
         iecopy = (GB_REL_IFES *)malloc(iesize);
-        GB_MEMCPY(iecopy,ie,iesize);
+        memcpy(iecopy,ie,iesize);
 
         /* write index entries an calc absolute offsets */
 
@@ -293,7 +293,7 @@ static long write_IFS(struct gb_index_files_struct *ifs, FILE *out, long *offset
         if (out) ftwrite_aligned(iecopy,iesize,out);
         *offset += iesize;
 
-        GB_FREE(iecopy);
+        free(iecopy);
     }
 
     /* ifs */
@@ -373,7 +373,7 @@ static long write_GBDATA(GB_MAIN_TYPE *Main,GBDATA *gbd, int quark, FILE *out, l
                     int valid=0;    /* no of non-temporary items */
                     headercopy = (struct gb_header_list_struct*) malloc(headermemsize);
                     ad_assert(sizeof(*headercopy)==ALIGN(sizeof(*headercopy)));
-                    GB_MEMSET(headercopy,0x0,headermemsize);
+                    memset(headercopy,0x0,headermemsize);
 
                     for (item=0; item<nitems; item++)
                     {
@@ -403,7 +403,7 @@ static long write_GBDATA(GB_MAIN_TYPE *Main,GBDATA *gbd, int quark, FILE *out, l
 
                     headermemsize = ALIGN(valid * sizeof(*header));
                     ftwrite_aligned(headercopy, headermemsize, out);
-                    GB_FREE(headercopy);
+                    free(headercopy);
 
                 }else{      /* Calc new indizes and size of header */
                     int valid=0;    /* no of non-temporary items */
@@ -608,10 +608,10 @@ static gbdByKey createGbdByKey(GB_MAIN_TYPE *Main)
 
  err2:  while (idx>=0)
  {
-     GB_FREE(gbk[idx].gbdoff);
+     free(gbk[idx].gbdoff);
      idx--;
  }
-    GB_FREE(gbk);
+    free(gbk);
  err1:  GB_memerr();
     return NULL;
 }
@@ -620,8 +620,8 @@ static void freeGbdByKey(GB_MAIN_TYPE *Main, gbdByKey gbk)
 {
     int idx;
 
-    for (idx=0; idx<Main->keycnt; idx++) GB_FREE(gbk[idx].gbdoff);
-    GB_FREE(gbk);
+    for (idx=0; idx<Main->keycnt; idx++) free(gbk[idx].gbdoff);
+    free(gbk);
 }
 
 /* ********************************************************
@@ -648,7 +648,7 @@ int gb_save_mapfile(GB_MAIN_TYPE *Main, GB_CSTR path)
     writeError = out==NULL;     /* global flag */
 
     ad_assert(ADMAP_ID_LEN <= strlen(ADMAP_ID));
-    GB_MEMSET(&mheader,0,sizeof(mheader));
+    memset(&mheader,0,sizeof(mheader));
     strcpy(mheader.mapfileID,ADMAP_ID); /* header */
 
     mheader.version = ADMAP_VERSION;

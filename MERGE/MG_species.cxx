@@ -1016,10 +1016,7 @@ GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
                 if (d != s) D_alignment_names[s] = 0;
                 ++d;
             }
-            else {
-                free(D_alignment_names[s]);
-                D_alignment_names[s] = 0;
-            }
+            else freeset(D_alignment_names[s], 0);
             free(type2);
         }
 
@@ -1111,7 +1108,7 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
 
     GBDATA *M_species;
     GBDATA *D_species;
-    free(m_name); m_name = 0;
+    freeset(m_name, 0);
 
     {
         long M_species_count = GB_number_of_subentries(M_species_data);
@@ -1142,9 +1139,7 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
                 char     *newname = AWTC_create_numbered_suffix(D_species_hash, m_name, dummy);
 
                 mg_assert(newname);
-
-                free(m_name);
-                m_name = newname;
+                freeset(m_name, newname);
             }
             else {
                 switch (aw_question(GBS_global_string("Warning:  There is a name conflict for species '%s'\n"
@@ -1171,9 +1166,7 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
                         awr->awar_string(NEW_NAME_AWAR)->write_string(newname ? newname : "???");
                         free(newname);
 
-                        free(m_name);
-                        m_name = aw_input("New name of species",NEW_NAME_AWAR);
-
+                        freeset(m_name, aw_input("New name of species", NEW_NAME_AWAR));
                         goto new_try;
                     }
                     case 4:

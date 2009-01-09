@@ -181,8 +181,7 @@ void aw_create_color_chooser_window(AW_window *aww, const char *awar_name,const 
         aws->window_fit();
     }
     awr->awar(AWAR_GLOBAL_COLOR_NAME)->write_string(label_name);
-    free(aw_glob_font_awar_name);
-    aw_glob_font_awar_name = strdup(awar_name);
+    freedup(aw_glob_font_awar_name, awar_name);
     aws->show();
 }
 
@@ -689,7 +688,7 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
                     break;
                 }
 
-                free(id_copy); id_copy = 0;
+                freeset(id_copy, 0);
             }
 
             if (flag_fixed_fonts_only) def_font = AW_DEFAULT_FIXED_FONT; // AW_LUCIDA_SANS_TYPEWRITER;

@@ -270,20 +270,17 @@ char *AW_select_table_struct::copy_string(const char *str) {
     return out;
 }
 
-AW_select_table_struct::AW_select_table_struct(const char *displayedi,
-        const char *valuei) {
+AW_select_table_struct::AW_select_table_struct(const char *displayedi, const char *valuei) {
     memset((char *)this, 0, sizeof(AW_select_table_struct));
     displayed = copy_string(displayedi);
     char_value = strdup(valuei);
 }
-AW_select_table_struct::AW_select_table_struct(const char *displayedi,
-        long valuei) {
+AW_select_table_struct::AW_select_table_struct(const char *displayedi, long valuei) {
     memset((char *)this, 0, sizeof(AW_select_table_struct));
     displayed = copy_string(displayedi);
     int_value = valuei;;
 }
-AW_select_table_struct::AW_select_table_struct(const char *displayedi,
-        float valuei) {
+AW_select_table_struct::AW_select_table_struct(const char *displayedi, float valuei) {
     memset((char *)this, 0, sizeof(AW_select_table_struct));
     displayed = copy_string(displayedi);
     float_value = valuei;
@@ -293,10 +290,9 @@ AW_select_table_struct::~AW_select_table_struct(void) {
     free(char_value);
 }
 
-AW_selection_list::AW_selection_list(const char *variable_namei,
-        int variable_typei, Widget select_list_widgeti) {
+AW_selection_list::AW_selection_list(const char *variable_namei, int variable_typei, Widget select_list_widgeti) {
     memset((char *)this, 0, sizeof(AW_selection_list));
-    variable_name = GB_strdup(variable_namei);
+    variable_name = nulldup(variable_namei);
     variable_type = (AW_VARIABLE_TYPE)variable_typei;
     select_list_widget = select_list_widgeti;
     list_table = NULL;
@@ -346,8 +342,8 @@ static char *sub_menu = 0;
 static void initMenuListing(const char *win_name) {
     aw_assert(win_name);
 
-    free(window_name); window_name = strdup(win_name);
-    free(sub_menu); sub_menu = 0;
+    freedup(window_name, win_name);
+    freeset(sub_menu, 0);
 
     printf("---------------------------------------- list of menus for '%s'\n", window_name);
 }
@@ -367,14 +363,8 @@ static void dumpOpenSubMenu(const char *sub_name) {
 
     dumpMenuEntry(sub_name); // dump the menu itself
 
-    if (sub_menu) {
-        char *new_sub_menu = strdup(GBS_global_string("%s/%s", sub_menu, sub_name));
-        free(sub_menu);
-        sub_menu = new_sub_menu;
-    }
-    else {
-        sub_menu = strdup(sub_name);
-    }
+    if (sub_menu) freeset(sub_menu, GBS_global_string_copy("%s/%s", sub_menu, sub_name));
+    else sub_menu = strdup(sub_name);
 }
 
 static void dumpCloseSubMenu() {
@@ -383,13 +373,11 @@ static void dumpCloseSubMenu() {
     if (lslash) {
         lslash[0] = 0;
     }
-    else {
-        free(sub_menu); sub_menu = 0;
-    }
+    else freeset(sub_menu, 0);
 }
 
 static void dumpCloseAllSubMenus() {
-    free(sub_menu); sub_menu = 0;
+    freeset(sub_menu, 0);
 }
 
 #endif // DUMP_MENU_LIST
@@ -2745,9 +2733,7 @@ static const char *possible_mnemonics(int menu_deep, const char *topic_name) {
     int t;
     static char *unused;
 
-    if (unused)
-        free(unused);
-    unused = strdup(topic_name);
+    freedup(unused, topic_name);
 
     for (t = 0; unused[t]; ++t) {
         bool remove = false;
@@ -2835,8 +2821,7 @@ static void test_duplicate_mnemonics(int menu_deep, const char *topic_name,
     }
 }
 
-static void open_test_duplicate_mnemonics(int menu_deep,
-        const char *sub_menu_name, const char *mnemonic) {
+static void open_test_duplicate_mnemonics(int menu_deep, const char *sub_menu_name, const char *mnemonic) {
     aw_assert(menu_deep == menu_deep_check+1);
     menu_deep_check = menu_deep;
 
@@ -2844,14 +2829,11 @@ static void open_test_duplicate_mnemonics(int menu_deep,
     char *buf = (char*)malloc(len);
 
     memset(buf, 0, len);
-
     sprintf(buf, "%s|%s", TD_menu_name, sub_menu_name);
 
     test_duplicate_mnemonics(menu_deep-1, sub_menu_name, mnemonic);
 
-    free(TD_menu_name);
-    TD_menu_name = buf;
-
+    freeset(TD_menu_name, buf);
     TD_poss[menu_deep] = 0;
 }
 
@@ -2876,13 +2858,8 @@ static void close_test_duplicate_mnemonics(int menu_deep) {
 static void init_duplicate_mnemonic() {
     int i;
 
-    if (TD_menu_name) {
-        close_test_duplicate_mnemonics(1); // close last menu
-        free(TD_menu_name);
-        TD_menu_name = 0;
-    }
-
-    TD_menu_name = strdup("");
+    if (TD_menu_name) close_test_duplicate_mnemonics(1); // close last menu
+    freedup(TD_menu_name, "");
 
     for (i=0; i<MAX_DEEP_TO_TEST; i++) {
         TD_topics[i] = 0;
@@ -2892,8 +2869,7 @@ static void init_duplicate_mnemonic() {
 static void exit_duplicate_mnemonic() {
     close_test_duplicate_mnemonics(1); // close last menu
     aw_assert(TD_menu_name);
-    free(TD_menu_name);
-    TD_menu_name = 0;
+    freeset(TD_menu_name, 0);
     aw_assert(menu_deep_check == 0);
 }
 #endif
@@ -3255,8 +3231,7 @@ void AW_window::set_window_title_intern(char *title) {
 
 void AW_window::set_window_title(const char *title) {
     XtVaSetValues(p_w->shell, XmNtitle, title, NULL);
-    free(window_name);
-    window_name = strdup(title);
+    freedup(window_name, title);
 }
 
 const char *AW_window::get_window_title(void) {
@@ -3459,13 +3434,9 @@ GB_ERROR AW_root::stop_macro_recording() {
     GB_set_mode_of_file(prvt->recording_macro_path, mode | ((mode >> 2)& 0111));
     prvt->recording_macro_file = 0;
 
-    free(prvt->recording_macro_path);
-    free(prvt->stop_action_name);
-    free(prvt->application_name_for_macros);
-
-    prvt->recording_macro_path = 0;
-    prvt->stop_action_name = 0;
-    prvt->application_name_for_macros = 0;
+    freeset(prvt->recording_macro_path, 0);
+    freeset(prvt->stop_action_name, 0);
+    freeset(prvt->application_name_for_macros, 0);
 
     return 0;
 }

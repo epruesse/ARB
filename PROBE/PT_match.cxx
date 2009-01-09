@@ -346,8 +346,10 @@ extern "C" int probe_match(PT_local * locs, aisc_string probestring)
 
     PT_probematch *ml;
     char          *rev_pro;
-    if (locs->pm_sequence) free(locs->pm_sequence);
-    locs->pm_sequence       = psg.main_probe = strdup(probestring);
+
+    freedup(locs->pm_sequence, probestring);
+    psg.main_probe = locs->pm_sequence;
+
     compress_data(probestring);
     while ((ml = locs->pm)) destroy_PT_probematch(ml);
     locs->matches_truncated = 0;
@@ -392,8 +394,8 @@ extern "C" int probe_match(PT_local * locs, aisc_string probestring)
     }
     psg.reversed = 0;
 
-    if (locs->pm_sequence) free(locs->pm_sequence);
-    locs->pm_sequence = psg.main_probe = strdup(probestring);
+    freedup(locs->pm_sequence, probestring);
+    psg.main_probe = locs->pm_sequence;
 
     psg.deep = locs->pm_max;
     pt_build_pos_to_weight((PT_MATCH_TYPE)locs->sort_by,probestring);
@@ -407,8 +409,7 @@ extern "C" int probe_match(PT_local * locs, aisc_string probestring)
         psg.reversed = 1;
         rev_pro = reverse_probe(probestring,0);
         complement_probe(rev_pro,0 );
-        if (locs->pm_csequence) free(locs->pm_csequence);
-        locs->pm_csequence = psg.main_probe = strdup(rev_pro);
+        freeset(locs->pm_csequence, psg.main_probe = strdup(rev_pro));
         if (psg.deep >=0 ){
             get_info_about_probe(locs, rev_pro, psg.pt, 0, 0.0, 0, 0);
         }else{
@@ -585,9 +586,7 @@ static const char *get_match_info_formatted(PT_probematch  *ml, const format_pro
     free(ref);
 
     static char *result = 0;
-    if (result) free(result);
-    result = GBS_strclose(memfile);
-
+    freeset(result, GBS_strclose(memfile));
     return result;
 }
 
@@ -625,8 +624,7 @@ static const char *get_match_hinfo_formatted(PT_probematch *ml, const format_pro
         }
 
         static char *result = 0;
-        if (result) free(result);
-        result = GBS_strclose(memfile);
+        freeset(result, GBS_strclose(memfile));
 
         return result;
     }

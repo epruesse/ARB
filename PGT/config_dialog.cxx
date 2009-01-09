@@ -689,132 +689,26 @@ void staticTextChangedCallback(Widget widget, XtPointer clientData, XtPointer)
 /****************************************************************************
 *  CALLBACK - COLOR/TEXT CHANGED
 ****************************************************************************/
-void configDialog::textChangedCallback(Widget widget)
-{
+
+inline void setColorFromTextWidget(Widget widget, char *& colorStringVar) {
     int r, g, b; // DUMMY RGB VALUES
+    char *colorString = XmTextGetString(widget);
+    if(hex2rgb(&r, &g, &b, colorString)) freeset(colorStringVar, colorString);
+    else free(colorString);
+}
 
-    // CROSSHAIR TEXT-WIDGET CHANGED?
-    if(widget == m_crosshairText)
-    {
-        char *crosshairColorString= XmTextGetString(m_crosshairText);
+void configDialog::textChangedCallback(Widget widget) {
+    if      (widget == m_crosshairText)    setColorFromTextWidget(m_crosshairText, m_crosshairColorString); // CROSSHAIR TEXT-WIDGET CHANGED?
+    else if (widget == m_unmarkedText)     setColorFromTextWidget(m_unmarkedText,  m_unmarkedColorString);  // UNMARKED TEXT-WIDGET CHANGED?
+    else if (widget == m_markedText)       setColorFromTextWidget(m_markedText,    m_markedColorString);    // MARKED TEXT-WIDGET CHANGED?
+    else if (widget == m_selectedText)     setColorFromTextWidget(m_selectedText,  m_selectedColorString);  // SELECTED TEXT-WIDGET CHANGED?
+    else if (widget == m_textText)         setColorFromTextWidget(m_textText,      m_textColorString);      // INFOTEXT TEXT-WIDGET CHANGED?
+    else if (widget == m_ID_ProteinText)   freeset(m_id_protein,   XmTextGetString(m_ID_ProteinText));      // PROTEIN-ID TEXT-WIDGET CHANGED?
+    else if (widget == m_ID_GeneText)      freeset(m_id_gene,      XmTextGetString(m_ID_GeneText));         // GENE-ID TEXT-WIDGET CHANGED?
+    else if (widget == m_info_ProteinText) freeset(m_info_protein, XmTextGetString(m_info_ProteinText));    // PROTEIN-TEXT TEXT-WIDGET CHANGED?
+    else if (widget == m_info_GeneText)    freeset(m_info_gene,    XmTextGetString(m_info_GeneText));       // GENE-TEXT TEXT-WIDGET CHANGED?
 
-        if(hex2rgb(&r, &g, &b, crosshairColorString))
-        {
-            if(m_crosshairColorString) free(m_crosshairColorString);
-            m_crosshairColorString= crosshairColorString;
-        }
-        else free(crosshairColorString);
-    }
-    // UNMARKED TEXT-WIDGET CHANGED?
-    else if(widget == m_unmarkedText)
-    {
-        char *unmarkedColorString= XmTextGetString(m_unmarkedText);
-
-        if(hex2rgb(&r, &g, &b, unmarkedColorString))
-        {
-            if(m_unmarkedColorString) free(m_unmarkedColorString);
-            m_unmarkedColorString= unmarkedColorString;
-        }
-        else free(unmarkedColorString);
-    }
-    // MARKED TEXT-WIDGET CHANGED?
-    else if(widget == m_markedText)
-    {
-        char *markedColorString= XmTextGetString(m_markedText);
-
-        if(hex2rgb(&r, &g, &b, markedColorString))
-        {
-            if(m_markedColorString) free(m_markedColorString);
-            m_markedColorString= markedColorString;
-        }
-        else free(markedColorString);
-    }
-    // SELECTED TEXT-WIDGET CHANGED?
-    else if(widget == m_selectedText)
-    {
-        char *selectedColorString= XmTextGetString(m_selectedText);
-
-        if(hex2rgb(&r, &g, &b, selectedColorString))
-        {
-            if(m_selectedColorString) free(m_selectedColorString);
-            m_selectedColorString= selectedColorString;
-        }
-        else free(selectedColorString);
-    }
-    // INFOTEXT TEXT-WIDGET CHANGED?
-    else if(widget == m_textText)
-    {
-        char *textColorString= XmTextGetString(m_textText);
-
-        if(hex2rgb(&r, &g, &b, textColorString))
-        {
-            if(m_textColorString) free(m_textColorString);
-            m_textColorString= textColorString;
-        }
-        else free(textColorString);
-    }
-    // PROTEIN-ID TEXT-WIDGET CHANGED?
-    else if(widget == m_ID_ProteinText)
-    {
-        if(m_id_protein) free(m_id_protein);
-        m_id_protein= XmTextGetString(m_ID_ProteinText);
-    }
-    // GENE-ID TEXT-WIDGET CHANGED?
-    else if(widget == m_ID_GeneText)
-    {
-        if(m_id_gene) free(m_id_gene);
-        m_id_gene= XmTextGetString(m_ID_GeneText);
-    }
-    // PROTEIN-TEXT TEXT-WIDGET CHANGED?
-    else if(widget == m_info_ProteinText)
-    {
-        if(m_info_protein) free(m_info_protein);
-        m_info_protein= XmTextGetString(m_info_ProteinText);
-    }
-    // GENE-TEXT TEXT-WIDGET CHANGED?
-    else if(widget == m_info_GeneText)
-    {
-        if(m_info_gene) free(m_info_gene);
-        m_info_gene= XmTextGetString(m_info_GeneText);
-    }
-
-
-
-//     // GET TEXT FIELD ENTRIES
-//     char *crosshairText= XmTextGetString(m_crosshairText);
-//     char *unmarkedText= XmTextGetString(m_unmarkedText);
-//     char *markedText= XmTextGetString(m_markedText);
-//     char *selectedText= XmTextGetString(m_selectedText);
-//     char *textText= XmTextGetString(m_textText);
-//
-//     char *id_proteinText= XmTextGetString(m_ID_ProteinText);
-//     char *id_geneText= XmTextGetString(m_ID_GeneText);
-//     char *info_proteinText= XmTextGetString(m_info_ProteinText);
-//     char *info_geneText= XmTextGetString(m_info_GeneText);
-//
-//     // UPDATE RELATED WIDGET
-//     if((widget == m_crosshairText)
-//         && (hex2rgb(&r, &g, &b, crosshairText))) m_crosshairColorString= crosshairText;
-//
-//     else if((widget == m_unmarkedText)
-//         && (hex2rgb(&r, &g, &b, unmarkedText))) m_unmarkedColorString= unmarkedText;
-//
-//     else if((widget == m_markedText)
-//         && (hex2rgb(&r, &g, &b, markedText))) m_markedColorString= markedText;
-//
-//     else if((widget == m_selectedText)
-//         && (hex2rgb(&r, &g, &b, selectedText))) m_selectedColorString= selectedText;
-//
-//     else if((widget == m_textText)
-//              && (hex2rgb(&r, &g, &b, textText))) m_textColorString= textText;
-//
-//     else if(widget == m_ID_ProteinText) m_id_protein= id_proteinText;
-//     else if(widget == m_ID_GeneText) m_id_gene= id_geneText;
-//     else if(widget == m_info_ProteinText) m_info_protein= info_proteinText;
-//     else if(widget == m_info_GeneText) m_info_gene= info_geneText;
-
-    // UPDATE THE COLORS
-    updateColors();
+    updateColors(); // UPDATE THE COLORS
 }
 
 

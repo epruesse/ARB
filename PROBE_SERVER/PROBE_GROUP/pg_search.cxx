@@ -114,7 +114,7 @@ GB_ERROR PG_init_pt_server(GBDATA *gb_main, const char *servername, void (*print
     print         = print_function;
 
     print("Search a free running pt-server..");
-    current_server_name = GB_strdup(PG_probe_pt_look_for_server(gb_main, servername, error));
+    current_server_name = nulldup(PG_probe_pt_look_for_server(gb_main, servername, error));
     pg_assert(error || current_server_name);
     server_initialized  = true;;
     return error;
@@ -124,8 +124,7 @@ GB_ERROR PG_init_pt_server(GBDATA *gb_main, const char *servername, void (*print
 //      void PG_exit_pt_server(void)
 //  -------------------------------------
 void PG_exit_pt_server(void) {
-    free(current_server_name);
-    current_server_name = 0;
+    freeset(current_server_name, 0);
     server_initialized  = false;
 }
 
@@ -205,7 +204,7 @@ static const char *PG_find_next_probe_internal(GB_ERROR& error) {
 
     if (ok) {
         static char *result;
-        if (result) { free(result); result = 0; }
+        freeset(result, 0);
 
         ok = aisc_get(fpd.gl.link, PT_PEP, fpd.pep, PEP_RESULT, &result, NULL)==0;
 
@@ -251,10 +250,7 @@ const char *PG_find_next_probe(GB_ERROR& error) {
     }
 
     static char *this_result;
-    if (this_result) {
-        free(this_result);
-        this_result = 0;
-    }
+    freeset(this_result, 0);
 
     char *spunkt = strchr(result_ptr, ';');
     if (spunkt) {
@@ -403,11 +399,7 @@ GB_ERROR PG_probe_match(PG_Group& group, const probe_config_data& para, const ch
 
         if (!error && locs_error && locs_error[0]) {
             static char *err = 0;
-
-            if (err) free(err);
-            err        = locs_error;
-            locs_error = 0;
-
+            reassign(err, locs_error);
             error = err;
         }
 

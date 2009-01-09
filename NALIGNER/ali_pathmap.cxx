@@ -26,8 +26,7 @@ ALI_PATHMAP::~ALI_PATHMAP(void)
 {
     unsigned long   l;
 
-    if (pathmap)
-        free((char *) pathmap);
+    if (pathmap) free((char *) pathmap);
     if (up_pointers) {
         for (l = 0; l < width; l++)
             if ((*up_pointers)[l])

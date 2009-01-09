@@ -1626,14 +1626,10 @@ void imageDialog::drawSpots()
 
 
     // RESET SPOT COUNTER VALUES
-    m_numSpots= 0;
-    m_numMarkedSpots= 0;
-    m_numSelectedSpots= 0;
-    if(m_selectedSpotName)
-    {
-        free(m_selectedSpotName);
-        m_selectedSpotName= NULL;
-    }
+    m_numSpots         = 0;
+    m_numMarkedSpots   = 0;
+    m_numSelectedSpots = 0;
+    freeset(m_selectedSpotName, NULL);
 
     // ITERATE THROUGH THE SPOTS
     for(spot_it= m_spotList.begin(); spot_it != m_spotList.end(); ++spot_it)

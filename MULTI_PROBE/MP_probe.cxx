@@ -293,15 +293,11 @@ ProbeValuation::~ProbeValuation()
     int i;
     result_struct *elem;
 
-    for (i=0; i<size_sonden_array; i++)
-        free(sondenarray[i]);
-
-    for (i=0; i<pool_length; i++)
-        delete probe_pool[i];
+    for (i=0; i<size_sonden_array; i++) free(sondenarray[i]);
+    for (i=0; i<pool_length; i++) delete probe_pool[i];
 
     elem = computation_result_list->get_first();
-    while (elem)
-    {
+    while (elem) {
         computation_result_list->remove_first();
         delete [] elem->view_string;
         delete elem;
@@ -310,10 +306,8 @@ ProbeValuation::~ProbeValuation()
 
     delete computation_result_list;
 
-    if (act_generation == child_generation)
-        delete act_generation;
-    else
-    {
+    if (act_generation == child_generation) delete act_generation;
+    else {
         delete act_generation;
         delete child_generation;
     }

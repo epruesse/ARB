@@ -201,8 +201,7 @@ ED4_returncode ED4_members::append_member(ED4_base *new_member) {
         }
         memcpy(new_member_list, memberList, size_of_list*sizeof(*new_member_list));
 
-        free(memberList);
-        memberList = new_member_list;
+        freeset(memberList, new_member_list);
         size_of_list = new_size_of_list;
     }
 

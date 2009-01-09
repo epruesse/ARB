@@ -219,8 +219,7 @@ BOOL CachePartitionLoad(struct CacheHandler *, struct PTPanPartition *pp)
         printf("Out of memory while loading tree (%ld)!\n", pp->pp_DiskTreeSize);
       }
     }
-    free(pp->pp_LongDictRaw);
-    pp->pp_LongDictRaw = NULL;
+    freeset(pp->pp_LongDictRaw, NULL);
   } else {
     printf("Out of memory while loading long dictionary (%ld)!\n", len);
   }
@@ -250,13 +249,12 @@ void CachePartitionUnload(struct CacheHandler *, struct PTPanPartition *pp)
     pp->pp_MapFileBuffer = NULL;
     pp->pp_DiskTree = NULL;
   } else {
-    free(pp->pp_DiskTree);
+    freeset(pp->pp_DiskTree, NULL);
   }
   pp->pp_BranchTree = NULL;
   pp->pp_ShortEdgeTree = NULL;
   pp->pp_LongEdgeLenTree = NULL;
   pp->pp_LongDictRaw = NULL;
-  pp->pp_DiskTree = NULL;
 }
 /* \\\ */
 
@@ -387,9 +385,8 @@ void CacheStdSuffixPartitionUnload(struct CacheHandler *, struct PTPanPartition 
     pp->pp_MapFileBuffer = NULL;
     pp->pp_DiskTree = NULL;
   } else {
-    free(pp->pp_DiskTree);
+    freeset(pp->pp_DiskTree, NULL);
   }
-  pp->pp_DiskTree = NULL;
 }
 /* \\\ */
 

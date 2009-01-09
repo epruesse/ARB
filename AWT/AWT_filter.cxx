@@ -315,10 +315,7 @@ char *AWT_get_combined_filter_name(AW_root *aw_root, GB_CSTR prefix) {
         char *content = awar_found->read_string();
 
         if (strstr(content, "none")==0) { // don't add filters named 'none'
-            char *new_combined_name = (char*)malloc(strlen(combined_name)+1+strlen(content)+1);
-            sprintf(new_combined_name, "%s/%s", combined_name, content);
-            free(combined_name);
-            combined_name = new_combined_name;
+            freeset(combined_name, GBS_global_string_copy("%s/%s", combined_name, content));
         }
     }
 

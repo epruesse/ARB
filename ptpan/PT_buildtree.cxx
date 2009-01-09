@@ -94,8 +94,7 @@ BOOL BuildStdSuffixTree(struct PTPanGlobal *pg)
   printf(">>> Phase 4: Freeing memory and cleaning it up... <<<\n");
 
   /* return some memory not used anymore */
-  free(pp->pp_StdSfxNodes);
-  pp->pp_StdSfxNodes = NULL;
+  freeset(pp->pp_StdSfxNodes, NULL);
 
   if(GB_rename_file(newtreename, pg->pg_IndexName))
   {
@@ -1024,20 +1023,16 @@ BOOL CreateTreeForPartition(struct PTPanPartition *pp)
   printf(">>> Phase 4: Freeing memory and cleaning it up... <<<\n");
 
   /* return some memory not used anymore */
-  free(pp->pp_SfxNodes);
-  free(pp->pp_BranchCode);
-  free(pp->pp_ShortEdgeCode);
-  free(pp->pp_LongEdgeLenCode);
-  free(pp->pp_LongDictRaw);
-  free(pp->pp_LeafBuffer);
-  pp->pp_SfxNodes = NULL;
-  pp->pp_LevelStats = NULL;
-  pp->pp_BranchCode = NULL;
-  pp->pp_ShortEdgeCode = NULL;
-  pp->pp_LongEdgeLenCode = NULL;
-  pp->pp_LongDictRaw = NULL;
-  pp->pp_LeafBuffer = NULL;
+  freeset(pp->pp_SfxNodes, NULL);
+  freeset(pp->pp_BranchCode, NULL);
+  freeset(pp->pp_ShortEdgeCode, NULL);
+  freeset(pp->pp_LongEdgeLenCode, NULL);
+  freeset(pp->pp_LongDictRaw, NULL);
+  freeset(pp->pp_LeafBuffer, NULL);
+
+  pp->pp_LevelStats     = NULL;
   pp->pp_LeafBufferSize = 0;
+
   return(TRUE);
 }
 /* \\\ */
@@ -1185,8 +1180,7 @@ BOOL BuildMemoryTree(struct PTPanPartition *pp)
   printf("DONE! (%ld KB unused)\n", (pp->pp_Sfx2EdgeOffset - pp->pp_SfxNEdgeOffset) >> 10);
 
   /* free some memory not required anymore */
-  free(pp->pp_QuickPrefixLookup);
-  pp->pp_QuickPrefixLookup = NULL;
+  freeset(pp->pp_QuickPrefixLookup, NULL);
 
   printf("Quick Prefix Lookup speedup: %ld%% (%ld)\n",
          (pp->pp_QuickPrefixCount * 100) / pp->pp_Size, pp->pp_QuickPrefixCount);
@@ -1709,8 +1703,7 @@ BOOL CalculateTreeStats(struct PTPanPartition *pp)
     pp->pp_TreePruneDepth,
     pp->pp_TreePruneLength);
 
-  free(pp->pp_LevelStats);
-  pp->pp_LevelStats = NULL;
+  freeset(pp->pp_LevelStats, NULL);
 
   /* allocate branch histogram */
   pp->pp_BranchCode = (struct HuffCode *) calloc(1UL << pg->pg_AlphaSize,

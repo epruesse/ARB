@@ -590,8 +590,7 @@ GB_ERROR checkAndMergeFields( GBDATA *gb_new_species, GB_ERROR error, speciesCon
                                 add += sprintf(add, "} %s", content);
 
                                 free(content);
-                                free(new_content);
-                                new_content = whole;
+                                freeset(new_content, whole);
                                 new_content_len = strlen(new_content);
                             }
                         }
@@ -613,8 +612,7 @@ GB_ERROR checkAndMergeFields( GBDATA *gb_new_species, GB_ERROR error, speciesCon
                 char *new_doneFields = (char*)malloc(doneLen+fieldLen+1+1);
                 sprintf(new_doneFields, "%s%s;", doneFields, fieldName);
                 doneLen += fieldLen+1;
-                free(doneFields);
-                doneFields = new_doneFields;
+                freeset(doneFields, new_doneFields);
                 fieldEnd[0] = ';';
             }
             fieldEnd[1] = behind;
@@ -709,9 +707,7 @@ GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species, speci
         if (!error) {   // name was created
             if (GBT_find_species_rel_species_data(gb_species_data, new_species_name) != 0) { //if the name is not unique create unique name
                 UniqueNameDetector und(gb_species_data);
-                char *uniqueName = AWTC_makeUniqueShortName(new_species_name, und);
-                free(new_species_name);
-                new_species_name = uniqueName;
+                freeset(new_species_name, AWTC_makeUniqueShortName(new_species_name, und));
                 if (!new_species_name) error = "No short name created.";
             }
         }
