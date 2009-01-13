@@ -1052,10 +1052,10 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
                             }
 
                             if (paramlist) {
-                                error = GBS_global_string("while applying '%s(%s)' to '%s': %s", s1, paramlist, inputstreams, error);
+                                error = GBS_global_string("while applying '%s(%s)'\nto '%s':\n%s", s1, paramlist, inputstreams, error);
                             }
                             else {
-                                error = GBS_global_string("while applying '%s' to '%s': %s", s1, inputstreams, error);
+                                error = GBS_global_string("while applying '%s'\nto '%s':\n%s", s1, inputstreams, error);
                             }
 
                             free(inputstreams);
@@ -1120,7 +1120,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
         free(s1);
     }
 
-    GB_export_error("in '%s': %s", commands, error);
+    GB_export_error("Command '%s' failed:\nReason: %s", commands, error);
     return NULL;
 }
 

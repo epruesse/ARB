@@ -304,21 +304,6 @@ SECTION COMMANDLIST
 			numleft      (NO)       numbers on the left side
 			gap=#        (10)       insert a gap every # seq. characters.
 
-		filter(options)
-
-			exclude=#   	characters in filter sequence which exclude the coloumn or
-			include=# 	vice versa
-			SAI=#	   	SAI of filter sequence or
-			species=   	species of filter sequence
-
-		diff(options)
-
-                        show differences to default alignment of another species
-
-                             SAI=#
-                             species=#
-                             [equal=.]
-
 		extract_sequence("chars",rel_len)
 
                         like extract_words, but do not sort words, but rel_len is the minimum
@@ -333,6 +318,108 @@ SECTION COMMANDLIST
                         is used (which in most cases is the tree displayed in the ARB_NT main window).
 
                         'depth' specifies how many "levels" of the taxonomy are used.
+
+        FILTERING
+
+                There are several functions to filter sequential data:
+
+                      - filter
+                      - diff
+                      - gc
+
+                All these functions use the following COMMON OPTIONS to define
+                what is used as filter sequence:
+
+                    - species=name
+
+                      Use species 'name' as filter.
+
+                    - SAI=name
+
+                      Use SAI 'name' as filter.
+
+                    - first=1
+
+                      Use 1st input stream as filter for all other input streams.
+
+                    - pairwise=1
+
+                      Use 1st input stream as filter for 2nd stream,
+                      3rd stream as filter for 4th stream, and so on.
+
+                    - align=ali_name
+
+                      Use alignment 'ali_name' instead of current default
+                      alignment (only meaningful together with 'species' or 'SAI').
+
+                    Note: Only one of the parameters 'species', 'SAI', 'first' or 'pairwise' may be used.
+
+                diff(options)
+
+                        Calculates the difference between the filter (see common options above) and the input stream(s) and
+                        write the result to output stream(s).
+
+                        Additional options:
+
+                        - equal=x
+
+                          Character written to output if filter and stream are equal at
+                          a position (defaults to '.'). To copy the stream contents for
+                          equal columns, specify 'equal=' (directly followed by ',' or ')')
+
+                        - differ=y
+
+                          Character written to output if filter and stream don't match at one column position.
+                          Default is to copy the character from the stream.
+
+		filter(options)
+
+                        Filters only specified columns out of the input stream(s). You need to
+                        specify either
+
+                        - exclude=xyz
+
+                          to use all columns, where the filter (see common options above) has none
+                          of the characters 'xyz'
+
+                        or
+
+                        - include=xyz
+
+                          to use only columns, where the filter has one of the characters 'xyz'
+
+                        All used columns are concatenated and written to the output stream(s).
+
+
+                change(options)
+
+                        Randomly modifies the content of columns selected
+                        by the filter (see common options above).
+
+                        The options 'include=xyz' and 'exclude=xyz' work like
+                        with 'filter()', but here they select the columns to modify - all other
+                        columns get copied unmodified.
+
+                        How the selected columns are modified, is specified by the following
+                        parameters:
+
+                                - change=percent
+
+                                  percentage of changed columns (default: silently change nothing, to make
+                                  it more difficult for you to ignore this helpfile)
+
+                                - to=xy
+
+                                  randomly change to one of the characters 'xy'.
+
+                                  Hints:
+
+                                        - Use 'xyy' to produce 33% 'x' and 66% 'y' 
+                                        - Use 'xxxxxxxxxy' to produce 90% 'x' and 10% 'y'
+                                        - Use 'x' to replace all matching columns by 'x'
+
+                        I think the intention for this (long undocumented) command is to easily generate
+                        artificial sequences with different GC-content, in order to test treeing-software.
 
 	SPECIALS
 
