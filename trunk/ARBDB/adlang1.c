@@ -640,11 +640,10 @@ static GB_ERROR gbl_count(GBL_command_arguments *args)
     }
     GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
     for (i=0;i<args->cinput;i++) {         /* go through all orig streams  */
-        char *p;
-        long sum = 0;                   /* count frequencies    */
-        p = args->vinput[i].str;
+        long           sum = 0;                     /* count frequencies    */
+        unsigned char *p   = (unsigned char *)args->vinput[i].str;
         while (*p){
-            sum += tab[(unsigned int)*(p++)];
+            sum += tab[*(p++)];
         }
         STREAM_OUT(args, GBS_global_string_copy("%li", sum));
     }
