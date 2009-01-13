@@ -35,6 +35,10 @@
 
 using namespace std;
 
+#if defined(DEBUG)
+#define WARN_TODO
+#endif // DEBUG
+
 
 // #define DUMP_DATA // use this to see internal data (class Helpfile)
 #define MAX_LINE_LENGTH 500     // maximum length of lines in input stream
@@ -194,6 +198,15 @@ public:
 };
 
 
+#if defined(WARN_TODO)
+void check_TODO(const char *line, Reader& reader) {
+    if (strstr(line, "@@@") != NULL || strstr(line, "TODO") != NULL) {
+        string warn = strf("TODO: %s", line);
+        add_warning(warn.c_str(), reader.getLineNo());
+    }
+}
+#endif // WARN_TODO
+
 //  ---------------------------
 //      class NamedSection
 //  ---------------------------
@@ -330,6 +343,10 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
             pushParagraph(sec, paragraph); lines_in_paragraph = 0;
         }
         else {
+#if defined(WARN_TODO)
+            check_TODO(line, reader);
+#endif // WARN_TODO
+        
             string      keyword;
             const char *rest = extractKeyword(line, keyword);
 
@@ -418,6 +435,10 @@ void Helpfile::readHelp(istream& in, const string& filename) {
                 continue;
             }
 
+#if defined(WARN_TODO)
+            check_TODO(line, read);
+#endif // WARN_TODO
+            
             string      keyword;
             const char *rest = extractKeyword(line, keyword);
 
