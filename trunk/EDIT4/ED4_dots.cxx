@@ -14,6 +14,7 @@
 #include "ed4_visualizeSAI.hxx" // for SAI selection box
 
 #include <arbdbt.h>
+#include <ctype.h>
 
 using namespace std;
 
