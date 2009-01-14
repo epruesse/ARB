@@ -193,6 +193,7 @@ GB_ERROR GB_abort_transaction P_((GBDATA *gbd));
 GB_ERROR GB_commit_transaction P_((GBDATA *gbd));
 GB_ERROR GB_end_transaction P_((GBDATA *gbd, GB_ERROR error));
 void GB_end_transaction_show_error P_((GBDATA *gbd, GB_ERROR error, void (*error_handler )(GB_ERROR )));
+int GB_get_transaction_level P_((GBDATA *gbd));
 GB_ERROR GB_update_server P_((GBDATA *gbd));
 NOT4PERL const void *GB_read_old_value P_((void));
 long GB_read_old_size P_((void));

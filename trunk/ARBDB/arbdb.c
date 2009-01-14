@@ -1493,7 +1493,7 @@ long GB_read_temporary(GBDATA *gbd) {
 
 GB_ERROR GB_push_local_transaction(GBDATA *gbd) {
     /* Starts a read only transaction !!;
-       be shure that all data is cached
+       be sure that all data is cached
        be extremely carefull !!!!! */
     
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
@@ -1712,6 +1712,11 @@ GB_ERROR GB_end_transaction(GBDATA *gbd, GB_ERROR error) {
 void GB_end_transaction_show_error(GBDATA *gbd, GB_ERROR error, void (*error_handler)(GB_ERROR)) {
     error = GB_end_transaction(gbd, error);
     if (error) error_handler(error);
+}
+
+int GB_get_transaction_level(GBDATA *gbd) {
+    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
+    return Main->transaction;
 }
 
 /********************************************************************************************
