@@ -2038,12 +2038,6 @@ char *GBT_get_next_tree_name(GBDATA *gb_main, const char *tree){
     return NULL;
 }
 
-void GBT_free_names(char **names) {
-    char **pn;
-    for (pn = names; *pn;pn++) free(*pn);
-    free((char *)names);
-}
-
 int gbt_sum_leafs(GBT_TREE *tree){
     if (tree->is_leaf){
         return 1;
@@ -3201,6 +3195,75 @@ GBDATA **GBT_gen_species_array(GBDATA *gb_main, long *pspeccnt)
         result[(*pspeccnt)++]=gb_species;
     }
     return result;
+}
+
+/* ---------------------------------------- 
+ * conversion between
+ *
+ * - char ** (heap-allocated array of heap-allocated char*'s)
+ * - one string containing several substrings separated by a separator
+ *   (e.g. "name1,name2,name3")
+ */
+
+#if defined(DEVEL_RALF)
+#warning search for code which is splitting strings and use GBT_split_string there
+#endif /* DEVEL_RALF */
+
+char **GBT_split_string(const char *namelist, char separator, int *countPtr) {
+    // Split 'namelist' into an array of names at 'separator'.
+    // Use GBT_free_names() to free it.
+    // Sets 'countPtr' to the number of names found
+
+    int         sepCount = 0;
+    const char *sep      = namelist;
+    while (sep) {
+        sep = strchr(sep, separator);
+        if (sep) {
+            ++sep;
+            ++sepCount;
+        }
+    }
+
+    char **result = malloc((sepCount+2)*sizeof(*result)); // 3 separators -> 4 names (plus terminal NULL)
+    int    count  = 0;
+
+    for (; count < sepCount; ++count) {
+        sep = strchr(namelist, separator);
+        gb_assert(sep);
+        
+        result[count] = GB_strpartdup(namelist, sep-1);
+        namelist      = sep+1;
+    }
+
+    result[count++] = strdup(namelist);
+    result[count]   = NULL;
+
+    if (countPtr) *countPtr = count;
+
+    return result;
+}
+
+char *GBT_join_names(const char *const *names, char separator) {
+    struct GBS_strstruct *out = GBS_stropen(1000);
+
+    if (names[0]) {
+        GBS_strcat(out, names[0]);
+        gb_assert(strchr(names[0], separator) == 0); // otherwise you'll never be able to GBT_split_string
+        int n;
+        for (n = 1; names[n]; ++n) {
+            GBS_chrcat(out, separator);
+            GBS_strcat(out, names[n]);
+            gb_assert(strchr(names[n], separator) == 0); // otherwise you'll never be able to GBT_split_string
+        }
+    }
+
+    return GBS_strclose(out);
+}
+
+void GBT_free_names(char **names) {
+    char **pn;
+    for (pn = names; *pn;pn++) free(*pn);
+    free((char *)names);
 }
 
 /* ---------------------------------------- */
