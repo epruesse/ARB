@@ -99,21 +99,17 @@ ALI_SEQUENCE *ALI_ARBDB::get_sequence(char *name,int and_mark)
     return ali_seq;
 }
 
-char *ALI_ARBDB::get_extended(char *name)
-{
-    char                         *extended = 0;
-    GBDATA         *gb_extended_data;
-    GBDATA         *gb_ex;
+char *ALI_ARBDB::get_SAI(char *name) {
+    char   *extended    = 0;
+    GBDATA *gb_sai_data = GBT_get_SAI_data(gb_main);
+    GBDATA *gb_sai      = GB_find_string(gb_sai_data, "name", name, GB_IGNORE_CASE, down_2_level);
 
-    gb_extended_data = GB_search(gb_main, "extended_data", GB_FIND);
-
-    gb_ex = GB_find_string(gb_extended_data, "name", name, GB_IGNORE_CASE, down_2_level);
-    if (gb_ex) {
-        gb_ex = GB_brother(gb_ex, alignment);
-        if (gb_ex) {
-            gb_ex = GB_entry(gb_ex, "data");
-            if (gb_ex)
-                extended = GB_read_string(gb_ex);
+    if (gb_sai) {
+        gb_sai = GB_brother(gb_sai, alignment);
+        if (gb_sai) {
+            gb_sai = GB_entry(gb_sai, "data");
+            if (gb_sai)
+                extended = GB_read_string(gb_sai);
         }
     }
 
@@ -157,7 +153,7 @@ int ALI_ARBDB::put_sequence(char *name, ALI_SEQUENCE *sequence) {
 }
 
 
-int ALI_ARBDB::put_extended(const char *name, char *sequence) {
+int ALI_ARBDB::put_SAI(const char *name, char *sequence) {
     GB_change_my_security(gb_main,6,"passwd");
 
     GBDATA *gb_extended = GBT_create_SAI(gb_main,name);

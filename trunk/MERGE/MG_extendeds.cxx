@@ -30,17 +30,17 @@ void MG_extended_rename_cb(AW_window *aww,GBDATA *gbmain, int ex_nr) {
 
     GB_ERROR error = GB_begin_transaction(gbmain);
     if (!error) {
-        GBDATA *gb_extended_data = GB_search(gbmain, "extended_data", GB_CREATE_CONTAINER);
+        GBDATA *gb_sai_data = GBT_get_SAI_data(gbmain);
 
-        if (!gb_extended_data) error = GB_get_error();
+        if (!gb_sai_data) error = GB_get_error();
         else {
-            GBDATA *gb_extended = GBT_find_SAI_rel_exdata(gb_extended_data, source);
-            GBDATA *gb_dest_sai = GBT_find_SAI_rel_exdata(gb_extended_data, dest);
+            GBDATA *gb_sai      = GBT_find_SAI_rel_SAI_data(gb_sai_data, source);
+            GBDATA *gb_dest_sai = GBT_find_SAI_rel_SAI_data(gb_sai_data, dest);
 
             if (gb_dest_sai) error = GBS_global_string("SAI '%s' already exists", dest);
-            else if (!gb_extended) error = "Please select a SAI";
+            else if (!gb_sai) error = "Please select a SAI";
             else {
-                GBDATA *gb_name     = GB_search(gb_extended, "name", GB_STRING);
+                GBDATA *gb_name     = GB_search(gb_sai, "name", GB_STRING);
                 if (!gb_name) error = GB_get_error();
                 else    error       = GB_write_string(gb_name, dest);
             }
@@ -108,10 +108,10 @@ void MG_extended_delete_cb(AW_window *aww, GBDATA *gbmain, int ex_nr) {
         const char *tsource = GBS_global_string("tmp/merge%i/extended_name", ex_nr);
         char       *source  = aww->get_root()->awar(tsource)->read_string();
 
-        GBDATA *gb_extended    = GBT_find_SAI(gbmain, source);
-        if (gb_extended) error = GB_delete(gb_extended);
-        else    error          = "Please select a SAI first";
-        
+        GBDATA *gb_sai    = GBT_find_SAI(gbmain, source);
+        if (gb_sai) error = GB_delete(gb_sai);
+        else    error     = "Please select a SAI first";
+
         free(source);
     }
     GB_end_transaction_show_error(gbmain, error, aw_message);
@@ -130,16 +130,16 @@ void MG_transfer_extended(AW_window *aww, AW_CL force){
 
         if (!gb_source) error = "Please select the SAI you want to transfer";
         else {
-            GBDATA *gb_extended_data2     = GB_search(GLOBAL_gb_dest,"extended_data",GB_CREATE_CONTAINER);
-            if (!gb_extended_data2) error = GB_get_error();
+            GBDATA *gb_sai_data2     = GBT_get_SAI_data(GLOBAL_gb_dest);
+            if (!gb_sai_data2) error = GB_get_error();
             else {
-                GBDATA *gb_dest_sai = GBT_find_SAI_rel_exdata(gb_extended_data2,dest);
+                GBDATA *gb_dest_sai = GBT_find_SAI_rel_SAI_data(gb_sai_data2,dest);
                 if(gb_dest_sai) {
                     if (force) error = GB_delete(gb_dest_sai);
                     else error       = GBS_global_string("SAI '%s' exists, delete it first", dest);
                 }
                 if (!error) {
-                    gb_dest_sai             = GB_create_container(gb_extended_data2, "extended");
+                    gb_dest_sai             = GB_create_container(gb_sai_data2, "extended");
                     if (!gb_dest_sai) error = GB_get_error();
                     else error              = GB_copy(gb_dest_sai,gb_source);
                 }
@@ -159,19 +159,19 @@ void MG_map_extended1(AW_root *aw_root, AW_CL scannerid)
 {
     char *source = aw_root->awar(AWAR_EX_NAME1)->read_string();
     GB_push_transaction(GLOBAL_gb_merge);
-    GBDATA *gb_extended = GBT_find_SAI(GLOBAL_gb_merge,source);
-    awt_map_arbdb_scanner(scannerid,gb_extended,0, CHANGE_KEY_PATH);
+    GBDATA *gb_sai = GBT_find_SAI(GLOBAL_gb_merge,source);
+    awt_map_arbdb_scanner(scannerid,gb_sai,0, CHANGE_KEY_PATH);
     GB_pop_transaction(GLOBAL_gb_merge);
-    delete source;
+    free(source);
 }
 void MG_map_extended2(AW_root *aw_root, AW_CL scannerid)
 {
     char *source = aw_root->awar(AWAR_EX_NAME2)->read_string();
     GB_push_transaction(GLOBAL_gb_dest);
-    GBDATA *gb_extended = GBT_find_SAI(GLOBAL_gb_dest,source);
-    awt_map_arbdb_scanner(scannerid,gb_extended,0, CHANGE_KEY_PATH);
+    GBDATA *gb_sai = GBT_find_SAI(GLOBAL_gb_dest,source);
+    awt_map_arbdb_scanner(scannerid,gb_sai,0, CHANGE_KEY_PATH);
     GB_pop_transaction(GLOBAL_gb_dest);
-    delete source;
+    free(source);
 }
 
 

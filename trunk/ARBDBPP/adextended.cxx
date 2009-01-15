@@ -72,7 +72,7 @@ AD_ERR * AD_SAI::find(char *path)
 {
     error();
     AD_SPECIES::release();  // speicherplatz freigeben`
-    gb_species = GBT_find_SAI_rel_exdata(ad_main->extended_data,path);
+    gb_species = GBT_find_SAI_rel_SAI_data(ad_main->sai_data,path);
     AD_SPECIES::initpntr();
     return 0;
 }

@@ -92,9 +92,10 @@ void probe_read_data_base(char *name)
         printf("Database %s is empty\n",name);
         exit(EXIT_FAILURE);
     }
-    psg.gb_main = gb_main;
+    psg.gb_main         = gb_main;
     psg.gb_species_data = gb_species_data;
-    psg.gb_extended_data = GB_search(gb_main,"extended_data",GB_CREATE_CONTAINER);
+    psg.gb_sai_data     = GBT_get_SAI_data(gb_main);
+
     GB_commit_transaction(gb_main);
 }
 
@@ -179,7 +180,7 @@ void probe_read_alignments() {
     // read ref SAI (e.g. ecoli)
     {
         char   *def_ref = GBT_get_default_ref(psg.gb_main);
-        GBDATA *gb_ref  = GBT_find_SAI_rel_exdata(psg.gb_extended_data, def_ref);
+        GBDATA *gb_ref  = GBT_find_SAI_rel_SAI_data(psg.gb_sai_data, def_ref);
 
         psg.ecoli = 0;
         if (gb_ref) {

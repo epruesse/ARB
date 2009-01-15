@@ -109,14 +109,14 @@ class AD_MAIN : public AD_READWRITE
     friend class AD_SAI;
     friend class AD_ALI;
     friend class AD_SEQ;
-        
-    GBDATA *gbd;            // Zeiger auf container der DB
-    GBDATA *species_data;   // 
-    GBDATA *extended_data;  // 
-    GBDATA *presets;
-    int     AD_fast;        // Flag fuer schnelen Zugriff 
-    AD_EDITMODI      mode;  // for seq modes 
-        
+
+    GBDATA      *gbd;           // Zeiger auf container der DB
+    GBDATA      *species_data;
+    GBDATA      *sai_data;
+    GBDATA      *presets;
+    int          AD_fast;       // Flag fuer schnelen Zugriff
+    AD_EDITMODI  mode;          // for seq modes
+
 public:
 
 

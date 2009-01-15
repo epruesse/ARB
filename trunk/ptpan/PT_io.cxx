@@ -675,7 +675,7 @@ BOOL OpenDataBase(struct PTPanGlobal *pg)
     return(FALSE);
   }
   /* add the extended data container */
-  pg->pg_ExtendedData = GB_search(pg->pg_MainDB, "extended_data", GB_CREATE_CONTAINER);
+  pg->pg_SaiData = GBT_get_SAI_data(pg->pg_MainDB);
   pg->pg_AlignmentName = GBT_get_default_alignment(pg->pg_MainDB);
 
   printf("Building PT-Server for alignment '%s'...\n", pg->pg_AlignmentName);
@@ -692,7 +692,7 @@ BOOL LoadEcoliSequence(struct PTPanGlobal *pg)
   GBDATA *gb_extdata;
   STRPTR defaultref = GBT_get_default_ref(pg->pg_MainDB);
 
-  gb_extdata = GBT_find_SAI_rel_exdata(pg->pg_ExtendedData, defaultref);
+  gb_extdata = GBT_find_SAI_rel_SAI_data(pg->pg_SaiData, defaultref);
   free(defaultref);
 
   /* free memory if previously allocated */

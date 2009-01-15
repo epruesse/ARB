@@ -250,13 +250,11 @@ AW_CL   awt_create_select_filter(AW_root *aw_root,GBDATA *gb_main,const char *de
 
     aw_root->awar(acbs->def_subname)->touch();      // cause an callback
 
-    GBDATA *gb_extended_data =  GB_search(acbs->gb_main,"extended_data",GB_CREATE_CONTAINER);
+    GBDATA *gb_sai_data = GBT_get_SAI_data(acbs->gb_main);
+    GBDATA *gb_sel      = GB_search(acbs->gb_main, AWAR_SPECIES_NAME, GB_STRING);
 
-    GB_add_callback(gb_extended_data,GB_CB_CHANGED,     (GB_CB)awt_create_select_filter_window_gb_cb, (int *)acbs);
-
-    GBDATA *gb_sel = GB_search(acbs->gb_main,AWAR_SPECIES_NAME,GB_STRING);
-
-    GB_add_callback(gb_sel,GB_CB_CHANGED,           (GB_CB)awt_create_select_filter_window_gb_cb, (int *)acbs);
+    GB_add_callback(gb_sai_data, GB_CB_CHANGED, (GB_CB)awt_create_select_filter_window_gb_cb, (int *)acbs);
+    GB_add_callback(gb_sel,      GB_CB_CHANGED, (GB_CB)awt_create_select_filter_window_gb_cb, (int *)acbs);
 
     aw_root->awar(acbs->def_alignment)->add_callback(   (AW_RCB1)awt_create_select_filter_window_gb_cb,(AW_CL)acbs);
     aw_root->awar(acbs->def_2filter)->add_callback(     (AW_RCB1)awt_create_select_filter_window_aw_cb,(AW_CL)acbs);

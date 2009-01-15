@@ -586,7 +586,6 @@ void *awt_create_selection_list_on_extendeds(GBDATA *gb_main,AW_window *aws, con
                                              AW_BOOL add_sel_species)
 {
     AW_selection_list           *id;
-    GBDATA                      *gb_extended_data;
     struct awt_sel_list_for_sai *cbs;
 
     GB_push_transaction(gb_main);
@@ -603,8 +602,8 @@ void *awt_create_selection_list_on_extendeds(GBDATA *gb_main,AW_window *aws, con
 
     awt_create_selection_list_on_extendeds_update(0,(void *)cbs);
 
-    gb_extended_data = GB_search(gb_main,"extended_data",GB_CREATE_CONTAINER);
-    GB_add_callback(gb_extended_data,GB_CB_CHANGED, (GB_CB)awt_create_selection_list_on_extendeds_update, (int *)cbs);
+    GBDATA *gb_sai_data = GBT_get_SAI_data(gb_main);
+    GB_add_callback(gb_sai_data,GB_CB_CHANGED, (GB_CB)awt_create_selection_list_on_extendeds_update, (int *)cbs);
 
     if (add_sel_species){       // update box if another species is selected
         GBDATA *gb_sel = GB_search(gb_main,AWAR_SPECIES_NAME,GB_STRING);

@@ -40,14 +40,6 @@ typedef float GBT_LEN;
 (tree_obj_ptr)->name = 0;                               \
 (tree_obj_ptr)->remark_branch = 0
 
-#define AWAR_SPECIES_DATA       "species_data"
-#define AWAR_SPECIES            "species"
-
-#define AWAR_SAI_DATA           "extended_data"
-#define AWAR_SAI                "extended"
-
-#define AWAR_TREE_DATA          "tree_data"
-
 #define AWAR_ERROR_CONTAINER    "tmp/message/pending"
 
 #ifdef FAKE_VTAB_PTR

@@ -11,6 +11,11 @@
 #include "adGene.h"
 #include "ad_config.h"
 
+#if defined(DEVEL_RALF)
+#warning split this file into semantic sections (alignment, insertDelete, tree, items_species_sai, rest)
+#endif /* DEVEL_RALF */
+
+
 #define GBT_GET_SIZE 0
 #define GBT_PUT_DATA 1
 
@@ -251,7 +256,7 @@ NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment,
 
         if (!error) {
             GBDATA *gb_sai;
-            for (gb_sai = GBT_first_SAI_rel_exdata(gb_extended_data);
+            for (gb_sai = GBT_first_SAI_rel_SAI_data(gb_extended_data);
                  gb_sai && !error;
                  gb_sai = GBT_next_SAI(gb_sai) )
             {
@@ -2194,15 +2199,12 @@ GBDATA *GBT_create_species_rel_species_data(GBDATA *gb_species_data, const char 
 }
 
 GBDATA *GBT_create_species(GBDATA *gb_main, const char *name) {
-    GBDATA *gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
-    return GBT_create_species_rel_species_data(gb_species_data, name);
+    return GBT_create_species_rel_species_data(GBT_get_species_data(gb_main), name);
 }
-
 
 GBDATA *GBT_create_SAI(GBDATA *gb_main,const char *name) {
     /* Search for an SAI, when SAI does not exist, create it */
-    GBDATA *gb_extended_data = GB_search(gb_main, "extended_data", GB_CREATE_CONTAINER);
-    return GBT_create_item(gb_extended_data, "extended", name);
+    return GBT_create_item(GBT_get_SAI_data(gb_main), "extended", name);
 }
 
 #if defined(DEVEL_RALF)
@@ -2363,9 +2365,55 @@ GBDATA *GBT_find_species(GBDATA *gb_main,const char *name) {
     return GBT_find_species_rel_species_data(GBT_get_species_data(gb_main), name);
 }
 
+/* -------------------------------------------------------------------------------- */
+
+GBDATA *GBT_get_SAI_data(GBDATA *gb_main) {
+    return GB_search(gb_main, "extended_data", GB_CREATE_CONTAINER);
+}
+
+GBDATA *GBT_first_marked_SAI(GBDATA *gb_sai_data) {
+    GBDATA *gb_sai;
+    for (gb_sai = GB_entry(gb_sai_data,"extended");
+         gb_sai;
+         gb_sai = GB_nextEntry(gb_sai))
+    {
+        if (GB_read_flag(gb_sai)) return gb_sai;
+    }
+    return NULL;
+}
+
+GBDATA *GBT_next_marked_SAI(GBDATA *gb_sai) {
+    while ((gb_sai = GB_nextEntry(gb_sai))) {
+        if (GB_read_flag(gb_sai)) return gb_sai;
+    }
+    return NULL;
+}
+
+/* Search SAIs */
+GBDATA *GBT_first_SAI(GBDATA *gb_main) {
+    return GB_entry(GBT_get_SAI_data(gb_main),"extended");
+}
+
+GBDATA *GBT_next_SAI(GBDATA *gb_sai) {
+    gb_assert(GB_has_key(gb_sai, "extended"));
+    return GB_nextEntry(gb_sai);
+}
+
+GBDATA *GBT_find_SAI(GBDATA *gb_main, const char *name) {
+    return GBT_find_species_rel_species_data(GBT_get_SAI_data(gb_main), name);
+}
+
+/* Search SAIs rel SAI data */
+GBDATA *GBT_first_SAI_rel_SAI_data(GBDATA *gb_sai_data) {
+    return GB_entry(gb_sai_data, "extended");
+}
+
+GBDATA *GBT_find_SAI_rel_SAI_data(GBDATA *gb_sai_data, const char *name) {
+    return GBT_find_species_rel_species_data(gb_sai_data, name);
+}
+
 /* --------------------- */
 /*      count items      */
-/* --------------------- */
 
 long GBT_get_item_count(GBDATA *gb_main, const char *item_container_name) {
     GBDATA *gb_item_data;
@@ -2388,52 +2436,6 @@ long GBT_get_SAI_count(GBDATA *gb_main) {
 }
 
 /* -------------------------------------------------------------------------------- */
-
-GBDATA *GBT_first_marked_extended(GBDATA *gb_extended_data)
-{
-    GBDATA *gb_extended;
-    for (gb_extended = GB_entry(gb_extended_data,"extended");
-         gb_extended;
-         gb_extended = GB_nextEntry(gb_extended))
-    {
-        if (GB_read_flag(gb_extended)) return gb_extended;
-    }
-    return NULL;
-}
-
-GBDATA *GBT_next_marked_extended(GBDATA *gb_extended)
-{
-    while ((gb_extended = GB_nextEntry(gb_extended))) {
-        if (GB_read_flag(gb_extended)) return gb_extended;
-    }
-    return NULL;
-}
-/* Search SAIs */
-GBDATA *GBT_first_SAI(GBDATA *gb_main) {
-    GBDATA *gb_extended_data = GB_search(gb_main,"extended_data",GB_CREATE_CONTAINER);
-    GBDATA *gb_extended      = GB_entry(gb_extended_data,"extended");
-    return gb_extended;
-}
-
-GBDATA *GBT_next_SAI(GBDATA *gb_extended) {
-    gb_assert(GB_has_key(gb_extended, "extended"));
-    return GB_nextEntry(gb_extended);
-}
-
-GBDATA *GBT_find_SAI(GBDATA *gb_main,const char *name)
-{
-    GBDATA *gb_extended_data = GB_search(gb_main,"extended_data",GB_CREATE_CONTAINER);
-    return GBT_find_species_rel_species_data(gb_extended_data,name);
-}
-/* Search SAIs rel extended_data */
-
-GBDATA *GBT_first_SAI_rel_exdata(GBDATA *gb_extended_data) {
-    return GB_entry(gb_extended_data,"extended");
-}
-
-GBDATA *GBT_find_SAI_rel_exdata(GBDATA *gb_extended_data, const char *name) {
-    return GBT_find_species_rel_species_data(gb_extended_data,name);
-}
 
 char *GBT_create_unique_species_name(GBDATA *gb_main,const char *default_name){
     GBDATA *gb_species;
@@ -3474,7 +3476,7 @@ GBDATA *GBT_open(const char *path,const char *opent,const char *disabled_path)
             if (hash_size < GBT_SPECIES_INDEX_SIZE) hash_size = GBT_SPECIES_INDEX_SIZE;
             GB_create_index(species_data,"name",GB_IGNORE_CASE,hash_size);
 
-            extended_data = GB_search(gbd, "extended_data", GB_CREATE_CONTAINER);
+            extended_data = GBT_get_SAI_data(gbd);
             hash_size = GB_number_of_subentries(extended_data);
             if (hash_size < GBT_SAI_INDEX_SIZE) hash_size = GBT_SAI_INDEX_SIZE;
             GB_create_index(extended_data,"name",GB_IGNORE_CASE,hash_size);
