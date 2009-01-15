@@ -17,7 +17,7 @@
 
 AD_MAIN::AD_MAIN() {
     gbd = 0;
-    species_data = extended_data = presets = 0;
+    species_data = sai_data = presets = 0;
     AD_fast = MAXCACH;
 }
 
@@ -41,10 +41,10 @@ AD_ERR *AD_MAIN::open(const char *path) {
     }
     if (gbd) {  //  DB geoeffnet
         GB_begin_transaction(gbd); // Zeiger initialisieren
-        
-        species_data  = GB_entry(gbd,"species_data");
-        extended_data = GB_entry(gbd,"extended_data");
-        presets       = GB_entry(gbd,"presets");
+
+        species_data = GB_entry(gbd,"species_data");
+        sai_data     = GB_entry(gbd,"extended_data");
+        presets      = GB_entry(gbd,"presets");
 
         GB_commit_transaction(gbd);
 

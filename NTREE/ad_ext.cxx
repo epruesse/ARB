@@ -29,12 +29,12 @@ void extended_rename_cb(AW_window *aww){
     GB_ERROR  error  = GB_begin_transaction(GLOBAL_gb_main);
 
     if (!error) {
-        GBDATA *gb_extended_data = GB_search(GLOBAL_gb_main,"extended_data",GB_CREATE_CONTAINER);
+        GBDATA *gb_extended_data = GBT_get_SAI_data(GLOBAL_gb_main);
 
         if (!gb_extended_data) error = GB_get_error();
         else {
-            GBDATA *gb_extended = GBT_find_SAI_rel_exdata(gb_extended_data,source);
-            GBDATA *gb_dest     = GBT_find_SAI_rel_exdata(gb_extended_data,dest);
+            GBDATA *gb_extended = GBT_find_SAI_rel_SAI_data(gb_extended_data,source);
+            GBDATA *gb_dest     = GBT_find_SAI_rel_SAI_data(gb_extended_data,dest);
             if (gb_dest) {
                 error = GBS_global_string("SAI '%s' already exists", dest);
             }
@@ -60,12 +60,12 @@ void extended_copy_cb(AW_window *aww) {
     GB_ERROR  error  = GB_begin_transaction(GLOBAL_gb_main);
     
     if (!error) {
-        GBDATA *gb_extended_data = GB_search(GLOBAL_gb_main,"extended_data",GB_CREATE_CONTAINER);
+        GBDATA *gb_extended_data = GBT_get_SAI_data(GLOBAL_gb_main);
 
         if (!gb_extended_data) error = GB_get_error();
         else {
-            GBDATA *gb_extended = GBT_find_SAI_rel_exdata(gb_extended_data, source);
-            GBDATA *gb_dest     = GBT_find_SAI_rel_exdata(gb_extended_data, dest);
+            GBDATA *gb_extended = GBT_find_SAI_rel_SAI_data(gb_extended_data, source);
+            GBDATA *gb_dest     = GBT_find_SAI_rel_SAI_data(gb_extended_data, dest);
             
             if (gb_dest) error = GBS_global_string("SAI '%s' already exists", dest);
             else if (gb_extended) {

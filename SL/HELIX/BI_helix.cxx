@@ -251,17 +251,17 @@ const char *BI_helix::init(GBDATA *gb_main, const char *alignment_name, const ch
     GB_transaction ta(gb_main);
     clear_error();
 
-    GBDATA *gb_extended_data = GB_search(gb_main,"extended_data",GB_CREATE_CONTAINER);
-    long    size2            = GBT_get_alignment_len(gb_main,alignment_name);
+    GBDATA *gb_sai_data = GBT_get_SAI_data(gb_main);
+    long    size2       = GBT_get_alignment_len(gb_main,alignment_name);
 
     if (size2<=0) {
         set_error(GB_get_error());
     }
     else {
-        GBDATA *gb_helix_nr_con = GBT_find_SAI_rel_exdata(gb_extended_data, helix_nr_name);
-        GBDATA *gb_helix_con = GBT_find_SAI_rel_exdata(gb_extended_data, helix_name);
-        GBDATA *gb_helix = 0;
-        GBDATA *gb_helix_nr = 0;
+        GBDATA *gb_helix_nr_con = GBT_find_SAI_rel_SAI_data(gb_sai_data, helix_nr_name);
+        GBDATA *gb_helix_con    = GBT_find_SAI_rel_SAI_data(gb_sai_data, helix_name);
+        GBDATA *gb_helix        = 0;
+        GBDATA *gb_helix_nr     = 0;
 
         if (gb_helix_nr_con)    gb_helix_nr = GBT_read_sequence(gb_helix_nr_con,alignment_name);
         if (gb_helix_con)       gb_helix = GBT_read_sequence(gb_helix_con,alignment_name);

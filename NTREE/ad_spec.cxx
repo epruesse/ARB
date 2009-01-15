@@ -61,16 +61,16 @@ static void move_species_to_extended(AW_window *aww) {
     GB_ERROR  error  = GB_begin_transaction(GLOBAL_gb_main);
 
     if (!error) {
-        GBDATA *gb_extended_data = GB_search(GLOBAL_gb_main, "extended_data", GB_CREATE_CONTAINER);
+        GBDATA *gb_sai_data = GBT_get_SAI_data(GLOBAL_gb_main);
 
-        if (!gb_extended_data) error = GB_get_error();
+        if (!gb_sai_data) error = GB_get_error();
         else {
             GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main, source);
-            GBDATA *gb_dest    = GBT_find_SAI_rel_exdata(gb_extended_data, source);
+            GBDATA *gb_dest    = GBT_find_SAI_rel_SAI_data(gb_sai_data, source);
 
             if (gb_dest) error = GBS_global_string("SAI '%s' already exists", source);
             else if (gb_species) {
-                gb_dest = GB_create_container(gb_extended_data, "extended");
+                gb_dest = GB_create_container(gb_sai_data, "extended");
                 if (!gb_dest) error = GB_get_error();
                 else {
                     error = GB_copy(gb_dest, gb_species);
@@ -142,26 +142,31 @@ void create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL) {
             } else if (strspn(sai_name, " ") == strlen(sai_name)) {
                 error = "Name of SAI is empty. Please enter a valid name.";
             } else {
-                GBDATA *gb_extended_data = GB_search(GLOBAL_gb_main, "extended_data", GB_CREATE_CONTAINER);
-                GBDATA *gb_sai = GBT_find_SAI_rel_exdata(gb_extended_data, sai_name);
-                char *ali_name = GBT_get_default_alignment(GLOBAL_gb_main);
+                GBDATA *gb_sai_data = GBT_get_SAI_data(GLOBAL_gb_main);
+                GBDATA *gb_sai      = GBT_find_SAI_rel_SAI_data(gb_sai_data, sai_name);
+                char   *ali_name    = GBT_get_default_alignment(GLOBAL_gb_main);
 
                 if (gb_sai) {
                     error = "SAI with the same name already exists. Please enter another name.";
                 } else {
                     // create SAI container and copy fields from the species to the SAI
-                    gb_sai = GB_create_container(gb_extended_data, "extended");
+                    gb_sai                   = GB_create_container(gb_sai_data, "extended");
                     GBDATA *gb_species_field = GB_child(gb_species);
+                    
                     while (gb_species_field && !error) {
-                        char *key = GB_read_key(gb_species_field);
+                        char   *key          = GB_read_key(gb_species_field);
                         GBDATA *gb_sai_field = GB_search(gb_sai, GB_read_key(gb_species_field), GB_read_type(gb_species_field));
+
                         if (!strcmp(key, "name")) { // write the new name
-                            error = GB_write_string(gb_sai_field, sai_name);                                                    
-                        } else if (!strcmp(key, "sec_struct")) { // write contents from the field "sec_struct" to the alignment data
+                            error = GB_write_string(gb_sai_field, sai_name);
+                        }
+                        else if (!strcmp(key, "sec_struct")) { // write contents from the field "sec_struct" to the alignment data
                             GBDATA *gb_sai_ali = GB_search(gb_sai, ali_name, GB_CREATE_CONTAINER);
-                            GBDATA *gb_sai_data = GB_search(gb_sai_ali, "data", GB_STRING);
-                            error = GB_write_string(gb_sai_data, sec_struct);
-                        } else if (strcmp(key, "acc") && strcmp(key, ali_name)) { // don't copy "acc" and the old alignment data
+                            GBDATA *gb_data    = GB_search(gb_sai_ali, "data", GB_STRING);
+
+                            error = GB_write_string(gb_data, sec_struct);
+                        }
+                        else if (strcmp(key, "acc") && strcmp(key, ali_name)) { // don't copy "acc" and the old alignment data
                             error = GB_copy(gb_sai_field, gb_species_field);
                         }
                         gb_species_field = GB_nextChild(gb_species_field);

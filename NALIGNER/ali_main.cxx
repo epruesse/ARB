@@ -311,9 +311,9 @@ int main(int argc, char **argv)
                  */
                 aligs.arbdb.begin_transaction();
                 char *String = align_profile->cheapest_sequence();
-                aligs.arbdb.put_extended("ALI_CON",String);
+                aligs.arbdb.put_SAI("ALI_CON",String);
                 freeset(String, align_profile->borders_sequence());
-                //                              aligs.arbdb.put_extended("ALI_BOR",string,0);
+                //                              aligs.arbdb.put_SAI("ALI_BOR",string,0);
                 free(String);
                 aligs.arbdb.commit_transaction();
 
@@ -340,9 +340,9 @@ int main(int argc, char **argv)
                  */
                 aligs.arbdb.begin_transaction();
                 String = align_pre_sequence_i->string();
-                aligs.arbdb.put_extended("ALI_PRE_I",String);
+                aligs.arbdb.put_SAI("ALI_PRE_I",String);
                 freeset(String, align_pre_sequence->string());
-                aligs.arbdb.put_extended("ALI_PRE",String);
+                aligs.arbdb.put_SAI("ALI_PRE",String);
                 free(String);
                 aligs.arbdb.commit_transaction();
 
@@ -371,7 +371,7 @@ int main(int argc, char **argv)
 
                 aligs.arbdb.begin_transaction();
                 aligs.arbdb.put_sequence_string(species_name,String);
-                aligs.arbdb.put_extended("ALI_INSERTS",approx_elem->ins_marker);
+                aligs.arbdb.put_SAI("ALI_INSERTS",approx_elem->ins_marker);
                 aligs.arbdb.commit_transaction();
                 delete sequence;
 

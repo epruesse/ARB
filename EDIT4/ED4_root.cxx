@@ -1358,10 +1358,10 @@ void ED4_no_dangerous_modes(void)
 void ED4_init_faligner_data(AWTC_faligner_cd *faligner_data) {
     GB_push_transaction(GLOBAL_gb_main);
 
-    const char *err              = 0;
-    char       *helix_name       = GBT_get_default_helix(GLOBAL_gb_main);
-    char       *alignment_name   = GBT_get_default_alignment(GLOBAL_gb_main);
-    GBDATA     *gb_extended_data = GB_search(GLOBAL_gb_main,"extended_data",GB_CREATE_CONTAINER);
+    const char *err            = 0;
+    char       *helix_name     = GBT_get_default_helix(GLOBAL_gb_main);
+    char       *alignment_name = GBT_get_default_alignment(GLOBAL_gb_main);
+    GBDATA     *gb_sai_data    = GBT_get_SAI_data(GLOBAL_gb_main);
 
     long size2        = GBT_get_alignment_len(GLOBAL_gb_main,alignment_name);
     if (size2<=0) err = (char *)GB_get_error();
@@ -1369,7 +1369,7 @@ void ED4_init_faligner_data(AWTC_faligner_cd *faligner_data) {
     freeset(faligner_data->helix_string, 0);
     
     if (!err) {
-        GBDATA *gb_helix_con = GBT_find_SAI_rel_exdata(gb_extended_data, helix_name);
+        GBDATA *gb_helix_con = GBT_find_SAI_rel_SAI_data(gb_sai_data, helix_name);
         if (gb_helix_con) {
             GBDATA *gb_helix = GBT_read_sequence(gb_helix_con,alignment_name);
             if (gb_helix) {

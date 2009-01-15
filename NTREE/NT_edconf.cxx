@@ -274,13 +274,13 @@ extern "C" {
 
 /** collect all Sais, place some SAI in top area, rest in middle */
 void nt_build_sai_string(GBS_strstruct *topfile, GBS_strstruct *middlefile){
-    GBDATA *gb_sai_data = GB_search(GLOBAL_gb_main,"extended_data",GB_FIND);
+    GBDATA *gb_sai_data = GBT_get_SAI_data(GLOBAL_gb_main);
     if (!gb_sai_data) return;
 
     GB_HASH *hash = GBS_create_hash(100, GB_IGNORE_CASE);
     GBDATA  *gb_sai;
 
-    for (gb_sai = GBT_first_SAI_rel_exdata(gb_sai_data); gb_sai; gb_sai = GBT_next_SAI(gb_sai)) {
+    for (gb_sai = GBT_first_SAI_rel_SAI_data(gb_sai_data); gb_sai; gb_sai = GBT_next_SAI(gb_sai)) {
         GBDATA *gb_name = GB_search(gb_sai,"name",GB_FIND);
         if (!gb_name) continue;
 

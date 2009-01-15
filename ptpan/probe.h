@@ -80,7 +80,7 @@ struct PTPanGlobal
 
   /* Main data base information */
   GBDATA     *pg_MainDB;         /* ARBDB interface */
-  GBDATA     *pg_ExtendedData;
+  GBDATA     *pg_SaiData;
 
   STRPTR      pg_AlignmentName;  /* Name of the alignment in DB */
 
