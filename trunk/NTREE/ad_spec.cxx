@@ -133,7 +133,7 @@ void create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL) {
             // generate default name and name input field for the new SAI
             {
                 char *sai_default_name = GBS_global_string_copy("%s%s", species_name, strstr(species_name, "_pfold") ? "" : "_pfold");
-                sai_name         = aw_input("Name of SAI to create:", 0, sai_default_name);
+                sai_name         = aw_input("Name of SAI to create:", sai_default_name);
                 free(sai_default_name);
             }
 
@@ -308,7 +308,7 @@ static void ad_species_rename_cb(AW_window *aww, AW_CL, AW_CL) {
         GB_transaction  ta(GLOBAL_gb_main);
         GBDATA         *gb_full_name  = GB_search(gb_species, "full_name", GB_STRING);
         const char     *full_name     = gb_full_name ? GB_read_char_pntr(gb_full_name) : "";
-        char           *new_full_name = aw_input("Enter new 'full_name' of species:", 0, full_name);
+        char           *new_full_name = aw_input("Enter new 'full_name' of species:", full_name);
 
         if (new_full_name) {
             GB_ERROR error = 0;

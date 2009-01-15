@@ -668,7 +668,7 @@ void AWT_graphic_tree::toggle_group(AP_tree * at)
             
             switch (aw_question(msg,"Rename,Destroy,Cancel")){
                 case 0: {
-                    char *new_gname = aw_input("Rename group", 0, at->name);
+                    char *new_gname = aw_input("Rename group", "Change group name:", at->name);
                     if (new_gname) {
                         freeset(at->name, new_gname);
                         GB_write_string(gb_name, new_gname);
@@ -699,7 +699,7 @@ void AWT_graphic_tree::toggle_group(AP_tree * at)
 AW_BOOL AWT_graphic_tree::create_group(AP_tree * at)
 {
     if (!at->name) {
-        char *gname = aw_input("Enter Name of Group",0);
+        char *gname = aw_input("Enter Name of Group");
         if (!gname) return AW_FALSE;
 
         GBDATA         *gbmain = GB_get_root(tree_static->gb_tree);

@@ -472,7 +472,7 @@ static void SEC_rename_structure(AW_window *, AW_CL cl_db, AW_CL) {
     SEC_db_interface      *db        = (SEC_db_interface*)cl_db;
     SEC_structure_toggler *structure = db->structure();
 
-    char *new_name = aw_input("Rename structure", "New name", 0, structure->name());
+    char *new_name = aw_input("Rename structure", "New name", structure->name());
     if (new_name) {
         structure->setName(new_name);
         free(new_name);

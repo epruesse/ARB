@@ -202,7 +202,6 @@ void nt_create_all_awars(AW_root *awr, AW_default def) {
     create_probe_design_variables(awr,def,GLOBAL_gb_main);
     create_primer_design_variables(awr,def, GLOBAL_gb_main);
     create_trees_var(awr,def);
-    NT_create_extendeds_var(awr,def);
     create_species_var(awr,def);
     create_consensus_var(awr,def);
     create_gde_var(awr,def);
@@ -680,7 +679,7 @@ void NT_set_compression(AW_window *, AW_CL dis_compr, AW_CL){
 
 
 void NT_mark_degenerated_branches(AW_window *aww, AW_CL ntwcl) {
-    char *val = aw_input("Enter degeneration factor [ 1 .. ]", 0);
+    char *val = aw_input("Enter degeneration factor [ 1 .. ]");
     if (val) {
         AWT_canvas     *ntw = (AWT_canvas *)ntwcl;
         GB_transaction  dummy(ntw->gb_main);
@@ -694,7 +693,7 @@ void NT_mark_degenerated_branches(AW_window *aww, AW_CL ntwcl) {
 }
 
 void NT_mark_deep_branches(AW_window *aww, AW_CL ntwcl) {
-    char *val = aw_input("Enter depth [ 1 .. ]", 0);
+    char *val = aw_input("Enter depth [ 1 .. ]");
     if (val) {
         AWT_canvas     *ntw = (AWT_canvas *)ntwcl;
         GB_transaction  dummy(ntw->gb_main);
@@ -708,7 +707,7 @@ void NT_mark_deep_branches(AW_window *aww, AW_CL ntwcl) {
 }
 
 void NT_mark_long_branches(AW_window *aww, AW_CL ntwcl){
-    char *val = aw_input("Enter relativ diff [0 .. 5.0]",0);
+    char *val = aw_input("Enter relativ diff [0 .. 5.0]");
     if (val) {
         AWT_canvas     *ntw = (AWT_canvas *)ntwcl;
         GB_transaction  dummy(ntw->gb_main);

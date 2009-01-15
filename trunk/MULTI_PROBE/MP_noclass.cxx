@@ -51,7 +51,7 @@ void MP_new_sequence(AW_window *aww) {
     delete glob_old_seq;
     glob_old_seq = NULL;
 
-    char *res = aw_input("Enter target sequence",MP_AWAR_SEQUENZEINGABE);
+    char *res = aw_input2awar("Enter target sequence", MP_AWAR_SEQUENZEINGABE);
     free(res);
 
     MP_take_manual_sequence(aww);

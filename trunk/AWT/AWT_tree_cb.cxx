@@ -651,7 +651,7 @@ void NT_move_boot_branch(AW_window*, AW_CL cl_ntw, AW_CL cl_direction) // copy b
 
 void NT_scale_tree(AW_window*, AW_CL cl_ntw, AW_CL) // scale branchlengths
 {
-    char *answer = aw_input("Enter scale factor", "Scale branchlengths by factor:", 0, "100");
+    char *answer = aw_input("Enter scale factor", "Scale branchlengths by factor:", "100");
     if (answer) {
         AWT_canvas *ntw    = (AWT_canvas*)cl_ntw;
         double      factor = atof(answer);

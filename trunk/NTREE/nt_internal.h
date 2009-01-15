@@ -55,8 +55,6 @@ AW_window *NT_start_editor_on_old_configuration(AW_root *awr);
 void NT_start_editor_on_tree(AW_window *, GBT_TREE **ptree, int use_species_aside);
 GB_ERROR NT_create_configuration(AW_window *, GBT_TREE **ptree, const char *conf_name, int use_species_aside);
 void NT_configuration_admin(AW_window *aw_main, AW_CL cl_GBT_TREE_ptr, AW_CL dummy_1x);
-AW_window *NT_extract_configuration(AW_root *awr);
-GB_ERROR NT_create_configuration_cb(AW_window *aww, AW_CL cl_GBT_TREE_ptr, AW_CL cl_use_species_aside);
 
 /* NT_extern.cxx */
 void NT_save_cb(AW_window *aww);
@@ -118,7 +116,6 @@ void NT_create_alignment_vars(AW_root *aw_root, AW_default aw_def);
 AW_window *NT_create_alignment_window(AW_root *root, AW_CL popmedown);
 
 /* ad_ext.cxx */
-void NT_create_extendeds_var(AW_root *aw_root, AW_default aw_def);
 AW_window *NT_create_extendeds_window(AW_root *aw_root);
 
 /* ad_spec.cxx */
