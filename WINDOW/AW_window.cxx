@@ -737,17 +737,18 @@ void AW_cb_struct::run_callback(void) {
         // the following callbacks are allowed even if disable_callbacks is true
         if ((f != (AW_CB)message_cb)       &&
             (f != (AW_CB)macro_message_cb) &&
-            (f != (AW_CB)modify_input_cb)  &&
+            (f != (AW_CB)input_history_cb) &&
             (f != (AW_CB)input_cb)         &&
             (f != (AW_CB)AW_POPUP_HELP)    &&
             (f != (AW_CB)AW_POPDOWN)       &&
             !aw->is_expose_callback(AW_INFO_AREA, f)      &&
             !aw->is_resize_callback(AW_INFO_AREA, f) )
         {
-            // don't warn about the following callback, just silently ignore them : 
+            // don't warn about the following callback, just silently ignore them :
             if (!aw->is_expose_callback(AW_MIDDLE_AREA, f) &&
                 !aw->is_resize_callback(AW_MIDDLE_AREA, f) )
             {
+                // otherwise remind the user to answer the prompt:
                 aw_message("That has been ignored. Answer the prompt first!");
             }
             return;

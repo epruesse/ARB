@@ -211,9 +211,11 @@ AW_status.o: aw_root.hxx
 AW_status.o: aw_window.hxx
 AW_status.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AW_status.o: $(ARBHOME)/INCLUDE/ad_prot.h
+AW_status.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AW_status.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_status.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_status.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AW_status.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AW_status.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_status.o: $(ARBHOME)/INCLUDE/awt.hxx
 AW_status.o: $(ARBHOME)/INCLUDE/awt_www.hxx

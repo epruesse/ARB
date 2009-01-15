@@ -120,9 +120,9 @@ static void AWT_start_config_manager(AW_window *aww, AW_CL cl_config)
     char              *title            = GBS_global_string_copy("Configurations for '%s'", aww->window_name);
 
     const char *buttons = "RESTORE,STORE,DELETE,CLOSE,HELP";
-    char       *result  = aw_string_selection(title, "Enter a new or select an existing config",
-                                              config->get_awar_name("current").c_str(), 0, existing_configs.c_str(),
-                                              buttons, correct_key_name);
+    char       *result  = aw_string_selection2awar(title, "Enter a new or select an existing config",
+                                                   config->get_awar_name("current").c_str(), existing_configs.c_str(),
+                                                   buttons, correct_key_name);
     int         button  = aw_string_selection_button();
 
     if (button >= 0 && button <= 2) { // RESTORE, STORE and DELETE

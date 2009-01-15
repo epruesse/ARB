@@ -956,7 +956,7 @@ void ED4_set_col_stat_threshold(AW_window */*aww*/, AW_CL cl_do_refresh, AW_CL) 
     char default_input[40];
     sprintf(default_input, "%6.2f", default_threshold);
 
-    char *input = aw_input("Please insert threshold value for marking:", 0, default_input);
+    char *input = aw_input("Please insert threshold value for marking:", default_input);
     if (input) {
         double input_threshold = atof(input);
 
@@ -1166,21 +1166,15 @@ static void group_species(int use_field, AW_window *use_as_main_window) {
     ED4_ROOT->use_window(use_as_main_window);
 
     if (!use_field) {
-        char group_name[GB_GROUP_NAME_MAX+1];
-        {
-            char *dummy = aw_input("Enter name for new group:", 0);
-            if (!dummy) {
-                error = "Input canceled";
-            }
-            else {
-                e4_assert(strlen(dummy) <= GB_GROUP_NAME_MAX);
-                strcpy(group_name, dummy);
-                free(dummy);
-            }
-        }
+        char *group_name = aw_input("Enter name for new group:");
 
-        if (!error) {
+        if (group_name) {
+            if (strlen(group_name)>GB_GROUP_NAME_MAX) {
+                group_name[GB_GROUP_NAME_MAX] = 0;
+                aw_message("Truncated too long group name");
+            }
             createGroupFromSelected(group_name, 0, 0);
+            free(group_name);
         }
     }
     else {

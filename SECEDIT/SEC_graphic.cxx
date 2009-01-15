@@ -91,7 +91,7 @@ static GB_ERROR change_constraints(SEC_base *elem) {
 
     if (!error) {
         char *question = GBS_global_string_copy("%s-constraints for %s", constraint_type, element_type);
-        char *answer   = aw_input(question, 0, GBS_global_string("%.2f-%.2f", elem->minSize(), elem->maxSize()));
+        char *answer   = aw_input(question, GBS_global_string("%.2f-%.2f", elem->minSize(), elem->maxSize()));
 
         while (answer) {
             char *end;
@@ -118,7 +118,7 @@ static GB_ERROR change_constraints(SEC_base *elem) {
             sec_assert(error);
             aw_popup_ok(error);
             
-            char *retry = aw_input(question, 0, answer);
+            char *retry = aw_input(question, answer);
             free(answer);
 
             answer = retry;

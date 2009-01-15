@@ -9,7 +9,7 @@
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <arbdb.h>
+#include <arbdbt.h>
 #include <stdarg.h>
 #include <aw_root.hxx>
 #include <aw_device.hxx>
@@ -18,6 +18,12 @@
 #include <awt_www.hxx>
 #include <awt.hxx>
 #include <SIG_PF.h>
+
+#include <string>
+#include <deque>
+#include <algorithm>
+
+using namespace std;
 
 #define FD_SET_TYPE
 
@@ -1108,136 +1114,193 @@ int aw_string_selection_button() {
     return aw_string_selected_button;
 }
 
-#define AW_INPUT_AWAR "tmp/input/string"
+#define AW_INPUT_AWAR       "tmp/input/string"
 #define AW_INPUT_TITLE_AWAR "tmp/input/title"
 
-void modify_input_cb( AW_window *aw, AW_CL cl_mode, AW_CL cl_Default) {
-    int         mode        = (int)cl_mode; // 1 = '<' 0 = '>'
-    const char *Default     = (const char *)cl_Default;
-    AW_root    *aw_root     = aw->get_root();
-    AW_awar    *awar        = aw_root->awar(AW_INPUT_AWAR);
-    char       *content     = awar->read_string();
-    bool        found_lower = false;
-    bool        found_upper = false;
+static void create_input_awars(AW_root *aw_root) {
+    aw_root->awar_string(AW_INPUT_TITLE_AWAR, "", AW_ROOT_DEFAULT);
+    aw_root->awar_string(AW_INPUT_AWAR,       "", AW_ROOT_DEFAULT);
+}
 
-    for (int i = 0; content[i]; ++i) {
-        if (isalpha(content[i])) {
-            if (islower(content[i])) found_lower = true;
-            else found_upper = true;
-        }
+// -------------------------
+//      aw_input history
+
+static deque<string> input_history; // front contains newest entries
+
+#if defined(DEBUG)
+// # define TRACE_HISTORY
+#endif // DEBUG
+
+
+#if defined(TRACE_HISTORY)
+static void dumpHistory(const char *where) {
+    printf("History [%s]:\n", where);
+    for (deque<string>::iterator h = input_history.begin(); h != input_history.end(); ++h) {
+        printf("'%s'\n", h->c_str());
     }
+}
+#endif // TRACE_HISTORY
 
-    enum { MAKE_EMPTY, MAKE_LOWER, MAKE_CAPS, MAKE_UPPER, MAKE_DEFAULT, MAKE_UNKNOWN } make = MAKE_UNKNOWN;
+static void input_history_insert(const char *str, bool front) {
+    string s(str);
 
-    printf("found_upper=%i found_lower=%i content='%s'\n", int(found_upper), int(found_lower), content);
-
-    if (found_upper) {
-        if (found_lower) make = mode ? MAKE_LOWER : MAKE_UPPER; // mixed case
-        else make = mode ? MAKE_CAPS : MAKE_DEFAULT; // upper case
+    if (input_history.empty()) {
+        input_history.push_front(""); // insert an empty string into history
     }
-    else if (found_lower) make = mode ? MAKE_EMPTY : MAKE_CAPS; // lower case
     else {
-        if (content[0]) make = mode ? MAKE_EMPTY : MAKE_DEFAULT; // non-alpha
-        else make = mode ? MAKE_UNKNOWN : MAKE_DEFAULT; // empty
+        deque<string>::iterator found = find(input_history.begin(), input_history.end(), s);
+        if (found != input_history.end()) {
+            input_history.erase(found);
+        }
+    }
+    if (front) {
+        input_history.push_front(s);
+    }
+    else {
+        input_history.push_back(s);
     }
 
-    printf("make=%i\n", int(make));
+#if defined(TRACE_HISTORY)
+    dumpHistory(GBS_global_string("input_history_insert('%s', front=%i)", str, front));
+#endif // TRACE_HISTORY
+}
 
-    switch (make) {
-        case MAKE_EMPTY:
-            content[0] = 0;
-            break;
-        case MAKE_DEFAULT:
-            freedup(content, Default);
-            break;
-        case MAKE_UNKNOWN:
-            break;
-        default: {
-            bool last_was_space = true;
-            for (int i = 0; content[i]; ++i) {
-                if (isalpha(content[i])) {
-                    switch (make) {
-                        case MAKE_LOWER: content[i] = tolower(content[i]); break;
-                        case MAKE_UPPER: content[i] = toupper(content[i]); break;
-                        case MAKE_CAPS: content[i]  = (last_was_space ? toupper : tolower)(content[i]); break;
-                        default : aw_assert(0); break;
-                    }
-                    last_was_space = false;
-                }
-                else {
-                    last_was_space = isspace(content[i]);
-                }
-            }
+void input_history_cb(AW_window *aw, AW_CL cl_mode) {
+    int      mode    = (int)cl_mode;                // -1 = '<' +1 = '>'
+    AW_root *aw_root = aw->get_root();
+    AW_awar *awar    = aw_root->awar(AW_INPUT_AWAR);
+    char    *content = awar->read_string();
+
+    if (content) input_history_insert(content, mode == 1);
+
+    if (!input_history.empty()) {
+        if (mode == -1) {
+            string s = input_history.front();
+            awar->write_string(s.c_str());
+            input_history.pop_front();
+            input_history.push_back(s);
+        }
+        else {
+            string s = input_history.back();
+            awar->write_string(s.c_str());
+            input_history.pop_back();
+            input_history.push_front(s);
         }
     }
 
-    awar->write_string(content);
+#if defined(TRACE_HISTORY)
+    dumpHistory(GBS_global_string("input_history_cb(mode=%i)", mode));
+#endif // TRACE_HISTORY
+
     free(content);
 }
 
-void input_cb( AW_window *aw, AW_CL cd1) {
+void input_cb(AW_window *aw, AW_CL cd1) {
     // any previous contents were passed to client (who is responsible to free the resources)
-    // so DONT free aw_input_cb_result here
-
+    // so DONT free aw_input_cb_result here:
     aw_input_cb_result        = 0;
     aw_string_selected_button = int(cd1);
 
-    if (cd1<0) return; // cancel button -> no result
-
-    // create heap-copy of result -> client will get the owner
-    aw_input_cb_result = aw->get_root()->awar(AW_INPUT_AWAR)->read_as_string();
-
-    return;
+    if (cd1 >= 0) {              // <0 = cancel button -> no result
+        // create heap-copy of result -> client will get the owner
+        aw_input_cb_result = aw->get_root()->awar(AW_INPUT_AWAR)->read_as_string();
+    }
 }
 
-char *aw_input( const char *title, const char *prompt, const char *awar_value, const char *default_input)
-{
-    AW_root *root = AW_root::THIS;
+#define INPUT_SIZE 50           // size of input prompts in aw_input and aw_string_selection
+
+static AW_window_message *new_input_window(AW_root *root, const char *title, const char *buttons) {
+    // helper for aw_input and aw_string_selection    
+    AW_window_message *aw_msg = new AW_window_message;
+
+    aw_msg->init(root, title, false);
+
+    aw_msg->label_length(0);
+    aw_msg->auto_space(10, 10);
+
+    aw_msg->at(10, 10);
+    aw_msg->button_length(INPUT_SIZE+1);
+    aw_msg->create_button(0, AW_INPUT_TITLE_AWAR);
+
+    aw_msg->at_newline();
+    aw_msg->create_input_field(AW_INPUT_AWAR, INPUT_SIZE);
+
+    int    butCount     = 2;    // ok and cancel
+    char **button_names = 0;
+    int    maxlen       = 6;    // use as min.length for buttons (for 'CANCEL')
+
+    if (buttons) {
+        button_names = GBT_split_string(buttons, ',', &butCount);
+
+        for (int b = 0; b<butCount; b++) {
+            int len = strlen(button_names[b]);
+            if (len>maxlen) maxlen = len;
+        }
+
+    }
+
+    aw_msg->button_length(maxlen+1); 
+    
+    aw_msg->at_newline();
+    aw_msg->callback(input_history_cb, -1); aw_msg->create_button("bwd", "<<", 0);
+    aw_msg->callback(input_history_cb,  1); aw_msg->create_button("fwd", ">>", 0);
+
+    if (butCount>3) aw_msg->at_newline(); // approx. 5 buttons (2+3) fit into one line
+
+    if (buttons) {
+        for (int b = 0; b<butCount; b++) {
+            aw_msg->callback(input_cb, b);         // use b == 0 as result for 1st button, 1 for 2nd button, etc.
+            aw_msg->create_button(button_names[b], button_names[b], "");
+        }
+        GBT_free_names(button_names);
+        button_names = 0;
+    }
+    else {
+        aw_msg->callback(input_cb,  0); aw_msg->create_button("OK", "OK", "O");
+        aw_msg->callback(input_cb, -1); aw_msg->create_button("CANCEL", "CANCEL", "C");
+    }
+
+    return aw_msg;
+}
+
+char *aw_input(const char *title, const char *prompt, const char *default_input) {
+    // prompt user to enter a string
+    //
+    // title         = title of window
+    // prompt        = question
+    // default_input = default for answer (NULL -> "")
+    // 
+    // result is NULL, if cancel was pressed
+    // otherwise result contains the user input (maybe an empty string)
 
     static AW_window_message *aw_msg = 0;
-    root->awar_string(AW_INPUT_TITLE_AWAR)->write_string((char *)prompt);
-    if (awar_value) {
-        root->awar_string(AW_INPUT_AWAR)->map(awar_value);
-    }else{
-        root->awar_string(AW_INPUT_AWAR)->write_string(default_input ? default_input : "");
+
+    AW_root *root = AW_root::THIS;
+    if (!aw_msg) create_input_awars(root); // first call -> create awars
+
+    root->awar(AW_INPUT_TITLE_AWAR)->write_string(prompt);
+    aw_assert(strlen(prompt) <= INPUT_SIZE);
+
+    AW_awar *inAwar = root->awar(AW_INPUT_AWAR);
+    if (default_input) {
+        input_history_insert(default_input, true); // insert default into history
+        inAwar->write_string(default_input);
     }
+    else {
+        inAwar->write_string("");
+    }
+
+    aw_assert(GB_get_transaction_level(inAwar->gb_var) <= 0); // otherwise history would not work
 
     if (!aw_msg) {
-        aw_msg = new AW_window_message;
-
-#define INPUT_SIZE 50
-
-        // @@@ FIXME: tried to attach input field and title button to right border
-        // but it's not working at all
-
-        aw_msg->init( root, title, false);
-
-        aw_msg->label_length( 0 );
-        aw_msg->button_length( INPUT_SIZE+1 );
-        aw_msg->auto_space( 10, 10 );
-
-        aw_msg->at( 10, 10 );
-        aw_msg->create_button( 0,AW_INPUT_TITLE_AWAR );
-
-        aw_msg->at( 10, 40 );
-        aw_msg->create_input_field((char *)AW_INPUT_AWAR, INPUT_SIZE);
-
-        aw_msg->at( 10, 70 );
-        aw_msg->button_length(7);
-
-        aw_msg->callback(input_cb, 0);
-        aw_msg->create_button( "OK", "OK", "O" );
-
-        aw_msg->callback(input_cb, -1);
-        aw_msg->create_button( "CANCEL", "CANCEL", "C" );
-
-        aw_msg->callback(modify_input_cb, 1, (AW_CL)default_input);
-        aw_msg->create_button("lower", "<", 0);
-        
-        aw_msg->callback(modify_input_cb, 0, (AW_CL)default_input);
-        aw_msg->create_button("upper", ">", 0);
+        aw_msg = new_input_window(root, title, NULL);
+        aw_msg->window_fit();
     }
-
+    else {
+        aw_msg->set_window_title(title);
+        aw_msg->window_fit();
+    }
+    
     aw_msg->window_fit();
     aw_msg->show_grabbed();
     char dummy[] = "";
@@ -1251,104 +1314,97 @@ char *aw_input( const char *title, const char *prompt, const char *awar_value, c
     root->disable_callbacks = AW_FALSE;
     aw_msg->hide();
 
-    if (awar_value) root->awar_string(AW_INPUT_AWAR)->unmap();
-
+    if (aw_input_cb_result) input_history_insert(aw_input_cb_result, true);
     return aw_input_cb_result;
 }
 
-char *aw_input( const char *prompt, const char *awar_value, const char *default_input)
-{
-    return aw_input("ENTER A STRING", prompt, awar_value, default_input);
+char *aw_input(const char *prompt, const char *default_input) {
+    return aw_input("Enter string", prompt, default_input);
+}
+
+char *aw_input2awar(const char *title, const char *prompt, const char *awar_name) {
+    AW_root *aw_root       = AW_root::THIS;
+    AW_awar *awar          = aw_root->awar(awar_name);
+    char    *default_value = awar->read_string();
+    char    *result        = aw_input(title, prompt, default_value);
+
+    awar->write_string(result);
+    free(default_value);
+    
+    return result;
+}
+
+char *aw_input2awar(const char *prompt, const char *awar_name) {
+    return aw_input2awar("Enter string", prompt, awar_name);
 }
 
 
-// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-//      char *aw_string_selection(const char *title, const char *prompt, const char *awar_name, const char *default_value, const char *value_list, const char *buttons, char *(*check_fun)(const char*))
-// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-// A modal input window. A String may be entered by hand or selected from value_list
-//
-//      title           window title
-//      prompt          prompt at input field
-//      awar_name       name of awar to use for inputfield (if NULL => internal awar)
-//      default_value   default value (if NULL => ""). Not used in case of awar_name != NULL
-//      value_list      Existing selections (seperated by ';' ; if NULL => uses aw_input)
-//      buttons         Existing selections (seperated by ';' ; if NULL => uses aw_input)
-//      check_fun       function to correct input (or 0 for no check). The function may return 0 to indicate no correction
-//
-// returns the value of the inputfield
-//
-char *aw_string_selection(const char *title, const char *prompt, const char *awar_name, const char *default_value, const char *value_list, const char *buttons, char *(*check_fun)(const char*))
-{
-    if (!value_list) return aw_input(title, prompt, awar_name, default_value);
+char *aw_string_selection(const char *title, const char *prompt, const char *default_input, const char *value_list, const char *buttons, char *(*check_fun)(const char*)) {
+    // A modal input window. A String may be entered by hand or selected from value_list
+    //
+    //      title           window title
+    //      prompt          prompt at input field
+    //      default_input   default value (if NULL => "").
+    //      value_list      Existing selections (seperated by ';')
+    //      buttons         String containing answer button names separated by ',' (default is "OK,Cancel")
+    //                      Use aw_string_selected_button() to detect which has been pressed.
+    //      check_fun       function to correct input (or NULL for no check). The function may return NULL to indicate no correction
+    //
+    // returns the value of the inputfield
 
-    AW_root *root = AW_root::THIS;
+    aw_assert(value_list);
 
-    static AW_window_message *aw_msg = 0;
-    static AW_selection_list *sel = 0;
+    static GB_HASH *str_sels = 0; // for each 'buttons' store window + selection list
 
-    root->awar_string(AW_INPUT_TITLE_AWAR)->write_string((char *)prompt);
-    if (awar_name) {
-        root->awar_string(AW_INPUT_AWAR)->map(awar_name);
-    }else{
-        root->awar_string(AW_INPUT_AWAR)->write_string(default_value ? default_value : "");
+    if (!str_sels) str_sels = GBS_create_hash(20, GB_MIND_CASE);
+
+    struct str_sel_data {
+        AW_window_message *aw_msg;
+        AW_selection_list *sel;
+    };
+
+    const char   *bkey = buttons ? buttons : ",default,";
+    str_sel_data *sd      = (str_sel_data*)GBS_read_hash(str_sels, bkey);
+    if (!sd) {
+        sd         = new str_sel_data;
+        sd->aw_msg = 0;
+        sd->sel    = 0;
+
+        GBS_write_hash(str_sels, bkey, (long)sd);
     }
 
+    AW_window_message *& aw_msg = sd->aw_msg;
+    AW_selection_list *& sel    = sd->sel;
+
+    AW_root *root = AW_root::THIS;
+    if (!aw_msg) create_input_awars(root); // first call -> create awars
+
+    root->awar(AW_INPUT_TITLE_AWAR)->write_string(prompt);
+    aw_assert(strlen(prompt) <= INPUT_SIZE);
+
+    AW_awar *inAwar = root->awar(AW_INPUT_AWAR);
+    if (default_input) {
+        input_history_insert(default_input, true); // insert default into history
+        inAwar->write_string(default_input);
+    }
+    else {
+        inAwar->write_string("");
+    }
+
+    aw_assert(GB_get_transaction_level(inAwar->gb_var) <= 0); // otherwise history would not work
+
     if (!aw_msg) {
-        int width           = strlen(prompt)+1;
-        if (width<30) width = 30;
-
-        aw_msg = new AW_window_message;
-
-        aw_msg->init( root, title, true);
-
-        aw_msg->label_length( 0 );
-        aw_msg->button_length(width);
-
-        aw_msg->at( 10, 10 );
-        aw_msg->auto_space( 10, 10 );
-        aw_msg->create_button( 0,AW_INPUT_TITLE_AWAR );
+        aw_msg = new_input_window(root, title, buttons);
 
         aw_msg->at_newline();
-        aw_msg->create_input_field((char *)AW_INPUT_AWAR,width);
-        aw_msg->at_newline();
-
-        sel = aw_msg->create_selection_list(AW_INPUT_AWAR, 0, 0, width, 10);
+        sel = aw_msg->create_selection_list(AW_INPUT_AWAR, 0, 0, INPUT_SIZE, 10);
         aw_msg->insert_default_selection(sel, "", "");
         aw_msg->update_selection_list(sel);
-
-        aw_msg->at_newline();
-        // aw_msg->at_attach(AW_FALSE, AW_TRUE); // attach buttons to Y (at_attach does not work)
-
-        if (buttons)  {
-            char *but    = strdup(buttons);
-            char *word;
-            int   result = 0;
-
-            aw_msg->button_length(9);
-
-            for (word = strtok(but, ","); word; word = strtok(0, ","), ++result) {
-                aw_msg->callback(input_cb, result);
-                aw_msg->create_button(word, word, "");
-            }
-
-            free(but);
-        }
-        else {
-            aw_msg->button_length( 0 );
-
-            aw_msg->callback     ( input_cb, 0 );
-            aw_msg->create_button( "OK", "OK", "O" );
-
-            aw_msg->callback     ( input_cb, -1 );
-            aw_msg->create_button( "CANCEL", "CANCEL", "C" );
-        }
-
-        aw_msg->window_fit();
     }
     else {
         aw_msg->set_window_title(title);
-        aw_msg->window_fit();
     }
+    aw_msg->window_fit();
 
     // update the selection box :
     aw_assert(sel);
@@ -1403,10 +1459,22 @@ char *aw_string_selection(const char *title, const char *prompt, const char *awa
     root->disable_callbacks = AW_FALSE;
     aw_msg->hide();
 
-    if (awar_name){
-        root->awar_string(AW_INPUT_AWAR)->unmap();
-    }
     return aw_input_cb_result;
+}
+
+char *aw_string_selection2awar(const char *title, const char *prompt, const char *awar_name, const char *value_list, const char *buttons, char *(*check_fun)(const char*)) {
+    // params see aw_string_selection
+    // default_value is taken from and result is written back to awar 'awar_name'
+    
+    AW_root *aw_root       = AW_root::THIS;
+    AW_awar *awar          = aw_root->awar(awar_name);
+    char    *default_value = awar->read_string();
+    char    *result        = aw_string_selection(title, prompt, default_value, value_list, buttons, check_fun);
+
+    awar->write_string(result);
+    free(default_value);
+
+    return result;
 }
 
 /***********************************************************************/

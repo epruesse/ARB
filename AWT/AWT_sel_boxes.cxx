@@ -497,7 +497,7 @@ char *awt_create_string_on_configurations(GBDATA *gb_main) {
             if (!gb_name) {
                 char *err = strdup(GB_get_error());
                 GB_CSTR question = GBS_global_string("Rename of configuration failed (reason: '%s')\n"
-                                                     "Do you like do delete the unnamed configuration?", err);
+                                                     "Do you like to delete the unnamed configuration?", err);
                 free(err);
 
                 if (aw_ask_sure(question)) {

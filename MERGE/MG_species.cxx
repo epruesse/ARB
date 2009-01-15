@@ -989,11 +989,6 @@ AW_window *create_mg_merge_tagged_fields(AW_root *aw_root)
     return (AW_window*)aws;
 }
 
-
-const char *NEW_NAME_AWAR = "tmp/simple_import/new_species_name";
-
-
-
 GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
     /** First big job:  Make the alignment names equal */
     char **   M_alignment_names = GBT_get_alignment_names(GLOBAL_gb_merge);
@@ -1161,12 +1156,12 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
                         continue;
 
                     case 3: {
-                        GB_ERROR  dummy;
-                        char     *newname = AWTC_create_numbered_suffix(D_species_hash, m_name, dummy);
-                        awr->awar_string(NEW_NAME_AWAR)->write_string(newname ? newname : "???");
-                        free(newname);
+                        GB_ERROR  warning;          // duplicated species warning (does not apply here)
+                        char     *autoname = AWTC_create_numbered_suffix(D_species_hash, m_name, warning);
 
-                        freeset(m_name, aw_input("New name of species", NEW_NAME_AWAR));
+                        if (!autoname) autoname = strdup(m_name);
+                        freeset(m_name, aw_input("Rename species", "Enter new name of species", autoname));
+                        free(autoname);
                         goto new_try;
                     }
                     case 4:

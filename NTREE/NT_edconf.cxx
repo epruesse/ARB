@@ -483,7 +483,7 @@ GB_ERROR NT_create_configuration(AW_window *, GBT_TREE **ptree,const char *conf_
 
     if (!conf_name) {
         char *existing_configs = awt_create_string_on_configurations(GLOBAL_gb_main);
-        conf_name              = to_free = aw_string_selection("CREATE CONFIGURATION", "Enter name of configuration:", AWAR_CONFIGURATION, "default_configuration", existing_configs, 0, 0);
+        conf_name              = to_free = aw_string_selection2awar("CREATE CONFIGURATION", "Enter name of configuration:", AWAR_CONFIGURATION, existing_configs, 0, 0);
         free(existing_configs);
     }
     if (!conf_name) return GB_export_error("no config name");
@@ -492,7 +492,7 @@ GB_ERROR NT_create_configuration(AW_window *, GBT_TREE **ptree,const char *conf_
         static int last_used_species_aside = 3;
         {
             const char *val                    = GBS_global_string("%i", last_used_species_aside);
-            char       *use_species            = aw_input("Enter number of extra species to view aside marked:", 0, val);
+            char       *use_species            = aw_input("Enter number of extra species to view aside marked:", val);
             if (use_species) use_species_aside = atoi(use_species);
             free(use_species);
         }
@@ -566,7 +566,7 @@ void nt_rename_configuration(AW_window *aww) {
 
     GB_transaction dummy(GLOBAL_gb_main);
 
-    char *new_name = aw_input("Rename selection", "Enter the new name of the selection", 0, old_name);
+    char *new_name = aw_input("Rename selection", "Enter the new name of the selection", old_name);
     if (new_name) {
         GBDATA *gb_existing_cfg = GBT_find_configuration(GLOBAL_gb_main, new_name);
         if (gb_existing_cfg) {
@@ -663,46 +663,3 @@ void NT_configuration_admin(AW_window *aw_main, AW_CL cl_GBT_TREE_ptr, AW_CL) {
     aww->show();
 }
 
-// --------------------------------------------------------------------------------
-// --------------------------------------------------------------------------------
-// --------------------------------------------------------------------------------
-
-#if 0
-
-// obsolete:
-AW_window *NT_extract_configuration(AW_root *awr){
-    static AW_window_simple *aws = 0;
-    if (aws) return (AW_window *)aws;
-    awr->awar_string(AWAR_CONFIGURATION,"default_configuration",gb_main);
-    aws = new AW_window_simple;
-    aws->init( awr, "EXTRACT_CONFIGURATION", "EXTRACT A CONFIGURATION", 400, 200 );
-    aws->at(10,10);
-    aws->auto_space(0,0);
-    awt_create_selection_list_on_configurations(gb_main,(AW_window *)aws,AWAR_CONFIGURATION);
-    aws->at_newline();
-
-    aws->callback((AW_CB0)nt_extract_configuration);
-    aws->create_button("EXTRACT","EXTRACT","E");
-
-    aws->callback(nt_delete_configuration);
-    aws->create_button("DELETE","DELETE");
-
-    aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");
-
-    aws->callback(AW_POPUP_HELP,(AW_CL)"configuration.hlp");
-    aws->create_button("HELP","HELP","H");
-
-    aws->window_fit();
-    return (AW_window *)aws;
-}
-// obsolete:
-GB_ERROR NT_create_configuration_cb(AW_window *aww, AW_CL cl_GBT_TREE_ptr, AW_CL cl_use_species_aside) {
-    GBT_TREE **ptree             = (GBT_TREE**)(cl_GBT_TREE_ptr);
-    int        use_species_aside = int(cl_use_species_aside);
-
-    init_config_awars(aww->get_root());
-    return NT_create_configuration(0, ptree, 0, use_species_aside);
-}
-
-#endif
