@@ -33,7 +33,6 @@ char *gbs_compress_command P_((const char *com));
 void gbs_regerror P_((int en));
 
 /* arbdb.c */
-void gb_init_gb P_((void));
 GB_BUFFER gb_increase_buffer P_((long size));
 char *gb_check_out_buffer P_((GB_CBUFFER buffer));
 GB_ERROR gb_unfold P_((GBCONTAINER *gbd, long deep, int index_pos));
