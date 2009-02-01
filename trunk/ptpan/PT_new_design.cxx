@@ -550,6 +550,7 @@ void CalcProbeQuality(struct DesignQuery *dq)
         dh->dh_SearchQuery = sq;
         /* prefs */
         sq->sq_Query        = dh->dh_ProbeSeq;
+        sq->sq_QueryLen     = strlen(sq->sq_Query);
         sq->sq_MaxErrors    = (float) PERC_SIZE * PROBE_MISM_DEC;
         sq->sq_Reversed     = FALSE;
         sq->sq_AllowReplace = TRUE;
@@ -559,11 +560,13 @@ void CalcProbeQuality(struct DesignQuery *dq)
         sq->sq_SortMode     = SORT_HITS_WEIGHTED;
 
         /* init */
+        // TODO: add PP_convertBondMatrix ?
+        PP_buildPosWeight(sq);
         sq->sq_MismatchWeights = &sq->sq_PTPanGlobal->pg_MismatchWeights;
 
         dh = (struct DesignHit *) dh->dh_Node.ln_Succ;
     }
-
+    
     printf("Cached parts\n");
     /* search over partitions that are still in cache */
     pp = (struct PTPanPartition *) pg->pg_Partitions.lh_Head;
