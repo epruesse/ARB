@@ -107,6 +107,7 @@ const char *GBS_readable_size P_((unsigned long long size));
 /* arbdb.c */
 char *GB_rel P_((void *struct_adress, long rel_adress));
 double GB_atof P_((const char *str));
+void GB_init_gb P_((void));
 GB_BUFFER GB_give_buffer P_((long size));
 int GB_give_buffer_size P_((void));
 GB_BUFFER GB_give_buffer2 P_((long size));

@@ -1426,7 +1426,7 @@ GBDATA *GB_login(const char *cpath,const char *opent,const char *user)
     }
 
     gbm_init_mem();
-    gb_init_gb();
+    GB_init_gb();
 
     if (GB_install_pid(1)) return 0;
 
