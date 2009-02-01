@@ -338,6 +338,8 @@ int main(int argc, char *argv[])
   aisc_core_on_error = 0;
   pg->pg_AISC = create_PT_main();
 
+  GB_init_gb(); // nedded for PT_new_design
+
   /* set global variable -- sigh */
   aisc_main = pg->pg_AISC;
 
