@@ -194,7 +194,7 @@ only few functions can be used, when the tree is reloaded (stage 3):
 
 # define PT_READ_PNTR(ptr,my_int_i)                                     \
     do {                                                                \
-        pt_assert(sizeof(my_int_i)==4);                                 \
+        pt_assert(sizeof(my_int_i)==8);                                 \
         (my_int_i) = (unsigned long)bswap_64(*(unsigned long*)(ptr));   \
     } while(0)
 
