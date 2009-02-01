@@ -105,7 +105,7 @@ void QueryTests(struct PTPanGlobal *pg)
 #endif
 
 
-static void PP_convertBondMatrix(PT_pdc *pdc, PTPanGlobal *pg)
+void PP_convertBondMatrix(PT_pdc *pdc, PTPanGlobal *pg)
 {
     for (int query = SEQCODE_A; query <= SEQCODE_T; ++query) {
         for (int species = SEQCODE_A; species <= SEQCODE_T; ++species) {
@@ -119,46 +119,7 @@ static void PP_convertBondMatrix(PT_pdc *pdc, PTPanGlobal *pg)
             pg->pg_MismatchWeights.mw_Replace[query * ALPHASIZE + species] = max_bind - new_bind;
         }
     }
-}
-
-
-static double PP_calc_position_wmis(int pos, int seq_len, double y1, double y2)
-{
-    return (double)(((double)(pos * (seq_len - 1 - pos)) / (double)((seq_len - 1) * (seq_len - 1)))* (double)(y2*4.0) + y1);
-}
-
-
-static void PP_buildPosWeight(SearchQuery *sq)
-{
-    if (sq->sq_PosWeight) delete[] sq->sq_PosWeight;
-    //printf("buildPosWeight: ...new double[%i];\n", sq->sq_QueryLen+1);
-    sq->sq_PosWeight = new double[sq->sq_QueryLen+1];       // TODO: check if +1 is necessary
-
-    for (int pos=0; pos < sq->sq_QueryLen; ++pos) {
-        if (sq->sq_SortMode == SORT_HITS_WEIGHTED) {
-            sq->sq_PosWeight[pos] = PP_calc_position_wmis(pos, sq->sq_QueryLen, 0.3, 1.0);
-        }else{
-            sq->sq_PosWeight[pos] = 1.0;
-        }
-    }
-    sq->sq_PosWeight[sq->sq_QueryLen] = 0.0;                // TODO: check if last pos is necessary
-}
-
-
-/* /// "probe_match()" */
-extern "C" int probe_match(PT_local *locs, aisc_string probestring)
-{
-  struct PTPanGlobal *pg = PTPanGlobalPtr;
-  struct PTPanPartition *pp;
-  struct SearchQuery *sq;
-  struct SearchQuery *compsq = NULL;
-  PT_probematch *ml;
-
-  pg->pg_SearchPrefs = locs;
-
-  PP_convertBondMatrix(locs->pdc, pg);
 #if defined(DEBUG)
-    PT_pdc *pdc = locs->pdc;
     printf("Current bond values:\n");
     for (int y = 0; y<4; y++) {
         for (int x = 0; x<4; x++) {
@@ -174,6 +135,51 @@ extern "C" int probe_match(PT_local *locs, aisc_string probestring)
         printf("\n");
     }
 #endif // DEBUG
+}
+
+
+static double PP_calc_position_wmis(int pos, int seq_len, double y1, double y2)
+{
+    return (double)(((double)(pos * (seq_len - 1 - pos)) / (double)((seq_len - 1) * (seq_len - 1)))* (double)(y2*4.0) + y1);
+}
+
+
+void PP_buildPosWeight(SearchQuery *sq)
+{
+    if (sq->sq_PosWeight) delete[] sq->sq_PosWeight;
+    //printf("buildPosWeight: ...new double[%i];\n", sq->sq_QueryLen+1);
+    sq->sq_PosWeight = new double[sq->sq_QueryLen+1];       // TODO: check if +1 is necessary
+
+    for (int pos=0; pos < sq->sq_QueryLen; ++pos) {
+        if (sq->sq_SortMode == SORT_HITS_WEIGHTED) {
+            sq->sq_PosWeight[pos] = PP_calc_position_wmis(pos, sq->sq_QueryLen, 0.3, 1.0);
+        }else{
+            sq->sq_PosWeight[pos] = 1.0;
+        }
+    }
+    sq->sq_PosWeight[sq->sq_QueryLen] = 0.0;                // TODO: check if last pos is necessary
+#if defined(DEBUG)
+    printf("sq_Posweight[]: ");
+    for (int pos=0; pos < sq->sq_QueryLen; ++pos) {
+        printf("%f, ", sq->sq_PosWeight[pos]);
+    }
+    printf("%f\n", sq->sq_PosWeight[sq->sq_QueryLen]);
+#endif
+}
+
+
+/* /// "probe_match()" */
+extern "C" int probe_match(PT_local *locs, aisc_string probestring)
+{
+  struct PTPanGlobal *pg = PTPanGlobalPtr;
+  struct PTPanPartition *pp;
+  struct SearchQuery *sq;
+  struct SearchQuery *compsq = NULL;
+  PT_probematch *ml;
+
+  pg->pg_SearchPrefs = locs;
+
+  PP_convertBondMatrix(locs->pdc, pg);
 
   /* find out where a given probe matches */
   if (PTPanGlobalPtr->pg_verbose >0) {
@@ -474,7 +480,7 @@ if (strcmp(ps->ps_Name, "BclSp114") == 0)
     printf("\n");
     bitpos = 0;
 }
-/**/
+*/
     while (bitpos < ps->ps_SeqDataCompressedSize)           // get relpos and store prefix
     {
         code = GetNextCharacter(pg, ps->ps_SeqDataCompressed, bitpos, count);
