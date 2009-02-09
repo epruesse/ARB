@@ -817,6 +817,34 @@ static void dumpStreams(const char *name, int count, const GBL *args) {
     }
 }
 
+static const char *shortenLongString(const char *str, size_t wanted_len) {
+    // shortens the string 'str' to 'wanted_len' (appends '[..]' if string was shortened)
+
+    const char *result;
+    size_t      len = strlen(str);
+
+    gb_assert(wanted_len>4);
+
+    if (len>wanted_len) {
+        static char   *shortened_str;
+        static size_t  len = 0;
+
+        if (len>wanted_len) {
+            memcpy(shortened_str, str, wanted_len-4);
+        }
+        else {
+            freeset(shortened_str, GB_strpartdup(str, str+wanted_len));
+            len = wanted_len;
+        }
+        strcpy(shortened_str+wanted_len-4, "[..]");
+        result = shortened_str;
+    }
+    else {
+        result = str;
+    }
+    return result;
+}
+
 char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *commands, GBDATA *gbd, const char *default_tree_name) {
     /* simple command interpreter returns NULL on error (+ GB_export_error) */
     /* if first character is == ':' run string parser
@@ -1042,15 +1070,23 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
                             char *paramlist    = 0;
                             int   j;
 
+#define MAX_PRINT_LEN 200
+
                             for (j = 0; j<args.cparam; ++j) {
-                                if (!paramlist) paramlist = strdup(args.vparam[j].str);
-                                else freeset(paramlist, GBS_global_string_copy("%s,%s", paramlist, args.vparam[j].str));
+                                const char *param       = args.vparam[j].str;
+                                const char *param_short = shortenLongString(param, MAX_PRINT_LEN);
+
+                                if (!paramlist) paramlist = strdup(param_short);
+                                else freeset(paramlist, GBS_global_string_copy("%s,%s", paramlist, param_short));
                             }
                             for (j = 0; j<args.cinput; ++j) {
-                                if (!inputstreams) inputstreams = strdup(args.vinput[j].str);
-                                else freeset(inputstreams, GBS_global_string_copy("%s;%s", inputstreams, args.vinput[j].str));
-                            }
+                                const char *param       = args.vinput[j].str;
+                                const char *param_short = shortenLongString(param, MAX_PRINT_LEN);
 
+                                if (!inputstreams) inputstreams = strdup(param_short);
+                                else freeset(inputstreams, GBS_global_string_copy("%s;%s", inputstreams, param_short));
+                            }
+#undef MAX_PRINT_LEN
                             if (paramlist) {
                                 error = GBS_global_string("while applying '%s(%s)'\nto '%s':\n%s", s1, paramlist, inputstreams, error);
                             }
