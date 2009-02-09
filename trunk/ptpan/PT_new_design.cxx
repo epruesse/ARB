@@ -278,6 +278,7 @@ struct DesignHit * AddDesignHit(struct DesignQuery *dq)
 
     /* now iterate through the lower parts of the tree, collecting all leaf nodes */
     seqcode = SEQCODE_N;
+    done = FALSE;
     do
     {
         while (seqcode < pg->pg_AlphaSize)
@@ -289,8 +290,7 @@ struct DesignHit * AddDesignHit(struct DesignQuery *dq)
                 tn = GoDownNodeChildNoEdge(tn, seqcode);
                 seqcode = SEQCODE_N;
                 //printf("Down %d %08lx\n", seqcode, tn);
-            }
-            seqcode++;
+            } else seqcode++;
         }
 
         while (seqcode == pg->pg_AlphaSize)         // we didn't find any children
@@ -378,7 +378,6 @@ struct DesignHit * AddDesignHit(struct DesignQuery *dq)
             freeset(tn, parenttn);
         }
     } while (! done);
-
     /* if the number of hits is smaller than the minimum number
     of group hits, we don't need to verify, as the equation won't hold. */
     if (dh->dh_NumMatches < dq->dq_MinGroupHits)
@@ -477,7 +476,7 @@ struct DesignHit * AddDesignHit(struct DesignQuery *dq)
                                     break;
             }
         }
-        if ((dh->dh_Temp < dq->dq_MinTemp) || (dh->dh_Temp > dq->dq_MaxTemp))
+        if ((dh->dh_Temp < dq->dq_MinTemp - EPSILON) || (dh->dh_Temp > dq->dq_MaxTemp + EPSILON))
         {
             take = FALSE;           // temperature was out of given range
         }
@@ -742,8 +741,8 @@ BOOL FindProbeInPartition(struct DesignQuery *dq)
                         }
                     }
 
-                    if ((currtemp > dq->dq_MaxTemp) ||              // check temperature out of range
-                        (currtemp + (4.0 * pathleft) < dq->dq_MinTemp))
+                    if ((currtemp > dq->dq_MaxTemp + EPSILON) ||    // check temperature out of range
+                        (currtemp + (4.0 * pathleft) < dq->dq_MinTemp - EPSILON))
                     {
                         /*printf("temp %f <= [%f] <= %f out of range!\n",
                         dq->dq_MinTemp, currtemp, dq->dq_MaxTemp);*/
