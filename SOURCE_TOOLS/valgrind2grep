@@ -25,9 +25,16 @@ my $unmark_rest     = "(note) ";
 sub check_ignore($\$) {
   my ($text,$ignore_r) = @_;
   if (not defined $$ignore_r) {
-    # to ignore more messages please add here:
-    if ($text =~ /_XtGet(Sub)?[rR]esources.*libXt/) { $$ignore_r = $&; return; }
-    if ($text =~ /_X11TransWrite.*libX11/) { $$ignore_r = $&; return; }
+    # if you encounter errors/warnings in foreign libraries you wont be able to fix them.
+    # To ignore them add a search expression here.
+    # Please add current date as well, to make it easier to find outdated expressions.
+    #
+    # X11 bugs:
+    if ($text =~ /_XtGet(Sub)?[rR]esources.*libXt/) { $$ignore_r = $&; return; } # 24/11/2005
+    if ($text =~ /_X11TransWrite.*libX11/) { $$ignore_r = $&; return; }          # 24/11/2005
+    # motif bugs:
+    if ($text =~ /XmRenderTableCopy/) { $$ignore_r = $&; return; } # 09/02/2009
+    if ($text =~ /XmRenderTableFree/) { $$ignore_r = $&; return; } # 09/02/2009
   }
 }
 
