@@ -261,6 +261,7 @@ struct DesignHit * AddDesignHit(struct DesignQuery *dq)
     struct PTPanPartition *pp = dq->dq_PTPanPartition;
     struct PTPanSpecies *ps;
     struct DesignHit *dh = &dq->dq_TempHit;
+    
     ULONG cnt;
     BOOL take = TRUE;
     BOOL done;
@@ -344,19 +345,21 @@ struct DesignHit * AddDesignHit(struct DesignQuery *dq)
                                     /* check if we are over the limit */
                                     if (++dh->dh_NonGroupHits > dq->dq_MaxNonGroupHits)
                                     {
-                                        //printf("NonGroupHits exceeded!\n");
+/*                                        printf("NonGroupHits exceeded! Species: %s abspos: %lu, relpos: %lu\n",
+                                               ps->ps_Name, ht->ht_AbsPos, 
+                                               ht->ht_AbsPos - ps->ps_AbsOffset);*/
                                         take = FALSE;
                                         done = TRUE;
                                         break;
                                     }
                                 }
                             } else {
-                            //printf("Duplicate hit in %s (%ld)\n", ht->ht_Species->ps_Name, ht->ht_AbsPos);
+                                //printf("Duplicate hit in %s (%ld)\n", ht->ht_Species->ps_Name, ht->ht_AbsPos);
                             }
                         } else {
-                        /*printf("Hit crosses boundary %ld > %ld \n",
-                        ht->ht_AbsPos + dq->dq_ProbeLength,
-                        ps->ps_AbsOffset + ps->ps_RawDataSize);*/
+                            /*printf("Hit crosses boundary %ld > %ld \n",
+                                ht->ht_AbsPos + dq->dq_ProbeLength,
+                                ps->ps_AbsOffset + ps->ps_RawDataSize);*/
                         }
                         ht++;
                     } while (--cnt);
@@ -380,8 +383,8 @@ struct DesignHit * AddDesignHit(struct DesignQuery *dq)
     of group hits, we don't need to verify, as the equation won't hold. */
     if (dh->dh_NumMatches < dq->dq_MinGroupHits)
     {
-        /*printf("NumMatches %ld < MinGroupHits %ld\n",
-        dh->dh_NumMatches, dq->dq_MinGroupHits);*/
+//        printf("NumMatches %ld < MinGroupHits %ld\n",
+//            dh->dh_NumMatches, dq->dq_MinGroupHits);
         take = FALSE;
     }
 
@@ -416,7 +419,8 @@ struct DesignHit * AddDesignHit(struct DesignQuery *dq)
                         /* check if we are over the limit */
                         if (++dh->dh_NonGroupHits > dq->dq_MaxNonGroupHits)
                         {
-                            //printf("NonGroupHits exceeded (2)!\n");
+/*                            printf("NonGroupHits exceeded (2)! Species: %s abspos: %lu, relpos: %lu\n",
+                                   ps->ps_Name, ht->ht_AbsPos, ht->ht_AbsPos - ps->ps_AbsOffset);*/
                             take = FALSE;
                             break;
                         }
@@ -426,15 +430,15 @@ struct DesignHit * AddDesignHit(struct DesignQuery *dq)
                 }
             } else {
                 /*printf("Hit crosses boundary %ld > %ld \n",
-                ht->ht_AbsPos + dq->dq_ProbeLength,
-                ps->ps_AbsOffset + ps->ps_RawDataSize);*/
+                    ht->ht_AbsPos + dq->dq_ProbeLength,
+                    ps->ps_AbsOffset + ps->ps_RawDataSize);*/
             }
             ht++;
         } while (--cnt);
         if (dh->dh_GroupHits < dq->dq_MinGroupHits)
         {
             /*printf("grouphits %ld < MinGroupHits %ld\n",
-            dh->dh_GroupHits, dq->dq_MinGroupHits);*/
+                dh->dh_GroupHits, dq->dq_MinGroupHits);*/
             take = FALSE;
         }
     }
