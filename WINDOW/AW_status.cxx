@@ -31,6 +31,7 @@ using namespace std;
 #define AW_GAUGE_SIZE        40 // length of gauge display (in characters)
 #define AW_GAUGE_GRANULARITY 1000 // how fine the gauge is transported to status (no of steps) [old value = 255]
 
+#define AW_GAUGE_PERCENT(pc) ((pc)*AW_GAUGE_GRANULARITY/100)
 
 #define AW_STATUS_KILL_DELAY        4000 // in ms
 #define AW_STATUS_LISTEN_DELAY      300 // in ms
@@ -69,26 +70,30 @@ enum {
     AW_STATUS_CMD_MESSAGE
 };
 
+#define AW_EST_BUFFER 5
 
 struct aw_stg_struct {
     int        fd_to[2];
     int        fd_from[2];
     int        mode;
     int        hide;
-    int        hide_delay;      // in seconds
+    int        hide_delay;              // in seconds
     pid_t      pid;
-    AW_BOOL    is_child; // true in status window process 
+    AW_BOOL    is_child;                // true in status window process
     int        pipe_broken;
     int        err_no;
     AW_window *aws;
     AW_window *awm;
     AW_BOOL    status_initialized;
     char      *lines[AW_MESSAGE_LINES];
-    bool       need_refresh;    // if true -> message list needs to refresh
+    bool       need_refresh;            // if true -> message list needs to refresh
     time_t     last_refresh_time;
     time_t     last_message_time;
     int        local_message;
-    time_t     last_start;      // time of last status start
+    time_t     last_start;              // time of last status start
+    long       last_est_count;
+    long       last_estimation[AW_EST_BUFFER];
+    long       last_used_est;
 } aw_stg = {
     {0,0},                      // fd_to
     {0,0},                      // fd_from
@@ -107,7 +112,10 @@ struct aw_stg_struct {
     0,                          // last_refresh_time
     0,                          // last_message_time
     0,                          // local_message
-    0                           // last_start
+    0,                          // last_start
+    0,                          // last_est_count
+    { 0 },                      // last_estimation
+    -1,                         // last_used_est
 };
 
 #include <errno.h>
@@ -528,11 +536,11 @@ inline const char *sec2disp(long seconds) {
     static char buffer[50];
 
     if (seconds<0) seconds = 0;
-    if (seconds<60) {
+    if (seconds<100) {
         sprintf(buffer, "%li sec", seconds);
     }
     else {
-        long minutes = seconds/60;
+        long minutes = (seconds+30)/60;
 
         if (minutes<60) {
             sprintf(buffer, "%li min", minutes);
@@ -597,11 +605,13 @@ static void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
 #if defined(TRACE_STATUS)
                 fprintf(stderr, "received AW_STATUS_CMD_OPEN\n"); fflush(stdout);
 #endif // TRACE_STATUS
-                aw_stg.mode       = AW_STATUS_OK;
-                aw_stg.last_start = time(0);
+                aw_stg.mode           = AW_STATUS_OK;
+                aw_stg.last_start     = time(0);
+                aw_stg.last_est_count = 0;
+                aw_stg.last_used_est  = -1;
                 aw_stg.aws->show();
-                aw_stg.hide       = 0;
-                aw_stg.hide_delay = AW_STATUS_HIDE_DELAY;
+                aw_stg.hide           = 0;
+                aw_stg.hide_delay     = AW_STATUS_HIDE_DELAY;
 
 #if defined(ARB_LOGGING)
                 aw_status_append_to_log("----------------------------");
@@ -641,21 +651,54 @@ static void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
 
                 if (gaugeValue>0) {
                     long sec_elapsed   = time(0)-aw_stg.last_start;
-                    long sec_estimated = (sec_elapsed*(AW_GAUGE_GRANULARITY-gaugeValue))/gaugeValue;
+                    long sec_estimated = (sec_elapsed*AW_GAUGE_GRANULARITY)/gaugeValue; // guess overall time
+
+#define PRINT_MIN_GAUGE AW_GAUGE_PERCENT(2)
 
                     char buffer[200];
-                    int  off  = sprintf(buffer, "Elapsed: %s ", sec2disp(sec_elapsed));
-                    off      += sprintf(buffer+off, "Rest: %s ", sec2disp(sec_estimated));
+                    int  off  = 0;
+                    off      += sprintf(buffer+off, "%i%%  ", gaugeValue*100/AW_GAUGE_GRANULARITY);
+                    off      += sprintf(buffer+off, "Elapsed: %s  ", sec2disp(sec_elapsed));
+
+                    // rotate estimations
+                    memcpy(aw_stg.last_estimation, aw_stg.last_estimation+1, sizeof(aw_stg.last_estimation[0])*(AW_EST_BUFFER-1));
+                    aw_stg.last_estimation[AW_EST_BUFFER-1] = sec_estimated;
+
+                    if (aw_stg.last_est_count == AW_EST_BUFFER) { // now we can estimate!
+                        long used_estimation = 0;
+                        int  i;
+                        
+                        for (i = 0; i<AW_EST_BUFFER; ++i) {
+                            used_estimation +=aw_stg.last_estimation[i];
+                        }
+                        used_estimation /= AW_EST_BUFFER;
+
+                        if (aw_stg.last_used_est != -1) {
+                            long diff = labs(aw_stg.last_used_est-used_estimation);
+                            if (diff <= 1) { used_estimation = aw_stg.last_used_est; } // fake away low frequency changes
+                        }
+
+                        long sec_rest         = used_estimation-sec_elapsed;
+                        off                  += sprintf(buffer+off, "Rest: %s", sec2disp(sec_rest));
+                        aw_stg.last_used_est  = used_estimation;
+                    }
+                    else {
+                        aw_stg.last_est_count++;
+                        off += sprintf(buffer+off, "Rest: ???");
+                    }
 
                     awr->awar(AWAR_STATUS_ELAPSED)->write_string(buffer);
+                    
 #if defined(TRACE_STATUS)
                     fprintf(stderr, "gauge=%i\n", gaugeValue); fflush(stdout);
 #endif // TRACE_STATUS
                 }
                 else if (gaugeValue == 0) { // restart timer
-                    aw_stg.last_start = time(0);
+                    aw_stg.last_start     = time(0);
+                    aw_stg.last_est_count = 0;
+                    aw_stg.last_used_est  = 0;
 #if defined(TRACE_STATUS)
-                fprintf(stderr, "reset status timer (gauge=0)\n"); fflush(stdout);
+                    fprintf(stderr, "reset status timer (gauge=0)\n"); fflush(stdout);
 #endif // TRACE_STATUS
                 }
                 break;
@@ -1064,10 +1107,11 @@ int aw_question(const char *msg, const char *buttons, bool fixedSizeButtons, con
     aw_msg->hide();
 
     switch ( aw_message_cb_result ) {
-        case -1: /* exit with core */
-            ARB_SIGSEGV;
+        case -1:                /* exit with core */
+            fprintf(stderr, "Core dump requested\n");
+            ARB_SIGSEGV(1);
             break;
-        case -2: /* exit without core */
+        case -2:                /* exit without core */
             exit( -1 );
             break;
     }
