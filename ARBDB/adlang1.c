@@ -123,55 +123,49 @@ static GB_ERROR trace_params(int argc, const GBL *argv, struct gbl_param *ppara,
 
         for (para = ppara; para && !error; para = para->next) {
             int len = strlen(para->param_name);
-            
-            if (strncmp(argument, para->param_name, len-1) == 0) { // compare w/o '=' (allowed for GB_BIT params)
-                const char *value = argument+len-1;
 
-                if (value[0] == '=') { // normal case: parameter name followed by '='
-                    value++;
-                }
-                else if (!value[0]) {           // no '=' and argument only contains name
-                    if (para->type != GB_BIT) { // error if type isn't bit
-                        error = GBS_global_string("expected '=' after parameter name in '%s'", argument);
+            if (strncmp(argument, para->param_name, len) == 0) { 
+                const char *value = argument+len; // set to start of value;
+
+                if (para->type == GB_BIT) {
+                    // GB_BIT is special cause param_name does NOT contain trailing '='
+
+                    if (!value[0]) { // only 'name' -> handle like 'name=1'
+                        ;
                     }
-                    else {
-                        value = ""; // handle 'param' like 'param=1' for bit type
+                    else if (value[0] == '=') {
+                        value++;
                     }
-                }
-                else {          // only START of param matches, try other params
-                    value = 0;
                 }
 
-                if (value && !error) {
-                    switch (para->type) {
-                        case GB_STRING:
-                            *(const char **)para->varaddr  = value;
-                            break;
+                switch (para->type) {
+                    case GB_STRING:
+                        *(const char **)para->varaddr  = value;
+                        break;
                         
-                        case GB_INT:
-                            gb_assert(sizeof(int) == sizeof(size_t)); // assumed by GBL_PARAM_SIZET
-                            *(int *)para->varaddr = atoi(value);
-                            break;
+                    case GB_INT:
+                        gb_assert(sizeof(int) == sizeof(size_t)); // assumed by GBL_PARAM_SIZET
+                        *(int *)para->varaddr = atoi(value);
+                        break;
 
-                        case GB_BIT:
-                            // 'param=' is same as 'param' or 'param=1' (historical reason, dont change)
-                            *(int *)para->varaddr = (value[0] ? atoi(value) : 1);
-                            break;
+                    case GB_BIT:
+                        // 'param=' is same as 'param' or 'param=1' (historical reason, dont change)
+                        *(int *)para->varaddr = (value[0] ? atoi(value) : 1);
+                        break;
 
-                        case GB_BYTE:
-                            *(char *)para->varaddr = *value; // this may use the terminal zero-byte (e.g. for p1 in 'p0=0,p1=,p2=2' )
-                            if (value[0] && value[1]) { // found at least 2 chars
-                                GB_warning("Only one character expected in value '%s' of param '%s' - rest is ignored", value, para->param_name);
-                            }
-                            break;
+                    case GB_BYTE:
+                        *(char *)para->varaddr = *value; // this may use the terminal zero-byte (e.g. for p1 in 'p0=0,p1=,p2=2' )
+                        if (value[0] && value[1]) { // found at least 2 chars
+                            GB_warning("Only one character expected in value '%s' of param '%s' - rest is ignored", value, para->param_name);
+                        }
+                        break;
 
-                        default:
-                            gb_assert(0);
-                            error = GBS_global_string("Parameter '%s': Unknown type %i (internal error)", para->param_name, para->type);
-                            break;
-                    }
-                    if (!error) break;
+                    default:
+                        gb_assert(0);
+                        error = GBS_global_string("Parameter '%s': Unknown type %i (internal error)", para->param_name, para->type);
+                        break;
                 }
+                break; // accept parameter
             }
         }
 
