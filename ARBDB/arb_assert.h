@@ -69,10 +69,10 @@
  * (done because automatic backtrace on SIGSEGV lacks name of current function) 
  */
 
-#define ARB_SIGSEGV do {                                \
-        GBK_dump_backtrace(NULL, "ARB_SIGSEGV");        \
-        GBK_install_SIGSEGV_handler(GB_FALSE);          \
-        *(int *)0 = 0;                                  \
+#define ARB_SIGSEGV(backtrace) do {                             \
+        if (backtrace) GBK_dump_backtrace(NULL, "ARB_SIGSEGV"); \
+        GBK_install_SIGSEGV_handler(GB_FALSE);                  \
+        *(int *)0 = 0;                                          \
     } while(0)
 
 /* ------------------------------------------------------------ */
@@ -101,7 +101,7 @@
 #ifdef ASSERT_CRASH
 # define arb_assert(cond)                       \
     do {                                        \
-        if (!(cond)) ARB_SIGSEGV;               \
+        if (!(cond)) ARB_SIGSEGV(1);            \
     } while (0)
 #endif
 
@@ -111,7 +111,7 @@
         if (!(cond)) {                                                  \
             fputs(GBK_assert_msg(#cond, __FILE__, __LINE__), stderr);   \
             fflush(stderr);                                             \
-            ARB_SIGSEGV;                                                \
+            ARB_SIGSEGV(1);                                             \
         }                                                               \
     } while (0)
 #endif

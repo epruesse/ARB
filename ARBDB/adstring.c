@@ -1916,9 +1916,9 @@ void GBK_terminate(const char *templat, ...) {
     fprintf(stderr, "Error: '%s'\n", error);
     fputs("Can't continue - terminating..\n", stderr);
     GBK_dump_backtrace(stderr, "GBK_terminate");
-    
+
     fflush(stderr);
-    gb_assert(0); // GBK_terminate shall not be called, fix reason
+    ARB_SIGSEGV(0); // GBK_terminate shall not be called, fix reason (crash in DEBUG and NDEBUG version)
     exit(EXIT_FAILURE);
 }
 
