@@ -374,7 +374,7 @@ void PH_save_ml_cb(AW_window *aww) {
 
         free(bits);
     }
-    delete fname;
+    free(fname);
 
     if (error) {
         GB_abort_transaction(GLOBAL_gb_main);
