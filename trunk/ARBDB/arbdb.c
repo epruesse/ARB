@@ -313,7 +313,7 @@ void GB_close(GBDATA *gbd) {
     }
 
 #if defined(DEVEL_RALF)
-#warning code below was in ARB long time ago. Needs to be debugged, crashes ARB IIRC
+#warning code below was in ARB long time ago. Needs to be debugged, crashes ARB
     gb_delete_entry(gbd);
     gb_do_callback_list(gbd);   /* do all callbacks */
     gb_destroy_main(Main);
@@ -708,11 +708,18 @@ int gb_get_compression_mask(GB_MAIN_TYPE *Main, GBQUARK key, int gb_type)
 
 GB_ERROR GB_write_pntr(GBDATA *gbd,const char *s, long bytes_size, long stored_size)
 {
+    // 'bytes_size' is the size of what 's' points to.
+    // 'stored_size' is the size-information written into the DB
+    // 
+    // e.g. for strings : stored_size = bytes_size-1, cause stored_size is string len,
+    //                    but bytes_size includes zero byte.
+
+
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    GBQUARK key = GB_KEY_QUARK(gbd);
-    char *d;
-    int compression_mask;
-    long memsize;
+    GBQUARK       key  = GB_KEY_QUARK(gbd);
+    const char   *d;
+    int           compression_mask;
+    long          memsize;
 
     gb_free_cache(Main,gbd);
     gb_save_extern_data_in_ts(gbd);
@@ -721,13 +728,15 @@ GB_ERROR GB_write_pntr(GBDATA *gbd,const char *s, long bytes_size, long stored_s
 
     if (compression_mask){
         d = gb_compress_data(gbd, key, s, bytes_size, &memsize, compression_mask, GB_FALSE);
-    }else{
+    }
+    else {
         d = NULL;
     }
-    if (d){
+    if (d) {
         gbd->flags.compressed_data = 1;
-    }else{
-        d = (char *)s;
+    }
+    else {
+        d = s;
         gbd->flags.compressed_data = 0;
         memsize = bytes_size;
     }

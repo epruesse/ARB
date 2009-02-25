@@ -929,7 +929,7 @@ GB_BUFFER gb_compress_data(GBDATA *gbd, int key, GB_CBUFFER source, long size, l
     }
 
     *msize = size;
-    ad_assert(1);
+
     if (last_flag) return 0;                                    /* no compression */
     return (char *)source;
 }
