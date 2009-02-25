@@ -19,10 +19,11 @@
  * Define SIMPLE_ARB_ASSERT before including this header
  * to avoid ARBDB dependency!
  * 
- * ASSERT_CRASH if assert fails debugger stops at assert makro
- * ASSERT_ERROR assert prints an error and ARB exits
- * ASSERT_PRINT assert prints a message (anyway) and ARB continues
- * ASSERT_NONE  assertions inactive
+ * ASSERT_CRASH                 if assert fails debugger stops at assert makro
+ * ASSERT_BACKTRACE_AND_CRASH   like ASSERT_CRASH - with backtrace
+ * ASSERT_ERROR                 assert prints an error and ARB exits
+ * ASSERT_PRINT                 assert prints a message (anyway) and ARB continues
+ * ASSERT_NONE                  assertions inactive
  *
  * ------------------------------------------------------------ */
 
@@ -101,7 +102,7 @@
 #ifdef ASSERT_CRASH
 # define arb_assert(cond)                       \
     do {                                        \
-        if (!(cond)) ARB_SIGSEGV(1);            \
+        if (!(cond)) ARB_SIGSEGV(0);            \
     } while (0)
 #endif
 

@@ -1894,9 +1894,13 @@ void GB_internal_error(const char *templat, ...) {
                      "If you've made changes to the database, consider to save it using a different name.\n"
                      "Try to fix the cause of the error and restart ARB.");
 
+#ifdef ASSERTION_USED
+    fprintf(stderr, full_message);
+    gb_assert(0);                             // internal errors shall not happen, go fix it
+#else
     GBK_dump_backtrace(stderr, full_message);
-    gb_assert(0);                            // internal errors shall not happen, go fix it
-    
+#endif
+
     free(full_message);
 }
 
