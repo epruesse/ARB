@@ -277,7 +277,7 @@ static void GB_dump_internal(GBDATA *gbd, int *lines_allowed) {
         }
     }
 
-    if (content==0) content           = "<unknown - not examined>";
+    if (content==0) content           = "<zero content - illegal!>";
     if (content_len == 0) content_len = strlen(content);
 
     {
