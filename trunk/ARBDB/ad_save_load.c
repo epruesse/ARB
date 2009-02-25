@@ -481,7 +481,7 @@ long gb_write_rek(FILE *out,GBCONTAINER *gbc,long deep,long big_hunk)
                 strng = GB_read_char_pntr(gb);
                 if (!strng) {
                     strng = "broken entry replaced by arb_2_ascii";
-                    fprintf(stderr, "replaced broken DB entry %s\n", GB_get_db_path(gb));
+                    fprintf(stderr, "- replaced broken DB entry %s (data lost)\n", GB_get_db_path(gb));
                 }
                 if (*strng == '%') {
                     putc('%',out);
