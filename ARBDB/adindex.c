@@ -57,53 +57,51 @@ char *gb_index_check_in(GBDATA *gbd)
 }
 
 /* remove entry from index table */
-char *gb_index_check_out(GBDATA *gbd)
-{
-    struct gb_index_files_struct *ifs;
-    struct gb_if_entries         *ifes;
-    struct gb_if_entries         *ifes2;
-    GB_REL_IFES                  *entries;
+void gb_index_check_out(GBDATA *gbd) {
+    if (gbd->flags2.is_indexed) {
+        GB_ERROR     error   = 0;
+        GBCONTAINER *gfather = GB_GRANDPA(gbd);
+        GBQUARK      quark   = GB_KEY_QUARK(gbd);
+        
+        struct gb_index_files_struct *ifs;
 
-    GBQUARK        quark;
-    GBCONTAINER   *gfather;
-    GB_CSTR        data;
-    unsigned long  index;
+        gbd->flags2.is_indexed = 0;
+        GB_INDEX_FIND(gfather, ifs, quark);
 
-    if (!gbd->flags2.is_indexed) return 0;
-    gbd->flags2.is_indexed = 0;
+        if (!ifs) error = "key is not indexed";
+        else {
+            GB_CSTR data = GB_read_char_pntr(gbd);
 
-    gfather = GB_GRANDPA(gbd);
-    quark = GB_KEY_QUARK(gbd);
-    GB_INDEX_FIND(gfather,ifs,quark);
-    if (!ifs) {
-        GB_internal_error("gb_index_check_out ifs not found");
-        return 0;       /* This key is not indexed */
-    }
-    data = GB_read_char_pntr(gbd);
-    GB_CALC_HASH_INDEX(data,index,ifs->hash_table_size,ifs->case_sens);
-    ifes2 = 0;
-    entries = GB_INDEX_FILES_ENTRIES(ifs);
-
-    for (   ifes = GB_ENTRIES_ENTRY(entries,index);
-            ifes;
-            ifes = GB_IF_ENTRIES_NEXT(ifes))
-    {
-        if (gbd == GB_IF_ENTRIES_GBD(ifes)) {       /* entry found */
-            if (ifes2) {
-                SET_GB_IF_ENTRIES_NEXT(ifes2, GB_IF_ENTRIES_NEXT(ifes));
-            }else{
-                SET_GB_ENTRIES_ENTRY(entries,index,GB_IF_ENTRIES_NEXT(ifes));
+            if (!data) {
+                error = GBS_global_string("can't read key value (%s)", GB_expect_error());
             }
-            ifs->nr_of_elements--;
-            gbm_free_mem((char *)ifes,
-                         sizeof(struct gb_if_entries),
-                         GB_GBM_INDEX(gbd));
-            return 0;
+            else {
+                unsigned long index;
+                GB_CALC_HASH_INDEX(data, index, ifs->hash_table_size, ifs->case_sens);
+
+                struct gb_if_entries *ifes2   = 0;
+                GB_REL_IFES          *entries = GB_INDEX_FILES_ENTRIES(ifs);
+                struct gb_if_entries *ifes;
+
+                for (ifes = GB_ENTRIES_ENTRY(entries,index); ifes; ifes = GB_IF_ENTRIES_NEXT(ifes)) {
+                    if (gbd == GB_IF_ENTRIES_GBD(ifes)) {       /* entry found */
+                        if (ifes2) SET_GB_IF_ENTRIES_NEXT(ifes2, GB_IF_ENTRIES_NEXT(ifes));
+                        else SET_GB_ENTRIES_ENTRY(entries,index,GB_IF_ENTRIES_NEXT(ifes));
+
+                        ifs->nr_of_elements--;
+                        gbm_free_mem((char *)ifes, sizeof(struct gb_if_entries), GB_GBM_INDEX(gbd));
+                        break;
+                    }
+                    ifes2 = ifes;
+                }
+            }
         }
-        ifes2 = ifes;
+
+        if (error) {
+            error = GBS_global_string("gb_index_check_out failed for key '%s' (%s)\n", GB_KEY(gbd), error);
+            GB_internal_error(error);
+        }
     }
-    GB_internal_error("gb_index_check_out item not found in index list");
-    return 0;
 }
 
 GB_ERROR GB_create_index(GBDATA *gbd, const char *key, GB_CASE case_sens, long estimated_size) {
