@@ -220,7 +220,6 @@ GB_ERROR gb_remove_all_but_main P_((GB_MAIN_TYPE *Main, const char *path));
 long gb_ascii_2_bin P_((const char *source, GBDATA *gbd));
 GB_BUFFER gb_bin_2_ascii P_((GBDATA *gbd));
 long gb_test_sub P_((GBDATA *gbd));
-long gb_write_rek P_((FILE *out, GBCONTAINER *gbc, long deep, long big_hunk));
 long gb_read_in_long P_((FILE *in, long reversed));
 long gb_read_number P_((FILE *in));
 void gb_put_number P_((long i, FILE *out));

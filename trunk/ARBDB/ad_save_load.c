@@ -443,7 +443,7 @@ long gb_test_sub(GBDATA *gbd)
 }
 
 /* only used for saving ASCII database */
-long gb_write_rek(FILE *out,GBCONTAINER *gbc,long deep,long big_hunk)
+static long gb_write_rek(FILE *out,GBCONTAINER *gbc,long deep,long big_hunk)
 {
     long     i;
     char    *s;
@@ -480,8 +480,8 @@ long gb_write_rek(FILE *out,GBCONTAINER *gbc,long deep,long big_hunk)
             case    GB_STRING:
                 strng = GB_read_char_pntr(gb);
                 if (!strng) {
-                    strng = "broken entry replaced by arb_2_ascii";
-                    fprintf(stderr, "- replaced broken DB entry %s (data lost)\n", GB_get_db_path(gb));
+                    strng = "<entry was broken - replaced during ASCIIsave/arb_repair>";
+                    GB_warning("- replaced broken DB entry %s (data lost)\n", GB_get_db_path(gb));
                 }
                 if (*strng == '%') {
                     putc('%',out);
