@@ -435,9 +435,11 @@ void ED4_alignment_length_changed(GBDATA *gb_alignment_len, int */*cl*/, GB_CB_T
         err = ED4_ROOT->ecoli_ref->init(GLOBAL_gb_main); // reload ecoli
         if (err) { aw_message(err); err = 0; }
         
-        //TODO: is this needed here?
-        err = ED4_pfold_set_SAI(&ED4_ROOT->protstruct, GLOBAL_gb_main, ED4_ROOT->alignment_name, &ED4_ROOT->protstruct_len); // reload protstruct
-        if (err) { aw_message(err); err = 0; }
+        if(ED4_ROOT->alignment_type == GB_AT_AA) {
+            //TODO: is this needed here?
+            err = ED4_pfold_set_SAI(&ED4_ROOT->protstruct, GLOBAL_gb_main, ED4_ROOT->alignment_name, &ED4_ROOT->protstruct_len); // reload protstruct
+            if (err) { aw_message(err); err = 0; }
+        }
         //ED4_ROOT->refresh_all_windows(0);
         //ED4_expose_all_windows();
 
