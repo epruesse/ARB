@@ -1056,7 +1056,10 @@ templ:	TEMPLATES/TEMPLATES.dummy
 
 #********************************************************************************
 
-up: depends proto tags valgrind_update
+up:
+	$(MAKE) -k up_internal
+
+up_internal: depends proto tags valgrind_update
 
 #********************************************************************************
 
