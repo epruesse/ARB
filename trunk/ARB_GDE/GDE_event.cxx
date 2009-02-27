@@ -507,11 +507,11 @@ void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
             gfile.name = preCreateTempfile(buffer);
 
             switch(gfile.format) {
-                case COLORMASK:   WriteCMask  (DataSet, buffer, select_mode, gfile.maskable); break;
-                case GENBANK:     WriteGen    (DataSet, buffer, select_mode, gfile.maskable); break;
-                case NA_FLAT:     WriteNA_Flat(DataSet, buffer, select_mode, gfile.maskable); break;
-                case STATUS_FILE: WriteStatus (DataSet, buffer, select_mode)                ; break;
-                case GDE:         WriteGDE    (DataSet, buffer, select_mode, gfile.maskable); break;
+                case COLORMASK:   WriteCMask  (DataSet, gfile.name, select_mode, gfile.maskable); break;
+                case GENBANK:     WriteGen    (DataSet, gfile.name, select_mode, gfile.maskable); break;
+                case NA_FLAT:     WriteNA_Flat(DataSet, gfile.name, select_mode, gfile.maskable); break;
+                case STATUS_FILE: WriteStatus (DataSet, gfile.name, select_mode)                ; break;
+                case GDE:         WriteGDE    (DataSet, gfile.name, select_mode, gfile.maskable); break;
                 default: break;
             }
         }
