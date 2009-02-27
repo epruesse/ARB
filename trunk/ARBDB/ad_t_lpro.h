@@ -21,10 +21,6 @@ extern "C" {
 
 
 /* adtools.c */
-char *gbt_insert_delete P_((const char *source, long len, long destlen, long *newsize, long pos, long nchar, long mod, char insert_what, char insert_tail));
-GB_ERROR gbt_insert_character_gbd P_((GBDATA *gb_data, long len, long pos, long nchar, const char *delete_chars, const char *species_name));
-GB_ERROR gbt_insert_character_species P_((GBDATA *gb_species, const char *ali_name, long len, long pos, long nchar, const char *delete_chars));
-GB_ERROR gbt_insert_character P_((GBDATA *gb_species_data, const char *species, const char *name, long len, long pos, long nchar, const char *delete_chars));
 long gbt_write_tree_nodes P_((GBDATA *gb_tree, GBT_TREE *node, long startid));
 GBT_TREE *gbt_read_tree_rek P_((char **data, long *startid, GBDATA **gb_tree_nodes, long structure_size, int size_of_tree, GB_ERROR *error));
 int gbt_sum_leafs P_((GBT_TREE *tree));

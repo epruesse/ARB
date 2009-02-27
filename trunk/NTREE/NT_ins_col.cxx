@@ -7,6 +7,8 @@
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
 
+#define nt_assert(bed) arb_assert(bed)
+
 extern GBDATA *GLOBAL_gb_main;     /* muss existieren */
 
 void create_insertchar_variables(AW_root *root,AW_default db1)
@@ -19,7 +21,9 @@ void create_insertchar_variables(AW_root *root,AW_default db1)
 
 void awt_inserchar_event(AW_window *aws,AW_CL awcl_mode)
 {
-    int      mode    = (int)awcl_mode;
+    int mode = (int)awcl_mode; // 1 = insert, -1 = delete
+    nt_assert(mode == -1 || mode == 1);
+
     AW_root *root    = aws->get_root();
     long     pos     = root->awar(AWAR_CURSOR_POSITION)->read_int()-1;
     long     nchar   = root->awar("insertchar/nchar")->read_int() * mode;
