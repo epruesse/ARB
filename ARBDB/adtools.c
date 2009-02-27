@@ -1742,7 +1742,8 @@ static GBT_TREE *gbt_load_tree_rek(TreeReader *reader, int structuresize, GBT_LE
             free(left);
         }
     }
-    else { /* single node */
+    else {                      /* single node */
+        gbt_eat_white(reader);
         char *name = gbt_read_quoted_string(reader);
         if (name) {
             node          = (GBT_TREE*)GB_calloc(1, structuresize);
