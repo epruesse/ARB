@@ -2349,6 +2349,7 @@ static GB_ERROR apply_filters(GBL_command_arguments *args, struct common_filter_
                         STREAM_OUT(args, filter_one(args->vinput[i].str, filter, flen, param));
                     }
                 }
+                free(filter);
             }
         }
     }

@@ -81,7 +81,7 @@ else
                 SCAN_ARGS=1
             fi
             if [ $1 = '-l' ] ; then
-                LEAK_CHECK='$LEAK_CHECK --leak-check=yes --leak-resolution=high'
+                LEAK_CHECK="$LEAK_CHECK --leak-check=yes --leak-resolution=high"
                 shift 1
                 SCAN_ARGS=1
             fi

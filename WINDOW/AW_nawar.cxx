@@ -675,6 +675,7 @@ void aw_create_selection_box_awars(AW_root *awr, const char *awar_base,
             if (error) aw_message(GBS_global_string("Failed to create directory '%s' (Reason: %s)", dir, error));
         }
     }
+    free(dir);
 
     delete [] awar_name;
 }
