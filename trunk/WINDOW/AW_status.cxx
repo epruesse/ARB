@@ -661,7 +661,7 @@ static void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
                     off      += sprintf(buffer+off, "Elapsed: %s  ", sec2disp(sec_elapsed));
 
                     // rotate estimations
-                    memcpy(aw_stg.last_estimation, aw_stg.last_estimation+1, sizeof(aw_stg.last_estimation[0])*(AW_EST_BUFFER-1));
+                    memmove(aw_stg.last_estimation, aw_stg.last_estimation+1, sizeof(aw_stg.last_estimation[0])*(AW_EST_BUFFER-1));
                     aw_stg.last_estimation[AW_EST_BUFFER-1] = sec_estimated;
 
                     if (aw_stg.last_est_count == AW_EST_BUFFER) { // now we can estimate!
