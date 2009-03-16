@@ -232,8 +232,10 @@ void GEN_root::paint(AW_device *device) {
                 double inside  = aw_root->awar(AWAR_GENMAP_RADIAL_INSIDE)->read_float()*1000;
                 double outside = aw_root->awar(AWAR_GENMAP_RADIAL_OUTSIDE)->read_float();
 
-                GEN_iterator curr   = gene_set.begin();
-                while (curr != gene_set.end()) {
+                GEN_iterator curr = gene_set.begin();
+                GEN_iterator end  = gene_set.end();
+
+                while (curr != end) {
                     int draw_gc, text_gc;
                     if (getDrawGcs(curr, paint_what, gene_name, draw_gc, text_gc)) {
                     // if (paint_what || text_gc != GEN_GC_DEFAULT) {
@@ -277,7 +279,9 @@ void GEN_root::paint(AW_device *device) {
                 int    arrow_y  = int(factor_y*arrow_size);
 
                 GEN_iterator curr = gene_set.begin();
-                while (curr != gene_set.end()) {
+                GEN_iterator end  = gene_set.end();
+                
+                while (curr != end) {
                     int draw_gc, text_gc;
                     if (getDrawGcs(curr, paint_what, gene_name, draw_gc, text_gc)) {
                         int y         = int(curr->StartPos()*factor_y+0.5);
@@ -309,7 +313,9 @@ void GEN_root::paint(AW_device *device) {
                 int    arrowMid       = line_height/2;
 
                 GEN_iterator curr = gene_set.begin();
-                while (curr != gene_set.end()) {
+                GEN_iterator end  = gene_set.end();
+                
+                while (curr != end) {
                     int draw_gc, text_gc;
                     if (getDrawGcs(curr, paint_what, gene_name, draw_gc, text_gc)) {
                         int line1 = curr->StartPos()/display_width;

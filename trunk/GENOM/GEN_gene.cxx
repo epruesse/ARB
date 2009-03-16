@@ -18,10 +18,65 @@
 #include "GEN_gene.hxx"
 #include "GEN_local.hxx"
 #include "GEN_nds.hxx"
-#include "GEN_tools.hxx"
 
 // Standard fields of a gb_gene entry:
 // -----------------------------------
+// name                  = short name of gene (unique in one species)
+// type                  = type of gene (e.g. 'gene', 'CDS', 'tRNA', 'misc_feature')
+// pos_start             = start-position(s) of gene(-parts); range is 1...genomeLength
+// pos_stop              = end-position(s)   of gene(-parts); range is 1...genomeLength
+// pos_certain           = contains pairs of chars (1. for start-pos, 2. for end-pos)
+// 
+//                         '=' means 'pos is exact'
+//                         '<' means 'pos may be lower'
+//                         '>' means 'pos may be higher'
+//                         '+' means 'pos is directly behind'
+//                         '-' means 'pos is directly before'
+//                         
+//                         if pos_certain is missing -> like '=='
+//                         
+// pos_complement        = 1 -> CDS is on opposite strand
+
+// fields for splitted genes:
+// --------------------------
+// pos_joined         = xxx -> gene consists of abs(xxx) parts (if missing xxx == 1 is assumed)
+// 
+// if abs(xxx)>1, the gene consists of several parts.
+// In that case the fields 'pos_start', 'pos_stop',  'pos_certain' and 'pos_complement'
+// contain multiple comma-separated values - one for each joined part.
+// 
+// if xxx is < -1, then joining the parts does not make sense (or nothing is known about it)
+//
+// Note: Please do not access these fields manually - use GEN_read_position!
+
+// other fields added by importer:
+// -------------------------------
+//
+// During import ARB tries to reproduce existing translations.
+// If it succeeds, it removes the translation.
+// 
+// ARB_translation      = written if ARB translation differs from original translation
+//                        (original translation is not deleted in this case)
+// ARB_translation_note = additional info about failed translation
+// ARB_translation_rm   = 1 -> translation was reproduced and deleted
+//
+// if a gene with type 'gene' exists and another gene with different type, but
+// identical location exists as well, ARB sets ARB_display_hidden to 1 for
+// the 'gene'. For the other gene with diff. type ARB sets a reference to the
+// hidden 'gene':
+// 
+// ARB_is_gene          = shortname of related hidden gene
+
+
+// fields used for display:
+// ------------------------
+// ARB_display_hidden = 1 -> do not display this gene (depends on AWAR_GENMAP_SHOW_HIDDEN too)
+// ARB_color          = color group
+
+
+
+// Old format standard fields of a gb_gene entry:
+// ----------------------------------------------
 // name          = short name of gene (unique in one species)
 // pos_begin     = start-position of gene
 // pos_end       = end-position of gene
@@ -34,12 +89,27 @@
 // pos_beginxxx, pos_endxxx = start-/end-positions for parts 2...n
 // pos_uncertainxxx         = like above for parts 2...n
 //
-// fields used for display:
-// ------------------------
-// ARB_display_hidden       = 1 -> do not display this gene (depends on AWAR_GENMAP_SHOW_HIDDEN too)
-// ARB_color                = color group
 
 using namespace std;
+
+static const GEN_position *loadPositions4gene(GBDATA *gb_gene) {
+    static GEN_position *loaded_position     = 0;
+    static GBDATA       *positionLoaded4gene = 0;
+
+    if (positionLoaded4gene != gb_gene) {
+        if (loaded_position) {
+            GEN_free_position(loaded_position);
+            loaded_position     = 0;
+            positionLoaded4gene = 0;
+        }
+
+        if (gb_gene) {
+            loaded_position = GEN_read_position(gb_gene);
+            if (loaded_position) positionLoaded4gene = gb_gene;
+        }
+    }
+    return loaded_position;
+}
 
 //  ----------------------------------------------------------
 //      GEN_gene::init(GBDATA *gb_gene_, GEN_root *root_)
@@ -53,56 +123,44 @@ void GEN_gene::init(GBDATA *gb_gene_, GEN_root *root_) {
     complement  = gbd ? GB_read_byte(gbd) == 1 : false;
 }
 
-GB_ERROR GEN_gene::load_positions(int part) {
+void GEN_gene::load_location(int part, const GEN_position *location) {
     gen_assert(part >= 1);
-
-    const char *pos_begin_name = GEN_pos_begin_entry_name(part);
-    const char *pos_end_name   = GEN_pos_end_entry_name(part);
-
-    GBDATA *gb_begin = GB_entry(gb_gene, pos_begin_name);
-    if (!gb_begin) return GBS_global_string("'%s' entry missing", pos_begin_name);
-    pos1             = GB_read_int(gb_begin);
-
-    GBDATA *gb_end = GB_entry(gb_gene, pos_end_name);
-    if (!gb_end) return GBS_global_string("'%s' entry missing", pos_end_name);
-    pos2           = GB_read_int(gb_end);
-
+    gen_assert(part <= location->parts);
+  
+    pos1       = location->start_pos[part-1];
+    pos2       = location->stop_pos[part-1];
+    complement = location->complement[part-1];
+  
     gen_assert(pos1 <= pos2);
-
-    return 0;
 }
 
-GEN_gene::GEN_gene(GBDATA *gb_gene_, GEN_root *root_, GB_ERROR& error) {
+GEN_gene::GEN_gene(GBDATA *gb_gene_, GEN_root *root_, const GEN_position *location) {
     init(gb_gene_, root_);
-    error = load_positions(1);
+    load_location(1, location);
+    nodeInfo = GEN_make_node_text_nds(root->GbMain(), gb_gene, 0);
+}
 
-    if (!error) {
-        nodeInfo = GEN_make_node_text_nds(root->GbMain(), gb_gene, 0);
+GEN_gene::GEN_gene(GBDATA *gb_gene_, GEN_root *root_, const GEN_position *location, int partNumber) {
+    //  partNumber 1..n which part of a splitted gene
+    //  maxParts   1..n of how many parts consists this gene?
+ 
+    init(gb_gene_, root_);
+    load_location(partNumber, location);
+ 
+    {
+        char buffer[30];
+        sprintf(buffer, " (%i/%i)", partNumber, location->parts);
+        nodeInfo = name+buffer;
     }
 }
-
+ 
 void GEN_gene::reinit_NDS() const {
     nodeInfo = GEN_make_node_text_nds(root->GbMain(), gb_gene, 0);
 }
 
-GEN_gene::GEN_gene(GBDATA *gb_gene_, GEN_root *root_, int partNumber, int maxParts, GB_ERROR& error) {
-    //  partNumber 1..n which part of a splitted gene
-    //  maxParts   1..n of how many parts consists this gene?
-
-    init(gb_gene_, root_);
-    error = load_positions(partNumber);
-
-    {
-        char buffer[30];
-        sprintf(buffer, " (%i/%i)", partNumber, maxParts);
-        nodeInfo = name+buffer;
-    }
-}
-//  ------------------------------
-//      GEN_gene::~GEN_gene()
-//  ------------------------------
-GEN_gene::~GEN_gene() {
-}
+// -----------------
+//      GEN_root
+// -----------------
 
 GEN_root::GEN_root(const char *organism_name_, const char *gene_name_, GBDATA *gb_main_, AW_root *aw_root, GEN_graphic *gen_graphic_)
     : gb_main(gb_main_)
@@ -148,23 +206,25 @@ GEN_root::GEN_root(const char *organism_name_, const char *gene_name_, GBDATA *g
                     }
 
                     if (show_this) {
-                        GBDATA   *gbd     = GB_entry(gb_gene, "pos_joined");
-                        int       joined  = gbd ? GB_read_int(gbd) : 0;
-                        GB_ERROR  warning = 0;
+                        const GEN_position *location = loadPositions4gene(gb_gene);
 
-                        if (joined) {
-                            for (int j = 1; j <= joined; ++j) { // insert all parts
-                                GEN_gene gene(gb_gene, this, j, joined, warning);
-                                if (!warning) gene_set.insert(gene);
-                                else     break; // abort
+                        if (!location) {
+                            GB_ERROR  warning = GB_get_error();
+                            char     *id      = GEN_global_gene_identifier(gb_gene, gb_organism);
+                            aw_message(GBS_global_string("Can't load gene '%s':\nReason: %s", id, warning));
+                            free(id);
+                        }
+                        else {
+                            int parts = location->parts;
+                            if (parts == 1) {
+                                gene_set.insert(GEN_gene(gb_gene, this, location));
+                            }
+                            else { // joined gene
+                                for (int p = 1; p <= parts; ++p) {
+                                    gene_set.insert(GEN_gene(gb_gene, this, location, p));
+                                }
                             }
                         }
-                        else { // insert normal (unsplitted) gene
-                            GEN_gene gene(gb_gene, this, warning);
-                            if (!warning) gene_set.insert(gene);
-                        }
-
-                        if (warning) aw_message(GBS_global_string("%s in gene '%s'", warning, GBT_read_name(gb_gene)));
                     }
                     gb_gene = GEN_next_gene(gb_gene);
                 }
@@ -173,17 +233,9 @@ GEN_root::GEN_root(const char *organism_name_, const char *gene_name_, GBDATA *g
     }
 }
 
-//  ------------------------------
-//      GEN_root::~GEN_root()
-//  ------------------------------
-GEN_root::~GEN_root() {
-}
-
-//  ------------------------------------
-//      void GEN_root::reinit_NDS()
-//  ------------------------------------
 void GEN_root::reinit_NDS() const {
-    for (GEN_gene_set::iterator gene = gene_set.begin(); gene != gene_set.end(); ++gene) {
+    GEN_iterator end  = gene_set.end();
+    for (GEN_iterator gene = gene_set.begin(); gene != end; ++gene) {
         gene->reinit_NDS();
     }
 }

@@ -14,7 +14,6 @@ ARB-Input-Mask
 # Show edit/reload button
 @EDIT=1
 
-
 # ---------------------------
 # The definition of the mask:
 
@@ -27,14 +26,11 @@ ARB-Input-Mask
 
     NEW_SECTION()
 
-    TEXTFIELD( "Name       ",  "name" , 40)
-    TEXTFIELD( "Start      ",  "pos_begin" , 15)        TEXTFIELD(   "End       ",  "pos_end" , 15)  CHECKBOX("Complement","complement",0)
+    TEXTFIELD("Name       ",  "name" , 40)
+    TEXTFIELD("Start      ",  "pos_start" , 15)        TEXTFIELD("End       ",  "pos_stop" , 15)  CHECKBOX("Complement","pos_complement",0)
 
-    NEW_SECTION()
-    TEXT("Coding sequence:")
-    TEXTFIELD( "Start      ",  "CDS/pos_begin" , 15)    TEXTFIELD(   "End       ",  "CDS/pos_end" , 15)  CHECKBOX("Complement","CDS/complement",0)
-    TEXTFIELD( "Codon start","CDS/codon_start",1)
-    TEXTFIELD( "Note       ","CDS/note",50)
+    TEXTFIELD("Codon start","codon_start",1)
+    TEXTFIELD("Note       ","note",50)
 
 
 @MASK_END

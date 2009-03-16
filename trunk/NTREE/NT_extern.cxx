@@ -41,7 +41,6 @@
 #include "nt_join.hxx"
 #include "nt_edconf.hxx"
 #include "ap_pos_var_pars.hxx"
-#include "nt_import.hxx"
 #include <arb_version.h>
 #include "nt_internal.h"
 #include <st_window.hxx>

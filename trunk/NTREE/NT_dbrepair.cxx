@@ -29,6 +29,12 @@
 
 using namespace std;
 
+#if defined(DEVEL_RALF)
+#warning the whole fix mechanism should be part of ARBDB
+// meanwhile DB checks are only performed by ARB_NTREE 
+// before moving to ARBDB, ARBDB should go C++ (if this is possible)
+#endif // DEVEL_RALF
+
 // --------------------------------------------------------------------------------
 // CheckedConsistencies provides an easy way to automatically correct flues in the database
 // by calling a check routine exactly one.
@@ -159,6 +165,237 @@ static GB_ERROR NT_fix_gene_data(GBDATA *gb_main, size_t species_count, size_t /
     }
     return ta.close(error);
 }
+
+// --------------------------------------------------------------------------------
+
+static GBDATA *expectField(GBDATA *gb_gene, const char *field, GB_ERROR& data_error) {
+    GBDATA *gb_field = 0;
+    if (!data_error) {
+        gb_field = GB_entry(gb_gene, field);
+        if (!gb_field) data_error = GBS_global_string("Expected field '%s' missing", field);
+    }
+    return gb_field;
+}
+
+static GBDATA *disexpectField(GBDATA *gb_gene, const char *field, GB_ERROR& data_error) {
+    GBDATA *gb_field = 0;
+    if (!data_error) {
+        gb_field = GB_entry(gb_gene, field);
+        if (gb_field) data_error = GBS_global_string("Unexpected field '%s' exists (wrong value in pos_joined?)", field);
+    }
+    GBS_reuse_buffer(field);
+    return gb_field;
+}
+
+static GB_ERROR NT_convert_gene_locations(GBDATA *gb_main, size_t species_count, size_t /*sai_count*/) {
+    GB_transaction ta(gb_main);
+    GB_ERROR       error         = 0;
+    long           fixed_genes   = 0;
+    long           skipped_genes = 0;
+    long           genes         = 0;
+
+    typedef vector<GBDATA*> GBvec;
+    GBvec                   toDelete;
+    size_t                  count = 0;
+
+    for (GBDATA *gb_organism = GEN_first_organism(gb_main);
+         gb_organism && !error;
+         gb_organism = GEN_next_organism(gb_organism))
+    {
+
+        
+        GBDATA *gb_gene_data = GEN_find_gene_data(gb_organism);
+        nt_assert(gb_gene_data);
+        if (gb_gene_data) {
+            for (GBDATA *gb_gene = GEN_first_gene_rel_gene_data(gb_gene_data);
+                 gb_gene && !error;
+                 gb_gene = GEN_next_gene(gb_gene))
+            {
+                genes++;
+
+                int parts = 1;
+                {
+                    GBDATA *gb_pos_joined    = GB_entry(gb_gene, "pos_joined");
+                    if (gb_pos_joined) parts = GB_read_int(gb_pos_joined); // its a joined gene
+                }
+
+                GBDATA *gb_pos_start = GB_entry(gb_gene, "pos_start"); // test for new format
+                if (!gb_pos_start) {
+                    GBDATA *gb_pos_begin = GB_entry(gb_gene, "pos_begin"); // test for old format
+                    if (!gb_pos_begin) {
+                        error = "Neighter 'pos_begin' nor 'pos_start' found - format of gene location is unknown";
+                    }
+                }
+
+                if (!gb_pos_start && !error) { // assume old format
+                    // parts<-1 would be valid in new format, but here we have old format
+                    if (parts<1) error = GBS_global_string("Illegal value in 'pos_joined' (%i)", parts); 
+                    
+                    GB_ERROR      data_error = 0;   // error in this gene -> don't convert
+                    GEN_position *pos        = GEN_new_position(parts, GB_FALSE); // all were joinable (no information about it was stored)
+
+                    // parse old gene information into 'pos'
+                    // 
+                    // old-format was:
+                    // Start-Positions:  pos_begin, pos_begin2, pos_begin3, ...
+                    // End-Positions:    pos_end, pos_end2, pos_end3, ...
+                    // Joined?:          pos_joined (always >= 1)
+                    // Complement:       complement (one entry for all parts)
+                    // Certainty:        pos_uncertain (maybe pos_uncertain1 etc.)
+
+                    int complement = 0;
+                    {
+                        GBDATA *gb_complement = GB_entry(gb_gene, "complement");
+                        if (gb_complement) {
+                            complement = GB_read_byte(gb_complement);
+                            toDelete.push_back(gb_complement);
+                        }
+                    }
+
+                    bool has_uncertain_fields = false;
+                    for (int p = 1; p <= parts && !error && !data_error; ++p) {
+                        GBDATA     *gb_pos_begin        = 0;
+                        GBDATA     *gb_pos_end          = 0;
+                        const char *pos_uncertain_field = 0;
+
+                        if (p == 1) {
+                            gb_pos_begin = expectField(gb_gene, "pos_begin", data_error);
+                            gb_pos_end   = expectField(gb_gene, "pos_end", data_error);
+                        
+                            pos_uncertain_field = "pos_uncertain";
+                        }
+                        else {
+                            const char *pos_begin_field = GBS_global_string("pos_begin%i", p);
+                            const char *pos_end_field   = GBS_global_string("pos_end%i", p);
+
+                            gb_pos_begin = expectField(gb_gene, pos_begin_field, data_error);
+                            gb_pos_end   = expectField(gb_gene, pos_end_field, data_error);
+
+                            GBS_reuse_buffer(pos_end_field);
+                            GBS_reuse_buffer(pos_begin_field);
+
+                            if (!data_error) pos_uncertain_field = GBS_global_string("pos_uncertain%i", p);
+                        }
+
+                        int pospos = complement ? (parts-p) : (p-1);
+
+                        if (!data_error) {
+                            GBDATA *gb_pos_uncertain = GB_entry(gb_gene, pos_uncertain_field);
+
+                            if (!gb_pos_uncertain) {
+                                if (has_uncertain_fields) data_error = GBS_global_string("Expected field '%s' missing", pos_uncertain_field);
+                            }
+                            else {
+                                if (p == 1) has_uncertain_fields = true;
+                                else {
+                                    if (!has_uncertain_fields) {
+                                        data_error = GBS_global_string("Found '%s' as first certainty-information", pos_uncertain_field);
+                                    }
+                                }
+                            }
+
+                            if (!data_error) {
+                                int begin = GB_read_int(gb_pos_begin);
+                                int end   = GB_read_int(gb_pos_end);
+
+                                pos->start_pos[pospos]  = begin;
+                                pos->stop_pos[pospos]   = end;
+                                pos->complement[pospos] = complement; // set all complement entries to same value (old format only had one complement entry)
+
+                                if (gb_pos_uncertain) {
+                                    const char *uncertain = GB_read_char_pntr(gb_pos_uncertain);
+
+                                    if (!uncertain) error       = GB_get_error();
+                                    else {
+                                        if (!pos->start_uncertain) GEN_use_uncertainties(pos);
+                                    
+                                        if (strlen(uncertain) != 2) {
+                                            data_error = "wrong length";
+                                        }
+                                        else {
+                                            for (int up = 0; up<2; up++) {
+                                                if (strchr("<=>", uncertain[up]) == 0) {
+                                                    data_error = GBS_global_string("illegal character '%c'", uncertain[up]);
+                                                }
+                                                else {
+                                                    (up == 0 ? pos->start_uncertain[pospos] : pos->stop_uncertain[pospos]) = uncertain[up];
+                                                }
+                                            }
+                                        }
+
+
+                                        toDelete.push_back(gb_pos_uncertain);
+                                    }
+                                }
+
+                                toDelete.push_back(gb_pos_begin);
+                                toDelete.push_back(gb_pos_end);
+                            }
+                        }
+                    }
+
+                    for (int p = parts+1; p <= parts+4 && !error && !data_error; ++p) {
+                        disexpectField(gb_gene, GBS_global_string("pos_begin%i", p), data_error);
+                        disexpectField(gb_gene, GBS_global_string("pos_end%i", p), data_error);
+                        disexpectField(gb_gene, GBS_global_string("complement%i", p), data_error);
+                        disexpectField(gb_gene, GBS_global_string("pos_uncertain%i", p), data_error);
+                    }
+
+                    // now save new position data
+
+                    if (data_error) {
+                        skipped_genes++;
+                    }
+                    else if (!error) {
+                        error = GEN_write_position(gb_gene, pos);
+
+                        if (!error) {
+                            // delete old-format entries
+                            GBvec::const_iterator end = toDelete.end();
+                            for (GBvec::const_iterator i = toDelete.begin(); i != end && !error; ++i) {
+                                error = GB_delete(*i);
+                            }
+
+                            if (!error) fixed_genes++;
+                        }
+                    }
+
+                    toDelete.clear();
+                    GEN_free_position(pos);
+
+                    if (data_error || error) {
+                        char *gene_id = GEN_global_gene_identifier(gb_gene, gb_organism);
+                        if (error) {
+                            error = GBS_global_string("Gene '%s': %s", gene_id, error);
+                        }
+                        else {
+                            aw_message(GBS_global_string("Gene '%s' was not converted, fix data manually!\nReason: %s", gene_id, data_error));
+                        }
+                        free(gene_id);
+                    }
+                }
+            }
+        }
+
+        aw_status(double(++count)/species_count);
+    }
+
+    if (!error) {
+        if (fixed_genes>0) aw_message(GBS_global_string("Fixed location entries of %li genes.", fixed_genes));
+        if (skipped_genes>0) {
+            aw_message(GBS_global_string("Didn't fix location entries of %li genes (see warnings).", skipped_genes));
+            error = "Not all gene locations were fixed.\nFix manually, save DB and restart ARB with that DB.\nMake sure you have a backup copy of the original DB!";
+        }
+
+        if (fixed_genes || skipped_genes) {
+            long already_fixed_genes = genes-(fixed_genes+skipped_genes);
+            if (already_fixed_genes>0) aw_message(GBS_global_string("Location entries of %li genes already were in new format.", already_fixed_genes));
+        }
+    }
+    
+    return error;
+}
+
 
 // --------------------------------------------------------------------------------
 
@@ -686,10 +923,19 @@ GB_ERROR NT_repair_DB(GBDATA *gb_main) {
 
     CheckedConsistencies check(gb_main);
     GB_ERROR             err = 0;
-
+    bool                 is_genome_db;
+    {
+        GB_transaction ta(gb_main);
+        is_genome_db = GEN_is_genome_db(gb_main, -1);
+    }
+    
     check.perform_check("fix gene_data",     NT_fix_gene_data,     err);
     check.perform_check("fix_dict_compress", NT_fix_dict_compress, err); // do this before NT_del_mark_move_REF (cause 'REF' is affected)
     check.perform_check("del_mark_move_REF", NT_del_mark_move_REF, err);
+
+    if (is_genome_db) {
+        check.perform_check("convert_gene_locations", NT_convert_gene_locations, err);
+    }
 
     return err;
 }

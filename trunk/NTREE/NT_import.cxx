@@ -8,7 +8,6 @@
 #include <awt_canvas.hxx>
 #include <mg_merge.hxx>
 
-#include "nt_import.hxx"
 #include "nt_internal.h"
 #include "ad_spec.hxx"
 #include "GEN.hxx"

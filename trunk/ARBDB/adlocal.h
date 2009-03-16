@@ -95,6 +95,8 @@ typedef struct gbs_hashi_struct GB_HASHI;
 
 #define GB_MAIN_ARRAY_SIZE 4096
 
+struct GBS_strstruct;
+
 /********************************************/
 
 enum {

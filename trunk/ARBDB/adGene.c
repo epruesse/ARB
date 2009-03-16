@@ -13,6 +13,7 @@
 /*  ====================================================================  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "adGene.h"
@@ -70,7 +71,29 @@ GBDATA* GEN_find_gene(GBDATA *gb_species, const char *name) {
     return gb_gene_data ? GEN_find_gene_rel_gene_data(gb_gene_data, name) : 0;
 }
 
-GBDATA* GEN_create_gene_rel_gene_data(GBDATA *gb_gene_data, const char *name) {
+GBDATA* GEN_create_nonexisting_gene_rel_gene_data(GBDATA *gb_gene_data, const char *name) {
+    GB_ERROR  error   = GB_push_transaction(gb_gene_data);
+    GBDATA   *gb_gene = 0;
+
+    gb_assert(!GEN_find_gene_rel_gene_data(gb_gene_data, name)); // don't call this function if you are not sure that the gene does not exists!
+
+    if (!error) {
+        gb_gene = GB_create_container(gb_gene_data, "gene");
+        error   = gb_gene ? GBT_write_string(gb_gene, "name", name) : GB_expect_error();
+    }
+
+    gb_assert(gb_gene || error);
+    error = GB_end_transaction(gb_gene_data, error);
+    if (error) GB_export_error(error);
+
+    return gb_gene;
+}
+
+GBDATA* GEN_create_nonexisting_gene(GBDATA *gb_species, const char *name) {
+    return GEN_create_nonexisting_gene_rel_gene_data(GEN_findOrCreate_gene_data(gb_species), name);
+}
+
+GBDATA* GEN_find_or_create_gene_rel_gene_data(GBDATA *gb_gene_data, const char *name) {
     GBDATA *gb_gene = 0;
 
     /* Search for a gene, when gene does not exist create it */
@@ -89,8 +112,8 @@ GBDATA* GEN_create_gene_rel_gene_data(GBDATA *gb_gene_data, const char *name) {
     return gb_gene;
 }
 
-GBDATA* GEN_create_gene(GBDATA *gb_species, const char *name) {
-    return GEN_create_gene_rel_gene_data(GEN_findOrCreate_gene_data(gb_species), name);
+GBDATA* GEN_find_or_create_gene(GBDATA *gb_species, const char *name) {
+    return GEN_find_or_create_gene_rel_gene_data(GEN_findOrCreate_gene_data(gb_species), name);
 }
 
 GBDATA* GEN_first_gene(GBDATA *gb_species) {
@@ -112,6 +135,397 @@ GBDATA *GEN_first_marked_gene(GBDATA *gb_species) {
 GBDATA *GEN_next_marked_gene(GBDATA *gb_gene) {
     return GB_next_marked(gb_gene,"gene");
 }
+
+/* ----------------------- */
+/*      gene position      */
+/* ----------------------- */
+
+static struct GEN_position *lastFreedPosition = 0;
+
+struct GEN_position *GEN_new_position(int parts, GB_BOOL joinable) {
+    struct GEN_position *pos;
+
+    size_t pos_size  = parts*sizeof(pos->start_pos[0]);
+    size_t comp_size = parts*sizeof(pos->complement[0]);
+    size_t data_size = 2*pos_size+3*comp_size;
+
+    gb_assert(parts>0);
+
+    if (lastFreedPosition && lastFreedPosition->parts == parts) {
+        pos               = lastFreedPosition;
+        lastFreedPosition = 0;
+        memset(pos->start_pos, 0, data_size);
+    }
+    else {
+        pos             = GB_calloc(1, sizeof(*pos));
+        pos->parts      = parts;
+        pos->start_pos  = GB_calloc(1, data_size);
+        pos->stop_pos   = pos->start_pos+parts;
+        pos->complement = (unsigned char*)(pos->stop_pos+parts);
+    }
+
+    pos->joinable        = joinable;
+    pos->start_uncertain = 0;
+    pos->stop_uncertain  = 0;
+
+    return pos;
+}
+
+void GEN_use_uncertainties(struct GEN_position *pos) {
+    if (pos->start_uncertain == 0) {
+        // space was already allocated in GEN_new_position
+        pos->start_uncertain = pos->complement+pos->parts;
+        pos->stop_uncertain  = pos->start_uncertain+pos->parts;
+
+        size_t comp_size = pos->parts*sizeof(pos->complement[0]);
+        memset(pos->start_uncertain, '=', 2*comp_size);
+    }
+}
+
+void GEN_free_position(struct GEN_position *pos) {
+    if (lastFreedPosition) {
+        free(lastFreedPosition->start_pos); // rest is allocated together with start_pos
+        free(lastFreedPosition);
+    }
+
+    lastFreedPosition = pos;
+}
+
+static void clearParseTable(char **parseTable, int parts) {
+    int p;
+    free(parseTable[0]);
+    for (p = 0; p<parts; p++) parseTable[p] = 0;
+}
+
+static GB_ERROR parseCSV(GBDATA *gb_gene, const char *field_name, int parts, char **parseTable) {
+    // reads a field and splits the content at ','
+    // results are put into parseTable (only first entry in parseTable is allocated, other entries
+    // are simply pointers into the same string)
+
+    GB_ERROR  error    = 0;
+    GBDATA   *gb_field = GB_entry(gb_gene, field_name);
+    if (gb_field) {
+        char *content = GB_read_string(gb_field);
+        if (content) {
+            int   p;
+            char *pos = content;
+
+            clearParseTable(parseTable, parts);
+
+            for (p = 0; p<(parts-1) && !error; p++) {
+                char *comma = strchr(pos, ',');
+                if (comma) {
+                    comma[0]      = 0;
+                    parseTable[p] = pos;
+                    pos           = comma+1;
+                }
+                else {
+                    error = "comma expected";
+                }
+            }
+
+            if (!error) {
+                parseTable[p] = pos; // rest
+
+                if (strchr(pos, ',') != 0) error = "comma found where none expected";
+            }
+
+            if (error) {
+                error         = GBS_global_string("%s in '%s' (while parsing %i values from '%s')",
+                                                  error, pos, parts, GB_read_char_pntr(gb_field));
+                parseTable[0] = content; // ensure content gets freed
+            }
+        }
+        else {
+            error = GB_get_error();
+        }
+    }
+    else {
+        error = GBS_global_string("Expected entry '%s' missing", field_name);
+    }
+
+    if (error) clearParseTable(parseTable, parts);
+    return error;
+}
+
+static GB_ERROR parsePositions(GBDATA *gb_gene, const char *field_name, int parts, size_t *results, char **parseTable) {
+    GB_ERROR error = parseCSV(gb_gene, field_name, parts, parseTable);
+    if (!error) {
+        int p;
+        for (p = 0; p<parts && !error; p++) {
+            char *end;
+            results[p] = strtol(parseTable[p], &end, 10);
+            if (end == parseTable[p]) { // error
+                error = GBS_global_string("can't convert '%s' to number (while parsing '%s')", parseTable[p], field_name);
+            }
+        }
+    }
+    return error;
+}
+
+struct GEN_position *GEN_read_position(GBDATA *gb_gene) {
+    int                  parts         = 1;
+    GB_BOOL              joinable      = GB_FALSE;
+    GBDATA              *gb_pos_joined = GB_entry(gb_gene, "pos_joined");
+    struct GEN_position *pos           = 0;
+    GB_ERROR             error         = 0;
+
+    if (gb_pos_joined) {
+        parts = GB_read_int(gb_pos_joined);
+        if (parts != 1) { // splitted
+            if (parts>1) joinable = GB_TRUE;
+            else if (parts<-1) parts = -parts; // neg value means "not joinable" (comes from feature location 'order(...)')
+            else error = GBS_global_string("Illegal value %i in 'pos_joined'", parts);
+        }
+    }
+
+    if (!error) {
+        pos = GEN_new_position(parts, joinable);
+
+        char **parseTable = GB_calloc(parts, sizeof(*parseTable));
+
+        error =             parsePositions(gb_gene, "pos_start", parts, pos->start_pos, parseTable);
+        if (!error) error = parsePositions(gb_gene, "pos_stop",  parts, pos->stop_pos,  parseTable);
+
+        int p;
+        if (!error) {
+            error = parseCSV(gb_gene, "pos_complement",  parts, parseTable);
+            for (p = 0; p<parts && !error; p++) {
+                const char *val = parseTable[p];
+                if ((val[0] != '0' && val[0] != '1') || val[1] != 0) {
+                    error = GBS_global_string("Invalid content '%s' in 'pos_complement' (expected: \"01\")", val);
+                }
+                else {
+                    pos->complement[p] = (unsigned char)atoi(val);
+                }
+            }
+        }
+
+        if (!error) {
+            GBDATA *gb_pos_certain = GB_entry(gb_gene, "pos_certain");
+
+            if (gb_pos_certain) {
+                error = parseCSV(gb_gene, "pos_certain",  parts, parseTable);
+                GEN_use_uncertainties(pos);
+                for (p = 0; p<parts && !error; p++) {
+                    const unsigned char *val = (unsigned char *)(parseTable[p]);
+                    int                  vp;
+
+                    for (vp = 0; vp<2; vp++) {
+                        unsigned char c = val[vp];
+                        if (c != '<' && c != '=' && c != '>' && (c != "+-"[vp])) {
+                            error = GBS_global_string("Invalid content '%s' in 'pos_certain' (expected 2 from \"<=>\")", val);
+                        }
+                    }
+                    if (!error) {
+                        pos->start_uncertain[p] = val[0];
+                        pos->stop_uncertain[p]  = val[1];
+                    }
+                }
+            }
+        }
+
+        clearParseTable(parseTable, parts);
+        free(parseTable);
+    }
+
+    if (error) {
+        GB_export_error(error);
+        if (pos) {
+            GEN_free_position(pos);
+            pos = 0;
+        }
+    }
+    return pos;
+}
+
+GB_ERROR GEN_write_position(GBDATA *gb_gene, const struct GEN_position *pos) {
+    GB_ERROR  error          = 0;
+    GBDATA   *gb_pos_joined  = GB_entry(gb_gene, "pos_joined");
+    GBDATA   *gb_pos_certain = GB_entry(gb_gene, "pos_certain");
+    GBDATA   *gb_pos_start;
+    GBDATA   *gb_pos_stop;
+    GBDATA   *gb_pos_complement;
+    int       p;
+
+    gb_assert(pos);
+
+    gb_pos_start             = GB_search(gb_gene, "pos_start", GB_STRING);
+    if (!gb_pos_start) error = GB_get_error();
+
+    if (!error) {
+        gb_pos_stop             = GB_search(gb_gene, "pos_stop", GB_STRING);
+        if (!gb_pos_stop) error = GB_get_error();
+    }
+    if (!error) {
+        gb_pos_complement             = GB_search(gb_gene, "pos_complement", GB_STRING);
+        if (!gb_pos_complement) error = GB_get_error();
+    }
+
+    if (!error) {
+        if (pos->start_uncertain) {
+            if (!gb_pos_certain) {
+                gb_pos_certain             = GB_search(gb_gene, "pos_certain", GB_STRING);
+                if (!gb_pos_certain) error = GB_get_error();
+            }
+        }
+        else {
+            if (gb_pos_certain) {
+                error          = GB_delete(gb_pos_certain);
+                gb_pos_certain = 0;
+            }
+        }
+    }
+
+#if defined(DEBUG)
+    /* test data */
+    if (!error) {
+        for (p = 0; p<pos->parts; ++p) {
+            char c;
+
+            c = pos->complement[p]; gb_assert(c == 0 || c == 1);
+            gb_assert(pos->start_pos[p] <= pos->stop_pos[p]);
+            if (pos->start_uncertain) {
+                c = pos->start_uncertain[p]; gb_assert(strchr("<=>+", c) != 0);
+                c = pos->stop_uncertain[p]; gb_assert(strchr("<=>-", c) != 0);
+            }
+        }
+    }
+#endif /* DEBUG */
+
+    if (!error) {
+        if (pos->parts == 1) {
+            if (gb_pos_joined) error = GB_delete(gb_pos_joined);
+            
+            if (!error) error = GB_write_string(gb_pos_start,      GBS_global_string("%u", pos->start_pos[0]));
+            if (!error) error = GB_write_string(gb_pos_stop,       GBS_global_string("%u", pos->stop_pos[0]));
+            if (!error) error = GB_write_string(gb_pos_complement, GBS_global_string("%c", pos->complement[0]+'0'));
+
+            if (!error && gb_pos_certain) {
+                error = GB_write_string(gb_pos_certain, GBS_global_string("%c%c", pos->start_uncertain[0], pos->stop_uncertain[0]));
+            }
+        }
+        else {
+            if (!gb_pos_joined) {
+                gb_pos_joined             = GB_search(gb_gene, "pos_joined", GB_INT);
+                if (!gb_pos_joined) error = GB_get_error();
+            }
+            if (!error) error = GB_write_int(gb_pos_joined, pos->parts * (pos->joinable ? 1 : -1)); // neg. parts means not joinable
+
+            if (!error) {
+                void *start      = GBS_stropen(12*pos->parts);
+                void *stop       = GBS_stropen(12*pos->parts);
+                void *complement = GBS_stropen(2*pos->parts);
+                void *uncertain  = GBS_stropen(3*pos->parts);
+
+                for (p = 0; p<pos->parts; ++p) {
+                    if (p>0) {
+                        GBS_chrcat(start, ',');
+                        GBS_chrcat(stop, ',');
+                        GBS_chrcat(complement, ',');
+                        GBS_chrcat(uncertain, ',');
+                    }
+                    GBS_strcat(start, GBS_global_string("%u", pos->start_pos[p]));
+                    GBS_strcat(stop,  GBS_global_string("%u", pos->stop_pos[p]));
+                    GBS_chrcat(complement, pos->complement[p]+'0');
+                    if (gb_pos_certain) {
+                        GBS_chrcat(uncertain, pos->start_uncertain[p]);
+                        GBS_chrcat(uncertain, pos->stop_uncertain[p]);
+                    }
+                }
+
+                char *sstart      = GBS_strclose(start);
+                char *sstop       = GBS_strclose(stop);
+                char *scomplement = GBS_strclose(complement);
+                char *suncertain  = GBS_strclose(uncertain);
+
+                error             = GB_write_string(gb_pos_start, sstart);
+                if (!error) error = GB_write_string(gb_pos_stop, sstop);
+                if (!error) error = GB_write_string(gb_pos_complement, scomplement);
+                if (!error && gb_pos_certain) error = GB_write_string(gb_pos_certain, suncertain);
+
+                free(suncertain);
+                free(scomplement);
+                free(sstop);
+                free(sstart);
+            }
+        }
+    }
+
+    return error;
+}
+
+static struct GEN_position *location2sort = 0;
+
+static int cmp_location_parts(const void *v1, const void *v2) {
+    int i1 = *(int*)v1;
+    int i2 = *(int*)v2;
+
+    int cmp = location2sort->start_pos[i1]-location2sort->start_pos[i2];
+    if (!cmp) {
+        cmp = location2sort->stop_pos[i1]-location2sort->stop_pos[i2];
+    }
+    return cmp;
+}
+
+void GEN_sortAndMergeLocationParts(struct GEN_position *location) {
+    // Note: makes location partly invalid (only start_pos + stop_pos are valid afterwards)
+    int  parts = location->parts;
+    int *idx   = (int*)malloc(parts*sizeof(*idx)); // idx[newpos] = oldpos
+    int  i, p;
+
+    for (p = 0; p<parts; ++p) idx[p] = p;
+
+    location2sort = location;
+    qsort(idx, parts, sizeof(*idx), cmp_location_parts);
+    location2sort = 0;
+
+    for (p = 0; p<parts; ++p) {
+        i = idx[p];
+
+#define swap(a, b, type) do { type tmp = (a); (a) = (b); (b) = (tmp); } while (0)
+
+        if (i != p) {
+            swap(location->start_pos[i],  location->start_pos[p],  size_t);
+            swap(location->stop_pos[i],   location->stop_pos[p],   size_t);
+            swap(idx[i], idx[p], int);
+        }
+    }
+
+#if defined(DEBUG) && 0
+    printf("Locations sorted:\n");
+    for (p = 0; p<parts; ++p) {
+        printf("  [%i] %i - %i %i\n", p, location->start_pos[p], location->stop_pos[p], (int)(location->complement[p]));
+    }
+#endif /* DEBUG */
+    
+    i = 0;
+    for (p = 1; p<parts; p++) {
+        if ((location->stop_pos[i]+1) >= location->start_pos[p]) {
+            // parts overlap or are directly consecutive
+
+            location->stop_pos[i]  = location->stop_pos[p];
+        }
+        else {
+            i++;
+            location->start_pos[i] = location->start_pos[p];
+            location->stop_pos[i]  = location->stop_pos[p];
+        }
+    }
+    location->parts = i+1;
+
+#if defined(DEBUG) && 0
+    parts = location->parts;
+    printf("Locations merged:\n");
+    for (p = 0; p<parts; ++p) {
+        printf("  [%i] %i - %i %i\n", p, location->start_pos[p], location->stop_pos[p], (int)(location->complement[p]));
+    }
+#endif /* DEBUG */
+
+    free(idx);
+}
+
+
 
 //  -----------------------------------------
 //      test if species is pseudo-species
@@ -369,3 +783,11 @@ GBDATA *GEN_next_marked_organism(GBDATA *gb_organism) {
     return gb_organism;
 }
 
+char *GEN_global_gene_identifier(GBDATA *gb_gene, GBDATA *gb_organism) {
+    if (!gb_organism) {
+        gb_organism = GB_get_father(GB_get_father(gb_gene));
+        gb_assert(gb_organism);
+    }
+
+    return GBS_global_string_copy("%s/%s", GBT_read_name(gb_organism), GBT_read_name(gb_gene));
+}

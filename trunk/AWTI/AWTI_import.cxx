@@ -19,7 +19,7 @@
 #include <awt_changekey.hxx>
 #include <awt_sel_boxes.hxx>
 #include <GEN.hxx>
-#include <GAGenomImport.h>
+#include <GenomeImport.h>
 #include <AW_rename.hxx>
 #include <awti_import.hxx>
 #include <awti_imp_local.hxx>
@@ -112,7 +112,7 @@ AW_BOOL awtc_read_string_pair(FILE *in, char *&s1, char *&s2, size_t& lineNr) {
 }
 
 
-GB_ERROR awtc_read_import_format(char *file) {
+GB_ERROR awtc_read_import_format(const char *file) {
     GB_ERROR  error    = 0;
     char     *fullfile = AWT_unfold_path(file,"ARBHOME");
     FILE     *in       = fopen(fullfile,"r");
@@ -822,13 +822,15 @@ GB_ERROR awtc_read_data(char *ali_name)
 
 void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing database
 {
-    AW_root *awr         = aww->get_root();
-    bool     is_genom_db = false;
+    AW_root *awr                     = aww->get_root();
+    bool     is_genom_db             = false;
+    bool     delete_db_type_if_error = false; // delete db type (genome/normal) in case of error ?
     {
         bool           read_genom_db = (awr->awar(AWAR_READ_GENOM_DB)->read_int() != IMP_PLAIN_SEQUENCE);
         GB_transaction ta(GB_MAIN);
-        
-        is_genom_db = GEN_is_genome_db(GB_MAIN, read_genom_db);
+
+        delete_db_type_if_error = (GB_entry(GB_MAIN, GENOM_DB_TYPE) == 0);
+        is_genom_db             = GEN_is_genome_db(GB_MAIN, read_genom_db);
 
         if (read_genom_db!=is_genom_db) {
             if (is_genom_db) {
@@ -842,37 +844,10 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
     }
 
     GB_ERROR error = 0;
-    char *file = 0;
-    if (!is_genom_db) {
-        file = awr->awar(AWAR_FORM"/file_name")->read_string();
-        if (!strlen(file)) {
-            delete file;
-            aw_message("Please select a form");
-            return;
-        }
-
-        error = awtc_read_import_format(file);
-        if (error) {
-            delete awtcig.ifo; awtcig.ifo = 0;
-            aw_message(error);
-            return;
-        }
-
-        if (awtcig.ifo->new_format) {
-            awtcig.ifo2 = awtcig.ifo;
-            awtcig.ifo = 0;
-            error = awtc_read_import_format(awtcig.ifo2->new_format);
-            if (error) {
-                delete awtcig.ifo; awtcig.ifo = 0;
-                delete awtcig.ifo2; awtcig.ifo2 = 0;
-                aw_message(error);
-                return;
-            }
-        }
-    }
 
     GB_change_my_security(GB_MAIN,6,"");
-    GB_begin_transaction(GB_MAIN);                      //first transaction start
+    
+    GB_begin_transaction(GB_MAIN); // first transaction start
     char *ali_name;
     {
         char *ali = awr->awar(AWAR_ALI)->read_string();
@@ -900,7 +875,7 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
 
     if (!error) {
         if (is_genom_db) {
-            // import genome flatfile into ARB-genome database :
+            // import genome flatfile into ARB-genome database:
 
             char  *mask   = awr->awar(AWAR_FILE)->read_string();
             char **fnames = GBS_read_dir(mask, NULL);
@@ -915,11 +890,11 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
 
                 for (count = 0; fnames[count]; ++count) ; // count filenames
 
-                GBDATA             *gb_species_data = GB_search(GB_MAIN, "species_data", GB_CREATE_CONTAINER);
-                UniqueNameDetector  und_species(gb_species_data, count*10);
+                GBDATA *gb_species_data = GB_search(GB_MAIN, "species_data", GB_CREATE_CONTAINER);
+                ImportSession import_session(gb_species_data, count*10);
 
                 // close the above transaction and do each importfile in separate transaction
-                // to avoid that all imports are undone by transaction abort in case of error
+                // to avoid that all imports are undone by transaction abort happening in case of error
                 GB_commit_transaction(GB_MAIN);
 
                 aw_openstatus("Reading input files");
@@ -929,13 +904,13 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
 
                     GB_begin_transaction(GB_MAIN);
 
-                    // error_this_file = GI_importGenomeFile(gb_species_data, fnames[count], ali_name, und_species);
-                    error_this_file = GI_importGenomeFile(GB_MAIN, fnames[count], ali_name);
+                    error_this_file = GI_importGenomeFile(import_session, fnames[count], ali_name);
 
                     if (!error_this_file) {
                         GB_commit_transaction(GB_MAIN);
-                        GB_warning("File '%s' successfully imported", fnames[count]);
+                        // GB_warning("File '%s' successfully imported", fnames[count]);
                         successfull_imports++;
+                        delete_db_type_if_error = false;
                     }
                     else { // error occurred during import
                         error_this_file = GBS_global_string("'%s' not imported\nReason: %s", fnames[count], error_this_file);
@@ -964,92 +939,129 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
         else {
             // import to non-genome ARB-db :
 
-            char *f          = awr->awar(AWAR_FILE)->read_string();
-            awtcig.filenames = GBS_read_dir(f, NULL);
+            {
+                // load import filter: 
+                char *file = awr->awar(AWAR_FORM"/file_name")->read_string();
 
-            if (awtcig.filenames == 0) {
-                error = GB_get_error();
-            }
-            else {
-                if (awtcig.filenames[0] == 0){
-                    error = GB_export_error("Cannot find file '%s'", f);
+                if (!strlen(file)) {
+                    error = "Please select a form";
                 }
                 else {
-                    aw_openstatus("Reading input files");
-                    
-                    error = awtc_read_data(ali_name);
-                    if (error) {
-                        error = GBS_global_string("While reading file '%s':\n%s", awtcig.current_file[-1], error);
+                    error = awtc_read_import_format(file);
+                    if (!error && awtcig.ifo->new_format) {
+                        awtcig.ifo2 = awtcig.ifo;
+                        awtcig.ifo  = 0;
+
+                        error = awtc_read_import_format(awtcig.ifo2->new_format);
+                        if (!error) {
+                            if (awtcig.ifo->new_format) {
+                                error = "Only one level of form nesting (NEW_FORMAT) allowed";
+                            }
+                        }
+                    }
+                }
+                free(file);
+            }
+
+            {
+                char *f          = awr->awar(AWAR_FILE)->read_string();
+                awtcig.filenames = GBS_read_dir(f,0);
+                free(f);
+            }
+
+            if (awtcig.filenames[0] == 0){
+                error = GB_export_error("Cannot find selected file(s)");
+            }
+
+            bool status_open = false;
+            if (!error) {
+                aw_openstatus("Reading input files");
+                status_open = true;
+                
+                error = awtc_read_data(ali_name);
+
+                if (error) {
+                    error = GBS_global_string("Error: %s reading file %s", error, awtcig.current_file[-1]);
+                }
+                else {
+                    if (awtcig.ifo->noautonames || (awtcig.ifo2 && awtcig.ifo2->noautonames)) {
+                        ask_generate_names = false;
                     }
                     else {
-                        if (awtcig.ifo->noautonames || (awtcig.ifo2 && awtcig.ifo2->noautonames)) {
-                            ask_generate_names = false;
-                        }
-                        else {
-                            ask_generate_names = true;
-                        }
-
-                        delete awtcig.ifo; awtcig.ifo   = 0;
-                        delete awtcig.ifo2; awtcig.ifo2 = 0;
-
-                        if (awtcig.in)  fclose(awtcig.in);
-                        awtcig.in = 0;
+                        ask_generate_names = true;
                     }
-                    aw_closestatus();
                 }
-                GBT_free_names(awtcig.filenames);
             }
+
+            delete awtcig.ifo; awtcig.ifo = 0;
+            delete awtcig.ifo2; awtcig.ifo2 = 0;
+
+            if (awtcig.in) {
+                fclose(awtcig.in);
+                awtcig.in = 0;
+            }
+            
+            GBT_free_names(awtcig.filenames);
             awtcig.filenames    = 0;
             awtcig.current_file = 0;
 
-            free(f);
+            if (status_open) aw_closestatus();
         }
     }
     free(ali_name);
 
+    bool call_func = true; // shall awtcig.func be called ? 
     if (error) {
-        aw_message(error);
         GB_abort_transaction(GB_MAIN);
-        return;
+
+        if (delete_db_type_if_error) {
+            // delete db type, if it was initialized above
+            // (avoids 'can't import'-error, if file-type (genome-file/species-file) is changed after a failed try)
+            GB_transaction  ta(GB_MAIN);
+            GBDATA         *db_type = GB_entry(GB_MAIN, GENOM_DB_TYPE);
+            if (db_type) GB_delete(db_type);
+        }
+
+        call_func = false;
     }
+    else {
+        aww->hide(); // import window stays open in case of error
 
-    aww->hide();
+        aw_openstatus("Checking and Scanning database");
+        aw_status("Pass 1: Check entries");
 
-    aw_openstatus("Checking and Scanning database");
-    aw_status("Pass 1: Check entries");
+        // scan for hidden/unknown fields :
+        awt_selection_list_rescan(GB_MAIN, AWT_NDS_FILTER, AWT_RS_UPDATE_FIELDS);
+        if (is_genom_db) awt_gene_field_selection_list_rescan(GB_MAIN, AWT_NDS_FILTER, AWT_RS_UPDATE_FIELDS);
 
-    // scan for hidden/unknown fields :
-    awt_selection_list_rescan(GB_MAIN, AWT_NDS_FILTER, AWT_RS_UPDATE_FIELDS);
-    if (is_genom_db) awt_gene_field_selection_list_rescan(GB_MAIN, AWT_NDS_FILTER, AWT_RS_UPDATE_FIELDS);
+        GBT_mark_all(GB_MAIN,1);
+        sleep(1);
+        aw_status("Pass 2: Check sequence lengths");
+        GBT_check_data(GB_MAIN,0);
+        sleep(1);
 
-    GBT_mark_all(GB_MAIN,1);
-    sleep(1);
-    aw_status("Pass 2: Check sequence lengths");
-    GBT_check_data(GB_MAIN,0);
-    sleep(1);
+        GB_commit_transaction(GB_MAIN);
 
-    GB_commit_transaction(GB_MAIN);
-
-    if (ask_generate_names) {
-        if (aw_question("You may generate short names using the full_name and accession entry of the species",
-                        "Generate new short names (recommended),Use found names")==0)
-        {
-            aw_status("Pass 3: Generate unique names");
-            error = AW_select_nameserver(GB_MAIN, awtcig.gb_other_main);
-            if (!error) {
-                error = AWTC_pars_names(GB_MAIN,1);
+        if (ask_generate_names) {
+            if (aw_question("You may generate short names using the full_name and accession entry of the species",
+                            "Generate new short names (recommended),Use found names")==0)
+            {
+                aw_status("Pass 3: Generate unique names");
+                error = AW_select_nameserver(GB_MAIN, awtcig.gb_other_main);
+                if (!error) {
+                    error = AWTC_pars_names(GB_MAIN,1);
+                }
             }
         }
+
+        aw_closestatus();
     }
 
-    aw_closestatus();
     if (error) aw_message(error);
-
-    GB_begin_transaction(GB_MAIN);
+    
     GB_change_my_security(GB_MAIN,0,"");
-    GB_commit_transaction(GB_MAIN);
 
-    awtcig.func(awr, awtcig.cd1,awtcig.cd2);
+    if (call_func) awtcig.func(awr, awtcig.cd1,awtcig.cd2);
 }
 
 class AliNameAndType {
