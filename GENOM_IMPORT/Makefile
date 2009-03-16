@@ -1,36 +1,41 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
 
-.SUFFIXES: .o .cpp .depend
+.SUFFIXES: .o .cxx .depend
 
 # --------------------------------------------------------------------------------
 
 # objects for library
 CPP_OBJECTS =   \
-		GAARB.o \
-		GALogger.o \
-		GAFile.o \
-		GAEmbl.o \
-		GADDBJ.o \
-		GAGenBank.o \
-		GASourceFileSwitcher.o \
-		GAGenomImport.o \
+		GenomeImport.o \
+		Importer.o \
+		DBwriter.o \
+		SequenceBuffer.o \
+		MetaInfo.o \
+		Feature.o \
+		Location.o \
+		tools.o \
 
 # --------------------------------------------------------------------------------
 
 $(MAIN): $(CPP_OBJECTS)
-	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
+	@$(ARBHOME)/SOURCE_TOOLS/binuptodate.pl $(MAIN) $(CPP_OBJECTS) || ( \
+		echo "$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)"; \
+		$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS) ; \
+	)
 
-.cpp.o:
+.cxx.o:
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES)
 
 .c.o:
 	$(ACC) $(cflags) -c $< $(CPPINCLUDES)
 
 clean:
-	rm -f $(CPP_OBJECTS) *.a
-ifeq ($(CREATE_TEST_EXECUTABLE),1)
-	rm -f test_import
-endif
+	-rm *.o
+	-rm *.a
+	-rm *.bak
+	-rm *~
+	-rm *#
+	-rm *\%
 
 #.IGNORE:
 #	clean
@@ -42,7 +47,7 @@ depends: $(DEPENDS)
 $(DEPENDS): depend.init
 depend.init:
 	$(MAKEDEPEND) $(MAKEDEPENDFLAGS) 2>/dev/null # remove dependencies
-.cpp.depend:
+.cxx.depend:
 	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
 
 # DO NOT DELETE
@@ -50,147 +55,133 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
-GAARB.o: GAARB.h
-GAARB.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
-GAARB.o: $(ARBHOME)/INCLUDE/ad_prot.h
-GAARB.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-GAARB.o: $(ARBHOME)/INCLUDE/adGene.h
-GAARB.o: $(ARBHOME)/INCLUDE/arb_assert.h
-GAARB.o: $(ARBHOME)/INCLUDE/arbdb.h
-GAARB.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-GAARB.o: $(ARBHOME)/INCLUDE/arbdbt.h
-GAARB.o: $(ARBHOME)/INCLUDE/attributes.h
-GAARB.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-GAARB.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-GAARB.o: $(ARBHOME)/INCLUDE/aw_position.hxx
-GAARB.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
-GAARB.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-GAARB.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-GAARB.o: $(ARBHOME)/INCLUDE/awt.hxx
+DBwriter.o: DBwriter.h
+DBwriter.o: defs.h
+DBwriter.o: Feature.h
+DBwriter.o: GenomeImport.h
+DBwriter.o: Importer.h
+DBwriter.o: Location.h
+DBwriter.o: MetaInfo.h
+DBwriter.o: MetaTag.h
+DBwriter.o: SequenceBuffer.h
+DBwriter.o: types.h
+DBwriter.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+DBwriter.o: $(ARBHOME)/INCLUDE/ad_prot.h
+DBwriter.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+DBwriter.o: $(ARBHOME)/INCLUDE/adGene.h
+DBwriter.o: $(ARBHOME)/INCLUDE/arb_assert.h
+DBwriter.o: $(ARBHOME)/INCLUDE/arbdb.h
+DBwriter.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+DBwriter.o: $(ARBHOME)/INCLUDE/arbdbt.h
+DBwriter.o: $(ARBHOME)/INCLUDE/arbtools.h
+DBwriter.o: $(ARBHOME)/INCLUDE/attributes.h
+DBwriter.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+DBwriter.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+DBwriter.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+DBwriter.o: $(ARBHOME)/INCLUDE/aw_question.hxx
+DBwriter.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
+DBwriter.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+DBwriter.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+DBwriter.o: $(ARBHOME)/INCLUDE/awt_translate.hxx
+DBwriter.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+DBwriter.o: $(ARBHOME)/INCLUDE/GEN.hxx
+DBwriter.o: $(ARBHOME)/INCLUDE/smartptr.h
 
-GADDBJ.o: GAARB.h
-GADDBJ.o: GADDBJ.h
-GADDBJ.o: GAFile.h
-GADDBJ.o: GALogger.h
-GADDBJ.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
-GADDBJ.o: $(ARBHOME)/INCLUDE/ad_prot.h
-GADDBJ.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-GADDBJ.o: $(ARBHOME)/INCLUDE/adGene.h
-GADDBJ.o: $(ARBHOME)/INCLUDE/arb_assert.h
-GADDBJ.o: $(ARBHOME)/INCLUDE/arbdb.h
-GADDBJ.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-GADDBJ.o: $(ARBHOME)/INCLUDE/arbdbt.h
-GADDBJ.o: $(ARBHOME)/INCLUDE/attributes.h
-GADDBJ.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-GADDBJ.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-GADDBJ.o: $(ARBHOME)/INCLUDE/aw_position.hxx
-GADDBJ.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
-GADDBJ.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-GADDBJ.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-GADDBJ.o: $(ARBHOME)/INCLUDE/awt.hxx
+Feature.o: defs.h
+Feature.o: Feature.h
+Feature.o: Location.h
+Feature.o: types.h
+Feature.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+Feature.o: $(ARBHOME)/INCLUDE/arb_assert.h
+Feature.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+Feature.o: $(ARBHOME)/INCLUDE/arbtools.h
+Feature.o: $(ARBHOME)/INCLUDE/attributes.h
+Feature.o: $(ARBHOME)/INCLUDE/smartptr.h
 
-GAEmbl.o: GAARB.h
-GAEmbl.o: GAEmbl.h
-GAEmbl.o: GAFile.h
-GAEmbl.o: GALogger.h
-GAEmbl.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
-GAEmbl.o: $(ARBHOME)/INCLUDE/ad_prot.h
-GAEmbl.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-GAEmbl.o: $(ARBHOME)/INCLUDE/adGene.h
-GAEmbl.o: $(ARBHOME)/INCLUDE/arb_assert.h
-GAEmbl.o: $(ARBHOME)/INCLUDE/arbdb.h
-GAEmbl.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-GAEmbl.o: $(ARBHOME)/INCLUDE/arbdbt.h
-GAEmbl.o: $(ARBHOME)/INCLUDE/attributes.h
-GAEmbl.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-GAEmbl.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-GAEmbl.o: $(ARBHOME)/INCLUDE/aw_position.hxx
-GAEmbl.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
-GAEmbl.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-GAEmbl.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-GAEmbl.o: $(ARBHOME)/INCLUDE/awt.hxx
+GenomeImport.o: DBwriter.h
+GenomeImport.o: defs.h
+GenomeImport.o: Feature.h
+GenomeImport.o: GenomeImport.h
+GenomeImport.o: Importer.h
+GenomeImport.o: Location.h
+GenomeImport.o: MetaInfo.h
+GenomeImport.o: MetaTag.h
+GenomeImport.o: SequenceBuffer.h
+GenomeImport.o: tools.h
+GenomeImport.o: types.h
+GenomeImport.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+GenomeImport.o: $(ARBHOME)/INCLUDE/ad_prot.h
+GenomeImport.o: $(ARBHOME)/INCLUDE/arb_assert.h
+GenomeImport.o: $(ARBHOME)/INCLUDE/arbdb.h
+GenomeImport.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+GenomeImport.o: $(ARBHOME)/INCLUDE/arbtools.h
+GenomeImport.o: $(ARBHOME)/INCLUDE/attributes.h
+GenomeImport.o: $(ARBHOME)/INCLUDE/aw_question.hxx
+GenomeImport.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
+GenomeImport.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+GenomeImport.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+GenomeImport.o: $(ARBHOME)/INCLUDE/smartptr.h
 
-GAFile.o: GAARB.h
-GAFile.o: GAFile.h
-GAFile.o: GALogger.h
-GAFile.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
-GAFile.o: $(ARBHOME)/INCLUDE/ad_prot.h
-GAFile.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-GAFile.o: $(ARBHOME)/INCLUDE/adGene.h
-GAFile.o: $(ARBHOME)/INCLUDE/arb_assert.h
-GAFile.o: $(ARBHOME)/INCLUDE/arbdb.h
-GAFile.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-GAFile.o: $(ARBHOME)/INCLUDE/arbdbt.h
-GAFile.o: $(ARBHOME)/INCLUDE/attributes.h
-GAFile.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-GAFile.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-GAFile.o: $(ARBHOME)/INCLUDE/aw_position.hxx
-GAFile.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
-GAFile.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-GAFile.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-GAFile.o: $(ARBHOME)/INCLUDE/awt.hxx
+Importer.o: DBwriter.h
+Importer.o: defs.h
+Importer.o: Feature.h
+Importer.o: GenomeImport.h
+Importer.o: Importer.h
+Importer.o: Location.h
+Importer.o: MetaInfo.h
+Importer.o: MetaTag.h
+Importer.o: SequenceBuffer.h
+Importer.o: tools.h
+Importer.o: types.h
+Importer.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+Importer.o: $(ARBHOME)/INCLUDE/ad_prot.h
+Importer.o: $(ARBHOME)/INCLUDE/arb_assert.h
+Importer.o: $(ARBHOME)/INCLUDE/arbdb.h
+Importer.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+Importer.o: $(ARBHOME)/INCLUDE/arbtools.h
+Importer.o: $(ARBHOME)/INCLUDE/attributes.h
+Importer.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+Importer.o: $(ARBHOME)/INCLUDE/smartptr.h
 
-GAGenBank.o: GAARB.h
-GAGenBank.o: GAFile.h
-GAGenBank.o: GAGenBank.h
-GAGenBank.o: GALogger.h
-GAGenBank.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
-GAGenBank.o: $(ARBHOME)/INCLUDE/ad_prot.h
-GAGenBank.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-GAGenBank.o: $(ARBHOME)/INCLUDE/adGene.h
-GAGenBank.o: $(ARBHOME)/INCLUDE/arb_assert.h
-GAGenBank.o: $(ARBHOME)/INCLUDE/arbdb.h
-GAGenBank.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-GAGenBank.o: $(ARBHOME)/INCLUDE/arbdbt.h
-GAGenBank.o: $(ARBHOME)/INCLUDE/attributes.h
-GAGenBank.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-GAGenBank.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-GAGenBank.o: $(ARBHOME)/INCLUDE/aw_position.hxx
-GAGenBank.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
-GAGenBank.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-GAGenBank.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-GAGenBank.o: $(ARBHOME)/INCLUDE/awt.hxx
+Location.o: defs.h
+Location.o: Location.h
+Location.o: tools.h
+Location.o: types.h
+Location.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+Location.o: $(ARBHOME)/INCLUDE/ad_prot.h
+Location.o: $(ARBHOME)/INCLUDE/adGene.h
+Location.o: $(ARBHOME)/INCLUDE/arb_assert.h
+Location.o: $(ARBHOME)/INCLUDE/arbdb.h
+Location.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+Location.o: $(ARBHOME)/INCLUDE/arbtools.h
+Location.o: $(ARBHOME)/INCLUDE/attributes.h
+Location.o: $(ARBHOME)/INCLUDE/smartptr.h
 
-GAGenomImport.o: GAARB.h
-GAGenomImport.o: GADDBJ.h
-GAGenomImport.o: GAEmbl.h
-GAGenomImport.o: GAFile.h
-GAGenomImport.o: GAGenBank.h
-GAGenomImport.o: GALogger.h
-GAGenomImport.o: GASourceFileSwitcher.h
-GAGenomImport.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
-GAGenomImport.o: $(ARBHOME)/INCLUDE/ad_prot.h
-GAGenomImport.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-GAGenomImport.o: $(ARBHOME)/INCLUDE/adGene.h
-GAGenomImport.o: $(ARBHOME)/INCLUDE/arb_assert.h
-GAGenomImport.o: $(ARBHOME)/INCLUDE/arbdb.h
-GAGenomImport.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-GAGenomImport.o: $(ARBHOME)/INCLUDE/arbdbt.h
-GAGenomImport.o: $(ARBHOME)/INCLUDE/attributes.h
-GAGenomImport.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-GAGenomImport.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-GAGenomImport.o: $(ARBHOME)/INCLUDE/aw_position.hxx
-GAGenomImport.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
-GAGenomImport.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-GAGenomImport.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-GAGenomImport.o: $(ARBHOME)/INCLUDE/awt.hxx
+MetaInfo.o: defs.h
+MetaInfo.o: MetaInfo.h
+MetaInfo.o: MetaTag.h
+MetaInfo.o: types.h
+MetaInfo.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+MetaInfo.o: $(ARBHOME)/INCLUDE/arb_assert.h
+MetaInfo.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+MetaInfo.o: $(ARBHOME)/INCLUDE/arbtools.h
+MetaInfo.o: $(ARBHOME)/INCLUDE/attributes.h
 
-GALogger.o: GALogger.h
-GALogger.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
-GALogger.o: $(ARBHOME)/INCLUDE/ad_prot.h
-GALogger.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-GALogger.o: $(ARBHOME)/INCLUDE/adGene.h
-GALogger.o: $(ARBHOME)/INCLUDE/arb_assert.h
-GALogger.o: $(ARBHOME)/INCLUDE/arbdb.h
-GALogger.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-GALogger.o: $(ARBHOME)/INCLUDE/arbdbt.h
-GALogger.o: $(ARBHOME)/INCLUDE/attributes.h
-GALogger.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-GALogger.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-GALogger.o: $(ARBHOME)/INCLUDE/aw_position.hxx
-GALogger.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
-GALogger.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-GALogger.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-GALogger.o: $(ARBHOME)/INCLUDE/awt.hxx
+SequenceBuffer.o: defs.h
+SequenceBuffer.o: SequenceBuffer.h
+SequenceBuffer.o: types.h
+SequenceBuffer.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+SequenceBuffer.o: $(ARBHOME)/INCLUDE/arb_assert.h
+SequenceBuffer.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+SequenceBuffer.o: $(ARBHOME)/INCLUDE/arbtools.h
+SequenceBuffer.o: $(ARBHOME)/INCLUDE/attributes.h
+SequenceBuffer.o: $(ARBHOME)/INCLUDE/smartptr.h
 
-GASourceFileSwitcher.o: GASourceFileSwitcher.h
+tools.o: defs.h
+tools.o: tools.h
+tools.o: types.h
+tools.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+tools.o: $(ARBHOME)/INCLUDE/arb_assert.h
+tools.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+tools.o: $(ARBHOME)/INCLUDE/arbtools.h
+tools.o: $(ARBHOME)/INCLUDE/attributes.h

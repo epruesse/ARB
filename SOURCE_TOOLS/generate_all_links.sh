@@ -199,7 +199,7 @@ symlink ../DIST/dist.hxx INCLUDE/dist.hxx &&
 symlink ../EDIT4/ed4_extern.hxx INCLUDE/ed4_extern.hxx &&
 symlink ../GENOM/EXP.hxx INCLUDE/EXP.hxx &&
 symlink ../GENOM/GEN.hxx INCLUDE/GEN.hxx &&
-symlink ../GENOM_IMPORT/GAGenomImport.h INCLUDE/GAGenomImport.h &&
+symlink ../GENOM_IMPORT/GenomeImport.h INCLUDE/GenomeImport.h &&
 symlink ../ISLAND_HOPPING/island_hopping.h INCLUDE/island_hopping.h &&
 symlink ../MERGE/mg_merge.hxx INCLUDE/mg_merge.hxx &&
 symlink ../NTREE/ntree.hxx INCLUDE/ntree.hxx &&

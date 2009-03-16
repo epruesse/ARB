@@ -398,7 +398,6 @@ NT_extern.o: nt_cb.hxx
 NT_extern.o: nt_concatenate.hxx
 NT_extern.o: NT_dbrepair.hxx
 NT_extern.o: nt_edconf.hxx
-NT_extern.o: nt_import.hxx
 NT_extern.o: nt_internal.h
 NT_extern.o: nt_join.hxx
 NT_extern.o: nt_sort.hxx
@@ -453,7 +452,6 @@ NT_extern.o: $(ARBHOME)/INCLUDE/st_window.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/svn_revision.h
 
 NT_import.o: ad_spec.hxx
-NT_import.o: nt_import.hxx
 NT_import.o: nt_internal.h
 NT_import.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 NT_import.o: $(ARBHOME)/INCLUDE/ad_prot.h

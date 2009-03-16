@@ -94,6 +94,7 @@ NOT4PERL GB_ERROR GBT_with_stored_species P_((GBDATA *gb_main, const char *store
 GB_ERROR GBT_restore_marked_species P_((GBDATA *gb_main, const char *stored_marked));
 GBDATA *GBT_read_sequence P_((GBDATA *gb_species, const char *aliname));
 GB_CSTR GBT_read_name P_((GBDATA *gb_item));
+const char *GBT_get_name P_((GBDATA *gb_item));
 char *GBT_get_default_alignment P_((GBDATA *gb_main));
 GB_ERROR GBT_set_default_alignment P_((GBDATA *gb_main, const char *alignment_name));
 char *GBT_get_default_helix P_((GBDATA *gb_main));
@@ -129,6 +130,7 @@ NOT4PERL long *GBT_readOrCreate_int P_((GBDATA *gb_container, const char *fieldp
 NOT4PERL double *GBT_readOrCreate_float P_((GBDATA *gb_container, const char *fieldpath, double default_value));
 GB_ERROR GBT_write_string P_((GBDATA *gb_container, const char *fieldpath, const char *content));
 GB_ERROR GBT_write_int P_((GBDATA *gb_container, const char *fieldpath, long content));
+GB_ERROR GBT_write_byte P_((GBDATA *gb_container, const char *fieldpath, unsigned char content));
 GB_ERROR GBT_write_float P_((GBDATA *gb_container, const char *fieldpath, double content));
 GBDATA *GB_test_link_follower P_((GBDATA *gb_main, GBDATA *gb_link, const char *link));
 GBDATA *GBT_open P_((const char *path, const char *opent, const char *disabled_path));
@@ -136,8 +138,8 @@ GB_ERROR GBT_remote_action P_((GBDATA *gb_main, const char *application, const c
 GB_ERROR GBT_remote_awar P_((GBDATA *gb_main, const char *application, const char *awar_name, const char *value));
 const char *GBT_remote_read_awar P_((GBDATA *gb_main, const char *application, const char *awar_name));
 const char *GBT_remote_touch_awar P_((GBDATA *gb_main, const char *application, const char *awar_name));
-NOT4PERL GB_ERROR GBT_get_gene_positions P_((GBDATA *gb_gene, int whichPos, long *pos_begin, long *pos_end));
-char *GBT_read_gene_sequence P_((GBDATA *gb_gene, GB_BOOL use_revComplement));
+NOT4PERL char *GBT_read_gene_sequence_and_length P_((GBDATA *gb_gene, GB_BOOL use_revComplement, char partSeparator, int *gene_length));
+char *GBT_read_gene_sequence P_((GBDATA *gb_gene, GB_BOOL use_revComplement, char partSeparator));
 char *GB_generate_notification P_((GBDATA *gb_main, void (*cb )(const char *message, void *client_data ), const char *message, void *client_data));
 GB_ERROR GB_remove_last_notification P_((GBDATA *gb_main));
 GB_ERROR GB_notify P_((GBDATA *gb_main, int id, const char *message));

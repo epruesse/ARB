@@ -250,10 +250,10 @@ void GEN_create_nds_vars(AW_root *aw_root,AW_default awdef,GBDATA *gb_main, GB_C
             gb_key_text = GB_create(gb_viewkey,"key_text",GB_STRING);
             switch(i){
                 case 1:
-                    GB_write_string(gb_key_text,"pos_begin");
+                    GB_write_string(gb_key_text,"pos_start");
                     break;
                 case 2:
-                    GB_write_string(gb_key_text,"pos_end");
+                    GB_write_string(gb_key_text,"pos_stop");
                     break;
                 case 3:
                     GB_write_string(gb_key_text,"product");

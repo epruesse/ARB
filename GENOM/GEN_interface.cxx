@@ -212,7 +212,9 @@ void GEN_update_GENE_CONTENT(GBDATA *gb_main, AW_root *awr) {
     bool            clear   = true;
 
     if (gb_gene) {
-        char *gene_content = GBT_read_gene_sequence(gb_gene, GB_FALSE); // ignore complement here (to highlight gene in ARB_EDIT4)
+        // ignore complement here (to highlight gene in ARB_EDIT4);
+        // separate multiple parts by \n
+        char *gene_content = GBT_read_gene_sequence(gb_gene, GB_FALSE, '\n');
 
         awr->awar(AWAR_GENE_CONTENT)->write_string(gene_content);
         clear = false;
@@ -484,7 +486,7 @@ void gene_create_cb(AW_window *aww){
             error = GBS_global_string("Illegal position(s): %s", pos_error);
         }
         else {
-            gb_dest = GEN_create_gene_rel_gene_data(gb_gene_data, dest);
+            gb_dest = GEN_find_or_create_gene_rel_gene_data(gb_gene_data, dest);
             if (gb_dest) {
                 GBDATA *gb_pos     = GB_create(gb_dest, "pos_begin", GB_INT);
                 if (!gb_pos) error = GB_get_error();

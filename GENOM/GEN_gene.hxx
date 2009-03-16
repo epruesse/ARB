@@ -18,33 +18,34 @@
 //      display classes for ARB_GENE_MAP:
 //  ----------------------------------------
 
-class GEN_root;
-class GEN_graphic;
+class  GEN_root;
+class  GEN_graphic;
+struct GEN_position;
 
 //  -----------------------
 //      class GEN_gene
 //  -----------------------
 class GEN_gene {
 private:
-    GBDATA         *gb_gene;
-    GEN_root       *root;
+    GBDATA              *gb_gene;
+    GEN_root            *root;
     std::string          name;
     mutable std::string  nodeInfo;
-    long            pos1;
-    long            pos2;
-    bool            complement;
+    long                 pos1;
+    long                 pos2;
+    bool                 complement;
 
     //     int       level; // on which "level" the gene is printed
 
     // Note: if a gene is joined from several parts it is represented in several GEN_gene's!
 
     void init(GBDATA *gb_gene_, GEN_root *root_);
-    GB_ERROR load_positions(int part);
+    void load_location(int part, const GEN_position *location);
 
 public:
-    GEN_gene(GBDATA *gb_gene_, GEN_root *root_, GB_ERROR& error);
-    GEN_gene(GBDATA *gb_gene_, GEN_root *root_, int partNumber, int maxParts, GB_ERROR& error);
-    virtual ~GEN_gene();
+    GEN_gene(GBDATA *gb_gene_, GEN_root *root_, const GEN_position *location);
+    GEN_gene(GBDATA *gb_gene_, GEN_root *root_, const GEN_position *location, int partNumber);
+    ~GEN_gene() {}
 
     inline bool operator<(const GEN_gene& other) const {
         long cmp     = pos1-other.pos1;
@@ -90,7 +91,7 @@ private:
 
 public:
     GEN_root(const char *organism_name_, const char *gene_name_, GBDATA *gb_main_, AW_root *aw_root, GEN_graphic *gen_graphic_);
-    virtual ~GEN_root();
+    ~GEN_root() {}
 
     const std::string& GeneName() const { return gene_name; }
     const std::string& OrganismName() const { return organism_name; }

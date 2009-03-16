@@ -281,26 +281,25 @@ static GBDATA *create_gene_species(GBDATA *gb_species_data2, const char *interna
     return gb_species2;
 }
 
-static GB_ERROR create_genelike_entry(const char *internal_name, GBDATA *gb_species_data2, int pos_begin, int pos_end, const char *ali_genome, const char *long_name) {
-    GBDATA *gb_genespecies = create_gene_species(gb_species_data2, internal_name, long_name, pos_begin, ali_genome+pos_begin, pos_end-pos_begin+1);
+static GB_ERROR create_genelike_entry(const char *internal_name, GBDATA *gb_species_data2, int start_pos, int end_pos, const char *ali_genome, const char *long_name) {
+    GBDATA *gb_genespecies = create_gene_species(gb_species_data2, internal_name, long_name, start_pos, ali_genome+start_pos, end_pos-start_pos+1);
     return gb_genespecies ? 0 : GB_get_error();
 }
 
-static GB_ERROR create_intergene(GBDATA *gb_species_data2, int pos_begin, int pos_end, const char *ali_genome, const char *long_gene_name) {
-    if (pos_begin <= pos_end) {
+static GB_ERROR create_intergene(GBDATA *gb_species_data2, int start_pos, int end_pos, const char *ali_genome, const char *long_gene_name) {
+    if (start_pos <= end_pos) {
         char internal_name[128];
-        ++intergene_counter;
-        sprintf(internal_name, "i%x", intergene_counter);
-        return create_genelike_entry(internal_name, gb_species_data2, pos_begin, pos_end, ali_genome, long_gene_name);
+        sprintf(internal_name, "i%x", intergene_counter++);
+        return create_genelike_entry(internal_name, gb_species_data2, start_pos, end_pos, ali_genome, long_gene_name);
     }
     return "Illegal inter-gene positions (start behind end)";
 }
 
-static GB_ERROR create_gene(GBDATA *gb_species_data2, int pos_begin, int pos_end, const char *ali_genome, const char *long_gene_name) {
-    if (pos_begin <= pos_end) {
+static GB_ERROR create_gene(GBDATA *gb_species_data2, int start_pos, int end_pos, const char *ali_genome, const char *long_gene_name) {
+    if (start_pos <= end_pos) {
         char internal_name[128];
         sprintf(internal_name, "n%x", gene_counter++);
-        return create_genelike_entry(internal_name, gb_species_data2, pos_begin, pos_end, ali_genome, long_gene_name);
+        return create_genelike_entry(internal_name, gb_species_data2, start_pos, end_pos, ali_genome, long_gene_name);
     }
     return "Illegal gene positions (start behind end)";
 }
@@ -371,49 +370,21 @@ static GB_ERROR create_splitted_gene(GBDATA *gb_species_data2, PositionPairList&
     return error;
 }
 
-static GB_ERROR read_PositionPair(GBDATA *gb_gene, const char *pos_begin, const char *pos_end, PositionPair& pp) {
-    GB_ERROR  error        = 0;
-    GBDATA   *gb_pos_begin = GB_entry(gb_gene, pos_begin);
-    if (!gb_pos_begin) {
-        error = GBS_global_string("entry '%s' not found", pos_begin);
+static GB_ERROR scan_gene_positions(GBDATA *gb_gene, PositionPairList& part_list) {
+    GB_ERROR      error    = 0;
+    GEN_position *location = GEN_read_position(gb_gene);
+
+    if (!location) {
+        error = GB_get_error();
     }
     else {
-        GBDATA *gb_pos_end = GB_entry(gb_gene, pos_end);
-        if (!gb_pos_end) {
-            error = GBS_global_string("entry '%s' not found", pos_end);
+        GEN_sortAndMergeLocationParts(location);
+        int parts = location->parts;
+        for (int p = 0; p<parts; ++p) {
+            part_list.push_back(PositionPair(location->start_pos[p]-1, location->stop_pos[p]-1));
         }
-        else {
-            pp.begin = GB_read_int(gb_pos_begin)-1; // Note: gene positions are in range [1..N]
-            pp.end   = GB_read_int(gb_pos_end)-1;
-        }
+        GEN_free_position(location);
     }
-    return error;
-}
-
-static GB_ERROR scan_gene_positions(GBDATA *gb_gene, PositionPairList& part_list) {
-    PositionPair pp;
-    GB_ERROR     error = read_PositionPair(gb_gene, "pos_begin", "pos_end", pp);
-
-    if (!error) {
-        part_list.push_back(pp);
-        GBDATA *gb_pos_joined = GB_entry(gb_gene, "pos_joined");
-        if (gb_pos_joined) { // splitted gene
-            int parts = GB_read_int(gb_pos_joined);
-            gp_assert(parts >= 2);
-
-            char pos_begin_string[20];
-            char pos_end_string[20];
-
-            for (int p = 2; p <= parts && !error; ++p) {
-                sprintf(pos_begin_string, "pos_begin%i", p);
-                sprintf(pos_end_string,   "pos_end%i",   p);
-
-                error = read_PositionPair(gb_gene, pos_begin_string, pos_end_string, pp);
-                if (!error) part_list.push_back(pp);
-            }
-        }
-    }
-
     return error;
 }
 

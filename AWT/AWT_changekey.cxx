@@ -226,16 +226,12 @@ void awt_gene_field_selection_list_rescan(GBDATA *gb_main, long bitfilter, awt_r
     if (mode & AWT_RS_SCAN_UNKNOWN_FIELDS) {
         awt_add_new_gene_changekey(gb_main,"name", GB_STRING);
 
-        awt_add_new_gene_changekey(gb_main,"pos_begin", GB_INT);
-        awt_add_new_gene_changekey(gb_main,"pos_end", GB_INT);
-        awt_add_new_gene_changekey(gb_main,"pos_uncertain", GB_STRING);
-
-        awt_add_new_gene_changekey(gb_main,"pos_begin2", GB_INT);
-        awt_add_new_gene_changekey(gb_main,"pos_end2", GB_INT);
-        awt_add_new_gene_changekey(gb_main,"pos_uncertain2", GB_STRING);
-
+        awt_add_new_gene_changekey(gb_main,"pos_start", GB_STRING);
+        awt_add_new_gene_changekey(gb_main,"pos_stop", GB_STRING);
+        awt_add_new_gene_changekey(gb_main,"pos_complement", GB_STRING);
+        
         awt_add_new_gene_changekey(gb_main,"pos_joined", GB_INT);
-        awt_add_new_gene_changekey(gb_main,"complement", GB_BYTE);
+        awt_add_new_gene_changekey(gb_main,"pos_certain", GB_STRING);
 
         for (name = names; *name; name++) {
             if ( (1<<(**name)) & bitfilter ) {          // look if already exists

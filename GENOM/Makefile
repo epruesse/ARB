@@ -9,7 +9,7 @@ CPP_OBJECTS =   \
 	GEN_gene.o \
 	GEN_nds.o \
 	GEN_color_groups.o \
-	GEN_tools.o \
+	GEN_translations.o \
     \
 	EXP_interface.o \
 	EXP_main.o \
@@ -103,7 +103,6 @@ GEN_gene.o: GEN.hxx
 GEN_gene.o: GEN_gene.hxx
 GEN_gene.o: GEN_local.hxx
 GEN_gene.o: GEN_nds.hxx
-GEN_gene.o: GEN_tools.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -227,18 +226,22 @@ GEN_nds.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 
-GEN_tools.o: GEN.hxx
-GEN_tools.o: GEN_local.hxx
-GEN_tools.o: GEN_tools.hxx
-GEN_tools.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
-GEN_tools.o: $(ARBHOME)/INCLUDE/ad_prot.h
-GEN_tools.o: $(ARBHOME)/INCLUDE/adGene.h
-GEN_tools.o: $(ARBHOME)/INCLUDE/arb_assert.h
-GEN_tools.o: $(ARBHOME)/INCLUDE/arbdb.h
-GEN_tools.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-GEN_tools.o: $(ARBHOME)/INCLUDE/attributes.h
-GEN_tools.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-GEN_tools.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-GEN_tools.o: $(ARBHOME)/INCLUDE/aw_position.hxx
-GEN_tools.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-GEN_tools.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+GEN_translations.o: GEN.hxx
+GEN_translations.o: GEN_local.hxx
+GEN_translations.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+GEN_translations.o: $(ARBHOME)/INCLUDE/ad_prot.h
+GEN_translations.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+GEN_translations.o: $(ARBHOME)/INCLUDE/adGene.h
+GEN_translations.o: $(ARBHOME)/INCLUDE/arb_assert.h
+GEN_translations.o: $(ARBHOME)/INCLUDE/arbdb.h
+GEN_translations.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+GEN_translations.o: $(ARBHOME)/INCLUDE/arbdbt.h
+GEN_translations.o: $(ARBHOME)/INCLUDE/arbtools.h
+GEN_translations.o: $(ARBHOME)/INCLUDE/attributes.h
+GEN_translations.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+GEN_translations.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+GEN_translations.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+GEN_translations.o: $(ARBHOME)/INCLUDE/aw_question.hxx
+GEN_translations.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+GEN_translations.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+GEN_translations.o: $(ARBHOME)/INCLUDE/awt_translate.hxx

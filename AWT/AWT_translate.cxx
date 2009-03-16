@@ -40,7 +40,7 @@ GB_ERROR AWT_saveTranslationInfo(GBDATA *gb_species, int arb_transl_table, int c
     return error;
 }
 
-GB_ERROR AWT_getTranslationInfo(GBDATA *gb_species, int& arb_transl_table, int& codon_start) {
+GB_ERROR AWT_getTranslationInfo(GBDATA *gb_item, int& arb_transl_table, int& codon_start) {
     // looks for sub-entries 'transl_table' and 'codon_start' of species (works for genes as well)
     // if found -> test for validity and translate 'transl_table' from EMBL to ARB table number
     // 
@@ -53,7 +53,7 @@ GB_ERROR AWT_getTranslationInfo(GBDATA *gb_species, int& arb_transl_table, int& 
     codon_start      = -1;          // not found yet
     
     GB_ERROR  error           = 0;
-    GBDATA   *gb_transl_table = GB_entry(gb_species, "transl_table");
+    GBDATA   *gb_transl_table = GB_entry(gb_item, "transl_table");
 
     if (gb_transl_table) {
         int embl_table   = atoi(GB_read_char_pntr(gb_transl_table));
@@ -64,7 +64,7 @@ GB_ERROR AWT_getTranslationInfo(GBDATA *gb_species, int& arb_transl_table, int& 
     }
 
     if (!error) {
-        GBDATA *gb_codon_start = GB_entry(gb_species, "codon_start");
+        GBDATA *gb_codon_start = GB_entry(gb_item, "codon_start");
         if (gb_codon_start) {
             int codon_start_value = atoi(GB_read_char_pntr(gb_codon_start));
 
@@ -75,18 +75,29 @@ GB_ERROR AWT_getTranslationInfo(GBDATA *gb_species, int& arb_transl_table, int& 
                 codon_start = codon_start_value-1; // internal value is 0..2
             }
         }
+        else if (arb_transl_table != -1) {
+            // default to codon_start 1
+            error = GBT_write_int(gb_item, "codon_start", 1);
+            if (!error) codon_start = 0; // internal value is 0..2
+        }
     }
 
-    if (arb_transl_table != codon_start) {
+    if (!error && arb_transl_table != codon_start) {
         if (arb_transl_table == -1) error = "Found 'codon_start', but 'transl_table' is missing";
         else if (codon_start == -1) error = "Found 'transl_table', but 'codon_start' is missing";
     }
 
     if (error) { // append species name to error message
-        error = GBS_global_string("%s (species='%s')", error, GBT_read_name(gb_species));
+        error = GBS_global_string("%s (item='%s')", error, GBT_read_name(gb_item));
     }
 
     return error;
+}
+
+inline void memcpy3(char *dest, const char *source) {
+    dest[0] = source[0];
+    dest[1] = source[1];
+    dest[2] = source[2];
 }
 
 int AWT_pro_a_nucs_convert(int arb_code_nr, char *data, int size, int pos, bool translate_all, bool create_start_codon, bool append_stop_codon, int *translatedSize) {
@@ -127,16 +138,19 @@ int AWT_pro_a_nucs_convert(int arb_code_nr, char *data, int size, int pos, bool 
         }
     }
 
-    int  stops = 0;
-    long i     = pos;
+    int            stops      = 0;
+    long           i          = pos;
+    char           startCodon = 0;
+    const GB_HASH *t2i_hash   = AWT_get_translator(arb_code_nr)->T2iHash();
 
-    const GB_HASH *t2i_hash = AWT_get_translator(arb_code_nr)->T2iHash();
+    if (create_start_codon) {
+        memcpy3(buffer, data+pos);
+        startCodon = AWT_is_start_codon(buffer, arb_code_nr);
+    }
 
     for (char *p = data+pos; i+2<size; p+=3,i+=3) {
-        buffer[0] = p[0];
-        buffer[1] = p[1];
-        buffer[2] = p[2];
-        int spro  = (int)GBS_read_hash(t2i_hash,buffer);
+        memcpy3(buffer, p);
+        int spro = (int)GBS_read_hash(t2i_hash,buffer);
         int C;
         if (!spro) {
             C = 'X';
@@ -152,15 +166,7 @@ int AWT_pro_a_nucs_convert(int arb_code_nr, char *data, int size, int pos, bool 
     int tsize = dest-data;
 
     if (tsize>0) {            // at least 1 amino written
-        if (create_start_codon) {
-            buffer[0] = data[pos];
-            buffer[1] = data[pos+1];
-            buffer[2] = data[pos+2];
-
-            char start_codon = AWT_is_start_codon(buffer, arb_code_nr);
-            if (start_codon) data[0] = start_codon;
-        }
-
+        if (create_start_codon && startCodon) data[0] = startCodon;
         if (append_stop_codon && dest[-1] != '*') {
             *dest++ = '*';
             tsize++;
