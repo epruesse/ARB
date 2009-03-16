@@ -1,5 +1,4 @@
 #!/usr/bin/perl
-
 # =============================================================== #
 #                                                                 #
 #   File      : markedSpecies.pl                                  #
@@ -18,23 +17,18 @@ BEGIN {
   if (not exists $ENV{'ARBHOME'}) { die "Environment variable \$ARBHOME has to be defined"; }
   my $arbhome = $ENV{'ARBHOME'};
   push @INC, "$arbhome/lib";
+  push @INC, "$arbhome/lib/PERL_SCRIPTS/SPECIES";
   1;
 }
 
 use ARB;
-
-sub noError($$) {
-  my ($err,$where) = @_;
-  if (defined $err) { die "Error at $where: $err"; }
-}
+use tools;
 
 sub listMarkedSpecies() {
-  my $gb_main = ARB::open(":","rw");
-  if (!$gb_main) {
-    noError(ARB::get_error(), 'db connect (no running ARB?)');
-  }
+  my $gb_main = ARB::open(":","r");
+  $gb_main || expectError('db connect (no running ARB?)');
 
-  noError(ARB::begin_transaction($gb_main), 'begin_transaction');
+  dieOnError(ARB::begin_transaction($gb_main), 'begin_transaction');
 
   for (my $gb_species = BIO::first_species($gb_main);
        $gb_species;
@@ -43,6 +37,7 @@ sub listMarkedSpecies() {
          my $marked = ARB::read_flag($gb_species);
          if ($marked==1) {
            my $species_name = BIO::read_string($gb_species, "name");
+           $species_name || expectError('read_string');
            print $species_name."\n";
          }
        }
