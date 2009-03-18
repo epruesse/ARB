@@ -12,6 +12,7 @@
 #include "DBwriter.h"
 
 #define AW_RENAME_SKIP_GUI
+#include <algorithm>
 #include <AW_rename.hxx>
 #include <arbdbt.h>
 #include <adGene.h>
@@ -42,12 +43,12 @@ static GBDATA *DB_create_container(GBDATA *parent, const char *name, bool mark) 
     // create container (optionally set mark flag)
     GBDATA *gb_container = GB_create_container(parent, name);
     if (!gb_container) throw DBerror(GBS_global_string("Failed to create container '%s'", name));
-    
+
     if (mark) {
         GB_ERROR err = GB_write_flag(gb_container, 1);
         if (err) throw DBerror(GBS_global_string("Failed to mark %s", name), err);
     }
-    
+
     return gb_container;
 }
 
@@ -55,7 +56,7 @@ static GBDATA *DB_create_string_field(GBDATA *parent, const char *field, const c
     // create field with content
 
     gb_assert(content[0]);
-    
+
     GBDATA *gb_field = GB_create(parent, field, GB_STRING);
     if (!gb_field) throw DBerror(GBS_global_string("Failed to create field '%s'", field));
 
@@ -127,7 +128,7 @@ static const string& getUnreservedQualifier(const string& qualifier) {
     // if a qualifier is reserved, 'ORG_' is prepended.
     //
     // (Note: When we'll export data, 'ORG_' will be removed from qualifiers!)
-    
+
     typedef map<string, string, NoCaseCmp> TranslateMap;
 
     static TranslateMap *unreserve = 0;
@@ -310,7 +311,7 @@ public:
         return GB_read_char_pntr(gb_type);
     }
     bool hasType(const char *type) const { return strcmp(getType(), type) == 0; }
-    
+
     void hide() { DB_create_byte_field(gb_Gene, ARB_HIDDEN, 1); }
     void addRefToGene(const char *name_of_gene) { DB_create_string_field(gb_Gene, ARB_GENE_REF, name_of_gene); }
 
@@ -344,7 +345,7 @@ public:
 void DBwriter::hideUnwantedGenes() {
     typedef vector<PosGene> Genes;
     typedef Genes::iterator GeneIter;
-    
+
     GBDATA *gb_gene;
     Genes   gps;
 
