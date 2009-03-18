@@ -706,13 +706,13 @@ void NT_mark_deep_branches(AW_window *aww, AW_CL ntwcl) {
 }
 
 void NT_mark_long_branches(AW_window *aww, AW_CL ntwcl){
-    char *val = aw_input("Enter relativ diff [0 .. 5.0]");
+    char *val = aw_input("Enter minimum relativ difference (percent)");
     if (val) {
         AWT_canvas     *ntw = (AWT_canvas *)ntwcl;
         GB_transaction  dummy(ntw->gb_main);
         
         NT_mark_all_cb(aww,(AW_CL)ntw, (AW_CL)0);
-        AWT_TREE(ntw)->tree_root->mark_long_branches(ntw->gb_main,atof(val));
+        AWT_TREE(ntw)->tree_root->mark_long_branches(ntw->gb_main,atof(val)/100.0);
         AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
         free(val);
         ntw->refresh();

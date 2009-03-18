@@ -1732,31 +1732,44 @@ static void ap_mark_species_rek(AP_tree *at){
     ap_mark_species_rek(at->rightson);
 }
 
-static double ap_search_strange_species_rek(AP_tree *at,double diff_eps,double max_diff){
+static double ap_search_strange_species_rek(AP_tree *at, double max_rel_diff, bool& marked) {
+    marked = false;
     if (at->is_leaf) return 0.0;
-    int max_is_left = 1;
-    double max = ap_search_strange_species_rek(at->leftson,diff_eps,max_diff) + at->leftlen;
-    double min = ap_search_strange_species_rek(at->rightson,diff_eps,max_diff) + at->rightlen;
+
+    bool   max_is_left = true;
+    bool   marked_left;
+    bool   marked_right;
+    double max         = ap_search_strange_species_rek(at->leftson, max_rel_diff, marked_left) + at->leftlen;
+    double min         = ap_search_strange_species_rek(at->rightson, max_rel_diff, marked_right) + at->rightlen;
+
     if (max<min) {
         double h = max; max = min; min = h;
-        max_is_left = 0;
+        max_is_left = false;
     }
-    if (min < 0) return - 2.0 * max_diff;
 
-    if (max > min * (1.0 + max_diff) + diff_eps){
-        if (max_is_left) ap_mark_species_rek(at->leftson);
-        else        ap_mark_species_rek(at->rightson);
-        return  - 2.0 * max_diff;
+    if (max > min * (1.0 + max_rel_diff)) {
+        if (max_is_left) {
+            if (!marked_left) {
+                ap_mark_species_rek(at->leftson);
+                marked = true;
+            }
+        }
+        else {
+            if (!marked_right) {
+                ap_mark_species_rek(at->rightson);
+                marked = true;
+            }
+        }
     }
+    if (!marked && (marked_left||marked_right)) marked = true;
     return (max + min) *.5;
 }
 
-void AP_tree::mark_long_branches(GBDATA *gb_main,double diff){
+void AP_tree::mark_long_branches(GBDATA *gb_main,double max_rel_diff){
     // look for asymmetric parts of the tree and mark all species with long branches
-    double max_deep =   gr.tree_depth;
-    double diff_eps = max_deep * 0.05;
     GB_transaction dummy(gb_main);
-    ap_search_strange_species_rek(this,diff_eps,diff);
+    bool           marked;
+    ap_search_strange_species_rek(this, max_rel_diff, marked);
 }
 
 static int ap_mark_degenerated(AP_tree *at, double degeneration_factor, double& max_degeneration)  {
