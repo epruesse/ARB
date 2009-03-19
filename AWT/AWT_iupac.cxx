@@ -7,7 +7,7 @@
 
 #include "awt_iupac.hxx"
 
-#define IUPAC_EMPTY " "
+#define IUPAC_EMPTY "" // changed from " " to "" (2009-03-19 -- ralf)
 #define ILL_CODE char(26)
 
 AWT_IUPAC_descriptor AWT_iupac_code[26][2]= {
