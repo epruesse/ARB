@@ -490,7 +490,7 @@ void SEC_bond_def::paint(AW_device *device, char base1, char base2, const Positi
             int maxIdx = -1;
             for (int i1 = 0; iupac1[i1]; ++i1) {
                 for (int i2 = 0; iupac2[i2]; ++i2) {
-                    char        b     = get_bond(iupac1[i1], iupac2[i2]);
+                    char b = get_bond(iupac1[i1], iupac2[i2]);
 
                     if (b != ' ') {
                         const char *found = strchr(SEC_BOND_PAIR_CHAR, b);
