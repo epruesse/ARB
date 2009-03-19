@@ -538,9 +538,9 @@ char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *
                     else {
                         e4_assert(IS_AMINO());
 
-                        int group_count[IUPAC_GROUPS];
+                        int group_count[ED4_IUPAC_GROUPS];
 
-                        for (j=0; j<IUPAC_GROUPS; j++) {
+                        for (j=0; j<ED4_IUPAC_GROUPS; j++) {
                             group_count[j] = 0;
                         }
                         for (j=0; j<used_bases_tables; j++) {
@@ -555,7 +555,7 @@ char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *
 
                         kcount = 0;
                         int bestGroup = 0;
-                        for (j=0; j<IUPAC_GROUPS; j++) {
+                        for (j=0; j<ED4_IUPAC_GROUPS; j++) {
                             if (group_count[j]>kcount) {
                                 bestGroup = j;
                                 kcount = group_count[j];

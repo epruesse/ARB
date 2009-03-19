@@ -1,6 +1,6 @@
 
-#define IUPAC_EMPTY     " "
-#define IUPAC_GROUPS    6
+#define ED4_IUPAC_EMPTY  " "
+#define ED4_IUPAC_GROUPS 6
 
 #define IS_NUCLEOTIDE()   (ED4_ROOT->alignment_type==GB_AT_RNA || ED4_ROOT->alignment_type==GB_AT_DNA)
 #define IS_RNA()          (ED4_ROOT->alignment_type==GB_AT_RNA)
