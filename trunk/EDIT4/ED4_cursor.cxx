@@ -897,7 +897,7 @@ void ED4_cursor::updateAwars()
 #define MAXIUPAC 6
 
     char iupac[MAXIUPAC+1];
-    strcpy(iupac, IUPAC_EMPTY);
+    strcpy(iupac, ED4_IUPAC_EMPTY);
 
     if (owner_of_cursor) {
         ED4_species_manager *species_manager = owner_of_cursor->get_parent(ED4_L_SPECIES)->to_species_manager();

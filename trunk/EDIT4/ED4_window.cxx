@@ -49,7 +49,7 @@ void ED4_window::reset_all_for_new_config()
     ED4_ROOT->aw_root->awar(awar_path_for_cursor)->write_int(0);
     ED4_ROOT->aw_root->awar(awar_path_for_Ecoli)->write_int(0);
     ED4_ROOT->aw_root->awar(awar_path_for_basePos)->write_int(0);
-    ED4_ROOT->aw_root->awar(awar_path_for_IUPAC)->write_string(IUPAC_EMPTY);
+    ED4_ROOT->aw_root->awar(awar_path_for_IUPAC)->write_string(ED4_IUPAC_EMPTY);
     ED4_ROOT->aw_root->awar(awar_path_for_helixNr)->write_string("");
 
     if (next) next->reset_all_for_new_config();
@@ -546,7 +546,7 @@ void ED4_window::delete_window( ED4_window *window) //delete from window list
     ED4_ROOT->aw_root->awar(temp->awar_path_for_cursor)->write_int(0);              // save in database
     ED4_ROOT->aw_root->awar(temp->awar_path_for_Ecoli)->write_int(0);
     ED4_ROOT->aw_root->awar(temp->awar_path_for_basePos)->write_int(0);
-    ED4_ROOT->aw_root->awar(temp->awar_path_for_IUPAC)->write_string(IUPAC_EMPTY);
+    ED4_ROOT->aw_root->awar(temp->awar_path_for_IUPAC)->write_string(ED4_IUPAC_EMPTY);
     ED4_ROOT->aw_root->awar(temp->awar_path_for_helixNr)->write_string("");
     delete temp;
 }
@@ -611,7 +611,7 @@ ED4_window::ED4_window( AW_window *window )
     ED4_ROOT->aw_root->awar_int(awar_path_for_basePos,0,AW_ROOT_DEFAULT)->set_minmax(0,MAX_POSSIBLE_SEQ_LENGTH);
 
     sprintf(awar_path_for_IUPAC, AWAR_EDIT_IUPAC, id);
-    ED4_ROOT->aw_root->awar_string(awar_path_for_IUPAC,IUPAC_EMPTY,AW_ROOT_DEFAULT);
+    ED4_ROOT->aw_root->awar_string(awar_path_for_IUPAC,ED4_IUPAC_EMPTY,AW_ROOT_DEFAULT);
 
     sprintf(awar_path_for_helixNr, AWAR_EDIT_HELIXNR, id);
     ED4_ROOT->aw_root->awar_string(awar_path_for_helixNr, "", AW_ROOT_DEFAULT); // ->set_minmax(-MAX_POSSIBLE_SEQ_LENGTH,MAX_POSSIBLE_SEQ_LENGTH);
