@@ -267,7 +267,8 @@ static MetaTag genebank_meta_description[] = {
     { "  ORGANISM", "tax",        MT_BASIC },
     { "COMMENT",    "comment",    MT_BASIC },
     { "CONTIG",     "contig",     MT_BASIC },
-    
+    { "PROJECT",     "projref",      MT_BASIC },
+
     { "FEATURES", "", MT_FEATURE_START },
     { "BASE",     "", MT_SEQUENCE_START }, // BASE COUNT (sometimes missing)
     { "ORIGIN",   "", MT_SEQUENCE_START }, // only used if BASE COUNT is missing
@@ -301,6 +302,7 @@ static MetaTag embl_meta_description[] = {
     { "OS", "full_name",       MT_BASIC },
     { "OC", "tax",             MT_BASIC },
     { "OG", "organelle",       MT_BASIC },
+    { "PR", "projref",            MT_BASIC },
 
     { "FH", "", MT_FEATURE_START },
     { "FT", "", MT_FEATURE },
