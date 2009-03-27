@@ -140,28 +140,32 @@
   <!-- ======================== -->
   <xsl:template name="link-to-document">
     <xsl:param name="doc"/>
+    <xsl:param name="type"/>
     <xsl:param name="missing"/>
     <xsl:param name="quote"/>
 
     <xsl:choose>
-      <xsl:when test="string-length(substring-before($doc,'.ps'))&gt;0"> <!--it's a postscript link-->
+      <xsl:when test="$type='ps'">
         <A href="{concat($postscriptpath,$doc,'.gz')}">
           <xsl:value-of select="$doc"/> (Postscript)
         </A>
       </xsl:when>
-      <xsl:when test="string-length(substring-before($doc,'.pdf'))&gt;0"> <!--it's a pdf link-->
+      <xsl:when test="$type='pdf'">
         <A href="{concat($pdfpath,$doc,'.gz')}">
           <xsl:value-of select="$doc"/> (PDF)
         </A>
       </xsl:when>
-      <xsl:otherwise>
-        <A href="{concat($rootpath,$doc)}.html">
+      <xsl:when test="$type='hlp'">
+        <xsl:variable name="docbase">
+          <xsl:value-of select="substring-before($doc,'.hlp')"/>
+        </xsl:variable>
+        <A href="{concat($rootpath,$docbase)}.html">
           <xsl:choose>
             <xsl:when test="$missing='1'">
-              <FONT color="red"><xsl:value-of select="concat('Missing Link to ',$doc,'.hlp')"/></FONT>
+              <FONT color="red"><xsl:value-of select="concat('Missing Link to ',$doc)"/></FONT>
             </xsl:when>
             <xsl:otherwise>
-              <xsl:for-each select="document(concat($xml_location,'/',$doc,'.xml'))">
+              <xsl:for-each select="document(concat($xml_location,'/',$docbase,'.xml'))">
                 <xsl:for-each select="PAGE/TITLE">
                   <xsl:if test="$quote='1'">&acute;</xsl:if>
                   <xsl:copy-of select="normalize-space(text())"/>
@@ -171,6 +175,9 @@
             </xsl:otherwise>
           </xsl:choose>
         </A>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:message terminate="yes">Illegal document type '<xsl:value-of select="$type"/>' in link-to-document</xsl:message>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -181,6 +188,7 @@
 
   <xsl:template match="UP" mode="uplinks"><LI><xsl:call-template name="link-to-document">
         <xsl:with-param name="doc" select="@dest"/>
+        <xsl:with-param name="type" select="@type"/>
         <xsl:with-param name="missing" select="@missing"/>
       </xsl:call-template></LI></xsl:template>
 
@@ -195,6 +203,7 @@
     <LI>
       <xsl:call-template name="link-to-document">
         <xsl:with-param name="doc" select="@dest"/>
+        <xsl:with-param name="type" select="@type"/>
         <xsl:with-param name="missing" select="@missing"/>
       </xsl:call-template>
     </LI>
@@ -247,10 +256,11 @@
 
   <xsl:template match="LINK" mode="link-recursion">
     <xsl:choose>
-      <xsl:when test="@type='help'">
+      <xsl:when test="@type='hlp' or @type='ps' or @type='pdf'">
         <xsl:call-template name="link-to-document">
           <xsl:with-param name="doc" select="@dest"/>
-          <xsl:with-param name="missing"/>
+          <xsl:with-param name="type" select="@type"/>
+          <xsl:with-param name="missing" select="@missing"/>
           <xsl:with-param name="quote" select="1"/>
         </xsl:call-template>
       </xsl:when>
