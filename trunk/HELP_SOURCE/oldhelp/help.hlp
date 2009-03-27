@@ -17,7 +17,7 @@ DESCRIPTION
               - an HTML version which is located in $ARBHOME/lib/help_html
                 - it may be started using the BROWSE button in embedded help windows
                 - If arb is installed in /usr/arb it may be accessible at LINK{file:///usr/arb/lib/help_html/arb.html}.
-              - This HTML help is also available via LINK{http://www.arb-home.de/help_html/arb.html}.
+              - This HTML help is also available via LINK{http://help.arb-home.de/arb.html}.
                 Please note that the online version may be more recent than your ARB version!
 
     The following is about the embedded help module:

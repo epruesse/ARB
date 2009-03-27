@@ -92,27 +92,34 @@
   <xsl:template name="link-to-document">
     <xsl:param name="doc"/>
     <xsl:param name="missing"/>
+    <xsl:param name="type"/>
 
     <xsl:choose>
-      <xsl:when test="string-length(substring-before($doc,'.ps'))&gt;0"> <!--it's a postscript link-->
+      <xsl:when test="$type='ps'">
         <xsl:text>Postscript: </xsl:text>
         <xsl:value-of select="$doc"/>
       </xsl:when>
-      <xsl:when test="string-length(substring-before($doc,'.pdf'))&gt;0"> <!--it's a PDF link-->
+      <xsl:when test="$type='pdf'">
         <xsl:text>PDF: </xsl:text>
         <xsl:value-of select="$doc"/>
       </xsl:when>
+      <xsl:when test="$type='hlp'">
+        <xsl:variable name="docbase">
+          <xsl:value-of select="substring-before($doc,'.hlp')"/>
+        </xsl:variable>
+        <xsl:choose>
+          <xsl:when test="$missing='1'">
+            <xsl:value-of select="concat('Missing Link to ',$docbase,'.hlp')"/>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:for-each select="document(concat($xml_location,'/',$docbase,'.xml'))">
+              <xsl:for-each select="PAGE/TITLE">TOPIC &acute;<xsl:copy-of select="normalize-space(text())"/>&acute;</xsl:for-each>
+            </xsl:for-each>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:when>
       <xsl:otherwise>
-          <xsl:choose>
-            <xsl:when test="$missing='1'">
-              <xsl:value-of select="concat('Missing Link to ',$doc,'.hlp')"/>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:for-each select="document(concat($xml_location,'/',$doc,'.xml'))">
-                <xsl:for-each select="PAGE/TITLE">TOPIC &acute;<xsl:copy-of select="normalize-space(text())"/>&acute;</xsl:for-each>
-              </xsl:for-each>
-            </xsl:otherwise>
-          </xsl:choose>
+        <xsl:message terminate="yes">Illegal document type '<xsl:value-of select="$type"/>' in link-to-document</xsl:message>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -125,11 +132,6 @@
     <xsl:param name="dest"/>
 
     <xsl:value-of select="$dest"/>
-    <xsl:if test="substring-before($dest,'.ps')=''"> <!-- not postscript .. -->
-      <xsl:if test="substring-before($dest,'.pdf')=''"> <!-- .. or pdf .. -->
-        <xsl:text>.hlp</xsl:text> <!-- .. -> add .hlp -->
-      </xsl:if>
-    </xsl:if>
     <xsl:text>&br;</xsl:text>
   </xsl:template>
 
@@ -315,10 +317,11 @@
 
   <xsl:template match="LINK" mode="expand-links">
     <xsl:choose>
-      <xsl:when test="@type='help'">
+      <xsl:when test="@type='hlp' or @type='ps' or @type='pdf'">
         <xsl:call-template name="link-to-document">
           <xsl:with-param name="doc" select="@dest"/>
-          <xsl:with-param name="missing"/>
+          <xsl:with-param name="missing" select="@missing"/>
+          <xsl:with-param name="type" select="@type"/>
         </xsl:call-template>
       </xsl:when>
       <xsl:when test="@type='www'">

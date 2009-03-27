@@ -3,7 +3,7 @@
 
 # --------------------------------------------------------------------------------
 
-TEST_ONE=0# default is 0 (if 1 only arb.hlp is processed)
+TEST_ONE=0# default is 0 (if 1 only one .hlp file is processed. see below @ TEST_ONE)
 
 # --------------------------------------------------------------------------------
 # directories of source/destination files:
@@ -90,7 +90,7 @@ OLD_HELP_ALL= \
 ifeq ($(TEST_ONE),1)
 #OLD_HELP=$(HLP_SOURCE)/parser.hlp $(HLP_SOURCE)/commands.hlp $(HLP_SOURCE)/FAQS.hlp $(HLP_SOURCE)/acisrt.hlp
 #OLD_HELP=$(HLP_SOURCE)/arb.hlp
-OLD_HELP=$(HLP_SOURCE)/help.hlp
+OLD_HELP=$(HLP_SOURCE)/arb.hlp
 else
 OLD_HELP=$(OLD_HELP_ALL:$(HLP_SOURCE)/FORM.hlp=)# remove FORM.hlp (this is just a default file)
 endif

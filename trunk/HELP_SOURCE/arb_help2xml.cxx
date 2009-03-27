@@ -230,7 +230,7 @@ typedef list<NamedSection> NamedSections;
 
 class Link {
     string target;
-    int    source_lineno;
+    size_t source_lineno;
 
 public:
     Link(const string& target_, size_t source_lineno_)
@@ -239,7 +239,7 @@ public:
     {}
 
     const string& Target() const { return target; }
-    int SourceLineno() const { return source_lineno; }
+    size_t SourceLineno() const { return source_lineno; }
 };
 
 typedef list<Link> Links;
@@ -260,7 +260,7 @@ public:
     virtual ~Helpfile() {}
 
     void readHelp(istream& in, const string& filename);
-    void writeXML(FILE *out, const string& page_name, const string& path1, const string& path2);
+    void writeXML(FILE *out, const string& page_name);
     void extractInternalLinks();
 };
 
@@ -343,10 +343,6 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
             pushParagraph(sec, paragraph); lines_in_paragraph = 0;
         }
         else {
-#if defined(WARN_TODO)
-            check_TODO(line, reader);
-#endif // WARN_TODO
-        
             string      keyword;
             const char *rest = extractKeyword(line, keyword);
 
@@ -386,6 +382,7 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
 //         *p = *p+string("\n");
     }
 }
+string cutoff_hlp_extension(const string& s) __ATTR__DEPRECATED;
 inline string cutoff_hlp_extension(const string& s) {
     // cuts off the '.hlp'
     size_t pos   = s.find(".hlp");
@@ -403,7 +400,7 @@ inline string cutoff_hlp_extension(const string& s) {
         return s; // accept .pdf
     }
     
-    throw string("Expected extension .hlp");
+    throw string("Expected extension .hlp, .ps or .pdf");
 }
 inline void check_duplicates(const string& link, const char */*where*/, const Links& existing, bool add_warnings) {
     for (Links::const_iterator ex = existing.begin(); ex != existing.end(); ++ex) {
@@ -446,23 +443,19 @@ void Helpfile::readHelp(istream& in, const string& filename) {
                 if (keyword == "UP") {
                     rest = eatWhite(rest);
                     if (strlen(rest)) {
-                        string rest_noext = cutoff_hlp_extension(rest);
-
-                        check_duplicates(rest_noext, uplinks, references, true);
+                        check_duplicates(rest, uplinks, references, true);
                         if (strcmp(name_only, rest) == 0) throw "UP link to self";
 
-                        uplinks.push_back(Link(rest_noext, read.getLineNo()));
+                        uplinks.push_back(Link(rest, read.getLineNo()));
                     }
                 }
                 else if (keyword == "SUB") {
                     rest = eatWhite(rest);
                     if (strlen(rest)) {
-                        string rest_noext = cutoff_hlp_extension(rest);
-
-                        check_duplicates(rest_noext, uplinks, references, true);
+                        check_duplicates(rest, uplinks, references, true);
                         if (strcmp(name_only, rest) == 0) throw "SUB link to self";
 
-                        references.push_back(Link(rest_noext, read.getLineNo()));
+                        references.push_back(Link(rest, read.getLineNo()));
                     }
                 }
                 else if (keyword == "TITLE") {
@@ -685,10 +678,9 @@ private:
     int  indentation;           // the real indentation of the black (after enumeration was removed)
 
     string text;                // text of the Section (containing linefeeds)
+    size_t lineNo;              // line number where Paragraph starts
 
-    friend ParagraphTree* buildParagraphTree(Strings::const_iterator begin, const Strings::const_iterator end);
-
-    ParagraphTree(Strings::const_iterator begin, const Strings::const_iterator end) {
+    ParagraphTree(Strings::const_iterator begin, const Strings::const_iterator end, size_t beginLineNo) {
         h2x_assert(begin != end);
 
         text = *begin;
@@ -696,6 +688,8 @@ private:
 
         enumeration   = 0;
         is_enumerated = startsWithNumber(text, enumeration);
+
+        lineNo = beginLineNo;
 
         if (is_enumerated) {
             size_t text_start     = text.find_first_not_of(" \n");
@@ -750,7 +744,7 @@ private:
         }
 
         text    = correctIndentation(text, -indentation);
-        brother = buildParagraphTree(++begin, end);
+        brother = buildParagraphTree(++begin, end, beginLineNo);
     }
 
 public:
@@ -777,15 +771,15 @@ public:
         if (son) { cout << "\nson:\n"; son->dump(out); cout << "\n"; }
     }
 
-    static ParagraphTree* buildParagraphTree(Strings::const_iterator begin, const Strings::const_iterator end) {
+    static ParagraphTree* buildParagraphTree(Strings::const_iterator begin, const Strings::const_iterator end, size_t beginLineNo) {
         if (begin == end) return 0;
-        return new ParagraphTree(begin, end);
+        return new ParagraphTree(begin, end, beginLineNo);
     }
     static ParagraphTree* buildParagraphTree(const NamedSection& N) {
         ParagraphTree  *ptree = 0;
         const Strings&  S     = N.getSection().Content();
         if (S.empty()) throw string("Tried to build an empty ParagraphTree (Section=")+N.getName()+")";
-        else ptree = buildParagraphTree(S.begin(), S.end());
+        else ptree = buildParagraphTree(S.begin(), S.end(), N.getSection().StartLineno());
         return ptree;
     }
 
@@ -850,10 +844,10 @@ public:
     ParagraphTree* format_indentations();
     ParagraphTree* format_enums();
 private:
-    static ParagraphTree* buildNewParagraph(const string& Text) {
+    static ParagraphTree* buildNewParagraph(const string& Text, size_t beginLineNo) {
         Strings S;
         S.push_back(Text);
-        return new ParagraphTree(S.begin(), S.end());
+        return new ParagraphTree(S.begin(), S.end(), beginLineNo);
     }
     ParagraphTree *extractEmbeddedEnum(int lookfor) {
         size_t this_lineend = text.find('\n');
@@ -864,7 +858,7 @@ private:
             if (startsWithNumber(embedded, number, false)) {
                 if (number == lookfor) {
                     text.erase(this_lineend);
-                    return buildNewParagraph(embedded);
+                    return buildNewParagraph(embedded, lineNo);
                 }
                 break;
             }
@@ -992,37 +986,132 @@ ParagraphTree* ParagraphTree::format_indentations() {
     return this;
 }
 
-static void print_XML_Text_expanding_links(const string& text) {
+// -----------------
+//      LinkType
+
+enum LinkType {
+    LT_UNKNOWN = 0,
+    LT_HTTP    = 1,
+    LT_FTP     = 2,
+    LT_FILE    = 4,
+    LT_EMAIL   = 8,
+    LT_HLP     = 16,
+    LT_PS      = 32,
+    LT_PDF     = 64
+};
+
+const char *link_id[] = {
+    "unknown",
+    "www",
+    "www",
+    "www",
+    "email", 
+    "hlp", 
+    "ps", 
+    "pdf", 
+};
+
+static string LinkType2id(LinkType type) {
+    int idx = 0;
+    while (type >= 1) {
+        idx++;
+        type = LinkType(type>>1);
+    }
+    return link_id[idx];
+}
+
+inline const char *getExtension(const string& name) {
+    size_t last_dot = name.find_last_of('.');
+    if (last_dot == string::npos) {
+        return NULL;
+    }
+    return name.c_str()+last_dot+1;
+}
+
+static LinkType detectLinkType(const string& link_target) {
+    LinkType    type = LT_UNKNOWN;
+    const char *ext  = getExtension(link_target);
+
+    if      (ext && strcasecmp(ext, "hlp") == 0)            type = LT_HLP;
+    else if (link_target.find("http://")   == 0)            type = LT_HTTP;
+    else if (link_target.find("ftp://")    == 0)            type = LT_FTP;
+    else if (link_target.find("file://")   == 0)            type = LT_FILE; 
+    else if (link_target.find('@')         != string::npos) type = LT_EMAIL; 
+    else if (ext && strcasecmp(ext, "ps")  == 0)            type = LT_PS; 
+    else if (ext && strcasecmp(ext, "pdf") == 0)            type = LT_PDF; 
+
+    return type;
+}
+
+// --------------------------------------------------------------------------------
+
+
+
+static string locate_helpfile(const string& helpname) {
+    // search for 'helpname' in various helpfile locations
+
+#define PATHS 2
+    static string path[PATHS] = { "oldhelp/", "genhelp/" };
+    struct stat st;
+
+    for (size_t p = 0; p<PATHS; p++) {
+        string fullname = path[p]+helpname;
+        if (stat(fullname.c_str(), &st) == 0) {
+            return fullname;
+        }
+    }
+    return "";
+#undef PATHS
+}
+
+static string locate_document(const string& docname) {
+    // search for 'docname' or 'docname.gz' in various helpfile locations
+
+    string located = locate_helpfile(docname);
+    if (located.empty()) {
+        located = locate_helpfile(docname+".gz");
+    }
+    return located;
+}
+
+static void add_link_attributes(XML_Tag& link, LinkType type, const string& dest, size_t source_line) {
+    if (type == LT_UNKNOWN) throw LineAttachedMessage("Invalid link", source_line);
+    
+    link.add_attribute("dest", dest);
+    link.add_attribute("type", LinkType2id(type));
+    link.add_attribute("source_line", source_line);
+
+    if (type&(LT_HLP|LT_PDF|LT_PS)) {               // other links (www, email) cannot be checked for existance here
+        string fullhelp = ((type&LT_HLP) ? locate_helpfile : locate_document)(dest);
+        if (fullhelp.empty()) {
+            link.add_attribute("missing", "1");
+            string warning = strf("Dead link to '%s'", dest.c_str());
+            h2x_assert(source_line<1000); // illegal line number ? 
+            add_warning(warning, source_line);
+        }
+    }
+}
+
+static void print_XML_Text_expanding_links(const string& text, size_t lineNo) {
     size_t found = text.find("LINK{", 0);
     if (found != string::npos) {
         size_t inside_link = found+5;
         size_t close = text.find('}', inside_link);
 
         if (close != string::npos) {
-            string link_target = text.substr(inside_link, close-inside_link);
-            string type        = "unknown";
-            string dest        = link_target;
+            string   link_target = text.substr(inside_link, close-inside_link);
+            LinkType type        = detectLinkType(link_target);
+            string   dest        = link_target;
 
-            if (link_target.find("http://") != string::npos) { type = "www"; }
-            else if (link_target.find("ftp://") != string::npos) { type = "www"; }
-            else if (link_target.find("file://") != string::npos) { type = "www"; }
-            else if (link_target.find('@') != string::npos) { type = "email"; }
-            else {
-                type = "help";
-                dest = cutoff_hlp_extension(link_target);
-            }
+            XML_Text(text.substr(0, found));
 
-            {
-                XML_Text t(text.substr(0, found));
-            }
             {
                 XML_Tag link("LINK");
                 link.set_on_extra_line(false);
-                link.add_attribute("type", type);
-                link.add_attribute("dest", dest);
+                add_link_attributes(link, type, dest, lineNo);
             }
 
-            return print_XML_Text_expanding_links(text.substr(close+1));
+            return print_XML_Text_expanding_links(text.substr(close+1), lineNo);
         }
     }
 
@@ -1036,24 +1125,7 @@ void ParagraphTree::xml_write(bool ignore_enumerated, bool write_as_entry) {
     }
     else {
         {
-            XML_Tag *para = 0;
-//             char     buffer[100];
-
-            if (is_enumerated || write_as_entry) {
-                para = new XML_Tag("ENTRY");
-            }
-            else {
-                para = new XML_Tag("P");
-            }
-
-//             sprintf(buffer, "%i", indentation);
-//             para->add_attribute("indentation", buffer);
-
-//             if (is_enumerated) {
-//                 sprintf(buffer, "%i", enumeration);
-//                 para->add_attribute("enumerated", buffer);
-//             }
-
+            XML_Tag para(is_enumerated || write_as_entry ? "ENTRY" : "P");
             {
                 XML_Tag textblock("T");
                 textblock.add_attribute("reflow", reflow ? "1" : "0");
@@ -1065,11 +1137,7 @@ void ParagraphTree::xml_write(bool ignore_enumerated, bool write_as_entry) {
                     else {
                         usedText = text;
                     }
-//                     XML_Text t(usedText.substr(1)); // skip first char (\n)
-
-                    print_XML_Text_expanding_links(usedText);
-
-//                     XML_Text t(usedText);
+                    print_XML_Text_expanding_links(usedText, lineNo);
                 }
             }
             if (son) {
@@ -1081,37 +1149,31 @@ void ParagraphTree::xml_write(bool ignore_enumerated, bool write_as_entry) {
                     son->xml_write(false);
                 }
             }
-
-            delete para;
         }
         if (brother) brother->xml_write(ignore_enumerated, write_as_entry);
     }
 }
 
-static void addMissingAttribute(XML_Tag& link, const string& basename, const string& path1, const string& path2) {
-    struct stat st;
-    string      fullname1 = path1+basename+".hlp";
-    string      fullname2 = path2+basename+".hlp";
-
-    if (stat(fullname1.c_str(), &st) == -1 &&
-        stat(fullname2.c_str(), &st) == -1)
-    {
-        link.add_attribute("missing", "1");
+static void create_top_links(const Links& links, const char *tag) {
+    for (Links::const_iterator s = links.begin(); s != links.end(); ++s) {
+        XML_Tag link(tag);
+        add_link_attributes(link, detectLinkType(s->Target()), s->Target(), s->SourceLineno());
     }
 }
 
-void Helpfile::writeXML(FILE *out, const string& page_name, const string& path1, const string& path2) {
+void Helpfile::writeXML(FILE *out, const string& page_name) {
 #if defined(DUMP_DATA)
-    display(uplinks, "Uplinks", stdout);
-    display(references, "References", stdout);
+    display(uplinks,         "Uplinks",         stdout);
+    display(references,      "References",      stdout);
     display(auto_references, "Auto-References", stdout);
-    display(title, "Title", stdout);
-    display(sections, "Sections", stdout);
+    display(title,           "Title",           stdout);
+    display(sections,        "Sections",        stdout);
 #endif // DUMP_DATA
 
     XML_Document xml("PAGE", "arb_help.dtd", out);
     xml.skip_empty_tags       = true;
     xml.indentation_per_level = 2;
+    
     xml.getRoot().add_attribute("name", page_name);
 #if defined(DEBUG)
     xml.getRoot().add_attribute("edit_warning", "devel"); // inserts a edit warning into development version
@@ -1119,24 +1181,10 @@ void Helpfile::writeXML(FILE *out, const string& page_name, const string& path1,
     xml.getRoot().add_attribute("edit_warning", "release"); // inserts a different edit warning into release version
 #endif // DEBUG
 
-    for (Links::const_iterator s = uplinks.begin(); s != uplinks.end(); ++s) {
-        XML_Tag uplink("UP");
-        uplink.add_attribute("dest", s->Target());
-        uplink.add_attribute("source_line", s->SourceLineno());
-        addMissingAttribute(uplink, s->Target(), path1, path2);
-    }
-    for (Links::const_iterator s = references.begin(); s != references.end(); ++s) {
-        XML_Tag sublink("SUB");
-        sublink.add_attribute("dest", s->Target());
-        sublink.add_attribute("source_line", s->SourceLineno());
-        addMissingAttribute(sublink, s->Target(), path1, path2);
-    }
-    for (Links::const_iterator s = auto_references.begin(); s != auto_references.end(); ++s) {
-        XML_Tag sublink("SUB");
-        sublink.add_attribute("dest", s->Target());
-        sublink.add_attribute("source_line", s->SourceLineno());
-        addMissingAttribute(sublink, s->Target(), path1, path2);
-    }
+    create_top_links(uplinks, "UP");
+    create_top_links(references, "SUB");
+    create_top_links(auto_references, "SUB");
+
     {
         XML_Tag title_tag("TITLE");
         Strings& T = title.Content();
@@ -1202,18 +1250,18 @@ void Helpfile::extractInternalLinks() {
                         link_target.find("file://") == string::npos &&
                         link_target.find('@')       == string::npos)
                     {
-                        string rest_noext = cutoff_hlp_extension(link_target);
+                        // string rest_noext = cutoff_hlp_extension(link_target);
 
                         try {
-                            check_duplicates(rest_noext, "SUB", references, true); // check only sublinks here
+                            check_duplicates(link_target, "SUB", references, true); // check only sublinks here
                             try {
-                                check_duplicates(rest_noext, "UP", uplinks, false); // check only sublinks here
-                                check_duplicates(rest_noext, "AUTO-SUB", auto_references, false); // check only sublinks here
-                                auto_references.push_back(Link(rest_noext, sec.StartLineno()));
+                                check_duplicates(link_target, "UP", uplinks, false); // check only sublinks here
+                                check_duplicates(link_target, "AUTO-SUB", auto_references, false); // check only sublinks here
                             }
                             catch (string& err) {
-                                ; // duplicated link in text
+                                ; // ingore duplicated link in text
                             }
+                            auto_references.push_back(Link(link_target, sec.StartLineno()));
                         }
                         catch (string& err) {
                             preadd_warning(strf("%s", err.c_str()), sec.StartLineno());
@@ -1286,7 +1334,16 @@ int main(int argc, char *argv[]) {
             if (!out) throw string("Can't open '")+xml_output+'\'';
 
             try {
-                help.writeXML(out, cutoff_hlp_extension(string(arb_help, 8)), "oldhelp/", "genhelp/"); // cut off 'oldhelp/' and '.hlp'
+                // arb_help contains 'oldhelp/name.hlp'
+                size_t slash = arb_help.find('/');
+                size_t dot   = arb_help.find_last_of('.');
+
+                if (slash == string::npos || dot == string::npos) {
+                    throw string("parameter <ARB helpfile> has to be in format 'oldhelp/name.hlp' (not '"+arb_help+"')");
+                }
+
+                string page_name(arb_help, slash+1, dot-slash-1);
+                help.writeXML(out, page_name);
                 fclose(out);
             }
             catch (...) {
