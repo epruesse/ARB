@@ -2,7 +2,6 @@
 /*                                                                                       */
 /*    File       : ED4_visualizeSAI.cxx                                                  */
 /*    Purpose    : To Visualise the Sequence Associated Information (SAI) in the Editor  */
-/*    Time-stamp : Tue Apr 1 2003                                                        */
 /*    Author     : Yadhu Kumar (yadhu@mikro.biologie.tu-muenchen.de)                     */
 /*    web site   : http://www.arb-home.de/                                               */
 /*                                                                                       */

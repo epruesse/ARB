@@ -2,7 +2,6 @@
 //
 //    File       : ed4_ProteinViewer.hxx                               
 //    Purpose    : Protein viewer
-//    Time-stamp : <Wed Sep/26/2007 08:45 MET Coder@ReallySoft.de>
 //    Author     : Yadhu Kumar (yadhu@arb-home.de)
 //    web site   : http://www.arb-home.de/                                              
 //                                                                                      

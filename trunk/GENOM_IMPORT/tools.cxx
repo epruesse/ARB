@@ -2,7 +2,6 @@
 //                                                                  //
 //   File      : tools.cxx                                          //
 //   Purpose   :                                                    //
-//   Time-stamp: <Tue Nov/28/2006 17:42 MET Coder@ReallySoft.de>    //
 //                                                                  //
 //   Coded by Ralf Westram (coder@reallysoft.de) in November 2006   //
 //   Institute of Microbiology (Technical University Munich)        //

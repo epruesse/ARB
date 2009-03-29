@@ -2,7 +2,6 @@
 //                                                                  //
 //   File      : Importer.cxx                                       //
 //   Purpose   :                                                    //
-//   Time-stamp: <Fri Mar/13/2009 12:27 MET Coder@ReallySoft.de>    //
 //                                                                  //
 //   Coded by Ralf Westram (coder@reallysoft.de) in November 2006   //
 //   Institute of Microbiology (Technical University Munich)        //

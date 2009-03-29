@@ -2,7 +2,6 @@
 //                                                                  //
 //   File      : MetaInfo.cxx                                       //
 //   Purpose   :                                                    //
-//   Time-stamp: <Mon Mar/16/2009 13:59 MET Coder@ReallySoft.de>    //
 //                                                                  //
 //   Coded by Ralf Westram (coder@reallysoft.de) in November 2006   //
 //   Institute of Microbiology (Technical University Munich)        //

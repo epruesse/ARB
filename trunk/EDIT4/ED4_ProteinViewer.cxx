@@ -3,7 +3,6 @@
 //    File       : ED4_ProteinViewer.cxx                               
 //    Purpose    : Protein Viewer: Dynamical translation and display of
 //                 aminoacid sequences in the dna alignment.
-//    Time-stamp : Thu Sep 14 2006                                                       
 //    Author     : Yadhu Kumar (yadhu@arb-home.de)
 //    web site   : http://www.arb-home.de/                                              
 //                                                                                      

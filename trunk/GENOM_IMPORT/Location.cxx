@@ -2,7 +2,6 @@
 //                                                                  //
 //   File      : Location.cxx                                       //
 //   Purpose   :                                                    //
-//   Time-stamp: <Thu Mar/12/2009 17:55 MET Coder@ReallySoft.de>    //
 //                                                                  //
 //   Coded by Ralf Westram (coder@reallysoft.de) in November 2006   //
 //   Institute of Microbiology (Technical University Munich)        //

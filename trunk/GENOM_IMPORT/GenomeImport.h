@@ -2,7 +2,6 @@
 //                                                                  //
 //   File      : GenomeImport.h                                     //
 //   Purpose   : Genome flat file import                            //
-//   Time-stamp: <Thu Nov/20/2008 13:11 MET Coder@ReallySoft.de>    //
 //                                                                  //
 //   Coded by Ralf Westram (coder@reallysoft.de) in November 2006   //
 //   Institute of Microbiology (Technical University Munich)        //

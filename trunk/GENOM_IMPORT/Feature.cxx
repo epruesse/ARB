@@ -2,7 +2,6 @@
 //                                                                  //
 //   File      : Feature.cxx                                        //
 //   Purpose   :                                                    //
-//   Time-stamp: <Wed Nov/05/2008 14:09 MET Coder@ReallySoft.de>    //
 //                                                                  //
 //   Coded by Ralf Westram (coder@reallysoft.de) in November 2006   //
 //   Institute of Microbiology (Technical University Munich)        //
