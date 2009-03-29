@@ -2,7 +2,6 @@
 //                                                                  //
 //   File      : ed4_dots.hxx                                       //
 //   Purpose   : Insert dots where bases may be missing             //
-//   Time-stamp: <Fri Jan/02/2009 11:26 MET Coder@ReallySoft.de>    //
 //                                                                  //
 //   Coded by Ralf Westram (coder@reallysoft.de) in December 2008   //
 //   Institute of Microbiology (Technical University Munich)        //

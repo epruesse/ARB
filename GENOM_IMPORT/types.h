@@ -2,7 +2,6 @@
 //                                                                  //
 //   File      : types.h                                            //
 //   Purpose   :                                                    //
-//   Time-stamp: <Wed Dec/06/2006 13:37 MET Coder@ReallySoft.de>    //
 //                                                                  //
 //   Coded by Ralf Westram (coder@reallysoft.de) in November 2006   //
 //   Institute of Microbiology (Technical University Munich)        //

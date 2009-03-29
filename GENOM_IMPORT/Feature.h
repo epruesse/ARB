@@ -2,7 +2,6 @@
 //                                                                  //
 //   File      : Feature.h                                          //
 //   Purpose   :                                                    //
-//   Time-stamp: <Tue Feb/13/2007 15:07 MET Coder@ReallySoft.de>    //
 //                                                                  //
 //   Coded by Ralf Westram (coder@reallysoft.de) in November 2006   //
 //   Institute of Microbiology (Technical University Munich)        //

@@ -3,7 +3,6 @@
 /*    File       : NT_concatenate.cxx                                                    */
 /*    Purpose    : 1.Concatenatenation of sequences or alignments                        */
 /*                 2.Merging the fields of similar species and creating a new species    */
-/*    Time-stamp : Thu Nov 21 2002                                                       */
 /*    Author     : Yadhu Kumar (yadhu@mikro.biologie.tu-muenchen.de)                     */
 /*    web site   : http://www.arb-home.de/                                               */
 /*                                                                                       */

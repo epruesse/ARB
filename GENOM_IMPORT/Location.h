@@ -2,7 +2,6 @@
 //                                                                  //
 //   File      : Location.h                                         //
 //   Purpose   :                                                    //
-//   Time-stamp: <Thu Mar/12/2009 16:25 MET Coder@ReallySoft.de>    //
 //                                                                  //
 //   Coded by Ralf Westram (coder@reallysoft.de) in November 2006   //
 //   Institute of Microbiology (Technical University Munich)        //

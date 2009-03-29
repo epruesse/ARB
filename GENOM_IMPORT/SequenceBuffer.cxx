@@ -2,7 +2,6 @@
 //                                                                  //
 //   File      : SequenceBuffer.cxx                                 //
 //   Purpose   :                                                    //
-//   Time-stamp: <Thu Oct/30/2008 10:55 MET Coder@ReallySoft.de>    //
 //                                                                  //
 //   Coded by Ralf Westram (coder@reallysoft.de) in December 2006   //
 //   Institute of Microbiology (Technical University Munich)        //
