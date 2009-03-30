@@ -631,47 +631,23 @@ GB_ERROR GB_check_hkey(const char *key) { /* goes to header: __ATTR__USERESULT *
     return err;
 }
 
-/*  int  i; */
-/*  long len; */
-
-/*  if (!key || key[0] == 0) return GB_export_error("Empty key is not allowed"); */
-/*  len = strlen(key); */
-/*  if (len>GB_KEY_LEN_MAX) return GB_export_error("Invalid key '%s': too long",key); */
-/*  if (len < GB_KEY_LEN_MIN) return GB_export_error("Invalid key '%s': too short",key); */
-
-/*  for (i = 0; key[i]; ++i) { */
-/*         char c = key[i]; */
-/*      if ( (c>='a') && (c<='z')) continue; */
-/*      if ( (c>='A') && (c<='Z')) continue; */
-/*      if ( (c>='0') && (c<='9')) continue; */
-/*      if ( (c=='_') ) continue; */
-
-         /* hierarchical keys :  */
-/*      if ( (c=='/') ) continue; */
-/*      if ( (c=='-') && (key[i+1] == '>') ) { ++i; continue; } */
-
-/*      return GB_export_error("Invalid character '%c' in '%s'; allowed: a-z A-Z 0-9 '_' '->' '/'", c, key); */
-/*  } */
-
-/*  return 0; */
-
 #define UPPERCASE(c) if ( (c>='a') && (c<='z')) c+= 'A'-'a'
 
 /* search a substring in another string
     match_mode == 0     -> exact match
-    match_mode == 1     -> a==A
+    match_mode == 1     -> a==A 
     match_mode == 2     -> a==a && a==?
     match_mode == else  -> a==A && a==?
 */
 
-GB_CSTR GBS_find_string(GB_CSTR str, GB_CSTR key, int match_mode) {
+GB_CSTR GBS_find_string(GB_CSTR str, GB_CSTR substr, int match_mode) {
     const char *p1, *p2;
     char        b;
     
     switch (match_mode) {
 
         case 0: /* exact match */
-            for (p1 = str, p2 = key; *p1;) {
+            for (p1 = str, p2 = substr; *p1;) {
                 if (!(b = *p2)) {
                     return (char *)str;
                 } else {
@@ -679,7 +655,7 @@ GB_CSTR GBS_find_string(GB_CSTR str, GB_CSTR key, int match_mode) {
                         p1++;
                         p2++;
                     } else {
-                        p2 = key;
+                        p2 = substr;
                         p1 = (++str);
                     }
                 }
@@ -688,7 +664,7 @@ GB_CSTR GBS_find_string(GB_CSTR str, GB_CSTR key, int match_mode) {
             break;
 
         case 1: /* a==A */
-            for (p1 = str, p2 = key; *p1;) {
+            for (p1 = str, p2 = substr; *p1;) {
                 if (!(b = *p2)) {
                     return (char *)str;
                 } else {
@@ -696,7 +672,7 @@ GB_CSTR GBS_find_string(GB_CSTR str, GB_CSTR key, int match_mode) {
                         p1++;
                         p2++;
                     } else {
-                        p2 = key;
+                        p2 = substr;
                         p1 = (++str);
                     }
                 }
@@ -704,7 +680,7 @@ GB_CSTR GBS_find_string(GB_CSTR str, GB_CSTR key, int match_mode) {
             if (!*p2) return (char *)str;
             break;
         case 2: /* a==a && a==? */
-            for (p1 = str, p2 = key; *p1;) {
+            for (p1 = str, p2 = substr; *p1;) {
                 if (!(b = *p2)) {
                     return (char *)str;
                 } else {
@@ -712,7 +688,7 @@ GB_CSTR GBS_find_string(GB_CSTR str, GB_CSTR key, int match_mode) {
                         p1++;
                         p2++;
                     } else {
-                        p2 = key;
+                        p2 = substr;
                         p1 = (++str);
                     }
                 }
@@ -721,7 +697,7 @@ GB_CSTR GBS_find_string(GB_CSTR str, GB_CSTR key, int match_mode) {
             break;
 
         default: /* a==A && a==? */
-            for (p1 = str, p2 = key; *p1;) {
+            for (p1 = str, p2 = substr; *p1;) {
                 if (!(b = *p2)) {
                     return (char *)str;
                 } else {
@@ -729,7 +705,7 @@ GB_CSTR GBS_find_string(GB_CSTR str, GB_CSTR key, int match_mode) {
                         p1++;
                         p2++;
                     } else {
-                        p2 = key;
+                        p2 = substr;
                         p1 = (++str);
                     }
                 }
