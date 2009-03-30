@@ -1821,12 +1821,5 @@ AW_window *GEN_map(AW_root *aw_root, int window_number) {
 }
 
 AW_window *GEN_map_first(AW_root *aw_root) {
-    AW_window *aw_map1 = GEN_map(aw_root, 0);
-
-#if defined(DEVEL_RALF)
-    AW_window *aw_map2 = GEN_map(aw_root, 1);
-    aw_map2->show();
-#endif // DEVEL_RALF
-
-    return aw_map1;
+    return GEN_map(aw_root, 0);
 }
