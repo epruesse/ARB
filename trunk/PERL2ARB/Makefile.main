@@ -40,14 +40,18 @@ $(TARGET_SO) : $(ARB_SO)
 $(ARB_SO) : $(XS_DEPENDS) depends.stamp
 	-rm $(ARB_SO)
 	@echo "-------- calling MakeMaker-Makefile"
-	$(MAKE) "dflags=${dflags}" $@
+	( $(MAKE) "dflags=${dflags}" $@ || \
+		(echo "------ failed.. retry once"; \
+		 $(MAKE) "dflags=${dflags}" $@))
 	@echo "-------- post-recreating .depends"
 	$(MAKETHIS) "DEPENDS=0" .depends
 	$(MAKETHIS) $@ # recurse
 
 ARB.c : $(XS_DEPENDS) 
 	@echo "-------- calling MakeMaker-Makefile (to get depends)"
-	$(MAKE) "dflags=${dflags}" $@
+	( $(MAKE) "dflags=${dflags}" $@ || \
+		(echo "------ failed.. retry once"; \
+		 $(MAKE) "dflags=${dflags}" $@ ))
 	@echo "-------- end of MakeMaker-Makefile" 
 
 Makefile : $(MACH).PL typemap  
