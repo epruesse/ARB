@@ -302,7 +302,4 @@ symlink_maybe_no_target ../AISC_MKPTPS/aisc_mkpt MAKEBIN/aisc_mkpt &&
 symlink_maybe_no_target ../help/input_mask_format.hlp     lib/inputMasks/format.readme &&
 symlink ../../GDEHELP                     lib/help/GDEHELP &&
 
-# links related to probe web service
-symlink ../PROBE_WEB/SERVER PROBE_SERVER/ps_cgi &&
-
 echo "generate_all_links.sh done."
