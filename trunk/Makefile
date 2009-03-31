@@ -522,7 +522,6 @@ ARCHS = \
 			PRIMER_DESIGN/PRIMER_DESIGN.a \
 			PROBE_COM/server.a \
 			PROBE_DESIGN/PROBE_DESIGN.a \
-			PROBE_SERVER/PROBE_SERVER.a \
 			PROBE_SET/PROBE_SET.a \
 			READSEQ/READSEQ.a \
 			RNA3D/RNA3D.a \
@@ -977,10 +976,6 @@ show:
 		@echo '  help   recompile help files'
 		@echo '  tools  make small tools used by arb'
 		@echo ''
-		@echo ' optional targets (not build by make all)'
-		@echo ''
-		@echo '  ps     ARB probe server'
-		@echo ''
 		@echo ' foreign targets:'
 		@echo ''
 		@echo '  gde    GDE'
@@ -1037,7 +1032,6 @@ sl:	NAMES_COM/NAMES_COM.dummy
 
 ds:	$(DBSERVER)
 pt:	$(PROBE)
-ps:	PROBE_SERVER/PROBE_SERVER.dummy
 pst: 	PROBE_SET/PROBE_SET.dummy
 pd:	PROBE_DESIGN/PROBE_DESIGN.dummy
 na:	$(NAMES)
@@ -1294,7 +1288,7 @@ arbshared: dball aw dp awt
 arbapplications: nt pa ed e4 we pt na al nal di ph ds trs pgt
 
 # optionally things (no real harm for ARB if any of them fails):
-arbxtras: tg ps pst a3
+arbxtras: tg pst a3
 
 tryxtras:
 	@echo $(SEP)
