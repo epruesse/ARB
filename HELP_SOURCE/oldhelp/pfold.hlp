@@ -47,7 +47,7 @@ SECTION Overview of the Chou-Fasman Algorithm
 	that certain amino acids tend to form or break alpha-helices ('H'),
 	beta-sheets ('E') and beta-turns ('T'). The experimentally obtained
 	Chou-Fasman parameters (former and breaker values) are used to predict the
-	possible occurance of the individual structure types which can then be
+	possible occurrence of the individual structure types which can then be
 	merged to create a secondary structure summary. Further information on how
 	this approach is used for protein structure match computation can be found
 	in LINK{pfold_props.hlp} in section 'Description of Match Methods'.

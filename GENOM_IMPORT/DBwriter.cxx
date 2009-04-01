@@ -172,11 +172,11 @@ void DBwriter::writeFeature(const Feature& feature)
     {
         string                gene_name = feature.createGeneName();
         NameCounter::iterator existing  = generatedGenes.find(gene_name);
-        if (existing == generatedGenes.end()) { // first occurrance of that gene name
+        if (existing == generatedGenes.end()) { // first occurrence of that gene name
             generatedGenes[gene_name] = 1;
         }
         else {
-            existing->second++; // increment occurances
+            existing->second++; // increment occurrences
         }
 
         gb_gene = DB_create_container(gb_gene_data, "gene", false);
@@ -237,11 +237,11 @@ void DBwriter::renumberDuplicateGenes() {
 
         NameCounter::iterator rc = renameCounter.find(gene_name);
         if (rc != rc_end) { // rename current_gene
-            int maxOccurances = generatedGenes[gene_name];
-            rc->second++;   // increment occurance counter
-            gi_assert(rc->second <= maxOccurances);
+            int maxOccurrences = generatedGenes[gene_name];
+            rc->second++;   // increment occurrence counter
+            gi_assert(rc->second <= maxOccurrences);
 
-            int digits = strlen(GBS_global_string("%i", maxOccurances));
+            int digits = strlen(GBS_global_string("%i", maxOccurrences));
             gene_name    += GBS_global_string("_%0*i", digits, rc->second);
             GB_ERROR err  = GB_write_string(gb_name, gene_name.c_str());
             if (err) throw DBerror("Failed to write to field 'name' (during gene-renumbering)", err);

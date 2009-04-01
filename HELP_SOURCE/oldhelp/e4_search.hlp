@@ -35,7 +35,7 @@ DESCRIPTION	Search
 
 		Last/Next
 
-			Jumps to the last/next occurance of any of the given patterns.
+			Jumps to the last/next occurrence of any of the given patterns.
 			You can repeat your last search by pressing CTRL-S.
 
 		Show ?
@@ -53,13 +53,13 @@ DESCRIPTION	Search
 		Open folded?
 
 			If checked, the Last/Next-Button will open folded groups,
-			to jump to the next occurance. Otherwise search will jump
+			to jump to the next occurrence. Otherwise search will jump
 			over folded groups.
 
 		Auto jump?
 
 			If checked, the cursor will automatically jump to the
-			nearest occurance, if you change the search pattern or
+			nearest occurrence, if you change the search pattern or
 			other search parameters.
 
 		Ignore gaps in sequence?

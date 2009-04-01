@@ -52,8 +52,8 @@ void PS_detect_weak_differences_stepdown( const PS_NodePtr _ps_node,
     //  Recursively walk through tree and make a bool-matrix of SpeciesID's
     //  where true means that the 2 species can be distinguished by a probe.
     //
-    //  The first occurence of a pair of distinguishable IDs is stored as (smaller_ID,bigger_ID).
-    //  The following ocurences of this pair are stored as (bigger_ID,smaller_ID).
+    //  The first occurrence of a pair of distinguishable IDs is stored as (smaller_ID,bigger_ID).
+    //  The following occurrence of this pair are stored as (bigger_ID,smaller_ID).
     //  (this allows us to find pairs of SpeciesIDs that can be distinguished by exactly one probe)
 
     SpeciesID id = _ps_node->getNum();

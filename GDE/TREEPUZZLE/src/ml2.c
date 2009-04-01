@@ -233,7 +233,7 @@ Node *internalnode(Tree *tr, char **chpp, int *ninode)
 			
 			if (!strcmp(ident, idcomp)) {
 				if (usedtaxa[i]) {
-					FPRINTF(STDOUTFILE "\n\n\nUnable to proceed (multiple occurence of sequence '");
+					FPRINTF(STDOUTFILE "\n\n\nUnable to proceed (multiple occurrences of sequence '");
 					FPRINTF(STDOUTFILE "%s' in tree)\n\n\n", ident);
 					exit(1);
 				}

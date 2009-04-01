@@ -1405,7 +1405,7 @@ void ED4_search(AW_window */*aww*/, AW_CL searchDescriptor)
                             aw_message("There are no other shown patterns");
                         }
                         else {
-                            aw_message("This is the only occurance of the search pattern");
+                            aw_message("This is the only occurrence of the search pattern");
                         }
                     }
                     else {

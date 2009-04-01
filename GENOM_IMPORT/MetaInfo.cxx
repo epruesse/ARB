@@ -134,7 +134,7 @@ void MetaInfo::add(const MetaTag *meta, const string& content, bool allow_multip
     stringMapIter existing = entries.find(meta->field);
     if (existing != entries.end()) { // existing entry
         if (!allow_multiple_entries) {
-            throw GBS_global_string("Multiple occurrance of tag '%s'", meta->tag.c_str());
+            throw GBS_global_string("Multiple occurrences of tag '%s'", meta->tag.c_str());
         }
         existing->second += '\n'+content; // append content
     }

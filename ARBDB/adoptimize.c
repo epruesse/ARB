@@ -49,7 +49,7 @@ typedef struct S_GB_SINGLE_DICT_TREE
 {
     GB_DICT_NODE_TYPE typ;          /* always SINGLE_NODE */
     unsigned_char     ch;           /* the character */
-    int               count;        /* no of occurances of this branch */
+    int               count;        /* no of occurrences of this branch */
     GB_DICT_TREE      son;
     GB_DICT_TREE      brother;
 
@@ -57,14 +57,15 @@ typedef struct S_GB_SINGLE_DICT_TREE
 
 /****************************************************/
 
-#define COMPRESSABLE(type)                      ((type)>=GB_BYTES && (type)<=GB_STRING)
-#define DICT_MEM_WEIGHT                         4
-#define WORD_HELPFUL(wordlen, occurences)       ((long)((occurences)*3 + DICT_MEM_WEIGHT*(2*sizeof(GB_NINT)+(wordlen))) \
-                                                 <                      \
-                                                 (long)((occurences)*(wordlen)))
-/* (occurences)*4                       compressed size
+#define COMPRESSABLE(type) ((type) >= GB_BYTES && (type)<=GB_STRING)
+#define DICT_MEM_WEIGHT    4
+
+#define WORD_HELPFUL(wordlen, occurrences)      ((long)((occurrences)*3 + DICT_MEM_WEIGHT*(2*sizeof(GB_NINT)+(wordlen))) \
+                                                 < \
+                                                 (long)((occurrences)*(wordlen)))
+/* (occurrences)*4                      compressed size
  * 2*sizeof(GB_NINT)+(wordlen)          size in dictionary
- * (occurences)*(wordlen)               uncompressed size
+ * (occurrences)*(wordlen)              uncompressed size
  */
 
 /****************************************************/
@@ -73,8 +74,8 @@ typedef struct S_GB_SINGLE_DICT_TREE
 #define MAX_WORD_LEN    50      /* maximum length of words in dictionary */
 #define MAX_BROTHERS    10      /* maximum no of brothers linked with GB_SINGLE_DICT_TREE
                                  * above we use GB_FULL_DICT_TREE */
-#define MAX_DIFFER       2      /* percentage of difference (of occurances of strings) below which two
-                                 * consecutive parts are treated as EQUAL # of occurances */
+#define MAX_DIFFER       2      /* percentage of difference (of occurrences of strings) below which two
+                                 * consecutive parts are treated as EQUAL # of occurrences */
 #define INCR_DIFFER      1      /* the above percentage is incremented from 0 to MAX_DIFFER by INCR_DIFFER per step */
 
 #define DICT_STRING_INCR 1024   /* dictionary string will be incremented by this size */
@@ -1241,7 +1242,7 @@ static GB_DICT_TREE cut_dtree(GB_DICT_TREE tree, int cut_count, long *memcount, 
 static GB_DICT_TREE cut_useless_words(GB_DICT_TREE tree, int deep, long *removed)
 /* removes/shortens all branches of 'tree' which are not useful for compression
  * 'deep' should be zero (incremented by cut_useless_words)
- * 'removed' will be set to the # of removed occurances
+ * 'removed' will be set to the # of removed occurrences
  * returns: the reduced tree
  */
 {
@@ -1539,7 +1540,7 @@ static GB_DICT_TREE removeSubsequentString(GB_DICT_TREE *tree_pntr, cu_str buffe
      * searches tree for 'buffer' (length='len')
      *
      * returns          - rest below found string
-     *            (if found and if the # of occurances of the string is less/equal than 'max_occur')
+     *            (if found and if the # of occurrences of the string is less/equal than 'max_occur')
      *          - NULL otherwise
      *
      * removes the whole found string from the tree (not only the rest!)
@@ -1657,14 +1658,14 @@ static int expandBranches(u_str buffer, int deep, int minwordlen, int maxdeep, G
      * expands all branches in 'tree'
      *
      * this is done by searching every of these branches in 'root' and moving any subsequent parts from there to 'tree'
-     * (this is only done, if the # of occurances of the found part does not exceed the # of occurances of 'tree' more than 'max_percent' percent)
+     * (this is only done, if the # of occurrences of the found part does not exceed the # of occurrences of 'tree' more than 'max_percent' percent)
      *
      *  'buffer'        strings are rebuild here while descending the tree (length of buffer==MAX_WORD_LEN)
      *  'deep'          recursion level
      *  'maxdeep'       maximum recursion level
      *  'minwordlen'    is the length of the words to search (usually equal to MIN_WORD_LEN-1)
      *
-     * returns the # of occurances which were added to 'tree'
+     * returns the # of occurrences which were added to 'tree'
      */
     int expand = 0;             /* calculate count-sum of added subsequent parts */
 
@@ -1925,7 +1926,7 @@ static GB_DICT_TREE build_dict_tree(O_gbdByKey *gbk, long maxmem, long maxdeep, 
 
 static GB_DICT_TREE remove_word_from_dtree(GB_DICT_TREE tree, cu_str wordStart, int wordLen, u_str resultBuffer, int *resultLen, long *resultFrequency, long *removed) {
     /* searches 'tree' for a word starting with 'wordStart' an removes it from the tree
-     * if there are more than one possibilities, the returned word will be the one with the most occurances
+     * if there are more than one possibilities, the returned word will be the one with the most occurrences
      * if there was no possibility -> resultLen==0, tree unchanged
      * otherwise: resultBuffer contains the word, returns new tree with word removed
      */

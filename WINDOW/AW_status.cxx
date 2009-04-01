@@ -1937,7 +1937,7 @@ static void aw_help_search(AW_window *aww) {
         // replace all spaces in 'searchtext' by '.*'
         freeset(searchtext, GBS_string_eval(searchtext, " =.*", 0));
 
-        // grep .hlp for occurances of 'searchtext'.
+        // grep .hlp for occurrences of 'searchtext'.
         // write filenames of matching files into 'helpfilename'
         {
             {

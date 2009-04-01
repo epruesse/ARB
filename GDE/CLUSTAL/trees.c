@@ -443,7 +443,7 @@ getint("\n\nEnter number of bootstrap trials ",1,10000,boot_ntrials);
 	fprintf(phy_tree_file,"\n Each column is 1 sequence; ");
 	fprintf(phy_tree_file,"the stars in each line show 1 group; ");
 	fprintf(phy_tree_file,"\n the dots show the other\n");
-	fprintf(phy_tree_file,"\n Numbers show occurences in bootstrap samples.");
+	fprintf(phy_tree_file,"\n Numbers show occurrences in bootstrap samples.");
 /*
 	print_tree(standard_tree, phy_tree_file, boot_totals);
 */

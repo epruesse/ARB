@@ -40,10 +40,10 @@ DESCRIPTION     left/right position:
 
                 minimal distance to next match of primer:
                 if a primer is found again outside this range it is ignored
-                example: primerpos     100
-                         min.dist       50
-                         2nd occurence  30 => primer remains in list
-                         3rd occurence 140 => primer is removed from list
+                example: primerpos        100
+                         min.dist          50
+                         2nd occurrence    30 => primer remains in list
+                         3rd occurrence   140 => primer is removed from list
 
                 expand IUPAC-codes:
                 switches expansion of IUPAC-codes on/off

@@ -11,7 +11,7 @@ SUB	set_protection.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Protection Level
 
-OCCURENCE	ARB_NT/Protection
+OCCURRENCE	ARB_NT/Protection
 		ARB_EDIT/EDIT/Set Protection Level ...
 
 DESCRIPTION	An individual protection level (0 - 6) can be assigned to
