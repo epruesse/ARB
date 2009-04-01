@@ -1501,7 +1501,7 @@ SHOW()
 	int   col;			/* number of output columns prepared */
 	short done;			/* tells if current group is done */
 	rowptr root;			/* pointer to root of op tree */
-	int   sym[6];			/* occurrance counts for six chars */
+	int   sym[6];			/* occurrence counts for six chars */
 	char  c;			/* temp variable */
 	rowptr t, w, yy;		/* temp pointer */
 	int    x;			/* temp variables */

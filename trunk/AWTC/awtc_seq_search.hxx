@@ -449,7 +449,6 @@ public:
     }
 };
 
-//class AWTC_FastSearchOccurance;
 class AWTC_FastSearchSequence           // a sequence where search of character triples is very fast
 {
     const AWTC_CompactedSubSequence *mySequence;
@@ -482,7 +481,7 @@ public:
 };
 
 
-class AWTC_FastSearchOccurance          // iterates through all Occurances of one character triple
+class AWTC_FastSearchOccurrence          // iterates through all Occurances of one character triple
 {
     const AWTC_FastSearchSequence&      mySequence;
     const AWTC_TripleOffset             *myOffset;
@@ -491,9 +490,9 @@ class AWTC_FastSearchOccurance          // iterates through all Occurances of on
 
 public:
 
-    AWTC_FastSearchOccurance(const AWTC_FastSearchSequence& Sequence, const char *triple)
+    AWTC_FastSearchOccurrence(const AWTC_FastSearchSequence& Sequence, const char *triple)
         : mySequence(Sequence)                          { myOffset = mySequence.find(triple); IV();}
-    ~AWTC_FastSearchOccurance()                         { IV();}
+    ~AWTC_FastSearchOccurrence()                        { IV();}
 
     int found() const                                   { IV(); return myOffset!=0; }
     void gotoNext()                                     { awtc_assert(myOffset!=0); myOffset = myOffset->next(); IV(); }

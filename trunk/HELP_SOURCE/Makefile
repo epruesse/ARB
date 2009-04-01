@@ -113,7 +113,7 @@ dump:
 $(XML_LOCATION)/%.xml : $(HLP_SOURCE)/%.hlp
 		@test \! -f $(HLP_GENERATED)/$(<F) || \
 				( echo $<:1: exists twice -- only one existance allowed; \
-				  echo $(HLP_GENERATED)/$(<F):1: other occurance \
+				  echo $(HLP_GENERATED)/$(<F):1: other occurrence \
 				  && false )
 		arb_help2xml $< $@
 		@$(VALIDATE) $@
@@ -121,7 +121,7 @@ $(XML_LOCATION)/%.xml : $(HLP_SOURCE)/%.hlp
 $(XML_LOCATION)/%.xml : $(HLP_GENERATED)/%.hlp
 		@test \! -f $(HLP_SOURCE)/$(<F) || \
 				( echo $<:1: exists twice -- only one existance allowed; \
-				  echo $(HLP_SOURCE)/$(<F):1: other occurance \
+				  echo $(HLP_SOURCE)/$(<F):1: other occurrence \
 				  && false )
 		arb_help2xml $< $@
 		@$(VALIDATE) $@

@@ -15,7 +15,7 @@ OCCURRENCE	ARB_EDIT4/Block/Replace
 DESCRIPTION	This menu allows you to replace parts in the sequence data.
 
 		The selected range (see subtopics) will be searched for
-		occurances of the string given in the first input field.
+		occurrences of the string given in the first input field.
 		If found it will be replaced by the string given in the
 		second input field.
 

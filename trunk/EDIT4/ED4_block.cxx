@@ -634,7 +634,7 @@ static char* replace_in_sequence(const char *sequence, int len, int /*repeat*/, 
     }
     else {
         while (o<len) {
-            if (sequence[o]==ostart && strncmp(sequence+o, oldString, olen)==0) { // occurance of oldString
+            if (sequence[o]==ostart && strncmp(sequence+o, oldString, olen)==0) { // occurrence of oldString
                 memcpy(new_seq+n, newString, nlen);
                 n += nlen;
                 o += olen;

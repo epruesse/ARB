@@ -51,7 +51,7 @@ void BaseCounter::checkOverallCounter() const
 
     gi_assert(count[BC_ALL]>0); // forgot to call calcOverallCounter ?
     if (count[BC_ALL] != all) {
-        throw GBS_global_string("Overall bp (=%u) does not match sum (=%u) of single bases (Occurrance: '%s')",
+        throw GBS_global_string("Overall bp (=%u) does not match sum (=%u) of single bases (Occurrence: '%s')",
                                 count[BC_ALL], all, source.c_str());
     }
 }

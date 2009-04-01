@@ -137,7 +137,7 @@ float *PH_filter::calculate_column_homology(void){
     long stopcol  = options_vector[OPT_STOP_COL];
     long len      = stopcol - startcol;
 
-    // chars_counted[column][index] counts the occurrances of single characters per column
+    // chars_counted[column][index] counts the occurrences of single characters per column
     // index = num_all_chars   -> count chars which act as column stopper ( = forget whole column if char occurs)
     // index = num_all_chars+1 -> count masked characters ( = don't count)
 

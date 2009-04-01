@@ -56,7 +56,7 @@ void readid(FILE *infp, int t)
 			if (Identif[t][j] != Identif[i][j])
 				flag = FALSE;
 		if (flag) {
-			FPRINTF(STDOUTFILE "\n\n\nUnable to proceed (multiple occurence of sequence name '");
+			FPRINTF(STDOUTFILE "\n\n\nUnable to proceed (multiple occurrences of sequence name '");
 			fputid(STDOUT, t);
 			FPRINTF(STDOUTFILE "')\n\n\n");
 			exit(1);
@@ -1405,7 +1405,7 @@ treelistitemtype *addtree2list(char             **tree,         /* sorted tree s
 
 /**********/
 
-/* resort list of trees by number of occurences for output */
+/* resort list of trees by number of occurrences for output */
 void sortbynum(treelistitemtype *list, treelistitemtype **sortlist)
 {
 	treelistitemtype *tmpptr = NULL;
@@ -1525,9 +1525,9 @@ void fprintfsortedpstrees(FILE *output,
 				if (num == 1){
 					fprintf (output, "\n");
 					fprintf (output, "The following tree(s) occured in more than %.2f%% of the %d puzzling steps.\n", cutoff, itemsum);
-					fprintf (output, "The trees are orderd descending by the number of occurences.\n");
+					fprintf (output, "The trees are orderd descending by the number of occurrences.\n");
 					fprintf (output, "\n");
-					fprintf (output, "\n       occurences    ID  Phylip tree\n");
+					fprintf (output, "\n       occurrences   ID  Phylip tree\n");
 				}
 				fprintf (output, "%2d. %5d %6.2f%% %5d  ", num++, (*tmpptr).count, percent, (*tmpptr).id);
 			}

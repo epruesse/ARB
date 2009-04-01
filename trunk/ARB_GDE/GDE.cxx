@@ -456,7 +456,7 @@ void create_gde_var(AW_root  *aw_root, AW_default aw_def,
     gde_cgss.wt = wt;
     gde_cgss.THIS= THIS;
 
-    // aw_root->awar_string("tmp/gde/helptext", "help", aw_def); // only occurence
+    // aw_root->awar_string("tmp/gde/helptext", "help", aw_def); // only occurrence
     aw_root->awar_string(AWAR_GDE_ALIGNMENT, "", aw_def);
 
     switch (gde_cgss.wt)

@@ -490,7 +490,7 @@ int Find(const char *target,const char *key)
 int Find2(const char *target,const char *key)
     /*
      *   Like find, but returns the index of the leftmost
-     *   occurence, and -1 if not found.
+     *   occurrence, and -1 if not found.
      */
 {
     int i,j,len1,dif,flag = FALSE;

@@ -420,7 +420,7 @@ void GenebankImporter::import_section() {
 
             switch (knownTag->type) {
                 case MT_HEADER:
-                    if (seenHeaderLine) throw GBS_global_string("Multiple occurrance of tag '%s'", tag.c_str());
+                    if (seenHeaderLine) throw GBS_global_string("Multiple occurrences of tag '%s'", tag.c_str());
                     seenHeaderLine = true;
                     // fall-through
                 case MT_BASIC:
@@ -562,7 +562,7 @@ void EmblImporter::import_section() {
 
             switch (knownTag->type) {
                 case MT_HEADER:
-                    if (seenHeaderLine) throw GBS_global_string("Multiple occurrance of tag '%s'", tag.c_str());
+                    if (seenHeaderLine) throw GBS_global_string("Multiple occurrences of tag '%s'", tag.c_str());
                     seenHeaderLine = true;
                     // fall-through
                 case MT_BASIC:

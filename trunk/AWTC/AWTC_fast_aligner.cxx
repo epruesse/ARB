@@ -895,13 +895,13 @@ GB_ERROR AWTC_FastSearchSequence::fast_align(const AWTC_CompactedSubSequence& sl
     long bestLength=0;
 
     while (slave.rightOf()>=3) { // with all triples of slaveSequence
-        AWTC_FastSearchOccurance occurance(*this, slave.text()); // "search" first
+        AWTC_FastSearchOccurrence occurrence(*this, slave.text()); // "search" first
         AWTC_SequencePosition rightmostSlave = slave;
 
-        while (occurance.found()) { // with all occurances of the triple
+        while (occurrence.found()) { // with all occurrences of the triple
             long score = match*3;
-            AWTC_SequencePosition masterLeft(occurance.sequence(), occurance.offset());
-            AWTC_SequencePosition masterRight(occurance.sequence(), occurance.offset()+3);
+            AWTC_SequencePosition masterLeft(occurrence.sequence(), occurrence.offset());
+            AWTC_SequencePosition masterRight(occurrence.sequence(), occurrence.offset()+3);
             AWTC_SequencePosition slaveLeft(slave);
             AWTC_SequencePosition slaveRight(slave,3);
 
@@ -927,7 +927,7 @@ GB_ERROR AWTC_FastSearchSequence::fast_align(const AWTC_CompactedSubSequence& sl
                 }
             }
 
-            occurance.gotoNext(); // "search" next
+            occurrence.gotoNext(); // "search" next
 
             if (rightmostSlave<slaveRight) {
                 rightmostSlave = slaveRight;

@@ -948,7 +948,7 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
         for (int g = 0; g<group_count; ++g) {
             int      name             = group_idx[g];
             long     possible_tprobes = psg.data[name].size-pdc->probelen+1;
-            GB_HASH *hash_one         = GBS_create_hash(possible_tprobes*hash_multiply, GB_MIND_CASE); // count tprobe occurances for one group/sequence
+            GB_HASH *hash_one         = GBS_create_hash(possible_tprobes*hash_multiply, GB_MIND_CASE); // count tprobe occurrences for one group/sequence
             ptnd_add_sequence_to_hash(pdc, hash_one, psg.data[name].data, psg.data[name].size, pdc->probelen, partstring, partsize);
             GBS_hash_do_loop2(hash_one, ptnd_collect_hash, hash); // merge hash_one into hash
 #if defined(DEBUG)
@@ -959,7 +959,7 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
         PT_sequence *seq;
         for ( seq = pdc->sequences; seq; seq = seq->next) {
             long     possible_tprobes = seq->seq.size-pdc->probelen+1;
-            GB_HASH *hash_one         = GBS_create_hash(possible_tprobes*hash_multiply, GB_MIND_CASE); // count tprobe occurances for one group/sequence
+            GB_HASH *hash_one         = GBS_create_hash(possible_tprobes*hash_multiply, GB_MIND_CASE); // count tprobe occurrences for one group/sequence
             ptnd_add_sequence_to_hash(pdc, hash_one, seq->seq.data, seq->seq.size, pdc->probelen, partstring, partsize);
             GBS_hash_do_loop2(hash_one, ptnd_collect_hash, hash); // merge hash_one into hash
 #if defined(DEBUG)

@@ -20,10 +20,10 @@ DESCRIPTION	Standart Regular Expressions:
 		[1]	/Search Regexpr/Replace String/
 		[2]	/Search Regexpr/
 
-		[1] searches the input for occurances of 'Search Regexpr' and
-                replaces every occurance with 'Replace String'.
+		[1] searches the input for occurrences of 'Search Regexpr' and
+                replaces every occurrence with 'Replace String'.
 
-		[2] searches the input for the FIRST occurance of 'Search
+		[2] searches the input for the FIRST occurrence of 'Search
                 Regexpr' - if not found it returns an empty string
 
 BUGS		No bugs known

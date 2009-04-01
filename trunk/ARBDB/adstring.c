@@ -1285,7 +1285,7 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
 
         To reference to the wildcards on the left side of the '='
         use ? and *, to reference in a different order use:
-            *0 to reference to the first occurence of *
+            *0 to reference to the first occurrence of *
             *1          second
             ...
             *9

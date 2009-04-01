@@ -529,8 +529,8 @@ static void update_browser_selection_list(AW_root *aw_root, AW_CL cl_aww, AW_CL 
             entry.type       = GB_read_type(child);
             entry.gbd        = child;
 
-            int occurances = child_count[entry.key_name].occur;
-            if (occurances != 1) {
+            int occurrences = child_count[entry.key_name].occur;
+            if (occurrences != 1) {
                 entry.childCount = child_count[entry.key_name].count;
                 child_count[entry.key_name].count++;
             }
