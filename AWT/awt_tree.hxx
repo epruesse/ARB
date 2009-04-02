@@ -407,7 +407,7 @@ public:
 
     GB_ERROR move_group_info(AP_tree *new_group);
     void     mark_duplicates(GBDATA *gb_main);
-    void     mark_long_branches(GBDATA *gb_main,double max_rel_diff);
+    void     mark_long_branches(GBDATA *gb_main, double min_rel_diff, double min_abs_diff);
     void     mark_deep_branches(GBDATA *gb_main,int rel_depth);
     void     mark_degenerated_branches(GBDATA *gb_main,double degeneration_factor);
     void     justify_branch_lenghs(GBDATA *gb_main);

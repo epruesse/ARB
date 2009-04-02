@@ -706,16 +706,26 @@ void NT_mark_deep_branches(AW_window *aww, AW_CL ntwcl) {
 }
 
 void NT_mark_long_branches(AW_window *aww, AW_CL ntwcl){
-    char *val = aw_input("Enter minimum relativ difference (percent)");
+    char *val = aw_input("Enter min.rel.diff.(%),min.abs.diff");
     if (val) {
-        AWT_canvas     *ntw = (AWT_canvas *)ntwcl;
-        GB_transaction  dummy(ntw->gb_main);
-        
-        NT_mark_all_cb(aww,(AW_CL)ntw, (AW_CL)0);
-        AWT_TREE(ntw)->tree_root->mark_long_branches(ntw->gb_main,atof(val)/100.0);
-        AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
+        GB_ERROR  error = 0;
+        char     *komma = strchr(val, ',');
+
+        if (!komma) error = "Expected ','";
+        else {
+            float min_rel_diff = atof(val)/100.0;
+            float min_abs_diff = atof(komma+1);
+
+            AWT_canvas     *ntw = (AWT_canvas *)ntwcl;
+            GB_transaction  dummy(ntw->gb_main);
+
+            NT_mark_all_cb(aww,(AW_CL)ntw, (AW_CL)0);
+            AWT_TREE(ntw)->tree_root->mark_long_branches(ntw->gb_main, min_rel_diff, min_abs_diff);
+            AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
+            ntw->refresh();
+        }
+        if (error) aw_message(error);
         free(val);
-        ntw->refresh();
     }
 }
 
