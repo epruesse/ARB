@@ -17,25 +17,35 @@ DESCRIPTION	Badly aligned sequences often result in long branches in the
 		find those sequences.
 
 		The programs allows to mark all species having an extra
-		long branch compared to it's neighbour branch.
+		long branch compared with it's neighbour branch.
 
-                Enter the minimum relative difference between two neighbour branches
-                you want to have marked.
+                Enter two values separated by comma into the input field:
+                   * first the minimum relative difference between two neighbour
+                     branches you want to have marked.
 
-                Examples:
+                     Examples:
 
                         100 = mark branches that have more than the double length
                               compared with their neighbour branch
                         10  = mark branches that are more than 10% longer 
                         0   = mark branches that are longer than their neighbour branch
-                        
 
-NOTES		If a branch was marked - it's parent branches will not be marked!
-		
+                   * second the minimun absolute difference between two neighbour
+                     branches. The unit is the same as used in branchlength.
 
-BUGS		The program does not show all extra long branches because
-		then the output won't be user readable. So after fixing
-		the alignment of sequences and recalculating the branch
-		lengths, there might be new sequences with extra long 
-		branches.
+NOTES		If a branch was marked - it's parent branches will not be marked,
+                i.e. the function does not mark ALL extra long branches, only those
+                nearest to the tips of the trees will get marked - otherwise the
+                output won't be useful.
 
+                Intended workflow is:
+                         * Search long branches
+                         * Check alignment and data and maybe fix it
+                         * Recalculate tree parts (see LINK{pa_add.hlp})
+                         * Search again. Now you most likely will find other branches.
+                
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS            No bugs known
