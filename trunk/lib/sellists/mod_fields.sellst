@@ -10,3 +10,6 @@ calculate sequence checksum,                        seqcheck#|sequence|"ARB_";ch
 count ambiguities (nry. ...) (filter: ECOLI),       ambig#|sequence|filter(SAI=ECOLI,exclude=.-)|mid(10,-10)|len("-ACGTU")
 truncate seq. ranges outside ecoli range,           |filter(SAI=ECOLI,exclude=.)
 increase G+C content in helical regions by 5%,      ali_*/data#|change(SAI=HELIX,exclude=.-,change=5,to=GC)
+store taxonomy,                                     ARB_treetax#|taxonomy(1)
+store full taxonomy,                                ARB_treetax#|taxonomy(999)
+
