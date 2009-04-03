@@ -32,7 +32,8 @@ static void awt_create_selection_list_on_scandb_cb(GBDATA *dummy, struct adawcbs
     cbs->aws->clear_selection_list(cbs->id);
 
     if (cbs->add_all_fields_pseudo_field) {
-        cbs->aws->insert_selection(cbs->id, ALL_FIELDS_PSEUDO_FIELD, ALL_FIELDS_PSEUDO_FIELD);
+        cbs->aws->insert_selection(cbs->id, PSEUDO_FIELD_ANY_FIELD, PSEUDO_FIELD_ANY_FIELD);
+        cbs->aws->insert_selection(cbs->id, PSEUDO_FIELD_ALL_FIELDS, PSEUDO_FIELD_ALL_FIELDS);
     }
 
     GBDATA *gb_key;

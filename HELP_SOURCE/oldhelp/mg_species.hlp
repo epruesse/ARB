@@ -1,13 +1,11 @@
 #Please insert up references in the next lines (line starts with keyword UP)
 UP	arb.hlp
 UP	glossary.hlp
-UP	sp_search.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
 SUB	del_list.hlp
 SUB	write_field_list.hlp
 SUB	mod_field_list.hlp
-
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
@@ -16,10 +14,11 @@ TITLE		Compare and Transfer Species Entries
 
 OCCURRENCE	ARB_INTRO <MERGE TWO ARB DATABASES> ARB_MERGE <Transfer Species>
 
-DESCRIPTION	Allows 	# database searching,
-			# comparison of the two databases,
-			# transfering data from left to right
-			# realigning sequences to new alignment
+DESCRIPTION	Allows
+                        * database searching,
+			* comparison of the two databases,
+			* transfering data from left to right
+			* realigning sequences to new alignment
 
 	Database Searching:
 
@@ -35,12 +34,12 @@ DESCRIPTION	Allows 	# database searching,
 		'Hits:' prompt.
 
 		Define whether matching or non matching species should be
-			listed by pressing the appropriate combination of left
-			and right buttons in the 'QUERY TYPE' area. Performing
-			multiple searches, define whether the list of 'species'
-			should be replaced by the new results, whether newly
-			found 'species' should be removed from or appended
-			to the existing list.
+		listed by pressing the appropriate combination of left
+		and right buttons in the 'QUERY TYPE' area. Performing
+		multiple searches, define whether the list of 'species'
+		should be replaced by the new results, whether newly
+		found 'species' should be removed from or appended
+		to the existing list.
 
 		Select a 'field' from the 'Fields' subwindow.
 
@@ -48,25 +47,27 @@ DESCRIPTION	Allows 	# database searching,
 
 		Press the 'RUN QUERY' button of the results area.
 
+                See also LINK{searching.hlp} and LINK{search_equal_fields.hlp}.
+
 	Data Transfer:
 
 		To transfer a single 'species' and all its 'field' entries,
-			select the species from the list displayed in the 'HIT
-			LIST' subwindow and press The 'TRANSFER SELECTED
-			SPECIES' button in the middle column of the 'TRANSFER
-			SPECIES' window.
+		select the species from the list displayed in the 'HIT
+		LIST' subwindow and press The 'TRANSFER SELECTED
+		SPECIES' button in the middle column of the 'TRANSFER
+		SPECIES' window.
 
 		To transfer all listed 'species' and all corresponding 'field'
-			entries, press the 'TRANSFER ALL LISTED SPECIES' button
-			in the middle column of the 'TRANSFER SPECIES' window.
+		entries, press the 'TRANSFER ALL LISTED SPECIES' button
+		in the middle column of the 'TRANSFER SPECIES' window.
 
 		To transfer the entries of a 'field' selected from the 'Search
-			field' subwindow for all listed 'species, press the
-			'TRANSFER A FIELD FOR ALL LISTED SPECIES' button in the
-                        middle column of the 'TRANSFER SPECIES' window.
+		field' subwindow for all listed 'species, press the
+		'TRANSFER A FIELD FOR ALL LISTED SPECIES' button in the
+                middle column of the 'TRANSFER SPECIES' window.
 
 		To save modifications press the 'Save result' button of the
-			'ARB_MERGE' window.
+                'ARB_MERGE' window.
 
 	Adapt Alignment:
 

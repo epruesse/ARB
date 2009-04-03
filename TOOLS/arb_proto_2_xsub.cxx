@@ -123,7 +123,6 @@ int main(int argc, char **argv)
         /* exclude some functions  because of type problems */
         if (strstr(tok,"NOT4PERL")) continue;
         if (strstr(tok,"struct")) continue;
-        if (strstr(tok,"GBDATA_SET")) continue;
         if (strstr(tok,"UINT4 *")) continue;
         if (strstr(tok,"FLOAT *")) continue;
         if (strstr(tok,"...")) continue;

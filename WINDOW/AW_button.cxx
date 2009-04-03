@@ -1888,24 +1888,23 @@ char *AW_window::get_selection_list_contents( AW_selection_list * selection_list
     return GBS_strclose(fd);
 }
 
+GB_HASH *AW_window::selection_list_to_hash(AW_selection_list *sel_list, bool case_sens) {
+    // creates a hash (key = value of selection list, value = display string from selection list)
 
-GBDATA_SET *AW_window::selection_list_to_species_set(GBDATA *gb_main,AW_selection_list *selection_list){
+    int                     counter = 0;
     AW_select_table_struct *list_table;
-    GB_transaction dummy(gb_main);
 
-    GBDATA *gb_species_data = GB_search(gb_main,    "species_data",GB_CREATE_CONTAINER);
-    int counter = 0;
-    for ( list_table = selection_list->list_table; list_table; list_table = list_table->next ) {
+    for ( list_table = sel_list->list_table; list_table; list_table = list_table->next ) {
         counter ++;
     }
-    GBDATA_SET *set = GB_create_set(counter);
 
-    for ( list_table = selection_list->list_table; list_table; list_table = list_table->next ) {
-        GBDATA *gb_species = GBT_find_species_rel_species_data(gb_species_data,list_table->char_value);
-        if (!gb_species) continue;
-        GB_add_set(set,gb_species);
+    GB_HASH *hash = GBS_create_hash(2*counter, case_sens ? GB_MIND_CASE : GB_IGNORE_CASE);
+
+    for ( list_table = sel_list->list_table; list_table; list_table = list_table->next ) {
+        GBS_write_hash(hash, list_table->char_value, (long)list_table->displayed);
     }
-    return set;
+
+    return hash;
 }
 
 extern "C" {

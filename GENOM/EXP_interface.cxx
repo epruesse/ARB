@@ -245,8 +245,8 @@ AW_window *EXP_create_experiment_query_window(AW_root *aw_root) {
     experiment_query_global_cbs = cbs;
 
     aws->create_menu(       0,   "More search",     "s" );
-    aws->insert_menu_topic( "search_equal_fields_within_db","Search For Equal Fields and Mark Duplikates",          "E",0,  -1, (AW_CB)awt_search_equal_entries, cbs, 0 );
-    aws->insert_menu_topic( "search_equal_words_within_db", "Search For Equal Words Between Fields and Mark Duplikates",    "W",0,  -1, (AW_CB)awt_search_equal_entries, cbs, 1 );
+    aws->insert_menu_topic("search_equal_fields_within_db","Search For Equal Fields and Mark Duplikates",               "E", "search_duplicates.hlp", -1, (AW_CB)awt_search_equal_entries, cbs, 0);
+    aws->insert_menu_topic("search_equal_words_within_db", "Search For Equal Words Between Fields and Mark Duplikates", "W", "search_duplicates.hlp", -1, (AW_CB)awt_search_equal_entries, cbs, 1);
 
     aws->button_length(7);
 

@@ -64,11 +64,11 @@ typedef enum {
 
 struct adaqbsstruct {
     AW_window         *aws;
-    GBDATA            *gb_main;
-    GBDATA            *gb_ref;  // second reference database
-    AW_BOOL            look_in_ref_list; // for querys
+    GBDATA            *gb_main;                     // the main database (in merge tool: source db in left query; dest db in right query)
+    GBDATA            *gb_ref;                      // second reference database (only used by merge tool; dest db in left query; source db in right query)
+    AW_BOOL            expect_hit_in_ref_list;      // merge-tool: when searching dups in fields: match only if hit exists in other DBs hitlist (true for DBII-query)
     AWAR               species_name;
-    AWAR               tree_name;
+    const char        *tree_name;
     AWAR               awar_keys[AWT_QUERY_SEARCHES];
     AWAR               awar_setkey;
     AWAR               awar_setprotection;
@@ -88,9 +88,11 @@ struct adaqbsstruct {
     AWAR               awar_tag;
     AWAR               awar_count;
     AW_selection_list *result_id;
-    int                select_bit; // one of 1 2 4 8 .. 128 (one for each query box)
+    int                select_bit;                  // one of 1 2 4 8 .. 128 (one for each query box)
 
     const ad_item_selector *selector;
+
+    GB_HASH *hit_description; // key = char* (hit item name), value = char* (description of hit)
 };
 
 #define AWAR_TABLE_FIELD_REORDER_SOURCE_TEMPLATE "tmp/table/%s/field/reorder_source"
@@ -119,7 +121,8 @@ struct awt_table {
 #define AWAR_TABLE_EXPORT "tmp/ad_table/export_table"
 #define AWAR_TABLE_IMPORT "tmp/ad_table/import_table"
 
-#define ALL_FIELDS_PSEUDO_FIELD "[any field]"
+#define PSEUDO_FIELD_ANY_FIELD  "[any field]"
+#define PSEUDO_FIELD_ALL_FIELDS "[all fields]"
 
 long awt_query_update_list(void *dummy, struct adaqbsstruct *cbs);
 
