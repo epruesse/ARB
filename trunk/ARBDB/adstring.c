@@ -2041,6 +2041,15 @@ void gbs_regerror(int en){
 
 /****** expects '/term/by/' *******/
 
+#if defined(DEVEL_RALF)
+#warning rewrite regexpr code using GNU regexpressions
+/*
+ * see http://www.gnu.org/software/hello/manual/libc/Regular-Expressions.html
+ * use better error handling as well (separate error and result)
+ */
+#endif /* DEVEL_RALF */
+
+
 #ifdef NO_REGEXPR
 /** regexpr = '/regexpr/' */
 
@@ -2050,23 +2059,25 @@ GB_CSTR GBS_regsearch(GB_CSTR in, const char *regexprin){
      * returns the position or NULL
      */
     static char  expbuf[8000];
-    static char *regexpr = 0;
+    static char *regexpr  = 0;
+    static int   lastRlen = -1;
     char        *res;
-    int          rl      = strlen(regexprin)-2;
-    
-    if (regexprin[0] != '/' || regexprin[rl+1] != '/') {
+    int          rlen     = strlen(regexprin)-2;
+
+    if (regexprin[0] != '/' || regexprin[rlen+1] != '/') {
         GB_export_error("RegExprSyntax: '/searchterm/'");
         GB_print_error();
         return 0;
     }
 
-    if (!regexpr || strncmp(regexpr, regexprin+1, rl) != 0) { // first or new regexpr
+    if (!regexpr || lastRlen != rlen || strncmp(regexpr, regexprin+1, rlen) != 0) { // first or new regexpr
         freedup(regexpr, regexprin+1);
-        regexpr[rl] = 0;
-        regerrno    = 0;
-        
-        res = compile(regexpr,&expbuf[0],&expbuf[8000],0);
-        if (!res|| regerrno){
+        regexpr[rlen] = 0;
+        regerrno      = 0;
+        lastRlen      = rlen;
+
+        res = compile(regexpr, &expbuf[0], &expbuf[8000], 0);
+        if (!res|| regerrno) {
             gbs_regerror(regerrno);
             return 0;
         }
@@ -2083,15 +2094,15 @@ char *GBS_regreplace(const char *in, const char *regexprin, GBDATA *gb_species){
     void        *out;
     char        *res;
     const char  *loc;
-    int          rl = strlen(regexprin)-2;
+    int          rlen = strlen(regexprin)-2;
     GBUSE(gb_species);
-    if (regexprin[0] != '/' || regexprin[rl+1] != '/') {
+    if (regexprin[0] != '/' || regexprin[rlen+1] != '/') {
         GB_export_error("RegExprSyntax: '/searchterm/replace/'");
         return 0;
     }
     /* Copy regexpr and remove leading + trailing '/' */
     regexpr = strdup(regexprin+1);
-    regexpr[rl] = 0;
+    regexpr[rlen] = 0;
 
     /* Search seperating '/' */
     subs                                                    = strrchr(regexpr,'/');
@@ -2148,15 +2159,15 @@ static GB_CSTR gb_compile_regexpr(GB_CSTR regexprin,char **subsout){
     char *regexpr;
     char *subs;
 
-    int rl = strlen(regexprin)-2;
-    if (regexprin[0] != '/' || regexprin[rl+1] != '/') {
+    int rlen = strlen(regexprin)-2;
+    if (regexprin[0] != '/' || regexprin[rlen+1] != '/') {
         GB_export_error("RegExprSyntax: '/searchterm/replace/'");
         return 0;
     }
 
     /* Copy regexpr and remove leading + trailing '/' */
     regexpr = GB_STRDUP(regexprin+1);
-    regexpr[rl] = 0;
+    regexpr[rlen] = 0;
     if (subsout){
         /* Search seperating '/' */
         subs = strrchr(regexpr,'/');
@@ -2480,27 +2491,6 @@ char *GB_read_as_tagged_string(GBDATA *gbd, const char *tagi){
     return s;
 }
 
-
-GBDATA_SET *GB_create_set(int items){
-    GBDATA_SET *set = (GBDATA_SET *)GB_calloc(sizeof(GBDATA_SET),1);
-    set->nitems = 0;
-    set->malloced_items = items;
-    set->items = (GBDATA **)GB_calloc(sizeof(GBDATA *),(size_t)set->malloced_items);
-    return set;
-}
-
-void GB_add_set(GBDATA_SET *set, GBDATA *item){
-    if (set->nitems >= set->malloced_items){
-        set->malloced_items *= 2;
-        set->items = (GBDATA **)realloc((char *)set->items,(size_t)(sizeof(void *) * set->malloced_items));
-    }
-    set->items[set->nitems++] = item;
-}
-
-void GB_delete_set(GBDATA_SET *set){
-    free(set->items);
-    free(set);
-}
 
 /* be CAREFUL : this function is used to save ARB ASCII database (i.e. properties)
  * used as well to save perl macros

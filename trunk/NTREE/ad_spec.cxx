@@ -938,12 +938,22 @@ static void awtc_nn_search(AW_window *aww, AW_CL id) {
         aw_root->awar(AWAR_NN_HIT_COUNT)->write_int(hits);
         aww->update_selection_list(sel);
     }
-    
+
     free(sequence);
 }
 
-static void awtc_move_hits(AW_window *,AW_CL id, AW_CL cbs){
-    awt_copy_selection_list_2_queried_species((struct adaqbsstruct *)cbs,(AW_selection_list *)id);
+static void awtc_move_hits(AW_window *aww, AW_CL id, AW_CL cbs) {
+    AW_root *aw_root         = aww->get_root();
+    char    *current_species = aw_root->awar(AWAR_SPECIES_NAME)->read_string();
+    
+    if (!current_species) current_species = strdup("<unknown>");
+
+    char *hit_description = GBS_global_string_copy("<neighbour of %s: %%s>", current_species);
+
+    awt_copy_selection_list_2_queried_species((struct adaqbsstruct *)cbs, (AW_selection_list *)id, hit_description);
+
+    free(hit_description);
+    free(current_species);
 }
 
 static void create_next_neighbours_vars(AW_root *aw_root) {
@@ -1060,7 +1070,7 @@ static AW_window *ad_spec_next_neighbours_create(AW_root *aw_root,AW_CL cbs){
         aws->create_button("SEARCH","SEARCH");
 
         aws->at("move");
-        aws->callback(awtc_move_hits,(AW_CL)id,cbs);
+        aws->callback(awtc_move_hits, (AW_CL)id, cbs);
         aws->create_button("MOVE_TO_HITLIST","MOVE TO HITLIST");
 
     }
@@ -1225,10 +1235,10 @@ AW_window *ad_create_query_window(AW_root *aw_root)
     ad_query_global_cbs = cbs;
 
     aws->create_menu(       0,   "More search",     "s" );
-    aws->insert_menu_topic( "search_equal_fields_within_db","Search For Equal Fields and Mark Duplikates",          "E",0,  -1, (AW_CB)awt_search_equal_entries, cbs, 0 );
-    aws->insert_menu_topic( "search_equal_words_within_db", "Search For Equal Words Between Fields and Mark Duplikates",    "W",0,  -1, (AW_CB)awt_search_equal_entries, cbs, 1 );
-    aws->insert_menu_topic( "search_next_relativ_of_sel",   "Search Next Relatives of SELECTED Species in PT_Server ...",   "R",0,  -1, (AW_CB)AW_POPUP,    (AW_CL)ad_spec_next_neighbours_create, cbs );
-    aws->insert_menu_topic( "search_next_relativ_of_listed","Search Next Relatives of LISTED Species in PT_Server ...",     "L",0,  -1, (AW_CB)AW_POPUP,    (AW_CL)ad_spec_next_neighbours_listed_create, cbs );
+    aws->insert_menu_topic("search_equal_fields_within_db","Search For Equal Fields and Mark Duplikates",                "E", "search_duplicates.hlp", -1, (AW_CB)awt_search_equal_entries, cbs, 0);
+    aws->insert_menu_topic("search_equal_words_within_db", "Search For Equal Words Between Fields and Mark Duplikates",  "W", "search_duplicates.hlp", -1, (AW_CB)awt_search_equal_entries, cbs, 1);
+    aws->insert_menu_topic("search_next_relativ_of_sel",   "Search Next Relatives of SELECTED Species in PT_Server ...", "R", 0,                       -1, (AW_CB)AW_POPUP, (AW_CL)ad_spec_next_neighbours_create, cbs);
+    aws->insert_menu_topic("search_next_relativ_of_listed","Search Next Relatives of LISTED Species in PT_Server ...",   "L", 0,                       -1, (AW_CB)AW_POPUP, (AW_CL)ad_spec_next_neighbours_listed_create, cbs);
 
     aws->button_length(7);
 

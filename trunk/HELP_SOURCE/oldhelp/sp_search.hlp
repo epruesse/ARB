@@ -17,7 +17,7 @@ SUB	sel_spec.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Search Database for Species
 
-OCCURENCE	ARB_NT/Species/search
+OCCURRENCE	ARB_NT/Species/search
 		ARB_NT/<species button: 4th broad rectangular button in
 		top area>
 
@@ -45,48 +45,31 @@ DESCRIPTION	Searches for a (set of) species (not SAIs)
 
 		Press the <SEARCH> button.
 
-NOTES           If you select the '[any field]' pseudo search field, all direct database subentries of
-                the species are search for the expression.
-                This does NOT work for subcontainers (i.e. ali16s/data is not searched).
+NOTES           see LINK{searching.hlp} for details about searching.
 
-                If can use '>xxx' or '<xxx' as search string (where xxx should be a number)
-                to perform a numeric comparison.
-
+                see LINK{search_duplicates.hlp}
 
 EXAMPLES	1. Search for a species called 'Pseudomonas tolaasii'
 
-			Select: List all species that match the query
-
-			Select search field: 'full_name'
-
-			Type search string: 'pseu*tol*'
-
-				* and ? are wild cards for multiple and
-				single characters, respectively
-
-			Press 'SEARCH' to start the operation
+			Select:                    Search all species that match the query
+			Select search field:       'full_name'
+			Type search expression:    'pseu*tol*'
+			Press:                     'SEARCH' 
 
 		2. Search for all species that are marked:
 
-			Select: List all species that are marked
-
-			Press: 'SEARCH'	to start the operation
+			Select:                    Search all species that are marked
+			Press:                     'SEARCH' 
 
 		3. Search for all species that are marked and for which
                 an entry is present in the field 'reference'
 
-			Select: List all species that are marked
-
-			Press: 'SEARCH'	to start the operation 1
-
-			Select: Keep species that match the query
-
-			Select search field: 'reference'
-
-			Type search string: '?*' (More than one character)
-
-			Press: 'SEARCH' to start the 2nd operation
-
+			Select:                    Search all species that are marked
+			Press:                     'SEARCH'
+			Select:                    Keep species that match the query
+			Select search field:       'reference'
+			Type search string:        '*' (=search existing entry)
+			Press:                     'SEARCH' again
 
 
 WARNINGS	If the hitlist becomes too long, it will be truncated.

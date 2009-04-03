@@ -30,6 +30,10 @@ SECTION         DESCRIPTION
                 When you press the 'MOVE TO HITLIST' button, the species list is transferred to
                 the species search result list, where you're able to apply further actions to the
                 found relatives (like mark or modify them).
+                  * Depending on the settings of 'Search/Add/Keep species' in the main query-window
+                    the species list is either replaced, added or kept.
+                  * Depending on the setting of 'that match/dont match the query' either the list of
+                    found relatives is applied or the rest of the species.
 
 NOTES		None
 

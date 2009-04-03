@@ -124,20 +124,16 @@ void create_print_box_for_selection_lists(AW_window *aw_window,AW_CL selid);
  ***************************************************************************/
 
 
-#define AWT_MAX_QUERY_LIST_LEN        1000
 #define IS_QUERIED(gb_species,cbs)    (cbs->select_bit & GB_read_usr_private(gb_species))
-#define SET_QUERIED(gb_species,cbs)   GB_write_usr_private(gb_species,cbs->select_bit | GB_read_usr_private(gb_species))
-#define CLEAR_QUERIED(gb_species,cbs) GB_write_usr_private(gb_species,(~cbs->select_bit) & GB_read_usr_private(gb_species))
-
 class awt_query_struct {
 public:
     awt_query_struct(void);
 
-    GBDATA  *gb_main;           // the main database
-    GBDATA  *gb_ref;            // second reference database
-    AW_BOOL  look_in_ref_list;  // for querys
-    AWAR     species_name;      // AWAR containing current species name
-    AWAR     tree_name;         // AWAR containing current tree name
+    GBDATA  *gb_main;                // the main database (in merge tool: source db in left query; dest db in right query)
+    GBDATA  *gb_ref;                 // second reference database (only used by merge tool; dest db in left query; source db in right query)
+    AW_BOOL  expect_hit_in_ref_list; // merge-tool: when searching dups in fields: match only if hit exists in other DBs hitlist (true for DBII-query) 
+    AWAR     species_name;           // AWAR containing current species name
+    AWAR     tree_name;              // AWAR containing current tree name
 
     const ad_item_selector *selector;  // which kind of item do we handle?
 
@@ -175,10 +171,10 @@ public:
 };
 
 struct adaqbsstruct;
-void awt_copy_selection_list_2_queried_species(struct adaqbsstruct *cbs, AW_selection_list * id);
+void awt_copy_selection_list_2_queried_species(struct adaqbsstruct *cbs, AW_selection_list *id, const char *hit_description);
 struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtqs); // create the query box
 /* Create the query box */
-void awt_search_equal_entries(AW_window *dummy,struct adaqbsstruct *cbs,int tokenize);
+void awt_search_equal_entries(AW_window *dummy, struct adaqbsstruct *cbs, bool tokenize);
 long awt_count_queried_species(struct adaqbsstruct *cbs);
 void awt_unquery_all(void *dummy, struct adaqbsstruct *cbs);
 

@@ -1293,29 +1293,29 @@ AW_window *MG_merge_species_cb(AW_root *awr){
     awt_query_struct awtqs;
     aws->create_menu(0,"DB_I_Expert","D");
 
-    awtqs.gb_main             = GLOBAL_gb_merge;
-    awtqs.gb_ref              = GLOBAL_gb_dest;
-    awtqs.look_in_ref_list    = AW_FALSE;
-    awtqs.species_name        = AWAR_SPECIES1;
-    awtqs.tree_name           = 0; // no selected tree here -> can't use tree related ACI commands without specifying a tree
-    awtqs.select_bit          = 1;
-    awtqs.ere_pos_fig         = "ere1";
-    awtqs.by_pos_fig          = "by1";
-    awtqs.qbox_pos_fig        = "qbox1";
-    awtqs.rescan_pos_fig      = "rescan1";
-    awtqs.key_pos_fig         = 0;
-    awtqs.query_pos_fig       = "content1";
-    awtqs.result_pos_fig      = "result1";
-    awtqs.count_pos_fig       = "count1";
-    awtqs.do_query_pos_fig    = "doquery1";
-    awtqs.config_pos_fig      = "doconfig1";
-    awtqs.do_mark_pos_fig     = 0;
-    awtqs.do_unmark_pos_fig   = 0;
-    awtqs.do_delete_pos_fig   = "dodelete1";
-    awtqs.do_set_pos_fig      = "doset1";
-    awtqs.do_refresh_pos_fig  = "dorefresh1";
-    awtqs.open_parser_pos_fig = "openparser1";
-    awtqs.use_menu            = 1;
+    awtqs.gb_main                = GLOBAL_gb_merge;
+    awtqs.gb_ref                 = GLOBAL_gb_dest;
+    awtqs.expect_hit_in_ref_list = AW_FALSE;
+    awtqs.species_name           = AWAR_SPECIES1;
+    awtqs.tree_name              = 0;               // no selected tree here -> can't use tree related ACI commands without specifying a tree
+    awtqs.select_bit             = 1;
+    awtqs.ere_pos_fig            = "ere1";
+    awtqs.by_pos_fig             = "by1";
+    awtqs.qbox_pos_fig           = "qbox1";
+    awtqs.rescan_pos_fig         = "rescan1";
+    awtqs.key_pos_fig            = 0;
+    awtqs.query_pos_fig          = "content1";
+    awtqs.result_pos_fig         = "result1";
+    awtqs.count_pos_fig          = "count1";
+    awtqs.do_query_pos_fig       = "doquery1";
+    awtqs.config_pos_fig         = "doconfig1";
+    awtqs.do_mark_pos_fig        = 0;
+    awtqs.do_unmark_pos_fig      = 0;
+    awtqs.do_delete_pos_fig      = "dodelete1";
+    awtqs.do_set_pos_fig         = "doset1";
+    awtqs.do_refresh_pos_fig     = "dorefresh1";
+    awtqs.open_parser_pos_fig    = "openparser1";
+    awtqs.use_menu               = 1;
 
     mg_initialize_species_selectors();
     awtqs.selector = &(MG_species_selector[0]);
@@ -1328,27 +1328,27 @@ AW_window *MG_merge_species_cb(AW_root *awr){
 
     aws->create_menu(0,"DB_II_Expert","B");
 
-    awtqs.gb_main             = GLOBAL_gb_dest;
-    awtqs.gb_ref              = GLOBAL_gb_merge;
-    awtqs.look_in_ref_list    = AW_TRUE;
-    awtqs.species_name        = AWAR_SPECIES2;
-    awtqs.select_bit          = 1;
-    awtqs.ere_pos_fig         = "ere2";
-    awtqs.by_pos_fig          = "by2";
-    awtqs.qbox_pos_fig        = "qbox2";
-    awtqs.rescan_pos_fig      = "rescan2";
-    awtqs.key_pos_fig         = 0;
-    awtqs.query_pos_fig       = "content2";
-    awtqs.result_pos_fig      = "result2";
-    awtqs.count_pos_fig       = "count2";
-    awtqs.do_query_pos_fig    = "doquery2";
-    awtqs.config_pos_fig      = "doconfig2";
-    awtqs.do_mark_pos_fig     = 0;
-    awtqs.do_unmark_pos_fig   = 0;
-    awtqs.do_delete_pos_fig   = "dodelete2";
-    awtqs.do_set_pos_fig      = "doset2";
-    awtqs.do_refresh_pos_fig  = "dorefresh2";
-    awtqs.open_parser_pos_fig = "openparser2";
+    awtqs.gb_main                = GLOBAL_gb_dest;
+    awtqs.gb_ref                 = GLOBAL_gb_merge;
+    awtqs.expect_hit_in_ref_list = AW_TRUE;
+    awtqs.species_name           = AWAR_SPECIES2;
+    awtqs.select_bit             = 1;
+    awtqs.ere_pos_fig            = "ere2";
+    awtqs.by_pos_fig             = "by2";
+    awtqs.qbox_pos_fig           = "qbox2";
+    awtqs.rescan_pos_fig         = "rescan2";
+    awtqs.key_pos_fig            = 0;
+    awtqs.query_pos_fig          = "content2";
+    awtqs.result_pos_fig         = "result2";
+    awtqs.count_pos_fig          = "count2";
+    awtqs.do_query_pos_fig       = "doquery2";
+    awtqs.config_pos_fig         = "doconfig2";
+    awtqs.do_mark_pos_fig        = 0;
+    awtqs.do_unmark_pos_fig      = 0;
+    awtqs.do_delete_pos_fig      = "dodelete2";
+    awtqs.do_set_pos_fig         = "doset2";
+    awtqs.do_refresh_pos_fig     = "dorefresh2";
+    awtqs.open_parser_pos_fig    = "openparser2";
 
     awtqs.selector = &(MG_species_selector[1]);
 

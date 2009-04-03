@@ -471,10 +471,9 @@ void Helpfile::readHelp(istream& in, const string& filename) {
                     }
                 }
                 else {
-                    if (keyword == "NOTE") keyword      = "NOTES";
-                    if (keyword == "EXAMPLE") keyword   = "EXAMPLES";
-                    if (keyword == "OCCURENCE") keyword = "OCCURRENCE";
-                    if (keyword == "WARNING") keyword   = "WARNINGS";
+                    if (keyword == "NOTE")    keyword = "NOTES";
+                    if (keyword == "EXAMPLE") keyword = "EXAMPLES";
+                    if (keyword == "WARNING") keyword = "WARNINGS";
 
                     int idx;
                     for (idx = 0; knownSections[idx]; ++idx) {

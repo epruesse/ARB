@@ -232,12 +232,6 @@ extern long GB_NOVICE;
 
 struct GBL_command_table;
 
-typedef struct GBDATA_SET_STRUCT {
-    long nitems;
-    long malloced_items;
-    GBDATA **items;
-} GBDATA_SET;
-
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -154,10 +154,8 @@ enum {
 
 
 typedef char *AW_pixmap;
-typedef struct GBDATA_SET_STRUCT GBDATA_SET;
 
-class AW_window_Motif;
-
+class  AW_window_Motif;
 struct AW_select_table_struct;
 
 class AW_selection_list {
@@ -526,14 +524,14 @@ public:
     void  move_selection(AW_selection_list *selection_list, const char *awar_name, int offset);
 
 
-    char       *get_selection_list_contents( AW_selection_list * selection_list, long nr_of_lines = -1);
-    void        sort_selection_list(  AW_selection_list * selection_list, int backward, int case_sensitive);
-    GB_ERROR    save_selection_list(  AW_selection_list * selection_list, const char *filename,long number_of_lines = 0);
-    void        set_selection_list_suffix( AW_selection_list * selection_list, const char *suffix);
-    GB_ERROR    load_selection_list(  AW_selection_list * selection_list, const char *filename);
-    GBDATA_SET *selection_list_to_species_set(GBDATA *gb_main,AW_selection_list *selection_list);
+    char     *get_selection_list_contents(AW_selection_list * selection_list, long nr_of_lines = -1);
+    void      sort_selection_list(AW_selection_list * selection_list, int backward, int case_sensitive);
+    GB_ERROR  save_selection_list(AW_selection_list * selection_list, const char *filename,long number_of_lines = 0);
+    void      set_selection_list_suffix(AW_selection_list * selection_list, const char *suffix);
+    GB_ERROR  load_selection_list(AW_selection_list * selection_list, const char *filename);
+    GB_HASH  *selection_list_to_hash(AW_selection_list *sel_list, bool case_sens);
 
-    AW_selection_list * create_multi_selection_list( const char *label = 0, const char *mnemonic = 0, int columns = 4, int rows = 4 );
+    AW_selection_list *create_multi_selection_list(const char *label = 0, const char *mnemonic = 0, int columns = 4, int rows = 4);
     // all works, but its not connected to an AWAR may be converted to AW_mselection_list_helper
 };
 

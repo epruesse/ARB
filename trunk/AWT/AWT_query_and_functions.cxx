@@ -23,20 +23,52 @@
 #include "awt_config_manager.hxx"
 #include "awt_changekey.hxx"
 #include "awt_sel_boxes.hxx"
+#include "awt_advice.hxx"
 
 #include "GEN.hxx"
 
 using namespace std;
 
+#define AWT_MAX_QUERY_LIST_LEN  1000
+#define AWT_MAX_SHOWN_DATA_SIZE 500
+
 /***************** Create the database query box and functions *************************/
 
 #define AWAR_COLORIZE "tmp/arbdb_query_all/colorize"
 
+inline void SET_QUERIED(GBDATA *gb_species, adaqbsstruct *cbs, const char *hitInfo) {
+    awt_assert(hitInfo);
+
+    GB_write_usr_private(gb_species, cbs->select_bit | GB_read_usr_private(gb_species));
+
+    char *name   = cbs->selector->generate_item_id(cbs->gb_main, gb_species);
+    long  toFree = GBS_write_hash(cbs->hit_description, name, reinterpret_cast<long>(strdup(hitInfo)));
+    if (toFree) free(reinterpret_cast<char*>(toFree));
+    free(name);
+}
+
+inline void CLEAR_QUERIED(GBDATA *gb_species, adaqbsstruct *cbs) {
+    GB_write_usr_private(gb_species, (~cbs->select_bit) & GB_read_usr_private(gb_species));
+
+    char *name   = cbs->selector->generate_item_id(cbs->gb_main, gb_species);
+    long  toFree = GBS_read_hash(cbs->hit_description, name);
+    if (toFree) {
+        free(reinterpret_cast<char*>(toFree));
+        GBS_write_hash(cbs->hit_description, name, 0); // delete hit info
+    }
+    free(name);
+}
+
+inline const char *getHitInfo(GBDATA *gb_species, adaqbsstruct *cbs) {
+    char *name = cbs->selector->generate_item_id(cbs->gb_main, gb_species);
+    long  info = GBS_read_hash(cbs->hit_description, name);
+    free(name);
+    return reinterpret_cast<const char*>(info);
+}
+
 static void awt_query_create_global_awars(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_int(AWAR_COLORIZE, 0, aw_def);
 }
-
-
 
 enum AWT_EXT_QUERY_TYPES {
     AWT_EXT_QUERY_NONE,
@@ -66,9 +98,8 @@ long awt_query_update_list(void *dummy, struct adaqbsstruct *cbs)
 {
     AWUSE(dummy);
     GB_push_transaction(cbs->gb_main);
-    //     char buffer[BUFSIZE+1],*p;
-    int count;
-    char    *key = cbs->aws->get_root()->awar(cbs->awar_keys[0])->read_string();
+    int   count;
+    char *key = cbs->aws->get_root()->awar(cbs->awar_keys[0])->read_string();
 
     cbs->aws->clear_selection_list(cbs->result_id);
     count = 0;
@@ -87,32 +118,22 @@ long awt_query_update_list(void *dummy, struct adaqbsstruct *cbs)
                 if (IS_QUERIED(gb_item,cbs)) {
                     if (count < AWT_MAX_QUERY_LIST_LEN ) {
                         char *name = cbs->selector->generate_item_id(cbs->gb_main, gb_item);
-                        if (!name) continue; // a guy w/o name
+                        if (name) {
+                            const char *hit_info = reinterpret_cast<const char *>(GBS_read_hash(cbs->hit_description, name));
 
-                        char flag                       = ' ';
-                        if (GB_read_flag(gb_item)) flag = '*';
+                            if (!hit_info) hit_info = "<no hit info>";
 
-                        char *data = 0;
-                        {
-                            GBDATA *gb_key = GB_search(gb_item,key,GB_FIND);
-                            if (gb_key) {
-                                data        = GB_read_as_string(gb_key);
-                                long length = GB_read_string_count(gb_key);
-                                if (length>1000) strcpy(data+997, "..."); // truncate long data
-                            }
+                            const char *line = GBS_global_string("%c %-*s :%s",
+                                                                 GB_read_flag(gb_item) ? '*' : ' ',
+                                                                 cbs->selector->item_name_length, name,
+                                                                 hit_info);
+
+                            cbs->aws->insert_selection( cbs->result_id, line, name);
+                            free(name);
                         }
-                        const char *line = GBS_global_string("%c %-*s :%s",
-                                                             flag,
-                                                             cbs->selector->item_name_length, name,
-                                                             data ? data : "<no data>");
-
-                        cbs->aws->insert_selection( cbs->result_id, line, name );
-                        free(name);
-                        free(data);
                     }
                     else if (count == AWT_MAX_QUERY_LIST_LEN) {
-                        cbs->aws->insert_selection( cbs->result_id,
-                                                    "********* List truncated *********","" );
+                        cbs->aws->insert_selection( cbs->result_id, "*****  List truncated  *****","" );
                     }
                     count ++;
                 }
@@ -216,35 +237,32 @@ void awt_delete_species_in_list(void *dummy, struct adaqbsstruct *cbs)
     }
 }
 
-GB_HASH *awt_create_species_hash(GBDATA *gb_main, char *key,int split)
-{
-    GB_HASH *hash = GBS_create_hash(GBT_get_species_hash_size(gb_main), GB_IGNORE_CASE);
-    GBDATA  *gb_species;
-    GBDATA  *gb_name;
-    char    *keyas;
+static GB_HASH *awt_create_ref_hash(const struct adaqbsstruct *cbs, const char *key, AW_BOOL split_words) {
+    GBDATA  *gb_ref       = cbs->gb_ref;
+    AW_BOOL  queried_only = cbs->expect_hit_in_ref_list;
+    GB_HASH *hash         = GBS_create_hash(GBT_get_species_hash_size(gb_ref), GB_IGNORE_CASE);
 
-    for (   gb_species = GBT_first_species(gb_main);
-            gb_species;
-            gb_species = GBT_next_species(gb_species))
+    for (GBDATA  *gb_species = GBT_first_species(gb_ref);
+         gb_species;
+         gb_species = GBT_next_species(gb_species))
     {
-        gb_name = GB_search(gb_species,key,GB_FIND);
-        if (!gb_name) continue;
-        keyas = GB_read_as_string(gb_name);
-        if (keyas && strlen(keyas)) {
-            if (split){
-                char *t;
-                for (t = strtok(keyas," ");
-                     t;
-                     t = strtok(0," "))
-                    {
-                        if (strlen(t) ){
-                            GBS_write_hash(hash,t,(long)gb_species);
+        if (!queried_only || IS_QUERIED(gb_species, cbs)) {
+            GBDATA *gb_name = GB_search(gb_species,key,GB_FIND);
+            if (gb_name) {
+                char *keyas = GB_read_as_string(gb_name);
+                if (keyas && strlen(keyas)) {
+                    if (split_words) {
+                        char *t;
+                        for (t = strtok(keyas," "); t; t = strtok(0," ")) {
+                            if (t[0]) GBS_write_hash(hash, t, (long)gb_species);
                         }
                     }
-            }else{
-                GBS_write_hash(hash,keyas,(long)gb_species);
+                    else {
+                        GBS_write_hash(hash, keyas, (long)gb_species);
+                    }
+                }
+                free(keyas);
             }
-            delete keyas;
         }
     }
     return hash;
@@ -255,421 +273,865 @@ GB_HASH *awt_create_species_hash(GBDATA *gb_main, char *key,int split)
 //  ------------------------
 typedef enum { ILLEGAL, AND, OR } awt_query_operator;
 
+typedef enum {
+    AQT_INVALID,
+    AQT_EMPTY,
+    AQT_NON_EMPTY,
+    AQT_LOWER,
+    AQT_GREATER,
+    AQT_EXACT_MATCH,
+    AQT_OCCURS,
+    AQT_STARTS_WITH,
+    AQT_ENDS_WITH,
+    AQT_WILDCARD,
+    AQT_REGEXPR,
+    AQT_ACI,
+} awt_query_type;
+
+typedef enum {
+    AQFT_EXPLICIT,                                  // query should match one explicit field
+    AQFT_ANY_FIELD,                                 // query should match one field (no matter which)
+    AQFT_ALL_FIELDS,                                // query should match all fields
+} awt_query_field_type;
+
 class awt_query {
-private:
+    awt_query_operator  op;                         // operator (AND or OR)
+    char               *key;                        // search key
+    AW_BOOL             Not;                        // true means "don't match"
+    char               *query;                      // search expression
+    
+    GBDATA     *gb_main;
+    const char *tree;                               // name of current default tree (needed for ACI)
 
-    awt_query_operator  op;
-    char               *key;
-    char               *query;
-    AW_BOOL             Not;
-    awt_query          *next;
+    AW_BOOL              rek;                       // is 'key' hierarchical ?
+    awt_query_field_type match_field;               // type of search key
+    GBQUARK              keyquark;                  // valid only if match_field == AQFT_EXPLICIT
+    awt_query_type       type;                      // type of 'query'
+    struct {                                        // used for some values of 'type'
+        string str;
+        float  number;
+    } xquery;
 
-    AW_BOOL rek;
-    AW_BOOL all_fields;
+    mutable GB_ERROR  error;                        // set by matches(), once set all future matches fail
+    mutable char     *lastACIresult;                // result of last ACI query
+    
+    awt_query *next;
+    int        index;                               // number of query (0 = first query, 1 = second query); not always consecutive!
 
-    GBQUARK keyquark;
+    // --------------------
 
-    void init() {
-        op    = ILLEGAL;
-        key   = 0;
-        query = 0;
-        Not   = AW_FALSE;
-        next  = 0;
+    void initFields(struct adaqbsstruct *cbs, int idx, awt_query_operator aqo, AW_root *aw_root);
+    awt_query() {}
 
-        rek        = AW_FALSE;
-        all_fields = AW_FALSE;
-
-        keyquark = 0;
-    }
+    void       detect_query_type();
+    awt_query *remove_tail();
+    void       append(awt_query *tail);
 
 public:
 
-    awt_query() { init(); }
     awt_query(struct adaqbsstruct *cbs);
 
-    virtual ~awt_query() {
+    ~awt_query() {
         free(key);
         free(query);
+        free(lastACIresult);
         delete next;
     }
 
     awt_query_operator getOperator() const { return op; }
     const char *getKey() const { return key; }
-    const char *getQuery() const { return query; }
-    AW_BOOL getNot() const { return Not; }
+    AW_BOOL applyNot(AW_BOOL matched) const { return Not ? !matched : matched; }
+    AW_BOOL shallMatch() const { return !Not; }
+    awt_query_type getType() const { return type; }
+    int getIndex() const { return index; }
+
+    AW_BOOL matches(const char *data, GBDATA *gb_item) const;
+    GB_ERROR getError(int count = 0) const;
+    const char *get_last_ACI_result() const { return type == AQT_ACI ? lastACIresult : 0; }
 
     awt_query *getNext() { return next; }
 
-    void initForContainer(GBDATA *gb_item_container) {
-        rek      = 0;
-        keyquark = -1;
+    AW_BOOL is_rek() const { return rek; }
+    awt_query_field_type get_match_field() const { return match_field; }
+    GBQUARK getKeyquark() const { return keyquark; }
 
-        if (GB_first_non_key_char(key)) {
-            if (strcmp(key, ALL_FIELDS_PSEUDO_FIELD) == 0) {
-                all_fields = 1;
-            }
-            else {
-                rek = 1;
-            }
+    GBDATA *get_first_key(GBDATA *gb_item) const {
+        GBDATA *gb_key = 0;
+
+        if (is_rek()) {
+            gb_key = GB_search(gb_item, getKey(), GB_FIND);
+        }
+        else if (match_field != AQFT_EXPLICIT) {
+            gb_key = GB_child(gb_item);
         }
         else {
-            keyquark = GB_key_2_quark(gb_item_container, key);
+            gb_key = GB_find_sub_by_quark(gb_item, getKeyquark(), 0);
         }
 
-        if (next) next->initForContainer(gb_item_container);
+        return gb_key;
     }
 
-    AW_BOOL is_rek() const { return rek; }
-    AW_BOOL query_all_fields() const { return all_fields; }
-    GBQUARK getKeyquark() const { return keyquark; }
+    void negate();
+
+#if defined(DEBUG)
+    string dump_str() const { return string(key)+(Not ? "!=" : "==")+query; }
+    void dump(string *prev = 0) const {
+        string mine = dump_str();
+        if (prev) {
+            string both = *prev+' ';
+            switch (op) {
+                case AND: both += "&&"; break;
+                case OR: both  += "||"; break;
+                default : awt_assert(0); break;
+            }
+            both += ' '+mine;
+            mine  = both;
+
+            if (next) mine = '('+mine+')';
+        }
+
+        if (next) next->dump(&mine);
+        else fputs(mine.c_str(), stdout);
+    }
+#endif // DEBUG
 };
 
-//  -------------------------------------------------------
-//      awt_query::awt_query(struct adaqbsstruct *cbs)
-//  -------------------------------------------------------
-awt_query::awt_query(struct adaqbsstruct *cbs) {
-    init(); // set defaults
+void awt_query::initFields(struct adaqbsstruct *cbs, int idx, awt_query_operator aqo, AW_root *aw_root) {
+    awt_assert(aqo == OR || aqo == AND);
 
+    error         = 0;
+    lastACIresult = 0;
+    next          = 0;
+    index         = idx;
+
+    op    = aqo;
+    key   = aw_root->awar(cbs->awar_keys[idx])->read_string();
+    Not   = aw_root->awar(cbs->awar_not[idx])->read_int() != 0;
+    query = aw_root->awar(cbs->awar_queries[idx])->read_string();
+
+    gb_main = cbs->gb_main;
+    tree    = cbs->tree_name;
+
+    rek         = false;
+    match_field = AQFT_EXPLICIT;;
+    keyquark    = -1;    
+    if (GB_first_non_key_char(key)) {
+        if (strcmp(key, PSEUDO_FIELD_ANY_FIELD) == 0) match_field = AQFT_ANY_FIELD;
+        else if (strcmp(key, PSEUDO_FIELD_ALL_FIELDS) == 0) match_field = AQFT_ALL_FIELDS;
+        else rek = true;
+    }
+    else {
+        keyquark = GB_key_2_quark(gb_main, key);
+    }
+
+    detect_query_type();
+}
+
+awt_query::awt_query(struct adaqbsstruct *cbs) {
     AW_root *aw_root = cbs->aws->get_root();
 
-    op    = OR; // before hit is false
-    key   = aw_root->awar(cbs->awar_keys[0])->read_string();
-    query = aw_root->awar(cbs->awar_queries[0])->read_string();
-    Not   = aw_root->awar(cbs->awar_not[0])->read_int() != 0;
-    next  = 0;
+    initFields(cbs, 0, OR, aw_root);                // initial value is false, (false OR QUERY1) == QUERY1
 
     awt_query *tail = this;
     for (size_t keyidx = 1; keyidx<AWT_QUERY_SEARCHES; ++keyidx) {
         char *opstr = aw_root->awar(cbs->awar_operator[keyidx])->read_string();
 
-        if (strcmp(opstr, "ign") != 0) { // not ignore
+        if (strcmp(opstr, "ign") != 0) {            // not ignore
             awt_query_operator next_op = ILLEGAL;
 
-            if (strcmp(opstr, "and")      == 0) next_op = AND;
-            else if (strcmp(opstr, "or")  == 0) next_op = OR;
+            if (strcmp(opstr, "and")     == 0) next_op = AND;
+            else if (strcmp(opstr, "or") == 0) next_op = OR;
 #if defined(ASSERTION_USED)
             else aw_assert(0);
 #endif // ASSERTION_USED
 
             if (next_op != ILLEGAL) {
-                awt_query *next_query = new awt_query();
+                awt_query *next_query = new awt_query;
 
-                next_query->op    = next_op;
-                next_query->key   = aw_root->awar(cbs->awar_keys[keyidx])->read_string();
-                next_query->query = aw_root->awar(cbs->awar_queries[keyidx])->read_string();
-                next_query->Not   = aw_root->awar(cbs->awar_not[keyidx])->read_int() != 0;
+                next_query->initFields(cbs, keyidx, next_op, aw_root);
 
                 tail->next = next_query;
-                tail       = tail->next;
+                tail       = next_query;
             }
         }
         free(opstr);
     }
 }
 
-//  --------------------------------------------------------------------------------
-//      void awt_do_query(void *dummy, struct adaqbsstruct *cbs,AW_CL ext_query)
-//  --------------------------------------------------------------------------------
-void awt_do_query(void *dummy, struct adaqbsstruct *cbs,AW_CL ext_query)
-{
-    AWUSE(dummy);
-    AW_root   *aw_root = cbs->aws->get_root();
-    awt_query  query(cbs);
+awt_query *awt_query::remove_tail() {
+    awt_query *tail = 0;
+    if (next) {
+        awt_query *body_last = this;
+        while (body_last->next && body_last->next->next) {
+            body_last = body_last->next;
+        }
+        awt_assert(body_last->next);
+        awt_assert(body_last->next->next == 0);
+        
+        tail            = body_last->next;
+        body_last->next = 0;
+    }
+    return tail;
+}
 
-    //  char *key = aw_root->awar(cbs->awar_keys[0])->read_string();
+void awt_query::append(awt_query *tail) {
+    awt_assert(this != tail);
+    if (next) next->append(tail);
+    else next = tail;
+}
 
-    //  if (!strlen(key)) {
-    //         free(key);
-    //      aw_message("ERROR: To perfom a query you have to select a field and enter a search string");
-    //      return;
-    //  }
+void awt_query::negate() {
+    if (next) {
+        awt_query *tail = remove_tail();
 
-    char    *first_key = aw_root->awar(cbs->awar_keys[0])->read_string();
-    char    *first_query = aw_root->awar(cbs->awar_queries[0])->read_string();
-    GB_push_transaction(cbs->gb_main);
-    if (cbs->gb_ref && !strlen(first_query)){
-        if (!ext_query) ext_query = AWT_EXT_QUERY_COMPARE_LINES;
+        negate();
+        tail->negate();
+
+        switch (tail->op) {
+            case AND: tail->op = OR; break;
+            case OR: tail->op  = AND; break;
+            default : awt_assert(0); break;
+        }
+
+        append(tail);
+    }
+    else {
+        Not = !Not;
+        switch (match_field) {
+            case AQFT_EXPLICIT: break;
+            case AQFT_ALL_FIELDS: match_field = AQFT_ANY_FIELD; break; // not match allFields <=> mismatch anyField
+            case AQFT_ANY_FIELD: match_field  = AQFT_ALL_FIELDS; break; // not match anyField <=> mismatch allFields
+        }
+    }
+}
+
+GB_ERROR awt_query::getError(int count) const {
+    GB_ERROR err = error;
+    error        = NULL;
+
+    if (err) {
+        err = GBS_global_string("%s (in query #%i)", err, count+1);
     }
 
-    AWT_QUERY_MODES mode = (AWT_QUERY_MODES)aw_root->awar(cbs->awar_ere)->read_int();
-    AWT_QUERY_RANGE range = (AWT_QUERY_RANGE)aw_root->awar(cbs->awar_where)->read_int();
-    AWT_QUERY_TYPES type = (AWT_QUERY_TYPES)aw_root->awar(cbs->awar_by)->read_int();
+    if (next) {
+        if (err) {
+            char *dup = strdup(err);
 
-    //  int      hit;
-    GB_HASH *ref_hash = 0;
-
-    if (cbs->gb_ref && ( ext_query == AWT_EXT_QUERY_COMPARE_LINES || ext_query == AWT_EXT_QUERY_COMPARE_WORDS)) {
-        GB_push_transaction(cbs->gb_ref);
-        ref_hash = awt_create_species_hash(cbs->gb_ref,first_key, ext_query == AWT_EXT_QUERY_COMPARE_WORDS);
+            err = next->getError(count+1);
+            if (err) err = GBS_global_string("%s\n%s", dup, err);
+            else err = GBS_global_string("%s", dup);
+            free(dup);
+        }
+        else {
+            err = next->getError(count+1);
+        }
     }
 
-    for (GBDATA *gb_item_container = cbs->selector->get_first_item_container(cbs->gb_main, aw_root, range);
-         gb_item_container;
-         gb_item_container = cbs->selector->get_next_item_container(gb_item_container, range))
-        {
-            //         int     rek      = 0;
-            //         GBQUARK keyquark = -1;
-            //
-            //         if (GB_first_non_key_char(key)) rek = 1;
-            //         else keyquark                       = GB_key_2_quark(gb_item_container,key);
+    return err;
+}
 
-            query.initForContainer(gb_item_container);
 
-            for (GBDATA *gb_item = cbs->selector->get_first_item(gb_item_container);
-                 gb_item;
-                 gb_item = cbs->selector->get_next_item(gb_item))
-                {
-                    switch(mode) {
-                    case    AWT_QUERY_GENERATE: CLEAR_QUERIED(gb_item,cbs); break;
-                    case    AWT_QUERY_ENLARGE: if (IS_QUERIED(gb_item,cbs)) continue; break;
-                    case    AWT_QUERY_REDUCE:   if (!IS_QUERIED(gb_item,cbs)) continue; break;
-                    }
+inline bool containsWildcards(const char *str) { return strpbrk(str, "*?") != 0; }
+inline bool containsWildcards(const string& str) { return str.find_first_of("*?") != string::npos; }
 
-                    AW_BOOL hit = 0;
+void awt_query::detect_query_type() {
+    char    first = query[0];
+    string& str   = xquery.str;
+    str           = query;
 
-                    switch(type) {
-                    case AWT_QUERY_MARKED: {
-                        hit = GB_read_flag(gb_item);
-                        break;
-                    }
-                    case AWT_QUERY_MATCH:
-                    case AWT_QUERY_DONT_MATCH: {
+    type = AQT_INVALID;
 
-                        for (awt_query *this_query = &query; this_query;  this_query = this_query ? this_query->getNext() : 0) { // iterate over all single queries
-                            AW_BOOL  this_hit   = 0;
-                            GBDATA  *gb_key     = 0;
-                            AW_BOOL  abortQuery = 0;
-                            AW_BOOL  all_fields = 0;
+    if (!first)            type = AQT_EMPTY;
+    else if (first == '/') type = AQT_REGEXPR;
+    else if (first == '|') type = AQT_ACI;
+    else if (first == '<' || first == '>') {
+        const char *rest = query+1;
+        const char *end;
+        float       f    = strtof(rest, const_cast<char**>(&end));
 
-                            if (this_query->is_rek()) {
-                                gb_key = GB_search(gb_item,this_query->getKey(),GB_FIND);
-                            }
-                            else if (this_query->query_all_fields()) {
-                                gb_key     = GB_child(gb_item);
-                                all_fields = 1;
-                            }
-                            else {
-                                gb_key = GB_find_sub_by_quark(gb_item, this_query->getKeyquark(), 0);
-                            }
+        if (end != rest) { // did convert part or all of rest to float
+            if (end[0] == 0) { // all of rest has been converted
+                type          = query[0] == '<' ? AQT_LOWER : AQT_GREATER;
+                xquery.number = f;
+            }
+            else {
+                error = GBS_global_string("Could not convert '%s' to number (unexpected content '%s')", rest, end);
+            }
+        }
+        // otherwise handle as non-special search string
+    }
 
-                            while (gb_key) {
-                                switch(ext_query) {
-                                case AWT_EXT_QUERY_NONE: {
-                                    const char *query_string = this_query->getQuery();
-                                    if (gb_key) {
-                                        char *data = GB_read_as_string(gb_key);
-                                        awt_assert(data || all_fields);
-                                        if (data) {
-                                            switch (query_string[0]) {
-                                            case '>': if (atoi(data)> atoi(query_string+1)) this_hit   = 1; break;
-                                            case '<': if (atoi(data) < atoi(query_string+1)) this_hit  = 1; break;
-                                            default: if (GBS_string_matches(data,query_string,GB_IGNORE_CASE)) this_hit = 1; break;
-                                            }
-                                            free(data);
-                                        }
-                                    }
-                                    else {
-                                        this_hit = (strlen(query_string) == 0);
-                                    }
-                                    break;
-                                }
-                                case AWT_EXT_QUERY_COMPARE_LINES:
-                                case AWT_EXT_QUERY_COMPARE_WORDS: {
-                                    if (gb_key) {
-                                        char   *data        = GB_read_as_string(gb_key);
-                                        GBDATA *gb_ref_pntr = 0;
+    if (type == AQT_INVALID && !error) {            // no type detected above
+        if (containsWildcards(query)) {
+            size_t qlen = strlen(query);
+            char   last = query[qlen-1];
 
-                                        if (!data || !data[0]) {
-                                            delete data;
-                                            break;
-                                        }
-                                        if (ext_query == AWT_EXT_QUERY_COMPARE_WORDS){
-                                            for (char *t = strtok(data," "); t; t = strtok(0," ")) {
-                                                gb_ref_pntr =   (GBDATA *)GBS_read_hash(ref_hash,t);
-                                                if (gb_ref_pntr){
-                                                    if (cbs->look_in_ref_list) {
-                                                        if (IS_QUERIED(gb_ref_pntr,cbs)) this_hit = 1;
-                                                    }
-                                                    else {
-                                                        this_hit = 1;
-                                                    }
-                                                }
-                                            }
-                                        }else{
-                                            gb_ref_pntr =   (GBDATA *)GBS_read_hash(ref_hash,data);
-                                            if (gb_ref_pntr){
-                                                if (cbs->look_in_ref_list) {
-                                                    if (IS_QUERIED(gb_ref_pntr,cbs)) this_hit = 1;
-                                                }else{
-                                                    this_hit = 1;
-                                                }
-                                            }
-                                        }
-                                        delete data;
-                                    }
-                                    abortQuery = true;
-                                    hit        = this_hit;
-                                    break;
-                                }
-                                }
-
-                                if (abortQuery) break;
-
-                                if (hit) {
-                                    if (all_fields) {
-                                        // @@@ store field for display?
-                                    }
-                                    break;
-                                }
-
-                                gb_key = all_fields ? GB_nextChild(gb_key) : 0;
-                            }
-
-                            if (abortQuery) {
-                                this_query = 0;
-                            }
-                            else {
-                                if (this_query->getNot()) this_hit = !this_hit;
-
-                                // calculate result
-                                switch (this_query->getOperator()) {
-                                case AND: hit = hit && this_hit; break;
-                                case OR: hit  = hit || this_hit; break;
-                                default : awt_assert(0); break;
-                                }
-                            }
-                        }
-
-                        if (type == AWT_QUERY_DONT_MATCH) hit = !hit;
-                        break;
-                    }
-                    }
-                    if (hit) SET_QUERIED(gb_item,cbs);
-                    else    CLEAR_QUERIED(gb_item,cbs);
+            if (first == '*') {
+                if (last == '*') {
+                    str  = string(str, 1, str.length()-2); // cut off first and last
+                    type = str.length() ? AQT_OCCURS : AQT_NON_EMPTY;
                 }
-        }
-
-    //  delete key;
-    free(first_query);
-    free(first_key);
-
-    awt_query_update_list(0,cbs);
-
-    GB_pop_transaction(cbs->gb_main);
-    if (ref_hash){
-        GBS_free_hash(ref_hash);
-        GB_pop_transaction(cbs->gb_ref);
-    }
-}
-
-void awt_copy_selection_list_2_queried_species(struct adaqbsstruct *cbs, AW_selection_list* id){
-    GB_transaction dummy(cbs->gb_main);
-    GBDATA *gb_species;
-    for (gb_species = GBT_first_species(cbs->gb_main);
-         gb_species;
-         gb_species = GBT_next_species(gb_species)){
-        CLEAR_QUERIED(gb_species,cbs);
-    }
-    GBDATA_SET *set = cbs->aws->selection_list_to_species_set(cbs->gb_main,id);
-    if (set){
-        int i;
-        for (i=0;i<set->nitems;i++){
-            SET_QUERIED(set->items[i],cbs);
-        }
-        GB_delete_set(set);
-    }
-    awt_query_update_list(0,cbs);
-}
-
-
-void awt_search_equal_entries(AW_window *,struct adaqbsstruct *cbs,int tokenize){
-    char    *key = cbs->aws->get_root()->awar(cbs->awar_keys[0])->read_string();
-    if (!strlen(key)) {
-        delete key;
-        aw_message("ERROR: To perfom a query you have to select a field and enter a search string");
-        return;
-    }
-    GB_transaction dumy(cbs->gb_main);
-
-    GBDATA          *gb_species_data = GB_search(cbs->gb_main,  "species_data",GB_CREATE_CONTAINER);
-    long             hashsize;
-    GB_ERROR         error           = 0;
-    AWT_QUERY_RANGE  range           = AWT_QUERY_ALL_SPECIES;
-
-    switch (cbs->selector->type) {
-    case AWT_QUERY_ITEM_SPECIES:  {
-        hashsize = GB_number_of_subentries(gb_species_data);
-        break;
-    }
-    case AWT_QUERY_ITEM_EXPERIMENTS:
-    case AWT_QUERY_ITEM_GENES: {
-        // handle species sub-items
-        hashsize = 0;
-
-        for (GBDATA *gb_item_container = cbs->selector->get_first_item_container(cbs->gb_main, cbs->aws->get_root(), range);
-             !error && gb_item_container;
-             gb_item_container = cbs->selector->get_next_item_container(gb_item_container, range))
-            {
-                hashsize += GB_number_of_subentries(gb_item_container);
+                else {
+                    str  = string(str, 1);          // cut of first
+                    type = AQT_ENDS_WITH;
+                }
+            }
+            else {
+                if (last == '*') {
+                    str  = string(str, 0, str.length()-1); // cut of last
+                    type = AQT_STARTS_WITH;
+                }
+                else type = AQT_WILDCARD;
             }
 
-        break;
-    }
-    default: {
-        awt_assert(0);
-        hashsize = 0;
-        break;
-    }
+            if (type != AQT_WILDCARD && containsWildcards(str)) { // still contains wildcards -> fallback
+                str  = query; 
+                type = AQT_WILDCARD;
+            }
+        }
+        else type = AQT_EXACT_MATCH;
     }
 
-    if (hashsize) {
-        GB_HASH *hash    = GBS_create_hash(hashsize, GB_IGNORE_CASE);
-        AW_root *aw_root = cbs->aws->get_root();
+    awt_assert(type != AQT_INVALID || error);
+}
+
+AW_BOOL awt_query::matches(const char *data, GBDATA *gb_item) const {
+    // 'data' is the content of the searched field (read as string)
+    // 'gb_item' is the DB item (e.g. species, gene). Used in ACI-search only.
+    
+    AW_BOOL hit;
+
+    awt_assert(data);
+    awt_assert(gb_item);
+
+    if (error) hit = AW_FALSE;
+    else switch (type) {
+        case AQT_EMPTY: {
+            hit = (data[0] == 0);
+            break;
+        }
+        case AQT_NON_EMPTY: { 
+            hit = (data[0] != 0);
+            break;
+        }
+        case AQT_EXACT_MATCH: {                     // exact match (but ignoring case)
+            hit = strcasecmp(data, query) == 0;
+            break;
+        }
+        case AQT_OCCURS: {                          // query expression occurs in data (equiv to '*expr*')
+            // hit = GBS_find_string(xquery.str.c_str(), data, 1) != 0;
+            hit = GBS_find_string(data, xquery.str.c_str(), 1) != 0;
+            break;
+        }
+        case AQT_STARTS_WITH: {                     // data starts with query expression (equiv to 'expr*')
+            hit = strncasecmp(data, xquery.str.c_str(), xquery.str.length()) == 0;
+            break;
+        }
+        case AQT_ENDS_WITH: {                       // data ends with query expression (equiv to '*expr')
+            int dlen = strlen(data);
+            hit = strcasecmp(data+dlen-xquery.str.length(), xquery.str.c_str()) == 0;
+            break;
+        }
+        case AQT_WILDCARD: {                        // expr contains wildcards (use GBS_string_matches for compare)
+            hit = GBS_string_matches(data,query,GB_IGNORE_CASE);
+            break;
+        }
+        case AQT_GREATER:                           // data is greater than query
+        case AQT_LOWER: {                           // data is lower than query
+            const char *start = data;
+            while (start[0] == ' ') ++start;
+
+            const char *end;
+            float       f = strtof(start, const_cast<char**>(&end));
+
+            if (end == start) { // nothing was converted
+                hit = AW_FALSE;
+            }
+            else {
+                bool is_numeric = (end[0] == 0);
+
+                if (!is_numeric) {
+                    while (end[0] == ' ') ++end;
+                    is_numeric = (end[0] == 0);
+                }
+                if (is_numeric) {
+                    hit = (type == AQT_GREATER)
+                        ? f > xquery.number
+                        : f < xquery.number;
+                }
+                else {
+                    hit = AW_FALSE;
+                }
+            }
+            break;
+        }
+        case AQT_REGEXPR: {                         // expr is a regexpr ('/.../')
+            hit = GBS_regsearch(data, query) != 0;
+            break;
+        }
+        case AQT_ACI: {                             // expr is a ACI ('|...'); result = "0" -> no hit; otherwise hit
+            char *aci_result = GB_command_interpreter(gb_main, data, query, gb_item, tree);
+            if (!aci_result) {
+                error = GB_expect_error();
+                hit   = AW_FALSE;
+            }
+            else {
+                hit = strcmp(aci_result, "0") != 0;
+            }
+            freeset(lastACIresult, aci_result);
+            break;
+        }
+        case AQT_INVALID: {                     // invalid
+            awt_assert(0);
+            error = "Invalid search expression";
+            hit   = AW_FALSE;
+            break;
+        }
+    }
+    return applyNot(hit);
+}
+
+static void awt_do_query(void *dummy, struct adaqbsstruct *cbs, AW_CL cl_ext_query) {
+    AWUSE(dummy);
+
+    GB_push_transaction(cbs->gb_main);
+
+    AWT_EXT_QUERY_TYPES  ext_query = (AWT_EXT_QUERY_TYPES)cl_ext_query;
+    AW_root             *aw_root   = cbs->aws->get_root();
+    awt_query            query(cbs);
+
+    if (cbs->gb_ref){ // special for merge tool!
+        char *first_query = aw_root->awar(cbs->awar_queries[0])->read_string();
+        if (strlen(first_query) == 0) {
+            if (!ext_query) ext_query  = AWT_EXT_QUERY_COMPARE_LINES;
+        }
+        free(first_query);
+    }
+
+    AWT_QUERY_MODES mode  = (AWT_QUERY_MODES)aw_root->awar(cbs->awar_ere)->read_int();
+    AWT_QUERY_RANGE range = (AWT_QUERY_RANGE)aw_root->awar(cbs->awar_where)->read_int();
+    AWT_QUERY_TYPES type  = (AWT_QUERY_TYPES)aw_root->awar(cbs->awar_by)->read_int();
+
+    GB_ERROR error = 0;
+
+    if (cbs->gb_ref && // merge tool only
+        (ext_query == AWT_EXT_QUERY_COMPARE_LINES || ext_query == AWT_EXT_QUERY_COMPARE_WORDS))
+    {
+        GB_push_transaction(cbs->gb_ref);
+        const char *first_key = query.getKey();
+        GB_HASH    *ref_hash  = awt_create_ref_hash(cbs, first_key, ext_query == AWT_EXT_QUERY_COMPARE_WORDS);
+
+#if defined(DEBUG)
+        printf("query: search indentical %s in field %s%s\n",
+               (ext_query == AWT_EXT_QUERY_COMPARE_WORDS ? "words" : "values"),
+               first_key,
+               cbs->expect_hit_in_ref_list ? " of species listed in other hitlist" : "");
+#endif // DEBUG
 
         for (GBDATA *gb_item_container = cbs->selector->get_first_item_container(cbs->gb_main, aw_root, range);
              gb_item_container;
              gb_item_container = cbs->selector->get_next_item_container(gb_item_container, range))
+        {
+            for (GBDATA *gb_item = cbs->selector->get_first_item(gb_item_container);
+                 gb_item;
+                 gb_item = cbs->selector->get_next_item(gb_item))
+            {
+                switch (mode) {
+                    case AWT_QUERY_GENERATE: CLEAR_QUERIED(gb_item, cbs); break;
+                    case AWT_QUERY_ENLARGE:  if (IS_QUERIED(gb_item, cbs)) continue; break;
+                    case AWT_QUERY_REDUCE:   if (!IS_QUERIED(gb_item, cbs)) continue; break;
+                }
+                    
+                GBDATA *gb_key = query.get_first_key(gb_item);
+
+                if (gb_key) {
+                    char   *data        = GB_read_as_string(gb_key);
+                    GBDATA *gb_ref_pntr = 0;
+
+                    if (data && data[0]) {
+                        string  hit_reason;
+                        AW_BOOL this_hit = AW_FALSE;
+
+                        if (ext_query == AWT_EXT_QUERY_COMPARE_WORDS){
+                            for (char *t = strtok(data," "); t; t = strtok(0," ")) {
+                                gb_ref_pntr = (GBDATA *)GBS_read_hash(ref_hash,t);
+                                if (gb_ref_pntr) { // found item in other DB, with 'first_key' containing word from 'gb_key'
+                                    this_hit   = AW_TRUE;
+                                    hit_reason = GBS_global_string("%s%s has word '%s' in %s",
+                                                                   cbs->expect_hit_in_ref_list ? "Hit " : "",
+                                                                   cbs->selector->generate_item_id(cbs->gb_ref, gb_ref_pntr),
+                                                                   t, first_key);
+                                }
+                            }
+                        }
+                        else {
+                            gb_ref_pntr = (GBDATA *)GBS_read_hash(ref_hash,data); 
+                            if (gb_ref_pntr) { // found item in other DB, with identical 'first_key' 
+                                this_hit   = AW_TRUE;
+                                hit_reason = GBS_global_string("%s%s matches %s",
+                                                               cbs->expect_hit_in_ref_list ? "Hit " : "",
+                                                               cbs->selector->generate_item_id(cbs->gb_ref, gb_ref_pntr),
+                                                               first_key);
+                            }
+                        }
+
+                        if (this_hit) {
+                            awt_assert(!hit_reason.empty());
+                            SET_QUERIED(gb_item, cbs, hit_reason.c_str());
+                        }
+                        else CLEAR_QUERIED(gb_item, cbs);
+                    }
+                    free(data);
+                }                
+            }
+        }
+
+        GBS_free_hash(ref_hash);
+        GB_pop_transaction(cbs->gb_ref);
+    }
+    else {                                          // "normal" query
+        if (type == AWT_QUERY_DONT_MATCH) {
+#if defined(DEBUG)
+            fputs("query: !(", stdout); query.dump();
+#endif // DEBUG
+
+            query.negate();
+            type = AWT_QUERY_MATCH;
+
+#if defined(DEBUG)
+            fputs(") => query: ", stdout); query.dump(); fputc('\n', stdout);
+#endif // DEBUG
+        }
+#if defined(DEBUG)
+        else { fputs("query: ", stdout); query.dump(); fputc('\n', stdout); }
+#endif // DEBUG
+        
+        for (GBDATA *gb_item_container = cbs->selector->get_first_item_container(cbs->gb_main, aw_root, range);
+             gb_item_container;
+             gb_item_container = cbs->selector->get_next_item_container(gb_item_container, range))
+        {
+            for (GBDATA *gb_item = cbs->selector->get_first_item(gb_item_container);
+                 gb_item;
+                 gb_item = cbs->selector->get_next_item(gb_item))
+            {
+                string hit_reason;
+
+                switch (mode) {
+                    case AWT_QUERY_GENERATE: CLEAR_QUERIED(gb_item,cbs); break;
+                    case AWT_QUERY_ENLARGE:  if (IS_QUERIED(gb_item,cbs)) continue; break;
+                    case AWT_QUERY_REDUCE:   if (!IS_QUERIED(gb_item,cbs)) continue; break;
+                }
+
+                AW_BOOL hit = 0;
+
+                switch(type) {
+                    case AWT_QUERY_MARKED: {
+                        hit        = GB_read_flag(gb_item);
+                        hit_reason = "<marked>";
+                        break;
+                    }
+                    case AWT_QUERY_MATCH: {
+                        for (awt_query *this_query = &query; this_query;  this_query = this_query ? this_query->getNext() : 0) { // iterate over all single queries
+                            awt_query_operator this_op = this_query->getOperator();
+
+                            if ((this_op == OR) == hit) {
+                                continue; // skip query Q for '1 OR Q' and for '0 AND Q' (result can't change)
+                            }
+
+                            string this_hit_reason;
+
+                            GBDATA               *gb_key      = this_query->get_first_key(gb_item);
+                            awt_query_field_type  match_field = this_query->get_match_field();
+                            AW_BOOL               this_hit    = (match_field == AQFT_ALL_FIELDS) ? AW_TRUE : AW_FALSE;
+
+                            char *data = gb_key ? GB_read_as_string(gb_key) : strdup(""); // assume "" for explicit fields that don't exist
+                            awt_assert(data);
+
+                            while (data) {
+                                awt_assert(ext_query == AWT_EXT_QUERY_NONE);
+                                AW_BOOL     matched     = this_query->matches(data, gb_item); // includes not-op
+                                const char *reason_key  = 0;
+
+                                switch (match_field) {
+                                    case AQFT_EXPLICIT:
+                                        this_hit   = matched;
+                                        reason_key = this_query->getKey();
+                                        break;
+
+                                    case AQFT_ANY_FIELD:
+                                        if (matched) {
+                                            this_hit   = AW_TRUE;
+                                            reason_key = GB_read_key_pntr(gb_key);
+                                        }
+                                        break;
+
+                                    case AQFT_ALL_FIELDS:
+                                        if (!matched) {
+                                            this_hit   = AW_FALSE;
+                                            reason_key = GB_read_key_pntr(gb_key);
+                                        }
+                                        break;
+                                }
+
+                                if (reason_key) {
+                                    if (strlen(data)>AWT_MAX_SHOWN_DATA_SIZE) {
+                                        strcpy(data+AWT_MAX_SHOWN_DATA_SIZE-5, "[...]");
+                                    }
+                                    this_hit_reason       = string(reason_key)+"="+data;
+                                    const char *ACIresult = this_query->get_last_ACI_result();
+                                    if (ACIresult) {
+                                        this_hit_reason = string("[ACI=")+ACIresult+"] "+this_hit_reason;
+                                    }
+                                    gb_key = NULL; // stop!
+                                }
+
+                                freeset(data, NULL);
+                                if (gb_key) {
+                                    do { gb_key = GB_nextChild(gb_key); }
+                                    while (gb_key && GB_read_type(gb_key) == GB_DB);
+
+                                    if (gb_key) {
+                                        data = GB_read_as_string(gb_key);
+                                        awt_assert(data);
+                                    }
+                                }
+                            }
+
+                            if (this_hit && match_field == AQFT_ALL_FIELDS) {
+                                awt_assert(this_hit_reason.empty());
+                                this_hit_reason = this_query->shallMatch() ? "<matched all fields>" : "<matched no field>";
+                            }
+
+                            
+                            if (this_hit) {
+                                awt_assert(!this_hit_reason.empty()); // if we got a hit, we also need a reason
+                                const char *prefix = GBS_global_string("%c%c", '1'+this_query->getIndex(), this_query->shallMatch() ? ' ' : '!');
+                                this_hit_reason    = string(prefix)+this_hit_reason;
+                            }
+
+                            // calculate result
+                            // (Note: the operator of the 1st query is always OR)
+                            switch (this_op) {
+                                case AND: {
+                                    awt_assert(hit); // otherwise there was no need to run this sub-query
+                                    hit        = this_hit;
+                                    hit_reason = hit_reason.empty() ? this_hit_reason : hit_reason+" & "+this_hit_reason;
+                                    break;
+                                }
+                                case OR: {
+                                    awt_assert(!hit); // otherwise there was no need to run this sub-query
+                                    hit        = this_hit;
+                                    hit_reason = this_hit_reason;
+                                    break;
+                                }
+                                default :
+                                    awt_assert(0);
+                                    break;
+                            }
+                            awt_assert(!hit || !hit_reason.empty()); // if we got a hit, we also need a reason
+                        }
+                        break;
+                    }
+                    default : awt_assert(0); break;
+                }
+
+                if (hit) {
+                    awt_assert(!hit_reason.empty());
+
+                    if (mode == AWT_QUERY_REDUCE) {
+                        string prev_info = getHitInfo(gb_item, cbs);
+                        hit_reason = prev_info+" (kept cause "+hit_reason+")";
+                    }
+
+                    SET_QUERIED(gb_item, cbs, hit_reason.c_str());
+                }
+                else CLEAR_QUERIED(gb_item, cbs);
+            }
+        }
+        
+    }
+
+    if (!error) error = query.getError(); // check for query error
+
+    if (error) aw_message(error);
+    else awt_query_update_list(0,cbs);
+
+    GB_pop_transaction(cbs->gb_main);
+}
+
+void awt_copy_selection_list_2_queried_species(struct adaqbsstruct *cbs, AW_selection_list *id, const char *hit_description) {
+    GB_transaction ta(cbs->gb_main);
+
+    awt_assert(strstr(hit_description, "%s")); // hit_description needs '%s' (which is replaced by visible content of 'id')
+
+    GB_ERROR         error     = 0;
+    AW_window       *aww       = cbs->aws;
+    AW_root         *aw_root   = aww->get_root();
+    GB_HASH         *list_hash = aww->selection_list_to_hash(id, false);
+    AWT_QUERY_MODES  mode      = (AWT_QUERY_MODES)aw_root->awar(cbs->awar_ere)->read_int();
+    AWT_QUERY_TYPES  type      = (AWT_QUERY_TYPES)aw_root->awar(cbs->awar_by)->read_int();
+
+    if (type == AWT_QUERY_MARKED) {
+        error = "Query mode 'that are marked' does not apply here.\nEither select 'that match the query' or 'that don't match the q.'";
+    }
+
+    if (type != AWT_QUERY_MATCH || mode != AWT_QUERY_GENERATE) { // different behavior as in the past -> advice
+        AWT_advice("'Move to hitlist' now depends on the values selected for\n"
+                   " * 'Search/Add/Keep species' and\n"
+                   " * 'that match/dont match the query'\n"
+                   "in the search tool.",
+                   AWT_ADVICE_TOGGLE|AWT_ADVICE_HELP,
+                   "Behavior changed",
+                   "next_neighbours.hlp");
+    }
+
+    for (GBDATA *gb_species = GBT_first_species(cbs->gb_main);
+         gb_species && !error;
+         gb_species = GBT_next_species(gb_species))
+    {
+        switch (mode) {
+            case AWT_QUERY_GENERATE: CLEAR_QUERIED(gb_species, cbs); break;
+            case AWT_QUERY_ENLARGE:  if (IS_QUERIED(gb_species, cbs)) continue; break;
+            case AWT_QUERY_REDUCE:   if (!IS_QUERIED(gb_species, cbs)) continue; break;
+        }
+
+        const char *name      = GBT_get_name(gb_species);
+        const char *displayed = reinterpret_cast<const char*>(GBS_read_hash(list_hash, name));
+
+        if ((displayed == 0) == (type == AWT_QUERY_DONT_MATCH)) {
+            string hit_reason = GBS_global_string(hit_description, displayed ? displayed : "<no near neighbour>");
+            
+            if (mode == AWT_QUERY_REDUCE) {
+                string prev_info = getHitInfo(gb_species, cbs);
+                hit_reason = prev_info+" (kept cause "+hit_reason+")";
+            }
+            SET_QUERIED(gb_species, cbs, hit_reason.c_str());
+        }
+        else {
+            CLEAR_QUERIED(gb_species, cbs);
+        }
+    }
+
+    if (error) aw_message(error);
+    awt_query_update_list(0,cbs);
+}
+
+
+void awt_search_equal_entries(AW_window *,struct adaqbsstruct *cbs, bool tokenize){
+    char     *key   = cbs->aws->get_root()->awar(cbs->awar_keys[0])->read_string();
+    GB_ERROR  error = 0;
+
+    if (strlen(key) == 0) {
+        error = "Please select a key (in the first query expression)";
+    }
+    else {
+        GB_transaction dumy(cbs->gb_main);
+
+        GBDATA          *gb_species_data = GB_search(cbs->gb_main,  "species_data",GB_CREATE_CONTAINER);
+        long             hashsize;
+        AWT_QUERY_RANGE  range           = AWT_QUERY_ALL_SPECIES;
+
+        switch (cbs->selector->type) {
+            case AWT_QUERY_ITEM_SPECIES:  {
+                hashsize = GB_number_of_subentries(gb_species_data);
+                break;
+            }
+            case AWT_QUERY_ITEM_EXPERIMENTS:
+            case AWT_QUERY_ITEM_GENES: {
+                // handle species sub-items
+                hashsize = 0;
+
+                for (GBDATA *gb_item_container = cbs->selector->get_first_item_container(cbs->gb_main, cbs->aws->get_root(), range);
+                     gb_item_container;
+                     gb_item_container = cbs->selector->get_next_item_container(gb_item_container, range))
+                {
+                    hashsize += GB_number_of_subentries(gb_item_container);
+                }
+
+                break;
+            }
+            default: {
+                awt_assert(0);
+                hashsize = 0;
+                break;
+            }
+        }
+
+        if (hashsize) {
+            GB_HASH *hash    = GBS_create_hash(hashsize, GB_IGNORE_CASE);
+            AW_root *aw_root = cbs->aws->get_root();
+
+            for (GBDATA *gb_item_container = cbs->selector->get_first_item_container(cbs->gb_main, aw_root, range);
+                 gb_item_container;
+                 gb_item_container = cbs->selector->get_next_item_container(gb_item_container, range))
             {
                 for (GBDATA *gb_item = cbs->selector->get_first_item(gb_item_container);
                      gb_item;
                      gb_item       = cbs->selector->get_next_item(gb_item))
-                    {
-                        CLEAR_QUERIED(gb_item,cbs);
-                        GB_write_flag(gb_item,0);
+                {
+                    CLEAR_QUERIED(gb_item,cbs);
+                    GB_write_flag(gb_item,0);
 
-                        GBDATA *gb_key = GB_search(gb_item,key,GB_FIND);    if (!gb_key) continue;
-                        char   *data   = GB_read_as_string(gb_key);         if (!data) continue;
+                    GBDATA *gb_key = GB_search(gb_item,key,GB_FIND);    if (!gb_key) continue;
+                    char   *data   = GB_read_as_string(gb_key);         if (!data) continue;
 
-                        if (tokenize){
-                            char *s;
-                            for (s=strtok(data,",; \t."); s ; s = strtok(0,",; \t.")){
-                                GBDATA *gb_old = (GBDATA *)GBS_read_hash(hash,s);
-                                if (gb_old){
-                                    SET_QUERIED(gb_old,cbs);
-                                    SET_QUERIED(gb_item,cbs);
-                                    GB_write_flag(gb_item,1);
-                                }else{
-                                    GBS_write_hash(hash,s,(long)gb_item);
+                    if (tokenize){
+                        char *s;
+                        for (s=strtok(data,",; \t."); s ; s = strtok(0,",; \t.")){
+                            GBDATA *gb_old = (GBDATA *)GBS_read_hash(hash,s);
+                            if (gb_old) {
+                                const char *oldInfo   = 0;
+                                char       *firstInfo = GBS_global_string_copy("1st=%s", s);
+
+                                if (IS_QUERIED(gb_old, cbs)) {
+                                    const char *prevInfo = getHitInfo(gb_old, cbs);
+
+                                    if (strstr(prevInfo, firstInfo) == 0) { // not already have 1st-entry here
+                                        oldInfo = GBS_global_string("%s %s", prevInfo, firstInfo);
+                                    }
                                 }
+                                else {
+                                    oldInfo = firstInfo;
+                                }
+                                
+                                if (oldInfo) SET_QUERIED(gb_old, cbs, oldInfo);
+                                SET_QUERIED(gb_item, cbs, GBS_global_string("dup=%s", s));
+                                GB_write_flag(gb_item, 1);
+
+                                free(firstInfo);
                             }
-                        }else{
-                            GBDATA *gb_old = (GBDATA *)GBS_read_hash(hash,data);
-                            if (gb_old){
-                                SET_QUERIED(gb_old,cbs);
-                                SET_QUERIED(gb_item,cbs);
-                                GB_write_flag(gb_item,1);
-                            }else{
-                                GBS_write_hash(hash,data,(long)gb_item);
+                            else {
+                                GBS_write_hash(hash,s,(long)gb_item);
                             }
                         }
-                        free(data);
                     }
+                    else {
+                        GBDATA *gb_old = (GBDATA *)GBS_read_hash(hash,data);
+                        if (gb_old) {
+                            if (!IS_QUERIED(gb_old, cbs)) {
+                                SET_QUERIED(gb_old, cbs, GBS_global_string("%s (1st)", data));
+                            }
+                            SET_QUERIED(gb_item, cbs, GBS_global_string("%s (duplicate)", data));
+                            GB_write_flag(gb_item, 1);
+                        }
+                        else {
+                            GBS_write_hash(hash,data,(long)gb_item);
+                        }
+                    }
+                    free(data);
+                }
             }
 
-        GBS_free_hash(hash);
+            GBS_free_hash(hash);
+        }
+        else {
+            error = "No items exist";
+        }
     }
 
     free(key);
+
+    if (error) aw_message(error);
     awt_query_update_list(0,cbs);
 }
 
@@ -1791,6 +2253,24 @@ static void query_box_popup_view_window(AW_window *aww, AW_CL cl_create_window, 
     aw_viewer->show();
 }
 
+static int get_item_count(GBDATA *gb_main, AW_root *aw_root, const ad_item_selector *selector) {
+    int count = 0;
+    GB_transaction ta(gb_main);
+    
+    for (GBDATA *gb_item_container = selector->get_first_item_container(gb_main, aw_root, AWT_QUERY_ALL_SPECIES);
+         gb_item_container;
+         gb_item_container = selector->get_next_item_container(gb_item_container, AWT_QUERY_ALL_SPECIES))
+    {
+        for (GBDATA *gb_item = selector->get_first_item(gb_item_container);
+             gb_item;
+             gb_item = selector->get_next_item(gb_item))
+        {
+            count++;
+        }
+    }
+    return count;
+}
+
 /***************** Create the database query box and functions *************************/
 struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtqs) // create the query box
 {
@@ -1801,14 +2281,15 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
     GBDATA              *gb_main = awtqs->gb_main;
     struct adaqbsstruct *cbs     = (struct adaqbsstruct *)calloc(1, sizeof(struct adaqbsstruct));
 
-    cbs->gb_main          = awtqs->gb_main;
-    cbs->aws              = aws;
-    cbs->gb_ref           = awtqs->gb_ref;
-    cbs->look_in_ref_list = awtqs->look_in_ref_list;
-    cbs->select_bit       = awtqs->select_bit;
-    cbs->species_name     = strdup(awtqs->species_name);
-    cbs->tree_name        = awtqs->tree_name ? aw_root->awar(awtqs->tree_name)->read_string() : 0;
-    cbs->selector         = awtqs->selector;
+    cbs->gb_main                = awtqs->gb_main;
+    cbs->aws                    = aws;
+    cbs->gb_ref                 = awtqs->gb_ref;
+    cbs->expect_hit_in_ref_list = awtqs->expect_hit_in_ref_list;
+    cbs->select_bit             = awtqs->select_bit;
+    cbs->species_name           = strdup(awtqs->species_name);
+    cbs->tree_name              = awtqs->tree_name ? aw_root->awar(awtqs->tree_name)->read_string() : 0;
+    cbs->selector               = awtqs->selector;
+    cbs->hit_description        = GBS_create_hash(2*get_item_count(cbs->gb_main, cbs->aws->get_root(), cbs->selector), GB_IGNORE_CASE);
 
     GB_push_transaction(gb_main);
     /*************** Create local AWARS *******************/
@@ -2061,16 +2542,16 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
         if (cbs->gb_ref){
             awt_assert(cbs->selector->type == AWT_QUERY_ITEM_SPECIES); // stuff below works only for species
             aws->insert_separator();
-            if (cbs->look_in_ref_list){
-                aws->insert_menu_topic("search_equal_fields_and_listed_in_I",   "Search Species with an Entry Which Exists in Both Databases and are Listed in the Database I hitlist","S",
-                                       "compare_lines.hlp",-1,(AW_CB)awt_do_query,(AW_CL)cbs,AWT_EXT_QUERY_COMPARE_LINES);
-                aws->insert_menu_topic("search_equal_words_and_listed_in_I","Search Species with an Entry Word Which Exists in Both Databases and are Listed in the Database I hitlist","W",
-                                       "compare_lines.hlp",-1,(AW_CB)awt_do_query,(AW_CL)cbs,AWT_EXT_QUERY_COMPARE_WORDS);
+            if (cbs->expect_hit_in_ref_list) {
+                aws->insert_menu_topic("search_equal_fields_and_listed_in_I", "Search entries existing in both DBs and listed in the DB I hitlist","S",
+                                       "search_equal_fields.hlp",-1,(AW_CB)awt_do_query,(AW_CL)cbs,AWT_EXT_QUERY_COMPARE_LINES);
+                aws->insert_menu_topic("search_equal_words_and_listed_in_I",  "Search words existing in entries of both DBs and listed in the DB I hitlist","W",
+                                       "search_equal_fields.hlp",-1,(AW_CB)awt_do_query,(AW_CL)cbs,AWT_EXT_QUERY_COMPARE_WORDS);
             }else{
-                aws->insert_menu_topic("search_equal_field_in_both_db", "Search Species with an Entry Which Exists in Both Databases","S",
-                                       "compare_lines.hlp",-1,(AW_CB)awt_do_query,(AW_CL)cbs,AWT_EXT_QUERY_COMPARE_LINES);
-                aws->insert_menu_topic("search_equal_word_in_both_db","Search Species with an Entry Word Which Exists in Both Databases","W",
-                                       "compare_lines.hlp",-1,(AW_CB)awt_do_query,(AW_CL)cbs,AWT_EXT_QUERY_COMPARE_WORDS);
+                aws->insert_menu_topic("search_equal_field_in_both_db", "Search entries existing in both DBs","S",
+                                       "search_equal_fields.hlp",-1,(AW_CB)awt_do_query,(AW_CL)cbs,AWT_EXT_QUERY_COMPARE_LINES);
+                aws->insert_menu_topic("search_equal_word_in_both_db","Search words existing in entries of both DBs","W",
+                                       "search_equal_fields.hlp",-1,(AW_CB)awt_do_query,(AW_CL)cbs,AWT_EXT_QUERY_COMPARE_WORDS);
             }
         }
     }
