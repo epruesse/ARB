@@ -237,6 +237,18 @@ admap.o: arbdb.h
 admap.o: arbdb_base.h
 admap.o: $(ARBHOME)/INCLUDE/attributes.h
 
+admatch.o: ad_k_prot.h
+admatch.o: ad_lpro.h
+admatch.o: ad_prot.h
+admatch.o: adlmacros.h
+admatch.o: adlocal.h
+admatch.o: adregexp.h
+admatch.o: adtune.h
+admatch.o: arb_assert.h
+admatch.o: arbdb.h
+admatch.o: arbdb_base.h
+admatch.o: $(ARBHOME)/INCLUDE/attributes.h
+
 admath.o: ad_k_prot.h
 admath.o: ad_lpro.h
 admath.o: ad_prot.h
@@ -324,16 +336,12 @@ adsort.o: $(ARBHOME)/INCLUDE/attributes.h
 adstring.o: ad_k_prot.h
 adstring.o: ad_lpro.h
 adstring.o: ad_prot.h
-adstring.o: ad_t_lpro.h
-adstring.o: ad_t_prot.h
 adstring.o: adlmacros.h
 adstring.o: adlocal.h
-adstring.o: adregexp.h
 adstring.o: adtune.h
 adstring.o: arb_assert.h
 adstring.o: arbdb.h
 adstring.o: arbdb_base.h
-adstring.o: arbdbt.h
 adstring.o: $(ARBHOME)/INCLUDE/attributes.h
 
 adsystem.o: ad_k_prot.h

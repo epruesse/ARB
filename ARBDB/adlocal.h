@@ -5,6 +5,9 @@
 #ifndef ADLOCAL_H
 #define ADLOCAL_H
 
+#ifndef _STDIO_H
+#include <stdio.h>
+#endif
 #ifndef _STDINT_H
 #include <stdint.h>
 #endif

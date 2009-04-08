@@ -438,6 +438,7 @@ AWT_pro_a_nucs.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_pro_a_nucs.o: $(ARBHOME)/INCLUDE/inline.h
 
 AWT_query_and_functions.o: awt.hxx
+AWT_query_and_functions.o: awt_advice.hxx
 AWT_query_and_functions.o: awt_changekey.hxx
 AWT_query_and_functions.o: awt_config_manager.hxx
 AWT_query_and_functions.o: awt_sel_boxes.hxx
