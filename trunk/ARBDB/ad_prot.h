@@ -50,9 +50,6 @@ char *GBS_string_2_key P_((const char *str));
 GB_ERROR GB_check_key P_((const char *key)) __ATTR__USERESULT;
 GB_ERROR GB_check_link_name P_((const char *key)) __ATTR__USERESULT;
 GB_ERROR GB_check_hkey P_((const char *key)) __ATTR__USERESULT;
-GB_CSTR GBS_find_string P_((GB_CSTR str, GB_CSTR substr, int match_mode));
-GB_BOOL GBS_string_matches_regexp P_((const char *str, const char *search, GB_CASE case_sens));
-GB_BOOL GBS_string_matches P_((const char *str, const char *search, GB_CASE case_sens));
 char *GBS_remove_escape P_((char *com));
 char *GBS_escape_string P_((const char *str, const char *chars_to_escape, char escape_char));
 char *GBS_unescape_string P_((const char *str, const char *escaped_chars, char escape_char));
@@ -68,7 +65,6 @@ void GBS_strnprintf P_((struct GBS_strstruct *strstr, long len, const char *temp
 void GBS_chrcat P_((struct GBS_strstruct *strstr, char ch));
 void GBS_intcat P_((struct GBS_strstruct *strstr, long val));
 void GBS_floatcat P_((struct GBS_strstruct *strstr, double val));
-char *GBS_string_eval P_((const char *insource, const char *icommand, GBDATA *gb_container));
 char *GBS_eval_env P_((GB_CSTR p));
 char *GBS_find_lib_file P_((const char *filename, const char *libprefix, int warn_when_not_found));
 char **GBS_read_dir P_((const char *dir, const char *mask));
@@ -86,11 +82,6 @@ int GB_status P_((double val));
 NOT4PERL void GB_install_status P_((gb_status_func_type func));
 int GB_status2 P_((const char *templat, ...)) __ATTR__FORMAT(1);
 NOT4PERL void GB_install_status2 P_((gb_status_func2_type func2));
-GB_CSTR GBS_regsearch P_((GB_CSTR in, const char *regexprin));
-char *GBS_regreplace P_((const char *in, const char *regexprin, GBDATA *gb_species));
-GB_CSTR GBS_regsearch P_((GB_CSTR in, GB_CSTR regexprin));
-char *GBS_regreplace P_((const char *in, const char *regexprin, GBDATA *gb_species));
-char *GBS_regmatch P_((const char *in, const char *regexprin));
 char *GBS_merge_tagged_strings P_((const char *s1, const char *tag1, const char *replace1, const char *s2, const char *tag2, const char *replace2));
 char *GBS_string_eval_tagged_string P_((GBDATA *gb_main, const char *s, const char *dt, const char *tag, const char *srt, const char *aci, GBDATA *gbd));
 char *GB_read_as_tagged_string P_((GBDATA *gbd, const char *tagi));
@@ -100,6 +91,17 @@ char *GBS_fconvert_string P_((char *buffer));
 char *GBS_replace_tabs_by_spaces P_((const char *text));
 int GBS_strscmp P_((const char *s1, const char *s2));
 const char *GBS_readable_size P_((unsigned long long size));
+
+/* admatch.c */
+GB_CSTR GBS_find_string P_((GB_CSTR str, GB_CSTR substr, int match_mode));
+GB_BOOL GBS_string_matches_regexp P_((const char *str, const char *search, GB_CASE case_sens));
+GB_BOOL GBS_string_matches P_((const char *str, const char *search, GB_CASE case_sens));
+char *GBS_string_eval P_((const char *insource, const char *icommand, GBDATA *gb_container));
+GB_CSTR GBS_regsearch P_((GB_CSTR in, const char *regexprin));
+char *GBS_regreplace P_((const char *in, const char *regexprin, GBDATA *gb_species));
+GB_CSTR GBS_regsearch P_((GB_CSTR in, GB_CSTR regexprin));
+char *GBS_regreplace P_((const char *in, const char *regexprin, GBDATA *gb_species));
+char *GBS_regmatch P_((const char *in, const char *regexprin));
 
 /* arbdb.c */
 char *GB_rel P_((void *struct_adress, long rel_adress));

@@ -262,6 +262,7 @@ arbdb_symlink adlundo.h &&
 arbdb_symlink admalloc.c &&
 arbdb_symlink admap.c &&
 arbdb_symlink admap.h &&
+arbdb_symlink admatch.c &&
 arbdb_symlink admath.c &&
 arbdb_symlink adoptimize.c &&
 arbdb_symlink adperl.c &&
