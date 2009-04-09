@@ -1049,8 +1049,10 @@ void awt_search_equal_entries(AW_window *,struct adaqbsstruct *cbs, bool tokeniz
         GB_transaction dumy(cbs->gb_main);
 
         GBDATA          *gb_species_data = GB_search(cbs->gb_main, "species_data", GB_CREATE_CONTAINER);
+        AW_root         *aw_root         = cbs->aws->get_root();
         long             hashsize;
         AWT_QUERY_RANGE  range           = AWT_QUERY_ALL_SPECIES;
+        AWT_QUERY_TYPES  type            = (AWT_QUERY_TYPES)aw_root->awar(cbs->awar_by)->read_int();;
 
         switch (cbs->selector->type) {
             case AWT_QUERY_ITEM_SPECIES:  {
@@ -1078,9 +1080,15 @@ void awt_search_equal_entries(AW_window *,struct adaqbsstruct *cbs, bool tokeniz
             }
         }
 
-        if (hashsize) {
-            GB_HASH *hash    = GBS_create_hash(hashsize, GB_IGNORE_CASE);
-            AW_root *aw_root = cbs->aws->get_root();
+        if (!hashsize) {
+            error = "No items exist";
+        }
+        else if (type == AWT_QUERY_MARKED) {
+            error = "'that are marked' is not applicable here";
+        }
+
+        if (!error) {
+            GB_HASH *hash = GBS_create_hash(hashsize, GB_IGNORE_CASE);
 
             for (GBDATA *gb_item_container = cbs->selector->get_first_item_container(cbs->gb_main, aw_root, range);
                  gb_item_container;
@@ -1088,7 +1096,7 @@ void awt_search_equal_entries(AW_window *,struct adaqbsstruct *cbs, bool tokeniz
             {
                 for (GBDATA *gb_item = cbs->selector->get_first_item(gb_item_container);
                      gb_item;
-                     gb_item       = cbs->selector->get_next_item(gb_item))
+                     gb_item = cbs->selector->get_next_item(gb_item))
                 {
                     CLEAR_QUERIED(gb_item,cbs);
                     GB_write_flag(gb_item,0);
@@ -1139,14 +1147,36 @@ void awt_search_equal_entries(AW_window *,struct adaqbsstruct *cbs, bool tokeniz
                             GBS_write_hash(hash,data,(long)gb_item);
                         }
                     }
+
                     free(data);
+                }
+
+                if (type == AWT_QUERY_DONT_MATCH) {
+                    for (GBDATA *gb_item = cbs->selector->get_first_item(gb_item_container);
+                         gb_item;
+                         gb_item = cbs->selector->get_next_item(gb_item))
+                    {
+                        if (IS_QUERIED(gb_item, cbs)) {
+                            CLEAR_QUERIED(gb_item, cbs);
+                            GB_write_flag(gb_item, 0); // unmark
+                        }
+                        else {
+                            SET_QUERIED(gb_item, cbs, tokenize ? "<entry with unique words>" : "<unique entry>");
+                        }
+                    }
                 }
             }
 
             GBS_free_hash(hash);
         }
-        else {
-            error = "No items exist";
+
+        if (type != AWT_QUERY_MATCH) {
+            AWT_advice("'Find equal entries' now depends on the values selected for\n"
+                       " * 'that match/dont match the query'\n"
+                       "in the search tool.",
+                       AWT_ADVICE_TOGGLE|AWT_ADVICE_HELP,
+                       "Behavior changed",
+                       "search_duplicates.hlp");
         }
     }
 
