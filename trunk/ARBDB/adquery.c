@@ -875,7 +875,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
     if (!str) {
         if (!gbd) {
             GB_internal_error("ARB_command_interpreter no input streams found");
-            return GB_STRDUP("????");
+            return strdup("????");
         }
         str = GB_read_as_string(gbd);
         strmalloc = 1;
@@ -887,23 +887,22 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
                "                        command='%s'\n", str, commands);
     }
     
-    /*********************** empty command -> do not modify string ***************/
-    if (!commands || !commands[0]) {    /* empty command -> return GB_STRDUP(str) */
-        if (!strmalloc) return GB_STRDUP(str);
+    if (!commands || !commands[0]) { /* empty command -> do not modify string */
+        if (!strmalloc) return strdup(str);
         return (char *)str;
     }
 
-    /*********************** ':' -> string parser ********************/
-    if (commands[0] == ':') {
+    if (commands[0] == ':') { /* ':' -> string parser */
         return GBS_string_eval(str,commands+1,gbd);
     }
-    if (commands[0] == '/') {
+    
+    if (commands[0] == '/') { /* regular expression */
         GB_ERROR  err    = 0;
         char     *result = GBS_regreplace(str, commands, &err);
 
         if (!result) {
             if (strcmp(err, "Missing '/' between search and replace string") == 0) {
-                /* if GBS_regreplace didn't find a third '/' we use GBS_regmatch: */
+                /* if GBS_regreplace didn't find a third '/' -> silently use GBS_regmatch: */
                 size_t matchlen;
                 err    = 0;
                 const char *matched = GBS_regmatch(str, commands, &matchlen, &err);
@@ -921,7 +920,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
 
     gb_local->gbl.gb_main = gb_main;
     len = strlen(commands)+1;
-    buffer = GB_STRDUP(commands);
+    buffer = strdup(commands);
 
     /*********************** remove all spaces and tabs ********************/
     {
@@ -964,7 +963,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
     if (strmalloc) {
         orig[0].str = (char *)str;
     }else{
-        orig[0].str = GB_STRDUP(str);
+        orig[0].str = strdup(str);
     }
     argcinput = 1;
     argcout = 0;
@@ -994,7 +993,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
                     break;
                 }
                 *end = 0;
-                out[argcout++].str = GB_STRDUP(s1+1);
+                out[argcout++].str = strdup(s1+1);
             }
             else {
                 argcparam = 0;
@@ -1026,7 +1025,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
                                     p1[len2] = 0;
                                 }
                             }
-                            in[argcparam++].str = GB_STRDUP(p1);
+                            in[argcparam++].str = strdup(p1);
                         }
                     }
                     if (error) break;
@@ -1135,7 +1134,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
     {
         char *s1;
         if (!argcout) {
-            s1 = GB_STRDUP(""); /* returned '<NULL>' in the past */
+            s1 = strdup(""); /* returned '<NULL>' in the past */
         }
         else if (argcout ==1) {
             s1 = out[0].str;

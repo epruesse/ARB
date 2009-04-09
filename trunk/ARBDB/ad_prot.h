@@ -396,7 +396,6 @@ GB_BOOL GB_is_directory_compressed P_((GBDATA *gbd));
 
 /* admalloc.c */
 NOT4PERL void *GB_calloc P_((unsigned int nelem, unsigned int elsize));
-char *GB_deprStrdup P_((const char *p)) __ATTR__DEPRECATED;
 char *GB_strdup P_((const char *p));
 char *GB_strduplen P_((const char *p, unsigned len));
 char *GB_strpartdup P_((const char *start, const char *end));

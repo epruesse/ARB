@@ -109,13 +109,6 @@ NOT4PERL void *GB_calloc(unsigned int nelem, unsigned int elsize)
     return mem;
 }
 
-#if defined(DEVEL_RALF)
-char *GB_deprStrdup(const char *p) {
-    /* goes to header: __ATTR__DEPRECATED  */
-    return strdup(p);
-}
-#endif /* DEVEL_RALF */
-
 char *GB_strdup(const char *p) {
     /* does strdup(), but working with NULL
      * (Note: use nulldup() instead!)  

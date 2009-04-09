@@ -454,7 +454,7 @@ long GBS_write_hash(GB_HASH *hs, const char *key, long val) {
 }
 
 long GBS_write_hash_no_strdup(GB_HASH *hs, char *key, long val) {
-    /* same as GBS_write_hash, but does no GB_STRDUP. 'key' is freed later in GBS_free_hash,
+    /* same as GBS_write_hash, but does no strdup. 'key' is freed later in GBS_free_hash,
      * so the user has to 'malloc' the string and give control to the hash.
      * Note: after calling this function 'key' may be invalid!
     */

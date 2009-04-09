@@ -39,8 +39,9 @@ typedef enum { GB_FALSE = 0 , GB_TRUE = 1 } GB_BOOL;
  * Note: freeset, freedup and reassign may safely use the changed variable in the rhs-expression!
  *
  * @@@ the complete section could go into a seperate header,
- * but it makes no sense atm, cause we need GB_strdup anyway
+ * but it makes no sense atm, cause we need GB_strdup for C compilation
  * (using a macro would evaluate 'str' in nulldup twice - which is not ok)
+ *
  */
 
 #define freeset(var,str) do { typeof(var) freesetvar = (str); free(var); (var) = freesetvar; } while(0)
