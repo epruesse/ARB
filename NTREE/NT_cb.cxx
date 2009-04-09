@@ -49,9 +49,7 @@ void NT_delete_mark_all_cb(void *, AWT_canvas *ntw) {
 }
 
 
-AW_window *
-NT_open_select_tree_window(AW_root *awr,char *awar_tree)
-{
+AW_window * NT_open_select_tree_window(AW_root *awr,char *awar_tree) {
     AW_window_simple *aws;
 
     aws = new AW_window_simple;
