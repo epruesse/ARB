@@ -827,14 +827,14 @@ static const char *shortenLongString(const char *str, size_t wanted_len) {
 
     if (len>wanted_len) {
         static char   *shortened_str;
-        static size_t  len = 0;
+        static size_t  short_len = 0;
 
-        if (len>wanted_len) {
+        if (short_len >= wanted_len) {
             memcpy(shortened_str, str, wanted_len-4);
         }
         else {
             freeset(shortened_str, GB_strpartdup(str, str+wanted_len));
-            len = wanted_len;
+            short_len = wanted_len;
         }
         strcpy(shortened_str+wanted_len-4, "[..]");
         result = shortened_str;
@@ -897,19 +897,22 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
     if (commands[0] == ':') {
         return GBS_string_eval(str,commands+1,gbd);
     }
-    if (commands[0] == '/'){
-        char *result = GBS_regreplace(str,commands,gbd);
+    if (commands[0] == '/') {
+        GB_ERROR  err    = 0;
+        char     *result = GBS_regreplace(str, commands, &err);
+
         if (!result) {
-            GB_ERROR err = GB_get_error();
-
-            if (strstr(err, "no '/' found in regexpr") != 0) {
+            if (strcmp(err, "Missing '/' between search and replace string") == 0) {
                 /* if GBS_regreplace didn't find a third '/' we use GBS_regmatch: */
-                char *found;
-                GB_clear_error();
+                size_t matchlen;
+                err    = 0;
+                const char *matched = GBS_regmatch(str, commands, &matchlen, &err);
 
-                found  = GBS_regmatch(str, commands);
-                result = found ? found : GB_STRDUP("");
+                if (matched) result   = GB_strndup(matched, matchlen);
+                else if (!err) result = strdup("");
             }
+
+            if (!result && err) result = GBS_global_string_copy("<Error: %s>", err);
         }
         return result;
     }

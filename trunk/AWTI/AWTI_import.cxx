@@ -965,7 +965,7 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
 
             {
                 char *f          = awr->awar(AWAR_FILE)->read_string();
-                awtcig.filenames = GBS_read_dir(f,0);
+                awtcig.filenames = GBS_read_dir(f,NULL);
                 free(f);
             }
 

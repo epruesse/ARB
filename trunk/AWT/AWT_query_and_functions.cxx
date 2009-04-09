@@ -308,13 +308,14 @@ class awt_query {
     GBQUARK              keyquark;                  // valid only if match_field == AQFT_EXPLICIT
     awt_query_type       type;                      // type of 'query'
     struct {                                        // used for some values of 'type'
-        string str;
-        float  number;
+        string     str;
+        GBS_REGEX *regexp;
+        float      number;
     } xquery;
 
-    mutable GB_ERROR  error;                        // set by matches(), once set all future matches fail
-    mutable char     *lastACIresult;                // result of last ACI query
-    
+    mutable char *error;                            // set by matches(), once set all future matches fail
+    mutable char *lastACIresult;                    // result of last ACI query
+
     awt_query *next;
     int        index;                               // number of query (0 = first query, 1 = second query); not always consecutive!
 
@@ -335,6 +336,8 @@ public:
         free(key);
         free(query);
         free(lastACIresult);
+        if (xquery.regexp) GBS_free_regexpr(xquery.regexp);
+        free(error);
         delete next;
     }
 
@@ -363,6 +366,9 @@ public:
         }
         else if (match_field != AQFT_EXPLICIT) {
             gb_key = GB_child(gb_item);
+            while (gb_key && GB_read_type(gb_key) == GB_DB) {
+                gb_key = GB_nextChild(gb_key);
+            }
         }
         else {
             gb_key = GB_find_sub_by_quark(gb_item, getKeyquark(), 0);
@@ -403,6 +409,7 @@ void awt_query::initFields(struct adaqbsstruct *cbs, int idx, awt_query_operator
     lastACIresult = 0;
     next          = 0;
     index         = idx;
+    xquery.regexp = 0;
 
     op    = aqo;
     key   = aw_root->awar(cbs->awar_keys[idx])->read_string();
@@ -542,7 +549,16 @@ void awt_query::detect_query_type() {
     type = AQT_INVALID;
 
     if (!first)            type = AQT_EMPTY;
-    else if (first == '/') type = AQT_REGEXPR;
+    else if (first == '/') {
+        GB_CASE     case_flag;
+        GB_ERROR    err       = 0;
+        const char *unwrapped = GBS_unwrap_regexpr(query, &case_flag, &err);
+        if (unwrapped) {
+            xquery.regexp = GBS_compile_regexpr(unwrapped, case_flag, &err);
+            if (xquery.regexp) type = AQT_REGEXPR;
+        }
+        if (err) freedup(error, err);
+    }
     else if (first == '|') type = AQT_ACI;
     else if (first == '<' || first == '>') {
         const char *rest = query+1;
@@ -555,7 +571,7 @@ void awt_query::detect_query_type() {
                 xquery.number = f;
             }
             else {
-                error = GBS_global_string("Could not convert '%s' to number (unexpected content '%s')", rest, end);
+                freeset(error, GBS_global_string_copy("Could not convert '%s' to number (unexpected content '%s')", rest, end));
             }
         }
         // otherwise handle as non-special search string
@@ -666,13 +682,13 @@ AW_BOOL awt_query::matches(const char *data, GBDATA *gb_item) const {
             break;
         }
         case AQT_REGEXPR: {                         // expr is a regexpr ('/.../')
-            hit = GBS_regsearch(data, query) != 0;
+            hit = GBS_regmatch_compiled(data, xquery.regexp, NULL) != 0;
             break;
         }
         case AQT_ACI: {                             // expr is a ACI ('|...'); result = "0" -> no hit; otherwise hit
             char *aci_result = GB_command_interpreter(gb_main, data, query, gb_item, tree);
             if (!aci_result) {
-                error = GB_expect_error();
+                freedup(error, GB_expect_error());
                 hit   = AW_FALSE;
             }
             else {
@@ -683,7 +699,7 @@ AW_BOOL awt_query::matches(const char *data, GBDATA *gb_item) const {
         }
         case AQT_INVALID: {                     // invalid
             awt_assert(0);
-            error = "Invalid search expression";
+            freedup(error, "Invalid search expression");
             hit   = AW_FALSE;
             break;
         }
@@ -712,7 +728,7 @@ static void awt_do_query(void *dummy, struct adaqbsstruct *cbs, AW_CL cl_ext_que
     AWT_QUERY_RANGE range = (AWT_QUERY_RANGE)aw_root->awar(cbs->awar_where)->read_int();
     AWT_QUERY_TYPES type  = (AWT_QUERY_TYPES)aw_root->awar(cbs->awar_by)->read_int();
 
-    GB_ERROR error = 0;
+    GB_ERROR error = query.getError();
 
     if (cbs->gb_ref && // merge tool only
         (ext_query == AWT_EXT_QUERY_COMPARE_LINES || ext_query == AWT_EXT_QUERY_COMPARE_WORDS))
@@ -729,7 +745,7 @@ static void awt_do_query(void *dummy, struct adaqbsstruct *cbs, AW_CL cl_ext_que
 #endif // DEBUG
 
         for (GBDATA *gb_item_container = cbs->selector->get_first_item_container(cbs->gb_main, aw_root, range);
-             gb_item_container;
+             gb_item_container && !error;
              gb_item_container = cbs->selector->get_next_item_container(gb_item_container, range))
         {
             for (GBDATA *gb_item = cbs->selector->get_first_item(gb_item_container);
@@ -807,7 +823,7 @@ static void awt_do_query(void *dummy, struct adaqbsstruct *cbs, AW_CL cl_ext_que
 #endif // DEBUG
         
         for (GBDATA *gb_item_container = cbs->selector->get_first_item_container(cbs->gb_main, aw_root, range);
-             gb_item_container;
+             gb_item_container && !error;
              gb_item_container = cbs->selector->get_next_item_container(gb_item_container, range))
         {
             for (GBDATA *gb_item = cbs->selector->get_first_item(gb_item_container);

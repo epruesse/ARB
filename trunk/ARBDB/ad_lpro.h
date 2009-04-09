@@ -30,10 +30,6 @@ void gbs_memcopy P_((char *dest, const char *source, long len));
 char *gbs_malloc_copy P_((const char *source, long len));
 char *gbs_add_path P_((char *path, char *name));
 
-/* admatch.c */
-char *gbs_compress_command P_((const char *com));
-void gbs_regerror P_((int en));
-
 /* arbdb.c */
 GB_BUFFER gb_increase_buffer P_((long size));
 char *gb_check_out_buffer P_((GB_CBUFFER buffer));

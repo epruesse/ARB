@@ -59,8 +59,8 @@ void GBS_strforget P_((struct GBS_strstruct *strstr));
 GB_BUFFER GBS_mempntr P_((struct GBS_strstruct *strstr));
 long GBS_memoffset P_((struct GBS_strstruct *strstr));
 void GBS_str_cut_tail P_((struct GBS_strstruct *strstr, int byte_count));
+void GBS_strncat P_((struct GBS_strstruct *strstr, const char *ptr, size_t len));
 void GBS_strcat P_((struct GBS_strstruct *strstr, const char *ptr));
-void GBS_strncat P_((struct GBS_strstruct *strstr, const char *ptr, long len));
 void GBS_strnprintf P_((struct GBS_strstruct *strstr, long len, const char *templat, ...)) __ATTR__FORMAT(3);
 void GBS_chrcat P_((struct GBS_strstruct *strstr, char ch));
 void GBS_intcat P_((struct GBS_strstruct *strstr, long val));
@@ -93,15 +93,18 @@ int GBS_strscmp P_((const char *s1, const char *s2));
 const char *GBS_readable_size P_((unsigned long long size));
 
 /* admatch.c */
+GBS_MATCHER *GBS_compile_matcher P_((const char *search_expr, GB_CASE case_flag));
+void GBS_free_matcher P_((GBS_MATCHER *matcher));
+GBS_REGEX *GBS_compile_regexpr P_((const char *regexpr, GB_CASE case_flag, GB_ERROR *error));
+void GBS_free_regexpr P_((GBS_REGEX *toFree));
+const char *GBS_unwrap_regexpr P_((const char *regexpr_in_slashes, GB_CASE *case_flag, GB_ERROR *error));
+const char *GBS_regmatch_compiled P_((const char *str, GBS_REGEX *comreg, size_t *matchlen));
+const char *GBS_regmatch P_((const char *str, const char *regExpr, size_t *matchlen, GB_ERROR *error));
+char *GBS_regreplace P_((const char *str, const char *regReplExpr, GB_ERROR *error));
 GB_CSTR GBS_find_string P_((GB_CSTR str, GB_CSTR substr, int match_mode));
-GB_BOOL GBS_string_matches_regexp P_((const char *str, const char *search, GB_CASE case_sens));
 GB_BOOL GBS_string_matches P_((const char *str, const char *search, GB_CASE case_sens));
+GB_BOOL GBS_string_matches_regexp P_((const char *str, const GBS_MATCHER *expr));
 char *GBS_string_eval P_((const char *insource, const char *icommand, GBDATA *gb_container));
-GB_CSTR GBS_regsearch P_((GB_CSTR in, const char *regexprin));
-char *GBS_regreplace P_((const char *in, const char *regexprin, GBDATA *gb_species));
-GB_CSTR GBS_regsearch P_((GB_CSTR in, GB_CSTR regexprin));
-char *GBS_regreplace P_((const char *in, const char *regexprin, GBDATA *gb_species));
-char *GBS_regmatch P_((const char *in, const char *regexprin));
 
 /* arbdb.c */
 char *GB_rel P_((void *struct_adress, long rel_adress));

@@ -242,7 +242,6 @@ admatch.o: ad_lpro.h
 admatch.o: ad_prot.h
 admatch.o: adlmacros.h
 admatch.o: adlocal.h
-admatch.o: adregexp.h
 admatch.o: adtune.h
 admatch.o: arb_assert.h
 admatch.o: arbdb.h

@@ -96,6 +96,12 @@ typedef short GB_MAIN_IDX;      /* random-index */
 typedef struct gbs_hash_struct  GB_HASH;
 typedef struct gbs_hashi_struct GB_HASHI;
 
+struct GBS_regex;
+struct GBS_string_matcher;
+
+typedef struct GBS_regex          GBS_REGEX;
+typedef struct GBS_string_matcher GBS_MATCHER;
+
 #define GB_MAIN_ARRAY_SIZE 4096
 
 struct GBS_strstruct;
