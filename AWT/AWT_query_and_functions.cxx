@@ -791,6 +791,11 @@ static void awt_do_query(void *dummy, struct adaqbsstruct *cbs, AW_CL cl_ext_que
                             }
                         }
 
+                        if (type == AWT_QUERY_DONT_MATCH) {
+                            this_hit = !this_hit;
+                            if (this_hit) hit_reason = "<no matching entry>";
+                        }
+
                         if (this_hit) {
                             awt_assert(!hit_reason.empty());
                             SET_QUERIED(gb_item, cbs, hit_reason.c_str());
@@ -1043,7 +1048,7 @@ void awt_search_equal_entries(AW_window *,struct adaqbsstruct *cbs, bool tokeniz
     else {
         GB_transaction dumy(cbs->gb_main);
 
-        GBDATA          *gb_species_data = GB_search(cbs->gb_main,  "species_data",GB_CREATE_CONTAINER);
+        GBDATA          *gb_species_data = GB_search(cbs->gb_main, "species_data", GB_CREATE_CONTAINER);
         long             hashsize;
         AWT_QUERY_RANGE  range           = AWT_QUERY_ALL_SPECIES;
 
