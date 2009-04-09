@@ -2069,7 +2069,7 @@ const char *GBT_tree_info_string(GBDATA *gb_main, const char *tree_name, int max
             GB_export_error("nnodes not found in tree '%s'",tree_name);
         }
         else {
-            const char *sizeInfo = GBS_global_string("(%li:%i)", GB_read_int(gb_nnodes), GB_read_security_write(gb_tree));
+            const char *sizeInfo = GBS_global_string("(%li:%i)", GB_read_int(gb_nnodes)+1, GB_read_security_write(gb_tree));
             GBDATA     *gb_rem   = GB_entry(gb_tree,"remark");
             int         len;
 
