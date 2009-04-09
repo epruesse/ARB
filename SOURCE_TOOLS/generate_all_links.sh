@@ -237,7 +237,6 @@ arbdb_symlink AD_MOBJECTS.h &&
 arbdb_symlink adExperiment.c &&
 arbdb_symlink adGene.c &&
 arbdb_symlink adGene.h &&
-arbdb_symlink adReference.c &&
 arbdb_symlink adRevCompl.c &&
 arbdb_symlink adTest.c &&
 arbdb_symlink ad_config.c &&
