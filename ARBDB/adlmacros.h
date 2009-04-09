@@ -3,14 +3,6 @@
 #define A_TO_I(c) if(c>'9') c-='A'-10; else c-='0';
 
 
-// GB_STRDUP does no longer exist!
-// its only here to avoid my own versioning problems.. will disappear soon
-#if defined(DEVEL_RALF)
-#define GB_STRDUP(str) GB_deprStrdup(str)
-#else
-#define GB_STRDUP(str) strdup(str)
-#endif // DEVEL_RALF
-
 #if defined(DIGITAL) || defined(DARWIN)
 # define GB_MEMALIGN(a,b) malloc(b)
 #else

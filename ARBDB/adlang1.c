@@ -30,7 +30,7 @@ int GB_get_ACISRT_trace() { return trace; }
 /* export stream */
 
 #define STREAM_OUT(args, s)      do { (*((args)->voutput))[(*((args)->coutput))++].str = (s); } while(0)
-#define STREAM_DUPOUT(args, s)   STREAM_OUT(args, GB_STRDUP(s));
+#define STREAM_DUPOUT(args, s)   STREAM_OUT(args, strdup(s));
 #define STREAM_INOUT(args, i)    STREAM_DUPOUT(args, args->vinput[i].str);
 
 /********************************************************************************************
@@ -345,7 +345,7 @@ static GB_ERROR gbl_mid_streams(int arg_cinput, const GBL *arg_vinput,
 
         c = p[nend];
         p[nend] =0;
-        (*arg_vout)[(*arg_cout)++].str = GB_STRDUP(p+nstart);     /* export result string */
+        (*arg_vout)[(*arg_cout)++].str = strdup(p+nstart);     /* export result string */
         p[nend] = c;
     }
     return 0;
@@ -856,7 +856,7 @@ static GB_ERROR gbl_string_convert(GBL_command_arguments *args)
     
     GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
     for (i=0;i<args->cinput;i++) { /* go through all in streams    */
-        char *p              = GB_STRDUP(args->vinput[i].str);
+        char *p              = strdup(args->vinput[i].str);
         char *pp;
         int   last_was_alnum = 0;
 
