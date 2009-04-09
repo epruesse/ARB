@@ -79,26 +79,39 @@ static char * get_overlay_files(AW_root *awr, const char *fname, GB_ERROR& error
 
     char *found_files = 0;
     if (!error) {
-        char *mask               = GBS_global_string_copy("%s.*_gnu", name_prefix);
-        char *found_prefix_files = overlay_prefix ? GB_find_all_files(dir, mask, GB_FALSE) : 0;
-        free(mask);
-
-        mask                      = GBS_global_string_copy("*.%s", name_postfix);
-        char *found_postfix_files = overlay_postfix ? GB_find_all_files(dir, mask, GB_FALSE) : 0;
-        free(mask);
-
-        if (found_prefix_files) {
-            if (found_postfix_files) {
-                found_files = GBS_global_string_copy("%s*%s", found_prefix_files, found_postfix_files);
+        char *found_prefix_files  = 0;
+        char *found_postfix_files = 0;
+        
+        if (overlay_prefix || overlay_postfix) {
+            char *mask = GBS_global_string_copy("%s.*_gnu", name_prefix);
+            if (overlay_prefix) {
+                found_prefix_files             = GB_find_all_files(dir, mask, GB_FALSE);
+                if (!found_prefix_files) error = GB_get_error();
             }
-            else { // only found_prefix_files
-                found_files        = found_prefix_files;
-                found_prefix_files = 0;
+            free(mask);
+
+            mask = GBS_global_string_copy("*.%s", name_postfix);
+            if (overlay_postfix) {
+                found_postfix_files             = GB_find_all_files(dir, mask, GB_FALSE);
+                if (!found_postfix_files) error = GB_get_error();
             }
+            free(mask);
         }
-        else {
-            found_files         = found_postfix_files;
-            found_postfix_files = 0;
+
+        if (!error) {
+            if (found_prefix_files) {
+                if (found_postfix_files) {
+                    found_files = GBS_global_string_copy("%s*%s", found_prefix_files, found_postfix_files);
+                }
+                else { // only found_prefix_files
+                    found_files        = found_prefix_files;
+                    found_prefix_files = 0;
+                }
+            }
+            else {
+                found_files         = found_postfix_files;
+                found_postfix_files = 0;
+            }
         }
 
         free(found_postfix_files);

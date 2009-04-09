@@ -26,7 +26,6 @@
 # The ARB source code is aware of the following defines:
 #
 # HAVE_BOOL             should be true if compiler supports the type 'bool'
-# NO_REGEXPR            for machines w/o regular expression library
 # NDEBUG                doesnt compile the DEBUG sections
 # DEVEL_$(DEVELOPER)    developer-dependent flag (enables you to have private sections in code)
 #                       DEVELOPER='ANY' (default setting) will be ignored

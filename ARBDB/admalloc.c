@@ -124,6 +124,7 @@ char *GB_strdup(const char *p) {
 }
 
 char *GB_strduplen(const char *p, unsigned len) {
+    /* fast replacement for strdup, if len is known */
     if (p) {
         char *neu;
 
@@ -136,11 +137,11 @@ char *GB_strduplen(const char *p, unsigned len) {
 }
 
 char *GB_strpartdup(const char *start, const char *end) {
-    /* strdup of a part of a string
+    /* strdup of a part of a string (including 'start' and 'end')
      * 'end' may point behind end of string -> copy only till zero byte
      * if 'end'=('start'-1) -> return ""
      * if 'end'<('start'-1) -> return 0
-     * if 'end' == 0 -> copy whole string
+     * if 'end' == NULL -> copy whole string
      */
 
     char *result;

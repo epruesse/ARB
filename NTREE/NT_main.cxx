@@ -560,7 +560,7 @@ int main(int argc, char **argv)
 
     if (start_db_browser) {
         aw_root->awar(AWAR_DB"directory")->write_string(browser_startdir);
-        char *latest = GB_find_latest_file(browser_startdir, "/\\.a[r0-9][b0-9]$/");
+        char *latest = GB_find_latest_file(browser_startdir, "/\\.(arb|a[0-9]{2})$/");
         if (latest){
             int l = strlen(latest);
             latest[l-1] = 'b';

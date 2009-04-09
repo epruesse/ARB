@@ -7,20 +7,18 @@
 /*   http://www.arb-home.de/                                     */
 /*                                                               */
 /* ============================================================= */
-
-
 #include "adlocal.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
-#include <unistd.h>
 #include <stdarg.h>
 #include <dirent.h>
 #include <sys/stat.h>
 #include <execinfo.h>
 #include <signal.h>
+
 
 
 /********************************************************************************************
@@ -108,7 +106,9 @@ char *GB_find_all_files(const char *dir,const char *mask, GB_BOOL filename_only)
     /* Returns a string containing the filenames of all files matching mask.
        The single filenames are seperated by '*'.
        if 'filename_only' is true -> string contains only filenames w/o path
-       returns 0 if no files found (or directory not found)
+       
+       returns 0 if no files found (or directory not found).
+       in this case an error may be exported  
 
        'mask' may contain wildcards (*?) or
        it may be a regular expression ('/regexp/')
@@ -122,19 +122,23 @@ char *GB_find_all_files(const char *dir,const char *mask, GB_BOOL filename_only)
 
     dirp = opendir(dir);
     if (dirp) {
-        for (dp = readdir(dirp); dp != NULL; dp = readdir(dirp)) {
-            if (GBS_string_matches_regexp(dp->d_name,mask,0)) {
-                sprintf(buffer,"%s/%s",dir,dp->d_name);
-                if (stat(buffer,&st) == 0  && S_ISREG(st.st_mode)) { // regular file ?
-                    if (filename_only) strcpy(buffer, dp->d_name);
-                    if (result) {
-                        freeset(result, GBS_global_string_copy("%s*%s", result, buffer));
-                    }
-                    else {
-                        result = strdup(buffer);
+        GBS_MATCHER *matcher = GBS_compile_matcher(mask, GB_IGNORE_CASE);
+        if (matcher) {
+            for (dp = readdir(dirp); dp != NULL; dp = readdir(dirp)) {
+                if (GBS_string_matches_regexp(dp->d_name, matcher)) {
+                    sprintf(buffer,"%s/%s",dir,dp->d_name);
+                    if (stat(buffer,&st) == 0  && S_ISREG(st.st_mode)) { // regular file ?
+                        if (filename_only) strcpy(buffer, dp->d_name);
+                        if (result) {
+                            freeset(result, GBS_global_string_copy("%s*%s", result, buffer));
+                        }
+                        else {
+                            result = strdup(buffer);
+                        }
                     }
                 }
             }
+            GBS_free_matcher(matcher);
         }
         closedir(dirp);
     }
@@ -142,8 +146,13 @@ char *GB_find_all_files(const char *dir,const char *mask, GB_BOOL filename_only)
     return result;
 }
 
-char *GB_find_latest_file(const char *dir,const char *mask) {
-    /* 'mask' may contain wildcards (*?) or it may be a regular expression ('/regexp/') */
+char *GB_find_latest_file(const char *dir, const char *mask) {
+    /* returns the name of the newest file in dir 'dir' matching 'mask'
+     * or NULL (in this case an error may be exported)
+     *
+     * 'mask' may contain wildcards (*?) or
+     * it may be a regular expression ('/regexp/')
+     */
     
     DIR           *dirp;
     struct dirent *dp;
@@ -154,16 +163,20 @@ char *GB_find_latest_file(const char *dir,const char *mask) {
 
     dirp = opendir(dir);
     if (dirp) {
-        for (dp = readdir(dirp); dp != NULL; dp = readdir(dirp)){
-            if (GBS_string_matches_regexp(dp->d_name,mask,0)){
-                sprintf(buffer,"%s/%s",dir,dp->d_name);
-                if (stat(buffer,&st) == 0){
-                    if ((GB_ULONG)st.st_mtime > newest){
-                        newest = st.st_mtime;
-                        freedup(result, dp->d_name);
+        GBS_MATCHER *matcher = GBS_compile_matcher(mask, GB_IGNORE_CASE);
+        if (matcher) {
+            for (dp = readdir(dirp); dp != NULL; dp = readdir(dirp)) {
+                if (GBS_string_matches_regexp(dp->d_name, matcher)) {
+                    sprintf(buffer,"%s/%s",dir,dp->d_name);
+                    if (stat(buffer,&st) == 0) {
+                        if ((GB_ULONG)st.st_mtime > newest) {
+                            newest = st.st_mtime;
+                            freedup(result, dp->d_name);
+                        }
                     }
                 }
             }
+            GBS_free_matcher(matcher);
         }
         closedir(dirp);
     }
@@ -619,8 +632,6 @@ GB_ERROR GB_check_hkey(const char *key) { /* goes to header: __ATTR__USERESULT *
     return err;
 }
 
-/* #define UPPERCASE(c) if ( (c>='a') && (c<='z')) c+= 'A'-'a' */
-
 char *gbs_add_path(char *path,char *name)
 {
     long i,len,found;
@@ -646,6 +657,8 @@ char *gbs_add_path(char *path,char *name)
     return erg;
 }
 
+/* --------------------------- */
+/*      escape characters      */
 
 char *GBS_remove_escape(char *com)  /* \ is the escape charakter
                                      */
@@ -870,24 +883,21 @@ static void gbs_strensure_mem(struct GBS_strstruct *strstr,long len) {
     }
 }
 
-void GBS_strcat(struct GBS_strstruct *strstr,const char *ptr) {
-    /* append string to strstruct */
-    long len = strlen(ptr);
-
-    gbs_strensure_mem(strstr,len);
-    memcpy(strstr->GBS_strcat_data+strstr->GBS_strcat_pos,ptr,(int)len);
-    strstr->GBS_strcat_pos += len;
-    strstr->GBS_strcat_data[strstr->GBS_strcat_pos]  = 0;
-}
-
-void GBS_strncat(struct GBS_strstruct *strstr,const char *ptr,long len) {
+void GBS_strncat(struct GBS_strstruct *strstr, const char *ptr, size_t len) {
     /* append some bytes string to strstruct
      * (caution : copies zero byte and things behind!)
      */
-    gbs_strensure_mem(strstr,len+2);
-    memcpy(strstr->GBS_strcat_data+strstr->GBS_strcat_pos,ptr,(int)len);
-    strstr->GBS_strcat_pos += len;
-    strstr->GBS_strcat_data[strstr->GBS_strcat_pos] = 0;
+    if (len>0) {
+        gbs_strensure_mem(strstr,len+2);
+        memcpy(strstr->GBS_strcat_data+strstr->GBS_strcat_pos,ptr, len);
+        strstr->GBS_strcat_pos += len;
+        strstr->GBS_strcat_data[strstr->GBS_strcat_pos] = 0;
+    }
+}
+
+void GBS_strcat(struct GBS_strstruct *strstr, const char *ptr) {
+    /* append string to strstruct */
+    GBS_strncat(strstr, ptr, strlen(ptr));
 }
 
 
@@ -1018,11 +1028,14 @@ char *GBS_find_lib_file(const char *filename, const char *libprefix, int warn_wh
 
 char **GBS_read_dir(const char *dir, const char *mask) {
     /* Return names of files in directory 'dir'.
-     * Filter through 'mask' (mask == NULL -> return all files).
+     * Filter through 'mask':
+     * - mask == NULL -> return all files
+     * -      in format '/expr/' -> use regular expression (case sensitive)
+     * - else it does a simple string match with wildcards ("?*")
      *
-     * Result is a NULL terminated array of char* (sorted alphanumerically) 
+     * Result is a NULL terminated array of char* (sorted alphanumerically)
      * Use GBT_free_names() to free the result.
-     * 
+     *
      * In case of error, result is NULL and error is exported
      *
      * Special case: If 'dir' is the name of a file, return an array with file as only element
@@ -1059,32 +1072,37 @@ char **GBS_read_dir(const char *dir, const char *mask) {
     else {
         if (mask == NULL) mask = "*";
 
-        int   allocated = 100;
-        int   entries   = 0;
-        names           = malloc(100*sizeof(*names));
+        GBS_MATCHER *matcher = GBS_compile_matcher(mask, GB_MIND_CASE);
+        if (matcher) {
+            int allocated = 100;
+            int entries   = 0;
+            names         = malloc(100*sizeof(*names));
 
-        struct dirent *entry;
-        while ((entry = readdir(dirstream)) != 0) {
-            const char *name = entry->d_name;
+            struct dirent *entry;
+            while ((entry = readdir(dirstream)) != 0) {
+                const char *name = entry->d_name;
 
-            if (name[0] == '.' && (name[1] == 0 || (name[1] == '.' && name[2] == 0))) {
-                ; // skip '.' and '..'
-            }
-            else {
-                if (GBS_string_matches_regexp(name, mask, GB_MIND_CASE)) {
-                    if (entries == allocated) {
-                        allocated += allocated>>1; // * 1.5
-                        names  = realloc(names, allocated*sizeof(*names));
+                if (name[0] == '.' && (name[1] == 0 || (name[1] == '.' && name[2] == 0))) {
+                    ; // skip '.' and '..'
+                }
+                else {
+                    if (GBS_string_matches_regexp(name, matcher)) {
+                        if (entries == allocated) {
+                            allocated += allocated>>1; // * 1.5
+                            names  = realloc(names, allocated*sizeof(*names));
+                        }
+                        names[entries++] = strdup(GB_concat_path(fulldir, name));
                     }
-                    names[entries++] = strdup(GB_concat_path(fulldir, name));
                 }
             }
+
+            names          = realloc(names, (entries+1)*sizeof(*names));
+            names[entries] = NULL;
+
+            GB_sort((void**)names, 0, entries, GB_string_comparator, 0);
+
+            GBS_free_matcher(matcher);
         }
-
-        names          = realloc(names, (entries+1)*sizeof(*names));
-        names[entries] = NULL;
-
-        GB_sort((void**)names, 0, entries, GB_string_comparator, 0);
 
         closedir(dirstream);
     }
@@ -1475,7 +1493,8 @@ NOT4PERL void GB_install_status2(gb_status_func2_type func2){
     gb_status_func2 = func2;
 }
 
-
+/* ------------------------------------------- */
+/*      helper function for tagged fields      */
 
 GB_ERROR g_bs_add_value_tag_to_hash(GBDATA *gb_main, GB_HASH *hash, char *tag, char *value,const char *rtag, const char *srt, const char *aci, GBDATA *gbd){
     char    *p;

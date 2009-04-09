@@ -73,6 +73,12 @@ typedef void GB_MAIN_TYPE;
 typedef struct gbs_hash_struct  GB_HASH;
 typedef struct gbs_hashi_struct GB_HASHI;
 
+struct GBS_regex;
+struct GBS_string_matcher;
+
+typedef struct GBS_regex          GBS_REGEX;
+typedef struct GBS_string_matcher GBS_MATCHER;
+
 struct gb_flag_types {      /* public flags */
     unsigned int        type:4;
     unsigned int        security_delete:3;

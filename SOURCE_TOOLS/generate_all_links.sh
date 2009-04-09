@@ -267,7 +267,6 @@ arbdb_symlink admath.c &&
 arbdb_symlink adoptimize.c &&
 arbdb_symlink adperl.c &&
 arbdb_symlink adquery.c &&
-arbdb_symlink adregexp.h &&
 arbdb_symlink adseqcompr.c &&
 arbdb_symlink adsocket.c &&
 arbdb_symlink adsort.c &&
