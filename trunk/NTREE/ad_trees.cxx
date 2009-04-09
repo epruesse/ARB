@@ -713,8 +713,7 @@ void move_tree_pos(AW_window *aww, AW_CL cl_offset) {
     }
 }
 
-AW_window *create_trees_window(AW_root *aw_root)
-{
+AW_window *create_trees_window(AW_root *aw_root) {
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;

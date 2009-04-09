@@ -85,8 +85,7 @@ void awt_create_selection_list_on_ad(GBDATA *gb_main,AW_window *aws, const char 
 
 // ******************** selection boxes on trees ********************
 
-void awt_create_selection_list_on_trees_cb(GBDATA *dummy, struct adawcbstruct *cbs)
-{
+void awt_create_selection_list_on_trees_cb(GBDATA *dummy, struct adawcbstruct *cbs) {
     AWUSE(dummy);
 
     cbs->aws->clear_selection_list(cbs->id);
@@ -111,8 +110,7 @@ void awt_create_selection_list_on_trees_cb(GBDATA *dummy, struct adawcbstruct *c
     cbs->aws->update_selection_list( cbs->id );
 }
 
-void awt_create_selection_list_on_trees(GBDATA *gb_main,AW_window *aws,const char *varname)
-{
+void awt_create_selection_list_on_trees(GBDATA *gb_main,AW_window *aws,const char *varname) {
     AW_selection_list *id;
     GBDATA            *gb_tree_data;
     
