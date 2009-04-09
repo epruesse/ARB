@@ -29,8 +29,11 @@ DESCRIPTION     Searches for
                 in the DB I hitlist are queried and searched for equal entries (or words in entries).
                 Search is performed only in the field selected in the first query of DB II.
 
-NOTES		As a shortcut you can search for entries existing in both DBs by entering an empty
-                'Search string' in the first query.
+                If you select 'that dont match' in the search&query windows, species are only listed
+                if they have an entry which doesn't exist in other DB.  
+
+NOTES		As a shortcut to these functions, you can enter an empty 'Search string' in
+                the first query.
 
                 If you need to search for empty fields,
                    * either use the second query or
