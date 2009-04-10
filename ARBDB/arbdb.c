@@ -134,10 +134,10 @@ static void init_buffer(struct gb_buffer *buf, size_t initial_size) {
 }
 
 static char *check_out_buffer(struct gb_buffer *buf) {
-    char *checkOut = gb_local->buf1.mem;
+    char *checkOut = buf->mem;
 
-    gb_local->buf1.mem  = 0;
-    gb_local->buf1.size = 0;
+    buf->mem  = 0;
+    buf->size = 0;
 
     return checkOut;
 }
