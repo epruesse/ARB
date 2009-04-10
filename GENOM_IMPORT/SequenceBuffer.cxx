@@ -21,7 +21,7 @@ void CharCounter::countChars(const string& line)
 {
     string::const_iterator e = line.end();
     for (string::const_iterator i = line.begin(); i != e; ++i) {
-        ++count[*i];
+        ++count[static_cast<unsigned char>(*i)];
         ++all;
     }
 }

@@ -1,7 +1,7 @@
 // ================================================================ //
 //                                                                  //
 //   File      : Importer.cxx                                       //
-//   Purpose   :                                                    //
+//   Purpose   : Genome importer core                               //
 //                                                                  //
 //   Coded by Ralf Westram (coder@reallysoft.de) in November 2006   //
 //   Institute of Microbiology (Technical University Munich)        //
@@ -13,10 +13,6 @@
 #include "tools.h"
 #include "Feature.h"
 #include "DBwriter.h"
-
-// #include <map>
-// #include <cctype>
-
 
 using namespace std;
 
@@ -199,6 +195,7 @@ void Importer::parseFeatureTable() {
 
     while (!feature.Null()) {
         feature->expectLocationInSequence(expectedSeqLength);
+        feature->fixEmptyQualifiers();
         db_writer.writeFeature(*feature);
         feature = parseFeature();
     }
@@ -220,18 +217,20 @@ void Importer::import() {
     try {
         string line;
         while (flatfile.getLine(line)) {
-            flatfile.backLine(line);
+            if (!line.empty()) { // silently skip empty lines before or after section
+                flatfile.backLine(line);
 
-            // cleanup from import of previous section
-            gi_assert(pushedFeatureLines.empty()); // oops - somehow forgot a feature
-            pushedFeatureLines.clear();
-            warnings.clear();
+                // cleanup from import of previous section
+                gi_assert(pushedFeatureLines.empty()); // oops - somehow forgot a feature
+                pushedFeatureLines.clear();
+                warnings.clear();
 
-            expectedSeqLength = 0; // reset expected seq. length
-            import_section();
+                expectedSeqLength = 0; // reset expected seq. length
+                import_section();
 
-            gi_assert(warnings.empty());
-            gi_assert(pushedFeatureLines.empty()); // oops - somehow forgot a feature
+                gi_assert(warnings.empty());
+                gi_assert(pushedFeatureLines.empty()); // oops - somehow forgot a feature
+            }
         }
     }
     catch (const DBerror& err) { throw err.getMessage(); }
@@ -536,7 +535,9 @@ void EmblImporter::import_section() {
     while (!EOS) {
         string line, tag, content;
         expectLine(line);
-        if (!splitEmblTag(line, tag, content)) throw "Expected two-character tag at start of line";
+        if (!splitEmblTag(line, tag, content)) {
+            throw "Expected two-character tag at start of line";
+        }
 
         const MetaTag *knownTag = findTag(tag);
         if (!knownTag) throw GBS_global_string("Invalid tag '%s'", tag.c_str());
