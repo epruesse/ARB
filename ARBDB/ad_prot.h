@@ -109,11 +109,14 @@ char *GBS_string_eval P_((const char *insource, const char *icommand, GBDATA *gb
 /* arbdb.c */
 char *GB_rel P_((void *struct_adress, long rel_adress));
 double GB_atof P_((const char *str));
-void GB_init_gb P_((void));
-GB_BUFFER GB_give_buffer P_((long size));
+GB_BUFFER GB_give_buffer P_((size_t size));
+GB_BUFFER GB_increase_buffer P_((size_t size));
 int GB_give_buffer_size P_((void));
 GB_BUFFER GB_give_buffer2 P_((long size));
+int GB_is_in_buffer P_((GB_CBUFFER ptr));
+char *GB_check_out_buffer P_((GB_CBUFFER buffer));
 GB_BUFFER GB_give_other_buffer P_((GB_CBUFFER buffer, long size));
+void GB_init_gb P_((void));
 void GB_close P_((GBDATA *gbd));
 void GB_exit P_((GBDATA *gbd));
 long GB_read_int P_((GBDATA *gbd));

@@ -288,7 +288,9 @@ struct gb_cache_struct {
 
 
 
-/** root structure for each database */
+// -----------------------------------------------
+//      root structure (one for each database)
+
 struct gbcmc_comm;
 struct g_b_undo_mgr_struct;
 struct gb_callback_list;
@@ -361,13 +363,16 @@ extern GB_MAIN_TYPE *gb_main_array[];
 typedef enum { ARB_COMMIT, ARB_ABORT, ARB_TRANS } ARB_TRANS_TYPE;
 typedef enum { GB_IGNORE_CASE = 0 , GB_MIND_CASE = 1, GB_CASE_UNDEFINED = 2 } GB_CASE;
 
+// ------------------------------------------------------------------
+//      global data structure that is used for all open databases
 
-/** global data structure that is valid for all databases*/
+struct gb_buffer {
+    char   *mem;
+    size_t  size;
+};
+
 struct gb_local_data {
-    char *buffer2;
-    long  bufsize2;
-    char *buffer;
-    long  bufsize;
+    struct gb_buffer buf1, buf2;
     char *write_buffer;
     char *write_ptr;
     long  write_bufsize;

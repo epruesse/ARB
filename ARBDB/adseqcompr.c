@@ -854,7 +854,7 @@ char *gb_uncompress_by_sequence(GBDATA *gbd, const char *ss,long size, GB_ERROR 
     else {
         GB_MAIN_TYPE *Main    = GB_MAIN(gbd);
         GBDATA       *gb_main = (GBDATA*)Main->data;
-        char         *to_free = gb_check_out_buffer(ss); /* Remove 'ss' from memory management, otherwise load_single_key_data() may destroy it */
+        char         *to_free = GB_check_out_buffer(ss); /* Remove 'ss' from memory management, otherwise load_single_key_data() may destroy it */
         int           index;
         GBQUARK       quark;
 

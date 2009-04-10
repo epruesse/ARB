@@ -297,10 +297,6 @@ const char *BI_helix::init(GBDATA *gb_main) {
     return err;
 }
 
-extern "C" {
-    char *GB_give_buffer(long size);
-}
-
 int BI_helix::_check_pair(char left, char right, BI_PAIR_TYPE pair_type)
 {
     int i;

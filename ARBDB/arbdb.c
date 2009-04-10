@@ -125,6 +125,108 @@ int gb_convert_type_2_appendix_size[] = { /* contains the size of the suffix (ak
 };
 
 
+/* --------------------------------- */
+/*      local buffer management      */
+
+static void init_buffer(struct gb_buffer *buf, size_t initial_size) {
+    buf->size = initial_size;
+    buf->mem  = buf->size ? (char*)malloc(buf->size) : NULL;
+}
+
+static char *check_out_buffer(struct gb_buffer *buf) {
+    char *checkOut = gb_local->buf1.mem;
+
+    gb_local->buf1.mem  = 0;
+    gb_local->buf1.size = 0;
+
+    return checkOut;
+}
+
+static void alloc_buffer(struct gb_buffer *buf, size_t size) {
+    free(buf->mem);
+    buf->size = size;
+#if (MEMORY_TEST==1)
+    buf->mem  = (char *)malloc(buf->size);
+#else
+    buf->mem  = (char *)GB_calloc(buf->size,1);
+#endif
+}
+
+static GB_BUFFER give_buffer(struct gb_buffer *buf, size_t size) {
+#if (MEMORY_TEST==1)
+    alloc_buffer(buf, size); // do NOT reuse buffer if testing memory
+#else
+    if (size >= buf->size) {
+        alloc_buffer(buf, size);
+    }
+#endif
+    return buf->mem;
+}
+
+static int is_in_buffer(struct gb_buffer *buf, GB_CBUFFER ptr) {
+    return ptr >= buf->mem && ptr < buf->mem+buf->size;
+}
+
+/* ------------------------------ */
+
+GB_BUFFER GB_give_buffer(size_t size) {
+    /* return a pointer to a static piece of memory at least size bytes long */
+    return give_buffer(&gb_local->buf1, size);
+}
+
+GB_BUFFER GB_increase_buffer(size_t size) {
+    if (size < gb_local->buf1.size) {
+        char   *old_buffer = gb_local->buf1.mem;
+        size_t  old_size   = gb_local->buf1.size;
+
+        gb_local->buf1.mem = NULL;
+        alloc_buffer(&gb_local->buf1, size);
+        memcpy(gb_local->buf1.mem, old_buffer, old_size);
+
+        free(old_buffer);
+    }
+    return gb_local->buf1.mem;
+}
+
+int GB_give_buffer_size(){
+    return gb_local->buf1.size;
+}
+
+GB_BUFFER GB_give_buffer2(long size) {
+    return give_buffer(&gb_local->buf2, size);
+}
+
+int GB_is_in_buffer(GB_CBUFFER ptr) {
+    /* returns 1 or 2 if 'ptr' points to gb_local->buf1/buf2
+     * returns 0 otherwise
+     */
+    int buffer = 0;
+
+    if (is_in_buffer(&gb_local->buf1, ptr)) buffer = 1;
+    else if (is_in_buffer(&gb_local->buf2, ptr)) buffer = 2;
+
+    return buffer;
+}
+
+char *GB_check_out_buffer(GB_CBUFFER buffer) {
+    /* Check a piece of memory out of the buffer management
+     * after it is checked out, the user has the full control to use and free it
+     * Returns a pointer to the start of the buffer (even if 'buffer' points inside the buffer!)
+     */
+    char *old = 0;
+
+    if (is_in_buffer(&gb_local->buf1, buffer)) old = check_out_buffer(&gb_local->buf1);
+    else if (is_in_buffer(&gb_local->buf2, buffer)) old = check_out_buffer(&gb_local->buf2);
+
+    return old;
+}
+
+GB_BUFFER GB_give_other_buffer(GB_CBUFFER buffer, long size) {
+    return is_in_buffer(&gb_local->buf1, buffer)
+        ? GB_give_buffer2(size)
+        : GB_give_buffer(size);
+}
+
 /********************************************************************************************
                     GB local data
 ********************************************************************************************/
@@ -157,101 +259,26 @@ unsigned char GB_BIT_compress_data[] = {
     0
 };
 
-void GB_init_gb(void)
-{
+void GB_init_gb(void) {
+    if (!gb_local) {
+        gb_local = (struct gb_local_data *)gbm_get_mem(sizeof(struct gb_local_data),0);
 
-    if (gb_local) return;
-    gb_local = (struct gb_local_data *)gbm_get_mem(sizeof(struct gb_local_data),0);
-    gb_local->bufsize = 4000;
-    gb_local->buffer2 = (char *)malloc((size_t)gb_local->bufsize);
-    gb_local->bufsize2 = 4000;
-    gb_local->buffer = (char *)malloc((size_t)gb_local->bufsize);
-    gb_local->write_bufsize = GBCM_BUFFER;
-    gb_local->write_buffer = (char *)malloc((size_t)gb_local->write_bufsize);
-    gb_local->write_ptr = gb_local->write_buffer;
-    gb_local->write_free = gb_local->write_bufsize;
-    gb_local->bituncompress = gb_build_uncompress_tree(GB_BIT_compress_data,1,0);
-    gb_local->bitcompress = gb_build_compress_list(GB_BIT_compress_data,1,&(gb_local->bc_size));
+        init_buffer(&gb_local->buf1, 4000);
+        init_buffer(&gb_local->buf2, 4000);
+
+        gb_local->write_bufsize = GBCM_BUFFER;
+        gb_local->write_buffer  = (char *)malloc((size_t)gb_local->write_bufsize);
+        gb_local->write_ptr     = gb_local->write_buffer;
+        gb_local->write_free    = gb_local->write_bufsize;
+        
+        gb_local->bituncompress = gb_build_uncompress_tree(GB_BIT_compress_data,1,0);
+        gb_local->bitcompress   = gb_build_compress_list(GB_BIT_compress_data,1,&(gb_local->bc_size));
+
 #ifdef ARBDB_SIZEDEBUG
-    arbdb_stat = (long *)GB_calloc(sizeof(long),1000);
+        arbdb_stat = (long *)GB_calloc(sizeof(long),1000);
 #endif
-}
-
-/********************************************************************************************
-                    local buffer management
-********************************************************************************************/
-/* return a pointer to a static piece of memory at least size bytes long */
-GB_BUFFER GB_give_buffer(long size)
-{
-#if (MEMORY_TEST==1)
-    if (gb_local->buffer) free(gb_local->buffer);
-    gb_local->bufsize = size;
-    gb_local->buffer = (char *)malloc((size_t)gb_local->bufsize);
-#else
-    if (size < gb_local->bufsize) return    gb_local->buffer;
-    if (gb_local->buffer) free(gb_local->buffer);
-    gb_local->bufsize = size;
-    gb_local->buffer = (char *)GB_calloc((size_t)gb_local->bufsize,1);
-#endif
-    return  gb_local->buffer;
-}
-
-GB_BUFFER gb_increase_buffer(long size){
-    char *old_buffer;
-    if (size < gb_local->bufsize) return    gb_local->buffer;
-    old_buffer = gb_local->buffer;
-    gb_local->buffer = (char *)GB_calloc((size_t)size,1);
-    memcpy(gb_local->buffer,old_buffer, gb_local->bufsize);
-    gb_local->bufsize = size;
-    free(old_buffer);
-    return gb_local->buffer;
-}
-
-int GB_give_buffer_size(){
-    return gb_local->bufsize;
-}
-
-GB_BUFFER GB_give_buffer2(long size)
-{
-#if (MEMORY_TEST==1)
-    if (gb_local->buffer2) free(gb_local->buffer2);
-    gb_local->bufsize2 = size;
-    gb_local->buffer2 = (char *)malloc((size_t)gb_local->bufsize2);
-#else
-    if (size < gb_local->bufsize2) return   gb_local->buffer2;
-    if (gb_local->buffer2) free(gb_local->buffer2);
-    gb_local->bufsize2 = size;
-    gb_local->buffer2 = (char *)GB_calloc((size_t)gb_local->bufsize2,1);
-#endif
-    return  gb_local->buffer2;
-}
-char *gb_check_out_buffer(GB_CBUFFER buffer){
-    /* Check a piece of memory out of the buffer management
-     * after it is checked out, the user has the full control to use and free it
-     * Returns a pointer to the start of the buffer (even if 'buffer' points inside the buffer!)
-    */
-    char *old = 0;
-    if (buffer >= gb_local->buffer && buffer< gb_local->buffer + gb_local->bufsize){
-        old = gb_local->buffer;
-        gb_local->buffer = 0;
-        gb_local->bufsize = 0;
     }
-    else if (buffer >= gb_local->buffer2 && buffer< gb_local->buffer2 + gb_local->bufsize2){
-        old = gb_local->buffer2;
-        gb_local->buffer2 = 0;
-        gb_local->bufsize2 = 0;
-    }
-    return old;
 }
-
-GB_BUFFER GB_give_other_buffer(GB_CBUFFER buffer, long size)
-{
-    if (buffer >= gb_local->buffer && buffer< gb_local->buffer + gb_local->bufsize){
-        return GB_give_buffer2(size);
-    }
-    return GB_give_buffer(size);
-}
-
 
 /********************************************************************************************
             unfold -> load data from disk or server
@@ -753,9 +780,10 @@ GB_ERROR GB_write_string(GBDATA *gbd,const char *s)
     long size;
     /*fprintf(stderr, "GB_write_string(%p, %s);\n", gbd, s);*/
     GB_TEST_WRITE(gbd,GB_STRING,"GB_write_string");
-    GB_TEST_NON_BUFFER(s,"GB_write_string");
-    if (!s) s="";
-    size = strlen(s);
+    GB_TEST_NON_BUFFER(s,"GB_write_string");        /* compress would destroy the other buffer */
+    
+    if (!s) s = "";
+    size      = strlen(s);
 
     /* no zero len strings allowed */
     if ((GB_GETMEMSIZE(gbd))  && (size == GB_GETSIZE(gbd)))
@@ -786,9 +814,10 @@ GB_ERROR GB_write_link(GBDATA *gbd,const char *s)
 {
     long size;
     GB_TEST_WRITE(gbd,GB_STRING,"GB_write_link");
-    GB_TEST_NON_BUFFER(s,"GB_write_link");
-    if (!s) s="";
-    size = strlen(s);
+    GB_TEST_NON_BUFFER(s,"GB_write_link");          /* compress would destroy the other buffer */
+    
+    if (!s) s = "";
+    size      = strlen(s);
 
     /* no zero len strings allowed */
     if ((GB_GETMEMSIZE(gbd))  && (size == GB_GETSIZE(gbd)))
@@ -806,7 +835,7 @@ GB_ERROR GB_write_bits(GBDATA *gbd,const char *bits,long size, const char *c_0)
     long memsize[2];
 
     GB_TEST_WRITE(gbd,GB_BITS,"GB_write_bits");
-    GB_TEST_NON_BUFFER(bits,"GB_write_bits");
+    GB_TEST_NON_BUFFER(bits,"GB_write_bits");       /* compress would destroy the other buffer */
     gb_save_extern_data_in_ts(gbd);
 
     d = gb_compress_bits(bits,size,(const unsigned char *)c_0,memsize);
@@ -827,7 +856,7 @@ GB_ERROR GB_write_ints(GBDATA *gbd,const GB_UINT4 *i,long size)
 {
 
     GB_TEST_WRITE(gbd,GB_INTS,"GB_write_ints");
-    GB_TEST_NON_BUFFER((char *)i,"GB_write_ints");      /* compress will destroy the other buffer */
+    GB_TEST_NON_BUFFER((char *)i,"GB_write_ints");  /* compress would destroy the other buffer */
 
     if ( 0x01020304 != htonl((GB_UINT4)0x01020304) ) {
         long      j;
@@ -847,7 +876,7 @@ GB_ERROR GB_write_floats(GBDATA *gbd,const float *f,long size)
 {
     long fullsize = size * sizeof(float);
     GB_TEST_WRITE(gbd,GB_FLOATS,"GB_write_floats");
-    GB_TEST_NON_BUFFER((char *)f,"GB_write_floats");
+    GB_TEST_NON_BUFFER((char *)f,"GB_write_floats"); /* compress would destroy the other buffer */
 
     {
         XDR    xdrs;
