@@ -44,6 +44,8 @@ using namespace std;
 #define AWAR_STATUS_GAUGE   AWAR_STATUS "Gauge"
 #define AWAR_STATUS_ELAPSED AWAR_STATUS "Elapsed"
 
+#define AWAR_QUESTION "tmp/Question"
+
 #define AW_MESSAGE_LISTEN_DELAY 500 // look in ms whether a father died
 #define AW_MESSAGE_LINES        500
 
@@ -974,7 +976,7 @@ void aw_popup_exit(const char *msg, bool fixedSizeButtons, const char *helpfile)
     exit(EXIT_FAILURE);
 }
 
-int aw_question(const char *msg, const char *buttons, bool fixedSizeButtons, const char *helpfile) {
+int aw_question(const char *question, const char *buttons, bool fixedSizeButtons, const char *helpfile) {
     // return 0 for first button, 1 for second button, 2 for third button, ...
     //
     // the single buttons are seperated by kommas (e.g. "YES,NO")
@@ -993,43 +995,49 @@ int aw_question(const char *msg, const char *buttons, bool fixedSizeButtons, con
     AW_root *root = AW_root::THIS;
 
     AW_window_message *aw_msg;
-    char              *button_list  = strdup(buttons ? buttons : "OK");
-    static GB_HASH    *hash_windows = 0;
+    char              *button_list  = strdup(buttons ? buttons : "OK"); 
 
     if (button_list[0] == 0) {
         freedup(button_list, "Maybe ok,EXIT");
         GBK_dump_backtrace(stderr, "Empty buttonlist");
-        msg = GBS_global_string_copy("%s\n"
-                                     "(Program error - Unsure what happens when you click ok\n"
-                                     " Check console for backtrace and report error)",
-                                     msg);
+        question = GBS_global_string_copy("%s\n"
+                                          "(Program error - Unsure what happens when you click ok\n"
+                                          " Check console for backtrace and report error)",
+                                          question);
     }
 
-    if (!hash_windows) hash_windows = GBS_create_hash(256, GB_MIND_CASE);
-    if (!msg) msg                   = "Unknown Message";
-    char *hindex                    = (char *)calloc(sizeof(char),strlen(msg) + strlen(button_list) + 3);
-    sprintf(hindex,"%s&&%s",msg,button_list);
+    AW_awar *awar_quest     = root->awar_string(AWAR_QUESTION);
+    if (!question) question = "<oops - no question?!>";
+    awar_quest->write_string(question);
 
-    aw_msg = (AW_window_message *)GBS_read_hash(hash_windows,hindex);
+    size_t  question_length = strlen(question);
+    char   *hindex; // hash key to find matching window
+    {
+        const char *help = helpfile ? helpfile : "";
+
+        hindex = (char *)calloc(sizeof(char), strlen(button_list) + 1 + 5 + 1 + 1 + 1 + strlen(help) + 1);
+        sprintf(hindex,"%s\n%i\n%i\n%s", button_list, question_length, int(fixedSizeButtons), help);
+    }
+
+    static GB_HASH *hash_windows    = 0;
+    if (!hash_windows) hash_windows = GBS_create_hash(256, GB_MIND_CASE);
+    aw_msg                          = (AW_window_message *)GBS_read_hash(hash_windows, hindex);
+    
     if (!aw_msg) {
         aw_msg = new AW_window_message;
-        GBS_write_hash(hash_windows,hindex,(long)aw_msg);
-        int counter = 0;
+        GBS_write_hash(hash_windows, hindex, (long)aw_msg);
 
         aw_msg->init( root, "QUESTION BOX", false);
         aw_msg->recalc_size_at_show = 1; // force size recalc (ignores user size)
 
         aw_msg->label_length( 10 );
-        aw_msg->button_length( 0 );
 
         aw_msg->at( 10, 10 );
         aw_msg->auto_space( 10, 10 );
-        {
-            char *hmsg = GBS_string_eval(msg,"*/*= */*",0);
-            aw_msg->create_button( 0,hmsg );
-            free(hmsg);
-        }
 
+        aw_msg->button_length(question_length+1);
+        aw_msg->create_button(0, AWAR_QUESTION);
+        
         aw_msg->at_newline();
 
         if (fixedSizeButtons) {
@@ -1049,10 +1057,14 @@ int aw_question(const char *msg, const char *buttons, bool fixedSizeButtons, con
 
             aw_msg->button_length(max_button_length+1);
         }
+        else {
+            aw_msg->button_length(0);
+        }
 
         // insert the buttons:
         char *ret              = strtok( button_list, "," );
         bool  help_button_done = false;
+        int   counter          = 0;
 
         while( ret ) {
             if (ret[0] == '^') {
