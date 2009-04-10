@@ -1049,7 +1049,8 @@ templ:	TEMPLATES/TEMPLATES.dummy
 
 #********************************************************************************
 
-up:
+up: checks
+	$(MAKE) links
 	$(MAKE) -k up_internal
 
 up_internal: depends proto tags valgrind_update
