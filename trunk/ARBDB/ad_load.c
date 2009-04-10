@@ -605,8 +605,8 @@ long gb_read_bin_rek(FILE *in,GBCONTAINER *gbd,long nitems,long version,long rev
         security = getc(in);
         type2 = (type>>4)&0xf;
         key = getc(in);
-        if (!key){
-            p = gb_local->buffer;
+        if (!key) {
+            p = buff = GB_give_buffer(256);
             for (i=0;i<256;i++) {
                 c = getc(in);
                 *(p++) = c;
@@ -621,10 +621,10 @@ long gb_read_bin_rek(FILE *in,GBCONTAINER *gbd,long nitems,long version,long rev
                 return -1;
             }
             if (type2 == (long)GB_DB){
-                gbc = gb_make_container(gbd,gb_local->buffer,-1,0);
+                gbc = gb_make_container(gbd, buff, -1, 0);
                 gb2 = (GBDATA *)gbc;
             }else{
-                gb2 = gb_make_entry(gbd,gb_local->buffer,-1,0,(GB_TYPES)type2);
+                gb2 = gb_make_entry(gbd, buff, -1, 0, (GB_TYPES)type2);
             }
         }else{
             if (type2 == (long)GB_DB){
@@ -929,7 +929,7 @@ long gb_read_bin_rek_V2(FILE *in,GBCONTAINER *gbd,long nitems,long version,long 
                         if (!(*(p++) = getc(in) )) goto shrtstring_fully_loaded;
                     }
                     i = i*3/2;
-                    buff = gb_increase_buffer(i);
+                    buff = GB_increase_buffer(i);
                     p = buff + size;
                 }
         shrtstring_fully_loaded:
