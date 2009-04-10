@@ -12,6 +12,7 @@
 
 #include <arbdbt.h>
 #include <awt_translate.hxx>
+#include <awt_codon_table.hxx>
 #include <aw_question.hxx>
 
 #include "GEN.hxx"
@@ -39,6 +40,10 @@ static char *translate_gene_sequence(GBDATA *gb_gene, GB_ERROR& error, int& tran
 
         int arb_transl_table, codon_start;
         error = AWT_getTranslationInfo(gb_gene, arb_transl_table, codon_start);
+        
+        if (arb_transl_table == -1) arb_transl_table = AWT_embl_transl_table_2_arb_code_nr(1); // use embl table 1 (standard code)
+        if (codon_start == -1) codon_start           = 0; // default codon start
+
         if (!error) AWT_pro_a_nucs_convert(arb_transl_table, gene_seq, gene_length, codon_start, false, true, true, &translated_length);
 
         if (error) {

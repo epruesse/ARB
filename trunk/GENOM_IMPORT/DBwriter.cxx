@@ -55,6 +55,9 @@ static GBDATA *DB_create_string_field(GBDATA *parent, const char *field, const c
     // create field with content
 
     gb_assert(content[0]);
+    // do NOT WRITE empty string-fields into ARB DB,
+    // cause ARB DB does not differ between empty content and non-existing fields
+    // (i.e. when writing an empty string, ARB removes the field)
 
     GBDATA *gb_field = GB_create(parent, field, GB_STRING);
     if (!gb_field) throw DBerror(GBS_global_string("Failed to create field '%s'", field));
@@ -201,6 +204,7 @@ void DBwriter::writeFeature(const Feature& feature)
     {
         const stringMap& qualifiers = feature.getQualifiers();
         stringMapCIter   e          = qualifiers.end();
+        
         for (stringMapCIter i = qualifiers.begin(); i != e; ++i) {
             const string& unreserved = getUnreservedQualifier(i->first);
             DB_create_string_field(gb_gene, unreserved.c_str(), i->second.c_str());

@@ -122,3 +122,19 @@ void Feature::expectLocationInSequence(long seqLength) const
         throw GBS_global_string("Illegal feature location (outside sequence 1..%li)", seqLength);
     }
 }
+
+void Feature::fixEmptyQualifiers() {
+    // some qualifiers in feature table may be empty
+
+    stringMapIter e = qualifiers.end();
+    for (stringMapIter i = qualifiers.begin(); i != e; ++i) {
+        if (i->second.empty()) { // with all qualifiers, that have no content, do..
+            if (i->first == "replace") {
+                // ARB cannot store empty strings!
+                // Since '/replace=""' means 'delete location', we need to store this
+                // this information differently.
+                i->second = "<empty>"; // 
+            }
+        }
+    }
+}

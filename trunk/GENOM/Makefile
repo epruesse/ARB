@@ -244,4 +244,6 @@ GEN_translations.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GEN_translations.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 GEN_translations.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_translations.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+GEN_translations.o: $(ARBHOME)/INCLUDE/awt.hxx
+GEN_translations.o: $(ARBHOME)/INCLUDE/awt_codon_table.hxx
 GEN_translations.o: $(ARBHOME)/INCLUDE/awt_translate.hxx

@@ -35,6 +35,8 @@ public:
     const stringMap& getQualifiers() const { return qualifiers; }
 
     void expectLocationInSequence(long seqLength) const;
+
+    void fixEmptyQualifiers();
 };
 
 
