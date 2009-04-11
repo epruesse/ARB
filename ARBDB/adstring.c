@@ -1087,11 +1087,14 @@ char **GBS_read_dir(const char *dir, const char *mask) {
                 }
                 else {
                     if (GBS_string_matches_regexp(name, matcher)) {
-                        if (entries == allocated) {
-                            allocated += allocated>>1; // * 1.5
-                            names  = realloc(names, allocated*sizeof(*names));
+                        const char *full = GB_concat_path(fulldir, name);
+                        if (!GB_is_directory(full)) { // skip directories
+                            if (entries == allocated) {
+                                allocated += allocated>>1; // * 1.5
+                                names      = realloc(names, allocated*sizeof(*names));
+                            }
+                            names[entries++] = strdup(full);
                         }
-                        names[entries++] = strdup(GB_concat_path(fulldir, name));
                     }
                 }
             }
