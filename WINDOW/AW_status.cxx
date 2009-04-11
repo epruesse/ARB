@@ -902,7 +902,8 @@ extern "C" {
         int        val      = (int)(gauge*AW_GAUGE_GRANULARITY);
 
         if (val != last_val) {
-            if (val>0 || gauge == 0.0) { // dont write 0 on low gauge (cause 0 resets the timer)
+            if (val>0 || gauge == 0.0) {            // dont write 0 on low gauge (cause 0 resets the timer)
+                aw_assert(gauge <= 1.0);            // please fix the gauge calculation in caller!
                 aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_GAUGE);
                 safe_write(aw_stg.fd_to[1], (char*)&val, sizeof(int));
             }
