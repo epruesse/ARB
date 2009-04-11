@@ -166,6 +166,7 @@ MetaInfo.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MetaInfo.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MetaInfo.o: $(ARBHOME)/INCLUDE/arbtools.h
 MetaInfo.o: $(ARBHOME)/INCLUDE/attributes.h
+MetaInfo.o: $(ARBHOME)/INCLUDE/RegExpr.hxx
 
 SequenceBuffer.o: defs.h
 SequenceBuffer.o: SequenceBuffer.h

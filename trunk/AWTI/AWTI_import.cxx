@@ -899,25 +899,31 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
 
                 aw_openstatus("Reading input files");
 
-                for (count = 0; !error && fnames[count]; ++count) {
+                for (int curr = 0; !error && fnames[curr]; ++curr) {
                     GB_ERROR error_this_file =  0;
 
                     GB_begin_transaction(GB_MAIN);
+                    {
+                        const char *lslash = strrchr(fnames[curr], '/');
+                        aw_status(GBS_global_string("%i/%i: %s", curr+1, count, lslash ? lslash+1 : fnames[curr]));
+                    }
 
-                    error_this_file = GI_importGenomeFile(import_session, fnames[count], ali_name);
+                    error_this_file = GI_importGenomeFile(import_session, fnames[curr], ali_name);
 
                     if (!error_this_file) {
                         GB_commit_transaction(GB_MAIN);
-                        // GB_warning("File '%s' successfully imported", fnames[count]);
+                        // GB_warning("File '%s' successfully imported", fnames[curr]);
                         successfull_imports++;
                         delete_db_type_if_error = false;
                     }
                     else { // error occurred during import
-                        error_this_file = GBS_global_string("'%s' not imported\nReason: %s", fnames[count], error_this_file);
+                        error_this_file = GBS_global_string("'%s' not imported\nReason: %s", fnames[curr], error_this_file);
                         GB_warning("Import error: %s", error_this_file);
                         GB_abort_transaction(GB_MAIN);
                         failed_imports++;
                     }
+
+                    aw_status((curr+1)/double(count));
                 }
 
                 if (!successfull_imports) {

@@ -8,7 +8,10 @@
 //   http://www.arb-home.de/                                        //
 //                                                                  //
 // ================================================================ //
+
 #include "MetaInfo.h"
+#include <RegExpr.hxx>
+
 
 using namespace std;
 
@@ -101,31 +104,77 @@ void References::dump() const
 }
 #endif // DEBUG
 
+enum DBID_TYPE {
+    DBID_STANDARD, 
+    DBID_ACCEPT, 
+    DBID_ILLEGAL,
+};
+struct DBID {
+    const char *id;
+    DBID_TYPE   type;
+    const char *arb_field;
+};
+
+// see http://www.ebi.ac.uk/embl/Documentation/User_manual/usrman.html#3_4_10_4
+
+static const DBID dbid_definition[] = {             // accepted DBIDs (EMBL 'RX'-tag)
+    { "DOI",      DBID_STANDARD, "doi_id"      },
+    { "PUBMED",   DBID_STANDARD, "pubmed_id"   },
+    { "AGRICOLA", DBID_STANDARD, "agricola_id" },
+    { "MEDLINE",  DBID_ACCEPT,   "medline_id"  }, // non-standard, but common
+
+    { NULL, DBID_ILLEGAL, NULL }, // end marker
+};
+
 void References::add_dbid(const string& content) {
     // add embl 'RX' entry
-    // expects content like 'MEDLINE; id.' or 'PUBMED; id.' etc.
+    //
+    // * 'content' has \n inserted at original line breaks and
+    //   contains database references like 'MEDLINE; id.' or 'PUBMED; id.' etc.
+    // * Multiple database references may be concatenated (each starts on it's own line)
+    // * 'id' is possibly split up on several lines
 
-    size_t semi = content.find(';');
-    if (semi == string::npos) throw GBS_global_string("Expected ';' in '%s'", content.c_str());
+    RegExpr reg_dbid("^([A-Z]+);\\s+|\n([A-Z]+);\\s+", false);
+    size_t  offset = 0;
 
-    string db_tag_org = content.substr(0, semi);
-    string db_tag     = db_tag_org;
-    for (string::iterator s = db_tag.begin(); s != db_tag.end(); ++s) {
-        if (!isalpha(*s)) throw GBS_global_string("Illegal character '%c' in database id '%s'", *s, db_tag_org.c_str());
-        *s = tolower(*s);
+    const RegMatch *dbid_start = reg_dbid.match(content);
+
+    if (!dbid_start) {
+        throw GBS_global_string("Expected database reference id (e.g. 'DOI; ' or 'PUBMED; ')");
     }
-    db_tag += "_id";
+    else {
+        re_assert(reg_dbid.subexpr_count() == 2);
+        while (dbid_start) {
+            const RegMatch *sub = reg_dbid.subexpr_match(1);
+            if (!sub) sub       = reg_dbid.subexpr_match(2);
+            re_assert(sub);
 
-    size_t id_start = content.find_first_not_of(' ', semi+1);
-    if (semi == string::npos) throw GBS_global_string("Expected id behind ';' in '%s'", content.c_str());
+            string dbid     = sub->extract(content);
+            size_t id_start = dbid_start->posBehindMatch();
 
-    string id = content.substr(id_start);
-    if (id[id.length()-1] != '.') {
-        throw GBS_global_string("Expected '.' at end of %s '%s'", db_tag.c_str(), id.c_str());
+            offset     = id_start;
+            dbid_start = reg_dbid.match(content, offset); // search for start of next db-id
+
+            DBID_TYPE   type      = DBID_ILLEGAL;
+            const char *arb_field = 0;
+            for (int m = 0; ; m++) {
+                const char *name = dbid_definition[m].id;
+                if (!name) break;
+                if (dbid == name) {
+                    type      = dbid_definition[m].type;
+                    arb_field = dbid_definition[m].arb_field;
+                    break;
+                }
+            }
+            if (type == DBID_ILLEGAL) throw GBS_global_string("Unknown DBID '%s'", dbid.c_str());
+
+            string id = content.substr(id_start, dbid_start ? dbid_start->pos()-id_start : string::npos);
+            if (id.empty()) throw GBS_global_string("Empty database reference for '%s'", dbid.c_str());
+            if (id[id.length()-1] != '.') throw GBS_global_string("Expected terminal '.' in '%s'", id.c_str());
+            id.erase(id.length()-1); // remove terminal '.'
+            add(arb_field, id);
+        }
     }
-    id.erase(id.length()-1); // remove terminal '.'
-
-    add(db_tag, id);
 }
 
 // --------------------------------------------------------------------------------
