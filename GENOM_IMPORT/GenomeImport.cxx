@@ -31,7 +31,9 @@ GB_ERROR GI_importGenomeFile(ImportSession& session, const char *file_name, cons
         if (!in) throw GBS_global_string("Can't read file '%s' (Reason: %s)", file_name, strerror(errno));
 
         FileBuffer flatfile(file_name, in);
-        DBwriter   db_writer(session, ali_name);
+        flatfile.showFilenameInLineError(false);
+
+        DBwriter db_writer(session, ali_name);
 
         SmartPtr<Importer> importer;
         {
@@ -49,7 +51,7 @@ GB_ERROR GI_importGenomeFile(ImportSession& session, const char *file_name, cons
     }
     catch (const string &err) { error = GBS_global_string("%s", err.c_str()); }
     catch (const char *err) { error = err; }
-    catch (...) { error = GBS_global_string("Unknown expection occurred while importing '%s'", file_name); }
+    catch (...) { error = "Unknown expection during import"; }
     return error;
 }
 

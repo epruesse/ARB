@@ -256,6 +256,7 @@ static MetaTag genebank_meta_description[] = {
     { "  JOURNAL", "journal",     MT_REF },
     { "   PUBMED", "pubmed_id",   MT_REF },
     { "  MEDLINE", "medline_id",  MT_REF },
+    { "   REMARK", "refremark",   MT_REF },
     
     { "DEFINITION", "definition", MT_BASIC },
     { "ACCESSION",  "acc",        MT_BASIC },
@@ -265,7 +266,7 @@ static MetaTag genebank_meta_description[] = {
     { "  ORGANISM", "tax",        MT_BASIC },
     { "COMMENT",    "comment",    MT_BASIC },
     { "CONTIG",     "contig",     MT_BASIC },
-    { "PROJECT",     "projref",      MT_BASIC },
+    { "PROJECT",     "projref",   MT_BASIC },
 
     { "FEATURES", "", MT_FEATURE_START },
     { "BASE",     "", MT_SEQUENCE_START }, // BASE COUNT (sometimes missing)
@@ -300,7 +301,7 @@ static MetaTag embl_meta_description[] = {
     { "OS", "full_name",       MT_BASIC },
     { "OC", "tax",             MT_BASIC },
     { "OG", "organelle",       MT_BASIC },
-    { "PR", "projref",            MT_BASIC },
+    { "PR", "projref",         MT_BASIC },
 
     { "FH", "", MT_FEATURE_START },
     { "FT", "", MT_FEATURE },
@@ -525,8 +526,9 @@ void EmblImporter::import_section() {
     MetaInfo   meta;
     References refs;
 
-    const MetaTag *prevTag = 0; // previously handled tag
-    string         prevContent; // previously found content
+    const MetaTag *prevTag      = 0;                // previously handled tag
+    string         prevContent;                     // previously found content
+    bool           prevAppendNL = false;            // append '\n' into  multiline tags
 
     bool seenHeaderLine = false;
     bool EOS            = false; // end of section ?
@@ -542,14 +544,15 @@ void EmblImporter::import_section() {
         const MetaTag *knownTag = findTag(tag);
         if (!knownTag) throw GBS_global_string("Invalid tag '%s'", tag.c_str());
 
-        if (knownTag == prevTag) { // multiline tag
-            prevContent.append(content); // append w/o space - EMBL flatfiles have spaces at EOL when needed
+        if (knownTag == prevTag) {                  // multiline tag
+            if (prevAppendNL) prevContent.append("\n"); // append a newline to make parsing in add_dbid() more easy
+            prevContent.append(content);            // append w/o space - EMBL flatfiles have spaces at EOL when needed
         }
-        else { // start of new tag
-            if (prevTag) { // save previous tag
+        else {                                      // start of new tag
+            if (prevTag) {                          // save previous tag
                 switch (prevTag->type) {
                     case MT_REF:        refs.add(prevTag->field, prevContent); break;
-                    case MT_REF_DBID:   refs.add_dbid(prevContent); break;
+                    case MT_REF_DBID:   refs.add_dbid(prevContent); prevAppendNL = false; break;
                     case MT_BASIC:      meta.add(prevTag, prevContent, true); break;
                     case MT_HEADER:
                         meta.add(prevTag, prevContent, true); 
@@ -568,9 +571,14 @@ void EmblImporter::import_section() {
                     // fall-through
                 case MT_BASIC:
                 case MT_REF:
-                case MT_REF_DBID:  
-                    prevTag     = knownTag;
-                    prevContent = content;
+                    prevTag        = knownTag;
+                    prevContent    = content;
+                    break;
+
+                case MT_REF_DBID:
+                    prevTag      = knownTag;
+                    prevContent  = content;
+                    prevAppendNL = true;
                     break;
 
                 case MT_REF_START:
