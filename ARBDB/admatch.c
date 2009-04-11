@@ -90,9 +90,7 @@ void GBS_free_matcher(GBS_MATCHER *matcher) {
 /* --------------------------------------------- */
 /*      Regular Expressions search/replace       */
 
-struct GBS_regex {
-    regex_t compiled;
-};
+struct GBS_regex { regex_t compiled; }; // definition exists twice (see ../SL/REGEXPR/RegExpr.cxx)
 
 GBS_REGEX *GBS_compile_regexpr(const char *regexpr, GB_CASE case_flag, GB_ERROR *error) {
     GBS_REGEX *comreg  = malloc(sizeof(*comreg));

@@ -213,6 +213,7 @@ symlink ../SL/AW_NAME/AW_rename.hxx INCLUDE/AW_rename.hxx &&
 symlink ../SL/DB_SCANNER/db_scanner.hxx INCLUDE/db_scanner.hxx &&
 symlink ../SL/FILE_BUFFER/FileBuffer.h INCLUDE/FileBuffer.h &&
 symlink ../SL/HELIX/BI_helix.hxx INCLUDE/BI_helix.hxx &&
+symlink ../SL/REGEXPR/RegExpr.hxx INCLUDE/RegExpr.hxx &&
 symlink ../STAT/st_window.hxx INCLUDE/st_window.hxx &&
 symlink ../WINDOW/aw_awars.hxx INCLUDE/aw_awars.hxx &&
 symlink ../WINDOW/aw_color_groups.hxx INCLUDE/aw_color_groups.hxx &&
