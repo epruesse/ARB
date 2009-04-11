@@ -79,9 +79,16 @@ bool FileBuffer::getLine_intern(string& line)
 }
 
 string FileBuffer::lineError(const char *msg) {
-    size_t         len       = strlen(msg)+filename.length()+100;
     static char   *buffer;
     static size_t  allocated = 0;
+
+    size_t len;
+    if (showFilename) {
+        len = strlen(msg)+filename.length()+100;
+    }
+    else {
+        len = strlen(msg)+100;
+    }
 
     if (len>allocated) {
         allocated = len;
@@ -89,13 +96,21 @@ string FileBuffer::lineError(const char *msg) {
         buffer    = (char*)malloc(allocated);
     }
 
+    if (showFilename) {
 #if defined(DEBUG)
-    int printed =
+        int printed =
 #endif // DEBUG
-        sprintf(buffer, "while reading %s (line #%li):\n%s", filename.c_str(), lineNumber, msg);
-    fb_assert((size_t)printed < allocated);
-
-    // return GBS_global_string("while reading %s (line #%li):\n%s", filename.c_str(), lineNumber, msg);
+            sprintf(buffer, "while reading %s (line #%li):\n%s", filename.c_str(), lineNumber, msg);
+        fb_assert((size_t)printed < allocated);
+    }
+    else {
+#if defined(DEBUG)
+        int printed =
+#endif // DEBUG
+            sprintf(buffer, "while reading line #%li:\n%s", lineNumber, msg);
+        fb_assert((size_t)printed < allocated);
+    }
+    
     return buffer;
 }
 
