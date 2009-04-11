@@ -71,8 +71,9 @@ private:
 
     string *next_line;
 
-    long   lineNumber;          // current line number
+    long   lineNumber;                              // current line number
     string filename;
+    bool   showFilename;
 
     void fillBuffer();
 
@@ -82,6 +83,8 @@ public:
     FileBuffer(const string& filename_, FILE *in) {
         filename = filename_;
         fp       = in;
+
+        showFilename = true;
 
         fb_assert(fp);
         read = BUFFERSIZE;
@@ -120,6 +123,7 @@ public:
 
     const string& getFilename() const { return filename; }
 
+    void showFilenameInLineError(bool show) { showFilename = show; }
     string lineError(const char *msg);
     string lineError(const string& msg) { return lineError(msg.c_str()); }
 };
