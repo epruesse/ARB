@@ -18,6 +18,18 @@ using namespace std;
 
 //--------------------------------------------------------------------------------
 
+static bool is_escaped(const string& str, size_t pos) {
+    // returns true, if position 'pos' in string 'str' is escaped by '\\'
+
+    bool escaped = false;
+    if (pos != 0) { // pos 0 can't be escaped
+        if (str[pos-1] == '\\') {                   // is an escape before pos ?
+            escaped = !is_escaped(str, pos-1);   // pos is escaped, if the escape isn't!
+        }
+    }
+    return escaped;
+}
+
 FeatureLine::FeatureLine(const string& line) {
     // start parsing at position 5
     string::size_type first_char = line.find_first_not_of(' ', 5);
@@ -51,7 +63,12 @@ FeatureLine::FeatureLine(const string& line) {
                 rest = line.substr(equal_pos+1);
 
                 if (rest[0] == '"') {
-                    if (rest[rest.length()-1] == '"') {
+                    size_t rlen = rest.length();
+
+                    if (rlen == 1) {                // special case: only one open quote behind qualifier
+                        type = FL_QUALIFIER_QUOTE_OPENED;
+                    }
+                    else if (rest[rlen-1] == '"' && !is_escaped(rest, rlen-1)) { // closing non-escaped quote at eol
                         type = FL_QUALIFIER_QUOTED;
                     }
                     else {
@@ -256,7 +273,7 @@ static MetaTag genebank_meta_description[] = {
     { "  JOURNAL", "journal",     MT_REF },
     { "   PUBMED", "pubmed_id",   MT_REF },
     { "  MEDLINE", "medline_id",  MT_REF },
-    { "   REMARK", "refremark",   MT_REF },
+    { "  REMARK",  "refremark",   MT_REF },
     
     { "DEFINITION", "definition", MT_BASIC },
     { "ACCESSION",  "acc",        MT_BASIC },
@@ -615,7 +632,7 @@ void EmblImporter::import_section() {
 
 inline void parseCounter(bool expect, BaseCounter& headerCount, StringParser& parser, Base base, const char *word) {
     // parses part of string (e.g. " 6021225 BP;" or " 878196 A;")
-    // if 'expect' == true -> throw expection if missing
+    // if 'expect' == true -> throw exception if missing
 
     stringCIter start = parser.getPosition();
     try {
@@ -632,7 +649,7 @@ inline void parseCounter(bool expect, BaseCounter& headerCount, StringParser& pa
         // otherwise silently ignore
     }
     catch (...) {
-        throw "Unexpected expection in parseCounter";
+        throw "Unexpected exception in parseCounter";
     }
 }
 

@@ -21,13 +21,28 @@ Feature::Feature(const string& Type, const string& locationString)
 {
 }
 
+inline void setOrAppendQualifiedEntry(stringMap& qualifiers, const string& qualifier, const string& value) {
+    stringMapIter existing = qualifiers.find(qualifier);
+    if (existing != qualifiers.end()) { // existing qualifier
+        existing->second.append(1, '\n'); // append separated by LF
+        existing->second.append(value);
+    }
+    else {
+        qualifiers[qualifier] = value;
+    }
+}
+
 void Feature::addQualifiedEntry(const string& qualifier, const string& value) {
     // search for quotes
+    size_t vlen = value.length();
+
+    gi_assert(vlen>0);
+
     stringCIter start = value.begin();
-    stringCIter end   = start+value.length()-1;
+    stringCIter end   = start+vlen-1;
 
     if (*start == '"') {
-        if (*end != '"') {
+        if (vlen == 1 || *end != '"') {
             throw GBS_global_string("Unclosed quotes at qualifier '%s'", qualifier.c_str());
         }
         // skip quotes :
@@ -38,14 +53,7 @@ void Feature::addQualifiedEntry(const string& qualifier, const string& value) {
         ++end; // point behind last character
     }
 
-    stringMapIter existing = qualifiers.find(qualifier);
-    if (existing != qualifiers.end()) { // existing qualifier
-        existing->second.append(1, '\n'); // append separated by LF
-        existing->second.append(start, end);
-    }
-    else {
-        qualifiers[qualifier] = string(start, end);
-    }
+    setOrAppendQualifiedEntry(qualifiers, qualifier, string(start, end));
 }
 
 static void appendData(string& id, const string& data, int maxAppend) {
