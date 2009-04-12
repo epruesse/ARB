@@ -17,6 +17,9 @@
 #ifndef _CPP_CCTYPE
 #include <cctype>
 #endif
+#ifndef _CPP_ALGORITHM
+#include <algorithm>
+#endif
 
 
 inline bool beginsWith(const string& str, const string& start) {
@@ -55,6 +58,7 @@ struct StringParser {
 
     stringCIter getPosition() const { return pos; }
     void setPosition(const stringCIter& position) { pos = position; }
+    void advance(size_t offset) { std::advance(pos, offset); }
 
     string rest() const { return string(pos, end); }
 
@@ -87,12 +91,24 @@ struct StringParser {
         return spaces;
     }
 
-    void expectWord(const char *word) {
-        for (size_t p = 0; word[p]; ++p, ++pos) {
-            if (word[p] != *pos) {
-                throw GBS_global_string("Expected to see '%s'", word);
+    size_t lookingAt(const char *content) {
+        // returns 0 if different content is seen (or if content is "")
+        // otherwise it returns the string length of content
+
+        size_t      p;
+        stringCIter look = pos;
+        for (p = 0; content[p]; ++p, ++look) {
+            if (content[p] != *look) {
+                return 0;
             }
         }
+        return p;
+    }
+
+    void expectContent(const char *content) {
+        size_t len = lookingAt(content);
+        if (!len) throw GBS_global_string("Expected to see '%s' (found='%s')", content, CURRENT_REST);
+        std::advance(pos, len); // eat the found content
     }
 
     string extractWord(const char *delimiter = " ") {
@@ -106,23 +122,26 @@ struct StringParser {
         return string(start, pos);
     }
 
-    long extractNumber() {
-        long l           = 0;
-        bool seen_digits = false;
+    long eatNumber(bool &eaten) {
+        long lnum = 0;
         char c;
-    
+        
+        eaten = false;
         for (; isdigit(c = *pos); ++pos) {
-            l           = l*10+(c-'0');
-            seen_digits = true;
+            lnum  = lnum*10+(c-'0');
+            eaten = true;
         }
 
-        if (!seen_digits) {
-            throw GBS_global_string("Expected number, found '%s'", CURRENT_REST);
-        }
-
-        return l;
+        return lnum;
     }
 
+    long extractNumber() {
+        bool seen_digits;
+        long lnum = eatNumber(seen_digits);
+        
+        if (!seen_digits) throw GBS_global_string("Expected number, found '%s'", CURRENT_REST);
+        return lnum;
+    }
 };
 
 #else
