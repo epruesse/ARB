@@ -637,26 +637,22 @@ inline bool parseCounter(bool expect, BaseCounter& headerCount, StringParser& pa
 
     bool        found = false;
     stringCIter start = parser.getPosition();
-    try {
-        parser.expectSpaces(0);
+    
+    parser.expectSpaces(0);
 
-        bool seen_number;
-        long count = parser.eatNumber(seen_number);
+    bool seen_number;
+    long count = parser.eatNumber(seen_number);
 
-        if (seen_number) {
-            headerCount.addCount(base, count);
-            size_t spaces = parser.eatSpaces();
-            if (spaces>0) {
-                size_t len = parser.lookingAt(word);
-                if (len>0) {                        // seen
-                    parser.advance(len);
-                    found = true;
-                }
+    if (seen_number) {
+        headerCount.addCount(base, count);
+        size_t spaces = parser.eatSpaces();
+        if (spaces>0) {
+            size_t len = parser.lookingAt(word);
+            if (len>0) {                        // seen
+                parser.advance(len);
+                found = true;
             }
         }
-    }
-    catch (...) {
-        throw "Unexpected exception in parseCounter";
     }
 
     if (!found) {
