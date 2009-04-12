@@ -389,7 +389,7 @@ static long scanSeqlenFromLOCUS(const string& locusContent) {
 
     long bp = parser.extractNumber();
     parser.eatSpaces();
-    parser.expectWord("bp");
+    parser.expectContent("bp");
 
     return bp;
 }
@@ -630,27 +630,40 @@ void EmblImporter::import_section() {
 // --------------------------------------------------------------------------------
 // sequence readers:
 
-inline void parseCounter(bool expect, BaseCounter& headerCount, StringParser& parser, Base base, const char *word) {
+inline bool parseCounter(bool expect, BaseCounter& headerCount, StringParser& parser, Base base, const char *word) {
     // parses part of string (e.g. " 6021225 BP;" or " 878196 A;")
     // if 'expect' == true -> throw exception if missing
+    // if 'expect' == false -> return false if missing
 
+    bool        found = false;
     stringCIter start = parser.getPosition();
     try {
         parser.expectSpaces(0);
-        headerCount.addCount(base, parser.extractNumber());
-        parser.expectSpaces();
-        parser.expectWord(word);
-    }
-    catch (const char *err) {
-        parser.setPosition(start); // reset position
-        if (expect) {                               // counter is expected -> throw again
-            throw GBS_global_string("Expected counter '### %s', found '%s'", word, parser.rest().c_str());
+
+        bool seen_number;
+        long count = parser.eatNumber(seen_number);
+
+        if (seen_number) {
+            headerCount.addCount(base, count);
+            size_t spaces = parser.eatSpaces();
+            if (spaces>0) {
+                size_t len = parser.lookingAt(word);
+                if (len>0) {                        // seen
+                    parser.advance(len);
+                    found = true;
+                }
+            }
         }
-        // otherwise silently ignore
     }
     catch (...) {
         throw "Unexpected exception in parseCounter";
     }
+
+    if (!found) {
+        parser.setPosition(start); // reset position
+        if (expect) throw GBS_global_string("Expected counter '### %s', found '%s'", word, parser.rest().c_str());
+    }
+    return found;
 }
 
 void GenebankImporter::parseSequence(const string& tag, const string& headerline) {
@@ -662,7 +675,7 @@ void GenebankImporter::parseSequence(const string& tag, const string& headerline
         {
             StringParser parser(headerline);
 
-            parser.expectWord("COUNT");
+            parser.expectContent("COUNT");
 
             parseCounter(true, *headerCount, parser, BC_A, "a");
             parseCounter(true, *headerCount, parser, BC_C, "c");
@@ -738,7 +751,7 @@ void EmblImporter::parseSequence(const string& headerline) {
     {
         StringParser parser(headerline);
 
-        parser.expectWord("Sequence");
+        parser.expectContent("Sequence");
 
         parseCounter(true, headerCount, parser, BC_ALL,   "BP;");
         parseCounter(true, headerCount, parser, BC_A,     "A;");
