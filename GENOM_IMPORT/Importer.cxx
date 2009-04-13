@@ -282,10 +282,10 @@ static MetaTag genebank_meta_description[] = {
     { "SOURCE",     "full_name",  MT_BASIC },
     { "  ORGANISM", "tax",        MT_BASIC },
     { "COMMENT",    "comment",    MT_BASIC },
-    { "CONTIG",     "contig",     MT_BASIC },
     { "PROJECT",     "projref",   MT_BASIC },
 
     { "FEATURES", "", MT_FEATURE_START },
+    { "CONTIG",   "", MT_CONTIG }, 
     { "BASE",     "", MT_SEQUENCE_START }, // BASE COUNT (sometimes missing)
     { "ORIGIN",   "", MT_SEQUENCE_START }, // only used if BASE COUNT is missing
     { "//",       "", MT_END },
@@ -466,6 +466,9 @@ void GenebankImporter::import_section() {
                 case MT_END:
                     EOS = true;
                     break;
+
+                case MT_CONTIG:
+                    throw GBS_global_string("Cannot import files containing CONTIG");
 
                 case MT_REF_DBID: // embl only
                 default:
