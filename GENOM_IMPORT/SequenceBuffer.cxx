@@ -125,7 +125,7 @@ void BaseCounter::expectEqual(const BaseCounter& other) const {
 // --------------------------------------------------------------------------------
 
 SequenceBuffer::~SequenceBuffer() {
-    delete seq;
+    delete [] seq;
 }
 
 const char *SequenceBuffer::getSequence() const {

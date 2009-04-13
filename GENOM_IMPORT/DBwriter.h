@@ -51,11 +51,10 @@ public:
 };
 
 typedef map<string, int> NameCounter;
+class Translator;
 
 class DBwriter : public Noncopyable {
-    // GBDATA         *gb_species_data;
     const char     *ali_name;
-    // UniqueNameDetector&  UND_species; // // passed from outside, extended when creating new species
     ImportSession&  session;
 
     // following data is valid for one organism write :
@@ -65,6 +64,9 @@ class DBwriter : public Noncopyable {
 
     void testAndRemoveTranslations(Importer& importer); // test and delete translations (if test was ok). warns via Importer
     void hideUnwantedGenes();
+
+    static Translator *unreserve;
+    static const string& getUnreservedQualifier(const string& qualifier);
 
 public:
     DBwriter(ImportSession& session_, const char *Ali_name)
@@ -83,6 +85,8 @@ public:
 
     void renumberDuplicateGenes();
     void finalizeOrganism(const MetaInfo& meta, const References& refs, Importer& importer);
+
+    static void deleteStaticData();
 };
 
 

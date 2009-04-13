@@ -68,4 +68,5 @@ ImportSession::ImportSession(GBDATA *gb_species_data_, int estimated_genomes_cou
 ImportSession::~ImportSession() {
     delete ok_to_ignore_wrong_start_codon;
     delete und_species;
+    DBwriter::deleteStaticData();
 }
