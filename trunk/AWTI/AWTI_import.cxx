@@ -908,6 +908,9 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
                         aw_status(GBS_global_string("%i/%i: %s", curr+1, count, lslash ? lslash+1 : fnames[curr]));
                     }
 
+#if defined(DEBUG)
+                    fprintf(stderr, "import of '%s'\n", fnames[curr]);
+#endif // DEBUG
                     error_this_file = GI_importGenomeFile(import_session, fnames[curr], ali_name);
 
                     if (!error_this_file) {
