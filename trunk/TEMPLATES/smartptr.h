@@ -20,10 +20,6 @@
 #ifndef SMARTPTR_H
 #define SMARTPTR_H
 
-// #ifndef _CPP_MEMORY
-// #include <memory>
-// #endif
-
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
@@ -35,16 +31,33 @@
 //
 //  provides:
 //
-//  SmartPtr<type>                                                   uses delete
-//  SmartPtr<type, Counted<type, auto_delete_array_ptr<type> > >     uses delete []
-//  SmartPtr<type, Counted<type, auto_free_ptr<type> > >             uses free
+//  SmartPtr<type>                                                              uses delete
+//  SmartPtr<type, Counted<type, auto_delete_array_ptr<type> > >                uses delete []
+//  SmartPtr<type, Counted<type, auto_free_ptr<type> > >                        uses free
+//  SmartPtr<type, Counted<type, custom_dealloc_ptr<type, deallocator> > >      uses custom deallocator
 //
 // --------------------------------------------------------------------------------
-// two macros for convinience:
+// macros for convinience:
 
-#define SmartArrayPtr(type)  SmartPtr<type, Counted<type, auto_delete_array_ptr<type> > >
-#define SmartMallocPtr(type) SmartPtr<type, Counted<type, auto_free_ptr<type> > >
+#define SmartArrayPtr(type)               SmartPtr<type, Counted<type, auto_delete_array_ptr<type> > >
+#define SmartMallocPtr(type)              SmartPtr<type, Counted<type, auto_free_ptr<type> > >
+#define SmartCustomPtr(type, deallocator) SmartPtr<type, Counted<type, custom_dealloc_ptr<type, deallocator> > >
 
+// --------------------------------------------------------------------------------
+// examples:
+//
+// typedef SmartPtr<std::string> StringPtr;
+// StringPtr s = new std::string("hello world");        // will be deallocated using delete
+// 
+// typedef SmartArrayPtr(std::string) StringArrayPtr;
+// StringArrayPtr strings = new std::string[100];       // will be deallocated using delete []
+// 
+// typedef SmartMallocPtr(char) CharPtr;
+// CharPtr cp = strdup("hello world");                  // will be deallocated using free()
+// 
+// typedef SmartCustomPtr(GEN_position, GEN_free_position) GEN_position_Ptr;
+// GEN_position_Ptr gp = GEN_new_position(5, GB_FALSE); // will be deallocated using GEN_free_position()
+// 
 // --------------------------------------------------------------------------------
 
 
@@ -65,6 +78,22 @@
 //
 // used by Counted<> to use correct method to destroy the contents
 // -----------------------------------------------------------------
+
+template<class T, void (*DEALLOC)(T*)>
+class custom_dealloc_ptr {
+    T *const thePointer;
+public:
+    custom_dealloc_ptr(T *p) : thePointer(p) {
+        DUMP_SMART_PTRS_DO(fprintf(stderr, "pointer %p now controlled by custom_dealloc_ptr\n", thePointer));
+    }
+    ~custom_dealloc_ptr() {
+        DUMP_SMART_PTRS_DO(fprintf(stderr, "pointer %p gets destroyed by custom_dealloc_ptr (using fun %p)\n", thePointer, DEALLOC));
+        DEALLOC(thePointer);
+    }
+
+    const T* getPointer() const { return thePointer; }
+    T* getPointer() { return thePointer; }
+};
 
 template <class T>
 class auto_free_ptr {
@@ -128,22 +157,22 @@ class Counted {
 public:
 
     Counted(T *p) : counter(0), pointer(p) {
-        DUMP_SMART_PTRS_DO(fprintf(stderr, "pointer %p now controlled by Counted\n", (T*)pointer));
+        DUMP_SMART_PTRS_DO(fprintf(stderr, "pointer %p now controlled by Counted\n", getPointer()));
         tpl_assert(p);
     }
 #ifdef DEBUG
     ~Counted() {
         tpl_assert(counter==0);
-        DUMP_SMART_PTRS_DO(fprintf(stderr, "pointer %p gets destroyed by Counted\n", (T*)pointer));
+        DUMP_SMART_PTRS_DO(fprintf(stderr, "pointer %p gets destroyed by Counted\n", getPointer()));
     }
 #endif
 
     unsigned new_reference() {
-        DUMP_SMART_PTRS_DO(fprintf(stderr, "pointer %p gets new reference (now there are %i references)\n", (T*)pointer, counter+1));
+        DUMP_SMART_PTRS_DO(fprintf(stderr, "pointer %p gets new reference (now there are %i references)\n", getPointer(), counter+1));
         return ++counter;
     }
     unsigned free_reference() {
-        DUMP_SMART_PTRS_DO(fprintf(stderr, "pointer %p looses a reference (now there are %i references)\n", (T*)pointer, counter-1));
+        DUMP_SMART_PTRS_DO(fprintf(stderr, "pointer %p looses a reference (now there are %i references)\n", getPointer(), counter-1));
         tpl_assert(counter!=0);
         return --counter;
     }
@@ -168,7 +197,7 @@ private:
 
     void Unbind() {
         if (object && object->free_reference()==0) {
-            DUMP_SMART_PTRS_DO(fprintf(stderr, "Unbind() deletes Counted object %p (which hold pointer %p)\n", object, (T*)object->getPointer()));
+            DUMP_SMART_PTRS_DO(fprintf(stderr, "Unbind() deletes Counted object %p (which hold pointer %p)\n", object, object->getPointer()));
             delete object;
         }
         object = 0;
