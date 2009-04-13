@@ -1402,14 +1402,12 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
     //      title           window title
     //      prompt          prompt at input field
     //      default_input   default value (if NULL => "").
-    //      value_list      Existing selections (seperated by ';')
+    //      value_list      Existing selections (seperated by ';') or NULL if no selection exists
     //      buttons         String containing answer button names separated by ',' (default is "OK,Cancel")
     //                      Use aw_string_selected_button() to detect which has been pressed.
     //      check_fun       function to correct input (or NULL for no check). The function may return NULL to indicate no correction
     //
     // returns the value of the inputfield
-
-    aw_assert(value_list);
 
     static GB_HASH *str_sels = 0; // for each 'buttons' store window + selection list
 
@@ -1466,7 +1464,7 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
     // update the selection box :
     aw_assert(sel);
     aw_msg->clear_selection_list(sel);
-    {
+    if (value_list) {
         char *values = strdup(value_list);
         char *word;
 
