@@ -64,9 +64,11 @@ bool FileBuffer::getLine_intern(string& line)
         offset = lineEnd+1;
         if (offset == read) fillBuffer();
 
-        char nextChar = buf[offset];
-        if (is_EOL(nextChar) && nextChar != lf) offset++; // skip DOS linefeed
-        if (offset == read) fillBuffer();
+        if (offset<read) { // otherwise EOF!
+            char nextChar = buf[offset];
+            if (is_EOL(nextChar) && nextChar != lf) offset++; // skip DOS linefeed
+            if (offset == read) fillBuffer();
+        }
     }
     else { // reached end of buffer
         line = string(buf+offset, read-offset);
