@@ -33,7 +33,7 @@ RegExpr::~RegExpr() {
 
 void RegExpr::compile() const {
     if (!comreg) {
-        freeset(matches, NULL);
+        delete [] matches; matches = NULL;
         
         GB_ERROR error = 0;
         comreg = GBS_compile_regexpr(expression.c_str(), ignore_case ? GB_IGNORE_CASE : GB_MIND_CASE, &error);
@@ -52,7 +52,7 @@ void RegExpr::perform_match(const char *str, size_t offset) const {
      * In this case it is assumed, that we are not at line start!
      */
 
-    freeset(matches, NULL);
+    delete [] matches; matches = NULL;
 
     size_t      subs      = subexpr_count();
     regmatch_t *possMatch = (regmatch_t*)malloc((subs+1) * sizeof(regmatch_t));
