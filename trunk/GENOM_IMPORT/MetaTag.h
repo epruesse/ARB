@@ -16,21 +16,22 @@
 #endif
 
 enum MetaTagType {
-    MT_HEADER,                  // Header tag (ID or LOCUS)
-    MT_BASIC,                   // Basic tag -> gets written to DB (into 'field')
-    MT_REF_START,               // Start of (new) reference
-    MT_REF,                     // Reference data, 'field' describes type of reference
-    MT_REF_DBID,                // Database reference (PUBMED, MEDLINE, DOI, ...)
-    MT_FEATURE_START,           // Start of feature table
-    MT_FEATURE,                 // Feature table
-    MT_SEQUENCE_START,          // Start of sequence
-    MT_END,                     // End of file (or section, if multiple entries)
-    MT_IGNORE,                  // is ignored
+    MT_HEADER,                                      // Header tag (ID or LOCUS)
+    MT_BASIC,                                       // Basic tag -> gets written to DB (into 'field')
+    MT_REF_START,                                   // Start of (new) reference
+    MT_REF,                                         // Reference data, 'field' describes type of reference
+    MT_REF_DBID,                                    // Database reference (PUBMED, MEDLINE, DOI, ...)
+    MT_FEATURE_START,                               // Start of feature table
+    MT_FEATURE,                                     // Feature table
+    MT_SEQUENCE_START,                              // Start of sequence
+    MT_CONTIG,                                      // contig entry
+    MT_END,                                         // End of file (or section, if multiple entries)
+    MT_IGNORE,                                      // is ignored
 };
 
 struct MetaTag {
-    string      tag;            // tag name (in flatfile)
-    string      field;          // field name
+    string      tag;                                // tag name (in flatfile)
+    string      field;                              // field name
     MetaTagType type;
 };
 
