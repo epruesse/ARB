@@ -23,7 +23,9 @@
 
 using namespace std;
 
-typedef SmartMallocPtr(GEN_position) GEN_positionPtr;
+typedef SmartCustomPtr(GEN_position, GEN_free_position) GEN_positionPtr;
+
+// --------------------------------------------------------------------------------
 
 void DBerror::init(const string& msg, GB_ERROR gberror) {
     if (gberror) err = msg+" (Reason: "+gberror+")";
@@ -124,20 +126,22 @@ public:
     }
 };
 
-static const string& getUnreservedQualifier(const string& qualifier) {
+typedef map<string, string, NoCaseCmp> TranslateMap;
+struct Translator { TranslateMap trans; };
+
+Translator *DBwriter::unreserve = 0;
+
+const string& DBwriter::getUnreservedQualifier(const string& qualifier) {
     // return a non-reserved qualifier
     // (some are reserved - e.g. name, pos_start, ... and all starting with 'ARB_')
     // if a qualifier is reserved, 'ORG_' is prepended.
     //
-    // (Note: When we'll export data, 'ORG_' will be removed from qualifiers!)
+    // (Note: When we'll export data, 'ORG_' shall be removed from qualifiers!)
 
-    typedef map<string, string, NoCaseCmp> TranslateMap;
-
-    static TranslateMap *unreserve = 0;
-    static string        prefix    = "ORG_";
+    static string prefix = "ORG_";
 
     if (!unreserve) {
-        unreserve                     = new TranslateMap;
+        unreserve = new Translator;
         const char *reserved[] = {
             "name", "type",
             "pos_start", "pos_stop", "pos_complement", "pos_certain", "pos_joined",
@@ -145,19 +149,19 @@ static const string& getUnreservedQualifier(const string& qualifier) {
         };
 
         for (int i = 0; reserved[i]; ++i) {
-            (*unreserve)[reserved[i]] = prefix+reserved[i];
+            unreserve->trans[reserved[i]] = prefix+reserved[i];
         }
     }
 
-    TranslateMap::const_iterator found = unreserve->find(qualifier);
-    if (found != unreserve->end()) { // qualifier is reserved
+    TranslateMap::const_iterator found = unreserve->trans.find(qualifier);
+    if (found != unreserve->trans.end()) { // qualifier is reserved
         return found->second;
     }
     if (NoCaseCmp::has_prefix(qualifier, prefix) || // qualifier starts with 'ORG_'
         NoCaseCmp::has_prefix(qualifier, "ARB_")) // or 'ARB_'
     {
-        (*unreserve)[qualifier] = prefix+qualifier; // add as 'ORG_ORG_' or 'ORG_ARB_' to TranslateMap
-        return (*unreserve)[qualifier];
+        unreserve->trans[qualifier] = prefix+qualifier; // add as 'ORG_ORG_' or 'ORG_ARB_' to TranslateMap
+        return unreserve->trans[qualifier];
     }
     return qualifier;
 }
@@ -437,6 +441,13 @@ void DBwriter::finalizeOrganism(const MetaInfo& meta, const References& refs, Im
     generatedGenes.clear();
     gb_gene_data = 0;
     gb_organism  = 0;
+}
+
+void DBwriter::deleteStaticData() {
+    if (unreserve) {
+        delete unreserve;
+        unreserve = NULL;
+    }
 }
 
 
