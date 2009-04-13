@@ -568,10 +568,8 @@ void nt_rename_configuration(AW_window *aww) {
 
     char *new_name = aw_input("Rename selection", "Enter the new name of the selection", old_name);
     if (new_name) {
-        GBDATA *gb_existing_cfg = GBT_find_configuration(GLOBAL_gb_main, new_name);
-        if (gb_existing_cfg) {
-            err = GBS_global_string("There is already a selection named '%s'", new_name);
-        }
+        GBDATA *gb_existing_cfg  = GBT_find_configuration(GLOBAL_gb_main, new_name);
+        if (gb_existing_cfg) err = GBS_global_string("There is already a selection named '%s'", new_name);
         else {
             GBDATA *gb_old_cfg = GBT_find_configuration(GLOBAL_gb_main, old_name);
             if (gb_old_cfg) {
@@ -580,20 +578,14 @@ void nt_rename_configuration(AW_window *aww) {
                     err = GB_write_string(gb_name, new_name);
                     if (!err) awar_curr_cfg->write_string(new_name);
                 }
-                else {
-                    err = "Selection has no name";
-                }
+                else err = "Selection has no name";
             }
-            else {
-                err = "Can't find that selection";
-            }
+            else err = "Can't find that selection";
         }
         free(new_name);
     }
 
     if (err) aw_message(err);
-
-    free(new_name);
     free(old_name);
 }
 //  --------------------------------------------------------------------------------------

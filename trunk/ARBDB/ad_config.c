@@ -26,20 +26,22 @@
 ********************************************************************************************/
 
 char **GBT_get_configuration_names_and_count(GBDATA *gb_main, int *countPtr) {
-    /* returns an null terminated array of string pointers */
+    /* returns existing configurations (as null terminated array of char* (heap-copies))
+     * Use GBT_free_names() to free the array.
+     *
+     * returns NULL if no configurations exist
+     *
+     * Note: automatically names configs w/o legal name.
+     */
     GBDATA  *gb_configuration_data;
     int      count       = 0;
-    char   **configNames = 0;
+    char   **configNames = NULL;
 
     GB_push_transaction(gb_main);
 
-    gb_configuration_data = GB_search(gb_main,AWAR_CONFIG_DATA,GB_DB);
+    gb_configuration_data = GB_search(gb_main, AWAR_CONFIG_DATA, GB_CREATE_CONTAINER);
     if (gb_configuration_data) {
         GBDATA *gb_config;
-
-#if defined(DEVEL_RALF)
-#warning auto-rename unnamed configurations here (see AWT_sel_boxes.cxx : awt_create_selection_list_on_configurations_cb)
-#endif /* DEVEL_RALF */
 
         for (gb_config = GB_entry(gb_configuration_data, AWAR_CONFIG);
              gb_config;
@@ -49,21 +51,33 @@ char **GBT_get_configuration_names_and_count(GBDATA *gb_main, int *countPtr) {
         }
 
         if (count) {
-            configNames = (char **)GB_calloc(sizeof(char *),(size_t)count+1);
-            count       = 0;
+            configNames       = (char **)GB_calloc(sizeof(char *),(size_t)count+1);
+            count             = 0;
+            int unnamed_count = 0;
 
             for (gb_config = GB_entry(gb_configuration_data, AWAR_CONFIG);
                  gb_config;
                  gb_config = GB_nextEntry(gb_config))
             {
                 GBDATA *gb_name = GB_entry(gb_config, "name");
-                if (gb_name) {
-                    configNames[count++] = GB_read_string(gb_name);
+                char   *name    = gb_name ? GB_read_string(gb_name) : NULL;
+
+                if (!name || name[0] == 0) { // no name or empty name
+                    char     *new_name = GBS_global_string_copy("<unnamed%i>", ++unnamed_count);
+                    GB_ERROR  error    = GBT_write_string(gb_config, "name", new_name);
+
+                    if (error) {
+                        GB_warning("Failed to rename unnamed configuration to '%s'", new_name);
+                        freeset(new_name, NULL);
+                    }
+                    freeset(name, new_name);
                 }
+
+                if (name) configNames[count++] = name;
             }
         }
     }
-    
+
     GB_pop_transaction(gb_main);
     *countPtr = count;
 

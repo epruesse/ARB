@@ -412,43 +412,21 @@ void awt_create_selection_list_on_table_fields(GBDATA *gb_main,AW_window *aws,co
 
 // ******************** selection boxes on editor configurations ********************
 
-void awt_create_selection_list_on_configurations_cb(GBDATA *dummy, struct adawcbstruct *cbs) {
-    AWUSE(dummy);
- restart:
+void awt_create_selection_list_on_configurations_cb(GBDATA*, struct adawcbstruct *cbs) {
     cbs->aws->clear_selection_list(cbs->id);
-    GBDATA *gb_configuration_data = GB_search(cbs->gb_main,AWAR_CONFIG_DATA,GB_CREATE_CONTAINER);
-    GBDATA *gb_config;
 
-#if defined(DEVEL_RALF)
-#warning use GBT_get_configuration_names here and skip renaming here
-#endif // DEVEL_RALF
+    int    config_count;
+    char **config = GBT_get_configuration_names_and_count(cbs->gb_main, &config_count);
 
-
-    for (gb_config = GB_child(gb_configuration_data); gb_config; gb_config = GB_nextChild(gb_config)) {
-        GBDATA *gb_name = GB_entry(gb_config,"name");
-        if (!gb_name){
-            aw_message("internal error: unnamed configuration (now renamed to 'unnamed_config')");
-            gb_name = GB_create(gb_config, "name", GB_STRING);
-            if (!gb_name) {
-                char *err = strdup(GB_get_error());
-                GB_CSTR question = GBS_global_string("Rename of configuration failed (reason: '%s')\n"
-                                                     "Do you like do delete the unnamed configuration?", err);
-                free(err);
-
-                if (aw_ask_sure(question)) {
-                    GB_delete(gb_config);
-                    goto restart;
-                }
-                continue;
-            }
-            GB_write_string(gb_name, "unnamed_config");
+    if (config) {
+        for (int c = 0; c<config_count; c++) {
+            cbs->aws->insert_selection(cbs->id, config[c], config[c]);
         }
-        const char *name = GB_read_char_pntr(gb_name);
-        cbs->aws->insert_selection( cbs->id, name, name );
+        GBT_free_names(config);
     }
 
-    cbs->aws->insert_default_selection( cbs->id, "????", "????" );
-    cbs->aws->update_selection_list( cbs->id );
+    cbs->aws->insert_default_selection(cbs->id, "????", "????");
+    cbs->aws->update_selection_list(cbs->id);
 }
 
 void awt_create_selection_list_on_configurations(GBDATA *gb_main,AW_window *aws,const char *varname)
@@ -477,41 +455,24 @@ void awt_create_selection_list_on_configurations(GBDATA *gb_main,AW_window *aws,
 }
 
 char *awt_create_string_on_configurations(GBDATA *gb_main) {
+    // returns semicolon-separated string containing configuration names
+    // (or NULL if no configs exist)
+    
     GB_push_transaction(gb_main);
- restart:
-    char   *result                = 0;
-    GBDATA *gb_configuration_data = GB_search(gb_main,AWAR_CONFIG_DATA,GB_CREATE_CONTAINER);
-    GBDATA *gb_config;
 
-#if defined(DEVEL_RALF)
-#warning use GBT_get_configuration_names here and skip renaming here
-#endif // DEVEL_RALF
+    int    config_count;
+    char **config = GBT_get_configuration_names_and_count(gb_main, &config_count);
+    char  *result = 0;
 
-    for (gb_config = GB_child(gb_configuration_data); gb_config; gb_config = GB_nextChild(gb_config)) {
-        GBDATA *gb_name = GB_entry(gb_config,"name");
-        if (!gb_name){
-            aw_message("internal error: unnamed configuration (now renamed to 'unnamed_config')");
-            gb_name = GB_create(gb_config, "name", GB_STRING);
-            if (!gb_name) {
-                char *err = strdup(GB_get_error());
-                GB_CSTR question = GBS_global_string("Rename of configuration failed (reason: '%s')\n"
-                                                     "Do you like to delete the unnamed configuration?", err);
-                free(err);
-
-                if (aw_ask_sure(question)) {
-                    GB_delete(gb_config);
-                    goto restart;
-                }
-                continue;
-            }
-            GB_write_string(gb_name, "unnamed_config");
+    if (config) {
+        GBS_strstruct *out = GBS_stropen(1000);
+        for (int c = 0; c<config_count; c++) {
+            if (c>0) GBS_chrcat(out, ';');
+            GBS_strcat(out, config[c]);
         }
-        const char *name = GB_read_char_pntr(gb_name);
-        awt_assert(name);
-        
-        if (result) freeset(result, GBS_global_string_copy("%s;%s", result, name));
-        else result = strdup(name);
+        result = GBS_strclose(out);
     }
+
     GB_pop_transaction(gb_main);
     return result;
 }
