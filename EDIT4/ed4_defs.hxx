@@ -55,9 +55,10 @@ extern bool           move_cursor; //only needed for editing in consensus
 extern bool           DRAW;
 extern bool           last_window_reached; //only needed for refreshing all windows
 
-extern double           status_add_count;                   //only needed for loading configuration
-extern double           status_total_count;
-extern bool         loading;
+extern size_t status_count_total; // used for consensus progress bar
+extern size_t status_count_curr;
+
+extern bool loading;
 
 // globally used defines and flags
 

@@ -934,8 +934,10 @@ void ED4_sequence_terminal_basic::calc_update_intervall(long *left_index, long *
     if (*left_index < 0) *left_index                             = 0;
 }
 
-void ED4_manager::create_consensus(ED4_group_manager *upper_group_manager)      //creates consensus
-{                                                                                       //is called by group manager
+void ED4_manager::create_consensus(ED4_group_manager *upper_group_manager) {
+    // creates consensus
+    // is called by group manager
+    
     ED4_group_manager *group_manager_for_child = upper_group_manager;
 
     if (is_group_manager()) {
@@ -943,23 +945,21 @@ void ED4_manager::create_consensus(ED4_group_manager *upper_group_manager)      
 
         group_manager->table().init(MAXSEQUENCECHARACTERLENGTH);
         group_manager_for_child = group_manager;
-    }
 
-    if (loading) {
-        status_total_count += status_add_count;
-        if (aw_status(status_total_count) == 1) {                                                               // Kill has been Pressed
-            aw_closestatus();
-            GB_close(GLOBAL_gb_main);
-            while (ED4_ROOT->first_window) {
-                ED4_ROOT->first_window->delete_window(ED4_ROOT->first_window);
+        if (loading) {
+            if (aw_status(++status_count_curr/double(status_count_total)) == 1) { // Kill has been Pressed
+                aw_closestatus();
+                GB_close(GLOBAL_gb_main);
+                while (ED4_ROOT->first_window) {
+                    ED4_ROOT->first_window->delete_window(ED4_ROOT->first_window);
+                }
+                GB_commit_transaction( GLOBAL_gb_main );
+                GB_close(GLOBAL_gb_main);
+                delete ED4_ROOT->main_manager;
+                ::exit(0);
             }
-            GB_commit_transaction( GLOBAL_gb_main );
-            GB_close(GLOBAL_gb_main);
-            delete ED4_ROOT->main_manager;
-            ::exit(0);
         }
     }
-
     int i;
     for (i=0; i<children->members(); i++) {
         ED4_base *member = children->member(i);

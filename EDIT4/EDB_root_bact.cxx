@@ -392,8 +392,7 @@ ED4_returncode  EDB_root_bact::fill_species(ED4_multi_species_manager  *multi_sp
             ship[lauf] = '\0'; // speciesname-generation is finished
             lauf = 0;
 
-            status_total_count += status_add_count;
-            if (aw_status(status_total_count) == 1) { // Kill has been Pressed
+            if (aw_status(++status_count_curr/double(status_count_total)) == 1) { // Kill has been Pressed
                 aw_closestatus();
                 while (ED4_ROOT->first_window) {
                     ED4_ROOT->first_window->delete_window(ED4_ROOT->first_window);
