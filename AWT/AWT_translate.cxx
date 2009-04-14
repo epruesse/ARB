@@ -100,7 +100,7 @@ inline void memcpy3(char *dest, const char *source) {
     dest[2] = source[2];
 }
 
-int AWT_pro_a_nucs_convert(int arb_code_nr, char *data, int size, int pos, bool translate_all, bool create_start_codon, bool append_stop_codon, int *translatedSize) {
+int AWT_pro_a_nucs_convert(int arb_code_nr, char *data, size_t size, size_t pos, bool translate_all, bool create_start_codon, bool append_stop_codon, int *translatedSize) {
     // if translate_all == true -> 'pos' > 1 produces a leading 'X' in protein data
     //                             (otherwise nucleotides in front of the starting pos are simply ignored)
     // 
@@ -114,7 +114,7 @@ int AWT_pro_a_nucs_convert(int arb_code_nr, char *data, int size, int pos, bool 
     // - the length of the translated protein sequence in 'translatedSize' (if != 0)
     // - number of stop-codons in translated sequence as result
 
-    gb_assert(pos >= 0 && pos <= 2);
+    gb_assert(pos <= 2);
 
     for (char *p = data; *p ; p++) {
         char c = *p;
@@ -139,7 +139,7 @@ int AWT_pro_a_nucs_convert(int arb_code_nr, char *data, int size, int pos, bool 
     }
 
     int            stops      = 0;
-    long           i          = pos;
+    size_t         i          = pos;
     char           startCodon = 0;
     const GB_HASH *t2i_hash   = AWT_get_translator(arb_code_nr)->T2iHash();
 
