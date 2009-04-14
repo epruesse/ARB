@@ -3841,7 +3841,7 @@ static void getPartPositions(const struct GEN_position *pos, int part, size_t *s
     *stopPos  = pos->stop_pos [part]+gpp->offset[(pos->stop_uncertain  ? pos->stop_uncertain  : gpp->certain)[part]];
 }
 
-NOT4PERL char *GBT_read_gene_sequence_and_length(GBDATA *gb_gene, GB_BOOL use_revComplement, char partSeparator, int *gene_length) {
+NOT4PERL char *GBT_read_gene_sequence_and_length(GBDATA *gb_gene, GB_BOOL use_revComplement, char partSeparator, size_t *gene_length) {
     // return the sequence data of a gene
     // 
     // if use_revComplement is true -> use data from complementary strand (if complement is set for gene)
