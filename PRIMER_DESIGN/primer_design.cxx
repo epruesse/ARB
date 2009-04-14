@@ -274,9 +274,8 @@ void primer_design_event_init( AW_window *aww, AW_CL cl_from_gene) {
     char           *selected_gene    = 0;
     GBDATA         *gb_species       = 0;
     GBDATA         *gb_gene          = 0;
+    GEN_position   *genPos           = 0;
     GBDATA         *gb_seq           = 0;
-    long            gene_start       = -1;
-    long            gene_end         = -1;
     bool            is_genom_db      = GEN_is_genome_db(GLOBAL_gb_main, -1);
 
     if (is_genom_db && from_gene) {
@@ -306,20 +305,16 @@ void primer_design_event_init( AW_window *aww, AW_CL cl_from_gene) {
         gb_assert(is_genom_db); // otherwise button should not exist
 
         gb_gene = GEN_find_gene(gb_species, selected_gene);
-
         if (!gb_gene) {
             error = GB_export_error("Species '%s' has no gene named '%s'", selected_species, selected_gene);
         }
         else {
-            GBDATA *gb_pos_begin = GB_entry(gb_gene, "pos_begin");
-            GBDATA *gb_pos_end   = GB_entry(gb_gene, "pos_end");
-
-            if (!gb_pos_begin || !gb_pos_end) {
-                error = GB_export_error("Error in position entries of '%s/%s'", selected_species, selected_gene);
+            genPos = GEN_read_position(gb_gene);
+            if (!genPos) {
+                error = GB_expect_error();
             }
-            else {
-                gene_start = GB_read_int(gb_pos_begin);
-                gene_end   = GB_read_int(gb_pos_end);
+            else if (genPos->joinable == GB_FALSE) {
+                error = GBS_global_string("Gene '%s' is not joinable", selected_gene);
             }
         }
     }
@@ -334,97 +329,104 @@ void primer_design_event_init( AW_window *aww, AW_CL cl_from_gene) {
         //         long int          length_min, length_max;
         char             *sequence   = 0;
 
-        sequence = GB_read_string(gb_seq);
-        length   = strlen(sequence);
-
         if (gb_gene) {
-            long  gene_length  = gene_end-gene_start+1;
-            char *gene_sequence = (char*)malloc(gene_length+1);
-
-            memcpy(gene_sequence, sequence+gene_start, gene_length);
-            gene_sequence[gene_length] = 0;
-
-            freeset(sequence, gene_sequence);
-            length     = gene_length;
-            add_offset = gene_start;
+            size_t gene_length;
+            sequence   = GBT_read_gene_sequence_and_length(gb_gene, GB_FALSE, 0, &gene_length);
+            if (!sequence) {
+                error = GB_expect_error();
+            }
+            else {
+                length     = gene_length;
+                add_offset = genPos->start_pos[0];
+#if defined(DEVEL_RALF)
+#warning does this work with splitted genes ? 
+#warning warn about uncertainties ? 
+#endif // DEVEL_RALF
+            }
+        }
+        else {
+            sequence = GB_read_string(gb_seq);
+            length   = strlen(sequence);
         }
 
-        // find reasonable parameters
-        // left pos (first base from start)
+        if (!error) {
+            // find reasonable parameters
+            // left pos (first base from start)
 
-        long int left_len = root->awar(AWAR_PRIMER_DESIGN_LEFT_LENGTH)->read_int();
-        if (left_len == 0 || left_len<0) left_len = 100;
+            long int left_len = root->awar(AWAR_PRIMER_DESIGN_LEFT_LENGTH)->read_int();
+            if (left_len == 0 || left_len<0) left_len = 100;
 
-        i                     = new SequenceIterator( sequence, 0, SequenceIterator::IGNORE, left_len, SequenceIterator::FORWARD );
-        i->nextBase();          // find first base from start
-        left_min              = i->pos; // store pos. of first base
-        while (i->nextBase() != SequenceIterator::EOS ) ; // step to 'left_len'th base from start
-        left_max              = i->pos; // store pos. of 'left_len'th base
+            i                     = new SequenceIterator( sequence, 0, SequenceIterator::IGNORE, left_len, SequenceIterator::FORWARD );
+            i->nextBase();          // find first base from start
+            left_min              = i->pos; // store pos. of first base
+            while (i->nextBase() != SequenceIterator::EOS ) ; // step to 'left_len'th base from start
+            left_max              = i->pos; // store pos. of 'left_len'th base
 
-        root->awar(AWAR_PRIMER_DESIGN_LEFT_POS)->write_int(left_min+add_offset);
-        root->awar(AWAR_PRIMER_DESIGN_LEFT_LENGTH)->write_int(left_len);
+            root->awar(AWAR_PRIMER_DESIGN_LEFT_POS)->write_int(left_min+add_offset);
+            root->awar(AWAR_PRIMER_DESIGN_LEFT_LENGTH)->write_int(left_len);
 
-        long int right_len = root->awar(AWAR_PRIMER_DESIGN_RIGHT_LENGTH)->read_int();
-        if (right_len == 0 || right_len<0) right_len = 100;
+            long int right_len = root->awar(AWAR_PRIMER_DESIGN_RIGHT_LENGTH)->read_int();
+            if (right_len == 0 || right_len<0) right_len = 100;
 
-        // right pos ('right_len'th base from end)
-        i->restart( length, 0, right_len, SequenceIterator::BACKWARD );
-        i->nextBase();                  // find last base
-        right_max             = i->pos; // store pos. of last base
-        while (i->nextBase() != SequenceIterator::EOS ) ; // step to 'right_len'th base from end
-        right_min             = i->pos; // store pos of 'right_len'th base from end
+            // right pos ('right_len'th base from end)
+            i->restart( length, 0, right_len, SequenceIterator::BACKWARD );
+            i->nextBase();                  // find last base
+            right_max             = i->pos; // store pos. of last base
+            while (i->nextBase() != SequenceIterator::EOS ) ; // step to 'right_len'th base from end
+            right_min             = i->pos; // store pos of 'right_len'th base from end
 
-        root->awar(AWAR_PRIMER_DESIGN_RIGHT_POS)->write_int(right_min+add_offset);
-        root->awar(AWAR_PRIMER_DESIGN_RIGHT_LENGTH)->write_int(right_len);
+            root->awar(AWAR_PRIMER_DESIGN_RIGHT_POS)->write_int(right_min+add_offset);
+            root->awar(AWAR_PRIMER_DESIGN_RIGHT_LENGTH)->write_int(right_len);
 
-        // primer distance
-        if ( right_min >= left_max ) {                                  // non-overlapping ranges
-            i->restart(left_max, right_min, SequenceIterator::IGNORE, SequenceIterator::FORWARD);
-            long int bases_between  = 0;                                // count bases from right_min to left_max
-            while (i->nextBase()   != SequenceIterator::EOS) ++bases_between;
-            dist_min = bases_between;                                   // take bases between as min distance
-        }
-        else {                                                        // overlapping ranges
-            dist_min = right_min - left_min +1;
-        }
-        dist_max = right_max - left_min;
-        root->awar(AWAR_PRIMER_DESIGN_DIST_MIN)->write_int(dist_min);
-        root->awar(AWAR_PRIMER_DESIGN_DIST_MAX)->write_int(dist_max);
+            // primer distance
+            if ( right_min >= left_max ) {                                  // non-overlapping ranges
+                i->restart(left_max, right_min, SequenceIterator::IGNORE, SequenceIterator::FORWARD);
+                long int bases_between  = 0;                                // count bases from right_min to left_max
+                while (i->nextBase()   != SequenceIterator::EOS) ++bases_between;
+                dist_min = bases_between;                                   // take bases between as min distance
+            }
+            else {                                                        // overlapping ranges
+                dist_min = right_min - left_min +1;
+            }
+            dist_max = right_max - left_min;
+            root->awar(AWAR_PRIMER_DESIGN_DIST_MIN)->write_int(dist_min);
+            root->awar(AWAR_PRIMER_DESIGN_DIST_MAX)->write_int(dist_max);
 
-        // primer length
-        //         length_min = root->awar(AWAR_PRIMER_DESIGN_LENGTH_MIN)->read_int();
-        //         length_max = root->awar(AWAR_PRIMER_DESIGN_LENGTH_MAX)->read_int();
-        //         if ( length_max > 100 ) length_max = 100;
-        //         if ( length_min >= length_max ) length_min = length_max >> 2;
-        //         root->awar(AWAR_PRIMER_DESIGN_LENGTH_MIN)->write_int(length_min);
-        //         root->awar(AWAR_PRIMER_DESIGN_LENGTH_MAX)->write_int(length_max);
+            // primer length
+            //         length_min = root->awar(AWAR_PRIMER_DESIGN_LENGTH_MIN)->read_int();
+            //         length_max = root->awar(AWAR_PRIMER_DESIGN_LENGTH_MAX)->read_int();
+            //         if ( length_max > 100 ) length_max = 100;
+            //         if ( length_min >= length_max ) length_min = length_max >> 2;
+            //         root->awar(AWAR_PRIMER_DESIGN_LENGTH_MIN)->write_int(length_min);
+            //         root->awar(AWAR_PRIMER_DESIGN_LENGTH_MAX)->write_int(length_max);
 
-        // GC-ratio/temperature - factors
-        //         root->awar(AWAR_PRIMER_DESIGN_GC_FACTOR)->write_int(50);
-        //         root->awar(AWAR_PRIMER_DESIGN_TEMP_FACTOR)->write_int(50);
+            // GC-ratio/temperature - factors
+            //         root->awar(AWAR_PRIMER_DESIGN_GC_FACTOR)->write_int(50);
+            //         root->awar(AWAR_PRIMER_DESIGN_TEMP_FACTOR)->write_int(50);
 
-        // update mem-info
-        primer_design_event_update_memory(aww);
-
-        delete i;
-        free( sequence );
+            // update mem-info
+            primer_design_event_update_memory(aww);
 
 #ifdef DEBUG
-        printf ( "primer_design_event_init : left_min   %7li\n",left_min );
-        printf ( "primer_design_event_init : left_max   %7li\n",left_max );
-        printf ( "primer_design_event_init : right_min  %7li\n",right_min );
-        printf ( "primer_design_event_init : right_max  %7li\n",right_max );
-        //         printf ( "primer_design_event_init : length_min %7li\n",length_min );
-        //         printf ( "primer_design_event_init : length_max %7li\n",length_max );
-        printf ( "primer_design_event_init : dist_min   %7li\n",dist_min );
-        printf ( "primer_design_event_init : dist_max   %7li\n\n",dist_max );
+            printf ( "primer_design_event_init : left_min   %7li\n",left_min );
+            printf ( "primer_design_event_init : left_max   %7li\n",left_max );
+            printf ( "primer_design_event_init : right_min  %7li\n",right_min );
+            printf ( "primer_design_event_init : right_max  %7li\n",right_max );
+            //         printf ( "primer_design_event_init : length_min %7li\n",length_min );
+            //         printf ( "primer_design_event_init : length_max %7li\n",length_max );
+            printf ( "primer_design_event_init : dist_min   %7li\n",dist_min );
+            printf ( "primer_design_event_init : dist_max   %7li\n\n",dist_max );
 #endif
+        }
+        delete i;
+        free( sequence );
     }
 
     if (error) {
         aw_message(error);
     }
 
+    GEN_free_position(genPos);
     free(selected_gene);
     free(selected_species);
 }

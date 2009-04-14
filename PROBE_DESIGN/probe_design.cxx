@@ -298,7 +298,7 @@ GB_ERROR pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
             species_name = GB_read_char_pntr(gb_name);
         }
 
-        for (GBDATA *gb_gene = GEN_first_marked_gene(gb_species); gb_gene; gb_gene = GEN_next_marked_gene(gb_gene)) {
+        for (GBDATA *gb_gene = GEN_first_marked_gene(gb_species); gb_gene && !error; gb_gene = GEN_next_marked_gene(gb_gene)) {
             const char *gene_name = 0;
             {
                 GBDATA *gb_gene_name = GB_entry(gb_gene, "name");
@@ -308,44 +308,40 @@ GB_ERROR pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
 
             long CheckSum;
             {
-                GBDATA *gb_gene_pos_begin = GB_entry(gb_gene, "pos_begin");
-                if (!gb_gene_pos_begin) { error = gene_requires(gb_gene, "pos_begin"); break; }
-
-                GBDATA *gb_gene_pos_end = GB_entry(gb_gene,"pos_end");
-                if (!gb_gene_pos_end) { error = gene_requires(gb_gene, "pos_end"); break; }
-
-                int pos_begin = GB_read_int(gb_gene_pos_begin)-1;
-                int pos_end   = GB_read_int(gb_gene_pos_end)-1;
-
-                int   len      = pos_end-pos_begin+1;
-                char *gene_seq = new char[len+1];
-                strncpy(gene_seq, sequence+pos_begin, len);
-                gene_seq[len]  = 0;
-
-                CheckSum = GBS_checksum(gene_seq, 1, ".-");
-
-                // @@@ FIXME: what to do with splitted genes ?
+                char *gene_seq       = GBT_read_gene_sequence(gb_gene, GB_FALSE, 0);
+                if (!gene_seq) error = GB_expect_error();
+                else {
+                    CheckSum = GBS_checksum(gene_seq, 1, ".-");
+                    free(gene_seq);
+                }
             }
 
-            const char *id = GBS_global_string("%s/%s", species_name, gene_name);
+            if (!error) {
+                const char *id = GBS_global_string("%s/%s", species_name, gene_name);
 
-            GBS_intcat(checksums, CheckSum);
-            GBS_strcat(names, id);
-            GBS_chrcat(checksums, '#');
-            GBS_chrcat(names, '#');
+                GBS_intcat(checksums, CheckSum);
+                GBS_strcat(names, id);
+                GBS_chrcat(checksums, '#');
+                GBS_chrcat(names, '#');
+            }
         }
     }
 
     GBS_str_cut_tail(names, 1); // remove trailing '#'
     GBS_str_cut_tail(checksums, 1); // remove trailing '#'
 
-    bs.data = GBS_strclose(names);
-    bs.size = strlen(bs.data)+1;
+    if (error) {
+        GBS_strforget(names);
+        GBS_strforget(checksums);
+    }
+    else {
+        bs.size = GBS_memoffset(names)+1;
+        bs.data = GBS_strclose(names);
 
-    checksum.data = GBS_strclose(checksums);
-    checksum.size = strlen(checksum.data)+1;
-
-    GB_commit_transaction(GLOBAL_gb_main);
+        checksum.size = GBS_memoffset(checksums)+1;
+        checksum.data = GBS_strclose(checksums);
+    }
+    error = GB_end_transaction(GLOBAL_gb_main, error);
     return error;
 }
 
