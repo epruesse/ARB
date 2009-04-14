@@ -138,7 +138,7 @@ GB_ERROR GBT_remote_action P_((GBDATA *gb_main, const char *application, const c
 GB_ERROR GBT_remote_awar P_((GBDATA *gb_main, const char *application, const char *awar_name, const char *value));
 const char *GBT_remote_read_awar P_((GBDATA *gb_main, const char *application, const char *awar_name));
 const char *GBT_remote_touch_awar P_((GBDATA *gb_main, const char *application, const char *awar_name));
-NOT4PERL char *GBT_read_gene_sequence_and_length P_((GBDATA *gb_gene, GB_BOOL use_revComplement, char partSeparator, int *gene_length));
+NOT4PERL char *GBT_read_gene_sequence_and_length P_((GBDATA *gb_gene, GB_BOOL use_revComplement, char partSeparator, size_t *gene_length));
 char *GBT_read_gene_sequence P_((GBDATA *gb_gene, GB_BOOL use_revComplement, char partSeparator));
 char *GB_generate_notification P_((GBDATA *gb_main, void (*cb )(const char *message, void *client_data ), const char *message, void *client_data));
 GB_ERROR GB_remove_last_notification P_((GBDATA *gb_main));
