@@ -507,8 +507,8 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
     total_no_of_groups += group_count;
     total_no_of_species += species_count;
 
-    status_add_count = (double) (1.0 / (double) total_no_of_species);
-    status_total_count = 0;
+    status_count_total = total_no_of_species;
+    status_count_curr  = 0;
 
     GB_push_transaction( GLOBAL_gb_main );
 
@@ -689,8 +689,8 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
         aw_status((double)0);
     }
 
-    status_add_count = (double) (1.0 / (double) total_no_of_groups);
-    status_total_count = 0;
+    status_count_total = total_no_of_groups + 1; // 1 is root_group_man
+    status_count_curr  = 0;
 
     root_group_man->create_consensus(root_group_man);
     e4_assert(root_group_man->table().ok());
