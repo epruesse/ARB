@@ -115,7 +115,7 @@ void resize_callb(AW_window *aw,AW_CL cd1,AW_CL cd2)
 //                            { if(PHDATA::ROOT->markerline[x]>=0.0)
 
 static GB_ERROR PH_create_ml_multiline_SAI(GB_CSTR sai_name, int nr, GBDATA **gb_sai_ptr) {
-    GBDATA   *gb_sai = GBT_create_SAI(GLOBAL_gb_main, sai_name);
+    GBDATA   *gb_sai = GBT_find_or_create_SAI(GLOBAL_gb_main, sai_name);
     GBDATA   *gbd, *gb2;
     GB_ERROR  error  = ph_check_initialized();
 
@@ -287,7 +287,7 @@ void PH_save_ml_cb(AW_window *aww) {
     GB_ERROR error = 0;
 
     char   *fname  = aww->get_root()->awar("tmp/phylo/markerlinename")->read_string();
-    GBDATA *gb_sai = GBT_create_SAI(GLOBAL_gb_main,fname);
+    GBDATA *gb_sai = GBT_find_or_create_SAI(GLOBAL_gb_main,fname);
     GBDATA *gbd,*gb2;
 
     error = ph_check_initialized();

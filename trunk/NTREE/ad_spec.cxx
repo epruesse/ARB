@@ -219,7 +219,7 @@ static void species_create_cb(AW_window * aww) {
 
             if (gb_dest) error = GBS_global_string("Species '%s' already exists", dest);
             else {
-                gb_dest = GBT_create_species_rel_species_data(gb_species_data, dest);
+                gb_dest = GBT_find_or_create_species_rel_species_data(gb_species_data, dest);
                 if (!gb_dest) error = GB_get_error();
                 else aww->get_root()->awar(AWAR_SPECIES_NAME)->write_string(dest);
             }

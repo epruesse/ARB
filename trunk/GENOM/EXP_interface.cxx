@@ -177,7 +177,7 @@ struct ad_item_selector EXP_item_selector =
         "experiments",
         EXP_get_first_experiment_data,
         EXP_get_next_experiment_data,
-        EXP_first_experiment_rel_experiment_data,
+        EXP_first_experiment_rel_exp_data,
         EXP_next_experiment,
         EXP_get_current_experiment,
         &AWT_organism_selector
@@ -287,13 +287,13 @@ void experiment_create_cb(AW_window *aww) {
             error = "Please select a species";
         }
         else {
-            GBDATA *gb_dest = EXP_find_experiment_rel_experiment_data(gb_experiment_data, dest);
+            GBDATA *gb_dest = EXP_find_experiment_rel_exp_data(gb_experiment_data, dest);
 
             if (gb_dest) {
                 error  = GB_export_error("Experiment '%s' already exists", dest);
             }
             else {
-                gb_dest = EXP_create_experiment_rel_experiment_data(gb_experiment_data, dest);
+                gb_dest = EXP_find_or_create_experiment_rel_exp_data(gb_experiment_data, dest);
                 if (gb_dest) aww->get_root()->awar(AWAR_EXPERIMENT_NAME)->write_string(dest);
                 else error = GB_get_error();
             }
@@ -317,8 +317,8 @@ void experiment_rename_cb(AW_window *aww){
 
             if (!gb_experiment_data) error = "Please select a species first";
             else {
-                GBDATA *gb_source = EXP_find_experiment_rel_experiment_data(gb_experiment_data, source);
-                GBDATA *gb_dest   = EXP_find_experiment_rel_experiment_data(gb_experiment_data, dest);
+                GBDATA *gb_source = EXP_find_experiment_rel_exp_data(gb_experiment_data, source);
+                GBDATA *gb_dest   = EXP_find_experiment_rel_exp_data(gb_experiment_data, dest);
 
                 if (!gb_source) error   = "Please select an experiment";
                 else if (gb_dest) error = GB_export_error("Experiment '%s' already exists", dest);
@@ -353,8 +353,8 @@ void experiment_copy_cb(AW_window *aww) {
             error = "Please select a species first.";
         }
         else {
-            GBDATA *gb_source = EXP_find_experiment_rel_experiment_data(gb_experiment_data, source);
-            GBDATA *gb_dest   = EXP_find_experiment_rel_experiment_data(gb_experiment_data, dest);
+            GBDATA *gb_source = EXP_find_experiment_rel_exp_data(gb_experiment_data, source);
+            GBDATA *gb_dest   = EXP_find_experiment_rel_exp_data(gb_experiment_data, dest);
 
             if (!gb_source) error   = "Please select a experiment";
             else if (gb_dest) error = GB_export_error("Experiment '%s' already exists", dest);

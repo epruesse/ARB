@@ -910,7 +910,7 @@ void MG_merge_tagged_field_cb(AW_window *aww) {
 
                     if (!name) error = GB_get_error();
                     else {
-                        GBDATA *gb_species2 = GBT_create_species_rel_species_data(gb_dest_species_data, name);
+                        GBDATA *gb_species2 = GBT_find_or_create_species_rel_species_data(gb_dest_species_data, name);
 
                         if (!gb_species2) error = GB_get_error();
                         else {

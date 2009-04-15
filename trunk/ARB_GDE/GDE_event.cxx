@@ -294,7 +294,7 @@ static void GDE_export(NA_Alignment *dataset,char *align,long oldnumelements)
         if (!issame)            /* save as extended */
         {
 
-            GBDATA *gb_extended =   GBT_create_SAI(GLOBAL_gb_main,savename);
+            GBDATA *gb_extended =   GBT_find_or_create_SAI(GLOBAL_gb_main,savename);
             sequ->gb_species=gb_extended;
             GBDATA *gb_data = GBT_add_data(gb_extended, align,"data", GB_STRING);
             error = GBT_write_sequence(gb_data,align,maxalignlen,(char *)sequ->sequence);
@@ -349,12 +349,12 @@ static void GDE_export(NA_Alignment *dataset,char *align,long oldnumelements)
                         GB_delete(gb_species);
                         // fall-through!
                     case 2:     // reimport sequence
-                        gb_species = GBT_create_species_rel_species_data(gb_species_data, savename);
+                        gb_species = GBT_find_or_create_species_rel_species_data(gb_species_data, savename);
                         break;
                 }
             }
             else {
-                gb_species = GBT_create_species_rel_species_data(gb_species_data, savename);
+                gb_species = GBT_find_or_create_species_rel_species_data(gb_species_data, savename);
             }
             if (!gb_species) continue;
             sequ->gb_species = gb_species;
@@ -421,7 +421,7 @@ static void GDE_export(NA_Alignment *dataset,char *align,long oldnumelements)
         *resstring='\0';
 
 
-        GBDATA *gb_extended =   GBT_create_SAI(GLOBAL_gb_main,"COLMASK");
+        GBDATA *gb_extended =   GBT_find_or_create_SAI(GLOBAL_gb_main,"COLMASK");
         gb_color = GBT_add_data(gb_extended, align,"colmask", GB_BYTES);
         error = GB_write_bytes(gb_color,dummy,maxalignlen);
 

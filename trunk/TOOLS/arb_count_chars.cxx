@@ -91,7 +91,7 @@ int main(int argc, char **argv){
     }
     // save result as SAI COUNTED_CHARS
     {
-        GBDATA *gb_sai = GBT_create_SAI(gb_main,RESULTNAME);
+        GBDATA *gb_sai = GBT_find_or_create_SAI(gb_main,RESULTNAME);
         if (!gb_sai) {
             GB_print_error();
             return -1;

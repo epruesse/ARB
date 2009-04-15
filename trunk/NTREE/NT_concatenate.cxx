@@ -306,7 +306,7 @@ void shiftAlignment(AW_window *aws, long int direction){
 /*----------  Create SAI to display alignments that were concatenated --------------*/
 
 GB_ERROR displayAlignmentInfo(GBDATA *gb_main, GB_ERROR error, char *new_ali_name, char *alignment_separator){
-    GBDATA        *gb_extended    = GBT_create_SAI(gb_main,"Alignment Information");
+    GBDATA        *gb_extended    = GBT_find_or_create_SAI(gb_main,"Alignment Information");
     GBDATA        *gb_data        = GBT_add_data(gb_extended, new_ali_name,"data", GB_STRING);
     GBS_strstruct *ali_str        = GBS_stropen(GBT_get_alignment_len(gb_main,new_ali_name));
     const char    *const_ali_name = con_alignment_list->first_element();
