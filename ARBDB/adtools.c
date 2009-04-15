@@ -205,7 +205,20 @@ NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment,
                 int         alignment_seen = 0;
                 GBDATA     *gb_ali         = 0;
 
-                if (gb_name) {
+                if (!gb_name) {
+                    // fatal: name is missing -> create a unique name
+                    char *unique = GBT_create_unique_species_name(gb_main, "autoname.");
+                    error        = GBT_write_string(gb_species, "name", unique);
+
+                    if (!error) {
+                        gb_name = GB_entry(gb_species, "name");
+                        GBS_write_hash(species_name_hash, unique, 1); // not seen before
+                        GB_warning("Seen unnamed species (gave name '%s')", unique);
+                    }
+                    free(unique);
+                }
+                
+                if (!error) {
                     name = GB_read_char_pntr(gb_name);
                     if (species_name_hash) {
                         int seen = GBS_read_hash(species_name_hash, name);
@@ -214,43 +227,42 @@ NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment,
                         if (seen == 2) alignment_seen = 1; // already seen an alignment
                     }
                 }
-                else {
-                    gb_name = GB_create(gb_species,"name",GB_STRING);
-                    GB_write_string(gb_name,"unknown"); // @@@ create a unique name here
-                }
 
-                GB_write_security_delete(gb_name,7);
-                GB_write_security_write(gb_name,6);
+                if (!error) error = GB_write_security_delete(gb_name,7);
+                if (!error) error = GB_write_security_write(gb_name,6);
 
-                gb_ali = GB_entry(gb_species, ali_name);
-                if (gb_ali) {
-                    GBDATA *gb_data = GB_entry(gb_ali, "data");
-                    if (!gb_data) {
-                        error = GBT_write_string(gb_ali, "data", "Error: entry 'data' was missing and therefore was filled with this text.");
-                        GB_warning("No '%s/data' entry for species '%s' (has been filled with dummy data)", ali_name, name);
-                    }
-                    else {
-                        if (GB_read_type(gb_data) != GB_STRING){
-                            GB_delete(gb_data);
-                            error = GBS_global_string("'%s/data' of species '%s' had wrong DB-type (%s) and has been deleted!",
-                                                      ali_name, name, GB_read_key_pntr(gb_data));
+                if (!error) {
+                    gb_ali = GB_entry(gb_species, ali_name);
+                    if (gb_ali) {
+                        GBDATA *gb_data = GB_entry(gb_ali, "data");
+                        if (!gb_data) {
+                            error = GBT_write_string(gb_ali, "data", "Error: entry 'data' was missing and therefore was filled with this text.");
+                            GB_warning("No '%s/data' entry for species '%s' (has been filled with dummy data)", ali_name, name);
                         }
                         else {
-                            long data_len = GB_read_string_count(gb_data);
-                            if (found_ali_len != data_len) {
-                                if (found_ali_len>0)        aligned       = 0;
-                                if (found_ali_len<data_len) found_ali_len = data_len;
+                            if (GB_read_type(gb_data) != GB_STRING){
+                                GB_delete(gb_data);
+                                error = GBS_global_string("'%s/data' of species '%s' had wrong DB-type (%s) and has been deleted!",
+                                                          ali_name, name, GB_read_key_pntr(gb_data));
                             }
-                            GB_write_security_delete(gb_data,7);
+                            else {
+                                long data_len = GB_read_string_count(gb_data);
+                                if (found_ali_len != data_len) {
+                                    if (found_ali_len>0)        aligned       = 0;
+                                    if (found_ali_len<data_len) found_ali_len = data_len;
+                                }
 
-                            if (!alignment_seen && species_name_hash) { // mark as seen
-                                GBS_write_hash(species_name_hash, name, 2); // 2 means "species has data in at least 1 alignment"
+                                error = GB_write_security_delete(gb_data,7);
+
+                                if (!alignment_seen && species_name_hash) { // mark as seen
+                                    GBS_write_hash(species_name_hash, name, 2); // 2 means "species has data in at least 1 alignment"
+                                }
                             }
                         }
                     }
                 }
 
-                GB_write_security_delete(gb_species,security_write);
+                if (!error) error = GB_write_security_delete(gb_species,security_write);
             }
         }
 
@@ -2451,6 +2463,20 @@ int GBT_is_partial(GBDATA *gb_species, int default_value, int define_if_undef) {
 /********************************************************************************************
                     some simple find procedures
 ********************************************************************************************/
+
+GBDATA *GBT_find_item_rel_item_data(GBDATA *gb_item_data, const char *id_field, const char *id_value) {
+    // 'gb_item_data' is a container containing items
+    // 'id_field' is a field containing a unique identifier for each item (e.g. 'name' for species)
+    //
+    // returns a pointer to an item with 'id_field' containing 'id_value'
+    // or NULL
+    
+    GBDATA *gb_item_id = GB_find_string(gb_item_data, id_field, id_value, GB_IGNORE_CASE, down_2_level);
+    return gb_item_id ? GB_get_father(gb_item_id) : 0;
+}
+
+/* -------------------------------------------------------------------------------- */
+
 GBDATA *GBT_get_species_data(GBDATA *gb_main) {
     return GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
 }
@@ -2463,6 +2489,7 @@ GBDATA *GBT_first_marked_species(GBDATA *gb_main) {
     return GB_first_marked(GBT_get_species_data(gb_main), "species");
 }
 GBDATA *GBT_next_marked_species(GBDATA *gb_species) {
+    gb_assert(GB_has_key(gb_species, "species"));
     return GB_next_marked(gb_species,"species");
 }
 
@@ -2479,11 +2506,10 @@ GBDATA *GBT_next_species(GBDATA *gb_species) {
 }
 
 GBDATA *GBT_find_species_rel_species_data(GBDATA *gb_species_data,const char *name) {
-    GBDATA *gb_species_name = GB_find_string(gb_species_data,"name",name,GB_IGNORE_CASE,down_2_level);
-    return gb_species_name ? GB_get_father(gb_species_name) : 0;
+    return GBT_find_item_rel_item_data(gb_species_data, "name", name);
 }
-GBDATA *GBT_find_species(GBDATA *gb_main,const char *name) {
-    return GBT_find_species_rel_species_data(GBT_get_species_data(gb_main), name);
+GBDATA *GBT_find_species(GBDATA *gb_main, const char *name) {
+    return GBT_find_item_rel_item_data(GBT_get_species_data(gb_main), "name", name);
 }
 
 /* -------------------------------------------------------------------------------- */
@@ -2492,25 +2518,19 @@ GBDATA *GBT_get_SAI_data(GBDATA *gb_main) {
     return GB_search(gb_main, "extended_data", GB_CREATE_CONTAINER);
 }
 
-GBDATA *GBT_first_marked_SAI(GBDATA *gb_sai_data) {
-    GBDATA *gb_sai;
-    for (gb_sai = GB_entry(gb_sai_data,"extended");
-         gb_sai;
-         gb_sai = GB_nextEntry(gb_sai))
-    {
-        if (GB_read_flag(gb_sai)) return gb_sai;
-    }
-    return NULL;
+GBDATA *GBT_first_marked_SAI_rel_SAI_data(GBDATA *gb_sai_data) {
+    return GB_first_marked(gb_sai_data, "extended");
 }
 
 GBDATA *GBT_next_marked_SAI(GBDATA *gb_sai) {
-    while ((gb_sai = GB_nextEntry(gb_sai))) {
-        if (GB_read_flag(gb_sai)) return gb_sai;
-    }
-    return NULL;
+    gb_assert(GB_has_key(gb_sai, "extended"));
+    return GB_next_marked(gb_sai, "extended");
 }
 
 /* Search SAIs */
+GBDATA *GBT_first_SAI_rel_SAI_data(GBDATA *gb_sai_data) {
+    return GB_entry(gb_sai_data, "extended");
+}
 GBDATA *GBT_first_SAI(GBDATA *gb_main) {
     return GB_entry(GBT_get_SAI_data(gb_main),"extended");
 }
@@ -2520,30 +2540,26 @@ GBDATA *GBT_next_SAI(GBDATA *gb_sai) {
     return GB_nextEntry(gb_sai);
 }
 
-GBDATA *GBT_find_SAI(GBDATA *gb_main, const char *name) {
-    return GBT_find_species_rel_species_data(GBT_get_SAI_data(gb_main), name);
-}
-
-/* Search SAIs rel SAI data */
-GBDATA *GBT_first_SAI_rel_SAI_data(GBDATA *gb_sai_data) {
-    return GB_entry(gb_sai_data, "extended");
-}
-
 GBDATA *GBT_find_SAI_rel_SAI_data(GBDATA *gb_sai_data, const char *name) {
-    return GBT_find_species_rel_species_data(gb_sai_data, name);
+    return GBT_find_item_rel_item_data(gb_sai_data, "name", name);
+}
+GBDATA *GBT_find_SAI(GBDATA *gb_main, const char *name) {
+    return GBT_find_item_rel_item_data(GBT_get_SAI_data(gb_main), "name", name);
 }
 
 /* --------------------- */
 /*      count items      */
 
-long GBT_get_item_count(GBDATA *gb_main, const char *item_container_name) {
+long GBT_get_item_count(GBDATA *gb_parent_of_container, const char *item_container_name) {
+    // returns elements stored in a container
+
     GBDATA *gb_item_data;
     long    count = 0;
 
-    GB_push_transaction(gb_main);
-    gb_item_data = GB_entry(gb_main, item_container_name);
+    GB_push_transaction(gb_parent_of_container);
+    gb_item_data = GB_entry(gb_parent_of_container, item_container_name);
     if (gb_item_data) count = GB_number_of_subentries(gb_item_data);
-    GB_pop_transaction(gb_main);
+    GB_pop_transaction(gb_parent_of_container);
 
     return count;
 }
@@ -2558,19 +2574,78 @@ long GBT_get_SAI_count(GBDATA *gb_main) {
 
 /* -------------------------------------------------------------------------------- */
 
-char *GBT_create_unique_species_name(GBDATA *gb_main,const char *default_name){
-    GBDATA *gb_species;
-    int c = 1;
-    char *buffer;
-    gb_species = GBT_find_species(gb_main,default_name);
-    if (!gb_species) return strdup(default_name);
+char *GBT_create_unique_item_identifier(GBDATA *gb_item_container, const char *id_field, const char *default_id) {
+    // returns an identifier not used by items in 'gb_item_container'
+    // 'id_field' is the entry that is used as identifier (e.g. 'name' for species)
+    // 'default_id' will be suffixed with a number to generate a unique id
+    //
+    // Note:
+    // * The resulting id may be longer than 8 characters
+    // * This function is slow, so just use in extra-ordinary situations
 
-    buffer = (char *)GB_calloc(sizeof(char),strlen(default_name)+10);
-    while (gb_species){
-        sprintf(buffer,"%s_%i",default_name,c++);
-        gb_species = GBT_find_species(gb_main,buffer);
+    GBDATA *gb_item   = GBT_find_item_rel_item_data(gb_item_container, id_field, default_id);
+    char   *unique_id;
+
+    if (!gb_item) {
+        unique_id = strdup(default_id); // default_id is unused
     }
-    return buffer;
+    else {
+        char   *generated_id  = malloc(strlen(default_id)+20);
+        size_t  min_num = 1;
+
+#define GENERATE_ID(num) sprintf(generated_id,"%s%zi", default_id, num);
+        
+        GENERATE_ID(min_num);
+        gb_item = GBT_find_item_rel_item_data(gb_item_container, id_field, generated_id);
+
+        if (gb_item) {
+            size_t num_items = GB_number_of_subentries(gb_item_container);
+            size_t max_num   = 0;
+
+            ad_assert(num_items); // otherwise deadlock below
+
+            do {
+                max_num += num_items;
+                GENERATE_ID(max_num);
+                gb_item  = GBT_find_item_rel_item_data(gb_item_container, id_field, generated_id);
+            } while (gb_item && max_num >= num_items);
+
+            if (max_num<num_items) { // overflow
+                char *uid;
+                generated_id[0] = 'a'+GB_random(26);
+                generated_id[1] = 'a'+GB_random(26);
+                generated_id[2] = 0;
+
+                uid = GBT_create_unique_item_identifier(gb_item_container, id_field, generated_id);
+                strcpy(generated_id, uid);
+                free(uid);
+            }
+            else {
+                // max_num is unused
+                while ((max_num-min_num)>1) {
+                    size_t mid = (min_num+max_num)/2;
+                    ad_assert(mid != min_num && mid != max_num);
+
+                    GENERATE_ID(mid);
+                    gb_item = GBT_find_item_rel_item_data(gb_item_container, id_field, generated_id);
+
+                    if (gb_item) min_num = mid;
+                    else max_num = mid;
+                }
+                GENERATE_ID(max_num);
+                ad_assert(GBT_find_item_rel_item_data(gb_item_container, id_field, generated_id) == NULL);
+            }
+        }
+        unique_id = generated_id;
+
+#undef GENERATE_ID
+    }
+
+    return unique_id;
+}
+
+char *GBT_create_unique_species_name(GBDATA *gb_main, const char *default_name) {
+    return GBT_create_unique_item_identifier(GBT_get_species_data(gb_main), "name", default_name);
 }
 
 /********************************************************************************************
