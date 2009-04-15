@@ -2284,60 +2284,53 @@ GB_ERROR GBT_export_tree(GBDATA *gb_main,FILE *out,GBT_TREE *tree, GB_BOOL tripl
 ********************************************************************************************/
 
 
-GBDATA *GBT_create_item(GBDATA *gb_item_data, const char *itemname, const char *name)
-{
-    /* Search for a item with field 'name' set to given name. (name compare is case-insensitive)
-     * If item does not exist, create it. Newly created items are automatically marked.
+GBDATA *GBT_find_or_create_item_rel_item_data(GBDATA *gb_item_data, const char *itemname, const char *id_field, const char *id, GB_BOOL markCreated) {
+    /* Search for a item with field 'id_field' set to given 'id' (id compare is case-insensitive)
+     * If item does not exist, create it.
+     * Newly created items are automatically marked, if 'markCreated' is GB_TRUE
      * items may be: species, genes, SAIs, ...
      */
 
     GBDATA   *gb_item = 0;
     GB_ERROR  error   = 0;
 
-    if (gb_item_data) {
-        GBDATA *gb_name = GB_find_string(gb_item_data,"name",name,GB_IGNORE_CASE,down_2_level);
-
-        if (gb_name) { // item already exists
-            gb_item = GB_get_father(gb_name); // use it
-        }
-        else { // create a new item
-            if (strlen(name) < 2) {
-                error = GBS_global_string("name '%s' is too short", name);
-            }
-            else {
-                gb_item = GB_create_container(gb_item_data, itemname);
-                if (gb_item) {
-                    error             = GBT_write_string(gb_item, "name", name);
-                    if (!error) error = GB_write_flag(gb_item, 1);      // mark the generated item
+    if (!gb_item_data) error = "No container";
+    else {
+        gb_item = GBT_find_item_rel_item_data(gb_item_data, id_field, id);
+        if (!gb_item) {
+            error = GB_push_transaction(gb_item_data);
+            if (!error) {
+                gb_item             = GB_create_container(gb_item_data, itemname); // create a new item
+                if (!gb_item) error = GB_expect_error();
+                else {
+                    error = GBT_write_string(gb_item, id_field, id); // write item identifier
+                    if (!error && markCreated) error = GB_write_flag(gb_item, 1); // mark generated item
                 }
             }
+            error = GB_end_transaction(gb_item_data, error);
         }
     }
 
-    if (!gb_item && !error) {
-        error = GB_get_error();
-        gb_assert(error);
-    }
-
+    if (!gb_item && !error) error = GB_expect_error();
     if (error) {
         gb_item = 0;
-        GB_export_error("Can't create %s '%s': %s", itemname, name, error);
+        GB_export_error("Can't create %s '%s': %s", itemname, id, error);
     }
 
     return gb_item;
 }
 
-GBDATA *GBT_create_species_rel_species_data(GBDATA *gb_species_data, const char *name) {
-    return GBT_create_item(gb_species_data, "species", name);
+GBDATA *GBT_find_or_create_species_rel_species_data(GBDATA *gb_species_data, const char *name) {
+    return GBT_find_or_create_item_rel_item_data(gb_species_data, "species", "name", name, GB_TRUE);
 }
 
-GBDATA *GBT_create_species(GBDATA *gb_main, const char *name) {
-    return GBT_create_species_rel_species_data(GBT_get_species_data(gb_main), name);
+GBDATA *GBT_find_or_create_species(GBDATA *gb_main, const char *name) {
+    return GBT_find_or_create_species_rel_species_data(GBT_get_species_data(gb_main), name);
 }
 
-GBDATA *GBT_create_SAI(GBDATA *gb_main,const char *name) {
+GBDATA *GBT_find_or_create_SAI(GBDATA *gb_main,const char *name) {
     /* Search for an SAI, when SAI does not exist, create it */
-    return GBT_create_item(GBT_get_SAI_data(gb_main), "extended", name);
+    return GBT_find_or_create_item_rel_item_data(GBT_get_SAI_data(gb_main), "extended", "name", name, GB_TRUE);
 }
 
 #if defined(DEVEL_RALF)

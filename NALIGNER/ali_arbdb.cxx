@@ -156,7 +156,7 @@ int ALI_ARBDB::put_sequence(char *name, ALI_SEQUENCE *sequence) {
 int ALI_ARBDB::put_SAI(const char *name, char *sequence) {
     GB_change_my_security(gb_main,6,"passwd");
 
-    GBDATA *gb_extended = GBT_create_SAI(gb_main,name);
+    GBDATA *gb_extended = GBT_find_or_create_SAI(gb_main,name);
     GBDATA *gb_data     = GBT_add_data(gb_extended,alignment,"data",GB_STRING);
     GB_write_string(gb_data,sequence);
     

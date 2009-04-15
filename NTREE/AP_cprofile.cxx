@@ -1403,7 +1403,7 @@ void CPRO_condense_cb( AW_window *aw,AW_CL which_statistic )
 
     GB_begin_transaction(GLOBAL_gb_main);
 
-    GBDATA *gb_extended = GBT_create_SAI(GLOBAL_gb_main,savename);
+    GBDATA *gb_extended = GBT_find_or_create_SAI(GLOBAL_gb_main,savename);
 
     GBDATA *gb_param;
     const char *typestring = GBS_global_string("RATES BY DISTANCE:  [%s] [UPPER_CASE%% %li]"

@@ -1933,7 +1933,7 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
 
             if (!error) {
                 if (creation_mode==CREATE_NEW_SPECIES) {
-                    GBDATA *gb_created_species = GBT_create_species(GLOBAL_gb_main, new_species_name);
+                    GBDATA *gb_created_species = GBT_find_or_create_species(GLOBAL_gb_main, new_species_name);
                     if (!gb_created_species) {
                         error = GB_export_error("Failed to create new species '%s'", new_species_name);
                     }

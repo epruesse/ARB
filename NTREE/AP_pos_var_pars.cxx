@@ -194,7 +194,7 @@ char *AP_pos_var::save_sai( char *sai_name ){
     int i,j;
 
 
-    GBDATA *gb_extended = GBT_create_SAI(gb_main,sai_name);
+    GBDATA *gb_extended = GBT_find_or_create_SAI(gb_main,sai_name);
 
 
     {   sprintf(buffer,"%s/_TYPE",ali_name);

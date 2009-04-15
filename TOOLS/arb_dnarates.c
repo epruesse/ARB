@@ -1817,7 +1817,7 @@ void writeToArb(){
 
 
     sprintf(type_info, "PVML: Positional Variability by ML (Olsen)");
-    gb_sai = GBT_create_SAI(gb_main,sai_name);
+    gb_sai = GBT_find_or_create_SAI(gb_main,sai_name);
     if (!gb_sai){
         GB_print_error();
     }else{

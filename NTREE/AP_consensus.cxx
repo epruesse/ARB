@@ -405,7 +405,7 @@ GB_ERROR CON_export(char *savename,char *align,int **statistic,char *result,int 
     char *buffer=(char *)GB_calloc(2000,sizeof(char));
 //     GB_push_transaction(GLOBAL_gb_main);
 
-    GBDATA *gb_extended = GBT_create_SAI(GLOBAL_gb_main,savename);
+    GBDATA *gb_extended = GBT_find_or_create_SAI(GLOBAL_gb_main,savename);
     GBDATA *gb_data = GBT_add_data(gb_extended, align,"data", GB_STRING);
     err = GB_write_string(gb_data,result);
     GBDATA *gb_options= GBT_add_data(gb_extended, align,"_TYPE", GB_STRING);
@@ -963,7 +963,7 @@ void CON_calc_max_freq_cb(AW_window *aw){
     }
 
     char   *savename    = awr->awar(AWAR_MAX_FREQ_SAI_NAME)->read_string();
-    GBDATA *gb_extended = GBT_create_SAI(GLOBAL_gb_main,savename);
+    GBDATA *gb_extended = GBT_find_or_create_SAI(GLOBAL_gb_main,savename);
     free(savename);
     GBDATA *gb_data     = GBT_add_data(gb_extended, align,"data", GB_STRING);
     GBDATA *gb_data2    = GBT_add_data(gb_extended, align,"dat2", GB_STRING);
