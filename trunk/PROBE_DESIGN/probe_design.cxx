@@ -309,7 +309,7 @@ GB_ERROR pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
             long CheckSum;
             {
                 char *gene_seq       = GBT_read_gene_sequence(gb_gene, GB_FALSE, 0);
-                if (!gene_seq) error = GB_expect_error();
+                if (!gene_seq) error = GB_await_error();
                 else {
                     CheckSum = GBS_checksum(gene_seq, 1, ".-");
                     free(gene_seq);

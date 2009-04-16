@@ -770,7 +770,7 @@ static GB_ERROR gbt_insert_character_gbd(GBDATA *gb_data, enum insDelTarget targ
                     }
 
                     if (!error) {
-                        if (!source) error = GB_expect_error();
+                        if (!source) error = GB_await_error();
                         else {
                             long    modified_len;
                             GB_CSTR modified = gbt_insert_delete(source, size, params->ali_len, &modified_len, pos, nchar, mod, insert_what, insert_tail, extraByte);
@@ -2301,7 +2301,7 @@ GBDATA *GBT_find_or_create_item_rel_item_data(GBDATA *gb_item_data, const char *
             error = GB_push_transaction(gb_item_data);
             if (!error) {
                 gb_item             = GB_create_container(gb_item_data, itemname); // create a new item
-                if (!gb_item) error = GB_expect_error();
+                if (!gb_item) error = GB_await_error();
                 else {
                     error = GBT_write_string(gb_item, id_field, id); // write item identifier
                     if (!error && markCreated) error = GB_write_flag(gb_item, 1); // mark generated item
@@ -2311,7 +2311,7 @@ GBDATA *GBT_find_or_create_item_rel_item_data(GBDATA *gb_item_data, const char *
         }
     }
 
-    if (!gb_item && !error) error = GB_expect_error();
+    if (!gb_item && !error) error = GB_await_error();
     if (error) {
         gb_item = 0;
         GB_export_error("Can't create %s '%s': %s", itemname, id, error);

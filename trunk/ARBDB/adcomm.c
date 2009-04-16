@@ -137,7 +137,7 @@ void *gbcms_sighup(void){
         fprintf(stderr,
                 "- Could not read '%s' (Reason: %s)\n"
                 "[maybe retry]\n",
-                panic_file, GB_expect_error());
+                panic_file, GB_await_error());
     }
     else {
         char *newline           = strchr(db_panic, '\n');

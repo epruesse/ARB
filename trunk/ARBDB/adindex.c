@@ -73,7 +73,7 @@ void gb_index_check_out(GBDATA *gbd) {
             GB_CSTR data = GB_read_char_pntr(gbd);
 
             if (!data) {
-                error = GBS_global_string("can't read key value (%s)", GB_expect_error());
+                error = GBS_global_string("can't read key value (%s)", GB_await_error());
             }
             else {
                 unsigned long index;

@@ -23,7 +23,7 @@ static GB_ERROR create_n_write(GBDATA *gb_father, const char *field, const char 
     GBDATA   *gbd   = GB_create(gb_father, field, GB_STRING);
     
     if (!gbd) {
-        error = GB_expect_error();
+        error = GB_await_error();
     }
     else {
         error = GB_write_string(gbd, content);
@@ -42,7 +42,7 @@ static GB_ERROR find_n_print(GBDATA *gb_father, const char *field) {
     else {
         char *content = GB_read_string(gbd);
         if (!content) {
-            error = GB_expect_error();
+            error = GB_await_error();
         }
         else {
             printf("field '%s' has content '%s'\n", field, content);
@@ -89,7 +89,7 @@ static GB_ERROR dump_key_data(GBDATA *gb_main) {
                     char *name = GB_read_string(gb_name);
 
                     if (!name) {
-                        error = GB_expect_error();
+                        error = GB_await_error();
                     }
                     else {
                         GBDATA *gb_cm = GB_entry(gb_key, "compression_mask");
@@ -119,7 +119,7 @@ static GB_ERROR create_db(const char *filename) {
     GB_ERROR  error   = 0;
     GBDATA   *gb_main = GB_open(filename, "wc");
 
-    if (!gb_main) error = GB_expect_error();
+    if (!gb_main) error = GB_await_error();
 
     // write two fields with same case
     if (!error) {
@@ -145,7 +145,7 @@ static GB_ERROR test_db(const char *filename) {
     GB_ERROR  error   = 0;
     GBDATA   *gb_main = GB_open(filename, "r");
 
-    if (!gb_main) error = GB_expect_error();
+    if (!gb_main) error = GB_await_error();
     if (!error) error   = dump_fields(gb_main);
     if (!error) error   = dump_key_data(gb_main);
     

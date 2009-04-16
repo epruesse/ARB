@@ -72,7 +72,7 @@ static void copy_SAI_cb(AW_window *aww) {
                     if (gb_dest_exists) error = GBS_global_string("There is already a SAI named '%s'", dest_name);
                     else {
                         GBDATA *gb_dest     = GB_create_container(gb_sai_data, "extended");
-                        if (!gb_dest) error = GB_expect_error();
+                        if (!gb_dest) error = GB_await_error();
                         else {
                             error             = GB_copy(gb_dest, gb_source);
                             if (!error) {
@@ -115,7 +115,7 @@ static void copy_SAI_to_species_cb(AW_window *aww) {
                     if (!gb_sai) error = GBS_global_string("SAI '%s' not found", sai_name);
                     else {
                         gb_dest             = GB_create_container(gb_species_data, "species");
-                        if (!gb_dest) error = GB_expect_error();
+                        if (!gb_dest) error = GB_await_error();
                         else {
                             error = GB_copy(gb_dest, gb_sai);
                             if (!error) {

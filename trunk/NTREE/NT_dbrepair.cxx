@@ -613,7 +613,7 @@ static GB_ERROR findAffectedKeys(GBDATA *gb_key_data, KeyCounter& kcount, Keys& 
             const char *keyName = GB_read_char_pntr(gb_name);
 
             if (!keyName) {
-                error = GBS_global_string("@key w/o @name (%s)", GB_expect_error());
+                error = GBS_global_string("@key w/o @name (%s)", GB_await_error());
             }
             else {
                 char *keyGroup = strdup(keyName);

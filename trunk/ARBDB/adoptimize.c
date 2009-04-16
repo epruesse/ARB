@@ -230,7 +230,7 @@ static GB_ERROR gb_convert_compression(GBDATA *source) {
 
         if (!string) {
             if (expectData) {
-                error = GBS_global_string("Can't read old data to convert compression (Reason: %s)", GB_expect_error());
+                error = GBS_global_string("Can't read old data to convert compression (Reason: %s)", GB_await_error());
             }
         }
         else {

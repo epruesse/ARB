@@ -299,7 +299,7 @@ public:
     PosGene(GBDATA *gb_gene) : gb_Gene(gb_gene) {
         GEN_position *pp = GEN_read_position(gb_gene);
         if (!pp) {
-            throw GBS_global_string("Can't read gene position (Reason: %s)", GB_expect_error());
+            throw GBS_global_string("Can't read gene position (Reason: %s)", GB_await_error());
         }
         pos = pp;
     }

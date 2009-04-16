@@ -130,7 +130,7 @@ static GB_ERROR awtc_read_export_format(export_format *efo, const char *file, bo
                 // Join lines that end with \ with next line.
                 // Replace ' = ' and ':' by '\=' and '\:'
                 efo->form  = GBS_string_eval(form, "\\\\\n=:\\==\\\\\\=:*=\\*\\=*1:\\:=\\\\\\:", 0);
-                if (!efo->form) error = GB_failedTo_error("evaluate part below 'BEGIN'", NULL, GB_expect_error());
+                if (!efo->form) error = GB_failedTo_error("evaluate part below 'BEGIN'", NULL, GB_await_error());
                 free(form);
             }
 
@@ -539,7 +539,7 @@ static GB_ERROR AWTI_export_format(AW_root *aw_root, const char *formname, const
     if (!error) {
         if (!outname) { // if no 'outname' is given -> export to temporary file
             *resulting_outname = GB_create_tempfile(GB_unique_filename("exported", efo.suffix));
-            if (!*resulting_outname) error = GB_expect_error();
+            if (!*resulting_outname) error = GB_await_error();
         }
         else *resulting_outname = strdup(outname);
     }
