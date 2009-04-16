@@ -527,8 +527,11 @@ static void awtc_write_entry(GBDATA *gbd,const char *key,char *str,const char *t
     if (!gbd) return;
     while (str[0] == ' '|| str[0] == '\t'|| str[0] == '|') str++;
     len = strlen(str) -1;
-    while (len >=0 && (
-                       str[len] == ' '|| str[len] == '\t'|| str[len] == '|' || str[len] == 13)) len--;
+    while (len >=0 &&
+           (str[len] == ' ' || str[len] == '\t' || str[len] == '|' || str[len] == 13))
+    {
+        len--;
+    }
     str[len+1] = 0;
     if (!str[0]) return;
 
@@ -545,12 +548,14 @@ static void awtc_write_entry(GBDATA *gbd,const char *key,char *str,const char *t
             char *val = GBS_strclose(s);
             GB_write_string(gbk,val);
             free(val);
-        }else{
+        }
+        else {
             if (!strcmp(key,"name")){
                 char *nstr = GBT_create_unique_species_name(awtcig.gb_main,str);
                 GB_write_string(gbk,nstr);
                 free(nstr);
-            }else{
+            }
+            else {
                 GB_write_string(gbk,str);
             }
         }

@@ -9,7 +9,7 @@
  /*                                                                  */
  /* ================================================================ */
 
-#include "arbdb.h"
+#include "arbdbt.h"
 
 GBDATA* EXP_get_experiment_data(GBDATA *gb_species) {
     return GB_search(gb_species, "experiment_data", GB_CREATE_CONTAINER);
@@ -22,7 +22,6 @@ GBDATA* EXP_find_experiment(GBDATA *gb_species, const char *name) {
     // find existing experiment
     return EXP_find_experiment_rel_exp_data(EXP_get_experiment_data(gb_species), name);
 }
-
 
 GBDATA* EXP_first_experiment_rel_exp_data(GBDATA *gb_experiment_data) {
     return GB_entry(gb_experiment_data, "experiment");

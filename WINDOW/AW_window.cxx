@@ -3558,7 +3558,7 @@ GB_ERROR AW_root::check_for_remote_command(AW_default gb_maind, const char *rm_b
             error = this->awar(tmp_awar)->write_as_string(value);
         }
         GBT_write_string(gb_main, awar_result, error ? error : "");
-        GBT_write_string(gb_main, awar_awar, ""); // this works as READY-signal for perl-client (remote_awar and remote_read_awar)
+        GBT_write_string(gb_main, awar_awar, ""); // this works as READY-signal for perl-client (BIO::remote_awar and BIO:remote_read_awar)
     }
     GB_pop_transaction(gb_main);
 

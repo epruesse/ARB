@@ -120,50 +120,48 @@ void NT_importValidNames(AW_window*, AW_CL, AW_CL) {
 
         }
         // continue here with database interaction
+        GB_ERROR error        = GB_begin_transaction(GLOBAL_gb_main);
+        GBDATA*  gb_namesCont = GB_entry(GLOBAL_gb_main, "VALID_NAMES");
 
-        GBDATA* namesCont;
-        GBDATA* pair;
-        GBDATA* oldName;
-        GBDATA* newName;
-        GBDATA* descType;
-        DescList::iterator di;
-        const char* typeStr;
-        GB_begin_transaction(GLOBAL_gb_main);
-        namesCont = GB_entry(GLOBAL_gb_main, "VALID_NAMES");
-        if(namesCont != NULL){
-            aw_message("Container for Valid Names already exists\n Please delete old Valid Names first");
+        if (gb_namesCont != NULL) {
+            error = "Container for Valid Names already exists\n Please delete old Valid Names first";
         }
         else {
-            namesCont = GB_create_container(GLOBAL_gb_main, "VALID_NAMES");
-            for ( di = myDescs.begin(); di != myDescs.end(); di++){
-                if((*di).getType() < 10){
-                    pair = GB_create_container(namesCont,"pair");
-                    
-                    oldName = GB_create(pair, "OLDNAME", GB_STRING);
-                    GB_write_string(oldName, ((*di).getSecondName()).c_str());
-
-                    newName = GB_create(pair, "NEWNAME", GB_STRING);
-                    GB_write_string(newName, ((*di).getFirstName()).c_str());
-
-                    descType = GB_create(pair, "DESCTYPE", GB_STRING);
-                    switch((*di).getType()) {
-                        case 0: typeStr = "VALGEN"; break;
-                        case 1: typeStr = "HETGEN"; break;
-                        case 2: typeStr = "HOMGEN"; break;
-                        case 3: typeStr = "RENGEN"; break;
-                        case 4: typeStr = "CORGEN"; break;
-                        case 5: typeStr = "VALSPEC"; break;
-                        case 6: typeStr = "HETSPEC"; break;
-                        case 7: typeStr = "HOMSPEC"; break;
-                        case 8: typeStr = "RENSPEC"; break;
-                        case 9: typeStr = "CORSPEC"; break;
-                        default: typeStr = "NOTYPE"; break;
+            gb_namesCont             = GB_create_container(GLOBAL_gb_main, "VALID_NAMES");
+            if (!gb_namesCont) error = GB_await_error();
+            else {
+                DescList::iterator di;
+                for ( di = myDescs.begin(); di != myDescs.end() && !error; di++){
+                    if(di->getType() < 10){
+                        GBDATA* gb_pair     = GB_create_container(gb_namesCont, "pair");
+                        if (!gb_pair) error = GB_await_error();
+                        else {
+                            error             = GBT_write_string(gb_pair, "OLDNAME", di->getSecondName().c_str());
+                            if (!error) error = GBT_write_string(gb_pair, "NEWNAME", di->getFirstName().c_str());
+                            if (!error) {
+                                const char* typeStr  = 0;
+                                switch (di->getType()) {
+                                    case 0: typeStr = "VALGEN"; break;
+                                    case 1: typeStr = "HETGEN"; break;
+                                    case 2: typeStr = "HOMGEN"; break;
+                                    case 3: typeStr = "RENGEN"; break;
+                                    case 4: typeStr = "CORGEN"; break;
+                                    case 5: typeStr = "VALSPEC"; break;
+                                    case 6: typeStr = "HETSPEC"; break;
+                                    case 7: typeStr = "HOMSPEC"; break;
+                                    case 8: typeStr = "RENSPEC"; break;
+                                    case 9: typeStr = "CORSPEC"; break;
+                                    default: nt_assert(0); break;
+                                }
+                                error = GBT_write_string(gb_pair, "DESCTYPE", typeStr);
+                            }
+                        }
                     }
-                    GB_write_string(descType, typeStr);
                 }
             }
         }
-        GB_commit_transaction(GLOBAL_gb_main);
+        error = GB_end_transaction(GLOBAL_gb_main, error);
+        if (error) aw_message(error);
     }
     catch (string& err) { aw_message(err.c_str()); }
     catch (...) { aw_message("Unknown exception"); }
@@ -174,69 +172,56 @@ void NT_suggestValidNames(AW_window*, AW_CL, AW_CL) {
     vector<string> speciesNames;
     GB_begin_transaction(GLOBAL_gb_main);
 
-    GBDATA*  GB_validNamesCont = GB_entry(GLOBAL_gb_main, "VALID_NAMES");
+    GBDATA*  gb_validNamesCont = GB_entry(GLOBAL_gb_main, "VALID_NAMES");
     GB_ERROR err               = 0;
 
-    if (!GB_validNamesCont) err = "No valid names imported yet";
+    if (!gb_validNamesCont) err = "No valid names imported yet";
 
-    for (GBDATA *GBT_species=GBT_first_species(GLOBAL_gb_main);
-         !err && GBT_species;
-         GBT_species=GBT_next_species(GBT_species)){
+    for (GBDATA *gb_species = GBT_first_species(GLOBAL_gb_main);
+         !err && gb_species;
+         gb_species = GBT_next_species(gb_species))
+    {
         // retrieve species names
-        GBDATA* GBT_fullName = GB_entry(GBT_species,"full_name"); // gb_fullname
-        char *fullName =  GBT_fullName ? GB_read_string(GBT_fullName) : 0;
-        if (!fullName) err = "Species has no fullname";
+        GBDATA*  gb_fullName = GB_entry(gb_species,"full_name"); // gb_fullname
+        char    *fullName     = gb_fullName ? GB_read_string(gb_fullName) : 0;
+        if (!fullName) err    = "Species has no fullname";
 
         // search validNames
 
-        for (GBDATA *GB_validNamePair = GB_entry(GB_validNamesCont, "pair");
-             GB_validNamePair && !err;
-             GB_validNamePair = GB_nextEntry(GB_validNamePair))
+        for (GBDATA *gb_validNamePair = GB_entry(gb_validNamesCont, "pair");
+             gb_validNamePair && !err;
+             gb_validNamePair = GB_nextEntry(gb_validNamePair))
         {
             // retrieve list of all species names
 
-            GBDATA* actDesc = GB_entry(GB_validNamePair, "DESCTYPE");
-            char* typeString = GB_read_string(actDesc);
-            if (strcmp(typeString, "NOTYPE") != 0){
-                GBDATA* newName = GB_entry(GB_validNamePair, "NEWNAME");
-                char* validName = newName ? GB_read_string(newName) : 0;
-                GBDATA* oldName = GB_entry(GB_validNamePair, "OLDNAME");
-                if (!oldName) { std::cout << "oldName not found" << std:: cout; return; }
-                char* depName = GB_read_string(oldName);
-                if (!depName){std::cout << "deprecatedName not found" << std:: cout; return; }
-                //           printf ("%s\n",  validName);
+            GBDATA* gb_actDesc = GB_entry(gb_validNamePair, "DESCTYPE");
+            char*   typeString = GB_read_string(gb_actDesc);
 
-                if (!validName || !depName) {
-                    err = GBS_global_string("Invalid names entry for %s",fullName);
-                }
+            nt_assert(strcmp(typeString, "NOTYPE") != 0);
 
+            char *validName = GBT_read_string(gb_validNamePair, "NEWNAME");
+            char *depName   = GBT_read_string(gb_validNamePair, "OLDNAME");
+
+            if (!validName || !depName) err = GB_await_error();
+            else {
                 // now compare all names
                 if(!err && ( (strcmp(fullName, validName) == 0)||(strcmp(fullName, depName) == 0))) {
-                    //insert new database fields if necessary
-
-                    GBDATA* GB_speciesValidNameCont = GB_entry(GBT_species,"Valid_Name");
-                    if (GB_speciesValidNameCont == 0){GB_speciesValidNameCont = GB_create_container(GBT_species, "Valid_Name");}
-
-                    GBDATA* GB_speciesValidName = GB_entry(GB_speciesValidNameCont, "NameString");
-                    if (GB_speciesValidName == 0){GB_speciesValidName = GB_create(GB_speciesValidNameCont, "NameString", GB_STRING);}
-                    GB_write_string(GB_speciesValidName, validName);
-
-                    GBDATA* GB_speciesDescType = GB_entry(GB_speciesValidNameCont, "DescType");
-                    if (GB_speciesDescType == 0){GB_speciesDescType = GB_create(GB_speciesValidNameCont, "DescType", GB_STRING);}
-                    GB_write_string(GB_speciesDescType, typeString);
-
-                    if(strcmp(fullName, validName) == 0){std::cout << "validspeciesname found" << std::endl;}
-                    if(strcmp(fullName, depName) == 0){std::cout << "depspeciesname found" << std::endl;}
+                    // insert new database fields if necessary
+                    GBDATA* gb_validNameCont   = GB_search(gb_species, "Valid_Name", GB_CREATE_CONTAINER);
+                    if (!gb_validNameCont) err = GB_await_error();
+                    else {
+                        err           = GBT_write_string(gb_validNameCont, "NameString", validName);
+                        if (!err) err = GBT_write_string(gb_validNameCont, "DescType", typeString);
+                    }
                 }
-
-                free (validName);
-                free (depName);
-
             }
-            free (typeString);
+                
+            free(validName);
+            free(depName);
+            free(typeString);
         }
 
-        free (fullName);
+        free(fullName);
     }
 
     GB_end_transaction_show_error(GLOBAL_gb_main, err, aw_message);

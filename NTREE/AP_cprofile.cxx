@@ -1111,7 +1111,8 @@ void CPRO_savestatistic_cb(AW_window *aw,AW_CL which_statistic)
         error = "no filename";
     }
     else {
-        if (!(CPRO.result[which_statistic].statisticexists)) {
+        const CPRO_result_struct& curr_stat = CPRO.result[which_statistic];
+        if (!(curr_stat.statisticexists)) {
             error = "calculate first!";
         }
         else {
@@ -1122,54 +1123,35 @@ void CPRO_savestatistic_cb(AW_window *aw,AW_CL which_statistic)
             }
             else {
                 error = GB_begin_transaction(newbase);
+
+                if (!error) error = GBT_write_int   (newbase, "cpro_resolution",    curr_stat.resolution);
+                if (!error) error = GBT_write_int   (newbase, "cpro_maxalignlen",   curr_stat.maxalignlen);
+                if (!error) error = GBT_write_int   (newbase, "cpro_maxaccu",       curr_stat.maxaccu);
+                if (!error) error = GBT_write_int   (newbase, "cpro_memneeded",     curr_stat.memneeded);
+                if (!error) error = GBT_write_string(newbase, "cpro_alignname",     curr_stat.alignname);
+                if (!error) error = GBT_write_string(newbase, "cpro_which_species", curr_stat.which_species);
+                if (!error) error = GBT_write_float (newbase, "cpro_ratio",         curr_stat.ratio);
+                if (!error) error = GBT_write_int   (newbase, "cpro_gaps",          curr_stat.countgaps);
+
                 if (!error) {
-                    // @@@ FIXME: fix error handling for single writes 
-                    GBDATA *gb_param = GB_create(newbase,"cpro_resolution",GB_INT);
-                    GB_write_int(gb_param,CPRO.result[which_statistic].resolution);
+                    long maxalignlen = curr_stat.maxalignlen;
 
-                    gb_param = GB_create(newbase,"cpro_maxalignlen",GB_INT);
-                    GB_write_int(gb_param,CPRO.result[which_statistic].maxalignlen);
+                    for (long column = 0; column<curr_stat.resolution && !error; column++) {
+                        GBDATA   *gb_colrescontainer = GB_create_container(newbase,"column");
+                        GBDATA   *gb_colentry;
+                        GB_UINT4 *pointer;
 
-                    gb_param = GB_create(newbase,"cpro_maxaccu",GB_INT);
-                    GB_write_int(gb_param,CPRO.result[which_statistic].maxaccu);
-
-                    gb_param = GB_create(newbase,"cpro_memneeded",GB_INT);
-                    GB_write_int(gb_param,CPRO.result[which_statistic].memneeded);
-
-                    gb_param = GB_create(newbase,"cpro_alignname",GB_STRING);
-                    GB_write_string(gb_param,CPRO.result[which_statistic].alignname);
-
-                    gb_param = GB_create(newbase,"cpro_which_species",GB_STRING);
-                    GB_write_string(gb_param,CPRO.result[which_statistic].which_species);
-
-                    gb_param = GB_create(newbase,"cpro_ratio",GB_FLOAT);
-                    GB_write_float(gb_param,CPRO.result[which_statistic].ratio);
-                    
-                    gb_param = GB_create(newbase,"cpro_gaps",GB_INT);
-                    GB_write_int(gb_param,CPRO.result[which_statistic].countgaps);
-
-                    long maxalignlen = CPRO.result[which_statistic].maxalignlen;
-
-                    GBDATA   *gb_colrescontainer;
-                    GBDATA   *gb_colentry;
-                    GB_UINT4 *pointer;
-                    for (long column = 0;column<CPRO.result[which_statistic].resolution;column++)
-                    {
-                        gb_colrescontainer=GB_create_container(newbase,"column");
-                        if( (pointer=CPRO.result[which_statistic].statistic[column*3+0]) )
-                        {
-                            gb_colentry=GB_create(gb_colrescontainer,"equal",GB_INTS);
-                            GB_write_ints(gb_colentry,pointer,maxalignlen);
+                        if (!error && (pointer = curr_stat.statistic[column*3+0])) {
+                            gb_colentry = GB_create(gb_colrescontainer, "equal", GB_INTS);
+                            error       = GB_write_ints(gb_colentry, pointer, maxalignlen);
                         }
-                        if( (pointer=CPRO.result[which_statistic].statistic[column*3+1]))
-                        {
-                            gb_colentry=GB_create(gb_colrescontainer,"group",GB_INTS);
-                            GB_write_ints(gb_colentry,pointer,maxalignlen);
+                        if (!error && (pointer = curr_stat.statistic[column*3+1])) {
+                            gb_colentry = GB_create(gb_colrescontainer, "group", GB_INTS);
+                            error       = GB_write_ints(gb_colentry, pointer, maxalignlen);
                         }
-                        if( (pointer=CPRO.result[which_statistic].statistic[column*3+2]))
-                        {
-                            gb_colentry=GB_create(gb_colrescontainer,"different",GB_INTS);
-                            GB_write_ints(gb_colentry,pointer,maxalignlen);
+                        if (!error && (pointer = curr_stat.statistic[column*3+2])) {
+                            gb_colentry = GB_create(gb_colrescontainer, "different", GB_INTS);
+                            error       = GB_write_ints(gb_colentry, pointer, maxalignlen);
                         }
                     }
                 }

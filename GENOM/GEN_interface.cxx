@@ -410,11 +410,7 @@ void gene_copy_cb(AW_window *aww){
                 if (!gb_dest) error = GB_get_error();
                 else error          = GB_copy(gb_dest, gb_source);
 
-                if (!error) {
-                    GBDATA *gb_name     = GB_search(gb_dest,"name",GB_STRING);
-                    if (!gb_name) error = GB_get_error();
-                    else    error       = GB_write_string(gb_name,dest);
-                }
+                if (!error) error = GBT_write_string(gb_dest, "name", dest);
                 if (!error) aww->get_root()->awar(AWAR_GENE_NAME)->write_string(dest);
             }
         }
@@ -462,16 +458,12 @@ void gene_create_cb(AW_window *aww){
     GBDATA   *gb_gene_data = GEN_get_current_gene_data(GLOBAL_gb_main, aw_root);
     GBDATA   *gb_dest      = GEN_find_gene_rel_gene_data(gb_gene_data, dest);
 
-    if (!gb_gene_data) error  = "Please select a species first";
-    else if (gb_dest) error   = GBS_global_string("Gene '%s' already exists", dest);
+    if (!gb_gene_data) error = "Please select a species first";
+    else if (gb_dest) error  = GBS_global_string("Gene '%s' already exists", dest);
     else {
-        GB_ERROR pos_error = 0;
-        if (pos1<1 || pos2<1) {
-            pos_error = "positions have to be above zero";
-        }
-        else if (pos2<pos1) {
-            pos_error = "endpos has to be greater than startpos";
-        }
+        GB_ERROR pos_error              = 0;
+        if (pos1<1 || pos2<1) pos_error = "positions have to be above zero";
+        else if (pos2<pos1) pos_error   = "endpos has to be greater or equal to startpos";
         else {
             GBDATA *gb_organism   = GB_get_father(gb_gene_data);
             GBDATA *gb_genome     = GBT_read_sequence(gb_organism, GENOM_ALIGNMENT);
@@ -487,26 +479,14 @@ void gene_create_cb(AW_window *aww){
         }
         else {
             gb_dest = GEN_find_or_create_gene_rel_gene_data(gb_gene_data, dest);
-            if (gb_dest) {
-                GBDATA *gb_pos     = GB_create(gb_dest, "pos_begin", GB_INT);
-                if (!gb_pos) error = GB_get_error();
-                else    GB_write_int(gb_pos, pos1);
 
-                if (!error) {
-                    gb_pos             = GB_create(gb_dest, "pos_end", GB_INT);
-                    if (!gb_pos) error = GB_get_error();
-                    else GB_write_int(gb_pos, pos2);
-                }
-
-                if (!error) {
-                    GBDATA *gb_compl     = GB_create(gb_dest, "complement", GB_BYTE);
-                    if (!gb_compl) error = GB_get_error();
-                    else    GB_write_byte(gb_compl, complement);
-                }
-            }
+            if (!gb_dest) error = GB_get_error();
             else {
-                error = GB_get_error();
+                error = GBT_write_int(gb_dest, "pos_start", pos1);
+                if (!error) error = GBT_write_int(gb_dest, "pos_stop", pos2);
+                if (!error) error = GBT_write_byte(gb_dest, "complement", complement);
             }
+
             if (!error) aww->get_root()->awar(AWAR_GENE_NAME)->write_string(dest);
         }
     }

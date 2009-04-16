@@ -26,7 +26,7 @@ class SEC_structure_toggler {
     int          Count;
 
     int  current();
-    void set_current(int idx);
+    GB_ERROR set_current(int idx) __ATTR__USERESULT;
     
     GBDATA *find(int num);
     GBDATA *create(const char *name); // create new structure (storing current)

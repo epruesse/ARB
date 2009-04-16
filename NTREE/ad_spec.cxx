@@ -157,16 +157,15 @@ void create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL) {
                         char   *key          = GB_read_key(gb_species_field);
                         GBDATA *gb_sai_field = GB_search(gb_sai, GB_read_key(gb_species_field), GB_read_type(gb_species_field));
 
-                        if (!strcmp(key, "name")) { // write the new name
+                        if (strcmp(key, "name") == 0) { // write the new name
                             error = GB_write_string(gb_sai_field, sai_name);
                         }
-                        else if (!strcmp(key, "sec_struct")) { // write contents from the field "sec_struct" to the alignment data
-                            GBDATA *gb_sai_ali = GB_search(gb_sai, ali_name, GB_CREATE_CONTAINER);
-                            GBDATA *gb_data    = GB_search(gb_sai_ali, "data", GB_STRING);
-
-                            error = GB_write_string(gb_data, sec_struct);
+                        else if (strcmp(key, "sec_struct") == 0) { // write contents from the field "sec_struct" to the alignment data
+                            GBDATA *gb_sai_ali     = GB_search(gb_sai, ali_name, GB_CREATE_CONTAINER);
+                            if (!gb_sai_ali) error = GB_await_error();
+                            else    error          = GBT_write_string(gb_sai_ali, "data", sec_struct);
                         }
-                        else if (strcmp(key, "acc") && strcmp(key, ali_name)) { // don't copy "acc" and the old alignment data
+                        else if (strcmp(key, "acc") != 0 && strcmp(key, ali_name) != 0) { // don't copy "acc" and the old alignment data
                             error = GB_copy(gb_sai_field, gb_species_field);
                         }
                         gb_species_field = GB_nextChild(gb_species_field);
@@ -272,6 +271,7 @@ static void ad_species_copy_cb(AW_window *aww, AW_CL, AW_CL) {
     AW_root *aw_root    = aww->get_root();
     char    *name;
     GBDATA  *gb_species = expect_species_selected(aw_root, &name);
+
     if (gb_species) {
         GB_transaction  ta(GLOBAL_gb_main);
         GBDATA         *gb_species_data = GB_get_father(gb_species);
@@ -286,9 +286,7 @@ static void ad_species_copy_cb(AW_window *aww, AW_CL, AW_CL) {
         else {
             error = GB_copy(gb_new_species, gb_species);
             if (!error) {
-                GBDATA *gb_name = GB_search(gb_new_species,"name",GB_STRING);
-                error           = GB_write_string(gb_name, copy_name);
-                
+                error = GBT_write_string(gb_new_species, "name", copy_name);
                 if (!error) aw_root->awar(AWAR_SPECIES_NAME)->write_string(copy_name); // set focus
             }
         }
@@ -573,22 +571,14 @@ static void ad_hide_field(AW_window *aws, AW_CL cl_cbs, AW_CL cl_hide) {
         const ad_item_selector *selector  = cbs->selector;
         GBDATA                 *gb_source = awt_get_key(GLOBAL_gb_main, source, selector->change_key_path);
 
-        if (!gb_source) {
-            error = "Please select the field you want to (un)hide";
-        }
-        else {
-            GBDATA *gb_hidden     = GB_search(gb_source, CHANGEKEY_HIDDEN, GB_INT);
-            if (!gb_hidden) error = GB_get_error();
-            else    error         = GB_write_int(gb_hidden, (int)cl_hide);
-        }
+        if (!gb_source) error = "Please select the field you want to (un)hide";
+        else error            = GBT_write_int(gb_source, CHANGEKEY_HIDDEN, int(cl_hide));
+        
         free(source);
     }
     GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
     if (!error) aws->move_selection(cbs->id, AWAR_FIELD_DELETE, 1);
 }
-
-
-
 
 static void ad_field_delete(AW_window *aws, AW_CL cl_cbs) {
     GB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);

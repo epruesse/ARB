@@ -31,11 +31,7 @@ static GB_ERROR writeHistory(GBDATA *gb_species, const char *stamp, const char *
     GB_ERROR  error      = 0;
     GBDATA   *gb_history = GB_entry(gb_species, "seq_history");
 
-    if (!gb_history) {
-        gb_history = GB_create(gb_species, "seq_history", GB_STRING);
-        if (!gb_history) error = GB_get_error();
-        else error = GB_write_string(gb_history, newContent);
-    }
+    if (!gb_history) error = GBT_write_string(gb_species, "seq_history", newContent);
     else {
         char *oldContent = GB_read_string(gb_history);
         long  oldSize    = GB_read_string_count(gb_history);

@@ -356,11 +356,11 @@ public:
     virtual AP_BOOL     clear(  unsigned long stack_update, unsigned long user_push_counter);
     virtual void        unhash_sequence(void);
 
-    void move_gbt_2_ap(GBT_TREE *tree, GB_BOOL insert_remove_cb);   // moves all node/leaf information from struct GBT_TREE to AP_tree
+    void move_gbt_2_ap(GBT_TREE *tree, bool insert_remove_cb);   // moves all node/leaf information from struct GBT_TREE to AP_tree
     void load_node_info();  // load linewidth etc
 
-    GB_ERROR load(AP_tree_root *tree_static, int link_to_database,
-                  GB_BOOL insert_delete_cbs, GB_BOOL show_status,
+    GB_ERROR load(AP_tree_root *tree_static,
+                  bool link_to_database, bool insert_delete_cbs, bool show_status,
                   int *zombies, int *duplicates);
 
     virtual GB_ERROR save(char *tree_name);

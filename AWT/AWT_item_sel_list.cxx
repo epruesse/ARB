@@ -19,6 +19,8 @@
 #include "awtlocal.hxx"
 #include "awt_item_sel_list.hxx"
 
+#include <arbdbt.h>
+
 static AW_window *awt_existing_window(AW_window *, AW_CL cl1, AW_CL) {
     return (AW_window*)cl1;
 }
@@ -36,31 +38,38 @@ static void awt_create_selection_list_on_scandb_cb(GBDATA *dummy, struct adawcbs
         cbs->aws->insert_selection(cbs->id, PSEUDO_FIELD_ALL_FIELDS, PSEUDO_FIELD_ALL_FIELDS);
     }
 
-    GBDATA *gb_key;
-    GBDATA *gb_key_name;
-    
-    for (gb_key = GB_entry(gb_key_data,CHANGEKEY); gb_key; gb_key = GB_nextEntry(gb_key)) {
-        GBDATA *key_type = GB_entry(gb_key,CHANGEKEY_TYPE);
-        if ( !( ((long)cbs->def_filter) & (1<<GB_read_int(key_type)))) continue; // type does not match filter
+    for (GBDATA *gb_key = GB_entry(gb_key_data,CHANGEKEY); gb_key; gb_key = GB_nextEntry(gb_key)) {
+        GBDATA *gb_key_type = GB_entry(gb_key,CHANGEKEY_TYPE);
+        if ( !( ((long)cbs->def_filter) & (1<<GB_read_int(gb_key_type)))) continue; // type does not match filter
 
-        gb_key_name = GB_entry(gb_key,CHANGEKEY_NAME);
-        if (!gb_key_name) continue; // key w/o name -> don't show
-        const char *name  = GB_read_char_pntr(gb_key_name);
+        GBDATA *gb_key_name = GB_entry(gb_key,CHANGEKEY_NAME);
+        if (!gb_key_name) continue;                 // key w/o name -> don't show
 
-        GBDATA *gb_hidden = GB_entry(gb_key, CHANGEKEY_HIDDEN);
-        if (!gb_hidden) { // it's an older db version w/o hidden flag -> add it
-            gb_hidden = GB_create(gb_key, CHANGEKEY_HIDDEN, GB_INT);
-            GB_write_int(gb_hidden, 0); // default is non-hidden
+        const char *name = GB_read_char_pntr(gb_key_name);
+        if (!name) {
+            fprintf(stderr, "WARNING: can't read key name (Reason: %s)", GB_await_error());
+            name = "<unnamedKey?>";
         }
 
-        if (GB_read_int(gb_hidden)) {
-            if (!cbs->include_hidden_fields) continue; // don't show hidden fields
+        long       *hiddenPtr = GBT_read_int(gb_key, CHANGEKEY_HIDDEN);
+        const char *display   = 0;
 
-            cbs->aws->insert_selection( cbs->id, GBS_global_string("[hidden] %s", name), name );
+        if (!hiddenPtr) {                           // it's an older db version w/o hidden flag -> add it
+            GB_ERROR error = GBT_write_int(gb_key, CHANGEKEY_HIDDEN, 0); // default is "not hidden"
+            fprintf(stderr, "WARNING: can't create " CHANGEKEY_HIDDEN " (Reason: %s)", error);
+
+            static long not_hidden = 0;;
+            hiddenPtr              = &not_hidden;
         }
-        else { // normal field
-            cbs->aws->insert_selection( cbs->id, name, name );
+
+        if (*hiddenPtr) { // hidden ?
+            if (cbs->include_hidden_fields) {       // show hidden fields ?
+                display = GBS_global_string("[hidden] %s", name);
+            }
         }
+        else display = name;
+
+        if (display) cbs->aws->insert_selection(cbs->id, display, name);
     }
 
     cbs->aws->insert_default_selection( cbs->id, "????", "----" );

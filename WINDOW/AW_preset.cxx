@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <memory.h>
-#include <arbdb.h>
+#include <arbdbt.h>
 #include <aw_root.hxx>
 #include <aw_device.hxx>
 #include <aw_window.hxx>
@@ -522,14 +522,7 @@ long AW_find_color_group(GBDATA *gbd, AW_BOOL ignore_usage_flag) {
 }
 
 GB_ERROR AW_set_color_group(GBDATA *gbd, long color_group) {
-    GB_ERROR  error    = 0;
-    GBDATA   *gb_group = GB_entry(gbd, AW_COLOR_GROUP_ENTRY);
-
-    if (!gb_group) gb_group = GB_create(gbd, AW_COLOR_GROUP_ENTRY, GB_INT);
-
-    if (gb_group)   error = GB_write_int(gb_group, color_group);
-    else            error = GB_get_error();
-    return error;
+    return GBT_write_int(gbd, AW_COLOR_GROUP_ENTRY, color_group);
 }
 
 AW_gc_manager AW_manage_GC(AW_window   *aww,

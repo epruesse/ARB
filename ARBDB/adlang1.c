@@ -1447,12 +1447,11 @@ static GB_ERROR gbl_readdb(GBL_command_arguments *args)
 
 
     for (i=0;i<args->cparam;i++){
-        GBDATA *gb = GB_search(args->gb_ref,args->vparam[i].str,GB_FIND);
-        char *val;
-        if(!gb) continue;
-        val = GB_read_as_string(gb);
-        GBS_strcat(strstr,val);
-        free(val);
+        char *val = GBT_read_as_string(args->gb_ref, args->vparam[i].str);
+        if (val) {
+            GBS_strcat(strstr, val);
+            free(val);
+        }
     }
     STREAM_OUT(args, GBS_strclose(strstr));
     return 0;

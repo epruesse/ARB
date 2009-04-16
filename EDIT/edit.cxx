@@ -2027,7 +2027,8 @@ static void create_edit_variables(AW_root *root, AW_default awr, AED_window *aed
 
     create_gde_var(root,awr, ED_create_sequences_for_gde,CGSS_WT_EDIT,(void *)aedw);
 
-    ARB_init_global_awars(root, awr, GLOBAL_gb_main);
+    GB_ERROR error = ARB_init_global_awars(root, awr, GLOBAL_gb_main);
+    if (error) aw_message(error);
 }
 
 static AW_window *create_edit_preset_window(AW_root *awr){

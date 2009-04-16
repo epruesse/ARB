@@ -212,113 +212,92 @@ char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode)
 
 
 
-//  ---------------------------------------------------------------------------------------------------------------
-//      void GEN_create_nds_vars(AW_root *aw_root,AW_default awdef,GBDATA *gb_main, GB_CB NDS_changed_callback)
-//  ---------------------------------------------------------------------------------------------------------------
-void GEN_create_nds_vars(AW_root *aw_root,AW_default awdef,GBDATA *gb_main, GB_CB NDS_changed_callback)
-{
-    GBDATA *gb_arb_presets;
-    GBDATA *gb_viewkey = 0;
-    //  GBDATA *gb_inherit;
-    GBDATA *gb_flag1;
-    GBDATA *gb_len1;
-    GBDATA *gb_pars;
-    GBDATA *gb_key_text;
+void GEN_create_nds_vars(AW_root *aw_root,AW_default awdef,GBDATA *gb_main, GB_CB NDS_changed_callback) {
+    GB_ERROR  error          = GB_push_transaction(gb_main);
+    GBDATA   *gb_arb_presets = GB_search(gb_main,"arb_presets",GB_CREATE_CONTAINER);
+    GBDATA   *gb_viewkey     = 0;
 
-    GB_push_transaction(gb_main);
-    gb_arb_presets = GB_search(gb_main,"arb_presets",GB_CREATE_CONTAINER);
-    int i;
-    for (i=0;i<GEN_NDS_COUNT; i++) {
-        char buf[256];
-        memset(buf,0,256);
+    for (int i=0; i<GEN_NDS_COUNT && !error; i++) {
+        char  buf[256];
+        char *keystart = buf+sprintf(buf,"tmp/gene_viewkey_%i/",i);
 
         if (gb_viewkey) {
             gen_assert(GB_has_key(gb_viewkey, "gene_viewkey"));
             gb_viewkey = GB_nextEntry(gb_viewkey);
-        }else{
+        }
+        else {
             gb_viewkey = GB_entry(gb_arb_presets,"gene_viewkey");
         }
         if (!gb_viewkey){
             gb_viewkey = GB_create_container(gb_arb_presets,"gene_viewkey");
         }
 
-        gb_assert(gb_viewkey);
-        GB_add_callback(gb_viewkey, GB_CB_CHANGED, NDS_changed_callback, 0);
+        if (!gb_viewkey) {
+            error = GB_await_error();
+        }
+        else {
+            GB_add_callback(gb_viewkey, GB_CB_CHANGED, NDS_changed_callback, 0);
 
-        gb_key_text = GB_entry(gb_viewkey, "key_text");
-        if (!gb_key_text) {
-            gb_key_text = GB_create(gb_viewkey,"key_text",GB_STRING);
-            switch(i){
-                case 1:
-                    GB_write_string(gb_key_text,"pos_start");
-                    break;
-                case 2:
-                    GB_write_string(gb_key_text,"pos_stop");
-                    break;
-                case 3:
-                    GB_write_string(gb_key_text,"product");
-                    break;
-                default:
-                    GB_write_string(gb_key_text,"name");
-                    break;
+            const char *default_key = 0;
+            switch (i) {
+                case 1:  default_key = "pos_start"; break;
+                case 2:  default_key = "pos_stop"; break;
+                case 3:  default_key = "product"; break;
+                default: default_key = "name"; break;
+            }
+            GBDATA *gb_key_text     = GB_searchOrCreate_string(gb_viewkey, "key_text", default_key);
+            if (!gb_key_text) error = GB_await_error();
+            else {
+                strcpy(keystart, "key_text");
+                aw_root->awar_string(buf,"",awdef);
+                aw_root->awar(buf)->map((void *)gb_key_text);
             }
         }
-        sprintf(buf,"tmp/gene_viewkey_%i/key_text",i);
-        aw_root->awar_string(buf,"",awdef);
-        aw_root->awar(buf)->map((void *)gb_key_text);
 
-        gb_pars = GB_entry(gb_viewkey, "pars");
-        if (!gb_pars) {
-            gb_pars = GB_create(gb_viewkey,"pars",GB_STRING);
-            GB_write_string(gb_pars,"");
-        }
-        sprintf(buf,"tmp/gene_viewkey_%i/pars",i);
-        aw_root->awar_string(buf,"",awdef);
-        aw_root->awar(buf)->map((void *)gb_pars);
-
-        gb_flag1 = GB_entry(gb_viewkey, "flag1");
-        if (!gb_flag1) {
-            gb_flag1 = GB_create(gb_viewkey,"flag1",GB_INT);
-            if (i<=2){
-                GB_write_int(gb_flag1,1);
-            }else{
-                GB_write_int(gb_flag1,0);
+        if (!error) {
+            GBDATA *gb_pars     = GB_searchOrCreate_string(gb_viewkey, "pars", "");
+            if (!gb_pars) error = GB_await_error();
+            else {
+                strcpy(keystart, "pars");
+                aw_root->awar_string(buf,"",awdef);
+                aw_root->awar(buf)->map((void *)gb_pars);
             }
         }
-        sprintf(buf,"tmp/gene_viewkey_%i/flag1",i);
-        aw_root->awar_int(buf,0,awdef);
-        aw_root->awar(buf)->map((void *)gb_flag1);
 
-        gb_len1 = GB_entry(gb_viewkey, "len1");
-        if (!gb_len1) {
-            gb_len1 = GB_create(gb_viewkey,"len1",GB_INT);
-            GB_write_int(gb_len1,30);
+        if (!error) {
+            GBDATA *gb_flag1     = GB_searchOrCreate_int(gb_viewkey, "flag1", i <= 2 ? 1 : 0);
+            if (!gb_flag1) error = GB_await_error();
+            else {
+                strcpy(keystart, "flag1");
+                aw_root->awar_int(buf,0,awdef);
+                aw_root->awar(buf)->map((void *)gb_flag1);
+            }
         }
-        sprintf(buf,"tmp/gene_viewkey_%i/len1",i);
-        aw_root->awar_int(buf,0,awdef);
-        aw_root->awar(buf)->set_minmax(0, GEN_NDS_STRING_SIZE);
-        aw_root->awar(buf)->map((void *)gb_len1);
 
-        //      gb_inherit = GB_entry(gb_viewkey, "inherit");
-        //      if (!gb_inherit) {
-        //          gb_inherit = GB_create(gb_viewkey,"inherit",GB_INT);
-        //          GB_write_int(gb_inherit,0);
-        //      }
-        //      sprintf(buf,"tmp/gene_viewkey_%i/inherit",i);
-        //      aw_root->awar_int(buf,0,awdef);
-        //      aw_root->awar(buf)->map((void *)gb_inherit);
-    }
-    GBDATA *gb_next;
-    gen_assert(GB_has_key(gb_viewkey, "gene_viewkey"));
-    while ((gb_next = GB_nextEntry(gb_viewkey))) {
-        GB_ERROR error = GB_delete(gb_next);
-        if (error) {
-            aw_message(error);
-            break;
+        if (!error) {
+            GBDATA *gb_len1     = GB_searchOrCreate_int(gb_viewkey, "len1", 30);
+            if (!gb_len1) error = GB_await_error();
+            else {
+                strcpy(keystart, "len1");
+                aw_root->awar_int(buf,0,awdef);
+                aw_root->awar(buf)->set_minmax(0, GEN_NDS_STRING_SIZE);
+                aw_root->awar(buf)->map((void *)gb_len1);
+            }
         }
     }
+
+    if (!error) {
+        GBDATA *gb_next;
+        gen_assert(GB_has_key(gb_viewkey, "gene_viewkey"));
+        while (!error && (gb_next = GB_nextEntry(gb_viewkey))) {
+            error = GB_delete(gb_next);
+        }
+    }
+
     aw_root->awar_string("tmp/gene_viewkey/key_text","",awdef);
-    GB_pop_transaction(gb_main);
+
+    error = GB_end_transaction(gb_main, error);
+    if (error) aw_message(error);
 }
 //  ---------------------------------------------------------------------------------------
 //      void GEN_create_select_nds_window(AW_window *aww,char *key_text,AW_CL cgb_main)

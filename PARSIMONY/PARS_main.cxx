@@ -478,36 +478,31 @@ static void nt_add(AW_window *, AWT_canvas *ntw, int what, AP_BOOL quick, int te
 
     if (what)
     {
-        char *name = GBT_readOrCreate_string(GLOBAL_gb_main,AWAR_SPECIES_NAME,"");
-        if (strlen(name))
-        {
+        char *name = GBT_readOrCreate_string(GLOBAL_gb_main, AWAR_SPECIES_NAME, "");
+        if (name && strlen(name)) {
             GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main,name);
-            if (gb_species)
-            {
+            if (gb_species) {
                 hash = GBS_create_hash(10, GB_MIND_CASE);
                 GBS_write_hash(hash,name,(long)gb_species);
             }
-            else
-            {
+            else {
                 error = "Error: Selected Species not found";
             }
         }
-        else
-        {
+        else {
             error= "Please select an species"
                 "   to select an species:   1. arb_edit: enable global cursor and select sequence"
                 "               2. arb_ntree: species/search and select species";
         }
+        free(name);
     }
-    else
-    {
+    else {
         hash = GBT_create_marked_species_hash(GLOBAL_gb_main);
         if (!hash) error = GB_get_error();
     }
     GB_commit_transaction (GLOBAL_gb_main);
 
-    if (!error)
-    {
+    if (!error) {
         NT_remove_species_in_tree_from_hash(*ap_main->tree_root,hash);
 
         isits.quick_add_flag = quick;
@@ -522,15 +517,15 @@ static void nt_add(AW_window *, AWT_canvas *ntw, int what, AP_BOOL quick, int te
 
         if (test){
             GBS_hash_do_loop(hash,insert_species_in_tree_test);
-        }else{
+        }
+        else {
             aw_status("reading database");
             GB_begin_transaction(GLOBAL_gb_main);
             GBS_hash_do_loop(hash,transform_gbd_to_leaf);
             GB_commit_transaction(GLOBAL_gb_main);
             GBS_hash_do_sorted_loop(hash, hash_insert_species_in_tree, sort_sequences_by_length);
         }
-        if (!quick )
-        {
+        if (!quick ) {
             aw_status("final optimization");
             rootEdge()->nni_rek(AP_FALSE,isits.abort_flag,-1,GB_FALSE, AP_BL_NNI_ONLY);
         }
@@ -547,7 +542,7 @@ static void nt_add(AW_window *, AWT_canvas *ntw, int what, AP_BOOL quick, int te
         aw_closestatus();
     }
 
-    if (hash)GBS_free_hash(hash);
+    if (hash) GBS_free_hash(hash);
     if (error) aw_message(error);
 
     AWT_TREE(ntw)->resort_tree(0);
@@ -1857,8 +1852,10 @@ static void pars_create_all_awars(AW_root *awr, AW_default aw_def)
     create_parsimony_variables(awr, GLOBAL_gb_main);
     create_nds_vars(awr,aw_def,GLOBAL_gb_main);
 
-    ARB_init_global_awars(awr, aw_def, GLOBAL_gb_main);
     AWT_create_db_browser_awars(awr, aw_def);
+
+    GB_ERROR error = ARB_init_global_awars(awr, aw_def, GLOBAL_gb_main);
+    if (error) aw_message(error);
 }
 
 static AW_root *AD_map_viewer_aw_root = 0;

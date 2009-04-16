@@ -172,12 +172,12 @@ static int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned c
     }
 
     {
-        GBDATA *gb_filter;
-        GB_transaction dummy(GLOBAL_gb_main);
-        gb_filter = GB_search(GLOBAL_gb_main,AWAR_GDE_EXPORT_FILTER,GB_STRING);
-        char *string = filter->to_string();
-        GB_write_string(gb_filter,string);
-        delete [] string;
+        GB_transaction  dummy(GLOBAL_gb_main);
+        char           *str   = filter->to_string();
+        GB_ERROR        error = GBT_write_string(GLOBAL_gb_main, AWAR_GDE_EXPORT_FILTER, str);
+        delete [] str;
+
+        if (error) aw_message(error);
     }
 
     free(seqlen);

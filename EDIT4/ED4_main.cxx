@@ -370,7 +370,6 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
     // Note: cursor awars are created in window constructor
 
     ed4_create_mainDB_awars(root, config_name);
-    ARB_init_global_awars(root, AW_ROOT_DEFAULT, GLOBAL_gb_main);
     
     AWT_create_db_browser_awars(root, AW_ROOT_DEFAULT);
 
@@ -459,6 +458,9 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
         root->awar_string(PFOLD_AWAR_SYMBOL_TEMPLATE_2, PFOLD_PAIR_CHARS_2);
         root->awar_string(PFOLD_AWAR_SAI_FILTER, "pfold");
     }
+
+    GB_ERROR error = ARB_init_global_awars(root, AW_ROOT_DEFAULT, GLOBAL_gb_main);
+    if (error) aw_message(error);
 }
 
 const char *ED4_propertyName(int mode) {

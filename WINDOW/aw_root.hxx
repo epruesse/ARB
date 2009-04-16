@@ -339,11 +339,11 @@ public:
     GB_ERROR toggle_toggle();   /* switches between 1/0 */
     void     touch(void);
 
-    void make_global(); // should be used by ARB_init_global_awars only
+    GB_ERROR make_global() __ATTR__USERESULT; // should be used by ARB_init_global_awars only
 };
 
 bool ARB_global_awars_initialized();
-void ARB_init_global_awars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main);
+GB_ERROR ARB_init_global_awars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main) __ATTR__USERESULT;
 
 // ----------------------------------
 //      class Awar_Callback_Info

@@ -150,38 +150,37 @@ static void awt_add_sequences_to_list(struct adfiltercbstruct *cbs, const char *
     }
 }
 
-
-void awt_create_select_filter_window_gb_cb(void *dummy,struct adfiltercbstruct *cbs){           // update list widget and variables
-    AWUSE(dummy);
-    AW_root *aw_root = cbs->awr;
+void awt_create_select_filter_window_gb_cb(void *dummy, struct adfiltercbstruct *cbs) {
+    // update list widget and variables
     GB_push_transaction(cbs->gb_main);
-    char *use = aw_root->awar(cbs->def_alignment)->read_string();
     GBDATA *gb_extended;
 
     if (cbs->id) {
+        char *use = cbs->awr->awar(cbs->def_alignment)->read_string();
 
         cbs->aws->clear_selection_list(cbs->id);
         cbs->aws->insert_default_selection( cbs->id, "none", "" );
-        GBDATA *gb_sel = GB_search(cbs->gb_main,AWAR_SPECIES_NAME,GB_STRING);
-        char *name = GB_read_string(gb_sel);
-        if (strlen(name)){
+        
+        const char *name = GBT_readOrCreate_char_pntr(cbs->gb_main, AWAR_SPECIES_NAME, "");
+        if (name[0]){
             GBDATA *gb_species = GBT_find_species(cbs->gb_main,name);
             if (gb_species){
                 awt_add_sequences_to_list(cbs,use,gb_species,"SEL. SPECIES:",'@');
             }
         }
-        free(name);
-        for (   gb_extended = GBT_first_SAI(cbs->gb_main);
-                gb_extended;
-                gb_extended = GBT_next_SAI(gb_extended)){
+        
+        for (gb_extended = GBT_first_SAI(cbs->gb_main);
+             gb_extended;
+             gb_extended = GBT_next_SAI(gb_extended))
+        {
             awt_add_sequences_to_list(cbs,use,gb_extended,"",' ');
         }
 
         cbs->aws->update_selection_list( cbs->id );
+        free(use);
     }
     awt_create_select_filter_window_aw_cb(0,cbs);
     GB_pop_transaction(cbs->gb_main);
-    free(use);
 }
 
 

@@ -199,8 +199,6 @@ void mg_check_field_cb(AW_window *aww){
                  gb_species1 && !error;
                  gb_species1 = GBT_next_species(gb_species1))
             {
-                // GBDATA *gbd    = GB_search(gb_species1,dest,GB_FIND);
-                // if (gbd) error = GB_delete(gbd);
                 if (IS_QUERIED(gb_species1)) sum_species++;
             }
 
@@ -217,8 +215,10 @@ void mg_check_field_cb(AW_window *aww){
                  gb_species1 && !error;
                  gb_species1 = GBT_next_species(gb_species1))
             {
-                GBDATA *gbd    = GB_search(gb_species1,dest,GB_FIND);
-                if (gbd) error = GB_delete(gbd);
+                {
+                    GBDATA *gbd    = GB_search(gb_species1,dest,GB_FIND);
+                    if (gbd) error = GB_delete(gbd);
+                }
 
                 if (!error) {
                     if (IS_QUERIED(gb_species1)) {
@@ -256,18 +256,10 @@ void mg_check_field_cb(AW_window *aww){
                                 }
 
                                 if (positions1 && !error) {
-                                    gbd = GB_search(gb_species2,dest,GB_STRING);
-                                    if (!gbd) error = GB_get_error();
-                                    else {
-                                        error = GB_write_string(gbd,positions2);
-                                        if (!error) {
-                                            gbd             = GB_search(gb_species1,dest,GB_STRING);
-                                            if (!gbd) error = GB_get_error();
-                                            else error      = GB_write_string(gbd,positions1);
-                                        }
-                                    }
+                                    error             = GBT_write_string(gb_species2, dest, positions2);
+                                    if (!error) error = GBT_write_string(gb_species1, dest, positions1);
                                 }
-                                
+
                                 free(positions2);
                                 free(positions1);
                             }

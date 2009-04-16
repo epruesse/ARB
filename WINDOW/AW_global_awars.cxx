@@ -55,7 +55,7 @@ static void db_updated_cb(GBDATA *gbd, int *cl_awar, GB_CB_TYPE /*cbtype*/) {
     }
 }
 
-void AW_awar::make_global() {
+GB_ERROR AW_awar::make_global() {
 #if defined(DEBUG)
     aw_assert(!is_global);      // don't make awars global twice!
     aw_assert(gb_main4awar);
@@ -67,6 +67,7 @@ void AW_awar::make_global() {
     GB_transaction  dummy(gb_main4awar);
     const char     *db_path = get_db_path(this);
     GBDATA         *gbd     = GB_search(gb_main4awar, db_path, GB_FIND);
+    GB_ERROR        error   = 0;
 
     if (gbd) { // was already set by another ARB application
         // -> read db value and store in awar
@@ -77,13 +78,15 @@ void AW_awar::make_global() {
     else {
         // store awar value in db
 
-        char *content = read_as_string();
-        gbd           = GB_search(gb_main4awar, db_path, GB_STRING);
-        GB_write_string(gbd, content);
+        char *content   = read_as_string();
+        gbd             = GB_search(gb_main4awar, db_path, GB_STRING);
+        if (!gbd) error = GB_await_error();
+        else  error     = GB_write_string(gbd, content);
         free(content);
     }
 
-    GB_add_callback(gbd, GB_CB_CHANGED, db_updated_cb, (int*)this);
+    if (!error) GB_add_callback(gbd, GB_CB_CHANGED, db_updated_cb, (int*)this);
+    return error;
 }
 
 static bool initialized = false;
@@ -92,13 +95,13 @@ bool ARB_global_awars_initialized() {
     return initialized;
 }
 
-void ARB_init_global_awars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main) {
+GB_ERROR ARB_init_global_awars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main) {
     aw_assert(!initialized);    // don't call twice!
 
     initialized  = true;
     gb_main4awar = gb_main;
 
-    aw_root->awar_string(AWAR_WWW_BROWSER, "(netscape -remote 'openURL($(URL))' || netscape '$(URL)') &", aw_def)->make_global();
+    return aw_root->awar_string(AWAR_WWW_BROWSER, "(netscape -remote 'openURL($(URL))' || netscape '$(URL)') &", aw_def)->make_global();
 }
 
 

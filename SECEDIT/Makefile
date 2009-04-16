@@ -308,9 +308,11 @@ SEC_toggle.o: SEC_graphic.hxx
 SEC_toggle.o: SEC_toggle.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/ad_prot.h
+SEC_toggle.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/arbdb.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+SEC_toggle.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/attributes.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx

@@ -1213,6 +1213,8 @@ GBDATA *GB_create(GBDATA *father,const char *key, GB_TYPES type)
 
 GBDATA *GB_create_container(GBDATA *father,const char *key)
 {
+    /* create a new container */
+    
     GBCONTAINER *gbd;
     if (GB_check_key(key)) {
         GB_print_error();

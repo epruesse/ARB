@@ -165,9 +165,11 @@ AW_preset.o: aw_root.hxx
 AW_preset.o: aw_window.hxx
 AW_preset.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AW_preset.o: $(ARBHOME)/INCLUDE/ad_prot.h
+AW_preset.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AW_preset.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_preset.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_preset.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AW_preset.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AW_preset.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_preset.o: $(ARBHOME)/INCLUDE/awt.hxx
 AW_preset.o: $(ARBHOME)/INCLUDE/awt_advice.hxx

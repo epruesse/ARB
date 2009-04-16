@@ -20,14 +20,14 @@ class AP_pos_var {
     char *ali_name;
     char *tree_name;
 
-    const char  *parsimony( GBT_TREE *tree, GB_UINT4 *bases =0, GB_UINT4 *ltbases =0 );
+    const char *parsimony(GBT_TREE *tree, GB_UINT4 *bases = 0, GB_UINT4 *ltbases = 0);
 
 public:
 
     AP_pos_var(GBDATA *gb_main,char *ali_name, long ali_len, int isdna, char *tree_name);
     ~AP_pos_var();
 
-    GB_ERROR  retrieve( GBT_TREE *tree);
-    char     *delete_old_sai( char *sai_name );
-    char     *save_sai( char *sai_name );
+    GB_ERROR retrieve(GBT_TREE *tree);
+    GB_ERROR delete_old_sai(const char *sai_name);
+    GB_ERROR save_sai(const char *sai_name);
 };

@@ -15,7 +15,6 @@
 #include "arb_interface.hxx"
 #include "file_import.hxx"
 
-
 // Interessant wäre es vielleicht dies alles hier in eine Klasse zu verpacken
 // Zusätzlich sollte vielleicht noch eine Funktion zur Analyse des Spaltentyps
 // hinzugefügt werden. !?

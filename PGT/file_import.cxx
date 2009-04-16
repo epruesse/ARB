@@ -204,8 +204,8 @@ int importCSV(importTable *table, importData *data)
     // FETCH ARB DATABASE HANDLE
     GBDATA *gb_main= get_gbData();
     GBDATA *gb_experiment;
-    GBDATA *gb_proteom, *gb_proteom_data, *gb_proteom_name;
-    GBDATA *gb_protein, *gb_protein_data, *gb_protein_entry;
+    GBDATA *gb_proteom, *gb_proteom_data;
+    GBDATA *gb_protein, *gb_protein_data;
     char *head, *content;
     int rows= table->rows;
     int columns= table->columns;
@@ -247,27 +247,28 @@ int importCSV(importTable *table, importData *data)
     ARB_begin_transaction();
 
     // ENTER EXPERIMENT DATA ENTRY
-    gb_proteom_data= GB_entry(gb_experiment, "proteome_data");
-
     // IF THERE IS NO PROETOME_DATA ENTRY, CREATE A NEW ONE
-    if(!gb_proteom_data) gb_proteom_data=
-        GB_create_container(gb_experiment, "proteome_data");
+    gb_proteom_data = GB_search(gb_experiment, "proteome_data", GB_CREATE_CONTAINER);
+    pgt_assert(gb_proteom_data); // @@@ error handling is missing
 
     // CREATE NEW PROTEOME ENTRY
-    gb_proteom= GB_create_container(gb_proteom_data, "proteome");
+    gb_proteom = GB_create_container(gb_proteom_data, "proteome");
+    pgt_assert(gb_proteom);
 
     // ADD THE NAME TO THE NEW PROTEOME ENTRY
-    gb_proteom_name= GB_create(gb_proteom, "name", GB_STRING);
-    GB_write_string(gb_proteom_name, data->proteome);
+    GB_ERROR error = GBT_write_string(gb_proteom, "name", data->proteome);
+    pgt_assert(!error);
 
     // CREATE PROTEINE DATA ENTRY
-    gb_protein_data= GB_create_container(gb_proteom, "proteine_data");
+    gb_protein_data = GB_create_container(gb_proteom, "proteine_data");
+    pgt_assert(gb_protein_data);
 
     // IMPORT CELL DATA
     for(int r= 1; r < rows; r++)
     {
         // EACH ROW REPRESENTS A PROTEIN -> NEW CONTAINER
-        gb_protein= GB_create_container(gb_protein_data, "protein");
+        gb_protein = GB_create_container(gb_protein_data, "protein");
+        pgt_assert(gb_protein);
 
         // TRAVERSE COLUMNS FOR EACH ROW AND CREATE ENTRIES
         for(int c= 0; c < columns; c++)
@@ -286,25 +287,16 @@ int importCSV(importTable *table, importData *data)
                 {
                     switch(table->columnType[c])
                     {
-                        case DATATYPE_INT:
-                            gb_protein_entry= GB_create(gb_protein, head, GB_INT);
-                            if(gb_protein_entry) GB_write_int(gb_protein_entry, atol(content));
-                            break;
-                        case DATATYPE_FLOAT:
-                            gb_protein_entry= GB_create(gb_protein, head, GB_FLOAT);
-                            if(gb_protein_entry) GB_write_float(gb_protein_entry, atof(content));
-                            break;
-                        default:
-                            gb_protein_entry= GB_create(gb_protein, head, GB_STRING);
-                            if(gb_protein_entry) GB_write_string(gb_protein_entry, content);
-                            break;
+                        case DATATYPE_INT:   error = GBT_write_int(gb_protein, head, atol(content)); break;
+                        case DATATYPE_FLOAT: error = GBT_write_float(gb_protein, head, atof(content)); break;
+                        default:             error = GBT_write_string(gb_protein, head, content); break;
                     }
                 }
                 else
                 {
-                    gb_protein_entry= GB_create(gb_protein, head, GB_STRING);
-                    GB_write_string(gb_protein_entry, content);
+                    error = GBT_write_string(gb_protein, head, content);
                 }
+                pgt_assert(!error);
             }
         }
     }

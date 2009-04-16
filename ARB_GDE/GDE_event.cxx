@@ -238,199 +238,203 @@ static void GDE_freeali(NA_Alignment *dataset) {
         GDE_free((void**)&dataset->selection_mask);
         GDE_free((void**)&dataset->alignment_name);
 
-        unsigned long i;
-        for(i=0;i<dataset->numelements;i++) GDE_freesequ(&(dataset->element[i]));
+        for (unsigned long i=0;i<dataset->numelements;i++) {
+            GDE_freesequ(dataset->element+i);
+        }
     }
 }
 
-static void GDE_export(NA_Alignment *dataset,char *align,long oldnumelements)
-{
-    GB_begin_transaction(GLOBAL_gb_main);
-    long maxalignlen=GBT_get_alignment_len(GLOBAL_gb_main,align);
-    long isdefaultalign=0;
-    int load_all = 0;
-    if(maxalignlen<=0)
-    {
-        align=GBT_get_default_alignment(GLOBAL_gb_main);
-        isdefaultalign=1;
+static void GDE_export(NA_Alignment *dataset, char *align, long oldnumelements) {
+    GB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
+    
+    long maxalignlen    = GBT_get_alignment_len(GLOBAL_gb_main, align);
+    long isdefaultalign = 0;
+
+    if (maxalignlen <= 0 && !error) {
+        align             = GBT_get_default_alignment(GLOBAL_gb_main);
+        if (!align) error = GB_get_error();
+        else {
+            isdefaultalign = 1;
+            maxalignlen    = GBT_get_alignment_len(GLOBAL_gb_main, align);
+        }
     }
 
-    maxalignlen=GBT_get_alignment_len(GLOBAL_gb_main,align);
-    long lotyp=0;
-    {
+    long lotyp = 0;
+    if (!error) {
         GB_alignment_type at = GBT_get_alignment_type(GLOBAL_gb_main, align);
 
-        switch (at)
-        {
-            case GB_AT_DNA: lotyp = DNA; break;
-            case GB_AT_RNA: lotyp = RNA; break;
-            case GB_AT_AA:  lotyp = PROTEIN; break;
-            case GB_AT_UNKNOWN: lotyp = DNA; break;
+        switch (at) {
+            case GB_AT_DNA:     lotyp = DNA;     break;
+            case GB_AT_RNA:     lotyp = RNA;     break;
+            case GB_AT_AA:      lotyp = PROTEIN; break;
+            case GB_AT_UNKNOWN: lotyp = DNA;     break;
         }
     }
 
-    GB_ERROR error = 0;
     unsigned long i;
-    for(i=oldnumelements;!error && i<dataset->numelements;i++)
-    {
-        NA_Sequence *sequ=&(dataset->element[i]);
-        int seqtyp,issame=0;
-        seqtyp=sequ->elementtype;
-        if( (seqtyp==lotyp)||((seqtyp==DNA)&&(lotyp==RNA))||((seqtyp==RNA)&&(lotyp==DNA)) ){
-            issame=1;
-        }else{
-            aw_message(GBS_global_string("Warning: sequence type of species '%s' changed",sequ->short_name));
+    int           load_all = 0;
+
+    for (i = oldnumelements; !error && i < dataset->numelements; i++) {
+        NA_Sequence *sequ = dataset->element+i;
+        int seqtyp, issame = 0;
+
+        seqtyp = sequ->elementtype;
+        if ((seqtyp == lotyp) || ((seqtyp == DNA) && (lotyp == RNA)) || ((seqtyp == RNA) && (lotyp == DNA))) {
+            issame = 1;
+        }
+        else {
+            aw_message(GBS_global_string("Warning: sequence type of species '%s' changed", sequ->short_name));
         }
 
-        if(sequ->tmatrix) {
-            for(long j=0;j<sequ->seqlen;j++) {
+        if (sequ->tmatrix) {
+            for (long j = 0; j < sequ->seqlen; j++) {
                 sequ->sequence[j] = (char)sequ->tmatrix[sequ->sequence[j]];
             }
         }
 
-        char *savename   = GBS_string_2_key(sequ->short_name);
+        char *savename = GBS_string_2_key(sequ->short_name);
+
         sequ->gb_species = 0;
-        
-        if (!issame)            /* save as extended */
-        {
 
-            GBDATA *gb_extended =   GBT_find_or_create_SAI(GLOBAL_gb_main,savename);
-            sequ->gb_species=gb_extended;
-            GBDATA *gb_data = GBT_add_data(gb_extended, align,"data", GB_STRING);
-            error = GBT_write_sequence(gb_data,align,maxalignlen,(char *)sequ->sequence);
+        if (!issame) {          /* save as extended */
+            GBDATA *gb_extended = GBT_find_or_create_SAI(GLOBAL_gb_main, savename);
+
+            if (!gb_extended) error = GB_await_error();
+            else {
+                sequ->gb_species    = gb_extended;
+                GBDATA *gb_data     = GBT_add_data(gb_extended, align, "data", GB_STRING);
+                if (!gb_data) error = GB_await_error();
+                else    error       = GBT_write_sequence(gb_data, align, maxalignlen, (char *)sequ->sequence);
+            }
         }
-        else /* save as sequence */
-        {
-            GBDATA *gb_species_data = GB_search(GLOBAL_gb_main,"species_data",GB_CREATE_CONTAINER);
-            GBDATA *gb_species;
-            gb_species = GBT_find_species_rel_species_data(gb_species_data, savename);
-            GB_push_my_security(GLOBAL_gb_main);
+        else {                  /* save as sequence */
+            GBDATA *gb_species_data     = GB_search(GLOBAL_gb_main, "species_data", GB_CREATE_CONTAINER);
+            if (!gb_species_data) error = GB_await_error();
+            else {
+                GBDATA *gb_species = GBT_find_species_rel_species_data(gb_species_data, savename);
 
-            if (gb_species) {   /* new element that already exists !!!!*/
-                int select_mode;
-                const char *msg = GBS_global_string(
-                                                    "You are (re-)importing a species '%s'.\n"
-                                                    "That species already exists in your database!\n"
-                                                    "\n"
-                                                    "Possible actions:\n"
-                                                    "\n"
-                                                    "       - delete and overwrite the existing species\n"
-                                                    "       - skip - don't change the species\n"
-                                                    "       - reimport only the sequence of the existing species\n"
-                                                    "       - reimport all sequences (don't ask again)\n"
-                                                    "\n"
-                                                    "Note: After aligning it's recommended to choose 'reimport all'.",
-                                                    savename);
-                if (!load_all) {
-                    select_mode = aw_question(msg,
-                                              "delete existing,"   // 0
-                                              "skip,"              // 1
-                                              "reimport sequence," // 2
-                                              "reimport all"       // 3
-                                              );
+                GB_push_my_security(GLOBAL_gb_main);
 
-                    if (select_mode == 3) { // load all sequences
-                        load_all = 1;
+                if (gb_species) {   /* new element that already exists !!!! */
+                    int select_mode;
+                    const char *msg =
+                        GBS_global_string("You are (re-)importing a species '%s'.\n"
+                                          "That species already exists in your database!\n"
+                                          "\n"
+                                          "Possible actions:\n"
+                                          "\n"
+                                          "       - delete and overwrite the existing species\n"
+                                          "       - skip - don't change the species\n"
+                                          "       - reimport only the sequence of the existing species\n"
+                                          "       - reimport all sequences (don't ask again)\n"
+                                          "\n"
+                                          "Note: After aligning it's recommended to choose 'reimport all'.",
+                                          savename);
+
+                    if (!load_all) {
+                        select_mode = aw_question(msg,
+                                                  "delete existing,"   // 0
+                                                  "skip,"              // 1
+                                                  "reimport sequence," // 2
+                                                  "reimport all"       // 3
+                                                  );
+
+                        if (select_mode == 3) {     // load all sequences
+                            load_all = 1;
+                        }
+                    }
+
+                    if (load_all) select_mode = 2;    // reimport sequence
+                    gde_assert(select_mode >= 0 && select_mode <= 2);
+
+                    switch (select_mode) {
+                        case 1:    // skip
+                            gb_species = 0;
+                            break;       // continue with next species
+
+                        case 0:    // delete existing species
+                            GB_delete(gb_species);
+                            // fall-through!
+                        case 2:    // reimport sequence
+                            gb_species = GBT_find_or_create_species_rel_species_data(gb_species_data, savename);
+                            break;
                     }
                 }
-
-                if (load_all) {
-                    select_mode = 2; // reimport sequence
+                else {
+                    gb_species = GBT_find_or_create_species_rel_species_data(gb_species_data, savename);
                 }
+                if (gb_species) {
+                    sequ->gb_species = gb_species;
 
-                gde_assert(select_mode >= 0 && select_mode <= 2);
+                    GBDATA *gb_data     = GBT_add_data(gb_species, align, "data", GB_STRING); // does only add if not already existing
+                    if (!gb_data) error = GB_await_error();
+                    else {
+                        GBDATA *gb_old_data = GBT_read_sequence(gb_species, align);
+                        if (gb_old_data) {  // we already have data -> compare checksums
+                            const char *old_seq      = GB_read_char_pntr(gb_old_data);
+                            long        old_checksum = GBS_checksum(old_seq, 1, "-.");
+                            long        new_checksum = GBS_checksum((char *)sequ->sequence, 1, "-.");
 
-                switch(select_mode) {
-                    case 1:     // skip
-                        gb_species = 0;
-                        continue; // continue with next species
-
-                    case 0:     // delete existing species
-                        GB_delete(gb_species);
-                        // fall-through!
-                    case 2:     // reimport sequence
-                        gb_species = GBT_find_or_create_species_rel_species_data(gb_species_data, savename);
-                        break;
+                            if (old_checksum != new_checksum) {
+                                aw_message(GBS_global_string("Warning: Sequence checksum for '%s' differs", savename));
+                            }
+                        }
+                        error = GBT_write_sequence(gb_data, align, maxalignlen, (char *)sequ->sequence);
+                    }
                 }
+                GB_pop_my_security(GLOBAL_gb_main);
             }
-            else {
-                gb_species = GBT_find_or_create_species_rel_species_data(gb_species_data, savename);
-            }
-            if (!gb_species) continue;
-            sequ->gb_species = gb_species;
-
-            GBDATA *gb_old_data = GBT_read_sequence(gb_species, align);
-            GBDATA *gb_data     = GBT_add_data(gb_species, align,"data", GB_STRING);
-
-            if (gb_old_data) { // we already have data -> compare checksums
-                const char *old_seq      = GB_read_char_pntr(gb_old_data);
-                long        old_checksum = GBS_checksum(old_seq, 1, "-.");
-                long        new_checksum = GBS_checksum((char*)sequ->sequence, 1, "-.");
-
-                if (old_checksum != new_checksum) {
-                    aw_message(GBS_global_string("Warning: Sequence checksum for '%s' differs", savename));
-                }
-            }
-
-            error = GBT_write_sequence(gb_data,align,maxalignlen,(char *)sequ->sequence);
-            GB_pop_my_security(GLOBAL_gb_main);
-
         }
         free(savename);
     }
 
     /* colormasks */
-    for(i=0;!error && i<dataset->numelements;i++)
-    {
-        NA_Sequence *sequ=&(dataset->element[i]);
-        if(sequ->cmask)
-        {
-            GBDATA *gb_color;
-            maxalignlen=LMAX(maxalignlen,sequ->seqlen);
-            char *resstring=(char *)calloc((unsigned int)maxalignlen+1,sizeof(char));
+    for (i = 0; !error && i < dataset->numelements; i++) {
+        NA_Sequence *sequ = &(dataset->element[i]);
 
-            char *dummy=resstring;
-            for(long j=0;j<maxalignlen-sequ->seqlen;j++)
-                *resstring++=DEFAULT_COLOR;
+        if (sequ->cmask) {
+            maxalignlen     = LMAX(maxalignlen, sequ->seqlen);
+            char *resstring = (char *)calloc((unsigned int)maxalignlen + 1, sizeof(char));
+            char *dummy     = resstring;
 
-            for(long k=0;k<sequ->seqlen;k++)
-                *resstring++=(char)sequ->cmask[i];
-            *resstring='\0';
+            for (long j = 0; j < maxalignlen - sequ->seqlen; j++) *resstring++ = DEFAULT_COLOR;
+            for (long k = 0; k < sequ->seqlen; k++)               *resstring++ = (char)sequ->cmask[i];
+            *resstring = '\0';
 
-            GBDATA *gb_ali=GB_search(sequ->gb_species,
-                                     align,GB_CREATE_CONTAINER);
-            gb_color=GB_search(gb_ali,"colmask",GB_BYTES);
-            error = GB_write_bytes(gb_color,dummy,maxalignlen);
-            delete dummy;
-
+            GBDATA *gb_ali     = GB_search(sequ->gb_species, align, GB_CREATE_CONTAINER);
+            if (!gb_ali) error = GB_await_error();
+            else {
+                GBDATA *gb_color     = GB_search(gb_ali, "colmask", GB_BYTES);
+                if (!gb_color) error = GB_await_error();
+                else    error        = GB_write_bytes(gb_color, dummy, maxalignlen);
+            }
+            free(dummy);
         }
     }
-    if(!error && dataset->cmask)
-    {
-        GBDATA *gb_color;
-        maxalignlen=LMAX(maxalignlen,dataset->cmask_len);
-        char *resstring=(char *)calloc((unsigned int)maxalignlen+1,sizeof(char));
 
-        char *dummy=resstring;
-        long k;
-        for(k=0;k<maxalignlen-dataset->cmask_len;k++)
-            *resstring++=DEFAULT_COLOR;
+    if (!error && dataset->cmask) {
+        maxalignlen     = LMAX(maxalignlen, dataset->cmask_len);
+        char *resstring = (char *)calloc((unsigned int)maxalignlen + 1, sizeof(char));
+        char *dummy     = resstring;
+        long  k;
 
-        for(k=0;k<dataset->cmask_len;k++)
-            *resstring++=(char)dataset->cmask[k];
-        *resstring='\0';
+        for (k = 0; k < maxalignlen - dataset->cmask_len; k++) *resstring++ = DEFAULT_COLOR;
+        for (k = 0; k < dataset->cmask_len; k++)               *resstring++ = (char)dataset->cmask[k];
+        *resstring = '\0';
 
+        GBDATA *gb_extended     = GBT_find_or_create_SAI(GLOBAL_gb_main, "COLMASK");
+        if (!gb_extended) error = GB_await_error();
+        else {
+            GBDATA *gb_color     = GBT_add_data(gb_extended, align, "colmask", GB_BYTES);
+            if (!gb_color) error = GB_await_error();
+            else    error        = GB_write_bytes(gb_color, dummy, maxalignlen);
+        }
 
-        GBDATA *gb_extended =   GBT_find_or_create_SAI(GLOBAL_gb_main,"COLMASK");
-        gb_color = GBT_add_data(gb_extended, align,"colmask", GB_BYTES);
-        error = GB_write_bytes(gb_color,dummy,maxalignlen);
-
-        delete dummy;
+        free(dummy);
     }
 
     GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
-
-    if(isdefaultalign) delete align;
+    if (isdefaultalign) free(align);
 }
 
 static char *preCreateTempfile(const char *name) {

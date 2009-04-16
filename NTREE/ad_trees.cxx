@@ -54,7 +54,7 @@ void tree_vars_callback(AW_root *aw_root) // Map tree vars to display objects
     }else{
 
         GBDATA *tree_prot = GB_search(ali_cont,"security",  GB_FIND);
-        if (!tree_prot) *GBT_readOrCreate_int(ali_cont,"security", GB_read_security_write(ali_cont));
+        if (!tree_prot) GBT_readOrCreate_int(ali_cont,"security", GB_read_security_write(ali_cont));
         tree_prot = GB_search(ali_cont,"security",  GB_INT);
         GBDATA *tree_rem =  GB_search(ali_cont,"remark",    GB_STRING);
         aw_root->awar(AWAR_TREE_SECURITY)->map((void*)tree_prot);
