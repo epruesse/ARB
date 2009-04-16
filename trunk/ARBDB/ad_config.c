@@ -59,8 +59,7 @@ char **GBT_get_configuration_names_and_count(GBDATA *gb_main, int *countPtr) {
                  gb_config;
                  gb_config = GB_nextEntry(gb_config))
             {
-                GBDATA *gb_name = GB_entry(gb_config, "name");
-                char   *name    = gb_name ? GB_read_string(gb_name) : NULL;
+                char *name = GBT_read_string(gb_config, "name");
 
                 if (!name || name[0] == 0) { // no name or empty name
                     char     *new_name = GBS_global_string_copy("<unnamed%i>", ++unnamed_count);

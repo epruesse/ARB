@@ -177,98 +177,117 @@ GB_ERROR AP_pos_var::retrieve( GBT_TREE *tree){
     return error;
 }
 
-char *AP_pos_var::delete_old_sai( char *sai_name ){
-    GBDATA *gb_extended = GBT_find_SAI(gb_main,sai_name);
-    if (!gb_extended) return 0;
-    GBDATA *gb_ali = GB_search(gb_extended, ali_name, GB_FIND);
-    if (!gb_ali) return 0;
-    GB_ERROR error = GB_delete(gb_ali);
-    return (char *)error;
+GB_ERROR AP_pos_var::delete_old_sai(const char *sai_name) {
+    GBDATA *gb_extended = GBT_find_SAI(gb_main, sai_name);
+    if (gb_extended) {
+        GBDATA *gb_ali = GB_search(gb_extended, ali_name, GB_FIND);
+        if (gb_ali) {
+            return GB_delete(gb_ali);
+        }
+    }
+    return NULL; // sai/ali did not exist
 }
 
-char *AP_pos_var::save_sai( char *sai_name ){
-    char buffer[1024];
-    double logbase = sqrt(2.0);
-    double b = .75;
-    double max_rate = 1.0;
-    int i,j;
+GB_ERROR AP_pos_var::save_sai(const char *sai_name) {
+    GB_ERROR  error       = 0;
+    GBDATA   *gb_extended = GBT_find_or_create_SAI(gb_main, sai_name);
 
+    if (!gb_extended) error = GB_await_error();
+    else {
+        GBDATA *gb_ali     = GB_search(gb_extended, ali_name, GB_DB);
+        if (!gb_ali) error = GB_await_error();
+        else {
+            const char *description = 
+                GBS_global_string("PVP: Positional Variability by Parsimony: tree '%s' ntaxa %li",
+                                  tree_name, treesize/2);
+            
+            error = GBT_write_string(gb_ali, "_TYPE", description);
+        }
 
-    GBDATA *gb_extended = GBT_find_or_create_SAI(gb_main,sai_name);
+        if (!error) {
+            char *data = (char*)calloc(1,(int)ali_len+1);
+            int  *sum  = (int*)calloc(sizeof(int), (int)ali_len);
+            
+            for (int j=0; j<256 && !error; j++) {                   // get sum of frequencies
+                if (frequencies[j]) {
+                    for (int i=0; i<ali_len; i++) {
+                        sum[i] += frequencies[j][i];
+                    }
 
+                    if (j >= 'A' && j <= 'Z') {
+                        GBDATA *gb_freq     = GB_search(gb_ali, GBS_global_string("FREQUENCIES/N%c", j), GB_INTS);
+                        if (!gb_freq) error = GB_await_error();
+                        else    error       = GB_write_ints(gb_freq, frequencies[j], ali_len);
+                    }
+                }
+            }
 
-    {   sprintf(buffer,"%s/_TYPE",ali_name);
-    GBDATA *gb_description  = GB_search( gb_extended, buffer, GB_STRING);
-    sprintf(buffer,"PVP: Positional Variability by Parsimony: tree '%s' ntaxa %li",tree_name, treesize/2);
-    GB_write_string( gb_description,buffer);
+            if (!error) {
+                GBDATA *gb_transi     = GB_search(gb_ali, "FREQUENCIES/TRANSITIONS", GB_INTS);
+                if (!gb_transi) error = GB_await_error();
+                else    error         = GB_write_ints(gb_transi,transitions,ali_len);
+            }
+            if (!error) {
+                GBDATA *gb_transv     = GB_search(gb_ali, "FREQUENCIES/TRANSVERSIONS", GB_INTS);
+                if (!gb_transv) error = GB_await_error();
+                error                 = GB_write_ints(gb_transv,transversions,ali_len);
+            }
+
+            if (!error) {
+                int    max_categ = 0;
+                double logbase   = sqrt(2.0);
+                double lnlogbase = log(logbase);
+                double b         = .75;
+                double max_rate  = 1.0;
+
+                for (int i=0; i<ali_len; i++) {
+                    if (sum[i] * 10 <= treesize) {
+                        data[i] = '.';
+                        continue;
+                    }
+                    if (transitions[i] == 0) {
+                        data[i] = '-';
+                        continue;
+                    }
+                    double rate = transitions[i]/ (double)sum[i];
+                    if (rate >= b * .95) {
+                        rate = b * .95;
+                    }
+                    rate = -b * log(1-rate/b);
+                    if (rate > max_rate) rate = max_rate;
+                    rate /= max_rate;       // scaled  1.0 == fast rate
+                    // ~0.0 slow rate
+                    double dcat = -log(rate)/lnlogbase;
+                    int icat = (int)dcat;
+                    if (icat > 35) icat = 35;
+                    if (icat >= max_categ) max_categ = icat +1;
+                    data[i] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[icat];
+                }
+
+                error = GBT_write_string(gb_ali, "data", data);
+
+                if (!error) {
+                    // Generate Categories
+                    GBS_strstruct *out = GBS_stropen(1000);
+                    for (int i = 0; i<max_categ; i++) {
+                        GBS_floatcat(out, pow(1.0/logbase, i) );
+                        GBS_chrcat(out,' ');
+                    }
+
+                    error = GBT_write_string(gb_ali, "_CATEGORIES", GBS_mempntr(out));
+                    GBS_strforget(out);
+                }
+            }
+
+            free(sum);
+            free(data);
+        }
     }
 
-
-    char *data = (char *)calloc(1,(int)ali_len+1);
-    int *sum = (int *)calloc(sizeof(int), (int)ali_len);
-    for (j=0;j<256;j++) {       // get sum of frequencies
-        if (!frequencies[j]) continue;
-        for (i=0;i<ali_len;i++) {
-            sum[i] += frequencies[j][i];
-        }
-        char freqname[100];
-        if (j<'A' || j>'Z') continue;
-        sprintf(freqname,"FREQUENCIES/N%c",j);
-        GBDATA *gb_freq = GBT_add_data( gb_extended, ali_name, freqname, GB_INTS);
-        GB_write_ints(gb_freq,frequencies[j],ali_len);
-    }
-    {
-        GBDATA *gb_transi = GBT_add_data( gb_extended, ali_name,"FREQUENCIES/TRANSITIONS", GB_INTS);
-        GB_write_ints(gb_transi,transitions,ali_len);
-        GBDATA *gb_transv = GBT_add_data( gb_extended, ali_name,"FREQUENCIES/TRANSVERSIONS", GB_INTS);
-        GB_write_ints(gb_transv,transversions,ali_len);
-    }
-    int max_categ = 0;
-    double lnlogbase = log(logbase);
-    for (i=0;i<ali_len;i++) {
-        if (sum[i] * 10 <= treesize) {
-            data[i] = '.';
-            continue;
-        }
-        if (transitions[i] == 0) {
-            data[i] = '-';
-            continue;
-        }
-        double rate = transitions[i]/ (double)sum[i];
-        if (rate >= b * .95) {
-            rate = b * .95;
-        }
-        rate = -b * log(1-rate/b);
-        if (rate > max_rate) rate = max_rate;
-        rate /= max_rate;       // scaled  1.0 == fast rate
-        // ~0.0 slow rate
-        double dcat = -log(rate)/lnlogbase;
-        int icat = (int)dcat;
-        if (icat > 35) icat = 35;
-        if (icat >= max_categ) max_categ = icat +1;
-        data[i] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[icat];
-    }
-
-    GBDATA *gb_data  = GBT_add_data( gb_extended, ali_name, "data", GB_STRING);
-    GB_write_string(gb_data,data);
-
-    {       // Generate Categories
-        GBS_strstruct *strstruct = GBS_stropen(1000);
-        for (i = 0; i<max_categ; i++) {
-            GBS_floatcat(strstruct, pow(1.0/logbase, i) );
-            GBS_chrcat(strstruct,' ');
-        }
-        char *h = GBS_strclose(strstruct);
-        sprintf(buffer,"%s/_CATEGORIES",ali_name);
-        GBDATA *gb_categories  = GB_search( gb_extended, buffer, GB_STRING);
-        GB_write_string(gb_categories, h);
-        free(h);
-    }
-
-    free(sum);
-    free(data);
-    return 0;
+    return error;
 }
+
+
 
 // Calculate the positional variability: window interface
 void AP_calc_pos_var_pars(AW_window *aww) {

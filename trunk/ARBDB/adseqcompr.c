@@ -753,34 +753,21 @@ GB_ERROR GBT_compress_sequence_tree2(GBDATA *gb_main, const char *tree_name, con
 }
 
 void GBT_compression_test(void *dummy, GBDATA *gb_main) {
-    GB_ERROR  error     = 0;
-    char     *tree_name = 0;
-    char     *ali_name;
-    GBDATA   *gb_tree_name;
+    GB_ERROR  error     = GB_begin_transaction(gb_main);
+    char     *ali_name  = GBT_get_default_alignment(gb_main);
+    char     *tree_name = GBT_read_string(gb_main, "focus/tree_name");
 
     GBUSE(dummy);
+    if (!ali_name || !tree_name) error = GB_await_error();
 
-    GB_begin_transaction(gb_main);
-
-    ali_name     = GBT_get_default_alignment(gb_main);
-    gb_tree_name = GB_search(gb_main, "/focus/tree_name", GB_FIND);
-    if (!gb_tree_name) {
-        error = "Can't detect current treename";
-    }
-    else {
-        tree_name = GB_read_string(gb_tree_name);
-    }
-
-    GB_commit_transaction(gb_main);
+    error = GB_end_transaction(gb_main, error);
 
     if (!error) {
         printf("Recompression data in alignment '%s' using tree '%s'\n", ali_name, tree_name);
         error = GBT_compress_sequence_tree2(gb_main, tree_name, ali_name);
     }
-    if (error) {
-        GB_warning("%s",error);
-    }
 
+    if (error) GB_warning("%s",error);
     free(tree_name);
     free(ali_name);
 }

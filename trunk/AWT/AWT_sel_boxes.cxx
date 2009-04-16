@@ -22,38 +22,28 @@
 
 // ******************** selection boxes on alignments ********************
 
-static void awt_create_selection_list_on_ad_cb(GBDATA *dummy, struct adawcbstruct *cbs)
-{
-    GBDATA *gb_alignment;
-    GBDATA *gb_alignment_name;
-    GBDATA *gb_alignment_type;
-    char   *alignment_name;
-    char   *alignment_type;
-
-    AWUSE(dummy);
-
+static void awt_create_selection_list_on_ad_cb(GBDATA *dummy, struct adawcbstruct *cbs) {
     cbs->aws->clear_selection_list(cbs->id);
 
-    for (gb_alignment = GB_search(cbs->gb_main,"presets/alignment",GB_FIND);
+    for (GBDATA * gb_alignment = GB_search(cbs->gb_main, "presets/alignment", GB_FIND);
          gb_alignment;
          gb_alignment = GB_nextEntry(gb_alignment))
     {
-        gb_alignment_type = GB_entry(gb_alignment,"alignment_type");
-        gb_alignment_name = GB_entry(gb_alignment,"alignment_name");
-        alignment_type    = GB_read_string(gb_alignment_type);
-        alignment_name    = GB_read_string(gb_alignment_name);
+        char *alignment_type = GBT_read_string(gb_alignment, "alignment_type");
+        char *alignment_name = GBT_read_string(gb_alignment, "alignment_name");
+        char *str            = GBS_string_eval(alignment_type, cbs->comm, 0);
 
-        char *str = GBS_string_eval(alignment_type,cbs->comm,0);
-        if (!*str){
-            cbs->aws->insert_selection( cbs->id, alignment_name, alignment_name );
+        if (!*str) {
+            cbs->aws->insert_selection(cbs->id, alignment_name, alignment_name);
         }
         free(str);
         free(alignment_type);
         free(alignment_name);
     }
-    cbs->aws->insert_default_selection( cbs->id, "????", "????" );
-    cbs->aws->update_selection_list( cbs->id );
+    cbs->aws->insert_default_selection(cbs->id, "????", "????");
+    cbs->aws->update_selection_list(cbs->id);
 }
+
 
 void awt_create_selection_list_on_ad(GBDATA *gb_main,AW_window *aws, const char *varname,const char *comm)
 // if comm is set then only those alignments are taken

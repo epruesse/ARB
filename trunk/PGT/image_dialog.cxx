@@ -1179,19 +1179,15 @@ void imageDialog::set_ARB_image_path(const char *path)
 {
     if(!m_hasARBdata) return;
 
-    GBDATA *gb_proteom, *gb_imagepath;
+    GBDATA *gb_proteom;
 
     gb_proteom= find_proteome(m_species, m_experiment, m_proteome);
 
     if(gb_proteom)
     {
         ARB_begin_transaction();
-
-        if(!(gb_imagepath= GB_search(gb_proteom, "image_path", GB_FIND)))
-            gb_imagepath= GB_create(gb_proteom, "image_path", GB_STRING);
-
-        if(gb_imagepath) GB_write_string(gb_imagepath, path);
-
+        GB_ERROR error = GBT_write_string(gb_proteom, "image_path", path);
+        pgt_assert(!error);
         ARB_commit_transaction();
     }
 

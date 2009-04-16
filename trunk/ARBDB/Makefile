@@ -136,9 +136,11 @@ adcompr.o: $(ARBHOME)/INCLUDE/attributes.h
 
 adExperiment.o: ad_k_prot.h
 adExperiment.o: ad_prot.h
+adExperiment.o: ad_t_prot.h
 adExperiment.o: arb_assert.h
 adExperiment.o: arbdb.h
 adExperiment.o: arbdb_base.h
+adExperiment.o: arbdbt.h
 adExperiment.o: $(ARBHOME)/INCLUDE/attributes.h
 
 adGene.o: ad_k_prot.h

@@ -522,21 +522,17 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag
                 GB_export_error("Cannot create linked objects");
                 return NULL; /* do not create linked objects */
             }
-            if(internflag){
-                if ( s2 || (create ==GB_CREATE_CONTAINER) ) {   /* not last key */
-                    gbsp = gb_create_container(gbp, s1);
-                }else{
-                    gbsp = gb_create(gbp, s1,(GB_TYPES)create);
-                    if (create == GB_STRING) {
-                        GB_write_string(gbsp,"");
-                    }
-                }
-            }else{
-                if ( s2 || (create == GB_CREATE_CONTAINER) ) {  /* not last key */
-                    gbsp = GB_create_container(gbp, s1);
-                }else{
-                    gbsp = GB_create(gbp, s1,(GB_TYPES)create);
-                    if (create == GB_STRING) {   GB_write_string(gbsp,"");}
+
+            if (s2 || (create == GB_CREATE_CONTAINER)) {
+                gbsp = internflag
+                    ? gb_create_container(gbp, s1)
+                    : GB_create_container(gbp, s1);
+            }
+            else {
+                gbsp = GB_create(gbp, s1,(GB_TYPES)create);
+                if (create == GB_STRING) {
+                    GB_ERROR error = GB_write_string(gbsp,"");
+                    if (error) GB_internal_error("Couldn't write to just created string entry");
                 }
             }
 
@@ -567,12 +563,14 @@ GBDATA *GB_searchOrCreate_string(GBDATA *gb_container, const char *fieldpath, co
     GBDATA *gb_str = GB_search(gb_container, fieldpath, GB_FIND);
     if (!gb_str) {
         gb_str = GB_search(gb_container, fieldpath, GB_STRING);
-        if (gb_str) {
-            GB_ERROR error = GB_write_string(gb_str, default_value);
-            if (error) {
-                gb_str = 0;
-                GB_export_error(error);
-            }
+        GB_ERROR error;
+        
+        if (!gb_str) error = GB_await_error();
+        else error         = GB_write_string(gb_str, default_value);
+
+        if (error) {
+            gb_str = 0;
+            GB_export_error(error);
         }
     }
     else {
@@ -585,12 +583,14 @@ GBDATA *GB_searchOrCreate_int(GBDATA *gb_container, const char *fieldpath, long 
     GBDATA *gb_int = GB_search(gb_container, fieldpath, GB_FIND);
     if (!gb_int) {
         gb_int = GB_search(gb_container, fieldpath, GB_INT);
-        if (gb_int) {
-            GB_ERROR error = GB_write_int(gb_int, default_value);
-            if (error) {
-                gb_int = 0;
-                GB_export_error(error);
-            }
+        GB_ERROR error;
+
+        if (!gb_int) error = GB_await_error();
+        else error         = GB_write_int(gb_int, default_value);
+        
+        if (error) {
+            gb_int = 0;
+            GB_export_error(error);
         }
     }
     else {
@@ -603,12 +603,14 @@ GBDATA *GB_searchOrCreate_float(GBDATA *gb_container, const char *fieldpath, dou
     GBDATA *gb_float = GB_search(gb_container, fieldpath, GB_FIND);
     if (!gb_float) {
         gb_float = GB_search(gb_container, fieldpath, GB_FLOAT);
-        if (gb_float) {
-            GB_ERROR error = GB_write_float(gb_float, default_value);
-            if (error) {
-                gb_float = 0;
-                GB_export_error(error);
-            }
+        GB_ERROR error;
+
+        if (!gb_float) error = GB_await_error();
+        else error           = GB_write_float(gb_float, default_value);
+        
+        if (error) {
+            gb_float = 0;
+            GB_export_error(error);
         }
     }
     else {

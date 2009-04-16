@@ -122,7 +122,7 @@ void PARS_kernighan_cb(AP_tree *tree) {
     AP_FLOAT pars_start, pars_prev;
     pars_prev  = pars_start = nt->tree->tree_root->costs();
 
-    int rek_deep_max = (int)*GBT_read_int(GLOBAL_gb_main,"genetic/kh/maxdepth");
+    int rek_deep_max = *GBT_read_int(GLOBAL_gb_main,"genetic/kh/maxdepth");
 
     AP_KL_FLAG funktype = (AP_KL_FLAG)*GBT_read_int(GLOBAL_gb_main,"genetic/kh/function_type");
 
@@ -163,11 +163,11 @@ void PARS_kernighan_cb(AP_tree *tree) {
     }
 
     int rek_breite[8];
-    rek_breite[0] = (int)*GBT_read_int(GLOBAL_gb_main,"genetic/kh/static/depth0");
-    rek_breite[1] = (int)*GBT_read_int(GLOBAL_gb_main,"genetic/kh/static/depth1");
-    rek_breite[2] = (int)*GBT_read_int(GLOBAL_gb_main,"genetic/kh/static/depth2");
-    rek_breite[3] = (int)*GBT_read_int(GLOBAL_gb_main,"genetic/kh/static/depth3");
-    rek_breite[4] = (int)*GBT_read_int(GLOBAL_gb_main,"genetic/kh/static/depth4");
+    rek_breite[0] = *GBT_read_int(GLOBAL_gb_main,"genetic/kh/static/depth0");
+    rek_breite[1] = *GBT_read_int(GLOBAL_gb_main,"genetic/kh/static/depth1");
+    rek_breite[2] = *GBT_read_int(GLOBAL_gb_main,"genetic/kh/static/depth2");
+    rek_breite[3] = *GBT_read_int(GLOBAL_gb_main,"genetic/kh/static/depth3");
+    rek_breite[4] = *GBT_read_int(GLOBAL_gb_main,"genetic/kh/static/depth4");
     int rek_breite_anz = 5;
 
     int anzahl = (int)(*GBT_read_float(GLOBAL_gb_main,"genetic/kh/nodes")*tree->arb_tree_leafsum2());

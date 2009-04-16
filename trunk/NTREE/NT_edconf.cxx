@@ -531,24 +531,22 @@ GB_ERROR NT_create_configuration(AW_window *, GBT_TREE **ptree,const char *conf_
     }
 
     char *middle = GBS_strclose(topmid);
-    char *top = GBS_strclose(topfile);
+    char *top    = GBS_strclose(topfile);
 
-    GBDATA *gb_configuration = GBT_create_configuration(GLOBAL_gb_main,conf_name);
-    GB_ERROR error = 0;
-    if (!gb_configuration){
-        error = GB_get_error();
-    }else{
-        GBDATA *gb_top_area = GB_search(gb_configuration,"top_area",GB_STRING);
-        GBDATA *gb_middle_area = GB_search(gb_configuration,"middle_area",GB_STRING);
-        error = GB_write_string(gb_top_area,top);
-        if (!error){
-            error = GB_write_string(gb_middle_area,middle);
-        }
+    GBDATA   *gb_configuration = GBT_create_configuration(GLOBAL_gb_main,conf_name);
+    GB_ERROR  error            = 0;
+
+    if (!gb_configuration) error = GB_await_error();
+    else {
+        error             = GBT_write_string(gb_configuration, "top_area", top);
+        if (!error) error = GBT_write_string(gb_configuration, "middle_area", middle);
     }
+
     free(to_free);
     free(middle);
     free(top);
     GBS_free_hash(used);
+
     if (error) aw_message(error);
     return error;
 }

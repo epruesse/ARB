@@ -660,70 +660,84 @@ char *AWT_graphic_tree_node_deleted(void *cd, AP_tree *old)
 }
 void AWT_graphic_tree::toggle_group(AP_tree * at)
 {
-    if (at->gb_node) {
-        GBDATA *gb_name = GB_search(at->gb_node, "group_name", GB_FIND);
-        if (gb_name) {
-            char       *gname = GB_read_string(gb_name);
-            const char *msg   = GBS_global_string("What to do with group '%s'?",gname);
-            
-            switch (aw_question(msg,"Rename,Destroy,Cancel")){
-                case 0: {
+    GB_ERROR error = NULL;
+    
+    if (at->gb_node) {                                            // existing group
+        char *gname = GBT_read_string(at->gb_node, "group_name");
+        if (gname) {
+            const char *msg = GBS_global_string("What to do with group '%s'?",gname);
+
+            switch (aw_question(msg, "Rename,Destroy,Cancel")) {
+                case 0: {                                                    // rename
                     char *new_gname = aw_input("Rename group", "Change group name:", at->name);
                     if (new_gname) {
                         freeset(at->name, new_gname);
-                        GB_write_string(gb_name, new_gname);
+                        error = GBT_write_string(at->gb_node, "group_name", new_gname);
                     }
-                    return;
+                    break;
                 }
-                case 1: {
+
+                case 1:                                      // destroy
                     at->gr.grouped = 0;
                     at->name       = 0;
-                    GB_delete(at->gb_node);
+                    error          = GB_delete(at->gb_node);
                     at->gb_node    = 0;
-                    return;
-                }
-                case 2: {
-                    return;
-                }
+                    break;
+
+                case 2:         // cancel
+                    break;
             }
 
             free(gname);
         }
-        else {
-            
-        }
     }
-    if (create_group(at)) at->gr.grouped = 1;
+    else {
+        error = create_group(at); // create new group
+        if (!error && at->name) at->gr.grouped = 1;
+    }
+
+    if (error) aw_message(error);
 }
 
-AW_BOOL AWT_graphic_tree::create_group(AP_tree * at)
-{
+GB_ERROR AWT_graphic_tree::create_group(AP_tree * at) {
+    GB_ERROR error = NULL;
     if (!at->name) {
         char *gname = aw_input("Enter Name of Group");
-        if (!gname) return AW_FALSE;
+        if (gname) {
+            GBDATA         *gb_mainT = GB_get_root(tree_static->gb_tree);
+            GB_transaction  ta(gb_mainT);
 
-        GBDATA         *gbmain = GB_get_root(tree_static->gb_tree);
-        GB_transaction  ta(gbmain);
+            if (!at->gb_node) {
+                at->gb_node   = GB_create_container(this->tree_static->gb_tree, "node");
+                if (!at->gb_node) error = GB_await_error();
+                else {
+                    error = GBT_write_int(at->gb_node, "id", 0);
+                    this->exports.save = !error;
+                }
+            }
 
-        if (!at->gb_node) {
-            at->gb_node   = GB_create_container(this->tree_static->gb_tree, "node");
-            GBDATA *gb_id = GB_search(at->gb_node, "id", GB_INT);
-            GB_write_int(gb_id, 0);
-            this->exports.save = 1;
+            if (!error) {
+                GBDATA *gb_name     = GB_search(at->gb_node, "group_name", GB_STRING);
+                if (!gb_name) error = GB_await_error();
+                else {
+                    error = GBT_write_group_name(gb_name, gname);
+                    if (!error) at->name = gname;
+                }
+            }
+            error = ta.close(error);
         }
-
-        at->name = gname;
-        GBDATA *gb_name = GB_search(at->gb_node, "group_name", GB_STRING);
-        GBT_write_group_name(gb_name, at->name);
     }
     else if (!at->gb_node) {
-        at->gb_node   = GB_create_container(this->tree_static->gb_tree, "node");
-        GBDATA *gb_id = GB_search(at->gb_node, "id", GB_INT);
-        GB_write_int(gb_id, 0);
-        this->exports.save = 1;
+        at->gb_node = GB_create_container(this->tree_static->gb_tree, "node");
+
+        if (!at->gb_node) error = GB_await_error();
+        else {
+            error = GBT_write_int(at->gb_node, "id", 0);
+            this->exports.save = !error;
+        }
     }
 
-    return AW_TRUE;
+    return error;
 }
 
 void AWT_graphic_tree::key_command(AWT_COMMAND_MODE /*cmd*/, AW_key_mod key_modifier, char key_char,
@@ -1549,7 +1563,8 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         if (at->is_leaf) break; // don't touch zombies
 
                         if (this->tree_static->gb_tree) {
-                            this->create_group(at);
+                            GB_ERROR error = this->create_group(at);
+                            if (error) aw_message(error);
                         }
                         if (at->name) {
                             at->gr.grouped ^= 1;
@@ -1663,13 +1678,6 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                     at = (AP_tree *)ct->client_data1;
                 }
                 if (!at) break;
-                //                 if (button == AWT_M_RIGHT) {
-                //                     if (this->tree_static->gb_tree) {
-                //                         this->create_group(at);
-                //                     }
-                //                     this->exports.refresh = 1;
-                //                 }
-                //this->exports.refresh = 1;        // No refresh needed !! AD_map_viewer will do the refresh
                 AD_map_viewer(at->gb_node,ADMVT_INFO);
             }
             break;
@@ -1682,13 +1690,6 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                     at = (AP_tree *)ct->client_data1;
                 }
                 if (!at) break;
-//                 if (button == AWT_M_RIGHT) {
-//                     if (this->tree_static->gb_tree) {
-//                         this->create_group(at);
-//                     }
-//                     this->exports.refresh = 1;
-//                 }
-                //this->exports.refresh = 1;        // No refresh needed !! AD_map_viewer will do the refresh
                 AD_map_viewer(at->gb_node,ADMVT_WWW);
             }
             break;
@@ -2393,7 +2394,7 @@ const char *AWT_graphic_tree::show_ruler(AW_device *device, int gc) {
         ruler_text_y = *GBT_readOrCreate_float(this->tree_static->gb_tree, awar, ruler_text_y);
 
         sprintf(awar,"ruler/ruler_width");
-        double ruler_width = (double)*GBT_readOrCreate_int(this->tree_static->gb_tree, awar, 0);
+        double ruler_width = *GBT_readOrCreate_int(this->tree_static->gb_tree, awar, 0);
 
         device->set_line_attributes(gc, ruler_width+baselinewidth, AW_SOLID);
 

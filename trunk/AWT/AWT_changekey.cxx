@@ -25,70 +25,70 @@
 GBDATA *awt_get_key(GBDATA *gb_main, const char *key, const char *change_key_path)
 // get the container of a species key description
 {
-    GBDATA *gb_key_data = GB_search(gb_main, change_key_path, GB_CREATE_CONTAINER);
 #if defined(DEVEL_RALF)
 #warning check if search for CHANGEKEY_NAME should be case-sensitive!
 #endif // DEVEL_RALF
-    GBDATA *gb_key_name     = GB_find_string(gb_key_data, CHANGEKEY_NAME, key, GB_IGNORE_CASE, down_2_level);
-    GBDATA *gb_key          = 0;
-    if (gb_key_name) gb_key = GB_get_father(gb_key_name);
+    GBDATA *gb_key      = 0;
+    GBDATA *gb_key_data = GB_search(gb_main, change_key_path, GB_CREATE_CONTAINER);
+
+    if (gb_key_data) {
+        GBDATA *gb_key_name = GB_find_string(gb_key_data, CHANGEKEY_NAME, key, GB_IGNORE_CASE, down_2_level);
+        
+        if (gb_key_name) gb_key = GB_get_father(gb_key_name);
+    }
     return gb_key;
 }
 
-GB_TYPES awt_get_type_of_changekey(GBDATA *gb_main,const char *field_name, const char *change_key_path) {
-    GBDATA *gbd = awt_get_key(gb_main,field_name, change_key_path);
-    if(!gbd) return GB_NONE;
-    GBDATA *gb_key_type = GB_entry(gbd,CHANGEKEY_TYPE);
-    if (!gb_key_type) return GB_NONE;
-    return (GB_TYPES) GB_read_int(gb_key_type);
+GB_TYPES awt_get_type_of_changekey(GBDATA *gb_main, const char *field_name, const char *change_key_path) {
+    GB_TYPES  type = GB_NONE;
+    GBDATA   *gbd  = awt_get_key(gb_main,field_name, change_key_path);
+
+    if (gbd) {
+        long *typePtr     = GBT_read_int(gbd, CHANGEKEY_TYPE);
+        if (typePtr) type = (GB_TYPES)*typePtr;
+    }
+
+    return type;
 }
 
 
-GB_ERROR awt_add_new_changekey_to_keypath(GBDATA *gb_main,const char *name, int type, const char *keypath)
-{
-    GBDATA *gb_key;
-    GBDATA *key_name;
-    GB_ERROR error = 0;
-    GBDATA *gb_key_data;
-    gb_key_data = GB_search(gb_main,keypath,GB_CREATE_CONTAINER);
+GB_ERROR awt_add_new_changekey_to_keypath(GBDATA *gb_main,const char *name, int type, const char *keypath) {
+    GB_ERROR  error  = NULL;
+    GBDATA   *gb_key = awt_get_key(gb_main, name, keypath);
+    char     *c      = GB_first_non_key_char(name);
 
-    for (gb_key = GB_entry(gb_key_data,CHANGEKEY); gb_key; gb_key = GB_nextEntry(gb_key)) {
-        key_name = GB_search(gb_key,CHANGEKEY_NAME,GB_STRING);
-        if (!strcmp(GB_read_char_pntr(key_name),name)) break;
-    }
-    char *c = GB_first_non_key_char(name);
     if (c) {
         char *new_name = strdup(name);
+        
         *GB_first_non_key_char(new_name) = 0;
-        if (*c =='/'){
-            error = awt_add_new_changekey(gb_main,new_name,GB_DB);
-        }else if (*c =='-'){
-            error = awt_add_new_changekey(gb_main,new_name,GB_LINK);
-        }else{
-            aw_message(GBS_global_string("Cannot add '%s' to your key list",name));
-        }
+
+        if (*c =='/') error      = awt_add_new_changekey(gb_main, new_name, GB_DB);
+        else if (*c =='-') error = awt_add_new_changekey(gb_main, new_name, GB_LINK);
+        else error               = GBS_global_string("Cannot add '%s' to your key list (illegal character '%c')", name, *c);
+
         free(new_name);
-        if (error && !strncmp(error, "Fatal",5) ) return error;
     }
 
-    if (!gb_key) {
-        GBDATA *key = GB_create_container(gb_key_data,CHANGEKEY);
-        key_name = GB_create(key,CHANGEKEY_NAME,GB_STRING);
-        GB_write_string(key_name,name);
-        GBDATA *key_type = GB_create(key,CHANGEKEY_TYPE,GB_INT);
-        GB_write_int(key_type,type);
-    }else{
-        GBDATA *key_type = GB_search(gb_key,CHANGEKEY_TYPE, GB_INT);
-        int elem_type = GB_read_int(key_type);
-        if ( elem_type != type && (type != GB_DB || elem_type != GB_LINK)){
-            return ("Fatal Error: Key exists and type is incompatible");
+    if (!error) {
+        if (!gb_key) {          // create new key
+            GBDATA *gb_key_data = GB_search(gb_main, keypath, GB_CREATE_CONTAINER);
+            gb_key              = gb_key_data ? GB_create_container(gb_key_data, CHANGEKEY) : 0;
+
+            if (!gb_key) error = GB_get_error();
+            else {
+                error = GBT_write_string(gb_key, CHANGEKEY_NAME, name);
+                if (!error) error = GBT_write_int(gb_key, CHANGEKEY_TYPE, type);
+            }
         }
-#if defined(DEBUG)
-        printf("Warning: Key '%s' exists\n", name);
-#endif
-        return 0;
+        else {                  // check type of existing key
+            long *elem_type = GBT_read_int(gb_key, CHANGEKEY_TYPE);
+            if (*elem_type != type) error = GBS_global_string("Key '%s' exists, but has different type", name);
+        }
     }
-    return 0;
+
+    awt_assert(gb_key || error);
+
+    return error;
 }
 
 GB_ERROR awt_add_new_changekey(GBDATA *gb_main,const char *name, int type)              { return awt_add_new_changekey_to_keypath(gb_main, name, type, CHANGE_KEY_PATH); }
@@ -118,27 +118,19 @@ inline bool is_in_reserved_path(const char *fieldpath)  {
 static void awt_delete_unused_changekeys(GBDATA *gb_main, const char **names, const char *change_key_path) {
     // deletes all keys from 'change_key_path' which are not listed in 'names'
     GBDATA *gb_key_data = GB_search(gb_main, change_key_path, GB_CREATE_CONTAINER);
-    GBDATA *gb_key      = GB_entry(gb_key_data, CHANGEKEY);
+    GBDATA *gb_key      = gb_key_data ? GB_entry(gb_key_data, CHANGEKEY) : 0;
 
     while (gb_key) {
-        bool        found = false;
-        int         key_type;
-        const char *key_name;
-
-        {
-            GBDATA *gb_key_type = GB_entry(gb_key, CHANGEKEY_TYPE);
-            key_type            = GB_read_int(gb_key_type);
-
-            GBDATA *gb_key_name = GB_entry(gb_key, CHANGEKEY_NAME);
-            key_name            = GB_read_char_pntr(gb_key_name);
-        }
+        bool        found    = false;
+        int         key_type = *GBT_read_int(gb_key, CHANGEKEY_TYPE);
+        const char *key_name = GBT_read_char_pntr(gb_key, CHANGEKEY_NAME);
 
         for (const char **name = names; *name; ++name) {
             if (strcmp(key_name, (*name)+1) == 0) { // key with this name exists
                 if (key_type == (*name)[0]) {
                     found = true;
                 }
-                // otherwise key exists, byt type mismatches = > delete this key
+                // otherwise key exists, but type mismatches = > delete this key
                 break;
             }
         }
@@ -171,7 +163,10 @@ static void awt_delete_unused_changekeys(GBDATA *gb_main, const char **names, co
 
 static void awt_show_all_changekeys(GBDATA *gb_main, const char *change_key_path) {
     GBDATA *gb_key_data = GB_search(gb_main, change_key_path, GB_CREATE_CONTAINER);
-    for (GBDATA *gb_key = GB_entry(gb_key_data, CHANGEKEY); gb_key; gb_key = GB_nextEntry(gb_key)) {
+    for (GBDATA *gb_key = gb_key_data ? GB_entry(gb_key_data, CHANGEKEY) : 0;
+         gb_key;
+         gb_key = GB_nextEntry(gb_key))
+    {
         GBDATA *gb_key_hidden = GB_entry(gb_key, CHANGEKEY_HIDDEN);
         if (gb_key_hidden) {
             if (GB_read_int(gb_key_hidden)) GB_write_int(gb_key_hidden, 0); // unhide

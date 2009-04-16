@@ -1921,7 +1921,7 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
                 new_species_name = AWTC_generate_random_name(*existingNames);
 
                 if (!new_species_name) {
-                    error = GB_export_error("Failed to create a new name for '%s'", new_species_full_name);
+                    error = GBS_global_string("Failed to create a new name for '%s'", new_species_full_name);
                 }
             }
 
@@ -1935,29 +1935,16 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
                 if (creation_mode==CREATE_NEW_SPECIES) {
                     GBDATA *gb_created_species = GBT_find_or_create_species(GLOBAL_gb_main, new_species_name);
                     if (!gb_created_species) {
-                        error = GB_export_error("Failed to create new species '%s'", new_species_name);
+                        error = GBS_global_string("Failed to create new species '%s'", new_species_name);
                     }
                     else {
-                        GB_CSTR ali = GBT_get_default_alignment(GLOBAL_gb_main);
-                        GBDATA *gb_ali = GB_search(gb_created_species, ali, GB_DB);
-                        if (gb_ali) {
-                            GBDATA *gb_data = GB_search(gb_ali, "data", GB_STRING);
-                            error = GB_write_string(gb_data, ".......");
-                        }
-                        else {
-                            error = GB_export_error("Can't create alignment '%s'", ali);
-                        }
-                    }
+                        GB_CSTR  ali    = GBT_get_default_alignment(GLOBAL_gb_main);
+                        GBDATA  *gb_ali = GB_search(gb_created_species, ali, GB_DB);
 
-                    if (!error) {
-                        GBDATA *gb_full_name = GB_search(gb_created_species, "full_name", GB_STRING);
-                        if (gb_full_name) {
-                            error = GB_write_string(gb_full_name, new_species_full_name);
-                        }
-                        else {
-                            error = GB_export_error("Can't create full_name entry for new species");
-                        }
+                        if (gb_ali) error = GBT_write_string(gb_ali, "data", ".......");
+                        else error        = GBS_global_string("Can't create alignment '%s' (Reason: %s)", ali, GB_await_error());
                     }
+                    if (!error) error = GBT_write_string(gb_created_species, "full_name", new_species_full_name);
                 }
                 else if (creation_mode==CREATE_FROM_CONSENSUS && dataSource==MERGE_FIELDS)
                 { // create from consensus (merge fields from all species in container)
@@ -1978,17 +1965,9 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
                             gb_new_species = GB_create_container(gb_species_data, "species");
                             error = GB_copy(gb_new_species, gb_source); // copy first found species to create a new species
                         }
-                        if (!error) {
-                            GBDATA *gb_name = GB_search(gb_new_species, "name", GB_STRING);
-                            error = GB_write_string(gb_name, new_species_name); // insert new 'name'
-                        }
-                        if (!error) {
-                            GBDATA *gb_full_name = GB_search(gb_new_species, "full_name", GB_STRING);
-                            error = GB_write_string(gb_full_name, new_species_full_name); // insert new 'full_name'
-                        }
-                        if (!error) {
-                            error = createDataFromConsensus(gb_new_species, group_man); // insert consensus as 'data'
-                        }
+                        if (!error) error = GBT_write_string(gb_new_species, "name", new_species_name); // insert new 'name'
+                        if (!error) error = GBT_write_string(gb_new_species, "full_name", new_species_full_name); // insert new 'full_name'
+                        if (!error) error = createDataFromConsensus(gb_new_species, group_man); // insert consensus as 'data'
 
                         if (!error) {
                             char *doneFields = strdup(";name;"); // all fields which are already merged
@@ -2142,13 +2121,7 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
                                                 }
 
                                                 if (new_content) {
-                                                    GBDATA *gb_new_field = GB_search(gb_new_species, fieldName, GB_STRING);
-                                                    if (gb_new_field) {
-                                                        error = GB_write_string(gb_new_field, new_content);
-                                                    }
-                                                    else {
-                                                        error = GB_export_error("Can't create field '%s'", fieldName);
-                                                    }
+                                                    error = GBT_write_string(gb_new_species, fieldName, new_content);
                                                     free(new_content);
                                                 }
                                             }
@@ -2183,23 +2156,17 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
                     GBDATA                    *gb_source   = GBT_find_species_rel_species_data(gb_species_data, source_name);
 
                     if (gb_source) {
-                        gb_new_species = GB_create_container(gb_species_data, "species");
-                        error = GB_copy(gb_new_species, gb_source);
-                        if (!error) {
-                            GBDATA *gb_name = GB_search(gb_new_species, "name", GB_STRING);
-                            error = GB_write_string(gb_name, new_species_name);
-                        }
-                        if (!error) {
-                            GBDATA *gb_full_name = GB_search(gb_new_species, "full_name", GB_STRING);
-                            error = GB_write_string(gb_full_name, new_species_full_name); // insert new 'full_name'
-                        }
+                        gb_new_species    = GB_create_container(gb_species_data, "species");
+                        error             = GB_copy(gb_new_species, gb_source);
+                        if (!error) error = GBT_write_string(gb_new_species, "name", new_species_name);
+                        if (!error) error = GBT_write_string(gb_new_species, "full_name", new_species_full_name); // insert new 'full_name'
                         if (!error && creation_mode==CREATE_FROM_CONSENSUS) {
                             ED4_group_manager *group_man = cursor_terminal->get_parent(ED4_L_GROUP)->to_group_manager();
                             error = createDataFromConsensus(gb_new_species, group_man);
                         }
                     }
                     else {
-                        error = GB_export_error("Can't find species '%s'", source_name);
+                        error = GBS_global_string("Can't find species '%s'", source_name);
                     }
                 }
             }

@@ -1673,18 +1673,12 @@ static void awt_loadsave_colorset(AW_window *aws, AW_CL cl_csd, AW_CL cl_mode) {
             if (!gb_colorset) { // create new (otherwise overwrite w/o comment)
                 gb_colorset             = GB_create_container(gb_colorset_root, "colorset");
                 if (!gb_colorset) error = GB_get_error();
-                else {
-                    GBDATA *gb_name = GB_create(gb_colorset, "name", GB_STRING);
-                    if (!gb_name) error = GB_get_error();
-                    else error = GB_write_string(gb_name, name);
-                }
+                else error              = GBT_write_string(gb_colorset, "name", name);
             }
             if (!error) {
                 char *colorset = create_colorset_representation(csd, error);
                 if (colorset) {
-                    GBDATA *gb_set     = GB_search(gb_colorset, "color_set", GB_STRING);
-                    if (!gb_set) error = GB_get_error();
-                    else    error      = GB_write_string(gb_set, colorset);
+                    error = GBT_write_string(gb_colorset, "color_set", colorset);
                     free(colorset);
                 }
             }

@@ -1785,8 +1785,7 @@ static GB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
                     }
 
                     if (!error) { // write used relatives to db-field
-                        GBDATA *gb_used_relatives = GB_search(gb_toAlign, "used_rels", GB_STRING);
-                        GB_write_string(gb_used_relatives, used_relatives);
+                        error = GBT_write_string(gb_toAlign, "used_rels", used_relatives);
                     }
                 }
 

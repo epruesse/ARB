@@ -13,6 +13,8 @@
 #include "SEC_graphic.hxx"
 #include "SEC_defs.hxx"
 
+#include <arbdbt.h>
+
 #include <cstdlib>
 #include <climits>
 
@@ -24,17 +26,8 @@ GB_ERROR SEC_structure_toggler::store(GBDATA *gb_struct) {
     char     *xstring = 0;
     GB_ERROR  error   = gfx->read_data_from_db(&data, &xstring);
 
-    if (!error) {
-        GBDATA *gb_data = GB_search(gb_struct, "data", GB_STRING);
-        if (!gb_data) error = GB_get_error();
-        else error = GB_write_string(gb_data, data);
-    }
-
-    if (!error) {
-        GBDATA *gb_ref = GB_search(gb_struct, "ref", GB_STRING);
-        if (!gb_ref) error = GB_get_error();
-        else error = GB_write_string(gb_ref, xstring);
-    }
+    if (!error) error = GBT_write_string(gb_struct, "data", data);
+    if (!error) error = GBT_write_string(gb_struct, "ref", xstring);
 
     free(xstring);
     free(data);
@@ -68,13 +61,19 @@ GB_ERROR SEC_structure_toggler::restore(GBDATA *gb_struct) {
 }
 
 int SEC_structure_toggler::current() {
-    GBDATA *gb_num = GB_search(gb_structures, "current", GB_INT);
-    return GB_read_int(gb_num);
+    return *GBT_read_int(gb_structures, "current");
 }
-void SEC_structure_toggler::set_current(int idx) {
-    GBDATA *gb_num = GB_search(gb_structures, "current", GB_INT);
-    sec_assert(find(idx)); // oops - nonexisting container
-    GB_write_int(gb_num, idx);
+
+GB_ERROR SEC_structure_toggler::set_current(int idx) {
+    GBDATA   *gb_num = GB_search(gb_structures, "current", GB_INT);
+    GB_ERROR  error;
+
+    if (!gb_num) error = GB_await_error();
+    else {
+        sec_assert(find(idx));                      // oops - nonexisting container
+        error = GB_write_int(gb_num, idx);
+    }
+    return error;
 }
 
 GBDATA *SEC_structure_toggler::find(int num) {
@@ -99,10 +98,9 @@ GBDATA *SEC_structure_toggler::create(const char *structure_name) {
         st_error = setName(gb_new, structure_name);
 
         if (!st_error) st_error = store(gb_new);
+        if (!st_error) st_error = set_current(Count);
         if (!st_error) {
-            set_current(Count);
             gb_current = gb_new;
-            
             sec_assert(find(current()) == gb_current);
             Count++;
         }
@@ -130,7 +128,7 @@ SEC_structure_toggler::SEC_structure_toggler(GBDATA *gb_main, const char *ali_na
         find(INT_MAX); // sets Count
         if (Count == 0) { // init
             gb_current = create(ali_name);
-            set_current(0);
+            st_error   = set_current(0);
         }
         else {
             int curr = current();
@@ -138,7 +136,7 @@ SEC_structure_toggler::SEC_structure_toggler(GBDATA *gb_main, const char *ali_na
                 gb_current = find(current());
             }
             else { // wrong -> reset
-                set_current(0);
+                st_error   = set_current(0);
                 gb_current = find(0);
             }
         }
@@ -158,11 +156,10 @@ GB_ERROR SEC_structure_toggler::next() {
         if (nextNum >= Count) nextNum = 0;
 
         sec_assert(find(current()) == gb_current);
-        
-        error = store(gb_current);
 
+        error             = store(gb_current);
+        if (!error) error = set_current(nextNum);
         if (!error) {
-            set_current(nextNum);
             gb_current = find(nextNum);
             if (!gb_current) {
                 error = GBS_global_string("Failed to find structure #%i", nextNum);
@@ -211,10 +208,9 @@ GB_ERROR SEC_structure_toggler::remove() {
     if (!error) {
         int curr = current();
         error    = GB_delete(gb_del);
-
         if (!error) {
             Count--;
-            if (curr >= del) set_current(curr-1);
+            if (curr >= del) error = set_current(curr-1);
         }
     }
     return ta.close(error);
@@ -233,13 +229,7 @@ const char *SEC_structure_toggler::name() {
 }
 
 GB_ERROR SEC_structure_toggler::setName(GBDATA *gb_struct, const char *new_name) {
-    GB_ERROR  error    = 0;
-    GBDATA   *gb_name  = GB_search(gb_struct, "name", GB_STRING);
-    if (gb_name) error = GB_write_string(gb_name, new_name);
-    else      error    = GB_get_error();
-
-    return error;
-    
+    return GBT_write_string(gb_struct, "name", new_name);
 }
 
 GB_ERROR SEC_structure_toggler::setName(const char *new_name) {

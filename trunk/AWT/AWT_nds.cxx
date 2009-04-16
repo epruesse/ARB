@@ -211,11 +211,8 @@ void create_nds_vars(AW_root *aw_root, AW_default awdef, GBDATA *gb_main) {
                 was_group_name = true; // means: change group/leaf + add 'taxonomy(1)' to ACI
             }
 
-            GBDATA *gb_len1  = GB_entry(gb_viewkey, "len1");
-            GBDATA *gb_pars  = GB_entry(gb_viewkey, "pars");
-
-            if (!gb_len1)  { gb_len1 = GB_create(gb_viewkey, "len1",  GB_INT   ); GB_write_int(gb_len1, default_len); }
-            if (!gb_pars ) { gb_pars  = GB_create(gb_viewkey, "pars",  GB_STRING); GB_write_string(gb_pars, ""); }
+            GB_searchOrCreate_int(gb_viewkey, "len1", default_len); 
+            GBDATA *gb_pars = GB_searchOrCreate_string(gb_viewkey, "pars", "");
 
             if (was_group_name) {
                 group = 1;
@@ -251,10 +248,8 @@ void create_nds_vars(AW_root *aw_root, AW_default awdef, GBDATA *gb_main) {
                 }
             }
 
-            GBDATA *gb_group = GB_entry(gb_viewkey, "group");
-            GBDATA *gb_leaf  = GB_entry(gb_viewkey, "leaf");
-            if (!gb_group) { gb_group = GB_create(gb_viewkey, "group", GB_INT); GB_write_int(gb_group, group ); }
-            if (!gb_leaf)  { gb_leaf = GB_create(gb_viewkey, "leaf",  GB_INT); GB_write_int(gb_leaf,  leaf ); }
+            GB_searchOrCreate_int(gb_viewkey, "group", group);
+            GB_searchOrCreate_int(gb_viewkey, "leaf", leaf);
         }
     }
 
@@ -551,15 +546,15 @@ void make_node_text_init(GBDATA *gb_main){
 
     for (gbz = GB_entry(gb_arb_presets, "viewkey"); gbz; gbz  = GB_nextEntry(gbz)) {
         /* toggle set ? */
-        bool at_leaf = GB_read_int(GB_entry(gbz, "leaf"));
-        bool at_group = GB_read_int(GB_entry(gbz, "group"));
+        bool at_leaf  = *GBT_read_int(gbz, "leaf");
+        bool at_group = *GBT_read_int(gbz, "group");
 
 
         if (at_leaf || at_group) {
             freeset(awt_nds_ms->dkeys[count], GB_read_string(GB_entry(gbz, "key_text")));
 
             awt_nds_ms->rek[count]      = (GB_first_non_key_char(awt_nds_ms->dkeys[count]) != 0);
-            awt_nds_ms->lengths[count]  = GB_read_int(GB_entry(gbz, "len1"));
+            awt_nds_ms->lengths[count]  = *GBT_read_int(gbz, "len1");
             awt_nds_ms->at_leaf[count]  = at_leaf;
             awt_nds_ms->at_group[count] = at_group;
 

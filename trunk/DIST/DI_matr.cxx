@@ -1348,7 +1348,7 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL bootstrap_flag)
         free(tree_name);
     }
 
-    if (!error && tree) error = GBT_delete_tree(tree);
+    if (tree) GBT_delete_tree(tree);
 
     if (close_stat) aw_closestatus();
     aw_status();                      // remove 'abort' flag

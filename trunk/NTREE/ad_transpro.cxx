@@ -642,19 +642,10 @@ GB_ERROR arb_transdna(GBDATA *gb_main, char *ali_source, char *ali_dest, long *n
         }
         else {
             nt_assert(strlen(buffer) == (unsigned)ali_len);
-            
+
             // re-alignment sucessfull
-            error = GB_write_string(gb_dest_data,buffer);
-            if (!error) {
-                GBDATA *gb_codon_start = GB_search(gb_species, "codon_start", GB_STRING); // find or create
-                if (!gb_codon_start) {
-                    error = GB_get_error();
-                }
-                else {
-                    // write 'codon_start'
-                    error = GB_write_string(gb_codon_start, "1"); // after re-alignment codon_start is always 1
-                }
-            }
+            error             = GB_write_string(gb_dest_data, buffer);
+            if (!error) error = GBT_write_string(gb_species, "codon_start", "1"); // after re-alignment codon_start is always 1
         }
 
         free(buffer);

@@ -16,6 +16,8 @@
 #include <arbdb.h>
 #include <arbdbt.h>
 
+#define pgt_assert(cond) arb_assert(cond)
+
 // ARB AWARS USED BY PGT
 #define AWAR_EXPERIMENT_NAME "tmp/exp/name"
 #define AWAR_PROTEOM_NAME    "tmp/exp/proteom_name"

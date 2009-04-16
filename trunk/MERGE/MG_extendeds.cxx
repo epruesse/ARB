@@ -37,13 +37,9 @@ void MG_extended_rename_cb(AW_window *aww,GBDATA *gbmain, int ex_nr) {
             GBDATA *gb_sai      = GBT_find_SAI_rel_SAI_data(gb_sai_data, source);
             GBDATA *gb_dest_sai = GBT_find_SAI_rel_SAI_data(gb_sai_data, dest);
 
-            if (gb_dest_sai) error = GBS_global_string("SAI '%s' already exists", dest);
+            if (gb_dest_sai) error  = GBS_global_string("SAI '%s' already exists", dest);
             else if (!gb_sai) error = "Please select a SAI";
-            else {
-                GBDATA *gb_name     = GB_search(gb_sai, "name", GB_STRING);
-                if (!gb_name) error = GB_get_error();
-                else    error       = GB_write_string(gb_name, dest);
-            }
+            else error              = GBT_write_string(gb_sai, "name", dest);
         }
     }
     error = GB_end_transaction(gbmain, error);

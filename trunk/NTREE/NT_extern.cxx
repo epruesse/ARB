@@ -224,8 +224,10 @@ void nt_create_all_awars(AW_root *awr, AW_default def) {
     NT_createValidNamesAwars(awr,def); // lothar
     SQ_create_awars(awr, def);
 
-    ARB_init_global_awars(awr, def, GLOBAL_gb_main);
-    awt_create_aww_vars(awr,def);
+    GB_ERROR error = ARB_init_global_awars(awr, def, GLOBAL_gb_main);
+    if (!error) awt_create_aww_vars(awr,def);
+
+    if (error) aw_message(error);
 }
 
 

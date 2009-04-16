@@ -1022,7 +1022,7 @@ void AP_tree::load_node_info(){
     this->gr.grouped = PH_tree_read_byte(this->gb_node, "grouped", 0);
 }
 
-void AP_tree::move_gbt_2_ap(GBT_TREE* tree, GB_BOOL insert_remove_cb)
+void AP_tree::move_gbt_2_ap(GBT_TREE* tree, bool insert_remove_cb)
 {
     this->is_leaf = tree->is_leaf;
     this->leftlen = tree->leftlen;
@@ -1094,22 +1094,20 @@ GB_ERROR PH_tree_write_byte(GBDATA *gb_tree, AP_tree *node,short i,const char *k
     return error;
 }
 
-GB_ERROR PH_tree_write_float(GBDATA *gb_tree, AP_tree *node,float f,const char *key, float init)
-{
-    GBDATA *gbd;
-    GB_ERROR error= 0;
+GB_ERROR PH_tree_write_float(GBDATA *gb_tree, AP_tree *node,float f,const char *key, float init) {
+    GB_ERROR  error = 0;
     if (f==init) {
         if (node->gb_node){
-            gbd = GB_entry(node->gb_node,key);
-            if (gbd) GB_delete(gbd);
+            GBDATA *gbd    = GB_entry(node->gb_node,key);
+            if (gbd) error = GB_delete(gbd);
         }
-    }else{
+    }
+    else {
         if (!node->gb_node){
-            node->gb_node = GB_create_container(gb_tree,"node");
+            node->gb_node             = GB_create_container(gb_tree,"node");
+            if (!node->gb_node) error = GB_await_error();
         }
-        gbd = GB_entry(node->gb_node,key);
-        if (!gbd) gbd = GB_create(node->gb_node,key,GB_FLOAT);
-        error = GB_write_float(gbd,f);
+        if (!error) error = GBT_write_float(node->gb_node, key, f);
     }
     return error;
 }
@@ -1384,35 +1382,35 @@ AP_FLOAT AP_tree::costs(void){
     return 0.0;
 }
 
-GB_ERROR AP_tree::load( AP_tree_root *tr, int link_to_database, GB_BOOL insert_delete_cbs, GB_BOOL show_status, int *zombies, int *duplicates)    {
-    GBDATA *gb_main = tr->gb_main;
-    char *tree_name = tr->tree_name;
-    GB_transaction dummy(gb_main);  // open close a transaction
+GB_ERROR AP_tree::load(AP_tree_root *tree_static, bool link_to_database, bool insert_delete_cbs, bool show_status, int *zombies, int *duplicates) {
+    GBDATA   *gb_main   = tree_static->gb_main;
+    char     *tree_name = tree_static->tree_name;
+    GB_ERROR  error     = GB_push_transaction(gb_main);
 
-    GBT_TREE *gbt_tree;
-    GBDATA *gb_tree_data;
-    GBDATA *gb_tree;
+    if (!error) {
+        GBT_TREE *gbt_tree   = GBT_read_tree(gb_main, tree_name, -sizeof(GBT_TREE));
+        if (!gbt_tree) error = GB_await_error();
+        else {
+            GBDATA *gb_tree_data = GB_search(gb_main,"tree_data",GB_CREATE_CONTAINER);
+            GBDATA *gb_tree      = gb_tree_data ? GB_search(gb_tree_data,tree_name,GB_FIND) : 0;
 
-    gbt_tree = GBT_read_tree(gb_main,tree_name,-sizeof(GBT_TREE));
-    if (!gbt_tree) {
-        return GB_get_error();
-    }
+            if (!gb_tree) error = GB_await_error();
+            else {
+                if (link_to_database) {
+                    error = GBT_link_tree(gbt_tree, gb_main, show_status ? GB_TRUE : GB_FALSE, zombies, duplicates);
+                }
+                if (!error) {
+                    tree_root = tree_static;
+                    move_gbt_2_ap(gbt_tree, insert_delete_cbs);
+                    tree_root->update_timers();
+                }
+            }
 
-    gb_tree_data = GB_search(gb_main,"tree_data",GB_CREATE_CONTAINER);
-    gb_tree = GB_search(gb_tree_data,tree_name,GB_FIND);
-
-    if (link_to_database) {
-        GB_ERROR error = GBT_link_tree(gbt_tree,gb_main,show_status, zombies, duplicates);
-        if (error) {
             GBT_delete_tree(gbt_tree);
-            return error;
         }
     }
-    this->tree_root = tr;
-    move_gbt_2_ap(gbt_tree,insert_delete_cbs);
-    GBT_delete_tree(gbt_tree);
-    this->tree_root->update_timers();
-    return 0;
+    error = GB_end_transaction(gb_main, error);
+    return error;
 }
 
 GB_ERROR AP_tree::relink(   )

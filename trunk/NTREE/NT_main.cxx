@@ -64,65 +64,62 @@ GB_ERROR NT_format_all_alignments(GBDATA *gb_main) {
         GBDATA *gb_aligned = GB_search(gb_ali, "aligned", GB_INT);
 
         if (GB_read_int(gb_aligned) == 0) { // sequences in alignment are not formatted
-            int format_action = 0;
-            // 0 -> ask user
-            // 1 -> format automatically w/o asking
-            // 2 -> skip automatically w/o asking
-
-            GBDATA     *gb_ali_name  = GB_entry(gb_ali,"alignment_name");
-            const char *ali_name     = GB_read_char_pntr(gb_ali_name);
+            enum FormatAction {
+                FA_ASK_USER   = 0, // ask user
+                FA_FORMAT_ALL = 1, // format automatically w/o asking
+                FA_SKIP_ALL   = 2, // skip automatically w/o asking
+            };
+            FormatAction  format_action = FA_ASK_USER;
+            GBDATA       *gb_ali_name   = GB_entry(gb_ali,"alignment_name");
+            const char   *ali_name      = GB_read_char_pntr(gb_ali_name);
 
             {
                 bool    is_ali_genom   = strcmp(ali_name, GENOM_ALIGNMENT) == 0;
                 GBDATA *gb_auto_format = GB_entry(gb_ali, "auto_format");
-                if (gb_auto_format) {
-                    format_action = GB_read_int(gb_auto_format);
 
+                if (gb_auto_format) {
+                    format_action = FormatAction(GB_read_int(gb_auto_format));
                     if (is_ali_genom) {
-                        if (format_action != 2) {
-                            format_action = 2; // always skip ali_genom
-                            GB_write_int(gb_auto_format, 2);
+                        if (format_action != FA_SKIP_ALL) {
+                            format_action = FA_SKIP_ALL; // always skip ali_genom
+                            err           = GB_write_int(gb_auto_format, FA_SKIP_ALL);
                         }
                     }
                 }
                 else if (is_ali_genom) {
-                    gb_auto_format = GB_search(gb_ali, "auto_format", GB_INT);
-                    GB_write_int(gb_auto_format, 2); // always skip
-                    format_action          = 2;
+                    format_action = FA_SKIP_ALL;
+                    err           = GBT_write_int(gb_ali, "auto_format", FA_SKIP_ALL);  // always skip
                 }
             }
 
             bool perform_format = false;
+            if (!err) {
+                switch (format_action) {
+                    case FA_FORMAT_ALL: perform_format = true; break;
+                    case FA_SKIP_ALL:   perform_format = false; break;
+                    default: {
+                        char *qtext  = GBS_global_string_copy("Alignment '%s' is not formatted. Format?", ali_name);
+                        int   answer = question.get_answer(qtext, "Format,Skip,Always format,Always skip", "all", false);
 
-            switch (format_action) {
-                case 1: perform_format = true; break;
-                case 2: perform_format = false; break;
-                default: {
-                    char *qtext  = GBS_global_string_copy("Alignment '%s' is not formatted. Format?", ali_name);
-                    int   answer = question.get_answer(qtext, "Format,Skip,Always format,Always skip", "all", false);
+                        switch (answer) {
+                            case 2:
+                                err = GBT_write_int(gb_ali, "auto_format", FA_FORMAT_ALL);
+                                // fall-through
+                            case 0:
+                                perform_format = true;
+                                break;
 
-                    switch (answer) {
-                        case 2: {
-                            GBDATA *gb_auto_format = GB_search(gb_ali, "auto_format", GB_INT);
-                            GB_write_int(gb_auto_format, 1);
-                            // fall-through
+                            case 3:
+                                err = GBT_write_int(gb_ali, "auto_format", FA_SKIP_ALL);
+                                break;
                         }
-                        case 0:
-                            perform_format = true;
-                            break;
-                        case 3: {
-                            GBDATA *gb_auto_format = GB_search(gb_ali, "auto_format", GB_INT);
-                            GB_write_int(gb_auto_format, 2);
-                            break;
-                        }
+
+                        free(qtext);
+                        break;
                     }
-
-                    free(qtext);
-                    break;
                 }
             }
-
-            if (perform_format) {
+            if (!err && perform_format) {
                 aw_status(GBS_global_string("Formatting '%s'", ali_name));
                 GB_push_my_security(gb_main);
                 err = GBT_format_alignment(gb_main, ali_name);

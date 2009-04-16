@@ -217,10 +217,9 @@ GB_ERROR MG_export_fields(AW_root *aw_root, GBDATA *gb_source, GBDATA *gb_dest, 
 
                 char *result = MG_create_field_content(gb_source, method, source, aci, error, source_organism_hash);
                 mg_assert(result || error);
+                
                 if (result) {
-                    GBDATA *gb_export = GB_search(gb_dest, start, GB_STRING);
-                    error             = GB_write_string(gb_export, result);
-
+                    error = GBT_write_string(gb_dest, start, result);
                     free(result);
                 }
                 else {

@@ -267,21 +267,18 @@ static GB_ERROR gb_convert_compression(GBDATA *source) {
 }
 
 GB_ERROR gb_convert_V2_to_V3(GBDATA *gb_main){
-    GBDATA *gb_system;
-    GB_ERROR error = 0;
-    GBDATA *gb_extended_data;
-    gb_system = GB_search(gb_main,GB_SYSTEM_FOLDER, GB_FIND);
-    if (gb_system){
-        return error;
+    GB_ERROR  error     = 0;
+    GBDATA   *gb_system = GB_search(gb_main,GB_SYSTEM_FOLDER, GB_FIND);
+
+    if (!gb_system) {
+        gb_system = GB_create_container(gb_main, GB_SYSTEM_FOLDER);
+        if (GB_entry(gb_main,"extended_data")){
+            GB_warning("Converting data from old V2.0 to V2.1 Format:\n"
+                       " Please Wait (may take some time)");
+        }
+        error = gb_convert_compression(gb_main);
+        GB_disable_quicksave(gb_main,"Database converted to new format");
     }
-    gb_system = GB_create_container(gb_main, GB_SYSTEM_FOLDER);
-    gb_extended_data = GB_entry(gb_main,"extended_data");
-    if (gb_extended_data){
-        GB_warning("Converting data from old V2.0 to V2.1 Format:\n"
-                   " Please Wait (may take some time)");
-    }
-    error = gb_convert_compression(gb_main);
-    GB_disable_quicksave(gb_main,"Database converted to new format");
     return error;
 }
 

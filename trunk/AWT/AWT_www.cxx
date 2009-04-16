@@ -40,7 +40,6 @@ void awt_create_aww_vars(AW_root *aw_root,AW_default aw_def){
     aw_root->awar_int(AWAR_WWW_SELECT,0,aw_def);
 
     awt_assert(ARB_global_awars_initialized());
-    //     aw_root->awar_string(AWAR_WWW_BROWSER, "(netscape -remote 'openURL($(URL))' || netscape '$(URL)') &", aw_def);
 }
 
 GB_ERROR awt_openURL(AW_root *aw_root, GBDATA *gb_main, const char *url) {

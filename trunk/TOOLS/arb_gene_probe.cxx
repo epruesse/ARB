@@ -185,24 +185,14 @@ void GenePositionMap::dump() const
 static GB_ERROR create_data_entry(GBDATA *gb_species2, const char *sequence, int seqlen) {
     GB_ERROR  error         = 0;
     char     *gene_sequence = new char[seqlen+1];
-    memcpy(gene_sequence, sequence, seqlen); // @@@ FIXME: avoid this copy!
+    
+    memcpy(gene_sequence, sequence, seqlen);        // @@@ FIXME: avoid this copy!
     gene_sequence[seqlen] = 0;
 
-    GBDATA *gb_ali = GB_create_container(gb_species2, "ali_ptgene");
-    if (gb_ali) {
-        GBDATA *gb_data = GB_create(gb_ali, "data", GB_STRING);
-        if (gb_data) {
-            error = GB_write_string(gb_data, gene_sequence);
-        }
-        else {
-            error = GB_get_error();
-            if (!error) error = "can't create 'data' entry";
-        }
-    }
-    else {
-        error = GB_get_error();
-        if (!error) error = "can't create 'ali_ptgene' container";
-    }
+    GBDATA *gb_ali     = GB_create_container(gb_species2, "ali_ptgene");
+    if (!gb_ali) error = GB_await_error();
+    else    error      = GBT_write_string(gb_ali, "data", gene_sequence);
+    
     delete [] gene_sequence;
     return error;
 }
@@ -224,58 +214,47 @@ void CHECK_SEMI_ESCAPED(const char *name) {
 static GBDATA *create_gene_species(GBDATA *gb_species_data2, const char *internal_name, const char *long_name, int abspos, const char *sequence, int length) {
     // Note: 'sequence' is not necessarily 0-terminated!
 
-    GB_ERROR  error       = 0;
-    GBDATA   *gb_species2 = GB_create_container(gb_species_data2, "species");
-
 #if defined(DEBUG)
     char *firstSem = strchr(long_name, ';');
     gp_assert(firstSem);
     CHECK_SEMI_ESCAPED(firstSem+1);
 #endif // DEBUG
 
-    if (!error && gb_species2) {
+    GB_ERROR  error       = GB_push_transaction(gb_species_data2);
+    GBDATA   *gb_species2 = 0;
+
+    if (!error) {
+        gb_species2 = GB_create_container(gb_species_data2, "species");
+        if (!gb_species2) error = GB_await_error();
+    }
+
+    if (!error) {
         GBDATA *gb_name = GB_create(gb_species2, "name", GB_STRING);
-        if (gb_name) {
+        
+        if (!gb_name) error = GB_await_error();
+        else {
             error = GB_write_string(gb_name, internal_name);
             if (!error) {
                 const char *static_internal_name = GB_read_char_pntr(gb_name); // use static copy from db as map-index (internal_name is temporary)
                 error                            = create_data_entry(gb_species2, sequence, length);
                 if (!error) {
                     names[static_internal_name] = strdup(long_name);
-
-                    GBDATA *gb_abspos = GB_create(gb_species2, "abspos", GB_INT);
-                    if (gb_abspos) {
-                        GB_write_int(gb_abspos, abspos); // store absolute position
-                    }
-                    else {
-                        error = GB_get_error();
-                        if (!error) error = "can't create 'abspos' entry";
-                    }
-
+                    error = GBT_write_int(gb_species2, "abspos", abspos);
 #if defined(DEBUG)
                     // store realname for debugging purposes
-                    if (!error) {
-                        GBDATA *gb_realname     = GB_create(gb_species2, "realname_debug", GB_STRING);
-                        if (!gb_realname) error = GB_get_error();
-                        else    error           = GB_write_string(gb_realname, long_name);
-                    }
+                    if (!error) error = GBT_write_string(gb_species2, "realname_debug", long_name);
 #endif // DEBUG
                 }
             }
         }
-        else {
-            error = GB_get_error();
-            if (!error) error = "can't create 'name' entry";
-        }
-    }
-    else {
-        error = GB_get_error();
-        if (!error) error = "can't create new 'species'";
     }
 
+    error = GB_end_transaction(gb_species_data2, error);
+
     if (error) { // be more verbose :
-        error = GBS_global_string("%s (internal_name='%s', long_name='%s')", error, internal_name, long_name);
+        error       = GBS_global_string("%s (internal_name='%s', long_name='%s')", error, internal_name, long_name);
         GB_export_error(error);
+        gb_species2 = NULL;
     }
 
     return gb_species2;
@@ -358,10 +337,7 @@ static GB_ERROR create_splitted_gene(GBDATA *gb_species_data2, PositionPairList&
         printf("splitted gene: long_gene_name='%s' internal_name='%s' split_pos_list='%s'\n",
                long_gene_name, internal_name, split_pos_list);
 #endif // DEBUG
-
-        GBDATA *gb_splitpos     = GB_create(gb_species2, "splitpos", GB_STRING);
-        if (!gb_splitpos) error = GB_get_error();
-        else    error           = GB_write_string(gb_splitpos, split_pos_list);
+        error = GBT_write_string(gb_species2, "splitpos", split_pos_list);
     }
 
     free(split_pos_list);
@@ -587,15 +563,9 @@ int main(int argc, char* argv[]) {
                 gp_assert(moff <= mapsize);
             }
 
-            GBDATA *gb_gene_map = GB_create_container(gb_main,"gene_map");
-            if (!gb_gene_map) {
-                error = GB_get_error();
-            }
-            else {
-                GBDATA *gb_map_string     = GB_create(gb_gene_map,"map_string",GB_STRING);
-                if (!gb_map_string) error = GB_get_error();
-                else    error             = GB_write_string(gb_map_string, map_string);
-            }
+            GBDATA *gb_gene_map     = GB_create_container(gb_main,"gene_map");
+            if (!gb_gene_map) error = GB_get_error();
+            else    error           = GBT_write_string(gb_gene_map, "map_string", map_string);
         }
 
         if (!error) {

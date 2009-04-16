@@ -429,41 +429,35 @@ GB_ERROR CON_export(char *savename,char *align,int **statistic,char *result,int 
     GBDATA *gb_names = GB_search(GB_get_father(gb_options), "_SPECIES",GB_FIND);
     if(gb_names) GB_delete(gb_names); /* delete old entry */
 
-    if(nrofspecies<20)
-    {
+    if (nrofspecies<20) {
         GBDATA        *gb_species;
         GBS_strstruct *strstruct = GBS_stropen(1000);
 
-        if (onlymarked) {
-            gb_species = GBT_first_marked_species(GLOBAL_gb_main);
-        } else {
-            gb_species = GBT_first_species(GLOBAL_gb_main);
-        }
-        while(gb_species)
-        {
-            if(GBT_read_sequence(gb_species,align))
-            {
+        if (onlymarked) gb_species = GBT_first_marked_species(GLOBAL_gb_main);
+        else gb_species            = GBT_first_species(GLOBAL_gb_main);
+        
+        while(gb_species) {
+            if(GBT_read_sequence(gb_species,align)) {
                 GBDATA     *gb_speciesname = GB_search(gb_species,"name",GB_FIND);
                 const char *name           = GB_read_char_pntr(gb_speciesname);
                 
                 GBS_strcat(strstruct,name);
                 GBS_chrcat(strstruct,' ');
             }
-            if (onlymarked) {
-                gb_species = GBT_next_marked_species(gb_species);
-            }else{
-                gb_species = GBT_next_species(gb_species);
-            }
+            if (onlymarked) gb_species = GBT_next_marked_species(gb_species);
+            else gb_species            = GBT_next_species(gb_species);
         }
-        gb_names       = GB_search(GB_get_father(gb_options),"_SPECIES",GB_STRING);
+
         char *allnames = GBS_strclose(strstruct);
-        err            = GB_write_string(gb_names,allnames);
-        delete allnames;
+        err            = GBT_write_string(GB_get_father(gb_options), "_SPECIES", allnames);
+        free(allnames);
     }
-    {   char buffer2[256];
+
+    {
+        char buffer2[256];
         sprintf(buffer2,"%s/FREQUENCIES", align);
-    GBDATA *gb_graph = GB_search(gb_extended, buffer2, GB_FIND);
-    if(gb_graph) GB_delete(gb_graph);   /* delete old entry */
+        GBDATA *gb_graph = GB_search(gb_extended, buffer2, GB_FIND);
+        if(gb_graph) GB_delete(gb_graph);   /* delete old entry */
     }
     /* export additional information */
     if(resultiscomplex)

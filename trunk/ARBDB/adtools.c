@@ -81,70 +81,95 @@ GB_ERROR GBT_check_alignment_name(const char *alignment_name)
     return 0;
 }
 
-GBDATA *GBT_create_alignment(GBDATA *gbd,
-                             const char *name, long len, long aligned,
-                             long security, const char *type)
-{
-    GBDATA *gb_presets;
-    GBDATA *gbn;
-    char c[2];
-    GB_ERROR error;
-    c[1] = 0;
-    gb_presets = GB_search(gbd,"presets",GB_CREATE_CONTAINER);
-    if (!gb_presets) return NULL;
+static GB_ERROR create_ali_strEntry(GBDATA *gb_ali, const char *field, const char *strval, long write_protection) {
+    GB_ERROR  error  = 0;
+    GBDATA   *gb_sub = GB_create(gb_ali, field, GB_STRING);
 
-    error = GBT_check_alignment_name(name);
+    if (!gb_sub) error = GB_await_error();
+    else {
+        error             = GB_write_string(gb_sub, strval);
+        if (!error) error = GB_write_security_delete(gb_sub, 7);
+        if (!error) error = GB_write_security_write(gb_sub, write_protection);
+    }
+
     if (error) {
-        GB_export_error(error);
-        return NULL;
+        error = GBS_global_string("failed to create alignment subentry '%s'\n"
+                                  "(Reason: %s)", field, error);
     }
 
-    if ( aligned<0 ) aligned = 0;
-    if ( aligned>1 ) aligned = 1;
-    if ( security<0) {
-        error = GB_export_error("Negative securities not allowed");
-        return NULL;
-    }
-    if ( security>6) {
-        error = GB_export_error("Securities above 6 are not allowed");
-        return NULL;
-    }
-    if (!strstr("dna:rna:ami:usr",type)) {
-        error = GB_export_error("Unknown alignment type '%s'",type);
-        return NULL;
-    }
-    gbn = GB_find_string(gb_presets,"alignment_name",name,GB_IGNORE_CASE,down_2_level);
-    if (gbn) {
-        error = GB_export_error("Alignment '%s' already exists",name);
-        return NULL;
+    return error;
+}
+static GB_ERROR create_ali_intEntry(GBDATA *gb_ali, const char *field, int intval, long write_protection) {
+    GB_ERROR  error  = 0;
+    GBDATA   *gb_sub = GB_create(gb_ali, field, GB_INT);
+
+    if (!gb_sub) error = GB_await_error();
+    else {
+        error             = GB_write_int(gb_sub, intval);
+        if (!error) error = GB_write_security_delete(gb_sub, 7);
+        if (!error) error = GB_write_security_write(gb_sub, write_protection);
     }
 
-    gbd = GB_create_container(gb_presets,"alignment");
-    GB_write_security_delete(gbd,6);
-    gbn =   GB_create(gbd,"alignment_name",GB_STRING);
-    GB_write_string(gbn,name);
-    GB_write_security_delete(gbn,7);
-    GB_write_security_write(gbn,6);
+    if (error) {
+        error = GBS_global_string("failed to create alignment subentry '%s'\n"
+                                  "(Reason: %s)", field, error);
+    }
 
-    gbn =   GB_create(gbd,"alignment_len",GB_INT);
-    GB_write_int(gbn,len);
-    GB_write_security_delete(gbn,7);
-    GB_write_security_write(gbn,0);
+    return error;
+}
 
-    gbn =   GB_create(gbd,"aligned",GB_INT);
-    GB_write_int(gbn,aligned);
-    GB_write_security_delete(gbn,7);
-    GB_write_security_write(gbn,0);
-    gbn =   GB_create(gbd,"alignment_write_security",GB_INT);
-    GB_write_int(gbn,security);
-    GB_write_security_delete(gbn,7);
-    GB_write_security_write(gbn,6);
+GBDATA *GBT_create_alignment(GBDATA *gbd, const char *name, long len, long aligned, long security, const char *type) {
+    GB_ERROR  error      = NULL;
+    GBDATA   *gb_presets = GB_search(gbd, "presets", GB_CREATE_CONTAINER);
+    GBDATA   *result     = NULL;
 
-    gbn =   GB_create(gbd,"alignment_type",GB_STRING);
-    GB_write_string(gbn,type);
-    GB_write_security_delete(gbn,7);
-    GB_write_security_write(gbn,0);
-    return gbd;
+    if (!gb_presets) {
+        error = GBS_global_string("can't find/create 'presets' (Reason: %s)", GB_await_error());
+    }
+    else {
+        error = GBT_check_alignment_name(name);
+        if (!error && (security<0 || security>6)) {
+            error = GBS_global_string("Illegal security value %li (allowed 0..6)", security);
+        }
+        if (!error) {
+            const char *allowed_types = ":dna:rna:ami:usr:";
+            int         tlen          = strlen(type);
+            const char *found         = strstr(allowed_types, type);
+            if (!found || found == allowed_types || found[-1] != ':' || found[tlen] != ':') {
+                error = GBS_global_string("Invalid alignment type '%s'", type);
+            }
+        }
+
+        if (!error) {
+            GBDATA *gb_name = GB_find_string(gb_presets, "alignment_name", name, GB_IGNORE_CASE, down_2_level);
+
+            if (gb_name) error = GBS_global_string("Alignment '%s' already exists", name);
+            else {
+                GBDATA *gb_ali     = GB_create_container(gb_presets, "alignment");
+                if (!gb_ali) error = GB_await_error();
+                else {
+                    error = GB_write_security_delete(gb_ali, 6);
+                    if (!error) error = create_ali_strEntry(gb_ali, "alignment_name",           name, 6);
+                    if (!error) error = create_ali_intEntry(gb_ali, "alignment_len",            len, 0);
+                    if (!error) error = create_ali_intEntry(gb_ali, "aligned",                  aligned <= 0 ? 0 : 1, 0);
+                    if (!error) error = create_ali_intEntry(gb_ali, "alignment_write_security", security, 6);
+                    if (!error) error = create_ali_strEntry(gb_ali, "alignment_type",           type, 0);
+                }
+
+                if (!error) result = gb_ali;
+            }
+        }
+    }
+
+    if (!result) {
+        ad_assert(error);
+        GB_export_error("in GBT_create_alignment: %s", error);
+    }
+#if defined(DEBUG)
+    else ad_assert(!error);
+#endif /* DEBUG */
+
+    return result;
 }
 
 NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment, GB_HASH *species_name_hash)
@@ -991,7 +1016,7 @@ GB_ERROR GBT_insert_character(GBDATA *Main, char *alignment_name, long pos, long
                     some tree write functions
 ********************************************************************************************/
 
-GB_ERROR GBT_delete_tree(GBT_TREE *tree)
+void GBT_delete_tree(GBT_TREE *tree)
      /* frees a tree only in memory (not in the database)
         to delete the tree in Database
         just call GB_delete((GBDATA *)gb_tree);
@@ -1000,18 +1025,13 @@ GB_ERROR GBT_delete_tree(GBT_TREE *tree)
     free(tree->name);
     free(tree->remark_branch);
 
-    if (tree->is_leaf == 0) {
-        GB_ERROR error;
-        
-        gb_assert(tree->leftson);
-        gb_assert(tree->rightson);
-        if ( (error=GBT_delete_tree( tree->leftson) ) ) return error;
-        if ( (error=GBT_delete_tree( tree->rightson)) ) return error;
+    if (!tree->is_leaf) {
+        GBT_delete_tree(tree->leftson);
+        GBT_delete_tree(tree->rightson);
     }
-    if (!tree->father || !tree->tree_is_one_piece_of_memory){
+    if (!tree->tree_is_one_piece_of_memory || !tree->father) {
         free(tree);
     }
-    return 0;
 }
 
 GB_ERROR GBT_write_group_name(GBDATA *gb_group_name, const char *new_group_name) {
@@ -1019,11 +1039,7 @@ GB_ERROR GBT_write_group_name(GBDATA *gb_group_name, const char *new_group_name)
     size_t   len   = strlen(new_group_name);
 
     if (len >= GB_GROUP_NAME_MAX) {
-        char *shortened = (char*)GB_calloc(10+len+1, 1);
-        strcpy(shortened, "Too long: ");
-        strcpy(shortened+10, new_group_name);
-        strcpy(shortened+GB_GROUP_NAME_MAX-4, "..."); // cut end
-        error = GB_write_string(gb_group_name, shortened);
+        error = GBS_global_string("Group name '%s' too long (max %i characters)", new_group_name, GB_GROUP_NAME_MAX);
     }
     else {
         error = GB_write_string(gb_group_name, new_group_name);
@@ -1045,7 +1061,6 @@ long gbt_write_tree_nodes(GBDATA *gb_tree,GBT_TREE *node,long startid)
         }
         gb_name = GB_search(node->gb_node,"group_name",GB_STRING);
         error = GBT_write_group_name(gb_name, node->name);
-/*         error = GB_write_string(gb_name,node->name); */
         if (error) return -1;
     }
     if (node->gb_node){         /* delete not used nodes else write id */
@@ -2438,11 +2453,8 @@ int GBT_is_partial(GBDATA *gb_species, int default_value, int define_if_undef) {
     }
     else {
         if (define_if_undef) {
-            gb_partial = GB_create(gb_species, "ARB_partial", GB_INT);
-            if (gb_partial) error = GB_write_int(gb_partial, default_value);
-            else error = GB_get_error();
+            error = GBT_write_int(gb_species, "ARB_partial", default_value);
         }
-
         result = default_value;
     }
 
@@ -2868,14 +2880,10 @@ GB_ERROR GBT_set_alignment_len(GBDATA *gb_main, const char *aliname, long new_le
     GBDATA   *gb_alignment = GBT_get_alignment(gb_main, aliname);
 
     if (gb_alignment) {
-        GBDATA *gb_alignment_len     = GB_search(gb_alignment,"alignment_len",GB_FIND);
-        GBDATA *gb_alignment_aligned = GB_search(gb_alignment,"aligned",GB_FIND);
-        
         GB_push_my_security(gb_main);
-        error             = GB_write_int(gb_alignment_len,new_len); /* write new len */
-        if (!error) error = GB_write_int(gb_alignment_aligned,0); /* sequences will be unaligned */
+        error             = GBT_write_int(gb_alignment, "alignment_len", new_len); /* write new len */
+        if (!error) error = GBT_write_int(gb_alignment, "aligned", 0);             /* mark as unaligned */
         GB_pop_my_security(gb_main);
-
     }
     else error = GB_export_error("Alignment '%s' not found", aliname);
     return error;
@@ -3110,19 +3118,23 @@ void GBT_message(GBDATA *gb_main, const char *msg) {
     // 
     // see also : GB_warning
 
-    GBDATA *gb_pending_messages;
-    GBDATA *gb_msg;
+    GB_ERROR error = GB_push_transaction(gb_main);
 
-    gb_assert(msg);
+    if (!error) {
+        GBDATA *gb_pending_messages = GB_search(gb_main, AWAR_ERROR_CONTAINER, GB_CREATE_CONTAINER);
+        GBDATA *gb_msg              = gb_pending_messages ? GB_create(gb_pending_messages, "msg", GB_STRING) : 0;
 
-    GB_push_transaction(gb_main);
+        if (!gb_msg) error = GB_await_error();
+        else {
+            gb_assert(msg);
+            error = GB_write_string(gb_msg, msg);
+        }
+    }
+    error = GB_end_transaction(gb_main, error);
 
-    gb_pending_messages = GB_search(gb_main, AWAR_ERROR_CONTAINER, GB_CREATE_CONTAINER);
-    gb_msg              = GB_create(gb_pending_messages, "msg", GB_STRING);
-
-    GB_write_string(gb_msg, msg);
-
-    GB_pop_transaction(gb_main);
+    if (error) {
+        fprintf(stderr, "GBT_message: Failed to write message '%s'\n(Reason: %s)\n", msg, error);
+    }
 }
 
 /********************************************************************************************
@@ -3143,10 +3155,12 @@ struct gbt_rename_struct {
     int all_flag;
 } gbtrst;
 
-/* starts the rename session, if allflag = 1 then the whole database is to be
-        renamed !!!!!!! */
-GB_ERROR GBT_begin_rename_session(GBDATA *gb_main, int all_flag)
-{
+GB_ERROR GBT_begin_rename_session(GBDATA *gb_main, int all_flag) {
+    /* starts a rename session,
+     * if whole database shall be renamed, set allflag == 1
+     * use GBT_abort_rename_session or GBT_commit_rename_session to end the session
+     */
+    
     GB_ERROR error = GB_push_transaction(gb_main);
     if (!error) {
         gbtrst.gb_main         = gb_main;
@@ -3471,7 +3485,7 @@ void GBT_free_names(char **names) {
 
 /* ---------------------------------------- */
 /* read value from database field
- * returns 0 in case of error (use GB_get_error())
+ * returns 0 in case of error (use GB_await_error())
  * or when field does not exist
  *
  * otherwise GBT_read_string returns a heap copy
@@ -3598,8 +3612,9 @@ NOT4PERL double *GBT_readOrCreate_float(GBDATA *gb_container, const char *fieldp
     return result;
 }
 
-/* --------------------------------------------------------- */
-/*      overwrite existing or create new database field      */
+/* ------------------------------------------------------------------- */
+/*      overwrite existing or create new database field                */
+/*      (field must not exist twice or more - it has to be unique!!)   */
 
 GB_ERROR GBT_write_string(GBDATA *gb_container, const char *fieldpath, const char *content) {
     GBDATA   *gbd;
@@ -3712,9 +3727,19 @@ GBDATA *GBT_open(const char *path,const char *opent,const char *disabled_path)
     return gbd;
 }
 
-/********************************************************************************************
-                    REMOTE COMMANDS
-********************************************************************************************/
+/* --------------------------------------------------------------------------------
+ * Remote commands
+ *
+ * Note: These commands may seem to be unused from inside ARB.
+ * They get used, but only indirectly via the macro-function.
+ *
+ * Search for
+ * - BIO::remote_action         (use of GBT_remote_action)
+ * - BIO::remote_awar           (use of GBT_remote_awar)
+ * - BIO::remote_read_awar      (use of GBT_remote_read_awar - seems unused)
+ * - BIO::remote_touch_awar     (use of GBT_remote_touch_awar - seems unused)
+ */
+
 
 #define AWAR_REMOTE_BASE_TPL            "tmp/remote/%s/"
 #define MAX_REMOTE_APPLICATION_NAME_LEN 30
@@ -3761,20 +3786,19 @@ static GB_ERROR gbt_wait_for_remote_action(GBDATA *gb_main, GBDATA *gb_action, c
     GB_ERROR error = 0;
 
     /* wait to end of action */
-    while(1) {
-        char *ac;
+
+    while (!error) {
         GB_usleep(2000);
-        GB_begin_transaction(gb_main);
-        ac = GB_read_string(gb_action);
-        if (ac[0] == 0) { // action has been cleared from remote side
-            GBDATA *gb_result = GB_search(gb_main, awar_read, GB_STRING);
-            error             = GB_read_char_pntr(gb_result); // check for errors
+        error = GB_begin_transaction(gb_main);
+        if (!error) {
+            char *ac = GB_read_string(gb_action);
+            if (ac[0] == 0) { // action has been cleared from remote side
+                GBDATA *gb_result = GB_search(gb_main, awar_read, GB_STRING);
+                error             = GB_read_char_pntr(gb_result); // check for errors
+            }
             free(ac);
-            GB_commit_transaction(gb_main);
-            break;
         }
-        free(ac);
-        GB_commit_transaction(gb_main);
+        error = GB_end_transaction(gb_main, error);
     }
 
     return error; // may be error or result
@@ -3783,77 +3807,69 @@ static GB_ERROR gbt_wait_for_remote_action(GBDATA *gb_main, GBDATA *gb_action, c
 GB_ERROR GBT_remote_action(GBDATA *gb_main, const char *application, const char *action_name){
     struct gbt_remote_awars  awars;
     GBDATA                  *gb_action;
+    GB_ERROR                 error = NULL;
 
     gbt_build_remote_awars(&awars, application);
     gb_action = gbt_remote_search_awar(gb_main, awars.awar_action);
 
-    GB_begin_transaction(gb_main);
-    GB_write_string(gb_action, action_name); /* write command */
-    GB_commit_transaction(gb_main);
+    error             = GB_begin_transaction(gb_main);
+    if (!error) error = GB_write_string(gb_action, action_name); /* write command */
+    error             = GB_end_transaction(gb_main, error);
 
-    return gbt_wait_for_remote_action(gb_main, gb_action, awars.awar_result);
+    if (!error) error = gbt_wait_for_remote_action(gb_main, gb_action, awars.awar_result);
+    return error;
 }
 
 GB_ERROR GBT_remote_awar(GBDATA *gb_main, const char *application, const char *awar_name, const char *value) {
     struct gbt_remote_awars  awars;
     GBDATA                  *gb_awar;
+    GB_ERROR                 error = NULL;
 
     gbt_build_remote_awars(&awars, application);
     gb_awar = gbt_remote_search_awar(gb_main, awars.awar_awar);
 
-    {
-        GBDATA *gb_value;
+    error = GB_begin_transaction(gb_main);
+    if (!error) error = GB_write_string(gb_awar, awar_name);
+    if (!error) error = GBT_write_string(gb_main, awars.awar_value, value);
+    error = GB_end_transaction(gb_main, error);
 
-        GB_begin_transaction(gb_main);
-        gb_value = GB_search(gb_main, awars.awar_value, GB_STRING);
-        GB_write_string(gb_awar, awar_name);
-        GB_write_string(gb_value, value);
-        GB_commit_transaction(gb_main);
-    }
-
-    return gbt_wait_for_remote_action(gb_main, gb_awar, awars.awar_result);
+    if (!error) error = gbt_wait_for_remote_action(gb_main, gb_awar, awars.awar_result);
+    
+    return error;
 }
 
-const char *GBT_remote_read_awar(GBDATA *gb_main, const char *application, const char *awar_name) {
+GB_ERROR GBT_remote_read_awar(GBDATA *gb_main, const char *application, const char *awar_name) {
     struct gbt_remote_awars  awars;
     GBDATA                  *gb_awar;
-    const char              *result = 0;
+    GB_ERROR                 error = NULL;
 
     gbt_build_remote_awars(&awars, application);
     gb_awar = gbt_remote_search_awar(gb_main, awars.awar_awar);
 
-    {
-        GBDATA *gb_action;
+    error             = GB_begin_transaction(gb_main);
+    if (!error) error = GB_write_string(gb_awar, awar_name);
+    if (!error) error = GBT_write_string(gb_main, awars.awar_action, "AWAR_REMOTE_READ");
+    error             = GB_end_transaction(gb_main, error);
 
-        GB_begin_transaction(gb_main);
-        gb_action = GB_search(gb_main, awars.awar_action, GB_STRING);
-        GB_write_string(gb_awar, awar_name);
-        GB_write_string(gb_action, "AWAR_REMOTE_READ");
-        GB_commit_transaction(gb_main);
-    }
-
-    result = gbt_wait_for_remote_action(gb_main, gb_awar, awars.awar_value);
-    return result;
+    if (!error) error = gbt_wait_for_remote_action(gb_main, gb_awar, awars.awar_value);
+    return error;
 }
 
 const char *GBT_remote_touch_awar(GBDATA *gb_main, const char *application, const char *awar_name) {
     struct gbt_remote_awars  awars;
     GBDATA                  *gb_awar;
+    GB_ERROR                 error = NULL;
 
     gbt_build_remote_awars(&awars, application);
     gb_awar = gbt_remote_search_awar(gb_main, awars.awar_awar);
 
-    {
-        GBDATA *gb_action;
+    error             = GB_begin_transaction(gb_main);
+    if (!error) error = GB_write_string(gb_awar, awar_name);
+    if (!error) error = GBT_write_string(gb_main, awars.awar_action, "AWAR_REMOTE_TOUCH");
+    error             = GB_end_transaction(gb_main, error);
 
-        GB_begin_transaction(gb_main);
-        gb_action = GB_search(gb_main, awars.awar_action, GB_STRING);
-        GB_write_string(gb_awar, awar_name);
-        GB_write_string(gb_action, "AWAR_REMOTE_TOUCH");
-        GB_commit_transaction(gb_main);
-    }
-
-    return gbt_wait_for_remote_action(gb_main, gb_awar, awars.awar_result);
+    if (!error) error = gbt_wait_for_remote_action(gb_main, gb_awar, awars.awar_result);
+    return error;
 }
 
 static const char *gb_cache_genome(GBDATA *gb_genome) {
@@ -4068,20 +4084,18 @@ static void notify_cb(GBDATA *gb_message, int *cb_info, GB_CB_TYPE cb_type) {
 }
 
 static int allocateNotificationID(GBDATA *gb_main, int *cb_info) {
+    /* returns a unique notification ID
+     * or 0 (use GB_get_error() in this case)
+     */
+    
     int      id    = 0;
     GB_ERROR error = GB_push_transaction(gb_main);
 
     if (!error) {
         GBDATA *gb_notify = GB_search(gb_main, ARB_NOTIFICATIONS, GB_CREATE_CONTAINER);
+        
         if (gb_notify) {
-            GBDATA *gb_counter = GB_entry(gb_notify, "counter");
-
-            if (!gb_counter) {          /* first call */
-                gb_counter = GB_create(gb_notify, "counter", GB_INT);
-                if (gb_counter) {
-                    error = GB_write_int(gb_counter, 0);
-                }
-            }
+            GBDATA *gb_counter = GB_searchOrCreate_int(gb_notify, "counter", 0);
 
             if (gb_counter) {
                 int newid = GB_read_int(gb_counter) + 1; /* increment counter */
@@ -4094,20 +4108,16 @@ static int allocateNotificationID(GBDATA *gb_main, int *cb_info) {
 
                     if (!error) {
                         GBDATA *gb_notification = GB_create_container(gb_notify, "notify");
+                        
                         if (gb_notification) {
-                            GBDATA *gb_id = GB_create(gb_notification, "id", GB_INT);
-                            if (gb_id) {
-                                error = GB_write_int(gb_id, newid);
-                                if (!error) {
-                                    GBDATA *gb_message = GB_create(gb_notification, "message", GB_STRING);
-                                    if (gb_message) {
-                                        error = GB_write_string(gb_message, "");
-                                        if (!error) {
-                                            error = GB_add_callback(gb_message, GB_CB_CHANGED|GB_CB_DELETE, notify_cb, cb_info);
-                                            if (!error) {
-                                                id = newid; /* success */
-                                            }
-                                        }
+                            error = GBT_write_int(gb_notification, "id", newid);
+                            if (!error) {
+                                GBDATA *gb_message = GB_searchOrCreate_string(gb_notification, "message", "");
+                                
+                                if (gb_message) {
+                                    error = GB_add_callback(gb_message, GB_CB_CHANGED|GB_CB_DELETE, notify_cb, cb_info);
+                                    if (!error) {
+                                        id = newid; /* success */
                                     }
                                 }
                             }
@@ -4118,11 +4128,12 @@ static int allocateNotificationID(GBDATA *gb_main, int *cb_info) {
         }
     }
 
-    if (error || !id) {
-        GB_abort_transaction(gb_main);
-        if (error) GB_export_error(error);
+    if (!id) {
+        if (!error) error = GB_await_error();
+        error = GBS_global_string("Failed to allocate notification ID (%s)", error);
     }
-    else GB_pop_transaction(gb_main);
+    error = GB_end_transaction(gb_main, error);
+    if (error) GB_export_error(error);
 
     return id;
 }
@@ -4190,8 +4201,7 @@ GB_ERROR GB_remove_last_notification(GBDATA *gb_main) {
         }
     }
 
-    GB_pop_transaction(gb_main);
-
+    error = GB_end_transaction(gb_main, error);
     return error;
 }
 

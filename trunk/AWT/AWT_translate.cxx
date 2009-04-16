@@ -20,22 +20,13 @@
 #include "awt_translate.hxx"
 
 GB_ERROR AWT_saveTranslationInfo(GBDATA *gb_species, int arb_transl_table, int codon_start) {
-    GB_ERROR  error;
     int embl_transl_table = AWT_arb_code_nr_2_embl_transl_table(arb_transl_table);
 
     awt_assert(codon_start >= 0 && codon_start<3); // codon_start has to be 0..2
     awt_assert(embl_transl_table >= 0);
 
-
-    GBDATA   *gb_transl_table   = GB_search(gb_species, "transl_table", GB_STRING);
-    if (!gb_transl_table) error = GB_get_error();
-    else      error             = GB_write_string(gb_transl_table, GBS_global_string("%i", embl_transl_table));
-
-    if (!error) {
-        GBDATA *gb_start_pos     = GB_search(gb_species, "codon_start", GB_STRING);
-        if (!gb_start_pos) error = GB_get_error();
-        else    error            = GB_write_string(gb_start_pos, GBS_global_string("%i", codon_start+1));
-    }
+    GB_ERROR error    = GBT_write_string(gb_species, "transl_table", GBS_global_string("%i", embl_transl_table));
+    if (!error) error = GBT_write_string(gb_species, "codon_start",  GBS_global_string("%i", codon_start+1));
 
     return error;
 }

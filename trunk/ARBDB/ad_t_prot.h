@@ -30,7 +30,7 @@ GBDATA *GBT_find_or_create P_((GBDATA *Main, const char *key, long delete_level)
 GB_ERROR GBT_check_data P_((GBDATA *Main, const char *alignment_name));
 GB_ERROR GBT_format_alignment P_((GBDATA *Main, const char *alignment_name));
 GB_ERROR GBT_insert_character P_((GBDATA *Main, char *alignment_name, long pos, long count, char *char_delete));
-GB_ERROR GBT_delete_tree P_((GBT_TREE *tree));
+void GBT_delete_tree P_((GBT_TREE *tree));
 GB_ERROR GBT_write_group_name P_((GBDATA *gb_group_name, const char *new_group_name));
 GB_ERROR GBT_write_tree P_((GBDATA *gb_main, GBDATA *gb_tree, const char *tree_name, GBT_TREE *tree));
 GB_ERROR GBT_write_plain_tree P_((GBDATA *gb_main, GBDATA *gb_tree, char *tree_name, GBT_TREE *tree));
@@ -138,7 +138,7 @@ GBDATA *GB_test_link_follower P_((GBDATA *gb_main, GBDATA *gb_link, const char *
 GBDATA *GBT_open P_((const char *path, const char *opent, const char *disabled_path));
 GB_ERROR GBT_remote_action P_((GBDATA *gb_main, const char *application, const char *action_name));
 GB_ERROR GBT_remote_awar P_((GBDATA *gb_main, const char *application, const char *awar_name, const char *value));
-const char *GBT_remote_read_awar P_((GBDATA *gb_main, const char *application, const char *awar_name));
+GB_ERROR GBT_remote_read_awar P_((GBDATA *gb_main, const char *application, const char *awar_name));
 const char *GBT_remote_touch_awar P_((GBDATA *gb_main, const char *application, const char *awar_name));
 NOT4PERL char *GBT_read_gene_sequence_and_length P_((GBDATA *gb_gene, GB_BOOL use_revComplement, char partSeparator, size_t *gene_length));
 char *GBT_read_gene_sequence P_((GBDATA *gb_gene, GB_BOOL use_revComplement, char partSeparator));

@@ -30,9 +30,15 @@ GB_BOOL GEN_is_genome_db(GBDATA *gb_main, int default_value) {
     GBDATA *gb_genom_db = GB_entry(gb_main, GENOM_DB_TYPE);
 
     if (!gb_genom_db) {         // no DB-type entry -> create one with default
+        GB_ERROR error = NULL;
+
         assert_or_exit(default_value != -1); // first call to GEN_is_genome_db has to provide a 'default_value'
-        gb_genom_db = GB_create(gb_main, GENOM_DB_TYPE, GB_INT);
-        GB_write_int(gb_genom_db, default_value);
+
+        gb_genom_db             = GB_create(gb_main, GENOM_DB_TYPE, GB_INT);
+        if (!gb_genom_db) error = GB_await_error();
+        else error              = GB_write_int(gb_genom_db, default_value);
+
+        if (error) GBK_terminate("Fatal in GEN_is_genome_db: %s", error);
     }
 
     return GB_read_int(gb_genom_db) != 0;
@@ -103,11 +109,22 @@ GBDATA* GEN_find_or_create_gene_rel_gene_data(GBDATA *gb_gene_data, const char *
     else {
         GBDATA *gb_name = GB_find_string(gb_gene_data, "name", name, GB_IGNORE_CASE, down_2_level);
 
-        if (gb_name) return GB_get_father(gb_name); // found existing gene
+        if (gb_name) {
+            gb_gene = GB_get_father(gb_name); // found existing gene
+        }
+        else {
+            GB_ERROR error = GB_push_transaction(gb_gene_data);
 
-        gb_gene = GB_create_container(gb_gene_data, "gene");
-        gb_name = GB_create(gb_gene, "name", GB_STRING);
-        GB_write_string(gb_name, name);
+            if (!error) {
+                gb_gene = GB_create_container(gb_gene_data, "gene");
+                error   = GBT_write_string(gb_gene, "name", name);
+            }
+            error = GB_end_transaction(gb_gene_data, error);
+            if (error) {
+                gb_gene = NULL;
+                GB_export_error(error);
+            }
+        }
     }
     return gb_gene;
 }
