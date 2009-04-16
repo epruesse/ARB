@@ -166,12 +166,12 @@ static char *MG_create_field_content(GBDATA *gb_species, CreationMethod method, 
         if (method == MG_CREATE_USING_ACI_ONLY) {
             mg_assert(!result);
             aci_result = GB_command_interpreter(GLOBAL_gb_merge, "", aci, gb_species, 0);
-            if (!aci_result) error = GB_expect_error();
+            if (!aci_result) error = GB_await_error();
         }
         else {
             if (aci && aci[0]) {
                 aci_result = GB_command_interpreter(GLOBAL_gb_merge, result ? result : "", aci, gb_origin, 0);
-                if (!aci_result) error = GB_expect_error();
+                if (!aci_result) error = GB_await_error();
             }
         }
 

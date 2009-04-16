@@ -668,7 +668,7 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode, GBT_TREE
             const char *aci_srt = awt_nds_ms->parsing[i];
             if (aci_srt) {
                 char *aci_result = GB_command_interpreter(gb_main, str, aci_srt, gbd, tree_name);
-                freeset(str, aci_result ? aci_result : GBS_global_string_copy("<error: %s>", GB_expect_error()));
+                freeset(str, aci_result ? aci_result : GBS_global_string_copy("<error: %s>", GB_await_error()));
             }
         }
 

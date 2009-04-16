@@ -688,7 +688,7 @@ AW_BOOL awt_query::matches(const char *data, GBDATA *gb_item) const {
         case AQT_ACI: {                             // expr is a ACI ('|...'); result = "0" -> no hit; otherwise hit
             char *aci_result = GB_command_interpreter(gb_main, data, query, gb_item, tree);
             if (!aci_result) {
-                freedup(error, GB_expect_error());
+                freedup(error, GB_await_error());
                 hit   = AW_FALSE;
             }
             else {

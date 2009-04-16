@@ -79,7 +79,7 @@ GBDATA* GEN_create_nonexisting_gene_rel_gene_data(GBDATA *gb_gene_data, const ch
 
     if (!error) {
         gb_gene = GB_create_container(gb_gene_data, "gene");
-        error   = gb_gene ? GBT_write_string(gb_gene, "name", name) : GB_expect_error();
+        error   = gb_gene ? GBT_write_string(gb_gene, "name", name) : GB_await_error();
     }
 
     gb_assert(gb_gene || error);

@@ -284,13 +284,28 @@ GB_ERROR GB_print_error() {
 }
 
 GB_ERROR GB_get_error() {
+    /* goes to header: __ATTR__DEPRECATED  */
+
+    /* This function is deprecated.
+     * Instead use either
+     * - GB_have_error() or
+     * - GB_await_error()
+     */
+    
     return GB_error_buffer;
 }
 
-GB_ERROR GB_expect_error() {
-    return GB_error_buffer
-        ? GB_error_buffer
-        : "Expected error, but no error message found (program logic error)";
+GB_BOOL GB_have_error() {
+    return GB_error_buffer != 0;
+}
+
+GB_ERROR GB_await_error() {
+    if (GB_error_buffer) {
+        static char *err = 0;
+        reassign(err, GB_error_buffer);
+        return err;
+    }
+    return "Program logic error: Something went wrong, but reason is unknown";
 }
 
 void GB_clear_error() {         /* clears the error buffer */
