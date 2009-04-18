@@ -2564,12 +2564,11 @@ void AWT_graphic_tree::info(AW_device *device, AW_pos x, AW_pos y,
 
 }
 
-AWT_graphic *NT_generate_tree( AW_root *root,GBDATA *gb_main )
-{
+AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main) {
     AWT_graphic_tree *apdt = new AWT_graphic_tree(root,gb_main);
     AP_tree tree_proto(0);
     apdt->init(&tree_proto);        // no tree_root !!! load will do this
-    return (AWT_graphic *)apdt;
+    return apdt;
 }
 
 void awt_create_dtree_awars(AW_root *aw_root,AW_default def)

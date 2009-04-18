@@ -1514,7 +1514,7 @@ NOT4PERL void GB_install_status2(gb_status_func2_type func2){
 /* ------------------------------------------- */
 /*      helper function for tagged fields      */
 
-GB_ERROR g_bs_add_value_tag_to_hash(GBDATA *gb_main, GB_HASH *hash, char *tag, char *value,const char *rtag, const char *srt, const char *aci, GBDATA *gbd){
+static GB_ERROR g_bs_add_value_tag_to_hash(GBDATA *gb_main, GB_HASH *hash, char *tag, char *value,const char *rtag, const char *srt, const char *aci, GBDATA *gbd) {
     char    *p;
     GB_HASH *sh;
     char    *to_free = 0;
@@ -1525,7 +1525,7 @@ GB_ERROR g_bs_add_value_tag_to_hash(GBDATA *gb_main, GB_HASH *hash, char *tag, c
         else if (aci) {
             value = to_free = GB_command_interpreter(gb_main,value,aci,gbd, 0);
         }
-        if (!value) return GB_get_error();
+        if (!value) return GB_await_error();
     }
 
     p=value; while ( (p = strchr(p,'[')) ) *p =  '{'; /* replace all '[' by '{' */
@@ -1543,19 +1543,18 @@ GB_ERROR g_bs_add_value_tag_to_hash(GBDATA *gb_main, GB_HASH *hash, char *tag, c
 }
 
 
-GB_ERROR g_bs_convert_string_to_tagged_hash(GB_HASH *hash, char *s,char *default_tag,const char *del,
-                                            GBDATA *gb_main, const char *rtag,const char *srt, const char *aci, GBDATA *gbd){
+static GB_ERROR g_bs_convert_string_to_tagged_hash(GB_HASH *hash, char *s,char *default_tag,const char *del,
+                                                   GBDATA *gb_main, const char *rtag,const char *srt, const char *aci, GBDATA *gbd){
     char *se;           /* string end */
     char *sa;           /* string anfang and tag end */
     char *ts;           /* tag start */
     char *t;
     GB_ERROR error = 0;
-    while (s){
-        if (strlen(s)<=0) break;
+    while (s && s[0]) {
         ts = strchr(s,'[');
         if (!ts){
             error = g_bs_add_value_tag_to_hash(gb_main,hash,default_tag,s,rtag,srt,aci,gbd); /* no tag found, use default tag */
-            if (error) return error;
+            if (error) break;
             break;
         }else{
             *(ts++) = 0;
@@ -1566,7 +1565,7 @@ GB_ERROR g_bs_convert_string_to_tagged_hash(GB_HASH *hash, char *s,char *default
             while (*sa == ' ') sa++;
         }else{
             error = g_bs_add_value_tag_to_hash(gb_main,hash,default_tag,s,rtag,srt,aci,gbd); /* no tag found, use default tag */
-            if (error) return error;
+            if (error) break;
             break;
         }
         se = strchr(sa,'[');
@@ -1578,114 +1577,145 @@ GB_ERROR g_bs_convert_string_to_tagged_hash(GB_HASH *hash, char *s,char *default
             if (del && strcmp(t,del) == 0) continue; /* test, whether to delete */
             if (sa[0] == 0) continue;
             error = g_bs_add_value_tag_to_hash(gb_main,hash,t,sa,rtag,srt,aci,gbd); /* tag found, use  tag */
-            if (error) return error;
+            if (error) break;
         }
         s = se;
     }
     return error;
 }
 
-void *g_bs_merge_result;
-void *g_bs_merge_sub_result;
-GB_HASH *g_bs_collect_tags_hash;
+static long g_bs_merge_tags(const char *tag, long val, void *cd_sub_result) {
+    struct GBS_strstruct *sub_result = (struct GBS_strstruct*)cd_sub_result;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+    GBS_strcat(sub_result, tag);
+    GBS_strcat(sub_result, ",");
 
-    static long g_bs_merge_tags(const char *tag, long val) {
-        GBS_strcat(g_bs_merge_sub_result, tag);
-        GBS_strcat(g_bs_merge_sub_result, ",");
-        return val;
-    }
-
-    static long g_bs_read_tagged_hash(const char *value, long subhash){
-        char *str;
-        static int counter = 0;
-        g_bs_merge_sub_result = GBS_stropen(100);
-        GBS_hash_do_sorted_loop((GB_HASH *)subhash, g_bs_merge_tags, GBS_HCF_sortedByKey);
-        GBS_free_hash((GB_HASH *)subhash); /* array of tags */
-        GBS_intcat(g_bs_merge_sub_result,counter++); /* create a unique number */
-
-        str = GBS_strclose(g_bs_merge_sub_result);
-        GBS_write_hash(g_bs_collect_tags_hash,str,(long)strdup(value)); /* send output to new hash for sorting */
-
-        free(str);
-        return 0;
-    }
-
-    static long g_bs_read_final_hash(const char *tag, long value){
-        char *lk = strrchr(tag,',');
-        if (lk) {           /* remove number at end */
-            *lk = 0;
-            GBS_strcat(g_bs_merge_result," [");
-            GBS_strcat(g_bs_merge_result,tag);
-            GBS_strcat(g_bs_merge_result,"] ");
-        }
-        GBS_strcat(g_bs_merge_result,(char *)value);
-        return value;
-    }
-
-#ifdef __cplusplus
+    return val;
 }
-#endif
+
+static long g_bs_read_tagged_hash(const char *value, long subhash, void *cd_g_bs_collect_tags_hash) {
+    char                 *str;
+    static int            counter    = 0;
+    struct GBS_strstruct *sub_result = GBS_stropen(100);
+        
+    GBS_hash_do_sorted_loop((GB_HASH *)subhash, g_bs_merge_tags, GBS_HCF_sortedByKey, sub_result);
+    GBS_intcat(sub_result, counter++); /* create a unique number */
+
+    str = GBS_strclose(sub_result);
+
+    GB_HASH *g_bs_collect_tags_hash = (GB_HASH*)cd_g_bs_collect_tags_hash;
+    GBS_write_hash(g_bs_collect_tags_hash, str,(long)strdup(value)); /* send output to new hash for sorting */
+
+    free(str);
+    return 0;
+}
+
+static long g_bs_read_final_hash(const char *tag, long value, void *cd_merge_result) {
+    struct GBS_strstruct *merge_result = (struct GBS_strstruct*)cd_merge_result;
+        
+    char *lk = strrchr(tag,',');
+    if (lk) {           /* remove number at end */
+        *lk = 0;
+        GBS_strcat(merge_result, " [");
+        GBS_strcat(merge_result, tag);
+        GBS_strcat(merge_result, "] ");
+    }
+    GBS_strcat(merge_result,(char *)value);
+    return value;
+}
 
 
 static char *g_bs_get_string_of_tag_hash(GB_HASH *tag_hash){
-    g_bs_merge_result = GBS_stropen(256);
-    g_bs_collect_tags_hash = GBS_create_hash(1024, GB_IGNORE_CASE);
+    struct GBS_strstruct *merge_result      = GBS_stropen(256);
+    GB_HASH              *collect_tags_hash = GBS_create_hash(1024, GB_IGNORE_CASE);
 
-    GBS_hash_do_sorted_loop(tag_hash, g_bs_read_tagged_hash, GBS_HCF_sortedByKey);     /* move everything into g_bs_collect_tags_hash */
-    GBS_hash_do_sorted_loop(g_bs_collect_tags_hash, g_bs_read_final_hash, GBS_HCF_sortedByKey);
+    GBS_hash_do_sorted_loop(tag_hash, g_bs_read_tagged_hash, GBS_HCF_sortedByKey, collect_tags_hash);     /* move everything into collect_tags_hash */
+    GBS_hash_do_sorted_loop(collect_tags_hash, g_bs_read_final_hash, GBS_HCF_sortedByKey, merge_result);
 
-    GBS_free_hash_free_pointer(g_bs_collect_tags_hash);
-    return GBS_strclose(g_bs_merge_result);
+    GBS_free_hash_free_pointer(collect_tags_hash);
+    return GBS_strclose(merge_result);
 }
 
-/* Create a tagged string from two tagged strings:
-                 * a tagged string is '[tag,tag,tag] string'
-                 * if s2 than delete all tags replace1 in string1
-                 * if s1 than delete all tags replace2 in string2 */
+long g_bs_free_hash_of_hashes_elem(const char *key, long val, void *dummy) {
+    GB_HASH *hash = (GB_HASH*)val;
+    GBUSE(key);
+    GBUSE(dummy);
+    if (hash) GBS_free_hash(hash);
+    return 0;
+}
+static void g_bs_free_hash_of_hashes(GB_HASH *hash) {
+    GBS_hash_do_loop(hash, g_bs_free_hash_of_hashes_elem, NULL);
+    GBS_free_hash(hash);
+}
 
 char *GBS_merge_tagged_strings(const char *s1, const char *tag1, const char *replace1, const char *s2, const char *tag2, const char *replace2){
-    char *str1 = strdup(s1);
-    char *str2 = strdup(s2);
-    char *t1 = GBS_string_2_key(tag1);
-    char *t2 = GBS_string_2_key(tag2);
-    char *result = 0;
-    GB_ERROR error = 0;
-    GB_HASH *hash = GBS_create_hash(16, GB_MIND_CASE);
+    /* Create a tagged string from two tagged strings:
+     * a tagged string is somthing like '[tag,tag,tag] string [tag] string [tag,tag] string'
+     * 
+     * if 's2' is not empty, then delete tag 'replace1' in 's1'
+     * if 's1' is not empty, then delete tag 'replace2' in 's2'
+     *
+     * if result is NULL, an error has been exported.
+     */
+
+    char     *str1   = strdup(s1);
+    char     *str2   = strdup(s2);
+    char     *t1     = GBS_string_2_key(tag1);
+    char     *t2     = GBS_string_2_key(tag2);
+    char     *result = 0;
+    GB_ERROR  error  = 0;
+    GB_HASH  *hash   = GBS_create_hash(16, GB_MIND_CASE);
+
     if (!strlen(s1)) replace2 = 0;
     if (!strlen(s2)) replace1 = 0;
+
     if (replace1 && replace1[0] == 0) replace1 = 0;
     if (replace2 && replace2[0] == 0) replace2 = 0;
-    error = g_bs_convert_string_to_tagged_hash(hash,str1,t1,replace1,0,0,0,0,0);
-    if (!error) error = g_bs_convert_string_to_tagged_hash(hash,str2,t2,replace2,0,0,0,0,0);
-    if (!error){
+
+    error              = g_bs_convert_string_to_tagged_hash(hash,str1,t1,replace1,0,0,0,0,0);
+    if (!error) error  = g_bs_convert_string_to_tagged_hash(hash,str2,t2,replace2,0,0,0,0,0);
+
+    if (!error) {
         result = g_bs_get_string_of_tag_hash(hash);
     }
-    GBS_free_hash(hash);
+    else {
+        GB_export_error(error);
+    }
+
+    g_bs_free_hash_of_hashes(hash);
+
     free(t2);
     free(t1);
-    free(str1);
     free(str2);
+    free(str1);
+
     return result;
 }
 
-char *GBS_string_eval_tagged_string(GBDATA *gb_main,const char *s, const char *dt, const char *tag, const char *srt, const char *aci, GBDATA *gbd){
-    char *str = strdup(s);
-    char *default_tag = GBS_string_2_key(dt);
-    GB_HASH *hash = GBS_create_hash(16, GB_MIND_CASE);
-    GB_ERROR error = 0;
-    char *result = 0;
-    error = g_bs_convert_string_to_tagged_hash(hash,str,default_tag,0,gb_main,tag,srt,aci,gbd);
+char *GBS_string_eval_tagged_string(GBDATA *gb_main, const char *s, const char *dt, const char *tag, const char *srt, const char *aci, GBDATA *gbd) {
+    /* if 's' is untagged, tag it with default tag 'dt'.
+     * if 'tag' is != NULL -> apply 'srt' or 'aci' to that part of the  content of 's', which is tagged with 'tag'
+     * 
+     * if result is NULL, an error has been exported.
+     */
+    
+    char     *str         = strdup(s);
+    char     *default_tag = GBS_string_2_key(dt);
+    GB_HASH  *hash        = GBS_create_hash(16, GB_MIND_CASE);
+    char     *result      = 0;
+    GB_ERROR  error       = g_bs_convert_string_to_tagged_hash(hash,str,default_tag,0,gb_main,tag,srt,aci,gbd);
 
-    if (!error){
+    if (!error) {
         result = g_bs_get_string_of_tag_hash(hash);
     }
-    GBS_free_hash(hash);
+    else {
+        GB_export_error(error);
+    }
+
+    g_bs_free_hash_of_hashes(hash);
     free(default_tag);
     free(str);
+    
     return result;
 }
 

@@ -143,7 +143,7 @@ char *arb_prm_read(int /*prmanz*/)
     return 0;
 }
 
-long arb_count_keys(const char */*key*/,long val)
+long arb_count_keys(const char */*key*/,long val, void *)
 {
     if (val >1) {
         aprm.key_cnt++;
@@ -153,7 +153,7 @@ long arb_count_keys(const char */*key*/,long val)
     return val;
 }
 
-long arb_print_primer(const char *key,long val)
+long arb_print_primer(const char *key,long val, void *)
 {
     if (val <=1) return val;
     int gc = 0;
@@ -185,7 +185,7 @@ int primer_print(char *dest,char * source,int size)
     return 0;
 }
 
-long arb_reduce_primer_len(const char *key,long val)
+long arb_reduce_primer_len(const char *key,long val, void *)
 {
     static char buffer[256];
     int size = strlen(key)-aprm.reduce;
@@ -239,12 +239,12 @@ void arb_prm_primer(int /*prmanz*/)
 
                 aprm.key_cnt = 0;
                 aprm.one_key_cnt = 0;
-                GBS_hash_do_loop(mhash, arb_count_keys);
+                GBS_hash_do_loop(mhash, arb_count_keys, NULL);
                 if ((aprm.key_cnt + aprm.one_key_cnt < cutoff_cnt) &&
                     //  (aprm.key_cnt > aprm.one_key_cnt) &&
                     (aprm.key_cnt<best_primer_cnt[prmlen+1])){
                     fprintf(aprm.out,"%3i primer found len %3i(of %4i taxa) for position %i\n", aprm.key_cnt, prmlen, pspecies, pos);
-                    GBS_hash_do_loop(mhash, arb_print_primer);
+                    GBS_hash_do_loop(mhash, arb_print_primer, NULL);
                     fprintf(aprm.out,"\n\n");
                     cutoff_cnt = aprm.key_cnt;
                 }
@@ -254,7 +254,7 @@ void arb_prm_primer(int /*prmanz*/)
                     aprm.key_cnt/=4;
                     aprm.reduce++;
                 }
-                GBS_hash_do_loop(mhash,arb_reduce_primer_len);
+                GBS_hash_do_loop(mhash,arb_reduce_primer_len, NULL);
                 GBS_free_hash(mhash);
                 mhash = hash;
             }

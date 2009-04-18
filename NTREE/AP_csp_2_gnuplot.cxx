@@ -445,9 +445,9 @@ AW_window *AP_open_csp_2_gnuplot_window( AW_root *root ){
     aws->insert_default_selection(selid, "<select one>", "");
     aws->update_selection_list(selid);
 
-    AW_CL filter = awt_create_select_filter(root,GLOBAL_gb_main,AP_AWAR_FILTER_NAME);
+    adfiltercbstruct *filter = awt_create_select_filter(root, GLOBAL_gb_main, AP_AWAR_FILTER_NAME);
     aws->at("ap_filter");
-    aws->callback(AW_POPUP,(AW_CL)awt_create_select_filter_win,filter);
+    aws->callback(AW_POPUP, (AW_CL)awt_create_select_filter_win, (AW_CL)filter);
     aws->create_button("SELECT_FILTER", AP_AWAR_FILTER_NAME);
 
     aws->at("smooth");

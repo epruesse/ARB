@@ -308,25 +308,26 @@ void GBS_optimize_hash(GB_HASH *hs) {
     }
 }
 
-static void *gbs_save_hash_strstruct = 0;
-
-long gbs_hash_to_strstruct(const char *key, long val){
-    const char *p;
-    int c;
-    for ( p = key; (c=*p) ; p++) {
-        GBS_chrcat(gbs_save_hash_strstruct,c);
-        if (c==':') GBS_chrcat(gbs_save_hash_strstruct,c);
+static long gbs_hash_to_strstruct(const char *key, long val, void *cd_out) {
+    const char           *p;
+    int                   c;
+    struct GBS_strstruct *out = (struct GBS_strstruct*)cd_out;
+    
+    for (p = key; (c=*p) ; p++) {
+        GBS_chrcat(out, c);
+        if (c==':') GBS_chrcat(out, c);
     }
-    GBS_chrcat(gbs_save_hash_strstruct,':');
-    GBS_intcat(gbs_save_hash_strstruct,val);
-    GBS_chrcat(gbs_save_hash_strstruct,' ');
+    GBS_chrcat(out, ':');
+    GBS_intcat(out, val);
+    GBS_chrcat(out, ' ');
+
     return val;
 }
 
 char *GBS_hashtab_2_string(GB_HASH *hash) {
-    gbs_save_hash_strstruct = GBS_stropen(1024);
-    GBS_hash_do_loop(hash, gbs_hash_to_strstruct);
-    return GBS_strclose(gbs_save_hash_strstruct);
+    struct GBS_strstruct *out = GBS_stropen(1024);
+    GBS_hash_do_loop(hash, gbs_hash_to_strstruct, out);
+    return GBS_strclose(out);
 }
 
 
@@ -685,7 +686,7 @@ void GBS_free_hash_free_pointer(GB_HASH *hs)
     free((char *)hs);
 }
 
-void GBS_hash_do_loop(GB_HASH *hs, gb_hash_loop_type func)
+void GBS_hash_do_loop(GB_HASH *hs, gb_hash_loop_type func, void *client_data)
 {
     long i,e2;
     struct gbs_hash_entry *e;
@@ -693,21 +694,7 @@ void GBS_hash_do_loop(GB_HASH *hs, gb_hash_loop_type func)
     for (i=0;i<e2;i++) {
         for (e=hs->entries[i];e;e=e->next) {
             if (e->val) {
-                e->val = func(e->key,e->val);
-            }
-        }
-    }
-}
-
-void GBS_hash_do_loop2(GB_HASH *hs, gb_hash_loop_type2 func, void *parameter)
-{
-    long i,e2;
-    struct gbs_hash_entry *e;
-    e2 = hs->size;
-    for (i=0;i<e2;i++) {
-        for (e=hs->entries[i];e;e=e->next) {
-            if (e->val) {
-                e->val = func(e->key,e->val, parameter);
+                e->val = func(e->key,e->val, client_data);
             }
         }
     }
@@ -814,7 +801,7 @@ extern "C" {
 }
 #endif
 
-void GBS_hash_do_sorted_loop(GB_HASH *hs, gb_hash_loop_type func, gbs_hash_compare_function sorter) {
+void GBS_hash_do_sorted_loop(GB_HASH *hs, gb_hash_loop_type func, gbs_hash_compare_function sorter, void *client_data) {
     long   i, j, e2;
     struct gbs_hash_entry *e, **mtab;
     e2 = hs->size;
@@ -828,7 +815,7 @@ void GBS_hash_do_sorted_loop(GB_HASH *hs, gb_hash_loop_type func, gbs_hash_compa
     }
     GB_sort((void **) mtab, 0, j, wrap_hashCompare4gb_sort, (void*)sorter);
     for (i = 0; i < j; i++) {
-        func(mtab[i]->key, mtab[i]->val);
+        func(mtab[i]->key, mtab[i]->val, client_data);
     }
     free((char *)mtab);
 }

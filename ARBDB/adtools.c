@@ -565,7 +565,7 @@ GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name)
     if (species_name_hash) {
         if (!error) {
             long counter = 0;
-            GBS_hash_do_loop2(species_name_hash, check_for_species_without_data, &counter);
+            GBS_hash_do_loop(species_name_hash, check_for_species_without_data, &counter);
             if (counter>0) {
                 GB_warning("Found %li species without alignment data (only some were listed)", counter);
             }
@@ -2960,16 +2960,15 @@ GB_ERROR GBT_check_arb_file(const char *name)
 #define GBT_SUM_LEN 4096
 /* maximum length of path */
 
-struct {
-    GB_HASH *hash_table;
-    int count;
-    char **result;
-    GB_TYPES type;
-    char *buffer;
-} gbs_scan_db_data;
+struct DbScanner {
+    GB_HASH   *hash_table;
+    int        count;
+    char     **result;
+    GB_TYPES   type;
+    char      *buffer;
+};
 
-void gbt_scan_db_rek(GBDATA *gbd,char *prefix, int deep)
-{
+static void gbt_scan_db_rek(GBDATA *gbd,char *prefix, int deep, struct DbScanner *scanner) {
     GB_TYPES type = GB_read_type(gbd);
     GBDATA *gb2;
     const char *key;
@@ -2980,11 +2979,11 @@ void gbt_scan_db_rek(GBDATA *gbd,char *prefix, int deep)
             if (deep){
                 key = GB_read_key_pntr(gb2);
                 sprintf(&prefix[len_of_prefix],"/%s",key);
-                gbt_scan_db_rek(gb2,prefix,1);
+                gbt_scan_db_rek(gb2, prefix, 1, scanner);
             }
             else {
                 prefix[len_of_prefix] = 0;
-                gbt_scan_db_rek(gb2,prefix,1);
+                gbt_scan_db_rek(gb2, prefix, 1, scanner);
             }
         }
         prefix[len_of_prefix] = 0;
@@ -2995,32 +2994,44 @@ void gbt_scan_db_rek(GBDATA *gbd,char *prefix, int deep)
         }
         else {
             prefix[0] = (char)type;
-            GBS_incr_hash( gbs_scan_db_data.hash_table, prefix);
+            GBS_incr_hash(scanner->hash_table, prefix);
         }
     }
 }
 
-long gbs_scan_db_count(const char *key,long val)
-{
-    gbs_scan_db_data.count++;
+static long gbs_scan_db_count(const char *key, long val, void *cd_scanner) {
+    struct DbScanner *scanner = (struct DbScanner*)cd_scanner;
+
+    scanner->count++;
     key = key;
+
     return val;
 }
 
-long gbs_scan_db_insert(const char *key,long val, void *v_datapath)
-{
-    if (!v_datapath) {
-        gbs_scan_db_data.result[gbs_scan_db_data.count++]  = strdup(key);
+struct scan_db_insert {
+    struct DbScanner *scanner;
+    const char       *datapath;
+};
+
+static long gbs_scan_db_insert(const char *key, long val, void *cd_insert_data) {
+    struct scan_db_insert *insert = (struct scan_db_insert *)cd_insert_data;
+    char *to_insert = 0;
+
+    if (!insert->datapath) {
+        to_insert = strdup(key);
     }
     else {
-        char *datapath = (char*)v_datapath;
-        if (GBS_strscmp(datapath, key+1) == 0) { // datapath matches
-            char *subkey = strdup(key+strlen(datapath)); // cut off prefix
-            subkey[0]    = key[0]; // copy type
-
-            gbs_scan_db_data.result[gbs_scan_db_data.count++] = subkey;
+        if (GBS_strscmp(insert->datapath, key+1) == 0) { // datapath matches
+            to_insert    = strdup(key+strlen(insert->datapath)); // cut off prefix
+            to_insert[0] = key[0]; // copy type
         }
     }
+
+    if (to_insert) {
+        struct DbScanner *scanner         = insert->scanner;
+        scanner->result[scanner->count++] = to_insert;
+    }
+
     return val;
 }
 
@@ -3031,35 +3042,39 @@ static int gbs_scan_db_compare(const void *left, const void *right, void *unused
 
 
 char **GBT_scan_db(GBDATA *gbd, const char *datapath) {
-    /* returns a NULL terminated array of 'strings'
-       each string is the path to a node beyond gbd;
-       every string exists only once
-       the first character of a string is the type of the entry
-       the strings are sorted alphabetically !!!
+    /* returns a NULL terminated array of 'strings':
+     * - each string is the path to a node beyond gbd;
+     * - every string exists only once
+     * - the first character of a string is the type of the entry
+     * - the strings are sorted alphabetically !!!
+     *
+     * if datapath != 0, only keys with prefix datapath are scanned and
+     * the prefix is removed from the resulting key_names.
+     */
+    struct DbScanner scanner;
 
-       if datapath              != 0, only keys with prefix datapath are scanned and
-       the prefix is removed from the resulting key_names
-    */
-    gbs_scan_db_data.hash_table  = GBS_create_hash(1024, GB_MIND_CASE);
-    gbs_scan_db_data.buffer      = (char *)malloc(GBT_SUM_LEN);
-    strcpy(gbs_scan_db_data.buffer,"");
-    gbt_scan_db_rek(gbd, gbs_scan_db_data.buffer,0);
+    scanner.hash_table = GBS_create_hash(1024, GB_MIND_CASE);
+    scanner.buffer     = (char *)malloc(GBT_SUM_LEN);
+    strcpy(scanner.buffer,"");
+    
+    gbt_scan_db_rek(gbd, scanner.buffer, 0, &scanner);
 
-    gbs_scan_db_data.count = 0;
-    GBS_hash_do_loop(gbs_scan_db_data.hash_table,gbs_scan_db_count);
+    scanner.count = 0;
+    GBS_hash_do_loop(scanner.hash_table, gbs_scan_db_count, &scanner);
 
-    gbs_scan_db_data.result = (char **)GB_calloc(sizeof(char *),gbs_scan_db_data.count+1);
+    scanner.result = (char **)GB_calloc(sizeof(char *),scanner.count+1);
     /* null terminated result */
 
-    gbs_scan_db_data.count = 0;
-    GBS_hash_do_loop2(gbs_scan_db_data.hash_table,gbs_scan_db_insert, (void*)datapath);
+    scanner.count = 0;
+    struct scan_db_insert insert = { &scanner, datapath, };
+    GBS_hash_do_loop(scanner.hash_table, gbs_scan_db_insert, &insert);
 
-    GBS_free_hash(gbs_scan_db_data.hash_table);
+    GBS_free_hash(scanner.hash_table);
 
-    GB_sort((void **)gbs_scan_db_data.result, 0, gbs_scan_db_data.count, gbs_scan_db_compare, 0);
+    GB_sort((void **)scanner.result, 0, scanner.count, gbs_scan_db_compare, 0);
 
-    free(gbs_scan_db_data.buffer);
-    return gbs_scan_db_data.result;
+    free(scanner.buffer);
+    return scanner.result;
 }
 
 /********************************************************************************************

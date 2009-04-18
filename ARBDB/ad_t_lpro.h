@@ -27,9 +27,6 @@ int gbt_sum_leafs P_((GBT_TREE *tree));
 GB_CSTR *gbt_fill_species_names P_((GB_CSTR *des, GBT_TREE *tree));
 void gbt_export_tree_node_print_remove P_((char *str));
 void gbt_export_tree_rek P_((GBT_TREE *tree, FILE *out));
-void gbt_scan_db_rek P_((GBDATA *gbd, char *prefix, int deep));
-long gbs_scan_db_count P_((const char *key, long val));
-long gbs_scan_db_insert P_((const char *key, long val, void *v_datapath));
 GB_ERROR gbt_rename_tree_rek P_((GBT_TREE *tree, int tree_index));
 
 /* adseqcompr.c */

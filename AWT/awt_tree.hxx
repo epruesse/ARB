@@ -180,10 +180,12 @@ public:
     static char *mutation_per_site; // if != 0 then mutations are set by combine
     static char *static_mutation_per_site[3];   // if != 0 then mutations are set by combine
 
-    AP_BOOL is_set_flag;
-    long    sequence_len;
-    long    update;
-    AP_FLOAT    costs;
+    AP_BOOL  is_set_flag;
+    long     sequence_len;
+    long     update;
+    AP_FLOAT costs;
+
+    static long global_combineCount;
 
     AP_sequence(AP_tree_root *rooti);
     virtual ~AP_sequence(void);

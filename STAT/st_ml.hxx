@@ -109,7 +109,7 @@ class ST_ML {
     void insert_tree_into_hash_rek(AP_tree *node);
     void create_matrizes(double max_disti, int nmatrizes);
     void create_frequencies();
-    static long delete_species(const char *key, long val);
+    static long delete_species(const char *key, long val, void *cd_st_ml);
 public:
     AP_tree_root *tree_root;
     int latest_modification; // last mod;

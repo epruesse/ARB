@@ -3,9 +3,7 @@
 extern struct NT_global {
     AW_root *awr;
     AWT_graphic_tree *tree;
-} * nt;
+} *GLOBAL_NT;
 
-AWT_graphic *PARS_generate_tree(AW_root *root);
+AWT_graphic_tree *PARS_generate_tree(AW_root *root);
 
-extern AW_CL pars_global_filter;
-extern long global_combineCount;

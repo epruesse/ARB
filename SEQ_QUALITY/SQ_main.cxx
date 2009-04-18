@@ -73,15 +73,14 @@ void SQ_create_awars(AW_root * aw_root, AW_default aw_def) {
 // --------------------------------------------------------------------------------
 
 
-static void sq_calc_seq_quality_cb(AW_window * aww,
-        AW_CL res_from_awt_create_select_filter) {
-    AW_root *aw_root = aww->get_root();
-    GB_ERROR error = 0;
-    GBT_TREE *tree = 0;
-    AP_tree *ap_tree = 0;
+static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_select_filter) {
+    AW_root      *aw_root      = aww->get_root();
+    GB_ERROR      error        = 0;
+    GBT_TREE     *tree         = 0;
+    AP_tree      *ap_tree      = 0;
     AP_tree_root *ap_tree_root = 0;
-    bool marked_only = (aw_root->awar(AWAR_SQ_MARK_ONLY_FLAG)->read_int() > 0);
-    char *treename = aw_root->awar(AWAR_TREE)->read_string(); // contains "????" if no tree is selected
+    bool          marked_only  = (aw_root->awar(AWAR_SQ_MARK_ONLY_FLAG)->read_int() > 0);
+    char         *treename     = aw_root->awar(AWAR_TREE)->read_string(); // contains "????" if no tree is selected
 
     if (treename && strstr(treename, "????") == 0) {
         ap_tree = new AP_tree(0);
@@ -145,8 +144,7 @@ static void sq_calc_seq_quality_cb(AW_window * aww,
         int reevaluate = aw_root->awar(AWAR_SQ_REEVALUATE)->read_int();
 
         // Load and use Sequence-Filter
-        AP_filter *filter = awt_get_filter(aw_root,
-                res_from_awt_create_select_filter);
+        AP_filter *filter = awt_get_filter(aw_root, (adfiltercbstruct*)res_from_awt_create_select_filter);
 
         /*
          SQ_evaluate() generates the final estimation for the quality of an alignment.
@@ -285,12 +283,12 @@ AW_window *SQ_create_seq_quality_window(AW_root * aw_root, AW_CL) {
     awt_create_selection_list_on_trees(GLOBAL_gb_main, (AW_window *) aws, AWAR_TREE);
 
     aws->at("filter");
-    AW_CL filtercd = awt_create_select_filter(aws->get_root(), GLOBAL_gb_main, AWAR_FILTER_NAME);
-    aws->callback(AW_POPUP, (AW_CL) awt_create_select_filter_win, filtercd);
+    adfiltercbstruct *filtercd = awt_create_select_filter(aws->get_root(), GLOBAL_gb_main, AWAR_FILTER_NAME);
+    aws->callback(AW_POPUP, (AW_CL) awt_create_select_filter_win, (AW_CL)filtercd);
     aws->create_button("SELECT_FILTER", AWAR_FILTER_NAME);
 
     aws->at("go");
-    aws->callback(sq_calc_seq_quality_cb, filtercd);
+    aws->callback(sq_calc_seq_quality_cb, (AW_CL)filtercd);
     aws->highlight();
     aws->create_button("GO", "GO", "G");
 

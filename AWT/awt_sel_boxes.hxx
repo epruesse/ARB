@@ -13,6 +13,9 @@
 #ifndef AWT_SEL_BOXES_HXX
 #define AWT_SEL_BOXES_HXX
 
+class  AP_filter;
+struct adfiltercbstruct;
+
 /**************************************************************************
  *********************   Various Database Selection Boxes    ***********
  ***************************************************************************/
@@ -66,7 +69,7 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const ch
                                AW_window* (*create_popup)(AW_root *, AW_default)); // .. or create_popup  (both together not allowed)
 
 /***********************    FILTERS     ************************/
-AW_CL   awt_create_select_filter(AW_root *aw_root,GBDATA *gb_main, const char *def_name);
+adfiltercbstruct *awt_create_select_filter(AW_root *aw_root,GBDATA *gb_main, const char *def_name);
 /* Create a data structure for filters (needed for awt_create_select_filter_win */
 /* Create a filter selection box, this box needs 3 AWARS:
    1. "$def_name"
@@ -76,11 +79,10 @@ AW_CL   awt_create_select_filter(AW_root *aw_root,GBDATA *gb_main, const char *d
 */
 void awt_set_awar_to_valid_filter_good_for_tree_methods(GBDATA *gb_main,AW_root *awr, const char *awar_name);
 
-AW_window *awt_create_select_filter_win(AW_root *aw_root,AW_CL res_of_create_select_filter);
+AW_window *awt_create_select_filter_win(AW_root *aw_root, AW_CL cd_adfiltercbstruct);
 /* not just the box, but the whole window */
 
-class AP_filter;
-AP_filter *awt_get_filter(AW_root *aw_root,AW_CL res_of_create_select_filter);
+AP_filter *awt_get_filter(AW_root *aw_root, adfiltercbstruct *acbs);
 
 char *AWT_get_combined_filter_name(AW_root *aw_root, GB_CSTR prefix);
 

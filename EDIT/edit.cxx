@@ -1394,24 +1394,16 @@ long AED_dlist::read_hash(const char *name){
     return val;
 }
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-    static long aeddlist_optimizehash(const char *key, long val) {
-        if (val>1) return 1;
-        key = key;
-        return 0;
-    }
-
-#ifdef __cplusplus
+static long aeddlist_optimizehash(const char *key, long val, void*) {
+    if (val>1) return 1;
+    key = key;
+    return 0;
 }
-#endif
 
 void AED_dlist::optimize_hash(void){
     if (!hash) return;
     hash_level = 1;
-    GBS_hash_do_loop(hash,aeddlist_optimizehash);
+    GBS_hash_do_loop(hash, aeddlist_optimizehash, NULL);
 }
 void AED_dlist::insert_hash(const char *name){
     if (!hash) return;

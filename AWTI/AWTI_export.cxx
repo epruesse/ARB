@@ -692,8 +692,9 @@ static GB_ERROR AWTI_export_format_multiple(AW_root *aw_root, const char *formna
 // ----------------------------------------
 
 void AWTC_export_go_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL res_from_awt_create_select_filter) {
-    GBDATA         *gb_main = (GBDATA*)cl_gb_main;
-    GB_transaction  dummy(gb_main);
+    GBDATA           *gb_main = (GBDATA*)cl_gb_main;
+    GB_transaction    dummy(gb_main);
+    adfiltercbstruct *acbs    = (adfiltercbstruct*)res_from_awt_create_select_filter;
 
     aw_openstatus("Exporting data");
 
@@ -708,7 +709,7 @@ void AWTC_export_go_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL res_from_awt_crea
     char *outname      = awr->awar(AWAR_EXPORT_FILE"/file_name")->read_string();
     char *real_outname = 0;     // with suffix (name of first file if multiple)
 
-    AP_filter *filter = awt_get_filter(awr, res_from_awt_create_select_filter);
+    AP_filter *filter = awt_get_filter(awr, acbs);
     esd               = new export_sequence_data(gb_main, marked_only, filter, cut_stop_codon, compress);
     GB_set_export_sequence_hook(exported_sequence);
 
@@ -863,8 +864,8 @@ AW_window *open_AWTC_export_window(AW_root *awr,GBDATA *gb_main)
     aws->update_option_menu();
 
     aws->at("seqfilter");
-    AW_CL filtercd = awt_create_select_filter(aws->get_root(), gb_main, AWAR_EXPORT_FILTER_NAME);
-    aws->callback(AW_POPUP, (AW_CL)awt_create_select_filter_win, filtercd);
+    adfiltercbstruct *filtercd = awt_create_select_filter(aws->get_root(), gb_main, AWAR_EXPORT_FILTER_NAME);
+    aws->callback(AW_POPUP, (AW_CL)awt_create_select_filter_win, (AW_CL)filtercd);
     aws->create_button("SELECT_FILTER", AWAR_EXPORT_FILTER_NAME);
 
     aws->at("cutstop");
@@ -875,7 +876,7 @@ AW_window *open_AWTC_export_window(AW_root *awr,GBDATA *gb_main)
 
     aws->at("go");
     aws->highlight();
-    aws->callback(AWTC_export_go_cb,(AW_CL)gb_main, filtercd);
+    aws->callback(AWTC_export_go_cb,(AW_CL)gb_main, (AW_CL)filtercd);
     aws->create_button("GO", "GO","G");
 
     return aws;

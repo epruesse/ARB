@@ -68,7 +68,8 @@
 DI_MATRIX   *DI_MATRIX::ROOT = 0;
 DI_dmatrix *di_dmatrix     = 0;
 AWT_csp    *global_csp     = 0;
-AW_CL       dist_filter_cl = 0;
+
+static adfiltercbstruct *dist_filter_cl = 0;
 
 AP_matrix DI_dna_matrix(AP_MAX);
 
@@ -912,7 +913,7 @@ static GB_ERROR di_calculate_matrix_cb(AW_window *aww, AW_CL bootstrap_flag, AW_
 
     char *cancel = aw_root->awar(AWAR_DIST_CANCEL_CHARS)->read_string();
 
-    AP_filter *ap_filter = awt_get_filter(aw_root,dist_filter_cl);
+    AP_filter *ap_filter = awt_get_filter(aw_root, dist_filter_cl);
     if (bootstrap_flag){
         ap_filter->enable_bootstrap();
     }
@@ -1579,9 +1580,8 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     awt_create_selection_list_on_ad(GLOBAL_gb_main, (AW_window *)aws,AWAR_DIST_ALIGNMENT,"*=");
 
     aws->at("filter_select");
-    AW_CL filtercd = awt_create_select_filter(aws->get_root(),GLOBAL_gb_main,AWAR_DIST_FILTER_NAME);
-    dist_filter_cl = filtercd;
-    aws->callback(AW_POPUP,(AW_CL)awt_create_select_filter_win,filtercd);
+    dist_filter_cl = awt_create_select_filter(aws->get_root(), GLOBAL_gb_main, AWAR_DIST_FILTER_NAME);
+    aws->callback(AW_POPUP, (AW_CL)awt_create_select_filter_win, (AW_CL)dist_filter_cl);
     aws->create_button("SELECT_FILTER", AWAR_DIST_FILTER_NAME);
 
     aws->at("weights_select");

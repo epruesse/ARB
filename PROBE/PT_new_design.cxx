@@ -830,18 +830,16 @@ inline int ptnd_check_tprobe(PT_pdc *pdc, char *probe, int len)
     return 0;
 }
 
-extern "C" {
-    static long ptnd_build_probes_collect(const char *probe, long count) {
-        PT_tprobes *tprobe;
-        if (count >= ptnd.locs->group_count*ptnd.pdc->mintarget) {
-            tprobe = create_PT_tprobes();
-            tprobe->sequence = strdup(probe);
-            tprobe->temp = pt_get_temperature(probe);
-            tprobe->groupsize = (int)count;
-            aisc_link(&ptnd.pdc->ptprobes, tprobe);
-        }
-        return count;
+static long ptnd_build_probes_collect(const char *probe, long count, void*) {
+    PT_tprobes *tprobe;
+    if (count >= ptnd.locs->group_count*ptnd.pdc->mintarget) {
+        tprobe = create_PT_tprobes();
+        tprobe->sequence = strdup(probe);
+        tprobe->temp = pt_get_temperature(probe);
+        tprobe->groupsize = (int)count;
+        aisc_link(&ptnd.pdc->ptprobes, tprobe);
     }
+    return count;
 }
 
 static void ptnd_add_sequence_to_hash(PT_pdc *pdc, GB_HASH *hash, char *sequence, int seq_len, int probe_len, char *prefix, int prefix_len) {
@@ -950,7 +948,7 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
             long     possible_tprobes = psg.data[name].size-pdc->probelen+1;
             GB_HASH *hash_one         = GBS_create_hash(possible_tprobes*hash_multiply, GB_MIND_CASE); // count tprobe occurrences for one group/sequence
             ptnd_add_sequence_to_hash(pdc, hash_one, psg.data[name].data, psg.data[name].size, pdc->probelen, partstring, partsize);
-            GBS_hash_do_loop2(hash_one, ptnd_collect_hash, hash); // merge hash_one into hash
+            GBS_hash_do_loop(hash_one, ptnd_collect_hash, hash); // merge hash_one into hash
 #if defined(DEBUG)
             GBS_calc_hash_statistic(hash_one, "inner", 0);
 #endif // DEBUG
@@ -961,7 +959,7 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
             long     possible_tprobes = seq->seq.size-pdc->probelen+1;
             GB_HASH *hash_one         = GBS_create_hash(possible_tprobes*hash_multiply, GB_MIND_CASE); // count tprobe occurrences for one group/sequence
             ptnd_add_sequence_to_hash(pdc, hash_one, seq->seq.data, seq->seq.size, pdc->probelen, partstring, partsize);
-            GBS_hash_do_loop2(hash_one, ptnd_collect_hash, hash); // merge hash_one into hash
+            GBS_hash_do_loop(hash_one, ptnd_collect_hash, hash); // merge hash_one into hash
 #if defined(DEBUG)
             GBS_calc_hash_statistic(hash_one, "inner", 0);
 #endif // DEBUG
@@ -971,7 +969,7 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
 #if defined(DEBUG)
         GBS_print_hash_statistic_summary("inner");
 #endif // DEBUG
-        GBS_hash_do_loop(hash,ptnd_build_probes_collect);
+        GBS_hash_do_loop(hash, ptnd_build_probes_collect, NULL);
 #if defined(DEBUG)
         GBS_calc_hash_statistic(hash, "outer", 1);
 #endif // DEBUG
