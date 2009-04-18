@@ -17,7 +17,6 @@
 
 char *AP_sequence_parsimony::table;
 
-
 /*****************************
 
 
@@ -134,8 +133,6 @@ void AP_sequence_parsimony::set(const char *isequence)
     is_set_flag     = AP_TRUE;
     cashed_real_len = -1.0;
 }
-
-long global_combineCount;
 
 AP_FLOAT AP_sequence_parsimony::combine( const AP_sequence *lefts, const AP_sequence *rights) {
     //   char *p1,*p2,*p;

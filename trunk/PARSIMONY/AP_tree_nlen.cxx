@@ -677,7 +677,6 @@ const char *AP_tree_nlen::move(AP_tree *new_brother,AP_FLOAT rel_pos)
 /*-----------------------
   costs
   -----------------------*/
-extern long global_combineCount;
 
 AP_FLOAT AP_tree_nlen::costs(void) { /* cost of a tree (number of changes ..) */
     if (! this->tree_root->sequence_template) return 0.0;

@@ -1071,15 +1071,15 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
     if (!clone) AW_init_color_group_defaults("arb_ntree");
 
-    nt.tree = (AWT_graphic_tree*)NT_generate_tree(awr,GLOBAL_gb_main);
+    GLOBAL_NT.tree = NT_generate_tree(awr,GLOBAL_gb_main);
 
     AWT_canvas *ntw;
     {
-        AP_tree_sort old_sort_type = nt.tree->tree_sort;
-        nt.tree->set_tree_type(AP_LIST_SIMPLE); // avoid NDS warnings during startup
+        AP_tree_sort old_sort_type = GLOBAL_NT.tree->tree_sort;
+        GLOBAL_NT.tree->set_tree_type(AP_LIST_SIMPLE); // avoid NDS warnings during startup
 
-        ntw = new AWT_canvas(GLOBAL_gb_main, awm, nt.tree, aw_gc_manager, awar_tree);
-        nt.tree->set_tree_type(old_sort_type);
+        ntw = new AWT_canvas(GLOBAL_gb_main, awm, GLOBAL_NT.tree, aw_gc_manager, awar_tree);
+        GLOBAL_NT.tree->set_tree_type(old_sort_type);
         ntw->set_mode(AWT_MODE_SELECT);
     }
 
@@ -1180,7 +1180,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
             SEP________________________SEP();
 #endif
-            if (!nt.extern_quit_button){
+            if (!GLOBAL_NT.extern_quit_button){
                 AWMIMT( "quit",     "Quit",             "Q","quit.hlp",     AWM_ALL, (AW_CB)nt_exit,    0, 0 );
             }
 
@@ -1198,7 +1198,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
             NT_insert_mark_submenus(awm, ntw, 1);
             AWMIMT("gene_colors",     "Set Colors",     "l", "mark_colors.hlp",   AWM_ALL,  AW_POPUP,               (AW_CL)NT_create_species_colorize_window, 0);
-            AWMIMT("selection_admin", "Configurations", "o", "configuration.hlp", AWM_SEQ2, NT_configuration_admin, (AW_CL)&(nt.tree->tree_root), (AW_CL)0     );
+            AWMIMT("selection_admin", "Configurations", "o", "configuration.hlp", AWM_SEQ2, NT_configuration_admin, (AW_CL)&(GLOBAL_NT.tree->tree_root), (AW_CL)0     );
 
             SEP________________________SEP();
 
@@ -1214,7 +1214,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             awm->insert_sub_menu(0, "Sort Species",         "r");
             {
                 AWMIMT("sort_by_field", "According to Database Entries","D","sp_sort_fld.hlp", AWM_EXP, AW_POPUP,              (AW_CL)NT_build_resort_window, 0 );
-                AWMIMT("sort_by_tree",  "According to Phylogeny",      "P","sp_sort_phyl.hlp", AWM_EXP, (AW_CB)NT_resort_data_by_phylogeny,    (AW_CL)&(nt.tree->tree_root), 0 );
+                AWMIMT("sort_by_tree",  "According to Phylogeny",      "P","sp_sort_phyl.hlp", AWM_EXP, (AW_CB)NT_resort_data_by_phylogeny,    (AW_CL)&(GLOBAL_NT.tree->tree_root), 0 );
             }
             awm->close_sub_menu();
 
@@ -1259,8 +1259,8 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
             awm->insert_sub_menu(0, "Edit Sequences","E");
             {
-                AWMIMT("new_arb_edit4",  "Using marked species and tree", "m", "arb_edit4.hlp", AWM_ALL,  (AW_CB)NT_start_editor_on_tree, (AW_CL)&(nt.tree->tree_root), 0 );
-                AWMIMT("new2_arb_edit4", "... plus relatives",            "r", "arb_edit4.hlp", AWM_ALL,  (AW_CB)NT_start_editor_on_tree, (AW_CL)&(nt.tree->tree_root), -1);
+                AWMIMT("new_arb_edit4",  "Using marked species and tree", "m", "arb_edit4.hlp", AWM_ALL,  (AW_CB)NT_start_editor_on_tree, (AW_CL)&(GLOBAL_NT.tree->tree_root), 0 );
+                AWMIMT("new2_arb_edit4", "... plus relatives",            "r", "arb_edit4.hlp", AWM_ALL,  (AW_CB)NT_start_editor_on_tree, (AW_CL)&(GLOBAL_NT.tree->tree_root), -1);
                 AWMIMT("old_arb_edit4",  "Using earlier configuration",   "c", "arb_edit4.hlp", AWM_SEQ2, AW_POPUP, (AW_CL)NT_start_editor_on_old_configuration, 0        );
             }
             awm->close_sub_menu();
@@ -1698,7 +1698,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->at(db_alignx, second_liney);
     
     awm->at_set_to(AW_FALSE, AW_FALSE, ((2-is_genome_db)*EDIT_XSIZE), EDIT_YSIZE);
-    awm->callback((AW_CB)NT_start_editor_on_tree, (AW_CL)&(nt.tree->tree_root), 0);
+    awm->callback((AW_CB)NT_start_editor_on_tree, (AW_CL)&(GLOBAL_NT.tree->tree_root), 0);
     awm->help_text("arb_edit4.hlp");
     awm->create_button("EDIT_SEQUENCES", "#edit.xpm");
 
@@ -1755,7 +1755,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->at(db_infox, second_uppery);
     awm->button_length(13);
     awm->help_text("marked_species.hlp");
-    awm->callback(NT_configuration_admin, (AW_CL)&(nt.tree->tree_root), 0);
+    awm->callback(NT_configuration_admin, (AW_CL)&(GLOBAL_NT.tree->tree_root), 0);
     awm->create_button(0, AWAR_MARKED_SPECIES_COUNTER);
     {
         GBDATA *gb_species_data = GB_search(GLOBAL_gb_main,"species_data",GB_CREATE_CONTAINER);

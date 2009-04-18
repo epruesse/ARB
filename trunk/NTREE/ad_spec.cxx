@@ -396,7 +396,7 @@ void AD_map_viewer(GBDATA *gbd,AD_MAP_VIEWER_TYPE type) {
         if (!gb_name) gb_name = GB_entry(gbd,"group_name"); // bad hack, should work
 
         const char *name = gb_name ? GB_read_char_pntr(gb_name) : "noname";
-        error = awt_openURL_by_gbd(nt.awr, GLOBAL_gb_main, gbd, name);
+        error = awt_openURL_by_gbd(GLOBAL_NT.awr, GLOBAL_gb_main, gbd, name);
     }
 
     error = GB_end_transaction(GLOBAL_gb_main, error);

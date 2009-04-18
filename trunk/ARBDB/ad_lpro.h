@@ -183,7 +183,6 @@ long gbcmc_close P_((struct gbcmc_comm *link));
 GB_ERROR gbcm_logout P_((GBCONTAINER *gb_main, char *user));
 
 /* adhash.c */
-long gbs_hash_to_strstruct P_((const char *key, long val));
 long gbs_hashi_index P_((long key, long size));
 void gb_init_cache P_((GB_MAIN_TYPE *Main));
 char *gb_read_cache P_((GBDATA *gbd));

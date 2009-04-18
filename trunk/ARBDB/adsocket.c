@@ -1361,8 +1361,9 @@ char *GB_unique_filename(const char *name_prefix, const char *suffix) {
 }
 
 static GB_HASH *files_to_remove_on_exit = 0;
-static long exit_remove_file(const char *key, long val) {
+static long exit_remove_file(const char *key, long val, void *unused) {
     GBUSE(val);
+    GBUSE(unused);
     if (unlink(key) != 0) {
         fprintf(stderr, "Warning: %s\n", GB_export_IO_error("removing", key));
     }
@@ -1370,7 +1371,7 @@ static long exit_remove_file(const char *key, long val) {
 }
 static void exit_removal() {
     if (files_to_remove_on_exit) {
-        GBS_hash_do_loop(files_to_remove_on_exit, exit_remove_file);
+        GBS_hash_do_loop(files_to_remove_on_exit, exit_remove_file, NULL);
     }
 }
 void GB_remove_on_exit(const char *filename) {

@@ -241,36 +241,36 @@ int nt_build_conf_string_rek(GB_HASH *used, GBT_TREE *tree, GBS_strstruct *memfi
     return nspecies;
 }
 
-static GBS_strstruct *nt_build_sai_middle_file;
-static const char    *nt_build_sai_last_group_name;
+struct SAI_string_builder {
+    struct GBS_strstruct *sai_middle;
+    const char           *last_group_name;
+};
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+static long nt_build_sai_string_by_hash(const char *key, long val, void *cd_sai_builder) {
+    struct SAI_string_builder *sai_builder = (struct SAI_string_builder*)cd_sai_builder;
 
-    static long nt_build_sai_string_by_hash(const char *key,long val){
-        char *sep = strchr(key,1);
-        if (!sep) return val;   // what's wrong
+    char *sep = strchr(key,1);
+    if (!sep) return val;                           // what's wrong
 
-        if (!nt_build_sai_last_group_name || strncmp(key,nt_build_sai_last_group_name,sep-key)){ // new group
-            if (nt_build_sai_last_group_name){
-                GBS_chrcat(nt_build_sai_middle_file,1);             // Seperated by 1
-                GBS_chrcat(nt_build_sai_middle_file,'E');               // End of old group
-            }
-            GBS_chrcat(nt_build_sai_middle_file,1);             // Seperated by 1
-            GBS_strcat(nt_build_sai_middle_file,"FSAI:");
-            GBS_strncat(nt_build_sai_middle_file,key,sep-key);
-            nt_build_sai_last_group_name = key;
+    struct GBS_strstruct *sai_middle      = sai_builder->sai_middle;
+    const char           *last_group_name = sai_builder->last_group_name;
+
+    if (!last_group_name || strncmp(key, last_group_name, sep-key)) { // new group
+        if (last_group_name){
+            GBS_chrcat(sai_middle,1);               // Seperated by 1
+            GBS_chrcat(sai_middle,'E');             // End of old group
         }
-        GBS_chrcat(nt_build_sai_middle_file,1);             // Seperated by 1
-        GBS_strcat(nt_build_sai_middle_file,"S");
-        GBS_strcat(nt_build_sai_middle_file,sep+1);
-        return val;
+        GBS_chrcat(sai_middle,1);                   // Seperated by 1
+        GBS_strcat(sai_middle,"FSAI:");
+        GBS_strncat(sai_middle,key,sep-key);
+        last_group_name = key;
     }
-
-#ifdef __cplusplus
+    GBS_chrcat(sai_middle,1);                       // Seperated by 1
+    GBS_strcat(sai_middle,"S");
+    GBS_strcat(sai_middle,sep+1);
+    return val;
 }
-#endif
+
 
 /** collect all Sais, place some SAI in top area, rest in middle */
 void nt_build_sai_string(GBS_strstruct *topfile, GBS_strstruct *middlefile){
@@ -311,10 +311,9 @@ void nt_build_sai_string(GBS_strstruct *topfile, GBS_strstruct *middlefile){
     GBS_chrcat(middlefile, 1);
     GBS_strcat(middlefile, "GSAI-Maingroup");
 
-    nt_build_sai_last_group_name = 0;
-    nt_build_sai_middle_file = middlefile;
-    GBS_hash_do_sorted_loop(hash, nt_build_sai_string_by_hash, GBS_HCF_sortedByKey);
-    if (nt_build_sai_last_group_name) {
+    struct SAI_string_builder sai_builder = { middlefile, 0};
+    GBS_hash_do_sorted_loop(hash, nt_build_sai_string_by_hash, GBS_HCF_sortedByKey, &sai_builder);
+    if (sai_builder.last_group_name) {
         GBS_chrcat(middlefile,1);               // Seperated by 1
         GBS_chrcat(middlefile,'E');             // End of old group
     }

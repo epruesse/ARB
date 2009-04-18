@@ -20,7 +20,7 @@
 
 #define META "" // default is 'no hotkey'
 
-AW_CL agde_filtercd;
+adfiltercbstruct *agde_filtercd;
 
 extern void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd);
 
@@ -237,7 +237,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
             aws->button_length(12);
             aws->at("filtername");
             agde_filtercd = awt_create_select_filter(aws->get_root(),GLOBAL_gb_main,AWAR_GDE_FILTER_NAME);
-            aws->callback((AW_CB2)AW_POPUP,(AW_CL)awt_create_select_filter_win,agde_filtercd);
+            aws->callback((AW_CB2)AW_POPUP, (AW_CL)awt_create_select_filter_win, (AW_CL)agde_filtercd);
             aws->create_button("SELECT_FILTER", AWAR_GDE_FILTER_NAME);
         }
 

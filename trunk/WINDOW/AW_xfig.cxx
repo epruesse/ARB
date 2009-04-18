@@ -519,8 +519,7 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
     }
 }
 
-static long aw_xfig_hash_free_loop(const char */*key*/,long val)
-{
+static long aw_xfig_hash_free_loop(const char *,long val, void *) {
     if (val) free( (char *)val);
     return 0;
 }
@@ -530,7 +529,7 @@ AW_xfig::~AW_xfig(void)
     int i;
 
     if (hash) {
-        GBS_hash_do_loop(hash, aw_xfig_hash_free_loop);
+        GBS_hash_do_loop(hash, aw_xfig_hash_free_loop, NULL);
         GBS_free_hash(hash);
     }
     struct AW_xfig_text *xtext;

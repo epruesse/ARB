@@ -40,16 +40,17 @@ using namespace std;
 
 AW_HEADER_MAIN
 
-GBDATA    *GLOBAL_gb_main;      // global gb_main for arb_pars
-AP_main   *ap_main;
-NT_global *nt;
-AWT_csp   *awt_csp            = 0;
-AW_CL      pars_global_filter = 0;
+GBDATA    *GLOBAL_gb_main;                          // global gb_main for arb_pars
+NT_global *GLOBAL_NT;
+
+// waaah more globals :(
+AP_main *ap_main;
+AWT_csp *awt_csp = 0;
 
 AW_window *create_kernighan_window(AW_root *aw_root);
 
 void PARS_export_tree(void){
-    const char *error = nt->tree->tree_root->AP_tree::save(0);
+    const char *error = GLOBAL_NT->tree->tree_root->AP_tree::save(0);
     if (error){
         aw_message(error);
         return;
@@ -94,267 +95,261 @@ void AP_user_pop_cb(AW_window *aww,AWT_canvas *ntw)
     }
 }
 
-static struct {
+struct InsertData {
     AP_BOOL quick_add_flag;
     AP_BOOL singlestatus; // update status for single species addition
     int     abort_flag;
     long    maxspecies;
     long    currentspecies;
-} isits;
 
-extern long global_combineCount;
+    InsertData(AP_BOOL quick)
+        : quick_add_flag(quick)
+        , singlestatus(AP_FALSE)
+        , abort_flag(AP_FALSE)
+        , maxspecies(0)
+        , currentspecies(0)
+    {
+    }
+};
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+static long insert_species_in_tree_test(const char *key,long val, void *cd_isits) {
+    if (!val) return val;
 
-    static long insert_species_in_tree_test(const char *key,long val) {
-        if (!val) return val;
-        if (isits.abort_flag) return val;
+    InsertData *isits = (InsertData*)cd_isits;
+    if (isits->abort_flag) return val;
 
-        AP_tree *tree = (*ap_main->tree_root);
-        GBDATA *gb_node = (GBDATA *)val;
+    AP_tree *tree = (*ap_main->tree_root);
+    GBDATA *gb_node = (GBDATA *)val;
 
-        GB_begin_transaction(GLOBAL_gb_main);
+    GB_begin_transaction(GLOBAL_gb_main);
 
-        GBDATA *gb_data = GBT_read_sequence(gb_node,ap_main->use);
-        if (!gb_data)
-        {
-            sprintf(AW_ERROR_BUFFER,"Warning Species '%s' has no sequence '%s'",
-                    key,ap_main->use);
-            aw_message();
-            GB_commit_transaction(GLOBAL_gb_main);
-            return val;
-        }
-
-        AP_tree *leaf = tree->dup();
-        leaf->gb_node = gb_node;
-        leaf->name = strdup(key);
-        leaf->is_leaf = GB_TRUE;
-
-        leaf->sequence = leaf->tree_root->sequence_template->dup();
-        leaf->sequence->set(GB_read_char_pntr(gb_data));
-        GB_commit_transaction (GLOBAL_gb_main);
-
-        if (leaf->sequence->real_len() < MIN_SEQUENCE_LENGTH)
-        {
-            sprintf(AW_ERROR_BUFFER,
-                    "Species %s has too short sequence (%i, minimum is %i)",
-                    key,
-                    (int)leaf->sequence->real_len(),
-                    MIN_SEQUENCE_LENGTH);
-            aw_message();
-            delete leaf;
-            return val;
-        }
-
-        if (isits.singlestatus) {
-            sprintf(AW_ERROR_BUFFER,
-                    "Inserting Species %s (%li:%li)",
-                    key,
-                    ++isits.currentspecies,
-                    isits.maxspecies);
-            aw_openstatus(AW_ERROR_BUFFER);
-        }
-        else {
-            isits.abort_flag = aw_status(++isits.currentspecies/(double)isits.maxspecies);
-        }
-
-        {
-            AP_FLOAT best_val = 9999999999999.0;
-            AP_FLOAT this_val;
-            int cnt = 0;
-
-            while (cnt<2)
-            {
-                char buf[200];
-
-                sprintf(buf,"Pre-optimize (pars=%f)",best_val);
-
-                aw_status(buf);
-                this_val = rootEdge()->nni_rek(AP_FALSE,isits.abort_flag,-1);
-                if (this_val<best_val)
-                {
-                    best_val = this_val;
-                    cnt = 0;
-                }
-                else if (this_val==best_val)
-                {
-                    cnt++;
-                }
-                else
-                {
-                    cnt = 0;
-                }
-            }
-        }
-
-        rootEdge()->dumpNNI=2;
-
-        aw_status("Searching best position");
-
-        AP_tree **blist;
-        AP_tree_nlen *bl,*blf;
-        GB_ERROR error = 0;
-        long    bsum = 0;
-        long    counter = 0;
-
-        error = tree->buildBranchList(blist,bsum,AP_TRUE,-1);   // get all branches
-        global_combineCount = 0;
-
-        AP_tree *bestposl = tree->leftson;
-        AP_tree *bestposr = tree->rightson;
-        leaf->insert(bestposl);
-        AP_FLOAT best_parsimony,akt_parsimony;
-        best_parsimony = akt_parsimony = (*ap_main->tree_root)->costs();
-
-        for (counter = 0;!isits.abort_flag && blist[counter];counter += 2)
-        {
-            if (isits.singlestatus && (counter & 0xf) == 0) {
-                isits.abort_flag = (AP_BOOL)aw_status(counter/(bsum*2.0));
-            }
-
-            bl = (AP_tree_nlen *)blist[counter];
-            blf = (AP_tree_nlen *)blist[counter+1];
-            if (blf->father == bl )
-            {
-                bl = (AP_tree_nlen *)blist[counter+1];
-                blf = (AP_tree_nlen *)blist[counter];
-            }
-
-            //      if (blf->father) {  //->father
-            //          blf->set_root();
-            //      }
-
-            if (bl->father)     //->father
-            {
-                bl->set_root();
-            }
-
-            leaf->move(bl,0.5);
-            akt_parsimony = (*ap_main->tree_root)->costs();
-
-            if (akt_parsimony<best_parsimony)
-            {
-                best_parsimony = akt_parsimony;
-                bestposl = bl;
-                bestposr = blf;
-            }
-        }
-        delete blist;
-        blist = 0;
-        if (bestposl->father != bestposr) bestposl = bestposr;
-        leaf->move(bestposl,0.5);
-
-        // calculate difference in father-sequence
-
-        int baseDiff = 0;
-
-        {
-            AP_tree_nlen *fath = ((AP_tree_nlen*)bestposl)->Father()->Father();
-            char *seq_with_leaf;
-            char *seq_without_leaf;
-            long len_with_leaf;
-            long len_without_leaf;
-            long i;
-
-            seq_with_leaf = fath->getSequence();
-            len_with_leaf = fath->sequence->sequence_len;
-
-
-            ap_main->push();
-            leaf->remove();
-
-            seq_without_leaf = fath->getSequence();
-            len_without_leaf = fath->sequence->sequence_len;
-
-
-            ap_main->pop();
-
-
-            if (len_with_leaf==len_without_leaf)
-            {
-                for (i=0; i<len_with_leaf; i++)
-                {
-                    if (seq_with_leaf[i]!=seq_without_leaf[i])
-                    {
-                        baseDiff++;
-                    }
-                }
-
-                //      cout << "Anzahl geaenderte Basen: " << baseDiff << '\n';
-            }
-            else
-            {
-                cout << "Laenge der Sequenz hat sich geaendert!!!";
-            }
-
-            delete [] seq_with_leaf;
-            delete [] seq_without_leaf;
-        }
-
-        rootEdge()->countSpecies();
-
-        //    printf("Combines: %i\n",global_combineCount);
-
-        if (!isits.quick_add_flag )
-        {
-            int deep = -1;
-            AP_tree_nlen *bestpos = (AP_tree_nlen*)bestposl;
-            AP_tree_edge *e = bestpos->edgeTo(bestpos->Father());
-
-            if ((isits.currentspecies & 0xf ) == 0)  deep = -1;
-
-            aw_status("optimization");
-            e->dumpNNI = 1;
-            e->distInsertBorder = e->distanceToBorder(INT_MAX,(AP_tree_nlen*)leaf);
-            e->basesChanged = baseDiff;
-            e->nni_rek(AP_FALSE,isits.abort_flag,deep);
-            e->dumpNNI = 0;
-        }
-
+    GBDATA *gb_data = GBT_read_sequence(gb_node,ap_main->use);
+    if (!gb_data)
+    {
+        sprintf(AW_ERROR_BUFFER,"Warning Species '%s' has no sequence '%s'",
+                key,ap_main->use);
+        aw_message();
+        GB_commit_transaction(GLOBAL_gb_main);
         return val;
     }
 
-    static int sort_sequences_by_length(const char*, long leaf0_ptr, const char*, long leaf1_ptr) {
-        AP_tree *leaf0 = (AP_tree*)leaf0_ptr;
-        AP_tree *leaf1 = (AP_tree*)leaf1_ptr;
+    AP_tree *leaf = tree->dup();
+    leaf->gb_node = gb_node;
+    leaf->name = strdup(key);
+    leaf->is_leaf = GB_TRUE;
 
-        AP_FLOAT len0 = leaf0->sequence->real_len();
-        AP_FLOAT len1 = leaf1->sequence->real_len();
+    leaf->sequence = leaf->tree_root->sequence_template->dup();
+    leaf->sequence->set(GB_read_char_pntr(gb_data));
+    GB_commit_transaction (GLOBAL_gb_main);
 
-        return len0<len1 ? 1 : (len0>len1 ? -1 : 0); // longest sequence first
+    if (leaf->sequence->real_len() < MIN_SEQUENCE_LENGTH)
+    {
+        sprintf(AW_ERROR_BUFFER,
+                "Species %s has too short sequence (%i, minimum is %i)",
+                key,
+                (int)leaf->sequence->real_len(),
+                MIN_SEQUENCE_LENGTH);
+        aw_message();
+        delete leaf;
+        return val;
     }
 
-    static long transform_gbd_to_leaf(const char *key,long val){
-        if (!val) return val;
-        if (isits.abort_flag) return val;
-        AP_tree *tree = (*ap_main->tree_root);
-        GBDATA *gb_node = (GBDATA *)val;
-        GBDATA *gb_data = GBT_read_sequence(gb_node,ap_main->use);
-        if (!gb_data) {
-            sprintf(AW_ERROR_BUFFER,"Warning Species '%s' has no sequence '%s'",
-                    key,ap_main->use);
-            aw_message();
-            return 0;
+    if (isits->singlestatus) {
+        sprintf(AW_ERROR_BUFFER,
+                "Inserting Species %s (%li:%li)",
+                key,
+                ++isits->currentspecies,
+                isits->maxspecies);
+        aw_openstatus(AW_ERROR_BUFFER);
+    }
+    else {
+        isits->abort_flag = aw_status(++isits->currentspecies/(double)isits->maxspecies);
+    }
+
+    {
+        AP_FLOAT best_val = 9999999999999.0;
+        AP_FLOAT this_val;
+        int      cnt      = 0;
+
+        while (cnt<2) {
+            char buf[200];
+
+            sprintf(buf,"Pre-optimize (pars=%f)",best_val);
+
+            aw_status(buf);
+            this_val = rootEdge()->nni_rek(AP_FALSE,isits->abort_flag,-1);
+            if (this_val<best_val) {
+                best_val = this_val;
+                cnt      = 0;
+            }
+            else if (this_val==best_val) {
+                cnt++;
+            }
+            else {
+                cnt = 0;
+            }
         }
-        AP_tree *leaf = tree->dup();
-        leaf->gb_node = gb_node;
-        leaf->name = strdup(key);
-        leaf->is_leaf = GB_TRUE;
-        leaf->sequence = leaf->tree_root->sequence_template->dup();
-        leaf->sequence->set(GB_read_char_pntr(gb_data));
-        return (long)leaf;
     }
 
-#ifdef __cplusplus
-}
-#endif
+    rootEdge()->dumpNNI=2;
 
-static AP_tree *insert_species_in_tree(const char *key,AP_tree *leaf)
+    aw_status("Searching best position");
+
+    AP_tree **blist;
+    AP_tree_nlen *bl,*blf;
+    GB_ERROR error = 0;
+    long    bsum = 0;
+    long    counter = 0;
+
+    error = tree->buildBranchList(blist,bsum,AP_TRUE,-1);   // get all branches
+    AP_sequence::global_combineCount = 0;
+
+    AP_tree *bestposl = tree->leftson;
+    AP_tree *bestposr = tree->rightson;
+    leaf->insert(bestposl);
+    AP_FLOAT best_parsimony,akt_parsimony;
+    best_parsimony = akt_parsimony = (*ap_main->tree_root)->costs();
+
+    for (counter = 0; !isits->abort_flag && blist[counter]; counter += 2)
+    {
+        if (isits->singlestatus && (counter & 0xf) == 0) {
+            isits->abort_flag = (AP_BOOL)aw_status(counter/(bsum*2.0));
+        }
+
+        bl = (AP_tree_nlen *)blist[counter];
+        blf = (AP_tree_nlen *)blist[counter+1];
+        if (blf->father == bl )
+        {
+            bl = (AP_tree_nlen *)blist[counter+1];
+            blf = (AP_tree_nlen *)blist[counter];
+        }
+
+        //      if (blf->father) {  //->father
+        //          blf->set_root();
+        //      }
+
+        if (bl->father)     //->father
+        {
+            bl->set_root();
+        }
+
+        leaf->move(bl,0.5);
+        akt_parsimony = (*ap_main->tree_root)->costs();
+
+        if (akt_parsimony<best_parsimony)
+        {
+            best_parsimony = akt_parsimony;
+            bestposl = bl;
+            bestposr = blf;
+        }
+    }
+    delete blist;
+    blist = 0;
+    if (bestposl->father != bestposr) bestposl = bestposr;
+    leaf->move(bestposl,0.5);
+
+    // calculate difference in father-sequence
+
+    int baseDiff = 0;
+
+    {
+        AP_tree_nlen *fath = ((AP_tree_nlen*)bestposl)->Father()->Father();
+        char *seq_with_leaf;
+        char *seq_without_leaf;
+        long len_with_leaf;
+        long len_without_leaf;
+        long i;
+
+        seq_with_leaf = fath->getSequence();
+        len_with_leaf = fath->sequence->sequence_len;
+
+
+        ap_main->push();
+        leaf->remove();
+
+        seq_without_leaf = fath->getSequence();
+        len_without_leaf = fath->sequence->sequence_len;
+
+
+        ap_main->pop();
+
+
+        if (len_with_leaf==len_without_leaf) {
+            for (i=0; i<len_with_leaf; i++) {
+                if (seq_with_leaf[i]!=seq_without_leaf[i]) {
+                    baseDiff++;
+                }
+            }
+        }
+        else {
+            cout << "Laenge der Sequenz hat sich geaendert!!!";
+        }
+
+        delete [] seq_with_leaf;
+        delete [] seq_without_leaf;
+    }
+
+    rootEdge()->countSpecies();
+
+    //    printf("Combines: %i\n",global_combineCount);
+
+    if (!isits->quick_add_flag ) {
+        int           deep    = -1;
+        AP_tree_nlen *bestpos = (AP_tree_nlen*)bestposl;
+        AP_tree_edge *e       = bestpos->edgeTo(bestpos->Father());
+
+        if ((isits->currentspecies & 0xf ) == 0)  deep = -1;
+
+        aw_status("optimization");
+        e->dumpNNI = 1;
+        e->distInsertBorder = e->distanceToBorder(INT_MAX,(AP_tree_nlen*)leaf);
+        e->basesChanged = baseDiff;
+        e->nni_rek(AP_FALSE, isits->abort_flag, deep);
+        e->dumpNNI = 0;
+    }
+
+    return val;
+}
+
+static int sort_sequences_by_length(const char*, long leaf0_ptr, const char*, long leaf1_ptr) {
+    AP_tree *leaf0 = (AP_tree*)leaf0_ptr;
+    AP_tree *leaf1 = (AP_tree*)leaf1_ptr;
+
+    AP_FLOAT len0 = leaf0->sequence->real_len();
+    AP_FLOAT len1 = leaf1->sequence->real_len();
+
+    return len0<len1 ? 1 : (len0>len1 ? -1 : 0); // longest sequence first
+}
+
+static long transform_gbd_to_leaf(const char *key,long val, void *) {
+    if (!val) return val;
+
+    AP_tree *tree    = (*ap_main->tree_root);
+    GBDATA  *gb_node = (GBDATA *)val;
+    GBDATA  *gb_data = GBT_read_sequence(gb_node,ap_main->use);
+    
+    if (!gb_data) {
+        sprintf(AW_ERROR_BUFFER,"Warning Species '%s' has no sequence '%s'",
+                key,ap_main->use);
+        aw_message();
+        return 0;
+    }
+    AP_tree *leaf = tree->dup();
+    leaf->gb_node = gb_node;
+    leaf->name = strdup(key);
+    leaf->is_leaf = GB_TRUE;
+    leaf->sequence = leaf->tree_root->sequence_template->dup();
+    leaf->sequence->set(GB_read_char_pntr(gb_data));
+    return (long)leaf;
+}
+
+static AP_tree *insert_species_in_tree(const char *key, AP_tree *leaf, void *cd_isits)
 {
     if (!leaf) return leaf;
-    if (isits.abort_flag) return leaf;
+
+    InsertData *isits = (InsertData*)cd_isits;
+    if (isits->abort_flag) return leaf;
+
     AP_tree *tree = (*ap_main->tree_root);
 
 
@@ -366,10 +361,10 @@ static AP_tree *insert_species_in_tree(const char *key,AP_tree *leaf)
         return 0;
     }
 
-    ++isits.currentspecies;
-    if (isits.singlestatus) {
+    ++isits->currentspecies;
+    if (isits->singlestatus) {
         sprintf(AW_ERROR_BUFFER, "Inserting Species %s (%li:%li)",
-                key, isits.currentspecies,isits.maxspecies);
+                key, isits->currentspecies, isits->maxspecies);
         aw_openstatus(AW_ERROR_BUFFER);
     }
     aw_status("Searching best position");
@@ -381,7 +376,7 @@ static AP_tree *insert_species_in_tree(const char *key,AP_tree *leaf)
     long    counter = 0;
 
     error = tree->buildBranchList(blist,bsum,AP_TRUE,-1);       // get all branches
-    global_combineCount = 0;
+    AP_sequence::global_combineCount = 0;
 
     AP_tree *bestposl = tree->leftson;
     AP_tree *bestposr = tree->rightson;
@@ -389,9 +384,9 @@ static AP_tree *insert_species_in_tree(const char *key,AP_tree *leaf)
     AP_FLOAT best_parsimony,akt_parsimony;
     best_parsimony = akt_parsimony = (*ap_main->tree_root)->costs();
 
-    for (counter = 0;!isits.abort_flag && blist[counter];counter += 2) {
-        if (isits.singlestatus && (counter & 0xf) == 0) {
-            isits.abort_flag = (AP_BOOL)aw_status(counter/(bsum*2.0));
+    for (counter = 0;!isits->abort_flag && blist[counter];counter += 2) {
+        if (isits->singlestatus && (counter & 0xf) == 0) {
+            isits->abort_flag = (AP_BOOL)aw_status(counter/(bsum*2.0));
         }
         bl = (AP_tree_nlen *)blist[counter];
         blf = (AP_tree_nlen *)blist[counter+1];
@@ -419,12 +414,12 @@ static AP_tree *insert_species_in_tree(const char *key,AP_tree *leaf)
     }
     leaf->move(bestposl,0.5);
 
-    if (    !isits.quick_add_flag ) {
+    if (!isits->quick_add_flag) {
         int deep = 5;
-        if ( (isits.currentspecies & 0xf ) == 0)  deep = -1;
+        if ( (isits->currentspecies & 0xf ) == 0)  deep = -1;
         aw_status("optimization");
         ((AP_tree_nlen *)bestposl->father)->
-            nn_interchange_rek(AP_FALSE,isits.abort_flag,deep,AP_BL_NNI_ONLY, GB_TRUE);
+            nn_interchange_rek(AP_FALSE, isits->abort_flag, deep, AP_BL_NNI_ONLY, GB_TRUE);
     }
     AP_tree *brother = leaf->brother();
     if (    brother->is_leaf &&     // brother is a short sequence
@@ -432,40 +427,34 @@ static AP_tree *insert_species_in_tree(const char *key,AP_tree *leaf)
             leaf->father->father){      // There are more than two species
         brother->remove();
         leaf->remove();
-        isits.currentspecies--;
+        isits->currentspecies--;
         char *label = GBS_global_string_copy("2:%s",leaf->name);
-        insert_species_in_tree(label,leaf); // reinsert species
+        insert_species_in_tree(label, leaf, cd_isits); // reinsert species
         delete label;
-        isits.currentspecies--;
+        isits->currentspecies--;
         label = GBS_global_string_copy("shortseq:%s",brother->name);
-        insert_species_in_tree(label,brother);  // reinsert short sequence
+        insert_species_in_tree(label, brother, cd_isits);  // reinsert short sequence
         delete label;
     }
 
-    if (!isits.singlestatus) {
-        isits.abort_flag |= aw_status(isits.currentspecies/(double)isits.maxspecies);
+    if (!isits->singlestatus) {
+        isits->abort_flag |= aw_status(isits->currentspecies/(double)isits->maxspecies);
     }
 
     return leaf;
 }
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-    static long hash_insert_species_in_tree(const char *key,long leaf) {
-        return (long)insert_species_in_tree(key, (AP_tree*)leaf);
-    }
-
-    static long count_hash_elements(const char *,long val) {
-        if (!val) return val;
-        isits.maxspecies++;
-        return val;
-    }
-
-#ifdef __cplusplus
+static long hash_insert_species_in_tree(const char *key, long leaf, void *cd_isits) {
+    return (long)insert_species_in_tree(key, (AP_tree*)leaf, cd_isits);
 }
-#endif
+
+static long count_hash_elements(const char *,long val, void *cd_isits) {
+    if (val) {
+        InsertData *isits = (InsertData*)cd_isits;
+        isits->maxspecies++;
+    }
+    return val;
+}
 
 static void nt_add(AW_window *, AWT_canvas *ntw, int what, AP_BOOL quick, int test)
 {
@@ -505,25 +494,21 @@ static void nt_add(AW_window *, AWT_canvas *ntw, int what, AP_BOOL quick, int te
     if (!error) {
         NT_remove_species_in_tree_from_hash(*ap_main->tree_root,hash);
 
-        isits.quick_add_flag = quick;
-        isits.abort_flag     = AP_FALSE;
-        isits.singlestatus   = AP_FALSE;
-        isits.maxspecies     = 0;
-        isits.currentspecies = 0;
+        InsertData isits(quick);
 
-        GBS_hash_do_loop(hash,count_hash_elements);
+        GBS_hash_do_loop(hash, count_hash_elements, &isits);
 
         aw_openstatus(GBS_global_string("Adding %li species", isits.maxspecies));
 
-        if (test){
-            GBS_hash_do_loop(hash,insert_species_in_tree_test);
+        if (test) {
+            GBS_hash_do_loop(hash, insert_species_in_tree_test, &isits);
         }
         else {
             aw_status("reading database");
             GB_begin_transaction(GLOBAL_gb_main);
-            GBS_hash_do_loop(hash,transform_gbd_to_leaf);
+            GBS_hash_do_loop(hash, transform_gbd_to_leaf, NULL);
             GB_commit_transaction(GLOBAL_gb_main);
-            GBS_hash_do_sorted_loop(hash, hash_insert_species_in_tree, sort_sequences_by_length);
+            GBS_hash_do_sorted_loop(hash, hash_insert_species_in_tree, sort_sequences_by_length, &isits);
         }
         if (!quick ) {
             aw_status("final optimization");
@@ -568,7 +553,7 @@ class PartialSequence {
         if (!self) {
             ap_assert(!released); // request not possible, because leaf has already been released!
             
-            self = (AP_tree*)transform_gbd_to_leaf(GBT_read_name(gb_species), (long)gb_species);
+            self = (AP_tree*)transform_gbd_to_leaf(GBT_read_name(gb_species), (long)gb_species, NULL);
             ap_assert(self);
         }
         return self;
@@ -1008,15 +993,13 @@ static void NT_partial_add(AW_window *aww, AW_CL cl_ntw, AW_CL) {
 
 // --------------------------------------------------------------------------------
 
-static void NT_branch_lengths(AW_window *, AWT_canvas *ntw)
-{
+static void NT_branch_lengths(AW_window *, AWT_canvas *ntw) {
     aw_openstatus("Calculating Branch Lengths");
-    isits.abort_flag = AP_FALSE;
-    rootEdge()->nni_rek(AP_FALSE,isits.abort_flag,-1, GB_FALSE,AP_BL_BL_ONLY);
+    int abort_flag = AP_FALSE;
+    rootEdge()->nni_rek(AP_FALSE, abort_flag, -1, GB_FALSE, AP_BL_BL_ONLY);
 
     aw_closestatus();
     AWT_TREE(ntw)->resort_tree(0);
-
 
     ntw->zoom_reset();
     ntw->refresh();
@@ -1027,12 +1010,9 @@ static void NT_bootstrap(AW_window *aw,AWT_canvas *ntw,AW_CL limit_only)
 {
     AW_POPUP_HELP(aw, (AW_CL)"pa_bootstrap.hlp");
     aw_openstatus("Calculating Bootstrap Limit");
-    isits.abort_flag = AP_FALSE;
-    if (limit_only){
-        rootEdge()->nni_rek(AP_FALSE,isits.abort_flag,-1, GB_FALSE,(AP_BL_MODE)(AP_BL_BOOTSTRAP_LIMIT));
-    }else{
-        rootEdge()->nni_rek(AP_FALSE,isits.abort_flag,-1, GB_FALSE,(AP_BL_MODE)(AP_BL_BOOTSTRAP_ESTIMATE));
-    }
+    int abort_flag = AP_FALSE;
+    rootEdge()->nni_rek(AP_FALSE, abort_flag, -1, GB_FALSE,
+                        limit_only ? AP_BL_BOOTSTRAP_LIMIT : AP_BL_BOOTSTRAP_ESTIMATE);
     aw_closestatus();
 
     AWT_TREE(ntw)->resort_tree(0);
@@ -1051,8 +1031,8 @@ static void NT_optimize(AW_window *, AWT_canvas *ntw)
     rootNode()->test_tree();
 
     aw_openstatus("Calculating Branch Lengths");
-    isits.abort_flag = AP_FALSE;
-    rootEdge()->nni_rek(AP_FALSE,isits.abort_flag,-1, GB_FALSE,AP_BL_BL_ONLY);
+    int abort_flag = AP_FALSE;
+    rootEdge()->nni_rek(AP_FALSE, abort_flag, -1, GB_FALSE, AP_BL_BL_ONLY);
     AWT_TREE(ntw)->resort_tree(0);
     rootNode()->compute_tree(GLOBAL_gb_main);
     aw_closestatus();
@@ -1064,23 +1044,23 @@ static void NT_optimize(AW_window *, AWT_canvas *ntw)
 static void NT_recursiveNNI(AW_window *,AWT_canvas *ntw)
 {
     aw_openstatus("Recursive NNI");
-    isits.abort_flag = AP_FALSE;
+    int abort_flag = AP_FALSE;
 
     AP_FLOAT thisPars = rootNode()->costs();
     AP_FLOAT lastPars = -1.0;
 
     aw_status(GBS_global_string("Old parsimony: %f", thisPars));
-    while (thisPars!=lastPars && isits.abort_flag == AP_FALSE) {
-        lastPars          = thisPars;
-        thisPars          = rootEdge()->nni_rek(AP_FALSE,isits.abort_flag,-1,GB_TRUE);
-        isits.abort_flag |= aw_status(GBS_global_string("New Parsimony: %f",thisPars));
+    while (thisPars!=lastPars && abort_flag == AP_FALSE) {
+        lastPars    = thisPars;
+        thisPars    = rootEdge()->nni_rek(AP_FALSE, abort_flag, -1, GB_TRUE);
+        abort_flag |= aw_status(GBS_global_string("New Parsimony: %f",thisPars));
     }
 
     aw_status("Calculating Branch Lengths");
-    isits.abort_flag = AP_FALSE;
-    rootEdge()->nni_rek(AP_FALSE,isits.abort_flag,-1, GB_FALSE,AP_BL_BL_ONLY);
-    AWT_TREE(ntw)->resort_tree(0);
+    abort_flag = AP_FALSE;
+    rootEdge()->nni_rek(AP_FALSE, abort_flag, -1, GB_FALSE, AP_BL_BL_ONLY);
 
+    AWT_TREE(ntw)->resort_tree(0);
     rootNode()->compute_tree(GLOBAL_gb_main);
     aw_closestatus();
     ntw->zoom_reset();
@@ -1430,8 +1410,7 @@ static void pars_reset_optimal_parsimony(AW_window *aww, AW_CL *cl_ntw) {
 
 ******************************************************/
 
-static void pars_start_cb(AW_window *aww)
-{
+static void pars_start_cb(AW_window *aww, AW_CL cd_adfiltercbstruct) {
     AW_root *awr = aww->get_root();
     GB_begin_transaction(GLOBAL_gb_main);
     {
@@ -1451,30 +1430,32 @@ static void pars_start_cb(AW_window *aww)
     awm->init(awr,"ARB_PARSIMONY", "ARB_PARSIMONY", 400,200);
 
     AW_gc_manager aw_gc_manager = 0;
-    nt->tree                    = (AWT_graphic_tree*)PARS_generate_tree(awr);
+    GLOBAL_NT->tree             = PARS_generate_tree(awr);
 
     AWT_canvas *ntw;
     {
-        AP_tree_sort  old_sort_type = nt->tree->tree_sort;
-        nt->tree->set_tree_type(AP_LIST_SIMPLE); // avoid NDS warnings during startup
-        ntw = new AWT_canvas(GLOBAL_gb_main,(AW_window *)awm,nt->tree, aw_gc_manager,AWAR_TREE) ;
-        nt->tree->set_tree_type(old_sort_type);
+        AP_tree_sort  old_sort_type = GLOBAL_NT->tree->tree_sort;
+        GLOBAL_NT->tree->set_tree_type(AP_LIST_SIMPLE); // avoid NDS warnings during startup
+        ntw = new AWT_canvas(GLOBAL_gb_main, (AW_window *)awm, GLOBAL_NT->tree, aw_gc_manager, AWAR_TREE);
+        GLOBAL_NT->tree->set_tree_type(old_sort_type);
     }
 
     {
         aw_openstatus("load tree");
         NT_reload_tree_event(awr,ntw,GB_TRUE);          // load first tree and set delete callbacks
-        if (!nt->tree->tree_root) {
+        if (!GLOBAL_NT->tree->tree_root) {
             aw_closestatus();
             aw_popup_exit("I cannot load the selected tree");
         }
 
         AP_tree_edge::initialize((AP_tree_nlen*)*ap_main->tree_root);   // builds edges
-        GB_ERROR error = nt->tree->tree_root->remove_leafs(ntw->gb_main, AWT_REMOVE_DELETED);
+        GB_ERROR error = GLOBAL_NT->tree->tree_root->remove_leafs(ntw->gb_main, AWT_REMOVE_DELETED);
 
         if (!error){
-            NT_tree_init(nt->tree);
-            error = nt->tree->tree_root->remove_leafs(ntw->gb_main, AWT_REMOVE_DELETED | AWT_REMOVE_NO_SEQUENCE);
+            adfiltercbstruct *acbs = (adfiltercbstruct*)cd_adfiltercbstruct;
+            NT_tree_init(GLOBAL_NT->tree, acbs);
+            
+            error = GLOBAL_NT->tree->tree_root->remove_leafs(ntw->gb_main, AWT_REMOVE_DELETED | AWT_REMOVE_NO_SEQUENCE);
         }
         if (error) {
             aw_popup_exit(error, true);
@@ -1482,7 +1463,7 @@ static void pars_start_cb(AW_window *aww)
 
         GB_commit_transaction(ntw->gb_main);
         aw_status("Calculating inner nodes");
-        nt->tree->tree_root->costs();
+        GLOBAL_NT->tree->tree_root->costs();
 
         aw_closestatus();
     }
@@ -1576,8 +1557,8 @@ static void pars_start_cb(AW_window *aww)
         awm->close_sub_menu();
         awm->insert_menu_topic("reset", "Reset optimal parsimony", "s", "", AWM_ALL, (AW_CB)pars_reset_optimal_parsimony, (AW_CL)ntw, 0);
         awm->insert_separator();
-        awm->insert_menu_topic("beautify_tree",               "Beautify Tree",        "B","resorttree.hlp",   AWM_TREE,   (AW_CB)NT_resort_tree_cb,   (AW_CL)ntw, 0 );
-        awm->insert_menu_topic("calc_branch_lenths",          "Calculate Branch Lengths",             "L","pa_branchlengths.hlp",AWM_ALL,     (AW_CB)NT_branch_lengths,(AW_CL)ntw, 0 );
+        awm->insert_menu_topic("beautify_tree",               "Beautify Tree",            "B","resorttree.hlp",   AWM_TREE,   (AW_CB)NT_resort_tree_cb,   (AW_CL)ntw, 0 );
+        awm->insert_menu_topic("calc_branch_lenths",          "Calculate Branch Lengths", "L","pa_branchlengths.hlp",AWM_ALL,     (AW_CB)NT_branch_lengths,(AW_CL)ntw, 0 );
         awm->insert_separator();
         awm->insert_menu_topic("calc_upper_bootstrap_indep",  "Calculate Upper Bootstrap Limit (dependend NNI)",   "d","pa_bootstrap.hlp", AWM_ALL,    (AW_CB)NT_bootstrap,(AW_CL)ntw, 0 );
         awm->insert_menu_topic("calc_upper_bootstrap_dep",    "Calculate Upper Bootstrap Limit (independend NNI)", "i","pa_bootstrap.hlp", AWM_ALL,    (AW_CB)NT_bootstrap,(AW_CL)ntw, 1 );
@@ -1734,19 +1715,18 @@ static AW_window *create_pars_init_window(AW_root *awr)
     aws->at("close");
     aws->create_button("ABORT","ABORT","A");
 
-    aws->callback(pars_start_cb);
-    aws->at("go");
-    aws->create_button("GO","GO","G");
-
     aws->callback(AW_POPUP_HELP,(AW_CL)"arb_pars_init.hlp");
     aws->at("help");
     aws->create_button("HELP","HELP","H");
 
     aws->at("filter");
-    AW_CL filtercd = awt_create_select_filter(aws->get_root(),GLOBAL_gb_main,AWAR_FILTER_NAME);
-    pars_global_filter = filtercd;
-    aws->callback(AW_POPUP,(AW_CL)awt_create_select_filter_win,filtercd);
+    adfiltercbstruct *filtercd = awt_create_select_filter(aws->get_root(),GLOBAL_gb_main,AWAR_FILTER_NAME);
+    aws->callback(AW_POPUP, (AW_CL)awt_create_select_filter_win, (AW_CL)filtercd);
     aws->create_button("SELECT_FILTER",AWAR_FILTER_NAME);
+
+    aws->callback(pars_start_cb, (AW_CL)filtercd);
+    aws->at("go");
+    aws->create_button("GO","GO","G");
 
     aws->at("alignment");
     awt_create_selection_list_on_ad(GLOBAL_gb_main,(AW_window *)aws,AWAR_ALIGNMENT,"*=");
@@ -1883,8 +1863,8 @@ int main(int argc, char **argv)
 
     ap_main = new AP_main;
 
-    nt = (NT_global *)calloc(sizeof(NT_global),1);
-    nt->awr = aw_root;
+    GLOBAL_NT      = (NT_global *)calloc(sizeof(NT_global),1);
+    GLOBAL_NT->awr = aw_root;
 
     const char *db_server = ":";
 

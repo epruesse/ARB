@@ -1741,8 +1741,7 @@ static void aw_window_destroy_cb(Widget w, AW_window *aww,
     aww->hide();
 }
 
-static long aw_loop_get_window_geometry(const char *key, long val) {
-    AWUSE(key);
+static long aw_loop_get_window_geometry(const char *, long val, void *) {
     AW_window *aww = (AW_window *)val;
     short posx, posy;
 
@@ -1775,8 +1774,7 @@ static long aw_loop_get_window_geometry(const char *key, long val) {
 }
 
 void aw_update_awar_window_geometry(AW_root *awr) {
-    GBS_hash_do_loop(awr->hash_for_windows,
-            (gb_hash_loop_type)aw_loop_get_window_geometry);
+    GBS_hash_do_loop(awr->hash_for_windows, aw_loop_get_window_geometry, NULL);
 }
 
 static Widget aw_create_shell(AW_window *aww, AW_BOOL allow_resize, AW_BOOL allow_close,

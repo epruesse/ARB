@@ -487,16 +487,20 @@ void ST_ML::create_matrizes(double max_disti, int nmatrizes) {
     }
 }
 
-ST_ML *st_delete_species_st_ml = 0;
+long ST_ML::delete_species(const char *key, long val, void *cd_st_ml) {
+    ST_ML *st_ml = (ST_ML*)cd_st_ml;
 
-long ST_ML::delete_species(const char *key, long val) {
-    if (GBS_read_hash(st_delete_species_st_ml->keep_species_hash, key))
+    if (GBS_read_hash(st_ml->keep_species_hash, key)) {
         return val;
-    AP_tree *leaf = (AP_tree *) val;
-    AP_tree *father = leaf->father;
-    leaf->remove();
-    delete father; // deletes me also
-    return 0;
+    }
+    else {
+        AP_tree *leaf   = (AP_tree *) val;
+        AP_tree *father = leaf->father;
+        leaf->remove();
+        delete father;                              // deletes me also
+        
+        return 0;
+    }
 }
 
 /** this is the real constructor, call only once */
@@ -549,9 +553,8 @@ GB_ERROR ST_ML::init(const char *tree_name, const char *alignment_namei,
             if (n) *(n++) = 1;
         }
 
-        st_delete_species_st_ml = this;
         insert_tree_into_hash_rek(tree_root->tree);
-        GBS_hash_do_loop(hash_2_ap_tree, (gb_hash_loop_type) delete_species);
+        GBS_hash_do_loop(hash_2_ap_tree, delete_species, this);
         GBS_free_hash(keep_species_hash);
         keep_species_hash = 0;
         GBT_link_tree((GBT_TREE *) tree_root->tree, gb_main, GB_FALSE, 0, 0);

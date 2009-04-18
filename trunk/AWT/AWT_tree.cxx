@@ -411,6 +411,7 @@ AP_matrix::~AP_matrix(void)
 
 char *AP_sequence::mutation_per_site = 0;
 char *AP_sequence::static_mutation_per_site[3] = { 0,0,0 };
+long AP_sequence::global_combineCount;
 
 AP_sequence::~AP_sequence(void) { ; }
 AP_FLOAT AP_sequence::real_len(void) { return 0.0; }

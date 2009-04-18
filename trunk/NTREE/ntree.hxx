@@ -13,7 +13,7 @@ struct NT_global {
     AW_BOOL            extern_quit_button;
 };
 
-extern NT_global  nt;
+extern NT_global  GLOBAL_NT;
 extern GBDATA    *GLOBAL_gb_main;
 
 
@@ -21,7 +21,7 @@ class NT_install_window_creator{
     int dummy;
 public:
     NT_install_window_creator( AW_Window_Creator wc ) {
-        nt.window_creator = wc;
+        GLOBAL_NT.window_creator = wc;
     };
 };
 

@@ -3,8 +3,7 @@
 
 #define ap_assert(x) arb_assert(x)
 
-class       AP_tree_nlen;
-extern long global_combineCount;
+class AP_tree_nlen;
 
 struct AP_CO_LIST {     // liste fuer crossover
     GBDATA *leaf0;

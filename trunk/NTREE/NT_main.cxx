@@ -38,8 +38,8 @@ AW_HEADER_MAIN
 #define NT_SERVE_DB_TIMER 50
 #define NT_CHECK_DB_TIMER 200
 
-GBDATA *GLOBAL_gb_main; // global gb_main for arb_ntree
-NT_global nt = { 0, 0, 0, AW_FALSE };
+GBDATA *GLOBAL_gb_main;                             // global gb_main for arb_ntree
+NT_global GLOBAL_NT = { 0, 0, 0, AW_FALSE };
 
 // NT_format_all_alignments may be called after any operation which causes
 // unformatted alignments (e.g importing sequences)
@@ -262,7 +262,7 @@ void nt_delete_database(AW_window *aww){
 void main3(AW_root *aw_root)
 {
 
-    nt.awr = aw_root;
+    GLOBAL_NT.awr = aw_root;
     create_nt_window(aw_root);
 
     if (GB_read_clients(GLOBAL_gb_main)==0) {
@@ -402,10 +402,10 @@ int main(int argc, char **argv)
     aw_initstatus();
     GB_set_verbose();
 
-    aw_root = new AW_root;
-    nt.awr  = aw_root;
-    AD_set_default_root(aw_root); // set default for AD_map_viewer (as long as no info-box was opened)
-    
+    aw_root       = new AW_root;
+    GLOBAL_NT.awr = aw_root;
+    AD_set_default_root(aw_root);                   // set default for AD_map_viewer (as long as no info-box was opened)
+
     aw_default = aw_root->open_default(".arb_prop/ntree.arb");
     aw_root->init_variables(aw_default);
     aw_root->init("ARB_NT");
@@ -567,8 +567,8 @@ int main(int argc, char **argv)
             free(latest);
         }
         AW_window *iws;
-        if (nt.window_creator){
-            iws = nt.window_creator(aw_root,0);
+        if (GLOBAL_NT.window_creator){
+            iws = GLOBAL_NT.window_creator(aw_root,0);
         }else{
             iws = nt_create_intro_window(aw_root);
         }

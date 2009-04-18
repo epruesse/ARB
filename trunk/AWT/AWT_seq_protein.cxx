@@ -14,8 +14,6 @@
 
 #define awt_assert(bed) arb_assert(bed)
 
-extern long global_combineCount;
-
 // start of implementation of class AP_sequence_protein:
 
 AP_sequence_protein::AP_sequence_protein(AP_tree_root *tree_root)

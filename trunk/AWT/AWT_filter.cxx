@@ -150,7 +150,7 @@ static void awt_add_sequences_to_list(struct adfiltercbstruct *cbs, const char *
     }
 }
 
-void awt_create_select_filter_window_gb_cb(void *dummy, struct adfiltercbstruct *cbs) {
+void awt_create_select_filter_window_gb_cb(void *, struct adfiltercbstruct *cbs) {
     // update list widget and variables
     GB_push_transaction(cbs->gb_main);
     GBDATA *gb_extended;
@@ -184,10 +184,9 @@ void awt_create_select_filter_window_gb_cb(void *dummy, struct adfiltercbstruct 
 }
 
 
-AW_CL   awt_create_select_filter(AW_root *aw_root,GBDATA *gb_main,const char *def_name)
+adfiltercbstruct *awt_create_select_filter(AW_root *aw_root, GBDATA *gb_main, const char *def_name) {
     // def_name = filter name awar (has to exist, name has to be "SOMETHING/name")
     // awars "SOMETHING/filter" (STRING) and "SOMETHING/alignment" (STRING) have to exist as well! 
-{
     struct adfiltercbstruct *acbs   = new adfiltercbstruct ;
     acbs->gb_main                   = gb_main;
     GB_push_transaction(acbs->gb_main);
@@ -262,7 +261,7 @@ AW_CL   awt_create_select_filter(AW_root *aw_root,GBDATA *gb_main,const char *de
     awt_create_select_filter_window_gb_cb(0,acbs);
 
     GB_pop_transaction(acbs->gb_main);
-    return (AW_CL)acbs;
+    return acbs;
 }
 
 
@@ -278,14 +277,12 @@ void awt_set_awar_to_valid_filter_good_for_tree_methods(GBDATA *gb_main, AW_root
     }
 }
 
-AW_window *awt_create_2_filter_window(AW_root *aw_root,AW_CL res_of_create_select_filter)
-{
-    struct adfiltercbstruct *acbs = (struct adfiltercbstruct *) res_of_create_select_filter;
+static AW_window *awt_create_2_filter_window(AW_root *aw_root, adfiltercbstruct *acbs) {
     GB_push_transaction(acbs->gb_main);
     aw_root->awar(acbs->def_2alignment)->map( acbs->def_alignment);
-    AW_CL s2filter = awt_create_select_filter(aw_root, acbs->gb_main,acbs->def_2name);
+    adfiltercbstruct *s2filter = awt_create_select_filter(aw_root, acbs->gb_main, acbs->def_2name);
     GB_pop_transaction(acbs->gb_main);
-    return awt_create_select_filter_win(aw_root,s2filter);
+    return awt_create_select_filter_win(aw_root, (AW_CL)s2filter);
 }
 
 char *AWT_get_combined_filter_name(AW_root *aw_root, GB_CSTR prefix) {
@@ -319,9 +316,8 @@ char *AWT_get_combined_filter_name(AW_root *aw_root, GB_CSTR prefix) {
     return combined_name;
 }
 
-AW_window *awt_create_select_filter_win(AW_root *aw_root,AW_CL res_of_create_select_filter)
-{
-    struct adfiltercbstruct *acbs = (struct adfiltercbstruct *) res_of_create_select_filter;
+AW_window *awt_create_select_filter_win(AW_root *aw_root, AW_CL res_of_create_select_filter) {
+    struct adfiltercbstruct *acbs = (struct adfiltercbstruct *)res_of_create_select_filter;
     GB_push_transaction(acbs->gb_main);
 
     AW_window_simple *aws = new AW_window_simple;
@@ -372,11 +368,9 @@ AW_window *awt_create_select_filter_win(AW_root *aw_root,AW_CL res_of_create_sel
     return (AW_window *)aws;
 }
 
-AP_filter *awt_get_filter(AW_root *aw_root,AW_CL res_of_create_select_filter)
-{
-    adfiltercbstruct *acbs        = (adfiltercbstruct *) res_of_create_select_filter;
-    AP_filter        *filter      = new AP_filter;
-    bool              initialized = false;
+AP_filter *awt_get_filter(AW_root *aw_root, adfiltercbstruct *acbs) {
+    AP_filter *filter      = new AP_filter;
+    bool       initialized = false;
 
     if (acbs) {
         GB_push_transaction(acbs->gb_main);
