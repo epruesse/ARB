@@ -28,8 +28,8 @@
 #define PTM_DEBUG
 #endif // DEBUG
 
-typedef unsigned long ulong;
-typedef unsigned int  uint;
+typedef unsigned long ULONG;
+typedef unsigned int  UINT;
 typedef unsigned char uchar;
 
 #define  min(a, b) ((a) < (b)) ? (a) : (b)

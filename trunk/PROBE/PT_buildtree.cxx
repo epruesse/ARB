@@ -222,16 +222,16 @@ enter_stage_1_build_tree(PT_main * main,char *tname)
     int  passes   = 1;
 
     {
-        ulong total_size = psg.char_count;
+        ULONG total_size = psg.char_count;
 
         printf("Overall bases: %li\n", total_size);
 
         while (1) {
 #ifdef DEVEL_JB
-            ulong estimated_kb = (total_size/1024)*55;  // value by try and error (for gene server)
+            ULONG estimated_kb = (total_size/1024)*55;  // value by try and error (for gene server)
                                                         // TODO: estimated_kb depends on 32/64 bit...
 #else
-            ulong estimated_kb = (total_size/1024)*35; /* value by try and error; 35 bytes per base*/
+            ULONG estimated_kb = (total_size/1024)*35; /* value by try and error; 35 bytes per base*/
 #endif            
             printf("Estimated memory usage for %i passes: %lu k\n", passes, estimated_kb);
 
@@ -242,7 +242,7 @@ enter_stage_1_build_tree(PT_main * main,char *tname)
             passes     *= 5;
         }
 
-        //     while ( ulong(total_size*35/1024) > physical_memory) {  /* value by try and error; 35 bytes per base*/
+        //     while ( ULONG(total_size*35/1024) > physical_memory) {  /* value by try and error; 35 bytes per base*/
         //         total_size /= 4;
         //         partsize ++;
         //         passes *=5;

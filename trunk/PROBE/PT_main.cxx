@@ -17,7 +17,7 @@
 
 struct probe_struct_global  psg;
 char                       *pt_error_buffer = new char[1024];
-ulong                       physical_memory = 0;
+ULONG                       physical_memory = 0;
 
 // globals of gene-pt-server
 int gene_flag = 0;

@@ -121,7 +121,7 @@ static int int_compare ( const void *a,
 //  Konstruktor zum Erzeugen einer Instanz der Klasse Postree aus einer 
 //  zufaellig besetzten Instanz der Klasse Sequenz mit vorgebener Sequenzlaenge
 // -----------------------------------------------------------------------------
-    Postree::Postree ( uint len ) : sequence ( len )
+    Postree::Postree ( UINT len ) : sequence ( len )
 // -----------------------------------------------------------------------------
 {
     str seq = sequence.Compressed();
@@ -135,7 +135,7 @@ static int int_compare ( const void *a,
 //  vorgegebener Zeilennummer
 // -----------------------------------------------------------------------------
     Postree::Postree ( str  file,
-                       uint line ) : sequence ( file, line )
+                       UINT line ) : sequence ( file, line )
 // -----------------------------------------------------------------------------
 {
     str seq = sequence.Compressed();

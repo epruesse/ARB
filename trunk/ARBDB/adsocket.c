@@ -1121,7 +1121,7 @@ int GB_host_is_local(const char *hostname){
 
 GB_ULONG GB_get_physical_memory(void) {
     /* Returns the physical available memory size in k available for one process */
-    ulong memsize; /* real existing memory in k */
+    GB_ULONG memsize; /* real existing memory in k */
     
 #if defined(SUN5) || defined(LINUX) 
     {
@@ -1151,13 +1151,13 @@ GB_ULONG GB_get_physical_memory(void) {
            "         (it assumes you have %ul Mb,  but does not use more)\n\n", memsize/1024);
 #endif
 
-    ulong nettomemsize = memsize - 10240;         /* reduce by 10Mb (for kernel etc.) */
+    GB_ULONG nettomemsize = memsize - 10240;         /* reduce by 10Mb (for kernel etc.) */
 
     // detect max allocateable memory by ... allocating
-    ulong max_malloc_try = nettomemsize*1024;
-    ulong max_malloc     = 0;
+    GB_ULONG max_malloc_try = nettomemsize*1024;
+    GB_ULONG max_malloc     = 0;
     {
-        ulong step_size  = 4096;
+        GB_ULONG step_size  = 4096;
         void *head = 0;
 
         do {
@@ -1175,7 +1175,7 @@ GB_ULONG GB_get_physical_memory(void) {
         max_malloc /= 1024;
     }
 
-    ulong usedmemsize = (MIN(nettomemsize,max_malloc)*95)/100;  /* arb uses max. 95 % of available memory (was 70% in the past) */
+    GB_ULONG usedmemsize = (MIN(nettomemsize,max_malloc)*95)/100;  /* arb uses max. 95 % of available memory (was 70% in the past) */
 
 #if defined(DEBUG)
     printf("- memsize(real)        = %20lu k\n", memsize);

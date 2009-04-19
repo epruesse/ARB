@@ -20,13 +20,13 @@ using std::cout;
 // -----------------------------------------------------------------------------
 //  Erzeugen einer Zufallssequenz mit vorgebener Laenge
 // -----------------------------------------------------------------------------
-    static str RandomSequence ( uint len )
+    static str RandomSequence ( UINT len )
 // -----------------------------------------------------------------------------
 {
     str seq = new char [len + 1];
 
     if (seq) {
-        uint pos = 0;
+        UINT pos = 0;
 
         while (pos < len) {
             // Sequenz mit zufaellig ausgewaehlten Basen besetzen
@@ -43,7 +43,7 @@ using std::cout;
 //  alle ueberfluessigen und unzulaessigen Zeichen entfernt wurden.
 // -----------------------------------------------------------------------------
     static str CompressSequence ( str  sequence,
-                                  uint length )
+                                  UINT length )
 // -----------------------------------------------------------------------------
 {
     str compressed = NULL;
@@ -110,7 +110,7 @@ using std::cout;
 //  Datei mit einer vorgegebene Zeilennummer
 // -----------------------------------------------------------------------------
     static str ReadSequence ( str  file,
-                              uint line )
+                              UINT line )
 // -----------------------------------------------------------------------------
 {
     str seq = NULL;
@@ -205,7 +205,7 @@ using std::cout;
 //  Konstruktor zum Erzeugen einer zufaellig besetzten
 //  Instanz der Klasse Sequenz mit vorgebener Sequenzlaenge
 // -----------------------------------------------------------------------------
-    Sequence::Sequence ( uint len )
+    Sequence::Sequence ( UINT len )
 // -----------------------------------------------------------------------------
 {
     original   = NULL;
@@ -227,7 +227,7 @@ using std::cout;
 //  aus einer vorgebener Datei mit vorgegebener Zeilennummer
 // -----------------------------------------------------------------------------
     Sequence::Sequence ( str  file,
-                         uint line )
+                         UINT line )
 // -----------------------------------------------------------------------------
 {
     original   = NULL;

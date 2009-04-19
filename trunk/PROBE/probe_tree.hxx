@@ -1,4 +1,9 @@
+#if defined(DARWIN)
+#include <wordsize.h>
+#else
 #include <bits/wordsize.h>
+#endif // DARWIN
+
 #include <byteswap.h>
 
 #define PTM_magic             0xf4
@@ -348,8 +353,8 @@ GB_INLINE char *PT_WRITE_CHAIN_ENTRY(const char * const ptr,const int mainapos,i
 GB_INLINE POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
 {
     long i;
-    uint sec;
-    uint offset;
+    UINT sec;
+    UINT offset;
     if (ptmain->stage3) {       // stage 3  no father
         if (node->flags & IS_SINGLE_BRANCH_NODE){
             if (base != (node->flags & 0x7)) return NULL;  // no son

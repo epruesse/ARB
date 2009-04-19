@@ -18,6 +18,8 @@
 #include "GDE_extglob.h"
 #include "AW_rename.hxx"
 
+typedef unsigned int UINT;
+
 static int Arbdb_get_curelem(NA_Alignment *dataset)
 {
     int curelem;
@@ -111,19 +113,19 @@ static int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned c
             bool   isInfo[256];
 
             for (i=0; i<256; i++) isInfo[i] = true;
-            isInfo[uint('-')] = false;
-            isInfo[uint('.')] = false;
+            isInfo[UINT('-')] = false;
+            isInfo[UINT('.')] = false;
             if (compress == COMPRESS_NONINFO_COLUMNS) {
                 GB_alignment_type type = GBT_get_alignment_type(dataset->gb_main, dataset->alignment_name);
                 switch (type) {
                     case GB_AT_RNA:
                     case GB_AT_DNA:
-                        isInfo[uint('N')] = false;
-                        isInfo[uint('n')] = false;
+                        isInfo[UINT('N')] = false;
+                        isInfo[UINT('n')] = false;
                         break;
                     case GB_AT_AA:
-                        isInfo[uint('X')] = false;
-                        isInfo[uint('x')] = false;
+                        isInfo[UINT('X')] = false;
+                        isInfo[UINT('x')] = false;
                         break;
                     default:
                         gde_assert(0);
@@ -137,7 +139,7 @@ static int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned c
 
                     for (size_t n=0; n<numberspecies; n++) {
                         if (i < seqlen[n]) {
-                            if (isInfo[uint(the_sequences[n][i])]) {
+                            if (isInfo[UINT(the_sequences[n][i])]) {
                                 wantColumn = true; // have info -> take column
                                 break;
                             }
