@@ -63,7 +63,9 @@ struct LOC_hyptrav {
 
 
 extern long nonodes, endsite, outgrno, nextree, which;
+
 extern boolean interleaved, printdata, outgropt, treeprint, dotdiff, transvp;
+
 extern steptr weight, category, alias, location, ally;
 
 #ifndef OLDC

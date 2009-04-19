@@ -6,7 +6,9 @@
 */
 
 #include <iostream>
+#if !defined(DARWIN)
 #include <malloc.h>
+#endif // DARWIN
 
 #include "arbdb.h"
 #include "arbdbt.h"

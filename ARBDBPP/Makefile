@@ -5,7 +5,7 @@ $(MAIN): $(CPP_OBJECTS)
 	$(LINK_SHARED_LIB) $(@:.a=).$(SHARED_LIB_SUFFIX) $(CPP_OBJECTS)
 	touch $@
 .cxx.o:
-	$(CCPLIB) $(cflags) -c $< $(CPPINCLUDES)
+	$(CPPLIB) $(cflags) -c $< $(CPPINCLUDES)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a *.so

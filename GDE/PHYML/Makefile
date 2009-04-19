@@ -25,8 +25,14 @@ else
 # compilation together with ARB
 
 CC     = $(ACC)
-CFLAGS = $(cflags) -fomit-frame-pointer -static  
+CFLAGS = $(cflags) -fomit-frame-pointer
 EXEC   = $(ARBHOME)/bin/phyml
+
+ifdef DARWIN
+CFLAGS += -fPIC
+else
+CFLAGS += -static
+endif
 
 # ARBs standard target
 $(MAIN) : $(EXEC)

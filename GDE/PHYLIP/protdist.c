@@ -50,8 +50,13 @@ long chars, datasets, ith, ctgry, categs;
    chars = number of positions in actual sequences */
 double freqa, freqc, freqg, freqt, cvi, invarfrac, ttratio, xi, xv,
   ease, fracchange;
-boolean weights, justwts, progress, mulsets, gama, invar, basesequal,
-  usepam, usejtt, kimura, similarity, firstset, printdata, interleaved;
+
+extern boolean printdata, interleaved;
+  
+boolean usepam, weights, mulsets, similarity, justwts, basesequal, firstset, 
+	kimura, invar, progress, gama, usejtt;  
+  
+  
 codetype whichcode;
 cattype whichcat;
 steptr oldweight;

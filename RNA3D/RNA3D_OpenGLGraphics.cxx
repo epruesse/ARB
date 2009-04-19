@@ -106,7 +106,7 @@ void OpenGLGraphics::WinToScreenCoordinates(int x, int y, GLdouble *screenPos) {
     glGetDoublev(GL_MODELVIEW_MATRIX,modelMatrix);
     GLdouble projMatrix[16];
     glGetDoublev(GL_PROJECTION_MATRIX,projMatrix);
-    int viewport[4];
+    GLint viewport[4];
     glGetIntegerv(GL_VIEWPORT,viewport);
     gluUnProject(x, y, 0,
                  modelMatrix,

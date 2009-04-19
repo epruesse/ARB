@@ -11,6 +11,8 @@
 #include "convert.h"
 #include "global.h"
 
+struct global_data data; 
+
 int realloc_sequence_data(int total_seqs) {
     if (total_seqs>data.allocated) {
         data.allocated = (int)(data.allocated*1.5)+5;

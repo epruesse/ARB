@@ -33,7 +33,7 @@ $(MAIN): $(OBJECTS)
 	$(LINK_SHARED_LIB) $(@:.a=).$(SHARED_LIB_SUFFIX) $(OBJECTS)
 	touch $@
 .cxx.o:
-	$(CCPLIB) $(cflags) -c $< $(CPPINCLUDES)
+	$(CPPLIB) $(cflags) -c $< $(CPPINCLUDES)
 
 .c.o:
 	$(ACCLIB) $(cflags) -c $< $(CPPINCLUDES)

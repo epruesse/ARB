@@ -150,7 +150,7 @@ typedef struct  {
 } Nbrf;
 
 /* one sequence entry */
-struct  {
+struct global_data {
     int       numofseq;         /* number of sequences */
     int       seq_length;       /* sequence length */
     int       max;
@@ -167,5 +167,7 @@ struct  {
     Embl      embl;
     Alma      alma;
     Nbrf      nbrf;
-} data;
+}; 
+
+extern struct global_data data; 
 

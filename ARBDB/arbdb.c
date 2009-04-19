@@ -1,4 +1,7 @@
-/* #include <stdio.h> */
+#if defined(DARWIN)
+#include <stdio.h>
+#endif /* DARWIN */
+
 #include <stdlib.h>
 #include <string.h>
 /* #include <malloc.h> */
