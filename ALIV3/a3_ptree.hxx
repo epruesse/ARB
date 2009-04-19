@@ -74,11 +74,11 @@ class Postree   // Klasse fuer einen Positionsbaum einer RNS-Sequenzen
             Postree         ( str        seq );         // Konstruktor fuer Positionsbaum
                                                         // einer vorgegebenen Sequenz
 
-            Postree         ( uint       len );         // Konstruktor fuer Positionsbaum einer
+            Postree         ( UINT       len );         // Konstruktor fuer Positionsbaum einer
                                                         // Zufallssequenz mit vorgegebener Laenge
 
             Postree         ( str        file,          // Konstruktor fuer Positionsbaum
-                              uint       line );        // einer Sequenz aus einer Datei
+                              UINT       line );        // einer Sequenz aus einer Datei
                                                         // mit vorgegebener Zeilennummer
 
             Postree         ( Postree   &postree );     // Kopierkonstruktor

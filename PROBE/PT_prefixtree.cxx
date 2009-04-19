@@ -397,7 +397,7 @@ void PTD_clear_fathers(PTM2 *ptmain, POS_TREE * node)       /* stage 1*/
 }
 
 #ifdef DEVEL_JB
-void PTD_put_longlong(FILE * out, ulong i)
+void PTD_put_longlong(FILE * out, ULONG i)
 {
     arb_assert(i == (unsigned long) i);
     arb_assert(sizeof(PT_PNTR) == 8);       // this function only work and only get called at 64-bit
@@ -416,7 +416,7 @@ void PTD_put_longlong(FILE * out, ulong i)
     io = buf[7]; putc(io,out);
 }
 #endif
-void PTD_put_int(FILE * out, ulong i)
+void PTD_put_int(FILE * out, ULONG i)
 {
     arb_assert(i == (unsigned int) i);
     int io;
@@ -428,7 +428,7 @@ void PTD_put_int(FILE * out, ulong i)
     io = buf[3]; putc(io,out);
 }
 
-void PTD_put_short(FILE * out, ulong i)
+void PTD_put_short(FILE * out, ULONG i)
 {
     arb_assert(i == (unsigned short) i);
     int io;

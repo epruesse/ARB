@@ -20,10 +20,10 @@ class Sequence              // Klasse fuer RNS-Sequenzen
     private:
     
     str     original;       // Originale Sequenz
-    uint    origlen;        // Laenge der originalen Sequenz
+    UINT    origlen;        // Laenge der originalen Sequenz
 
     str     compressed;     // Kompremiert Sequenz
-    uint    complen;        // Laenge der kompremierten Sequenz
+    UINT    complen;        // Laenge der kompremierten Sequenz
 
     public:
 
@@ -31,10 +31,10 @@ class Sequence              // Klasse fuer RNS-Sequenzen
 
             Sequence        ( str        seq );         // Konstruktor mit vorgegebener Sequenz
 
-            Sequence        ( uint       len );         // Konstruktor fuer Zufallssequenz
+            Sequence        ( UINT       len );         // Konstruktor fuer Zufallssequenz
 
             Sequence        ( str        file,          // Konstruktor fuer Sequenz aus Datei
-                              uint       line );
+                              UINT       line );
 
             Sequence        ( Sequence  &sequence );    // Kopierkonstruktor
 
@@ -43,13 +43,13 @@ class Sequence              // Klasse fuer RNS-Sequenzen
     str     Original        ( void )    { return strdup(original); };   // Liefert Kopie der
                                                                         // originalen Sequenz
 
-    uint    OriginalLen     ( void )    { return origlen; };            // Liefert Laenge der
+    UINT    OriginalLen     ( void )    { return origlen; };            // Liefert Laenge der
                                                                         // originalen Sequenz
 
     str     Compressed      ( void )    { return strdup(compressed); }; // Liefert Kopie der
                                                                         // kompremierten Sequenz
 
-    uint    CompressedLen   ( void )    { return complen; };            // Liefert Laenge der
+    UINT    CompressedLen   ( void )    { return complen; };            // Liefert Laenge der
                                                                         // kompremierten Sequenz
 
     int     Set             ( str        seq );                         // Ueberschreibt die
