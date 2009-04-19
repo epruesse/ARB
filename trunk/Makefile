@@ -35,6 +35,10 @@
 # Read configuration 
 include config.makefile
 
+ifeq ($(LD_LIBRARY_PATH),'')
+LD_LIBRARY_PATH:=${ARBHOME}/lib
+endif
+
 FORCEMASK = umask 002
 
 # ---------------------- [unconditionally used options]
@@ -44,8 +48,8 @@ GPP:=g++
 CPPreal:=cpp
 
 ifdef DARWIN
-	GCC:=gcc2
-	GPP:=g++2
+	GCC:=gcc
+	GPP:=g++
 endif
 
 # ---------------------- compiler version detection
@@ -54,7 +58,7 @@ endif
 
 ALLOWED_GCC_3xx_VERSIONS=3.2 3.3.1 3.3.3 3.3.4 3.3.5 3.3.6 3.4.0 3.4.2 3.4.3
 ALLOWED_GCC_4xx_VERSIONS=\
-	4.0.0 4.0.2 4.0.3 \
+	4.0.0 4.0.1 4.0.2 4.0.3 \
 	4.1.1 4.1.2 4.1.3 \
 	4.2.0 4.2.1 4.2.3 4.2.4 \
 	4.3.1 4.3.2\
@@ -68,6 +72,8 @@ USING_GCC_3XX=$(strip $(foreach version,$(ALLOWED_GCC_3xx_VERSIONS),$(findstring
 USING_GCC_4XX=$(strip $(foreach version,$(ALLOWED_GCC_4xx_VERSIONS),$(findstring $(version),$(GCC_VERSION_ALLOWED))))
 
 #----------------------
+
+LINK_STATIC=0# set to 1 to link statically
 
 shared_cflags :=# flags for shared lib compilation
 
@@ -234,23 +240,30 @@ cppflags := $(extended_cpp_warnings)
 ACC := $(GCC)# compile C
 CPP := $(GPP) $(cppflags)# compile C++
 ACCLIB := $(ACC) $(shared_cflags)# compile C (shared libs)
-CCPLIB := $(CPP) $(shared_cflags)# compile C++ (shared libs)
+CPPLIB := $(CPP) $(shared_cflags)# compile C++ (shared libs)
 
 PP := $(CPPreal)# preprocessor
-
-SHARED_LIB_SUFFIX = so# shared lib suffix (can be set to 'a' to link statically)
 
 lflags += $(ldynamic)
 
 LINK_STATIC_LIB := ld $(lflags) -r -o# link static lib
-LINK_SHARED_LIB := $(GPP) $(lflags) -shared -o# link shared lib
 LINK_EXECUTABLE := $(GPP) $(lflags) $(cdynamic) -o# link executable (c++)
+
+ifeq ($(LINK_STATIC),1)
+SHARED_LIB_SUFFIX = a# static lib suffix
+LINK_SHARED_LIB := $(LINK_STATIC_LIB)
+else
+SHARED_LIB_SUFFIX = so# shared lib suffix
+LINK_SHARED_LIB := $(GPP) $(lflags) -shared -o# link shared lib
+endif
 
 # other used tools
 
 CTAGS := etags
 XMKMF := /usr/bin/X11/xmkmf
-MAKEDEPEND = $(FORCEMASK);makedepend
+MAKEDEPEND_PLAIN = makedepend
+
+MAKEDEPEND = $(FORCEMASK);$(MAKEDEPEND_PLAIN)
 
 SEP=--------------------------------------------------------------------------------
 
@@ -363,7 +376,7 @@ ifeq ('$(GCC_VERSION_ALLOWED)', '')
 		@echo '    - switch to one of the allowed versions (see arb_README_gcc.txt for installing'
 		@echo '      a different version of gcc)'
 		@echo ''
-		@/bin/false
+		@false
 else
 		@echo "  - Supported gcc version '$(GCC_VERSION_ALLOWED)' detected - fine!"
 		@echo ''
@@ -409,7 +422,21 @@ ifeq ($(strip $(ARB_PATH_SET)),)
 		@false
 endif
 
-check_ENVIRONMENT : check_PATH
+check_TOOLS:
+	@util/arb_check_build_env.pl \
+		"$(ACC)" \
+		"$(CPP)" \
+		"$(GPP)" \
+		"$(PP)" \
+		"$(ACCLIB)" \
+		"$(CPPLIB)" \
+		"$(XMKMF)" \
+		"$(MAKEDEPEND_PLAIN)" \
+		"$(LINK_SHARED_LIB)" \
+		"$(LINK_SHARED_LIB)" \
+
+
+check_ENVIRONMENT : check_PATH check_TOOLS
 
 check_tabs: check_setup
 ifeq ($(DEBUG),1)
@@ -417,8 +444,8 @@ ifeq ($(DEBUG),1)
 endif
 
 force_tab_check:
-	touch -t 198001010000 SOURCE_TOOLS/tabBrake.stamp
-	$(MAKE) check_tabs
+	@touch -t 198001010000 SOURCE_TOOLS/tabBrake.stamp
+	@$(MAKE) check_tabs
 
 
 # ---------------------
@@ -821,7 +848,7 @@ ARCHS_ALIV3 = \
 
 $(ALIV3): $(ARCHS_ALIV3:.a=.dummy) shared_libs
 	@echo $(SEP) Link $@
-	$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_ALIV3) $(ARBDB_LIB) $(SYSLIBS) $(CCPLIBS)
+	$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_ALIV3) $(ARBDB_LIB) $(SYSLIBS)
 
 #***********************************	SHARED LIBRARIES SECTION  **************************************
 
@@ -885,8 +912,7 @@ lib/lib%.$(SHARED_LIB_SUFFIX): LIBLINK/lib%.$(SHARED_LIB_SUFFIX)
 		"ARBHOME = $(ARBHOME)" \
 		"ARLIB = $(ARLIB)" \
 		"AUTODEPENDS=1" \
-		"CCPLIB = $(CCPLIB)" \
-		"CCPLIBS = $(CCPLIBS)" \
+		"CPPLIB = $(CPPLIB)" \
 		"CPP = $(CPP)" \
 		"CPPINCLUDES = $(CPPINCLUDES)" \
 		"DEBUG=$(DEBUG)" \

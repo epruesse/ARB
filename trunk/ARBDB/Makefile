@@ -10,7 +10,7 @@ $(MAIN): $(OBJECTS)
 .c.o:
 	$(ACCLIB) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
 .cxx.o:
-	$(CCPLIB) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
+	$(CPPLIB) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
 
 proto:	gproto lproto
 

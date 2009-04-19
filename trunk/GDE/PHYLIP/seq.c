@@ -8,7 +8,9 @@
    charged for it and provided that this copyright notice is not removed. */
 
 long nonodes, endsite, outgrno, nextree, which;
-boolean interleaved, printdata, outgropt, treeprint, dotdiff, transvp;
+
+boolean printdata, outgropt, treeprint, dotdiff, transvp, interleaved;
+
 steptr weight, category, alias, location, ally;
 sequence y;
 

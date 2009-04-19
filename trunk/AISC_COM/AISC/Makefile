@@ -60,13 +60,11 @@ $(CLIENT_OBJECTS):	$(CLIENT_OBJECTS:O/%.o=C/%.c) $(GEN_INCLUDES) $(CLIENT_INCLUD
 GENH/%.h: AISC/%.pa AISC/*.pa $(MAIN_SOURCE) $(INCLUDE_INCLUDES)
 	@echo "----------------------------------------"
 	@echo "1 - LD_LIBRARY_PATH=$(LD_LIBRARY_PATH)"
-#	ldd $(AISC)
 	$(AISC) $< $(MAIN_SOURCE) $@
 
 GENC/%.c: AISC/%.pa AISC/*.pa $(MAIN_SOURCE) $(AISC_SERVER_EXTERN)
 	@echo "----------------------------------------"
 	@echo "2 - LD_LIBRARY_PATH=$(LD_LIBRARY_PATH)"
-#	ldd $(AISC)
 	$(AISC) $< $(MAIN_SOURCE) $@ $(AISC_SERVER_EXTERN) $(IMPORT_PROTO)
 
 
@@ -92,7 +90,7 @@ clean:
 	rm -f GENC/*
 
 .depends:
-	makedepend C/*.c GENC/*.c -I GENH -I C -f- -w1 | grep -v ' /usr' | sed -e 's/^C/O/ig' > .depends_new
+	$(MAKEDEPEND) C/*.c GENC/*.c -I GENH -I C -f- -w1 | grep -v ' /usr' | sed -e 's/^C/O/ig' > .depends_new
 	$(ARBHOME)/SOURCE_TOOLS/mv_if_diff .depends_new .depends
 
 ifeq ($(AUTODEPENDS),1)

@@ -18,9 +18,9 @@ $(MAIN): $(OBJECTS)
 	touch $@
 
 .cxx.o:
-	$(CCPLIB) $(cflags) -c $<  $(CPPINCLUDES)
+	$(CPPLIB) $(cflags) -c $<  $(CPPINCLUDES)
 
-#	$(CCPLIB) $(cflags) -c -D_USE_AW_WINDOW $<  $(CPPINCLUDES)
+#	$(CPPLIB) $(cflags) -c -D_USE_AW_WINDOW $<  $(CPPINCLUDES)
 
 awt_tree_cb.hxx: AWT_tree_cb.cxx
 	rm -f $@
