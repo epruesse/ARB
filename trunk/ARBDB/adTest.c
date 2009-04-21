@@ -201,6 +201,7 @@ static void GB_dump_internal(GBDATA *gbd, int *lines_allowed) {
     GBCONTAINER   *father            = GB_FATHER(gbd);
     GBDATA        *gb_show_later     = 0;
     char          *whatto_show_later = 0;
+    GB_BOOL        showChilds        = GB_TRUE;
 
     if (father) {
         int index_pos = (int)gbd->index; /* my index position in father */
@@ -240,7 +241,8 @@ static void GB_dump_internal(GBDATA *gbd, int *lines_allowed) {
     }
 
     if (!father && !key_name) {
-        key_name = "<unknown quark - element w/o father>";
+        key_name   = "<unknown quark - element w/o father>";
+        showChilds = GB_FALSE;
     }
     else { // test if we need a transaction
         if (!GB_MAIN(gbd)->transaction) {
@@ -308,7 +310,7 @@ static void GB_dump_internal(GBDATA *gbd, int *lines_allowed) {
         free(prefix);
     }
 
-    if (type==GB_DB) {
+    if (type==GB_DB && showChilds == GB_TRUE) {
         GBCONTAINER *gbc = (GBCONTAINER*)gbd;
         GBDATA *gbp;
 
