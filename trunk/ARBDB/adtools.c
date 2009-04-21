@@ -1066,9 +1066,11 @@ static GBT_TREE *fixDeletedSon(GBT_TREE *tree) {
 
 
 GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TREE_REMOVE_TYPE mode, GB_HASH *species_hash, int *removed, int *groups_removed) {
-    // given 'tree' can either
+    // Given 'tree' can either
     // - be linked (in this case 'species_hash' shall be NULL)
     // - be unlinked (in this case 'species_hash' has to be provided)
+    //
+    // If 'removed' and/or 'groups_removed' is given, it's used to count the removed leafs/groups.
 
     if (tree->is_leaf) {
         if (tree->name) {
@@ -1093,7 +1095,7 @@ GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TREE_REMOVE_TYPE mode, GB_HASH *s
 
             if (deleteSelf) {
                 GBT_delete_tree(tree);
-                (*removed)++;
+                if (removed) (*removed)++;
                 tree = 0;
             }
         }
@@ -1112,7 +1114,7 @@ GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TREE_REMOVE_TYPE mode, GB_HASH *s
             tree = fixDeletedSon(tree);
         }
         else {                  // everything deleted -> delete self
-            if (tree->name) (*groups_removed)++;
+            if (tree->name && groups_removed) (*groups_removed)++;
             tree->is_leaf = GB_TRUE;
             GBT_delete_tree(tree);
             tree          = 0;
