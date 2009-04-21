@@ -68,13 +68,13 @@ typedef enum {  // flags zum kennzeichnen von knoten
     AP_NONE
 } AP_TREE_SIDE;
 
-enum {          // Flags can be ored !!!
-    AWT_REMOVE_MARKED = 1,
-    AWT_REMOVE_NOT_MARKED = 2,
-    AWT_REMOVE_DELETED = 4,
-    AWT_REMOVE_NO_SEQUENCE = 8,
+typedef enum {          // Flags can be ored !!!
+    AWT_REMOVE_MARKED        = GBT_REMOVE_MARKED,
+    AWT_REMOVE_NOT_MARKED    = GBT_REMOVE_NOT_MARKED,
+    AWT_REMOVE_DELETED       = GBT_REMOVE_DELETED,
+    AWT_REMOVE_NO_SEQUENCE   = 8,
     AWT_REMOVE_BUT_DONT_FREE = 16
-};  //  AWT_REMOVE_TYPE;
+} AWT_REMOVE_TYPE;
 
 typedef double AP_FLOAT;
 

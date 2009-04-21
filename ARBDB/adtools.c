@@ -1012,9 +1012,119 @@ GB_ERROR GBT_insert_character(GBDATA *Main, char *alignment_name, long pos, long
 }
 
 
-/********************************************************************************************
-                    some tree write functions
-********************************************************************************************/
+/* ---------------------- */
+/*      remove leafs      */
+
+
+static GBT_TREE *fixDeletedSon(GBT_TREE *tree) {
+    // fix tree after one son has been deleted
+    // (Note: this function only works correct for trees with minimum element size!)
+    GBT_TREE *delNode = tree;
+
+    if (delNode->leftson) {
+        ad_assert(!delNode->rightson);
+        tree             = delNode->leftson;
+        delNode->leftson = 0;
+    }
+    else {
+        ad_assert(!delNode->leftson);
+        ad_assert(delNode->rightson);
+        
+        tree              = delNode->rightson;
+        delNode->rightson = 0;
+    }
+
+    // now tree is the new tree
+    tree->father = delNode->father;
+
+    if (delNode->remark_branch && !tree->remark_branch) { // rescue remarks if possible
+        tree->remark_branch    = delNode->remark_branch;
+        delNode->remark_branch = 0;
+    }
+    if (delNode->gb_node && !tree->gb_node) { // rescue group if possible
+        tree->gb_node    = delNode->gb_node;
+        delNode->gb_node = 0;
+    }
+
+    delNode->is_leaf = GB_TRUE; // don't try recursive delete
+
+    if (delNode->father) { // not root
+        GBT_delete_tree(delNode);
+    }
+    else { // root node
+        if (delNode->tree_is_one_piece_of_memory) {
+            // dont change root -> copy instead
+            memcpy(delNode, tree, sizeof(GBT_TREE));
+            tree = delNode;
+        }
+        else {
+            GBT_delete_tree(delNode);
+        }
+    }
+    return tree;
+}
+
+
+GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TREE_REMOVE_TYPE mode, GB_HASH *species_hash, int *removed, int *groups_removed) {
+    // given 'tree' can either
+    // - be linked (in this case 'species_hash' shall be NULL)
+    // - be unlinked (in this case 'species_hash' has to be provided)
+
+    if (tree->is_leaf) {
+        if (tree->name) {
+            GB_BOOL  deleteSelf = GB_FALSE;
+            GBDATA  *gb_node;
+
+            if (species_hash) {
+                gb_node = (GBDATA*)GBS_read_hash(species_hash, tree->name);
+                ad_assert(tree->gb_node == 0); // dont call linked tree with 'species_hash'!
+            }
+            else gb_node = tree->gb_node;
+
+            if (gb_node) {
+                if (mode & (GBT_REMOVE_MARKED|GBT_REMOVE_NOT_MARKED)) {
+                    long flag = GB_read_flag(gb_node);
+                    deleteSelf = (flag && (mode&GBT_REMOVE_MARKED)) || (!flag && (mode&GBT_REMOVE_NOT_MARKED));
+                }
+            }
+            else { // zombie
+                if (mode & GBT_REMOVE_DELETED) deleteSelf = GB_TRUE;
+            }
+
+            if (deleteSelf) {
+                GBT_delete_tree(tree);
+                (*removed)++;
+                tree = 0;
+            }
+        }
+    }
+    else {
+        tree->leftson  = GBT_remove_leafs(tree->leftson, mode, species_hash, removed, groups_removed);
+        tree->rightson = GBT_remove_leafs(tree->rightson, mode, species_hash, removed, groups_removed);
+
+        if (tree->leftson) {
+            if (!tree->rightson) { // right son deleted
+                tree = fixDeletedSon(tree);
+            }
+            // otherwise no son deleted
+        }
+        else if (tree->rightson) { // left son deleted
+            tree = fixDeletedSon(tree);
+        }
+        else {                  // everything deleted -> delete self
+            if (tree->name) (*groups_removed)++;
+            tree->is_leaf = GB_TRUE;
+            GBT_delete_tree(tree);
+            tree          = 0;
+        }
+    }
+
+    return tree;
+}
+
+/* ------------------- */
+/*      free tree      */
+
 
 void GBT_delete_tree(GBT_TREE *tree)
      /* frees a tree only in memory (not in the database)
@@ -1033,6 +1143,12 @@ void GBT_delete_tree(GBT_TREE *tree)
         free(tree);
     }
 }
+
+
+/********************************************************************************************
+                    some tree write functions
+********************************************************************************************/
+
 
 GB_ERROR GBT_write_group_name(GBDATA *gb_group_name, const char *new_group_name) {
     GB_ERROR error = 0;
