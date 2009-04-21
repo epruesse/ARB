@@ -889,102 +889,9 @@ static void NT_dump_gcs(AW_window *aww, AW_CL, AW_CL) {
 
 //--------------------------------------------------------------------------------------------------
 
-static GBT_TREE *fixDeletedSon(GBT_TREE *tree) {
-    // fix tree after one son has been deleted
-    // (Note: this function only works correct for trees with minimum element size!)
-    GBT_TREE *delNode = tree;
-
-    if (delNode->leftson) {
-        nt_assert(!delNode->rightson);
-        tree             = delNode->leftson;
-        delNode->leftson = 0;
-    }
-    else {
-        nt_assert(!delNode->leftson);
-        nt_assert(delNode->rightson);
-        
-        tree              = delNode->rightson;
-        delNode->rightson = 0;
-    }
-
-    // now tree is the new tree
-    tree->father = delNode->father;
-
-    if (delNode->remark_branch && !tree->remark_branch) { // rescue remarks if possible
-        tree->remark_branch    = delNode->remark_branch;
-        delNode->remark_branch = 0;
-    }
-    if (delNode->gb_node && !tree->gb_node) { // rescue group if possible
-        tree->gb_node    = delNode->gb_node;
-        delNode->gb_node = 0;
-    }
-
-    delNode->is_leaf = GB_TRUE; // don't try recursive delete
-
-    if (delNode->father) { // not root
-        GBT_delete_tree(delNode);
-    }
-    else { // root node
-        if (delNode->tree_is_one_piece_of_memory) {
-            // dont change root -> copy instead
-            memcpy(delNode, tree, sizeof(GBT_TREE));
-            tree = delNode;
-        }
-        else {
-            GBT_delete_tree(delNode);
-        }
-    }
-    return tree;
-}
-
-static GBT_TREE *remove_leafs(GBT_TREE *tree, long mode, GB_HASH *species_hash, int& removed, int& groups_removed) {
-    if (tree->is_leaf) {
-        if (tree->name) {
-            GBDATA *gb_node    = (GBDATA*)GBS_read_hash(species_hash, tree->name);
-            bool    deleteSelf = false;
-            if (gb_node) {
-                if (mode & AWT_REMOVE_MARKED) {
-                    if (GB_read_flag(gb_node)) deleteSelf = true;
-                }
-            }
-            else { // zombie
-                if (mode & AWT_REMOVE_DELETED) deleteSelf = true;
-            }
-
-            if (deleteSelf) {
-                GBT_delete_tree(tree);
-                removed++;
-                tree = 0;
-            }
-        }
-    }
-    else {
-        tree->leftson  = remove_leafs(tree->leftson, mode, species_hash, removed, groups_removed);
-        tree->rightson = remove_leafs(tree->rightson, mode, species_hash, removed, groups_removed);
-
-        if (tree->leftson) {
-            if (!tree->rightson) { // right son deleted
-                tree = fixDeletedSon(tree);
-            }
-            // otherwise no son deleted
-        }
-        else if (tree->rightson) { // left son deleted
-            tree = fixDeletedSon(tree);
-        }
-        else {                  // everything deleted -> delete self
-            if (tree->gb_node) groups_removed++;
-            tree->is_leaf = GB_TRUE;
-            GBT_delete_tree(tree);
-            tree          = 0;
-        }
-    }
-
-    return tree;
-}
-
 void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main) {
-    GBDATA *gb_main = (GBDATA*)cl_gb_main;
-    long    mode    = (long)cl_mode;
+    GBDATA               *gb_main = (GBDATA*)cl_gb_main;
+    GBT_TREE_REMOVE_TYPE  mode    = (GBT_TREE_REMOVE_TYPE)cl_mode;
 
     GB_transaction ta(gb_main);
 
@@ -1007,7 +914,7 @@ void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main) {
                 int removed        = 0;
                 int groups_removed = 0;
 
-                tree = remove_leafs(tree, mode, species_hash, removed, groups_removed);
+                tree = GBT_remove_leafs(tree, mode, species_hash, &removed, &groups_removed);
 
                 gb_assert(removed >= groups_removed);
 
