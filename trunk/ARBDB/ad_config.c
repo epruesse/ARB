@@ -113,9 +113,7 @@ GBT_config *GBT_load_configuration_data(GBDATA *gb_main, const char *name, GB_ER
     GBT_config *config = 0;
     GBDATA     *gb_configuration;
 
-    GB_push_transaction(gb_main);
-
-    *error           = 0;
+    *error           = GB_push_transaction(gb_main);
     gb_configuration = GBT_find_configuration(gb_main, name);
 
     if (!gb_configuration) {
@@ -129,9 +127,8 @@ GBT_config *GBT_load_configuration_data(GBDATA *gb_main, const char *name, GB_ER
         if (!config->top_area || !config->middle_area) {
             GBT_free_configuration_data(config);
             config = 0;
-            GB_ERROR dberr = GB_get_error();
-            *error = GBS_global_string("Configuration '%s' is corrupted (%s)",
-                                       name, dberr ? dberr : "unknown reason");
+            *error = GBS_global_string("Configuration '%s' is corrupted (Reason: %s)", 
+                                       name, GB_await_error());
         }
     }
 
@@ -147,7 +144,7 @@ GB_ERROR GBT_save_configuration_data(GBT_config *config, GBDATA *gb_main, const 
     
     gb_configuration = GBT_create_configuration(gb_main, name);
     if (!gb_configuration) {
-        error = GBS_global_string("Can't create configuration '%s' (Reason: %s)", name, GB_get_error());
+        error = GBS_global_string("Can't create configuration '%s' (Reason: %s)", name, GB_await_error());
     }
     else {
         error             = GBT_write_string(gb_configuration, "top_area", config->top_area);

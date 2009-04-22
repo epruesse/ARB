@@ -554,28 +554,26 @@ ATTRIBUTED(__ATTR__USERESULT,
                             switch(seperator) {
                                 case ':':
                                     h = GBS_string_eval(entry,psym+1,gb_container);
-                                    if (h){
-                                        GBS_strcat(strstruct,h);
-                                        free(h);
-                                    }else{
-                                        return GB_get_error();
-                                    }
+                                    if (!h) return GB_await_error();
+
+                                    GBS_strcat(strstruct,h);
+                                    free(h);
                                     break;
+                                    
                                 case '|':
                                     h = GB_command_interpreter(GB_get_root(gb_container), entry,psym+1,gb_container, 0);
-                                    if (h) {
-                                        GBS_strcat(strstruct,h);
-                                        free(h);
-                                    }
-                                    else {
-                                        return GB_get_error();
-                                    }
+                                    if (!h) return GB_await_error();
+
+                                    GBS_strcat(strstruct,h);
+                                    free(h);
                                     break;
+                                    
                                 case '#':
                                     if (!gb_entry){
                                         GBS_strcat(strstruct,psym+1);
                                         break;
                                     }
+                                    // fall-through
                                 default:
                                     GBS_strcat(strstruct,entry);
                                     break;
@@ -673,32 +671,34 @@ static char *gbs_compress_command(const char *com) {
 
 char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_container)
      /* GBS_string_eval replaces substrings in source
-        Syntax: command = "oliver=olli:peter=peti"
-        The string is GB_STRDUPped !
-        *   is a wildcard for any number of character
-        ?   is a wildcard for exactly one character
-
-        To reference to the wildcards on the left side of the '='
-        use ? and *, to reference in a different order use:
-            *0 to reference to the first occurrence of *
-            *1          second
-            ...
-            *9
-
-        if the last and first characters of the search string are no '*' wildcards then
-        the replace is repeated as many times as possible
-        '\' is the escape character: e.g. \n is newline; '\\' is '\'; '\=' is '='; ....
-
-        eg:
-        print first three characters of first word and the whole second word:
-
-        *(arb_key)          is the value of the a database entry arb key
-        *(arb_key#string)   value of the database entry or 'string' if the entry does not exist
-        *(arb_key\:SRT)     runs SRT recursively on the value of the database entry
-        *([arb_key]|ACI)    runs the ACI command interpreter on the value of the database entry (or on an empty string)
-
-     */
-
+      * Syntax: command = "oliver=olli:peter=peti"
+      * 
+      * Returns a heapcopy of result of replacement.
+      * 
+      *         * is a wildcard for any number of character
+      *         ? is a wildcard for exactly one character
+      * 
+      * To reference to the wildcards on the left side of the '='
+      * use ? and *, to reference in a different order use:
+      *         *0 to reference to the first occurrence of *
+      *         *1          second
+      *         ...
+      *         *9
+      * 
+      * if the last and first characters of the search string are no '*' wildcards then
+      * the replace is repeated as many times as possible
+      * '\' is the escape character: e.g. \n is newline; '\\' is '\'; '\=' is '='; ....
+      * 
+      * eg:
+      * print first three characters of first word and the whole second word:
+      * 
+      *         *(arb_key)          is the value of the a database entry arb key
+      *         *(arb_key#string)   value of the database entry or 'string' if the entry does not exist
+      *         *(arb_key\:SRT)     runs SRT recursively on the value of the database entry
+      *         *([arb_key]|ACI)    runs the ACI command interpreter on the value of the database entry (or on an empty string)
+      * 
+      * If an error occurs it returns NULL - in this case the error was exported.
+      */
 {
     GB_CSTR  source;            /* pointer into the current string when parsed */
     char    *search;            /* pointer into the current command when parsed */

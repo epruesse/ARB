@@ -169,69 +169,78 @@ void *gbcms_sighup(void){
                 server open
 ***************************************************************************************/
 
-GB_ERROR GBCMS_open(const char *path,long timeout,GBDATA *gb_main)
-{
-    struct Hs_struct *hs;
-    int      so[1];
-    char    *unix_name[1];
-    GB_ERROR err;
-    struct gbcmc_comm *comm;
-    GB_MAIN_TYPE   *Main = GB_MAIN(gb_main);
+GB_ERROR GBCMS_open(const char *path, long timeout, GBDATA *gb_main) {
+    GB_MAIN_TYPE *Main  = GB_MAIN(gb_main);
+    GB_ERROR      error = 0;
+
     if (Main->server_data) {
-        return GB_export_error("ARB_DB_SERVER_ERROR reopen of server not allowed");
+        error = "reopen of server not allowed";
     }
-    if ( (comm = gbcmc_open(path)) ) {
-        GB_export_error("Socket '%s' already in use",path);
-        GB_print_error();
-        gbcmc_close(comm);
-        comm = 0;
-        return GB_get_error();
+    else {
+        struct gbcmc_comm *comm = gbcmc_open(path);
+        if (comm) {
+            error = GBS_global_string("Socket '%s' already in use", path);
+            gbcmc_close(comm);
+        }
+        else {
+            int   socket;
+            char *unix_name;
+
+            error = gbcm_open_socket(path, TCP_NODELAY, 0, &socket, &unix_name);
+            if (!error) {
+                signal(SIGPIPE,(SIG_PF)gbcms_sigpipe);
+                signal(SIGHUP,(SIG_PF)gbcms_sighup);
+
+                gbcms_gb_main = (GBCONTAINER *)gb_main;
+
+                if (listen(socket, MAX_QUEUE_LEN) < 0) {
+                    error = GBS_global_string("could not listen (server; errno=%i)", errno);
+                }
+                else {
+                    struct Hs_struct *hs = (struct Hs_struct *)GB_calloc(sizeof(struct Hs_struct),1);
+
+                    hs->timeout   = timeout;
+                    hs->gb_main   = gb_main;
+                    hs->hso       = socket;
+                    hs->unix_name = unix_name;
+
+                    Main->server_data = (void *)hs;
+                }
+            }
+        }
     }
-    hs = (struct Hs_struct *)GB_calloc(sizeof(struct Hs_struct),1);
 
-    hs->timeout = timeout;
-    hs->gb_main = gb_main;
-    err = gbcm_open_socket(path,TCP_NODELAY, 0, so,unix_name);
-    if (err) {
-        printf("%s\n",err);
-        return err;
+    if (error) {
+        error = GBS_global_string("ARB_DB_SERVER_ERROR: %s", error);
+        fprintf(stderr, "%s\n", error);
     }
-
-    signal(SIGPIPE,(SIG_PF)gbcms_sigpipe);
-    signal(SIGHUP,(SIG_PF)gbcms_sighup);
-
-    gbcms_gb_main = (GBCONTAINER *)gb_main;
-
-    if (listen((int)(so[0]), MAX_QUEUE_LEN) < 0) {
-        return GB_export_error("ARB_DB SERVER ERROR could not listen (server) %i",errno);
-    }
-    hs->hso = so[0];
-    hs->unix_name = unix_name[0];
-    Main->server_data = (void *)hs;
-    return 0;
+    return error;
 }
+
+
 /**************************************************************************************
                 server close
 ***************************************************************************************/
-GB_ERROR GBCMS_shutdown(GBDATA *gbd){
-    struct Hs_struct *hs;
-    struct Socinf *si;
-    GB_MAIN_TYPE   *Main = GB_MAIN(gbd);
-    if (!Main->server_data) return 0;
-    hs = (struct Hs_struct *)Main->server_data;
-    for(si=hs->soci; si; si=si->next){
-        shutdown(si->socket, 2);  /* 2 = both dir */
-        close(si->socket);
-    }
-    shutdown(hs->hso, 2);
-    if (hs->unix_name){
-        unlink(hs->unix_name);
-        freeset(hs->unix_name, NULL);
-    }
-    close(hs->hso);
-    freeset(Main->server_data, NULL);
 
-    return 0;
+void GBCMS_shutdown(GBDATA *gbd) {
+    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
+    if (Main->server_data) {
+        struct Hs_struct *hs = (struct Hs_struct *)Main->server_data;
+        struct Socinf    *si;
+
+        for (si=hs->soci; si; si=si->next) {
+            shutdown(si->socket, 2);  /* 2 = both dir */
+            close(si->socket);
+        }
+        shutdown(hs->hso, 2);
+        
+        if (hs->unix_name){
+            unlink(hs->unix_name);
+            freeset(hs->unix_name, NULL);
+        }
+        close(hs->hso);
+        freeset(Main->server_data, NULL);
+    }
 }
 
 /**************************************************************************************
@@ -2106,7 +2115,7 @@ GB_ERROR GB_install_pid(int mode) {
             FILE *pidfile = GB_fopen_tempfile(pidfile_name, "at", &pid_fullname);
 
             if (!pidfile) {
-                error = GBS_global_string("GB_install_pid: %s", GB_get_error());
+                error = GBS_global_string("GB_install_pid: %s", GB_await_error());
             }
             else {
                 fprintf(pidfile,"%li ", pid);

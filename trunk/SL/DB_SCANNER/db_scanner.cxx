@@ -123,18 +123,17 @@ static void awt_arbdb_scanner_value_change(void *, struct adawcbstruct *cbs)
 
         GBDATA *gb_key_name;
         char   *key_name = 0;
-        if (awt_check_scanner_key_data(cbs,gbd)) { // not exist, create new element
+
+        if (awt_check_scanner_key_data(cbs,gbd)) {  // not exist, create new element
             gb_key_name         = GB_entry(gbd,CHANGEKEY_NAME);
             key_name            = GB_read_string(gb_key_name);
             GBDATA *gb_key_type = GB_entry(gbd,CHANGEKEY_TYPE);
+
             if (strlen(value)) {
-                GBDATA *gb_new = GB_search(cbs->gb_user, key_name,GB_read_int(gb_key_type));
-                if (!gb_new) {
-                    error = GB_get_error();
-                }
-                if (!error){
-                    error = GB_write_as_string(gb_new,value);
-                }
+                GBDATA *gb_new     = GB_search(cbs->gb_user, key_name,GB_read_int(gb_key_type));
+                if (!gb_new) error = GB_await_error();
+                else    error      = GB_write_as_string(gb_new,value);
+                
                 cbs->aws->get_root()->awar(cbs->def_gbd)->write_int((long)gb_new); // remap arbdb
             }
         }

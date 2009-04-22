@@ -225,45 +225,50 @@ void *gbcm_sigio()
 
 /************************************* find the mach name and id *************************************/
 
-GB_ERROR gbcm_get_m_id(const char *path, char **m_name, long *id)
-{
-    const char *p;
-    char       *mn;
-    long        i;
+GB_ERROR gbcm_get_m_id(const char *path, char **m_name, long *id) {
+    GB_ERROR error = 0;
 
-    if (!path) {
-        return "OPEN_ARB_DB_CLIENT ERROR: missing hostname:socketid";
-    }
-    if (strcmp(path,":") == 0) {
-        path = GBS_read_arb_tcp("ARB_DB_SERVER");
-        if (!path) return GB_get_error();
-    }
-    p = strchr(path, ':');
-    if (path[0] == '*' || path[0] == ':'){  /* UNIX MODE */
-        if (!p) {
-            return GB_export_error("OPEN_ARB_DB_CLIENT ERROR: missing ':' in %s",path);
+    if (!path) error = "missing hostname:socketid";
+    else {
+        if (strcmp(path,":") == 0) {
+            path             = GBS_read_arb_tcp("ARB_DB_SERVER");
+            if (!path) error = GB_await_error();
         }
-        *m_name = strdup(p+1);
-        *id = -1;
-        return 0;
+
+        if (!error) {
+            const char *p = strchr(path, ':');
+
+            if (!p) error = GBS_global_string("missing ':' in '%s'", path);
+            else {
+                if (path[0] == '*' || path[0] == ':') { // UNIX MODE
+                    *m_name = strdup(p+1);
+                    *id     = -1;
+                }
+                else {
+                    char *mn = GB_strpartdup(path, p);
+
+                    int i = atoi(p + 1);
+                    if ((i < 1) || (i > 4096)) {
+                        error = GBS_global_string("socketnumber %i not in [1..4096]", i);
+                    }
+
+                    if (!error) {
+                        *m_name = mn;
+                        *id     = i;
+                    }
+                    else {
+                        free(mn);
+                    }
+                }
+            }
+        }
     }
-    if (!p) {
-        return GB_export_error("OPEN_ARB_DB_CLIENT ERROR: missing ':' in %s",path);
-    }
-    mn = (char *)GB_calloc(sizeof(char), p - path + 1);
-    strncpy(mn, path, p - path);
-    *m_name = mn;
-    i = atoi(p + 1);
-    if ((i < 1) || (i > 4096)) {
-        return GB_export_error("OPEN_ARB_DB_CLIENT ERROR: socketnumber %li not in [1024..4095]",i);
-    }
-    *id = i;
-    return 0;
+
+    if (error) error = GBS_global_string("OPEN_ARB_DB_CLIENT ERROR: %s", error);
+    return error;
 }
 
-GB_ERROR
-gbcm_open_socket(const char *path, long delay2, long do_connect, int *psocket, char **unix_name)
-{
+GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *psocket, char **unix_name) {
     long      socket_id[1];
     char    *mach_name[1];
     struct in_addr  addr;   /* union -> u_long  */
@@ -296,14 +301,14 @@ gbcm_open_socket(const char *path, long delay2, long do_connect, int *psocket, c
         so_ad.sin_port = htons((unsigned short)(socket_id[0])); /* @@@ = pb_socket  */
         if (do_connect){
             /*printf("Connecting to %X:%i\n",addr.s_addr,socket_id[0]);*/
-            if (connect((int)*psocket,(struct sockaddr *)(&so_ad), sizeof(so_ad))) {
+            if (connect(*psocket,(struct sockaddr *)(&so_ad), sizeof(so_ad))) {
                 GB_warning("Cannot connect to %s:%li   errno %i",mach_name[0],socket_id[0],errno);
                 return "";
             }
         }else{
             int one = 1;
-            setsockopt((int)(*psocket),SOL_SOCKET,SO_REUSEADDR,(const char *)&one,sizeof(one));
-            if (bind((int)(*psocket),(struct sockaddr *)(&so_ad),sizeof(so_ad))){
+            setsockopt(*psocket, SOL_SOCKET,SO_REUSEADDR,(const char *)&one,sizeof(one));
+            if (bind(*psocket, (struct sockaddr *)(&so_ad),sizeof(so_ad))){
                 return "Could not open socket on Server";
             }
         }
@@ -311,7 +316,7 @@ gbcm_open_socket(const char *path, long delay2, long do_connect, int *psocket, c
         if (delay2 == TCP_NODELAY) {
             GB_UINT4      optval;
             optval = 1;
-            setsockopt((int)(*psocket), IPPROTO_TCP, TCP_NODELAY, (char *)&optval, sizeof (GB_UINT4));
+            setsockopt(*psocket, IPPROTO_TCP, TCP_NODELAY, (char *)&optval, sizeof (GB_UINT4));
         }
         *unix_name = 0;
         return 0;
@@ -325,7 +330,7 @@ gbcm_open_socket(const char *path, long delay2, long do_connect, int *psocket, c
         strcpy(so_ad.sun_path, mach_name[0]);
 
         if (do_connect){
-            if (connect((int)(*psocket), (struct sockaddr*)(&so_ad), strlen(so_ad.sun_path)+2)) {
+            if (connect(*psocket, (struct sockaddr*)(&so_ad), strlen(so_ad.sun_path)+2)) {
                 if (mach_name[0]) free((char *)mach_name[0]);
                 return "";
             }

@@ -300,9 +300,7 @@ gb_rename_entry(GBCONTAINER *gbc, const char *new_key) {
 
 
 /* creates a terminal database object */
-GBDATA         *
-gb_make_entry(GBCONTAINER * father, const char *key, long index_pos, GBQUARK keyq, GB_TYPES type)
-{
+GBDATA *gb_make_entry(GBCONTAINER * father, const char *key, long index_pos, GBQUARK keyq, GB_TYPES type) {
     GBDATA       *gbd;
     long          gbm_index;
     static char  *buffer = 0;

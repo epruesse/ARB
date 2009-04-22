@@ -21,7 +21,6 @@ extern "C" {
 
 
 /* adtools.c */
-long gbt_write_tree_nodes P_((GBDATA *gb_tree, GBT_TREE *node, long startid));
 GBT_TREE *gbt_read_tree_rek P_((char **data, long *startid, GBDATA **gb_tree_nodes, long structure_size, int size_of_tree, GB_ERROR *error));
 int gbt_sum_leafs P_((GBT_TREE *tree));
 GB_CSTR *gbt_fill_species_names P_((GB_CSTR *des, GBT_TREE *tree));

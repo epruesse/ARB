@@ -210,7 +210,6 @@ GB_CSTR gb_reffile_name P_((GB_CSTR path));
 GB_ERROR gb_delete_reference P_((const char *master));
 GB_ERROR gb_create_reference P_((const char *master));
 GB_ERROR gb_add_reference P_((char *master, char *changes));
-GB_ERROR gb_remove_quick_saved P_((GB_MAIN_TYPE *Main, const char *path));
 GB_ERROR gb_remove_all_but_main P_((GB_MAIN_TYPE *Main, const char *path));
 long gb_ascii_2_bin P_((const char *source, GBDATA *gbd));
 GB_BUFFER gb_bin_2_ascii P_((GBDATA *gbd));
@@ -224,7 +223,6 @@ int gb_is_writeable P_((struct gb_header_list_struct *header, GBDATA *gbd, long 
 int gb_write_bin_sub_containers P_((FILE *out, GBCONTAINER *gbc, long version, long diff_save, int is_root));
 long gb_write_bin_rek P_((FILE *out, GBDATA *gbd, long version, long diff_save, long index_of_master_file));
 int gb_write_bin P_((FILE *out, GBDATA *gbd, long version));
-GB_ERROR gb_check_quick_save P_((GBDATA *gb_main, char *refpath));
 char *gb_full_path P_((const char *path));
 GB_ERROR gb_check_saveable P_((GBDATA *gbd, const char *path, const char *flags));
 

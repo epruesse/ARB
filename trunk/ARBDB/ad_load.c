@@ -443,7 +443,7 @@ static GB_ERROR gb_parse_ascii_rek(Reader r, GBCONTAINER *gb_parent, const char 
                                     error      = gb_parse_ascii_rek(r, gbc, cont_name);
                                     // caution: most buffer variables are invalidated NOW!
 
-                                    set_protection_level(Main, (GBDATA*)gbc, protection);
+                                    if (!error) error = set_protection_level(Main, (GBDATA*)gbc, protection);
 
                                     free(protection);
                                     free(cont_name);
@@ -476,10 +476,7 @@ static GB_ERROR gb_parse_ascii_rek(Reader r, GBCONTAINER *gb_parent, const char 
 
                                     gb_assert(gb_type != GB_NONE);
                                     gb_new = gb_make_entry(gb_parent, name, -1, 0, gb_type);
-                                    if (!gb_new) {
-                                        error = GB_get_error();
-                                        gb_assert(error);
-                                    }
+                                    if (!gb_new) error = GB_await_error();
                                     else {
                                         switch (type[1]) {
                                             case 'i': error = GB_write_int(gb_new, atoi(line)); break;
@@ -500,7 +497,7 @@ static GB_ERROR gb_parse_ascii_rek(Reader r, GBCONTAINER *gb_parent, const char 
                                             default : gb_assert(0); // forgot a case ?
                                         }
 
-                                        if (!error) set_protection_level(Main, gb_new, protection);
+                                        if (!error) error = set_protection_level(Main, gb_new, protection);
                                     }
                                 }
                             }
@@ -516,14 +513,11 @@ static GB_ERROR gb_parse_ascii_rek(Reader r, GBCONTAINER *gb_parent, const char 
 
                             if (!end) error = "Cannot convert string (contains zero char)";
                             else {
-                                GBDATA *gb_string = gb_make_entry(gb_parent, name, -1, 0, GB_STRING);
-                                if (!gb_string) {
-                                    error = GB_get_error();
-                                    gb_assert(error);
-                                }
+                                GBDATA *gb_string     = gb_make_entry(gb_parent, name, -1, 0, GB_STRING);
+                                if (!gb_string) error = GB_await_error();
                                 else {
-                                    error = GB_write_string(gb_string, string_start);
-                                    set_protection_level(Main, gb_string, protection);
+                                    error             = GB_write_string(gb_string, string_start);
+                                    if (!error) error = set_protection_level(Main, gb_string, protection);
                                 }
                             }
                         }
@@ -718,7 +712,7 @@ long gb_recover_corrupt_file(GBCONTAINER *gbd,FILE *in, GB_ERROR recovery_reason
     static long size = 0;
     long pos = ftell(in);
     if (!GBCONTAINER_MAIN(gbd)->allow_corrupt_file_recovery) {
-        if (!recovery_reason) { recovery_reason = GB_get_error(); }
+        if (!recovery_reason) { recovery_reason = GB_await_error(); }
         GB_export_error("Aborting recovery (because recovery mode is disabled)\n"
                         "Error causing recovery: '%s'\n"
                         "Part of data may be recovered using 'arb_repair yourDB.arb newName.arb'\n"
@@ -1212,7 +1206,7 @@ long gb_read_bin(FILE *in,GBCONTAINER *gbd, int diff_file_allowed)
         }
         else {
             if (!merror) {
-                GB_warning("%s",GB_get_error());
+                GB_warning("%s", GB_await_error());
             }
             else {
                 GB_information("ARB: no FastLoad File '%s' found: loading entire database",map_path);
@@ -1299,29 +1293,32 @@ GB_MAIN_IDX gb_make_main_idx(GB_MAIN_TYPE *Main)
     return idx;
 }
 
-GB_ERROR    gb_login_remote(struct gb_main_type *gb_main,const char *path,const char *opent){
-    GBCONTAINER *gbd = gb_main->data;
+GB_ERROR gb_login_remote(struct gb_main_type *gb_main,const char *path,const char *opent) {
+    GBCONTAINER *gbd   = gb_main->data;
+    GB_ERROR     error = NULL;
+
     gb_main->local_mode = GB_FALSE;
-    gb_main->c_link = gbcmc_open(path);
+    gb_main->c_link     = gbcmc_open(path);
 
     if (!gb_main->c_link) {
-        return GB_export_error("There is no ARBDB server '%s', please start one or add a filename",path);
+        error = GBS_global_string("There is no ARBDB server '%s', please start one or add a filename", path);
     }
+    else {
+        gbd->server_id       = 0;
+        gb_main->remote_hash = GBS_create_hashi(GB_REMOTE_HASH_SIZE);
+        error                = gb_init_transaction(gbd); /* login in server */
+        
+        if (!error) {
+            gbd->flags2.folded_container = 1;
 
-    gbd->server_id = 0;
-    gb_main->remote_hash = GBS_create_hashi(GB_REMOTE_HASH_SIZE);
-
-    if (gb_init_transaction(gbd))   {   /* login in server */
-        return GB_get_error();
+            if (    strchr(opent, 't')  ) error = gb_unfold(gbd, 0,-2); /* tiny */
+            else if (strchr(opent, 'm') ) error = gb_unfold(gbd, 1,-2); /* medium (no sequence)*/
+            else if (strchr(opent, 'b') ) error = gb_unfold(gbd, 2,-2); /* big (no tree)*/
+            else if (strchr(opent, 'h') ) error = gb_unfold(gbd,-1,-2); /* huge (all)*/
+            else error                          = gb_unfold(gbd, 0,-2); /* tiny */
+        }
     }
-    gbd->flags2.folded_container = 1;
-
-    if (    strchr(opent, 't')  ) gb_unfold(gbd,0,-2);  /* tiny */
-    else if (strchr(opent, 'm') ) gb_unfold(gbd,1,-2);  /* medium (no sequence)*/
-    else if (strchr(opent, 'b') ) gb_unfold(gbd,2,-2);  /* big (no tree)*/
-    else if (strchr(opent, 'h') ) gb_unfold(gbd,-1,-2); /* huge (all)*/
-    else gb_unfold(gbd,0,-2);   /* tiny */
-    return 0;
+    return error;
 }
 
 GBDATA *GB_login(const char *cpath,const char *opent,const char *user)
@@ -1538,15 +1535,14 @@ GBDATA *GB_login(const char *cpath,const char *opent,const char *user)
                         if (input){
                             time_of_quick_file = GB_time_of_file(quickFile);
                             if (time_of_main_file && time_of_quick_file < time_of_main_file){
-                                GB_export_error("Your main database file '%s' is newer than\n"
-                                                "   the changes file '%s'\n"
-                                                "   That is very strange and happens only if files where\n"
-                                                "   moved/copied by hand\n"
-                                                "   Your file '%s' may be an old relict,\n"
-                                                "   if you ran into problems now,delete it",
-                                                path,quickFile,quickFile);
-                                GB_print_error();
-                                GB_warning(GB_get_error());
+                                const char *warning = GBS_global_string("Your main database file '%s' is newer than\n"
+                                                                        "   the changes file '%s'\n"
+                                                                        "   That is very strange and happens only if files where\n"
+                                                                        "   moved/copied by hand\n"
+                                                                        "   Your file '%s' may be an old relict,\n"
+                                                                        "   if you ran into problems now,delete it",
+                                                                        path, quickFile, quickFile);
+                                GB_warning(warning);
                             }
                             i = gb_read_in_long(input, 0);
                             if ((i== 0x56430176) || (i == GBTUM_MAGIC_NUMBER) || (i == GBTUM_MAGIC_REVERSED))
@@ -1555,12 +1551,9 @@ GBDATA *GB_login(const char *cpath,const char *opent,const char *user)
                                 fclose (input);
 
                                 if (err) {
-                                    GB_ERROR suberr = GB_get_error();
-                                    if (!suberr) { suberr = "<no specified reason>"; }
-
                                     err_msg = GBS_global_string("Loading failed (file corrupt?)\n"
-                                                                "[Fail-Reason: '%s']\n", 
-                                                                suberr);
+                                                                "[Fail-Reason: '%s']\n",
+                                                                GB_await_error());
                                 }
                             }
                             else {

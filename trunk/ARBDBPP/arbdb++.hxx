@@ -73,7 +73,7 @@ class AD_ERR
 public:
     AD_ERR();               // create error
     AD_ERR(const char *errorstring); // create error
-    AD_ERR(const char *,const int core); // setzt den Fehler und bricht mit core ab falls core == CORE
+    AD_ERR(const char *, int core); // setzt den Fehler und bricht mit core ab falls core == CORE
     ~AD_ERR();
     char *show();   // returns the error text
 };

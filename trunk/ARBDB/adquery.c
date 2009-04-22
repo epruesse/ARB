@@ -848,12 +848,11 @@ static const char *shortenLongString(const char *str, size_t wanted_len) {
 }
 
 char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *commands, GBDATA *gbd, const char *default_tree_name) {
-    /* simple command interpreter returns NULL on error (+ GB_export_error) */
-    /* if first character is == ':' run string parser
-       if first character is == '/' run regexpr
-       else command interpreter
-
-    */
+    /* simple command interpreter returns NULL on error (+ GB_export_error) 
+     * if first character is == ':' run string parser
+     * if first character is == '/' run regexpr
+     * else command interpreter
+     */
     int           strmalloc = 0;
     int           len;
     char         *buffer;
