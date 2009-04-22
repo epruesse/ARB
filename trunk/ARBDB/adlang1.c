@@ -1683,7 +1683,7 @@ static struct cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *
         if (!*error) {
             GBDATA *gb_tree = GBT_get_tree(gb_main, tree_name);
             if (!gb_tree) {
-                *error = GB_export_error("Can't find 'tree_data'");
+                *error = GBS_global_string("Can't find tree '%s'", tree_name);
             }
             else {
                 struct cached_taxonomy *ct            = malloc(sizeof(*ct));

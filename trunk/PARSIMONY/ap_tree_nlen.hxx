@@ -68,11 +68,11 @@ public:
     int  Distance();
 
     // tree reconstruction methods:
-    GB_ERROR insert(AP_tree *new_brother);
-    GB_ERROR remove(void);
-    GB_ERROR swap_assymetric(AP_TREE_SIDE modus);
-    GB_ERROR move(AP_tree *new_brother,AP_FLOAT rel_pos);
-    GB_ERROR set_root();
+    void insert(AP_tree *new_brother);
+    void remove(void);
+    void swap_assymetric(AP_TREE_SIDE modus);
+    void moveTo(AP_tree *new_brother, AP_FLOAT rel_pos); // if unsure, use cantMoveTo to test if possible
+    void set_root();
 
     // tree optimization methods:
     void parsimony_rek();
@@ -211,7 +211,7 @@ public:
 
     // encapsulated AP_tree_nlen methods:
 
-    GB_ERROR set_root()                                         { return sonNode()->set_root(); }
+    void set_root()                                             { return sonNode()->set_root(); }
 
     // tree optimization:
 

@@ -206,6 +206,7 @@ class AP_tree_root {
 public:
     GBDATA  *gb_main;
     GBDATA  *gb_tree;
+    GBDATA  *gb_tree_gone; // if all leafes have been removed by tree operations, remember 'gb_tree' here (see inform_about_changed_root)
     GBDATA *gb_species_data;
     GBDATA *gb_table_data;
     long    tree_timer;
@@ -304,15 +305,14 @@ protected:
 
 public:
     GBT_TREE_ELEMENTS( AP_tree);
-    AP_tree_members gr;
-    AP_branch_members   br;
+    AP_tree_members    gr;
+    AP_branch_members  br;
+    AP_FLOAT           mutation_rate;
+    unsigned long      stack_level;
+    AP_tree_root      *tree_root;
+    AP_sequence       *sequence;
 
-    AP_FLOAT    mutation_rate;
-    unsigned long stack_level;
-    AP_tree_root    *tree_root;
-    AP_sequence     *sequence;
-
-    AP_tree(void);
+    AP_tree(AP_tree_root *tree_root);
 
     GBT_TREE *get_gbt_tree() { return (GBT_TREE*)this; }
 
@@ -329,23 +329,26 @@ public:
     GBT_LEN arb_tree_min_deep();
     GBT_LEN arb_tree_deep();
 
-    void    load_sequences_rek(char *use,GB_BOOL set_by_gbdata,GB_BOOL show_status) ;   // uses seq->filter
-    virtual void    parsimony_rek();
-    AP_tree(AP_tree_root    *tree_root);
-    virtual     AP_tree *dup(void);
+    void         load_sequences_rek(char *use,GB_BOOL set_by_gbdata,GB_BOOL show_status) ; // uses seq->filter
+    virtual void parsimony_rek();
 
-    virtual GB_ERROR insert(AP_tree *new_brother);
-    virtual GB_ERROR remove(void); // no delete of father
-    virtual GB_ERROR swap_assymetric(AP_TREE_SIDE modus); // 0 = AP_LEFT_son  1=AP_RIGHT_son
-    void             swap_sons(void); // exchange sons
-    virtual GB_ERROR move(AP_tree *new_brother,AP_FLOAT rel_pos); // move to new brother
-    virtual GB_ERROR set_root(void);
-    virtual void     delete_tree(void);
-    virtual GB_ERROR remove_leafs(GBDATA *gb_main,int awt_remove_type);
-    
+    virtual AP_tree *dup(void);
+
+    virtual void insert(AP_tree *new_brother);
+    virtual void remove(void);                      // no delete of father
+    virtual void swap_assymetric(AP_TREE_SIDE modus); // 0 = AP_LEFT_son  1=AP_RIGHT_son
+    void         swap_sons(void);                   // exchange sons
+
+    GB_ERROR     cantMoveTo(AP_tree *new_brother);  // use this to detect impossible moves
+    virtual void moveTo(AP_tree *new_brother,AP_FLOAT rel_pos); // move to new brother
+
+    virtual void set_root(void);
+    virtual void delete_tree(void);
+    virtual void remove_leafs(GBDATA *gb_main,int awt_remove_type);
+
     void remove_bootstrap(GBDATA *); // remove bootstrap values from subtree
     void reset_branchlengths(GBDATA *); // reset branchlengths of subtree to 0.1
-    void scale_branchlengths(GBDATA *gb_main, double factor); 
+    void scale_branchlengths(GBDATA *gb_main, double factor);
     void bootstrap2branchlen(GBDATA *); // copy bootstraps to branchlengths
     void branchlen2bootstrap(GBDATA *); // copy branchlengths to bootstraps
 
@@ -363,24 +366,21 @@ public:
 
     GB_ERROR load(AP_tree_root *tree_static,
                   bool link_to_database, bool insert_delete_cbs, bool show_status,
-                  int *zombies, int *duplicates);
+                  int *zombies, int *duplicates) __ATTR__USERESULT;
 
-    virtual GB_ERROR save(char *tree_name);
-    GB_ERROR relink( );
+    virtual GB_ERROR saveTree() __ATTR__USERESULT; 
+    GB_ERROR relink() __ATTR__USERESULT;
 
     virtual AP_UPDATE_FLAGS check_update();
 
-    virtual void    update();
+    virtual void update();
 
 
-    GB_ERROR buildLeafList(AP_tree **&list, long &num); // returns a list of leafs
-    GB_ERROR buildNodeList(AP_tree **&list, long &num); // returns a list of leafs
-    GB_ERROR buildBranchList(AP_tree **&list, long &num,    AP_BOOL create_terminal_branches,int deep);
-    // returns a pairs o leafs/father,
-    //          node/father
+    void buildLeafList(AP_tree **&list, long &num); // returns a list of leafs
+    void buildNodeList(AP_tree **&list, long &num); // returns a list of nodes (leafs and internal nodes, but not root)
+    void buildBranchList(AP_tree **&list, long &num, AP_BOOL create_terminal_branches, int deep);
 
-    AP_tree **getRandomNodes(int nnodes);
-    // returns a list of random nodes (no leafs)
+    AP_tree **getRandomNodes(int nnodes); // returns a list of random nodes (no leafs)
 
     AP_BOOL is_son(AP_tree *father);
     AP_tree *brother(void) const;
@@ -407,7 +407,7 @@ public:
         }
     }
 
-    GB_ERROR move_group_info(AP_tree *new_group);
+    GB_ERROR move_group_info(AP_tree *new_group) __ATTR__USERESULT;
     void     mark_duplicates(GBDATA *gb_main);
     void     mark_long_branches(GBDATA *gb_main, double min_rel_diff, double min_abs_diff);
     void     mark_deep_branches(GBDATA *gb_main,int rel_depth);

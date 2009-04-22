@@ -172,8 +172,8 @@ public:
     void      toggle_group(AP_tree * at);
     void      jump(AP_tree *at, const char *name);
     AP_tree  *search(AP_tree *root, const char *name);
-    GB_ERROR  load(GBDATA *gb_main, const char *name,AW_CL link_to_database, AW_CL insert_delete_cbs);
-    GB_ERROR  save(GBDATA *gb_main, const char *name,AW_CL cd1, AW_CL cd2);
+    GB_ERROR  load(GBDATA *gb_main, const char *name,AW_CL link_to_database, AW_CL insert_delete_cbs) __ATTR__USERESULT;
+    GB_ERROR  save(GBDATA *gb_main, const char *name,AW_CL cd1, AW_CL cd2) __ATTR__USERESULT;
     int       check_update(GBDATA *gb_main); // reload tree if needed
     void      update(GBDATA *gb_main);
     void      set_tree_type(AP_tree_sort type);

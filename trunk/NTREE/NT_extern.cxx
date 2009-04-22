@@ -761,7 +761,8 @@ void NT_justify_branch_lenghs(AW_window *, AW_CL cl_ntw, AW_CL){
     if (AWT_TREE(ntw)->tree_root){
         AWT_TREE(ntw)->tree_root->justify_branch_lenghs(ntw->gb_main);
         AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
-        AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
+        GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
+        if (error) aw_message(error);
         ntw->refresh();
     }
 }
@@ -796,7 +797,8 @@ void NT_pseudo_species_to_organism(AW_window *, AW_CL ntwcl){
         GB_HASH *organism_hash = GBT_create_organism_hash(ntw->gb_main);
         AWT_TREE(ntw)->tree_root->relink_tree(ntw->gb_main, relink_pseudo_species_to_organisms, organism_hash);
         AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
-        AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
+        GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
+        if (error) aw_message(error);
         ntw->refresh();
         GBS_free_hash(organism_hash);
     }
@@ -921,7 +923,7 @@ void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main) {
             GB_ERROR  error = 0;
             aw_status(t/double(treeCount));
             aw_status(tree_names[t]);
-            GBT_TREE *tree  = GBT_read_tree(gb_main, tree_names[t], -sizeof(GBT_TREE));
+            GBT_TREE *tree = GBT_read_tree(gb_main, tree_names[t], -sizeof(GBT_TREE));
             if (!tree) {
                 aw_message(GBS_global_string("Can't load tree '%s' - skipped", tree_names[t]));
             }

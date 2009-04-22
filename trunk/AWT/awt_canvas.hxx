@@ -111,8 +111,8 @@ public:
     virtual ~AWT_nonDB_graphic();
 
     // dummy functions, only spittings out warnings: 
-    GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2);
-    GB_ERROR save(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2);
+    GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) __ATTR__USERESULT;
+    GB_ERROR save(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) __ATTR__USERESULT;
     int  check_update(GBDATA *gb_main);
     void update(GBDATA *gb_main); 
 };
