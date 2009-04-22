@@ -352,7 +352,7 @@ static int awtc_next_file(void) {
                 mid_file_name  = GB_create_tempfile(mid_name);
                 free(mid_name);
 
-                if (!mid_file_name) error = GB_get_error();
+                if (!mid_file_name) error = GB_await_error();
             }
 
             if (!error) {
@@ -378,7 +378,7 @@ static int awtc_next_file(void) {
                 dest_file_name  = GB_create_tempfile(dest_name);
                 free(dest_name);
 
-                if (!dest_file_name) error = GB_get_error();
+                if (!dest_file_name) error = GB_await_error();
             }
             
             if (!error) {
@@ -408,11 +408,11 @@ static int awtc_next_file(void) {
 
         if (mid_file_name)  {
             gb_assert(GB_is_privatefile(mid_file_name, GB_FALSE));
-            if (GB_unlink(mid_file_name)<0 && !error) error = GB_get_error();
+            if (GB_unlink(mid_file_name)<0) aw_message(GB_await_error());
             free(mid_file_name);
         }
         if (dest_file_name) {
-            if (GB_unlink(dest_file_name)<0 && !error) error = GB_get_error();
+            if (GB_unlink(dest_file_name)<0) aw_message(GB_await_error());
             free(dest_file_name);
         }
 
@@ -699,10 +699,10 @@ GB_ERROR awtc_read_data(char *ali_name)
                         if (pl->srt){
                             bool   err_flag;
                             string expanded = expandSetVariables(variables, pl->srt, err_flag);
-                            if (err_flag) error = GB_get_error();
+                            if (err_flag) error = GB_await_error();
                             else {
                                 dele           = s = GBS_string_eval(dup,expanded.c_str(),gb_species);
-                                if (!s) error  = GB_get_error();
+                                if (!s) error  = GB_await_error();
                             }
                             if (error) what_error = "SRT";
                         }
@@ -712,12 +712,12 @@ GB_ERROR awtc_read_data(char *ali_name)
 
                         if (!error && pl->aci){
                             bool   err_flag;
-                            string expanded = expandSetVariables(variables, pl->aci, err_flag);
-                            if (err_flag) error = GB_get_error();
+                            string expanded     = expandSetVariables(variables, pl->aci, err_flag);
+                            if (err_flag) error = GB_await_error();
                             else {
                                 dup           = dele;
                                 dele          = s = GB_command_interpreter(GB_MAIN, s,expanded.c_str(),gb_species, 0);
-                                if (!s) error = GB_get_error();
+                                if (!s) error = GB_await_error();
                                 free(dup);
                             }
                             if (error) what_error = "ACI";
@@ -730,7 +730,7 @@ GB_ERROR awtc_read_data(char *ali_name)
                             {
                                 bool   err_flag;
                                 string expanded_field = expandSetVariables(variables, string(pl->append ? pl->append : pl->write), err_flag);
-                                if (err_flag) error   = GB_get_error();
+                                if (err_flag) error   = GB_await_error();
                                 else   field          = GBS_string_2_key(expanded_field.c_str());
                                 if (error) what_error = "APPEND or WRITE";
                             }
@@ -738,7 +738,7 @@ GB_ERROR awtc_read_data(char *ali_name)
                             if (!error && pl->tag) {
                                 bool   err_flag;
                                 string expanded_tag = expandSetVariables(variables, string(pl->tag), err_flag);
-                                if (err_flag) error = GB_get_error();
+                                if (err_flag) error = GB_await_error();
                                 else   tag          = GBS_string_2_key(expanded_tag.c_str());
                                 if (error) what_error = "TAG";
                             }
@@ -793,14 +793,14 @@ GB_ERROR awtc_read_data(char *ali_name)
             GBDATA *gb_data = GBT_add_data(gb_species,ali_name,"data", GB_STRING);
             if (ifo->sequencesrt) {
                 char *h = GBS_string_eval(sequence,ifo->sequencesrt,gb_species);
-                if (!h) return GB_get_error();
+                if (!h) return GB_await_error();
                 freeset(sequence, h);
             }
 
             if (ifo->sequenceaci) {
                 char *h = GB_command_interpreter(GB_MAIN, sequence,ifo->sequenceaci,gb_species, 0);
                 free(sequence);
-                if (!h) return GB_get_error();
+                if (!h) return GB_await_error();
                 sequence = h;
             }
 

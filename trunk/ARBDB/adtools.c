@@ -1560,7 +1560,9 @@ static GBT_TREE *read_tree_and_size_internal(GBDATA *gb_tree, GBDATA *gb_ctree, 
 }
 
 GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main,const char *tree_name, long structure_size, int *tree_size) {
-    /* read a tree from DB */
+    /* Read a tree from DB.
+     * In case of failure, return NULL (and export error) 
+     */
     GB_ERROR error = 0;
 
     if (!tree_name) {

@@ -1930,9 +1930,7 @@ static void aw_help_browse(AW_window *aww) {
         free(help_url);
     }
     else {
-        GB_ERROR err = GB_get_error();
-        if (!err) err = "Can't detect URL of help file";
-        aw_message(err);
+        aw_message(GBS_global_string("Can't detect URL of help file\n(Reason: %s)", GB_await_error()));
     }
 }
 
@@ -1957,7 +1955,7 @@ static void aw_help_search(AW_window *aww) {
                 free(helpname);
             }
 
-            if (!helpfilename) error = GB_get_error();
+            if (!helpfilename) error = GB_await_error();
             else {
                 const char *gen_help_tmpl = "cd %s;grep -i '^[^#]*%s' `find . -name \"*.hlp\"` | sed -e 'sI:.*IIg' -e 'sI^\\./IIg' | sort | uniq > %s";
                 char       *gen_help_cmd  = GBS_global_string_copy(gen_help_tmpl, GB_getenvDOCPATH(), searchtext, helpfilename);
@@ -1970,8 +1968,8 @@ static void aw_help_search(AW_window *aww) {
         }
 
         if (!error) {
-            char *result = GB_read_file(helpfilename);
-            if (!result) error = GB_get_error();
+            char *result       = GB_read_file(helpfilename);
+            if (!result) error = GB_await_error();
             else {
                 // write temporary helpfile containing links to matches as subtopics
 

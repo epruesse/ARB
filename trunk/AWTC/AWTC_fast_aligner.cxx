@@ -1258,12 +1258,9 @@ static GB_ERROR alignCompactedTo(AWTC_CompactedSubSequence     *toAlignSequence,
                 }
                 else {
                     if (ali_params.firstColumn!=0 || ali_params.lastColumn!=-1) { // we aligned just a part of the sequence
-                        char *buffer = GB_read_string(gbd);   // so we read old sequence data
-                        long  len    = GB_read_string_count(gbd);
-
-                        if (!buffer) {
-                            error = GB_get_error();
-                        }
+                        char *buffer       = GB_read_string(gbd); // so we read old sequence data
+                        long  len          = GB_read_string_count(gbd);
+                        if (!buffer) error = GB_await_error();
                         else {
                             int  lenToCopy     = ali_params.lastColumn-ali_params.firstColumn+1;
                             long wholeChksum   = calcSequenceChecksum(buffer,len);

@@ -259,7 +259,7 @@ string awt_script::get_value() const
 
         char *val = GB_command_interpreter(gb_main, species_name, script.c_str(), gbd, 0);
         if (!val) {
-            aw_message(GB_get_error());
+            aw_message(GB_await_error());
             result = "<error>";
         }
         else {

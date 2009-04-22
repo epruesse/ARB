@@ -252,7 +252,7 @@ static void GDE_export(NA_Alignment *dataset, char *align, long oldnumelements) 
 
     if (maxalignlen <= 0 && !error) {
         align             = GBT_get_default_alignment(GLOBAL_gb_main);
-        if (!align) error = GB_get_error();
+        if (!align) error = GB_await_error();
         else {
             isdefaultalign = 1;
             maxalignlen    = GBT_get_alignment_len(GLOBAL_gb_main, align);
@@ -442,7 +442,7 @@ static char *preCreateTempfile(const char *name) {
     // exits in case of error
     char *fullname = GB_create_tempfile(name);
 
-    if (!fullname) Error(GBS_global_string("preCreateTempfile: %s", GB_get_error())); // exits
+    if (!fullname) Error(GBS_global_string("preCreateTempfile: %s", GB_await_error())); // exits
     return fullname;
 }
 

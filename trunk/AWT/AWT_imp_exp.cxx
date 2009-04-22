@@ -255,10 +255,8 @@ GB_ERROR AWT_export_XML_tree(GBDATA *gb_main, const char *db_name, const char *t
     else {
         GB_transaction gb_dummy(gb_main);
 
-        GBT_TREE *tree = GBT_read_tree(gb_main,tree_name,sizeof(GBT_TREE));
-        if (!tree) {
-            error = GB_get_error();
-        }
+        GBT_TREE *tree   = GBT_read_tree(gb_main,tree_name,sizeof(GBT_TREE));
+        if (!tree) error = GB_await_error();
         else {
             error = GBT_link_tree(tree,gb_main,GB_TRUE, 0, 0);
             if (!error && use_NDS) make_node_text_init(gb_main);
@@ -299,10 +297,8 @@ GB_ERROR AWT_export_Newick_tree(GBDATA *gb_main, char *tree_name, AW_BOOL use_ND
     else {
         GB_transaction gb_dummy(gb_main);
 
-        GBT_TREE *tree = GBT_read_tree(gb_main,tree_name,sizeof(GBT_TREE));
-        if (!tree) {
-            error = GB_get_error();
-        }
+        GBT_TREE *tree   = GBT_read_tree(gb_main,tree_name,sizeof(GBT_TREE));
+        if (!tree) error = GB_await_error();
         else {
             error = GBT_link_tree(tree,gb_main,GB_TRUE, 0, 0);
             if (!error && use_NDS) make_node_text_init(gb_main);
@@ -316,14 +312,11 @@ GB_ERROR AWT_export_Newick_tree(GBDATA *gb_main, char *tree_name, AW_BOOL use_ND
                 else remark             = GBS_global_string_copy("ARB-tree '%s'", tree_name);
 
                 {
-                    char *escaped_remark = GBT_newick_comment(remark, GB_TRUE);
-
-                    if (escaped_remark) {
+                    char *escaped_remark       = GBT_newick_comment(remark, GB_TRUE);
+                    if (!escaped_remark) error = GB_await_error();
+                    else {
                         fprintf(output, "[%s]\n", escaped_remark);
                         free(escaped_remark);
-                    }
-                    else {
-                        error = GB_get_error();
                     }
                 }
                 free(remark);

@@ -142,21 +142,16 @@ static void fill_pt_server_selection_list(AW_window *aws, AW_selection_list *id)
     aws->clear_selection_list(id);
 
     const char * const *pt_servers = GBS_get_arb_tcp_entries("ARB_PT_SERVER*");
+
     int count = 0;
     while (pt_servers[count]) count++;
 
     for (int i=0; i<count; i++) {
         char *choice = GBS_ptserver_id_to_choice(i, 1);
         if (!choice) {
-            GB_ERROR error = GB_get_error();
-            if (!error) {
-                error = GBS_global_string("Failed to get pt-server id #%i (please report)", i);
-                gb_assert(0); // should not occur
-            }
-            aw_message(error);
+            aw_message(GB_await_error());
             break;
         }
-
         aws->insert_selection(id,choice,(long)i);
         free(choice);
     }
@@ -826,16 +821,14 @@ void AWT_edit(const char *path, awt_fileChanged_cb callback, AW_window *aww, GBD
 
         cb_data = new fileChanged_cb_data(&fpath, callback); // fpath now is 0 and belongs to cb_data
 
-        char *arb_notify = GB_generate_notification(gb_main, editor_terminated_cb, "editor terminated", (void*)cb_data);
-        if (arb_notify) {
+        char *arb_notify       = GB_generate_notification(gb_main, editor_terminated_cb, "editor terminated", (void*)cb_data);
+        if (!arb_notify) error = GB_await_error();
+        else {
             char *arb_message = GBS_global_string_copy("arb_message \"Could not start editor '%s'\"", editor);
-            
+
             command = GBS_global_string_copy("((%s %s || %s); %s)&", editor, cb_data->fpath, arb_message, arb_notify);
             free(arb_message);
             free(arb_notify);
-        }
-        else {
-            error = GB_get_error();
         }
     }
     else {
@@ -843,12 +836,11 @@ void AWT_edit(const char *path, awt_fileChanged_cb callback, AW_window *aww, GBD
     }
 
     if (command) {
-        GB_information("Executing '%s'", command);
-        if (system(command) != 0) {
-            aw_message(GBS_global_string("Could not start editor command '%s'", command));
-            if (callback) {
-                error = GB_remove_last_notification(gb_main);
-            }
+        awt_assert(!error);
+        error = GB_system(command);
+        if (error) {
+            aw_message(error); error = NULL;
+            if (callback) error = GB_remove_last_notification(gb_main);
         }
         else { // sucessfully started editor
             // Can't be sure editor really started when callback is used (see command above).
@@ -862,9 +854,7 @@ void AWT_edit(const char *path, awt_fileChanged_cb callback, AW_window *aww, GBD
         }
     }
 
-    if (error) {
-        aw_message(error);
-    }
+    if (error) aw_message(error);
 
     free(command);
     delete cb_data;

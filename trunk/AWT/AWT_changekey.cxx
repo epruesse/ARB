@@ -73,16 +73,16 @@ GB_ERROR awt_add_new_changekey_to_keypath(GBDATA *gb_main,const char *name, int 
         if (!gb_key) {          // create new key
             GBDATA *gb_key_data = GB_search(gb_main, keypath, GB_CREATE_CONTAINER);
             gb_key              = gb_key_data ? GB_create_container(gb_key_data, CHANGEKEY) : 0;
-
-            if (!gb_key) error = GB_get_error();
+            if (!gb_key) error  = GB_await_error();
             else {
-                error = GBT_write_string(gb_key, CHANGEKEY_NAME, name);
+                error             = GBT_write_string(gb_key, CHANGEKEY_NAME, name);
                 if (!error) error = GBT_write_int(gb_key, CHANGEKEY_TYPE, type);
             }
         }
         else {                  // check type of existing key
-            long *elem_type = GBT_read_int(gb_key, CHANGEKEY_TYPE);
-            if (*elem_type != type) error = GBS_global_string("Key '%s' exists, but has different type", name);
+            long *elem_type                     = GBT_read_int(gb_key, CHANGEKEY_TYPE);
+            if (!elem_type) error               = GB_await_error();
+            else  if (*elem_type != type) error = GBS_global_string("Key '%s' exists, but has different type", name);
         }
     }
 

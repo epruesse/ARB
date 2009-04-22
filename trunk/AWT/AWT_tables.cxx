@@ -155,7 +155,7 @@ void ad_table_field_create_cb(AW_window *aws,awt_table *awtt)   {
         GB_TYPES type = (GB_TYPES)aws->get_root()->awar(awtt->awar_field_new_type)->read_int();
         if(!error) {
             GBDATA *gb_table_field = GBT_open_table_field(gb_table, name, type);
-            if (!gb_table_field) error = GB_get_error();
+            if (!gb_table_field) error = GB_await_error();
         }
     }
     else {
@@ -369,7 +369,7 @@ void table_rename_cb(AW_window *aww,GBDATA *gb_main){
         if (gb_table){
             GBDATA *gb_name = GB_search(gb_table,"name",GB_STRING);
             
-            if (!gb_name) error = GB_get_error();
+            if (!gb_name) error = GB_await_error();
             else error          = GB_write_string(gb_name,dest);
         }
     }
@@ -412,8 +412,8 @@ void table_create_cb(AW_window *aww,GBDATA *gb_main){
     if (!error) {
         error = GB_check_key(dest);
         if (!error){
-            GBDATA *gb_table = GBT_open_table(gb_main,dest,GB_FALSE);
-            if (!gb_table) error = GB_get_error();
+            GBDATA *gb_table     = GBT_open_table(gb_main,dest,GB_FALSE);
+            if (!gb_table) error = GB_await_error();
         }
     }
     error = GB_end_transaction(gb_main, error);

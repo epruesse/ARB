@@ -281,33 +281,33 @@ const char *GBS_scan_arb_tcp_param(const char *ipPort, const char *wantedParam) 
             Find an entry in the $ARBHOME/lib/arb_tcp.dat file
 ********************************************************************************************/
 
-/* Be aware: GBS_read_arb_tcp returns a quite unusual string containing several string delimiters (0-characters).
-   It contains all words (separated by space or tab in arb_tcp.dat) of the corresponding line in arb_tcp.dat.
-   These words get concatenated (separated by 0 characters).
-
-   The first word (which matches the parameter env) is skipped.
-   The second word (the socket info = "host:port") is returned directly as result.
-   The third word is the server executable name.
-   Thr fourth and following words are parameters to the executable. 
-
-   To access these words follow this example:
-
-   const char *ipPort    = GBS_read_arb_tcp("ARB_NAME_SERVER");
-   if (ipPort) {
-   const char *serverExe = strchr(ipPort, 0)+1;
-   const char *para1     = strchr(serverExe, 0)+1; // always exists!
-   const char *para2     = strchr(para1, 0)+1;
-   if (para2[0]) {
-   // para2 exists
-   }
-   }
-
-   see also GBS_read_arb_tcp_param() above
-
-   Returns NULL on error (which is exported in that case)
-*/
-
 const char *GBS_read_arb_tcp(const char *env) {
+    /* Be aware: GBS_read_arb_tcp returns a quite unusual string containing several string delimiters (0-characters).
+     * It contains all words (separated by space or tab in arb_tcp.dat) of the corresponding line in arb_tcp.dat.
+     * These words get concatenated (separated by 0 characters).
+     *
+     * The first word (which matches the parameter env) is skipped.
+     * The second word (the socket info = "host:port") is returned directly as result.
+     * The third word is the server executable name.
+     * The fourth and following words are parameters to the executable. 
+     *
+     * To access these words follow this example:
+     *
+     * const char *ipPort = GBS_read_arb_tcp("ARB_NAME_SERVER");
+     * if (ipPort) {
+     *     const char *serverExe = strchr(ipPort, 0)+1;
+     *     const char *para1     = strchr(serverExe, 0)+1; // always exists!
+     *     const char *para2     = strchr(para1, 0)+1;
+     *     if (para2[0]) {
+     *         // para2 exists
+     *     }
+     * }
+     *
+     * see also GBS_read_arb_tcp_param() above
+     *
+     * Returns NULL on error (which is exported in that case)
+     */
+
     const char *result = 0;
     GB_ERROR    error  = 0;
 
@@ -414,8 +414,10 @@ void GBS_add_ptserver_logentry(const char *entry) {
 
 char *GBS_ptserver_id_to_choice(int i, int showBuild) {
     /* Return a readable name for PTserver number 'i'
-       if 'showBuild' then show build info as well
-    */
+     * If 'showBuild' then show build info as well.
+     *
+     * Return NULL in case of error (which was exported then)
+     */
     char       *serverID = GBS_global_string_copy("ARB_PT_SERVER%i", i);
     const char *ipPort   = GBS_read_arb_tcp(serverID);
     char       *result   = 0;

@@ -60,9 +60,7 @@ GB_ERROR AWTC_FIND_FAMILY::open(char *servername) {
     }
     else {
         const char *socketid = GBS_read_arb_tcp(servername);
-        if (!socketid) {
-            error = GB_get_error();
-        }
+        if (!socketid) error = GB_await_error();
         else {
             link = (aisc_com *)aisc_open(socketid, &com, AISC_MAGIC_NUMBER);
             if (!link) error = "Cannot contact PT server [1]";
