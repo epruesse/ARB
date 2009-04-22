@@ -306,23 +306,20 @@ GB_ERROR pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
                 gene_name = GB_read_char_pntr(gb_gene_name);
             }
 
-            long CheckSum;
             {
                 char *gene_seq       = GBT_read_gene_sequence(gb_gene, GB_FALSE, 0);
                 if (!gene_seq) error = GB_await_error();
                 else {
-                    CheckSum = GBS_checksum(gene_seq, 1, ".-");
+                    long        CheckSum = GBS_checksum(gene_seq, 1, ".-");
+                    const char *id       = GBS_global_string("%s/%s", species_name, gene_name);
+
+                    GBS_intcat(checksums, CheckSum);
+                    GBS_strcat(names, id);
+                    GBS_chrcat(checksums, '#');
+                    GBS_chrcat(names, '#');
+                    
                     free(gene_seq);
                 }
-            }
-
-            if (!error) {
-                const char *id = GBS_global_string("%s/%s", species_name, gene_name);
-
-                GBS_intcat(checksums, CheckSum);
-                GBS_strcat(names, id);
-                GBS_chrcat(checksums, '#');
-                GBS_chrcat(names, '#');
             }
         }
     }
