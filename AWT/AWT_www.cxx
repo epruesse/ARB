@@ -61,7 +61,7 @@ GB_ERROR awt_openURL(AW_root *aw_root, GBDATA *gb_main, const char *url) {
 
     if (gb_main) {
         if (GBCMC_system(gb_main, browser)) {
-            error = GB_get_error();
+            error = GB_await_error();
         }
     }
     else {
@@ -82,7 +82,7 @@ GB_ERROR awt_open_ACISRT_URL_by_gbd(AW_root *aw_root,GBDATA *gb_main, GBDATA *gb
     GB_transaction  tscope(gb_main);
     char           *url   = GB_command_interpreter(gb_main,name,url_srt,gbd, 0);
 
-    if (!url) error = GB_get_error();
+    if (!url) error = GB_await_error();
     else error      = awt_openURL(aw_root, gb_main, url);
 
     free(url);

@@ -386,7 +386,7 @@ void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw) {
             dest       = GB_create_tempfile(name);
             free(name);
 
-            if (!dest) error = GB_get_error();
+            if (!dest) error = GB_await_error();
             break;
         }
     }
@@ -403,7 +403,7 @@ void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw) {
 
         aw_openstatus("Printing");
 
-        if (!xfig) error = GB_get_error();
+        if (!xfig) error = GB_await_error();
         else {
             device->reset();
             ntw->init_device(device);  // draw screen
@@ -491,7 +491,11 @@ void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw) {
                         error     = GB_system(GBS_global_string("%s %s", prt, dest));
                         free(prt);
 
-                        if (GB_unlink(dest)<0 && !error) error = GB_get_error();
+                        if (GB_unlink(dest)<0) {
+                            GB_ERROR err2 = GB_await_error();
+                            if (error) fprintf(stderr, "ARB-Error: %s", err2);
+                            else error = err2;
+                        }
                         break;
                     }
                 }
@@ -499,7 +503,11 @@ void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw) {
         }
         aw_closestatus();
 
-        if (GB_unlink(xfig)<0 && !error) error = GB_get_error();
+        if (GB_unlink(xfig)<0) {
+            GB_ERROR err2 = GB_await_error();
+            if (error) fprintf(stderr, "ARB-Error: %s", err2);
+            else error = err2;
+        }
         free(xfig);
     }
 

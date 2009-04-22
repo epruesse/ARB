@@ -179,7 +179,7 @@ void awt_aps_go(AW_window *aww){
 
         GB_ERROR error = NULL;
         if (!tmpf){
-            error = GBS_global_string("awt_aps_go: %s", GB_get_error());
+            error = GBS_global_string("awt_aps_go: %s", GB_await_error());
         }
         else {
             char *y_begin = text;
@@ -279,7 +279,7 @@ void awt_aps_go(AW_window *aww){
                         free(name_only);
                     }
 
-                    if (!tmp_file2) error = GB_get_error();
+                    if (!tmp_file2) error = GB_await_error();
                     else {
                         scall = GBS_global_string("%s >%s;(%s %s;rm -f %s %s)&",
                                                   a2ps_call, tmp_file2,
@@ -430,9 +430,10 @@ void AWT_create_ascii_print_window(AW_root *awr, const char *text_to_print,const
 void AWT_show_file(AW_root *awr, const char *filename){
     char *text = GB_read_file(filename);
     if (!text){
-        aw_message(GB_get_error());
-        return;
+        aw_message(GB_await_error());
     }
-    AWT_create_ascii_print_window(awr,text, filename);
-    delete text;
+    else {
+        AWT_create_ascii_print_window(awr, text, filename);
+        free(text);
+    }
 }

@@ -116,16 +116,15 @@ void AW_awar::get( float *p_float ) {
         if (!gb_var) return AW_MSG_UNMAPPED_AWAR;       \
         GB_transaction ta(gb_var);                      \
         AWAR_CHANGE_DUMP(awar_name, #self, format);     \
-        if ( func(gb_var, para)) return GB_get_error(); \
-        return 0;                                       \
+        return func(gb_var, para);                      \
     }                                                   \
     GB_ERROR AW_awar::concat(re, self)(type para) {     \
         if (!gb_var) return AW_MSG_UNMAPPED_AWAR;       \
         GB_transaction ta(gb_var);                      \
         AWAR_CHANGE_DUMP(awar_name, #self, format);     \
-        if (func(gb_var, para)) return GB_get_error();  \
+        GB_ERROR       error = func(gb_var, para);      \
         GB_touch(gb_var);                               \
-        return 0;                                       \
+        return error;                                   \
     }
 
 WRITE_SKELETON(write_string, const char*, "%s", GB_write_string) // defines rewrite_string
@@ -395,7 +394,7 @@ void AW_awar::update(void)
                 str = this->read_string();
                 char *n;
                 n = GBS_string_eval(str,pp.srt,0);
-                if (!n) AW_ERROR("SRT ERROR %s %s",pp.srt,GB_get_error());
+                if (!n) AW_ERROR("SRT ERROR %s %s", pp.srt, GB_await_error());
                 else{
                     if (strcmp(n,str)) {
                         this->write_string(n);

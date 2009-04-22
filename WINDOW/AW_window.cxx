@@ -3574,7 +3574,7 @@ GB_ERROR AW_root::check_for_remote_command(AW_default gb_maind, const char *rm_b
             GBT_write_string(gb_main, awar_result, "");
         } else {
             aw_message(GB_export_error("Unknown action '%s' in macro", action));
-            GBT_write_string(gb_main, awar_result, GB_get_error());
+            GBT_write_string(gb_main, awar_result, GB_await_error());
         }
         GBT_write_string(gb_main, awar_action, ""); // this works as READY-signal for perl-client (remote_action)
     }

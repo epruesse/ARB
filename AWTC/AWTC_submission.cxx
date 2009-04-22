@@ -148,8 +148,9 @@ static void ed_submit_info_event(AW_window *aww) {
         if (seq_info) {
             GBS_strcat(strstruct, seq_info);
             free(seq_info);
-        }else{
-            aw_message(GB_get_error());
+        }
+        else {
+            aw_message(GB_await_error());
         }
     }else{
         GBS_strcat(strstruct,"Species not found");
@@ -194,7 +195,7 @@ static void ed_submit_parse_event(AW_window *aww)
     char *source = GB_read_file(sub_file);
     if (source) {
         dest = GBS_string_eval(source,parser,0);
-        if (!dest) dest = strdup(GB_get_error());
+        if (!dest) dest = strdup(GB_await_error());
     }
     else {
         dest = strdup("submission form not found");
@@ -212,7 +213,7 @@ static void ed_submit_parse_event(AW_window *aww)
     *d = 0;
 
     dest2             = GBS_string_eval(dest,privat,0);
-    if (!dest2) dest2 = strdup(GB_get_error());
+    if (!dest2) dest2 = strdup(GB_await_error());
 
     aw_root->awar(AWAR_PARSED)->write_string(dest2);
 

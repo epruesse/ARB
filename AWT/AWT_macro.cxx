@@ -33,7 +33,7 @@ static void awt_delete_macro_cb(AW_window *aww){
     AW_root *awr = aww->get_root();
     char    *mn  = awt_get_selected_fullname(awr, AWAR_MACRO_BASE);
 
-    if (GB_unlink(mn)<0) aw_message(GB_get_error());
+    if (GB_unlink(mn)<0) aw_message(GB_await_error());
     else awt_refresh_selection_box(awr, AWAR_MACRO_BASE);
 
     free(mn);

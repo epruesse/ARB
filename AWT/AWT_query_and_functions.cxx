@@ -1255,7 +1255,7 @@ void awt_do_pars_list(void *dummy, struct adaqbsstruct *cbs)
         if (!error) {
             gb_key_type = GB_brother(gb_key_name,CHANGEKEY_TYPE);
             
-            if (!gb_key_type) error = GB_get_error();
+            if (!gb_key_type) error = GB_await_error();
             else {
                 if (GB_read_int(gb_key_type)!=GB_STRING &&
                     aw_question("Writing to a non-STRING database field may lead to conversion problems.", "Abort,Continue")==0)
@@ -1298,39 +1298,23 @@ void awt_do_pars_list(void *dummy, struct adaqbsstruct *cbs)
                             break;
                         }
                         GBDATA *gb_new = GB_search(gb_item, key,GB_FIND);
-                        char   *str;
-                        
-                        if (gb_new) {
-                            str = GB_read_as_string(gb_new);
-                        }
-                        else {
-                            str = strdup("");
-                        }
-                        char *parsed = 0;
+                        char   *str    = gb_new ? GB_read_as_string(gb_new) : strdup("");
+                        char   *parsed = 0;
+
                         if (double_pars) {
                             char *com2 = GB_command_interpreter(cbs->gb_main, str,command,gb_item, cbs->tree_name);
                             if (com2) {
-                                if (tag) {
-                                    parsed = GBS_string_eval_tagged_string(cbs->gb_main, "",deftag,tag,0,com2,gb_item);
-                                }
-                                else {
-                                    parsed = GB_command_interpreter(cbs->gb_main, "",com2,gb_item, cbs->tree_name);
-                                }
+                                if (tag) parsed = GBS_string_eval_tagged_string(cbs->gb_main, "", deftag, tag, 0, com2, gb_item);
+                                else parsed     = GB_command_interpreter       (cbs->gb_main, "", com2, gb_item, cbs->tree_name);
                             }
                             free(com2);
                         }
                         else {
-                            if (tag) {
-                                parsed = GBS_string_eval_tagged_string(cbs->gb_main, str,deftag,tag,0,command,gb_item);
-                            }
-                            else {
-                                parsed = GB_command_interpreter(cbs->gb_main, str,command,gb_item, cbs->tree_name);
-                            }
+                            if (tag) parsed = GBS_string_eval_tagged_string(cbs->gb_main, str, deftag, tag, 0, command,gb_item);
+                            else parsed     = GB_command_interpreter       (cbs->gb_main, str, command, gb_item, cbs->tree_name);
                         }
 
-                        if (!parsed) {
-                            error = GB_get_error();
-                        }
+                        if (!parsed) error = GB_await_error();
                         else {
                             if (strcmp(parsed, str) != 0) { // any change?
                                 if (gb_new && parsed[0] == 0) { // empty result -> delete field
@@ -1339,7 +1323,7 @@ void awt_do_pars_list(void *dummy, struct adaqbsstruct *cbs)
                                 else {
                                     if (!gb_new) {
                                         gb_new = GB_search(gb_item, key, GB_read_int(gb_key_type));
-                                        if (!gb_new) error = GB_get_error();
+                                        if (!gb_new) error = GB_await_error();
                                     }
                                     if (!error) error = GB_write_as_string(gb_new, parsed);
                                 }
@@ -1672,7 +1656,7 @@ static void awt_loadsave_colorset(AW_window *aws, AW_CL cl_csd, AW_CL cl_mode) {
         if (mode == 0) {        // save-mode
             if (!gb_colorset) { // create new (otherwise overwrite w/o comment)
                 gb_colorset             = GB_create_container(gb_colorset_root, "colorset");
-                if (!gb_colorset) error = GB_get_error();
+                if (!gb_colorset) error = GB_await_error();
                 else error              = GBT_write_string(gb_colorset, "name", name);
             }
             if (!error) {
@@ -1695,7 +1679,7 @@ static void awt_loadsave_colorset(AW_window *aws, AW_CL cl_csd, AW_CL cl_mode) {
                     }
                     else {
                         const char *colorset = GB_read_char_pntr(gb_set);
-                        if (!colorset) error = GB_get_error();
+                        if (!colorset) error = GB_await_error();
                         else {
                             if (mode == 1) { // load => clear all colors
                                 error = clear_all_colors(csd);
@@ -1990,10 +1974,8 @@ void awt_do_set_list(void *, struct adaqbsstruct *cbs, long append) {
 
     GBDATA *gb_key_type;
     {
-        GBDATA *gb_key_data = GB_search(cbs->gb_main, cbs->selector->change_key_path, GB_CREATE_CONTAINER);
-        if (!gb_key_data) {
-            error = GB_get_error();
-        }
+        GBDATA *gb_key_data     = GB_search(cbs->gb_main, cbs->selector->change_key_path, GB_CREATE_CONTAINER);
+        if (!gb_key_data) error = GB_await_error();
         else {
             GBDATA *gb_key_name = GB_find_string(gb_key_data,CHANGEKEY_NAME,key,GB_IGNORE_CASE,down_2_level);
             if (!gb_key_name) {
@@ -2001,7 +1983,7 @@ void awt_do_set_list(void *, struct adaqbsstruct *cbs, long append) {
             }
             else {
                 gb_key_type = GB_brother(gb_key_name,CHANGEKEY_TYPE);
-                if (!gb_key_type) error = GB_get_error();
+                if (!gb_key_type) error = GB_await_error();
             }
         }
     }
@@ -2045,7 +2027,7 @@ void awt_do_set_list(void *, struct adaqbsstruct *cbs, long append) {
                 else {
                     gb_new = GB_search(gb_item, key, GB_read_int(gb_key_type));
 
-                    if (!gb_new) error = GB_get_error();
+                    if (!gb_new) error = GB_await_error();
                     else error         = GB_write_as_string(gb_new,value);
                 }
             }

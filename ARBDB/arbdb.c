@@ -2258,12 +2258,10 @@ int GB_read_flag(GBDATA *gbd)
             touch entry
 ********************************************************************************************/
 
-
-GB_ERROR GB_touch(GBDATA *gbd) {
+void GB_touch(GBDATA *gbd) {
     GB_TEST_TRANSACTION(gbd);
     gb_touch_entry(gbd,gb_changed);
     GB_DO_CALLBACKS(gbd);
-    return 0;
 }
 
 

@@ -498,12 +498,9 @@ static GB_ERROR AWTI_XML_recursive(GBDATA *gbd) {
 }
 
 static GB_ERROR export_species_using_form(FILE *out, GBDATA *gb_species, const char *form) {
-    GB_ERROR  error = NULL;
-    char     *pars  = GBS_string_eval(" ", form, gb_species);
-
-    if (!pars) {
-        error = GB_get_error();
-    }
+    GB_ERROR  error  = NULL;
+    char     *pars   = GBS_string_eval(" ", form, gb_species);
+    if (!pars) error = GB_await_error();
     else {
         char *p;
         char *o = pars;
@@ -563,7 +560,11 @@ static GB_ERROR AWTI_export_format(AW_root *aw_root, const char *formname, const
                 aw_status(GBS_global_string("exec '%s'", efo.system));
                 error = GB_system(sys);
 
-                if (GB_unlink(intermediate_export)<0 && !error) error = GB_get_error();
+                if (GB_unlink(intermediate_export)<0) {
+                    GB_ERROR err2 = GB_await_error();
+                    if (error) aw_message(err2);
+                    else error = err2;
+                }
 
                 aw_status(1 - double(export_depth-1)/export_depth_max);
 
@@ -751,14 +752,12 @@ void AWTC_create_export_awars(AW_root *awr, AW_default def) {
     awr->awar_int(AWAR_EXPORT_CUTSTOP, 0, def); // dont cut stop-codon
 }
 
-static char *get_format_default_suffix(const char *formname) {
+static char *get_format_default_suffix(const char *formname, GB_ERROR& error) {
     export_format efs;
-    GB_ERROR      error = awtc_read_export_format(&efs, formname, false);
-    if (error) {
-        GB_export_error(error);
-        return NULL;
-    }
-    return efs.suffix ? strdup(efs.suffix) : NULL;
+    error = awtc_read_export_format(&efs, formname, false);
+
+    if (!error && efs.suffix) return strdup(efs.suffix);
+    return NULL;
 }
 
 static void export_form_changed_cb(AW_root *aw_root) {
@@ -774,13 +773,10 @@ static void export_form_changed_cb(AW_root *aw_root) {
 
     if (current_format) {
         if (GB_is_regularfile(current_format)) {
-            char *current_suffix = get_format_default_suffix(current_format);
-
-            if (!current_suffix) {
-                error = GB_get_error(); // if no suffix defined in format -> no error
-            }
-
+            char *current_suffix = get_format_default_suffix(current_format, error);
             if (!error) {
+                // Note: current_suffix may be NULL.. is that ok? 
+            
                 // modify export filename and view
 
                 AW_awar *awar_filter = aw_root->awar(AWAR_EXPORT_FILE"/filter");
