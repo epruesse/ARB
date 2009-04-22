@@ -2954,6 +2954,9 @@ void AW_window::insert_sub_menu(const char *smenu_id, AW_label name,
 
     if (p_w->menu_deep < AW_MAX_MENU_DEEP-1) p_w->menu_deep++;
 
+    if(!(Mask&get_root()->global_mask)) {
+        XtSetSensitive( Label, False );
+    }
     AW_INSERT_BUTTON_IN_SENS_LIST ( root, smenu_id, Mask, Label );
 }
 

@@ -17,6 +17,7 @@ AW_at::AW_at(void) {
     memset((char*)this,0,sizeof(AW_at));
     length_of_buttons = 10;
     shadow_thickness = 2;
+    mask_for_next_button = AWM_ALL;
 }
 
 

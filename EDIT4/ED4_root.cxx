@@ -1496,7 +1496,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->insert_menu_topic ( "load_config", "Load Configuration", "L", "No Help", AWM_ALL, AW_POPUP, (AW_CL)ED4_start_editor_on_old_configuration, 0);
     awmm->insert_menu_topic ( "reload_config", "Reload Configuration", "R", "No Help", AWM_ALL, ED4_restart_editor, 0, 0);
     SEP________________________SEP;
-    GDE_load_menu(awmm,"pretty_print");
+    GDE_load_menu(awmm,AWM_ALL,"pretty_print");
     SEP________________________SEP;
 
     if (ED4_window::no_of_windows == 1) {                           // this is the first window
@@ -1552,11 +1552,11 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     SEP________________________SEP;
     awmm->insert_menu_topic("fast_aligner",INTEGRATED_ALIGNERS_TITLE " [Ctrl-A]","I","faligner.hlp",AWM_ALL,AW_POPUP,(AW_CL)ED4_create_faligner_window,(AW_CL)&faligner_client_data);
     awmm->insert_menu_topic("fast_align_set_ref", "Set Aligner Reference [Ctrl-R]","","faligner.hlp",AWM_ALL, (AW_CB)AWTC_set_reference_species_name, (AW_CL)aw_root, 0);
-    awmm->insert_menu_topic("align_sequence","Old Aligner From ARB_EDIT", "O","ne_align_seq.hlp", AWM_ALL,AW_POPUP, (AW_CL)create_naligner_window, 0 );
+    awmm->insert_menu_topic("align_sequence","Old Aligner From ARB_EDIT", "O","ne_align_seq.hlp", AWM_EXP,AW_POPUP, (AW_CL)create_naligner_window, 0 );
     awmm->insert_menu_topic("graph_aligner","SILVA Aligner (SINA)", "", "galign_main.hlp", galign_mask(), show_galigner_window, (AW_CL)&faligner_client_data, 0);
     awmm->insert_menu_topic("del_ali_tmp", "Remove All Aligner Entries", "R", 0, AWM_ALL, ED4_remove_faligner_entries, 1, 0);
     SEP________________________SEP;
-    awmm->insert_menu_topic("missing_bases", "Dot potentially missing bases", "D", "missbase.hlp", AWM_ALL, ED4_popup_dot_missing_bases_window, 0, 0);
+    awmm->insert_menu_topic("missing_bases", "Dot potentially missing bases", "D", "missbase.hlp", AWM_EXP, ED4_popup_dot_missing_bases_window, 0, 0);
     SEP________________________SEP;
     awmm->insert_menu_topic("sec_edit", "Edit Secondary Structure", "", 0, AWM_ALL, ED4_SECEDIT_start, (AW_CL)GLOBAL_gb_main, 0);
 
@@ -1604,10 +1604,10 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->insert_menu_topic( "show_all", "Show all bases ", "a",     "set_reference.hlp",    AWM_ALL, ED4_set_reference_species, 1, 0 );
     awmm->insert_menu_topic( "show_diff", "Show only differences to selected","d","set_reference.hlp", AWM_ALL, ED4_set_reference_species, 0, 0 );
     SEP________________________SEP;
-    awmm->insert_menu_topic( "enable_col_stat", "Activate column statistics", "v", "st_ml.hlp",AWM_ALL,ED4_activate_col_stat, 0, 0);
-    awmm->insert_menu_topic( "disable_col_stat", "Disable column statistics", "i", "st_ml.hlp",AWM_ALL,disable_col_stat, 0, 0);
-    awmm->insert_menu_topic( "detail_col_stat", "Detailed column statistics", "c", "st_ml.hlp",AWM_ALL, ED4_show_detailed_column_stats, 0, 0);
-    awmm->insert_menu_topic( "dcs_threshold", "Set threshold for D.c.s.", "f", "st_ml.hlp",AWM_ALL, ED4_set_col_stat_threshold, 1, 0);
+    awmm->insert_menu_topic( "enable_col_stat", "Activate column statistics", "v", "st_ml.hlp",AWM_EXP,ED4_activate_col_stat, 0, 0);
+    awmm->insert_menu_topic( "disable_col_stat", "Disable column statistics", "i", "st_ml.hlp",AWM_EXP,disable_col_stat, 0, 0);
+    awmm->insert_menu_topic( "detail_col_stat", "Detailed column statistics", "c", "st_ml.hlp",AWM_EXP, ED4_show_detailed_column_stats, 0, 0);
+    awmm->insert_menu_topic( "dcs_threshold", "Set threshold for D.c.s.", "f", "st_ml.hlp",AWM_EXP, ED4_set_col_stat_threshold, 1, 0);
     SEP________________________SEP;
     awmm->insert_menu_topic( "visulize_SAI", "Visualize SAIs", "z", "visualizeSAI.hlp", AWM_ALL,AW_POPUP,(AW_CL)ED4_createVisualizeSAI_window, 0 );
     // Enable ProteinViewer only for DNA sequence type
@@ -1681,14 +1681,14 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
         }
 
         const char *entry = GBS_global_string("Save loaded Properties (~/%s)", db_name);
-        awmm->insert_menu_topic("save_loaded_props", entry, "l", "e4_defaults.hlp", AWM_EXP, ED4_save_defaults, (AW_CL)default_mode, 0);
+        awmm->insert_menu_topic("save_loaded_props", entry, "l", "e4_defaults.hlp", AWM_ALL, ED4_save_defaults, (AW_CL)default_mode, 0);
         SEP________________________SEP;
 
         for (int mode = 2; mode >= 0; --mode) {
             char hotkey[] = "x";
             hotkey[0]     = "Pta"[mode];
             entry         = GBS_global_string("Save %sProperties (~/%s)", entry_type[mode], ED4_propertyName(mode));
-            awmm->insert_menu_topic(tag[mode], entry, hotkey, "e4_defaults.hlp", mode == 2 ? AWM_ALL : AWM_EXP, ED4_save_defaults, (AW_CL)mode, 0);
+            awmm->insert_menu_topic(tag[mode], entry, hotkey, "e4_defaults.hlp", AWM_ALL, ED4_save_defaults, (AW_CL)mode, 0);
         }
     }
     awmm->close_sub_menu();

@@ -2510,7 +2510,7 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
         aws->callback((AW_CB)awt_do_query,(AW_CL)cbs,AWT_EXT_QUERY_NONE);
         aws->create_button("SEARCH", "Search");
     }
-    if (awtqs->do_refresh_pos_fig && !GB_NOVICE){
+    if (awtqs->do_refresh_pos_fig){
         aws->at(awtqs->do_refresh_pos_fig);
         aws->callback((AW_CB1)awt_query_update_list,(AW_CL)cbs);
         aws->create_button("REFRESH_HITLIST", "REFRESH","R");
@@ -2533,7 +2533,7 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
         aws->callback((AW_CB)awt_delete_species_in_list,(AW_CL)cbs,0);
         aws->create_button("DELETE_LISTED","Delete Listed","D");
     }
-    if (awtqs->do_set_pos_fig && !GB_NOVICE){
+    if (awtqs->do_set_pos_fig){
         sprintf(buffer,"tmp/arbdb_query_%i/set_key",query_id);
         cbs->awar_setkey = strdup(buffer);
         aw_root->awar_string( cbs->awar_setkey);
@@ -2555,7 +2555,7 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
     char *Items = strdup(cbs->selector->items_name);
     Items[0]    = toupper(Items[0]);
 
-    if ( ( awtqs->use_menu || awtqs->open_parser_pos_fig) && !GB_NOVICE){
+    if ( ( awtqs->use_menu || awtqs->open_parser_pos_fig)){
         sprintf(buffer,"tmp/arbdb_query_%i/tag",query_id);      cbs->awar_tag = strdup(buffer);     aw_root->awar_string( cbs->awar_tag);
         sprintf(buffer,"tmp/arbdb_query_%i/use_tag",query_id);      cbs->awar_use_tag = strdup(buffer); aw_root->awar_int( cbs->awar_use_tag);
         sprintf(buffer,"tmp/arbdb_query_%i/deftag",query_id);       cbs->awar_deftag = strdup(buffer);  aw_root->awar_string( cbs->awar_deftag);
@@ -2572,7 +2572,7 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
             aws->create_button("MODIFY_FIELDS_OF_LISTED", "MODIFY FIELDS\nOF LISTED","F");
         }
     }
-    if (awtqs->use_menu && !GB_NOVICE){
+    if (awtqs->use_menu) {
         sprintf(buffer, "Set Protection of Fields of Listed %s", Items); aws->insert_menu_topic("s_prot_of_listed",buffer,"P","set_protection.hlp",-1,AW_POPUP,(AW_CL)create_awt_set_protection,(AW_CL)cbs);
         aws->insert_separator();
         sprintf(buffer, "Mark Listed %s, don't Change Rest", Items);    aws->insert_menu_topic("mark_listed", buffer,"M","mark.hlp",-1,(AW_CB)awt_do_mark_list,(AW_CL)cbs,(AW_CL)1 | 8);

@@ -389,7 +389,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
 }
 
 
-void GDE_load_menu(AW_window *awm,const char *menulabel,const char *menuitemlabel)
+void GDE_load_menu(AW_window *awm, AW_active mask, const char *menulabel,const char *menuitemlabel)
 {
     //  AW_root *aw_root = awm->get_root();
     char       buffer[1024];
@@ -430,7 +430,7 @@ void GDE_load_menu(AW_window *awm,const char *menulabel,const char *menuitemlabe
                 char hotkey[] = "x";
                 hotkey[0]     = menuitem->meta;
                 awm->insert_menu_topic(0,menuitem->label,hotkey,
-                                       help,AWM_ALL,
+                                       help, mask,
                                        AW_POPUP, (AW_CL)GDE_menuitem_cb, (AW_CL)AWinfo );
             }
         }

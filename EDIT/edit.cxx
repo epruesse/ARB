@@ -2118,7 +2118,7 @@ void aed_create_window(AED_root *aedr) {
     }
 
     awmm->insert_separator();
-    GDE_load_menu(awmm,"pretty_print");
+    GDE_load_menu(awmm,AWM_ALL,"pretty_print");
     awmm->insert_separator();
     awmm->insert_menu_topic("quit","Quit","Q","quit.hlp",   AWM_ALL,        aed_quit,(AW_CL)aed_window->root,1);
 
@@ -2165,10 +2165,10 @@ void aed_create_window(AED_root *aedr) {
     awmm->insert_menu_topic("refresh_helix","Reload Helix (SAI 'HELIXNR/HELIX')",       "H","helix.hlp",    AWM_ALL,    (AW_CB)reload_helix, (AW_CL)aed_window, 0 );
     awmm->insert_menu_topic("refresh_ecoli","Reload Reference (SAI 'ECOLI')",       "R","ecoliref.hlp", AWM_ALL,    (AW_CB)reload_ref, (AW_CL)aed_window, 0 );
     awmm->insert_menu_topic("enable_col_stat","Enable Column Statistic",            "C","st_ml.hlp",    AWM_ALL,AW_POPUP,(AW_CL)st_create_main_window,(AW_CL)st_ml);
-    //  awmm->insert_menu_topic("submission",   "Submission ...",               "S","submission.hlp",   AWM_TUM,    AW_POPUP, (AW_CL)create_submission_window, (AW_CL)aed_window );
+    //  awmm->insert_menu_topic("submission",   "Submission ...",               "S","submission.hlp",   AWM_ALL,    AW_POPUP, (AW_CL)create_submission_window, (AW_CL)aed_window );
     awmm->insert_separator();
     awmm->insert_sub_menu(0,"GDE Specials","G");
-    GDE_load_menu(awmm,0,0);
+    GDE_load_menu(awmm,AWM_ALL,0,0);
     awmm->close_sub_menu();
 
     awmm->set_info_area_height( 250 );

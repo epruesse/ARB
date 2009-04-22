@@ -17,10 +17,6 @@ struct gb_local_data *gb_local = 0;
 long *arbdb_stat;
 #endif
 
-
-long    GB_NOVICE  = 0;
-
-
 char *GB_rel(void *struct_adress,long rel_adress)
 {
     if (!rel_adress) return NULL;

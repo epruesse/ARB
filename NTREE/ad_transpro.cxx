@@ -739,10 +739,9 @@ AW_window *NT_create_realign_dna_window(AW_root *root) {
 }
 
 
-void create_transpro_menus(AW_window *awmm)
-{
-    awmm->insert_menu_topic("dna_2_pro",    "Translate Nucleic to Amino Acid ...","T","translate_dna_2_pro.hlp",        AWM_PRO,    AW_POPUP, (AW_CL)NT_create_dna_2_pro_window, 0 );
-    awmm->insert_menu_topic("realign_dna",  "Realign Nucleic Acid according to Aligned Protein ...","r","realign_dna.hlp",  AWM_PRO,    AW_POPUP, (AW_CL)NT_create_realign_dna_window, 0 );
+void create_transpro_menus(AW_window *awmm) {
+    awmm->insert_menu_topic("dna_2_pro",   "Translate Nucleic to Amino Acid ...",                   "T", "translate_dna_2_pro.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_create_dna_2_pro_window,   0);
+    awmm->insert_menu_topic("realign_dna", "Realign Nucleic Acid according to Aligned Protein ...", "r", "realign_dna.hlp",         AWM_ALL, AW_POPUP, (AW_CL)NT_create_realign_dna_window, 0);
 }
 
 void NT_create_transpro_variables(AW_root *root,AW_default db1)

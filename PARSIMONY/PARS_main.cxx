@@ -1530,9 +1530,9 @@ static void pars_start_cb(AW_window *aww, AW_CL cd_adfiltercbstruct) {
         awm->insert_separator();
         awm->insert_sub_menu(0, "Remove Species from Tree",     "R");
         {
-            awm->insert_menu_topic("tree_remove_deleted", "Remove Zombies",       "Z","trm_del.hlp",  AWM_TREE,   (AW_CB)NT_remove_leafs,     (AW_CL)ntw, AWT_REMOVE_DELETED|AWT_REMOVE_BUT_DONT_FREE );
-            awm->insert_menu_topic("tree_remove_marked",  "Remove Marked",        "M","trm_mrkd.hlp", AWM_TREE,   (AW_CB)NT_remove_leafs,     (AW_CL)ntw, AWT_REMOVE_MARKED|AWT_REMOVE_BUT_DONT_FREE );
-            awm->insert_menu_topic("tree_keep_marked",    "Keep Marked",          "K","tkeep_mrkd.hlp",   AWM_TREE,   (AW_CB)NT_remove_leafs,     (AW_CL)ntw, AWT_REMOVE_NOT_MARKED|AWT_REMOVE_DELETED|AWT_REMOVE_BUT_DONT_FREE );
+            awm->insert_menu_topic("tree_remove_deleted", "Remove Zombies", "Z", "trm_del.hlp",    AWM_ALL, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_REMOVE_DELETED|AWT_REMOVE_BUT_DONT_FREE);
+            awm->insert_menu_topic("tree_remove_marked",  "Remove Marked",  "M", "trm_mrkd.hlp",   AWM_ALL, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_REMOVE_MARKED|AWT_REMOVE_BUT_DONT_FREE);
+            awm->insert_menu_topic("tree_keep_marked",    "Keep Marked",    "K", "tkeep_mrkd.hlp", AWM_ALL, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_REMOVE_NOT_MARKED|AWT_REMOVE_DELETED|AWT_REMOVE_BUT_DONT_FREE);
         }
         awm->close_sub_menu();
         awm->insert_sub_menu(0, "Add Species to Tree",      "A");
@@ -1557,12 +1557,12 @@ static void pars_start_cb(AW_window *aww, AW_CL cd_adfiltercbstruct) {
         awm->close_sub_menu();
         awm->insert_menu_topic("reset", "Reset optimal parsimony", "s", "", AWM_ALL, (AW_CB)pars_reset_optimal_parsimony, (AW_CL)ntw, 0);
         awm->insert_separator();
-        awm->insert_menu_topic("beautify_tree",               "Beautify Tree",            "B","resorttree.hlp",   AWM_TREE,   (AW_CB)NT_resort_tree_cb,   (AW_CL)ntw, 0 );
-        awm->insert_menu_topic("calc_branch_lenths",          "Calculate Branch Lengths", "L","pa_branchlengths.hlp",AWM_ALL,     (AW_CB)NT_branch_lengths,(AW_CL)ntw, 0 );
+        awm->insert_menu_topic("beautify_tree",      "Beautify Tree",            "B", "resorttree.hlp",       AWM_ALL, (AW_CB)NT_resort_tree_cb, (AW_CL)ntw, 0);
+        awm->insert_menu_topic("calc_branch_lenths", "Calculate Branch Lengths", "L", "pa_branchlengths.hlp", AWM_ALL, (AW_CB)NT_branch_lengths, (AW_CL)ntw, 0);
         awm->insert_separator();
-        awm->insert_menu_topic("calc_upper_bootstrap_indep",  "Calculate Upper Bootstrap Limit (dependend NNI)",   "d","pa_bootstrap.hlp", AWM_ALL,    (AW_CB)NT_bootstrap,(AW_CL)ntw, 0 );
-        awm->insert_menu_topic("calc_upper_bootstrap_dep",    "Calculate Upper Bootstrap Limit (independend NNI)", "i","pa_bootstrap.hlp", AWM_ALL,    (AW_CB)NT_bootstrap,(AW_CL)ntw, 1 );
-        awm->insert_menu_topic("tree_remove_remark",          "Remove Bootstrap Values",  "V","trm_boot.hlp", AWM_TREE,   (AW_CB)NT_remove_bootstrap,     (AW_CL)ntw, 0 );
+        awm->insert_menu_topic("calc_upper_bootstrap_indep", "Calculate Upper Bootstrap Limit (dependend NNI)",   "d", "pa_bootstrap.hlp", AWM_ALL, (AW_CB)NT_bootstrap,        (AW_CL)ntw, 0);
+        awm->insert_menu_topic("calc_upper_bootstrap_dep",   "Calculate Upper Bootstrap Limit (independend NNI)", "i", "pa_bootstrap.hlp", AWM_ALL, (AW_CB)NT_bootstrap,        (AW_CL)ntw, 1);
+        awm->insert_menu_topic("tree_remove_remark",         "Remove Bootstrap Values",                           "V", "trm_boot.hlp",     AWM_ALL, (AW_CB)NT_remove_bootstrap, (AW_CL)ntw, 0);
     }
 
 #if defined(TEST_FUNCTIONS)
@@ -1571,11 +1571,11 @@ static void pars_start_cb(AW_window *aww, AW_CL cd_adfiltercbstruct) {
 
     awm->create_menu("props","Properties","r","properties.hlp", AWM_ALL);
     {
-        awm->insert_menu_topic("props_menu",    "Menu: Colors and Fonts ...",   "M","props_frame.hlp",  AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window, 0 );
-        awm->insert_menu_topic("props_tree",    "Tree: Colors and Fonts ...",   "C","pars_props_data.hlp",AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager );
-        awm->insert_menu_topic("props_tree2",   "Tree: Settings ...",       "T","nt_tree_settings.hlp",AWM_ALL, AW_POPUP, (AW_CL)NT_create_tree_setting, (AW_CL)ntw );
-        awm->insert_menu_topic("props_kl",  "KERN. LIN ...",        "K","kernlin.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_kernighan_window, 0 );
-        awm->insert_menu_topic("save_props",    "Save Defaults (in ~/.arb_prop/pars.arb)",  "D","savedef.hlp",  AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
+        awm->insert_menu_topic("props_menu",  "Menu: Colors and Fonts ...",              "M", "props_frame.hlp",      AWM_ALL, AW_POPUP,(AW_CL)AW_preset_window,        0);
+        awm->insert_menu_topic("props_tree",  "Tree: Colors and Fonts ...",              "C", "pars_props_data.hlp",  AWM_ALL, AW_POPUP,(AW_CL)AW_create_gc_window,     (AW_CL)aw_gc_manager );
+        awm->insert_menu_topic("props_tree2", "Tree: Settings ...",                      "T", "nt_tree_settings.hlp", AWM_ALL, AW_POPUP,(AW_CL)NT_create_tree_setting,  (AW_CL)ntw );
+        awm->insert_menu_topic("props_kl",    "KERN. LIN ...",                           "K", "kernlin.hlp",          AWM_ALL, AW_POPUP,(AW_CL)create_kernighan_window, 0);
+        awm->insert_menu_topic("save_props",  "Save Defaults (in ~/.arb_prop/pars.arb)", "D", "savedef.hlp",          AWM_ALL, (AW_CB)AW_save_defaults, 0, 0);
     }
     awm->button_length(5);
 

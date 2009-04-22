@@ -165,6 +165,15 @@ static void AWAR_INFO_BUTTON_TEXT_change_cb(AW_root *awr) {
     free(value);
 }
 
+static void expert_mode_changed_cb(AW_root *aw_root) {
+    aw_root->awar(AWAR_AWM_MASK)->write_int(aw_root->awar(AWAR_EXPERT)->read_int() ? AWM_ALL : AWM_BASIC); // publish expert-mode globally
+}
+static void NT_toggle_expert_mode(AW_window *aww, AW_CL, AW_CL) {
+    AW_root *aw_root     = aww->get_root();
+    AW_awar *awar_expert = aw_root->awar(AWAR_EXPERT);
+    awar_expert->write_int(!awar_expert->read_int());
+}
+
 void nt_create_all_awars(AW_root *awr, AW_default def) {
     // creates awars for all modules reachable from ARB_NT main window
 
@@ -225,7 +234,13 @@ void nt_create_all_awars(AW_root *awr, AW_default def) {
     SQ_create_awars(awr, def);
 
     GB_ERROR error = ARB_init_global_awars(awr, def, GLOBAL_gb_main);
-    if (!error) awt_create_aww_vars(awr,def);
+    if (!error) {
+        AW_awar *awar_expert = awr->awar(AWAR_EXPERT);
+        awar_expert->add_callback(expert_mode_changed_cb);
+        awar_expert->touch();
+        
+        awt_create_aww_vars(awr,def);
+    }
 
     if (error) aw_message(error);
 }
@@ -1049,22 +1064,22 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             AWMIMT("new_window",    "New window",           "N","newwindow.hlp",        F_ALL, AW_POPUP, (AW_CL)create_nt_main_window, clone+1 );
             SEP________________________SEP();
 
-            AWMIMT("optimize_db",   "Optimize database",        "O","optimize.hlp",AWM_EXP, AW_POPUP,   (AW_CL)NT_create_database_optimization_window, 0);
+            AWMIMT("optimize_db",   "Optimize database",        "O","optimize.hlp",AWM_ALL, AW_POPUP,   (AW_CL)NT_create_database_optimization_window, 0);
             SEP________________________SEP();
 
-            awm->insert_sub_menu(  0,"Import",      "I" );
+            awm->insert_sub_menu(  0,"Import",      "I");
             {
                 AWMIMT("import_seq", "Import sequences and fields","I","arb_import.hlp",AWM_ALL, NT_import_sequences,0,0);
-                GDE_load_menu(awm,"import");
+                GDE_load_menu(awm,AWM_EXP,"import");
             }
             awm->close_sub_menu();
 
-            awm->insert_sub_menu(  0,"Export",      "E" );
+            awm->insert_sub_menu(  0,"Export",      "E");
             {
-                AWMIMT("export_to_ARB", "Export seq/tree/SAI's to new ARB database","A", "arb_ntree.hlp",   AWM_ALL, (AW_CB)NT_system_cb,   (AW_CL)"arb_ntree -export &",0 );
-                AWMIMT("export_seqs",   "Export sequences to foreign format",    "f","arb_export.hlp",  AWM_ALL, AW_POPUP, (AW_CL)open_AWTC_export_window, (AW_CL)GLOBAL_gb_main);
-                GDE_load_menu(awm,"export");
-                AWMIMT("export_nds",    "Export fields using NDS","N","arb_export_nds.hlp",AWM_EXP, AW_POPUP, (AW_CL)create_nds_export_window, 0);
+                AWMIMT("export_to_ARB", "Export seq/tree/SAI's to new ARB database", "A", "arb_ntree.hlp",      AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"arb_ntree -export &",0);
+                AWMIMT("export_seqs",   "Export sequences to foreign format",        "f", "arb_export.hlp",     AWM_ALL, AW_POPUP,            (AW_CL)open_AWTC_export_window, (AW_CL)GLOBAL_gb_main);
+                GDE_load_menu(awm,AWM_ALL,"export");
+                AWMIMT("export_nds",    "Export fields using NDS",                   "N", "arb_export_nds.hlp", AWM_ALL, AW_POPUP,            (AW_CL)create_nds_export_window, 0);
             }
             awm->close_sub_menu();
             SEP________________________SEP();
@@ -1073,9 +1088,9 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
             awm->insert_sub_menu(  0,"Registration/Bug report/Version info",       "R" );
             {
-                AWMIMT( "registration", "Registration",         "R","registration.hlp", AWM_EXP, (AW_CB)AW_POPUP,   (AW_CL)NT_submit_bug, 0 );
-                AWMIMT( "bug_report",   "Bug report",           "B","registration.hlp", AWM_ALL, (AW_CB)AW_POPUP,   (AW_CL)NT_submit_bug, 1 );
-                AWMIMT( "version_info", "Version info (" ARB_VERSION ")",  "V","version.hlp",  AWM_ALL, (AW_CB)AW_POPUP_HELP,  (AW_CL)"version.hlp", 0 );
+                AWMIMT("registration", "Registration",                   "R", "registration.hlp", AWM_ALL, (AW_CB)AW_POPUP,      (AW_CL)NT_submit_bug, 0);
+                AWMIMT("bug_report",   "Bug report",                     "B", "registration.hlp", AWM_ALL, (AW_CB)AW_POPUP,      (AW_CL)NT_submit_bug, 1);
+                AWMIMT("version_info", "Version info (" ARB_VERSION ")", "V", "version.hlp",      AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"version.hlp", 0);
             }
             awm->close_sub_menu();
 #if 0
@@ -1097,15 +1112,14 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         // ----------------
         awm->create_menu(0,"Species","c","species.hlp", AWM_ALL);
         {
-            AWMIMT( "species_search", "Search and query",    "q",    "sp_search.hlp",    AWM_ALL,AW_POPUP,   (AW_CL)ad_create_query_window,  0 );
-            AWMIMT( "species_info",   "Species information", "i",    "sp_info.hlp",      AWM_ALL,NT_popup_species_window, 0, 0);
-//             AWMIMT( "species_info",   "Species information", "i",    "sp_info.hlp",      AWM_ALL,AW_POPUP,   (AW_CL)NT_create_species_window,    0);
+            AWMIMT("species_search", "Search and query",    "q", "sp_search.hlp", AWM_ALL, AW_POPUP,                (AW_CL)ad_create_query_window, 0);
+            AWMIMT("species_info",   "Species information", "i", "sp_info.hlp",   AWM_ALL, NT_popup_species_window, 0,                             0);
 
             SEP________________________SEP();
 
             NT_insert_mark_submenus(awm, ntw, 1);
-            AWMIMT("gene_colors",     "Set Colors",     "l", "mark_colors.hlp",   AWM_ALL,  AW_POPUP,               (AW_CL)NT_create_species_colorize_window, 0);
-            AWMIMT("selection_admin", "Configurations", "o", "configuration.hlp", AWM_SEQ2, NT_configuration_admin, (AW_CL)&(GLOBAL_NT.tree->tree_root), (AW_CL)0     );
+            AWMIMT("gene_colors",     "Set Colors",     "l", "mark_colors.hlp",   AWM_ALL, AW_POPUP,               (AW_CL)NT_create_species_colorize_window, 0);
+            AWMIMT("selection_admin", "Configurations", "o", "configuration.hlp", AWM_ALL, NT_configuration_admin, (AW_CL)&(GLOBAL_NT.tree->tree_root),      (AW_CL)0);
 
             SEP________________________SEP();
 
@@ -1116,36 +1130,36 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
             SEP________________________SEP();
 
-            AWMIMT("del_marked",    "Delete Marked Species",    "D","sp_del_mrkd.hlp",  AWM_EXP, (AW_CB)NT_delete_mark_all_cb,      (AW_CL)ntw, 0 );
+            AWMIMT("del_marked",    "Delete Marked Species",    "D","sp_del_mrkd.hlp",  AWM_ALL, (AW_CB)NT_delete_mark_all_cb,      (AW_CL)ntw, 0 );
 
             awm->insert_sub_menu(0, "Sort Species",         "r");
             {
-                AWMIMT("sort_by_field", "According to Database Entries","D","sp_sort_fld.hlp", AWM_EXP, AW_POPUP,              (AW_CL)NT_build_resort_window, 0 );
-                AWMIMT("sort_by_tree",  "According to Phylogeny",      "P","sp_sort_phyl.hlp", AWM_EXP, (AW_CB)NT_resort_data_by_phylogeny,    (AW_CL)&(GLOBAL_NT.tree->tree_root), 0 );
+                AWMIMT("sort_by_field", "According to Database Entries", "D", "sp_sort_fld.hlp",  AWM_ALL, AW_POPUP,                           (AW_CL)NT_build_resort_window,       0);
+                AWMIMT("sort_by_tree",  "According to Phylogeny",        "P", "sp_sort_phyl.hlp", AWM_ALL, (AW_CB)NT_resort_data_by_phylogeny, (AW_CL)&(GLOBAL_NT.tree->tree_root), 0);
             }
             awm->close_sub_menu();
 
-            awm->insert_sub_menu(0, "Merge Species",      "g");
+            awm->insert_sub_menu(0, "Merge Species",      "g", 0, AWM_EXP);
             {
-                AWMIMT("merge_species", "Create merged species from similar species",  "m", "sp_merge.hlp", AWM_EXP,AW_POPUP,(AW_CL)NT_createMergeSimilarSpeciesWindow, (AW_CL)ntw );
-                AWMIMT("join_marked",   "Join Marked Species",    "J","join_species.hlp", AWM_EXP, AW_POPUP, (AW_CL)create_species_join_window,   0 );
+                AWMIMT("merge_species", "Create merged species from similar species", "m", "sp_merge.hlp",     AWM_EXP, AW_POPUP, (AW_CL)NT_createMergeSimilarSpeciesWindow, (AW_CL)ntw );
+                AWMIMT("join_marked",   "Join Marked Species",                        "J", "join_species.hlp", AWM_EXP, AW_POPUP, (AW_CL)create_species_join_window,         0);
             }
             awm->close_sub_menu();
 
             SEP________________________SEP();
 
-            AWMIMT( "species_submission", "Submit Species", "b",  "submission.hlp",   AWM_ALL,AW_POPUP,   (AW_CL)AWTC_create_submission_window,   0 );
+            AWMIMT( "species_submission", "Submit Species", "b",  "submission.hlp",   AWM_EXP, AW_POPUP,   (AW_CL)AWTC_create_submission_window,   0 );
 
             SEP________________________SEP();
 
-            AWMIMT( "new_names",    "Generate New Names",   "e", "sp_rename.hlp",   AWM_EXP, AW_POPUP,   (AW_CL)AWTC_create_rename_window,      (AW_CL)GLOBAL_gb_main );
+            AWMIMT( "new_names",    "Generate New Names",   "e", "sp_rename.hlp",   AWM_ALL, AW_POPUP,   (AW_CL)AWTC_create_rename_window,      (AW_CL)GLOBAL_gb_main );
 
-            awm->insert_sub_menu(0, "Valid Names ...",     "");
+            awm->insert_sub_menu(0, "Valid Names ...",     "", 0, AWM_EXP);
             {
                 AWMIMT("imp_names",    "Import Names from File", "", "vn_import.hlp",  AWM_EXP, NT_importValidNames,  0, 0);
                 AWMIMT("del_names",    "Delete Names from DB",   "", "vn_delete.hlp",  AWM_EXP, NT_deleteValidNames,  0, 0);
                 AWMIMT("sug_names",    "Suggest Valid Names",    "", "vn_suggest.hlp", AWM_EXP, NT_suggestValidNames, 0, 0);
-                AWMIMT("search_names", "Search manually",        "", "vn_search.hlp",  AWM_ALL, AW_POPUP,             (AW_CL)NT_searchManuallyNames , 0);
+                AWMIMT("search_names", "Search manually",        "", "vn_search.hlp",  AWM_EXP, AW_POPUP,             (AW_CL)NT_searchManuallyNames , 0);
            }
             awm->close_sub_menu();
         }
@@ -1160,21 +1174,21 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         // -----------------
         awm->create_menu(0,"Sequence","S","sequence.hlp",   AWM_ALL);
         {
-            AWMIMT("seq_admin",   "Sequence/Alignment Admin", "A", "ad_align.hlp",   AWM_EXP,  AW_POPUP, (AW_CL)NT_create_alignment_window, 0);
-            AWMIMT("ins_del_col", "Insert/Delete Column",     "I", "insdelchar.hlp", AWM_SEQ2, AW_POPUP, (AW_CL)create_insertchar_window,   0);
+            AWMIMT("seq_admin",   "Sequence/Alignment Admin", "A", "ad_align.hlp",   AWM_ALL,  AW_POPUP, (AW_CL)NT_create_alignment_window, 0);
+            AWMIMT("ins_del_col", "Insert/Delete Column",     "I", "insdelchar.hlp", AWM_ALL,  AW_POPUP, (AW_CL)create_insertchar_window,   0);
             SEP________________________SEP();
 
             awm->insert_sub_menu(0, "Edit Sequences","E");
             {
-                AWMIMT("new_arb_edit4",  "Using marked species and tree", "m", "arb_edit4.hlp", AWM_ALL,  (AW_CB)NT_start_editor_on_tree, (AW_CL)&(GLOBAL_NT.tree->tree_root), 0 );
-                AWMIMT("new2_arb_edit4", "... plus relatives",            "r", "arb_edit4.hlp", AWM_ALL,  (AW_CB)NT_start_editor_on_tree, (AW_CL)&(GLOBAL_NT.tree->tree_root), -1);
-                AWMIMT("old_arb_edit4",  "Using earlier configuration",   "c", "arb_edit4.hlp", AWM_SEQ2, AW_POPUP, (AW_CL)NT_start_editor_on_old_configuration, 0        );
+                AWMIMT("new_arb_edit4",  "Using marked species and tree", "m", "arb_edit4.hlp", AWM_ALL, (AW_CB)NT_start_editor_on_tree, (AW_CL)&(GLOBAL_NT.tree->tree_root),         0);
+                AWMIMT("new2_arb_edit4", "... plus relatives",            "r", "arb_edit4.hlp", AWM_ALL, (AW_CB)NT_start_editor_on_tree, (AW_CL)&(GLOBAL_NT.tree->tree_root),         -1);
+                AWMIMT("old_arb_edit4",  "Using earlier configuration",   "c", "arb_edit4.hlp", AWM_ALL, AW_POPUP,                       (AW_CL)NT_start_editor_on_old_configuration, 0);
             }
             awm->close_sub_menu();
 
-            awm->insert_sub_menu(0, "Other sequence editors","O");
+            awm->insert_sub_menu(0, "Other sequence editors", "O", 0, AWM_EXP);
             {
-                AWMIMT("arb_edit", "ARB Editor (old)", "o", "arb_edit.hlp", AWM_SEQ2, (AW_CB)NT_system_cb, (AW_CL)"arb_edit &",  0               );
+                AWMIMT("arb_edit", "ARB Editor (old)", "o", "arb_edit.hlp", AWM_EXP, (AW_CB)NT_system_cb, (AW_CL)"arb_edit &",  0);
             }
             awm->close_sub_menu();
             SEP________________________SEP();
@@ -1183,52 +1197,49 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             {
                 AWMIMT("arb_align",   "Align sequence into an existing alignment",         "A", "align.hlp",       AWM_ALL, (AW_CB) AW_POPUP_HELP, (AW_CL)"align.hlp",                  0);
                 AWMIMT("realign_dna", "Realign nucleic acid according to aligned protein", "R", "realign_dna.hlp", AWM_ALL, AW_POPUP,              (AW_CL)NT_create_realign_dna_window, 0);
-                GDE_load_menu(awm,"align");
+                GDE_load_menu(awm,AWM_ALL,"align");
             }
             awm->close_sub_menu();
-            AWMIMT("seq_concat",    "Concatenate Sequences/Alignments", "C", "concatenate_align.hlp", AWM_EXP, AW_POPUP, (AW_CL)NT_createConcatenationWindow,     (AW_CL)ntw );
-            AWMIMT("track_changes", "Track alignment changes",          "k", "track_ali_changes.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_create_trackAliChanges_window, 0)     ;
+            AWMIMT("seq_concat",    "Concatenate Sequences/Alignments", "C", "concatenate_align.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_createConcatenationWindow,     (AW_CL)ntw);
+            AWMIMT("track_changes", "Track alignment changes",          "k", "track_ali_changes.hlp", AWM_EXP, AW_POPUP, (AW_CL)NT_create_trackAliChanges_window, 0);
             SEP________________________SEP();
 
-            AWMIMT("dna_2_pro", "Perform translation",                     "t", "translate_dna_2_pro.hlp", AWM_PRO, AW_POPUP, (AW_CL)NT_create_dna_2_pro_window, 0      );
-            AWMIMT("arb_dist",  "Compare sequences using Distance Matrix", "D", "dist.hlp",                AWM_SEQ, (AW_CB)NT_system_cb,    (AW_CL)"arb_dist &",    0);
+            AWMIMT("dna_2_pro", "Perform translation",                     "t", "translate_dna_2_pro.hlp", AWM_ALL, AW_POPUP,            (AW_CL)NT_create_dna_2_pro_window, 0);
+            AWMIMT("arb_dist",  "Compare sequences using Distance Matrix", "D", "dist.hlp",                AWM_EXP, (AW_CB)NT_system_cb, (AW_CL)"arb_dist &",               0);
             SEP________________________SEP();
 
-            AWMIMT("seq_quality",   "Check Sequence Quality", "Q", "seq_quality.hlp",   AWM_EXP,  AW_POPUP, (AW_CL)SQ_create_seq_quality_window,   0)     ;
-            AWMIMT("chimera_check", "Chimera Check",          "m", "check_quality.hlp", AWM_SEQ2, AW_POPUP, (AW_CL)st_create_quality_check_window, (AW_CL)GLOBAL_gb_main);
+            AWMIMT("seq_quality",   "Check Sequence Quality", "Q", "seq_quality.hlp",   AWM_EXP, AW_POPUP, (AW_CL)SQ_create_seq_quality_window,   0);
+            AWMIMT("chimera_check", "Chimera Check",          "m", "check_quality.hlp", AWM_EXP, AW_POPUP, (AW_CL)st_create_quality_check_window, (AW_CL)GLOBAL_gb_main);
 
             SEP________________________SEP();
 
-            GDE_load_menu(awm,"pretty_print");
+            GDE_load_menu(awm,AWM_ALL,"pretty_print");
         }
         // ------------
         //      SAI
         // ------------
         awm->create_menu(0,"SAI","A","extended.hlp",    AWM_ALL);
         {
-            AWMIMT("sai_admin", "Manage SAIs",                "S","ad_extended.hlp",  AWM_EXP,    AW_POPUP, (AW_CL)NT_create_extendeds_window,   0 );
-            SEP________________________SEP();
+            AWMIMT("sai_admin", "Manage SAIs",                "S","ad_extended.hlp",  AWM_ALL,    AW_POPUP, (AW_CL)NT_create_extendeds_window,   0 );
             awm->insert_sub_menu(0, "Create SAI using ...", "C");
             {
-                AWMIMT("sai_max_freq",  "Max. Frequency",                                               "M", "max_freq.hlp",     AWM_ALL,   AW_POPUP, (AW_CL)AP_open_max_freq_window, 0    );
-                AWMIMT("sai_consensus", "Consensus",                                                    "C", "consensus.hlp",    AWM_ALL,   AW_POPUP, (AW_CL)AP_open_con_expert_window, 0  );
-                AWMIMT("pos_var_pars",  "Positional variability + Column statistic (parsimony method)", "a", "pos_var_pars.hlp", AWM_TREE2, AW_POPUP, (AW_CL)AP_open_pos_var_pars_window, 0);
-                AWMIMT("arb_phyl",      "Filter by base frequency",                                     "F", "phylo.hlp",        AWM_TREE2, (AW_CB)NT_system_cb,  (AW_CL)"arb_phylo &",   0);
-                AWMIMT("sai_pfold",     "Protein secondary structure (field \"sec_struct\")",           "P", "pfold.hlp",        AWM_ALL,   (AW_CB)create_sai_from_pfold, (AW_CL)ntw,     0);
+                AWMIMT("sai_max_freq",  "Max. Frequency",                                               "M", "max_freq.hlp",     AWM_EXP, AW_POPUP,                     (AW_CL)AP_open_max_freq_window,     0);
+                AWMIMT("sai_consensus", "Consensus",                                                    "C", "consensus.hlp",    AWM_ALL, AW_POPUP,                     (AW_CL)AP_open_con_expert_window,   0);
+                AWMIMT("pos_var_pars",  "Positional variability + Column statistic (parsimony method)", "a", "pos_var_pars.hlp", AWM_ALL, AW_POPUP,                     (AW_CL)AP_open_pos_var_pars_window, 0);
+                AWMIMT("arb_phyl",      "Filter by base frequency",                                     "F", "phylo.hlp",        AWM_ALL, (AW_CB)NT_system_cb,          (AW_CL)"arb_phylo &",               0);
+                AWMIMT("sai_pfold",     "Protein secondary structure (field \"sec_struct\")",           "P", "pfold.hlp",        AWM_EXP, (AW_CB)create_sai_from_pfold, (AW_CL)ntw,                         0);
 
-                GDE_load_menu(awm,"SAI");
+                GDE_load_menu(awm,AWM_EXP,"SAI");
             }
             awm->close_sub_menu();
 
-            if (!GB_NOVICE){
-                awm->insert_sub_menu(0, "Other functions",  "O");
-                {
-                    AWMIMT("pos_var_dist",          "Positional variability (distance method)",     "P", "pos_variability.ps", AWM_EXP, AW_POPUP,      (AW_CL)AP_open_cprofile_window,          0);
-                    AWMIMT("count_different_chars", "Count different chars/column",                 "C", "count_chars.hlp",    AWM_EXP, NT_system_cb2, (AW_CL)"arb_count_chars",                0);
-                    AWMIMT("export_pos_var",        "Export Column Statistic (GNUPLOT format)",     "E", "csp_2_gnuplot.hlp",  AWM_EXP, AW_POPUP,      (AW_CL)AP_open_csp_2_gnuplot_window,     0);
-                }
-                awm->close_sub_menu();
+            awm->insert_sub_menu(0, "Other functions", "O");
+            {
+                AWMIMT("pos_var_dist",          "Positional variability (distance method)",     "P", "pos_variability.ps", AWM_EXP, AW_POPUP,      (AW_CL)AP_open_cprofile_window,          0);
+                AWMIMT("count_different_chars", "Count different chars/column",                 "C", "count_chars.hlp",    AWM_EXP, NT_system_cb2, (AW_CL)"arb_count_chars",                0);
+                AWMIMT("export_pos_var",        "Export Column Statistic (GNUPLOT format)",     "E", "csp_2_gnuplot.hlp",  AWM_ALL, AW_POPUP,      (AW_CL)AP_open_csp_2_gnuplot_window,     0);
             }
+            awm->close_sub_menu();
         }
 
         // ---------------
@@ -1236,11 +1247,11 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         // ---------------
         awm->create_menu(0,"Probes","P","probe_menu.hlp", AWM_ALL);
         {
-            AWMIMT("probe_design",      "Design Probes",             "D", "probedesign.hlp", AWM_PRB, AW_POPUP, (AW_CL)create_probe_design_window, (AW_CL)is_genome_db );
-            AWMIMT("probe_multi",       "Calculate Multi-Probes",    "u", "multiprobe.hlp",  AWM_PRB, AW_POPUP, (AW_CL)MP_main, (AW_CL)ntw           );
-            AWMIMT("probe_match",       "Match Probes",              "M", "probematch.hlp",  AWM_PRB, AW_POPUP, (AW_CL)create_probe_match_window, 0  );
+            AWMIMT("probe_design",      "Design Probes",             "D", "probedesign.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_probe_design_window, (AW_CL)is_genome_db );
+            AWMIMT("probe_multi",       "Calculate Multi-Probes",    "u", "multiprobe.hlp",  AWM_ALL, AW_POPUP, (AW_CL)MP_main, (AW_CL)ntw           );
+            AWMIMT("probe_match",       "Match Probes",              "M", "probematch.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_probe_match_window, 0  );
             SEP________________________SEP();
-            AWMIMT("primer_design_new", "Design Primers",            "P", "primer_new.hlp",  AWM_PRB, AW_POPUP, (AW_CL)create_primer_design_window, 0);
+            AWMIMT("primer_design_new", "Design Primers",            "P", "primer_new.hlp",  AWM_EXP, AW_POPUP, (AW_CL)create_primer_design_window, 0);
             AWMIMT("primer_design",     "Design Sequencing Primers", "",  "primer.hlp",      AWM_EXP, (AW_CB)NT_primer_cb, 0, 0                      );
             SEP________________________SEP();
             AWMIMT("pt_server_admin",   "PT_SERVER Admin",           "A", "probeadmin.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_probe_admin_window, (AW_CL)is_genome_db);
@@ -1256,23 +1267,23 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         if (!clone) {
             awm->insert_sub_menu(0, "Add Species to Existing Tree", "A");
             {
-                AWMIMT( "arb_pars_quick",  "ARB Parsimony (Quick add marked)", "Q", "pars.hlp",    AWM_TREE,   (AW_CB)NT_system_cb,    (AW_CL)"arb_pars -add_marked -quit &",0 );
-                AWMIMT( "arb_pars",        "ARB Parsimony interactive",        "i", "pars.hlp",    AWM_TREE,   (AW_CB)NT_system_cb,    (AW_CL)"arb_pars &",    0 );
-                GDE_load_menu(awm,"Incremental_Phylogeny");
+                AWMIMT( "arb_pars_quick",  "ARB Parsimony (Quick add marked)", "Q", "pars.hlp",    AWM_ALL,   (AW_CB)NT_system_cb,    (AW_CL)"arb_pars -add_marked -quit &",0 );
+                AWMIMT( "arb_pars",        "ARB Parsimony interactive",        "i", "pars.hlp",    AWM_ALL,   (AW_CB)NT_system_cb,    (AW_CL)"arb_pars &",    0 );
+                GDE_load_menu(awm,AWM_ALL,"Incremental_Phylogeny");
             }
             awm->close_sub_menu();
         }
 
         awm->insert_sub_menu(0, "Remove Species from Tree",     "R");
         {
-            AWMIMT("tree_remove_deleted", "Remove zombies", "z", "trm_del.hlp",    AWM_TREE, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_REMOVE_DELETED );
-            AWMIMT("tree_remove_marked",  "Remove marked",  "m", "trm_mrkd.hlp",   AWM_TREE, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_REMOVE_MARKED );
-            AWMIMT("tree_keep_marked",    "Keep marked",    "K", "tkeep_mrkd.hlp", AWM_TREE, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_REMOVE_NOT_MARKED|AWT_REMOVE_DELETED);
+            AWMIMT("tree_remove_deleted", "Remove zombies", "z", "trm_del.hlp",    AWM_ALL, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_REMOVE_DELETED );
+            AWMIMT("tree_remove_marked",  "Remove marked",  "m", "trm_mrkd.hlp",   AWM_ALL, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_REMOVE_MARKED );
+            AWMIMT("tree_keep_marked",    "Keep marked",    "K", "tkeep_mrkd.hlp", AWM_ALL, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_REMOVE_NOT_MARKED|AWT_REMOVE_DELETED);
 #if defined(DEVEL_RALF)
 #warning add "remove duplicates from tree"
             SEP________________________SEP();
-            AWMIMT("all_tree_remove_deleted", "Remove zombies from all trees", "a", "trm_del.hlp", AWM_TREE, (AW_CB)NT_alltree_remove_leafs, AWT_REMOVE_DELETED, (AW_CL)GLOBAL_gb_main);
-            AWMIMT("all_tree_remove_marked",  "Remove marked from all trees",  "l", "trm_del.hlp", AWM_TREE, (AW_CB)NT_alltree_remove_leafs, AWT_REMOVE_MARKED, (AW_CL)GLOBAL_gb_main);
+            AWMIMT("all_tree_remove_deleted", "Remove zombies from all trees", "a", "trm_del.hlp", AWM_ALL, (AW_CB)NT_alltree_remove_leafs, AWT_REMOVE_DELETED, (AW_CL)GLOBAL_gb_main);
+            AWMIMT("all_tree_remove_marked",  "Remove marked from all trees",  "l", "trm_del.hlp", AWM_ALL, (AW_CB)NT_alltree_remove_leafs, AWT_REMOVE_MARKED, (AW_CL)GLOBAL_gb_main);
 #endif // DEVEL_RALF
         }
         awm->close_sub_menu();
@@ -1281,20 +1292,21 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             awm->insert_sub_menu(0, "Build tree from sequence data",    "B");
             {
                 awm->insert_sub_menu(0, "Distance matrix methods", "D");
-                AWMIMT( "arb_dist",     "ARB Neighbour Joining",     "J", "dist.hlp",    AWM_TREE,   (AW_CB)NT_system_cb,    (AW_CL)"arb_dist &",    0 );
-                GDE_load_menu(awm,"Phylogeny_DistMatrix");
+                AWMIMT( "arb_dist",     "ARB Neighbour Joining",     "J", "dist.hlp",    AWM_ALL,   (AW_CB)NT_system_cb,    (AW_CL)"arb_dist &",    0 );
+                GDE_load_menu(awm,AWM_ALL,"Phylogeny_DistMatrix");
                 awm->close_sub_menu();
 
                 awm->insert_sub_menu(0, "Maximum Parsimony methods", "P");
-                GDE_load_menu(awm,"Phylogeny_MaxParsimony");
+                GDE_load_menu(awm,AWM_ALL,"Phylogeny_MaxParsimony");
                 awm->close_sub_menu();
 
                 awm->insert_sub_menu(0, "Maximum Likelihood methods", "L");
-                GDE_load_menu(awm,"Phylogeny_MaxLikelyhood");
+                GDE_load_menu(awm,AWM_EXP,"Phylogeny_MaxLikelyhood_EXP");
+                GDE_load_menu(awm,AWM_ALL,"Phylogeny_MaxLikelyhood");
                 awm->close_sub_menu();
 
-                awm->insert_sub_menu(0, "Other methods", "O");
-                GDE_load_menu(awm,"Phylogeny_Other");
+                awm->insert_sub_menu(0, "Other methods", "O", 0, AWM_EXP);
+                GDE_load_menu(awm,AWM_EXP,"Phylogeny_Other");
                 awm->close_sub_menu();
             }
             awm->close_sub_menu();
@@ -1314,7 +1326,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         {
             AWMIMT("tree_group_all",         "Group all",               "a", "tgroupall.hlp",   AWM_ALL,  (AW_CB)NT_group_tree_cb,       (AW_CL)ntw, 0);
             AWMIMT("tree_group_not_marked",  "Group all except marked", "m", "tgroupnmrkd.hlp", AWM_ALL,  (AW_CB)NT_group_not_marked_cb, (AW_CL)ntw, 0);
-            AWMIMT("tree_group_term_groups", "Group terminal groups",   "t", "tgroupterm.hlp",  AWM_TREE, (AW_CB)NT_group_terminal_cb,   (AW_CL)ntw, 0);
+            AWMIMT("tree_group_term_groups", "Group terminal groups",   "t", "tgroupterm.hlp",  AWM_ALL, (AW_CB)NT_group_terminal_cb,   (AW_CL)ntw, 0);
             AWMIMT("tree_ungroup_all",       "Ungroup all",             "U", "tungroupall.hlp", AWM_ALL,  (AW_CB)NT_ungroup_all_cb,      (AW_CL)ntw, 0);
             SEP________________________SEP();
             NT_insert_color_collapse_submenu(awm, ntw);
@@ -1322,43 +1334,43 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         awm->close_sub_menu();
         awm->insert_sub_menu(0, "Beautify tree", "e");
         {
-            AWMIMT("beautifyt_tree", "#beautifyt.bitmap", "", "resorttree.hlp", AWM_TREE, (AW_CB)NT_resort_tree_cb, (AW_CL)ntw, 0);
-            AWMIMT("beautifyc_tree", "#beautifyc.bitmap", "", "resorttree.hlp", AWM_TREE, (AW_CB)NT_resort_tree_cb, (AW_CL)ntw, 1);
-            AWMIMT("beautifyb_tree", "#beautifyb.bitmap", "", "resorttree.hlp", AWM_TREE, (AW_CB)NT_resort_tree_cb, (AW_CL)ntw, 2);
+            AWMIMT("beautifyt_tree", "#beautifyt.bitmap", "", "resorttree.hlp", AWM_ALL, (AW_CB)NT_resort_tree_cb, (AW_CL)ntw, 0);
+            AWMIMT("beautifyc_tree", "#beautifyc.bitmap", "", "resorttree.hlp", AWM_ALL, (AW_CB)NT_resort_tree_cb, (AW_CL)ntw, 1);
+            AWMIMT("beautifyb_tree", "#beautifyb.bitmap", "", "resorttree.hlp", AWM_ALL, (AW_CB)NT_resort_tree_cb, (AW_CL)ntw, 2);
         }
         awm->close_sub_menu();
         awm->insert_sub_menu(0, "Modify branches", "M");
         {
-            AWMIMT("tree_remove_remark",     "Remove bootstraps",       "b", "trm_boot.hlp",      AWM_TREE, NT_remove_bootstrap,      (AW_CL)ntw, 0);
+            AWMIMT("tree_remove_remark",     "Remove bootstraps",       "b", "trm_boot.hlp",      AWM_ALL, NT_remove_bootstrap,      (AW_CL)ntw, 0);
             SEP________________________SEP();
-            AWMIMT("tree_reset_lengths",     "Reset branchlengths",    "R", "tbl_reset.hlp",   AWM_TREE, NT_reset_branchlengths,   (AW_CL)ntw, 0);
-            AWMIMT("justify_branch_lengths", "Justify branchlengths",  "J", "tbl_justify.hlp", AWM_TREE, NT_justify_branch_lenghs, (AW_CL)ntw, 0);
-            AWMIMT("tree_scale_lengths",     "Scale Branchlengths",    "S", "tbl_scale.hlp",   AWM_TREE, NT_scale_tree,            (AW_CL)ntw, 0);
+            AWMIMT("tree_reset_lengths",     "Reset branchlengths",    "R", "tbl_reset.hlp",   AWM_ALL, NT_reset_branchlengths,   (AW_CL)ntw, 0);
+            AWMIMT("justify_branch_lengths", "Justify branchlengths",  "J", "tbl_justify.hlp", AWM_ALL, NT_justify_branch_lenghs, (AW_CL)ntw, 0);
+            AWMIMT("tree_scale_lengths",     "Scale Branchlengths",    "S", "tbl_scale.hlp",   AWM_ALL, NT_scale_tree,            (AW_CL)ntw, 0);
             SEP________________________SEP();
-            AWMIMT("tree_boot2len",      "Bootstraps -> Branchlengths", "", "tbl_boot2len.hlp", AWM_TREE, NT_move_boot_branch, (AW_CL)ntw, 0);
-            AWMIMT("tree_len2boot",      "Bootstraps <- Branchlengths", "", "tbl_boot2len.hlp", AWM_TREE, NT_move_boot_branch, (AW_CL)ntw, 1);
+            AWMIMT("tree_boot2len",      "Bootstraps -> Branchlengths", "", "tbl_boot2len.hlp", AWM_ALL, NT_move_boot_branch, (AW_CL)ntw, 0);
+            AWMIMT("tree_len2boot",      "Bootstraps <- Branchlengths", "", "tbl_boot2len.hlp", AWM_ALL, NT_move_boot_branch, (AW_CL)ntw, 1);
 
         }
         awm->close_sub_menu();
-        AWMIMT("mark_long_branches", "Mark long branches", "k", "mark_long_branches.hlp", AWM_EXP, (AW_CB)NT_mark_long_branches, (AW_CL)ntw, 0);
+        AWMIMT("mark_long_branches", "Mark long branches", "k", "mark_long_branches.hlp", AWM_ALL, (AW_CB)NT_mark_long_branches, (AW_CL)ntw, 0);
         AWMIMT("mark_deep_branches", "Mark deep branches", "d", "mark_deep_branches.hlp", AWM_EXP, (AW_CB)NT_mark_deep_branches, (AW_CL)ntw, 0);
         AWMIMT("mark_degen_branches", "Mark degenerated branches", "g", "mark_degen_branches.hlp", AWM_EXP, (AW_CB)NT_mark_degenerated_branches, (AW_CL)ntw, 0);
-        AWMIMT("mark_duplicates", "Mark duplicates", "u", "mark_duplicates.hlp", AWM_EXP, (AW_CB)NT_mark_duplicates, (AW_CL)ntw, 0);
+        AWMIMT("mark_duplicates", "Mark duplicates", "u", "mark_duplicates.hlp", AWM_ALL, (AW_CB)NT_mark_duplicates, (AW_CL)ntw, 0);
 
         SEP________________________SEP();
 
         AWMIMT("tree_select",        "Select Tree",      "T", 0, AWM_ALL,  AW_POPUP, (AW_CL)NT_open_select_tree_window,   (AW_CL)awar_tree);
-        AWMIMT("tree_select_latest", "Select Last Tree", "L", 0, AWM_TREE, (AW_CB)NT_select_last_tree, (AW_CL)awar_tree, 0                );
+        AWMIMT("tree_select_latest", "Select Last Tree", "L", 0, AWM_ALL, (AW_CB)NT_select_last_tree, (AW_CL)awar_tree, 0                );
 
         SEP________________________SEP();
 
         if (!clone){
-            AWMIMT("tree_admin", "Tree admin",                "i", "treeadm.hlp",   AWM_TREE, AW_POPUP, (AW_CL)create_trees_window, 0             );
+            AWMIMT("tree_admin", "Tree admin",                "i", "treeadm.hlp",   AWM_ALL, AW_POPUP, (AW_CL)create_trees_window, 0             );
             AWMIMT("nds",        "NDS (Node display setup)",  "N", "props_nds.hlp", AWM_ALL,  AW_POPUP, (AW_CL)AWT_create_nds_window, (AW_CL)GLOBAL_gb_main);
         }
         SEP________________________SEP();
 
-        AWMIMT("transversion",       "Transversion analysis",   "y", "trans_anal.hlp", AWM_TREE, (AW_CB)AW_POPUP_HELP,       (AW_CL)"trans_anal.hlp", 0);
+        AWMIMT("transversion",       "Transversion analysis",   "y", "trans_anal.hlp", AWM_EXP, (AW_CB)AW_POPUP_HELP,       (AW_CL)"trans_anal.hlp", 0);
 
         SEP________________________SEP();
 
@@ -1368,7 +1380,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             SEP________________________SEP();
         }
 
-        awm->insert_sub_menu(0, "Other..",  "O");
+        awm->insert_sub_menu(0, "Other..",  "O", 0, AWM_EXP);
         {
             AWMIMT("tree_pseudo_species_to_organism", "Change pseudo species to organisms in tree", "p", "tree_pseudo.hlp",        AWM_EXP, (AW_CB)NT_pseudo_species_to_organism, (AW_CL)ntw, 0);
         }
@@ -1381,44 +1393,40 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         // --------------
         awm->create_menu(0,"Tools","o","nt_etc.hlp", AWM_ALL);
         {
-            AWMIMT("names_admin",      "Name server admin",    "s","namesadmin.hlp",   AWM_EXP, AW_POPUP, (AW_CL)AW_create_namesadmin_window, (AW_CL)GLOBAL_gb_main );
-            awm->insert_sub_menu( 0,   "DB admin", "D");
+            AWMIMT("names_admin",      "Name server admin",    "s","namesadmin.hlp",   AWM_ALL, AW_POPUP, (AW_CL)AW_create_namesadmin_window, (AW_CL)GLOBAL_gb_main );
+            awm->insert_sub_menu( 0,   "DB admin", "D", 0, AWM_EXP);
             {
                 AWMIMT("db_admin", "Re-repair DB", "R", "rerepair.hlp", AWM_EXP, NT_rerepair_DB, (AW_CL)GLOBAL_gb_main, 0);
             }
             awm->close_sub_menu();
-            awm->insert_sub_menu( 0,   "Network", "N");
+            awm->insert_sub_menu( 0,   "Network", "N", 0, AWM_EXP);
             {
-                AWMIMT("ors",   "ORS (disabled) ...",      "O","ors.hlp",          AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"netscape http://pop.mikro.biologie.tu-muenchen.de/ORS/ &", 0);
-                GDE_load_menu(awm,"user");
+                AWMIMT("ors",   "ORS (disabled) ...",      "O","ors.hlp",          AWM_EXP, (AW_CB)NT_system_cb, (AW_CL)"netscape http://pop.mikro.biologie.tu-muenchen.de/ORS/ &", 0);
+                GDE_load_menu(awm,AWM_EXP,"user");
             }
             awm->close_sub_menu();
             SEP________________________SEP();
 
-            awm->insert_sub_menu(0,"GDE specials","G");
+            awm->insert_sub_menu(0,"GDE specials","G", 0, AWM_EXP);
             {
-                GDE_load_menu(awm,0,0);
+                GDE_load_menu(awm,AWM_EXP,0,0);
             }
             awm->close_sub_menu();
 
-            if (!GB_NOVICE){
-                awm->insert_sub_menu(0,"WL specials","W");
-                {
-                    AWMIMT("chewck_gcg_list",         "Check GCG list",          "C", "checkgcg.hlp", AWM_TUM, AW_POPUP, (AW_CL)create_check_gcg_window,          0         );
-                    AWMIMT("view_probe_group_result", "View probe group result", "V", "",             AWM_EXP, AW_POPUP, (AW_CL)create_probe_group_result_window, (AW_CL)ntw);
-                }
-                awm->close_sub_menu();
+            awm->insert_sub_menu(0,"WL specials","W", 0, AWM_EXP);
+            {
+                AWMIMT("chewck_gcg_list",         "Check GCG list",          "C", "checkgcg.hlp", AWM_EXP, AW_POPUP, (AW_CL)create_check_gcg_window,          0         );
+                AWMIMT("view_probe_group_result", "View probe group result", "V", "",             AWM_EXP, AW_POPUP, (AW_CL)create_probe_group_result_window, (AW_CL)ntw);
             }
+            awm->close_sub_menu();
 
-            if (!GB_NOVICE) {
-                SEP________________________SEP();
-                AWMIMT("xterm",         "Start XTERM",             "X",0   ,       AWM_EXP, (AW_CB)GB_xterm, (AW_CL)0, 0 );
-            }
+            SEP________________________SEP();
+            AWMIMT("xterm",         "Start XTERM",             "X",0   ,       AWM_ALL, (AW_CB)GB_xterm, (AW_CL)0, 0 );
         }
 #if defined(DEBUG)
         awm->create_menu(0,"Debugging","D","", AWM_ALL);
         {
-            AWMIMT("fix_db",      "Fix database",            "F", "fixdb.hlp", AWM_EXP, (AW_CB)NT_fix_database,            0,                     0);
+            AWMIMT("fix_db",      "Fix database",            "F", "fixdb.hlp", AWM_ALL, (AW_CB)NT_fix_database,            0,                     0);
             AWMIMT("debug_arbdb", "Print debug information", "d", 0,           AWM_ALL, (AW_CB)GB_print_debug_information, (AW_CL)GLOBAL_gb_main, 0);
             AWMIMT("test_compr",  "Test compression",        "c", 0,           AWM_ALL, (AW_CB)GBT_compression_test,       (AW_CL)GLOBAL_gb_main, 0);
             SEP________________________SEP();
@@ -1441,6 +1449,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             AWMIMT("props_www",      "Search world wide web (WWW)",                 "W","props_www.hlp",        AWM_ALL, AW_POPUP, (AW_CL)AWT_open_www_window,  (AW_CL)GLOBAL_gb_main );
             SEP________________________SEP();
             AWMIMT("enable_advices", "Reactivate advices",                          "R","advice.hlp", AWM_ALL, (AW_CB) AWT_reactivate_all_advices, 0, 0 );
+            AWMIMT("toggle_expert",  "Toggle expert mode",                          "T",0,            AWM_ALL, NT_toggle_expert_mode, 0, 0 );
             SEP________________________SEP();
             AWMIMT("save_props",     "Save properties (in ~/.arb_prop/ntree.arb)",  "S","savedef.hlp",AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
         }
@@ -1454,18 +1463,18 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->create_mode(0, "mark.bitmap",     "mode_mark.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_MARK  );
     awm->create_mode(0, "group.bitmap",    "mode_group.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_GROUP );
     awm->create_mode(0, "pzoom.bitmap",     "mode_pzoom.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_ZOOM  );
-    awm->create_mode(0, "lzoom.bitmap",    "mode_lzoom.hlp",  AWM_EXP, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_LZOOM );
+    awm->create_mode(0, "lzoom.bitmap",    "mode_lzoom.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_LZOOM );
     awm->create_mode(0, "modify.bitmap",   "mode_info.hlp",   AWM_ALL, (AW_CB)NT_modify_cb,  (AW_CL)ntw, (AW_CL)AWT_MODE_MOD   );
     awm->create_mode(0, "www_mode.bitmap", "mode_www.hlp",    AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_WWW   );
 
-    awm->create_mode(0, "line.bitmap",    "mode_width.hlp",    AWM_TREE, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_LINE   );
-    awm->create_mode(0, "rot.bitmap",     "mode_rotate.hlp",   AWM_TREE, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_ROT    );
-    awm->create_mode(0, "spread.bitmap",  "mode_angle.hlp",    AWM_TREE, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SPREAD );
-    awm->create_mode(0, "swap.bitmap",    "mode_swap.hlp",     AWM_TREE, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SWAP   );
-    awm->create_mode(0, "length.bitmap",  "mode_length.hlp",   AWM_TREE, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_LENGTH );
-    awm->create_mode(0, "move.bitmap",    "mode_move.hlp",     AWM_TREE, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_MOVE   );
-    awm->create_mode(0, "setroot.bitmap", "mode_set_root.hlp", AWM_TREE, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SETROOT);
-    awm->create_mode(0, "reset.bitmap",   "mode_reset.hlp",    AWM_TREE, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_RESET  );
+    awm->create_mode(0, "line.bitmap",    "mode_width.hlp",    AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_LINE   );
+    awm->create_mode(0, "rot.bitmap",     "mode_rotate.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_ROT    );
+    awm->create_mode(0, "spread.bitmap",  "mode_angle.hlp",    AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SPREAD );
+    awm->create_mode(0, "swap.bitmap",    "mode_swap.hlp",     AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SWAP   );
+    awm->create_mode(0, "length.bitmap",  "mode_length.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_LENGTH );
+    awm->create_mode(0, "move.bitmap",    "mode_move.hlp",     AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_MOVE   );
+    awm->create_mode(0, "setroot.bitmap", "mode_set_root.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SETROOT);
+    awm->create_mode(0, "reset.bitmap",   "mode_reset.hlp",    AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_RESET  );
 
     awm->set_info_area_height( 250 );
     awm->at(5,2);
