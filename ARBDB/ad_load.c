@@ -1502,8 +1502,8 @@ GBDATA *GB_login(const char *cpath,const char *opent,const char *user)
                     if (dbCreated) printf(" database %s created\n", path);
                 }
                 else {
-                    GB_export_error("ERROR Database '%s' not found",path);
-                    gbd = 0;
+                    error = GBS_global_string("Database '%s' not found",path);
+                    gbd   = 0;
                 }
             }
             if (input) {
