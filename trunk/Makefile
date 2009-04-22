@@ -1241,7 +1241,7 @@ clean: links
 	$(MAKE) clean2
 
 # 'relocated' is about 50% faster than 'rebuild'
-relocated: links
+reloc_clean: links
 	@echo "---------------------------------------- Relocation cleanup"
 	$(MAKE) \
 		perl_clean \
@@ -1250,6 +1250,9 @@ relocated: links
 		binclean \
 		libclean \
 		objclean
+
+relocated: links
+	$(MAKE) reloc_clean
 	@echo "---------------------------------------- and remake"
 	$(MAKE) all
 
