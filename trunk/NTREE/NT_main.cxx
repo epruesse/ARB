@@ -171,9 +171,6 @@ GB_ERROR create_nt_window(AW_root *aw_root){
     GB_ERROR error = GB_request_undo_type(GLOBAL_gb_main, GB_UNDO_NONE);
     if (error) aw_message(error);
     nt_create_all_awars(aw_root,AW_ROOT_DEFAULT);
-    if (GB_NOVICE){
-        aw_root->set_sensitive(AWM_BASIC);
-    }
     aww = create_nt_main_window(aw_root,0);
     aww->show();
     error = GB_request_undo_type(GLOBAL_gb_main, GB_UNDO_UNDO);
@@ -345,8 +342,8 @@ AW_window *nt_create_intro_window(AW_root *awr)
     aws->callback((AW_CB1)nt_intro_start_merge,0);
     aws->create_autosize_button("MERGE_TWO_DATABASES","MERGE TWO ARB DATABASES","O");
 
-    aws->at("novice");
-    aws->create_toggle("NT/GB_NOVICE");
+    aws->at("expert");
+    aws->create_toggle(AWAR_EXPERT);
 
     return (AW_window *)aws;
 }
@@ -415,7 +412,8 @@ int main(int argc, char **argv)
 
     aw_create_selection_box_awars(aw_root, AWAR_DB, "", ".arb", "noname.arb", aw_default);
     aw_root->awar_string( AWAR_DB"type", "b", aw_default);
-    aw_root->awar_int( "NT/GB_NOVICE",      0, aw_default)  ->add_target_var(&GB_NOVICE);
+
+    aw_root->awar_int(AWAR_EXPERT, 0, aw_default);
 
     aw_root->awar_string(AWAR_DB_NAME, "noname.arb", aw_default);
     aw_root->awar(AWAR_DB_PATH)->add_callback(AWAR_DB_PATH_changed_cb);

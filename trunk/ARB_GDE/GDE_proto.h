@@ -19,7 +19,7 @@ void crop(char *input, char *head, char *tail);
 
 /* GDE.cxx */
 char *GDE_makeawarname(AWwindowinfo *AWinfo, long i);
-void GDE_load_menu(AW_window *awm, const char *menulabel, const char *menuitemlabel);
+void GDE_load_menu(AW_window *awm, AW_active mask, const char *menulabel, const char *menuitemlabel);
 void create_gde_var(AW_root *aw_root, AW_default aw_def, char *(*get_sequences )(void *THIS, GBDATA **&the_species, uchar **&the_names, uchar **&the_sequences, long &numberspecies, long &maxalignlen ), gde_cgss_window_type wt, void *THIS);
 
 /* GDE_event.cxx */

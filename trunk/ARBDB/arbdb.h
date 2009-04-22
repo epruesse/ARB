@@ -234,8 +234,6 @@ extern "C" {
 }
 #endif
 
-extern long GB_NOVICE;
-
 struct GBL_command_table;
 
 #ifdef __cplusplus

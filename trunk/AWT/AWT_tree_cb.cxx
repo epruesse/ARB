@@ -345,7 +345,7 @@ void NT_insert_color_mark_submenu(AW_window_menu_modes *awm, AWT_canvas *ntree_c
 #undef MAXENTRY
 }
 
-static void nt_insert_mark_topic(AW_window_menu_modes *awm, const char *attrib, const char *label_suffix, const char *entry_template,
+static void nt_insert_mark_topic(AW_window_menu_modes *awm, AW_active mask, const char *attrib, const char *label_suffix, const char *entry_template,
                                  const char *hotkey, const char *helpfile,
                                  AW_CB cb, AW_CL cl1, AW_CL cl2)
 {
@@ -376,27 +376,27 @@ static void nt_insert_mark_topic(AW_window_menu_modes *awm, const char *attrib, 
         entry = GBS_global_string_copy(entry_template, "", "");
     }
 
-    awm->insert_menu_topic(label, entry, hotkey, helpfile, AWM_ALL, cb, cl1, cl2);
+    awm->insert_menu_topic(label, entry, hotkey, helpfile, mask, cb, cl1, cl2);
 
     free(label_tmp);
     free(entry);
 }
 
-static void nt_insert_mark_topics(AW_window_menu_modes *awm, AWT_canvas *ntw, int affect, const char *attrib)
+static void nt_insert_mark_topics(AW_window_menu_modes *awm, AW_active mask, AWT_canvas *ntw, int affect, const char *attrib)
 {
     awt_assert(affect == (affect&MARK_MODE_UPPER_BITS)); // only bits 2 .. 4 are allowed
 
-    nt_insert_mark_topic(awm, attrib, "mark_all",            "Mark all %sSpecies%s",                    "M", "sp_mrk_all.hlp",    (AW_CB)NT_mark_all_cb,     (AW_CL)ntw, (AW_CL)(1+affect));
-    nt_insert_mark_topic(awm, attrib, "unmark_all",          "Unmark all %sSpecies%s",                  "U", "sp_umrk_all.hlp",   (AW_CB)NT_mark_all_cb,     (AW_CL)ntw, (AW_CL)(0+affect));
-    nt_insert_mark_topic(awm, attrib, "swap_marked",         "Invert marks of all %sSpecies%s",         "v", "sp_invert_mrk.hlp", (AW_CB)NT_mark_all_cb,     (AW_CL)ntw, (AW_CL)(2+affect));
+    nt_insert_mark_topic(awm, mask, attrib, "mark_all",            "Mark all %sSpecies%s",                    "M", "sp_mrk_all.hlp",    (AW_CB)NT_mark_all_cb,     (AW_CL)ntw, (AW_CL)(1+affect));
+    nt_insert_mark_topic(awm, mask, attrib, "unmark_all",          "Unmark all %sSpecies%s",                  "U", "sp_umrk_all.hlp",   (AW_CB)NT_mark_all_cb,     (AW_CL)ntw, (AW_CL)(0+affect));
+    nt_insert_mark_topic(awm, mask, attrib, "swap_marked",         "Invert marks of all %sSpecies%s",         "v", "sp_invert_mrk.hlp", (AW_CB)NT_mark_all_cb,     (AW_CL)ntw, (AW_CL)(2+affect));
     awm->insert_separator();
-    nt_insert_mark_topic(awm, attrib, "mark_tree",           "Mark %sSpecies%s in Tree",                "T", "sp_mrk_tree.hlp",   (AW_CB)NT_mark_tree_cb,    (AW_CL)ntw, (AW_CL)(1+affect));
-    nt_insert_mark_topic(awm, attrib, "unmark_tree",         "Unmark %sSpecies%s in Tree",              "n", "sp_umrk_tree.hlp",  (AW_CB)NT_mark_tree_cb,    (AW_CL)ntw, (AW_CL)(0+affect));
-    nt_insert_mark_topic(awm, attrib, "swap_marked_tree",    "Invert marks of %sSpecies%s in Tree",     "",  "sp_invert_mrk.hlp", (AW_CB)NT_mark_tree_cb,    (AW_CL)ntw, (AW_CL)(2+affect));
+    nt_insert_mark_topic(awm, mask, attrib, "mark_tree",           "Mark %sSpecies%s in Tree",                "T", "sp_mrk_tree.hlp",   (AW_CB)NT_mark_tree_cb,    (AW_CL)ntw, (AW_CL)(1+affect));
+    nt_insert_mark_topic(awm, mask, attrib, "unmark_tree",         "Unmark %sSpecies%s in Tree",              "n", "sp_umrk_tree.hlp",  (AW_CB)NT_mark_tree_cb,    (AW_CL)ntw, (AW_CL)(0+affect));
+    nt_insert_mark_topic(awm, mask, attrib, "swap_marked_tree",    "Invert marks of %sSpecies%s in Tree",     "",  "sp_invert_mrk.hlp", (AW_CB)NT_mark_tree_cb,    (AW_CL)ntw, (AW_CL)(2+affect));
     awm->insert_separator();
-    nt_insert_mark_topic(awm, attrib, "mark_nontree",        "Mark %sSpecies%s NOT in Tree",            "",  "sp_mrk_tree.hlp",   (AW_CB)NT_mark_nontree_cb, (AW_CL)ntw, (AW_CL)(1+affect));
-    nt_insert_mark_topic(awm, attrib, "unmark_nontree",      "Unmark %sSpecies%s NOT in Tree",          "",  "sp_umrk_tree.hlp",  (AW_CB)NT_mark_nontree_cb, (AW_CL)ntw, (AW_CL)(0+affect));
-    nt_insert_mark_topic(awm, attrib, "swap_marked_nontree", "Invert marks of %sSpecies%s NOT in Tree", "",  "sp_invert_mrk.hlp", (AW_CB)NT_mark_nontree_cb, (AW_CL)ntw, (AW_CL)(2+affect));
+    nt_insert_mark_topic(awm, mask, attrib, "mark_nontree",        "Mark %sSpecies%s NOT in Tree",            "",  "sp_mrk_tree.hlp",   (AW_CB)NT_mark_nontree_cb, (AW_CL)ntw, (AW_CL)(1+affect));
+    nt_insert_mark_topic(awm, mask, attrib, "unmark_nontree",      "Unmark %sSpecies%s NOT in Tree",          "",  "sp_umrk_tree.hlp",  (AW_CB)NT_mark_nontree_cb, (AW_CL)ntw, (AW_CL)(0+affect));
+    nt_insert_mark_topic(awm, mask, attrib, "swap_marked_nontree", "Invert marks of %sSpecies%s NOT in Tree", "",  "sp_invert_mrk.hlp", (AW_CB)NT_mark_nontree_cb, (AW_CL)ntw, (AW_CL)(2+affect));
 }
 
 void NT_insert_mark_submenus(AW_window_menu_modes *awm, AWT_canvas *ntw, int insert_as_submenu) {
@@ -407,19 +407,19 @@ void NT_insert_mark_submenus(AW_window_menu_modes *awm, AWT_canvas *ntw, int ins
     {
         awm->insert_menu_topic("count_marked",  "Count Marked Species",     "C","sp_count_mrk.hlp", AWM_ALL, (AW_CB)NT_count_mark_all_cb,       (AW_CL)ntw, 0 );
         awm->insert_separator();
-        nt_insert_mark_topics(awm, ntw, 0, 0);
+        nt_insert_mark_topics(awm, AWM_ALL, ntw, 0, 0);
         awm->insert_separator();
 
         awm->insert_sub_menu(0, "Full sequences", "F");
-        nt_insert_mark_topics(awm, ntw, 4, "full");
+        nt_insert_mark_topics(awm, AWM_EXP, ntw, 4, "full");
         awm->close_sub_menu();
 
         awm->insert_sub_menu(0, "Partial sequences", "P");
-        nt_insert_mark_topics(awm, ntw, 8, "partial");
+        nt_insert_mark_topics(awm, AWM_EXP, ntw, 8, "partial");
         awm->close_sub_menu();
 
         awm->insert_sub_menu(0, "Current Alignment", "A");
-        nt_insert_mark_topics(awm, ntw, 16, "-with data");
+        nt_insert_mark_topics(awm, AWM_EXP, ntw, 16, "-with data");
         awm->close_sub_menu();
     }
 

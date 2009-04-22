@@ -38,16 +38,17 @@ menu:Phylogeny_DistMatrix
 menu:Phylogeny_MaxParsimony
 #include <phylip_pars.genmenu>
 
-menu:Phylogeny_MaxLikelyhood
+menu:Phylogeny_MaxLikelyhood_EXP
 #include <fastdnaml.genmenu>
+#include <molphy.genmenu>
 
+menu:Phylogeny_MaxLikelyhood
 #define RAXML_DNA
 #include <raxml.genmenu>
 #undef RAXML_DNA
 #include <raxml.genmenu>
 
 #include <phylip_ml.genmenu>
-#include <molphy.genmenu>
 
 menu:Phylogeny_Other
 #include <puzzle.genmenu>

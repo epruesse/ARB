@@ -33,6 +33,7 @@
 #define AWAR_MIN_MISMATCHES       "nt/min_mismatches"
 #define AWAR_MAX_MISMATCHES       "nt/max_mismatches"
 #define AWAR_ITARGET_STRING       "nt/itarget_string"
+#define AWAR_EXPERT               "nt/expert"
 
 #define AWAR_SAI_COLOR_STR       "tmp/sai_color_str" //to visualize SAIs in probe Match window
 
@@ -63,6 +64,8 @@
 
 #define AWAR_FOOTER     "tmp/LeftFooter" // mode line (showing help for selected mode)
 #define AWAR_FOOTER_MAX_LEN 100 // max allowed textlen for mode line
+
+#define AWAR_AWM_MASK "tmp/awm_mask"
 
 #else
 #error aw_awars.hxx included twice

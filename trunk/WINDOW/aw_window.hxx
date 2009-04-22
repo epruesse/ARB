@@ -139,19 +139,16 @@ public:
 
 enum {
     AWM_DISABLED = 0,           // disabled items (used for dynamically dis-/enabled items)
-    AWM_ALL      = -1,
-    AWM_EXP      = 1,
-    AWM_TREE     = 2,           // Basic
-    AWM_TREE2    = 4,
-    AWM_PRO      = 8,           // Protein data
-    AWM_SEC      = 16,          // Secundaerystructure
-    AWM_SEQ      = 32,          // Sequence Basic
-    AWM_SEQ2     = 64,
-    AWM_PRB      = 0x100,       // probe design
-    AWM_TUM      = 0x200,       // W. Ludwig Specials
-    AWM_BASIC    = 2 + 32
+    AWM_BASIC    = 1,
+    AWM_EXP      = 2,
+    AWM_ALL      = AWM_BASIC|AWM_EXP 
 };
 
+enum {
+    AWM_MASK_UNKNOWN = AWM_DISABLED,
+    AWM_MASK_DEFAULT = AWM_BASIC,
+    AWM_MASK_EXPERT  = AWM_ALL
+};
 
 typedef char *AW_pixmap;
 
