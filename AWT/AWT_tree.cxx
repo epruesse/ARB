@@ -973,8 +973,7 @@ void AP_tree::test_tree(void) const {
 }
 
 
-GB_INLINE short PH_tree_read_byte(GBDATA *tree,const char *key, int init)
-{
+GB_INLINE short tree_read_byte(GBDATA *tree,const char *key, int init) {
     GBDATA *gbd;
     if (!tree) return init;
     gbd = GB_entry(tree,key);
@@ -982,8 +981,7 @@ GB_INLINE short PH_tree_read_byte(GBDATA *tree,const char *key, int init)
     return (short)GB_read_byte(gbd);
 }
 
-GB_INLINE float PH_tree_read_float(GBDATA *tree,const char *key, double init)
-{
+GB_INLINE float tree_read_float(GBDATA *tree,const char *key, double init) {
     GBDATA *gbd;
     if (!tree) return (float)init;
     gbd = GB_entry(tree,key);
@@ -994,13 +992,13 @@ GB_INLINE float PH_tree_read_float(GBDATA *tree,const char *key, double init)
 
 
 /** moves all node/leaf information from struct GBT_TREE to AP_tree */
-void AP_tree::load_node_info(){
-    this->gr.spread = PH_tree_read_float(this->gb_node, "spread", 1.0);
-    this->gr.left_angle = PH_tree_read_float(this->gb_node, "left_angle", 0.0);
-    this->gr.right_angle = PH_tree_read_float(this->gb_node, "right_angle", 0.0);
-    this->gr.left_linewidth = PH_tree_read_byte(this->gb_node, "left_linewidth", 0);
-    this->gr.right_linewidth = PH_tree_read_byte(this->gb_node, "right_linewidth", 0);
-    this->gr.grouped = PH_tree_read_byte(this->gb_node, "grouped", 0);
+void AP_tree::load_node_info() {
+    gr.spread          = tree_read_float(gb_node, "spread",          1.0);
+    gr.left_angle      = tree_read_float(gb_node, "left_angle",      0.0);
+    gr.right_angle     = tree_read_float(gb_node, "right_angle",     0.0);
+    gr.left_linewidth  = tree_read_byte (gb_node, "left_linewidth",  0);
+    gr.right_linewidth = tree_read_byte (gb_node, "right_linewidth", 0);
+    gr.grouped         = tree_read_byte (gb_node, "grouped",         0);
 }
 
 void AP_tree::move_gbt_2_ap(GBT_TREE* tree, bool insert_remove_cb)
@@ -1037,46 +1035,45 @@ void AP_tree::move_gbt_2_ap(GBT_TREE* tree, bool insert_remove_cb)
 
 #if defined(DEBUG)
 #if defined(DEVEL_RALF)
-#define DEBUG_PH_tree_write_byte
+#define DEBUG_tree_write_byte
 #endif // DEVEL_RALF
 #endif // DEBUG
 
 
-GB_ERROR PH_tree_write_byte(GBDATA *gb_tree, AP_tree *node,short i,const char *key, int init)
-{
+static GB_ERROR tree_write_byte(GBDATA *gb_tree, AP_tree *node,short i,const char *key, int init) {
     GBDATA *gbd;
     GB_ERROR error= 0;
     if (i==init) {
         if (node->gb_node){
             gbd = GB_entry(node->gb_node,key);
             if (gbd) {
-#if defined(DEBUG_PH_tree_write_byte)
-                printf("[PH_tree_write_byte] deleting db entry %p\n", gbd);
-#endif // DEBUG_PH_tree_write_byte
+#if defined(DEBUG_tree_write_byte)
+                printf("[tree_write_byte] deleting db entry %p\n", gbd);
+#endif // DEBUG_tree_write_byte
                 GB_delete(gbd);
             }
         }
     }else{
         if (!node->gb_node){
             node->gb_node = GB_create_container(gb_tree,"node");
-#if defined(DEBUG_PH_tree_write_byte)
-            printf("[PH_tree_write_byte] created node-container %p\n", node->gb_node);
-#endif // DEBUG_PH_tree_write_byte
+#if defined(DEBUG_tree_write_byte)
+            printf("[tree_write_byte] created node-container %p\n", node->gb_node);
+#endif // DEBUG_tree_write_byte
         }
         gbd = GB_entry(node->gb_node,key);
         if (!gbd) {
             gbd = GB_create(node->gb_node,key,GB_BYTE);
-#if defined(DEBUG_PH_tree_write_byte)
-            printf("[PH_tree_write_byte] created db entry %p\n", gbd);
-#endif // DEBUG_PH_tree_write_byte
+#if defined(DEBUG_tree_write_byte)
+            printf("[tree_write_byte] created db entry %p\n", gbd);
+#endif // DEBUG_tree_write_byte
         }
         error = GB_write_byte(gbd,i);
     }
     return error;
 }
 
-GB_ERROR PH_tree_write_float(GBDATA *gb_tree, AP_tree *node,float f,const char *key, float init) {
-    GB_ERROR  error = 0;
+static GB_ERROR tree_write_float(GBDATA *gb_tree, AP_tree *node,float f,const char *key, float init) {
+    GB_ERROR error = NULL;
     if (f==init) {
         if (node->gb_node){
             GBDATA *gbd    = GB_entry(node->gb_node,key);
@@ -1093,25 +1090,19 @@ GB_ERROR PH_tree_write_float(GBDATA *gb_tree, AP_tree *node,float f,const char *
     return error;
 }
 
-#if defined(DEVEL_RALF)
-#warning fix PH_-prefix
-#endif // DEVEL_RALF
+static GB_ERROR tree_write_tree_rek(GBDATA *gb_tree, AP_tree * THIS) {
+    GB_ERROR error = NULL;
+    if (!THIS->is_leaf) {
+        error             = tree_write_tree_rek(gb_tree,THIS->leftson);
+        if (!error) error = tree_write_tree_rek(gb_tree,THIS->rightson);
 
-GB_ERROR PH_tree_write_tree_rek(GBDATA *gb_tree, AP_tree * THIS)
-{
-    GB_ERROR error;
-    if (THIS->is_leaf){
-        return 0;
+        if (!error) error = tree_write_float(gb_tree, THIS, THIS->gr.spread,          "spread",          1.0);
+        if (!error) error = tree_write_float(gb_tree, THIS, THIS->gr.left_angle,      "left_angle",      0.0);
+        if (!error) error = tree_write_float(gb_tree, THIS, THIS->gr.right_angle,     "right_angle",     0.0);
+        if (!error) error = tree_write_byte (gb_tree, THIS, THIS->gr.left_linewidth,  "left_linewidth",  0);
+        if (!error) error = tree_write_byte (gb_tree, THIS, THIS->gr.right_linewidth, "right_linewidth", 0);
+        if (!error) error = tree_write_byte (gb_tree, THIS, THIS->gr.grouped,         "grouped",         0);
     }
-    error             = PH_tree_write_tree_rek(gb_tree,THIS->leftson);
-    if (!error) error = PH_tree_write_tree_rek(gb_tree,THIS->rightson);
-
-    if (!error) error = PH_tree_write_float(gb_tree,THIS, THIS->gr.spread,"spread", 1.0);
-    if (!error) error = PH_tree_write_float(gb_tree,THIS, THIS->gr.left_angle,"left_angle", 0.0);
-    if (!error) error = PH_tree_write_float(gb_tree,THIS, THIS->gr.right_angle,"right_angle", 0.0);
-    if (!error) error = PH_tree_write_byte(gb_tree,THIS, THIS->gr.left_linewidth,"left_linewidth", 0);
-    if (!error) error = PH_tree_write_byte(gb_tree,THIS, THIS->gr.right_linewidth,"right_linewidth", 0);
-    if (!error) error = PH_tree_write_byte(gb_tree,THIS, THIS->gr.grouped,"grouped", 0);
     return error;
 }
 
@@ -1127,7 +1118,7 @@ const char *AP_tree::saveTree() {
         error = GBS_global_string("I cannot save your tree, cause '%s' has been deleted from DB", tree_name);
     }
     else {
-        if (!error) error = PH_tree_write_tree_rek(gb_tree, this);
+        if (!error) error = tree_write_tree_rek(gb_tree, this);
         if (!error) error = GBT_write_tree(gb_main, gb_tree, 0, get_gbt_tree());
     }
     
