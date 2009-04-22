@@ -125,8 +125,13 @@ AW_font_group.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_font_group.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_font_group.o: $(ARBHOME)/INCLUDE/attributes.h
 
+AW_global_awars.o: aw_awars.hxx
+AW_global_awars.o: aw_device.hxx
 AW_global_awars.o: aw_global_awars.hxx
+AW_global_awars.o: aw_keysym.hxx
+AW_global_awars.o: aw_position.hxx
 AW_global_awars.o: aw_root.hxx
+AW_global_awars.o: aw_window.hxx
 AW_global_awars.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AW_global_awars.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_global_awars.o: $(ARBHOME)/INCLUDE/arb_assert.h
