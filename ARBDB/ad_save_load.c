@@ -63,8 +63,7 @@ GB_CSTR gb_oldQuicksaveName(GB_CSTR path, int nr)
     return qname;
 }
 
-GB_CSTR gb_quicksaveName(GB_CSTR path,int nr)
-{
+GB_CSTR gb_quicksaveName(GB_CSTR path,int nr) {
     static char *qname = 0;
     char *ext;
 
@@ -82,8 +81,7 @@ GB_CSTR gb_quicksaveName(GB_CSTR path,int nr)
     return qname;
 }
 
-GB_CSTR gb_mapfile_name(GB_CSTR path)
-{
+GB_CSTR gb_mapfile_name(GB_CSTR path) {
     static char *mapname = 0;
     char *ext;
 
@@ -98,8 +96,7 @@ GB_CSTR gb_mapfile_name(GB_CSTR path)
     return mapname;
 }
 
-GB_CSTR gb_overwriteName(GB_CSTR path)
-{
+GB_CSTR gb_overwriteName(GB_CSTR path) {
     static char *oname = 0;
     int          len   = strlen(path);
 
@@ -110,38 +107,46 @@ GB_CSTR gb_overwriteName(GB_CSTR path)
     return oname;
 }
 
-GB_CSTR gb_reffile_name(GB_CSTR path){
-    static char *refname = 0;
-    char *ext;
-    STATIC_BUFFER(refname, strlen(path)+4+1);
+GB_CSTR gb_reffile_name(GB_CSTR path) {
+    static char *refname;
+    size_t       len = strlen(path);
+    const char  *ext;
+    size_t       ext_offset;
 
-    strcpy(refname,path);
-    ext = gb_findExtension(refname);
-    if (!ext) ext = refname + strlen(refname);
-    strcpy(ext,".ARF");
+    STATIC_BUFFER(refname, len+4+1);
+    memcpy(refname, path, len+1);
+
+    ext        = gb_findExtension(refname);
+    ext_offset = ext ? (size_t)(ext-refname) : len;
+
+    strcpy(refname+ext_offset, ".ARF");
+
     return refname;
 }
 
-GB_ERROR gb_delete_reference(const char *master){
-    char *fullmaster = gb_full_path(master);
-    const char *fullref = gb_reffile_name(fullmaster);
+GB_ERROR gb_delete_reference(const char *master) {
+    GB_ERROR    error      = 0;
+    char       *fullmaster = gb_full_path(master);
+    const char *fullref    = gb_reffile_name(fullmaster);
+
+    if (GB_unlink(fullref)<0) error = GB_await_error();
+
     free(fullmaster);
-    if (GB_unlink(fullref)<0) {
-        return GB_get_error();
-    }
-    return 0;
+    return error;
 }
 
 GB_ERROR gb_create_reference(const char *master){
-    char *fullmaster = gb_full_path(master);
-    const char *fullref = gb_reffile_name(fullmaster);
-    GB_ERROR error = 0;
-    FILE *out = fopen(fullref,"w");
-    if (out){
+    char       *fullmaster = gb_full_path(master);
+    const char *fullref    = gb_reffile_name(fullmaster);
+    GB_ERROR    error      = 0;
+    FILE       *out        = fopen(fullref,"w");
+    
+    if (out) {
         fprintf(out,"***** The following files may be a link to %s ********\n",fullmaster);
         fclose(out);
         GB_set_mode_of_file(fullref,00666);
-    }else{
+    }
+    else {
         error = GB_export_error("WARNING: Cannot create file '%s'\n"
                                 "   Your database is saved, but you should check write permissions\n"
                                 "   in the destination directory",
@@ -153,16 +158,18 @@ GB_ERROR gb_create_reference(const char *master){
 }
 
 GB_ERROR gb_add_reference(char *master, char *changes){
-    char *fullmaster = gb_full_path(master);
-    char *fullchanges = gb_full_path(changes);
-    const char *fullref = gb_reffile_name(fullmaster);
-    GB_ERROR    error = 0;
-    FILE *out = fopen(fullref,"a");
-    if (out){
+    char       *fullmaster  = gb_full_path(master);
+    char       *fullchanges = gb_full_path(changes);
+    const char *fullref     = gb_reffile_name(fullmaster);
+    GB_ERROR    error       = 0;
+    FILE       *out         = fopen(fullref,"a");
+
+    if (out) {
         fprintf(out,"%s\n",fullchanges);
         fclose(out);
         GB_set_mode_of_file(fullref,00666);
-    }else{
+    }
+    else {
         error = GB_export_error("Cannot add your file '%s'\n"
                                 "   to the list of references of '%s'\n"
                                 "   Please ask the owner of that file not to delete it\n"
@@ -170,24 +177,25 @@ GB_ERROR gb_add_reference(char *master, char *changes){
                                 fullchanges,fullref);
     }
 
-    free(fullmaster);
     free(fullchanges);
+    free(fullmaster);
+    
     return error;
 }
-GB_ERROR gb_remove_quick_saved(GB_MAIN_TYPE *Main, const char *path)
-{
+
+static GB_ERROR gb_remove_quick_saved(GB_MAIN_TYPE *Main, const char *path) {
     int i;
     GB_ERROR error = 0;
 
     for (i=0; i<GB_MAX_QUICK_SAVE_INDEX && !error; i++) {
         if (GB_unlink(gb_quicksaveName(path,i))<0) {
-            error = GB_get_error();
+            error = GB_await_error();
         }
     }
 
     for (i=0; i<10 && !error; i++) {
         if (GB_unlink(gb_oldQuicksaveName(path,i))<0) {
-            error = GB_get_error();
+            error = GB_await_error();
         }
     }
 
@@ -202,7 +210,7 @@ GB_ERROR gb_remove_all_but_main(GB_MAIN_TYPE *Main, const char *path){
     error = gb_remove_quick_saved(Main,path);
     if (!error){
         if (GB_unlink(gb_mapfile_name(path))<0){
-            error = GB_get_error();
+            error = GB_await_error();
         }
     }                 /* delete old mapfile */
     return error;
@@ -273,7 +281,7 @@ static GB_ERROR deleteSuperfluousQuicksaves(GB_MAIN_TYPE *Main) {
     for (i=0; cnt>GB_MAX_QUICK_SAVES && i<GB_MAX_QUICK_SAVE_INDEX && !error; i++) {
         GB_CSTR qsave = gb_quicksaveName(path, i);
         if (GB_is_regularfile(qsave)) {
-            if (GB_unlink(qsave)<0) error = GB_get_error();
+            if (GB_unlink(qsave)<0) error = GB_await_error();
             else cnt--;
         }
     }
@@ -934,6 +942,9 @@ GB_ERROR GB_save_in_home(GBDATA *gb,const char *path,const char *savetype)
     return error;
 }
 
+#if defined(DEVEL_RALF)
+#warning rewrite error handling in GB_save_as, GB_save_quick_as, GB_save_quick, gb_check_saveable
+#endif /* DEVEL_RALF */
 
 /** Save whole database */
 GB_ERROR GB_save_as(GBDATA *gb,const char *path,const char *savetype)
@@ -1085,30 +1096,29 @@ GB_ERROR GB_save_as(GBDATA *gb,const char *path,const char *savetype)
     return GB_get_error();
 }
 
-/** is quick save allowed ??? */
-GB_ERROR gb_check_quick_save(GBDATA *gb_main, char *refpath)
-{
-    GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
-    GBUSE(refpath);
-    gb_main = (GBDATA *)Main->data;
+static GB_ERROR gb_check_quick_save(GBDATA *gb_main) {
+    /* is quick save allowed?
+     * return NULL if allowed, error why disallowed otherwise.
+     */
 
+    GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
     if (Main->qs.quick_save_disabled) {
-        return GB_export_error("Save Changes Disabled, because\n"
-                               "    '%s'\n"
-                               "    Save whole database using binary mode first",
-                               Main->qs.quick_save_disabled);
+        return GBS_global_string("Save Changes Disabled, because\n"
+                                 "    '%s'\n"
+                                 "    Save whole database using binary mode first",
+                                 Main->qs.quick_save_disabled);
     }
 
-    return 0;
+    return NULL;
 }
 
 GB_ERROR GB_delete_database(GB_CSTR filename) {
-    if (GB_unlink(filename)<0 ||
-        gb_remove_all_but_main(0, filename))
-    {
-        return GB_get_error();
-    }
-    return NULL;
+    GB_ERROR error = 0;
+
+    if (GB_unlink(filename)<0) error = GB_await_error();
+    else error                       = gb_remove_all_but_main(0, filename);
+
+    return error;
 }
 
 GB_ERROR GB_save_quick_as(GBDATA *gb_main, char *path)
@@ -1126,7 +1136,7 @@ GB_ERROR GB_save_quick_as(GBDATA *gb_main, char *path)
     }
 
     if (!strcmp(path,Main->path)) return GB_save_quick(gb_main,path);   /* No rename */
-    if (gb_check_quick_save(gb_main,path)) return GB_get_error();
+    if (gb_check_quick_save(gb_main)) return GB_get_error();
     if (gb_check_saveable(gb_main,path,"bn")) return GB_get_error();
 
     fmaster = fopen( Main->path, "r" ); /* old master !!!! */
@@ -1210,7 +1220,7 @@ GB_ERROR GB_save_quick(GBDATA *gb, char *refpath)
     GB_MAIN_TYPE *Main = GB_MAIN(gb);
 
     gb = (GBDATA *)Main->data;
-    if (gb_check_quick_save(gb,refpath)) return GB_get_error();
+    if (gb_check_quick_save(gb)) return GB_get_error();
     if (gb_check_saveable(gb,refpath,"q")) return GB_get_error();
 
     if (refpath && strcmp(refpath, Main->path) )
@@ -1280,15 +1290,15 @@ GB_ERROR GB_save_quick(GBDATA *gb, char *refpath)
 /** returns 0 if user is allowed to save */
 
 char *gb_full_path(const char *path) {
-    const char *cwd;
-    char *res;
-    if (path[0] == '/') return strdup(path);
+    char *res = 0;
+    
+    if (path[0] == '/') res = strdup(path);
+    else {
+        const char *cwd = GB_getcwd();
 
-    cwd = GB_getcwd();
-
-    if (path[0] == 0) return strdup(cwd);
-    res = GBS_global_string_copy("%s/%s",cwd,path);
-
+        if (path[0] == 0) res = strdup(cwd);
+        else res              = GBS_global_string_copy("%s/%s",cwd,path);
+    }
     return res;
 }
 

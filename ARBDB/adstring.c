@@ -230,6 +230,9 @@ GB_ERROR GB_export_error(const char *templat, ...) {
     char    *p  = buffer;
     va_list  parg;
     memset(buffer,0,1000);
+#if defined(DEVEL_RALF)
+#warning dont prepend error here    
+#endif /* DEVEL_RALF */
     sprintf (buffer,"ARB ERROR: ");
     p          += strlen(p);
     va_start(parg,templat);
@@ -305,6 +308,7 @@ GB_ERROR GB_await_error() {
         reassign(err, GB_error_buffer);
         return err;
     }
+    ad_assert(0); // please correct error handling 
     return "Program logic error: Something went wrong, but reason is unknown";
 }
 

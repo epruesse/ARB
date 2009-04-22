@@ -285,11 +285,14 @@ void GB_init_gb(void) {
 
 GB_ERROR gb_unfold(GBCONTAINER *gbd, long deep, int index_pos)
 {
-    /* get data from server if deep than get subitems too
-       if index_pos >=0 than get indexed item from server */
-    /*  if index_pos <0 get all items           */
-    GB_ERROR error;
-    GBDATA *gb2;
+    /* get data from server if deep than get subitems too.
+     * If index_pos >= 0, get indexed item from server
+     *               <0, get all items
+     */
+
+    GB_ERROR  error;
+    GBDATA   *gb2;
+    
     struct gb_header_list_struct *header = GB_DATA_LIST_HEADER(gbd->d);
 
     if (!gbd->flags2.folded_container) return 0;
@@ -1361,8 +1364,9 @@ GB_ERROR GB_copy(GBDATA *dest, GBDATA *source)
                     gb_d = GB_create(dest,key,type2);
                 }
 
-                if (!gb_d) return GB_get_error();
-                error = GB_copy(gb_d, gb_p);
+                if (!gb_d) error = GB_await_error();
+                else error       = GB_copy(gb_d, gb_p);
+                
                 if (error) break;
             }
 
@@ -1637,12 +1641,14 @@ GB_ERROR GB_begin_transaction(GBDATA *gbd) {
 GB_ERROR gb_init_transaction(GBCONTAINER *gbd)      /* the first transaction ever */
 {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    GB_ERROR error;
+    GB_ERROR      error;
+
     Main->transaction = 1;
+    
     error = gbcmc_init_transaction(Main->data);
-    if (error) return error;
-    Main->clock ++;
-    return 0;
+    if (!error) Main->clock ++;
+
+    return error;
 }
 
 GB_ERROR GB_no_transaction(GBDATA *gbd)

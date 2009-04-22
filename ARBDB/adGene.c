@@ -219,11 +219,13 @@ static GB_ERROR parseCSV(GBDATA *gb_gene, const char *field_name, int parts, cha
     // results are put into parseTable (only first entry in parseTable is allocated, other entries
     // are simply pointers into the same string)
 
-    GB_ERROR  error    = 0;
-    GBDATA   *gb_field = GB_entry(gb_gene, field_name);
-    if (gb_field) {
-        char *content = GB_read_string(gb_field);
-        if (content) {
+    GB_ERROR  error      = 0;
+    GBDATA   *gb_field   = GB_entry(gb_gene, field_name);
+    if (!gb_field) error = GBS_global_string("Expected entry '%s' missing", field_name);
+    else {
+        char *content       = GB_read_string(gb_field);
+        if (!content) error = GB_await_error();
+        else {
             int   p;
             char *pos = content;
 
@@ -253,12 +255,6 @@ static GB_ERROR parseCSV(GBDATA *gb_gene, const char *field_name, int parts, cha
                 parseTable[0] = content; // ensure content gets freed
             }
         }
-        else {
-            error = GB_get_error();
-        }
-    }
-    else {
-        error = GBS_global_string("Expected entry '%s' missing", field_name);
     }
 
     if (error) clearParseTable(parseTable, parts);
@@ -346,6 +342,7 @@ struct GEN_position *GEN_read_position(GBDATA *gb_gene) {
         free(parseTable);
     }
 
+    gb_assert(error || pos);
     if (error) {
         GB_export_error(error);
         if (pos) {
@@ -368,22 +365,22 @@ GB_ERROR GEN_write_position(GBDATA *gb_gene, const struct GEN_position *pos) {
     gb_assert(pos);
 
     gb_pos_start             = GB_search(gb_gene, "pos_start", GB_STRING);
-    if (!gb_pos_start) error = GB_get_error();
+    if (!gb_pos_start) error = GB_await_error();
 
     if (!error) {
         gb_pos_stop             = GB_search(gb_gene, "pos_stop", GB_STRING);
-        if (!gb_pos_stop) error = GB_get_error();
+        if (!gb_pos_stop) error = GB_await_error();
     }
     if (!error) {
         gb_pos_complement             = GB_search(gb_gene, "pos_complement", GB_STRING);
-        if (!gb_pos_complement) error = GB_get_error();
+        if (!gb_pos_complement) error = GB_await_error();
     }
 
     if (!error) {
         if (pos->start_uncertain) {
             if (!gb_pos_certain) {
                 gb_pos_certain             = GB_search(gb_gene, "pos_certain", GB_STRING);
-                if (!gb_pos_certain) error = GB_get_error();
+                if (!gb_pos_certain) error = GB_await_error();
             }
         }
         else {
@@ -425,7 +422,7 @@ GB_ERROR GEN_write_position(GBDATA *gb_gene, const struct GEN_position *pos) {
         else {
             if (!gb_pos_joined) {
                 gb_pos_joined             = GB_search(gb_gene, "pos_joined", GB_INT);
-                if (!gb_pos_joined) error = GB_get_error();
+                if (!gb_pos_joined) error = GB_await_error();
             }
             if (!error) error = GB_write_int(gb_pos_joined, pos->parts * (pos->joinable ? 1 : -1)); // neg. parts means not joinable
 

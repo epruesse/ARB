@@ -24,18 +24,9 @@ static const char *get_addid(GBDATA *gb_main) {
 }
 
 static GB_ERROR set_addid(GBDATA *gb_main, const char *addid) {
-    GB_transaction  ta(gb_main);
-    GB_ERROR        error    = 0;
-    GBDATA         *gb_addid = GB_search(gb_main, AWAR_NAMESERVER_ADDID, GB_STRING);
-
-#if defined(DEBUG)
-    printf("set_addid(%s)\n", addid);
-#endif // DEBUG
-
-    if (gb_addid) error = GB_write_string(gb_addid, addid ? addid : "");
-    else error          = GB_get_error();
-
-    return error;
+    GB_ERROR error    = GB_push_transaction(gb_main);
+    if (!error) error = GBT_write_string(gb_main, AWAR_NAMESERVER_ADDID, addid ? addid : "");
+    return GB_end_transaction(gb_main, error);
 }
 
 const char *AW_get_nameserver_addid(GBDATA *gb_main) {
@@ -66,9 +57,7 @@ GB_ERROR AW_select_nameserver(GBDATA *gb_main, GBDATA *gb_other_main) {
     if (!addid) {
         const char * const *nameservers = GBS_get_arb_tcp_entries("ARB_NAME_SERVER*");
 
-        if (!nameservers) {
-            error = GB_get_error();
-        }
+        if (!nameservers) error = GB_await_error();
         else {
             int serverCount = 0;
 
@@ -216,9 +205,7 @@ public:
 
             if (!err) {
                 const char *ipport = GBS_read_arb_tcp(server_id);
-                if (!ipport) {
-                    err = GB_get_error();
-                }
+                if (!ipport) err = GB_await_error();
                 else {
                     link     = (aisc_com *)aisc_open(ipport, &com,AISC_MAGIC_NUMBER);
                     linktime = time(0);

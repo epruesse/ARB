@@ -870,7 +870,7 @@ char *gb_uncompress_by_sequence(GBDATA *gbd, const char *ss,long size, GB_ERROR 
                 dest = g_b_uncompress_single_sequence_by_master(ss, master, size, new_size);
             }
             else {
-                *error = GB_get_error();
+                *error = GB_await_error();
             }
         }
         free(to_free);

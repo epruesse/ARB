@@ -319,7 +319,7 @@ void GB_split_full_path P_((const char *fullpath, char **res_dir, char **res_ful
 
 /* adcomm.c */
 GB_ERROR GBCMS_open P_((const char *path, long timeout, GBDATA *gb_main));
-GB_ERROR GBCMS_shutdown P_((GBDATA *gbd));
+void GBCMS_shutdown P_((GBDATA *gbd));
 GB_BOOL GBCMS_accept_calls P_((GBDATA *gbd, GB_BOOL wait_extra_time));
 long GB_read_clients P_((GBDATA *gbd));
 GB_BOOL GB_is_server P_((GBDATA *gbd));

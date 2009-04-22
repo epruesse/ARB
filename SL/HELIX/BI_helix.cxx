@@ -251,9 +251,7 @@ const char *BI_helix::init(GBDATA *gb_main, const char *alignment_name, const ch
     GBDATA *gb_sai_data = GBT_get_SAI_data(gb_main);
     long    size2       = GBT_get_alignment_len(gb_main,alignment_name);
 
-    if (size2<=0) {
-        set_error(GB_get_error());
-    }
+    if (size2<=0) set_error(GB_await_error());
     else {
         GBDATA *gb_helix_nr_con = GBT_find_SAI_rel_SAI_data(gb_sai_data, helix_nr_name);
         GBDATA *gb_helix_con    = GBT_find_SAI_rel_SAI_data(gb_sai_data, helix_name);
@@ -421,10 +419,7 @@ const char *BI_ecoli_ref::init(GBDATA *gb_main,char *alignment_name, char *ref_n
     GB_ERROR err  = 0;
     long     size = GBT_get_alignment_len(gb_main,alignment_name);
     
-    if (size<=0) {
-        err = GB_get_error();
-        bi_assert(err);
-    }
+    if (size<=0) err = GB_await_error();
     else {
         GBDATA *gb_ref_con   = GBT_find_SAI(gb_main, ref_name);
         if (!gb_ref_con) err = GBS_global_string("I cannot find the SAI '%s'",ref_name);

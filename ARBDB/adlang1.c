@@ -438,10 +438,10 @@ static GB_ERROR gbl_apply_binary_operator(GBL_command_arguments *args, gbl_binar
 
                 for (i = 0; i<args->cinput; ++i) {
                     char *result1       = GB_command_interpreter(gb_main, args->vinput[i].str, args->vparam[0].str, args->gb_ref, args->default_tree_name);
-                    if (!result1) error = GB_get_error();
+                    if (!result1) error = GB_await_error();
                     else {
                         char *result2       = GB_command_interpreter(gb_main, args->vinput[i].str, args->vparam[1].str, args->gb_ref, args->default_tree_name);
-                        if (!result2) error = GB_get_error();
+                        if (!result2) error = GB_await_error();
                         else {
                             STREAM_OUT(args, op(result1, result2, client_data));
                             free(result2);
@@ -464,59 +464,68 @@ static GB_ERROR gbl_apply_binary_operator(GBL_command_arguments *args, gbl_binar
           the commands themselves:
 ********************************************************************************************/
 
-static GB_ERROR gbl_command(GBL_command_arguments *args)
-{
-    GBDATA *gb_main = (GBDATA*)GB_MAIN(args->gb_ref)->data;
-    int     i;
-    char   *command;
+static GB_ERROR gbl_command(GBL_command_arguments *args) {
+    GB_ERROR error = NULL;
 
-    if (args->cparam!=1) return "syntax: command(\"escaped command\")";
+    if (args->cparam!=1) {
+        error = "syntax: command(\"escaped command\")";
+    }
+    else {
+        GBDATA *gb_main = (GBDATA*)GB_MAIN(args->gb_ref)->data;
+        int     i;
+        char   *command;
 
-    GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
-
-    command = unEscapeString(args->vparam[0].str);
+        GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
+        command = unEscapeString(args->vparam[0].str);
 #if defined(DEBUG)
-    printf("executing command '%s'\n", command);
+        printf("executing command '%s'\n", command);
 #endif /* DEBUG */
 
-    for (i=0;i<args->cinput;i++) { /* go through all orig streams       */
-        char *result = GB_command_interpreter(gb_main, args->vinput[i].str, command, args->gb_ref, args->default_tree_name);
-        if (!result) return GB_get_error();
-
-        STREAM_OUT(args, result);
+        for (i=0; i<args->cinput && !error; i++) { /* go through all orig streams       */
+            char *result       = GB_command_interpreter(gb_main, args->vinput[i].str, command, args->gb_ref, args->default_tree_name);
+            if (!result) error = GB_await_error();
+            else  STREAM_OUT(args, result);
+        }
+        free(command);
     }
-    free(command);
-    return 0;
+    return error;
 }
 
-static GB_ERROR gbl_eval(GBL_command_arguments *args)
-{
-    GBDATA *gb_main = (GBDATA*)GB_MAIN(args->gb_ref)->data;
-    int     i;
-    char   *command;
-    char   *to_eval;
+static GB_ERROR gbl_eval(GBL_command_arguments *args) {
+    GB_ERROR error = NULL;
 
-    if (args->cparam!=1) return "eval syntax: eval(\"escaped command evaluating to command\")";
-
-    GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
-
-    to_eval = unEscapeString(args->vparam[0].str);
-    command = GB_command_interpreter(gb_main, "", to_eval, args->gb_ref, args->default_tree_name); // evaluate independent
-
-    if (GB_get_ACISRT_trace()) {
-        printf("evaluating '%s'\n", to_eval);
-        printf("executing '%s'\n", command);
+    if (args->cparam!=1) {
+        error = "eval syntax: eval(\"escaped command evaluating to command\")";
     }
+    else {
+        GBDATA *gb_main = (GBDATA*)GB_MAIN(args->gb_ref)->data;
+        char   *command;
+        char   *to_eval;
 
-    for (i=0;i<args->cinput;i++) { /* go through all orig streams  */
-        char *result = GB_command_interpreter(gb_main, args->vinput[i].str, command, args->gb_ref, args->default_tree_name);
-        if (!result) return GB_get_error();
+        GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
 
-        STREAM_OUT(args, result);
+        to_eval = unEscapeString(args->vparam[0].str);
+        command = GB_command_interpreter(gb_main, "", to_eval, args->gb_ref, args->default_tree_name); // evaluate independent
+
+        if (!command) error = GB_await_error();
+        else {
+            int i;
+
+            if (GB_get_ACISRT_trace()) {
+                printf("evaluating '%s'\n", to_eval);
+                printf("executing '%s'\n", command);
+            }
+
+            for (i=0; i<args->cinput && !error; i++) { /* go through all orig streams  */
+                char *result       = GB_command_interpreter(gb_main, args->vinput[i].str, command, args->gb_ref, args->default_tree_name);
+                if (!result) error = GB_await_error();
+                else  STREAM_OUT(args, result);
+            }
+            free(command);
+        }
+        free(to_eval);
     }
-    free(to_eval);
-    free(command);
-    return 0;
+    return error;
 }
 
 static GB_HASH *definedCommands = 0;
@@ -569,12 +578,11 @@ static GB_ERROR gbl_do(GBL_command_arguments *args) {
             if (GB_get_ACISRT_trace()) {
                 printf("executing defined command '%s'='%s' on %i streams\n", name, cmd, args->cinput);
             }
-            
-            for (i=0;i<args->cinput;i++) { /* go through all orig streams  */
-                char *result = GB_command_interpreter(gb_main, args->vinput[i].str, cmd, args->gb_ref, args->default_tree_name);
-                if (!result) return GB_get_error();
 
-                STREAM_OUT(args, result);
+            for (i=0; i<args->cinput && !error; i++) { /* go through all orig streams  */
+                char *result       = GB_command_interpreter(gb_main, args->vinput[i].str, cmd, args->gb_ref, args->default_tree_name);
+                if (!result) error = GB_await_error();
+                else  STREAM_OUT(args, result);
             }
         }
     }
@@ -587,38 +595,44 @@ static GB_ERROR gbl_streams(GBL_command_arguments *args) {
     return 0;
 }
 
-static GB_ERROR gbl_origin(GBL_command_arguments *args)
-{
-    GBDATA *gb_origin = 0;
-    GBDATA *gb_main   = (GBDATA*)GB_MAIN(args->gb_ref)->data;
+static GB_ERROR gbl_origin(GBL_command_arguments *args) {
+    GB_ERROR error = NULL;
 
-    if (args->cparam!=1) return GB_export_error("syntax: %s(\"escaped command\")", args->command);
-    if (!GEN_is_pseudo_gene_species(args->gb_ref)) return GB_export_error("'%s' applies to gene-species only", args->command);
-
-    GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
-
-    if (strcmp(args->command, "origin_organism") == 0) {
-        gb_origin = GEN_find_origin_organism(args->gb_ref, 0);
+    if (args->cparam!=1) error = GBS_global_string("syntax: %s(\"escaped command\")", args->command);
+    else if (!GEN_is_pseudo_gene_species(args->gb_ref)) {
+        error = GBS_global_string("'%s' applies to gene-species only", args->command);
     }
     else {
-        ad_assert(strcmp(args->command, "origin_gene") == 0);
-        gb_origin = GEN_find_origin_gene(args->gb_ref, 0);
-    }
+        GBDATA *gb_origin = NULL;
 
-    {
-        char *command = unEscapeString(args->vparam[0].str);
-        int   i;
+        GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
 
-        for (i=0;i<args->cinput;i++) { /* go through all orig streams  */
-            char *result = GB_command_interpreter(gb_main, args->vinput[i].str, command, gb_origin, args->default_tree_name);
-            if (!result) return GB_get_error();
-
-            STREAM_OUT(args, result);
+        if (strcmp(args->command, "origin_organism") == 0) {
+            gb_origin = GEN_find_origin_organism(args->gb_ref, 0);
+        }
+        else {
+            ad_assert(strcmp(args->command, "origin_gene") == 0);
+            gb_origin = GEN_find_origin_gene(args->gb_ref, 0);
         }
 
-        free(command);
+        if (!error && !gb_origin) error = GB_await_error();
+        
+        if (!error) {
+            char   *command = unEscapeString(args->vparam[0].str);
+            int     i;
+            GBDATA *gb_main = (GBDATA*)GB_MAIN(args->gb_ref)->data;
+
+            for (i=0; i<args->cinput && !error; i++) { /* go through all orig streams  */
+                char *result       = GB_command_interpreter(gb_main, args->vinput[i].str, command, gb_origin, args->default_tree_name);
+                if (!result) error = GB_await_error();
+                else  STREAM_OUT(args, result);
+            }
+
+            free(command);
+        }
     }
-    return 0;
+
+    return error;
 }
 
 static GB_ERROR gbl_count(GBL_command_arguments *args)
@@ -1280,11 +1294,10 @@ static GB_ERROR gbl_extract_words(GBL_command_arguments *args)
 
     GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
     for (i=0;i<args->cinput;i++) {         /* go through all in streams    */
-        char *res;
-        res = GBS_extract_words(args->vinput[i].str, args->vparam[0].str, len, 1);
-        if (!res) return GB_get_error();
-
+        char *res = GBS_extract_words(args->vinput[i].str, args->vparam[0].str, len, 1);
+        ad_assert(res);
         STREAM_OUT(args, res);
+        free(res);
     }
     return 0;
 }
@@ -1301,11 +1314,10 @@ static GB_ERROR gbl_extract_sequence(GBL_command_arguments *args)
 
     GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
     for (i=0;i<args->cinput;i++) {         /* go through all in streams    */
-        char *res;
-        res = GBS_extract_words(args->vinput[i].str, args->vparam[0].str, len, 0);
-        if (!res) return GB_get_error();
-
+        char *res = GBS_extract_words(args->vinput[i].str, args->vparam[0].str, len, 0);
+        ad_assert(res);
         STREAM_OUT(args, res);
+        free(res);
     }
     return 0;
 }
@@ -1354,27 +1366,37 @@ static GB_ERROR gbl_gcgcheck(GBL_command_arguments *args)
                                         SRT
 ********************************************************************************************/
 
-static GB_ERROR gbl_srt(GBL_command_arguments *args)
-{
-    int i;
-    int j;
+static GB_ERROR gbl_srt(GBL_command_arguments *args) {
+    GB_ERROR error = NULL;
+    int      i;
+    int      j;
+
     GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
-    for (i=0;i<args->cinput;i++) {         /* go through all in streams    */
-        char *source = args->vinput[i].str;
-        for (j=0;j<args->cparam;j++) {
-            char *hs = GBS_string_eval(source,args->vparam[j].str,args->gb_ref);
-            if (!hs) return GB_get_error();
-            if (source != args->vinput[i].str) free(source);
-            source = hs;
+
+    for (i=0; i<args->cinput && !error; i++) {      /* go through all in streams    */
+        const char *source    = args->vinput[i].str;
+        char       *modsource = 0;
+
+        for (j=0; j<args->cparam && !error; j++) {
+            char *hs = GBS_string_eval(modsource ? modsource : source,
+                                       args->vparam[j].str,
+                                       args->gb_ref);
+
+            if (!hs) error = GB_await_error();
+            else freeset(modsource, hs);
         }
-        if (source != args->vinput[i].str){
-            STREAM_OUT(args, source);
-        }
-        else{
-            STREAM_DUPOUT(args, source);
+
+        if (!error) {
+            if (modsource) {
+                STREAM_OUT(args, modsource);
+                free(modsource);
+            }
+            else {
+                STREAM_DUPOUT(args, source);
+            }
         }
     }
-    return 0;
+    return error;
 }
 
 /********************************************************************************************
@@ -1415,7 +1437,6 @@ static GB_ERROR gbl_per_cent(GBL_command_arguments *args){ return gbl_apply_bina
 static GB_ERROR gbl_select(GBL_command_arguments *args) {
     int       i;
     GB_ERROR  error   = 0;
-    GBDATA   *gb_main = (GBDATA*)GB_MAIN(args->gb_ref)->data;
 
     GBL_CHECK_FREE_PARAM(*args->coutput, args->cinput);
 
@@ -1425,13 +1446,10 @@ static GB_ERROR gbl_select(GBL_command_arguments *args) {
             error = GBS_global_string("Input stream value (%i) is out of bounds (0 to %i)", value, args->cparam-1);
         }
         else {
-            char *result = GB_command_interpreter(gb_main, "", args->vparam[value].str, args->gb_ref, args->default_tree_name);
-            if (!result) {
-                error = GB_get_error();
-            }
-            else {
-                STREAM_OUT(args, result);
-            }
+            GBDATA *gb_main    = (GBDATA*)GB_MAIN(args->gb_ref)->data;
+            char   *result     = GB_command_interpreter(gb_main, "", args->vparam[value].str, args->gb_ref, args->default_tree_name);
+            if (!result) error = GB_await_error();
+            else    STREAM_OUT(args, result);
         }
     }
     return error;
@@ -1608,7 +1626,7 @@ static void flush_taxonomy_cb(GBDATA *gbd, int *cd_ct, GB_CB_TYPE cbt) {
         GBDATA       *gb_main         = (GBDATA*)Main->data;
         GBDATA       *gb_tree_refresh = GB_search(gb_main, AWAR_TREE_REFRESH, GB_INT);
         if (!gb_tree_refresh) {
-            error = GBS_global_string("%s (while trying to force refresh)", GB_get_error());
+            error = GBS_global_string("%s (while trying to force refresh)", GB_await_error());
         }
         else {
             /* #if defined(DEBUG) */
@@ -1672,13 +1690,9 @@ static struct cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *
     }
     cached = GBS_read_hash(cached_taxonomies, tree_name);
     if (!cached) {
-        GBT_TREE *tree = GBT_read_tree(gb_main, tree_name, sizeof(*tree));
-        if (!tree) {
-            *error = GB_get_error();
-        }
-        else {
-            *error = GBT_link_tree(tree, gb_main, GB_FALSE, 0, 0);
-        }
+        GBT_TREE *tree    = GBT_read_tree(gb_main, tree_name, sizeof(*tree));
+        if (!tree) *error = GB_await_error();
+        else     *error   = GBT_link_tree(tree, gb_main, GB_FALSE, 0, 0);
 
         if (!*error) {
             GBDATA *gb_tree = GBT_get_tree(gb_main, tree_name);
@@ -1898,42 +1912,43 @@ static GB_ERROR gbl_taxonomy(GBL_command_arguments *args)
     return error;
 }
 
-static GB_ERROR gbl_sequence(GBL_command_arguments *args)
-{
-    char     *use;
-    GBDATA   *gb_seq;
+static GB_ERROR gbl_sequence(GBL_command_arguments *args) {
     GB_ERROR  error = 0;
 
-    if (args->cparam!=0) return "\"sequence\" syntax: \"sequence\" (no parameters)";
-    args->vparam = args->vparam;
-    if (args->cinput==0) return "No input stream";
-    GBL_CHECK_FREE_PARAM(*args->coutput,1);
+    if (args->cparam!=0) error      = "\"sequence\" syntax: \"sequence\" (no parameters)";
+    else if (args->cinput==0) error = "No input stream";
+    else {
+        GBL_CHECK_FREE_PARAM(*args->coutput,1);
 
-    switch (identify_gb_item(args->gb_ref)) {
-        case GBT_ITEM_UNKNOWN: {
-            error = "'sequence' used for unknown item";
-            break;
-        }
-        case GBT_ITEM_SPECIES: {
-            use    = GBT_get_default_alignment(GB_get_root(args->gb_ref));
-            gb_seq = GBT_read_sequence(args->gb_ref,use);
+        switch (identify_gb_item(args->gb_ref)) {
+            case GBT_ITEM_UNKNOWN: {
+                error = "'sequence' used for unknown item";
+                break;
+            }
+            case GBT_ITEM_SPECIES: {
+                char *use = GBT_get_default_alignment(GB_get_root(args->gb_ref));
+                
+                if (!use) error = GB_await_error();
+                else {
+                    GBDATA *gb_seq = GBT_read_sequence(args->gb_ref,use);
 
-            if (gb_seq) STREAM_OUT(args, GB_read_string(gb_seq));
-            else        STREAM_DUPOUT(args, ""); /* if current alignment does not exist -> return empty string */
+                    if (gb_seq) STREAM_OUT(args, GB_read_string(gb_seq));
+                    else        STREAM_DUPOUT(args, ""); /* if current alignment does not exist -> return empty string */
 
-            free(use);
+                    free(use);
+                }
+                break;
+            }
+            case GBT_ITEM_GENE: {
+                char *seq = GBT_read_gene_sequence(args->gb_ref, GB_TRUE, 0);
 
-            break;
-        }
-        case GBT_ITEM_GENE: {
-            char *seq = GBT_read_gene_sequence(args->gb_ref, GB_TRUE, 0);
-            if (!seq) error = GB_get_error();
-            if (!error) STREAM_OUT(args, seq);
+                if (!seq) error = GB_await_error();
+                else STREAM_OUT(args, seq);
 
-            break;
+                break;
+            }
         }
     }
-
     return error;
 }
 
@@ -2339,7 +2354,7 @@ static GB_ERROR apply_filters(GBL_command_arguments *args, struct common_filter_
                 }
                 else {
                     filter = gbl_read_seq_sai_or_species(common->species, common->sai, common->align, &flen);
-                    if (!filter) error = GB_get_error();
+                    if (!filter) error = GB_await_error();
                 }
 
                 gb_assert(filter || error);
@@ -2565,7 +2580,7 @@ static GB_ERROR gbl_exec(GBL_command_arguments *args)
             char *filename = GB_unique_filename("arb_exec_input", "tmp");
             FILE *out      = GB_fopen_tempfile(filename, "wt", &inputname);
 
-            if (!out) error = GB_get_error();
+            if (!out) error = GB_await_error();
             else {
                 for (i=0; i<args->cinput; i++) {               // go through all in streams
                     fprintf(out,"%s\n",args->vinput[i].str);
@@ -2617,7 +2632,7 @@ static GB_ERROR gbl_exec(GBL_command_arguments *args)
         }
 
         gb_assert(GB_is_privatefile(inputname, GB_FALSE));
-        if (GB_unlink(inputname)<0 && !error) error = GB_get_error();
+        if (GB_unlink(inputname)<0 && !error) error = GB_await_error();
         free(inputname);
     }
 

@@ -960,7 +960,7 @@ GB_CBUFFER gb_uncompress_data(GBDATA *gbd, GB_CBUFFER source, long size){
             error = GBS_global_string("Internal Error: Cannot uncompress data of field '%s'",GB_read_key_pntr(gbd));
         }
 
-        if (!data && !error) error = GB_get_error();
+        if (!data && !error) error = GB_await_error();
         if (error) last = 1; // sth went wrong, stop
     }
 

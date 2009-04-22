@@ -129,7 +129,7 @@ static GB_ERROR read_arb_tcp_dat(const char *filename, int *versionFound) {
                 if (tok[0] == '#') break; /* EOL comment -> stop */
                 if (tokCount >= MAXTOKENS) { error = "Too many tokens"; break; }
                 tokens[tokCount] = tokCount ? GBS_eval_env(tok) : strdup(tok);
-                if (!tokens[tokCount]) { error = GB_get_error(); break; }
+                if (!tokens[tokCount]) { error = GB_await_error(); break; }
                 tokCount++;
                 lp = 0;
             }
@@ -303,6 +303,8 @@ const char *GBS_scan_arb_tcp_param(const char *ipPort, const char *wantedParam) 
    }
 
    see also GBS_read_arb_tcp_param() above
+
+   Returns NULL on error (which is exported in that case)
 */
 
 const char *GBS_read_arb_tcp(const char *env) {
@@ -337,6 +339,7 @@ const char *GBS_read_arb_tcp(const char *env) {
         }
     }
 
+    ad_assert(result||error);
     if (error) {
         GB_export_error(error);
         result = 0;
