@@ -432,14 +432,16 @@ void AP_sequence::set_gb(GBDATA *gb_data){
  ************           AP_tree_root                    **********
  *****************************************************************************************/
 
-void
-AP_tree_tree_deleted(GBDATA * gbd, class AP_tree_root * tr
-                     /* , GB_CB_TYPE gbtype */ )
-{
+void AP_tree_tree_deleted(GBDATA * gbd, class AP_tree_root * tr /* , GB_CB_TYPE gbtype */ ) {
     if (gbd == tr->gb_tree) {
         tr->gb_tree = 0;
-    } else {
-        printf("internal warning:: AP_tree_tree_deleted :: a callback to unknown tree occur \n");
+    }
+    else if (tr->gb_tree == 0) {
+        ; // ok - tree has been removed by inform_about_changed_root()
+    }
+    else {
+        printf("internal warning:: AP_tree_tree_deleted :: a callback to unknown tree occurred\n");
+        awt_assert(0);
     }
 }
 
@@ -447,18 +449,18 @@ AP_tree_root::AP_tree_root(GBDATA * gb_maini, class AP_tree * tree_protoi,const 
 {
     memset((char *) this, 0, sizeof(AP_tree_root));
     if (tree_protoi) {
-        this->tree_template = tree_protoi->dup();
+        tree_template = tree_protoi->dup();
     }
-    this->gb_main = gb_maini;
-    if(name){
-        this->tree_name = strdup(name);
+    gb_main = gb_maini;
+    if (name){
+        tree_name = strdup(name);
         GB_push_transaction(gb_main);
-        this->gb_tree = GBT_get_tree(gb_main,name);
-        if (gb_tree){
-            GB_add_callback(this->gb_tree, GB_CB_DELETE, (GB_CB) AP_tree_tree_deleted, (int *) this);
+        gb_tree = GBT_get_tree(gb_main,name);
+        if (gb_tree) {
+            GB_add_callback(gb_tree, GB_CB_DELETE, (GB_CB) AP_tree_tree_deleted, (int *) this);
         }
-        this->gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
-        this->gb_table_data = GB_search(gb_main, "table_data", GB_CREATE_CONTAINER);
+        gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
+        gb_table_data   = GB_search(gb_main, "table_data", GB_CREATE_CONTAINER);
 
         GB_pop_transaction(gb_main);
     }
@@ -512,7 +514,7 @@ void ap_tree_node_deleted(GBDATA *, int *cl, GB_CB_TYPE){
 
 static bool vtable_ptr_check_done = false;
 
-AP_tree::AP_tree(AP_tree_root   *tree_rooti)
+AP_tree::AP_tree(AP_tree_root *tree_rooti)
 {
     //memset(((char*)this)+sizeof(char*), 0, sizeof(*this)-sizeof(char*));
 
@@ -611,34 +613,35 @@ AP_BOOL AP_tree::is_son(AP_tree *mfather) {
     return AP_FALSE;
 }
 
-GB_ERROR AP_tree::insert(AP_tree *new_brother){
-    AP_tree        *new_tree = dup();
-    AP_FLOAT    laenge;
+void AP_tree::insert(AP_tree *new_brother) {
+    AP_tree  *new_tree = dup();
+    AP_FLOAT  laenge;
 
-    new_tree->leftson = this;
+    new_tree->leftson  = this;
     new_tree->rightson = new_brother;
-    new_tree->father = new_brother->father;
-    this->father = new_tree;
+    new_tree->father   = new_brother->father;
+    father             = new_tree;
 
     if (new_brother->father) {
         if (new_brother->father->leftson == new_brother) {
             laenge = new_brother->father->leftlen = new_brother->father->leftlen*.5;
             new_brother->father->leftson = new_tree;
-        } else {
+        }
+        else {
             laenge = new_brother->father->rightlen = new_brother->father->rightlen*.5;
             new_brother->father->rightson = new_tree;
         }
-    }else{
+    }
+    else {
         laenge = 0.5;
     }
-    new_tree->leftlen = laenge;
-    new_tree->rightlen = laenge;
+    new_tree->leftlen   = laenge;
+    new_tree->rightlen  = laenge;
     new_brother->father = new_tree;
 
     if (!new_tree->father) {
-        this->tree_root->inform_about_changed_root(new_brother,new_tree);
+        tree_root->inform_about_changed_root(new_brother,new_tree);
     }
-    return 0;
 }
 
 char *AP_tree_root::inform_about_changed_root(class AP_tree *old, class AP_tree *newroot) {
@@ -646,9 +649,9 @@ char *AP_tree_root::inform_about_changed_root(class AP_tree *old, class AP_tree 
     this -> tree = newroot;
     if (!newroot) {             // tree empty
         if (gb_tree) {
-            GB_delete(gb_tree);
-            gb_tree = 0;
-            aw_message(GBS_global_string("Tree '%s' lost all leafs and has been deleted!", tree_name));
+            awt_assert(gb_tree_gone == 0);          // no tree should be remembered yet
+            gb_tree_gone = gb_tree;                 // remember for deletion (done in AP_tree::save)
+            gb_tree      = 0;
         }
     }
     return 0;
@@ -660,112 +663,121 @@ char *AP_tree_root::inform_about_delete(class AP_tree *old) {
 }
 
 
-GB_ERROR AP_tree::remove(void){
+void AP_tree::remove(void){
     if (father == 0) {
-        this->tree_root->inform_about_changed_root(father,0);
-        return 0;
+        tree_root->inform_about_changed_root(father,0);
     }
-
-    if (father->leftson != this) {
-        father->swap_sons();
-    }
-    if (father->gb_node) {      // move inner information to subtree
-        if (!father->rightson->gb_node && !father->rightson->is_leaf){
-            father->rightson->gb_node = father->gb_node;
-            father->gb_node = 0;
+    else {
+        if (father->leftson != this) {
+            father->swap_sons();
         }
-    }
-
-    if (father->father != 0) {
-        AP_tree        *ff_pntr = father->father;
-
-        if (ff_pntr->leftson == father) {
-            ff_pntr->leftlen += father->rightlen;
-            ff_pntr->leftson = father->rightson;
-            father->rightson->father = ff_pntr;
-        } else {
-            ff_pntr->rightlen += father->rightlen;
-            ff_pntr->rightson = father->rightson;
-            father->rightson->father = ff_pntr;
+        if (father->gb_node) {      // move inner information to subtree
+            if (!father->rightson->gb_node && !father->rightson->is_leaf){
+                father->rightson->gb_node = father->gb_node;
+                father->gb_node = 0;
+            }
         }
-    } else {
-        AP_tree        *newbroth = brother();
-        newbroth->father = 0;
-        this->tree_root->inform_about_changed_root(father,newbroth);
+
+        if (father->father != 0) {
+            AP_tree *ff_pntr = father->father;
+
+            if (ff_pntr->leftson == father) {
+                ff_pntr->leftlen         += father->rightlen;
+                ff_pntr->leftson          = father->rightson;
+                father->rightson->father  = ff_pntr;
+            }
+            else {
+                ff_pntr->rightlen        += father->rightlen;
+                ff_pntr->rightson         = father->rightson;
+                father->rightson->father  = ff_pntr;
+            }
+        }
+        else {
+            AP_tree *newbroth = brother();
+            newbroth->father  = 0;
+            tree_root->inform_about_changed_root(father,newbroth);
+        }
+        tree_root->inform_about_delete(father);
+        tree_root->inform_about_delete(this);
+        set_fathernotson(0);
     }
-    this->tree_root->inform_about_delete(father);
-    this->tree_root->inform_about_delete(this);
-    this->set_fathernotson(0);
-    return 0;
 }
 
-const char *AP_tree::move(AP_tree *new_brother, AP_FLOAT rel_pos)
+GB_ERROR AP_tree::cantMoveTo(AP_tree *new_brother) {
+    GB_ERROR error = 0;
+
+    if (!father)                                error = "Can't move the root of the tree";
+    else if (!new_brother->father)              error = "Can't move to the root of the tree";
+    else if (new_brother->father == father)     error = "Already there";
+    else if (new_brother->is_son(this))         error = "Can't move a subtree into itself";
+
+    return error;
+}
+
+void AP_tree::moveTo(AP_tree *new_brother, AP_FLOAT rel_pos) {
     // rel_pos == 0.0 -> at father
-    //  == 1.0 -> at brother
-{
-    if (new_brother->is_son(this)) {
-        return GB_export_error("You cannot move a tree to itself");
-    }
-    if (father == 0) return 0;
-    if (father->leftson != this) {
-        father->swap_sons();
-    }
+    //         == 1.0 -> at brother
+
+    awt_assert(father);
+    awt_assert(new_brother->father);
+    awt_assert(new_brother->father != father);      // already there
+    awt_assert(!new_brother->is_son(this));         // can't move tree into itself
+
+    if (father->leftson != this) father->swap_sons();
 
     if (father->father == 0) {
-        if (new_brother->father == this->father) return 0;  // move root to root
         brother()->father = 0;
-        this->tree_root->inform_about_changed_root(father,brother());
-    }else{
-        AP_tree        *ff_pntr = father->father;
+        tree_root->inform_about_changed_root(father, brother());
+    }
+    else {
+        AP_tree *ff_pntr = father->father;
         if (father == new_brother) {    // just pull branches !!
-            new_brother = brother();
+            new_brother  = brother();
             if (ff_pntr->leftson == father) {
                 rel_pos *= ff_pntr->leftlen / (father->rightlen+ff_pntr->leftlen);
-            }else{
-                rel_pos *= ff_pntr->rightlen/(father->rightlen+ff_pntr->rightlen);
             }
-        }else if (new_brother->father == this->father) {    // just pull branches !!
-            if (ff_pntr->leftson == father) {
-                rel_pos = 1.0 + (rel_pos -1.0) *
-                    father->rightlen / (father->rightlen+ff_pntr->leftlen);
-            }else{
-                rel_pos = 1.0 + (rel_pos -1.0) *
-                    father->rightlen/(father->rightlen+ff_pntr->rightlen);
+            else {
+                rel_pos *= ff_pntr->rightlen / (father->rightlen+ff_pntr->rightlen);
             }
+        }
+        else if (new_brother->father == father) { // just pull branches !!
+            rel_pos =
+                1.0 + (rel_pos-1.0) * father->rightlen
+                /
+                (father->rightlen + (ff_pntr->leftson == father ? ff_pntr->leftlen : ff_pntr->rightlen));
         }
 
         if (ff_pntr->leftson == father) {
             ff_pntr->leftlen += father->rightlen;
-            ff_pntr->leftson = father->rightson;
+            ff_pntr->leftson  = father->rightson;
             father->rightson->father = ff_pntr;
-        } else {
+        }
+        else {
             ff_pntr->rightlen += father->rightlen;
-            ff_pntr->rightson = father->rightson;
+            ff_pntr->rightson  = father->rightson;
             father->rightson->father = ff_pntr;
         }
     }
 
-    AP_tree        *new_tree = father;
-    AP_tree     *brother_father = new_brother->father;
-    AP_FLOAT    laenge;
+    AP_tree  *new_tree       = father;
+    AP_tree  *brother_father = new_brother->father;
+    AP_FLOAT  laenge;
 
     if (brother_father->leftson == new_brother) {
-        laenge = brother_father->leftlen;
+        laenge  = brother_father->leftlen;
         laenge -= brother_father->leftlen = laenge * rel_pos ;
         new_brother->father->leftson = new_tree;
-    } else {
-        laenge = brother_father->rightlen;
+    }
+    else {
+        laenge  = brother_father->rightlen;
         laenge -= brother_father->rightlen = laenge * rel_pos ;
         brother_father->rightson = new_tree;
     }
-    new_tree->rightlen = laenge;
-
+    
+    new_tree->rightlen  = laenge;
     new_brother->father = new_tree;
-
-    new_tree->rightson = new_brother;
-    new_tree->father = brother_father;
-
-    return 0;
+    new_tree->rightson  = new_brother;
+    new_tree->father    = brother_father;
 }
 
 void AP_tree::swap_sons(void)
@@ -779,216 +791,184 @@ void AP_tree::swap_sons(void)
     this->rightlen = h;
 }
 
-GB_ERROR AP_tree::swap_assymetric(AP_TREE_SIDE mode){
-    //mode 1 exchanges lefts with brother
-    // mode 2 exchanges rights with brother
-    AP_tree * pntr;
-    AP_tree        *pntr_father;
-    AP_tree        *pntr_brother;
+void AP_tree::swap_assymetric(AP_TREE_SIDE mode){
+    // mode AP_LEFT exchanges lefts with brother
+    // mode AP_RIGHT exchanges rights with brother
 
-    if (this->is_leaf == GB_TRUE) {
-        return (char *)GB_export_error("swap not allowed at leaf  !!");
-    }
-    if (this->father == 0) {
-        return (char *)GB_export_error("swap not allowed at root  !!");
-    }
-    if (this->father->father == 0) {
-        pntr_brother = this->brother();
-        if (pntr_brother->is_leaf == GB_TRUE) {
-            // no swap needed !
-            return 0;
-        }
-        switch (mode) {
-            case AP_LEFT:
+    awt_assert(!is_leaf);                           // cannot swap leafs
+    awt_assert(father);                             // cannot swap root (has no brother)
+    awt_assert(mode == AP_LEFT || mode == AP_RIGHT); // illegal mode
+
+    AP_tree *pntr;
+
+    if (father->father == 0) { // father is root
+        AP_tree *pntr_brother = brother();
+        if (!pntr_brother->is_leaf) {
+            if (mode == AP_LEFT) {
                 pntr_brother->leftson->father = this;
-                pntr = pntr_brother->leftson;
-                pntr_brother->leftson = leftson;
-                this->leftson->father = pntr_brother;
-                this->leftson = pntr;
-                break;
-
-            case AP_RIGHT:
-                //rightson with brother's leftson
+                pntr                          = pntr_brother->leftson;
+                pntr_brother->leftson         = leftson;
+                leftson->father               = pntr_brother;
+                leftson                       = pntr;
+            }
+            else {
                 pntr_brother->leftson->father = this;
-                this->rightson->father = pntr_brother;
-                pntr = pntr_brother->leftson;
-                pntr_brother->leftson = this->rightson;
-                this->rightson = pntr;
-                break;
-            default:
-                GB_warning("Cannot handle switch in swap()");
-                break;
+                rightson->father              = pntr_brother;
+                pntr                          = pntr_brother->leftson;
+                pntr_brother->leftson         = rightson;
+                rightson                      = pntr;
+            }
         }
-
-        return 0;
     }
-    pntr_father = father->father;
-    AP_FLOAT help_len;
-    switch (mode) {
-        case AP_LEFT:
-            //swap leftson with brother
-
+    else {
+        if (mode == AP_LEFT) { // swap leftson with brother
             if (father->leftson == this) {
                 father->rightson->father = this;
-                this->leftson->father = this->father;
-                pntr = father->rightson;
-                help_len = father->rightlen;
-                father->rightlen = this->leftlen;
-                this->leftlen = help_len;
-                father->rightson = leftson;
-                this->leftson = pntr;
-            } else {
-                father->leftson->father = this;
-                this->leftson->father = this->father;
-                pntr = father->leftson;
-                help_len = father->leftlen;
-                father->leftlen = this->leftlen;
-                this->leftlen = help_len;
-                father->leftson = leftson;
-                this->leftson = pntr;
+                leftson->father          = father;
+                pntr                     = father->rightson;
+                AP_FLOAT help_len        = father->rightlen;
+                father->rightlen         = leftlen;
+                leftlen                  = help_len;
+                father->rightson         = leftson;
+                leftson                  = pntr;
             }
-            break;
-        case AP_RIGHT:
-            //rightson with brother
+            else {
+                father->leftson->father = this;
+                leftson->father         = father;
+                pntr                    = father->leftson;
+                AP_FLOAT help_len       = father->leftlen;
+                father->leftlen         = leftlen;
+                leftlen                 = help_len;
+                father->leftson         = leftson;
+                leftson                 = pntr;
+            }
+        }
+        else { // swap rightson with brother
             if (father->leftson == this) {
                 father->rightson->father = this;
-                this->rightson->father = this->father;
-                pntr = father->rightson;
-                help_len = father->rightlen;
-                father->rightlen = this->rightlen;
-                this->rightlen = help_len;
-                father->rightson = rightson;
-                this->rightson = pntr;
-            } else {
-                father->leftson->father = this;
-                this->rightson->father = this->father;
-                pntr = father->leftson;
-                help_len = father->leftlen;
-                father->leftson = rightson;
-                father->leftlen = this->rightlen;
-                this->rightlen = help_len;
-                this->rightson = pntr;
+                rightson->father         = father;
+                pntr                     = father->rightson;
+                AP_FLOAT help_len        = father->rightlen;
+                father->rightlen         = rightlen;
+                rightlen                 = help_len;
+                father->rightson         = rightson;
+                rightson                 = pntr;
             }
-            break;
-        default:
-            GB_warning("Cannot handle switch in swap() 2");
+            else {
+                father->leftson->father = this;
+                rightson->father        = father;
+                pntr                    = father->leftson;
+                AP_FLOAT help_len       = father->leftlen;
+                father->leftson         = rightson;
+                father->leftlen         = rightlen;
+                rightlen                = help_len;
+                rightson                = pntr;
+            }
+        }
     }
-    return 0;
 }
 
-GB_ERROR AP_tree::set_root()
-{
-    AP_tree        *pntr;
-    AP_tree        *prev;
-    AP_tree        *next;
-    AP_branch_members br1,br2;
-    if (father == 0) {      // already root
-        return 0;
-    }
+void AP_tree::set_root() {
+    if (!father) return;                            // already root
+    if (!father->father) return;                    // already root?
 
-    if (father->father == 0) {  // already root  ???
-        return 0;
-    }
-
+    AP_tree *old_root    = 0;
     AP_tree *old_brother = 0;
-    br1 = this->br;
-    for  (pntr = this->father; pntr->father; pntr = pntr->father) {
-        br2 = pntr->br;
-        pntr->br = br1;
-        br1 = br2;
-        old_brother= pntr;
+    {
+        AP_branch_members  br1 = br;
+        AP_tree           *pntr;
+
+        for  (pntr = father; pntr->father; pntr = pntr->father) {
+            AP_branch_members br2 = pntr->br;
+            pntr->br              = br1;
+            br1                   = br2;
+            old_brother           = pntr;
+        }
+        if ( pntr->leftson == old_brother) {
+            pntr->rightson->br = br1;
+        }
+        old_root = pntr;
     }
-    if ( pntr->leftson == old_brother) {
-        pntr->rightson->br = br1;
-    }
+    if (old_brother) old_brother = old_brother->brother();
 
-    if (old_brother)    old_brother = old_brother->brother();
-    AP_tree        *    old_root = pntr;
-
-
-    {           // move remark branches to top
+    {
+        // move remark branches to top
         AP_tree *node;
-        char *remark = nulldup(this->remark_branch);
-        for (node = this;node->father;node = node->father){
-            char *sh = node->remark_branch;
+        char    *remark = nulldup(remark_branch);
+
+        for (node = this; node->father; node = node->father) {
+            char *sh            = node->remark_branch;
             node->remark_branch = remark;
-            remark = sh;
+            remark              = sh;
         }
         delete remark;
     }
     AP_FLOAT old_root_len = old_root->leftlen + old_root->rightlen;
 
-    //
     //new node & this init
-    //
 
-    old_root->leftson = this;
-    old_root->rightson = this->father;  // will be set later
+    old_root->leftson  = this;
+    old_root->rightson = father;                    // will be set later
 
-    if (this->father->leftson == this) {
-        old_root->leftlen = old_root->rightlen = this->father->leftlen*.5;
-    } else {
-        old_root->leftlen = old_root->rightlen = this->father->rightlen*.5;
+    if (father->leftson == this) {
+        old_root->leftlen = old_root->rightlen = father->leftlen*.5;
+    }
+    else {
+        old_root->leftlen = old_root->rightlen = father->rightlen*.5;
     }
 
-    next = father->father;
-    prev = old_root;
-    pntr = father;
+    AP_tree *next = father->father;
+    AP_tree *prev = old_root;
+    AP_tree *pntr = father;
 
     if (father->leftson == this)    father->leftson = old_root; // to set the flag correctly
 
-    //
-    //loop from father to son of root   rotate tree
-    //
+    // loop from father to son of root, rotate tree
     while  (next->father) {
-        double len = 0;
-        if (next->leftson == pntr){
-            len = next->leftlen;
-        }else{
-            len = next->rightlen;
-        }
+        double len = (next->leftson == pntr) ? next->leftlen : next->rightlen;
 
         if (pntr->leftson == prev) {
             pntr->leftson = next;
             pntr->leftlen = len;
-        }else{
+        }
+        else {
             pntr->rightson = next;
             pntr->rightlen = len;
         }
+        
         pntr->father = prev;
-        prev = pntr;
-        pntr = next;
-        next = next->father;
+        prev         = pntr;
+        pntr         = next;
+        next         = next->father;
     }
-    // now next points to the old root, which has been destroyed 20 lines above
+    // now next points to the old root, which has been destroyed above
     //
-    //pointer at oldroot
+    // pointer at oldroot
     // pntr == brother before old root == next
-    //
+
     if (pntr->leftson == prev) {
         pntr->leftlen = old_root_len;
         pntr->leftson = old_brother;
-    }else{
+    }
+    else {
         pntr->rightlen = old_root_len;
         pntr->rightson = old_brother;
     }
+
     old_brother->father = pntr;
-    pntr->father = prev;
-    this->father = old_root;
-    return 0;
+    pntr->father        = prev;
+    father              = old_root;
 }
 
-void AP_tree::test_tree(void) const
-{
-    int d = 0;
-    if (this->is_leaf) return;
-    if (this != this->rightson->father) d = 1;
-    if (this != this->leftson->father) d = 1;
-    if (d ) {
-        AW_ERROR("AP_tree::test_tree: Tree damaged");
-    }else{
-        this->rightson->test_tree();
-        this->leftson->test_tree();
+void AP_tree::test_tree(void) const {
+    if (!is_leaf) {
+        if (rightson->father != this || leftson->father != this) {
+            AW_ERROR("AP_tree::test_tree: Tree damaged");
+        }
+        else {
+            rightson->test_tree();
+            leftson->test_tree();
+        }
     }
 }
 
@@ -1113,6 +1093,10 @@ GB_ERROR PH_tree_write_float(GBDATA *gb_tree, AP_tree *node,float f,const char *
     return error;
 }
 
+#if defined(DEVEL_RALF)
+#warning fix PH_-prefix
+#endif // DEVEL_RALF
+
 GB_ERROR PH_tree_write_tree_rek(GBDATA *gb_tree, AP_tree * THIS)
 {
     GB_ERROR error;
@@ -1131,24 +1115,27 @@ GB_ERROR PH_tree_write_tree_rek(GBDATA *gb_tree, AP_tree * THIS)
     return error;
 }
 
-const char *AP_tree::save(char  *tree_name)
-{
-    GB_ERROR error = 0;
-    tree_name = tree_name;
-    GBDATA *gb_tree = this->tree_root->gb_tree;
-    GBDATA *gb_main = this->tree_root->gb_main;
+const char *AP_tree::saveTree() {
+    GBDATA     *gb_tree   = tree_root->gb_tree;
+    GBDATA     *gb_main   = tree_root->gb_main;
+    const char *tree_name = tree_root->tree_name;
+    
+    GB_ERROR error = GB_push_transaction(gb_main);
 
-    if (!gb_tree) return "I cannot save your tree, it has been deleted";
-
-    GB_push_transaction(gb_main);
-    if (!error) error = PH_tree_write_tree_rek(gb_tree,this);
-    if (!error) error = GBT_write_tree(gb_main,gb_tree,0,this->get_gbt_tree());
-    this->tree_root->update_timers();
-    GB_pop_transaction(gb_main);
-    return error;
+    if (!gb_tree) {
+        awt_assert(!tree_root->gb_tree_gone); // should have been handled by caller (e.g. in AWT_graphic_tree::save)
+        error = GBS_global_string("I cannot save your tree, cause '%s' has been deleted from DB", tree_name);
+    }
+    else {
+        if (!error) error = PH_tree_write_tree_rek(gb_tree, this);
+        if (!error) error = GBT_write_tree(gb_main, gb_tree, 0, get_gbt_tree());
+    }
+    
+    if (!error) tree_root->update_timers();
+    return GB_end_transaction(gb_main, error);
 }
 
-GB_ERROR AP_tree::move_group_info(AP_tree *new_group){
+GB_ERROR AP_tree::move_group_info(AP_tree *new_group) {
     GB_ERROR error = 0;
     if (is_leaf || !name) {
         error = GB_export_error("Please select a valid group");
@@ -1414,11 +1401,10 @@ GB_ERROR AP_tree::load(AP_tree_root *tree_static, bool link_to_database, bool in
     return error;
 }
 
-GB_ERROR AP_tree::relink(   )
-{
-    GB_transaction dummy(this->tree_root->gb_main); // open close a transaction
-    GB_ERROR error = GBT_link_tree(this->get_gbt_tree(),this->tree_root->gb_main,GB_FALSE, 0, 0); // no status
-    this->tree_root->update_timers();
+GB_ERROR AP_tree::relink() {
+    GB_transaction dummy(tree_root->gb_main); // open close a transaction
+    GB_ERROR error = GBT_link_tree(get_gbt_tree(), tree_root->gb_main, GB_FALSE, 0, 0); // no status
+    tree_root->update_timers();
     return error;
 }
 
@@ -1440,8 +1426,8 @@ AP_UPDATE_FLAGS AP_tree::check_update( )
 void AP_tree::delete_tree() {
     if (is_leaf) {
         delete this;
-        return;
-    } else {
+    }
+    else {
         leftson->delete_tree();
         rightson->delete_tree();
     }
@@ -1491,42 +1477,39 @@ void AP_tree::load_sequences_rek(char *use,GB_BOOL set_by_gbdata,GB_BOOL show_st
     _load_sequences_rek(use,set_by_gbdata,nnodes, &counter);
 }
 
-char *buildLeafList_rek(AP_tree *THIS, AP_tree **list,long& num) {
+static void buildLeafList_rek(AP_tree *THIS, AP_tree **list,long& num) {
     // builds a list of all species
-    if (THIS->is_leaf == GB_FALSE) {
-        char *error = 0;
-        if (!error) error = buildLeafList_rek(THIS->leftson,list,num);
-        if (!error) error = buildLeafList_rek(THIS->rightson,list,num);
-        return error;
+    if (!THIS->is_leaf) {
+        buildLeafList_rek(THIS->leftson,list,num);
+        buildLeafList_rek(THIS->rightson,list,num);
     }
-    list[num] = THIS;
-    num++;
-    return 0;
+    else {
+        list[num] = THIS;
+        num++;
+    }
 }
 
-GB_ERROR AP_tree::buildLeafList(AP_tree **&list, long &num)
-{
-    num = this->arb_tree_leafsum2();
-    list = new AP_tree *[num+1];
-    list[num] = 0;
+void AP_tree::buildLeafList(AP_tree **&list, long &num) {
+    num        = arb_tree_leafsum2();
+    list       = new AP_tree *[num+1];
+    list[num]  = 0;
     long count = 0;
-    return buildLeafList_rek(this,list,count);
+
+    buildLeafList_rek(this,list,count);
+
+    awt_assert(count == num);
 }
 
-char *buildNodeList_rek(AP_tree *THIS, AP_tree **list,long& num) {
+static void buildNodeList_rek(AP_tree *THIS, AP_tree **list, long& num) {
     // builds a list of all species
     if (!THIS->is_leaf) {
         if (THIS->father) list[num++] = THIS;
-        char *error = 0;
-        if (!error) error = buildNodeList_rek(THIS->leftson,list,num);
-        if (!error) error = buildNodeList_rek(THIS->rightson,list,num);
-        return error;
+        buildNodeList_rek(THIS->leftson,list,num);
+        buildNodeList_rek(THIS->rightson,list,num);
     }
-    return 0;
 }
 
-GB_ERROR AP_tree::buildNodeList(AP_tree **&list, long &num)
-{
+void AP_tree::buildNodeList(AP_tree **&list, long &num) {
     num = this->arb_tree_leafsum2()-1;
     list = new AP_tree *[num+1];
     list[num] = 0;
@@ -1534,94 +1517,92 @@ GB_ERROR AP_tree::buildNodeList(AP_tree **&list, long &num)
     return buildNodeList_rek(this,list,num);
 }
 
-char *buildBranchList_rek(AP_tree *THIS, AP_tree **list,long& num,
-                          AP_BOOL create_terminal_branches, int deep) {
+static void buildBranchList_rek(AP_tree *THIS, AP_tree **list,long& num, AP_BOOL create_terminal_branches, int deep) {
     // builds a list of all species
-    if (!deep) return 0;
-
-    if (THIS->father && (create_terminal_branches || !THIS->is_leaf) ) {
-        if (THIS->father->father){
-            list[num++] = THIS;
-            list[num++] = THIS->father;
-        }else{                  // root
-            if (THIS->father->leftson == THIS) {
+    // (returns pairs of leafs/father and nodes/father)
+    
+    if (deep) {
+        if (THIS->father && (create_terminal_branches || !THIS->is_leaf) ) {
+            if (THIS->father->father){
                 list[num++] = THIS;
-                list[num++] = THIS->father->rightson;
+                list[num++] = THIS->father;
+            }
+            else {                  // root
+                if (THIS->father->leftson == THIS) {
+                    list[num++] = THIS;
+                    list[num++] = THIS->father->rightson;
+                }
             }
         }
-    }
-    if (!THIS->is_leaf) {
-        char *error = 0;
-        if (!error) error = buildBranchList_rek(THIS->leftson,list,num,
-                                                create_terminal_branches,deep-1);
-        if (!error) error = buildBranchList_rek(THIS->rightson,list,num,
-                                                create_terminal_branches,deep-1);
-        return error;
-    }
-    return 0;
-}
-
-GB_ERROR AP_tree::buildBranchList(AP_tree **&list, long &num,
-                                  AP_BOOL create_terminal_branches, int deep)
-{
-    if (deep>=0) {
-        int i;
-        num = 2;
-        for (i=0;i<deep;i++) num *=2;
-    }else{
-        if (create_terminal_branches) {
-            num = this->arb_tree_leafsum2()*2;
-        }else{
-            num = this->arb_tree_leafsum2();
+        if (!THIS->is_leaf) {
+            buildBranchList_rek(THIS->leftson,list,  num, create_terminal_branches, deep-1);
+            buildBranchList_rek(THIS->rightson,list, num, create_terminal_branches, deep-1);
         }
     }
-    if (num<0) num = 0;
-    list = new AP_tree *[num*2+4];
-    long count = 0;
-    if (!num) return 0;
-    char *error = buildBranchList_rek(this,list,count,create_terminal_branches,deep);
-    list[count] = 0;
-    num = count/2;
-    return error;
+}
 
+void AP_tree::buildBranchList(AP_tree **&list, long &num, AP_BOOL create_terminal_branches, int deep) {
+    if (deep>=0) {
+        num = 2;
+        for (int i=0; i<deep; i++) num *=2;
+    }
+    else {
+        num = arb_tree_leafsum2() * (create_terminal_branches ? 2 : 1);
+    }
+
+    awt_assert(num >= 0);
+    // if (num<0) num = 0;
+
+    list = new AP_tree *[num*2+4];
+
+    if (num) {
+        long count = 0;
+        
+        buildBranchList_rek(this,list,count,create_terminal_branches,deep);
+        list[count] = 0;
+        num         = count/2;
+    }
 }
 
 
-GB_ERROR AP_tree::remove_leafs(GBDATA *gb_main,int awt_remove_type)
-{
-    AP_tree        **list;
-    long             count;
-    GB_ERROR         error   = 0;
-    if (!error) error        = buildLeafList(list,count);
-    long             i;
-    GB_transaction   ta(gb_main);
+void AP_tree::remove_leafs(GBDATA *gb_main,int awt_remove_type) {
+    AP_tree **list;
+    long      count;
+    
+    buildLeafList(list,count);
+
+    long           i;
+    GB_transaction ta(gb_main);
 
     for (i=0;i<count; i++) {
-        long flag;
         if (list[i]->gb_node) {
-            flag = GB_read_flag(list[i]->gb_node);
-            if (    ( flag && (awt_remove_type & AWT_REMOVE_MARKED) ) ||
-                    ( !flag && (awt_remove_type & AWT_REMOVE_NOT_MARKED) ) ||
-                    ( !list[i]->sequence && (awt_remove_type & AWT_REMOVE_NO_SEQUENCE) )
-                    ){
-                error = list[i]->remove();
-                if (!(awt_remove_type & AWT_REMOVE_BUT_DONT_FREE)){
-                    delete list[i]->father;
-                }
+            bool removeNode = false;
+
+            if ((awt_remove_type & AWT_REMOVE_NO_SEQUENCE) && !list[i]->sequence) {
+                removeNode = true;
             }
-        }else{
-            if (awt_remove_type & AWT_REMOVE_DELETED) {
-                error = list[i]->remove();
+            else if (awt_remove_type & (AWT_REMOVE_MARKED|AWT_REMOVE_NOT_MARKED)) {
+                long flag  = GB_read_flag(list[i]->gb_node);
+                removeNode = (flag && (awt_remove_type&AWT_REMOVE_MARKED)) || (!flag && (awt_remove_type&AWT_REMOVE_NOT_MARKED));
+            }
+
+            if (removeNode) {
+                list[i]->remove();
                 if (!(awt_remove_type & AWT_REMOVE_BUT_DONT_FREE)){
                     delete list[i]->father;
                 }
             }
         }
-        if (error) break;
+        else {
+            if (awt_remove_type & AWT_REMOVE_DELETED) {
+                list[i]->remove();
+                if (!(awt_remove_type & AWT_REMOVE_BUT_DONT_FREE)){
+                    delete list[i]->father;
+                }
+            }
+        }
     }
     delete [] list;
-
-    return error;
 }
 
 void AP_tree::remove_bootstrap(GBDATA *gb_main){
@@ -1690,8 +1671,7 @@ AP_tree ** AP_tree::getRandomNodes(int anzahl) {
 
     long sumnodes;
     if (!anzahl) return 0;
-    GB_ERROR error  = this->buildNodeList(list,sumnodes);
-    if (error) return 0;
+    buildNodeList(list,sumnodes);
     if (!sumnodes) {
         delete list;
         return 0;

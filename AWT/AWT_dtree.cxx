@@ -1245,12 +1245,10 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         GB_ERROR error;
                         switch(button){
                             case AWT_M_LEFT:
-                                if (  dest->is_son(source)) {
-                                    error = "This operation is only allowed with two independent subtrees";
-                                }else{
-                                    error = source->move(dest,cl->length);
-                                }
+                                error = source->cantMoveTo(dest);
+                                if (!error) source->moveTo(dest,cl->length);
                                 break;
+                                
                             case AWT_M_RIGHT:
                                 error = source->move_group_info(dest);
                                 break;
@@ -1798,41 +1796,44 @@ void AWT_graphic_tree::unload(void)
 {
     rot_at = 0;
 
-    delete this->tree_root;
-    delete this->tree_static;
+    delete tree_root;
+    delete tree_static;
     free(tree_name);
 
-    this->tree_root         = 0;
-    this->tree_static       = 0;
-    this->tree_root_display = 0;
-    this->tree_name         = 0;
+    tree_root         = 0;
+    tree_static       = 0;
+    tree_root_display = 0;
+    tree_name         = 0;
 }
 
-GB_ERROR AWT_graphic_tree::load(GBDATA *, const char *name,AW_CL link_to_database, AW_CL insert_delete_cbs)
-{
+GB_ERROR AWT_graphic_tree::load(GBDATA *, const char *name,AW_CL link_to_database, AW_CL insert_delete_cbs) {
     GB_ERROR error = 0;
-    if (strcmp(name, "tree_????") == 0) { // no tree selected
-        this->unload();
+
+    if (strcmp(name, "tree_????") == 0) {           // no tree selected
+        unload();
+        zombies    = 0;
+        duplicates = 0;
     }
     else {
-        AP_tree      *apt = this->tree_proto->dup();
+        AP_tree      *apt = tree_proto->dup();
         AP_tree_root *tr  = new AP_tree_root(gb_main,apt,name);
 
         error = apt->load(tr,(int)link_to_database,(GB_BOOL)insert_delete_cbs, GB_TRUE, &zombies, &duplicates); // show status
-        this->unload();
+        unload();
 
         if (error) {
             delete tr;
             delete apt;
         }
         else {
-            this->tree_root         = apt;
-            this->tree_static       = tr;
-            this->tree_root_display = this->tree_root;
+            tree_root         = apt;
+            tree_static       = tr;
+            tree_root_display = this->tree_root;
 
-            this->tree_root->compute_tree(gb_main);
+            tree_root->compute_tree(gb_main);
+            
+            tree_name = strdup(name);
 
-            this->tree_name     = strdup(name);
             tr->root_changed_cd = (void*)this;
             tr->root_changed    = AWT_graphic_tree_root_changed;
             tr->node_deleted_cd = (void*)this;
@@ -1843,12 +1844,30 @@ GB_ERROR AWT_graphic_tree::load(GBDATA *, const char *name,AW_CL link_to_databas
     return error;
 }
 
-GB_ERROR AWT_graphic_tree::save(GBDATA *dummy, const char *name,AW_CL cd1,AW_CL cd2)
-{
-    AWUSE(dummy);
-    AWUSE(cd1);AWUSE(name);AWUSE(cd2);
-    if (!this->tree_root) return 0;
-    return this->tree_root->save(0);
+GB_ERROR AWT_graphic_tree::save(GBDATA */*dummy*/, const char *name, AW_CL /*cd1*/, AW_CL /*cd2*/) {
+    GB_ERROR error = NULL;
+    if (tree_root) {
+        error = tree_root->saveTree();
+    }
+    else if (tree_name) {
+        if (tree_static && tree_static->gb_tree_gone) {
+            GB_transaction ta(gb_main);
+            error = GB_delete(tree_static->gb_tree_gone);
+            error = ta.close(error);
+
+            if (!error) {
+                aw_message(GBS_global_string("Tree '%s' lost all leafes and has been deleted", tree_name));
+#if defined(DEVEL_RALF)
+#warning somehow update selected tree
+
+                // solution: currently selected tree (in NTREE, maybe also in PARSIMONY)
+                // needs to add a delete callback on treedata in DB
+
+#endif // DEVEL_RALF
+            }
+        }
+    }
+    return error;
 }
 
 int AWT_graphic_tree::check_update(GBDATA *gbdummy)

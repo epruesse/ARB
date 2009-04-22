@@ -378,10 +378,9 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
 
                         switch(button){
                             case AWT_M_LEFT:
-                                if (dest->is_son(source)) {
-                                    error = "This operation is only allowed with two independent subtrees";
-                                }else{
-                                    error = source->move(dest,cl->length);
+                                error = source->cantMoveTo(dest);
+                                if (!error) {
+                                    source->moveTo(dest,cl->length);
                                     recalc_branch_lengths = true;
                                 }
                                 break;

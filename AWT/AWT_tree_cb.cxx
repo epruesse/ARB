@@ -428,63 +428,35 @@ void NT_insert_mark_submenus(AW_window_menu_modes *awm, AWT_canvas *ntw, int ins
     }
 }
 
+static void nt_save_changed_tree(AWT_canvas *ntw) {
+    GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
+    if (error) aw_message(error);
+    ntw->zoom_reset();
+    ntw->refresh();
+}
+
 // ---------------------------------------
 //      Automated collapse/expand tree
 // ---------------------------------------
 
-void NT_group_tree_cb(void *dummy, AWT_canvas *ntw)
-{
-    AWUSE(dummy);
+static void nt_group_tree(AWT_canvas *ntw, int mode, int color_group) {
     GB_transaction gb_dummy(ntw->gb_main);
+
     AWT_TREE(ntw)->check_update(ntw->gb_main);
-    AWT_TREE(ntw)->group_tree(AWT_TREE(ntw)->tree_root, 0, 0);
-    AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
-    ntw->zoom_reset();
-    ntw->refresh();
+    AWT_TREE(ntw)->group_tree(AWT_TREE(ntw)->tree_root, mode, color_group);
+    nt_save_changed_tree(ntw);
 }
 
-void NT_group_not_marked_cb(void *dummy, AWT_canvas *ntw)
-{
-    AWUSE(dummy);
-    GB_transaction gb_dummy(ntw->gb_main);
-    AWT_TREE(ntw)->check_update(ntw->gb_main);
-    AWT_TREE(ntw)->group_tree(AWT_TREE(ntw)->tree_root, 1, 0);
-    AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
-    ntw->zoom_reset();
-    ntw->refresh();
-}
-void NT_group_terminal_cb(void *dummy, AWT_canvas *ntw)
-{
-    AWUSE(dummy);
-    GB_transaction gb_dummy(ntw->gb_main);
-    AWT_TREE(ntw)->check_update(ntw->gb_main);
-    AWT_TREE(ntw)->group_tree(AWT_TREE(ntw)->tree_root, 2, 0);
-    AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
-    ntw->zoom_reset();
-    ntw->refresh();
-}
-
-void NT_ungroup_all_cb(void *dummy, AWT_canvas *ntw)
-{
-    AWUSE(dummy);
-    GB_transaction gb_dummy(ntw->gb_main);
-    AWT_TREE(ntw)->check_update(ntw->gb_main);
-    AWT_TREE(ntw)->group_tree(AWT_TREE(ntw)->tree_root, 4, 0);
-    AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
-    ntw->zoom_reset();
-    ntw->refresh();
-}
+void NT_group_tree_cb      (void *, AWT_canvas *ntw){ nt_group_tree(ntw, 0, 0); }
+void NT_group_not_marked_cb(void *, AWT_canvas *ntw){ nt_group_tree(ntw, 1, 0); }
+void NT_group_terminal_cb  (void *, AWT_canvas *ntw){ nt_group_tree(ntw, 2, 0); }
+void NT_ungroup_all_cb     (void *, AWT_canvas *ntw){ nt_group_tree(ntw, 4, 0); }
 
 void NT_group_not_color_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_colornum) {
     AWT_canvas     *ntw      = (AWT_canvas*)cl_ntw;
     int             colornum = (int)cl_colornum;
-    GB_transaction  gb_dummy(ntw->gb_main);
 
-    AWT_TREE(ntw)->check_update(ntw->gb_main);
-    AWT_TREE(ntw)->group_tree(AWT_TREE(ntw)->tree_root, 8, colornum);
-    AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
-    ntw->zoom_reset();
-    ntw->refresh();
+    nt_group_tree(ntw, 8, colornum);
 }
 
 // ----------------------------------------------------------------------------------------------------
@@ -543,9 +515,7 @@ void NT_resort_tree_cb(void *dummy, AWT_canvas *ntw,int type)
         default:stype = 1; break;
     }
     AWT_TREE(ntw)->resort_tree(stype);
-    AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
-    ntw->zoom_reset();
-    ntw->refresh();
+    nt_save_changed_tree(ntw);
 }
 
 void NT_reset_lzoom_cb(void *dummy, AWT_canvas *ntw)
@@ -577,37 +547,35 @@ void NT_set_tree_style(void *dummy, AWT_canvas *ntw, AP_tree_sort type)
     ntw->refresh();
 }
 
-void NT_remove_leafs(void *dummy, AWT_canvas *ntw, long mode) // if dummy == 0 -> no message
-{
-    AWUSE(dummy);
-    {
-        GB_transaction gb_dummy(ntw->gb_main);
-        AWT_TREE(ntw)->check_update(ntw->gb_main);
+void NT_remove_leafs(void *, AWT_canvas *ntw, long mode) {
+    GB_transaction ta(ntw->gb_main);
 
-        GB_ERROR error = AWT_TREE(ntw)->tree_root->remove_leafs(ntw->gb_main, (int)mode);
-        if (error) aw_message(error);
+    AWT_TREE(ntw)->check_update(ntw->gb_main);
+    if (AWT_TREE(ntw)->tree_root) {
+        AWT_TREE(ntw)->tree_root->remove_leafs(ntw->gb_main, (int)mode);
         if (AWT_TREE(ntw)->tree_root) AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
-        AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
+        nt_save_changed_tree(ntw);
     }
-    ntw->zoom_reset();
-    ntw->refresh();
+    else {
+        aw_message("Got no tree");
+    }
 }
 
 void NT_remove_bootstrap(AW_window*, AW_CL cl_ntw, AW_CL) // delete all bootstrap values
 {
     AWT_canvas     *ntw = (AWT_canvas*)cl_ntw;
     GB_transaction  gb_dummy(ntw->gb_main);
+    
     AWT_TREE(ntw)->check_update(ntw->gb_main);
 
     AP_tree *tree_root = AWT_TREE(ntw)->tree_root;
     if (tree_root) {
         tree_root->remove_bootstrap(ntw->gb_main);
         tree_root->compute_tree(ntw->gb_main);
-        AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
+        nt_save_changed_tree(ntw);
     }
-    ntw->zoom_reset();
-    ntw->refresh();
 }
+
 void NT_reset_branchlengths(AW_window*, AW_CL cl_ntw, AW_CL) // set all branchlengths to 0.1
 {
     AWT_canvas     *ntw = (AWT_canvas*)cl_ntw;
@@ -618,10 +586,8 @@ void NT_reset_branchlengths(AW_window*, AW_CL cl_ntw, AW_CL) // set all branchle
     if (tree_root){
         tree_root->reset_branchlengths(ntw->gb_main);
         tree_root->compute_tree(ntw->gb_main);
-        AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
+        nt_save_changed_tree(ntw);
     }
-    ntw->zoom_reset();
-    ntw->refresh();
 }
 
 void NT_move_boot_branch(AW_window*, AW_CL cl_ntw, AW_CL cl_direction) // copy branchlengths to bootstraps (or vice versa)
@@ -633,20 +599,18 @@ void NT_move_boot_branch(AW_window*, AW_CL cl_ntw, AW_CL cl_direction) // copy b
     AWT_TREE(ntw)->check_update(ntw->gb_main);
 
     AP_tree *tree_root = AWT_TREE(ntw)->tree_root;
-    if (tree_root){
+    if (tree_root) {
         if (direction == 0) tree_root->bootstrap2branchlen(ntw->gb_main);
         else                tree_root->branchlen2bootstrap(ntw->gb_main);
 
         tree_root->compute_tree(ntw->gb_main);
-        AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
+        nt_save_changed_tree(ntw);
 
         char *adviceText = GBS_global_string_copy("Please note, that you just overwrote your existing %s.",
                                                   direction ? "bootstrap values" : "branchlengths");
         AWT_advice(adviceText, AWT_ADVICE_TOGGLE|AWT_ADVICE_HELP, 0, "tbl_boot2len.hlp");
         free(adviceText);
     }
-    ntw->zoom_reset();
-    ntw->refresh();
 }
 
 void NT_scale_tree(AW_window*, AW_CL cl_ntw, AW_CL) // scale branchlengths
@@ -661,11 +625,8 @@ void NT_scale_tree(AW_window*, AW_CL cl_ntw, AW_CL) // scale branchlengths
         if (tree_root){
             tree_root->scale_branchlengths(ntw->gb_main, factor);
             tree_root->compute_tree(ntw->gb_main);
-            AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
+            nt_save_changed_tree(ntw);
         }
-        ntw->zoom_reset();
-        ntw->refresh();
-
         free(answer);
     }
 }
@@ -703,7 +664,8 @@ void NT_jump_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL auto_expand_groups)
                     }
                     if (changed) {
                         AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
-                        AWT_TREE(ntw)->save(ntw->gb_main, 0, 0, 0);
+                        GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main, 0, 0, 0);
+                        if (error) aw_message(error);
                         ntw->zoom_reset();
                     }
                 }

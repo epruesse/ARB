@@ -503,12 +503,23 @@ long ST_ML::delete_species(const char *key, long val, void *cd_st_ml) {
     }
 }
 
+inline GB_ERROR tree_size_ok(AP_tree_root *tree_root) {
+    GB_ERROR error = NULL;
+
+    if (!tree_root->tree || tree_root->tree->is_leaf) {
+        const char *tree_name = tree_root->tree_name;
+        
+        error = GBS_global_string("Too few species remained in tree '%s'", tree_name);
+    }
+    return error;
+}
+
 /** this is the real constructor, call only once */
 GB_ERROR ST_ML::init(const char *tree_name, const char *alignment_namei,
                      const char *species_names, int marked_only,
                      const char * /*filter_string */, AWT_csp * awt_cspi) {
 
-    GB_transaction dummy(gb_main);
+    GB_transaction ta(gb_main);
     GB_ERROR error = 0;
     if (is_inited) {
         return GB_export_error("Sorry, once you selected a column statistic you cannot change parameters");
@@ -541,9 +552,11 @@ GB_ERROR ST_ML::init(const char *tree_name, const char *alignment_namei,
     // aw_status("Loading Tree");
     /* delete species */
     if (species_names) { // keep names
-        error = tree_root->tree->remove_leafs(gb_main, AWT_REMOVE_DELETED);
-        if (error)
-            return error;
+        tree_root->tree->remove_leafs(gb_main, AWT_REMOVE_DELETED);
+
+        error = tree_size_ok(tree_root);
+        if (error) return ta.close(error);
+
         char *l, *n;
         keep_species_hash = GBS_create_hash(GBT_get_species_hash_size(gb_main), GB_MIND_CASE);
         for (l = (char *) species_names; l; l = n) {
@@ -558,21 +571,14 @@ GB_ERROR ST_ML::init(const char *tree_name, const char *alignment_namei,
         GBS_free_hash(keep_species_hash);
         keep_species_hash = 0;
         GBT_link_tree((GBT_TREE *) tree_root->tree, gb_main, GB_FALSE, 0, 0);
-    } else { // keep marked
+    }
+    else { // keep marked
         GBT_link_tree((GBT_TREE *) tree_root->tree, gb_main, GB_FALSE, 0, 0);
-        if (marked_only) {
-            error = tree_root->tree->remove_leafs(gb_main,
-                                                  AWT_REMOVE_NOT_MARKED | AWT_REMOVE_DELETED);
-        } else {
-            error = tree_root->tree->remove_leafs(gb_main, AWT_REMOVE_DELETED);
-        }
-        if (error)
-            return error;
-        if (!tree_root->tree || tree_root->tree->is_leaf) {
-            return GB_export_error(
-                                   "Too few species of the editor are in the tree '%s'",
-                                   tree_name);
-        }
+        tree_root->tree->remove_leafs(gb_main, (marked_only ? AWT_REMOVE_NOT_MARKED : 0)|AWT_REMOVE_DELETED);
+        
+        error = tree_size_ok(tree_root);
+        if (error) return ta.close(error);
+
         insert_tree_into_hash_rek(tree_root->tree);
     }
 
@@ -581,7 +587,8 @@ GB_ERROR ST_ML::init(const char *tree_name, const char *alignment_namei,
     if (!awt_csp_error) {
         rates = awt_csp->rates;
         ttratio = awt_csp->ttratio;
-    } else {
+    }
+    else {
         rates = new float[alignment_len];
         ttratio = new float[alignment_len];
         for (int i = 0; i < alignment_len; i++) {

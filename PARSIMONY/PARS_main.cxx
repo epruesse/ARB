@@ -50,13 +50,9 @@ AWT_csp *awt_csp = 0;
 AW_window *create_kernighan_window(AW_root *aw_root);
 
 void PARS_export_tree(void){
-    const char *error = GLOBAL_NT->tree->tree_root->AP_tree::save(0);
-    if (error){
-        aw_message(error);
-        return;
-    }else{
-        ;//aww->message("Data saved",2000);
-    }
+    // GB_ERROR error = GLOBAL_NT->tree->tree_root->AP_tree::saveTree();
+    GB_ERROR error = GLOBAL_NT->tree->save(0, 0, 0, 0);
+    if (error) aw_message(error);
 }
 
 void PARS_export_cb(AW_window *, AWT_canvas *, AW_CL mode){
@@ -195,13 +191,12 @@ static long insert_species_in_tree_test(const char *key,long val, void *cd_isits
 
     aw_status("Searching best position");
 
-    AP_tree **blist;
-    AP_tree_nlen *bl,*blf;
-    GB_ERROR error = 0;
-    long    bsum = 0;
-    long    counter = 0;
+    AP_tree      **blist;
+    AP_tree_nlen  *bl,*blf;
+    long           bsum    = 0;
+    long           counter = 0;
 
-    error = tree->buildBranchList(blist,bsum,AP_TRUE,-1);   // get all branches
+    tree->buildBranchList(blist,bsum,AP_TRUE,-1);   // get all branches
     AP_sequence::global_combineCount = 0;
 
     AP_tree *bestposl = tree->leftson;
@@ -233,7 +228,7 @@ static long insert_species_in_tree_test(const char *key,long val, void *cd_isits
             bl->set_root();
         }
 
-        leaf->move(bl,0.5);
+        leaf->moveTo(bl,0.5);
         akt_parsimony = (*ap_main->tree_root)->costs();
 
         if (akt_parsimony<best_parsimony)
@@ -246,7 +241,7 @@ static long insert_species_in_tree_test(const char *key,long val, void *cd_isits
     delete blist;
     blist = 0;
     if (bestposl->father != bestposr) bestposl = bestposr;
-    leaf->move(bestposl,0.5);
+    leaf->moveTo(bestposl,0.5);
 
     // calculate difference in father-sequence
 
@@ -369,13 +364,12 @@ static AP_tree *insert_species_in_tree(const char *key, AP_tree *leaf, void *cd_
     }
     aw_status("Searching best position");
 
-    AP_tree **blist;
-    AP_tree_nlen *bl,*blf;
-    GB_ERROR error = 0;
-    long    bsum = 0;
-    long    counter = 0;
+    AP_tree      **blist;
+    AP_tree_nlen  *bl,*blf;
+    long           bsum    = 0;
+    long           counter = 0;
 
-    error = tree->buildBranchList(blist,bsum,AP_TRUE,-1);       // get all branches
+    tree->buildBranchList(blist,bsum,AP_TRUE,-1);       // get all branches
     AP_sequence::global_combineCount = 0;
 
     AP_tree *bestposl = tree->leftson;
@@ -399,7 +393,7 @@ static AP_tree *insert_species_in_tree(const char *key, AP_tree *leaf, void *cd_
             bl->set_root();
         }
 
-        leaf->move(bl,0.5);
+        leaf->moveTo(bl,0.5);
         akt_parsimony = (*ap_main->tree_root)->costs();
         if (akt_parsimony < best_parsimony) {
             best_parsimony = akt_parsimony;
@@ -412,7 +406,7 @@ static AP_tree *insert_species_in_tree(const char *key, AP_tree *leaf, void *cd_
     if (bestposl->father != bestposr){
         bestposl = bestposr;
     }
-    leaf->move(bestposl,0.5);
+    leaf->moveTo(bestposl,0.5);
 
     if (!isits->quick_add_flag) {
         int deep = 5;
@@ -845,10 +839,8 @@ static void nt_add_partial(AW_window */*aww*/, AWT_canvas *ntw) {
 #if defined(DEBUG)
                     printf("inserting '%s'\n", name);
 #endif // DEBUG
-                    error = part_leaf->insert(target);
-                }
-
-                if (!error) {
+                    part_leaf->insert(target);
+                    
                     // we need to create the sequence of the father node!
                     AP_tree *father = part_leaf->father;
                     father->costs();
@@ -1114,11 +1106,12 @@ static void PA_focus_cb(AW_window *,GBDATA *gb_main_par)
 ******************************************************/
 
 #if defined(TEST_FUNCTIONS)
-static void refreshTree(AWT_canvas *ntw)
-{
+static void refreshTree(AWT_canvas *ntw) {
     GB_transaction gb_dummy(ntw->gb_main);
+    
     AWT_TREE(ntw)->check_update(ntw->gb_main);
-    AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
+    GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
+    if (error) aw_message(error);
     ntw->zoom_reset();
     ntw->refresh();
 }
@@ -1449,17 +1442,12 @@ static void pars_start_cb(AW_window *aww, AW_CL cd_adfiltercbstruct) {
         }
 
         AP_tree_edge::initialize((AP_tree_nlen*)*ap_main->tree_root);   // builds edges
-        GB_ERROR error = GLOBAL_NT->tree->tree_root->remove_leafs(ntw->gb_main, AWT_REMOVE_DELETED);
+        GLOBAL_NT->tree->tree_root->remove_leafs(ntw->gb_main, AWT_REMOVE_DELETED);
 
-        if (!error){
-            adfiltercbstruct *acbs = (adfiltercbstruct*)cd_adfiltercbstruct;
-            NT_tree_init(GLOBAL_NT->tree, acbs);
+        adfiltercbstruct *acbs = (adfiltercbstruct*)cd_adfiltercbstruct;
+        NT_tree_init(GLOBAL_NT->tree, acbs);
             
-            error = GLOBAL_NT->tree->tree_root->remove_leafs(ntw->gb_main, AWT_REMOVE_DELETED | AWT_REMOVE_NO_SEQUENCE);
-        }
-        if (error) {
-            aw_popup_exit(error, true);
-        }
+        GLOBAL_NT->tree->tree_root->remove_leafs(ntw->gb_main, AWT_REMOVE_DELETED | AWT_REMOVE_NO_SEQUENCE);
 
         GB_commit_transaction(ntw->gb_main);
         aw_status("Calculating inner nodes");
