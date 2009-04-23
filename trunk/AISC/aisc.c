@@ -24,12 +24,20 @@ char *read_aisc_file(char *path)
     }else{
         if (fseek(input,0,2)==-1){
             fprintf(stderr, "file %s not seekable\n",path);
-        }else{
-            data_size = (int)ftell(input) + 1;
-            rewind(input);
-            buffer =  (char *)malloc(data_size+1);
-            data_size = fread(buffer,1,data_size,input);
-            buffer[data_size] = 0;
+        }
+        else {
+            data_size = (int)ftell(input);
+
+            if (data_size == 0) {
+                fprintf(stderr, "%s:0: file is empty\n", path);
+            }
+            else {
+                data_size++;
+                rewind(input);
+                buffer =  (char *)malloc(data_size+1);
+                data_size = fread(buffer,1,data_size,input);
+                buffer[data_size] = 0;
+            }
         }
         fclose(input);
     }

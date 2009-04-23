@@ -932,19 +932,40 @@ int do_com_next(const char *str)
     str = str;
     return 0;
 }
-#define COMMAND(str,string,len,func) if ( string[0]==str[0]             \
-                                          &&!strncmp(string,str,len)) { char *s=str+len; \
-        READ_SPACES(s); if (func(s)) break; continue;}
-#define COMMAND2(str,string,len,func) if ( string[0]==str[0]            \
-                                           &&!strncmp(string,str,len)) { char *s=str+len; \
-        if (func(s)) break; continue;}
-#define COMMAND2_NOFAIL(str,string,len,func) if ( string[0]==str[0]     \
-                                                  &&!strncmp(string,str,len)) { char *s=str+len; \
-        if (func(s)) { return -1; } continue;}
-int
-run_prg(void)
-{
-    int             err;
+
+#define COMMAND(str,string,len,func)                                    \
+    if ( string[0] == str[0] && !strncmp(string,str,len)) {             \
+        char *s=str+len;                                                \
+        READ_SPACES(s);                                                 \
+        if (func(s)) break;                                             \
+        continue;                                                       \
+    }
+
+#define COMMAND_NOFAIL(str,string,len,func)                             \
+    if ( string[0] == str[0] && !strncmp(string,str,len)) {             \
+        char *s=str+len;                                                \
+        READ_SPACES(s);                                                 \
+        if (func(s)) return -1;                                         \
+        continue;                                                       \
+    }
+
+#define COMMAND2(str,string,len,func)                                   \
+    if ( string[0] == str[0] && !strncmp(string,str,len)) {             \
+        char *s=str+len;                                                \
+        if (func(s)) break;                                             \
+        continue;                                                       \
+    }
+
+#define COMMAND2_NOFAIL(str,string,len,func)                            \
+    if (string[0] == str[0] && !strncmp(string,str,len)) {              \
+        char *s=str+len;                                                \
+        if (func(s)) return -1;                                         \
+        continue;                                                       \
+    }
+
+int run_prg(void) {
+    int err;
+    
     for (gl->pc = gl->prg; gl->pc; gl->pc = gl->nextpc) {
         gl->nextpc = gl->pc->next;
         if (gl->pc->command) {
@@ -1025,7 +1046,7 @@ run_prg(void)
             COMMAND(gl->linebuf,"TAB",3,do_com_tab)
             COMMAND(gl->linebuf,"PP",2,do_com_print2)
             COMMAND(gl->linebuf,"EXIT",4,do_com_exit)
-            COMMAND(gl->linebuf,"DATA",4,do_com_data)
+            COMMAND_NOFAIL(gl->linebuf,"DATA",4,do_com_data)
             COMMAND(gl->linebuf,"DBG",3,do_com_dbg)
             printf_error("Unknown Command '%s'", gl->pc->str);
         return -1;
