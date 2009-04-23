@@ -263,7 +263,7 @@ static long nt_build_sai_string_by_hash(const char *key, long val, void *cd_sai_
         GBS_chrcat(sai_middle,1);                   // Seperated by 1
         GBS_strcat(sai_middle,"FSAI:");
         GBS_strncat(sai_middle,key,sep-key);
-        last_group_name = key;
+        sai_builder->last_group_name = key;
     }
     GBS_chrcat(sai_middle,1);                       // Seperated by 1
     GBS_strcat(sai_middle,"S");
