@@ -10,7 +10,6 @@ TOOLS := \
 	arb_export_tree \
 	arb_gene_probe \
 	arb_message \
-	arb_newick_2_otb \
 	arb_notify \
 	arb_primer \
 	arb_probe \
@@ -40,9 +39,6 @@ all: $(BINARIES)
 
 $(ARBHOME)/bin/arb_probe: arb_probe.o
 	$(LINK_EXECUTABLE) $@ $< ../SERVERCNTRL/SERVERCNTRL.a ../PROBE_COM/client.a $(LIB_ARBDB)
-
-$(ARBHOME)/bin/arb_newick_2_otb: arb_newick_2_otb.o
-	$(LINK_EXECUTABLE) $@ $< ../CAT/CAT.a $(LIB_ARBDB)
 
 $(ARBHOME)/bin/%: %.o
 	$(LINK_EXECUTABLE) $@ $< $(LIB_ARBDB)
@@ -141,16 +137,6 @@ arb_message.o: $(ARBHOME)/INCLUDE/arbdb.h
 arb_message.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 arb_message.o: $(ARBHOME)/INCLUDE/arbdbt.h
 arb_message.o: $(ARBHOME)/INCLUDE/attributes.h
-
-arb_newick_2_otb.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
-arb_newick_2_otb.o: $(ARBHOME)/INCLUDE/ad_prot.h
-arb_newick_2_otb.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-arb_newick_2_otb.o: $(ARBHOME)/INCLUDE/arb_assert.h
-arb_newick_2_otb.o: $(ARBHOME)/INCLUDE/arbdb.h
-arb_newick_2_otb.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-arb_newick_2_otb.o: $(ARBHOME)/INCLUDE/arbdbt.h
-arb_newick_2_otb.o: $(ARBHOME)/INCLUDE/attributes.h
-arb_newick_2_otb.o: $(ARBHOME)/INCLUDE/cat_tree.hxx
 
 arb_notify.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 arb_notify.o: $(ARBHOME)/INCLUDE/ad_prot.h

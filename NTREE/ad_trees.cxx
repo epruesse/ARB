@@ -14,7 +14,6 @@
 #include <aw_global.hxx>
 #include <awt.hxx>
 #include <awt_imp_exp.hxx>
-#include <cat_tree.hxx>
 #include <awt_tree_cmp.hxx>
 #include <awt_sel_boxes.hxx>
 
@@ -111,7 +110,6 @@ void ad_tree_set_security(AW_root *aw_root)
 
 enum ExportTreeType {
     AD_TREE_EXPORT_FORMAT_NEWICK,
-    AD_TREE_EXPORT_FORMAT_ORS,
     AD_TREE_EXPORT_FORMAT_XML,
     AD_TREE_EXPORT_FORMAT_NEWICK_PRETTY,
 };
@@ -126,7 +124,6 @@ void update_filter_cb(AW_root *root){
 
     switch (ExportTreeType(root->awar(AWAR_TREE_EXPORT_FORMAT)->read_int())) {
         case AD_TREE_EXPORT_FORMAT_XML: filter_type = "xml"; break;
-        case AD_TREE_EXPORT_FORMAT_ORS: filter_type = "otb"; break;
         case AD_TREE_EXPORT_FORMAT_NEWICK:
         case AD_TREE_EXPORT_FORMAT_NEWICK_PRETTY:
             switch (ExportNodeType(root->awar(AWAR_TREE_EXPORT_NDS)->read_int())) {
@@ -281,10 +278,6 @@ void tree_save_cb(AW_window *aww){
         ExportTreeType exportType = static_cast<ExportTreeType>(aw_root->awar(AWAR_TREE_EXPORT_FORMAT)->read_int());
 
         switch (exportType) {
-            case AD_TREE_EXPORT_FORMAT_ORS:
-                error = create_and_save_CAT_tree(GLOBAL_gb_main,tree_name,fname);
-                break;
-
             case AD_TREE_EXPORT_FORMAT_XML:
                 error = AWT_export_XML_tree(GLOBAL_gb_main, db_name, tree_name,
                                             use_NDS,
@@ -332,7 +325,6 @@ AW_window *create_tree_export_window(AW_root *root)
     aws->insert_option("NEWICK TREE FORMAT",                   "N", AD_TREE_EXPORT_FORMAT_NEWICK);
     aws->insert_option("NEWICK TREE FORMAT (pretty, but big)", "P", AD_TREE_EXPORT_FORMAT_NEWICK_PRETTY);
     aws->insert_option("ARB_XML TREE FORMAT",                  "X", AD_TREE_EXPORT_FORMAT_XML);
-    aws->insert_option("ORS TRANSFER BINARY FORMAT",           "O", AD_TREE_EXPORT_FORMAT_ORS);
     aws->update_option_menu();
 
     awt_create_selection_box((AW_window *)aws,AWAR_TREE_EXPORT "");

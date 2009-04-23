@@ -193,7 +193,6 @@ symlink ../AWTC/awtc_submission.hxx INCLUDE/awtc_submission.hxx &&
 symlink ../AWTI/awti_export.hxx INCLUDE/awti_export.hxx &&
 symlink ../AWTI/awti_import.hxx INCLUDE/awti_import.hxx &&
 symlink ../BUGEX/bugex.h INCLUDE/bugex.h &&
-symlink ../CAT/cat_tree.hxx INCLUDE/cat_tree.hxx &&
 symlink ../CONSENSUS_TREE/CT_ctree.hxx INCLUDE/CT_ctree.hxx &&
 symlink ../DIST/dist.hxx INCLUDE/dist.hxx &&
 symlink ../EDIT4/ed4_extern.hxx INCLUDE/ed4_extern.hxx &&

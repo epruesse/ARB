@@ -1403,7 +1403,6 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             awm->close_sub_menu();
             awm->insert_sub_menu( 0,   "Network", "N", 0, AWM_EXP);
             {
-                AWMIMT("ors",   "ORS (disabled) ...",      "O","ors.hlp",          AWM_EXP, (AW_CB)NT_system_cb, (AW_CL)"netscape http://pop.mikro.biologie.tu-muenchen.de/ORS/ &", 0);
                 GDE_load_menu(awm,AWM_EXP,"user");
             }
             awm->close_sub_menu();
