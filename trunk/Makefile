@@ -523,7 +523,6 @@ ARCHS = \
 			AWT/libAWT.a \
 			AWTC/AWTC.a \
 			AWTI/AWTI.a \
-			CAT/CAT.a \
 			CONSENSUS_TREE/CONSENSUS_TREE.a \
 			CONVERTALN/CONVERTALN.a \
 			DBSERVER/DBSERVER.a \
@@ -558,7 +557,6 @@ ARCHS = \
 			STAT/STAT.a \
 			TOOLS/TOOLS.a \
 			TREEGEN/TREEGEN.a \
-			TRS/TRS.a \
 			WETC/WETC.a \
 			WINDOW/libAW.a \
 			XML/XML.a \
@@ -584,7 +582,6 @@ ARCHS_NTREE = \
 		ARB_GDE/ARB_GDE.a \
 		AWTC/AWTC.a \
 		AWTI/AWTI.a \
-		CAT/CAT.a \
 		GENOM/GENOM.a \
 		GENOM_IMPORT/GENOM_IMPORT.a \
 		ISLAND_HOPPING/ISLAND_HOPPING.a \
@@ -948,7 +945,7 @@ com_probe: PROBE_COM/PROBE_COM.dummy
 com_names: NAMES_COM/NAMES_COM.dummy
 com_all: com_probe com_names
 
-TOOLS/TOOLS.dummy : shared_libs SERVERCNTRL/SERVERCNTRL.dummy CAT/CAT.dummy com_probe
+TOOLS/TOOLS.dummy : shared_libs SERVERCNTRL/SERVERCNTRL.dummy com_probe
 
 AWTC/AWTC.dummy :   			com_names com_probe
 
@@ -1110,7 +1107,6 @@ proto: proto_tools
 		NTREE/NTREE.proto \
 		$(ARCHS_PT_SERVER:.a=.proto) \
 		SERVERCNTRL/SERVERCNTRL.proto \
-		TRS/TRS.proto \
 		AISC_COM/AISC_COM.proto \
 		GDE/GDE.proto \
 
@@ -1158,7 +1154,6 @@ gde:		GDE/GDE.dummy
 GDE:		gde
 agde: 		ARB_GDE/ARB_GDE.dummy
 tools:		TOOLS/TOOLS.dummy
-trs:		TRS/TRS.dummy
 convert:	SL/FILE_BUFFER/FILE_BUFFER.dummy shared_libs
 	$(MAKE) CONVERTALN/CONVERTALN.dummy
 
@@ -1327,7 +1322,7 @@ arbbasic2: templ mbin com ${MAKE_RTC} sl $(GL)
 arbshared: dball aw dp awt
 
 # needed arb applications
-arbapplications: nt pa ed e4 we pt na al nal di ph ds trs pgt
+arbapplications: nt pa ed e4 we pt na al nal di ph ds pgt
 
 # optionally things (no real harm for ARB if any of them fails):
 arbxtras: tg pst a3

@@ -173,7 +173,6 @@ ad_trees.o: $(ARBHOME)/INCLUDE/awt.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/awt_imp_exp.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/awt_tree_cmp.hxx
-ad_trees.o: $(ARBHOME)/INCLUDE/cat_tree.hxx
 
 AP_consensus.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/ad_prot.h
