@@ -272,6 +272,7 @@ GB_BOOL GB_is_readablefile P_((const char *filename));
 GB_BOOL GB_is_directory P_((const char *path));
 long GB_getuid_of_file P_((char *path));
 int GB_unlink P_((const char *path));
+void GB_unlink_or_warn P_((const char *path, GB_ERROR *error));
 char *GB_follow_unix_link P_((const char *path));
 GB_ERROR GB_symlink P_((const char *name1, const char *name2));
 GB_ERROR GB_set_mode_of_file P_((const char *path, long mode));

@@ -606,6 +606,21 @@ int GB_unlink(const char *path)
     return 0;
 }
 
+void GB_unlink_or_warn(const char *path, GB_ERROR *error) {
+    /* Unlinks 'path'
+     *
+     * In case of a real unlink failure:
+     * - if 'error' is given -> set error if not already set
+     * - otherwise only warn
+     */
+
+    if (GB_unlink(path)<0) {
+        GB_ERROR unlink_error = GB_await_error();
+        if (error && *error == NULL) *error = unlink_error;
+        else GB_warning(unlink_error);
+    }
+}
+
 char *GB_follow_unix_link(const char *path){    /* returns the real path of a file */
     char buffer[1000];
     char *path2;

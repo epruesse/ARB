@@ -385,7 +385,7 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
                         }
                         else {
                             nt_assert(mode == 2);
-                            if (GB_unlink(command_file)<0) error = GB_get_error();
+                            GB_unlink_or_warn(command_file, &error);
                         }
                         free(smooth);
                     }

@@ -555,7 +555,7 @@ void NT_submit_mail(AW_window *aww, AW_CL cl_awar_base) {
     FILE     *mail      = GB_fopen_tempfile(mail_name, "wt", &mail_file);
     GB_ERROR  error     = 0;
 
-    if (!mail) error = GB_get_error();
+    if (!mail) error = GB_await_error();
     else {
         char *awar_base    = (char *)cl_awar_base;
         char *address      = aww->get_root()->awar(GBS_global_string("%s/address", awar_base))->read_string();
@@ -578,7 +578,7 @@ void NT_submit_mail(AW_window *aww, AW_CL cl_awar_base) {
         gb_assert(GB_is_privatefile(mail_file, GB_FALSE));
 
         error = GB_system(command);
-        if (GB_unlink(mail_file)<0 && !error) error = GB_get_error();
+        GB_unlink_or_warn(mail_file, &error);
 
         free(plainaddress);
         free(text);

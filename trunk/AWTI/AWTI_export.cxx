@@ -560,12 +560,7 @@ static GB_ERROR AWTI_export_format(AW_root *aw_root, const char *formname, const
                 aw_status(GBS_global_string("exec '%s'", efo.system));
                 error = GB_system(sys);
 
-                if (GB_unlink(intermediate_export)<0) {
-                    GB_ERROR err2 = GB_await_error();
-                    if (error) aw_message(err2);
-                    else error = err2;
-                }
-
+                GB_unlink_or_warn(intermediate_export, &error);
                 aw_status(1 - double(export_depth-1)/export_depth_max);
 
                 free(sys);
@@ -627,9 +622,7 @@ static GB_ERROR AWTI_export_format(AW_root *aw_root, const char *formname, const
 
     if (error) {
         if (*resulting_outname) {
-            if (GB_unlink(*resulting_outname)<0) {
-                aw_message(GB_export_IO_error("deleting", *resulting_outname));
-            }
+            GB_unlink_or_warn(*resulting_outname, NULL);
             freeset(*resulting_outname, 0);
         }
     }
