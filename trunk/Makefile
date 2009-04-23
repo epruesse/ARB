@@ -1092,7 +1092,8 @@ depend: depends
 
 proto_tools: AISC_MKPTPS/AISC_MKPTPS.dummy
 
-proto: proto_tools TOOLS/TOOLS.dummy 
+#proto: proto_tools TOOLS/TOOLS.dummy 
+proto: proto_tools
 		$(MAKE) \
 				AISC/AISC.proto \
 				ARBDB/ARBDB.proto \
