@@ -408,11 +408,11 @@ static int awtc_next_file(void) {
 
         if (mid_file_name)  {
             gb_assert(GB_is_privatefile(mid_file_name, GB_FALSE));
-            if (GB_unlink(mid_file_name)<0) aw_message(GB_await_error());
+            GB_unlink_or_warn(mid_file_name, &error);
             free(mid_file_name);
         }
         if (dest_file_name) {
-            if (GB_unlink(dest_file_name)<0) aw_message(GB_await_error());
+            GB_unlink_or_warn(dest_file_name, &error);
             free(dest_file_name);
         }
 

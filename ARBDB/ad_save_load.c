@@ -129,7 +129,7 @@ GB_ERROR gb_delete_reference(const char *master) {
     char       *fullmaster = gb_full_path(master);
     const char *fullref    = gb_reffile_name(fullmaster);
 
-    if (GB_unlink(fullref)<0) error = GB_await_error();
+    GB_unlink_or_warn(fullref, &error);
 
     free(fullmaster);
     return error;
@@ -187,32 +187,17 @@ static GB_ERROR gb_remove_quick_saved(GB_MAIN_TYPE *Main, const char *path) {
     int i;
     GB_ERROR error = 0;
 
-    for (i=0; i<GB_MAX_QUICK_SAVE_INDEX && !error; i++) {
-        if (GB_unlink(gb_quicksaveName(path,i))<0) {
-            error = GB_await_error();
-        }
-    }
+    for (i=0; i<GB_MAX_QUICK_SAVE_INDEX && !error; i++) GB_unlink_or_warn(gb_quicksaveName(path,i), &error);
+    for (i=0; i<10 && !error; i++) GB_unlink_or_warn(gb_oldQuicksaveName(path,i), &error);
+    if (Main) Main->qs.last_index = -1;
 
-    for (i=0; i<10 && !error; i++) {
-        if (GB_unlink(gb_oldQuicksaveName(path,i))<0) {
-            error = GB_await_error();
-        }
-    }
-
-    if (Main) {
-        Main->qs.last_index = -1;
-    }
     return error;
 }
 
 GB_ERROR gb_remove_all_but_main(GB_MAIN_TYPE *Main, const char *path){
     GB_ERROR error = 0;
     error = gb_remove_quick_saved(Main,path);
-    if (!error){
-        if (GB_unlink(gb_mapfile_name(path))<0){
-            error = GB_await_error();
-        }
-    }                 /* delete old mapfile */
+    if (!error) GB_unlink_or_warn(gb_mapfile_name(path), &error); /* delete old mapfile */
     return error;
 }
 
@@ -1025,16 +1010,14 @@ GB_ERROR GB_save_as(GBDATA *gb,const char *path,const char *savetype)
          * containing NULL-entries in their header */
 
         erg = 0;
-        if (strchr(savetype,'m'))
-        {
-            map_path = gb_mapfile_name(path);
-            erg |= gb_save_mapfile(Main,map_path);          /* save mapfile */
-            erg |= gb_write_bin(out,gb,1);                  /* save binary */
+        if (strchr(savetype,'m')) {
+            map_path  = gb_mapfile_name(path);
+            erg      |= gb_save_mapfile(Main,map_path); /* save mapfile */
+            erg      |= gb_write_bin(out,gb,1);     /* save binary */
         }
-        else
-        {
-            GB_unlink(gb_mapfile_name(path));                  /* delete old mapfile */
-            erg |= gb_write_bin(out,gb,1);                  /* save binary */
+        else {
+            GB_unlink_or_warn(gb_mapfile_name(path), NULL); /* delete old mapfile */
+            erg |= gb_write_bin(out,gb,1);          /* save binary */
         }
 
         if (erg==0){
@@ -1069,7 +1052,7 @@ GB_ERROR GB_save_as(GBDATA *gb,const char *path,const char *savetype)
                 }
                 else /* if we cannot rename the mapfile, then we delete it */
                 {
-                    GB_unlink(overwrite_map_path);
+                    GB_unlink_or_warn(overwrite_map_path, NULL);
                     goto error;
                 }
             }
@@ -1146,7 +1129,7 @@ GB_ERROR GB_save_quick_as(GBDATA *gb_main, char *path)
     }
     fclose(fmaster);
     if (GB_unlink(path)<0){
-        return GB_export_error("File '%s' already exists and cannot be deleted",path);
+        return GB_export_error("File '%s' already exists and cannot be deleted\n(Reason: %s)",path, GB_await_error());
     };      /* delete old file */
 
     mode = GB_mode_of_link(Main->path); /* old master */

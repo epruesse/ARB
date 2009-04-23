@@ -2632,7 +2632,7 @@ static GB_ERROR gbl_exec(GBL_command_arguments *args)
         }
 
         gb_assert(GB_is_privatefile(inputname, GB_FALSE));
-        if (GB_unlink(inputname)<0 && !error) error = GB_await_error();
+        GB_unlink_or_warn(inputname, &error);
         free(inputname);
     }
 

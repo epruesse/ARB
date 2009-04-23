@@ -490,24 +490,14 @@ void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw) {
                         char *prt = awr->awar(AWAR_PRINT_TREE_PRINTER)->read_string();
                         error     = GB_system(GBS_global_string("%s %s", prt, dest));
                         free(prt);
-
-                        if (GB_unlink(dest)<0) {
-                            GB_ERROR err2 = GB_await_error();
-                            if (error) fprintf(stderr, "ARB-Error: %s", err2);
-                            else error = err2;
-                        }
+                        GB_unlink_or_warn(dest, &error);
                         break;
                     }
                 }
             }
         }
         aw_closestatus();
-
-        if (GB_unlink(xfig)<0) {
-            GB_ERROR err2 = GB_await_error();
-            if (error) fprintf(stderr, "ARB-Error: %s", err2);
-            else error = err2;
-        }
+        GB_unlink_or_warn(xfig, &error);
         free(xfig);
     }
 
