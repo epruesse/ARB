@@ -1084,39 +1084,50 @@ up_internal: depends proto tags valgrind_update
 
 #********************************************************************************
 
-depends: com_all
+depends:
+	$(MAKE) comtools 
+	@echo "$(SEP) Partially build com interface"
+	$(MAKE) PROBE_COM/PROBE_COM.depends
+	$(MAKE) NAMES_COM/NAMES_COM.depends
+	@echo $(SEP) Updating dependencies
 	$(MAKE) $(ARCHS:.a=.depends) \
 			HELP_SOURCE/HELP_SOURCE.depends \
 
 depend: depends
 
-proto_tools: AISC_MKPTPS/AISC_MKPTPS.dummy
+proto_tools:
+	@echo $(SEP) Building prototyper 
+	$(MAKE) AISC_MKPTPS/AISC_MKPTPS.dummy
 
 #proto: proto_tools TOOLS/TOOLS.dummy 
 proto: proto_tools
-		$(MAKE) \
-				AISC/AISC.proto \
-				ARBDB/ARBDB.proto \
-				ARB_GDE/ARB_GDE.proto \
-				CONVERTALN/CONVERTALN.proto \
-				NTREE/NTREE.proto \
-				$(ARCHS_PT_SERVER:.a=.proto) \
-				SERVERCNTRL/SERVERCNTRL.proto \
-				TRS/TRS.proto \
-				AISC_COM/AISC_COM.proto \
-				GDE/GDE.proto \
+	@echo $(SEP) Updating prototypes
+	$(MAKE) \
+		AISC/AISC.proto \
+		ARBDB/ARBDB.proto \
+		ARB_GDE/ARB_GDE.proto \
+		CONVERTALN/CONVERTALN.proto \
+		NTREE/NTREE.proto \
+		$(ARCHS_PT_SERVER:.a=.proto) \
+		SERVERCNTRL/SERVERCNTRL.proto \
+		TRS/TRS.proto \
+		AISC_COM/AISC_COM.proto \
+		GDE/GDE.proto \
 
 #********************************************************************************
 
 valgrind_update:
-		$(MAKE) -C SOURCE_TOOLS valgrind_update
+	@echo $(SEP) Updating for valgrind
+	$(MAKE) -C SOURCE_TOOLS valgrind_update
 
 #********************************************************************************
 
 TAGFILE=TAGS
 TAGFILE_TMP=TAGS.tmp
 
-tags: tags_$(MACH)
+tags:
+	@echo $(SEP) Updating tags
+	$(MAKE) tags_$(MACH)
 	mv $(TAGFILE_TMP) $(TAGFILE)
 
 tags_LINUX: tags2
