@@ -26,7 +26,11 @@ server.a:	$(MAIN_SOURCE)	$(PRIVATE_SERVER_OBJECTS:.o=.c) $(PUBLIC_SOURCES)
 
 
 depends:
-#		$(MAKE) -r -f AISC/Makefile depends
+		$(MAKE) -r $(makeflags) -f AISC/Makefile \
+			"AISC_SAVE=$(AISC_SAVE)" \
+			"MAIN_SOURCE=$(MAIN_SOURCE)" \
+			"PRIVATE_SERVER_OBJECTS=$(PRIVATE_SERVER_OBJECTS)" \
+			pregenerate
 
 # @echo "no automatic dependencies for PROBE_COM - skipped"
 

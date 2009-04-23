@@ -35,6 +35,8 @@ AISC_SERVER_EXTERN = GENH/aisc_server_extern.aisc
 
 all: $(CLIENT) $(SERVER)
 
+pregenerate: $(GEN_INCLUDES) $(GEN_SERVER_PROTO) $(GEN_SERVER_OBJECTS:.o=.c) 
+
 $(SERVER):	$(SERVER_OBJECTS) $(GEN_SERVER_OBJECTS) $(PRIVATE_SERVER_OBJECTS)
 	$(LINK_STATIC_LIB) $@ $^
 
@@ -58,15 +60,10 @@ $(CLIENT_OBJECTS):	$(CLIENT_OBJECTS:O/%.o=C/%.c) $(GEN_INCLUDES) $(CLIENT_INCLUD
 	$(CLIENTCOMPILER) $(FORCED_FLAGS) -c -o $@ C/$(@F:.o=.c) -IGENH -I. -IC
 
 GENH/%.h: AISC/%.pa AISC/*.pa $(MAIN_SOURCE) $(INCLUDE_INCLUDES)
-	@echo "----------------------------------------"
-	@echo "1 - LD_LIBRARY_PATH=$(LD_LIBRARY_PATH)"
 	$(AISC) $< $(MAIN_SOURCE) $@
 
 GENC/%.c: AISC/%.pa AISC/*.pa $(MAIN_SOURCE) $(AISC_SERVER_EXTERN)
-	@echo "----------------------------------------"
-	@echo "2 - LD_LIBRARY_PATH=$(LD_LIBRARY_PATH)"
 	$(AISC) $< $(MAIN_SOURCE) $@ $(AISC_SERVER_EXTERN) $(IMPORT_PROTO)
-
 
 $(IMPORT_PROTO): GENC/aisc_server.c
 	echo $@

@@ -25,7 +25,12 @@ server.a: $(MAIN_SOURCE) $(PRIVATE_SERVER_OBJECTS:.o=.c) $(PUBLIC_SOURCES)
 
 
 depends:
-#	$(MAKE) -r -f AISC/Makefile depends
+	$(MAKE) -r $(makeflags) -f AISC/Makefile \
+		"AISC_SAVE=$(AISC_SAVE)" \
+		"AUTODEPENDS=$(AUTODEPENDS)" \
+		"MAIN_SOURCE=$(MAIN_SOURCE)" \
+		"PRIVATE_SERVER_OBJECTS = $(PRIVATE_SERVER_OBJECTS)" \
+		pregenerate
 
 clean:
 	$(MAKE) $(makeflags) -f AISC/Makefile clean
