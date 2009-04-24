@@ -16,7 +16,7 @@ void ED4_SECEDIT_start(AW_window *aw, AW_CL cl_gbmain, AW_CL) {
     if (!aw_sec) { // do not open window twice
         aw_sec = SEC_create_main_window(aw->get_root(), (GBDATA*)cl_gbmain);
         if (!aw_sec) {
-            GB_ERROR err = GB_get_error();
+            GB_ERROR err = GB_await_error();
             aw_message(GBS_global_string("Couldn't start secondary structure editor.\nReason: %s", err));
             return;
         }

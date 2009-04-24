@@ -42,12 +42,12 @@ GB_ERROR SEC_structure_toggler::restore(GBDATA *gb_struct) {
 
     GBDATA *gb_data   = GB_search(gb_struct, "data", GB_FIND);
     if (gb_data) data = GB_read_string(gb_data);
-    if (!data) error  = GB_get_error();
+    if (!data) error  = GB_await_error();
 
     if (!error) {
         GBDATA *gb_ref      = GB_search(gb_struct, "ref", GB_FIND);
         if (gb_ref) xstring = GB_read_string(gb_ref);
-        if (!xstring) error = GB_get_error();
+        if (!xstring) error = GB_await_error();
     }
 
     if (!error) {
@@ -91,10 +91,10 @@ GBDATA *SEC_structure_toggler::find(int num) {
 GBDATA *SEC_structure_toggler::create(const char *structure_name) {
     sec_assert(!st_error);
     if (st_error) return 0;
-    
-    GBDATA *gb_new = GB_create_container(gb_structures, "struct");
 
-    if (gb_new) {
+    GBDATA *gb_new        = GB_create_container(gb_structures, "struct");
+    if (!gb_new) st_error = GB_await_error();
+    else {
         st_error = setName(gb_new, structure_name);
 
         if (!st_error) st_error = store(gb_new);
@@ -105,7 +105,6 @@ GBDATA *SEC_structure_toggler::create(const char *structure_name) {
             Count++;
         }
     }
-    else st_error = GB_get_error();
 
     return gb_new;
 }
@@ -121,7 +120,7 @@ SEC_structure_toggler::SEC_structure_toggler(GBDATA *gb_main, const char *ali_na
     GB_transaction ta(gb_main);
     gb_structures = GB_search(gb_main, GBS_global_string("secedit/structs/%s", ali_name), GB_CREATE_CONTAINER);
     if (!gb_structures) {
-        st_error   = GB_get_error();
+        st_error   = GB_await_error();
         gb_current = 0;
     }
     else {
@@ -222,7 +221,7 @@ const char *SEC_structure_toggler::name() {
 
     GBDATA *gb_name               = GB_search(gb_current, "name", GB_FIND);
     if (gb_name) structure_name   = GB_read_char_pntr(gb_name);
-    if (!structure_name) st_error = GB_get_error();
+    if (!structure_name) st_error = GB_await_error();
 
     st_error = ta.close(st_error);
     return structure_name;
