@@ -350,7 +350,7 @@ void gene_rename_cb(AW_window *aww) {
                 else {
                     GBDATA *gb_name = GB_search(gb_source, "name", GB_STRING);
 
-                    if (!gb_name) error = GB_get_error();
+                    if (!gb_name) error = GB_await_error();
                     else {
                         error = GB_write_string(gb_name, dest);
                         if (!error) aww->get_root()->awar(AWAR_GENE_NAME)->write_string(dest);
@@ -407,7 +407,7 @@ void gene_copy_cb(AW_window *aww){
             else if (gb_dest) error = GB_export_error("Gene '%s' already exists", dest);
             else {
                 gb_dest             = GB_create_container(gb_gene_data,"gene");
-                if (!gb_dest) error = GB_get_error();
+                if (!gb_dest) error = GB_await_error();
                 else error          = GB_copy(gb_dest, gb_source);
 
                 if (!error) error = GBT_write_string(gb_dest, "name", dest);
@@ -480,7 +480,7 @@ void gene_create_cb(AW_window *aww){
         else {
             gb_dest = GEN_find_or_create_gene_rel_gene_data(gb_gene_data, dest);
 
-            if (!gb_dest) error = GB_get_error();
+            if (!gb_dest) error = GB_await_error();
             else {
                 error = GBT_write_int(gb_dest, "pos_start", pos1);
                 if (!error) error = GBT_write_int(gb_dest, "pos_stop", pos2);

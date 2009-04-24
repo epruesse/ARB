@@ -42,6 +42,7 @@ class DBerror {
     void init(const string& msg, GB_ERROR gberror);
 
 public:
+    DBerror();
     DBerror(const char *msg);
     DBerror(const string& msg);
     DBerror(const char *msg, GB_ERROR gberror);

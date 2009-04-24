@@ -28,13 +28,15 @@ typedef SmartCustomPtr(GEN_position, GEN_free_position) GEN_positionPtr;
 // --------------------------------------------------------------------------------
 
 void DBerror::init(const string& msg, GB_ERROR gberror) {
+    gi_assert(gberror);
     if (gberror) err = msg+" (Reason: "+gberror+")";
-    else err = msg;
+    else err = msg; // ndebug!
 }
 
-DBerror::DBerror(const char *msg) { string errmsg(msg); init(msg, GB_get_error()); }
-DBerror::DBerror(const string& msg) { init(msg, GB_get_error()); }
-DBerror::DBerror(const char *msg, GB_ERROR gberror) { string errmsg(msg); init(msg, gberror); }
+DBerror::DBerror() { init("", GB_await_error()); }
+DBerror::DBerror(const char *msg) { string errmsg(msg); init(errmsg, GB_await_error()); }
+DBerror::DBerror(const string& msg) { init(msg, GB_await_error()); }
+DBerror::DBerror(const char *msg, GB_ERROR gberror) { string errmsg(msg); init(errmsg, gberror); }
 DBerror::DBerror(const string& msg, GB_ERROR gberror) { init(msg, gberror); }
 
 // --------------------------------------------------------------------------------
@@ -56,7 +58,7 @@ static GBDATA *DB_create_container(GBDATA *parent, const char *name, bool mark) 
 static GBDATA *DB_create_string_field(GBDATA *parent, const char *field, const char *content) {
     // create field with content
 
-    gb_assert(content[0]);
+    gi_assert(content[0]);
     // do NOT WRITE empty string-fields into ARB DB,
     // cause ARB DB does not differ between empty content and non-existing fields
     // (i.e. when writing an empty string, ARB removes the field)
@@ -89,8 +91,10 @@ void DBwriter::createOrganism(const string& flatfile, const char *importerTag)
 
     // create the organism
     {
-        UniqueNameDetector&  UND_species   = *session.und_species;
-        char                *organism_name = AWTC_makeUniqueShortName("genome", UND_species);
+        UniqueNameDetector& UND_species = *session.und_species;
+
+        char *organism_name = AWTC_makeUniqueShortName("genome", UND_species);
+        if (!organism_name) throw DBerror();
 
         gb_organism = DB_create_container(session.gb_species_data, "species", true);
         DB_create_string_field(gb_organism, "name", organism_name);

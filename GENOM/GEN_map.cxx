@@ -663,8 +663,8 @@ static GB_ERROR GEN_species_add_entry(GBDATA *gb_pseudo, const char *key, const 
     GBDATA   *gbd   = GB_entry(gb_pseudo, key);
 
     if (!gbd) { // key does not exist yet -> create
-        gbd   = GB_create(gb_pseudo, key, GB_STRING);
-        error = GB_get_error();
+        gbd             = GB_create(gb_pseudo, key, GB_STRING);
+        if (!gbd) error = GB_await_error();
     }
     else { // key exists
         if (GB_read_type(gbd) != GB_STRING) { // test correct key type
@@ -736,13 +736,12 @@ static void gen_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene
 
     if (!full_species_name) full_species_name = species_name;
 
-    char *full_name = GBS_global_string_copy("%s [%s]", full_species_name, gene_name);
-    char *sequence  = GBT_read_gene_sequence(gb_gene, GB_TRUE, 0);
-    
-    if (!sequence) {
-        aw_message(GB_get_error());
-    }
-    else  {
+    char     *full_name = GBS_global_string_copy("%s [%s]", full_species_name, gene_name);
+    char     *sequence  = GBT_read_gene_sequence(gb_gene, GB_TRUE, 0);
+    GB_ERROR  error     = 0;
+
+    if (!sequence) error = GB_await_error();
+    else {
         const char *ali = eg2ps->ali;
         long        id  = GBS_checksum(sequence, 1, ".-");
         char        acc[100];
@@ -754,7 +753,6 @@ static void gen_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene
         GBDATA   *gb_exist_geneSpec       = GEN_find_pseudo_species(GLOBAL_gb_main, species_name, gene_name, eg2ps->pseudo_hash);
         bool      create_new_gene_species = true;
         char     *short_name              = 0;
-        GB_ERROR  error                   = 0;
 
         if (gb_exist_geneSpec) {
             const char *existing_name = GBT_read_name(gb_exist_geneSpec);
@@ -866,13 +864,11 @@ static void gen_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene
             }
 
             if (!error) { // write sequence data
-                GBDATA *gb_data = GBT_add_data(gb_exist_geneSpec, ali, "data", GB_STRING);
-                if (gb_data) {
+                GBDATA *gb_data     = GBT_add_data(gb_exist_geneSpec, ali, "data", GB_STRING);
+                if (!gb_data) error = GB_await_error();
+                else {
                     size_t sequence_length = strlen(sequence);
                     error                  = GBT_write_sequence(gb_data, ali, sequence_length, sequence);
-                }
-                else {
-                    error = GB_get_error();
                 }
             }
 
@@ -898,11 +894,11 @@ static void gen_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene
             if (!error && codon_start)  error = GEN_species_add_entry(gb_exist_geneSpec, "codon_start", codon_start);
             if (!error && transl_table) error = GEN_species_add_entry(gb_exist_geneSpec, "transl_table", transl_table);
         }
-        if (error) aw_message(error);
 
         free(short_name);
         free(sequence);
     }
+    if (error) aw_message(error);
 
     free(full_name);
 }
@@ -1089,7 +1085,7 @@ void gene_extract_cb(AW_window *aww, AW_CL cl_pmode){
         GBDATA         *gb_ali = GBT_get_alignment(GLOBAL_gb_main, ali);
 
         if (!gb_ali && !GBT_create_alignment(GLOBAL_gb_main,ali,0,0,0,"dna")) {
-            error = GB_get_error();
+            error = GB_await_error();
         }
     }
 
