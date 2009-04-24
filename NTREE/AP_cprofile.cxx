@@ -1116,11 +1116,8 @@ void CPRO_savestatistic_cb(AW_window *aw,AW_CL which_statistic)
             error = "calculate first!";
         }
         else {
-            GBDATA *newbase = GB_open(filename,"wc");
-
-            if (!newbase) {
-                error = GB_get_error();
-            }
+            GBDATA *newbase     = GB_open(filename,"wc");
+            if (!newbase) error = GB_await_error();
             else {
                 error = GB_begin_transaction(newbase);
 

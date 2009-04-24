@@ -56,17 +56,13 @@ static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, in
                     long slen = GBT_get_alignment_len(gb_main,ali_source);
                     to_free   = GBS_global_string_copy("%s_pro",ali_source);
                     ali_dest  = to_free;
-                    gb_dest   = GBT_create_alignment(gb_main,ali_dest,slen/3+1,0,1,"ami");
+                    gb_dest   = GBT_create_alignment(gb_main, ali_dest, slen/3+1, 0, 1, "ami");
 
-                    {
+                    if (!gb_dest) error = GB_await_error();
+                    else {
                         char *fname = GBS_global_string_copy("%s/data",ali_dest);
-                        awt_add_new_changekey(gb_main,fname,GB_STRING);
+                        error       = awt_add_new_changekey(gb_main,fname,GB_STRING);
                         free(fname);
-                    }
-
-                    if (!gb_dest){
-                        error = GB_get_error();
-                        nt_assert(error);
                     }
                 }
             }
@@ -160,14 +156,11 @@ static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, in
 
                     stops += AWT_pro_a_nucs_convert(table, data, GB_read_string_count(gb_source_data), startpos, translate_all, false, false, 0); // do the translation
                     ++count;
-                    
-                    GBDATA *gb_dest_data = GBT_add_data(gb_species,ali_dest,"data", GB_STRING);
-                    if (!gb_dest_data) {
-                        error = GB_get_error();
-                    }
-                    else {
-                        error = GB_write_string(gb_dest_data,data);
-                    }
+
+                    GBDATA *gb_dest_data     = GBT_add_data(gb_species, ali_dest, "data", GB_STRING);
+                    if (!gb_dest_data) error = GB_await_error();
+                    else    error            = GB_write_string(gb_dest_data, data);
+
                     free(data);
                 }
 

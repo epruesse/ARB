@@ -50,17 +50,14 @@ GB_ERROR nt_species_join(GBDATA *dest, GBDATA *source, int deep, char *sep, char
                     GB_TYPES type = GB_read_type(gb_source_field);
 
                     if (type == GB_DB) {
-                        GBDATA *gb_dest_container = GB_create_container(dest, source_field);
-                        if (gb_dest_container) {
-                            error = nt_species_join(gb_dest_container, gb_source_field, 0, sep, sep2);
-                        }
-                        else {
-                            error = GB_get_error();
-                        }
+                        GBDATA *gb_dest_container     = GB_create_container(dest, source_field);
+                        if (!gb_dest_container) error = GB_await_error();
+                        else    error                 = nt_species_join(gb_dest_container, gb_source_field, 0, sep, sep2);
                     }
                     else {
-                        gb_dest_field = GB_create(dest,source_field, GB_read_type(gb_source_field));
-                        error         = GB_copy(gb_dest_field,gb_source_field);
+                        gb_dest_field             = GB_create(dest,source_field, GB_read_type(gb_source_field));
+                        if (!gb_dest_field) error = GB_await_error();
+                        else error                = GB_copy(gb_dest_field,gb_source_field);
                     }
                 }
             }

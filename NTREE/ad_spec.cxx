@@ -61,17 +61,16 @@ static void move_species_to_extended(AW_window *aww) {
     GB_ERROR  error  = GB_begin_transaction(GLOBAL_gb_main);
 
     if (!error) {
-        GBDATA *gb_sai_data = GBT_get_SAI_data(GLOBAL_gb_main);
-
-        if (!gb_sai_data) error = GB_get_error();
+        GBDATA *gb_sai_data     = GBT_get_SAI_data(GLOBAL_gb_main);
+        if (!gb_sai_data) error = GB_await_error();
         else {
             GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main, source);
             GBDATA *gb_dest    = GBT_find_SAI_rel_SAI_data(gb_sai_data, source);
 
             if (gb_dest) error = GBS_global_string("SAI '%s' already exists", source);
             else if (gb_species) {
-                gb_dest = GB_create_container(gb_sai_data, "extended");
-                if (!gb_dest) error = GB_get_error();
+                gb_dest             = GB_create_container(gb_sai_data, "extended");
+                if (!gb_dest) error = GB_await_error();
                 else {
                     error = GB_copy(gb_dest, gb_species);
                     if (!error) {
@@ -210,16 +209,15 @@ static void species_create_cb(AW_window * aww) {
     GB_ERROR  error = GB_begin_transaction(GLOBAL_gb_main);
 
     if (!error) {
-        GBDATA *gb_species_data = GB_search(GLOBAL_gb_main, "species_data", GB_CREATE_CONTAINER);
-
-        if (!gb_species_data) error = GB_get_error();
+        GBDATA *gb_species_data     = GB_search(GLOBAL_gb_main, "species_data", GB_CREATE_CONTAINER);
+        if (!gb_species_data) error = GB_await_error();
         else {
             GBDATA *gb_dest = GBT_find_species_rel_species_data(gb_species_data, dest);
 
             if (gb_dest) error = GBS_global_string("Species '%s' already exists", dest);
             else {
-                gb_dest = GBT_find_or_create_species_rel_species_data(gb_species_data, dest);
-                if (!gb_dest) error = GB_get_error();
+                gb_dest             = GBT_find_or_create_species_rel_species_data(gb_species_data, dest);
+                if (!gb_dest) error = GB_await_error();
                 else aww->get_root()->awar(AWAR_SPECIES_NAME)->write_string(dest);
             }
         }
@@ -273,29 +271,31 @@ static void ad_species_copy_cb(AW_window *aww, AW_CL, AW_CL) {
     GBDATA  *gb_species = expect_species_selected(aw_root, &name);
 
     if (gb_species) {
-        GB_transaction  ta(GLOBAL_gb_main);
-        GBDATA         *gb_species_data = GB_get_father(gb_species);
-        UniqueNameDetector und(gb_species_data);
-        char           *copy_name       = AWTC_makeUniqueShortName(GBS_global_string("c%s", name), und);
-        GBDATA         *gb_new_species  = GB_create_container(gb_species_data, "species");
-        GB_ERROR        error           = 0;
+        GB_transaction      ta(GLOBAL_gb_main);
+        GBDATA             *gb_species_data = GB_get_father(gb_species);
+        UniqueNameDetector  und(gb_species_data);
+        GB_ERROR            error           = 0;
+        char               *copy_name       = AWTC_makeUniqueShortName(GBS_global_string("c%s", name), und);
 
-        if (!gb_new_species) {
-            error = GB_get_error();
-        }
+        if (!copy_name) error = GB_await_error();
         else {
-            error = GB_copy(gb_new_species, gb_species);
-            if (!error) {
-                error = GBT_write_string(gb_new_species, "name", copy_name);
-                if (!error) aw_root->awar(AWAR_SPECIES_NAME)->write_string(copy_name); // set focus
-            }
-        }
+            GBDATA *gb_new_species = GB_create_container(gb_species_data, "species");
 
+            if (!gb_new_species) error = GB_await_error();
+            else {
+                error = GB_copy(gb_new_species, gb_species);
+                if (!error) {
+                    error = GBT_write_string(gb_new_species, "name", copy_name);
+                    if (!error) aw_root->awar(AWAR_SPECIES_NAME)->write_string(copy_name); // set focus
+                }
+            }
+
+            free(copy_name);
+        }
         if (error) {
             error = ta.close(error);
             aw_message(error);
         }
-        free(copy_name);
     }
 }
 

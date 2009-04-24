@@ -98,19 +98,13 @@ static void trackAlignmentChanges(AW_window *aww) {
             GBDATA *gb_checksum = GB_entry(gb_species, checksum_field);
             if (!gb_checksum) {
                 newSpecies++;
-                gb_checksum = GB_create(gb_species, checksum_field, GB_STRING);
-                if (!gb_checksum) {
-                    error = GB_get_error();
-                }
-                else {
-                    save_comment = "new";
-                }
+                gb_checksum             = GB_create(gb_species, checksum_field, GB_STRING);
+                if (!gb_checksum) error = GB_await_error();
+                else save_comment       = "new";
             }
             else {
-                char *oldValue = GB_read_string(gb_checksum);
-                if (!oldValue) {
-                    error = GB_get_error();
-                }
+                char *oldValue       = GB_read_string(gb_checksum);
+                if (!oldValue) error = GB_await_error();
                 else {
                     char *comma = strchr(oldValue, ',');
                     if (!comma) {

@@ -192,7 +192,7 @@ void aa_create_alignment(AW_window *aww) {
     if (!error) {
         char   *name             = aww->get_root()->awar("presets/alignment_dest")->read_string();
         GBDATA *gb_alignment     = GBT_create_alignment(GLOBAL_gb_main,name,0,0,0,"dna");
-        if (!gb_alignment) error = GB_get_error();
+        if (!gb_alignment) error = GB_await_error();
         else {
             char *nfield = GBS_global_string_copy("%s/data",name);
             error        = awt_add_new_changekey( GLOBAL_gb_main,nfield,GB_STRING);

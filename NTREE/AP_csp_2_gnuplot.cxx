@@ -85,17 +85,22 @@ static char * get_overlay_files(AW_root *awr, const char *fname, GB_ERROR& error
         if (overlay_prefix || overlay_postfix) {
             char *mask = GBS_global_string_copy("%s.*_gnu", name_prefix);
             if (overlay_prefix) {
+#if defined(DEVEL_RALF)
+#warning change error handling for GB_find_all_files() - globally!
+#endif // DEVEL_RALF
                 found_prefix_files             = GB_find_all_files(dir, mask, GB_FALSE);
                 if (!found_prefix_files) error = GB_get_error();
             }
             free(mask);
 
-            mask = GBS_global_string_copy("*.%s", name_postfix);
-            if (overlay_postfix) {
-                found_postfix_files             = GB_find_all_files(dir, mask, GB_FALSE);
-                if (!found_postfix_files) error = GB_get_error();
+            if (!error) {
+                mask = GBS_global_string_copy("*.%s", name_postfix);
+                if (overlay_postfix) {
+                    found_postfix_files             = GB_find_all_files(dir, mask, GB_FALSE);
+                    if (!found_postfix_files) error = GB_get_error();
+                }
+                free(mask);
             }
-            free(mask);
         }
 
         if (!error) {
@@ -352,8 +357,8 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
                     char *command_file;
                     char *command_name = GB_unique_filename("arb", "gnuplot");
 
-                    out = GB_fopen_tempfile(command_name, "wt", &command_file);
-                    if (!out) error = GB_get_error();
+                    out             = GB_fopen_tempfile(command_name, "wt", &command_file);
+                    if (!out) error = GB_await_error();
                     else {
                         char *smooth      = aww->get_root()->awar(AP_AWAR_CSP_SMOOTH_GNUPLOT)->read_string();
                         char *found_files = get_overlay_files(aww->get_root(), fname, error);

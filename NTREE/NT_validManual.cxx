@@ -146,22 +146,8 @@ void selectValidNameFromList(AW_window* selManWindowRoot, AW_CL, AW_CL)
 
                 if (!gb_name_cont) err = "could not create Valid Name container in database";
                 else {
-                    GBDATA *gb_val_name = GB_entry(gb_name_cont,"NameString");
-                    if (!gb_val_name) {
-                        gb_val_name           = GB_create(gb_name_cont, "NameString", GB_STRING);
-                        if (!gb_val_name) err = GB_get_error();
-                    }
-
-                    if (!err) {
-                        GBDATA *gb_val_type = GB_entry(gb_name_cont,"DescType");
-                        if (!gb_val_type) {
-                            gb_val_type           = GB_create(gb_name_cont, "DescType", GB_STRING);
-                            if (!gb_val_type) err = GB_get_error();
-                        }
-
-                        if (!err) err = GB_write_string(gb_val_name, selectedValName);
-                        if (!err) err = GB_write_string(gb_val_type, "MAN");
-                    }
+                    err           = GBT_write_string(gb_name_cont, "NameString", selectedValName);
+                    if (!err) err = GBT_write_string(gb_name_cont, "DescType", "MAN");
                 }
             }
         }

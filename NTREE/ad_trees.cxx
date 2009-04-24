@@ -180,7 +180,7 @@ void tree_rename_cb(AW_window *aww) {
         if (!error) {
             GBDATA *gb_tree_data = GB_search(GLOBAL_gb_main, "tree_data", GB_CREATE_CONTAINER);
 
-            if (!gb_tree_data) error = GB_get_error();
+            if (!gb_tree_data) error = GB_await_error();
             else {
                 GBDATA *gb_tree_name = GB_entry(gb_tree_data, source);
                 GBDATA *gb_dest      = GB_entry(gb_tree_data, dest);
@@ -190,7 +190,7 @@ void tree_rename_cb(AW_window *aww) {
                 else {
                     GBDATA *gb_new_tree = GB_create_container(gb_tree_data, dest);
 
-                    if (!gb_new_tree) error = GB_get_error();
+                    if (!gb_new_tree) error = GB_await_error();
                     else {
                         error = GB_copy(gb_new_tree, gb_tree_name);
                         if (!error) error = GB_delete(gb_tree_name);
@@ -208,14 +208,12 @@ void tree_rename_cb(AW_window *aww) {
 }
 
 static GB_ERROR tree_append_remark(GBDATA *gb_tree, const char *add_to_remark) {
-    GB_ERROR  error     = 0;
-    GBDATA   *gb_remark = GB_search(gb_tree, "remark", GB_STRING);
-
-    if (!gb_remark) error = GB_get_error();
+    GB_ERROR  error       = 0;
+    GBDATA   *gb_remark   = GB_search(gb_tree, "remark", GB_STRING);
+    if (!gb_remark) error = GB_await_error();
     else {
-        char *old_remark = GB_read_string(gb_remark);
-
-        if (!old_remark) error = GB_get_error();
+        char *old_remark       = GB_read_string(gb_remark);
+        if (!old_remark) error = GB_await_error();
         else {
             GB_CSTR new_remark = GBS_global_string("%s\n%s", old_remark, add_to_remark);
             error              = GB_write_string(gb_remark, new_remark);
@@ -233,9 +231,8 @@ void tree_copy_cb(AW_window *aww) {
     if (!error) {
         error = GB_begin_transaction(GLOBAL_gb_main);
         if (!error) {
-            GBDATA *gb_tree_data = GB_search(GLOBAL_gb_main, "tree_data", GB_CREATE_CONTAINER);
-
-            if (!gb_tree_data) error = GB_get_error();
+            GBDATA *gb_tree_data     = GB_search(GLOBAL_gb_main, "tree_data", GB_CREATE_CONTAINER);
+            if (!gb_tree_data) error = GB_await_error();
             else {
                 GBDATA *gb_tree_name = GB_entry(gb_tree_data, source);
                 GBDATA *gb_dest      = GB_entry(gb_tree_data, dest);
@@ -244,7 +241,7 @@ void tree_copy_cb(AW_window *aww) {
                 else if (!gb_tree_name) error = "Please select a tree";
                 else {
                     gb_dest             = GB_create_container(gb_tree_data, dest);
-                    if (!gb_dest) error = GB_get_error();
+                    if (!gb_dest) error = GB_await_error();
                     else {
                         error = GB_copy(gb_dest, gb_tree_name);
                         if (!error) error = tree_append_remark(gb_dest, GBS_global_string("[created as copy of '%s']", source));
@@ -414,26 +411,25 @@ void tree_load_cb(AW_window *aww){
         if (strcmp(pcTreeFormat,"xml") == 0) {
             char *tempFname = readXmlTree(fname);
             tree = GBT_load_tree(tempFname,sizeof(GBT_TREE), &tree_comment, 1, &scaleWarning);
-
-            if (unlink(tempFname) != 0) {
-                fprintf(stderr, "Couldn't unlink '%s'\n", tempFname);
-            }
+            GB_unlink_or_warn(tempFname, NULL);
             free(tempFname);
         }
         else {
             tree = GBT_load_tree(fname,sizeof(GBT_TREE), &tree_comment, 1, &scaleWarning);
         }
 
-        if (!tree) error = GB_get_error();
+        if (!tree) error = GB_await_error();
         else {
             if (scaleWarning) GBT_message(GLOBAL_gb_main, scaleWarning);
 
             GB_transaction ta(GLOBAL_gb_main);
-            if (!error)                 error = GBT_write_tree(GLOBAL_gb_main,0,tree_name,tree);
+            error                             = GBT_write_tree(GLOBAL_gb_main,0,tree_name,tree);
             if (!error && tree_comment) error = GBT_write_tree_rem(GLOBAL_gb_main, tree_name, GBS_global_string("Loaded from '%s'\n%s", fname, tree_comment));
+
+            if (error) error = ta.close(error);
+            else aw_root->awar(AWAR_TREE)->write_string(tree_name); // show new tree
+
             GBT_delete_tree(tree);
-            
-            aw_root->awar(AWAR_TREE)->write_string(tree_name); // show new tree
         }
 
         free(scaleWarning);
@@ -547,7 +543,7 @@ void ad_move_tree_info(AW_window *aww,AW_CL mode){
         // compare_node_info only sets remark branches        
         char *log_name       = GB_unique_filename("arb_node", "log");
         log_file             = GB_create_tempfile(log_name);
-        if (!log_file) error = GB_get_error();
+        if (!log_file) error = GB_await_error();
         free(log_name);
     }
 
