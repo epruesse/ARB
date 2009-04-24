@@ -1163,6 +1163,8 @@ GB_ERROR GBT_write_group_name(GBDATA *gb_group_name, const char *new_group_name)
 }
 
 static GB_ERROR gbt_write_tree_nodes(GBDATA *gb_tree, GBT_TREE *node, long *startid) {
+    // increments '*startid' for each inner node (not for leafs)
+
     GB_ERROR error = NULL;
 
     if (!node->is_leaf) {
@@ -1192,7 +1194,7 @@ static GB_ERROR gbt_write_tree_nodes(GBDATA *gb_tree, GBT_TREE *node, long *star
             }
 
             if (node_is_used) { // set id for used nodes
-                error             = GBT_write_int(node->gb_node, "id", *startid++);
+                error             = GBT_write_int(node->gb_node, "id", *startid);
                 if (!error) error = GB_write_usr_private(node->gb_node,0);
             }
             else {          // delete unused nodes
@@ -1201,6 +1203,7 @@ static GB_ERROR gbt_write_tree_nodes(GBDATA *gb_tree, GBT_TREE *node, long *star
             }
         }
 
+        (*startid)++;
         if (!error) error = gbt_write_tree_nodes(gb_tree, node->leftson, startid);
         if (!error) error = gbt_write_tree_nodes(gb_tree, node->rightson, startid);
     }
@@ -1386,7 +1389,7 @@ static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tre
         if (!plain_only && !error) {
             // save nodes to DB
             long size         = 0;
-            error             = gbt_write_tree_nodes(gb_tree, tree, &size); // reports number of named nodes in 'size'
+            error             = gbt_write_tree_nodes(gb_tree, tree, &size); // reports number of nodes in 'size'
             if (!error) error = GBT_write_int(gb_tree, "nnodes", size);
 
             if (!error) {
