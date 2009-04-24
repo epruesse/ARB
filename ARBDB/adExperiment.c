@@ -19,8 +19,13 @@ GBDATA* EXP_find_experiment_rel_exp_data(GBDATA *gb_experiment_data, const char 
     return GBT_find_item_rel_item_data(gb_experiment_data, "name", name);
 }
 GBDATA* EXP_find_experiment(GBDATA *gb_species, const char *name) {
-    // find existing experiment
+    // search an experiment
+    // Note: If you know the experiment exists, use EXP_expect_experiment!
     return EXP_find_experiment_rel_exp_data(EXP_get_experiment_data(gb_species), name);
+}
+GBDATA* EXP_expect_experiment(GBDATA *gb_species, const char *name) {
+    // find existing experiment
+    return GBT_expect_item_rel_item_data(EXP_get_experiment_data(gb_species), "name", name);
 }
 
 GBDATA* EXP_first_experiment_rel_exp_data(GBDATA *gb_experiment_data) {

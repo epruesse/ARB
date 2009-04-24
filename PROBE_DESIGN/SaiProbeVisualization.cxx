@@ -384,19 +384,17 @@ static char *GetDisplayInfo(AW_root *root, const char *speciesName, size_t displ
     GB_ERROR        error       = 0;
     char           *displayInfo = 0;
     GB_transaction  ta(GLOBAL_gb_main);
-    GBDATA         *gb_Species  = GBT_find_species(GLOBAL_gb_main, speciesName);
+    GBDATA         *gb_Species  = GBT_expect_species(GLOBAL_gb_main, speciesName);
 
-    if (!gb_Species) {
-        error = GB_get_error();
-    }
+    if (!gb_Species) error = GB_await_error();
     else {
         char *field_content = 0;
         {
             char   *dbFieldName = root->awar_string(AWAR_SPV_DB_FIELD_NAME)->read_string();
             GBDATA *gb_field    = GB_search(gb_Species, dbFieldName, GB_FIND);
             if (gb_field) {
-                field_content = GB_read_as_string(gb_field);
-                if (!field_content) error = GB_get_error();
+                field_content             = GB_read_as_string(gb_field);
+                if (!field_content) error = GB_await_error();
             }
             else {
                 error = GBS_global_string("No entry '%s' in species '%s'", dbFieldName, speciesName);
@@ -407,7 +405,7 @@ static char *GetDisplayInfo(AW_root *root, const char *speciesName, size_t displ
         if (!error) {
             char *aciCommand        = root->awar_string(AWAR_SPV_ACI_COMMAND)->read_string();
             displayInfo             = GB_command_interpreter(GLOBAL_gb_main, field_content, aciCommand, gb_Species, default_tree_name);
-            if (!displayInfo) error = GB_get_error();
+            if (!displayInfo) error = GB_await_error();
             free(aciCommand);
         }
 
@@ -415,10 +413,7 @@ static char *GetDisplayInfo(AW_root *root, const char *speciesName, size_t displ
         free(field_content);
     }
 
-    if (error) {
-        free(displayInfo);
-        return strdup(error);   // display the error
-    }
+    if (error) freedup(displayInfo, error);                // display the error
 
     sai_assert(displayInfo);
     return displayInfo;

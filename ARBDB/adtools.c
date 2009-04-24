@@ -119,6 +119,11 @@ static GB_ERROR create_ali_intEntry(GBDATA *gb_ali, const char *field, int intva
 }
 
 GBDATA *GBT_create_alignment(GBDATA *gbd, const char *name, long len, long aligned, long security, const char *type) {
+    /* create alignment
+     *
+     * returns pointer to alignment or
+     * NULL (in this case an error has been exported)
+     */
     GB_ERROR  error      = NULL;
     GBDATA   *gb_presets = GB_search(gbd, "presets", GB_CREATE_CONTAINER);
     GBDATA   *result     = NULL;
@@ -1168,7 +1173,7 @@ static GB_ERROR gbt_write_tree_nodes(GBDATA *gb_tree, GBT_TREE *node, long *star
                 node->gb_node = GB_create_container(gb_tree, "node");
                 if (!node->gb_node) error = GB_await_error();
             }
-            if (!*error) {
+            if (!error) {
                 GBDATA *gb_name     = GB_search(node->gb_node,"group_name",GB_STRING);
                 if (!gb_name) error = GB_await_error();
                 else    error       = GBT_write_group_name(gb_name, node->name);
@@ -2596,7 +2601,7 @@ int GBT_is_partial(GBDATA *gb_species, int default_value, int define_if_undef) {
     //
     // returns: 0 if sequence is full
     //          1 if sequence is partial
-    //          -1 in case of error
+    //          -1 in case of error (which is exported in this case)
     //
     // if the sequence has no 'ARB_partial' entry it returns 'default_value'
     // if 'define_if_undef' is true then create an 'ARB_partial'-entry with the default value
@@ -2634,10 +2639,24 @@ GBDATA *GBT_find_item_rel_item_data(GBDATA *gb_item_data, const char *id_field, 
     // 'id_field' is a field containing a unique identifier for each item (e.g. 'name' for species)
     //
     // returns a pointer to an item with 'id_field' containing 'id_value'
-    // or NULL
-    
+    // or NULL (in this case an error MAY be exported)
+    // 
+    // Note: If you expect the item to exist, use GBT_expect_item_rel_item_data!
+
     GBDATA *gb_item_id = GB_find_string(gb_item_data, id_field, id_value, GB_IGNORE_CASE, down_2_level);
     return gb_item_id ? GB_get_father(gb_item_id) : 0;
+}
+
+GBDATA *GBT_expect_item_rel_item_data(GBDATA *gb_item_data, const char *id_field, const char *id_value) {
+    // like GBT_find_item_rel_item_data, but also exports an error if the item is not present
+
+    GBDATA *gb_found = GBT_find_item_rel_item_data(gb_item_data, id_field, id_value);
+    if (!gb_found && !GB_have_error()) { // item simply not exists
+        GBDATA     *gb_any   = GB_find(gb_item_data, id_field, down_2_level);
+        const char *itemname = gb_any ? GB_read_key_pntr(gb_any) : "<item>";
+        GB_export_error("Could not find %s with %s '%s'", itemname, id_field, id_value);
+    }
+    return gb_found;
 }
 
 /* -------------------------------------------------------------------------------- */
@@ -2674,7 +2693,17 @@ GBDATA *GBT_find_species_rel_species_data(GBDATA *gb_species_data,const char *na
     return GBT_find_item_rel_item_data(gb_species_data, "name", name);
 }
 GBDATA *GBT_find_species(GBDATA *gb_main, const char *name) {
+    // Search for a species.
+    // Return found species or NULL (in this case an error MAY be exported).
+    //
+    // Note: If you expect the species to exists, use GBT_expect_species!
     return GBT_find_item_rel_item_data(GBT_get_species_data(gb_main), "name", name);
+}
+
+GBDATA *GBT_expect_species(GBDATA *gb_main, const char *name) {
+    // Returns an existing species or
+    // NULL (in that case an error is exported)
+    return GBT_expect_item_rel_item_data(GBT_get_species_data(gb_main), "name", name);
 }
 
 /* -------------------------------------------------------------------------------- */
@@ -2709,7 +2738,17 @@ GBDATA *GBT_find_SAI_rel_SAI_data(GBDATA *gb_sai_data, const char *name) {
     return GBT_find_item_rel_item_data(gb_sai_data, "name", name);
 }
 GBDATA *GBT_find_SAI(GBDATA *gb_main, const char *name) {
+    // Search for a SAI.
+    // Return found SAI or NULL (in this case an error MAY be exported).
+    //
+    // Note: If you expect the SAI to exist, use GBT_expect_SAI!
     return GBT_find_item_rel_item_data(GBT_get_SAI_data(gb_main), "name", name);
+}
+
+GBDATA *GBT_expect_SAI(GBDATA *gb_main, const char *name) {
+    // Returns an existing SAI or
+    // NULL (in that case an error is exported)
+    return GBT_expect_item_rel_item_data(GBT_get_SAI_data(gb_main), "name", name);
 }
 
 /* --------------------- */

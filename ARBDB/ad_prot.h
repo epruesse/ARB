@@ -488,6 +488,7 @@ GB_HASH *GBT_create_organism_hash P_((GBDATA *gb_main));
 GBDATA *EXP_get_experiment_data P_((GBDATA *gb_species));
 GBDATA *EXP_find_experiment_rel_exp_data P_((GBDATA *gb_experiment_data, const char *name));
 GBDATA *EXP_find_experiment P_((GBDATA *gb_species, const char *name));
+GBDATA *EXP_expect_experiment P_((GBDATA *gb_species, const char *name));
 GBDATA *EXP_first_experiment_rel_exp_data P_((GBDATA *gb_experiment_data));
 GBDATA *EXP_next_experiment P_((GBDATA *gb_experiment));
 GBDATA *EXP_find_or_create_experiment_rel_exp_data P_((GBDATA *gb_experiment_data, const char *name));
