@@ -1203,6 +1203,11 @@ perl: tools
 		"MAKEDEPEND=$(MAKEDEPEND)" \
 		"MAKEDEPENDFLAGS=$(MAKEDEPENDFLAGS)" \
 		all
+	@$(MAKE) testperlscripts
+
+testperlscripts: 
+	@echo $(SEP) Testing scripts in PERL_SCRIPTS
+	$(MAKE) -C PERL_SCRIPTS/test test
 
 perl_clean:
 	@$(MAKE) -C PERL2ARB -r -f Makefile.main \
