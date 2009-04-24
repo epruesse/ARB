@@ -87,15 +87,11 @@ AP_main::~AP_main(void) {
     if (stack) delete stack;
 }
 
-char *AP_main::open(char *db_server)
-{
-    char *error = 0 ;
-
-    GLOBAL_gb_main = GB_open(db_server,"rwt");
-    if (!GLOBAL_gb_main) return (char *)GB_get_error();
-    if (error) return error;
-
-    return 0;
+GB_ERROR AP_main::open(char *db_server) {
+    GB_ERROR error             = 0;
+    GLOBAL_gb_main             = GB_open(db_server,"rwt");
+    if (!GLOBAL_gb_main) error = GB_await_error();
+    return error;
 }
 
 void AP_main::user_push(void) {

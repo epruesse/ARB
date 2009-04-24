@@ -847,8 +847,12 @@ static const char *shortenLongString(const char *str, size_t wanted_len) {
     return result;
 }
 
+#if defined(DEVEL_RALF)
+#warning rewrite GB_command_interpreter (error+ressource handling)
+#endif /* DEVEL_RALF */
+
 char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *commands, GBDATA *gbd, const char *default_tree_name) {
-    /* simple command interpreter returns NULL on error (+ GB_export_error) 
+    /* simple command interpreter returns NULL on error (+ GB_export_error)
      * if first character is == ':' run string parser
      * if first character is == '/' run regexpr
      * else command interpreter
@@ -875,13 +879,12 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
 
     if (!str) {
         if (!gbd) {
-            GB_internal_error("ARB_command_interpreter no input streams found");
-            return strdup("????");
+            GB_export_error("ACI: no input streams found");
+            return NULL;
         }
         str = GB_read_as_string(gbd);
         strmalloc = 1;
     }
-
 
     if (trace) {
         printf("GB_command_interpreter: str='%s'\n"

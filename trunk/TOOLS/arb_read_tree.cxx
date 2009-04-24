@@ -7,9 +7,7 @@
 
 
 void show_error(GBDATA *gb_main) {
-    GBT_message(gb_main, GB_get_error());
-    GB_print_error();
-    GB_clear_error();
+    GBT_message(gb_main, GB_await_error());
 }
 
 // add_bootstrap interprets the length of the branches as bootstrap value
@@ -121,7 +119,7 @@ int main(int argc,char **argv)
     if (commentFile) {
         comment_from_file = GB_read_file(commentFile);
         if (!comment_from_file) {
-            comment_from_file = GBS_global_string_copy("Error reading from comment-file '%s':\n%s", commentFile, GB_get_error());
+            comment_from_file = GBS_global_string_copy("Error reading from comment-file '%s':\n%s", commentFile, GB_await_error());
         }
     }
 

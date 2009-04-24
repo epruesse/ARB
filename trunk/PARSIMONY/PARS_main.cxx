@@ -481,9 +481,8 @@ static void nt_add(AW_window *, AWT_canvas *ntw, int what, AP_BOOL quick, int te
     }
     else {
         hash = GBT_create_marked_species_hash(GLOBAL_gb_main);
-        if (!hash) error = GB_get_error();
     }
-    GB_commit_transaction (GLOBAL_gb_main);
+    GB_commit_transaction(GLOBAL_gb_main);
 
     if (!error) {
         NT_remove_species_in_tree_from_hash(*ap_main->tree_root,hash);
@@ -648,7 +647,7 @@ static GB_ERROR nt_best_partial_match_rek(list<PartialSequence>& partial, AP_tre
                     }
                 }
                 else if (is_partial == -1) {
-                    error = GB_get_error();
+                    error = GB_await_error();
                 }
             }
         }
@@ -731,7 +730,7 @@ static void nt_add_partial(AW_window */*aww*/, AWT_canvas *ntw) {
                             GBS_write_hash(partial_hash, name, (long)gb_marked);
                             break;
                         case -1:    // error
-                            error = GB_get_error();
+                            error = GB_await_error();
                             break;
                         default :
                             ap_assert(0);
@@ -1899,9 +1898,8 @@ int main(int argc, char **argv)
     }
 
     GLOBAL_gb_main = GBT_open(db_server,"rw",0);
-    if (!GLOBAL_gb_main) {
-        aw_popup_exit(GB_get_error());
-    }
+    if (!GLOBAL_gb_main) aw_popup_exit(GB_await_error()); // exits
+    
     AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB-database (%s)", db_server));
 
     pars_create_all_awars(aw_root,aw_default);

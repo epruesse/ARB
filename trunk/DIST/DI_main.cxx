@@ -60,8 +60,7 @@ int main(int argc, char **argv)
     }
     GLOBAL_gb_main = GB_open(params->db_server,"rw");
     if (!GLOBAL_gb_main) {
-        aw_message(GB_get_error());
-        fprintf(stderr,"%s\n",GB_get_error());
+        aw_message(GB_await_error());
         exit(-1);
     }
 

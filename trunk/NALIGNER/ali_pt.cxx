@@ -103,7 +103,7 @@ int ALI_PT::open(char *servername,GBDATA *gb_main)
     const char *socketid = GBS_read_arb_tcp(servername);
 
     if (!socketid) {
-        ali_message (GB_get_error());
+        ali_message(GB_await_error());
         return -1;
     }
 

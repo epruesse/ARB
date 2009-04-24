@@ -214,14 +214,15 @@ int main(  int  _argc,
     struct tms before;
     times( &before );
     printf( "Opening probe-group-database '%s'..\n  ", DB_name );
-    ARB_main = GB_open( DB_name, "rwcN" );//"rwch");
+    ARB_main = GB_open( DB_name, "rwcN" );
     if (!ARB_main) {
-        error             = GB_get_error();
-        if (!error) error = GB_export_error( "Can't open database '%s'", DB_name );
+        error = GB_await_error();
+        GB_warning(error);
+        exit(1);
     }
     printf( "..loaded database (enter to continue)  " );
     PS_print_time_diff( &before );
-//  getchar();
+    //  getchar();
 
     GB_transaction dummy( ARB_main );
     GBDATA *group_tree = GB_entry(ARB_main, "group_tree");

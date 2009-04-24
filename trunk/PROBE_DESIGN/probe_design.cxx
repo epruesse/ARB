@@ -216,17 +216,21 @@ int init_local_com_struct()
     return 0;
 }
 
-static const char *PD_probe_pt_look_for_server(AW_root *root)
-{
-    char choice[256];
+static const char *PD_probe_pt_look_for_server(AW_root *root, GB_ERROR& error) {
+    // return PT server info string (see GBS_read_arb_tcp for details)
+    // or NULL (in this case 'error' is set)
+
+    const char *result = 0;
+    char        choice[256];
+
     sprintf(choice, "ARB_PT_SERVER%li", root->awar(AWAR_PT_SERVER)->read_int());
-    GB_ERROR error;
     error = arb_look_and_start_server(AISC_MAGIC_NUMBER, choice, GLOBAL_gb_main);
-    if (error) {
-        aw_message(error);
-        return 0;
+    if (!error) {
+        result             = GBS_read_arb_tcp(choice);
+        if (!result) error = GB_await_error();
     }
-    return GBS_read_arb_tcp(choice);
+    pd_assert(!!result != !!error);
+    return result;
 }
 
 static GB_ERROR species_requires(GBDATA *gb_species, const char *whats_required) {
@@ -399,22 +403,14 @@ void probe_design_event(AW_window *aww)
     aw_status("Search a free running server");
 
     {
-        const char *servername = PD_probe_pt_look_for_server(root);
-        if (!servername) {
-            aw_closestatus();
-            return;
+        const char *servername = PD_probe_pt_look_for_server(root, error);
+        if (servername) {
+            pd_gl.link = (aisc_com *)aisc_open(servername, &pd_gl.com,AISC_MAGIC_NUMBER);
+            if (!pd_gl.link) error = "can't contact PT server";
         }
-
-        pd_gl.link = (aisc_com *)aisc_open(servername, &pd_gl.com,AISC_MAGIC_NUMBER);
-        servername = 0;
     }
 
-    if (!pd_gl.link) {
-        aw_message ("Cannot contact Probe bank server ");
-        aw_closestatus();
-        return;
-    }
-    if (init_local_com_struct() ) {
+    if (!error && init_local_com_struct()) {
         error = "Cannot contact to probe server: Connection Refused";
     }
 
@@ -671,8 +667,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
         }
 
         if (!error) {
-            const char *servername = PD_probe_pt_look_for_server(root);
-            if (!servername) error = GB_get_error();
+            const char *servername = PD_probe_pt_look_for_server(root, error);
 
             if (!error) {
                 if (selection_id) {
@@ -690,11 +685,8 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
                 }
 
                 pd_gl.link = (aisc_com *)aisc_open(servername, &pd_gl.com,AISC_MAGIC_NUMBER);
+                if (!pd_gl.link) error = "Cannot contact PT-server";
             }
-        }
-
-        if (!error && !pd_gl.link) {
-            error = "Cannot contact PT-server";
         }
 
         if (!error) {
@@ -1736,12 +1728,7 @@ void pd_kill_pt_server(AW_window *aww, AW_CL kill_all)
         for (int i= min ; i <=max ; i++) {
             char *choice = GBS_ptserver_id_to_choice(i, 0);
             if (!choice) {
-                GB_ERROR error = GB_get_error();
-                if (!error) {
-                    error = GBS_global_string("Failed to get pt-server id #%i (please report)", i);
-                    gb_assert(0); // should not occur
-                }
-                aw_message(error);
+                aw_message(GB_await_error());
                 break;
             }
 
@@ -1797,11 +1784,8 @@ static void pd_export_pt_server(AW_window *aww)
 
         // check alignment first
         if (create_gene_server) {
-            GBDATA *gb_ali = GBT_get_alignment(GLOBAL_gb_main, GENOM_ALIGNMENT);
-            if (!gb_ali) {
-                error             = GB_get_error();
-                if (!error) error = "cannot find alignment '" GENOM_ALIGNMENT "'";
-            }
+            GBDATA *gb_ali     = GBT_get_alignment(GLOBAL_gb_main, GENOM_ALIGNMENT);
+            if (!gb_ali) error = GB_await_error();
         }
         else { // normal pt server
             char              *use     = GBT_get_default_alignment(GLOBAL_gb_main);

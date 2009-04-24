@@ -262,7 +262,7 @@ static GBDATA *create_gene_species(GBDATA *gb_species_data2, const char *interna
 
 static GB_ERROR create_genelike_entry(const char *internal_name, GBDATA *gb_species_data2, int start_pos, int end_pos, const char *ali_genome, const char *long_name) {
     GBDATA *gb_genespecies = create_gene_species(gb_species_data2, internal_name, long_name, start_pos, ali_genome+start_pos, end_pos-start_pos+1);
-    return gb_genespecies ? 0 : GB_get_error();
+    return gb_genespecies ? 0 : GB_await_error();
 }
 
 static GB_ERROR create_intergene(GBDATA *gb_species_data2, int start_pos, int end_pos, const char *ali_genome, const char *long_gene_name) {
@@ -329,9 +329,7 @@ static GB_ERROR create_splitted_gene(GBDATA *gb_species_data2, PositionPairList&
     GBDATA              *gb_species2 = create_gene_species(gb_species_data2, internal_name, long_gene_name, first_part.begin,
                                                            gene_sequence, first_part.end-first_part.begin+1);
 
-    if (!gb_species2) {
-        error = GB_get_error();
-    }
+    if (!gb_species2) error = GB_await_error();
     else {
 #if defined(DEBUG) && 0
         printf("splitted gene: long_gene_name='%s' internal_name='%s' split_pos_list='%s'\n",
@@ -350,9 +348,7 @@ static GB_ERROR scan_gene_positions(GBDATA *gb_gene, PositionPairList& part_list
     GB_ERROR      error    = 0;
     GEN_position *location = GEN_read_position(gb_gene);
 
-    if (!location) {
-        error = GB_get_error();
-    }
+    if (!location) error = GB_await_error();
     else {
         GEN_sortAndMergeLocationParts(location);
         int parts = location->parts;
@@ -381,7 +377,7 @@ static GB_ERROR insert_genes_of_organism(GBDATA *gb_organism, GBDATA *gb_species
     gp_assert(gb_ali_genom);                                                       // existance has to be checked by caller!
     
     const char *ali_genom       = GB_read_char_pntr(gb_ali_genom);
-    if (!ali_genom) error       = GB_get_error();
+    if (!ali_genom) error       = GB_await_error();
     PositionPair::genome_length = GB_read_count(gb_ali_genom);     // this affects checks in PositionPair
 
     for (GBDATA *gb_gene = GEN_first_gene(gb_organism);
@@ -493,7 +489,7 @@ int main(int argc, char* argv[]) {
         GBDATA *gb_species_data_new = GB_create_container(gb_main,"species_data"); // introducing a second 'species_data' container
 
         if (!gb_species_data || ! gb_species_data_new) {
-            error = GB_get_error();
+            error = GB_await_error();
         }
 
         int non_ali_genom_species = 0;
@@ -564,7 +560,7 @@ int main(int argc, char* argv[]) {
             }
 
             GBDATA *gb_gene_map     = GB_create_container(gb_main,"gene_map");
-            if (!gb_gene_map) error = GB_get_error();
+            if (!gb_gene_map) error = GB_await_error();
             else    error           = GBT_write_string(gb_gene_map, "map_string", map_string);
         }
 
@@ -574,7 +570,7 @@ int main(int argc, char* argv[]) {
 
             if (!error) {
                 GBDATA *gb_use     = GB_search(gb_main,"presets/alignment/alignment_name",GB_STRING);
-                if (!gb_use) error = GB_get_error();
+                if (!gb_use) error = GB_await_error();
                 else {
                     GB_push_my_security(gb_main);
                     error = GB_write_string(gb_use,"ali_ptgene");

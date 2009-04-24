@@ -533,8 +533,8 @@ GB_ERROR ST_ML::init(const char *tree_name, const char *alignment_namei,
     alignment_name = strdup(alignment_namei);
     alignment_len = GBT_get_alignment_len(gb_main, alignment_name);
     if (alignment_len < 10) {
-        delete alignment_name;
-        return (char *) GB_get_error();
+        free(alignment_name);
+        return GB_await_error();
     }
     AP_tree *tree = new AP_tree(0);
     tree_root = new AP_tree_root(gb_main, tree, tree_name);

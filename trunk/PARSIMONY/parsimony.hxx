@@ -40,8 +40,8 @@ public:
     AP_main(void);
     ~AP_main(void);
     class AP_tree **tree_root;
-    char *open(char *db_server);
-    char *test(char *ratename, char *treename);
+    GB_ERROR open(char *db_server);
+    // char *test(char *ratename, char *treename);
     void set_tree_root(AP_tree *new_root);
 
     AP_BOOL buffer_cout;
