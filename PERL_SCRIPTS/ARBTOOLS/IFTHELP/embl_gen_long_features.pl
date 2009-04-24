@@ -19,7 +19,7 @@ my $line_number = 0;
 my $line_to_print = undef;
 
 eval {
-  foreach (<>) {
+  foreach (<STDIN>) {
     $line_number++;
     if (/^FT   /) {
       chomp;

@@ -20,7 +20,7 @@ my $line_to_print = undef;
 
 eval {
   my $mode = 0;
-  foreach (<>) {
+  foreach (<STDIN>) {
     $line_number++;
     if ($mode==0) { # copy all till feature table
       if (/^FEATURES/o) { $mode = 1; }

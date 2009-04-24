@@ -10,6 +10,10 @@
 # =============================================================== #
 
 package SAI;
+
+use strict;
+use warnings;
+
 use ARB;
 
 my $gb_main;
@@ -18,8 +22,8 @@ sub connectDB() {
   print "Connecting to running ARB database\n";
   $gb_main = ARB::open(":","r");
   if (! $gb_main ) {
-    $error = ARB::get_error();
-    print("$error\n");
+    my $error = ARB::await_error();
+    print $error."\n";
     exit 0;
   }
   ARB::begin_transaction($gb_main);
@@ -53,7 +57,7 @@ sub findSAI($) {
 sub getSAIalignments($\@) {
   my ($gb_sai,$array_r) = @_;
 
-  for (my $gb=ARB::first($gb_sai); $gb; $gb = ARB::next($gb)) {
+  for (my $gb=ARB::child($gb_sai); $gb; $gb = ARB::nextChild($gb)) {
     my $key = ARB::read_key($gb);
     if ($key =~ /^ali_/o) {
       push @$array_r, $key;
