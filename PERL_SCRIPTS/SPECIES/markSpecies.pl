@@ -39,7 +39,7 @@ sub markSpecies(\%$$) {
       my $species_name = BIO::read_string($gb_species, "name");
       $species_name || expectError('read_string');
 
-      if (exists $$marklist_r{$species_name}) {
+      if (defined $$marklist_r{$species_name}) {
         if ($marked!=$wanted_mark) {
           ARB::write_flag($gb_species,$wanted_mark);
           $count[$wanted_mark]++;
