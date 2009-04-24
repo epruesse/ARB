@@ -65,7 +65,7 @@ sub buildMarklist($\%) {
 
   my @lines;
   if ($file eq '-') { # use STDIN
-    @lines = <>;
+    @lines = <STDIN>;
   }
   else {
     open(FILE,'<'.$file) || die "can't open '$file' (Reason: $!)";

@@ -48,7 +48,7 @@ GI::define_tokenizer_columns(8); # datafile is expected to contain 8 columns
 GI::message("Reading '$importfilename'..");
 open(IMPORT,"<$importfilename") || GI::error("Can't read '$importfilename'");
 my $lineno = 1;
-my @head   = GI::tokenize_columns(<>,"$lineno of $importfilename");
+my @head   = GI::tokenize_columns(<IMPORT>,"$lineno of $importfilename");
 
 my ($gb_genome,$genome_name) = GI::findCurrentGenome();
 my $gb_gene_data = ARB::search($gb_genome, "gene_data", "CONTAINER");
@@ -61,7 +61,7 @@ GI::unmarkGenesOfGenome($gb_genome);
 GI::message("Importing data to organism '$genome_name' ..");
 my $gene_count = 0;
 
-ORF: foreach (<>) { # loop over all lines from inputfile
+ORF: foreach (<IMPORT>) { # loop over all lines from inputfile
   $lineno++;
   my @elems = GI::tokenize_columns($_,"$lineno of $importfilename");
   my ($orf,$substrate,$spots,$mean_score,$sd_score,$best_hit,$coordx,$coordy) = @elems;

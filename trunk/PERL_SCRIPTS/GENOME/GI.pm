@@ -14,6 +14,8 @@
 
 package GI;
 
+use strict;
+use warnings;
 use ARB;
 
 my $gb_main;
@@ -23,8 +25,8 @@ sub connectDB() {
   print "Connecting to running ARB database\n";
   $gb_main = ARB::open(":","r");
   if (! $gb_main ) {
-    $error = ARB::get_error();
-    print("$error\n");
+    my $error = ARB::await_error();
+    print $error."\n";
     exit 0;
   }
   ARB::begin_transaction($gb_main);
@@ -60,21 +62,21 @@ sub findORF($$$$$) {
   my ($gb_gene_data,$genome_name,$orf,$create,$verbose) = @_;
   my $error;
   my $gb_orf;
-  my $gb_locus_tag = ARB::find($gb_gene_data, "locus_tag", $orf, "down_2");
+  my $gb_locus_tag = ARB::find_string($gb_gene_data, "locus_tag", $orf, 1, "down_2");
   if (!$gb_locus_tag) {
     if ($create==0) {
       $error = "no gene with locus_tag '$orf' found for organism '$genome_name'";
     }
     else {
       my $gb_genome = ARB::get_father($gb_gene_data);
-      $gb_orf = BIO::create_gene($gb_genome, $orf);
+      $gb_orf = BIO::create_nonexisting_gene($gb_genome, $orf);
       if (!$gb_orf) {
         my $reason = ARB::get_error();
         $error = "cannot create gene '$orf' ($reason)";
       }
       else {
         my $gb_locus_tag = ARB::search($gb_orf, "locus_tag", "STRING");
-        if (!gb_locus_tag) {
+        if (!$gb_locus_tag) {
           my $reason = ARB::get_error();
           $error = "cannot create field 'locus_tag' ($reason)";
         }

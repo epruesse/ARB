@@ -18,7 +18,7 @@ my @secstructs = ('');
 my $seqnum = 0;
 my $mode = 0;
 
-foreach $line (<>) {
+foreach $line (<STDIN>) {
   chomp($line);
   if ($mode==0) {
     if ($line =~ /^(==== Secondary Structure Definition.+)\s+\.$/) {
