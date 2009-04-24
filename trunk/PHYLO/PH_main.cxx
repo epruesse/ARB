@@ -542,14 +542,15 @@ main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    AP_root        *apmain;
-    AW_root        *aw_root;
-    char           *error, **alignment_names;
-    AW_default      aw_default;
-    PH_used_windows *puw = new PH_used_windows;
-    AP_display     *apd = new AP_display;
-    int             num_alignments;
-    const char *db_server = ":";
+    AP_root          *apmain;
+    AW_root          *aw_root;
+    char            **alignment_names;
+    GB_ERROR          error     = 0;
+    AW_default        aw_default;
+    PH_used_windows  *puw       = new PH_used_windows;
+    AP_display       *apd       = new AP_display;
+    int               num_alignments;
+    const char       *db_server = ":";
 
     aw_initstatus();
     aw_root = new AW_root;

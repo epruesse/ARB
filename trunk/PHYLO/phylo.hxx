@@ -122,10 +122,8 @@ private:
     char    *use;
 
 public:
-    //  AP_tree *tree;              // root of tree
     class AWT_graphic *display;
-    char *open(const char *db_server);
-    //  char *test(char *ratename, char *treename);
+    GB_ERROR open(const char *db_server);
     GBDATA *gb_main;
 };
 
