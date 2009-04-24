@@ -1005,11 +1005,12 @@ void ED4_turnSpecies(AW_window *aw, AW_CL, AW_CL) {
         AW_root *root       = aw->get_root();
         char    *name       = root->awar(AWAR_SPECIES_NAME)->read_string();
         char    *ali        = ED4_ROOT->alignment_name;
-        GBDATA  *gb_species = GBT_find_species(GLOBAL_gb_main, name);
-        GBDATA  *gbd        = gb_species ? GBT_read_sequence(gb_species, ali) : (GBDATA*)NULL;
-        char   *data        = gbd ? GB_read_string(gbd) : (char*)NULL;
+        GBDATA  *gb_species = GBT_expect_species(GLOBAL_gb_main, name);
+        GBDATA  *gbd        = gb_species ? GBT_read_sequence(gb_species, ali) : NULL;
+        char    *data       = gbd ? GB_read_string(gbd) : NULL;
 
-        if (data) {
+        if (!data) error = GB_await_error();
+        else {
             long length = GB_read_string_count(gbd);
 
             char T_or_U;
@@ -1018,10 +1019,6 @@ void ED4_turnSpecies(AW_window *aw, AW_CL, AW_CL) {
                 GBT_reverseComplementNucSequence(data, length, T_or_U);
                 error = GB_write_string(gbd,data);
             }
-        }
-        else {
-            error = GB_get_error();
-            if (!error) error = GB_export_error("Can't read data of '%s'", name);
         }
 
         free(data);
@@ -1358,34 +1355,30 @@ void ED4_no_dangerous_modes(void)
 }
 
 void ED4_init_faligner_data(AWTC_faligner_cd *faligner_data) {
-    GB_push_transaction(GLOBAL_gb_main);
+    GB_ERROR  error          = GB_push_transaction(GLOBAL_gb_main);
+    char     *alignment_name = GBT_get_default_alignment(GLOBAL_gb_main);
+    long      alilen         = GBT_get_alignment_len(GLOBAL_gb_main, alignment_name);
 
-    const char *err            = 0;
-    char       *helix_name     = GBT_get_default_helix(GLOBAL_gb_main);
-    char       *alignment_name = GBT_get_default_alignment(GLOBAL_gb_main);
-    GBDATA     *gb_sai_data    = GBT_get_SAI_data(GLOBAL_gb_main);
-
-    long size2        = GBT_get_alignment_len(GLOBAL_gb_main,alignment_name);
-    if (size2<=0) err = (char *)GB_get_error();
-
-    freeset(faligner_data->helix_string, 0);
-    
-    if (!err) {
-        GBDATA *gb_helix_con = GBT_find_SAI_rel_SAI_data(gb_sai_data, helix_name);
-        if (gb_helix_con) {
+    if (alilen<=0) error = GB_await_error();
+    else {
+        char   *helix_name       = GBT_get_default_helix(GLOBAL_gb_main);
+        GBDATA *gb_helix_con     = GBT_expect_SAI(GLOBAL_gb_main, helix_name);
+        if (!gb_helix_con) error = GB_await_error();
+        else {
             GBDATA *gb_helix = GBT_read_sequence(gb_helix_con,alignment_name);
             if (gb_helix) {
-                faligner_data->helix_string = GB_read_string(gb_helix);
-                if (!faligner_data->helix_string) err = GB_get_error();
+                char *helix_string = GB_read_string(gb_helix);
+
+                if (!helix_string) error = GB_await_error();
+                else freeset(faligner_data->helix_string, helix_string);
             }
         }
+        free(helix_name);
     }
-    if (err) aw_message(err);
 
-    free(helix_name);
     free(alignment_name);
-
-    GB_pop_transaction(GLOBAL_gb_main);
+    error = GB_end_transaction(GLOBAL_gb_main, error);
+    if (error) aw_message(error);
 }
 
 static void ED4_create_faligner_window(AW_root *awr, AW_CL cd) {

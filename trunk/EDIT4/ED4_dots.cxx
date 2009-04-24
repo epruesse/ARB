@@ -51,9 +51,9 @@ static ED4_returncode dot_sequence_by_consensus(void **cl_insert_stat, void **, 
                     char *sequence = GB_read_string(gb_ali);
 
                     if (!sequence) {
-                        GB_ERROR err = GB_get_error();
-
-                        error = GBS_global_string("No sequence found for '%s'\n(Reason: %s)", GBT_read_name(gb_species), err);
+                        GB_ERROR err = GB_await_error();
+                        error        = GBS_global_string("No sequence found for '%s'\n(Reason: %s)",
+                                                         GBT_read_name(gb_species), err);
                     }
                     else {
                         size_t length            = GB_read_string_count(gb_ali);
@@ -154,8 +154,8 @@ static void dot_missing_bases(AW_window *aww) {
                 char           *sai_name = aw_root->awar(AWAR_DOT_SAI)->read_string();
 
                 if (sai_name && sai_name[0]) {
-                    GBDATA *gb_sai     = GBT_find_SAI(GLOBAL_gb_main, sai_name);
-                    if (!gb_sai) error = GB_get_error();
+                    GBDATA *gb_sai     = GBT_expect_SAI(GLOBAL_gb_main, sai_name);
+                    if (!gb_sai) error = GB_await_error();
                     else {
                         GBDATA *gb_ali = GBT_read_sequence(gb_sai, ED4_ROOT->alignment_name);
                         if (!gb_ali) {
@@ -198,12 +198,9 @@ static void dot_missing_bases(AW_window *aww) {
             e4_assert(stat.pos_count);
             GB_transaction ta(GLOBAL_gb_main);
             ED4_returncode result = group_manager->route_down_hierarchy((void**)&stat, NULL, &dot_sequence_by_consensus);
-            if (result == ED4_R_ERROR) {
-                error = GB_get_error();
-                e4_assert(error);
-            }
+            if (result == ED4_R_ERROR) error = GB_await_error();
 
-            if (stat.sequences_checked == 0) {
+            if (stat.sequences_checked == 0 && !error) {
                 error = GBS_global_string("Group contains no %ssequences", stat.marked_only ? "marked " : "");
             }
 
