@@ -63,14 +63,14 @@ void MG_create_db_dependent_rename_awars(AW_root *aw_root, GBDATA *gb_merge, GBD
 
         // use other as default (needed e.g. for import)
         if (gb_addid1 && !gb_addid2) {
-            gb_addid2 = GB_create(gb_dest, AWAR_NAMESERVER_ADDID, GB_STRING);
-            if (!gb_addid2) error = GB_get_error();
-            else error = GB_write_string(gb_addid2, addid1);
+            gb_addid2             = GB_create(gb_dest, AWAR_NAMESERVER_ADDID, GB_STRING);
+            if (!gb_addid2) error = GB_await_error();
+            else error            = GB_write_string(gb_addid2, addid1);
         }
         else if (!gb_addid1 && gb_addid2) {
-            gb_addid1 = GB_create(gb_merge, AWAR_NAMESERVER_ADDID, GB_STRING);
-            if (!gb_addid1) error = GB_get_error();
-            else error = GB_write_string(gb_addid1, addid2);
+            gb_addid1             = GB_create(gb_merge, AWAR_NAMESERVER_ADDID, GB_STRING);
+            if (!gb_addid1) error = GB_await_error();
+            else error            = GB_write_string(gb_addid1, addid2);
         }
 
         if (!error) {

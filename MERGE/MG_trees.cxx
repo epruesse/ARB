@@ -33,9 +33,8 @@ void MG_tree_rename_cb(AW_window *aww,GBDATA *gbd, int tree_nr){
         error = GB_begin_transaction(gbd);
 
         if (!error) {
-            GBDATA *gb_tree_data = GB_search(gbd, "tree_data", GB_CREATE_CONTAINER);
-
-            if (!gb_tree_data) error = GB_get_error();
+            GBDATA *gb_tree_data     = GB_search(gbd, "tree_data", GB_CREATE_CONTAINER);
+            if (!gb_tree_data) error = GB_await_error();
             else {
                 GBDATA *gb_tree_name = GB_entry(gb_tree_data, source);
                 GBDATA *gb_dest_tree = GB_entry(gb_tree_data, dest);
@@ -114,7 +113,7 @@ void MG_tr_delete_cb(AW_window *aww,GBDATA *gbd, long tree_nr){
 
     if (!error) {
         GBDATA *gb_tree_data     = GB_search(gbd,"tree_data",GB_CREATE_CONTAINER);
-        if (!gb_tree_data) error = GB_get_error();
+        if (!gb_tree_data) error = GB_await_error();
         else {
             GBDATA *gb_tree_name    = GB_entry(gb_tree_data,source);
             if (gb_tree_name) error = GB_delete(gb_tree_name);
@@ -136,7 +135,7 @@ void MG_transfer_tree(AW_window *aww){
         GBDATA *gb_tree_data1 = GB_search(GLOBAL_gb_merge,"tree_data",GB_CREATE_CONTAINER);
         GBDATA *gb_tree_data2 = GB_search(GLOBAL_gb_dest,"tree_data",GB_CREATE_CONTAINER);
 
-        if (!gb_tree_data1 || !gb_tree_data2) error = GB_get_error();
+        if (!gb_tree_data1 || !gb_tree_data2) error = GB_await_error();
         else {
             GBDATA *gb_source     = GB_entry(gb_tree_data1, source);
             GBDATA *gb_dest_tree  = GB_entry(gb_tree_data2, dest);
@@ -145,7 +144,7 @@ void MG_transfer_tree(AW_window *aww){
             else if (gb_dest_tree) error = GBS_global_string("Tree '%s' already exists, delete it first", dest);
             else {
                 gb_dest_tree             = GB_create_container(gb_tree_data2,dest);
-                if (!gb_dest_tree) error = GB_get_error();
+                if (!gb_dest_tree) error = GB_await_error();
                 else error               = GB_copy(gb_dest_tree,gb_source);
             }
         }

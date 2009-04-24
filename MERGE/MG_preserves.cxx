@@ -149,7 +149,7 @@ public:
         base_count_diff  = 0;
         bool valid       = true;
 
-        assert(!GB_get_error());
+        assert(!GB_have_error());
 
         for (int i = 0; valid && ali_names[i]; ++i) {
             if (GBDATA *gb_src_data = GBT_read_sequence(gb_src, ali_names[i])) {
@@ -160,7 +160,7 @@ public:
                     long dst_bases  = count_bases(gb_dst_data);
                     base_count_diff = labs(src_bases-dst_bases);
 
-                    if (GB_get_error()) valid = false;
+                    if (GB_have_error()) valid = false;
 
                     double factor;
                     if (base_count_diff>5)  factor = 0.2;
@@ -228,9 +228,8 @@ static void find_species_candidates(Candidates& candidates, const char **ali_nam
                 candidates.insert(cand);
             }
             else {
-                if (GB_ERROR err = GB_get_error()) {
-                    aw_message(GBS_global_string("Invalid adaption candidate '%s' (%s)", dst_name, err));
-                    GB_clear_error();
+                if (GB_have_error()) {
+                    aw_message(GBS_global_string("Invalid adaption candidate '%s' (%s)", dst_name, GB_await_error()));
                 }
                 delete cand;
             }
@@ -268,9 +267,8 @@ static void find_SAI_candidates(Candidates& candidates, const char **ali_names) 
                 candidates.insert(cand);
             }
             else {
-                if (GB_ERROR err = GB_get_error()) {
-                    aw_message(GBS_global_string("Invalid adaption candidate 'SAI:%s' (%s)", dst_name, err));
-                    GB_clear_error();
+                if (GB_have_error()) {
+                    aw_message(GBS_global_string("Invalid adaption candidate 'SAI:%s' (%s)", dst_name, GB_await_error()));
                 }
                 delete cand;
             }

@@ -48,9 +48,9 @@ void MG_config_rename_cb(AW_window *aww, GBDATA *gbd, int config_nr) {
         error = GB_begin_transaction(gbd);
         if (!error) {
             GBDATA *gb_config_data     = GB_search(gbd, AWAR_CONFIG_DATA, GB_CREATE_CONTAINER);
-            if (!gb_config_data) error = GB_get_error();
+            if (!gb_config_data) error = GB_await_error();
             else {
-                GBDATA *gb_dest_name = GB_find_string(gb_config_data, "name", dest, GB_IGNORE_CASE, down_2_level);
+                GBDATA *gb_dest_name    = GB_find_string(gb_config_data, "name", dest, GB_IGNORE_CASE, down_2_level);
                 if (gb_dest_name) error = GBS_global_string("Configuration '%s' already exists", dest);
                 else {
                     GBDATA *gb_source_name    = GB_find_string(gb_config_data, "name", source, GB_IGNORE_CASE, down_2_level);

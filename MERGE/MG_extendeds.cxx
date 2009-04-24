@@ -30,9 +30,8 @@ void MG_extended_rename_cb(AW_window *aww,GBDATA *gbmain, int ex_nr) {
 
     GB_ERROR error = GB_begin_transaction(gbmain);
     if (!error) {
-        GBDATA *gb_sai_data = GBT_get_SAI_data(gbmain);
-
-        if (!gb_sai_data) error = GB_get_error();
+        GBDATA *gb_sai_data     = GBT_get_SAI_data(gbmain);
+        if (!gb_sai_data) error = GB_await_error();
         else {
             GBDATA *gb_sai      = GBT_find_SAI_rel_SAI_data(gb_sai_data, source);
             GBDATA *gb_dest_sai = GBT_find_SAI_rel_SAI_data(gb_sai_data, dest);
@@ -127,7 +126,7 @@ void MG_transfer_extended(AW_window *aww, AW_CL force){
         if (!gb_source) error = "Please select the SAI you want to transfer";
         else {
             GBDATA *gb_sai_data2     = GBT_get_SAI_data(GLOBAL_gb_dest);
-            if (!gb_sai_data2) error = GB_get_error();
+            if (!gb_sai_data2) error = GB_await_error();
             else {
                 GBDATA *gb_dest_sai = GBT_find_SAI_rel_SAI_data(gb_sai_data2,dest);
                 if(gb_dest_sai) {
@@ -136,7 +135,7 @@ void MG_transfer_extended(AW_window *aww, AW_CL force){
                 }
                 if (!error) {
                     gb_dest_sai             = GB_create_container(gb_sai_data2, "extended");
-                    if (!gb_dest_sai) error = GB_get_error();
+                    if (!gb_dest_sai) error = GB_await_error();
                     else error              = GB_copy(gb_dest_sai,gb_source);
                 }
             }
