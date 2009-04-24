@@ -481,8 +481,8 @@ static void PV_WriteTranslatedSequenceToDB(ED4_AA_sequence_terminal *aaSeqTerm, 
                     error = GBS_global_string_copy("%s You chose to skip this Species!", question);
                 }
                 else {
-                    gb_new_alignment = GBT_get_alignment(GLOBAL_gb_main,newAlignmentName);
-                    if (!gb_new_alignment) error = GB_get_error();
+                    gb_new_alignment             = GBT_get_alignment(GLOBAL_gb_main,newAlignmentName);
+                    if (!gb_new_alignment) error = GB_await_error();
                 }
                 free(question);
             }
@@ -490,14 +490,14 @@ static void PV_WriteTranslatedSequenceToDB(ED4_AA_sequence_terminal *aaSeqTerm, 
                 long aliLen      = GBT_get_alignment_len(GLOBAL_gb_main,defaultAlignment);
                 gb_new_alignment = GBT_create_alignment(GLOBAL_gb_main,newAlignmentName,aliLen/3+1,0,1,"ami");
 
-                if (!gb_new_alignment) error = GB_get_error();
+                if (!gb_new_alignment) error = GB_await_error();
                 else giNewAlignments++;
             }
 
             if (!error) {
                 gb_ProSeqData            = GBT_add_data(gb_species,newAlignmentName,"data", GB_STRING);
                 if (gb_ProSeqData) error = GB_write_string(gb_ProSeqData,str_SeqData);
-                else error               = GB_get_error();
+                else error               = GB_await_error();
             }
         }
         free(str_SeqData);

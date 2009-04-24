@@ -1907,7 +1907,7 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
                     if (!nameIsUnique(new_species_name, gb_species_data)) {
                         if (!existingNames) existingNames = new UniqueNameDetector(gb_species_data);
                         freeset(new_species_name, AWTC_makeUniqueShortName(new_species_name, *existingNames));
-                        if (!new_species_name) error = "No short name created.";
+                        if (!new_species_name) error = GB_await_error();
                     }
                 }
             }

@@ -730,13 +730,13 @@ GB_ERROR SEC_graphic::save(GBDATA *, const char *,AW_CL,AW_CL)
 
 GB_ERROR SEC_graphic::read_data_from_db(char **data, char **x_string) const {
     GB_ERROR error = 0;
-    
+
     sec_assert(gb_struct && gb_struct_ref);
-    *data = GB_read_string(gb_struct);
-    if (!*data) error = GB_get_error();
+    *data             = GB_read_string(gb_struct);
+    if (!*data) error = GB_await_error();
     else {
-        *x_string = GB_read_string(gb_struct_ref);
-        if (!*x_string) error = GB_get_error();
+        *x_string             = GB_read_string(gb_struct_ref);
+        if (!*x_string) error = GB_await_error();
     }
     return error;
 }
