@@ -715,7 +715,7 @@ void GenebankImporter::parseSequence(const string& tag, const string& headerline
                 size_t datasize = seqData.getBaseCounter().getCount(BC_ALL);
 
                 if (cur_pos != (datasize+1)) {
-                    throw GBS_global_string("Got wrong base position (found=%zu, expected=%lu)", cur_pos, datasize+1);
+                    throw GBS_global_string("Got wrong base position (found=%zu, expected=%zu)", cur_pos, size_t(datasize+1));
                 }
 
                 int blocks = 0;
