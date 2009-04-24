@@ -159,7 +159,7 @@ static void parseLocationList(const string& source, size_t startPos, LocationVec
         while (paren_count>0) {
             size_t paren = source.find_first_of("()", pos);
             if (paren == string::npos) {
-                throw GBS_global_string("Expected %u closing parenthesis in '%s'", paren_count, source.c_str());
+                throw GBS_global_string("Expected %zu closing parenthesis in '%s'", paren_count, source.c_str());
             }
             if (source[paren] == ')') paren_count--;
             else paren_count++;

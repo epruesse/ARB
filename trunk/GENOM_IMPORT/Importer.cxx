@@ -88,7 +88,7 @@ FeatureLine::FeatureLine(const string& line) {
         if (first_char == string::npos) {
             throw "Expected feature line, found empty line";
         }
-        throw GBS_global_string("Expected feature line (first char at pos=%u unexpected)", first_char);
+        throw GBS_global_string("Expected feature line (first char at pos=%zu unexpected)", first_char);
     }
 }
 
@@ -715,7 +715,7 @@ void GenebankImporter::parseSequence(const string& tag, const string& headerline
                 size_t datasize = seqData.getBaseCounter().getCount(BC_ALL);
 
                 if (cur_pos != (datasize+1)) {
-                    throw GBS_global_string("Got wrong base position (found=%u, expected=%u)", cur_pos, datasize+1);
+                    throw GBS_global_string("Got wrong base position (found=%zu, expected=%lu)", cur_pos, datasize+1);
                 }
 
                 int blocks = 0;
@@ -797,7 +797,7 @@ void EmblImporter::parseSequence(const string& headerline) {
                 size_t datasize = seqData.getBaseCounter().getCount(BC_ALL);
 
                 if (basecount != datasize) {
-                    throw GBS_global_string("Got wrong base counter(found=%u, expected=%u)", basecount, datasize);
+                    throw GBS_global_string("Got wrong base counter(found=%zu, expected=%zu)", basecount, datasize);
                 }
             }
         }

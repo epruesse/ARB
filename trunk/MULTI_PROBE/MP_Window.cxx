@@ -82,7 +82,7 @@ AW_window_simple *MP_Window::create_result_window(AW_root *aw_root)
     result_window->create_button("MARK_AS_BEST", "Good");
 
     result_window->at("Comment");
-    result_window->callback(MP_Comment, (AW_CL) NULL);
+    result_window->callback(MP_Comment, (AW_CL)0);
     result_window->create_input_field(MP_AWAR_RESULTPROBESCOMMENT);
 
     result_window->at("auto");

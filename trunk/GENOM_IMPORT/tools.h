@@ -84,7 +84,7 @@ struct StringParser {
         bool   validNumber = allowMore ? spaces >= count : spaces == count;
 
         if (!validNumber) {
-            throw GBS_global_string("Expected %u%s spaces, found %u (before '%s')",
+            throw GBS_global_string("Expected %zu%s spaces, found %zu (before '%s')",
                                     count, allowMore ? " or more" : "",
                                     spaces, CURRENT_REST);
         }

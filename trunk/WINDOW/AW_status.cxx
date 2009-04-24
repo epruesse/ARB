@@ -1017,7 +1017,7 @@ int aw_question(const char *question, const char *buttons, bool fixedSizeButtons
         const char *help = helpfile ? helpfile : "";
 
         hindex = (char *)calloc(sizeof(char), strlen(button_list) + 1 + 5 + 1 + 1 + 1 + strlen(help) + 1);
-        sprintf(hindex,"%s\n%i\n%i\n%s", button_list, question_length, int(fixedSizeButtons), help);
+        sprintf(hindex,"%s\n%zu\n%i\n%s", button_list, question_length, int(fixedSizeButtons), help);
     }
 
     static GB_HASH *hash_windows    = 0;

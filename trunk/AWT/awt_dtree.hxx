@@ -14,9 +14,9 @@
 
 void awt_create_dtree_awars(AW_root *aw_root,AW_default def);
 
-#define NT_BOX_WIDTH      3.5  /* pixel/2 ! */
-#define NT_ROOT_WIDTH     4.5  /* pixel/2 ! */
-#define NT_SELECTED_WIDTH 5.5
+#define NT_BOX_WIDTH       3.5  /* pixel/2 ! */
+#define NT_ROOT_WIDTH      4.5  /* pixel/2 ! */
+#define NT_SELECTED_WIDTH  5.5
 
 #define PH_CLICK_SPREAD   0.10
 

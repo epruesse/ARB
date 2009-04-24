@@ -1724,7 +1724,7 @@ void AWT_graphic_tree::set_tree_type(AP_tree_sort type)
             exports.dont_fit_x      = 1;
             exports.dont_fit_y      = 1;
             exports.dont_fit_larger = 0;
-            exports.left_offset     = 2*NT_SELECTED_WIDTH;
+            exports.left_offset     = short(2*NT_SELECTED_WIDTH+0.5);
             exports.right_offset    = 300;
             exports.top_offset      = 30;
             exports.bottom_offset   = 30;

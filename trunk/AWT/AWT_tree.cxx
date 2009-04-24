@@ -1820,7 +1820,7 @@ void AP_tree::mark_deep_branches(GBDATA *,int mark_depth){
 
     ap_check_depth(this, 0, &depthsum, &leafs, &max_depth);
 
-    int balanced_depth = log10(leafs)/log10(2); // log2(leafs)
+    double balanced_depth = log10(leafs) / log10(2);
 
     long marked_depthsum = 0;
     long marked          = 0;
@@ -1829,11 +1829,11 @@ void AP_tree::mark_deep_branches(GBDATA *,int mark_depth){
     marked_depthsum = -marked_depthsum + marked*mark_depth;
 
     aw_message(GBS_global_string(
-                                 "optimal depth would be %i\n"
-                                 "mean depth = %f\n"
+                                 "optimal depth would be %.2f\n"
+                                 "mean depth = %.2f\n"
                                  "max depth  = %li\n"
                                  "marked species  = %li\n"
-                                 "mean depth of marked  = %f\n"
+                                 "mean depth of marked  = %.2f\n"
                                  ,
                                  balanced_depth,
                                  depthsum/(double)leafs,
