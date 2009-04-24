@@ -616,13 +616,10 @@ UniqueNameDetector::UniqueNameDetector(GBDATA *gb_item_data, int additionalEntri
 
 UniqueNameDetector::~UniqueNameDetector() { GBS_free_hash(hash); }
 
-// inline bool nameIsUnique(const char *short_name, GBDATA *gb_species_data) {
-    // return GBT_find_species_rel_species_data(gb_species_data, short_name)==0;
-// }
-
 static char *makeUniqueShortName(const char *prefix, UniqueNameDetector& existing) {
     // generates a non-existing short-name (name starts with prefix)
-    // returns 0 if failed
+    // 
+    // returns NULL if it fails
 
     char *result     = 0;
     int   prefix_len = strlen(prefix);
@@ -649,7 +646,7 @@ static char *makeUniqueShortName(const char *prefix, UniqueNameDetector& existin
             }
             if (num == max_num && stop != max_num) num = 0;
         }
-        if (num == max_num) num = 0; 
+        if (num == max_num) num = 0;
         next_try[prefix_len] = num;
     }
     return result;
@@ -658,7 +655,8 @@ static char *makeUniqueShortName(const char *prefix, UniqueNameDetector& existin
 char *AWTC_makeUniqueShortName(const char *prefix, UniqueNameDetector& existingNames) {
     // generates a unique species name from prefix
     // (prefix will be fillup with zero digits and then shortened down to first char)
-    // returns 0 if fails
+    // 
+    // returns NULL if failed (and exports error)
 
     int  len = strlen(prefix);
     char p[9];
@@ -680,6 +678,7 @@ char *AWTC_makeUniqueShortName(const char *prefix, UniqueNameDetector& existingN
     }
 
     gb_assert(!result || strlen(result) <= 8);
+    if (!result) GB_export_error("Failed to create unique shortname (prefix='%s')", prefix);
 
     return result;
 }

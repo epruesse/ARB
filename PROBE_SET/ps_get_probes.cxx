@@ -185,8 +185,8 @@ int main( int   argc,
                 sprintf( __ARB_DB_NAME, "%s%utmp.arb", arb_db_name_prefix, probe_length );
                 printf( "Opening ARB-Database '%s'..\n  ", __ARB_DB_NAME );
                 __ARB_DB    = GB_open( __ARB_DB_NAME, "rN" );
-                __ARB_ERROR = GB_get_error();
-                if (__ARB_ERROR) {
+                if (!__ARB_DB) {
+                    __ARB_ERROR = GB_await_error();
                     printf( "%s\n", __ARB_ERROR );
                     return 1;
                 }

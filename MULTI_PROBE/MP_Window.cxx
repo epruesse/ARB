@@ -195,11 +195,12 @@ void mp_load_list( AW_window *aww, AW_selection_list *selection_list, char *base
     char *data;
     {
         const char *awar_file = GBS_global_string("%s/file_name", base_name);
-        char *filename  = aww->get_root()->awar(awar_file)->read_string();
-        data            = GB_read_file(filename);
+        char       *filename  = aww->get_root()->awar(awar_file)->read_string();
+        data                  = GB_read_file(filename);
+        
         free(filename);
-        if (!data){
-            aw_message(GB_get_error());
+        if (!data) {
+            aw_message(GB_await_error());
             return;
         }
     }

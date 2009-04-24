@@ -112,7 +112,7 @@ int main(int argc, char **argv)
                     h = GBS_string_eval(p,eval,0);
                     if (!h){
                         h = strdup (p);
-                        fprintf(stderr,"%s\n",GB_get_error());
+                        fprintf(stderr,"%s\n",GB_await_error());
                     }
 
                     if (usestdin) {
@@ -140,7 +140,7 @@ int main(int argc, char **argv)
             }
 
             if (!ndata){
-                fprintf(stderr,"%s\n",GB_get_error());
+                fprintf(stderr,"%s\n",GB_await_error());
                 exit(-1);
             }
             if (strcmp(data,ndata)){

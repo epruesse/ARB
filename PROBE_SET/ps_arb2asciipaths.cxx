@@ -73,11 +73,8 @@ int main( int argc,
         const char *input_DB_name = argv[1];
     
         printf( "Opening probe-group-database '%s'..", input_DB_name );
-        pb_main = GB_open( input_DB_name, "rwcN" );//"rwch");
-        if (!pb_main) {
-            error             = GB_get_error();
-            if (!error) error = GB_export_error( "Can't open database '%s'", input_DB_name );
-        }
+        pb_main = GB_open(input_DB_name, "rwcN");
+        if (!pb_main) error = GB_await_error();
     }
     printf( "loaded database (enter to continue)\n" );
 //  getchar();

@@ -151,13 +151,13 @@ static GB_ERROR PH_create_ml_multiline_SAI(GB_CSTR sai_name, int nr, GBDATA **gb
     GBDATA *gb_data = 0, *gb_TYPE = 0;
 
     if (!error) {
-        gb_data = GBT_add_data(gb_sai,PHDATA::ROOT->use,"data",GB_STRING);
-        if (!gb_data) error = GB_get_error();
+        gb_data             = GBT_add_data(gb_sai,PHDATA::ROOT->use,"data",GB_STRING);
+        if (!gb_data) error = GB_await_error();
     }
 
     if (!error) {
         gb_TYPE             = GBT_add_data(gb_sai,PHDATA::ROOT->use,"_TYPE",GB_STRING);
-        if (!gb_TYPE) error = GB_get_error();
+        if (!gb_TYPE) error = GB_await_error();
     }
 
     if (!error && !PHDATA::ROOT->markerline) {
@@ -173,7 +173,7 @@ static GB_ERROR PH_create_ml_multiline_SAI(GB_CSTR sai_name, int nr, GBDATA **gb
             GB_remove_on_exit(full_save_name);
             free(save_name);
 
-            if (!saveResults) error = GB_get_error();
+            if (!saveResults) error = GB_await_error();
         }
 
         if (!error) {
@@ -324,13 +324,13 @@ void PH_save_ml_cb(AW_window *aww) {
     GBDATA *gb_bits = 0, *gb_TYPE = 0;
 
     if (!error) {
-        gb_bits = GBT_add_data(gb_sai,PHDATA::ROOT->use,"bits",GB_BITS);
-        if (!gb_bits) error = GB_get_error();
+        gb_bits             = GBT_add_data(gb_sai,PHDATA::ROOT->use,"bits",GB_BITS);
+        if (!gb_bits) error = GB_await_error();
     }
 
     if (!error) {
         gb_TYPE             = GBT_add_data(gb_sai,PHDATA::ROOT->use,"_TYPE",GB_STRING);
-        if (!gb_TYPE) error = GB_get_error();
+        if (!gb_TYPE) error = GB_await_error();
     }
 
     if (!error && !PHDATA::ROOT->markerline) {
