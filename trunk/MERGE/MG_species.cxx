@@ -293,13 +293,9 @@ static GB_ERROR MG_transfer_fields_info(char *fieldname = NULL) {
     GBDATA   *gb_key_data = GB_search(GLOBAL_gb_merge, CHANGE_KEY_PATH, GB_CREATE_CONTAINER);
     GB_ERROR  error       = 0;
 
-    if (!gb_key_data) {
-        error = GB_get_error();
-    }
+    if (!gb_key_data) error = GB_await_error();
     else {
-        if (!GB_search(GLOBAL_gb_dest, CHANGE_KEY_PATH, GB_CREATE_CONTAINER)) {
-            error = GB_get_error();
-        }
+        if (!GB_search(GLOBAL_gb_dest, CHANGE_KEY_PATH, GB_CREATE_CONTAINER)) error = GB_await_error();
         else {
             for (GBDATA *gb_key = GB_entry(gb_key_data,CHANGEKEY);
                  gb_key && !error;
@@ -405,34 +401,35 @@ MG_remaps::~MG_remaps(){
     delete remaps;
 }
 
-GB_ERROR MG_transfer_sequence(MG_remap *remap, GBDATA *source_species, GBDATA *destination_species,const char *alignment_name){ // align sequence after copy !!!
-    if (!remap) return 0;   // no remap
-    GBDATA *gb_seq_left = GBT_read_sequence(source_species,alignment_name);
-    GBDATA *gb_seq_right = GBT_read_sequence(destination_species,alignment_name);
-    if (!gb_seq_right || !gb_seq_left) return 0; // one has no sequence -> not copied;
-    char *ls = GB_read_string(gb_seq_left);
-    char *rs = GB_read_string(gb_seq_right);
-    if (strcmp(ls,rs)){
-        delete ls;
-        delete rs;
-        return 0;           // sequences differ -> not copied
-    }
-    delete rs;
-    rs = remap->remap(ls);
+GB_ERROR MG_transfer_sequence(MG_remap *remap, GBDATA *source_species, GBDATA *destination_species,const char *alignment_name) {
+    // align sequence after copy
     GB_ERROR error = 0;
-    if (rs){
-        long old_check = GBS_checksum(ls,0,".- ");
-        long new_check = GBS_checksum(rs,0,".- ");
-        if (old_check == new_check){
-            error = GB_write_string(gb_seq_right,rs);
-        }else{
-            error = GB_export_error("Error in aligning sequences");
+
+    if (remap) {                                    // shall remap?
+        GBDATA *gb_seq_left  = GBT_read_sequence(source_species,      alignment_name);
+        GBDATA *gb_seq_right = GBT_read_sequence(destination_species, alignment_name);
+
+        if (gb_seq_left && gb_seq_right) {          // if one DB hasn't sequence -> sequence was not copied
+            char *ls = GB_read_string(gb_seq_left);
+            char *rs = GB_read_string(gb_seq_right);
+
+            if (strcmp(ls, rs) == 0) {              // if sequences are not identical -> sequence was not copied
+                free(rs);
+                rs = remap->remap(ls);
+
+                if (!rs) error = GB_await_error();
+                else {
+                    long old_check = GBS_checksum(ls, 0, ".- ");
+                    long new_check = GBS_checksum(rs, 0, ".- ");
+
+                    if (old_check == new_check) error = GB_write_string(gb_seq_right, rs);
+                    else error                        = GB_export_error("Error in aligning sequences (checksum changed)");
+                }
+            }
+            free(rs);
+            free(ls);
         }
-    }else{
-        error = GB_get_error();
     }
-    delete rs;
-    delete ls;
     return error;
 }
 
@@ -515,7 +512,7 @@ static GB_ERROR MG_transfer_one_species(AW_root *aw_root, MG_remaps& remap,
     }
     if (!error) {
         gb_species2 = GB_create_container(gb_species_data2, "species");
-        if (!gb_species2) error = GB_get_error();
+        if (!gb_species2) error = GB_await_error();
     }
     if (!error) error = GB_copy(gb_species2, gb_species1);
     if (!error && transfer_fields) {
@@ -660,21 +657,11 @@ void MG_transfer_fields_cb(AW_window *aww){
             if (IS_QUERIED(gb_species1)) {
                 const char *name1       = GBT_read_name(gb_species1);
                 GBDATA     *gb_species2 = GB_find_string(gb_dest_species_data,"name", name1, GB_IGNORE_CASE, down_2_level);
-                
+
                 if (!gb_species2) {
-                    gb_species2 = GB_create_container(gb_dest_species_data,"species");
-                    if (!gb_species2) {
-                        error = GB_get_error();
-                    }
-                    else {
-                        GBDATA *gb_name2 = GB_search(gb_species2,"name",GB_STRING);
-                        if (!gb_name2) {
-                            error = GB_get_error();
-                        }
-                        else {
-                            error = GB_write_string(gb_name2, name1);
-                        }
-                    }
+                    gb_species2             = GB_create_container(gb_dest_species_data,"species");
+                    if (!gb_species2) error = GB_await_error();
+                    else error              = GBT_write_string(gb_species2, "name", name1);
                 }
                 else {
                     gb_species2 = GB_get_father(gb_species2);
@@ -695,7 +682,7 @@ void MG_transfer_fields_cb(AW_window *aww){
                                 char *s1 = GB_read_string(gb_field1);
                                 char *s2 = GB_read_string(gb_field2);
 
-                                if (!s1 || !s2) error = GB_get_error();
+                                if (!s1 || !s2) error = GB_await_error();
                                 else {
                                     if (!GBS_find_string(s2,s1,0)) {
                                         error             = GB_write_string(gb_field2, GBS_global_string("%s %s", s2, s1));
@@ -724,7 +711,7 @@ void MG_transfer_fields_cb(AW_window *aww){
                         if (gb_field1 && !error) {
                             type1                 = GB_read_type(gb_field1);
                             gb_field2             = GB_search(gb_species2,field,type1);
-                            if (!gb_field2) error = GB_get_error();
+                            if (!gb_field2) error = GB_await_error();
                             else error            = GB_copy(gb_field2,gb_field1);
                         }
                     }
@@ -835,7 +822,7 @@ void MG_move_field_cb(AW_window *aww){
 
                     if (!error && !gb_field2) { // destination missing or removed 
                         gb_field2             = GB_search(gb_species2,field,type1);
-                        if (!gb_field2) error = GB_get_error();
+                        if (!gb_field2) error = GB_await_error();
                         else error            = GB_copy(gb_field2,gb_field1);
                     }
                 }
@@ -896,38 +883,30 @@ void MG_merge_tagged_field_cb(AW_window *aww) {
         char    *tag1     = awr->awar(AWAR_TAG1)->read_string();
         char    *tag2     = awr->awar(AWAR_TAG2)->read_string();
         char    *tag_del1 = awr->awar(AWAR_TAG_DEL1)->read_string();
-        
-        GBDATA *gb_dest_species_data = GB_search(GLOBAL_gb_dest, "species_data", GB_CREATE_CONTAINER);
 
-        if (!gb_dest_species_data) error = GB_get_error();
+        GBDATA *gb_dest_species_data     = GB_search(GLOBAL_gb_dest, "species_data", GB_CREATE_CONTAINER);
+        if (!gb_dest_species_data) error = GB_await_error();
         else {
             for (GBDATA * gb_species1 = GBT_first_species(GLOBAL_gb_merge);
                  gb_species1 && !error;
                  gb_species1 = GBT_next_species(gb_species1))
             {
                 if (IS_QUERIED(gb_species1)) {
-                    char *name = GBT_read_string(gb_species1, "name");
-
-                    if (!name) error = GB_get_error();
+                    char *name       = GBT_read_string(gb_species1, "name");
+                    if (!name) error = GB_await_error();
                     else {
-                        GBDATA *gb_species2 = GBT_find_or_create_species_rel_species_data(gb_dest_species_data, name);
-
-                        if (!gb_species2) error = GB_get_error();
+                        GBDATA *gb_species2     = GBT_find_or_create_species_rel_species_data(gb_dest_species_data, name);
+                        if (!gb_species2) error = GB_await_error();
                         else {
-                            char *s1 = GBT_readOrCreate_string(gb_species1, f1, "");
-                            char *s2 = GBT_readOrCreate_string(gb_species2, f2, "");
-
-                            if (s1 && s2) {
-                                char *sum = GBS_merge_tagged_strings(s1, tag1, tag_del1,
-                                                                     s2, tag2, tag_del1);
-
-                                if (!sum) error = GB_get_error();
-                                else error      = GBT_write_string(gb_species2, f2, sum);
-
+                            char *s1              = GBT_readOrCreate_string(gb_species1, f1, "");
+                            char *s2              = GBT_readOrCreate_string(gb_species2, f2, "");
+                            if (!s1 || !s2) error = GB_await_error();
+                            else {
+                                char *sum       = GBS_merge_tagged_strings(s1, tag1, tag_del1, s2, tag2, tag_del1);
+                                if (!sum) error = GB_await_error();
+                                else  error     = GBT_write_string(gb_species2, f2, sum);
                                 free(sum);
                             }
-                            else error = GB_get_error();
-
                             free(s2);
                             free(s1);
                         }
@@ -1176,23 +1155,13 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
         }
 
         if (!error) {
-            D_species      = GB_create_container(D_species_data,"species");
-            if (!D_species) {
-                error = GB_get_error();
-            }
+            D_species             = GB_create_container(D_species_data,"species");
+            if (!D_species) error = GB_await_error();
             else {
                 error             = GB_copy(D_species, M_species);
                 if (!error) error = GB_write_flag(D_species,1); // mark species
                 if (!error) error = GB_write_usr_private(D_species,255); // put in hitlist
-                if (!error) {
-                    GBDATA *D_name = GB_search(D_species,"name",GB_STRING);
-                    if (!D_name) {
-                        error = GB_get_error();
-                    }
-                    else {
-                        error = GB_write_string(D_name,m_name);
-                    }
-                }
+                if (!error) error = GBT_write_string(D_species, "name", m_name);
             }
 
             GBS_write_hash(D_species_hash, m_name, (long)D_species);

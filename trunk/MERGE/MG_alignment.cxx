@@ -242,7 +242,7 @@ void MG_aa_create_alignment(AW_window *aww,AW_CL db_nr)
     GB_ERROR    error        = GB_begin_transaction(gbd);
     GBDATA     *gb_alignment = GBT_create_alignment(gbd,name,0,0,0,"dna");
     
-    if (!gb_alignment) error = GB_get_error();
+    if (!gb_alignment) error = GB_await_error();
     GB_end_transaction_show_error(gbd, error, aw_message);
     free(name);
 }

@@ -339,12 +339,10 @@ void MG_start_cb(AW_window *aww)
         }
         else {
             aw_openstatus("Loading databases");
-                
+
             aw_status("DATABASE I");
-            GLOBAL_gb_merge = GBT_open(merge, "rw", "$(ARBHOME)/lib/pts/*");
-            if (!GLOBAL_gb_merge) {
-                error = GB_get_error();
-            }
+            GLOBAL_gb_merge             = GBT_open(merge, "rw", "$(ARBHOME)/lib/pts/*");
+            if (!GLOBAL_gb_merge) error = GB_await_error();
             else {
                 AWT_announce_db_to_browser(GLOBAL_gb_merge, GBS_global_string("Database I (source; %s)", merge));
 
@@ -365,10 +363,8 @@ void MG_start_cb(AW_window *aww)
                 }
 
                 if (!error) {
-                    GLOBAL_gb_dest = GBT_open(main, open_mode, "$(ARBHOME)/lib/pts/*");
-                    if (!GLOBAL_gb_dest) {
-                        error = GB_get_error();
-                    }
+                    GLOBAL_gb_dest             = GBT_open(main, open_mode, "$(ARBHOME)/lib/pts/*");
+                    if (!GLOBAL_gb_dest) error = GB_await_error();
                     else {
                         AWT_announce_db_to_browser(GLOBAL_gb_dest, GBS_global_string("Database II (destination; %s)", main));
                     }
