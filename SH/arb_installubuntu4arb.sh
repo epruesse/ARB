@@ -53,6 +53,7 @@ else
             rxp \
             sablotron \
             x11proto-print-dev \
+            xutils-dev \
 
     elif [ "$1" == "compile_noOpenGL" ]; then
         $0 arb_noOpenGL

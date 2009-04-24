@@ -36,6 +36,7 @@ ARB requirements on Ubuntu 8.04
      - rxp
      - sablotron
      - libxaw7-dev
+     - xutils-dev
 
  2b) OPENGL version
 
