@@ -363,12 +363,13 @@ void concatenateAlignments(AW_window *aws) {
                 error = "Alignment exists! Quitting function...";
             }
             else {
-                gb_new_alignment = GBT_get_alignment(GLOBAL_gb_main,new_ali_name);
-                if (!gb_new_alignment) error = GB_get_error();
+                gb_new_alignment             = GBT_get_alignment(GLOBAL_gb_main,new_ali_name);
+                if (!gb_new_alignment) error = GB_await_error();
             }
-        } else {
-            gb_new_alignment = GBT_create_alignment(GLOBAL_gb_main,new_ali_name,new_alignment_len,0,0,seq_type);
-            if (!gb_new_alignment) error = GB_get_error();
+        }
+        else {
+            gb_new_alignment             = GBT_create_alignment(GLOBAL_gb_main,new_ali_name,new_alignment_len,0,0,seq_type);
+            if (!gb_new_alignment) error = GB_await_error();
         }
 
         if (!error && !con_alignment_list->first_element())     error = "No alignments were selected to concatenate!";
@@ -692,7 +693,7 @@ GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species, speci
                 // if the name is not unique -> create unique name
                 UniqueNameDetector und(gb_species_data);
                 freeset(new_species_name, AWTC_makeUniqueShortName(new_species_name, und));
-                if (!new_species_name) error = "No short name created.";
+                if (!new_species_name) error = GB_await_error();
             }
         }
 

@@ -27,7 +27,7 @@ void AP_conservProfile2Gnuplot_callback(AW_window *aww) {
     char     *cmdName = GB_unique_filename("arb", "gnuplot");
     FILE     *cmdFile = GB_fopen_tempfile(cmdName, "wt", &command_file);
 
-    if (!cmdFile) error = GB_get_error();
+    if (!cmdFile) error = GB_await_error();
     else {
         char *fname   = aww->get_root()->awar(AP_AWAR_CONSPRO_FILENAME)->read_string();
         char *smooth  = aww->get_root()->awar(AP_AWAR_CONSPRO_SMOOTH_GNUPLOT)->read_string();

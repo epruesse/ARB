@@ -49,11 +49,8 @@ GB_ERROR arb_arcg()
         for (GBDATA *gb_species = GB_entry(gb_species_data,"species"); !error && gb_species; gb_species = GB_nextEntry(gb_species)) {
             GBDATA *gb_acc = GB_entry(gb_species,"acc");
             if (gb_acc) {
-                char *acc = GB_read_string(gb_acc);
-
-                if (!acc) {
-                    error = GB_get_error();
-                }
+                char *acc       = GB_read_string(gb_acc);
+                if (!acc) error = GB_await_error();
                 else {
                     for (ac = acc; *ac; ) {
                         for (p = ac; *p==' '; p++) ;

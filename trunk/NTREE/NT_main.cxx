@@ -208,7 +208,7 @@ int main_load_and_startup_main_window(AW_root *aw_root) // returns 0 when succes
     GLOBAL_gb_main = GBT_open(db_server,"rw","$(ARBHOME)/lib/pts/*");
 
     if (!GLOBAL_gb_main) {
-        aw_popup_ok(GB_get_error());
+        aw_popup_ok(GB_await_error());
         return -1;
     }
 
@@ -466,7 +466,7 @@ int main(int argc, char **argv)
             MG_create_all_awars(aw_root,aw_default,":","noname.arb");
             GLOBAL_gb_merge = GBT_open(":","rw",0);
             if (!GLOBAL_gb_merge) {
-                aw_popup_ok(GB_get_error());
+                aw_popup_ok(GB_await_error());
                 exit(0);
             }
             AWT_announce_db_to_browser(GLOBAL_gb_merge, "Current database (:)");

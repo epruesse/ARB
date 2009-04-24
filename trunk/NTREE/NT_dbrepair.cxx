@@ -70,15 +70,12 @@ public:
         }
         else {
             GB_transaction ta(gb_main);
+            
             GBDATA *gb_checks = GB_search(gb_main, "checks", GB_CREATE_CONTAINER);
             GBDATA *gb_check  = GB_create(gb_checks, "check", GB_STRING);
 
-            if (!gb_check) {
-                error = GB_get_error();
-            }
-            else {
-                error = GB_write_string(gb_check, check_name.c_str());
-            }
+            if (!gb_check) error = GB_await_error();
+            else error           = GB_write_string(gb_check, check_name.c_str());
 
             if (!error) consistencies.insert(check_name);
         }
@@ -305,10 +302,10 @@ static GB_ERROR NT_convert_gene_locations(GBDATA *gb_main, size_t species_count,
                                 if (gb_pos_uncertain) {
                                     const char *uncertain = GB_read_char_pntr(gb_pos_uncertain);
 
-                                    if (!uncertain) error       = GB_get_error();
+                                    if (!uncertain) error = GB_await_error();
                                     else {
                                         if (!pos->start_uncertain) GEN_use_uncertainties(pos);
-                                    
+
                                         if (strlen(uncertain) != 2) {
                                             data_error = "wrong length";
                                         }
@@ -446,20 +443,16 @@ static GB_ERROR NT_del_mark_move_REF(GBDATA *gb_main, size_t species_count, size
                                                   helix_name, ali_names[ali]);
                     }
                     else { // move info from REF -> _REF
-                        char *content = GB_read_string(gb_old_ref);
-                        if (content) {
-                            gb_new_ref = GB_create(gb_ali, "_REF", GB_STRING);
-                            if (!gb_new_ref) {
-                                error = GB_get_error();
-                            }
+                        char *content       = GB_read_string(gb_old_ref);
+                        if (!content) error = GB_await_error();
+                        else {
+                            gb_new_ref             = GB_create(gb_ali, "_REF", GB_STRING);
+                            if (!gb_new_ref) error = GB_await_error();
                             else {
                                 error = GB_write_string(gb_new_ref, content);
                                 if (!error) error = GB_delete(gb_old_ref);
                             }
                             free(content);
-                        }
-                        else {
-                            error = GB_get_error();
                         }
                     }
                 }

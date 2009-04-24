@@ -177,7 +177,7 @@ static void edit_SAI_description(AW_window *aww) {
                 else {
                     GB_clear_error();
                     type             = GBT_read_string(gb_ali, "_TYPE");
-                    if (!type) error = GB_get_error();
+                    if (!type) error = GB_await_error();
                 }
             }
             error = ta.close(error);

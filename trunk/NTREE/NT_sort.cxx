@@ -105,9 +105,8 @@ GB_ERROR NT_resort_data_base(GBT_TREE *tree, const char *key1, const char *key2,
 
     GB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
     if (!error) {
-        GBDATA *gb_sd = GB_search(GLOBAL_gb_main,"species_data",GB_CREATE_CONTAINER);
-
-        if (!gb_sd) error = GB_get_error();
+        GBDATA *gb_sd     = GB_search(GLOBAL_gb_main,"species_data",GB_CREATE_CONTAINER);
+        if (!gb_sd) error = GB_await_error();
         else {
             if (tree) {
                 gb_resort_data_count = 0;
