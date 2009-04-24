@@ -209,7 +209,7 @@ GEN_root::GEN_root(const char *organism_name_, const char *gene_name_, GBDATA *g
                         const GEN_position *location = loadPositions4gene(gb_gene);
 
                         if (!location) {
-                            GB_ERROR  warning = GB_get_error();
+                            GB_ERROR  warning = GB_await_error();
                             char     *id      = GEN_global_gene_identifier(gb_gene, gb_organism);
                             aw_message(GBS_global_string("Can't load gene '%s':\nReason: %s", id, warning));
                             free(id);

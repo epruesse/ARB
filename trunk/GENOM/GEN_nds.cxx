@@ -164,7 +164,7 @@ char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode)
                         if (!pars){
                             pars = strdup("<error>");
                             if (!gen_nds_ms->errorclip++) {
-                                aw_message(GB_get_error());
+                                aw_message(GB_await_error());
                             }
                         }
                         p = pars;

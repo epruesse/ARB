@@ -293,9 +293,9 @@ void experiment_create_cb(AW_window *aww) {
                 error  = GB_export_error("Experiment '%s' already exists", dest);
             }
             else {
-                gb_dest = EXP_find_or_create_experiment_rel_exp_data(gb_experiment_data, dest);
-                if (gb_dest) aww->get_root()->awar(AWAR_EXPERIMENT_NAME)->write_string(dest);
-                else error = GB_get_error();
+                gb_dest             = EXP_find_or_create_experiment_rel_exp_data(gb_experiment_data, dest);
+                if (!gb_dest) error = GB_await_error();
+                else aww->get_root()->awar(AWAR_EXPERIMENT_NAME)->write_string(dest);
             }
         }
     }
@@ -323,9 +323,8 @@ void experiment_rename_cb(AW_window *aww){
                 if (!gb_source) error   = "Please select an experiment";
                 else if (gb_dest) error = GB_export_error("Experiment '%s' already exists", dest);
                 else {
-                    GBDATA *gb_name = GB_search(gb_source, "name", GB_STRING);
-
-                    if (!gb_name) error = GB_get_error();
+                    GBDATA *gb_name     = GB_search(gb_source, "name", GB_STRING);
+                    if (!gb_name) error = GB_await_error();
                     else {
                         error = GB_write_string(gb_name, dest);
                         if (!error) aww->get_root()->awar(AWAR_EXPERIMENT_NAME)->write_string(dest);
@@ -360,17 +359,12 @@ void experiment_copy_cb(AW_window *aww) {
             else if (gb_dest) error = GB_export_error("Experiment '%s' already exists", dest);
             else {
                 gb_dest             = GB_create_container(gb_experiment_data,"experiment");
-                if (!gb_dest) error = GB_get_error();
+                if (!gb_dest) error = GB_await_error();
                 else error          = GB_copy(gb_dest, gb_source);
 
                 if (!error) {
-                    GBDATA *gb_name = GB_search(gb_dest,"name",GB_STRING);
-
-                    if (!gb_name) error = GB_get_error();
-                    else {
-                        error = GB_write_string(gb_name,dest);
-                        if (!error) aww->get_root()->awar(AWAR_EXPERIMENT_NAME)->write_string(dest);
-                    }
+                    error = GBT_write_string(gb_dest, "name", dest);
+                    if (!error) aww->get_root()->awar(AWAR_EXPERIMENT_NAME)->write_string(dest);
                 }
             }
         }
