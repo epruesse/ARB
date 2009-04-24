@@ -346,7 +346,7 @@ GB_ERROR GB_failedTo_error(const char *do_something, const char *special, GB_ERR
 #define PRINT2BUFFER_CHECKED(printed, buffer, bufsize, templat, parg)   \
     (printed) = PRINT2BUFFER(buffer, bufsize, templat, parg);           \
     if ((printed) < 0 || (size_t)(printed) >= (bufsize)) {              \
-        GBK_terminate("Internal buffer overflow (size=%zu, used=%zi)\n", \
+        GBK_terminate("Internal buffer overflow (size=%zu, used=%i)\n", \
                      (bufsize), (printed));                             \
     }
     
@@ -415,7 +415,7 @@ static GB_CSTR gbs_vglobal_string(const char *templat, va_list parg, int allow_r
         }
     }
 
-    PRINT2BUFFER_CHECKED(psize, buffer[my_idx], GBS_GLOBAL_STRING_SIZE, templat, parg);
+    PRINT2BUFFER_CHECKED(psize, buffer[my_idx], (size_t)GBS_GLOBAL_STRING_SIZE, templat, parg);
 
 #if defined(TRACE_BUFFER_USAGE)
     printf("Printed into global buffer #%i ('%s')\n", my_idx, buffer[my_idx]);

@@ -174,8 +174,8 @@ void DI_dmatrix::handle_move(AW_event& event) {
         AW_pos maxx = awm->get_scrolled_picture_width() - screen_width;
         AW_pos maxy = awm->get_scrolled_picture_height() - screen_height;
 
-        if (sxpos>maxx) sxpos = maxx;
-        if (sypos>maxy) sypos = maxy;
+        if (sxpos>maxx) sxpos = int(maxx);
+        if (sypos>maxy) sypos = int(maxy);
         if (sxpos<0) sxpos    = 0;
         if (sypos<0) sypos    = 0;
 

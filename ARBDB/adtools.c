@@ -4164,7 +4164,7 @@ NOT4PERL char *GBT_read_gene_sequence_and_length(GBDATA *gb_gene, GB_BOOL use_re
             getPartPositions(pos, p, &start, &stop);
 
             if (start<1 || start>(stop+1) || stop > seq_length) { // do not reject zero-length genes (start == stop+1)
-                error = GBS_global_string("Illegal gene position(s): start=%u, end=%u, seq.length=%li",
+                error = GBS_global_string("Illegal gene position(s): start=%zu, end=%zu, seq.length=%li",
                                           start, stop, seq_length);
             }
             else {

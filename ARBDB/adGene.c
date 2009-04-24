@@ -411,8 +411,8 @@ GB_ERROR GEN_write_position(GBDATA *gb_gene, const struct GEN_position *pos) {
         if (pos->parts == 1) {
             if (gb_pos_joined) error = GB_delete(gb_pos_joined);
             
-            if (!error) error = GB_write_string(gb_pos_start,      GBS_global_string("%u", pos->start_pos[0]));
-            if (!error) error = GB_write_string(gb_pos_stop,       GBS_global_string("%u", pos->stop_pos[0]));
+            if (!error) error = GB_write_string(gb_pos_start,      GBS_global_string("%zu", pos->start_pos[0]));
+            if (!error) error = GB_write_string(gb_pos_stop,       GBS_global_string("%zu", pos->stop_pos[0]));
             if (!error) error = GB_write_string(gb_pos_complement, GBS_global_string("%c", pos->complement[0]+'0'));
 
             if (!error && gb_pos_certain) {
@@ -439,8 +439,8 @@ GB_ERROR GEN_write_position(GBDATA *gb_gene, const struct GEN_position *pos) {
                         GBS_chrcat(complement, ',');
                         GBS_chrcat(uncertain, ',');
                     }
-                    GBS_strcat(start, GBS_global_string("%u", pos->start_pos[p]));
-                    GBS_strcat(stop,  GBS_global_string("%u", pos->stop_pos[p]));
+                    GBS_strcat(start, GBS_global_string("%zu", pos->start_pos[p]));
+                    GBS_strcat(stop,  GBS_global_string("%zu", pos->stop_pos[p]));
                     GBS_chrcat(complement, pos->complement[p]+'0');
                     if (gb_pos_certain) {
                         GBS_chrcat(uncertain, pos->start_uncertain[p]);
