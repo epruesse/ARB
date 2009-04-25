@@ -73,6 +73,7 @@ long GBS_gcgchecksum P_((const char *seq));
 uint32_t GB_checksum P_((const char *seq, long length, int ignore_case, const char *exclude));
 uint32_t GBS_checksum P_((const char *seq, int ignore_case, const char *exclude));
 char *GBS_extract_words P_((const char *source, const char *chars, float minlen, GB_BOOL sort_output));
+size_t GBS_shorten_repeated_data P_((char *data));
 NOT4PERL void GB_install_error_handler P_((gb_error_handler_type aw_message_handler));
 void GB_internal_error P_((const char *templat, ...)) __ATTR__FORMAT(1);
 void GB_warning P_((const char *templat, ...)) __ATTR__FORMAT(1);

@@ -465,18 +465,27 @@ static void awt_scanner_scan_list(GBDATA *dummy, struct adawcbstruct *cbs)
                     *(p++) = ' ';
                     *p     = 0;
 
-                    char *data = GB_read_as_string(gbd);
-                    int   ssize;
+                    {
+                        char *data = GB_read_as_string(gbd);
+                        int   ssize;
 
-                    if (data){
-                        int rest = INFO_WIDTH-(p-buffer);
-                        ssize    = strlen(data);
+                        if (data) {
+                            int rest = INFO_WIDTH-(p-buffer);
+                            ssize    = strlen(data);
 
-                        if (ssize > rest) ssize = rest;
-                        memcpy(p,data,ssize);
-                        p[ssize] = 0;
+                            if (ssize > rest) {
+                                ssize = GBS_shorten_repeated_data(data);
+                                if (ssize > rest) {
+                                    if (ssize>5) strcpy(data+rest-5, "[...]");
+                                    ssize = rest;
+                                }
+                            }
 
-                        free(data);
+                            memcpy(p,data,ssize);
+                            p[ssize] = 0;
+
+                            free(data);
+                        }
                     }
                     cbs->aws->insert_selection( cbs->id, buffer, (long)gbd );
                 }
