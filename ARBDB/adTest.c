@@ -284,7 +284,14 @@ static void GB_dump_internal(GBDATA *gbd, int *lines_allowed) {
 
     {
         char     *prefix  = GBS_global_string_copy("%*s %-15s gbd=%p type=%s content=", indent, "", key_name, gbd, type_name);
-        unsigned  wrappos = 3000;
+        unsigned  wrappos = 500;
+        char     *toFree  = 0;
+
+        if (content_len > wrappos) {
+            toFree      = strdup(content);
+            content     = toFree;
+            content_len = GBS_shorten_repeated_data(toFree);
+        }
 
         if (content_len <= wrappos) {
             printf("%s'%s'\n", prefix, content);
@@ -308,6 +315,7 @@ static void GB_dump_internal(GBDATA *gbd, int *lines_allowed) {
             free(buffer);
         }
         free(prefix);
+        free(toFree);
     }
 
     if (type==GB_DB && showChilds == GB_TRUE) {

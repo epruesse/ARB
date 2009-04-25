@@ -1298,6 +1298,49 @@ char *GBS_extract_words( const char *source,const char *chars, float minlen, GB_
     return GBS_strclose(strstruct);
 }
 
+
+size_t GBS_shorten_repeated_data(char *data) {
+    // shortens repeats in 'data'
+    // This function modifies 'data'!!
+    // e.g. "..............................ACGT....................TGCA"
+    // ->   ".{30}ACGT.{20}TGCA"
+
+#if defined(DEBUG)
+    size_t  orgLen    = strlen(data);
+#endif // DEBUG
+    char   *dataStart = data;
+    char   *dest      = data;
+    size_t  repeat    = 1;
+    char    last      = *data++;
+
+    do {
+        char curr = *data++;
+        if (curr == last) {
+            repeat++;
+        }
+        else {
+            if (repeat >= 10) {
+                dest += sprintf(dest, "%c{%zu}", last, repeat); // insert repeat count
+            }
+            else {
+                size_t r;
+                for (r = 0; r<repeat; r++) *dest++ = last; // insert plain
+            }
+            last   = curr;
+            repeat = 1;
+        }
+    }
+    while (last);
+
+    *dest = 0;
+
+#if defined(DEBUG)
+
+    ad_assert(strlen(dataStart) <= orgLen);
+#endif // DEBUG
+    return dest-dataStart;
+}
+
 /* ----------------------- */
 /*      Error handler      */
 

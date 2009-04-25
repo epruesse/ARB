@@ -896,7 +896,10 @@ static void awt_do_query(void *dummy, struct adaqbsstruct *cbs, AW_CL cl_ext_que
 
                                 if (reason_key) {
                                     if (strlen(data)>AWT_MAX_SHOWN_DATA_SIZE) {
-                                        strcpy(data+AWT_MAX_SHOWN_DATA_SIZE-5, "[...]");
+                                        size_t shortened_len = GBS_shorten_repeated_data(data);
+                                        if (shortened_len>AWT_MAX_SHOWN_DATA_SIZE) {
+                                            strcpy(data+AWT_MAX_SHOWN_DATA_SIZE-5, "[...]");
+                                        }
                                     }
                                     this_hit_reason       = string(reason_key)+"="+data;
                                     const char *ACIresult = this_query->get_last_ACI_result();
