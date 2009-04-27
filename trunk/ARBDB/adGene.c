@@ -799,7 +799,7 @@ GBDATA *GEN_next_marked_organism(GBDATA *gb_organism) {
 
 char *GEN_global_gene_identifier(GBDATA *gb_gene, GBDATA *gb_organism) {
     if (!gb_organism) {
-        gb_organism = GB_get_father(GB_get_father(gb_gene));
+        gb_organism = GB_get_grandfather(gb_gene);
         gb_assert(gb_organism);
     }
 

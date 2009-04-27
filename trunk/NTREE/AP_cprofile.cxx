@@ -185,7 +185,7 @@ static void CPRO_readandallocate(char **&speciesdata,GBDATA **&speciesdatabase,
         for(long j=0;j<CPRO.numspecies;j++)
         {
             CPRO.antagonist[j]=0;
-            if(GB_read_flag(GB_get_father(GB_get_father(speciesdatabase[j]))))
+            if(GB_read_flag(GB_get_grandfather(speciesdatabase[j])))
                 CPRO.antagonist[j]=(char)1;
         }
     }

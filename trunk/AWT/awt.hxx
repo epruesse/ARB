@@ -46,6 +46,22 @@ typedef enum {
     AWT_QUERY_ALL_SPECIES
 } AWT_QUERY_RANGE;
 
+typedef enum {
+    AWT_QUERY_SORT_NONE = 0,
+
+    // "real" criteria:
+    AWT_QUERY_SORT_BY_1STFIELD_CONTENT = 1,         // by content of first selected search field
+    AWT_QUERY_SORT_BY_ID               = 2,         // by item id (not by parent)
+    AWT_QUERY_SORT_BY_NESTED_PID       = 4,         // by nested parent id
+    AWT_QUERY_SORT_BY_MARKED           = 8,         // marked items first
+    AWT_QUERY_SORT_BY_HIT_DESCRIPTION  = 16,        // by hit description
+    AWT_QUERY_SORT_REVERSE             = 32,        // revert following (may occur multiple times)
+
+} AWT_QUERY_RESULT_ORDER;
+
+#define AWT_QUERY_SORT_CRITERIA_BITS 6              // number of "real" sort criteria
+#define AWT_QUERY_SORT_CRITERIA_MASK ((1<<AWT_QUERY_SORT_CRITERIA_BITS)-1)
+
 struct ad_item_selector {
     AWT_QUERY_ITEM_TYPE type;
 
@@ -57,11 +73,12 @@ struct ad_item_selector {
     char *(*generate_item_id)(GBDATA *gb_main, GBDATA *gb_item);
     GBDATA *(*find_item_by_id)(GBDATA *gb_main, const char *id);
     AW_CB selection_list_rescan_cb;
-    int   item_name_length;
+    int   item_name_length; // -1 means "unknown" (might be long)
 
     const char *change_key_path;
-    const char *item_name;      // "species" or "gene" or "experiment" or "organism"
-    const char *items_name;     // "species" or "genes" or "experiments" or "organisms"
+    const char *item_name;                          // "species" or "gene" or "experiment" or "organism"
+    const char *items_name;                         // "species" or "genes" or "experiments" or "organisms"
+    const char *id_field;                           // e.g. "name" for species, genes
 
     GBDATA *(*get_first_item_container)(GBDATA *, AW_root *, AWT_QUERY_RANGE); // for species this is normally awt_get_species_data
     GBDATA *(*get_next_item_container)(GBDATA *, AWT_QUERY_RANGE); // for species this is normally a function returning 0
@@ -70,11 +87,12 @@ struct ad_item_selector {
 
     GBDATA *(*get_selected_item)(GBDATA *gb_main, AW_root *aw_root); // searches the currently selected item
 
-    struct ad_item_selector *parent_selector; // selector for parent item
+    struct ad_item_selector *parent_selector;       // selector of parent item (or NULL if item has no parents)
+    GBDATA *(*get_parent)(GBDATA *gb_item);         // if 'parent_selector' is defined, this function returns the parent of the item
 };
 
-char *AWT_get_item_id(ad_item_selector *sel, GBDATA *gb_item);
-GBDATA *AWT_get_item_with_id(ad_item_selector *sel, const char *id);
+char   *AWT_get_item_id(GBDATA *gb_main, const ad_item_selector *sel, GBDATA *gb_item);
+GBDATA *AWT_get_item_with_id(GBDATA *gb_main, const ad_item_selector *sel, const char *id);
 
 extern ad_item_selector AWT_species_selector;
 extern ad_item_selector AWT_organism_selector;
@@ -175,7 +193,7 @@ void awt_copy_selection_list_2_queried_species(struct adaqbsstruct *cbs, AW_sele
 struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtqs); // create the query box
 /* Create the query box */
 void awt_search_equal_entries(AW_window *dummy, struct adaqbsstruct *cbs, bool tokenize);
-long awt_count_queried_species(struct adaqbsstruct *cbs);
+long awt_count_queried_items(struct adaqbsstruct *cbs, AWT_QUERY_RANGE range);
 void awt_unquery_all(void *dummy, struct adaqbsstruct *cbs);
 
 AW_window *awt_create_item_colorizer(AW_root *aw_root, GBDATA *gb_main, const ad_item_selector *sel);

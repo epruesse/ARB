@@ -38,6 +38,10 @@ void GEN_select_gene(GBDATA* /*gb_main*/, AW_root *aw_root, const char *item_nam
         aw_root->awar(AWAR_ORGANISM_NAME)->write_string(organism);
         aw_root->awar(AWAR_GENE_NAME)->write_string(gene);
     }
+    else if (!item_name[0]) { // accept empty input -> deselect gene/organism
+        aw_root->awar(AWAR_GENE_NAME)->write_string("");
+        aw_root->awar(AWAR_ORGANISM_NAME)->write_string("");
+    }
     else {
         aw_message(GBS_global_string("Illegal item_name '%s' in GEN_select_gene()", item_name));
     }
@@ -45,7 +49,7 @@ void GEN_select_gene(GBDATA* /*gb_main*/, AW_root *aw_root, const char *item_nam
 }
 
 static char *gen_get_gene_id(GBDATA */*gb_main*/, GBDATA *gb_gene) {
-    GBDATA *gb_species = GB_get_father(GB_get_father(gb_gene));
+    GBDATA *gb_species = GB_get_grandfather(gb_gene);
     return GBS_global_string_copy("%s/%s", GBT_read_name(gb_species), GBT_read_name(gb_gene));
 }
 
@@ -160,25 +164,26 @@ static GBDATA *GEN_get_next_gene_data(GBDATA *gb_gene_data, AWT_QUERY_RANGE rang
     return gb_organism ? GEN_expect_gene_data(gb_organism) : 0;
 }
 
-//  ----------------------------------------------------
-//      struct ad_item_selector GEN_item_selector =
-//  ----------------------------------------------------
-struct ad_item_selector GEN_item_selector         = {
+// --------------------------
+//      GEN_item_selector
+
+struct ad_item_selector GEN_item_selector = {
     AWT_QUERY_ITEM_GENES,
     GEN_select_gene,
     gen_get_gene_id,
     gen_find_gene_by_id,
     (AW_CB)awt_gene_field_selection_list_update_cb,
-    25,
+    -1, // unknown
     CHANGE_KEY_PATH_GENES,
     "gene",
     "genes",
+    "name",
     GEN_get_first_gene_data,
     GEN_get_next_gene_data,
     GEN_first_gene_rel_gene_data,
     GEN_next_gene,
     GEN_get_current_gene,
-    &AWT_organism_selector
+    &AWT_organism_selector, GB_get_grandfather,
 };
 
 void GEN_species_name_changed_cb(AW_root *awr) {

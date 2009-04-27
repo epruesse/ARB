@@ -1094,8 +1094,8 @@ long    GB_read_transaction(GBDATA *gbd)
                     Get and check the database hierarchy
 ********************************************************************************************/
 
-GBDATA *GB_get_father(GBDATA *gbd) /* Get the father of an entry */
-{
+GBDATA *GB_get_father(GBDATA *gbd) {
+    /* Get the father of an entry */
     GBDATA *father;
 
     GB_TEST_TRANSACTION(gbd);
@@ -1103,6 +1103,20 @@ GBDATA *GB_get_father(GBDATA *gbd) /* Get the father of an entry */
     if (!GB_FATHER(father))         return NULL;
 
     return father;
+}
+
+GBDATA *GB_get_grandfather(GBDATA *gbd) {
+    GBDATA *gb_grandpa;
+    GB_TEST_TRANSACTION(gbd);
+
+    gb_grandpa = (GBDATA*)GB_FATHER(gbd);
+    if (gb_grandpa) {
+        gb_grandpa = (GBDATA*)GB_FATHER(gb_grandpa);
+        if (gb_grandpa && !GB_FATHER(gb_grandpa)) {
+            gb_grandpa = 0;
+        }
+    }
+    return gb_grandpa;
 }
 
 GBDATA *GB_get_root(GBDATA *gbd) {  /* Get the root entry (gb_main) */

@@ -179,6 +179,7 @@ GB_BOOL GB_has_key P_((GBDATA *gbd, const char *key));
 long GB_read_clock P_((GBDATA *gbd));
 long GB_read_transaction P_((GBDATA *gbd));
 GBDATA *GB_get_father P_((GBDATA *gbd));
+GBDATA *GB_get_grandfather P_((GBDATA *gbd));
 GBDATA *GB_get_root P_((GBDATA *gbd));
 GB_BOOL GB_check_father P_((GBDATA *gbd, GBDATA *gb_maybefather));
 int GB_rename P_((GBDATA *gbc, const char *new_key));

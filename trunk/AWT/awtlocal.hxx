@@ -87,12 +87,14 @@ struct adaqbsstruct {
     AWAR               awar_deftag;
     AWAR               awar_tag;
     AWAR               awar_count;
+    AWAR               awar_sort;
+    unsigned long      sort_mask;                   // contains several cascading sort criteria (AWT_QUERY_SORT_CRITERIA_BITS each)
     AW_selection_list *result_id;
     int                select_bit;                  // one of 1 2 4 8 .. 128 (one for each query box)
 
     const ad_item_selector *selector;
 
-    GB_HASH *hit_description; // key = char* (hit item name), value = char* (description of hit)
+    GB_HASH *hit_description; // key = char* (hit item name), value = char* (description of hit - allocated!)
 };
 
 #define AWAR_TABLE_FIELD_REORDER_SOURCE_TEMPLATE "tmp/table/%s/field/reorder_source"
