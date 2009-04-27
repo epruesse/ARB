@@ -3252,6 +3252,8 @@ char **GBT_scan_db(GBDATA *gbd, const char *datapath) {
      *
      * if datapath != 0, only keys with prefix datapath are scanned and
      * the prefix is removed from the resulting key_names.
+     *
+     * @@@ this function is incredibly slow when called from clients
      */
     struct DbScanner scanner;
 
@@ -4146,7 +4148,7 @@ NOT4PERL char *GBT_read_gene_sequence_and_length(GBDATA *gb_gene, GB_BOOL use_re
 
     GB_ERROR             error       = 0;
     char                *result      = 0;
-    GBDATA              *gb_species  = GB_get_father(GB_get_father(gb_gene));
+    GBDATA              *gb_species  = GB_get_grandfather(gb_gene);
     struct GEN_position *pos         = GEN_read_position(gb_gene);
 
     if (!pos) error = GB_await_error();

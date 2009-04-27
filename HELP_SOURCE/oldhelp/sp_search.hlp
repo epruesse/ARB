@@ -75,4 +75,7 @@ EXAMPLES	1. Search for a species called 'Pseudomonas tolaasii'
 WARNINGS	If the hitlist becomes too long, it will be truncated.
                 Nevertheless all operations work on non-truncated hitlist!
 
+                Changing the sort order will most likely show different items, because the
+                list gets truncated after it was sorted.
+
 BUGS		No bugs known

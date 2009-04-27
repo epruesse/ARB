@@ -73,6 +73,26 @@ SECTION SEARCH EXPRESSION
                - if the query string is completely empty, it hits if the selected field does
                  not exist.
 
+SECTION SORTING RESULTS
+
+                Search results are displayed unsorted by default. You can sort them, by selecting
+                a different order with the sort radio button.
+                The available sort criteria are
+
+                    unsorted       display items like they are stored in database
+                    by value       sort by content of first query field
+                    by id          sort by unique item id (e.g. 'name' for species)
+                    by parent      sort by globally unique id of parent item (e.g. 'name' of organism for genes)
+                    by marked      sort marked before unmarked items
+                    by hit         sort by (and display) hit description (the hit description tells you
+                                   why an item was hit by query)
+                    reverse        reverts previously selected sort order
+
+                ARB remembers and uses all the sort criteria you apply.
+
+                Example: Selecting 'by id' will sort the items by their id (e.g. 'name'). If you
+                select 'by value' afterwards, ARB will sort items by the content of the first query
+                field - if the contents of some items are equal, it will still sort them by name.
 
 NOTES		Wildcarded or exact search always searches case insensitive.
                 Regular expression search always searches case sensitive.

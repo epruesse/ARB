@@ -43,7 +43,7 @@ static ED4_returncode dot_sequence_by_consensus(void **cl_insert_stat, void **, 
         if (seq_term) {
             GBDATA *gb_ali = seq_term->data();
             if (gb_ali) {
-                GBDATA           *gb_species = GB_get_father(GB_get_father(gb_ali));
+                GBDATA           *gb_species = GB_get_grandfather(gb_ali);
                 bool              marked     = GB_read_flag(gb_species);
                 dot_insert_stat&  stat       = *reinterpret_cast<dot_insert_stat *>(cl_insert_stat);
 

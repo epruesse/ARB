@@ -238,7 +238,7 @@ static GB_ERROR species_requires(GBDATA *gb_species, const char *whats_required)
 }
 
 static GB_ERROR gene_requires(GBDATA *gb_gene, const char *whats_required) {
-    GBDATA *gb_species = GB_get_father(GB_get_father(gb_gene));
+    GBDATA *gb_species = GB_get_grandfather(gb_gene);
     pd_assert(gb_species);
     return GBS_global_string("Gene '%s' of organism '%s' needs %s", GBT_read_name(gb_gene), GBT_read_name(gb_species), whats_required);
 }

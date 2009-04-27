@@ -753,7 +753,7 @@ static void awtc_nn_search_all_listed(AW_window *aww,AW_CL _cbs) {
     if (!dest_type){
         error = GB_export_error("Please select a valid field");
     }
-    long max = awt_count_queried_species(cbs);
+    long max = awt_count_queried_items(cbs, AWT_QUERY_ALL_SPECIES);
 
     if (strcmp(dest_field, "name")==0) {
         int answer = aw_question("CAUTION! This will destroy all name-fields of the listed species.\n",
@@ -886,13 +886,15 @@ static void awtc_nn_search(AW_window *aww, AW_CL id) {
     AWTC_FIND_FAMILY ff(GLOBAL_gb_main);
     bool             rel_matches = aw_root->awar(AWAR_NN_REL_MATCHES)->read_int();
 
+    int max_hits = 0; // max wanted hits
+
     if (!error) {
         int           pts        = aw_root->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
         int           oligo_len  = aw_root->awar(AWAR_NN_OLIGO_LEN)->read_int();
         int           mismatches = aw_root->awar(AWAR_NN_MISMATCHES)->read_int();
         bool          fast_mode  = aw_root->awar(AWAR_NN_FAST_MODE)->read_int();
         FF_complement compl_mode = static_cast<FF_complement>(aw_root->awar(AWAR_NN_COMPLEMENT)->read_int());
-        int           max_hits   = aw_root->awar(AWAR_NN_MAX_HITS)->read_int();
+        max_hits                 = aw_root->awar(AWAR_NN_MAX_HITS)->read_int();
 
         error = ff.findFamily(pts, sequence, oligo_len, mismatches, fast_mode, rel_matches, compl_mode, max_hits);
     }
@@ -908,14 +910,16 @@ static void awtc_nn_search(AW_window *aww, AW_CL id) {
             aww->insert_default_selection(sel,"<Error>","");
         }
         else {
-            int count = 1;
+            int count    = 1;
+            int numWidth = log(max_hits)/log(10)+1;
+
             for (const AWTC_FIND_FAMILY_MEMBER *fm = ff.getFamilyList(); fm; fm = fm->next) {
                 const char *dis;
                 if (rel_matches) {
-                    dis = GBS_global_string("#%-5i %-12s Rel.hits: %5.1f%%", count, fm->name, fm->rel_matches*100);
+                    dis = GBS_global_string("#%0*i %-12s Rel.hits: %5.1f%%", numWidth, count, fm->name, fm->rel_matches*100);
                 }
                 else {
-                    dis = GBS_global_string("#%-5i %-12s Hits: %4li", count, fm->name, fm->matches);
+                    dis = GBS_global_string("#%0*i %-12s Hits: %4li", numWidth, count, fm->name, fm->matches);
                 }
 
                 aww->insert_selection(sel, dis, fm->name);

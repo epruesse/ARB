@@ -62,7 +62,7 @@ static void EXP_select_experiment(GBDATA* /*gb_main*/, AW_root *aw_root, const c
 }
 
 static char *EXP_get_experiment_id(GBDATA */*gb_main*/, GBDATA *gb_experiment) {
-    GBDATA *gb_species = GB_get_father(GB_get_father(gb_experiment));
+    GBDATA *gb_species = GB_get_grandfather(gb_experiment);
     return GBS_global_string_copy("%s/%s", GBT_read_name(gb_species), GBT_read_name(gb_experiment));
 }
 
@@ -164,24 +164,24 @@ static GBDATA *EXP_get_next_experiment_data(GBDATA *gb_experiment_data, AWT_QUER
     return gb_species ? EXP_get_experiment_data(gb_species) : 0;
 }
 
-struct ad_item_selector EXP_item_selector =
-    {
-        AWT_QUERY_ITEM_EXPERIMENTS,
-        EXP_select_experiment,
-        EXP_get_experiment_id,
-        EXP_find_experiment_by_id,
-        (AW_CB)awt_experiment_field_selection_list_update_cb,
-        25,
-        CHANGE_KEY_PATH_EXPERIMENTS,
-        "experiment",
-        "experiments",
-        EXP_get_first_experiment_data,
-        EXP_get_next_experiment_data,
-        EXP_first_experiment_rel_exp_data,
-        EXP_next_experiment,
-        EXP_get_current_experiment,
-        &AWT_organism_selector
-    };
+struct ad_item_selector EXP_item_selector = {
+    AWT_QUERY_ITEM_EXPERIMENTS,
+    EXP_select_experiment,
+    EXP_get_experiment_id,
+    EXP_find_experiment_by_id,
+    (AW_CB)awt_experiment_field_selection_list_update_cb,
+    -1, // unknown
+    CHANGE_KEY_PATH_EXPERIMENTS,
+    "experiment",
+    "experiments",
+    "name", 
+    EXP_get_first_experiment_data,
+    EXP_get_next_experiment_data,
+    EXP_first_experiment_rel_exp_data,
+    EXP_next_experiment,
+    EXP_get_current_experiment,
+    &AWT_organism_selector, GB_get_grandfather, 
+};
 
 
 GBDATA *EXP_get_current_experiment(GBDATA *gb_main, AW_root *aw_root) {
