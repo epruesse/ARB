@@ -781,13 +781,13 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr){
 
     Widget middle_area_widget = AW_get_AreaWidget(RNA3D->gl_Canvas->aww, AW_MIDDLE_AREA);
 
-    XtAddEventHandler(middle_area_widget, StructureNotifyMask, 0, (XtEventHandler)ResizeOpenGLWindow,        (XtPointer)0);
-    XtAddEventHandler(middle_area_widget, ExposureMask,        0, (XtEventHandler)ExposeOpenGLWindow,        (XtPointer)0);
-    XtAddEventHandler(middle_area_widget, KeyPressMask,        0, (XtEventHandler)KeyPressEventHandler,      (XtPointer)0);
-    XtAddEventHandler(middle_area_widget, KeyReleaseMask,      0, (XtEventHandler)KeyReleaseEventHandler,    (XtPointer)0);
-    XtAddEventHandler(middle_area_widget, ButtonPressMask,     0, (XtEventHandler)ButtonPressEventHandler,   (XtPointer)0);
-    XtAddEventHandler(middle_area_widget, ButtonReleaseMask,   0, (XtEventHandler)ButtonReleaseEventHandler, (XtPointer)0);
-    XtAddEventHandler(middle_area_widget, PointerMotionMask,   0, (XtEventHandler)MouseMoveEventHandler,     (XtPointer)0);
+    XtAddEventHandler(middle_area_widget, StructureNotifyMask, 0, ResizeOpenGLWindow,        (XtPointer)0);
+    XtAddEventHandler(middle_area_widget, ExposureMask,        0, ExposeOpenGLWindow,        (XtPointer)0);
+    XtAddEventHandler(middle_area_widget, KeyPressMask,        0, KeyPressEventHandler,      (XtPointer)0);
+    XtAddEventHandler(middle_area_widget, KeyReleaseMask,      0, KeyReleaseEventHandler,    (XtPointer)0);
+    XtAddEventHandler(middle_area_widget, ButtonPressMask,     0, ButtonPressEventHandler,   (XtPointer)0);
+    XtAddEventHandler(middle_area_widget, ButtonReleaseMask,   0, ButtonReleaseEventHandler, (XtPointer)0);
+    XtAddEventHandler(middle_area_widget, PointerMotionMask,   0, MouseMoveEventHandler,     (XtPointer)0);
 
 #ifdef DEBUG
     cout<<"RNA3D: OpenGL Window created!"<<endl;

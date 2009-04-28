@@ -838,7 +838,7 @@ void AW_normal_cursor(AW_root *root) {
 }
 
 /***********************************************************************/
-static void AW_root_focusCB(Widget wgt, XtPointer *awrp) {
+static void AW_root_focusCB(Widget wgt, XtPointer awrp, XEvent*, Boolean*) {
     AWUSE(wgt);
     AW_root *aw_root = (AW_root *)awrp;
     if (aw_root->focus_callback_list) {
@@ -850,7 +850,7 @@ void AW_root::set_focus_callback(void (*f)(class AW_root*,AW_CL,AW_CL), AW_CL cd
     focus_callback_list = new AW_var_callback(f,cd1,cd2,focus_callback_list);
 }
 
-static void AW_focusCB(Widget wgt, XtPointer aw_cb_struct) {
+static void AW_focusCB(Widget wgt, XtPointer aw_cb_struct, XEvent*, Boolean*) {
     AWUSE(wgt);
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
     cbs->run_callback();
@@ -862,8 +862,7 @@ void AW_window::set_popup_callback(void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1,
 
 void AW_window::set_focus_callback(void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2) {
     XtAddEventHandler(MIDDLE_WIDGET, EnterWindowMask, FALSE,
-    (XtEventHandler)AW_focusCB,
-    (XtPointer) new AW_cb_struct(this, f, cd1, cd2, 0));
+    AW_focusCB, (XtPointer) new AW_cb_struct(this, f, cd1, cd2, 0));
 }
 
 /*******************************    expose  ****************************************/
@@ -1140,7 +1139,7 @@ void AW_window::get_event(AW_event *eventi) {
 
 /***********************************************************************/
 
-static void AW_motionCB(Widget w, XtPointer aw_cb_struct, XEvent *ev) {
+static void AW_motionCB(Widget w, XtPointer aw_cb_struct, XEvent *ev, Boolean*) {
     AWUSE(w);
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
 
@@ -1154,7 +1153,7 @@ static void AW_motionCB(Widget w, XtPointer aw_cb_struct, XEvent *ev) {
 }
 void AW_area_management::set_motion_callback(AW_window *aww, void (*f)(AW_window *,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2) {
     XtAddEventHandler(area, ButtonMotionMask, False,
-            (XtEventHandler) AW_motionCB, (XtPointer) new AW_cb_struct(aww, f, cd1, cd2, "") );
+                      AW_motionCB, (XtPointer) new AW_cb_struct(aww, f, cd1, cd2, "") );
 }
 void AW_window::set_motion_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2) {
     AW_area_management *aram= MAP_ARAM(area);
@@ -1843,8 +1842,7 @@ Widget aw_create_shell(AW_window *aww, AW_BOOL allow_resize, AW_BOOL allow_close
                 XmNdeleteResponse, XmDO_NOTHING, 
                 NULL);
     }
-    XtAddEventHandler(shell, EnterWindowMask, FALSE,
-            (XtEventHandler)AW_root_focusCB, (XtPointer) aww->get_root());
+    XtAddEventHandler(shell, EnterWindowMask, FALSE, AW_root_focusCB, (XtPointer) aww->get_root());
 
     if (!p_global->main_widget) {
         p_global->main_widget = shell;
@@ -3018,8 +3016,7 @@ AW_area_management::AW_area_management(AW_root *awr, Widget formi, Widget widget
     memset((char *)this, 0, sizeof(AW_area_management));
     form = formi;
     area = widget;
-    XtAddEventHandler(area, EnterWindowMask, FALSE,
-            (XtEventHandler)AW_root_focusCB, (XtPointer)awr);
+    XtAddEventHandler(area, EnterWindowMask, FALSE, AW_root_focusCB, (XtPointer)awr);
 }
 
 AW_device *AW_window::get_device(AW_area area) {
