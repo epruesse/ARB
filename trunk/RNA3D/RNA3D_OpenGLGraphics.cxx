@@ -8,20 +8,8 @@
 #include <cmath>
 #include <cstdlib>
 
-// The following includes are needed to use AW_window_Motif 
-// and access Application's colormap
-#include <aw_root.hxx>
-#include <aw_window.hxx>
-#include "../WINDOW/aw_awar.hxx"
-#include "../WINDOW/aw_Xm.hxx"
-#include "../WINDOW/aw_click.hxx"
-#include "../WINDOW/aw_size.hxx"
-#include "../WINDOW/aw_print.hxx"
-#include "../WINDOW/aw_window_Xm.hxx"
-#include "../WINDOW/aw_commn.hxx"
-
 #include <awt_canvas.hxx>
-
+#include <aw_window_Xm_interface.hxx>
 
 using namespace std;
 
@@ -40,7 +28,7 @@ void OpenGLGraphics::SetOpenGLBackGroundColor() {
     unsigned long bgColor;
     XtVaGetValues( RNA3D->glw, XmNbackground, &bgColor, NULL );
 
-    Widget w = RNA3D->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area;
+    Widget w = AW_get_AreaWidget(RNA3D->gl_Canvas->aww, AW_MIDDLE_AREA);
 
     XColor xcolor;
     xcolor.pixel = bgColor;
@@ -63,14 +51,12 @@ void OpenGLGraphics::SetOpenGLBackGroundColor() {
 ColorRGBf OpenGLGraphics::ConvertGCtoRGB(int gc) {
     ColorRGBf clr = ColorRGBf(0,0,0);
     float r, g, b; r = g = b = 0.0;
-   
-    Widget w = RNA3D->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area;
 
-    AW_common *common = RNA3D->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->common;
-    class AW_GC_Xm *gcm = AW_MAP_GC( gc );
- 
-    XGCValues xGCValues;
-    XGetGCValues( XtDisplay( w ), gcm->gc, GCForeground, &xGCValues );
+    Widget w   = AW_get_AreaWidget(RNA3D->gl_Canvas->aww, AW_MIDDLE_AREA);
+    GC     xgc = AW_map_AreaGC(RNA3D->gl_Canvas->aww, AW_MIDDLE_AREA, gc);
+
+    XGCValues     xGCValues;
+    XGetGCValues( XtDisplay( w ), xgc, GCForeground, &xGCValues );
     unsigned long color = xGCValues.foreground;
 
     XColor xcolor;

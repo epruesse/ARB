@@ -1,6 +1,7 @@
 
 ARCHS_ALL = \
 	glpng/libglpng_arb.dummy  \
+	glAW/libglAW.dummy  \
 
 # --------------------------------------------------------------------------------
 # If a package is available as debian package it should go here

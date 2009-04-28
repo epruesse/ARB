@@ -1,14 +1,7 @@
 #include "RNA3D_GlobalHeader.hxx"
 
-// The following includes are needed to use AW_window_Motif
-#include <aw_root.hxx>
-#include <aw_window.hxx>
-#include "../WINDOW/aw_awar.hxx"
-#include "../WINDOW/aw_Xm.hxx"
-#include "../WINDOW/aw_click.hxx"
-#include "../WINDOW/aw_size.hxx"
-#include "../WINDOW/aw_print.hxx"
-#include "../WINDOW/aw_window_Xm.hxx"
+#include <GL/aw_window_ogl.hxx>
+#include <aw_window_Xm_interface.hxx>
 
 #include "RNA3D_Global.hxx"
 #include "RNA3D_Graphics.hxx"
@@ -780,32 +773,21 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr){
     AddCallBacks(awr);
     RNA3D->root = awr;
 
-    appContext = awr->prvt->context;
+    appContext = AW_get_XtAppContext(awr);
 
     RNA3D->OpenGLEngineState = NOT_CREATED;
 
     /** Add event handlers */
 
-    XtAddEventHandler( RNA3D->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
-                       StructureNotifyMask , 0, (XtEventHandler) ResizeOpenGLWindow, (XtPointer) 0 );
+    Widget middle_area_widget = AW_get_AreaWidget(RNA3D->gl_Canvas->aww, AW_MIDDLE_AREA);
 
-    XtAddEventHandler( RNA3D->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
-                       ExposureMask, 0, (XtEventHandler) ExposeOpenGLWindow, (XtPointer) 0 );
-
-    XtAddEventHandler( RNA3D->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
-                       KeyPressMask, 0, (XtEventHandler) KeyPressEventHandler, (XtPointer) 0 );
-
-    XtAddEventHandler( RNA3D->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
-                       KeyReleaseMask, 0, (XtEventHandler) KeyReleaseEventHandler, (XtPointer) 0 );
-
-    XtAddEventHandler( RNA3D->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
-                       ButtonPressMask, 0, (XtEventHandler) ButtonPressEventHandler, (XtPointer) 0 );
-
-    XtAddEventHandler( RNA3D->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
-                       ButtonReleaseMask, 0, (XtEventHandler) ButtonReleaseEventHandler, (XtPointer) 0 );
-
-    XtAddEventHandler( RNA3D->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
-                       PointerMotionMask, 0, (XtEventHandler) MouseMoveEventHandler, (XtPointer) 0 );
+    XtAddEventHandler(middle_area_widget, StructureNotifyMask, 0, (XtEventHandler)ResizeOpenGLWindow,        (XtPointer)0);
+    XtAddEventHandler(middle_area_widget, ExposureMask,        0, (XtEventHandler)ExposeOpenGLWindow,        (XtPointer)0);
+    XtAddEventHandler(middle_area_widget, KeyPressMask,        0, (XtEventHandler)KeyPressEventHandler,      (XtPointer)0);
+    XtAddEventHandler(middle_area_widget, KeyReleaseMask,      0, (XtEventHandler)KeyReleaseEventHandler,    (XtPointer)0);
+    XtAddEventHandler(middle_area_widget, ButtonPressMask,     0, (XtEventHandler)ButtonPressEventHandler,   (XtPointer)0);
+    XtAddEventHandler(middle_area_widget, ButtonReleaseMask,   0, (XtEventHandler)ButtonReleaseEventHandler, (XtPointer)0);
+    XtAddEventHandler(middle_area_widget, PointerMotionMask,   0, (XtEventHandler)MouseMoveEventHandler,     (XtPointer)0);
 
 #ifdef DEBUG
     cout<<"RNA3D: OpenGL Window created!"<<endl;

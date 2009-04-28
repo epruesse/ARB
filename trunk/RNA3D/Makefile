@@ -52,12 +52,6 @@ RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 
-RNA3D_Interface.o: ../WINDOW/aw_awar.hxx
-RNA3D_Interface.o: ../WINDOW/aw_click.hxx
-RNA3D_Interface.o: ../WINDOW/aw_print.hxx
-RNA3D_Interface.o: ../WINDOW/aw_size.hxx
-RNA3D_Interface.o: ../WINDOW/aw_window_Xm.hxx
-RNA3D_Interface.o: ../WINDOW/aw_Xm.hxx
 RNA3D_Interface.o: RNA3D_Global.hxx
 RNA3D_Interface.o: RNA3D_GlobalHeader.hxx
 RNA3D_Interface.o: RNA3D_Graphics.hxx
@@ -78,7 +72,9 @@ RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_window_Xm_interface.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+RNA3D_Interface.o: $(ARBHOME)/INCLUDE/GL/aw_window_ogl.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 
 RNA3D_Main.o: RNA3D_Global.hxx
@@ -121,15 +117,9 @@ RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/GL/aw_window_ogl.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 
-RNA3D_OpenGLGraphics.o: ../WINDOW/aw_awar.hxx
-RNA3D_OpenGLGraphics.o: ../WINDOW/aw_click.hxx
-RNA3D_OpenGLGraphics.o: ../WINDOW/aw_commn.hxx
-RNA3D_OpenGLGraphics.o: ../WINDOW/aw_print.hxx
-RNA3D_OpenGLGraphics.o: ../WINDOW/aw_size.hxx
-RNA3D_OpenGLGraphics.o: ../WINDOW/aw_window_Xm.hxx
-RNA3D_OpenGLGraphics.o: ../WINDOW/aw_Xm.hxx
 RNA3D_OpenGLGraphics.o: RNA3D_Global.hxx
 RNA3D_OpenGLGraphics.o: RNA3D_GlobalHeader.hxx
 RNA3D_OpenGLGraphics.o: RNA3D_OpenGLGraphics.hxx
@@ -147,6 +137,7 @@ RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_window_Xm_interface.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 

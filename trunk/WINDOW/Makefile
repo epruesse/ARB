@@ -1,6 +1,6 @@
 .SUFFIXES: .o .c .cxx .depend
 
-STD_OBJECTS = \
+OBJECTS = \
 		AW_position.o \
 		AW_Xm.o \
 		AW_at.o \
@@ -20,14 +20,8 @@ STD_OBJECTS = \
 		AW_xfigfont.o \
 		AW_xfont.o \
 		AW_xkey.o \
+		AW_window_Xm_interface.o \
 
-OPENGL_OBJECTS = GLwMDrawA.o GLwDrawA.o
-
-ifeq ($(OPENGL),1)
-OBJECTS=$(STD_OBJECTS) $(OPENGL_OBJECTS)
-else
-OBJECTS=$(STD_OBJECTS)
-endif
 
 $(MAIN): $(OBJECTS)
 	$(LINK_SHARED_LIB) $(@:.a=).$(SHARED_LIB_SUFFIX) $(OBJECTS)
@@ -245,8 +239,6 @@ AW_window.o: aw_xfig.hxx
 AW_window.o: aw_xfigfont.hxx
 AW_window.o: aw_xkey.hxx
 AW_window.o: aw_Xm.hxx
-AW_window.o: GLwDrawA.h
-AW_window.o: GLwMDrawA.h
 AW_window.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AW_window.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_window.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -255,6 +247,19 @@ AW_window.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_window.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_window.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AW_window.o: $(ARBHOME)/INCLUDE/attributes.h
+
+AW_window_Xm_interface.o: aw_commn.hxx
+AW_window_Xm_interface.o: aw_device.hxx
+AW_window_Xm_interface.o: aw_keysym.hxx
+AW_window_Xm_interface.o: aw_position.hxx
+AW_window_Xm_interface.o: aw_root.hxx
+AW_window_Xm_interface.o: aw_window.hxx
+AW_window_Xm_interface.o: aw_window_Xm.hxx
+AW_window_Xm_interface.o: aw_window_Xm_interface.hxx
+AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/attributes.h
 
 AW_xfig.o: aw_device.hxx
 AW_xfig.o: aw_position.hxx

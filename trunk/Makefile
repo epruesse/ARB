@@ -204,10 +204,10 @@ else
 GL_LIB:=-lGL
 endif
 GL_PNGLIBS:= -L$(ARBHOME)/GL/glpng -lglpng_arb -lpng
-GLLIBS:=-lGLEW -lGLw -lglut $(GL_PNGLIBS)
+GLLIBS:=-lGLEW -lGLw -lglut $(GL_PNGLIBS) -L$(ARBHOME)/GL/glAW -lglAW
 endif
 
-XLIBS += $(GL_LIB)
+#XLIBS += $(GL_LIB)
 
 #---------------------- basic libs:
 

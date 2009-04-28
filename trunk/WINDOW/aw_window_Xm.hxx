@@ -1,6 +1,14 @@
 #ifndef AW_WINDOW_XM_HXX
 #define AW_WINDOW_XM_HXX
 
+#ifndef AW_DEVICE_HXX
+#include <aw_device.hxx>
+#endif
+#ifndef AW_KEYSYM_HXX
+#include <aw_keysym.hxx>
+#endif
+
+
 // Makrodefinitionen
 #define  p_r        prvt
 #define  p_global   (root->prvt)
@@ -59,20 +67,6 @@ struct AW_timer_cb_struct {
     AW_CL cd2;
 };
 
-
-
-/********************************* Used for single items in lists ****************************************/
-struct AW_variable_update_struct {
-    AW_variable_update_struct( Widget widgeti, AW_widget_type widget_typei, AW_awar *awari, const char *var_s_i, int var_i_i, float var_f_i, AW_cb_struct *cbsi );
-    AW_awar        *awar;
-    Widget          widget;
-    AW_widget_type  widget_type;
-    char           *variable_value;
-    long            variable_int_value;
-    float           variable_float_value;
-    AW_cb_struct   *cbs;
-    void           *id;         // selection id etc ...
-};
 
 
 /************************************************************************/
@@ -188,6 +182,14 @@ struct AW_select_table_struct {
 /*****************************************************************************************************
         area management:    devices callbacks
 *****************************************************************************************************/
+
+class AW_common;
+class AW_device_Xm;
+class AW_device_click;
+class AW_device_size;
+class AW_device_print;
+class AW_cb_struct;
+
 class AW_area_management {
     friend class AW_window;
     friend class AW_window_simple;
@@ -228,6 +230,9 @@ public:
     AW_area_management(AW_root *awr,Widget form,Widget widget);
 };
 /************************************************************************/
+
+class AW_selection_list;
+
 class AW_root_Motif {
 private:
 protected:
@@ -286,9 +291,6 @@ public:
     Widget get_last_button_widget() { return last_button ? last_button->button : 0; }
 };
 
-// void create_help_entry(AW_window *aww);
-
-
 /**********************************************************************/
 const int AW_NUMBER_OF_F_KEYS = 20;
 
@@ -336,6 +338,10 @@ void        message_cb( AW_window *aw, AW_CL cd1 );
 // void        macro_message_cb( AW_window *aw, AW_CL cd1 );
 void        input_cb( AW_window *aw, AW_CL cd1 );
 void        input_history_cb( AW_window *aw, AW_CL cl_mode); // internal
+
+Widget aw_create_shell(AW_window *aww, AW_BOOL allow_resize, AW_BOOL allow_close, int width, int height, int posx, int posy);
+void   aw_realize_widget(AW_window *aww);
+void   aw_create_help_entry(AW_window *aww);
 
 #else
 #error aw_window_Xm.hxx included twice
