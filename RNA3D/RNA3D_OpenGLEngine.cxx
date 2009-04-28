@@ -13,6 +13,7 @@
 #include <aw_awars.hxx>
 #include <BI_helix.hxx>
 
+#include <GL/aw_window_ogl.hxx>
 
 // --------------------------------------------------------------------------------
 // global data

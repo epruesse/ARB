@@ -89,6 +89,38 @@ AW_widget_list_for_variable::AW_widget_list_for_variable( AW_awar *vs, AW_CL cd1
     awar->add_callback((AW_RCB1)aw_cp_awar_2_widget_cb, (AW_CL)this);
 }
 
+/********************************* Used for single items in lists ****************************************/
+
+struct AW_variable_update_struct {
+    AW_variable_update_struct( Widget widgeti, AW_widget_type widget_typei, AW_awar *awari, const char *var_s_i, int var_i_i, float var_f_i, AW_cb_struct *cbsi );
+    AW_awar        *awar;
+    Widget          widget;
+    AW_widget_type  widget_type;
+    char           *variable_value;
+    long            variable_int_value;
+    float           variable_float_value;
+    AW_cb_struct   *cbs;
+    void           *id;         // selection id etc ...
+};
+
+AW_variable_update_struct::AW_variable_update_struct(Widget widgeti,
+        AW_widget_type widget_typei, AW_awar *awari, const char *var_s_i,
+        int var_i_i, float var_f_i, AW_cb_struct *cbsi) {
+
+    widget = widgeti;
+    widget_type = widget_typei;
+    awar = awari;
+    if (var_s_i) {
+        variable_value = strdup(var_s_i);
+    } else {
+        variable_value = 0;
+    }
+    variable_int_value = var_i_i; // used for toggles and selection menus
+    variable_float_value = var_f_i;
+    cbs = cbsi;
+
+}
+
 
 void AW_variable_update_callback( Widget wgt, XtPointer variable_update_struct, XtPointer call_data ) {
     AWUSE(wgt);AWUSE(call_data);
