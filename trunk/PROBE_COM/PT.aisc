@@ -106,7 +106,7 @@ PT_pdc, PDC,    12,     (~ The new probe design ~), {
     @TYPE,          @IDENT,         @REF,   @ACC,   @KEY,           @KEYC,  @INIT,                  @DOCU;
     dllh,           mh,             t,      ,       (~~),           0,      ,                       (~Header~);
     PT_probeparts,  parts,          d,      ,       ,               ,       ,                       (~ The parts of the probes ~);
-    PT_probeparts,  dparts,         d,      ,       ,               ,       ,                       (~ The duplikated parts of the probes ~);
+    PT_probeparts,  dparts,         d,      ,       ,               ,       ,                       (~ The duplicated parts of the probes ~);
     PT_bond,        bond,           siv,    ,       BOND,           10,     ,                       (~The bond matrix~), SIZE (4*4);
     int,            dummy,          t,      ,       ,               ,       init_bond_matrix(THIS), (~ init bond matrix ~);
     double,         dte,            t,      ,       DTEDGE,         12,     50.0,                   (~ The Temperature drop per percent mismatch on the edge of the probe ~);
