@@ -220,8 +220,8 @@ int aisc_calc_special_commands(void)
             buf2 = strdup(buf1);
             free(co->str);
             co->str = s2;
-            sprintf(error_buf,"%li",(long)co);
-            write_hash(gl->fns,buf2,error_buf);
+            sprintf(string_buf,"%li",(long)co);
+            write_hash(gl->fns,buf2,string_buf);
             continue;
         }
         if (!strncmp(co->str,"LABEL",5)) {
@@ -231,15 +231,15 @@ int aisc_calc_special_commands(void)
             buf2 = strdup(buf1);
             free(co->str);
             co->str = buf2;
-            sprintf(error_buf,"%li",(long)co);
-            write_hash(gl->fns,buf2,error_buf);
+            sprintf(string_buf,"%li",(long)co);
+            write_hash(gl->fns,buf2,string_buf);
             continue;
         }
     }
     return 0;
 }
 
-int hash_index(const char *key, int size)
+static int hash_index(const char *key, int size)
 {
     int         x;
     const char *p;

@@ -10,14 +10,17 @@ PUBLIC_SOURCES := $(wildcard C/*.c)
 # Do you want to create save and load
 AISC_SAVE := NO
 
+# C++ Compiler
 COMPILER := $(CPP) $(cflags) -I$(ARBHOME)/INCLUDE
 CLIENTCOMPILER := $(COMPILER)
 
-AISC_COMPILER=../AISC/aisc
+# AISC dependencies
+AISC_COMPILER=../MAKEBIN/aisc
+AISC_DEPENDS = $(wildcard AISC/*.pa) $(AISC_COMPILER)
 
 include AISC/export2sub
 
-server.a:	$(MAIN_SOURCE)	$(PRIVATE_SERVER_OBJECTS:.o=.c) $(PUBLIC_SOURCES) $(AISC_COMPILER)
+server.a:	$(MAIN_SOURCE)	$(PRIVATE_SERVER_OBJECTS:.o=.c) $(PUBLIC_SOURCES) $(AISC_DEPENDS)
 		@$(MAKE) -r -f AISC/Makefile
 
 depends:

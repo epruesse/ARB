@@ -6,7 +6,7 @@
 #include "aisc_proto.h"
 
 const int linebufsize = 200000;
-char      error_buf[256];
+char      string_buf[256]; 
 
 struct global_struct *gl;
 
@@ -45,8 +45,7 @@ char *read_aisc_file(char *path)
 }
 
 
-void
-aisc_init()
+static void aisc_init()
 {
     int             i;
     gl = (struct global_struct *)calloc(sizeof(struct global_struct),1);
@@ -128,23 +127,23 @@ aisc_init()
     gl->outtab[(unsigned char)'\\'] = 0;
 }
 
-void p_err(const char *error) {
+static void p_err(const char *error) {
     fprintf(stderr, "%s:%i: Error: %s\n", gl->line_path, gl->line_cnt, error);
     gl->error_flag = 1;
 }
 
-void p_err_eof         (void){ p_err("Unexpected end of file seen"); }
-void p_error_brih      (void){ p_err("You tried to insert a bracket in a named field"); }
-void p_error_nobr      (void){ p_err("{} found, missing contents"); }
-void p_error_nocbr     (void){ p_err("missing '}'"); }
-void p_error_emwbr     (void){ p_err("string expected, ',' found"); }
-void p_error_hewnoid   (void){ p_err("string expected, ';' found"); }
-void p_error_mixhnh    (void){ p_err("you cannot use the symbol '@' in this line (or it must be the third symbol in the line)"); }
-void p_error_misscom   (void){ p_err("missing ';'"); }
-void p_error_missco    (void){ p_err("missing ',' or ';' or 'newline'"); }
-void p_error_exp_string(void){ p_err("string expected"); }
+static void p_err_eof         (void){ p_err("Unexpected end of file seen"); }
+/* static void p_error_brih      (void){ p_err("You tried to insert a bracket in a named field"); } */
+static void p_error_nobr      (void){ p_err("{} found, missing contents"); }
+static void p_error_nocbr     (void){ p_err("missing '}'"); }
+static void p_error_emwbr     (void){ p_err("string expected, ',' found"); }
+static void p_error_hewnoid   (void){ p_err("string expected, ';' found"); }
+static void p_error_mixhnh    (void){ p_err("you cannot use the symbol '@' in this line (or it must be the third symbol in the line)"); }
+static void p_error_misscom   (void){ p_err("missing ';'"); }
+static void p_error_missco    (void){ p_err("missing ',' or ';' or 'newline'"); }
+static void p_error_exp_string(void){ p_err("string expected"); }
 
-char *read_aisc_string(char ** in, int *is_m) {
+static char *read_aisc_string(char ** in, int *is_m) {
     char           *cp;
     char            buf[1024];
     cp = &buf[0];
@@ -276,18 +275,10 @@ char *read_aisc_string(char ** in, int *is_m) {
         return 0;       /* emtpy string */
     return (char *) strdup(buf);
 }
-AD *make_AD(void)
-{
-    return (AD *) calloc(sizeof(AD), 1);
-}
-HS *make_HS(void)
-{
-    return (HS *) calloc(sizeof(HS), 1);
-}
-CL *make_CL(void)
-{
-    return (CL *) calloc(sizeof(CL), 1);
-}
+
+static AD *make_AD(void) { return (AD *) calloc(sizeof(AD), 1); }
+static HS *make_HS(void) { return (HS *) calloc(sizeof(HS), 1); }
+CL *make_CL(void) { return (CL *) calloc(sizeof(CL), 1); }
 
 #define ITEM_MAKE       hitem = make_AD();if (item) {   \
         item->next_item = hitem;                        \
@@ -295,7 +286,7 @@ CL *make_CL(void)
         first_item = hitem;                             \
     }; item  = hitem; item->first_item = first_item;
 
-AD *read_aisc_line(char ** in, HS ** hs)
+static AD *read_aisc_line(char ** in, HS ** hs)
 {                               /* lese bis zum ;/} */
     static int      is_m;
     char           *str;
@@ -462,7 +453,7 @@ read_aisc(char ** in)
     return first;
 }
 
-CL *read_prog(char ** in,char *file)
+static CL *read_prog(char ** in,char *file)
 {
     char *p;
     CL *hcl,*cl,*first_cl;
