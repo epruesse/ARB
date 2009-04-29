@@ -15,10 +15,16 @@ HEADERS = \
 	$(ARBDB)/ad_prot.h \
 	$(ARBDB)/ad_t_prot.h \
 
-ARB_SO=blib/arch/auto/ARB/ARB.so
+ifdef DARWIN
+SO:=bundle
+else
+SO:=so
+endif
+
+ARB_SO=blib/arch/auto/ARB/ARB.$(SO)
 
 TARGET_PM=$(LIB)/ARB.pm
-TARGET_SO=$(LIB)/ARB.so
+TARGET_SO=$(LIB)/ARB.$(SO)	
 
 TARGETS=$(TARGET_PM) $(TARGET_SO)
 

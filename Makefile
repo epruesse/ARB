@@ -71,22 +71,40 @@ GCC_VERSION_ALLOWED=$(strip $(subst ___,,$(foreach version,$(ALLOWED_GCC_VERSION
 USING_GCC_3XX=$(strip $(foreach version,$(ALLOWED_GCC_3xx_VERSIONS),$(findstring $(version),$(GCC_VERSION_ALLOWED))))
 USING_GCC_4XX=$(strip $(foreach version,$(ALLOWED_GCC_4xx_VERSIONS),$(findstring $(version),$(GCC_VERSION_ALLOWED))))
 
+#---------------------- define special directories for non standard builds
+
+ifdef DARWIN
+OSX_SDK:=/Developer/SDKs/MacOSX10.5.sdk
+OSX_FW:=/System/Library/Frameworks
+OSX_FW_OPENGL:=$(OSX_FW)/OpenGL.framework/Versions/A/Libraries
+OSX_FW_IMAGEIO:=$(OSX_FW)/ApplicationServices.framework/Versions/A/Frameworks/ImageIO.framework/Versions/A/Resources
+endif
+
 #----------------------
 
-LINK_STATIC=0# set to 1 to link statically
+ifdef DARWIN
+	LINK_STATIC=1# link static
+else
+	LINK_STATIC=0# link dynamically
+endif
 
 shared_cflags :=# flags for shared lib compilation
+lflags :=# linker flags
 
 ifeq ($(DEBUG),0)
 	dflags := -DNDEBUG# defines
 	cflags := -O4# compiler flags (C and C++)
-	lflags := -O99 --strip-all# linker flags
+ ifndef DARWIN
+	lflags += -O99 --strip-all# linker flags
+ endif
 endif
 
 ifeq ($(DEBUG),1)
 	dflags := -DDEBUG
 	cflags := -O0 -g -g3 -ggdb -ggdb3
-	lflags := -g
+ ifndef DARWIN
+	lflags += -g
+ endif
 
 	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl
 
@@ -94,15 +112,15 @@ ifeq ($(DEBUG),1)
 	extended_warnings     := -Wwrite-strings -Wunused -Wno-aggregate-return -Wshadow
 	extended_cpp_warnings := -Wnon-virtual-dtor -Wreorder -Wpointer-arith 
  ifneq ('$(USING_GCC_3XX)','')
-		extended_cpp_warnings += -Wdisabled-optimization -Wmissing-format-attribute
-		extended_cpp_warnings += -Wmissing-noreturn # -Wfloat-equal 
+	extended_cpp_warnings += -Wdisabled-optimization -Wmissing-format-attribute
+	extended_cpp_warnings += -Wmissing-noreturn # -Wfloat-equal 
  endif
  ifneq ('$(USING_GCC_4XX)','')
-# 		extended_cpp_warnings += -Wwhatever
+#	extended_cpp_warnings += -Wwhatever
  endif
 
  ifeq ($(DEBUG_GRAPHICS),1)
-		dflags += -DDEBUG_GRAPHICS
+	dflags += -DDEBUG_GRAPHICS
  endif
 endif
 
@@ -131,6 +149,10 @@ ifeq ($(ARB_64),1)
 	ifeq ($(BUILDHOST_64),1)
 #		build 64-bit ARB version on 64-bit host
 		CROSS_LIB:=# empty = autodetect below
+		ifdef DARWIN
+			cflags += -arch x86_64
+			lflags += -arch x86_64
+		endif
 	else
 #		build 64-bit ARB version on 32-bit host
 		CROSS_LIB:=/lib64
@@ -163,13 +185,12 @@ endif
 dflags += -D$(MACH) # define machine
 dflags += -DHAVE_BOOL # all have bool [@@@ TODO: remove dependent code from ARB source]
 dflags += -DNO_REGEXPR # for machines w/o regular expression library
-dflags +=  $(shell getconf LFS_CFLAGS)
 
 ifdef DARWIN
 	cflags += -no-cpp-precomp 
 	shared_cflags += -fno-common
-	dflags +=
-	lflags += $(LDFLAGS) -force_flat_namespace -Wl,-stack_size -Wl,10000000 -Wl,-stack_addr -Wl,c0000000
+else
+	dflags +=  $(shell getconf LFS_CFLAGS)
 endif
 
 cflags += -pipe
@@ -178,52 +199,75 @@ cflags += -funit-at-a-time
 
 #---------------------- X11 location
 
-X11R6=1# we use X11R6
+XHOME:=/usr/X11R6
+XINCLUDES:=-I$(XHOME)/include
 
-ifeq ($(X11R6),1)
-	XHOME:=/usr/X11R6
-	XINCLUDES:=-I$(XHOME)/include
-else
-	XHOME:=/usr/X11
-	XINCLUDES:=-I$(XHOME)/include -I$(XHOME)/include/Xm
+ifdef DARWIN
+	XINCLUDES += -I/sw/include -I$(OSX_SDK)/usr/X11/include -I$(OSX_SDK)/usr/include/krb5
 endif
 
-XLIBS:=-L$(XHOME)/$(CROSS_LIB) -lXm -lXpm -lXp -lXt -lXext -lX11
+ifdef DARWIN
+	XLIBS := -L/usr/OpenMotif/lib -lXm -L$(XHOME)/lib -lpng -lXt -lX11 -lXext -lXp -lc -lXmu -lXi
+	XLIBS += -lGLU -lGL -Wl,-dylib_file,$(OSX_FW_OPENGL)/libGL.dylib:$(OSX_FW_OPENGL)/libGL.dylib
+else
+	XLIBS:=-L$(XHOME)/$(CROSS_LIB) -lXm -lXpm -lXp -lXt -lXext -lX11
+endif
 
 #---------------------- open GL
 
 ifeq ($(OPENGL),1) 
 	cflags += -DARB_OPENGL # activate OPENGL code
-endif
+	GL     := gl # this is the name of the OPENGL base target
+	GL_LIB := -lGL -L$(ARBHOME)/GL/glAW -lglAW
 
-ifeq ($(OPENGL),1)
-GL:=gl # this is the name of the OPENGL base target
-ifdef DEBIAN
-GL_LIB:=-lGL -lpthread
-else
-GL_LIB:=-lGL
-endif
-GL_PNGLIBS:= -L$(ARBHOME)/GL/glpng -lglpng_arb -lpng
-GLLIBS:=-lGLEW -lGLw -lglut $(GL_PNGLIBS) -L$(ARBHOME)/GL/glAW -lglAW
-endif
+ ifdef DEBIAN
+	GL_LIB += -lpthread
+ endif
+
+GL_PNGLIBS := -L$(ARBHOME)/GL/glpng -lglpng_arb -lpng
+
+ ifdef DARWIN
+	GLEWLIB := -L/usr/lib -lGLEW -L$(OSX_SDK)/usr/X11/lib -lGLw
+	GLUTLIB := -L$(XHOME)/lib -lglut
+ else 
+	GLEWLIB := -lGLEW -lGLw
+	GLUTLIB := -lglut
+ endif
+
+GL_LIBS := $(GL_LIB) $(GLEWLIB) $(GLUTLIB) $(GL_PNGLIBS)
 
 #XLIBS += $(GL_LIB)
 
+endif
+
+#---------------------- tiff lib:
+
+ifdef DARWIN
+	TIFFLIBS := -L/usr/local/lib -ltiff -L$(OSX_FW_IMAGEIO) -lTIFF  
+else
+	TIFFLIBS := -ltiff
+endif
+
 #---------------------- basic libs:
 
-SYSLIBS := -lm
+SYSLIBS:=
+
 ifdef DARWIN
-SYSLIBS += -lstdc++
+	SYSLIBS += -lstdc++
+else
+	SYSLIBS += -lm
 endif
 
 #---------------------- include symbols?
 
-cdynamic=
-ldynamic=
-
 ifeq ($(TRACESYM),1)
-cdynamic += -rdynamic
-ldynamic += --export-dynamic 
+	ifdef DARWIN
+		cdynamic =
+		ldynamic =
+	else
+		cdynamic = -rdynamic
+		ldynamic = --export-dynamic 
+	endif
 endif
 
 # ------------------------------------------------------------------------- 
@@ -260,7 +304,11 @@ endif
 # other used tools
 
 CTAGS := etags
-XMKMF := /usr/bin/X11/xmkmf
+ifdef DARWIN
+	XMKMF := /usr/X11/bin/xmkmf
+else
+	XMKMF := /usr/bin/X11/xmkmf
+endif
 MAKEDEPEND_PLAIN = makedepend
 
 MAKEDEPEND = $(FORCEMASK);$(MAKEDEPEND_PLAIN)
@@ -657,7 +705,7 @@ ARCHS_EDIT4 := \
 ifeq ($(OPENGL),1)
 ARCHS_EDIT4 += RNA3D/RNA3D.a
 endif
-LIBS_EDIT4 := $(GLLIBS)
+LIBS_EDIT4 := $(GL_LIBS)
 
 $(EDIT4): $(ARCHS_EDIT4:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_EDIT4) $(GUI_LIBS) || ( \
@@ -672,7 +720,7 @@ PGT = bin/arb_pgt
 ARCHS_PGT = \
 		PGT/PGT.a \
 
-PGT_SYS_LIBS=$(XLIBS) -ltiff $(LIBS)
+PGT_SYS_LIBS=$(XLIBS) $(TIFFLIBS) $(LIBS)
 
 $(PGT) : $(ARCHS_PGT:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PGT) || ( \
