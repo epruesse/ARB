@@ -5,23 +5,23 @@
 
 # Enter your name (upper case, no spaces) here, to enable '#ifdef DEVEL_YOURNAME #endif' sections
 # (Release version uses 'RELEASE')
-DEVELOPER=ANY
+DEVELOPER := ANY
 
-DEBUG=0# build with debug information
-DEBUG_GRAPHICS=0# force instant graphic update
+DEBUG := 0# build with debug information
+DEBUG_GRAPHICS := 0# force instant graphic update
 
-TRACESYM=1# insert symbols for meaningful backtraces into executables 
+TRACESYM := 1# insert symbols for meaningful backtraces into executables 
 
 # Include features using OPENGL? 
-OPENGL=1
+OPENGL := 1
 
 # 0 = use old PTSERVER
 # 1 = use the new PTPan implementation as pt-server (Not tested very well, do NOT use!)
 # 2 = compile both, use old (recommended for development only)
-PTPAN=0
+PTPAN := 0
 
-ARB_64=0# compile 64bit ARB version (still very buggy!)
-#BUILDHOST_64=1# whether build host is 64bit (value defaults to ARB_64). Uncomment for Cross-Compile
+ARB_64 := 0# compile 64bit ARB version (still very buggy!)
+#BUILDHOST_64 := 1# whether build host is 64bit (value defaults to ARB_64). Uncomment for Cross-Compile
 
 # --------------------------------------------------------------------------------
 # target machine section
@@ -30,16 +30,16 @@ ARB_64=0# compile 64bit ARB version (still very buggy!)
 # ------------
 # Section: Linux
 
-MACH  = LINUX# Linux g++  and gcc
-LINUX = 1
+MACH  := LINUX# Linux g++  and gcc
+LINUX := 1
 
-# DEBIAN = 1 # uncomment for DEBIAN systems
-# REDHAT = 1 # uncomment for REDHAT systems
+# DEBIAN := 1 # uncomment for DEBIAN systems
+# REDHAT := 1 # uncomment for REDHAT systems
 
 # ------------
 # Section: Mac OSX
 
-# MACH   = DARWIN#
-# DARWIN = 1
+# MACH   := DARWIN#
+# DARWIN := 1
 
 # ------------
