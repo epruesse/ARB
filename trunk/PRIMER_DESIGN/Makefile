@@ -2,8 +2,6 @@
 
 .SUFFIXES: .o .cxx .depend
 
-CPPINCLUDES = $(CPPINCLUDES) #-I~/STL
-
 CPP_OBJECTS =   \
 	PRD_Pair.o \
 	PRD_Item.o \

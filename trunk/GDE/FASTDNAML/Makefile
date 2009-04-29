@@ -6,7 +6,7 @@ TARGET = $(ARBHOME)/bin/fastdnaml
 all : $(TARGET)
 
 $(TARGET) : $(OBJECT)
-	$(ACC) $(cflags) -o $@ $< $(LIB) -lm
+	$(ACC) $(cflags) -o $@ $< -lm
 
 .c.o:
 	$(ACC) $(cflags) -c -o $@ $< $(AINCLUDES)

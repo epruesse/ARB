@@ -20,7 +20,7 @@ BINARY=$(ARBHOME)/bin/puzzle
 PUZZ_CFLAGS = $(cflags) -DPACKAGE=\"tree-puzzle\" -DVERSION=\"5.0\" -DHAVE_LIBM=1 -DSTDC_HEADERS=1 -DHAVE_LIMITS_H=1 -Isrc
 
 $(BINARY): $(OBJECT)
-		$(ACC) $(PUZZ_CFLAGS) -o $@ $(OBJECT) $(LIB) -lm
+		$(ACC) $(PUZZ_CFLAGS) -o $@ $(OBJECT) -lm
 
 src/%.o : src/%.c
 	$(ACC) $(PUZZ_CFLAGS) -c -o $@ $< $(AINCLUDES)

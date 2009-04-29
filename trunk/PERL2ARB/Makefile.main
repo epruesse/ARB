@@ -25,6 +25,15 @@ TARGETS=$(TARGET_PM) $(TARGET_SO)
 XS_DEPENDS = Makefile ARB.xs debug.h Makefile.PL
 
 # ------------------------------------------------------------
+# variables for Makefile
+
+MYEXTLIB :=
+PASTHRU_INC :=
+PASTHRU_DEFINE :=
+
+export MYEXTLIB PASTHRU_INC PASTHRU_DEFINE dflags
+
+# ------------------------------------------------------------
 
 all: perlmain.c $(TARGETS)
 

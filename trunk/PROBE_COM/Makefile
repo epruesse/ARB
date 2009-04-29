@@ -1,41 +1,28 @@
 # The file, where all structures are described
-MAIN_SOURCE = PT.aisc
+MAIN_SOURCE := PT.aisc
 
 # Your own server functions
-PRIVATE_SERVER_OBJECTS = PT_extern.o
+PRIVATE_SERVER_OBJECTS := PT_extern.o
 
 # Public server/client sources (needed for dependencies)
-PUBLIC_SOURCES = $(wildcard C/*.c)
+PUBLIC_SOURCES := $(wildcard C/*.c)
 
 # Do you want to create save and load
-AISC_SAVE	= NO
+AISC_SAVE := NO
 
-COMPILER = $(CPP) $(cflags) -I$(ARBHOME)/INCLUDE
-CLIENTCOMPILER = $(COMPILER)
+COMPILER := $(CPP) $(cflags) -I$(ARBHOME)/INCLUDE
+CLIENTCOMPILER := $(COMPILER)
 
-# DONT CHANGE THE NEXT LINES
+include AISC/export2sub
 
 server.a:	$(MAIN_SOURCE)	$(PRIVATE_SERVER_OBJECTS:.o=.c) $(PUBLIC_SOURCES)
-		$(MAKE) -r $(makeflags) -f AISC/Makefile \
-			"AISC_SAVE=$(AISC_SAVE)" \
-			"CLIENTCOMPILER=$(CLIENTCOMPILER)" \
-			"COMPILER=$(COMPILER)" \
-			"LINK_STATIC_LIB=$(LINK_STATIC_LIB)" \
-			"MAIN_SOURCE=$(MAIN_SOURCE)" \
-			"PRIVATE_SERVER_OBJECTS=$(PRIVATE_SERVER_OBJECTS)" \
-
+		@$(MAKE) -r -f AISC/Makefile
 
 depends:
-		$(MAKE) -r $(makeflags) -f AISC/Makefile \
-			"AISC_SAVE=$(AISC_SAVE)" \
-			"MAIN_SOURCE=$(MAIN_SOURCE)" \
-			"PRIVATE_SERVER_OBJECTS=$(PRIVATE_SERVER_OBJECTS)" \
-			pregenerate
-
-# @echo "no automatic dependencies for PROBE_COM - skipped"
+		@$(MAKE) -r -f AISC/Makefile pregenerate
 
 clean:
-	$(MAKE) $(makeflags) -f AISC/Makefile clean
+		@$(MAKE) -r -f AISC/Makefile clean
 
 # DO NOT DELETE
 

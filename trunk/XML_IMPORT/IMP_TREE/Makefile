@@ -3,7 +3,7 @@
 .SUFFIXES: .o .cxx .depend
 
 CPP_OBJECTS = sax2Handler.o \
-			  xmlParser.o \
+		xmlParser.o \
 
 TARGET=$(ARBHOME)/bin/xml2newick
 
