@@ -526,7 +526,7 @@ static void ptnd_duplikate_probepart(PT_pdc *pdc)
     }
 }
 /***********************************************************************
-                sort the parts and check for duplikated parts
+                sort the parts and check for duplicated parts
 ***********************************************************************/
 
 static int ptnd_compare_parts(const void *PT_probeparts_ptr1, const void *PT_probeparts_ptr2, void*) {
