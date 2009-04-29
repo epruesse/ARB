@@ -30,7 +30,7 @@ else
 
 CC      = $(ACC)
 TARGET 	= $(ARBHOME)/bin
-LDFLAGS = $(LIB) -lm
+LDFLAGS = -lm
 CFLAGS  = $(cflags) $(CFLAGS_RAXML)
 
 $(MAIN) : all

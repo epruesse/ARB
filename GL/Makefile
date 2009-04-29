@@ -21,13 +21,12 @@ endif
 
 RAISE_WARNINGS=1
 
-ifeq ($(RAISE_WARNINGS),1)
-SUB_CPP=$(CPP)
-SUB_ACC=$(ACC)
-else
-SUB_CPP=$(CPP:-W -Wall=-w)
-SUB_ACC=$(ACC:-W -Wall=-w)
+ifeq ($(RAISE_WARNINGS),0)
+CPP:=$(CPP:-W -Wall=-w)
+ACC:=$(ACC:-W -Wall=-w)
 endif
+
+include $(ARBHOME)/SOURCE_TOOLS/export2sub
 
 # --------------------------------------------------------------------------------
 
@@ -39,12 +38,7 @@ clean: $(ARCHS:.dummy=.clean)
 
 %.depend:
 	@cp -p $(@D)/Makefile $(@D)/Makefile.old # save old Makefile
-	@$(MAKE) -C $(@D) -r \
-		"LD_LIBRARY_PATH  = ${LD_LIBRARY_PATH}" \
-		"MAKEDEPENDFLAGS = $(MAKEDEPENDFLAGS)" \
-		"MAKEDEPEND=$(MAKEDEPEND)" \
-		"ARBHOME=$(ARBHOME)" \
-		depends;
+	@$(MAKE) -C $(@D) -r depends
 	@grep "^# DO NOT DELETE" $(@D)/Makefile >/dev/null # check whether sub Makefile has dependencies
 	@cat $(@D)/Makefile \
 		| ../SOURCE_TOOLS/fix_depends.pl \
@@ -54,28 +48,12 @@ clean: $(ARCHS:.dummy=.clean)
 
 %.dummy:
 	@$(MAKE) -C $(@D) -r \
-		"ACC = $(SUB_ACC)" \
-		"AINCLUDES = $(AINCLUDES)" \
 		"ARB  = yes" \
-		"ARBHOME = $(ARBHOME)" \
-		"CPPLIB = $(CPPLIB)" \
-		"CPP = $(SUB_CPP)" \
-		"CPPINCLUDES = $(CPPINCLUDES)" \
-		"LD_LIBRARY_PATH  = $(LD_LIBRARY_PATH)" \
-		"LIBPATH = $(LIBPATH)" \
-		"LINK_STATIC_LIB = $(LINK_STATIC_LIB)" \
 		"MAIN = $(@F:.dummy=.a)" \
-		"MAKE = $(MAKE)" \
-		"POST_COMPILE  = $(POST_COMPILE)" \
-		"SHARED_LIB_SUFFIX = $(SHARED_LIB_SUFFIX)" \
-		"SYSLIBS = $(SYSLIBS)" \
-		"XHOME = $(XHOME)" \
-		"XLIBS = $(XLIBS)" \
 		"cflags = $(cflags) -DIN_ARB_$(@D:/=)" \
 
 %.clean:
 	@$(MAKE) -C $(@D) \
-		"OPENGL=$(OPENGL)" \
 		clean
 
 # DO NOT DELETE

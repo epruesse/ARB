@@ -68,12 +68,7 @@ clean: $(ARCHS:.dummy=.clean)
 
 %.depend:
 	@cp -p $(@D)/Makefile $(@D)/Makefile.old # save old Makefile
-	@$(MAKE) -C $(@D) -r \
-		"LD_LIBRARY_PATH  = ${LD_LIBRARY_PATH}" \
-		"MAKEDEPENDFLAGS = $(MAKEDEPENDFLAGS)" \
-		"MAKEDEPEND=$(MAKEDEPEND)" \
-		"ARBHOME=$(ARBHOME)" \
-		depends;
+	@$(MAKE) -C $(@D) -r depends
 	@grep "^# DO NOT DELETE" $(@D)/Makefile >/dev/null # check whether sub Makefile has dependencies
 	@cat $(@D)/Makefile \
 		| ../SOURCE_TOOLS/fix_depends.pl \
@@ -84,29 +79,14 @@ clean: $(ARCHS:.dummy=.clean)
 %.dummy:
 	@(( \
 	    $(MAKE) -C $(@D) -r \
-		"ACC = $(ACC)" \
-		"AINCLUDES = $(AINCLUDES)" \
 		"ARB  = yes" \
-		"ARBHOME = $(ARBHOME)" \
-		"CPPLIB = $(CPPLIB)" \
-		"CPP = $(CPP)" \
-		"CPPINCLUDES = $(CPPINCLUDES)" \
-		"LD_LIBRARY_PATH  = $(LD_LIBRARY_PATH)" \
-		"LIBPATH = $(LIBPATH)" \
-		"LINK_STATIC_LIB = $(LINK_STATIC_LIB)" \
 		"MAIN = $(@F:.dummy=.a)" \
-		"MAKE = $(MAKE)" \
-		"SHARED_LIB_SUFFIX = $(SHARED_LIB_SUFFIX)" \
-		"SYSLIBS = $(SYSLIBS)" \
-		"XHOME = $(XHOME)" \
-		"XLIBS = $(XLIBS)" \
 		"cflags = $(sub_cflags) -DIN_ARB_$(@D:/=)" \
-		>$(@D).log 2>&1 && (cat $(@D).log;rm $(@D).log)) || (cat $(@D).log;rm $(@D).log;false))
+		>$(@D).$$ID.log 2>&1 && (cat $(@D).$$ID.log;rm $(@D).$$ID.log)) || (cat $(@D).$$ID.log;rm $(@D).$$ID.log;false))
 
 %.clean:
 	@$(MAKE) -C $(@D) \
 		"ARB  = yes" \
-		"OPENGL=$(OPENGL)" \
 		clean
 
 # the end of the above command avoids that the output of parallel make calls gets mixed up 

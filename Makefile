@@ -384,7 +384,7 @@ else
 
 endif
 
-GCC_WITH_VTABLE_AFTER_CLASS=$(ALLOWED_GCC_295_VERSIONS)
+GCC_WITH_VTABLE_AFTER_CLASS=#occurred only with no longer supported $(ALLOWED_GCC_295_VERSIONS)
 HAVE_GCC_WITH_VTABLE_AFTER_CLASS=$(strip $(foreach version,$(GCC_WITH_VTABLE_AFTER_CLASS),$(findstring $(version),$(GCC_VERSION_ALLOWED))))
 
 # depending on the version of gcc the location of the vtable pointer differs.
@@ -462,16 +462,16 @@ ARBDB_LIB=-lARBDB
 ARBDBPP_LIB=-lARBDBPP
 
 LIBS = $(ARBDB_LIB) $(SYSLIBS)
-GUI_LIBS = $(LIBS) -lAW -lAWT $(RTC) $(XLIBS)
+GUI_LIBS = $(LIBS) -lAW -lAWT $(XLIBS)
 
 LIBPATH = -L$(ARBHOME)/LIBLINK
 
 DEST_LIB = lib
 DEST_BIN = bin
 
-AINCLUDES = 	-I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)
-CPPINCLUDES =	-I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)
-MAKEDEPENDFLAGS = -- $(cflags) -- -DARB_OPENGL -I. -Y$(ARBHOME)/INCLUDE
+AINCLUDES := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)
+CPPINCLUDES := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)
+MAKEDEPENDFLAGS := -- $(cflags) -- -DARB_OPENGL -I. -Y$(ARBHOME)/INCLUDE
 
 ifeq ($(VTABLE_INFRONTOF_CLASS),1)
 # Some code in ARB depends on the location of the vtable pointer
@@ -869,14 +869,14 @@ lib/lib%.$(SHARED_LIB_SUFFIX): LIBLINK/lib%.$(SHARED_LIB_SUFFIX)
 #			Recursive calls to submakefiles
 #***************************************************************************************
 
+include SOURCE_TOOLS/export2sub
+
 %.depends:
 	@cp -p $(@D)/Makefile $(@D)/Makefile.old # save old Makefile
 	@$(MAKE) -C $(@D) -r \
 		"AUTODEPENDS=1" \
-		"LD_LIBRARY_PATH  = ${LD_LIBRARY_PATH}" \
-		"MAKEDEPENDFLAGS = $(MAKEDEPENDFLAGS)" \
-		"MAKEDEPEND=$(MAKEDEPEND)" \
-		"ARBHOME=$(ARBHOME)" \
+		"MAIN=nothing" \
+		"cflags=noCflags" \
 		depends;
 	@grep "^# DO NOT DELETE" $(@D)/Makefile >/dev/null
 	@cat $(@D)/Makefile \
@@ -888,13 +888,15 @@ lib/lib%.$(SHARED_LIB_SUFFIX): LIBLINK/lib%.$(SHARED_LIB_SUFFIX)
 %.proto:
 	@$(MAKE) -C $(@D) \
 		"AUTODEPENDS=0" \
+		"MAIN=nothing" \
+		"cflags=noCflags" \
 		proto
 
 %.clean:
 	@$(MAKE) -C $(@D) \
 		"AUTODEPENDS=0" \
-		"MACH=$(MACH)" \
-		"OPENGL=$(OPENGL)" \
+		"MAIN=nothing" \
+		"cflags=noCflags" \
 		clean
 
 # rule to generate main target (normally a library):
@@ -903,29 +905,8 @@ lib/lib%.$(SHARED_LIB_SUFFIX): LIBLINK/lib%.$(SHARED_LIB_SUFFIX)
 	(( \
 	    echo "$(SEP) Make everything in $(@D)"; \
 	    $(MAKE) -C $(@D) -r \
-		"ACC = $(ACC)" \
-		"ACCLIB = $(ACCLIB)" \
-		"AINCLUDES = $(AINCLUDES)" \
-		"ARBHOME = $(ARBHOME)" \
-		"ARLIB = $(ARLIB)" \
 		"AUTODEPENDS=1" \
-		"CPPLIB = $(CPPLIB)" \
-		"CPP = $(CPP)" \
-		"CPPINCLUDES = $(CPPINCLUDES)" \
-		"DEBUG=$(DEBUG)" \
-		"LD_LIBRARY_PATH  = $(LD_LIBRARY_PATH)" \
-		"LIBPATH = $(LIBPATH)" \
-		"LINK_EXECUTABLE = $(LINK_EXECUTABLE)" \
-		"LINK_STATIC_LIB = $(LINK_STATIC_LIB)" \
-		"LINK_SHARED_LIB = $(LINK_SHARED_LIB)" \
 		"MAIN = $(@F:.dummy=.a)" \
-		"OPENGL  = $(OPENGL)" \
-		"POST_COMPILE = $(POST_COMPILE)" \
-		"SHARED_LIB_SUFFIX = $(SHARED_LIB_SUFFIX)" \
-		"STATIC = $(STATIC)"\
-		"SYSLIBS = $(SYSLIBS)" \
-		"XHOME = $(XHOME)" \
-		"XLIBS = $(XLIBS)" \
 		"cflags = $(cflags) -DIN_ARB_$(subst /,_,$(@D))" \
 	) >$(@D).$$ID.log 2>&1 && (cat $(@D).$$ID.log;rm $(@D).$$ID.log)) || (cat $(@D).$$ID.log;rm $(@D).$$ID.log;false))
 
@@ -1039,7 +1020,6 @@ prd: 	PRIMER_DESIGN/PRIMER_DESIGN.dummy
 nt:	menus $(NTREE)
 ed:	$(EDIT)
 
-al:	$(ALIGNER)
 nal:	$(NALIGNER)
 a3:	$(ALIV3)
 
@@ -1065,10 +1045,10 @@ sec:	SECEDIT/SECEDIT.dummy
 e4:	$(EDIT4)
 gi:	GENOM_IMPORT/GENOM_IMPORT.dummy
 we:	$(WETC)
-eb:	$(EDITDB)
 
 pgt:	$(PGT)
 xml:	XML/XML.dummy
+xmlin:  XML_IMPORT/XML_IMPORT.dummy# broken
 templ:	TEMPLATES/TEMPLATES.dummy
 
 #********************************************************************************
@@ -1196,12 +1176,7 @@ perl: tools
 	@echo $(SEP) Make everything in PERL2ARB
 	@$(MAKE) -C PERL2ARB -r -f Makefile.main \
 		"AUTODEPENDS=1" \
-		"MACH=$(MACH)" \
 		"dflags=$(dflags)" \
-		"ARBHOME=$(ARBHOME)" \
-		"DEBUG=$(DEBUG)" \
-		"MAKEDEPEND=$(MAKEDEPEND)" \
-		"MAKEDEPENDFLAGS=$(MAKEDEPENDFLAGS)" \
 		all
 	@$(MAKE) testperlscripts
 
@@ -1212,7 +1187,6 @@ testperlscripts:
 perl_clean:
 	@$(MAKE) -C PERL2ARB -r -f Makefile.main \
 		"AUTODEPENDS=0" \
-		"MACH=$(MACH)" \
 		clean
 
 # ----------------------------------------
@@ -1321,16 +1295,16 @@ release_quick:
 arbbasic: links preplib
 		$(MAKE) arbbasic2
 
-arbbasic2: templ mbin com ${MAKE_RTC} sl $(GL)
+arbbasic2: templ mbin com sl $(GL)
 
 # shared arb libraries
 arbshared: dball aw dp awt
 
 # needed arb applications
-arbapplications: nt pa ed e4 we pt na al nal di ph ds pgt
+arbapplications: nt pa ed e4 we pt na nal di ph ds pgt
 
 # optionally things (no real harm for ARB if any of them fails):
-arbxtras: tg pst a3
+arbxtras: tg pst a3 xmlin 
 
 tryxtras:
 	@echo $(SEP)

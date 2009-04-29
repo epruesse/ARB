@@ -1,0 +1,24 @@
+# -*-Mode: Makefile;-*-
+#
+# --------------------------------------------------------------------------------
+# variables listed here are automatically exported to sub-makefiles
+
+export ARBHOME
+
+export DEBUG
+export OPENGL
+
+export MACH
+export DEBIAN
+export DARWIN
+
+export ACC ACCLIB AINCLUDES
+export CPP CPPLIB CPPINCLUDES
+export POST_COMPILE
+
+export LD_LIBRARY_PATH LIBPATH SYSLIBS
+export XLIBS #XHOME
+export LINK_EXECUTABLE LINK_STATIC_LIB LINK_SHARED_LIB SHARED_LIB_SUFFIX
+
+export MAKEDEPENDFLAGS MAKEDEPEND
+

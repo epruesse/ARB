@@ -4,7 +4,6 @@ OBJECTS = db_server.o
 
 $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
-$(OBJECTS): $(LOCALS) $(ARBDBH) $(SERVERCNTRLH)
 
 .cxx.o:
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES)
