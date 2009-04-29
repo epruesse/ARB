@@ -61,7 +61,7 @@ enum PT_MATCH_TYPE {
 #define CREATEANSWER 51 /* private msg type: create result answer */
 #define FINDANSWER 52   /* private msg type: find result answer */
 
-extern ulong physical_memory;
+extern ULONG physical_memory;
 struct Hs_struct;
 extern char *pt_error_buffer;
 

@@ -1,10 +1,8 @@
 #if defined(DARWIN)
-#include <wordsize.h>
+#include <krb5.h>
 #else
 #include <bits/wordsize.h>
 #endif // DARWIN
-
-#include <byteswap.h>
 
 #define PTM_magic             0xf4
 #define PTM_TABLE_SIZE        (1024*256)
@@ -166,6 +164,53 @@ only few functions can be used, when the tree is reloaded (stage 3):
 
 #define PT_GET_TYPE(pt)     (PTM.flag_2_type[pt->flags])
 #define PT_SET_TYPE(pt,i,j) (pt->flags = (i<<6)+j)
+
+/********************* bswap for OSX  ***********************/
+#if defined(DARWIN)
+
+static inline unsigned short bswap_16(unsigned short x) {
+    return (x>>8) | (x<<8);
+}
+
+static inline unsigned int bswap_32(unsigned int x) {
+    return (bswap_16(x&0xffff)<<16) | (bswap_16(x>>16));
+}
+
+static inline unsigned long long bswap_64(unsigned long long x) {
+    return (((unsigned long long)bswap_32(x&0xffffffffull))<<32) | (bswap_32(x>>32));
+}
+
+#else
+#include <byteswap.h>
+#endif // DARWIN
+
+#if defined(DEVEL_RALF)
+#warning remove byte swap - see below 
+#endif // DEVEL_RALF
+
+// ********************************************************************************
+// ********************************************************************************
+//
+//      Note about using byte swap here
+//
+//  - using bswapXX below was only done for compatibility reasons, in order to be
+//    able to use a PT-Server independent from the endianness of the OS
+//    (on which PT-Server was created/used)
+//
+//  - since PT_READ_PNTR / PT_WRITE_PNTR differ between 64 and 32-bit versions
+//    this compatibility does no longer exists
+//
+//  TODO:
+//
+//  - put some data into PT-Server file describing
+//      * endianness
+//      * 32/64 bit flavour
+//      * PT-Server version number!!!
+//
+//  - deny to load PT-Server with error message if it does not match
+//    (or if it is an old one)
+//
+//  - remove byte swaps completely
 
 /********************* Read and write to memory ***********************/
 

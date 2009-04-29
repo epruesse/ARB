@@ -4,7 +4,9 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
     'NAME'         => 'ARB',
     'VERSION_FROM' => 'ARB.pm',               # finds $VERSION
-    'LIBS'         => '-L../ARBDB2 -lARBDB',  # e.g., '-lm' 
+    'LIBS'         => '-L../ARBDB2 -lARBDB -L/usr/local/lib/perl5/5.10.0/darwin-2level/CORE/ -lperl',  # e.g., '-lm' 
     'DEFINE'       => '',                     # e.g., '-DHAVE_SOMETHING' 
     'INC'          => '-I../INCLUDE',         # e.g., '-I/usr/include/other' 
+    'CCFLAGS'      => '-arch x86_64',
+    'LDDLFLAGS'    => '-bundle -flat_namespace',
 );
