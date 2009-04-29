@@ -36,15 +36,17 @@
  * OpenGL(TM) is a trademark of Silicon Graphics, Inc.
  */
 
-/*
- *
- * This file has been slightly modified from the original for use with Mesa
- *
- *     Jeroen van der Zijp
- *
- *     jvz@cyberia.cfdrc.com
- *
+/* This file has been slightly modified from the original for use with Mesa
+ *     Jeroen van der Zijp (jvz@cyberia.cfdrc.com)
  */
+
+/* This file has been modified for use with ARB */
+
+#ifndef __GLX_MOTIF
+#error ARB only needs the Motif flavour of this file
+#endif
+#define USE(x) (x)=(x)
+
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 /* #include <GL/glx.h> */
@@ -52,19 +54,19 @@
 #ifdef __GLX_MOTIF
 #include <Xm/PrimitiveP.h>
 #include "GLwMDrawAP.h"
-#else 
+#else
 #include "GLwDrawAP.h"
-#endif 
+#endif
 #include <assert.h>
 #include <stdio.h>
 
 #ifdef __GLX_MOTIF
-#define GLwDrawingAreaWidget             GLwMDrawingAreaWidget
-#define GLwDrawingAreaClassRec           GLwMDrawingAreaClassRec
-#define glwDrawingAreaClassRec           glwMDrawingAreaClassRec
-#define glwDrawingAreaWidgetClass        glwMDrawingAreaWidgetClass
-#define GLwDrawingAreaRec                GLwMDrawingAreaRec
-#endif 
+#define GLwDrawingAreaWidget      GLwMDrawingAreaWidget
+#define GLwDrawingAreaClassRec    GLwMDrawingAreaClassRec
+#define glwDrawingAreaClassRec    glwMDrawingAreaClassRec
+#define glwDrawingAreaWidgetClass glwMDrawingAreaWidgetClass
+#define GLwDrawingAreaRec         GLwMDrawingAreaRec
+#endif
 
 #define ATTRIBLIST_SIZE 32
 
@@ -94,7 +96,7 @@ static char defaultTranslations[] =
 
 
 static XtActionsRec actions[] = {
-  {"glwInput",(XtActionProc)glwInput},                /* key or mouse input */
+    {(String)"glwInput",(XtActionProc)glwInput},                /* key or mouse input */
   };
 
 
@@ -117,106 +119,50 @@ static XtActionsRec actions[] = {
 static XtResource resources[] = {
   /* The GLX attributes.  Add any new attributes here */
 
-  {GLwNbufferSize, GLwCBufferSize, XtRInt, sizeof (int),
-       offset(bufferSize), XtRImmediate, (XtPointer) 0},
-  
-  {GLwNlevel, GLwCLevel, XtRInt, sizeof (int),
-       offset(level), XtRImmediate, (XtPointer) 0},
-  
-  {GLwNrgba, GLwCRgba, XtRBoolean, sizeof (Boolean),
-       offset(rgba), XtRImmediate, (XtPointer) FALSE},
-  
-  {GLwNdoublebuffer, GLwCDoublebuffer, XtRBoolean, sizeof (Boolean),
-       offset(doublebuffer), XtRImmediate, (XtPointer) FALSE},
-  
-  {GLwNstereo, GLwCStereo, XtRBoolean, sizeof (Boolean),
-       offset(stereo), XtRImmediate, (XtPointer) FALSE},
-  
-  {GLwNauxBuffers, GLwCAuxBuffers, XtRInt, sizeof (int),
-       offset(auxBuffers), XtRImmediate, (XtPointer) 0},
-  
-  {GLwNredSize, GLwCColorSize, XtRInt, sizeof (int),
-       offset(redSize), XtRImmediate, (XtPointer) 1},
-  
-  {GLwNgreenSize, GLwCColorSize, XtRInt, sizeof (int),
-       offset(greenSize), XtRImmediate, (XtPointer) 1},
-  
-  {GLwNblueSize, GLwCColorSize, XtRInt, sizeof (int),
-       offset(blueSize), XtRImmediate, (XtPointer) 1},
-  
-  {GLwNalphaSize, GLwCAlphaSize, XtRInt, sizeof (int),
-       offset(alphaSize), XtRImmediate, (XtPointer) 0},
-  
-  {GLwNdepthSize, GLwCDepthSize, XtRInt, sizeof (int),
-       offset(depthSize), XtRImmediate, (XtPointer) 0},
-  
-  {GLwNstencilSize, GLwCStencilSize, XtRInt, sizeof (int),
-       offset(stencilSize), XtRImmediate, (XtPointer) 0},
-  
-  {GLwNaccumRedSize, GLwCAccumColorSize, XtRInt, sizeof (int),
-       offset(accumRedSize), XtRImmediate, (XtPointer) 0},
-  
-  {GLwNaccumGreenSize, GLwCAccumColorSize, XtRInt, sizeof (int),
-       offset(accumGreenSize), XtRImmediate, (XtPointer) 0},
-  
-  {GLwNaccumBlueSize, GLwCAccumColorSize, XtRInt, sizeof (int),
-       offset(accumBlueSize), XtRImmediate, (XtPointer) 0},
-  
-  {GLwNaccumAlphaSize, GLwCAccumAlphaSize, XtRInt, sizeof (int),
-       offset(accumAlphaSize), XtRImmediate, (XtPointer) 0},
-  
+    {(String)GLwNbufferSize,     (String)GLwCBufferSize,     XtRInt,     sizeof(int)    , offset(bufferSize)    , XtRImmediate, (XtPointer)0},
+    {(String)GLwNlevel,          (String)GLwCLevel,          XtRInt,     sizeof(int)    , offset(level)         , XtRImmediate, (XtPointer)0},
+    {(String)GLwNrgba,           (String)GLwCRgba,           XtRBoolean, sizeof(Boolean), offset(rgba)          , XtRImmediate, (XtPointer)FALSE},
+    {(String)GLwNdoublebuffer,   (String)GLwCDoublebuffer,   XtRBoolean, sizeof(Boolean), offset(doublebuffer)  , XtRImmediate, (XtPointer)FALSE},
+    {(String)GLwNstereo,         (String)GLwCStereo,         XtRBoolean, sizeof(Boolean), offset(stereo)        , XtRImmediate, (XtPointer)FALSE},
+    {(String)GLwNauxBuffers,     (String)GLwCAuxBuffers,     XtRInt,     sizeof(int)    , offset(auxBuffers)    , XtRImmediate, (XtPointer)0},
+    {(String)GLwNredSize,        (String)GLwCColorSize,      XtRInt,     sizeof(int)    , offset(redSize)       , XtRImmediate, (XtPointer)1},
+    {(String)GLwNgreenSize,      (String)GLwCColorSize,      XtRInt,     sizeof(int)    , offset(greenSize)     , XtRImmediate, (XtPointer)1},
+    {(String)GLwNblueSize,       (String)GLwCColorSize,      XtRInt,     sizeof(int)    , offset(blueSize)      , XtRImmediate, (XtPointer)1},
+    {(String)GLwNalphaSize,      (String)GLwCAlphaSize,      XtRInt,     sizeof(int)    , offset(alphaSize)     , XtRImmediate, (XtPointer)0},
+    {(String)GLwNdepthSize,      (String)GLwCDepthSize,      XtRInt,     sizeof(int)    , offset(depthSize)     , XtRImmediate, (XtPointer)0},
+    {(String)GLwNstencilSize,    (String)GLwCStencilSize,    XtRInt,     sizeof(int)    , offset(stencilSize)   , XtRImmediate, (XtPointer)0},
+    {(String)GLwNaccumRedSize,   (String)GLwCAccumColorSize, XtRInt,     sizeof(int)    , offset(accumRedSize)  , XtRImmediate, (XtPointer)0},
+    {(String)GLwNaccumGreenSize, (String)GLwCAccumColorSize, XtRInt,     sizeof(int)    , offset(accumGreenSize), XtRImmediate, (XtPointer)0},
+    {(String)GLwNaccumBlueSize,  (String)GLwCAccumColorSize, XtRInt,     sizeof(int)    , offset(accumBlueSize) , XtRImmediate, (XtPointer)0},
+    {(String)GLwNaccumAlphaSize, (String)GLwCAccumAlphaSize, XtRInt,     sizeof(int)    , offset(accumAlphaSize), XtRImmediate, (XtPointer)0},
+
   /* the attribute list */
-  {GLwNattribList, GLwCAttribList, XtRPointer, sizeof(int *),
-       offset(attribList), XtRImmediate, (XtPointer) NULL},
+    {(String)GLwNattribList, (String)GLwCAttribList, XtRPointer, sizeof(int *), offset(attribList), XtRImmediate, (XtPointer) NULL},
 
   /* the visual info */
-  {GLwNvisualInfo, GLwCVisualInfo, GLwRVisualInfo, sizeof (XVisualInfo *),
-       offset(visualInfo), XtRImmediate, (XtPointer) NULL},
+    {(String)GLwNvisualInfo, (String)GLwCVisualInfo, (String)GLwRVisualInfo, sizeof (XVisualInfo *), offset(visualInfo), XtRImmediate, (XtPointer) NULL},
 
   /* miscellaneous resources */
-  {GLwNinstallColormap, GLwCInstallColormap, XtRBoolean, sizeof (Boolean),
-       offset(installColormap), XtRImmediate, (XtPointer) TRUE},
-
-  {GLwNallocateBackground, GLwCAllocateColors, XtRBoolean, sizeof (Boolean),
-       offset(allocateBackground), XtRImmediate, (XtPointer) FALSE},
-
-  {GLwNallocateOtherColors, GLwCAllocateColors, XtRBoolean, sizeof (Boolean),
-       offset(allocateOtherColors), XtRImmediate, (XtPointer) FALSE},
-
-  {GLwNinstallBackground, GLwCInstallBackground, XtRBoolean, sizeof (Boolean),
-       offset(installBackground), XtRImmediate, (XtPointer) TRUE},
-
-  {GLwNginitCallback, GLwCCallback, XtRCallback, sizeof (XtCallbackList),
-       offset(ginitCallback), XtRImmediate, (XtPointer) NULL},
-
-  {GLwNinputCallback, GLwCCallback, XtRCallback, sizeof (XtCallbackList),
-       offset(inputCallback), XtRImmediate, (XtPointer) NULL},
-
-  {GLwNresizeCallback, GLwCCallback, XtRCallback, sizeof (XtCallbackList),
-       offset(resizeCallback), XtRImmediate, (XtPointer) NULL},
-
-  {GLwNexposeCallback, GLwCCallback, XtRCallback, sizeof (XtCallbackList),
-       offset(exposeCallback), XtRImmediate, (XtPointer) NULL},
+    {(String)GLwNinstallColormap,     (String)GLwCInstallColormap,   XtRBoolean,  sizeof(Boolean)       , offset(installColormap)    , XtRImmediate, (XtPointer)TRUE},
+    {(String)GLwNallocateBackground,  (String)GLwCAllocateColors,    XtRBoolean,  sizeof(Boolean)       , offset(allocateBackground) , XtRImmediate, (XtPointer)FALSE},
+    {(String)GLwNallocateOtherColors, (String)GLwCAllocateColors,    XtRBoolean,  sizeof(Boolean)       , offset(allocateOtherColors), XtRImmediate, (XtPointer)FALSE},
+    {(String)GLwNinstallBackground,   (String)GLwCInstallBackground, XtRBoolean,  sizeof(Boolean)       , offset(installBackground)  , XtRImmediate, (XtPointer)TRUE},
+    {(String)GLwNginitCallback,       (String)GLwCCallback,          XtRCallback, sizeof(XtCallbackList), offset(ginitCallback)      , XtRImmediate, (XtPointer)NULL},
+    {(String)GLwNinputCallback,       (String)GLwCCallback,          XtRCallback, sizeof(XtCallbackList), offset(inputCallback)      , XtRImmediate, (XtPointer)NULL},
+    {(String)GLwNresizeCallback,      (String)GLwCCallback,          XtRCallback, sizeof(XtCallbackList), offset(resizeCallback)     , XtRImmediate, (XtPointer)NULL},
+    {(String)GLwNexposeCallback,      (String)GLwCCallback,          XtRCallback, sizeof(XtCallbackList), offset(exposeCallback)     , XtRImmediate, (XtPointer)NULL},
 
   /* Changes to Motif primitive resources */
 #ifdef __GLX_MOTIF
-  {XmNtraversalOn, XmCTraversalOn, XmRBoolean, sizeof (Boolean),
-   XtOffset (GLwDrawingAreaWidget, primitive.traversal_on), XmRImmediate,
-   (XtPointer)FALSE},
-  
+    {(String)XmNtraversalOn, (String)XmCTraversalOn, XmRBoolean, sizeof (Boolean), XtOffset (GLwDrawingAreaWidget, primitive.traversal_on), XmRImmediate, (XtPointer)FALSE},
+
   /* highlighting is normally disabled, as when Motif tries to disable
    * highlighting, it tries to reset the color back to the parent's
    * background (usually Motif blue).  Unfortunately, that is in a
    * different colormap, and doesn't work too well.
    */
-  {XmNhighlightOnEnter, XmCHighlightOnEnter, XmRBoolean, sizeof (Boolean),
-   XtOffset (GLwDrawingAreaWidget, primitive.highlight_on_enter),
-   XmRImmediate, (XtPointer) FALSE},
-  
-  {XmNhighlightThickness, XmCHighlightThickness, XmRHorizontalDimension,
-   sizeof (Dimension),
-   XtOffset (GLwDrawingAreaWidget, primitive.highlight_thickness),
-   XmRImmediate, (XtPointer) 0},
+    {(String)XmNhighlightOnEnter,   (String)XmCHighlightOnEnter,   XmRBoolean,             sizeof(Boolean)  , XtOffset(GLwDrawingAreaWidget, primitive.highlight_on_enter) , XmRImmediate, (XtPointer)FALSE},
+    {(String)XmNhighlightThickness, (String)XmCHighlightThickness, XmRHorizontalDimension, sizeof(Dimension), XtOffset(GLwDrawingAreaWidget, primitive.highlight_thickness), XmRImmediate, (XtPointer)0},
 #endif 
   };
 
@@ -294,10 +240,10 @@ GLwDrawingAreaClassRec glwDrawingAreaClassRec = {
   { /* core fields */
 #ifdef __GLX_MOTIF
     /* superclass                */        (WidgetClass) &xmPrimitiveClassRec,
-    /* class_name                */        "GLwMDrawingArea",
+    /* class_name                */        (String)"GLwMDrawingArea",
 #else /* not __GLX_MOTIF */
     /* superclass                */        (WidgetClass) &widgetClassRec,
-    /* class_name                */        "GLwDrawingArea",
+    /* class_name                */        (String)"GLwDrawingArea",
 #endif /* __GLX_MOTIF */
     /* widget_size               */        sizeof(GLwDrawingAreaRec),
     /* class_initialize          */        NULL,
@@ -330,7 +276,7 @@ GLwDrawingAreaClassRec glwDrawingAreaClassRec = {
     /* display_accelerator       */        XtInheritDisplayAccelerator,
     /* extension                 */        NULL
   },
-#ifdef __GLX_MOTIF /* primitive resources */
+#ifdef __GLX_MOTIF /* primitive resources (XmPrimitiveClassPart) */
   {
     /* border_highlight          */        XmInheritBorderHighlight,
     /* border_unhighlight        */        XmInheritBorderUnhighlight,
@@ -338,16 +284,17 @@ GLwDrawingAreaClassRec glwDrawingAreaClassRec = {
     /* arm_and_activate          */        NULL,
     /* get_resources             */        NULL,
     /* num get_resources         */        0,
-    /* extension                 */        NULL,                                
-  }
-#endif 
-  };
+    /* extension                 */        NULL,
+  }, 
+#endif
+  { NULL }, 
+};
 
 WidgetClass glwDrawingAreaWidgetClass=(WidgetClass)&glwDrawingAreaClassRec;
 
 
 
-static void error(Widget w,char* string){
+static void error(Widget w,const char* string){
   char buf[100];
 #ifdef __GLX_MOTIF
   sprintf(buf,"GLwMDrawingArea: %s\n",string);
@@ -358,7 +305,7 @@ static void error(Widget w,char* string){
   }
 
 
-static void warning(Widget w,char* string){
+static void warning(Widget w,const char* string){
   char buf[100];
 #ifdef __GLX_MOTIF
   sprintf (buf, "GLwMDraw: %s\n", string);
@@ -432,6 +379,8 @@ static void createColormap(GLwDrawingAreaWidget w,int offset,XrmValue *value){
   static int cacheEntries=0;
   static int cacheMalloced=0;
   int i;
+
+  USE(offset);
     
   assert(w->glwDrawingArea.visualInfo);
 
@@ -576,13 +525,14 @@ static void Realize(Widget w,Mask *valueMask,XSetWindowAttributes *attributes){
 
 
 static void Redraw(GLwDrawingAreaWidget w,XEvent *event,Region region){
-  GLwDrawingAreaCallbackStruct cb;
-  if(!XtIsRealized((Widget)w)) return;
-  cb.reason=GLwCR_EXPOSE;
-  cb.event=event;
-  cb.width=w->core.width;
-  cb.height=w->core.height;
-  XtCallCallbackList((Widget)w,w->glwDrawingArea.exposeCallback,&cb);
+    GLwDrawingAreaCallbackStruct cb;
+    USE(region);
+    if(!XtIsRealized((Widget)w)) return;
+    cb.reason = GLwCR_EXPOSE;
+    cb.event  = event;
+    cb.width  = w->core.width;
+    cb.height = w->core.height;
+    XtCallCallbackList((Widget)w,w->glwDrawingArea.exposeCallback,&cb);
   }
 
 
@@ -649,12 +599,14 @@ static void Destroy(GLwDrawingAreaWidget glw){
 
 /* Action routine for keyboard and mouse events */
 static void glwInput(GLwDrawingAreaWidget glw,XEvent *event,String *params,Cardinal *numParams){
-  GLwDrawingAreaCallbackStruct cb;
-  cb.reason=GLwCR_INPUT;
-  cb.event=event;
-  cb.width=glw->core.width;
-  cb.height=glw->core.height;
-  XtCallCallbackList((Widget)glw,glw->glwDrawingArea.inputCallback,&cb);
+    GLwDrawingAreaCallbackStruct cb;
+    USE(params);
+    USE(numParams);
+    cb.reason = GLwCR_INPUT;
+    cb.event  = event;
+    cb.width  = glw->core.width;
+    cb.height = glw->core.height;
+    XtCallCallbackList((Widget)glw,glw->glwDrawingArea.inputCallback,&cb);
   }
 
 

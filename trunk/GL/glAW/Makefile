@@ -2,7 +2,7 @@
 
 .SUFFIXES: .o .c .cxx .depend
 
-C_OBJECTS = $(subst .c,.o,$(wildcard *.c))
+C_OBJECTS = GLwMDrawA.o
 CPP_OBJECTS = $(subst .cxx,.o,$(wildcard *.cxx))
 
 OBJECTS = $(C_OBJECTS) $(CPP_OBJECTS)
@@ -50,9 +50,6 @@ AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-
-GLwDrawA.o: GLwDrawA.h
-GLwDrawA.o: GLwDrawAP.h
 
 GLwMDrawA.o: GLwDrawA.c
 GLwMDrawA.o: GLwDrawA.h
