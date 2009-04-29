@@ -1,4 +1,10 @@
 #!/usr/bin/perl
+#
+# checks files for TABs and raises error if TABs found
+# (TABs are evil, cause they have no default width)
+#
+# As well checks for older ARB compile logs and removes them
+
 
 use strict;
 use warnings;
@@ -132,6 +138,12 @@ sub recurse_dirs($$) {
 
         if ($modtime<$files_newer_than) {
           $scan = 0;
+          # file was created before last compile start
+          # check if it's a log from an aborted compile
+          if (/^[^.]+\.([0-9]+)\.log$/o) {
+            print "Old log file: $full -- removing\n";
+            unlink($full) || print "$full:0: can't unlink (Reason: $!)\n";
+          }
         }
         else {
           if (/\.([^.]+)$/) {   # file with extension
