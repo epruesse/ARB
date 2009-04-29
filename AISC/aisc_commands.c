@@ -9,18 +9,24 @@
 #include "aisc.h"
 #include "aisc_proto.h"
 
-int      contains_tabs = 0;
+int contains_tabs = 0;
+static int error_count = 0;
 
-int print_error(const char *err) {
-    /* fprintf(stderr, "ERROR: %s: line %i in file %s\n", err, gl->pc->linenr, gl->pc->path); */
-    fprintf(stderr, "%s:%i: Error: %s\n", gl->pc->path, gl->pc->linenr, err);
-    return 1;
+void print_error_internal(const char *err, const char *launcher_file, int launcher_line) {
+    fprintf(stderr, "./%s:%i: Error: %s\n", gl->pc->path, gl->pc->linenr, err);
+    if (launcher_file) fprintf(stderr, "../AISC/%s:%i: error was launched from here\n", launcher_file, launcher_line);
+    error_count++;
+}
+
+void print_warning_internal(const char *err, const char *launcher_file, int launcher_line) {
+    fprintf(stderr, "./%s:%i: Warning: %s\n", gl->pc->path, gl->pc->linenr, err);
+    if (launcher_file) fprintf(stderr, "../AISC/%s:%i: error was launched from here\n", launcher_file, launcher_line);
 }
 
 #define ERRBUFSIZE 200
-
-int printf_error(const char *format, ...) {
+const char *formatted(const char *format, ...) {
     /* goes to header:  __ATTR__FORMAT(1) */
+
     static char *errbuf = 0;
     if (!errbuf) { errbuf = (char*)malloc(ERRBUFSIZE+1); }
 
@@ -28,7 +34,7 @@ int printf_error(const char *format, ...) {
     va_start(argPtr, format);
     int     chars = vsprintf(errbuf, format, argPtr);
     if (chars>ERRBUFSIZE) {
-        fprintf(stderr, "%s:%i: Error buffer overflow!\n", __FILE__, __LINE__);
+        fprintf(stderr, "%s:%i: Error: Buffer overflow!\n", __FILE__, __LINE__);
         vfprintf(stderr, format, argPtr);
         fputc('\n', stderr);
 
@@ -37,12 +43,11 @@ int printf_error(const char *format, ...) {
     }
     va_end(argPtr);
 
-    return print_error(errbuf);
+    return errbuf;
 }
-
 #undef ERRBUFSIZE
 
-void memcopy(char *dest, const char *source, int len)
+static void memcopy(char *dest, const char *source, int len)
 {
     int         i;
     const char *s;
@@ -64,7 +69,7 @@ void memcopy(char *dest, const char *source, int len)
     }
 }
 
-char *find_string(const char *str,const char *key)
+static char *find_string(const char *str,const char *key)
 {
     const char *p1,*p2;
     for (p1=str,p2=key;*p1;) {
@@ -83,8 +88,9 @@ char *find_string(const char *str,const char *key)
     return 0;
 }
 
-char *calc_rest_line(/*const*/ char *str, int size, int presize)
-{                               /* wertet einen Puffer str aus , str[-1] muss exestieren !!! */
+static char *calc_rest_line(/*const*/ char *str, int size, int presize)
+{
+    /* wertet einen Puffer str aus , str[-1] muss exestieren !!! */
     char *ld;
     char *p;
     char *br;
@@ -130,25 +136,25 @@ char *calc_rest_line(/*const*/ char *str, int size, int presize)
         READ_SPACES(path);
         fi = strpbrk(path, "+,");
         if (!fi) {
-            print_error("NO '+,;' found in ADD FUNKTION");
+            print_error("NO '+,;' found in ADD FUNCTION");
             return 0;
         }
         *(fi++) = 0;
         READ_SPACES(fi);
-        sprintf(error_buf, "%li", atol(path) + atol(fi));
-        fi = strdup(error_buf);
+        sprintf(string_buf, "%li", atol(path) + atol(fi));
+        fi = strdup(string_buf);
     }else if (*p == '*') {
         path = p + 1;
         READ_SPACES(path);
         fi = strpbrk(path, "*,");
         if (!fi) {
-            print_error("NO '*,;' found in ADD FUNKTION");
+            print_error("NO '*,;' found in ADD FUNCTION");
             return 0;
         }
         *(fi++) = 0;
         READ_SPACES(fi);
-        sprintf(error_buf, "%li", atol(path) * atol(fi));
-        fi = strdup(error_buf);
+        sprintf(string_buf, "%li", atol(path) * atol(fi));
+        fi = strdup(string_buf);
     } else if (*p == '#') {
         if (!strncmp(p, "#FILE", 5)) {
             for (path = p + 5; gl->s2_tab[(unsigned)(path[0])]; path++) ;
@@ -205,8 +211,7 @@ char *calc_rest_line(/*const*/ char *str, int size, int presize)
 }
 
 
-int
-calc_line(char *str, char *buf)
+static int calc_line(char *str, char *buf)
 {
     char           *ld;
     int             len;
@@ -224,8 +229,7 @@ calc_line(char *str, char *buf)
     return 0;
 }
 
-int
-calc_line2(char *str, char *buf)
+static int calc_line2(char *str, char *buf)
 {                               /* erstes $( nicht auswerten ) !!! */
     char           *ld;
     char           *lb;
@@ -250,8 +254,7 @@ calc_line2(char *str, char *buf)
     return 0;
 }
 
-void
-write_aisc(AD * ad, FILE * out, int deep)
+static void write_aisc(AD * ad, FILE * out, int deep)
 {
     AD             *item, *line;
     int             i;
@@ -278,8 +281,8 @@ write_aisc(AD * ad, FILE * out, int deep)
     }
 }
 
-void
-write_prg(CL * cl, FILE * out, int deep)
+/*
+static void write_prg(CL * cl, FILE * out, int deep)
 {
     CL             *line;
     int             i;
@@ -289,17 +292,15 @@ write_prg(CL * cl, FILE * out, int deep)
         fprintf(out, "%5i  %s\n", line->linenr, line->str);
     }
 }
+*/
 
-
-int
-do_com_dbg(char *str)
+static int do_com_dbg(char *str)
 {
     write_aisc(gl->root, stdout, 0);
     str = str;
     return 0;
 }
-int
-do_com_data(char *str)
+static int do_com_data(char *str)
 {
     char           *in;
     if (strlen(str) < 2) {
@@ -318,8 +319,7 @@ do_com_data(char *str)
     return 0;
 }
 
-int
-do_com_write(FILE * out, char *str)
+static int do_com_write(FILE * out, char *str)
 {
     char *p;
     char  c;
@@ -379,7 +379,7 @@ do_com_write(FILE * out, char *str)
             if (strncmp(p, "SETSOURCE", 9) == 0) { /* skip '@SETSOURCE file, line@' */
                 p = strchr(p, '@');
                 if (!p) {
-                    printf_error("expected '@' after '@SETSOURCE' (injected code)");
+                    print_error("expected '@' after '@SETSOURCE' (injected code)");
                     return 1;
                 }
                 p++;
@@ -400,21 +400,18 @@ do_com_write(FILE * out, char *str)
     return 0;
 }
 
-int
-do_com_print(char *str)
+static int do_com_print(char *str)
 {
     do_com_write(gl->out, str);
     return 0;
 }
-int
-do_com_print2(char *str)
+static int do_com_print2(char *str)
 {
     do_com_write(stdout, str);
     return 0;
 }
 
-int
-do_com_tabstop(char *str)
+static int do_com_tabstop(char *str)
 {
     int             ts, i;
     ts = atoi(str);
@@ -428,8 +425,7 @@ do_com_tabstop(char *str)
     return 0;
 }
 
-int
-do_com_tab(char *str)
+static int do_com_tab(char *str)
 {
     int             ts, val;
     char           *s1, *s2;
@@ -449,13 +445,13 @@ do_com_tab(char *str)
     return 0;
 }
 
-int
-do_com_error(char *str)
+static int do_com_error(char *str)
 {
     print_error(str);
     return 1;
 }
-int do_com_open(char *str)
+
+static int do_com_open(char *str)
 {
     FILE           *file;
     int             i;
@@ -468,13 +464,13 @@ int do_com_open(char *str)
         return 1;
     }
     if (strlen(fn) < 3) {
-        print_error("Filename too short (<3)");
+        printf_error("Filename '%s' too short (<3)", fn);
         return 1;
     }
     for (i = 0; i < OPENFILES; i++) {
         if (gl->fouts[i]) {
-            if (!strcmp(gl->fouts[i], str)) {
-                print_error("File already opened");
+            if (strcmp(gl->fouts[i], str) == 0) {
+                printf_error("File '%s' already opened", str);
                 return 1;
             }
         }
@@ -485,12 +481,12 @@ int do_com_open(char *str)
         }
     }
     if (i == OPENFILES) {
-        print_error("Too many Files open");
+        print_error("Too many open files");
         return 1;
     }
     file = fopen(fn, "w");
     if (!file) {
-        print_error("Cannot open File");
+        printf_error("Cannot open file '%s'", fn);
         return 1;
     }
 
@@ -516,7 +512,7 @@ void aisc_remove_files()
     }
 }
 
-int do_com_close(char *str)
+static int do_com_close(char *str)
 {
     int             i;
     READ_SPACES(str);
@@ -540,7 +536,7 @@ int do_com_close(char *str)
     return 0;
 }
 
-int do_com_out(char *str)
+static int do_com_out(char *str)
 {
     int             i;
     READ_SPACES(str);
@@ -553,11 +549,11 @@ int do_com_out(char *str)
             }
         }
     }
-    print_error("File not opened for OUT Command");
+    printf_error("File '%s' not opened for OUT Command", str);
     return 1;
 }
 
-int do_com_moveto(char *str)
+static int do_com_moveto(char *str)
 {
     AD             *fo;
     char           *st;
@@ -589,7 +585,7 @@ int do_com_moveto(char *str)
     return 0;
 }
 
-int do_com_set(char *str)
+static int do_com_set(char *str)
 {
     char           *st;
     char           *co;
@@ -610,8 +606,7 @@ int do_com_set(char *str)
     *(co++) = 0;
     def = read_hash_local(st,&hs);
     if (!def) {
-        sprintf(error_buf, "not defined Ident '%s' in SET (use CREATE first)", st);
-        print_error(error_buf);
+        printf_error("undefined Ident '%s' in SET (use CREATE first)", st);
         return 1;
     }
     READ_SPACES(co);
@@ -623,7 +618,7 @@ int do_com_set(char *str)
     return 0;
 }
 
-int do_com_create(char *str)
+static int do_com_create(char *str)
 {
     char           *st;
     char           *co;
@@ -642,8 +637,7 @@ int do_com_create(char *str)
     *(co++) = 0;
     def = read_hash( gl->st->hs,st);
     if (def) {
-        sprintf(error_buf, "Ident '%s' in CREATE already defined", st);
-        print_error(error_buf);
+        printf_error("Ident '%s' in CREATE already defined", st);
         return 1;
     }
     READ_SPACES(co);
@@ -655,23 +649,28 @@ int do_com_create(char *str)
     return 0;
 }
 
-int
-do_com_if(char *str)
+static int do_com_if(char *str)
 {
     char           *equ;
     char           *kom;
     char           *la;
     char           *kom2;
-    int         op = 0; /* 0=   1~ 2< 3> !+8 */
+
+    int op = 0;                                     /* 0=   1~ 2< 3> !+8 */
     for (equ = str;*equ;equ++) {
         if (*equ =='=') { op = 0; break;}
         if (*equ =='~') { op = 1; break;}
         /*if (*equ =='<') { op = 2; break;}
           if (*equ =='>') { op = 3; break;}*/
     }
-    if (equ[-1] == '!') op +=8;
     la = equ;
-    if (!*la) return 0;
+    if (!*la) { // no operator found -> assume condition true, even if empty or undefined
+        return 0;
+    }
+
+    aisc_assert(equ>str);
+    if (equ[-1] == '!') op += 8;
+
     READ_RSPACES(la);
     *(++la) = 0;
     equ++;
@@ -689,18 +688,23 @@ do_com_if(char *str)
             case 8:     if ( strcmp(str, equ)) return 0; break;
             case 1:     if ( find_string(str, equ)) return 0; break;
             case 9:     if (!find_string(str, equ)) return 0; break;
-            case 2:     if (strcmp(str, equ)< 0) return 0; break;
-            case 10:if (strcmp(str, equ)>=0) return 0; break;
-            case 3:     if (strcmp(str, equ)> 0) return 0; break;
-            case 11:if (strcmp(str, equ)<=0) return 0; break;
+                /* case 2:     if (strcmp(str, equ)< 0) return 0; break; */
+                /* case 10:if (strcmp(str, equ)>=0) return 0; break; */
+                /* case 3:     if (strcmp(str, equ)> 0) return 0; break; */
+                /* case 11:if (strcmp(str, equ) <= 0) return 0; break; */
+            default :
+                printf_error("Unhandled operator (op=%i)", op);
+                return 1;
         }
         equ = kom2;
     }
-    gl->nextpc = gl->pc->ELSE->next;
+
+    // condition wrong -> goto else
+    gl->nextpc = gl->pc->ELSE->next; 
     return 0;
 }
 
-int do_com_for_add(CL *co)
+static int do_com_for_add(CL *co)
 {
     struct for_data_struct *fd;
     fd = (struct for_data_struct *)calloc(sizeof(struct for_data_struct),1);
@@ -709,7 +713,7 @@ int do_com_for_add(CL *co)
     return 0;
 }
 
-int do_com_for_sub(CL *co)
+static int do_com_for_sub(CL *co)
 {
     struct for_data_struct *fd;
     fd = co->fd;
@@ -737,7 +741,7 @@ int do_com_push(const char *str)
     return 0;
 }
 
-int do_com_pop(const char *str)
+static int do_com_pop(const char *str)
 {
     struct stack_struct *st;
     st = gl->st;
@@ -753,7 +757,7 @@ int do_com_pop(const char *str)
     return 0;
 }
 
-int do_com_gosub(char *str)
+static int do_com_gosub(char *str)
 {
     char *fn;
     char *s;
@@ -772,7 +776,7 @@ int do_com_gosub(char *str)
     }
     fn = read_hash(gl->fns,str);
     if (!fn) {
-        print_error("Funktion not found");
+        printf_error("Function '%s' not found", str);
         return 1;
     }
     gl->pc = fun = (CL *)atol(fn);
@@ -783,8 +787,7 @@ int do_com_gosub(char *str)
     READ_SPACES(fpara);
     for (para = params; *para;para=npara,fpara=nfpara){
         if (!*fpara) {
-            sprintf(error_buf,"Too many Parameters %s",para);
-            print_error(error_buf);
+            printf_error("Too many Parameters %s",para);
             return 1;
         }
         for (s = para; !gl->c_tab[(int)(*s)]; s++) ;
@@ -794,15 +797,14 @@ int do_com_gosub(char *str)
         if (*s) {nfpara = s+1;READ_SPACES(nfpara);} else nfpara = s;
         *s = 0;
         s = read_hash( gl->st->hs,para);
-        if (s) {        sprintf(error_buf,"duplikated formal parameter %s",para);
-            print_error(error_buf);
+        if (s) {
+            printf_error("duplicated formal parameter %s", para);
             return 1;
         }
         write_hash(gl->st->hs, fpara, para);
     }
     if (*fpara) {
-        sprintf(error_buf,"Too less Parameters %s",fpara);
-        print_error(error_buf);
+        printf_error("Not enough parameters '%s'", fpara);
         return 1;
     }
     gl->nextpc = fun ->next;
@@ -810,33 +812,32 @@ int do_com_gosub(char *str)
     return 0;
 }
 
-int do_com_goto(char *str)
+static int do_com_goto(char *str)
 {
     char *fn;
     fn = read_hash(gl->fns,str);
     if (!fn) {
-        print_error("Function not found");
+        printf_error("Function '%s' not found", str);
         return 1;
     }
     gl->nextpc = ( (CL *)atol(fn) ) ->next;
     return 0;
 }
 
-int do_com_return(char *str)
+static int do_com_return(char *str)
 {
     gl->nextpc = gl->st->pc->next;
     if (do_com_pop("")) return 1;
     str = str;
     return 0;
 }
-int do_com_exit(char *str)
+static int do_com_exit(char *str)
 {
     str = str;
     return 1;
 }
 
-int
-do_com_for(char *str)
+static int do_com_for(char *str)
 {
     AD             *fo;
     char           *st;
@@ -871,12 +872,11 @@ do_com_for(char *str)
         }
         p = (char *) read_hash_local(st, &hs);
         if (!p) {
-            sprintf(error_buf, "not defined Ident '%s' in FOR (use CREATE first)", st);
-            print_error(error_buf);
+            printf_error("Undefined Ident '%s' in FOR (use CREATE first)", st);
             return 1;
         }
-        sprintf(error_buf, "%li", gl->pc->fd->forval);
-        write_hash(hs, st, error_buf);
+        sprintf(string_buf, "%li", gl->pc->fd->forval);
+        write_hash(hs, st, string_buf);
         gl->pc->fd->forstr = strdup(st);
     } else {
         p = strrchr(st, '/');
@@ -901,7 +901,7 @@ do_com_for(char *str)
     return 0;
 }
 
-int do_com_next(const char *str)
+static int do_com_next(const char *str)
 {
     AD             *fo;
     char           *p;
@@ -924,8 +924,8 @@ int do_com_next(const char *str)
         } else {
             gl->nextpc = gl->pc->FOR->next;
             p = read_hash_local(gl->pc->FOR->fd->forstr,&hs);
-            sprintf(error_buf, "%li", gl->pc->FOR->fd->forval);
-            write_hash(hs, gl->pc->FOR->fd->forstr, error_buf);
+            sprintf(string_buf, "%li", gl->pc->FOR->fd->forval);
+            write_hash(hs, gl->pc->FOR->fd->forstr, string_buf);
         }
 
     }
@@ -933,34 +933,34 @@ int do_com_next(const char *str)
     return 0;
 }
 
-#define COMMAND(str,string,len,func)                                    \
-    if ( string[0] == str[0] && !strncmp(string,str,len)) {             \
-        char *s=str+len;                                                \
-        READ_SPACES(s);                                                 \
-        if (func(s)) break;                                             \
-        continue;                                                       \
+#define COMMAND(str,string,len,func)                            \
+    if ( string[0] == str[0] && !strncmp(string,str,len)) {     \
+        char *s=str+len;                                        \
+        READ_SPACES(s);                                         \
+        if (func(s)) break;                                     \
+        continue;                                               \
     }
 
-#define COMMAND_NOFAIL(str,string,len,func)                             \
-    if ( string[0] == str[0] && !strncmp(string,str,len)) {             \
-        char *s=str+len;                                                \
-        READ_SPACES(s);                                                 \
-        if (func(s)) return -1;                                         \
-        continue;                                                       \
+#define COMMAND_NOFAIL(str,string,len,func)                     \
+    if ( string[0] == str[0] && !strncmp(string,str,len)) {     \
+        char *s=str+len;                                        \
+        READ_SPACES(s);                                         \
+        if (func(s)) return -1;                                 \
+        continue;                                               \
     }
 
-#define COMMAND2(str,string,len,func)                                   \
-    if ( string[0] == str[0] && !strncmp(string,str,len)) {             \
-        char *s=str+len;                                                \
-        if (func(s)) break;                                             \
-        continue;                                                       \
+#define COMMAND2(str,string,len,func)                           \
+    if ( string[0] == str[0] && !strncmp(string,str,len)) {     \
+        char *s=str+len;                                        \
+        if (func(s)) break;                                     \
+        continue;                                               \
     }
 
-#define COMMAND2_NOFAIL(str,string,len,func)                            \
-    if (string[0] == str[0] && !strncmp(string,str,len)) {              \
-        char *s=str+len;                                                \
-        if (func(s)) return -1;                                         \
-        continue;                                                       \
+#define COMMAND2_NOFAIL(str,string,len,func)                    \
+    if (string[0] == str[0] && !strncmp(string,str,len)) {      \
+        char *s=str+len;                                        \
+        if (func(s)) return -1;                                 \
+        continue;                                               \
     }
 
 int run_prg(void) {
@@ -975,6 +975,7 @@ int run_prg(void) {
                         gl->nextpc = gl->pc->ELSE->next;
                         break;
                     }
+                    
                     if (do_com_if(gl->linebuf))
                         return 1;
                     break;
@@ -1026,30 +1027,33 @@ int run_prg(void) {
         if (err)
             return err;
 
-        COMMAND2(gl->linebuf,"PRINT",5,do_com_print)
-            COMMAND2(gl->linebuf,"P ",2,do_com_print)
-            COMMAND2(gl->linebuf,"P\t",2,do_com_print)
-            COMMAND(gl->linebuf,"GOSUB",5,do_com_gosub)
-            COMMAND(gl->linebuf,"CALL",4,do_com_gosub)
-            COMMAND(gl->linebuf,"GOTO",4,do_com_goto)
-            COMMAND(gl->linebuf,"RETURN",6,do_com_return)
-            COMMAND(gl->linebuf,"PUSH",4,do_com_push)
-            COMMAND(gl->linebuf,"POP",3,do_com_pop)
-            COMMAND(gl->linebuf,"CONTINUE",8,do_com_next)
+        COMMAND2(gl->linebuf,"PRINT",5,do_com_print);
+        COMMAND2(gl->linebuf,"P ",2,do_com_print);
+        COMMAND2(gl->linebuf,"P\t",2,do_com_print);
+        COMMAND(gl->linebuf,"GOSUB",5,do_com_gosub);
+        COMMAND(gl->linebuf,"CALL",4,do_com_gosub);
+        COMMAND(gl->linebuf,"GOTO",4,do_com_goto);
+        COMMAND(gl->linebuf,"RETURN",6,do_com_return);
+        COMMAND(gl->linebuf,"PUSH",4,do_com_push);
+        COMMAND(gl->linebuf,"POP",3,do_com_pop);
+        COMMAND(gl->linebuf,"CONTINUE",8,do_com_next);
 
 
-            COMMAND(gl->linebuf,"OPEN",4,do_com_open)
-            COMMAND(gl->linebuf,"CLOSE",5,do_com_close)
-            COMMAND(gl->linebuf,"OUT",3,do_com_out)
-            COMMAND2_NOFAIL(gl->linebuf,"ERROR",5,do_com_error)
-            COMMAND(gl->linebuf,"TABSTOP",7,do_com_tabstop)
-            COMMAND(gl->linebuf,"TAB",3,do_com_tab)
-            COMMAND(gl->linebuf,"PP",2,do_com_print2)
-            COMMAND(gl->linebuf,"EXIT",4,do_com_exit)
-            COMMAND_NOFAIL(gl->linebuf,"DATA",4,do_com_data)
-            COMMAND(gl->linebuf,"DBG",3,do_com_dbg)
-            printf_error("Unknown Command '%s'", gl->pc->str);
+        COMMAND(gl->linebuf,"OPEN",4,do_com_open);
+        COMMAND(gl->linebuf,"CLOSE",5,do_com_close);
+        COMMAND(gl->linebuf,"OUT",3,do_com_out);
+        COMMAND2_NOFAIL(gl->linebuf,"ERROR",5,do_com_error);
+        COMMAND(gl->linebuf,"TABSTOP",7,do_com_tabstop);
+        COMMAND(gl->linebuf,"TAB",3,do_com_tab);
+        COMMAND(gl->linebuf,"PP",2,do_com_print2);
+        COMMAND(gl->linebuf,"EXIT",4,do_com_exit);
+        COMMAND_NOFAIL(gl->linebuf,"DATA",4,do_com_data);
+        COMMAND(gl->linebuf,"DBG",3,do_com_dbg);
+
+        printf_error("Unknown Command '%s'", gl->pc->str);
         return -1;
     }
+
+    aisc_assert(error_count == 0);
     return 0;
 }

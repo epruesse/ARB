@@ -5,7 +5,7 @@
 #include "aisc.h"
 #include "aisc_proto.h"
 
-AD *aisc_match(AD * var, char *varid, char *varct) {
+static AD *aisc_match(AD * var, char *varid, char *varct) {
     if (varid) {
         if (strcmp(var->key, varid)) {
             return 0;
@@ -167,8 +167,8 @@ get_var_string(char *var)
                 if (gl->pc->command == IF) {
                     return 0;
                 }
-                fprintf(stderr, "%s: ", var);
-                print_error("Ident not found");
+                /* fprintf(stderr, "%s: ", var); */
+                printf_error("Ident '%s' not found", var);
                 return 0;
             }
             return strdup(bar);
@@ -189,8 +189,7 @@ get_var_string(char *var)
             }
         } else {
             if (cur->sub) {
-                fprintf(stderr, "%s: ", var);
-                print_error("Ident is a Hierarchical Type");
+                printf_error("Ident '%s' is a hierarchical type", var);
                 return 0;
             } else {
                 if (cur->val) {
@@ -209,7 +208,7 @@ get_var_string(char *var)
         if (nextdp)
             *(nextdp++) = 0;
         if (!doppelpunkt[0]) {
-            print_error("Ident Replacement is missing an '='");
+            print_error("Ident replacement is missing an '='");
             return 0;
         }
 
@@ -217,7 +216,7 @@ get_var_string(char *var)
         if (bar) {
             *(bar++) = 0;
         } else {
-            print_error("Ident Replacement is missing an '='");
+            print_error("Ident replacement is missing an '='");
             return 0;
         }
         findl = strlen(doppelpunkt);

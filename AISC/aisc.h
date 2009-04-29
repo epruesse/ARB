@@ -111,7 +111,7 @@ struct global_struct {
 };
 
 extern struct global_struct *gl;
-extern char error_buf[256];
+extern char string_buf[256];
 #define READ_SPACES(var)        while(gl->s3_tab[(unsigned)(*var)]) var++;
 #define READ_RSPACES(var)       while(gl->s3_tab[(unsigned)(*(--var))]);
 
@@ -121,5 +121,18 @@ extern char error_buf[256];
 #define END_STR1 '~'
 #define END_STR2 ')'
 
+#include "aisc_proto.h"
 
+#define aisc_assert(cond) do { if (!(cond)) { *(char*)NULL = 0; } } while(0) /* core dump */
 
+// #define SHOW_CALLER // show where error was raised
+
+#ifdef SHOW_CALLER
+#define print_error(err)                print_error_internal(err, __FILE__, __LINE__)
+#define print_warning(err)              print_warning_internal(err, __FILE__, __LINE__)
+#define printf_error(format, arg)       print_error_internal(formatted(format, arg), __FILE__, __LINE__)
+#else
+#define print_error(err)                print_error_internal(err, NULL, 0)
+#define print_warning(err)              print_warning_internal(err, NULL, 0)
+#define printf_error(format, arg)       print_error_internal(formatted(format, arg), NULL, 0)
+#endif
