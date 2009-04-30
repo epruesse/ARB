@@ -241,7 +241,7 @@ GL_LIBS := $(GL_LIB) $(GLEWLIB) $(GLUTLIB) $(GL_PNGLIBS)
 else
 # OPENGL=0
 
-GLLIBS:=# no opengl -> no libs
+GL_LIBS:=# no opengl -> no libs
 GL:=# dont build ARB openGL libs
 
 endif
