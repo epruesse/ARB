@@ -6,6 +6,7 @@ ARCHS_ALL = \
 	DB_SCANNER/DB_SCANNER.dummy  \
 	FILE_BUFFER/FILE_BUFFER.dummy  \
 	REGEXPR/REGEXPR.dummy  \
+	FAST_ALIGNER/FAST_ALIGNER.dummy  \
 
 # --------------------------------------------------------------------------------
 # If a package is available as debian package it should go here

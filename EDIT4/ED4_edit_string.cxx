@@ -12,7 +12,7 @@
 #include <aw_window.hxx>
 #include <AW_helix.hxx>
 
-#include <awtc_fast_aligner.hxx>
+#include <fast_aligner.hxx>
 #include <awt_map_key.hxx>
 
 #include "ed4_defs.hxx"

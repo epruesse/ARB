@@ -9,7 +9,7 @@
 #include <arbdb.h>
 #include <aw_root.hxx>
 
-#include "awtc_ClustalV.hxx"
+#include "ClustalV.hxx"
 #include "awtc_seq_search.hxx"
 
 /* ---------------------------------------------------------------- */

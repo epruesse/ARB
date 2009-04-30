@@ -11,10 +11,10 @@
 
 #include <island_hopping.h>
 
-#include "awtc_next_neighbours.hxx"
-#include "awtc_seq_search.hxx"
-#include "awtc_ClustalV.hxx"
-#include "awtc_fast_aligner.hxx"
+#include <awtc_next_neighbours.hxx>
+#include <awtc_seq_search.hxx>
+#include "ClustalV.hxx"
+#include "fast_aligner.hxx"
 
 #include <arbdbt.h>
 #include <aw_window.hxx>

@@ -21,7 +21,7 @@
 #include "gde.hxx"
 #include <awt.hxx>
 
-#include <awtc_fast_aligner.hxx>
+// #include <fast_aligner.hxx>
 
 AW_HEADER_MAIN
 
