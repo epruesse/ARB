@@ -238,6 +238,12 @@ GL_LIBS := $(GL_LIB) $(GLEWLIB) $(GLUTLIB) $(GL_PNGLIBS)
 
 #XLIBS += $(GL_LIB)
 
+else
+# OPENGL=0
+
+GLLIBS:=# no opengl -> no libs
+GL:=# dont build ARB openGL libs
+
 endif
 
 #---------------------- tiff lib:
