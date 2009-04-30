@@ -104,7 +104,7 @@ ED4_block.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ED4_block.o: $(ARBHOME)/INCLUDE/awtc_fast_aligner.hxx
+ED4_block.o: $(ARBHOME)/INCLUDE/fast_aligner.hxx
 
 ED4_cursor.o: ed4_awars.hxx
 ED4_cursor.o: ed4_class.hxx
@@ -193,8 +193,8 @@ ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/awt_map_key.hxx
-ED4_edit_string.o: $(ARBHOME)/INCLUDE/awtc_fast_aligner.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+ED4_edit_string.o: $(ARBHOME)/INCLUDE/fast_aligner.hxx
 
 ED4_list.o: ed4_class.hxx
 ED4_list.o: ed4_defs.hxx
@@ -475,8 +475,8 @@ ED4_root.o: $(ARBHOME)/INCLUDE/awt.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/awt_map_key.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/awtc_constructSequence.hxx
-ED4_root.o: $(ARBHOME)/INCLUDE/awtc_fast_aligner.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+ED4_root.o: $(ARBHOME)/INCLUDE/fast_aligner.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/gde.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/st_window.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/svn_revision.h
@@ -506,7 +506,7 @@ ED4_search.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/awt.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
-ED4_search.o: $(ARBHOME)/INCLUDE/awtc_fast_aligner.hxx
+ED4_search.o: $(ARBHOME)/INCLUDE/fast_aligner.hxx
 
 ED4_secedit.o: ed4_secedit.hxx
 ED4_secedit.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -608,7 +608,7 @@ ED4_tools.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/awt_iupac.hxx
-ED4_tools.o: $(ARBHOME)/INCLUDE/awtc_fast_aligner.hxx
+ED4_tools.o: $(ARBHOME)/INCLUDE/fast_aligner.hxx
 
 ED4_visualizeSAI.o: ed4_class.hxx
 ED4_visualizeSAI.o: ed4_defs.hxx
@@ -711,7 +711,7 @@ graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
-graph_aligner_gui.o: $(ARBHOME)/INCLUDE/awtc_fast_aligner.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/client.h
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/fast_aligner.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/PT_com.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/servercntrl.h

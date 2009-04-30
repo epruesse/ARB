@@ -17,7 +17,7 @@
 #include <aw_root.hxx>
 #include <aw_window.hxx>
 
-#include "awtc_fast_aligner.hxx"
+// #include "awtc_fast_aligner.hxx"
 #include "awtc_seq_search.hxx"
 #include "awtc_constructSequence.hxx"
 

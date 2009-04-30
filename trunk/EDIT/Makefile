@@ -66,7 +66,6 @@ edit.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 edit.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 edit.o: $(ARBHOME)/INCLUDE/awt.hxx
 edit.o: $(ARBHOME)/INCLUDE/awt_map_key.hxx
-edit.o: $(ARBHOME)/INCLUDE/awtc_fast_aligner.hxx
 edit.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 edit.o: $(ARBHOME)/INCLUDE/gde.hxx
 edit.o: $(ARBHOME)/INCLUDE/st_window.hxx

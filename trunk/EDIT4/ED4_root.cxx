@@ -16,7 +16,7 @@
 #include <awt_seq_colors.hxx>
 #include <awt_map_key.hxx>
 
-#include <awtc_fast_aligner.hxx>
+#include <fast_aligner.hxx>
 #include <awtc_constructSequence.hxx>
 
 #include <arb_version.h>

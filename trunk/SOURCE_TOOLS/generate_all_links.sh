@@ -186,7 +186,6 @@ symlink ../AWT/awt_tree_cmp.hxx INCLUDE/awt_tree_cmp.hxx &&
 symlink ../AWT/awt_www.hxx INCLUDE/awt_www.hxx &&
 symlink ../AWT/awtlocal.hxx INCLUDE/awtlocal.hxx &&
 symlink ../AWTC/awtc_constructSequence.hxx INCLUDE/awtc_constructSequence.hxx &&
-symlink ../AWTC/awtc_fast_aligner.hxx INCLUDE/awtc_fast_aligner.hxx &&
 symlink ../AWTC/awtc_next_neighbours.hxx INCLUDE/awtc_next_neighbours.hxx &&
 symlink ../AWTC/awtc_seq_search.hxx INCLUDE/awtc_seq_search.hxx &&
 symlink ../AWTC/awtc_submission.hxx INCLUDE/awtc_submission.hxx &&
@@ -210,6 +209,7 @@ symlink ../SEQ_QUALITY/seq_quality.h INCLUDE/seq_quality.h &&
 symlink ../SL/AW_HELIX/AW_helix.hxx INCLUDE/AW_helix.hxx &&
 symlink ../SL/AW_NAME/AW_rename.hxx INCLUDE/AW_rename.hxx &&
 symlink ../SL/DB_SCANNER/db_scanner.hxx INCLUDE/db_scanner.hxx &&
+symlink ../SL/FAST_ALIGNER/fast_aligner.hxx INCLUDE/fast_aligner.hxx &&
 symlink ../SL/FILE_BUFFER/FileBuffer.h INCLUDE/FileBuffer.h &&
 symlink ../SL/HELIX/BI_helix.hxx INCLUDE/BI_helix.hxx &&
 symlink ../SL/REGEXPR/RegExpr.hxx INCLUDE/RegExpr.hxx &&

@@ -11,7 +11,7 @@
 #include <aw_keysym.hxx>
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
-#include <awtc_fast_aligner.hxx>
+#include <fast_aligner.hxx>
 
 #include "ed4_awars.hxx"
 #include "ed4_class.hxx"

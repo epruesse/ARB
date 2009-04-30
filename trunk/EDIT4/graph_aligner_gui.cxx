@@ -24,7 +24,7 @@
 #include <string.h>
 
 // need to use AWTC_faligner_cd defined here to get selected species
-#include <awtc_fast_aligner.hxx>
+#include <fast_aligner.hxx>
 #include "graph_aligner_gui.hxx"
 #include "ed4_defs.hxx"
 
