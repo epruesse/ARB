@@ -660,10 +660,10 @@ GB_ERROR GB_rename_file(const char *oldpath,const char *newpath){
     long old_mod = GB_mode_of_file(newpath);
     if (old_mod == -1) old_mod = GB_mode_of_file(oldpath);
     if (rename(oldpath,newpath)) {
-        return GB_export_error("Cannot rename '%s' to '%s'",oldpath,newpath);
+        return GB_export_IO_error("renaming", GBS_global_string("%s into %s", oldpath, newpath));
     }
     if (GB_set_mode_of_file(newpath,old_mod)) {
-        return GB_export_error("Cannot set modes of '%s'",newpath);
+        return GB_export_IO_error("setting mode",newpath);
     }
     sync();
     return 0;
