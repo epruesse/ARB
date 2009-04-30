@@ -313,7 +313,7 @@ MAKEDEPEND_PLAIN = makedepend
 
 MAKEDEPEND = $(FORCEMASK);$(MAKEDEPEND_PLAIN)
 
-SEP=--------------------------------------------------------------------------------
+SEP:=--------------------------------------------------------------------------------
 
 # delete variables unused below
 
@@ -1229,8 +1229,7 @@ perl: tools
 	@$(MAKE) testperlscripts
 
 testperlscripts: 
-	@echo $(SEP) Testing scripts in PERL_SCRIPTS
-	$(MAKE) -C PERL_SCRIPTS/test test
+	@$(MAKE) -C PERL_SCRIPTS/test test
 
 perl_clean:
 	@$(MAKE) -C PERL2ARB -r -f Makefile.main \
