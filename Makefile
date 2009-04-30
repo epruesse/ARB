@@ -638,7 +638,6 @@ ARCHS_NTREE = \
 		AWTI/AWTI.a \
 		GENOM/GENOM.a \
 		GENOM_IMPORT/GENOM_IMPORT.a \
-		ISLAND_HOPPING/ISLAND_HOPPING.a \
 		MERGE/MERGE.a \
 		MULTI_PROBE/MULTI_PROBE.a \
 		NTREE/NTREE.a \
@@ -1027,7 +1026,6 @@ show:
 		@echo '  ge     genome library'
 		@echo '  pd     probe design lib'
 		@echo '  prd    primer design lib'
-		@echo '  ih     island hopper'
 		@echo ''
 		@echo ' other targets:'
 		@echo ''
@@ -1063,8 +1061,6 @@ aw:	WINDOW/libAW.dummy
 awt:	AWT/libAWT.dummy
 awtc:	AWTC/AWTC.dummy
 awti:	AWTI/AWTI.dummy
-
-ih:	ISLAND_HOPPING/ISLAND_HOPPING.dummy
 
 mp: 	MULTI_PROBE/MULTI_PROBE.dummy
 mg:	MERGE/MERGE.dummy
