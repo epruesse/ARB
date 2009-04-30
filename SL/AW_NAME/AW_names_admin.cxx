@@ -10,7 +10,7 @@
 
 static char *namesFilename(AW_CL cl_gb_main) {
     const char *field    = AW_get_nameserver_addid((GBDATA*)cl_gb_main);
-    const char *filename = field[0] ? GBS_global_string("names_%s.dat", field) : "names_dat";
+    const char *filename = field[0] ? GBS_global_string("names_%s.dat", field) : "names.dat";
     char       *fullname = nulldup(GB_path_in_ARBLIB("nas", filename));
 
     return fullname;
@@ -35,10 +35,17 @@ static void awtc_edit_names_file(AW_window */*aws*/, AW_CL cl_gb_main){
 static void awtc_remove_arb_acc(AW_window */*aws*/, AW_CL cl_gb_main){
     char *path    = namesFilename(cl_gb_main);
     char *newpath = GBS_string_eval(path,"*=*%",0);
-    char  command[1024];
-    sprintf(command,
-            "cp %s %s;arb_replace -l '*ACC {}*=:*ACC {TUM_*=:*ACC {ARB_*=' %s",
-            path, newpath, path);
+    char *command = GBS_global_string_copy("cp %s %s;"
+                                           "arb_replace -l '"
+                                           "*ACC {}*=:" // remove entries w/o acc
+                                           // "*ACC {TUM*=:" // remove entries with TUM prefix (disabled Apr 2009 - very old prefix)
+                                           "*ACC {ARB*='" // remove entries with 'ARB_' prefix (Note: Nameserver does not store the '_'!)
+                                           " %s",
+                                           path, newpath, path);
+    GB_ERROR error = GB_system(command);
+    if (error) aw_message(error);
+
+    free(command);
     free(newpath);
     free(path);
 }
@@ -82,7 +89,7 @@ AW_window *AW_create_namesadmin_window(AW_root *root, AW_CL cl_gb_main)  {
     aws->at("remove_arb");
     aws->callback(awtc_remove_arb_acc, cl_gb_main);
     aws->create_button("REMOVE_SUPERFLUOUS_ENTRIES_IN_NAMES_FILE",
-                       "Remove all entries with an\n'ARB_XXXX' accession number\nfrom names file");
+                       "Remove all entries with an\n'ARB*' accession number\nfrom names file");
 
     AW_awar *awar_addid = root->awar(AWAR_NAMESERVER_ADDID);
     awar_addid->add_callback(addid_changed_cb, cl_gb_main);
