@@ -712,7 +712,7 @@ ARCHS_EDIT4 += RNA3D/RNA3D.a
 endif
 LIBS_EDIT4 := $(GL_LIBS)
 
-$(EDIT4): $(ARCHS_EDIT4:.a=.dummy) shared_libs
+$(EDIT4): $(ARCHS_EDIT4:.a=.dummy) shared_libs $(GL)
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_EDIT4) $(GUI_LIBS) || ( \
 		echo Link $@ ; \
 		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS) $(LIBS_EDIT4)" ; \
@@ -1092,9 +1092,9 @@ sq:	SEQ_QUALITY/SEQ_QUALITY.dummy
 
 sec:	SECEDIT/SECEDIT.dummy
 
-e4:	$(EDIT4)
+e4:	wetc help readseq menus $(EDIT4)
 gi:	GENOM_IMPORT/GENOM_IMPORT.dummy
-we:	$(WETC)
+wetc:	$(WETC)
 
 pgt:	$(PGT)
 xml:	XML/XML.dummy
@@ -1350,7 +1350,7 @@ arbbasic2: templ mbin com sl $(GL)
 arbshared: dball aw dp awt
 
 # needed arb applications
-arbapplications: nt pa ed e4 we pt na nal di ph ds pgt
+arbapplications: nt pa ed e4 wetc pt na nal di ph ds pgt
 
 # optionally things (no real harm for ARB if any of them fails):
 arbxtras: tg pst a3 xmlin 
