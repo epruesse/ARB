@@ -556,7 +556,7 @@ main(int argc, char **argv)
     aw_root = new AW_root;
     aw_default = aw_root->open_default(".arb_prop/phylo.arb");
     aw_root->init_variables(aw_default);
-    aw_root->init("ARB_PHYL");
+    aw_root->init_root("ARB_PHYLO", AW_FALSE);
 
     if (argc == 2) {
         db_server = argv[1];

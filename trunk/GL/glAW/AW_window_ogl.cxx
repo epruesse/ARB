@@ -77,8 +77,7 @@ void AW_window_menu_modes_opengl::init(AW_root *root_in, const char *wid,
     int posx = 50;
     int posy = 50;
 
-    p_w->shell= aw_create_shell(this, AW_TRUE, AW_TRUE, width, height, posx,
-                                posy);
+    p_w->shell= aw_create_shell(this, AW_TRUE, AW_TRUE, width, height, posx, posy);
 
     main_window = XtVaCreateManagedWidget("mainWindow1",
                                           xmMainWindowWidgetClass, p_w->shell, 
@@ -363,7 +362,6 @@ void AW_window_menu_modes_opengl::init(AW_root *root_in, const char *wid,
     create_devices();
     aw_create_help_entry(this);
     create_window_variables();
-    set_icon(window_defaults_name);
 }
 
 

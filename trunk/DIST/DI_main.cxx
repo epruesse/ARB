@@ -51,7 +51,7 @@ int main(int argc, char **argv)
     aw_root    = new AW_root;
     aw_default = aw_root->open_default(".arb_prop/dist.arb");
     aw_root->init_variables(aw_default);
-    aw_root->init("ARB_DIST");
+    aw_root->init_root("ARB_DIST", AW_FALSE);
 
     struct arb_params *params;
     params  = arb_trace_argv(&argc,argv);

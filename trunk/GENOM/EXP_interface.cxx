@@ -469,7 +469,6 @@ AW_window *EXP_create_experiment_window(AW_root *aw_root) {
     aws = new AW_window_simple_menu;
     aws->init( aw_root, "EXPERIMENT_INFORMATION", "EXPERIMENT INFORMATION");
     aws->load_xfig("ad_spec.fig");
-    //     aws->load_xfig("experiment_info.fig");
 
     aws->button_length(8);
 

@@ -148,8 +148,8 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
 
     switch (gde_cgss.wt) {
         case CGSS_WT_DEFAULT: {
-            const char *fig = (seqtype == '-') ? "gdeitem_simple.fig" : "gdeitem.fig";
-            aws->load_xfig(fig);
+            if (seqtype == '-') aws->load_xfig("gdeitem_simple.fig");
+            else                aws->load_xfig("gdeitem.fig");
             break;
         }
         case CGSS_WT_EDIT:

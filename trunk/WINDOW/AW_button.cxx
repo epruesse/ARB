@@ -875,9 +875,9 @@ void AW_window::create_toggle(const char *var_name, aw_toggle_data *tdata) {
 
         if (tdata->buttonWidth == 0) {
             if (tdata->isTextToggle) {
-                int l1  = strlen(tdata->bitmapOrText[0]);
+                int l1 = strlen(tdata->bitmapOrText[0]);
                 int l2 = strlen(tdata->bitmapOrText[1]);
-        
+
                 _at->length_of_buttons = l1>l2 ? l1 : l2; // use longer text for button size
             }
             else {
@@ -915,9 +915,14 @@ void AW_window::create_toggle(const char *var_name, aw_toggle_data *tdata) {
 void AW_window::create_toggle(const char *var_name,const char *no, const char *yes, int buttonWidth) {
     aw_toggle_data *tdata  = new aw_toggle_data;
     tdata->isTextToggle    = false;
-    tdata->bitmapOrText[0] = GBS_string_eval(no, "*=#*1:##=#",0);
-    tdata->bitmapOrText[1] = GBS_string_eval(yes,"*=#*1:##=#",0);
-    tdata->buttonWidth     = buttonWidth;
+
+    aw_assert(no[0] == '#');
+    aw_assert(yes[0] == '#');
+
+    tdata->bitmapOrText[0] = strdup(no);
+    tdata->bitmapOrText[1] = strdup(yes);
+
+    tdata->buttonWidth = buttonWidth;
 
     create_toggle(var_name, tdata);
 }
@@ -934,13 +939,13 @@ void AW_window::create_text_toggle(const char *var_name, const char *noText, con
 
 
 void AW_window::create_toggle( const char *var_name ) {
-    create_toggle(var_name,"no.bitmap","yes.bitmap");
+    create_toggle(var_name,"#no.bitmap","#yes.bitmap");
 }
 
 void AW_window::create_inverse_toggle( const char *var_name ) {
     // like create_toggle, but displays inverse value
     // (i.e. it's checked if value is zero, and unchecked otherwise)
-    create_toggle(var_name,"yes.bitmap","no.bitmap");
+    create_toggle(var_name,"#yes.bitmap","#no.bitmap");
 }
 
 /************************************************************************************************/

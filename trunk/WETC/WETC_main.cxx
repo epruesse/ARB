@@ -23,7 +23,8 @@ int main(int argc,char **argv){
     aw_root = new AW_root;
     aw_default = aw_root->open_default(".arb_prop/ntree.arb");
     aw_root->init_variables(aw_default);
-    aw_root->init("ARB_NT");
+    // aw_root->init_root("ARB_NT", AW_FALSE);
+    aw_root->init_root("ARB_WETC", AW_FALSE);
 
     if (!strcmp(com,"-fileedit")){
         AWT_show_file(aw_root, argv[2]);

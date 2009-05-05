@@ -1844,7 +1844,7 @@ int main(int argc, char **argv)
     aw_root = new AW_root;
     aw_default = aw_root->open_default(".arb_prop/pars.arb");
     aw_root->init_variables(aw_default);
-    aw_root->init("ARB_PARS");
+    aw_root->init_root("ARB_PARS", AW_FALSE);
 
     AD_map_viewer_aw_root = aw_root;
 

@@ -279,7 +279,6 @@ public:
     
     void    message( char *title, int ms ); // Set for ms milliseconds the title of the window
     void    set_window_title( const char *title ); // Set the window title forever
-    void    set_icon( const char *pixmap_name = 0,const char *default_icon = 0); // Set the Pixmap
 
     const char *get_window_title( void ); // Get the window's title
     const char *get_window_id() const { return window_defaults_name; } // Get the window's internal name
