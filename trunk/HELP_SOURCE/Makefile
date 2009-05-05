@@ -19,8 +19,10 @@ CONVERT_FROM_OLD_HELP=1# WARNING! If set to 1 => overwrites XML-Files (that IS i
 # if set to 0 the helpfiles in oldhelp are ignored and only XML is used as source (not intended for now)
 
 # needed tools:
-TOOL_OBJECT = \
+TOOL_OBJECTS = \
 	 arb_help2xml.o
+
+BINARIES = $(TOOL_OBJECTS:%.o=$(ARBHOME)/bin/%)
 
 QUIETLY = ./quietly.pl
 
@@ -230,6 +232,7 @@ help : $(HELP)
 # --------------------------------------------------------------------------------
 
 clean:
+		rm -f $(TOOL_OBJECTS) $(BINARIES)
 		rm -f $(HTML_IDX) `find $(HLP_DEST) -name "*.hlp"`
 		rm -f html.list `find $(HTML_LOCATION) -name "*.html"`
 ifeq ($(CONVERT_FROM_OLD_HELP),1)
@@ -239,7 +242,7 @@ endif
 
 # --------------------------------------------------------------------------------
 
-tools: $(TOOL_OBJECT:%.o=$(ARBHOME)/bin/%)
+tools: $(BINARIES)
 
 LIBS=../XML/XML.a
 
@@ -254,7 +257,7 @@ $(XML_DEPEND) : arb_help2xml.cxx
 $(HELP2XML): arb_help2xml.o $(LIBS)
 	$(LINK_EXECUTABLE) $@ $< $(LIBS) $(LIBPATH) -lARBDB
 
-DEPENDS = $(TOOL_OBJECT:.o=.depend)
+DEPENDS = $(TOOL_OBJECTS:.o=.depend)
 depends: $(DEPENDS)
 	@cat $(DEPENDS) | grep -v '^#' >>Makefile
 	@rm $(DEPENDS)
