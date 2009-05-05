@@ -18,7 +18,7 @@ sub lookForScripts($\@\@) {
       if (-d $full) {
         push @subdirs, $full;
       }
-      elsif (/\.pl$/io) { push @$scripts_r, $full; $dirOf{$_} = $dir; }
+      elsif (/\.(pl|amc)$/io) { push @$scripts_r, $full; $dirOf{$_} = $dir; }
       elsif (/\.pm$/io) { push @$modules_r, $full; $dirOf{$_} = $dir; }
     }
   }
@@ -102,12 +102,15 @@ sub main() {
   $arbhome = $ENV{ARBHOME};
   if (not defined $arbhome) { die "ARBHOME undefined"; }
 
-  my $root = $ENV{ARBHOME}.'/PERL_SCRIPTS';
-  if (not -d $root) { die "No such directory '$root'"; }
+  my $script_root = $ENV{ARBHOME}.'/PERL_SCRIPTS';
+  my $macros_root = $ENV{ARBHOME}.'/lib/macros';
+  if (not -d $script_root) { die "No such directory '$script_root'"; }
+  if (not -d $macros_root) { die "No such directory '$macros_root'"; }
 
   my @scripts = ();
   my @modules = ();
-  lookForScripts($root,@scripts,@modules);
+  lookForScripts($script_root,@scripts,@modules);
+  lookForScripts($macros_root,@scripts,@modules);
 
   # print "Existing perl scripts:\n";
   # foreach (@scripts) { print "- '$_'\n"; }
