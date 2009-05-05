@@ -1283,14 +1283,16 @@ static int aw_status_dummy2(const char *val) {
     return aw_status((char *)val);
 }
 
-void AW_root::init(const char *programmname, AW_BOOL no_exit) {
+void AW_root::init_root(const char *programmname, AW_BOOL no_exit) {
     // Initialisiert eine gesamte X-Anwendung
     int a = 0;
     int i;
     XFontStruct *fontstruct;
     char buffer[256];
     char *fallback_resources[100];
+
     p_r-> no_exit = no_exit;
+    program_name  = strdup(programmname);
 
     for (i=0; i<1000; i++) {
         if (aw_fb[i].fb == 0)
@@ -1742,15 +1744,45 @@ void aw_update_awar_window_geometry(AW_root *awr) {
     GBS_hash_do_loop(awr->hash_for_windows, aw_loop_get_window_geometry, NULL);
 }
 
+static const char *existingPixmap(const char *iconpath, const char *name) {
+    const char *icon = GBS_global_string("%s/%s.xpm", iconpath, name);
+
+    if (!GB_is_regularfile(icon)) {
+        icon = GBS_global_string("%s/%s.bitmap", iconpath, name);
+        if (!GB_is_regularfile(icon)) icon = NULL;
+    }
+
+    return icon;
+}
+
+static Pixmap getIcon(Screen *screen, const char *iconName, Pixel foreground, Pixel background) {
+    static GB_HASH *icon_hash = 0;
+    if (!icon_hash) icon_hash = GBS_create_hash(100, GB_MIND_CASE);
+
+    Pixmap pixmap = GBS_read_hash(icon_hash, iconName);
+
+    if (!pixmap && iconName) {
+        const char *iconpath = GB_path_in_ARBLIB("pixmaps/icons", NULL);
+        const char *iconFile = existingPixmap(iconpath, iconName);
+
+        if (iconFile) {
+            char *ico = strdup(iconFile);
+            pixmap    = XmGetPixmap(screen, ico, foreground, background);
+            GBS_write_hash(icon_hash, iconName, pixmap);
+            free(ico);
+        }
+    }
+
+    return pixmap;
+}
+
 Widget aw_create_shell(AW_window *aww, AW_BOOL allow_resize, AW_BOOL allow_close, int width, int height, int posx, int posy) {
     AW_root *root = aww->get_root();
     Widget shell;
 
     // set minimum window size to size provided by init
-    if (width>aww->_at->max_x_size)
-        aww->_at->max_x_size = width;
-    if (height>aww->_at->max_y_size)
-        aww->_at->max_y_size = height;
+    if (width >aww->_at->max_x_size) aww->_at->max_x_size = width;
+    if (height>aww->_at->max_y_size) aww->_at->max_y_size = height;
 
     if ( !GBS_read_hash(root->hash_for_windows, aww->window_name)) {
         GBS_write_hash(root->hash_for_windows, aww->window_name, (long)aww);
@@ -1812,118 +1844,102 @@ Widget aw_create_shell(AW_window *aww, AW_BOOL allow_resize, AW_BOOL allow_close
         width = 4000;
         height = 3000;
 
-        if (!aww->recalc_size_at_show)
-            aww->recalc_size_at_show = 1;
+        if (!aww->recalc_size_at_show) aww->recalc_size_at_show = 1;
     }
 
-    Widget father = p_global->toplevel_widget;
+    Widget  father      = p_global->toplevel_widget;
+    Screen *screen      = XtScreen(father);
+    Pixmap  icon_pixmap = getIcon(screen, aww->window_defaults_name, p_global->foreground, p_global->background);
+
+    if (!icon_pixmap) {
+        icon_pixmap = getIcon(screen, root->program_name, p_global->foreground, p_global->background);
+    }
+
+    if (!icon_pixmap) {
+        AW_ERROR("Error: Missing icon pixmap for window '%s'\n", aww->window_defaults_name);
+    }
+    else if (icon_pixmap == XmUNSPECIFIED_PIXMAP) {
+        AW_ERROR("Error: Failed to load icon pixmap for window '%s'\n", aww->window_defaults_name);
+    }
+
     if (!p_global->main_widget || !p_global->main_aww->get_show()) {
         shell = XtVaCreatePopupShell("editor", applicationShellWidgetClass,
-                father, 
-                XmNwidth, width, 
-                XmNheight, height, 
-                XmNx, posx, 
-                XmNy, posy, 
-                XmNtitle, aww->window_name, 
-                XmNiconName, aww->window_name, 
-                XmNkeyboardFocusPolicy, XmEXPLICIT,
-                XmNdeleteResponse, XmDO_NOTHING, 
-                NULL);
+                                     father,
+                                     XmNwidth, width, 
+                                     XmNheight, height, 
+                                     XmNx, posx, 
+                                     XmNy, posy, 
+                                     XmNtitle, aww->window_name, 
+                                     XmNiconName, aww->window_name, 
+                                     XmNkeyboardFocusPolicy, XmEXPLICIT,
+                                     XmNdeleteResponse, XmDO_NOTHING,
+                                     XtNiconPixmap, icon_pixmap, 
+                                     NULL);
     } else {
         shell = XtVaCreatePopupShell("transient", transientShellWidgetClass,
-                father, 
-                XmNwidth, width, 
-                XmNheight, height, 
-                XmNx, posx, 
-                XmNy, posy, 
-                XmNtitle, aww->window_name, 
-                XmNiconName, aww->window_name, 
-                XmNkeyboardFocusPolicy, XmEXPLICIT, 
-                XmNdeleteResponse, XmDO_NOTHING, 
-                NULL);
+                                     father, 
+                                     XmNwidth, width, 
+                                     XmNheight, height, 
+                                     XmNx, posx, 
+                                     XmNy, posy, 
+                                     XmNtitle, aww->window_name, 
+                                     XmNiconName, aww->window_name, 
+                                     XmNkeyboardFocusPolicy, XmEXPLICIT, 
+                                     XmNdeleteResponse, XmDO_NOTHING, 
+                                     XtNiconPixmap, icon_pixmap, 
+                                     NULL);
     }
     XtAddEventHandler(shell, EnterWindowMask, FALSE, AW_root_focusCB, (XtPointer) aww->get_root());
 
     if (!p_global->main_widget) {
         p_global->main_widget = shell;
-        p_global->main_aww = aww;
-    } else {
+        p_global->main_aww    = aww;
+    }
+    else {
         if ( !p_global->main_aww->get_show()) { // now i am the root window
             p_global->main_widget = shell;
-            p_global->main_aww = aww;
+            p_global->main_aww    = aww;
         }
     }
 
-    Atom WM_DELETE_WINDOW = XmInternAtom(XtDisplay(shell),
-            (char*)"WM_DELETE_WINDOW", False);
+    Atom WM_DELETE_WINDOW = XmInternAtom(XtDisplay(shell), (char*)"WM_DELETE_WINDOW", False);
 
     if (allow_close == AW_FALSE) {
         XmAddWMProtocolCallback(shell, WM_DELETE_WINDOW, (XtCallbackProc)aw_window_avoid_destroy_cb,(caddr_t)aww);
-    } else if (!p_global->no_exit) {
+    }
+    else if (!p_global->no_exit) {
         XmAddWMProtocolCallback(shell, WM_DELETE_WINDOW, (XtCallbackProc)aw_window_destroy_cb,(caddr_t)aww);
     }
-    return shell;
-}
 
-void AW_window::set_icon(const char *icon, const char *default_icon) {
-    if (!icon) icon                 = "default";
-    if (!default_icon) default_icon = "default";
-    
-    Widget w = p_w->shell;
-    while (w) {
-        if (XtIsWMShell(w)) break;
-        w = XtParent(w);
-    }
+    // set icon window (for window managers where iconified applications are dropped onto desktop or similar)
+    {
+        Window icon_window;
+        XtVaGetValues(shell, XmNiconWindow, &icon_window, NULL);
 
-    if (w) {
-        const char *iconpath = GB_path_in_ARBLIB("pixmaps/icons", NULL);
-        char       *path     = GBS_global_string_copy("%s/%s.bitmap", iconpath, icon);
-        char       *def_path = GBS_global_string_copy("%s/%s.bitmap", iconpath, default_icon);
+        Display *dpy = XtDisplay(shell);
+        if (!icon_window) {
+            XSetWindowAttributes attr;
+            attr.background_pixmap = icon_pixmap;
 
-        XtVaGetValues(w, XmNforeground, &p_global->foreground, NULL);
-        Pixmap pixmap = XmGetPixmap(XtScreen(w), path, p_global->foreground, p_global->background);
-        
-        if (pixmap == XmUNSPECIFIED_PIXMAP) {
-            XmDestroyPixmap(XtScreen(w), pixmap);
-            pixmap = XmGetPixmap(XtScreen(w), def_path, p_global->foreground, p_global->background);
+            int          xpos, ypos;
+            unsigned int xsize, ysize, borderwidth, depth;
+            Window       wroot;
+
+            if (XGetGeometry(dpy, icon_pixmap, &wroot, &xpos, &ypos, &xsize, &ysize, &borderwidth, &depth)) {
+                icon_window = XCreateWindow(dpy, wroot, 0, 0, xsize, ysize, 0, depth, CopyFromParent, CopyFromParent, CWBackPixmap, &attr);
+            }
         }
-
-        if (pixmap == XmUNSPECIFIED_PIXMAP) {
-            AW_ERROR("Cannot find pixmap (neither '%s' nor '%s')", path, def_path);
+        if (!icon_window) {
+            XtVaSetValues(shell, XmNiconPixmap, icon_pixmap, NULL);
         }
         else {
-            Window window;
-            XtVaGetValues(w, XmNiconWindow, &window, NULL);
-
-            Display *dpy = XtDisplay(w);
-
-            if (!window) {
-                XSetWindowAttributes attr;
-                attr.background_pixmap = pixmap;
-
-                int          xpos, ypos;
-                unsigned int xsize, ysize, borderwidth, depth;
-                Window       wroot;
-
-                if (XGetGeometry(dpy, pixmap, &wroot, &xpos, &ypos, &xsize, &ysize, &borderwidth, &depth)) {
-                    window = XCreateWindow(dpy, wroot, 0, 0, xsize, ysize, 0, depth, CopyFromParent, CopyFromParent, CWBackPixmap, &attr);
-                }
-            }
-
-            if (!window) {
-                XtVaSetValues(w, XmNiconPixmap, pixmap, NULL);
-            }
-            else {
-                XtVaSetValues(w, XmNiconWindow, window, NULL);
-                XSetWindowBackgroundPixmap(dpy, window, pixmap);
-                XClearWindow(dpy, window);
-            }
+            XtVaSetValues(shell, XmNiconWindow, icon_window, NULL);
+            XSetWindowBackgroundPixmap(dpy, icon_window, icon_pixmap);
+            XClearWindow(dpy, icon_window);
         }
-        XmDestroyPixmap(XtScreen(w), pixmap);
-
-        free(def_path);
-        free(path);
     }
+
+    return shell;
 }
 
 
@@ -1963,8 +1979,7 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid,
     int posx = 50;
     int posy = 50;
 
-    p_w->shell= aw_create_shell(this, AW_TRUE, AW_TRUE, width, height, posx,
-            posy);
+    p_w->shell= aw_create_shell(this, AW_TRUE, AW_TRUE, width, height, posx, posy);
 
     main_window = XtVaCreateManagedWidget("mainWindow1",
             xmMainWindowWidgetClass, p_w->shell, 
@@ -2153,7 +2168,6 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid,
     create_devices();
     aw_create_help_entry(this);
     create_window_variables();
-    set_icon(window_defaults_name);
 }
 
 void AW_window_menu::init(AW_root *root_in, const char *wid,
@@ -2178,8 +2192,7 @@ void AW_window_menu::init(AW_root *root_in, const char *wid,
     int posx = 50;
     int posy = 50;
 
-    p_w->shell= aw_create_shell(this, AW_TRUE, AW_TRUE, width, height, posx,
-            posy);
+    p_w->shell= aw_create_shell(this, AW_TRUE, AW_TRUE, width, height, posx, posy);
 
     main_window = XtVaCreateManagedWidget("mainWindow1",
             xmMainWindowWidgetClass, p_w->shell, 
@@ -2356,7 +2369,6 @@ void AW_window_menu::init(AW_root *root_in, const char *wid,
     create_devices();
     aw_create_help_entry(this);
     create_window_variables();
-    set_icon(window_defaults_name);
 }
 
 void AW_window_simple::init(AW_root *root_in, const char *wid,
@@ -2372,8 +2384,7 @@ void AW_window_simple::init(AW_root *root_in, const char *wid,
     window_name = strdup(windowname);
     window_defaults_name = GBS_string_2_key(wid);
 
-    p_w->shell= aw_create_shell(this, AW_TRUE, AW_TRUE, width, height, posx,
-            posy);
+    p_w->shell= aw_create_shell(this, AW_TRUE, AW_TRUE, width, height, posx, posy);
 
     // add this to disable resize or maximize in simple dialogs (avoids broken layouts)
     // XtVaSetValues(p_w->shell, XmNmwmFunctions, MWM_FUNC_MOVE | MWM_FUNC_CLOSE,
@@ -2396,7 +2407,6 @@ void AW_window_simple::init(AW_root *root_in, const char *wid,
 
     aw_realize_widget(this);
     create_devices();
-    set_icon(window_defaults_name);
 }
 
 void AW_window_simple_menu::init(AW_root *root_in, const char *wid,
@@ -2415,8 +2425,7 @@ void AW_window_simple_menu::init(AW_root *root_in, const char *wid,
     int posx = 50;
     int posy = 50;
 
-    p_w->shell= aw_create_shell(this, AW_TRUE, AW_TRUE, width, height, posx,
-            posy);
+    p_w->shell= aw_create_shell(this, AW_TRUE, AW_TRUE, width, height, posx, posy);
 
     Widget main_window;
     Widget help_popup;
@@ -2480,7 +2489,6 @@ void AW_window_simple_menu::init(AW_root *root_in, const char *wid,
 
     aw_create_help_entry(this);
     create_devices();
-    set_icon(window_defaults_name);
 }
 
 void AW_window_message::init(AW_root *root_in, const char *windowname,
@@ -2498,8 +2506,7 @@ void AW_window_message::init(AW_root *root_in, const char *windowname,
     window_defaults_name = GBS_string_2_key(window_name);
 
     // create shell for message box
-    p_w->shell= aw_create_shell(this, AW_TRUE, allow_close, width, height,
-            posx, posy);
+    p_w->shell= aw_create_shell(this, AW_TRUE, allow_close, width, height, posx, posy);
 
     // disable resize or maximize in simple dialogs (avoids broken layouts)
     XtVaSetValues(p_w->shell, XmNmwmFunctions, MWM_FUNC_MOVE | MWM_FUNC_CLOSE,
@@ -2517,7 +2524,6 @@ void AW_window_message::init(AW_root *root_in, const char *windowname,
 
     aw_realize_widget(this);
     //  create_devices();
-    set_icon("message");
 }
 
 void AW_window::set_info_area_height(int height) {

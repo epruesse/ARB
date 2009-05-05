@@ -798,7 +798,7 @@ void aw_initstatus( void )
         aw_root->awar_string( AWAR_STATUS_GAUGE,"------------------------------------",aw_default);
         aw_root->awar_string( AWAR_STATUS_ELAPSED,"",aw_default);
         aw_root->awar_string( AWAR_ERROR_MESSAGES,"",aw_default);
-        aw_root->init("ARB_STATUS",AW_TRUE);
+        aw_root->init_root("ARB_STATUS",AW_TRUE);
 
         AW_window_simple *aws = new AW_window_simple;
         aws->init( aw_root, "STATUS_BOX", "STATUS BOX");

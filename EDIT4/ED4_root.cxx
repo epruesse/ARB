@@ -1830,13 +1830,13 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
 
     // draw align/edit-button AFTER protection!!
     awmm->at("edit");
-    awmm->create_toggle(AWAR_EDIT_MODE, "edit/align.xpm", "edit/editseq.xpm", 7);
+    awmm->create_toggle(AWAR_EDIT_MODE, "#edit/align.xpm", "#edit/editseq.xpm", 7);
 
     awmm->at("insert");
     awmm->create_text_toggle(AWAR_INSERT_MODE, "Replace", "Insert", 7);
 
     awmm->at("direct");
-    awmm->create_toggle(AWAR_EDIT_DIRECTION,"edit/3to5.bitmap","edit/5to3.bitmap", 7);
+    awmm->create_toggle(AWAR_EDIT_DIRECTION,"#edit/3to5.bitmap","#edit/5to3.bitmap", 7);
 
     // ------------------------
     //      secedit / rna3d
@@ -1893,13 +1893,13 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     // --------------------
 
     awmm->at("cons");
-    awmm->create_toggle(ED4_AWAR_CONSENSUS_SHOW, "edit/nocons.bitmap", "edit/cons.bitmap");
+    awmm->create_toggle(ED4_AWAR_CONSENSUS_SHOW, "#edit/nocons.bitmap", "#edit/cons.bitmap");
 
     awmm->at("num");
-    awmm->create_toggle(ED4_AWAR_DIGITS_AS_REPEAT, "edit/norepeat.bitmap", "edit/repeat.bitmap");
+    awmm->create_toggle(ED4_AWAR_DIGITS_AS_REPEAT, "#edit/norepeat.bitmap", "#edit/repeat.bitmap");
 
     awmm->at("key");
-    awmm->create_toggle("key_mapping/enable", "edit/nokeymap.bitmap", "edit/keymap.bitmap");
+    awmm->create_toggle("key_mapping/enable", "#edit/nokeymap.bitmap", "#edit/keymap.bitmap");
 
     // search
     

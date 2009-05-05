@@ -2224,7 +2224,7 @@ void aed_create_window(AED_root *aedr) {
     awmm->insert_default_option("6",0,6);
     awmm->update_option_menu();
 
-    awmm->create_toggle(AWAR_EDIT_DIRECTION,"edit/r2l.bitmap","edit/l2r.bitmap");
+    awmm->create_toggle(AWAR_EDIT_DIRECTION,"#edit/r2l.bitmap","#edit/l2r.bitmap");
 
     awmm->label("MG");
     awmm->create_toggle(AWAR_EDIT_MULTI_SEQ);
@@ -2349,7 +2349,7 @@ int main(int argc,char **argv) {
     aed_root.db = aed_root.aw_root->open_default( ".arb_prop/edit.arb" );
 
     aed_root.aw_root->init_variables( aed_root.db );
-    aed_root.aw_root->init( "ARB_EDITOR" );     // window-system is initialized
+    aed_root.aw_root->init_root("ARB_EDITOR", AW_FALSE);     // initialize window-system 
 
     aed_create_window(&aed_root); // creates editor window and inserts callbacks
     aed_root.aw_root->main_loop(); // let's enter main-loop

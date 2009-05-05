@@ -90,6 +90,9 @@ endif
 
 shared_cflags :=# flags for shared lib compilation
 lflags :=# linker flags
+extended_warnings :=# warning flags for C and C++-compiler
+extended_cpp_warnings :=# warning flags for C++-compiler only
+
 
 ifeq ($(DEBUG),0)
 	dflags := -DNDEBUG# defines
@@ -1243,6 +1246,11 @@ perl_clean:
 
 wc:
 	wc `find . -type f \( -name '*.[ch]' -o -name '*.[ch]xx' \) -print`
+
+# ---------------------------------------- check ressources
+
+check_ressources:
+	$(ARBHOME)/SOURCE_TOOLS/check_ressources.pl
 
 # ---------------------------------------- cleaning
 

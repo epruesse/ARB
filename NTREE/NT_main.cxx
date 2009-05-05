@@ -405,7 +405,7 @@ int main(int argc, char **argv)
 
     aw_default = aw_root->open_default(".arb_prop/ntree.arb");
     aw_root->init_variables(aw_default);
-    aw_root->init("ARB_NT");
+    aw_root->init_root("ARB_NT", AW_FALSE);
 
     // create some early awars
     // Note: normally you don't like to add your awar-init-function here, but into nt_create_all_awars()

@@ -149,7 +149,7 @@ private:
 protected:
 public:
     static  AW_root *THIS;
-    AW_root_Motif   *prvt;      // Do not use !!!
+    AW_root_Motif   *prvt;                          // Do not use !!!
     AW_BOOL          value_changed;
     long             changer_of_variable;
     int              y_correction_for_input_labels;
@@ -158,6 +158,7 @@ public:
     AW_BOOL          variable_set_by_toggle_field;
     int              number_of_toggle_fields;
     int              number_of_option_menues;
+    char            *program_name;
 
     void            *get_aw_var_struct(char *awar);
     void            *get_aw_var_struct_no_error(char *awar);
@@ -190,7 +191,7 @@ public:
     enum { AW_MONO_COLOR, AW_RGB_COLOR }    color_mode;
 
     void init_variables( AW_default database );
-    void init( const char *programmname , AW_BOOL no_exit = AW_FALSE);
+    void init_root( const char *programmname , AW_BOOL no_exit);
     void main_loop(void);
     void process_events(void);
     AW_ProcessEventType peek_key_event(AW_window *);

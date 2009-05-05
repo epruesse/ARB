@@ -1558,15 +1558,15 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
     awm->callback((AW_CB)NT_set_tree_style,(AW_CL)ntw,(AW_CL)AP_TREE_RADIAL);
     awm->help_text("tr_type_radial.hlp");
-    awm->create_button("RADIAL_TREE_TYPE", "#radial.bitmap");
+    awm->create_button("RADIAL_TREE_TYPE", "#radial.xpm");
 
     awm->callback((AW_CB)NT_set_tree_style,(AW_CL)ntw,(AW_CL)AP_TREE_NORMAL);
     awm->help_text("tr_type_list.hlp");
-    awm->create_button("LIST_TREE_TYPE", "#dendro.bitmap");
+    awm->create_button("LIST_TREE_TYPE", "#dendro.xpm");
 
     awm->callback((AW_CB)NT_set_tree_style,(AW_CL)ntw,(AW_CL)AP_TREE_IRS);
     awm->help_text("tr_type_irs.hlp");
-    awm->create_button("FOLDED_LIST_TREE_TYPE", "#dendroIrs.bitmap");
+    awm->create_button("FOLDED_LIST_TREE_TYPE", "#dendroIrs.xpm");
     
     awm->callback((AW_CB)NT_set_tree_style, (AW_CL)ntw, (AW_CL)AP_LIST_NDS);
     awm->help_text("tr_type_nds.hlp");
