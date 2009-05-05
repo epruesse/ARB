@@ -14,6 +14,7 @@
         | grep -v "^CVS/" \
         | grep -v "/.svn/" \
         | grep -v "/CVS/" \
+        | grep -v "/unused/" \
         | grep -v "ChangeLog$" \
         | grep -v 'lib\/nas\/names.dat$' \
         | grep -v '/\..*$' \
