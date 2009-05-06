@@ -90,7 +90,7 @@ To build ARB from source
 Additional software that is needed to compile ARB:
 --------------------------------------------------
 
-- expat, rxp, sablotron 0.82-1.0 [needed for target 'help' only]
+- expat, xmllint, sablotron 0.82-1.0 [needed for target 'help' only]
 - openmotif, openmotif-devel
 - xaw???
 - xview-devel

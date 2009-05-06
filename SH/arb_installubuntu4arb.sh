@@ -50,7 +50,7 @@ else
             libxpm-dev \
             libxt-dev \
             lynx \
-            rxp \
+            libxml2-utils \
             sablotron \
             x11proto-print-dev \
             xutils-dev \

@@ -33,7 +33,7 @@ ARB requirements on Ubuntu 8.04
      - libxp-dev
      - libxext-dev
      - libtiff4-dev
-     - rxp
+     - libxml2-utils
      - sablotron
      - libxaw7-dev
      - xutils-dev

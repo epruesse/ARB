@@ -20,7 +20,7 @@ my @commands = (
                 'mv',
                 'perl',
                 'rm',
-                'rxp',
+                'xmllint',
                 'sabcmd',
                 'sed',
                 'sort',

@@ -1,5 +1,5 @@
 
-.SUFFIXES: .o .c .cxx .source .hlp .xml .html .depend .ps.gz .pdf.gz
+.SUFFIXES: .o .c .cxx .source .hlp .xml .dtd .html .depend .ps.gz .pdf.gz
 
 # --------------------------------------------------------------------------------
 
@@ -26,11 +26,9 @@ BINARIES = $(TOOL_OBJECTS:%.o=$(ARBHOME)/bin/%)
 
 QUIETLY = ./quietly.pl
 
-# We use Sablotron 1.0 and RXP 1.2
+# We use Sablotron 1.0 and XMLLINT
 XSLT = sabcmd
-VALIDATE = $(QUIETLY) RXP
-#VALIDATE = ./quiet_rxp.sh
-#VALIDATE = rxp -v -V -V
+VALIDATE = $(QUIETLY) XMLLINT
 
 # --------------------------------------------------------------------------------
 
@@ -102,6 +100,7 @@ XML_TMP2=$(XML_TMP:$(HLP_SOURCE)/%=$(XML_LOCATION)/%)
 XML=$(XML_TMP2:$(HLP_GENERATED)/%=$(XML_LOCATION)/%)
 
 XML_DEPEND=xml.stamp# xml files are rebuild if this stamp is recreated
+DTD=arb_help.dtd
 
 $(XML) : $(XML_DEPEND)  $(QUIETLY)
 
@@ -112,7 +111,7 @@ xml : $(XML)
 dump:
 		echo $(XML)
 
-$(XML_LOCATION)/%.xml : $(HLP_SOURCE)/%.hlp
+$(XML_LOCATION)/%.xml : $(HLP_SOURCE)/%.hlp $(DTD)
 		@test \! -f $(HLP_GENERATED)/$(<F) || \
 				( echo $<:1: exists twice -- only one existance allowed; \
 				  echo $(HLP_GENERATED)/$(<F):1: other occurrence \
@@ -120,7 +119,7 @@ $(XML_LOCATION)/%.xml : $(HLP_SOURCE)/%.hlp
 		arb_help2xml $< $@
 		@$(VALIDATE) $@
 
-$(XML_LOCATION)/%.xml : $(HLP_GENERATED)/%.hlp
+$(XML_LOCATION)/%.xml : $(HLP_GENERATED)/%.hlp $(DTD)
 		@test \! -f $(HLP_SOURCE)/$(<F) || \
 				( echo $<:1: exists twice -- only one existance allowed; \
 				  echo $(HLP_SOURCE)/$(<F):1: other occurrence \
@@ -178,7 +177,6 @@ date.xsl : date
 
 # --------------------------------------------------------------------------------
 
-DTD=arb_help.dtd
 STYLE_HTML=to_html.xsl
 STYLE_HELP=to_help.xsl
 
