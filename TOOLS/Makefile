@@ -47,8 +47,11 @@ clean:
 	rm -f $(BINARIES)
 	rm -f $(OBJECTS)
 
+depends:
+	$(MAKE) "DEBUG=1" depends_debug
+
 DEPENDS = $(OBJECTS:.o=.depend)
-depends: $(DEPENDS) 
+depends_debug: $(DEPENDS) 
 	@cat $(DEPENDS) | grep -v '^#' >>Makefile
 	@rm $(DEPENDS)
 $(DEPENDS): depend.init
