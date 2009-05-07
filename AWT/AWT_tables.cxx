@@ -343,7 +343,7 @@ void table_vars_callback(AW_root *aw_root,GBDATA *gb_main)      // Map table var
         aw_root->awar(AWAR_TABLE_REM)->unmap();
     }else{
         GBDATA *table_rem = GB_search(gb_table,"description",   GB_STRING);
-        aw_root->awar(AWAR_TABLE_REM)->map((void*)table_rem);
+        aw_root->awar(AWAR_TABLE_REM)->map(table_rem);
     }
     char *fname = GBS_string_eval(tablename,"*=*1.table:table_*=*1",0);
     aw_root->awar(AWAR_TABLE_EXPORT "/file_name")->write_string(fname); // create default file name

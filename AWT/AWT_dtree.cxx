@@ -1809,7 +1809,7 @@ void AWT_graphic_tree::unload(void)
 GB_ERROR AWT_graphic_tree::load(GBDATA *, const char *name,AW_CL link_to_database, AW_CL insert_delete_cbs) {
     GB_ERROR error = 0;
 
-    if (strcmp(name, "tree_????") == 0) {           // no tree selected
+    if (name[0] == 0 || strcmp(name, "tree_????") == 0) { // no tree selected
         unload();
         zombies    = 0;
         duplicates = 0;

@@ -17,55 +17,54 @@ void print_speed(const char *desc, int loops){
     starttime = tp;
 }
 
-GBDATA *gb_main;
-
 int main(int argc, char **argv)
 {
-    //  GB_ERROR error;
-    char *in;
-    char *out;
-    const char *readflags = "rw";
-    //  GBDATA *gb_main;
+    GB_ERROR error = 0;
+
     if (argc == 0) {
         fprintf(stderr,"arb_2_ascii source.arb [dest.arb]: Converts a database to ascii format\n");
         fprintf(stderr,"        if dest.arb is set, try to fix problems  source.arb\n");
         fprintf(stderr,"        else replace source.arb by ascii version\n");
-        exit(-1);
-    }
-    in = argv[1];
-    if (argc == 1) {
-        out = in;
+
+        error = "Missing arguments";
     }
     else {
-        readflags = "rw";               /* try to recover corrupt data */
-        out = argv[2];
-    }
-    gb_main = GBT_open(in,readflags,0);
-    if (!gb_main){
-        GB_print_error();
-        return (-1);
+        char   *in      = argv[1];
+        GBDATA *gb_main = GBT_open(in,"rw",0);
+
+        if (!gb_main){
+            error = GB_await_error();
+        }
+        else {
+            GBDATA *gbd;
+            char *name;
+            {
+                GB_begin_transaction(gb_main);
+                GBDATA *gb_species = GBT_first_species(gb_main);
+                gbd = GB_search(gb_species,"name",GB_FIND);
+                name = GB_read_string(gbd);
+                GB_commit_transaction(gb_main);
+            }
+
+            int i;
+            GB_begin_transaction(gb_main);
+            gettimeofday(&starttime,0);
+
+            GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_FIND);
+            for (i= 0; i<10; i++){
+                GB_find_string(gb_species_data,"full_name","asdfasdf", GB_IGNORE_CASE, down_2_level);
+            }
+            GB_commit_transaction(gb_main);
+            print_speed("Transactions",i);
+
+            GB_close(gb_main);
+        }
     }
 
-    GBDATA *gbd;
-    char *name;
-    {
-        GB_begin_transaction(gb_main);
-        GBDATA *gb_species = GBT_first_species(gb_main);
-        gbd = GB_search(gb_species,"name",GB_FIND);
-        name = GB_read_string(gbd);
-        GB_commit_transaction(gb_main);
+    if (error) {
+        fprintf(stderr, "arb_perf_test: Error: %s\n", error);
+        return EXIT_FAILURE;
     }
 
-    int i;
-    GB_begin_transaction(gb_main);
-    gettimeofday(&starttime,0);
-
-    GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_FIND);
-    for (i= 0; i<10; i++){
-        GB_find_string(gb_species_data,"full_name","asdfasdf", GB_IGNORE_CASE, down_2_level);
-    }
-    GB_commit_transaction(gb_main);
-    print_speed("Transacionts",i);
-
-    return 0;
+    return EXIT_SUCCESS;
 }

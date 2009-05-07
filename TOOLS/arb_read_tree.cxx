@@ -6,10 +6,6 @@
 #include <time.h>
 
 
-void show_error(GBDATA *gb_main) {
-    GBT_message(gb_main, GB_await_error());
-}
-
 // add_bootstrap interprets the length of the branches as bootstrap value
 // (this is needed by Phylip DNAPARS/PROTPARS with bootstrapping)
 //
@@ -42,8 +38,7 @@ void add_bootstrap(GBT_TREE *node, double hundred) {
     add_bootstrap(node->rightson, hundred);
 }
 
-static void abort_with_usage(GBDATA *gb_main, const char *error) __ATTR__NORETURN;
-static void abort_with_usage(GBDATA *gb_main, const char *error) {
+ATTRIBUTED(__ATTR__NORETURN, static void abort_with_usage(GBDATA *gb_main, const char *error)) {
     printf("Usage: arb_read_tree [-scale factor] [-consense #ofTrees] tree_name treefile [comment] [-commentFromFile file]\n");
     if (error) {
         printf("Error: %s\n", error);
@@ -126,108 +121,94 @@ int main(int argc,char **argv)
     char *comment_from_treefile = 0;
     GBT_message(gb_main, GBS_global_string("Reading tree from '%s' ..", filename));
 
+    GB_ERROR  error = 0;
     GBT_TREE *tree;
     {
         char *scaleWarning = 0;
-        
+
         tree = GBT_load_tree(filename, sizeof(GBT_TREE), &comment_from_treefile, (consense||scale) ? 0 : 1, &scaleWarning);
         if (!tree) {
-            show_error(gb_main);
-            return -1;
+            error = GB_await_error();
         }
-
-        if (scaleWarning) {
-            GBT_message(gb_main, scaleWarning);
-            free(scaleWarning);
-        }
-    }
-
-    if (scale) {
-        GBT_message(gb_main, GBS_global_string("Scaling branch lengths by factor %f.", scale_factor));
-        GBT_scale_tree(tree, scale_factor, 1.0);
-    }
-
-    if (consense) {
-        if (calculated_trees < 1) {
-            GB_export_error("Min. for -consense is 1");
-            show_error(gb_main);
-            GB_close(gb_main);
-            return -1;
-        }
-        GBT_message(gb_main, GBS_global_string("Reinterpreting branch lengths as consense values (%i trees).", calculated_trees));
-        add_bootstrap(tree, calculated_trees);
-    }
-
-    GB_begin_transaction(gb_main);
-    if (tree->is_leaf){
-        const char *err = "Cannot load tree (need at least 2 leafs)";
-        GB_export_error(err);
-        show_error(gb_main);
-
-        GB_commit_transaction(gb_main);
-        GB_close(gb_main);
-        return -1;
-    }
-
-    GB_ERROR error = GBT_write_tree(gb_main,0,tree_name,tree);
-    if (error) {
-        GB_export_error(error);
-        show_error(gb_main);
-
-        GB_commit_transaction(gb_main);
-        GB_close(gb_main);
-        return -1;
-    }
-
-    // write tree comment:
-    {
-        const char *datestring;
-        {
-            time_t date;
-
-            if (time(&date) == -1) {
-                fprintf(stderr, "Error calculating time\n");
-                exit(EXIT_FAILURE);
+        else {
+            if (scaleWarning) {
+                GBT_message(gb_main, scaleWarning);
+                free(scaleWarning);
             }
-            datestring = ctime(&date);
+        }
+    }
+
+    if (!error) {
+        if (scale) {
+            GBT_message(gb_main, GBS_global_string("Scaling branch lengths by factor %f.", scale_factor));
+            GBT_scale_tree(tree, scale_factor, 1.0);
         }
 
-        char *load_info = GBS_global_string_copy("Tree loaded from '%s' on %s", filename, datestring);
+        if (consense) {
+            if (calculated_trees < 1) {
+                error = "Minimum for -consense is 1";
+            }
+            else {
+                GBT_message(gb_main, GBS_global_string("Reinterpreting branch lengths as consense values (%i trees).", calculated_trees));
+                add_bootstrap(tree, calculated_trees);
+            }
+        }
+    }
+
+    if (!error) {
+        error = GB_begin_transaction(gb_main);
+        
+        if (!error && tree->is_leaf) error = "Cannot load tree (need at least 2 leafs)";
+        if (!error) error                  = GBT_write_tree(gb_main,0,tree_name,tree);
+
+        if (!error) {
+            // write tree comment:
+            const char *datestring;
+            {
+                time_t date;
+                if (time(&date) == -1) datestring = "<Error calculating time>";
+                else datestring = ctime(&date);
+            }
+
+            char *load_info = GBS_global_string_copy("Tree loaded from '%s' on %s", filename, datestring);
 
 #define COMMENT_SOURCES 4
-        const char *comments[COMMENT_SOURCES] = {
-            comment,
-            comment_from_file,
-            comment_from_treefile,
-            load_info,
-        };
+            const char *comments[COMMENT_SOURCES] = {
+                comment,
+                comment_from_file,
+                comment_from_treefile,
+                load_info,
+            };
 
-        GBS_strstruct *buf   = GBS_stropen(5000);
-        bool           empty = true;
+            GBS_strstruct *buf   = GBS_stropen(5000);
+            bool           empty = true;
 
-        for (int c = 0; c<COMMENT_SOURCES; c++) {
-            if (comments[c]) {
-                if (!empty) GBS_chrcat(buf, '\n');
-                GBS_strcat(buf, comments[c]);
-                empty = false;
+            for (int c = 0; c<COMMENT_SOURCES; c++) {
+                if (comments[c]) {
+                    if (!empty) GBS_chrcat(buf, '\n');
+                    GBS_strcat(buf, comments[c]);
+                    empty = false;
+                }
             }
+
+            char *cmt = GBS_strclose(buf);
+
+            error = GBT_write_tree_rem(gb_main, tree_name, cmt);
+
+            free(cmt);
+            free(load_info);
         }
 
-        char *cmt = GBS_strclose(buf);
-        GBT_write_tree_rem(gb_main, tree_name, cmt);
-        free(cmt);
-        free(load_info);
+        error = GB_end_transaction(gb_main, error);
     }
+
+    if (error) GBT_message(gb_main, error);
+    else GBT_message(gb_main, GBS_global_string("Tree %s read into the database", tree_name));
+    
+    GB_close(gb_main);
 
     free(comment_from_file);
     free(comment_from_treefile);
 
-    char buffer[256];
-
-    sprintf(buffer,"Tree %s read into the database",tree_name);
-    GBT_message(gb_main,buffer);
-
-    GB_commit_transaction(gb_main);
-    GB_close(gb_main);
-    return 0;
+    return error ? EXIT_FAILURE : EXIT_SUCCESS;
 }

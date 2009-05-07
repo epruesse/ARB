@@ -120,7 +120,6 @@ char *GB_check_out_buffer P_((GB_CBUFFER buffer));
 GB_BUFFER GB_give_other_buffer P_((GB_CBUFFER buffer, long size));
 void GB_init_gb P_((void));
 void GB_close P_((GBDATA *gbd));
-void GB_exit P_((GBDATA *gbd));
 long GB_read_int P_((GBDATA *gbd));
 int GB_read_byte P_((GBDATA *gbd));
 double GB_read_float P_((GBDATA *gbd));

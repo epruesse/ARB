@@ -25,6 +25,8 @@ typedef const char *GB_ERROR;   /* memory management is controlled by the ARBDB 
 typedef char       *GB_BUFFER;  /* points to a piece of mem (writeable, but don't free!)*/
 typedef const char *GB_CBUFFER; /* points to a piece of mem (readable only)*/
 
+typedef struct gb_data_base_type GBDATA;
+
 typedef enum { GB_FALSE = 0 , GB_TRUE = 1 } GB_BOOL;
 
 

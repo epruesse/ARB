@@ -586,6 +586,8 @@ int main(int argc, char* argv[]) {
             error = GB_save_as(gb_main, outputname, "bfm");
             if (error) unlink(outputname);
         }
+
+        GB_close(gb_main);
     }
 
     if (error) {

@@ -1654,7 +1654,7 @@ GB_ERROR gbcmc_begin_transaction(GBDATA *gbd)
                 }
                 break;
             case GBCM_COMMAND_PUT_UPDATE_DELETE:
-                if (gb2)    gb_delete_entry(gb2);
+                if (gb2) gb_delete_entry(&gb2);
                 break;
             case GBCM_COMMAND_PUT_UPDATE_KEYS:
                 error = gbcmc_read_keys(socket,gbd);

@@ -54,10 +54,11 @@ void tree_vars_callback(AW_root *aw_root) // Map tree vars to display objects
 
         GBDATA *tree_prot = GB_search(ali_cont,"security",  GB_FIND);
         if (!tree_prot) GBT_readOrCreate_int(ali_cont,"security", GB_read_security_write(ali_cont));
-        tree_prot = GB_search(ali_cont,"security",  GB_INT);
-        GBDATA *tree_rem =  GB_search(ali_cont,"remark",    GB_STRING);
-        aw_root->awar(AWAR_TREE_SECURITY)->map((void*)tree_prot);
-        aw_root->awar(AWAR_TREE_REM)->map((void*)tree_rem);
+        tree_prot         = GB_search(ali_cont,"security",  GB_INT);
+        
+        GBDATA *tree_rem = GB_search(ali_cont,"remark",    GB_STRING);
+        aw_root->awar(AWAR_TREE_SECURITY)->map(tree_prot);
+        aw_root->awar(AWAR_TREE_REM)     ->map(tree_rem);
     }
     char *suffix = aw_root->awar(AWAR_TREE_EXPORT_FILTER)->read_string();
     char *fname  = GBS_string_eval(treename,GBS_global_string("*=*1.%s:tree_*=*1", suffix),0);

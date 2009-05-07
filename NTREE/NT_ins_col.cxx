@@ -13,10 +13,9 @@ extern GBDATA *GLOBAL_gb_main;     /* muss existieren */
 
 void create_insertchar_variables(AW_root *root,AW_default db1)
 {
-    root->awar_int( AWAR_CURSOR_POSITION, 0  ,    (void*)GLOBAL_gb_main);
-    root->awar_int( "insertchar/nchar", 0  ,    db1);
-    root->awar("insertchar/nchar")->set_minmax( 0, 999000);
-    root->awar_string( "insertchar/characters", ""  ,    db1);
+    root->awar_int   (AWAR_CURSOR_POSITION,    0,  GLOBAL_gb_main);
+    root->awar_int   ("insertchar/nchar",      0,  db1)->set_minmax( 0, 999000);
+    root->awar_string("insertchar/characters", "", db1);
 }
 
 void awt_inserchar_event(AW_window *aws,AW_CL awcl_mode)

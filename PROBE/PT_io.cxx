@@ -81,6 +81,9 @@ void probe_read_data_base(char *name)
     GBDATA *gb_species_data;
 
     GB_set_verbose();
+#if defined(DEVEL_RALF)
+#warning gb_main should be closed    
+#endif // DEVEL_RALF
     gb_main = GB_open(name,"r");
     if (!gb_main) {
         printf("Error reading file %s\n",name);

@@ -106,7 +106,7 @@ AD_ERR * AD_MAIN::save_home(const char *modus)
 
 AD_ERR *AD_MAIN::close()
 {
-    if (gbd) { GB_exit(gbd); }
+    if (gbd) { GB_close(gbd); }
     gbd = 0;
     return 0;
 }

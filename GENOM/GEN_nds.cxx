@@ -250,7 +250,7 @@ void GEN_create_nds_vars(AW_root *aw_root,AW_default awdef,GBDATA *gb_main, GB_C
             else {
                 strcpy(keystart, "key_text");
                 aw_root->awar_string(buf,"",awdef);
-                aw_root->awar(buf)->map((void *)gb_key_text);
+                aw_root->awar(buf)->map(gb_key_text);
             }
         }
 
@@ -260,7 +260,7 @@ void GEN_create_nds_vars(AW_root *aw_root,AW_default awdef,GBDATA *gb_main, GB_C
             else {
                 strcpy(keystart, "pars");
                 aw_root->awar_string(buf,"",awdef);
-                aw_root->awar(buf)->map((void *)gb_pars);
+                aw_root->awar(buf)->map(gb_pars);
             }
         }
 
@@ -270,7 +270,7 @@ void GEN_create_nds_vars(AW_root *aw_root,AW_default awdef,GBDATA *gb_main, GB_C
             else {
                 strcpy(keystart, "flag1");
                 aw_root->awar_int(buf,0,awdef);
-                aw_root->awar(buf)->map((void *)gb_flag1);
+                aw_root->awar(buf)->map(gb_flag1);
             }
         }
 
@@ -281,7 +281,7 @@ void GEN_create_nds_vars(AW_root *aw_root,AW_default awdef,GBDATA *gb_main, GB_C
                 strcpy(keystart, "len1");
                 aw_root->awar_int(buf,0,awdef);
                 aw_root->awar(buf)->set_minmax(0, GEN_NDS_STRING_SIZE);
-                aw_root->awar(buf)->map((void *)gb_len1);
+                aw_root->awar(buf)->map(gb_len1);
             }
         }
     }

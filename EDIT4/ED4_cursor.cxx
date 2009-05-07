@@ -464,6 +464,7 @@ void ED4_select_named_sequence_terminal(const char *name, int mode) {
     // mode == 1 -> only select species
     // mode == 2 -> only select SAI
 
+    GB_transaction ta(GLOBAL_gb_main);
     ED4_species_name_terminal *name_term = ED4_find_species_name_terminal(name);
     if (name_term) {
         // lookup current name term

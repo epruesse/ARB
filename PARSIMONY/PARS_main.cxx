@@ -49,20 +49,25 @@ AWT_csp *awt_csp = 0;
 
 AW_window *create_kernighan_window(AW_root *aw_root);
 
-void PARS_export_tree(void){
+static void pars_export_tree(void){
     // GB_ERROR error = GLOBAL_NT->tree->tree_root->AP_tree::saveTree();
     GB_ERROR error = GLOBAL_NT->tree->save(0, 0, 0, 0);
     if (error) aw_message(error);
 }
 
-void PARS_export_cb(AW_window *, AWT_canvas *, AW_CL mode){
+ATTRIBUTED(__ATTR__NORETURN, static void pars_exit(AW_window *aww)) {
+    aww->get_root()->unlink_awars_from_DB(GLOBAL_gb_main);
+    GB_close(GLOBAL_gb_main);
+    exit(0);
+}
+
+void PARS_export_cb(AW_window *aww, AWT_canvas *, AW_CL mode){
     if (mode &1){       // export tree
-        PARS_export_tree();
+        pars_export_tree();
     }
     if (mode &2) {
         //quit
-        GB_exit(GLOBAL_gb_main);
-        exit(0);
+        pars_exit(aww);
     }
 }
 
@@ -84,7 +89,7 @@ void AP_user_pop_cb(AW_window *aww,AWT_canvas *ntw)
     ntw->refresh();
     (*ap_main->tree_root)->test_tree();
     aww->get_root()->awar(AWAR_STACKPOINTER)->write_int(ap_main->user_push_counter);
-    PARS_export_tree();
+    pars_export_tree();
 
     if (ap_main->user_push_counter <= 0) { // last tree was popped => push again
         AP_user_push_cb(aww, ntw);
@@ -525,7 +530,7 @@ static void nt_add(AW_window *, AWT_canvas *ntw, int what, AP_BOOL quick, int te
 
     AWT_TREE(ntw)->resort_tree(0);
     ntw->zoom_reset();
-    if (!error) PARS_export_tree();
+    if (!error) pars_export_tree();
 }
 
 // -----------------------------------------
@@ -889,7 +894,7 @@ static void nt_add_partial(AW_window */*aww*/, AWT_canvas *ntw) {
 
 //     AWT_TREE(ntw)->resort_tree(0);
     ntw->zoom_reset();
-    if (!error) PARS_export_tree();
+    if (!error) pars_export_tree();
 }
 
 // -----------------------------
@@ -994,7 +999,7 @@ static void NT_branch_lengths(AW_window *, AWT_canvas *ntw) {
 
     ntw->zoom_reset();
     ntw->refresh();
-    PARS_export_tree();
+    pars_export_tree();
 }
 
 static void NT_bootstrap(AW_window *aw,AWT_canvas *ntw,AW_CL limit_only)
@@ -1011,7 +1016,7 @@ static void NT_bootstrap(AW_window *aw,AWT_canvas *ntw,AW_CL limit_only)
     AWT_TREE(ntw)->tree_root_display = AWT_TREE(ntw)->tree_root;
     ntw->zoom_reset();
     ntw->refresh();
-    PARS_export_tree();
+    pars_export_tree();
 }
 
 static void NT_optimize(AW_window *, AWT_canvas *ntw)
@@ -1029,7 +1034,7 @@ static void NT_optimize(AW_window *, AWT_canvas *ntw)
     aw_closestatus();
     ntw->zoom_reset();
     ntw->refresh();
-    PARS_export_tree();
+    pars_export_tree();
 }
 
 static void NT_recursiveNNI(AW_window *,AWT_canvas *ntw)
@@ -1056,7 +1061,7 @@ static void NT_recursiveNNI(AW_window *,AWT_canvas *ntw)
     aw_closestatus();
     ntw->zoom_reset();
     ntw->refresh();
-    PARS_export_tree();
+    pars_export_tree();
 }
 
 static AW_window *NT_create_tree_setting(AW_root *aw_root)
@@ -1457,24 +1462,11 @@ static void pars_start_cb(AW_window *aww, AW_CL cd_adfiltercbstruct) {
 
     awr->awar( AWAR_COLOR_GROUPS_USE)->add_callback( (AW_RCB)NT_recompute_cb, (AW_CL)ntw,0);
 
-    if (ap_main->commands.add_marked){
-        NT_quick_add(awm,ntw,0);
-    }
-    if (ap_main->commands.add_selected){
-        NT_quick_add(awm,ntw,1);
-    }
-    if (ap_main->commands.calc_branch_lenths){
-        NT_branch_lengths(awm,ntw);
-    }
-    if (ap_main->commands.calc_bootstrap){
-        NT_bootstrap(awm,ntw,0);
-    }
-    if (ap_main->commands.quit){
-        GB_exit(ntw->gb_main);
-        GB_usleep(3000000); // wait three seconds, there might be error messages !!!!
-        exit(0);
-    }
-
+    if (ap_main->commands.add_marked)           NT_quick_add(awm,ntw,0);
+    if (ap_main->commands.add_selected)         NT_quick_add(awm,ntw,1);
+    if (ap_main->commands.calc_branch_lenths)   NT_branch_lengths(awm,ntw);
+    if (ap_main->commands.calc_bootstrap)       NT_bootstrap(awm,ntw,0);
+    if (ap_main->commands.quit)                 pars_exit(awm);
 
     GB_transaction dummy(ntw->gb_main);
 
@@ -1698,7 +1690,7 @@ static AW_window *create_pars_init_window(AW_root *awr)
     aws->button_length( 10 );
     aws->label_length( 10 );
 
-    aws->callback( (AW_CB0)exit);
+    aws->callback(pars_exit);
     aws->at("close");
     aws->create_button("ABORT","ABORT","A");
 

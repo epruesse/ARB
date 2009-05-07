@@ -336,26 +336,34 @@ GB_ERROR gb_unfold(GBCONTAINER *gbd, long deep, int index_pos)
                     CLOSE DATABASE
 ********************************************************************************************/
 void GB_close(GBDATA *gbd) {
+    GB_ERROR error = 0;
+
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     if (!Main->local_mode){
-        gbcmc_close(Main->c_link);
+        long result = gbcmc_close(Main->c_link);
+        if (result != 0) error = GBS_global_string("gbcmc_close returns %li", result);
     }
 
-#if defined(DEVEL_RALF)
-#warning code below was in ARB long time ago. Needs to be debugged, crashes ARB
-    gb_delete_entry(gbd);
-    gb_do_callback_list(gbd);   /* do all callbacks */
-    gb_destroy_main(Main);
-#endif /* DEVEL_RALF */
-}
+    if (!error) {
+        gb_assert((GBDATA*)Main->data == gbd); 
+        gb_delete_entry(&gbd);
+        
+        /* ARBDB applications using awars easily crash in gb_do_callback_list(),
+         * if AWARs are still bound to elements in the closed database.
+         * 
+         * To unlink awars call AW_root::unlink_awars_from_DB().
+         * If that doesn't help, test Main->data (often aka as GLOBAL_gb_main)
+         */
+        Main->data = NULL;
+        gb_do_callback_list(Main);                  /* do all callbacks */
 
-void GB_exit(GBDATA *gbd) {
-    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    if (!Main->local_mode){
-        gbcmc_close(Main->c_link);
+        gb_destroy_main(Main);
+    }
+
+    if (error) {
+        GB_warning("Error in GB_close: %s", error);
     }
 }
-
 
 
 /********************************************************************************************
@@ -1257,10 +1265,11 @@ GBDATA *GB_create_container(GBDATA *father,const char *key)
     return (GBDATA *)gbd;
 }
 
+#if defined(DEVEL_RALF)
+#warning change param for GB_delete to GBDATA **
+#endif /* DEVEL_RALF */
 
-
-GB_ERROR GB_delete(GBDATA *source)
-{
+GB_ERROR GB_delete(GBDATA *source) {
     GBDATA *gb_main;
 
     GB_TEST_TRANSACTION(source);
@@ -1276,11 +1285,15 @@ GB_ERROR GB_delete(GBDATA *source)
         GB_set_compression(gb_main, -1); /* allow all types of compressions */
     }
 
-    if (GB_MAIN(source)->transaction<0){
-        gb_delete_entry(source);
-        gb_do_callback_list(gb_main);
-    }else{
-        gb_touch_entry(source,gb_deleted);
+    {
+        GB_MAIN_TYPE *Main = GB_MAIN(source);
+        if (Main->transaction<0){
+            gb_delete_entry(&source);
+            gb_do_callback_list(Main);
+        }
+        else {
+            gb_touch_entry(source,gb_deleted);
+        }
     }
     return 0;
 }
@@ -1645,9 +1658,12 @@ GB_ERROR GB_begin_transaction(GBDATA *gbd) {
         gb_untouch_me(gbd);
         if (error) return error;
     }
-    gb_do_callback_list(gbd);       /* do all callbacks
-                                       cb that change the db are no problem
-                                       'cause it's the beginning of a ta */
+
+    /* do all callbacks
+     * cb that change the db are no problem, because it's the beginning of a ta
+     */
+    gb_do_callback_list(Main);
+    
     Main->clock ++;
     return 0;
 }
@@ -1698,18 +1714,18 @@ GB_ERROR GB_abort_transaction(GBDATA *gbd)
         if (error) return error;
     }
     Main->clock--;
-    gb_do_callback_list(gbd);       /* do all callbacks */
+    gb_do_callback_list(Main);       /* do all callbacks */
     Main->transaction = 0;
     gb_untouch_children((GBCONTAINER *)gbd);
     gb_untouch_me(gbd);
     return 0;
 }
 
-GB_ERROR GB_commit_transaction(GBDATA *gbd)
-{
-    GB_ERROR error =0;
-    GB_MAIN_TYPE    *Main = GB_MAIN(gbd);
-    GB_CHANGED  flag;
+GB_ERROR GB_commit_transaction(GBDATA *gbd) {
+    GB_ERROR      error = 0;
+    GB_MAIN_TYPE *Main  = GB_MAIN(gbd);
+    GB_CHANGED    flag;
+
     gbd = (GBDATA *)Main->data;
     if (!Main->transaction) {
         error = GB_export_error("GB_commit_transaction: No running Transaction");
@@ -1733,7 +1749,7 @@ GB_ERROR GB_commit_transaction(GBDATA *gbd)
             gb_untouch_children((GBCONTAINER *)gbd);
             gb_untouch_me(gbd);
             if (error) break;
-            gb_do_callback_list(gbd);       /* do all callbacks */
+            gb_do_callback_list(Main);       /* do all callbacks */
         }
         gb_disable_undo(gbd);
         if(error1){
@@ -1752,9 +1768,9 @@ GB_ERROR GB_commit_transaction(GBDATA *gbd)
 
             gb_untouch_children((GBCONTAINER *)gbd);
             gb_untouch_me(gbd);
-            gb_do_callback_list(gbd);       /* do all callbacks */
+            gb_do_callback_list(Main);       /* do all callbacks */
         }
-        if (!error)         error = gbcmc_commit_transaction(gbd);
+        if (!error) error = gbcmc_commit_transaction(gbd);
 
     }
     Main->transaction = 0;
@@ -1855,12 +1871,11 @@ GB_ERROR gb_add_delete_callback_list(GBDATA *gbd,struct gb_transaction_save *old
 struct gb_callback_list *g_b_old_callback_list = 0;
 GB_MAIN_TYPE        *g_b_old_main = 0;
 
-GB_ERROR gb_do_callback_list(GBDATA *gbd)
-{
-    struct gb_callback_list *cbl,*cbl_next; /* first all delete callbacks */
-    GB_MAIN_TYPE    *Main = GB_MAIN(gbd);
-    g_b_old_main    = Main;
+GB_ERROR gb_do_callback_list(GB_MAIN_TYPE *Main) {
+    struct gb_callback_list *cbl,*cbl_next;
+    g_b_old_main = Main;
 
+    /* first all delete callbacks: */
     for (cbl = Main->cbld; cbl ; cbl = cbl_next){
         g_b_old_callback_list = cbl;
         cbl->func(cbl->gbd,cbl->clientdata, GB_CB_DELETE);
@@ -1871,7 +1886,7 @@ GB_ERROR gb_do_callback_list(GBDATA *gbd)
     }
     Main->cbld_last = 0;
     Main->cbld = 0;
-    /* then all updates */
+    /* then all update callbacks: */
     for (cbl = Main->cbl; cbl ; cbl = cbl_next){
         g_b_old_callback_list = cbl;
         cbl->func(cbl->gbd,cbl->clientdata, cbl->type);
@@ -2052,11 +2067,13 @@ GB_ERROR GB_ensure_callback(GBDATA *gbd, enum gb_call_back_type type, GB_CB func
     free cached data in a client, no pointers in the freed region are allowed
 ********************************************************************************************/
 GB_ERROR GB_release(GBDATA *gbd){
-    GBCONTAINER *gbc;
-    GBDATA *gb;
-    int index;
+    GBCONTAINER  *gbc;
+    GBDATA       *gb;
+    int           index;
+    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
+
     GB_TEST_TRANSACTION(gbd);
-    if (GB_MAIN(gbd)->local_mode) return 0;
+    if (Main->local_mode) return 0;
     if (GB_ARRAY_FLAGS(gbd).changed &&!gbd->flags2.update_in_server) {
         GB_update_server(gbd);
     }
@@ -2071,12 +2088,12 @@ GB_ERROR GB_release(GBDATA *gbd){
 
     for (index = 0; index < gbc->d.nheader; index++) {
         if ( (gb = GBCONTAINER_ELEM(gbc,index)) ) {
-            gb_delete_entry(gb);
+            gb_delete_entry(&gb);
         }
     }
 
     gbc->flags2.folded_container = 1;
-    gb_do_callback_list(gbd);       /* do all callbacks */
+    gb_do_callback_list(Main);       /* do all callbacks */
     return 0;
 }
 /********************************************************************************************

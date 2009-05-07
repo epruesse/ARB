@@ -815,9 +815,9 @@ long gb_read_bin_rek_V2(FILE *in,GBCONTAINER *gbd,long nitems,long version,long 
                         header = GB_DATA_LIST_HEADER(gbd->d);
                     }
                     if ((gb2 = GB_HEADER_LIST_GBD(header[index]))!=NULL) {
-                        gb_delete_entry(gb2);
-                        gb2 = NULL;
-                    }else{
+                        gb_delete_entry(&gb2);
+                    }
+                    else {
                         header[index].flags.ever_changed = 1;
                         header[index].flags.changed = gb_deleted;
                     }
@@ -851,30 +851,25 @@ long gb_read_bin_rek_V2(FILE *in,GBCONTAINER *gbd,long nitems,long version,long 
             }
 
             if (index >= 0 && (gb2 = GB_HEADER_LIST_GBD(header[index]))!=NULL) {
-                if (    (GB_TYPE(gb2) == GB_DB ) !=
-                        ( type2 == GB_DB) ) {
+                if ( (GB_TYPE(gb2) == GB_DB ) != (type2 == GB_DB)) {
                     GB_internal_error("Type changed, you may loose data");
-                    gb_delete_entry(gb2);
+                    gb_delete_entry(&gb2);
                     SET_GB_HEADER_LIST_GBD(header[index],NULL);
-                    gb2 = 0;    /* @@@ OLI */
-                }else{
-                    if (type2 == GB_DB){
-                        gbc = (GBCONTAINER *)gb2;
-                    }else{
-                        GB_FREEDATA(gb2);
-                    }
+                }
+                else {
+                    if (type2 == GB_DB) gbc = (GBCONTAINER *)gb2;
+                    else GB_FREEDATA(gb2);
                 }
             }
-        }else{
-            index = -1;
         }
-
+        else index = -1;
 
         if (!gb2) {
             if (type2 == (long)GB_DB){
                 gbc = gb_make_container(gbd,NULL,index, key);
                 gb2 = (GBDATA *)gbc;
-            }else{
+            }
+            else {
                 gb2 = gb_make_entry(gbd,NULL,index, key, (GB_TYPES)type2);
                 GB_INDEX_CHECK_OUT(gb2);
             }

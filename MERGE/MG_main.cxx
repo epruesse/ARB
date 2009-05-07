@@ -340,6 +340,9 @@ void MG_start_cb(AW_window *aww)
         else {
             aw_openstatus("Loading databases");
 
+#if defined(DEVEL_RALF)
+#warning where are GLOBAL_gb_merge / GLOBAL_gb_dest closed ? 
+#endif // DEVEL_RALF
             aw_status("DATABASE I");
             GLOBAL_gb_merge             = GBT_open(merge, "rw", "$(ARBHOME)/lib/pts/*");
             if (!GLOBAL_gb_merge) error = GB_await_error();

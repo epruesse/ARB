@@ -56,51 +56,28 @@ GB_ERROR AW_MSG_UNMAPPED_AWAR = "Error (unmapped AWAR):\n"
     "unmapped. Try to select a different item, reselect this and retry.";
 
 char *AW_awar::read_as_string( void ) {
-    char *rt;
-    if (!gb_var) return strdup("?????");
-    GB_push_transaction(gb_var);
-    rt = GB_read_as_string( gb_var );
-    GB_pop_transaction(gb_var);
-    return rt;
+    if (!gb_var) return strdup("");
+    GB_transaction ta(gb_var);
+    return GB_read_as_string(gb_var);
 }
 
 char *AW_awar::read_string(){
-    if (!gb_var) return strdup("?????");
-    GB_transaction dummy(gb_var);
-    return GB_read_as_string( gb_var );
-}
+    aw_assert(variable_type == AW_STRING);
 
-void AW_awar::get( char **p_string ) {
-    freeset(*p_string, read_string());
+    if (!gb_var) return strdup("");
+    GB_transaction ta(gb_var);
+    return GB_read_string(gb_var);
 }
-
 
 long AW_awar::read_int(){
     if (!gb_var) return 0;
-    GB_transaction dummy(gb_var);
+    GB_transaction ta(gb_var);
     return (long)GB_read_int( gb_var );
 }
-
-void AW_awar::get( long *p_int ) {
-    *p_int =  (long)read_int( );
-}
-
 double AW_awar::read_float(){
     if (!gb_var) return 0.0;
-    GB_transaction dummy(gb_var);
-    return GB_read_float( gb_var );
-}
-
-void AW_awar::get( double *p_double ) {
-    *p_double =  read_float( );
-}
-
-
-void AW_awar::get( float *p_float ) {
-    if (!gb_var){
-        *p_float = 0.0;         return;
-    }
-    *p_float =  read_float( );
+    GB_transaction ta(gb_var);
+    return GB_read_float(gb_var);
 }
 
 #if defined(DUMP_AWAR_CHANGES)
@@ -220,8 +197,7 @@ AW_awar *AW_awar::add_callback( void (*f)(AW_root*)){ return add_callback((AW_RC
 AW_awar *AW_awar::remove_callback( void (*f)(AW_root*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2 ){
     // remove a callback, please set unused AW_CL to (AW_CL)0
     AW_var_callback *prev = 0;
-    AW_var_callback *vc;
-    for (vc = callback_list; vc; vc = vc->next){
+    for (AW_var_callback *vc = callback_list; vc; vc = vc->next){
         if (vc->value_changed_cb== f &&
             vc->value_changed_cb_cd1 == cd1 &&
             vc->value_changed_cb_cd2 == cd2){
@@ -241,7 +217,80 @@ AW_awar *AW_awar::remove_callback( void (*f)(AW_root*,AW_CL,AW_CL), AW_CL cd1, A
 AW_awar *AW_awar::remove_callback(void (*f)(AW_root*, AW_CL), AW_CL cd1) { return remove_callback((AW_RCB) f, cd1, 0); }
 AW_awar *AW_awar::remove_callback(void (*f)(AW_root*)) { return remove_callback((AW_RCB) f, 0, 0); }
 
-GB_ERROR        AW_awar::toggle_toggle(){
+void AW_awar::remove_all_callbacks() {
+    while (callback_list) {
+        AW_var_callback *del = callback_list;
+        callback_list        = del->next;
+        delete del;
+    }
+}
+
+
+// --------------------------------------------------------------------------------
+
+bool AW_awar::unlink_from_DB(GBDATA *gb_main) {
+    bool make_zombie = false;
+    if (gb_origin == gb_var) {                      // not mapped
+        if (gb_var) {                               // no zombie awar
+            if (GB_get_root(gb_var) == gb_main) {   // awar is in questionable DB
+                make_zombie = true;
+            }
+        }
+    }
+    else {
+        if (GB_get_root(gb_var) == gb_main) {
+            if (GB_get_root(gb_origin) == gb_main) {
+                // mapped and origin in DB
+                make_zombie = true;
+            }
+            else {
+                // origin is in other DB -> just unmap
+                unmap();
+            }
+        }
+        else {
+            if (GB_get_root(gb_origin) == gb_main) {
+                // origin is in DB, current mapping is not
+                // -> remap permanentely
+                gb_origin = gb_var;
+            }
+            // else both are in other DB -> nothing to do
+        }
+    }
+
+    if (make_zombie) {
+        remove_all_callbacks();
+        remove_all_target_vars();
+        map(AW_default(NULL));                      // map to nothing
+        gb_origin = NULL;                           // make zombie awar (will not unmap)
+    }
+
+    return make_zombie;
+}
+
+long AW_unlink_awar_from_DB(const char *key, long cl_awar, void *cl_gb_main) {
+    AW_awar *awar    = (AW_awar*)cl_awar;
+    GBDATA  *gb_main = (GBDATA*)cl_gb_main;
+
+#if defined(DEBUG) && 0
+    bool is_zombie = awar->unlink_from_DB(gb_main);
+    if (is_zombie) printf("Unlinked awar '%s' from DB\n", key);
+#else    
+    awar->unlink_from_DB(gb_main);
+#endif // DEBUG
+    return cl_awar;
+}
+
+void AW_root::unlink_awars_from_DB(AW_default database) {
+    GBDATA *gb_main = (GBDATA*)database;
+    
+    aw_assert(GB_get_root(gb_main) == gb_main);
+    GBS_hash_do_loop(hash_table_for_variables, AW_unlink_awar_from_DB, gb_main);
+}
+
+// --------------------------------------------------------------------------------
+
+GB_ERROR AW_awar::toggle_toggle(){
     char *var = this->read_as_string();
     GB_ERROR    error =0;
     if (var[0] == '0' || var[0] == 'n') {
@@ -307,6 +356,14 @@ AW_awar *AW_awar::add_target_var( long *pint){
     return this;
 }
 
+void AW_awar::remove_all_target_vars() {
+    while (target_list) {
+        AW_var_target *tar = target_list;
+        target_list        = tar->next;
+        delete tar;
+    }
+}
+
 
 AW_awar *AW_awar::set_srt(const char *srt)
 {
@@ -319,7 +376,7 @@ AW_awar *AW_awar::set_srt(const char *srt)
 }
 
 
-AW_awar *AW_awar::map( AW_default gbd) {
+AW_awar *AW_awar::map(AW_default gbd) {
     if (gbd) GB_push_transaction((GBDATA *)gbd);
     if (gb_var) {               /* old map */
         GB_remove_callback((GBDATA *)gb_var, GB_CB_CHANGED, (GB_CB)AW_var_gbdata_callback, (int *)this);
@@ -329,7 +386,7 @@ AW_awar *AW_awar::map( AW_default gbd) {
         GB_add_callback((GBDATA *) gbd, GB_CB_CHANGED, (GB_CB)AW_var_gbdata_callback, (int *)this );
         GB_add_callback((GBDATA *) gbd, GB_CB_DELETE, (GB_CB)AW_var_gbdata_callback_delete, (int *)this );
     }
-    gb_var      = (GBDATA *)gbd;
+    gb_var = (GBDATA *)gbd;
     this->update();
     if (gbd) GB_pop_transaction((GBDATA *)gbd);
     return this;

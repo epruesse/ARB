@@ -1442,10 +1442,11 @@ static void di_autodetect_callback(AW_window *aww)
     free(filter_str);
 }
 
-static void ap_exit(AW_window *) __ATTR__NORETURN;
-static void ap_exit(AW_window *)
-{
-    if (GLOBAL_gb_main) GB_exit(GLOBAL_gb_main);
+ATTRIBUTED(__ATTR__NORETURN, static void di_exit(AW_window *aww)) {
+    if (GLOBAL_gb_main) {
+        aww->get_root()->unlink_awars_from_DB(GLOBAL_gb_main);
+        GB_close(GLOBAL_gb_main);
+    }
     exit(0);
 }
 
@@ -1547,7 +1548,7 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     aws->button_length( 10 );
 
     aws->at("close");
-    aws->callback(ap_exit);
+    aws->callback(di_exit);
     aws->create_button("CLOSE", "CLOSE","C");
 
     aws->at("help");
@@ -1562,7 +1563,7 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
 
     aws->create_menu(0, "FILE", "F", "HELP for Window", AWM_ALL);
     aws->insert_menu_topic("macros", "Macros  ...", "M", "macro.hlp", AWM_ALL, (AW_CB)AW_POPUP, (AW_CL)awt_open_macro_window,(AW_CL)"NEIGHBOUR_JOINING");
-    aws->insert_menu_topic("quit",   "Quit",        "Q", "quit.hlp",  AWM_ALL, (AW_CB)ap_exit,  0,  0                                                 );
+    aws->insert_menu_topic("quit",   "Quit",        "Q", "quit.hlp",  AWM_ALL, (AW_CB)di_exit,  0,  0                                                 );
 
     aws->create_menu(0, "Properties", "P", "properties.hlp", AWM_ALL);
     aws->insert_menu_topic("frame_props", "Frame ...",                                 "F", "props_frame.hlp", AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window, 0);

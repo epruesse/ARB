@@ -45,16 +45,16 @@ void MG_alignment_vars_callback(AW_root *aw_root,GBDATA *gbd, long ali_nr)
         GBDATA *ali_security = GB_entry(ali_cont,"alignment_write_security");
 
         sprintf(buffer,"tmp/merge%li/alignment_type",ali_nr);
-        aw_root->awar(buffer)->map((void*)ali_type);
+        aw_root->awar(buffer)->map(ali_type);
 
         sprintf(buffer,"tmp/merge%li/alignment_len",ali_nr);
-        aw_root->awar(buffer)->map((void*)ali_len);
+        aw_root->awar(buffer)->map(ali_len);
 
         sprintf(buffer,"tmp/merge%li/aligned",ali_nr);
-        aw_root->awar(buffer)->map((void*)ali_aligned);
+        aw_root->awar(buffer)->map(ali_aligned);
 
         sprintf(buffer,"tmp/merge%li/security",ali_nr);
-        aw_root->awar(buffer)->map((void*)ali_security);
+        aw_root->awar(buffer)->map(ali_security);
 
     }
     GB_pop_transaction(gbd);
