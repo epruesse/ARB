@@ -394,15 +394,8 @@ ED4_returncode  EDB_root_bact::fill_species(ED4_multi_species_manager  *multi_sp
 
             if (aw_status(++status_count_curr/double(status_count_total)) == 1) { // Kill has been Pressed
                 aw_closestatus();
-                while (ED4_ROOT->first_window) {
-                    ED4_ROOT->first_window->delete_window(ED4_ROOT->first_window);
-                }
-
-                GB_commit_transaction( GLOBAL_gb_main );
-                GB_close(GLOBAL_gb_main);
                 delete ship;
-                delete ED4_ROOT->main_manager;
-                ::exit(0);
+                ED4_exit();
             }
 
             fill_data(multi_species_manager, ref_sequence_info_terminal, ref_sequence_terminal, ship /*species name*/,

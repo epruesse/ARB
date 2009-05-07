@@ -949,14 +949,7 @@ void ED4_manager::create_consensus(ED4_group_manager *upper_group_manager) {
         if (loading) {
             if (aw_status(++status_count_curr/double(status_count_total)) == 1) { // Kill has been Pressed
                 aw_closestatus();
-                GB_close(GLOBAL_gb_main);
-                while (ED4_ROOT->first_window) {
-                    ED4_ROOT->first_window->delete_window(ED4_ROOT->first_window);
-                }
-                GB_commit_transaction( GLOBAL_gb_main );
-                GB_close(GLOBAL_gb_main);
-                delete ED4_ROOT->main_manager;
-                ::exit(0);
+                ED4_exit();
             }
         }
     }

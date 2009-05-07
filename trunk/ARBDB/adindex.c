@@ -70,31 +70,35 @@ void gb_index_check_out(GBDATA *gbd) {
 
         if (!ifs) error = "key is not indexed";
         else {
-            GB_CSTR data = GB_read_char_pntr(gbd);
+            error = GB_push_transaction(gbd);
+            if (!error) {
+                GB_CSTR data = GB_read_char_pntr(gbd);
 
-            if (!data) {
-                error = GBS_global_string("can't read key value (%s)", GB_await_error());
-            }
-            else {
-                unsigned long index;
-                GB_CALC_HASH_INDEX(data, index, ifs->hash_table_size, ifs->case_sens);
+                if (!data) {
+                    error = GBS_global_string("can't read key value (%s)", GB_await_error());
+                }
+                else {
+                    unsigned long index;
+                    GB_CALC_HASH_INDEX(data, index, ifs->hash_table_size, ifs->case_sens);
 
-                struct gb_if_entries *ifes2   = 0;
-                GB_REL_IFES          *entries = GB_INDEX_FILES_ENTRIES(ifs);
-                struct gb_if_entries *ifes;
+                    struct gb_if_entries *ifes2   = 0;
+                    GB_REL_IFES          *entries = GB_INDEX_FILES_ENTRIES(ifs);
+                    struct gb_if_entries *ifes;
 
-                for (ifes = GB_ENTRIES_ENTRY(entries,index); ifes; ifes = GB_IF_ENTRIES_NEXT(ifes)) {
-                    if (gbd == GB_IF_ENTRIES_GBD(ifes)) {       /* entry found */
-                        if (ifes2) SET_GB_IF_ENTRIES_NEXT(ifes2, GB_IF_ENTRIES_NEXT(ifes));
-                        else SET_GB_ENTRIES_ENTRY(entries,index,GB_IF_ENTRIES_NEXT(ifes));
+                    for (ifes = GB_ENTRIES_ENTRY(entries,index); ifes; ifes = GB_IF_ENTRIES_NEXT(ifes)) {
+                        if (gbd == GB_IF_ENTRIES_GBD(ifes)) {       /* entry found */
+                            if (ifes2) SET_GB_IF_ENTRIES_NEXT(ifes2, GB_IF_ENTRIES_NEXT(ifes));
+                            else SET_GB_ENTRIES_ENTRY(entries,index,GB_IF_ENTRIES_NEXT(ifes));
 
-                        ifs->nr_of_elements--;
-                        gbm_free_mem((char *)ifes, sizeof(struct gb_if_entries), GB_GBM_INDEX(gbd));
-                        break;
+                            ifs->nr_of_elements--;
+                            gbm_free_mem((char *)ifes, sizeof(struct gb_if_entries), GB_GBM_INDEX(gbd));
+                            break;
+                        }
+                        ifes2 = ifes;
                     }
-                    ifes2 = ifes;
                 }
             }
+            error = GB_end_transaction(gbd, error);
         }
 
         if (error) {
@@ -574,11 +578,15 @@ void gb_check_in_undo_modify(GB_MAIN_TYPE *Main,GBDATA *gbd){
     }
 }
 
+#if defined(DEVEL_RALF)
+#warning change param for gb_check_in_undo_delete to GBDATA **
+#endif /* DEVEL_RALF */
+
 void gb_check_in_undo_delete(GB_MAIN_TYPE *Main,GBDATA *gbd, int deep){
     long type = GB_TYPE(gbd);
     struct g_b_undo_entry_struct *ue;
     if (!Main->undo->valid_u){
-        gb_delete_entry(gbd);
+        gb_delete_entry(&gbd);
         return;
     }
 

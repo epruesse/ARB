@@ -966,7 +966,7 @@ void AW_window::create_input_field( const char *var_name,  int columns ) {
     if (!columns) columns = _at->length_of_buttons;
 
     AW_awar *vs = root->awar(var_name);
-    String      = root->awar( var_name )->read_string();
+    String      = root->awar( var_name )->read_as_string();
 
     int width_of_input_label, height_of_input_label;
     calculate_label_size(this, &width_of_input_label, &height_of_input_label, true, 0);

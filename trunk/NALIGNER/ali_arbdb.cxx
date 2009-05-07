@@ -13,10 +13,8 @@
 
 ALI_ARBDB::~ALI_ARBDB(void)
 {
-    if (gb_main)
-        GB_close(gb_main);
-    if (alignment)
-        free ((char *) alignment);
+    if (gb_main) GB_close(gb_main);
+    freeset(alignment, NULL);
 }
 
 int ALI_ARBDB::open(char *name, char *use_alignment)
@@ -42,8 +40,7 @@ int ALI_ARBDB::open(char *name, char *use_alignment)
 void ALI_ARBDB::close(void)
 {
     GB_close(gb_main);
-    if (alignment)
-        free(alignment);
+    freeset(alignment, NULL);
 }
 
 char *ALI_ARBDB::get_sequence_string(char *name,int and_mark)

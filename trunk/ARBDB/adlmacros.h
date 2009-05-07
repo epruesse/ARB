@@ -579,7 +579,7 @@ inline void STATIC_BUFFER(char*& strvar, int minlen) {
 #define _GB_CHECK_IN_UNDO_DELETE(Main,gbd)                      \
 do {                                                            \
     if ((Main)->undo_type) gb_check_in_undo_delete(Main,gbd,0); \
-    else gb_delete_entry(gbd);                                  \
+    else gb_delete_entry(&(gbd));                               \
 } while(0)
 
 #define _GB_CHECK_IN_UNDO_CREATE(Main,gbd)                      \

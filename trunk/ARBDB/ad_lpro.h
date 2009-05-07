@@ -46,7 +46,7 @@ GB_ERROR gb_set_compression P_((GBDATA *source));
 GB_ERROR gb_init_transaction P_((GBCONTAINER *gbd));
 GB_ERROR gb_add_changed_callback_list P_((GBDATA *gbd, struct gb_transaction_save *old, GB_CB_TYPE gbtype, GB_CB func, int *clientdata));
 GB_ERROR gb_add_delete_callback_list P_((GBDATA *gbd, struct gb_transaction_save *old, GB_CB func, int *clientdata));
-GB_ERROR gb_do_callback_list P_((GBDATA *gbd));
+GB_ERROR gb_do_callback_list P_((GB_MAIN_TYPE *Main));
 GB_MAIN_TYPE *gb_get_main_during_cb P_((void));
 GB_CSTR gb_read_pntr_ts P_((GBDATA *gbd, struct gb_transaction_save *ts));
 int gb_info P_((GBDATA *gbd, int deep));
@@ -69,7 +69,7 @@ GBDATA *gb_make_entry P_((GBCONTAINER *father, const char *key, long index_pos, 
 GBCONTAINER *gb_make_pre_defined_container P_((GBCONTAINER *father, GBCONTAINER *gbd, long index_pos, GBQUARK keyq));
 GBCONTAINER *gb_make_container P_((GBCONTAINER *father, const char *key, long index_pos, GBQUARK keyq));
 void gb_pre_delete_entry P_((GBDATA *gbd));
-void gb_delete_entry P_((GBDATA *gbd));
+void gb_delete_entry P_((GBDATA **gbd_ptr));
 struct gb_transaction_save *gb_new_gb_transaction_save P_((GBDATA *gbd));
 void gb_add_ref_gb_transaction_save P_((struct gb_transaction_save *ts));
 void gb_del_ref_gb_transaction_save P_((struct gb_transaction_save *ts));

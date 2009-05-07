@@ -44,7 +44,6 @@ typedef enum gb_call_back_type {
     GB_CB_ALL  = 7
 } GB_CB_TYPE;
 
-typedef struct gb_data_base_type GBDATA;
 typedef void (*GB_CB)(GBDATA *,int *clientdata, GB_CB_TYPE gbtype);
 
 #if defined(DEBUG)
@@ -68,7 +67,8 @@ typedef long GB_REL_CONTAINER;    /* relative adress */
 
 #endif /*MEMORY_TEST==1*/
 
-typedef void GB_MAIN_TYPE;
+struct gb_main_type;
+typedef struct gb_main_type *GB_MAIN_TYPE;
 
 typedef struct gbs_hash_struct  GB_HASH;
 typedef struct gbs_hashi_struct GB_HASHI;

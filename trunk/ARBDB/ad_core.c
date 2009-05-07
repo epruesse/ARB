@@ -442,21 +442,21 @@ void gb_pre_delete_entry(GBDATA *gbd){
 }
 
 
-void
-gb_delete_entry(GBDATA * gbd)
-{
-    long            gbm_index;
+void gb_delete_entry(GBDATA **gbd_ptr) {
+    GBDATA *gbd  = *gbd_ptr;
+    long    gbm_index;
     long    type = GB_TYPE(gbd);
 
     gbm_index = GB_GBM_INDEX(gbd);
 
     if (type == GB_DB) {
-        int             index;
-        GBDATA         *gbd2;
-        GBCONTAINER    *gbc = ((GBCONTAINER *) gbd);
+        int          index;
+        GBDATA      *gbd2;
+        GBCONTAINER *gbc = ((GBCONTAINER *) gbd);
+        
         for (index = 0; index < gbc->d.nheader; index++) {
             if ((gbd2 = GBCONTAINER_ELEM(gbc,index))!=NULL) {
-                gb_delete_entry(gbd2);
+                gb_delete_entry(&gbd2);
             }
         };
     }
@@ -465,21 +465,22 @@ gb_delete_entry(GBDATA * gbd)
     /* Now what is left is the core database entry !!! */
 
     if (type == GB_DB) {
-        GBCONTAINER    *gbc = ((GBCONTAINER *) gbd);
+        GBCONTAINER                  *gbc = ((GBCONTAINER *) gbd);
         struct gb_header_list_struct *hls;
 
         if ((hls=GB_DATA_LIST_HEADER(gbc->d))!=NULL){
-            gbm_free_mem(   (char *)hls,
-                            sizeof(struct gb_header_list_struct) *
-                            gbc->d.headermemsize,GBM_HEADER_INDEX );
+            gbm_free_mem((char *)hls,
+                         sizeof(struct gb_header_list_struct) * gbc->d.headermemsize,
+                         GBM_HEADER_INDEX);
         }
         gbm_free_mem((char *) gbd, sizeof(GBCONTAINER), gbm_index);
-    } else {
-        if (type >= GB_BITS){
-            GB_FREEDATA(gbd);
-        }
+    }
+    else {
+        if (type >= GB_BITS) GB_FREEDATA(gbd);
         gbm_free_mem((char *) gbd, sizeof(GBDATA), gbm_index);
     }
+
+    *gbd_ptr = 0; // avoid further usage
 }
 
 /********************************************************************************************
@@ -736,22 +737,30 @@ char *gb_abort_entry(GBDATA *gbd){
 /********************************************************************************************
                     Transactions
 ********************************************************************************************/
-int
-gb_abort_transaction_local_rek(GBDATA *gbd, long mode)
-     /*     delete created
-        undo    changed
-    */
-{
+
+#if defined(DEVEL_RALF)
+#warning change param for gb_abort_transaction_local_rek to GBDATA **
+#warning remove param 'mode' (unused!)
+#endif /* DEVEL_RALF */
+
+int gb_abort_transaction_local_rek(GBDATA *gbd, long mode) {
+    /* delete created, undo changed */
     GBDATA *gb;
     enum gb_key_types type;
     GB_CHANGED change = (GB_CHANGED)GB_ARRAY_FLAGS(gbd).changed;
 
     switch (change) {
-        case gb_not_changed:    return 0;
-        case gb_created:    GB_PUT_SECURITY_DELETE(gbd,0);
-            gb_delete_entry(gbd);
+        case gb_not_changed:
+            return 0;
+
+        case gb_created:
+            GB_PUT_SECURITY_DELETE(gbd,0);
+            gb_delete_entry(&gbd);
             return 1;
-        case gb_deleted:    GB_ARRAY_FLAGS(gbd).changed = gb_not_changed;
+
+        case gb_deleted:
+            GB_ARRAY_FLAGS(gbd).changed = gb_not_changed;
+            // fall-through
         default:
             type = (GB_TYPES)GB_TYPE(gbd);
             if (type == GB_DB)
@@ -810,7 +819,7 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA * gbd, long mode,int *pson_creat
                 _GB_CHECK_IN_UNDO_DELETE(Main,gbd);
                 return 0;
             }
-            gb_delete_entry(gbd);
+            gb_delete_entry(&gbd);
             return 0;
         case gb_created:
             if (mode) {

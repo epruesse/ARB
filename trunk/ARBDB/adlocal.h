@@ -14,7 +14,9 @@
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
 #endif
-
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
+#endif
 
 /* ================ Test memory @@@===================== */
 #if defined(DEBUG)
@@ -150,11 +152,6 @@ typedef enum gb_call_back_type {
     GB_CB_SON_CREATED = 4,
     GB_CB_ALL         = 7
 } GB_CB_TYPE;
-
-/* #define GBDATA struct gb_data_base_type */
-typedef struct gb_data_base_type GBDATA;
-
-/*#define GB_CB void (*func)(GBDATA *,int *clientdata, GB_CB_TYPE gbtype)*/
 
 #ifdef __cplusplus
 extern "C" {

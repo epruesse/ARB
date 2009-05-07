@@ -187,8 +187,9 @@ struct ad_item_selector GEN_item_selector = {
 };
 
 void GEN_species_name_changed_cb(AW_root *awr) {
-    char   *species_name = awr->awar(AWAR_SPECIES_NAME)->read_string();
-    GBDATA *gb_species   = GBT_find_species(GLOBAL_gb_main, species_name);
+    char *species_name = awr->awar(AWAR_SPECIES_NAME)->read_string();
+    GB_transaction ta(GLOBAL_gb_main);
+    GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main, species_name);
 
     if (gb_species) {
         if (GEN_is_pseudo_gene_species(gb_species)) {

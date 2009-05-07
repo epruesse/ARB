@@ -7,15 +7,8 @@ static void to_stderr(const char *msg) {
     fprintf(stderr, "arb_2_ascii: %s\n", msg);
 }
 
-int main(int argc, char **argv)
-{
-    GB_ERROR    error;
-    char       *in= NULL;
-    char       *out= NULL;
-    const char *readflags      = "rw";
-    const char *saveflags      = "a";
-    GBDATA     *gb_main;
-    int         dump_to_stdout = 0;
+int main(int argc, char **argv) {
+    GB_ERROR error = 0;
 
     fprintf(stderr, "arb_2_ascii - ARB database binary to ascii converter\n");
 
@@ -30,35 +23,44 @@ int main(int argc, char **argv)
                 "else replace <source.arb> by ascii version (backup first)\n"
                 "\n"
                 );
-        exit(-1);
-    }
 
-    in = argv[1];
-    if (argc == 2) {
-        out = in;
+        if (strcmp(argv[1], "--help") != 0) { error = "Missing arguments"; }
     }
     else {
-        readflags = "rwR";      /* try to recover corrupt data */
-        out       = argv[2];
+        char *in  = argv[1];
+        char *out = NULL;
+    
+        const char *readflags = "rw";
+        const char *saveflags = "a";
 
-        if (!out || strcmp(out, "-") == 0) {
-            saveflags      = "aS";
-            GB_install_information(to_stderr);
-            GB_install_warning(to_stderr);
-            dump_to_stdout = 1;
+        if (argc == 2) {
+            out = in;
         }
-    }
+        else {
+            readflags = "rwR";      /* try to recover corrupt data */
+            out       = argv[2];
 
-    gb_main = GB_open(in,readflags);
-    if (!gb_main){
-        GB_print_error();
-        return (-1);
-    }
+            if (!out || strcmp(out, "-") == 0) {
+                saveflags      = "aS";
+                GB_install_information(to_stderr);
+                GB_install_warning(to_stderr);
+            }
+        }
 
-    error = GB_save(gb_main,out, saveflags);
-    if (error){
-        fprintf(stderr, "arb_2_ascii: %s\n", error);
-        return -1;
+        GBDATA   *gb_main = GB_open(in,readflags);
+        if (!gb_main) {
+            error = GB_await_error();
+        }
+        else {
+            error = GB_save(gb_main,out, saveflags);
+        }
+
+        GB_close(gb_main);
     }
-    return 0;
+    
+    if (error) {
+        fprintf(stderr, "arb_2_ascii: Error: %s\n", error);
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
 }

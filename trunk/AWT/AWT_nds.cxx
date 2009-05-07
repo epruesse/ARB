@@ -130,11 +130,11 @@ static void map_viewkey(AW_root *aw_root, AW_default awdef, int i, GBDATA *gb_vi
     awt_assert(gb_leaf);
 
     AW_awar *Awar;
-    Awar = viewkeyAwar(aw_root, awdef, i, "key_text", true ); Awar->map((void*)gb_key_text);
-    Awar = viewkeyAwar(aw_root, awdef, i, "pars",     true ); Awar->map((void*)gb_pars    );
-    Awar = viewkeyAwar(aw_root, awdef, i, "len1",     false); Awar->map((void*)gb_len1    );
-    Awar = viewkeyAwar(aw_root, awdef, i, "group",    false); Awar->map((void*)gb_group   );
-    Awar = viewkeyAwar(aw_root, awdef, i, "leaf",     false); Awar->map((void*)gb_leaf    );
+    Awar = viewkeyAwar(aw_root, awdef, i, "key_text", true ); Awar->map(gb_key_text);
+    Awar = viewkeyAwar(aw_root, awdef, i, "pars",     true ); Awar->map(gb_pars    );
+    Awar = viewkeyAwar(aw_root, awdef, i, "len1",     false); Awar->map(gb_len1    );
+    Awar = viewkeyAwar(aw_root, awdef, i, "group",    false); Awar->map(gb_group   );
+    Awar = viewkeyAwar(aw_root, awdef, i, "leaf",     false); Awar->map(gb_leaf    );
 }
 
 static void map_viewkeys(AW_root *aw_root, AW_CL cl_awdef, AW_CL cl_gb_main) {

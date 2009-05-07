@@ -810,27 +810,34 @@ void ED4_gc_is_modified(AW_window *aww,AW_CL cd1, AW_CL cd2)                    
     ED4_expose_cb(aww,cd1,cd2);
 }
 
-void ED4_quit_editor(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/)          //Be Careful: Is this the last window?
-{
+void ED4_exit() {
+    ED4_ROOT->aw_root->unlink_awars_from_DB(GLOBAL_gb_main);
+
+    ED4_window *ed4w = ED4_ROOT->first_window;
+
+    while (ed4w) {
+        ed4w->aww->hide();
+        ed4w->cursor.invalidate_base_position();
+        ed4w = ed4w->next;
+    }
+
+    delete ED4_ROOT->main_manager;
+
+    while (ED4_ROOT->first_window)
+        ED4_ROOT->first_window->delete_window(ED4_ROOT->first_window);
+
+    GBDATA *gb_main = GLOBAL_gb_main;
+    GLOBAL_gb_main  = NULL;
+    GB_close(gb_main);
+
+    ::exit(0);
+}
+
+void ED4_quit_editor(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     ED4_ROOT->use_window(aww);
 
-    if (ED4_ROOT->first_window == ED4_ROOT->get_ed4w())          // quit button has been pressed in first window
-    {
-        ED4_window *ed4w = ED4_ROOT->first_window;
-
-        while (ed4w) {
-            ed4w->aww->hide();
-            ed4w->cursor.invalidate_base_position();
-            ed4w = ed4w->next;
-        }
-
-        delete ED4_ROOT->main_manager;
-
-        while (ED4_ROOT->first_window)
-            ED4_ROOT->first_window->delete_window(ED4_ROOT->first_window);
-
-        GB_close(GLOBAL_gb_main);
-        ::exit(0);
+    if (ED4_ROOT->first_window == ED4_ROOT->get_ed4w()) { // quit button has been pressed in first window
+        ED4_exit();
     }
     // case : in another window close has been pressed
     ED4_ROOT->get_aww()->hide();

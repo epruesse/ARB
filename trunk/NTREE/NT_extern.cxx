@@ -246,7 +246,7 @@ void nt_create_all_awars(AW_root *awr, AW_default def) {
 }
 
 
-void nt_exit(AW_window * /*aw_window*/) {
+void nt_exit(AW_window *aws) {
     if (GLOBAL_gb_main) {
         if (GB_read_clients(GLOBAL_gb_main)>=0) {
             if (GB_read_clock(GLOBAL_gb_main) > GB_last_saved_clock(GLOBAL_gb_main)){
@@ -270,7 +270,11 @@ void nt_exit(AW_window * /*aw_window*/) {
             }
         }
         GBCMS_shutdown(GLOBAL_gb_main);
-        GB_exit(GLOBAL_gb_main);
+
+        aws->get_root()->unlink_awars_from_DB(GLOBAL_gb_main);
+        GBDATA *gb_main = GLOBAL_gb_main;
+        GLOBAL_gb_main  = NULL; // avoid further usage
+        GB_close(gb_main);
     }
     exit(0);
 }

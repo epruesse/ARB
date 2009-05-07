@@ -74,12 +74,11 @@ void startup_sequence_cb(AW_window *aww,AW_CL cd1, AW_CL cl_aww)
     ph_view_species_cb(0,0,0);
 }
 
-
-
 ATTRIBUTED(__ATTR__NORETURN, static void ph_exit(AW_window *aw_window, PH_root *ph_root))
 {
     AWUSE(aw_window);
     if (ph_root->gb_main) {
+        aw_window->get_root()->unlink_awars_from_DB(ph_root->gb_main);
         GB_close(ph_root->gb_main);
     }
     exit(0);

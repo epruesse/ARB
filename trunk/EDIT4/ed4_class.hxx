@@ -1926,6 +1926,8 @@ void        ed4_change_edit_mode        (AW_root *root, AW_CL cd1);
 ED4_returncode  call_edit           (void **error, void **work_info, ED4_base *object ); // function for editing sequences
 ED4_returncode  rebuild_consensus       (void **arg1, void **arg2, ED4_base *object);
 
+void ED4_exit() __ATTR__NORETURN;
+
 void        ED4_quit_editor         (AW_window *aww, AW_CL cd1, AW_CL cd2 );                //Be Careful: Is this the last window?
 void        ED4_load_data           (AW_window *aww, AW_CL cd1, AW_CL cd2 );
 void        ED4_save_data           (AW_window *aww, AW_CL cd1, AW_CL cd2 );

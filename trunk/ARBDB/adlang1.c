@@ -1607,13 +1607,13 @@ static void flush_taxonomy_cb(GBDATA *gbd, int *cd_ct, GB_CB_TYPE cbt) {
     found = tree_of_cached_taxonomy(ct);
 
     if (found) {
-#if defined(DEBUG)
+#if defined(DEBUG) && 0
         fprintf(stderr, "Deleting cached taxonomy ct=%p (tree='%s')\n", ct, found);
 #endif /* DEBUG */
         GBS_write_hash(cached_taxonomies, found, 0); /* delete cached taxonomy from hash */
         free_cached_taxonomy(ct);
     }
-#if defined(DEBUG)
+#if defined(DEBUG) && 0
     else {
         fprintf(stderr, "No tree found for cached_taxonomies ct=%p (already deleted?)\n", ct);
     }
@@ -1624,15 +1624,17 @@ static void flush_taxonomy_cb(GBDATA *gbd, int *cd_ct, GB_CB_TYPE cbt) {
     if (found && !error) {
         GB_MAIN_TYPE *Main            = gb_get_main_during_cb();
         GBDATA       *gb_main         = (GBDATA*)Main->data;
-        GBDATA       *gb_tree_refresh = GB_search(gb_main, AWAR_TREE_REFRESH, GB_INT);
-        if (!gb_tree_refresh) {
-            error = GBS_global_string("%s (while trying to force refresh)", GB_await_error());
-        }
-        else {
-            /* #if defined(DEBUG) */
-            /* printf("Skipped tree refresh by touching AWAR_TREE_REFRESH\n"); */
-            /* #endif */ /* DEBUG */
-            GB_touch(gb_tree_refresh); /* Note : force tree update */
+        if (gb_main) {
+            GBDATA       *gb_tree_refresh = GB_search(gb_main, AWAR_TREE_REFRESH, GB_INT);
+            if (!gb_tree_refresh) {
+                error = GBS_global_string("%s (while trying to force refresh)", GB_await_error());
+            }
+            else {
+                /* #if defined(DEBUG) */
+                /* printf("Skipped tree refresh by touching AWAR_TREE_REFRESH\n"); */
+                /* #endif */ /* DEBUG */
+                GB_touch(gb_tree_refresh); /* Note : force tree update */
+            }
         }
     }
 

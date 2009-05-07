@@ -15,6 +15,10 @@
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
 #endif
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
+#endif
+
 
 #define AW_ROOT_DEFAULT (aw_main_root_default)
 class        AW_root;
@@ -30,9 +34,9 @@ typedef AW_window *(*AW_PPP)(AW_root*,AW_CL,AW_CL);
 typedef const char *AWAR;
 typedef long        AW_bitset;
 typedef double      AW_pos;
-typedef float       AW_grey_level; // <0 dont fill  0.0 white 1.0 black
-typedef void       *AW_default; // should be GBDATA *
-typedef AW_bitset   AW_active;  // bits to activate/inactivate buttons
+typedef float       AW_grey_level;                  // <0 dont fill  0.0 white 1.0 black
+typedef GBDATA     *AW_default;
+typedef AW_bitset   AW_active;                      // bits to activate/inactivate buttons
 typedef int         AW_font;
 
 typedef const char             *GB_ERROR;
@@ -213,6 +217,8 @@ public:
     AW_awar *awar_string(const char *var_name, const char *default_value = "", AW_default default_file = AW_ROOT_DEFAULT);
     AW_awar *awar_int   (const char *var_name, long default_value = 0,         AW_default default_file = AW_ROOT_DEFAULT);
     AW_awar *awar_float (const char *var_name, float default_value = 0.0,      AW_default default_file = AW_ROOT_DEFAULT);
+    
+    void unlink_awars_from_DB(GBDATA *gb_main); // use before calling GB_close for 'gb_main', if you have AWARs in DB
 
     AW_default  open_default(const char *default_name, bool create_if_missing = true);
     AW_error   *save_default( const char *awar_name );
@@ -225,7 +231,6 @@ public:
     void set_sensitive(AW_active mask);
     void set_sensitive( const char *id );
     void set_insensitive( const char *id );
-
 
     GB_ERROR start_macro_recording(const char *file,const char *application_id, const char *stop_action_name);
     GB_ERROR stop_macro_recording();
@@ -274,23 +279,30 @@ class AW_awar {
     bool is_global;
 #endif // DEBUG
 
-public:
-    // read only
-    class AW_root               *root;
+    void remove_all_callbacks();
+    void remove_all_target_vars();
+    bool unlink_from_DB(GBDATA *gb_main);
+
+    friend long AW_unlink_awar_from_DB(const char *key, long cl_awar, void *cl_gb_main);
     friend void AW_var_gbdata_callback_delete_intern(GBDATA *gbd, int *cl);
 
-    GBDATA           *gb_var;
-    GBDATA           *gb_origin;
-    
+public:
     // read only
-    void              run_callbacks();
-    void              update_target(AW_var_target*pntr);
-    void              update_targets();
-    AW_VARIABLE_TYPE  variable_type;
+    class AW_root *root;
 
+    GBDATA *gb_var;                                 // if unmapped, points to same DB elem as 'gb_origin'
+    GBDATA *gb_origin;                              // this is set ONCE on creation of awar
+
+    // read only
+
+    AW_VARIABLE_TYPE  variable_type;                // type of the awar
+    char             *awar_name;                    // name of the awar
+
+    void run_callbacks();
+    void update_target(AW_var_target*pntr);
+    void update_targets();
+    
     AW_awar( AW_VARIABLE_TYPE var_type, const char *var_name, const char *var_value, double var_double_value, AW_default default_file, AW_root *root );
-
-    char *awar_name;            // name of the awar
 
     AW_awar *add_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2);
     AW_awar *add_callback(Awar_CB1 f, AW_CL cd1);
@@ -313,10 +325,11 @@ public:
     AW_awar *map(AW_awar *dest); /* map to new address */
     AW_awar *unmap();           /* map to original address */
 
-    void             get(char **p_string); /* delete existing targets !!!*/
-    void             get(long *p_int);
-    void             get(double *p_double);
-    void             get(float *p_float);
+    void get(char **p_string )  { freeset(*p_string, read_string()); } /* deletes existing targets !!!*/
+    void get(long *p_int )      { *p_int =  (long)read_int(); }
+    void get(double *p_double ) { *p_double =  read_float(); }
+    void get(float *p_float )   { *p_float = read_float(); }
+
     AW_VARIABLE_TYPE get_type();
 
     char   *read_string();
@@ -340,7 +353,7 @@ public:
     GB_ERROR toggle_toggle();   /* switches between 1/0 */
     void     touch(void);
 
-    GB_ERROR make_global() __ATTR__USERESULT; // should be used by ARB_init_global_awars only
+    GB_ERROR make_global() __ATTR__USERESULT;       // should be used by ARB_init_global_awars only
 };
 
 bool ARB_global_awars_initialized();

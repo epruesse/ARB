@@ -39,13 +39,13 @@ void alignment_vars_callback(AW_root *aw_root)
         GBDATA *ali_security    = GB_search(ali_cont, "alignment_write_security", GB_INT   );
         GBDATA *ali_rem         = GB_search(ali_cont, "alignment_rem",            GB_STRING);
 
-        aw_root->awar("presets/alignment_name")->map((void*)ali_name);
-        aw_root->awar("presets/alignment_type")->map((void*)ali_type);
-        aw_root->awar("presets/alignment_len")->map((void*)ali_len);
-        aw_root->awar("presets/alignment_rem")->map((void*)ali_rem);
-        aw_root->awar("presets/aligned")->map((void*)ali_aligned);
-        aw_root->awar("presets/auto_format")->map((void*)ali_auto_format);
-        aw_root->awar("presets/security")->map((void*)ali_security);
+        aw_root->awar("presets/alignment_name")->map(ali_name);
+        aw_root->awar("presets/alignment_type")->map(ali_type);
+        aw_root->awar("presets/alignment_len") ->map(ali_len);
+        aw_root->awar("presets/alignment_rem") ->map(ali_rem);
+        aw_root->awar("presets/aligned")       ->map(ali_aligned);
+        aw_root->awar("presets/auto_format")   ->map(ali_auto_format);
+        aw_root->awar("presets/security")      ->map(ali_security);
     }
     GB_pop_transaction(GLOBAL_gb_main);
     free(use);
