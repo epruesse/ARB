@@ -2,7 +2,7 @@
 
 extern AW_window *preset_window(AW_root *root);
 
-GB_ERROR AP_root::open(const char *db_server) {
+GB_ERROR PH_root::open(const char *db_server) {
     GB_ERROR error = 0;
     
     gb_main             = GB_open(db_server,"rwt");

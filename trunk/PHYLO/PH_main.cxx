@@ -76,12 +76,12 @@ void startup_sequence_cb(AW_window *aww,AW_CL cd1, AW_CL cl_aww)
 
 
 
-static void ap_exit(AW_window *aw_window,AP_root *ap_root) __ATTR__NORETURN;
-static void ap_exit(AW_window *aw_window,AP_root *ap_root)
+ATTRIBUTED(__ATTR__NORETURN, static void ph_exit(AW_window *aw_window, PH_root *ph_root))
 {
     AWUSE(aw_window);
-    if (ap_root->gb_main) GB_close(ap_root->gb_main);
-    printf("\nGoodbye\n");
+    if (ph_root->gb_main) {
+        GB_close(ph_root->gb_main);
+    }
     exit(0);
 }
 
@@ -90,10 +90,10 @@ void expose_callb(AW_window *aw,AW_CL cd1,AW_CL cd2)
 {
     AWUSE(aw);AWUSE(cd1);AWUSE(cd2);
 
-    if(AP_display::apdisplay->displayed()!=NONE)
+    if(PH_display::ph_display->displayed()!=NONE)
     {
-        AP_display::apdisplay->clear_window();
-        AP_display::apdisplay->display();
+        PH_display::ph_display->clear_window();
+        PH_display::ph_display->display();
     }
     else    // startup
     {
@@ -105,10 +105,10 @@ void expose_callb(AW_window *aw,AW_CL cd1,AW_CL cd2)
 void resize_callb(AW_window *aw,AW_CL cd1,AW_CL cd2)
 {
     AWUSE(aw);AWUSE(cd1);AWUSE(cd2);
-    if(AP_display::apdisplay)
+    if(PH_display::ph_display)
     {
-        AP_display::apdisplay->resized();
-        AP_display::apdisplay->display();
+        PH_display::ph_display->resized();
+        PH_display::ph_display->display();
     }
 }
 //                           total_cells_horiz=PHDATA::ROOT->get_seq_len();
@@ -424,7 +424,7 @@ AW_window *PH_save_markerline(AW_root *root, AW_CL cl_multi_line)
     return aws;
 }
 
-AW_window *create_phyl_main_window(AW_root *aw_root,AP_root *ap_root,AWT_graphic * awd)
+AW_window *create_phyl_main_window(AW_root *aw_root,PH_root *ph_root,AWT_graphic * awd)
 {
     AWUSE(awd);
     AW_window_menu_modes *awm = new AW_window_menu_modes();
@@ -461,7 +461,7 @@ AW_window *create_phyl_main_window(AW_root *aw_root,AP_root *ap_root,AWT_graphic
 #endif // DEBUG
     awm->insert_menu_topic("export_filter","Export Filter", "E",    "ph_export_markerline.hlp",AWM_ALL, (AW_CB)AW_POPUP,(AW_CL) PH_save_markerline, 0 );
     awm->insert_menu_topic("export_freq","Export Frequencies",  "F",    "ph_export_markerline.hlp",AWM_ALL, (AW_CB)AW_POPUP,(AW_CL) PH_save_markerline, 1 );
-    awm->insert_menu_topic("quit","QUIT",       "q",    "quit.hlp", AWM_ALL,        (AW_CB)ap_exit ,(AW_CL)ap_root,0);
+    awm->insert_menu_topic("quit","QUIT",       "q",    "quit.hlp", AWM_ALL,        (AW_CB)ph_exit ,(AW_CL)ph_root,0);
 
     // Calculate menu
     awm->create_menu(0,"Calculate","C" );
@@ -483,7 +483,7 @@ AW_window *create_phyl_main_window(AW_root *aw_root,AP_root *ap_root,AWT_graphic
     awm->at(5,2);
     awm->auto_space(5,-2);
 
-    awm->callback( (AW_CB1)ap_exit ,(AW_CL)ap_root);
+    awm->callback( (AW_CB1)ph_exit ,(AW_CL)ph_root);
     awm->button_length(0);
     awm->help_text("quit.hlp");
     awm->create_button("QUIT","QUIT");
@@ -530,7 +530,7 @@ PH_used_windows::PH_used_windows(void)
 
 // initialize 'globals'
 PH_used_windows *PH_used_windows::windowList = 0;
-AP_display *AP_display::apdisplay=0;
+PH_display *PH_display::ph_display=0;
 PHDATA *PHDATA::ROOT = 0;
 
 
@@ -542,13 +542,13 @@ main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    AP_root          *apmain;
+    PH_root          *ph_root;
     AW_root          *aw_root;
     char            **alignment_names;
     GB_ERROR          error     = 0;
     AW_default        aw_default;
     PH_used_windows  *puw       = new PH_used_windows;
-    AP_display       *apd       = new AP_display;
+    PH_display       *phd       = new PH_display;
     int               num_alignments;
     const char       *db_server = ":";
 
@@ -561,8 +561,8 @@ main(int argc, char **argv)
     if (argc == 2) {
         db_server = argv[1];
     }
-    apmain = new AP_root;
-    if ((error = apmain->open(db_server))) { // initializes global 'GLOBAL_gb_main'
+    ph_root = new PH_root;
+    if ((error = ph_root->open(db_server))) { // initializes global 'GLOBAL_gb_main'
         aw_message(error);
         exit(-1);
     }
@@ -579,7 +579,7 @@ main(int argc, char **argv)
 
     // create main window :
 
-    puw->phylo_main_window = create_phyl_main_window(aw_root, apmain, 0);
+    puw->phylo_main_window = create_phyl_main_window(aw_root, ph_root, 0);
     puw->windowList        = puw;
 
     // exposing the main window is now done from inside startup_sequence_cb()
@@ -588,7 +588,7 @@ main(int argc, char **argv)
     //
     // puw->phylo_main_window->show();
 
-    apd->apdisplay = apd;
+    phd->ph_display = phd;
 
     //loading database
     GB_push_transaction(GLOBAL_gb_main);

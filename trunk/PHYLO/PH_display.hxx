@@ -6,7 +6,7 @@
  
 extern char **filter_text;
 
-class AP_display{
+class PH_display{
     AW_device *device;                   // device to draw in
     AW_pos screen_width;                 // dimensions of main screen
     AW_pos screen_height;
@@ -30,8 +30,8 @@ class AP_display{
           
 
 public:
-    AP_display(void);               // constructor
-    static AP_display *apdisplay;
+    PH_display(void);               // constructor
+    static PH_display *ph_display;
     void initialize(display_type);
     void display(void);                  // display data (according to display type: matrix ...)
     display_type displayed(void) { return display_what; };
@@ -42,7 +42,7 @@ public:
 };
 
 
-class AP_display_status
+class PH_display_status
 {
     AW_device *device;
     short font_width; 
@@ -54,7 +54,7 @@ class AP_display_status
     AW_pos tab_pos;
 
 public:
-    AP_display_status(AW_device *);
+    PH_display_status(AW_device *);
     
     void set_origin(void) { device->reset(); device->set_offset(AW::Vector(font_width, font_height)); }
     void newline(void) { x_pos = 0; y_pos+=(y_pos>=max_y) ? 0.0 : 1.0; }
