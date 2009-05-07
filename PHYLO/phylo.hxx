@@ -84,8 +84,7 @@ enum {
 };
 
 
-extern GBDATA        *GLOBAL_gb_main;
-extern class AP_root *ap_main;
+extern GBDATA *GLOBAL_gb_main;
 
 // make awars :
 void PH_create_matrix_variables(AW_root *aw_root, AW_default aw_def);
@@ -117,7 +116,7 @@ typedef enum {
 //      class definitions
 // --------------------------
 
-class AP_root {
+class PH_root {
 private:
     char    *use;
 

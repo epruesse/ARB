@@ -9,13 +9,13 @@ GB_ERROR    ph_check_initialized();
 void vertical_change_cb(AW_window *aww,void *cb1,void *cb2)
 {
     AWUSE(cb1); AWUSE(cb2);
-    AP_display::apdisplay->monitor_vertical_scroll_cb(aww);
+    PH_display::ph_display->monitor_vertical_scroll_cb(aww);
 }
 
 void horizontal_change_cb(AW_window *aww,void *cb1,void *cb2)
 {
     AWUSE(cb1); AWUSE(cb2);
-    AP_display::apdisplay->monitor_horizontal_scroll_cb(aww);
+    PH_display::ph_display->monitor_horizontal_scroll_cb(aww);
 }
 
 void ph_view_matrix_cb(AW_window *aww)
@@ -23,8 +23,8 @@ void ph_view_matrix_cb(AW_window *aww)
     AW_window *main_win = PH_used_windows::windowList->phylo_main_window;
     AWUSE(aww);
 
-    AP_display::apdisplay->initialize(matrix_dpy);
-    AP_display::apdisplay->display();
+    PH_display::ph_display->initialize(matrix_dpy);
+    PH_display::ph_display->display();
     main_win->set_vertical_change_callback((AW_CB2)vertical_change_cb,0,0);
     main_win->set_horizontal_change_callback((AW_CB2)horizontal_change_cb,0,0);
 }
@@ -34,8 +34,8 @@ void ph_view_species_cb(AW_window *aww,AW_CL cb1,AW_CL cb2)
     AWUSE(aww); AWUSE(cb1); AWUSE(cb2);
     AW_window *main_win = PH_used_windows::windowList->phylo_main_window;
 
-    AP_display::apdisplay->initialize(species_dpy);
-    AP_display::apdisplay->display();
+    PH_display::ph_display->initialize(species_dpy);
+    PH_display::ph_display->display();
     main_win->set_vertical_change_callback((AW_CB2)vertical_change_cb,0,0);
     main_win->set_horizontal_change_callback((AW_CB2)horizontal_change_cb,0,0);
 }
@@ -49,26 +49,26 @@ void ph_view_filter_cb(AW_window *aww,AW_CL ,AW_CL )
     else {
         AW_window *main_win  = PH_used_windows::windowList->phylo_main_window;
         AWUSE(aww);
-        PH_filter *ap_filter = new PH_filter;
+        PH_filter *ph_filter = new PH_filter;
 
-        ap_filter->init(PHDATA::ROOT->get_seq_len());
-        PHDATA::ROOT->markerline=ap_filter->calculate_column_homology();
-        AP_display::apdisplay->initialize(filter_dpy);
-        AP_display::apdisplay->display();
+        ph_filter->init(PHDATA::ROOT->get_seq_len());
+        PHDATA::ROOT->markerline=ph_filter->calculate_column_homology();
+        PH_display::ph_display->initialize(filter_dpy);
+        PH_display::ph_display->display();
         main_win->set_vertical_change_callback((AW_CB2)vertical_change_cb,0,0);
         main_win->set_horizontal_change_callback((AW_CB2)horizontal_change_cb,0,0);
     }
 }
 
 
-AP_display::AP_display()
+PH_display::PH_display()
 {
-    memset((char *) this,0,sizeof(AP_display));
+    memset((char *) this,0,sizeof(PH_display));
     this->display_what = NONE;
 }
 
 
-void AP_display::initialize (display_type dpyt)
+void PH_display::initialize (display_type dpyt)
 {
     display_what = dpyt;
     device=PH_used_windows::windowList->phylo_main_window->get_device(AW_MIDDLE_AREA);
@@ -118,7 +118,7 @@ void AP_display::initialize (display_type dpyt)
 }
 
 
-void AP_display::resized(void)
+void PH_display::resized(void)
 {
     AW_rectangle squ;
     AW_rectangle rect =  { 0, 0, 0, 0 };
@@ -189,7 +189,7 @@ void AP_display::resized(void)
 
 
 
-void AP_display::display(void)   // draw area
+void PH_display::display(void)   // draw area
 {
     char buf[50],cbuf[2];
     long x,y,xpos,ypos;
@@ -330,9 +330,9 @@ void AP_display::display(void)   // draw area
 }
 
 
-void AP_display::print(void)
+void PH_display::print(void)
 {
-    printf("\nContents of class AP_display:\n");
+    printf("\nContents of class PH_display:\n");
     printf("display_what: %d\n",display_what);
     printf("screen_width:          %f  screen_height:        %f\n",screen_width,screen_height);
     printf("cell_width:            %ld  cell_height:          %ld\n",cell_width,cell_height);
@@ -344,7 +344,7 @@ void AP_display::print(void)
 }
 
 
-void AP_display::set_scrollbar_steps(AW_window *aww,long width_h,long width_v,long page_h,long page_v)
+void PH_display::set_scrollbar_steps(AW_window *aww,long width_h,long width_v,long page_h,long page_v)
 {
     char buffer[200];
 
@@ -359,7 +359,7 @@ void AP_display::set_scrollbar_steps(AW_window *aww,long width_h,long width_v,lo
 }
 
 
-void AP_display::monitor_vertical_scroll_cb(AW_window *aww)    // draw area
+void PH_display::monitor_vertical_scroll_cb(AW_window *aww)    // draw area
 {
     long diff;
 
@@ -406,7 +406,7 @@ void AP_display::monitor_vertical_scroll_cb(AW_window *aww)    // draw area
     if((diff==1) || (diff==-1))  device->pop_clip_scale();
 }
 
-void AP_display::monitor_horizontal_scroll_cb(AW_window *aww)  // draw area
+void PH_display::monitor_horizontal_scroll_cb(AW_window *aww)  // draw area
 {
     long diff;
 
@@ -451,7 +451,7 @@ void AP_display::monitor_horizontal_scroll_cb(AW_window *aww)  // draw area
     if((diff==1) || (diff==-1))  device->pop_clip_scale();
 }
 
-AP_display_status::AP_display_status(AW_device *awd)
+PH_display_status::PH_display_status(AW_device *awd)
 {
     AW_rectangle rect;
     device=awd;
@@ -470,19 +470,19 @@ AP_display_status::AP_display_status(AW_device *awd)
     tab_pos=x_pos;
 }
 
-void AP_display_status::write(const char *text)
+void PH_display_status::write(const char *text)
 {
     device->text(0,text,x_pos*font_width,y_pos*font_height,0.0,-1,0,0);
     x_pos+=strlen(text);
 }
 
-void AP_display_status::writePadded(const char *text, size_t len)
+void PH_display_status::writePadded(const char *text, size_t len)
 {
     device->text(0,text,x_pos*font_width,y_pos*font_height,0.0,-1,0,0);
     x_pos += len;
 }
 
-void AP_display_status::write(long numl)
+void PH_display_status::write(long numl)
 {
     char buf[20];
 
@@ -490,7 +490,7 @@ void AP_display_status::write(long numl)
     write(buf);
 }
 
-void AP_display_status::write(AW_pos numA)
+void PH_display_status::write(AW_pos numA)
 {
     char buf[20];
 
@@ -498,7 +498,7 @@ void AP_display_status::write(AW_pos numA)
     write(buf);
 }
 
-void AP_display_status::clear(void){
+void PH_display_status::clear(void){
     device->clear(-1);
 }
 
@@ -507,59 +507,59 @@ void display_status(AW_window *dummy,AW_CL cl_awroot,AW_CL cd2)    // bottom are
     AWUSE(dummy); AWUSE(cd2);
     AW_root *aw_root = (AW_root *) cl_awroot;
 
-    if(!AP_display::apdisplay) return;
+    if(!PH_display::ph_display) return;
     if(!PH_used_windows::windowList) return;
 
     {
-        static AP_display_status apds(PH_used_windows::windowList->phylo_main_window->get_device (AW_BOTTOM_AREA));
-        apds.clear();
+        static PH_display_status phds(PH_used_windows::windowList->phylo_main_window->get_device (AW_BOTTOM_AREA));
+        phds.clear();
         
         const int LABEL_LEN = 21;
 
-        switch(AP_display::apdisplay->displayed())
+        switch(PH_display::ph_display->displayed())
         {
             case NONE: return;
             case filter_dpy:
-            case species_dpy: apds.set_origin();
-                apds.set_cursor((apds.get_size('x')/2)-10,0);
-                apds.write("STATUS REPORT FILTER");
-                apds.newline();
+            case species_dpy: phds.set_origin();
+                phds.set_cursor((phds.get_size('x')/2)-10,0);
+                phds.write("STATUS REPORT FILTER");
+                phds.newline();
                 
-                apds.writePadded("Start at column:", LABEL_LEN);
-                apds.write((long)aw_root->awar("phyl/filter/startcol")->read_int());
-                apds.move_x(15);
-                apds.set_tab();
-                apds.writePadded("Stop at column:", LABEL_LEN);
-                apds.write((long)aw_root->awar("phyl/filter/stopcol")->read_int());
-                apds.newline();
+                phds.writePadded("Start at column:", LABEL_LEN);
+                phds.write((long)aw_root->awar("phyl/filter/startcol")->read_int());
+                phds.move_x(15);
+                phds.set_tab();
+                phds.writePadded("Stop at column:", LABEL_LEN);
+                phds.write((long)aw_root->awar("phyl/filter/stopcol")->read_int());
+                phds.newline();
 
-                apds.writePadded("Minimal similarity:", LABEL_LEN);
-                apds.write((long)aw_root->awar("phyl/filter/minhom")->read_int());
-                apds.set_cursor_x(apds.get_tab());
-                apds.writePadded("Maximal similarity:", LABEL_LEN);
-                apds.write((long)aw_root->awar("phyl/filter/maxhom")->read_int());
-                apds.newline();
-                apds.newline();
+                phds.writePadded("Minimal similarity:", LABEL_LEN);
+                phds.write((long)aw_root->awar("phyl/filter/minhom")->read_int());
+                phds.set_cursor_x(phds.get_tab());
+                phds.writePadded("Maximal similarity:", LABEL_LEN);
+                phds.write((long)aw_root->awar("phyl/filter/maxhom")->read_int());
+                phds.newline();
+                phds.newline();
 
-                apds.writePadded("'.':", LABEL_LEN);
-                apds.write(filter_text[aw_root->awar("phyl/filter/point")->read_int()]);
-                apds.newline();
+                phds.writePadded("'.':", LABEL_LEN);
+                phds.write(filter_text[aw_root->awar("phyl/filter/point")->read_int()]);
+                phds.newline();
 
-                apds.writePadded("'-':", LABEL_LEN);
-                apds.write(filter_text[aw_root->awar("phyl/filter/minus")->read_int()]);
-                apds.newline();
+                phds.writePadded("'-':", LABEL_LEN);
+                phds.write(filter_text[aw_root->awar("phyl/filter/minus")->read_int()]);
+                phds.newline();
 
-                apds.writePadded("ambiguity codes:", LABEL_LEN);
-                apds.write(filter_text[aw_root->awar("phyl/filter/rest")->read_int()]);
-                apds.newline();
+                phds.writePadded("ambiguity codes:", LABEL_LEN);
+                phds.write(filter_text[aw_root->awar("phyl/filter/rest")->read_int()]);
+                phds.newline();
 
-                apds.writePadded("lowercase chars:", LABEL_LEN);
-                apds.write(filter_text[aw_root->awar("phyl/filter/lower")->read_int()]);
+                phds.writePadded("lowercase chars:", LABEL_LEN);
+                phds.write(filter_text[aw_root->awar("phyl/filter/lower")->read_int()]);
                 break;
 
-            case matrix_dpy: apds.set_origin();
-                apds.set_cursor((apds.get_size('x')/2)-10,0);
-                apds.write("STATUS REPORT MATRIX");
+            case matrix_dpy: phds.set_origin();
+                phds.set_cursor((phds.get_size('x')/2)-10,0);
+                phds.write("STATUS REPORT MATRIX");
                 break;
                 
             default: printf("\nstatus: unknown display type (maybe not implemented yet)\n");
