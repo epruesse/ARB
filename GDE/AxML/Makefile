@@ -23,7 +23,7 @@ else
 
 CC      = $(ACC)
 TARGET 	= $(ARBHOME)/bin/axml
-LDFLAGS = $(LIB) -lm
+LDFLAGS = -lm
 CFLAGS  = $(cflags)
 
 $(MAIN) : all
