@@ -16,6 +16,7 @@
 AW_at::AW_at(void) {
     memset((char*)this,0,sizeof(AW_at));
     length_of_buttons = 10;
+    height_of_buttons = 0;
     shadow_thickness = 2;
     mask_for_next_button = AWM_ALL;
 }
@@ -26,7 +27,9 @@ void AW_window::shadow_width (int shadow_thickness ) { _at->shadow_thickness = s
 void AW_window::label_length( int length ) { _at->length_of_label_for_inputfield = length; }
 
 void AW_window::button_length( int length ) { _at->length_of_buttons = length; }
+void AW_window::button_height( int height ) { _at->height_of_buttons = height>1 ? height : 0; }
 int  AW_window::get_button_length() const { return _at->length_of_buttons; }
+int  AW_window::get_button_height() const { return _at->height_of_buttons; }
 
 void AW_window::highlight( void ) { _at->highlight = AW_TRUE; }
 

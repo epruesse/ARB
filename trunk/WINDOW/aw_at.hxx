@@ -5,6 +5,7 @@ class AW_at {
 public:
     short   shadow_thickness;
     short   length_of_buttons;
+    short   height_of_buttons;
     short   length_of_label_for_inputfield;
     AW_BOOL highlight;
 
