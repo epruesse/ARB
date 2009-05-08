@@ -199,6 +199,7 @@ endif
 cflags += -pipe
 cflags += -fmessage-length=0# dont wrap compiler output
 cflags += -funit-at-a-time
+cflags += -fPIC
 
 #---------------------- X11 location
 
