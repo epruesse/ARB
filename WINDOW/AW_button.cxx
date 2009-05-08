@@ -492,32 +492,45 @@ Widget AW_window::get_last_button_widget() const {
     return p_global->get_last_button_widget();
 }
 
-static void detect_text_size(const char *text, int& width, int& height) {
-    char *linefeed = strchr(text, '\n');
-    if (!linefeed) {
-        width  = strlen(text);
-        height = 1;
-        return;
+void aw_detect_text_size(const char *text, size_t& width, size_t& height) {
+    size_t text_width = strcspn(text, "\n");
+
+    if (text[text_width]) {
+        aw_assert(text[text_width] == '\n');
+
+        aw_detect_text_size(text+text_width+1, width, height);
+        if (text_width>width) width = text_width;
+        height++;
     }
-
-    int my_width = linefeed-text;
-    detect_text_size(linefeed+1, width, height);
-
-    if (my_width>width) width = my_width;
-    height++;
-    return;
+    else { // EOS
+        width  = text_width;
+        height = 1;
+    }
 }
 
 void AW_window::create_autosize_button(const char *macro_name, AW_label buttonlabel, const  char *mnemonic, unsigned xtraSpace) {
-    int width, height;
-    detect_text_size(buttonlabel, width, height);
+    aw_assert(buttonlabel[0] != '#');               // use create_button() for graphical buttons!
+
+    bool is_awar = strchr(buttonlabel, '/') && !strchr(buttonlabel, ' ');
+    size_t  width, height;
+    if (is_awar) {
+        char *content = get_root()->awar(buttonlabel)->read_as_string();
+        aw_assert(content[0]); // you have to fill the awar before calling create_autosize_button, otherwise size cannot be detected
+        aw_detect_text_size(content, width, height);
+    }
+    else {
+        aw_detect_text_size(buttonlabel, width, height);
+    }
 
     int   len               = width+(xtraSpace*2);
     short length_of_buttons = _at->length_of_buttons;
+    short height_of_buttons = _at->height_of_buttons;
 
     _at->length_of_buttons = len+1;
+    _at->height_of_buttons = height;
     create_button(macro_name, buttonlabel, mnemonic);
     _at->length_of_buttons = length_of_buttons;
+    _at->height_of_buttons = height_of_buttons;
 }
 
 void AW_window::create_button(const char *macro_name, AW_label buttonlabel, const  char *mnemonic, const char *color) {
@@ -584,13 +597,18 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
         width_of_button  = _at->to_position_x - _at->x_for_next_button - width_of_label_and_spacer;
         height_of_button = _at->to_position_y - _at->y_for_next_button;
     }
-    else if (_at->length_of_buttons) { // button size specified from client code
+    else if (_at->length_of_buttons) { // button width specified from client code
         width_of_button  = BUTTON_TEXT_X_PADDING + calculate_string_width(_at->length_of_buttons+1);
 
         if (!is_graphical_button) {
-            int textwidth, textheight;
-            calculate_textsize(buttonlabel, &textwidth, &textheight);
-            height_of_button = BUTTON_TEXT_Y_PADDING + calculate_string_height(textheight, 0);
+            if (_at->height_of_buttons) { // button height specified from client code
+                height_of_button = BUTTON_TEXT_Y_PADDING + calculate_string_height(_at->height_of_buttons, 0);
+            }
+            else {
+                int textwidth, textheight;
+                calculate_textsize(buttonlabel, &textwidth, &textheight);
+                height_of_button = BUTTON_TEXT_Y_PADDING + calculate_string_height(textheight, 0);
+            }
         }
         else {
             height_of_button = BUTTON_TEXT_Y_PADDING + calculate_string_height(1, 0);

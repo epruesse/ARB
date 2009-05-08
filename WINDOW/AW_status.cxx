@@ -17,6 +17,8 @@
 #include <aw_awars.hxx>
 #include <awt_www.hxx>
 #include <awt.hxx>
+#include "aw_global.hxx"
+
 #include <SIG_PF.h>
 
 #include <string>
@@ -1011,19 +1013,25 @@ int aw_question(const char *question, const char *buttons, bool fixedSizeButtons
     if (!question) question = "<oops - no question?!>";
     awar_quest->write_string(question);
 
-    size_t  question_length = strlen(question);
-    char   *hindex; // hash key to find matching window
-    {
-        const char *help = helpfile ? helpfile : "";
+    size_t question_length, question_lines;
+    aw_detect_text_size(question, question_length, question_lines);
 
-        hindex = (char *)calloc(sizeof(char), strlen(button_list) + 1 + 5 + 1 + 1 + 1 + strlen(help) + 1);
-        sprintf(hindex,"%s\n%zu\n%i\n%s", button_list, question_length, int(fixedSizeButtons), help);
-    }
+    // hash key to find matching window
+    char *hindex = GBS_global_string_copy("%s$%zu$%zu$%i$%s",
+                                          button_list,
+                                          question_length, question_lines, int(fixedSizeButtons),
+                                          helpfile ? helpfile : "");
 
     static GB_HASH *hash_windows    = 0;
     if (!hash_windows) hash_windows = GBS_create_hash(256, GB_MIND_CASE);
     aw_msg                          = (AW_window_message *)GBS_read_hash(hash_windows, hindex);
-    
+
+#if defined(DEBUG)
+    printf("question_length=%zu question_lines=%zu\n", question_length, question_lines);
+    printf("hindex='%s'\n", hindex);
+    if (aw_msg) printf("[Reusing existing aw_question-window]\n");
+#endif // DEBUG
+
     if (!aw_msg) {
         aw_msg = new AW_window_message;
         GBS_write_hash(hash_windows, hindex, (long)aw_msg);
@@ -1037,8 +1045,12 @@ int aw_question(const char *question, const char *buttons, bool fixedSizeButtons
         aw_msg->auto_space( 10, 10 );
 
         aw_msg->button_length(question_length+1);
+        aw_msg->button_height(question_lines);
+
         aw_msg->create_button(0, AWAR_QUESTION);
-        
+
+        aw_msg->button_height(0);
+
         aw_msg->at_newline();
 
         if (fixedSizeButtons) {

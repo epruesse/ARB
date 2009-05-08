@@ -359,8 +359,10 @@ public:
     void draw_line(int x1, int y1, int x2, int y2, int width, AW_BOOL resize); // draws a line on the background
 
     void label_length( int length ); // Justifies all following labels
-    void button_length( int length ); // Sets the width of all following buttons
+    void button_length( int length ); // Sets the width of all following buttons (in chars)
+    void button_height( int height ); // Sets the height of all following buttons (in lines)
     int  get_button_length() const; // returns the current width of buttons
+    int  get_button_height() const; // returns the current height of buttons
     void highlight( void );     // Creates a frame around the button
     void auto_increment( int dx, int dy ); // enable automatic placement of buttons
     // dx is the horizontal distance between the left
