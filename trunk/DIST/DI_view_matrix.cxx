@@ -313,7 +313,7 @@ void DI_dmatrix::display(bool clear)   // draw area
                 int x2 = xpos * cell_width;
                 double len = ((val2-min_view_dist)/(max_view_dist-min_view_dist)) * maxw;
                 if (len >= 0) {
-                    device->box(DI_G_RULER_DISPLAY, AW_TRUE, x2, y2,len, h*.8,-1,AW_CL(CLICK_SET_MINMAX), cd_val);
+                    device->box(DI_G_RULER_DISPLAY, true, x2, y2,len, h*.8,-1,AW_CL(CLICK_SET_MINMAX), cd_val);
                 }else{
                     device->text(DI_G_STANDARD, "????", xpos * cell_width, ypos * cell_height - cell_offset, 0.0, -1, AW_CL(CLICK_SET_MINMAX), cd_val);
                 }

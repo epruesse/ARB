@@ -49,7 +49,7 @@
 #define AW_COLOR_GROUPS      12
 
 GB_ERROR  AW_set_color_group(GBDATA *gbd, long color_group);
-long      AW_find_color_group(GBDATA *gbd, AW_BOOL ignore_usage_flag = false);
+long      AW_find_color_group(GBDATA *gbd, bool ignore_usage_flag = false);
 char     *AW_get_color_group_name(AW_root *awr, int color_group);
 
 void AW_init_color_group_defaults(const char *for_program);

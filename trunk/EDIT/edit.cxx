@@ -57,12 +57,10 @@ AED_root::AED_root(void) {
 AED_window::AED_window(void) {
     memset((char *)this,0,sizeof(AED_window));
 
-    config_window_created = AW_FALSE;
-
-    global_focus_use = AW_FALSE;
-
-    last_slider_position = 0;
-    quickdraw = AW_FALSE;
+    config_window_created = false;
+    global_focus_use      = false;
+    last_slider_position  = 0;
+    quickdraw             = false;
 
     show_dlist_left_side = new AED_dlist_left_side;
     hide_dlist_left_side = new AED_dlist_left_side;
@@ -74,15 +72,15 @@ AED_window::AED_window(void) {
 
     alignment = new ADT_ALI;
 
-    cursor_is_managed = AW_FALSE;
-    one_area_entry_is_selected = AW_FALSE;
+    cursor_is_managed = false;
+    one_area_entry_is_selected = false;
 
     edit_modus = AED_ALIGN;
 
     info_area_height = 50;
-    edit_info_area = AW_FALSE;
+    edit_info_area = false;
 
-    selected_area_entry_is_visible = AW_FALSE;
+    selected_area_entry_is_visible = false;
 }
 
 
@@ -217,16 +215,16 @@ void AED_window::calculate_size(AW_window *awmm)
     size_device->set_filter(AED_F_ALL);
 
     AED_area_display_struct display_struct;
-    display_struct.clear                = AW_FALSE;
-    display_struct.calc_size            = AW_TRUE;
-    display_struct.visible_control          = AW_TRUE;
-    display_struct.top_indent           = 0;
-    display_struct.bottom_indent            = 0;
-    display_struct.left_indent          = 0;
-    display_struct.slider_pos_horizontal        = 0;
-    display_struct.slider_pos_vertical      = 0;
-    display_struct.picture_l            = 0;
-    display_struct.picture_t            = 0;
+    display_struct.clear                 = false;
+    display_struct.calc_size             = true;
+    display_struct.visible_control       = true;
+    display_struct.top_indent            = 0;
+    display_struct.bottom_indent         = 0;
+    display_struct.left_indent           = 0;
+    display_struct.slider_pos_horizontal = 0;
+    display_struct.slider_pos_vertical   = 0;
+    display_struct.picture_l             = 0;
+    display_struct.picture_t             = 0;
 
     size_device->reset();
     show_bottom_data( size_device, awmm, display_struct );
@@ -266,10 +264,11 @@ void AED_window::calculate_size(AW_window *awmm)
 /***************************************************************************************************************************/
 
 void AED_window::select_area_entry( AED_area_entry *area_entry,  AW_pos cursor_position ) {
-    selected_area_entry =           area_entry;
-    area_entry->is_selected =       AW_TRUE;
-    one_area_entry_is_selected =    AW_TRUE;
-    if (cursor_position >=0)    cursor =            (int)cursor_position;
+    selected_area_entry        = area_entry;
+    area_entry->is_selected    = true;
+    one_area_entry_is_selected = true;
+
+    if (cursor_position >=0) cursor = (int)cursor_position;
     root->aw_root->awar( AWAR_SPECIES_NAME_LOCAL)->write_string( area_entry->ad_species->name() );
     root->aw_root->awar( AWAR_CURSOR_POSITION_LOCAL)->write_int( (int)cursor_position );
 }
@@ -277,9 +276,9 @@ void AED_window::select_area_entry( AED_area_entry *area_entry,  AW_pos cursor_p
 
 
 void AED_window::deselect_area_entry( void ) {
-    selected_area_entry->is_selected =  AW_FALSE;
-    selected_area_entry =           NULL;
-    one_area_entry_is_selected =        AW_FALSE;
+    selected_area_entry->is_selected = false;
+    selected_area_entry              = NULL;
+    one_area_entry_is_selected       = false;
 }
 
 
@@ -421,10 +420,8 @@ static GB_ERROR species_copy_cb(const char *source, char *dest){
 
 /** searches a species and returns TRUE if species exists */
 
-static AW_BOOL does_species_exists(char *name) {
-    GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main,name);
-    if (gb_species) return AW_TRUE;
-    return AW_FALSE;
+inline bool does_species_exists(char *name) {
+    return GBT_find_species(GLOBAL_gb_main,name) != 0;
 }
 
 
@@ -608,11 +605,11 @@ void AED_window::show_top_data(AW_device *device, AW_window *awmm, AED_area_disp
 
 void AED_window::show_single_top_data(AW_device *device, AW_window *awmm, AED_area_entry *area_entry, AED_area_display_struct& display_struct, AW_pos *y ) {
     AWUSE(awmm);
-    AW_pos width;
-    AW_pos height;
+    AW_pos       width;
+    AW_pos       height;
     AW_rectangle screen;
-    char left_text[100];
-    AW_BOOL tmp;
+    char         left_text[100];
+    bool         tmp;
 
     const AW_font_information *font_information = device->get_font_information(AED_GC_SEQUENCE, 'A');
     device->get_area_size( &screen );
@@ -655,8 +652,8 @@ void AED_window::show_single_top_data(AW_device *device, AW_window *awmm, AED_ar
             if ( display_struct.clear )
                 device->clear_part(  0, *y - font_information->max_letter.ascent - 1, width+1, height+1, AED_F_ALL);
 
-            if ( (tmp  = (AW_BOOL)device->text( AED_GC_SELECTED, left_text, 4, *y, 0.0,AED_F_NAME, (AW_CL)area_entry, AED_F_NAME )) ) {
-                device->box(AED_GC_SELECTED, AW_FALSE, 2, help_y-height, width, height, AED_F_ALL, (AW_CL)"box", 0);
+            if ( (tmp  = device->text( AED_GC_SELECTED, left_text, 4, *y, 0.0,AED_F_NAME, (AW_CL)area_entry, AED_F_NAME )) ) {
+                device->box(AED_GC_SELECTED, false, 2, help_y-height, width, height, AED_F_ALL, (AW_CL)"box", 0);
             }
             if ( display_struct.visible_control ) {
                 selected_area_entry_is_visible = tmp;
@@ -737,12 +734,12 @@ static int AED_show_colored_sequence(AW_device *device, int gc, const char *opt_
             color = colors[i] + AED_GC_0;
             if (color > AED_GC_9) color = AED_GC_9;
             if (color != old_color) {   // draw till oldcolor
-                device->box(old_color,AW_TRUE, x, y2, x2-x, height, -1, cd1,cd2);
+                device->box(old_color, true, x, y2, x2-x, height, -1, cd1,cd2);
                 x = x2;
                 old_color = color;
             }
         }
-        device->box(color, AW_TRUE, x, y2, x2-x, height, -1, cd1,cd2);
+        device->box(color, true, x, y2, x2-x, height, -1, cd1,cd2);
     }
     return device->text(gc, opt_string,0,y,0.0, -1,cd1,cd2,size+start);
 }
@@ -750,11 +747,11 @@ static int AED_show_colored_sequence(AW_device *device, int gc, const char *opt_
 
 void AED_window::show_single_middle_data(AW_device *device, AW_window *awmm, AED_area_entry *area_entry, AED_area_display_struct& display_struct, AW_pos *y ) {
     AWUSE(awmm);
-    AW_pos width;
-    AW_pos height;
+    AW_pos       width;
+    AW_pos       height;
     AW_rectangle screen;
-    char left_text[100];
-    AW_BOOL tmp;
+    char         left_text[100];
+    bool         tmp;
 
     const AW_font_information *font_information = device->get_font_information( AED_GC_SEQUENCE, 'A' );
     device->get_area_size( &screen );
@@ -797,8 +794,8 @@ void AED_window::show_single_middle_data(AW_device *device, AW_window *awmm, AED
             if ( display_struct.clear )
                 device->clear_part(  2, *y - font_information->max_letter.ascent - 1, width+1, height+1, AED_F_ALL);
 
-            if ( (tmp = (AW_BOOL)device->text( AED_GC_SELECTED, left_text, 4, *y, 0.0,AED_F_NAME, (AW_CL)area_entry, AED_F_NAME ))  ) {
-                device->box(AED_GC_SELECTED, AW_FALSE, 2, help_y-height, width, height, AED_F_ALL, (AW_CL)"box", 0);
+            if ( (tmp = device->text( AED_GC_SELECTED, left_text, 4, *y, 0.0,AED_F_NAME, (AW_CL)area_entry, AED_F_NAME ))  ) {
+                device->box(AED_GC_SELECTED, false, 2, help_y-height, width, height, AED_F_ALL, (AW_CL)"box", 0);
             }
             if ( display_struct.visible_control ) {
                 selected_area_entry_is_visible = tmp;
@@ -878,11 +875,11 @@ void AED_window::show_bottom_data(AW_device *device, AW_window *awmm, AED_area_d
 
 void AED_window::show_single_bottom_data(AW_device *device, AW_window *awmm, AED_area_entry *area_entry, AED_area_display_struct& display_struct, AW_pos *y ) {
     AWUSE(awmm);
-    AW_pos width;
-    AW_pos height;
+    AW_pos       width;
+    AW_pos       height;
     AW_rectangle screen;
-    char left_text[100];
-    AW_BOOL tmp;
+    char         left_text[100];
+    bool         tmp;
 
     const AW_font_information *font_information = device->get_font_information(AED_GC_SEQUENCE, 'A');
     device->get_area_size( &screen );
@@ -922,8 +919,8 @@ void AED_window::show_single_bottom_data(AW_device *device, AW_window *awmm, AED
             if ( display_struct.clear )
                 device->clear_part(  2, *y - font_information->max_letter.ascent - 1, width+1, height+1, AED_F_ALL);
 
-            if ( (tmp = (AW_BOOL)device->text( AED_GC_SELECTED, left_text, 4, *y, 0.0,AED_F_NAME, (AW_CL)area_entry, AED_F_NAME )) ) {
-                device->box(AED_GC_SELECTED, AW_FALSE, 2, help_y-height, width, height, AED_F_ALL, (AW_CL)"box", 0);
+            if ( (tmp = device->text( AED_GC_SELECTED, left_text, 4, *y, 0.0,AED_F_NAME, (AW_CL)area_entry, AED_F_NAME )) ) {
+                device->box(AED_GC_SELECTED, false, 2, help_y-height, width, height, AED_F_ALL, (AW_CL)"box", 0);
             }
             if ( display_struct.visible_control ) {
                 selected_area_entry_is_visible = tmp;
@@ -970,20 +967,20 @@ void AED_window::show_single_bottom_data(AW_device *device, AW_window *awmm, AED
 }
 
 
-void AED_window::show_data( AW_device *device, AW_window *awmm, AW_BOOL visibility_control ) {
+void AED_window::show_data( AW_device *device, AW_window *awmm, bool visibility_control ) {
     AW_rectangle screen;
 
     AED_area_display_struct display_struct;
-    display_struct.clear                = AW_FALSE;
-    display_struct.calc_size            = AW_TRUE;
-    display_struct.visible_control          = visibility_control;
-    display_struct.top_indent           = awmm->top_indent_of_vertical_scrollbar;
-    display_struct.bottom_indent            = awmm->bottom_indent_of_vertical_scrollbar;
-    display_struct.left_indent          = awmm->left_indent_of_horizontal_scrollbar;
-    display_struct.slider_pos_horizontal        = awmm->slider_pos_horizontal;
-    display_struct.slider_pos_vertical      = awmm->slider_pos_vertical;
-    display_struct.picture_l            = awmm->picture->l;
-    display_struct.picture_t            = awmm->picture->t;
+    display_struct.clear                 = false;
+    display_struct.calc_size             = true;
+    display_struct.visible_control       = visibility_control;
+    display_struct.top_indent            = awmm->top_indent_of_vertical_scrollbar;
+    display_struct.bottom_indent         = awmm->bottom_indent_of_vertical_scrollbar;
+    display_struct.left_indent           = awmm->left_indent_of_horizontal_scrollbar;
+    display_struct.slider_pos_horizontal = awmm->slider_pos_horizontal;
+    display_struct.slider_pos_vertical   = awmm->slider_pos_vertical;
+    display_struct.picture_l             = awmm->picture->l;
+    display_struct.picture_t             = awmm->picture->t;
 
     device->get_area_size( &screen );
     GB_transaction dummy(GLOBAL_gb_main);
@@ -1008,10 +1005,10 @@ void AED_window::expose( AW_window *awmm ) {
     device->reset();
     device->set_filter(AED_F_ALL);
     device->clear(AED_F_ALL);
-    this->show_data( device, awmm, AW_TRUE );
+    this->show_data( device, awmm, true );
 
     if ( this->cursor_is_managed ) {
-        this->manage_cursor( device, awmm, AW_FALSE );
+        this->manage_cursor( device, awmm, false );
     }
 
 } // end: aed_expose
@@ -1057,18 +1054,18 @@ void aed_resize( AW_window *dummy, AW_CL cd1, AW_CL cd2 ) {
 
 
 static void aed_horizontal( AW_window *aw, AW_CL cd1, AW_CL cd2 ) {
-    AW_device               *device;
-    AW_device               *info_device;
-    AED_window              *aedw = (AED_window *)cd1;
-    AW_BOOL                 handle_cursor = (AW_BOOL)cd2;
-    AW_window   *awmm = aedw->aww;
-    AW_rectangle            screen;
-    AW_pos                  src_x;
-    AW_pos                  src_y;
-    AW_pos                  width;
-    AW_pos                  height;
-    AW_pos                  dest_x;
-    AW_pos                  dest_y;
+    AW_device    *device;
+    AW_device    *info_device;
+    AED_window   *aedw          = (AED_window *)cd1;
+    bool          handle_cursor = (bool)cd2;
+    AW_window    *awmm          = aedw->aww;
+    AW_rectangle  screen;
+    AW_pos        src_x;
+    AW_pos        src_y;
+    AW_pos        width;
+    AW_pos        height;
+    AW_pos        dest_x;
+    AW_pos        dest_y;
 
     device = aw->get_device (AW_MIDDLE_AREA  );
     device->reset();
@@ -1079,14 +1076,14 @@ static void aed_horizontal( AW_window *aw, AW_CL cd1, AW_CL cd2 ) {
     device->get_area_size( &screen );
 
     if ( handle_cursor && aedw->cursor_is_managed ) {
-        aedw->manage_cursor( device, awmm, AW_TRUE );
+        aedw->manage_cursor( device, awmm, true );
     }
 
     src_x = awmm->left_indent_of_horizontal_scrollbar + (AW_pos)awmm->slider_pos_horizontal - aedw->last_slider_position;
 
     if ( src_x < screen.r ) {
         if ( (AW_pos)awmm->slider_pos_horizontal > aedw->last_slider_position ) {      // nach rechts gescrollt
-            aedw->quickdraw = AW_TRUE;
+            aedw->quickdraw = true;
             src_y   = 0;
             width       = screen.r - awmm->left_indent_of_horizontal_scrollbar;
             height  = screen.b;
@@ -1100,12 +1097,12 @@ static void aed_horizontal( AW_window *aw, AW_CL cd1, AW_CL cd2 ) {
             aedw->quickdraw_right_indent = screen.r;
 
             device->move_region( src_x , src_y, width, height, dest_x, dest_y );
-            aedw->show_data( device, awmm, AW_TRUE );
-            aedw->quickdraw = AW_FALSE;
+            aedw->show_data( device, awmm, true );
+            aedw->quickdraw = false;
         }
         if ( (AW_pos)awmm->slider_pos_horizontal < aedw->last_slider_position ) {      // nach links gescrollt
 
-            aedw->quickdraw = AW_TRUE;
+            aedw->quickdraw = true;
 
             src_x   = awmm->left_indent_of_horizontal_scrollbar;
             src_y   = 0;
@@ -1120,24 +1117,24 @@ static void aed_horizontal( AW_window *aw, AW_CL cd1, AW_CL cd2 ) {
             aedw->quickdraw_right_indent = awmm->left_indent_of_horizontal_scrollbar - awmm->slider_pos_horizontal + aedw->last_slider_position + 10;
             device->set_offset(AW::Vector());
             device->clear_part(  awmm->left_indent_of_horizontal_scrollbar, 0, aedw->last_slider_position - (AW_pos)awmm->slider_pos_horizontal, screen.b, AED_F_ALL);
-            aedw->show_data( device, awmm, AW_TRUE );
-            aedw->quickdraw = AW_FALSE;
+            aedw->show_data( device, awmm, true );
+            aedw->quickdraw = false;
         }
     }
     else {  // mehr als eine Seite gescrollt
-        aedw->quickdraw = AW_TRUE;
+        aedw->quickdraw = true;
         device->set_offset(AW::Vector());
         device->clear_part(  awmm->left_indent_of_horizontal_scrollbar, 0, screen.r - awmm->left_indent_of_horizontal_scrollbar, screen.b, AED_F_ALL);
         aedw->quickdraw_left_indent = awmm->left_indent_of_horizontal_scrollbar;
         aedw->quickdraw_right_indent = screen.r;
-        aedw->show_data( device, awmm, AW_TRUE );
-        aedw->quickdraw = AW_FALSE;
+        aedw->show_data( device, awmm, true );
+        aedw->quickdraw = false;
     }
 
     aedw->last_slider_position = awmm->slider_pos_horizontal;
 
     if ( handle_cursor && aedw->cursor_is_managed ) {
-        aedw->cursor_is_managed = aedw->manage_cursor( device, awmm, AW_FALSE );
+        aedw->cursor_is_managed = aedw->manage_cursor( device, awmm, false );
     }
 
 
@@ -1146,13 +1143,13 @@ static void aed_horizontal( AW_window *aw, AW_CL cd1, AW_CL cd2 ) {
 
 
 static void aed_vertical( AW_window *aw, AW_CL cd1, AW_CL cd2 ) {
-    AED_window              *aedw = (AED_window *)cd1;
-    AW_window   *awmm = aedw->aww;
-    AW_BOOL                 handle_cursor = (AW_BOOL)cd2;
-    AW_device               *device;
-    AW_device               *info_device;
-    AW_rectangle            screen;
-    GB_transaction dummy(GLOBAL_gb_main);
+    AED_window     *aedw          = (AED_window *)cd1;
+    AW_window      *awmm          = aedw->aww;
+    bool            handle_cursor = (bool)cd2;
+    AW_device      *device;
+    AW_device      *info_device;
+    AW_rectangle    screen;
+    GB_transaction  dummy(GLOBAL_gb_main);
 
     device = aw->get_device (AW_MIDDLE_AREA  );
     device->reset();
@@ -1163,7 +1160,7 @@ static void aed_vertical( AW_window *aw, AW_CL cd1, AW_CL cd2 ) {
     device->get_area_size( &screen );
 
     if ( handle_cursor && aedw->cursor_is_managed && aedw->selected_area_entry_is_visible ) {
-        aedw->manage_cursor( device, awmm, AW_FALSE );
+        aedw->manage_cursor( device, awmm, false );
     }
 
     device->set_offset(AW::Vector());
@@ -1172,21 +1169,21 @@ static void aed_vertical( AW_window *aw, AW_CL cd1, AW_CL cd2 ) {
                         screen.r, screen.b - awmm->top_indent_of_vertical_scrollbar - awmm->bottom_indent_of_vertical_scrollbar, AED_F_ALL);
 
     AED_area_display_struct display_struct;
-    display_struct.clear                        = AW_FALSE;
-    display_struct.calc_size                    = AW_TRUE;
-    display_struct.visible_control                  = AW_TRUE;
-    display_struct.top_indent                   = awmm->top_indent_of_vertical_scrollbar;
-    display_struct.bottom_indent                    = awmm->bottom_indent_of_vertical_scrollbar;
-    display_struct.left_indent                  = awmm->left_indent_of_horizontal_scrollbar;
-    display_struct.slider_pos_horizontal                = awmm->slider_pos_horizontal;
-    display_struct.slider_pos_vertical              = awmm->slider_pos_vertical;
-    display_struct.picture_l                    = awmm->picture->l;
-    display_struct.picture_t                    = awmm->picture->t;
+    display_struct.clear                 = false;
+    display_struct.calc_size             = true;
+    display_struct.visible_control       = true;
+    display_struct.top_indent            = awmm->top_indent_of_vertical_scrollbar;
+    display_struct.bottom_indent         = awmm->bottom_indent_of_vertical_scrollbar;
+    display_struct.left_indent           = awmm->left_indent_of_horizontal_scrollbar;
+    display_struct.slider_pos_horizontal = awmm->slider_pos_horizontal;
+    display_struct.slider_pos_vertical   = awmm->slider_pos_vertical;
+    display_struct.picture_l             = awmm->picture->l;
+    display_struct.picture_t             = awmm->picture->t;
 
     aedw->show_middle_data( device, awmm, display_struct );
 
     if ( handle_cursor && aedw->cursor_is_managed && aedw->selected_area_entry_is_visible ) {
-        aedw->manage_cursor( device, awmm, AW_FALSE );
+        aedw->manage_cursor( device, awmm, false );
     }
 
 
@@ -1197,7 +1194,7 @@ static void aed_vertical( AW_window *aw, AW_CL cd1, AW_CL cd2 ) {
 void AED_window::hide_cursor( AW_device *device, AW_window *awmm ) {
 
     if ( cursor_is_managed ) {
-        this->manage_cursor( device, awmm, AW_FALSE );
+        this->manage_cursor( device, awmm, false );
     }
 
 } // end: AED_window::hide_cursor
@@ -1207,19 +1204,19 @@ void AED_window::hide_cursor( AW_device *device, AW_window *awmm ) {
 void AED_window::show_cursor( AW_device *device, AW_window *awmm ) {
 
     if ( cursor_is_managed ) {
-        this->manage_cursor( device, awmm, AW_FALSE );
+        this->manage_cursor( device, awmm, false );
     }
 
 } // end: AED_window::show_cursor
 
 
 
-AW_BOOL AED_window::manage_cursor( AW_device *device, AW_window *awmm, AW_BOOL use_last_slider_position ) {
+bool AED_window::manage_cursor( AW_device *device, AW_window *awmm, bool use_last_slider_position ) {
     AW_rectangle screen;
     AW_pos       slider_position_horizontal;
-    AW_BOOL      cursor_drawn;
-    
-    if (!selected_area_entry) return AW_FALSE;
+    bool         cursor_drawn;
+
+    if (!selected_area_entry) return false;
     const AW_font_information *font_information = device->get_font_information( AED_GC_SEQUENCE, 'A' );
     if ( use_last_slider_position ) {
         slider_position_horizontal = last_slider_position;
@@ -1249,7 +1246,7 @@ AW_BOOL AED_window::manage_cursor( AW_device *device, AW_window *awmm, AW_BOOL u
         device->set_offset(AW::Vector(offsetx, screen.b - awmm->bottom_indent_of_vertical_scrollbar));
         device->set_top_clip_border( screen.b - awmm->bottom_indent_of_vertical_scrollbar );
     }
-    cursor_drawn = (AW_BOOL)device->cursor( AED_GC_NAME_DRAG, cursor * font_information->max_letter.width, selected_area_entry->in_line, AW_cursor_insert, AED_F_CURSOR, 0, 0 );
+    cursor_drawn = (bool)device->cursor( AED_GC_NAME_DRAG, cursor * font_information->max_letter.width, selected_area_entry->in_line, AW_cursor_insert, AED_F_CURSOR, 0, 0 );
     device->pop_clip_scale();
     root->aw_root->awar( AWAR_CURSOR_POSITION_LOCAL)->write_int( cursor );
 
@@ -1260,19 +1257,20 @@ AW_BOOL AED_window::manage_cursor( AW_device *device, AW_window *awmm, AW_BOOL u
 
 
 void AED_window::show_single_area_entry( AW_device *device, AW_window *awmm, AED_area_entry *area_entry ) {
-    AW_pos y = area_entry->in_line;
-    GB_transaction dummy(GLOBAL_gb_main);
+    AW_pos                  y = area_entry->in_line;
+    GB_transaction          dummy(GLOBAL_gb_main);
     AED_area_display_struct display_struct;
-    display_struct.clear                = AW_TRUE;
-    display_struct.calc_size            = AW_FALSE;
-    display_struct.visible_control          = AW_TRUE;
-    display_struct.top_indent           = awmm->top_indent_of_vertical_scrollbar;
-    display_struct.bottom_indent            = awmm->bottom_indent_of_vertical_scrollbar;
-    display_struct.left_indent          = awmm->left_indent_of_horizontal_scrollbar;
-    display_struct.slider_pos_horizontal        = awmm->slider_pos_horizontal;
-    display_struct.slider_pos_vertical      = awmm->slider_pos_vertical;
-    display_struct.picture_l            = awmm->picture->l;
-    display_struct.picture_t            = awmm->picture->t;
+    
+    display_struct.clear                 = true;
+    display_struct.calc_size             = false;
+    display_struct.visible_control       = true;
+    display_struct.top_indent            = awmm->top_indent_of_vertical_scrollbar;
+    display_struct.bottom_indent         = awmm->bottom_indent_of_vertical_scrollbar;
+    display_struct.left_indent           = awmm->left_indent_of_horizontal_scrollbar;
+    display_struct.slider_pos_horizontal = awmm->slider_pos_horizontal;
+    display_struct.slider_pos_vertical   = awmm->slider_pos_vertical;
+    display_struct.picture_l             = awmm->picture->l;
+    display_struct.picture_t             = awmm->picture->t;
 
     if( area_entry->in_area == area_top ) {
         this->show_single_top_data( device, awmm, area_entry, display_struct, &y );
@@ -1298,7 +1296,7 @@ void drag_box(AW_device *device, int gc, AW_pos x, AW_pos y, AW_pos width, AW_po
         height = font_information->max_letter.height + 4;
     }
     AW_pos y_help = y + 2;
-    device->box(gc, AW_FALSE, x, y_help-height, width, height, AED_F_ALL, (AW_CL)"drag_box", 0);
+    device->box(gc, false, x, y_help-height, width, height, AED_F_ALL, (AW_CL)"drag_box", 0);
     device->text( gc, str, x+2, y-2, 0, AED_F_ALL, (AW_CL)"drag_box", 0 );                      // Text
 }
 
@@ -1459,26 +1457,26 @@ void set_cursor_to( AED_window *aedw, long cursor, class AED_area_entry *aed ) {
     }
 
     aedw->cursor = (int)cursor;
-    aedw->cursor_is_managed = AW_TRUE;
+    aedw->cursor_is_managed = true;
 
     if(  wincursor < awmm->slider_pos_horizontal + AED_WINBORDER && awmm->slider_pos_horizontal > 0) {
         long h = wincursor - AED_WINBORDER;
         if ( h < 0 ) h = 0;
         if ( h > worldwidth - widthofscrolledwin ) h = (long)(worldwidth - widthofscrolledwin);
         awmm->set_horizontal_scrollbar_position( (int)h );
-        aed_horizontal( awmm, (AW_CL)aedw, (AW_CL)AW_FALSE );
+        aed_horizontal( awmm, (AW_CL)aedw, (AW_CL)false );
     }else if ( wincursor > awmm->slider_pos_horizontal + widthofscrolledwin - AED_WINBORDER ){
         long h = wincursor - (widthofscrolledwin - AED_WINBORDER);
         if ( h < 0 ) h = 0;
         if ( h > worldwidth - widthofscrolledwin ) h = (long)(worldwidth - widthofscrolledwin);
         awmm->set_horizontal_scrollbar_position( (int)h );
-        aed_horizontal( awmm, (AW_CL)aedw, (AW_CL)AW_FALSE );
+        aed_horizontal( awmm, (AW_CL)aedw, (AW_CL)false );
     }
     if (!aed || aedw->area_middle != aed->in_area){
         aedw->show_cursor( device, awmm );
         return;
     }
-    aedw->cursor_is_managed = AW_FALSE;
+    aedw->cursor_is_managed = false;
 
     AW_pos y_pos = aed->absolut_y - awmm->top_indent_of_vertical_scrollbar;
     AW_pos hight_of_scrolled_window = screen.b - awmm->bottom_indent_of_vertical_scrollbar
@@ -1488,14 +1486,14 @@ void set_cursor_to( AED_window *aedw, long cursor, class AED_area_entry *aed ) {
         y_pos = awmm->slider_pos_vertical + y_pos - AED_WINBORDER;
         if (y_pos <= 0 ) y_pos = 0;
         awmm->set_vertical_scrollbar_position( (int)y_pos );
-        aed_vertical( awmm, (AW_CL)aedw, (AW_CL)AW_FALSE );
+        aed_vertical( awmm, (AW_CL)aedw, (AW_CL)false );
     }else if (y_pos > hight_of_scrolled_window - AED_WINBORDER){
         y_pos = awmm->slider_pos_vertical + y_pos - hight_of_scrolled_window + AED_WINBORDER;
         if (y_pos <= 0 ) y_pos = 0;
         awmm->set_vertical_scrollbar_position( (int)y_pos );
-        aed_vertical( awmm, (AW_CL)aedw, (AW_CL)AW_FALSE );
+        aed_vertical( awmm, (AW_CL)aedw, (AW_CL)false );
     }
-    aedw->cursor_is_managed = AW_TRUE;
+    aedw->cursor_is_managed = true;
     aedw->show_cursor( device, awmm );
 } // end: set_cursor_to
 
@@ -1545,12 +1543,12 @@ static void set_cursor_up_down(AED_window *aedw, int direction)
                                                       10, 5, 0);
     click_device->reset();
     click_device->set_filter(AED_F_NAME | AED_F_SEQUENCE);
-    aedw->show_data(click_device, awmm, AW_FALSE);
+    aedw->show_data(click_device, awmm, false);
 
     AW_clicked_text clicked_text;
     click_device->get_clicked_text(&clicked_text);
 
-    if (clicked_text.exists == AW_TRUE) {
+    if (clicked_text.exists == true) {
         AED_area_entry *new_selected_area_entry = (AED_area_entry *) clicked_text.client_data1;
         if (clicked_text.client_data2 == AED_F_SEQUENCE) {
             if (aedw->one_area_entry_is_selected) {
@@ -1565,7 +1563,7 @@ static void set_cursor_up_down(AED_window *aedw, int direction)
             aedw->show_cursor(device, awmm);
         }
     } else {
-        aedw->selected_area_entry_is_visible = AW_TRUE;
+        aedw->selected_area_entry_is_visible = true;
     }
 }
 
@@ -1705,10 +1703,10 @@ static void aed_input( AW_window *aw, AW_CL cd1, AW_CL cd2 ) {
 
 
     if ( event.type == AW_Mouse_Press ) {
-        aedw->show_data( click_device, awmm, AW_FALSE );
+        aedw->show_data( click_device, awmm, false );
         click_device->get_clicked_text( &clicked_text );
 
-        if ( clicked_text.exists == AW_TRUE ) {
+        if ( clicked_text.exists == true ) {
             AED_area_entry *new_selected_area_entry = (AED_area_entry *)clicked_text.client_data1;
             if( clicked_text.client_data2 == AED_F_NAME ) {
                 if( aedw->one_area_entry_is_selected ) {
@@ -1721,7 +1719,7 @@ static void aed_input( AW_window *aw, AW_CL cd1, AW_CL cd2 ) {
                 }
                 aedw->select_area_entry( new_selected_area_entry, clicked_text.cursor );
                 aedw->show_single_area_entry(device, awmm, new_selected_area_entry);
-                aedw->cursor_is_managed = AW_FALSE;
+                aedw->cursor_is_managed = false;
             }
             if( clicked_text.client_data2 == AED_F_SEQUENCE ) {
                 if( aedw->one_area_entry_is_selected ) {
@@ -1734,10 +1732,10 @@ static void aed_input( AW_window *aw, AW_CL cd1, AW_CL cd2 ) {
                 }
                 aedw->select_area_entry( new_selected_area_entry, clicked_text.cursor );
                 aedw->show_single_area_entry( device, awmm, new_selected_area_entry );
-                aedw->cursor_is_managed = AW_TRUE;
+                aedw->cursor_is_managed = true;
                 aedw->show_cursor( device, awmm );
             }
-            aedw->selected_area_entry_is_visible = AW_TRUE;
+            aedw->selected_area_entry_is_visible = true;
         }
     } // end: if ( event.type == AW_Mouse_Press )
 
@@ -1745,14 +1743,14 @@ static void aed_input( AW_window *aw, AW_CL cd1, AW_CL cd2 ) {
     if ( event.type == AW_Mouse_Release ) {
 
         if( aedw->drag ) {
-            aedw->drag = AW_FALSE;                                    // drag beendet
+            aedw->drag = false;                                    // drag beendet
             aedw->make_left_text( left_text, aedw->selected_area_entry );
             drag_box( device, AED_GC_NAME_DRAG, aedw->drag_x - aedw->drag_x_correcting, aedw->drag_y - aedw->drag_y_correcting, 0, 0, left_text );          // vorher gemalte Box entfernen
             click_device = aw->get_click_device (AW_MIDDLE_AREA,event.x, event.y, 10, 8, 0);
             click_device->reset();
             click_device->set_filter(AED_F_NAME);
 
-            aedw->show_data( click_device, awmm, AW_FALSE );
+            aedw->show_data( click_device, awmm, false );
             click_device->get_clicked_text(&clicked_text);
 
             AW_rectangle    screen;
@@ -1835,13 +1833,13 @@ static void aed_motion( AW_window *aw, AW_CL cd1, AW_CL cd2 ) {
         click_device = aw->get_click_device (AW_MIDDLE_AREA, event.x, event.y, 10, 5, 0 );
         click_device->reset();
         click_device->set_filter(AED_F_NAME);
-        aedw->show_data( click_device, awmm, AW_FALSE );
+        aedw->show_data( click_device, awmm, false );
         click_device->get_clicked_text( &clicked_text );
 
         if( clicked_text.exists && clicked_text.client_data2 == AED_F_NAME ) {
             AED_area_entry *area_entry = (AED_area_entry *)clicked_text.client_data1;
             if( strcmp(area_entry->ad_species->name(),aedw->selected_area_entry->ad_species->name()) == 0 ) {
-                aedw->drag = AW_TRUE;
+                aedw->drag = true;
                 aw->get_event ( &motion_event );
                 aedw->drag_x_correcting = event.x - (int)aedw->selected_area_entry->absolut_x;
                 aedw->drag_y_correcting = event.y - (int)aedw->selected_area_entry->absolut_y;
@@ -2153,15 +2151,15 @@ void aed_create_window(AED_root *aedr) {
     awmm->insert_menu_topic("props_menu",   "Menu: Colors and Fonts ...",   "M","props_frame.hlp",  AWM_ALL,    AW_POPUP, (AW_CL)AW_preset_window,  0 );
     awmm->insert_menu_topic("props_seq",    "Sequences: Colors and Fonts ...",  "C","neprops_data.hlp", AWM_ALL,    AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)preset_window );
     awmm->insert_menu_topic("props_etc",    "ETC ...",          "E","neprops.hlp",  AWM_ALL,    AW_POPUP, (AW_CL)create_edit_preset_window, (AW_CL)0 );
-    //  awmm->insert_menu_topic(0,"NDS ...",            "N","neprops_nds.hlp",  AWM_ALL, aed_popup_config_window, (AW_CL)aed_window, AW_TRUE );
+    //  awmm->insert_menu_topic(0,"NDS ...",            "N","neprops_nds.hlp",  AWM_ALL, aed_popup_config_window, (AW_CL)aed_window, true );
     awmm->insert_menu_topic("props_key_map","Key Mappings ...",     "K","nekey_map.hlp",    AWM_ALL,    AW_POPUP, (AW_CL)create_key_map_window, 0 );
     awmm->insert_menu_topic("props_helix",  "Helix Symbols ...",        "H","helixsym.hlp", AWM_ALL,    AW_POPUP, (AW_CL)create_helix_props_window, (AW_CL)
                             new AW_cb_struct(awmm,(AW_CB)aed_resize,(AW_CL)aed_window,0) );
     awmm->insert_separator();
     awmm->insert_menu_topic("save_props",   "Save Properties (in ~/.arb_prop/edit.arb)","S","savedef.hlp",  AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
     awmm->create_menu(0,"ETC","C");
-    awmm->insert_menu_topic("synchronize",  "Synchronize Cursor Position",      "S","exportcursor.hlp", AWM_ALL,    aed_use_focus, (AW_CL)aed_window, AW_TRUE );
-    awmm->insert_menu_topic("unsynchronize","Don't Synchronize Cursor",         "D","exportcursor.hlp", AWM_ALL,    aed_use_focus, (AW_CL)aed_window, AW_FALSE );
+    awmm->insert_menu_topic("synchronize",  "Synchronize Cursor Position",      "S","exportcursor.hlp", AWM_ALL,    aed_use_focus, (AW_CL)aed_window, true );
+    awmm->insert_menu_topic("unsynchronize","Don't Synchronize Cursor",         "D","exportcursor.hlp", AWM_ALL,    aed_use_focus, (AW_CL)aed_window, false );
     awmm->insert_menu_topic("refresh_helix","Reload Helix (SAI 'HELIXNR/HELIX')",       "H","helix.hlp",    AWM_ALL,    (AW_CB)reload_helix, (AW_CL)aed_window, 0 );
     awmm->insert_menu_topic("refresh_ecoli","Reload Reference (SAI 'ECOLI')",       "R","ecoliref.hlp", AWM_ALL,    (AW_CB)reload_ref, (AW_CL)aed_window, 0 );
     awmm->insert_menu_topic("enable_col_stat","Enable Column Statistic",            "C","st_ml.hlp",    AWM_ALL,AW_POPUP,(AW_CL)st_create_main_window,(AW_CL)st_ml);
@@ -2288,8 +2286,8 @@ void aed_create_window(AED_root *aedr) {
     awmm->set_resize_callback (AW_MIDDLE_AREA,          aed_resize,(AW_CL)aed_window,0);
     awmm->get_root()->set_focus_callback((AW_RCB)ED_focus_cb,(AW_CL)GLOBAL_gb_main,0);
 
-    awmm->set_vertical_change_callback(     aed_vertical,(AW_CL)aed_window, (AW_CL)AW_TRUE );
-    awmm->set_horizontal_change_callback(       aed_horizontal,(AW_CL)aed_window, (AW_CL)AW_TRUE );
+    awmm->set_vertical_change_callback(     aed_vertical,(AW_CL)aed_window, (AW_CL)true );
+    awmm->set_horizontal_change_callback(       aed_horizontal,(AW_CL)aed_window, (AW_CL)true );
 
     awmm->set_input_callback (AW_MIDDLE_AREA,aed_input,(AW_CL)aed_window,0);
     awmm->set_motion_callback (AW_MIDDLE_AREA,aed_motion,(AW_CL)aed_window,0);
@@ -2349,7 +2347,7 @@ int main(int argc,char **argv) {
     aed_root.db = aed_root.aw_root->open_default( ".arb_prop/edit.arb" );
 
     aed_root.aw_root->init_variables( aed_root.db );
-    aed_root.aw_root->init_root("ARB_EDITOR", AW_FALSE);     // initialize window-system 
+    aed_root.aw_root->init_root("ARB_EDITOR", false);     // initialize window-system 
 
     aed_create_window(&aed_root); // creates editor window and inserts callbacks
     aed_root.aw_root->main_loop(); // let's enter main-loop

@@ -53,7 +53,7 @@ void AW_preset_create_font_chooser(AW_window *aws, const char *awar, const char 
 void AW_preset_create_scale_chooser(AW_window *aws, const char *awar, const char *label);
 void AW_preset_create_color_chooser(AW_window *aws, const char *awar, const char *label,bool message_reload = false, bool show_label = false);
 
-void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_window, AW_BOOL has_font_info, const char *id0, ...) __ATTR__SENTINEL;
+void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_window, bool has_font_info, const char *id0, ...) __ATTR__SENTINEL;
 
 #else
 #error aw_preset.hxx included twice

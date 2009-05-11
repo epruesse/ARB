@@ -1538,7 +1538,7 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
             AW_window_simple*& aws = mask->get_window();
             aws                    = new AW_window_simple;
             aws->init(root, "INPUT_MASK", title.c_str());
-            aws->load_xfig(0, AW_TRUE);
+            aws->load_xfig(0, true);
 
             aws->recalc_size_at_show = 1; // ignore user size!
 
@@ -1930,7 +1930,7 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                     aws->get_window_size(width, height);
                     for (vector<int>::const_iterator yi = horizontal_lines.begin(); yi != horizontal_lines.end(); ++yi) {
                         int y = (*yi)+SEC_YBORDER;
-                        aws->draw_line(SEC_XBORDER, y, width-SEC_XBORDER, y, SEC_LINE_WIDTH, AW_TRUE);
+                        aws->draw_line(SEC_XBORDER, y, width-SEC_XBORDER, y, SEC_LINE_WIDTH, true);
                     }
                 }
 

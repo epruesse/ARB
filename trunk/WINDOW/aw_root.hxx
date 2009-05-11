@@ -42,14 +42,6 @@ typedef int         AW_font;
 typedef const char             *GB_ERROR;
 typedef struct gbs_hash_struct  GB_HASH;
 
-#ifdef HAVE_BOOL
-typedef bool AW_BOOL;
-const bool AW_FALSE = false;
-const bool AW_TRUE  = true;
-#else
-typedef enum { AW_FALSE=0, AW_TRUE } AW_BOOL;
-#endif
-
 extern AW_default aw_main_root_default;
 
 // #define AWUSE(variable) variable = variable
@@ -154,12 +146,12 @@ protected:
 public:
     static  AW_root *THIS;
     AW_root_Motif   *prvt;                          // Do not use !!!
-    AW_BOOL          value_changed;
+    bool             value_changed;
     long             changer_of_variable;
     int              y_correction_for_input_labels;
     AW_active        global_mask;
     GB_HASH         *hash_table_for_variables;
-    AW_BOOL          variable_set_by_toggle_field;
+    bool             variable_set_by_toggle_field;
     int              number_of_toggle_fields;
     int              number_of_option_menues;
     char            *program_name;
@@ -167,7 +159,7 @@ public:
     void            *get_aw_var_struct(char *awar);
     void            *get_aw_var_struct_no_error(char *awar);
 
-    AW_BOOL                 disable_callbacks;
+    bool                    disable_callbacks;
     struct AW_var_callback *focus_callback_list;
 
     int  active_windows;
@@ -195,7 +187,7 @@ public:
     enum { AW_MONO_COLOR, AW_RGB_COLOR }    color_mode;
 
     void init_variables( AW_default database );
-    void init_root( const char *programmname , AW_BOOL no_exit);
+    void init_root( const char *programmname , bool no_exit);
     void main_loop(void);
     void process_events(void);
     AW_ProcessEventType peek_key_event(AW_window *);

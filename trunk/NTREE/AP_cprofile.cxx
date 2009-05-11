@@ -873,7 +873,7 @@ void CPRO_getfromstatistic(float &equal,float &ingroup,long res,long column, uns
 }
 
 void CPRO_box(AW_device *device,int gc,float l,float t,float width,float high) {
-    device->box(gc, AW_FALSE, l, t, width, high, 1, (AW_CL)0, (AW_CL)0);
+    device->box(gc, false, l, t, width, high, 1, (AW_CL)0, (AW_CL)0);
 }
 
 float CPRO_confidinterval(long res,long column,unsigned char which_statistic,char mode)

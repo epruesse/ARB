@@ -183,7 +183,7 @@ public:
 };
 
 AWT_graphic_tree *NT_generate_tree( AW_root *root,GBDATA *gb_main );
-AW_BOOL           AWT_show_remark_branch(AW_device *device, const char *remark_branch, AW_BOOL is_leaf, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
+bool              AWT_show_remark_branch(AW_device *device, const char *remark_branch, bool is_leaf, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
 
 
 #endif

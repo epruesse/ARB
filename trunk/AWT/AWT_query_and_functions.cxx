@@ -503,9 +503,9 @@ void awt_delete_species_in_list(void *dummy, struct adaqbsstruct *cbs)
     }
 }
 
-static GB_HASH *awt_create_ref_hash(const struct adaqbsstruct *cbs, const char *key, AW_BOOL split_words) {
+static GB_HASH *awt_create_ref_hash(const struct adaqbsstruct *cbs, const char *key, bool split_words) {
     GBDATA  *gb_ref       = cbs->gb_ref;
-    AW_BOOL  queried_only = cbs->expect_hit_in_ref_list;
+    bool     queried_only = cbs->expect_hit_in_ref_list;
     GB_HASH *hash         = GBS_create_hash(GBT_get_species_hash_size(gb_ref), GB_IGNORE_CASE);
 
     for (GBDATA  *gb_species = GBT_first_species(gb_ref);
@@ -563,13 +563,13 @@ typedef enum {
 class awt_query {
     awt_query_operator  op;                         // operator (AND or OR)
     char               *key;                        // search key
-    AW_BOOL             Not;                        // true means "don't match"
+    bool                Not;                        // true means "don't match"
     char               *query;                      // search expression
-    
+
     GBDATA     *gb_main;
     const char *tree;                               // name of current default tree (needed for ACI)
 
-    AW_BOOL              rek;                       // is 'key' hierarchical ?
+    bool                 rek;                       // is 'key' hierarchical ?
     awt_query_field_type match_field;               // type of search key
     GBQUARK              keyquark;                  // valid only if match_field == AQFT_EXPLICIT
     awt_query_type       type;                      // type of 'query'
@@ -609,18 +609,18 @@ public:
 
     awt_query_operator getOperator() const { return op; }
     const char *getKey() const { return key; }
-    AW_BOOL applyNot(AW_BOOL matched) const { return Not ? !matched : matched; }
-    AW_BOOL shallMatch() const { return !Not; }
+    bool applyNot(bool matched) const { return Not ? !matched : matched; }
+    bool shallMatch() const { return !Not; }
     awt_query_type getType() const { return type; }
     int getIndex() const { return index; }
 
-    AW_BOOL matches(const char *data, GBDATA *gb_item) const;
+    bool matches(const char *data, GBDATA *gb_item) const;
     GB_ERROR getError(int count = 0) const;
     const char *get_last_ACI_result() const { return type == AQT_ACI ? lastACIresult : 0; }
 
     awt_query *getNext() { return next; }
 
-    AW_BOOL is_rek() const { return rek; }
+    bool is_rek() const { return rek; }
     awt_query_field_type get_match_field() const { return match_field; }
     GBQUARK getKeyquark() const { return keyquark; }
 
@@ -877,16 +877,16 @@ void awt_query::detect_query_type() {
     awt_assert(type != AQT_INVALID || error);
 }
 
-AW_BOOL awt_query::matches(const char *data, GBDATA *gb_item) const {
+bool awt_query::matches(const char *data, GBDATA *gb_item) const {
     // 'data' is the content of the searched field (read as string)
     // 'gb_item' is the DB item (e.g. species, gene). Used in ACI-search only.
     
-    AW_BOOL hit;
+    bool hit;
 
     awt_assert(data);
     awt_assert(gb_item);
 
-    if (error) hit = AW_FALSE;
+    if (error) hit = false;
     else switch (type) {
         case AQT_EMPTY: {
             hit = (data[0] == 0);
@@ -927,7 +927,7 @@ AW_BOOL awt_query::matches(const char *data, GBDATA *gb_item) const {
             float       f = strtof(start, const_cast<char**>(&end));
 
             if (end == start) { // nothing was converted
-                hit = AW_FALSE;
+                hit = false;
             }
             else {
                 bool is_numeric = (end[0] == 0);
@@ -942,7 +942,7 @@ AW_BOOL awt_query::matches(const char *data, GBDATA *gb_item) const {
                         : f < xquery.number;
                 }
                 else {
-                    hit = AW_FALSE;
+                    hit = false;
                 }
             }
             break;
@@ -955,7 +955,7 @@ AW_BOOL awt_query::matches(const char *data, GBDATA *gb_item) const {
             char *aci_result = GB_command_interpreter(gb_main, data, query, gb_item, tree);
             if (!aci_result) {
                 freedup(error, GB_await_error());
-                hit   = AW_FALSE;
+                hit   = false;
             }
             else {
                 hit = strcmp(aci_result, "0") != 0;
@@ -966,7 +966,7 @@ AW_BOOL awt_query::matches(const char *data, GBDATA *gb_item) const {
         case AQT_INVALID: {                     // invalid
             awt_assert(0);
             freedup(error, "Invalid search expression");
-            hit   = AW_FALSE;
+            hit   = false;
             break;
         }
     }
@@ -1038,14 +1038,14 @@ static void awt_do_query(void *dummy, struct adaqbsstruct *cbs, AW_CL cl_ext_que
                         GBDATA *gb_ref_pntr = 0;
 
                         if (data && data[0]) {
-                            string  hit_reason;
-                            AW_BOOL this_hit = AW_FALSE;
+                            string hit_reason;
+                            bool   this_hit = false;
 
                             if (ext_query == AWT_EXT_QUERY_COMPARE_WORDS){
                                 for (char *t = strtok(data," "); t; t = strtok(0," ")) {
                                     gb_ref_pntr = (GBDATA *)GBS_read_hash(ref_hash,t);
                                     if (gb_ref_pntr) { // found item in other DB, with 'first_key' containing word from 'gb_key'
-                                        this_hit   = AW_TRUE;
+                                        this_hit   = true;
                                         hit_reason = GBS_global_string("%s%s has word '%s' in %s",
                                                                        cbs->expect_hit_in_ref_list ? "Hit " : "",
                                                                        cbs->selector->generate_item_id(cbs->gb_ref, gb_ref_pntr),
@@ -1056,7 +1056,7 @@ static void awt_do_query(void *dummy, struct adaqbsstruct *cbs, AW_CL cl_ext_que
                             else {
                                 gb_ref_pntr = (GBDATA *)GBS_read_hash(ref_hash,data); 
                                 if (gb_ref_pntr) { // found item in other DB, with identical 'first_key' 
-                                    this_hit   = AW_TRUE;
+                                    this_hit   = true;
                                     hit_reason = GBS_global_string("%s%s matches %s",
                                                                    cbs->expect_hit_in_ref_list ? "Hit " : "",
                                                                    cbs->selector->generate_item_id(cbs->gb_ref, gb_ref_pntr),
@@ -1118,7 +1118,7 @@ static void awt_do_query(void *dummy, struct adaqbsstruct *cbs, AW_CL cl_ext_que
                         case AWT_QUERY_REDUCE:   if (!IS_QUERIED(gb_item,cbs)) continue; break;
                     }
 
-                    AW_BOOL hit = 0;
+                    bool hit = false;
 
                     switch(type) {
                         case AWT_QUERY_MARKED: {
@@ -1138,15 +1138,15 @@ static void awt_do_query(void *dummy, struct adaqbsstruct *cbs, AW_CL cl_ext_que
 
                                 GBDATA               *gb_key      = this_query->get_first_key(gb_item);
                                 awt_query_field_type  match_field = this_query->get_match_field();
-                                AW_BOOL               this_hit    = (match_field == AQFT_ALL_FIELDS) ? AW_TRUE : AW_FALSE;
+                                bool                  this_hit    = (match_field == AQFT_ALL_FIELDS);
 
                                 char *data = gb_key ? GB_read_as_string(gb_key) : strdup(""); // assume "" for explicit fields that don't exist
                                 awt_assert(data);
 
                                 while (data) {
                                     awt_assert(ext_query == AWT_EXT_QUERY_NONE);
-                                    AW_BOOL     matched     = this_query->matches(data, gb_item); // includes not-op
-                                    const char *reason_key  = 0;
+                                    bool        matched    = this_query->matches(data, gb_item); // includes not-op
+                                    const char *reason_key = 0;
 
                                     switch (match_field) {
                                         case AQFT_EXPLICIT:
@@ -1156,14 +1156,14 @@ static void awt_do_query(void *dummy, struct adaqbsstruct *cbs, AW_CL cl_ext_que
 
                                         case AQFT_ANY_FIELD:
                                             if (matched) {
-                                                this_hit   = AW_TRUE;
+                                                this_hit   = true;
                                                 reason_key = GB_read_key_pntr(gb_key);
                                             }
                                             break;
 
                                         case AQFT_ALL_FIELDS:
                                             if (!matched) {
-                                                this_hit   = AW_FALSE;
+                                                this_hit   = false;
                                                 reason_key = GB_read_key_pntr(gb_key);
                                             }
                                             break;
@@ -1832,7 +1832,7 @@ static char *create_colorset_representation(const color_save_data *csd, GB_ERROR
              !error && gb_item;
              gb_item = sel->get_next_item(gb_item))
         {
-            long        color     = AW_find_color_group(gb_item, AW_TRUE);
+            long        color     = AW_find_color_group(gb_item, true);
             char       *id        = sel->generate_item_id(gb_main, gb_item);
             const char *color_def = GBS_global_string("%s=%li", id, color);
             cl.push_front(color_def);

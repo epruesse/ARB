@@ -465,8 +465,9 @@ void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
     aw_openstatus(current_item->label);
     aw_status((double)0);
 
-    int         j,flag;
-    char       *Action,buffer[GBUFSIZ];
+    int   j;
+    bool  flag;
+    char *Action,buffer[GBUFSIZ];
 
     static int fileindx    = 0;
     int        select_mode = 0;
@@ -494,10 +495,10 @@ void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
     }
 
     if (!stop) {
-        flag = AW_FALSE;
+        flag = false;
         for(j=0;j<current_item->numinputs;j++) {
             if(current_item->input[j].format != STATUS_FILE) {
-                flag = AW_TRUE;
+                flag = true;
             }
         }
         if(flag && DataSet) select_mode = ALL; // TestSelection();
@@ -558,14 +559,14 @@ void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
 
         oldnumelements=DataSet->numelements;
 
-        BlockInput = AW_FALSE;
+        BlockInput = false;
 
         for(j=0;j<current_item->numoutputs;j++)
         {
             if(current_item->output[j].overwrite)
             {
                 if(current_item->output[j].format == GDE)
-                    OVERWRITE = AW_TRUE;
+                    OVERWRITE = true;
                 else
                     Warning("Overwrite mode only available for GDE format");
             }
@@ -592,7 +593,7 @@ void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
                 default:
                     break;
             }
-            OVERWRITE = AW_FALSE;
+            OVERWRITE = false;
         }
         for(j=0;j<current_item->numoutputs;j++)
         {

@@ -2,7 +2,7 @@
 #include <memory.h>
 #include "awt_automata.hxx"
 
-AWT_automata::AWT_automata(AW_BOOL free_value){
+AWT_automata::AWT_automata(bool free_value){
     memset((char *)this,0,sizefof(*this));
     value_is_malloced = free_value;
 }

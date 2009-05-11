@@ -231,8 +231,8 @@ const char *AWT_print_tree_to_file(AW_window *aww, AWT_canvas * ntw) {
             size.r += 20;
             size.b += 20;
             device->set_offset(AW::Vector(size.l, size.t) / -ntw->trans_to_fit);
-            device->set_bottom_clip_border((int)(size.b-size.t), AW_TRUE);
-            device->set_right_clip_border((int)(size.r-size.l), AW_TRUE);
+            device->set_bottom_clip_border((int)(size.b-size.t), true);
+            device->set_right_clip_border((int)(size.r-size.l), true);
             device->zoom(ntw->trans_to_fit);
         }
         else {
@@ -431,8 +431,8 @@ void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw) {
                 size.r += 20;
                 size.b += 20;
                 device->set_offset(AW::Vector(size.l, size.t) / -ntw->trans_to_fit);
-                device->set_bottom_clip_border((int)(size.b-size.t), AW_TRUE);
-                device->set_right_clip_border((int)(size.r-size.l), AW_TRUE);
+                device->set_bottom_clip_border((int)(size.b-size.t), true);
+                device->set_right_clip_border((int)(size.r-size.l), true);
                 device->zoom(ntw->trans_to_fit);
             }
             else {

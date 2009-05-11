@@ -33,10 +33,9 @@ AW_CL awt_create_selection_list_on_scandb(GBDATA                 *gb_main,
                                           const ad_item_selector *selector,
                                           size_t                  columns,
                                           size_t                  visible_rows,
-                                          AW_BOOL                 popup_list_in_window        = false,
-                                          AW_BOOL                 add_all_fields_pseudo_field = false,
-                                          AW_BOOL                 include_hidden_fields       = false
-                                          );
+                                          bool                    popup_list_in_window        = false,
+                                          bool                    add_all_fields_pseudo_field = false,
+                                          bool                    include_hidden_fields       = false);
 /* show fields of a species / extended / gene !!!
    type filter is a bitstring which controls what types are shown in
    the selection list: e.g 1<<GB_INT || 1 <<GB_STRING enables

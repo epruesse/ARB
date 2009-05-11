@@ -29,8 +29,8 @@ void AW_device_click::init(AW_pos mousex,AW_pos mousey, AW_pos max_distance_line
     max_distance_text = max_distance_texti;
     memset((char *)&opt_line,0,sizeof(opt_line));
     memset((char *)&opt_text,0,sizeof(opt_text));
-    opt_line.exists   = AW_FALSE;
-    opt_text.exists   = AW_FALSE;
+    opt_line.exists   = false;
+    opt_text.exists   = false;
 }
 
 
@@ -44,14 +44,17 @@ AW_DEVICE_TYPE AW_device_click::type(void) {
 /***********************************************************************************************************************/
 
 int AW_device_click::line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri, AW_CL clientdata1, AW_CL clientdata2) {
-    AW_pos  X0,Y0,X1,Y1;        // Transformed pos
-    AW_pos  CX0,CY0,CX1,CY1;    // Clipped line
-    int     drawflag;           // is line visible on screen
-    AW_pos  lx, ly, dx, dy, h1, h2, distance, skalar = 0;
-    AW_BOOL best_line                                = AW_FALSE; // is this line the best ?
+    AW_pos X0,Y0,X1,Y1;                             // Transformed pos
+    AW_pos CX0,CY0,CX1,CY1;                         // Clipped line
+    int    drawflag;                                // is line visible on screen
+    AW_pos lx, ly;
+    AW_pos dx, dy;
+    AW_pos h1, h2;
+    AW_pos distance, skalar = 0;
+    bool   best_line        = false;             // is this line the best ?
 
     AWUSE(gc);
-    if(!(filteri & filter)) return AW_FALSE;
+    if(!(filteri & filter)) return false;
 
     this->transform(x0,y0,X0,Y0);
     this->transform(x1,y1,X1,Y1);
@@ -67,7 +70,7 @@ int AW_device_click::line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW
         dy       = mouse_y - Y1;
         distance = (dx*dx) + (dy*dy);
         if (distance < max_distance_line) {
-            best_line = AW_TRUE;
+            best_line = true;
             max_distance_line = distance;
             //add more comments
             skalar = 0.0;
@@ -78,7 +81,7 @@ int AW_device_click::line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW
         dy       = mouse_y - Y0;
         distance = (dx*dx) + (dy*dy);
         if (distance < max_distance_line) {
-            best_line = AW_TRUE;
+            best_line = true;
             max_distance_line = distance;
             //add more comments
             skalar = 1.0;
@@ -97,14 +100,14 @@ int AW_device_click::line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW
                 h1       = dx*ly - dy*lx;
                 distance = (h1*h1) / h2;
                 if (distance < max_distance_line) {
-                    best_line         = AW_TRUE;
+                    best_line         = true;
                     max_distance_line = distance;
                     //add more comments
                 }
             }
         }
 
-        if(best_line == AW_TRUE) {
+        if (best_line == true) {
             aw_assert(x0 == x0); aw_assert(x1 == x1); // not NAN
             aw_assert(y0 == y0); aw_assert(y1 == y1);
 
@@ -116,11 +119,11 @@ int AW_device_click::line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW
             opt_line.length       = skalar;
             opt_line.client_data1 = clientdata1;
             opt_line.client_data2 = clientdata2;
-            opt_line.exists       = AW_TRUE;
+            opt_line.exists       = true;
         }
-        return AW_TRUE;
+        return true;
     }
-    return AW_FALSE;
+    return false;
 }
 
 
@@ -215,7 +218,7 @@ int AW_device_click::text(int gc, const char *str, AW_pos x, AW_pos y, AW_pos al
             opt_text.cursor       = position;
             opt_text.client_data1 = clientdata1;
             opt_text.client_data2 = clientdata2;
-            opt_text.exists       = AW_TRUE;
+            opt_text.exists       = true;
             opt_text.exactHit     = exact;
         }
     }

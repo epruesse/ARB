@@ -21,7 +21,7 @@ using namespace std;
   }
 
 void AW_device_size::init() {
-    drawn = AW_FALSE;
+    drawn = false;
 
     size_information.t = 0;
     size_information.b = 0;
@@ -72,9 +72,9 @@ int AW_device_size::line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_
     if (filteri & filter) {
         dot(x0, y0);
         dot(x1, y1);
-        return AW_TRUE;
+        return true;
     }
-    return AW_FALSE;
+    return false;
 }
 
 int AW_device_size::text(int gc, const char *str, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL clientdata1, AW_CL clientdata2, long opt_strlen) {

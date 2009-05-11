@@ -695,21 +695,20 @@ void InitNASeq(NA_Sequence *seq,int type)
 void ReadCMask(const char *filename)
 {
 
-    char in_line[GBUFSIZ],
-        head[GBUFSIZ],
-        curname[GBUFSIZ],
-        temp[GBUFSIZ];
-    int IGNORE_DASH = AW_FALSE,
-        offset;
+    char in_line[GBUFSIZ];
+    char head[GBUFSIZ];
+    char curname[GBUFSIZ];
+    char temp[GBUFSIZ];
+    bool IGNORE_DASH = false;
+    int  offset;
+    
     /*NA_DisplayData *NAdd;*/
     NA_Alignment *aln;
 
-    size_t j;
-    int i,k;
-    size_t curlen = 0;
-    int *colors=0,orig_ctype,jj,indx = 0;
-    FILE *file;
-    i=0;k=0;
+    size_t  j;
+    size_t  curlen = 0;
+    int    *colors = 0,orig_ctype,jj,indx = 0;
+    FILE   *file;
 
     if(DataSet == NULL) return;
 
@@ -739,9 +738,9 @@ void ReadCMask(const char *filename)
             sscanf(temp,"%d",&(aln->cmask_offset));
         }
         else if(Find(in_line,"nodash:"))
-            IGNORE_DASH = AW_TRUE;
+            IGNORE_DASH = true;
         else if(Find(in_line,"dash:"))
-            IGNORE_DASH = AW_TRUE;
+            IGNORE_DASH = true;
         else if(Find(in_line,"name:"))
         {
             crop(in_line,head,curname);
@@ -848,12 +847,12 @@ void ReadCMask(const char *filename)
                     }
                     sscanf(in_line,"%d",&(colors[j]));
                 }
-            IGNORE_DASH = AW_FALSE;
+            IGNORE_DASH = false;
             curname[0] = '\0';
         }
 
     }
-    /*RepaintAll(AW_TRUE);*/
+    /*RepaintAll(true);*/
     return;
 }
 
@@ -939,7 +938,7 @@ void ReadStatus(char *filename)
       {
       fgets(in_line,GBUFSIZ,file);
       if(strlen(in_line) == 0)
-      DONE = AW_TRUE;
+      DONE = true;
       else
       {
       sscanf(in_line,"%s",head);

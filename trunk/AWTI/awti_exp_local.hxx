@@ -10,4 +10,4 @@
 #define AWAR_EXPORT_FILTER_ALI     AWAR_EXPORT_FILTER_PREFIX "/alignment"
 #define AWAR_EXPORT_CUTSTOP        "export/cutstop"
 
-AW_BOOL awtc_read_string_pair(FILE *in, char *&s1, char *&s2, size_t& lineNr);
+bool awtc_read_string_pair(FILE *in, char *&s1, char *&s2, size_t& lineNr);

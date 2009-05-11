@@ -2654,7 +2654,7 @@ AW_window *AWTC_create_faligner_window(AW_root *root, AW_CL cd2)
 
     aws->label_length(0);
     aws->at( "pt_server" );
-    awt_create_selection_list_on_pt_servers(aws, AWAR_PT_SERVER, AW_TRUE);
+    awt_create_selection_list_on_pt_servers(aws, AWAR_PT_SERVER, true);
 
     aws->at("use_ali");
     aws->create_input_field(FA_AWAR_PT_SERVER_ALIGNMENT, 15);

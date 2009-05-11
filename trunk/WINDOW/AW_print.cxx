@@ -148,7 +148,7 @@ int AW_device_print::text(int gc, const char *str,AW_pos x,AW_pos y, AW_pos alig
     return text_overlay(gc,str,opt_strlen,x,y,alignment,filteri,(AW_CL)this, cd1,cd2,0.0,0.0,AW_draw_string_on_printer);
 }
 
-int AW_device_print::box(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+int AW_device_print::box(int gc, bool filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
     int    res;
     AW_pos x1 = x0+width;
     AW_pos y1 = y0+height;
@@ -172,7 +172,7 @@ int AW_device_print::box(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos widt
     return res;
 }
 
-int AW_device_print::circle(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+int AW_device_print::circle(int gc, bool filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
     AWUSE(cd1);AWUSE(cd2);
     AW_GC_Xm *gcm = AW_MAP_GC(gc);
     AW_pos    x1,y1;

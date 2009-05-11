@@ -321,7 +321,7 @@ new_galigner_simple(AW_root *root, AW_CL cd2, bool adv) {
     aws->at_shift(0,hgap);
     aws->button_length(24);
     aws->label("PT Server:");
-    awt_create_selection_list_on_pt_servers(aws, AWAR_PT_SERVER, AW_TRUE);
+    awt_create_selection_list_on_pt_servers(aws, AWAR_PT_SERVER, true);
 
     aws->at_newline();
     aws->callback(AW_POPUP, (AW_CL)create_select_sai_window, (AW_CL)0);

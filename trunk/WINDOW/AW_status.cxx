@@ -81,45 +81,45 @@ struct aw_stg_struct {
     int        fd_from[2];
     int        mode;
     int        hide;
-    int        hide_delay;              // in seconds
+    int        hide_delay;                          // in seconds
     pid_t      pid;
-    AW_BOOL    is_child;                // true in status window process
+    bool       is_child;                            // true in status window process
     int        pipe_broken;
     int        err_no;
     AW_window *aws;
     AW_window *awm;
-    AW_BOOL    status_initialized;
+    bool       status_initialized;
     char      *lines[AW_MESSAGE_LINES];
-    bool       need_refresh;            // if true -> message list needs to refresh
+    bool       need_refresh;                        // if true -> message list needs to refresh
     time_t     last_refresh_time;
     time_t     last_message_time;
     int        local_message;
-    time_t     last_start;              // time of last status start
+    time_t     last_start;                          // time of last status start
     long       last_est_count;
     long       last_estimation[AW_EST_BUFFER];
     long       last_used_est;
 } aw_stg = {
-    {0,0},                      // fd_to
-    {0,0},                      // fd_from
-    AW_STATUS_OK,               // mode
-    0,                          // hide
-    0,                          // hide_delay
-    0,                          // pid
-    AW_FALSE,                   // is_child
-    0,                          // pipe_broken
-    0,                          // errno
-    0,                          // aws
-    0,                          // awm
-    AW_FALSE,                   // status_initialized
-    { 0,0,0 },                  // lines
-    false,                      // need_refresh
-    0,                          // last_refresh_time
-    0,                          // last_message_time
-    0,                          // local_message
-    0,                          // last_start
-    0,                          // last_est_count
-    { 0 },                      // last_estimation
-    -1,                         // last_used_est
+    {0,0},                                          // fd_to
+    {0,0},                                          // fd_from
+    AW_STATUS_OK,                                   // mode
+    0,                                              // hide
+    0,                                              // hide_delay
+    0,                                              // pid
+    false,                                          // is_child
+    0,                                              // pipe_broken
+    0,                                              // errno
+    0,                                              // aws
+    0,                                              // awm
+    false,                                          // status_initialized
+    { 0,0,0 },                                      // lines
+    false,                                          // need_refresh
+    0,                                              // last_refresh_time
+    0,                                              // last_message_time
+    0,                                              // local_message
+    0,                                              // last_start
+    0,                                              // last_est_count
+    { 0 },                                          // last_estimation
+    -1,                                             // last_used_est
 };
 
 #include <errno.h>
@@ -785,7 +785,7 @@ void aw_initstatus( void )
         fprintf(stderr, "Forked status! (i am the child)\n"); fflush(stderr);
 #endif // TRACE_STATUS
 
-        aw_stg.is_child = AW_TRUE; // mark as child
+        aw_stg.is_child = true; // mark as child
 
         //         aw_status_wait_for_open(aw_stg.fd_to[0]);
 
@@ -800,7 +800,7 @@ void aw_initstatus( void )
         aw_root->awar_string( AWAR_STATUS_GAUGE,"------------------------------------",aw_default);
         aw_root->awar_string( AWAR_STATUS_ELAPSED,"",aw_default);
         aw_root->awar_string( AWAR_ERROR_MESSAGES,"",aw_default);
-        aw_root->init_root("ARB_STATUS",AW_TRUE);
+        aw_root->init_root("ARB_STATUS", true);
 
         AW_window_simple *aws = new AW_window_simple;
         aws->init( aw_root, "STATUS_BOX", "STATUS BOX");
@@ -871,7 +871,7 @@ void aw_openstatus( const char *title )
 {
     aw_stg.mode = AW_STATUS_OK;
     if ( !aw_stg.status_initialized) {
-        aw_stg.status_initialized = AW_TRUE;
+        aw_stg.status_initialized = true;
         aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_INIT);
     }
     aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_OPEN);
@@ -1124,11 +1124,11 @@ int aw_question(const char *question, const char *buttons, bool fixedSizeButtons
     fprintf(stderr, "add aw_message_timer_listen_event with delay = %i\n", AW_MESSAGE_LISTEN_DELAY); fflush(stdout);
 #endif // TRACE_STATUS_MORE
     root->add_timed_callback_never_disabled(AW_MESSAGE_LISTEN_DELAY, aw_message_timer_listen_event, (AW_CL)aw_msg, 0);
-    root->disable_callbacks = AW_TRUE;
+    root->disable_callbacks = true;
     while (aw_message_cb_result == -13) {
         root->process_events();
     }
-    root->disable_callbacks = AW_FALSE;
+    root->disable_callbacks = false;
     aw_msg->hide();
 
     switch ( aw_message_cb_result ) {
@@ -1152,7 +1152,7 @@ void aw_message(const char *msg) {
     }
     else {
         if (!aw_stg.status_initialized) {
-            aw_stg.status_initialized = AW_TRUE;
+            aw_stg.status_initialized = true;
             aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_INIT);
         }
         aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_MESSAGE);
@@ -1376,11 +1376,11 @@ char *aw_input(const char *title, const char *prompt, const char *default_input)
     aw_input_cb_result = dummy;
 
     root->add_timed_callback_never_disabled(AW_MESSAGE_LISTEN_DELAY, aw_message_timer_listen_event, (AW_CL)aw_msg, 0);
-    root->disable_callbacks = AW_TRUE;
+    root->disable_callbacks = true;
     while (aw_input_cb_result == dummy) {
         root->process_events();
     }
-    root->disable_callbacks = AW_FALSE;
+    root->disable_callbacks = false;
     aw_msg->hide();
 
     if (aw_input_cb_result) input_history_insert(aw_input_cb_result, true);
@@ -1494,7 +1494,7 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
     aw_input_cb_result = dummy;
 
     root->add_timed_callback_never_disabled(AW_MESSAGE_LISTEN_DELAY, aw_message_timer_listen_event, (AW_CL)aw_msg, 0);
-    root->disable_callbacks = AW_TRUE;
+    root->disable_callbacks = true;
 
     char *last_input = root->awar(AW_INPUT_AWAR)->read_string();
     while (aw_input_cb_result == dummy) {
@@ -1515,7 +1515,7 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
         }
         free(this_input);
 
-        if (aw_msg->get_show() == AW_FALSE) { // somebody minimized the window
+        if (aw_msg->get_show() == false) { // somebody minimized the window
             input_cb(aw_msg, (AW_CL)-1); // CANCEL
             break;
         }
@@ -1523,7 +1523,7 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
 
     free(last_input);
 
-    root->disable_callbacks = AW_FALSE;
+    root->disable_callbacks = false;
     aw_msg->hide();
 
     return aw_input_cb_result;
@@ -1602,11 +1602,11 @@ char *aw_file_selection( const char *title, const char *dir, const char *def_nam
     aw_input_cb_result = dummy;
 
     root->add_timed_callback_never_disabled(AW_MESSAGE_LISTEN_DELAY, aw_message_timer_listen_event, (AW_CL)aw_msg, 0);
-    root->disable_callbacks = AW_TRUE;
+    root->disable_callbacks = true;
     while (aw_input_cb_result == dummy) {
         root->process_events();
     }
-    root->disable_callbacks = AW_FALSE;
+    root->disable_callbacks = false;
     aw_msg->hide();
 
     return aw_input_cb_result;

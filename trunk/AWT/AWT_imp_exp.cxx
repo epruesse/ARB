@@ -61,9 +61,9 @@ inline void indentTo(int indent, FILE *out) {
 }
 
 static const char *awt_export_tree_node_print(GBDATA *gb_main, FILE *out, GBT_TREE *tree, const char *tree_name,
-                                              AW_BOOL pretty, int indent,
-                                              AW_BOOL use_NDS, AW_BOOL save_branchlengths,
-                                              AW_BOOL save_bootstraps, AW_BOOL save_groupnames)
+                                              bool pretty, int indent,
+                                              bool use_NDS, bool save_branchlengths,
+                                              bool save_bootstraps, bool save_groupnames)
 {
     const char *error = 0;
     const char *buf;
@@ -132,7 +132,7 @@ inline string buildNodeIdentifier(const string& parent_id, int& son_counter) {
 }
 
 static const char *awt_export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tree, double my_length, const char *tree_name,
-                                                  AW_BOOL use_NDS, AW_BOOL skip_folded, const string& parent_id, int& parent_son_counter) {
+                                                  bool use_NDS, bool skip_folded, const string& parent_id, int& parent_son_counter) {
     const char *error = 0;
 
     if (tree->is_leaf) {
@@ -219,9 +219,6 @@ static const char *awt_export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tre
     return error;
 }
 
-// --------------------------------------------
-//      const char * AWT_date_string(void)
-// --------------------------------------------
 const char * AWT_date_string(void) {
     struct timeval date;
     struct tm *p;
@@ -244,10 +241,7 @@ const char * AWT_date_string(void) {
     return readable;
 }
 
-// -----------------------------------------------------------------------------------------------------------------------------------------------------------
-//      GB_ERROR AWT_export_XML_tree(GBDATA *gb_main, const char *db_name, const char *tree_name, AW_BOOL use_NDS, AW_BOOL skip_folded, const char *path)
-// -----------------------------------------------------------------------------------------------------------------------------------------------------------
-GB_ERROR AWT_export_XML_tree(GBDATA *gb_main, const char *db_name, const char *tree_name, AW_BOOL use_NDS, AW_BOOL skip_folded, const char *path) {
+GB_ERROR AWT_export_XML_tree(GBDATA *gb_main, const char *db_name, const char *tree_name, bool use_NDS, bool skip_folded, const char *path) {
     GB_ERROR  error  = 0;
     FILE     *output = fopen(path, "w");
 
@@ -288,7 +282,7 @@ GB_ERROR AWT_export_XML_tree(GBDATA *gb_main, const char *db_name, const char *t
     return error;
 }
 
-GB_ERROR AWT_export_Newick_tree(GBDATA *gb_main, char *tree_name, AW_BOOL use_NDS, AW_BOOL save_branchlengths, AW_BOOL save_bootstraps, AW_BOOL save_groupnames, AW_BOOL pretty, char *path)
+GB_ERROR AWT_export_Newick_tree(GBDATA *gb_main, char *tree_name, bool use_NDS, bool save_branchlengths, bool save_bootstraps, bool save_groupnames, bool pretty, char *path)
 {
     GB_ERROR  error  = 0;
     FILE     *output = fopen(path, "w");

@@ -278,7 +278,7 @@ void NT_mark_color_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode)
     mark_mode    = mark_mode&3;
 
     for (GBDATA *gb_species = GBT_first_species(ntw->gb_main); gb_species; gb_species = GBT_next_species(gb_species)) {
-        int my_color_group = AW_find_color_group(gb_species, AW_TRUE);
+        int my_color_group = AW_find_color_group(gb_species, true);
 
         if (mark_matching == (color_group == my_color_group)) {
             switch (mark_mode) {
@@ -654,11 +654,11 @@ void NT_jump_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL auto_expand_groups)
             case AP_TREE_IRS:
             case AP_TREE_NORMAL:{
                 if (auto_expand_groups) {
-                    AW_BOOL         changed = AW_FALSE;
+                    bool changed = false;
                     while (found) {
                         if (found->gr.grouped) {
                             found->gr.grouped = 0;
-                            changed = AW_TRUE;
+                            changed = true;
                         }
                         found = found->father;
                     }

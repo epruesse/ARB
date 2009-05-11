@@ -221,11 +221,11 @@ public:
     void set_double_click_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
     void set_motion_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
 
-    AW_BOOL is_expose_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL));
-    AW_BOOL is_resize_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL));
-    AW_BOOL is_input_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL));
-    AW_BOOL is_double_click_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL));
-    AW_BOOL is_motion_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL));
+    bool is_expose_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL));
+    bool is_resize_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL));
+    bool is_input_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL));
+    bool is_double_click_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL));
+    bool is_motion_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL));
 
     AW_area_management(AW_root *awr,Widget form,Widget widget);
 };
@@ -276,7 +276,7 @@ public:
     Window   old_cursor_window;
     void     normal_cursor(void);
     void     set_cursor(Display *d, Window w, Cursor c);
-    AW_BOOL  no_exit;
+    bool     no_exit;
 
     char    *recording_macro_path;
     FILE    *recording_macro_file;
@@ -339,7 +339,7 @@ void        message_cb( AW_window *aw, AW_CL cd1 );
 void        input_cb( AW_window *aw, AW_CL cd1 );
 void        input_history_cb( AW_window *aw, AW_CL cl_mode); // internal
 
-Widget aw_create_shell(AW_window *aww, AW_BOOL allow_resize, AW_BOOL allow_close, int width, int height, int posx, int posy);
+Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int width, int height, int posx, int posy);
 void   aw_realize_widget(AW_window *aww);
 void   aw_create_help_entry(AW_window *aww);
 

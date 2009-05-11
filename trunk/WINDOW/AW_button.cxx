@@ -39,7 +39,7 @@
 static void aw_cp_awar_2_widget_cb(AW_root *root, AW_widget_list_for_variable *widgetlist){
     if (widgetlist->widget == (int *)root->changer_of_variable){
         root->changer_of_variable = 0;
-        root->value_changed = AW_FALSE;
+        root->value_changed = false;
         return;
     }
 
@@ -75,7 +75,7 @@ static void aw_cp_awar_2_widget_cb(AW_root *root, AW_widget_list_for_variable *w
         }
         free(var_value);
     }
-    root->value_changed = AW_FALSE;     // Maybe value changed is set because Motig calls me
+    root->value_changed = false;     // Maybe value changed is set because Motig calls me
 }
 
 
@@ -186,12 +186,12 @@ void AW_variable_update_callback( Widget wgt, XtPointer variable_update_struct, 
 
 
         case AW_WIDGET_SELECTION_LIST: {
-            char *ptr;
-            AW_selection_list *selection_list;
+            char                   *ptr;
+            AW_selection_list      *selection_list;
             AW_select_table_struct *list_table;
-            AW_BOOL found;
-            found = AW_FALSE;
-            xml = (XmListCallbackStruct*)call_data;
+            bool                    found;
+            found = false;
+            xml   = (XmListCallbackStruct*)call_data;
 
             XmStringGetLtoR( xml->item, XmSTRING_DEFAULT_CHARSET, &tmp );
 
@@ -251,7 +251,7 @@ void AW_variable_update_callback( Widget wgt, XtPointer variable_update_struct, 
             fprintf(root->prvt->recording_macro_file,");\n");
         }
         if (vus->cbs) vus->cbs->run_callback();
-        root->value_changed = AW_FALSE;
+        root->value_changed = false;
     }
 }
 
@@ -259,7 +259,7 @@ void AW_variable_update_callback( Widget wgt, XtPointer variable_update_struct, 
 void AW_value_changed_callback( Widget wgt, XtPointer rooti, XtPointer call_data ) {
     AWUSE(wgt);AWUSE(call_data);
     AW_root *root = (AW_root *)rooti;
-    root->value_changed = AW_TRUE;
+    root->value_changed = true;
 }
 
 
@@ -690,7 +690,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
                                          parent_widget,
                                          XmNwidth, (int)(width_of_label + 2),
                                          RES_LABEL_CONVERT(_at->label_for_inputfield),
-                                         XmNrecomputeSize, AW_FALSE,
+                                         XmNrecomputeSize, false,
                                          XmNalignment, XmALIGNMENT_BEGINNING,
                                          XmNfontList, p_global->fontlist,
                                          XmNx, (int)(x_label),
@@ -711,7 +711,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
             printf("Attaching highlighted buttons does not work - "
                    "highlight ignored for button '%s'!\n", buttonlabel);
 #endif // DEBUG
-            _at->highlight = AW_FALSE;
+            _at->highlight = false;
         }
         else {
             int shadow_offset = _at->shadow_thickness;
@@ -761,7 +761,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
                                               RES_LABEL_CONVERT(buttonlabel),
                                               XmNx, (int)(x_button),
                                               XmNy, (int)(y_button),
-                                              XmNrecomputeSize, AW_FALSE,
+                                              XmNrecomputeSize, false,
                                               XmNshadowThickness, _at->shadow_thickness,
                                               XmNalignment, XmALIGNMENT_CENTER,
                                               XmNfontList, p_global->fontlist,
@@ -779,7 +779,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
         button = XtVaCreateManagedWidget( "label",
                                           xmLabelWidgetClass,
                                           parent_widget,
-                                          XmNrecomputeSize, AW_FALSE,
+                                          XmNrecomputeSize, false,
                                           XmNx, (int)(x_button),
                                           XmNy, (int)(y_button),
                                           XmNalignment, alignment, // alignment of text inside button
@@ -1004,7 +1004,7 @@ void AW_window::create_input_field( const char *var_name,  int columns ) {
                                          XmNwidth, (int)(width_of_input_label + 2),
                                          XmNhighlightThickness, 0,
                                          RES_CONVERT( XmNlabelString, _at->label_for_inputfield ),
-                                         XmNrecomputeSize, AW_FALSE,
+                                         XmNrecomputeSize, false,
                                          XmNalignment, XmALIGNMENT_BEGINNING,
                                          XmNfontList, p_global->fontlist,
                                          (_at->attach_any) ? NULL:XmNx,(int)_at->x_for_next_button,
@@ -1138,7 +1138,7 @@ void AW_window::create_text_field( const char *var_name, int columns, int rows )
                                          XmNy, (int)(_at->y_for_next_button) + this->get_root()->y_correction_for_input_labels + 5 - 6,
                                          XmNwidth, (int)(width_of_text_label + 2),
                                          RES_CONVERT( XmNlabelString, _at->label_for_inputfield ),
-                                         XmNrecomputeSize, AW_FALSE,
+                                         XmNrecomputeSize, false,
                                          XmNalignment, XmALIGNMENT_BEGINNING,
                                          XmNfontList, p_global->fontlist,
                                          NULL );
@@ -1182,7 +1182,7 @@ void AW_window::create_text_field( const char *var_name, int columns, int rows )
                                             scrolledWindowText,
                                             XmNeditMode, XmMULTI_LINE_EDIT ,
                                             XmNvalue, String,
-                                            XmNscrollLeftSide, AW_FALSE,
+                                            XmNscrollLeftSide, false,
                                             XmNwidth, (int)width_of_text,
                                             XmNheight, (int)height_of_text,
                                             XmNfontList, p_global->fontlist,
@@ -1285,7 +1285,7 @@ AW_selection_list* AW_window::create_selection_list( const char *var_name, const
                                      XmNy, (int)(_at->y_for_next_button) + this->get_root()->y_correction_for_input_labels - 1,
                                      XmNwidth, (int)(width_of_label + 2),
                                      RES_CONVERT( XmNlabelString, tmp_label ),
-                                     XmNrecomputeSize, AW_FALSE,
+                                     XmNrecomputeSize, false,
                                      XmNalignment, XmALIGNMENT_BEGINNING,
                                      NULL );
         width_of_label += 10;
@@ -1819,13 +1819,13 @@ void AW_window::update_selection_list_intern( AW_selection_list *selection_list 
     float           global_var_float_value;
 
     if (!selection_list->variable_name) return; // not connected to awar
-    AW_BOOL found = AW_FALSE;
+    bool found = false;
     pos = 0;
     switch ( selection_list->variable_type ) {
         case AW_STRING: global_var_value = root->awar( selection_list->variable_name )->read_string();
             for ( list_table = selection_list->list_table; list_table; list_table = list_table->next ) {
                 if ( strcmp( global_var_value, list_table->char_value ) == 0 ) {
-                    found = AW_TRUE;
+                    found = true;
                     break;
                 }
                 pos++;
@@ -1834,7 +1834,7 @@ void AW_window::update_selection_list_intern( AW_selection_list *selection_list 
         case AW_INT:    global_var_int_value = root->awar( selection_list->variable_name )->read_int();
             for ( list_table = selection_list->list_table; list_table; list_table = list_table->next ) {
                 if ( global_var_int_value == list_table->int_value ) {
-                    found = AW_TRUE;
+                    found = true;
                     break;
                 }
                 pos++;
@@ -1843,7 +1843,7 @@ void AW_window::update_selection_list_intern( AW_selection_list *selection_list 
         case AW_FLOAT:  global_var_float_value = root->awar( selection_list->variable_name )->read_float();
             for ( list_table = selection_list->list_table; list_table; list_table = list_table->next ) {
                 if ( global_var_float_value == list_table->float_value ) {
-                    found = AW_TRUE;
+                    found = true;
                     break;
                 }
                 pos++;
@@ -2178,8 +2178,8 @@ AW_option_menu_struct *AW_window::create_option_menu( const char *var_name, AW_l
                                              INFO_WIDGET,
                                              XmNwidth, 1,
                                              XmNheight, 1,
-                                             XmNallowShellResize, AW_TRUE,
-                                             XmNoverrideRedirect, AW_TRUE,
+                                             XmNallowShellResize, true,
+                                             XmNoverrideRedirect, true,
                                              XmNfontList, p_global->fontlist,
                                              NULL );
     
@@ -2535,7 +2535,7 @@ void AW_window::create_toggle_field( const char *var_name, int orientation ) {
                                                     XmNy, (int)(_at->y_for_next_button) + this->get_root()->y_correction_for_input_labels,
                                                     XmNwidth, (int)(width_of_label + 2),
                                                     RES_CONVERT( XmNlabelString, tmp_label ),
-                                                    XmNrecomputeSize, AW_FALSE,
+                                                    XmNrecomputeSize, false,
                                                     XmNalignment, XmALIGNMENT_BEGINNING,
                                                     XmNfontList, p_global->fontlist,
                                                     NULL );
@@ -2598,7 +2598,7 @@ void AW_window::create_toggle_field( const char *var_name, int orientation ) {
 static Widget _aw_create_toggle_entry(AW_window *aww, Widget toggle_field,
                                       const char *label,const char *mnemonic,
                                       AW_variable_update_struct *awus,
-                                      AW_toggle_struct *awts, AW_BOOL default_toggle) {
+                                      AW_toggle_struct *awts, bool default_toggle) {
     AW_root *root = aww->get_root();
 
     Widget          toggleButton;
@@ -2645,7 +2645,7 @@ void AW_window::insert_toggle_internal(AW_label toggle_label, const char *mnemon
         _aw_create_toggle_entry(this,p_w->toggle_field,toggle_label,mnemonic,
                                 new AW_variable_update_struct( NULL, AW_WIDGET_TOGGLE_FIELD, root->awar(p_w->toggle_field_var_name), var_value, 0, 0, _callback ),
                                 new AW_toggle_struct( var_value, 0 ),
-                                default_toggle ? AW_TRUE : AW_FALSE);
+                                default_toggle ? true : false);
     }
 }
 void AW_window::insert_toggle_internal( AW_label toggle_label, const char *mnemonic, int var_value, bool default_toggle) {
@@ -2656,7 +2656,7 @@ void AW_window::insert_toggle_internal( AW_label toggle_label, const char *mnemo
         _aw_create_toggle_entry(this, p_w->toggle_field, toggle_label,mnemonic,
                                 new AW_variable_update_struct( NULL, AW_WIDGET_TOGGLE_FIELD, root->awar(p_w->toggle_field_var_name), 0, var_value, 0, _callback ),
                                 new AW_toggle_struct( var_value, 0 ),
-                                default_toggle ? AW_TRUE : AW_FALSE);
+                                default_toggle ? true : false);
     }
 }
 void AW_window::insert_toggle_internal( AW_label toggle_label, const char *mnemonic, float var_value, bool default_toggle) {
@@ -2667,7 +2667,7 @@ void AW_window::insert_toggle_internal( AW_label toggle_label, const char *mnemo
         _aw_create_toggle_entry(this, p_w->toggle_field,toggle_label, mnemonic,
                                 new AW_variable_update_struct( NULL, AW_WIDGET_TOGGLE_FIELD, root->awar(p_w->toggle_field_var_name), 0, 0, var_value, _callback ),
                                 new AW_toggle_struct( var_value, 0 ),
-                                default_toggle ? AW_TRUE : AW_FALSE);
+                                default_toggle ? true : false);
     }
 }
 

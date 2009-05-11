@@ -31,31 +31,31 @@ void AW_window::button_height( int height ) { _at->height_of_buttons = height>1 
 int  AW_window::get_button_length() const { return _at->length_of_buttons; }
 int  AW_window::get_button_height() const { return _at->height_of_buttons; }
 
-void AW_window::highlight( void ) { _at->highlight = AW_TRUE; }
+void AW_window::highlight( void ) { _at->highlight = true; }
 
 void AW_window::auto_increment( int x, int y ) {
-    _at->auto_increment_x = x;
-    _at->auto_increment_y = y;
-    _at->x_for_newline = _at->x_for_next_button;
-    _at->do_auto_space = AW_FALSE;
-    _at->do_auto_increment = AW_TRUE;
+    _at->auto_increment_x          = x;
+    _at->auto_increment_y          = y;
+    _at->x_for_newline             = _at->x_for_next_button;
+    _at->do_auto_space             = false;
+    _at->do_auto_increment         = true;
     _at->biggest_height_of_buttons = 0;
 }
 
 
 void AW_window::auto_space( int x, int y ) {
-    _at->auto_space_x = x;
-    _at->auto_space_y = y;
-    _at->x_for_newline = _at->x_for_next_button;
-    _at->do_auto_space = AW_TRUE;
-    _at->do_auto_increment = AW_FALSE;
+    _at->auto_space_x              = x;
+    _at->auto_space_y              = y;
+    _at->x_for_newline             = _at->x_for_next_button;
+    _at->do_auto_space             = true;
+    _at->do_auto_increment         = false;
     _at->biggest_height_of_buttons = 0;
 }
 
 
 void AW_window::auto_off( void ) {
-    _at->do_auto_space = AW_FALSE;
-    _at->do_auto_increment = AW_FALSE;
+    _at->do_auto_space     = false;
+    _at->do_auto_increment = false;
 }
 
 void AW_window::at_set_min_size(int xmin, int ymin) {
@@ -171,10 +171,10 @@ void AW_window::at_newline( void ) {
 
 void AW_window::at( const char *at_id ) {
     char to_position[100];memset(to_position,0,sizeof(to_position));
-    _at->attach_y = _at->attach_x = AW_FALSE;
-    _at->attach_ly = _at->attach_lx = AW_FALSE;
-    _at->attach_any = AW_FALSE;
-    _at->correct_for_at_string = AW_TRUE;
+    _at->attach_y              = _at->attach_x = false;
+    _at->attach_ly             = _at->attach_lx = false;
+    _at->attach_any            = false;
+    _at->correct_for_at_string = true;
 
     if ( !xfig_data ) {
         AW_ERROR( "no xfig file loaded " );
@@ -187,15 +187,15 @@ void AW_window::at( const char *at_id ) {
 
     if (!pos){
         sprintf( to_position, "X:%s", at_id ); pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash,to_position);
-        if (pos) _at->attach_any = _at->attach_lx = AW_TRUE;
+        if (pos) _at->attach_any = _at->attach_lx = true;
     }
     if (!pos){
         sprintf( to_position, "Y:%s", at_id ); pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash,to_position);
-        if (pos) _at->attach_any = _at->attach_ly = AW_TRUE;
+        if (pos) _at->attach_any = _at->attach_ly = true;
     }
     if (!pos){
         sprintf( to_position, "XY:%s", at_id );    pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash,to_position);
-        if (pos) _at->attach_any = _at->attach_lx = _at->attach_ly = AW_TRUE;
+        if (pos) _at->attach_any = _at->attach_lx = _at->attach_ly = true;
     }
     if( !pos ) {
         AW_ERROR(" ID '%s' does not exist in xfig file", at_id);
@@ -209,32 +209,32 @@ void AW_window::at( const char *at_id ) {
 
     if (!pos) {
         sprintf( to_position, "to:X:%s", at_id );  pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash,to_position);
-        if (pos) _at->attach_any = _at->attach_x = AW_TRUE;
+        if (pos) _at->attach_any = _at->attach_x = true;
     }
     if (!pos) {
         sprintf( to_position, "to:Y:%s", at_id );  pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash,to_position);
-        if (pos) _at->attach_any = _at->attach_y = AW_TRUE;
+        if (pos) _at->attach_any = _at->attach_y = true;
     }
     if (!pos) {
         sprintf( to_position, "to:XY:%s", at_id ); pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash,to_position);
-        if (pos) _at->attach_any = _at->attach_x = _at->attach_y = AW_TRUE;
+        if (pos) _at->attach_any = _at->attach_x = _at->attach_y = true;
     }
 
     if( pos ) {
-        _at->to_position_exists = AW_TRUE;
+        _at->to_position_exists = true;
         _at->to_position_x = (pos->x - xfig->minx);
         _at->to_position_y = (pos->y - xfig->miny);
         _at->correct_for_at_center = 0; // always justify left when a to-position exists
     }
     else {
-        _at->to_position_exists = AW_FALSE;
+        _at->to_position_exists = false;
     }
 }
 
 
 // set "$XY:id" manually
 
-void AW_window::at_attach(AW_BOOL attach_x, AW_BOOL attach_y) {
+void AW_window::at_attach(bool attach_x, bool attach_y) {
     aw_assert(0); // this does not work
     _at->attach_lx  = attach_x;
     _at->attach_ly  = attach_y;
@@ -244,14 +244,14 @@ void AW_window::at_attach(AW_BOOL attach_x, AW_BOOL attach_y) {
 // set "$to:XY:id" manually
 // use negative offsets to set offset from right/lower border to to-position
 
-void AW_window::at_set_to(AW_BOOL attach_x, AW_BOOL attach_y, int xoff, int yoff) {
+void AW_window::at_set_to(bool attach_x, bool attach_y, int xoff, int yoff) {
 //     aw_assert(attach_x || attach_y); // use at_unset_to() to un-attach
 
     _at->attach_any = attach_x || attach_y;
     _at->attach_x   = attach_x;
     _at->attach_y   = attach_y;
 
-    _at->to_position_exists = AW_TRUE;
+    _at->to_position_exists = true;
     _at->to_position_x      = xoff >= 0 ? _at->x_for_next_button + xoff : _at->max_x_size+xoff;
     _at->to_position_y      = yoff >= 0 ? _at->y_for_next_button + yoff : _at->max_y_size+yoff;
 
@@ -264,12 +264,12 @@ void AW_window::at_set_to(AW_BOOL attach_x, AW_BOOL attach_y, int xoff, int yoff
 }
 
 void AW_window::at_unset_to() {
-    _at->attach_x   = _at->attach_y = _at->to_position_exists = AW_FALSE;
+    _at->attach_x   = _at->attach_y = _at->to_position_exists = false;
     _at->attach_any = _at->attach_lx || _at->attach_ly;
 }
 
-AW_BOOL AW_window::at_ifdef(const  char *at_id) {
-    if (!xfig_data) return AW_FALSE;
+bool AW_window::at_ifdef(const  char *at_id) {
+    if (!xfig_data) return false;
     AW_xfig *xfig = (AW_xfig *)xfig_data;
     char     buffer[100];
 
@@ -281,13 +281,13 @@ AW_BOOL AW_window::at_ifdef(const  char *at_id) {
     aw_assert(printed<100);
 #endif // DEBUG
 
-    if (GBS_read_hash(xfig->hash,buffer+3)) return AW_TRUE; // "tag"
-    if (GBS_read_hash(xfig->hash,buffer+1)) return AW_TRUE; // "Y:tag"
-    if (GBS_read_hash(xfig->hash,buffer)) return AW_TRUE; // "XY:tag"
+    if (GBS_read_hash(xfig->hash,buffer+3)) return true; // "tag"
+    if (GBS_read_hash(xfig->hash,buffer+1)) return true; // "Y:tag"
+    if (GBS_read_hash(xfig->hash,buffer)) return true; // "XY:tag"
     buffer[1] = 'X';
-    if (GBS_read_hash(xfig->hash,buffer+1)) return AW_TRUE; // "X:tag"
+    if (GBS_read_hash(xfig->hash,buffer+1)) return true; // "X:tag"
 
-    return AW_FALSE;
+    return false;
 }
 
 void AW_window::check_at_pos( void ) {
@@ -314,10 +314,10 @@ void AW_window::unset_at_commands( void ) {
     _callback   = NULL;
     _d_callback = NULL;
 
-    _at->correct_for_at_string = AW_FALSE;
+    _at->correct_for_at_string = false;
     _at->correct_for_at_center = 0;
-    _at->to_position_exists    = AW_FALSE;
-    _at->highlight             = AW_FALSE;
+    _at->to_position_exists    = false;
+    _at->highlight             = false;
 
     freeset(_at->id_for_next_button, 0);
     freeset(_at->helptext_for_next_button, 0);

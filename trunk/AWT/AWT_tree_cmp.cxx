@@ -150,15 +150,11 @@ AWT_species_set *AWT_species_set_root::move_tree_2_ssr(AP_tree *node){
     return ss;
 }
 
-// --------------------------------------------------------------------------------
-//     AWT_species_set *AWT_species_set_root::find_best_matches_info(AP_tree *tree_source,FILE *log,AW_BOOL compare_node_info)
-// --------------------------------------------------------------------------------
-/*      Go through all node of the source tree and search for the best
- *      matching node in dest_tree (meaning searching ssr->sets)
- *      If a match is found, set ssr->sets to this match)
- */
-
-AWT_species_set *AWT_species_set_root::find_best_matches_info(AP_tree *tree_source,FILE *log,AW_BOOL compare_node_info){
+AWT_species_set *AWT_species_set_root::find_best_matches_info(AP_tree *tree_source, FILE *log, bool compare_node_info){
+    /* Go through all node of the source tree and search for the best
+     * matching node in dest_tree (meaning searching ssr->sets)
+     * If a match is found, set ssr->sets to this match)
+     */
     AWT_species_set *ss;
     if (tree_source->is_leaf){
         aw_status(this->status++/(double)this->mstatus);
@@ -189,10 +185,7 @@ AWT_species_set *AWT_species_set_root::find_best_matches_info(AP_tree *tree_sour
     return ss;                  // return bitstring for this node
 }
 
-// --------------------------------------------------------------------------------
-//     static AW_BOOL containsMarkedSpecies(const AP_tree *tree)
-// --------------------------------------------------------------------------------
-static AW_BOOL containsMarkedSpecies(const AP_tree *tree) {
+static bool containsMarkedSpecies(const AP_tree *tree) {
     if (tree->is_leaf) {
         GBDATA *gb_species = tree->gb_node;
         int flag = GB_read_flag(gb_species);
@@ -201,21 +194,18 @@ static AW_BOOL containsMarkedSpecies(const AP_tree *tree) {
     return containsMarkedSpecies(tree->leftson) || containsMarkedSpecies(tree->rightson);
 }
 
-// --------------------------------------------------------------------------------
-//     GB_ERROR AWT_species_set_root::copy_node_infos(FILE *log, AW_BOOL delete_old_nodes, AW_BOOL nodes_with_marked_only)
-// --------------------------------------------------------------------------------
-GB_ERROR AWT_species_set_root::copy_node_infos(FILE *log, AW_BOOL delete_old_nodes, AW_BOOL nodes_with_marked_only) {
+GB_ERROR AWT_species_set_root::copy_node_infos(FILE *log, bool delete_old_nodes, bool nodes_with_marked_only) {
     GB_ERROR error = 0;
     long j;
 
     for (j=this->nsets-1;j>=0;j--){
         AWT_species_set *set = this->sets[j];
-        char *old_group_name = 0;
-        AW_BOOL insert_new_node = set->best_node && set->best_node->name;
+        char *old_group_name  = 0;
+        bool  insert_new_node = set->best_node && set->best_node->name;
 
         if (nodes_with_marked_only && insert_new_node) {
             int hasMarked = containsMarkedSpecies(set->node);
-            if (!hasMarked) insert_new_node = AW_FALSE;
+            if (!hasMarked) insert_new_node = false;
         }
 
         if (set->node->gb_node && (delete_old_nodes || insert_new_node)) { // There is already a node, delete old
@@ -269,7 +259,7 @@ GB_ERROR AWT_species_set_root::copy_node_infos(FILE *log, AW_BOOL delete_old_nod
     return error;
 }
 
-void AWT_move_info(GBDATA *gb_main, const char *tree_source,const char *tree_dest,const char *log_file, AW_BOOL compare_node_info, AW_BOOL delete_old_nodes, AW_BOOL nodes_with_marked_only) {
+void AWT_move_info(GBDATA *gb_main, const char *tree_source,const char *tree_dest,const char *log_file, bool compare_node_info, bool delete_old_nodes, bool nodes_with_marked_only) {
     GB_ERROR  error = 0;
     FILE     *log   = 0;
 

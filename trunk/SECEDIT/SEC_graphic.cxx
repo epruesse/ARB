@@ -545,8 +545,8 @@ SEC_graphic::SEC_graphic(AW_root *aw_rooti, GBDATA *gb_maini)
     // aw_root = aw_rooti;
     // gb_main = gb_maini;
     
-    rot_ct.exists = AW_FALSE;
-    rot_cl.exists = AW_FALSE;
+    rot_ct.exists = false;
+    rot_cl.exists = false;
     
     // sec_root      = new SEC_root;
 }

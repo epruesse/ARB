@@ -68,7 +68,7 @@ inline void strlwr(char *s) {
 
 float *PH_filter::calculate_column_homology(void){
     long           i,j,max,num_all_chars;
-    AW_BOOL        mask[256];
+    bool           mask[256];
     char           delete_when_max[100],get_maximum_from[100],all_chars[100],max_char;
     long           reference_table[256],**chars_counted;
     char           real_chars[100], low_chars[100];
@@ -77,12 +77,13 @@ float *PH_filter::calculate_column_homology(void){
     AW_root       *aw_root;
     float         *mline = 0;
     double         gauge;
-    if(!PHDATA::ROOT) return 0; // nothing loaded yet
+
+    if(!PHDATA::ROOT) return 0;                     // nothing loaded yet
 
     GB_transaction dummy(PHDATA::ROOT->gb_main);
-    AW_BOOL isNUC = AW_TRUE;     // rna oder dna sequence : nur zum testen und Entwicklung
+    bool isNUC = true;     // rna oder dna sequence : nur zum testen und Entwicklung
     if (GBT_is_alignment_protein(PHDATA::ROOT->gb_main,PHDATA::ROOT->use)){
-        isNUC = AW_FALSE;
+        isNUC = false;
     }
 
     aw_root=PH_used_windows::windowList->phylo_main_window->get_root();
@@ -149,13 +150,13 @@ float *PH_filter::calculate_column_homology(void){
 
     for(i=0;i<PHDATA::ROOT->get_seq_len();i++) mline[i]=-1.0;  // all columns invalid
     for(i=0;i<256;i++){
-        mask[i]=AW_FALSE;
-        reference_table[i]=num_all_chars;    // invalid and synonyme characters
+        mask[i]            = false;
+        reference_table[i] = num_all_chars;         // invalid and synonyme characters
     }
 
     // set valid characters
     for(i=0;i<num_all_chars;i++){
-        mask[(unsigned char)all_chars[i]]            = AW_TRUE;
+        mask[(unsigned char)all_chars[i]]            = true;
         reference_table[(unsigned char)all_chars[i]] = i;
     }
 
@@ -170,11 +171,11 @@ float *PH_filter::calculate_column_homology(void){
     // set mappings according to options
     // be careful the elements of rest and low are mapped to 'X' and 'a'
     switch(options_vector[OPT_FILTER_POINT]){       // '.' in column
-        case DONT_COUNT: 
-            mask[(unsigned char)'.']=AW_FALSE;
+        case DONT_COUNT:
+            mask[(unsigned char)'.'] = false;
             break;
-            
-        case SKIP_COLUMN_IF_MAX: 
+
+        case SKIP_COLUMN_IF_MAX:
             strcat(delete_when_max,".");
             strcat(get_maximum_from,".");
             break;
@@ -185,18 +186,18 @@ float *PH_filter::calculate_column_homology(void){
             
         case COUNT_DONT_USE_MAX: // use like another valid base/acid while not maximal
             // do nothing: don't get maximum of this charcater
-            // but use character ( AW_TRUE in mask )
+            // but use character ( true in mask )
             break;
 
         default : ph_assert(0); break; // illegal value!
     }
 
     switch(options_vector[OPT_FILTER_MINUS]){       // '-' in column
-        case DONT_COUNT: 
-            mask[(unsigned char)'-']=AW_FALSE;
+        case DONT_COUNT:
+            mask[(unsigned char)'-'] = false;
             break;
-            
-        case SKIP_COLUMN_IF_MAX: 
+
+        case SKIP_COLUMN_IF_MAX:
             strcat(delete_when_max,"-");
             strcat(get_maximum_from,"-");
             break;
@@ -207,7 +208,7 @@ float *PH_filter::calculate_column_homology(void){
             
         case COUNT_DONT_USE_MAX: // use like another valid base/acid while not maximal
             // do nothing: don't get maximum of this charcater
-            // but use character ( AW_TRUE in mask )
+            // but use character ( true in mask )
             break;
 
         default : ph_assert(0); break; // illegal value!
@@ -217,7 +218,7 @@ float *PH_filter::calculate_column_homology(void){
     switch(options_vector[OPT_FILTER_AMBIG]) // all rest characters counted to 'X' (see below)
     {
         case DONT_COUNT:
-            for(i=0; rest_chars[i]; i++) mask[(unsigned char)rest_chars[i]] = AW_FALSE;
+            for(i=0; rest_chars[i]; i++) mask[(unsigned char)rest_chars[i]] = false;
             break;
 
         case SKIP_COLUMN_IF_MAX:
@@ -233,7 +234,7 @@ float *PH_filter::calculate_column_homology(void){
 
         case COUNT_DONT_USE_MAX: // use like another valid base/acid while not maximal
             // do nothing: don't get maximum of this charcater
-            // but use character ( AW_TRUE in mask )
+            // but use character ( true in mask )
             break;
 
         case TREAT_AS_REGULAR:
@@ -253,7 +254,7 @@ float *PH_filter::calculate_column_homology(void){
 
     switch(options_vector[OPT_FILTER_LOWER]){   // 'acgtu' in column
         case DONT_COUNT: 
-            for(i=0; low_chars[i]; i++) mask[(unsigned char)low_chars[i]] = AW_FALSE;
+            for(i=0; low_chars[i]; i++) mask[(unsigned char)low_chars[i]] = false;
             break;
 
         case SKIP_COLUMN_IF_MAX: 
@@ -269,7 +270,7 @@ float *PH_filter::calculate_column_homology(void){
 
         case COUNT_DONT_USE_MAX:  // use like another valid base/acid while not maximal
             // do nothing: don't get maximum of this charcater
-            // but use character ( AW_TRUE in mask )
+            // but use character ( true in mask )
             break;
 
         case TREAT_AS_UPPERCASE: // use like corresponding uppercase characters

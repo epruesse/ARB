@@ -10,7 +10,7 @@ struct NT_global {
     AW_root           *awr;
     AWT_graphic_tree  *tree;
     AW_Window_Creator  window_creator;
-    AW_BOOL            extern_quit_button;
+    bool               extern_quit_button;
 };
 
 extern NT_global  GLOBAL_NT;

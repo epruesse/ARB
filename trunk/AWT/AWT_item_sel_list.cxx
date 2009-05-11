@@ -88,9 +88,9 @@ AW_CL awt_create_selection_list_on_scandb(GBDATA                 *gb_main,
                                           const ad_item_selector *selector,
                                           size_t                  columns,
                                           size_t                  visible_rows,
-                                          AW_BOOL                 popup_list_in_window,
-                                          AW_BOOL                 add_all_fields_pseudo_field,
-                                          AW_BOOL                 include_hidden_fields)
+                                          bool                    popup_list_in_window,
+                                          bool                    add_all_fields_pseudo_field,
+                                          bool                    include_hidden_fields)
 {
     AW_selection_list *id              = 0;
     GBDATA            *gb_key_data;
@@ -106,7 +106,7 @@ AW_CL awt_create_selection_list_on_scandb(GBDATA                 *gb_main,
         {
             AW_window_simple *aw_popup = new AW_window_simple;
             aw_popup->init(aws->get_root(), "SELECT_LIST_ENTRY", "SELECT AN ENTRY");
-            //         aw_popup->load_xfig(0, AW_TRUE);
+            //         aw_popup->load_xfig(0, true);
 
             aw_popup->auto_space(10, 10);
             aw_popup->at_newline();
