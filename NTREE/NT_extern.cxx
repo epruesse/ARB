@@ -553,6 +553,101 @@ AW_window *NT_create_tree_setting(AW_root *aw_root)
 
 }
 
+enum streamSource { FROM_PIPE, FROM_FILE };
+static char *stream2str(streamSource source, const char *commandOrFile) {
+    char *output = 0;
+    FILE *in     = 0;
+
+    switch (source) {
+        case FROM_PIPE: in = popen(commandOrFile, "r"); break;
+        case FROM_FILE: in = fopen(commandOrFile, "rt"); break;
+    }
+
+    if (in) {
+        GBS_strstruct *out = GBS_stropen(2000);
+        int c;
+
+        while (EOF != (c = fgetc(in))) GBS_chrcat(out, c);
+
+        switch (source) {
+            case FROM_PIPE: pclose(in); break;
+            case FROM_FILE: fclose(in); break;
+        }
+
+        // skip trailing linefeeds
+        long offset = GBS_memoffset(out);
+        while (offset>0 && GBS_mempntr(out)[offset-1] == '\n') {
+            GBS_str_cut_tail(out, 1);
+            offset--;
+        }
+
+        output = GBS_strclose(out);
+    }
+    return output;
+}
+
+inline void removeTrailingNewlines(char *str) {
+    char *eos = strchr(str, 0)-1;
+    while (eos >= str && eos[0] == '\n') *eos-- = 0;
+}
+
+inline void append_named_value(GBS_strstruct *out, const char *prefix, const char *value) {
+    GBS_strcat(out, GBS_global_string("%-*s: %s\n", 12, prefix, value));
+}
+inline void append_command_output(GBS_strstruct *out, const char *prefix, const char *command) {
+    char *output = stream2str(FROM_PIPE, command);
+    if (output) {
+        removeTrailingNewlines(output);
+        if (strcmp(output, "unknown") != 0) append_named_value(out, prefix, output);
+        free(output);
+    }
+}
+
+static void append_existing_file(GBS_strstruct *out, const char *file) {
+    char *content = stream2str(FROM_FILE, file);
+    if (content) {
+        GBS_strcat(out, file);
+        GBS_strcat(out, ":");
+        GBS_chrcat(out, strchr(content, '\n') ? '\n' : ' ');
+        GBS_strcat(out, content);
+        GBS_chrcat(out, '\n');
+        free(content);
+    }
+}
+
+static char *get_system_info(bool extended) {
+    GBS_strstruct *info = GBS_stropen(2000);
+
+    GBS_strcat(info,
+               "\n\n"
+               "----------------------------------------\n"
+               "Information about your system:\n"
+               "----------------------------------------\n"
+               );
+    append_named_value(info, "ARB version", ARB_VERSION);
+#if defined(SHOW_WHERE_BUILD)
+    append_named_value(info, "build by", ARB_BUILD_USER "@" ARB_BUILD_HOST);
+#endif // SHOW_WHERE_BUILD
+    append_named_value(info, "ARBHOME", GB_getenvARBHOME());
+
+    GBS_chrcat(info, '\n');
+    append_command_output(info, "Kernel",   "uname -srv");
+    append_command_output(info, "Machine",  "uname -m");
+    append_command_output(info, "CPU",      "uname -p");
+    append_command_output(info, "Platform", "uname -i");
+    append_command_output(info, "OS",       "uname -o");
+
+    GBS_chrcat(info, '\n');
+    append_existing_file(info, "/proc/version");
+    append_existing_file(info, "/proc/version_signature");
+    if (extended) {
+        append_existing_file(info, "/proc/cpuinfo");
+        append_existing_file(info, "/proc/meminfo");
+    }
+
+    return GBS_strclose(info);
+}
+
 void NT_submit_mail(AW_window *aww, AW_CL cl_awar_base) {
     char     *mail_file;
     char     *mail_name = GB_unique_filename("arb_bugreport", "txt");
@@ -567,16 +662,8 @@ void NT_submit_mail(AW_window *aww, AW_CL cl_awar_base) {
         char *plainaddress = GBS_string_eval(address, "\"=:'=\\=", 0);                                    // Remove all dangerous symbols
 
         fprintf(mail, "%s\n", text);
-        fprintf(mail, "------------------------------\n");
-        fprintf(mail, "VERSION       :" ARB_VERSION "\n");
-#if defined(SHOW_WHERE_BUILD)
-        fprintf(mail, "BUILD_BY      :" ARB_BUILD_USER "@" ARB_BUILD_HOST "\n");
-#endif // SHOW_WHERE_BUILD
-        fprintf(mail, "SYSTEMINFO    :\n");
         fclose(mail);
 
-        system(GBS_global_string("uname -a >>%s", mail_file));
-        system(GBS_global_string("date  >>%s", mail_file));
         const char *command = GBS_global_string("mail '%s' <%s", plainaddress, mail_file);
 
         gb_assert(GB_is_privatefile(mail_file, GB_FALSE));
@@ -631,35 +718,47 @@ AW_window *NT_submit_bug(AW_root *aw_root, int bug_report){
     }
 
     {
-        const char *awar_name_text = GBS_global_string("%s/text", awar_name_start);
+        char *system_info = get_system_info(bug_report);
+        char *custom_text = 0;
 
         if (bug_report){
-            aw_root->awar_string(awar_name_text,
-                                 "Bug occurred in: [which part of ARB?]\n"
+            custom_text = strdup("Bug occurred in:\n"
+                                 "    [which part of ARB?]\n"
+                                 "\n"
                                  "The bug [ ] is reproducable\n"
                                  "        [ ] occurs randomly\n"
                                  "        [ ] occurs with specific data\n"
                                  "\n"
                                  "Detailed description:\n"
+                                 "[put your bug description here]\n"
+                                 "\n"
+                                 "\n"
+                                 "\n"
+                                 "Note: If the bug only occurs with a specific database,\n"
+                                 "      please provide a way how we can download your database.\n"
+                                 "      (e.g. upload it to a filesharing site and provide the URL here)\n"
                                  "\n"
                                  );
         }
         else {
-            aw_root->awar_string(awar_name_text,
-                                 GBS_global_string("******* Registration *******\n"
-                                                   "\n"
-                                                   "Name           : %s\n"
-                                                   "Department     :\n"
-                                                   "How many users :\n"
-                                                   "\n"
-                                                   "Why do you want to use arb ?\n"
-                                                   "\n",
-                                                   GB_getenvUSER())
-                                 );
+            custom_text = GBS_global_string_copy("******* Registration *******\n"
+                                                 "\n"
+                                                 "Name           : %s\n"
+                                                 "Department     : \n"
+                                                 "How many users : \n"
+                                                 "\n"
+                                                 "Why do you want to use arb ?\n"
+                                                 "\n",
+                                                 GB_getenvUSER());
         }
 
+        const char *awar_name_text = GBS_global_string("%s/text", awar_name_start);
+        aw_root->awar_string(awar_name_text, GBS_global_string("%s\n%s", custom_text, system_info));
         aws->at("box");
         aws->create_text_field(awar_name_text);
+
+        free(custom_text);
+        free(system_info);
     }
 
     aws->at("go");
@@ -667,6 +766,10 @@ AW_window *NT_submit_bug(AW_root *aw_root, int bug_report){
     aws->create_button("SEND","SEND");
 
     awss[bug_report] = aws; // store for further use
+
+    char *haveMail = GB_executable("mail");
+    if (haveMail) free(haveMail);
+    else aw_message("Won't be able to send your mail (no mail program found)\nCopy&paste the text to your favorite mail software");
 
     return aws;
 }
