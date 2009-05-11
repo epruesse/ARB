@@ -16,10 +16,6 @@
 class ED4_root;
 class ED4_database;
 
-#ifndef HAVE_BOOL
-typedef char bool;
-#endif
-
 typedef const char  ED4_ERROR;
 typedef int     ED4_COORDINATE;
 

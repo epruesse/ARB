@@ -98,13 +98,13 @@ typedef enum {
 } AW_cursor_type;
 
 
-// @@@ FIXME: elements of the following classes should go private! 
+// @@@ FIXME: elements of the following classes should go private!
 
 class AW_clicked_element {
 public:
-    AW_CL   client_data1;
-    AW_CL   client_data2;
-    AW_BOOL exists;         // AW_TRUE if a drawn element was clicked, else AW_FALSE
+    AW_CL client_data1;
+    AW_CL client_data2;
+    bool  exists;                                   // true if a drawn element was clicked, else false
 };
 
 class AW_clicked_line : public AW_clicked_element {
@@ -220,12 +220,12 @@ public:
     int clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out);
     int box_clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out);
 
-    void set_top_clip_border(int top, AW_BOOL allow_oversize = AW_FALSE);
-    void set_bottom_clip_border(int bottom, AW_BOOL allow_oversize = AW_FALSE); // absolut
-    void set_bottom_clip_margin(int bottom, AW_BOOL allow_oversize = AW_FALSE); // relativ
-    void set_left_clip_border(int left, AW_BOOL allow_oversize = AW_FALSE);
-    void set_right_clip_border(int right, AW_BOOL allow_oversize = AW_FALSE);
-    void set_cliprect(AW_rectangle *rect, AW_BOOL allow_oversize = AW_FALSE);
+    void set_top_clip_border(int top, bool allow_oversize = false);
+    void set_bottom_clip_border(int bottom, bool allow_oversize = false); // absolut
+    void set_bottom_clip_margin(int bottom, bool allow_oversize = false); // relativ
+    void set_left_clip_border(int left, bool allow_oversize = false);
+    void set_right_clip_border(int right, bool allow_oversize = false);
+    void set_cliprect(AW_rectangle *rect, bool allow_oversize = false);
     void set_clipall() {
         AW_rectangle rect;
         rect.t = rect.b = rect.l = rect.r = 0;
@@ -391,15 +391,15 @@ public:
     virtual int zoomtext4line(int gc, const char *string, AW_pos height, AW_pos lx0, AW_pos ly0, AW_pos lx1, AW_pos ly1, AW_pos alignmentx, AW_pos alignmenty, AW_bitset filteri,AW_CL cd1,AW_CL cd2);
 
 protected:
-    int generic_box(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
-    int generic_circle(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
-    int generic_arc(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, int start_degrees, int arc_degrees, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
+    int generic_box(int gc, bool filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
+    int generic_circle(int gc, bool filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
+    int generic_arc(int gc, bool filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, int start_degrees, int arc_degrees, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
     int generic_filled_area(int gc, int npoints, AW_pos *points, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
 
 public:
-    virtual int box(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filteri, AW_CL cd1, AW_CL cd2)                                     = 0;
-    virtual int circle(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filteri, AW_CL cd1, AW_CL cd2)                                  = 0;
-    virtual int arc(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, int start_degrees, int arc_degrees, AW_bitset filteri, AW_CL cd1, AW_CL cd2) = 0;
+    virtual int box(int gc, bool filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filteri, AW_CL cd1, AW_CL cd2)                                     = 0;
+    virtual int circle(int gc, bool filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filteri, AW_CL cd1, AW_CL cd2)                                  = 0;
+    virtual int arc(int gc, bool filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, int start_degrees, int arc_degrees, AW_bitset filteri, AW_CL cd1, AW_CL cd2) = 0;
     virtual int filled_area(int gc, int npoints, AW_pos *points, AW_bitset filteri, AW_CL cd1, AW_CL cd2)                                                                = 0;
 
     // * third level functions (never virtual)
@@ -422,21 +422,21 @@ public:
     bool invisible(int gc, AW::Position pos, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
         return invisible(gc, pos.xpos(), pos.ypos(), filteri, cd1, cd2);
     }
-    int box(int gc, AW_BOOL filled, const AW::Position& pos, const AW::Vector& size, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+    int box(int gc, bool filled, const AW::Position& pos, const AW::Vector& size, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
         return box(gc, filled, pos.xpos(), pos.ypos(), size.x(), size.y(), filteri, cd1, cd2);
     }
-    int box(int gc, AW_BOOL filled, const AW::Rectangle& rect, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+    int box(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
         return box(gc, filled, rect.upper_left_corner(), rect.diagonal(), filteri, cd1, cd2);
     }
     
-    int circle(int gc, AW_BOOL filled, const AW::Position& pos, AW_pos width, AW_pos heigth, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+    int circle(int gc, bool filled, const AW::Position& pos, AW_pos width, AW_pos heigth, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
         return circle(gc, filled, pos.xpos(), pos.ypos(), width, heigth, filteri, cd1, cd2);
     }
-    int circle(int gc, AW_BOOL filled, const AW::Rectangle& rect, AW_bitset filteri, AW_CL cd1, AW_CL cd2) { // paint a circle/ellipsoid into a rectangle
+    int circle(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri, AW_CL cd1, AW_CL cd2) { // paint a circle/ellipsoid into a rectangle
         return circle(gc, filled, rect.centroid(), rect.width(), rect.height(), filteri, cd1, cd2);
     }
     
-    int arc(int gc, AW_BOOL filled, const AW::Position& pos, AW_pos width, AW_pos heigth, int start_degrees, int arc_degrees, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+    int arc(int gc, bool filled, const AW::Position& pos, AW_pos width, AW_pos heigth, int start_degrees, int arc_degrees, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
         return arc(gc, filled, pos.xpos(), pos.ypos(), width, heigth, start_degrees, arc_degrees, filteri, cd1, cd2);
     }
 

@@ -835,7 +835,7 @@ AW_window *open_AWTC_export_window(AW_root *awr,GBDATA *gb_main)
 
     awt_create_selection_box(aws,AWAR_EXPORT_FILE,"f" );
 
-    awt_create_selection_box(aws,AWAR_EXPORT_FORM,"","ARBHOME", AW_FALSE );
+    awt_create_selection_box(aws,AWAR_EXPORT_FORM,"","ARBHOME", false );
 
     aws->get_root()->awar(AWAR_EXPORT_FORM"/file_name")->add_callback(export_form_changed_cb);
 

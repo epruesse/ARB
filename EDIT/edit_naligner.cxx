@@ -312,7 +312,7 @@ AW_window *create_naligner_window( AW_root *root, AW_CL cd2 ) {
 
     aws->at( "pt_server" );
     aws->label("PT_SERVER:");
-    awt_create_selection_list_on_pt_servers(aws, "naligner/pt_server", AW_TRUE);
+    awt_create_selection_list_on_pt_servers(aws, "naligner/pt_server", true);
 
     aws->at( "mark" );
     aws->label_length(40);

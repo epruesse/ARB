@@ -224,8 +224,8 @@ static int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned c
             this_elem->comments_maxlen = 1 + (this_elem->comments_len = strlen(this_elem->comments));
 
             //          if (this_elem->rmatrix &&
-            //              IS_REALLY_AA == AW_FALSE) {
-            //                  if (IS_REALLY_AA == AW_FALSE)
+            //              IS_REALLY_AA == false) {
+            //                  if (IS_REALLY_AA == false)
             //                          Ascii2NA((char *)this_elem->sequence,
             //                                   this_elem->seqlen,
             //                                   this_elem->rmatrix);

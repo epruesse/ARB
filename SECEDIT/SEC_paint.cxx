@@ -1037,7 +1037,7 @@ GB_ERROR SEC_root::paint(AW_device *device) {
 
             Position textPos(loop_center.xpos(), upperleft_corner.ypos());
 
-            device->box(SEC_GC_DEFAULT, AW_FALSE, upperleft_corner, diagonal, -1, cd1, cd2);
+            device->box(SEC_GC_DEFAULT, false, upperleft_corner, diagonal, -1, cd1, cd2);
             device->text(SEC_GC_DEFAULT, structId, textPos, 0.5, -1, cd1, cd2, 0);
         }
 

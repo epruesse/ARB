@@ -973,7 +973,7 @@ static void create_next_neighbours_vars(AW_root *aw_root) {
 
 static void create_common_next_neighbour_fields(AW_window *aws) {
     aws->at("pt_server");
-    awt_create_selection_list_on_pt_servers(aws, AWAR_PROBE_ADMIN_PT_SERVER, AW_TRUE);
+    awt_create_selection_list_on_pt_servers(aws, AWAR_PROBE_ADMIN_PT_SERVER, true);
 
     AWTC_create_common_next_neighbour_fields(aws);
 

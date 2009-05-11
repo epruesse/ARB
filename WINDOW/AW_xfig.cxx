@@ -321,11 +321,11 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
                 }
 
                 while (ret) {
-                    AW_BOOL got_nextline = AW_FALSE;
+                    bool  got_nextline = false;
                     char *p;
-                    int width =0;
-                    int color = 0;
-                    int x,y;
+                    int   width        = 0;
+                    int   color        = 0;
+                    int   x,y;
 
                     if (ret[0]=='2')  { // lines
                         int oldx =0,oldy =0;
@@ -345,7 +345,7 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
                             ret = fgets(buffer,MAX_XFIG_LENGTH,file);  ++lineNumber;
                             if (!ret) break;
                             if (ret[0]!='\t') {
-                                got_nextline = AW_TRUE;
+                                got_nextline = true;
                                 break;
                             }
 

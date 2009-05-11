@@ -406,7 +406,7 @@ AW_VARIABLE_TYPE AW_awar::get_type(){
 
 void AW_awar::update(void)
 {
-    AW_BOOL out_of_range = AW_FALSE;
+    bool out_of_range = false;
     if (gb_var && ((pp.f.min != pp.f.max) || pp.srt) ) {
         float fl;
         char *str;
@@ -416,11 +416,11 @@ void AW_awar::update(void)
 
                 lo = this->read_int();
                 if (lo < pp.f.min -.5) {
-                    out_of_range = AW_TRUE;
+                    out_of_range = true;
                     lo = (int)(pp.f.min + 0.5);
                 }
                 if (lo>pp.f.max + .5) {
-                    out_of_range = AW_TRUE;
+                    out_of_range = true;
                     lo = (int)(pp.f.max + 0.5);
                 }
                 if (out_of_range) {
@@ -433,11 +433,11 @@ void AW_awar::update(void)
             case AW_FLOAT:
                 fl = this->read_float();
                 if (fl < pp.f.min) {
-                    out_of_range = AW_TRUE;
+                    out_of_range = true;
                     fl = pp.f.min+AWAR_EPS;
                 }
                 if (fl>pp.f.max) {
-                    out_of_range = AW_TRUE;
+                    out_of_range = true;
                     fl = pp.f.max-AWAR_EPS;
                 }
                 if (out_of_range) {

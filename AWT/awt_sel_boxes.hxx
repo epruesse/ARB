@@ -32,7 +32,7 @@ void awt_create_selection_list_on_trees(GBDATA *gb_main,AW_window *aws, const ch
 /*********************** Pt-Servers ******************************/
 /* Selection list for pt-servers */
 
-void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname, AW_BOOL popup);
+void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname, bool popup);
 void awt_refresh_all_pt_server_selection_lists();
 
 /***********************    Tables Fields       ************************/
@@ -47,7 +47,7 @@ AW_window *AWT_create_tables_admin_window(AW_root *aw_root,GBDATA *gb_main);
 /***********************    SAIS        ************************/
 void *awt_create_selection_list_on_extendeds(GBDATA *gb_main,AW_window *aws, const char *varname,
                                              char *(*filter_poc)(GBDATA *gb_ext, AW_CL) = 0, AW_CL filter_cd = 0,
-                                             AW_BOOL add_sel_species= AW_FALSE);
+                                             bool add_sel_species= false);
 /* Selection list for all extendeds !!!!!!!!! */
 /* if filter_proc is set then show only those items on which
    filter_proc returns a strdup(string) */

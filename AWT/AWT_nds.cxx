@@ -499,7 +499,7 @@ AW_window *AWT_create_nds_window(AW_root *aw_root,AW_CL cgb_main) {
                 aws->create_button("SELECT_SRTACI", "S","S");
 
                 aws->get_at_position( &srtux,&dummy );
-                aws->at_set_to(AW_TRUE, AW_FALSE, -7, 30);
+                aws->at_set_to(true, false, -7, 30);
                 aws->create_input_field(awar_name,40);
             }
 

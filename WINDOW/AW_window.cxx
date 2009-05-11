@@ -466,13 +466,14 @@ AW_pos AW_window::get_scrolled_picture_height() {
 
 void AW_window::calculate_scrollbars(void) {
     AW_rectangle screen;
-    int slider_size_horizontal;
-    int slider_size_vertical;
-    AW_BOOL vertical, horizontal;
-    int position_of_slider;
-    int slider_max;
+    
+    int  slider_size_horizontal;
+    int  slider_size_vertical;
+    bool vertical, horizontal;
+    int  position_of_slider;
+    int  slider_max;
 
-    vertical = horizontal = AW_TRUE; // es gibt verticalen & horizontalen scrollbar
+    vertical = horizontal = true; // es gibt verticalen & horizontalen scrollbar
 
     this->_get_area_size(AW_MIDDLE_AREA, &screen);
 
@@ -490,7 +491,7 @@ void AW_window::calculate_scrollbars(void) {
     if (slider_size_horizontal > slider_max) { // Schirm groesser als Bild
         slider_size_horizontal = slider_max; // slider nimmt ganze laenge ein
         XtVaSetValues(p_w->scroll_bar_horizontal, XmNvalue, 0, NULL); // slider ganz links setzen
-        horizontal = AW_FALSE; // kein horizontaler slider mehr
+        horizontal = false; // kein horizontaler slider mehr
     }
 
     // check wether XmNValue is to big
@@ -506,7 +507,7 @@ void AW_window::calculate_scrollbars(void) {
     // Anpassung fuer resize, wenn unbeschriebener Bereich vergroessert wird
     if ( -slider_pos_horizontal + get_scrolled_picture_width() < screen.r
             -left_indent_of_horizontal_scrollbar) {
-        if (horizontal == AW_TRUE)
+        if (horizontal == true)
             slider_pos_horizontal = (int)(get_scrolled_picture_width()
                     - (screen.r-left_indent_of_horizontal_scrollbar) );
         else
@@ -542,7 +543,7 @@ void AW_window::calculate_scrollbars(void) {
     if (slider_size_vertical > slider_max) {
         slider_size_vertical = slider_max;
         XtVaSetValues(p_w->scroll_bar_vertical, XmNvalue, 0, NULL);
-        vertical = AW_FALSE;
+        vertical = false;
     }
 
     // check wether XmNValue is to big
@@ -558,7 +559,7 @@ void AW_window::calculate_scrollbars(void) {
     if ( -slider_pos_vertical + get_scrolled_picture_height() < screen.b
             -top_indent_of_vertical_scrollbar
             -bottom_indent_of_vertical_scrollbar) {
-        if (vertical == AW_TRUE)
+        if (vertical == true)
             slider_pos_vertical = (int)(get_scrolled_picture_height()
                     - (screen.b-top_indent_of_vertical_scrollbar
                             -bottom_indent_of_vertical_scrollbar));
@@ -740,12 +741,8 @@ void AW_cb_struct::run_callback(void) {
     }
 }
 
-AW_BOOL AW_cb_struct::contains(void (*g)(AW_window*,AW_CL ,AW_CL)) {
-    if (f == g)
-        return AW_TRUE;
-    if (!next)
-        return AW_FALSE;
-    return next->contains(g);
+bool AW_cb_struct::contains(void (*g)(AW_window*,AW_CL ,AW_CL)) {
+    return (f == g) || (next && next->contains(g));
 }
 
 void AW_root_Motif::set_cursor(Display *d, Window w, Cursor c) {
@@ -894,30 +891,22 @@ void AW_window::set_expose_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_
     aram->set_expose_callback(this, f, cd1, cd2);
 }
 
-AW_BOOL AW_area_management::is_expose_callback(AW_window */*aww*/, void (*f)(AW_window*,AW_CL,AW_CL)) {
-    if (!expose_cb)
-        return AW_FALSE;
-    return expose_cb->contains(f);
+bool AW_area_management::is_expose_callback(AW_window */*aww*/, void (*f)(AW_window*,AW_CL,AW_CL)) {
+    return expose_cb && expose_cb->contains(f);
 }
 
-AW_BOOL AW_window::is_expose_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL)) {
-    AW_area_management *aram= MAP_ARAM(area);
-    if (!aram)
-        return AW_FALSE;
-    return aram->is_expose_callback(this, f);
+bool AW_window::is_expose_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL)) {
+    AW_area_management *aram = MAP_ARAM(area);
+    return aram && aram->is_expose_callback(this, f);
 }
 
-AW_BOOL AW_area_management::is_resize_callback(AW_window */*aww*/, void (*f)(AW_window*,AW_CL,AW_CL)) {
-    if (!resize_cb)
-        return AW_FALSE;
-    return resize_cb->contains(f);
+bool AW_area_management::is_resize_callback(AW_window */*aww*/, void (*f)(AW_window*,AW_CL,AW_CL)) {
+    return resize_cb && resize_cb->contains(f);
 }
 
-AW_BOOL AW_window::is_resize_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL)) {
-    AW_area_management *aram= MAP_ARAM(area);
-    if (!aram)
-        return AW_FALSE;
-    return aram->is_resize_callback(this, f);
+bool AW_window::is_resize_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL)) {
+    AW_area_management *aram = MAP_ARAM(area);
+    return aram && aram->is_resize_callback(this, f);
 }
 
 void AW_window::set_window_size(int width, int height) {
@@ -1003,16 +992,14 @@ void AW_window::set_resize_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_
 }
 
 /***********************************************************************/
-static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct,
-        XmDrawingAreaCallbackStruct *call_data) {
+static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAreaCallbackStruct *call_data) {
     AWUSE(wgt);
-    XEvent *ev = call_data->event;
-
-    AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
-    AW_window *aww = cbs->aw;
-    AW_BOOL run_callback = AW_FALSE;
-    AW_BOOL run_double_click_callback = AW_FALSE;
-    AW_area_management *area = 0;
+    XEvent             *ev                        = call_data->event;
+    AW_cb_struct       *cbs                       = (AW_cb_struct *) aw_cb_struct;
+    AW_window          *aww                       = cbs->aw;
+    bool                run_callback              = false;
+    bool                run_double_click_callback = false;
+    AW_area_management *area                      = 0;
     {
         int i;
         for (i=0; i<AW_MAX_AREA; i++) {
@@ -1034,13 +1021,13 @@ static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct,
 
         if (area && area->double_click_cb) {
             if ( (ev->xbutton.time - area->click_time ) < 200) {
-                run_double_click_callback = AW_TRUE;
+                run_double_click_callback = true;
             } else {
-                run_callback = AW_TRUE;
+                run_callback = true;
             }
             area->click_time = ev->xbutton.time;
         } else {
-            run_callback = AW_TRUE;
+            run_callback = true;
         }
 
         aww->event.time = ev->xbutton.time;
@@ -1054,7 +1041,7 @@ static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct,
         aww->event.character = '\0';
         //  aww->event.time     use old time
 
-        run_callback = AW_TRUE;
+        run_callback = true;
     } else if (ev->xkey.type == KeyPress || ev->xkey.type == KeyRelease) {
         aww->event.time = ev->xbutton.time;
 
@@ -1083,7 +1070,7 @@ static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct,
                 && aww->event.type == AW_Keyboard_Press) {
             p_aww(aww)->modes_f_callbacks[mykey->awkey-AW_KEY_F1]->run_callback();
         } else {
-            run_callback = AW_TRUE;
+            run_callback = true;
         }
     }
 
@@ -1091,7 +1078,7 @@ static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct,
     //     else if (ev->xkey.type == KeyRelease) { // added Jan 98 to fetch multiple keystrokes in EDIT4 (may cause side effects)
     //         aww->event.time = ev->xbutton.time;
     //         aww->event.type = AW_Keyboard_Release;
-    //         run_callback = AW_TRUE;
+    //         run_callback = true;
     //     }
 
     if (run_double_click_callback) {
@@ -1283,7 +1270,7 @@ static int aw_status_dummy2(const char *val) {
     return aw_status((char *)val);
 }
 
-void AW_root::init_root(const char *programmname, AW_BOOL no_exit) {
+void AW_root::init_root(const char *programmname, bool no_exit) {
     // Initialisiert eine gesamte X-Anwendung
     int a = 0;
     int i;
@@ -1361,7 +1348,7 @@ void AW_root::init_root(const char *programmname, AW_BOOL no_exit) {
     p_r->last_toggle_field = p_r->toggle_field_list = NULL;
     p_r->last_selection_list = p_r->selection_list = NULL;
 
-    value_changed = AW_FALSE;
+    value_changed = false;
     y_correction_for_input_labels = 5;
     global_mask = AWM_ALL;
 
@@ -1776,7 +1763,7 @@ static Pixmap getIcon(Screen *screen, const char *iconName, Pixel foreground, Pi
     return pixmap;
 }
 
-Widget aw_create_shell(AW_window *aww, AW_BOOL allow_resize, AW_BOOL allow_close, int width, int height, int posx, int posy) {
+Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int width, int height, int posx, int posy) {
     AW_root *root = aww->get_root();
     Widget shell;
 
@@ -1904,7 +1891,7 @@ Widget aw_create_shell(AW_window *aww, AW_BOOL allow_resize, AW_BOOL allow_close
 
     Atom WM_DELETE_WINDOW = XmInternAtom(XtDisplay(shell), (char*)"WM_DELETE_WINDOW", False);
 
-    if (allow_close == AW_FALSE) {
+    if (allow_close == false) {
         XmAddWMProtocolCallback(shell, WM_DELETE_WINDOW, (XtCallbackProc)aw_window_avoid_destroy_cb,(caddr_t)aww);
     }
     else if (!p_global->no_exit) {
@@ -1979,7 +1966,7 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid,
     int posx = 50;
     int posy = 50;
 
-    p_w->shell= aw_create_shell(this, AW_TRUE, AW_TRUE, width, height, posx, posy);
+    p_w->shell= aw_create_shell(this, true, true, width, height, posx, posy);
 
     main_window = XtVaCreateManagedWidget("mainWindow1",
             xmMainWindowWidgetClass, p_w->shell, 
@@ -1995,8 +1982,8 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid,
             p_w->menu_bar[0], 
             XmNwidth, 1, 
             XmNheight, 1, 
-            XmNallowShellResize, AW_TRUE, 
-            XmNoverrideRedirect, AW_TRUE, 
+            XmNallowShellResize, true, 
+            XmNoverrideRedirect, true, 
             NULL);
 
     //create row column in Pull-Down shell
@@ -2192,7 +2179,7 @@ void AW_window_menu::init(AW_root *root_in, const char *wid,
     int posx = 50;
     int posy = 50;
 
-    p_w->shell= aw_create_shell(this, AW_TRUE, AW_TRUE, width, height, posx, posy);
+    p_w->shell= aw_create_shell(this, true, true, width, height, posx, posy);
 
     main_window = XtVaCreateManagedWidget("mainWindow1",
             xmMainWindowWidgetClass, p_w->shell, 
@@ -2208,8 +2195,8 @@ void AW_window_menu::init(AW_root *root_in, const char *wid,
             p_w->menu_bar[0], 
             XmNwidth, 1, 
             XmNheight, 1, 
-            XmNallowShellResize, AW_TRUE, 
-            XmNoverrideRedirect, AW_TRUE, 
+            XmNallowShellResize, true, 
+            XmNoverrideRedirect, true, 
             NULL);
 
     //create row column in Pull-Down shell
@@ -2384,7 +2371,7 @@ void AW_window_simple::init(AW_root *root_in, const char *wid,
     window_name = strdup(windowname);
     window_defaults_name = GBS_string_2_key(wid);
 
-    p_w->shell= aw_create_shell(this, AW_TRUE, AW_TRUE, width, height, posx, posy);
+    p_w->shell= aw_create_shell(this, true, true, width, height, posx, posy);
 
     // add this to disable resize or maximize in simple dialogs (avoids broken layouts)
     // XtVaSetValues(p_w->shell, XmNmwmFunctions, MWM_FUNC_MOVE | MWM_FUNC_CLOSE,
@@ -2425,7 +2412,7 @@ void AW_window_simple_menu::init(AW_root *root_in, const char *wid,
     int posx = 50;
     int posy = 50;
 
-    p_w->shell= aw_create_shell(this, AW_TRUE, AW_TRUE, width, height, posx, posy);
+    p_w->shell= aw_create_shell(this, true, true, width, height, posx, posy);
 
     Widget main_window;
     Widget help_popup;
@@ -2446,8 +2433,8 @@ void AW_window_simple_menu::init(AW_root *root_in, const char *wid,
             p_w->menu_bar[0], 
             XmNwidth, 1, 
             XmNheight, 1, 
-            XmNallowShellResize, AW_TRUE, 
-            XmNoverrideRedirect, AW_TRUE, 
+            XmNallowShellResize, true, 
+            XmNoverrideRedirect, true, 
             NULL);
 
     //create row column in Pull-Down shell
@@ -2506,7 +2493,7 @@ void AW_window_message::init(AW_root *root_in, const char *windowname,
     window_defaults_name = GBS_string_2_key(window_name);
 
     // create shell for message box
-    p_w->shell= aw_create_shell(this, AW_TRUE, allow_close, width, height, posx, posy);
+    p_w->shell= aw_create_shell(this, true, allow_close, width, height, posx, posy);
 
     // disable resize or maximize in simple dialogs (avoids broken layouts)
     XtVaSetValues(p_w->shell, XmNmwmFunctions, MWM_FUNC_MOVE | MWM_FUNC_CLOSE,
@@ -2889,8 +2876,8 @@ void AW_window::insert_sub_menu(const char *smenu_id, AW_label name,
             p_w->menu_bar[p_w->menu_deep], 
             XmNwidth, 1, 
             XmNheight, 1, 
-            XmNallowShellResize, AW_TRUE, 
-            XmNoverrideRedirect, AW_TRUE, 
+            XmNallowShellResize, true, 
+            XmNoverrideRedirect, true, 
             NULL);
 
     //create row column in Pull-Down shell
@@ -3072,7 +3059,7 @@ void AW_window::show(void) {
     if (!window_is_shown) {
         all_menus_created();
         get_root()->window_show();
-        window_is_shown = AW_TRUE;
+        window_is_shown = true;
     }
 
     if (recalc_size_at_show) {
@@ -3113,7 +3100,7 @@ void AW_window::show(void) {
 void AW_window::show_grabbed(void) {
     if (!window_is_shown) {
         get_root()->window_show();
-        window_is_shown = AW_TRUE;
+        window_is_shown = true;
     }
     XtPopup(p_w->shell, XtGrabExclusive);
     if (p_w->WM_top_offset == -1000) { // very bad hack
@@ -3124,12 +3111,12 @@ void AW_window::show_grabbed(void) {
 void AW_window::hide(void) {
     if (window_is_shown) {
         get_root()->window_hide();
-        window_is_shown = AW_FALSE;
+        window_is_shown = false;
     }
     XtPopdown(p_w->shell);
 }
 
-AW_BOOL AW_window::get_show(void) {
+bool AW_window::get_show(void) {
     return window_is_shown;
 }
 
@@ -3226,7 +3213,7 @@ static void AW_xfigCB_info_area(AW_window *aww, AW_xfig *xfig) {
     xfig->print(device);
 }
 
-void AW_window::load_xfig(const char *file, AW_BOOL resize) {
+void AW_window::load_xfig(const char *file, bool resize) {
     AW_xfig *xfig;
 
     if (file)
@@ -3256,8 +3243,7 @@ void AW_window::load_xfig(const char *file, AW_BOOL resize) {
     }
 }
 
-void AW_window::draw_line(int x1, int y1, int x2, int y2, int width,
-        AW_BOOL resize) {
+void AW_window::draw_line(int x1, int y1, int x2, int y2, int width, bool resize) {
     AW_xfig *xfig = (AW_xfig*)xfig_data;
     aw_assert(xfig);
     // forgot to call load_xfig ?

@@ -26,10 +26,10 @@ struct _xfstruct {
 };
 
 typedef struct _appres {
-    AW_BOOL  SCALABLEFONTS;     /* hns 5 Nov 91 */
-    AW_BOOL  debug;             /* hns 5 Nov 91 */
+    bool     SCALABLEFONTS;     /* hns 5 Nov 91 */
+    bool     debug;             /* hns 5 Nov 91 */
     Display *display;
-}               appresStruct, *appresPtr;
+} appresStruct, *appresPtr;
 extern appresStruct appres;
 
 #define DEFAULT      (-1)

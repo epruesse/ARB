@@ -127,19 +127,17 @@ void PHDATA::print() {
 GB_ERROR PHDATA::calculate_matrix(const char */*cancel*/,double /*alpha*/,PH_TRANSFORMATION /*transformation*/) {
     if(nentries<=1) return "There are no species selected";
 
-    char *filter;
-    matrix = new AP_smatrix(nentries);
-    long i,j,column,reference_table[256];
-    long options_vector[4];
+    char       *filter;
+    matrix                 = new AP_smatrix(nentries);
+    long        i,j,column,reference_table[256];
+    long        options_vector[4];
     const char *real_chars,*low_chars,*rest_chars;
-    char all_chars[100],*sequence_bufferi,*sequence_bufferj;
-    AW_BOOL compare[256];
-    AP_FLOAT number_of_comparisons;
-    double gauge;
+    char        all_chars[100],*sequence_bufferi,*sequence_bufferj;
+    bool        compare[256];
+    AP_FLOAT    number_of_comparisons;
+    double      gauge;
+    bool        bases_used = true;                      // rna oder dna sequence : nur zum testen und Entwicklung
 
-    AW_BOOL bases_used;     // rna oder dna sequence : nur zum testen und Entwicklung
-
-    bases_used = AW_TRUE;
     if (!PHDATA::ROOT) return "nothing loaded yet";
 
     aw_root = PH_used_windows::windowList->phylo_main_window->get_root();
@@ -170,8 +168,8 @@ GB_ERROR PHDATA::calculate_matrix(const char */*cancel*/,double /*alpha*/,PH_TRA
     options_vector[OPT_FILTER_LOWER] = aw_root->awar("phyl/matrix/lower")->read_int();
 
 
-    for(i=0;i<256;i++) compare[i]=AW_FALSE;
-    for(i=0;i<long(strlen(real_chars));i++) compare[(unsigned char)real_chars[i]]=AW_TRUE;
+    for(i=0;i<256;i++) compare[i]=false;
+    for(i=0;i<long(strlen(real_chars));i++) compare[(unsigned char)real_chars[i]]=true;
     for(i=0;i<long(strlen(all_chars));i++) reference_table[(unsigned char)all_chars[i]]=i;
 
     // rna or dna sequence: set synonymes
@@ -203,38 +201,38 @@ GB_ERROR PHDATA::calculate_matrix(const char */*cancel*/,double /*alpha*/,PH_TRA
     switch(options_vector[0]) // '.' in column
     {
         case 0:  // forget pair
-            // do nothing: compare stays AW_FALSE
+            // do nothing: compare stays false
             break;
         case 1:
-            compare[(unsigned char)'.']=AW_TRUE;
+            compare[(unsigned char)'.']=true;
             break;
     }
     switch(options_vector[1]) // '-' in column
     {
         case 0:  // forget pair
-            // do nothing: compare stays AW_FALSE
+            // do nothing: compare stays false
             break;
         case 1:
-            compare[(unsigned char)'-']=AW_TRUE;
+            compare[(unsigned char)'-']=true;
             break;
     }
     switch(options_vector[2]) // '.' in column
     {
         case 0:                 // forget pair
-            // do nothing: compare stays AW_FALSE
+            // do nothing: compare stays false
             break;
         case 1:
-            for(i=0;i<long(strlen(rest_chars));i++) compare[(unsigned char)rest_chars[i]] = AW_TRUE;
+            for(i=0;i<long(strlen(rest_chars));i++) compare[(unsigned char)rest_chars[i]] = true;
             break;
     }
     if(bases_used) {
         switch(options_vector[1]) // '-' in column
         {
             case 0:             // forget pair
-                // do nothing: compare stays AW_FALSE
+                // do nothing: compare stays false
                 break;
             case 1:
-                for(i=0;i<long(strlen(low_chars));i++) compare[(unsigned char)low_chars[i]] = AW_TRUE;
+                for(i=0;i<long(strlen(low_chars));i++) compare[(unsigned char)low_chars[i]] = true;
                 break;
         }
     }

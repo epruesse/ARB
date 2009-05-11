@@ -266,7 +266,7 @@ AW_window *awt_popup_selection_list_on_pt_servers(AW_root *aw_root, const char *
     return aw_popup;
 }
 
-void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname, AW_BOOL popup)
+void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname, bool popup)
 {
     if (popup) {
         AW_root *aw_root              = aws->get_root();
@@ -527,7 +527,7 @@ void awt_create_selection_list_on_extendeds_update(GBDATA *dummy, void *cbsid)
 
 void *awt_create_selection_list_on_extendeds(GBDATA *gb_main,AW_window *aws, const char *varname,
                                              char *(*filter_poc)(GBDATA *gb_ext, AW_CL), AW_CL filter_cd,
-                                             AW_BOOL add_sel_species)
+                                             bool add_sel_species)
 {
     AW_selection_list           *id;
     struct awt_sel_list_for_sai *cbs;

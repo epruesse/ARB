@@ -1646,7 +1646,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     
     awm->at(db_pathx, first_liney);
     // size of DB-name button is determined by buttons below:
-    awm->at_set_to(AW_FALSE, AW_FALSE, db_pathx2-db_pathx-1, second_liney-first_liney+1);
+    awm->at_set_to(false, false, db_pathx2-db_pathx-1, second_liney-first_liney+1);
     awm->callback( AW_POPUP, (AW_CL)NT_create_save_quick_as, (AW_CL)"tmp/nt/arbdb"); // do sth else
     awm->help_text("saveas.hlp");
     awm->create_button("QUICK_SAVE_AS",AWAR_DB_NAME);
@@ -1683,7 +1683,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     
     awm->at(db_treex, first_liney);
     // size of tree-name button is determined by buttons below:
-    awm->at_set_to(AW_FALSE, AW_FALSE, db_treex2-db_treex-1, second_uppery-first_liney+1);
+    awm->at_set_to(false, false, db_treex2-db_treex-1, second_uppery-first_liney+1);
     awm->callback((AW_CB2)AW_POPUP,(AW_CL)NT_open_select_tree_window,(AW_CL)awar_tree);
     awm->help_text("nt_tree_select.hlp");
     awm->create_button("SELECT_A_TREE", awar_tree);
@@ -1721,13 +1721,13 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     // draw ali/editor buttons AFTER protect menu (to get rid of it's label)
     awm->at(db_alignx, second_liney);
     
-    awm->at_set_to(AW_FALSE, AW_FALSE, ((2-is_genome_db)*EDIT_XSIZE), EDIT_YSIZE);
+    awm->at_set_to(false, false, ((2-is_genome_db)*EDIT_XSIZE), EDIT_YSIZE);
     awm->callback((AW_CB)NT_start_editor_on_tree, (AW_CL)&(GLOBAL_NT.tree->tree_root), 0);
     awm->help_text("arb_edit4.hlp");
     awm->create_button("EDIT_SEQUENCES", "#edit.xpm");
 
     if (is_genome_db) {
-        awm->at_set_to(AW_FALSE, AW_FALSE, EDIT_XSIZE, EDIT_YSIZE);
+        awm->at_set_to(false, false, EDIT_XSIZE, EDIT_YSIZE);
         awm->callback((AW_CB)AW_POPUP, (AW_CL)GEN_map_first, 0); // initial gene map
         awm->help_text("gene_map.hlp");
         awm->create_button("OPEN_GENE_MAP", "#gen_map.xpm");
@@ -1736,7 +1736,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     int db_alignx2 = awm->get_at_xposition();
     
     awm->at(db_alignx, first_liney);
-    awm->at_set_to(AW_FALSE, AW_FALSE, db_alignx2-db_alignx-1, second_liney-first_liney+1);
+    awm->at_set_to(false, false, db_alignx2-db_alignx-1, second_liney-first_liney+1);
     awm->callback(AW_POPUP,   (AW_CL)NT_open_select_alignment_window, 0 );
     awm->help_text("nt_align_select.hlp");
     awm->create_button("SELECT_AN_ALIGNMENT", AWAR_DEFAULT_ALIGNMENT);

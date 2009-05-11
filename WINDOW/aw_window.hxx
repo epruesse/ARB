@@ -43,15 +43,15 @@ class AW_at;
 
 class AW_at_size {
 
-    int     to_offset_x; // here we use offsets (not positions like in AW_at)
-    int     to_offset_y;
-    AW_BOOL to_position_exists;
+    int  to_offset_x;                               // here we use offsets (not positions like in AW_at)
+    int  to_offset_y;
+    bool to_position_exists;
 
-    AW_BOOL attach_x;           // attach right side to right form
-    AW_BOOL attach_y;
-    AW_BOOL attach_lx;          // attach left side to right form
-    AW_BOOL attach_ly;
-    AW_BOOL attach_any;
+    bool attach_x;           // attach right side to right form
+    bool attach_y;
+    bool attach_lx;          // attach left side to right form
+    bool attach_ly;
+    bool attach_any;
 
 
 public:
@@ -125,8 +125,8 @@ public:
                  const char   *help_texti = 0,
                  AW_cb_struct *next       = 0);
 
-    void    run_callback(void); // runs the whole list
-    AW_BOOL contains(void (*g)(AW_window*,AW_CL ,AW_CL)); // test if contained in list
+    void run_callback(void);                        // runs the whole list
+    bool contains(void (*g)(AW_window*,AW_CL ,AW_CL)); // test if contained in list
 };
 
 
@@ -246,10 +246,10 @@ public:
     // ------------------------------
     //      The read only section
     // ------------------------------
-    
-    char    *window_name;       // window title
-    char    *window_defaults_name;
-    AW_BOOL  window_is_shown;
+
+    char *window_name;                              // window title
+    char *window_defaults_name;
+    bool  window_is_shown;
 
     int left_indent_of_horizontal_scrollbar;
     int top_indent_of_vertical_scrollbar;
@@ -264,13 +264,14 @@ public:
     // --------------------------------
     //      The real public section
     // --------------------------------
-    
+
     AW_root *get_root(void) { return root; }
 
     //******************* Global layout functions **********************
-    void    show(void);         // bring hidden window to front of screen
-    void    hide(void);         // hide (dont destroy) a window (<->show)
-    AW_BOOL get_show(void);     // is window shown (== AW_TRUE) or hidden (== AW_FALSE)
+
+    void show(void);                                // bring hidden window to front of screen
+    void hide(void);                                // hide (dont destroy) a window (<->show)
+    bool get_show(void);                            // is window shown (== true) or hidden (== false)
 
     void hide_or_notify(const char *error) {
         if (error) aw_message(error);
@@ -298,11 +299,11 @@ public:
     void set_motion_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1=0, AW_CL cd2=0);
     void set_double_click_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1=0, AW_CL cd2=0);
 
-    AW_BOOL is_expose_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL));
-    AW_BOOL is_resize_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL));
-    AW_BOOL is_input_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL));
-    AW_BOOL is_motion_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL));
-    AW_BOOL is_double_click_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL));
+    bool is_expose_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL));
+    bool is_resize_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL));
+    bool is_input_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL));
+    bool is_motion_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL));
+    bool is_double_click_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL));
 
     void get_event(AW_event *eventi);       // In an event callback get the events info
 
@@ -355,8 +356,8 @@ public:
     // ************** ********************************************************************  *********
 
     // *** global modifier: ****
-    void load_xfig(const char *file, AW_BOOL resize=AW_TRUE); // Loads the background graphic
-    void draw_line(int x1, int y1, int x2, int y2, int width, AW_BOOL resize); // draws a line on the background
+    void load_xfig(const char *file, bool resize=true); // Loads the background graphic
+    void draw_line(int x1, int y1, int x2, int y2, int width, bool resize); // draws a line on the background
 
     void label_length( int length ); // Justifies all following labels
     void button_length( int length ); // Sets the width of all following buttons (in chars)
@@ -383,9 +384,9 @@ public:
     void at_shift( int x, int y ); // rel pos of a button
     void at_newline( void );    // in auto_space mode only: newline
 
-    void    at( const char *id ); // place the button at the position set in the .fig
-    // file (loaded with load_xfig) by the string $id
-    AW_BOOL at_ifdef(const  char *id); // check whether 'id' is an element if the .fig file
+    void at( const char *id );                      /* place the button at the position set in the .fig
+                                                     * file (loaded with load_xfig) by the string $id */
+    bool at_ifdef(const  char *id);                 // check whether 'id' is an element if the .fig file
 
     void label( const char *label ); // Create a label before the button
 
@@ -395,8 +396,8 @@ public:
 
     void dump_at_position(const char *debug_label) const; // for debugging (uses printf)
 
-    void at_attach(AW_BOOL attach_x, AW_BOOL attach_y); // attach to X, Y or both
-    void at_set_to(AW_BOOL attach_x, AW_BOOL attach_y, int xoff, int yoff); // set "to:XY:id" manually
+    void at_attach(bool attach_x, bool attach_y); // attach to X, Y or both
+    void at_set_to(bool attach_x, bool attach_y, int xoff, int yoff); // set "to:XY:id" manually
     void at_unset_to();         // unset "to:id" manually
     void at_set_min_size(int xmin, int ymin); // define minimum window size
 

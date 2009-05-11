@@ -25,7 +25,6 @@
 # -----------------------------------------------------
 # The ARB source code is aware of the following defines:
 #
-# HAVE_BOOL             should be true if compiler supports the type 'bool'
 # NDEBUG                doesnt compile the DEBUG sections
 # DEVEL_$(DEVELOPER)    developer-dependent flag (enables you to have private sections in code)
 #                       DEVELOPER='ANY' (default setting) will be ignored
@@ -186,7 +185,6 @@ endif
 #---------------------- other flags
 
 dflags += -D$(MACH) # define machine
-dflags += -DHAVE_BOOL # all have bool [@@@ TODO: remove dependent code from ARB source]
 
 ifdef DARWIN
 	cflags += -no-cpp-precomp 

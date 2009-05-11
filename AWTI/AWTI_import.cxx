@@ -53,9 +53,9 @@ static char *awtc_fgets(char *s, int size, FILE *stream) {
     return s;
 }
 
-AW_BOOL awtc_read_string_pair(FILE *in, char *&s1, char *&s2, size_t& lineNr) {
+bool awtc_read_string_pair(FILE *in, char *&s1, char *&s2, size_t& lineNr) {
     // helper function to read import/export filters.
-    // returns AW_TRUE if sucessfully read
+    // returns true if sucessfully read
     // 
     // 's1' is set to a heap-copy of the first token on line
     // 's2' is set to a heap-copy of the rest of the line (or NULL if only one token is present)
@@ -1189,8 +1189,8 @@ GBDATA *open_AWTC_import_window(AW_root *awr,const char *defname, bool do_exit, 
     aws->callback(AW_POPUP_HELP,(AW_CL)"arb_import.hlp");
     aws->create_button("HELP", "HELP","H");
 
-    awt_create_selection_box(aws, AWAR_FILE_BASE, "imp_", "PWD", AW_TRUE, AW_TRUE); // select import filename
-    awt_create_selection_box(aws, AWAR_FORM, "", "ARBHOME", AW_FALSE, AW_FALSE); // select import filter
+    awt_create_selection_box(aws, AWAR_FILE_BASE, "imp_", "PWD", true, true); // select import filename
+    awt_create_selection_box(aws, AWAR_FORM, "", "ARBHOME", false, false); // select import filter
 
     aws->at("auto");
     aws->callback(awtc_check_input_format);

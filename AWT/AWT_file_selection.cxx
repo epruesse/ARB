@@ -579,7 +579,7 @@ static void awt_selbox_install_autorefresh(adawcbstruct *acbs) {
     autorefresh_info = install;
 }
 
-void awt_create_selection_box(AW_window *aws, const char *awar_prefix,const char *at_prefix,const  char *pwd, AW_BOOL show_dir, AW_BOOL allow_wildcards)
+void awt_create_selection_box(AW_window *aws, const char *awar_prefix,const char *at_prefix,const  char *pwd, bool show_dir, bool allow_wildcards)
 {
     AW_root             *aw_root = aws->get_root();
     struct adawcbstruct *acbs    = new adawcbstruct;

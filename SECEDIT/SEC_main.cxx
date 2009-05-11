@@ -118,7 +118,7 @@ bool SEC_root::perform_autoscroll() {
             autoscroll = 0;
 
             device->clear(-1);
-            canvas->scroll(NULL, screen_scroll, AW_FALSE);
+            canvas->scroll(NULL, screen_scroll, false);
             scrolled = true;
         }
     }
@@ -158,7 +158,7 @@ void SEC_root::position_cursor(bool toCenter, bool evenIfVisible) {
 #if defined(DEBUG) && 1
             printf("Auto-scroll: scroll = (%f, %f) [Center cursor]\n", scroll.x(), scroll.y());
 #endif
-            ntw->scroll(NULL, -scroll, AW_FALSE);
+            ntw->scroll(NULL, -scroll, false);
             ntw->refresh();
         }
     }

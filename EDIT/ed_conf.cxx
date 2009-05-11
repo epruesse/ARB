@@ -126,7 +126,7 @@ void show_config_window_draw_area(AW_device *device, AED_window *aedw, AW_pos sl
             height = font_information->max_letter.height + 2;
 
             device->text( gc2, text, 4, y, 0.0, AED_F_TEXT_1, (AW_CL)current_entry_of_dlist, AED_F_NAME );
-            device->box( gc2, AW_FALSE, 2, help_y-height, width, height, AED_F_FRAME, (AW_CL)"box", 0 );
+            device->box( gc2, false, 2, help_y-height, width, height, AED_F_FRAME, (AW_CL)"box", 0 );
         }
 
         device->pop_clip_scale();
@@ -165,7 +165,7 @@ void show_config_window_draw_area(AW_device *device, AED_window *aedw, AW_pos sl
             height = font_information->max_letter.height + 2;
 
             device->text( gc2, text, 4+right_offset, y, 0.0, AED_F_TEXT_1, (AW_CL)current_entry_of_dlist, AED_F_NAME );
-            device->box(gc2, AW_FALSE, 2, help_y-height, right_offset+width, height, AED_F_FRAME, (AW_CL)"box", 0);
+            device->box(gc2, false, 2, help_y-height, right_offset+width, height, AED_F_FRAME, (AW_CL)"box", 0);
         }
 
         device->pop_clip_scale();
@@ -218,16 +218,16 @@ void aed_config_window_resize(AW_window *aw, AW_CL cd1, AW_CL cd2) {
 
 void aed_config_window_input(AW_window *aw, AW_CL cd1, AW_CL cd2) {
     AWUSE(cd2);
-    AED_window *aedw = (AED_window *)cd1;
-    AW_event                        event;
-    AW_device                   *device;
-    AW_device                   *click_device;
-    AW_device                   *size_device;
-    AW_clicked_text         clicked_text;
-    AW_world            size_information;
-    AED_left_side               *left_side_hit;
-    AED_left_side               *left_side_destination;
-    AW_BOOL                     update_other_windows = AW_FALSE;
+    AED_window      *aedw                 = (AED_window *)cd1;
+    AW_event         event;
+    AW_device       *device;
+    AW_device       *click_device;
+    AW_device       *size_device;
+    AW_clicked_text  clicked_text;
+    AW_world         size_information;
+    AED_left_side   *left_side_hit;
+    AED_left_side   *left_side_destination;
+    bool             update_other_windows = false;
 
     aw->get_event( &event );
 
@@ -241,13 +241,13 @@ void aed_config_window_input(AW_window *aw, AW_CL cd1, AW_CL cd2) {
                                       aedw->config_window->picture->l, aedw->config_window->top_indent_of_vertical_scrollbar );
         click_device->get_clicked_text( &clicked_text );
 
-        if ( clicked_text.exists == AW_TRUE ) {
+        if ( clicked_text.exists == true ) {
             left_side_hit = (AED_left_side *)clicked_text.client_data1;
             if ( aedw->one_entry_dlist_left_side_is_selected )
-                aedw->selected_entry_of_dlist_left_side->is_selected = AW_FALSE;
+                aedw->selected_entry_of_dlist_left_side->is_selected = false;
             else
-                aedw->one_entry_dlist_left_side_is_selected = AW_TRUE;
-            left_side_hit->is_selected = AW_TRUE;
+                aedw->one_entry_dlist_left_side_is_selected = true;
+            left_side_hit->is_selected = true;
             aedw->selected_entry_of_dlist_left_side = left_side_hit;
 
             device->clear(AED_F_ALL);
@@ -258,7 +258,7 @@ void aed_config_window_input(AW_window *aw, AW_CL cd1, AW_CL cd2) {
 
     if ( event.type == AW_Mouse_Release ) {
         if( aedw->drag ) {
-            aedw->drag = AW_FALSE;
+            aedw->drag = false;
             drag_box( device, 2, aedw->drag_x - aedw->drag_x_correcting, aedw->drag_y - aedw->drag_y_correcting, 0, 0, aedw->selected_entry_of_dlist_left_side->text_for_dragging );
             show_config_window_draw_area( click_device, aedw, aedw->config_window->slider_pos_horizontal, aedw->config_window->slider_pos_vertical,
                                           aedw->config_window->picture->l, aedw->config_window->top_indent_of_vertical_scrollbar );
@@ -275,7 +275,7 @@ void aed_config_window_input(AW_window *aw, AW_CL cd1, AW_CL cd2) {
                     else
                         left_side_destination->in_side->insert_before_entry( left_side_destination, aedw->selected_entry_of_dlist_left_side );
                     aedw->selected_entry_of_dlist_left_side->in_side = left_side_destination->in_side;
-                    update_other_windows = AW_TRUE;
+                    update_other_windows = true;
                 }
             }
             else {
@@ -284,12 +284,12 @@ void aed_config_window_input(AW_window *aw, AW_CL cd1, AW_CL cd2) {
                         aedw->show_dlist_left_side->remove_entry( aedw->selected_entry_of_dlist_left_side );
                         aedw->hide_dlist_left_side->append( aedw->selected_entry_of_dlist_left_side );
                         aedw->selected_entry_of_dlist_left_side->in_side = aedw->hide_dlist_left_side;
-                        update_other_windows = AW_TRUE;
+                        update_other_windows = true;
                     }
                     else {
                         aedw->hide_dlist_left_side->remove_entry( aedw->selected_entry_of_dlist_left_side );
                         aedw->hide_dlist_left_side->append( aedw->selected_entry_of_dlist_left_side );
-                        update_other_windows = AW_TRUE;
+                        update_other_windows = true;
                     }
                 }
                 else {
@@ -297,12 +297,12 @@ void aed_config_window_input(AW_window *aw, AW_CL cd1, AW_CL cd2) {
                         aedw->hide_dlist_left_side->remove_entry( aedw->selected_entry_of_dlist_left_side );
                         aedw->show_dlist_left_side->append( aedw->selected_entry_of_dlist_left_side );
                         aedw->selected_entry_of_dlist_left_side->in_side = aedw->show_dlist_left_side;
-                        update_other_windows = AW_TRUE;
+                        update_other_windows = true;
                     }
                     else {
                         aedw->show_dlist_left_side->remove_entry( aedw->selected_entry_of_dlist_left_side );
                         aedw->show_dlist_left_side->append( aedw->selected_entry_of_dlist_left_side );
-                        update_other_windows = AW_TRUE;
+                        update_other_windows = true;
                     }
                 }
             }
@@ -371,7 +371,7 @@ void aed_config_window_motion(AW_window *aw, AW_CL cd1, AW_CL cd2) {
         click_device->get_clicked_text( &clicked_text );
 
         if( clicked_text.exists && (AED_left_side *)clicked_text.client_data1 == aedw->selected_entry_of_dlist_left_side ) {
-            aedw->drag = AW_TRUE;
+            aedw->drag = true;
             aw->get_event ( &motion_event );
             aedw->drag_x_correcting = event.x - aedw->selected_entry_of_dlist_left_side->absolut_x;
             aedw->drag_y_correcting = event.y - aedw->selected_entry_of_dlist_left_side->absolut_y;
@@ -455,7 +455,7 @@ void aed_popup_config_window(AW_window *aw, AW_CL cd1, AW_CL cd2) {
     }
     else {
         aedw->config_window = new AW_window_menu();
-        aedw->config_window_created = AW_TRUE;
+        aedw->config_window_created = true;
 
         aedw->config_window->init(aedw->root->aw_root,"EDIT_CONFIG", "ARB_EDIT_CONFIG",200,200);
         aedw->config_window->create_menu( "1", "Window", "W", "no help", AWM_ALL );
@@ -515,12 +515,12 @@ void aed_popup_config_window(AW_window *aw, AW_CL cd1, AW_CL cd2) {
 
 
 AED_left_side::AED_left_side( void(*f)(class AED_window *, AED_area_entry *area_entry, char *text), const char *string ) {
-    is_selected = AW_FALSE;
-    previous = NULL;
-    next = NULL;
-    text = new char[(strlen(string)+1)];
+    is_selected = false;
+    previous    = NULL;
+    next        = NULL;
+    text        = new char[(strlen(string)+1)];
     strcpy( text, string );
-    make_text = f;
+    make_text   = f;
 }
 
 

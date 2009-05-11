@@ -39,7 +39,7 @@ AW_HEADER_MAIN
 #define NT_CHECK_DB_TIMER 200
 
 GBDATA *GLOBAL_gb_main;                             // global gb_main for arb_ntree
-NT_global GLOBAL_NT = { 0, 0, 0, AW_FALSE };
+NT_global GLOBAL_NT = { 0, 0, 0, false };
 
 // NT_format_all_alignments may be called after any operation which causes
 // unformatted alignments (e.g importing sequences)
@@ -405,7 +405,7 @@ int main(int argc, char **argv)
 
     aw_default = aw_root->open_default(".arb_prop/ntree.arb");
     aw_root->init_variables(aw_default);
-    aw_root->init_root("ARB_NT", AW_FALSE);
+    aw_root->init_root("ARB_NT", false);
 
     // create some early awars
     // Note: normally you don't like to add your awar-init-function here, but into nt_create_all_awars()

@@ -324,7 +324,7 @@ void AWT_canvas::zoom(AW_device *device, bool zoomIn, const Rectangle& wanted_pa
 }
 
 inline void nt_draw_zoom_box(AW_device *device, int gc, AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2 ) {
-    device->box(gc, AW_FALSE, x1, y1, x2-x1, y2-y1, AWT_F_ALL, 0, 0);
+    device->box(gc, false, x1, y1, x2-x1, y2-y1, AWT_F_ALL, 0, 0);
 }
 inline void nt_draw_zoom_box(AW_device *device, AWT_canvas *ntw) {
     nt_draw_zoom_box(device, ntw->drag_gc,
@@ -669,7 +669,7 @@ void AWT_motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2) {
     if (ntw->gb_main) ntw->tree_disp->pop_transaction(ntw->gb_main);
 }
 
-void AWT_canvas::scroll( AW_window *dummy, int dx, int dy,AW_BOOL dont_update_scrollbars) {
+void AWT_canvas::scroll( AW_window *dummy, int dx, int dy, bool dont_update_scrollbars) {
     AWUSE(dummy);
 
     int csx, cdx, cwidth, csy, cdy, cheight;
@@ -756,7 +756,7 @@ AWT_scroll_vert_cb( AW_window *aww, AWT_canvas* ntw, AW_CL cl1)
     delta_screen_y = (new_vert - ntw->old_vert_scroll_pos) ;
 
 
-    ntw->scroll(aww, 0, delta_screen_y, AW_TRUE);
+    ntw->scroll(aww, 0, delta_screen_y, true);
 
     ntw->old_vert_scroll_pos = (int)new_vert;
 
@@ -771,7 +771,7 @@ AWT_scroll_hor_cb( AW_window *aww, AWT_canvas* ntw, AW_CL cl1)
     int new_hor = aww->slider_pos_horizontal;
     delta_screen_x = (new_hor - ntw->old_hor_scroll_pos) ;
 
-    ntw->scroll(aww, delta_screen_x, 0, AW_TRUE);
+    ntw->scroll(aww, delta_screen_x, 0, true);
 
     ntw->old_hor_scroll_pos = new_hor;
 }

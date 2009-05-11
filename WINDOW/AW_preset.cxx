@@ -68,9 +68,9 @@ static int hex2dez(char c) {
 // --------------------------------------------------------------------------------
 void aw_incdec_color(AW_window *aww,const char *action){
     // action is sth like "r+" "b-" "g++" "r--"
-    AW_awar *awar = aww->get_root()->awar(aw_glob_font_awar_name);
-    char *color = awar->read_string();
-    AW_BOOL err = AW_TRUE;
+    AW_awar *awar  = aww->get_root()->awar(aw_glob_font_awar_name);
+    char    *color = awar->read_string();
+    bool     err   = true;
 
     fprintf(stderr, "current color is '%s'\n", color);
 
@@ -98,7 +98,7 @@ void aw_incdec_color(AW_window *aww,const char *action){
 
             sprintf(color, "#%2.2X%2.2X%2.2X", channel[0], channel[1], channel[2]);
 
-            err = AW_FALSE;
+            err = false;
             awar->write_string(color);
         }
     }
@@ -509,9 +509,9 @@ void AW_init_color_group_defaults(const char *for_program) {
 }
 
 
-long AW_find_color_group(GBDATA *gbd, AW_BOOL ignore_usage_flag) {
+long AW_find_color_group(GBDATA *gbd, bool ignore_usage_flag) {
     /* species/genes etc. may have a color group entry ('ARB_color')
-     * call with ignore_usage_flag == AW_TRUE to read color group regardless of global usage flag (AWAR_COLOR_GROUPS_USE)
+     * call with ignore_usage_flag == true to read color group regardless of global usage flag (AWAR_COLOR_GROUPS_USE)
      */
     aw_assert(color_groups_initialized);
     if (!use_color_groups && !ignore_usage_flag) return 0;
@@ -580,7 +580,7 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
     if (area == AW_GCM_DATA_AREA) {
         col = AW_DATA_BG;
     }
-    AW_BOOL first = AW_TRUE;
+    bool first = true;
 
     aww->main_drag_gc = base_drag;
     gcmgrfirst = gcmgrlast = new aw_gc_manager(mcbs->window_awar_name, 0);
@@ -607,10 +607,10 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
         }
 
         while (id) {
-            AW_BOOL flag_fixed_fonts_only    = AW_FALSE;
-            AW_BOOL flag_no_color_selector   = AW_FALSE;
-            AW_BOOL flag_append_in_same_line = AW_FALSE;
-            AW_BOOL flag_no_fonts            = AW_FALSE;
+            bool flag_fixed_fonts_only    = false;
+            bool flag_no_color_selector   = false;
+            bool flag_append_in_same_line = false;
+            bool flag_no_fonts            = false;
 
             AW_MGC_awar_cb_struct *acbs = 0;
             {
@@ -672,11 +672,11 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
                 int offset = 0;
                 while (1){
                     switch( id_copy[offset] ){
-                        case '#':   flag_fixed_fonts_only = AW_TRUE;        offset++; continue;
-                        case '=':   flag_no_color_selector = AW_TRUE;       offset++; continue;
-                        case '+':   flag_append_in_same_line = AW_TRUE;     offset++; continue;
-                        case '-':   flag_no_fonts = AW_TRUE;                offset++; continue;
-                        default:    break;
+                        case '#': flag_fixed_fonts_only=    true; offset++; continue;
+                        case '=': flag_no_color_selector=   true; offset++; continue;
+                        case '+': flag_append_in_same_line= true; offset++; continue;
+                        case '-': flag_no_fonts=            true; offset++; continue;
+                        default:  break;
                     }
                     break;
                 }
@@ -730,7 +730,7 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
                 base_drag++;
             }
             col++;
-            first = AW_FALSE;
+            first = false;
 
             // switch to next default:
 
@@ -747,7 +747,7 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
     return (AW_gc_manager)gcmgrfirst;
 }
 
-void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_window, AW_BOOL has_font_info, const char *id0, ...) {
+void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_window, bool has_font_info, const char *id0, ...) {
     // read the values of the specified GCs from 'source_window'
     // and write the values into same-named GCs of 'dest_window'
     //
@@ -781,25 +781,25 @@ static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, aw_gc_manager
 
     bool        has_color_groups = false;
     const char *window_awar_name = gcmgr->get_field();
-    AW_BOOL     first            = AW_TRUE;
+    bool        first            = true;
 
     for (gcmgr = gcmgr->get_next(); gcmgr; gcmgr = gcmgr->get_next()) {
         const char *id = gcmgr->get_field();
 
-        AW_BOOL flag_fixed_fonts_only    = AW_FALSE;
-        AW_BOOL flag_no_color_selector   = AW_FALSE;
-        AW_BOOL flag_append_in_same_line = AW_FALSE;
-        AW_BOOL flag_no_fonts            = AW_FALSE;
-        AW_BOOL flag_hide_this_gc        = AW_FALSE;
+        bool flag_fixed_fonts_only    = false;
+        bool flag_no_color_selector   = false;
+        bool flag_append_in_same_line = false;
+        bool flag_no_fonts            = false;
+        bool flag_hide_this_gc        = false;
 
         while (1){
             switch( id[0] ){
-                case '#':   flag_fixed_fonts_only = AW_TRUE;    id++; continue;
-                case '=':   flag_no_color_selector = AW_TRUE;   id++; continue;
-                case '+':   flag_append_in_same_line = AW_TRUE;     id++; continue;
+                case '#': flag_fixed_fonts_only=    true; id++; continue;
+                case '=': flag_no_color_selector=   true; id++; continue;
+                case '+': flag_append_in_same_line= true; id++; continue;
                 case '-':   {
-                    if (flag_no_fonts) flag_hide_this_gc = AW_TRUE; // if gc definition contains -- the gc is completely hidden
-                    else flag_no_fonts = AW_TRUE;
+                    if (flag_no_fonts) flag_hide_this_gc = true; // if gc definition contains -- the gc is completely hidden
+                    else flag_no_fonts = true;
                     id++;
                     continue;
                 }
@@ -873,7 +873,7 @@ static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, aw_gc_manager
             }
             if (!flag_append_in_same_line)  aws->at_newline();
         }
-        first = AW_FALSE;
+        first = false;
         free(fontbasename);
     }
 

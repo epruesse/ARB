@@ -532,9 +532,9 @@ void ad_move_tree_info(AW_window *aww,AW_CL mode){
      * mode == 2 -> add info
      */
 
-    AW_BOOL compare_node_info      = mode==1;
-    AW_BOOL delete_old_nodes       = mode==0;
-    AW_BOOL nodes_with_marked_only = (mode==0 || mode==2) && aww->get_root()->awar(AWAR_NODE_INFO_ONLY_MARKED)->read_int();
+    bool compare_node_info      = mode==1;
+    bool delete_old_nodes       = mode==0;
+    bool nodes_with_marked_only = (mode==0 || mode==2) && aww->get_root()->awar(AWAR_NODE_INFO_ONLY_MARKED)->read_int();
 
     char     *log_file = 0;
     GB_ERROR  error    = 0;

@@ -77,7 +77,7 @@ void AW_window_menu_modes_opengl::init(AW_root *root_in, const char *wid,
     int posx = 50;
     int posy = 50;
 
-    p_w->shell= aw_create_shell(this, AW_TRUE, AW_TRUE, width, height, posx, posy);
+    p_w->shell= aw_create_shell(this, true, true, width, height, posx, posy);
 
     main_window = XtVaCreateManagedWidget("mainWindow1",
                                           xmMainWindowWidgetClass, p_w->shell, 
@@ -93,8 +93,8 @@ void AW_window_menu_modes_opengl::init(AW_root *root_in, const char *wid,
                                       p_w->menu_bar[0], 
                                       XmNwidth, 1, 
                                       XmNheight, 1, 
-                                      XmNallowShellResize, AW_TRUE, 
-                                      XmNoverrideRedirect, AW_TRUE, 
+                                      XmNallowShellResize, true, 
+                                      XmNoverrideRedirect, true, 
                                       NULL);
 
     //create row column in Pull-Down shell

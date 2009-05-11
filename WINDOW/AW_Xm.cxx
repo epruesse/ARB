@@ -92,7 +92,7 @@ int AW_device_Xm::text(int gc, const char *str,AW_pos x,AW_pos y, AW_pos alignme
     return text_overlay(gc,str,opt_strlen,x,y,alignment,filteri,(AW_CL)this, cd1,cd2,0.0,0.0,AW_draw_string_on_screen);
 }
 
-int AW_device_Xm::box(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+int AW_device_Xm::box(int gc, bool filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
     AWUSE(cd1);AWUSE(cd2);
     class AW_GC_Xm *gcm            = AW_MAP_GC(gc);
     AW_pos          x1,y1;
@@ -135,11 +135,11 @@ int AW_device_Xm::box(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,A
     return 0;
 }
 
-int AW_device_Xm::circle(int gc, AW_BOOL filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+int AW_device_Xm::circle(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
     return arc(gc,filled,x0, y0, width, height, 0, 360, filteri, cd1, cd2);
 }
 
-int AW_device_Xm::arc(int gc, AW_BOOL filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, int start_degrees, int arc_degrees, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+int AW_device_Xm::arc(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, int start_degrees, int arc_degrees, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
     AWUSE(cd1);AWUSE(cd2);
     class AW_GC_Xm *gcm            = AW_MAP_GC(gc);
     AW_pos          X0,Y0,X1,Y1; // Transformed pos

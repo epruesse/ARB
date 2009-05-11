@@ -362,7 +362,7 @@ int AWT_graphic_tree::group_tree(AP_tree *at, int mode, int color_group)    // r
                 }
             }
             if (!ungroup_me && (mode & 8)) { // do not group one color_group
-                int my_color_group = AW_find_color_group(at->gb_node, AW_TRUE);
+                int my_color_group = AW_find_color_group(at->gb_node, true);
                 if (my_color_group == color_group) { // i am of that color group
                     ungroup_me = 1;
                 }
@@ -1055,7 +1055,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         break;
                     }
                     case AW_Mouse_Release:
-                        rot_ct.exists = AW_FALSE;
+                        rot_ct.exists = false;
                         exports.resize = 1;
                         break;
                     default: break;
@@ -1100,7 +1100,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         show_ruler(device, this->drag_gc);
                         break;
                     case AW_Mouse_Release:
-                        rot_cl.exists = AW_FALSE;
+                        rot_cl.exists = false;
                         this->exports.resize = 1;
                         break;
                     default:
@@ -1155,7 +1155,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         break;
                     }
                     case AW_Mouse_Release:
-                        rot_cl.exists = AW_FALSE;
+                        rot_cl.exists = false;
                         this->exports.refresh = 1;
                         if (button==AWT_M_RIGHT) { // if right mouse button is used -> adjust to 1 digit behind comma
                             sprintf(awar,"ruler/size");
@@ -1774,8 +1774,8 @@ AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_rooti, GBDATA *gb_maini):AWT_grap
     species_name      = 0;
     this->aw_root     = aw_rooti;
     this->gb_main     = gb_maini;
-    rot_ct.exists     = AW_FALSE;
-    rot_cl.exists     = AW_FALSE;
+    rot_ct.exists     = false;
+    rot_cl.exists     = false;
     nds_show_all      = true;
 }
 
@@ -1918,7 +1918,7 @@ void AWT_graphic_tree::NT_scalebox(int gc, double x, double y, double width)
     double diam  = width/disp_device->get_scale();
     double diam2 = diam+diam;
     disp_device->set_fill(gc, this->grey_level);
-    disp_device->box(gc, AW_TRUE, x-diam, y-diam, diam2, diam2, mark_filter, 0, 0);
+    disp_device->box(gc, true, x-diam, y-diam, diam2, diam2, mark_filter, 0, 0);
 }
 
 void AWT_graphic_tree::NT_emptybox(int gc, double x, double y, double width)
@@ -1926,7 +1926,7 @@ void AWT_graphic_tree::NT_emptybox(int gc, double x, double y, double width)
     double diam  = width/disp_device->get_scale();
     double diam2 = diam+diam;
     disp_device->set_line_attributes(gc, 0.0, AW_SOLID);
-    disp_device->box(gc, AW_FALSE, x-diam, y-diam, diam2, diam2, mark_filter, 0, 0);
+    disp_device->box(gc, false, x-diam, y-diam, diam2, diam2, mark_filter, 0, 0);
 }
 
 void AWT_graphic_tree::NT_rotbox(int gc, double x, double y, double width) // box with one corner down
@@ -1942,12 +1942,9 @@ void AWT_graphic_tree::NT_rotbox(int gc, double x, double y, double width) // bo
     disp_device->line(gc, x1, y, x, y2, mark_filter, 0, 0);
     disp_device->line(gc, x2, y, x, y2, mark_filter, 0, 0);
 }
-// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-//      AW_BOOL AWT_show_remark_branch(AW_device *device, const char *remark_branch, AW_BOOL is_leaf, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2)
-// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-// returns true if a bootstrap was DISPLAYED
 
-AW_BOOL AWT_show_remark_branch(AW_device *device, const char *remark_branch, AW_BOOL is_leaf, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+bool AWT_show_remark_branch(AW_device *device, const char *remark_branch, bool is_leaf, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+    // returns true if a bootstrap was DISPLAYED
     char       *end          = 0;
     int         bootstrap    = int(strtol(remark_branch, &end, 10));
     bool        is_bootstrap = end[0] == '%' && end[1] == 0;

@@ -40,12 +40,12 @@
 // --------------------------------------------------------------------------------
 
 
-static AW_BOOL openwinfonts;
+static bool openwinfonts;
 
 typedef XFontStruct *PIX_FONT;
 appresStruct appres = {
-    AW_TRUE,
-    AW_FALSE,
+    true,
+    false,
     0,
 };
 
@@ -231,7 +231,7 @@ void aw_root_init_font(Display *tool_d)
 
     appres.display = tool_d;
 #if defined(DUMP_FONT_LOOKUP)
-    appres.debug   = AW_TRUE;
+    appres.debug   = true;
 #endif // DUMP_FONT_LOOKUP
 
     /*
@@ -243,7 +243,7 @@ void aw_root_init_font(Display *tool_d)
 
     /* if the user hasn't disallowed off scalable fonts, check that the
        server really has them by checking for font of 0-0 size */
-    openwinfonts = AW_FALSE;
+    openwinfonts = false;
     if (appres.SCALABLEFONTS) {
         char **fontlist;
         int    count;
@@ -254,7 +254,7 @@ void aw_root_init_font(Display *tool_d)
 
         /* first look for OpenWindow style font names (e.g. times-roman) */
         if ((fontlist = XListFonts(tool_d, ps_fontinfo[1].name, 1, &count))!=0) {
-            openwinfonts = AW_TRUE;        /* yes, use them */
+            openwinfonts = true;        /* yes, use them */
             for (int f=0; f<AW_NUM_FONTS; f++) {     /* copy the OpenWindow font names */
                 x_fontinfo[f].templat = ps_fontinfo[f+1].name;
 #if defined(DUMP_FONT_LOOKUP)
@@ -275,7 +275,7 @@ void aw_root_init_font(Display *tool_d)
 #if defined(DUMP_FONT_LOOKUP)
                 printf("Not using SCALABLEFONTS!\n");
 #endif // DUMP_FONT_LOOKUP
-                appres.SCALABLEFONTS = AW_FALSE;   /* none, turn off request for them */
+                appres.SCALABLEFONTS = false;   /* none, turn off request for them */
             }
         }
     }
@@ -396,7 +396,7 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
 // if 'only_query' is false, then actually load the font and store the loaded fontstruct in 'fontstPtr'
 {
     // char          fn[128];      memset(fn,0,128);
-    AW_BOOL       found;
+    bool          found;
     struct xfont *newfont, *nf, *oldnf;
 
 #if defined(DEVEL_RALF)
@@ -414,7 +414,7 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
     /* see if we've already loaded that font size 's'
        from the font family 'f' */
 
-    found = AW_FALSE;
+    found = false;
 
     /* start with the basic font name (e.g. adobe-times-medium-r-normal-...
        OR times-roman for OpenWindows fonts) */
@@ -424,14 +424,14 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
     oldnf = nf;
     if (nf != NULL) {
         if (nf->size > s && !appres.SCALABLEFONTS) {
-            found = AW_TRUE;
+            found = true;
         }
         else {
             while (nf != NULL) {
                 if (nf->size == s ||
                     (!appres.SCALABLEFONTS && (nf->size >= s && oldnf->size <= s )))
                 {
-                    found = AW_TRUE;
+                    found = true;
                     break;
                 }
                 oldnf = nf;

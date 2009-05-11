@@ -216,7 +216,7 @@ void edit_tool_search_cb(AW_window *aw, AED_window *aedwindow,
 
     //---------------------------------------Suchen ja, aber im Editor ist
     //noch nichts markiert!
-    if(aedwindow->one_area_entry_is_selected == AW_FALSE) {
+    if(aedwindow->one_area_entry_is_selected == false) {
 
         //-------------------------------------no selection no replace
         if( adt_search.replace_option != ADT_NO_REPLACE )   {
@@ -458,7 +458,7 @@ void edit_tool_complement_cb(AW_window *aw, AED_window *aedwindow,
     }
 
     if( (!(adt_complement.which_button ==  BUTTON_COMPL_ALL)) &&
-        (aedwindow->one_area_entry_is_selected == AW_FALSE)
+        (aedwindow->one_area_entry_is_selected == false)
         )  {
         aw_message("**** ERROR:    no sequence selected !");
         return;

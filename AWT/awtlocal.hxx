@@ -4,7 +4,7 @@
 struct adawcbstruct {
     // @@@ FIXME: rethink design - maybe split into base class +
     // several derived classes for the different usages.
-    
+
     AW_window              *aws;
     AW_root                *awr;
     GBDATA                 *gb_main;
@@ -20,16 +20,16 @@ struct adawcbstruct {
     char                   *def_filter;
     char                   *previous_filename;
     char                   *pwd;
-    char                   *pwdx; // additional directories
-    AW_BOOL                 show_dir;
-    AW_BOOL                 leave_wildcards;
+    char                   *pwdx;                   // additional directories
+    bool                    show_dir;
+    bool                    leave_wildcards;
     char                    may_be_an_error;
     char                    show_only_marked;
     char                    scannermode;
     char                   *def_dir;
     const ad_item_selector *selector;
-    AW_BOOL                 add_all_fields_pseudo_field; // true = > add a pseudo-field named '[all_fields]' (used by 'awt_create_selection_list_on_scandb_cb')
-    AW_BOOL                 include_hidden_fields; // true       = > show hidden fields in selection list
+    bool                    add_all_fields_pseudo_field; // true = > add a pseudo-field named '[all_fields]' (used by 'awt_create_selection_list_on_scandb_cb')
+    bool                    include_hidden_fields;  // true       = > show hidden fields in selection list
 };
 
 struct awt_sel_list_for_tables {
@@ -45,7 +45,7 @@ struct awt_sel_list_for_sai {
     AW_selection_list *id;
     char *(*filter_poc)(GBDATA *gb_ext, AW_CL);
     AW_CL              filter_cd;
-    AW_BOOL            add_selected_species;
+    bool               add_selected_species;
 };
 
 typedef enum {
@@ -66,7 +66,7 @@ struct adaqbsstruct {
     AW_window         *aws;
     GBDATA            *gb_main;                     // the main database (in merge tool: source db in left query; dest db in right query)
     GBDATA            *gb_ref;                      // second reference database (only used by merge tool; dest db in left query; source db in right query)
-    AW_BOOL            expect_hit_in_ref_list;      // merge-tool: when searching dups in fields: match only if hit exists in other DBs hitlist (true for DBII-query)
+    bool               expect_hit_in_ref_list;      // merge-tool: when searching dups in fields: match only if hit exists in other DBs hitlist (true for DBII-query)
     AWAR               species_name;
     const char        *tree_name;
     AWAR               awar_keys[AWT_QUERY_SEARCHES];

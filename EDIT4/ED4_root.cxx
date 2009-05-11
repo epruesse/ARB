@@ -1702,7 +1702,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->get_at_position( &db_pathx,&db_pathy );
 
     awmm->shadow_width(1);
-    awmm->load_xfig("edit4/editmenu.fig", AW_FALSE);
+    awmm->load_xfig("edit4/editmenu.fig", false);
 
     // -------------------------
     //      help /quit /fold

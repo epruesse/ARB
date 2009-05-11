@@ -101,7 +101,7 @@ extern ad_item_selector AWT_organism_selector;
  *********************       File Selection Boxes    *******************
  ***************************************************************************/
 
-void awt_create_selection_box(AW_window *aws, const char *awar_prefix, const char *at_prefix = "", const char *pwd = "PWD", AW_BOOL show_dir = AW_TRUE, AW_BOOL allow_wildcards = AW_FALSE);
+void awt_create_selection_box(AW_window *aws, const char *awar_prefix, const char *at_prefix = "", const char *pwd = "PWD", bool show_dir = true, bool allow_wildcards = false);
 /* Create a file selection box, this box needs 3 AWARS:
 
 1. "$awar_prefix/filter"
@@ -120,7 +120,7 @@ The items are placed at
 2. "$at_prefix""box"
 3. "$at_prefix""file_name"
 
-if show_dir== AW_TRUE than show directories and files
+if show_dir== true than show directories and files
 else only files
 
 pwd is a 'shell enviroment variable' which indicates the base directory
@@ -147,11 +147,11 @@ class awt_query_struct {
 public:
     awt_query_struct(void);
 
-    GBDATA  *gb_main;                // the main database (in merge tool: source db in left query; dest db in right query)
-    GBDATA  *gb_ref;                 // second reference database (only used by merge tool; dest db in left query; source db in right query)
-    AW_BOOL  expect_hit_in_ref_list; // merge-tool: when searching dups in fields: match only if hit exists in other DBs hitlist (true for DBII-query) 
-    AWAR     species_name;           // AWAR containing current species name
-    AWAR     tree_name;              // AWAR containing current tree name
+    GBDATA *gb_main;                                // the main database (in merge tool: source db in left query; dest db in right query)
+    GBDATA *gb_ref;                                 // second reference database (only used by merge tool; dest db in left query; source db in right query)
+    bool    expect_hit_in_ref_list;                 // merge-tool: when searching dups in fields: match only if hit exists in other DBs hitlist (true for DBII-query)
+    AWAR    species_name;                           // AWAR containing current species name
+    AWAR    tree_name;                              // AWAR containing current tree name
 
     const ad_item_selector *selector;  // which kind of item do we handle?
 

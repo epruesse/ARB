@@ -299,7 +299,7 @@ ED4_returncode ED4_AA_sequence_terminal::draw( int /*only_text*/ )
                         if ((gcChar>=0) && (gcChar<ED4_G_DRAG)) {
                             color = gcChar;
                             if (iDisplayMode == PV_AA_BOX) {
-                                device->box(color, AW_TRUE, x1, y1, width*3, height, -1, 0,0);
+                                device->box(color, true, x1, y1, width*3, height, -1, 0,0);
                             }
                             else {
                                 device->arc(ED4_G_STANDARD, false, x1+(width*3)/2, y1, (width*3)/2, height/2, 0, -180, -1, 0, 0);
@@ -509,7 +509,7 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
                 if (color != old_color) {   // draw till oldcolor
                     if (x2>old_x){
                         if (old_color!=ED4_G_STANDARD) {
-                            device->box(old_color, AW_TRUE, old_x, y1, x2-old_x, height, -1, 0,0); // paints the search pattern background
+                            device->box(old_color, true, old_x, y1, x2-old_x, height, -1, 0,0); // paints the search pattern background
                         }
                     }
                     old_x = x2;
@@ -519,7 +519,7 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
 
             if (x2>old_x){
                 if (color!=ED4_G_STANDARD) {
-                    device->box(color, AW_TRUE, old_x, y1, x2-old_x, height, -1, 0,0);
+                    device->box(color, true, old_x, y1, x2-old_x, height, -1, 0,0);
                 }
             }
         }
@@ -610,7 +610,7 @@ ED4_returncode ED4_sequence_info_terminal::draw( int /*only_text*/ )
 
     ED4_species_name_terminal *name_term = corresponding_species_name_terminal();
     if (name_term->flag.selected) {
-        ED4_ROOT->get_device()->box(ED4_G_SELECTED, AW_TRUE, x, y, extension.size[WIDTH], text_y-y+1, (AW_bitset)-1, 0, 0);
+        ED4_ROOT->get_device()->box(ED4_G_SELECTED, true, x, y, extension.size[WIDTH], text_y-y+1, (AW_bitset)-1, 0, 0);
     }
 
     ED4_ROOT->get_device()->top_font_overlap    = 1;
@@ -692,7 +692,7 @@ ED4_returncode ED4_text_terminal::draw( int /*only_text*/ )
         }
 
         if (flag.selected) {
-            ED4_ROOT->get_device()->box(ED4_G_SELECTED, AW_TRUE, x, y, extension.size[WIDTH], text_y-y+1, (AW_bitset)-1, 0, 0);
+            ED4_ROOT->get_device()->box(ED4_G_SELECTED, true, x, y, extension.size[WIDTH], text_y-y+1, (AW_bitset)-1, 0, 0);
         }
         ED4_ROOT->get_device()->text( ED4_G_STANDARD, real_name, text_x+width_of_char, text_y, 0, 1, 0, 0, 0);
 
@@ -704,7 +704,7 @@ ED4_returncode ED4_text_terminal::draw( int /*only_text*/ )
             int bx    = int(text_x+xoff);
             int by    = int(text_y-(yoff+ysize));
 
-            ED4_ROOT->get_device()->box(ED4_G_STANDARD, AW_TRUE, bx, by, xsize, ysize, (AW_bitset)-1, 0, 0);
+            ED4_ROOT->get_device()->box(ED4_G_STANDARD, true, bx, by, xsize, ysize, (AW_bitset)-1, 0, 0);
             if (!is_marked && xsize>2 && ysize>2) {
                 ED4_ROOT->get_device()->clear_part(bx+1, by+1, xsize-2, ysize-2, (AW_bitset)-1);
             }

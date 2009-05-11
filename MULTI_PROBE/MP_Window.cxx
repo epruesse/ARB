@@ -553,7 +553,7 @@ MP_Window::MP_Window(AW_root *aw_root)
     aws->update_option_menu();
 
     aws->at("PTServer");
-    awt_create_selection_list_on_pt_servers(aws, MP_AWAR_PTSERVER, AW_TRUE);
+    awt_create_selection_list_on_pt_servers(aws, MP_AWAR_PTSERVER, true);
 
     aw_root->awar(MP_AWAR_PTSERVER)->add_callback(MP_cache_sonden2); // remove cached probes when changing pt-server
 

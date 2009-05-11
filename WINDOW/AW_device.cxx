@@ -11,7 +11,7 @@
 
 #include <inline.h>
 
-void AW_clip::set_cliprect(AW_rectangle *rect, AW_BOOL allow_oversize) {
+void AW_clip::set_cliprect(AW_rectangle *rect, bool allow_oversize) {
     clip_rect = *rect;  // coordintes : (0,0) = top-left-corner
     if (!allow_oversize){
         if (clip_rect.t < common->screen.t) clip_rect.t = common->screen.t;
@@ -47,7 +47,7 @@ void AW_clip::reduce_top_clip_border(int top){
     if (top > clip_rect.t) clip_rect.t = top;
 }
 
-void AW_clip::set_top_clip_border(int top, AW_BOOL allow_oversize) {
+void AW_clip::set_top_clip_border(int top, bool allow_oversize) {
     clip_rect.t = top;
     if (!allow_oversize){
         if (clip_rect.t < common->screen.t) clip_rect.t = common->screen.t;
@@ -61,7 +61,7 @@ void AW_clip::reduce_bottom_clip_border(int bottom) {
     if ( bottom < clip_rect.b)    clip_rect.b = bottom;
 }
 
-void AW_clip::set_bottom_clip_border(int bottom, AW_BOOL allow_oversize) {
+void AW_clip::set_bottom_clip_border(int bottom, bool allow_oversize) {
     clip_rect.b = bottom;
     if (!allow_oversize){
         if (clip_rect.b > common->screen.b) clip_rect.b = common->screen.b;
@@ -71,7 +71,7 @@ void AW_clip::set_bottom_clip_border(int bottom, AW_BOOL allow_oversize) {
     }
 }
 
-void AW_clip::set_bottom_clip_margin(int bottom,AW_BOOL allow_oversize) {
+void AW_clip::set_bottom_clip_margin(int bottom,bool allow_oversize) {
     clip_rect.b -= bottom;
     if (!allow_oversize){
         if (clip_rect.b > common->screen.b) clip_rect.b = common->screen.b;
@@ -83,7 +83,7 @@ void AW_clip::set_bottom_clip_margin(int bottom,AW_BOOL allow_oversize) {
 void AW_clip::reduce_left_clip_border(int left) {
     if (left > clip_rect.l)clip_rect.l = left;
 }
-void AW_clip::set_left_clip_border(int left, AW_BOOL allow_oversize) {
+void AW_clip::set_left_clip_border(int left, bool allow_oversize) {
     clip_rect.l = left;
     if (!allow_oversize){
         if (clip_rect.l < common->screen.l) clip_rect.l = common->screen.l;
@@ -97,7 +97,7 @@ void AW_clip::reduce_right_clip_border(int right) {
     if (right < clip_rect.r)    clip_rect.r = right;
 }
 
-void AW_clip::set_right_clip_border(int right, AW_BOOL allow_oversize) {
+void AW_clip::set_right_clip_border(int right, bool allow_oversize) {
     clip_rect.r = right;
     if (!allow_oversize){
         if (clip_rect.r > common->screen.r) clip_rect.r = common->screen.r;
@@ -600,7 +600,7 @@ bool AW_device::ready_to_draw(int gc) {
 
 // PJ: ::zoomtext is defined in AW_xfigfont.cxx
 
-int AW_device::generic_box(int gc, AW_BOOL /*filled*/, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2)
+int AW_device::generic_box(int gc, bool /*filled*/, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2)
 {
     int erg = 0;
     if (filteri & filter) {
@@ -616,7 +616,7 @@ int AW_device::generic_box(int gc, AW_BOOL /*filled*/, AW_pos x0,AW_pos y0,AW_po
 #warning draw in 45-degree-steps (8-cornered-polygones instead of circles)
 #endif // DEVEL_RALF
 
-int AW_device::generic_circle(int gc, AW_BOOL /*filled has no effect here*/, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2)
+int AW_device::generic_circle(int gc, bool /*filled has no effect here*/, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2)
 {
     int erg = 0;
     if (filteri & filter) {
@@ -628,7 +628,7 @@ int AW_device::generic_circle(int gc, AW_BOOL /*filled has no effect here*/, AW_
     return erg;
 }
 
-int AW_device::generic_arc(int gc, AW_BOOL /*filled has no effect here*/, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, int /*start_degrees*/, int /*arc_degrees*/, AW_bitset filteri, AW_CL cd1, AW_CL cd2)
+int AW_device::generic_arc(int gc, bool /*filled has no effect here*/, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, int /*start_degrees*/, int /*arc_degrees*/, AW_bitset filteri, AW_CL cd1, AW_CL cd2)
 {
     int erg = 0;
     if (filteri & filter) {
@@ -725,8 +725,8 @@ int AW_device::text_overlay( int gc, const char *opt_str, long opt_len, // eithe
     int          c             = 0;
     AW_pos       X0,Y0;         // Transformed pos
     
-    AW_BOOL inside_clipping_left  = AW_TRUE; // clipping at the left edge of the screen is different from clipping right of the left edge.
-    AW_BOOL inside_clipping_right = AW_TRUE;
+    bool inside_clipping_left  = true; // clipping at the left edge of the screen is different from clipping right of the left edge.
+    bool inside_clipping_right = true;
 
     // es gibt 4 clipping Moeglichkeiten:
     // 1. man will fuer den Fall clippen, dass man vom linken display-Rand aus druckt   => clipping rechts vom 1. Buchstaben
@@ -737,12 +737,12 @@ int AW_device::text_overlay( int gc, const char *opt_str, long opt_len, // eithe
     if (!(filter & filteri)) return 0;
 
     if (left_font_overlap || common->screen.l == clip_rect.l) { // was : clip_rect.l == 0
-        inside_clipping_left = AW_FALSE;
+        inside_clipping_left = false;
     }
 
     if (right_font_overlap || clip_rect.r == common->screen.r) { // was : clip_rect.r == common->screen.r
 
-        inside_clipping_right = AW_FALSE;
+        inside_clipping_right = false;
     }
 
     transform(x,y,X0,Y0);

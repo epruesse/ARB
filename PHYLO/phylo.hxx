@@ -161,7 +161,7 @@ private:
         struct PHENTRY *prev;
         int             group_members; /* >0: this elem is grouphead */
         struct elem    *first_member; /* !=NULL: elem is grouphead */
-        AW_BOOL         selected;
+        bool            selected;
     };
     unsigned int last_key_number;
     long         seq_len;
