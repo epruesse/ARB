@@ -16,7 +16,7 @@ include $(ARBHOME)/SOURCE_TOOLS/export2sub
 # --------------------------------------------------------------------------------
 
 $(MAIN):
-	echo "Makefile:19: XML_IMPORT compile broken atm"
+	@echo "Makefile:19: XML_IMPORT compile broken atm"
 	true
 
 #$(MAIN): $(ARCHS)
