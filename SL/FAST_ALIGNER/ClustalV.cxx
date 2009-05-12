@@ -78,11 +78,15 @@ static int             snd_list[MAXN+1];
 static int nseqs;               // # of sequences
 static int weights[MAX_BASETYPES][MAX_BASETYPES];     // weights[b1][b2] : penalty for mutation from base 'b1' to base 'b2'
 
-static int *displ;              // displ == 0 -> base in both , displ<0 -> displ gaps in slave, displ>0 -> displ gaps in master
-static int *zza;                // column (left->right) of align matrix (minimum of all paths to this matrix element)
-static int *zzb;                // -------------- " ------------------- (minimum of all paths, where gap inserted into slave)
-static int *zzc;                // column (left<-right) of align matrix (minimum of all paths to this matrix element)
-static int *zzd;                // -------------- " ------------------- (minimum of all paths, where gap inserted into slave)
+#if defined(DEBUG)
+size_t displ_size = 0;
+#endif // DEBUG
+
+static int *displ;                                  // displ == 0 -> base in both , displ<0 -> displ gaps in slave, displ>0 -> displ gaps in master
+static int *zza;                                    // column (left->right) of align matrix (minimum of all paths to this matrix element)
+static int *zzb;                                    // -------------- " ------------------- (minimum of all paths, where gap inserted into slave)
+static int *zzc;                                    // column (left<-right) of align matrix (minimum of all paths to this matrix element)
+static int *zzd;                                    // -------------- " ------------------- (minimum of all paths, where gap inserted into slave)
 static int  print_ptr;
 static int  last_print;
 
@@ -500,7 +504,11 @@ static void exit_myers(void) {
 
 static void init_show_pair(long max_seq_length)
 {
-    displ = (int *) ckalloc( (2*max_seq_length +1) * sizeof (int) );
+#if defined(DEBUG)
+    displ_size = (2*max_seq_length +1);
+#endif // DEBUG
+    displ      = (int *) ckalloc( (2*max_seq_length +1) * sizeof (int) );
+    last_print = 0;
 
     zza = (int *)ckalloc( (max_seq_length+1) * sizeof (int) );
     zzb = (int *)ckalloc( (max_seq_length+1) * sizeof (int) );
@@ -516,16 +524,31 @@ void exit_show_pair(void)
     freeset(zzb, 0);
     freeset(zza, 0);
     freeset(displ, 0);
+#if defined(DEBUG)
+    displ_size = 0;
+#endif // DEBUG
 }
+
+inline int set_displ(int offset, int value) {
+    awtc_assert(offset >= 0 && offset<int(displ_size));
+    displ[offset] = value;
+    return displ[offset];
+}
+inline int decr_displ(int offset, int value) {
+    awtc_assert(offset >= 0 && offset<int(displ_size));
+    displ[offset] -= value;
+    return displ[offset];
+}
+
 
 static inline void add(int v)           // insert 'v' gaps into master ???
 {
     if (last_print<0 && print_ptr>0) {
-        displ[print_ptr-1] = v;
-        displ[print_ptr++] = last_print;
+        set_displ(print_ptr-1,v);
+        set_displ(print_ptr++,last_print);
     }
     else {
-        last_print = displ[print_ptr++] = v;
+        last_print = set_displ(print_ptr++,v);
     }
 }
 
@@ -683,11 +706,11 @@ static int diff(int v1,int v2,int v3,int v4, int st,int en)
 
     if(v4<=0) {                                                 // if slave sequence is empty
         if(v3>0) {
-            if(last_print<0 ) {
-                last_print = displ[print_ptr-1] -= v3;          // add ..
+            if (last_print<0 && print_ptr>0) {
+                last_print = decr_displ(print_ptr-1,v3);          // add ..
             }
             else {
-                last_print = displ[print_ptr++] = -(v3);        // .. or insert gap of length 'v3' into slave
+                last_print = set_displ(print_ptr++,-(v3));        // .. or insert gap of length 'v3' into slave
             }
         }
 
@@ -724,18 +747,16 @@ static int diff(int v1,int v2,int v3,int v4, int st,int en)
             if(!ctrj)
             {
                 add(v4);
-                if(last_print<0)
-                    last_print = displ[print_ptr-1] -= 1;
+                if(last_print<0 && print_ptr>0)
+                    last_print = decr_displ(print_ptr-1,1);
                 else
-                    last_print = displ[print_ptr++] = -1;
+                    last_print = set_displ(print_ptr++,-1);
             }
             else
             {
-                if(ctrj>1)
-                    add(ctrj-1);
-                displ[print_ptr++] = last_print = 0;
-                if(ctrj<v4)
-                    add(v4-ctrj);
+                if (ctrj>1) add(ctrj-1);
+                set_displ(print_ptr++,last_print = 0);
+                if (ctrj<v4) add(v4-ctrj);
             }
 
             deep--;
@@ -907,10 +928,10 @@ static int diff(int v1,int v2,int v3,int v4, int st,int en)
     {
         diff(v1,v2,ctri-1,ctrj,st,0);                                           // includes midpoint ctrj
 
-        if(last_print<0)                         /* Delete 2 */
-            last_print = displ[print_ptr-1] -= 2;
+        if(last_print<0 && print_ptr>0) /* Delete 2 */
+            last_print = decr_displ(print_ptr-1,2);
         else
-            last_print = displ[print_ptr++] = -2;
+            last_print = set_displ(print_ptr++,-2);
 
         diff(v1+ctri+1,v2+ctrj,v3-ctri-1,v4-ctrj,0,en);
     }
