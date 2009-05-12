@@ -44,29 +44,31 @@ const char *AWAR_TREE_REM       =   "tmp/ad_tree/tree_rem";
 
 void tree_vars_callback(AW_root *aw_root) // Map tree vars to display objects
 {
-    GB_push_transaction(GLOBAL_gb_main);
-    char *treename = aw_root->awar(AWAR_TREE_NAME)->read_string();
-    GBDATA *ali_cont = GBT_get_tree(GLOBAL_gb_main,treename);
-    if (!ali_cont) {
-        aw_root->awar(AWAR_TREE_SECURITY)->unmap();
-        aw_root->awar(AWAR_TREE_REM)->unmap();
-    }else{
+    if (GLOBAL_gb_main) {
+        GB_push_transaction(GLOBAL_gb_main);
+        char *treename = aw_root->awar(AWAR_TREE_NAME)->read_string();
+        GBDATA *ali_cont = GBT_get_tree(GLOBAL_gb_main,treename);
+        if (!ali_cont) {
+            aw_root->awar(AWAR_TREE_SECURITY)->unmap();
+            aw_root->awar(AWAR_TREE_REM)->unmap();
+        }else{
 
-        GBDATA *tree_prot = GB_search(ali_cont,"security",  GB_FIND);
-        if (!tree_prot) GBT_readOrCreate_int(ali_cont,"security", GB_read_security_write(ali_cont));
-        tree_prot         = GB_search(ali_cont,"security",  GB_INT);
+            GBDATA *tree_prot = GB_search(ali_cont,"security",  GB_FIND);
+            if (!tree_prot) GBT_readOrCreate_int(ali_cont,"security", GB_read_security_write(ali_cont));
+            tree_prot         = GB_search(ali_cont,"security",  GB_INT);
         
-        GBDATA *tree_rem = GB_search(ali_cont,"remark",    GB_STRING);
-        aw_root->awar(AWAR_TREE_SECURITY)->map(tree_prot);
-        aw_root->awar(AWAR_TREE_REM)     ->map(tree_rem);
+            GBDATA *tree_rem = GB_search(ali_cont,"remark",    GB_STRING);
+            aw_root->awar(AWAR_TREE_SECURITY)->map(tree_prot);
+            aw_root->awar(AWAR_TREE_REM)     ->map(tree_rem);
+        }
+        char *suffix = aw_root->awar(AWAR_TREE_EXPORT_FILTER)->read_string();
+        char *fname  = GBS_string_eval(treename,GBS_global_string("*=*1.%s:tree_*=*1", suffix),0);
+        aw_root->awar(AWAR_TREE_EXPORT "/file_name")->write_string(fname); // create default file name
+        free(fname);
+        free(suffix);
+        GB_pop_transaction(GLOBAL_gb_main);
+        free(treename);
     }
-    char *suffix = aw_root->awar(AWAR_TREE_EXPORT_FILTER)->read_string();
-    char *fname  = GBS_string_eval(treename,GBS_global_string("*=*1.%s:tree_*=*1", suffix),0);
-    aw_root->awar(AWAR_TREE_EXPORT "/file_name")->write_string(fname); // create default file name
-    free(fname);
-    free(suffix);
-    GB_pop_transaction(GLOBAL_gb_main);
-    free(treename);
 }
 /*  update import tree name depending on file name */
 void tree_import_callback(AW_root *aw_root) {
@@ -91,22 +93,24 @@ void tree_import_callback(AW_root *aw_root) {
 
 void ad_tree_set_security(AW_root *aw_root)
 {
-    GB_transaction dummy(GLOBAL_gb_main);
-    char *treename = aw_root->awar(AWAR_TREE_NAME)->read_string();
-    GBDATA *ali_cont = GBT_get_tree(GLOBAL_gb_main,treename);
-    if (ali_cont) {
-        long prot = aw_root->awar(AWAR_TREE_SECURITY)->read_int();
-        long old;
-        old = GB_read_security_delete(ali_cont);
-        GB_ERROR error = 0;
-        if (old != prot){
-            error = GB_write_security_delete(ali_cont,prot);
-            if (!error)
-                error = GB_write_security_write(ali_cont,prot);
+    if (GLOBAL_gb_main) {
+        GB_transaction dummy(GLOBAL_gb_main);
+        char *treename = aw_root->awar(AWAR_TREE_NAME)->read_string();
+        GBDATA *ali_cont = GBT_get_tree(GLOBAL_gb_main,treename);
+        if (ali_cont) {
+            long prot = aw_root->awar(AWAR_TREE_SECURITY)->read_int();
+            long old;
+            old = GB_read_security_delete(ali_cont);
+            GB_ERROR error = 0;
+            if (old != prot){
+                error = GB_write_security_delete(ali_cont,prot);
+                if (!error)
+                    error = GB_write_security_write(ali_cont,prot);
+            }
+            if (error ) aw_message(error);
         }
-        if (error ) aw_message(error);
+        free(treename);
     }
-    free(treename);
 }
 
 enum ExportTreeType {

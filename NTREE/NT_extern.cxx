@@ -271,9 +271,12 @@ void nt_exit(AW_window *aws) {
         }
         GBCMS_shutdown(GLOBAL_gb_main);
 
-        aws->get_root()->unlink_awars_from_DB(GLOBAL_gb_main);
         GBDATA *gb_main = GLOBAL_gb_main;
-        GLOBAL_gb_main  = NULL; // avoid further usage
+        GLOBAL_gb_main  = NULL;                     // avoid further usage
+        
+        AW_root *aw_root = aws->get_root();
+        aw_root->unlink_awars_from_DB(gb_main);
+        AWT_destroy_input_masks(aw_root);
         GB_close(gb_main);
     }
     exit(0);
