@@ -1440,9 +1440,9 @@ static GB_ERROR writeDefaultMaskfile(const string& fullname, const string& maskn
           "\n# ---------------------------\n"
           "# The definition of the mask:\n\n"
           "@MASK_BEGIN\n\n"
-          "\tTEXT(\"You are editing\") SELF()\n"
-          "\tNEW_SECTION()\n"
-          "\tTEXTFIELD(\"Full name\", \"full_name\", 30)\n\n"
+          "    TEXT(\"You are editing\") SELF()\n"
+          "    NEW_SECTION()\n"
+          "    TEXTFIELD(\"Full name\", \"full_name\", 30)\n\n"
           "@MASK_END\n\n", out);
 
     fclose(out);
@@ -2013,7 +2013,7 @@ GB_ERROR AWT_initialize_input_mask(AW_root *root, GBDATA *gb_main, const awt_ite
                 unlink_old                          = false;
             }
         }
-        else {
+        else {                                      // new mask has been generated
             input_mask_list[internal_mask_name] = newMask;
         }
         mask_iter = input_mask_list.find(internal_mask_name);
@@ -2036,8 +2036,8 @@ GB_ERROR AWT_initialize_input_mask(AW_root *root, GBDATA *gb_main, const awt_ite
 
 // start of implementation of class awt_input_mask:
 
-awt_input_mask::~awt_input_mask()
-{
+awt_input_mask::~awt_input_mask() {
+    relink(true); // unlink from DB
     for (awt_mask_item_list::iterator h = handlers.begin(); h != handlers.end(); ++h) {
         (*h)->remove_name();
     }
@@ -2405,4 +2405,7 @@ void AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_ite
     awm->close_sub_menu();
 }
 
+void AWT_destroy_input_masks(AW_root *aw_root) {
+    input_mask_list.clear();
+}
 
