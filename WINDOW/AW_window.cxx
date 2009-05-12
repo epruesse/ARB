@@ -1630,14 +1630,12 @@ const char *aw_str_2_label(const char *str, AW_window *aww) {
             label = GB_path_in_ARBLIB("pixmaps", str+1);
         }
         else {
-            AW_awar *vs;
+            AW_awar *is_awar = aww->get_root()->label_is_awar(str);
 
-            if (strchr(str, '/') && (vs = aww->get_root()->awar_no_error(str))) {
-                // for labels displaying awar values, insert dummy text here
-
-                int wanted_len                 = aww->_at->length_of_buttons - 2;
+            if (is_awar) { // for labels displaying awar values, insert dummy text here
+                int wanted_len = aww->_at->length_of_buttons - 2;
                 if (wanted_len < 1) wanted_len = 1;
-            
+
                 char *labelbuf       = GB_give_buffer(wanted_len+1);
                 memset(labelbuf, 'y', wanted_len);
                 labelbuf[wanted_len] = 0;
@@ -1649,7 +1647,7 @@ const char *aw_str_2_label(const char *str, AW_window *aww) {
             }
         }
 
-        // store results locally, cause aw_str_2_label is often called twice with same arguments
+        // store results locally, cause aw_str_2_label is nearly always called twice with same arguments
         // (see RES_LABEL_CONVERT)
         last_label = label;
         last_str   = str;
@@ -1659,17 +1657,18 @@ const char *aw_str_2_label(const char *str, AW_window *aww) {
 }
 
 void AW_label_in_awar_list(AW_window *aww, Widget widget, const char *str) {
-    AW_awar *vs =0;
-    if (strchr(str, '/') && (vs=aww->get_root()->awar_no_error(str))) {
-        char *var_value = vs->read_as_string();
+    AW_awar *is_awar = aww->get_root()->label_is_awar(str);
+    if (is_awar) {
+        char *var_value = is_awar->read_as_string();
         if (var_value) {
             aww->update_label((int*)widget, var_value);
-        } else {
+        }
+        else {
             AW_ERROR("AW_label_in_awar_list:: AWAR %s not found\n", str);
             aww->update_label((int*)widget, str);
         }
         free(var_value);
-        AW_INSERT_BUTTON_IN_AWAR_LIST( vs,0, widget, AW_WIDGET_LABEL_FIELD, aww);
+        AW_INSERT_BUTTON_IN_AWAR_LIST(is_awar, 0, widget, AW_WIDGET_LABEL_FIELD, aww);
     }
 }
 /*********************************************************************************************/

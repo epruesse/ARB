@@ -648,6 +648,16 @@ AW_default AW_root::get_gbdata( const char *varname) {
     return 0;
 }
 
+AW_awar *AW_root::label_is_awar(const char *label) {
+    AW_awar *awar_exists = NULL;
+    size_t   off         = strcspn(label, "/ ");
+
+    if (label[off] == '/') {                        // contains '/' and no space before first '/'
+        awar_exists = awar_no_error(label);
+    }
+    return awar_exists;
+}
+
 // ---------------------------
 //      Awar_Callback_Info
 // ---------------------------

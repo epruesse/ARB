@@ -511,11 +511,12 @@ void aw_detect_text_size(const char *text, size_t& width, size_t& height) {
 void AW_window::create_autosize_button(const char *macro_name, AW_label buttonlabel, const  char *mnemonic, unsigned xtraSpace) {
     aw_assert(buttonlabel[0] != '#');               // use create_button() for graphical buttons!
 
-    bool is_awar = strchr(buttonlabel, '/') && !strchr(buttonlabel, ' ');
-    size_t  width, height;
+    AW_awar *is_awar = get_root()->label_is_awar(buttonlabel);
+    size_t   width, height;
     if (is_awar) {
-        char *content = get_root()->awar(buttonlabel)->read_as_string();
-        aw_assert(content[0]); // you have to fill the awar before calling create_autosize_button, otherwise size cannot be detected
+        char *content = is_awar->read_as_string();
+        aw_assert(content[0]); /* you need to fill the awar before calling create_autosize_button,
+                                * otherwise size cannot be detected */
         aw_detect_text_size(content, width, height);
     }
     else {
@@ -554,7 +555,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
     AWUSE(mnemonic);
 
 #if defined(DUMP_BUTTON_CREATION)
-    printf("------------------------------ Button %s\n", buttonlabel);
+    printf("------------------------------ Button '%s'\n", buttonlabel);
     printf("x_for_next_button=%i y_for_next_button=%i\n", _at->x_for_next_button, _at->y_for_next_button);
 #endif // DUMP_BUTTON_CREATION
 
@@ -582,7 +583,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
     bool is_graphical_button = buttonlabel[0] == '#';
     
 #if defined(DEBUG)
-    bool is_awar = !is_graphical_button && (strchr(buttonlabel, '/') && !strchr(buttonlabel, ' '));
+    AW_awar *is_awar = is_graphical_button ? NULL : get_root()->label_is_awar(buttonlabel);
 #endif // DEBUG
 
     int width_of_button = -1, height_of_button = -1;

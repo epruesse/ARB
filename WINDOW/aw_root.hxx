@@ -203,14 +203,16 @@ public:
 
     void set_focus_callback(void(*f)(class AW_root*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2); /* any focus callback in any window */
 
-    class AW_awar           *awar(const char *awar);
-    class AW_awar           *awar_no_error(const char *awar);
+    AW_awar *awar(const char *awar);
+    AW_awar *awar_no_error(const char *awar);
 
     AW_awar *awar_string(const char *var_name, const char *default_value = "", AW_default default_file = AW_ROOT_DEFAULT);
     AW_awar *awar_int   (const char *var_name, long default_value = 0,         AW_default default_file = AW_ROOT_DEFAULT);
     AW_awar *awar_float (const char *var_name, float default_value = 0.0,      AW_default default_file = AW_ROOT_DEFAULT);
-    
-    void unlink_awars_from_DB(GBDATA *gb_main); // use before calling GB_close for 'gb_main', if you have AWARs in DB
+
+    AW_awar *label_is_awar(const char *label); // returns awar, if label refers to one (used by buttons, etc.)
+
+    void unlink_awars_from_DB(GBDATA *gb_main);     // use before calling GB_close for 'gb_main', if you have AWARs in DB
 
     AW_default  open_default(const char *default_name, bool create_if_missing = true);
     AW_error   *save_default( const char *awar_name );
