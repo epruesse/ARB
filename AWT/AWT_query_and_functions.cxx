@@ -380,15 +380,17 @@ long awt_query_update_list(void *dummy, struct adaqbsstruct *cbs) {
                         }
                     }
                 }
-
-                if (toFree) info = toFree;
-                else info        = "<no data>";
+                else {
+                    toFree = GBS_global_string_copy("<%s has no data>", param.first_key);
+                }
+                info = toFree;
             }
             else {
                 info = reinterpret_cast<const char *>(GBS_read_hash(cbs->hit_description, name));
                 if (!info) info = "<no hit info>";
             }
 
+            awt_assert(info);
             const char *line = GBS_global_string("%c %-*s :%s",
                                                  GB_read_flag(sorted[i]) ? '*' : ' ',
                                                  name_len, name,
@@ -644,6 +646,13 @@ public:
     }
 
     void negate();
+
+    bool prefers_sort_by_hit() {
+        return
+            match_field == AQFT_ALL_FIELDS ||
+            match_field == AQFT_ANY_FIELD ||
+            (next && next->prefers_sort_by_hit());
+    }
 
 #if defined(DEBUG)
     string dump_str() const { return string(key)+(Not ? "!=" : "==")+query; }
@@ -1101,7 +1110,12 @@ static void awt_do_query(void *dummy, struct adaqbsstruct *cbs, AW_CL cl_ext_que
 #if defined(DEBUG)
             else { fputs("query: ", stdout); query.dump(); fputc('\n', stdout); }
 #endif // DEBUG
-        
+
+            if (query.prefers_sort_by_hit()) {
+                // automatically switch to sorting 'by hit' if 'any field' or 'all fields' is selected
+                aw_root->awar(cbs->awar_sort)->write_int(AWT_QUERY_SORT_BY_HIT_DESCRIPTION);
+            }
+
             for (GBDATA *gb_item_container = cbs->selector->get_first_item_container(cbs->gb_main, aw_root, range);
                  gb_item_container && !error;
                  gb_item_container = cbs->selector->get_next_item_container(gb_item_container, range))
