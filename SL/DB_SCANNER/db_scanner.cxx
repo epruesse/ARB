@@ -143,7 +143,7 @@ static void awt_arbdb_scanner_value_change(void *, struct adawcbstruct *cbs)
                 const struct ad_item_selector *selector = cbs->selector;
 
                 if (selector->type == AWT_QUERY_ITEM_SPECIES) { // species
-                    const char *name = GBT_read_name(cbs->gb_user);
+                    char *name = nulldup(GBT_read_name(cbs->gb_user));
                     aw_openstatus("Renaming species");
 
                     if (strlen(value)) {
@@ -159,6 +159,7 @@ static void awt_arbdb_scanner_value_change(void *, struct adawcbstruct *cbs)
                     }
 
                     aw_closestatus();
+                    free(name);
                 }
                 else { // non-species (gene, experiment, etc.)
                     if (strlen(value)) {
