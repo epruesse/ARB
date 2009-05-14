@@ -4,7 +4,7 @@
 #include <string.h>
 #include <PT_server.h>
 #include <PT_server_prototypes.h>
-#include "probe.h"
+#include "ptpan.h"
 #include "pt_prototypes.h"
 
 /* /// "AllocCacheHandler()" */

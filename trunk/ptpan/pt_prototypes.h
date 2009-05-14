@@ -15,7 +15,7 @@
 #endif
 
 
-/* PT_new_design.cxx */
+/* PTP_new_design.cxx */
 extern "C" int pt_init_bond_matrix P_((PT_pdc *THIS));
 extern "C" char *get_design_info P_((PT_tprobes *tprobe));
 extern "C" char *get_design_hinfo P_((PT_tprobes *tprobe));
@@ -28,13 +28,13 @@ void CalcProbeQuality P_((struct DesignQuery *dq));
 BOOL FindProbeInPartition P_((struct DesignQuery *dq));
 extern "C" int PT_start_design P_((PT_pdc *pdc, int dummy_1x));
 
-/* PT_main.cxx */
+/* PTP_main.cxx */
 struct PTPanGlobal *AllocPTPanGlobal P_((void));
 void FreePTPanGlobal P_((struct PTPanGlobal *pg));
 extern "C" int server_shutdown P_((PT_main *, aisc_string passwd));
 extern "C" int broadcast P_((PT_main *main, int dummy_1x));
 
-/* PT_io.cxx */
+/* PTP_io.cxx */
 ULONG BenchTimePassed P_((struct PTPanGlobal *pg));
 void BenchOutput P_((struct PTPanGlobal *pg));
 ULONG CalcLengthForFilteredSequence P_((struct PTPanGlobal *pg, STRPTR srcseq));
@@ -64,13 +64,13 @@ BOOL LoadIndexHeader P_((struct PTPanGlobal *pg));
 BOOL LoadAllPartitions P_((struct PTPanGlobal *pg));
 void FreeAllPartitions P_((struct PTPanGlobal *pg));
 
-/* PT_etc.cxx */
+/* PTP_etc.cxx */
 void SetARBErrorMsg P_((PT_local *locs, const STRPTR error));
 extern "C" STRPTR virt_name P_((PT_probematch *ml));
 extern "C" STRPTR virt_fullname P_((PT_probematch *ml));
 extern "C" bytestring *PT_unknown_names P_((struct_PT_pdc *pdc));
 
-/* PT_family.cxx */
+/* PTP_family.cxx */
 extern "C" int ff_find_family P_((PT_local *locs, bytestring *species));
 extern "C" int find_family P_((PT_local *locs, bytestring *species));
 
@@ -126,7 +126,7 @@ BOOL MatchSequenceRec P_((struct SearchQuery *sq));
 BOOL FindSequenceMatch P_((struct SearchQuery *sq, struct QueryHit *qh, STRPTR tarstr));
 BOOL FindSequenceMatchRec P_((struct SearchQuery *sq, struct QueryHit *qh, STRPTR tarptr));
 
-/* PT_buildtree.cxx */
+/* PTP_buildtree.cxx */
 BOOL BuildStdSuffixTree P_((struct PTPanGlobal *pg));
 BOOL BuildMemoryStdSuffixTree P_((struct PTPanPartition *pp));
 ULONG SplitStdSfxNode P_((struct PTPanPartition *pp, ULONG leafnum));
@@ -162,7 +162,7 @@ BOOL BuildLongEdgeDictionary P_((struct PTPanPartition *pp));
 BOOL WriteTreeToDisk P_((struct PTPanPartition *pp));
 BOOL CreatePartitionLookup P_((struct PTPanGlobal *pg));
 
-/* PT_match.cxx */
+/* PTP_match.cxx */
 void SearchPartition P_((struct PTPanPartition *pp, struct SearchQuery *sq));
 void QueryTests P_((struct PTPanGlobal *pg));
 void PP_convertBondMatrix P_((PT_pdc *pdc, PTPanGlobal *pg));
@@ -179,7 +179,7 @@ extern "C" bytestring *MP_match_string P_((PT_local *locs));
 extern "C" bytestring *MP_all_species_string P_((PT_local *));
 extern "C" int MP_count_all_species P_((PT_local *));
 
-/* PT_findEx.cxx */
+/* PTP_findEx.cxx */
 extern "C" int PT_find_exProb P_((PT_exProb *pep));
 
 /* PT_cachehandler.cxx */

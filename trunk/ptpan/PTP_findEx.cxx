@@ -5,7 +5,7 @@
 
 #include <PT_server.h>
 #include <PT_server_prototypes.h>
-#include "probe.h"
+#include "ptpan.h"
 //#include "probe_tree.hxx"
 #include "pt_prototypes.h"
 

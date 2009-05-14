@@ -6,7 +6,7 @@
 #include <string.h>
 #include <math.h>
 #include <PT_server.h>
-#include "probe.h"
+#include "ptpan.h"
 #include "pt_prototypes.h"
 #include <arbdbt.h>
 #include <BI_helix.hxx>
