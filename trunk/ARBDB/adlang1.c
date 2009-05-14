@@ -1569,27 +1569,23 @@ static void build_taxonomy_rek(GBT_TREE *node, GB_HASH *tax_hash, const char *pa
 
 static GB_HASH *cached_taxonomies = 0;
 
+static GB_BOOL is_cached_taxonomy(const char *key, long val, void *cl_ct) {
+    GBUSE(key);
+    struct cached_taxonomy *ct1 = (struct cached_taxonomy *)val;
+    struct cached_taxonomy *ct2 = (struct cached_taxonomy *)cl_ct;
+
+    return ct1 == ct2 ? GB_TRUE : GB_FALSE;
+}
+
 static const char *tree_of_cached_taxonomy(struct cached_taxonomy *ct) {
-    long        val;
-    const char *key        = 0;
-    const char *found_tree = 0;
-
     /* search the hash to find the correct cached taxonomy.
-       searching for tree name does not work, because the tree may already be deleted
-    */
-
-    for (GBS_hash_first_element(cached_taxonomies, &key, &val);
-         val;
-         GBS_hash_next_element(cached_taxonomies, &key, &val))
-    {
-        struct cached_taxonomy *curr_ct = (struct cached_taxonomy *)val;
-        if (ct == curr_ct) {
-            found_tree = key;
-            break;
-        }
-    }
-
-    return found_tree;
+     * searching for tree name does not work, because the tree possibly already was deleted
+     */
+    const char *tree = GBS_hash_next_element_that(cached_taxonomies, NULL, is_cached_taxonomy, ct);
+#if defined(DEBUG)
+    printf("tree_of_cached_taxonomy: tree='%s' ct->tree_name='%s'\n", tree, ct->tree_name);
+#endif /* DEBUG */
+    return tree;
 }
 
 static void flush_taxonomy_cb(GBDATA *gbd, int *cd_ct, GB_CB_TYPE cbt) {

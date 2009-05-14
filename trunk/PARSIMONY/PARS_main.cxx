@@ -700,6 +700,12 @@ static AP_tree *find_least_deep_leaf(AP_tree *at, int depth, int *min_depth) {
     return right ? right : left;
 }
 
+static long push_partial(const char *, long val, void *cd_partial) {
+    list<PartialSequence> *partial = reinterpret_cast<list<PartialSequence> *>(cd_partial);
+    partial->push_back(PartialSequence((GBDATA*)val));
+    return val;
+}
+
 static void nt_add_partial(AW_window */*aww*/, AWT_canvas *ntw) {
     GB_begin_transaction(GLOBAL_gb_main);
     GB_ERROR error                    = 0;
@@ -748,22 +754,13 @@ static void nt_add_partial(AW_window */*aww*/, AWT_canvas *ntw) {
             }
 
             if (!error && !marked_found) error = "There are no marked species";
-            
-            if (!error) {
-                // skip all species which are in tree
-                NT_remove_species_in_tree_from_hash(*ap_main->tree_root,partial_hash);
 
-                // build partial list from hash
-                long val;
-                for (GBS_hash_first_element(partial_hash, 0, &val);
-                     val;
-                     GBS_hash_next_element(partial_hash, 0, &val))
-                {
-                    partial.push_back(PartialSequence((GBDATA*)val));
-                }
+            if (!error) {
+                NT_remove_species_in_tree_from_hash(*ap_main->tree_root,partial_hash); // skip all species which are in tree
+                GBS_hash_do_loop(partial_hash, push_partial, &partial); // build partial list from hash
 
                 int partials_already_in_tree = partial_marked_sequences - partial.size();
-                
+
                 if (no_data>0) aw_message(GBS_global_string("%i marked species have no data in '%s'", no_data, ap_main->use));
                 if (full_marked_sequences>0) aw_message(GBS_global_string("%i marked species are declared full sequences", full_marked_sequences));
                 if (partials_already_in_tree>0) aw_message(GBS_global_string("%i marked species are already in tree", partials_already_in_tree));

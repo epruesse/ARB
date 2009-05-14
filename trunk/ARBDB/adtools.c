@@ -3388,13 +3388,13 @@ GB_ERROR GBT_begin_rename_session(GBDATA *gb_main, int all_flag) {
         if (!all_flag) { // this is meant to be used for single or few species
             int hash_size = 256;
 
-            gbtrst.renamed_hash     = GBS_create_hash(hash_size, GB_MIND_CASE);
+            gbtrst.renamed_hash     = GBS_create_dynaval_hash(hash_size, GB_MIND_CASE, GBS_dynaval_free);
             gbtrst.old_species_hash = 0;
         }
         else {
             int hash_size = GBT_get_species_hash_size(gb_main);
 
-            gbtrst.renamed_hash     = GBS_create_hash(hash_size, GB_MIND_CASE);
+            gbtrst.renamed_hash     = GBS_create_dynaval_hash(hash_size, GB_MIND_CASE, GBS_dynaval_free);
             gbtrst.old_species_hash = GBT_create_species_hash(gb_main);
         }
         gbtrst.all_flag = all_flag;
@@ -3456,7 +3456,7 @@ GB_ERROR GBT_rename_species(const char *oldname, const  char *newname, GB_BOOL i
 
 static void gbt_free_rename_session_data(void) {
     if (gbtrst.renamed_hash) {
-        GBS_free_hash_free_pointer(gbtrst.renamed_hash);
+        GBS_free_hash(gbtrst.renamed_hash);
         gbtrst.renamed_hash = 0;
     }
     if (gbtrst.old_species_hash) {

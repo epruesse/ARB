@@ -25,9 +25,10 @@ typedef struct gbs_hash_struct {
     size_t  nelem;
     GB_CASE case_sens;
 
-    size_t loop_pos;
-    struct gbs_hash_entry *loop_entry;
-    struct gbs_hash_entry **entries;
+    struct gbs_hash_entry **entries; // the hash table (has 'size' entries)
+
+    void (*freefun)(long val); // function to free hash values (see GBS_create_dynaval_hash)
+
 } gbs_hash;
 
 struct gbs_hashi_entry {
@@ -246,15 +247,30 @@ GB_HASH *GBS_create_hash(long user_size, GB_CASE case_sens) {
      *  ignore_case == 0 -> 'a != A'
      *  ignore_case != 0 -> 'a == A'
      */
+    
     struct gbs_hash_struct *hs;
-    long                    size    = GBS_get_a_prime(user_size); // use next prime number for hash size
+    long                    size = GBS_get_a_prime(user_size); // use next prime number for hash size
 
     hs            = (struct gbs_hash_struct *)GB_calloc(sizeof(struct gbs_hash_struct),1);
     hs->size      = size;
     hs->nelem     = 0;
     hs->case_sens = case_sens;
     hs->entries   = (struct gbs_hash_entry **)GB_calloc(sizeof(struct gbs_hash_entry *), size);
+    hs->freefun   = NULL; 
+
     return hs;
+}
+
+GB_HASH *GBS_create_dynaval_hash(long user_size, GB_CASE case_sens, void (*freefun)(long)) {
+    /* like GBS_create_hash, but values stored in hash get free'd using 'freefun'
+     */
+    GB_HASH *hs = GBS_create_hash(user_size, case_sens);
+    hs->freefun = freefun;
+    return hs;
+}
+
+void GBS_dynaval_free(long val) {
+    free((char*)val);
 }
 
 #if defined(DEBUG)
@@ -265,12 +281,8 @@ static void dump_access(const char *title, GB_HASH *hs, double mean_access) {
 }
 #endif /* DEBUG */
 
-#if defined(DEVEL_RALF)
-#warning maybe call GBS_optimize_hash automatically - but where?
-#endif /* DEVEL_RALF */
-
 void GBS_optimize_hash(GB_HASH *hs) {
-    if (hs->nelem > hs->size) { /* hash is overfilled (even full is bad) */
+    if (hs->nelem > hs->size) {                     /* hash is overfilled (even full is bad) */
         size_t new_size = GBS_get_a_prime(hs->nelem*3);
 
 #if defined(DEBUG)
@@ -373,7 +385,7 @@ char *GBS_string_2_hashtab(GB_HASH *hash, char *data){  /* destroys data */
     return error;
 }
 
-static struct gbs_hash_entry *find_hash_entry(const GB_HASH *hs, const char *key, unsigned long *index) {
+static struct gbs_hash_entry *find_hash_entry(const GB_HASH *hs, const char *key, size_t *index) {
     struct gbs_hash_entry *e;
     if (hs->case_sens == GB_IGNORE_CASE) {
         GB_CALC_HASH_INDEX_CASE_IGNORED(key,*index,hs->size);
@@ -391,10 +403,31 @@ static struct gbs_hash_entry *find_hash_entry(const GB_HASH *hs, const char *key
 }
 
 long GBS_read_hash(const GB_HASH *hs,const char *key) {
-    unsigned long          i;
+    size_t                 i;
     struct gbs_hash_entry *e = find_hash_entry(hs, key, &i);
 
     return e ? e->val : 0;
+}
+
+static void delete_from_list(GB_HASH *hs, size_t i, struct gbs_hash_entry *e) {
+    // delete the hash entry 'e' from list at index 'i'
+    hs->nelem--;
+    if (hs->entries[i] == e) {
+        hs->entries[i] = e->next;
+    }
+    else {
+        struct gbs_hash_entry *ee;
+        for (ee = hs->entries[i]; ee->next != e; ee = ee->next);
+        if (ee->next == e) {
+            ee->next = e->next;
+        }
+        else {
+            GB_internal_error("Database may be corrupt, hash tables error");
+        }
+    }
+    free(e->key);
+    if (hs->freefun) hs->freefun(e->val);
+    gbm_free_mem((char *)e,sizeof(struct gbs_hash_entry),GBM_HASH_INDEX);
 }
 
 static long write_hash(GB_HASH *hs, char *key, GB_BOOL copyKey, long val) {
@@ -402,35 +435,17 @@ static long write_hash(GB_HASH *hs, char *key, GB_BOOL copyKey, long val) {
      * if 'copyKey' == GB_FALSE, 'key' will be freed (now or later) and may be invalid!
      * if 'copyKey' == GB_TRUE, 'key' will not be touched in any way!
      */
-    unsigned long          i;
+
+    size_t          i;
     struct gbs_hash_entry *e       = find_hash_entry(hs, key, &i);
     long                   oldval  = 0;
 
     if (e) {
         oldval = e->val;
-        if (!val) {
-            // delete the hash entry
-            // (val == 0 is not stored, cause 0 is the default value)
-            hs->nelem--;
-            if (hs->entries[i] == e) {
-                hs->entries[i] = e->next;
-            }
-            else {
-                struct gbs_hash_entry *ee;
-                for (ee = hs->entries[i]; ee->next != e; ee = ee->next);
-                if (ee->next == e) {
-                    ee->next = e->next;
-                }
-                else {
-                    GB_internal_error("Database may be corrupt, hash tables error");
-                }
-            }
-            free(e->key);
-            gbm_free_mem((char *)e,sizeof(struct gbs_hash_entry),GBM_HASH_INDEX);
-        }
-        else {
-            e->val = val;
-        }
+        
+        if (!val) delete_from_list(hs, i, e); // (val == 0 is not stored, cause 0 is the default value)
+        else      e->val = val;
+
         if (!copyKey) free(key); // already had an entry -> delete usused mem
     }
     else if (val != 0) {        // don't store 0
@@ -464,22 +479,24 @@ long GBS_write_hash_no_strdup(GB_HASH *hs, char *key, long val) {
 
 long GBS_incr_hash(GB_HASH *hs,const char *key) {
     /* returns new value */
-    unsigned long          i;
+    size_t                 i;
     struct gbs_hash_entry *e = find_hash_entry(hs, key, &i);
+    long                   result;
 
     if (e) {
-        e->val++;
+        result = ++e->val;
+        if (!result) delete_from_list(hs, i, e);
     }
     else {
         e       = (struct gbs_hash_entry *)gbm_get_mem(sizeof(struct gbs_hash_entry),GBM_HASH_INDEX);
         e->next = hs->entries[i];
         e->key  = strdup(key);
-        e->val  = 1;
-        
+        e->val  = result = 1;
+
         hs->entries[i] = e;
         hs->nelem++;
     }
-    return e->val;
+    return result;
 }
 
 #if defined(DEVEL_RALF)
@@ -546,6 +563,7 @@ void GBS_free_hash_entries(GB_HASH *hs)
     for (i = 0; i < e2; i++) {
         for (e = hs->entries[i]; e; e = ee) {
             free(e->key);
+            if (hs->freefun) hs->freefun(e->val);
             ee              = e->next;
             gbm_free_mem((char *)e,sizeof(struct gbs_hash_entry),GBM_HASH_INDEX);
         }
@@ -663,38 +681,17 @@ void GBS_calc_hash_statistic(GB_HASH *hs, const char *id, int print) {
     addto_hash_statistic_summary(get_stat_summary(id), hs->size, hs->nelem, collisions, fill_ratio, hash_quality);
 }
 
-void GBS_free_hash_entries_free_pointer(GB_HASH *hs)
-{
-    long i;
-    long e2;
-    struct gbs_hash_entry *e, *ee;
-    e2 = hs->size;
-    for (i = 0; i < e2; i++) {
-        for (e = hs->entries[i]; e; e = ee) {
-            free(e->key);
-            if (e->val) free((char *)e->val);
-            ee = e->next;
-            gbm_free_mem((char *)e,sizeof(struct gbs_hash_entry),GBM_HASH_INDEX);
-        }
-        hs->entries[i] = 0;
-    }
-}
-void GBS_free_hash_free_pointer(GB_HASH *hs)
-{
-    GBS_free_hash_entries_free_pointer(hs);
-    free((char *)hs->entries);
-    free((char *)hs);
-}
-
 void GBS_hash_do_loop(GB_HASH *hs, gb_hash_loop_type func, void *client_data)
 {
     long i,e2;
-    struct gbs_hash_entry *e;
+    struct gbs_hash_entry *e, *next;
     e2 = hs->size;
     for (i=0;i<e2;i++) {
-        for (e=hs->entries[i];e;e=e->next) {
+        for (e = hs->entries[i]; e; e = next) {
+            next = e->next;
             if (e->val) {
-                e->val = func(e->key,e->val, client_data);
+                e->val = func(e->key, e->val, client_data);
+                if (!e->val) delete_from_list(hs, i, e);
             }
         }
     }
@@ -736,54 +733,35 @@ long GBS_hash_count_value(GB_HASH *hs, long val) {
     return count;
 }
 
-void GBS_hash_next_element(GB_HASH *hs,const  char **key, long *val){
-    struct gbs_hash_entry *e = hs->loop_entry;
-    if (!e){
-        if (key) *key = 0;
-        *val = 0;
-        return;
+const char *GBS_hash_next_element_that(GB_HASH *hs, const char *last_key, GB_BOOL (*condition)(const char *key, long val, void *cd), void *cd) {
+    /* Returns the key of the next element after 'last_key' matching 'condition' (i.e. where condition returns GB_TRUE).
+     * If 'last_key' is NULL, the first matching element is returned.
+     * Returns NULL if no (more) elements match the 'condition'.
+     */
+
+    size_t                 size = hs->size;;
+    size_t                 i    = 0;
+    struct gbs_hash_entry *e    = 0;
+
+    if (last_key) {
+        e = find_hash_entry(hs, last_key, &i);
+        if (!e) return NULL;
+        
+        e = e->next;       // use next entry after 'last_key'
+        if (!e) i++;
     }
-    if (key) *key = e->key;
-    *val = e->val;
 
-    if (e->next){
-        hs->loop_entry = e->next;
-    }
-    else {
-        long i  = hs->loop_pos+1;
-        long e2 = hs->size;
+    for (; i<size && !e; ++i) e = hs->entries[i]; // search first/next entry
 
-        for (;i<e2;i++) {
-            e = hs->entries[i];
-            if (e){
-                hs->loop_pos   = i;
-                hs->loop_entry = e;
-                return;
-            }
-        }
-        hs->loop_entry = 0; /* reached end */
-    }
-}
-
-void GBS_hash_first_element(GB_HASH *hs,const char **key, long *val){
-    struct gbs_hash_entry *e;
-    long i;
-    long e2 = hs->size;
-
-    for (i=0;i<e2;i++) {
-        e = hs->entries[i];
-        if (e){
-            hs->loop_pos   = i;
-            hs->loop_entry = e;
-            GBS_hash_next_element(hs,key,val);
-
-            return;
+    while (e) {
+        if ((*condition)(e->key, e->val, cd)) break;
+        e = e->next;
+        if (!e) {
+            for (i++; i<size && !e; ++i) e = hs->entries[i];
         }
     }
-    if (key) *key = 0;
-    *val = 0;
-    hs->loop_entry = 0;
-    return;
+
+    return e ? e->key : NULL;
 }
 
 #ifdef __cplusplus
@@ -815,7 +793,8 @@ void GBS_hash_do_sorted_loop(GB_HASH *hs, gb_hash_loop_type func, gbs_hash_compa
     }
     GB_sort((void **) mtab, 0, j, wrap_hashCompare4gb_sort, (void*)sorter);
     for (i = 0; i < j; i++) {
-        func(mtab[i]->key, mtab[i]->val, client_data);
+        long new_val = func(mtab[i]->key, mtab[i]->val, client_data);
+        if (new_val != mtab[i]->val) GBS_write_hash(hs, mtab[i]->key, new_val);
     }
     free((char *)mtab);
 }
