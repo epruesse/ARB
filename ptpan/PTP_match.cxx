@@ -5,7 +5,7 @@
 #include <PT_server.h>
 #include <PT_server_prototypes.h>
 #include <struct_man.h>
-#include "probe.h"
+#include "ptpan.h"
 #include "pt_prototypes.h"
 #include <arbdbt.h>
 #include <math.h>

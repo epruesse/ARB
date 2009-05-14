@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <PT_server.h>
 #include <PT_server_prototypes.h>
-#include "probe.h"
+#include "ptpan.h"
 #include "pt_prototypes.h"
 
 /* nice niffy macro to get a compressed sequence code */
