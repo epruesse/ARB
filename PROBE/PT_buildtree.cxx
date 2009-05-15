@@ -171,9 +171,7 @@ inline int ptd_string_shorter_than(const char *s, int len) {
 }
 
 /*initialize tree and call the build pos tree procedure*/
-void
-enter_stage_1_build_tree(PT_main * main,char *tname)
-{
+void enter_stage_1_build_tree(PT_main * main,char *tname) {
     main = main;
     POS_TREE       *pt = NULL;
     int             i, j, abs_align_pos;
@@ -201,6 +199,7 @@ enter_stage_1_build_tree(PT_main * main,char *tname)
         exit(EXIT_FAILURE);
     }
     GB_set_mode_of_file(t2name,0666);
+
     putc(0,out);        /* disable zero father */
     pos = 1;
 
@@ -227,7 +226,7 @@ enter_stage_1_build_tree(PT_main * main,char *tname)
         printf("Overall bases: %li\n", total_size);
 
         while (1) {
-#ifdef DEVEL_JB
+#ifdef ARB_64
             ULONG estimated_kb = (total_size/1024)*55;  // value by try and error (for gene server)
                                                         // TODO: estimated_kb depends on 32/64 bit...
 #else
@@ -289,19 +288,40 @@ enter_stage_1_build_tree(PT_main * main,char *tname)
         PTD_debug_nodes();
 #endif
     }
-#ifdef DEVEL_JB
-    if (last_obj >= 0xffffffff) {           // last_obj is bigger than int
-        PTD_put_longlong(out, last_obj);    // write last_obj as long long (64 bit)
-        PTD_put_int(out, 0xffffffff);       // write 0xffffffff at the end to signalize that
-                                            // last_obj ist stored in the 8 bytes before
-                                            // 0xffffffff is used as a signal to be compatible 
-                                            // with older pt-servers
-    } else {                                
-        PTD_put_int(out,last_obj);          // lost_obj fits into an int -> store it as usual
-    }
+
+    bool need64bit                        = false;  // does created db need a 64bit ptserver ?
+#ifdef ARB_64
+    if (last_obj >= 0xffffffff) need64bit = true;   // last_obj is bigger than int
 #else
-    PTD_put_int(out,last_obj);
-#endif    
+    if (last_obj <= 0) {                            // overflow ?
+        GBK_terminate("Overflow - out of memory");
+    }
+#endif
+
+    // write information about database
+    long info_pos = pos;
+    PTD_put_int(out, PT_SERVER_MAGIC);              // marker to identify PT-Server file
+    fputc(PT_SERVER_VERSION, out);                  // version of PT-Server file
+    pos += 4+1;
+
+    // as last element of info block, write it's size (2byte)
+    long info_size = pos-info_pos;
+    PTD_put_short(out, info_size);
+    pos += 2;
+
+    // save DB footer (which is the entry point on load)
+
+    if (need64bit) {                                // last_obj is bigger than int
+#ifdef ARB_64
+        PTD_put_longlong(out, last_obj);            // write last_obj as long long (64 bit)
+        PTD_put_int(out, 0xffffffff);               // write 0xffffffff at the end to signal 64bit ptserver is needed
+#else
+        gb_assert(0);
+#endif
+    }
+    else {
+        PTD_put_int(out,last_obj);                  // last_obj fits into an int -> store it as usual (compatible to old unversioned format)
+    }
 
     GB_commit_transaction(psg.gb_main);
     fclose(out);
