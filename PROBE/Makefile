@@ -153,6 +153,7 @@ PT_new_design.o: $(ARBHOME)/INCLUDE/arbdb.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/attributes.h
+PT_new_design.o: $(ARBHOME)/INCLUDE/inline.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/PT_com.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/PT_server.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/PT_server_prototypes.h

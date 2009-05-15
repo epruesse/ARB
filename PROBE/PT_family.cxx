@@ -217,7 +217,7 @@ extern "C" int ff_find_family(PT_local *locs, bytestring *species) {
     int complement  = locs->ff_compl; // any combination of: 1 = forward, 2 = reverse, 4 = reverse-complement, 8 = complement 
 
     char *sequence     = species->data;
-    int   sequence_len = probe_compress_sequence(sequence);
+    int   sequence_len = probe_compress_sequence(sequence, species->size);
 
     clear_statistic();
 

@@ -58,13 +58,13 @@ void PT_base_2_string(char *id_string, long len)
     while((len--)>0){
         c=*(src++);
         switch (c) {
-            case PT_A: *(dest++) = 'A';break;
-            case PT_C: *(dest++) = 'C';break;
-            case PT_G: *(dest++) = 'G';break;
-            case PT_T: *(dest++) = 'U';break;
-            case PT_N: *(dest++) = 'N';break;
-            case 0: *(dest++) = '0'; break;
-            default: *(dest++) = c;break;
+            case PT_A: *(dest++)  = 'A';break;
+            case PT_C: *(dest++)  = 'C';break;
+            case PT_G: *(dest++)  = 'G';break;
+            case PT_T: *(dest++)  = 'U';break;
+            case PT_N: *(dest++)  = 'N';break;
+            case 0: *(dest++)     = '0'; break;
+            default: *(dest++)    = c;break;
         }
 
     }
@@ -73,9 +73,6 @@ void PT_base_2_string(char *id_string, long len)
 
 void probe_read_data_base(char *name)
 {
-    // IDP Datenbank oeffnen
-
-
     GBDATA *gb_main;
     GBDATA *gb_species_data;
 
@@ -101,31 +98,68 @@ void probe_read_data_base(char *name)
     GB_commit_transaction(gb_main);
 }
 
-int probe_compress_sequence(char *seq)
+inline size_t count_uint_32(uint32_t *seq, size_t seqsize, uint32_t cmp) {
+    size_t count = 0;
+    while (count<seqsize && seq[count] == cmp) count++;
+    return count*4;
+}
+
+inline size_t count_char(const char *seq, size_t seqsize, char c, uint32_t c4) {
+    if (seq[0] == c) {
+        size_t count = 1+count_uint_32((uint32_t*)(seq+1), (seqsize-1)/4, c4);
+        for (; count<seqsize && seq[count] == c; ++count) ;
+        return count;
+    }
+    return 0;
+}
+
+inline size_t count_dots(const char *seq, int seqsize) { return count_char(seq, seqsize, '.', 0x2E2E2E2E); }
+inline size_t count_gaps(const char *seq, int seqsize) { return count_char(seq, seqsize, '-', 0x2D2D2D2D); }
+
+inline size_t count_gaps_and_dots(const char *seq, int seqsize) {
+    size_t count = 0;
+    size_t count2;
+    size_t count3;
+
+    do {
+        count2  = count_dots(seq+count, seqsize-count);
+        count  += count2;
+        count3  = count_gaps(seq+count, seqsize-count);
+        count  += count3;
+    }
+    while (count2 || count3);
+    return count;
+}
+
+int probe_compress_sequence(char *seq, int seqsize)
 {
     static uchar *tab = 0;
     if (!tab) {
         tab = (uchar *)malloc(256);
         memset(tab,PT_N,256);
+        
         tab['A'] = tab['a'] = PT_A;
         tab['C'] = tab['c'] = PT_C;
         tab['G'] = tab['g'] = PT_G;
         tab['T'] = tab['t'] = PT_T;
         tab['U'] = tab['u'] = PT_T;
         tab['.'] = PT_QU;
+        tab[0]   = PT_B_UNDEF;
     }
 
-    char *dest, *source;
-    dest = source = seq;
-    while(*seq) {
-        while ( *(uint32_t*)seq == 0x2D2D2D2D ) seq += 4;
-        while ( *seq == '-') seq++;
+    char   *dest   = seq;
+    size_t  offset = 0;
 
-        uchar c = tab[safeCharIndex(*seq++)];
+    while (seq[offset]) {
+        offset += count_gaps(seq+offset, seqsize-offset); // skip over gaps
+
+        uchar c = tab[safeCharIndex(seq[offset++])];
+        if (c == PT_B_UNDEF) break;                 // already seen terminal zerobyte
+
         *dest++ = c;
-        if ( c == PT_QU ) { // TODO: *seq='.' ???
-            while ( *(uint32_t*)seq == 0x2D2D2D2D || *(uint32_t*)seq == 0x2E2E2E2E ) seq+= 4;
-            while ( *seq == '-' || *seq == '.' ) seq++;
+        if (c == PT_QU) {                           // TODO: *seq = '.' ???
+            offset += count_gaps_and_dots(seq+offset, seqsize-offset); // skip over gaps and dots
+            // dest[-1] = PT_N; // @@@ uncomment this to handle '.' like 'N' (experimental!!!)
         }
     }
 
@@ -134,43 +168,36 @@ int probe_compress_sequence(char *seq)
     }
 
 #ifdef ARB_64
-    arb_assert(!((dest - source) & 0xffffffff00000000));    // must fit into 32 bit
+    arb_assert(!((dest - seq) & 0xffffffff00000000));    // must fit into 32 bit
 #endif    
 
-    return dest-source;
+    return dest-seq;
 }
 
-char *probe_read_string_append_point(GBDATA *gb_data,int *psize)
-{
-    char *data;
-    char *buffer;
-    long len;
-    len = GB_read_string_count(gb_data);
-    data = GB_read_string(gb_data);
+static char *probe_read_string_append_point(GBDATA *gb_data, int *psize) {
+    long  len  = GB_read_string_count(gb_data);
+    char *data = GB_read_string(gb_data);
+
     if (data[len-1] != '.') {
-        buffer = (char *)calloc(sizeof(char),len+2);
+        char *buffer = (char *)malloc(len+2);
+        
         strcpy(buffer,data);
         buffer[len++] = '.';
+        buffer[len+1] = 0;
         freeset(data, buffer);
     }
     *psize = len;
     return data;
 }
-char           *
-probe_read_alignment(int j, int *psize)
-{
-    static char    *buffer = 0;
-    GBDATA  *gb_ali,*gb_data;
-    buffer = 0;
-    gb_ali = GB_entry(psg.data[j].gbd, psg.alignment_name);
-    if (!gb_ali)
-        return 0;
-    /* this alignment doesnt exist */
-    gb_data = GB_entry(gb_ali, "data");
-    if (!gb_data) {
-        return 0;
+
+char *probe_read_alignment(int j, int *psize) {
+    char   *buffer = 0;
+    GBDATA *gb_ali = GB_entry(psg.data[j].gbd, psg.alignment_name);
+    
+    if (gb_ali) {
+        GBDATA *gb_data = GB_entry(gb_ali, "data");
+        if (gb_data) buffer = probe_read_string_append_point(gb_data, psize);
     }
-    buffer = probe_read_string_append_point(gb_data,psize);
     return buffer;
 }
 
@@ -228,11 +255,11 @@ void probe_read_alignments() {
                 data_missing++;
             }
             else {
-                pid.checksum = GBS_checksum(GB_read_char_pntr(gb_data),1,".-");
                 {
                     int   hsize;
                     char *data = probe_read_string_append_point(gb_data, &hsize);
-                    int   size = probe_compress_sequence(data);
+                    pid.checksum = GB_checksum(data, hsize, 1, ".-");
+                    int   size = probe_compress_sequence(data, hsize);
 
                     pid.data = (char *)gbs_malloc_copy(data, size);
                     pid.size = size;

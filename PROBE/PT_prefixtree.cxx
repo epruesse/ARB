@@ -13,7 +13,7 @@
 struct PTM_struct PTM;
 char PT_count_bits[PT_B_MAX+1][256]; // returns how many bits are set
 
-/********************* build a fast conversation table ***********************/
+/********************* build conversion table ***********************/
 
 void PT_init_count_bits(void){
     unsigned int base;
