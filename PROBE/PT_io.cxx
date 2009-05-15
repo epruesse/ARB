@@ -47,7 +47,7 @@ int compress_data(char *probestring)
 }
 
 /* get a string with readable bases from a string with PT_? */
-int PT_base_2_string(char *id_string, long len)
+void PT_base_2_string(char *id_string, long len)
 {
     char    c;
     char    *src,
@@ -69,7 +69,6 @@ int PT_base_2_string(char *id_string, long len)
 
     }
     *dest = '\0';
-    return 0;
 }
 
 void probe_read_data_base(char *name)

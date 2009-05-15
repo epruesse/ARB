@@ -63,7 +63,7 @@ void PT_init_map P_((void));
 
 /* PT_io.cxx */
 int compress_data P_((char *probestring));
-int PT_base_2_string P_((char *id_string, long len));
+void PT_base_2_string P_((char *id_string, long len));
 void probe_read_data_base P_((char *name));
 int probe_compress_sequence P_((char *seq));
 char *probe_read_string_append_point P_((GBDATA *gb_data, int *psize));
