@@ -206,6 +206,7 @@ AW_size.o: $(ARBHOME)/INCLUDE/attributes.h
 
 AW_status.o: aw_awars.hxx
 AW_status.o: aw_device.hxx
+AW_status.o: aw_global.hxx
 AW_status.o: aw_keysym.hxx
 AW_status.o: aw_position.hxx
 AW_status.o: aw_root.hxx
