@@ -13,6 +13,7 @@ if [ -z $1 ] ; then
     echo '    -f <filter>    regexpr to filter the reason (default: all)'
     echo '    -l [-r]        turn on leak-checking (-r for reachable blocks)'
     echo '    -A             show known boring errors (most Xt/Motif-related)'
+    echo '    -D             run gdb on error'
     echo ''
     echo ''
     echo 'Usage: arb_valgrind update'
@@ -35,7 +36,7 @@ if [ -z $1 ] ; then
     echo '          (cd $ARBHOME;make nt) && arb_valgrind -l arb_ntree ~/ARB/demo.arb'
     echo ''
     echo 'There are scripts for older valgrind versions: '
-    cat `ls arb_valgrind*`
+    cat `ls $ARBHOME/SOURCE_TOOLS/arb_valgrind*`
     echo ''
 
 else
@@ -53,6 +54,7 @@ else
     FILTER='.*'
     LEAK_CHECK=''
     TOOL='--tool=memcheck'
+    ATTACH=''
 
     if [ ! -f $LIST ] ; then
         UPDATE=1
@@ -95,6 +97,11 @@ else
                 shift 1
                 SCAN_ARGS=1
             fi
+            if [ $1 = '-D' ] ; then
+                ATTACH='--db-attach=yes'
+                shift 1
+                SCAN_ARGS=1
+            fi
         done
     fi
 
@@ -118,9 +125,13 @@ else
         echo "CALLERS='$CALLERS'"
         echo "FILTER ='$FILTER'"
         VG_CALLERS=$[$CALLERS+5]
-        COMMAND="valgrind $TOOL -v --error-limit=no --num-callers=$VG_CALLERS $SHOW_REACHABLE $LEAK_CHECK $*"
+        COMMAND="valgrind $TOOL -v --error-limit=no --num-callers=$VG_CALLERS $SHOW_REACHABLE $LEAK_CHECK $ATTACH $*"
         echo "COMMAND='$COMMAND'"
-        $COMMAND 2>&1 >/tmp/arb_valgrind_$USER.stdout | $DIR/valgrind2grep $CALLERS "$FILTER" $SUPPX
+        if [ "$ATTACH" = "" ]; then
+            $COMMAND 2>&1 >/tmp/arb_valgrind_$USER.stdout | $DIR/valgrind2grep $CALLERS "$FILTER" $SUPPX
+        else
+            $COMMAND
+        fi
         echo 'valgrind done.'
     fi
 fi
