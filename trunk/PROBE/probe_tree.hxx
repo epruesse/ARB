@@ -79,8 +79,8 @@ extern char PT_count_bits[PT_B_MAX+1][256]; // returns how many bits are set
     byte                bit[7] = 1  bit[6] = 0
     byte2               bit2[7] = 0  bit2[6] = 0  -->  short/char
                         bit2[7] = 1  bit2[6] = 0  -->  int/short
-                        bit2[7] = 0  bit2[6] = 1  -->  long/int         // atm only if DEVEL_JB is set
-                        bit2[7] = 1  bit2[6] = 1  -->  undefined        // atm only if DEVEL_JB is set
+                        bit2[7] = 0  bit2[6] = 1  -->  long/int         // atm only if ARB_64 is set
+                        bit2[7] = 1  bit2[6] = 1  -->  undefined        // atm only if ARB_64 is set
     [char/short/int/long son0]  if bit[0]   left (bigger) type if bit2[0] else right (smaller) type
     [char/short/int/long son1]  if bit[1]   left (bigger) type if bit2[1] else right (smaller) type
     ...
@@ -92,7 +92,7 @@ extern char PT_count_bits[PT_B_MAX+1][256]; // returns how many bits are set
     example2:   byte  = 0x8d    --> inner node; son0, son2 and son3 are available
                 byte2 = 0x81    --> son0 is a int; son2 and son3 are shorts
 
-// example3 atm only if DEVEL_JB is set
+// example3 atm only if ARB_64 is set
     example3:   byte  = 0x8d    --> inner node; son0, son2 and son3 are available
                 byte2 = 0x44    --> son2 is a long; son0 and son3 are ints
 
@@ -145,7 +145,7 @@ only few functions can be used, when the tree is reloaded (stage 3):
 #endif
 
 #define IS_SINGLE_BRANCH_NODE 0x40
-#ifdef DEVEL_JB
+#ifdef ARB_64
 # define INT_SONS              0x80
 # define LONG_SONS             0x40
 #else
@@ -184,33 +184,16 @@ static inline unsigned long long bswap_64(unsigned long long x) {
 #include <byteswap.h>
 #endif // DARWIN
 
-#if defined(DEVEL_RALF)
-#warning remove byte swap - see below 
-#endif // DEVEL_RALF
-
 // ********************************************************************************
 // ********************************************************************************
 //
-//      Note about using byte swap here
+// Note about bswap as used here:
 //
-//  - using bswapXX below was only done for compatibility reasons, in order to be
-//    able to use a PT-Server independent from the endianness of the OS
-//    (on which PT-Server was created/used)
+// * MSB has to be at start of written byte-chain, cause the most significant bit is used to separate
+//   between INT and SHORT
 //
-//  - since PT_READ_PNTR / PT_WRITE_PNTR differ between 64 and 32-bit versions
-//    this compatibility does no longer exists
-//
-//  TODO:
-//
-//  - put some data into PT-Server file describing
-//      * endianness
-//      * 32/64 bit flavour
-//      * PT-Server version number!!!
-//
-//  - deny to load PT-Server with error message if it does not match
-//    (or if it is an old one)
-//
-//  - remove byte swaps completely
+// * To use PT-server on a big-endian system it has to be skipped
+// 
 
 /********************* Read and write to memory ***********************/
 
@@ -412,7 +395,7 @@ GB_INLINE POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
         sec = (uchar)node->data;    // read second byte for charshort/shortlong info
         i = PT_count_bits[base][node->flags];
         i+= PT_count_bits[base][sec];
-#ifdef DEVEL_JB
+#ifdef ARB_64
         if (sec & LONG_SONS) {
             if (sec & INT_SONS) {                                   // undefined -> error
                 GBK_terminate("Your pt-server search tree is corrupt! You can not use it anymore.\n"
@@ -471,7 +454,7 @@ GB_INLINE POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
         if (!( (1<<base) & node->flags)) return NULL;  /* bit not set */
         base = (PT_BASES)PT_count_bits[base][node->flags];
         PT_READ_PNTR((&node->data)+sizeof(PT_PNTR)*base+ptmain->mode,i);
-        return (POS_TREE *)(i+ptmain->base);            // ptmain->base == 0x00 in stage 1
+        return (POS_TREE *)(i+ptmain->data_start); // ptmain->data_start == 0x00 in stage 1
     }
 }
 
@@ -481,7 +464,7 @@ GB_INLINE POS_TREE *PT_read_son_stage_1(PTM2 *ptmain, POS_TREE *node, PT_BASES b
     if (!( (1<<base) & node->flags)) return NULL;  /* bit not set */
     base = (PT_BASES)PT_count_bits[base][node->flags];
     PT_READ_PNTR((&node->data)+sizeof(PT_PNTR)*base+ptmain->mode,i);
-    return (POS_TREE *)(i+ptmain->base);                // ptmain->base == 0x00 in stage 1
+    return (POS_TREE *)(i+ptmain->data_start); // ptmain->data_start == 0x00 in stage 1
 }
 
 GB_INLINE PT_NODE_TYPE PT_read_type(POS_TREE *node)

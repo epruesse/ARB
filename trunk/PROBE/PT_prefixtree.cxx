@@ -396,7 +396,7 @@ void PTD_clear_fathers(PTM2 *ptmain, POS_TREE * node)       /* stage 1*/
     }
 }
 
-#ifdef DEVEL_JB
+#ifdef ARB_64
 void PTD_put_longlong(FILE * out, ULONG i)
 {
     arb_assert(i == (unsigned long) i);
@@ -457,7 +457,7 @@ long PTD_write_tip_to_disk(FILE * out, PTM2 */*ptmain*/,POS_TREE * node,long pos
     // write 4 bytes when not in stage 2 save mode
 
     cnt = size-sizeof(PT_PNTR)-1;               /* no father; type already saved */
-#ifdef DEVEL_JB
+#ifdef ARB_64
     fwrite(&node->data + sizeof(PT_PNTR), 0x01, cnt, out);   // write name rpos apos
 #else
     for (data = (&node->data)+sizeof(PT_PNTR);cnt;cnt--) { /* write apos rpos name */
@@ -564,7 +564,7 @@ long PTD_write_chain_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node,long pos) 
 
 void PTD_debug_nodes(void)
 {
-#ifdef DEVEL_JB
+#ifdef ARB_64
     printf ("Inner Node Statistic:\n");
     printf ("   Single Nodes:   %6i\n",psg.stat.single_node);
     printf ("   Short  Nodes:   %6i\n",psg.stat.short_node);
@@ -610,7 +610,7 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node, long *r_po
             if (diff>max_diff) {
                 max_diff = diff;
                 lasti = i;
-#ifdef DEVEL_JB
+#ifdef ARB_64
                 if (max_diff > psg.stat.maxdiff) {
                     psg.stat.maxdiff = max_diff;
                 }
@@ -638,7 +638,7 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node, long *r_po
         putc(node->flags,out);
         int flags2 = 0;
         int level;
-#ifdef DEVEL_JB
+#ifdef ARB_64
         if (max_diff > 0xffffffff){         // long node
             printf("Warning: max_diff > 0xffffffff is not tested.\n"); 
             flags2 |= 0x40;
@@ -676,7 +676,7 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node, long *r_po
             if (r_poss[i]){
                 /*u*/ long  diff = pos - r_poss[i];
                 arb_assert(diff >= 0);
-#ifdef DEVEL_JB
+#ifdef ARB_64
                 if (max_diff > 0xffffffff){         // long long / int  (bit[6] in flags2 is set; bit[7] is unset)
                     printf("Warning: max_diff > 0xffffffff is not tested.\n"); 
                     if (diff>level) {               // long long (64 bit)  (bit[i] in flags2 is set)
@@ -800,36 +800,85 @@ long PTD_write_leafs_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos
 
 /******************************** funtions for stage 2-3: load *********************************/
 
-void PTD_read_leafs_from_disk(char *fname,PTM2 *ptmain, POS_TREE **pnode)
-{
-    char *buffer;
-    long i;
-    char    *main;
-    buffer = GB_map_file(fname,0);
-    if (!buffer){
-        GB_print_error();
-        fprintf(stderr,"PT_SERVER: Error Out of Memory: mmap failes\n");
+void PTD_read_leafs_from_disk(char *fname,PTM2 *ptmain, POS_TREE **pnode) {
+    GB_ERROR  error  = NULL;
+    char     *buffer = GB_map_file(fname,0);
+
+    if (!buffer) {
+        error = GBS_global_string("mmap failed (%s)", GB_await_error());
+    }
+    else {
+        long  size = GB_size_of_file(fname);
+        char *main = &(buffer[size-4]);
+
+        long i;
+        bool big_db = false;;
+        PT_READ_INT(main, i);
+#ifdef ARB_64
+        if (i == 0xffffffff) {                          // 0xffffffff signalizes that "last_obj" is stored
+            main                       -= 8;            // in the previous 8 byte (in a long long)
+            arb_assert(sizeof(PT_PNTR) == 8);           // 0xffffffff is used as a signal to be compatible with older pt-servers
+            PT_READ_PNTR(main, i);                      // this search tree can only be loaded at 64 Bit
+
+            big_db = true;
+        }
+#else
+        if (i<0) {
+            arb_assert(i == -1);                        // aka 0xffffffff
+            big_db = true;                              // not usable in 32-bit version (fails below)
+        }
+        arb_assert(i <= INT_MAX);
+#endif
+
+        // try to find info_area 
+        main -= 2;
+        short info_size;
+        PT_READ_SHORT(main, info_size);
+
+        bool info_detected = false;
+        if (info_size>0 && info_size<(main-buffer)) {   // otherwise impossible size
+            main -= info_size;
+
+            long magic;
+            int  version;
+
+            PT_READ_INT(main, magic); main += 4;
+            PT_READ_CHAR(main, version); main++;
+
+            arb_assert(PT_SERVER_MAGIC>0 && PT_SERVER_MAGIC<INT_MAX);
+
+            if (magic == PT_SERVER_MAGIC) {
+                info_detected = true;
+                if (version>PT_SERVER_VERSION) {
+                    error = "PT-server database was built with a newer version of PT-Server";
+                }
+            }
+        }
+
+#ifndef ARB_64
+        // 32bit version:
+        if (!error && big_db) {
+            error = "PT-server database can only be used with 64bit-PT-Server";
+        }
+        if (!error && !info_detected) {
+            printf("Warning: ptserver DB has old format (no problem)\n");
+        }
+#endif // ARB_64
+
+        if (!error) {
+            arb_assert(i >= 0);
+
+            *pnode             = (POS_TREE *)(i+buffer);
+            ptmain->mode       = 0;
+            ptmain->data_start = buffer;
+        }
+    }
+
+    if (error) {
+        fprintf(stderr, "PT_SERVER-Error: %s\n", error);
         exit(EXIT_FAILURE);
     }
-
-    long size = GB_size_of_file(fname);
-
-    main = &(buffer[size-4]);
-    PT_READ_INT(main, i);
-#ifdef DEVEL_JB
-    if (i == 0xffffffff)                        // 0xffffffff signalizes that "last_obj" is stored
-    {                                           // in the previous 8 byte (in a long long)
-        main -= 8;                              // 0xffffffff is used as a signal to be compatible with older pt-servers
-        arb_assert(sizeof(PT_PNTR) == 8);       // this search tree can only be loaded at 64 Bit 
-        PT_READ_PNTR(main, i);
-    }
-    arb_assert(i >= 0);
-#else
-    arb_assert((i >= 0) && (i <= INT_MAX));
-#endif
-    *pnode = (POS_TREE *)(i+buffer);
-    ptmain->mode = 0;
-    ptmain->base = buffer;
+    
 }
 
 

@@ -22,6 +22,9 @@
 #include <arb_assert.h>
 #endif
 
+#define PT_SERVER_MAGIC   0x32108765                // pt server identifier
+#define PT_SERVER_VERSION 2                         // version of pt server database (no versioning till 2009/05/13)
+
 #define pt_assert(bed) arb_assert(bed)
 
 #if defined(DEBUG)
@@ -98,7 +101,7 @@ typedef struct POS_TREE_struct {
 } POS_TREE;
 
 typedef struct PTMM_struct {
-    char *base;
+    char *data_start; // points to start of data
     int   stage1;
     int   stage2;
     int   stage3;
@@ -140,7 +143,7 @@ struct probe_input_data {    /* every taxas own data */
 };
 
 struct probe_statistic_struct {
-#ifdef DEVEL_JB
+#ifdef ARB_64
     int cut_offs;       /* statistic of chains */
     int single_node;
     int short_node;
