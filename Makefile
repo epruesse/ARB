@@ -104,6 +104,7 @@ endif
 ifeq ($(DEBUG),1)
 	dflags := -DDEBUG
 	cflags := -O0 -g -g3 -ggdb -ggdb3
+#	cflags := -O2 -g -g3 -ggdb -ggdb3 # use this for callgrind (force inlining)
  ifndef DARWIN
 	lflags += -g
  endif
