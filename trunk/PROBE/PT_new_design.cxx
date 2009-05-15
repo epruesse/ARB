@@ -9,6 +9,7 @@
 #include "probe.h"
 #include "probe_tree.hxx"
 #include <arbdbt.h>
+#include <inline.h>
 
 #ifdef P_
 #error P_ already defined
@@ -802,31 +803,29 @@ static void ptnd_check_probepart(PT_pdc *pdc)
 /***********************************************************************
                         search for possible probes
 ***********************************************************************/
-inline int ptnd_check_tprobe(PT_pdc *pdc, char *probe, int len)
+inline int ptnd_check_tprobe(PT_pdc *pdc, const char *probe, int len)
 {
-    double temp;
-    int    gc;
-    int    at;
-    int    a,t,c,g,i;
+    int occ[PT_B_MAX] = { 0, 0, 0, 0, 0, 0 };
 
-    a = t = c= g = 0;
-    while (( i=*(probe++) )) {
-        switch(i) {
-            case PT_A:  a++; break;
-            case PT_C:  c++; break;
-            case PT_G:  g++; break;
-            case PT_T:  t++; break;
-            default:    return 1;
-        }
+    int count = 0;
+    while (count<len) {
+        occ[safeCharIndex(probe[count++])]++;
     }
-    gc = g+c;
-    at = a+t;
+    int gc = occ[PT_G]+occ[PT_C];
+    int at = occ[PT_A]+occ[PT_T];
+
+    int all = gc+at;
+    
+    if (all < len) return 1; // there were some unwanted characters ('N' or '.')
+    if (all < pdc->probelen) return 1;
+
     if (gc < pdc->min_gc*len) return 1;
     if (gc > pdc->max_gc*len) return 1;
-    temp = at*2 + gc*4;
+
+    double temp = at*2 + gc*4;
     if (temp< pdc->mintemp) return 1;
     if (temp>pdc->maxtemp) return 1;
-    if (at+gc < pdc->probelen) return 1;
+
     return 0;
 }
 
@@ -842,30 +841,32 @@ static long ptnd_build_probes_collect(const char *probe, long count, void*) {
     return count;
 }
 
+inline void PT_incr_hash(GB_HASH *hash, char *sequence, int len) {
+    char c        = sequence[len];
+    sequence[len] = 0;
+
+    pt_assert(strlen(sequence) == (size_t)len);
+    
+    GBS_incr_hash(hash, sequence);
+
+    sequence[len] = c;
+}
+
 static void ptnd_add_sequence_to_hash(PT_pdc *pdc, GB_HASH *hash, char *sequence, int seq_len, int probe_len, char *prefix, int prefix_len) {
     int pos;
-    int c;
-    //printf ("Size of sequence %i\n",seq_len);
-    if (*prefix) {
+    if (*prefix) { // partition search, else very large hash tables (>60 mbytes)
         for (pos = seq_len-probe_len; pos >= 0; pos--, sequence++) {
-            if (   (*prefix!= *sequence ||
-                    strncmp(sequence,prefix,prefix_len)) ) continue;
-            /* partition search, else very large hash tables (>60 mbytes)       */
-            c = sequence[probe_len];
-            sequence[probe_len] = 0;
-            if (!ptnd_check_tprobe(pdc,sequence,probe_len)) {
-                GBS_incr_hash(hash,sequence);
+            if ((*prefix!= *sequence || strncmp(sequence,prefix,prefix_len)) ) continue;
+            if (!ptnd_check_tprobe(pdc,sequence, probe_len)) {
+                PT_incr_hash(hash, sequence, probe_len);
             }
-            sequence[probe_len] = c;
         }
-    }else{
+    }
+    else {
         for (pos = seq_len-probe_len; pos >= 0; pos--, sequence++) {
-            c = sequence[probe_len];
-            sequence[probe_len] = 0;
-            if (!ptnd_check_tprobe(pdc,sequence,probe_len)) {
-                GBS_incr_hash(hash,sequence);
+            if (!ptnd_check_tprobe(pdc,sequence, probe_len)) {
+                PT_incr_hash(hash, sequence, probe_len);
             }
-            sequence[probe_len] = c;
         }
     }
 }
@@ -1034,7 +1035,7 @@ extern "C" int PT_start_design(PT_pdc *pdc, int /*dummy*/) {
 
     PT_sequence *seq;
     for ( seq = pdc->sequences; seq; seq = seq->next) { // Convert all external sequence to internal format
-        seq->seq.size = probe_compress_sequence(seq->seq.data);
+        seq->seq.size = probe_compress_sequence(seq->seq.data, seq->seq.size);
         locs->group_count++;
     }
 

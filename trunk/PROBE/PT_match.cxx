@@ -261,9 +261,10 @@ int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int mismatch
 
             while ((base = probe[height])) {
                 i = psg.data[name].data[pos];
-                if (i == PT_N || base == PT_N){
+                if (i == PT_N || base == PT_N || i == PT_QU || base == PT_QU) {
                     psg.N_mismatches = psg.N_mismatches + 1;
-                }else{
+                }
+                else {
                     if (i != base){
                         psg.mismatches++;
                         if (locs->pdc) {
