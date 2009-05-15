@@ -163,7 +163,7 @@ public:
         
         PT_BASES b = (PT_BASES)data.data[rpos];
 
-        printf("%s[%c] %s %i\n", prefix, PT_BASES_2_char(b), data.name, apos);
+        printf("%s[%c] %s apos=%i rpos=%i\n", prefix, PT_BASES_2_char(b), data.name, apos, rpos);
         return 0;
     }
 };
