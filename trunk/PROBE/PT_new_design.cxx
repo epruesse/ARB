@@ -876,6 +876,10 @@ static long ptnd_collect_hash(const char *key, long val, void *gb_hash) {
     return val;
 }
 
+#if defined(DEVEL_RALF)
+static long avoid_hash_warning(const char *, long , void*) { return 0; }
+#endif // DEVEL_RALF
+
 static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
     int           *group_idx    = new int[group_count];
     unsigned long  datasize     = 0;                    // of marked species/genes
@@ -935,7 +939,7 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
         fputs("'\n", stdout);
 #endif // DEBUG
 
-        GB_HASH *hash = GBS_create_hash(outer_hash_size, GB_MIND_CASE); // count in how many groups/sequences the tprobe occurs (key = tprobe, value = counter)
+        GB_HASH *hash_outer = GBS_create_hash(outer_hash_size, GB_MIND_CASE); // count in how many groups/sequences the tprobe occurs (key = tprobe, value = counter)
 
 #if defined(DEBUG)
         GBS_clear_hash_statistic_summary("inner");
@@ -948,7 +952,7 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
             long     possible_tprobes = psg.data[name].size-pdc->probelen+1;
             GB_HASH *hash_one         = GBS_create_hash(possible_tprobes*hash_multiply, GB_MIND_CASE); // count tprobe occurrences for one group/sequence
             ptnd_add_sequence_to_hash(pdc, hash_one, psg.data[name].data, psg.data[name].size, pdc->probelen, partstring, partsize);
-            GBS_hash_do_loop(hash_one, ptnd_collect_hash, hash); // merge hash_one into hash
+            GBS_hash_do_loop(hash_one, ptnd_collect_hash, hash_outer); // merge hash_one into hash
 #if defined(DEBUG)
             GBS_calc_hash_statistic(hash_one, "inner", 0);
 #endif // DEBUG
@@ -959,7 +963,7 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
             long     possible_tprobes = seq->seq.size-pdc->probelen+1;
             GB_HASH *hash_one         = GBS_create_hash(possible_tprobes*hash_multiply, GB_MIND_CASE); // count tprobe occurrences for one group/sequence
             ptnd_add_sequence_to_hash(pdc, hash_one, seq->seq.data, seq->seq.size, pdc->probelen, partstring, partsize);
-            GBS_hash_do_loop(hash_one, ptnd_collect_hash, hash); // merge hash_one into hash
+            GBS_hash_do_loop(hash_one, ptnd_collect_hash, hash_outer); // merge hash_one into hash
 #if defined(DEBUG)
             GBS_calc_hash_statistic(hash_one, "inner", 0);
 #endif // DEBUG
@@ -969,11 +973,17 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
 #if defined(DEBUG)
         GBS_print_hash_statistic_summary("inner");
 #endif // DEBUG
-        GBS_hash_do_loop(hash, ptnd_build_probes_collect, NULL);
+
+        GBS_hash_do_loop(hash_outer, ptnd_build_probes_collect, NULL);
+
 #if defined(DEBUG)
-        GBS_calc_hash_statistic(hash, "outer", 1);
+        GBS_calc_hash_statistic(hash_outer, "outer", 1);
+#if defined(DEVEL_RALF)
+        GBS_hash_do_loop(hash_outer, avoid_hash_warning, NULL); // hash is known to be overfilled - avoid assertion
+#endif // DEVEL_RALF
 #endif // DEBUG
-        GBS_free_hash(hash);
+        
+        GBS_free_hash(hash_outer);
         PT_inc_base_string_count(partstring,PT_A,PT_B_MAX,partsize);
     }
 #if defined(DEBUG)
