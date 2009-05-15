@@ -2853,8 +2853,9 @@ boolean buildSimpleTree (tree *tr, int ip, int iq, int ir)
   } /* buildSimpleTree */
 
 
+#if 0
 char * strchr (char *str, int chr)
- { /* strchr */
+{ /* strchr */
     int  c;
 
     while (c = *str)  {if (c == chr) return str; str++;}
@@ -2877,7 +2878,7 @@ char * strstr (char *str1, char *str2)
       }
     return  (char *) NULL;
  } /* strstr */
-
+#endif
 
 boolean readKeyValue (char *string, char *key, char *format, void *value)
   { /* readKeyValue */
