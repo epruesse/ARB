@@ -11,6 +11,7 @@
 #include "nt_internal.h"
 #include "ad_spec.hxx"
 #include "GEN.hxx"
+#include "awt.hxx"
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
@@ -34,7 +35,10 @@ void nt_seq_load_cb(AW_root *awr, AW_CL, AW_CL){
 */
 void NT_import_sequences(AW_window *aww,AW_CL,AW_CL){
 
-    if (GLOBAL_gb_merge) GB_close(GLOBAL_gb_merge);
+    if (GLOBAL_gb_merge) {
+        AWT_browser_forget_db(GLOBAL_gb_merge);
+        GB_close(GLOBAL_gb_merge);
+    }
 
     AW_root *awr = aww->get_root();
 

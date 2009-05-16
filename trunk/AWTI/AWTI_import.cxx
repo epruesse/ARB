@@ -1152,12 +1152,16 @@ GBDATA *open_AWTC_import_window(AW_root *awr,const char *defname, bool do_exit, 
     static AW_window_simple *aws = 0;
 
 #if defined(DEVEL_RALF)
-#warning where is awtcig.gb_main closed     
+#warning where is awtcig.gb_main closed
+    // it is either (currently not) closed by merge tool
+    // or closed as main db in ARB_NTREE
 #endif // DEVEL_RALF
     awtcig.gb_main = GB_open("noname.arb","wc");
     awtcig.func    = func;
     awtcig.cd1     = cd1;
     awtcig.cd2     = cd2;
+
+    AWT_announce_db_to_browser(awtcig.gb_main, "New database (import)");
 
     awtcig.gb_other_main = gb_main;
 
