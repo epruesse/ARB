@@ -342,6 +342,7 @@ void MG_start_cb(AW_window *aww)
 
 #if defined(DEVEL_RALF)
 #warning where are GLOBAL_gb_merge / GLOBAL_gb_dest closed ? 
+#warning when closing them, call AWT_browser_forget_db as well
 #endif // DEVEL_RALF
             aw_status("DATABASE I");
             GLOBAL_gb_merge             = GBT_open(merge, "rw", "$(ARBHOME)/lib/pts/*");

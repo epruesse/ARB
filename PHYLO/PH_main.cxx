@@ -77,9 +77,11 @@ void startup_sequence_cb(AW_window *aww,AW_CL cd1, AW_CL cl_aww)
 ATTRIBUTED(__ATTR__NORETURN, static void ph_exit(AW_window *aw_window, PH_root *ph_root))
 {
     AWUSE(aw_window);
-    if (ph_root->gb_main) {
-        aw_window->get_root()->unlink_awars_from_DB(ph_root->gb_main);
-        GB_close(ph_root->gb_main);
+    GBDATA *gb_main = ph_root->gb_main;
+    if (gb_main) {
+        aw_window->get_root()->unlink_awars_from_DB(gb_main);
+        AWT_browser_forget_db(gb_main);
+        GB_close(gb_main);
     }
     exit(0);
 }
@@ -536,7 +538,7 @@ PHDATA *PHDATA::ROOT = 0;
 int
 main(int argc, char **argv)
 {
-    if (argc >= 2 || (argc == 2 && strcmp(argv[1], "--help") == 0)) {
+    if (argc > 2 || (argc == 2 && strcmp(argv[1], "--help") == 0)) {
         fprintf(stderr, "Usage: arb_phylo [database]\n");
         return EXIT_FAILURE;
     }
@@ -549,7 +551,7 @@ main(int argc, char **argv)
     PH_used_windows  *puw       = new PH_used_windows;
     PH_display       *phd       = new PH_display;
     int               num_alignments;
-    const char       *db_server = ":";
+    const char       *db_server = (argc == 2 ? argv[1] : ":");
 
     aw_initstatus();
     aw_root = new AW_root;

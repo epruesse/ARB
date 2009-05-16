@@ -252,6 +252,13 @@ public:
     void set_path(const char* path) { current_path = path; }
 };
 
+class hasDB {
+    GBDATA *db;
+public: 
+    hasDB(GBDATA *gbm) : db(gbm) {}
+    bool operator()(const KnownDB& kdb) { return kdb.get_db() == db; }
+};
+
 // --------------------------
 //      class DB_browser
 // --------------------------
@@ -274,6 +281,14 @@ public:
         known_databases.push_back(KnownDB(gb_main, description));
     }
 
+    void del_db(GBDATA *gb_main) {
+        KnownDBiterator known = find_if(known_databases.begin(), known_databases.end(), hasDB(gb_main));
+        if (known != known_databases.end()) known_databases.erase(known);
+#if defined(DEBUG)
+        else awt_assert(0); // no need to delete unknown databases
+#endif // DEBUG
+    }
+
     AW_window *get_window(AW_root *aw_root);
     AW_selection_list *get_browser_id() { return browse_id; }
 
@@ -293,9 +308,9 @@ public:
 // -----------------------------
 //      DB_browser singleton
 // -----------------------------
-static DB_browser *get_the_browser() {
+static DB_browser *get_the_browser(bool autocreate = true) {
     static DB_browser *the_browser = 0;
-    if (!the_browser) the_browser = new DB_browser;
+    if (!the_browser && autocreate) the_browser = new DB_browser;
     return the_browser;
 }
 
@@ -305,6 +320,12 @@ static DB_browser *get_the_browser() {
 
 void AWT_announce_db_to_browser(GBDATA *gb_main, const char *description) {
     get_the_browser()->add_db(gb_main, description);
+}
+
+void AWT_browser_forget_db(GBDATA *gb_main) {
+    DB_browser *browser = get_the_browser(false);
+    awt_assert(browser);
+    if (browser) browser->del_db(gb_main);
 }
 
 // ---------------------------------------

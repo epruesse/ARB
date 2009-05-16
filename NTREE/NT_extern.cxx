@@ -277,6 +277,7 @@ void nt_exit(AW_window *aws) {
         AW_root *aw_root = aws->get_root();
         aw_root->unlink_awars_from_DB(gb_main);
         AWT_destroy_input_masks(aw_root);
+        AWT_browser_forget_db(gb_main);
         GB_close(gb_main);
     }
     exit(0);
