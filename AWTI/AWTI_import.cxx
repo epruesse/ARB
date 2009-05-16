@@ -210,6 +210,7 @@ input_format_struct::~input_format_struct(void)
         free(pl1->tag);
         free(pl1->append);
         free(pl1->write);
+        free(pl1->setvar);
         free(pl1);
     }
 
@@ -218,6 +219,7 @@ input_format_struct::~input_format_struct(void)
     free(ifo->new_format);
     free(ifo->begin);
     free(ifo->sequencestart);
+    free(ifo->filetag);
     free(ifo->sequenceend);
     free(ifo->sequencesrt);
     free(ifo->sequenceaci);
