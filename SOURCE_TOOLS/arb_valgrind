@@ -36,7 +36,7 @@ if [ -z $1 ] ; then
     echo '          (cd $ARBHOME;make nt) && arb_valgrind -l arb_ntree ~/ARB/demo.arb'
     echo ''
     echo 'There are scripts for older valgrind versions: '
-    cat `ls $ARBHOME/SOURCE_TOOLS/arb_valgrind*`
+    ls -al $ARBHOME/SOURCE_TOOLS/arb_valgrind_*
     echo ''
 
 else
