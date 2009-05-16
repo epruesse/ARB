@@ -1297,7 +1297,6 @@ static GB_ERROR gbl_extract_words(GBL_command_arguments *args)
         char *res = GBS_extract_words(args->vinput[i].str, args->vparam[0].str, len, 1);
         ad_assert(res);
         STREAM_OUT(args, res);
-        free(res);
     }
     return 0;
 }
@@ -1317,7 +1316,6 @@ static GB_ERROR gbl_extract_sequence(GBL_command_arguments *args)
         char *res = GBS_extract_words(args->vinput[i].str, args->vparam[0].str, len, 0);
         ad_assert(res);
         STREAM_OUT(args, res);
-        free(res);
     }
     return 0;
 }
@@ -1389,7 +1387,6 @@ static GB_ERROR gbl_srt(GBL_command_arguments *args) {
         if (!error) {
             if (modsource) {
                 STREAM_OUT(args, modsource);
-                free(modsource);
             }
             else {
                 STREAM_DUPOUT(args, source);
