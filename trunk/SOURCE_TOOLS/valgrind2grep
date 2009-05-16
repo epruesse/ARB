@@ -30,11 +30,12 @@ sub check_ignore($\$) {
     # Please add current date as well, to make it easier to find outdated expressions.
     #
     # X11 bugs:
-    if ($text =~ /_XtGet(Sub)?[rR]esources.*libXt/) { $$ignore_r = $&; return; } # 24/11/2005
-    if ($text =~ /_X11TransWrite.*libX11/) { $$ignore_r = $&; return; }          # 24/11/2005
+    if ($text =~ /\b(_XtGet(Sub)?[rR]esources)\b.*libXt/) { $$ignore_r = $&; return; } # 24/11/2005
+    if ($text =~ /\b(_X11TransWrite)\b.*libX11/) { $$ignore_r = $&; return; }          # 24/11/2005
+    if ($text =~ /\b(_XSend)\b.*libX11/) { $$ignore_r = $&; return; }                  # 16/05/2009
     # motif bugs:
-    if ($text =~ /XmRenderTableCopy/) { $$ignore_r = $&; return; } # 09/02/2009
-    if ($text =~ /XmRenderTableFree/) { $$ignore_r = $&; return; } # 09/02/2009
+    if ($text =~ /\b(XmRenderTableCopy)\b/) { $$ignore_r = $&; return; } # 09/02/2009
+    if ($text =~ /\b(XmRenderTableFree)\b/) { $$ignore_r = $&; return; } # 09/02/2009
   }
 }
 
