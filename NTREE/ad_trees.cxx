@@ -643,19 +643,21 @@ AW_window *create_tree_cmp_window(AW_root *root){
     return aws;
 }
 void ad_tr_delete_cb(AW_window *aww){
-    GB_ERROR error = 0;
-    char *source = aww->get_root()->awar(AWAR_TREE_NAME)->read_string();
+    GB_ERROR  error  = 0;
+    char     *source = aww->get_root()->awar(AWAR_TREE_NAME)->read_string();
+
     GB_begin_transaction(GLOBAL_gb_main);
-    GBDATA *gb_tree_data =  GB_search(GLOBAL_gb_main,"tree_data",GB_CREATE_CONTAINER);
-    GBDATA *gb_tree_name =  GB_entry(gb_tree_data,source);
-    if (gb_tree_name) {
+
+    GBDATA *gb_tree = GBT_get_tree(GLOBAL_gb_main,source);
+    if (gb_tree) {
         char *newname = GBT_get_next_tree_name(GLOBAL_gb_main,source);
-        error = GB_delete(gb_tree_name);
-        if (newname){
-            aww->get_root()->awar(AWAR_TREE_NAME)->write_string(newname);
-            free(newname);
+        error = GB_delete(gb_tree);
+        if (!error && newname) {
+            aww->get_root()->awar(AWAR_TREE_NAME)->write_string(strcmp(newname, source) == 0 ? "" : newname);
         }
-    }else{
+        free(newname);
+    }
+    else {
         error = "Please select a tree first";
     }
 

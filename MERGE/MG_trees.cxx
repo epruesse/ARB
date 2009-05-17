@@ -112,12 +112,12 @@ void MG_tr_delete_cb(AW_window *aww,GBDATA *gbd, long tree_nr){
     GB_ERROR    error   = GB_begin_transaction(gbd);
 
     if (!error) {
-        GBDATA *gb_tree_data     = GB_search(gbd,"tree_data",GB_CREATE_CONTAINER);
-        if (!gb_tree_data) error = GB_await_error();
+        GBDATA *gb_tree = GBT_get_tree(gbd, source);
+
+        if (gb_tree) error = GB_delete(gb_tree);
         else {
-            GBDATA *gb_tree_name    = GB_entry(gb_tree_data,source);
-            if (gb_tree_name) error = GB_delete(gb_tree_name);
-            else    error           = "Please select a tree";
+            if (GB_have_error()) error = GBS_global_string("Could not find tree '%s' (Reason: %s)", source, GB_await_error());
+            else error                 = "Please select a tree";
         }
     }
     GB_end_transaction_show_error(gbd, error, aw_message);

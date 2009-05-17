@@ -54,9 +54,9 @@ const char *GBT_tree_info_string P_((GBDATA *gb_main, const char *tree_name, int
 GB_ERROR GBT_check_tree_name P_((const char *tree_name));
 char **GBT_get_tree_names_and_count P_((GBDATA *Main, int *countPtr));
 char **GBT_get_tree_names P_((GBDATA *Main));
-char *GBT_get_next_tree_name P_((GBDATA *gb_main, const char *tree));
+char *GBT_get_next_tree_name P_((GBDATA *gb_main, const char *tree_name));
 GB_CSTR *GBT_get_species_names_of_tree P_((GBT_TREE *tree));
-char *GBT_existing_tree P_((GBDATA *Main, const char *tree));
+char *GBT_existing_tree P_((GBDATA *gb_main, const char *tree_name));
 GB_ERROR GBT_export_tree P_((GBDATA *gb_main, FILE *out, GBT_TREE *tree, GB_BOOL triple_root));
 GBDATA *GBT_find_or_create_item_rel_item_data P_((GBDATA *gb_item_data, const char *itemname, const char *id_field, const char *id, GB_BOOL markCreated));
 GBDATA *GBT_find_or_create_species_rel_species_data P_((GBDATA *gb_species_data, const char *name));

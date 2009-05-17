@@ -1370,8 +1370,7 @@ GB_ERROR AP_tree::load(AP_tree_root *tree_static, bool link_to_database, bool in
         GBT_TREE *gbt_tree   = GBT_read_tree(gb_main, tree_name, -sizeof(GBT_TREE));
         if (!gbt_tree) error = GB_await_error();
         else {
-            GBDATA *gb_tree_data = GB_search(gb_main,"tree_data",GB_CREATE_CONTAINER);
-            GBDATA *gb_tree      = gb_tree_data ? GB_search(gb_tree_data,tree_name,GB_FIND) : 0;
+            GBDATA *gb_tree = GBT_get_tree(gb_main, tree_name);
 
             if (!gb_tree) error = GB_await_error();
             else {

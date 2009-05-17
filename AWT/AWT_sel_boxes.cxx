@@ -118,8 +118,7 @@ void awt_create_selection_list_on_trees(GBDATA *gb_main,AW_window *aws,const cha
     awt_create_selection_list_on_trees_cb(0,cbs);
 
     gb_tree_data = GB_search(gb_main,"tree_data",GB_CREATE_CONTAINER);
-    GB_add_callback(gb_tree_data,GB_CB_CHANGED,
-                    (GB_CB)awt_create_selection_list_on_trees_cb, (int *)cbs);
+    GB_add_callback(gb_tree_data,GB_CB_CHANGED, (GB_CB)awt_create_selection_list_on_trees_cb, (int *)cbs);
 
     GB_pop_transaction(gb_main);
 }
