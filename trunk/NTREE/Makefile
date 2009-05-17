@@ -466,6 +466,7 @@ NT_import.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+NT_import.o: $(ARBHOME)/INCLUDE/awt.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/awti_import.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/GEN.hxx

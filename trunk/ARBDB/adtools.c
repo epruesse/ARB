@@ -1579,8 +1579,7 @@ GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main,const char *tree_name, long str
     else {
         error = GBT_check_tree_name(tree_name);
         if (!error) {
-            GBDATA *gb_tree_data = GB_search(gb_main, "tree_data", GB_CREATE_CONTAINER);
-            GBDATA *gb_tree      = GB_entry(gb_tree_data, tree_name);
+            GBDATA *gb_tree = GBT_get_tree(gb_main, tree_name);
 
             if (!gb_tree) {
                 error = GBS_global_string("Could not find tree '%s'", tree_name);
@@ -2203,11 +2202,8 @@ GBT_TREE *GBT_load_tree(const char *path, int structuresize, char **commentPtr, 
 
 GBDATA *GBT_get_tree(GBDATA *gb_main, const char *tree_name) {
     /* returns the datapntr to the database structure, which is the container for the tree */
-    GBDATA *gb_treedata;
-    GBDATA *gb_tree;
-    gb_treedata = GB_search(gb_main,"tree_data",GB_CREATE_CONTAINER);
-    gb_tree = GB_entry(gb_treedata, tree_name) ;
-    return gb_tree;
+    GBDATA *gb_treedata = GB_search(gb_main,"tree_data",GB_CREATE_CONTAINER);
+    return GB_entry(gb_treedata, tree_name);
 }
 
 long GBT_size_of_tree(GBDATA *gb_main, const char *tree_name) {
@@ -2343,20 +2339,23 @@ char **GBT_get_tree_names(GBDATA *Main){
     return GBT_get_tree_names_and_count(Main, &dummy);
 }
 
-char *GBT_get_next_tree_name(GBDATA *gb_main, const char *tree){
-    GBDATA *gb_treedata;
+char *GBT_get_next_tree_name(GBDATA *gb_main, const char *tree_name) {
+    /* returns a heap-copy of the name of the next tree behind 'tree_name'.
+     * If 'tree_name' is NULL or points to the last tree, returns the first tree.
+     * If no tree exists, returns NULL.
+     */
     GBDATA *gb_tree = 0;
-    gb_treedata = GB_search(gb_main,"tree_data",GB_CREATE_CONTAINER);
-    if (tree){
-        gb_tree = GB_entry(gb_treedata,tree);
+
+    if (tree_name) {
+        gb_tree = GBT_get_tree(gb_main, tree_name);
+        gb_tree = GB_nextChild(gb_tree);
     }
-    if (gb_tree){
-        gb_tree = GB_nextEntry(gb_tree);
-    }else{
+    if (!gb_tree) {
+        GBDATA *gb_treedata = GB_search(gb_main,"tree_data",GB_CREATE_CONTAINER);
         gb_tree = GB_child(gb_treedata);
     }
-    if (gb_tree) return GB_read_key(gb_tree);
-    return NULL;
+
+    return gb_tree ? GB_read_key(gb_tree) : NULL;
 }
 
 int gbt_sum_leafs(GBT_TREE *tree){
@@ -2376,10 +2375,10 @@ GB_CSTR *gbt_fill_species_names(GB_CSTR *des,GBT_TREE *tree) {
     return des;
 }
 
-/* creates an array of all species names in a tree,
-   the names is not strdupped !!! */
-
 GB_CSTR *GBT_get_species_names_of_tree(GBT_TREE *tree){
+    /* creates an array of all species names in a tree,
+     * The names are not allocated (so they may change as side effect of renaming species) */
+
     int size = gbt_sum_leafs(tree);
     GB_CSTR *result = (GB_CSTR *)GB_calloc(sizeof(char *),size +1);
 #if defined(DEBUG)
@@ -2390,17 +2389,17 @@ GB_CSTR *GBT_get_species_names_of_tree(GBT_TREE *tree){
     return result;
 }
 
-/* search for an existing or an alternate tree */
-char *GBT_existing_tree(GBDATA *Main, const char *tree) {
-    GBDATA *gb_treedata;
-    GBDATA *gb_tree;
-    gb_treedata = GB_entry(Main,"tree_data");
-    if (!gb_treedata) return NULL;
-    gb_tree = GB_entry(gb_treedata,tree);
-    if (gb_tree) return strdup(tree);
-    gb_tree = GB_child(gb_treedata);
-    if (!gb_tree) return NULL;
-    return GB_read_key(gb_tree);
+char *GBT_existing_tree(GBDATA *gb_main, const char *tree_name) {
+    /* search for an existing or an alternate tree */
+    GBDATA *gb_tree     = 0;
+    GBDATA *gb_treedata = GB_entry(gb_main,"tree_data");
+
+    if (gb_treedata) {
+        gb_tree = GB_entry(gb_treedata, tree_name);
+        if (!gb_tree) gb_tree = GB_child(gb_treedata); // take any tree
+    }
+
+    return gb_tree ? GB_read_key(gb_tree) : NULL;
 }
 
 void gbt_export_tree_node_print_remove(char *str){
