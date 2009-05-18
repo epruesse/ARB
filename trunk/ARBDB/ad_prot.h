@@ -119,6 +119,7 @@ int GB_is_in_buffer P_((GB_CBUFFER ptr));
 char *GB_check_out_buffer P_((GB_CBUFFER buffer));
 GB_BUFFER GB_give_other_buffer P_((GB_CBUFFER buffer, long size));
 void GB_init_gb P_((void));
+void GB_atclose P_((GBDATA *gbd, void (*fun )(GBDATA *gb_main, void *client_data ), void *client_data));
 void GB_close P_((GBDATA *gbd));
 long GB_read_int P_((GBDATA *gbd));
 int GB_read_byte P_((GBDATA *gbd));
