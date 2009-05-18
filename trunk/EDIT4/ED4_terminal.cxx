@@ -1129,7 +1129,7 @@ GB_CSTR ED4_species_name_terminal::get_displayed_text() const
 
         strcpy(real_name, "SAI: ");
         if (strcmp(db_pointer, "ECOLI")==0) {
-            char *name_for_ecoli = ED4_ROOT->aw_root->awar(ED4_AWAR_NDS_ECOLI_NAME)->read_string();
+            const char *name_for_ecoli = ED4_ROOT->aw_root->awar(ED4_AWAR_NDS_ECOLI_NAME)->read_char_pntr();
             if (name_for_ecoli[0]==0) name_for_ecoli = db_pointer;
             strncpy(real_name+5, name_for_ecoli, BUFFERSIZE-5);
         }
@@ -1182,8 +1182,8 @@ ED4_sequence_terminal_basic::ED4_sequence_terminal_basic(const char *temp_id, AW
     species_name = NULL;
 }
 
-ED4_sequence_terminal_basic::~ED4_sequence_terminal_basic()
-{
+ED4_sequence_terminal_basic::~ED4_sequence_terminal_basic() {
+    free(species_name);
 }
 
 ED4_AA_sequence_terminal::ED4_AA_sequence_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent )

@@ -69,6 +69,14 @@ char *AW_awar::read_string(){
     return GB_read_string(gb_var);
 }
 
+const char *AW_awar::read_char_pntr(){
+    aw_assert(variable_type == AW_STRING);
+
+    if (!gb_var) return "";
+    GB_transaction ta(gb_var);
+    return GB_read_char_pntr(gb_var);
+}
+
 long AW_awar::read_int(){
     if (!gb_var) return 0;
     GB_transaction ta(gb_var);
@@ -575,6 +583,10 @@ AW_default AW_root::open_default(const char *default_name, bool create_if_missin
         }
     }
 
+#if defined(DEVEL_RALF)
+#warning gb_default is never closed
+    // close it somewhere and call AWT_browser_forget_db as well
+#endif // DEVEL_RALF
 
     GBDATA *gb_default = GB_open(default_name, "rwcD");
 
@@ -583,13 +595,11 @@ AW_default AW_root::open_default(const char *default_name, bool create_if_missin
         AWT_announce_db_to_browser(gb_default, GBS_global_string("Properties (%s)", default_name));
     }
     else {
-        GB_print_error();
-
+        GB_ERROR    error           = GB_await_error();
         const char *shown_name      = strrchr(default_name, '/');
         if (!shown_name) shown_name = default_name;
-        fprintf(stderr, "Error loading properties '%s'\n", shown_name);
 
-        exit(EXIT_FAILURE);
+        GBK_terminate(GBS_global_string("Error loading properties '%s': %s", shown_name, error));
     }
     return (AW_default) gb_default;
 }

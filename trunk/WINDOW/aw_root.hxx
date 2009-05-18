@@ -326,10 +326,11 @@ public:
 
     AW_VARIABLE_TYPE get_type();
 
-    char   *read_string();
-    char   *read_as_string();
-    double  read_float();
-    long    read_int();
+    char       *read_string();
+    const char *read_char_pntr();
+    char       *read_as_string();
+    double      read_float();
+    long        read_int();
 
     GB_ERROR write_string(const char *aw_string);
     GB_ERROR write_as_string(const char *aw_string);

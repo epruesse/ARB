@@ -2433,7 +2433,7 @@ void AWTC_create_faligner_variables(AW_root *root,AW_default db1)
     root->awar_int(AWAR_PT_SERVER,             0,                   db1);
     root->awar_int(FA_AWAR_NEXT_RELATIVES,     1,                   db1)->set_minmax(1,100);
 
-    root->awar_string( FA_AWAR_PT_SERVER_ALIGNMENT, root->awar(AWAR_DEFAULT_ALIGNMENT)->read_string(),  db1);
+    root->awar_string(FA_AWAR_PT_SERVER_ALIGNMENT, root->awar(AWAR_DEFAULT_ALIGNMENT)->read_char_pntr(), db1);
 
     // island hopping:
 
