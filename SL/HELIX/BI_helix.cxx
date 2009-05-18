@@ -108,7 +108,7 @@ long BI_helix_free_hash(const char *, long val, void *) {
     return 0;
 }
 
-const char *BI_helix::initFromData(const char *helix_nr, const char *helix, size_t sizei)
+const char *BI_helix::initFromData(const char *helix_nr_in, const char *helix_in, size_t sizei)
 /* helix_nr string of helix identifiers
    helix    helix
    size     alignment len
@@ -125,23 +125,29 @@ const char *BI_helix::initFromData(const char *helix_nr, const char *helix, size
 
     Size = sizei;
 
+    char *helix = 0;
     {
-        size_t len = strlen(helix);
+        size_t len          = strlen(helix_in);
         if (len > Size) len = Size;
+
         char *h = (char *)malloc(Size+1);
         h[Size] = 0;
+        
         if (len<Size) memset(h+len,'.', Size-len);
-        memcpy(h,helix,len);
+        memcpy(h, helix_in, len);
         helix = h;
     }
 
-    if (helix_nr) {
-        size_t len = strlen(helix_nr);
+    char *helix_nr = 0;
+    if (helix_nr_in) {
+        size_t len          = strlen(helix_nr_in);
         if (len > Size) len = (int)Size;
+
         char *h = (char *)malloc((int)Size+1);
         h[Size] = 0;
+
         if (len<Size) memset(h+len,'.',(int)(Size-len));
-        memcpy(h,helix_nr,len);
+        memcpy(h, helix_nr_in, len);
         helix_nr = h;
     }
 
@@ -222,9 +228,12 @@ const char *BI_helix::initFromData(const char *helix_nr, const char *helix, size
 
     GBS_hash_do_loop(hash, BI_helix_check_error, NULL);
 
- helix_end:;
+ helix_end:
     GBS_hash_do_loop(hash, BI_helix_free_hash, NULL);
     GBS_free_hash(hash);
+
+    free(helix_nr);
+    free(helix);
 
     return get_error();
 }

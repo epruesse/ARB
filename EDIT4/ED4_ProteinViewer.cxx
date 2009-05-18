@@ -586,8 +586,7 @@ static void TranslateGeneToAminoAcidSequence(AW_root */*root*/, ED4_AA_sequence_
             // for complementary strand - get the complementary sequence and then perform translation
             pvError =  PV_ComplementarySequence(str_SeqData);
             if (pvError == PV_FAILED) {
-                aw_message("Getting complementary strand failed!!");
-                exit(0);
+                error = "Could not get complementary strand";
             }
             break;
         case DB_FIELD_STRAND:
@@ -616,15 +615,16 @@ static void TranslateGeneToAminoAcidSequence(AW_root */*root*/, ED4_AA_sequence_
             break;
     }
 
-    // do the translation: 
-    AWT_pro_a_nucs_convert(translationTable, str_SeqData, len, startPos4Translation, false, true, false, 0);
+    if (!error) {
+        // do the translation: 
+        AWT_pro_a_nucs_convert(translationTable, str_SeqData, len, startPos4Translation, false, true, false, 0);
 
-    char *s = new char[len+1];
-    int i,j;
-    char spChar = ' ';
-    {
-        int iDisplayMode = ED4_ROOT->aw_root->awar(AWAR_PROTVIEW_DISPLAY_OPTIONS)->read_int();
-        if (iDisplayMode == PV_AA_NAME) 
+        char *s = new char[len+1];
+        int i,j;
+        char spChar = ' ';
+        {
+            int iDisplayMode = ED4_ROOT->aw_root->awar(AWAR_PROTVIEW_DISPLAY_OPTIONS)->read_int();
+            if (iDisplayMode == PV_AA_NAME) 
             {
                 for( i=0, j=0; i<len && j<len; ) {
                     // start from the start pos of aa sequence
@@ -648,7 +648,7 @@ static void TranslateGeneToAminoAcidSequence(AW_root */*root*/, ED4_AA_sequence_
                     }
                 }
             }
-        else 
+            else 
             {
                 int k = startPos4Translation+1;
                 for(i=0, j=0; i<len; i++) {
@@ -660,18 +660,16 @@ static void TranslateGeneToAminoAcidSequence(AW_root */*root*/, ED4_AA_sequence_
                         s[i] = spChar;
                 }
             }
-        s[i]='\0'; // close the string
+            s[i]='\0'; // close the string
+        }
+    
+        seqTerm->SET_aaSequence_pointer(strdup(s));
+    
+        delete s;
     }
-    
-    seqTerm->SET_aaSequence_pointer(strdup(s));
-    
-    delete s;
     free(str_SeqData);
 
-    if (error) {
-        cout<<"error during writing translated data.....!!!"<<endl;
-        exit(0);
-    }
+    if (error) aw_message(GBS_global_string("Error: %s", error));
 }
 
 void PV_PrintMissingDBentryInformation(void){

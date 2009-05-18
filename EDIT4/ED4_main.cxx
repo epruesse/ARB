@@ -320,6 +320,7 @@ static void ED4_gap_chars_changed(AW_root *root) {
     char *gap_chars = root->awar_string(ED4_AWAR_GAP_CHARS)->read_string();
 
     ED4_init_is_align_character(gap_chars);
+    free(gap_chars);
 }
 
 static void ED4_edit_direction_changed(AW_root */*awr*/) {

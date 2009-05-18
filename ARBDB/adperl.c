@@ -9,8 +9,7 @@ GB_UNDO_TYPE GBP_undo_type(char *type){
     if (!strcasecmp("undo",type)) utype = GB_UNDO_UNDO;
     if (!strcasecmp("redo",type)) utype = GB_UNDO_REDO;
     if (utype == GB_UNDO_NONE){
-        GB_warning("Usage: ARB::undo(gb_main, 'undo'/'redo')");
-        exit(0);
+        GBK_terminate("Usage: ARB::undo(gb_main, 'undo'/'redo')");
     }
     return utype;
 }

@@ -162,7 +162,6 @@ ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manage
     GBDATA    *gb_ali_xxx = NULL;
     GBDATA    *gb_alignment;
     long       string_length;
-    char      *key_string;
     char       namebuffer[NAME_BUFFERSIZE];
 
     device = ED4_ROOT->first_window->aww->get_device(AW_MIDDLE_AREA);
@@ -188,7 +187,7 @@ ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manage
                                      gb_alignment, count_too, seq_coords, max_sequence_terminal_length, ED4_A_CONTAINER);
         }
         else { // otherwise we enter the data
-            key_string = GB_read_key( gb_alignment );
+            char *key_string = GB_read_key( gb_alignment );
             if (key_string[0] != '_') { // don't show sequences starting with an underscore
                 sprintf( namebuffer, "Sequence_Manager.%ld.%d", ED4_counter, count_too++ );
                 ED4_sequence_manager *seq_manager = new ED4_sequence_manager( namebuffer, 0, j*TERMINALHEIGHT, 0, 0, multi_sequence_manager );
@@ -264,6 +263,7 @@ ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manage
                 *seq_coords += TERMINALHEIGHT;
                 j++;
             }
+            free(key_string);
         }
     }
 

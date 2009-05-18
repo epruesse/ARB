@@ -681,14 +681,16 @@ ED4_char_table::ED4_char_table(int maxseqlength)
             }
         }
 
+        const char *align_string_ptr = align_string;
         while (1) {
-            char c = *align_string++;
+            char c = *align_string_ptr++;
             if (!c) break;
             set_char_to_index(c, idx++);
         }
 
         e4_assert(idx==used_bases_tables);
         initialized = true;
+        free(align_string);
     }
 
     bases_table = new ED4_bases_table_ptr[used_bases_tables];
