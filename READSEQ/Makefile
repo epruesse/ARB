@@ -13,22 +13,15 @@ endif
 
 # --------------------------------------------------------------------------------
 
-ifeq (1,1)
 # no warnings in this directory
-SUB_CPP=$(CPP:-W -Wall=-w)
-SUB_ACC=$(ACC:-W -Wall=-w)
-else
-SUB_CPP=$(CPP)
-SUB_ACC=$(ACC)
-endif
-
+subcflags:=$(subst -W -Wall,-w,$(cflags))
 
 
 $(BINARY):  $(OBJECT)
-	$(SUB_ACC) $(cflags) -o $@ $(OBJECT)
+	$(ACC) $(subcflags) -o $@ $(OBJECT)
 
 .c.o:
-	$(SUB_ACC) $(cflags) -c $< $(AINCLUDES)
+	$(ACC) $(subcflags) -c $< $(AINCLUDES)
 
 clean:
 	rm -f $(OBJECT) $(BINARY) 
