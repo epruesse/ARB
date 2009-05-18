@@ -362,7 +362,7 @@ private:
 protected:
 
     virtual GB_ERROR add_db_callbacks();
-    virtual GB_ERROR remove_db_callbacks();
+    virtual void     remove_db_callbacks();
 
     void set_item(GBDATA *new_item) {
 #if defined(DEBUG)
@@ -426,7 +426,7 @@ private:
     bool      in_destructor;
 
     virtual GB_ERROR add_db_callbacks();
-    virtual GB_ERROR remove_db_callbacks();
+    virtual void     remove_db_callbacks();
 
     static std::string generate_baseName(const awt_input_mask_global *global_, const std::string& child_path) {
         // the generated name is enumerated to allow different awt_input_handler's to be linked

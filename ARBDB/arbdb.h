@@ -37,12 +37,6 @@ typedef const float GB_CFLOAT;
 /* ---------------------------------------- need some stuff if adlocal.h is not included */
 
 #ifndef ADLOCAL_H
-typedef enum gb_call_back_type {
-    GB_CB_DELETE = 1,
-    GB_CB_CHANGED = 2,
-    GB_CB_SON_CREATED = 4,
-    GB_CB_ALL  = 7
-} GB_CB_TYPE;
 
 typedef void (*GB_CB)(GBDATA *,int *clientdata, GB_CB_TYPE gbtype);
 
@@ -119,6 +113,7 @@ typedef enum { GB_IGNORE_CASE = 0 , GB_MIND_CASE = 1, GB_CASE_UNDEFINED = 2 } GB
 struct gb_transaction_save;
 
 #endif /*ADLOCAL_H*/
+
 // --------------------------------------------------------------------------------
 
 typedef int GB_COMPRESSION_MASK;
@@ -164,10 +159,10 @@ struct gbcmc_comm {
 
 
 /********************* database ******************/
+
 #define SIZOFINTERN 10
 
 struct gb_extern_data {
-
     GB_REL_STRING rel_data; /* Typ: (char *) */
     long    memsize;
     long    size;

@@ -188,12 +188,12 @@ void AWT_seq_colors::reload(){
             unsigned char *sc = (unsigned char *)GBT_readOrCreate_string(gb_def, buf, default_characters(elem));
             if (!cbexists) {
                 GBDATA *gb_ne = GB_search(gb_def,buf,GB_STRING);
-                GB_add_callback(gb_ne,GB_CB_CHANGED,awt_awar_changed_cb,(int *)this);
+                GB_ensure_callback(gb_ne,GB_CB_CHANGED,awt_awar_changed_cb,(int *)this);
                 for (int s2=0; s2<AWT_SEQ_COLORS_MAX_SET; s2++){
                     sprintf(buf,AWAR_SEQ_NAME_TEMPLATE,s2,elem);
                     GBT_readOrCreate_char_pntr(gb_def, buf, default_color(s2, elem)); // add default if missing
                     gb_ne = GB_search(gb_def,buf,GB_STRING);
-                    GB_add_callback(gb_ne,GB_CB_CHANGED,awt_awar_changed_cb,(int *)this);
+                    GB_ensure_callback(gb_ne,GB_CB_CHANGED,awt_awar_changed_cb,(int *)this);
                 }
             }
             sprintf(buf,AWAR_SEQ_NAME_TEMPLATE,(int)set,elem);
