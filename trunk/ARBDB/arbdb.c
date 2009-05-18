@@ -713,6 +713,26 @@ double GB_read_from_floats(GBDATA *gbd, long index) {
                     WRITE DATA
 ********************************************************************************************/
 
+static void gb_do_callbacks(GBDATA *gbd) {
+    gb_assert(GB_MAIN(gbd)->transaction<0); // only use in "no transaction mode"!
+
+    GBDATA *gbdn,*gbdc;
+    for (gbdc= gbd; gbdc; gbdc=gbdn) {
+        struct gb_callback *cb,*cbn;
+        gbdn = GB_get_father(gbdc);
+        for (cb = GB_GET_EXT_CALLBACKS(gbdc); cb; cb = cbn) {
+            cbn = cb->next;
+            if (cb->type & GB_CB_CHANGED) {
+                gb_assert(!cb->running);
+                cb->running = GB_TRUE;
+                cb->func(gbdc,cb->clientdata,GB_CB_CHANGED);
+                cb->running = GB_FALSE;
+            }
+        }
+    }
+}
+
+#define GB_DO_CALLBACKS(gbd) do{ if (GB_MAIN(gbd)->transaction<0) gb_do_callbacks(gbd); }while(0)
 
 GB_ERROR GB_write_byte(GBDATA *gbd,int i)
 {
@@ -2025,7 +2045,7 @@ GB_ERROR GB_add_priority_callback(GBDATA *gbd, enum gb_call_back_type type, GB_C
 
     struct gb_callback *cb;
 
-    GB_TEST_TRANSACTION(gbd);
+    GB_TEST_TRANSACTION(gbd); // may return error
     GB_CREATE_EXT(gbd);
     cb = (struct gb_callback *)gbm_get_mem(sizeof(struct gb_callback),GB_GBM_INDEX(gbd));
 
@@ -2038,6 +2058,12 @@ GB_ERROR GB_add_priority_callback(GBDATA *gbd, enum gb_call_back_type type, GB_C
                 // wanted priority is lower -> insert here
                 break;
             }
+
+#if defined(DEVEL_RALF)
+            // test if callback already was added (every callback shall only exist once). see below.
+            gb_assert((curr->func != func) || (curr->clientdata != clientdata) || (curr->type != type ));
+#endif /* DEVEL_RALF */
+
             prev = curr;
             curr = curr->next;
         }
@@ -2052,13 +2078,21 @@ GB_ERROR GB_add_priority_callback(GBDATA *gbd, enum gb_call_back_type type, GB_C
         gbd->ext->callback = cb;
     }
 
-    /* cb->next = gbd->ext->callback; */
-    /* gbd->ext->callback = cb; */
-
     cb->type       = type;
     cb->clientdata = clientdata;
     cb->func       = func;
     cb->priority   = priority;
+
+#if defined(DEVEL_RALF)
+#if defined(DEBUG)
+    // test if callback already was added (every callback shall only exist once)
+    // maybe you like to use GB_ensure_callback instead of GB_add_callback
+    while (cb->next) {
+        cb = cb->next;
+        gb_assert((cb->func != func) || (cb->clientdata != clientdata) || (cb->type != type ));
+    }
+#endif /* DEBUG */
+#endif /* DEVEL_RALF */
 
     return 0;
 }
@@ -2068,46 +2102,59 @@ GB_ERROR GB_add_callback(GBDATA *gbd, enum gb_call_back_type type, GB_CB func, i
     return GB_add_priority_callback(gbd, type, func, clientdata, 5); // use default priority 5
 }
 
-GB_ERROR GB_remove_callback(GBDATA *gbd, enum gb_call_back_type type, GB_CB func, int *clientdata)
-/* if called with 'clientdata' == 0 -> remove all callbacks for function 'func' */
-{
-    struct gb_callback *cb,*cblast;
-    /*GB_TEST_TRANSACTION(gbd);*/
-    cblast = 0;
-    GB_CREATE_EXT(gbd);
-    for (cb = gbd->ext->callback; cb; cb=cb->next){
-        if ((cb->func == func) &&
-            ( (clientdata==0) || (clientdata==cb->clientdata)) &&
-            (cb->type == type )) break;
-        cblast = cb;
-    }
-    if (cb) {
-        if (cblast) {
-            cblast->next = cb->next;
-        }else{
-            gbd->ext->callback = cb->next;
+static void gb_remove_callback(GBDATA *gbd, enum gb_call_back_type type, GB_CB func, int *clientdata, GB_BOOL cd_should_match) {
+    GB_BOOL  removed     = GB_FALSE;
+    GB_BOOL  exactly_one = cd_should_match; // remove exactly one callback; old default behavior, previously to 2009/05/18
+
+    if (gbd->ext) {
+        struct gb_callback **cb_ptr       = &gbd->ext->callback;
+        struct gb_callback  *cb;
+        GB_BOOL              prev_running = GB_FALSE;
+
+        for (cb = *cb_ptr; cb; cb = *cb_ptr) {
+            if ((cb->func == func) &&
+                (cb->type == type ) &&
+                (cb->clientdata == clientdata || !cd_should_match))
+            {
+                if (prev_running || cb->running) {
+                    // if the previous callback in list or the callback itself is running (in "no transaction mode")
+                    // the callback cannot be removed (see gb_do_callbacks)
+                    GBK_terminate("gb_remove_callback: failed to remove running callback");
+                }
+
+                *cb_ptr = cb->next;
+                gbm_free_mem((char *)cb,sizeof(struct gb_callback),GB_GBM_INDEX(gbd));
+                removed = GB_TRUE;
+                if (exactly_one) break;
+            }
+            else {
+                cb_ptr = &cb->next;
+            }
+            prev_running = cb->running;
         }
-        gbm_free_mem((char *)cb,sizeof(struct gb_callback),GB_GBM_INDEX(gbd));
-    }else{
-        return "Callback not found";
     }
-    return 0;
+}
+
+void GB_remove_callback(GBDATA *gbd, enum gb_call_back_type type, GB_CB func, int *clientdata) {
+    // remove specific callback (type, func and clientdata must match)
+    gb_remove_callback(gbd, type, func, clientdata, GB_TRUE);
+}
+
+void GB_remove_all_callbacks_to(GBDATA *gbd, enum gb_call_back_type type, GB_CB func) {
+    // removes all callbacks 'func' bound to 'gbd' with 'type'
+    gb_remove_callback(gbd, type, func, 0, GB_FALSE);
 }
 
 GB_ERROR GB_ensure_callback(GBDATA *gbd, enum gb_call_back_type type, GB_CB func, int *clientdata) {
-    /*GB_TEST_TRANSACTION(gbd);*/
     struct gb_callback *cb;
-    GB_CREATE_EXT(gbd);
-    for (cb = gbd->ext->callback;cb;cb=cb->next){
-        if ((cb->func == func) &&
-            ((clientdata==0) || (clientdata==cb->clientdata)) &&
-            (cb->type == type ))
-        {
+    for (cb = GB_GET_EXT_CALLBACKS(gbd); cb; cb = cb->next) {
+        if ((cb->func == func) && (cb->clientdata == clientdata) && (cb->type == type )) {
             return NULL;        /* already in cb list */
         }
     }
     return GB_add_callback(gbd,type,func,clientdata);
 }
+
 /********************************************************************************************
                     RELEASE
     free cached data in a client, no pointers in the freed region are allowed

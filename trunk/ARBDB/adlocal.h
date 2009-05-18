@@ -146,13 +146,6 @@ enum gb_open_types {
     gb_open_read_only_small = 17
 };
 
-typedef enum gb_call_back_type {
-    GB_CB_DELETE      = 1,
-    GB_CB_CHANGED     = 2,
-    GB_CB_SON_CREATED = 4,
-    GB_CB_ALL         = 7
-} GB_CB_TYPE;
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -532,7 +525,8 @@ struct gb_callback
     GB_CB                   func;
     enum gb_call_back_type  type;
     int                    *clientdata;
-    int                     priority;
+    short                   priority;
+    GB_BOOL                 running;
 };
 
 struct gb_callback_list {

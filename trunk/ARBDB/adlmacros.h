@@ -317,47 +317,6 @@ do {                                                                            
 
 #endif
 
-/********************* CALLBACKS  ******************/
-
-#ifdef __cplusplus
-
-inline void GB_DO_CALLBACKS(GBDATA *gbd) {
-    if (GB_MAIN(gbd)->transaction<0) {
-        GBDATA *_gbdn,*_gbd;
-        for (_gbd= gbd;_gbd;_gbd=_gbdn) {
-            struct gb_callback *cb,*cbn;
-            _gbdn = GB_get_father(_gbd);
-            for (cb = GB_GET_EXT_CALLBACKS(_gbd); cb; cb = cbn) {
-                cbn = cb->next;
-                if (cb->type & GB_CB_CHANGED) {
-                    cb->func(_gbd,cb->clientdata,GB_CB_CHANGED);
-                }
-            }
-        }
-    }
-}
-
-#else
-
-#define GB_DO_CALLBACKS(gbd)                                        \
-do {                                                                \
-    if (GB_MAIN(gbd)->transaction<0) {                              \
-        GBDATA *_gbdn,*_gbd;                                        \
-        for (_gbd= (gbd);_gbd;_gbd=_gbdn) {                         \
-            struct gb_callback *cb,*cbn;                            \
-            _gbdn = GB_get_father(_gbd);                            \
-            for (cb = GB_GET_EXT_CALLBACKS(_gbd); cb; cb = cbn) {   \
-                cbn = cb->next;                                     \
-                if (cb->type & GB_CB_CHANGED) {                     \
-                    cb->func(_gbd,cb->clientdata,GB_CB_CHANGED);    \
-                }                                                   \
-            }                                                       \
-        }                                                           \
-    }                                                               \
-}while(0)
-
-#endif
-
 /********************* DATA ACCESS  ******************/
 
 #ifdef __cplusplus

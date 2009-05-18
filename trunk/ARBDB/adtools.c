@@ -4259,19 +4259,18 @@ struct NCB {
 };
 
 static void notify_cb(GBDATA *gb_message, int *cb_info, GB_CB_TYPE cb_type) {
-    GB_ERROR error   = GB_remove_callback(gb_message, GB_CB_CHANGED|GB_CB_DELETE, notify_cb, cb_info);
-    int      cb_done = 0;
+    GB_remove_callback(gb_message, GB_CB_CHANGED|GB_CB_DELETE, notify_cb, cb_info);
 
+    int         cb_done = 0;
     struct NCB *pending = (struct NCB*)cb_info;
 
     if (cb_type == GB_CB_CHANGED) {
-        if (!error) {
-            const char *message = GB_read_char_pntr(gb_message);
-            if (!message) error = GB_await_error();
-            else {
-                pending->cb(message, pending->client_data);
-                cb_done = 1;
-            }
+        GB_ERROR    error   = 0;
+        const char *message = GB_read_char_pntr(gb_message);
+        if (!message) error = GB_await_error();
+        else {
+            pending->cb(message, pending->client_data);
+            cb_done = 1;
         }
 
         if (!cb_done) {

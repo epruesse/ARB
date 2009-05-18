@@ -1612,7 +1612,7 @@ static void flush_taxonomy_cb(GBDATA *gbd, int *cd_ct, GB_CB_TYPE cbt) {
     }
 #endif /* DEBUG */
 
-    /*ignore error result*/ GB_remove_callback(gbd, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), flush_taxonomy_cb, 0);
+    GB_remove_all_callbacks_to(gbd, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), flush_taxonomy_cb);
 
     if (found && !error) {
         GB_MAIN_TYPE *Main            = gb_get_main_during_cb();
@@ -1707,7 +1707,7 @@ static struct cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *
                 cached = (long)ct;
                 GBS_write_hash(cached_taxonomies, tree_name, (long)ct);
 
-                GB_remove_callback(gb_tree, GB_CB_SON_CREATED, flush_taxonomy_if_new_group_cb, 0);
+                GB_remove_all_callbacks_to(gb_tree, GB_CB_SON_CREATED, flush_taxonomy_if_new_group_cb);
                 GB_add_callback(gb_tree, GB_CB_SON_CREATED, flush_taxonomy_if_new_group_cb, (int*)ct);
 
                 {
@@ -1715,7 +1715,7 @@ static struct cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *
                     GBDATA *gb_group_node;
 
                     if (gb_tree_entry) {
-                        GB_remove_callback(gb_tree_entry, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), flush_taxonomy_cb, 0); // remove all
+                        GB_remove_all_callbacks_to(gb_tree_entry, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), flush_taxonomy_cb); 
                         GB_add_callback(gb_tree_entry, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), flush_taxonomy_cb, (int*)ct);
                     }
 
@@ -1726,7 +1726,7 @@ static struct cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *
                     {
                         GBDATA *gb_group_name = GB_entry(gb_group_node, "group_name");
                         if (gb_group_name) { /* group with id = 0 has no name */
-                            GB_remove_callback(gb_group_name, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), flush_taxonomy_cb, 0); // remove all
+                            GB_remove_all_callbacks_to(gb_group_name, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), flush_taxonomy_cb);
                             GB_add_callback(gb_group_name, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), flush_taxonomy_cb, (int*)ct);
                             ct->groups++;
                         }
