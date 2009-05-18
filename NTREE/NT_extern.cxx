@@ -273,11 +273,15 @@ void nt_exit(AW_window *aws) {
 
         GBDATA *gb_main = GLOBAL_gb_main;
         GLOBAL_gb_main  = NULL;                     // avoid further usage
-        
+
         AW_root *aw_root = aws->get_root();
+#if defined(DEVEL_RALF)
+#warning instead of directly calling the following functions, try to add them as GB_atclose-callbacks
+#endif // DEVEL_RALF
         aw_root->unlink_awars_from_DB(gb_main);
         AWT_destroy_input_masks(aw_root);
         AWT_browser_forget_db(gb_main);
+
         GB_close(gb_main);
     }
     exit(0);

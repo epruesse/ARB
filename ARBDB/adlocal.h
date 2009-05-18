@@ -292,6 +292,7 @@ struct gbcmc_comm;
 struct g_b_undo_mgr_struct;
 struct gb_callback_list;
 struct gb_data_base_type2;
+struct gb_close_callback_struct;
 
 typedef struct gb_main_type {
     int transaction;
@@ -340,6 +341,8 @@ typedef struct gb_main_type {
     GB_HASH *command_hash;
     GB_HASH *resolve_link_hash;
     GB_HASH *table_hash;
+
+    struct gb_close_callback_struct *close_callbacks;
 
     struct gb_callback_list *cbl;
     struct gb_callback_list *cbl_last;

@@ -335,6 +335,48 @@ GB_ERROR gb_unfold(GBCONTAINER *gbd, long deep, int index_pos)
 /********************************************************************************************
                     CLOSE DATABASE
 ********************************************************************************************/
+
+typedef void (*gb_close_callback)(GBDATA *gb_main, void *client_data);
+
+struct gb_close_callback_struct {
+    struct gb_close_callback_struct *next;
+
+    gb_close_callback  cb;
+    void              *client_data;
+};
+
+#if defined(DEBUG)
+static GB_BOOL atclose_cb_exists(struct gb_close_callback_struct *gccs, gb_close_callback cb) {
+    return gccs && (gccs->cb == cb || atclose_cb_exists(gccs->next, cb));
+}
+#endif /* DEBUG */
+
+void GB_atclose(GBDATA *gbd, void (*fun)(GBDATA *gb_main, void *client_data), void *client_data) {
+    // Add a callback, which gets called directly before GB_close destroys all data.
+    // This is the recommended way to remove all callbacks from DB elements.
+
+    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
+
+    gb_assert(!atclose_cb_exists(Main->close_callbacks, fun)); // each close callback should only exist once 
+
+    struct gb_close_callback_struct *gccs = (struct gb_close_callback_struct *)malloc(sizeof(*gccs));
+
+    gccs->next        = Main->close_callbacks;
+    gccs->cb          = fun;
+    gccs->client_data = client_data;
+
+    Main->close_callbacks = gccs;
+}
+
+static void run_close_callbacks(GBDATA *gb_main, struct gb_close_callback_struct *gccs) {
+    while (gccs) {
+        gccs->cb(gb_main, gccs->client_data);
+        struct gb_close_callback_struct *next = gccs->next;
+        free(gccs);
+        gccs = next;
+    }
+}
+
 void GB_close(GBDATA *gbd) {
     GB_ERROR error = 0;
 
@@ -345,9 +387,13 @@ void GB_close(GBDATA *gbd) {
     }
 
     if (!error) {
-        gb_assert((GBDATA*)Main->data == gbd); 
+        gb_assert((GBDATA*)Main->data == gbd);
+
+        run_close_callbacks(gbd, Main->close_callbacks);
+        Main->close_callbacks = 0;
+
         gb_delete_entry(&gbd);
-        
+
         /* ARBDB applications using awars easily crash in gb_do_callback_list(),
          * if AWARs are still bound to elements in the closed database.
          * 
