@@ -725,6 +725,9 @@ class SEC_root {
         return false;
     }
 
+    void delete_root_loop() { SEC_loop *old_root_loop = root_loop; root_loop = 0; delete old_root_loop; }
+    void delete_announced_positions();
+
 public:
 
     SEC_root();

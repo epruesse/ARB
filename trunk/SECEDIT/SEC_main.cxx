@@ -699,6 +699,12 @@ static AW_window *SEC_create_display_window(AW_root *awr) {
     return aws;
 }
 
+static void SEC_exit(GBDATA *gb_main, void *cl_sec_root) {
+    SEC_root *sec_root = static_cast<SEC_root*>(cl_sec_root);
+
+    delete sec_root;
+}
+
 AW_window *SEC_create_main_window(AW_root *awr, GBDATA *gb_main) {
     SEC_graphic *gfx  = new SEC_graphic(awr, gb_main); // never freed
     SEC_root    *root = gfx->sec_root;
@@ -715,6 +721,8 @@ AW_window *SEC_create_main_window(AW_root *awr, GBDATA *gb_main) {
 
     const SEC_db_interface *db = root->get_db();
 
+    GB_atclose(gb_main, SEC_exit, root);
+    
     awm->create_menu( 0, "File", "F", "secedit_file.hlp",  AWM_ALL );
 
     awm->insert_menu_topic("secedit_new", "New structure", "N", 0, AWM_ALL, SEC_new_structure, (AW_CL)db, 0);
@@ -807,5 +815,4 @@ AW_window *SEC_create_main_window(AW_root *awr, GBDATA *gb_main) {
 
     return awm;
 }
-
 

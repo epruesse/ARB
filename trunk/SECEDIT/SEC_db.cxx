@@ -31,7 +31,7 @@ typedef void (SEC_db_interface::*interface_cb)(const SEC_dbcb *);
 struct SEC_dbcb {
     SEC_db_interface *instance;
     interface_cb      member_fun;
-    
+
     SEC_dbcb(SEC_db_interface *db, interface_cb cb) : instance(db), member_fun(cb) {}
     void call() const { (instance->*member_fun)(this); }
 };
@@ -214,6 +214,8 @@ void SEC_db_interface::reload_sequence(const SEC_dbcb *cb) {
     if (sequence) gfx->request_update(SEC_UPDATE_SHOWN_POSITIONS);
     
     if (perform_refresh) ntw->refresh();
+
+    free(species_name);
 }
 
 void SEC_db_interface::reload_ecoli(const SEC_dbcb *cb) {
@@ -474,21 +476,30 @@ SEC_db_interface::SEC_db_interface(SEC_graphic *Gfx, AWT_canvas *Ntw)
 
 SEC_db_interface::~SEC_db_interface() {
     free(aliname);
-    
+
     delete [] displayPos;
 
-    delete sequence_cb;
-    delete ecoli_cb;
-    delete helix_cb;
-    delete updatepos_cb;
-    delete relayout_cb;
-    delete refresh_cb;
-    delete cursorpos_cb;
-    delete alilen_changed_cb;
+    delete sequence;    sequence = 0;
 
-    delete toggler;
+    delete ecoli_seq;   ecoli_seq = 0;
+    delete Ecoli;       Ecoli     = 0;
 
-    delete bonddef;
+    delete helix_nr;    helix_nr  = 0;
+    delete helix_pos;   helix_pos = 0;
+    delete Helix;       Helix     = 0;
+
+    delete sequence_cb;         sequence_cb       = 0;
+    delete ecoli_cb;            ecoli_cb          = 0;
+    delete helix_cb;            helix_cb          = 0;
+    delete updatepos_cb;        updatepos_cb      = 0;
+    delete relayout_cb;         relayout_cb       = 0;
+    delete refresh_cb;          refresh_cb        = 0;
+    delete cursorpos_cb;        cursorpos_cb      = 0;
+    delete alilen_changed_cb;   alilen_changed_cb = 0;
+
+    delete toggler;     toggler = 0;
+
+    delete bonddef;     bonddef = 0;
 }
 
 SEC_root *SEC_db_interface::secroot() const { return gfx->sec_root; }

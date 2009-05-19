@@ -851,6 +851,7 @@ void ED4_cursor::updateAwars()
                     }
                 }
             }
+            free(species_name);
         }
     }
 
