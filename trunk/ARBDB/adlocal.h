@@ -526,7 +526,7 @@ struct gb_callback
     enum gb_call_back_type  type;
     int                    *clientdata;
     short                   priority;
-    GB_BOOL                 running;
+    short                   running;
 };
 
 struct gb_callback_list {
