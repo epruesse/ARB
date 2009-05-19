@@ -99,7 +99,8 @@ SEC_region::SEC_region(int start, int end)
 }
 
 SEC_region::~SEC_region() {
-    invalidate_base_count(); // frees abspos_array
+    invalidate_base_count();                        // frees abspos_array
+    delete [] abspos_array;
 }
 
 SEC_segment::~SEC_segment() {
@@ -167,8 +168,12 @@ SEC_loop::~SEC_loop() {
 SEC_root::~SEC_root() {
     delete db;
     delete autoscroll;
-    delete (get_root_loop());
-    delete [] bg_color;
+
+    delete_root_loop();
+
+    free(bg_color);
+
+    delete_announced_positions();
 }
 
 // -------------------------

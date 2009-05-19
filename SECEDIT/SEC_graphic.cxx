@@ -601,7 +601,8 @@ GB_ERROR SEC_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
     long    ali_len = -1;
     GBDATA *gb_ali  = 0;
     {
-        char *name = GBT_readOrCreate_string(gb_main, AWAR_HELIX_NAME, GBT_get_default_helix(gb_main));
+        char *helix_name = GBT_get_default_helix(gb_main);
+        char *name       = GBT_readOrCreate_string(gb_main, AWAR_HELIX_NAME, helix_name);
         sec_assert(name);
 
         GBDATA *gb_species = GBT_find_SAI(gb_main, name);
@@ -625,6 +626,7 @@ GB_ERROR SEC_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
         }
         
         free(name);
+        free(helix_name);
     }
 
     // -----------------------

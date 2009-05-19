@@ -434,7 +434,7 @@ GB_ERROR SEC_root::read_data(const char *input_string, const char *x_string_in) 
             }
         }
 
-        set_root_loop(0);
+        delete_root_loop();
     
         if (!error) {
 #if defined(DEBUG)
@@ -452,8 +452,7 @@ GB_ERROR SEC_root::read_data(const char *input_string, const char *x_string_in) 
                     set_under_construction(false); // mark as "constructed"
                 }
                 else {
-                    set_root_loop(0);
-                    delete rootLoop;
+                    delete_root_loop();
                 }
             }
             else {

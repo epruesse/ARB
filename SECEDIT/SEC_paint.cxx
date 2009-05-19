@@ -317,6 +317,11 @@ void SEC_root::clear_announced_positions() {
     drawnPositions->clear();
 }
 
+void SEC_root::delete_announced_positions() {
+    delete drawnPositions;
+    drawnPositions = 0;
+}
+
 
 // ---------------------------
 //      Paints CONSTRAINTS

@@ -3039,6 +3039,9 @@ GB_ERROR GBT_set_default_alignment(GBDATA *gb_main,const char *alignment_name) {
  * specify a different reference in edit4, but there's no
  * data model in the DB for it. Consider whether it makes sense,
  * if secedit uses it as well.
+ *
+ * Note: Don't change the result type to 'const char *' even if the functions always
+ *       return the same atm. That may change.
  */
 
 char *GBT_get_default_helix(GBDATA *gb_main) {
