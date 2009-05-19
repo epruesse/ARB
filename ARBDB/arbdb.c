@@ -723,10 +723,9 @@ static void gb_do_callbacks(GBDATA *gbd) {
         for (cb = GB_GET_EXT_CALLBACKS(gbdc); cb; cb = cbn) {
             cbn = cb->next;
             if (cb->type & GB_CB_CHANGED) {
-                gb_assert(!cb->running);
-                cb->running = GB_TRUE;
+                ++cb->running;
                 cb->func(gbdc,cb->clientdata,GB_CB_CHANGED);
-                cb->running = GB_FALSE;
+                --cb->running;
             }
         }
     }
@@ -2109,7 +2108,7 @@ static void gb_remove_callback(GBDATA *gbd, enum gb_call_back_type type, GB_CB f
     if (gbd->ext) {
         struct gb_callback **cb_ptr       = &gbd->ext->callback;
         struct gb_callback  *cb;
-        GB_BOOL              prev_running = GB_FALSE;
+        short                prev_running = 0;
 
         for (cb = *cb_ptr; cb; cb = *cb_ptr) {
             if ((cb->func == func) &&
