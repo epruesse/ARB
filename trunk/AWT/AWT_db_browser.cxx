@@ -449,9 +449,11 @@ static void browsed_node_changed_cb(GBDATA *, int *cl_aw_root, GB_CB_TYPE) {
 static void set_callback_node(GBDATA *node, AW_root *aw_root) {
     static GBDATA *active_node = 0;
 
-    if (active_node) GB_remove_callback(active_node, GB_CB_CHANGED, browsed_node_changed_cb, (int*)aw_root);
-    if (node) GB_add_callback(node, GB_CB_CHANGED, browsed_node_changed_cb, (int*)aw_root);
-    active_node = node;
+    if (active_node != node) {
+        if (active_node) GB_remove_callback(active_node, GB_CB_CHANGED, browsed_node_changed_cb, (int*)aw_root);
+        if (node) GB_ensure_callback(node, GB_CB_CHANGED, browsed_node_changed_cb, (int*)aw_root);
+        active_node = node;
+    }
 }
 
 struct counterPair {
