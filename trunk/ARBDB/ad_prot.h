@@ -93,6 +93,7 @@ char *GBS_fconvert_string P_((char *buffer));
 char *GBS_replace_tabs_by_spaces P_((const char *text));
 int GBS_strscmp P_((const char *s1, const char *s2));
 const char *GBS_readable_size P_((unsigned long long size));
+char *GBS_trim P_((const char *str));
 
 /* admatch.c */
 GBS_MATCHER *GBS_compile_matcher P_((const char *search_expr, GB_CASE case_flag));

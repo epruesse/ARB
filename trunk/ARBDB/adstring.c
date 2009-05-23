@@ -2006,3 +2006,13 @@ const char *GBS_readable_size(unsigned long long size) {
     return "<much>";
 }
 
+char *GBS_trim(const char *str) {
+    // trim whitespace at beginning and end of 'str'
+    const char *whitespace = " \t\n";
+    while (str[0] && strchr(whitespace, str[0])) str++;
+
+    const char *end = strchr(str, 0)-1;
+    while (end >= str && strchr(whitespace, end[0])) end--;
+
+    return GB_strpartdup(str, end);
+}
