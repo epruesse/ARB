@@ -2021,7 +2021,7 @@ static GBT_TREE *gbt_load_tree_rek(TreeReader *reader, int structuresize, GBT_LE
                                 right = 0; rightLen = DEFAULT_LENGTH_MARKER;
                             }
 
-                            gbt_get_char(reader); /* drop ',' */
+                            gbt_read_char(reader); /* drop ',' */
                             right = gbt_load_tree_rek(reader, structuresize, &rightLen);
                             if (right) gbt_readNameAndLength(reader, right, &rightLen);
                         }
