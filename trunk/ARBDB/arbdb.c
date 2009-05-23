@@ -26,35 +26,27 @@ char *GB_rel(void *struct_adress,long rel_adress)
                     GB local data
 ********************************************************************************************/
 
-double GB_atof(const char *str)
-{
-    double  res = 0.0;
-    double  val = 1.0;
-    long    neg = 0;
-    char    c;
-    char   *p   = (char *)str;
-    
-    while ( (c= *(p++)) ){
-        if (c == '.'){
-            val = 0.1;
-            continue;
-        }
-        if (c == 'e' || c == 'E' ) {
-            return atof(str);
-        }
-        if (c== '-') {
-            neg = 1;
-            continue;
-        }
-        if (val == 1.0) {
-            res*= 10.0;
-            res += c-'0';
-            continue;
-        }
-        res += (c-'0')*val;
-        val *= .1;
+NOT4PERL GB_ERROR GB_safe_atof(const char *str, double *res) {
+    GB_ERROR  error = NULL;
+    char     *end;
+    *res            = strtod(str, &end);
+    if (end == str || end[0] != 0) {
+        error = GBS_global_string("cannot convert '%s' to double", str);
     }
-    if (neg) return -res;
+    return error;
+}
+
+double GB_atof(const char *str) {
+    // convert ASCII to double
+
+    double res     = 0;
+#if defined(DEBUG)
+    GB_ERROR error = 
+#endif /* DEBUG */
+        GB_safe_atof(str, &res);
+
+    gb_assert(!error); // expected double in 'str' - better use GB_safe_atof()
+
     return res;
 }
 
@@ -663,7 +655,7 @@ char *GB_read_as_string(GBDATA *gbd)
         case GB_LINK:   return GB_read_link(gbd);
         case GB_BYTE:   return GBS_global_string_copy("%i",GB_read_byte(gbd));
         case GB_INT:    return GBS_global_string_copy("%li",GB_read_int(gbd));
-        case GB_FLOAT:  return GBS_global_string_copy("%.4g",GB_read_float(gbd));
+        case GB_FLOAT:  return GBS_global_string_copy("%g",GB_read_float(gbd));
         case GB_BITS:   return GB_read_bits(gbd,'0','1');
             /* Be careful : When adding new types here, you have to make sure that
              * GB_write_as_string is able to write them back and that this makes sense.
