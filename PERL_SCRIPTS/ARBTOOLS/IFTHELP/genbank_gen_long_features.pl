@@ -51,7 +51,7 @@ eval {
       }
       else { # new feature
         if (defined $line_to_print) { print $line_to_print."\n"; $line_to_print=undef; }
-        if (/^(     )([a-z]+)( .*)$/io) { # checked - really new feature
+        if (/^(     )([a-z_]+)( .*)$/io) { # checked - really new feature
           my ($white1,$feature,$rest) = ($1,$2,$3);
           $last_feature = $feature;
           chomp($rest);
