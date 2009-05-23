@@ -72,11 +72,6 @@ static char gbl_param_char(const char *param_name,char def, const char *help_tex
     return def;
 }
 
-static size_t gbl_param_size_t(const char *param_name, size_t def, const char *help_text, struct gbl_param **pp, size_t *vaddr) {
-    gbl_new_param(pp, GB_INT, vaddr, param_name, help_text);
-    return def;
-}
-
 static const char *gbl_param_String(const char *param_name, const char *def, const char *help_text, struct gbl_param **pp, String *vaddr) {
     gbl_new_param(pp, GB_STRING, vaddr, param_name, help_text);
     return def;
@@ -92,13 +87,11 @@ static int gbl_param_bit(const char *param_name, int def, const char *help_text,
 
 #define GBL_PARAM_INT(   var, param_name, def, help_text) GBL_PARAM_TYPE(int,    var, param_name, def, help_text)
 #define GBL_PARAM_CHAR(  var, param_name, def, help_text) GBL_PARAM_TYPE(char,   var, param_name, def, help_text)
-#define GBL_PARAM_SIZET( var, param_name, def, help_text) GBL_PARAM_TYPE(size_t, var, param_name, def, help_text)
 #define GBL_PARAM_STRING(var, param_name, def, help_text) GBL_PARAM_TYPE(String, var, param_name, def, help_text)
 #define GBL_PARAM_BIT(   var, param_name, def, help_text) GBL_PARAM_TYPE(bit,    var, param_name, def, help_text)
 
 #define GBL_STRUCT_PARAM_INT(   strct, member, param_name, def, help_text) GBL_STRUCT_PARAM_TYPE(int,    strct, member, param_name, def, help_text)
 #define GBL_STRUCT_PARAM_CHAR(  strct, member, param_name, def, help_text) GBL_STRUCT_PARAM_TYPE(char,   strct, member, param_name, def, help_text)
-#define GBL_STRUCT_PARAM_SIZET( strct, member, param_name, def, help_text) GBL_STRUCT_PARAM_TYPE(size_t, strct, member, param_name, def, help_text)
 #define GBL_STRUCT_PARAM_STRING(strct, member, param_name, def, help_text) GBL_STRUCT_PARAM_TYPE(String, strct, member, param_name, def, help_text)
 #define GBL_STRUCT_PARAM_BIT(   strct, member, param_name, def, help_text) GBL_STRUCT_PARAM_TYPE(bit,    strct, member, param_name, def, help_text)
 
@@ -144,7 +137,6 @@ static GB_ERROR trace_params(int argc, const GBL *argv, struct gbl_param *ppara,
                         break;
                         
                     case GB_INT:
-                        gb_assert(sizeof(int) == sizeof(size_t)); // assumed by GBL_PARAM_SIZET
                         *(int *)para->varaddr = atoi(value);
                         break;
 
@@ -2011,11 +2003,11 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args)
     int      ic;
 
     GBL_BEGIN_PARAMS;
-    GBL_PARAM_SIZET (firsttab, "firsttab=", 10,   "Indent first line");
-    GBL_PARAM_SIZET (tab,      "tab=",      10,   "Indent not first line");
+    GBL_PARAM_INT   (firsttab, "firsttab=", 10,   "Indent first line");
+    GBL_PARAM_INT   (tab,      "tab=",      10,   "Indent not first line");
     GBL_PARAM_BIT   (numleft,  "numleft",   0,    "Numbers left of sequence");
-    GBL_PARAM_SIZET (gap,      "gap=",      10,   "Insert ' ' every n sequence characters");
-    GBL_PARAM_SIZET (width,    "width=",    50,   "Sequence width (bases only)");
+    GBL_PARAM_INT   (gap,      "gap=",      10,   "Insert ' ' every n sequence characters");
+    GBL_PARAM_INT   (width,    "width=",    50,   "Sequence width (bases only)");
     GBL_PARAM_STRING(nl,       "nl=",       " ",  "Break line at characters 'str' if wrapping needed");
     GBL_PARAM_STRING(forcenl,  "forcenl=",  "\n", "Always break line at characters 'str'");
     GBL_TRACE_PARAMS(args->cparam,args->vparam);
