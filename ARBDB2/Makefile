@@ -80,6 +80,15 @@ ad_save_load.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/attributes.h
 
+adChangeKey.o: ad_prot.h
+adChangeKey.o: ad_t_prot.h
+adChangeKey.o: arbdb.h
+adChangeKey.o: arbdbt.h
+adChangeKey.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+adChangeKey.o: $(ARBHOME)/INCLUDE/arb_assert.h
+adChangeKey.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+adChangeKey.o: $(ARBHOME)/INCLUDE/attributes.h
+
 adcomm.o: ad_lpro.h
 adcomm.o: ad_prot.h
 adcomm.o: adlmacros.h

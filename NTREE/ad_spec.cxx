@@ -28,7 +28,6 @@
 #define nt_assert(bed) arb_assert(bed)
 
 extern GBDATA *GLOBAL_gb_main;
-#define AD_F_ALL (AW_active)(-1)
 
 // next neighbours of listed and selected:
 #define AWAR_NN_COMPLEMENT  AWAR_NN_BASE "complement"
@@ -45,15 +44,17 @@ extern GBDATA *GLOBAL_gb_main;
 
 void create_species_var(AW_root *aw_root, AW_default aw_def)
 {
-    aw_root->awar_string( AWAR_SPECIES_DEST, "" ,   aw_def);
-    aw_root->awar_string( AWAR_SPECIES_INFO, "" ,   aw_def);
-    aw_root->awar_string( AWAR_SPECIES_KEY, "" ,    aw_def);
-    aw_root->awar_string( AWAR_FIELD_REORDER_SOURCE, "" ,   aw_def);
-    aw_root->awar_string( AWAR_FIELD_REORDER_DEST, "" , aw_def);
-    aw_root->awar_string( AWAR_FIELD_CREATE_NAME, "" ,  aw_def);
-    aw_root->awar_int( AWAR_FIELD_CREATE_TYPE, GB_STRING,   aw_def );
-    aw_root->awar_string( AWAR_FIELD_DELETE, "" ,   aw_def);
-
+    aw_root->awar_string(AWAR_SPECIES_DEST,         "",        aw_def);
+    aw_root->awar_string(AWAR_SPECIES_INFO,         "",        aw_def);
+    aw_root->awar_string(AWAR_SPECIES_KEY,          "",        aw_def);
+    aw_root->awar_string(AWAR_FIELD_REORDER_SOURCE, "",        aw_def);
+    aw_root->awar_string(AWAR_FIELD_REORDER_DEST,   "",        aw_def);
+    aw_root->awar_string(AWAR_FIELD_CREATE_NAME,    "",        aw_def);
+    aw_root->awar_int   (AWAR_FIELD_CREATE_TYPE,    GB_STRING, aw_def);
+    aw_root->awar_string(AWAR_FIELD_DELETE,         "",        aw_def);
+    aw_root->awar_string(AWAR_FIELD_CONVERT_SOURCE, "",        aw_def);
+    aw_root->awar_int   (AWAR_FIELD_CONVERT_TYPE,   GB_STRING, aw_def);
+    aw_root->awar_string(AWAR_FIELD_CONVERT_NAME,   "",        aw_def);
 }
 
 static void move_species_to_extended(AW_window *aww) {
@@ -421,8 +422,8 @@ static void ad_list_reorder_cb(AW_window *aws, AW_CL cl_cbs1, AW_CL cl_cbs2) {
     const adawcbstruct     *cbs1      = (const adawcbstruct*)cl_cbs1;
     const adawcbstruct     *cbs2      = (const adawcbstruct*)cl_cbs2;
     const ad_item_selector *selector  = cbs1->selector;
-    GBDATA                 *gb_source = awt_get_key(GLOBAL_gb_main,source, selector->change_key_path);
-    GBDATA                 *gb_dest   = awt_get_key(GLOBAL_gb_main,dest, selector->change_key_path);
+    GBDATA                 *gb_source = GBT_get_changekey(GLOBAL_gb_main,source, selector->change_key_path);
+    GBDATA                 *gb_dest   = GBT_get_changekey(GLOBAL_gb_main,dest, selector->change_key_path);
 
     int left_index  = aws->get_index_of_current_element(cbs1->id, AWAR_FIELD_REORDER_SOURCE);
     int right_index = aws->get_index_of_current_element(cbs2->id, AWAR_FIELD_REORDER_DEST);
@@ -478,7 +479,7 @@ static void ad_list_reorder_cb2(AW_window *aws, AW_CL cl_cbs2, AW_CL cl_dir) {
 
     char                   *field_name = aws->get_root()->awar(AWAR_FIELD_REORDER_DEST)->read_string();
     const ad_item_selector *selector   = cbs2->selector;
-    GBDATA                 *gb_field   = awt_get_key(GLOBAL_gb_main, field_name, selector->change_key_path);
+    GBDATA                 *gb_field   = GBT_get_changekey(GLOBAL_gb_main, field_name, selector->change_key_path);
 
     if (!gb_field) {
         warning = "Please select an item to move (right box)";
@@ -569,7 +570,7 @@ static void ad_hide_field(AW_window *aws, AW_CL cl_cbs, AW_CL cl_hide) {
     if (!error) {
         char                   *source    = aws->get_root()->awar(AWAR_FIELD_DELETE)->read_string();
         const ad_item_selector *selector  = cbs->selector;
-        GBDATA                 *gb_source = awt_get_key(GLOBAL_gb_main, source, selector->change_key_path);
+        GBDATA                 *gb_source = GBT_get_changekey(GLOBAL_gb_main, source, selector->change_key_path);
 
         if (!gb_source) error = "Please select the field you want to (un)hide";
         else error            = GBT_write_int(gb_source, CHANGEKEY_HIDDEN, int(cl_hide));
@@ -588,7 +589,7 @@ static void ad_field_delete(AW_window *aws, AW_CL cl_cbs) {
         const adawcbstruct     *cbs        = (const adawcbstruct *)cl_cbs;
         const ad_item_selector *selector   = cbs->selector;
         int                     curr_index = aws->get_index_of_current_element(cbs->id, AWAR_FIELD_DELETE);
-        GBDATA                 *gb_source  = awt_get_key(GLOBAL_gb_main, source, selector->change_key_path);
+        GBDATA                 *gb_source  = GBT_get_changekey(GLOBAL_gb_main, source, selector->change_key_path);
 
         if (!gb_source) error = "Please select the field you want to delete";
         else error            = GB_delete(gb_source);
@@ -681,7 +682,7 @@ static void ad_field_create_cb(AW_window *aws, AW_CL cl_item_selector)
     int type = (int)aws->get_root()->awar(AWAR_FIELD_CREATE_TYPE)->read_int();
 
     const ad_item_selector *selector = (const ad_item_selector*)cl_item_selector;
-    if (!error) error = awt_add_new_changekey_to_keypath(GLOBAL_gb_main, name, type, selector->change_key_path);
+    if (!error) error = GBT_add_new_changekey_to_keypath(GLOBAL_gb_main, name, type, selector->change_key_path);
     aws->hide_or_notify(error);
     free(name);
     GB_pop_transaction(GLOBAL_gb_main);
@@ -710,11 +711,11 @@ AW_window *NT_create_ad_field_create(AW_root *root, AW_CL cl_item_selector)
 
     aws->at("type");
     aws->create_toggle_field(AWAR_FIELD_CREATE_TYPE,"FIELD TYPE","F");
-    aws->insert_toggle("Ascii Text","S",        (int)GB_STRING);
-    aws->insert_toggle("Link","L",          (int)GB_LINK);
-    aws->insert_toggle("Rounded Numerical","N", (int)GB_INT);
-    aws->insert_toggle("Numerical","R",     (int)GB_FLOAT);
-    aws->insert_toggle("MASK = 01 Text","0",    (int)GB_BITS);
+    aws->insert_toggle("Ascii Text",        "S", (int)GB_STRING);
+    aws->insert_toggle("Link",              "L", (int)GB_LINK);
+    aws->insert_toggle("Rounded Numerical", "N", (int)GB_INT);
+    aws->insert_toggle("Numerical",         "R", (int)GB_FLOAT);
+    aws->insert_toggle("MASK = 01 Text",    "0", (int)GB_BITS);
     aws->update_toggle_field();
 
     aws->at("ok");
@@ -724,16 +725,94 @@ AW_window *NT_create_ad_field_create(AW_root *root, AW_CL cl_item_selector)
     return (AW_window *)aws;
 }
 
+static void ad_field_convert_commit_cb(AW_window *aws, AW_CL cl_item_selector) {
+    const ad_item_selector *selector = (const ad_item_selector*) cl_item_selector;
+    AW_root *root = aws->get_root();
+    GB_ERROR error = NULL;
+
+    GB_push_transaction(GLOBAL_gb_main);
+    error = GBT_convert_changekey(GLOBAL_gb_main,
+                                  root->awar(AWAR_FIELD_CONVERT_SOURCE)->read_string(),
+                                  (GB_TYPES)root->awar(AWAR_FIELD_CONVERT_TYPE)->read_int());
+
+    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
+}
+
+static void ad_field_convert_update_typesel_cb(AW_window *aws, AW_CL cl_item_selector) {
+    const ad_item_selector *selector = (const ad_item_selector*) cl_item_selector;
+    AW_root *root = aws->get_root();
+
+    GB_push_transaction(GLOBAL_gb_main);
+    int type = GBT_get_type_of_changekey(
+        GLOBAL_gb_main,
+        root->awar(AWAR_FIELD_CONVERT_SOURCE)->read_string(),
+        selector->change_key_path);
+    GB_pop_transaction(GLOBAL_gb_main);
+
+    root->awar(AWAR_FIELD_CONVERT_TYPE)->write_int(type);
+}
+
+AW_window *NT_create_ad_field_convert(AW_root *root, AW_CL cl_item_selector) {
+    const ad_item_selector *selector = (const ad_item_selector*) cl_item_selector;
+
+    static AW_window_simple *awsa[AWT_QUERY_ITEM_TYPES];
+    if (awsa[selector->type]) return (AW_window *)awsa[selector->type];
+
+    AW_window_simple *aws = new AW_window_simple;
+    awsa[selector->type]  = aws;
+
+    aws->init(root, "CONVERT_FIELD", "CONVERT FIELDS");
+    aws->load_xfig("ad_conv.fig");
+
+    aws->at("close");
+    aws->callback( (AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE","CLOSE","C");
+
+    aws->at("help");
+    aws->callback( AW_POPUP_HELP,(AW_CL)"spaf_convert.hlp");
+    aws->create_button("HELP","HELP","H");
+
+    aws->callback(ad_field_convert_update_typesel_cb, cl_item_selector);
+    AW_CL cbs = awt_create_selection_list_on_scandb(
+        GLOBAL_gb_main,
+        (AW_window*)aws,
+        AWAR_FIELD_CONVERT_SOURCE, // AWAR containing selection
+        -1, // type filter
+        "source", // selector xfig position
+        0, // rescan button xfig position
+        selector,
+        40, 20, // selector w,h
+        false, // embed (true=popup)
+        false, // all-fields pseudo field
+        true); // include hidden fields
+
+    aws->at("typesel");
+    aws->create_toggle_field(AWAR_FIELD_CONVERT_TYPE, NULL, "F");
+    aws->insert_toggle("Ascii Text",        "S", (int)GB_STRING);
+    aws->insert_toggle("Link",              "L", (int)GB_LINK);
+    aws->insert_toggle("Rounded Numerical", "N", (int)GB_INT);
+    aws->insert_toggle("Numerical",         "R", (int)GB_FLOAT);
+    aws->insert_toggle("MASK = 01 Text",    "0", (int)GB_BITS);
+    aws->update_toggle_field();
+
+    aws->at("convert");
+    aws->callback(ad_field_convert_commit_cb, cl_item_selector);
+    aws->create_button("CONVERT","CONVERT","T");
+
+    return (AW_window*)aws;
+}
+
 void ad_spec_create_field_items(AW_window *aws) {
-    aws->insert_menu_topic("reorder_fields", "Reorder fields ...",     "R", "spaf_reorder.hlp", AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_list_reorder, (AW_CL)&AWT_species_selector); 
-    aws->insert_menu_topic("delete_field",   "Delete/Hide fields ...", "D", "spaf_delete.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_field_delete, (AW_CL)&AWT_species_selector); 
-    aws->insert_menu_topic("create_field",   "Create fields ...",      "C", "spaf_create.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_field_create, (AW_CL)&AWT_species_selector); 
+    aws->insert_menu_topic("reorder_fields", "Reorder fields ...",     "R", "spaf_reorder.hlp", AWM_EXP, AW_POPUP, (AW_CL)NT_create_ad_list_reorder, (AW_CL)&AWT_species_selector);
+    aws->insert_menu_topic("delete_field",   "Delete/Hide fields ...", "D", "spaf_delete.hlp",  AWM_EXP, AW_POPUP, (AW_CL)NT_create_ad_field_delete, (AW_CL)&AWT_species_selector);
+    aws->insert_menu_topic("create_field",   "Create fields ...",      "C", "spaf_create.hlp",  AWM_EXP, AW_POPUP, (AW_CL)NT_create_ad_field_create, (AW_CL)&AWT_species_selector);
+    aws->insert_menu_topic("convert_field",  "Convert fields ...",     "T", "spaf_convert.hlp", AWM_EXP, AW_POPUP, (AW_CL)NT_create_ad_field_convert,(AW_CL)&AWT_species_selector);
     aws->insert_separator(); 
-    aws->insert_menu_topic("unhide_fields", "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, (AW_CB)awt_selection_list_unhide_all_cb, (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER); 
-    aws->insert_separator(); 
-    aws->insert_menu_topic("scan_unknown_fields", "Scan unknown fields",   "u", "scandb.hlp", AD_F_ALL, (AW_CB)awt_selection_list_scan_unknown_cb,  (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER); 
-    aws->insert_menu_topic("del_unused_fields",   "Remove unused fields",  "e", "scandb.hlp", AD_F_ALL, (AW_CB)awt_selection_list_delete_unused_cb, (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER); 
-    aws->insert_menu_topic("refresh_fields",      "Refresh fields (both)", "f", "scandb.hlp", AD_F_ALL, (AW_CB)awt_selection_list_update_cb,        (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER); 
+    aws->insert_menu_topic("unhide_fields", "Show all hidden fields", "S", "scandb.hlp", AWM_EXP, (AW_CB)awt_selection_list_unhide_all_cb, (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER);
+    aws->insert_separator();
+    aws->insert_menu_topic("scan_unknown_fields", "Scan unknown fields",   "u", "scandb.hlp", AWM_ALL, (AW_CB)awt_selection_list_scan_unknown_cb,  (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER);
+    aws->insert_menu_topic("del_unused_fields",   "Remove unused fields",  "e", "scandb.hlp", AWM_EXP, (AW_CB)awt_selection_list_delete_unused_cb, (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER);
+    aws->insert_menu_topic("refresh_fields",      "Refresh fields (both)", "f", "scandb.hlp", AWM_EXP, (AW_CB)awt_selection_list_update_cb,        (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER);
 }
 
 #include <probe_design.hxx>
@@ -749,7 +828,7 @@ static void awtc_nn_search_all_listed(AW_window *aww,AW_CL _cbs) {
     char    *dest_field = aw_root->awar(AWAR_NN_DEST_FIELD)->read_string();
     
     GB_ERROR error     = 0;
-    GB_TYPES dest_type = awt_get_type_of_changekey(GLOBAL_gb_main, dest_field, CHANGE_KEY_PATH);
+    GB_TYPES dest_type = GBT_get_type_of_changekey(GLOBAL_gb_main, dest_field, CHANGE_KEY_PATH);
     if (!dest_type){
         error = GB_export_error("Please select a valid field");
     }
@@ -1137,17 +1216,17 @@ AW_window *create_speciesOrganismWindow(AW_root *aw_root, bool organismWindow)
     ad_global_scannerid = scannerid;
     ad_global_scannerroot = aws->get_root();
 
-    if (organismWindow) aws->create_menu(0,   "ORGANISM",     "O", "spa_organism.hlp",  AD_F_ALL );
-    else                aws->create_menu(0,   "SPECIES",     "S", "spa_species.hlp",  AD_F_ALL );
+    if (organismWindow) aws->create_menu(0,   "ORGANISM",     "O", "spa_organism.hlp",  AWM_ALL );
+    else                aws->create_menu(0,   "SPECIES",     "S", "spa_species.hlp",  AWM_ALL );
 
-    aws->insert_menu_topic("species_delete",        "Delete",        "D","spa_delete.hlp",   AD_F_ALL,   ad_species_delete_cb, 0, 0);
-    aws->insert_menu_topic("species_rename",        "Rename",        "R","spa_rename.hlp",   AD_F_ALL,   ad_species_rename_cb, 0, 0);
-    aws->insert_menu_topic("species_copy",          "Copy",          "y","spa_copy.hlp", AD_F_ALL,   ad_species_copy_cb, 0, 0);
-    aws->insert_menu_topic("species_create",        "Create",        "C","spa_create.hlp",   AD_F_ALL,   AW_POPUP, (AW_CL)create_species_create_window, 0);
-    aws->insert_menu_topic("species_convert_2_sai", "Convert to SAI","S","sp_sp_2_ext.hlp",AD_F_ALL,    (AW_CB)move_species_to_extended, 0, 0);
+    aws->insert_menu_topic("species_delete",        "Delete",        "D","spa_delete.hlp",   AWM_ALL,   ad_species_delete_cb, 0, 0);
+    aws->insert_menu_topic("species_rename",        "Rename",        "R","spa_rename.hlp",   AWM_ALL,   ad_species_rename_cb, 0, 0);
+    aws->insert_menu_topic("species_copy",          "Copy",          "y","spa_copy.hlp", AWM_ALL,   ad_species_copy_cb, 0, 0);
+    aws->insert_menu_topic("species_create",        "Create",        "C","spa_create.hlp",   AWM_ALL,   AW_POPUP, (AW_CL)create_species_create_window, 0);
+    aws->insert_menu_topic("species_convert_2_sai", "Convert to SAI","S","sp_sp_2_ext.hlp",AWM_ALL,    (AW_CB)move_species_to_extended, 0, 0);
     aws->insert_separator();
 
-    aws->create_menu(       0,   "FIELDS",     "F", "spa_fields.hlp",  AD_F_ALL );
+    aws->create_menu(       0,   "FIELDS",     "F", "spa_fields.hlp",  AWM_ALL );
     ad_spec_create_field_items(aws);
 
     {

@@ -61,7 +61,7 @@ static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, in
                     if (!gb_dest) error = GB_await_error();
                     else {
                         char *fname = GBS_global_string_copy("%s/data",ali_dest);
-                        error       = awt_add_new_changekey(gb_main,fname,GB_STRING);
+                        error       = GBT_add_new_changekey(gb_main,fname,GB_STRING);
                         free(fname);
                     }
                 }

@@ -104,7 +104,7 @@ int MG_check_alignment(AW_window *aww,int fast)
             gb_presets2 = GB_search(GLOBAL_gb_dest,"presets",GB_CREATE_CONTAINER);
             gb_ali2 = GB_create_container(gb_presets2,"alignment");
             GB_copy(gb_ali2,gb_ali1);
-            awt_add_new_changekey( GLOBAL_gb_dest, (char *)GBS_global_string("%s/data",*name),GB_STRING);
+            GBT_add_new_changekey( GLOBAL_gb_dest, (char *)GBS_global_string("%s/data",*name),GB_STRING);
         }
         char *type1 = GBT_get_alignment_type_string(GLOBAL_gb_merge,*name);
         char *type2 = GBT_get_alignment_type_string(GLOBAL_gb_dest,*name);
@@ -171,7 +171,7 @@ void MG_copy_delete_rename(AW_window * aww, AW_CL db_nr, AW_CL dele)
     GB_ERROR  error  = GB_begin_transaction(gbd);
 
     if (!error) error = GBT_rename_alignment(gbd, source, dest, (int)1, (int)dele);
-    if (!error) error = awt_add_new_changekey(gbd, GBS_global_string("%s/data", dest), GB_STRING);
+    if (!error) error = GBT_add_new_changekey(gbd, GBS_global_string("%s/data", dest), GB_STRING);
     
     error = GB_end_transaction(gbd, error);
     aww->hide_or_notify(error);

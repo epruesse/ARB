@@ -13,16 +13,6 @@
 #ifndef AWT_CHANGEKEY_HXX
 #define AWT_CHANGEKEY_HXX
 
-GBDATA   *awt_get_key(GBDATA *gb_main, const char *key, const char *change_key_path);
-GB_TYPES  awt_get_type_of_changekey(GBDATA *gb_main,const char *field_name, const char *change_key_path);
-
-GB_ERROR awt_add_new_changekey(GBDATA *gb_main,const char *name, int type);
-GB_ERROR awt_add_new_gene_changekey(GBDATA *gb_main,const char *name, int type);
-GB_ERROR awt_add_new_experiment_changekey(GBDATA *gb_main,const char *name, int type);
-
-GB_ERROR awt_add_new_changekey_to_keypath(GBDATA *gb_main,const char *name, int type, const char *keypath);
-// same as awt_add_new_changekey but with given keypath (with this you can add fields to any item (species, gene, ...))
-
 /***********************    FIELD INFORMATIONS  ************************/
 AW_CL awt_create_selection_list_on_scandb(GBDATA                 *gb_main,
                                           AW_window              *aws,

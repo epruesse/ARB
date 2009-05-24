@@ -236,6 +236,7 @@ symlink ../../GL/glAW/aw_window_ogl.hxx INCLUDE/GL/aw_window_ogl.hxx &&
 # arbdb dirs
 
 arbdb_symlink AD_MOBJECTS.h &&
+arbdb_symlink adChangeKey.c &&
 arbdb_symlink adExperiment.c &&
 arbdb_symlink adGene.c &&
 arbdb_symlink adGene.h &&

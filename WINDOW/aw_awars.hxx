@@ -1,15 +1,6 @@
 #ifndef AW_AWARS_HXX
 #define AW_AWARS_HXX
 
-#define CHANGE_KEY_PATH             "presets/key_data"
-#define CHANGE_KEY_PATH_GENES       "presets/gene_key_data"
-#define CHANGE_KEY_PATH_EXPERIMENTS "presets/experiment_key_data"
-
-#define CHANGEKEY        "key"
-#define CHANGEKEY_NAME   "key_name"
-#define CHANGEKEY_TYPE   "key_type"
-#define CHANGEKEY_HIDDEN "key_hidden"
-
 #define AWAR_DB                "tmp/nt/arbdb/"
 #define AWAR_DB_PATH           AWAR_DB "file_name"
 #define AWAR_DB_NAME           AWAR_DB_PATH "_without_path" //  awar is automatically updated when AWAR_DB_PATH changes

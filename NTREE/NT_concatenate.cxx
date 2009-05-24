@@ -436,7 +436,7 @@ void concatenateAlignments(AW_window *aws) {
 
     if (!error) {
         char *nfield = GBS_global_string_copy("%s/data",new_ali_name);
-        error        = awt_add_new_changekey(GLOBAL_gb_main, nfield, GB_STRING);
+        error        = GBT_add_new_changekey(GLOBAL_gb_main, nfield, GB_STRING);
         free(nfield);
     }
     GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
@@ -720,7 +720,7 @@ GB_ERROR checkAndCreateNewField(GBDATA *gb_main, char *new_field_name){
 
     if (error) return error;
     else {
-        error = awt_add_new_changekey(gb_main,new_field_name,GB_STRING);
+        error = GBT_add_new_changekey(gb_main,new_field_name,GB_STRING);
         if (error) {
             bool overwrite = aw_ask_sure(GBS_global_string("\"%s\" field exists! Do you want to overwrite the existing field?",new_field_name));
             if (!overwrite) return error;
