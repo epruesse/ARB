@@ -131,7 +131,7 @@ void aa_copy_delete_rename(AW_window *aww,AW_CL copy, AW_CL dele) {
     if (!error) error = GBT_rename_alignment(GLOBAL_gb_main,source,dest,(int)copy,(int)dele);
     if (!error) {
         char *nfield = GBS_global_string_copy("%s/data",dest);
-        error        = awt_add_new_changekey( GLOBAL_gb_main,nfield,GB_STRING);
+        error        = GBT_add_new_changekey( GLOBAL_gb_main,nfield,GB_STRING);
         free(nfield);
     }
 
@@ -195,7 +195,7 @@ void aa_create_alignment(AW_window *aww) {
         if (!gb_alignment) error = GB_await_error();
         else {
             char *nfield = GBS_global_string_copy("%s/data",name);
-            error        = awt_add_new_changekey( GLOBAL_gb_main,nfield,GB_STRING);
+            error        = GBT_add_new_changekey( GLOBAL_gb_main,nfield,GB_STRING);
             free(nfield);
         }
         free(name);

@@ -181,6 +181,15 @@ char *GBT_complementNucSequence P_((const char *s, int len, char T_or_U));
 GB_ERROR GBT_determine_T_or_U P_((GB_alignment_type alignment_type, char *T_or_U, const char *supposed_target));
 void GBT_reverseComplementNucSequence P_((char *seq, long length, char T_or_U));
 
+/* adChangeKey.c */
+GBDATA *GBT_get_changekey P_((GBDATA *gb_main, const char *key, const char *change_key_path));
+GB_TYPES GBT_get_type_of_changekey P_((GBDATA *gb_main, const char *field_name, const char *change_key_path));
+GB_ERROR GBT_add_new_changekey_to_keypath P_((GBDATA *gb_main, const char *name, int type, const char *keypath));
+GB_ERROR GBT_add_new_changekey P_((GBDATA *gb_main, const char *name, int type));
+GB_ERROR GBT_add_new_gene_changekey P_((GBDATA *gb_main, const char *name, int type));
+GB_ERROR GBT_add_new_experiment_changekey P_((GBDATA *gb_main, const char *name, int type));
+GB_ERROR GBT_convert_changekey P_((GBDATA *gb_main, const char *name, int target_type));
+
 #ifdef __cplusplus
 }
 #endif

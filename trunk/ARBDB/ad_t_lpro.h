@@ -36,6 +36,9 @@ char *gb_uncompress_by_sequence P_((GBDATA *gbd, const char *ss, long size, GB_E
 /* adtables.c */
 GBDATA *gbt_table_link_follower P_((GBDATA *gb_main, GBDATA *gb_link, const char *link));
 
+/* adChangeKey.c */
+GB_ERROR gbt_set_type_of_changekey P_((GBDATA *gb_main, const char *field_name, GB_TYPES type, const char *change_key_path));
+
 #ifdef __cplusplus
 }
 #endif

@@ -285,9 +285,11 @@ AWT_input_mask.o: awt_input_mask.hxx
 AWT_input_mask.o: awt_www.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/ad_prot.h
+AWT_input_mask.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AWT_input_mask.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx

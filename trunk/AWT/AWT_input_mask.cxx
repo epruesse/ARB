@@ -13,6 +13,7 @@
 //  ==================================================================== //
 
 #include <arbdb.h>
+#include <arbdbt.h>
 #include <awt.hxx>
 #include <awt_www.hxx>
 
@@ -424,11 +425,11 @@ void awt_string_handler::awar_changed() {
             gbdata = GB_search(item(), child, GB_FIND);
 
             if (!gbdata) {
-                GB_TYPES found_typ = awt_get_type_of_changekey(gb_main, child, keypath);
+                GB_TYPES found_typ = GBT_get_type_of_changekey(gb_main, child, keypath);
                 if (found_typ != GB_NONE) set_type(found_typ); // fix type if different
 
                 gbdata = GB_search(item(), child, type()); // here new items are created
-                if (found_typ == GB_NONE) awt_add_new_changekey_to_keypath(gb_main, child, type(), keypath);
+                if (found_typ == GB_NONE) GBT_add_new_changekey_to_keypath(gb_main, child, type(), keypath);
                 relink_me = true; //  @@@ only if child was created!!
             }
         }

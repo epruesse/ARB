@@ -6,6 +6,9 @@
 #define AWAR_FIELD_CREATE_TYPE "tmp/adfield/type"
 #define AWAR_FIELD_DELETE      "tmp/adfield/source"
 
+#define AWAR_FIELD_CONVERT_SOURCE "tmp/adconvert/source"
+#define AWAR_FIELD_CONVERT_NAME   "tmp/adconvert/name"
+#define AWAR_FIELD_CONVERT_TYPE   "tmp/adconvert/type"
 
 #define AWAR_FIELD_REORDER_SOURCE "tmp/ad_reorder/source"
 #define AWAR_FIELD_REORDER_DEST   "tmp/ad_reorder/dest"
@@ -23,5 +26,6 @@ void       create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL);
 AW_window *NT_create_ad_list_reorder(AW_root *root, AW_CL cl_item_selector);
 AW_window *NT_create_ad_field_delete(AW_root *root, AW_CL cl_item_selector);
 AW_window *NT_create_ad_field_create(AW_root *root, AW_CL cl_item_selector);
+AW_window *NT_create_ad_field_convert(AW_root *root, AW_CL cl_item_selector);
 
 void NT_detach_information_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_Awar_Callback_Info);

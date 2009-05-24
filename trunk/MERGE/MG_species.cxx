@@ -308,7 +308,7 @@ static GB_ERROR MG_transfer_fields_info(char *fieldname = NULL) {
                         char *name = GB_read_string(gb_key_name);
 
                         if (!fieldname || strcmp(fieldname,name) == 0) {
-                            error = awt_add_new_changekey(GLOBAL_gb_dest,name,(int)GB_read_int(gb_key_type));
+                            error = GBT_add_new_changekey(GLOBAL_gb_dest,name,(int)GB_read_int(gb_key_type));
                         }
                         free(name);
                     }
@@ -1048,7 +1048,7 @@ GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
                                           M_alignment_names[0], dest, error);
             }
             else {
-                awt_add_new_changekey(GLOBAL_gb_merge, GBS_global_string("%s/data",dest),GB_STRING);
+                GBT_add_new_changekey(GLOBAL_gb_merge, GBS_global_string("%s/data",dest),GB_STRING);
             }
         }
         free(type);

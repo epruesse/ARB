@@ -188,7 +188,7 @@ static void awt_arbdb_scanner_value_change(void *, struct adawcbstruct *cbs)
                     error = GB_write_as_string(gbd, value);
                 }
                 else {
-                    GBDATA *gb_key = awt_get_key(cbs->gb_main, key_name, cbs->selector->change_key_path);
+                    GBDATA *gb_key = GBT_get_changekey(cbs->gb_main, key_name, cbs->selector->change_key_path);
 
                     error = GB_delete(gbd);
                     if (!error) {

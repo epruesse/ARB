@@ -1552,7 +1552,7 @@ void awt_do_pars_list(void *dummy, struct adaqbsstruct *cbs)
                     error = "Aborted by user";
                 }
                 else {
-                    error = awt_add_new_changekey_to_keypath(cbs->gb_main,key,GB_STRING, cbs->selector->change_key_path);
+                    error = GBT_add_new_changekey_to_keypath(cbs->gb_main,key,GB_STRING, cbs->selector->change_key_path);
                 }
             }
         }
