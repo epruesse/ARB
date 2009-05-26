@@ -47,7 +47,7 @@ extern adfiltercbstruct *agde_filtercd;
 */
 
 
-static char *ReplaceArgs(AW_root *awr,char *Action,AWwindowinfo *AWinfo,int number)
+static char *ReplaceArgs(AW_root *awr,char *Action,GmenuItem *gmenuitem,int number)
 {
     /*
      *  The basic idea is to replace all of the symbols in the method
@@ -91,13 +91,13 @@ static char *ReplaceArgs(AW_root *awr,char *Action,AWwindowinfo *AWinfo,int numb
     char *textvalue=0;
     char *temp;
     int i,newlen,type;
-    symbol = AWinfo->gmenuitem->arg[number].symbol;
-    //method = AWinfo->gmenuitem->arg[number]->method;
-    //textvalue = AWinfo->gmenuitem->arg[number]->textvalue;
-    type = AWinfo->gmenuitem->arg[number].type;
+    symbol = gmenuitem->arg[number].symbol;
+    //method = gmenuitem->arg[number]->method;
+    //textvalue = gmenuitem->arg[number]->textvalue;
+    type = gmenuitem->arg[number].type;
     if( (type == SLIDER) )
     {
-        char *awarname = GDE_makeawarname(AWinfo,number);
+        char *awarname = GDE_makeawarname(gmenuitem,number);
         textvalue      = (char*)malloc(GBUFSIZ);
         char *awalue   = awr->awar(awarname)->read_as_string();
         sprintf(textvalue,"%s",awalue);
@@ -111,7 +111,7 @@ static char *ReplaceArgs(AW_root *awr,char *Action,AWwindowinfo *AWinfo,int numb
             (type == CHOICE_WEIGHTS) ||
             (type == TEXTFIELD))
     {
-        char *awarname=GDE_makeawarname(AWinfo,number);
+        char *awarname=GDE_makeawarname(gmenuitem,number);
         method=awr->awar(awarname)->read_string();
         textvalue=awr->awar(awarname)->read_string();
     }
@@ -446,7 +446,7 @@ static char *preCreateTempfile(const char *name) {
     return fullname;
 }
 
-void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
+void GDE_startaction_cb(AW_window *aw,GmenuItem *gmenuitem,AW_CL cd)
 {
     long oldnumelements=0;
     AWUSE(cd);
@@ -460,7 +460,7 @@ void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
     long            cutoff_stop_codon = aw_root->awar(AWAR_GDE_CUTOFF_STOPCODON)->read_int();
 
     GmenuItem *current_item;
-    current_item=AWinfo->gmenuitem;
+    current_item=gmenuitem;
 
     aw_openstatus(current_item->label);
     aw_status((double)0);
@@ -535,7 +535,7 @@ void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
         while (1) {
             char *oldAction = strdup(Action);
 
-            for(j=0;j<current_item->numargs;j++) Action = ReplaceArgs(aw_root,Action,AWinfo,j);
+            for(j=0;j<current_item->numargs;j++) Action = ReplaceArgs(aw_root,Action,gmenuitem,j);
             bool changed = strcmp(oldAction, Action) != 0;
             free(oldAction);
 

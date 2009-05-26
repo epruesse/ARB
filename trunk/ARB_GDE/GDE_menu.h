@@ -44,19 +44,21 @@ typedef struct GfileFormattype
 
 typedef struct GmenuItemtype
 {
-    int           numargs;      /* number of agruments to cmnd */
-    int           numoutputs;   /* number of outputs from cmnd */
-    int           numinputs;    /* number of input files to cmnd */
-    char         *label;        /* item name */
-    char         *method;       /* commandline produced */
-    GfileFormat  *input;        /* input definitions */
-    GfileFormat  *output;       /* output definitions */
-    GmenuItemArg *arg;          /* arguement definitions */
-    char          meta;         /* Meta character for function */
-    char          seqtype;      /* A -> amino, N -> nucleotide, '-' -> no sequence, otherwise both */
-    char         *help;         /* commandline help */
+    int               numargs;  /* number of agruments to cmnd */
+    int               numoutputs; /* number of outputs from cmnd */
+    int               numinputs; /* number of input files to cmnd */
+    char             *label;    /* item name */
+    char             *method;   /* commandline produced */
+    GfileFormat      *input;    /* input definitions */
+    GfileFormat      *output;   /* output definitions */
+    GmenuItemArg     *arg;      /* arguement definitions */
+    char              meta;     /* Meta character for function */
+    char              seqtype;  /* A -> amino, N -> nucleotide, '-' -> no sequence, otherwise both */
+    char             *help;     /* commandline help */
     /* ARB BEGIN */
     /*  Panel_item  X; */       /* Xview panel */
+    struct Gmenutype *parent_menu;
+    AW_window        *aws;      /* opened window */
 } GmenuItem;
 
 typedef struct Gmenutype
@@ -71,13 +73,6 @@ typedef struct Gmenutype
 
 
 } Gmenu;
-
-typedef struct AWwindowinfotype
-{
-    Gmenu     *gmenu;
-    GmenuItem *gmenuitem;
-
-} AWwindowinfo;
 
 // typedef unsigned char uchar;
 
