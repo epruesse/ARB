@@ -1177,63 +1177,59 @@ GBDATA *open_AWTC_import_window(AW_root *awr,const char *defname, bool do_exit, 
     awr->awar(AWAR_READ_GENOM_DB)->add_callback(genom_flag_changed);
     genom_flag_changed(awr);
 
-    if (aws){
-        aws->show();
-        return GB_MAIN;
+    if (!aws) {
+        aws = new AW_window_simple;
+
+        aws->init( awr, "ARB_IMPORT","ARB IMPORT");
+        aws->load_xfig("awt/import_db.fig");
+
+        aws->at("close");
+        aws->callback(import_window_close_cb);
+        aws->create_button("CLOSE", "CLOSE","C");
+
+        aws->at("help");
+        aws->callback(AW_POPUP_HELP,(AW_CL)"arb_import.hlp");
+        aws->create_button("HELP", "HELP","H");
+
+        awt_create_selection_box(aws, AWAR_FILE_BASE, "imp_", "PWD", true, true); // select import filename
+        awt_create_selection_box(aws, AWAR_FORM, "", "ARBHOME", false, false); // select import filter
+
+        aws->at("auto");
+        aws->callback(awtc_check_input_format);
+        aws->create_autosize_button("AUTO_DETECT", "AUTO DETECT","A");
+
+        aws->at("ali");
+        aws->create_input_field(AWAR_ALI,4);
+
+        aws->at("type");
+        aws->create_option_menu(AWAR_ALI_TYPE);
+        aws->insert_option("dna","d","dna");
+        aws->insert_option("rna","r","rna");
+        aws->insert_option("protein","p","ami");
+        aws->update_option_menu();
+
+        aws->at("protect");
+        aws->create_option_menu(AWAR_ALI_PROTECTION);
+        aws->insert_option("0", "0", 0);
+        aws->insert_option("1", "1", 1);
+        aws->insert_option("2", "2", 2);
+        aws->insert_option("3", "3", 3);
+        aws->insert_default_option("4", "4", 4);
+        aws->insert_option("5", "5", 5);
+        aws->insert_option("6", "6", 6);
+        aws->update_option_menu();
+
+        aws->at("genom");
+        aws->create_toggle_field(AWAR_READ_GENOM_DB);
+        aws->insert_toggle("Import genome data in EMBL, GenBank and DDBJ format","e", IMP_GENOME_FLATFILE);
+        aws->insert_toggle("Import selected format","f",IMP_PLAIN_SEQUENCE);
+        aws->update_toggle_field();
+
+        aws->at("go");
+        aws->callback(AWTC_import_go_cb);
+        aws->highlight();
+        aws->create_button("GO", "GO","G");
     }
-
-    aws = new AW_window_simple;
-
-    aws->init( awr, "ARB_IMPORT","ARB IMPORT");
-    aws->load_xfig("awt/import_db.fig");
-
-    aws->at("close");
-    aws->callback(import_window_close_cb);
-    aws->create_button("CLOSE", "CLOSE","C");
-
-    aws->at("help");
-    aws->callback(AW_POPUP_HELP,(AW_CL)"arb_import.hlp");
-    aws->create_button("HELP", "HELP","H");
-
-    awt_create_selection_box(aws, AWAR_FILE_BASE, "imp_", "PWD", true, true); // select import filename
-    awt_create_selection_box(aws, AWAR_FORM, "", "ARBHOME", false, false); // select import filter
-
-    aws->at("auto");
-    aws->callback(awtc_check_input_format);
-    aws->create_autosize_button("AUTO_DETECT", "AUTO DETECT","A");
-
-    aws->at("ali");
-    aws->create_input_field(AWAR_ALI,4);
-
-    aws->at("type");
-    aws->create_option_menu(AWAR_ALI_TYPE);
-    aws->insert_option("dna","d","dna");
-    aws->insert_option("rna","r","rna");
-    aws->insert_option("protein","p","ami");
-    aws->update_option_menu();
-
-    aws->at("protect");
-    aws->create_option_menu(AWAR_ALI_PROTECTION);
-    aws->insert_option("0", "0", 0);
-    aws->insert_option("1", "1", 1);
-    aws->insert_option("2", "2", 2);
-    aws->insert_option("3", "3", 3);
-    aws->insert_default_option("4", "4", 4);
-    aws->insert_option("5", "5", 5);
-    aws->insert_option("6", "6", 6);
-    aws->update_option_menu();
-
-    aws->at("genom");
-    aws->create_toggle_field(AWAR_READ_GENOM_DB);
-    aws->insert_toggle("Import genome data in EMBL, GenBank and DDBJ format","e", IMP_GENOME_FLATFILE);
-    aws->insert_toggle("Import selected format","f",IMP_PLAIN_SEQUENCE);
-    aws->update_toggle_field();
-
-    aws->at("go");
-    aws->callback(AWTC_import_go_cb);
-    aws->highlight();
-    aws->create_button("GO", "GO","G");
-
-    aws->show();
+    aws->activate();
     return GB_MAIN;
 }

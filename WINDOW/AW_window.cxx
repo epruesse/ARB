@@ -723,9 +723,10 @@ void AW_cb_struct::run_callback(void) {
     }
 
     if (f == AW_POPUP) {
-        if (pop_up_window) {
-            pop_up_window->show();
-        } else {
+        if (pop_up_window) { // already exists
+            pop_up_window->activate();
+        }
+        else {
             g = (AW_PPP)cd1;
             if (g) {
                 pop_up_window = g(aw->get_root(), cd2, 0);
@@ -1675,19 +1676,20 @@ void AW_label_in_awar_list(AW_window *aww, Widget widget, const char *str) {
 /*********************************************************************************************/
 /*********************************************************************************************/
 
-static void aw_window_avoid_destroy_cb(Widget, AW_window *,
-        XmAnyCallbackStruct *) {
+static void aw_window_avoid_destroy_cb(Widget, AW_window *, XmAnyCallbackStruct *) {
     aw_message("If YOU do not know what to answer, how should ARB know?\nPlease think again and answer the prompt!");
 }
 
-static void aw_window_destroy_cb(Widget w, AW_window *aww,
-        XmAnyCallbackStruct *cbs) {
-    AWUSE(cbs);
-    AWUSE(w);
+static void aw_window_noexit_destroy_cb(Widget , AW_window *aww, XmAnyCallbackStruct *) {
+    aww->hide();
+    // don't exit, when using destroy callback
+}
+
+static void aw_window_destroy_cb(Widget , AW_window *aww, XmAnyCallbackStruct *) {
     AW_root *root = aww->get_root();
-    if ( (p_global->main_aww == aww) || !p_global->main_aww->get_show()) {
+    if ( (p_global->main_aww == aww) || !p_global->main_aww->is_shown()) {
 #ifdef NDEBUG
-        if (aw_question("Are you sure to quit ??","YES,NO") ) return;
+        if (aw_question("Are you sure to quit?","YES,NO") ) return;
 #endif
         exit(0);
     }
@@ -1848,7 +1850,7 @@ Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int 
         AW_ERROR("Error: Failed to load icon pixmap for window '%s'\n", aww->window_defaults_name);
     }
 
-    if (!p_global->main_widget || !p_global->main_aww->get_show()) {
+    if (!p_global->main_widget || !p_global->main_aww->is_shown()) {
         shell = XtVaCreatePopupShell("editor", applicationShellWidgetClass,
                                      father,
                                      XmNwidth, width, 
@@ -1882,7 +1884,7 @@ Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int 
         p_global->main_aww    = aww;
     }
     else {
-        if ( !p_global->main_aww->get_show()) { // now i am the root window
+        if ( !p_global->main_aww->is_shown()) { // now i am the root window
             p_global->main_widget = shell;
             p_global->main_aww    = aww;
         }
@@ -1893,7 +1895,10 @@ Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int 
     if (allow_close == false) {
         XmAddWMProtocolCallback(shell, WM_DELETE_WINDOW, (XtCallbackProc)aw_window_avoid_destroy_cb,(caddr_t)aww);
     }
-    else if (!p_global->no_exit) {
+    else if (p_global->no_exit) {
+        XmAddWMProtocolCallback(shell, WM_DELETE_WINDOW, (XtCallbackProc)aw_window_noexit_destroy_cb,(caddr_t)aww);
+    }
+    else {
         XmAddWMProtocolCallback(shell, WM_DELETE_WINDOW, (XtCallbackProc)aw_window_destroy_cb,(caddr_t)aww);
     }
 
@@ -3050,8 +3055,58 @@ AW_device *AW_window::get_click_device(AW_area area, int mousex, int mousey,
     if (!aram->click_device)
         aram->click_device = new AW_device_click(aram->common);
     aram->click_device->init(mousex, mousey, max_distance_linei,
-            max_distance_texti, radi, (AW_bitset)-1);
+                             max_distance_texti, radi, (AW_bitset)-1);
     return (AW_device *)(aram->click_device);
+}
+
+void AW_window::wm_activate() {
+    {
+        Boolean iconic = False;
+        XtVaGetValues(p_w->shell, XmNiconic, &iconic, NULL) ;
+
+        if (iconic == True) {
+            XtVaSetValues(p_w->shell, XmNiconic, False, NULL) ;
+
+            XtMapWidget(p_w->shell) ;
+            XRaiseWindow(XtDisplay(p_w->shell), XtWindow(p_w->shell)) ;
+        }
+    }
+
+    {
+        Display *xdpy            = XtDisplay(p_w->shell);
+        Window   window          = XtWindow(p_w->shell);
+        Atom     netactivewindow = XInternAtom(xdpy, "_NET_ACTIVE_WINDOW", False);
+
+        if (netactivewindow) {
+
+            XClientMessageEvent ce;
+            ce.type         = ClientMessage;
+            ce.display      = xdpy;
+            ce.window       = window;
+            ce.message_type = netactivewindow;
+            ce.format       = 32;
+            ce.data.l[0]    = 2;
+            ce.data.l[1]    = None;
+            ce.data.l[2]    = Above;
+            ce.data.l[3]    = 0;
+            ce.data.l[4]    = 0;
+  
+            Status ret = XSendEvent(xdpy, XDefaultRootWindow(xdpy),
+                                    False,
+                                    SubstructureRedirectMask | SubstructureNotifyMask,
+                                    (XEvent *) &ce);
+
+#if defined(DEBUG)
+            if (!ret) { fprintf(stderr, "Failed to send _NET_ACTIVE_WINDOW to WM (XSendEvent returns %i)\n", ret); }
+#endif // DEBUG
+            XSync(xdpy, False);
+        }
+#if defined(DEBUG)
+        else {
+            fputs("No such atom '_NET_ACTIVE_WINDOW'\n", stderr);
+        }
+#endif // DEBUG
+    }
 }
 
 void AW_window::show(void) {
@@ -3090,8 +3145,7 @@ void AW_window::show(void) {
     }
 
     XtPopup(p_w->shell, XtGrabNone);
-    XtVaSetValues(p_w->shell, XmNiconic, False, NULL);
-    if (p_w->WM_top_offset == -1000) { // very bad hack
+    if (p_w->WM_top_offset == -1000) {              // very bad hack
         set_expose_callback(AW_INFO_AREA, (AW_CB)aw_calculate_WM_offsets, 0, 0);
     }
 }
@@ -3115,7 +3169,9 @@ void AW_window::hide(void) {
     XtPopdown(p_w->shell);
 }
 
-bool AW_window::get_show(void) {
+bool AW_window::is_shown(void) {
+    // return true if window is shown ( = not invisible and already created)
+    // Note: does return TRUE!, if window is only minimized by WM
     return window_is_shown;
 }
 

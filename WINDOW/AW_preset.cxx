@@ -182,7 +182,7 @@ void aw_create_color_chooser_window(AW_window *aww, const char *awar_name,const 
     }
     awr->awar(AWAR_GLOBAL_COLOR_NAME)->write_string(label_name);
     freedup(aw_glob_font_awar_name, awar_name);
-    aws->show();
+    aws->activate();
 }
 
 void AW_preset_create_color_chooser(AW_window *aws, const char *awar, const char *label,bool message_reload, bool show_label)
@@ -933,7 +933,7 @@ void AW_create_gc_color_groups_name_window(AW_window */*aww*/, AW_CL cl_aw_root,
         aws->window_fit();
     }
 
-    aws->show();
+    aws->activate();
 }
 
 //  ------------------------------------------------------------------------------------------------
@@ -997,7 +997,7 @@ void AW_create_gc_color_groups_window(AW_window */*aww*/, AW_CL cl_aw_root, AW_C
         aws->window_fit();
     }
 
-    aws->show();
+    aws->activate();
 }
 
 AW_window *AW_create_gc_window_named(AW_root * aw_root, AW_gc_manager id_par, const char *wid, const char *windowname) {
@@ -1063,7 +1063,7 @@ void awt_xfig_font_create_filerequest(AW_window *aw) {
         awt_create_selection_box((AW_window *)aws,"vectorfont","","ARBHOME");
     }
     aw_root->awar("vectorfont/file_name")->write_string(aw_root->vectorfont_name);
-    aws->show();
+    aws->activate();
 }
 
 AW_window *AWT_preset_window( AW_root *root )

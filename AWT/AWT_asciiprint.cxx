@@ -316,114 +316,113 @@ void AWT_create_ascii_print_window(AW_root *awr, const char *text_to_print,const
     }
     if (aws) {
         awr->awar_float(AWAR_APRINT_DX)->write_float(1.0);
-        aws->show();
-        return;
     }
-    aws = new AW_window_simple();
-    aws->init(awr,"PRINT","PRINT");
-    aws->load_xfig("awt/ascii_print.fig");
-    awr->awar_string(AWAR_APRINT_TITLE);
-    awr->awar_string(AWAR_APRINT_TEXT)                                  ->add_callback(awt_aps_text_changed);
+    else {
+        aws = new AW_window_simple();
+        aws->init(awr,"PRINT","PRINT");
+        aws->load_xfig("awt/ascii_print.fig");
+        awr->awar_string(AWAR_APRINT_TITLE);
+        awr->awar_string(AWAR_APRINT_TEXT)                                  ->add_callback(awt_aps_text_changed);
 
-    awr->awar_int(AWAR_APRINT_PAPER_SIZE,(int)AWT_APRINT_PAPERSIZE_A4)  ->add_callback(awt_aps_set_magnification_to_fit_xpage);
-    awr->awar_int(AWAR_APRINT_MAGNIFICATION,100)                        ->add_callback(awt_aps_calc_pages_needed);
-    awr->awar_int(AWAR_APRINT_PAGES,1);
-    awr->awar_int(AWAR_APRINT_SX,1);
-    awr->awar_int(AWAR_APRINT_SY,1);
+        awr->awar_int(AWAR_APRINT_PAPER_SIZE,(int)AWT_APRINT_PAPERSIZE_A4)  ->add_callback(awt_aps_set_magnification_to_fit_xpage);
+        awr->awar_int(AWAR_APRINT_MAGNIFICATION,100)                        ->add_callback(awt_aps_calc_pages_needed);
+        awr->awar_int(AWAR_APRINT_PAGES,1);
+        awr->awar_int(AWAR_APRINT_SX,1);
+        awr->awar_int(AWAR_APRINT_SY,1);
 
-    awr->awar_float(AWAR_APRINT_DX,1.0);
-    awr->awar_float(AWAR_APRINT_DY,1.0);
+        awr->awar_float(AWAR_APRINT_DX,1.0);
+        awr->awar_float(AWAR_APRINT_DY,1.0);
 
-    awr->awar_int(AWAR_APRINT_ORIENTATION,(int)AWT_APRINT_ORIENTATION_PORTRAIT)->add_callback(awt_aps_set_magnification_to_fit_xpage);
-    awr->awar_int(AWAR_APRINT_PRINTTO,int(AWT_APRINT_DEST_PRINTER));
-    {
-        char *print_command;
-        if (getenv("PRINTER")){
-            print_command = GBS_eval_env("lpr -h -P$(PRINTER)");
-        }else{
-            print_command = strdup("lpr -h");
+        awr->awar_int(AWAR_APRINT_ORIENTATION,(int)AWT_APRINT_ORIENTATION_PORTRAIT)->add_callback(awt_aps_set_magnification_to_fit_xpage);
+        awr->awar_int(AWAR_APRINT_PRINTTO,int(AWT_APRINT_DEST_PRINTER));
+        {
+            char *print_command;
+            if (getenv("PRINTER")){
+                print_command = GBS_eval_env("lpr -h -P$(PRINTER)");
+            }else{
+                print_command = strdup("lpr -h");
+            }
+
+            awr->awar_string(  AWAR_APRINT_PRINTER,print_command);
+            delete print_command;
+        }
+        awr->awar_string(AWAR_APRINT_FILE,"print.ps");
+
+        awt_aps_text_changed(awr);
+
+        aws->at("close");
+        aws->callback(AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE");
+
+
+        aws->at("help");
+        aws->callback(AW_POPUP_HELP,(AW_CL)"asciiprint.hlp");
+        aws->create_button("HELP", "HELP");
+
+        aws->at("go");
+        aws->callback(awt_aps_go);
+        aws->create_button("PRINT", "PRINT");
+
+        aws->at("title");
+        aws->create_input_field(AWAR_APRINT_TITLE);
+
+        aws->at("text");
+        aws->create_text_field(AWAR_APRINT_TEXT);
+
+        aws->button_length(5);
+        aws->at("rows");
+        aws->create_button(0,AWAR_APRINT_SY);
+
+        aws->at("columns");
+        aws->create_button(0,AWAR_APRINT_SX);
+
+        aws->at("magnification");
+        aws->create_input_field(AWAR_APRINT_MAGNIFICATION,4);
+
+        aws->at("paper_size");
+        {
+            aws->create_toggle_field(AWAR_APRINT_PAPER_SIZE,1);
+            aws->insert_toggle("A4","A",int(AWT_APRINT_PAPERSIZE_A4));
+            aws->insert_toggle("US","U",int(AWT_APRINT_PAPERSIZE_US));
+            aws->update_toggle_field();
         }
 
-        awr->awar_string(  AWAR_APRINT_PRINTER,print_command);
-        delete print_command;
-    }
-    awr->awar_string(AWAR_APRINT_FILE,"print.ps");
-
-    awt_aps_text_changed(awr);
-
-    aws->at("close");
-    aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE");
+        aws->at("orientation");
+        {
+            aws->create_toggle_field(AWAR_APRINT_ORIENTATION,1);
+            aws->insert_toggle("#print/portrait.bitmap","P",int(AWT_APRINT_ORIENTATION_PORTRAIT));
+            aws->insert_toggle("#print/landscape.bitmap","P",int(AWT_APRINT_ORIENTATION_LANDSCAPE));
+            aws->update_toggle_field();
+        }
 
 
-    aws->at("help");
-    aws->callback(AW_POPUP_HELP,(AW_CL)"asciiprint.hlp");
-    aws->create_button("HELP", "HELP");
+        aws->at("pages");
+        aws->create_button(0,AWAR_APRINT_PAGES);
 
-    aws->at("go");
-    aws->callback(awt_aps_go);
-    aws->create_button("PRINT", "PRINT");
+        aws->at("dcol");
+        aws->callback(awt_aps_set_magnification_to_fit_xpage);
+        aws->create_input_field(AWAR_APRINT_DX,4);
 
-    aws->at("title");
-    aws->create_input_field(AWAR_APRINT_TITLE);
+        aws->at("drows");
+        aws->callback(awt_aps_set_magnification_to_fit_ypage);
+        aws->create_input_field(AWAR_APRINT_DY,4);
 
-    aws->at("text");
-    aws->create_text_field(AWAR_APRINT_TEXT);
 
-    aws->button_length(5);
-    aws->at("rows");
-    aws->create_button(0,AWAR_APRINT_SY);
-
-    aws->at("columns");
-    aws->create_button(0,AWAR_APRINT_SX);
-
-    aws->at("magnification");
-    aws->create_input_field(AWAR_APRINT_MAGNIFICATION,4);
-
-    aws->at("paper_size");
-    {
-        aws->create_toggle_field(AWAR_APRINT_PAPER_SIZE,1);
-        aws->insert_toggle("A4","A",int(AWT_APRINT_PAPERSIZE_A4));
-        aws->insert_toggle("US","U",int(AWT_APRINT_PAPERSIZE_US));
+        aws->at("printto");
+        aws->create_toggle_field( AWAR_APRINT_PRINTTO);
+        aws->insert_toggle("Printer","P",int(AWT_APRINT_DEST_PRINTER));
+        aws->insert_toggle("File (Postscript)","F",int(AWT_APRINT_DEST_FILE));
+        aws->insert_toggle("File (ASCII)","A",int(AWT_APRINT_DEST_AFILE));
+        aws->insert_toggle("Preview","V",int(AWT_APRINT_DEST_PREVIEW));
         aws->update_toggle_field();
+
+        aws->at("printer");
+        aws->create_input_field(AWAR_APRINT_PRINTER, 16);
+
+        aws->at("filename");
+        aws->create_input_field(AWAR_APRINT_FILE, 16);
     }
-
-    aws->at("orientation");
-    {
-        aws->create_toggle_field(AWAR_APRINT_ORIENTATION,1);
-        aws->insert_toggle("#print/portrait.bitmap","P",int(AWT_APRINT_ORIENTATION_PORTRAIT));
-        aws->insert_toggle("#print/landscape.bitmap","P",int(AWT_APRINT_ORIENTATION_LANDSCAPE));
-        aws->update_toggle_field();
-    }
-
-
-    aws->at("pages");
-    aws->create_button(0,AWAR_APRINT_PAGES);
-
-    aws->at("dcol");
-    aws->callback(awt_aps_set_magnification_to_fit_xpage);
-    aws->create_input_field(AWAR_APRINT_DX,4);
-
-    aws->at("drows");
-    aws->callback(awt_aps_set_magnification_to_fit_ypage);
-    aws->create_input_field(AWAR_APRINT_DY,4);
-
-
-    aws->at("printto");
-    aws->create_toggle_field( AWAR_APRINT_PRINTTO);
-    aws->insert_toggle("Printer","P",int(AWT_APRINT_DEST_PRINTER));
-    aws->insert_toggle("File (Postscript)","F",int(AWT_APRINT_DEST_FILE));
-    aws->insert_toggle("File (ASCII)","A",int(AWT_APRINT_DEST_AFILE));
-    aws->insert_toggle("Preview","V",int(AWT_APRINT_DEST_PREVIEW));
-    aws->update_toggle_field();
-
-    aws->at("printer");
-    aws->create_input_field(AWAR_APRINT_PRINTER, 16);
-
-    aws->at("filename");
-    aws->create_input_field(AWAR_APRINT_FILE, 16);
-
-    aws->show();
+    aws->activate();
 }
 
 

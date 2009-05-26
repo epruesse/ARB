@@ -520,6 +520,6 @@ AW_window *EXP_create_experiment_window(AW_root *aw_root) {
 
 void EXP_popup_experiment_window(AW_window *aww, AW_CL, AW_CL) {
     AW_window *aws = EXP_create_experiment_window(aww->get_root());
-    aws->show();
+    aws->activate();
 }
 

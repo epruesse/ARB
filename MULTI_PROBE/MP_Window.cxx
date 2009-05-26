@@ -392,7 +392,7 @@ MP_Window::MP_Window(AW_root *aw_root)
 
     aws->button_length(20);
     aws->at("Results");
-    aws->callback(MP_result_window);
+    aws->callback(MP_popup_result_window);
     aws->create_button("OPEN_RESULT_WIN", "Open result window");
 
     aws->button_length(5);

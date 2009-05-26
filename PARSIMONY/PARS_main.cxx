@@ -1405,8 +1405,8 @@ static void pars_reset_optimal_parsimony(AW_window *aww, AW_CL *cl_ntw) {
 
 ******************************************************/
 
-static void pars_start_cb(AW_window *aww, AW_CL cd_adfiltercbstruct) {
-    AW_root *awr = aww->get_root();
+static void pars_start_cb(AW_window *aw_parent, AW_CL cd_adfiltercbstruct) {
+    AW_root *awr = aw_parent->get_root();
     GB_begin_transaction(GLOBAL_gb_main);
     {
         GB_ERROR error = pars_check_size(awr);
@@ -1673,10 +1673,10 @@ static void pars_start_cb(AW_window *aww, AW_CL cd_adfiltercbstruct) {
     awm->set_bottom_area_height( 0 );
     awm->set_focus_callback((AW_CB)PA_focus_cb,(AW_CL)ntw->gb_main,0);
 
-    aww->hide();
+    aw_parent->hide(); // hide parent
     awm->show();
 
-    AP_user_push_cb(aww, ntw); // push initial tree
+    AP_user_push_cb(aw_parent, ntw); // push initial tree
 }
 
 static AW_window *create_pars_init_window(AW_root *awr)

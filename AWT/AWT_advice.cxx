@@ -37,8 +37,7 @@ static AW_root    *advice_root  = 0;
 static AW_default  advice_props = 0;
 
 // --------------------------------------------------------
-//      void init_Advisor(AW_root *awr, AW_default def)
-// --------------------------------------------------------
+
 void init_Advisor(AW_root *awr, AW_default def)
 {
     awt_assert(!initialized);   // can't init twice
@@ -62,8 +61,8 @@ static const char *awt_advice_cb_result = 0;
 void awt_message_timer_listen_event(AW_root *awr, AW_CL cl1, AW_CL cl2)
 {
     AW_window *aww = ((AW_window *)cl1);
-    if (aww->get_show()){
-        aww->show();
+    if (aww->is_shown()) { // if still shown, then auto-activate to avoid that user minimizes advice-window
+        aww->activate();
         awr->add_timed_callback(AWT_ADVICE_LISTEN_DELAY, awt_message_timer_listen_event, cl1, cl2);
     }
 }
@@ -100,16 +99,13 @@ static void disable_advice(const char* id) {
         free(disabled_list);
     }
 }
+
 // -------------------------------------------
-//      void AWT_reactivate_all_advices()
-// -------------------------------------------
+
 void AWT_reactivate_all_advices() {
     get_disabled_advices()->write_string("");
 }
 
-// -----------------------------------------------------------------------------------------------------------
-//      void AWT_advice(const char *message, int type, const char *title, const char *corresponding_help)
-// -----------------------------------------------------------------------------------------------------------
 void AWT_advice(const char *message, int type, const char *title, const char *corresponding_help) {
     awt_assert(initialized);
     size_t  message_len = strlen(message); awt_assert(message_len>0);
@@ -127,7 +123,7 @@ void AWT_advice(const char *message, int type, const char *title, const char *co
         else awt_assert((type & AWT_ADVICE_HELP) == 0);
 #endif // ASSERTION_USED
 
-        AW_window_simple *aws = new AW_window_simple; // do not delete (ARB will crash)
+        AW_window_simple *aws = new AW_window_simple; // do not delete (ARB will crash) -- maybe reuse window for all advices? 
 
         if (!title) title = "Please read carefully";
         aws->init(advice_root, "Advice", GBS_global_string("ARB: %s", title));
@@ -177,7 +173,7 @@ void AWT_advice(const char *message, int type, const char *title, const char *co
         // ----------------------------------------
 
         //     aws->show_grabbed();
-        aws->show();
+        aws->activate();
 
         const char *dummy    = "";
         awt_advice_cb_result = dummy;

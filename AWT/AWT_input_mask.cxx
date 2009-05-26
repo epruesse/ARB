@@ -2018,8 +2018,7 @@ GB_ERROR AWT_initialize_input_mask(AW_root *root, GBDATA *gb_main, const awt_ite
 
     if (!error) {
         awt_assert(mask_iter != input_mask_list.end());
-        AW_window_simple *aws  = mask_iter->second->get_window();
-        aws->show();
+        mask_iter->second->get_window()->activate();
     }
 
     if (unlink_old) {
@@ -2352,7 +2351,7 @@ static void create_new_input_mask(AW_window *aww, AW_CL cl_item_type, AW_CL) { /
         aws->window_fit();
     }
 
-    aws->show();
+    aws->activate();
     aww->get_root()->awar(AWAR_INPUT_MASK_ITEM)->write_string(awt_itemtype_names[int(cl_item_type)]);
 }
 
@@ -2402,7 +2401,7 @@ void AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_ite
     awm->close_sub_menu();
 }
 
-void AWT_destroy_input_masks(AW_root *aw_root) {
+void AWT_destroy_input_masks() {
     input_mask_list.clear();
 }
 

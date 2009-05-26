@@ -231,7 +231,6 @@ void ED4_create_dot_missing_bases_awars(AW_root *aw_root, AW_default aw_def) {
 }
 
 void ED4_popup_dot_missing_bases_window(AW_window *editor_window, AW_CL, AW_CL) {
-    // AW_window *ED4_popup_dot_missing_bases_window(AW_root *aw_root, AW_CL) {
     AW_root                 *aw_root = editor_window->get_root();
     static AW_window_simple *aws     = 0;
 
@@ -274,6 +273,6 @@ void ED4_popup_dot_missing_bases_window(AW_window *editor_window, AW_CL, AW_CL) 
 
     e4_assert(aws);
     
-    aws->show();
+    aws->activate();
 }
 

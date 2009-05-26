@@ -450,10 +450,7 @@ void aed_popup_config_window(AW_window *aw, AW_CL cd1, AW_CL cd2) {
     AW_device               *size_device;
     AW_world                size_information;
 
-    if ( aedw->config_window_created ) {
-        aedw->config_window->show();
-    }
-    else {
+    if (!aedw->config_window_created) {
         aedw->config_window = new AW_window_menu();
         aedw->config_window_created = true;
 
@@ -504,13 +501,8 @@ void aed_popup_config_window(AW_window *aw, AW_CL cd1, AW_CL cd2) {
         size_device->get_size_information( &size_information );
         aedw->config_window->tell_scrolled_picture_size( size_information );
         aedw->config_window->calculate_scrollbars();
-
-
-
-        aedw->config_window->show();
-
     }
-
+    aedw->config_window->activate();
 }
 
 

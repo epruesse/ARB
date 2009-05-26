@@ -623,7 +623,7 @@ AW_window *GEN_create_gene_window(AW_root *aw_root) {
 
 void GEN_popup_gene_window(AW_window *aww, AW_CL, AW_CL) { // w/o this DETACH does not work
     AW_window *aws = GEN_create_gene_window(aww->get_root());
-    aws->show();
+    aws->activate();
 }
 
 AW_window *GEN_create_gene_query_window(AW_root *aw_root) {

@@ -308,7 +308,7 @@ void AWT_create_select_srtaci_window(AW_window *aww,AW_CL awar_acisrt,AW_CL awar
         awt_pre_to_view(aw_root);
         win =  (AW_window*)aws;
     }
-    win->show();
+    win->activate();
 }
 
 static void nds_init_config(AWT_config_definition& cdef) {

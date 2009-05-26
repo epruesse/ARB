@@ -21,6 +21,6 @@ void ED4_SECEDIT_start(AW_window *aw, AW_CL cl_gbmain, AW_CL) {
             return;
         }
     }
-    aw_sec->show();
+    aw_sec->activate();
 }
 

@@ -714,7 +714,7 @@ static void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
 #if defined(ARB_LOGGING)
                 aw_status_append_to_log(str);
 #endif // ARB_LOGGING
-                aw_stg.awm->show();
+                aw_stg.awm->activate();
                 aw_insert_message_in_tmp_message_delayed(str);
                 break;
 
@@ -828,7 +828,7 @@ void aw_initstatus( void )
         aws->create_button("ABORT", "Abort", "k");
 
         aw_stg.hide = 0;
-        aw_stg.aws = (AW_window *)aws;
+        aw_stg.aws = aws;
 
         AW_window_simple *awm = new AW_window_simple;
         awm->init( aw_root, "MESSAGE_BOX", "MESSAGE BOX");
@@ -849,7 +849,7 @@ void aw_initstatus( void )
         awm->callback(aw_clear_and_hide_message_cb);
         awm->create_button("HIDE_CLEAR", "Ok","O");
 
-        aw_stg.awm = (AW_window *)awm;
+        aw_stg.awm = awm;
 
 #if defined(TRACE_STATUS)
         fprintf(stderr, "Created status window!\n"); fflush(stderr);
@@ -957,8 +957,8 @@ void aw_message_timer_listen_event(AW_root *awr, AW_CL cl1, AW_CL cl2)
 #endif // TRACE_STATUS_MORE
 
     AW_window *aww = ((AW_window *)cl1);
-    if (aww->get_show()){
-        aww->show();
+    if (aww->is_shown()) { // if still shown, then auto-activate to avoid that user minimizes prompter
+        aww->activate();
         awr->add_timed_callback_never_disabled(AW_MESSAGE_LISTEN_DELAY, aw_message_timer_listen_event, cl1, cl2);
     }
 }
@@ -1515,7 +1515,7 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
         }
         free(this_input);
 
-        if (aw_msg->get_show() == false) { // somebody minimized the window
+        if (!aw_msg->is_shown()) { // somebody hided/closed the window
             input_cb(aw_msg, (AW_CL)-1); // CANCEL
             break;
         }
@@ -2097,7 +2097,7 @@ void AW_POPUP_HELP(AW_window *aw,AW_CL /*char */ helpcd) {
     if (!GBS_string_matches(help_file,"*.ps",GB_IGNORE_CASE) &&
         !GBS_string_matches(help_file,"*.pdf",GB_IGNORE_CASE))
     { // dont open help if postscript or pdf file
-        helpwindow->show();
+        helpwindow->activate();
     }
 }
 

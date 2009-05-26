@@ -758,63 +758,63 @@ void ED4_create_SAI_selection_button(AW_window *aws, const char *cawar_name) {
 
 AW_window *ED4_createVisualizeSAI_window(AW_root *aw_root) {
     static AW_window_simple *aws = 0;
-    if (aws) return aws;
+    if (!aws) {
 
-    aws = new AW_window_simple;
+        aws = new AW_window_simple;
 
-    aws->init( aw_root, "VISUALIZE_SAI", "Visualize SAIs");
-    aws->load_xfig("visualizeSAI.fig");
+        aws->init( aw_root, "VISUALIZE_SAI", "Visualize SAIs");
+        aws->load_xfig("visualizeSAI.fig");
 
-    aws->callback( AW_POPUP_HELP,(AW_CL)"visualizeSAI.hlp");
-    aws->at("help");
-    aws->create_button("HELP","HELP","H");
+        aws->callback( AW_POPUP_HELP,(AW_CL)"visualizeSAI.hlp");
+        aws->at("help");
+        aws->create_button("HELP","HELP","H");
 
-    aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");
+        aws->at("close");
+        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->create_button("CLOSE","CLOSE","C");
 
-    aws->at("enable");
-    aws->create_toggle(AWAR_SAI_ENABLE);
+        aws->at("enable");
+        aws->create_toggle(AWAR_SAI_ENABLE);
 
-    aws->at("sai");
-    ED4_create_SAI_selection_button(aws, AWAR_SAI_SELECT);
+        aws->at("sai");
+        ED4_create_SAI_selection_button(aws, AWAR_SAI_SELECT);
 
-    aws->at("auto_select");
-    aws->create_toggle(AWAR_SAI_AUTO_SELECT);
+        aws->at("auto_select");
+        aws->create_toggle(AWAR_SAI_AUTO_SELECT);
 
-    aws->at("clrTrList");
-    AW_selection_list *clrTransTableLst = buildClrTransTabNamesList(aws);
+        aws->at("clrTrList");
+        AW_selection_list *clrTransTableLst = buildClrTransTabNamesList(aws);
 
-    aws->at("edit");
-    aws->button_length(10);
-    aws->callback(AW_POPUP,(AW_CL)create_editColorTranslationTable_window,0);
-    aws->create_button("EDIT","EDIT");
+        aws->at("edit");
+        aws->button_length(10);
+        aws->callback(AW_POPUP,(AW_CL)create_editColorTranslationTable_window,0);
+        aws->create_button("EDIT","EDIT");
 
-    aws->at("create");
-    aws->callback(AW_POPUP,(AW_CL)create_createColorTranslationTable_window,0);
-    aws->create_button("CREATE","CREATE");
+        aws->at("create");
+        aws->callback(AW_POPUP,(AW_CL)create_createColorTranslationTable_window,0);
+        aws->create_button("CREATE","CREATE");
 
-    aws->at("copy");
-    aws->callback(AW_POPUP,(AW_CL)create_copyColorTranslationTable_window,0);
-    aws->create_button("COPY","COPY");
+        aws->at("copy");
+        aws->callback(AW_POPUP,(AW_CL)create_copyColorTranslationTable_window,0);
+        aws->create_button("COPY","COPY");
 
-    aws->at("delete");
-    aws->callback((AW_CB1)deleteColorTranslationTable,0);
-    aws->create_button("DELETE","DELETE");
+        aws->at("delete");
+        aws->callback((AW_CB1)deleteColorTranslationTable,0);
+        aws->create_button("DELETE","DELETE");
 
-    aws->at("marked");
-    aws->create_toggle_field(AWAR_SAI_ALL_SPECIES,1);
-    aws->insert_toggle("MARKED SPECIES", "M", 0);
-    aws->insert_toggle("ALL SPECIES", "A", 1);
-    aws->update_toggle_field();
+        aws->at("marked");
+        aws->create_toggle_field(AWAR_SAI_ALL_SPECIES,1);
+        aws->insert_toggle("MARKED SPECIES", "M", 0);
+        aws->insert_toggle("ALL SPECIES", "A", 1);
+        aws->update_toggle_field();
 
-    AW_awar *trans_tabs = aw_root->awar(AWAR_SAI_CLR_TRANS_TAB_NAMES);
-    trans_tabs->add_callback(update_ClrTransTabNamesList_cb, (AW_CL)aws, (AW_CL)clrTransTableLst);
-    trans_tabs->touch();        // force update
-
+        AW_awar *trans_tabs = aw_root->awar(AWAR_SAI_CLR_TRANS_TAB_NAMES);
+        trans_tabs->add_callback(update_ClrTransTabNamesList_cb, (AW_CL)aws, (AW_CL)clrTransTableLst);
+        trans_tabs->touch();        // force update
+    }
     aws->show();
 
-    return (AW_window *)aws;
+    return aws;
 }
 
 bool ED4_SAIs_visualized() {

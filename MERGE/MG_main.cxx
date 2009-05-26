@@ -188,7 +188,7 @@ static void MG_popup_if_renamed(AW_window *aww, AW_CL cl_create_window) {
             GBS_write_hashi(popup_hash, cl_create_window, (long)aw_popup);
         }
         
-        aw_popup->show();
+        aw_popup->activate();
     }
 
     if (error) aw_message(error);
@@ -322,7 +322,7 @@ void MG_start_cb2(AW_window *aww,AW_root *aw_root, bool save_enabled, bool dest_
         awm->callback(AW_POPUP_HELP, (AW_CL)"mg_main.hlp");
         awm->create_button("HELP_MERGE", "#merge/icon.bitmap");
 
-        awm->show();
+        awm->activate();
     }
 
     if (error) aw_message(error);
@@ -449,7 +449,7 @@ AW_window *create_MG_main_window(AW_root *aw_root)
 {
     MG_create_all_awars(aw_root,AW_ROOT_DEFAULT);
     AW_window *aww=create_merge_init_window(aw_root);
-    aww->show();
+    aww->activate();
     return aww;
 }
 

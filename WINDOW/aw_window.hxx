@@ -186,6 +186,8 @@ protected:
     void create_devices(void);
     void set_background(const char *colorname, Widget w);
 
+    void wm_activate();                                // un-minimize window and give it the focus (use show_and_activate())
+
 public:
 
     // ************ This is not the public section *************
@@ -269,15 +271,18 @@ public:
 
     //******************* Global layout functions **********************
 
-    void show(void);                                // bring hidden window to front of screen
-    void hide(void);                                // hide (dont destroy) a window (<->show)
-    bool get_show(void);                            // is window shown (== true) or hidden (== false)
+    void show();                                    // show newly created window or unhide hidden window (aka closed window)
+    void hide();                                    // hide (dont destroy) a window (<->show)
+
+    void activate() { show(); wm_activate(); }      // make_visible, pop window to front and give it the focus
+
+    bool is_shown();                                // is window visible (== true) or hidden (== false). ?
 
     void hide_or_notify(const char *error) {
         if (error) aw_message(error);
         else hide();
     }
-    
+
     void    message( char *title, int ms ); // Set for ms milliseconds the title of the window
     void    set_window_title( const char *title ); // Set the window title forever
 

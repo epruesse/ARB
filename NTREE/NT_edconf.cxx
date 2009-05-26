@@ -644,11 +644,11 @@ AW_window *create_configuration_admin_window(AW_root *root, GBT_TREE **ptree) {
     return aws;
 }
 
-void NT_configuration_admin(AW_window *aw_main, AW_CL cl_GBT_TREE_ptr, AW_CL) {
+void NT_popup_configuration_admin(AW_window *aw_main, AW_CL cl_GBT_TREE_ptr, AW_CL) {
     GBT_TREE  **ptree   = (GBT_TREE**)cl_GBT_TREE_ptr;
     AW_root    *aw_root = aw_main->get_root();
     AW_window  *aww     = create_configuration_admin_window(aw_root, ptree);
 
-    aww->show();
+    aww->activate();
 }
 

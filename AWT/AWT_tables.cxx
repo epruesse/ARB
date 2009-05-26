@@ -249,79 +249,76 @@ void   awt_map_table_field_rem(AW_root *aw_root,awt_table *awtt){
 
 void create_ad_table_field_admin(AW_window *aww,GBDATA *gb_main,const char *tname){
     static GB_HASH *table_to_win_hash = GBS_create_hash(256, GB_MIND_CASE);
-    AW_root *aw_root = aww->get_root();
-    char *table_name;
+    AW_root        *aw_root           = aww->get_root();
+    char           *table_name;
     if (tname){
         table_name = strdup(tname);
-    }else{
-        table_name    = aw_root->awar(AWAR_TABLE_NAME)->read_string();
+    }
+    else {
+        table_name = aw_root->awar(AWAR_TABLE_NAME)->read_string();
     }
 
     AW_window_simple *aws = (AW_window_simple *)GBS_read_hash(table_to_win_hash,table_name);
-    if (aws) {
-        delete table_name;
-        aws->show();
-        return;
+    if (!aws) {
+        awt_table *awtt = new awt_table(gb_main,aw_root,table_name);
+        aws = new AW_window_simple;
+        const char *table_header = GBS_global_string("TABLE_ADMIN_%s",table_name);
+        aws->init( aw_root, table_header,table_header);
+
+        aws->load_xfig("ad_table_fields.fig");
+
+        aws->callback( AW_POPDOWN);
+        aws->at("close");
+        aws->create_button("CLOSE","CLOSE","C");
+
+        aws->callback( AW_POPUP_HELP,(AW_CL)"tableadm.hlp");
+        aws->at("help");
+        aws->create_button("HELP","HELP","H");
+
+        aws->at("table_name");
+        aws->create_button(table_name,table_name,"A");
+
+        aws->button_length(13);
+
+        aws->at("delete");
+        aws->callback((AW_CB1)awt_table_field_delete_cb,(AW_CL)awtt);
+        aws->create_button("DELETE","DELETE","D");
+
+        aws->at("hide");
+        aws->callback((AW_CB1)awt_table_field_hide_cb,(AW_CL)awtt);
+        aws->create_button("HIDE","HIDE","D");
+
+        aws->at("create");
+        aws->callback(AW_POPUP,(AW_CL)create_ad_table_field_create_window,(AW_CL)awtt);
+        aws->create_button("CREATE","CREATE","C");
+
+        aws->at("reorder");
+        aws->callback(AW_POPUP,(AW_CL)create_ad_table_field_reorder_window,(AW_CL)awtt);
+        aws->create_button("REORDER","REORDER","R");
+
+
+
+        //    aws->at("rename");
+        //    aws->callback(AW_POPUP,(AW_CL)create_table_field_rename_window,(AW_CL)awtt);
+        //    aws->create_button("RENAME","RENAME","R");
+
+        //    aws->at("copy");
+        //    aws->callback(AW_POPUP,(AW_CL)create_table_field_copy_window,(AW_CL)awtt);
+        //    aws->create_button("COPY","COPY","C");
+
+
+        aws->at("list");
+        awt_create_selection_list_on_table_fields(gb_main,(AW_window *)aws,table_name,awtt->awar_selected_field);
+
+        aws->at("rem");
+        aws->create_text_field(awtt->awar_field_rem);
+
+        awt_map_table_field_rem(aw_root,awtt);
+        aw_root->awar(awtt->awar_selected_field)->add_callback((AW_RCB1)awt_map_table_field_rem,(AW_CL)awtt);
     }
-
-    awt_table *awtt = new awt_table(gb_main,aw_root,table_name);
-    aws = new AW_window_simple;
-    const char *table_header = GBS_global_string("TABLE_ADMIN_%s",table_name);
-    aws->init( aw_root, table_header,table_header);
-
-    aws->load_xfig("ad_table_fields.fig");
-
-    aws->callback( AW_POPDOWN);
-    aws->at("close");
-    aws->create_button("CLOSE","CLOSE","C");
-
-    aws->callback( AW_POPUP_HELP,(AW_CL)"tableadm.hlp");
-    aws->at("help");
-    aws->create_button("HELP","HELP","H");
-
-    aws->at("table_name");
-    aws->create_button(table_name,table_name,"A");
-
-    aws->button_length(13);
-
-    aws->at("delete");
-    aws->callback((AW_CB1)awt_table_field_delete_cb,(AW_CL)awtt);
-    aws->create_button("DELETE","DELETE","D");
-
-    aws->at("hide");
-    aws->callback((AW_CB1)awt_table_field_hide_cb,(AW_CL)awtt);
-    aws->create_button("HIDE","HIDE","D");
-
-    aws->at("create");
-    aws->callback(AW_POPUP,(AW_CL)create_ad_table_field_create_window,(AW_CL)awtt);
-    aws->create_button("CREATE","CREATE","C");
-
-    aws->at("reorder");
-    aws->callback(AW_POPUP,(AW_CL)create_ad_table_field_reorder_window,(AW_CL)awtt);
-    aws->create_button("REORDER","REORDER","R");
-
-
-
-    //    aws->at("rename");
-    //    aws->callback(AW_POPUP,(AW_CL)create_table_field_rename_window,(AW_CL)awtt);
-    //    aws->create_button("RENAME","RENAME","R");
-
-    //    aws->at("copy");
-    //    aws->callback(AW_POPUP,(AW_CL)create_table_field_copy_window,(AW_CL)awtt);
-    //    aws->create_button("COPY","COPY","C");
-
-
-    aws->at("list");
-    awt_create_selection_list_on_table_fields(gb_main,(AW_window *)aws,table_name,awtt->awar_selected_field);
-
-    aws->at("rem");
-    aws->create_text_field(awtt->awar_field_rem);
-
-    awt_map_table_field_rem(aw_root,awtt);
-    aw_root->awar(awtt->awar_selected_field)->add_callback((AW_RCB1)awt_map_table_field_rem,(AW_CL)awtt);
-
-    aws->show();
-
+    
+    aws->activate();
+    free(table_name);
 }
 
 
