@@ -152,55 +152,52 @@ static void enable_auto_match_cb(AW_root *root, AW_window *aww, AW_CL cl_sel_id)
 static void popup_match_window_cb(AW_window *aww) {
     AW_root   *root         = aww->get_root();
     AW_window *match_window = create_probe_match_window(root, 0);
-    match_window->show();
+    match_window->activate();
     root->awar(AWAR_TARGET_STRING)->touch(); // force re-match
 }
 
 // --------------------------------------------------------------------------------
 
-void probe_design_create_result_window(AW_window *aww)
+static void popup_probe_design_result_window(AW_window *aww)
 {
-    if (pd_gl.pd_design){
-        pd_gl.pd_design->show();
-        return;
+    if (!pd_gl.pd_design) {
+        AW_root *root = aww->get_root();
+
+        pd_gl.pd_design = new AW_window_simple;
+        pd_gl.pd_design->init(root, "PD_RESULT", "PD RESULT");
+        pd_gl.pd_design->load_xfig("pd_reslt.fig");
+
+        pd_gl.pd_design->at("close");
+        pd_gl.pd_design->callback((AW_CB0)AW_POPDOWN);
+        pd_gl.pd_design->create_button("CLOSE", "CLOSE", "C");
+
+        pd_gl.pd_design->at("help");
+        pd_gl.pd_design->callback(AW_POPUP_HELP, (AW_CL)"probedesignresult.hlp");
+        pd_gl.pd_design->create_button("HELP", "HELP", "H");
+
+        pd_gl.pd_design->at("auto");
+        pd_gl.pd_design->label("Auto match");
+        pd_gl.pd_design->create_toggle(AWAR_PD_MATCH_AUTOMATCH );
+
+        enable_auto_match_cb(root, pd_gl.pd_design, 0);
+
+        pd_gl.pd_design->at( "result" );
+        pd_gl.pd_design_id = pd_gl.pd_design->create_selection_list( AWAR_TARGET_STRING, NULL, "", 40, 5 );
+        pd_gl.pd_design->set_selection_list_suffix(pd_gl.pd_design_id, "prb");
+
+        pd_gl.pd_design->at("save");
+        pd_gl.pd_design->callback( AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)pd_gl.pd_design_id );
+        pd_gl.pd_design->create_button("SAVE", "SAVE", "S");
+
+        pd_gl.pd_design->at("print");
+        pd_gl.pd_design->callback( create_print_box_for_selection_lists, (AW_CL)pd_gl.pd_design_id );
+        pd_gl.pd_design->create_button("PRINT", "PRINT", "P");
+
+        pd_gl.pd_design->at("match");
+        pd_gl.pd_design->callback( popup_match_window_cb);
+        pd_gl.pd_design->create_button("MATCH", "MATCH", "M");
     }
-    AW_root *root = aww->get_root();
-
-    pd_gl.pd_design = new AW_window_simple;
-    pd_gl.pd_design->init(root, "PD_RESULT", "PD RESULT");
-    pd_gl.pd_design->load_xfig("pd_reslt.fig");
-
-    pd_gl.pd_design->at("close");
-    pd_gl.pd_design->callback((AW_CB0)AW_POPDOWN);
-    pd_gl.pd_design->create_button("CLOSE", "CLOSE", "C");
-
-    pd_gl.pd_design->at("help");
-    pd_gl.pd_design->callback(AW_POPUP_HELP, (AW_CL)"probedesignresult.hlp");
-    pd_gl.pd_design->create_button("HELP", "HELP", "H");
-
-    pd_gl.pd_design->at("auto");
-    pd_gl.pd_design->label("Auto match");
-    pd_gl.pd_design->create_toggle(AWAR_PD_MATCH_AUTOMATCH );
-
-    enable_auto_match_cb(root, pd_gl.pd_design, 0);
-
-    pd_gl.pd_design->at( "result" );
-    pd_gl.pd_design_id = pd_gl.pd_design->create_selection_list( AWAR_TARGET_STRING, NULL, "", 40, 5 );
-    pd_gl.pd_design->set_selection_list_suffix(pd_gl.pd_design_id, "prb");
-
-    pd_gl.pd_design->at("save");
-    pd_gl.pd_design->callback( AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)pd_gl.pd_design_id );
-    pd_gl.pd_design->create_button("SAVE", "SAVE", "S");
-
-    pd_gl.pd_design->at("print");
-    pd_gl.pd_design->callback( create_print_box_for_selection_lists, (AW_CL)pd_gl.pd_design_id );
-    pd_gl.pd_design->create_button("PRINT", "PRINT", "P");
-
-    pd_gl.pd_design->at("match");
-    pd_gl.pd_design->callback( popup_match_window_cb);
-    pd_gl.pd_design->create_button("MATCH", "MATCH", "M");
-
-    pd_gl.pd_design->show();
+    pd_gl.pd_design->activate();
 }
 
 int init_local_com_struct()
@@ -558,7 +555,7 @@ void probe_design_event(AW_window *aww)
                   PDC_TPROBE, &tprobe,
                   NULL);
 
-        probe_design_create_result_window(aww);
+        popup_probe_design_result_window(aww);
         pd_gl.pd_design->clear_selection_list(pd_gl.pd_design_id);
 
         if (tprobe) {
@@ -1330,7 +1327,7 @@ AW_window *create_probe_design_window( AW_root *root, AW_CL cl_genome_db)  {
     //  aws->at("save_default");
     //  aws->create_button("SAVE DEFAULTS","S");
 
-    aws->callback( probe_design_create_result_window);
+    aws->callback(popup_probe_design_result_window);
     aws->at("result");
     aws->create_button("RESULT","RESULT","S");
 
@@ -1588,16 +1585,13 @@ AW_window *create_IUPAC_resolve_window(AW_root *root) {
     return aws;
 }
 
-static void matchSaiProbe(AW_window *aw) {
-    AW_root *awr = aw->get_root();
-    static AW_window *awExists = 0;
+static void popupSaiProbeMatchWindow(AW_window *aw) {
+    static AW_window *aw_saiProbeMatch = 0;
 
-    if (!awExists) {
-        awExists = createSaiProbeMatchWindow(awr);
-    }
+    if (!aw_saiProbeMatch) aw_saiProbeMatch = createSaiProbeMatchWindow(aw->get_root());
     if(g_spd) transferProbeData(g_spd); //transferring probe data to saiProbeMatch function
 
-    awExists->show();
+    aw_saiProbeMatch->activate();
 }
 
 AW_window *create_probe_match_window( AW_root *root,AW_default)  {
@@ -1631,7 +1625,7 @@ AW_window *create_probe_match_window( AW_root *root,AW_default)  {
     aws->create_button("PRINT","PRINT","P");
 
     aws->at("matchSai");
-    aws->callback(matchSaiProbe);
+    aws->callback(popupSaiProbeMatchWindow);
     aws->create_button("MATCH_SAI","Match SAI","S");
 
     aws->callback( (AW_CB1)AW_POPUP,(AW_CL)create_probe_design_expert_window);

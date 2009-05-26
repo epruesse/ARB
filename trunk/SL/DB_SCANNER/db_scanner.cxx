@@ -516,7 +516,7 @@ static void awt_scanner_changed_cb(GBDATA *dummy, struct adawcbstruct *cbs, GB_C
     if (gbtype == GB_CB_DELETE) {
         cbs->gb_user = 0;
     }
-    if (cbs->gb_user && !cbs->aws->get_show()) {
+    if (cbs->gb_user && !cbs->aws->is_shown()) {
         // unmap invisible window
         //awt_map_arbdb_scanner((AW_CL)cbs,0,cbs->show_only_marked);
         // recalls this function !!!!

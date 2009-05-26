@@ -54,7 +54,7 @@ void NT_rerepair_DB(AW_window *, AW_CL cl_gbmain, AW_CL dummy_1x);
 AW_window *NT_start_editor_on_old_configuration(AW_root *awr);
 void NT_start_editor_on_tree(AW_window *, GBT_TREE **ptree, int use_species_aside);
 GB_ERROR NT_create_configuration(AW_window *, GBT_TREE **ptree, const char *conf_name, int use_species_aside);
-void NT_configuration_admin(AW_window *aw_main, AW_CL cl_GBT_TREE_ptr, AW_CL dummy_1x);
+void NT_popup_configuration_admin(AW_window *aw_main, AW_CL cl_GBT_TREE_ptr, AW_CL dummy_1x);
 
 /* NT_extern.cxx */
 void NT_save_cb(AW_window *aww);

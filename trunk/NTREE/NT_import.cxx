@@ -25,7 +25,7 @@ void nt_seq_load_cb(AW_root *awr, AW_CL, AW_CL){
     GB_ERROR   error  = MG_simple_merge(awr);
     if (!error) error = NT_format_all_alignments(GLOBAL_gb_main);
     ad_query_update_list();
-    if (!error) aww->show();
+    if (!error) aww->activate();
 }
 
 

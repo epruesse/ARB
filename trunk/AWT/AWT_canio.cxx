@@ -318,7 +318,7 @@ void AWT_popup_tree_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL)
         aws->create_button("CLOSE", "CANCEL", "C");
     }
 
-    aws->show();
+    aws->activate();
 }
 /*------------------------------------- to export secondary structure to XFIG ---------------------------------------------*/
 
@@ -361,7 +361,7 @@ void AWT_popup_sec_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) 
         aws->create_button("CLOSE", "CANCEL", "C");
     }
     
-    aws->show();
+    aws->activate();
 }
 /*------------------------------------------------------------------------------------------------------------------------------------------*/
 
@@ -734,5 +734,5 @@ void AWT_popup_print_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) {
     }
 
     awt_print_tree_check_size(0, (AW_CL)ntw);
-    aws->show();
+    aws->activate();
 }

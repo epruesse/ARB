@@ -1455,7 +1455,7 @@ static AW_window *GEN_create_organism_colorize_window(AW_root *aw_root) {
 // used to avoid that the organisms info window is stored in a menu (or with a button)
 void GEN_popup_organism_window(AW_window *aww, AW_CL, AW_CL) {
     AW_window *aws = NT_create_organism_window(aww->get_root());
-    aws->show();
+    aws->activate();
 }
 void GEN_create_organism_submenu(AW_window_menu_modes *awm, bool submenu/*, AWT_canvas *ntree_canvas*/) {
     const char *title  = "Organisms";

@@ -620,7 +620,7 @@ public:
 
     virtual ~awt_input_mask();
 
-    void show() { aws->show(); }
+    void show() { aws->activate(); }
     void hide() { aws->hide(); }
 
     void set_reload_on_reinit(bool dest) { shall_reload_on_reinit = dest; }
@@ -656,7 +656,7 @@ inline awt_viewport *awt_mask_item::to_viewport(bool fail)  { awt_viewport *view
 awt_item_type AWT_getItemType(const std::string& itemtype_name);
 void          AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_item_type, void (*open_window_cb)(AW_window* aww, AW_CL cl_id, AW_CL));
 
-void AWT_destroy_input_masks(AW_root *aw_root);
+void AWT_destroy_input_masks();
 
 #else
 #error AWT_input_mask.hxx included twice

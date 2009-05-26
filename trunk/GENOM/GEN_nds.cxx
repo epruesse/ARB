@@ -327,7 +327,7 @@ void GEN_create_select_nds_window(AW_window *aww,char *key_text,AW_CL cgb_main)
 
         win =  (AW_window*)aws;
     }
-    win->show();
+    win->activate();
 }
 //  -----------------------------------------------------------------------
 //      AW_window *GEN_open_nds_window(AW_root *aw_root,AW_CL cgb_main)

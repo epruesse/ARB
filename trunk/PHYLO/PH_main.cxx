@@ -70,7 +70,7 @@ void startup_sequence_cb(AW_window *aww,AW_CL cd1, AW_CL cl_aww)
     aw_root->awar("phyl/filter/startcol")->set_minmax(0,len);
     aw_root->awar("phyl/filter/stopcol")->set_minmax(0,len);
 
-    ((AW_window*)cl_aww)->show(); // pop up main window
+    ((AW_window*)cl_aww)->activate(); // pop up main window
     ph_view_species_cb(0,0,0);
 }
 

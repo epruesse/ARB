@@ -140,7 +140,7 @@ void DI_dmatrix::resized(void)
     awm->set_horizontal_scrollbar_position(0);
     awm->tell_scrolled_picture_size(rect);
     awm->calculate_scrollbars();
-    if (!awm->get_show() && m) {
+    if (!awm->is_shown() && m) {
         awm->show();
     }
 }

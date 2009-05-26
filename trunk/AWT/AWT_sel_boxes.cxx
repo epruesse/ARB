@@ -887,6 +887,6 @@ void AWT_popup_select_species_field_window(AW_window *aww, AW_CL cl_awar_name, A
                                             AWT_NDS_FILTER,
                                             "scandb","rescandb", &AWT_species_selector, 20, 10);
     }
-    aws->show();
+    aws->activate();
 }
 

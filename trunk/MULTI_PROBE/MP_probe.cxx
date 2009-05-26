@@ -201,8 +201,7 @@ void ProbeValuation::init_valuation()
     aww = mp_main->get_mp_window()->get_window();
     aww->init_list_entry_iterator(selected_list); //initialisieren
 
-    if (max_init_pop_combis < MAXINITPOPULATION)
-    {
+    if (max_init_pop_combis < MAXINITPOPULATION) {
         for (i=0; i<size_sonden_array; i++)         // generierung eines pools, in dem jede Sonde nur einmal pro Mismatch
         {                           // vorkommt, damit alle moeglichen Kombinationen deterministisch
             ptr2 = (char *)aww->get_list_entry_char_value();
@@ -220,41 +219,34 @@ void ProbeValuation::init_valuation()
             }
         }
         pool_length = counter;
-
-        act_generation->init_valuation();
-
-        evolution();
-        aww = mp_main->get_mp_window()->get_result_window();
-        aww->show();
-        return;
     }
+    else {
+        for (i=0; i<size_sonden_array; i++)
+        {                               // Generierung eines Pools, in dem die Wahrscheinlichkeiten fuer die Erfassung
+            ptr2 = (char *)aww->get_list_entry_char_value();
+            aww->iterate_list_entry(1);
 
-    for (i=0; i<size_sonden_array; i++)
-    {                               // Generierung eines Pools, in dem die Wahrscheinlichkeiten fuer die Erfassung
-        ptr2 = (char *)aww->get_list_entry_char_value();
-        aww->iterate_list_entry(1);
+            for(j=0; j<=mismatch_array[i]; j++)         // der Sonden schon eingearbeitet sind. DIe WS werden vom Benutzer fuer jedE
+            {                           // einzelne Sonde bestimmt
+                for (k=0; k < bewertungarray[i]; k++)
+                {
+                    temp_probe = new probe;
+                    temp_probe->probe_index = i;
+                    temp_probe->allowed_mismatches = j;
+                    temp_probe->e_coli_pos = atoi(ptr = MP_get_comment(3,ptr2));
+                    delete ptr;
 
-        for(j=0; j<=mismatch_array[i]; j++)         // der Sonden schon eingearbeitet sind. DIe WS werden vom Benutzer fuer jedE
-        {                           // einzelne Sonde bestimmt
-            for (k=0; k < bewertungarray[i]; k++)
-            {
-                temp_probe = new probe;
-                temp_probe->probe_index = i;
-                temp_probe->allowed_mismatches = j;
-                temp_probe->e_coli_pos = atoi(ptr = MP_get_comment(3,ptr2));
-                delete ptr;
-
-                probe_pool[counter++] = temp_probe;
+                    probe_pool[counter++] = temp_probe;
+                }
             }
         }
     }
 
-
     act_generation->init_valuation();
-
     evolution();
+    
     aww = mp_main->get_mp_window()->get_result_window();
-    aww->show();
+    aww->activate();
 }
 
 

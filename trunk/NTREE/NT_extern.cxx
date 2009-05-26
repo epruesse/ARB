@@ -279,7 +279,7 @@ void nt_exit(AW_window *aws) {
 #warning instead of directly calling the following functions, try to add them as GB_atclose-callbacks
 #endif // DEVEL_RALF
         aw_root->unlink_awars_from_DB(gb_main);
-        AWT_destroy_input_masks(aw_root);
+        AWT_destroy_input_masks();
         AWT_browser_forget_db(gb_main);
 
         GB_close(gb_main);
@@ -792,7 +792,7 @@ void NT_focus_cb(AW_window *aww)
 void NT_modify_cb(AW_window *aww,AW_CL cd1,AW_CL cd2)
 {
     AW_window *aws = NT_create_species_window(aww->get_root());
-    aws->show();
+    aws->activate();
     nt_mode_event(aww,(AWT_canvas*)cd1,(AWT_COMMAND_MODE)cd2);
 }
 
@@ -997,8 +997,7 @@ static void nt_auto_count_marked_species(GBDATA*, int* cl_aww, GB_CB_TYPE ) {
 
 void NT_popup_species_window(AW_window *aww, AW_CL, AW_CL) {
     // used to avoid that the species info window is stored in a menu (or with a button)
-    AW_window *aws = NT_create_species_window(aww->get_root());
-    aws->show();
+    NT_create_species_window(aww->get_root())->activate();
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -1236,7 +1235,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
             NT_insert_mark_submenus(awm, ntw, 1);
             AWMIMT("gene_colors",     "Set Colors",     "l", "mark_colors.hlp",   AWM_ALL, AW_POPUP,               (AW_CL)NT_create_species_colorize_window, 0);
-            AWMIMT("selection_admin", "Configurations", "o", "configuration.hlp", AWM_ALL, NT_configuration_admin, (AW_CL)&(GLOBAL_NT.tree->tree_root),      (AW_CL)0);
+            AWMIMT("selection_admin", "Configurations", "o", "configuration.hlp", AWM_ALL, NT_popup_configuration_admin, (AW_CL)&(GLOBAL_NT.tree->tree_root),      (AW_CL)0);
 
             SEP________________________SEP();
 
@@ -1780,14 +1779,14 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     
     awm->at(db_infox, first_liney);
     awm->button_length(13);
-    awm->callback(NT_popup_species_window, (AW_CL)awm, 0);
+    awm->callback(NT_popup_species_window, 0, 0);
     awm->help_text("sp_search.hlp");
     awm->create_button("INFO",  AWAR_INFO_BUTTON_TEXT);
 
     awm->at(db_infox, second_uppery);
     awm->button_length(13);
     awm->help_text("marked_species.hlp");
-    awm->callback(NT_configuration_admin, (AW_CL)&(GLOBAL_NT.tree->tree_root), 0);
+    awm->callback(NT_popup_configuration_admin, (AW_CL)&(GLOBAL_NT.tree->tree_root), 0);
     awm->create_button(0, AWAR_MARKED_SPECIES_COUNTER);
     {
         GBDATA *gb_species_data = GB_search(GLOBAL_gb_main,"species_data",GB_CREATE_CONTAINER);

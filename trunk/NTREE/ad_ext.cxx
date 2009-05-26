@@ -290,49 +290,53 @@ static void assign_SAI_to_group(AW_window *aww) {
 
 AW_window *NT_create_extendeds_window(AW_root *aw_root)
 {
-    AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "INFO_OF_SAI", "SAI INFORMATION");
-    aws->load_xfig("ad_ext.fig");
+    static AW_window_simple *aws = 0;
 
-    aws->callback( (AW_CB0)AW_POPDOWN);
-    aws->at("close");
-    aws->create_button("CLOSE","CLOSE","C");
+    if (!aws) {
+        aws = new AW_window_simple;
+        aws->init( aw_root, "INFO_OF_SAI", "SAI INFORMATION");
+        aws->load_xfig("ad_ext.fig");
 
-    aws->callback( AW_POPUP_HELP,(AW_CL)"ad_extended.hlp");
-    aws->at("help");
-    aws->create_button("HELP","HELP","H");
+        aws->callback( (AW_CB0)AW_POPDOWN);
+        aws->at("close");
+        aws->create_button("CLOSE","CLOSE","C");
 
-    aws->button_length(13);
+        aws->callback( AW_POPUP_HELP,(AW_CL)"ad_extended.hlp");
+        aws->at("help");
+        aws->create_button("HELP","HELP","H");
 
-    aws->at("delete");
-    aws->callback(delete_SAI_cb);
-    aws->create_button("DELETE","DELETE","D");
+        aws->button_length(13);
 
-    aws->at("rename");
-    aws->callback(rename_SAI_cb);
-    aws->create_button("RENAME","RENAME","R");
+        aws->at("delete");
+        aws->callback(delete_SAI_cb);
+        aws->create_button("DELETE","DELETE","D");
 
-    aws->at("copy");
-    aws->callback(copy_SAI_cb);
-    aws->create_button("COPY","COPY","C");
+        aws->at("rename");
+        aws->callback(rename_SAI_cb);
+        aws->create_button("RENAME","RENAME","R");
 
-    aws->at("remark");
-    aws->callback(edit_SAI_description);
-    aws->create_button("EDIT_COMMENT","EDIT COMMENT","R");
+        aws->at("copy");
+        aws->callback(copy_SAI_cb);
+        aws->create_button("COPY","COPY","C");
 
-    aws->at("group");
-    aws->callback(assign_SAI_to_group);
-    aws->create_button("ASSIGN_GROUP","ASSIGN GROUP","R");
+        aws->at("remark");
+        aws->callback(edit_SAI_description);
+        aws->create_button("EDIT_COMMENT","EDIT COMMENT","R");
 
-    aws->at("makespec");
-    aws->callback(copy_SAI_to_species_cb);
-    aws->create_button("COPY_TO_SPECIES","COPY TO\nSPECIES","C");
+        aws->at("group");
+        aws->callback(assign_SAI_to_group);
+        aws->create_button("ASSIGN_GROUP","ASSIGN GROUP","R");
 
-    aws->at("list");
-    awt_create_selection_list_on_extendeds(GLOBAL_gb_main,(AW_window *)aws,AWAR_SAI_NAME);
+        aws->at("makespec");
+        aws->callback(copy_SAI_to_species_cb);
+        aws->create_button("COPY_TO_SPECIES","COPY TO\nSPECIES","C");
 
-    AW_CL scannerid = awt_create_arbdb_scanner(GLOBAL_gb_main, aws, "info",0,0,0,AWT_SCANNER,0,0,0, &AWT_species_selector);
-    aws->get_root()->awar(AWAR_SAI_NAME)->add_callback(map_SAI_to_scanner, scannerid);
+        aws->at("list");
+        awt_create_selection_list_on_extendeds(GLOBAL_gb_main,(AW_window *)aws,AWAR_SAI_NAME);
 
+        AW_CL scannerid = awt_create_arbdb_scanner(GLOBAL_gb_main, aws, "info",0,0,0,AWT_SCANNER,0,0,0, &AWT_species_selector);
+        aws->get_root()->awar(AWAR_SAI_NAME)->add_callback(map_SAI_to_scanner, scannerid);
+    }
+    aws->show();
     return aws;
 }

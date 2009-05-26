@@ -16,7 +16,7 @@ void MP_del_sel_probes(AW_window *aww);
 void MP_del_probes(AW_window *aww);
 void MP_show_probes_in_tree(AW_window *aww);
 void MP_show_probes_in_tree_move(AW_window *aww, AW_CL cl_backward, AW_CL cl_result_probes_list);
-void MP_result_window(AW_window *aww);
+void MP_popup_result_window(AW_window *aww);
 void MP_del_all_result(AW_window *aww);
 void MP_del_sel_result(AW_window *aww);
 void MP_stop_comp(AW_window *aww);

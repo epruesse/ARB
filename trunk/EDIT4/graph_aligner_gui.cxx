@@ -432,17 +432,14 @@ void show_galigner_window(AW_window *aw, AW_CL cd2, AW_CL) {
 
     AW_root *root = aw->get_root();
     if (root->awar(GA_AWAR_ADVANCED)->read_int()) {
-        if (!ga_aws_adv)
-            ga_aws_adv = new_galigner_simple(root, cd2, true);
+        if (!ga_aws_adv) ga_aws_adv = new_galigner_simple(root, cd2, true);
         ga_aws_adv->show();
-        if (ga_aws)
-            ga_aws->hide();
-    } else {
-        if (!ga_aws)
-            ga_aws = new_galigner_simple(root, cd2, false);
+        if (ga_aws) ga_aws->hide();
+    }
+    else {
+        if (!ga_aws) ga_aws = new_galigner_simple(root, cd2, false);
         ga_aws->show();
-        if (ga_aws_adv)
-            ga_aws_adv->hide();
+        if (ga_aws_adv) ga_aws_adv->hide();
     }
 }
 

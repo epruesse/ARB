@@ -826,8 +826,7 @@ void mergeSimilarSpecies(AW_window *aws, AW_CL cl_mergeSimilarConcatenateAlignme
 
 
 /*----------------------------Creating concatenation window-----------------------------------------*/
-AW_window *NT_createConcatenationWindow(AW_root *aw_root, AW_CL cl_ntw){
-
+AW_window *NT_createConcatenationWindow(AW_root *aw_root, AW_CL cl_ntw) {
     AW_window_simple *aws = new AW_window_simple;
 
     aws->init( aw_root, "CONCATENATE_ALIGNMENTS", "CONCATENATION WINDOW");

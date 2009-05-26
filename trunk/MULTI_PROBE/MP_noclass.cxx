@@ -204,11 +204,9 @@ void MP_gen_singleprobe(AW_root *awr,AW_CL cd1,AW_CL cd2)
     delete new_sing;
 }
 
-void MP_result_window (AW_window *aww)
-{
+void MP_popup_result_window(AW_window *aww) {
     AWUSE(aww);
-    mp_main->get_mp_window()->create_result_window(mp_main->get_aw_root())->show();
-
+    mp_main->get_mp_window()->create_result_window(mp_main->get_aw_root())->activate();
     init_system3_tab();
 }
 
@@ -401,7 +399,7 @@ void MP_compute(AW_window *aww)
     mp_main->destroy_probe_eval();
 
     aw_closestatus();
-    aww2->show();
+    aww2->activate();
 
 }
 

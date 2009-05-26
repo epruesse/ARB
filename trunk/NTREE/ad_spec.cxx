@@ -196,7 +196,7 @@ void create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL) {
     if (!error) {
         AW_window *sai_info = NT_create_extendeds_window(aww->get_root());
         //TODO: why doesn't info box show anything on first startup? proper refresh needed?
-        sai_info->show();
+        sai_info->activate();
         ((AWT_canvas *)ntw)->refresh(); // refresh doesn't work, I guess...
     }
 

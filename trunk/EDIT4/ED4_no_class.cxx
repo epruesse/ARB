@@ -1293,7 +1293,7 @@ void group_species_cb(AW_window *aww, AW_CL cl_use_fields, AW_CL) {
         static AW_window *ask_field_window;
 
         if (!ask_field_window) ask_field_window = create_group_species_by_field_window(ED4_ROOT->aw_root, aww);
-        ask_field_window->show();
+        ask_field_window->activate();
     }
 }
 

@@ -1112,7 +1112,7 @@ static void di_view_matrix_cb(AW_window *aww){
     di_dmatrix->init();
     di_dmatrix->display(false);
     
-    viewer->show();
+    viewer->activate();
 }
 
 static void di_save_matrix_cb(AW_window *aww)

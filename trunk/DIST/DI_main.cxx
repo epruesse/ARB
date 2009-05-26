@@ -72,9 +72,8 @@ int main(int argc, char **argv)
 
     awd = (AWT_graphic *)0;
     aww = DI_create_matrix_window(aw_root);
-
-
     aww->show();
+
     aw_root->main_loop();
     return 0;
 }

@@ -99,23 +99,16 @@ void create_tables()
     }
 }
 
-AW_window *MP_main(AW_root *root, AW_default def)
-{
-    if (mp_main)
-    {
-        mp_main->get_mp_window()->get_window()->show();
-        return (AW_window *)mp_main->get_mp_window()->get_window();
+AW_window *MP_main(AW_root *root, AW_default def) {
+    if (!mp_main) {
+        create_tables();
+        mp_main = new MP_Main(root, (AWT_canvas *)def);
     }
 
-    create_tables();
-
-    mp_main = new MP_Main(root, (AWT_canvas *)def);
-
-    mp_main->get_mp_window()->get_window()->show();
-
-    //    alex_main();  //normal erst spaeter aufrufen !!!
-
-    return (AW_window *)mp_main->get_mp_window()->get_window();
+    AW_window *aw = mp_main->get_mp_window()->get_window();
+    aw->show();
+    
+    return aw;
 }
 
 
