@@ -175,15 +175,14 @@ int probe_compress_sequence(char *seq, int seqsize)
 }
 
 static char *probe_read_string_append_point(GBDATA *gb_data, int *psize) {
-    long  len  = GB_read_string_count(gb_data);
+    long len = GB_read_string_count(gb_data);
     char *data = GB_read_string(gb_data);
 
-    if (data[len-1] != '.') {
-        char *buffer = (char *)malloc(len+2);
-        
-        strcpy(buffer,data);
+    if (data[len - 1] != '.') {
+        char *buffer = (char *) malloc(len + 2);
+        strcpy(buffer, data);
         buffer[len++] = '.';
-        buffer[len+1] = 0;
+        buffer[len] = 0;
         freeset(data, buffer);
     }
     *psize = len;
