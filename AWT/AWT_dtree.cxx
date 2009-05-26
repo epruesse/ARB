@@ -1844,7 +1844,7 @@ GB_ERROR AWT_graphic_tree::load(GBDATA *, const char *name,AW_CL link_to_databas
     return error;
 }
 
-GB_ERROR AWT_graphic_tree::save(GBDATA */*dummy*/, const char *name, AW_CL /*cd1*/, AW_CL /*cd2*/) {
+GB_ERROR AWT_graphic_tree::save(GBDATA */*dummy*/, const char */*name*/, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     GB_ERROR error = NULL;
     if (tree_root) {
         error = tree_root->saveTree();

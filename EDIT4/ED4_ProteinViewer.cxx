@@ -470,7 +470,7 @@ static void PV_WriteTranslatedSequenceToDB(ED4_AA_sequence_terminal *aaSeqTerm, 
 
             if (gb_alignment_exists) {
                 int     skip_sp     = 0;
-                char   *question;
+                char   *question    = 0;
                 GBDATA *gb_seq_data = GBT_read_sequence(gb_species, newAlignmentName);
                 if (gb_seq_data) {
                     e4_assert(ASKtoOverWriteData);

@@ -889,8 +889,8 @@ void awt_query::detect_query_type() {
 bool awt_query::matches(const char *data, GBDATA *gb_item) const {
     // 'data' is the content of the searched field (read as string)
     // 'gb_item' is the DB item (e.g. species, gene). Used in ACI-search only.
-    
-    bool hit;
+
+    bool hit = false;
 
     awt_assert(data);
     awt_assert(gb_item);
@@ -2278,7 +2278,7 @@ void awt_do_set_list(void *, struct adaqbsstruct *cbs, long append) {
 
     GB_begin_transaction(cbs->gb_main);
 
-    GBDATA *gb_key_type;
+    GBDATA *gb_key_type = 0;
     {
         GBDATA *gb_key_data     = GB_search(cbs->gb_main, cbs->selector->change_key_path, GB_CREATE_CONTAINER);
         if (!gb_key_data) error = GB_await_error();

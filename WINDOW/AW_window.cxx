@@ -3090,11 +3090,14 @@ void AW_window::wm_activate() {
             ce.data.l[2]    = Above;
             ce.data.l[3]    = 0;
             ce.data.l[4]    = 0;
-  
-            Status ret = XSendEvent(xdpy, XDefaultRootWindow(xdpy),
-                                    False,
-                                    SubstructureRedirectMask | SubstructureNotifyMask,
-                                    (XEvent *) &ce);
+
+#if defined(DEBUG)
+            Status ret = 
+#endif // DEBUG
+                XSendEvent(xdpy, XDefaultRootWindow(xdpy),
+                           False,
+                           SubstructureRedirectMask | SubstructureNotifyMask,
+                           (XEvent *) &ce);
 
 #if defined(DEBUG)
             if (!ret) { fprintf(stderr, "Failed to send _NET_ACTIVE_WINDOW to WM (XSendEvent returns %i)\n", ret); }

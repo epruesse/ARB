@@ -22,7 +22,7 @@
 
 // ******************** selection boxes on alignments ********************
 
-static void awt_create_selection_list_on_ad_cb(GBDATA *dummy, struct adawcbstruct *cbs) {
+static void awt_create_selection_list_on_ad_cb(GBDATA *, struct adawcbstruct *cbs) {
     cbs->aws->clear_selection_list(cbs->id);
 
     for (GBDATA * gb_alignment = GB_search(cbs->gb_main, "presets/alignment", GB_FIND);
