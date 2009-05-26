@@ -89,7 +89,6 @@ inline char *strcpydest(char *dest, const char *src) {
 inline const char *field_awar(const char *field_name, const char *subfield) {
     static char        buffer[BUFSIZE];
     static const char *prefix    = AWAR_MERGE_GENE_SPECIES_BASE"def_";
-    static int         prefixlen = strlen(prefix);
 
     char *end = strcpydest(strcpydest(buffer, AWAR_MERGE_GENE_SPECIES_BASE"def_"), field_name);
     *end++ = '/';

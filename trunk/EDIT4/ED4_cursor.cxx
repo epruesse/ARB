@@ -460,10 +460,7 @@ static void jump_to_species(ED4_species_name_terminal *name_term, int seq_pos, b
 static bool ignore_selected_species_changes_cb = false;
 static bool ignore_selected_SAI_changes_cb     = false;
 
-void ED4_select_named_sequence_terminal(const char *name, int mode) {
-    // mode == 1 -> only select species
-    // mode == 2 -> only select SAI
-
+static void select_named_sequence_terminal(const char *name) {
     GB_transaction ta(GLOBAL_gb_main);
     ED4_species_name_terminal *name_term = ED4_find_species_name_terminal(name);
     if (name_term) {
@@ -517,7 +514,7 @@ void ED4_selected_SAI_changed_cb(AW_root */*aw_root*/)
             printf("Selected SAI is '%s'\n", name);
 #endif // DEBUG
 
-            ED4_select_named_sequence_terminal(name, 2);
+            select_named_sequence_terminal(name);
             free(name);
         }
     }
@@ -535,7 +532,7 @@ void ED4_selected_species_changed_cb(AW_root */*aw_root*/)
 #if defined(DEBUG) && 1
             printf("Selected species is '%s'\n", name);
 #endif
-            ED4_select_named_sequence_terminal(name, 1);
+            select_named_sequence_terminal(name);
             free(name);
         }
     }

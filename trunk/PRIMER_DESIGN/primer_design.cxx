@@ -321,10 +321,10 @@ void primer_design_event_init( AW_window *aww, AW_CL cl_from_gene) {
 
     if (!error && gb_seq) {
         SequenceIterator *i          = 0;
-        PRD_Sequence_Pos  length;
+        PRD_Sequence_Pos  length     = 0;
         PRD_Sequence_Pos  left_min, left_max;
         PRD_Sequence_Pos  right_min, right_max;
-        PRD_Sequence_Pos  add_offset = 0; // offset to add to positions (used for genes)
+        PRD_Sequence_Pos  add_offset = 0;           // offset to add to positions (used for genes)
         long int          dist_min, dist_max;
         //         long int          length_min, length_max;
         char             *sequence   = 0;
