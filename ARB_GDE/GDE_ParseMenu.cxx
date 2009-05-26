@@ -132,14 +132,16 @@ void ParseMenu()
             if (resize == NULL) Error ("Calloc");
             thismenu->item =(GmenuItem*)resize;
 
-            thisitem             = &(thismenu->item[curitem]);
-            thisitem->label      = strdup(temp);
-            thisitem->meta       = '\0';
-            thisitem->numinputs  = 0;
-            thisitem->numoutputs = 0;
-            thisitem->numargs    = 0;
-            //thisitem->X        = 0;
-            thisitem->help       = NULL;
+            thisitem              = &(thismenu->item[curitem]);
+            thisitem->label       = strdup(temp);
+            thisitem->meta        = '\0';
+            thisitem->numinputs   = 0;
+            thisitem->numoutputs  = 0;
+            thisitem->numargs     = 0;
+            //thisitem->X         = 0;
+            thisitem->help        = NULL;
+            thisitem->parent_menu = thismenu;
+            thisitem->aws         = NULL; // no window opened yet
         }
 
         /*

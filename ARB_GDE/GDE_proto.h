@@ -18,12 +18,12 @@ void Error(const char *msg) __ATTR__NORETURN;
 void crop(char *input, char *head, char *tail);
 
 /* GDE.cxx */
-char *GDE_makeawarname(AWwindowinfo *AWinfo, long i);
+char *GDE_makeawarname(GmenuItem *gmenuitem, long i);
 void GDE_load_menu(AW_window *awm, AW_active mask, const char *menulabel, const char *menuitemlabel);
 void create_gde_var(AW_root *aw_root, AW_default aw_def, char *(*get_sequences )(void *THIS, GBDATA **&the_species, uchar **&the_names, uchar **&the_sequences, long &numberspecies, long &maxalignlen ), gde_cgss_window_type wt, void *THIS);
 
 /* GDE_event.cxx */
-void GDE_startaction_cb(AW_window *aw, AWwindowinfo *AWinfo, AW_CL cd);
+void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL cd);
 
 /* GDE_arbdb_io.cxx */
 void ReadArbdb_plain(char *filename, NA_Alignment *dataset, int type);
