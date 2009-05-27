@@ -8,7 +8,6 @@
 #include <aw_keysym.hxx>
 #endif
 
-
 // Makrodefinitionen
 #define  p_r        prvt
 #define  p_global   (root->prvt)
