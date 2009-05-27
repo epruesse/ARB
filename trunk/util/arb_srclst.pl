@@ -31,6 +31,7 @@ my @skipped_directories = (
 
 my %used_files = map { $_ => 1; } (
                                    'demo.arb',
+                                   'export2sub',
                                    'zcat',
                                    'Doxyfile',
                                    'Makefile',
@@ -401,7 +402,7 @@ sub getVCEntries($\%) {
 
 sub expectVCmember($$\%) {
   my ($full,$item,$VC_r) = @_;
-  if (not exists $$VC_r{$item} and $ignore_unknown==0) {
+  if ((not defined $$VC_r{$item}) and ($ignore_unknown==0)) {
     if (not matchingExpr($full,@pack_fullGenerated)) {
       die "'$full' ($_) included, but not in $VC (seems to be generated)";
     }
@@ -415,7 +416,7 @@ my %unpackedCVSmember = map { $_ => 1; } (
 
 sub unexpectVCmember($$\%) {
   my ($full,$item,$VC_r) = @_;
-  if (exists $$VC_r{$item}) {
+  if (defined $$VC_r{$item}) {
     if (not exists $unpackedCVSmember{$item} and $ignore_unknown==0) {
       die "'$full' excluded, but in $VC";
     }
