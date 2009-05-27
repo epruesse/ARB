@@ -591,14 +591,14 @@ AW_window *GEN_create_gene_window(AW_root *aw_root) {
     ad_global_scannerid   = scannerid;
     ad_global_scannerroot = aws->get_root();
 
-    aws->create_menu(       0,   "GENE",     "G", "spa_gene.hlp",  AD_F_ALL );
+    aws->create_menu("GENE",     "G", "spa_gene.hlp",  AD_F_ALL );
     aws->insert_menu_topic("gene_delete",   "Delete",       "D","spa_delete.hlp",       AD_F_ALL,   (AW_CB)gene_delete_cb, 0, 0);
     aws->insert_menu_topic("gene_rename",   "Rename ...",   "R","spa_rename.hlp",   AD_F_ALL,   AW_POPUP, (AW_CL)create_gene_rename_window, 0);
     aws->insert_menu_topic("gene_copy",     "Copy ...",     "y","spa_copy.hlp",         AD_F_ALL,   AW_POPUP, (AW_CL)create_gene_copy_window, 0);
     aws->insert_menu_topic("gene_create",   "Create ...",   "C","spa_create.hlp",   AD_F_ALL,   AW_POPUP, (AW_CL)create_gene_create_window, 0);
     aws->insert_separator();
 
-    aws->create_menu(       0,   "FIELDS",     "F", "gene_fields.hlp",  AD_F_ALL );
+    aws->create_menu("FIELDS",     "F", "gene_fields.hlp",  AD_F_ALL );
     GEN_create_field_items(aws);
 
     {
@@ -611,7 +611,7 @@ AW_window *GEN_create_gene_window(AW_root *aw_root) {
         aws->callback(NT_detach_information_window, (AW_CL)&aws, (AW_CL)detach_info);
         aws->create_button("DETACH", "DETACH", "D");
 
-        detach_info->set_detach_button(aws->get_last_button_widget());
+        detach_info->set_detach_button(aws->get_last_widget());
     }
 
     //     aws->get_root()->awar(AWAR_GENE_NAME)->add_callback(GEN_map_gene,scannerid);
@@ -634,7 +634,7 @@ AW_window *GEN_create_gene_query_window(AW_root *aw_root) {
     }
     aws = new AW_window_simple_menu;
     aws->init( aw_root, "GEN_QUERY", "Gene SEARCH and QUERY");
-    aws->create_menu(0,"More functions","f");
+    aws->create_menu("More functions","f");
     aws->load_xfig("ad_query.fig");
 
     awt_query_struct awtqs;
@@ -669,7 +669,7 @@ AW_window *GEN_create_gene_query_window(AW_root *aw_root) {
     AW_CL cbs             = (AW_CL)awt_create_query_box((AW_window*)aws,&awtqs);
     gene_query_global_cbs = cbs;
 
-    aws->create_menu(       0,   "More search",     "s" );
+    aws->create_menu("More search",     "s" );
     aws->insert_menu_topic("search_equal_fields_within_db", "Search For Equal Fields and Mark Duplikates",               "E", "search_duplicates.hlp", -1, (AW_CB)awt_search_equal_entries, cbs, 0);
     aws->insert_menu_topic("search_equal_words_within_db",  "Search For Equal Words Between Fields and Mark Duplikates", "W", "search_duplicates.hlp", -1, (AW_CB)awt_search_equal_entries, cbs, 1);
 

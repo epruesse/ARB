@@ -72,19 +72,13 @@ void AW_window::at_set_min_size(int xmin, int ymin) {
 /*******************************************************************************************************/
 /*******************************************************************************************************/
 
-void AW_window::id( const char *at_id ) {
-    delete _at->id_for_next_button;
-    _at->id_for_next_button     = strdup( at_id );
-}
-
-
 void AW_window::help_text(const char *help_id ) {
     delete _at->helptext_for_next_button;
     _at->helptext_for_next_button   = strdup( help_id );
 }
 
 
-void AW_window::mask( AW_active Mask ) {
+void AW_window::sens_mask( AW_active Mask ) {
     _at->mask_for_next_button = Mask;
 }
 
@@ -319,7 +313,6 @@ void AW_window::unset_at_commands( void ) {
     _at->to_position_exists    = false;
     _at->highlight             = false;
 
-    freeset(_at->id_for_next_button, 0);
     freeset(_at->helptext_for_next_button, 0);
     freeset(_at->label_for_inputfield, 0);
     

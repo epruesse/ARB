@@ -488,8 +488,8 @@ static void calculate_label_size(AW_window *aww, int *width, int *height, bool i
 
 /****************************************************************************************************************************/
 
-Widget AW_window::get_last_button_widget() const {
-    return p_global->get_last_button_widget();
+Widget AW_window::get_last_widget() const {
+    return p_global->get_last_widget();
 }
 
 void aw_detect_text_size(const char *text, size_t& width, size_t& height) {
@@ -565,8 +565,9 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
     {
         if (macro_name){
             _callback->id = GBS_global_string_copy("%s/%s",this->window_defaults_name,macro_name);
-            GBS_write_hash(this->get_root()->prvt->action_hash,_callback->id,(long)_callback);
-        }else{
+            get_root()->define_remote_command(_callback);
+        }
+        else {
             _callback->id = 0;
         }
     }
@@ -768,11 +769,11 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
                                               XmNfontList, p_global->fontlist,
                                               XmNbackground, _at->background_color,
                                               mwidth, (int)width_of_button, // may terminate the list
-                                              mheight, (int)height_of_button, // may terminate the list 
+                                              mheight, (int)height_of_button, // may terminate the list
                                               NULL );
         }
         AW_label_in_awar_list(this,button,buttonlabel);
-        AW_INSERT_BUTTON_IN_SENS_LIST ( root, _at->id_for_next_button, _at->mask_for_next_button, button );
+        root->make_sensitive(button, _at->mask_for_next_button);
     }
     else { // button w/o callback (flat, not clickable)
         long alignment = (org_correct_for_at_center == 1) ? XmALIGNMENT_CENTER : XmALIGNMENT_BEGINNING;
@@ -1055,7 +1056,7 @@ void AW_window::create_input_field( const char *var_name,  int columns ) {
                       (XtCallbackProc) AW_server_callback,
                       (XtPointer) _d_callback );
         _d_callback->id = GBS_global_string_copy("INPUT:%s",var_name);
-        GBS_write_hash(this->get_root()->prvt->action_hash,_d_callback->id,(long)_d_callback);
+        get_root()->define_remote_command(_d_callback);
     }
 
     // callback for losing focus
@@ -1068,8 +1069,7 @@ void AW_window::create_input_field( const char *var_name,  int columns ) {
                   (XtPointer) root );
 
     AW_INSERT_BUTTON_IN_AWAR_LIST( vs,0, textField, AW_WIDGET_INPUT_FIELD, this);
-
-    AW_INSERT_BUTTON_IN_SENS_LIST ( root, _at->id_for_next_button, _at->mask_for_next_button, textField );
+    root->make_sensitive(textField, _at->mask_for_next_button);
 
     short height;
     XtVaGetValues( textField, XmNheight, &height, NULL);
@@ -1232,8 +1232,7 @@ void AW_window::create_text_field( const char *var_name, int columns, int rows )
     XtAddCallback(scrolledText, XmNvalueChangedCallback, (XtCallbackProc) AW_value_changed_callback, (XtPointer) root );
 
     AW_INSERT_BUTTON_IN_AWAR_LIST( vs,0, scrolledText, AW_WIDGET_TEXT_FIELD, this);
-    AW_INSERT_BUTTON_IN_SENS_LIST ( root, _at->id_for_next_button, _at->mask_for_next_button, scrolledText );
-
+    root->make_sensitive(scrolledText, _at->mask_for_next_button);
 
     this->unset_at_commands();
     this->increment_at_commands( width_of_last_widget, height_of_last_widget );
@@ -1410,7 +1409,7 @@ AW_selection_list* AW_window::create_selection_list( const char *var_name, const
                           (XtPointer) _d_callback );
         }
         AW_INSERT_BUTTON_IN_AWAR_LIST( vs,(AW_CL)p_global->last_selection_list, scrolledList, AW_WIDGET_SELECTION_LIST, this);
-        AW_INSERT_BUTTON_IN_SENS_LIST ( root, _at->id_for_next_button, _at->mask_for_next_button, scrolledList );
+        root->make_sensitive(scrolledList, _at->mask_for_next_button);
     }
 
     this->unset_at_commands();
@@ -2261,7 +2260,6 @@ AW_option_menu_struct *AW_window::create_option_menu( const char *var_name, AW_l
     {
         AW_option_menu_struct *next =
             new AW_option_menu_struct(get_root()->number_of_option_menues,
-                                      _at->id_for_next_button,
                                       var_name,
                                       vs->variable_type,
                                       optionMenu1,
@@ -2282,8 +2280,8 @@ AW_option_menu_struct *AW_window::create_option_menu( const char *var_name, AW_l
     p_global->current_option_menu = p_global->last_option_menu;
 
     AW_INSERT_BUTTON_IN_AWAR_LIST( vs,(AW_CL)p_global->current_option_menu, optionMenu, AW_WIDGET_CHOICE_MENU, this);
-    AW_INSERT_BUTTON_IN_SENS_LIST ( root, _at->id_for_next_button, _at->mask_for_next_button, optionMenu1 );
-
+    root->make_sensitive(optionMenu1, _at->mask_for_next_button);
+    
     return p_global->current_option_menu;
 }
 
@@ -2373,7 +2371,7 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
                       (XtPointer) new AW_variable_update_struct(NULL, AW_WIDGET_CHOICE_MENU, root->awar(oms->variable_name), var_value, 0, 0, cbs));
 
         option_menu_add_option(p_global->current_option_menu, new AW_option_struct(var_value, entry), default_option);
-        AW_INSERT_BUTTON_IN_SENS_LIST(root, _at->id_for_next_button, _at->mask_for_next_button, entry);
+        root->make_sensitive(entry, _at->mask_for_next_button);
         this->unset_at_commands();
     }
 }
@@ -2393,7 +2391,7 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
                       (XtPointer) new AW_variable_update_struct(NULL, AW_WIDGET_CHOICE_MENU, root->awar(oms->variable_name), 0, var_value, 0, cbs));
 
         option_menu_add_option(p_global->current_option_menu, new AW_option_struct(var_value, entry), default_option);
-        AW_INSERT_BUTTON_IN_SENS_LIST(root, _at->id_for_next_button, _at->mask_for_next_button, entry);
+        root->make_sensitive(entry, _at->mask_for_next_button);
         this->unset_at_commands();
     }
 }
@@ -2413,7 +2411,7 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
                       (XtPointer) new AW_variable_update_struct(NULL, AW_WIDGET_CHOICE_MENU, root->awar(oms->variable_name), 0, 0, var_value, cbs));
 
         option_menu_add_option(p_global->current_option_menu, new AW_option_struct(var_value, entry), default_option);
-        AW_INSERT_BUTTON_IN_SENS_LIST(root, _at->id_for_next_button, _at->mask_for_next_button, entry);
+        root->make_sensitive(entry, _at->mask_for_next_button);
         this->unset_at_commands();
     }
 }
@@ -2592,8 +2590,7 @@ void AW_window::create_toggle_field( const char *var_name, int orientation ) {
     }
 
     AW_INSERT_BUTTON_IN_AWAR_LIST( vs,get_root()->number_of_toggle_fields, toggle_field, AW_WIDGET_TOGGLE_FIELD, this);
-    AW_INSERT_BUTTON_IN_SENS_LIST ( root, _at->id_for_next_button, _at->mask_for_next_button, toggle_field );
-
+    root->make_sensitive(toggle_field, _at->mask_for_next_button);
 }
 
 static Widget _aw_create_toggle_entry(AW_window *aww, Widget toggle_field,
@@ -2630,9 +2627,8 @@ static Widget _aw_create_toggle_entry(AW_window *aww, Widget toggle_field,
             p_global->last_toggle_field->first_toggle = awts;
         }
     }
-    AW_INSERT_BUTTON_IN_SENS_LIST ( root, aww->_at->id_for_next_button,
-                                    aww->_at->mask_for_next_button, toggleButton );
-
+    root->make_sensitive(toggleButton, aww->_at->mask_for_next_button);
+    
     aww->unset_at_commands();
     return  toggleButton;
 }

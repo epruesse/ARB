@@ -761,19 +761,19 @@ AW_window *create_trees_window(AW_root *aw_root) {
 
         aws->at("upall");
         aws->callback(move_tree_pos, (AW_CL)-9999);
-        aws->create_button("allup", "#moveUpAll.bitmap", 0);
+        aws->create_button("moveUpAll", "#moveUpAll.bitmap", 0);
 
         aws->at("up");
         aws->callback(move_tree_pos, (AW_CL)-1);
-        aws->create_button("allup", "#moveUp.bitmap", 0);
+        aws->create_button("moveUp", "#moveUp.bitmap", 0);
 
         aws->at("down");
         aws->callback(move_tree_pos, (AW_CL)1);
-        aws->create_button("allup", "#moveDown.bitmap", 0);
+        aws->create_button("moveDown", "#moveDown.bitmap", 0);
 
         aws->at("downall");
         aws->callback(move_tree_pos, (AW_CL)9999);
-        aws->create_button("allup", "#moveDownAll.bitmap", 0);
+        aws->create_button("moveDownAll", "#moveDownAll.bitmap", 0);
 
 
         aws->at("list");

@@ -9,7 +9,6 @@ public:
     short length_of_label_for_inputfield;
     bool  highlight;
 
-    char      *id_for_next_button;
     char      *helptext_for_next_button;
     AW_active  mask_for_next_button;
 

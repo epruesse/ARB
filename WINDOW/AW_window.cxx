@@ -73,56 +73,50 @@ AW_timer_cb_struct::AW_timer_cb_struct(AW_root *ari, void (*g)(AW_root*,AW_CL,AW
 AW_timer_cb_struct::~AW_timer_cb_struct(void) {
 }
 
-AW_buttons_struct::AW_buttons_struct(AW_root *root, const char *idi,
-        AW_active maski, Widget w) {
-    if (idi) {
-        id = strdup(idi);
-    } else {
-        id = NULL;
+void AW_root::make_sensitive(Widget w, AW_active mask) {
+    // Dont call make_sensitive directly.
+    // Simply set sens_mask(AWM_EXP) and after creating the expert-mode-only widgets, set back using sens_mask(AWM_ALL) 
+
+    aw_assert(w);
+    prvt->set_last_widget(w);
+
+    if (mask != AWM_ALL) { // no need to make widget sensitive, if its shown unconditionally
+        prvt->button_list = new AW_buttons_struct(mask, w, prvt->button_list);
     }
-    mask = maski;
-    button = w;
-    next = 0;
+}
 
-    if (p_global->button_list)
-        p_global->last_button->next = this;
-    else
-        p_global->button_list = this;
+AW_buttons_struct::AW_buttons_struct(AW_active maski, Widget w, AW_buttons_struct *prev_button) {
+    aw_assert(w);
 
-    p_global->last_button = this;
+    mask     = maski;
+    button   = w;
+    next     = prev_button;
 }
 
 AW_buttons_struct::~AW_buttons_struct() {
-    aw_assert(next == 0);
-    // has to be removed from global list before calling dtor
-    free(id);
+    aw_assert(next == 0); // has to be removed from global list before calling dtor
 }
 
 bool AW_remove_button_from_sens_list(AW_root *root, Widget w) {
     bool removed = false;
     if (p_global->button_list) {
         AW_buttons_struct *prev = 0;
-        AW_buttons_struct *bl= p_global->button_list;
+        AW_buttons_struct *bl   = p_global->button_list;
 
         while (bl) {
-            if (bl->button == w)
-                break; // found wanted widget
+            if (bl->button == w) break; // found wanted widget
             prev = bl;
             bl = bl->next;
         }
 
         if (bl) {
             // remove from list
-            if (prev)
-                prev->next = bl->next;
-            else
-                p_global->button_list = bl->next;
-
-            if (p_global->last_button == bl)
-                p_global->last_button = prev;
+            if (prev) prev->next       = bl->next;
+            else p_global->button_list = bl->next;
 
             bl->next = 0;
-            removed = true;
+            removed  = true;
+            
             delete bl;
         }
     }
@@ -164,24 +158,20 @@ AW_option_struct::~AW_option_struct() {
     free(variable_value);
 }
 
-AW_option_menu_struct::AW_option_menu_struct(int numberi,
-        const char *unique_option_menu_namei, const char *variable_namei,
-        AW_VARIABLE_TYPE variable_typei, Widget label_widgeti,
-        Widget menu_widgeti, AW_pos xi, AW_pos yi, int correct) {
+AW_option_menu_struct::AW_option_menu_struct(int numberi, const char *variable_namei,
+                                             AW_VARIABLE_TYPE variable_typei, Widget label_widgeti,
+                                             Widget menu_widgeti, AW_pos xi, AW_pos yi, int correct) {
     option_menu_number = numberi;
-    unique_option_menu_name
-            = unique_option_menu_namei ? strdup(unique_option_menu_namei) : 0;
-
-    variable_name = strdup(variable_namei);
-    variable_type = variable_typei;
-    label_widget = label_widgeti;
-    menu_widget = menu_widgeti;
-    first_choice = NULL;
-    last_choice = NULL;
-    default_choice = NULL;
-    next = NULL;
-    x = xi;
-    y = yi;
+    variable_name      = strdup(variable_namei);
+    variable_type      = variable_typei;
+    label_widget       = label_widgeti;
+    menu_widget        = menu_widgeti;
+    first_choice       = NULL;
+    last_choice        = NULL;
+    default_choice     = NULL;
+    next               = NULL;
+    x                  = xi;
+    y                  = yi;
 
     correct_for_at_center_intern = correct;
 }
@@ -685,6 +675,22 @@ static void aw_calculate_WM_offsets(AW_window *aww) {
 /************** standard callback server *********************/
 
 static void macro_message_cb(AW_window *aw, AW_CL);
+
+bool AW_cb_struct::is_equal(const AW_cb_struct& other) const {
+    bool equal = false;
+    if (f == other.f) {                             // same callback function
+        equal = (cd1 == other.cd1) && (cd2 == other.cd2);
+        if (equal) {
+            if (f == AW_POPUP) {
+                equal = aw->get_root() == other.aw->get_root();
+            }
+            else {
+                equal = aw == other.aw;
+            }
+        }
+    }
+    return equal;
+}
 
 void AW_cb_struct::run_callback(void) {
     AW_PPP g;
@@ -1606,9 +1612,8 @@ void AW_help_entry_pressed(AW_window *aww) {
 }
 
 void aw_create_help_entry(AW_window *aww) {
-    aww->insert_help_topic(0,
-            "Click here and then on the questionable button/menu/...", "P", 0,
-            AWM_ALL, (AW_CB)AW_help_entry_pressed, 0, 0);
+    aww->insert_help_topic("Click here and then on the questionable button/menu/...", "P", 0,
+                           AWM_ALL, (AW_CB)AW_help_entry_pressed, 0, 0);
 }
 
 /****************************************************************************************************************************/
@@ -2003,9 +2008,8 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid,
                                           RES_CONVERT( XmNmnemonic, help_mnemonic ), 
                                           XmNsubMenuId, p_w->help_pull_down, NULL );
     XtVaSetValues(p_w->menu_bar[0], XmNmenuHelpWidget, help_label, NULL);
-    //insert help_label to button_list
-    AW_INSERT_BUTTON_IN_SENS_LIST ( root, help_button, AWM_ALL, help_label );
-
+    root->make_sensitive(help_label, AWM_ALL);
+    
     form1 = XtVaCreateManagedWidget( "form1",
     xmFormWidgetClass,
     main_window,
@@ -2216,9 +2220,8 @@ void AW_window_menu::init(AW_root *root_in, const char *wid,
                                           RES_CONVERT( XmNmnemonic, help_mnemonic ), 
                                           XmNsubMenuId, p_w->help_pull_down, NULL );
     XtVaSetValues(p_w->menu_bar[0], XmNmenuHelpWidget, help_label, NULL);
-    //insert help_label to button_list
-    AW_INSERT_BUTTON_IN_SENS_LIST ( root, help_button, AWM_ALL, help_label );
-
+    root->make_sensitive(help_label, AWM_ALL);
+    
     form1 = XtVaCreateManagedWidget( "form1",
     xmFormWidgetClass,
     main_window,
@@ -2454,9 +2457,8 @@ void AW_window_simple_menu::init(AW_root *root_in, const char *wid,
                                           RES_CONVERT( XmNmnemonic, help_mnemonic ), 
                                           XmNsubMenuId, p_w->help_pull_down, NULL );
     XtVaSetValues(p_w->menu_bar[0], XmNmenuHelpWidget, help_label, NULL);
-    //insert help_label to button_list
-    AW_INSERT_BUTTON_IN_SENS_LIST ( root, help_button, AWM_ALL, help_label );
-
+    root->make_sensitive(help_label, AWM_ALL);
+    
     form1 = XtVaCreateManagedWidget( "form1",
     xmFormWidgetClass,
     main_window,
@@ -2539,44 +2541,13 @@ void AW_window::set_vertical_scrollbar_bottom_indent(int indent) {
     bottom_indent_of_vertical_scrollbar = indent;
 }
 
-void AW_root::set_sensitive(AW_active mask) {
+void AW_root::apply_sensitivity(AW_active mask) {
     AW_buttons_struct *list;
 
     global_mask = mask;
     for (list = p_r->button_list; list; list = list->next) {
-        if (!list->button)
-            continue;
-        if (list->mask & mask) {
-            XtSetSensitive(list->button, True);
-        } else {
-            XtSetSensitive(list->button, False);
-
-        }
+        XtSetSensitive(list->button, (list->mask & mask) ? True : False);
     }
-}
-
-void AW_root::set_sensitive(const char *id) {
-    AW_buttons_struct *list= p_r->button_list;
-
-    do {
-        if (list->id && !strcmp(list->id, id) ) {
-            XtSetSensitive(list->button, True);
-        }
-        list = list->next;
-    } while (list != NULL);
-
-}
-
-void AW_root::set_insensitive(const char *id) {
-    AW_buttons_struct *list= p_r->button_list;
-
-    do {
-        if (list->id && !strcmp(list->id, id) ) {
-            XtSetSensitive(list->button, False);
-        }
-        list = list->next;
-    } while (list != NULL);
-
 }
 
 void AW_window::select_mode(int mode) {
@@ -2600,7 +2571,7 @@ inline int yoffset_for_mode_button(int button_number) {
     return button_number*MODE_BUTTON_OFFSET + (button_number/4)*8 + 2;
 }
 
-int AW_window::create_mode(const char *mode_id, const char *pixmap, const char *helpText, AW_active Mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active Mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     Widget button;
 
     TuneBackground(p_w->mode_area, TUNE_BUTTON); // set background color for mode-buttons
@@ -2635,7 +2606,7 @@ int AW_window::create_mode(const char *mode_id, const char *pixmap, const char *
         p_w->modes_widgets[p_w->number_of_modes] = button;
     }
 
-    AW_INSERT_BUTTON_IN_SENS_LIST ( root, mode_id, Mask, button );
+    root->make_sensitive(button, Mask);
     p_w->number_of_modes++;
 
     int ynext = yoffset_for_mode_button(p_w->number_of_modes);
@@ -2835,8 +2806,7 @@ static void exit_duplicate_mnemonic() {
 
 // --------------------------------------------------------------------------------
 
-void AW_window::create_menu(const char *menu_id, AW_label name,
-        const char *mnemonic, const char *helpText, AW_active Mask) {
+void AW_window::create_menu(AW_label name, const char *mnemonic, const char *helpText, AW_active Mask) {
     p_w->menu_deep = 0;
 #ifdef DEBUG
     init_duplicate_mnemonic();
@@ -2844,7 +2814,7 @@ void AW_window::create_menu(const char *menu_id, AW_label name,
 #if defined(DUMP_MENU_LIST)
     dumpCloseAllSubMenus();
 #endif // DUMP_MENU_LIST
-    insert_sub_menu(menu_id, name, mnemonic, helpText, Mask);
+    insert_sub_menu(name, mnemonic, helpText, Mask);
 }
 
 void AW_window::all_menus_created() { // this is called by AW_window::show() (i.e. after all menus have been created)
@@ -2859,8 +2829,7 @@ void AW_window::all_menus_created() { // this is called by AW_window::show() (i.
 #endif // DEBUG
 }
 
-void AW_window::insert_sub_menu(const char *smenu_id, AW_label name,
-        const char *mnemonic, const char *helpText, AW_active Mask) {
+void AW_window::insert_sub_menu(AW_label name, const char *mnemonic, const char *helpText, AW_active Mask) {
     AWUSE(helpText);
     Widget shell, Label;
 
@@ -2914,10 +2883,7 @@ void AW_window::insert_sub_menu(const char *smenu_id, AW_label name,
 
     if (p_w->menu_deep < AW_MAX_MENU_DEEP-1) p_w->menu_deep++;
 
-    if(!(Mask&get_root()->global_mask)) {
-        XtSetSensitive( Label, False );
-    }
-    AW_INSERT_BUTTON_IN_SENS_LIST ( root, smenu_id, Mask, Label );
+    root->make_sensitive(Label, Mask);
 }
 
 void AW_window::close_sub_menu(void) {
@@ -2964,19 +2930,16 @@ void AW_window::insert_menu_topic(const char *topic_id, AW_label name,
     AW_label_in_awar_list(this,button,name);
     AW_cb_struct *cbs = new AW_cb_struct(this, f, cd1, cd2, helpText);
     XtAddCallback(button, XmNactivateCallback,
-    (XtCallbackProc) AW_server_callback,
-    (XtPointer) cbs);
+                  (XtCallbackProc) AW_server_callback,
+                  (XtPointer) cbs);
 
-    cbs->id = GBS_global_string_copy("%s",topic_id);
-    GBS_write_hash(get_root()->prvt->action_hash,topic_id,(long)cbs);
-    if(!(Mask&get_root()->global_mask)) {
-        XtSetSensitive( button, False );
-    }
-    AW_INSERT_BUTTON_IN_SENS_LIST(root, topic_id, Mask, button);
+    cbs->id = strdup(topic_id);
+    root->define_remote_command(cbs);
+    root->make_sensitive(button, Mask);
 }
 
-void AW_window::insert_help_topic(const char *topic_id, AW_label name,
-        const char *mnemonic, const char *helpText, AW_active Mask, void (*f)(AW_window*, AW_CL , AW_CL ), AW_CL cd1, AW_CL cd2) {
+void AW_window::insert_help_topic(AW_label name, const char *mnemonic, const char *helpText, AW_active Mask,
+                                  void (*f)(AW_window*, AW_CL , AW_CL ), AW_CL cd1, AW_CL cd2) {
     Widget button;
 
     // create one help-sub-menu-point
@@ -2988,7 +2951,7 @@ void AW_window::insert_help_topic(const char *topic_id, AW_label name,
     (XtCallbackProc) AW_server_callback,
     (XtPointer) new AW_cb_struct(this, f, cd1, cd2, helpText));
 
-    AW_INSERT_BUTTON_IN_SENS_LIST ( root, topic_id, Mask, button );
+    root->make_sensitive(button, Mask);
 }
 
 void AW_window::insert_separator(void) {
@@ -3475,53 +3438,15 @@ void AW_root::stop_execute_macro() {
 
 }
 
-/*  Macro Main Loop, replaces Window Mainloop
- *
- */
-#if 0
-GB_ERROR AW_root::enable_execute_macro(FILE *mfile,const char *mname) {
-    char *com = 0;
-    char *awar = 0;
-    char *act = 0;
-    char *value = 0;
-    GB_ERROR error = 0;
-    while (1) {
-        delete com;
-        com = GBS_fread_string(mfile,0);
-        if (!com || !strlen(com)) break;
-        if (strcasecmp(com,"ACTION")==0) {
-            act = GBS_fread_string(mfile,0);
-            AW_cb_struct *cbs = (AW_cb_struct *)GBS_read_hash(prvt->action_hash,act);
-            if (cbs) {
-                cbs->run_callback();
-            } else {
-                aw_message(error = GB_export_error("Unknown action '%s' in macro '%s'",act,mname));
-                break;
-            }
-            delete act;act = 0;
-            continue;
+void AW_root::define_remote_command(AW_cb_struct *cbs) {
+    AW_cb_struct *old_cbs = (AW_cb_struct*)GBS_write_hash(prvt->action_hash, cbs->id, (long)cbs);
+    if (old_cbs) {
+        if (!old_cbs->is_equal(*cbs)) {                  // existing remote command replaced by different callback
+            GBK_terminate("duplicated use of callback id '%s'", old_cbs->id);
         }
-        if (strcasecmp(com,"AWAR")==0) {
-            awar = GBS_fread_string(mfile,0);
-            value = GBS_fread_string(mfile,0);
-            AW_awar *aw = awar(awar);
-            if (aw) {
-                error = aw->write_as_string(value);
-                if (error) break;
-            } else {
-                error = GB_export_error("Error in Macro: AWAR '%s' not found in macro '%s'",awar,mname);
-                break;
-            }
-            delete awar;awar = 0;
-            delete value;value = 0;
-        }
+        free(old_cbs);
     }
-    delete act;
-    delete awar;
-    delete value;
-    return error;
 }
-#endif
 
 #if defined(DEBUG)
 #if defined(DEVEL_RALF)

@@ -244,11 +244,11 @@ void MG_start_cb2(AW_window *aww,AW_root *aw_root, bool save_enabled, bool dest_
         awm->init(aw_root,"ARB_MERGE", "ARB_MERGE");
         awm->load_xfig("merge/main.fig");
 
-        awm->create_menu(       0,   "File",     "F", "merge_file.hlp",  AWM_ALL );
 #if defined(DEBUG)
-        awm->insert_menu_topic("db_browser", "Browse loaded database(s)", "", "db_browser.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_create_db_browser, 0);
-        awm->insert_separator();
+        AWT_create_debug_menu(awm);
 #endif // DEBUG
+
+        awm->create_menu("File",     "F", "merge_file.hlp",  AWM_ALL );
         if (mg_save_enabled && GB_read_clients(GLOBAL_gb_merge)>=0) {
             awm->insert_menu_topic("save_DB1","Save Data Base I ...",       "S","save_as.hlp",AWM_ALL, AW_POPUP, (AW_CL)MG_save_source_cb,(AW_CL)AWAR_MERGE_DB );
         }

@@ -44,6 +44,8 @@ typedef struct gbs_hash_struct  GB_HASH;
 
 extern AW_default aw_main_root_default;
 
+typedef struct _WidgetRec *Widget;
+
 // #define AWUSE(variable) variable = variable
 #if defined(DEBUG) && defined(DEVEL_RALF) && 0
 #define AWUSE(variable) (void)variable; int DONT_USE_AWUSE_FOR_##variable
@@ -222,15 +224,16 @@ public:
     AW_default  get_gbdata(const char *varname);
 
     // ************** Set and clear sensitivity of buttons and menus  *********
-    void set_sensitive(AW_active mask);
-    void set_sensitive( const char *id );
-    void set_insensitive( const char *id );
+    void apply_sensitivity(AW_active mask);
+    void make_sensitive(Widget w, AW_active mask);
 
     GB_ERROR start_macro_recording(const char *file,const char *application_id, const char *stop_action_name);
     GB_ERROR stop_macro_recording();
     GB_ERROR execute_macro(const char *file);
     void     stop_execute_macro(); // Starts macro window main loop, delayed return
     GB_ERROR enable_execute_macro(FILE *mfile,const char *mname); // leave macro window main loop, returns stop_execute_macro
+
+    void define_remote_command(struct AW_cb_struct *cbs);
     GB_ERROR check_for_remote_command(AW_default gb_main,const char *rm_base);
 
     /*************************************************************************

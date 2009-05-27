@@ -1260,7 +1260,7 @@ AW_window *MG_merge_species_cb(AW_root *awr){
     aws->create_button("HELP","HELP","H");
 
     awt_query_struct awtqs;
-    aws->create_menu(0,"DB_I_Expert","D");
+    aws->create_menu("DB_I_Expert","D");
 
     awtqs.gb_main                = GLOBAL_gb_merge;
     awtqs.gb_ref                 = GLOBAL_gb_dest;
@@ -1295,7 +1295,7 @@ AW_window *MG_merge_species_cb(AW_root *awr){
     ad_global_scannerid1 = scannerid;
     aws->get_root()->awar(AWAR_SPECIES1)->add_callback(AD_map_species1);
 
-    aws->create_menu(0,"DB_II_Expert","B");
+    aws->create_menu("DB_II_Expert","B");
 
     awtqs.gb_main                = GLOBAL_gb_dest;
     awtqs.gb_ref                 = GLOBAL_gb_merge;
@@ -1368,7 +1368,7 @@ AW_window *MG_merge_species_cb(AW_root *awr){
     aws->callback(AW_POPUP_HELP,(AW_CL)"mg_species.hlp");
     aws->create_button("HELP_MERGE", "#merge/icon.bitmap");
 
-    aws->create_menu(0,"DB1->DB2","-");
+    aws->create_menu("DB1->DB2","-");
     aws->insert_menu_topic( "compare_field_of_listed",  "Compare a field of listed species ...","C","checkfield.hlp",   AWM_ALL, AW_POPUP,(AW_CL)create_mg_check_fields,0);
     aws->insert_menu_topic( "move_field_of_selected",   "Move one field of selected left species to same field of selected right species","M",
                             "movefield.hlp", AWM_ALL, AW_POPUP,(AW_CL)create_mg_move_fields,0);

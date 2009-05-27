@@ -1561,15 +1561,15 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     //  aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
     //  aws->create_button("CLOSE","C");
 
-    aws->create_menu(0, "FILE", "F", "HELP for Window", AWM_ALL);
+    aws->create_menu("FILE", "F", "HELP for Window", AWM_ALL);
     aws->insert_menu_topic("macros", "Macros  ...", "M", "macro.hlp", AWM_ALL, (AW_CB)AW_POPUP, (AW_CL)awt_open_macro_window,(AW_CL)"NEIGHBOUR_JOINING");
     aws->insert_menu_topic("quit",   "Quit",        "Q", "quit.hlp",  AWM_ALL, (AW_CB)di_exit,  0,  0                                                 );
 
-    aws->create_menu(0, "Properties", "P", "properties.hlp", AWM_ALL);
+    aws->create_menu("Properties", "P", "properties.hlp", AWM_ALL);
     aws->insert_menu_topic("frame_props", "Frame ...",                                 "F", "props_frame.hlp", AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window, 0);
     aws->insert_menu_topic("save_props",  "Save Properties (in ~/.arb_prop/dist.arb)", "S", "savedef.hlp",     AWM_ALL, (AW_CB)AW_save_defaults, 0, 0       );
 
-    aws->insert_help_topic("help", "help ...", "h", "dist.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"dist.hlp", 0);
+    aws->insert_help_topic("help ...", "h", "dist.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"dist.hlp", 0);
 
     aws->at( "which_species" );
     aws->create_option_menu( AWAR_DIST_WHICH_SPECIES );

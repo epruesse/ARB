@@ -578,11 +578,11 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix){
                       "#AboveDist$#DB008D",
                       NULL);
 
-    awm->create_menu(0,"File","F");
+    awm->create_menu("File","F");
     awm->insert_menu_topic("save_matrix",   "Save Matrix to File",  "S","save_matrix.hlp",  AWM_ALL, AW_POPUP, (AW_CL)DI_create_save_matrix_window, (AW_CL)AWAR_DIST_SAVE_MATRIX_BASE);
     awm->insert_menu_topic("close",     "Close",    "C",0,  AWM_ALL,    (AW_CB)AW_POPDOWN, (AW_CL)0, 0 );
 
-    awm->create_menu(0,"Props","P");
+    awm->create_menu("Props","P");
     awm->insert_menu_topic("props_matrix",      "Matrix: Colors and Fonts ...", "C","neprops_data.hlp"  ,   AWM_ALL,    AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)preset_window );
     awm->insert_menu_topic("show_dist_as_ascii",    "Show Dist in Ascii",           "A",0       ,   AWM_ALL,    di_view_set_max_d, 0, (AW_CL)dmatrix );
     awm->insert_menu_topic("show_dist_010",     "Show Dist [0,0.1]",            "1",0       ,   AWM_ALL,    di_view_set_max_d, 10, (AW_CL)dmatrix );

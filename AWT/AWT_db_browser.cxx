@@ -12,6 +12,7 @@
 //  ==================================================================== // 
 
 #include "awt.hxx"
+#include "awt_tree.hxx"
 #include <inline.h>
 
 #include <string>
@@ -436,7 +437,7 @@ static void execute_browser_command(AW_window *aww, const char *command) {
 //      the browser window
 // ----------------------------
 
-AW_window *AWT_create_db_browser(AW_root *aw_root) {
+static AW_window *create_db_browser(AW_root *aw_root) {
     return get_the_browser()->get_window(aw_root);
 }
 
@@ -883,3 +884,26 @@ AW_window *DB_browser::get_window(AW_root *aw_root) {
     return aww;
 }
 
+#if defined(DEBUG)
+
+static void dump_gcs(AW_window *aww, AW_CL, AW_CL) {
+    for (int gc = int(AWT_GC_CURSOR); gc <= AWT_GC_MAX;  ++gc) {
+        int   r, g, b;
+        const char *err = aww->GC_to_RGB(aww->get_device(AW_MIDDLE_AREA), gc, r, g, b);
+        if (err) {
+            printf("Error retrieving RGB values for GC #%i: %s\n", gc, err);
+        }
+        else {
+            printf("GC #%i RGB values: r=%i g=%i b=%i\n", gc, r, g, b);
+        }
+    }
+}
+
+void AWT_create_debug_menu(AW_window *awmm) {
+    awmm->create_menu("debug", "", NULL, AWM_ALL);
+
+    awmm->insert_menu_topic("db_browser", "Browse loaded database(s)", "", "db_browser.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_db_browser, 0);
+    awmm->insert_menu_topic("dump_gcs",   "Dump GCs",                  "", "",               AWM_ALL, dump_gcs, 0,                        0);
+}
+
+#endif // DEBUG

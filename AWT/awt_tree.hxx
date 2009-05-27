@@ -1,20 +1,37 @@
-#ifndef awt_tree_hxx_included
-#define awt_tree_hxx_included
+// =========================================================== //
+//                                                             //
+//   File      : awt_tree.hxx                                  //
+//   Purpose   :                                               //
+//                                                             //
+//   Institute of Microbiology (Technical University Munich)   //
+//   http://www.arb-home.de/                                   //
+//                                                             //
+// =========================================================== //
 
-#define AP_F_LOADED ((AW_active)1)
-#define AP_F_NLOADED ((AW_active)2)
+#ifndef AWT_TREE_HXX
+#define AWT_TREE_HXX
+
+#define AP_F_LOADED    ((AW_active)1)
+#define AP_F_NLOADED   ((AW_active)2)
 #define AP_F_SEQUENCES ((AW_active)4)
-#define AP_F_MATRIX ((AW_active)8)
-#define AP_F_TREE ((AW_active)16)
-#define AP_F_ALL ((AW_active)-1)
+#define AP_F_MATRIX    ((AW_active)8)
+#define AP_F_TREE      ((AW_active)16)
+#define AP_F_ALL       ((AW_active)-1)
 
 #define GROUPED_SUM 2   // min. no of species in a group which should be drawn as box
 
 class AW_window;
 class AW_root;
 
+#ifndef AWT_PRO_A_NUCS_HXX
 #include <awt_pro_a_nucs.hxx>
+#endif
+#ifndef AW_COLOR_GROUPS_HXX
 #include <aw_color_groups.hxx>
+#endif
+#ifndef ARBDBT_H
+#include <arbdbt.h>
+#endif
 
 typedef unsigned char uchar;
 enum {
@@ -418,5 +435,6 @@ public:
 
 long AP_timer(void);
 
-
-#endif
+#else
+#error awt_tree.hxx included twice
+#endif // AWT_TREE_HXX

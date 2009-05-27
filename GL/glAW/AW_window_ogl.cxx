@@ -100,18 +100,18 @@ void AW_window_menu_modes_opengl::init(AW_root *root_in, const char *wid,
     //create row column in Pull-Down shell
     p_w->help_pull_down = XtVaCreateWidget("menu_row_column",
                                            xmRowColumnWidgetClass, help_popup, 
-                                           XmNrowColumnType, XmMENU_PULLDOWN, 
+                                           XmNrowColumnType, XmMENU_PULLDOWN,
                                            NULL);
 
-    // create HELP-label in menu bar
+                                                    // create HELP-label in menu bar
     help_label = XtVaCreateManagedWidget("menu1_top_b1",
-                                         xmCascadeButtonWidgetClass, p_w->menu_bar[0], 
+                                         xmCascadeButtonWidgetClass, p_w->menu_bar[0],
                                          RES_CONVERT( XmNlabelString, help_button ),
-                                         RES_CONVERT( XmNmnemonic, help_mnemonic ), 
+                                         RES_CONVERT( XmNmnemonic, help_mnemonic ),
                                          XmNsubMenuId, p_w->help_pull_down, NULL );
     XtVaSetValues(p_w->menu_bar[0], XmNmenuHelpWidget, help_label, NULL);
     //insert help_label to button_list
-    AW_INSERT_BUTTON_IN_SENS_LIST ( root, help_button, AWM_ALL, help_label );
+    root->make_sensitive(help_label, AWM_ALL);
 
     form1 = XtVaCreateManagedWidget( "form1",
                                      xmFormWidgetClass,

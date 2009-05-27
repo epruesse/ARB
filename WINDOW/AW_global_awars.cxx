@@ -100,9 +100,9 @@ bool ARB_global_awars_initialized() {
 static void AWAR_AWM_MASK_changed_cb(AW_root *awr) {
     int mask = awr->awar(AWAR_AWM_MASK)->read_int();
 #if defined(DEBUG)
-    printf("AWAR_AWM_MASK changed, calling set_sensitive(%i)\n", mask);
+    printf("AWAR_AWM_MASK changed, calling apply_sensitivity(%i)\n", mask);
 #endif
-    awr->set_sensitive(mask);
+    awr->apply_sensitivity(mask);
 }
 
 GB_ERROR ARB_init_global_awars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main) {

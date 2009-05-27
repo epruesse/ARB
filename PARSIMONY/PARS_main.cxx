@@ -1344,7 +1344,7 @@ static void TEST_buildAndDumpChain(AW_window *, AWT_canvas *)
 
 static void init_TEST_menu(AW_window_menu_modes *awm,AWT_canvas *ntw)
 {
-    awm->create_menu( 0,   "Test", "T", "",  AWM_ALL );
+    awm->create_menu("Test", "T", "",  AWM_ALL );
 
     awm->insert_menu_topic(0, "Test edges",         "T", "", AWM_ALL, (AW_CB)TEST_testWholeTree,     (AW_CL)ntw, 0);
     awm->insert_menu_topic(0, "Mix tree",           "M", "", AWM_ALL, (AW_CB)TEST_mixTree,           (AW_CL)ntw, 0);
@@ -1471,22 +1471,22 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_adfiltercbstruct) {
     GBDATA *gb_arb_presets = GB_search(ntw->gb_main,"arb_presets", GB_CREATE_CONTAINER);
     GB_add_callback(gb_arb_presets,GB_CB_CHANGED, (GB_CB)AWT_expose_cb,(int *)ntw);
 
-    awm->create_menu(       0,   "File",     "F", "pars_file.hlp",  AWM_ALL );
-    {
 #if defined(DEBUG)
-        awm->insert_menu_topic("db_browser", "Browse loaded database(s)", "", "db_browser.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_create_db_browser, 0);
-        awm->insert_separator();
+    AWT_create_debug_menu(awm);
 #endif // DEBUG
+
+    awm->create_menu("File",     "F", "pars_file.hlp",  AWM_ALL );
+    {
         awm->insert_menu_topic("print_tree", "Print Tree ...",          "P","tree2prt.hlp", AWM_ALL, AWT_popup_print_window, (AW_CL)ntw, 0 );
         awm->insert_menu_topic( "quit",     "Quit",             "Q","quit.hlp",     AWM_ALL, (AW_CB)PARS_export_cb, (AW_CL)ntw,2);
     }
 
-    awm->create_menu( 0,   "Species", "S", "nt_tree.hlp",  AWM_ALL );
+    awm->create_menu("Species", "S", "nt_tree.hlp",  AWM_ALL );
     {
         NT_insert_mark_submenus(awm, ntw, 0);
 
     }
-    awm->create_menu( 0,   "Tree", "T", "nt_tree.hlp",  AWM_ALL );
+    awm->create_menu("Tree", "T", "nt_tree.hlp",  AWM_ALL );
     {
 
         awm->insert_menu_topic( "nds",      "NDS (Node Display Setup) ...",      "N","props_nds.hlp",    AWM_ALL, AW_POPUP, (AW_CL)AWT_create_nds_window, (AW_CL)ntw->gb_main );
@@ -1495,7 +1495,7 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_adfiltercbstruct) {
         awm->insert_menu_topic("tree_2_xfig", "Edit Tree View using XFIG ...",  "E", "tree2file.hlp", AWM_ALL, AWT_popup_tree_export_window, (AW_CL)ntw, 0);
         awm->insert_menu_topic("tree_print",  "Print Tree View to Printer ...", "P", "tree2prt.hlp",  AWM_ALL, AWT_popup_print_window,       (AW_CL)ntw, 0);
         awm->insert_separator();
-        awm->insert_sub_menu(0, "Collapse/Expand Tree",         "C");
+        awm->insert_sub_menu("Collapse/Expand Tree",         "C");
         {
             awm->insert_menu_topic("tree_group_all",        "Group All",            "A","tgroupall.hlp",    AWM_ALL,    (AW_CB)NT_group_tree_cb,    (AW_CL)ntw, 0 );
             awm->insert_menu_topic("tree_group_not_marked", "Group All Except Marked",  "M","tgroupnmrkd.hlp",  AWM_ALL,    (AW_CB)NT_group_not_marked_cb,  (AW_CL)ntw, 0 );
@@ -1505,14 +1505,14 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_adfiltercbstruct) {
         }
         awm->close_sub_menu();
         awm->insert_separator();
-        awm->insert_sub_menu(0, "Remove Species from Tree",     "R");
+        awm->insert_sub_menu("Remove Species from Tree",     "R");
         {
             awm->insert_menu_topic("tree_remove_deleted", "Remove Zombies", "Z", "trm_del.hlp",    AWM_ALL, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_REMOVE_DELETED|AWT_REMOVE_BUT_DONT_FREE);
             awm->insert_menu_topic("tree_remove_marked",  "Remove Marked",  "M", "trm_mrkd.hlp",   AWM_ALL, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_REMOVE_MARKED|AWT_REMOVE_BUT_DONT_FREE);
             awm->insert_menu_topic("tree_keep_marked",    "Keep Marked",    "K", "tkeep_mrkd.hlp", AWM_ALL, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_REMOVE_NOT_MARKED|AWT_REMOVE_DELETED|AWT_REMOVE_BUT_DONT_FREE);
         }
         awm->close_sub_menu();
-        awm->insert_sub_menu(0, "Add Species to Tree",      "A");
+        awm->insert_sub_menu("Add Species to Tree",      "A");
         {
             awm->insert_menu_topic("add_marked",         "Add Marked Species",                              "M", "pa_quick.hlp",     AWM_ALL, (AW_CB)NT_quick_add,  (AW_CL)ntw, 0);
             awm->insert_menu_topic("add_marked_nni",     "Add Marked Species + Local Optimization (NNI)",   "N", "pa_add.hlp",       AWM_ALL, (AW_CB)NT_add,        (AW_CL)ntw, 0);
@@ -1526,7 +1526,7 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_adfiltercbstruct) {
         }
         awm->close_sub_menu();
         awm->insert_separator();
-        awm->insert_sub_menu(0, "Tree Optimization",        "O");
+        awm->insert_sub_menu("Tree Optimization",        "O");
         {
             awm->insert_menu_topic("nni",           "Local Optimization (NNI) of Marked Visible Nodes", "L","",         AWM_ALL,    (AW_CB)NT_recursiveNNI, (AW_CL)ntw, 0 );
             awm->insert_menu_topic("kl_optimization",   "Global Optimization of Marked Visible Nodes",      "G","pa_optimizer.hlp", AWM_ALL,    (AW_CB)NT_optimize, (AW_CL)ntw, 0 );
@@ -1546,7 +1546,7 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_adfiltercbstruct) {
     init_TEST_menu(awm,ntw);
 #endif // TEST_FUNCTIONS
 
-    awm->create_menu("props","Properties","r","properties.hlp", AWM_ALL);
+    awm->create_menu("Properties","r","properties.hlp", AWM_ALL);
     {
         awm->insert_menu_topic("props_menu",  "Menu: Colors and Fonts ...",              "M", "props_frame.hlp",      AWM_ALL, AW_POPUP,(AW_CL)AW_preset_window,        0);
         awm->insert_menu_topic("props_tree",  "Tree: Colors and Fonts ...",              "C", "pars_props_data.hlp",  AWM_ALL, AW_POPUP,(AW_CL)AW_create_gc_window,     (AW_CL)aw_gc_manager );
@@ -1556,30 +1556,30 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_adfiltercbstruct) {
     }
     awm->button_length(5);
 
-    awm->create_menu(0,"ETC","E","nt_etc.hlp", AWM_ALL);
+    awm->create_menu("ETC","E","nt_etc.hlp", AWM_ALL);
     {
         awm->insert_menu_topic("reset_logical_zoom",    "Reset Logical Zoom",   "L","rst_log_zoom.hlp", AWM_ALL, (AW_CB)NT_reset_lzoom_cb, (AW_CL)ntw, 0 );
         awm->insert_menu_topic("reset_physical_zoom",   "Reset Physical Zoom",  "P","rst_phys_zoom.hlp",AWM_ALL, (AW_CB)NT_reset_pzoom_cb, (AW_CL)ntw, 0 );
     }
 
-    awm->insert_help_topic("help_how",      "How to use Help",      "H","help.hlp",     AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"help.hlp", 0);
-    awm->insert_help_topic("help_arb",      "ARB Help",         "A","arb.hlp",      AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb.hlp", 0);
-    awm->insert_help_topic("help_arb_pars",     "ARB PARSIMONY Help",       "N","arb_pars.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb_pars.hlp", 0);
+    awm->insert_help_topic("How to use Help",    "H", "help.hlp",     AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"help.hlp",     0);
+    awm->insert_help_topic("ARB Help",           "A", "arb.hlp",      AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb.hlp",      0);
+    awm->insert_help_topic("ARB PARSIMONY Help", "N", "arb_pars.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb_pars.hlp", 0);
 
-    awm->create_mode( 0, "select.bitmap", "mode_select.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SELECT);
-    awm->create_mode( 0, "mark.bitmap", "mode_mark.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_MARK);
-    awm->create_mode( 0, "group.bitmap", "mode_group.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_GROUP);
-    awm->create_mode( 0, "pzoom.bitmap", "mode_pzoom.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_ZOOM);
-    awm->create_mode( 0, "lzoom.bitmap", "mode_lzoom.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_LZOOM);
-    awm->create_mode( 0, "swap.bitmap", "mode_swap.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SWAP);
-    awm->create_mode( 0, "move.bitmap", "mode_move.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_MOVE);
+    awm->create_mode("select.bitmap", "mode_select.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SELECT);
+    awm->create_mode("mark.bitmap",   "mode_mark.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_MARK);
+    awm->create_mode("group.bitmap",  "mode_group.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_GROUP);
+    awm->create_mode("pzoom.bitmap",  "mode_pzoom.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_ZOOM);
+    awm->create_mode("lzoom.bitmap",  "mode_lzoom.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_LZOOM);
+    awm->create_mode("swap.bitmap",   "mode_swap.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SWAP);
+    awm->create_mode("move.bitmap",   "mode_move.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_MOVE);
 #ifdef NNI_MODES
-    awm->create_mode( 0, "nearestn.bitmap", "mode_nni.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_NNI);
-    awm->create_mode( 0, "kernlin.bitmap", "mode_kernlin.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_KERNINGHAN);
-    awm->create_mode( 0, "optimize.bitmap", "mode_optimize.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_OPTIMIZE);
+    awm->create_mode("nearestn.bitmap", "mode_nni.hlp",      AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_NNI);
+    awm->create_mode("kernlin.bitmap",  "mode_kernlin.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_KERNINGHAN);
+    awm->create_mode("optimize.bitmap", "mode_optimize.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_OPTIMIZE);
 #endif // NNI_MODES
-    awm->create_mode( 0, "setroot.bitmap", "mode_set_root.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SETROOT);
-    awm->create_mode( 0, "reset.bitmap", "mode_reset.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_RESET);
+    awm->create_mode("setroot.bitmap", "mode_set_root.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SETROOT);
+    awm->create_mode("reset.bitmap",   "mode_reset.hlp",    AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_RESET);
 
     awm->at(5,2);
     awm->auto_space(0,-2);

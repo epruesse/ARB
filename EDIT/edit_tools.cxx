@@ -730,7 +730,6 @@ AW_window *create_tool_complement( AW_root *root, AED_window *aedwindow ) {
     aws->update_option_menu();
 
     aws->at("gaps_points");
-    aws->id("remove_option");
     aws->create_toggle("tmp/tools/complement/gaps_points");
 
     aws->at("left");

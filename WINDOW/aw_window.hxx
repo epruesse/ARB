@@ -127,6 +127,7 @@ public:
 
     void run_callback(void);                        // runs the whole list
     bool contains(void (*g)(AW_window*,AW_CL ,AW_CL)); // test if contained in list
+    bool is_equal(const AW_cb_struct& other) const;
 };
 
 
@@ -320,16 +321,16 @@ public:
     AW_device *get_print_device (AW_area area);
 
     // ************** Create the menu buttons *********
-    void create_menu(const char *id, AW_label name, const char *mnemonic, const char *help_text = 0, AW_active mask = -1);
-    void insert_sub_menu(const char *id, AW_label name, const char *mnemonic, const char *help_text = 0, AW_active mask = -1);
+    void create_menu(AW_label name, const char *mnemonic, const char *help_text = 0, AW_active mask = -1);
+    void insert_sub_menu(AW_label name, const char *mnemonic, const char *help_text = 0, AW_active mask = -1);
     void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text, AW_active mask, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
     void close_sub_menu(void);
 
     void insert_separator(void);
-    void insert_help_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text, AW_active mask, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
+    void insert_help_topic(AW_label name, const char *mnemonic, const char *help_text, AW_active mask, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
     void insert_separator_help(void);
     // ************** Create modes on the left side ******************
-    int create_mode(const char *id, const char *pixmap, const char *help_text, AW_active mask, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
+    int create_mode(const char *pixmap, const char *help_text, AW_active mask, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
     void select_mode(int mode);
 
 
@@ -409,8 +410,7 @@ public:
     void store_at_size_and_attach( AW_at_size *at_size ); // get size of at-element
     void restore_at_size_and_attach( const AW_at_size *at_size ); // set size of a at-element
 
-    void id( const char *id );  // Set the id of the button (for set_sensitive)
-    void mask( AW_active mask ); // Set the mask used for set_sensitive
+    void sens_mask( AW_active mask ); // Set the sensitivity mask used for following widgets (Note: reset by next at()-command) 
     void help_text(const char *id ); // Set the help text of a button
     void callback( void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2 ); // normal callbacks
     void callback( void (*f)(AW_window*,AW_CL), AW_CL cd1);
@@ -426,7 +426,7 @@ public:
     //    void   create_button( const char *macro_name, AW_label label,const char *mnemonic = 0); // simple button; shadow only when callback
     void   create_button( const char *macro_name, AW_label label,const char *mnemonic = 0, const char *color = 0); // simple button; shadow only when callback
     void   create_autosize_button( const char *macro_name, AW_label label,const char *mnemonic = 0, unsigned xtraSpace = 1); // as above, but ignores button_length
-    Widget get_last_button_widget() const;
+    Widget get_last_widget() const;
 
     void create_toggle( const char *awar_name); // int 0/1  string yes/no   float undef
     void create_inverse_toggle( const char *awar_name); // like create_toggle, but displays inverted toggle value

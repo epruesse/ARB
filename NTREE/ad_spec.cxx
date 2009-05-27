@@ -1220,8 +1220,8 @@ AW_window *create_speciesOrganismWindow(AW_root *aw_root, bool organismWindow)
     ad_global_scannerid = scannerid;
     ad_global_scannerroot = aws->get_root();
 
-    if (organismWindow) aws->create_menu(0,   "ORGANISM",     "O", "spa_organism.hlp",  AWM_ALL );
-    else                aws->create_menu(0,   "SPECIES",     "S", "spa_species.hlp",  AWM_ALL );
+    if (organismWindow) aws->create_menu("ORGANISM",     "O", "spa_organism.hlp",  AWM_ALL );
+    else                aws->create_menu("SPECIES",     "S", "spa_species.hlp",  AWM_ALL );
 
     aws->insert_menu_topic("species_delete",        "Delete",        "D","spa_delete.hlp",   AWM_ALL,   ad_species_delete_cb, 0, 0);
     aws->insert_menu_topic("species_rename",        "Rename",        "R","spa_rename.hlp",   AWM_ALL,   ad_species_rename_cb, 0, 0);
@@ -1230,7 +1230,7 @@ AW_window *create_speciesOrganismWindow(AW_root *aw_root, bool organismWindow)
     aws->insert_menu_topic("species_convert_2_sai", "Convert to SAI","S","sp_sp_2_ext.hlp",AWM_ALL,    (AW_CB)move_species_to_extended, 0, 0);
     aws->insert_separator();
 
-    aws->create_menu(       0,   "FIELDS",     "F", "spa_fields.hlp",  AWM_ALL );
+    aws->create_menu("FIELDS",     "F", "spa_fields.hlp",  AWM_ALL );
     ad_spec_create_field_items(aws);
 
     {
@@ -1245,7 +1245,7 @@ AW_window *create_speciesOrganismWindow(AW_root *aw_root, bool organismWindow)
         aws->callback(NT_detach_information_window, (AW_CL)&aws, (AW_CL)detach_info);
         aws->create_button("DETACH", "DETACH", "D");
 
-        detach_info->set_detach_button(aws->get_last_button_widget());
+        detach_info->set_detach_button(aws->get_last_widget());
     }
 
     aws->show();
@@ -1278,7 +1278,7 @@ AW_window *ad_create_query_window(AW_root *aw_root)
     }
     aws = new AW_window_simple_menu;
     aws->init( aw_root, "SPECIES_QUERY", "SEARCH and QUERY");
-    aws->create_menu(0,"More functions","f");
+    aws->create_menu("More functions","f");
     aws->load_xfig("ad_query.fig");
 
 
@@ -1311,7 +1311,7 @@ AW_window *ad_create_query_window(AW_root *aw_root)
     AW_CL cbs           = (AW_CL)awt_create_query_box((AW_window*)aws,&awtqs);
     ad_query_global_cbs = cbs;
 
-    aws->create_menu(       0,   "More search",     "s" );
+    aws->create_menu("More search",     "s" );
     aws->insert_menu_topic("search_equal_fields_within_db","Search For Equal Fields and Mark Duplikates",                "E", "search_duplicates.hlp", -1, (AW_CB)awt_search_equal_entries, cbs, 0);
     aws->insert_menu_topic("search_equal_words_within_db", "Search For Equal Words Between Fields and Mark Duplikates",  "W", "search_duplicates.hlp", -1, (AW_CB)awt_search_equal_entries, cbs, 1);
     aws->insert_menu_topic("search_next_relativ_of_sel",   "Search Next Relatives of SELECTED Species in PT_Server ...", "R", 0,                       -1, (AW_CB)AW_POPUP, (AW_CL)ad_spec_next_neighbours_create, cbs);

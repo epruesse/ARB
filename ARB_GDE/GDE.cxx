@@ -411,7 +411,7 @@ void GDE_load_menu(AW_window *awm, AW_active mask, const char *menulabel,const c
                 }
             }
             else {
-                awm->insert_sub_menu(0,menuname,META);
+                awm->insert_sub_menu(menuname,META);
             }
             free(menuname);
         }
