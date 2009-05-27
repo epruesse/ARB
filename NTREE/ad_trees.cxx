@@ -743,7 +743,9 @@ AW_window *create_trees_window(AW_root *aw_root) {
 
         aws->at("cmp");
         aws->callback(AW_POPUP,(AW_CL)create_tree_diff_window,0);
+        aws->sens_mask(AWM_EXP);
         aws->create_button("CMP_TOPOLOGY","Compare topology","T");
+        aws->sens_mask(AWM_ALL);
 
         aws->at("export");
         aws->callback(AW_POPUP,(AW_CL)create_tree_export_window,0);

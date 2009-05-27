@@ -106,7 +106,7 @@ void awt_create_selection_list_on_trees(GBDATA *gb_main,AW_window *aws,const cha
     
     GB_push_transaction(gb_main);
 
-    id = aws->create_selection_list(varname,0,"",40,8);
+    id = aws->create_selection_list(varname,0,"",40,4);
     struct adawcbstruct *cbs = new adawcbstruct;
     memset(cbs, 0, sizeof(*cbs));
 
@@ -533,7 +533,7 @@ void *awt_create_selection_list_on_extendeds(GBDATA *gb_main,AW_window *aws, con
 
     GB_push_transaction(gb_main);
 
-    id  = aws->create_selection_list(varname,0,"",40,8);
+    id  = aws->create_selection_list(varname,0,"",40,4);
     cbs = new awt_sel_list_for_sai;
 
     cbs->aws                  = aws;

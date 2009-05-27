@@ -355,8 +355,10 @@ AW_window *awt_create_select_filter_win(AW_root *aw_root, AW_CL res_of_create_se
     aws->at("simplify");
     aws->create_option_menu(acbs->def_simplify);
     aws->insert_option("ORIGINAL DATA","O",0);
+    aws->sens_mask(AWM_EXP);
     aws->insert_option("TRANSVERSIONS ONLY","T",1);
     aws->insert_option("SIMPLIFIED AA","A",2);
+    aws->sens_mask(AWM_ALL);
     aws->update_option_menu();
 
     awt_create_select_filter_window_gb_cb(0,acbs);

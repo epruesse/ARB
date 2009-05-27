@@ -2614,13 +2614,17 @@ AW_window *AWTC_create_faligner_window(AW_root *root, AW_CL cd2)
     aws->at("aligner");
     aws->create_toggle_field(FA_AWAR_USE_ISLAND_HOPPING,"Aligner","A");
     aws->insert_default_toggle("Fast aligner",   "F", 0);
+    aws->sens_mask(AWM_EXP);
     aws->insert_toggle        ("Island Hopping", "I", 1);
+    aws->sens_mask(AWM_ALL);
     aws->update_toggle_field();
 
     aws->button_length(12);
     aws->at("island_para");
     aws->callback(AW_POPUP, (AW_CL)AWTC_create_island_hopping_window, (AW_CL)0);
+    aws->sens_mask(AWM_EXP);
     aws->create_button("island_para", "Parameters", "");
+    aws->sens_mask(AWM_ALL);
 
     aws->button_length(10);
 
@@ -2705,8 +2709,10 @@ AW_window *AWTC_create_faligner_window(AW_root *root, AW_CL cd2)
     aws->at("insert");
     aws->create_option_menu(FA_AWAR_REPORT, "Report", "");
     aws->insert_option        ("No report",                   "", FA_NO_REPORT);
+    aws->sens_mask(AWM_EXP);
     aws->insert_default_option("Report to temporary entries", "", FA_TEMP_REPORT);
     aws->insert_option        ("Report to resident entries",  "", FA_REPORT);
+    aws->sens_mask(AWM_ALL);
     aws->update_option_menu();
 
     aws->at("gaps");
