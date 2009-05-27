@@ -1254,10 +1254,11 @@ check_ressources:
 # ---------------------------------------- cleaning
 
 rmbak:
-	find . \( -name '*%' -o -name '*.bak' -o -name 'core' \
-		-o -name 'infile' -o -name treefile -o -name outfile \
-		-o -name 'gde*_?' -o -name '*~' \) \
-	-print -exec rm {} \;
+	@echo "Cleanup:"
+	@find . \( -name '*%' -o -name '*.bak' -o -name 'core' \
+		   -o -name 'infile' -o -name treefile -o -name outfile \
+		   -o -name 'gde*_?' -o -name '*~' \) \
+	        -exec rm -v {} \;
 
 binclean:
 	@echo Cleaning bin directory
@@ -1325,6 +1326,10 @@ sourcetarfile: rmbak
 save2: rmbak
 	util/arb_save ignore
 
+save_test: rmbak
+	@echo "Testing source list.."
+	@util/arb_srclst.pl > /dev/null
+
 release:
 	touch SOURCE_TOOLS/inc_minor.stamp
 	$(MAKE) do_release
@@ -1382,6 +1387,9 @@ all: checks
 	$(MAKE) binlink
 	$(MAKE) perl
 	-$(MAKE) tryxtras
+ifeq ("$(DEVELOPER)","SAVETEST")
+	$(MAKE) save_test
+endif
 	@echo $(SEP)
 	@echo "made 'all' with success."
 	@echo "to start arb enter 'arb'"
