@@ -46,10 +46,7 @@ GCC:=gcc
 GPP:=g++ 
 CPPreal:=cpp
 
-ifdef DARWIN
-	GCC:=gcc
-	GPP:=g++
-endif
+
 
 # ---------------------- compiler version detection
 
@@ -205,7 +202,7 @@ XHOME:=/usr/X11R6
 XINCLUDES:=-I$(XHOME)/include
 
 ifdef DARWIN
-	XINCLUDES += -I/sw/include -I$(OSX_SDK)/usr/X11/include -I$(OSX_SDK)/usr/include/krb5
+	XINCLUDES := -I/sw/include -I$(OSX_SDK)/usr/X11/include -I$(OSX_SDK)/usr/include/krb5
 endif
 
 ifdef DARWIN
