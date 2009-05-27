@@ -1221,7 +1221,9 @@ GBDATA *open_AWTC_import_window(AW_root *awr,const char *defname, bool do_exit, 
 
         aws->at("genom");
         aws->create_toggle_field(AWAR_READ_GENOM_DB);
+        aws->sens_mask(AWM_EXP);
         aws->insert_toggle("Import genome data in EMBL, GenBank and DDBJ format","e", IMP_GENOME_FLATFILE);
+        aws->sens_mask(AWM_ALL);
         aws->insert_toggle("Import selected format","f",IMP_PLAIN_SEQUENCE);
         aws->update_toggle_field();
 

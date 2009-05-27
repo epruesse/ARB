@@ -1345,7 +1345,9 @@ AW_window *create_probe_design_window( AW_root *root, AW_CL cl_genome_db)  {
 
     aws->at("lenout"  ); aws->create_input_field(AWAR_PD_DESIGN_CLIPRESULT, 6);
     aws->at("mishit"  ); aws->create_input_field(AWAR_PD_DESIGN_MISHIT,     6);
+    aws->sens_mask(AWM_EXP);
     aws->at("maxbonds"); aws->create_input_field(AWAR_PD_DESIGN_MAXBOND,    6);
+    aws->sens_mask(AWM_ALL);
     aws->at("minhits" ); aws->create_input_field(AWAR_PD_DESIGN_MINTARGETS, 6);
 
     aws->at("minlen"); aws->create_input_field(AWAR_PD_DESIGN_PROBELENGTH,  5);

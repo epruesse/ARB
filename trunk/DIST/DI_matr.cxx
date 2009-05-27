@@ -1586,9 +1586,11 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     aws->create_button("SELECT_FILTER", AWAR_DIST_FILTER_NAME);
 
     aws->at("weights_select");
+    aws->sens_mask(AWM_EXP);
     global_csp = new AWT_csp(GLOBAL_gb_main,aws->get_root(),AWAR_DIST_COLUMN_STAT_NAME);
     aws->callback(AW_POPUP,(AW_CL)create_csp_window, (AW_CL)global_csp);
     aws->create_button("SELECT_COL_STAT",AWAR_DIST_COLUMN_STAT_NAME);
+    aws->sens_mask(AWM_ALL);
 
     aws->at("which_cancel");
     aws->create_input_field(AWAR_DIST_CANCEL_CHARS,12);
@@ -1683,7 +1685,9 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
 
     aws->at("autodetect");   // auto
     aws->callback(di_autodetect_callback);
+    aws->sens_mask(AWM_EXP);
     aws->create_button("AUTODETECT_CORRECTION", "AUTODETECT","A");
+    aws->sens_mask(AWM_ALL);
 
     aws->at("sort_tree_name");
     aws->create_input_field(AWAR_DIST_TREE_SORT_NAME,12);
