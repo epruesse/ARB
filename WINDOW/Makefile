@@ -6,6 +6,7 @@ OBJECTS = \
 		AW_at.o \
 		AW_button.o \
 		AW_click.o \
+		AW_debug.o \
 		AW_device.o \
 		AW_font_group.o \
 		AW_global_awars.o \
@@ -97,6 +98,22 @@ AW_click.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AW_click.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_click.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_click.o: $(ARBHOME)/INCLUDE/attributes.h
+
+AW_debug.o: aw_device.hxx
+AW_debug.o: aw_keysym.hxx
+AW_debug.o: aw_position.hxx
+AW_debug.o: aw_root.hxx
+AW_debug.o: aw_window.hxx
+AW_debug.o: aw_window_Xm.hxx
+AW_debug.o: aw_Xm.hxx
+AW_debug.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+AW_debug.o: $(ARBHOME)/INCLUDE/ad_prot.h
+AW_debug.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+AW_debug.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AW_debug.o: $(ARBHOME)/INCLUDE/arbdb.h
+AW_debug.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AW_debug.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AW_debug.o: $(ARBHOME)/INCLUDE/attributes.h
 
 AW_device.o: aw_commn.hxx
 AW_device.o: aw_device.hxx

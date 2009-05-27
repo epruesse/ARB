@@ -1,6 +1,9 @@
 #ifndef AW_XM_HXX
 #define AW_XM_HXX
 
+#ifndef AW_DEVICE_HXX
+#include <aw_device.hxx>
+#endif
 
 class AW_device_Xm: public AW_device {
     int fastflag;

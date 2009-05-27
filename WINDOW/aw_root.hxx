@@ -143,8 +143,6 @@ typedef enum  {
 } AW_ProcessEventType;
 
 class AW_root {
-private:
-protected:
 public:
     static  AW_root *THIS;
     AW_root_Motif   *prvt;                          // Do not use !!!
@@ -244,6 +242,9 @@ public:
     int font_2_xfig(AW_font font_nr);   // converts fontnr to xfigid
     // negative values indicate monospaced f.
 
+#if defined(DEBUG)
+    void callallcallbacks(int mode);
+#endif // DEBUG
 };
 
 

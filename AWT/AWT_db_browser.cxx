@@ -899,11 +899,29 @@ static void dump_gcs(AW_window *aww, AW_CL, AW_CL) {
     }
 }
 
+static void callallcallbacks(AW_window *aww, AW_CL mode, AW_CL) {
+    static bool running = false; // avoid deadlock
+    if (!running) {
+        running = true;
+        aww->get_root()->callallcallbacks(mode);
+        running = false;
+    }
+}
+
 void AWT_create_debug_menu(AW_window *awmm) {
     awmm->create_menu("debug", "", NULL, AWM_ALL);
 
     awmm->insert_menu_topic("db_browser", "Browse loaded database(s)", "", "db_browser.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_db_browser, 0);
     awmm->insert_menu_topic("dump_gcs",   "Dump GCs",                  "", "",               AWM_ALL, dump_gcs, 0,                        0);
+
+    {
+        awmm->insert_sub_menu("Callbacks (dangerous! use at your own risk)", "C", NULL, AWM_ALL);
+        awmm->insert_menu_topic("run_all_cbs",     "Call all callbacks",           "", "", AWM_ALL, callallcallbacks, 0, 0);
+        awmm->insert_menu_topic("run_all_cbs_bwd", "Call all callbacks (reverse)", "", "", AWM_ALL, callallcallbacks, 1, 0);
+        awmm->insert_menu_topic("run_all_cbs_rnd", "Call all callbacks (random)",  "", "", AWM_ALL, callallcallbacks, 2, 0);
+        awmm->insert_menu_topic("run_all_cbs_inf", "Call all callbacks (forever)", "", "", AWM_ALL, callallcallbacks, 3, 0);
+        awmm->close_sub_menu();
+    }
 }
 
 #endif // DEBUG
