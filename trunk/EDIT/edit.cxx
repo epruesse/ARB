@@ -2108,7 +2108,7 @@ void aed_create_window(AED_root *aedr) {
 
     st_ml = new_ST_ML(GLOBAL_gb_main);
 
-    awmm->create_menu(       "1",   "File",     "F" );
+    awmm->create_menu("File", "F" );
 
     if (!is_client){
         awmm->insert_menu_topic("save_bin","Save BIN","B","save_bin.hlp",   AWM_ALL,aed_save_bin,(AW_CL)aed_window,0);
@@ -2123,7 +2123,7 @@ void aed_create_window(AED_root *aedr) {
 
 
 
-    awmm->create_menu(0,"EDIT","E");
+    awmm->create_menu("EDIT","E");
     awmm->insert_menu_topic("search",   "Search ...",               "S","ne_search.hlp",    AWM_ALL,    AW_POPUP, (AW_CL)create_tool_search, (AW_CL)aed_window);
     awmm->insert_menu_topic("replace",  "Replace ...",          "R","ne_replace.hlp",   AWM_ALL,    AW_POPUP, (AW_CL)create_tool_replace, (AW_CL)aed_window);
     awmm->insert_menu_topic("complement",   "Complement ...",           "C","ne_compl.hlp", AWM_ALL,    AW_POPUP, (AW_CL)create_tool_complement, (AW_CL)aed_window );
@@ -2147,7 +2147,7 @@ void aed_create_window(AED_root *aedr) {
     awmm->insert_menu_topic("mark_selected",    "Mark Selected Sequence",           "k","mark.hlp", AWM_ALL, (AW_CB)set_smark_cb, (AW_CL)aed_window, 1);
     awmm->insert_menu_topic("unmark_selected",  "Unmark Selected Sequence",         "n","mark.hlp", AWM_ALL, (AW_CB)set_smark_cb, (AW_CL)aed_window, 0);
 
-    awmm->create_menu(0,"Props","P");
+    awmm->create_menu("Props","P");
     awmm->insert_menu_topic("props_menu",   "Menu: Colors and Fonts ...",   "M","props_frame.hlp",  AWM_ALL,    AW_POPUP, (AW_CL)AW_preset_window,  0 );
     awmm->insert_menu_topic("props_seq",    "Sequences: Colors and Fonts ...",  "C","neprops_data.hlp", AWM_ALL,    AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)preset_window );
     awmm->insert_menu_topic("props_etc",    "ETC ...",          "E","neprops.hlp",  AWM_ALL,    AW_POPUP, (AW_CL)create_edit_preset_window, (AW_CL)0 );
@@ -2157,7 +2157,7 @@ void aed_create_window(AED_root *aedr) {
                             new AW_cb_struct(awmm,(AW_CB)aed_resize,(AW_CL)aed_window,0) );
     awmm->insert_separator();
     awmm->insert_menu_topic("save_props",   "Save Properties (in ~/.arb_prop/edit.arb)","S","savedef.hlp",  AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
-    awmm->create_menu(0,"ETC","C");
+    awmm->create_menu("ETC","C");
     awmm->insert_menu_topic("synchronize",  "Synchronize Cursor Position",      "S","exportcursor.hlp", AWM_ALL,    aed_use_focus, (AW_CL)aed_window, true );
     awmm->insert_menu_topic("unsynchronize","Don't Synchronize Cursor",         "D","exportcursor.hlp", AWM_ALL,    aed_use_focus, (AW_CL)aed_window, false );
     awmm->insert_menu_topic("refresh_helix","Reload Helix (SAI 'HELIXNR/HELIX')",       "H","helix.hlp",    AWM_ALL,    (AW_CB)reload_helix, (AW_CL)aed_window, 0 );
@@ -2165,7 +2165,7 @@ void aed_create_window(AED_root *aedr) {
     awmm->insert_menu_topic("enable_col_stat","Enable Column Statistic",            "C","st_ml.hlp",    AWM_ALL,AW_POPUP,(AW_CL)st_create_main_window,(AW_CL)st_ml);
     //  awmm->insert_menu_topic("submission",   "Submission ...",               "S","submission.hlp",   AWM_ALL,    AW_POPUP, (AW_CL)create_submission_window, (AW_CL)aed_window );
     awmm->insert_separator();
-    awmm->insert_sub_menu(0,"GDE Specials","G");
+    awmm->insert_sub_menu("GDE Specials","G");
     GDE_load_menu(awmm,AWM_ALL,0,0);
     awmm->close_sub_menu();
 

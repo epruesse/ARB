@@ -297,7 +297,7 @@ void NT_mark_color_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode)
 void NT_insert_color_mark_submenu(AW_window_menu_modes *awm, AWT_canvas *ntree_canvas, const char *menuname, int mark_basemode) {
 #define MAXLABEL 40
 #define MAXENTRY 20
-    awm->insert_sub_menu(0, menuname, "");
+    awm->insert_sub_menu(menuname, "");
 
     char        label_buf[MAXLABEL+1];
     char        entry_buf[MAXENTRY+1];
@@ -401,7 +401,7 @@ static void nt_insert_mark_topics(AW_window_menu_modes *awm, AW_active mask, AWT
 
 void NT_insert_mark_submenus(AW_window_menu_modes *awm, AWT_canvas *ntw, int insert_as_submenu) {
     if (insert_as_submenu) {
-        awm->insert_sub_menu(0, "Mark species", "M");
+        awm->insert_sub_menu("Mark species", "M");
     }
 
     {
@@ -410,15 +410,15 @@ void NT_insert_mark_submenus(AW_window_menu_modes *awm, AWT_canvas *ntw, int ins
         nt_insert_mark_topics(awm, AWM_ALL, ntw, 0, 0);
         awm->insert_separator();
 
-        awm->insert_sub_menu(0, "Full sequences", "F");
+        awm->insert_sub_menu("Full sequences", "F");
         nt_insert_mark_topics(awm, AWM_EXP, ntw, 4, "full");
         awm->close_sub_menu();
 
-        awm->insert_sub_menu(0, "Partial sequences", "P");
+        awm->insert_sub_menu("Partial sequences", "P");
         nt_insert_mark_topics(awm, AWM_EXP, ntw, 8, "partial");
         awm->close_sub_menu();
 
-        awm->insert_sub_menu(0, "Current Alignment", "A");
+        awm->insert_sub_menu("Current Alignment", "A");
         nt_insert_mark_topics(awm, AWM_EXP, ntw, 16, "-with data");
         awm->close_sub_menu();
     }
@@ -468,7 +468,7 @@ void NT_insert_color_collapse_submenu(AW_window_menu_modes *awm, AWT_canvas *ntr
 
     awt_assert(ntree_canvas != 0);
 
-    awm->insert_sub_menu(0, "Group all except Color ...", "C");
+    awm->insert_sub_menu("Group all except Color ...", "C");
 
     char        label_buf[MAXLABEL+1];
     char        entry_buf[MAXENTRY+1];

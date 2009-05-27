@@ -2365,7 +2365,7 @@ void AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_ite
 
     if (!global_awars_created) create_global_awars(awr);
 
-    awm->insert_sub_menu(0, "User Masks", "k");
+    awm->insert_sub_menu("User Masks", "k");
 
     for (int scope = 0; scope <= 1; ++scope) {
         bool entries_made = false;
@@ -2397,7 +2397,16 @@ void AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_ite
         if (entries_made) awm->insert_separator();
     }
 
-    awm->insert_menu_topic("new_mask", "New mask ...", "N", "input_mask_new.hlp", AWM_ALL, create_new_input_mask, (AW_CL)wanted_item_type, (AW_CL)0);
+    {
+        const char *itemname            = awt_itemtype_names[wanted_item_type];
+        char       *new_item_mask_id    = GBS_global_string_copy("new_%s_mask", itemname);
+        char       *new_item_mask_label = GBS_global_string_copy("New %s mask..", itemname);
+
+        awm->insert_menu_topic(new_item_mask_id, new_item_mask_label, "N", "input_mask_new.hlp", AWM_ALL, create_new_input_mask, (AW_CL)wanted_item_type, (AW_CL)0);
+
+        free(new_item_mask_label);
+        free(new_item_mask_id);
+    }    
     awm->close_sub_menu();
 }
 

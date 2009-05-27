@@ -723,7 +723,7 @@ AW_window *SEC_create_main_window(AW_root *awr, GBDATA *gb_main) {
 
     GB_atclose(gb_main, SEC_exit, root);
     
-    awm->create_menu( 0, "File", "F", "secedit_file.hlp",  AWM_ALL );
+    awm->create_menu("File", "F", "secedit_file.hlp",  AWM_ALL );
 
     awm->insert_menu_topic("secedit_new", "New structure", "N", 0, AWM_ALL, SEC_new_structure, (AW_CL)db, 0);
     awm->insert_menu_topic("secedit_rename", "Rename structure", "R", 0, AWM_ALL, SEC_rename_structure, (AW_CL)db, 0);
@@ -738,7 +738,7 @@ AW_window *SEC_create_main_window(AW_root *awr, GBDATA *gb_main) {
 
     awm->insert_menu_topic( "close", "Close", "C","quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 1,0);
 
-    awm->create_menu("props","Properties","P","properties.hlp", AWM_ALL);
+    awm->create_menu("Properties","P","properties.hlp", AWM_ALL);
     awm->insert_menu_topic("sec_display", "Display options", "D", "sec_display.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_create_display_window, 0);
     awm->insert_separator();
     awm->insert_menu_topic("props_secedit", "Change Colors and Fonts","C","secedit_props_data.hlp",AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager );
@@ -750,14 +750,14 @@ AW_window *SEC_create_main_window(AW_root *awr, GBDATA *gb_main) {
     awm->insert_separator();
     awm->insert_menu_topic("save_props",    "How to save properties",   "p","savedef.hlp",  AWM_ALL, (AW_CB) AW_POPUP_HELP, (AW_CL)"sec_props.hlp", 0 );
 
-    awm->create_mode(0, "pzoom.bitmap",       "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_ZOOM);
-    awm->create_mode(0, "sec_modify.bitmap",  "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_MOVE);
-    awm->create_mode(0, "setroot.bitmap",     "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_SETROOT);
-    awm->create_mode(0, "rot.bitmap",         "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_ROT);
-    awm->create_mode(0, "stretch.bitmap",     "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_STRETCH);
-    awm->create_mode(0, "info.bitmap",        "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_MOD);
-    awm->create_mode(0, "sec_setcurs.bitmap", "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_LINE);
-    awm->create_mode(0, "probeInfo.bitmap",   "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_PROINFO);
+    awm->create_mode("pzoom.bitmap",       "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_ZOOM);
+    awm->create_mode("sec_modify.bitmap",  "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_MOVE);
+    awm->create_mode("setroot.bitmap",     "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_SETROOT);
+    awm->create_mode("rot.bitmap",         "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_ROT);
+    awm->create_mode("stretch.bitmap",     "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_STRETCH);
+    awm->create_mode("info.bitmap",        "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_MOD);
+    awm->create_mode("sec_setcurs.bitmap", "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_LINE);
+    awm->create_mode("probeInfo.bitmap",   "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_PROINFO);
 
     awm->set_info_area_height( 250 );
     awm->at(5,2);

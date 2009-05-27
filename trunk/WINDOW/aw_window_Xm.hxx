@@ -14,9 +14,6 @@
 #define  p_global   (root->prvt)
 #define  p_aww(aww) (aww->p_w)
 
-#define AW_INSERT_BUTTON_IN_SENS_LIST(root,id,mask,widget)              \
-    do { new AW_buttons_struct(root,id,mask,widget); } while (0)
-
 bool AW_remove_button_from_sens_list(AW_root *aw_root, Widget w);
 
 #define MAP_ARAM(ar) p_w->areas[ar]
@@ -71,10 +68,9 @@ struct AW_timer_cb_struct {
 
 /************************************************************************/
 struct AW_buttons_struct {
-    AW_buttons_struct(AW_root *rooti, const char *idi, AW_active maski, Widget w);
+    AW_buttons_struct(AW_active maski, Widget w, AW_buttons_struct *next);
     ~AW_buttons_struct();
 
-    char              *id;
     AW_active          mask;
     Widget             button;
     AW_buttons_struct *next;
@@ -108,10 +104,9 @@ struct AW_option_struct {
 };
 
 struct AW_option_menu_struct {
-    AW_option_menu_struct( int numberi, const char *unique_option_menu_namei, const char *variable_namei, AW_VARIABLE_TYPE variable_typei, Widget label_widgeti, Widget menu_widgeti, AW_pos xi, AW_pos yi, int correct);
+    AW_option_menu_struct( int numberi, const char *variable_namei, AW_VARIABLE_TYPE variable_typei, Widget label_widgeti, Widget menu_widgeti, AW_pos xi, AW_pos yi, int correct);
 
     int               option_menu_number;
-    char             *unique_option_menu_name;
     char             *variable_name;
     AW_VARIABLE_TYPE  variable_type;
     Widget            label_widget;
@@ -234,8 +229,7 @@ public:
 class AW_selection_list;
 
 class AW_root_Motif {
-private:
-protected:
+    Widget           last_widget;                   // last created (sensitive) widget
 public:
     Display         *display;
     XtAppContext     context;
@@ -250,7 +244,6 @@ public:
     XmFontList fontlist;
 
     AW_buttons_struct *button_list;
-    AW_buttons_struct *last_button;
 
     AW_config_struct *config_list;
     AW_config_struct *last_config;
@@ -274,8 +267,6 @@ public:
     Cursor   question_cursor;
     Display *old_cursor_display;
     Window   old_cursor_window;
-    void     normal_cursor(void);
-    void     set_cursor(Display *d, Window w, Cursor c);
     bool     no_exit;
 
     char    *recording_macro_path;
@@ -288,7 +279,11 @@ public:
     AW_root_Motif() {};
     ~AW_root_Motif() {};
 
-    Widget get_last_button_widget() { return last_button ? last_button->button : 0; }
+    Widget get_last_widget() const { return last_widget; }
+    void set_last_widget(Widget w) { last_widget = w; }
+
+    void set_cursor(Display *d, Window w, Cursor c);
+    void normal_cursor(void);
 };
 
 /**********************************************************************/

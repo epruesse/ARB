@@ -184,12 +184,17 @@ AWT_csp.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_csp.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 
 AWT_db_browser.o: awt.hxx
+AWT_db_browser.o: awt_pro_a_nucs.hxx
+AWT_db_browser.o: awt_tree.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/ad_prot.h
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/attributes.h
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_position.hxx

@@ -694,7 +694,7 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr){
     RNA3D->gl_Canvas->refresh();
     RNA3D->gl_Canvas->set_mode(AWT_MODE_NONE);
 
-    awm->create_menu( 0, "File", "F", 0,  AWM_ALL );
+    awm->create_menu("File", "F", 0,  AWM_ALL );
     {
         Structure3D *s;
         int rnaType = s->FindTypeOfRNA();
