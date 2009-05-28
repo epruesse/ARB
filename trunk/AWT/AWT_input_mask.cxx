@@ -18,7 +18,6 @@
 #include <awt_www.hxx>
 
 #include "awt_input_mask.hxx"
-#include "awt_changekey.hxx"
 
 #ifndef __MAP__
 #include <map>

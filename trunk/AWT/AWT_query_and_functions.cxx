@@ -21,7 +21,7 @@
 #include "awt.hxx"
 #include "awtlocal.hxx"
 #include "awt_config_manager.hxx"
-#include "awt_changekey.hxx"
+#include "awt_item_sel_list.hxx"
 #include "awt_sel_boxes.hxx"
 #include "awt_advice.hxx"
 
@@ -2718,9 +2718,14 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
 
             aws->at(xpos_calc[0], ypos+key*KEY_Y_OFFSET);
             aws->restore_at_size_and_attach(&at_size);
-            awt_create_selection_list_on_scandb(gb_main,aws,cbs->awar_keys[key], AWT_NDS_FILTER,
-                                                0, awtqs->rescan_pos_fig,
-                                                awtqs->selector, 22, 20, true, true);
+
+            {
+                char *button_id = GBS_global_string_copy("field_sel_%i", key);
+                awt_create_selection_list_on_scandb(gb_main,aws,cbs->awar_keys[key], AWT_NDS_FILTER,
+                                                    0, awtqs->rescan_pos_fig,
+                                                    awtqs->selector, 22, 20, AWT_SF_PSEUDO, button_id);
+                free(button_id);
+            }
 
             if (xpos_calc[1] == -1) aws->get_at_position(&xpos_calc[1], &ypos_dummy);
 

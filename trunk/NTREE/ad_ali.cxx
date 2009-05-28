@@ -10,7 +10,6 @@
 
 #include <arbdbt.h>
 #include <awt.hxx>
-#include <awt_changekey.hxx>
 #include <awt_sel_boxes.hxx>
 
 extern GBDATA *GLOBAL_gb_main;

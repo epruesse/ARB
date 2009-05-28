@@ -80,7 +80,6 @@ ad_ali.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/awt.hxx
-ad_ali.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 
 ad_ext.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -122,8 +121,8 @@ ad_spec.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/awt.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
-ad_spec.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/awt_dtree.hxx
+ad_spec.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
@@ -148,7 +147,6 @@ ad_transpro.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/awt.hxx
-ad_transpro.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/awt_codon_table.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
@@ -338,7 +336,7 @@ NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/awt.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
-NT_concatenate.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
+NT_concatenate.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
@@ -502,7 +500,7 @@ NT_join.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/awt.hxx
-NT_join.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
+NT_join.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 
 NT_main.o: nt_cb.hxx
@@ -557,7 +555,7 @@ NT_sort.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/awt.hxx
-NT_sort.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
+NT_sort.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
 
 NT_trackAliChanges.o: NT_trackAliChanges.h
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/ad_k_prot.h

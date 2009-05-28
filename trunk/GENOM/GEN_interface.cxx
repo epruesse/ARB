@@ -2,7 +2,7 @@
 #include <cstring>
 #include <awt.hxx>
 #include <awt_canvas.hxx>
-#include <awt_changekey.hxx>
+#include <awt_item_sel_list.hxx>
 #include <awt_sel_boxes.hxx>
 #include <aw_awars.hxx>
 #include <db_scanner.hxx>

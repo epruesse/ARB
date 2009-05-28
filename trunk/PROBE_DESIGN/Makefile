@@ -93,7 +93,6 @@ SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
-SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_dtree.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_nds.hxx

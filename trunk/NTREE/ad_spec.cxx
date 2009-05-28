@@ -14,7 +14,7 @@
 #include <awt_canvas.hxx>
 #include <awt_dtree.hxx>
 #include <awtlocal.hxx>
-#include <awt_changekey.hxx>
+#include <awt_item_sel_list.hxx>
 #include <awt_sel_boxes.hxx>
 #include <db_scanner.hxx>
 #include <awtc_next_neighbours.hxx>
@@ -645,8 +645,8 @@ AW_window *NT_create_ad_field_delete(AW_root *root, AW_CL cl_item_selector)
     AW_CL cbs = awt_create_selection_list_on_scandb(GLOBAL_gb_main,
                                                     (AW_window*)aws,AWAR_FIELD_DELETE,
                                                     -1,
-                                                    "source",0, selector, 20, 10,
-                                                    false, false, true);
+                                                    "source", 0, selector, 20, 10,
+                                                    AWT_SF_HIDDEN);
 
     aws->button_length(13);
     aws->at("hide");
@@ -777,18 +777,15 @@ AW_window *NT_create_ad_field_convert(AW_root *root, AW_CL cl_item_selector) {
     aws->create_button("HELP","HELP","H");
 
     aws->callback(ad_field_convert_update_typesel_cb, cl_item_selector);
-    AW_CL cbs = awt_create_selection_list_on_scandb(
-        GLOBAL_gb_main,
-        (AW_window*)aws,
-        AWAR_FIELD_CONVERT_SOURCE, // AWAR containing selection
-        -1, // type filter
-        "source", // selector xfig position
-        0, // rescan button xfig position
-        selector,
-        40, 20, // selector w,h
-        false, // embed (true=popup)
-        false, // all-fields pseudo field
-        true); // include hidden fields
+    awt_create_selection_list_on_scandb(GLOBAL_gb_main,
+                                        aws,
+                                        AWAR_FIELD_CONVERT_SOURCE, // AWAR containing selection
+                                        -1,     // type filter
+                                        "source", // selector xfig position
+                                        0,      // rescan button xfig position
+                                        selector,
+                                        40, 20, // selector w,h
+                                        AWT_SF_HIDDEN);
 
     aws->at("typesel");
     aws->create_toggle_field(AWAR_FIELD_CONVERT_TYPE, NULL, "F");

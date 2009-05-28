@@ -9,7 +9,7 @@
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <awt.hxx>
-#include <awt_changekey.hxx>
+#include <awt_item_sel_list.hxx>
 
 #include "nt_sort.hxx"
 

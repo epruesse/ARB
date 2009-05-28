@@ -18,7 +18,7 @@
 #include <aw_window.hxx>
 #include <awt.hxx>
 #include <awt_nds.hxx>
-#include <awt_changekey.hxx>
+#include <awt_item_sel_list.hxx>
 #include <awt_sel_boxes.hxx>
 
 #include "GEN_interface.hxx"

@@ -11,7 +11,6 @@
 #include <aw_window.hxx>
 #include <awt.hxx>
 #include <awt_codon_table.hxx>
-#include <awt_changekey.hxx>
 #include <awt_sel_boxes.hxx>
 #include <awt_pro_a_nucs.hxx>
 #include <awt_translate.hxx>
