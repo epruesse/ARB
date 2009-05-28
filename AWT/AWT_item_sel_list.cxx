@@ -25,7 +25,7 @@ static AW_window *awt_existing_window(AW_window *, AW_CL cl1, AW_CL) {
     return (AW_window*)cl1;
 }
 
-static void awt_create_selection_list_on_scandb_cb(GBDATA *dummy, struct adawcbstruct *cbs)
+static void populate_selection_list_on_scandb_cb(GBDATA *dummy, struct adawcbstruct *cbs)
 {
     GBDATA *gb_key_data;
     gb_key_data = GB_search(cbs->gb_main, cbs->selector->change_key_path, GB_CREATE_CONTAINER);
@@ -33,7 +33,7 @@ static void awt_create_selection_list_on_scandb_cb(GBDATA *dummy, struct adawcbs
 
     cbs->aws->clear_selection_list(cbs->id);
 
-    if (cbs->add_all_fields_pseudo_field) {
+    if (cbs->add_pseudo_fields) {
         cbs->aws->insert_selection(cbs->id, PSEUDO_FIELD_ANY_FIELD, PSEUDO_FIELD_ANY_FIELD);
         cbs->aws->insert_selection(cbs->id, PSEUDO_FIELD_ALL_FIELDS, PSEUDO_FIELD_ALL_FIELDS);
     }
@@ -88,10 +88,23 @@ AW_CL awt_create_selection_list_on_scandb(GBDATA                 *gb_main,
                                           const ad_item_selector *selector,
                                           size_t                  columns,
                                           size_t                  visible_rows,
-                                          bool                    popup_list_in_window,
-                                          bool                    add_all_fields_pseudo_field,
-                                          bool                    include_hidden_fields)
+                                          awt_selected_fields     field_filter,
+                                          const char             *popup_button_id)
 {
+    /* show fields of a item (e.g. species, SAI, gene)
+     * 'varname'                is the awar set by the selection list
+     * 'type_filter'            is a bitstring which controls what types are shown in the selection list
+     *                          (e.g '1<<GB_INT || 1 <<GB_STRING' enables ints and strings)
+     * 'scan_xfig_label'        is the position of the selection box (or selection button)
+     * 'rescan_xfig_label'      if not NULL, a 'RESCAN' button is added at that position
+     * 'selector'               describes the item type, for which fields are shown
+     * 'columns'/'visible_rows' specify the size of the selection list
+     * 'field_filter'           controls if pseudo-fields and/or hidden fields are added
+     * 'popup_button_id'        if not NULL, a button (with this id) is inserted.
+     *                          When clicked a popup window containing the selection list opens.
+     */
+
+
     AW_selection_list *id              = 0;
     GBDATA            *gb_key_data;
     AW_window         *win_for_sellist = aws;
@@ -100,8 +113,7 @@ AW_CL awt_create_selection_list_on_scandb(GBDATA                 *gb_main,
 
     if (scan_xfig_label) aws->at(scan_xfig_label);
 
-    if (popup_list_in_window) {
-
+    if (popup_button_id) { 
         // create HIDDEN popup window containing the selection list
         {
             AW_window_simple *aw_popup = new AW_window_simple;
@@ -123,29 +135,27 @@ AW_CL awt_create_selection_list_on_scandb(GBDATA                 *gb_main,
             win_for_sellist = aw_popup;
         }
 
+        // and bind hidden window popup to button 
         aws->button_length(columns);
         aws->callback((AW_CB2)AW_POPUP,(AW_CL)awt_existing_window, (AW_CL)win_for_sellist);
-        aws->create_button("SELECTED_ITEM", varname);
+        aws->create_button(popup_button_id, varname);
 
     }
-    else { // otherwise we build a normal selection list
+    else { // otherwise just insert the selection list at point
         id = aws->create_selection_list(varname,0,"",columns,visible_rows); // 20,10);
     }
-//     else { // otherwise we build an option menu
-//         aws->create_option_menu(varname, 0, "");
-//     }
 
     struct adawcbstruct *cbs = new adawcbstruct;
     memset(cbs, 0, sizeof(*cbs));
 
-    cbs->aws                         = win_for_sellist;
-    cbs->awr                         = win_for_sellist->get_root();
-    cbs->gb_main                     = gb_main;
-    cbs->id                          = id;
-    cbs->def_filter                  = (char *)type_filter;
-    cbs->selector                    = selector;
-    cbs->add_all_fields_pseudo_field = add_all_fields_pseudo_field;
-    cbs->include_hidden_fields       = include_hidden_fields;
+    cbs->aws                   = win_for_sellist;
+    cbs->awr                   = win_for_sellist->get_root();
+    cbs->gb_main               = gb_main;
+    cbs->id                    = id;
+    cbs->def_filter            = (char *)type_filter;
+    cbs->selector              = selector;
+    cbs->add_pseudo_fields     = field_filter & AWT_SF_PSEUDO;
+    cbs->include_hidden_fields = field_filter & AWT_SF_PSEUDO;
 
     if (rescan_xfig_label) {
         int x, y;
@@ -155,17 +165,13 @@ AW_CL awt_create_selection_list_on_scandb(GBDATA                 *gb_main,
         aws->callback(selector->selection_list_rescan_cb, (AW_CL)cbs->gb_main,(AW_CL)-1);
         aws->create_button("RESCAN_DB", "RESCAN","R");
 
-        if (popup_list_in_window) {
-            aws->at(x, y);          // restore 'at' position if popup_list_in_window
-        }
+        if (popup_button_id) aws->at(x, y); // restore 'at' position if popup_list_in_window
     }
 
-    awt_create_selection_list_on_scandb_cb(0,cbs);
-//     win_for_sellist->update_selection_list( id );
+    populate_selection_list_on_scandb_cb(0,cbs);
 
     gb_key_data = GB_search(gb_main, cbs->selector->change_key_path, GB_CREATE_CONTAINER);
-
-    GB_add_callback(gb_key_data, GB_CB_CHANGED, (GB_CB)awt_create_selection_list_on_scandb_cb, (int *)cbs);
+    GB_add_callback(gb_key_data, GB_CB_CHANGED, (GB_CB)populate_selection_list_on_scandb_cb, (int *)cbs);
 
     GB_pop_transaction(gb_main);
     return (AW_CL)cbs;

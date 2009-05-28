@@ -13,7 +13,6 @@
 #include <awt.hxx>
 #include "awt_nds.hxx"
 #include "awt_config_manager.hxx"
-#include "awt_changekey.hxx"
 #include "awt_sel_boxes.hxx"
 
 #define NDS_PER_PAGE 10         // number of NDS definitions on each config-page

@@ -8,7 +8,6 @@
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <awt.hxx>
-#include <awt_changekey.hxx>
 #include <awt_sel_boxes.hxx>
 #include "merge.hxx"
 

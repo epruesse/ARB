@@ -17,7 +17,6 @@
 
 #include <awt.hxx>
 #include <awtlocal.hxx>
-#include <awt_changekey.hxx>
 
 #include <db_scanner.hxx>
 

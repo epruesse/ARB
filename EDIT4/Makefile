@@ -365,7 +365,7 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/awt.hxx
-ED4_no_class.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
+ED4_no_class.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/BI_helix.hxx

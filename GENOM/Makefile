@@ -69,7 +69,7 @@ EXP_interface.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/awt.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
-EXP_interface.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
+EXP_interface.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
 
@@ -165,7 +165,7 @@ GEN_interface.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/awt.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
-GEN_interface.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
+GEN_interface.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/ntree.hxx
@@ -222,7 +222,7 @@ GEN_nds.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/awt.hxx
-GEN_nds.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
+GEN_nds.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 

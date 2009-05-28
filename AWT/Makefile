@@ -117,7 +117,7 @@ AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 
 AWT_changekey.o: awt.hxx
-AWT_changekey.o: awt_changekey.hxx
+AWT_changekey.o: awt_item_sel_list.hxx
 AWT_changekey.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_changekey.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_changekey.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -284,7 +284,6 @@ AWT_imp_exp.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_imp_exp.o: $(ARBHOME)/INCLUDE/xml.hxx
 
 AWT_input_mask.o: awt.hxx
-AWT_input_mask.o: awt_changekey.hxx
 AWT_input_mask.o: awt_hotkeys.hxx
 AWT_input_mask.o: awt_input_mask.hxx
 AWT_input_mask.o: awt_www.hxx
@@ -377,7 +376,6 @@ AWT_map_key.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_map_key.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 
 AWT_nds.o: awt.hxx
-AWT_nds.o: awt_changekey.hxx
 AWT_nds.o: awt_config_manager.hxx
 AWT_nds.o: awt_nds.hxx
 AWT_nds.o: awt_sel_boxes.hxx
@@ -450,8 +448,8 @@ AWT_pro_a_nucs.o: $(ARBHOME)/INCLUDE/inline.h
 
 AWT_query_and_functions.o: awt.hxx
 AWT_query_and_functions.o: awt_advice.hxx
-AWT_query_and_functions.o: awt_changekey.hxx
 AWT_query_and_functions.o: awt_config_manager.hxx
+AWT_query_and_functions.o: awt_item_sel_list.hxx
 AWT_query_and_functions.o: awt_sel_boxes.hxx
 AWT_query_and_functions.o: awtlocal.hxx
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -474,7 +472,7 @@ AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/GEN.hxx
 
 AWT_sel_boxes.o: awt.hxx
-AWT_sel_boxes.o: awt_changekey.hxx
+AWT_sel_boxes.o: awt_item_sel_list.hxx
 AWT_sel_boxes.o: awt_sel_boxes.hxx
 AWT_sel_boxes.o: awtlocal.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/ad_config.h

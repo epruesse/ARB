@@ -14,7 +14,6 @@
 #include <awt_nds.hxx>
 #include <aw_preset.hxx>
 #include <awt.hxx>
-#include <awt_changekey.hxx>
 #include <awt_sel_boxes.hxx>
 
 #include <awt_canvas.hxx>

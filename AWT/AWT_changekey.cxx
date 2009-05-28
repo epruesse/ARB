@@ -20,7 +20,7 @@
 #include <arbdbt.h>
 
 #include "awt.hxx"
-#include "awt_changekey.hxx"
+#include "awt_item_sel_list.hxx"
 
 static const char GENE_DATA_PATH[]       = "gene_data/gene/";
 static const char EXPERIMENT_DATA_PATH[] = "experiment_data/experiment/";

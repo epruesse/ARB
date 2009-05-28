@@ -16,7 +16,7 @@
 #include <aw_global.hxx>
 #include <awt.hxx>
 #include <awt_advice.hxx>
-#include <awt_changekey.hxx>
+#include <awt_item_sel_list.hxx>
 #include <awt_sel_boxes.hxx>
 #include <GEN.hxx>
 #include <GenomeImport.h>
