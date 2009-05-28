@@ -289,7 +289,7 @@ const char *GBS_read_arb_tcp(const char *env) {
      * The first word (which matches the parameter env) is skipped.
      * The second word (the socket info = "host:port") is returned directly as result.
      * The third word is the server executable name.
-     * The fourth and following words are parameters to the executable. 
+     * The fourth and following words are parameters to the executable.
      *
      * To access these words follow this example:
      *
@@ -361,7 +361,7 @@ const char * const *GBS_get_arb_tcp_entries(const char *matching) {
         int count   = 0;
         int matched = 0;
         int c;
-        
+
         while (ATD_content[count]) count++;
 
         if (matchingEntriesSize != count) {
@@ -400,6 +400,7 @@ const char *GBS_ptserver_logname() {
 void GBS_add_ptserver_logentry(const char *entry) {
     FILE *log = fopen(GBS_ptserver_logname(), "at");
     if (log) {
+        chmod(GBS_ptserver_logname(), 0666);
         char       atime[256];
         time_t     t   = time(0);
         struct tm *tms = localtime(&t);
