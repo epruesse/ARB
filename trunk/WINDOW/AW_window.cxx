@@ -3442,7 +3442,9 @@ void AW_root::define_remote_command(AW_cb_struct *cbs) {
     AW_cb_struct *old_cbs = (AW_cb_struct*)GBS_write_hash(prvt->action_hash, cbs->id, (long)cbs);
     if (old_cbs) {
         if (!old_cbs->is_equal(*cbs)) {                  // existing remote command replaced by different callback
+#if defined(DEVEL_RALF)
             GBK_terminate("duplicated use of callback id '%s'", old_cbs->id);
+#endif // DEVEL_RALF
         }
         free(old_cbs);
     }
