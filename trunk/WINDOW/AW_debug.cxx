@@ -23,6 +23,7 @@
 #include <vector>
 #include <iterator>
 #include <string>
+#include <algorithm>
 using namespace std;
 
 typedef vector<string> CallbackArray;
@@ -65,7 +66,7 @@ void AW_root::callallcallbacks(int mode) {
         for (CallbackIter cb = callbacks.begin(); cb != end; ++cb) {
             const char *remote_command = cb->c_str();
             aw_message(GBS_global_string("Calling '%s'", remote_command));
-            
+
             AW_cb_struct *cbs = (AW_cb_struct *)GBS_read_hash(prvt->action_hash, remote_command);
             cbs->run_callback();
         }
