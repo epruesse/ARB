@@ -355,6 +355,7 @@ first_target:
 		@echo ' rmbak        - remove all "*%" and cores'
 		@echo ' show         - show available shortcuts (AKA subtargets)'
 		@echo ' up           - shortcut for depends+proto+tags'
+		@echo ' modified     - rebuild files modified in svn checkout (touches files!)'
 		@echo ''
 		@echo 'Internal maintainance:'
 		@echo ''
@@ -1108,6 +1109,12 @@ up: checks
 	$(MAKE) -k up_internal
 
 up_internal: depends proto tags valgrind_update
+
+#********************************************************************************
+
+modified:
+	SOURCE_TOOLS/touch_modified.pl
+	$(MAKE) all
 
 #********************************************************************************
 
