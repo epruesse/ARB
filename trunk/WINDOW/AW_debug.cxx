@@ -126,7 +126,7 @@ void AW_root::callallcallbacks(int mode) {
         }
 
         CallbackIter end  = callbacks.end();
-        int          curr = 1;
+        size_t       curr = 1;
 
         for (int pass = 1; pass <= 2; ++pass) {
             CallbackIter cb = callbacks.begin();
@@ -143,11 +143,14 @@ void AW_root::callallcallbacks(int mode) {
 
                 if (this_pass) {
                     if (remote_command[0] == '!' || GBS_read_hash(dontCallHash, remote_command)) {
-                        aw_message(GBS_global_string("Skipped callback %i/%i (%s)", curr, count, remote_command));
+                        aw_message(GBS_global_string("Skipped callback %zu/%zu (%s)", curr, count, remote_command)); { {
+                            }
+                        }
                     }
                     else {
-                        aw_message(GBS_global_string("Calling back %i/%i (%s)", curr, count, remote_command));
-
+                        aw_message(GBS_global_string("Calling back %zu/%zu (%s)", curr, count, remote_command)); {
+                        }
+                        
                         AW_cb_struct *cbs = (AW_cb_struct *)GBS_read_hash(prvt->action_hash, remote_command);
                         GB_clear_error();
 
@@ -170,7 +173,7 @@ void AW_root::callallcallbacks(int mode) {
                 }
                 else {
                     if (pass == 1) {
-                        aw_message(GBS_global_string("Delayed callback %i/%i (%s)", curr, count, remote_command));
+                        aw_message(GBS_global_string("Delayed callback %zu/%zu (%s)", curr, count, remote_command));
                     }
                 }
 
