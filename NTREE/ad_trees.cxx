@@ -773,6 +773,10 @@ AW_window *create_trees_window(AW_root *aw_root) {
 
         aws->button_length(0);
 
+#if defined(DEBUG)
+#if defined(DEVEL_RALF)
+#warning implement tree move buttons
+#endif // DEVEL_RALF
         aws->at("upall");
         aws->callback(move_tree_pos, (AW_CL)-9999);
         aws->create_button("moveUpAll", "#moveUpAll.bitmap", 0);
@@ -784,6 +788,7 @@ AW_window *create_trees_window(AW_root *aw_root) {
         aws->at("down");
         aws->callback(move_tree_pos, (AW_CL)1);
         aws->create_button("moveDown", "#moveDown.bitmap", 0);
+#endif // DEBUG
 
         aws->at("downall");
         aws->callback(move_tree_pos, (AW_CL)9999);
