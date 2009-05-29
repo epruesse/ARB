@@ -132,7 +132,7 @@ static void awt_arbdb_scanner_value_change(void *, struct adawcbstruct *cbs)
                 GBDATA *gb_new     = GB_search(cbs->gb_user, key_name,GB_read_int(gb_key_type));
                 if (!gb_new) error = GB_await_error();
                 else    error      = GB_write_as_string(gb_new,value);
-                
+
                 cbs->aws->get_root()->awar(cbs->def_gbd)->write_int((long)gb_new); // remap arbdb
             }
         }
@@ -187,11 +187,15 @@ static void awt_arbdb_scanner_value_change(void *, struct adawcbstruct *cbs)
                     error = GB_write_as_string(gbd, value);
                 }
                 else {
-                    GBDATA *gb_key = GBT_get_changekey(cbs->gb_main, key_name, cbs->selector->change_key_path);
-
-                    error = GB_delete(gbd);
-                    if (!error) {
-                        cbs->aws->get_root()->awar(cbs->def_gbd)->write_int( (long) gb_key);
+                    GBDATA *gb_key = GBT_get_changekey(cbs->gb_main, key_name,
+                            cbs->selector->change_key_path);
+                    if (GB_child(gbd)) {
+                        error = "Sorry, cannot perform a deletion.\n(The selected entry has child entries. Delete them first.)";
+                    } else {
+                        error = GB_delete(gbd);
+                        if (!error) {
+                            cbs->aws->get_root()->awar(cbs->def_gbd)->write_int((long) gb_key);
+                        }
                     }
                 }
             }
@@ -373,7 +377,7 @@ static void awt_scanner_scan_rek(GBDATA *gbd,struct adawcbstruct *cbs,int deep, 
 {
     GB_TYPES  type = GB_read_type(gbd);
     char     *key  = GB_read_key(gbd);
-    
+
     GBS_strstruct *out = GBS_stropen(1000);
     for (int i = 0; i < deep; i++) GBS_strcat(out, ": ");
     GBS_strnprintf(out, 30, "%-12s", key);
@@ -383,7 +387,7 @@ static void awt_scanner_scan_rek(GBDATA *gbd,struct adawcbstruct *cbs,int deep, 
             GBS_strcat(out, "<CONTAINER>:");
             cbs->aws->insert_selection(cbs->id, GBS_mempntr(out), (long)gbd);
             GBS_strforget(out);
-            
+
             for (GBDATA *gb2 = GB_child(gbd); gb2; gb2 = GB_nextChild(gb2)) {
                 awt_scanner_scan_rek(gb2, cbs, deep + 1, id);
             }
@@ -393,7 +397,7 @@ static void awt_scanner_scan_rek(GBDATA *gbd,struct adawcbstruct *cbs,int deep, 
             GBS_strnprintf(out, 100, "LINK TO '%s'", GB_read_link_pntr(gbd));
             cbs->aws->insert_selection(cbs->id, GBS_mempntr(out), (long)gbd);
             GBS_strforget(out);
-            
+
             GBDATA *gb_al = GB_follow_link(gbd);
             if (gb_al) {
                 for (GBDATA *gb2 = GB_child(gb_al); gb2; gb2 = GB_nextChild(gb2)) {
