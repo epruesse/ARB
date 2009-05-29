@@ -103,8 +103,6 @@ void AW_normal_cursor(AW_root *);
 
 /*************************************************************************/
 class AW_cb_struct {
-private:
-
     AW_CL         cd1;
     AW_CL         cd2;
     AW_cb_struct *next;
@@ -112,22 +110,27 @@ private:
 public:
     // ************ This is not the public section *************
     AW_window  *pop_up_window;
-    void (*f)(AW_window*,AW_CL ,AW_CL);
+    AW_CB       f;
     AW_window  *aw;
     const char *help_text;
     char       *id;
 
     // ************ The real public section *************
     AW_cb_struct(AW_window    *awi,
-                 void (*g)(AW_window*,AW_CL ,AW_CL),
+                 AW_CB         g,
                  AW_CL         cd1i       = 0,
                  AW_CL         cd2i       = 0,
                  const char   *help_texti = 0,
                  AW_cb_struct *next       = 0);
 
     void run_callback(void);                        // runs the whole list
-    bool contains(void (*g)(AW_window*,AW_CL ,AW_CL)); // test if contained in list
+    bool contains(AW_CB g);                         // test if contained in list
     bool is_equal(const AW_cb_struct& other) const;
+
+#if defined(DEBUG)
+    AW_CL get_cd1() const { return cd1; }
+    AW_CL get_cd2() const { return cd2; }
+#endif // DEBUG
 };
 
 
@@ -290,6 +293,7 @@ public:
     const char *get_window_title( void ); // Get the window's title
     const char *get_window_id() const { return window_defaults_name; } // Get the window's internal name
 
+    const char *local_id(const char *id) const;
 
     void set_info_area_height(int height);
     void set_bottom_area_height(int height);

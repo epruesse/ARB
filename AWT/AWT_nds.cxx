@@ -474,28 +474,35 @@ AW_window *AWT_create_nds_window(AW_root *aw_root,AW_CL cgb_main) {
             aws->create_toggle(viewkeyAwarName(i, "group"));
 
             {
-                const char *awar_name = viewkeyAwarName(i, "key_text");
+                char *awar_name = strdup(viewkeyAwarName(i, "key_text"));
 
                 aws->button_length(20);
                 aws->get_at_position( &fieldx,&dummy );
                 aws->create_input_field(awar_name,15);
 
                 aws->button_length(0);
-                aws->callback(AWT_popup_select_species_field_window, (AW_CL)strdup(awar_name), cgb_main);
+                aws->callback(AWT_popup_select_species_field_window, (AW_CL)awar_name, cgb_main); // awar_name belongs to cbs now
                 aws->get_at_position( &fieldselectx,&dummy );
-                aws->create_button("SELECT_NDS","S");
+
+                char *button_id = GBS_global_string_copy("SELECT_NDS_%i", i+1);
+                aws->create_button(button_id, "N");
+                free(button_id);
             }
 
             aws->get_at_position( &columnx,&dummy );
             aws->create_input_field(viewkeyAwarName(i, "len1"),4);
 
             {
-                const char *awar_name = viewkeyAwarName(i, "pars");
+                char *awar_name = strdup(viewkeyAwarName(i, "pars"));
 
                 aws->get_at_position( &srtx,&dummy );
                 aws->button_length(0);
-                aws->callback(AWT_create_select_srtaci_window,(AW_CL)strdup(awar_name),0);
-                aws->create_button("SELECT_SRTACI", "S","S");
+                aws->callback(AWT_create_select_srtaci_window,(AW_CL)awar_name,0); // awar_name belongs to cbs now
+                {
+                    char *button_id = GBS_global_string_copy("SELECT_SRTACI_%i", i+1);
+                    aws->create_button(button_id, "S");
+                    free(button_id);
+                }
 
                 aws->get_at_position( &srtux,&dummy );
                 aws->at_set_to(true, false, -7, 30);

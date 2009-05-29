@@ -1289,7 +1289,7 @@ AW_window *MG_merge_species_cb(AW_root *awr){
     mg_initialize_species_selectors();
     awtqs.selector = &(MG_species_selector[0]);
 
-    awt_create_query_box((AW_window*)aws,&awtqs);
+    awt_create_query_box(aws, &awtqs, "db1");
 
     AW_CL scannerid      = awt_create_arbdb_scanner(GLOBAL_gb_merge, aws, "box1",0,0,0,AWT_SCANNER,0,0,AWT_NDS_FILTER, awtqs.selector);
     ad_global_scannerid1 = scannerid;
@@ -1321,7 +1321,7 @@ AW_window *MG_merge_species_cb(AW_root *awr){
 
     awtqs.selector = &(MG_species_selector[1]);
 
-    awt_create_query_box((AW_window*)aws,&awtqs);
+    awt_create_query_box(aws, &awtqs, "db2");
 
     scannerid            = awt_create_arbdb_scanner(GLOBAL_gb_dest, aws, "box2",0,0,0,AWT_SCANNER,0,0,AWT_NDS_FILTER, awtqs.selector);
     ad_global_scannerid2 = scannerid;

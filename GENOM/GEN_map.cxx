@@ -619,8 +619,21 @@ typedef enum  {
     GEN_PERFORM_ALL_ORGANISMS,
     GEN_PERFORM_CURRENT_ORGANISM,
     GEN_PERFORM_ALL_BUT_CURRENT_ORGANISM,
-    GEN_PERFORM_MARKED_ORGANISMS
+    GEN_PERFORM_MARKED_ORGANISMS, 
+
+    GEN_PERFORM_MODES, // counter
 } GEN_PERFORM_MODE;
+
+const char *GEN_PERFORM_MODE_id[GEN_PERFORM_MODES] = {
+    "org_all", 
+    "org_current", 
+    "org_butcur", 
+    "org_marked", 
+};
+
+inline string performmode_relative_id(const char *id, GEN_PERFORM_MODE pmode) {
+    return GBS_global_string("%s_%s", GEN_PERFORM_MODE_id[pmode], id);
+}
 
 typedef enum  {
     GEN_MARK,
@@ -1281,14 +1294,16 @@ static void mark_genes_of_marked_gene_species(AW_window */*aww*/, AW_CL, AW_CL) 
             GB_write_flag(gb_gene, 1); // mark gene
         }
     }
-    
+
     GBS_free_hash(organism_hash);
 }
 
 AW_window *create_gene_extract_window(AW_root *root, AW_CL cl_pmode)
 {
-    AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "EXTRACT_GENE", "Extract genes to alignment");
+    AW_window_simple *aws       = new AW_window_simple;
+    string            window_id = performmode_relative_id("EXTRACT_GENE", GEN_PERFORM_MODE(cl_pmode));
+
+    aws->init(root, window_id.c_str(), "Extract genes to alignment");
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -1303,9 +1318,10 @@ AW_window *create_gene_extract_window(AW_root *root, AW_CL cl_pmode)
 
     aws->at("ok");
     aws->callback(gene_extract_cb, cl_pmode);
-    aws->create_button("GO","GO","G");
 
-    return (AW_window *)aws;
+    aws->create_button("GO", "GO", "G");
+
+    return aws;
 }
 
 #define AWMIMT awm->insert_menu_topic
@@ -1519,15 +1535,14 @@ void GEN_create_genes_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE/*, A
             AWMIMT( "gene_map", "Gene Map", "", "gene_map.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_map_first, 0 /*(AW_CL)ntree_canvas*/); // initial gene map
             awm->insert_separator();
 
-            GEN_create_gene_species_submenu(awm, true/*, ntree_canvas*/); // Gene-species
-            GEN_create_organism_submenu(awm, true/*, ntree_canvas*/); // Organisms
-            EXP_create_experiments_submenu(awm, true); // Experiments
+            GEN_create_gene_species_submenu(awm, true); // Gene-species
+            GEN_create_organism_submenu    (awm, true); // Organisms
+            EXP_create_experiments_submenu (awm, true); // Experiments
             awm->insert_separator();
         }
 
-        AWMIMT( "gene_info",    "Gene information", "", "gene_info.hlp", AWM_ALL,GEN_popup_gene_window, (AW_CL)awm, 0);
-//         AWMIMT( "gene_info",    "Gene information", "", "gene_info.hlp", AWM_ALL,AW_POPUP,   (AW_CL)GEN_create_gene_window, 0 );
-        AWMIMT( "gene_search",  "Search and Query", "", "gene_search.hlp", AWM_ALL,AW_POPUP,   (AW_CL)GEN_create_gene_query_window, 0 );
+        AWMIMT("gene_info",   "Gene information", "", "gene_info.hlp",   AWM_ALL, AW_POPUP, (AW_CL)GEN_create_gene_window,       0);
+        AWMIMT("gene_search", "Search and Query", "", "gene_search.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_create_gene_query_window, 0);
 
         GEN_create_mask_submenu(awm);
 
@@ -1620,7 +1635,7 @@ void GEN_map_window::init(AW_root *awr) {
 
     // File Menu
     create_menu("File", "F", "no.hlp",  AWM_ALL );
-    insert_menu_topic( "close", "Close", "C","quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 1,0);
+    insert_menu_topic( "close", "Close", "C","quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
     insert_menu_topic( "new_view", "New view", "v","new_view.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_map,(AW_CL)window_nr+1);
 
     GEN_create_genes_submenu(this, false/*, ntree_canvas*/); // Genes
@@ -1727,7 +1742,7 @@ void GEN_map_window::init(AW_root *awr) {
 
     help_text("gen_disp_book.hlp");
     callback(GEN_set_display_style,(AW_CL)GEN_DISPLAY_STYLE_BOOK);
-    create_button("RADIAL_DISPLAY_TYPE", "#gen_book.bitmap",0);
+    create_button("BOOK_DISPLAY_TYPE", "#gen_book.bitmap",0);
 
     get_at_position( &cur_x,&cur_y );
     int jump_x = cur_x;
@@ -1735,7 +1750,7 @@ void GEN_map_window::init(AW_root *awr) {
     at(dtype_x1, second_line_y);
     help_text("gen_disp_vertical.hlp");
     callback(GEN_set_display_style,(AW_CL)GEN_DISPLAY_STYLE_VERTICAL);
-    create_button("RADIAL_DISPLAY_TYPE", "#gen_vertical.bitmap",0);
+    create_button("VERTICAL_DISPLAY_TYPE", "#gen_vertical.bitmap",0);
 
     // jump button:
 

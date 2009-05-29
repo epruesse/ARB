@@ -34,7 +34,7 @@ using namespace std;
 
 /***************** Create the database query box and functions *************************/
 
-#define AWAR_COLORIZE "tmp/arbdb_query_all/colorize"
+#define AWAR_COLORIZE "tmp/dbquery_all/colorize"
 
 inline void SET_QUERIED(GBDATA *gb_species, adaqbsstruct *cbs, const char *hitInfo, size_t hitInfoLen = 0) {
     awt_assert(hitInfo);
@@ -2589,10 +2589,15 @@ static void query_box_popup_view_window(AW_window *aww, AW_CL cl_create_window, 
 }
 
 /***************** Create the database query box and functions *************************/
-struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtqs) // create the query box
-{
-    static int query_id = 0;
 
+static void query_rel_menu_entry(AW_window *aws, const char *id, const char *query_id, AW_label label, const char *mnemonic, const char *helpText, AW_active Mask, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2) {
+    char *rel_id = GBS_global_string_copy("%s_%s", query_id, id);
+    aws->insert_menu_topic(rel_id, label, mnemonic, helpText, Mask, f, cd1, cd2);
+    free(rel_id);
+}
+
+struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtqs, const char *query_id) // create the query box
+{
     char                 buffer[256];
     AW_root             *aw_root = aws->get_root();
     GBDATA              *gb_main = awtqs->gb_main;
@@ -2617,44 +2622,44 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
         const char *default_key[AWT_QUERY_SEARCHES+1] = { "name", "name", "name", 0};
 
         for (int key_id = 0; key_id<AWT_QUERY_SEARCHES; ++key_id) {
-            sprintf(buffer,"tmp/arbdb_query_%i/key_%i",query_id, key_id);
+            sprintf(buffer,"tmp/dbquery_%s/key_%i",query_id, key_id);
             cbs->awar_keys[key_id] = strdup(buffer);
             awt_assert(default_key[key_id] != 0);
             aw_root->awar_string( cbs->awar_keys[key_id], default_key[key_id], AW_ROOT_DEFAULT);
 
-            sprintf(buffer,"tmp/arbdb_query_%i/query_%i",query_id, key_id);
+            sprintf(buffer,"tmp/dbquery_%s/query_%i",query_id, key_id);
             cbs->awar_queries[key_id] = strdup(buffer);
             aw_root->awar_string( cbs->awar_queries[key_id], "*", AW_ROOT_DEFAULT);
 
-            sprintf(buffer,"tmp/arbdb_query_%i/not_%i",query_id, key_id);
+            sprintf(buffer,"tmp/dbquery_%s/not_%i",query_id, key_id);
             cbs->awar_not[key_id] = strdup(buffer);
             aw_root->awar_int( cbs->awar_not[key_id], 0, AW_ROOT_DEFAULT);
 
-            sprintf(buffer,"tmp/arbdb_query_%i/operator_%i",query_id, key_id);
+            sprintf(buffer,"tmp/dbquery_%s/operator_%i",query_id, key_id);
             cbs->awar_operator[key_id] = strdup(buffer);
             aw_root->awar_string( cbs->awar_operator[key_id], "ign", AW_ROOT_DEFAULT);
         }
         aw_root->awar(cbs->awar_keys[0])->add_callback(awt_first_searchkey_changed_cb, (AW_CL)cbs);
     }
 
-    sprintf(buffer,"tmp/arbdb_query_%i/ere",query_id);
+    sprintf(buffer,"tmp/dbquery_%s/ere",query_id);
     cbs->awar_ere = strdup(buffer);
     aw_root->awar_int( cbs->awar_ere, AWT_QUERY_GENERATE);
 
-    sprintf(buffer,"tmp/arbdb_query_%i/where",query_id);
+    sprintf(buffer,"tmp/dbquery_%s/where",query_id);
     cbs->awar_where = strdup(buffer);
     aw_root->awar_int( cbs->awar_where, AWT_QUERY_ALL_SPECIES);
 
-    sprintf(buffer,"tmp/arbdb_query_%i/count",query_id);
+    sprintf(buffer,"tmp/dbquery_%s/count",query_id);
     cbs->awar_count = strdup(buffer);
     aw_root->awar_int( cbs->awar_count, 0);
 
-    sprintf(buffer,"tmp/arbdb_query_%i/sort",query_id);
+    sprintf(buffer,"tmp/dbquery_%s/sort",query_id);
     cbs->awar_sort = strdup(buffer);
     aw_root->awar_int( cbs->awar_sort, AWT_QUERY_SORT_NONE)->add_callback(awt_sort_order_changed_cb, (AW_CL)cbs);
     cbs->sort_mask = AWT_QUERY_SORT_NONE; // default to unsorted
 
-    sprintf(buffer,"tmp/arbdb_query_%i/by",query_id);
+    sprintf(buffer,"tmp/dbquery_%s/by",query_id);
     cbs->awar_by = strdup(buffer);
     aw_root->awar_int( cbs->awar_by, AWT_QUERY_MATCH);
 
@@ -2764,7 +2769,7 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
         aws->d_callback((AW_CB1)awt_toggle_flag,(AW_CL)cbs);
 
         {
-            char    *this_awar_name = GBS_global_string_copy("tmp/arbdb_query_%i/select", query_id);
+            char    *this_awar_name = GBS_global_string_copy("tmp/dbquery_%s/select", query_id);
             AW_awar *awar           = aw_root->awar_string( this_awar_name, "", AW_ROOT_DEFAULT);
 
             cbs->result_id = aws->create_selection_list(this_awar_name,"","",5,5);
@@ -2830,15 +2835,15 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
         aws->create_button("DELETE_LISTED","Delete Listed","D");
     }
     if (awtqs->do_set_pos_fig){
-        sprintf(buffer,"tmp/arbdb_query_%i/set_key",query_id);
+        sprintf(buffer,"tmp/dbquery_%s/set_key",query_id);
         cbs->awar_setkey = strdup(buffer);
         aw_root->awar_string( cbs->awar_setkey);
 
-        sprintf(buffer,"tmp/arbdb_query_%i/set_protection",query_id);
+        sprintf(buffer,"tmp/dbquery_%s/set_protection",query_id);
         cbs->awar_setprotection = strdup(buffer);
         aw_root->awar_int( cbs->awar_setprotection, 4);
 
-        sprintf(buffer,"tmp/arbdb_query_%i/set_value",query_id);
+        sprintf(buffer,"tmp/dbquery_%s/set_value",query_id);
         cbs->awar_setvalue = strdup(buffer);
         aw_root->awar_string( cbs->awar_setvalue);
 
@@ -2852,16 +2857,16 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
     Items[0]    = toupper(Items[0]);
 
     if ( ( awtqs->use_menu || awtqs->open_parser_pos_fig)){
-        sprintf(buffer,"tmp/arbdb_query_%i/tag",query_id);      cbs->awar_tag = strdup(buffer);     aw_root->awar_string( cbs->awar_tag);
-        sprintf(buffer,"tmp/arbdb_query_%i/use_tag",query_id);      cbs->awar_use_tag = strdup(buffer); aw_root->awar_int( cbs->awar_use_tag);
-        sprintf(buffer,"tmp/arbdb_query_%i/deftag",query_id);       cbs->awar_deftag = strdup(buffer);  aw_root->awar_string( cbs->awar_deftag);
-        sprintf(buffer,"tmp/arbdb_query_%i/double_pars",query_id);  cbs->awar_double_pars = strdup(buffer); aw_root->awar_int( cbs->awar_double_pars);
-        sprintf(buffer,"tmp/arbdb_query_%i/parskey",query_id);      cbs->awar_parskey = strdup(buffer); aw_root->awar_string( cbs->awar_parskey);
-        sprintf(buffer,"tmp/arbdb_query_%i/parsvalue",query_id);    cbs->awar_parsvalue = strdup(buffer);   aw_root->awar_string( cbs->awar_parsvalue);
-        sprintf(buffer,"tmp/arbdb_query_%i/awar_parspredefined",query_id);cbs->awar_parspredefined = strdup(buffer);aw_root->awar_string( cbs->awar_parspredefined);
+        sprintf(buffer, "tmp/dbquery_%s/tag",                 query_id); cbs->awar_tag            = strdup(buffer); aw_root->awar_string(cbs->awar_tag);
+        sprintf(buffer, "tmp/dbquery_%s/use_tag",             query_id); cbs->awar_use_tag        = strdup(buffer); aw_root->awar_int   (cbs->awar_use_tag);
+        sprintf(buffer, "tmp/dbquery_%s/deftag",              query_id); cbs->awar_deftag         = strdup(buffer); aw_root->awar_string(cbs->awar_deftag);
+        sprintf(buffer, "tmp/dbquery_%s/double_pars",         query_id); cbs->awar_double_pars    = strdup(buffer); aw_root->awar_int   (cbs->awar_double_pars);
+        sprintf(buffer, "tmp/dbquery_%s/parskey",             query_id); cbs->awar_parskey        = strdup(buffer); aw_root->awar_string(cbs->awar_parskey);
+        sprintf(buffer, "tmp/dbquery_%s/parsvalue",           query_id); cbs->awar_parsvalue      = strdup(buffer); aw_root->awar_string(cbs->awar_parsvalue);
+        sprintf(buffer, "tmp/dbquery_%s/awar_parspredefined", query_id); cbs->awar_parspredefined = strdup(buffer); aw_root->awar_string(cbs->awar_parspredefined);
 
         if (awtqs->use_menu){
-            sprintf(buffer, "Modify Fields of Listed %s", Items); aws->insert_menu_topic("mod_fields_of_listed",buffer,"F","mod_field_list.hlp",-1,AW_POPUP,(AW_CL)create_awt_open_parser,(AW_CL)cbs);
+            sprintf(buffer, "Modify Fields of Listed %s", Items); query_rel_menu_entry(aws, "mod_fields_of_listed", query_id, buffer, "F", "mod_field_list.hlp",-1,AW_POPUP,(AW_CL)create_awt_open_parser,(AW_CL)cbs);
         }else{
             aws->at(awtqs->open_parser_pos_fig);
             aws->callback(AW_POPUP,(AW_CL)create_awt_open_parser,(AW_CL)cbs);
@@ -2869,16 +2874,16 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
         }
     }
     if (awtqs->use_menu) {
-        sprintf(buffer, "Set Protection of Fields of Listed %s", Items); aws->insert_menu_topic("s_prot_of_listed",buffer,"P","set_protection.hlp",-1,AW_POPUP,(AW_CL)create_awt_set_protection,(AW_CL)cbs);
+        sprintf(buffer, "Set Protection of Fields of Listed %s", Items); query_rel_menu_entry(aws, "s_prot_of_listed", query_id, buffer, "P", "set_protection.hlp", -1, AW_POPUP, (AW_CL)create_awt_set_protection, (AW_CL)cbs);
         aws->insert_separator();
-        sprintf(buffer, "Mark Listed %s, don't Change Rest", Items);    aws->insert_menu_topic("mark_listed", buffer,"M","mark.hlp",-1,(AW_CB)awt_do_mark_list,(AW_CL)cbs,(AW_CL)1 | 8);
-        sprintf(buffer, "Mark Listed %s, Unmark Rest", Items);          aws->insert_menu_topic("mark_listed_unmark_rest", buffer, "L","mark.hlp",-1,(AW_CB)awt_do_mark_list,(AW_CL)cbs,(AW_CL)1);
-        sprintf(buffer, "Unmark Listed %s, don't Change Rest", Items);  aws->insert_menu_topic("unmark_listed", buffer,"U","mark.hlp",-1,(AW_CB)awt_do_mark_list,(AW_CL)cbs,(AW_CL)0 | 8);
-        sprintf(buffer, "Unmark Listed %s, Mark Rest", Items);          aws->insert_menu_topic("unmark_listed_mark_rest", buffer,"R","mark.hlp",-1,(AW_CB)awt_do_mark_list,(AW_CL)cbs,(AW_CL)0);
+        sprintf(buffer, "Mark Listed %s, don't Change Rest",   Items); query_rel_menu_entry(aws, "mark_listed",             query_id, buffer, "M", "mark.hlp", -1, (AW_CB)awt_do_mark_list, (AW_CL)cbs, (AW_CL)1 | 8);
+        sprintf(buffer, "Mark Listed %s, Unmark Rest",         Items); query_rel_menu_entry(aws, "mark_listed_unmark_rest", query_id, buffer, "L", "mark.hlp", -1, (AW_CB)awt_do_mark_list, (AW_CL)cbs, (AW_CL)1);
+        sprintf(buffer, "Unmark Listed %s, don't Change Rest", Items); query_rel_menu_entry(aws, "unmark_listed",           query_id, buffer, "U", "mark.hlp", -1, (AW_CB)awt_do_mark_list, (AW_CL)cbs, (AW_CL)0 | 8);
+        sprintf(buffer, "Unmark Listed %s, Mark Rest",         Items); query_rel_menu_entry(aws, "unmark_listed_mark_rest", query_id, buffer, "R", "mark.hlp", -1, (AW_CB)awt_do_mark_list, (AW_CL)cbs, (AW_CL)0);
         aws->insert_separator();
 
 
-        sprintf(buffer, "Set Color of Listed %s", Items);    aws->insert_menu_topic("set_color_of_listed", buffer,"C","set_color_of_listed.hlp",-1,AW_POPUP, (AW_CL)create_awt_listed_items_colorizer, (AW_CL)cbs);
+        sprintf(buffer, "Set Color of Listed %s", Items);    query_rel_menu_entry(aws, "set_color_of_listed", query_id, buffer,"C","set_color_of_listed.hlp",-1,AW_POPUP, (AW_CL)create_awt_listed_items_colorizer, (AW_CL)cbs);
 
         if (cbs->gb_ref){
             awt_assert(cbs->selector->type == AWT_QUERY_ITEM_SPECIES); // stuff below works only for species
@@ -2899,7 +2904,6 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
 
     free(Items);
 
-    query_id++;
     GB_pop_transaction(gb_main);
     return cbs;
 }

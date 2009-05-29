@@ -553,72 +553,76 @@ void GEN_map_gene(AW_root *aw_root, AW_CL scannerid)
 }
 
 void GEN_create_field_items(AW_window *aws) {
-    aws->insert_menu_topic("reorder_fields", "Reorder fields ...",    "R", "spaf_reorder.hlp", AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_list_reorder, (AW_CL)&GEN_item_selector); 
-    aws->insert_menu_topic("delete_field",   "Delete/Hide field ...", "D", "spaf_delete.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_field_delete, (AW_CL)&GEN_item_selector); 
-    aws->insert_menu_topic("create_field",   "Create fields ...",     "C", "spaf_create.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_field_create, (AW_CL)&GEN_item_selector); 
+    aws->insert_menu_topic("gen_reorder_fields", "Reorder fields ...",    "R", "spaf_reorder.hlp", AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_list_reorder, (AW_CL)&GEN_item_selector); 
+    aws->insert_menu_topic("gen_delete_field",   "Delete/Hide field ...", "D", "spaf_delete.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_field_delete, (AW_CL)&GEN_item_selector); 
+    aws->insert_menu_topic("gen_create_field",   "Create fields ...",     "C", "spaf_create.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_field_create, (AW_CL)&GEN_item_selector); 
     aws->insert_separator();
-    aws->insert_menu_topic("unhide_fields", "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, (AW_CB)awt_gene_field_selection_list_unhide_all_cb, (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER); 
+    aws->insert_menu_topic("gen_unhide_fields", "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, (AW_CB)awt_gene_field_selection_list_unhide_all_cb, (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER); 
     aws->insert_separator();
-    aws->insert_menu_topic("scan_unknown_fields", "Scan unknown fields",   "u", "scandb.hlp", AD_F_ALL, (AW_CB)awt_gene_field_selection_list_scan_unknown_cb,  (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER); 
-    aws->insert_menu_topic("del_unused_fields",   "Remove unused fields",  "e", "scandb.hlp", AD_F_ALL, (AW_CB)awt_gene_field_selection_list_delete_unused_cb, (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER); 
-    aws->insert_menu_topic("refresh_fields",      "Refresh fields (both)", "f", "scandb.hlp", AD_F_ALL, (AW_CB)awt_gene_field_selection_list_update_cb,        (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER); 
+    aws->insert_menu_topic("gen_scan_unknown_fields", "Scan unknown fields",   "u", "scandb.hlp", AD_F_ALL, (AW_CB)awt_gene_field_selection_list_scan_unknown_cb,  (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER); 
+    aws->insert_menu_topic("gen_del_unused_fields",   "Remove unused fields",  "e", "scandb.hlp", AD_F_ALL, (AW_CB)awt_gene_field_selection_list_delete_unused_cb, (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER); 
+    aws->insert_menu_topic("gen_refresh_fields",      "Refresh fields (both)", "f", "scandb.hlp", AD_F_ALL, (AW_CB)awt_gene_field_selection_list_update_cb,        (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER); 
 }
 
 AW_window *GEN_create_gene_window(AW_root *aw_root) {
     static AW_window_simple_menu *aws = 0;
-    if (aws) return (AW_window *)aws;
+    if (!aws) {
 
-    aws = new AW_window_simple_menu;
-    aws->init( aw_root, "GENE_INFORMATION", "GENE INFORMATION");
-    aws->load_xfig("ad_spec.fig");
+        aws = new AW_window_simple_menu;
+        aws->init( aw_root, "GENE_INFORMATION", "GENE INFORMATION");
+        aws->load_xfig("ad_spec.fig");
 
-    aws->button_length(8);
+        aws->button_length(8);
 
-    aws->at("close");
-    aws->callback( (AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");
+        aws->at("close");
+        aws->callback( (AW_CB0)AW_POPDOWN);
+        aws->create_button("CLOSE","CLOSE","C");
 
-    aws->at("search");
-    aws->callback(AW_POPUP, (AW_CL)GEN_create_gene_query_window, 0);
-    aws->create_button("SEARCH","SEARCH","S");
+        aws->at("search");
+        aws->callback(AW_POPUP, (AW_CL)GEN_create_gene_query_window, 0);
+        aws->create_button("SEARCH","SEARCH","S");
 
-    aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"gene_info.hlp");
-    aws->create_button("HELP","HELP","H");
+        aws->at("help");
+        aws->callback(AW_POPUP_HELP, (AW_CL)"gene_info.hlp");
+        aws->create_button("HELP","HELP","H");
 
 
-    AW_CL scannerid       = awt_create_arbdb_scanner(GLOBAL_gb_main, aws, "box",0,"field","enable",AWT_VIEWER,0,"mark",AWT_NDS_FILTER, &GEN_item_selector);
-    ad_global_scannerid   = scannerid;
-    ad_global_scannerroot = aws->get_root();
+        AW_CL scannerid       = awt_create_arbdb_scanner(GLOBAL_gb_main, aws, "box",0,"field","enable",AWT_VIEWER,0,"mark",AWT_NDS_FILTER, &GEN_item_selector);
+        ad_global_scannerid   = scannerid;
+        ad_global_scannerroot = aws->get_root();
 
-    aws->create_menu("GENE",     "G", "spa_gene.hlp",  AD_F_ALL );
-    aws->insert_menu_topic("gene_delete",   "Delete",       "D","spa_delete.hlp",       AD_F_ALL,   (AW_CB)gene_delete_cb, 0, 0);
-    aws->insert_menu_topic("gene_rename",   "Rename ...",   "R","spa_rename.hlp",   AD_F_ALL,   AW_POPUP, (AW_CL)create_gene_rename_window, 0);
-    aws->insert_menu_topic("gene_copy",     "Copy ...",     "y","spa_copy.hlp",         AD_F_ALL,   AW_POPUP, (AW_CL)create_gene_copy_window, 0);
-    aws->insert_menu_topic("gene_create",   "Create ...",   "C","spa_create.hlp",   AD_F_ALL,   AW_POPUP, (AW_CL)create_gene_create_window, 0);
-    aws->insert_separator();
+        aws->create_menu("GENE",     "G", "spa_gene.hlp",  AD_F_ALL );
+        aws->insert_menu_topic("gene_delete",   "Delete",       "D","spa_delete.hlp",       AD_F_ALL,   (AW_CB)gene_delete_cb, 0, 0);
+        aws->insert_menu_topic("gene_rename",   "Rename ...",   "R","spa_rename.hlp",   AD_F_ALL,   AW_POPUP, (AW_CL)create_gene_rename_window, 0);
+        aws->insert_menu_topic("gene_copy",     "Copy ...",     "y","spa_copy.hlp",         AD_F_ALL,   AW_POPUP, (AW_CL)create_gene_copy_window, 0);
+        aws->insert_menu_topic("gene_create",   "Create ...",   "C","spa_create.hlp",   AD_F_ALL,   AW_POPUP, (AW_CL)create_gene_create_window, 0);
+        aws->insert_separator();
 
-    aws->create_menu("FIELDS",     "F", "gene_fields.hlp",  AD_F_ALL );
-    GEN_create_field_items(aws);
+        aws->create_menu("FIELDS",     "F", "gene_fields.hlp",  AD_F_ALL );
+        GEN_create_field_items(aws);
 
-    {
-        Awar_Callback_Info    *cb_info     = new Awar_Callback_Info(aws->get_root(), AWAR_GENE_NAME, GEN_map_gene, scannerid); // do not delete!
-        AW_detach_information *detach_info = new AW_detach_information(cb_info); // do not delete!
+        {
+            Awar_Callback_Info    *cb_info     = new Awar_Callback_Info(aws->get_root(), AWAR_GENE_NAME, GEN_map_gene, scannerid); // do not delete!
+            AW_detach_information *detach_info = new AW_detach_information(cb_info); // do not delete!
 
-        cb_info->add_callback();
+            cb_info->add_callback();
 
-        aws->at("detach");
-        aws->callback(NT_detach_information_window, (AW_CL)&aws, (AW_CL)detach_info);
-        aws->create_button("DETACH", "DETACH", "D");
+            aws->at("detach");
+            aws->callback(NT_detach_information_window, (AW_CL)&aws, (AW_CL)detach_info);
+            aws->create_button("DETACH", "DETACH", "D");
 
-        detach_info->set_detach_button(aws->get_last_widget());
+            detach_info->set_detach_button(aws->get_last_widget());
+        }
+
+        //     aws->get_root()->awar(AWAR_GENE_NAME)->add_callback(GEN_map_gene,scannerid);
+        GEN_map_gene(aws->get_root(),scannerid);
+        aws->show();
     }
-
-    //     aws->get_root()->awar(AWAR_GENE_NAME)->add_callback(GEN_map_gene,scannerid);
-
-    aws->show();
-    GEN_map_gene(aws->get_root(),scannerid);
-    return (AW_window *)aws;
+    else {
+        aws->show();
+    }
+    
+    return aws;
 }
 
 void GEN_popup_gene_window(AW_window *aww, AW_CL, AW_CL) { // w/o this DETACH does not work
@@ -666,12 +670,12 @@ AW_window *GEN_create_gene_query_window(AW_root *aw_root) {
     awtqs.create_view_window  = (AW_CL)GEN_create_gene_window;
     awtqs.selector            = &GEN_item_selector;
 
-    AW_CL cbs             = (AW_CL)awt_create_query_box((AW_window*)aws,&awtqs);
+    AW_CL cbs             = (AW_CL)awt_create_query_box(aws, &awtqs, "gen");
     gene_query_global_cbs = cbs;
 
     aws->create_menu("More search",     "s" );
-    aws->insert_menu_topic("search_equal_fields_within_db", "Search For Equal Fields and Mark Duplikates",               "E", "search_duplicates.hlp", -1, (AW_CB)awt_search_equal_entries, cbs, 0);
-    aws->insert_menu_topic("search_equal_words_within_db",  "Search For Equal Words Between Fields and Mark Duplikates", "W", "search_duplicates.hlp", -1, (AW_CB)awt_search_equal_entries, cbs, 1);
+    aws->insert_menu_topic("gen_search_equal_fields_within_db", "Search For Equal Fields and Mark Duplikates",               "E", "search_duplicates.hlp", -1, (AW_CB)awt_search_equal_entries, cbs, 0);
+    aws->insert_menu_topic("gen_search_equal_words_within_db",  "Search For Equal Words Between Fields and Mark Duplikates", "W", "search_duplicates.hlp", -1, (AW_CB)awt_search_equal_entries, cbs, 1);
 
     aws->button_length(7);
 

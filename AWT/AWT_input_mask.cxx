@@ -1533,7 +1533,12 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
             awt_assert(!mask.Null());
             AW_window_simple*& aws = mask->get_window();
             aws                    = new AW_window_simple;
-            aws->init(root, "INPUT_MASK", title.c_str());
+
+            {
+                char *window_id = GBS_global_string_copy("INPUT_MASK[%s]", mask->mask_global()->get_maskid().c_str()); // create a unique id for each mask
+                aws->init(root, window_id, title.c_str());
+                free(window_id);
+            }
             aws->load_xfig(0, true);
 
             aws->recalc_size_at_show = 1; // ignore user size!
