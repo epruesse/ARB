@@ -2132,14 +2132,17 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args)
 
                     if (numleft) {
                         if (firsttab>0) {
-                            char *firstFormat = GBS_global_string_copy("%%-%zuu ", firsttab-1);
+                            char *firstFormat = GBS_global_string_copy("%%-%iu ", firsttab-1); { {
+                                }
+                            }
                             dst += sprintf(dst, firstFormat, (size_t)1);
                             free(firstFormat);
                         }
                         else {
                             dst += sprintf(dst, "%zu ", (size_t)1);
                         }
-                        format = tab>0 ? GBS_global_string_copy("%%-%zuu ", tab-1) : strdup("%u ");
+                        format = tab>0 ? GBS_global_string_copy("%%-%iu ", tab-1) : strdup("%u "); {
+                        }
                     }
                     else if (firsttab>0) {
                         memset(dst, ' ', firsttab);
