@@ -412,7 +412,7 @@ void GB_close(GBDATA *gbd) {
 long GB_read_int(GBDATA *gbd)
 {
     GB_TEST_READ(gbd,GB_INT,"GB_read_int");
-    return  gbd->info.i;
+    return gbd->info.i;
 }
 
 int GB_read_byte(GBDATA *gbd)
@@ -737,10 +737,19 @@ GB_ERROR GB_write_byte(GBDATA *gbd,int i)
     return 0;
 }
 
-GB_ERROR GB_write_int(GBDATA *gbd,long i)
-{
+GB_ERROR GB_write_int(GBDATA *gbd,long i) {
+#if defined(ARB64)
+#if defined(DEVEL_RALF)
+#warning GB_write_int should be GB_ERROR GB_write_int(GBDATA *gbd,int32_t i) 
+#endif /* DEVEL_RALF */
+#endif /* ARB64 */
+
     GB_TEST_WRITE(gbd,GB_INT,"GB_write_int");
-    if (gbd->info.i != i){
+    if ((long)((int32_t)i) != i) {
+        gb_assert(0);
+        return "GB_INT out of range (signed, 32bit)";
+    }
+    if (gbd->info.i != (int32_t)i){
         gb_save_extern_data_in_ts(gbd);
         gbd->info.i = i;
         gb_touch_entry(gbd,gb_changed);

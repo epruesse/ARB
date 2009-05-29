@@ -179,10 +179,10 @@ struct GB_INTern {
 };
 
 union gb_data_base_type_union {
-    long    i;
+    int32_t                  i;
     struct GB_INTern_strings istr;
-    struct GB_INTern    in;
-    struct gb_extern_data   ex;
+    struct GB_INTern         in;
+    struct gb_extern_data    ex;
 };
 
 struct gb_callback;
@@ -194,14 +194,14 @@ struct gb_db_extended {
 };
 
 struct gb_data_base_type {
-    long    server_id;
-    GB_REL_CONTAINER rel_father;    /* Typ: (struct gb_data_base_type2 *) */
-    struct gb_db_extended   *ext;
-    long    index;
-    struct gb_flag_types    flags;
-    struct gb_flag_types2   flags2;
-    union gb_data_base_type_union info;
-    int cache_index;    /* should be a member of gb_db_extended */
+    long                           server_id;
+    GB_REL_CONTAINER               rel_father; /* Typ: (struct gb_data_base_type2 *) */
+    struct gb_db_extended         *ext;
+    long                           index;
+    struct gb_flag_types           flags;
+    struct gb_flag_types2          flags2;
+    union gb_data_base_type_union  info;
+    int                            cache_index; /* should be a member of gb_db_extended */
 };
 
 /*********** Alignment ***********/
