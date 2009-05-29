@@ -428,8 +428,20 @@ void tree_load_cb(AW_window *aww){
             if (scaleWarning) GBT_message(GLOBAL_gb_main, scaleWarning);
 
             GB_transaction ta(GLOBAL_gb_main);
-            error                             = GBT_write_tree(GLOBAL_gb_main,0,tree_name,tree);
-            if (!error && tree_comment) error = GBT_write_tree_rem(GLOBAL_gb_main, tree_name, GBS_global_string("Loaded from '%s'\n%s", fname, tree_comment));
+            error = GBT_write_tree(GLOBAL_gb_main,0,tree_name,tree);
+
+            if (!error && tree_comment) {
+                char *comment;
+                {
+                    GBS_strstruct *com = GBS_stropen(1000);
+                    
+                    GBS_strcat(com, GBS_global_string("Loaded from '%s'\n", fname));
+                    GBS_strcat(com, tree_comment);
+                    comment = GBS_strclose(com);
+                }
+                error = GBT_write_tree_rem(GLOBAL_gb_main, tree_name, comment);
+                free(comment);
+            }
 
             if (error) error = ta.close(error);
             else aw_root->awar(AWAR_TREE)->write_string(tree_name); // show new tree
