@@ -2,6 +2,10 @@
 #include "convert.h"
 #include "global.h"
 
+#include <assert.h>
+#include <errno.h>
+
+
 /* ---------------------------------------------------------------
  *   Function init_phylip().
  *       Initialize genbank entry.
@@ -30,7 +34,11 @@ void to_phylip(inf, outf, informat,readstdin)
         error(64, temp);
     }
     ifp              = create_FILE_BUFFER(inf, IFP);
-    if(Lenstr(outf) <= 0)   ofp = stdout;
+    if(Lenstr(outf) <= 0) {
+        ofp = stdout;
+        assert(0); // can't use stdout (because rewind is used below)
+        error(140, "Cannot write to standard output, EXIT\n");
+    }
     else if((ofp=fopen(outf, "w"))==NULL)   {
         sprintf(temp, "Cannot open output file %s, exit\n", outf);
         error(117, temp);
@@ -84,8 +92,8 @@ void to_phylip(inf, outf, informat,readstdin)
         to_phylip_1x1(inf, outf, informat);
         return;
     }
-    current = 0;
-    fprintf(ofp, "%4d %4d", maxsize, current);
+    current         = 0;
+    int headersize1 = fprintf(ofp, "%8d %8d", maxsize, current);
     if (readstdin){
         int c;
         int spaced = 0;
@@ -112,15 +120,28 @@ void to_phylip(inf, outf, informat,readstdin)
         if(maxsize>current) fprintf(ofp, "\n");
     }
     /* rewrite output header */
+    errno = 0;
     rewind(ofp);
-    fprintf(ofp, "%4d %4d", total_seq, maxsize);
+    assert(errno == 0);
+    if (errno) {
+        perror("rewind error");
+        sprintf(temp, "Failed to rewind file (errno=%i), EXIT\n", errno);
+        error(141, temp);
+    }
+
+    int headersize2 = fprintf(ofp, "%8d %8d", total_seq, maxsize);
 
     destroy_FILE_BUFFER(ifp); fclose(ofp);
+
+    if (headersize1 != headersize2) {
+        sprintf(temp, "Failed to rewrite header (headersize differs: %i != %i), EXIT\n", headersize1, headersize2);
+        assert(0);
+        error(142, temp);
+    }
 
 #ifdef log
     fprintf(stderr, "Total %d sequences have been processed\n", total_seq);
 #endif
-
 }
 /* ---------------------------------------------------------------
  *   Function to_phylip_1x1()
