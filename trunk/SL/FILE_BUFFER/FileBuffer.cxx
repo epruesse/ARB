@@ -12,6 +12,7 @@
 #include "FileBuffer.h"
 #include <cstdlib>
 #include <cstring>
+#include <errno.h>
 
 using namespace std;
 
@@ -117,10 +118,13 @@ string FileBuffer::lineError(const char *msg) {
 }
 
 void FileBuffer::rewind() {
+    errno = 0;
     std::rewind(fp);
+    fb_assert(errno == 0); // not handled yet
+    
     read = BUFFERSIZE;
     fillBuffer();
-        
+
     if (next_line) {
         delete next_line;
         next_line = 0;
