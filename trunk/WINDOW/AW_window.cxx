@@ -686,6 +686,14 @@ bool AW_cb_struct::is_equal(const AW_cb_struct& other) const {
             }
             else {
                 equal = aw == other.aw;
+                if (!equal) {
+                    equal = aw->get_root() == other.aw->get_root();
+                    if (equal) {
+                        fprintf(stderr,
+                                "callback '%s' instanciated twice with different windows (w1='%s' w2='%s') -- assuming the callbacks are equal\n",
+                                id, aw->get_window_id(), other.aw->get_window_id());
+                    }
+                }
             }
         }
     }
@@ -3220,6 +3228,12 @@ const char *AW_window::get_window_title(void) {
     return title;
 }
 
+const char *AW_window::local_id(const char *id) const {
+    static char *last_local_id = 0;
+    freeset(last_local_id, GBS_global_string_copy("%s/%s", get_window_id(), id));
+    return last_local_id;
+}
+
 /***************************************************************************************************************************/
 /***************************************************************************************************************************/
 /***************************************************************************************************************************/
@@ -3439,6 +3453,10 @@ void AW_root::stop_execute_macro() {
 }
 
 void AW_root::define_remote_command(AW_cb_struct *cbs) {
+    if (cbs->f == (AW_CB)AW_POPDOWN) {
+        aw_assert(!cbs->get_cd1() && !cbs->get_cd2()); // popdown takes no parameters (please pass ", 0, 0"!)
+    }
+
     AW_cb_struct *old_cbs = (AW_cb_struct*)GBS_write_hash(prvt->action_hash, cbs->id, (long)cbs);
     if (old_cbs) {
         if (!old_cbs->is_equal(*cbs)) {                  // existing remote command replaced by different callback

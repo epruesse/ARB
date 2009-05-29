@@ -185,16 +185,18 @@ void aw_create_color_chooser_window(AW_window *aww, const char *awar_name,const 
     aws->activate();
 }
 
-void AW_preset_create_color_chooser(AW_window *aws, const char *awar, const char *label,bool message_reload, bool show_label)
+void AW_preset_create_color_chooser(AW_window *aws, const char *awar_name, const char *label,bool message_reload, bool show_label)
 {
-    if (message_reload) aws->get_root()->awar(awar)->add_callback(aw_message_reload);
+    if (message_reload) aws->get_root()->awar(awar_name)->add_callback(aw_message_reload);
     if (show_label) {
         aw_assert(label);
         aws->label(label);
     }
-    aws->callback((AW_CB)aw_create_color_chooser_window,(AW_CL)strdup(awar),(AW_CL)strdup(label));
-    char *color = aws->get_root()->awar(awar)->read_string();
-    aws->create_button("SELECT_A_COLOR", " ", 0, color);
+    aws->callback((AW_CB)aw_create_color_chooser_window,(AW_CL)strdup(awar_name),(AW_CL)strdup(label));
+    char *color     = aws->get_root()->awar(awar_name)->read_string();
+    char *button_id = GBS_global_string_copy("sel_color[%s]", awar_name);
+    aws->create_button(button_id, " ", 0, color);
+    free(button_id);
     free(color);
 }
 
