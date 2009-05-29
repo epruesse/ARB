@@ -1749,25 +1749,57 @@ void GBT_unlink_tree(GBT_TREE *tree)
 /*      TreeReader      */
 /* -------------------- */
 
+enum tr_lfmode { LF_UNKNOWN, LF_N, LF_R, LF_NR, LF_RN, };
+
 typedef struct {
     char                 *tree_file_name;
     FILE                 *in;
-    int                   last_character;      // may be EOF
+    int                   last_character; // may be EOF
     int                   line_cnt;
     struct GBS_strstruct *tree_comment;
     double                max_found_branchlen;
     double                max_found_bootstrap;
     GB_ERROR              error;
+    enum tr_lfmode        lfmode;
 } TreeReader;
+
+static char gbt_getc(TreeReader *reader) {
+    // reads character from stream (convert)
+    // when linefeeds are completely broken, 
+    char c   = getc(reader->in);
+    int  inc = 0;
+
+    if (c == '\n') {
+        switch (reader->lfmode) {
+            case LF_UNKNOWN: reader->lfmode = LF_N; inc = 1; break;
+            case LF_N:       inc = 1; break;
+            case LF_R:       reader->lfmode = LF_RN; c = gbt_getc(reader); break;
+            case LF_NR:      c = gbt_getc(reader); break;
+            case LF_RN:      inc = 1; break;
+        }
+    }
+    else if (c == '\r') {
+        switch (reader->lfmode) {
+            case LF_UNKNOWN: reader->lfmode = LF_R; inc = 1; break;
+            case LF_R:       inc = 1; break;
+            case LF_N:       reader->lfmode = LF_NR; c = gbt_getc(reader); break; 
+            case LF_RN:      c = gbt_getc(reader); break;
+            case LF_NR:      inc = 1; break;
+        }
+        if (c == '\r') c = '\n';     // never report '\r'
+    }
+    if (inc) reader->line_cnt++;
+
+    return c;
+}
 
 static char gbt_read_char(TreeReader *reader) {
     GB_BOOL done = GB_FALSE;
     int     c    = ' ';
 
     while (!done) {
-        c = getc(reader->in);
-        if (c == '\n') reader->line_cnt++;
-        else if (c == ' ' || c == '\t') ; // skip
+        c = gbt_getc(reader);
+        if (c == ' ' || c == '\t' || c == '\n') ; // skip
         else if (c == '[') {    // collect tree comment(s)
             if (reader->tree_comment != 0) {
                 // not first comment -> do new line
@@ -1776,7 +1808,7 @@ static char gbt_read_char(TreeReader *reader) {
             c = getc(reader->in);
             while (c != ']' && c != EOF) {
                 GBS_chrcat(reader->tree_comment, c);
-                c = getc(reader->in);
+                c = gbt_getc(reader);
             }
         }
         else done = GB_TRUE;
@@ -1787,9 +1819,7 @@ static char gbt_read_char(TreeReader *reader) {
 }
 
 static char gbt_get_char(TreeReader *reader) {
-    int c = getc(reader->in);
-
-    if (c == '\n') reader->line_cnt++;
+    int c = gbt_getc(reader);
     reader->last_character = c;
     return c;
 }
@@ -1803,7 +1833,8 @@ static TreeReader *newTreeReader(FILE *input, const char *file_name) {
     reader->max_found_branchlen = -1;
     reader->max_found_bootstrap = -1;
     reader->line_cnt            = 1;
-    
+    reader->lfmode              = LF_UNKNOWN;
+
     gbt_read_char(reader);
 
     return reader;
@@ -1841,7 +1872,7 @@ static char *getTreeComment(TreeReader *reader) {
 
 static void gbt_eat_white(TreeReader *reader) {
     int c = reader->last_character;
-    while ((c == ' ') || (c == '\n') || (c == '\t')){
+    while ((c == ' ') || (c == '\n') || (c == '\r') || (c == '\t')){
         c = gbt_get_char(reader);
     }
 }
