@@ -3444,9 +3444,13 @@ void AW_root::define_remote_command(AW_cb_struct *cbs) {
         if (!old_cbs->is_equal(*cbs)) {                  // existing remote command replaced by different callback
 #if defined(DEVEL_RALF)
             GBK_terminate("duplicated use of callback id '%s'", old_cbs->id);
+#else
+#if defined(DEBUG)
+            fprintf(stderr, GBS_global_string("Warning: duplicated use of callback id '%s'\n", old_cbs->id));
+#endif // DEBUG
 #endif // DEVEL_RALF
         }
-        free(old_cbs);
+        // do not free old_cbs, cause it's still reachable from first widget that defined this remote command
     }
 }
 
