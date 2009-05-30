@@ -6,6 +6,9 @@
  *
  */
 
+#ifndef AD_LPRO_H
+#define AD_LPRO_H
+
 #ifndef P_
 # error P_ is not defined
 #endif
@@ -275,3 +278,7 @@ void gb_testDB P_((GBDATA *gbd));
 #ifdef __cplusplus
 }
 #endif
+
+#else
+#error ad_lpro.h included twice
+#endif /* AD_LPRO_H */

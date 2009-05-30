@@ -22,7 +22,7 @@
 
 #include <mg_merge.hxx>
 
-#include "nt_concatenate.hxx"
+#include "nt_internal.h"
 #include "ntree.hxx"
 #include "nt_cb.hxx"
 #include "NT_dbrepair.hxx"

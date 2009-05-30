@@ -17,25 +17,25 @@ proto:	gproto lproto
 lproto: lpro tlpro# local prototypes
 
 lpro: $(GB_O:.o=.c)
-	../MAKEBIN/aisc_mkpt -c "Internal database interface" -G -z -C -F gb_,gbs_,gbcm,gbm_,gbl_ $^ >ad_lpro.h.tmp
+	../MAKEBIN/aisc_mkpt -c "Internal database interface" -G -z -C -w ad_lpro.h -F gb_,gbs_,gbcm,gbm_,gbl_ $^ >ad_lpro.h.tmp
 	../SOURCE_TOOLS/mv_if_diff ad_lpro.h.tmp ad_lpro.h
 
 tlpro: $(GB_T:.o=.c)
-	../MAKEBIN/aisc_mkpt -c "Internal toolkit" -G -z -C -F gb_,gbt_,gbs_ $^ >ad_t_lpro.h.tmp
+	../MAKEBIN/aisc_mkpt -c "Internal toolkit" -G -z -C -w ad_t_lpro.h -F gb_,gbt_,gbs_ $^ >ad_t_lpro.h.tmp
 	../SOURCE_TOOLS/mv_if_diff ad_t_lpro.h.tmp ad_t_lpro.h
 
 gproto: pro tpro kpro# global prototypes
 
 pro: $(GB_O:.o=.c)
-	../MAKEBIN/aisc_mkpt -c "ARB database interface" -G -z -C -F GB_,GEN_,EXP_,GBS_,GBP_,GBT_,GBCM $^ >ad_prot.h.tmp
+	../MAKEBIN/aisc_mkpt -c "ARB database interface" -G -z -C -w ad_prot.h -F GB_,GEN_,EXP_,GBS_,GBP_,GBT_,GBCM $^ >ad_prot.h.tmp
 	../SOURCE_TOOLS/mv_if_diff ad_prot.h.tmp ad_prot.h
 
 tpro: $(GB_T:.o=.c)
-	../MAKEBIN/aisc_mkpt -c "ARB toolkit" -G -z -C -F GB_,GEN_,EXP_,GBT_ $^ >ad_t_prot.h.tmp
+	../MAKEBIN/aisc_mkpt -c "ARB toolkit" -G -z -C -w ad_t_prot.h -F GB_,GEN_,EXP_,GBT_ $^ >ad_t_prot.h.tmp
 	../SOURCE_TOOLS/mv_if_diff ad_t_prot.h.tmp ad_t_prot.h
 
 kpro: $(GB_O:.o=.c)
-	../MAKEBIN/aisc_mkpt -c "ARB kernel interface" -G -z -C -F GBK_ $^ >ad_k_prot.h.tmp
+	../MAKEBIN/aisc_mkpt -c "ARB kernel interface" -G -z -C -w ad_k_prot.h -F GBK_ $^ >ad_k_prot.h.tmp
 	../SOURCE_TOOLS/mv_if_diff ad_k_prot.h.tmp ad_k_prot.h
 
 wc:

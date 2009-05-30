@@ -1,5 +1,15 @@
-#ifndef awt_csp_hxx_included
-#define awt_csp_hxx_included
+// =========================================================== //
+//                                                             //
+//   File      : awt_csp.hxx                                   //
+//   Purpose   :                                               //
+//                                                             //
+//   Institute of Microbiology (Technical University Munich)   //
+//   http://www.arb-home.de/                                   //
+//                                                             //
+// =========================================================== //
+
+#ifndef AWT_CSP_HXX
+#define AWT_CSP_HXX
 
 
 /*
@@ -32,23 +42,19 @@ public:
     char *awar_smooth;
     char *awar_enable_helix;
     void *sai_sel_box_id;
+    
     /* real public */
-    size_t  seq_len;    // real length == 0 -> not valid
-    GB_UINT4 *weights;  // helix = 1, non helix == 2
-    float   *rates;
-    float   *ttratio;
-    float   *frequency[256];
-    GB_UINT4 *mut_sum;
-    GB_UINT4 *freq_sum;
-    unsigned char *is_helix;  // == 1 -> helix; == 0 -> loop region
-    char    *desc;
+    size_t         seq_len;                         // real length    == 0 -> not valid
+    GB_UINT4      *weights;                         // helix           = 1, non helix == 2
+    float         *rates;
+    float         *ttratio;
+    float         *frequency[256];
+    GB_UINT4      *mut_sum;
+    GB_UINT4      *freq_sum;
+    unsigned char *is_helix;                        // == 1 -> helix; == 0 -> loop region
+    char          *desc;
 
     AWT_csp(GBDATA *gb_main, AW_root *awr, const char *awar_template);
-    /* awar_template ==     ".../name"
-       -> generated        ".../alignment"
-       ".../smooth"
-       ".../enable_helix"
-    */
     ~AWT_csp(void);
     void exit();
     GB_ERROR go(AP_filter *filter = 0);
@@ -56,11 +62,9 @@ public:
 };
 
 AW_window *create_csp_window(AW_root *root, AWT_csp *csp);
-
-void create_selection_list_on_csp(AW_window *aww, AWT_csp *csp);
-
+void       create_selection_list_on_csp(AW_window *aww, AWT_csp *csp);
 
 
-
-
-#endif
+#else
+#error awt_csp.hxx included twice
+#endif // AWT_CSP_HXX

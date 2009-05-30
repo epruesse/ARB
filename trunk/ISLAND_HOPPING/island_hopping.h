@@ -1,6 +1,16 @@
+// =========================================================== //
+//                                                             //
+//   File      : island_hopping.h                              //
+//   Purpose   :                                               //
+//                                                             //
+//   Coded by Ralf Westram (coder@reallysoft.de)               //
+//   Institute of Microbiology (Technical University Munich)   //
+//   http://www.arb-home.de/                                   //
+//                                                             //
+// =========================================================== //
 
-#ifndef awtc_island_hopping_h_included
-#define awtc_island_hopping_h_included
+#ifndef ISLAND_HOPPING_H
+#define ISLAND_HOPPING_H
 
 typedef const char *GB_ERROR;
 
@@ -127,4 +137,6 @@ public:
 
 };
 
-#endif
+#else
+#error island_hopping.h included twice
+#endif // ISLAND_HOPPING_H

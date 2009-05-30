@@ -3,7 +3,6 @@
 /* #include <malloc.h> */
 #include <string.h>
 #include "aisc.h"
-#include "aisc_proto.h"
 
 const int linebufsize = 200000;
 char      string_buf[256]; 

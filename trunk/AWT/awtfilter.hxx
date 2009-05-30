@@ -1,5 +1,16 @@
-#ifndef awtfilter_hxx_included
-#define awtfilter_hxx_included
+// =========================================================== //
+//                                                             //
+//   File      : awtfilter.hxx                                 //
+//   Purpose   :                                               //
+//                                                             //
+//   Institute of Microbiology (Technical University Munich)   //
+//   http://www.arb-home.de/                                   //
+//                                                             //
+// =========================================================== //
+
+#ifndef AWTFILTER_HXX
+#define AWTFILTER_HXX
+
 
 struct adfiltercbstruct {
     AW_window *aws;
@@ -26,4 +37,6 @@ struct adfiltercbstruct {
 
 };
 
-#endif
+#else
+#error awtfilter.hxx included twice
+#endif // AWTFILTER_HXX

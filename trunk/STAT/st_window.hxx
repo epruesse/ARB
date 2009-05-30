@@ -1,5 +1,16 @@
-#ifndef st_window_hxx_included
-#define st_window_hxx_included
+// =========================================================== //
+//                                                             //
+//   File      : st_window.hxx                                 //
+//   Purpose   :                                               //
+//                                                             //
+//   Institute of Microbiology (Technical University Munich)   //
+//   http://www.arb-home.de/                                   //
+//                                                             //
+// =========================================================== //
+
+#ifndef ST_WINDOW_HXX
+#define ST_WINDOW_HXX
+
 
 #define ST_ML_AWAR "tmp/st_ml/"
 #define ST_ML_AWAR_CSP                  ST_ML_AWAR "name"
@@ -44,4 +55,7 @@ GB_ERROR st_ml_check_sequence_quality(GBDATA * gb_main, const char *tree_name,
                                       int marked_only, st_report_enum report, const char *filter_string,
                                       const char *dest_field);
 
-#endif
+
+#else
+#error st_window.hxx included twice
+#endif // ST_WINDOW_HXX

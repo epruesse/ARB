@@ -1,5 +1,16 @@
-#ifndef awt_tree_cmp_hxx_included
-#define awt_tree_cmp_hxx_included
+// =========================================================== //
+//                                                             //
+//   File      : awt_tree_cmp.hxx                              //
+//   Purpose   :                                               //
+//                                                             //
+//   Institute of Microbiology (Technical University Munich)   //
+//   http://www.arb-home.de/                                   //
+//                                                             //
+// =========================================================== //
+
+#ifndef AWT_TREE_CMP_HXX
+#define AWT_TREE_CMP_HXX
+
 
 class AP_tree;
 class AWT_species_set;
@@ -48,5 +59,6 @@ public:
 
 void AWT_move_info(GBDATA *gb_main, const char *tree_source,const char *tree_dest,const char *log_file, bool compare_node_info, bool overwrite_old_nodes, bool nodes_with_marked_only);
 
-
-#endif
+#else
+#error awt_tree_cmp.hxx included twice
+#endif // AWT_TREE_CMP_HXX

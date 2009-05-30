@@ -4,6 +4,9 @@
  *
  */
 
+#ifndef SERVERCNTRL_H
+#define SERVERCNTRL_H
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -38,3 +41,7 @@ struct arb_params *arb_trace_argv(int *argc, char **argv);
 #ifdef __cplusplus
 }
 #endif
+
+#else
+#error servercntrl.h included twice
+#endif /* SERVERCNTRL_H */

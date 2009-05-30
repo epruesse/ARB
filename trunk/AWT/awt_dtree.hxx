@@ -1,5 +1,16 @@
-#ifndef awt_dtree_hxx_included
-#define awt_dtree_hxx_included
+// =========================================================== //
+//                                                             //
+//   File      : awt_dtree.hxx                                 //
+//   Purpose   :                                               //
+//                                                             //
+//   Institute of Microbiology (Technical University Munich)   //
+//   http://www.arb-home.de/                                   //
+//                                                             //
+// =========================================================== //
+
+#ifndef AWT_DTREE_HXX
+#define AWT_DTREE_HXX
+
 
 #define AWAR_DTREE_BASELINEWIDTH   "awt/dtree/baselinewidth"
 #define AWAR_DTREE_VERICAL_DIST    "awt/dtree/verticaldist"
@@ -186,4 +197,6 @@ AWT_graphic_tree *NT_generate_tree( AW_root *root,GBDATA *gb_main );
 bool              AWT_show_remark_branch(AW_device *device, const char *remark_branch, bool is_leaf, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
 
 
-#endif
+#else
+#error awt_dtree.hxx included twice
+#endif // AWT_DTREE_HXX

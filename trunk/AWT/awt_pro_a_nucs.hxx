@@ -1,5 +1,16 @@
-#ifndef awt_pro_a_nucs_hxx_included
-#define awt_pro_a_nucs_hxx_included
+// =========================================================== //
+//                                                             //
+//   File      : awt_pro_a_nucs.hxx                            //
+//   Purpose   :                                               //
+//                                                             //
+//   Institute of Microbiology (Technical University Munich)   //
+//   http://www.arb-home.de/                                   //
+//                                                             //
+// =========================================================== //
+
+#ifndef AWT_PRO_A_NUCS_HXX
+#define AWT_PRO_A_NUCS_HXX
+
 
 enum AP_BASES {
     AP_A   = 1,
@@ -114,4 +125,6 @@ AWT_translator *AWT_get_translator(int code_nr);              // use explicit pr
 AWT_translator *AWT_get_user_translator(GBDATA *gb_main = 0); // uses user setting for protein code from AWAR_PROTEIN_TYPE
 // AWAR_PROTEIN_TYPE has to exist; the first call of AWT_get_user_translator needs 'gb_main'!=0 
 
-#endif
+#else
+#error awt_pro_a_nucs.hxx included twice
+#endif // AWT_PRO_A_NUCS_HXX

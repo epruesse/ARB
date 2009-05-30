@@ -5,11 +5,10 @@
 // #include <malloc.h>
 #include <memory.h>
 #include <arbdb.h>
-#include "arbdb++.hxx"
 #include "adtools.hxx"
+
 /***************************************************************************
 class ADT_COMPLEMENT
-
 ***************************************************************************/
 ADT_COMPLEMENT::ADT_COMPLEMENT() {
     //      ad_species = NULL;

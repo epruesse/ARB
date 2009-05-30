@@ -9,7 +9,7 @@ $(MAIN): $(OBJECTS)
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
 
 proto:
-	../MAKEBIN/aisc_mkpt -A -P -C $(OBJECTS:.o=.c) >servercntrl.h.tmp
+	../MAKEBIN/aisc_mkpt -A -P -C -w servercntrl.h $(OBJECTS:.o=.c) >servercntrl.h.tmp
 	../SOURCE_TOOLS/mv_if_diff servercntrl.h.tmp servercntrl.h
 
 clean:

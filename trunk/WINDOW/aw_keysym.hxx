@@ -1,8 +1,16 @@
+// =========================================================== //
+//                                                             //
+//   File      : aw_keysym.hxx                                 //
+//   Purpose   :                                               //
+//                                                             //
+//   Institute of Microbiology (Technical University Munich)   //
+//   http://www.arb-home.de/                                   //
+//                                                             //
+// =========================================================== //
+
 #ifndef AW_KEYSYM_HXX
 #define AW_KEYSYM_HXX
 
-// #ifndef _AW_KEY_CODES_INCLUDED
-// #define _AW_KEY_CODES_INCLUDED
 
 typedef enum {
     AW_KEY_NONE,
@@ -44,8 +52,7 @@ typedef enum {
     AW_KEYMODE_NUMLOCK = 16,
 } AW_key_mod;
 
-// #endif
 
 #else
 #error aw_keysym.hxx included twice
-#endif
+#endif // AW_KEYSYM_HXX

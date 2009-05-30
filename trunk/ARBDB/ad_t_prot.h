@@ -6,6 +6,9 @@
  *
  */
 
+#ifndef AD_T_PROT_H
+#define AD_T_PROT_H
+
 #ifndef P_
 # error P_ is not defined
 #endif
@@ -193,3 +196,7 @@ GB_ERROR GBT_convert_changekey P_((GBDATA *gb_main, const char *name, int target
 #ifdef __cplusplus
 }
 #endif
+
+#else
+#error ad_t_prot.h included twice
+#endif /* AD_T_PROT_H */

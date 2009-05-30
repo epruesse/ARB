@@ -15,7 +15,7 @@ $(MAIN): $(CPP_OBJECTS)
 proto: GDE_proto.h
 
 GDE_proto.h: $(CPP_FILES) Makefile
-	../MAKEBIN/aisc_mkpt -G -A -E $(CPP_FILES) > GDE_proto.h.tmp
+	../MAKEBIN/aisc_mkpt -G -A -E -w GDE_proto.h $(CPP_FILES) > GDE_proto.h.tmp
 	../SOURCE_TOOLS/mv_if_diff GDE_proto.h.tmp GDE_proto.h
 
 clean:

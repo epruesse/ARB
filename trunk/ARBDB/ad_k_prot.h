@@ -6,6 +6,9 @@
  *
  */
 
+#ifndef AD_K_PROT_H
+#define AD_K_PROT_H
+
 #ifndef P_
 # error P_ is not defined
 #endif
@@ -29,3 +32,7 @@ GB_ERROR GBK_assert_msg P_((const char *assertion, const char *file, int linenr)
 #ifdef __cplusplus
 }
 #endif
+
+#else
+#error ad_k_prot.h included twice
+#endif /* AD_K_PROT_H */

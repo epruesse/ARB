@@ -1,5 +1,16 @@
-#ifndef awt_map_key_hxx_included
-#define awt_map_key_hxx_included
+// =========================================================== //
+//                                                             //
+//   File      : awt_map_key.hxx                               //
+//   Purpose   :                                               //
+//                                                             //
+//   Institute of Microbiology (Technical University Munich)   //
+//   http://www.arb-home.de/                                   //
+//                                                             //
+// =========================================================== //
+
+#ifndef AWT_MAP_KEY_HXX
+#define AWT_MAP_KEY_HXX
+
 
 #define MAX_MAPPED_KEYS 20
 
@@ -17,4 +28,7 @@ public:
 AW_window *create_key_map_window(AW_root *root);
 
 
-#endif
+
+#else
+#error awt_map_key.hxx included twice
+#endif // AWT_MAP_KEY_HXX

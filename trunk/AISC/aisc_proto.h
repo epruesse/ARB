@@ -4,6 +4,9 @@
  *
  */
 
+#ifndef AISC_PROTO_H
+#define AISC_PROTO_H
+
 #ifndef P_
 # if defined(__STDC__) || defined(__cplusplus)
 #  define P_(s) s
@@ -56,3 +59,7 @@ char *get_var_string P_((char *var));
 #endif
 
 #undef P_
+
+#else
+#error aisc_proto.h included twice
+#endif /* AISC_PROTO_H */

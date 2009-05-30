@@ -1,5 +1,16 @@
-#ifndef awt_nds_hxx_included
-#define awt_nds_hxx_included
+// =========================================================== //
+//                                                             //
+//   File      : awt_nds.hxx                                   //
+//   Purpose   :                                               //
+//                                                             //
+//   Institute of Microbiology (Technical University Munich)   //
+//   http://www.arb-home.de/                                   //
+//                                                             //
+// =========================================================== //
+
+#ifndef AWT_NDS_HXX
+#define AWT_NDS_HXX
+
 
 #define AWAR_SELECT_ACISRT     "tmp/acisrt/select"
 #define AWAR_SELECT_ACISRT_PRE "tmp/acisrt/select_pre"
@@ -15,4 +26,8 @@ void       AWT_create_select_srtaci_window(AW_window *aww,AW_CL awar_acisrt,AW_C
 
 # endif
 
-#endif
+
+
+#else
+#error awt_nds.hxx included twice
+#endif // AWT_NDS_HXX

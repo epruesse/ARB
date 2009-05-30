@@ -5,7 +5,6 @@
 #include <string.h>
 
 #include <arbdb.h>
-#include <arbdb++.hxx>
 #include <adtools.hxx>
 #include <aw_root.hxx>
 #include <aw_device.hxx>

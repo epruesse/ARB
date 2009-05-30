@@ -52,7 +52,7 @@ all : prot_tml.h $(PRGS:%=../../bin/%)
 
 prot_tml.h: $(SOURCES_TML)
 	rm -f $@
-	../../MAKEBIN/aisc_mkpt $(SOURCES_TML) >$@
+	../../MAKEBIN/aisc_mkpt $(SOURCES_TML) -w $@ >$@
 
 $(INSTALLDIR)/protml : $(OBJML) $(OBJPML)
 	$(CC) $(CFLAGS) $(DEFINE) -o $@ $(OBJML) $(OBJPML) $(LIBS)

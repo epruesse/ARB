@@ -6,6 +6,9 @@
  *
  */
 
+#ifndef AD_T_LPRO_H
+#define AD_T_LPRO_H
+
 #ifndef P_
 # error P_ is not defined
 #endif
@@ -42,3 +45,7 @@ GB_ERROR gbt_set_type_of_changekey P_((GBDATA *gb_main, const char *field_name, 
 #ifdef __cplusplus
 }
 #endif
+
+#else
+#error ad_t_lpro.h included twice
+#endif /* AD_T_LPRO_H */

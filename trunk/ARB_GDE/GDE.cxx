@@ -17,7 +17,6 @@
 #include "GDE_def.h"
 #include "GDE_extglob.h"
 #include "GDE_awars.h"
-#include "GDE_proto.h"
 
 #define META "" // default is 'no hotkey'
 

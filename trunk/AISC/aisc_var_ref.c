@@ -3,7 +3,6 @@
 #include <string.h>
 /* #include <malloc.h> */
 #include "aisc.h"
-#include "aisc_proto.h"
 
 static AD *aisc_match(AD * var, char *varid, char *varct) {
     if (varid) {

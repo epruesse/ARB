@@ -4,6 +4,9 @@
  *
  */
 
+#ifndef SERVER_H
+#define SERVER_H
+
 #ifndef P_
 # if defined(__STDC__) || defined(__cplusplus)
 #  define P_(s) s
@@ -70,3 +73,7 @@ void aisc_remove_destroy_callback P_((void));
 #endif
 
 #undef P_
+
+#else
+#error server.h included twice
+#endif /* SERVER_H */

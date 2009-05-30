@@ -4,6 +4,9 @@
  *
  */
 
+#ifndef PROTOTYPES_H
+#define PROTOTYPES_H
+
 #ifndef P_
 # if defined(__STDC__) || defined(__cplusplus)
 #  define P_(s) s
@@ -237,3 +240,7 @@ void free_sequence_data P_((int used_entries));
 #endif
 
 #undef P_
+
+#else
+#error prototypes.h included twice
+#endif /* PROTOTYPES_H */

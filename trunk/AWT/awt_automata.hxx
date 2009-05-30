@@ -1,8 +1,19 @@
-#ifndef awt_automata_hxx_included
-#define awt_automata_hxx_included
+// =========================================================== //
+//                                                             //
+//   File      : awt_automata.hxx                              //
+//   Purpose   :                                               //
+//                                                             //
+//   Institute of Microbiology (Technical University Munich)   //
+//   http://www.arb-home.de/                                   //
+//                                                             //
+// =========================================================== //
+
+#ifndef AWT_AUTOMATA_HXX
+#define AWT_AUTOMATA_HXX
 
 
-typedef long    AW_CL;          // generic client data type (void *)
+
+typedef long AW_CL;                                 // generic client data type (void *)
 
 class AWT_auto_states {
 public:
@@ -30,4 +41,6 @@ public:
 }
 
 
-#endif
+#else
+#error awt_automata.hxx included twice
+#endif // AWT_AUTOMATA_HXX
