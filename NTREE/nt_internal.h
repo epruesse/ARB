@@ -45,9 +45,9 @@ void NT_system_cb2(AW_window *aww, AW_CL command, AW_CL auto_help_file);
 
 /* NT_concatenate.cxx */
 void NT_createConcatenationAwars(AW_root *aw_root, AW_default aw_def);
-AW_window *NT_createConcatenationWindow(AW_root *aw_root, AW_CL cl_ntw);
-AW_window *NT_createMergeSimilarSpeciesWindow(AW_root *aw_root, AW_CL cl_ntw);
-AW_window *NT_createMergeSimilarSpeciesAndConcatenateWindow(AW_root *aw_root, AW_CL cl_ntw);
+AW_window *NT_createConcatenationWindow(AW_root *aw_root);
+AW_window *NT_createMergeSimilarSpeciesWindow(AW_root *aw_root);
+AW_window *NT_createMergeSimilarSpeciesAndConcatenateWindow(AW_root *aw_root);
 
 /* NT_dbrepair.cxx */
 GB_ERROR NT_repair_DB(GBDATA *gb_main);
