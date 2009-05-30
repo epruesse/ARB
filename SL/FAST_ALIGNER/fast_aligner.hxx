@@ -1,11 +1,17 @@
-/*********************************************************************************
- *  Coded by Ralf Westram (coder@reallysoft.de) in 1998                          *
- *  Institute of Microbiology (Technical University Munich)                      *
- *  http://www.mikro.biologie.tu-muenchen.de/                                    *
- *********************************************************************************/
+// =========================================================== //
+//                                                             //
+//   File      : fast_aligner.hxx                              //
+//   Purpose   :                                               //
+//                                                             //
+//   Coded by Ralf Westram (coder@reallysoft.de) in 1998       //
+//   Institute of Microbiology (Technical University Munich)   //
+//   http://www.arb-home.de/                                   //
+//                                                             //
+// =========================================================== //
 
-#ifndef awtc_fast_aligner_hxx_included
-#define awtc_fast_aligner_hxx_included
+#ifndef FAST_ALIGNER_HXX
+#define FAST_ALIGNER_HXX
+
 
 #define INTEGRATED_ALIGNERS_TITLE "Integrated Aligners"
 
@@ -39,5 +45,6 @@ GB_ERROR AWTC_delete_temp_entries(GBDATA *gb_main, GB_CSTR alignment);
 
 // --------------------------------------------------------------------------------
 
-
-#endif
+#else
+#error fast_aligner.hxx included twice
+#endif // FAST_ALIGNER_HXX

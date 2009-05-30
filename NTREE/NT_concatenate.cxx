@@ -32,7 +32,7 @@
 #include <awt_sel_boxes.hxx>
 #include "awtlocal.hxx"
 #include <aw_question.hxx>
-#include "nt_concatenate.hxx"
+#include "nt_internal.h"
 #include <nt_sort.hxx>   // for sorting database entries
 
 #ifndef ARB_ASSERT_H

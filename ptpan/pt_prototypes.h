@@ -4,6 +4,9 @@
  *
  */
 
+#ifndef PT_PROTOTYPES_H
+#define PT_PROTOTYPES_H
+
 #ifndef P_
 # if defined(__STDC__) || defined(__cplusplus)
 #  define P_(s) s
@@ -215,3 +218,7 @@ void FreeBinTree P_((struct BinTree *root));
 struct Node *FindBinTreeLowerKey P_((struct BinTree *root, LLONG key));
 
 #undef P_
+
+#else
+#error pt_prototypes.h included twice
+#endif /* PT_PROTOTYPES_H */

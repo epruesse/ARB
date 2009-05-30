@@ -1,5 +1,15 @@
-#ifndef arbdbpp_hxx_included
-#define arbdbpp_hxx_included
+// =========================================================== //
+//                                                             //
+//   File      : arbdb++.hxx                                   //
+//   Purpose   :                                               //
+//                                                             //
+//   Institute of Microbiology (Technical University Munich)   //
+//   http://www.arb-home.de/                                   //
+//                                                             //
+// =========================================================== //
+
+#ifndef ARBDBPP_HXX
+#define ARBDBPP_HXX
 
 /* KLASSENDEFINITIONEN fuer die Datenbankschnittstelle 
 
@@ -24,9 +34,6 @@ AD_MARK
 #ifndef AW_KEYSYM_HXX
 #include <aw_keysym.hxx>
 #endif
-
-#ifndef ARBDBPP_INCLUDED
-#define ARBDBPP_INCLUDED
 
 #define ADPP_CORE *(int *)0=0;
 #define AD_ERR_WARNING  1
@@ -455,7 +462,6 @@ public:
     AD_ERR *command( AW_key_mod keymod, AW_key_code keycode, char key, int direction, long &cursorpos, int & changed_flag);
 };
 
-#endif
-
-
-#endif
+#else
+#error arbdb++.hxx included twice
+#endif // ARBDBPP_HXX

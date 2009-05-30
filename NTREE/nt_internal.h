@@ -4,6 +4,9 @@
  *
  */
 
+#ifndef NT_INTERNAL_H
+#define NT_INTERNAL_H
+
 /* hide __attribute__'s for non-gcc compilers: */
 #ifndef __GNUC__
 # ifndef __attribute__
@@ -131,3 +134,7 @@ AW_window *NT_create_organism_window(AW_root *aw_root);
 AW_window *NT_create_dna_2_pro_window(AW_root *root);
 AW_window *NT_create_realign_dna_window(AW_root *root);
 void NT_create_transpro_variables(AW_root *root, AW_default db1);
+
+#else
+#error nt_internal.h included twice
+#endif /* NT_INTERNAL_H */

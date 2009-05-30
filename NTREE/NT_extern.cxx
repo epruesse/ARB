@@ -50,7 +50,6 @@
 #include <EXP.hxx>
 #include <awt_input_mask.hxx>
 
-#include "nt_concatenate.hxx"
 #include "seq_quality.h"
 #include "NT_trackAliChanges.h"
 #include "NT_dbrepair.hxx"

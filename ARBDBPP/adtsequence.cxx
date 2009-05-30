@@ -3,7 +3,6 @@
 #include <stdio.h>
 
 #include <arbdb.h>
-#include "arbdb++.hxx"
 #include "adtools.hxx"
 
 ADT_SEQUENCE::ADT_SEQUENCE() {

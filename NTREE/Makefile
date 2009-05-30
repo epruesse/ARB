@@ -40,9 +40,9 @@ $(MAIN): $(CPP_OBJECTS)
 	)
 
 proto:
-	../MAKEBIN/aisc_mkpt -A -E -g -F NT_,AP_ $(CPP_SOURCES) >nt_internal.h.tmp
+	../MAKEBIN/aisc_mkpt -A -E -g -F NT_,AP_ -w nt_internal.h $(CPP_SOURCES) >nt_internal.h.tmp
 	../SOURCE_TOOLS/mv_if_diff nt_internal.h.tmp nt_internal.h
-	../MAKEBIN/aisc_mkpt -A -E -g NT_cb.cxx NT_extern.cxx >nt_cb.hxx.tmp
+	../MAKEBIN/aisc_mkpt -A -E -g -w nt_cb.hxx NT_cb.cxx NT_extern.cxx >nt_cb.hxx.tmp
 	../SOURCE_TOOLS/mv_if_diff nt_cb.hxx.tmp nt_cb.hxx
 
 .cxx.o:
@@ -314,7 +314,7 @@ NT_cb.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 
-NT_concatenate.o: nt_concatenate.hxx
+NT_concatenate.o: nt_internal.h
 NT_concatenate.o: nt_sort.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -392,7 +392,6 @@ NT_extern.o: ap_csp_2_gnuplot.hxx
 NT_extern.o: ap_pos_var_pars.hxx
 NT_extern.o: etc_check_gcg.hxx
 NT_extern.o: nt_cb.hxx
-NT_extern.o: nt_concatenate.hxx
 NT_extern.o: NT_dbrepair.hxx
 NT_extern.o: nt_edconf.hxx
 NT_extern.o: nt_internal.h
@@ -504,8 +503,8 @@ NT_join.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 
 NT_main.o: nt_cb.hxx
-NT_main.o: nt_concatenate.hxx
 NT_main.o: NT_dbrepair.hxx
+NT_main.o: nt_internal.h
 NT_main.o: ntree.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 NT_main.o: $(ARBHOME)/INCLUDE/ad_prot.h

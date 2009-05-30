@@ -4,7 +4,6 @@
 /* #include <malloc.h> */
 
 #include "aisc.h"
-#include "aisc_proto.h"
 
 
 CL *aisc_calc_blocks(CL * co, CL * afor, CL * aif, int up) {

@@ -1,5 +1,15 @@
-#ifndef awt_hxx_included
-#define awt_hxx_included
+// =========================================================== //
+//                                                             //
+//   File      : awt.hxx                                       //
+//   Purpose   :                                               //
+//                                                             //
+//   Institute of Microbiology (Technical University Munich)   //
+//   http://www.arb-home.de/                                   //
+//                                                             //
+// =========================================================== //
+
+#ifndef AWT_HXX
+#define AWT_HXX
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
@@ -266,4 +276,6 @@ void AWT_browser_forget_db(GBDATA *gb_main);
 void AWT_create_debug_menu(AW_window *awmm);
 #endif // DEBUG
 
-#endif
+#else
+#error awt.hxx included twice
+#endif // AWT_HXX

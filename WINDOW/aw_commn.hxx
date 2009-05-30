@@ -1,8 +1,6 @@
 #ifndef AW_COMMN_HXX
 #define AW_COMMN_HXX
 
-// #define _AW_COMMON_INCLUDED
-
 #define AW_INT(x) (  ((x)>=0) ? (int) ((x)+.5):(int )((x)-.5) )
 
 class AW_GC_Xm {

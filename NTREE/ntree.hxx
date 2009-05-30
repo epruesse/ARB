@@ -1,9 +1,19 @@
-#ifndef ntree_hxx_included
-#define ntree_hxx_included
+// =========================================================== //
+//                                                             //
+//   File      : ntree.hxx                                     //
+//   Purpose   : global ARB_NTREE interface                    //
+//                                                             //
+//   Institute of Microbiology (Technical University Munich)   //
+//   http://www.arb-home.de/                                   //
+//                                                             //
+// =========================================================== //
 
+#ifndef NTREE_HXX
+#define NTREE_HXX
 
-#define NT_AW_TRUE 1
+#define NT_AW_TRUE  1
 #define NT_AW_FALSE 0
+
 class AWT_graphic_tree;
 
 struct NT_global {
@@ -33,4 +43,6 @@ void nt_main_startup_main_window(AW_root *aw_root);
 #define AWAR_MARKED_SPECIES_COUNTER    "tmp/disp_marked_species"
 #define AWAR_NTREE_TITLE_MODE          "tmp/title_mode"
 
-#endif
+#else
+#error ntree.hxx included twice
+#endif // NTREE_HXX

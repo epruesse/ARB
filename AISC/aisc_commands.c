@@ -7,7 +7,6 @@
 #include <memory.h>
 
 #include "aisc.h"
-#include "aisc_proto.h"
 
 int contains_tabs = 0;
 static int error_count = 0;

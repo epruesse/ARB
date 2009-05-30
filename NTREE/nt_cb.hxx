@@ -4,6 +4,9 @@
  *
  */
 
+#ifndef NT_CB_HXX
+#define NT_CB_HXX
+
 /* hide __attribute__'s for non-gcc compilers: */
 #ifndef __GNUC__
 # ifndef __attribute__
@@ -56,3 +59,7 @@ void NT_update_marked_counter(AW_window *aww, long count);
 void NT_popup_species_window(AW_window *aww, AW_CL dummy_1x, AW_CL dummy_2x);
 void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main);
 AW_window *create_nt_main_window(AW_root *awr, AW_CL clone);
+
+#else
+#error nt_cb.hxx included twice
+#endif /* NT_CB_HXX */

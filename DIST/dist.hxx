@@ -1,10 +1,20 @@
-#ifndef dist_hxx_included
-#define dist_hxx_included
+// =========================================================== //
+//                                                             //
+//   File      : dist.hxx                                      //
+//   Purpose   :                                               //
+//                                                             //
+//   Institute of Microbiology (Technical University Munich)   //
+//   http://www.arb-home.de/                                   //
+//                                                             //
+// =========================================================== //
 
-#ifndef awt_seq_dna_hxx_included
+#ifndef DIST_HXX
+#define DIST_HXX
+
+#ifndef AWT_SEQ_DNA_HXX
 #include <awt_seq_dna.hxx>
 #endif
-#ifndef awt_seq_simple_pro_hxx_included
+#ifndef AWT_SEQ_SIMPLE_PRO_HXX
 #include <awt_seq_simple_pro.hxx>
 #endif
 
@@ -13,4 +23,6 @@
 extern GBDATA *GLOBAL_gb_main;
 GBT_TREE *neighbourjoining(char **names, AP_FLOAT **m, long size, size_t structure_size);
 
-#endif
+#else
+#error dist.hxx included twice
+#endif // DIST_HXX

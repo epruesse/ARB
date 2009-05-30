@@ -1,5 +1,16 @@
-#ifndef awt_seq_simple_pro_hxx_included
-#define awt_seq_simple_pro_hxx_included
+// =========================================================== //
+//                                                             //
+//   File      : awt_seq_simple_pro.hxx                        //
+//   Purpose   :                                               //
+//                                                             //
+//   Institute of Microbiology (Technical University Munich)   //
+//   http://www.arb-home.de/                                   //
+//                                                             //
+// =========================================================== //
+
+#ifndef AWT_SEQ_SIMPLE_PRO_HXX
+#define AWT_SEQ_SIMPLE_PRO_HXX
+
 
 typedef enum {
     ala, arg, asn, asp, cys, gln, glu, gly, his, ileu, leu, lys, met, phe, pro,
@@ -21,6 +32,6 @@ public:
     void partial_match(const AP_sequence* part, long *overlap, long *penalty) const;
 };
 
-
-
-#endif
+#else
+#error awt_seq_simple_pro.hxx included twice
+#endif // AWT_SEQ_SIMPLE_PRO_HXX

@@ -24,7 +24,7 @@ $(MAIN): $(OBJECTS)
 
 awt_tree_cb.hxx: AWT_tree_cb.cxx
 	rm -f $@
-	../MAKEBIN/aisc_mkpt -C $? >$@
+	../MAKEBIN/aisc_mkpt -w $@ -C $? >$@
 
 clean:
 	rm -f $(OBJECTS) *.a *.so

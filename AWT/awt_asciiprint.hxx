@@ -1,5 +1,15 @@
-#ifndef awt_asciiprint_hxx_included
-#define awt_asciiprint_hxx_included
+// =========================================================== //
+//                                                             //
+//   File      : awt_asciiprint.hxx                            //
+//   Purpose   :                                               //
+//                                                             //
+//   Institute of Microbiology (Technical University Munich)   //
+//   http://www.arb-home.de/                                   //
+//                                                             //
+// =========================================================== //
+
+#ifndef AWT_ASCIIPRINT_HXX
+#define AWT_ASCIIPRINT_HXX
 
 
 #define AWAR_APRINT               "tmp/aprint/"
@@ -38,4 +48,6 @@ enum AWT_asciiprint_destination {
 };
 
 
-#endif
+#else
+#error awt_asciiprint.hxx included twice
+#endif // AWT_ASCIIPRINT_HXX

@@ -1,5 +1,16 @@
-#ifndef awt_seq_colors_hxx_included
-#define awt_seq_colors_hxx_included
+// =========================================================== //
+//                                                             //
+//   File      : awt_seq_colors.hxx                            //
+//   Purpose   :                                               //
+//                                                             //
+//   Institute of Microbiology (Technical University Munich)   //
+//   http://www.arb-home.de/                                   //
+//                                                             //
+// =========================================================== //
+
+#ifndef AWT_SEQ_COLORS_HXX
+#define AWT_SEQ_COLORS_HXX
+
 
 #define AWAR_SEQ_PATH                  "awt/seq_colors/"
 #define AWAR_SEQ_NAME_STRINGS_TEMPLATE AWAR_SEQ_PATH  "strings/elem_%i"
@@ -56,4 +67,6 @@ public:
 AW_window *create_seq_colors_window(AW_root *awr, AWT_seq_colors *asc);
 
 
-#endif
+#else
+#error awt_seq_colors.hxx included twice
+#endif // AWT_SEQ_COLORS_HXX

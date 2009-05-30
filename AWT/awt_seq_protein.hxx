@@ -1,5 +1,15 @@
-#ifndef awt_seq_protein_hxx_included
-#define awt_seq_protein_hxx_included
+// =========================================================== //
+//                                                             //
+//   File      : awt_seq_protein.hxx                           //
+//   Purpose   :                                               //
+//                                                             //
+//   Institute of Microbiology (Technical University Munich)   //
+//   http://www.arb-home.de/                                   //
+//                                                             //
+// =========================================================== //
+
+#ifndef AWT_SEQ_PROTEIN_HXX
+#define AWT_SEQ_PROTEIN_HXX
 
 
 enum AP_PROTEINS {
@@ -34,9 +44,6 @@ enum AP_PROTEINS {
     APP_Z = APP_E | APP_Q,      // Glx ( = Glu | Gln )
 };
 
-// ----------------------------------------------------------
-//      class AP_sequence_protein :  public  AP_sequence
-// ----------------------------------------------------------
 class AP_sequence_protein :  public  AP_sequence {
 private:
     AP_PROTEINS *sequence;
@@ -54,5 +61,6 @@ public:
     void partial_match(const AP_sequence* part, long *overlap, long *penalty) const;
 };
 
-
-#endif
+#else
+#error awt_seq_protein.hxx included twice
+#endif // AWT_SEQ_PROTEIN_HXX

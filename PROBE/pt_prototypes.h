@@ -4,6 +4,9 @@
  *
  */
 
+#ifndef PT_PROTOTYPES_H
+#define PT_PROTOTYPES_H
+
 #ifndef P_
 # if defined(__STDC__) || defined(__cplusplus)
 #  define P_(s) s
@@ -122,3 +125,7 @@ GB_INLINE int PT_read_apos P_((PTM2 *ptmain, POS_TREE *node));
 template <typename T >int PT_read_chain P_((PTM2 *ptmain, POS_TREE *node, T func));
 
 #undef P_
+
+#else
+#error pt_prototypes.h included twice
+#endif /* PT_PROTOTYPES_H */

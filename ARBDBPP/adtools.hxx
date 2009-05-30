@@ -1,14 +1,17 @@
-#ifndef adtools_hxx_included
-#define adtools_hxx_included
+// =========================================================== //
+//                                                             //
+//   File      : adtools.hxx                                   //
+//   Purpose   :                                               //
+//                                                             //
+//   Institute of Microbiology (Technical University Munich)   //
+//   http://www.arb-home.de/                                   //
+//                                                             //
+// =========================================================== //
 
-/*      adtools.hxx
-*****************************************/
+#ifndef ADTOOLS_HXX
+#define ADTOOLS_HXX
 
-const   long  max_value = 0x7fffffff;
-
-// TOOLS
-#ifndef ARBDBPPTOOLS_INCLUDED
-#define ARBDBPPTOOLS_INCLUDED
+const long max_value = 0x7fffffff;
 
 #include <arbdb++.hxx>
 
@@ -327,5 +330,6 @@ public:
 
 };
 
-#endif
-#endif
+#else
+#error adtools.hxx included twice
+#endif // ADTOOLS_HXX

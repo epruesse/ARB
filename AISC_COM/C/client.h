@@ -4,6 +4,9 @@
  *
  */
 
+#ifndef CLIENT_H
+#define CLIENT_H
+
 #ifndef P_
 # if defined(__STDC__) || defined(__cplusplus)
 #  define P_(s) s
@@ -52,3 +55,7 @@ int aisc_find P_((aisc_com *link, int father_type, long father, int attribute, i
 #endif
 
 #undef P_
+
+#else
+#error client.h included twice
+#endif /* CLIENT_H */

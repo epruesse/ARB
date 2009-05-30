@@ -55,25 +55,28 @@ static void Version(void);
 #define NEWBUFSIZ (20480*sizeof(char)) /* new buffer size */
 
 
-static int  dostatic            = 0;   /* include static functions? */
-static int  doinline            = 0;   /* include inline functions? */
-static int  donum               = 0;   /* print line numbers? */
-static int  define_macro        = 1;   /* define macro for prototypes? */
-static int  use_macro           = 1;   /* use a macro for prototypes? */
-static int  use_main            = 0;   /* add prototype for main? */
-static int  no_parm_names       = 0;   /* no parm names - only types */
-static int  print_extern        = 0;   /* use "extern" before function declarations */
-static int  dont_promote        = 0;   /* don't promote prototypes */
-static int  promote_lines       = 0;   /* promote 'AISC_MKPT_PROMOTE'-lines */
-static int  aisc                = 0;   /* aisc compatible output */
-static int  cansibycplus        = 0;   /* produce extern "C" */
-static int  promote_extern_c    = 0;   /* produce extern "C" into prototype */
-static int  extern_c_seen       = 0;   /* true if extern "C" was parsed */
-static int  search__attribute__ = 0;   /* search for gnu-extension __attribute__(()) ? */
-static int  search__ATTR__      = 0;   /* search for ARB-__attribute__-macros (__ATTR__) ? */
-static int  inquote             = 0;   /* in a quote?? */
-static int  newline_seen        = 1;   /* are we at the start of a line */
-static int  glastc              = ' '; /* last char. seen by getsym() */
+static int dostatic            = 0;                 /* include static functions? */
+static int doinline            = 0;                 /* include inline functions? */
+static int donum               = 0;                 /* print line numbers? */
+static int define_macro        = 1;                 /* define macro for prototypes? */
+static int use_macro           = 1;                 /* use a macro for prototypes? */
+static int use_main            = 0;                 /* add prototype for main? */
+static int no_parm_names       = 0;                 /* no parm names - only types */
+static int print_extern        = 0;                 /* use "extern" before function declarations */
+static int dont_promote        = 0;                 /* don't promote prototypes */
+static int promote_lines       = 0;                 /* promote 'AISC_MKPT_PROMOTE'-lines */
+static int aisc                = 0;                 /* aisc compatible output */
+static int cansibycplus        = 0;                 /* produce extern "C" */
+static int promote_extern_c    = 0;                 /* produce extern "C" into prototype */
+static int extern_c_seen       = 0;                 /* true if extern "C" was parsed */
+static int search__attribute__ = 0;                 /* search for gnu-extension __attribute__(()) ? */
+static int search__ATTR__      = 0;                 /* search for ARB-__attribute__-macros (__ATTR__) ? */
+
+static const char *include_wrapper = NULL;             /* add include wrapper (contains name of header or NULL) */
+
+static int inquote      = 0;                        /* in a quote?? */
+static int newline_seen = 1;                        /* are we at the start of a line */
+static int glastc       = ' ';                      /* last char. seen by getsym() */
 
 static char *current_file   = 0;  /* name of current file */
 static char *current_dir    = 0;  /* name of current directory */
@@ -1265,6 +1268,8 @@ static void Usage(void){
           "\n"
           "\n   -P               promote /*AISC_MKPT_PROMOTE:forHeader*/ to header"
           "\n"
+          "\n   -w               add standard include wrapper"
+          "\n"
           "\n   -c \"text\"      add text as comment into header"
           "\n"
           "\n   -V               print version number"
@@ -1322,6 +1327,12 @@ int main(int argc, char **argv){
                 header_comment = t;
                 break;
             }
+            else if (*t == 'w') {
+                t = *argv++; --argc;
+                if (!t) Usage();
+                include_wrapper = t;
+                break;
+            }
             else if (*t == 'F') {
                 t = *argv++; --argc;
                 if (!t) Usage();
@@ -1346,6 +1357,7 @@ int main(int argc, char **argv){
         exit(EXIT_FAILURE);
     }
 
+    char *include_macro = 0;
     if (aisc) {
         if (header_comment) {
             fputs("# *********************************************************\n", stdout);
@@ -1365,6 +1377,22 @@ int main(int argc, char **argv){
               " * Any changes you make here will be overwritten later!\n"
               " *\n"
               " */\n\n", stdout);
+
+        if (include_wrapper) {
+            int p;
+            include_macro = strdup(include_wrapper);
+            for (p = 0; include_macro[p]; p++) {
+                char c           = include_macro[p];
+                c                = strchr(".-", c) ? '_' : toupper(c);
+                include_macro[p] = c;
+            }
+
+            printf("#ifndef %s\n"
+                   "#define %s\n"
+                   "\n", 
+                   include_macro, 
+                   include_macro);
+        }
 
         if (use_macro) {
             if (define_macro) {
@@ -1448,8 +1476,18 @@ int main(int argc, char **argv){
         if (use_macro && define_macro) {
             printf("\n#undef %s\n", macro_name);    /* clean up namespace */
         }
+
+        if (include_wrapper) {
+            printf("\n"
+                   "#else\n"
+                   "#error %s included twice\n"
+                   "#endif /* %s */\n",
+                   include_wrapper,
+                   include_macro);
+        }
     }
 
+    free(include_macro);
     freeSymParts();
     free(current_file);
     free(current_dir);

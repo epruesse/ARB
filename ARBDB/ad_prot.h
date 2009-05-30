@@ -6,6 +6,9 @@
  *
  */
 
+#ifndef AD_PROT_H
+#define AD_PROT_H
+
 #ifndef P_
 # error P_ is not defined
 #endif
@@ -500,3 +503,7 @@ GBDATA *EXP_find_or_create_experiment_rel_exp_data P_((GBDATA *gb_experiment_dat
 #ifdef __cplusplus
 }
 #endif
+
+#else
+#error ad_prot.h included twice
+#endif /* AD_PROT_H */

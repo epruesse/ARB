@@ -4,6 +4,9 @@
  *
  */
 
+#ifndef GDE_PROTO_H
+#define GDE_PROTO_H
+
 /* define ARB attributes: */
 #ifndef ATTRIBUTES_H
 # include <attributes.h>
@@ -62,3 +65,7 @@ int WriteStatus(NA_Alignment *aln, char *filename, int method);
 void ReadStatus(char *filename);
 void NormalizeOffset(NA_Alignment *aln);
 int WriteCMask(NA_Alignment *aln, char *filename, int method, int maskable);
+
+#else
+#error GDE_proto.h included twice
+#endif /* GDE_PROTO_H */

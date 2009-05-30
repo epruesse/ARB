@@ -4,6 +4,9 @@
  *
  */
 
+#ifndef AWT_TREE_CB_HXX
+#define AWT_TREE_CB_HXX
+
 #ifndef P_
 # if defined(__STDC__) || defined(__cplusplus)
 #  define P_(s) s
@@ -54,3 +57,7 @@ void NT_remove_species_in_tree_from_hash P_((AP_tree *tree, GB_HASH *hash));
 #endif
 
 #undef P_
+
+#else
+#error awt_tree_cb.hxx included twice
+#endif /* AWT_TREE_CB_HXX */

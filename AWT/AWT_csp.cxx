@@ -27,18 +27,27 @@ void awt_csp_rescan_sais(AW_root *awr, AW_CL csp_cd){
 }
 
 AWT_csp::AWT_csp(GBDATA *gb_maini, AW_root *awri, const char *awar_template) {
-    // awar_template    .../name is replaced by /alignment
+    /* awar_template ==     ".../name"
+     *  -> generated        ".../alignment"
+     *                      ".../smooth"
+     *                      ".../enable_helix"
+     */
+
     memset((char *)this,0,sizeof(AWT_csp));
+
     this->gb_main = gb_maini;
-    this->awr = awri;
-    this->awar_name     = GBS_string_eval(awar_template,AWT_CSP_AWAR_CSP_NAME,0);
+    this->awr     = awri;
+
+    this->awar_name         = GBS_string_eval(awar_template,AWT_CSP_AWAR_CSP_NAME,0);
     this->awar_alignment    = GBS_string_eval(awar_template,AWT_CSP_AWAR_CSP_ALIGNMENT,0);
-    this->awar_smooth   = GBS_string_eval(awar_template,AWT_CSP_AWAR_CSP_SMOOTH,0);
+    this->awar_smooth       = GBS_string_eval(awar_template,AWT_CSP_AWAR_CSP_SMOOTH,0);
     this->awar_enable_helix = GBS_string_eval(awar_template,AWT_CSP_AWAR_CSP_ENABLE_HELIX,0);
+
     awr->awar_string(awar_name, "NONE");
     awr->awar_string(awar_alignment);
     awr->awar_int(awar_smooth);
     awr->awar_int(awar_enable_helix, 1);
+
     awr->awar(this->awar_alignment)->add_callback( awt_csp_rescan_sais, (AW_CL)this);
     awt_csp_rescan_sais(awr, (AW_CL)this);
 }

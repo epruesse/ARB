@@ -1,7 +1,20 @@
-#ifndef awt_codon_table_included
-#define awt_codon_table_included
+// =========================================================== //
+//                                                             //
+//   File      : awt_codon_table.hxx                           //
+//   Purpose   :                                               //
+//                                                             //
+//   Coded by Ralf Westram (coder@reallysoft.de)               //
+//   Institute of Microbiology (Technical University Munich)   //
+//   http://www.arb-home.de/                                   //
+//                                                             //
+// =========================================================== //
 
+#ifndef AWT_CODON_TABLE_HXX
+#define AWT_CODON_TABLE_HXX
+
+#ifndef AWT_HXX
 #include <awt.hxx>
+#endif
 
 // --------------------------------------------------------------------------------
 
@@ -81,4 +94,7 @@ void test_AWT_get_codons();
 
 // --------------------------------------------------------------------------------
 
-#endif
+
+#else
+#error awt_codon_table.hxx included twice
+#endif // AWT_CODON_TABLE_HXX

@@ -13,7 +13,7 @@ $(BINARY): $(OBJECT)
 	$(ACC) $(cflags) -Wstrict-prototypes -c $< $(AINCLUDES) $(POST_COMPILE)
 
 proto:
-	../MAKEBIN/aisc_mkpt -C $(OBJECT:.o=.c) >prototypes.h.tmp
+	../MAKEBIN/aisc_mkpt -C -w prototypes.h $(OBJECT:.o=.c) >prototypes.h.tmp
 	../SOURCE_TOOLS/mv_if_diff prototypes.h.tmp prototypes.h
 
 clean:

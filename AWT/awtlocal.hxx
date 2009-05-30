@@ -1,5 +1,16 @@
-#ifndef awtlocal_hxx_included
-#define awtlocal_hxx_included
+// =========================================================== //
+//                                                             //
+//   File      : awtlocal.hxx                                  //
+//   Purpose   :                                               //
+//                                                             //
+//   Institute of Microbiology (Technical University Munich)   //
+//   http://www.arb-home.de/                                   //
+//                                                             //
+// =========================================================== //
+
+#ifndef AWTLOCAL_HXX
+#define AWTLOCAL_HXX
+
 
 struct adawcbstruct {
     // @@@ FIXME: rethink design - maybe split into base class +
@@ -129,4 +140,6 @@ struct awt_table {
 long awt_query_update_list(void *dummy, struct adaqbsstruct *cbs);
 
 
-#endif
+#else
+#error awtlocal.hxx included twice
+#endif // AWTLOCAL_HXX
