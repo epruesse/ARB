@@ -729,7 +729,7 @@ GB_ERROR checkAndCreateNewField(GBDATA *gb_main, char *new_field_name){
     return 0;
 }
 
-void mergeSimilarSpecies(AW_window *aws, AW_CL cl_mergeSimilarConcatenateAlignments, AW_CL cl_ntw) {
+static void mergeSimilarSpecies(AW_window *aws, AW_CL cl_mergeSimilarConcatenateAlignments) {
     AW_root *aw_root          = aws->get_root();
     char    *merge_field_name = aw_root->awar(AWAR_CON_MERGE_FIELD)->read_string();
     char    *new_field_name   = aw_root->awar(AWAR_CON_STORE_SIM_SP_NO)->read_string();
@@ -815,18 +815,13 @@ void mergeSimilarSpecies(AW_window *aws, AW_CL cl_mergeSimilarConcatenateAlignme
 
     GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
 
-    // refresh the screen display
-    AWT_canvas *ntw = (AWT_canvas *) cl_ntw;
-
-    ntw->refresh();
-
     // Concatenate alignments of the merged species if cl_mergeSimilarConcatenateAlignments = MERGE_SIMILAR_CONCATENATE_ALIGNMENTS
     if (int (cl_mergeSimilarConcatenateAlignments) && !error) concatenateAlignments(aws);
 }
 
 
 /*----------------------------Creating concatenation window-----------------------------------------*/
-AW_window *NT_createConcatenationWindow(AW_root *aw_root, AW_CL cl_ntw) {
+AW_window *NT_createConcatenationWindow(AW_root *aw_root) {
     AW_window_simple *aws = new AW_window_simple;
 
     aws->init( aw_root, "CONCATENATE_ALIGNMENTS", "CONCATENATION WINDOW");
@@ -900,20 +895,19 @@ AW_window *NT_createConcatenationWindow(AW_root *aw_root, AW_CL cl_ntw) {
     aws->create_button("CONCATENATE","CONCATENATE","A");
 
     aws->at("merge_species");
-    aws->callback(AW_POPUP, (AW_CL)NT_createMergeSimilarSpeciesWindow,cl_ntw);
+    aws->callback(AW_POPUP, (AW_CL)NT_createMergeSimilarSpeciesWindow, 0);
     aws->create_button("MERGE_SPECIES","MERGE SIMILAR SPECEIES","M");
 
     aws->at("merge_concatenate");
-    aws->callback(AW_POPUP, (AW_CL)NT_createMergeSimilarSpeciesAndConcatenateWindow,cl_ntw);
+    aws->callback(AW_POPUP, (AW_CL)NT_createMergeSimilarSpeciesAndConcatenateWindow, 0);
     aws->create_button("MERGE_CONCATENATE","MERGE and CONCATENATE","S");
 
     aws->show();
     return (AW_window *)aws;
 }
 
-static AW_window *createMergeSimilarSpeciesWindow(AW_root *aw_root, int option, AW_CL cl_ntw) {
-
-    AW_window_simple    *aws = new AW_window_simple;
+static AW_window *createMergeSimilarSpeciesWindow(AW_root *aw_root, int option) {
+    AW_window_simple *aws = new AW_window_simple;
 
     aws->init(aw_root, "MERGE_SPECIES", "MERGE SPECIES WINDOW" );
     aws->load_xfig("merge_species.fig");
@@ -940,7 +934,7 @@ static AW_window *createMergeSimilarSpeciesWindow(AW_root *aw_root, int option, 
     aws->create_input_field(AWAR_CON_STORE_SIM_SP_NO,20);
 
     aws->at("merge");
-    aws->callback(mergeSimilarSpecies, option, cl_ntw);
+    aws->callback(mergeSimilarSpecies, option);
     aws->create_button("MERGE_SIMILAR_SPECIES","MERGE SIMILAR SPECIES","M");
 
     aws->at("close");
@@ -950,12 +944,12 @@ static AW_window *createMergeSimilarSpeciesWindow(AW_root *aw_root, int option, 
     return (AW_window *)aws;
 }
 
-AW_window *NT_createMergeSimilarSpeciesWindow(AW_root *aw_root, AW_CL cl_ntw) {
-    return createMergeSimilarSpeciesWindow(aw_root, 0, cl_ntw);
+AW_window *NT_createMergeSimilarSpeciesWindow(AW_root *aw_root) {
+    return createMergeSimilarSpeciesWindow(aw_root, 0);
 }
 
-AW_window *NT_createMergeSimilarSpeciesAndConcatenateWindow(AW_root *aw_root, AW_CL cl_ntw) {
-    return createMergeSimilarSpeciesWindow(aw_root, MERGE_SIMILAR_CONCATENATE_ALIGNMENTS, cl_ntw);
+AW_window *NT_createMergeSimilarSpeciesAndConcatenateWindow(AW_root *aw_root) {
+    return createMergeSimilarSpeciesWindow(aw_root, MERGE_SIMILAR_CONCATENATE_ALIGNMENTS);
 }
 
 /*-------------------------------------------------------------------------------------------------------*/

@@ -1243,7 +1243,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
             awm->insert_sub_menu("Merge Species",      "g", 0, AWM_EXP);
             {
-                AWMIMT("merge_species", "Create merged species from similar species", "m", "sp_merge.hlp",     AWM_EXP, AW_POPUP, (AW_CL)NT_createMergeSimilarSpeciesWindow, (AW_CL)ntw );
+                AWMIMT("merge_species", "Create merged species from similar species", "m", "sp_merge.hlp",     AWM_EXP, AW_POPUP, (AW_CL)NT_createMergeSimilarSpeciesWindow, 0);
                 AWMIMT("join_marked",   "Join Marked Species",                        "J", "join_species.hlp", AWM_EXP, AW_POPUP, (AW_CL)create_species_join_window,         0);
             }
             awm->close_sub_menu();
@@ -1302,7 +1302,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
                 GDE_load_menu(awm,AWM_ALL,"align");
             }
             awm->close_sub_menu();
-            AWMIMT("seq_concat",    "Concatenate Sequences/Alignments", "C", "concatenate_align.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_createConcatenationWindow,     (AW_CL)ntw);
+            AWMIMT("seq_concat",    "Concatenate Sequences/Alignments", "C", "concatenate_align.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_createConcatenationWindow,     0);
             AWMIMT("track_changes", "Track alignment changes",          "k", "track_ali_changes.hlp", AWM_EXP, AW_POPUP, (AW_CL)NT_create_trackAliChanges_window, 0);
             SEP________________________SEP();
 
