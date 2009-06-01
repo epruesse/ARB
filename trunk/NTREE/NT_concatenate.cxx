@@ -909,7 +909,11 @@ AW_window *NT_createConcatenationWindow(AW_root *aw_root) {
 static AW_window *createMergeSimilarSpeciesWindow(AW_root *aw_root, int option) {
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init(aw_root, "MERGE_SPECIES", "MERGE SPECIES WINDOW" );
+    {
+        char *window_id = GBS_global_string_copy("MERGE_SPECIES_%i", option);
+        aws->init(aw_root, window_id, "MERGE SPECIES WINDOW" );
+        free(window_id);
+    }
     aws->load_xfig("merge_species.fig");
 
     aws->callback( AW_POPUP_HELP,(AW_CL)"merge_species.hlp");
@@ -945,11 +949,17 @@ static AW_window *createMergeSimilarSpeciesWindow(AW_root *aw_root, int option) 
 }
 
 AW_window *NT_createMergeSimilarSpeciesWindow(AW_root *aw_root) {
-    return createMergeSimilarSpeciesWindow(aw_root, 0);
+    static AW_window *aw = 0;
+    
+    if (!aw) aw = createMergeSimilarSpeciesWindow(aw_root, 0);
+    return aw;
 }
 
 AW_window *NT_createMergeSimilarSpeciesAndConcatenateWindow(AW_root *aw_root) {
-    return createMergeSimilarSpeciesWindow(aw_root, MERGE_SIMILAR_CONCATENATE_ALIGNMENTS);
+    static AW_window *aw = 0;
+    
+    if (!aw) aw = createMergeSimilarSpeciesWindow(aw_root, MERGE_SIMILAR_CONCATENATE_ALIGNMENTS);
+    return aw;
 }
 
 /*-------------------------------------------------------------------------------------------------------*/
