@@ -163,6 +163,83 @@ GB_ERROR GB_create_index(GBDATA *gbd, const char *key, GB_CASE case_sens, long e
     return error;
 }
 
+#if defined(DEBUG)
+
+void GB_dump_indices(GBDATA *gbd) {
+    // dump indices of container
+
+    char *db_path = strdup(GB_get_db_path(gbd));
+
+    if (GB_TYPE(gbd) != GB_DB) {
+        fprintf(stderr, "'%s' (%s) is no container.\n", db_path, GB_get_type_name(gbd));
+    }
+    else {
+        struct gb_index_files_struct *ifs;
+        
+        int           index_count = 0;
+        GBCONTAINER  *gbc         = (GBCONTAINER*)gbd;
+        GB_MAIN_TYPE *Main        = GBCONTAINER_MAIN(gbc);
+
+        for (ifs = GBCONTAINER_IFS(gbc); ifs; ifs = GB_INDEX_FILES_NEXT(ifs)) {
+            index_count++;
+        }
+
+        if (index_count == 0) {
+            fprintf(stderr, "Container '%s' has no index.\n", db_path);
+        }
+        else {
+            int pass;
+
+            fprintf(stderr, "Indices for '%s':\n", db_path);
+            for (pass = 1; pass <= 2; pass++) {
+                if (pass == 2) {
+                    fprintf(stderr, "\nDetailed index contents:\n\n");
+                }
+                index_count = 0;
+                for (ifs = GBCONTAINER_IFS(gbc); ifs; ifs = GB_INDEX_FILES_NEXT(ifs)) {
+                    fprintf(stderr,
+                            "* Index %i for key=%s (%i), entries=%li, %s\n",
+                            index_count,
+                            Main->keys[ifs->key].key,
+                            ifs->key,
+                            ifs->nr_of_elements,
+                            ifs->case_sens == GB_MIND_CASE
+                            ? "Case sensitive"
+                            : (ifs->case_sens == GB_IGNORE_CASE
+                               ? "Case insensitive"
+                               : "<Error in case_sens>")
+                            );
+
+                    if (pass == 2) {
+                        struct gb_if_entries *ifes;
+                        int                   index;
+
+                        fprintf(stderr, "\n");
+                        for (index = 0; index<ifs->hash_table_size; index++) {
+                            for (ifes = GB_ENTRIES_ENTRY(GB_INDEX_FILES_ENTRIES(ifs),index);
+                                 ifes;
+                                 ifes = GB_IF_ENTRIES_NEXT(ifes))
+                            {
+                                GBDATA     *igbd = GB_IF_ENTRIES_GBD(ifes);
+                                const char *data = GB_read_char_pntr(igbd);
+
+                                fprintf(stderr, "  - '%s' (@idx=%i)\n", data, index);
+                            }
+                        }
+                        fprintf(stderr, "\n");
+                    }
+                    index_count++;
+                }
+            }
+        }
+    }
+
+    free(db_path);
+}
+
+#endif /* DEBUG */
+
+
 /* find an entry in an hash table */
 GBDATA *gb_index_find(GBCONTAINER *gbf, struct gb_index_files_struct *ifs, GBQUARK quark, const char *val, GB_CASE case_sens, int after_index){
     unsigned long         index;
