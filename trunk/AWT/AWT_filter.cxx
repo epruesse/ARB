@@ -136,8 +136,8 @@ static void awt_add_sequences_to_list(struct adfiltercbstruct *cbs, const char *
                 if (type == GB_BITS || type == GB_STRING) {
                     char *str;
 
-                    if (count) str = GBS_global_string_copy("%s%-20s SEQ_%i   %s", pre, name, count + 1, TYPE);
-                    else str       = GBS_global_string_copy("%s%-20s     %s", pre, name, TYPE);
+                    if (count) str = GBS_global_string_copy("%s%-20s SEQ_%i %s", pre, name, count + 1, TYPE);
+                    else str       = GBS_global_string_copy("%s%-20s       %s", pre, name, TYPE);
 
                     const char *target = GBS_global_string("%c%s%c%s", tpre, GB_read_key_pntr(gb_data), 1, name);
 
