@@ -453,8 +453,7 @@ struct gb_if_entries
 
 /** hash index to speed up GB_find(x,x,down_2_level) ***/
 
-struct gb_index_files_struct
-{
+struct gb_index_files_struct {
     GB_REL_IFS  rel_if_next;    /* Typ: (struct gb_index_files_struct *) */
 
     GBQUARK key;
