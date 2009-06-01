@@ -51,30 +51,6 @@ void init_Advisor(AW_root *awr, AW_default def)
     initialized = true;
 }
 
-// -------------------------
-//      event handler :
-// -------------------------
-
-#define AWT_ADVICE_LISTEN_DELAY 500
-static const char *awt_advice_cb_result = 0;
-
-void awt_message_timer_listen_event(AW_root *awr, AW_CL cl1, AW_CL cl2)
-{
-    AW_window *aww = ((AW_window *)cl1);
-    if (aww->is_shown()) { // if still shown, then auto-activate to avoid that user minimizes advice-window
-        aww->activate();
-        awr->add_timed_callback(AWT_ADVICE_LISTEN_DELAY, awt_message_timer_listen_event, cl1, cl2);
-    }
-}
-
-static void advice_close_cb(AW_window*) {
-    awt_advice_cb_result = "close";
-}
-static void advice_hide_and_close_cb(AW_window*) {
-    advice_root->awar(AWAR_ADVICE_UNDERSTOOD)->write_int(1);
-    awt_advice_cb_result = "close";
-}
-
 // ----------------------------
 //      disabled advices :
 // ----------------------------
@@ -102,6 +78,35 @@ static void disable_advice(const char* id) {
 
 // -------------------------------------------
 
+static void advice_close_cb(AW_window *aww, AW_CL cl_id, AW_CL type) {
+    int understood = advice_root->awar(AWAR_ADVICE_UNDERSTOOD)->read_int();
+
+    // switch to 'not understood'. Has to be checked by user for each advice.
+    advice_root->awar(AWAR_ADVICE_UNDERSTOOD)->write_int(0); 
+    aww->hide();
+
+    if (understood) {
+        const char *id = (const char *)cl_id;
+
+        disable_advice(id);
+        if (type & AWT_ADVICE_TOGGLE) {
+            static bool in_advice = false;
+            if (!in_advice) {
+                in_advice = true;
+                AWT_advice("You have disabled an advice.\n"
+                           "In order to disable it PERMANENTLY, save properties.", AWT_ADVICE_TOGGLE);
+                in_advice = false;
+            }
+        }
+    }
+}
+static void advice_hide_and_close_cb(AW_window *aww, AW_CL cl_id, AW_CL type) {
+    advice_root->awar(AWAR_ADVICE_UNDERSTOOD)->write_int(1);
+    advice_close_cb(aww, cl_id, type);
+}
+
+// -------------------------------------------
+
 void AWT_reactivate_all_advices() {
     get_disabled_advices()->write_string("");
 }
@@ -110,7 +115,7 @@ void AWT_advice(const char *message, int type, const char *title, const char *co
     awt_assert(initialized);
     size_t  message_len = strlen(message); awt_assert(message_len>0);
     long    crc32       = GB_checksum(message, message_len, true, " .,-!"); // checksum is used to test if advice was shown
-    char   *advice_id   = GBS_global_string_copy("%lx", crc32);
+    char   *advice_id   = GBS_global_string_copy("%lx", crc32); // do not delete (bound to cbs)
 
     bool show_advice = !advice_disabled(advice_id);
 
@@ -123,10 +128,10 @@ void AWT_advice(const char *message, int type, const char *title, const char *co
         else awt_assert((type & AWT_ADVICE_HELP) == 0);
 #endif // ASSERTION_USED
 
-        AW_window_simple *aws = new AW_window_simple; // do not delete (ARB will crash) -- maybe reuse window for all advices? 
+        AW_window_simple *aws = new AW_window_simple; // do not delete (ARB will crash) -- maybe reuse window for all advices?
 
         if (!title) title = "Please read carefully";
-        aws->init(advice_root, "Advice", GBS_global_string("ARB: %s", title));
+        aws->init(advice_root, "advice", GBS_global_string("ARB: %s", title));
         aws->load_xfig("awt/advice.fig");
 
         bool has_help     = type & AWT_ADVICE_HELP;
@@ -135,7 +140,7 @@ void AWT_advice(const char *message, int type, const char *title, const char *co
         if (has_help) {
             aws->callback( AW_POPUP_HELP,(AW_CL)corresponding_help);
             aws->at("help");
-            aws->create_button("HELP","HELP","H");
+            aws->create_button(0, "HELP","H");
 
             if (type & AWT_ADVICE_HELP_POPUP) help_pops_up = true;
         }
@@ -158,45 +163,16 @@ void AWT_advice(const char *message, int type, const char *title, const char *co
 
         aws->at("ok");
         if (type & AWT_ADVICE_TOGGLE) {
-            aws->callback(advice_close_cb);
-            aws->create_button("OK","OK","O");
+            aws->callback(advice_close_cb, (AW_CL)advice_id, type);
+            aws->create_button(0, "OK", "O");
         }
         else {
-            aws->callback(advice_hide_and_close_cb);
-            aws->create_autosize_button("OK","I understand","O", 2);
+            aws->callback(advice_hide_and_close_cb, (AW_CL)advice_id, type);
+            aws->create_autosize_button(0, "I understand", "O", 2);
         }
 
         aws->window_fit();
-
-        // ----------------------------------------
-        //      show window and wait for answer
-        // ----------------------------------------
-
-        //     aws->show_grabbed();
-        aws->activate();
-
-        const char *dummy    = "";
-        awt_advice_cb_result = dummy;
-
-        advice_root->add_timed_callback(AWT_ADVICE_LISTEN_DELAY, awt_message_timer_listen_event, (AW_CL)aws, 0);
-        while (awt_advice_cb_result == dummy) {
-            advice_root->process_events(); // wait for answer
-        }
-        aws->hide();
-
-        if (understood->read_int() == 1) {
-            disable_advice(advice_id);
-            if (type & AWT_ADVICE_TOGGLE) {
-                static bool in_advice = false;
-                if (!in_advice) {
-                    in_advice = true;
-                    AWT_advice("You have disabled an advice.\n"
-                               "In order to disable it PERMANENTLY, save properties.", AWT_ADVICE_TOGGLE);
-                    in_advice = false;
-                }
-            }
-        }
+        aws->show();
     }
-    free(advice_id);
 }
 
