@@ -665,10 +665,11 @@ static void aw_calculate_WM_offsets(AW_window *aww) {
     oposy = root->awar(aw_awar_name_posy(aww))->read_int();
 
     XtVaGetValues( p_aww(aww)->shell ,
-    XmNx, &posx,
-    XmNy, &posy,
-    NULL);
-    p_aww(aww)->WM_top_offset = posy-oposy;
+                   XmNx, &posx,
+                   XmNy, &posy,
+                   NULL);
+
+    p_aww(aww)->WM_top_offset  = posy-oposy;
     p_aww(aww)->WM_left_offset = posx-oposx;
 }
 
@@ -1603,16 +1604,6 @@ void AW_window::create_devices(void) {
         p_w->areas[AW_BOTTOM_AREA]->create_devices(this, AW_BOTTOM_AREA);
     }
 }
-
-#if 0
-// currently unused
-void activate_question(AW_root *root,AW_window *aww) {
-    p_global->help_active = 1;
-    p_global->set_cursor( XtDisplay(p_global->toplevel_widget),
-            XtWindow(p_aww(aww)->shell),
-            p_global->question_cursor);
-}
-#endif
 
 void AW_help_entry_pressed(AW_window *aww) {
     AW_root *root = aww->get_root();
@@ -3460,13 +3451,12 @@ void AW_root::define_remote_command(AW_cb_struct *cbs) {
     AW_cb_struct *old_cbs = (AW_cb_struct*)GBS_write_hash(prvt->action_hash, cbs->id, (long)cbs);
     if (old_cbs) {
         if (!old_cbs->is_equal(*cbs)) {                  // existing remote command replaced by different callback
-#if defined(DEVEL_RALF)
-            GBK_terminate("duplicated use of callback id '%s'", old_cbs->id);
-#else
 #if defined(DEBUG)
             fprintf(stderr, GBS_global_string("Warning: duplicated use of callback id '%s'\n", old_cbs->id));
-#endif // DEBUG
+#if defined(DEVEL_RALF)
+            gb_assert(0);
 #endif // DEVEL_RALF
+#endif // DEBUG
         }
         // do not free old_cbs, cause it's still reachable from first widget that defined this remote command
     }
