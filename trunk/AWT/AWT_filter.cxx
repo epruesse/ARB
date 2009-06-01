@@ -141,7 +141,7 @@ static void awt_add_sequences_to_list(struct adfiltercbstruct *cbs, const char *
 
                     const char *target = GBS_global_string("%c%s%c%s", tpre, GB_read_key_pntr(gb_data), 1, name);
 
-                    cbs->aws->insert_selection(cbs->id, str, target);
+                    cbs->aw_filt->insert_selection(cbs->id, str, target);
                     free(str);
                     count++;
                 }
@@ -158,8 +158,8 @@ void awt_create_select_filter_window_gb_cb(void *, struct adfiltercbstruct *cbs)
     if (cbs->id) {
         char *use = cbs->awr->awar(cbs->def_alignment)->read_string();
 
-        cbs->aws->clear_selection_list(cbs->id);
-        cbs->aws->insert_default_selection( cbs->id, "none", "" );
+        cbs->aw_filt->clear_selection_list(cbs->id);
+        cbs->aw_filt->insert_default_selection( cbs->id, "none", "" );
         
         const char *name = GBT_readOrCreate_char_pntr(cbs->gb_main, AWAR_SPECIES_NAME, "");
         if (name[0]){
@@ -176,7 +176,7 @@ void awt_create_select_filter_window_gb_cb(void *, struct adfiltercbstruct *cbs)
             awt_add_sequences_to_list(cbs,use,gb_extended,"",' ');
         }
 
-        cbs->aws->update_selection_list( cbs->id );
+        cbs->aw_filt->update_selection_list( cbs->id );
         free(use);
     }
     awt_create_select_filter_window_aw_cb(0,cbs);
@@ -236,9 +236,9 @@ adfiltercbstruct *awt_create_select_filter(AW_root *aw_root, GBDATA *gb_main, co
     aw_root->awar_string( acbs->def_2filter );
     aw_root->awar_string( acbs->def_2alignment );
 
-    acbs->id = 0;
-    acbs->aws = 0;
-    acbs->awr = aw_root;
+    acbs->id      = 0;
+    acbs->aw_filt = 0;
+    acbs->awr     = aw_root;
     {
         char *fname = aw_root->awar(acbs->def_name)->read_string();
         const char *fsname = GBS_global_string(" data%c%s",1,fname);
@@ -318,56 +318,61 @@ char *AWT_get_combined_filter_name(AW_root *aw_root, GB_CSTR prefix) {
 
 AW_window *awt_create_select_filter_win(AW_root *aw_root, AW_CL res_of_create_select_filter) {
     struct adfiltercbstruct *acbs = (struct adfiltercbstruct *)res_of_create_select_filter;
-    GB_push_transaction(acbs->gb_main);
 
-    AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "FILTER_SELECT", "Select Filter");
-    aws->load_xfig("awt/filter.fig");
-    aws->button_length( 10 );
+    if (!acbs->aw_filt) {
+        GB_push_transaction(acbs->gb_main);
 
-    aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE","C");
+        AW_window_simple *aws = new AW_window_simple;
+        aws->init( aw_root, "FILTER_SELECT", "Select Filter");
+        aws->load_xfig("awt/filter.fig");
+        aws->button_length( 10 );
 
-    aws->at("help");aws->callback(AW_POPUP_HELP,(AW_CL)"sel_fil.hlp");
-    aws->create_button("HELP", "HELP","H");
+        aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE","C");
 
-    acbs->aws = (AW_window *)aws;
-    aws->at("filter");
-    acbs->id = aws->create_selection_list(acbs->def_subname,0,"",20,3);
+        aws->at("help");aws->callback(AW_POPUP_HELP,(AW_CL)"sel_fil.hlp");
+        aws->create_button("HELP", "HELP","H");
 
-    aws->at("2filter");
-    aws->callback(AW_POPUP,(AW_CL)awt_create_2_filter_window,(AW_CL)acbs);
-    aws->create_button(acbs->def_2name,acbs->def_2name);
+        acbs->aw_filt = aws; // store the filter selection window in 'acbs'
+        
+        aws->at("filter");
+        acbs->id = aws->create_selection_list(acbs->def_subname,0,"",20,3);
 
-    aws->at("zero");
-    aws->callback((AW_CB1)awt_create_select_filter_window_aw_cb,(AW_CL)acbs);
-    aws->create_input_field(acbs->def_cancel,10);
+        aws->at("2filter");
+        aws->callback(AW_POPUP,(AW_CL)awt_create_2_filter_window,(AW_CL)acbs);
+        aws->create_button(acbs->def_2name,acbs->def_2name);
 
-    aws->at("sequence");
-    aws->create_text_field(acbs->def_source,1,1);
+        aws->at("zero");
+        aws->callback((AW_CB1)awt_create_select_filter_window_aw_cb,(AW_CL)acbs);
+        aws->create_input_field(acbs->def_cancel,10);
 
-    aws->at("min");
-    aws->create_input_field(acbs->def_min,4);
+        aws->at("sequence");
+        aws->create_text_field(acbs->def_source,1,1);
 
-    aws->at("max");
-    aws->create_input_field(acbs->def_max,4);
+        aws->at("min");
+        aws->create_input_field(acbs->def_min,4);
 
-    aws->at("simplify");
-    aws->create_option_menu(acbs->def_simplify);
-    aws->insert_option("ORIGINAL DATA","O",0);
-    aws->sens_mask(AWM_EXP);
-    aws->insert_option("TRANSVERSIONS ONLY","T",1);
-    aws->insert_option("SIMPLIFIED AA","A",2);
-    aws->sens_mask(AWM_ALL);
-    aws->update_option_menu();
+        aws->at("max");
+        aws->create_input_field(acbs->def_max,4);
 
-    awt_create_select_filter_window_gb_cb(0,acbs);
+        aws->at("simplify");
+        aws->create_option_menu(acbs->def_simplify);
+        aws->insert_option("ORIGINAL DATA","O",0);
+        aws->sens_mask(AWM_EXP);
+        aws->insert_option("TRANSVERSIONS ONLY","T",1);
+        aws->insert_option("SIMPLIFIED AA","A",2);
+        aws->sens_mask(AWM_ALL);
+        aws->update_option_menu();
 
-    aws->button_length( 7 );
-    aws->at("len");    aws->create_button(0,acbs->def_len);
+        awt_create_select_filter_window_gb_cb(0,acbs);
 
-    GB_pop_transaction(acbs->gb_main);
-    return (AW_window *)aws;
+        aws->button_length( 7 );
+        aws->at("len");    aws->create_button(0,acbs->def_len);
+
+        GB_pop_transaction(acbs->gb_main);
+    }
+
+    return acbs->aw_filt;
 }
 
 AP_filter *awt_get_filter(AW_root *aw_root, adfiltercbstruct *acbs) {
