@@ -1482,11 +1482,13 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             SEP________________________SEP();
         }
 
-        awm->insert_sub_menu("Other..",  "O", 0, AWM_EXP);
-        {
-            AWMIMT(awm->local_id("tree_pseudo_species_to_organism"), "Change pseudo species to organisms in tree", "p", "tree_pseudo.hlp",        AWM_EXP, (AW_CB)NT_pseudo_species_to_organism, (AW_CL)ntw, 0);
+        if (is_genome_db) {
+            awm->insert_sub_menu("Other..",  "O", 0, AWM_EXP);
+            {
+                AWMIMT(awm->local_id("tree_pseudo_species_to_organism"), "Change pseudo species to organisms in tree", "p", "tree_pseudo.hlp",        AWM_EXP, (AW_CB)NT_pseudo_species_to_organism, (AW_CL)ntw, 0);
+            }
+            awm->close_sub_menu();
         }
-        awm->close_sub_menu();
     }
 
     if(!clone){
@@ -1516,7 +1518,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
             awm->insert_sub_menu("WL specials","W", 0, AWM_EXP);
             {
-                AWMIMT("chewck_gcg_list",                        "Check GCG list",          "C", "checkgcg.hlp", AWM_EXP, AW_POPUP, (AW_CL)create_check_gcg_window,          0);
+                AWMIMT("check_gcg_list",                         "Check GCG list",          "C", "checkgcg.hlp", AWM_EXP, AW_POPUP, (AW_CL)create_check_gcg_window,          0);
                 AWMIMT(awm->local_id("view_probe_group_result"), "View probe group result", "V", "",             AWM_EXP, AW_POPUP, (AW_CL)create_probe_group_result_window, (AW_CL)ntw);
             }
             awm->close_sub_menu();
