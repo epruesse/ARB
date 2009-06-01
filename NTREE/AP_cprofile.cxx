@@ -57,6 +57,8 @@
 #include <awt.hxx>
 #include <awt_sel_boxes.hxx>
 
+#define ap_assert(cond) arb_assert(cond)
+
 typedef GB_UINT4  STATTYPE;
 extern GBDATA    *GLOBAL_gb_main;
 enum {
@@ -1233,42 +1235,65 @@ void CPRO_loadstatistic_cb(AW_window *aw,AW_CL which_statistic)
     free(filename);
 }
 
-AW_window *CPRO_savestatisticwindow_cb(AW_root *aw_root,AW_CL which_statistic)
-{
-    AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "SAVE_CPRO_STATISTIC", "SAVE STATISTIC");
-    aws->load_xfig("sel_box.fig");
+static AW_window *CPRO_savestatisticwindow_cb(AW_root *aw_root,AW_CL cl_which_statistic) {
+    static AW_window *aw[2] = { 0, 0 };             // one window for each value of 'which_statistic'
 
-    aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");
+    int which_statistic = int(cl_which_statistic);
+    ap_assert(which_statistic >= 0 && which_statistic <= 1);
 
-    aws->at("save");aws->callback(CPRO_savestatistic_cb,which_statistic);
-    aws->create_button("SAVE","SAVE","S");
+    if (!aw[which_statistic]) {
+        AW_window_simple *aws       = new AW_window_simple;
+        char             *window_id = GBS_global_string_copy("SAVE_CPRO_STATISTIC_%i", which_statistic);
+        
+        aws->init( aw_root, window_id, "SAVE STATISTIC");
+        aws->load_xfig("sel_box.fig");
 
-    aws->callback( (AW_CB0)AW_POPDOWN);
-    aws->at("cancel");
-    aws->create_button("CANCEL","CANCEL","C");
+        aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
+        aws->create_button("CLOSE","CLOSE","C");
 
-    awt_create_selection_box((AW_window *)aws,"cpro/save");
+        aws->at("save");aws->callback(CPRO_savestatistic_cb,which_statistic);
+        aws->create_button("SAVE","SAVE","S");
 
-    return (AW_window *)aws;
+        aws->callback( (AW_CB0)AW_POPDOWN);
+        aws->at("cancel");
+        aws->create_button("CANCEL","CANCEL","C");
+
+        awt_create_selection_box(aws,"cpro/save");
+
+        free(window_id);
+
+        aw[which_statistic] = aws;
+    }
+    return aw[which_statistic];
 }
 
-AW_window *CPRO_loadstatisticwindow_cb(AW_root *aw_root,AW_CL which_statistic)
-{
-    AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "LOAD_CPRO_STATISTIC", "LOAD STATISTIC");
-    aws->load_xfig("sel_box.fig");
+static AW_window *CPRO_loadstatisticwindow_cb(AW_root *aw_root, AW_CL cl_which_statistic) {
+    static AW_window *aw[2] = { 0, 0 };             // one window for each value of 'which_statistic'
 
-    aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");
+    int which_statistic = int(cl_which_statistic);
+    ap_assert(which_statistic >= 0 && which_statistic <= 1);
 
-    aws->at("save");aws->callback(CPRO_loadstatistic_cb,which_statistic);
-    aws->create_button("LOAD","LOAD","S");
+    if (!aw[which_statistic]) {
+        AW_window_simple *aws       = new AW_window_simple;
+        char             *window_id = GBS_global_string_copy("LOAD_CPRO_STATISTIC_%i", which_statistic);
+        
+        aws->init(aw_root, window_id, "LOAD STATISTIC");
+        aws->load_xfig("sel_box.fig");
 
-    awt_create_selection_box((AW_window *)aws,"cpro/load");
+        aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
+        aws->create_button("CLOSE","CLOSE","C");
 
-    return (AW_window *)aws;
+        aws->at("save");aws->callback(CPRO_loadstatistic_cb,which_statistic);
+        aws->create_button("LOAD","LOAD","S");
+
+        awt_create_selection_box(aws,"cpro/load");
+
+        free(window_id);
+        
+        aw[which_statistic] = aws;
+    }
+
+    return aw[which_statistic];
 }
 
 // search point of resolution when half maximum if reached (for condense)
