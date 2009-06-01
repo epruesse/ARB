@@ -13,7 +13,7 @@
 
 
 struct adfiltercbstruct {
-    AW_window *aws;
+    AW_window *aw_filt;
     AW_root   *awr;
     GBDATA    *gb_main;
     
