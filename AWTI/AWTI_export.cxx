@@ -145,8 +145,8 @@ static GB_ERROR awtc_read_export_format(export_format *efo, const char *file, bo
             }
 
             error = GB_failedTo_error("read export format", fullfile, error);
+            fclose(in);
         }
-        fclose(in);
         free(fullfile);
     }
 
