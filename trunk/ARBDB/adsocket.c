@@ -1034,7 +1034,13 @@ GB_CSTR GB_getenvARBMACROHOME(void) {
     static const char *amh = 0;
     if (!amh) {
         amh = getenv_existing_directory("ARBMACROHOME"); // doc in arb_envar.hlp
-        if (!amh) amh = GBS_eval_env("$(HOME)/.arb_prop/macros");
+        if (!amh) {
+            amh = GBS_eval_env("$(HOME)/.arb_prop/macros");
+            if (!GB_is_directory(amh)) {
+                GB_ERROR error = GB_create_directory(amh);
+                if (error) GB_warning("Failed to create directory '%s' (Reason: $!)", amh, error);
+            }
+        }
     }
     return amh;
 }
