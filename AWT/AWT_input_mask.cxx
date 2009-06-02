@@ -1553,8 +1553,8 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
             aws->callback( AW_POPUP_HELP,(AW_CL)"input_mask.hlp");      aws->create_button(ID("HELP"),"HELP","H");
 
             if (edit_reload) {
-                aws->callback(AWT_edit_input_mask, (AW_CL)&mask->mask_global()->get_maskname(), (AW_CL)mask->mask_global()->is_local_mask());   aws->create_button(ID("EDIT"),"EDIT","E");
-                aws->callback(AWT_reload_input_mask, (AW_CL)&mask->mask_global()->get_internal_maskname());                                     aws->create_button(ID("RELOAD"),"RELOAD","R");
+                aws->callback(AWT_edit_input_mask, (AW_CL)&mask->mask_global()->get_maskname(), (AW_CL)mask->mask_global()->is_local_mask());   aws->create_button(0, "EDIT","E");
+                aws->callback(AWT_reload_input_mask, (AW_CL)&mask->mask_global()->get_internal_maskname());                                     aws->create_button(0, "RELOAD","R");
             }
 
             if (edit_reload && edit_enable && show_marked) aws->at_newline();
