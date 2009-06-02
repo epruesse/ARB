@@ -73,6 +73,7 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "export_to_ARB",            2);
     GBS_write_hash(dontCallHash, "primer_design",            2);
     GBS_write_hash(dontCallHash, "CHECK_GCG_LIST/SHOW_FILE", 2);
+    GBS_write_hash(dontCallHash, "HELP/EDIT", 2);
 
     // avoid saving
     GBS_write_hash(dontCallHash, "save_changes", 3);
@@ -92,6 +93,9 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "ARB_NT/mark_long_branches",  5);
     GBS_write_hash(dontCallHash, "ARB_NT/tree_scale_lengths",  5);
     GBS_write_hash(dontCallHash, "del_marked",                 5);
+    GBS_write_hash(dontCallHash, "GDE__import__Import_sequences_using_Readseq_slow_/GO", 5);
+    GBS_write_hash(dontCallHash, "MULTI_PROBE/CREATE_NEW_SEQUENCE", 5);
+    GBS_write_hash(dontCallHash, "LOAD_SELECTION_BOX/LOAD", 5);
 #endif // DEVEL_RALF
 
     GB_HASH *autodontCallHash = GBS_create_hash(30, GB_MIND_CASE);
@@ -124,6 +128,8 @@ int sortedByCallbackLocation(const char *k0, long v0, const char *k1, long v1) {
 }
 
 void AW_root::callallcallbacks(int mode) {
+    // mode == -2 -> mark all as called
+    // mode == -1 -> forget called
     // mode == 0 -> call all in alpha-order
     // mode == 1 -> call all in reverse alpha-order
     // mode == 2 -> call all in code-order
@@ -163,24 +169,21 @@ void AW_root::callallcallbacks(int mode) {
         }
 
         switch (mode) {
+            case -2:
             case 0: break;                          // use this order
             case 1: reverse(callbacks.begin(), callbacks.end()); break; // use reverse order
             case 10: random_shuffle(callbacks.begin(), callbacks.end()); break; // use random order
             default : gb_assert(0); break;          // unknown mode
         }
 
-        CallbackIter end  = callbacks.end();
+        count = callbacks.size();
+        aw_message(GBS_global_string("%zi callbacks were not called yet", count));
+
+        CallbackIter end = callbacks.end();
 
         for (int pass = 1; pass <= 2; ++pass) {
             size_t       curr = 1;
             CallbackIter cb   = callbacks.begin();
-
-#if defined(DEVEL_RALF)
-            // skip first xxx callbacks (to go to bug quicker)
-            int skip  = 0;                          // 150;
-            advance(cb, skip);
-            curr     += skip;
-#endif // DEVEL_RALF
 
             for (; cb != end; ++cb) {
                 const char *remote_command = cb->c_str();
@@ -189,32 +192,34 @@ void AW_root::callallcallbacks(int mode) {
                 if (this_pass) {
                     GBS_write_hash(alreadyCalledHash, remote_command, 1); // don't call twice
 
-                    AW_cb_struct *cbs = (AW_cb_struct *)GBS_read_hash(prvt->action_hash, remote_command);
-                    bool skipcb = remote_command[0] == '!' || GBS_read_hash(dontCallHash, remote_command);
-                    if (!skipcb) {
-                        if (cbs->f == (AW_CB)AW_help_entry_pressed) skipcb = true;
-                    }
-                    if (skipcb) {
-                        fprintf(stderr, "Skipped callback %zu/%zu (%s)\n", curr, count, remote_command);
-                    }
-                    else {
-                        fprintf(stderr, "Calling back %zu/%zu (%s)\n", curr, count, remote_command);
-                        
-                        GB_clear_error();
-
-                        cbs->run_callback();
-                        process_events();
-
-                        if (GB_have_error()) {
-                            fprintf(stderr, "Unhandled error in '%s': %s\n", remote_command, GB_await_error());
+                    if (mode != -2) { // -2 means "only mark as called"
+                        AW_cb_struct *cbs = (AW_cb_struct *)GBS_read_hash(prvt->action_hash, remote_command);
+                        bool skipcb = remote_command[0] == '!' || GBS_read_hash(dontCallHash, remote_command);
+                        if (!skipcb) {
+                            if (cbs->f == (AW_CB)AW_help_entry_pressed) skipcb = true;
                         }
+                        if (skipcb) {
+                            fprintf(stderr, "Skipped callback %zu/%zu (%s)\n", curr, count, remote_command);
+                        }
+                        else {
+                            fprintf(stderr, "Calling back %zu/%zu (%s)\n", curr, count, remote_command);
+                        
+                            GB_clear_error();
 
-                        if (cbs->f == AW_POPUP) {
-                            AW_window *awp = cbs->pop_up_window;
-                            if (awp) {
-                                fprintf(stderr, "Popping down window '%s'\n", awp->get_window_id());
-                                awp->hide();
-                                process_events();
+                            cbs->run_callback();
+                            process_events();
+
+                            if (GB_have_error()) {
+                                fprintf(stderr, "Unhandled error in '%s': %s\n", remote_command, GB_await_error());
+                            }
+
+                            if (cbs->f == AW_POPUP) {
+                                AW_window *awp = cbs->pop_up_window;
+                                if (awp) {
+                                    fprintf(stderr, "Popping down window '%s'\n", awp->get_window_id());
+                                    awp->hide();
+                                    process_events();
+                                }
                             }
                         }
                     }
