@@ -71,8 +71,6 @@ extern AW_window    *MP_main(AW_root *root, AW_default def);
 
 AW_window *create_tree_window(AW_root *aw_root,AWT_graphic *awd);
 
-#define F_ALL ((AW_active)-1)
-
 void nt_test_ascii_print(AW_window *aww){
     AWT_create_ascii_print_window(aww->get_root(),"hello world","Just a test");
 }
@@ -1158,15 +1156,12 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
         awm->create_menu("File",     "F", "nt_file.hlp",  AWM_ALL );
         {
-            AWMIMT("save_changes",  "Quicksave changes",            "s","save.hlp", AWM_ALL, (AW_CB)NT_save_quick_cb, 0,    0);
-            AWMIMT("save_all_as",   "Save whole database as ...",       "w","save.hlp", AWM_ALL, AW_POPUP,  (AW_CL)NT_create_save_as, (AW_CL)"tmp/nt/arbdb");
-
+            AWMIMT("save_changes", "Quicksave changes",          "s", "save.hlp",      AWM_ALL, (AW_CB)NT_save_quick_cb, 0, 0);
+            AWMIMT("save_all_as",  "Save whole database as ...", "w", "save.hlp",      AWM_ALL, AW_POPUP,(AW_CL)NT_create_save_as, (AW_CL)"tmp/nt/arbdb");
             SEP________________________SEP();
-
-            AWMIMT("new_window",    "New window",           "N","newwindow.hlp",        F_ALL, AW_POPUP, (AW_CL)create_nt_main_window, clone+1 );
+            AWMIMT("new_window",   "New window",                 "N", "newwindow.hlp", AWM_ALL, AW_POPUP,(AW_CL)create_nt_main_window, clone+1);
             SEP________________________SEP();
-
-            AWMIMT("optimize_db",   "Optimize database",        "O","optimize.hlp",AWM_ALL, AW_POPUP,   (AW_CL)NT_create_database_optimization_window, 0);
+            AWMIMT("optimize_db",  "Optimize database",          "O", "optimize.hlp",  AWM_ALL, AW_POPUP,(AW_CL)NT_create_database_optimization_window, 0);
             SEP________________________SEP();
 
             awm->insert_sub_menu("Import",      "I");
@@ -1197,10 +1192,10 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             awm->close_sub_menu();
 #if 0
             SEP________________________SEP();
-            AWMIMT("undo",      "Undo",      "U", "undo.hlp", F_ALL, (AW_CB)NT_undo_cb,      (AW_CL)GB_UNDO_UNDO, (AW_CL)ntw);
-            AWMIMT("redo",      "Redo",      "d", "undo.hlp", F_ALL, (AW_CB)NT_undo_cb,      (AW_CL)GB_UNDO_REDO, (AW_CL)ntw);
-            AWMIMT("undo_info", "Undo info", "f", "undo.hlp", F_ALL, (AW_CB)NT_undo_info_cb, (AW_CL)GB_UNDO_UNDO, (AW_CL)0  );
-            AWMIMT("redo_info", "Redo info", "o", "undo.hlp", F_ALL, (AW_CB)NT_undo_info_cb, (AW_CL)GB_UNDO_REDO, (AW_CL)0  );
+            AWMIMT("undo",      "Undo",      "U", "undo.hlp", AWM_ALL, (AW_CB)NT_undo_cb,      (AW_CL)GB_UNDO_UNDO, (AW_CL)ntw);
+            AWMIMT("redo",      "Redo",      "d", "undo.hlp", AWM_ALL, (AW_CB)NT_undo_cb,      (AW_CL)GB_UNDO_REDO, (AW_CL)ntw);
+            AWMIMT("undo_info", "Undo info", "f", "undo.hlp", AWM_ALL, (AW_CB)NT_undo_info_cb, (AW_CL)GB_UNDO_UNDO, (AW_CL)0  );
+            AWMIMT("redo_info", "Redo info", "o", "undo.hlp", AWM_ALL, (AW_CB)NT_undo_info_cb, (AW_CL)GB_UNDO_REDO, (AW_CL)0  );
 
             SEP________________________SEP();
 #endif
@@ -1541,7 +1536,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             AWMIMT("props_www",      "Search world wide web (WWW)",                 "W","props_www.hlp",        AWM_ALL, AW_POPUP, (AW_CL)AWT_open_www_window,  (AW_CL)GLOBAL_gb_main );
             SEP________________________SEP();
             AWMIMT("enable_advices", "Reactivate advices",                          "R","advice.hlp", AWM_ALL, (AW_CB) AWT_reactivate_all_advices, 0, 0 );
-            AWMIMT("toggle_expert",  "Toggle expert mode",                          "T",0,            AWM_ALL, NT_toggle_expert_mode, 0, 0 );
+            AWMIMT("!toggle_expert", "Toggle expert mode",                          "T",0,            AWM_ALL, NT_toggle_expert_mode, 0, 0 );
             SEP________________________SEP();
             AWMIMT("save_props",     "Save properties (in ~/.arb_prop/ntree.arb)",  "S","savedef.hlp",AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
         }

@@ -325,8 +325,8 @@ public:
     AW_device *get_print_device (AW_area area);
 
     // ************** Create the menu buttons *********
-    void create_menu(AW_label name, const char *mnemonic, const char *help_text = 0, AW_active mask = -1);
-    void insert_sub_menu(AW_label name, const char *mnemonic, const char *help_text = 0, AW_active mask = -1);
+    void create_menu(AW_label name, const char *mnemonic, const char *help_text = 0, AW_active mask = AWM_ALL);
+    void insert_sub_menu(AW_label name, const char *mnemonic, const char *help_text = 0, AW_active mask = AWM_ALL);
     void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text, AW_active mask, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
     void close_sub_menu(void);
 

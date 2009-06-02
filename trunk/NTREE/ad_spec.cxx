@@ -1309,19 +1309,19 @@ AW_window *ad_create_query_window(AW_root *aw_root)
     ad_query_global_cbs = cbs;
 
     aws->create_menu("More search",     "s" );
-    aws->insert_menu_topic("spec_search_equal_fields_within_db","Search For Equal Fields and Mark Duplikates",                "E", "search_duplicates.hlp", -1, (AW_CB)awt_search_equal_entries, cbs, 0);
-    aws->insert_menu_topic("spec_search_equal_words_within_db", "Search For Equal Words Between Fields and Mark Duplikates",  "W", "search_duplicates.hlp", -1, (AW_CB)awt_search_equal_entries, cbs, 1);
-    aws->insert_menu_topic("spec_search_next_relativ_of_sel",   "Search Next Relatives of SELECTED Species in PT_Server ...", "R", 0,                       -1, (AW_CB)AW_POPUP, (AW_CL)ad_spec_next_neighbours_create, cbs);
-    aws->insert_menu_topic("spec_search_next_relativ_of_listed","Search Next Relatives of LISTED Species in PT_Server ...",   "L", 0,                       -1, (AW_CB)AW_POPUP, (AW_CL)ad_spec_next_neighbours_listed_create, cbs);
+    aws->insert_menu_topic("spec_search_equal_fields_within_db","Search For Equal Fields and Mark Duplikates",                "E", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, cbs, 0);
+    aws->insert_menu_topic("spec_search_equal_words_within_db", "Search For Equal Words Between Fields and Mark Duplikates",  "W", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, cbs, 1);
+    aws->insert_menu_topic("spec_search_next_relativ_of_sel",   "Search Next Relatives of SELECTED Species in PT_Server ...", "R", 0,                       AWM_ALL, (AW_CB)AW_POPUP, (AW_CL)ad_spec_next_neighbours_create, cbs);
+    aws->insert_menu_topic("spec_search_next_relativ_of_listed","Search Next Relatives of LISTED Species in PT_Server ...",   "L", 0,                       AWM_ALL, (AW_CB)AW_POPUP, (AW_CL)ad_spec_next_neighbours_listed_create, cbs);
 
     aws->button_length(7);
 
     aws->at("close");
-    aws->callback( (AW_CB0)AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE","CLOSE","C");
 
     aws->at("help");
-    aws->callback( AW_POPUP_HELP,(AW_CL)"sp_search.hlp");
+    aws->callback(AW_POPUP_HELP,(AW_CL)"sp_search.hlp");
     aws->create_button("HELP","HELP","H");
 
     return (AW_window *)aws;

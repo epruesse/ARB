@@ -2866,7 +2866,7 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
         sprintf(buffer, "tmp/dbquery_%s/awar_parspredefined", query_id); cbs->awar_parspredefined = strdup(buffer); aw_root->awar_string(cbs->awar_parspredefined);
 
         if (awtqs->use_menu){
-            sprintf(buffer, "Modify Fields of Listed %s", Items); query_rel_menu_entry(aws, "mod_fields_of_listed", query_id, buffer, "F", "mod_field_list.hlp",-1,AW_POPUP,(AW_CL)create_awt_open_parser,(AW_CL)cbs);
+            sprintf(buffer, "Modify Fields of Listed %s", Items); query_rel_menu_entry(aws, "mod_fields_of_listed", query_id, buffer, "F", "mod_field_list.hlp", AWM_ALL, AW_POPUP,(AW_CL)create_awt_open_parser,(AW_CL)cbs);
         }else{
             aws->at(awtqs->open_parser_pos_fig);
             aws->callback(AW_POPUP,(AW_CL)create_awt_open_parser,(AW_CL)cbs);
@@ -2874,30 +2874,30 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
         }
     }
     if (awtqs->use_menu) {
-        sprintf(buffer, "Set Protection of Fields of Listed %s", Items); query_rel_menu_entry(aws, "s_prot_of_listed", query_id, buffer, "P", "set_protection.hlp", -1, AW_POPUP, (AW_CL)create_awt_set_protection, (AW_CL)cbs);
+        sprintf(buffer, "Set Protection of Fields of Listed %s", Items); query_rel_menu_entry(aws, "s_prot_of_listed", query_id, buffer, "P", "set_protection.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_awt_set_protection, (AW_CL)cbs);
         aws->insert_separator();
-        sprintf(buffer, "Mark Listed %s, don't Change Rest",   Items); query_rel_menu_entry(aws, "mark_listed",             query_id, buffer, "M", "mark.hlp", -1, (AW_CB)awt_do_mark_list, (AW_CL)cbs, (AW_CL)1 | 8);
-        sprintf(buffer, "Mark Listed %s, Unmark Rest",         Items); query_rel_menu_entry(aws, "mark_listed_unmark_rest", query_id, buffer, "L", "mark.hlp", -1, (AW_CB)awt_do_mark_list, (AW_CL)cbs, (AW_CL)1);
-        sprintf(buffer, "Unmark Listed %s, don't Change Rest", Items); query_rel_menu_entry(aws, "unmark_listed",           query_id, buffer, "U", "mark.hlp", -1, (AW_CB)awt_do_mark_list, (AW_CL)cbs, (AW_CL)0 | 8);
-        sprintf(buffer, "Unmark Listed %s, Mark Rest",         Items); query_rel_menu_entry(aws, "unmark_listed_mark_rest", query_id, buffer, "R", "mark.hlp", -1, (AW_CB)awt_do_mark_list, (AW_CL)cbs, (AW_CL)0);
+        sprintf(buffer, "Mark Listed %s, don't Change Rest",   Items); query_rel_menu_entry(aws, "mark_listed",             query_id, buffer, "M", "mark.hlp", AWM_ALL, (AW_CB)awt_do_mark_list, (AW_CL)cbs, (AW_CL)1 | 8);
+        sprintf(buffer, "Mark Listed %s, Unmark Rest",         Items); query_rel_menu_entry(aws, "mark_listed_unmark_rest", query_id, buffer, "L", "mark.hlp", AWM_ALL, (AW_CB)awt_do_mark_list, (AW_CL)cbs, (AW_CL)1);
+        sprintf(buffer, "Unmark Listed %s, don't Change Rest", Items); query_rel_menu_entry(aws, "unmark_listed",           query_id, buffer, "U", "mark.hlp", AWM_ALL, (AW_CB)awt_do_mark_list, (AW_CL)cbs, (AW_CL)0 | 8);
+        sprintf(buffer, "Unmark Listed %s, Mark Rest",         Items); query_rel_menu_entry(aws, "unmark_listed_mark_rest", query_id, buffer, "R", "mark.hlp", AWM_ALL, (AW_CB)awt_do_mark_list, (AW_CL)cbs, (AW_CL)0);
         aws->insert_separator();
 
 
-        sprintf(buffer, "Set Color of Listed %s", Items);    query_rel_menu_entry(aws, "set_color_of_listed", query_id, buffer,"C","set_color_of_listed.hlp",-1,AW_POPUP, (AW_CL)create_awt_listed_items_colorizer, (AW_CL)cbs);
+        sprintf(buffer, "Set Color of Listed %s", Items);    query_rel_menu_entry(aws, "set_color_of_listed", query_id, buffer,"C","set_color_of_listed.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_awt_listed_items_colorizer, (AW_CL)cbs);
 
         if (cbs->gb_ref){
             awt_assert(cbs->selector->type == AWT_QUERY_ITEM_SPECIES); // stuff below works only for species
             aws->insert_separator();
             if (cbs->expect_hit_in_ref_list) {
                 aws->insert_menu_topic("search_equal_fields_and_listed_in_I", "Search entries existing in both DBs and listed in the DB I hitlist","S",
-                                       "search_equal_fields.hlp",-1,(AW_CB)awt_do_query,(AW_CL)cbs,AWT_EXT_QUERY_COMPARE_LINES);
+                                       "search_equal_fields.hlp", AWM_ALL, (AW_CB)awt_do_query,(AW_CL)cbs,AWT_EXT_QUERY_COMPARE_LINES);
                 aws->insert_menu_topic("search_equal_words_and_listed_in_I",  "Search words existing in entries of both DBs and listed in the DB I hitlist","W",
-                                       "search_equal_fields.hlp",-1,(AW_CB)awt_do_query,(AW_CL)cbs,AWT_EXT_QUERY_COMPARE_WORDS);
+                                       "search_equal_fields.hlp", AWM_ALL, (AW_CB)awt_do_query,(AW_CL)cbs,AWT_EXT_QUERY_COMPARE_WORDS);
             }else{
                 aws->insert_menu_topic("search_equal_field_in_both_db", "Search entries existing in both DBs","S",
-                                       "search_equal_fields.hlp",-1,(AW_CB)awt_do_query,(AW_CL)cbs,AWT_EXT_QUERY_COMPARE_LINES);
+                                       "search_equal_fields.hlp", AWM_ALL, (AW_CB)awt_do_query,(AW_CL)cbs,AWT_EXT_QUERY_COMPARE_LINES);
                 aws->insert_menu_topic("search_equal_word_in_both_db","Search words existing in entries of both DBs","W",
-                                       "search_equal_fields.hlp",-1,(AW_CB)awt_do_query,(AW_CL)cbs,AWT_EXT_QUERY_COMPARE_WORDS);
+                                       "search_equal_fields.hlp", AWM_ALL, (AW_CB)awt_do_query,(AW_CL)cbs,AWT_EXT_QUERY_COMPARE_WORDS);
             }
         }
     }
