@@ -300,14 +300,18 @@ void mp_load_list( AW_window *aww, AW_selection_list *selection_list, char *base
     aww->update_selection_list(selection_list);
 }
 
-AW_window *mp_create_load_box_for_selection_lists(AW_root *aw_root, AW_CL selid)
+static AW_window *mp_create_load_box_for_selection_lists(AW_root *aw_root, AW_CL selid)
 {
-    char *base_name = GBS_global_string_copy("tmp/load_box_sel_%li",(long)selid);
+    AW_selection_list *selection_list = (AW_selection_list*)selid;
+
+    char *var_id    = GBS_string_2_key(selection_list->variable_name);
+    char *base_name = GBS_global_string_copy("tmp/load_box_sel_%s", var_id); // do not free (attached to cbs)
 
     aw_create_selection_box_awars(aw_root, base_name, ".", ".list", "");
 
-    AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "LOAD", "Load");
+    AW_window_simple *aws       = new AW_window_simple;
+    char             *window_id = GBS_global_string_copy("LOAD_%s", var_id);
+    aws->init( aw_root, window_id, "Load");
     aws->load_xfig("sl_l_box.fig");
 
     aws->at("close");
@@ -319,8 +323,12 @@ AW_window *mp_create_load_box_for_selection_lists(AW_root *aw_root, AW_CL selid)
     aws->callback((AW_CB)mp_load_list,(AW_CL)selid,(AW_CL)base_name); // transfers ownership of base_name
     aws->create_button("LOAD","LOAD","L");
 
-    awt_create_selection_box((AW_window *)aws,base_name);
-    return (AW_window*) aws;
+    awt_create_selection_box(aws, base_name);
+
+    free(window_id);
+    free(var_id);
+
+    return aws;
 }
 
 void MP_Window::build_pt_server_list()
