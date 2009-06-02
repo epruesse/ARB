@@ -924,6 +924,7 @@ void AWT_create_debug_menu(AW_window *awmm) {
         awmm->insert_menu_topic("!run_all_cbs_inf",   "Call all callbacks (forever)",     "", "", AWM_ALL, callallcallbacks, 11, 0);
         awmm->insert_separator();
         awmm->insert_menu_topic("!forget_called_cbs", "Forget called",     "", "", AWM_ALL, callallcallbacks, -1, 0);
+        awmm->insert_menu_topic("!mark_all_called",   "Mark all called",   "", "", AWM_ALL, callallcallbacks, -2, 0);
         awmm->close_sub_menu();
     }
 }
