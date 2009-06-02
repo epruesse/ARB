@@ -741,7 +741,7 @@ AW_window *createSaiProbeMatchWindow(AW_root *awr){
     awm->insert_help_topic("How to Visualize SAI`s ?", "H", "saiProbeHelp.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"saiProbeHelp.hlp", 0);
 
     awm->create_menu("File", "F", 0,  AWM_ALL );
-    awm->insert_menu_topic( "close", "Close", "C","quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 1,0);
+    awm->insert_menu_topic( "close", "Close", "C","quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
 
     awm->create_menu("Properties", "P", 0,  AWM_ALL );
     awm->insert_menu_topic( "selectDispField", "Select Display Field", "F","displayField.hlp", AWM_ALL,AW_POPUP, (AW_CL)createDisplayField_window, (AW_CL)0);
