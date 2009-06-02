@@ -82,6 +82,7 @@ void AW_root::make_sensitive(Widget w, AW_active mask) {
 
     if (mask != AWM_ALL) { // no need to make widget sensitive, if its shown unconditionally
         prvt->button_list = new AW_buttons_struct(mask, w, prvt->button_list);
+        if (!(mask & global_mask)) XtSetSensitive(w, False); // disable widget if mask doesnt match
     }
 }
 
