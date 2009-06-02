@@ -51,7 +51,7 @@ char *prefixSSH(const char *host, const char *command, int async) {
     */
 
     char *result    = 0;
-    char  asyncChar = "&"[!async];
+    char  asyncChar = " &"[!!async];
 
     if (host && host[0]) {
         const char *hostPort = strchr(host, ':');
