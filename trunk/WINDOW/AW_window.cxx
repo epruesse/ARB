@@ -75,9 +75,11 @@ AW_timer_cb_struct::~AW_timer_cb_struct(void) {
 
 void AW_root::make_sensitive(Widget w, AW_active mask) {
     // Dont call make_sensitive directly.
-    // Simply set sens_mask(AWM_EXP) and after creating the expert-mode-only widgets, set back using sens_mask(AWM_ALL) 
+    // Simply set sens_mask(AWM_EXP) and after creating the expert-mode-only widgets, set back using sens_mask(AWM_ALL)
 
     aw_assert(w);
+    aw_assert(legal_mask(mask));
+    
     prvt->set_last_widget(w);
 
     if (mask != AWM_ALL) { // no need to make widget sensitive, if its shown unconditionally
@@ -88,6 +90,7 @@ void AW_root::make_sensitive(Widget w, AW_active mask) {
 
 AW_buttons_struct::AW_buttons_struct(AW_active maski, Widget w, AW_buttons_struct *prev_button) {
     aw_assert(w);
+    aw_assert(legal_mask(maski));
 
     mask     = maski;
     button   = w;
@@ -125,14 +128,17 @@ bool AW_remove_button_from_sens_list(AW_root *root, Widget w) {
 }
 
 AW_config_struct::AW_config_struct(const char *idi, AW_active maski, Widget w,
-        const char *variable_namei, const char *variable_valuei,
-        AW_config_struct *nexti) {
-    id = strdup(idi);
-    mask = maski;
-    widget = w;
-    variable_name = strdup(variable_namei);
+                                   const char *variable_namei, const char *variable_valuei,
+                                   AW_config_struct *nexti)
+{
+    aw_assert(legal_mask(maski));
+    
+    id             = strdup(idi);
+    mask           = maski;
+    widget         = w;
+    variable_name  = strdup(variable_namei);
     variable_value = strdup(variable_valuei);
-    next = nexti;
+    next           = nexti;
 }
 
 /*************************************************************************************************************/
@@ -2542,6 +2548,7 @@ void AW_window::set_vertical_scrollbar_bottom_indent(int indent) {
 }
 
 void AW_root::apply_sensitivity(AW_active mask) {
+    aw_assert(legal_mask(mask));
     AW_buttons_struct *list;
 
     global_mask = mask;
@@ -2572,6 +2579,7 @@ inline int yoffset_for_mode_button(int button_number) {
 }
 
 int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active Mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+    aw_assert(legal_mask(Mask));
     Widget button;
 
     TuneBackground(p_w->mode_area, TUNE_BUTTON); // set background color for mode-buttons
@@ -2807,6 +2815,7 @@ static void exit_duplicate_mnemonic() {
 // --------------------------------------------------------------------------------
 
 void AW_window::create_menu(AW_label name, const char *mnemonic, const char *helpText, AW_active Mask) {
+    aw_assert(legal_mask(Mask));
     p_w->menu_deep = 0;
 #ifdef DEBUG
     init_duplicate_mnemonic();
@@ -2830,6 +2839,7 @@ void AW_window::all_menus_created() { // this is called by AW_window::show() (i.
 }
 
 void AW_window::insert_sub_menu(AW_label name, const char *mnemonic, const char *helpText, AW_active Mask) {
+    aw_assert(legal_mask(Mask));
     AWUSE(helpText);
     Widget shell, Label;
 
@@ -2898,10 +2908,13 @@ void AW_window::close_sub_menu(void) {
 }
 
 void AW_window::insert_menu_topic(const char *topic_id, AW_label name,
-        const char *mnemonic, const char *helpText, AW_active Mask, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2) {
+                                  const char *mnemonic, const char *helpText, AW_active Mask,
+                                  void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2)
+{
+    aw_assert(legal_mask(Mask));
     Widget button;
-    if (!topic_id)
-        topic_id = name;
+    
+    if (!topic_id) topic_id = name; // hmm, due to this we cannot insert_menu_topic w/o id. Change? @@@
 
     TuneBackground(p_w->menu_bar[p_w->menu_deep], TUNE_MENUTOPIC); // set background color for normal menu topics
 
@@ -2939,7 +2952,9 @@ void AW_window::insert_menu_topic(const char *topic_id, AW_label name,
 }
 
 void AW_window::insert_help_topic(AW_label name, const char *mnemonic, const char *helpText, AW_active Mask,
-                                  void (*f)(AW_window*, AW_CL , AW_CL ), AW_CL cd1, AW_CL cd2) {
+                                  void (*f)(AW_window*, AW_CL , AW_CL ), AW_CL cd1, AW_CL cd2)
+{
+    aw_assert(legal_mask(Mask));
     Widget button;
 
     // create one help-sub-menu-point
