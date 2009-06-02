@@ -185,6 +185,9 @@ static void popup_probe_design_result_window(AW_window *aww)
         pd_gl.pd_design_id = pd_gl.pd_design->create_selection_list( AWAR_TARGET_STRING, NULL, "", 40, 5 );
         pd_gl.pd_design->set_selection_list_suffix(pd_gl.pd_design_id, "prb");
 
+        pd_gl.pd_design->clear_selection_list(pd_gl.pd_design_id);
+        pd_gl.pd_design->insert_default_selection( pd_gl.pd_design_id, "No probes designed yet", "" );
+
         pd_gl.pd_design->at("save");
         pd_gl.pd_design->callback( AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)pd_gl.pd_design_id );
         pd_gl.pd_design->create_button("SAVE", "SAVE", "S");
