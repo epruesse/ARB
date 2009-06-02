@@ -583,15 +583,20 @@ void create_save_box_for_selection_lists_save(AW_window *aws,AW_CL selidcd,AW_CL
 
 AW_window *create_save_box_for_selection_lists(AW_root *aw_root,AW_CL selid)
 {
-    char *awar_base_name = GBS_global_string_copy("tmp/save_box_sel_%li", long(selid)); // don't free (passed to callback)
+    AW_selection_list *selection_list = (AW_selection_list*)selid;
+
+    char *var_id         = GBS_string_2_key(selection_list->variable_name);
+    char *awar_base_name = GBS_global_string_copy("tmp/save_box_sel_%s", var_id); // don't free (passed to callback)
     char *awar_line_anz  = GBS_global_string_copy("%s/line_anz", awar_base_name);
     {
         aw_create_selection_box_awars(aw_root, awar_base_name, ".", GBS_global_string("noname.list"), "list");
         aw_root->awar_int(awar_line_anz, 0, AW_ROOT_DEFAULT);
     }
 
-    AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "SAVE_SELECTCION_BOX", "SAVE BOX");
+    AW_window_simple *aws       = new AW_window_simple;
+    char             *window_id = GBS_global_string_copy("SAVE_SELECTCION_BOX_%s", var_id);
+
+    aws->init(aw_root, window_id, "SAVE BOX");
     aws->load_xfig("sl_s_box.fig");
 
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
@@ -613,11 +618,13 @@ AW_window *create_save_box_for_selection_lists(AW_root *aw_root,AW_CL selid)
     aws->insert_option("10000", "a", 10000);
     aws->update_option_menu();
 
-    awt_create_selection_box((AW_window *)aws,awar_base_name);
+    awt_create_selection_box(aws,awar_base_name);
 
+    free(window_id);
     free(awar_line_anz);
+    free(var_id);
 
-    return (AW_window *)aws;
+    return aws;
 }
 
 void AWT_load_list(AW_window *aww, AW_CL sel_id, AW_CL ibase_name)
