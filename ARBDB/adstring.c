@@ -1446,10 +1446,21 @@ void GBK_terminate(const char *templat, ...) {
 }
 
 GB_ERROR GBK_assert_msg(const char *assertion, const char *file, int linenr) {
-    return GBS_global_string("assertion '%s' failed in %s #%i", assertion, file, linenr);
+#define BUFSIZE 1000
+    static char *buffer   = 0;
+    const char  *result   = 0;
+    int          old_size = last_global_string_size;
+
+    if (!buffer) buffer = (char *)malloc(BUFSIZE);
+    result              = GBS_global_string_to_buffer(buffer, BUFSIZE, "assertion '%s' failed in %s #%i", assertion, file, linenr);
+
+    last_global_string_size = old_size;
+
+    return result;
+#undef BUFSIZE
 }
 
-void GB_warning(const char *templat, ...) { 
+void GB_warning(const char *templat, ...) {
     /* goes to header: __ATTR__FORMAT(1)  */
 
     /* If program uses GUI, the message is printed via aw_message, otherwise it goes to stdout
