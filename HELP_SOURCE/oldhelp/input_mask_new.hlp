@@ -29,6 +29,9 @@ NOTES		To delete masks delete the corresponding file in the inputMasks subdirect
 
 EXAMPLES	None
 
-WARNINGS	None
+WARNINGS	When a mask was reloaded (or created), macro recording will not work properly.
+                You need to restart ARB before you can record/execute macros for modified masks.
+
+                Anyway, modifying a mask easily renders any macros recorded for that mask useless.
 
 BUGS		No bugs known

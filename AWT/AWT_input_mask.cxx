@@ -1446,7 +1446,7 @@ static GB_ERROR writeDefaultMaskfile(const string& fullname, const string& maskn
 }
 
 static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, const awt_item_type_selector *sel,
-                                                const string& mask_name, bool local, GB_ERROR& error) {
+                                                const string& mask_name, bool local, GB_ERROR& error, bool reloading) {
     size_t             lineNo = 0;
     awt_input_mask_ptr mask;
 
@@ -1534,8 +1534,11 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
             AW_window_simple*& aws = mask->get_window();
             aws                    = new AW_window_simple;
 
+            // do not use callback ids for reloaded masks
+#define ID(id) (reloading ? NULL : id)
+
             {
-                char *window_id = GBS_global_string_copy("INPUT_MASK[%s]", mask->mask_global()->get_maskid().c_str()); // create a unique id for each mask
+                char *window_id = GBS_global_string_copy("INPUT_MASK_%s", mask->mask_global()->get_maskid().c_str()); // create a unique id for each mask
                 aws->init(root, window_id, title.c_str());
                 free(window_id);
             }
@@ -1546,12 +1549,12 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
             aws->auto_space(x_spacing, y_spacing);
             aws->at_newline();
 
-            aws->callback((AW_CB0)AW_POPDOWN); aws->create_button("CLOSE", "CLOSE", "C");
-            aws->callback( AW_POPUP_HELP,(AW_CL)"input_mask.hlp"); aws->create_button("HELP","HELP","H");
+            aws->callback((AW_CB0)AW_POPDOWN);                          aws->create_button(ID("CLOSE"), "CLOSE", "C");
+            aws->callback( AW_POPUP_HELP,(AW_CL)"input_mask.hlp");      aws->create_button(ID("HELP"),"HELP","H");
 
             if (edit_reload) {
-                aws->callback( AWT_edit_input_mask, (AW_CL)&mask->mask_global()->get_maskname(), (AW_CL)mask->mask_global()->is_local_mask()); aws->create_button("EDIT","EDIT","E");
-                aws->callback( AWT_reload_input_mask, (AW_CL)&mask->mask_global()->get_internal_maskname()); aws->create_button("RELOAD","RELOAD","R");
+                aws->callback(AWT_edit_input_mask, (AW_CL)&mask->mask_global()->get_maskname(), (AW_CL)mask->mask_global()->is_local_mask());   aws->create_button(ID("EDIT"),"EDIT","E");
+                aws->callback(AWT_reload_input_mask, (AW_CL)&mask->mask_global()->get_internal_maskname());                                     aws->create_button(ID("RELOAD"),"RELOAD","R");
             }
 
             if (edit_reload && edit_enable && show_marked) aws->at_newline();
@@ -1743,7 +1746,7 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                                     check_last_parameter(error, command);
 
                                     if (!error) {
-                                        char   *key                    = GBS_string_2_key(label.c_str());
+                                        char   *key                    = ID(GBS_string_2_key(label.c_str()));
                                         AW_CB   cb                     = cmd == CMD_OPENMASK ? AWT_open_input_mask : AWT_change_input_mask;
                                         string  mask_to_start_internal = find_internal_name(mask_to_start, local);
 
@@ -1772,7 +1775,7 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                                     check_last_parameter(error, command);
 
                                     if (!error) {
-                                        char *key = GBS_string_2_key(button_text.c_str());
+                                        char *key = ID(GBS_string_2_key(button_text.c_str()));
 
                                         aws->callback(AWT_input_mask_browse_url, (AW_CL)new string(url_srt), (AW_CL)&*mask);
                                         aws->button_length(button_text.length()+2);
@@ -1792,7 +1795,7 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                                         referenced_ids[id_source] = lineNo;
                                         referenced_ids[id_dest]   = lineNo;
 
-                                        char *key = GBS_string_2_key(button_text.c_str());
+                                        char *key = ID(GBS_string_2_key(button_text.c_str()));
 
                                         aws->callback(AWT_input_mask_perform_action, (AW_CL)new awt_assignment(mask, id_dest, id_source), 0);
                                         aws->button_length(button_text.length()+2);
@@ -1807,7 +1810,7 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                                     check_last_parameter(error, command);
 
                                     if (!error) {
-                                        char *key = GBS_string_2_key(text.c_str());
+                                        char *key = ID(GBS_string_2_key(text.c_str()));
                                         aws->button_length(text.length()+2);
                                         aws->create_button(key, text.c_str());
                                         free(key);
@@ -1818,7 +1821,7 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                                     if (!error) {
                                         const awt_item_type_selector *selector         = mask->mask_global()->get_selector();
                                         string                        button_awar_name = selector->get_self_awar();
-                                        char                         *key              = GBS_string_2_key(button_awar_name.c_str());
+                                        char                         *key              = ID(GBS_string_2_key(button_awar_name.c_str()));
 
                                         aws->button_length(selector->get_self_awar_content_length());
                                         aws->create_button(key, button_awar_name.c_str());
@@ -1941,6 +1944,8 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
 
             // link to database
             if (!error) link_mask_to_database(mask);
+
+#undef ID
         }
 
         if (error) {
@@ -2006,7 +2011,7 @@ GB_ERROR AWT_initialize_input_mask(AW_root *root, GBDATA *gb_main, const awt_ite
     }
 
     if (mask_iter == input_mask_list.end()) { // mask not loaded yet
-        awt_input_mask_ptr newMask = awt_create_input_mask(root, gb_main, sel, mask_name, local, error);
+        awt_input_mask_ptr newMask = awt_create_input_mask(root, gb_main, sel, mask_name, local, error, unlink_old);
         if (error) {
             error = GBS_global_string("Error reading %s (%s)", mask_name, error);
             if (!old_mask.Null()) { // are we doing a reload or changemask ?
