@@ -190,6 +190,8 @@ struct ad_item_selector GEN_item_selector = {
     &AWT_organism_selector, GB_get_grandfather,
 };
 
+ad_item_selector *GEN_get_selector() { return &GEN_item_selector; }
+
 void GEN_species_name_changed_cb(AW_root *awr) {
     char *species_name = awr->awar(AWAR_SPECIES_NAME)->read_string();
     GB_transaction ta(GLOBAL_gb_main);

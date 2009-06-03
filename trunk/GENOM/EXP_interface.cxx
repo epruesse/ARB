@@ -186,6 +186,7 @@ struct ad_item_selector EXP_item_selector = {
     &AWT_organism_selector, GB_get_grandfather, 
 };
 
+ad_item_selector *EXP_get_selector() { return &EXP_item_selector; }
 
 GBDATA *EXP_get_current_experiment(GBDATA *gb_main, AW_root *aw_root) {
     GBDATA *gb_organism    = GEN_get_current_organism(gb_main, aw_root);

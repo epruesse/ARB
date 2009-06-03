@@ -14,6 +14,11 @@
 #include <arbdbt.h>
 #include <adGene.h>
 
+#include <awt.hxx>                                  // for ad_item_selector only
+#include <GEN.hxx> 
+#include <EXP.hxx> 
+#include <aw_color_groups.hxx> 
+
 #include <smartptr.h>
 #include <inline.h>
 
@@ -30,23 +35,37 @@
 using namespace std;
 
 #if defined(DEVEL_RALF)
-#warning the whole fix mechanism should be part of ARBDB
-// meanwhile DB checks are only performed by ARB_NTREE 
-// before moving to ARBDB, ARBDB should go C++ (if this is possible)
+#warning the whole fix mechanism should be part of some lower-level-library
+// meanwhile DB checks are only performed by ARB_NTREE
+// ad_item_selector should go to same library as this module
 #endif // DEVEL_RALF
 
 // --------------------------------------------------------------------------------
 // CheckedConsistencies provides an easy way to automatically correct flues in the database
-// by calling a check routine exactly one.
+// by calling a check routine exactly once.
+// 
 // For an example see nt_check_database_consistency()
+//
+// Note: this makes problems if DB is loaded with older ARB version and some already
+// fixed flues a put into DB again.
+// see http://bugs.arb-home.de/ticket/143
+
+typedef GB_ERROR (*item_check_fun)(GBDATA *gb_item, const ad_item_selector *sel);
+
+typedef map<string, item_check_fun>    item_check_map;
+typedef item_check_map::const_iterator item_check_iter;
 
 class CheckedConsistencies {
-    GBDATA      *gb_main;
-    size_t       species_count;
-    size_t       sai_count;
-    set<string>  consistencies;
+    GBDATA         *gb_main;
+    size_t          species_count;
+    size_t          sai_count;
+    set<string>     consistencies;
+    item_check_map  item_checks;
+
+    GB_ERROR perform_selected_item_checks(ad_item_selector *sel);
 
 public:
+
     CheckedConsistencies(GBDATA *gb_main_) : gb_main(gb_main_) {
         GB_transaction ta(gb_main);
         GBDATA *gb_checks = GB_search(gb_main, "checks", GB_CREATE_CONTAINER);
@@ -95,6 +114,14 @@ public:
         }
     }
 
+    void register_item_check(const string& check_name, item_check_fun item_check) {
+        if (!was_performed(check_name)) {
+            item_checks[check_name] = item_check;
+        }
+    }
+
+    void perform_item_checks(GB_ERROR& error);
+
     GB_ERROR forgetDoneChecks() {
         GB_ERROR       error = 0;
         GB_transaction ta(gb_main);
@@ -113,6 +140,53 @@ public:
         return error;
     }
 };
+
+GB_ERROR CheckedConsistencies::perform_selected_item_checks(ad_item_selector *sel) {
+    GB_ERROR        error = NULL;
+    item_check_iter end   = item_checks.end();
+    
+    for (GBDATA *gb_cont = sel->get_first_item_container(gb_main, NULL, AWT_QUERY_ALL_SPECIES);
+         gb_cont && !error;
+         gb_cont = sel->get_next_item_container(gb_cont, AWT_QUERY_ALL_SPECIES))
+    {
+        for (GBDATA *gb_item = sel->get_first_item(gb_cont);
+             gb_item && !error;
+             gb_item = sel->get_next_item(gb_item))
+        {
+            for (item_check_iter chk = item_checks.begin(); chk != end && !error; ++chk) {
+                error = chk->second(gb_item, sel);
+            }
+        }
+    }
+
+    return error;
+}
+
+void CheckedConsistencies::perform_item_checks(GB_ERROR& error) {
+    if (!item_checks.empty()) {
+        if (!error) {
+            GB_transaction ta(gb_main);
+            bool           is_genome_db = GEN_is_genome_db(gb_main, -1);
+
+            error = perform_selected_item_checks(&AWT_species_selector);
+            if (!error && is_genome_db) {
+                error             = perform_selected_item_checks(GEN_get_selector());
+                if (!error) error = perform_selected_item_checks(EXP_get_selector());
+            }
+
+            error = ta.close(error);
+        }
+
+        if (!error) {
+            item_check_iter end = item_checks.end();
+            for (item_check_iter chk = item_checks.begin(); chk != end && !error; ++chk) {
+                error = register_as_performed(chk->first);
+            }
+
+            if (!error) item_checks.clear();
+        }
+    }
+}
 
 // --------------------------------------------------------------------------------
 
@@ -911,6 +985,42 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
 
 // --------------------------------------------------------------------------------
 
+GB_ERROR NT_remove_dup_colors(GBDATA *gb_item, const ad_item_selector *sel) {
+    // Databases out there may contain multiple 'ARB_color' entries.
+    // Due to some already fixed bug - maybe introduced in r5309 and fixed in r5825
+
+    GBDATA   *gb_color = GB_entry(gb_item, AW_COLOR_GROUP_ENTRY);
+    GB_ERROR  error    = NULL;
+    
+#if defined(DEBUG)
+    int del_count = 0;
+#endif // DEBUG
+
+    if (gb_color) {
+        GB_push_my_security(gb_color);
+        while (!error) {
+            GBDATA *gb_next_color = GB_nextEntry(gb_color);
+            if (!gb_next_color) break;
+            
+            error = GB_delete(gb_next_color);
+            if (!error) del_count++;
+        }
+        GB_pop_my_security(gb_color);
+    }
+
+#if defined(DEBUG)
+    if (del_count) fprintf(stderr,
+                           "- deleted %i duplicated '" AW_COLOR_GROUP_ENTRY "' from %s '%s'\n",
+                           del_count, 
+                           sel->item_name, 
+                           sel->generate_item_id(GB_get_root(gb_item), gb_item));
+#endif // DEBUG
+
+return error;
+}
+
+// --------------------------------------------------------------------------------
+
 GB_ERROR NT_repair_DB(GBDATA *gb_main) {
     // status is already open and will be closed by caller!
 
@@ -921,7 +1031,7 @@ GB_ERROR NT_repair_DB(GBDATA *gb_main) {
         GB_transaction ta(gb_main);
         is_genome_db = GEN_is_genome_db(gb_main, -1);
     }
-    
+
     check.perform_check("fix gene_data",     NT_fix_gene_data,     err);
     check.perform_check("fix_dict_compress", NT_fix_dict_compress, err); // do this before NT_del_mark_move_REF (cause 'REF' is affected)
     check.perform_check("del_mark_move_REF", NT_del_mark_move_REF, err);
@@ -930,6 +1040,9 @@ GB_ERROR NT_repair_DB(GBDATA *gb_main) {
         check.perform_check("convert_gene_locations", NT_convert_gene_locations, err);
     }
 
+    check.register_item_check("duplicated_item_colors", NT_remove_dup_colors);
+    check.perform_item_checks(err);
+    
     return err;
 }
 
