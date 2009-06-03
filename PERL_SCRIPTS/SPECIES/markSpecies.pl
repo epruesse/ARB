@@ -12,7 +12,7 @@ BEGIN {
   if (not exists $ENV{'ARBHOME'}) { die "Environment variable \$ARBHOME has to be defined"; }
   my $arbhome = $ENV{'ARBHOME'};
   push @INC, "$arbhome/lib";
-  push @INC, "$arbhome/lib/PERL_SCRIPTS/SPECIES";
+  push @INC, "$arbhome/PERL_SCRIPTS/SPECIES";
   1;
 }
 
