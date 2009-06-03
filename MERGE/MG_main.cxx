@@ -135,41 +135,21 @@ AW_window *MG_save_result_cb(AW_root *aw_root, char *base_name)
     return (AW_window *)aws;
 }
 
-void
-MG_save_quick_cb(AW_window *aww)
-{
+void MG_save_quick_result_cb(AW_window *aww) {
     char *name = aww->get_root()->awar(AWAR_MAIN_DB"/file_name")->read_string();
     aw_openstatus("Saving database");
     GB_begin_transaction(GLOBAL_gb_dest);
-    GBT_check_data(GLOBAL_gb_dest,0);
+    GBT_check_data(GLOBAL_gb_dest, 0);
     GB_commit_transaction(GLOBAL_gb_dest);
     GB_ERROR error = GB_save_quick_as(GLOBAL_gb_dest, name);
     aw_closestatus();
-    if (error) aw_message(error);
-    else    awt_refresh_selection_box(aww->get_root(), AWAR_MAIN_DB);
+    if (error)
+        aw_message(error);
+    else
+        awt_refresh_selection_box(aww->get_root(), AWAR_MAIN_DB);
     delete name;
+    return;
 }
-
-AW_window *MG_save_quick_result_cb(AW_root *aw_root, char *base_name)
-{
-    static AW_window_simple *aws = 0;
-    if (aws) return (AW_window *)aws;
-
-    aws = new AW_window_simple;
-    aws->init( aw_root, "SAVE_CHANGES_OF_DB_II_AS", "SAVE CHANGES TO DB2 AS");
-    aws->load_xfig("sel_box.fig");
-
-    aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");
-
-    aws->at("save");aws->callback(MG_save_quick_cb);
-    aws->create_button("SAVE","SAVE","S");
-
-    awt_create_selection_box((AW_window *)aws,base_name);
-
-    return (AW_window *)aws;
-}
-
 
 static void MG_create_db_dependent_awars(AW_root *aw_root, GBDATA *gb_merge, GBDATA *gb_dest) {
     MG_create_db_dependent_rename_awars(aw_root, gb_merge, gb_dest);
@@ -187,7 +167,7 @@ static void MG_popup_if_renamed(AW_window *aww, AW_CL cl_create_window) {
             aw_popup                     = create_window(aww->get_root());
             GBS_write_hashi(popup_hash, cl_create_window, (long)aw_popup);
         }
-        
+
         aw_popup->activate();
     }
 
@@ -226,7 +206,7 @@ void MG_start_cb2(AW_window *aww,AW_root *aw_root, bool save_enabled, bool dest_
     if (!error) {
         GB_transaction ta_merge(GLOBAL_gb_merge);
         GB_transaction ta_dest(GLOBAL_gb_dest);
-            
+
         GB_change_my_security(GLOBAL_gb_dest,6,"passwd");
         GB_change_my_security(GLOBAL_gb_merge,6,"passwd");
         if (aww) aww->hide();
@@ -262,16 +242,16 @@ void MG_start_cb2(AW_window *aww,AW_root *aw_root, bool save_enabled, bool dest_
 
         awm->button_length(30);
 
-        if (GB_read_clients(GLOBAL_gb_merge)>=0){ // merge 2 database
+        if (GB_read_clients(GLOBAL_gb_merge)>=0){ // merge two databases
             awm->at("alignment");
             awm->callback((AW_CB1)AW_POPUP,(AW_CL)MG_merge_alignment_cb);
             awm->help_text("mg_alignment.hlp");
-            awm->create_button("CHECK_ALIGNMENTS", "Check Alignments ...");
+            awm->create_button("CHECK_ALIGNMENTS", "Check alignments ...");
 
             awm->at("names");
             awm->callback((AW_CB1)AW_POPUP,(AW_CL)MG_merge_names_cb);
             awm->help_text("mg_names.hlp");
-            awm->create_button("CHECK_NAMES", "Check Names ...");
+            awm->create_button("CHECK_NAMES", "Check names ...");
         }
         else { // export into new database
             MG_set_renamed(true, aw_root, "Not necessary"); // a newly created database needs no renaming
@@ -280,7 +260,7 @@ void MG_start_cb2(AW_window *aww,AW_root *aw_root, bool save_enabled, bool dest_
         awm->at("species");
         awm->callback(MG_popup_if_renamed, (AW_CL)MG_merge_species_cb);
         awm->help_text("mg_species.hlp");
-        awm->create_button("TRANSFER_SPECIES", "Transfer Species ... ");
+        awm->create_button("TRANSFER_SPECIES", "Transfer species ... ");
 
         awm->at("extendeds");
         awm->callback((AW_CB1)AW_POPUP,(AW_CL)MG_merge_extendeds_cb);
@@ -290,22 +270,22 @@ void MG_start_cb2(AW_window *aww,AW_root *aw_root, bool save_enabled, bool dest_
         awm->at("trees");
         awm->callback(MG_popup_if_renamed, (AW_CL)MG_merge_trees_cb);
         awm->help_text("mg_trees.hlp");
-        awm->create_button("TRANSFER_TREES", "Transfer Trees ...");
+        awm->create_button("TRANSFER_TREES", "Transfer trees ...");
 
         awm->at("configs");
         awm->callback(MG_popup_if_renamed, (AW_CL)MG_merge_configs_cb);
         awm->help_text("mg_configs.hlp");
-        awm->create_button("TRANSFER_CONFIGS", "Transfer Configurations ...");
+        awm->create_button("TRANSFER_CONFIGS", "Transfer configurations ...");
 
         if (mg_save_enabled && GB_read_clients(GLOBAL_gb_dest)>=0){       // No need to save when importing data
             awm->at("save");
             awm->callback(AW_POPUP,(AW_CL)MG_save_result_cb,(AW_CL)AWAR_MAIN_DB);
-            awm->create_button("SAVE_WHOLE_DB2", "Save Whole DB II ...");
+            awm->create_button("SAVE_WHOLE_DB2", "Save whole DB II as ...");
 
             awm->at("save_quick");
             awm->highlight();
-            awm->callback(AW_POPUP,(AW_CL)MG_save_quick_result_cb,(AW_CL)AWAR_MAIN_DB);
-            awm->create_button("SAVE_CHANGES_OF_DB2", "Save Changes of DB II as ...");
+            awm->callback(MG_save_quick_result_cb);
+            awm->create_button("SAVE_CHANGES_OF_DB2", "Quick-save changes of DB II");
         }
 
         awm->button_length(15);
@@ -341,7 +321,7 @@ void MG_start_cb(AW_window *aww)
             aw_openstatus("Loading databases");
 
 #if defined(DEVEL_RALF)
-#warning where are GLOBAL_gb_merge / GLOBAL_gb_dest closed ? 
+#warning where are GLOBAL_gb_merge / GLOBAL_gb_dest closed ?
 #warning when closing them, call AWT_browser_forget_db as well
 #endif // DEVEL_RALF
             aw_status("DATABASE I");
