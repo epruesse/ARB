@@ -1931,9 +1931,9 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
 
     // Buttons at left window border
 
-    awmm->create_mode("edit/arrow.bitmap", "normal.hlp", ((AW_active)-1), (AW_CB)modes_cb, (AW_CL)0, (AW_CL)0);
-    awmm->create_mode("edit/kill.bitmap",  "kill.hlp",   ((AW_active)-1), (AW_CB)modes_cb, (AW_CL)1, (AW_CL)0);
-    awmm->create_mode("edit/mark.bitmap",  "mark.hlp",   ((AW_active)-1), (AW_CB)modes_cb, (AW_CL)2, (AW_CL)0);
+    awmm->create_mode("edit/arrow.bitmap", "normal.hlp", AWM_ALL, (AW_CB)modes_cb, (AW_CL)0, (AW_CL)0);
+    awmm->create_mode("edit/kill.bitmap",  "kill.hlp",   AWM_ALL, (AW_CB)modes_cb, (AW_CL)1, (AW_CL)0);
+    awmm->create_mode("edit/mark.bitmap",  "mark.hlp",   AWM_ALL, (AW_CB)modes_cb, (AW_CL)2, (AW_CL)0);
 
     AWTC_create_faligner_variables(awmm->get_root(), db);
 
