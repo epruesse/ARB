@@ -108,7 +108,25 @@ static void advice_hide_and_close_cb(AW_window *aww, AW_CL cl_id, AW_CL type) {
 // -------------------------------------------
 
 void AWT_reactivate_all_advices() {
-    get_disabled_advices()->write_string("");
+    AW_awar *awar_disabled = get_disabled_advices();
+
+    char *disabled = awar_disabled->read_string();
+    char *nosemi   = GBS_string_eval(disabled, ";=", NULL);
+    int   entries  = strlen(nosemi)-strlen(disabled);
+
+    if (entries>0) {
+        awt_assert(entries>1);
+        entries--;
+        aw_message(GBS_global_string("Enabled %i advices", entries));
+    }
+    else {
+        aw_message("No advices were disabled yet.");
+    }
+
+    free(nosemi);
+    free(disabled);
+
+    awar_disabled->write_string("");
 }
 
 void AWT_advice(const char *message, int type, const char *title, const char *corresponding_help) {
