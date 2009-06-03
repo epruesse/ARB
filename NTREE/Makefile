@@ -9,7 +9,6 @@ CPP_OBJECTS = \
 	AP_cprofile.o \
 	AP_csp_2_gnuplot.o \
 	AP_pos_var_pars.o \
-	ETC_check_gcg.o \
 	NT_cb.o \
 	NT_concatenate.o \
 	NT_dbrepair.o \
@@ -272,22 +271,6 @@ AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 
-ETC_check_gcg.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
-ETC_check_gcg.o: $(ARBHOME)/INCLUDE/ad_prot.h
-ETC_check_gcg.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-ETC_check_gcg.o: $(ARBHOME)/INCLUDE/arb_assert.h
-ETC_check_gcg.o: $(ARBHOME)/INCLUDE/arbdb.h
-ETC_check_gcg.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-ETC_check_gcg.o: $(ARBHOME)/INCLUDE/arbdbt.h
-ETC_check_gcg.o: $(ARBHOME)/INCLUDE/attributes.h
-ETC_check_gcg.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-ETC_check_gcg.o: $(ARBHOME)/INCLUDE/aw_global.hxx
-ETC_check_gcg.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-ETC_check_gcg.o: $(ARBHOME)/INCLUDE/aw_position.hxx
-ETC_check_gcg.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ETC_check_gcg.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ETC_check_gcg.o: $(ARBHOME)/INCLUDE/awt.hxx
-
 NT_cb.o: ad_trees.hxx
 NT_cb.o: nt_cb.hxx
 NT_cb.o: nt_internal.h
@@ -390,7 +373,6 @@ NT_extern.o: ap_consensus.hxx
 NT_extern.o: ap_conservProfile2Gnuplot.hxx
 NT_extern.o: ap_csp_2_gnuplot.hxx
 NT_extern.o: ap_pos_var_pars.hxx
-NT_extern.o: etc_check_gcg.hxx
 NT_extern.o: nt_cb.hxx
 NT_extern.o: NT_dbrepair.hxx
 NT_extern.o: nt_edconf.hxx
