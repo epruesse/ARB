@@ -701,7 +701,7 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr){
         if (rnaType == LSU_23S)
             awm->insert_menu_topic( "changeMolecule", "Change Molecule", "M","rna3d_changeMolecule.hlp", AWM_ALL, AW_POPUP, (AW_CL)CreateChangeMolecule_window, 0);
     }
-    awm->insert_menu_topic( "close", "Close", "C","quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 1,0);
+    awm->insert_menu_topic( "close", "Close", "C","quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
 
     {
         awm->at(1,2);
