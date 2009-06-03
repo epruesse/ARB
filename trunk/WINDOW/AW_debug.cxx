@@ -58,45 +58,76 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "ARB_NT/QUIT",    1);
     GBS_write_hash(dontCallHash, "quit",           1);
     GBS_write_hash(dontCallHash, "ARB_EDIT4/QUIT", 1);
+    GBS_write_hash(dontCallHash, "ARB_INTRO/CANCEL", 1);
 
     // avoid start of some external programs:
-    GBS_write_hash(dontCallHash, "xterm",                    2);
-    GBS_write_hash(dontCallHash, "arb_dist",                 2);
-    GBS_write_hash(dontCallHash, "arb_edit",                 2);
-    GBS_write_hash(dontCallHash, "arb_phyl",                 2);
-    GBS_write_hash(dontCallHash, "arb_pars",                 2);
-    GBS_write_hash(dontCallHash, "arb_pars_quick",           2);
-    GBS_write_hash(dontCallHash, "new_arb_edit4",            2);
-    GBS_write_hash(dontCallHash, "new2_arb_edit4",           2);
-    GBS_write_hash(dontCallHash, "ARB_NT/EDIT_SEQUENCES",    2);
-    GBS_write_hash(dontCallHash, "count_different_chars",    2);
-    GBS_write_hash(dontCallHash, "export_to_ARB",            2);
-    GBS_write_hash(dontCallHash, "primer_design",            2);
-    GBS_write_hash(dontCallHash, "CHECK_GCG_LIST/SHOW_FILE", 2);
-    GBS_write_hash(dontCallHash, "HELP/EDIT", 2);
-
+#if 1    
+    GBS_write_hash(dontCallHash, "ARB_NT/EDIT_SEQUENCES",                              2);
+    GBS_write_hash(dontCallHash, "CHECK_GCG_LIST/SHOW_FILE",                           2);
+    GBS_write_hash(dontCallHash, "CPR_MAIN/HELP",                                      2);
+    GBS_write_hash(dontCallHash, "GDE__user__Start_a_slave_ARB_on_a_foreign_host_/GO", 2);
+    GBS_write_hash(dontCallHash, "HELP/BROWSE",                                        2);
+    GBS_write_hash(dontCallHash, "HELP/EDIT",                                          2);
+    GBS_write_hash(dontCallHash, "MACROS/EDIT",                                        2);
+    GBS_write_hash(dontCallHash, "MACROS/EXECUTE",                                     2);
+    GBS_write_hash(dontCallHash, "NAME_SERVER_ADMIN/EDIT_NAMES_FILE",                  2);
+    GBS_write_hash(dontCallHash, "arb_dist",                                           2);
+    GBS_write_hash(dontCallHash, "arb_edit",                                           2);
+    GBS_write_hash(dontCallHash, "arb_pars",                                           2);
+    GBS_write_hash(dontCallHash, "arb_pars_quick",                                     2);
+    GBS_write_hash(dontCallHash, "arb_phyl",                                           2);
+    GBS_write_hash(dontCallHash, "count_different_chars",                              2);
+    GBS_write_hash(dontCallHash, "export_to_ARB",                                      2);
+    GBS_write_hash(dontCallHash, "new2_arb_edit4",                                     2);
+    GBS_write_hash(dontCallHash, "new_arb_edit4",                                      2);
+    GBS_write_hash(dontCallHash, "primer_design",                                      2);
+    GBS_write_hash(dontCallHash, "xterm",                                              2);
+    GBS_write_hash(dontCallHash, "SUBMIT_REG/SEND",                                              2);
+    GBS_write_hash(dontCallHash, "SUBMIT_BUG/SEND",                                              2);
+    GBS_write_hash(dontCallHash, "NAME_SERVER_ADMIN/REMOVE_SUPERFLUOUS_ENTRIES_IN_NAMES_FILE", 2);
+    GBS_write_hash(dontCallHash, "PRINT_CANVAS/PRINT", 2);
+    GBS_write_hash(dontCallHash, "PT_SERVER_ADMIN/CREATE_TEMPLATE", 2);
+    GBS_write_hash(dontCallHash, "SELECT_CONFIFURATION/START", 2);
+#endif
+    
     // avoid saving
     GBS_write_hash(dontCallHash, "save_changes", 3);
     GBS_write_hash(dontCallHash, "save_props",   3);
 
-#if defined(DEVEL_RALF)
+#if 1
 #warning crashing - fix later
     GBS_write_hash(dontCallHash, "ARB_NT/mark_duplicates",         4);
     GBS_write_hash(dontCallHash, "ARB_NT/view_probe_group_result", 4);
     GBS_write_hash(dontCallHash, "check_gcg_list",                 4);
-#endif // DEVEL_RALF
+    GBS_write_hash(dontCallHash, "PT_SERVER_ADMIN/CHECK_SERVER",   4);
+#endif
 
-#if defined(DEVEL_RALF)
-#warning test callbacks asking questions again later    
-    GBS_write_hash(dontCallHash, "ARB_NT/mark_deep_branches",  5);
-    GBS_write_hash(dontCallHash, "ARB_NT/mark_degen_branches", 5);
-    GBS_write_hash(dontCallHash, "ARB_NT/mark_long_branches",  5);
-    GBS_write_hash(dontCallHash, "ARB_NT/tree_scale_lengths",  5);
-    GBS_write_hash(dontCallHash, "del_marked",                 5);
+#if 1
+#warning test callbacks asking questions again later
+    GBS_write_hash(dontCallHash, "ARB_NT/mark_deep_branches",                            5);
+    GBS_write_hash(dontCallHash, "ARB_NT/mark_degen_branches",                           5);
+    GBS_write_hash(dontCallHash, "ARB_NT/mark_long_branches",                            5);
+    GBS_write_hash(dontCallHash, "ARB_NT/tree_scale_lengths",                            5);
+    GBS_write_hash(dontCallHash, "CREATE_USER_MASK/CREATE",                              5);
     GBS_write_hash(dontCallHash, "GDE__import__Import_sequences_using_Readseq_slow_/GO", 5);
-    GBS_write_hash(dontCallHash, "MULTI_PROBE/CREATE_NEW_SEQUENCE", 5);
-    GBS_write_hash(dontCallHash, "LOAD_SELECTION_BOX/LOAD", 5);
-#endif // DEVEL_RALF
+    GBS_write_hash(dontCallHash, "INFO_OF_ALIGNMENT/DELETE",                             5);
+    GBS_write_hash(dontCallHash, "LOAD_SELECTION_BOX/LOAD",                              5);
+    GBS_write_hash(dontCallHash, "MULTI_PROBE/CREATE_NEW_SEQUENCE",                      5);
+    GBS_write_hash(dontCallHash, "NDS_PROPS/SAVELOAD_CONFIG",                            5);
+    GBS_write_hash(dontCallHash, "PRIMER_DESIGN/SAVELOAD_CONFIG",                        5);
+    GBS_write_hash(dontCallHash, "PROBE_DESIGN/SAVELOAD_CONFIG",                         5);
+    GBS_write_hash(dontCallHash, "PT_SERVER_ADMIN/KILL_ALL_SERVERS",                     5);
+    GBS_write_hash(dontCallHash, "PT_SERVER_ADMIN/KILL_SERVER",                          5);
+    GBS_write_hash(dontCallHash, "PT_SERVER_ADMIN/UPDATE_SERVER",                        5);
+    GBS_write_hash(dontCallHash, "SPECIES_QUERY/DELETE_LISTED",                          5);
+    GBS_write_hash(dontCallHash, "SPECIES_QUERY/SAVELOAD_CONFIG",                        5);
+    GBS_write_hash(dontCallHash, "SPECIES_SELECTIONS/RENAME",                            5);
+    GBS_write_hash(dontCallHash, "SPECIES_SELECTIONS/STORE",                             5);
+    GBS_write_hash(dontCallHash, "del_marked",                                           5);
+    GBS_write_hash(dontCallHash, "REALIGN_DNA/REALIGN",                                  5);
+    GBS_write_hash(dontCallHash, "TREE_PROPS/SAVELOAD_CONFIG",                           5);
+    GBS_write_hash(dontCallHash, "WWW_PROPS/SAVELOAD_CONFIG",                            5);
+#endif
 
     GB_HASH *autodontCallHash = GBS_create_hash(30, GB_MIND_CASE);
     GBS_hash_do_loop(dontCallHash, auto_dontcall1, autodontCallHash);
