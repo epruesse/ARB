@@ -375,7 +375,7 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
     if (work_info->error || (error && *error == 1)) {
         // hier evtl. nochmal route_down_hierarchy aufrufen ?!!
         aw_message(work_info->error);
-        GB_abort_transaction(GLOBAL_gb_main); 
+        GB_abort_transaction(GLOBAL_gb_main);
         ED4_ROOT->refresh_all_windows(0);
     }
     else {
@@ -409,7 +409,7 @@ void ED4_input_cb(AW_window *aww,AW_CL /*cd1*/, AW_CL /*cd2*/)
     static int repeatCount;
 
     ED4_ROOT->use_window(aww);
-    
+
     aww->get_event(&event);
 
 #if defined(DEBUG) && 0
@@ -611,7 +611,7 @@ void ED4_scrollbar_change_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
 
         if (aww->slider_pos_horizontal>max_slider_xpos) aww->set_horizontal_scrollbar_position(max_slider_xpos);
         if (aww->slider_pos_horizontal<0)               aww->set_horizontal_scrollbar_position(0);
-        
+
         if (aww->slider_pos_vertical>max_slider_ypos) aww->set_vertical_scrollbar_position(max_slider_ypos);
         if (aww->slider_pos_vertical<0)               aww->set_vertical_scrollbar_position(0);
     }
@@ -729,6 +729,8 @@ void ED4_jump_to_cursor_position(AW_window *aww, char *awar_name, bool /*callbac
 
     long pos = aww->get_root()->awar(awar_name)->read_int();
     if (pos>0) pos--;           // user->real position (userpos is 1..n)
+    long max = ED4_ROOT->root_group_man->remap()->get_max_screen_pos();
+    if(pos > max) pos = max;
 
     if (strcmp(awar_name, ED4_ROOT->get_ed4w()->awar_path_for_Ecoli)==0) { // callback from ecoli
         BI_ecoli_ref *ecoli = ED4_ROOT->ecoli_ref;
@@ -1301,7 +1303,7 @@ void ED4_load_new_config(char *string)
 {
     char *config_data_top    = NULL;
     char *config_data_middle = NULL;
-    
+
     ED4_window     *window;
     GB_transaction  dummy(GLOBAL_gb_main);
 
@@ -1447,7 +1449,7 @@ void ED4_compression_changed_cb(AW_root *awr){
         ED4_cursor& cursor  = ED4_ROOT->get_ed4w()->cursor;
         int         rel_pos = cursor.get_screen_relative_pos();
         int         seq_pos = cursor.get_sequence_pos();
-        
+
         AW_window *aww    = ED4_ROOT->get_aww();
         AW_device *device = ED4_ROOT->get_device();
 
@@ -1461,7 +1463,7 @@ void ED4_compression_changed_cb(AW_root *awr){
 
         cursor.jump_sequence_pos(aww, seq_pos, ED4_JUMP_KEEP_POSITION);
         cursor.set_screen_relative_pos(aww, rel_pos);
-        
+
         ED4_expose_cb(aww, 0, 0); // does pop_clip_scale + refresh
     }
 }
@@ -1563,7 +1565,7 @@ AW_window *ED4_create_level_1_options_window(AW_root *root){
 
     aws->at("scroll_x");
     aws->create_input_field(ED4_AWAR_SCROLL_SPEED_X);
-    
+
     aws->at("scroll_y");
     aws->create_input_field(ED4_AWAR_SCROLL_SPEED_Y);
 
