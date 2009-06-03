@@ -39,6 +39,9 @@ void EXP_create_experiments_submenu(AW_window_menu_modes *awm, bool submenu);
 // windows:
 AW_window *EXP_create_experiment_query_window(AW_root *aw_root);
 
+struct ad_item_selector;
+ad_item_selector *EXP_get_selector(); // return EXP_item_selector
+
 #else
 #error EXP.hxx included twice
 #endif // EXP_HXX
