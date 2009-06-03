@@ -634,12 +634,14 @@ static const char *get_match_info_formatted(PT_probematch  *ml, const format_pro
         cat_spaced_right(memfile, GBS_global_string("%i", ml->N_mismatches), format.N_mis_width());
     }
     cat_spaced_right(memfile, GBS_global_string("%.1f", wmis), format.wmis_width());
-    cat_spaced_right(memfile, GBS_global_string("%i", ml->b_pos), format.pos_width);
+    // print position, add 1 to change counter from base 0 to base 1
+    cat_spaced_right(memfile, GBS_global_string("%li", (ml->b_pos + 1)), format.pos_width);
     if (format.show_gpos) {
         cat_spaced_right(memfile, GBS_global_string("%i", ml->g_pos), format.gpos_width);
     }
     if (format.show_ecoli) {
-        cat_spaced_right(memfile, GBS_global_string("%li", PT_abs_2_rel(ml->b_pos)), format.ecoli_width);
+        // print ecoli position. add 1 to change count from base 0 to base 1
+        cat_spaced_right(memfile, GBS_global_string("%li", PT_abs_2_rel(ml->b_pos) + 1), format.ecoli_width);
     }
     cat_spaced_left(memfile, GBS_global_string("%i", ml->reversed), format.rev_width());
 
