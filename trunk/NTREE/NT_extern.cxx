@@ -32,7 +32,6 @@
 #include <awt_tree_cb.hxx>
 #include "ntree.hxx"
 #include "nt_cb.hxx"
-#include "etc_check_gcg.hxx"
 #include "nt_sort.hxx"
 #include "ap_consensus.hxx"
 #include "ap_csp_2_gnuplot.hxx"
@@ -219,7 +218,6 @@ void nt_create_all_awars(AW_root *awr, AW_default def) {
     create_nds_vars(awr,def,GLOBAL_gb_main);
     create_export_nds_awars(awr,def);
     AWTC_create_rename_awars(awr,def);
-    create_check_gcg_awars(awr,def);
     awt_create_dtree_awars(awr,GLOBAL_gb_main);
 
     awr->awar_string( AWAR_ERROR_MESSAGES, "", GLOBAL_gb_main);
@@ -1513,7 +1511,6 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
             awm->insert_sub_menu("WL specials","W", 0, AWM_EXP);
             {
-                AWMIMT("check_gcg_list",                         "Check GCG list",          "C", "checkgcg.hlp", AWM_EXP, AW_POPUP, (AW_CL)create_check_gcg_window,          0);
                 AWMIMT(awm->local_id("view_probe_group_result"), "View probe group result", "V", "",             AWM_EXP, AW_POPUP, (AW_CL)create_probe_group_result_window, (AW_CL)ntw);
             }
             awm->close_sub_menu();

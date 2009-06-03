@@ -249,6 +249,7 @@ void GB_free_dictionary P_((struct DictData *dd));
 
 /* adindex.c */
 GB_ERROR GB_create_index P_((GBDATA *gbd, const char *key, GB_CASE case_sens, long estimated_size));
+void GB_dump_indices P_((GBDATA *gbd));
 GB_ERROR GB_request_undo_type P_((GBDATA *gb_main, GB_UNDO_TYPE type));
 GB_UNDO_TYPE GB_get_requested_undo_type P_((GBDATA *gb_main));
 GB_ERROR GB_undo P_((GBDATA *gb_main, GB_UNDO_TYPE type));
