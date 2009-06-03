@@ -151,11 +151,14 @@ GB_ERROR awtc_read_import_format(const char *file) {
                 pl->next       = ifo->pl;               // this concatenates the filters to the front -> that is corrected below
                 ifo->pl        = pl;
                 pl->match      = GBS_remove_escape(s2);
+                pl->type       = GB_STRING;
             }
-            else if (pl && !strcmp(s1,"SRT"))    { pl->srt    = s2; s2 = 0; }
-            else if (pl && !strcmp(s1,"ACI"))    { pl->aci    = s2; s2 = 0; }
-            else if (pl && !strcmp(s1,"WRITE"))  { pl->write  = s2; s2 = 0; }
-            else if (pl && !strcmp(s1,"APPEND")) { pl->append = s2; s2 = 0; }
+            else if (pl && !strcmp(s1,"SRT"))         { pl->srt    = s2; s2 = 0; }
+            else if (pl && !strcmp(s1,"ACI"))         { pl->aci    = s2; s2 = 0; }
+            else if (pl && !strcmp(s1,"WRITE"))       { pl->write  = s2; s2 = 0; }
+            else if (pl && !strcmp(s1,"WRITE_INT"))   { pl->write  = s2; s2 = 0; pl->type = GB_INT; }
+            else if (pl && !strcmp(s1,"WRITE_FLOAT")) { pl->write  = s2; s2 = 0; pl->type = GB_FLOAT; }
+            else if (pl && !strcmp(s1,"APPEND"))      { pl->append = s2; s2 = 0; }
             else if (pl && !strcmp(s1,"SETVAR")) {
                 if (strlen(s2) != 1 || s2[0]<'a' || s2[0]>'z') {
                     error = "Allowed variable names are a-z";
@@ -521,7 +524,7 @@ char *awtc_read_line(int tab,char *sequencestart, char *sequenceend){
     return ifo->b2;
 }
 
-static void awtc_write_entry(GBDATA *gbd,const char *key,char *str,const char *tag,int append)
+static void awtc_write_entry(GBDATA *gbd,const char *key,char *str,const char *tag,int append, GB_TYPES type = GB_STRING)
 {
     GBDATA *gbk;
     int len, taglen;
@@ -538,6 +541,23 @@ static void awtc_write_entry(GBDATA *gbd,const char *key,char *str,const char *t
     if (!str[0]) return;
 
     gbk = GB_entry(gbd,key);
+
+    if (type != GB_STRING) {
+        if (!gbk) gbk=GB_create(gbd,key,type);
+        switch(type) {
+            case GB_INT:
+                GB_write_int(gbk, atoi(str));
+                break;
+            case GB_FLOAT:
+                GB_write_float(gbk, atof(str));
+                break;
+            default:
+                awti_assert(0);
+                break;
+        }
+        return;
+    }
+
     if (!gbk || !append){
         if (!gbk) gbk=GB_create(gbd,key,GB_STRING);
 
@@ -746,7 +766,7 @@ GB_ERROR awtc_read_data(char *ali_name)
                             }
 
                             if (!error) {
-                                awtc_write_entry(gb_species, field, s, tag, pl->append != 0);
+                                awtc_write_entry(gb_species, field, s, tag, pl->append != 0, pl->type);
                             }
                             free(tag);
                             free(field);
