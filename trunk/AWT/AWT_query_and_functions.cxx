@@ -1944,7 +1944,7 @@ static GB_ERROR restore_colorset_representation(const color_save_data *csd, cons
 
 static void awt_loadsave_colorset(AW_window *aws, AW_CL cl_csd, AW_CL cl_mode) {
     const color_save_data *csd     = (const color_save_data*)cl_csd;
-    int              mode          = (int)cl_mode; // 0 = save; 1 = load; 2 = overlay; 3 = delete;
+    int                    mode    = (int)cl_mode;  // 0 = save; 1 = load; 2 = overlay; 3 = delete;
     AW_root               *aw_root = aws->get_root();
     char                  *name    = aw_root->awar(AWT_COLOR_LOADSAVE_NAME)->read_string();
     GB_ERROR               error   = 0;
@@ -2011,62 +2011,78 @@ static void awt_loadsave_colorset(AW_window *aws, AW_CL cl_csd, AW_CL cl_mode) {
 }
 
 static AW_window *awt_create_loadsave_colored_window(AW_root *aw_root, AW_CL cl_csd) {
-    color_save_data *csd = (color_save_data*)cl_csd;
-
-    // init data
-    aw_root->awar_string(AWT_COLOR_LOADSAVE_NAME, "", AW_ROOT_DEFAULT);
-
-    // init window
-    AW_window_simple *aws = new AW_window_simple;
-    aws->init(aw_root, "colorset_loadsave", GBS_global_string("Load/Save %s colorset", csd->items_name));
-    aws->load_xfig("color_loadsave.fig");
-
-    aws->at("close");
-    aws->callback((AW_CB0) AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE", "C");
-
-    aws->at("help");
-    aws->callback(AW_POPUP_HELP,(AW_CL)"color_loadsave.hlp");
-    aws->create_button("HELP","HELP","H");
-
-    aws->at("name");
-    aws->create_input_field(AWT_COLOR_LOADSAVE_NAME, 60);
-
-    awt_assert(csd->sel_id == 0);
-    aws->at("list");
-    csd->sel_id = aws->create_selection_list(AWT_COLOR_LOADSAVE_NAME, 0, 0, 0, 0);
-    csd->aww    = aws;
-
-    update_colorset_selection_list(csd);
-
-    aws->at("save");
-    aws->callback(awt_loadsave_colorset, (AW_CL)csd, (AW_CL)0); // 0 = save
-    aws->create_button("save", "Save", "S");
-
-    aws->at("load");
-    aws->callback(awt_loadsave_colorset, (AW_CL)csd, (AW_CL)1); // 1 = load
-    aws->create_button("load", "Load", "L");
-
-    aws->at("overlay");
-    aws->callback(awt_loadsave_colorset, (AW_CL)csd, (AW_CL)2); // 2 = overlay
-    aws->create_button("overlay", "Overlay", "O");
-
-    aws->at("delete");
-    aws->callback(awt_loadsave_colorset, (AW_CL)csd, (AW_CL)3); // 3 = delete
-    aws->create_button("delete", "Delete", "D");
-
-    aws->at("reset");
-    aws->callback(awt_clear_all_colors, (AW_CL)csd);
-    aws->create_button("reset", "Reset", "R");
-
-    // callbacks
-    {
-        GB_transaction  ta(csd->cmd->gb_main);
-        GBDATA         *gb_colorset = get_colorset_root(csd);
-        GB_add_callback(gb_colorset, GB_CB_CHANGED, colorset_changed_cb, (int*)csd);
+    static AW_window **aw_loadsave = 0;
+    if (!aw_loadsave) {
+        // init data
+        aw_root->awar_string(AWT_COLOR_LOADSAVE_NAME, "", AW_ROOT_DEFAULT);
+        aw_loadsave = (AW_window**)GB_calloc(AWT_QUERY_ITEM_TYPES, sizeof(*aw_loadsave)); // contains loadsave windows for each item type
     }
 
-    return aws;
+    color_save_data     *csd  = (color_save_data*)cl_csd;
+    AWT_QUERY_ITEM_TYPE  type = csd->cmd->sel->type;
+
+    awt_assert(type<AWT_QUERY_ITEM_TYPES);
+
+    if (!aw_loadsave[type]) {
+        // init window
+        AW_window_simple *aws = new AW_window_simple;
+        {
+            char *window_id = GBS_global_string_copy("colorset_loadsave_%s", csd->items_name);
+            aws->init(aw_root, window_id, GBS_global_string("Load/Save %s colorset", csd->items_name));
+            free(window_id);
+        }
+
+        aws->load_xfig("color_loadsave.fig");
+
+        aws->at("close");
+        aws->callback((AW_CB0) AW_POPDOWN);
+        aws->create_button("CLOSE","CLOSE", "C");
+
+        aws->at("help");
+        aws->callback(AW_POPUP_HELP,(AW_CL)"color_loadsave.hlp");
+        aws->create_button("HELP","HELP","H");
+
+        aws->at("name");
+        aws->create_input_field(AWT_COLOR_LOADSAVE_NAME, 60);
+
+        awt_assert(csd->sel_id == 0);
+        aws->at("list");
+        csd->sel_id = aws->create_selection_list(AWT_COLOR_LOADSAVE_NAME, 0, 0, 0, 0);
+        csd->aww    = aws;
+
+        update_colorset_selection_list(csd);
+
+        aws->at("save");
+        aws->callback(awt_loadsave_colorset, (AW_CL)csd, (AW_CL)0); // 0 = save
+        aws->create_button("save", "Save", "S");
+
+        aws->at("load");
+        aws->callback(awt_loadsave_colorset, (AW_CL)csd, (AW_CL)1); // 1 = load
+        aws->create_button("load", "Load", "L");
+
+        aws->at("overlay");
+        aws->callback(awt_loadsave_colorset, (AW_CL)csd, (AW_CL)2); // 2 = overlay
+        aws->create_button("overlay", "Overlay", "O");
+
+        aws->at("delete");
+        aws->callback(awt_loadsave_colorset, (AW_CL)csd, (AW_CL)3); // 3 = delete
+        aws->create_button("delete", "Delete", "D");
+
+        aws->at("reset");
+        aws->callback(awt_clear_all_colors, (AW_CL)csd);
+        aws->create_button("reset", "Reset", "R");
+
+        // callbacks
+        {
+            GB_transaction  ta(csd->cmd->gb_main);
+            GBDATA         *gb_colorset = get_colorset_root(csd);
+            GB_add_callback(gb_colorset, GB_CB_CHANGED, colorset_changed_cb, (int*)csd);
+        }
+
+        aw_loadsave[type] = aws;
+    }
+
+    return aw_loadsave[type];
 }
 
 static const char *color_group_name(int color_group) {
@@ -2081,13 +2097,11 @@ static const char *color_group_name(int color_group) {
 
     return buf;
 }
-// -------------------------------------------------------------------------------------------------------------------------------------------------
-//      static AW_window *create_awt_colorizer_window(AW_root *aw_root, GBDATA *gb_main, struct adaqbsstruct *cbs, const ad_item_selector *sel)
-// -------------------------------------------------------------------------------------------------------------------------------------------------
-// invoked by   'colorize listed'                   (sel != 0)
-// and          'colorize marked/mark colored'      (cbs != 0)
-//
+
 static AW_window *create_awt_colorizer_window(AW_root *aw_root, GBDATA *gb_main, struct adaqbsstruct *cbs, const ad_item_selector *sel) {
+    // invoked by   'colorize listed'                   (sel != 0)
+    // and          'colorize marked/mark colored'      (cbs != 0)
+
     enum { AWT_COL_INVALID, AWT_COL_COLORIZE_LISTED, AWT_COL_COLORIZE_MARKED } mode = AWT_COL_INVALID;
 
     awt_query_create_global_awars(aw_root, AW_ROOT_DEFAULT);
@@ -2108,7 +2122,7 @@ static AW_window *create_awt_colorizer_window(AW_root *aw_root, GBDATA *gb_main,
     const char             *what = mode == AWT_COL_COLORIZE_LISTED ? "listed" : "marked";
 
     {
-        char *macro_name  = GBS_global_string_copy("COLORIZE_%s", Sel->items_name);
+        char *macro_name  = GBS_global_string_copy("COLORIZE_%s_%s", what, Sel->items_name);
         char *window_name = GBS_global_string_copy("Colorize %s %s", what, Sel->items_name);
 
         aws->init( aw_root, macro_name, window_name);

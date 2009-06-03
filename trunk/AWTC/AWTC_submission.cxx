@@ -42,7 +42,13 @@ static AW_window *create_calltexe_window(AW_root *root, char *varname)
     AWUSE(root);
 
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "SUBM_TEXTEDIT", "START TEXT EDITOR");
+    {
+        char *var_id    = GBS_string_2_key(varname);
+        char *window_id = GBS_global_string_copy("SUBM_TEXTEDIT_%s", var_id);
+        aws->init( root, window_id, "START TEXT EDITOR");
+        free(window_id);
+        free(var_id);
+    }
 
     aws->load_xfig("calltexe.fig");
     aws->label_length( 18 );
