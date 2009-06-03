@@ -90,10 +90,11 @@ struct ad_item_selector {
     const char *items_name;                         // "species" or "genes" or "experiments" or "organisms"
     const char *id_field;                           // e.g. "name" for species, genes
 
-    GBDATA *(*get_first_item_container)(GBDATA *, AW_root *, AWT_QUERY_RANGE); // for species this is normally awt_get_species_data
-    GBDATA *(*get_next_item_container)(GBDATA *, AWT_QUERY_RANGE); // for species this is normally a function returning 0
-    GBDATA *(*get_first_item)(GBDATA *); // for species this is normally GBT_first_species_rel_species_data
-    GBDATA *(*get_next_item)(GBDATA *); // for species this is normally GBT_next_species
+    GBDATA *(*get_first_item_container)(GBDATA *, AW_root *, AWT_QUERY_RANGE); // AW_root may be NULL for AWT_QUERY_ALL_SPECIES and AWT_QUERY_MARKED_SPECIES
+    GBDATA *(*get_next_item_container)(GBDATA *, AWT_QUERY_RANGE); // use same AWT_QUERY_RANGE as in get_first_item_container()
+    
+    GBDATA *(*get_first_item)(GBDATA *);
+    GBDATA *(*get_next_item)(GBDATA *);
 
     GBDATA *(*get_selected_item)(GBDATA *gb_main, AW_root *aw_root); // searches the currently selected item
 

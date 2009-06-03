@@ -90,37 +90,43 @@ static char *old_species_marks = 0; // configuration storing marked species
 //     GB_ERROR GBT_with_stored_species(GBDATA *gb_main, const char *stored, species_callback doit, int *clientdata);
 // }
 
+inline void exp_restore_old_species_marks() {
+    if (old_species_marks) {
+        GBT_restore_marked_species(GLOBAL_gb_main, old_species_marks);
+        freeset(old_species_marks, 0);
+    }
+}
+
 static GBDATA *EXP_get_first_experiment_data(GBDATA *gb_main, AW_root *aw_root, AWT_QUERY_RANGE range) {
-    GBDATA   *gb_species = 0;
+    GBDATA   *gb_organism = 0;
     GB_ERROR  error      = 0;
+
+    exp_restore_old_species_marks();
 
     switch (range) {
         case AWT_QUERY_CURRENT_SPECIES: {
             char *species_name = aw_root->awar(AWAR_ORGANISM_NAME)->read_string();
-            gb_species         = GBT_find_species(gb_main, species_name);
+            gb_organism         = GBT_find_species(gb_main, species_name);
             free(species_name);
             break;
         }
         case AWT_QUERY_MARKED_SPECIES: {
-            GBDATA *gb_organism = GEN_first_marked_organism(gb_main);
-            GBDATA *gb_pseudo   = GEN_first_marked_pseudo_species(gb_main);
-
-            gb_assert(old_species_marks == 0); // this occurs in case of recursive calls (not possible)
+            GBDATA *gb_pseudo = GEN_first_marked_pseudo_species(gb_main);
 
             if (gb_pseudo) {    // there are marked pseudo-species..
                 old_species_marks = GBT_store_marked_species(gb_main, 1); // store and unmark marked species
+                error             = GBT_with_stored_species(gb_main, old_species_marks, GEN_mark_organism_or_corresponding_organism, 0); // mark organisms related with stored
 
-                error                  = GBT_with_stored_species(gb_main, old_species_marks, GEN_mark_organism_or_corresponding_organism, 0); // mark organisms related with stored
-                if (!error) gb_species = GEN_first_marked_organism(gb_main);
+                if (!error) gb_organism = GEN_first_marked_organism(gb_main);
             }
             else {
-                gb_species = gb_organism;
+                gb_organism = GEN_first_marked_organism(gb_main);
             }
 
             break;
         }
         case AWT_QUERY_ALL_SPECIES: {
-            gb_species = GBT_first_species(gb_main);
+            gb_organism = GBT_first_species(gb_main);
             break;
         }
         default: {
@@ -130,29 +136,26 @@ static GBDATA *EXP_get_first_experiment_data(GBDATA *gb_main, AW_root *aw_root, 
     }
 
     if (error) GB_export_error(error);
-    return gb_species ? EXP_get_experiment_data(gb_species) : 0;
+    return gb_organism ? EXP_get_experiment_data(gb_organism) : 0;
 }
 
 static GBDATA *EXP_get_next_experiment_data(GBDATA *gb_experiment_data, AWT_QUERY_RANGE range) {
-    GBDATA *gb_species = 0;
+    GBDATA *gb_organism = 0;
     switch (range) {
         case AWT_QUERY_CURRENT_SPECIES: {
             break;
         }
         case AWT_QUERY_MARKED_SPECIES: {
             GBDATA *gb_last_species = GB_get_father(gb_experiment_data);
-            gb_species              = GEN_next_marked_organism(gb_last_species);
+            gb_organism             = GEN_next_marked_organism(gb_last_species);
 
-            if (!gb_species && old_species_marks) { // got all -> clean up
-                GBT_restore_marked_species(GLOBAL_gb_main, old_species_marks);
-                freeset(old_species_marks, 0);
-            }
+            if (!gb_organism) exp_restore_old_species_marks(); // got all -> clean up
 
             break;
         }
         case AWT_QUERY_ALL_SPECIES: {
             GBDATA *gb_last_species = GB_get_father(gb_experiment_data);
-            gb_species              = GBT_next_species(gb_last_species);
+            gb_organism             = GBT_next_species(gb_last_species);
             break;
         }
         default: {
@@ -161,7 +164,7 @@ static GBDATA *EXP_get_next_experiment_data(GBDATA *gb_experiment_data, AWT_QUER
         }
     }
 
-    return gb_species ? EXP_get_experiment_data(gb_species) : 0;
+    return gb_organism ? EXP_get_experiment_data(gb_organism) : 0;
 }
 
 struct ad_item_selector EXP_item_selector = {
@@ -185,13 +188,13 @@ struct ad_item_selector EXP_item_selector = {
 
 
 GBDATA *EXP_get_current_experiment(GBDATA *gb_main, AW_root *aw_root) {
-    GBDATA *gb_species    = GEN_get_current_organism(gb_main, aw_root);
+    GBDATA *gb_organism    = GEN_get_current_organism(gb_main, aw_root);
     GBDATA *gb_experiment = 0;
 
-    if (gb_species) {
+    if (gb_organism) {
         char *experiment_name = aw_root->awar(AWAR_EXPERIMENT_NAME)->read_string();
-        gb_experiment         = EXP_find_experiment(gb_species,experiment_name);
-        delete experiment_name;
+        gb_experiment         = EXP_find_experiment(gb_organism,experiment_name);
+        free(experiment_name);
     }
 
     return gb_experiment;

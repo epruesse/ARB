@@ -71,8 +71,6 @@ static GBDATA *gen_find_gene_by_id(GBDATA *gb_main, const char *id) {
 }
 
 
-static char *old_species_marks = 0; // configuration storing marked species
-
 extern "C" GB_ERROR GEN_mark_organism_or_corresponding_organism(GBDATA *gb_species, int *client_data) {
     AWUSE(client_data);
     GB_ERROR error = 0;
@@ -93,10 +91,21 @@ extern "C" GB_ERROR GEN_mark_organism_or_corresponding_organism(GBDATA *gb_speci
     return error;
 }
 
+static char *old_species_marks = 0; // configuration storing marked species
+
+inline void gen_restore_old_species_marks() {
+    if (old_species_marks) {
+        GBT_restore_marked_species(GLOBAL_gb_main, old_species_marks);
+        freeset(old_species_marks, 0);
+    }
+}
+
 static GBDATA *GEN_get_first_gene_data(GBDATA *gb_main, AW_root *aw_root, AWT_QUERY_RANGE range) {
     GBDATA   *gb_organism = 0;
     GB_ERROR  error      = 0;
 
+    gen_restore_old_species_marks();
+    
     switch (range) {
         case AWT_QUERY_CURRENT_SPECIES: {
             char *species_name = aw_root->awar(AWAR_ORGANISM_NAME)->read_string();
@@ -108,12 +117,10 @@ static GBDATA *GEN_get_first_gene_data(GBDATA *gb_main, AW_root *aw_root, AWT_QU
             gb_organism = GEN_first_marked_organism(gb_main);
             GBDATA *gb_pseudo   = GEN_first_marked_pseudo_species(gb_main);
 
-            gb_assert(old_species_marks == 0); // this occurs in case of recursive calls (not possible)
-
             if (gb_pseudo) {    // there are marked pseudo-species..
                 old_species_marks = GBT_store_marked_species(gb_main, 1); // store and unmark marked species
 
-                error                  = GBT_with_stored_species(gb_main, old_species_marks, GEN_mark_organism_or_corresponding_organism, 0); // mark organisms related with stored
+                error                   = GBT_with_stored_species(gb_main, old_species_marks, GEN_mark_organism_or_corresponding_organism, 0); // mark organisms related with stored
                 if (!error) gb_organism = GEN_first_marked_organism(gb_main);
             }
 
@@ -143,10 +150,7 @@ static GBDATA *GEN_get_next_gene_data(GBDATA *gb_gene_data, AWT_QUERY_RANGE rang
             GBDATA *gb_last_organism = GB_get_father(gb_gene_data);
             gb_organism              = GEN_next_marked_organism(gb_last_organism);
 
-            if (!gb_organism && old_species_marks) { // got all -> clean up
-                GBT_restore_marked_species(GLOBAL_gb_main, old_species_marks);
-                freeset(old_species_marks, 0);
-            }
+            if (!gb_organism) gen_restore_old_species_marks(); // got all -> clean up
 
             break;
         }
