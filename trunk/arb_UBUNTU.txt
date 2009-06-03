@@ -11,6 +11,7 @@ ARB requirements on Ubuntu 8.04
      - gnuplot
      - gv
      - xfig
+     - xterm
 
  1b) OPENGL version 
 

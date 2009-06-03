@@ -26,7 +26,7 @@ To install a precompiled ARB
 - (open)motif
 - bash
 - libpng
-
+- xterm
 
 Only needed for Open GL version:
 
