@@ -16,6 +16,7 @@ struct input_format_per_line {
     char *append;
     char *write;
     char *setvar;
+    GB_TYPES type;
 
     int start_line; //  linenumber in filter where this MATCH starts
 

@@ -1,3 +1,7 @@
+#Modified by FOG, 17.05.2009#
+#type INT for start, stop and insdc added#
+#some changes to fields#
+
 AUTODETECT      "LOCUS       *\nORIGIN*"
                 #Global settings:
 KEYWIDTH        12
@@ -18,7 +22,7 @@ MATCH           "ACCESSION *"
                 WRITE "acc"
 
 MATCH           "PROJECT"
-                WRITE "insdc"
+                WRITE_INT "insdc"
 
 MATCH           "LOCUS *"
                 SRT "     = :    = :   = :  = :* * * * * * *=*7"
@@ -34,11 +38,13 @@ MATCH           "  ORGANISM *"
 
 MATCH           "  ORGANISM *"
                 SRT             "*|*=*2"
-                WRITE           "tax_gb"
+                TAG    "GB"
+                WRITE           "tax_embl"
 
 MATCH           "  ORGANISM *"
                 SRT             "* * *=*1 *2:*|*=*1"
-                WRITE           "tax_gb_name"
+                TAG   "GB"
+                WRITE           "tax_embl_name"
 
 MATCH           "REFERENCE *(bases*"
                 SRT             "*(*=*2:bases=:to=-: =:)="
@@ -70,7 +76,8 @@ MATCH           "*/clone*"
 
 MATCH           "*/db_xref="taxon*"
                 SRT "*db_xref*=*2:*\:*=*2:\"=:\==:*|*=*1"
-                APPEND          "tax_xref_gb"
+                TAG   "GB"
+                APPEND          "tax_xref_embl"
 
 MATCH           "*/isolate=*"
                 SRT "*isolate*=*2:\"=:\==:*|*=*1"
@@ -110,11 +117,11 @@ MATCH           "*/collection_date*"
 
 MATCH           "     rRNA*"
                 SRT             "*..*=*1:<=:>="
-                APPEND          "start" 
+                WRITE_INT       "start"
 
 MATCH           "     rRNA *"
                 SRT             "*..*=*2:<=:>=:*|*=*1"
-                APPEND          "stop" 
+                WRITE_INT       "stop"
 
 MATCH           "     rRNA*/gene*"
                 SRT             "*gene*=*2:\==:"=:*|*=*1"

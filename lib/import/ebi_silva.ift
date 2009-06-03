@@ -1,3 +1,6 @@
+#Modified by FOG, 17.05.2009#
+#field type INT added for start, stop, insdc, version#
+
 AUTODETECT      "ID   *\nFT   rRNA *\nSQ*"
 # Global settings:
 KEYWIDTH        5
@@ -11,23 +14,23 @@ MATCH           "ID *"
 
 MATCH           "ID *"
                 SRT "*; SV *;*=*2"
-                WRITE "version"
+                WRITE_INT "version"
 
 MATCH           "AC *"
                 ACI "extract_words("0123456789",4.0)"
-                WRITE "acc"
+                WRITE      "acc"
 
 MATCH           "PR *"
                 SRT "PR   *=*:*\:*=*2:;="
-                APPEND "insdc"
+                WRITE_INT  "insdc"
 
 MATCH           "DT *Created*"
                 SRT "DT   *=*:* \(*=*1;"
-                APPEND "date"
+                APPEND      "date"
 
 MATCH           "DT *updated*"
                 SRT "DT   *=*:* \(*=*1:"
-                APPEND "date"
+                APPEND      "date"
 
 MATCH           "DE *"
                 SRT             "DE   *=*:;="
@@ -128,11 +131,11 @@ MATCH           "FT  *collection_date*"
 MATCH           "FT   rRNA*"
                 SRT             "*rRNA*=*2: =:*..*=*1:<=:>="
 
-                APPEND          "start" 
+                WRITE_INT          "start"
 
 MATCH           "FT   rRNA *"
                 SRT             "*rRNA*=*2: =:*..*=*2:<=:>="
-                APPEND          "stop" 
+                WRITE_INT          "stop"
 
 MATCH           "FT  *gene*"
                 SRT             "*gene*=*2:\==:"="
