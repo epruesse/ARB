@@ -1003,7 +1003,9 @@ GB_ERROR NT_remove_dup_colors(GBDATA *gb_item, const ad_item_selector *sel) {
             if (!gb_next_color) break;
             
             error = GB_delete(gb_next_color);
+#if defined(DEBUG)
             if (!error) del_count++;
+#endif // DEBUG
         }
         GB_pop_my_security(gb_color);
     }
