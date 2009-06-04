@@ -916,12 +916,12 @@ void AWT_create_debug_menu(AW_window *awmm) {
 
     {
         awmm->insert_sub_menu("Callbacks (dangerous! use at your own risk)", "C", NULL, AWM_ALL);
-        awmm->insert_menu_topic("!run_all_cbs_alph",  "Call all callbacks (alpha-order)", "", "", AWM_ALL, callallcallbacks, 0, 0);
-        awmm->insert_menu_topic("!run_all_cbs_nalph", "Call all callbacks (reverse)",     "", "", AWM_ALL, callallcallbacks, 1, 0);
-        awmm->insert_menu_topic("!run_all_cbs_loc",   "Call all callbacks (code-order)",  "", "", AWM_ALL, callallcallbacks, 2, 0);
-        awmm->insert_menu_topic("!run_all_cbs_nloc",  "Call all callbacks (reverse)",     "", "", AWM_ALL, callallcallbacks, 3, 0);
-        awmm->insert_menu_topic("!run_all_cbs_rnd",   "Call all callbacks (random)",      "", "", AWM_ALL, callallcallbacks, 10, 0);
-        awmm->insert_menu_topic("!run_all_cbs_inf",   "Call all callbacks (forever)",     "", "", AWM_ALL, callallcallbacks, 11, 0);
+        awmm->insert_menu_topic("!run_all_cbs_alph",  "Call all callbacks (alpha-order)",     "", "", AWM_ALL, callallcallbacks, 0,  0);
+        awmm->insert_menu_topic("!run_all_cbs_nalph", "Call all callbacks (alpha-reverse)",   "", "", AWM_ALL, callallcallbacks, 1,  0);
+        awmm->insert_menu_topic("!run_all_cbs_loc",   "Call all callbacks (code-order)",      "", "", AWM_ALL, callallcallbacks, 2,  0);
+        awmm->insert_menu_topic("!run_all_cbs_nloc",  "Call all callbacks (code-reverse)",    "", "", AWM_ALL, callallcallbacks, 3,  0);
+        awmm->insert_menu_topic("!run_all_cbs_rnd",   "Call all callbacks (random)",          "", "", AWM_ALL, callallcallbacks, 10, 0);
+        awmm->insert_menu_topic("!run_all_cbs_inf",   "Call all callbacks (random repeated)", "", "", AWM_ALL, callallcallbacks, 11, 0);
         awmm->insert_separator();
         awmm->insert_menu_topic("!forget_called_cbs", "Forget called",     "", "", AWM_ALL, callallcallbacks, -1, 0);
         awmm->insert_menu_topic("!mark_all_called",   "Mark all called",   "", "", AWM_ALL, callallcallbacks, -2, 0);
