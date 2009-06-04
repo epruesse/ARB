@@ -1865,6 +1865,8 @@ GB_ERROR AWT_graphic_tree::save(GBDATA */*dummy*/, const char */*name*/, AW_CL /
 
 #endif // DEVEL_RALF
             }
+
+            tree_static->gb_tree_gone = 0; // do not delete twice
         }
     }
     return error;
