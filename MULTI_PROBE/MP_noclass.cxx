@@ -66,7 +66,9 @@ void MP_close_main(AW_window *aww)
         mp_main->get_mp_window()->get_result_window()->hide();
 
     GB_transaction dummy(ntw->gb_main);
-    AWT_TREE(ntw)->tree_root->calc_color();
+
+    AP_tree *ap_tree = AWT_TREE(ntw)->tree_root;
+    if (ap_tree) ap_tree->calc_color();
 
     if (ntw->gb_main)
         ntw->tree_disp->update(ntw->gb_main);
