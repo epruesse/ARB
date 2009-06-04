@@ -361,12 +361,13 @@ ST_ML::ST_ML(GBDATA * gb_maini) {
 }
 
 ST_ML::~ST_ML() {
-    delete tree_root->tree;
-    tree_root->tree = 0;
+    if (tree_root) {
+        delete tree_root->tree;
+        tree_root->tree = 0;
+        delete tree_root;
+    }
     free(alignment_name);
-    delete tree_root;
-    if (hash_2_ap_tree)
-        GBS_free_hash(hash_2_ap_tree);
+    if (hash_2_ap_tree) GBS_free_hash(hash_2_ap_tree);
     delete not_valid;
     delete[]base_frequencies;
     delete[]inv_base_frequencies;
@@ -540,8 +541,8 @@ GB_ERROR ST_ML::init(const char *tree_name, const char *alignment_namei,
     tree_root = new AP_tree_root(gb_main, tree, tree_name);
     error = tree->load(tree_root, 0, GB_FALSE, GB_FALSE, 0, 0); // tree is not linked !!!
     if (error) {
-        delete tree;
-        delete tree_root;
+        delete tree;            tree      = 0;
+        delete tree_root;       tree_root = 0;
         return error;
     }
     tree_root->tree = tree;
