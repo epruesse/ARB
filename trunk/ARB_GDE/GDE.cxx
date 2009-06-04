@@ -437,7 +437,7 @@ void GDE_load_menu(AW_window *awm, AW_active mask, const char *menulabel,const c
             }
         }
         //  if(!menulabel && nmenu==0)
-        //      awm->insert_menu_topic(0,"Close","C",0,(AW_active) -1, (AW_CB)AW_POPDOWN, 0, 0);
+        //      awm->insert_menu_topic(0,"Close","C",0,(AW_active) AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
         if (!menulabel){
             awm->close_sub_menu();
         }
