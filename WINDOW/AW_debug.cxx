@@ -63,7 +63,6 @@ static void build_dontCallHash() {
     // avoid start of some external programs:
 #if 1    
     GBS_write_hash(dontCallHash, "ARB_NT/EDIT_SEQUENCES",                              2);
-    GBS_write_hash(dontCallHash, "CHECK_GCG_LIST/SHOW_FILE",                           2);
     GBS_write_hash(dontCallHash, "CPR_MAIN/HELP",                                      2);
     GBS_write_hash(dontCallHash, "GDE__user__Start_a_slave_ARB_on_a_foreign_host_/GO", 2);
     GBS_write_hash(dontCallHash, "HELP/BROWSE",                                        2);
@@ -98,7 +97,6 @@ static void build_dontCallHash() {
 #warning crashing - fix later
     GBS_write_hash(dontCallHash, "ARB_NT/mark_duplicates",         4);
     GBS_write_hash(dontCallHash, "ARB_NT/view_probe_group_result", 4);
-    GBS_write_hash(dontCallHash, "check_gcg_list",                 4);
     GBS_write_hash(dontCallHash, "PT_SERVER_ADMIN/CHECK_SERVER",   4);
 #endif
 
@@ -158,7 +156,7 @@ int sortedByCallbackLocation(const char *k0, long v0, const char *k1, long v1) {
     return cmp;
 }
 
-void AW_root::callallcallbacks(int mode) {
+size_t AW_root::callallcallbacks(int mode) {
     // mode == -2 -> mark all as called
     // mode == -1 -> forget called
     // mode == 0 -> call all in alpha-order
@@ -166,18 +164,26 @@ void AW_root::callallcallbacks(int mode) {
     // mode == 2 -> call all in code-order
     // mode == 3 -> call all in reverse code-order
     // mode == 10 -> call all in random order
-    // mode == 11-> call all in random order (repeated, never returns)
+    // mode == 11-> call all in random order (repeated until no uncalled callbacks left)
 
-    size_t count = GBS_hash_count_elems(prvt->action_hash);
+    size_t count     = GBS_hash_count_elems(prvt->action_hash);
+    size_t callCount = 0;
+
     aw_message(GBS_global_string("Found %zi callbacks", count));
 
     if (!dontCallHash) build_dontCallHash();
 
     if (mode == 11) {
-        aw_message("Calling callbacks forever");
+        aw_message("Calling callbacks iterated");
         for (int iter = 1; ; ++iter) { // forever
-            callallcallbacks(10); // call all in random order
-            aw_message(GBS_global_string("All callbacks were called (iteration %i)", iter));
+            size_t thisCount = callallcallbacks(10); // call all in random order
+            aw_message(GBS_global_string("%zu callbacks were called (iteration %i)", thisCount, iter));
+            if (!thisCount) {
+                aw_message("No uncalled callbacks left");
+                break;
+            }
+
+            callCount += thisCount;
         }
     }
     else if (mode == -1) {
@@ -201,14 +207,16 @@ void AW_root::callallcallbacks(int mode) {
 
         switch (mode) {
             case -2:
-            case 0: break;                          // use this order
-            case 1: reverse(callbacks.begin(), callbacks.end()); break; // use reverse order
+            case 0:
+            case 2: break;                          // use this order
+            case 1:
+            case 3: reverse(callbacks.begin(), callbacks.end()); break; // use reverse order
             case 10: random_shuffle(callbacks.begin(), callbacks.end()); break; // use random order
             default : gb_assert(0); break;          // unknown mode
         }
 
         count = callbacks.size();
-        aw_message(GBS_global_string("%zi callbacks were not called yet", count));
+        aw_message(GBS_global_string("%zu callbacks were not called yet", count));
 
         CallbackIter end = callbacks.end();
 
@@ -238,7 +246,8 @@ void AW_root::callallcallbacks(int mode) {
                             GB_clear_error();
 
                             cbs->run_callback();
-                            process_events();
+                            callCount++;
+                            process_pending_events();
 
                             if (GB_have_error()) {
                                 fprintf(stderr, "Unhandled error in '%s': %s\n", remote_command, GB_await_error());
@@ -247,9 +256,12 @@ void AW_root::callallcallbacks(int mode) {
                             if (cbs->f == AW_POPUP) {
                                 AW_window *awp = cbs->pop_up_window;
                                 if (awp) {
+                                    awp->force_expose();
+                                    process_pending_events();
+                                    
                                     fprintf(stderr, "Popping down window '%s'\n", awp->get_window_id());
                                     awp->hide();
-                                    process_events();
+                                    process_pending_events();
                                 }
                             }
                         }
@@ -267,6 +279,8 @@ void AW_root::callallcallbacks(int mode) {
             if (pass == 1) fprintf(stderr, "Executing delayed callbacks:\n");
         }
     }
+
+    return callCount;
 }
 
 

@@ -197,7 +197,8 @@ public:
     void init_variables( AW_default database );
     void init_root( const char *programmname , bool no_exit);
     void main_loop(void);
-    void process_events(void);
+    void process_events(void); // might block
+    void process_pending_events(void); // non-blocking
     AW_ProcessEventType peek_key_event(AW_window *);
 
     void add_timed_callback               (int ms, AW_RCB2 f, AW_CL cd1, AW_CL cd2);
@@ -251,7 +252,7 @@ public:
     // negative values indicate monospaced f.
 
 #if defined(DEBUG)
-    void callallcallbacks(int mode);
+    size_t callallcallbacks(int mode);
 #endif // DEBUG
 };
 

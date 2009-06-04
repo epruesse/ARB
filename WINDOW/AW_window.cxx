@@ -923,6 +923,16 @@ bool AW_window::is_expose_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_C
     return aram && aram->is_expose_callback(this, f);
 }
 
+void AW_window::force_expose() {
+    XmDrawingAreaCallbackStruct da_struct;
+
+    da_struct.reason = XmCR_EXPOSE;
+    da_struct.event = (XEvent *) NULL;
+    da_struct.window = XtWindow(p_w->shell);
+
+    XtCallCallbacks(p_w->shell, XmNexposeCallback, (XtPointer) &da_struct);
+}
+
 bool AW_area_management::is_resize_callback(AW_window */*aww*/, void (*f)(AW_window*,AW_CL,AW_CL)) {
     return resize_cb && resize_cb->contains(f);
 }
@@ -3173,6 +3183,13 @@ void AW_root::main_loop(void) {
 
 void AW_root::process_events(void) {
     XtAppProcessEvent(p_r->context,XtIMAll);
+}
+void AW_root::process_pending_events(void) {
+    XtInputMask pending = XtAppPending(p_r->context);
+    while (pending) {
+        XtAppProcessEvent(p_r->context, pending);
+        pending = XtAppPending(p_r->context);
+    }
 }
 
 /** Returns type if key event follows, else 0 */
