@@ -101,11 +101,13 @@ Additional software that is needed to compile ARB:
 Additional software that is needed to compile open gl parts:
 ------------------------------------------------------------
 - mesa
-- mesa-devel ?
+- mesa-devel
+- mesaglw (opensuse)
+- mesaglw-devel (opensuse)
 - libpng
-- libglew                  http://glew.sourceforge.net/
+- libglew                 
 - freeglut
-- freeglut-devel ?
+- freeglut-devel
 ----------------------------------------------------------------------
 If we forgot something (or if your OS needs something special)
 please notify us (devel@arb-home.de). We will mention it here..
