@@ -50,6 +50,7 @@ AW_window *NT_createMergeSimilarSpeciesWindow(AW_root *aw_root);
 AW_window *NT_createMergeSimilarSpeciesAndConcatenateWindow(AW_root *aw_root);
 
 /* NT_dbrepair.cxx */
+GB_ERROR NT_remove_dup_colors(GBDATA *gb_item, const ad_item_selector *sel);
 GB_ERROR NT_repair_DB(GBDATA *gb_main);
 void NT_rerepair_DB(AW_window *, AW_CL cl_gbmain, AW_CL dummy_1x);
 
