@@ -634,7 +634,7 @@ static const char *get_match_info_formatted(PT_probematch  *ml, const format_pro
         cat_spaced_right(memfile, GBS_global_string("%i", ml->N_mismatches), format.N_mis_width());
     }
     cat_spaced_right(memfile, GBS_global_string("%.1f", wmis), format.wmis_width());
-    cat_spaced_right(memfile, GBS_global_string("%li", ml->b_pos), format.pos_width);
+    cat_spaced_right(memfile, GBS_global_string("%i", ml->b_pos), format.pos_width);
     if (format.show_gpos) {
         cat_spaced_right(memfile, GBS_global_string("%i", ml->g_pos), format.gpos_width);
     }
