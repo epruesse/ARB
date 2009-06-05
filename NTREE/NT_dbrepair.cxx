@@ -985,13 +985,13 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
 
 // --------------------------------------------------------------------------------
 
-GB_ERROR NT_remove_dup_colors(GBDATA *gb_item, const ad_item_selector *sel) {
+static GB_ERROR remove_dup_colors(GBDATA *gb_item, const ad_item_selector *sel) {
     // Databases out there may contain multiple 'ARB_color' entries.
     // Due to some already fixed bug - maybe introduced in r5309 and fixed in r5825
 
     GBDATA   *gb_color = GB_entry(gb_item, AW_COLOR_GROUP_ENTRY);
     GB_ERROR  error    = NULL;
-    
+
 #if defined(DEBUG)
     int del_count = 0;
 #endif // DEBUG
@@ -1013,12 +1013,14 @@ GB_ERROR NT_remove_dup_colors(GBDATA *gb_item, const ad_item_selector *sel) {
 #if defined(DEBUG)
     if (del_count) fprintf(stderr,
                            "- deleted %i duplicated '" AW_COLOR_GROUP_ENTRY "' from %s '%s'\n",
-                           del_count, 
-                           sel->item_name, 
+                           del_count,
+                           sel->item_name,
                            sel->generate_item_id(GB_get_root(gb_item), gb_item));
+#else    
+    sel = sel;                                      // no warning
 #endif // DEBUG
 
-return error;
+    return error;
 }
 
 // --------------------------------------------------------------------------------
@@ -1042,7 +1044,7 @@ GB_ERROR NT_repair_DB(GBDATA *gb_main) {
         check.perform_check("convert_gene_locations", NT_convert_gene_locations, err);
     }
 
-    check.register_item_check("duplicated_item_colors", NT_remove_dup_colors);
+    check.register_item_check("duplicated_item_colors", remove_dup_colors);
     check.perform_item_checks(err);
     
     return err;
