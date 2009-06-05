@@ -525,8 +525,8 @@ void SEC_root::fixStructureBugs(int version) {
                 sec_assert(part->parent()->getType() == SEC_LOOP);
 
                 // .. and segment region ends one position too early
-                sec_assert(get_helix()->helixNr(reg->get_sequence_end()) == 0);
-                sec_assert(get_helix()->helixNr(next_reg->get_sequence_start()) != 0);
+                sec_assert(get_helixDef()->helixNr(reg->get_sequence_end()) == 0);
+                sec_assert(get_helixDef()->helixNr(next_reg->get_sequence_start()) != 0);
 
                 // make them adjacent
                 reg->set_sequence_portion(reg->get_sequence_start(), next_reg->get_sequence_start());

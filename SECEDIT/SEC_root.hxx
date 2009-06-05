@@ -740,9 +740,9 @@ public:
 
     const SEC_db_interface *get_db() const { return db; }
     bool canDisplay() const { return db && db->canDisplay(); }
-    const BI_helix *get_helix() const { sec_assert(db); return db->helix(); }
-    BI_PAIR_TYPE getBondtype(int abspos) { return get_helix() ? get_helix()->pairtype(abspos) : HELIX_NONE; }
-    const char *helixNrAt(int abspos) const { return get_helix()->helixNr(abspos); }
+    const BI_helix *get_helixDef() const { sec_assert(db); return db->helix(); }
+    BI_PAIR_TYPE getBondtype(int abspos) { const BI_helix *h = get_helixDef(); return h ? h->pairtype(abspos) : HELIX_NONE; }
+    const char *helixNrAt(int abspos) const { return get_helixDef()->helixNr(abspos); }
 
     const size_t *getHelixPositions(const char *helixNr) const;
     const double& get_char_radius(int gc) const { return char_radius[gc]; }
