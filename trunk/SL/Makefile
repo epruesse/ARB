@@ -1,5 +1,7 @@
 
 ARCHS_ALL = \
+	TREE_READ/TREE_READ.dummy  \
+	TREE_WRITE/TREE_WRITE.dummy  \
 	HELIX/HELIX.dummy  \
 	AW_HELIX/AW_HELIX.dummy  \
 	AW_NAME/AW_NAME.dummy  \

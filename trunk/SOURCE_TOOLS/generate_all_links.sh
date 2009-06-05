@@ -165,7 +165,6 @@ symlink ../AWT/awt_config_manager.hxx INCLUDE/awt_config_manager.hxx &&
 symlink ../AWT/awt_csp.hxx INCLUDE/awt_csp.hxx &&
 symlink ../AWT/awt_dtree.hxx INCLUDE/awt_dtree.hxx &&
 symlink ../AWT/awt_hotkeys.hxx INCLUDE/awt_hotkeys.hxx &&
-symlink ../AWT/awt_imp_exp.hxx INCLUDE/awt_imp_exp.hxx &&
 symlink ../AWT/awt_input_mask.hxx INCLUDE/awt_input_mask.hxx &&
 symlink ../AWT/awt_item_sel_list.hxx INCLUDE/awt_item_sel_list.hxx &&
 symlink ../AWT/awt_iupac.hxx INCLUDE/awt_iupac.hxx &&
@@ -213,6 +212,8 @@ symlink ../SL/FAST_ALIGNER/fast_aligner.hxx INCLUDE/fast_aligner.hxx &&
 symlink ../SL/FILE_BUFFER/FileBuffer.h INCLUDE/FileBuffer.h &&
 symlink ../SL/HELIX/BI_helix.hxx INCLUDE/BI_helix.hxx &&
 symlink ../SL/REGEXPR/RegExpr.hxx INCLUDE/RegExpr.hxx &&
+symlink ../SL/TREE_READ/TreeRead.h INCLUDE/TreeRead.h &&
+symlink ../SL/TREE_WRITE/TreeWrite.h INCLUDE/TreeWrite.h &&
 symlink ../STAT/st_window.hxx INCLUDE/st_window.hxx &&
 symlink ../WINDOW/aw_awars.hxx INCLUDE/aw_awars.hxx &&
 symlink ../WINDOW/aw_color_groups.hxx INCLUDE/aw_color_groups.hxx &&

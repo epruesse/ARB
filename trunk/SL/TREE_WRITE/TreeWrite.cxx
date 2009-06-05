@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/time.h>
 
 #include <arbdb.h>
 #include <arbdbt.h>
@@ -12,6 +11,7 @@
 #include <awt_nds.hxx>
 
 #include <xml.hxx>
+#include <TreeRead.h>
 
 using namespace std;
 
@@ -217,28 +217,6 @@ static const char *awt_export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tre
     }
 
     return error;
-}
-
-const char * AWT_date_string(void) {
-    struct timeval date;
-    struct tm *p;
-
-    gettimeofday(&date, 0);
-
-#if defined(DARWIN)
-    struct timespec local;
-    TIMEVAL_TO_TIMESPEC(&date, &local); // not avail in time.h of Linux gcc 2.95.3
-    p = localtime(&local.tv_sec);
-#else
-    p = localtime(&date.tv_sec);
-#endif // DARWIN
-
-    char *readable = asctime(p); // points to a static buffer
-    char *cr       = strchr(readable, '\n');
-    awt_assert(cr);
-    cr[0]          = 0;         // cut of \n
-
-    return readable;
 }
 
 GB_ERROR AWT_export_XML_tree(GBDATA *gb_main, const char *db_name, const char *tree_name, bool use_NDS, bool skip_folded, const char *path) {
