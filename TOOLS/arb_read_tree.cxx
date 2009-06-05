@@ -1,10 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <arbdb.h>
-#include <arbdbt.h>
+#include <TreeRead.h>
 #include <time.h>
-
 
 // add_bootstrap interprets the length of the branches as bootstrap value
 // (this is needed by Phylip DNAPARS/PROTPARS with bootstrapping)

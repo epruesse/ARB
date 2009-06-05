@@ -13,7 +13,8 @@
 #include <aw_awars.hxx>
 #include <aw_global.hxx>
 #include <awt.hxx>
-#include <awt_imp_exp.hxx>
+#include <TreeRead.h>
+#include <TreeWrite.h>
 #include <awt_tree_cmp.hxx>
 #include <awt_sel_boxes.hxx>
 

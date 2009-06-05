@@ -9,9 +9,10 @@ OBJECTS =	\
 		AWT_pro_a_nucs.o AWT_csp.o AWT_canvas.o AWT_dtree.o AWT_tree.o AWT_tree_cb.o AWT_nei.o \
 		AWT_filter.o AWT_sel_boxes.o AWT_canio.o AWT_nds.o \
 		AWT_query_and_functions.o AWT_file_selection.o \
-		AWT_imp_exp.o AWT_preset.o AWT_seq_dna.o AWT_seq_protein.o AWT_seq_simple_pro.o \
+		AWT_preset.o AWT_seq_dna.o AWT_seq_protein.o AWT_seq_simple_pro.o \
 		AWT_codon_table.o AWT_iupac.o AWT_config_manager.o AWT_advice.o AWT_db_browser.o \
-		AWT_attributes.o AWT_changekey.o AWT_item_sel_list.o AWT_macro.o AWT_translate.o
+		AWT_attributes.o AWT_changekey.o AWT_item_sel_list.o AWT_macro.o AWT_translate.o \
+		AWT_tools.o
 
 $(MAIN): $(OBJECTS)
 	$(LINK_SHARED_LIB) $(@:.a=).$(SHARED_LIB_SUFFIX) $(OBJECTS)
@@ -265,23 +266,6 @@ AWT_filter.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 
 AWT_hotkeys.o: awt_hotkeys.hxx
-
-AWT_imp_exp.o: awt.hxx
-AWT_imp_exp.o: awt_nds.hxx
-AWT_imp_exp.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
-AWT_imp_exp.o: $(ARBHOME)/INCLUDE/ad_prot.h
-AWT_imp_exp.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-AWT_imp_exp.o: $(ARBHOME)/INCLUDE/arb_assert.h
-AWT_imp_exp.o: $(ARBHOME)/INCLUDE/arbdb.h
-AWT_imp_exp.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-AWT_imp_exp.o: $(ARBHOME)/INCLUDE/arbdbt.h
-AWT_imp_exp.o: $(ARBHOME)/INCLUDE/attributes.h
-AWT_imp_exp.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-AWT_imp_exp.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-AWT_imp_exp.o: $(ARBHOME)/INCLUDE/aw_position.hxx
-AWT_imp_exp.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-AWT_imp_exp.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AWT_imp_exp.o: $(ARBHOME)/INCLUDE/xml.hxx
 
 AWT_input_mask.o: awt.hxx
 AWT_input_mask.o: awt_hotkeys.hxx
@@ -571,6 +555,19 @@ AWT_tables.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_tables.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_tables.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_tables.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+
+AWT_tools.o: awt.hxx
+AWT_tools.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+AWT_tools.o: $(ARBHOME)/INCLUDE/ad_prot.h
+AWT_tools.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AWT_tools.o: $(ARBHOME)/INCLUDE/arbdb.h
+AWT_tools.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AWT_tools.o: $(ARBHOME)/INCLUDE/attributes.h
+AWT_tools.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AWT_tools.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+AWT_tools.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+AWT_tools.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+AWT_tools.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 
 AWT_translate.o: awt.hxx
 AWT_translate.o: awt_codon_table.hxx
