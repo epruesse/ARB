@@ -277,6 +277,11 @@ arbdb_symlink adsystem.c &&
 arbdb_symlink adtables.c &&
 arbdb_symlink adtcp.c &&
 arbdb_symlink adtools.c &&
+arbdb_symlink adali.c &&
+arbdb_symlink adcolumns.c &&
+arbdb_symlink adtree.c &&
+arbdb_symlink adname.c &&
+arbdb_symlink aditem.c &&
 arbdb_symlink adtune.c &&
 arbdb_symlink adtune.h &&
 arbdb_symlink arbdb.c &&

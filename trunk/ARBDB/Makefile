@@ -109,6 +109,21 @@ ad_save_load.o: arbdb.h
 ad_save_load.o: arbdb_base.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/attributes.h
 
+adali.o: ad_k_prot.h
+adali.o: ad_lpro.h
+adali.o: ad_prot.h
+adali.o: ad_t_lpro.h
+adali.o: ad_t_prot.h
+adali.o: adGene.h
+adali.o: adlmacros.h
+adali.o: adlocal.h
+adali.o: adtune.h
+adali.o: arb_assert.h
+adali.o: arbdb.h
+adali.o: arbdb_base.h
+adali.o: arbdbt.h
+adali.o: $(ARBHOME)/INCLUDE/attributes.h
+
 adChangeKey.o: ad_k_prot.h
 adChangeKey.o: ad_prot.h
 adChangeKey.o: ad_t_prot.h
@@ -117,6 +132,21 @@ adChangeKey.o: arbdb.h
 adChangeKey.o: arbdb_base.h
 adChangeKey.o: arbdbt.h
 adChangeKey.o: $(ARBHOME)/INCLUDE/attributes.h
+
+adcolumns.o: ad_k_prot.h
+adcolumns.o: ad_lpro.h
+adcolumns.o: ad_prot.h
+adcolumns.o: ad_t_lpro.h
+adcolumns.o: ad_t_prot.h
+adcolumns.o: adGene.h
+adcolumns.o: adlmacros.h
+adcolumns.o: adlocal.h
+adcolumns.o: adtune.h
+adcolumns.o: arb_assert.h
+adcolumns.o: arbdb.h
+adcolumns.o: arbdb_base.h
+adcolumns.o: arbdbt.h
+adcolumns.o: $(ARBHOME)/INCLUDE/attributes.h
 
 adcomm.o: ad_k_prot.h
 adcomm.o: ad_lpro.h
@@ -199,6 +229,20 @@ adindex.o: arbdb.h
 adindex.o: arbdb_base.h
 adindex.o: $(ARBHOME)/INCLUDE/attributes.h
 
+aditem.o: ad_k_prot.h
+aditem.o: ad_lpro.h
+aditem.o: ad_prot.h
+aditem.o: ad_t_lpro.h
+aditem.o: ad_t_prot.h
+aditem.o: adlmacros.h
+aditem.o: adlocal.h
+aditem.o: adtune.h
+aditem.o: arb_assert.h
+aditem.o: arbdb.h
+aditem.o: arbdb_base.h
+aditem.o: arbdbt.h
+aditem.o: $(ARBHOME)/INCLUDE/attributes.h
+
 adlang1.o: ad_k_prot.h
 adlang1.o: ad_lpro.h
 adlang1.o: ad_prot.h
@@ -269,6 +313,21 @@ admath.o: arb_assert.h
 admath.o: arbdb.h
 admath.o: arbdb_base.h
 admath.o: $(ARBHOME)/INCLUDE/attributes.h
+
+adname.o: ad_config.h
+adname.o: ad_k_prot.h
+adname.o: ad_lpro.h
+adname.o: ad_prot.h
+adname.o: ad_t_lpro.h
+adname.o: ad_t_prot.h
+adname.o: adlmacros.h
+adname.o: adlocal.h
+adname.o: adtune.h
+adname.o: arb_assert.h
+adname.o: arbdb.h
+adname.o: arbdb_base.h
+adname.o: arbdbt.h
+adname.o: $(ARBHOME)/INCLUDE/attributes.h
 
 adoptimize.o: ad_k_prot.h
 adoptimize.o: ad_lpro.h
@@ -408,13 +467,11 @@ adTest.o: arbdb.h
 adTest.o: arbdb_base.h
 adTest.o: $(ARBHOME)/INCLUDE/attributes.h
 
-adtools.o: ad_config.h
 adtools.o: ad_k_prot.h
 adtools.o: ad_lpro.h
 adtools.o: ad_prot.h
 adtools.o: ad_t_lpro.h
 adtools.o: ad_t_prot.h
-adtools.o: adGene.h
 adtools.o: adlmacros.h
 adtools.o: adlocal.h
 adtools.o: adtune.h
@@ -423,6 +480,20 @@ adtools.o: arbdb.h
 adtools.o: arbdb_base.h
 adtools.o: arbdbt.h
 adtools.o: $(ARBHOME)/INCLUDE/attributes.h
+
+adtree.o: ad_k_prot.h
+adtree.o: ad_lpro.h
+adtree.o: ad_prot.h
+adtree.o: ad_t_lpro.h
+adtree.o: ad_t_prot.h
+adtree.o: adlmacros.h
+adtree.o: adlocal.h
+adtree.o: adtune.h
+adtree.o: arb_assert.h
+adtree.o: arbdb.h
+adtree.o: arbdb_base.h
+adtree.o: arbdbt.h
+adtree.o: $(ARBHOME)/INCLUDE/attributes.h
 
 adtune.o: adtune.h
 
