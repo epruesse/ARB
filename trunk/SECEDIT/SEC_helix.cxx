@@ -18,7 +18,7 @@ using namespace std;
 
 const size_t *SEC_root::getHelixPositions(const char *helixNr) const {
     sec_assert(helixNr);
-    const BI_helix *helix  = get_helix();
+    const BI_helix *helix  = get_helixDef();
     long            start1 = helix->first_position(helixNr);
 
     if (start1 == -1) return 0;

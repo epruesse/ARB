@@ -639,7 +639,7 @@ void SEC_helix_strand::paint_strands(AW_device *device, const Vector& strand_vec
     }
 
     SEC_root       *root  = get_root();
-    const BI_helix *helix = root->get_helix();
+    const BI_helix *helix = root->get_helixDef();
 
     double base_dist = base_count>1 ? strand_len / (base_count-1) : 1;
     Vector vnext     = strand_vec * base_dist; // vector from base to next base (in strand)
@@ -992,7 +992,7 @@ GB_ERROR SEC_root::paint(AW_device *device) {
     sec_assert(rootLoop);
     clear_announced_positions(); // reset positions next to cursor
 
-    const BI_helix *helix = get_helix();
+    const BI_helix *helix = get_helixDef();
     sec_assert(helix);
 
     GB_ERROR error = helix->get_error();
@@ -1143,7 +1143,7 @@ GB_ERROR SEC_root::paint(AW_device *device) {
 
 void SEC_region::align_helix_strands(SEC_root *root, SEC_region *other_region) {
     if (abspos_array) {
-        const BI_helix *helix = root->get_helix();
+        const BI_helix *helix = root->get_helixDef();
         if (helix && !helix->get_error()) {
             SEC_region *reg[2] = { this, other_region }; 
             int incr[2] = { 1, -1 }; // this is iterated forward, other_region backward

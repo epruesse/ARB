@@ -295,7 +295,7 @@ static void export_structure_to_file(AW_window *, AW_CL cl_db)
 
         sec_assert(xstr.get_x_string_length() == strlen(x_string));
 
-        char *foldInfo = SEC_xstring_to_foldedHelixList(x_string, xstr.get_x_string_length(), sec_root->get_helix());
+        char *foldInfo = SEC_xstring_to_foldedHelixList(x_string, xstr.get_x_string_length(), sec_root->get_helixDef());
         fprintf(out, "foldedHelices=%s\n", foldInfo);
         free(foldInfo);
 
@@ -390,7 +390,7 @@ static void import_structure_from_file(AW_window *, AW_CL cl_db) {
                     size_t xlength = root->get_xString().getLength();
 
                     if (token == "foldedHelices") { // new version
-                        x_string = SEC_foldedHelixList_to_xstring(content.c_str(), xlength, root->get_helix(), error); // sets error
+                        x_string = SEC_foldedHelixList_to_xstring(content.c_str(), xlength, root->get_helixDef(), error); // sets error
                     }
                     else if (token == "no of helices") { // old version
                         int saved_helices = atoi(content.c_str());
@@ -399,7 +399,7 @@ static void import_structure_from_file(AW_window *, AW_CL cl_db) {
                         if (!error) error = expectToken(file, "xstring_rel_helix", content);
                         if (!error) {
                             int helices_in_db;
-                            x_string = old_decode_xstring_rel_helix(content.c_str(), xlength, root->get_helix(), &helices_in_db);
+                            x_string = old_decode_xstring_rel_helix(content.c_str(), xlength, root->get_helixDef(), &helices_in_db);
                             if (helices_in_db != saved_helices) {
                                 error = GBS_global_string("Number of helices does not match (file=%i, db=%i).\n"
                                                           "Saving the structure again from another DB with correct number of helices will work around this restriction.",

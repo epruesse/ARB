@@ -643,7 +643,7 @@ GB_ERROR SEC_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
             char *ref = GB_read_string(gb_struct_ref);
             err = sec_root->read_data(strct,ref);
             if (err) {
-                err = GBS_global_string("Defect structure in DB\n(read-error: '%s')", err);
+                err = GBS_global_string("Defect structure in DB (read-error: '%s')", err);
             }
 #if defined(CHECK_INTEGRITY)
             else {
@@ -826,6 +826,7 @@ void SEC_graphic::show(AW_device *device) {
     }
 
     if (textToDisplay) { // no structure
+        sec_assert(strchr(textToDisplay, '\n') == 0); // linefeeds do not work here
         device->text(SEC_GC_ECOLI, textToDisplay, 0, 0, 0, 1, 0, 0, 0);
         sec_root->set_last_drawed_cursor_position(LineVector(Origin, ZeroVector));
     }

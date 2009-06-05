@@ -521,7 +521,7 @@ void SEC_root::create_default_bone() {
     strand2->set_next_segment(segment2);
 
     size_t start1, end1, start2, end2;
-    findLongestHelix(get_helix(), start1, end1, start2, end2);
+    findLongestHelix(get_helixDef(), start1, end1, start2, end2);
 
     strand1->set_sequence_portion(start1, end1+1); segment2->set_sequence_portion(end1+1, start2);
     strand2->set_sequence_portion(start2, end2+1); segment1->set_sequence_portion(end2+1, start1);
