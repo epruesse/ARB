@@ -335,11 +335,15 @@ NT_dbrepair.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/arbdbt.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/attributes.h
+NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+NT_dbrepair.o: $(ARBHOME)/INCLUDE/awt.hxx
+NT_dbrepair.o: $(ARBHOME)/INCLUDE/EXP.hxx
+NT_dbrepair.o: $(ARBHOME)/INCLUDE/GEN.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/inline.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/smartptr.h
 
