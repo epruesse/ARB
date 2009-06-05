@@ -473,6 +473,7 @@ void awt_create_selection_list_on_extendeds_update(GBDATA *dummy, void *cbsid)
 
     AWUSE(dummy);
     cbs->aws->clear_selection_list(cbs->id);
+    GB_transaction ta(cbs->gb_main);
 
     for (GBDATA *gb_extended = GBT_first_SAI(cbs->gb_main);
          gb_extended;
