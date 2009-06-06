@@ -133,8 +133,8 @@ void update_filter_cb(AW_root *root){
         case AD_TREE_EXPORT_FORMAT_NEWICK:
         case AD_TREE_EXPORT_FORMAT_NEWICK_PRETTY:
             switch (ExportNodeType(root->awar(AWAR_TREE_EXPORT_NDS)->read_int())) {
-                case AD_TREE_EXPORT_NODE_SPECIES_NAME:  filter_type = "ntree"; break;
-                case AD_TREE_EXPORT_NODE_NDS:           filter_type = "tree"; break;
+                case AD_TREE_EXPORT_NODE_SPECIES_NAME:  filter_type = "tree"; break;
+                case AD_TREE_EXPORT_NODE_NDS:           filter_type = "ntree"; break;
                 default: nt_assert(0); break;
             }
             break;
