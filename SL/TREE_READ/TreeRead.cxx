@@ -259,7 +259,7 @@ static void setBranchName(TreeReader *reader, GBT_TREE *node, char *name) {
 
 static bool gbt_readNameAndLength(TreeReader *reader, GBT_TREE *node, GBT_LEN *len) {
     /* reads the branch-length and -name
-       '*len' should normally be initialized with DEFAULT_LENGTH_MARKER 
+       '*len' should normally be initialized with TREE_DEFLEN_MARKER 
      * returns the branch-length in 'len' and sets the branch-name of 'node'
      * returns GB_TRUE if successful, otherwise reader->error gets set
      */
@@ -315,7 +315,7 @@ static GBT_TREE *gbt_load_tree_rek(TreeReader *reader, int structuresize, GBT_LE
     if (reader->last_character == '(') {
         gbt_read_char(reader);  // drop the '('
 
-        GBT_LEN   leftLen = DEFAULT_LENGTH_MARKER;
+        GBT_LEN   leftLen = TREE_DEFLEN_MARKER;
         GBT_TREE *left    = gbt_load_tree_rek(reader, structuresize, &leftLen);
 
         tree_assert(left || reader->error);
@@ -330,7 +330,7 @@ static GBT_TREE *gbt_load_tree_rek(TreeReader *reader, int structuresize, GBT_LE
                         break;
 
                     case ',': {
-                        GBT_LEN   rightLen = DEFAULT_LENGTH_MARKER;
+                        GBT_LEN   rightLen = TREE_DEFLEN_MARKER;
                         GBT_TREE *right    = 0;
 
                         while (reader->last_character == ',' && !reader->error) {
@@ -338,7 +338,7 @@ static GBT_TREE *gbt_load_tree_rek(TreeReader *reader, int structuresize, GBT_LE
                                 GBT_TREE *pair = gbt_linkedTreeNode(left, leftLen, right, rightLen, structuresize);
                                 
                                 left  = pair; leftLen = 0;
-                                right = 0; rightLen = DEFAULT_LENGTH_MARKER;
+                                right = 0; rightLen = TREE_DEFLEN_MARKER;
                             }
 
                             gbt_read_char(reader); /* drop ',' */
@@ -348,7 +348,7 @@ static GBT_TREE *gbt_load_tree_rek(TreeReader *reader, int structuresize, GBT_LE
 
                         if (reader->last_character == ')') {
                             node     = gbt_linkedTreeNode(left, leftLen, right, rightLen, structuresize);
-                            *nodeLen = DEFAULT_LENGTH_MARKER;
+                            *nodeLen = TREE_DEFLEN_MARKER;
 
                             left = 0;
                             right  = 0;
@@ -415,7 +415,7 @@ GBT_TREE *TREE_load(const char *path, int structuresize, char **commentPtr, int 
         else        name_only = path;
 
         TreeReader *reader      = newTreeReader(input, name_only);
-        GBT_LEN     rootNodeLen = DEFAULT_LENGTH_MARKER; /* root node has no length. only used as input to gbt_load_tree_rek*/
+        GBT_LEN     rootNodeLen = TREE_DEFLEN_MARKER; /* root node has no length. only used as input to gbt_load_tree_rek*/
         tree                    = gbt_load_tree_rek(reader, structuresize, &rootNodeLen);
         fclose(input);
 

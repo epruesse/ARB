@@ -15,14 +15,14 @@
 
 void TREE_scale(GBT_TREE *tree, double length_scale, double bootstrap_scale) {
     if (tree->leftson) {
-        if (tree->leftlen <= DEFAULT_LENGTH_MARKER) tree->leftlen  = DEFAULT_LENGTH;
-        else                                        tree->leftlen *= length_scale;
+        if (tree->leftlen <= TREE_DEFLEN_MARKER) tree->leftlen  = TREE_DEFLEN;
+        else                                     tree->leftlen *= length_scale;
         
         TREE_scale(tree->leftson, length_scale, bootstrap_scale);
     }
     if (tree->rightson) {
-        if (tree->rightlen <= DEFAULT_LENGTH_MARKER) tree->rightlen  = DEFAULT_LENGTH; 
-        else                                         tree->rightlen *= length_scale;
+        if (tree->rightlen <= TREE_DEFLEN_MARKER) tree->rightlen  = TREE_DEFLEN; 
+        else                                      tree->rightlen *= length_scale;
         
         TREE_scale(tree->rightson, length_scale, bootstrap_scale);
     }
