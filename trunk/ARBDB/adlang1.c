@@ -1581,7 +1581,7 @@ static const char *tree_of_cached_taxonomy(struct cached_taxonomy *ct) {
      */
     const char *tree = GBS_hash_next_element_that(cached_taxonomies, NULL, is_cached_taxonomy, ct);
 #if defined(DEBUG)
-    printf("tree_of_cached_taxonomy: tree='%s' ct->tree_name='%s'\n", tree, ct->tree_name);
+    if (tree) printf("tree_of_cached_taxonomy: tree='%s' ct->tree_name='%s'\n", tree, ct->tree_name);
 #endif /* DEBUG */
     return tree;
 }

@@ -2112,7 +2112,9 @@ static void gb_remove_callback(GBDATA *gbd, enum gb_call_back_type type, GB_CB f
         short                prev_running = 0;
 
         for (cb = *cb_ptr; cb; cb = *cb_ptr) {
-            if ((cb->func == func) &&
+            short this_running = cb->running;
+
+            if ((cb->func == func)  &&
                 (cb->type == type ) &&
                 (cb->clientdata == clientdata || !cd_should_match))
             {
@@ -2130,7 +2132,7 @@ static void gb_remove_callback(GBDATA *gbd, enum gb_call_back_type type, GB_CB f
             else {
                 cb_ptr = &cb->next;
             }
-            prev_running = cb->running;
+            prev_running = this_running;
         }
     }
 }
