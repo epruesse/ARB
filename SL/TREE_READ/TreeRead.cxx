@@ -379,7 +379,7 @@ static GBT_TREE *gbt_load_tree_rek(TreeReader *reader, int structuresize, GBT_LE
 
 
 
-GBT_TREE *GBT_load_tree(const char *path, int structuresize, char **commentPtr, int allow_length_scaling, char **warningPtr) {
+GBT_TREE *TREE_load(const char *path, int structuresize, char **commentPtr, int allow_length_scaling, char **warningPtr) {
     /* Load a newick compatible tree from file 'path',
        structure size should be >0, see GBT_read_tree for more information
        if commentPtr != NULL -> set it to a malloc copy of all concatenated comments found in tree file
@@ -434,7 +434,7 @@ GBT_TREE *GBT_load_tree(const char *path, int structuresize, char **commentPtr, 
                 }
             }
 
-            GBT_scale_tree(tree, branchlen_scale, bootstrap_scale); // scale bootstraps and branchlengths
+            TREE_scale(tree, branchlen_scale, bootstrap_scale); // scale bootstraps and branchlengths
 
             if (commentPtr) {
                 char *comment = getTreeComment(reader);

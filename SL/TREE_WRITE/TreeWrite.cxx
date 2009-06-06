@@ -15,23 +15,10 @@
 
 using namespace std;
 
-// static void awt_export_tree_node_print_remove(char *str)
-// {
-//     int i,len;
-//     len = strlen (str);
-//     for(i=0;i<len;i++) {
-//         if (str[i] =='\'') str[i] ='.';
-//         if (str[i] =='\"') str[i] ='.';
-//     }
-// }
-
-// -------------------------------------------------------------------------
-//      static void awt_export_tree_label(const char *label, FILE *out)
-// -------------------------------------------------------------------------
-// writes a label into the Newick file
-// label is quoted if necessary
-// label may be an internal_node_label, a leaf_label or a root_label
-static void awt_export_tree_label(const char *label, FILE *out) {
+static void export_tree_label(const char *label, FILE *out) {
+    // writes a label into the Newick file
+    // label is quoted if necessary
+    // label may be an internal_node_label, a leaf_label or a root_label
     awt_assert(label);
     char *need_quotes = strpbrk(label, " \t()[]\'\":;,");
 
@@ -60,10 +47,10 @@ inline void indentTo(int indent, FILE *out) {
     }
 }
 
-static const char *awt_export_tree_node_print(GBDATA *gb_main, FILE *out, GBT_TREE *tree, const char *tree_name,
-                                              bool pretty, int indent,
-                                              bool use_NDS, bool save_branchlengths,
-                                              bool save_bootstraps, bool save_groupnames)
+static const char *export_tree_node_print(GBDATA *gb_main, FILE *out, GBT_TREE *tree, const char *tree_name,
+                                          bool pretty, int indent,
+                                          bool use_NDS, bool save_branchlengths,
+                                          bool save_bootstraps, bool save_groupnames)
 {
     const char *error = 0;
     const char *buf;
@@ -74,19 +61,19 @@ static const char *awt_export_tree_node_print(GBDATA *gb_main, FILE *out, GBT_TR
         if (use_NDS)    buf = make_node_text_nds(gb_main, tree->gb_node,0,tree, tree_name);
         else            buf = tree->name;
 
-        awt_export_tree_label(buf, out);
+        export_tree_label(buf, out);
     }
     else {
         if (pretty) fputs("(\n", out);
         else        putc('(', out);
 
-        error = awt_export_tree_node_print(gb_main, out, tree->leftson, tree_name, pretty, indent+1, use_NDS, save_branchlengths, save_bootstraps, save_groupnames);
+        error = export_tree_node_print(gb_main, out, tree->leftson, tree_name, pretty, indent+1, use_NDS, save_branchlengths, save_bootstraps, save_groupnames);
         if (save_branchlengths) fprintf(out, ":%.5f", tree->leftlen);
         fputs(",\n", out);
 
         if (error) return error;
 
-        error = awt_export_tree_node_print(gb_main, out, tree->rightson, tree_name, pretty, indent+1, use_NDS, save_branchlengths, save_bootstraps, save_groupnames);
+        error = export_tree_node_print(gb_main, out, tree->rightson, tree_name, pretty, indent+1, use_NDS, save_branchlengths, save_bootstraps, save_groupnames);
         if (save_branchlengths) fprintf(out, ":%.5f", tree->rightlen);
         fputc('\n', out);
 
@@ -117,7 +104,7 @@ static const char *awt_export_tree_node_print(GBDATA *gb_main, FILE *out, GBT_TR
         }
         else if (bootstrap) print = bootstrap;
 
-        if (print) awt_export_tree_label(print, out);
+        if (print) export_tree_label(print, out);
 
         free(bootstrap);
     }
@@ -131,8 +118,8 @@ inline string buildNodeIdentifier(const string& parent_id, int& son_counter) {
     return GBS_global_string("%s.%i", parent_id.c_str(), son_counter);
 }
 
-static const char *awt_export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tree, double my_length, const char *tree_name,
-                                                  bool use_NDS, bool skip_folded, const string& parent_id, int& parent_son_counter) {
+static const char *export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tree, double my_length, const char *tree_name,
+                                              bool use_NDS, bool skip_folded, const string& parent_id, int& parent_son_counter) {
     const char *error = 0;
 
     if (tree->is_leaf) {
@@ -206,20 +193,20 @@ static const char *awt_export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tre
                 branch_tag.add_attribute("items_in_group", GBT_count_nodes(tree));
             }
             else {
-                if (!error) error  = awt_export_tree_node_print_xml(gb_main, tree->leftson, tree->leftlen, tree_name, use_NDS, skip_folded, my_id, my_son_counter);
-                if (!error) error  = awt_export_tree_node_print_xml(gb_main, tree->rightson, tree->rightlen, tree_name, use_NDS, skip_folded, my_id, my_son_counter);
+                if (!error) error  = export_tree_node_print_xml(gb_main, tree->leftson, tree->leftlen, tree_name, use_NDS, skip_folded, my_id, my_son_counter);
+                if (!error) error  = export_tree_node_print_xml(gb_main, tree->rightson, tree->rightlen, tree_name, use_NDS, skip_folded, my_id, my_son_counter);
             }
         }
         else {
-            if (!error) error = awt_export_tree_node_print_xml(gb_main, tree->leftson, tree->leftlen, tree_name, use_NDS, skip_folded, parent_id, parent_son_counter);
-            if (!error) error = awt_export_tree_node_print_xml(gb_main, tree->rightson, tree->rightlen, tree_name, use_NDS, skip_folded, parent_id, parent_son_counter);
+            if (!error) error = export_tree_node_print_xml(gb_main, tree->leftson, tree->leftlen, tree_name, use_NDS, skip_folded, parent_id, parent_son_counter);
+            if (!error) error = export_tree_node_print_xml(gb_main, tree->rightson, tree->rightlen, tree_name, use_NDS, skip_folded, parent_id, parent_son_counter);
         }
     }
 
     return error;
 }
 
-GB_ERROR AWT_export_XML_tree(GBDATA *gb_main, const char *db_name, const char *tree_name, bool use_NDS, bool skip_folded, const char *path) {
+GB_ERROR TREE_write_XML(GBDATA *gb_main, const char *db_name, const char *tree_name, bool use_NDS, bool skip_folded, const char *path) {
     GB_ERROR  error  = 0;
     FILE     *output = fopen(path, "w");
 
@@ -251,7 +238,7 @@ GB_ERROR AWT_export_XML_tree(GBDATA *gb_main, const char *db_name, const char *t
                 }
 
                 int my_son_counter = 0;
-                error              = awt_export_tree_node_print_xml(gb_main,tree,0.0, tree_name, use_NDS, skip_folded, "", my_son_counter);
+                error              = export_tree_node_print_xml(gb_main,tree,0.0, tree_name, use_NDS, skip_folded, "", my_son_counter);
             }
         }
         fclose(output);
@@ -260,7 +247,7 @@ GB_ERROR AWT_export_XML_tree(GBDATA *gb_main, const char *db_name, const char *t
     return error;
 }
 
-GB_ERROR AWT_export_Newick_tree(GBDATA *gb_main, char *tree_name, bool use_NDS, bool save_branchlengths, bool save_bootstraps, bool save_groupnames, bool pretty, char *path)
+GB_ERROR TREE_write_Newick(GBDATA *gb_main, char *tree_name, bool use_NDS, bool save_branchlengths, bool save_bootstraps, bool save_groupnames, bool pretty, char *path)
 {
     GB_ERROR  error  = 0;
     FILE     *output = fopen(path, "w");
@@ -293,7 +280,7 @@ GB_ERROR AWT_export_Newick_tree(GBDATA *gb_main, char *tree_name, bool use_NDS, 
                 }
                 free(remark);
                 if (!error) {
-                    error = awt_export_tree_node_print(gb_main, output, tree, tree_name, pretty, 0, use_NDS,  save_branchlengths,  save_bootstraps,  save_groupnames);
+                    error = export_tree_node_print(gb_main, output, tree, tree_name, pretty, 0, use_NDS,  save_branchlengths,  save_bootstraps,  save_groupnames);
                 }
             }
 

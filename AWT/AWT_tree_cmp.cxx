@@ -172,7 +172,7 @@ AWT_species_set *AWT_species_set_root::find_best_matches_info(AP_tree *tree_sour
         ss->node->remark_branch = 0;
         if (mismatches){
             char remark[20];
-            sprintf(remark,"# %i",mismatches); // the #-sign is important (otherwise AWT_export_Newick_tree will not work correctly)
+            sprintf(remark,"# %i",mismatches); // the #-sign is important (otherwise TREE_write_Newick will not work correctly)
             ss->node->remark_branch = strdup(remark);
         }
     }else{

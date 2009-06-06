@@ -264,7 +264,7 @@ void tree_copy_cb(AW_window *aww) {
     free(source);
 }
 
-void tree_save_cb(AW_window *aww){
+static void tree_save_cb(AW_window *aww){
     AW_root  *aw_root   = aww->get_root();
     char     *tree_name = aw_root->awar(AWAR_TREE_NAME)->read_string();
     
@@ -282,20 +282,20 @@ void tree_save_cb(AW_window *aww){
 
         switch (exportType) {
             case AD_TREE_EXPORT_FORMAT_XML:
-                error = AWT_export_XML_tree(GLOBAL_gb_main, db_name, tree_name,
-                                            use_NDS,
-                                            aw_root->awar(AWAR_TREE_EXPORT_HIDE_FOLDED_GROUPS)->read_int(),
-                                            fname);
+                error = TREE_write_XML(GLOBAL_gb_main, db_name, tree_name,
+                                       use_NDS,
+                                       aw_root->awar(AWAR_TREE_EXPORT_HIDE_FOLDED_GROUPS)->read_int(),
+                                       fname);
                 break;
 
             case AD_TREE_EXPORT_FORMAT_NEWICK:
             case AD_TREE_EXPORT_FORMAT_NEWICK_PRETTY:
-                error = AWT_export_Newick_tree(GLOBAL_gb_main, tree_name, use_NDS,
-                                               aw_root->awar(AWAR_TREE_EXPORT_INCLUDE_BRANCHLENS)->read_int(),
-                                               aw_root->awar(AWAR_TREE_EXPORT_INCLUDE_BOOTSTRAPS)->read_int(),
-                                               aw_root->awar(AWAR_TREE_EXPORT_INCLUDE_GROUPNAMES)->read_int(),
-                                               exportType == AD_TREE_EXPORT_FORMAT_NEWICK_PRETTY,
-                                               fname);
+                error = TREE_write_Newick(GLOBAL_gb_main, tree_name, use_NDS,
+                                          aw_root->awar(AWAR_TREE_EXPORT_INCLUDE_BRANCHLENS)->read_int(),
+                                          aw_root->awar(AWAR_TREE_EXPORT_INCLUDE_BOOTSTRAPS)->read_int(),
+                                          aw_root->awar(AWAR_TREE_EXPORT_INCLUDE_GROUPNAMES)->read_int(),
+                                          exportType == AD_TREE_EXPORT_FORMAT_NEWICK_PRETTY,
+                                          fname);
                 break;
         }
 
@@ -416,12 +416,12 @@ void tree_load_cb(AW_window *aww){
         GBT_TREE *tree;
         if (strcmp(pcTreeFormat,"xml") == 0) {
             char *tempFname = readXmlTree(fname);
-            tree = GBT_load_tree(tempFname,sizeof(GBT_TREE), &tree_comment, 1, &scaleWarning);
+            tree = TREE_load(tempFname,sizeof(GBT_TREE), &tree_comment, 1, &scaleWarning);
             GB_unlink_or_warn(tempFname, NULL);
             free(tempFname);
         }
         else {
-            tree = GBT_load_tree(fname,sizeof(GBT_TREE), &tree_comment, 1, &scaleWarning);
+            tree = TREE_load(fname,sizeof(GBT_TREE), &tree_comment, 1, &scaleWarning);
         }
 
         if (!tree) error = GB_await_error();
