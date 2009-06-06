@@ -11,6 +11,9 @@
 #ifndef AWT_NDS_HXX
 #define AWT_NDS_HXX
 
+#ifndef ARBDBT_H
+#include <arbdbt.h>
+#endif
 
 #define AWAR_SELECT_ACISRT     "tmp/acisrt/select"
 #define AWAR_SELECT_ACISRT_PRE "tmp/acisrt/select_pre"
