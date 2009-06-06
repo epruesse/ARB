@@ -121,7 +121,7 @@ int main(int argc,char **argv)
     {
         char *scaleWarning = 0;
 
-        tree = GBT_load_tree(filename, sizeof(GBT_TREE), &comment_from_treefile, (consense||scale) ? 0 : 1, &scaleWarning);
+        tree = TREE_load(filename, sizeof(GBT_TREE), &comment_from_treefile, (consense||scale) ? 0 : 1, &scaleWarning);
         if (!tree) {
             error = GB_await_error();
         }
@@ -136,7 +136,7 @@ int main(int argc,char **argv)
     if (!error) {
         if (scale) {
             GBT_message(gb_main, GBS_global_string("Scaling branch lengths by factor %f.", scale_factor));
-            GBT_scale_tree(tree, scale_factor, 1.0);
+            TREE_scale(tree, scale_factor, 1.0);
         }
 
         if (consense) {
