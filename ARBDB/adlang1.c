@@ -59,8 +59,9 @@ static void gbl_new_param(struct gbl_param **pp, GB_TYPES type, void *vaddr, con
     gblp->help_text  = help_text;
 }
 
-typedef const char *String;
-typedef int         bit;
+typedef const char   *String;
+typedef int           bit;
+typedef unsigned int  uint;
 
 static int gbl_param_int(const char *param_name,int def, const char *help_text, struct gbl_param **pp, int *vaddr) {
     gbl_new_param(pp, GB_INT, vaddr, param_name, help_text);
@@ -69,6 +70,11 @@ static int gbl_param_int(const char *param_name,int def, const char *help_text, 
 
 static char gbl_param_char(const char *param_name,char def, const char *help_text, struct gbl_param **pp, char *vaddr) {
     gbl_new_param(pp, GB_BYTE, vaddr, param_name, help_text);
+    return def;
+}
+
+static uint gbl_param_uint(const char *param_name, uint def, const char *help_text, struct gbl_param **pp, uint *vaddr) {
+    gbl_new_param(pp, GB_INT, vaddr, param_name, help_text);
     return def;
 }
 
@@ -87,11 +93,13 @@ static int gbl_param_bit(const char *param_name, int def, const char *help_text,
 
 #define GBL_PARAM_INT(   var, param_name, def, help_text) GBL_PARAM_TYPE(int,    var, param_name, def, help_text)
 #define GBL_PARAM_CHAR(  var, param_name, def, help_text) GBL_PARAM_TYPE(char,   var, param_name, def, help_text)
+#define GBL_PARAM_UINT(  var, param_name, def, help_text) GBL_PARAM_TYPE(uint,   var, param_name, def, help_text)
 #define GBL_PARAM_STRING(var, param_name, def, help_text) GBL_PARAM_TYPE(String, var, param_name, def, help_text)
 #define GBL_PARAM_BIT(   var, param_name, def, help_text) GBL_PARAM_TYPE(bit,    var, param_name, def, help_text)
 
 #define GBL_STRUCT_PARAM_INT(   strct, member, param_name, def, help_text) GBL_STRUCT_PARAM_TYPE(int,    strct, member, param_name, def, help_text)
 #define GBL_STRUCT_PARAM_CHAR(  strct, member, param_name, def, help_text) GBL_STRUCT_PARAM_TYPE(char,   strct, member, param_name, def, help_text)
+#define GBL_STRUCT_PARAM_UINT(  strct, member, param_name, def, help_text) GBL_STRUCT_PARAM_TYPE(uint,   strct, member, param_name, def, help_text)
 #define GBL_STRUCT_PARAM_STRING(strct, member, param_name, def, help_text) GBL_STRUCT_PARAM_TYPE(String, strct, member, param_name, def, help_text)
 #define GBL_STRUCT_PARAM_BIT(   strct, member, param_name, def, help_text) GBL_STRUCT_PARAM_TYPE(bit,    strct, member, param_name, def, help_text)
 
@@ -137,6 +145,7 @@ static GB_ERROR trace_params(int argc, const GBL *argv, struct gbl_param *ppara,
                         break;
                         
                     case GB_INT:
+                        gb_assert(sizeof(int) == sizeof(uint)); // assumed by GBL_PARAM_UINT
                         *(int *)para->varaddr = atoi(value);
                         break;
 
@@ -2003,11 +2012,11 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args)
     int      ic;
 
     GBL_BEGIN_PARAMS;
-    GBL_PARAM_INT   (firsttab, "firsttab=", 10,   "Indent first line");
-    GBL_PARAM_INT   (tab,      "tab=",      10,   "Indent not first line");
+    GBL_PARAM_UINT  (firsttab, "firsttab=", 10,   "Indent first line");
+    GBL_PARAM_UINT  (tab,      "tab=",      10,   "Indent not first line");
     GBL_PARAM_BIT   (numleft,  "numleft",   0,    "Numbers left of sequence");
-    GBL_PARAM_INT   (gap,      "gap=",      10,   "Insert ' ' every n sequence characters");
-    GBL_PARAM_INT   (width,    "width=",    50,   "Sequence width (bases only)");
+    GBL_PARAM_UINT  (gap,      "gap=",      10,   "Insert ' ' every n sequence characters");
+    GBL_PARAM_UINT  (width,    "width=",    50,   "Sequence width (bases only)");
     GBL_PARAM_STRING(nl,       "nl=",       " ",  "Break line at characters 'str' if wrapping needed");
     GBL_PARAM_STRING(forcenl,  "forcenl=",  "\n", "Always break line at characters 'str'");
     GBL_TRACE_PARAMS(args->cparam,args->vparam);
@@ -2132,17 +2141,14 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args)
 
                     if (numleft) {
                         if (firsttab>0) {
-                            char *firstFormat = GBS_global_string_copy("%%-%iu ", firsttab-1); { {
-                                }
-                            }
+                            char *firstFormat = GBS_global_string_copy("%%-%uiu ", firsttab-1);
                             dst += sprintf(dst, firstFormat, (size_t)1);
                             free(firstFormat);
                         }
                         else {
                             dst += sprintf(dst, "%zu ", (size_t)1);
                         }
-                        format = tab>0 ? GBS_global_string_copy("%%-%iu ", tab-1) : strdup("%u "); {
-                        }
+                        format = tab>0 ? GBS_global_string_copy("%%-%uiu ", tab-1) : strdup("%u ");
                     }
                     else if (firsttab>0) {
                         memset(dst, ' ', firsttab);
