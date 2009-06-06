@@ -50,9 +50,9 @@ SOURCES_TML = $(OBJML:.o=.c) $(OBJPML:.o=.c)
 
 all : prot_tml.h $(PRGS:%=../../bin/%)
 
-prot_tml.h: $(SOURCES_TML)
+prot_tml.h: $(SOURCES_TML) Makefile
 	rm -f $@
-	../../MAKEBIN/aisc_mkpt $(SOURCES_TML) -w $@ >$@
+	../../MAKEBIN/aisc_mkpt -w $@ $(SOURCES_TML) >$@
 
 $(INSTALLDIR)/protml : $(OBJML) $(OBJPML)
 	$(CC) $(CFLAGS) $(DEFINE) -o $@ $(OBJML) $(OBJPML) $(LIBS)
