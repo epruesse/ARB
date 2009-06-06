@@ -36,9 +36,18 @@ typedef struct {
     enum tr_lfmode        lfmode;
 } TreeReader;
 
+static void setReaderError(TreeReader *reader, const char *message) {
+    tree_assert(!reader->error);
+    reader->error = GBS_global_string("Error reading %s:%i: %s",
+                                      reader->tree_file_name,
+                                      reader->line_cnt,
+                                      message);
+}
+
 static char gbt_getc(TreeReader *reader) {
-    // reads character from stream (convert)
-    // when linefeeds are completely broken, 
+    // reads character from stream
+    // - converts linefeeds for DOS- and MAC-textfiles
+    // - increments line_cnt
     char c   = getc(reader->in);
     int  inc = 0;
 
@@ -74,14 +83,29 @@ static char gbt_read_char(TreeReader *reader) {
         c = gbt_getc(reader);
         if (c == ' ' || c == '\t' || c == '\n') ; // skip
         else if (c == '[') {    // collect tree comment(s)
-            if (reader->tree_comment != 0) {
+            int openBrackets = 1;
+            if (GBS_memoffset(reader->tree_comment)) {
                 // not first comment -> do new line
                 GBS_chrcat(reader->tree_comment, '\n');
             }
-            c = getc(reader->in);
-            while (c != ']' && c != EOF) {
-                GBS_chrcat(reader->tree_comment, c);
+
+            while (openBrackets && !reader->error) {
                 c = gbt_getc(reader);
+                switch (c) {
+                    case EOF:
+                        setReaderError(reader, "Reached end of file while reading comment");
+                        break;
+                    case ']':
+                        openBrackets--;
+                        if (openBrackets) GBS_chrcat(reader->tree_comment, c); // write all but last closing brackets
+                        break;
+                    case '[':
+                        openBrackets++;
+                        // fall-through
+                    default:
+                        GBS_chrcat(reader->tree_comment, c);
+                        break;
+                }
             }
         }
         else done = GB_TRUE;
@@ -117,14 +141,6 @@ static void freeTreeReader(TreeReader *reader) {
     free(reader->tree_file_name);
     if (reader->tree_comment) GBS_strforget(reader->tree_comment);
     free(reader);
-}
-
-static void setReaderError(TreeReader *reader, const char *message) {
-    
-    reader->error = GBS_global_string("Error reading %s:%i: %s",
-                                      reader->tree_file_name,
-                                      reader->line_cnt,
-                                      message);
 }
 
 static char *getTreeComment(TreeReader *reader) {
@@ -403,6 +419,12 @@ GBT_TREE *TREE_load(const char *path, int structuresize, char **commentPtr, int 
         tree                    = gbt_load_tree_rek(reader, structuresize, &rootNodeLen);
         fclose(input);
 
+        if (reader->error) {
+            GBT_delete_tree(tree);
+            tree  = 0;
+            error = reader->error;
+        }
+
         if (tree) {
             double bootstrap_scale = 1.0;
             double branchlen_scale = 1.0;
@@ -439,12 +461,11 @@ GBT_TREE *TREE_load(const char *path, int structuresize, char **commentPtr, int 
             if (commentPtr) {
                 char *comment = getTreeComment(reader);
 
+                const char *loaded_from = GBS_global_string("Loaded from %s", path);
+                freeset(comment, TREE_log_action_to_tree_comment(comment, loaded_from));
+
                 tree_assert(*commentPtr == 0);
-                if (comment && comment[0]) {
-                    char *unescaped = GBT_newick_comment(comment, GB_FALSE);
-                    *commentPtr     = unescaped;
-                }
-                free(comment);
+                *commentPtr = comment;
             }
         }
 

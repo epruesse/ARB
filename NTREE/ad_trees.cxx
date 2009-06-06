@@ -432,16 +432,7 @@ void tree_load_cb(AW_window *aww){
             error = GBT_write_tree(GLOBAL_gb_main,0,tree_name,tree);
 
             if (!error && tree_comment) {
-                char *comment;
-                {
-                    GBS_strstruct *com = GBS_stropen(1000);
-                    
-                    GBS_strcat(com, GBS_global_string("Loaded from '%s'\n", fname));
-                    GBS_strcat(com, tree_comment);
-                    comment = GBS_strclose(com);
-                }
-                error = GBT_write_tree_rem(GLOBAL_gb_main, tree_name, comment);
-                free(comment);
+                error = GBT_write_tree_rem(GLOBAL_gb_main, tree_name, tree_comment);
             }
 
             if (error) error = ta.close(error);

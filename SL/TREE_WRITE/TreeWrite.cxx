@@ -1,25 +1,21 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <awt.hxx>
 
 #define _NO_AWT_NDS_WINDOW_FUNCTIONS
 #include <awt_nds.hxx>
-
 #include <xml.hxx>
+
 #include <TreeRead.h>
+#include <awt.hxx>
 
 using namespace std;
+
+#define tree_assert(cond) arb_assert(cond)
 
 static void export_tree_label(const char *label, FILE *out) {
     // writes a label into the Newick file
     // label is quoted if necessary
     // label may be an internal_node_label, a leaf_label or a root_label
-    awt_assert(label);
+    tree_assert(label);
     char *need_quotes = strpbrk(label, " \t()[]\'\":;,");
 
     if (need_quotes) {
@@ -88,7 +84,7 @@ static const char *export_tree_node_print(GBDATA *gb_main, FILE *out, GBT_TREE *
             if (boot[strlen(boot)-1] == '%') { // does remark_branch contain a bootstrap value ?
                 char   *end = 0;
                 double  val = strtod(boot, &end);
-                awt_assert(end[0] == '%');        // otherwise sth strange is contained in remark_branch
+                tree_assert(end[0] == '%');        // otherwise sth strange is contained in remark_branch
                 
                 boot = GBS_global_string("%i", int(val+0.5));
             }
@@ -144,7 +140,7 @@ static const char *export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tree, d
                 char   *end = 0;
                 double  val = strtod(boot, &end);
                 
-                awt_assert(end[0] == '%');          // otherwise sth strange is contained in remark_branch
+                tree_assert(end[0] == '%');          // otherwise sth strange is contained in remark_branch
                 bootstrap = GBS_global_string_copy("%i", int(val+0.5));
             }
         }
@@ -155,7 +151,7 @@ static const char *export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tree, d
             if (use_NDS) buf = make_node_text_nds(gb_main, tree->gb_node,0,tree, tree_name);
             else buf         = tree->name;
 
-            awt_assert(buf);
+            tree_assert(buf);
             groupname = strdup(buf);
 
             GBDATA *gb_grouped = GB_entry(tree->gb_node, "grouped");
@@ -185,7 +181,7 @@ static const char *export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tree, d
                 if (folded) branch_tag.add_attribute("folded", "1");
             }
             else {
-                awt_assert(!folded);
+                tree_assert(!folded);
             }
 
             int my_son_counter = 0;
@@ -247,6 +243,42 @@ GB_ERROR TREE_write_XML(GBDATA *gb_main, const char *db_name, const char *tree_n
     return error;
 }
 
+static char *complete_newick_comment(const char *comment) {
+    // ensure that all '[' in 'comment' are closed by corresponding ']' by inserting additional brackets
+
+    int                   openBrackets = 0;
+    struct GBS_strstruct *out          = GBS_stropen(strlen(comment)*1.1);
+
+    for (int o = 0; comment[o]; ++o) {
+        switch (comment[o]) {
+            case '[':
+                openBrackets++;
+                break;
+            case ']':
+                if (openBrackets == 0) {
+                    GBS_chrcat(out, '[');           // insert one
+                }
+                else {
+                    openBrackets--;
+                }
+                break;
+
+            default:
+                break;
+        }
+        GBS_chrcat(out, comment[o]);
+    }
+
+    while (openBrackets>0) {
+        GBS_chrcat(out, ']');                       // insert one
+        openBrackets--;
+    }
+
+    gb_assert(openBrackets == 0);
+
+    return GBS_strclose(out);
+}
+
 GB_ERROR TREE_write_Newick(GBDATA *gb_main, char *tree_name, bool use_NDS, bool save_branchlengths, bool save_bootstraps, bool save_groupnames, bool pretty, char *path)
 {
     GB_ERROR  error  = 0;
@@ -267,16 +299,21 @@ GB_ERROR TREE_write_Newick(GBDATA *gb_main, char *tree_name, bool use_NDS, bool 
                 GBDATA *tree_cont   = GBT_get_tree(gb_main,tree_name);
                 GBDATA *tree_remark = GB_entry(tree_cont, "remark");
 
-                if (tree_remark) remark = GB_read_string(tree_remark);
-                else remark             = GBS_global_string_copy("ARB-tree '%s'", tree_name);
-
+                if (tree_remark) {
+                    remark = GB_read_string(tree_remark);
+                }
                 {
-                    char *escaped_remark       = GBT_newick_comment(remark, GB_TRUE);
-                    if (!escaped_remark) error = GB_await_error();
-                    else {
-                        fprintf(output, "[%s]\n", escaped_remark);
-                        free(escaped_remark);
-                    }
+                    const char *saved_to = GBS_global_string("%s saved to %s", tree_name, path);
+                    freeset(remark, TREE_log_action_to_tree_comment(remark, saved_to));
+                }
+
+                if (remark) {
+                    char *wellformed = complete_newick_comment(remark);
+
+                    tree_assert(wellformed);
+
+                    fputc('[', output); fputs(wellformed, output); fputs("]\n", output);
+                    free(wellformed);
                 }
                 free(remark);
                 if (!error) {
