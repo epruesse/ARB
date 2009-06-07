@@ -412,7 +412,6 @@ NT_extern.o: $(ARBHOME)/INCLUDE/awt_advice.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_dtree.hxx
-NT_extern.o: $(ARBHOME)/INCLUDE/awt_hotkeys.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_input_mask.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_macro.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
@@ -430,7 +429,6 @@ NT_extern.o: $(ARBHOME)/INCLUDE/GEN.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/primer_design.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/probe_design.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/seq_quality.h
-NT_extern.o: $(ARBHOME)/INCLUDE/smartptr.h
 NT_extern.o: $(ARBHOME)/INCLUDE/st_window.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/svn_revision.h
 

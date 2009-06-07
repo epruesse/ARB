@@ -92,10 +92,8 @@ EXP_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/awt.hxx
-EXP_main.o: $(ARBHOME)/INCLUDE/awt_hotkeys.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/awt_input_mask.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/ntree.hxx
-EXP_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 GEN_color_groups.o: GEN_color_groups.hxx
 
@@ -203,9 +201,7 @@ GEN_map.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/awt.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
-GEN_map.o: $(ARBHOME)/INCLUDE/awt_hotkeys.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/awt_input_mask.hxx
-GEN_map.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 GEN_nds.o: GEN_interface.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
