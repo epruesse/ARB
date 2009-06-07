@@ -12,29 +12,14 @@
 //                                                                       //
 //  ==================================================================== //
 
-#include <arbdb.h>
+#include "awt_input_mask_internal.hxx"
+
 #include <arbdbt.h>
-#include <awt.hxx>
 #include <awt_www.hxx>
 
-#include "awt_input_mask.hxx"
-
-#ifndef __MAP__
-#include <map>
-#endif
-#ifndef __VECTOR__
-#include <vector>
-#endif
-
-#include <dirent.h>
-#include <sys/types.h>
 #include <sys/stat.h>
-
-#include <cctype>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <climits>
+#include <sys/types.h>
+#include <dirent.h>
 
 using namespace std;
 

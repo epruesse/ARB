@@ -270,6 +270,7 @@ AWT_hotkeys.o: awt_hotkeys.hxx
 AWT_input_mask.o: awt.hxx
 AWT_input_mask.o: awt_hotkeys.hxx
 AWT_input_mask.o: awt_input_mask.hxx
+AWT_input_mask.o: awt_input_mask_internal.hxx
 AWT_input_mask.o: awt_www.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/ad_prot.h
