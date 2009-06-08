@@ -151,6 +151,7 @@ ad_transpro.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/awt_translate.hxx
 
+ad_trees.o: ad_trees.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ad_trees.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ad_trees.o: $(ARBHOME)/INCLUDE/ad_t_prot.h

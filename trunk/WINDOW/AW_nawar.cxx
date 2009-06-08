@@ -593,7 +593,9 @@ AW_default AW_root::open_default(const char *default_name, bool create_if_missin
 
     if (gb_default) {
         GB_no_transaction(gb_default);
+#if defined(DEBUG)
         AWT_announce_db_to_browser(gb_default, GBS_global_string("Properties (%s)", default_name));
+#endif // DEBUG
     }
     else {
         GB_ERROR    error           = GB_await_error();

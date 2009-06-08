@@ -1181,7 +1181,9 @@ GBDATA *open_AWTC_import_window(AW_root *awr,const char *defname, bool do_exit, 
     awtcig.cd1     = cd1;
     awtcig.cd2     = cd2;
 
+#if defined(DEBUG)
     AWT_announce_db_to_browser(awtcig.gb_main, "New database (import)");
+#endif // DEBUG
 
     awtcig.gb_other_main = gb_main;
 

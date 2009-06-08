@@ -1,3 +1,16 @@
+// ============================================================ //
+//                                                              //
+//   File      : ad_spec.hxx                                    //
+//   Purpose   :                                                //
+//                                                              //
+//   Institute of Microbiology (Technical University Munich)    //
+//   www.arb-home.de                                            //
+//                                                              //
+// ============================================================ //
+
+#ifndef AD_SPEC_HXX
+#define AD_SPEC_HXX
+
 #define AWAR_SPECIES_DEST "tmp/adspec/dest"
 #define AWAR_SPECIES_INFO "tmp/adspec/info"
 #define AWAR_SPECIES_KEY  "tmp/adspec/key"
@@ -12,6 +25,11 @@
 
 #define AWAR_FIELD_REORDER_SOURCE "tmp/ad_reorder/source"
 #define AWAR_FIELD_REORDER_DEST   "tmp/ad_reorder/dest"
+
+#ifndef AWT_HXX
+#include <awt.hxx>
+#endif
+
 
 void       create_species_var(AW_root *aw_root, AW_default aw_def);
 AW_window *NT_create_species_window(AW_root *aw_root);
@@ -29,3 +47,7 @@ AW_window *NT_create_ad_field_create(AW_root *root, AW_CL cl_item_selector);
 AW_window *NT_create_ad_field_convert(AW_root *root, AW_CL cl_item_selector);
 
 void NT_detach_information_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_Awar_Callback_Info);
+
+#else
+#error ad_spec.hxx included twice
+#endif // AD_SPEC_HXX

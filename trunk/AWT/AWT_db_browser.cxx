@@ -22,6 +22,9 @@
 
 #include <cstring>
 
+// do includes above (otherwise depends depend on DEBUG)
+#if defined(DEBUG)
+
 using namespace std;
 
 // used AWARs : 
@@ -883,8 +886,6 @@ AW_window *DB_browser::get_window(AW_root *aw_root) {
     }
     return aww;
 }
-
-#if defined(DEBUG)
 
 static void dump_gcs(AW_window *aww, AW_CL, AW_CL) {
     for (int gc = int(AWT_GC_CURSOR); gc <= AWT_GC_MAX;  ++gc) {

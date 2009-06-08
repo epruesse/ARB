@@ -80,7 +80,9 @@ ATTRIBUTED(__ATTR__NORETURN, static void ph_exit(AW_window *aw_window, PH_root *
     GBDATA *gb_main = ph_root->gb_main;
     if (gb_main) {
         aw_window->get_root()->unlink_awars_from_DB(gb_main);
+#if defined(DEBUG)
         AWT_browser_forget_db(gb_main);
+#endif // DEBUG
         GB_close(gb_main);
     }
     exit(0);
@@ -572,9 +574,13 @@ main(int argc, char **argv)
     PH_create_filter_variables(aw_root, aw_default);
     PH_create_matrix_variables(aw_root, aw_default);
     ARB_init_global_awars(aw_root, aw_default, GLOBAL_gb_main);
+#if defined(DEBUG)
     AWT_create_db_browser_awars(aw_root, aw_default);
+#endif // DEBUG
 
+#if defined(DEBUG)
     AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB-database (%s)", db_server));
+#endif // DEBUG
 
     create_filter_text();
 

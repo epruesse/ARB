@@ -372,7 +372,9 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
 
     ed4_create_mainDB_awars(root, config_name);
     
+#if defined(DEBUG)
     AWT_create_db_browser_awars(root, AW_ROOT_DEFAULT);
+#endif // DEBUG
 
     create_naligner_variables(root, AW_ROOT_DEFAULT);
     create_galigner_variables(root, AW_ROOT_DEFAULT);
@@ -555,7 +557,9 @@ int main(int argc, char **argv)
         exit (-1);
     }
 
+#if defined(DEBUG)
     AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB database (%s)", data_path));
+#endif // DEBUG
     ED4_ROOT = new ED4_root;
 
     openProperties(); // open properties database

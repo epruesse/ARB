@@ -830,7 +830,9 @@ void ED4_exit() {
 
     GBDATA *gb_main = GLOBAL_gb_main;
     GLOBAL_gb_main  = NULL;
+#if defined(DEBUG)
     AWT_browser_forget_db(gb_main);
+#endif // DEBUG
     GB_close(gb_main);
 
     ::exit(0);

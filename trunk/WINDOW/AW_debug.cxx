@@ -9,8 +9,6 @@
 //                                                             //
 // =========================================================== //
 
-#if defined(DEBUG)
-// --------------------------------------------------------------------------------
 
 #include <Xm/Xm.h>
 
@@ -24,6 +22,10 @@
 #include <iterator>
 #include <string>
 #include <algorithm>
+
+// do includes above (otherwise depends depend on DEBUG)
+#if defined(DEBUG)
+// --------------------------------------------------------------------------------
 
 using namespace std;
 
@@ -282,7 +284,6 @@ size_t AW_root::callallcallbacks(int mode) {
 
     return callCount;
 }
-
 
 // --------------------------------------------------------------------------------
 #endif // DEBUG
