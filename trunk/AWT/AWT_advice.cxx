@@ -112,7 +112,7 @@ void AWT_reactivate_all_advices() {
 
     char *disabled = awar_disabled->read_string();
     char *nosemi   = GBS_string_eval(disabled, ";=", NULL);
-    int   entries  = strlen(nosemi)-strlen(disabled);
+    int   entries  = strlen(disabled)-strlen(nosemi);
 
     if (entries>0) {
         awt_assert(entries>1);
