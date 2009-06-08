@@ -1,14 +1,10 @@
+#include "ad_spec.hxx"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <arbdb.h>
 #include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
 #include <aw_awars.hxx>
-#include "ad_spec.hxx"
-#include <awt.hxx>
 #include <awt_www.hxx>
 #include <awt_tree.hxx>
 #include <awt_canvas.hxx>

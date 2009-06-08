@@ -328,7 +328,9 @@ void MG_start_cb(AW_window *aww)
             GLOBAL_gb_merge             = GBT_open(merge, "rw", "$(ARBHOME)/lib/pts/*");
             if (!GLOBAL_gb_merge) error = GB_await_error();
             else {
+#if defined(DEBUG)
                 AWT_announce_db_to_browser(GLOBAL_gb_merge, GBS_global_string("Database I (source; %s)", merge));
+#endif // DEBUG
 
                 aw_status("DATABASE II");
 
@@ -349,9 +351,9 @@ void MG_start_cb(AW_window *aww)
                 if (!error) {
                     GLOBAL_gb_dest             = GBT_open(main, open_mode, "$(ARBHOME)/lib/pts/*");
                     if (!GLOBAL_gb_dest) error = GB_await_error();
-                    else {
-                        AWT_announce_db_to_browser(GLOBAL_gb_dest, GBS_global_string("Database II (destination; %s)", main));
-                    }
+#if defined(DEBUG)
+                    else AWT_announce_db_to_browser(GLOBAL_gb_dest, GBS_global_string("Database II (destination; %s)", main));
+#endif // DEBUG
                 }
                 free(main);
             }
@@ -422,7 +424,10 @@ void MG_create_all_awars(AW_root *awr, AW_default aw_def,const char *fname_one, 
 
     MG_create_rename_awars(awr, aw_def);
     AWTC_create_rename_awars(awr, aw_def);
+
+#if defined(DEBUG)
     AWT_create_db_browser_awars(awr, aw_def);
+#endif // DEBUG
 }
 
 AW_window *create_MG_main_window(AW_root *aw_root)

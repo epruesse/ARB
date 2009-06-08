@@ -18,6 +18,8 @@
 #include <awt_tree_cmp.hxx>
 #include <awt_sel_boxes.hxx>
 
+#include "ad_trees.hxx"
+
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
@@ -25,15 +27,14 @@
 
 extern GBDATA *GLOBAL_gb_main;
 
-const char *AWAR_TREE_NAME      =   "tmp/ad_tree/tree_name";
-const char *AWAR_TREE_DEST      =   "tmp/ad_tree/tree_dest";
-const char *AWAR_TREE_SECURITY  =   "tmp/ad_tree/tree_security";
-const char *AWAR_TREE_REM       =   "tmp/ad_tree/tree_rem";
+const char *AWAR_TREE_DEST     = "tmp/ad_tree/tree_dest";
+const char *AWAR_TREE_SECURITY = "tmp/ad_tree/tree_security";
+const char *AWAR_TREE_REM      = "tmp/ad_tree/tree_rem";
 
-#define AWAR_TREE_EXPORT                "tmp/ad_tree/export_tree"
-#define AWAR_TREE_IMPORT                "tmp/ad_tree/import_tree"
-#define AWAR_NODE_INFO_ONLY_MARKED      "tmp/ad_tree/import_only_marked_node_info"
-#define AWAR_TREE_EXPORT_SAVE           "ad_tree/export_tree"
+#define AWAR_TREE_EXPORT           "tmp/ad_tree/export_tree"
+#define AWAR_TREE_IMPORT           "tmp/ad_tree/import_tree"
+#define AWAR_NODE_INFO_ONLY_MARKED "tmp/ad_tree/import_only_marked_node_info"
+#define AWAR_TREE_EXPORT_SAVE      "ad_tree/export_tree"
 
 #define AWAR_TREE_EXPORT_FILTER             AWAR_TREE_EXPORT "/filter"
 #define AWAR_TREE_EXPORT_FORMAT             AWAR_TREE_EXPORT_SAVE "/format"

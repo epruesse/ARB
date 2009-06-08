@@ -227,7 +227,9 @@ int main_load_and_startup_main_window(AW_root *aw_root) // returns 0 when succes
             }
         }
     }
+#if defined(DEBUG)
     AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB database (%s)", db_server));
+#endif // DEBUG
 
     free(db_server);
     nt_main_startup_main_window(aw_root);
@@ -469,10 +471,14 @@ int main(int argc, char **argv)
                 aw_popup_ok(GB_await_error());
                 exit(0);
             }
+#if defined(DEBUG)
             AWT_announce_db_to_browser(GLOBAL_gb_merge, "Current database (:)");
+#endif // DEBUG
 
             GLOBAL_gb_dest = GBT_open("noname.arb","cw",0);
+#if defined(DEBUG)
             AWT_announce_db_to_browser(GLOBAL_gb_dest, "New database (noname.arb)");
+#endif // DEBUG
 
             MG_start_cb2(NULL, aw_root, true, true);
             aw_root->main_loop();

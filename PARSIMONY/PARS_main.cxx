@@ -57,7 +57,9 @@ static void pars_export_tree(void){
 
 ATTRIBUTED(__ATTR__NORETURN, static void pars_exit(AW_window *aww)) {
     aww->get_root()->unlink_awars_from_DB(GLOBAL_gb_main);
+#if defined(DEBUG)
     AWT_browser_forget_db(GLOBAL_gb_main);
+#endif // DEBUG
     GB_close(GLOBAL_gb_main);
     exit(0);
 }
@@ -1809,7 +1811,9 @@ static void pars_create_all_awars(AW_root *awr, AW_default aw_def)
     create_parsimony_variables(awr, GLOBAL_gb_main);
     create_nds_vars(awr,aw_def,GLOBAL_gb_main);
 
+#if defined(DEBUG)
     AWT_create_db_browser_awars(awr, aw_def);
+#endif // DEBUG
 
     GB_ERROR error = ARB_init_global_awars(awr, aw_def, GLOBAL_gb_main);
     if (error) aw_message(error);
@@ -1890,7 +1894,9 @@ int main(int argc, char **argv)
     GLOBAL_gb_main = GBT_open(db_server,"rw",0);
     if (!GLOBAL_gb_main) aw_popup_exit(GB_await_error()); // exits
     
+#if defined(DEBUG)
     AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB-database (%s)", db_server));
+#endif // DEBUG
 
     pars_create_all_awars(aw_root,aw_default);
 

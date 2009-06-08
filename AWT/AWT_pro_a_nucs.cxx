@@ -321,6 +321,7 @@ static int nuc_dist(const AWT_translator *translator, unsigned char p1, unsigned
     return mindist;
 }
 
+#if defined(DEBUG)
 static void awt_pro_a_nucs_debug(const AWT_translator *translator, const AWT_distance_meter *distmeter) {
     int max_aa     = translator->MaxAA();
     int realmax_aa = translator->RealmaxAA();
@@ -346,6 +347,7 @@ static void awt_pro_a_nucs_debug(const AWT_translator *translator, const AWT_dis
         printf ("\n");
     }
 }
+#endif // DEBUG
 
 // ---------------------------
 //      AWT_distance_meter

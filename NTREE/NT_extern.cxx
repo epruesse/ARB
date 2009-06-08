@@ -11,7 +11,6 @@
 
 #include "ad_trees.hxx"
 #include "ad_spec.hxx"
-#include <awt.hxx>
 #include <awt_nds.hxx>
 #include <awt_canvas.hxx>
 #include <aw_preset.hxx>
@@ -192,7 +191,9 @@ void nt_create_all_awars(AW_root *awr, AW_default def) {
 
     GEN_create_awars(awr, def);
     EXP_create_awars(awr, def);
+#if defined(DEBUG)
     AWT_create_db_browser_awars(awr, def);
+#endif // DEBUG
 
     AW_create_namesadmin_awars(awr, GLOBAL_gb_main);
 
@@ -275,7 +276,9 @@ void nt_exit(AW_window *aws) {
 #endif // DEVEL_RALF
         aw_root->unlink_awars_from_DB(gb_main);
         AWT_destroy_input_masks();
+#if defined(DEBUG)
         AWT_browser_forget_db(gb_main);
+#endif // DEBUG
 
         GB_close(gb_main);
     }
