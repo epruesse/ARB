@@ -909,6 +909,13 @@ shared_libs: dball aw awt
 		@echo -------------------- Updating shared libraries
 		$(MAKE) libs
 
+addlibs:
+	(perl $(ARBHOME)/SOURCE_TOOLS/provide_libs.pl \
+				"arbhome=$(ARBHOME)" \
+				"opengl=$(OPENGL)" \
+				"link_static=$(LINK_STATIC)" \
+	)
+
 libs:	lib/libARBDB.$(SHARED_LIB_SUFFIX) \
 	lib/libARBDBPP.$(SHARED_LIB_SUFFIX) \
 	lib/libARBDO.$(SHARED_LIB_SUFFIX) \
@@ -1315,9 +1322,11 @@ relink: binclean libclean
 	$(MAKE) all
 
 tarfile: rebuild
+	$(MAKE) addlibs 
 	util/arb_compress
 
 tarfile_quick: all
+	$(MAKE) addlibs 
 	util/arb_compress
 
 save: sourcetarfile 
