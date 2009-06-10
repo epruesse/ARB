@@ -176,11 +176,11 @@ my @skipped_when_matchesFull = (
                                 qr/^\.\/lib\/arb_tcp\.dat$/o,
                                 qr/^\.\/arb.*\.tgz$/o,
                                 qr/^\.\/SOURCE_TOOLS\/valgrind2grep\.lst$/o,
+                                qr/\/lib\/addlibs\/(lib.*\.so\..*)$/o,
                                );
 
 my @forced_when_matchesFull = (
                                qr/\/PROBE_WEB\/SERVER\/.*\.jar$/o,
-                               qr/\/lib\/addlibs\/(lib.*|.*\.sh)$/o,
                               );
 
 # files that are even packed when generated and not in VC
