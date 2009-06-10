@@ -13,6 +13,7 @@ use strict;
 use warnings;
 
 my %needed_by = (
+                 # 'libXm.so' => 'arb_ntree', # this would also link the motif lib (not done atm)
                 );
 
 my %needed_by_opengl = (
@@ -21,6 +22,8 @@ my %needed_by_opengl = (
                        );
 
 my $verbose = 0; # for debugging this script
+
+#  libs get copied to ../lib/addlibs
 
 sub getModtime($) {
   my ($fileOrDir) = @_;
