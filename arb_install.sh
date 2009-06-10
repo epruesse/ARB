@@ -6,7 +6,7 @@ err() {
     echo "********************************* ERROR ***********************" 1>&2
     echo "`basename $0`: $@" 1>&2
     echo "***************************** END OF ERROR ********************" 1>&2
-    echo "  Please rerun script !!!" 1>&2
+    echo "Please fix and then rerun script !!!" 1>&2
     exit 1
 }
 
@@ -93,10 +93,14 @@ fi
 cwd=`pwd`
 
 if test ! -f arb.tgz; then
-    if test -f arb_noOPENGL.tgz; then
-        ln -s arb_noOPENGL.tgz arb.tgz
-    else
-        err "Neither arb.tgz nor arb_noOPENGL.tgz found"
+    # link any arb.32.*.tgz or arb.64.*.tgz to arb.tgz
+    ln -s arb.[36][24].*.tgz arb.tgz
+    if test ! -L arb.tgz; then
+        err "Failed to link any arb-tarball to arb.tgz (maybe there are multiple arb.32/64*.tgz in this directory)"
+    fi
+    if test ! -f arb.tgz; then
+        ls -al arb.tgz
+        err "arb.tgz does not link to an arb-tarball"
     fi
 fi
 
@@ -321,10 +325,6 @@ case "$var" in
     cp lib/arb_tcp_org.dat lib/arb_tcp.dat
     echo ">>> server installed";;
 esac
-
-# install missing libraries
-seperator
-( export ARBHOME ; $ARBHOME/lib/addlibs/install_libs.sh )
 
 seperator
 echo ">>> Installation Complete"
