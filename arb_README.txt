@@ -27,7 +27,6 @@ Welcome to the 'ARB' Sequence Database Tools
 
         'arb_install.sh'        // install script
         'arb.tgz'               // ARB program
-        'zcat'                  // decompress (gzip)
 
         Note: do not uncompress and untar arb.tar.gz directly,
               use the install script !!!
