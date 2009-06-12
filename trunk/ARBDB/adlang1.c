@@ -2140,15 +2140,18 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args)
                     const char *src_start = src;
 
                     if (numleft) {
+                        /* Warning: Be very careful, when you change format strings here!
+                         * currently all format strings result in '%u' or '%-##u' (where # are digits) 
+                         */
                         if (firsttab>0) {
-                            char *firstFormat = GBS_global_string_copy("%%-%uiu ", firsttab-1);
+                            char *firstFormat = GBS_global_string_copy("%%-%iu ", firsttab-1);
                             dst += sprintf(dst, firstFormat, (size_t)1);
                             free(firstFormat);
                         }
                         else {
                             dst += sprintf(dst, "%zu ", (size_t)1);
                         }
-                        format = tab>0 ? GBS_global_string_copy("%%-%uiu ", tab-1) : strdup("%u ");
+                        format = tab>0 ? GBS_global_string_copy("%%-%iu ", tab-1) : strdup("%u ");
                     }
                     else if (firsttab>0) {
                         memset(dst, ' ', firsttab);
@@ -2175,7 +2178,8 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args)
                         if (rest_data>0) {
                             *dst++ = '\n';
                             if (numleft) {
-                                dst += sprintf(dst, format, (src-src_start)+1);
+                                unsigned int num  = (src-src_start)+1; /* this goes to the '%u' (see comment above) */
+                                dst              += sprintf(dst, format, num);
                             }
                             else if (tab>0) {
                                 memset(dst, ' ', tab);
