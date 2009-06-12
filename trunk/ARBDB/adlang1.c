@@ -2145,11 +2145,11 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args)
                          */
                         if (firsttab>0) {
                             char *firstFormat = GBS_global_string_copy("%%-%iu ", firsttab-1);
-                            dst += sprintf(dst, firstFormat, (size_t)1);
+                            dst += sprintf(dst, firstFormat, (unsigned)1);
                             free(firstFormat);
                         }
                         else {
-                            dst += sprintf(dst, "%zu ", (size_t)1);
+                            dst += sprintf(dst, "%u ", (unsigned)1);
                         }
                         format = tab>0 ? GBS_global_string_copy("%%-%iu ", tab-1) : strdup("%u ");
                     }
@@ -2290,7 +2290,7 @@ static char *gbl_read_seq_sai_or_species(const char *species, const char *sai, c
 
     if (error) {
         gb_assert(!seq);
-        GB_export_error(error);
+        GB_export_error("%s", error);
     }
 
     return seq;
