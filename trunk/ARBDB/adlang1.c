@@ -108,11 +108,20 @@ static int gbl_param_bit(const char *param_name, int def, const char *help_text,
         if (def_error) { GBL_END_PARAMS; return def_error; }; };
 
 #define GBL_END_PARAMS { struct gbl_param *_gblp; while (params) { \
-                _gblp = params; params = params->next; \
-                free((char *)_gblp); } };
+                             _gblp = params; params = params->next;     \
+                             free((char *)_gblp); } };
 
-#define GBL_CHECK_FREE_PARAM(nr,cnt) if (nr+cnt >= GBL_MAX_ARGUMENTS) {\
-        return "Max Parameters exceeded";}
+#define GBL_CHECK_FREE_PARAM(nr,cnt) do {       \
+        if ((nr)+(cnt) >= GBL_MAX_ARGUMENTS) {  \
+            /* ad_assert(0); */                 \
+            return "max. parameters exceeded";  \
+        }                                       \
+    }while(0)
+
+#if defined(DEVEL_RALF)
+#warning remove GBL_MAX_ARGUMENTS - instead allocate dynamic
+#endif /* DEVEL_RALF */
+
 
 static GB_ERROR trace_params(int argc, const GBL *argv, struct gbl_param *ppara, const char *com) {
     GB_ERROR error = 0;
