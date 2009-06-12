@@ -32,7 +32,6 @@ my @skipped_directories = (
 my %used_files = map { $_ => 1; } (
                                    'demo.arb',
                                    'export2sub',
-                                   'zcat',
                                    'Doxyfile',
                                    'Makefile',
                                    'Makefile.org',

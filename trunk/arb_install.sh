@@ -24,17 +24,10 @@ untar() {
         #remove old DEPOT BUG
     rm -f DEPOT/gde/bin
 
-    if [ ! -x $cwd/zcat ]; then
-        if chmod 755 $cwd/zcat; then
-            echo ">>> chmod 755  $cwd/zcat succesfull"
-        else
-            err "Cannot chmod of $cwd/zcat"
-        fi
-    fi
     if [ ! -r $cwd/$1 ]; then
         err "Cannot find or read file  $cwd/$1"
     fi
-    if $cwd/zcat $cwd/$1 |tar xfv -; then
+    if gunzip --stdout $cwd/$1 | tar xfv -; then
         echo ">>> $1 uncompressed and untared"
     else
         err "Error in uncompressing or untaring $1"
