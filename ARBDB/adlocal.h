@@ -578,7 +578,7 @@ struct gb_scandir {
 
 /* command interpreter */
 
-#define GBL_MAX_ARGUMENTS 50
+#define GBL_MAX_ARGUMENTS 500
 
 typedef struct gbl_struct {
     char *str;
