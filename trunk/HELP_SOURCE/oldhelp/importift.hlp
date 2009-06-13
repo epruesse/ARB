@@ -39,6 +39,7 @@ SECTION         BRIEF DESCRIPTION
         		SEQUENCEEND	"STRING"
         		[CREATE_ACC_FROM_SEQUENCE]
         		[DONT_GEN_NAMES]
+                        [IFNOTSET x "Reason why x is not set"]
         		END		"STRING"
 
 		or it can pipe the data through any external program PROGRAM to
@@ -95,7 +96,16 @@ DESCRIPTION	First of all the converter appends all import files maching
                                store the current result in the variable x, where x may be any character.
                                After it was set this variable can be referenced by using $x in any
                                command expression (SRT_STRING,ACI_STRING,TAGNAME,DB_FIELD_NAME).
+
+                               For each used variable there has to be defined an error reason
+                               describing, what's wrong if the variable has NOT been set.
+                               Define error reasons using
+
+                                      IFNOTSET x "Reason why x is not set"
+
                                Note: use '$$' to insert a single '$'.
+
+                               Allowed variable names are 'a' to 'z'.
 
                    Note: Every of these commands may only occur once in one MATCH rule.
                          To run some of them multiple, create multiple MATCH rules.
