@@ -15,6 +15,7 @@ XX
 *(db_xref|    do(formatMeta)|split|dropempty|srt("*=DR   *\n"))\
 *(description|do(formatMeta)|split|dropempty|srt("*=DE   *\n"))\
 XX
+*(|readdb(author);readdb(title);readdb(journal);readdb(refgrp);readdb(auth_comm);readdb(nuc_rp)|merge|dropempty|srt("*=RN   [1]\n"))\
 *(author|     do(formatMeta)|split|dropempty|srt("*=RA   *\n"))\
 *(title|      do(formatMeta)|split|dropempty|srt("*=RT   *\n"))\
 *(journal|    do(formatMeta)|split|dropempty|srt("*=RL   *\n"))\
