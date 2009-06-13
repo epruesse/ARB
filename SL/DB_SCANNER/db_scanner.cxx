@@ -512,7 +512,6 @@ static void awt_scanner_changed_cb(GBDATA *dummy, struct adawcbstruct *cbs, GB_C
 {
     AWUSE(dummy);
     AW_window *aws = cbs->aws;
-    GB_transaction dummy2(cbs->gb_main);
 
     cbs->may_be_an_error = 1;
 
@@ -527,6 +526,8 @@ static void awt_scanner_changed_cb(GBDATA *dummy, struct adawcbstruct *cbs, GB_C
     }
     aws->clear_selection_list(cbs->id);
     if (cbs->gb_user) {
+        GB_transaction ta(cbs->gb_main);
+
         switch (cbs->scannermode) {
             case AWT_SCANNER:
                 awt_scanner_scan_rek(cbs->gb_user,cbs,0,cbs->id);
@@ -539,6 +540,8 @@ static void awt_scanner_changed_cb(GBDATA *dummy, struct adawcbstruct *cbs, GB_C
     aws->insert_default_selection( cbs->id, "", (long)0 );
     aws->update_selection_list( cbs->id );
     if (cbs->gb_user) {
+        GB_transaction ta(cbs->gb_main);
+
         long flag = GB_read_flag(cbs->gb_user);
         aws->get_root()->awar(cbs->def_dir)->write_int(flag);
     }
