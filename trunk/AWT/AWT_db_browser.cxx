@@ -21,6 +21,7 @@
 #include <algorithm>
 
 #include <cstring>
+#include <smartptr.h>
 
 // do includes above (otherwise depends depend on DEBUG)
 #if defined(DEBUG)
@@ -266,6 +267,10 @@ public:
 // --------------------------
 //      class DB_browser
 // --------------------------
+
+class DB_browser;
+static DB_browser *get_the_browser(bool autocreate);
+
 class DB_browser {
     typedef vector<KnownDB>::iterator KnownDBiterator;
 
@@ -275,7 +280,10 @@ class DB_browser {
     AW_window         *aww;     // browser window
     AW_selection_list *browse_id; // the browse subwindow
 
-    DB_browser(const DB_browser& other); // copying not allowed
+    static SmartPtr<DB_browser> the_browser;
+    friend DB_browser *get_the_browser(bool autocreate);
+
+    DB_browser(const DB_browser& other);            // copying not allowed
     DB_browser& operator = (const DB_browser& other); // assignment not allowed
 public:
     DB_browser() : current_db(0), aww(0) {}
@@ -312,10 +320,14 @@ public:
 // -----------------------------
 //      DB_browser singleton
 // -----------------------------
+
+SmartPtr<DB_browser> DB_browser::the_browser;
+
 static DB_browser *get_the_browser(bool autocreate = true) {
-    static DB_browser *the_browser = 0;
-    if (!the_browser && autocreate) the_browser = new DB_browser;
-    return the_browser;
+    if (DB_browser::the_browser.Null() && autocreate) {
+        DB_browser::the_browser = new DB_browser;
+    }
+    return &*DB_browser::the_browser;
 }
 
 // --------------------------
