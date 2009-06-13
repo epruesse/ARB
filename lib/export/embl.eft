@@ -27,7 +27,8 @@ XX
 XX
 *(comment|    do(formatMeta)|split|dropempty|srt("*=CC   *\n"))\
 XX
-*(strain|crop(" ")|dropempty|srt("*=FT   strain\\=*\n"))\
+FT   source          1..*(|export_sequence|len(.-))
+*(strain|crop(" ")|dropempty|srt("*=FT                   /strain\\=*\n"))\
 XX
 SQ   Sequence *(|export_sequence|len(.-)) BP;
 *(|export_sequence|format_sequence(firsttab=10;tab=10;width=50;numleft;gap=10)) 
