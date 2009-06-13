@@ -595,10 +595,20 @@ static GB_ERROR AWTI_export_format(AW_root *aw_root, const char *formname, const
                     }
                 }
 
+                int allCount    = 0;
                 for (GBDATA *gb_species = esd->first_species();
                      gb_species && !error;
                      gb_species = esd->next_species(gb_species))
                 {
+                    allCount++;
+                }
+
+                int count       = 0;
+                for (GBDATA *gb_species = esd->first_species();
+                     gb_species && !error;
+                     gb_species = esd->next_species(gb_species))
+                {
+                    aw_status(GBS_global_string("Saving species %i/%i", ++count, allCount));
                     switch (efo.export_mode) {
                         case AWTI_EXPORT_USING_FORM:
                             error = export_species_using_form(out, gb_species, efo.form);
@@ -612,6 +622,7 @@ static GB_ERROR AWTI_export_format(AW_root *aw_root, const char *formname, const
                             gb_assert(0);
                             break;
                     }
+                    aw_status(double(count)/allCount);
                 }
 
                 delete xml;
