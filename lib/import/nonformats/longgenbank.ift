@@ -6,45 +6,46 @@ FILETAG         GB
 BEGIN           "LOCUS*"
 
 MATCH           "LOCUS *"
-                SRT "* *=*1"
-                WRITE "name"
+                SRT             "* *=*1"
+                WRITE           "name"
 
 # set tagname for feature table to 'GB'
 MATCH           "LOCUS *"
-        SRT "*=GB"
-        SETVAR t
+                SRT             "*=GB"
+                SETVAR          t
+                IFNOTSET        t "No LOCUS tag seen"
 
 MATCH           "LOCUS *"
-                SRT "* *=*1"
+                SRT             "* *=*1"
                 TAG             "GB"
-                WRITE "id"
+                WRITE           "id"
 
 MATCH           "LOCUS *"
-                SRT "     = :    = :   = :  = :* * *=*2"
+                SRT             "     = :    = :   = :  = :* * *=*2"
                 TAG             "GB"
-                WRITE "db_nuc"
+                WRITE           "db_nuc"
 
 MATCH           "ACCESSION *"
-                ACI "extract_words("0123456789",4.0)"
-                WRITE "acc"
+                ACI             "extract_words("0123456789",4.0)"
+                WRITE           "acc"
 
 MATCH           "ACCESSION *"
-                ACI "extract_words("0123456789",4.0)"
+                ACI             "extract_words("0123456789",4.0)"
                 TAG             "GB"
-                WRITE "db_acc"
+                WRITE           "db_acc"
 
 MATCH           "PROJECT"
                 TAG             "GB"
-                WRITE "insdc"
+                WRITE           "insdc"
 
 MATCH           "LOCUS *"
-                SRT "     = :    = :   = :  = :* * * * * * *=*7"
+                SRT             "     = :    = :   = :  = :* * * * * * *=*7"
                 TAG             "GB"
-                WRITE "date"
+                WRITE           "date"
 
 MATCH           "DEFINITION"
                 TAG             "GB"
-                WRITE "description"
+                WRITE           "description"
 
 MATCH           "KEYWORDS *"
                 TAG             "GB"
@@ -66,7 +67,8 @@ MATCH           "  ORGANISM *"
 
 MATCH           "REFERENCE *"
                 SRT             "* *=*1"
-   SETVAR x
+                SETVAR          x
+                IFNOTSET        x "No REFERENCE seen"
                 TAG             "GB"
                 APPEND          "num_bib"
 
@@ -93,7 +95,7 @@ MATCH           "  CONSRTM *"
 MATCH           "  AUTHORS *"
                 SRT             "*=[$x]\: *"
                 TAG             "GB"
-                APPEND "author"
+                APPEND          "author"
 
 MATCH           "  TITLE *"
                 SRT             "*=[$x]\: *"
@@ -106,7 +108,7 @@ MATCH           "  JOURNAL *"
                 APPEND          "journal"
 
 MATCH           "  JOURNAL *Submitted*"
-                SRT "*Submitted*=*2:\(*\)*=*1"
+                SRT             "*Submitted*=*2:\(*\)*=*1"
                 TAG             "GB"
                 WRITE           "submit_date"
 
@@ -126,6 +128,7 @@ MATCH           "     Protein*product=*"
                 APPEND          "gene_prod"
 
 # maybe works with FT prefix (untested):
+# (@@@ put into both feature table sections when tested)
 
 MATCH           "FTx*Protein*note*"
                 SRT             "*/note\=\"*\"*=*2"
@@ -142,61 +145,64 @@ MATCH           "FTx*Protein*product=*"
                 TAG             "GB"
                 APPEND          "gene_prod"
 
-# ---------------------------------------------------------------
-# Start feature table (same in longebi.ift and longgenbank.ift!)
+# -----------------------------------------------------------------
+# Start feature table
+#
+# This is similar in longebi.ift and longgenbank.ift,
+# so normally you will make changes to both of them
 
 MATCH           "FT   source*"
-                SRT "*source*=*2: ="
+                SRT             "*source*=*2: ="
                 TAG             "$t"
                 APPEND          "nuc_region"
 
 MATCH           "FTx  source *mol_type*"
-                SRT "*mol_type*=*2:\==:\"=:"
+                SRT             "*mol_type*=*2:\==:\"=:"
                 TAG             "$t"
                 APPEND          "mol_type"
 
 MATCH           "FTx  source *citation*"
-                SRT "*citation*=*2:\"=:\=="
+                SRT             "*citation*=*2:\"=:\=="
                 TAG             "$t"
                 APPEND          "biblio"
 
 MATCH           "FTx source *cell_line*"
-                SRT "*cell_line*=*2:\"=:\=="
+                SRT             "*cell_line*=*2:\"=:\=="
                 TAG             "$t"
                 APPEND          "cell_line"
 
 MATCH           "FTx  source *cell_type*"
-                SRT "*cell_type*=*2:\"=:\=="
+                SRT             "*cell_type*=*2:\"=:\=="
                 TAG             "$t"
                 APPEND          "cell_type"
 
 MATCH           "FTx  source *clone*"
-                SRT "*clone*=*2:\"=:\=="
+                SRT             "*clone*=*2:\"=:\=="
                 TAG             "$t"
                 APPEND          "clone"
 
 MATCH           "FTx  source *cultivar*"
-                SRT "*cultivar*=*2:\"=:\=="
+                SRT             "*cultivar*=*2:\"=:\=="
                 TAG             "$t"
                 APPEND          "cultivar"
 
 MATCH           "FTx  source *db_xref=*"
-                SRT "*db_xref*=*2:\"=:\=="
+                SRT             "*db_xref*=*2:\"=:\=="
                 TAG             "$t"
                 APPEND          "db_ref"
 
 MATCH           "FTx  source *db_xref="taxon*"
-                SRT "*db_xref*=*2:*\:*=*2:\"=:\=="
+                SRT             "*db_xref*=*2:*\:*=*2:\"=:\=="
 #               TAG             "GB"
                 APPEND          "tax_xref_gb"
 
 MATCH           "FTx  source *lab_host=*"
-                SRT "*lab_host*=*2:\"=:\=="
+                SRT             "*lab_host*=*2:\"=:\=="
                 TAG             "$t"
                 APPEND          "host"
 
 MATCH           "FTx  source *isolate=*"
-                SRT "*isolate*=*2:\"=:\=="
+                SRT             "*isolate*=*2:\"=:\=="
                 TAG             "$t"
                 APPEND          "isolate"
 
@@ -258,7 +264,7 @@ MATCH           "FTx  source *sub_species*"
 MATCH           "FTx  source *specimen_voucher*"
                 SRT             "*/specimen_voucher*=*2:\"=:\=="
                 TAG             "$t"
-                APPEND          "secimen_voucher"
+                APPEND          "specimen_voucher"
 
 MATCH           "FTx  source *specific_host*"
                 SRT             "*/specific_host*=*2:\"=:\=="
@@ -286,20 +292,21 @@ MATCH           "FTx  source *collection_date*"
                 APPEND          "collection_date"
 
 MATCH           "FT   CDS*"
-                SRT             "*CDS*=*2:*..*=*1: =:<=:>="
+                SRT             "<=:>=:*CDS*..*=*2: ="
 #               TAG             "$t"
-                APPEND  "start"
+                APPEND          "start"
 
 MATCH           "FT   CDS*"
-                SRT             "*CDS*=*2:*..*=*2: =:<=:>="
+                SRT             "<=:>=:*CDS*..*=*3: ="
 #               TAG             "$t"
-                APPEND  "stop"
+                APPEND          "stop"
 
 MATCH           "FT   CDS*"
                 SRT             "<=:>=:*CDS*=*2: ="
-    SETVAR z
+                SETVAR          z
+                IFNOTSET        z "No CDS location seen"
                 TAG             "$t"
-                APPEND  "cds_pos"
+                APPEND          "cds_pos"
 
 MATCH           "FTx  CDS *allele*
                 SRT             "*allele*=*2:\"=:\==:*=[$z]\: *"
@@ -386,15 +393,15 @@ MATCH           "FTx  rRNA *product*"
 #               APPEND          "ebi_comment"
 
 
-# End feature table (same in longebi.ift and longgenbank.ift!)
+# End feature table (read comment at start!)
 # ---------------------------------------------------------------
-
 
 SEQUENCEAFTER   "ORIGIN*"
 SEQUENCESRT     " =:~=.:*Check*..="
 SEQUENCEACI     "remove("0123456789 /")"
 SEQUENCECOLUMN  0
 SEQUENCEEND     "//"
+
 CREATE_ACC_FROM_SEQUENCE
 
 END             "//"

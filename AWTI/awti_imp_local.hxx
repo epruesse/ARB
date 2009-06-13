@@ -29,6 +29,7 @@ struct input_format_per_line {
     }
 };
 
+#define IFS_VARIABLES 26 // 'a'-'z'
 
 struct input_format_struct {
     char    *autodetect;
@@ -40,15 +41,16 @@ struct input_format_struct {
 
     struct input_format_per_line    *pl;
 
-    char    *sequencestart;
+    char   *sequencestart;
     int     read_this_sequence_line_too;
-    char    *sequenceend;
-    char    *sequencesrt;
-    char    *sequenceaci;
-    char    *filetag;
+    char   *sequenceend;
+    char   *sequencesrt;
+    char   *sequenceaci;
+    char   *filetag;
     size_t  sequencecolumn;
     int     autocreateacc;
     int     noautonames;
+    char   *user_error[IFS_VARIABLES]; // one for each possible variable
 
     char    *end;
 
