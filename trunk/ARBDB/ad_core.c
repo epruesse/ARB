@@ -441,7 +441,6 @@ void gb_pre_delete_entry(GBDATA *gbd){
     _GB_DELETE_EXT(gbd, gbm_index);
 }
 
-
 void gb_delete_entry(GBDATA **gbd_ptr) {
     GBDATA *gbd  = *gbd_ptr;
     long    gbm_index;

@@ -202,6 +202,7 @@ AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/inline.h
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AWT_dtree.o: awt.hxx
 AWT_dtree.o: awt_attributes.hxx

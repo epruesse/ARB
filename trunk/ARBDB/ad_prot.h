@@ -209,6 +209,8 @@ GB_ERROR GB_end_transaction P_((GBDATA *gbd, GB_ERROR error));
 void GB_end_transaction_show_error P_((GBDATA *gbd, GB_ERROR error, void (*error_handler )(GB_ERROR )));
 int GB_get_transaction_level P_((GBDATA *gbd));
 GB_ERROR GB_update_server P_((GBDATA *gbd));
+NOT4PERL GB_BOOL GB_inside_callback P_((GBDATA *of_gbd, enum gb_call_back_type cbtype));
+GBDATA *GB_get_gb_main_during_cb P_((void));
 NOT4PERL const void *GB_read_old_value P_((void));
 long GB_read_old_size P_((void));
 char *GB_get_callback_info P_((GBDATA *gbd));

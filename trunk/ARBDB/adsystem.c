@@ -84,24 +84,26 @@ void delete_gb_dictionary(GB_DICTIONARY *dict){
 }
 
 void gb_system_key_changed_cb(GBDATA *gbd,int *cl, GB_CB_TYPE type){
-    GB_MAIN_TYPE *Main = gb_get_main_during_cb();
     GBQUARK q = (GBQUARK)(long) cl;
 
     if (type == GB_CB_DELETE){
+        GB_MAIN_TYPE *Main = gb_get_main_during_cb();
+
         delete_gb_dictionary(Main->keys[q].dictionary);
         Main->keys[q].dictionary = 0;
-        Main->keys[q].gb_key = 0;
+        Main->keys[q].gb_key     = 0;
     }else{
         gb_load_single_key_data(gbd,q);
     }
 }
 
 void gb_system_master_changed_cb(GBDATA *gbd,int *cl, GB_CB_TYPE type){
-    GB_MAIN_TYPE *Main = gb_get_main_during_cb();
     GBQUARK q = (GBQUARK)(long) cl;
     if (type == GB_CB_DELETE){
+        GB_MAIN_TYPE *Main = gb_get_main_during_cb();
         Main->keys[q].gb_master_ali = 0;
-    }else{
+    }
+    else {
         gb_load_single_key_data(gbd,q);
     }
 }
