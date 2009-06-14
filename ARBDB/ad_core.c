@@ -590,8 +590,7 @@ void gb_save_extern_data_in_ts(GBDATA *gbd){
 /********** set the key quark of an database field
         check for indexing data field ***********/
 
-char *gb_write_index_key(GBCONTAINER *father, long index, GBQUARK new_index)
-{
+void gb_write_index_key(GBCONTAINER *father, long index, GBQUARK new_index) {
     GB_MAIN_TYPE *Main = GBCONTAINER_MAIN(father);
     struct gb_header_list_struct *hls = GB_DATA_LIST_HEADER(father->d);
     GBQUARK old_index = hls[index].flags.key_quark;
@@ -621,16 +620,14 @@ char *gb_write_index_key(GBCONTAINER *father, long index, GBQUARK new_index)
             hls[index].flags.key_quark = new_index;
             if (ifs) gb_index_check_in(gbd);
 
-            return 0;
+            return;
         }
     }
 
     hls[index].flags.key_quark = new_index;
-    return 0;
 }
 
-char *gb_write_key(GBDATA *gbd,const char *s)
-{
+void gb_write_key(GBDATA *gbd,const char *s) {
     GBQUARK       new_index = 0;
     GB_MAIN_TYPE *Main      = GB_MAIN(gbd);
 
@@ -640,7 +637,7 @@ char *gb_write_key(GBDATA *gbd,const char *s)
             new_index = (int)gb_create_key(Main,s,GB_TRUE);
         }
     }
-    return gb_write_index_key(GB_FATHER(gbd), gbd->index, new_index);
+    gb_write_index_key(GB_FATHER(gbd), gbd->index, new_index);
 }
 
 void gb_create_key_array(GB_MAIN_TYPE *Main, int index){
