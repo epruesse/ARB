@@ -51,6 +51,7 @@ GB_ERROR gb_add_changed_callback_list P_((GBDATA *gbd, struct gb_transaction_sav
 GB_ERROR gb_add_delete_callback_list P_((GBDATA *gbd, struct gb_transaction_save *old, GB_CB func, int *clientdata));
 GB_ERROR gb_do_callback_list P_((GB_MAIN_TYPE *Main));
 GB_MAIN_TYPE *gb_get_main_during_cb P_((void));
+GBDATA *GB_get_gb_main_during_cb P_((void));
 GB_CSTR gb_read_pntr_ts P_((GBDATA *gbd, struct gb_transaction_save *ts));
 int gb_info P_((GBDATA *gbd, int deep));
 

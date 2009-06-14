@@ -373,6 +373,9 @@ void GB_close(GBDATA *gbd) {
     GB_ERROR error = 0;
 
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
+
+    gb_assert(Main->transaction == 0); // you can't close DB if there is still an open transaction!
+
     if (!Main->local_mode){
         long result = gbcmc_close(Main->c_link);
         if (result != 0) error = GBS_global_string("gbcmc_close returns %li", result);
@@ -1929,13 +1932,14 @@ GB_ERROR gb_add_delete_callback_list(GBDATA *gbd,struct gb_transaction_save *old
     cbl->clientdata = clientdata;
     cbl->func = func;
     cbl->gbd = gbd;
+    cbl->type = GB_CB_DELETE;
     if (old) gb_add_ref_gb_transaction_save(old);
     cbl->old = old;
     return 0;
 }
 
-struct gb_callback_list *g_b_old_callback_list = 0;
-GB_MAIN_TYPE        *g_b_old_main = 0;
+static struct gb_callback_list *g_b_old_callback_list = NULL; // points to callback during callback (NULL otherwise)
+static GB_MAIN_TYPE            *g_b_old_main          = NULL; // points to DB root during callback (NULL otherwise)
 
 GB_ERROR gb_do_callback_list(GB_MAIN_TYPE *Main) {
     struct gb_callback_list *cbl,*cbl_next;
@@ -1946,29 +1950,78 @@ GB_ERROR gb_do_callback_list(GB_MAIN_TYPE *Main) {
         g_b_old_callback_list = cbl;
         cbl->func(cbl->gbd,cbl->clientdata, GB_CB_DELETE);
         cbl_next = cbl->next;
-        g_b_old_callback_list = 0;
+        g_b_old_callback_list = NULL;
         gb_del_ref_gb_transaction_save(cbl->old);
         gbm_free_mem((char *)cbl,sizeof(struct gb_callback_list),GBM_CB_INDEX);
     }
-    Main->cbld_last = 0;
-    Main->cbld = 0;
+    
+    Main->cbld_last = NULL;
+    Main->cbld      = NULL;
+
     /* then all update callbacks: */
     for (cbl = Main->cbl; cbl ; cbl = cbl_next){
         g_b_old_callback_list = cbl;
         cbl->func(cbl->gbd,cbl->clientdata, cbl->type);
         cbl_next = cbl->next;
-        g_b_old_callback_list = 0;
+        g_b_old_callback_list = NULL;
         gb_del_ref_gb_transaction_save(cbl->old);
         gbm_free_mem((char *)cbl,sizeof(struct gb_callback_list),GBM_CB_INDEX);
     }
-    Main->cbl_last = 0;
-    Main->cbl = 0;
+
+    g_b_old_main   = NULL;
+    Main->cbl_last = NULL;
+    Main->cbl      = NULL;
+    
     return 0;
 }
 
-GB_MAIN_TYPE *gb_get_main_during_cb(){
+GB_MAIN_TYPE *gb_get_main_during_cb() {
+    /* if inside a callback, return the DB root of the DB element, the callback was called for.
+     * if not inside a callback, return NULL.
+     */
     return g_b_old_main;
 }
+
+NOT4PERL GB_BOOL GB_inside_callback(GBDATA *of_gbd, enum gb_call_back_type cbtype) {
+    GB_MAIN_TYPE *Main   = gb_get_main_during_cb();
+    GB_BOOL       inside = GB_FALSE;
+
+    if (Main) {                 // inside a callback
+        gb_assert(g_b_old_callback_list);
+        if (g_b_old_callback_list->gbd == of_gbd) {
+            GB_CB_TYPE curr_cbtype;
+            if (Main->cbld) {       // delete callbacks were not all performed yet
+                                    // -> current callback is a delete callback
+                curr_cbtype = g_b_old_callback_list->type & GB_CB_DELETE;
+            }
+            else {
+                gb_assert(Main->cbl); // change callback
+                curr_cbtype = g_b_old_callback_list->type & (GB_CB_ALL-GB_CB_DELETE);
+            }
+            gb_assert(curr_cbtype != GB_CB_NONE); // wtf!? are we inside callback or not?
+
+            if ((cbtype&curr_cbtype) != GB_CB_NONE) {
+                inside = GB_TRUE;
+            }
+        }
+    }
+
+    return inside;
+}
+
+GBDATA *GB_get_gb_main_during_cb() {
+    GBDATA       *gb_main = NULL;
+    GB_MAIN_TYPE *Main    = gb_get_main_during_cb();
+
+    if (Main) {                 // inside callback
+        if (!GB_inside_callback((GBDATA*)Main->data, GB_CB_DELETE)) { // main is not deleted
+            gb_main = (GBDATA*)Main->data;
+        }
+    }
+    return gb_main;
+}
+
+
 
 GB_CSTR gb_read_pntr_ts(GBDATA *gbd, struct gb_transaction_save *ts){
     int         type = GB_TYPE_TS(ts);
@@ -2041,9 +2094,30 @@ char *GB_get_callback_info(GBDATA *gbd) {
 }
 
 GB_ERROR GB_add_priority_callback(GBDATA *gbd, enum gb_call_back_type type, GB_CB func, int *clientdata, int priority) {
-    /* smaller priority values get executed before bigger priority values */
+    /* Adds a callback to a DB entry.
+     * 
+     * Callbacks with smaller priority values get executed before bigger priority values.
+     *
+     * Be careful when writing GB_CB_DELETE callbacks, there is a severe restriction:
+     * 
+     * - the DB element may already be freed. The pointer is still pointing to the original
+     *   location, so you can use it to identify the DB element, but you cannot dereference
+     *   it under all circumstances.
+     *
+     * ARBDB internal delete-callbacks may use gb_get_main_during_cb() to access the DB root.
+     * See also: GB_get_gb_main_during_cb()
+     */
 
     struct gb_callback *cb;
+
+#if defined(DEBUG)
+    if (GB_inside_callback(gbd, GB_CB_DELETE)) {
+        printf("Warning: GB_add_priority_callback called inside delete-callback of gbd (gbd may already be freed)\n");
+#if defined(DEVEL_RALF)
+        gb_assert(0); // fix callback-handling (never modify callbacks from inside delete callbacks)
+#endif /* DEVEL_RALF */
+    }
+#endif /* DEBUG */
 
     GB_TEST_TRANSACTION(gbd); // may return error
     GB_CREATE_EXT(gbd);
@@ -2097,14 +2171,22 @@ GB_ERROR GB_add_priority_callback(GBDATA *gbd, enum gb_call_back_type type, GB_C
     return 0;
 }
 
-GB_ERROR GB_add_callback(GBDATA *gbd, enum gb_call_back_type type, GB_CB func, int *clientdata)
-{
+GB_ERROR GB_add_callback(GBDATA *gbd, enum gb_call_back_type type, GB_CB func, int *clientdata) {
     return GB_add_priority_callback(gbd, type, func, clientdata, 5); // use default priority 5
 }
 
 static void gb_remove_callback(GBDATA *gbd, enum gb_call_back_type type, GB_CB func, int *clientdata, GB_BOOL cd_should_match) {
-    GB_BOOL  removed     = GB_FALSE;
-    GB_BOOL  exactly_one = cd_should_match; // remove exactly one callback; old default behavior, previously to 2009/05/18
+    GB_BOOL removed     = GB_FALSE;
+    GB_BOOL exactly_one = cd_should_match; // remove exactly one callback
+
+#if defined(DEBUG)
+    if (GB_inside_callback(gbd, GB_CB_DELETE)) {
+        printf("Warning: gb_remove_callback called inside delete-callback of gbd (gbd may already be freed)\n");
+#if defined(DEVEL_RALF)
+        gb_assert(0); // fix callback-handling (never modify callbacks from inside delete callbacks)
+#endif /* DEVEL_RALF */
+    }
+#endif /* DEBUG */
 
     if (gbd->ext) {
         struct gb_callback **cb_ptr       = &gbd->ext->callback;
@@ -2121,7 +2203,7 @@ static void gb_remove_callback(GBDATA *gbd, enum gb_call_back_type type, GB_CB f
                 if (prev_running || cb->running) {
                     // if the previous callback in list or the callback itself is running (in "no transaction mode")
                     // the callback cannot be removed (see gb_do_callbacks)
-                    GBK_terminate("gb_remove_callback: failed to remove running callback");
+                    GBK_terminate("gb_remove_callback: tried to remove currently running callback");
                 }
 
                 *cb_ptr = cb->next;

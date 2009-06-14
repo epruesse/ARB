@@ -1747,10 +1747,6 @@ GB_ERROR gbcmc_abort_transaction(GBDATA *gbd)
     return 0;
 }
 
-/**************************************************************************************
-                send update to client
-***************************************************************************************/
-
 GB_ERROR gbcms_add_to_delete_list(GBDATA *gbd)
 {
     struct Hs_struct *hs;

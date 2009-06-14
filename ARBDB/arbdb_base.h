@@ -30,6 +30,7 @@ typedef struct gb_data_base_type GBDATA;
 typedef enum { GB_FALSE = 0 , GB_TRUE = 1 } GB_BOOL;
 
 typedef enum gb_call_back_type {
+    GB_CB_NONE        = 0,
     GB_CB_DELETE      = 1,
     GB_CB_CHANGED     = 2, // element or son of element changed
     GB_CB_SON_CREATED = 4, // new son created

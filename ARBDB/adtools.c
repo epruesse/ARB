@@ -750,7 +750,7 @@ struct NCB {
 };
 
 static void notify_cb(GBDATA *gb_message, int *cb_info, GB_CB_TYPE cb_type) {
-    GB_remove_callback(gb_message, GB_CB_CHANGED|GB_CB_DELETE, notify_cb, cb_info);
+    GB_remove_callback(gb_message, GB_CB_CHANGED|GB_CB_DELETE, notify_cb, cb_info); // @@@ cbproblematic
 
     int         cb_done = 0;
     struct NCB *pending = (struct NCB*)cb_info;

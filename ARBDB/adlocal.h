@@ -337,10 +337,10 @@ typedef struct gb_main_type {
 
     struct gb_close_callback_struct *close_callbacks;
 
-    struct gb_callback_list *cbl;
+    struct gb_callback_list *cbl; /* contains change-callbacks (after change, until callbacks are done) */
     struct gb_callback_list *cbl_last;
 
-    struct gb_callback_list *cbld;
+    struct gb_callback_list *cbld; /* contains delete-callbacks (after delete, until callbacks are done) */
     struct gb_callback_list *cbld_last;
 
     struct gb_user_struct    *users[GB_MAX_USERS]; /* user 0 is server */

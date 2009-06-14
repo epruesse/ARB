@@ -1622,20 +1622,18 @@ static void flush_taxonomy_cb(GBDATA *gbd, int *cd_ct, GB_CB_TYPE cbt) {
     }
 #endif /* DEBUG */
 
-    GB_remove_all_callbacks_to(gbd, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), flush_taxonomy_cb);
+    if (!GB_inside_callback(gbd, GB_CB_DELETE)) {
+        GB_remove_all_callbacks_to(gbd, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), flush_taxonomy_cb);
+    }
 
     if (found && !error) {
-        GB_MAIN_TYPE *Main            = gb_get_main_during_cb();
-        GBDATA       *gb_main         = (GBDATA*)Main->data;
+        GBDATA *gb_main = GB_get_gb_main_during_cb();
         if (gb_main) {
-            GBDATA       *gb_tree_refresh = GB_search(gb_main, AWAR_TREE_REFRESH, GB_INT);
+            GBDATA *gb_tree_refresh = GB_search(gb_main, AWAR_TREE_REFRESH, GB_INT);
             if (!gb_tree_refresh) {
                 error = GBS_global_string("%s (while trying to force refresh)", GB_await_error());
             }
             else {
-                /* #if defined(DEBUG) */
-                /* printf("Skipped tree refresh by touching AWAR_TREE_REFRESH\n"); */
-                /* #endif */ /* DEBUG */
                 GB_touch(gb_tree_refresh); /* Note : force tree update */
             }
         }
