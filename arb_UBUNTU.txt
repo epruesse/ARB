@@ -12,6 +12,7 @@ ARB requirements on Ubuntu 8.04
      - gv
      - xfig
      - xterm
+     - treetool
 
  1b) OPENGL version 
 
