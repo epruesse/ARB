@@ -23,8 +23,6 @@
 #include <arbdb.h>
 #endif
 
-const char * AWT_date_string(void);
-
 // ------------------------------------------------------------
 // filename related functions:
 

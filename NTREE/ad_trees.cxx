@@ -17,6 +17,7 @@
 #include <TreeWrite.h>
 #include <awt_tree_cmp.hxx>
 #include <awt_sel_boxes.hxx>
+#include <awt_nds.hxx>
 
 #include "ad_trees.hxx"
 
@@ -277,21 +278,21 @@ static void tree_save_cb(AW_window *aww){
     else {
         char *fname   = aw_root->awar(AWAR_TREE_EXPORT "/file_name")->read_string();
         char *db_name = aw_root->awar(AWAR_DB_NAME)->read_string();
-        
-        bool           use_NDS    = ExportNodeType(aw_root->awar(AWAR_TREE_EXPORT_NDS)->read_int()) == AD_TREE_EXPORT_NODE_NDS;
-        ExportTreeType exportType = static_cast<ExportTreeType>(aw_root->awar(AWAR_TREE_EXPORT_FORMAT)->read_int());
+
+        bool                use_NDS    = ExportNodeType(aw_root->awar(AWAR_TREE_EXPORT_NDS)->read_int()) == AD_TREE_EXPORT_NODE_NDS;
+        ExportTreeType      exportType = static_cast<ExportTreeType>(aw_root->awar(AWAR_TREE_EXPORT_FORMAT)->read_int());
+        TREE_node_text_gen *node_gen   = use_NDS ? new TREE_node_text_gen(make_node_text_init, make_node_text_nds) : 0;
 
         switch (exportType) {
             case AD_TREE_EXPORT_FORMAT_XML:
-                error = TREE_write_XML(GLOBAL_gb_main, db_name, tree_name,
-                                       use_NDS,
+                error = TREE_write_XML(GLOBAL_gb_main, db_name, tree_name, node_gen,
                                        aw_root->awar(AWAR_TREE_EXPORT_HIDE_FOLDED_GROUPS)->read_int(),
                                        fname);
                 break;
 
             case AD_TREE_EXPORT_FORMAT_NEWICK:
             case AD_TREE_EXPORT_FORMAT_NEWICK_PRETTY:
-                error = TREE_write_Newick(GLOBAL_gb_main, tree_name, use_NDS,
+                error = TREE_write_Newick(GLOBAL_gb_main, tree_name, node_gen,
                                           aw_root->awar(AWAR_TREE_EXPORT_INCLUDE_BRANCHLENS)->read_int(),
                                           aw_root->awar(AWAR_TREE_EXPORT_INCLUDE_BOOTSTRAPS)->read_int(),
                                           aw_root->awar(AWAR_TREE_EXPORT_INCLUDE_GROUPNAMES)->read_int(),
@@ -301,7 +302,8 @@ static void tree_save_cb(AW_window *aww){
         }
 
         awt_refresh_selection_box(aw_root, AWAR_TREE_EXPORT);
-        
+
+        delete node_gen;
         free(db_name);
         free(fname);
     }

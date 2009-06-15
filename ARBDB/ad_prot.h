@@ -341,6 +341,7 @@ int GBCMC_system P_((GBDATA *gbd, const char *ss));
 GB_ERROR GB_tell_server_dont_wait P_((GBDATA *gbd));
 GB_CSTR GB_get_hostname P_((void));
 GB_ERROR GB_install_pid P_((int mode));
+const char *GB_date_string P_((void));
 
 /* adhash.c */
 long GBS_get_a_prime P_((long above_or_equal_this));

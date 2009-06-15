@@ -168,6 +168,7 @@ ad_trees.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/awt.hxx
+ad_trees.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/awt_tree_cmp.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/TreeRead.h
