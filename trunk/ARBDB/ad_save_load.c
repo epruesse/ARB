@@ -1358,15 +1358,8 @@ GB_ERROR gb_check_saveable(GBDATA *gbd,const char *path,const char *flags){
     return 0;
 }
 
-GB_ERROR GB_disable_path(GBDATA *gbd,const char *path){
-    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    if (Main->disabled_path) free(Main->disabled_path);
-    if (path) {
-        Main->disabled_path = GBS_eval_env(path);
-    }else{
-        Main->disabled_path = NULL;
-    }
-    return 0;
+void GB_disable_path(GBDATA *gbd, const char *path) {
+    freeset(GB_MAIN(gbd)->disabled_path, path ? GBS_eval_env(path) : NULL);
 }
 
 

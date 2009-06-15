@@ -403,7 +403,7 @@ GB_ERROR GB_save_as P_((GBDATA *gb, const char *path, const char *savetype));
 GB_ERROR GB_delete_database P_((GB_CSTR filename));
 GB_ERROR GB_save_quick_as P_((GBDATA *gb_main, char *path));
 GB_ERROR GB_save_quick P_((GBDATA *gb, char *refpath));
-GB_ERROR GB_disable_path P_((GBDATA *gbd, const char *path));
+void GB_disable_path P_((GBDATA *gbd, const char *path));
 
 /* adcompr.c */
 GB_BOOL GB_is_directory_compressed P_((GBDATA *gbd));

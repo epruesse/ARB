@@ -132,6 +132,8 @@ inline void SET_GB_EXTERN_DATA_DATA(struct gb_extern_data& ex, char *data)      
 
 /* -------------------------------------------------------------------------------- */
 
+#define HAS_FATHER(gbd) ((gbd)->rel_father != NULL)
+
 #ifdef __cplusplus
 
 inline GBCONTAINER* GB_FATHER(GBDATA *gbd)                                  { return GB_RESOLVE(struct gb_data_base_type2 *,gbd,rel_father); }
@@ -182,8 +184,8 @@ inline gb_header_flags& GB_ARRAY_FLAGS(GBCONTAINER *gbc)    { return GB_DATA_LIS
 
 #define GB_KEY_QUARK(gbd) (GB_DATA_LIST_HEADER(GB_FATHER(gbd)->d)[(gbd)->index].flags.key_quark)
 #define GB_KEY(gbd)       (GB_MAIN(gbd)->keys[GB_KEY_QUARK(gbd)].key)
-#define GB_TYPE(gbd)      ((GB_TYPES)gbd->flags.type) // return type was 'int', changed 11.Mai.07 hopefully w/o harm --ralf
-#define GB_TYPE_TS(ts)    ((GB_TYPES)ts->flags.type)
+#define GB_TYPE(gbd)      ((GB_TYPES)(gbd)->flags.type) // return type was 'int', changed 11.Mai.07 hopefully w/o harm --ralf
+#define GB_TYPE_TS(ts)    ((GB_TYPES)(ts)->flags.type)
 
 #define GB_ARRAY_FLAGS(gbd)         (GB_DATA_LIST_HEADER(GB_FATHER(gbd)->d)[(gbd)->index].flags)
 
