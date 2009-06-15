@@ -584,7 +584,7 @@ static GB_ERROR AWTI_export_format(AW_root *aw_root, const char *formname, const
                         xml->add_attribute("database", db_name);
                         free(db_name);
                     }
-                    xml->add_attribute("export_date", AWT_date_string());
+                    xml->add_attribute("export_date", GB_date_string());
                     {
                         char *fulldtd = AWT_unfold_path("lib/dtd", "ARBHOME");
                         XML_Comment rem(GBS_global_string("There's a basic version of ARB_seq_export.dtd in %s\n"

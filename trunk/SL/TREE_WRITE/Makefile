@@ -35,6 +35,7 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
+TreeWrite.o: TreeWrite.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/ad_prot.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -43,12 +44,5 @@ TreeWrite.o: $(ARBHOME)/INCLUDE/arbdb.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/arbdbt.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/attributes.h
-TreeWrite.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-TreeWrite.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-TreeWrite.o: $(ARBHOME)/INCLUDE/aw_position.hxx
-TreeWrite.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-TreeWrite.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-TreeWrite.o: $(ARBHOME)/INCLUDE/awt.hxx
-TreeWrite.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
 TreeWrite.o: $(ARBHOME)/INCLUDE/TreeRead.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/xml.hxx

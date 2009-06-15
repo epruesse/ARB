@@ -11,8 +11,7 @@ OBJECTS =	\
 		AWT_query_and_functions.o AWT_file_selection.o \
 		AWT_preset.o AWT_seq_dna.o AWT_seq_protein.o AWT_seq_simple_pro.o \
 		AWT_codon_table.o AWT_iupac.o AWT_config_manager.o AWT_advice.o AWT_db_browser.o \
-		AWT_attributes.o AWT_changekey.o AWT_item_sel_list.o AWT_macro.o AWT_translate.o \
-		AWT_tools.o
+		AWT_attributes.o AWT_changekey.o AWT_item_sel_list.o AWT_macro.o AWT_translate.o
 
 $(MAIN): $(OBJECTS)
 	$(LINK_SHARED_LIB) $(@:.a=).$(SHARED_LIB_SUFFIX) $(OBJECTS)
@@ -557,19 +556,6 @@ AWT_tables.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_tables.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_tables.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_tables.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-
-AWT_tools.o: awt.hxx
-AWT_tools.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
-AWT_tools.o: $(ARBHOME)/INCLUDE/ad_prot.h
-AWT_tools.o: $(ARBHOME)/INCLUDE/arb_assert.h
-AWT_tools.o: $(ARBHOME)/INCLUDE/arbdb.h
-AWT_tools.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-AWT_tools.o: $(ARBHOME)/INCLUDE/attributes.h
-AWT_tools.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-AWT_tools.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-AWT_tools.o: $(ARBHOME)/INCLUDE/aw_position.hxx
-AWT_tools.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-AWT_tools.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 
 AWT_translate.o: awt.hxx
 AWT_translate.o: awt_codon_table.hxx
