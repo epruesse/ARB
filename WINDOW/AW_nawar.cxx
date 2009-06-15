@@ -294,6 +294,8 @@ void AW_root::unlink_awars_from_DB(AW_default database) {
     GBDATA *gb_main = (GBDATA*)database;
     
     aw_assert(GB_get_root(gb_main) == gb_main);
+
+    GB_transaction ta(gb_main); // needed in awar-callbacks during unlink 
     GBS_hash_do_loop(hash_table_for_variables, AW_unlink_awar_from_DB, gb_main);
 }
 

@@ -107,7 +107,7 @@ static void GDE_create_infieldwithpm(AW_window *aws,char *newawar,long width)
 }
 
 static char *gde_filter_weights(GBDATA *gb_sai,AW_CL ){
-    char   *ali_name = GBT_get_default_alignment(GLOBAL_gb_main);
+    char   *ali_name = GBT_get_default_alignment(GB_get_root(gb_sai));
     GBDATA *gb_ali   = GB_entry(gb_sai,ali_name);
     char   *result   = 0;
 
