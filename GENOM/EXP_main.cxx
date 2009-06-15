@@ -148,9 +148,9 @@ void EXP_create_experiments_submenu(AW_window_menu_modes *awm, bool submenu) {
         awm->insert_separator();
         AWMIMT( "experiment_colors",    "Colors ...",           "C",    "mark_colors.hlp", AWM_ALL,AW_POPUP,   (AW_CL)EXP_create_experiment_colorize_window, 0);
 
-#if defined(DEVEL_KAI)
+#if defined(DEBUG)
         awm->insert_separator();
-        AWMIMT("pgt", "Proteom Genome Toolkit (PGT)", "P", "pgt.hlp", AWM_ALL, NT_system_cb, (AW_CL)"arb_pgt &", 0);
+        AWMIMT("pgt", "[debug-only] Proteom Genome Toolkit (PGT)", "P", "pgt.hlp", AWM_ALL, NT_system_cb, (AW_CL)"arb_pgt &", 0);
 #endif // DEVEL_KAI
     }
     if (submenu) awm->close_sub_menu();
