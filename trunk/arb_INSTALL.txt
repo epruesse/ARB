@@ -39,6 +39,7 @@ Software that is useful together with ARB:
 - ghostview (gv)
 - xfig (+ fig2dev to print from xfig)
 - perl5
+- treetool
 
 --------------------------------------------------------------------------------
 If you don't want to use the 3D features in ARB, you may as well install  
