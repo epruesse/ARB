@@ -172,7 +172,7 @@ const char *GB_get_type_name(GBDATA *gbd) {
 }
 
 const char *GB_get_db_path(GBDATA *gbd) {
-    GBDATA *gb_father = GB_get_father(gbd);
+    GBDATA *gb_father = (GBDATA*)GB_FATHER(gbd);
 
     if (gb_father) {
         char *father_path = strdup(GB_get_db_path(gb_father));

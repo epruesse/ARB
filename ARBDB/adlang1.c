@@ -1684,7 +1684,6 @@ static void flush_taxonomy_if_new_group_cb(GBDATA *gb_tree, int *cd_ct, GB_CB_TY
 #endif /* DEBUG */
 }
 
-
 static struct cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *tree_name, GB_ERROR *error) {
     long cached;
     *error = 0;
@@ -1708,7 +1707,7 @@ static struct cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *
                 int                     group_counter = 0;
 
                 ct->tree_name = strdup(tree_name);
-                ct->taxonomy  = GBS_create_hash((int)(nodes*2), GB_IGNORE_CASE);
+                ct->taxonomy  = GBS_create_dynaval_hash((int)(nodes*2), GB_IGNORE_CASE, GBS_dynaval_free);
                 ct->groups    = 0; // counted below
 
                 build_taxonomy_rek(tree, ct->taxonomy, "<root>", &group_counter);
