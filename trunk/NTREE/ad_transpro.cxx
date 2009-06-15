@@ -190,8 +190,13 @@ static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, in
         if (no_data>0) {
             aw_message(GBS_global_string("%i taxa had no data in '%s'", no_data, ali_source));
         }
-        aw_message(GBS_global_string("%i taxa converted\n  %f stops per sequence found",
-                                     count, (double)stops/(double)count));
+        if ((count+no_data) == 0) {
+            aw_message("Please mark species to translate");
+        }
+        else {
+            aw_message(GBS_global_string("%i taxa converted\n  %f stops per sequence found",
+                                         count, (double)stops/(double)count));
+        }
     }
 
     free(to_free);

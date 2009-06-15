@@ -356,41 +356,47 @@ NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment,
                     }
                 }
 
-                if (!error) error = GB_write_security_delete(gb_name,7);
-                if (!error) error = GB_write_security_write(gb_name,6);
-
                 if (!error) {
-                    gb_ali = GB_entry(gb_species, ali_name);
-                    if (gb_ali) {
-                        GBDATA *gb_data = GB_entry(gb_ali, "data");
-                        if (!gb_data) {
-                            error = GBT_write_string(gb_ali, "data", "Error: entry 'data' was missing and therefore was filled with this text.");
-                            GB_warning("No '%s/data' entry for species '%s' (has been filled with dummy data)", ali_name, name);
-                        }
-                        else {
-                            if (GB_read_type(gb_data) != GB_STRING){
-                                GB_delete(gb_data);
-                                error = GBS_global_string("'%s/data' of species '%s' had wrong DB-type (%s) and has been deleted!",
-                                                          ali_name, name, GB_read_key_pntr(gb_data));
+                    GB_push_my_security(gb_name);
+
+                    error             = GB_write_security_delete(gb_name,7);
+                    if (!error) error = GB_write_security_write(gb_name,6);
+
+                    if (!error) {
+                        gb_ali = GB_entry(gb_species, ali_name);
+                        if (gb_ali) {
+                            GBDATA *gb_data = GB_entry(gb_ali, "data");
+                            if (!gb_data) {
+                                error = GBT_write_string(gb_ali, "data", "Error: entry 'data' was missing and therefore was filled with this text.");
+                                GB_warning("No '%s/data' entry for species '%s' (has been filled with dummy data)", ali_name, name);
                             }
                             else {
-                                long data_len = GB_read_string_count(gb_data);
-                                if (found_ali_len != data_len) {
-                                    if (found_ali_len>0)        aligned       = 0;
-                                    if (found_ali_len<data_len) found_ali_len = data_len;
+                                if (GB_read_type(gb_data) != GB_STRING){
+                                    GB_delete(gb_data);
+                                    error = GBS_global_string("'%s/data' of species '%s' had wrong DB-type (%s) and has been deleted!",
+                                                              ali_name, name, GB_read_key_pntr(gb_data));
                                 }
+                                else {
+                                    long data_len = GB_read_string_count(gb_data);
+                                    if (found_ali_len != data_len) {
+                                        if (found_ali_len>0)        aligned       = 0;
+                                        if (found_ali_len<data_len) found_ali_len = data_len;
+                                    }
 
-                                error = GB_write_security_delete(gb_data,7);
+                                    error = GB_write_security_delete(gb_data,7);
 
-                                if (!alignment_seen && species_name_hash) { // mark as seen
-                                    GBS_write_hash(species_name_hash, name, 2); // 2 means "species has data in at least 1 alignment"
+                                    if (!alignment_seen && species_name_hash) { // mark as seen
+                                        GBS_write_hash(species_name_hash, name, 2); // 2 means "species has data in at least 1 alignment"
+                                    }
                                 }
                             }
                         }
                     }
-                }
 
-                if (!error) error = GB_write_security_delete(gb_species,security_write);
+                    if (!error) error = GB_write_security_delete(gb_species,security_write);
+
+                    GB_pop_my_security(gb_name);
+                }
             }
         }
 
@@ -435,9 +441,7 @@ NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment,
         if (!error) error = GBT_write_int(preset_alignment, "aligned", aligned);
 
         if (error) {
-            error = GBS_global_string("alignment '%s': %s\n"
-                                      "Database corrupted - try to fix if possible, save with different name and restart application.",
-                                      ali_name, error);
+            error = GBS_global_string("Error checking alignment '%s':\n%s\n" , ali_name, error);
         }
     }
 
