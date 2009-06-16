@@ -9,24 +9,44 @@ using namespace std;
 
 #define tree_assert(cond) arb_assert(cond)
 
-static void export_tree_label(const char *label, FILE *out) {
+static void export_tree_label(const char *label, FILE *out, TREE_node_quoting qmode) {
     // writes a label into the Newick file
     // label is quoted if necessary
     // label may be an internal_node_label, a leaf_label or a root_label
     tree_assert(label);
-    char *need_quotes = strpbrk(label, " \t()[]\'\":;,");
 
-    if (need_quotes) {
-        fputc('\'', out);
+    const char *disallowed_chars = " \t\'\"()[]:;,"; // '(' is first problem_char
+    const char *problem_chars    = disallowed_chars+4;
+    tree_assert(problem_chars[0] == '(');
+
+    bool need_quotes = strpbrk(label, disallowed_chars) != NULL;
+    char used_quote  = 0;
+
+    if ((qmode & TREE_FORCE_QUOTES) || need_quotes) {
+        if      (qmode&TREE_SINGLE_QUOTES) used_quote = '\'';
+        else if (qmode&TREE_DOUBLE_QUOTES) used_quote = '\"';
+    }
+
+    if (used_quote) {
+        bool force_replace = (qmode & TREE_FORCE_REPLACE);
+
+        fputc(used_quote, out);
         while (*label) {
             char c = *label++;
-            if (c == '\'') fputc('\'', out); // ' in quoted labels as ''
+            if (c == used_quote || // replace used quote by an '_' if it appears inside label
+                (force_replace && strchr(problem_chars, c))) // replace all problematic characters if requested
+            {
+                c = '_'; 
+            }
             fputc(c, out);
         }
-        fputc('\'', out);
+        fputc(used_quote, out);
     }
     else {
-        fputs(label, out);
+        // unquoted label - always replace all problematic characters by '_'
+        for (int i = 0; label[i]; ++i) {
+            fputc(strchr(disallowed_chars, label[i]) ? '_' : label[i], out);
+        }
     }
 }
 
@@ -44,7 +64,7 @@ inline void indentTo(int indent, FILE *out) {
 static const char *export_tree_node_print(GBDATA *gb_main, FILE *out, GBT_TREE *tree, const char *tree_name,
                                           bool pretty, int indent,
                                           const TREE_node_text_gen *node_gen, bool save_branchlengths,
-                                          bool save_bootstraps, bool save_groupnames)
+                                          bool save_bootstraps, bool save_groupnames, TREE_node_quoting qmode)
 {
     const char *error = 0;
     const char *buf;
@@ -55,19 +75,19 @@ static const char *export_tree_node_print(GBDATA *gb_main, FILE *out, GBT_TREE *
         if (node_gen) buf = node_gen->gen(gb_main, tree->gb_node,0,tree, tree_name);
         else          buf = tree->name;
 
-        export_tree_label(buf, out);
+        export_tree_label(buf, out, qmode);
     }
     else {
         if (pretty) fputs("(\n", out);
         else        putc('(', out);
 
-        error = export_tree_node_print(gb_main, out, tree->leftson, tree_name, pretty, indent+1, node_gen, save_branchlengths, save_bootstraps, save_groupnames);
+        error = export_tree_node_print(gb_main, out, tree->leftson, tree_name, pretty, indent+1, node_gen, save_branchlengths, save_bootstraps, save_groupnames, qmode);
         if (save_branchlengths) fprintf(out, ":%.5f", tree->leftlen);
         fputs(",\n", out);
 
         if (error) return error;
 
-        error = export_tree_node_print(gb_main, out, tree->rightson, tree_name, pretty, indent+1, node_gen, save_branchlengths, save_bootstraps, save_groupnames);
+        error = export_tree_node_print(gb_main, out, tree->rightson, tree_name, pretty, indent+1, node_gen, save_branchlengths, save_bootstraps, save_groupnames, qmode);
         if (save_branchlengths) fprintf(out, ":%.5f", tree->rightlen);
         fputc('\n', out);
 
@@ -98,7 +118,7 @@ static const char *export_tree_node_print(GBDATA *gb_main, FILE *out, GBT_TREE *
         }
         else if (bootstrap) print = bootstrap;
 
-        if (print) export_tree_label(print, out);
+        if (print) export_tree_label(print, out, qmode);
 
         free(bootstrap);
     }
@@ -277,7 +297,7 @@ static char *complete_newick_comment(const char *comment) {
     return GBS_strclose(out);
 }
 
-GB_ERROR TREE_write_Newick(GBDATA *gb_main, char *tree_name, const TREE_node_text_gen *node_gen, bool save_branchlengths, bool save_bootstraps, bool save_groupnames, bool pretty, char *path)
+GB_ERROR TREE_write_Newick(GBDATA *gb_main, char *tree_name, const TREE_node_text_gen *node_gen, bool save_branchlengths, bool save_bootstraps, bool save_groupnames, bool pretty, TREE_node_quoting quoteMode, char *path)
 {
     GB_ERROR  error  = 0;
     FILE     *output = fopen(path, "w");
@@ -315,7 +335,7 @@ GB_ERROR TREE_write_Newick(GBDATA *gb_main, char *tree_name, const TREE_node_tex
                 }
                 free(remark);
                 if (!error) {
-                    error = export_tree_node_print(gb_main, output, tree, tree_name, pretty, 0, node_gen,  save_branchlengths,  save_bootstraps,  save_groupnames);
+                    error = export_tree_node_print(gb_main, output, tree, tree_name, pretty, 0, node_gen,  save_branchlengths,  save_bootstraps,  save_groupnames, quoteMode);
                 }
             }
 

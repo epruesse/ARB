@@ -44,6 +44,8 @@ const char *AWAR_TREE_REM      = "tmp/ad_tree/tree_rem";
 #define AWAR_TREE_EXPORT_INCLUDE_BRANCHLENS AWAR_TREE_EXPORT_SAVE "/branchlens"
 #define AWAR_TREE_EXPORT_INCLUDE_GROUPNAMES AWAR_TREE_EXPORT_SAVE "/groupnames"
 #define AWAR_TREE_EXPORT_HIDE_FOLDED_GROUPS AWAR_TREE_EXPORT_SAVE "/hide_folded"
+#define AWAR_TREE_EXPORT_QUOTEMODE          AWAR_TREE_EXPORT_SAVE "/quote_mode"
+#define AWAR_TREE_EXPORT_REPLACE            AWAR_TREE_EXPORT_SAVE "/replace"
 
 void tree_vars_callback(AW_root *aw_root) // Map tree vars to display objects
 {
@@ -162,6 +164,8 @@ void create_trees_var(AW_root *aw_root, AW_default aw_def)
     aw_root->awar_int(AWAR_TREE_EXPORT_INCLUDE_BRANCHLENS , 1, aw_def);
     aw_root->awar_int(AWAR_TREE_EXPORT_HIDE_FOLDED_GROUPS , 0, aw_def);
     aw_root->awar_int(AWAR_TREE_EXPORT_INCLUDE_GROUPNAMES , 1, aw_def);
+    aw_root->awar_int(AWAR_TREE_EXPORT_QUOTEMODE, TREE_SINGLE_QUOTES, aw_def); // old default behavior
+    aw_root->awar_int(AWAR_TREE_EXPORT_REPLACE, 0, aw_def); // old default behavior
 
     aw_create_selection_box_awars(aw_root, AWAR_TREE_IMPORT, "", ".tree", "treefile", aw_def);
 
@@ -292,11 +296,17 @@ static void tree_save_cb(AW_window *aww){
 
             case AD_TREE_EXPORT_FORMAT_NEWICK:
             case AD_TREE_EXPORT_FORMAT_NEWICK_PRETTY:
+                TREE_node_quoting quoteMode = TREE_node_quoting(aw_root->awar(AWAR_TREE_EXPORT_QUOTEMODE)->read_int());
+                if (aw_root->awar(AWAR_TREE_EXPORT_REPLACE)->read_int()) {
+                    quoteMode = TREE_node_quoting(quoteMode|TREE_FORCE_REPLACE);
+                }
+
                 error = TREE_write_Newick(GLOBAL_gb_main, tree_name, node_gen,
                                           aw_root->awar(AWAR_TREE_EXPORT_INCLUDE_BRANCHLENS)->read_int(),
                                           aw_root->awar(AWAR_TREE_EXPORT_INCLUDE_BOOTSTRAPS)->read_int(),
                                           aw_root->awar(AWAR_TREE_EXPORT_INCLUDE_GROUPNAMES)->read_int(),
                                           exportType == AD_TREE_EXPORT_FORMAT_NEWICK_PRETTY,
+                                          quoteMode, 
                                           fname);
                 break;
         }
@@ -348,6 +358,17 @@ AW_window *create_tree_export_window(AW_root *root)
     aws->at_newline(); aws->label("Save group names"); aws->create_toggle(AWAR_TREE_EXPORT_INCLUDE_GROUPNAMES);
     aws->at_newline(); aws->label("Hide folded groups (XML only)"); aws->create_toggle(AWAR_TREE_EXPORT_HIDE_FOLDED_GROUPS);
 
+    aws->at_newline(); aws->label("Name quoting (Newick only)");
+    aws->create_option_menu(AWAR_TREE_EXPORT_QUOTEMODE,0,0);
+    aws->insert_option("none",            "n", TREE_DISALLOW_QUOTES);
+    aws->insert_option("single",          "s", TREE_SINGLE_QUOTES);
+    aws->insert_option("double",          "d", TREE_DOUBLE_QUOTES);
+    aws->insert_option("single (forced)", "i", TREE_SINGLE_QUOTES|TREE_FORCE_QUOTES);
+    aws->insert_option("double (forced)", "o", TREE_DOUBLE_QUOTES|TREE_FORCE_QUOTES);
+    aws->update_option_menu();
+
+    aws->at_newline(); aws->label("Replace problem chars"); aws->create_toggle(AWAR_TREE_EXPORT_REPLACE);
+    
     aws->at_newline();
     aws->callback(tree_save_cb);
     aws->create_button("SAVE","SAVE","o");
