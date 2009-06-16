@@ -24,9 +24,10 @@ TOOLS += $(subst .c,,$(wildcard arb*test*.c))
 TOOLS += $(subst .cxx,,$(wildcard arb*test*.cxx))
 endif
 
-LIB_ARBDB          := $(LIBPATH) -lARBDB
-LIBS_ARB_PROBE     := ../SERVERCNTRL/SERVERCNTRL.a ../PROBE_COM/client.a
-LIBS_ARB_READ_TREE := ../SL/TREE_READ/TREE_READ.a
+LIB_ARBDB            := $(LIBPATH) -lARBDB
+LIBS_ARB_PROBE       := ../SERVERCNTRL/SERVERCNTRL.a ../PROBE_COM/client.a
+LIBS_ARB_READ_TREE   := ../SL/TREE_READ/TREE_READ.a
+LIBS_ARB_EXPORT_TREE := ../SL/TREE_WRITE/TREE_WRITE.a ../XML/XML.a $(LIBS_ARB_READ_TREE)
 
 OBJECTS:=$(addsuffix .o,$(TOOLS))
 BINARIES:=$(addprefix $(ARBHOME)/bin/,$(TOOLS))
@@ -44,6 +45,9 @@ $(ARBHOME)/bin/arb_probe: arb_probe.o $(LIBS_ARB_PROBE)
 
 $(ARBHOME)/bin/arb_read_tree: arb_read_tree.o  $(LIBS_ARB_READ_TREE)
 	$(LINK_EXECUTABLE) $@ $< $(LIBS_ARB_READ_TREE) $(LIB_ARBDB) 
+
+$(ARBHOME)/bin/arb_export_tree: arb_export_tree.o  $(LIBS_ARB_EXPORT_TREE)
+	$(LINK_EXECUTABLE) $@ $< $(LIBS_ARB_EXPORT_TREE) $(LIB_ARBDB) 
 
 $(ARBHOME)/bin/%: %.o
 	$(LINK_EXECUTABLE) $@ $< $(LIB_ARBDB)
@@ -126,6 +130,7 @@ arb_export_tree.o: $(ARBHOME)/INCLUDE/arbdb.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/arbdbt.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_export_tree.o: $(ARBHOME)/INCLUDE/TreeWrite.h
 
 arb_gene_probe.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 arb_gene_probe.o: $(ARBHOME)/INCLUDE/ad_prot.h

@@ -1317,7 +1317,8 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL bootstrap_flag)
 #if 0
         // save all generated trees for debugging
         FILE *out = fopen(GBS_global_string("tree_%i",loop_count),"w");
-        GBT_export_tree(gb_main,out,tree,GB_FALSE);
+        TREE_export_tree(gb_main, out, tree, false, true, false);
+        printf(";\n"); // aka empty tree
         fclose(out);
 #endif
 

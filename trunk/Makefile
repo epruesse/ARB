@@ -1199,7 +1199,7 @@ SOURCE_TOOLS/generate_all_links.stamp: SOURCE_TOOLS/generate_all_links.sh
 gde:		GDE/GDE.dummy
 GDE:		gde
 agde: 		ARB_GDE/ARB_GDE.dummy
-tools:		TOOLS/TOOLS.dummy
+tools:		SL/SL.dummy TOOLS/TOOLS.dummy
 convert:	SL/FILE_BUFFER/FILE_BUFFER.dummy shared_libs
 	$(MAKE) CONVERTALN/CONVERTALN.dummy
 

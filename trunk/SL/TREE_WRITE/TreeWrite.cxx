@@ -328,3 +328,72 @@ GB_ERROR TREE_write_Newick(GBDATA *gb_main, char *tree_name, const TREE_node_tex
 
     return error;
 }
+
+// --------------------------------------------------------------------------------
+
+static void export_tree_node_print_remove(char *str) {
+    int i = 0;
+    while (char c = str[i]) {
+        if (c == '\'' || c == '\"') str[i] = '.';
+        i++;
+    }
+}
+
+static void export_tree_rek(GBT_TREE *tree, FILE *out, bool export_branchlens, bool dquot) {
+    if (tree->is_leaf) {
+        export_tree_node_print_remove(tree->name);
+        fprintf(out,
+                dquot ? " \"%s\" " : " '%s' ",
+                tree->name);
+    }
+    else {
+        fputc('(', out);
+        export_tree_rek(tree->leftson,  out, export_branchlens, dquot); if (export_branchlens) fprintf(out, ":%.5f,", tree->leftlen);
+        export_tree_rek(tree->rightson, out, export_branchlens, dquot); if (export_branchlens) fprintf(out, ":%.5f",  tree->rightlen);
+        fputc(')', out);
+
+        if (tree->name) {
+            export_tree_node_print_remove(tree->name);
+            fprintf(out,
+                    dquot ? "\"%s\"" : "'%s'",
+                    tree->name);
+        }
+    }
+}
+
+#if defined(DEBUG)
+#warning maybe replace TREE_export_tree by TREE_write_Newick
+/* need some additional parameters (no comment, trifurcation) */
+#endif /* DEBUG */
+
+GB_ERROR TREE_export_tree(GBDATA *gb_main,FILE *out,GBT_TREE *tree, bool triple_root, bool export_branchlens, bool dquot) {
+    GBUSE(gb_main);
+    
+    if (triple_root){
+        GBT_TREE *one,*two,*three;
+        if (tree->is_leaf){
+            return GB_export_error("Tree is two small, minimum 3 nodes");
+        }
+        if (tree->leftson->is_leaf && tree->rightson->is_leaf){
+            return GB_export_error("Tree is two small, minimum 3 nodes");
+        }
+        if (tree->leftson->is_leaf){
+            one = tree->leftson;
+            two = tree->rightson->leftson;
+            three = tree->rightson->rightson;
+        }else{
+            one = tree->leftson->leftson;
+            two = tree->leftson->rightson;
+            three = tree->rightson;
+        }
+        fputc('(', out);
+        export_tree_rek(one,   out, export_branchlens, dquot); if (export_branchlens) fprintf(out, ":%.5f", 1.0); fputc(',', out);
+        export_tree_rek(two,   out, export_branchlens, dquot); if (export_branchlens) fprintf(out, ":%.5f", 1.0); fputc(',', out);
+        export_tree_rek(three, out, export_branchlens, dquot); if (export_branchlens) fprintf(out, ":%.5f", 1.0);
+        fputc(')', out);
+    }
+    else {
+        export_tree_rek(tree, out, export_branchlens, dquot);
+    }
+    return 0;
+}
