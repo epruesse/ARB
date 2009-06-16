@@ -24,9 +24,16 @@ struct TREE_node_text_gen {
     {}
 };
 
+enum TREE_node_quoting {
+    TREE_DISALLOW_QUOTES = 0, // don't use quotes
+    TREE_SINGLE_QUOTES   = 1, // use single quotes
+    TREE_DOUBLE_QUOTES   = 2, // use double quotes
 
+    TREE_FORCE_QUOTES  = 4, // force usage of quotes
+    TREE_FORCE_REPLACE = 8, // replace all problematic characters (default is to replace quotes in quoted labels)
+};
 
-GB_ERROR TREE_write_Newick(GBDATA *gb_main, char *tree_name, const TREE_node_text_gen *node_gen, bool save_branchlengths, bool save_bootstraps, bool save_groupnames, bool pretty, char *path);
+GB_ERROR TREE_write_Newick(GBDATA *gb_main, char *tree_name, const TREE_node_text_gen *node_gen, bool save_branchlengths, bool save_bootstraps, bool save_groupnames, bool pretty, TREE_node_quoting quoteMode, char *path);
 GB_ERROR TREE_write_XML(GBDATA *gb_main, const char *db_name, const char *tree_name, const TREE_node_text_gen *node_gen, bool skip_folded, const char *path);
 GB_ERROR TREE_export_tree(GBDATA *gb_main,FILE *out,GBT_TREE *tree, bool triple_root, bool export_branchlens, bool use_double_quotes);
 
