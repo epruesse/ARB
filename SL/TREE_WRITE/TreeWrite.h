@@ -28,6 +28,7 @@ struct TREE_node_text_gen {
 
 GB_ERROR TREE_write_Newick(GBDATA *gb_main, char *tree_name, const TREE_node_text_gen *node_gen, bool save_branchlengths, bool save_bootstraps, bool save_groupnames, bool pretty, char *path);
 GB_ERROR TREE_write_XML(GBDATA *gb_main, const char *db_name, const char *tree_name, const TREE_node_text_gen *node_gen, bool skip_folded, const char *path);
+GB_ERROR TREE_export_tree(GBDATA *gb_main,FILE *out,GBT_TREE *tree, bool triple_root, bool export_branchlens, bool use_double_quotes);
 
 #else
 #error TreeWrite.h included twice

@@ -151,7 +151,6 @@ char **GBT_get_tree_names P_((GBDATA *Main));
 char *GBT_get_next_tree_name P_((GBDATA *gb_main, const char *tree_name));
 GB_CSTR *GBT_get_species_names_of_tree P_((GBT_TREE *tree));
 char *GBT_existing_tree P_((GBDATA *gb_main, const char *tree_name));
-GB_ERROR GBT_export_tree P_((GBDATA *gb_main, FILE *out, GBT_TREE *tree, GB_BOOL triple_root));
 
 /* adname.c */
 GB_ERROR GBT_begin_rename_session P_((GBDATA *gb_main, int all_flag));

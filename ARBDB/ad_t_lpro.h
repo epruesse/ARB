@@ -38,8 +38,6 @@ GB_ERROR gbt_set_type_of_changekey P_((GBDATA *gb_main, const char *field_name, 
 GBT_TREE *gbt_read_tree_rek P_((char **data, long *startid, GBDATA **gb_tree_nodes, long structure_size, int size_of_tree, GB_ERROR *error));
 int gbt_sum_leafs P_((GBT_TREE *tree));
 GB_CSTR *gbt_fill_species_names P_((GB_CSTR *des, GBT_TREE *tree));
-void gbt_export_tree_node_print_remove P_((char *str));
-void gbt_export_tree_rek P_((GBT_TREE *tree, FILE *out));
 
 /* adname.c */
 GB_ERROR gbt_rename_tree_rek P_((GBT_TREE *tree, int tree_index));
