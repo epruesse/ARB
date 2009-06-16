@@ -72,7 +72,9 @@ else
     TREEPARAMS=
     HAVEINPUTTREE=0
     if [ "$TREE" != "????" -a ! -z "$TREE" ]; then
-        `arb_export_tree $TREE > treefile.in`
+        CMD="arb_export_tree $TREE"
+        echo "$CMD"
+        echo `$CMD > treefile.in`
         if [ \! -s treefile.in ]; then
             arb_message "Couldn't export tree '$TREE'"
             exit 1

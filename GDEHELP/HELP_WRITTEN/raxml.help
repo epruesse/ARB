@@ -118,6 +118,14 @@ PARAMETERS
                         performs just pure stepwise MP addition of new sequences
                         to an incomplete starting tree.
 
+                        You have to mark all species in tree AND all species which should be
+                        added to the tree.
+
+                        Note: RAxML has a bug in the tree-reader and rejects many
+                        trees as unrooted/multifurcated.
+                        You can to use 'Tree/Beautify Tree' and select the lowest
+                        mode (short branches first) as a workaround.
+
                 randomized tree searches (fixed start tree)
                 
                         will perform several randomized tree searches (as specified at
