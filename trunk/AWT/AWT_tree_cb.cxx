@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
+
 #include <arbdb.h>
 #include <arbdbt.h>
 
@@ -345,20 +347,11 @@ void NT_insert_color_mark_submenu(AW_window_menu_modes *awm, AWT_canvas *ntree_c
 #undef MAXENTRY
 }
 
-static void nt_insert_mark_topic(AW_window_menu_modes *awm, AW_active mask, const char *attrib, const char *label_suffix, const char *entry_template,
-                                 const char *hotkey, const char *helpfile,
-                                 AW_CB cb, AW_CL cl1, AW_CL cl2)
-{
-    const char *label     = 0;
-    char       *label_tmp = 0;
-    char       *entry     = 0;
-
+static char *create_mark_menu_entry(const char *attrib, const char *entry_template) {
+    char *entry = 0;
     if (attrib) {
         bool append = attrib[0] == '-'; // if attrib starts with '-' then append (otherwise prepend)
         if (append) ++attrib; // skip '-'
-
-        label_tmp = GBS_global_string_copy("%s_%s", attrib, label_suffix);
-        label     = label_tmp;
 
         if (append) {
             char *spaced_attrib = GBS_global_string_copy(" %s", attrib);
@@ -368,17 +361,38 @@ static void nt_insert_mark_topic(AW_window_menu_modes *awm, AW_active mask, cons
         else {
             char *spaced_attrib = GBS_global_string_copy("%s ", attrib);
             entry               = GBS_global_string_copy(entry_template, spaced_attrib, "");
+
+            if (islower(entry[0])) entry[0] = toupper(entry[0]); // Caps prepended lowercase 'attrib'
+
             free(spaced_attrib);
         }
     }
     else {
-        label = label_suffix;
         entry = GBS_global_string_copy(entry_template, "", "");
     }
+    return entry;
+}
+static char *create_mark_menu_id(const char *attrib, const char *id_suffix) {
+    char *id = 0;
+    if (attrib) {
+        id = GBS_global_string_copy("%s_%s", attrib[0] == '-' ? attrib+1 : attrib, id_suffix);
+    }
+    else {
+        id = strdup(id_suffix);
+    }
+    return id;
+}
 
-    awm->insert_menu_topic(label, entry, hotkey, helpfile, mask, cb, cl1, cl2);
+static void nt_insert_mark_topic(AW_window_menu_modes *awm, AW_active mask, const char *attrib, const char *id_suffix, const char *entry_template,
+                                 const char *hotkey, const char *helpfile,
+                                 AW_CB cb, AW_CL cl1, AW_CL cl2)
+{
+    char *entry = create_mark_menu_entry(attrib, entry_template);
+    char *id    = create_mark_menu_id(attrib, id_suffix);
 
-    free(label_tmp);
+    awm->insert_menu_topic(id, entry, hotkey, helpfile, mask, cb, cl1, cl2);
+
+    free(id);
     free(entry);
 }
 
@@ -388,15 +402,26 @@ static void nt_insert_mark_topics(AW_window_menu_modes *awm, AW_active mask, AWT
 
     nt_insert_mark_topic(awm, mask, attrib, "mark_all",            "Mark all %sSpecies%s",                    "M", "sp_mrk_all.hlp",    (AW_CB)NT_mark_all_cb,     (AW_CL)ntw, (AW_CL)(1+affect));
     nt_insert_mark_topic(awm, mask, attrib, "unmark_all",          "Unmark all %sSpecies%s",                  "U", "sp_umrk_all.hlp",   (AW_CB)NT_mark_all_cb,     (AW_CL)ntw, (AW_CL)(0+affect));
-    nt_insert_mark_topic(awm, mask, attrib, "swap_marked",         "Invert marks of all %sSpecies%s",         "v", "sp_invert_mrk.hlp", (AW_CB)NT_mark_all_cb,     (AW_CL)ntw, (AW_CL)(2+affect));
+    nt_insert_mark_topic(awm, mask, attrib, "swap_marked",         "Invert marks of all %sSpecies%s",         "I", "sp_invert_mrk.hlp", (AW_CB)NT_mark_all_cb,     (AW_CL)ntw, (AW_CL)(2+affect));
     awm->insert_separator();
-    nt_insert_mark_topic(awm, mask, attrib, "mark_tree",           "Mark %sSpecies%s in Tree",                "T", "sp_mrk_tree.hlp",   (AW_CB)NT_mark_tree_cb,    (AW_CL)ntw, (AW_CL)(1+affect));
-    nt_insert_mark_topic(awm, mask, attrib, "unmark_tree",         "Unmark %sSpecies%s in Tree",              "n", "sp_umrk_tree.hlp",  (AW_CB)NT_mark_tree_cb,    (AW_CL)ntw, (AW_CL)(0+affect));
-    nt_insert_mark_topic(awm, mask, attrib, "swap_marked_tree",    "Invert marks of %sSpecies%s in Tree",     "",  "sp_invert_mrk.hlp", (AW_CB)NT_mark_tree_cb,    (AW_CL)ntw, (AW_CL)(2+affect));
-    awm->insert_separator();
-    nt_insert_mark_topic(awm, mask, attrib, "mark_nontree",        "Mark %sSpecies%s NOT in Tree",            "",  "sp_mrk_tree.hlp",   (AW_CB)NT_mark_nontree_cb, (AW_CL)ntw, (AW_CL)(1+affect));
-    nt_insert_mark_topic(awm, mask, attrib, "unmark_nontree",      "Unmark %sSpecies%s NOT in Tree",          "",  "sp_umrk_tree.hlp",  (AW_CB)NT_mark_nontree_cb, (AW_CL)ntw, (AW_CL)(0+affect));
-    nt_insert_mark_topic(awm, mask, attrib, "swap_marked_nontree", "Invert marks of %sSpecies%s NOT in Tree", "",  "sp_invert_mrk.hlp", (AW_CB)NT_mark_nontree_cb, (AW_CL)ntw, (AW_CL)(2+affect));
+
+    char *label = create_mark_menu_entry(attrib, "%sSpecies%s in Tree");
+    
+    awm->insert_sub_menu(label, "T");
+    nt_insert_mark_topic(awm, mask, attrib, "mark_tree",           "Mark %sSpecies%s in Tree",                "M", "sp_mrk_tree.hlp",   (AW_CB)NT_mark_tree_cb,    (AW_CL)ntw, (AW_CL)(1+affect));
+    nt_insert_mark_topic(awm, mask, attrib, "unmark_tree",         "Unmark %sSpecies%s in Tree",              "U", "sp_umrk_tree.hlp",  (AW_CB)NT_mark_tree_cb,    (AW_CL)ntw, (AW_CL)(0+affect));
+    nt_insert_mark_topic(awm, mask, attrib, "swap_marked_tree",    "Invert marks of %sSpecies%s in Tree",     "I", "sp_invert_mrk.hlp", (AW_CB)NT_mark_tree_cb,    (AW_CL)ntw, (AW_CL)(2+affect));
+    awm->close_sub_menu();
+
+    freeset(label, create_mark_menu_entry(attrib, "%sSpecies%s NOT in Tree"));
+
+    awm->insert_sub_menu(label, "N");
+    nt_insert_mark_topic(awm, mask, attrib, "mark_nontree",        "Mark %sSpecies%s NOT in Tree",            "M", "sp_mrk_tree.hlp",   (AW_CB)NT_mark_nontree_cb, (AW_CL)ntw, (AW_CL)(1+affect));
+    nt_insert_mark_topic(awm, mask, attrib, "unmark_nontree",      "Unmark %sSpecies%s NOT in Tree",          "U", "sp_umrk_tree.hlp",  (AW_CB)NT_mark_nontree_cb, (AW_CL)ntw, (AW_CL)(0+affect));
+    nt_insert_mark_topic(awm, mask, attrib, "swap_marked_nontree", "Invert marks of %sSpecies%s NOT in Tree", "I", "sp_invert_mrk.hlp", (AW_CB)NT_mark_nontree_cb, (AW_CL)ntw, (AW_CL)(2+affect));
+    awm->close_sub_menu();
+    
+    free(label);
 }
 
 void NT_insert_mark_submenus(AW_window_menu_modes *awm, AWT_canvas *ntw, int insert_as_submenu) {
