@@ -1489,7 +1489,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->insert_menu_topic ( "load_config", "Load Configuration", "L", "No Help", AWM_ALL, AW_POPUP, (AW_CL)ED4_start_editor_on_old_configuration, 0);
     awmm->insert_menu_topic ( "reload_config", "Reload Configuration", "R", "No Help", AWM_ALL, ED4_restart_editor, 0, 0);
     SEP________________________SEP;
-    GDE_load_menu(awmm,AWM_ALL,"pretty_print");
+    GDE_load_menu(awmm,AWM_ALL,"Print");
     SEP________________________SEP;
 
     if (ED4_window::no_of_windows == 1) {                           // this is the first window

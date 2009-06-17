@@ -2115,7 +2115,7 @@ void aed_create_window(AED_root *aedr) {
     }
 
     awmm->insert_separator();
-    GDE_load_menu(awmm,AWM_ALL,"pretty_print");
+    GDE_load_menu(awmm,AWM_ALL,"Print");
     awmm->insert_separator();
     awmm->insert_menu_topic("quit","Quit","Q","quit.hlp",   AWM_ALL,        aed_quit,(AW_CL)aed_window->root,1);
 

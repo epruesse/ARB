@@ -69,9 +69,7 @@ typedef struct Gmenutype
     /* ARB BEGIN */
     /*  Panel_item  button;*/       /* Button to activate menu */
     /*  Menu        X;*/        /* XView menu structure */
-
-
-
+    char       meta;            /* Meta character for menu */
 } Gmenu;
 
 // typedef unsigned char uchar;

@@ -1168,7 +1168,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             awm->insert_sub_menu("Import",      "I");
             {
                 AWMIMT("import_seq", "Import sequences and fields","I","arb_import.hlp",AWM_ALL, NT_import_sequences,0,0);
-                GDE_load_menu(awm,AWM_EXP,"import");
+                GDE_load_menu(awm,AWM_EXP,"Import");
             }
             awm->close_sub_menu();
 
@@ -1176,7 +1176,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             {
                 AWMIMT("export_to_ARB", "Export seq/tree/SAI's to new ARB database", "A", "arb_ntree.hlp",      AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"arb_ntree -export &",0);
                 AWMIMT("export_seqs",   "Export sequences to foreign format",        "f", "arb_export.hlp",     AWM_ALL, AW_POPUP,            (AW_CL)open_AWTC_export_window, (AW_CL)GLOBAL_gb_main);
-                GDE_load_menu(awm,AWM_ALL,"export");
+                GDE_load_menu(awm,AWM_ALL,"Export");
                 AWMIMT("export_nds",    "Export fields using NDS",                   "N", "arb_export_nds.hlp", AWM_ALL, AW_POPUP,            (AW_CL)create_nds_export_window, 0);
             }
             awm->close_sub_menu();
@@ -1295,7 +1295,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             {
                 AWMIMT("arb_align",   "Align sequence into an existing alignment",         "A", "align.hlp",       AWM_EXP, (AW_CB) AW_POPUP_HELP, (AW_CL)"align.hlp",                  0);
                 AWMIMT("realign_dna", "Realign nucleic acid according to aligned protein", "R", "realign_dna.hlp", AWM_ALL, AW_POPUP,              (AW_CL)NT_create_realign_dna_window, 0);
-                GDE_load_menu(awm,AWM_ALL,"align");
+                GDE_load_menu(awm,AWM_ALL,"Align");
             }
             awm->close_sub_menu();
             AWMIMT("seq_concat",    "Concatenate Sequences/Alignments", "C", "concatenate_align.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_createConcatenationWindow,     0);
@@ -1311,7 +1311,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
             SEP________________________SEP();
 
-            GDE_load_menu(awm,AWM_ALL,"pretty_print");
+            GDE_load_menu(awm,AWM_ALL,"Print");
         }
         // ------------
         //      SAI
@@ -1367,7 +1367,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             {
                 AWMIMT( "arb_pars_quick",  "ARB Parsimony (Quick add marked)", "Q", "pars.hlp",    AWM_ALL,   (AW_CB)NT_system_cb,    (AW_CL)"arb_pars -add_marked -quit &",0 );
                 AWMIMT( "arb_pars",        "ARB Parsimony interactive",        "i", "pars.hlp",    AWM_ALL,   (AW_CB)NT_system_cb,    (AW_CL)"arb_pars &",    0 );
-                GDE_load_menu(awm,AWM_ALL,"Incremental_Phylogeny");
+                GDE_load_menu(awm,AWM_ALL,"Incremental phylogeny");
             }
             awm->close_sub_menu();
         }
@@ -1391,20 +1391,20 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             {
                 awm->insert_sub_menu("Distance matrix methods", "D");
                 AWMIMT( "arb_dist",     "ARB Neighbour Joining",     "J", "dist.hlp",    AWM_ALL,   (AW_CB)NT_system_cb,    (AW_CL)"arb_dist &",    0 );
-                GDE_load_menu(awm,AWM_ALL,"Phylogeny_DistMatrix");
+                GDE_load_menu(awm,AWM_ALL,"Phylogeny Distance Matrix");
                 awm->close_sub_menu();
 
                 awm->insert_sub_menu("Maximum Parsimony methods", "P");
-                GDE_load_menu(awm,AWM_ALL,"Phylogeny_MaxParsimony");
+                GDE_load_menu(awm,AWM_ALL,"Phylogeny max. parsimony");
                 awm->close_sub_menu();
 
                 awm->insert_sub_menu("Maximum Likelihood methods", "L");
-                GDE_load_menu(awm,AWM_EXP,"Phylogeny_MaxLikelyhood_EXP");
-                GDE_load_menu(awm,AWM_ALL,"Phylogeny_MaxLikelyhood");
+                GDE_load_menu(awm,AWM_EXP,"Phylogeny max. Likelyhood EXP");
+                GDE_load_menu(awm,AWM_ALL,"Phylogeny max. Likelyhood");
                 awm->close_sub_menu();
 
                 awm->insert_sub_menu("Other methods", "O", 0, AWM_EXP);
-                GDE_load_menu(awm,AWM_EXP,"Phylogeny_Other");
+                GDE_load_menu(awm,AWM_EXP,"Phylogeny (Other)");
                 awm->close_sub_menu();
             }
             awm->close_sub_menu();
@@ -1501,7 +1501,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             awm->close_sub_menu();
             awm->insert_sub_menu("Network", "N", 0, AWM_EXP);
             {
-                GDE_load_menu(awm,AWM_EXP,"user");
+                GDE_load_menu(awm,AWM_EXP,"User");
             }
             awm->close_sub_menu();
             SEP________________________SEP();
