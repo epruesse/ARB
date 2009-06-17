@@ -189,6 +189,11 @@ void ParseMenu()
             crop(in_line,head,temp);
             thisitem->meta = temp[0];
         }
+        else if(Find(in_line,"menumeta:"))
+        {
+            crop(in_line,head,temp);
+            thismenu->meta = temp[0];
+        }
         /*
          *       Sequence type restriction
          */

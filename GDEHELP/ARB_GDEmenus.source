@@ -10,39 +10,50 @@
 
 #include <warning.genmenu>
 
-lmenu:export
+lmenu:Export
+menumeta: E
 #include <export.genmenu>
 
-lmenu:pretty_print
+lmenu:Print
+menumeta: r
 #include <pretty_print.genmenu>
 
-lmenu:import
+lmenu:Import
+menumeta:I
 #include <import.genmenu>
 
-menu:align
+menu:Align
+menumeta:A
 #include <align.genmenu>
 
-menu:user
+menu:User
+menumeta:U
 #include <start_arb.genmenu>
 
 menu:SAI
+menumeta:S
 #include <dnamlrates.genmenu>
 
 menu:Incremental phylogeny
+menumeta:c
 #include <inc_fastdnaml.genmenu>
 
-menu:Phylogeny_DistMatrix
+menu:Phylogeny Distance Matrix
+menumeta:D
 #include <phylip_dist_org.genmenu>
 #include <phylip_dist.genmenu>
 
-menu:Phylogeny_MaxParsimony
+menu:Phylogeny max. parsimony
+menumeta:p
 #include <phylip_pars.genmenu>
 
-menu:Phylogeny_MaxLikelyhood_EXP
+menu:Phylogeny max. Likelyhood EXP
+menumeta:X
 #include <fastdnaml.genmenu>
 #include <molphy.genmenu>
 
-menu:Phylogeny_MaxLikelyhood
+menu:Phylogeny max. Likelyhood
+menumeta:L
 #define RAXML_DNA
 #include <raxml.genmenu>
 #undef RAXML_DNA
@@ -50,7 +61,8 @@ menu:Phylogeny_MaxLikelyhood
 
 #include <phylip_ml.genmenu>
 
-menu:Phylogeny_Other
+menu:Phylogeny (Other)
+menumeta:O
 #include <puzzle.genmenu>
 #include <desoete.genmenu>
 

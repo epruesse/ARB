@@ -18,8 +18,6 @@
 #include "GDE_extglob.h"
 #include "GDE_awars.h"
 
-#define META "" // default is 'no hotkey'
-
 adfiltercbstruct *agde_filtercd = 0;
 
 Gmenu menu[GDEMAXMENU];
@@ -394,34 +392,44 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root,GmenuItem *gmenuitem) {
 
 
 
-void GDE_load_menu(AW_window *awm, AW_active mask, const char *menulabel,const char *menuitemlabel)
-{
-    //  AW_root *aw_root = awm->get_root();
+void GDE_load_menu(AW_window *awm, AW_active mask, const char *menulabel, const char *menuitemlabel) {
+    // Load GDE menu items.
+    //
+    // If 'menulabel' == NULL -> load all menus
+    // Else                   -> load specified menu
+    // 
+    // If 'menuitemlabel' == NULL -> load complete menu(s)
+    // Else                       -> load only specific menu topic
+
     char       buffer[1024];
     char      *help;
     long       nitem,num_items;
     GmenuItem *menuitem;
+    char       hotkey[]   = "x";
+    bool       menuloaded = false;
+    bool       itemloaded = false;
 
     for (long nmenu = 0; nmenu<num_menus; nmenu++) {
         {
-            char *menuname = GBS_string_2_key(menu[nmenu].label);
+            const char *menuname = menu[nmenu].label;
             if (menulabel){
                 if (strcmp(menulabel,menuname)) {
-                    free(menuname);
                     continue;
                 }
             }
             else {
-                awm->insert_sub_menu(menuname,META);
+                hotkey[0]     = menu[nmenu].meta;
+                awm->insert_sub_menu(menuname, hotkey);
             }
-            free(menuname);
         }
 
+        menuloaded = true;
+
         num_items = menu[nmenu].numitems;
-        for(nitem=0;nitem<num_items;nitem++)
-        {
+        for (nitem=0; nitem<num_items;nitem++) {
             menuitem=&menu[nmenu].item[nitem];
             if (!menuitemlabel || strcmp(menuitem->label,menuitemlabel) == 0) {
+                itemloaded = true;
                 if (menuitem->help) {
                     sprintf(buffer,"GDEHELP/%s",menuitem->help);
                     help = strdup(buffer);
@@ -429,17 +437,26 @@ void GDE_load_menu(AW_window *awm, AW_active mask, const char *menulabel,const c
                 else {
                     help = 0;
                 }
-                char hotkey[] = "x";
                 hotkey[0]     = menuitem->meta;
                 awm->insert_menu_topic(0,menuitem->label,hotkey,
                                        help, mask,
                                        AW_POPUP, (AW_CL)GDE_menuitem_cb, (AW_CL)menuitem);
             }
         }
-        //  if(!menulabel && nmenu==0)
-        //      awm->insert_menu_topic(0,"Close","C",0,(AW_active) AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
         if (!menulabel){
             awm->close_sub_menu();
+        }
+    }
+
+    if (!menuloaded && menulabel) {
+        fprintf(stderr, "GDE-Warning: Could not find requested menu '%s'\n", menulabel);
+    }
+    if (!itemloaded && menuitemlabel) {
+        if (menulabel) {
+            fprintf(stderr, "GDE-Warning: Could not find requested topic '%s' in menu '%s'\n", menuitemlabel, menulabel);
+        }
+        else {
+            fprintf(stderr, "GDE-Warning: Could not find requested topic '%s'\n", menuitemlabel);
         }
     }
 }
