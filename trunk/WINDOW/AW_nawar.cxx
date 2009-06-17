@@ -580,10 +580,7 @@ AW_default AW_root::open_default(const char *default_name, bool create_if_missin
 
         free(buffer);
 
-        if (!found) {
-            GB_information("No '%s' found", default_name);
-            return 0;
-        }
+        if (!found) return 0;
     }
 
 #if defined(DEVEL_RALF)

@@ -696,11 +696,13 @@ bool AW_cb_struct::is_equal(const AW_cb_struct& other) const {
                 equal = aw == other.aw;
                 if (!equal) {
                     equal = aw->get_root() == other.aw->get_root();
+#if defined(DEBUG)
                     if (equal) {
                         fprintf(stderr,
                                 "callback '%s' instanciated twice with different windows (w1='%s' w2='%s') -- assuming the callbacks are equal\n",
                                 id, aw->get_window_id(), other.aw->get_window_id());
                     }
+#endif // DEBUG
                 }
             }
         }
@@ -3464,7 +3466,7 @@ GB_ERROR AW_root::execute_macro(const char *file) {
         path = GBS_global_string_copy("%s/%s", GB_getenvARBMACROHOME(), file);
     }
     const char *com = GBS_global_string("perl %s &", path);
-    printf("Action '%s'\n", com);
+    printf("[Action '%s']\n", com);
     if (system(com)) {
         aw_message(GBS_global_string("Calling '%s' failed", com));
     }
