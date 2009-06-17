@@ -462,6 +462,9 @@ GB_ERROR SEC_root::read_data(const char *input_string, const char *x_string_in) 
     }
 
     if (!error) {
+        if (version<DATA_VERSION) {
+            printf("Converting secondary structure from version %i to %i\n", version, DATA_VERSION);
+        }
         if (version<3) fixStructureBugs(version);
 #if defined(CHECK_INTEGRITY)
         check_integrity(CHECK_STRUCTURE);
