@@ -2286,14 +2286,7 @@ AW_option_menu_struct *AW_window::create_option_menu( const char *var_name, AW_l
 }
 
 static void remove_option_from_option_menu(AW_root *aw_root, AW_option_struct *os) {
-#if defined(DEBUG)
-    bool removed =
-#endif // DEBUG
-        AW_remove_button_from_sens_list(aw_root, os->choice_widget);
-#if defined(DEBUG)
-    aw_assert(removed);
-#endif // DEBUG
-    // XtRemoveAllCallbacks(os->choice_widget, XmNactivateCallback);
+    AW_remove_button_from_sens_list(aw_root, os->choice_widget);
     XtDestroyWidget(os->choice_widget);
 }
 
