@@ -7,7 +7,8 @@
 
 #include "aw_keysym.hxx"
 #include "aw_xkey.hxx"
-#include <arbdb.h>
+#include "aw_root.hxx"
+#include <arbdbt.h>
 
 #ifndef aw_assert
 #ifndef ARB_ASSERT_H
@@ -165,12 +166,15 @@ void aw_install_xkeys(Display *display) {
 //#define DUMP_KEYEVENTS
 #endif // DEBUG
 
-
 const awXKeymap *aw_xkey_2_awkey(XKeyEvent *xkeyevent) {
     awXKeymap *result;
     static awXKeymap singlekey = { 0,0,0,AW_KEYMODE_NONE,AW_KEY_NONE,0};
+    bool numlockwason = false;
 
-    xkeyevent->state &= ~AW_KEYMODE_NUMLOCK; // ignore NUMLOCK
+    if (xkeyevent->state & AW_KEYMODE_NUMLOCK) {    // numlock is active
+        xkeyevent->state &= ~AW_KEYMODE_NUMLOCK;    // ignore NUMLOCK
+        numlockwason      = true;
+    }
 
     static char    buffer[256];
     KeySym         keysym;
@@ -188,7 +192,15 @@ const awXKeymap *aw_xkey_2_awkey(XKeyEvent *xkeyevent) {
         singlekey.awstr = buffer;
 
         result = &singlekey;
-        
+
+        if (numlockwason && (xkeyevent->state & AW_KEYMODE_ALT)) {
+            static bool warned = false;
+            if (!warned){
+                aw_message("Warning: Accelerator keys only work if NUMLOCK is off!");
+                warned = true;
+            }
+        }
+
 #if defined(DUMP_KEYEVENTS)
         printf("AW_KEY_ASCII:");
 #endif // DUMP_KEYEVENTS
