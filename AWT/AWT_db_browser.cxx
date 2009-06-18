@@ -277,20 +277,23 @@ class DB_browser {
     vector<KnownDB> known_databases;
     size_t          current_db; // index of current db (in known_databases)
 
-    AW_window         *aww;     // browser window
-    AW_selection_list *browse_id; // the browse subwindow
+    AW_window             *aww;                     // browser window
+    AW_option_menu_struct *oms;                     // the DB selector
+    AW_selection_list     *browse_id;               // the browse subwindow
 
     static SmartPtr<DB_browser> the_browser;
     friend DB_browser *get_the_browser(bool autocreate);
 
+    void update_DB_selector();
+    
     DB_browser(const DB_browser& other);            // copying not allowed
     DB_browser& operator = (const DB_browser& other); // assignment not allowed
 public:
-    DB_browser() : current_db(0), aww(0) {}
+    DB_browser() : current_db(0), aww(0), oms(0) {}
 
     void add_db(GBDATA *gb_main, const char *description) {
-        awt_assert(!aww);       // now it's too late to announce!
         known_databases.push_back(KnownDB(gb_main, description));
+        if (aww) update_DB_selector();
     }
 
     void del_db(GBDATA *gb_main) {
@@ -818,6 +821,18 @@ static void db_changed_cb(AW_root *aw_root) {
     aw_root->awar(AWAR_DBB_PATH)->rewrite_string(browser->get_path());
 }
 
+void DB_browser::update_DB_selector() {
+    if (!oms) oms = aww->create_option_menu(AWAR_DBB_DB);
+    else aww->clear_option_menu(oms);
+
+    int idx = 0;
+    for (KnownDBiterator i = known_databases.begin(); i != known_databases.end(); ++i, ++idx) {
+        const KnownDB& db = *i;
+        aww->insert_option(db.get_description().c_str(), "", idx);
+    }
+    aww->update_option_menu();
+}
+
 AW_window *DB_browser::get_window(AW_root *aw_root) {
     awt_assert(!known_databases.empty()); // have no db to browse
 
@@ -851,15 +866,7 @@ AW_window *DB_browser::get_window(AW_root *aw_root) {
         aws->create_button("HELP","HELP","H");
 
         aws->at("db");
-        aws->create_option_menu(AWAR_DBB_DB);
-        {
-            int idx = 0;
-            for (KnownDBiterator i = known_databases.begin(); i != known_databases.end(); ++i, ++idx) {
-                const KnownDB& db = *i;
-                aws->insert_option(db.get_description().c_str(), "", idx);
-            }
-        }
-        aws->update_option_menu();
+        update_DB_selector();
 
         aws->at("order");
         aws->create_option_menu(AWAR_DBB_ORDER);
