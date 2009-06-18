@@ -1148,11 +1148,11 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 #if defined(DEBUG)
         // add more to debug-menu
         SEP________________________SEP();
-        AWMIMT("fix_db",      "Fix database",            "F", "fixdb.hlp", AWM_ALL, (AW_CB)NT_fix_database,            0,                     0);
-        AWMIMT("debug_arbdb", "Print debug information", "d", 0,           AWM_ALL, (AW_CB)GB_print_debug_information, (AW_CL)GLOBAL_gb_main, 0);
-        AWMIMT("test_compr",  "Test compression",        "c", 0,           AWM_ALL, (AW_CB)GBT_compression_test,       (AW_CL)GLOBAL_gb_main, 0);
+        AWMIMT("fix_db",      "Fix database",            "F", 0, AWM_ALL, (AW_CB)NT_fix_database,            0,                                       0);
+        AWMIMT("debug_arbdb", "Print debug information", "d", 0, AWM_ALL, (AW_CB)GB_print_debug_information, (AW_CL)                  GLOBAL_gb_main, 0);
+        AWMIMT("test_compr",  "Test compression",        "T", 0, AWM_ALL, (AW_CB)GBT_compression_test,       (AW_CL)                  GLOBAL_gb_main, 0);
         SEP________________________SEP();
-        AWMIMT("table_admin",       "Table Admin (unfinished/unknown purpose)",  "T","tableadm.hlp",     AWM_ALL, AW_POPUP,(AW_CL)AWT_create_tables_admin_window, (AW_CL)GLOBAL_gb_main);
+        AWMIMT("table_admin",       "Table Admin (unfinished/unknown purpose)",  "A","tableadm.hlp",     AWM_ALL, AW_POPUP,(AW_CL)AWT_create_tables_admin_window, (AW_CL)GLOBAL_gb_main);
 #endif // DEBUG
 
         awm->create_menu("File",     "F", "nt_file.hlp",  AWM_ALL );
@@ -1252,12 +1252,12 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
             AWMIMT( "new_names",    "Generate New Names",   "e", "sp_rename.hlp",   AWM_ALL, AW_POPUP,   (AW_CL)AWTC_create_rename_window,      (AW_CL)GLOBAL_gb_main );
 
-            awm->insert_sub_menu("Valid Names ...",     "", 0, AWM_EXP);
+            awm->insert_sub_menu("Valid Names ...",     "V", 0, AWM_EXP);
             {
-                AWMIMT("imp_names",    "Import Names from File", "", "vn_import.hlp",  AWM_EXP, NT_importValidNames,  0, 0);
-                AWMIMT("del_names",    "Delete Names from DB",   "", "vn_delete.hlp",  AWM_EXP, NT_deleteValidNames,  0, 0);
-                AWMIMT("sug_names",    "Suggest Valid Names",    "", "vn_suggest.hlp", AWM_EXP, NT_suggestValidNames, 0, 0);
-                AWMIMT("search_names", "Search manually",        "", "vn_search.hlp",  AWM_EXP, AW_POPUP,             (AW_CL)NT_searchManuallyNames , 0);
+                AWMIMT("imp_names",    "Import names from file", "I", "vn_import.hlp",  AWM_EXP, NT_importValidNames,  0, 0);
+                AWMIMT("del_names",    "Delete names from DB",   "D", "vn_delete.hlp",  AWM_EXP, NT_deleteValidNames,  0, 0);
+                AWMIMT("sug_names",    "Suggest valid names",    "v", "vn_suggest.hlp", AWM_EXP, NT_suggestValidNames, 0, 0);
+                AWMIMT("search_names", "Search manually",        "m", "vn_search.hlp",  AWM_EXP, AW_POPUP,             (AW_CL)NT_searchManuallyNames , 0);
            }
             awm->close_sub_menu();
         }
@@ -1350,7 +1350,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             AWMIMT("probe_match",       "Match Probes",              "M", "probematch.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_probe_match_window, 0  );
             SEP________________________SEP();
             AWMIMT("primer_design_new", "Design Primers",            "P", "primer_new.hlp",  AWM_EXP, AW_POPUP, (AW_CL)create_primer_design_window, 0);
-            AWMIMT("primer_design",     "Design Sequencing Primers", "",  "primer.hlp",      AWM_EXP, (AW_CB)NT_primer_cb, 0, 0                      );
+            AWMIMT("primer_design",     "Design Sequencing Primers", "S", "primer.hlp",      AWM_EXP, (AW_CB)NT_primer_cb, 0, 0                      );
             SEP________________________SEP();
             AWMIMT("pt_server_admin",   "PT_SERVER Admin",           "A", "probeadmin.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_probe_admin_window, (AW_CL)is_genome_db);
         }
@@ -1445,8 +1445,8 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             AWMIMT(awm->local_id("justify_branch_lengths"), "Justify branchlengths",  "J", "tbl_justify.hlp", AWM_ALL, NT_justify_branch_lenghs, (AW_CL)ntw, 0);
             AWMIMT(awm->local_id("tree_scale_lengths"),     "Scale Branchlengths",    "S", "tbl_scale.hlp",   AWM_ALL, NT_scale_tree,            (AW_CL)ntw, 0);
             SEP________________________SEP();
-            AWMIMT(awm->local_id("tree_boot2len"),      "Bootstraps -> Branchlengths", "", "tbl_boot2len.hlp", AWM_ALL, NT_move_boot_branch, (AW_CL)ntw, 0);
-            AWMIMT(awm->local_id("tree_len2boot"),      "Bootstraps <- Branchlengths", "", "tbl_boot2len.hlp", AWM_ALL, NT_move_boot_branch, (AW_CL)ntw, 1);
+            AWMIMT(awm->local_id("tree_boot2len"),      "Bootstraps -> Branchlengths", "l", "tbl_boot2len.hlp", AWM_ALL, NT_move_boot_branch, (AW_CL)ntw, 0);
+            AWMIMT(awm->local_id("tree_len2boot"),      "Bootstraps <- Branchlengths", "o", "tbl_boot2len.hlp", AWM_ALL, NT_move_boot_branch, (AW_CL)ntw, 1);
 
         }
         awm->close_sub_menu();
@@ -1536,7 +1536,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             AWMIMT("props_www",      "Search world wide web (WWW)",                 "W","props_www.hlp",        AWM_ALL, AW_POPUP, (AW_CL)AWT_open_www_window,  (AW_CL)GLOBAL_gb_main );
             SEP________________________SEP();
             AWMIMT("enable_advices", "Reactivate advices",                          "R","advice.hlp", AWM_ALL, (AW_CB) AWT_reactivate_all_advices, 0, 0 );
-            AWMIMT("!toggle_expert", "Toggle expert mode",                          "T",0,            AWM_ALL, NT_toggle_expert_mode, 0, 0 );
+            AWMIMT("!toggle_expert", "Toggle expert mode",                          "x",0,            AWM_ALL, NT_toggle_expert_mode, 0, 0 );
             SEP________________________SEP();
             AWMIMT("save_props",     "Save properties (in ~/.arb_prop/ntree.arb)",  "S","savedef.hlp",AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
         }

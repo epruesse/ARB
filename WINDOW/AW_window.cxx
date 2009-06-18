@@ -2641,12 +2641,12 @@ int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active M
 
 #ifdef DEBUG
 
-#define MAX_DEEP_TO_TEST     10
-#define MAX_MENU_ITEMS_TO_TEST   50
+#define MAX_DEEP_TO_TEST       10
+#define MAX_MENU_ITEMS_TO_TEST 50
 
 static char *TD_menu_name = 0;
-static char TD_mnemonics[MAX_DEEP_TO_TEST][MAX_MENU_ITEMS_TO_TEST];
-static int TD_topics[MAX_DEEP_TO_TEST];
+static char  TD_mnemonics[MAX_DEEP_TO_TEST][MAX_MENU_ITEMS_TO_TEST];
+static int   TD_topics[MAX_DEEP_TO_TEST];
 
 struct SearchPossibilities {
     char *menu_topic;
@@ -2736,8 +2736,7 @@ static void printPossibilities(int menu_deep) {
 
 static int menu_deep_check = 0;
 
-static void test_duplicate_mnemonics(int menu_deep, const char *topic_name,
-        const char *mnemonic) {
+static void test_duplicate_mnemonics(int menu_deep, const char *topic_name, const char *mnemonic) {
     if (mnemonic && mnemonic[0] != 0) {
         if (mnemonic[1]) { // longer than 1 char -> wrong
             fprintf(stderr, "Warning: Hotkey '%s' is too long; only 1 character allowed (%s|%s)\n", mnemonic, TD_menu_name, topic_name);
@@ -2746,8 +2745,10 @@ static void test_duplicate_mnemonics(int menu_deep, const char *topic_name,
             if (mnemonic[0]) {
                 fprintf(stderr, "Warning: Hotkey '%s' is useless for graphical menu entry (%s|%s)\n", mnemonic, TD_menu_name, topic_name);
             }
-        } else {
-            if (strchr(topic_name, mnemonic[0])) { // occurs in menu text
+        }
+        else {
+            // fprintf(stderr, "- menu_deep=%i, TD_menu_name='%s', topic_name='%s' mnemonic='%s'\n", menu_deep, TD_menu_name, topic_name, mnemonic);
+            if (strchr(topic_name, mnemonic[0])) {  // occurs in menu text
                 int topics = TD_topics[menu_deep];
                 int t;
                 char hotkey = toupper(mnemonic[0]); // store hotkeys case-less (case does not matter when pressing the hotkey)
@@ -2763,12 +2764,21 @@ static void test_duplicate_mnemonics(int menu_deep, const char *topic_name,
                 }
 
                 TD_topics[menu_deep] = topics+1;
-            } else {
+            }
+            else {
                 fprintf(stderr, "Warning: Hotkey '%c' is useless; does not occur in text (%s|%s)\n", mnemonic[0], TD_menu_name, topic_name);
                 addToPoss(menu_deep, topic_name);
             }
         }
     }
+#if defined(DEVEL_RALF)
+    else {
+        if (topic_name[0] != '#') { // not a graphical menu
+            fprintf(stderr, "Warning: Missing hotkey for (%s|%s)\n", TD_menu_name, topic_name);
+            addToPoss(menu_deep, topic_name);
+        }
+    }
+#endif // DEVEL_RALF
 }
 
 static void open_test_duplicate_mnemonics(int menu_deep, const char *sub_menu_name, const char *mnemonic) {
