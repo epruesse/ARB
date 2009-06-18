@@ -1534,7 +1534,7 @@ void GEN_create_genes_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE/*, A
 #endif // DEBUG
 
         if (for_ARB_NTREE) {
-            AWMIMT( "gene_map", "Gene Map", "", "gene_map.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_map_first, 0 /*(AW_CL)ntree_canvas*/); // initial gene map
+            AWMIMT( "gene_map", "Gene Map", "p", "gene_map.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_map_first, 0 /*(AW_CL)ntree_canvas*/); // initial gene map
             awm->insert_separator();
 
             GEN_create_gene_species_submenu(awm, true); // Gene-species
@@ -1543,8 +1543,8 @@ void GEN_create_genes_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE/*, A
             awm->insert_separator();
         }
 
-        AWMIMT("gene_info",   "Gene information", "", "gene_info.hlp",   AWM_ALL, AW_POPUP, (AW_CL)GEN_create_gene_window,       0);
-        AWMIMT("gene_search", "Search and Query", "", "gene_search.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_create_gene_query_window, 0);
+        AWMIMT("gene_info",   "Gene information", "i", "gene_info.hlp",   AWM_ALL, AW_POPUP, (AW_CL)GEN_create_gene_window,       0);
+        AWMIMT("gene_search", "Search and Query", "Q", "gene_search.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_create_gene_query_window, 0);
 
         GEN_create_mask_submenu(awm);
 

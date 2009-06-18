@@ -435,7 +435,7 @@ void NT_insert_mark_submenus(AW_window_menu_modes *awm, AWT_canvas *ntw, int ins
         nt_insert_mark_topics(awm, AWM_ALL, ntw, 0, 0);
         awm->insert_separator();
 
-        awm->insert_sub_menu("Complete sequences", "F");
+        awm->insert_sub_menu("Complete sequences", "o");
         nt_insert_mark_topics(awm, AWM_EXP, ntw, 4, "complete");
         awm->close_sub_menu();
 

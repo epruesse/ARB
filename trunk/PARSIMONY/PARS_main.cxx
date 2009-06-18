@@ -1346,7 +1346,7 @@ static void TEST_buildAndDumpChain(AW_window *, AWT_canvas *)
 
 static void init_TEST_menu(AW_window_menu_modes *awm,AWT_canvas *ntw)
 {
-    awm->create_menu("Test", "T", "",  AWM_ALL );
+    awm->create_menu("Test[debug]", "T", "",  AWM_ALL );
 
     awm->insert_menu_topic(0, "Test edges",         "T", "", AWM_ALL, (AW_CB)TEST_testWholeTree,     (AW_CL)ntw, 0);
     awm->insert_menu_topic(0, "Mix tree",           "M", "", AWM_ALL, (AW_CB)TEST_mixTree,           (AW_CL)ntw, 0);
@@ -1356,12 +1356,12 @@ static void init_TEST_menu(AW_window_menu_modes *awm,AWT_canvas *ntw)
     awm->insert_menu_topic(0, "Build & dump chain", "c", "", AWM_ALL, (AW_CB)TEST_buildAndDumpChain, (AW_CL)ntw, 0);
     awm->insert_separator();
     awm->insert_menu_topic(0, "Add marked species",          "A", "pa_quick.hlp", AWM_ALL, (AW_CB)NT_quick_add_test,  (AW_CL)ntw, 0);
-    awm->insert_menu_topic(0, "Add marked species + NNI",    "i", "pa_add.hlp",   AWM_ALL, (AW_CB)NT_add_test,        (AW_CL)ntw, 0);
+    awm->insert_menu_topic(0, "Add marked species + NNI",    "N", "pa_add.hlp",   AWM_ALL, (AW_CB)NT_add_test,        (AW_CL)ntw, 0);
     awm->insert_menu_topic(0, "Remove & add marked species", "o", "pa_add.hlp",   AWM_ALL, (AW_CB)NT_rquick_add_test, (AW_CL)ntw, 0);
     awm->insert_menu_topic(0, "Remove & add marked + NNI",   "v", "pa_add.hlp",   AWM_ALL, (AW_CB)NT_radd_test,       (AW_CL)ntw, 0);
     awm->insert_separator();
-    awm->insert_menu_topic(0, "Add selected species",       "", "pa_quick_sel.hlp", AWM_ALL, (AW_CB)NT_quick_add_test, (AW_CL)ntw, 1);
-    awm->insert_menu_topic(0, "Add selected species + NNI", "", "pa_add_sel.hlp",   AWM_ALL, (AW_CB)NT_add_test,       (AW_CL)ntw, 1);
+    awm->insert_menu_topic(0, "Add selected species",       "l", "pa_quick_sel.hlp", AWM_ALL, (AW_CB)NT_quick_add_test, (AW_CL)ntw, 1);
+    awm->insert_menu_topic(0, "Add selected species + NNI", "I", "pa_add_sel.hlp",   AWM_ALL, (AW_CB)NT_add_test,       (AW_CL)ntw, 1);
 }
 #endif // TEST_FUNCTIONS
 

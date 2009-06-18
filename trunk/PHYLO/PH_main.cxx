@@ -462,23 +462,23 @@ AW_window *create_phyl_main_window(AW_root *aw_root,PH_root *ph_root,AWT_graphic
     
     // File menu
     awm->create_menu("File","F");
-    awm->insert_menu_topic("export_filter","Export Filter", "E",    "ph_export_markerline.hlp",AWM_ALL, (AW_CB)AW_POPUP,(AW_CL) PH_save_markerline, 0 );
-    awm->insert_menu_topic("export_freq","Export Frequencies",  "F",    "ph_export_markerline.hlp",AWM_ALL, (AW_CB)AW_POPUP,(AW_CL) PH_save_markerline, 1 );
-    awm->insert_menu_topic("quit","QUIT",       "q",    "quit.hlp", AWM_ALL,        (AW_CB)ph_exit ,(AW_CL)ph_root,0);
+    awm->insert_menu_topic("export_filter", "Export Filter",      "E", "ph_export_markerline.hlp", AWM_ALL, (AW_CB)AW_POPUP, (AW_CL)PH_save_markerline, 0);
+    awm->insert_menu_topic("export_freq",   "Export Frequencies", "F", "ph_export_markerline.hlp", AWM_ALL, (AW_CB)AW_POPUP, (AW_CL)PH_save_markerline, 1);
+    awm->insert_menu_topic("quit",          "Quit",               "Q", "quit.hlp",                 AWM_ALL, (AW_CB)ph_exit,  (AW_CL)ph_root,            0);
 
     // Calculate menu
     awm->create_menu("Calculate","C" );
-    awm->insert_menu_topic("calc_column_filter",    "Column Filter",    "F","no help",AWM_ALL,(AW_CB2)ph_view_filter_cb,(AW_CL) 0,(AW_CL) 0);
+    awm->insert_menu_topic("calc_column_filter", "Column Filter", "F", "no help", AWM_ALL, (AW_CB2)ph_view_filter_cb, (AW_CL)0, (AW_CL)0);
 
     // Config menu
     awm->create_menu("Config","o");
-    awm->insert_menu_topic("config_column_filter","Column Filter",  "F","no help",  AWM_ALL,    AW_POPUP,(AW_CL)PH_create_filter_window,0);
+    awm->insert_menu_topic("config_column_filter", "Column Filter", "F", "no help", AWM_ALL, AW_POPUP, (AW_CL)PH_create_filter_window, 0);
 
     // Properties menu
     awm->create_menu("Properties","P");
-    awm->insert_menu_topic("props_menu",    "Menu: Colors and Fonts ...",   "M","props_frame.hlp",  AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window, 0 );
-    awm->insert_menu_topic("props_data",    "Data: Colors and Fonts ...",   "D","ph_props_data.hlp",AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)gcmiddle );
-    awm->insert_menu_topic("save_props",    "Save Properties (in ~/.arb_prop/phylo.arb)","S","savedef.hlp",AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
+    awm->insert_menu_topic("props_menu", "Menu: Colors and Fonts ...",                 "M", "props_frame.hlp",   AWM_ALL, AW_POPUP,(AW_CL)AW_preset_window,    0)     ;
+    awm->insert_menu_topic("props_data", "Data: Colors and Fonts ...",                 "D", "ph_props_data.hlp", AWM_ALL, AW_POPUP,(AW_CL)AW_create_gc_window, (AW_CL)gcmiddle );
+    awm->insert_menu_topic("save_props", "Save Properties (in ~/.arb_prop/phylo.arb)", "S", "savedef.hlp",       AWM_ALL,          (AW_CB)AW_save_defaults,    0, 0)  ;
 
 
     // set window areas
@@ -498,10 +498,10 @@ AW_window *create_phyl_main_window(AW_root *aw_root,PH_root *ph_root,AWT_graphic
 
     awm->set_bottom_area_height( 120 );
 
-    awm->set_expose_callback (AW_MIDDLE_AREA,   expose_callb,   (AW_CL)awm,0);
-    awm->set_resize_callback (AW_MIDDLE_AREA,   resize_callb,   (AW_CL)awm,0);
-    awm->set_expose_callback (AW_BOTTOM_AREA,   display_status, (AW_CL)aw_root,0);
-    awm->set_resize_callback (AW_BOTTOM_AREA,   display_status, (AW_CL)aw_root,0);
+    awm->set_expose_callback(AW_MIDDLE_AREA, expose_callb,   (AW_CL)awm,     0);
+    awm->set_resize_callback(AW_MIDDLE_AREA, resize_callb,   (AW_CL)awm,     0);
+    awm->set_expose_callback(AW_BOTTOM_AREA, display_status, (AW_CL)aw_root, 0);
+    awm->set_resize_callback(AW_BOTTOM_AREA, display_status, (AW_CL)aw_root, 0);
 
     return (AW_window *)awm;
 }
