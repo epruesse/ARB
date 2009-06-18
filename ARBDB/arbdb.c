@@ -1011,11 +1011,16 @@ int GB_get_my_security(GBDATA *gbd)
 
 GB_ERROR gb_security_error(GBDATA *gbd){
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    return GB_export_error("Security Error: You tried to change an entry '%s' with security level %i\n"
-                           "    and your current security level is %i",
-                           GB_read_key_pntr(gbd),
-                           GB_GET_SECURITY_WRITE(gbd),
-                           Main->security_level);
+    const char *error  = GB_export_error("Protection: Attempt to change a level-%i-'%s'-entry, \n"
+                                         "but your current security level is only %i",
+                                         GB_GET_SECURITY_WRITE(gbd),
+                                         GB_read_key_pntr(gbd),
+                                         Main->security_level);
+
+#if defined(DEBUG)
+    fprintf(stderr, "%s\n", error);
+#endif /* DEBUG */
+    return error;
 }
 
 GB_ERROR GB_write_security_write(GBDATA *gbd,unsigned long level)
