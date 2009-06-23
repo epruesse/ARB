@@ -62,26 +62,17 @@ NOTES		Following file formats currently can be detected and loaded:
 		'ARB_INTRO <MERGE TWO ARB DATABASES>' tool.
 
 		For importing other formats such as PHYLIP or PAUP into an
-		existing ARB database use the 'Import Foreign Formate (using
-		GDE, Readseq)' function accessible via the 'File' menu of the
-		'ARB_NT' main menu.
+		existing ARB database use the 'Import sequences using Readseq'
+                function accessible via the 'File' menu of the 'ARB_NT' main menu.
+                See LINK{agde_readseq.hlp}.
 
 		If 'AUTO DETECT' does not find any format, selecting a format
-		by hand (except the universal format) will not help you.
+		by hand most likely wont help you (exception: universal format).
 
-SECTION READSEQ
-
-                Alternatively 'readseq' can be used to import sequences.
-                It's also located in 'ARB_NT/File/Import' menu.
-                See LINK{agde_readseq.hlp}
-
-
-
-WARNINGS	!!! Using 'AUTO DETECT', check whether the format is detected
-		correctly. RDP files may be identified as GenBank. In this case
+WARNINGS	When using 'AUTO DETECT', check if the correct format is detected.
+		RDP files may for instance be identified as GenBank. In such case
 		choose '.../rdp.ift' manually.
 
-BUGS		'AUTO DETECT' look for certain key-words in the files. If it can
-		not find this words, it does not accept the file, even if the
-		file has the correct format. This is especially true for the
-		gcg format.
+BUGS		'AUTO DETECT' looks for certain key-words in the files. If it can't
+		find these words, it does not accept the file, even if the file has
+                the correct format. This is especially true for the gcg format.

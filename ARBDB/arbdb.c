@@ -1390,8 +1390,16 @@ GB_ERROR gb_delete_force(GBDATA *source)    /* delete always */
 /********************************************************************************************
                     Copy Data
 ********************************************************************************************/
-GB_ERROR GB_copy(GBDATA *dest, GBDATA *source)
-{
+
+#if defined(DEVEL_RALF)
+#warning replace GB_copy with GB_copy_with_protection after release 
+#endif /* DEVEL_RALF */
+
+GB_ERROR GB_copy(GBDATA *dest, GBDATA *source) {
+    return GB_copy_with_protection(dest, source, GB_FALSE);
+}
+
+GB_ERROR GB_copy_with_protection(GBDATA *dest, GBDATA *source, GB_BOOL copy_all_protections) {
     GB_TYPES type;
     GB_ERROR error = 0;
     GBDATA *gb_p;
@@ -1466,7 +1474,7 @@ GB_ERROR GB_copy(GBDATA *dest, GBDATA *source)
                 }
 
                 if (!gb_d) error = GB_await_error();
-                else error       = GB_copy(gb_d, gb_p);
+                else error       = GB_copy_with_protection(gb_d, gb_p, copy_all_protections);
                 
                 if (error) break;
             }
@@ -1480,7 +1488,13 @@ GB_ERROR GB_copy(GBDATA *dest, GBDATA *source)
     if (error) return error;
 
     gb_touch_entry(dest,gb_changed);
-    dest->flags.security_read   = source->flags.security_read;
+
+    dest->flags.security_read = source->flags.security_read;
+    if (copy_all_protections == GB_TRUE) {
+        dest->flags.security_write  = source->flags.security_write;
+        dest->flags.security_delete = source->flags.security_delete;
+    }
+
     return 0;
 }
 

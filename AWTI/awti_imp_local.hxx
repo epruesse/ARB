@@ -60,7 +60,7 @@ struct input_format_struct {
     ~input_format_struct(void);
 };
 
-extern struct awtcig_struct {
+struct awtcig_struct {
     struct input_format_struct  *ifo; // main input format
     struct input_format_struct  *ifo2; // symlink to input format
     GBDATA                      *gb_main; // import database
@@ -71,5 +71,5 @@ extern struct awtcig_struct {
     FILE                        *in;
     bool                         doExit; // whether import window 'close' does exit
     GBDATA                      *gb_other_main; // main DB 
-} awtcig;
+};
 

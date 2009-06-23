@@ -28,7 +28,7 @@
 
 using namespace std;
 
-struct awtcig_struct awtcig;
+static awtcig_struct awtcig;
 #define MAX_COMMENT_LINES 2000
 
 // -------------------------------------------------------------------
@@ -686,7 +686,7 @@ static string expandSetVariables(const SetVariables& variables, const string& so
     return dest;
 }
 
-GB_ERROR awtc_read_data(char *ali_name)
+GB_ERROR awtc_read_data(char *ali_name, int security_write)
 {
     char num[6];
     char text[100];
@@ -852,7 +852,7 @@ GB_ERROR awtc_read_data(char *ali_name)
             }
             sequence = GBS_strclose(strstruct);
 
-            GBDATA *gb_data = GBT_add_data(gb_species,ali_name,"data", GB_STRING);
+            GBDATA *gb_data = GBT_create_sequence_data(gb_species, ali_name, "data", GB_STRING, security_write);
             if (ifo->sequencesrt) {
                 char *h = GBS_string_eval(sequence,ifo->sequencesrt,gb_species);
                 if (!h) return GB_await_error();
@@ -867,7 +867,6 @@ GB_ERROR awtc_read_data(char *ali_name)
             }
 
             GB_write_string(gb_data,sequence);
-            GB_write_security_write(gb_data,4);
 
             GBDATA *gb_acc = GB_search(gb_species,"acc",GB_FIND);
             if (!gb_acc && ifo->autocreateacc) {
@@ -924,6 +923,7 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
 
     error = GBT_check_alignment_name(ali_name);
 
+    int ali_protection = awr->awar(AWAR_ALI_PROTECTION)->read_int();
     if (!error) {
         char *ali_type;
         ali_type = awr->awar(AWAR_ALI_TYPE)->read_string();
@@ -932,7 +932,6 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
             error = "You must set the alignment type to dna when importing genom sequences.";
         }
         else {
-            int ali_protection = awr->awar(AWAR_ALI_PROTECTION)->read_int();
             GBT_create_alignment(GB_MAIN,ali_name,2000,0,ali_protection,ali_type);
         }
         free(ali_type);
@@ -1054,7 +1053,7 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
                 aw_openstatus("Reading input files");
                 status_open = true;
                 
-                error = awtc_read_data(ali_name);
+                error = awtc_read_data(ali_name, ali_protection);
 
                 if (error) {
                     error = GBS_global_string("Error: %s reading file %s", error, awtcig.current_file[-1]);
