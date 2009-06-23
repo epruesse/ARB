@@ -6,7 +6,8 @@
 #if defined(DEBUG)
 #define NAME_SERVER_TIMEOUT (1*60) // 1 minute (for debugging)
 #else
-#define NAME_SERVER_TIMEOUT (15*60) // 15 minutes
+// #define NAME_SERVER_TIMEOUT (15*60) // 15 minutes
+#define NAME_SERVER_TIMEOUT (2*60) // 2 minutes (see http://bugs.arb-home.de/ticket/192 why)
 #endif // DEBUG
 
 // Sleeptime of nameserver in seconds
