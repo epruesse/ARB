@@ -565,14 +565,10 @@ GB_ERROR GBT_rename_alignment(GBDATA *gbMain, const char *source, const char *de
 /*      alignment related item functions       */
 
 
-#if defined(DEVEL_RALF)
-#warning GBT_add_data is weird: name sucks and why do anything special for GB_STRING? \
-    // better replace by GBT_ali_container(gb_spec, ali_name) and then use normal functions (GB_search or whatever) 
-#endif /* DEVEL_RALF */
-
-GBDATA *GBT_add_data(GBDATA *species,const char *ali_name, const char *key, GB_TYPES type)
-{
-    /* the same as GB_search(species, 'ali_name/key', GB_CREATE) */
+GBDATA *GBT_add_data(GBDATA *species,const char *ali_name, const char *key, GB_TYPES type) {
+    /* goes to header: __ATTR__DEPRECATED */
+    /* replace this function by GBT_create_sequence_data 
+     * the same as GB_search(species, 'ali_name/key', GB_CREATE) */
     GBDATA *gb_gb;
     GBDATA *gb_data;
     if (GB_check_key(ali_name)) {
@@ -593,6 +589,18 @@ GBDATA *GBT_add_data(GBDATA *species,const char *ali_name, const char *key, GB_T
     }
     else{
         gb_data = GB_search(gb_gb, key, type);
+    }
+    return gb_data;
+}
+
+NOT4PERL GBDATA *GBT_create_sequence_data(GBDATA *species,const char *ali_name, const char *key, GB_TYPES type, int security_write) {
+    GBDATA *gb_data = GBT_add_data(species, ali_name, key, type);
+    if (gb_data) {
+        GB_ERROR error = GB_write_security_write(gb_data, security_write);
+        if (error) {
+            GB_export_error(error);
+            gb_data = 0;
+        }
     }
     return gb_data;
 }

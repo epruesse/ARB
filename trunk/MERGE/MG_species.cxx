@@ -1158,7 +1158,7 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
             D_species             = GB_create_container(D_species_data,"species");
             if (!D_species) error = GB_await_error();
             else {
-                error             = GB_copy(D_species, M_species);
+                error             = GB_copy_with_protection(D_species, M_species, GB_TRUE);
                 if (!error) error = GB_write_flag(D_species,1); // mark species
                 if (!error) error = GB_write_usr_private(D_species,255); // put in hitlist
                 if (!error) error = GBT_write_string(D_species, "name", m_name);

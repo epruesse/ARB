@@ -192,6 +192,7 @@ GBDATA *GB_create P_((GBDATA *father, const char *key, GB_TYPES type));
 GBDATA *GB_create_container P_((GBDATA *father, const char *key));
 GB_ERROR GB_delete P_((GBDATA *source));
 GB_ERROR GB_copy P_((GBDATA *dest, GBDATA *source));
+GB_ERROR GB_copy_with_protection P_((GBDATA *dest, GBDATA *source, GB_BOOL copy_all_protections));
 char *GB_get_subfields P_((GBDATA *gbd));
 GB_ERROR GB_set_compression P_((GBDATA *gb_main, GB_COMPRESSION_MASK disable_compression));
 GB_ERROR GB_set_temporary P_((GBDATA *gbd));
