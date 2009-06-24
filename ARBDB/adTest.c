@@ -176,15 +176,14 @@ const char *GB_get_db_path(GBDATA *gbd) {
 
     if (gb_father) {
         char *father_path = strdup(GB_get_db_path(gb_father));
-        int   key_quark   = GB_KEY_QUARK(gbd);
 
         static char *result; // careful! used recursively
-        freeset(result, GBS_global_string_copy("%s/%s", father_path, key_quark ? GB_KEY(gbd) : "<illegal quark=0>"));
+        freeset(result, GBS_global_string_copy("%s/%s", father_path, GB_KEY(gbd)));
         free(father_path);
         
         return result;
     }
-    return "ROOT";
+    return "";
 }
 
 void GB_dump_db_path(GBDATA *gbd) {
