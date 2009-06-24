@@ -1181,6 +1181,7 @@ long gb_read_bin(FILE *in,GBCONTAINER *gbd, int diff_file_allowed)
                     GB_commit_transaction((GBDATA*)gbd);
 
                     ad_assert(newGbd->main_idx == new_idx);
+                    ad_assert((new_idx % GB_MAIN_ARRAY_SIZE) == new_idx);
 
                     gb_main_array[new_idx] = Main;
                     Main->data = newGbd;
@@ -1283,6 +1284,8 @@ GB_MAIN_IDX gb_make_main_idx(GB_MAIN_TYPE *Main)
         gb_next_main_idx_for_mapfile = 0;
     }
 
+    ad_assert((idx%GB_MAIN_ARRAY_SIZE) == idx);
+    
     gb_main_array[idx] = Main;
 
     return idx;

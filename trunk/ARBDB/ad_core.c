@@ -657,12 +657,13 @@ void gb_write_index_key(GBCONTAINER *father, long index, GBQUARK new_index) {
 }
 
 void gb_write_key(GBDATA *gbd,const char *s) {
-    GBQUARK       new_index = 0;
-    GB_MAIN_TYPE *Main      = GB_MAIN(gbd);
+    GBQUARK new_index = 0;
 
-    if (s){
-        new_index = (int)GBS_read_hash(Main->key_2_index_hash,s);
-        if (!new_index) {   /* create new index */
+    if (s) {
+        GB_MAIN_TYPE *Main = GB_MAIN(gbd);
+        new_index          = (int)GBS_read_hash(Main->key_2_index_hash,s);
+        
+        if (!new_index) {                           /* create new index */
             new_index = (int)gb_create_key(Main,s,GB_TRUE);
         }
     }
