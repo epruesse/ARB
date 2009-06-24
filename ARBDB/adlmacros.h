@@ -147,7 +147,8 @@ inline GBDATA *EXISTING_GBCONTAINER_ELEM(GBCONTAINER *gbc,int idx)          { re
 inline GBDATA *GBCONTAINER_ELEM(GBCONTAINER *gbc,int idx)                   { if (idx<gbc->d.nheader) return EXISTING_GBCONTAINER_ELEM(gbc, idx); return (GBDATA*)0; }
 inline void SET_GBCONTAINER_ELEM(GBCONTAINER *gbc, int idx, GBDATA *gbd)    { SET_GB_HEADER_LIST_GBD(GB_DATA_LIST_HEADER(gbc->d)[idx], gbd); }
 
-inline GB_MAIN_TYPE *GBCONTAINER_MAIN(GBCONTAINER *gbc)                     { return gb_main_array[(gbc->main_idx) % GB_MAIN_ARRAY_SIZE]; }
+// inline GB_MAIN_TYPE *GBCONTAINER_MAIN(GBCONTAINER *gbc)                     { return gb_main_array[(gbc->main_idx) % GB_MAIN_ARRAY_SIZE]; }
+inline GB_MAIN_TYPE *GBCONTAINER_MAIN(GBCONTAINER *gbc)                     { return gb_main_array[gbc->main_idx]; }
 inline GB_MAIN_TYPE *GB_MAIN(GBDATA *gbd)                                   { return GBCONTAINER_MAIN(GB_FATHER(gbd)); }
 inline GB_MAIN_TYPE *GB_MAIN(GBCONTAINER *gbc)                              { return GBCONTAINER_MAIN(gbc); }
 
@@ -162,7 +163,8 @@ inline GB_MAIN_TYPE *GB_MAIN(GBCONTAINER *gbc)                              { re
 # define GBCONTAINER_ELEM(gbc,idx)          ((struct gb_data_base_type *)((idx)<(gbc)->d.nheader ? EXISTING_GBCONTAINER_ELEM(gbc, idx) : NULL))
 # define SET_GBCONTAINER_ELEM(gbc,idx,gbd)  SET_GB_HEADER_LIST_GBD(GB_DATA_LIST_HEADER((gbc)->d)[idx],gbd)
 
-# define GBCONTAINER_MAIN(gbc)              gb_main_array[((gbc)->main_idx) % GB_MAIN_ARRAY_SIZE]
+// # define GBCONTAINER_MAIN(gbc)              gb_main_array[((gbc)->main_idx) % GB_MAIN_ARRAY_SIZE]
+# define GBCONTAINER_MAIN(gbc)              gb_main_array[(gbc)->main_idx]
 # define GB_MAIN(gbd)                       GBCONTAINER_MAIN(GB_FATHER(gbd))
 
 #endif
