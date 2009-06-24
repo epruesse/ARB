@@ -387,7 +387,7 @@ void GB_close(GBDATA *gbd) {
         run_close_callbacks(gbd, Main->close_callbacks);
         Main->close_callbacks = 0;
 
-        gb_delete_entry(&gbd);
+        gb_delete_main_entry(&gbd);
 
         /* ARBDB applications using awars easily crash in gb_do_callback_list(),
          * if AWARs are still bound to elements in the closed database.
