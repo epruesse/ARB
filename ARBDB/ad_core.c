@@ -482,6 +482,35 @@ void gb_delete_entry(GBDATA **gbd_ptr) {
     *gbd_ptr = 0; // avoid further usage
 }
 
+void gb_delete_main_entry(GBDATA **gbd_ptr) {
+    GBDATA *gbd  = *gbd_ptr;
+    long    type = GB_TYPE(gbd);
+
+    ad_assert(type == GB_DB);
+    if (type == GB_DB) {
+        int          index;
+        int          pass;
+        GBDATA      *gbd2;
+        GBCONTAINER *gbc = ((GBCONTAINER *) gbd);
+
+        int sys_quark = GB_key_2_quark(gbd, GB_SYSTEM_FOLDER);
+
+        for (pass = 1; pass <= 2; pass++) {
+            for (index = 0; index < gbc->d.nheader; index++) {
+                if ((gbd2 = GBCONTAINER_ELEM(gbc,index)) != NULL) {
+                    if (pass == 2 || GB_KEY_QUARK(gbd2) != sys_quark) { // delay deletion of system folder to pass 2
+#if defined(DEBUG)
+                        fprintf(stderr, "Deleting root node '%s'\n", GB_get_db_path(gbd2));
+#endif /* DEBUG */
+                        gb_delete_entry(&gbd2);
+                    }
+                }
+            }
+        }
+        gb_delete_entry(gbd_ptr);
+    }
+}
+
 /********************************************************************************************
                     Data Storage
 ********************************************************************************************/

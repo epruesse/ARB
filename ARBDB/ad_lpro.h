@@ -74,6 +74,7 @@ GBCONTAINER *gb_make_pre_defined_container P_((GBCONTAINER *father, GBCONTAINER 
 GBCONTAINER *gb_make_container P_((GBCONTAINER *father, const char *key, long index_pos, GBQUARK keyq));
 void gb_pre_delete_entry P_((GBDATA *gbd));
 void gb_delete_entry P_((GBDATA **gbd_ptr));
+void gb_delete_main_entry P_((GBDATA **gbd_ptr));
 struct gb_transaction_save *gb_new_gb_transaction_save P_((GBDATA *gbd));
 void gb_add_ref_gb_transaction_save P_((struct gb_transaction_save *ts));
 void gb_del_ref_gb_transaction_save P_((struct gb_transaction_save *ts));
