@@ -90,7 +90,7 @@ GBDATA *GBT_expect_item_rel_item_data(GBDATA *gb_item_data, const char *id_field
     GBDATA *gb_found = GBT_find_item_rel_item_data(gb_item_data, id_field, id_value);
     if (!gb_found && !GB_have_error()) { // item simply not exists
         GBDATA     *gb_any   = GB_find(gb_item_data, id_field, down_2_level);
-        const char *itemname = gb_any ? GB_read_key_pntr(gb_any) : "<item>";
+        const char *itemname = gb_any ? GB_read_key_pntr(GB_get_father(gb_any)) : "<item>";
         GB_export_error("Could not find %s with %s '%s'", itemname, id_field, id_value);
     }
     return gb_found;

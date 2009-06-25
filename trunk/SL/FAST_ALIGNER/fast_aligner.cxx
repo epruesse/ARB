@@ -2239,106 +2239,112 @@ void AWTC_start_faligning(AW_window *aw, AW_CL cd2)
     if (root->awar(FA_AWAR_USE_ISLAND_HOPPING)->read_int()) {
         island_hopper = new IslandHopping();
         if (root->awar(FA_AWAR_USE_SECONDARY)->read_int()) {
-            island_hopper->set_helix(cd->helix_string);
-            if (cd->helix_string) aw_message("Warning: No HELIX found. Can't use to align..");
+            if (cd->helix_string) island_hopper->set_helix(cd->helix_string);
+            else error = "Warning: No HELIX found. Can't use secondary structure";
         }
 
-        island_hopper->set_parameters(root->awar(FA_AWAR_ESTIMATE_BASE_FREQ)->read_int(),
-                                      root->awar(FA_AWAR_BASE_FREQ_T)->read_float(),
-                                      root->awar(FA_AWAR_BASE_FREQ_C)->read_float(),
-                                      root->awar(FA_AWAR_BASE_FREQ_A)->read_float(),
-                                      root->awar(FA_AWAR_BASE_FREQ_C)->read_float(),
-                                      root->awar(FA_AWAR_SUBST_PARA_CT)->read_float(),
-                                      root->awar(FA_AWAR_SUBST_PARA_AT)->read_float(),
-                                      root->awar(FA_AWAR_SUBST_PARA_GT)->read_float(),
-                                      root->awar(FA_AWAR_SUBST_PARA_AC)->read_float(),
-                                      root->awar(FA_AWAR_SUBST_PARA_CG)->read_float(),
-                                      root->awar(FA_AWAR_SUBST_PARA_AG)->read_float(),
-                                      root->awar(FA_AWAR_EXPECTED_DISTANCE)->read_float(),
-                                      root->awar(FA_AWAR_STRUCTURE_SUPPLEMENT)->read_float(),
-                                      root->awar(FA_AWAR_GAP_A)->read_float(),
-                                      root->awar(FA_AWAR_GAP_B)->read_float(),
-                                      root->awar(FA_AWAR_GAP_C)->read_float(),
-                                      root->awar(FA_AWAR_THRESHOLD)->read_float()
-                                      );
+        if (!error) {
+            island_hopper->set_parameters(root->awar(FA_AWAR_ESTIMATE_BASE_FREQ)->read_int(),
+                                          root->awar(FA_AWAR_BASE_FREQ_T)->read_float(),
+                                          root->awar(FA_AWAR_BASE_FREQ_C)->read_float(),
+                                          root->awar(FA_AWAR_BASE_FREQ_A)->read_float(),
+                                          root->awar(FA_AWAR_BASE_FREQ_C)->read_float(),
+                                          root->awar(FA_AWAR_SUBST_PARA_CT)->read_float(),
+                                          root->awar(FA_AWAR_SUBST_PARA_AT)->read_float(),
+                                          root->awar(FA_AWAR_SUBST_PARA_GT)->read_float(),
+                                          root->awar(FA_AWAR_SUBST_PARA_AC)->read_float(),
+                                          root->awar(FA_AWAR_SUBST_PARA_CG)->read_float(),
+                                          root->awar(FA_AWAR_SUBST_PARA_AG)->read_float(),
+                                          root->awar(FA_AWAR_EXPECTED_DISTANCE)->read_float(),
+                                          root->awar(FA_AWAR_STRUCTURE_SUPPLEMENT)->read_float(),
+                                          root->awar(FA_AWAR_GAP_A)->read_float(),
+                                          root->awar(FA_AWAR_GAP_B)->read_float(),
+                                          root->awar(FA_AWAR_GAP_C)->read_float(),
+                                          root->awar(FA_AWAR_THRESHOLD)->read_float()
+                                          );
+        }
     }
 
     FA_alignTarget alignWhat = static_cast<FA_alignTarget>(root->awar(FA_AWAR_TO_ALIGN)->read_int());
-    switch (alignWhat) {
-        case FA_CURRENT: { // align current species
-            toalign = root->awar(AWAR_SPECIES_NAME)->read_string();
-            break;
+    if (!error) {
+        switch (alignWhat) {
+            case FA_CURRENT: { // align current species
+                toalign = root->awar(AWAR_SPECIES_NAME)->read_string();
+                break;
+            }
+            case FA_MARKED: { // align marked species
+                break;
+            }
+            case FA_SELECTED: { // align selected species
+                get_first_selected_species = cd->get_first_selected_species;
+                get_next_selected_species = cd->get_next_selected_species;
+                break;
+            }
+            default: {
+                awtc_assert(0);
+                break;
+            }
         }
-        case FA_MARKED: { // align marked species
-            break;
-        }
-        case FA_SELECTED: { // align selected species
-            get_first_selected_species = cd->get_first_selected_species;
-            get_next_selected_species = cd->get_next_selected_species;
-            break;
-        }
-        default: {
-            awtc_assert(0);
-            break;
+
+        switch (static_cast<FA_reference>(root->awar(FA_AWAR_REFERENCE)->read_int())) {
+            case FA_REF_EXPLICIT: // align against specified species
+
+                reference = root->awar(FA_AWAR_REFERENCE_NAME)->read_string();
+                break;
+
+            case FA_REF_CONSENSUS: // align against group consensus
+
+                if (cd->get_group_consensus) {
+                    get_consensus = 1;
+                }
+                else {
+                    error = "Can't get group consensus here.";
+                }
+                break;
+
+            case FA_REF_RELATIVES: // align against species searched via pt_server
+
+                pt_server_id = root->awar(AWAR_PT_SERVER)->read_int();
+                if (pt_server_id<0) {
+                    error = "No pt_server selected";
+                }
+                break;
+
+            default: awtc_assert(0);
+                break;
         }
     }
-
-    switch (static_cast<FA_reference>(root->awar(FA_AWAR_REFERENCE)->read_int())) {
-        case FA_REF_EXPLICIT: // align against specified species
-
-            reference = root->awar(FA_AWAR_REFERENCE_NAME)->read_string();
-            break;
-
-        case FA_REF_CONSENSUS: // align against group consensus
-
-            if (cd->get_group_consensus) {
-                get_consensus = 1;
-            }
-            else {
-                error = "Can't get group consensus here.";
-            }
-            break;
-
-        case FA_REF_RELATIVES: // align against species searched via pt_server
-
-            pt_server_id = root->awar(AWAR_PT_SERVER)->read_int();
-            if (pt_server_id<0) {
-                error = "No pt_server selected";
-            }
-            break;
-
-        default: awtc_assert(0);
-            break;
-    }
-
+    
     int firstColumn = 0;
     int lastColumn = -1;
 
-    switch (static_cast<FA_range>(root->awar(FA_AWAR_RANGE)->read_int())) {
-        case FA_WHOLE_SEQUENCE:
-            break;
-        case FA_AROUND_CURSOR: {
-            int curpos = root->awar(AWAR_CURSOR_POSITION_LOCAL)->read_int();
-            int size = root->awar(FA_AWAR_AROUND)->read_int();
+    if (!error) {
+        switch (static_cast<FA_range>(root->awar(FA_AWAR_RANGE)->read_int())) {
+            case FA_WHOLE_SEQUENCE:
+                break;
+            case FA_AROUND_CURSOR: {
+                int curpos = root->awar(AWAR_CURSOR_POSITION_LOCAL)->read_int();
+                int size = root->awar(FA_AWAR_AROUND)->read_int();
 
-            if ((curpos-size)>0) firstColumn = curpos-size;
-            lastColumn = curpos+size;
-            break;
-        }
-        case FA_SELECTED_RANGE: {
-            if (!cd->get_selected_range(&firstColumn, &lastColumn)) {
-                error = "There is no selected species!";
+                if ((curpos-size)>0) firstColumn = curpos-size;
+                lastColumn = curpos+size;
+                break;
             }
+            case FA_SELECTED_RANGE: {
+                if (!cd->get_selected_range(&firstColumn, &lastColumn)) {
+                    error = "There is no selected species!";
+                }
 #ifdef DEBUG
-            else {
-                printf("Selected range: %i .. %i\n", firstColumn, lastColumn);
-            }
+                else {
+                    printf("Selected range: %i .. %i\n", firstColumn, lastColumn);
+                }
 #endif
-            break;
+                break;
+            }
+            default: { awtc_assert(0); break; }
         }
-        default: { awtc_assert(0); break; }
     }
-
+    
     if (!error) {
         char *editor_alignment = 0;
         {

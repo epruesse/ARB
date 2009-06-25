@@ -1361,19 +1361,15 @@ void ED4_init_faligner_data(AWTC_faligner_cd *faligner_data) {
 
     if (alilen<=0) error = GB_await_error();
     else {
-        char   *helix_name       = GBT_get_default_helix(GLOBAL_gb_main);
-        GBDATA *gb_helix_con     = GBT_expect_SAI(GLOBAL_gb_main, helix_name);
-        if (!gb_helix_con) error = GB_await_error();
-        else {
-            GBDATA *gb_helix = GBT_read_sequence(gb_helix_con,alignment_name);
-            if (gb_helix) {
-                char *helix_string = GB_read_string(gb_helix);
-
-                if (!helix_string) error = GB_await_error();
-                else freeset(faligner_data->helix_string, helix_string);
-            }
+        char   *helix_string = 0;
+        char   *helix_name   = GBT_get_default_helix(GLOBAL_gb_main);
+        GBDATA *gb_helix_con = GBT_find_SAI(GLOBAL_gb_main, helix_name);
+        if (gb_helix_con) {
+            GBDATA *gb_helix = GBT_read_sequence(gb_helix_con, alignment_name);
+            if (gb_helix) helix_string = GB_read_string(gb_helix);
         }
         free(helix_name);
+        freeset(faligner_data->helix_string, helix_string);
     }
 
     free(alignment_name);
