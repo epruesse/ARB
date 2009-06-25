@@ -310,7 +310,7 @@ static void awt_create_selection_box_cb(void *dummy, struct adawcbstruct *cbs) {
     DuplicateLinkFilter  unDup;
     unDup.register_directory(fulldir);
 
-    bool is_wildcard     = strchr(name_only, '*');
+    bool is_wildcard = strchr(name_only, '*');
 
     if (cbs->show_dir) {
         if (is_wildcard) {
@@ -318,7 +318,7 @@ static void awt_create_selection_box_cb(void *dummy, struct adawcbstruct *cbs) {
                 cbs->aws->insert_selection( cbs->id, (char *)GBS_global_string("  ALL '%s' in '%s'", name_only, fulldir), name);
             }
             else {
-                cbs->aws->insert_selection( cbs->id, (char *)GBS_global_string("  ALL '%s' below '%s'", name_only, fulldir), name);
+                cbs->aws->insert_selection( cbs->id, (char *)GBS_global_string("  ALL '%s' in+below '%s'", name_only, fulldir), name);
             }
         }
         else {
@@ -356,25 +356,34 @@ static void awt_create_selection_box_cb(void *dummy, struct adawcbstruct *cbs) {
             show_soft_link(cbs->aws, cbs->id, "ARB_WORKDIR", unDup);
             show_soft_link(cbs->aws, cbs->id, "PT_SERVER_HOME", unDup);
 
-            cbs->aws->insert_selection( cbs->id, "! \' Sub-directories shown\'", GBS_global_string("%s?hide?", name));
+            cbs->aws->insert_selection( cbs->id, "! \' Sub-directories (shown)\'", GBS_global_string("%s?hide?", name));
         }
         else {
-            cbs->aws->insert_selection( cbs->id, "! \' Sub-directories hidden\'", GBS_global_string("%s?show?", name));
+            cbs->aws->insert_selection( cbs->id, "! \' Sub-directories (hidden)\'", GBS_global_string("%s?show?", name));
         }
     }
 
     cbs->aws->insert_selection( cbs->id, GBS_global_string("! \' Sort order\'     (%s)", DIR_sort_order_name[DIR_sort_order]),
                                 GBS_global_string("%s?sort?", name));
 
-    cbs->aws->insert_selection( cbs->id, GBS_global_string("! \' Dot files/dirs\' (%s)", DIR_show_hidden ? "shown" : "hidden"),
-                                GBS_global_string("%s?dot?", name));
+    if (cbs->show_dir) {
+        cbs->aws->insert_selection( cbs->id, GBS_global_string("! \' Dot files/dirs\' (%s)", DIR_show_hidden ? "shown" : "hidden"),
+                                    GBS_global_string("%s?dot?", name));
+    }
 
     if (is_wildcard) {
         if (cbs->leave_wildcards) {
             awt_fill_selection_box_recursive(fulldir, strlen(fulldir)+1, name_only, false, cbs->show_dir && !DIR_subdirs_hidden, DIR_show_hidden, cbs->aws, cbs->id);
         }
         else {
-            awt_fill_selection_box_recursive(fulldir, strlen(fulldir)+1, name_only, true, false, DIR_show_hidden, cbs->aws, cbs->id);
+            if (cbs->show_dir) { // recursive wildcarded search
+                awt_fill_selection_box_recursive(fulldir, strlen(fulldir)+1, name_only, true, false, DIR_show_hidden, cbs->aws, cbs->id);
+            }
+            else {
+                char *mask = GBS_global_string_copy("%s*%s", name_only, filter);
+                awt_fill_selection_box_recursive(fulldir, strlen(fulldir)+1, mask, false, false, DIR_show_hidden, cbs->aws, cbs->id);
+                free(mask);
+            }
         }
     }
     else {
