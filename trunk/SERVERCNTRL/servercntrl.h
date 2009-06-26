@@ -20,6 +20,7 @@ struct arb_params {
     char *alignment;
     char *default_file;
     char *field;
+    const char *field_default;
 
     int  read_only;
 

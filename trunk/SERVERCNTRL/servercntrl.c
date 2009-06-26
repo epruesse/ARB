@@ -21,6 +21,7 @@
 /* AISC_MKPT_PROMOTE:    char *alignment;*/
 /* AISC_MKPT_PROMOTE:    char *default_file;*/
 /* AISC_MKPT_PROMOTE:    char *field;*/
+/* AISC_MKPT_PROMOTE:    const char *field_default;*/
 /* AISC_MKPT_PROMOTE:*/
 /* AISC_MKPT_PROMOTE:    int  read_only;*/
 /* AISC_MKPT_PROMOTE:*/
@@ -290,7 +291,7 @@ void arb_print_server_params() {
            "    -e<name>        sets extended name to '<name>'\n"
            "    -a<ali>         sets alignment to '<ali>'\n"
            "    -d<file>        sets default file to '<file>'\n"
-           "    -f<field>       sets DB field to '<field>'\n"
+           "    -f<field>=<def> sets DB field to '<field>' (using <def> as default)\n"
            "    -r              read-only mode\n"
            "    -D<server>      sets DB-server to '<server>'  [default = ':']\n"
            "    -J<server>      sets job-server to '<server>' [default = 'ARB_JOB_SERVER']\n"
@@ -318,7 +319,20 @@ struct arb_params *arb_trace_argv(int *argc, char **argv)
                 case 'e': erg->extended_name = strdup(argv[s]+2);break;
                 case 'a': erg->alignment     = strdup(argv[s]+2);break;
                 case 'd': erg->default_file  = strdup(argv[s]+2);break;
-                case 'f': erg->field         = strdup(argv[s]+2);break;
+                case 'f': {
+                    char *eq;
+                    erg->field = strdup(argv[s]+2);
+
+                    eq = strchr(erg->field, '=');
+                    if (eq) {
+                        erg->field_default = eq+1;
+                        eq[0]              = 0;
+                    }
+                    else {
+                        erg->field_default = 0; // this is illegal - error handling done in caller
+                    }
+                    break;
+                }
                 case 'r': erg->read_only     = 1;break;
                 case 'J': erg->job_server    = strdup(argv[s]+2);break;
                 case 'D': erg->db_server     = strdup(argv[s]+2);break;
