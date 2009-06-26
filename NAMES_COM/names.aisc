@@ -81,19 +81,20 @@ AN_local, LOCAL,    2,  (~local communication buffer~), {
 # single functions: MAIN_SHUTDOWN MAIN_SAVEALL
 
 AN_main, MAIN, 1, (~Die globalen Daten~), SAVEDIRECTION VERTICAL, {
-    @TYPE,          @IDENT,          @REF,  @ACC,   @SAVE,  @KEY,       @KEYC,  @INIT,  @DOCU;
-    t_key,          key,             t,     n,      ,       ,           ,       ,       (~Der KEY~);
-    AN_local,       loc_st,          d,     ,       ,       LOCAL,      10,     ,       (~Die Parameter~);
-    AN_shorts,      shorts1,         d,     r,      1,      SHORTS1,    12,     ,       (~ the unique letters for a word ~);
-    AN_shorts,      names,           d,     r,      1,      NAMES,      16,     ,       (~ the unique names first*second*S*accession ~);
-    AN_revers,      revers,          d,     r,      ,       ,           ,       ,       (~ the revers unique names first*second*S*accession ~);
-    int,            touched,         t,     r,      ,       TOUCHED,    19,     0,      (~ Does the database need to be saved ~);
-    aisc_string,    server_shutdown, %,     w,      ,       SHUTDOWN,   20,     ,       (~SHUTDOWN Command~);
-    int,            server_save,     %,     w,      ,       SAVEALL,    21,     ,       (~SAVE everything~);
-    aisc_string,    server_file,     t,     r,      ,       FILENAME,   22,     ,       (~The filename of the keys~);
-    int,            server_filedate, t,     ,       ,       FILEDATE,   23,     ,       (~The filedate of server_file~);
-    int,            dbversion,       t,     ,       1,      DBVERSION,  24,     4,      (~Nameserver database version ~);
-    aisc_string,    add_field,       t,     r,      1,      ADD_FIELD,  25,     ,       (~additional field used for identification ~);
-    long,           prefix_hash,     t,     ,       ,       ,           ,       0,      (~prefix hash table~)
+    @TYPE,          @IDENT,            @REF,  @ACC,   @SAVE,  @KEY,       @KEYC,  @INIT,  @DOCU;
+    t_key,          key,               t,     n,      ,       ,           ,       ,       (~Der KEY~);
+    AN_local,       loc_st,            d,     ,       ,       LOCAL,      10,     ,       (~Die Parameter~);
+    AN_shorts,      shorts1,           d,     r,      1,      SHORTS1,    12,     ,       (~ the unique letters for a word ~);
+    AN_shorts,      names,             d,     r,      1,      NAMES,      16,     ,       (~ the unique names first*second*S*accession ~);
+    AN_revers,      revers,            d,     r,      ,       ,           ,       ,       (~ the revers unique names first*second*S*accession ~);
+    int,            touched,           t,     r,      ,       TOUCHED,    19,     0,      (~ Does the database need to be saved ~);
+    aisc_string,    server_shutdown,   %,     w,      ,       SHUTDOWN,   20,     ,       (~SHUTDOWN Command~);
+    int,            server_save,       %,     w,      ,       SAVEALL,    21,     ,       (~SAVE everything~);
+    aisc_string,    server_file,       t,     r,      ,       FILENAME,   22,     ,       (~The filename of the keys~);
+    int,            server_filedate,   t,     ,       ,       FILEDATE,   23,     ,       (~The filedate of server_file~);
+    int,            dbversion,         t,     ,       1,      DBVERSION,  24,     4,      (~Nameserver database version ~);
+    aisc_string,    add_field,         t,     r,      1,      ADD_FIELD,  25,     ,       (~additional field used for identification ~);
+    aisc_string,    add_field_default, t,     r,      1,      AF_DEFAULT, 26,     ,       (~default value for add_field, if field is missing ~);
+    long,           prefix_hash,       t,     ,       ,       ,           ,       0,      (~prefix hash table~)
     };
 };

@@ -495,7 +495,7 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status, bool *isWarningPtr)
                 char *name      = gb_name      ? GB_read_string   (gb_name)     : strdup("");
                 char *full_name = gb_full_name ? GB_read_string   (gb_full_name): strdup("");
                 char *acc       = gb_acc       ? GB_read_string   (gb_acc)      : strdup("");
-                char *addid     = gb_addfield  ? GB_read_as_string(gb_addfield) : strdup("");
+                char *addid     = gb_addfield  ? GB_read_as_string(gb_addfield) : strdup(""); // empty value will be set to default by nameserver 
 
                 char *shrt = 0;
 

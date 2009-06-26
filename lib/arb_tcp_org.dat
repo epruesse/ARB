@@ -52,9 +52,9 @@ ARB_DB_SERVER           :/tmp/arb_db_$(USER)_$(ARB_PID)
 # The defined nameserver 'ARB_NAME_SERVER_START' uses the fields 'acc' and 'start'.
 
 ARB_NAME_SERVER                 localhost:3020          arb_name_server -d$(ARBHOME)/lib/nas/names.dat
-ARB_NAME_SERVER_START           localhost:3021          arb_name_server -d$(ARBHOME)/lib/nas/names_start.dat -fstart
-# ARB_NAME_SERVER_STRAIN          localhost:3022          arb_name_server -d$(ARBHOME)/lib/nas/names_strain.dat -fstrain
-# ARB_NAME_SERVER_POS_START       localhost:3023          arb_name_server -d$(ARBHOME)/lib/nas/names_pos_start.dat -fpos_start
+ARB_NAME_SERVER_START           localhost:3021          arb_name_server -d$(ARBHOME)/lib/nas/names_start.dat -fstart=1
+# ARB_NAME_SERVER_STRAIN          localhost:3022          arb_name_server -d$(ARBHOME)/lib/nas/names_strain.dat -fstrain=
+# ARB_NAME_SERVER_POS_START       localhost:3023          arb_name_server -d$(ARBHOME)/lib/nas/names_pos_start.dat -fpos_start=1
 
 #***********    PT_SERVERS The server should run on the nfs server ******************
 #*******     You may add new pt_servers here: (numbers must be continued)   *********

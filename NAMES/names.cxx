@@ -40,7 +40,7 @@ inline void aisc_link(dll_public *dll, AN_revers *revers)   { aisc_link(reinterp
 struct AN_gl_struct  AN_global;
 AN_main             *aisc_main; /* muss so heissen */
 
-const int SERVER_VERSION = 4;
+const int SERVER_VERSION = 5;
 
 // --------------------------------------------------------------------------------
 
@@ -149,7 +149,7 @@ static void an_add_short(AN_local *locs, const char *new_name,
 {
     AN_shorts *an_shorts;
     AN_revers *an_revers;
-    char        *full_name;
+    char      *full_name;
     locs = locs;
 
     if (strlen(parsed_sym)){
@@ -585,10 +585,12 @@ NameInformation::NameInformation(AN_local *locs) {
     parsed_sym = GBS_string_eval(full_name, "\t= :* * *sym*=S",0);
     if (strlen(parsed_sym)>1) freedup(parsed_sym, "");
 
-    parsed_acc      = make_alnum(locs->acc);
-    parsed_add_id   = make_alnum(locs->add_id);
-    first_name      = GBS_string_eval(parsed_name,"* *=*1",0);
-    rest_of_name    = make_alnum(parsed_name+strlen(first_name));
+    const char *add_id = locs->add_id[0] ? locs->add_id : aisc_main->add_field_default;
+
+    parsed_acc    = make_alnum(locs->acc);
+    parsed_add_id = make_alnum(add_id);
+    first_name    = GBS_string_eval(parsed_name,"* *=*1",0);
+    rest_of_name  = make_alnum(parsed_name+strlen(first_name));
 
     freeset(first_name, make_alnum(first_name));
 
@@ -1034,6 +1036,36 @@ static void check_for_illegal_chars(AN_main *main) {
     }
 }
 
+static void set_empty_addids(AN_main *main) {
+    // fill all empty add.ids with default value
+
+    if (main->add_field_default[0]) {
+        // if we use a non-empty default, old entries need to be changed
+        // (empty default was old behavior)
+
+        long count = 0;
+        for (AN_shorts *shrt = main->names; shrt; ) {
+            AN_shorts *next  = shrt->next;
+            if (!shrt->add_id[0]) {
+                aisc_unlink((struct_dllheader_ext*)shrt);
+
+                freedup(shrt->add_id, main->add_field_default);
+                gb_assert(strchr(shrt->mh.ident, 0)[-1] == '*');
+                freeset(shrt->mh.ident, GBS_global_string_copy("%s%s", shrt->mh.ident, main->add_field_default));
+            
+                aisc_link(&main->pnames, shrt);
+
+                count++;
+            }
+            shrt = next;
+        }
+        if (count>0) {
+            printf("  Filled in default value '%s' for %li names\n", main->add_field_default, count);
+            main->touched = 1;
+        }
+    }
+}
+
 static GB_ERROR server_load(AN_main *main)
 {
     FILE      *file;
@@ -1075,7 +1107,7 @@ static GB_ERROR server_load(AN_main *main)
             if (namesDBversion<4) {
                 fprintf(stderr, "* Checking for case-errors\n");
                 check_for_case_error(main);
-                
+
                 fprintf(stderr, "* Checking for illegal characters\n");
                 check_for_illegal_chars(main);
             }
@@ -1084,9 +1116,14 @@ static GB_ERROR server_load(AN_main *main)
             main->dbversion = SERVER_VERSION;
             main->touched   = 1; // force save
         }
-
-        fprintf(stderr, "ARB_name_server is up.\n");
-        main->server_filedate = GB_time_of_file(main->server_file);
+        if (namesDBversion > SERVER_VERSION) {
+            error = GBS_global_string("NAMEDB is from version %i, but your nameserver can only handle version %i",
+                                      namesDBversion, SERVER_VERSION);
+        }
+        else {
+            fprintf(stderr, "ARB_name_server is up.\n");
+            main->server_filedate = GB_time_of_file(main->server_file);
+        }
     }
     else {
         main->server_filedate = -1;
@@ -1205,23 +1242,58 @@ int main(int argc,char **argv)
     GB_ERROR error = server_load(aisc_main);
 
     if (!error) {
-        const char *field     = params->field;
-        if (field == 0) field = ""; // default to no field
-        
-        if (aisc_main->add_field == 0) {
-            printf("* add. field not defined yet -> using '%s'\n", field);
-            aisc_main->add_field = strdup(field);
-            aisc_main->touched   = 1;
+        const char *field         = params->field;
+        const char *field_default = params->field_default;
+
+        if (field == 0) {
+            field         = "";                     // default to no field
+            field_default = "";
         }
         else {
-            if (strcmp(aisc_main->add_field, field) != 0) {
-                if (aisc_main->add_field[0]) {
-                    error = GBS_global_string("This nameserver has to be started with -f%s", aisc_main->add_field);
+            if (!params->field_default) {
+                error = GBS_global_string("Missing default value for add.field (option has to be -f%s=defaultValue)", field);
+            }
+        }
+
+        if (!error) {
+            if (aisc_main->add_field == 0) {        // add. field was not defined yet
+                if (field[0]) {
+                    printf("* add. field not defined yet -> using '%s'\n", field);
                 }
                 else {
-                    error = "This nameserver has to be started w/o -f option";
+                    fputs("* using no add. field\n", stdout);
+                }
+                aisc_main->add_field = strdup(field);
+                aisc_main->touched   = 1;
+            }
+            else {
+                if (strcmp(aisc_main->add_field, field) != 0) { // add. field changed
+                    if (aisc_main->add_field[0]) {
+                        error = GBS_global_string("This names-DB has to be started with -f%s", aisc_main->add_field);
+                    }
+                    else {
+                        error = "This names-DB has to be started w/o -f option";
+                    }
                 }
             }
+        }
+
+        if (!error) {
+            char *field_default_alnum = make_alnum(field_default);
+
+            if (aisc_main->add_field_default == 0) { // previously no default was defined for add.field
+                reassign(aisc_main->add_field_default, field_default_alnum);
+                set_empty_addids(aisc_main);
+                aisc_main->touched           = 1;
+            }
+            else {
+                if (strcmp(aisc_main->add_field_default, field_default_alnum) != 0) {
+                    error = GBS_global_string("Default for add.field previously was '%s' (called with '%s')\n"
+                                              "If you really need to change this - delete the names DB",
+                                              aisc_main->add_field_default, field_default_alnum);
+                }
+            }
+            free(field_default_alnum);
         }
     }
 
@@ -1259,7 +1331,14 @@ int main(int argc,char **argv)
     }
 
     if (error) {
-        fprintf(stderr, "Error in ARB_name_server: %s\n", error);
+        char *message = GBS_global_string_copy("Error in ARB_name_server: %s", error);
+        char *send    = GBS_global_string_copy("arb_message \"%s\" &", message); // send async (otherwise deadlock!)
+
+        fprintf(stderr, "%s\n", message);
+        if (system(send) != 0) fprintf(stderr, "Failed to send error message to ARB\n");
+
+        free(send);
+        free(message);
     }
     else if (accept_calls == 0) {
         if (isTimeout) {
