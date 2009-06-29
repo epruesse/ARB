@@ -32,10 +32,11 @@ struct input_format_per_line {
 #define IFS_VARIABLES 26 // 'a'-'z'
 
 struct input_format_struct {
-    char    *autodetect;
-    char    *system;
-    char    *new_format;
-    size_t  tab;
+    char *autodetect;
+    char *system;
+    char *new_format;
+    size_t new_format_lineno;
+    size_t tab;
 
     char    *begin;
 

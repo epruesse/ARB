@@ -31,12 +31,13 @@ using namespace std;
 static awtcig_struct awtcig;
 #define MAX_COMMENT_LINES 2000
 
-// -------------------------------------------------------------------
-//      static char * awtc_fgets(char *s, int size, FILE *stream)
-// -------------------------------------------------------------------
-// same as fgets but also works with file in MACOS format
+inline const char *name_only(const char *fullpath) {
+    char *lslash = strrchr(fullpath, '/');
+    return lslash ? lslash+1 : fullpath;
+}
 
 static char *awtc_fgets(char *s, int size, FILE *stream) {
+    // same as fgets but also works with file in MACOS format
     int i;
     for (i = 0; i<(size-1); ++i) {
         int byte = fgetc(stream);
@@ -120,13 +121,10 @@ GB_ERROR awtc_read_import_format(const char *file) {
     char     *fullfile = AWT_unfold_path(file,"ARBHOME");
     FILE     *in       = fopen(fullfile,"r");
 
-    const char *name_only = strrchr(fullfile, '/');
-    name_only             = name_only ? name_only+1 : fullfile;
-
     if (!in) {
-        error = strchr(name_only, '*')
+        error = strchr(file, '*')
             ? "Please use 'AUTO DETECT' or manually select an import format"
-            : GB_export_IO_error("loading import filter", name_only);
+            : GB_export_IO_error("loading import filter", name_only(fullfile));
     }
     else {
         struct input_format_struct   *ifo;
@@ -196,7 +194,7 @@ GB_ERROR awtc_read_import_format(const char *file) {
             }
             else if (GLOBAL_COMMAND("AUTODETECT"))               { reassign(ifo->autodetect,    s2); }
             else if (GLOBAL_COMMAND("SYSTEM"))                   { reassign(ifo->system,        s2); }
-            else if (GLOBAL_COMMAND("NEW_FORMAT"))               { reassign(ifo->new_format,    s2); }
+            else if (GLOBAL_COMMAND("NEW_FORMAT"))               { reassign(ifo->new_format,    s2); ifo->new_format_lineno = lineNumber; }
             else if (GLOBAL_COMMAND("BEGIN"))                    { reassign(ifo->begin,         s2); }
             else if (GLOBAL_COMMAND("FILETAG"))                  { reassign(ifo->filetag,       s2); }
             else if (GLOBAL_COMMAND("SEQUENCESRT"))              { reassign(ifo->sequencesrt,   s2); }
@@ -233,7 +231,7 @@ GB_ERROR awtc_read_import_format(const char *file) {
         // reverse order of match list (was appended backwards during creation)
         if (ifo->pl) ifo->pl = ifo->pl->reverse(0);
 
-        if (error) error = GBS_global_string("in line %zi of import format '%s':\n%s", lineNumber, name_only, error);
+        if (error) error = GBS_global_string("in line %zi of import format '%s':\n%s", lineNumber, name_only(fullfile), error);
 
         fclose(in);
 
@@ -1044,8 +1042,14 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
                         error = awtc_read_import_format(awtcig.ifo2->new_format);
                         if (!error) {
                             if (awtcig.ifo->new_format) {
-                                error = "Only one level of form nesting (NEW_FORMAT) allowed";
+                                error = GBS_global_string("in line %zi of import filter '%s':\n"
+                                                          "Only one level of form nesting (NEW_FORMAT) allowed",
+                                                          awtcig.ifo->new_format_lineno, name_only(awtcig.ifo2->new_format));
                             }
+                        }
+                        if (error) {
+                            error = GBS_global_string("called from line %zi of '%s':\n%s",
+                                                      awtcig.ifo2->new_format_lineno, name_only(file), error);
                         }
                     }
                 }
