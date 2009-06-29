@@ -143,23 +143,24 @@ GB_ERROR awtc_read_import_format(const char *file) {
         size_t  lineNumber = 0;
         while (!error && awtc_read_string_pair(in, s1, s2, lineNumber)) {
 
-#define GLOBAL_COMMAND(cmd) (strcmp(s1, cmd) == 0)
+#define GLOBAL_COMMAND(cmd) (!error && strcmp(s1, cmd) == 0)
 #define MATCH_COMMAND(cmd)  (!error && strcmp(s1, cmd) == 0 && (pl || !(error = not_in_match_error(cmd))))
 
-            if      (GLOBAL_COMMAND("AUTODETECT"))               { reassign(ifo->autodetect,    s2); }
-            else if (GLOBAL_COMMAND("SYSTEM"))                   { reassign(ifo->system,        s2); }
-            else if (GLOBAL_COMMAND("NEW_FORMAT"))               { reassign(ifo->new_format,    s2); }
-            else if (GLOBAL_COMMAND("BEGIN"))                    { reassign(ifo->begin,         s2); }
-            else if (GLOBAL_COMMAND("FILETAG"))                  { reassign(ifo->filetag,       s2); }
-            else if (GLOBAL_COMMAND("SEQUENCESRT"))              { reassign(ifo->sequencesrt,   s2); }
-            else if (GLOBAL_COMMAND("SEQUENCEACI"))              { reassign(ifo->sequenceaci,   s2); }
-            else if (GLOBAL_COMMAND("SEQUENCEEND"))              { reassign(ifo->sequenceend,   s2); }
-            else if (GLOBAL_COMMAND("END"))                      { reassign(ifo->end,           s2); }
-            else if (GLOBAL_COMMAND("SEQUENCESTART"))            { reassign(ifo->sequencestart, s2); ifo->read_this_sequence_line_too = 1; }
-            else if (GLOBAL_COMMAND("SEQUENCEAFTER"))            { reassign(ifo->sequencestart, s2); ifo->read_this_sequence_line_too = 0; }
-            else if (GLOBAL_COMMAND("KEYWIDTH"))                 { ifo->tab            = atoi(s2); }
-            else if (GLOBAL_COMMAND("SEQUENCECOLUMN"))           { ifo->sequencecolumn = atoi(s2); }
-            else if (GLOBAL_COMMAND("CREATE_ACC_FROM_SEQUENCE")) { ifo->autocreateacc  = 1; }
+            if (GLOBAL_COMMAND("MATCH")) {
+                pl = (struct input_format_per_line *)GB_calloc(1, sizeof(struct input_format_per_line));
+
+                pl->start_line = lineNumber;
+                pl->next       = ifo->pl;               // this concatenates the filters to the front -> the list is reversed below
+                ifo->pl        = pl;
+                pl->match      = GBS_remove_escape(s2);
+                pl->type       = GB_STRING;
+            }
+            else if (MATCH_COMMAND("SRT"))         { reassign(pl->srt, s2); }
+            else if (MATCH_COMMAND("ACI"))         { reassign(pl->aci, s2); }
+            else if (MATCH_COMMAND("WRITE"))       { reassign(pl->write, s2); }
+            else if (MATCH_COMMAND("WRITE_INT"))   { reassign(pl->write, s2); pl->type = GB_INT; }
+            else if (MATCH_COMMAND("WRITE_FLOAT")) { reassign(pl->write, s2); pl->type = GB_FLOAT; }
+            else if (MATCH_COMMAND("APPEND"))      { reassign(pl->append, s2); }
             else if (GLOBAL_COMMAND("IFNOTSET")) {
                 if (s2[0]<'a' || s2[0]>'z') {
                     error = "Allowed variable names are a-z";
@@ -180,26 +181,6 @@ GB_ERROR awtc_read_import_format(const char *file) {
                     }
                 }
             }
-            else if (GLOBAL_COMMAND("DONT_GEN_NAMES")) { ifo->noautonames = 1; }
-            else if (GLOBAL_COMMAND("MATCH")) {
-                pl = (struct input_format_per_line *)GB_calloc(1, sizeof(struct input_format_per_line));
-
-                pl->start_line = lineNumber;
-                pl->next       = ifo->pl;               // this concatenates the filters to the front -> the list is reversed below
-                ifo->pl        = pl;
-                pl->match      = GBS_remove_escape(s2);
-                pl->type       = GB_STRING;
-            }
-
-            // ------------------------------------------------------------------------
-            // commands requiring that a MATCH command was seen before:
-
-            else if (MATCH_COMMAND("SRT"))         { reassign(pl->srt, s2); }
-            else if (MATCH_COMMAND("ACI"))         { reassign(pl->aci, s2); }
-            else if (MATCH_COMMAND("WRITE"))       { reassign(pl->write, s2); }
-            else if (MATCH_COMMAND("WRITE_INT"))   { reassign(pl->write, s2); pl->type = GB_INT; }
-            else if (MATCH_COMMAND("WRITE_FLOAT")) { reassign(pl->write, s2); pl->type = GB_FLOAT; }
-            else if (MATCH_COMMAND("APPEND"))      { reassign(pl->append, s2); }
             else if (MATCH_COMMAND("SETVAR")) {
                 if (strlen(s2) != 1 || s2[0]<'a' || s2[0]>'z') {
                     error = "Allowed variable names are a-z";
@@ -213,6 +194,21 @@ GB_ERROR awtc_read_import_format(const char *file) {
                 if (s2[0]) reassign(pl->tag, s2);
                 else error = "Empty TAG is not allowed";
             }
+            else if (GLOBAL_COMMAND("AUTODETECT"))               { reassign(ifo->autodetect,    s2); }
+            else if (GLOBAL_COMMAND("SYSTEM"))                   { reassign(ifo->system,        s2); }
+            else if (GLOBAL_COMMAND("NEW_FORMAT"))               { reassign(ifo->new_format,    s2); }
+            else if (GLOBAL_COMMAND("BEGIN"))                    { reassign(ifo->begin,         s2); }
+            else if (GLOBAL_COMMAND("FILETAG"))                  { reassign(ifo->filetag,       s2); }
+            else if (GLOBAL_COMMAND("SEQUENCESRT"))              { reassign(ifo->sequencesrt,   s2); }
+            else if (GLOBAL_COMMAND("SEQUENCEACI"))              { reassign(ifo->sequenceaci,   s2); }
+            else if (GLOBAL_COMMAND("SEQUENCEEND"))              { reassign(ifo->sequenceend,   s2); }
+            else if (GLOBAL_COMMAND("END"))                      { reassign(ifo->end,           s2); }
+            else if (GLOBAL_COMMAND("SEQUENCESTART"))            { reassign(ifo->sequencestart, s2); ifo->read_this_sequence_line_too = 1; }
+            else if (GLOBAL_COMMAND("SEQUENCEAFTER"))            { reassign(ifo->sequencestart, s2); ifo->read_this_sequence_line_too = 0; }
+            else if (GLOBAL_COMMAND("KEYWIDTH"))                 { ifo->tab            = atoi(s2); }
+            else if (GLOBAL_COMMAND("SEQUENCECOLUMN"))           { ifo->sequencecolumn = atoi(s2); }
+            else if (GLOBAL_COMMAND("CREATE_ACC_FROM_SEQUENCE")) { ifo->autocreateacc  = 1; }
+            else if (GLOBAL_COMMAND("DONT_GEN_NAMES"))           { ifo->noautonames    = 1; }
             else if (!error) {
                 error = GBS_global_string("Unknown command '%s'", s1);
             }
