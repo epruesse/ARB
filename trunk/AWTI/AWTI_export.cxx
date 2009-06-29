@@ -95,9 +95,9 @@ static GB_ERROR awtc_read_export_format(export_format *efo, const char *file, bo
             efo->export_mode = AWTI_EXPORT_USING_FORM; // default mode
 
             while (!error && awtc_read_string_pair(in, s1, s2, linenumber)) {
-                if      (!strcmp(s1, "SYSTEM"))     { efo->system = s2;           s2 = 0; }
-                else if (!strcmp(s1, "PRE_FORMAT")) { efo->new_format = s2;       s2 = 0; }
-                else if (!strcmp(s1, "SUFFIX"))     { efo->suffix = s2;           s2 = 0; }
+                if      (!strcmp(s1, "SYSTEM"))     { reassign(efo->system,     s2); }
+                else if (!strcmp(s1, "PRE_FORMAT")) { reassign(efo->new_format, s2); }
+                else if (!strcmp(s1, "SUFFIX"))     { reassign(efo->suffix,     s2); }
                 else if (!strcmp(s1, "INTERNAL"))   {
                     efo->export_mode = check_internal(s2);
                     if (efo->export_mode == AWTI_EXPORT_INVALID) {
