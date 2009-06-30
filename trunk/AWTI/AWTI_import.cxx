@@ -116,29 +116,30 @@ static GB_ERROR not_in_match_error(const char *cmd) {
     return GBS_global_string("Command '%s' may only appear after 'MATCH'", cmd);
 }
 
-GB_ERROR awtc_read_import_format(const char *file) {
-    GB_ERROR  error    = 0;
-    char     *fullfile = AWT_unfold_path(file,"ARBHOME");
-    FILE     *in       = fopen(fullfile,"r");
+static GB_ERROR read_import_format(const char *fullfile, input_format_struct *ifo, bool *var_set, bool included) {
+    GB_ERROR  error = 0;
+    FILE     *in    = fopen(fullfile,"rt");
+
+    input_format_per_line *pl = ifo->pl;
 
     if (!in) {
-        error = strchr(file, '*')
-            ? "Please use 'AUTO DETECT' or manually select an import format"
-            : GB_export_IO_error("loading import filter", name_only(fullfile));
+        const char *name = name_only(fullfile);
+
+        if (included) {
+            error = GB_export_IO_error("including", name);
+        }
+        else {
+            error = strchr(name, '*')
+                ? "Please use 'AUTO DETECT' or manually select an import format"
+                : GB_export_IO_error("loading import filter", name);
+        }
     }
     else {
-        struct input_format_struct   *ifo;
-        struct input_format_per_line *pl = 0;
-        
-
-        if (awtcig.ifo) { delete awtcig.ifo; awtcig.ifo = 0; }
-        ifo = awtcig.ifo = new input_format_struct;
-
-        bool var_used[IFS_VARIABLES];
-        for (int i = 0; i<IFS_VARIABLES; i++) var_used[i] = false;
 
         char   *s1, *s2;
-        size_t  lineNumber = 0;
+        size_t  lineNumber    = 0;
+        bool    include_error = false;
+
         while (!error && awtc_read_string_pair(in, s1, s2, lineNumber)) {
 
 #define GLOBAL_COMMAND(cmd) (!error && strcmp(s1, cmd) == 0)
@@ -184,7 +185,7 @@ GB_ERROR awtc_read_import_format(const char *file) {
                     error = "Allowed variable names are a-z";
                 }
                 else {
-                    var_used[s2[0]-'a'] = true;
+                    var_set[s2[0]-'a'] = true;
                     reassign(pl->setvar, s2);
                 }
             }
@@ -207,6 +208,16 @@ GB_ERROR awtc_read_import_format(const char *file) {
             else if (GLOBAL_COMMAND("SEQUENCECOLUMN"))           { ifo->sequencecolumn = atoi(s2); }
             else if (GLOBAL_COMMAND("CREATE_ACC_FROM_SEQUENCE")) { ifo->autocreateacc  = 1; }
             else if (GLOBAL_COMMAND("DONT_GEN_NAMES"))           { ifo->noautonames    = 1; }
+            else if (GLOBAL_COMMAND("INCLUDE")) {
+                char *dir         = AWT_extract_directory(fullfile);
+                char *includeFile = GBS_global_string_copy("%s/%s", dir, s2);
+
+                error = read_import_format(includeFile, ifo, var_set, true);
+                if (error) include_error = true;
+
+                free(includeFile);
+                free(dir);
+            }
             else if (!error) {
                 error = GBS_global_string("Unknown command '%s'", s1);
             }
@@ -215,29 +226,52 @@ GB_ERROR awtc_read_import_format(const char *file) {
             free(s2);
         }
 
-        for (int i = 0; i<IFS_VARIABLES && !error; i++) {
-            if (var_used[i]) {
-                if (!ifo->user_error[i]) {
-                    error = GBS_global_string("Warning: missing IFNOTSET for variable '%c'", 'a'+i);
-                }
-            }
-            else {
-                if (ifo->user_error[i]) {
-                    error = GBS_global_string("Warning: useless IFNOTSET for unused variable '%c'", 'a'+i);
-                }
-            }
+        if (error) {
+            error = GBS_global_string("%sin line %zi of %s '%s':\n%s",
+                                      include_error ? "included " : "", 
+                                      lineNumber,
+                                      included ? "file" : "import format",
+                                      name_only(fullfile),
+                                      error);
         }
-
-        // reverse order of match list (was appended backwards during creation)
-        if (ifo->pl) ifo->pl = ifo->pl->reverse(0);
-
-        if (error) error = GBS_global_string("in line %zi of import format '%s':\n%s", lineNumber, name_only(fullfile), error);
 
         fclose(in);
 
 #undef MATCH_COMMAND
 #undef GLOBAL_COMMAND
     }
+
+    return error;
+}
+
+GB_ERROR awtc_read_import_format(const char *file) {
+    char *fullfile = AWT_unfold_path(file,"ARBHOME");
+
+    delete awtcig.ifo;
+    awtcig.ifo = new input_format_struct;
+
+    bool var_set[IFS_VARIABLES];
+    for (int i = 0; i<IFS_VARIABLES; i++) var_set[i] = false;
+
+    GB_ERROR error = read_import_format(fullfile, awtcig.ifo, var_set, false);
+
+
+    for (int i = 0; i<IFS_VARIABLES && !error; i++) {
+        bool ifnotset = awtcig.ifo->user_error[i];
+        if (var_set[i]) {
+            if (!ifnotset) {
+                error = GBS_global_string("Warning: missing IFNOTSET for variable '%c'", 'a'+i);
+            }
+        }
+        else {
+            if (ifnotset) {
+                error = GBS_global_string("Warning: useless IFNOTSET for unused variable '%c'", 'a'+i);
+            }
+        }
+    }
+
+    // reverse order of match list (was appended backwards during creation)
+    if (awtcig.ifo->pl) awtcig.ifo->pl = awtcig.ifo->pl->reverse(0);
 
     free(fullfile);
 
@@ -1048,7 +1082,7 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
                             }
                         }
                         if (error) {
-                            error = GBS_global_string("called from line %zi of '%s':\n%s",
+                            error = GBS_global_string("in format used in line %zi of '%s':\n%s",
                                                       awtcig.ifo2->new_format_lineno, name_only(file), error);
                         }
                     }
