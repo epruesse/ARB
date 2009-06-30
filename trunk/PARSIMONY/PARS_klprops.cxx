@@ -30,7 +30,7 @@ AW_window *create_kernighan_window(AW_root *aw_root) {
 
     AW_window_simple *aws = new AW_window_simple;
     aws->init( aw_root, "OPTIMIZATION_PROPS", "Kernighan Lin Properties");
-    aws->load_xfig("PARS/kernlin.fig");
+    aws->load_xfig("pars/kernlin.fig");
     aws->button_length( 10 );
 
     aws->at("close");
