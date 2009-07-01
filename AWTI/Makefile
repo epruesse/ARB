@@ -78,3 +78,4 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/GEN.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/GenomeImport.h
+AWTI_import.o: $(ARBHOME)/INCLUDE/smartptr.h
