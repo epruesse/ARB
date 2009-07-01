@@ -1,5 +1,4 @@
 AUTODETECT      ">*"
-                #Global settings:
 KEYWIDTH        1
 
 BEGIN           ">??*"
@@ -14,6 +13,7 @@ MATCH           ">*"
 
 SEQUENCEAFTER   "*"
 SEQUENCESRT     ""
+SEQUENCEACI     "remove("123456789 /")"         # added by FOG, 17.05.2009
 SEQUENCECOLUMN  0
 SEQUENCEEND     ">*"
 

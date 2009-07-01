@@ -2,7 +2,7 @@ AUTODETECT      "NO AUTODETECTION"
 
 BEGIN           "??????*"
 SEQUENCESTART   "??*"
-SEQUENCEACI     "extract_sequence("ACGTUN-.",.7)|remove(" 0123456789")";
+SEQUENCEACI     "extract_sequence("acgtunACGTUN-.",.7)|remove(" 0123456789")";
 SEQUENCEEND     "/END/"
 
 CREATE_ACC_FROM_SEQUENCE
