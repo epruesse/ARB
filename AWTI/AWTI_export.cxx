@@ -239,7 +239,7 @@ public:
     static bool isGap(char c) { return c == '-' || c == '.'; }
 
     size_t count_species() {
-        awti_assert(!in_single_mode());
+        awte_assert(!in_single_mode());
         if (species_count == size_t(-1)) {
             species_count = 0;
             for (GBDATA *gb_species = find_first(gb_main); gb_species; gb_species = find_next(gb_species)) {
@@ -273,7 +273,7 @@ const unsigned char *export_sequence_data::get_seq_data(GBDATA *gb_species, size
 GB_ERROR export_sequence_data::detectVerticalGaps() {
     GB_ERROR err = 0;
 
-    awti_assert(!in_single_mode());
+    awte_assert(!in_single_mode());
 
     filter->calc_filter_2_seq();
     if (compress == 1) {        // compress vertical gaps!
@@ -545,12 +545,12 @@ static GB_ERROR AWTI_export_format(AW_root *aw_root, const char *formname, const
             // Export data using format 'new_format'.
             // Afterwards convert to wanted format using 'system'.
 
-            awti_assert(efo.system);
+            awte_assert(efo.system);
             
             char *intermediate_export;
             error = AWTI_export_format(aw_root, efo.new_format, NULL, &intermediate_export);
             if (!error) {
-                awti_assert(GB_is_privatefile(intermediate_export, GB_FALSE));
+                awte_assert(GB_is_privatefile(intermediate_export, GB_FALSE));
 
                 aw_status(GBS_global_string("Converting to %s", efo.suffix));
 

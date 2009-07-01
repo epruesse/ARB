@@ -16,8 +16,6 @@
 #include <arb_assert.h>
 #endif
 
-#define awti_assert(cond) arb_assert(cond)
-
 AW_window *open_AWTC_export_window(AW_root *awr,GBDATA *gb_main);
 
 #else
