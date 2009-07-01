@@ -1117,7 +1117,7 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
                 error = awtc_read_data(ali_name, ali_protection);
 
                 if (error) {
-                    error = GBS_global_string("Error: %s reading file %s", error, awtcig.current_file[-1]);
+                    error = GBS_global_string("Error: %s\nwhile reading file %s", error, awtcig.current_file[-1]);
                 }
                 else {
                     if (awtcig.ifo->noautonames || (awtcig.ifo2 && awtcig.ifo2->noautonames)) {

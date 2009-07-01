@@ -366,10 +366,11 @@ static void awt_create_selection_box_cb(void *dummy, struct adawcbstruct *cbs) {
     cbs->aws->insert_selection( cbs->id, GBS_global_string("! \' Sort order\'     (%s)", DIR_sort_order_name[DIR_sort_order]),
                                 GBS_global_string("%s?sort?", name));
 
-    if (cbs->show_dir) {
-        cbs->aws->insert_selection( cbs->id, GBS_global_string("! \' Dot files/dirs\' (%s)", DIR_show_hidden ? "shown" : "hidden"),
-                                    GBS_global_string("%s?dot?", name));
-    }
+    cbs->aws->insert_selection( cbs->id,
+                                GBS_global_string("! \' %s%s\'",
+                                                  DIR_show_hidden ? "Hide dot-" : "Show hidden ",
+                                                  cbs->show_dir ? "files/dirs" : "files"),
+                                GBS_global_string("%s?dot?", name));
 
     if (is_wildcard) {
         if (cbs->leave_wildcards) {
