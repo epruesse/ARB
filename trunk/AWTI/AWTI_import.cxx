@@ -11,6 +11,8 @@
 #include <GenomeImport.h>
 #include <GEN.hxx>
 
+#include <climits>
+
 using namespace std;
 
 static awtcig_struct awtcig;
@@ -134,7 +136,7 @@ static GB_ERROR read_import_format(const char *fullfile, input_format_struct *if
             if (GLOBAL_COMMAND("MATCH")) {
                 pl = new input_format_per_line;
 
-                pl->defined_at = GBS_global_string_copy("%i,%s", lineNumber, name_only(fullfile));
+                pl->defined_at = GBS_global_string_copy("%zi,%s", lineNumber, name_only(fullfile));
                 pl->next       = ifo->pl;           // this concatenates the filters to the front -> the list is reversed below
                 ifo->pl        = pl;
                 pl->match      = GBS_remove_escape(s2);
