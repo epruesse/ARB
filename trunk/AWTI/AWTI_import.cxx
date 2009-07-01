@@ -261,7 +261,8 @@ GB_ERROR awtc_read_import_format(const char *file) {
     for (int i = 0; i<IFS_VARIABLES && !error; i++) {
         bool ifnotset = awtcig.ifo->variable_errors.get(i+'a');
         if (var_set[i]) {
-            if (!ifnotset) {
+            bool isglobal = awtcig.ifo->global_variables.get(i+'a');
+            if (!ifnotset && !isglobal) { // don't warn if variable is global
                 error = GBS_global_string("Warning: missing IFNOTSET for variable '%c'", 'a'+i);
             }
         }
