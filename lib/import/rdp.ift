@@ -1,6 +1,11 @@
-AUTODETECT      "LOCUS       s*\nORIGIN*"
+# Modified by FOG 27.06.2009
+# start, stop added
+# type INT for start, stop added
+# acc parsing changed
+# a lot of stuff removed
+# IFNOTSET added
 
-# Global settings:
+AUTODETECT      "LOCUS       s*\nORIGIN*"
 KEYWIDTH        12
 FILETAG         RDP
 
@@ -15,10 +20,10 @@ MATCH           "LOCUS *"
                 TAG             "RDP"
                 WRITE           "id"
 
-MATCH           "LOCUS *"
-                SRT             "     = :    = :   = :  = :* * *=*2"
-                TAG             "RDP"
-                WRITE           "db_nuc"
+#MATCH           "LOCUS *"
+#                SRT             "     = :    = :   = :  = :* * *=*2"
+#                TAG             "RDP"
+#                WRITE           "db_nuc"
 
 MATCH           "LOCUS *"
                 SRT             "     = :    = :   = :  = :* * * * * * *=*7"
@@ -29,37 +34,37 @@ MATCH           "DEFINITION *"
                 TAG             "RDP"
                 WRITE           "description"
 
-MATCH           "COMMENT*Corresponding GenBank entry*"
-                SRT             "*Corresponding GenBank entry\: *=*2:|*=:(*=:;=:not submitted="
+MATCH           "COMMENT*Genbank*"
+                SRT             "*Genbank\: *=*2:|*=:(*=:;=:not submitted="
                 ACI             "extract_words("0123456789",4.0)"
                 WRITE           "acc"
 
-MATCH           "COMMENT*Corresponding GenBank entry*"
-                SRT             "*Corresponding GenBank entry\: *=*2:|*=:(*=:;=:not submitted="
-                ACI             "extract_words("0123456789",4.0)"
-                WRITE           "db_acc"
+#MATCH           "COMMENT*Genbank*"
+#                SRT             "*Genbank\: *=*2:|*=:(*=:;=:not submitted="
+#                ACI             "extract_words("0123456789",4.0)"
+#                WRITE           "db_acc"
 
-MATCH           "VERSION *"
-                TAG             "RDP"
-                WRITE           "version"
+#MATCH           "VERSION *"
+#                TAG             "RDP"
+#                WRITE           "version"
 
 MATCH           "KEYWORDS"
-                TAG             "RDP"
-                WRITE           "keywd"
+ #               TAG             "RDP"
+                WRITE           "keywd_RDP"
 
-MATCH           "SOURCE *"
-                TAG             "RDP"
-                WRITE           "source"
+#MATCH           "SOURCE *"
+#                TAG             "RDP"
+#                WRITE           "source"
 
 MATCH           "  ORGANISM *"
-                TAG             "RDP"
+#                TAG             "RDP"
                 SRT             "*|*=*1"
-                WRITE           "db_name"
+                WRITE           "tax_rdp_name"
 
 MATCH           "  ORGANISM *"
-                TAG             "RDP"
+#                TAG             "RDP"
                 SRT             "*|*=*2"
-                WRITE           "tax"
+                WRITE           "tax_rdp"
 
 MATCH           "  ORGANISM *"
                 SRT             "* * *=*1 *2:*|*=*1"
@@ -68,34 +73,34 @@ MATCH           "  ORGANISM *"
 MATCH           "REFERENCE *"
                 SRT             "* *=*1"
                 SETVAR          x
-                IFNOTSET        x "No REFERENCE seen"
-                TAG             "RDP"
-                APPEND          "num_bib"
+                IFNOTSET        x "No REFERENCE entry seen"
+#                TAG             "RDP"
+#                APPEND          "num_bib"
 
 MATCH           "REFERENCE *"
                 SRT             "(=:)=:?*=(?)*"
-                TAG             "RDP"
+#                TAG             "RDP"
                 APPEND          "nuc_rp"
 
 MATCH           "  AUTHORS *"
                 SRT             "*=($x)\: *"
-                TAG             "RDP"
+#                TAG             "RDP"
                 APPEND          "author"
 
 MATCH           "  TITLE *"
                 SRT             "*=($x)\: *"
-                TAG             "RDP"
+#                TAG             "RDP"
                 APPEND          "title"
 
 MATCH           "  JOURNAL *"
                 SRT             "*=($x)\: *"
-                TAG             "RDP"
+#                TAG             "RDP"
                 APPEND          "journal"
 
-MATCH           "  MEDLINE *"
-                SRT             "*=($x)\: *"
-                TAG             "RDP"
-                APPEND          "medline_id"
+#MATCH           "  MEDLINE *"
+#                SRT             "*=($x)\: *"
+#                TAG             "RDP"
+#                APPEND          "medline_id"
 
 MATCH           "     source*cell_line*"
                 SRT             "*/cell_line\=\"*\"*=*2"
@@ -115,7 +120,7 @@ MATCH           "     source*cultivar*"
 MATCH           "     source*db_xref*"
                 SRT             "*/db_xref\=\"*\"*=*2"
                 TAG             "RDP"
-                WRITE           "db_ref"
+                WRITE           "tax_xref_embl"
 
 MATCH           "     source*isolate*"
                 SRT             "*/isolate\=\"*\"*=*2"
@@ -125,7 +130,7 @@ MATCH           "     source*isolate*"
 MATCH           "     source*isolation_source*"
                 SRT             "*/isolation_source\=\"*\"*=*2"
                 TAG             "RDP"
-                WRITE           "isol_src"
+                WRITE           "isolation_source"
 
 MATCH           "     source*clone*"
                 SRT             "*/clone\=\"*\"*=*2"
@@ -168,7 +173,7 @@ MATCH           "     source*specific_host*"
                 WRITE           "host"
 
 MATCH           "     source*strain=*"
-                TAG             "RDP"
+#                TAG             "RDP"
                 SRT             "*strain\=\"*\"*=*2"
                 WRITE           "strain"
 
@@ -189,13 +194,13 @@ MATCH           "     source*tissue_type=*"
 
 MATCH           "     source*note*"
                 SRT             "*/note\=\"*\"*=*2"
-                TAG             "GB"
+                TAG             "RDP"
                 WRITE           "note"
 
 MATCH           "     rRNA*db_xref*"
                 SRT             "*/db_xref\=\"*\"*=*2"
                 TAG             "RDP"
-                APPEND          "db_ref"
+                APPEND          "tax_xref_embl"
 
 MATCH           "     rRNA*evidence*"
                 SRT             "*/evidence\=\"*\"*=*2"
@@ -241,6 +246,14 @@ MATCH           "     rRNA*product*"
                 SRT             "*/product\=\"*\"*=*2"
                 TAG             "RDP"
                 APPEND          "product"
+
+MATCH           "     rRNA*"
+                SRT             "*..*=*1:<=:>="
+                WRITE_INT       "start"
+
+MATCH           "     rRNA *"
+                SRT             "*..*=*2:<=:>=:*|*=*1"
+                WRITE_INT       "stop"
 
 SEQUENCEAFTER   "ORIGIN*"
 SEQUENCESRT     " =:~=.:*Check*..="
