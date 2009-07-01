@@ -1,3 +1,36 @@
+// ============================================================ //
+//                                                              //
+//   File      : awti_imp_local.hxx                             //
+//   Purpose   : local definitions for import                   //
+//                                                              //
+//   Institute of Microbiology (Technical University Munich)    //
+//   www.arb-home.de                                            //
+//                                                              //
+// ============================================================ //
+
+#ifndef AWTI_IMP_LOCAL_HXX
+#define AWTI_IMP_LOCAL_HXX
+
+#ifndef _CPP_STRING
+#include <string>
+#endif
+
+#ifndef ARBDBT_H
+#include <arbdbt.h>
+#endif
+#ifndef AW_ROOT_HXX
+#include <aw_root.hxx>
+#endif
+
+#ifndef AWTI_IMPORT_HXX
+#include <awti_import.hxx>
+#endif
+#ifndef SMARTPTR_H
+#include <smartptr.h>
+#endif
+
+#define awti_assert(cond) arb_assert(cond)
+
 #define AWAR_FILE_BASE      "tmp/import/pattern"
 #define AWAR_FILE           AWAR_FILE_BASE"/file_name"
 #define AWAR_FORM           "tmp/import/form"
@@ -8,17 +41,18 @@
 #define GB_MAIN awtcig.gb_main
 #define AWTC_IMPORT_CHECK_BUFFER_SIZE 10000
 
+
 struct input_format_per_line {
     char *match;
     char *aci;
     char *srt;
-    char *tag;
+    char *mtag;
     char *append;
     char *write;
     char *setvar;
     GB_TYPES type;
 
-    int start_line; //  linenumber in filter where this MATCH starts
+    char *defined_at; // where was match defined
 
     struct input_format_per_line *next;
 
@@ -27,20 +61,42 @@ struct input_format_per_line {
         next = to_append;
         return rest ? rest->reverse(this) : this;
     }
+
+    input_format_per_line();
+    ~input_format_per_line();
 };
 
-#define IFS_VARIABLES 26 // 'a'-'z'
+#define IFS_VARIABLES 26                            // 'a'-'z'
+
+// typedef std::map<char, std::string> SetVariables;
+
+class SetVariables {
+    typedef SmartPtr<std::string> StringPtr;
+    StringPtr value[IFS_VARIABLES];
+
+public:
+    SetVariables() {}
+
+    void set(char c, const char *s) {
+        awti_assert(c >= 'a' && c <= 'z');
+        value[c-'a'] = new std::string(s);
+    }
+    const std::string *get(char c) const {
+        awti_assert(c >= 'a' && c <= 'z');
+        StringPtr v = value[c-'a'];
+        return v.Null() ? NULL : &*v;
+    }
+};
+
 
 struct input_format_struct {
-    char *autodetect;
-    char *system;
-    char *new_format;
-    size_t new_format_lineno;
-    size_t tab;
+    char   *autodetect;
+    char   *system;
+    char   *new_format;
+    size_t  new_format_lineno;
+    size_t  tab;
 
     char    *begin;
-
-    struct input_format_per_line    *pl;
 
     char   *sequencestart;
     int     read_this_sequence_line_too;
@@ -48,15 +104,21 @@ struct input_format_struct {
     char   *sequencesrt;
     char   *sequenceaci;
     char   *filetag;
+    char   *autotag;
     size_t  sequencecolumn;
     int     autocreateacc;
     int     noautonames;
-    char   *user_error[IFS_VARIABLES]; // one for each possible variable
 
-    char    *end;
+    char *end;
 
-    char    *b1;
-    char    *b2;
+    SetVariables global_variables;                 // values of global variables
+    SetVariables variable_errors;                  // user-defined errors (used when var not set)
+
+    char *b1;
+    char *b2;
+
+    input_format_per_line *pl;
+
     input_format_struct(void);
     ~input_format_struct(void);
 };
@@ -74,3 +136,7 @@ struct awtcig_struct {
     GBDATA                      *gb_other_main; // main DB 
 };
 
+
+#else
+#error awti_imp_local.hxx included twice
+#endif // AWTI_IMP_LOCAL_HXX

@@ -1,30 +1,15 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <memory.h>
-#include <limits.h>
-
-#include <map>
-#include <string>
-
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_global.hxx>
-#include <awt.hxx>
-#include <awt_advice.hxx>
-#include <awt_item_sel_list.hxx>
-#include <awt_sel_boxes.hxx>
-#include <GEN.hxx>
-#include <GenomeImport.h>
-#include <AW_rename.hxx>
-#include <awti_import.hxx>
 #include <awti_imp_local.hxx>
 
-#define awti_assert(cond) arb_assert(cond)
+#include <awt.hxx>
+#include <awt_advice.hxx>
+#include <awt_sel_boxes.hxx>
+#include <awt_item_sel_list.hxx>
+
+#include <aw_global.hxx>
+#include <AW_rename.hxx>
+
+#include <GenomeImport.h>
+#include <GEN.hxx>
 
 using namespace std;
 
@@ -107,7 +92,9 @@ bool awtc_read_string_pair(FILE *in, char *&s1, char *&s2, size_t& lineNr) {
                 }
             }
         }
-    } while (res && !s1); // read until EOF or something found
+    } while (res && !s1);                           // read until EOF or something found
+
+    awti_assert(!res == !s1);
 
     return res;
 }
@@ -135,7 +122,6 @@ static GB_ERROR read_import_format(const char *fullfile, input_format_struct *if
         }
     }
     else {
-
         char   *s1, *s2;
         size_t  lineNumber    = 0;
         bool    include_error = false;
@@ -146,13 +132,15 @@ static GB_ERROR read_import_format(const char *fullfile, input_format_struct *if
 #define MATCH_COMMAND(cmd)  (!error && strcmp(s1, cmd) == 0 && (pl || !(error = not_in_match_error(cmd))))
 
             if (GLOBAL_COMMAND("MATCH")) {
-                pl = (struct input_format_per_line *)GB_calloc(1, sizeof(struct input_format_per_line));
+                pl = new input_format_per_line;
 
-                pl->start_line = lineNumber;
-                pl->next       = ifo->pl;               // this concatenates the filters to the front -> the list is reversed below
+                pl->defined_at = GBS_global_string_copy("%i,%s", lineNumber, name_only(fullfile));
+                pl->next       = ifo->pl;           // this concatenates the filters to the front -> the list is reversed below
                 ifo->pl        = pl;
                 pl->match      = GBS_remove_escape(s2);
                 pl->type       = GB_STRING;
+
+                if (ifo->autotag) pl->mtag = strdup(ifo->autotag); // will be overwritten by TAG command
             }
             else if (MATCH_COMMAND("SRT"))         { reassign(pl->srt, s2); }
             else if (MATCH_COMMAND("ACI"))         { reassign(pl->aci, s2); }
@@ -160,26 +148,6 @@ static GB_ERROR read_import_format(const char *fullfile, input_format_struct *if
             else if (MATCH_COMMAND("WRITE_INT"))   { reassign(pl->write, s2); pl->type = GB_INT; }
             else if (MATCH_COMMAND("WRITE_FLOAT")) { reassign(pl->write, s2); pl->type = GB_FLOAT; }
             else if (MATCH_COMMAND("APPEND"))      { reassign(pl->append, s2); }
-            else if (GLOBAL_COMMAND("IFNOTSET")) {
-                if (s2[0]<'a' || s2[0]>'z') {
-                    error = "Allowed variable names are a-z";
-                }
-                else {
-                    int off = 1;
-                    while (isblank(s2[off])) off++;
-                    if (!s2[off]) error = "Missing error message";
-                    else {
-                        int idx = s2[0]-'a';
-                        if (ifo->user_error[idx]) {
-                            error = GBS_global_string("Redefinition of IFNOTSET %c", s2[0]);
-                        }
-                        else {
-                            ifo->user_error[idx] = strdup(s2+off);
-                        }
-
-                    }
-                }
-            }
             else if (MATCH_COMMAND("SETVAR")) {
                 if (strlen(s2) != 1 || s2[0]<'a' || s2[0]>'z') {
                     error = "Allowed variable names are a-z";
@@ -190,7 +158,7 @@ static GB_ERROR read_import_format(const char *fullfile, input_format_struct *if
                 }
             }
             else if (MATCH_COMMAND("TAG")) {
-                if (s2[0]) reassign(pl->tag, s2);
+                if (s2[0]) reassign(pl->mtag, s2);
                 else error = "Empty TAG is not allowed";
             }
             else if (GLOBAL_COMMAND("AUTODETECT"))               { reassign(ifo->autodetect,    s2); }
@@ -202,6 +170,7 @@ static GB_ERROR read_import_format(const char *fullfile, input_format_struct *if
             else if (GLOBAL_COMMAND("SEQUENCEACI"))              { reassign(ifo->sequenceaci,   s2); }
             else if (GLOBAL_COMMAND("SEQUENCEEND"))              { reassign(ifo->sequenceend,   s2); }
             else if (GLOBAL_COMMAND("END"))                      { reassign(ifo->end,           s2); }
+            else if (GLOBAL_COMMAND("AUTOTAG"))                  { reassign(ifo->autotag,       s2); }
             else if (GLOBAL_COMMAND("SEQUENCESTART"))            { reassign(ifo->sequencestart, s2); ifo->read_this_sequence_line_too = 1; }
             else if (GLOBAL_COMMAND("SEQUENCEAFTER"))            { reassign(ifo->sequencestart, s2); ifo->read_this_sequence_line_too = 0; }
             else if (GLOBAL_COMMAND("KEYWIDTH"))                 { ifo->tab            = atoi(s2); }
@@ -218,8 +187,41 @@ static GB_ERROR read_import_format(const char *fullfile, input_format_struct *if
                 free(includeFile);
                 free(dir);
             }
-            else if (!error) {
-                error = GBS_global_string("Unknown command '%s'", s1);
+            else {
+                bool ifnotset  = GLOBAL_COMMAND("IFNOTSET");
+                bool setglobal = GLOBAL_COMMAND("SETGLOBAL");
+
+                if (ifnotset || setglobal) {
+                    if (s2[0]<'a' || s2[0]>'z') {
+                        error = "Allowed variable names are a-z";
+                    }
+                    else {
+                        int off = 1;
+                        while (isblank(s2[off])) off++;
+                        if (!s2[off]) error = GBS_global_string("Expected two arguments in '%s'", s2);
+                        else {
+                            char        varname = s2[0];
+                            const char *arg2    = s2+off;
+
+                            if (ifnotset) {
+                                if (ifo->variable_errors.get(varname)) {
+                                    error = GBS_global_string("Redefinition of IFNOTSET %c", varname);
+                                }
+                                else {
+                                    ifo->variable_errors.set(varname, arg2);
+                                }
+                            }
+                            else {
+                                awti_assert(setglobal);
+                                ifo->global_variables.set(varname, arg2);
+                                var_set[varname-'a'] = true;
+                            }
+                        }
+                    }
+                }
+                else if (!error) {
+                    error = GBS_global_string("Unknown command '%s'", s1);
+                }
             }
 
             free(s1);
@@ -257,7 +259,7 @@ GB_ERROR awtc_read_import_format(const char *file) {
 
 
     for (int i = 0; i<IFS_VARIABLES && !error; i++) {
-        bool ifnotset = awtcig.ifo->user_error[i];
+        bool ifnotset = awtcig.ifo->variable_errors.get(i+'a');
         if (var_set[i]) {
             if (!ifnotset) {
                 error = GBS_global_string("Warning: missing IFNOTSET for variable '%c'", 'a'+i);
@@ -278,45 +280,46 @@ GB_ERROR awtc_read_import_format(const char *file) {
     return error;
 }
 
-input_format_struct::input_format_struct(void){
-    memset((char *)this,0,sizeof(input_format_struct));
+input_format_per_line::input_format_per_line() {
+    memset((char *)this,0,sizeof(*this));
 }
 
-input_format_struct::~input_format_struct(void)
-{
-    struct input_format_struct *ifo= this;
-    struct input_format_per_line *pl1 = 0;
-    struct input_format_per_line *pl2 = 0;
-
-    for (pl1 = ifo->pl; pl1; pl1=pl2){
-        pl2 = pl1->next;
-        free(pl1->match);
-        free(pl1->srt);
-        free(pl1->aci);
-        free(pl1->tag);
-        free(pl1->append);
-        free(pl1->write);
-        free(pl1->setvar);
-        free(pl1);
-    }
-
-    free(ifo->autodetect);
-    free(ifo->system);
-    free(ifo->new_format);
-    free(ifo->begin);
-    free(ifo->sequencestart);
-    free(ifo->filetag);
-    free(ifo->sequenceend);
-    free(ifo->sequencesrt);
-    free(ifo->sequenceaci);
-    free(ifo->end);
-    free(ifo->b1);
-    free(ifo->b2);
-    for (int i = 0; i<IFS_VARIABLES; i++) free(ifo->user_error[i]);
+input_format_per_line::~input_format_per_line() {
+    free(match);
+    free(aci);
+    free(srt);
+    free(mtag);
+    free(append);
+    free(write);
+    free(setvar);
+    free(defined_at);
+    
+    delete next;
 }
 
-void awtc_check_input_format(AW_window *aww)
-{
+input_format_struct::input_format_struct() {
+    memset((char *)this,0,sizeof(*this));
+}
+
+input_format_struct::~input_format_struct() {
+    free(autodetect);
+    free(system);
+    free(new_format);
+    free(begin);
+    free(sequencestart);
+    free(sequenceend);
+    free(sequencesrt);
+    free(sequenceaci);
+    free(filetag);
+    free(autotag);
+    free(end);
+    free(b1);
+    free(b2);
+
+    delete pl;
+}
+
+void awtc_check_input_format(AW_window *aww) {
     AW_root   *root  = aww->get_root();
     char     **files = GBS_read_dir(GB_path_in_ARBLIB("import", NULL), "*.ift");
     char       buffer[AWTC_IMPORT_CHECK_BUFFER_SIZE+10];
@@ -692,8 +695,6 @@ static void awtc_write_entry(GBDATA *gbd,const char *key,char *str,const char *t
     return;
 }
 
-typedef map<char, string> SetVariables;
-
 static string expandSetVariables(const SetVariables& variables, const string& source, bool& error_occurred, const input_format_struct *ifo) {
     string                 dest;
     string::const_iterator norm_start = source.begin();
@@ -707,19 +708,25 @@ static string expandSetVariables(const SetVariables& variables, const string& so
                 dest.append(1, *p);
             }
             else { // real variable
-                SetVariables::const_iterator var = variables.find(*p);
-                if (var == variables.end()) {
-                    const char *user_error = ifo->user_error[(unsigned char)*p-'a'];
-                    awti_assert(user_error);
+                const string *value = variables.get(*p);
+                if (!value) {
+                    const string *user_error = ifo->variable_errors.get(*p);
+
+                    char *error = 0;
+                    if (user_error) {
+                        error = GBS_global_string_copy("%s (variable '$%c' not set yet)", user_error->c_str(), *p);
+                    }
+                    else {
+                        error = GBS_global_string_copy("Variable '$%c' not set (missing SETVAR or SETGLOBAL?)", *p);
+                    }
                     
-                    char *error    = GBS_global_string_copy("%s (variable '$%c' not set yet)", user_error, *p);
                     dest.append(GBS_global_string("<%s>", error));
                     GB_export_error(error);
                     free(error);
                     error_occurred = true;
                 }
                 else {
-                    dest.append(var->second);
+                    dest.append(*value);
                 }
             }
             ++p;
@@ -734,15 +741,15 @@ static string expandSetVariables(const SetVariables& variables, const string& so
 
 GB_ERROR awtc_read_data(char *ali_name, int security_write)
 {
-    char num[6];
-    char text[100];
-    static int  counter = 0;
-    GBDATA *gb_species_data = GB_search(GB_MAIN,"species_data",GB_CREATE_CONTAINER);
-    GBDATA *gb_species;
-    char *p;
-    struct input_format_struct *ifo;
-    struct input_format_per_line *pl = 0;
-    ifo = awtcig.ifo;
+    char        num[6];
+    char        text[100];
+    static int  counter         = 0;
+    GBDATA     *gb_species_data = GB_search(GB_MAIN,"species_data",GB_CREATE_CONTAINER);
+    GBDATA     *gb_species;
+    char       *p;
+
+    input_format_struct   *ifo = awtcig.ifo;
+    input_format_per_line *pl  = 0;
 
     while (1){              // go to the start
         p = awtc_read_line(0,ifo->sequencestart,ifo->sequenceend);
@@ -751,8 +758,9 @@ GB_ERROR awtc_read_data(char *ali_name, int security_write)
     if (!p) return "Cannot find start of file: Wrong format or empty file";
 
     // lets start !!!!!
-    while(p){
-        SetVariables variables;
+    while(p) {
+        SetVariables variables(ifo->global_variables);
+
         counter++;
         sprintf(text,"Reading species %i",counter);
         if (counter %10 == 0){
@@ -843,9 +851,9 @@ GB_ERROR awtc_read_data(char *ali_name, int security_write)
                                 if (error) what_error = "APPEND or WRITE";
                             }
 
-                            if (!error && pl->tag) {
+                            if (!error && pl->mtag) {
                                 bool   err_flag;
-                                string expanded_tag = expandSetVariables(variables, string(pl->tag), err_flag, ifo);
+                                string expanded_tag = expandSetVariables(variables, string(pl->mtag), err_flag, ifo);
                                 if (err_flag) error = GB_await_error();
                                 else   tag          = GBS_string_2_key(expanded_tag.c_str());
                                 if (error) what_error = "TAG";
@@ -858,14 +866,12 @@ GB_ERROR awtc_read_data(char *ali_name, int security_write)
                             free(field);
                         }
 
-                        if (!error && pl->setvar) {
-                            variables[pl->setvar[0]]  = s;
-                        }
+                        if (!error && pl->setvar) variables.set(pl->setvar[0], s);
                         free(dele);
                     }
 
                     if (error) {
-                        error =  GBS_global_string("'%s'\nin %s of MATCH at #%i of import-format", error, what_error, pl->start_line);
+                        error = GBS_global_string("'%s'\nin %s of MATCH (defined at #%s)", error, what_error, pl->defined_at);
                     }
                 }
             }

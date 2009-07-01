@@ -5,6 +5,9 @@ UP	saveas.hlp
 UP	arb_intro.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
+
+SUB	importift.hlp
+
 SUB	universal_ift.hlp
 SUB	dewachter_ift.hlp
 SUB	rdp_ift.hlp
@@ -15,8 +18,6 @@ SUB	dssp_ift.hlp
 SUB	gde_ift.hlp
 SUB	gde_flat_ift.hlp
 SUB	ae2_ift.hlp
-
-SUB	importift.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
@@ -71,7 +72,7 @@ NOTES		Following file formats currently can be detected and loaded:
 
 WARNINGS	When using 'AUTO DETECT', check if the correct format is detected.
 		RDP files may for instance be identified as GenBank. In such case
-		choose '.../rdp.ift' manually.
+		choose 'rdp.ift' manually.
 
 BUGS		'AUTO DETECT' looks for certain key-words in the files. If it can't
 		find these words, it does not accept the file, even if the file has
