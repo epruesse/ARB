@@ -38,7 +38,7 @@ GB_BOOL GEN_is_genome_db(GBDATA *gb_main, int default_value) {
         if (!gb_genom_db) error = GB_await_error();
         else error              = GB_write_int(gb_genom_db, default_value);
 
-        if (error) GBK_terminate("Fatal in GEN_is_genome_db: %s", error);
+        if (error) GBK_terminatef("Fatal in GEN_is_genome_db: %s", error);
     }
 
     return GB_read_int(gb_genom_db) != 0;

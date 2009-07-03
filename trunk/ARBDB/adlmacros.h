@@ -261,7 +261,7 @@ inline void GB_TEST_TRANSACTION(GBDATA *gbd) {
 #define GB_TEST_NON_BUFFER(x,gerror)                                    \
     do {                                                                \
         if (GB_is_in_buffer(x)) {                                       \
-            GBK_terminate("%s: you are not allowed to write any data, which you get by pntr", gerror); \
+            GBK_terminatef("%s: you are not allowed to write any data, which you get by pntr", gerror); \
         }                                                               \
     } while(0)
 

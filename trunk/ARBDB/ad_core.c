@@ -706,7 +706,7 @@ long gb_create_key(GB_MAIN_TYPE *Main, const char *s, GB_BOOL create_gb_key) {
     if (!Main->local_mode) {
         long test_index = gbcmc_key_alloc((GBDATA *)Main->data,s);
         if (test_index != index) {
-            GBK_terminate("Database corrupt (allocating quark '%s' in server failed)",s);
+            GBK_terminatef("Database corrupt (allocating quark '%s' in server failed)",s);
         }
     }
     Main->keys[index].nref = 0;

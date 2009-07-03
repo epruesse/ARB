@@ -346,10 +346,10 @@ GB_ERROR GB_failedTo_error(const char *do_something, const char *special, GB_ERR
 #define PRINT2BUFFER_CHECKED(printed, buffer, bufsize, templat, parg)   \
     (printed) = PRINT2BUFFER(buffer, bufsize, templat, parg);           \
     if ((printed) < 0 || (size_t)(printed) >= (bufsize)) {              \
-        GBK_terminate("Internal buffer overflow (size=%zu, used=%i)\n", \
-                     (bufsize), (printed));                             \
+        GBK_terminatef("Internal buffer overflow (size=%zu, used=%i)\n", \
+                       (bufsize), (printed));                           \
     }
-    
+
 /* -------------------------------------------------------------------------------- */
 
 #if defined(DEBUG)
@@ -1423,26 +1423,30 @@ void GB_internal_error(const char *templat, ...) {
     free(full_message);
 }
 
-void GBK_terminate(const char *templat, ...) {
-    /* goes to header: __ATTR__FORMAT(1)  */
+void GBK_terminate(const char *error) {
 
     /* GBK_terminate is the emergency exit!
      * only used if no other way to recover
      */
     
+    fprintf(stderr, "Error: '%s'\n", error);
+    fputs("Can't continue - terminating..\n", stderr);
+    GBK_dump_backtrace(stderr, "GBK_terminate");
+
+    fflush(stderr);
+    ARB_SIGSEGV(0); // GBK_terminate shall not be called, fix reason for call (this will crash in RELEASE version)
+    exit(EXIT_FAILURE);
+}
+
+void GBK_terminatef(const char *templat, ...) {
+    /* goes to header: __ATTR__FORMAT(1)  */
     va_list parg;
 
     va_start(parg,templat);
     GB_CSTR error = gbs_vglobal_string(templat, parg, 0);
     va_end(parg);
 
-    fprintf(stderr, "Error: '%s'\n", error);
-    fputs("Can't continue - terminating..\n", stderr);
-    GBK_dump_backtrace(stderr, "GBK_terminate");
-
-    fflush(stderr);
-    ARB_SIGSEGV(0); // GBK_terminate shall not be called, fix reason (crash in DEBUG and NDEBUG version)
-    exit(EXIT_FAILURE);
+    GBK_terminate(error);
 }
 
 GB_ERROR GBK_assert_msg(const char *assertion, const char *file, int linenr) {
