@@ -294,7 +294,7 @@ void experiment_create_cb(AW_window *aww) {
             GBDATA *gb_dest = EXP_find_experiment_rel_exp_data(gb_experiment_data, dest);
 
             if (gb_dest) {
-                error  = GB_export_error("Experiment '%s' already exists", dest);
+                error  = GB_export_errorf("Experiment '%s' already exists", dest);
             }
             else {
                 gb_dest             = EXP_find_or_create_experiment_rel_exp_data(gb_experiment_data, dest);
@@ -325,7 +325,7 @@ void experiment_rename_cb(AW_window *aww){
                 GBDATA *gb_dest   = EXP_find_experiment_rel_exp_data(gb_experiment_data, dest);
 
                 if (!gb_source) error   = "Please select an experiment";
-                else if (gb_dest) error = GB_export_error("Experiment '%s' already exists", dest);
+                else if (gb_dest) error = GB_export_errorf("Experiment '%s' already exists", dest);
                 else {
                     GBDATA *gb_name     = GB_search(gb_source, "name", GB_STRING);
                     if (!gb_name) error = GB_await_error();
@@ -360,7 +360,7 @@ void experiment_copy_cb(AW_window *aww) {
             GBDATA *gb_dest   = EXP_find_experiment_rel_exp_data(gb_experiment_data, dest);
 
             if (!gb_source) error   = "Please select a experiment";
-            else if (gb_dest) error = GB_export_error("Experiment '%s' already exists", dest);
+            else if (gb_dest) error = GB_export_errorf("Experiment '%s' already exists", dest);
             else {
                 gb_dest             = GB_create_container(gb_experiment_data,"experiment");
                 if (!gb_dest) error = GB_await_error();

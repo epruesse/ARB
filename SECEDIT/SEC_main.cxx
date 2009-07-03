@@ -303,7 +303,7 @@ static void export_structure_to_file(AW_window *, AW_CL cl_db)
         fclose(out);
     }
     else {
-        error = GB_export_error("Can't write secondary structure to '%s'", filename);
+        error = GB_export_errorf("Can't write secondary structure to '%s'", filename);
     }
 
     if (error) aw_popup_ok(error);
@@ -364,7 +364,7 @@ static void import_structure_from_file(AW_window *, AW_CL cl_db) {
         FILE        *in       = fopen(filename, "rt"); // closed by FileBuffer
 
         if (!in) {
-            error = GB_export_error("Can't open file '%s'", filename);
+            error = GB_export_errorf("Can't open file '%s'", filename);
         }
         else {
             FileBuffer file(filename, in);

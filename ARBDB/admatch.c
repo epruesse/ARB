@@ -748,7 +748,7 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
         if (bar) {
             *(bar++) = 0;
         } else {
-            GB_export_error("SRT ERROR: no '=' found in command '%s' (position > %zi)", icommand, doppelpunkt-command+1);
+            GB_export_errorf("SRT ERROR: no '=' found in command '%s' (position > %zi)", icommand, doppelpunkt-command+1);
             free(command);
             free(in);
             return 0;
@@ -847,7 +847,7 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
                 free(GBS_strclose(strstruct));
                 free(command);
                 free(in);
-                GB_export_error("%s",error);
+                GB_export_error(error);
                 return 0;
             }
         }       /* while parsing */

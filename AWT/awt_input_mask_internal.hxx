@@ -124,12 +124,12 @@ public:
     bool has_global_id(const std::string& name) const { return global_ids.lookup(name); }
 
     GB_ERROR add_local_id(const std::string& name, awt_mask_item *handler) {
-        if (has_global_id(name)) return GB_export_error("ID '%s' already defined as GLOBAL", name.c_str());
+        if (has_global_id(name)) return GB_export_errorf("ID '%s' already defined as GLOBAL", name.c_str());
         return ids.add(name, handler);
     }
 
     GB_ERROR add_global_id(const std::string& name, awt_mask_item *handler) {
-        if (has_local_id(name)) return GB_export_error("ID '%s' already defined as LOCAL", name.c_str());
+        if (has_local_id(name)) return GB_export_errorf("ID '%s' already defined as LOCAL", name.c_str());
         return global_ids.add(name, handler);
     }
 
@@ -146,7 +146,7 @@ public:
         if (!error) {
             found             = ids.lookup(name);
             if (!found) found = global_ids.lookup(name);
-            if (!found) error = GB_export_error("No item '%s' declared", name.c_str());
+            if (!found) error = GB_export_errorf("No item '%s' declared", name.c_str());
         }
         return found;
     }

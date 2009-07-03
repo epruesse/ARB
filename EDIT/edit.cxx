@@ -444,9 +444,9 @@ static void create_new_sequence(AW_window *aww,AED_window *aedw, int do_what)   
                 break;
             default:
                 if (does_species_exists(spname)) {
-                    if (do_what == 1) error = GB_export_error("Species %s already exists",spname);
+                    if (do_what == 1) error = GB_export_errorf("Species %s already exists",spname);
                 }else{
-                    if (do_what == 0) error = GB_export_error("Cannot find species %s",spname);
+                    if (do_what == 0) error = GB_export_errorf("Cannot find species %s",spname);
                 }
         }
         if (error) break;

@@ -297,7 +297,7 @@ void primer_design_event_init( AW_window *aww, AW_CL cl_from_gene) {
         const char *alignment = GBT_get_default_alignment( GLOBAL_gb_main );
         gb_seq                = GBT_read_sequence( gb_species, alignment );
         if (!gb_seq) {
-            error = GB_export_error("Species '%s' has no data in alignment '%s'", selected_species, alignment);
+            error = GB_export_errorf("Species '%s' has no data in alignment '%s'", selected_species, alignment);
         }
     }
 
@@ -306,7 +306,7 @@ void primer_design_event_init( AW_window *aww, AW_CL cl_from_gene) {
 
         gb_gene = GEN_find_gene(gb_species, selected_gene);
         if (!gb_gene) {
-            error = GB_export_error("Species '%s' has no gene named '%s'", selected_species, selected_gene);
+            error = GB_export_errorf("Species '%s' has no gene named '%s'", selected_species, selected_gene);
         }
         else {
             genPos = GEN_read_position(gb_gene);

@@ -714,7 +714,7 @@ const char *di_protdist::makedists()
                         if (curv < 0.0) {
                             tt -= slope / curv;
                             if (tt > 10000.0) {
-                                aw_message(GB_export_error("INFINITE DISTANCE BETWEEN SPECIES %ld AND %ld; -1.0 WAS WRITTEN\n", i, j));
+                                aw_message(GB_export_errorf("INFINITE DISTANCE BETWEEN SPECIES %ld AND %ld; -1.0 WAS WRITTEN\n", i, j));
                                 tt = -1.0 / fracchange;
                                 break;
                             }
@@ -760,7 +760,7 @@ const char *di_protdist::makedists()
                                 double rel = 1 - (double) m / n;
                                 double drel = 1.0 - rel - 0.2 * rel * rel;
                                 if (drel < 0.0) {
-                                    aw_message(GB_export_error("DISTANCE BETWEEN SEQUENCES %3ld AND %3ld IS TOO LARGE FOR KIMURA FORMULA", i, j));
+                                    aw_message(GB_export_errorf("DISTANCE BETWEEN SEQUENCES %3ld AND %3ld IS TOO LARGE FOR KIMURA FORMULA", i, j));
                                     tt = -1.0;
                                 }else{
                                     tt = -log(drel);

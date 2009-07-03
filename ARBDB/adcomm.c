@@ -465,7 +465,7 @@ gbcms_talking_put_update(int socket, long *hsin, void *sin,GBDATA * gbd_dummy)
             return GBCM_SERVER_FAULT;
         gbd = (GBDATA *) buffer[2];
         if ( (error = gbcm_test_address((long *)gbd,GBTUM_MAGIC_NUMBER))) {
-            GB_export_error("address %p not valid 3712",gbd);
+            GB_export_errorf("address %p not valid 3712",gbd);
             GB_print_error();
             return GBCM_SERVER_FAULT;
         }
@@ -578,7 +578,7 @@ int gbcms_talking_init_transaction(int socket,long *hsin,void *sin,GBDATA *gb_du
 
         if (anz<0) continue;
         if (anz==0) {
-            GB_export_error("ARB_DB ERROR CLIENT TRANSACTION TIMEOUT, CLIENT DISCONNECTED (I waited %lu seconds)",timeout.tv_sec);
+            GB_export_errorf("ARB_DB ERROR CLIENT TRANSACTION TIMEOUT, CLIENT DISCONNECTED (I waited %lu seconds)",timeout.tv_sec);
             GB_print_error();
             gb_local->running_client_transaction = ARB_ABORT;
             GB_abort_transaction(gbd);
@@ -649,7 +649,7 @@ int gbcms_talking_begin_transaction(int socket,long *hsin,void *sin, long client
 
         if (anz<0) continue;
         if (anz==0) {
-            GB_export_error("ARB_DB ERROR CLIENT TRANSACTION TIMEOUT, CLIENT DISCONNECTED (I waited %lu seconds)",timeout.tv_sec);
+            GB_export_errorf("ARB_DB ERROR CLIENT TRANSACTION TIMEOUT, CLIENT DISCONNECTED (I waited %lu seconds)",timeout.tv_sec);
             GB_print_error();
             gb_local->running_client_transaction = ARB_ABORT;
             GB_abort_transaction(gbd);
@@ -679,7 +679,7 @@ int gbcms_talking_commit_transaction(int socket,long *hsin,void *sin, GBDATA *gb
     GBUSE(hs);
     sin = sin;
     if ( (error = gbcm_test_address((long *)gbd,GBTUM_MAGIC_NUMBER)) ) {
-        GB_export_error("address %p not valid 4783",gbd);
+        GB_export_errorf("address %p not valid 4783",gbd);
         GB_print_error();
         if (error) return GBCM_SERVER_FAULT;
         return GBCM_SERVER_OK;
@@ -705,7 +705,7 @@ int gbcms_talking_abort_transaction(int socket,long *hsin,void *sin, GBDATA *gbd
     GBUSE(hs);
     sin = sin;
     if ( (error = gbcm_test_address((long *)gbd,GBTUM_MAGIC_NUMBER)) ) {
-        GB_export_error("address %p not valid 4356",gbd);
+        GB_export_errorf("address %p not valid 4356",gbd);
         GB_print_error();
         return GBCM_SERVER_FAULT;
     }
@@ -829,7 +829,7 @@ int gbcms_talking_find(int socket, long *hsin, void *sin, GBDATA * gbd)
     GBUSE(hs);GBUSE(sin);
 
     if ( (error = gbcm_test_address((long *) gbd, GBTUM_MAGIC_NUMBER)) ) {
-        GB_export_error("address %p not valid 8734", gbd);
+        GB_export_errorf("address %p not valid 8734", gbd);
         GB_print_error();
         return GBCM_SERVER_FAULT;
     }
@@ -913,7 +913,7 @@ gbcms_talking_key_alloc(int socket, long *hsin, void *sin, GBDATA * gbd)
     GBUSE(hs);GBUSE(sin);
 
     if ( (error = gbcm_test_address((long *) gbd, GBTUM_MAGIC_NUMBER))) {
-        GB_export_error("address %p not valid 8734", gbd);
+        GB_export_errorf("address %p not valid 8734", gbd);
         GB_print_error();
         return GBCM_SERVER_FAULT;
     }
@@ -1478,7 +1478,7 @@ GB_ERROR gbcm_unfold_client(GBCONTAINER *gbd, long deep, long index_pos)
     }
     if (irror) {
         GB_ERROR error;
-        error = GB_export_error("GB_unfold (%s) read error",GB_read_key_pntr((GBDATA*)gbd));
+        error = GB_export_errorf("GB_unfold (%s) read error",GB_read_key_pntr((GBDATA*)gbd));
         return error;
     }
 
@@ -1496,7 +1496,7 @@ GB_ERROR gbcm_unfold_client(GBCONTAINER *gbd, long deep, long index_pos)
 GB_ERROR gbcmc_begin_sendupdate(GBDATA *gbd)
 {
     if (gbcm_write_two(GB_MAIN(gbd)->c_link->socket,GBCM_COMMAND_PUT_UPDATE,gbd->server_id) ) {
-        return GB_export_error("Cannot send '%s' to server",GB_KEY(gbd));
+        return GB_export_errorf("Cannot send '%s' to server",GB_KEY(gbd));
     }
     return 0;
 }
@@ -1507,7 +1507,7 @@ GB_ERROR gbcmc_end_sendupdate(GBDATA *gbd)
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     int socket = Main->c_link->socket;
     if (gbcm_write_two(socket,GBCM_COMMAND_PUT_UPDATE_END,gbd->server_id) ) {
-        return GB_export_error("Cannot send '%s' to server",GB_KEY(gbd));
+        return GB_export_errorf("Cannot send '%s' to server",GB_KEY(gbd));
     }
     gbcm_write_flush(socket);
     while (1) {
@@ -1531,9 +1531,9 @@ GB_ERROR gbcmc_sendupdate_create(GBDATA *gbd)
     int socket = Main->c_link->socket;
     GBCONTAINER *father = GB_FATHER(gbd);
 
-    if (!father) return GB_export_error("internal error #2453:%s",GB_KEY(gbd));
+    if (!father) return GB_export_errorf("internal error #2453:%s",GB_KEY(gbd));
     if (gbcm_write_two(socket,GBCM_COMMAND_PUT_UPDATE_CREATE,father->server_id) ) {
-        return GB_export_error("Cannot send '%s' to server",GB_KEY(gbd));
+        return GB_export_errorf("Cannot send '%s' to server",GB_KEY(gbd));
     }
     buffer = (long *)GB_give_buffer(1014);
     error = gbcm_write_bin(socket,gbd,buffer,0,-1,1);
@@ -1546,7 +1546,7 @@ GB_ERROR gbcmc_sendupdate_delete(GBDATA *gbd)
     if (gbcm_write_two( GB_MAIN(gbd)->c_link->socket,
                         GBCM_COMMAND_PUT_UPDATE_DELETE,
                         gbd->server_id) ) {
-        return GB_export_error("Cannot send '%s' to server",GB_KEY(gbd));
+        return GB_export_errorf("Cannot send '%s' to server",GB_KEY(gbd));
     }else{
         return 0;
     }
@@ -1558,9 +1558,9 @@ GB_ERROR gbcmc_sendupdate_update(GBDATA *gbd, int send_headera)
     GB_ERROR error;
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
 
-    if (!GB_FATHER(gbd)) return GB_export_error("internal error #2453 %s",GB_KEY(gbd));
+    if (!GB_FATHER(gbd)) return GB_export_errorf("internal error #2453 %s",GB_KEY(gbd));
     if (gbcm_write_two(Main->c_link->socket,GBCM_COMMAND_PUT_UPDATE_UPDATE,gbd->server_id) ) {
-        return GB_export_error("Cannot send '%s' to server",GB_KEY(gbd));
+        return GB_export_errorf("Cannot send '%s' to server",GB_KEY(gbd));
     }
     buffer = (long *)GB_give_buffer(1016);
     error = gbcm_write_bin(Main->c_link->socket,gbd,buffer,0,0,send_headera);
@@ -1611,7 +1611,7 @@ GB_ERROR gbcmc_begin_transaction(GBDATA *gbd)
 
     buffer = (long *)GB_give_buffer(1026);
     if (gbcm_write_two(Main->c_link->socket,GBCM_COMMAND_BEGIN_TRANSACTION,Main->clock) ) {
-        return GB_export_error("Cannot send '%s' to server",GB_KEY(gbd));
+        return GB_export_errorf("Cannot send '%s' to server",GB_KEY(gbd));
     }
     if (gbcm_write_flush(socket)) {
         return GB_export_error("ARB_DB CLIENT ERROR send failed 1626");
@@ -1681,7 +1681,7 @@ GB_ERROR gbcmc_init_transaction(GBCONTAINER *gbd)
     int socket = Main->c_link->socket;
 
     if (gbcm_write_two(socket,GBCM_COMMAND_INIT_TRANSACTION,Main->clock) ) {
-        return GB_export_error("Cannot send '%s' to server",GB_KEY((GBDATA*)gbd));
+        return GB_export_errorf("Cannot send '%s' to server",GB_KEY((GBDATA*)gbd));
     }
     gbcm_write_string(socket,Main->this_user->username);
     if (gbcm_write_flush(socket)) {
@@ -1723,7 +1723,7 @@ GB_ERROR gbcmc_commit_transaction(GBDATA *gbd)
     int socket = Main->c_link->socket;
 
     if (gbcm_write_two(socket,GBCM_COMMAND_COMMIT_TRANSACTION,gbd->server_id) ) {
-        return GB_export_error("Cannot send '%s' to server",GB_KEY(gbd));
+        return GB_export_errorf("Cannot send '%s' to server",GB_KEY(gbd));
     }
     if (gbcm_write_flush(socket)) {
         return GB_export_error("ARB_DB CLIENT ERROR send failed");
@@ -1738,7 +1738,7 @@ GB_ERROR gbcmc_abort_transaction(GBDATA *gbd)
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     int socket = Main->c_link->socket;
     if (gbcm_write_two(socket,GBCM_COMMAND_ABORT_TRANSACTION,gbd->server_id) ) {
-        return GB_export_error("Cannot send '%s' to server",GB_KEY(gbd));
+        return GB_export_errorf("Cannot send '%s' to server",GB_KEY(gbd));
     }
     if (gbcm_write_flush(socket)) {
         return GB_export_error("ARB_DB CLIENT ERROR send failed");
@@ -1950,7 +1950,7 @@ GB_ERROR gbcmc_send_undo_commands(GBDATA *gbd, enum gb_undo_commands command){
     }
     result = gbcm_read_string(socket);
     gbcm_read_flush(socket);
-    if (result) GB_export_error("%s",result);
+    if (result) GB_export_errorf("%s",result);
     return result;
 }
 
@@ -2025,7 +2025,7 @@ GB_ERROR gbcm_login(GBCONTAINER *gb_main,const char *user)
         Main->this_user = Main->users[i];
         return 0;
     }
-    return GB_export_error("Too many users in this database: User '%s' ",user);
+    return GB_export_errorf("Too many users in this database: User '%s' ",user);
 }
 
 long gbcmc_close(struct gbcmc_comm * link)
@@ -2066,7 +2066,7 @@ GB_ERROR gbcm_logout(GBCONTAINER *gb_main,char *user)
             return 0;
         }
     }
-    return GB_export_error("User '%s' not logged in",user);
+    return GB_export_errorf("User '%s' not logged in",user);
 }
 
 GB_CSTR GB_get_hostname(void){

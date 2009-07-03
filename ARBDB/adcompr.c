@@ -1012,7 +1012,7 @@ GB_BOOL GB_is_directory_compressed(GBDATA *gbd) {
                     data = gb_uncompress_longs(data, size, &new_size);
                 }
                 else{
-                    error = GB_export_error("Internal Error: Cannot uncompress data of field '%s'",GB_read_key_pntr(gbd));
+                    error = GB_export_errorf("Internal Error: Cannot uncompress data of field '%s'",GB_read_key_pntr(gbd));
                 }
 
                 if (error) {

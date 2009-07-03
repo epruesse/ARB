@@ -124,7 +124,7 @@ static long count_bases(GBDATA *gb_data) {
             break;
         }
         default:
-            GB_export_error("Data type %s is not supported", GB_get_type_name(gb_data));
+            GB_export_errorf("Data type %s is not supported", GB_get_type_name(gb_data));
             break;
     }
     return count;

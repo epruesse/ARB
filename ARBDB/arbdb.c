@@ -983,7 +983,7 @@ GB_ERROR GB_write_as_string(GBDATA *gbd,const char *val)
         case GB_INT:    return GB_write_int(gbd,atoi(val));
         case GB_FLOAT:  return GB_write_float(gbd,GB_atof(val));
         case GB_BITS:   return GB_write_bits(gbd,val,strlen(val),"0");
-        default:    return GB_export_error("Error: You cannot use GB_write_as_string on this type of entry (%s)",GB_read_key_pntr(gbd));
+        default:    return GB_export_errorf("Error: You cannot use GB_write_as_string on this type of entry (%s)",GB_read_key_pntr(gbd));
     }
 }
 
@@ -1011,11 +1011,11 @@ int GB_get_my_security(GBDATA *gbd)
 
 GB_ERROR gb_security_error(GBDATA *gbd){
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    const char *error  = GB_export_error("Protection: Attempt to change a level-%i-'%s'-entry, \n"
-                                         "but your current security level is only %i",
-                                         GB_GET_SECURITY_WRITE(gbd),
-                                         GB_read_key_pntr(gbd),
-                                         Main->security_level);
+    const char *error  = GB_export_errorf("Protection: Attempt to change a level-%i-'%s'-entry, \n"
+                                          "but your current security level is only %i",
+                                          GB_GET_SECURITY_WRITE(gbd),
+                                          GB_read_key_pntr(gbd),
+                                          Main->security_level);
 
 #if defined(DEBUG)
     fprintf(stderr, "%s\n", error);
@@ -1296,8 +1296,8 @@ GBDATA *GB_create(GBDATA *father,const char *key, GB_TYPES type)
     }
     GB_TEST_TRANSACTION(father);
     if ( GB_TYPE(father)!=GB_DB) {
-        GB_export_error("GB_create: father (%s) is not of GB_DB type (%i) (creating '%s')",
-                        GB_read_key_pntr(father),GB_TYPE(father),key);
+        GB_export_errorf("GB_create: father (%s) is not of GB_DB type (%i) (creating '%s')",
+                         GB_read_key_pntr(father),GB_TYPE(father),key);
         return NULL;
     };
     gbd = gb_make_entry((GBCONTAINER *)father, key, -1,0,type);
@@ -1329,8 +1329,8 @@ GBDATA *GB_create_container(GBDATA *father,const char *key)
     }
     GB_TEST_TRANSACTION(father);
     if ( GB_TYPE(father)!=GB_DB) {
-        GB_export_error("GB_create: father (%s) is not of GB_DB type (%i) (creating '%s')",
-                        GB_read_key_pntr(father),GB_TYPE(father),key);
+        GB_export_errorf("GB_create: father (%s) is not of GB_DB type (%i) (creating '%s')",
+                         GB_read_key_pntr(father),GB_TYPE(father),key);
         return NULL;
     };
     gbd = gb_make_container((GBCONTAINER *)father,key, -1, 0);
@@ -1348,7 +1348,7 @@ GB_ERROR GB_delete(GBDATA *source) {
 
     GB_TEST_TRANSACTION(source);
     if (GB_GET_SECURITY_DELETE(source)>GB_MAIN(source)->security_level) {
-        return GB_export_error("Security error in GB_delete: %s",GB_read_key_pntr(source));
+        return GB_export_errorf("Security error in GB_delete: %s",GB_read_key_pntr(source));
     }
 
     gb_main = GB_get_root(source);
@@ -1411,8 +1411,8 @@ GB_ERROR GB_copy_with_protection(GBDATA *dest, GBDATA *source, GB_BOOL copy_all_
     type = GB_TYPE(source);
     if (GB_TYPE(dest) != type)
     {
-        return GB_export_error("incompatible types in GB_copy (source %s:%u != %s:%u",
-                               GB_read_key_pntr(source), type, GB_read_key_pntr(dest), GB_TYPE(dest));
+        return GB_export_errorf("incompatible types in GB_copy (source %s:%u != %s:%u",
+                                GB_read_key_pntr(source), type, GB_read_key_pntr(dest), GB_TYPE(dest));
     }
 
     switch (type)
@@ -1450,8 +1450,8 @@ GB_ERROR GB_copy_with_protection(GBDATA *dest, GBDATA *source, GB_BOOL copy_all_
 
             if (GB_TYPE(destc) != GB_DB)
             {
-                GB_ERROR err = GB_export_error("GB_COPY Type conflict %s:%i != %s:%i",
-                                               GB_read_key_pntr(dest), GB_TYPE(dest), GB_read_key_pntr(source), GB_DB);
+                GB_ERROR err = GB_export_errorf("GB_COPY Type conflict %s:%i != %s:%i",
+                                                GB_read_key_pntr(dest), GB_TYPE(dest), GB_read_key_pntr(source), GB_DB);
                 GB_internal_error(err);
                 return err;
             }
@@ -1625,7 +1625,7 @@ GB_ERROR GB_set_temporary(GBDATA *gbd)
 {
     GB_TEST_TRANSACTION(gbd);
     if (GB_GET_SECURITY_DELETE(gbd)>GB_MAIN(gbd)->security_level)
-        return GB_export_error("Security error in GB_set_temporary: %s",GB_read_key_pntr(gbd));
+        return GB_export_errorf("Security error in GB_set_temporary: %s",GB_read_key_pntr(gbd));
     gbd->flags.temporary = 1;
     gb_touch_entry(gbd,gb_changed);
     return 0;
@@ -1730,8 +1730,8 @@ GB_ERROR GB_begin_transaction(GBDATA *gbd) {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     gbd                = (GBDATA *)Main->data;
     if (Main->transaction>0) {
-        error = GB_export_error("GB_begin_transaction called %i !!!",
-                                Main->transaction);
+        error = GB_export_errorf("GB_begin_transaction called %i !!!",
+                                 Main->transaction);
         GB_internal_error(error);
         return GB_push_transaction(gbd);
     }
@@ -2274,8 +2274,8 @@ GB_ERROR GB_release(GBDATA *gbd){
         GB_update_server(gbd);
     }
     if (GB_TYPE(gbd) != GB_DB) {
-        GB_ERROR error=GB_export_error("You cannot release non container (%s)",
-                                       GB_read_key_pntr(gbd));
+        GB_ERROR error = GB_export_errorf("You cannot release non container (%s)",
+                                          GB_read_key_pntr(gbd));
         GB_internal_error(error);
         return error;
     }
@@ -2335,9 +2335,9 @@ GB_ERROR GB_resort_data_base(GBDATA *gb_main, GBDATA **new_order_list, long list
         return GB_export_error("Sorry: this program is not the arbdb server, you cannot resort your data");
 
     if (GB_read_clients(gb_main)>0)
-        return GB_export_error("There are %li clients (editors, tree programms) connected to this server,\n"
-                               "please close clients and rerun operation",
-                               GB_read_clients(gb_main));
+        return GB_export_errorf("There are %li clients (editors, tree programms) connected to this server,\n"
+                                "please close clients and rerun operation",
+                                GB_read_clients(gb_main));
 
     if (listsize <=0) return 0;
 
@@ -2426,7 +2426,7 @@ long GB_read_usr_public(GBDATA *gbd)
 long GB_read_usr_private(GBDATA *gbd) {
     GBCONTAINER *gbc = (GBCONTAINER *)gbd;
     if (GB_TYPE(gbc) != GB_DB) {
-        GB_ERROR error = GB_export_error("GB_write_usr_private: not a container (%s)",GB_read_key_pntr(gbd));
+        GB_ERROR error = GB_export_errorf("GB_write_usr_private: not a container (%s)",GB_read_key_pntr(gbd));
         GB_internal_error(error);
         return 0;
     }
@@ -2436,7 +2436,7 @@ long GB_read_usr_private(GBDATA *gbd) {
 GB_ERROR GB_write_usr_private(GBDATA *gbd,long ref) {
     GBCONTAINER *gbc = (GBCONTAINER *)gbd;
     if (GB_TYPE(gbc) != GB_DB) {
-        GB_ERROR error = GB_export_error("GB_write_usr_private: not a container (%s)",GB_read_key_pntr(gbd));
+        GB_ERROR error = GB_export_errorf("GB_write_usr_private: not a container (%s)",GB_read_key_pntr(gbd));
         GB_internal_error(error);
         return 0;
     }

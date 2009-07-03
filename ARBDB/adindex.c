@@ -799,7 +799,7 @@ char *GB_undo_info(GBDATA *gb_main,GB_UNDO_TYPE type) {
 GB_ERROR GB_set_undo_mem(GBDATA *gbd, long memsize){
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     if (memsize < _GBCMC_UNDOCOM_SET_MEM){
-        return  GB_export_error("Too less UNDO memory specified: should be more than %i",
+        return GB_export_errorf("Not enough UNDO memory specified: should be more than %i",
                                 _GBCMC_UNDOCOM_SET_MEM);
     }
     Main->undo->max_size_of_all_undos = memsize;

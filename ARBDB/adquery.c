@@ -440,7 +440,7 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag
         if (gbsp && create) {
             GB_TYPES oldType = GB_TYPE(gbsp);
             if (create != oldType) { /* type mismatch */
-                GB_export_error("Inconsistent type for field '%s' (existing=%i, expected=%i)", str, oldType, create);
+                GB_export_errorf("Inconsistent type for field '%s' (existing=%i, expected=%i)", str, oldType, create);
                 return NULL;
             }
         }
@@ -480,7 +480,7 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag
             *(s2++) = 0;
             if (seperator == '-') {
                 if ((*s2)  != '>'){
-                    GB_export_error("Invalid key for gb_search '%s'",str);
+                    GB_export_errorf("Invalid key for gb_search '%s'",str);
                     GB_print_error();
                     return NULL;
                 }
@@ -553,7 +553,7 @@ static GBDATA *gb_expect_type(GBDATA *gbd, long expected_type, const char *field
 
     long type = GB_TYPE(gbd);
     if (type != expected_type) {
-        GB_export_error("Field '%s' has wrong type (found=%li, expected=%li)", fieldname, type, expected_type);
+        GB_export_errorf("Field '%s' has wrong type (found=%li, expected=%li)", fieldname, type, expected_type);
         gbd = 0;
     }
     return gbd;
@@ -945,7 +945,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
                 if (c=='"' ) {      /* search the second " */
                     const char *hp = gbs_search_second_x(s1+1);
                     if (!hp){
-                        GB_export_error("unbalanced '\"' in '%s'",commands);
+                        GB_export_errorf("unbalanced '\"' in '%s'",commands);
                         return NULL;
                     }
                     while (s1 <= hp) *(s2++) = *(s1++);
@@ -1162,7 +1162,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
         free(s1);
     }
 
-    GB_export_error("Command '%s' failed:\nReason: %s", commands, error);
+    GB_export_errorf("Command '%s' failed:\nReason: %s", commands, error);
     return NULL;
 }
 

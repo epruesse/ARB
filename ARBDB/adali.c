@@ -175,8 +175,8 @@ GB_ERROR GBT_check_alignment_name(const char *alignment_name)
     GB_ERROR error;
     if ( (error = GB_check_key(alignment_name)) ) return error;
     if (strncmp(alignment_name,"ali_",4)){
-        return GB_export_error("your alignment_name '%s' must start with 'ali_'",
-                               alignment_name);
+        return GB_export_errorf("your alignment_name '%s' must start with 'ali_'",
+                                alignment_name);
     }
     return 0;
 }
@@ -268,7 +268,7 @@ GBDATA *GBT_create_alignment(GBDATA *gbd, const char *name, long len, long align
 
     if (!result) {
         ad_assert(error);
-        GB_export_error("in GBT_create_alignment: %s", error);
+        GB_export_errorf("in GBT_create_alignment: %s", error);
     }
 #if defined(DEBUG)
     else ad_assert(!error);
@@ -715,7 +715,7 @@ GBDATA *GBT_get_alignment(GBDATA *gb_main, const char *aliname) {
     GBDATA *gb_alignment_name = GB_find_string(gb_presets,"alignment_name",aliname,GB_IGNORE_CASE,down_2_level);
     
     if (!gb_alignment_name) {
-        GB_export_error("alignment '%s' not found", aliname);
+        GB_export_errorf("alignment '%s' not found", aliname);
         return NULL;
     }
     return GB_get_father(gb_alignment_name);
@@ -739,7 +739,7 @@ GB_ERROR GBT_set_alignment_len(GBDATA *gb_main, const char *aliname, long new_le
         if (!error) error = GBT_write_int(gb_alignment, "aligned", 0);             /* mark as unaligned */
         GB_pop_my_security(gb_main);
     }
-    else error = GB_export_error("Alignment '%s' not found", aliname);
+    else error = GB_export_errorf("Alignment '%s' not found", aliname);
     return error;
 }
 
@@ -929,7 +929,7 @@ NOT4PERL char *GBT_read_gene_sequence_and_length(GBDATA *gb_gene, GB_BOOL use_re
 
     if (error) {
         char *id = GEN_global_gene_identifier(gb_gene, gb_species);
-        error    = GB_export_error("Can't read sequence of '%s' (Reason: %s)", id, error);
+        error    = GB_export_errorf("Can't read sequence of '%s' (Reason: %s)", id, error);
         free(id);
         free(result);
         result   = 0;

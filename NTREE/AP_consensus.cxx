@@ -608,7 +608,7 @@ void CON_calculate_cb(AW_window *aw )
     GB_push_transaction(GLOBAL_gb_main);
 
     long maxalignlen = GBT_get_alignment_len(GLOBAL_gb_main,align);
-    if (maxalignlen <= 0) error = GB_export_error("alignment '%s' doesn't exist", align);
+    if (maxalignlen <= 0) error = GB_export_errorf("alignment '%s' doesn't exist", align);
 
     if (!error) {
         int isamino         = GBT_is_alignment_protein(GLOBAL_gb_main,align);

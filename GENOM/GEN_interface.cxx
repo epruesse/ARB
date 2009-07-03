@@ -358,7 +358,7 @@ void gene_rename_cb(AW_window *aww) {
                 GBDATA *gb_dest   = GEN_find_gene_rel_gene_data(gb_gene_data, dest);
 
                 if (!gb_source) error   = "Please select a gene first";
-                else if (gb_dest) error = GB_export_error("Gene '%s' already exists", dest);
+                else if (gb_dest) error = GB_export_errorf("Gene '%s' already exists", dest);
                 else {
                     GBDATA *gb_name = GB_search(gb_source, "name", GB_STRING);
 
@@ -416,7 +416,7 @@ void gene_copy_cb(AW_window *aww){
             GBDATA *gb_dest   = GEN_find_gene_rel_gene_data(gb_gene_data, dest);
 
             if (!gb_source) error   = "Please select a gene";
-            else if (gb_dest) error = GB_export_error("Gene '%s' already exists", dest);
+            else if (gb_dest) error = GB_export_errorf("Gene '%s' already exists", dest);
             else {
                 gb_dest             = GB_create_container(gb_gene_data,"gene");
                 if (!gb_dest) error = GB_await_error();

@@ -77,7 +77,7 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, GBDATA *gbmain, int do_sleep)
     GB_ERROR error = 0;
 
     if (!(tcp_id = GBS_read_arb_tcp(arb_tcp_env))) {
-        error = GB_export_error("Entry '%s' in $(ARBHOME)/lib/arb_tcp.dat not found", arb_tcp_env);
+        error = GB_export_errorf("Entry '%s' in $(ARBHOME)/lib/arb_tcp.dat not found", arb_tcp_env);
     }
     else {
         const char *server       = strchr(tcp_id, 0) + 1;
@@ -128,7 +128,7 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, GBDATA *gbmain, int do_sleep)
                 const char *port = strchr(tcp_id, ':');
 
                 if (!port) {
-                    error = GB_export_error("Error: Missing ':' in line '%s' file $(ARBHOME)/lib/arb_tcp.dat", arb_tcp_env);
+                    error = GB_export_errorf("Error: Missing ':' in line '%s' file $(ARBHOME)/lib/arb_tcp.dat", arb_tcp_env);
                 }
                 else {
                     char *remoteCommand = GBS_global_string_copy("$ARBHOME/bin/%s %s -T%s", server, serverparams, port);
@@ -263,7 +263,7 @@ GB_ERROR arb_look_and_kill_server(int magic_number, const char *arb_tcp_env)
     GB_ERROR    error = 0;
 
     if (!(tcp_id = GBS_read_arb_tcp(arb_tcp_env))) {
-        error = GB_export_error("Missing line '%s' in $(ARBHOME)/lib/arb_tcp.dat:",arb_tcp_env);
+        error = GB_export_errorf("Missing line '%s' in $(ARBHOME)/lib/arb_tcp.dat:",arb_tcp_env);
     }
     else {
         const char *server = strchr(tcp_id, 0)+1;
@@ -273,7 +273,7 @@ GB_ERROR arb_look_and_kill_server(int magic_number, const char *arb_tcp_env)
             const char *command = GBS_global_string("%s -kill -T%s &", server, tcp_id);
             /* sprintf(command, "%s -kill -T%s &", server, tcp_id); */
             if (system(command)) {
-                error = GB_export_error("Cannot execute '%s'",command);
+                error = GB_export_errorf("Cannot execute '%s'",command);
             }
             aisc_close(glservercntrl.link);
             glservercntrl.link = 0;

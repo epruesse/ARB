@@ -47,7 +47,7 @@ GBDATA *GBT_find_or_create_item_rel_item_data(GBDATA *gb_item_data, const char *
     if (!gb_item && !error) error = GB_await_error();
     if (error) {
         gb_item = 0;
-        GB_export_error("Can't create %s '%s': %s", itemname, id, error);
+        GB_export_errorf("Can't create %s '%s': %s", itemname, id, error);
     }
 
     return gb_item;
@@ -91,7 +91,7 @@ GBDATA *GBT_expect_item_rel_item_data(GBDATA *gb_item_data, const char *id_field
     if (!gb_found && !GB_have_error()) { // item simply not exists
         GBDATA     *gb_any   = GB_find(gb_item_data, id_field, down_2_level);
         const char *itemname = gb_any ? GB_read_key_pntr(GB_get_father(gb_any)) : "<item>";
-        GB_export_error("Could not find %s with %s '%s'", itemname, id_field, id_value);
+        GB_export_errorf("Could not find %s with %s '%s'", itemname, id_field, id_value);
     }
     return gb_found;
 }

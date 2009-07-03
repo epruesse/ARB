@@ -16,7 +16,7 @@ GBDATA *GB_follow_link(GBDATA *gb_link){
     if (!link) return 0;
     s = strchr(link,':');
     if (!s){
-        GB_export_error("Your link '%s' does not contain a ':' character",link);
+        GB_export_errorf("Your link '%s' does not contain a ':' character",link);
         return 0;
     }
     c = *s;
@@ -24,7 +24,7 @@ GBDATA *GB_follow_link(GBDATA *gb_link){
     lf = (GB_Link_Follower)GBS_read_hash(Main->resolve_link_hash,link);
     *s = c;
     if (!lf){
-        GB_export_error("Your link tag '%s' is unknown to the system",link);
+        GB_export_errorf("Your link tag '%s' is unknown to the system",link);
         return 0;
     }
     result = lf(GB_get_root(gb_link),gb_link,s+1);

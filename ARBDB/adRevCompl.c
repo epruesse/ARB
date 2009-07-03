@@ -104,7 +104,7 @@ GB_ERROR GBT_determine_T_or_U(GB_alignment_type alignment_type, char *T_or_U, co
         case GB_AT_DNA: *T_or_U = 'T'; break;
         default: {
             *T_or_U = 0;
-            return GB_export_error("%s not available for alignment-type", supposed_target);
+            return GB_export_errorf("%s not available for alignment-type", supposed_target);
         }
     }
     return 0;

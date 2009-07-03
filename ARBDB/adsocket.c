@@ -357,7 +357,7 @@ GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *p
                 if (mach_name[0]) free((char *)mach_name[0]);
                 return "Could not open socket on Server";
             }
-            if (chmod(mach_name[0],0777)) return GB_export_error("Cannot change mode of socket '%s'",mach_name[0]);
+            if (chmod(mach_name[0],0777)) return GB_export_errorf("Cannot change mode of socket '%s'",mach_name[0]);
         }
         *unix_name = mach_name[0];
         return 0;
@@ -645,14 +645,14 @@ char *GB_follow_unix_link(const char *path){    /* returns the real path of a fi
 
 GB_ERROR GB_symlink(const char *name1, const char *name2){  /* name1 is the existing file !!! */
     if (symlink(name1,name2)<0){
-        return GB_export_error("Cannot create symlink '%s' to file '%s'",name2,name1);
+        return GB_export_errorf("Cannot create symlink '%s' to file '%s'",name2,name1);
     }
     return 0;
 }
 
 GB_ERROR GB_set_mode_of_file(const char *path,long mode)
 {
-    if (chmod(path, (int)mode)) return GB_export_error("Cannot change mode of '%s'",path);
+    if (chmod(path, (int)mode)) return GB_export_errorf("Cannot change mode of '%s'",path);
     return 0;
 }
 
@@ -734,7 +734,7 @@ char *GB_map_FILE(FILE *in,int writeable){
         buffer = (char*)mmap(NULL, size, PROT_READ, MAP_SHARED, fi, 0);
     }
     if (buffer == MAP_FAILED){
-        GB_export_error("GB_map_file: Error Out of Memory: mmap failes (errno: %i)", errno);
+        GB_export_errorf("GB_map_file: Error Out of Memory: mmap failes (errno: %i)", errno);
         return NULL;
     }
     return buffer;
@@ -745,7 +745,7 @@ char *GB_map_file(const char *path,int writeable){
     char *buffer;
     in = fopen(path,"r");
     if (!in) {
-        GB_export_error("GB_map_file: sorry file '%s' not readable",path);
+        GB_export_errorf("GB_map_file: sorry file '%s' not readable",path);
         return NULL;
     }
     buffer = GB_map_FILE(in,writeable);
@@ -1244,7 +1244,7 @@ GB_CSTR GB_get_full_path(const char *anypath) {
         GB_export_error("NULL path (internal error)");
     }
     else if (strlen(anypath) >= PATH_MAX) {
-        GB_export_error("Path too long (> %i chars)", PATH_MAX-1);
+        GB_export_errorf("Path too long (> %i chars)", PATH_MAX-1);
     }
     else {
         path_toggle = 1-path_toggle; // use 2 buffers in turn

@@ -1002,7 +1002,7 @@ GB_ERROR ED4_pfold_set_SAI(char **protstruct, GBDATA *gb_main, const char *align
     else {
         if (protstruct_len) protstruct_len = 0;
         if (aw_root->awar(PFOLD_AWAR_ENABLE)->read_int()) {
-            error = GB_export_error( "SAI \"%s\" does not exist.\nDisabled protein structure display!", SAI_name );
+            error = GB_export_errorf( "SAI \"%s\" does not exist.\nDisabled protein structure display!", SAI_name );
             aw_root->awar(PFOLD_AWAR_ENABLE)->write_int(0);
         }
     }

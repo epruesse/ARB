@@ -211,7 +211,7 @@ static GB_ERROR trace_params(int argc, const GBL *argv, struct gbl_param *ppara,
             }
             freeset(params, NULL);
             res = GBS_strclose(str);
-            err = GB_export_error("Unknown Parameter '%s' in command '%s'\n\tPARAMETERS:\n%s",argv[i].str,com,res);
+            err = GB_export_errorf("Unknown Parameter '%s' in command '%s'\n\tPARAMETERS:\n%s",argv[i].str,com,res);
             free(res);
             return err;
         }
@@ -874,7 +874,7 @@ static GB_ERROR gbl_string_convert(GBL_command_arguments *args)
     if (strcmp(args->command, "lower")      == 0) mode = 0;
     else if (strcmp(args->command, "upper") == 0) mode = 1;
     else if (strcmp(args->command, "caps")  == 0) mode = 2;
-    else return GB_export_error("Unknown command '%s'", args->command);
+    else return GB_export_errorf("Unknown command '%s'", args->command);
 
     if (args->cparam!=0) return GBS_global_string("syntax: %s (no parameters)", args->command);
     
@@ -2296,7 +2296,7 @@ static char *gbl_read_seq_sai_or_species(const char *species, const char *sai, c
 
     if (error) {
         gb_assert(!seq);
-        GB_export_error("%s", error);
+        GB_export_error(error);
     }
 
     return seq;

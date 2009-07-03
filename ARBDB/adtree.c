@@ -624,7 +624,7 @@ GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main,const char *tree_name, long str
     }
 
     gb_assert(error);
-    GB_export_error("Couldn't read tree '%s' (Reason: %s)", tree_name, error);
+    GB_export_errorf("Couldn't read tree '%s' (Reason: %s)", tree_name, error);
     return NULL;
 }
 
@@ -800,12 +800,12 @@ const char *GBT_tree_info_string(GBDATA *gb_main, const char *tree_name, int max
     GBDATA     *gb_tree = GBT_get_tree(gb_main,tree_name);
     
     if (!gb_tree) {
-        GB_export_error("tree '%s' not found",tree_name);
+        GB_export_errorf("tree '%s' not found",tree_name);
     }
     else {
         GBDATA *gb_nnodes = GB_entry(gb_tree,"nnodes");
         if (!gb_nnodes) {
-            GB_export_error("nnodes not found in tree '%s'",tree_name);
+            GB_export_errorf("nnodes not found in tree '%s'",tree_name);
         }
         else {
             const char *sizeInfo = GBS_global_string("(%li:%i)", GB_read_int(gb_nnodes)+1, GB_read_security_write(gb_tree));
@@ -841,7 +841,7 @@ GB_ERROR GBT_check_tree_name(const char *tree_name)
     GB_ERROR error;
     if ( (error = GB_check_key(tree_name)) ) return error;
     if (strncmp(tree_name,"tree_",5)){
-        return GB_export_error("your treename '%s' does not begin with 'tree_'",tree_name);
+        return GB_export_errorf("your treename '%s' does not begin with 'tree_'",tree_name);
     }
     return 0;
 }

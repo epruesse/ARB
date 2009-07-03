@@ -224,7 +224,7 @@ GB_ERROR TREE_write_XML(GBDATA *gb_main, const char *db_name, const char *tree_n
     GB_ERROR  error  = 0;
     FILE     *output = fopen(path, "w");
 
-    if (!output) error = GB_export_error("file '%s' could not be opened for writing", path);
+    if (!output) error = GB_export_errorf("file '%s' could not be opened for writing", path);
     else {
         GB_transaction gb_dummy(gb_main);
 
@@ -302,7 +302,7 @@ GB_ERROR TREE_write_Newick(GBDATA *gb_main, char *tree_name, const TREE_node_tex
     GB_ERROR  error  = 0;
     FILE     *output = fopen(path, "w");
 
-    if (!output) error = GB_export_error("file '%s' could not be opened for writing", path);
+    if (!output) error = GB_export_errorf("file '%s' could not be opened for writing", path);
     else {
         GB_transaction gb_dummy(gb_main);
 

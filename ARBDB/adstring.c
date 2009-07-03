@@ -55,7 +55,7 @@ GB_ERROR gb_scan_directory(char *basename, struct gb_scandir *sd) { /* goes to h
 
     dirp = opendir(fulldir);
     if (!dirp){
-        GB_ERROR error = GB_export_error("Directory %s of file %s.arb not readable",fulldir,file);
+        GB_ERROR error = GB_export_errorf("Directory %s of file %s.arb not readable",fulldir,file);
         free(path);
         return error;
     }
@@ -210,7 +210,10 @@ void GB_raise_critical_error(const char *msg) {
  *  and:       export the error)
  * 
  * GB_export_error() shall only export, not return the error message.
- * if only used for formatting GBS_global_string shall be used.
+ * if only used for formatting GBS_global_string shall be used
+ * (most cases where GB_export_errorf is used are candidates for this.
+ *  GB_export_error was generally misused for this, before
+ *  GBS_global_string was added!)
  *
  * GB_export_IO_error() shall not export and be renamed into GB_IO_error()
  *
@@ -223,18 +226,24 @@ void GB_raise_critical_error(const char *msg) {
 
 static char *GB_error_buffer = 0;
 
-GB_ERROR GB_export_error(const char *templat, ...) {
-    /* goes to header: __ATTR__FORMAT(1) */
+GB_ERROR GB_export_error(const char *error) { // just a temp hack around format-warnings
+    return GB_export_errorf("%s", error);
+}
+
+GB_ERROR GB_export_errorf(const char *templat, ...) {
+    /* goes to header: __ATTR__FORMAT(1) __ATTR__DEPRECATED */
 
     char     buffer[GBS_GLOBAL_STRING_SIZE];
-    char    *p  = buffer;
+    char    *p = buffer;
     va_list  parg;
+    
     memset(buffer,0,1000);
+
 #if defined(DEVEL_RALF)
-#warning dont prepend error here    
+#warning dont prepend error here
 #endif /* DEVEL_RALF */
-    sprintf (buffer,"ARB ERROR: ");
-    p          += strlen(p);
+
+    p += sprintf(buffer,"ARB ERROR: ");
     va_start(parg,templat);
 
     vsprintf(p,templat,parg);
@@ -567,8 +576,8 @@ GB_ERROR GB_check_key(const char *key) { /* goes to header: __ATTR__USERESULT */
 
     if (!key || key[0] == 0) return GB_export_error("Empty key is not allowed");
     len = strlen(key);
-    if (len>GB_KEY_LEN_MAX) return GB_export_error("Invalid key '%s': too long",key);
-    if (len < GB_KEY_LEN_MIN) return GB_export_error("Invalid key '%s': too short",key);
+    if (len>GB_KEY_LEN_MAX) return GB_export_errorf("Invalid key '%s': too long",key);
+    if (len < GB_KEY_LEN_MIN) return GB_export_errorf("Invalid key '%s': too short",key);
 
     for (i = 0; key[i]; ++i) {
         char c = key[i];
@@ -576,7 +585,7 @@ GB_ERROR GB_check_key(const char *key) { /* goes to header: __ATTR__USERESULT */
         if ( (c>='A') && (c<='Z')) continue;
         if ( (c>='0') && (c<='9')) continue;
         if ( (c=='_') ) continue;
-        return GB_export_error("Invalid character '%c' in '%s'; allowed: a-z A-Z 0-9 '_' ", c, key);
+        return GB_export_errorf("Invalid character '%c' in '%s'; allowed: a-z A-Z 0-9 '_' ", c, key);
     }
 
     return 0;
@@ -588,8 +597,8 @@ GB_ERROR GB_check_link_name(const char *key) { /* goes to header: __ATTR__USERES
 
     if (!key || key[0] == 0) return GB_export_error("Empty key is not allowed");
     len = strlen(key);
-    if (len>GB_KEY_LEN_MAX) return GB_export_error("Invalid key '%s': too long",key);
-    if (len < 1) return GB_export_error("Invalid key '%s': too short",key); // here it differs from GB_check_key
+    if (len>GB_KEY_LEN_MAX) return GB_export_errorf("Invalid key '%s': too long",key);
+    if (len < 1) return GB_export_errorf("Invalid key '%s': too short",key); // here it differs from GB_check_key
 
     for (i = 0; key[i]; ++i) {
         char c = key[i];
@@ -597,7 +606,7 @@ GB_ERROR GB_check_link_name(const char *key) { /* goes to header: __ATTR__USERES
         if ( (c>='A') && (c<='Z')) continue;
         if ( (c>='0') && (c<='9')) continue;
         if ( (c=='_') ) continue;
-        return GB_export_error("Invalid character '%c' in '%s'; allowed: a-z A-Z 0-9 '_' ", c, key);
+        return GB_export_errorf("Invalid character '%c' in '%s'; allowed: a-z A-Z 0-9 '_' ", c, key);
     }
 
     return 0;
@@ -630,7 +639,7 @@ GB_ERROR GB_check_hkey(const char *key) { /* goes to header: __ATTR__USERESULT *
 
                 if (c == '-') {
                     if (key_end[1] != '>') {
-                        err = GB_export_error("'>' expected after '-' in '%s'", key);
+                        err = GB_export_errorf("'>' expected after '-' in '%s'", key);
                     }
                     start = key_end+2;
                 }
@@ -1085,7 +1094,7 @@ char **GBS_read_dir(const char *dir, const char *mask) {
                 lslash[0] = '/';
             }
 
-            if (!names) GB_export_error("can't read directory '%s'", fulldir);
+            if (!names) GB_export_errorf("can't read directory '%s'", fulldir);
         }
     }
     else {

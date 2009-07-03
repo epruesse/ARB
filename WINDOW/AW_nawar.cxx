@@ -601,7 +601,7 @@ AW_default AW_root::open_default(const char *default_name, bool create_if_missin
         const char *shown_name      = strrchr(default_name, '/');
         if (!shown_name) shown_name = default_name;
 
-        GBK_terminate(GBS_global_string("Error loading properties '%s': %s", shown_name, error));
+        GBK_terminatef(GBS_global_string("Error loading properties '%s': %s", shown_name, error));
     }
     return (AW_default) gb_default;
 }

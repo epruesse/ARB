@@ -578,7 +578,7 @@ double ap_calc_bootstrap_remark_sub(int seq_len, char *old, char *ne){
     for (i=0;i<seq_len;i++){
         int diff = ne[i] - old[i];
         if (diff > 1 || diff < -1){
-            GB_export_error("shit shit shit, diff by nni at one position not in [-1,1]: %i:%i - %i",diff,old[i],ne[i]);
+            GB_export_errorf("diff by nni at one position not in [-1,1]: %i:%i - %i",diff,old[i],ne[i]);
             GB_print_error();
             continue;
         }

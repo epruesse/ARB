@@ -1872,7 +1872,7 @@ int main(int argc, char **argv)
             ap_main->commands.calc_bootstrap = 1;
             continue;
         }
-        GB_export_error("Unknown option '%s'",argv[0]);
+        GB_export_errorf("Unknown option '%s'",argv[0]);
         GB_print_error();
         printf("    Options:                Meaning:\n"
                "\n"

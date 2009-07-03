@@ -1253,7 +1253,7 @@ static void group_species(int use_field, AW_window *use_as_main_window) {
             error = "Please select some species in order to insert them into new groups";
         }
         else if (!foundField) {
-            error = GB_export_error("Field not found: '%s'", field_name);
+            error = GB_export_errorf("Field not found: '%s'", field_name);
         }
     }
 
@@ -1786,7 +1786,7 @@ static GB_ERROR createDataFromConsensus(GBDATA *gb_species, ED4_group_manager *g
         error = GB_write_pntr(gb_data, consensus, len, len);
     }
     else {
-        error = GB_export_error("Can't find alignment '%s'", ali);
+        error = GB_export_errorf("Can't find alignment '%s'", ali);
     }
     free(consensus);
     return error;
