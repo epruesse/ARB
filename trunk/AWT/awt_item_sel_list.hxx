@@ -15,7 +15,7 @@
 
 /***********************    FIELD INFORMATIONS  ************************/
 
-typedef enum awt_selected_fields {
+enum awt_selected_fields {
     AWT_SF_STANDARD = 0,
     AWT_SF_PSEUDO   = 1,
     AWT_SF_HIDDEN   = 2,

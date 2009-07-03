@@ -1,5 +1,17 @@
-typedef struct ColorRGBf {
-public:
+// ============================================================ //
+//                                                              //
+//   File      : RNA3D_OpenGLGraphics.hxx                       //
+//   Purpose   :                                                //
+//                                                              //
+//   Institute of Microbiology (Technical University Munich)    //
+//   http://www.arb-home.de/                                    //
+//                                                              //
+// ============================================================ //
+
+#ifndef RNA3D_OPENGLGRAPHICS_HXX
+#define RNA3D_OPENGLGRAPHICS_HXX
+
+struct ColorRGBf {
     float red, green, blue;
     ColorRGBf() {}
     ColorRGBf(float r, float g, float b) { red = r; green = g; blue = b; }
@@ -14,8 +26,7 @@ public:
     }
 };
 
-class OpenGLGraphics {
-public:
+struct OpenGLGraphics {
     int       screenXmax,screenYmax, mouseX, mouseY;
     bool      displayGrid;
     ColorRGBf ApplicationBGColor;
@@ -40,3 +51,7 @@ public:
 
     void DrawBox(float x, float y, float width, float height);
 };
+
+#else
+#error RNA3D_OpenGLGraphics.hxx included twice
+#endif // RNA3D_OPENGLGRAPHICS_HXX
