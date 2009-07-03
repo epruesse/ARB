@@ -852,7 +852,7 @@ int gbcms_talking_find(int socket, long *hsin, void *sin, GBDATA * gbd)
             
         default:
             gb_assert(0);
-            GB_export_error(GBS_global_string("gbcms_talking_find: illegal data type (%i)", type));
+            GB_export_errorf("gbcms_talking_find: illegal data type (%i)", type);
             GB_print_error();
             return GBCM_SERVER_FAULT;
     }
@@ -872,7 +872,7 @@ int gbcms_talking_find(int socket, long *hsin, void *sin, GBDATA * gbd)
             gbd = GB_find_int(gbd, key, val2, gbs);
         }
         else {
-            GB_internal_error(GBS_global_string("Searching DBtype %i not implemented", type));
+            GB_internal_errorf("Searching DBtype %i not implemented", type);
         }
     }
 
@@ -1853,7 +1853,7 @@ GBDATA *GBCMC_find(GBDATA *gbd, const char *key, GB_TYPES type, const char *str,
             break;
         default :
             gb_assert(0);
-            GB_export_error(GBS_global_string("GBCMC_find: Illegal data type (%i)", type));
+            GB_export_errorf("GBCMC_find: Illegal data type (%i)", type);
             GB_print_error();
             return 0;
     }

@@ -255,7 +255,7 @@ GB_ERROR GBT_convert_changekey(GBDATA *gb_main, const char *name, int target_typ
         
         if (!error) error = gbt_set_type_of_changekey(gb_main, name, target_type, CHANGE_KEY_PATH);
         if (!error && rounded>0) {
-            GB_warning(GBS_global_string("%zi values were rounded (loss of precision)", rounded));
+            GB_warningf("%zi values were rounded (loss of precision)", rounded);
         }
     }
 
