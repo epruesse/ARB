@@ -223,7 +223,7 @@ void Importer::show_warnings(const string& import_of_what) {
         const char         *what = import_of_what.c_str();
         stringVectorCRIter  e    = warnings.rend();
         for (stringVectorCRIter i = warnings.rbegin(); i != e; ++i) {
-            GB_warning(GBS_global_string("Warning: %s: %s", what, i->c_str()));
+            GB_warningf("Warning: %s: %s", what, i->c_str());
         }
         warnings.clear();
     }
