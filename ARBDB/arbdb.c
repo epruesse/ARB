@@ -1291,7 +1291,7 @@ GBDATA *GB_create(GBDATA *father,const char *key, GB_TYPES type)
     /*     } */
 
     if ( !father ) {
-        GB_internal_error("GB_create error in GB_create:\nno father (key = '%s')",key);
+        GB_internal_errorf("GB_create error in GB_create:\nno father (key = '%s')",key);
         return NULL;
     }
     GB_TEST_TRANSACTION(father);
@@ -1324,7 +1324,7 @@ GBDATA *GB_create_container(GBDATA *father,const char *key)
         return NULL;
     }
     if ( !father ) {
-        GB_internal_error("GB_create error in GB_create:\nno father (key = '%s')",key);
+        GB_internal_errorf("GB_create error in GB_create:\nno father (key = '%s')",key);
         return NULL;
     }
     GB_TEST_TRANSACTION(father);
@@ -1452,7 +1452,7 @@ GB_ERROR GB_copy_with_protection(GBDATA *dest, GBDATA *source, GB_BOOL copy_all_
             {
                 GB_ERROR err = GB_export_error("GB_COPY Type conflict %s:%i != %s:%i",
                                                GB_read_key_pntr(dest), GB_TYPE(dest), GB_read_key_pntr(source), GB_DB);
-                GB_internal_error("%s",err);
+                GB_internal_error(err);
                 return err;
             }
 
@@ -1711,7 +1711,7 @@ GB_ERROR GB_pop_transaction(GBDATA *gbd) {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     if (Main->transaction==0) {
         error = GB_export_error("Pop without push");
-        GB_internal_error("%s",error);
+        GB_internal_error(error);
         return  error;
     }
     if (Main->transaction<0) return 0;  /* no transaction mode */
@@ -1732,7 +1732,7 @@ GB_ERROR GB_begin_transaction(GBDATA *gbd) {
     if (Main->transaction>0) {
         error = GB_export_error("GB_begin_transaction called %i !!!",
                                 Main->transaction);
-        GB_internal_error("%s",error);
+        GB_internal_error(error);
         return GB_push_transaction(gbd);
     }
     if (Main->transaction<0) return 0;
@@ -1775,7 +1775,7 @@ GB_ERROR GB_no_transaction(GBDATA *gbd)
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     if (!Main->local_mode) {
         error = GB_export_error("Tried to disable transactions in a client");
-        GB_internal_error("%s",error);
+        GB_internal_error(error);
         return 0;
     }
     Main->transaction = -1;
@@ -1817,7 +1817,7 @@ GB_ERROR GB_commit_transaction(GBDATA *gbd) {
     gbd = (GBDATA *)Main->data;
     if (!Main->transaction) {
         error = GB_export_error("GB_commit_transaction: No running Transaction");
-        GB_internal_error("%s",error);
+        GB_internal_error(error);
         return error;
     }
     if (Main->transaction>1){
@@ -1893,7 +1893,7 @@ GB_ERROR GB_update_server(GBDATA *gbd)
     struct gb_callback_list *cbl_old = Main->cbl_last;
     if (!Main->transaction) {
         error = GB_export_error("GB_update_server: No running Transaction");
-        GB_internal_error("%s",error);
+        GB_internal_error(error);
         return error;
     }
     if (Main->local_mode){
@@ -2276,7 +2276,7 @@ GB_ERROR GB_release(GBDATA *gbd){
     if (GB_TYPE(gbd) != GB_DB) {
         GB_ERROR error=GB_export_error("You cannot release non container (%s)",
                                        GB_read_key_pntr(gbd));
-        GB_internal_error("%s",error);
+        GB_internal_error(error);
         return error;
     }
     if (gbd->flags2.folded_container) return 0;
@@ -2426,9 +2426,8 @@ long GB_read_usr_public(GBDATA *gbd)
 long GB_read_usr_private(GBDATA *gbd) {
     GBCONTAINER *gbc = (GBCONTAINER *)gbd;
     if (GB_TYPE(gbc) != GB_DB) {
-        GB_ERROR error =
-            GB_export_error("GB_write_usr_private: not a container (%s)",GB_read_key_pntr(gbd));
-        GB_internal_error("%s",error);
+        GB_ERROR error = GB_export_error("GB_write_usr_private: not a container (%s)",GB_read_key_pntr(gbd));
+        GB_internal_error(error);
         return 0;
     }
     return gbc->flags2.usr_ref;
@@ -2437,9 +2436,8 @@ long GB_read_usr_private(GBDATA *gbd) {
 GB_ERROR GB_write_usr_private(GBDATA *gbd,long ref) {
     GBCONTAINER *gbc = (GBCONTAINER *)gbd;
     if (GB_TYPE(gbc) != GB_DB) {
-        GB_ERROR error =
-            GB_export_error("GB_write_usr_private: not a container (%s)",GB_read_key_pntr(gbd));
-        GB_internal_error("%s",error);
+        GB_ERROR error = GB_export_error("GB_write_usr_private: not a container (%s)",GB_read_key_pntr(gbd));
+        GB_internal_error(error);
         return 0;
     }
     gbc->flags2.usr_ref = ref;

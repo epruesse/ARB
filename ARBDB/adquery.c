@@ -282,7 +282,7 @@ static GBDATA *gb_find_internal(GBDATA *gbd, const char *key, GB_TYPES type, con
     switch (gbs) {
         case down_level:    return GB_find_subcontent_by_quark((GBDATA*)gbc, key_quark, type, val, case_sens, after);
         case down_2_level:  return find_sub_sub_by_quark((GBDATA*)gbc, key, key_quark, type, val, case_sens, after);
-        default:            GB_internal_error("Unknown seach type %li",gbs); return NULL;
+        default:            GB_internal_errorf("Unknown seach type %li",gbs); return NULL;
     }
 }
 
@@ -358,7 +358,7 @@ GBDATA *gb_find_by_nr(GBDATA *father, int index){
     }
     header = GB_DATA_LIST_HEADER(gbf->d);
     if (index >= gbf->d.nheader || index <0){
-        GB_internal_error("Index '%i' out of range [%i:%i[",index,0,gbf->d.nheader);
+        GB_internal_errorf("Index '%i' out of range [%i:%i[",index,0,gbf->d.nheader);
         return NULL;
     }
     if ( (int)header[index].flags.changed >= gb_deleted || !header[index].flags.key_quark){
@@ -465,7 +465,7 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag
     {
         len = strlen(str)+1;
         if (len > GB_PATH_MAX) {
-            GB_internal_error("Path Length '%i' exceeded by '%s'",GB_PATH_MAX,str);
+            GB_internal_errorf("Path Length '%i' exceeded by '%s'",GB_PATH_MAX,str);
             return NULL;
         }
         memcpy(buffer,str,len);
@@ -510,7 +510,7 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag
                 }else{  /* terminal */
                     if (create == GB_TYPE(gbsp)) break;
                 }
-                GB_internal_error("Inconsistent Type %u:%u '%s':'%s', repairing database", create, GB_TYPE(gbsp), str, s1);
+                GB_internal_errorf("Inconsistent Type %u:%u '%s':'%s', repairing database", create, GB_TYPE(gbsp), str, s1);
                 GB_print_error();
                 GB_delete(gbsp);
                 gbsp = GB_entry(gbd,s1);
