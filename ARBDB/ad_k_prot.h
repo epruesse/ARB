@@ -26,7 +26,8 @@ extern "C" {
 /* adstring.c */
 void GBK_dump_backtrace P_((FILE *out, GB_ERROR error));
 void GBK_install_SIGSEGV_handler P_((GB_BOOL install));
-void GBK_terminate P_((const char *templat, ...)) __ATTR__FORMAT(1);
+void GBK_terminate P_((const char *error));
+void GBK_terminatef P_((const char *templat, ...)) __ATTR__FORMAT(1);
 GB_ERROR GBK_assert_msg P_((const char *assertion, const char *file, int linenr));
 
 #ifdef __cplusplus
