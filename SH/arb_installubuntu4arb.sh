@@ -69,7 +69,7 @@ else
             libpng12-dev \
 
         DISTRIB=`cat /etc/lsb-release | grep DISTRIB_CODENAME | perl -npe 's/^.*=//'`
-        SOURCE="deb http://techno.mikro.biologie.tu-muenchen.de/debian $DISTRIB non-free"
+        SOURCE="deb http://dev.mikro.biologie.tu-muenchen.de/debian $DISTRIB non-free"
 
         apt-get install libglw-mesa-arb || ( \
             echo "-----------------------------------------" ;\

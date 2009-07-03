@@ -44,7 +44,7 @@ ARB requirements on Ubuntu 8.04
 
      Add the following repository to your packet manager:
 
-         deb http://techno.mikro.biologie.tu-muenchen.de/debian hardy non-free
+         deb http://dev.mikro.biologie.tu-muenchen.de/debian hardy non-free
 
      Install the following packets:
 
