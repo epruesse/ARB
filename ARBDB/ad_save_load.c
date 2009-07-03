@@ -474,7 +474,7 @@ static long gb_write_rek(FILE *out,GBCONTAINER *gbc,long deep,long big_hunk)
                 strng = GB_read_char_pntr(gb);
                 if (!strng) {
                     strng = "<entry was broken - replaced during ASCIIsave/arb_repair>";
-                    GB_warning("- replaced broken DB entry %s (data lost)\n", GB_get_db_path(gb));
+                    GB_warningf("- replaced broken DB entry %s (data lost)\n", GB_get_db_path(gb));
                 }
                 if (*strng == '%') {
                     putc('%',out);
@@ -1148,7 +1148,7 @@ GB_ERROR GB_save_quick_as(GBDATA *gb_main, char *path)
     mode = GB_mode_of_file(org_master);
     if (mode & S_IWUSR) {
         if (GB_set_mode_of_file(org_master,mode & ~(S_IWUSR | S_IWGRP | S_IWOTH))){
-            GB_warning( "!!!!!!!!! WARNING !!!!!!!\n"
+            GB_warningf("!!!!!!!!! WARNING !!!!!!!\n"
                         "   Cannot set mode of file '%s'\n"
                         "   NEVER, NEVER delete or change file\n"
                         "        '%s'\n"
@@ -1170,7 +1170,7 @@ GB_ERROR GB_save_quick_as(GBDATA *gb_main, char *path)
         return GB_get_error();
     }
     if ((uid_t)GB_getuid_of_file(full_path_of_source) != getuid()){
-        GB_warning( "**** WARNING ******\n"
+        GB_warningf("**** WARNING ******\n"
                     "   You now using a file '%s'\n"
                     "   which is owned by another user\n"
                     "   Please ask him not to delete this file\n"
@@ -1178,7 +1178,7 @@ GB_ERROR GB_save_quick_as(GBDATA *gb_main, char *path)
                     "   the WHOLE database",full_path_of_source);
     }
     if (gb_add_reference(full_path_of_source,path)){
-        GB_warning("%s",GB_get_error());
+        GB_warning(GB_get_error());
     }
 
     freedup(Main->path, path); /* Symlink created -> rename allowed */

@@ -402,7 +402,7 @@ void GB_close(GBDATA *gbd) {
     }
 
     if (error) {
-        GB_warning("Error in GB_close: %s", error);
+        GB_warningf("Error in GB_close: %s", error);
     }
 }
 
@@ -2350,8 +2350,8 @@ GB_ERROR GB_resort_data_base(GBDATA *gb_main, GBDATA **new_order_list, long list
         long old_index = new_order_list[new_index]->index;
 
         if (old_index < new_index)
-            GB_warning("Warning at resort database: entry exists twice: %li and %li",
-                       old_index, new_index);
+            GB_warningf("Warning at resort database: entry exists twice: %li and %li",
+                        old_index, new_index);
         else
         {
             GBDATA *ngb;

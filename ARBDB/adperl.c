@@ -20,9 +20,8 @@ int GBP_search_mode(char *search_mode){
     if (!strcasecmp(search_mode,"down_2")) return down_2_level;
     if (!strcasecmp(search_mode,"this_next")) return this_level | search_next;
     if (!strcasecmp(search_mode,"down_next")) return down_level | search_next;
-    GB_warning("Error: ARB::find    Cannot recognize your search_mode '%s'"
-               "    Possible choices: 'this' 'down' 'down_2' 'this_next'"
-               "                'down_next'", search_mode );
+    GB_warningf("Error: ARB::find: Unknown search_mode '%s'\n"
+                "Possible choices are: 'this' 'down' 'down_2' 'this_next' and 'down_next'", search_mode);
     return down_level;
 }
 
@@ -63,7 +62,7 @@ GB_TYPES GBP_gb_types(char *type_name){
     for (i=0;i<GB_TYPE_MAX;i++) {
         if (!strcasecmp(gbp_typeconvert[i],type_name)) return (GB_TYPES)i;
     }
-    GB_warning("ERROR: Unknown type %s (probably used in ARB::create or ARB::search",type_name);
+    GB_warningf("ERROR: Unknown type %s (probably used in ARB::create or ARB::search)",type_name);
     fprintf(stderr,"ERROR: Unknown type %s",type_name);
     fprintf(stderr,"    Possible Choices:\n");
     for (i=0;i<GB_TYPE_MAX;i++) {

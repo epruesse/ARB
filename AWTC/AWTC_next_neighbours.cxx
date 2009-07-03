@@ -26,7 +26,7 @@ AWTC_FIND_FAMILY_MEMBER::~AWTC_FIND_FAMILY_MEMBER(){
 }
 
 void awtc_ff_message(const char *msg){
-    GB_warning("%s",msg);
+    GB_warning(msg);
 }
 
 void AWTC_FIND_FAMILY::delete_family_list(){

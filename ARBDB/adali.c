@@ -23,7 +23,7 @@ static long check_for_species_without_data(const char *species_name, long value,
     if (value == 1) {
         long cnt = *((long*)counterPtr);
         if (cnt<40) {
-            GB_warning("Species '%s' has no data in any alignment", species_name);
+            GB_warningf("Species '%s' has no data in any alignment", species_name);
         }
         *((long*)counterPtr) = cnt+1;
     }
@@ -112,7 +112,7 @@ GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name)
             long counter = 0;
             GBS_hash_do_loop(species_name_hash, check_for_species_without_data, &counter);
             if (counter>0) {
-                GB_warning("Found %li species without alignment data (only some were listed)", counter);
+                GB_warningf("Found %li species without alignment data (only some were listed)", counter);
             }
         }
 
@@ -341,7 +341,7 @@ NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment,
                     if (!error) {
                         gb_name = GB_entry(gb_species, "name");
                         GBS_write_hash(species_name_hash, unique, 1); // not seen before
-                        GB_warning("Seen unnamed species (gave name '%s')", unique);
+                        GB_warningf("Seen unnamed species (gave name '%s')", unique);
                     }
                     free(unique);
                 }
@@ -368,7 +368,7 @@ NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment,
                             GBDATA *gb_data = GB_entry(gb_ali, "data");
                             if (!gb_data) {
                                 error = GBT_write_string(gb_ali, "data", "Error: entry 'data' was missing and therefore was filled with this text.");
-                                GB_warning("No '%s/data' entry for species '%s' (has been filled with dummy data)", ali_name, name);
+                                GB_warningf("No '%s/data' entry for species '%s' (has been filled with dummy data)", ali_name, name);
                             }
                             else {
                                 if (GB_read_type(gb_data) != GB_STRING){

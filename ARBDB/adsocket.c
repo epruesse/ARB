@@ -302,7 +302,7 @@ GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *p
         if (do_connect){
             /*printf("Connecting to %X:%i\n",addr.s_addr,socket_id[0]);*/
             if (connect(*psocket,(struct sockaddr *)(&so_ad), sizeof(so_ad))) {
-                GB_warning("Cannot connect to %s:%li   errno %i",mach_name[0],socket_id[0],errno);
+                GB_warningf("Cannot connect to %s:%li   errno %i",mach_name[0],socket_id[0],errno);
                 return "";
             }
         }else{
@@ -948,7 +948,7 @@ static char *getenv_executable(GB_CSTR envvar) {
     if (exe_name) {
         result = GB_executable(exe_name);
         if (!result) {
-            GB_warning("Environment variable '%s' contains '%s' (which is not an executable)", envvar, exe_name);
+            GB_warningf("Environment variable '%s' contains '%s' (which is not an executable)", envvar, exe_name);
         }
     }
 
@@ -969,8 +969,8 @@ static char *getenv_existing_directory(GB_CSTR envvar) {
             result = strdup(dir_name);
         }
         else {
-            GB_warning("Environment variable '%s' should contain the path of an existing directory.\n"
-                       "(current content '%s' has been ignored.)", envvar, dir_name);
+            GB_warningf("Environment variable '%s' should contain the path of an existing directory.\n"
+                        "(current content '%s' has been ignored.)", envvar, dir_name);
         }
     }
     return result;
@@ -1038,7 +1038,7 @@ GB_CSTR GB_getenvARBMACROHOME(void) {
             amh = GBS_eval_env("$(HOME)/.arb_prop/macros");
             if (!GB_is_directory(amh)) {
                 GB_ERROR error = GB_create_directory(amh);
-                if (error) GB_warning("Failed to create directory '%s' (Reason: %s)", amh, error);
+                if (error) GB_warningf("Failed to create directory '%s' (Reason: %s)", amh, error);
             }
         }
     }
@@ -1056,7 +1056,7 @@ GB_CSTR GB_getenvPATH() {
         else {
             char *arbbin = GBS_eval_env("$(ARBHOME)/bin");
             if (strstr(path, arbbin) == 0) {
-                GB_warning("Your PATH variable does not contain '%s'. Things may not work as expected.", arbbin);
+                GB_warningf("Your PATH variable does not contain '%s'. Things may not work as expected.", arbbin);
             }
             free(arbbin);
         }

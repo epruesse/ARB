@@ -143,8 +143,8 @@ GB_ERROR gbt_rename_tree_rek(GBT_TREE *tree,int tree_index){
                 char *newname;
                 if (rns->used_by == tree_index){ /* species more than once in the tree */
                     sprintf(buffer,"%s_%i", rns->data, counter++);
-                    GB_warning("Species '%s' more than once in '%s', creating zombie '%s'",
-                               tree->name, currentTreeName, buffer);
+                    GB_warningf("Species '%s' more than once in '%s', creating zombie '%s'",
+                                tree->name, currentTreeName, buffer);
                     newname = buffer;
                 }
                 else {

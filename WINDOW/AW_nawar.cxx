@@ -528,7 +528,7 @@ AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, const char *va
         AW_VARIABLE_TYPE gbtype;
         gbtype = (AW_VARIABLE_TYPE) GB_read_type( gb_def );
         if ( gbtype != var_type ) {
-            GB_warning("Wrong Awar type %s\n",var_name);
+            GB_warningf("Wrong Awar type %s\n",var_name);
             GB_delete( gb_def );
             gb_def = 0;
         }
@@ -556,7 +556,7 @@ AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, const char *va
                 GB_write_float( gb_def, (double)var_double_value );
                 break;
             default:
-                GB_warning("AWAR '%s' cannot be created because of inallowed type",var_name);
+                GB_warningf("AWAR '%s' cannot be created because of inallowed type",var_name);
                 break;
         }
     }

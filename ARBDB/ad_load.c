@@ -1194,7 +1194,7 @@ long gb_read_bin(FILE *in,GBCONTAINER *gbd, int diff_file_allowed)
         }
         else {
             if (!merror) {
-                GB_warning("%s", GB_await_error());
+                GB_warning(GB_await_error());
             }
             else {
                 GB_information("ARB: no FastLoad File '%s' found: loading entire database",map_path);
@@ -1581,7 +1581,7 @@ GBDATA *GB_login(const char *cpath,const char *opent,const char *user)
                 else {
                     if (input != stdin) fclose(input);
                     error = gb_read_ascii(path, gbd);
-                    if (error) GB_warning("%s", error);
+                    if (error) GB_warning(error);
                     GB_disable_quicksave((GBDATA *)gbd,"Sorry, I cannot save differences to ascii files\n"
                                          "  Save whole database in binary mode first");
                 }

@@ -66,7 +66,7 @@ char **GBT_get_configuration_names_and_count(GBDATA *gb_main, int *countPtr) {
                     GB_ERROR  error    = GBT_write_string(gb_config, "name", new_name);
 
                     if (error) {
-                        GB_warning("Failed to rename unnamed configuration to '%s'", new_name);
+                        GB_warningf("Failed to rename unnamed configuration to '%s'", new_name);
                         freeset(new_name, NULL);
                     }
                     freeset(name, new_name);

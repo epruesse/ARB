@@ -1042,7 +1042,7 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
                     }
                     else { // error occurred during import
                         error_this_file = GBS_global_string("'%s' not imported\nReason: %s", fnames[curr], error_this_file);
-                        GB_warning("Import error: %s", error_this_file);
+                        GB_warningf("Import error: %s", error_this_file);
                         GB_abort_transaction(GB_MAIN);
                         failed_imports++;
                     }
@@ -1054,7 +1054,7 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
                     error = "Nothing has been imported";
                 }
                 else {
-                    GB_warning("%i of %i files were imported with success", successfull_imports, (successfull_imports+failed_imports));
+                    GB_warningf("%i of %i files were imported with success", successfull_imports, (successfull_imports+failed_imports));
                 }
 
                 aw_closestatus();

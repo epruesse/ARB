@@ -166,7 +166,7 @@ static GB_ERROR trace_params(int argc, const GBL *argv, struct gbl_param *ppara,
                     case GB_BYTE:
                         *(char *)para->varaddr = *value; // this may use the terminal zero-byte (e.g. for p1 in 'p0=0,p1=,p2=2' )
                         if (value[0] && value[1]) { // found at least 2 chars
-                            GB_warning("Only one character expected in value '%s' of param '%s' - rest is ignored", value, para->param_name);
+                            GB_warningf("Only one character expected in value '%s' of param '%s' - rest is ignored", value, para->param_name);
                         }
                         break;
 
