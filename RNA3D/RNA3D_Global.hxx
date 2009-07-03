@@ -55,8 +55,7 @@
 #define AWAR_3D_DISPLAY_MASK  "rna3d/display_mask"
 #define AWAR_3D_23S_RRNA_MOL  "rna3d/rrna_mol_23s"
 
-typedef struct Vector3 {
-public:
+struct Vector3 {
     float x, y, z;
 
     Vector3() {}    // A default constructor
