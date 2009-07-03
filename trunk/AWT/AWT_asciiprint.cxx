@@ -295,7 +295,7 @@ void awt_aps_go(AW_window *aww){
             }
 
             if (scall) {
-                GB_information("executing '%s'", scall);
+                GB_informationf("executing '%s'", scall);
                 if (system(scall) != 0) error = GBS_global_string("Error while calling '%s'", scall);
             }
 

@@ -1197,7 +1197,7 @@ long gb_read_bin(FILE *in,GBCONTAINER *gbd, int diff_file_allowed)
                 GB_warning(GB_await_error());
             }
             else {
-                GB_information("ARB: no FastLoad File '%s' found: loading entire database",map_path);
+                GB_informationf("ARB: no FastLoad File '%s' found: loading entire database",map_path);
             }
         }
         if (ok) return 0;
@@ -1409,7 +1409,7 @@ GBDATA *GB_login(const char *cpath,const char *opent,const char *user)
     }
 
     if (gb_verbose_mode){
-        GB_information("ARB: Loading '%s'%s%s", path, quickFile ? " + Changes-File ":"", quickFile ? quickFile :"");
+        GB_informationf("ARB: Loading '%s'%s%s", path, quickFile ? " + Changes-File ":"", quickFile ? quickFile :"");
     }
 
     gbm_init_mem();
@@ -1615,7 +1615,7 @@ GBDATA *GB_login(const char *cpath,const char *opent,const char *user)
         if (Main->local_mode == GB_TRUE) { // i am the server
             GBT_install_message_handler((GBDATA *)gbd);
         }
-        if (gb_verbose_mode && !dbCreated) GB_information("ARB: Loading '%s' done\n", path);
+        if (gb_verbose_mode && !dbCreated) GB_informationf("ARB: Loading '%s' done\n", path);
     }
     free(path);
     return (GBDATA *)gbd;

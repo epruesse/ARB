@@ -1507,7 +1507,16 @@ NOT4PERL void GB_install_warning(gb_warning_func_type warn){
     gb_warning_func = warn;
 }
 
-void GB_information( const char *templat, ...) {    /* max 4000 characters */
+void GB_information(const char *message) {
+    if (gb_information_func) {
+        gb_information_func(message);
+    }
+    else {
+        fputs(message, stdout);
+        fputc('\n', stdout);
+    }
+}
+void GB_informationf(const char *templat, ...) {    
     /* goes to header: __ATTR__FORMAT(1)  */
 
     /* this message is always printed to stdout (regardless whether program uses GUI or not)
@@ -1516,16 +1525,12 @@ void GB_information( const char *templat, ...) {    /* max 4000 characters */
 
     va_list parg;
 
-    if ( gb_information_func ) {
-        char buffer[4000];memset(&buffer[0],0,4000);
-        va_start(parg,templat);
-        vsprintf(buffer,templat,parg);
-        gb_information_func(buffer);
-    }else{
-        va_start(parg,templat);
-        vfprintf(stdout,templat,parg);
-        fprintf(stdout,"\n");
-    }
+    va_start(parg,templat);
+    char *message = gbs_vglobal_string_copy(templat, parg);
+    va_end(parg);
+
+    GB_information(message);
+    free(message);
 }
 
 NOT4PERL void GB_install_information(gb_information_func_type info){
