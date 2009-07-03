@@ -1136,7 +1136,7 @@ GB_ERROR AP_tree::move_group_info(AP_tree *new_group) {
     }
     else if (new_group->is_leaf) {
         if (new_group->name) {
-            error = GB_export_error("'%s' is not a valid target for group information of '%s'.", new_group->name, name);
+            error = GB_export_errorf("'%s' is not a valid target for group information of '%s'.", new_group->name, name);
         }
         else if (new_group->gb_node) {
             error = GB_export_error("Internal Error: Target node already has a database entry (but no name)");

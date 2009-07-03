@@ -1000,9 +1000,9 @@ GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
 
         switch (d) {
             case 0:
-                error = GB_export_error("Cannot find a target alignment with a type of '%s'\n"
-                                        "You should create one first or select a different alignment type\n"
-                                        "during sequence import",type);
+                error = GB_export_errorf("Cannot find a target alignment with a type of '%s'\n"
+                                         "You should create one first or select a different alignment type\n"
+                                         "during sequence import",type);
                 break;
             case 1:
                 dest = D_alignment_names[0];

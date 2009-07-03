@@ -603,8 +603,8 @@ static void TranslateGeneToAminoAcidSequence(AW_root */*root*/, ED4_AA_sequence_
             if (gb_codonStart) {
                 startPos4Translation = atoi(GB_read_char_pntr(gb_codonStart))-1;
                 if (startPos4Translation<0 || startPos4Translation>2) {
-                    error = GB_export_error("'%s' has invalid codon_start entry %i (allowed: 1..3)",
-                                            speciesName, startPos4Translation+1);
+                    error = GB_export_errorf("'%s' has invalid codon_start entry %i (allowed: 1..3)",
+                                             speciesName, startPos4Translation+1);
                     break;
                 }
             }

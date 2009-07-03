@@ -568,11 +568,11 @@ GB_ERROR GEN_organism_not_found(GBDATA *gb_pseudo) {
     gb_assert(GEN_is_pseudo_gene_species(gb_pseudo));
     gb_assert(GEN_find_origin_organism(gb_pseudo, 0) == 0);
 
-    error = GB_export_error("The gene-species '%s' refers to an unknown organism (%s)\n"
-                            "This occurs if you rename or delete the organism or change the entry\n"
-                            "'ARB_origin_species' and will most likely cause serious problems.",
-                            GBT_read_name(gb_pseudo),
-                            GEN_origin_organism(gb_pseudo));
+    error = GB_export_errorf("The gene-species '%s' refers to an unknown organism (%s)\n"
+                             "This occurs if you rename or delete the organism or change the entry\n"
+                             "'ARB_origin_species' and will most likely cause serious problems.",
+                             GBT_read_name(gb_pseudo),
+                             GEN_origin_organism(gb_pseudo));
 
     return error;
 }

@@ -361,7 +361,7 @@ static void nds_restore_config(AW_window *aww, const char *stored, AW_CL, AW_CL)
                     parsedCfg.delete_entry(inherit_key);
                 }
                 else {
-                    error = GB_export_error("Expected entry '%s' in saved config", inherit_key);
+                    error = GB_export_errorf("Expected entry '%s' in saved config", inherit_key);
                 }
             }
 
@@ -397,7 +397,7 @@ static void nds_restore_config(AW_window *aww, const char *stored, AW_CL, AW_CL)
                     parsedCfg.delete_entry(flag1_key);
                 }
                 else {
-                    error = GB_export_error("Expected entry '%s' in saved config", flag1_key);
+                    error = GB_export_errorf("Expected entry '%s' in saved config", flag1_key);
                 }
             }
 

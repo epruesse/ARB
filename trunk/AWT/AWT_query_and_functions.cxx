@@ -2332,7 +2332,7 @@ void awt_do_set_list(void *, struct adaqbsstruct *cbs, long append) {
                             }
                             else {
                                 char *name = GBT_read_string(gb_item,"name");
-                                error = GB_export_error("Field '%s' of %s '%s' has incombatible type", key, cbs->selector->item_name, name);
+                                error = GB_export_errorf("Field '%s' of %s '%s' has incombatible type", key, cbs->selector->item_name, name);
                                 free(name);
                             }
                         }

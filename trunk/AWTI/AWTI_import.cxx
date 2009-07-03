@@ -788,9 +788,9 @@ GB_ERROR awtc_read_data(char *ali_name, int security_write)
             if (line == max_line){
                 char *file = 0;
                 if (awtcig.current_file[0]) file = awtcig.current_file[0];
-                GB_ERROR msg = GB_export_error("A database entry in file '%s' is longer than %i lines.\n"
-                                               "    This might be the result of a wrong input format\n"
-                                               "    or a long comment in a sequence\n",file,line);
+                GB_ERROR msg = GB_export_errorf("A database entry in file '%s' is longer than %i lines.\n"
+                                                "    This might be the result of a wrong input format\n"
+                                                "    or a long comment in a sequence\n",file,line);
 
                 switch (aw_question(msg,"Continue Reading,Continue Reading (Never ask again),Abort"))  {
                     case 0:
@@ -888,7 +888,7 @@ GB_ERROR awtc_read_data(char *ali_name, int security_write)
             p = awtc_read_line(ifo->tab,ifo->sequencestart,ifo->sequenceend);
             if (!p) break;
         }
-        return GB_export_error("No Start of Sequence found (%i lines read)", max_line);
+        return GB_export_errorf("No Start of Sequence found (%i lines read)", max_line);
 
     read_sequence:
         {

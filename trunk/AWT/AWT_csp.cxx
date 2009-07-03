@@ -81,7 +81,7 @@ GB_ERROR AWT_csp::go(AP_filter *filter){
     long alignment_length = GBT_get_alignment_len(this->gb_main, alignment_name);
     GB_ERROR error = 0;
     if (alignment_length <= 1)
-        return GB_export_error( "Unknown Alignment Size: Name '%s'\n"
+        return GB_export_errorf("Unknown Alignment Size: Name '%s'\n"
                                 "   Select a Valid Alignment",alignment_name);
     if (filter && filter->filter_len != alignment_length)
         return GB_export_error( "Incompatible filter_len" );

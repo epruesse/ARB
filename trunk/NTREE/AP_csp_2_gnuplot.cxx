@@ -40,7 +40,7 @@ static GB_ERROR split_stat_filename(const char *fname, char **dirPtr, char **nam
     *name_postfixPtr = 0;
 
     const char *lslash = strrchr(fname, '/');
-    if (!lslash) return GB_export_error("'%s' has to contain a '/'", fname);
+    if (!lslash) return GB_export_errorf("'%s' has to contain a '/'", fname);
 
     char *dir         = strdup(fname);
     dir[lslash-fname] = 0; // cut off at last '/'
@@ -269,7 +269,7 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
             FILE *out = 0;
             if (!error) {
                 out = fopen(fname,"w");
-                if (!out) error = GB_export_error("Cannot write to file '%s'",fname);
+                if (!out) error = GB_export_errorf("Cannot write to file '%s'",fname);
             }
 
             nt_assert(out || error);

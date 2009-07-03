@@ -313,8 +313,8 @@ char *DI_MATRIX::load(char *usei, AP_filter *filter, AP_weights *weights, LoadWh
                 gb_species = GBT_find_species_rel_species_data(gb_species_data, species_in_sort_tree[i]);
                 if (!gb_species) {
                     if (show_warnings) {
-                        aw_message(GB_export_error("Species '%s' found in tree '%s' but NOT in database.",
-                                                   species_in_sort_tree[i], sort_tree_name));
+                        aw_message(GB_export_errorf("Species '%s' found in tree '%s' but NOT in database.",
+                                                    species_in_sort_tree[i], sort_tree_name));
                     }
                     unknown_species_in_tree++;
                     continue;
@@ -354,9 +354,9 @@ char *DI_MATRIX::load(char *usei, AP_filter *filter, AP_weights *weights, LoadWh
     }
 
     if (unknown_species_in_tree && show_warnings) {
-        aw_message(GB_export_error("We found %i species in tree '%s' which are not in database.\n"
-                                   "This does not affect the current calculation, but you should think about it.",
-                                   unknown_species_in_tree, sort_tree_name));
+        aw_message(GB_export_errorf("We found %i species in tree '%s' which are not in database.\n"
+                                    "This does not affect the current calculation, but you should think about it.",
+                                    unknown_species_in_tree, sort_tree_name));
     }
 
     gb_assert(out_tree_species>=0);

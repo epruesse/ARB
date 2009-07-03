@@ -512,7 +512,7 @@ void probe_design_event(AW_window *aww)
                 else {
                     GBDATA *data = GBT_read_sequence(gb_species,ali_name);
                     if (!data) {
-                        aw_message( GB_export_error("Species '%s' has no sequence belonging to alignment '%s'", unames, ali_name));
+                        aw_message( GB_export_errorf("Species '%s' has no sequence belonging to alignment '%s'", unames, ali_name));
                         abort = true;
                     }
                     else {
@@ -1421,7 +1421,7 @@ static void resolve_IUPAC_target_string(AW_root *, AW_CL cl_aww, AW_CL cl_selid)
 
             int idx = i-'A';
             if (idx<0 || idx>=26 || AWT_iupac_code[idx][index].iupac==0) {
-                err = GB_export_error("Illegal character '%c' in IUPAC-String", i);
+                err = GB_export_errorf("Illegal character '%c' in IUPAC-String", i);
                 break;
             }
 
@@ -2099,14 +2099,14 @@ static void create_probe_group_result_sel_box(AW_root *aw_root, AW_window *aws) 
         }
 
         if (reason) {
-            error = GB_export_error("Error in database format (reason: %s)", reason);
+            error = GB_export_errorf("Error in database format (reason: %s)", reason);
             aws->insert_selection(selList, error, (long)0);
         }
 
         aws->update_selection_list(selList);
     }
     else {
-        error = GB_export_error("Can't open database '%s'", file_name);
+        error = GB_export_errorf("Can't open database '%s'", file_name);
         freeset(pg_global.pg_filename, 0);
     }
 

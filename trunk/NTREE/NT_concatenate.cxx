@@ -665,7 +665,7 @@ GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species, speci
                     error           = GB_write_string(gb_data, seq_data);
                     if (!error) id += GBS_checksum(seq_data,1,".-");  //creating checksum of the each aligned sequence to generate new accession number
                 }
-                if (error) error = GB_export_error("Can't create alignment '%s'", ali_names[no_of_alignments]);
+                if (error) error = GB_export_errorf("Can't create alignment '%s'", ali_names[no_of_alignments]);
             }
         }
 

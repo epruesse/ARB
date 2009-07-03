@@ -64,7 +64,7 @@ GB_ERROR GBT_check_arb_file(const char *name)
     char buffer[100];
     if (strchr(name,':')) return 0;
     in = fopen(name,"r");
-    if (!in) return GB_export_error("Cannot find file '%s'",name);
+    if (!in) return GB_export_errorf("Cannot find file '%s'",name);
     i = gb_read_in_long(in, 0);
     if ( (i== 0x56430176) || (i == GBTUM_MAGIC_NUMBER) || (i == GBTUM_MAGIC_REVERSED)) {
         fclose(in);
@@ -78,7 +78,7 @@ GB_ERROR GBT_check_arb_file(const char *name)
     };
 
 
-    return GB_export_error("'%s' is not an arb file",name);
+    return GB_export_errorf("'%s' is not an arb file",name);
 }
 
 /********************************************************************************************

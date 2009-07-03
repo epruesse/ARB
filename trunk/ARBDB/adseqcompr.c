@@ -415,7 +415,7 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, const ch
     else {
         int leafcount = g_b_count_leafs(tree);
         if (!leafcount) {
-            error = GB_export_error("Tree contains no sequences with data in '%s'", ali_name);
+            error = GB_export_errorf("Tree contains no sequences with data in '%s'", ali_name);
         }
         else {
             /* Distribute masters in tree */
@@ -725,7 +725,7 @@ GB_ERROR GBT_compress_sequence_tree2(GBDATA *gb_main, const char *tree_name, con
     }
     ctree = (GB_CTREE *)GBT_read_tree(gb_main,(char *)tree_name,-sizeof(GB_CTREE));
     if (!ctree) {
-        error = GB_export_error("Tree %s not found in database",tree_name);
+        error = GB_export_errorf("Tree %s not found in database",tree_name);
     }
     else {
         error             = GBT_link_tree((GBT_TREE *)ctree, gb_main, GB_FALSE, 0, 0);

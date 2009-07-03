@@ -59,7 +59,7 @@ GB_ERROR GBP_remove_callback(GBDATA *gbd, char *perl_func, char *perl_cl){
     arg =(char *)GBS_read_hash(gbp_cp_hash_table,data);
     if (!arg){
 	free(data);
-	return GB_export_error("Sorry: You never installed a callback '%s:%s'",perl_func,perl_cl);
+	return GB_export_errorf("Sorry: You never installed a callback '%s:%s'",perl_func,perl_cl);
     }else{
 	GBS_write_hash(gbp_cp_hash_table,data,0);
 	free(data);

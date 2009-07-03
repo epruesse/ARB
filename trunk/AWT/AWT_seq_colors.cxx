@@ -199,7 +199,7 @@ void AWT_seq_colors::reload(){
             sprintf(buf,AWAR_SEQ_NAME_TEMPLATE,(int)set,elem);
             char *val = GBT_read_string(gb_def,buf);
             if (strlen(val) != 2 || val[1] >'9' || val[1] < '0'){
-                aw_message(GB_export_error("Error in Color Lookup Table: '%s' is not of type X#",val));
+                aw_message(GB_export_errorf("Error in Color Lookup Table: '%s' is not of type X#",val));
                 delete val;
                 delete sc;
                 continue;

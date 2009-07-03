@@ -676,7 +676,7 @@ int gb_save_mapfile(GB_MAIN_TYPE *Main, GB_CSTR path)
 
  error:
 
-    GB_export_error("Error while saving FastLoad-File '%s'", opath);
+    GB_export_errorf("Error while saving FastLoad-File '%s'", opath);
     GB_unlink_or_warn(opath, NULL);
 
     return -1;

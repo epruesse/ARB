@@ -683,7 +683,7 @@ static GB_ERROR GEN_species_add_entry(GBDATA *gb_pseudo, const char *key, const 
     }
     else { // key exists
         if (GB_read_type(gbd) != GB_STRING) { // test correct key type
-            error = GB_export_error("field '%s' exists and has wrong type", key);
+            error = GB_export_errorf("field '%s' exists and has wrong type", key);
         }
     }
 
@@ -870,7 +870,7 @@ static void gen_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene
                 if (!error) { // create the species
                     gen_assert(short_name);
                     gb_exist_geneSpec = GBT_find_or_create_species(GLOBAL_gb_main, short_name);
-                    if (!gb_exist_geneSpec) error = GB_export_error("Failed to create pseudo-species '%s'", short_name);
+                    if (!gb_exist_geneSpec) error = GB_export_errorf("Failed to create pseudo-species '%s'", short_name);
                     else eg2ps->existing.add_name(short_name);
                 }
             }

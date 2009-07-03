@@ -607,19 +607,19 @@ GB_ERROR SEC_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
 
         GBDATA *gb_species = GBT_find_SAI(gb_main, name);
         if (!gb_species) {
-            err = GB_export_error("Cannot find helix template SAI '%s'",name);
+            err = GB_export_errorf("Cannot find helix template SAI '%s'",name);
         }
         else {
             char *ali_name = GBT_get_default_alignment(gb_main);
 
             ali_len = GBT_get_alignment_len(gb_main,ali_name);
             if (ali_len < 10) {
-                err = GB_export_error("alignment '%s' to short to generate helix",ali_name);
+                err = GB_export_errorf("alignment '%s' to short to generate helix",ali_name);
             }
             else {
                 gb_ali = GB_search(gb_species, ali_name, GB_FIND);
                 if (!gb_ali) {
-                    err = GB_export_error("Your helix structure template '%s' has no valid sequence for alignment '%s'", name,ali_name); // no sequence for name in the database !!!
+                    err = GB_export_errorf("Your helix structure template '%s' has no valid sequence for alignment '%s'", name,ali_name); // no sequence for name in the database !!!
                 }
             }
             free(ali_name);

@@ -147,10 +147,10 @@ GB_ERROR gb_create_reference(const char *master){
         GB_set_mode_of_file(fullref,00666);
     }
     else {
-        error = GB_export_error("WARNING: Cannot create file '%s'\n"
-                                "   Your database is saved, but you should check write permissions\n"
-                                "   in the destination directory",
-                                fullref);
+        error = GB_export_errorf("WARNING: Cannot create file '%s'\n"
+                                 "   Your database is saved, but you should check write permissions\n"
+                                 "   in the destination directory",
+                                 fullref);
     }
 
     free(fullmaster);
@@ -170,11 +170,11 @@ GB_ERROR gb_add_reference(char *master, char *changes){
         GB_set_mode_of_file(fullref,00666);
     }
     else {
-        error = GB_export_error("Cannot add your file '%s'\n"
-                                "   to the list of references of '%s'\n"
-                                "   Please ask the owner of that file not to delete it\n"
-                                "   or save the entire database (that's recommended!)",
-                                fullchanges,fullref);
+        error = GB_export_errorf("Cannot add your file '%s'\n"
+                                 "   to the list of references of '%s'\n"
+                                 "   Please ask the owner of that file not to delete it\n"
+                                 "   or save the entire database (that's recommended!)",
+                                 fullchanges,fullref);
     }
 
     free(fullchanges);
@@ -622,7 +622,7 @@ void gb_put_number(long i, FILE *out) {
 long gb_read_bin_error(FILE *in,GBDATA *gbd,const char *text)
 {
     long p = (long)ftell(in);
-    GB_export_error("%s in reading GB_file (loc %li=%lX) reading %s\n",
+    GB_export_errorf("%s in reading GB_file (loc %li=%lX) reading %s\n",
                     text,p,p,GB_KEY(gbd));
     GB_print_error();
     return 0;
@@ -1124,12 +1124,12 @@ GB_ERROR GB_save_quick_as(GBDATA *gb_main, char *path)
 
     fmaster = fopen( Main->path, "r" ); /* old master !!!! */
     if (!fmaster){      /* Oh no, where is my old master */
-        return GB_export_error("Save Changes is missing master ARB file '%s',\n"
-                               "    save database first", Main->path);
+        return GB_export_errorf("Save Changes is missing master ARB file '%s',\n"
+                                "    save database first", Main->path);
     }
     fclose(fmaster);
     if (GB_unlink(path)<0){
-        return GB_export_error("File '%s' already exists and cannot be deleted\n(Reason: %s)",path, GB_await_error());
+        return GB_export_errorf("File '%s' already exists and cannot be deleted\n(Reason: %s)",path, GB_await_error());
     };      /* delete old file */
 
     mode = GB_mode_of_link(Main->path); /* old master */
@@ -1208,16 +1208,16 @@ GB_ERROR GB_save_quick(GBDATA *gb, char *refpath)
 
     if (refpath && strcmp(refpath, Main->path) )
     {
-        return GB_export_error("Internal ARB Error, master file rename '%s'!= '%s',\n"
-                               "    save database first", refpath,Main->path);
+        return GB_export_errorf("Internal ARB Error, master file rename '%s'!= '%s',\n"
+                                "    save database first", refpath,Main->path);
     }
 
     fmaster = fopen( Main->path, "r");
 
     if (!fmaster) /* Oh no, where is my old master */
     {
-        return GB_export_error("Quick save is missing master ARB file '%s',\n"
-                               "    save database first", refpath);
+        return GB_export_errorf("Quick save is missing master ARB file '%s',\n"
+                                "    save database first", refpath);
     }
     fclose(fmaster);
 
@@ -1234,7 +1234,7 @@ GB_ERROR GB_save_quick(GBDATA *gb, char *refpath)
     path = gb_quicksaveName(Main->path, Main->qs.last_index);
     sec_path = gb_overwriteName(path);
 
-    if ((out = fopen(sec_path, "w")) == NULL) return GB_export_error("ARBDB ERROR: Cannot save file to '%s'",sec_path);
+    if ((out = fopen(sec_path, "w")) == NULL) return GB_export_errorf("ARBDB ERROR: Cannot save file to '%s'",sec_path);
 
     slevel = Main->security_level;
     translevel = Main->transaction;
@@ -1256,7 +1256,7 @@ GB_ERROR GB_save_quick(GBDATA *gb, char *refpath)
     Main->security_level = slevel;
     Main->transaction = translevel;
     erg |= fclose(out);
-    if (erg!=0) return GB_export_error("Cannot write to '%s'",sec_path); /* was: '%s%%'",path);*/
+    if (erg!=0) return GB_export_errorf("Cannot write to '%s'",sec_path); /* was: '%s%%'",path);*/
 
     if (GB_rename_file(sec_path,path)) return GB_get_error();
 
@@ -1328,7 +1328,7 @@ GB_ERROR gb_check_saveable(GBDATA *gbd,const char *path,const char *flags){
 
             lslash[0] = 0;
             if (!GB_is_directory(fullpath)) {
-                err = GB_export_error("Directory '%s' doesn't exist", fullpath);
+                err = GB_export_errorf("Directory '%s' doesn't exist", fullpath);
             }
             lslash[0] = '/';
 
@@ -1341,17 +1341,17 @@ GB_ERROR gb_check_saveable(GBDATA *gbd,const char *path,const char *flags){
     if ( !strchr(flags,'q')){
         mode = GB_mode_of_link(path);
         if (mode >=0 && !(mode & S_IWUSR)){ /* no write access -> lookes like a master file */
-            return GB_export_error(
-                                   "Your selected file '%s' already exists and is write protected\n"
-                                   "    It looks like that your file is a master arb file which is\n"
-                                   "    used by some xxx.a?? quicksave databases\n"
-                                   "    If you want to save it nevertheless, delete it first !!!",
-                                   path);
+            return GB_export_errorf(
+                                    "Your selected file '%s' already exists and is write protected\n"
+                                    "    It looks like that your file is a master arb file which is\n"
+                                    "    used by some xxx.a?? quicksave databases\n"
+                                    "    If you want to save it nevertheless, delete it first !!!",
+                                    path);
         }
     }
     if ( strchr(flags,'n')){
         if (GB_time_of_file(path)){
-            return GB_export_error( "Your destination file '%s' already exists.\n"
+            return GB_export_errorf("Your destination file '%s' already exists.\n"
                                     "\tDelete it by hand first",path );
         }
     }

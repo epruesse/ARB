@@ -89,12 +89,12 @@ GB_ERROR GBT_rename_species(const char *oldname, const  char *newname, GB_BOOL i
         gb_species       = GBT_find_species_rel_species_data(gbtrst.gb_species_data, oldname);
 
         if (gb_found_species && gb_species != gb_found_species) {
-            return GB_export_error("A species named '%s' already exists.",newname);
+            return GB_export_errorf("A species named '%s' already exists.",newname);
         }
     }
 
     if (!gb_species) {
-        return GB_export_error("Expected that a species named '%s' exists (maybe there are duplicate species, database might be corrupt)",oldname);
+        return GB_export_errorf("Expected that a species named '%s' exists (maybe there are duplicate species, database might be corrupt)",oldname);
     }
 
     gb_name = GB_entry(gb_species,"name");

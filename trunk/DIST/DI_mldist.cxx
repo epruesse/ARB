@@ -265,7 +265,7 @@ const char *di_mldist::makedists()
                     if (curv < 0.0) {
                         tt -= slope / curv;
                         if (tt > 10000.0) {
-                            aw_message(GB_export_error("INFINITE DISTANCE BETWEEN SPECIES %ld AND %ld; -1.0 WAS WRITTEN\n", i, j));
+                            aw_message(GB_export_errorf("INFINITE DISTANCE BETWEEN SPECIES %ld AND %ld; -1.0 WAS WRITTEN\n", i, j));
                             tt = -1.0 / fracchange;
                             break;
                         }

@@ -713,19 +713,11 @@ long gb_recover_corrupt_file(GBCONTAINER *gbd,FILE *in, GB_ERROR recovery_reason
     long pos = ftell(in);
     if (!GBCONTAINER_MAIN(gbd)->allow_corrupt_file_recovery) {
         if (!recovery_reason) { recovery_reason = GB_await_error(); }
-        GB_export_error("Aborting recovery (because recovery mode is disabled)\n"
-                        "Error causing recovery: '%s'\n"
-                        "Part of data may be recovered using 'arb_repair yourDB.arb newName.arb'\n"
-                        "(Note: Recovery doesn't work if the error occurs while loading a quick save file)",
-                        recovery_reason);
-        /*         GB_export_error("Your data file is corrupt.\n" */
-        /*                         "   This may happen if \n" */
-        /*                         "   - there is a hardware error (e.g a drive crash),\n" */
-        /*                         "   - data is corrupted by bad internet connections,\n" */
-        /*                         "   - data is destroyed by the program or\n" */
-        /*                         "   - if it isn't an arb file\n" */
-        /*                         "   You may recover part of your data by running\n" */
-        /*                         "       arb_repair old_arb_file panic.arb\n"); */
+        GB_export_errorf("Aborting recovery (because recovery mode is disabled)\n"
+                         "Error causing recovery: '%s'\n"
+                         "Part of data may be recovered using 'arb_repair yourDB.arb newName.arb'\n"
+                         "(Note: Recovery doesn't work if the error occurs while loading a quick save file)",
+                         recovery_reason);
         return -1;
     }
     pos = ftell(in);
@@ -1197,7 +1189,7 @@ long gb_read_bin(FILE *in,GBCONTAINER *gbd, int diff_file_allowed)
                 }
             }
             else {
-                GB_export_error("FastLoad-File index conflict (%s)", map_path);
+                GB_export_errorf("FastLoad-File index conflict (%s)", map_path);
             }
         }
         else {

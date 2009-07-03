@@ -40,7 +40,7 @@ GBDATA *gbt_table_link_follower(GBDATA *gb_main, GBDATA *gb_link, const char *li
     GBUSE(gb_link);
     sep = strchr(link,':');
     if (!sep){
-        GB_export_error("Link '%s' is missing second ':' tag", link);
+        GB_export_errorf("Link '%s' is missing second ':' tag", link);
         return NULL;
     }
     save = *sep;
@@ -49,7 +49,7 @@ GBDATA *gbt_table_link_follower(GBDATA *gb_main, GBDATA *gb_link, const char *li
     *sep = save;
 
     if (!gb_table){
-        GB_export_error("Table '%s' does not exist",link);
+        GB_export_errorf("Table '%s' does not exist",link);
         return NULL;
     }
     return GBT_find_table_entry(gb_table,sep+1);
@@ -201,7 +201,7 @@ GB_ERROR GBT_savely_write_table_entry_field(GBDATA *gb_table,GBDATA *gb_entry, c
     GBDATA *gb_entry_field;
     GB_TYPES type = GBT_get_type_of_table_entry_field(gb_table,fieldname);
     if (type == GB_NONE){
-        return GB_export_error("There is no field description '%s' for your table", fieldname);
+        return GB_export_errorf("There is no field description '%s' for your table", fieldname);
     }
     gb_entry_field = GB_search(gb_entry,"fieldname",type);
     return GB_write_as_string(gb_entry_field,value_in_ascii_format);

@@ -3432,14 +3432,14 @@ GB_ERROR AW_root::start_macro_recording(const char *file,
     }
     char *macro_header = GB_read_file("$(ARBHOME)/lib/macro.head");
     if (!macro_header) {
-        return GB_export_error("Cannot open file '%s'", "$(ARBHOME)/lib/macro.head");
+        return GB_export_errorf("Cannot open file '%s'", "$(ARBHOME)/lib/macro.head");
     }
 
     prvt->recording_macro_file = fopen(path, "w");
     prvt->recording_macro_path = path;
     if (!prvt->recording_macro_file) {
         delete macro_header;
-        return GB_export_error("Cannot open file '%s' for writing", file);
+        return GB_export_errorf("Cannot open file '%s' for writing", file);
     }
     prvt->stop_action_name = strdup(stop_action_name);
     prvt->application_name_for_macros = strdup(application_id);
@@ -3497,7 +3497,7 @@ void AW_root::define_remote_command(AW_cb_struct *cbs) {
     if (old_cbs) {
         if (!old_cbs->is_equal(*cbs)) {                  // existing remote command replaced by different callback
 #if defined(DEBUG)
-            fprintf(stderr, GBS_global_string("Warning: duplicated use of callback id '%s'\n", old_cbs->id));
+            fputs(GBS_global_string("Warning: duplicated use of callback id '%s'\n", old_cbs->id), stderr);
 #if defined(DEVEL_RALF)
             gb_assert(0);
 #endif // DEVEL_RALF
@@ -3569,7 +3569,7 @@ GB_ERROR AW_root::check_for_remote_command(AW_default gb_maind, const char *rm_b
             cbs->run_callback();
             GBT_write_string(gb_main, awar_result, "");
         } else {
-            aw_message(GB_export_error("Unknown action '%s' in macro", action));
+            aw_message(GB_export_errorf("Unknown action '%s' in macro", action));
             GBT_write_string(gb_main, awar_result, GB_await_error());
         }
         GBT_write_string(gb_main, awar_action, ""); // this works as READY-signal for perl-client (remote_action)

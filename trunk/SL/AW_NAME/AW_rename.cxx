@@ -348,7 +348,7 @@ GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const ch
             shrt = 0;
         }
         else {
-            err = GB_export_error("Generation of short name for '%s' failed", full_name);
+            err = GB_export_errorf("Generation of short name for '%s' failed", full_name);
         }
     }
 
@@ -678,7 +678,7 @@ char *AWTC_makeUniqueShortName(const char *prefix, UniqueNameDetector& existingN
     }
 
     gb_assert(!result || strlen(result) <= 8);
-    if (!result) GB_export_error("Failed to create unique shortname (prefix='%s')", prefix);
+    if (!result) GB_export_errorf("Failed to create unique shortname (prefix='%s')", prefix);
 
     return result;
 }

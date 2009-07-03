@@ -474,7 +474,7 @@ GBT_TREE *TREE_load(const char *path, int structuresize, char **commentPtr, int 
 
     tree_assert(tree||error);
     if (error) {
-        GB_export_error("Import tree: %s", error);
+        GB_export_errorf("Import tree: %s", error);
         tree_assert(!tree);
     }
 
