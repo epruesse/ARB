@@ -506,7 +506,7 @@ static void openProperties() {
         }
     }
 
-    GB_information("Using properties from '%s'", ED4_ROOT->db_name);
+    GB_informationf("Using properties from '%s'", ED4_ROOT->db_name);
     ED4_ROOT->aw_root->init_variables( ED4_ROOT->db); // pass defaults
 }
 

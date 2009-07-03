@@ -923,7 +923,7 @@ char *GB_find_executable(GB_CSTR description_of_executable, ...) {
         free(looked_for);
     }
     else {
-        GB_information("Using %s '%s' ('%s')", description_of_executable, name, found);
+        GB_informationf("Using %s '%s' ('%s')", description_of_executable, name, found);
     }
     return found;
 }
@@ -1051,7 +1051,7 @@ GB_CSTR GB_getenvPATH() {
         path = getenv_ignore_empty("PATH");
         if (!path) {
             path = GBS_eval_env("/bin:/usr/bin:$(ARBHOME)/bin");
-            GB_information("Your PATH variable is empty - using '%s' as search path.", path);
+            GB_informationf("Your PATH variable is empty - using '%s' as search path.", path);
         }
         else {
             char *arbbin = GBS_eval_env("$(ARBHOME)/bin");
