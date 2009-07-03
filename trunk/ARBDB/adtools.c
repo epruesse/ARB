@@ -225,7 +225,7 @@ static void new_gbt_message_created_cb(GBDATA *gb_pending_messages, int *cd, GB_
         for (gb_msg = GB_entry(gb_pending_messages, "msg"); gb_msg;) {
             {
                 const char *msg = GB_read_char_pntr(gb_msg);
-                GB_warning("%s", msg);
+                GB_warning(msg);
             }
             {
                 GBDATA *gb_next_msg = GB_nextEntry(gb_msg);
@@ -766,7 +766,7 @@ static void notify_cb(GBDATA *gb_message, int *cb_info, GB_CB_TYPE cb_type) {
 
         if (!cb_done) {
             gb_assert(error);
-            GB_warning("Notification failed (Reason: %s)\n", error);
+            GB_warningf("Notification failed (Reason: %s)\n", error);
             gb_assert(0);
         }
     }

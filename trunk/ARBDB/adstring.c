@@ -1035,11 +1035,11 @@ char *GBS_find_lib_file(const char *filename, const char *libprefix, int warn_wh
             }
             else {
                 if (warn_when_not_found) {
-                    GB_warning("Don't know where to find '%s'\n"
-                               "  searched in '.'\n"
-                               "  searched in $(HOME) (for '%s')\n"
-                               "  searched in $(ARBHOME)/lib/%s (for '%s')\n", 
-                               filename, fileInHome, libprefix, fileInLib);
+                    GB_warningf("Don't know where to find '%s'\n"
+                                "  searched in '.'\n"
+                                "  searched in $(HOME) (for '%s')\n"
+                                "  searched in $(ARBHOME)/lib/%s (for '%s')\n", 
+                                filename, fileInHome, libprefix, fileInLib);
                 }
             }
         }
@@ -1477,18 +1477,10 @@ GB_ERROR GBK_assert_msg(const char *assertion, const char *file, int linenr) {
 #undef BUFSIZE
 }
 
-void GB_warning(const char *templat, ...) {
-    /* goes to header: __ATTR__FORMAT(1)  */
-
+void GB_warning(const char *message) {
     /* If program uses GUI, the message is printed via aw_message, otherwise it goes to stdout
      * see also : GB_information
      */
-
-    va_list parg;
-
-    va_start(parg,templat);
-    char *message = gbs_vglobal_string_copy(templat, parg);
-    va_end(parg);
 
     if (gb_warning_func) {
         gb_warning_func(message);
@@ -1497,6 +1489,17 @@ void GB_warning(const char *templat, ...) {
         fputs(message, stdout);
         fputc('\n', stdout);
     }
+}
+void GB_warningf(const char *templat, ...) {
+    /* goes to header: __ATTR__FORMAT(1)  */
+
+    va_list parg;
+
+    va_start(parg,templat);
+    char *message = gbs_vglobal_string_copy(templat, parg);
+    va_end(parg);
+
+    GB_warning(message);
     free(message);
 }
 

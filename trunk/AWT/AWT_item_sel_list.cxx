@@ -57,7 +57,7 @@ static void populate_selection_list_on_scandb_cb(GBDATA *dummy, struct adawcbstr
         if (!hiddenPtr) {                           // it's an older db version w/o hidden flag -> add it
             GB_ERROR error = GBT_write_int(gb_key, CHANGEKEY_HIDDEN, 0); // default is "not hidden"
             if (error) {
-                GB_warning("WARNING: can't create " CHANGEKEY_HIDDEN " (Reason: %s)\n", error);
+                GB_warningf("WARNING: can't create " CHANGEKEY_HIDDEN " (Reason: %s)\n", error);
             }
 
             static long not_hidden = 0;;

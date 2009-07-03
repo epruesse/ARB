@@ -455,14 +455,14 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, const ch
                 int acceptable_compSteps = 11*min_compSteps; // accept 1000% overhead
 
                 if (mastercount>acceptable_masters || max_compSteps>acceptable_compSteps) {
-                    GB_warning("Tree is ill-suited for compression (cause of deep branches)\n"
-                               "                    Used tree   Optimal tree   Overhead\n"
-                               "Compression steps       %5i          %5i      %4i%% (speed)\n"
-                               "Master sequences        %5i          %5i      %4i%% (size)\n"
-                               "If you like to restart with a better tree,\n"
-                               "press 'Abort' to stop compression",
-                               max_compSteps, min_compSteps, (100*max_compSteps)/min_compSteps-100,
-                               mastercount, min_masters, (100*mastercount)/min_masters-100);
+                    GB_warningf("Tree is ill-suited for compression (cause of deep branches)\n"
+                                "                    Used tree   Optimal tree   Overhead\n"
+                                "Compression steps       %5i          %5i      %4i%% (speed)\n"
+                                "Master sequences        %5i          %5i      %4i%% (size)\n"
+                                "If you like to restart with a better tree,\n"
+                                "press 'Abort' to stop compression",
+                                max_compSteps, min_compSteps, (100*max_compSteps)/min_compSteps-100,
+                                mastercount, min_masters, (100*mastercount)/min_masters-100);
                 }
             }
 
@@ -670,13 +670,13 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, const ch
                         char *sizeOld = strdup(GBS_readable_size(sumold));
                         char *sizeNew = strdup(GBS_readable_size(sumnew));
 
-                        GB_warning("Alignment '%s':\n"
-                                   "    Uncompressed data:   %7s\n"
-                                   "    Old compressed data: %7s = %6.2f%%\n"
-                                   "    New compressed data: %7s = %6.2f%%",
-                                   ali_name, sizeOrg,
-                                   sizeOld, (100.0*sumold)/sumorg,
-                                   sizeNew, (100.0*sumnew)/sumorg);
+                        GB_warningf("Alignment '%s':\n"
+                                    "    Uncompressed data:   %7s\n"
+                                    "    Old compressed data: %7s = %6.2f%%\n"
+                                    "    New compressed data: %7s = %6.2f%%",
+                                    ali_name, sizeOrg,
+                                    sizeOld, (100.0*sumold)/sumorg,
+                                    sizeNew, (100.0*sumnew)/sumorg);
 
                         free(sizeNew);
                         free(sizeOld);
@@ -767,7 +767,7 @@ void GBT_compression_test(void *dummy, GBDATA *gb_main) {
         error = GBT_compress_sequence_tree2(gb_main, tree_name, ali_name);
     }
 
-    if (error) GB_warning("%s",error);
+    if (error) GB_warning(error);
     free(tree_name);
     free(ali_name);
 }
