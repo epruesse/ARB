@@ -1393,19 +1393,12 @@ void GBK_install_SIGSEGV_handler(GB_BOOL install) {
 /* ------------------------------------------- */
 /*      Error/notification functions           */
 
-void GB_internal_error(const char *templat, ...) {
-    /* goes to header: __ATTR__FORMAT(1)  */
-    va_list parg;
-
+void GB_internal_error(const char *message)  {
     /* Use GB_internal_error, when something goes badly wrong
      * but you want to give the user a chance to save his database
      * 
      * Note: it's NOT recommended to use this function!
      */
-
-    va_start(parg, templat);
-    GB_CSTR message = gbs_vglobal_string(templat, parg, 0);
-    va_end(parg);
 
     char *full_message = GBS_global_string_copy("Internal ARB Error: %s", message);
     gb_error_handler(full_message);
@@ -1414,13 +1407,24 @@ void GB_internal_error(const char *templat, ...) {
                      "Try to fix the cause of the error and restart ARB.");
 
 #ifdef ASSERTION_USED
-    fprintf(stderr, full_message);
-    gb_assert(0);                             // internal errors shall not happen, go fix it
+    fputs(full_message, stderr);
+    gb_assert(0);               // internal errors shall not happen, go fix it
 #else
     GBK_dump_backtrace(stderr, full_message);
 #endif
 
     free(full_message);
+}
+
+void GB_internal_errorf(const char *templat, ...) {
+    /* goes to header: __ATTR__FORMAT(1)  */
+    va_list parg;
+
+    va_start(parg, templat);
+    GB_CSTR message = gbs_vglobal_string(templat, parg, 0);
+    va_end(parg);
+
+    GB_internal_error(message);
 }
 
 void GBK_terminate(const char *error) {

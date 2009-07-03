@@ -235,27 +235,27 @@ inline void GB_TEST_TRANSACTION(GBDATA *gbd) {
 #endif // __cplusplus
 
 #define GB_TEST_READ(gbd,ty,error)                                      \
-    do {                                                                            \
-        GB_TEST_TRANSACTION(gbd);                                                   \
-        if (GB_ARRAY_FLAGS(gbd).changed == gb_deleted) {                            \
-            GB_internal_error("%s: %s",error,"Entry is deleted !!");                \
-            return 0;}                                                              \
-        if ( GB_TYPE(gbd) != ty && (ty != GB_STRING || GB_TYPE(gbd) == GB_LINK)) {  \
-            GB_internal_error("%s: %s",error,"wrong type");                         \
-            return 0;}                                                              \
+    do {                                                                \
+        GB_TEST_TRANSACTION(gbd);                                       \
+        if (GB_ARRAY_FLAGS(gbd).changed == gb_deleted) {                \
+            GB_internal_errorf("%s: %s",error,"Entry is deleted !!");   \
+            return 0;}                                                  \
+        if ( GB_TYPE(gbd) != ty && (ty != GB_STRING || GB_TYPE(gbd) == GB_LINK)) { \
+            GB_internal_errorf("%s: %s",error,"wrong type");            \
+            return 0;}                                                  \
     } while(0)
 
-#define GB_TEST_WRITE(gbd,ty,gerror)                                                \
-    do {                                                                            \
-        GB_TEST_TRANSACTION(gbd);                                                   \
-        if ( GB_ARRAY_FLAGS(gbd).changed == gb_deleted) {                           \
-            GB_internal_error("%s: %s",gerror,"Entry is deleted !!");               \
-            return 0;}                                                              \
-        if ( GB_TYPE(gbd) != ty && (ty != GB_STRING || GB_TYPE(gbd) != GB_LINK)) {  \
-            GB_internal_error("%s: %s",gerror,"type conflict !!");                  \
-            return 0;}                                                              \
-        if (GB_GET_SECURITY_WRITE(gbd)>GB_MAIN(gbd)->security_level)                \
-            return gb_security_error(gbd);                                          \
+#define GB_TEST_WRITE(gbd,ty,gerror)                                    \
+    do {                                                                \
+        GB_TEST_TRANSACTION(gbd);                                       \
+        if ( GB_ARRAY_FLAGS(gbd).changed == gb_deleted) {               \
+            GB_internal_errorf("%s: %s",gerror,"Entry is deleted !!");  \
+            return 0;}                                                  \
+        if ( GB_TYPE(gbd) != ty && (ty != GB_STRING || GB_TYPE(gbd) != GB_LINK)) { \
+            GB_internal_errorf("%s: %s",gerror,"type conflict !!");     \
+            return 0;}                                                  \
+        if (GB_GET_SECURITY_WRITE(gbd)>GB_MAIN(gbd)->security_level)    \
+            return gb_security_error(gbd);                              \
     } while(0)
 
 #define GB_TEST_NON_BUFFER(x,gerror)                                    \

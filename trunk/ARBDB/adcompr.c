@@ -164,7 +164,7 @@ struct gb_compress_tree *gb_build_uncompress_tree(const unsigned char *data,long
     }
     if (end) *end = ((char *)p)+1;
     if ( (error = gb_check_huffmann_tree(Main)) ) {
-        GB_internal_error("%s",error);
+        GB_internal_errorf("%s",error);
         gb_free_compress_tree(Main);
         return 0;
     }

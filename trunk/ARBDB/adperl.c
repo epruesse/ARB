@@ -75,8 +75,8 @@ GB_TYPES GBP_gb_types(char *type_name){
 GB_UNDO_TYPE GBP_undo_types(const char *type_name){
     if (!strcasecmp(type_name,"undo")) return GB_UNDO_UNDO;
     if (!strcasecmp(type_name,"redo")) return GB_UNDO_REDO;
-    GB_internal_error("Cannot convert '%s' to undo type,\n"
-                      " only 'redo' / 'undo' allowed\n", type_name);
+    GB_internal_errorf("Cannot convert '%s' to undo type,\n"
+                       " only 'redo' / 'undo' allowed\n", type_name);
     return GB_UNDO_NONE;
 }
 

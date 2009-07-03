@@ -174,8 +174,8 @@ void gb_link_entry(GBCONTAINER* father, GBDATA * gbd, long index_pos)
     }
 
     if (GB_TYPE(father) != GB_DB) {
-        GB_internal_error(  "to read a database into a non database keyword %s,"
-                            "probably %%%% is missing\n", GB_read_key_pntr((GBDATA*)father));
+        GB_internal_errorf("to read a database into a non database keyword %s,"
+                           "probably %%%% is missing\n", GB_read_key_pntr((GBDATA*)father));
         return;
     }
     if ( index_pos < 0) {
