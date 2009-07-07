@@ -1795,8 +1795,8 @@ Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int 
     if (width >aww->_at->max_x_size) aww->_at->max_x_size = width;
     if (height>aww->_at->max_y_size) aww->_at->max_y_size = height;
 
-    if ( !GBS_read_hash(root->hash_for_windows, aww->window_name)) {
-        GBS_write_hash(root->hash_for_windows, aww->window_name, (long)aww);
+    if ( !GBS_read_hash(root->hash_for_windows, aww->get_window_id())) {
+        GBS_write_hash(root->hash_for_windows, aww->get_window_id(), (long)aww);
         bool has_user_geometry = false;
 
         const char *temp= aw_awar_name_width(aww);
