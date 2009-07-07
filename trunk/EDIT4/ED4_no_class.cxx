@@ -734,7 +734,10 @@ void ED4_jump_to_cursor_position(AW_window *aww, char *awar_name, bool /*callbac
 #endif // DEBUG
 
     if (pos>0) pos--;                               // user->real position (userpos is 1..n)
-    long max          = ED4_ROOT->root_group_man->remap()->get_max_screen_pos();
+
+    ED4_remap *remap = ED4_ROOT->root_group_man->remap();
+
+    long max          = remap->screen_to_sequence(remap->get_max_screen_pos());
     if(pos > max) pos = max;
 
     if (strcmp(awar_name, ED4_ROOT->get_ed4w()->awar_path_for_Ecoli)==0) { // callback from ecoli
