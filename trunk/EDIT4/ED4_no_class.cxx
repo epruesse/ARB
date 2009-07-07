@@ -728,8 +728,13 @@ void ED4_jump_to_cursor_position(AW_window *aww, char *awar_name, bool /*callbac
     GB_ERROR    error  = 0;
 
     long pos = aww->get_root()->awar(awar_name)->read_int();
-    if (pos>0) pos--;           // user->real position (userpos is 1..n)
-    long max = ED4_ROOT->root_group_man->remap()->get_max_screen_pos();
+
+#if defined(DEBUG)
+    fprintf(stderr, "ED4_jump_to_cursor_position by awar='%s', pos=%li\n", awar_name, pos);
+#endif // DEBUG
+
+    if (pos>0) pos--;                               // user->real position (userpos is 1..n)
+    long max          = ED4_ROOT->root_group_man->remap()->get_max_screen_pos();
     if(pos > max) pos = max;
 
     if (strcmp(awar_name, ED4_ROOT->get_ed4w()->awar_path_for_Ecoli)==0) { // callback from ecoli
@@ -746,6 +751,9 @@ void ED4_jump_to_cursor_position(AW_window *aww, char *awar_name, bool /*callbac
         aw_message(error);
     }
     else {
+#if defined(DEBUG)
+        fprintf(stderr, "calling jump_sequence_pos(%i)\n", pos);
+#endif // DEBUG
         cursor->jump_sequence_pos(aww, pos, ED4_JUMP_CENTERED);
     }
 }
