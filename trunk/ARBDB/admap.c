@@ -727,7 +727,7 @@ int gb_is_valid_mapfile(const char *path, struct gb_map_header *mheader, int ver
         else if (mheader->byte_order!=ADMAP_BYTE_ORDER) error_form = "FastLoad-File '%s' has wrong byte order";
 
         if (error_form) {
-            GB_export_error(error_form, path);
+            GB_export_errorf(error_form, path);
             GB_print_error();
             return 0;
         }
