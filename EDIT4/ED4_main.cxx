@@ -351,15 +351,15 @@ static void ed4_create_mainDB_awars(AW_root *root, const char *config_name) {
 
     root->awar_string(AWAR_ITARGET_STRING, "", GLOBAL_gb_main);
 
-    root->awar_int(AWAR_CURSOR_POSITION, 1, GLOBAL_gb_main);
-    root->awar_int( AWAR_CURSOR_POSITION_LOCAL, 0, GLOBAL_gb_main);
-    root->awar_int(AWAR_SET_CURSOR_POSITION, 1, GLOBAL_gb_main);
+    root->awar_int(AWAR_CURSOR_POSITION,       1, GLOBAL_gb_main);
+    root->awar_int(AWAR_CURSOR_POSITION_LOCAL, 0, GLOBAL_gb_main);
+    root->awar_int(AWAR_SET_CURSOR_POSITION,   1, GLOBAL_gb_main);
 
     root->awar_string(AWAR_FIELD_CHOSEN, "", GLOBAL_gb_main);
 
     root->awar_string(AWAR_SPECIES_NAME, "", GLOBAL_gb_main);
-    root->awar_string(AWAR_SAI_NAME, "", GLOBAL_gb_main);
-    root->awar_string(AWAR_SAI_GLOBAL, "", GLOBAL_gb_main);
+    root->awar_string(AWAR_SAI_NAME,     "", GLOBAL_gb_main);
+    root->awar_string(AWAR_SAI_GLOBAL,   "", GLOBAL_gb_main);
     //    root->awar_string(AWAR_SAI_COLOR_STR, "", GLOBAL_gb_main); //sai visualization in probe match
 
     root->awar_string(AWAR_EDIT_CONFIGURATION, config_name, GLOBAL_gb_main);
