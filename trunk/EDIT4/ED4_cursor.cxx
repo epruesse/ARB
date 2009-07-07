@@ -1058,9 +1058,6 @@ void ED4_cursor::jump_screen_pos(AW_window *aww, int screen_pos, ED4_CursorJumpT
 
 void ED4_cursor::jump_sequence_pos(AW_window *aww, int seq_pos, ED4_CursorJumpType jump_type) {
     int screen_pos = ED4_ROOT->root_group_man->remap()->sequence_to_screen_clipped(seq_pos);
-#if defined(DEBUG)
-    fprintf(stderr, "in jump_sequence_pos: seq_pos=%i screen_pos=%i\n", seq_pos, screen_pos);
-#endif // DEBUG
     jump_screen_pos(aww, screen_pos, jump_type);
 }
 
