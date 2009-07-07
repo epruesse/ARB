@@ -289,8 +289,8 @@ void testMemblocks(const char *file, int line)
 
 static void imemerr(const char *why)
 {
-    GB_internal_error("Dangerous internal error: '%s'\n"
-                      "Inconsistent database: Do not overwrite old files with this database",why);
+    GB_internal_errorf("Dangerous internal error: '%s'\n"
+                       "Inconsistent database: Do not overwrite old files with this database", why);
 }
 
 static int getClusterIndex(size_t size) /* searches the index of the
@@ -331,8 +331,8 @@ void gbm_put_memblk(char *memblk, size_t size) /* gives any memory block (alloca
 
     if (size<(GBB_HEADER_SIZE+GBB_MINSIZE))
     {
-        GB_internal_error("gmb_put_memblk() called with size below %zu bytes",
-                          GBB_HEADER_SIZE+GBB_MINSIZE);
+        GB_internal_errorf("gmb_put_memblk() called with size below %zu bytes",
+                           GBB_HEADER_SIZE+GBB_MINSIZE);
         return;
     }
 
