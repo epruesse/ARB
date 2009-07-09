@@ -1,8 +1,48 @@
 ARB change log
 
-Major changes for next version:
+Major changes for arb_5.00:
 
- - ...
+ - ARB 64bit version
+ - new genome importer
+ - search for next relatives improved (normal search and fast-aligner)
+   * new parameters to precise search
+   * improved speed
+   * partial sequence reach normal scores
+ - search&query
+   * supports regular expressions and ACI
+   * track hit information
+   * result sorting
+ - Nameservers with add.field have to be started with default value
+   You need to correct parameter -f in lib/arb_tcp.dat (according to lib/arb_tcp_org.dat)
+ - Multiple pt-servers may be used in parallel
+ - type-conversion for DB fields
+ - SILVA compatible import filters
+ - Newick tree export:
+   * optionally save in human-readable format (big)
+   * closer to newick standard format (quoting style, comment, special chars in data)
+ - Upgraded RAxML to 7.0.3 (many features now usable from ARB interface)
+ - Fixed sequence quality calculation
+ - Secondary structures for proteins (DSSP)
+ - Distance matrix (arb_dist): mark by distance to selected
+ - ARB core
+   * many bugfixes and improvements to reliabilty
+   * faster sorting (general speedup)
+   * improved sequence compression (avoid worse trees, better ratio)
+   * improved handling of temporary files (permission/removal)
+   * prints backtraces in userland
+   * regular expression are POSIX standard now
+ - macro record/playback
+   * fixed several bugs
+   * you need to re-record your old macros!
+ - GUI:
+   * disabled auto-focus, you need to click now
+   * auto-raise windows on access
+ - Minor things:
+   * Ubuntu: packet installation for ARB
+   * Fixed novice/expert mode
+   * Mark deep/degenerated branches
+   * Increased NDS entries
+ - up-to-date Mac port (thx to Matt Cottrell)
 
 Major changes in ARB 07.12.07org:
 
