@@ -71,6 +71,12 @@ GB_ERROR AW_select_nameserver(GBDATA *gb_main, GBDATA *gb_other_main) {
                 for (int c = 0; c<serverCount; c++) {
                     const char *ipport = GBS_read_arb_tcp(nameservers[c]);
                     fieldNames[c]      = nulldup(GBS_scan_arb_tcp_param(ipport, "-f")); // may return 0
+
+                    // parameter -f contains default value (e.g. '-fstart=1')
+                    if (fieldNames[c]) {
+                        char *equal = strchr(fieldNames[c], '=');
+                        if (equal) equal[0] = 0;
+                    }
                 }
 
                 if (serverCount == 1) { // exactly 1 server defined -> don't ask
