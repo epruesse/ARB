@@ -171,7 +171,7 @@ my @skipped_when_matchesFull = (
                                 qr/^\.\/PERL2ARB\/perlmain.c$/o,
                                 qr/^\.\/TEMPLATES\/arb_build\.h$/o,
                                 qr/^\.\/lib\/ARB\.pm$/o,
-                                qr/^\.\/lib\/nas\/names\.dat$/o,
+                                qr/^\.\/lib\/nas\/names.*\.dat$/o,
                                 qr/^\.\/lib\/arb_tcp\.dat$/o,
                                 qr/^\.\/arb.*\.tgz$/o,
                                 qr/^\.\/SOURCE_TOOLS\/valgrind2grep\.lst$/o,
