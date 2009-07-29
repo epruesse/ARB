@@ -285,8 +285,11 @@ cflags += -W -Wall $(dflags) $(extended_warnings) $(cdynamic)
 cppflags := $(extended_cpp_warnings)
 
 ifeq ($(DEVELOPER),RALF)
+HAVE_GNUPP0X=`SOURCE_TOOLS/requireVersion.pl 4.3 $GCC_VERSION_FOUND`
+ifeq ($(HAVE_GNUPP0X),1)
 # ensure compatibility with upcoming C++ standard
 cppflags += -std=gnu++0x
+endif
 endif
 
 # compiler settings:
