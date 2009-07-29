@@ -11,5 +11,6 @@ tcpdat:
 		test -e arb_tcp.dat || cp -p arb_tcp_org.dat arb_tcp.dat
 
 nameserver:
+		test -L nas && echo "lib/nas is a link - skipped" || \
 		(cd nas;$(MAKE) all)
 
