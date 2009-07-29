@@ -282,7 +282,12 @@ endif
 
 cflags += -W -Wall $(dflags) $(extended_warnings) $(cdynamic)
 
-cppflags := $(extended_cpp_warnings) 
+cppflags := $(extended_cpp_warnings)
+
+ifeq ($(DEVELOPER),RALF)
+# ensure compatibility with upcoming C++ standard
+cppflags += -std=gnu++0x
+endif
 
 # compiler settings:
 
