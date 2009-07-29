@@ -101,8 +101,8 @@ inline bool copy_to_buf(const char *start, const char *behindEnd, int MAXLEN, ch
 }
 
 static void parse_names_into_gene_struct(const char *map_str, gene_struct_list& listOfGenes) {
-#define MAX_INAME_LEN 8
-#define MAX_ONAME_LEN 8
+#define MAX_INAME_LEN 30
+#define MAX_ONAME_LEN 30
 #define MAX_GNAME_LEN 1024
 
     char iname[MAX_INAME_LEN+1]; // internal name
@@ -127,7 +127,7 @@ static void parse_names_into_gene_struct(const char *map_str, gene_struct_list& 
                 free(unesc);
             }
             else {
-                err = "buffer overflow";
+                err = "buffer overflow (some name too long)";
                 break;
             }
         }
