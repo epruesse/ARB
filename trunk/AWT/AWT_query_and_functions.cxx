@@ -2739,7 +2739,7 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
             aws->restore_at_size_and_attach(&at_size);
 
             {
-                char *button_id = GBS_global_string_copy("field_sel_%i", key);
+                char *button_id = GBS_global_string_copy("field_sel_%s_%i", query_id, key);
                 awt_create_selection_list_on_scandb(gb_main,aws,cbs->awar_keys[key], AWT_NDS_FILTER,
                                                     0, awtqs->rescan_pos_fig,
                                                     awtqs->selector, 22, 20, AWT_SF_PSEUDO, button_id);
@@ -2803,14 +2803,20 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
     if (awtqs->config_pos_fig){
         aws->button_length(0);
         aws->at(awtqs->config_pos_fig);
-        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "query_box", query_box_store_config, query_box_restore_config, (AW_CL)cbs, 0);
+        char *macro_id = GBS_global_string_copy("SAVELOAD_CONFIG_%s", query_id);
+        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "query_box",
+                                  query_box_store_config, query_box_restore_config, (AW_CL)cbs, 0,
+                                  macro_id);
+        free(macro_id);
     }
 
     aws->button_length(18);
     if (awtqs->do_query_pos_fig){
         aws->at(awtqs->do_query_pos_fig);
         aws->callback((AW_CB)awt_do_query,(AW_CL)cbs,AWT_EXT_QUERY_NONE);
-        aws->create_button("SEARCH", "Search");
+        char *macro_id = GBS_global_string_copy("SEARCH_%s", query_id);
+        aws->create_button(macro_id, "Search");
+        free(macro_id);
     }
     if (awtqs->do_refresh_pos_fig){
         aws->at(awtqs->do_refresh_pos_fig);
@@ -2846,7 +2852,9 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
         aws->at(awtqs->do_delete_pos_fig);
         aws->help_text("del_list.hlp");
         aws->callback((AW_CB)awt_delete_species_in_list,(AW_CL)cbs,0);
-        aws->create_button("DELETE_LISTED","Delete Listed","D");
+        char *macro_id = GBS_global_string_copy("DELETE_LISTED_%s", query_id);
+        aws->create_button(macro_id, "Delete Listed", "D");
+        free(macro_id);
     }
     if (awtqs->do_set_pos_fig){
         sprintf(buffer,"tmp/dbquery_%s/set_key",query_id);
@@ -2864,7 +2872,9 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
         aws->at(awtqs->do_set_pos_fig);
         aws->help_text("mod_field_list.hlp");
         aws->callback(AW_POPUP,(AW_CL)create_awt_do_set_list,(AW_CL)cbs);
-        aws->create_button("WRITE_TO_FIELDS_OF_LISTED", "Write to Fields\nof Listed","S");
+        char *macro_id = GBS_global_string_copy("WRITE_TO_FIELDS_OF_LISTED_%s", query_id);
+        aws->create_button(macro_id, "Write to Fields\nof Listed","S");
+        free(macro_id);
     }
 
     char *Items = strdup(cbs->selector->items_name);
