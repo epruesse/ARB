@@ -32,8 +32,8 @@ DESCRIPTION     Searches for
                 If you select 'that dont match' in the search&query windows, species are only listed
                 if they have an entry which doesn't exist in other DB.  
 
-NOTES		As a shortcut to these functions, you can enter an empty 'Search string' in
-                the first query.
+NOTES		As a shortcut to search for equal entries, you can enter an empty 'Search string' in
+                the first query (of DB I or DB II). Searching for marked species is not affected! 
 
                 If you need to search for empty fields,
                    * either use the second query or

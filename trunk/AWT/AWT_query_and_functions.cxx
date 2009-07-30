@@ -991,17 +991,17 @@ static void awt_do_query(void *dummy, struct adaqbsstruct *cbs, AW_CL cl_ext_que
     AW_root             *aw_root   = cbs->aws->get_root();
     awt_query            query(cbs);
 
-    if (cbs->gb_ref){ // special for merge tool!
+    AWT_QUERY_MODES mode  = (AWT_QUERY_MODES)aw_root->awar(cbs->awar_ere)->read_int();
+    AWT_QUERY_RANGE range = (AWT_QUERY_RANGE)aw_root->awar(cbs->awar_where)->read_int();
+    AWT_QUERY_TYPES type  = (AWT_QUERY_TYPES)aw_root->awar(cbs->awar_by)->read_int();
+
+    if (cbs->gb_ref && type != AWT_QUERY_MARKED) {  // special for merge tool!
         char *first_query = aw_root->awar(cbs->awar_queries[0])->read_string();
         if (strlen(first_query) == 0) {
             if (!ext_query) ext_query  = AWT_EXT_QUERY_COMPARE_LINES;
         }
         free(first_query);
     }
-
-    AWT_QUERY_MODES mode  = (AWT_QUERY_MODES)aw_root->awar(cbs->awar_ere)->read_int();
-    AWT_QUERY_RANGE range = (AWT_QUERY_RANGE)aw_root->awar(cbs->awar_where)->read_int();
-    AWT_QUERY_TYPES type  = (AWT_QUERY_TYPES)aw_root->awar(cbs->awar_by)->read_int();
 
     GB_ERROR error = query.getError();
 
