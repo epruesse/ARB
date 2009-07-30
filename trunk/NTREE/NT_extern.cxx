@@ -1141,10 +1141,10 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 #endif // DEBUG
 
     if (clone){
-        awm->create_menu("File",     "F", "nt_file.hlp",  AWM_ALL );
-        AWMIMT( "close", "Close",                   "C",0,      AWM_ALL, (AW_CB)AW_POPDOWN,     0, 0 );
-
-    }else{
+        awm->create_menu("File", "F", "nt_file.hlp", AWM_ALL);
+        AWMIMT("close", "Close", "C", 0, AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
+    }
+    else {
 #if defined(DEBUG)
         // add more to debug-menu
         SEP________________________SEP();
@@ -1487,7 +1487,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         }
     }
 
-    if(!clone){
+    if (!clone) {
         // --------------
         //      Tools
         // --------------
@@ -1540,28 +1540,28 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             SEP________________________SEP();
             AWMIMT("save_props",     "Save properties (in ~/.arb_prop/ntree.arb)",  "S","savedef.hlp",AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
         }
-    } // clone
+    } // !clone
 
     awm->insert_help_topic("How to use help", "H", "help.hlp",      AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"help.hlp",      0);
     awm->insert_help_topic("ARB help",        "A", "arb.hlp",       AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb.hlp",       0);
     awm->insert_help_topic("ARB_NT help",     "N", "arb_ntree.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb_ntree.hlp", 0);
 
     awm->create_mode("select.bitmap",   "mode_select.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SELECT);
-    awm->create_mode("mark.bitmap",     "mode_mark.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_MARK  );
-    awm->create_mode("group.bitmap",    "mode_group.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_GROUP );
-    awm->create_mode("pzoom.bitmap",     "mode_pzoom.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_ZOOM  );
-    awm->create_mode("lzoom.bitmap",    "mode_lzoom.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_LZOOM );
-    awm->create_mode("modify.bitmap",   "mode_info.hlp",   AWM_ALL, (AW_CB)NT_modify_cb,  (AW_CL)ntw, (AW_CL)AWT_MODE_MOD   );
-    awm->create_mode("www_mode.bitmap", "mode_www.hlp",    AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_WWW   );
+    awm->create_mode("mark.bitmap",     "mode_mark.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_MARK);
+    awm->create_mode("group.bitmap",    "mode_group.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_GROUP);
+    awm->create_mode("pzoom.bitmap",    "mode_pzoom.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_ZOOM);
+    awm->create_mode("lzoom.bitmap",    "mode_lzoom.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_LZOOM);
+    awm->create_mode("modify.bitmap",   "mode_info.hlp",   AWM_ALL, (AW_CB)NT_modify_cb,  (AW_CL)ntw, (AW_CL)AWT_MODE_MOD);
+    awm->create_mode("www_mode.bitmap", "mode_www.hlp",    AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_WWW);
 
-    awm->create_mode("line.bitmap",    "mode_width.hlp",    AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_LINE   );
-    awm->create_mode("rot.bitmap",     "mode_rotate.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_ROT    );
-    awm->create_mode("spread.bitmap",  "mode_angle.hlp",    AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SPREAD );
-    awm->create_mode("swap.bitmap",    "mode_swap.hlp",     AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SWAP   );
-    awm->create_mode("length.bitmap",  "mode_length.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_LENGTH );
-    awm->create_mode("move.bitmap",    "mode_move.hlp",     AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_MOVE   );
+    awm->create_mode("line.bitmap",    "mode_width.hlp",    AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_LINE);
+    awm->create_mode("rot.bitmap",     "mode_rotate.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_ROT);
+    awm->create_mode("spread.bitmap",  "mode_angle.hlp",    AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SPREAD);
+    awm->create_mode("swap.bitmap",    "mode_swap.hlp",     AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SWAP);
+    awm->create_mode("length.bitmap",  "mode_length.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_LENGTH);
+    awm->create_mode("move.bitmap",    "mode_move.hlp",     AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_MOVE);
     awm->create_mode("setroot.bitmap", "mode_set_root.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SETROOT);
-    awm->create_mode("reset.bitmap",   "mode_reset.hlp",    AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_RESET  );
+    awm->create_mode("reset.bitmap",   "mode_reset.hlp",    AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_RESET);
 
     awm->set_info_area_height( 250 );
     awm->at(5,2);
@@ -1581,10 +1581,16 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     // ---------------------
 
     awm->button_length(0);
-    
-    awm->callback(nt_exit);
-    awm->help_text("quit.hlp");
-    awm->create_button("QUIT", "#quit.xpm");
+
+    if (clone) {
+        awm->callback(AW_POPDOWN);
+        awm->create_button("CLOSE", "#close.xpm");
+    }
+    else {
+        awm->callback(nt_exit);
+        awm->help_text("quit.hlp");
+        awm->create_button("QUIT", "#quit.xpm");
+    }
 
     int db_pathx = awm->get_at_xposition();
 

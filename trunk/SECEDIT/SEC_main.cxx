@@ -767,7 +767,7 @@ AW_window *SEC_create_main_window(AW_root *awr, GBDATA *gb_main) {
     awm->button_length(0);
     awm->help_text("quit.hlp");
     awm->callback((AW_CB0)AW_POPDOWN);
-    awm->create_button("Close", "#close.xpm");
+    awm->create_button("Close", "#quit.xpm"); // use quit button, cause users regard secedit as separate program
 
     // awm->callback(AW_POPUP_HELP,(AW_CL)"arb_secedit.hlp");
     // awm->button_length(0);
