@@ -36,13 +36,12 @@ SECTION Configuration
 NOTES
 
         - Pairs are not case-sensitive
-        - No check for duplicate pairs is performed
         - If a pair is not defined in any line, the symbol given
           behind 'Default' is used. 
 
 SECTION Missing
 
-        @@@ description of Non_Standard pairs
+        @@@ description of Non_Standard pairs ...
 
 EXAMPLES	None
 

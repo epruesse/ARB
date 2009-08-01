@@ -848,7 +848,7 @@ void ED4_quit_editor(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     }
     // case : in another window close has been pressed
     ED4_ROOT->get_aww()->hide();
-    ED4_ROOT->get_ed4w()->is_hidden = 1;
+    ED4_ROOT->get_ed4w()->is_hidden = true;
 }
 
 void ED4_load_data( AW_window *aww, AW_CL cd1, AW_CL cd2 )
@@ -1417,7 +1417,8 @@ void ED4_new_editor_window( AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/ )
     ED4_ROOT->use_window(aww);
 
     AW_device  *device;
-    ED4_window *new_window;
+    ED4_window *new_window = 0;
+    
     if (ED4_ROOT->generate_window( &device, &new_window) == ED4_R_BREAK) // don't open more then five windows
         return;
 

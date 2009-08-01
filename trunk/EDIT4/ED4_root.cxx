@@ -1388,21 +1388,29 @@ static void ED4_save_defaults(AW_window *aw, AW_CL cl_mode, AW_CL) {
     AW_save_specific_defaults(aw, ED4_propertyName(mode));
 }
 
+static AW_window *ED4_create_gc_window(AW_root *aw_root, AW_gc_manager id) {
+    static AW_window *gc_win = 0;
+    if (!gc_win) {
+        gc_win = AW_create_gc_window(aw_root, id);
+    }
+    return gc_win;
+}
+
 ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new_window)
 {
     AW_window_menu_modes *awmm;
-    AW_gc_manager         win_gc_manager; //every window has its own gc_manager
-    ED4_window           *ed4w = first_window;
 
-    while (ed4w)                                        // before creating a window look for a hidden window
     {
-        if (ed4w->is_hidden)
-        {
-            ed4w->aww->show();
-            ed4w->is_hidden = 0;
-            return ED4_R_BREAK;
+        ED4_window *ed4w = first_window;
+
+        while (ed4w) { // before creating a window look for a hidden window
+            if (ed4w->is_hidden) {
+                ed4w->aww->show();
+                ed4w->is_hidden = false;
+                return ED4_R_BREAK;
+            }
+            ed4w = ed4w->next;
         }
-        ed4w = ed4w->next;
     }
 
     if (ED4_window::no_of_windows == MAXWINDOWS)                            // no more then 5 windows allowed
@@ -1419,52 +1427,56 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
         awmm->init( aw_root, "ARB_EDIT4", buf, 800,450);
     }
 
-    *device     = awmm->get_device(AW_MIDDLE_AREA); //Points to Middle Area device
-    *new_window = ED4_window::insert_window( awmm ); //append to window list
+    *device     = awmm->get_device(AW_MIDDLE_AREA); // points to Middle Area device
+    *new_window = ED4_window::insert_window( awmm ); // append to window list
 
     e4_assert(ED4_window::no_of_windows >= 1);
-    if (ED4_window::no_of_windows == 1) { // this is the first window
+    bool clone = ED4_window::no_of_windows>1;
+    if (!clone) {                                   // this is the first window
         AW_init_color_group_defaults("arb_edit4");
     }
     else { // additional edit windows
         copy_window_struct( first_window, *new_window );
     }
 
-    win_gc_manager   = AW_manage_GC( awmm,                           //Window
-                                    *device,                //device-handle of window
-                                    ED4_G_STANDARD,                     //GC_Standard configuration
-                                    ED4_G_DRAG,
-                                    AW_GCM_DATA_AREA,
-                                    ED4_expose_cb,                      //callback function
-                                    1,                      // AW_CL for callback function
-                                    0,                      // AW_CL for callback function
-                                    true, // use color groups
+    // each window has its own gc-manager
+    aw_gc_manager = AW_manage_GC(awmm,              // window
+                                 *device,           // device-handle of window
+                                 ED4_G_STANDARD,    // GC_Standard configuration
+                                 ED4_G_DRAG,
+                                 AW_GCM_DATA_AREA,
+                                 ED4_expose_cb,     // callback function
+                                 1,                 // AW_CL for callback function
+                                 0,                 // AW_CL for callback function
+                                 true,              // use color groups
 
-                                    "#f8f8f8",
-                                    "STANDARD$black", // Standard Color showing sequences
-                                    "#SEQUENCES (0)$#505050", // default color for sequences (color 0)
-                                    "+-HELIX (1)$#8E0000",  "+-COLOR 2$#0000dd",    "-COLOR 3$#00AA55",
-                                    "+-COLOR 4$#80f",       "+-COLOR 5$#c0a020",    "-COLOR 6$grey",
-                                    "+-COLOR 7$#ff0000",    "+-COLOR 8$#44aaff",    "-COLOR 9$#ffaa00",
+                                 "#f8f8f8",
+                                 "STANDARD$black",  // Standard Color showing sequences
+                                 "#SEQUENCES (0)$#505050", // default color for sequences (color 0)
+                                 "+-HELIX (1)$#8E0000",  "+-COLOR 2$#0000dd",    "-COLOR 3$#00AA55",
+                                 "+-COLOR 4$#80f",       "+-COLOR 5$#c0a020",    "-COLOR 6$grey",
+                                 "+-COLOR 7$#ff0000",    "+-COLOR 8$#44aaff",    "-COLOR 9$#ffaa00",
 
-                                    "+-RANGE 0$#FFFFFF",    "+-RANGE 1$#F0F0F0",    "-RANGE 2$#E0E0E0",
-                                    "+-RANGE 3$#D8D8D8",    "+-RANGE 4$#D0D0D0",    "-RANGE 5$#C8C8C8",
-                                    "+-RANGE 6$#C0C0C0",    "+-RANGE 7$#B8B8B8",    "-RANGE 8$#B0B0B0",
-                                    "-RANGE 9$#A0A0A0",
+                                 "+-RANGE 0$#FFFFFF",    "+-RANGE 1$#F0F0F0",    "-RANGE 2$#E0E0E0",
+                                 "+-RANGE 3$#D8D8D8",    "+-RANGE 4$#D0D0D0",    "-RANGE 5$#C8C8C8",
+                                 "+-RANGE 6$#C0C0C0",    "+-RANGE 7$#B8B8B8",    "-RANGE 8$#B0B0B0",
+                                 "-RANGE 9$#A0A0A0",
 
-                                    // colors used to Paint search patterns
-                                    // (do not change the names of these gcs)
-                                    "+-User1$#B8E2F8",      "+-User2$#B8E2F8",      "-Probe$#B8E2F8", // see also SEC_graphic::init_devices
-                                    "+-Primer(l)$#A9FE54",  "+-Primer(r)$#A9FE54",  "-Primer(g)$#A9FE54",
-                                    "+-Sig(l)$#DBB0FF",     "+-Sig(r)$#DBB0FF",     "-Sig(g)$#DBB0FF",
+                                 // colors used to Paint search patterns
+                                 // (do not change the names of these gcs)
+                                 "+-User1$#B8E2F8",      "+-User2$#B8E2F8",      "-Probe$#B8E2F8", // see also SEC_graphic::init_devices
+                                 "+-Primer(l)$#A9FE54",  "+-Primer(r)$#A9FE54",  "-Primer(g)$#A9FE54",
+                                 "+-Sig(l)$#DBB0FF",     "+-Sig(r)$#DBB0FF",     "-Sig(g)$#DBB0FF",
 
-                                    "+-MISMATCHES$#FF9AFF", "-CURSOR$#FF0080",
-                                    "+-MARKED$#f4f8e0",     "-SELECTED$#FFFF80",
+                                 "+-MISMATCHES$#FF9AFF", "-CURSOR$#FF0080",
+                                 "+-MARKED$#f4f8e0",     "-SELECTED$#FFFF80",
 
-                                    NULL);
+                                 NULL);
 
-    aw_gc_manager = win_gc_manager;
-
+    // since the gc-managers of all EDIT4-windows point to the same window properties,
+    // changing fonts and colors is always done on first gc-manager
+    static AW_gc_manager first_gc_manager = 0;
+    if (!first_gc_manager) first_gc_manager = aw_gc_manager;
 
 #define SEP________________________SEP awmm->insert_separator()
 
@@ -1488,13 +1500,9 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     GDE_load_menu(awmm,AWM_ALL,"Print");
     SEP________________________SEP;
 
-    if (ED4_window::no_of_windows == 1) {                           // this is the first window
-        awmm->insert_menu_topic( "quit", "QUIT", "Q", 0, AWM_ALL, ED4_quit_editor, 0, 0 );
-    }
-    else {
-        awmm->insert_menu_topic( "close", "CLOSE", "C", 0, AWM_ALL, ED4_quit_editor, 0, 0 );
-    }
-
+    if (clone) awmm->insert_menu_topic( "close", "CLOSE", "C", 0, AWM_ALL, ED4_quit_editor, 0, 0);
+    else       awmm->insert_menu_topic( "quit",  "QUIT",  "Q", 0, AWM_ALL, ED4_quit_editor, 0, 0);
+    
     // ------------------------------
     //  Create
     // ------------------------------
@@ -1653,12 +1661,17 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->insert_menu_topic("props_consensus", "Consensus Definition ", "u", "e4_consensus.hlp", AWM_ALL, AW_POPUP, (AW_CL)ED4_create_consensus_definition_window, 0);
     SEP________________________SEP;
 
-    awmm->insert_menu_topic("props_data",       "Change Colors & Fonts ", "C", 0,         AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window,      (AW_CL)win_gc_manager);
+    awmm->insert_menu_topic("props_data",       "Change Colors & Fonts ", "C", 0,         AWM_ALL, AW_POPUP, (AW_CL)ED4_create_gc_window,      (AW_CL)first_gc_manager);
     awmm->insert_menu_topic("props_seq_colors", "Set Sequence Colors ",   "S", "no help", AWM_ALL, AW_POPUP, (AW_CL)create_seq_colors_window, (AW_CL)sequence_colors);
+
     SEP________________________SEP;
-    if (alignment_type == GB_AT_AA) awmm->insert_menu_topic("props_pfold",     "Protein Match Settings ", "P", "pfold_props.hlp", AWM_ALL, AW_POPUP, (AW_CL)ED4_pfold_create_props_window, (AW_CL)new AW_cb_struct(awmm, (AW_CB)ED4_expose_cb, 0, 0));
-    else                            awmm->insert_menu_topic("props_helix_sym", "Helix Settings ",         "H", "helixsym.hlp",    AWM_ALL, AW_POPUP, (AW_CL)create_helix_props_window,     (AW_CL)new AW_cb_struct(awmm, (AW_CB)ED4_expose_cb, 0, 0));
-    
+
+    static AW_cb_struct *expose_cb = 0;
+    if (!expose_cb) expose_cb = new AW_cb_struct(awmm, (AW_CB)ED4_expose_cb, 0, 0);
+
+    if (alignment_type == GB_AT_AA) awmm->insert_menu_topic("props_pfold",     "Protein Match Settings ", "P", "pfold_props.hlp", AWM_ALL, AW_POPUP, (AW_CL)ED4_pfold_create_props_window, (AW_CL)expose_cb);
+    else                            awmm->insert_menu_topic("props_helix_sym", "Helix Settings ",         "H", "helixsym.hlp",    AWM_ALL, AW_POPUP, (AW_CL)create_helix_props_window,     (AW_CL)expose_cb);
+
     awmm->insert_menu_topic("props_key_map", "Key Mappings ",              "K", "nekey_map.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_key_map_window, 0);
     awmm->insert_menu_topic("props_nds",     "Select visible info (NDS) ", "D", "e4_nds.hlp",    AWM_ALL, AW_POPUP, (AW_CL)ED4_create_nds_window, 0);
     SEP________________________SEP;
@@ -1710,15 +1723,16 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     // -------------------------
     //      help /quit /fold
     // -------------------------
-    
+
     awmm->button_length(0);
-    
+
     awmm->at("quit");
     awmm->callback(ED4_quit_editor, 0, 0);
     awmm->help_text("quit.hlp");
-     if (ED4_window::no_of_windows == 1)  awmm->create_button("QUIT","#quit.xpm"); // this is the first window
-     else                                 awmm->create_button("CLOSE","#close.xpm");
 
+    if (clone) awmm->create_button("CLOSE","#close.xpm");
+    else       awmm->create_button("QUIT","#quit.xpm");
+    
     awmm->at("help");
     awmm->callback(AW_help_entry_pressed);
     awmm->help_text("e4.hlp");

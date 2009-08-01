@@ -301,35 +301,40 @@ const char *BI_helix::init(GBDATA *gb_main) {
     return err;
 }
 
-int BI_helix::_check_pair(char left, char right, BI_PAIR_TYPE pair_type)
-{
-    int i;
-    int len = strlen(pairs[pair_type])-1;
+bool BI_helix::is_pairtype(char left, char right, BI_PAIR_TYPE pair_type) {
+    int   len = strlen(pairs[pair_type])-1;
     char *pai = pairs[pair_type];
-    for (i=0; i<len;i+=3){
-        if ( pai[i] == left && pai[i+1] == right) return 1;
-        if ( pai[i] == right && pai[i+1] == left) return 1;
+
+    for (int i=0; i<len;i+=3){
+        if ((pai[i] == left && pai[i+1] == right) ||
+            (pai[i] == right && pai[i+1] == left)) return true;
     }
-    return 0;
+    return false;
 }
 
-int BI_helix::check_pair(char left, char right, BI_PAIR_TYPE pair_type)
-    // returns 2 helix 1 weak helix 0 no helix  -1 nothing
-{
-    left = toupper(left);
+int BI_helix::check_pair(char left, char right, BI_PAIR_TYPE pair_type) {
+    // return value:
+    // 2  = helix
+    // 1  = weak helix
+    // 0  = no helix
+    // -1 = nothing
+
+    left  = toupper(left);
     right = toupper(right);
     switch(pair_type) {
         case HELIX_PAIR:
-            if (    _check_pair(left,right,HELIX_STRONG_PAIR) ||
-                    _check_pair(left,right,HELIX_PAIR) ) return 2;
-            if (    _check_pair(left,right,HELIX_WEAK_PAIR) ) return 1;
+            if (is_pairtype(left,right,HELIX_STRONG_PAIR) ||
+                is_pairtype(left,right,HELIX_PAIR)) return 2;
+            if (is_pairtype(left,right,HELIX_WEAK_PAIR) ) return 1;
             return 0;
+
         case HELIX_NO_PAIR:
-            if (    _check_pair(left,right,HELIX_STRONG_PAIR) ||
-                    _check_pair(left,right,HELIX_PAIR) ) return 0;
+            if (is_pairtype(left,right,HELIX_STRONG_PAIR) ||
+                is_pairtype(left,right,HELIX_PAIR) ) return 0;
             return 1;
+            
         default:
-            return _check_pair(left,right,pair_type);
+            return is_pairtype(left,right,pair_type) ? 1 : 0;
     }
 }
 

@@ -20,32 +20,27 @@
 #include <arbdb.h>
 #endif
 
-#define HELIX_MAX_NON_ST           10
-#define HELIX_AWAR_PAIR_TEMPLATE   "Helix/pairs/%s"
-#define HELIX_AWAR_SYMBOL_TEMPLATE "Helix/symbols/%s"
-#define HELIX_AWAR_ENABLE          "Helix/enable"
-
 typedef enum {
-    HELIX_NONE,         // used in entries
+    HELIX_NONE,                                     // used in entries
     HELIX_STRONG_PAIR,
-    HELIX_PAIR,         // used in entries
+    HELIX_PAIR,                                     // used in entries
     HELIX_WEAK_PAIR,
-    HELIX_NO_PAIR,          // used in entries
+    HELIX_NO_PAIR,                                  // used in entries
     HELIX_USER0,
     HELIX_USER1,
     HELIX_USER2,
     HELIX_USER3,
     HELIX_DEFAULT,
-    HELIX_NON_STANDARD0,            // used in entries
-    HELIX_NON_STANDARD1,            // used in entries
-    HELIX_NON_STANDARD2,            // used in entries
-    HELIX_NON_STANDARD3,            // used in entries
-    HELIX_NON_STANDARD4,            // used in entries
-    HELIX_NON_STANDARD5,            // used in entries
-    HELIX_NON_STANDARD6,            // used in entries
-    HELIX_NON_STANDARD7,            // used in entries
-    HELIX_NON_STANDARD8,            // used in entries
-    HELIX_NON_STANDARD9,            // used in entries
+    HELIX_NON_STANDARD0,                            // used in entries
+    HELIX_NON_STANDARD1,                            // used in entries
+    HELIX_NON_STANDARD2,                            // used in entries
+    HELIX_NON_STANDARD3,                            // used in entries
+    HELIX_NON_STANDARD4,                            // used in entries
+    HELIX_NON_STANDARD5,                            // used in entries
+    HELIX_NON_STANDARD6,                            // used in entries
+    HELIX_NON_STANDARD7,                            // used in entries
+    HELIX_NON_STANDARD8,                            // used in entries
+    HELIX_NON_STANDARD9,                            // used in entries
     HELIX_NO_MATCH,
     HELIX_MAX
 } BI_PAIR_TYPE;
@@ -55,8 +50,10 @@ struct BI_helix_entry {
     BI_PAIR_TYPE  pair_type;
     char         *helix_nr;
 
-    long next_pair_pos;         // next position with pair_type != HELIX_NONE
-    // contains 0 if uninitialized, -1 behind last position
+    long next_pair_pos;                             /* next position with pair_type != HELIX_NONE
+                                                     * contains
+                                                     *  0 if uninitialized,
+                                                     * -1 behind last position */
     bool allocated;
 };
 
@@ -66,16 +63,16 @@ class BI_helix {
 
     void _init(void);
 
-    static char *helix_error;         // error occurring during init is stored here
-    
+    static char *helix_error;                       // error occurring during init is stored here
+
     const char *init(GBDATA *gb_main, const char *alignment_name, const char *helix_nr_name, const char *helix_name);
-    
+
 protected:
 
     char *pairs[HELIX_MAX];
     char *char_bind[HELIX_MAX];
     
-    int _check_pair(char left, char right, BI_PAIR_TYPE pair_type);
+    bool is_pairtype(char left, char right, BI_PAIR_TYPE pair_type);
 
 public:
 
