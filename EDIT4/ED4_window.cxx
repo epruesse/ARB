@@ -599,7 +599,7 @@ ED4_window::ED4_window( AW_window *window )
     scrolled_rect.clear();
     id        = ++no_of_windows;
     coords.clear();
-    is_hidden = 0;
+    is_hidden = false;
 
     sprintf(awar_path_for_cursor, AWAR_EDIT_SEQ_POSITION, id);
     ED4_ROOT->aw_root->awar_int(awar_path_for_cursor,0,AW_ROOT_DEFAULT)->set_minmax(0,MAX_POSSIBLE_SEQ_LENGTH);

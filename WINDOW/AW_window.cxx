@@ -696,7 +696,7 @@ bool AW_cb_struct::is_equal(const AW_cb_struct& other) const {
                 equal = aw == other.aw;
                 if (!equal) {
                     equal = aw->get_root() == other.aw->get_root();
-#if defined(DEBUG)
+#if defined(DEBUG) && 0
                     if (equal) {
                         fprintf(stderr,
                                 "callback '%s' instanciated twice with different windows (w1='%s' w2='%s') -- assuming the callbacks are equal\n",
@@ -3497,7 +3497,7 @@ void AW_root::define_remote_command(AW_cb_struct *cbs) {
     if (old_cbs) {
         if (!old_cbs->is_equal(*cbs)) {                  // existing remote command replaced by different callback
 #if defined(DEBUG)
-            fputs(GBS_global_string("Warning: duplicated use of callback id '%s'\n", old_cbs->id), stderr);
+            fputs(GBS_global_string("Warning: reused callback id '%s' for different callback\n", old_cbs->id), stderr);
 #if defined(DEVEL_RALF)
             gb_assert(0);
 #endif // DEVEL_RALF
