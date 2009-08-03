@@ -165,7 +165,7 @@ GB_ERROR GB_create_index(GBDATA *gbd, const char *key, GB_CASE case_sens, long e
 
 #if defined(DEBUG)
 
-void GB_dump_indices(GBDATA *gbd) {
+NOT4PERL void GB_dump_indices(GBDATA *gbd) {
     // dump indices of container
 
     char *db_path = strdup(GB_get_db_path(gbd));
