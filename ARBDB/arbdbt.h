@@ -54,14 +54,17 @@ typedef struct gbt_tree_struct {
     GBT_TREE_ELEMENTS(struct gbt_tree_struct);
 } GBT_TREE;
 
-typedef enum { // Flags can be ored
-               // Please keep GBT_TREE_REMOVE_TYPE in sync with AWT_REMOVE_TYPE!
+typedef enum { // bit flags
     GBT_REMOVE_MARKED     = 1,
     GBT_REMOVE_NOT_MARKED = 2,
     GBT_REMOVE_DELETED    = 4,
+
+    // please keep AWT_REMOVE_TYPE in sync with GBT_TREE_REMOVE_TYPE
+    // see ../AWT/awt_tree.hxx@sync_GBT_TREE_REMOVE_TYPE_AWT_REMOVE_TYPE
+
 } GBT_TREE_REMOVE_TYPE;
 
-#define GBT_TREE_AWAR_SRT       " =:\n=:*=tree_*1:tree_tree_*=tree_*1"
+#define GBT_TREE_AWAR_SRT       " = :\n=:*=tree_*1:tree_tree_*=tree_*1"
 #define GBT_ALI_AWAR_SRT        " =:\n=:*=ali_*1:ali_ali_*=ali_*1"
 
 #define P_(s) s

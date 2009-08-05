@@ -399,7 +399,7 @@ void SEC_root::paintBackgroundColor(AW_device *device, SEC_bgpaint_mode mode, co
     // paints background colors for p2 and connection between p1 and p2.
     // gc1/gc2 are foreground gc used to detect size of background regions
     // 
-    // Paints skeleton as well
+    // Also paints skeleton
 
     sec_assert(valid_cb_params(cd1, cd2));
     

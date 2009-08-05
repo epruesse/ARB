@@ -37,7 +37,8 @@ enum FF_complement {
     FF_REVERSE            = 2,
     FF_REVERSE_COMPLEMENT = 4,
     FF_COMPLEMENT         = 8,
-    // do NOT change the order here or change ff_find_family()
+    
+    // do NOT change the order here w/o fixing ../PROBE/PT_family.cxx@FF_complement_dep
 };
 
 class AWTC_FIND_FAMILY {

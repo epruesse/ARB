@@ -124,15 +124,23 @@ typedef enum gb_key_types {
     GB_BYTE        = 2,
     GB_INT         = 3,
     GB_FLOAT       = 4,
+    // 5 is unused
     GB_BITS        = 6,
+    // 7 is unused
     GB_BYTES       = 8,
     GB_INTS        = 9,
     GB_FLOATS      = 10,
     GB_LINK        = 11,
     GB_STRING      = 12,
-    GB_STRING_SHRT = 13,        /* used automatically during save */
+    GB_STRING_SHRT = 13,                            /* used automatically during save */
+    // 14 is unused
     GB_DB          = 15,
-    GB_TYPE_MAX    = 16
+
+    // keep GB_TYPES consistent with AW_VARIABLE_TYPE
+    // see ../WINDOW/aw_root.hxx@sync_GB_TYPES_AW_VARIABLE_TYPE
+    
+    GB_TYPE_MAX = 16
+
 } GB_TYPES;
 
 enum gb_search_enum {

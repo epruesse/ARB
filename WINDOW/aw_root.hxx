@@ -62,20 +62,27 @@ typedef struct _WidgetRec *Widget;
 #endif // DEBUG
 
 typedef enum {
-    AW_NONE             = 0,
-    AW_BIT              = 1,
-    AW_BYTE             = 2,
-    AW_INT              = 3,
-    AW_FLOAT            = 4,
-    AW_BITS             = 6,
-    AW_BYTES            = 8,
-    AW_INTS             = 9,
-    AW_FLOATS           = 10,
-    AW_STRING           = 12,
-    AW_SYTRING_SHORT        = 13, // unused!
-    AW_DB               = 15,
-    AW_TYPE_MAX         = 16
-} AW_VARIABLE_TYPE;     // identical to GBDATA types
+    AW_NONE   = 0,
+    AW_BIT    = 1,
+    AW_BYTE   = 2,
+    AW_INT    = 3,
+    AW_FLOAT  = 4,
+    // 5 is unused
+    AW_BITS   = 6,
+    // 7 is unused
+    AW_BYTES  = 8,
+    AW_INTS   = 9,
+    AW_FLOATS = 10,
+    AW_STRING = 12,
+    // 13 is reserved (GB_STRING_SHRT)
+    // 14 is unused
+    AW_DB     = 15,
+    
+    // keep AW_VARIABLE_TYPE consistent with GB_TYPES
+    // see ../ARBDB/arbdb.h@sync_GB_TYPES_AW_VARIABLE_TYPE
+
+    AW_TYPE_MAX = 16
+} AW_VARIABLE_TYPE;
 
 typedef struct {
     int t, b, l, r;
