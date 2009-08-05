@@ -52,18 +52,14 @@ typedef struct _WidgetRec *Widget;
 #else
 #define AWUSE(variable) (void)variable
 #endif // DEBUG
-
-#if defined(DEBUG)
-#if defined(DEVEL_RALF)
-#define legal_mask(m) (((m)&AWM_ALL) == (m))
-#else
-#define legal_mask(m) 1
-#endif // DEVEL_RALF
-#endif // DEBUG
-
 // AWUSE is a obsolete way to get rid of unused-warnings. Will be removed in the future - do not use!
 // If your warning is about a parameter, skip the parameters name.
 // If your warning is about a variable, the variable is superfluous and should most likely be removed.
+
+
+#if defined(DEBUG)
+#define legal_mask(m) (((m)&AWM_ALL) == (m))
+#endif // DEBUG
 
 typedef enum {
     AW_NONE             = 0,

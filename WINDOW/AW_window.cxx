@@ -74,8 +74,10 @@ AW_timer_cb_struct::~AW_timer_cb_struct(void) {
 }
 
 void AW_root::make_sensitive(Widget w, AW_active mask) {
-    // Dont call make_sensitive directly.
-    // Simply set sens_mask(AWM_EXP) and after creating the expert-mode-only widgets, set back using sens_mask(AWM_ALL)
+    // Dont call make_sensitive directly!
+    // 
+    // Simply set sens_mask(AWM_EXP) and after creating the expert-mode-only widgets,
+    // set it back using sens_mask(AWM_ALL)
 
     aw_assert(w);
     aw_assert(legal_mask(mask));
