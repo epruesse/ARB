@@ -1367,7 +1367,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             {
                 AWMIMT( "arb_pars_quick",  "ARB Parsimony (Quick add marked)", "Q", "pars.hlp",    AWM_ALL,   (AW_CB)NT_system_cb,    (AW_CL)"arb_pars -add_marked -quit &",0 );
                 AWMIMT( "arb_pars",        "ARB Parsimony interactive",        "i", "pars.hlp",    AWM_ALL,   (AW_CB)NT_system_cb,    (AW_CL)"arb_pars &",    0 );
-                GDE_load_menu(awm,AWM_ALL,"Incremental phylogeny");
+                GDE_load_menu(awm, AWM_EXP, "Incremental phylogeny");
             }
             awm->close_sub_menu();
         }

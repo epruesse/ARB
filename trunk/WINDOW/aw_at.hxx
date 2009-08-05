@@ -10,7 +10,7 @@ public:
     bool  highlight;
 
     char      *helptext_for_next_button;
-    AW_active  mask_for_next_button;
+    AW_active  widget_mask; // sensitivity (expert/novice mode)
 
     unsigned long int background_color; // X11 Pixel
 

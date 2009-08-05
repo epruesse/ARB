@@ -773,7 +773,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
                                               NULL );
         }
         AW_label_in_awar_list(this,button,buttonlabel);
-        root->make_sensitive(button, _at->mask_for_next_button);
+        root->make_sensitive(button, _at->widget_mask);
     }
     else { // button w/o callback (flat, not clickable)
         long alignment = (org_correct_for_at_center == 1) ? XmALIGNMENT_CENTER : XmALIGNMENT_BEGINNING;
@@ -1069,7 +1069,7 @@ void AW_window::create_input_field( const char *var_name,  int columns ) {
                   (XtPointer) root );
 
     AW_INSERT_BUTTON_IN_AWAR_LIST( vs,0, textField, AW_WIDGET_INPUT_FIELD, this);
-    root->make_sensitive(textField, _at->mask_for_next_button);
+    root->make_sensitive(textField, _at->widget_mask);
 
     short height;
     XtVaGetValues( textField, XmNheight, &height, NULL);
@@ -1232,7 +1232,7 @@ void AW_window::create_text_field( const char *var_name, int columns, int rows )
     XtAddCallback(scrolledText, XmNvalueChangedCallback, (XtCallbackProc) AW_value_changed_callback, (XtPointer) root );
 
     AW_INSERT_BUTTON_IN_AWAR_LIST( vs,0, scrolledText, AW_WIDGET_TEXT_FIELD, this);
-    root->make_sensitive(scrolledText, _at->mask_for_next_button);
+    root->make_sensitive(scrolledText, _at->widget_mask);
 
     this->unset_at_commands();
     this->increment_at_commands( width_of_last_widget, height_of_last_widget );
@@ -1409,7 +1409,7 @@ AW_selection_list* AW_window::create_selection_list( const char *var_name, const
                           (XtPointer) _d_callback );
         }
         AW_INSERT_BUTTON_IN_AWAR_LIST( vs,(AW_CL)p_global->last_selection_list, scrolledList, AW_WIDGET_SELECTION_LIST, this);
-        root->make_sensitive(scrolledList, _at->mask_for_next_button);
+        root->make_sensitive(scrolledList, _at->widget_mask);
     }
 
     this->unset_at_commands();
@@ -2280,7 +2280,7 @@ AW_option_menu_struct *AW_window::create_option_menu( const char *var_name, AW_l
     p_global->current_option_menu = p_global->last_option_menu;
 
     AW_INSERT_BUTTON_IN_AWAR_LIST( vs,(AW_CL)p_global->current_option_menu, optionMenu, AW_WIDGET_CHOICE_MENU, this);
-    root->make_sensitive(optionMenu1, _at->mask_for_next_button);
+    root->make_sensitive(optionMenu1, _at->widget_mask);
     
     return p_global->current_option_menu;
 }
@@ -2364,7 +2364,7 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
                       (XtPointer) new AW_variable_update_struct(NULL, AW_WIDGET_CHOICE_MENU, root->awar(oms->variable_name), var_value, 0, 0, cbs));
 
         option_menu_add_option(p_global->current_option_menu, new AW_option_struct(var_value, entry), default_option);
-        root->make_sensitive(entry, _at->mask_for_next_button);
+        root->make_sensitive(entry, _at->widget_mask);
         this->unset_at_commands();
     }
 }
@@ -2384,7 +2384,7 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
                       (XtPointer) new AW_variable_update_struct(NULL, AW_WIDGET_CHOICE_MENU, root->awar(oms->variable_name), 0, var_value, 0, cbs));
 
         option_menu_add_option(p_global->current_option_menu, new AW_option_struct(var_value, entry), default_option);
-        root->make_sensitive(entry, _at->mask_for_next_button);
+        root->make_sensitive(entry, _at->widget_mask);
         this->unset_at_commands();
     }
 }
@@ -2404,7 +2404,7 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
                       (XtPointer) new AW_variable_update_struct(NULL, AW_WIDGET_CHOICE_MENU, root->awar(oms->variable_name), 0, 0, var_value, cbs));
 
         option_menu_add_option(p_global->current_option_menu, new AW_option_struct(var_value, entry), default_option);
-        root->make_sensitive(entry, _at->mask_for_next_button);
+        root->make_sensitive(entry, _at->widget_mask);
         this->unset_at_commands();
     }
 }
@@ -2583,7 +2583,7 @@ void AW_window::create_toggle_field( const char *var_name, int orientation ) {
     }
 
     AW_INSERT_BUTTON_IN_AWAR_LIST( vs,get_root()->number_of_toggle_fields, toggle_field, AW_WIDGET_TOGGLE_FIELD, this);
-    root->make_sensitive(toggle_field, _at->mask_for_next_button);
+    root->make_sensitive(toggle_field, _at->widget_mask);
 }
 
 static Widget _aw_create_toggle_entry(AW_window *aww, Widget toggle_field,
@@ -2620,7 +2620,7 @@ static Widget _aw_create_toggle_entry(AW_window *aww, Widget toggle_field,
             p_global->last_toggle_field->first_toggle = awts;
         }
     }
-    root->make_sensitive(toggleButton, aww->_at->mask_for_next_button);
+    root->make_sensitive(toggleButton, aww->_at->widget_mask);
     
     aww->unset_at_commands();
     return  toggleButton;

@@ -15,10 +15,11 @@
 
 AW_at::AW_at(void) {
     memset((char*)this,0,sizeof(AW_at));
+
     length_of_buttons = 10;
     height_of_buttons = 0;
-    shadow_thickness = 2;
-    mask_for_next_button = AWM_ALL;
+    shadow_thickness  = 2;
+    widget_mask       = AWM_ALL;
 }
 
 
@@ -83,7 +84,7 @@ void AW_window::sens_mask( AW_active Mask ) {
 #warning enable assertion below for all developers when tested    
 #endif // DEVEL_RALF
     aw_assert(legal_mask(Mask));
-    _at->mask_for_next_button = Mask;
+    _at->widget_mask = Mask;
 }
 
 
@@ -307,7 +308,7 @@ void AW_window::restore_at_size_and_attach( const AW_at_size *at_size ) {
 }
 
 void AW_window::unset_at_commands( void ) {
-    _at->mask_for_next_button = AWM_ALL;
+    // _at->widget_mask = AWM_ALL; // disabled 2009/Aug/5, cause this resets expert-mask after creating widget
 
     _callback   = NULL;
     _d_callback = NULL;
