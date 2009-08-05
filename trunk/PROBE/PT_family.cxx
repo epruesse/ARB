@@ -210,8 +210,9 @@ inline void complement_sequence(char *seq, int len) {
     for (int i = 0; i<len; i++) seq[i] = complement[int(seq[i])];
 }
 
-/* make sorted list of family members of species */
 extern "C" int ff_find_family(PT_local *locs, bytestring *species) {
+    // make sorted list of family members of species
+ 
     int probe_len   = locs->ff_pr_len;
     int mismatch_nr = locs->ff_mis_nr;
     int complement  = locs->ff_compl; // any combination of: 1 = forward, 2 = reverse, 4 = reverse-complement, 8 = complement 
@@ -224,6 +225,7 @@ extern "C" int ff_find_family(PT_local *locs, bytestring *species) {
     // if ff_find_type > 0 -> search only probes starting with 'A' (quick but less accurate)
     char last_first_c = locs->ff_find_type ? PT_A : PT_T;
 
+    // Note: code depends on order of ../AWTC/awtc_next_neighbours.hxx@FF_complement_dep
     for (int cmode = 1; cmode <= 8; cmode *= 2) { 
         switch (cmode) {
             case 1:             // forward

@@ -85,12 +85,16 @@ typedef enum {  // flags zum kennzeichnen von knoten
     AP_NONE
 } AP_TREE_SIDE;
 
-typedef enum {          // Flags can be ored !!!
+typedef enum { // bit flags
     AWT_REMOVE_MARKED        = GBT_REMOVE_MARKED,
     AWT_REMOVE_NOT_MARKED    = GBT_REMOVE_NOT_MARKED,
     AWT_REMOVE_DELETED       = GBT_REMOVE_DELETED,
     AWT_REMOVE_NO_SEQUENCE   = 8,
     AWT_REMOVE_BUT_DONT_FREE = 16
+
+    // please keep AWT_REMOVE_TYPE in sync with GBT_TREE_REMOVE_TYPE
+    // see ../ARBDB/arbdbt.h@sync_GBT_TREE_REMOVE_TYPE_AWT_REMOVE_TYPE
+    
 } AWT_REMOVE_TYPE;
 
 typedef double AP_FLOAT;
