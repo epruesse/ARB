@@ -10,7 +10,7 @@ sub main() {
   my $tgz = $ARGV[0];
   if (not -f $tgz) { die "No such file '$tgz'"; }
 
-  my $command = "tar -Ozxf $tgz ./SOURCE_TOOLS/version_info";
+  my $command = "tar --wildcards -Ozxf $tgz '*/SOURCE_TOOLS/version_info'";
   open(PIPE,$command.'|') || die "can't execute '$command' (Reason: $!)";
 
   my $major = undef;
