@@ -1,0 +1,36 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP      primer_new.hlp
+UP      primer_parameters.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	iupac-codes.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Primer Design/IUPAC codes
+
+OCCURRENCE	ARB_NT/ETC/Primer Design
+
+DESCRIPTION
+    R = A  G
+    M = A C
+    S =   CG
+    Y =  TC
+    K =  T G
+    W = AT
+    V = A CG
+    B =  TCG
+    D = AT G
+    H = ATC
+    N = ATCG (X accepted as well)
+
+NOTES		written by Wolfram Foerster 2001
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

@@ -1,0 +1,2 @@
+#!/bin/sh
+textedit $ARBHOME/lib/history &
