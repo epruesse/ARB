@@ -144,10 +144,10 @@ XML_Tag::XML_Tag(const string &name_)
 //  ----------------------------
 XML_Tag::~XML_Tag() {
     FILE *out = the_XML_Document->Out();
-    if (son) {
-        throw string("XML_Tag has son in destructor");
-    }
+    if (son) throw string("XML_Tag has son in destructor");
     close(out);
+
+    delete attribute;
 }
 
 //  ---------------------------------------------------------------------------------
