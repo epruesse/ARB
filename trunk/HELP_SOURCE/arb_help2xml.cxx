@@ -41,7 +41,7 @@ using namespace std;
 
 
 // #define DUMP_DATA // use this to see internal data (class Helpfile)
-#define MAX_LINE_LENGTH 500     // maximum length of lines in input stream
+#define MAX_LINE_LENGTH 200     // maximum length of lines in input stream
 #define TABSIZE         8
 
 static const char *knownSections[] = { "OCCURRENCE", "DESCRIPTION", "NOTES", "EXAMPLES", "WARNINGS", "BUGS",
@@ -138,24 +138,31 @@ private:
 
     void getline() {
         if (!eof) {
-            if (!in.good()) eof = true;
-            in.getline(lineBuffer, MAX_LINE_LENGTH);
-            lineNo++;
+            if (in.eof()) eof = true;
+            else {
+                h2x_assert(in.good());
 
-            if (strchr(lineBuffer, '\t')) {
-                int o2 = 0;
+                in.getline(lineBuffer, MAX_LINE_LENGTH);
+                lineNo++;
 
-                for (int o = 0; lineBuffer[o]; ++o) {
-                    if (lineBuffer[o] == '\t') {
-                        int spaces = TABSIZE - (o2 % TABSIZE);
-                        while (spaces--) lineBuffer2[o2++] = ' ';
+                if (in.eof()) eof = true;
+                else if (in.fail()) throw "line too long";
+
+                if (strchr(lineBuffer, '\t')) {
+                    int o2 = 0;
+
+                    for (int o = 0; lineBuffer[o]; ++o) {
+                        if (lineBuffer[o] == '\t') {
+                            int spaces = TABSIZE - (o2 % TABSIZE);
+                            while (spaces--) lineBuffer2[o2++] = ' ';
+                        }
+                        else {
+                            lineBuffer2[o2++] = lineBuffer[o];
+                        }
                     }
-                    else {
-                        lineBuffer2[o2++] = lineBuffer[o];
-                    }
+                    lineBuffer2[o2] = 0;
+                    strcpy(lineBuffer, lineBuffer2);
                 }
-                lineBuffer2[o2] = 0;
-                strcpy(lineBuffer, lineBuffer2);
             }
         }
     }
