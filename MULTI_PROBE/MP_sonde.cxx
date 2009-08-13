@@ -65,104 +65,101 @@ void Sonde::print()
 
 MO_Mismatch** Sonde::get_matching_species(BOOL match_kompl, int match_weight, int match_mis, char *match_seq, MO_Liste *convert, long *number_of_species)
 {
-    char        *servername, *match_name, *match_mismatches, *match_wmismatches;
-    char        toksep[2];
-    T_PT_PDC    pdc;
-    T_PT_MATCHLIST  match_list;
-    char        *probe = NULL;
-    char        *locs_error;
-    long        match_list_cnt;
-    bytestring  bs;
-    MO_Mismatch**   ret_list=NULL;
-    int         i = 0;
+    MO_Mismatch **ret_list   = NULL;
+    const char   *servername = MP_probe_pt_look_for_server();
+    
+    if (servername) {
+        char           *match_name, *match_mismatches, *match_wmismatches;
+        char            toksep[2];
+        T_PT_PDC        pdc;
+        T_PT_MATCHLIST  match_list;
+        char           *probe    = NULL;
+        char           *locs_error;
+        long            match_list_cnt;
+        bytestring      bs;
+        int             i        = 0;
 
-    if( !(servername=(char *)MP_probe_pt_look_for_server()) ){
-        return NULL;
-    }
+        mp_pd_gl.link = (aisc_com *)aisc_open(servername, &mp_pd_gl.com,AISC_MAGIC_NUMBER);
 
-    mp_pd_gl.link = (aisc_com *)aisc_open(servername, &mp_pd_gl.com,AISC_MAGIC_NUMBER);
-    freeset(servername, 0);
+        if (!mp_pd_gl.link) {
+            aw_message("Cannot contact Probe bank server ");
+            return NULL;
+        }
+        if (MP_init_local_com_struct() ) {
+            aw_message ("Cannot contact Probe bank server (2)");
+            return NULL;
+        }
 
-    if (!mp_pd_gl.link) {
-        aw_message ("Cannot contact Probe bank server ");
-        return NULL;
-    }
-    if (MP_init_local_com_struct() ) {
-        aw_message ("Cannot contact Probe bank server (2)");
-        return NULL;
-    }
+        aisc_create(mp_pd_gl.link,PT_LOCS, mp_pd_gl.locs,LOCS_PROBE_DESIGN_CONFIG, PT_PDC,  &pdc,   NULL);
 
-    aisc_create(mp_pd_gl.link,PT_LOCS, mp_pd_gl.locs,LOCS_PROBE_DESIGN_CONFIG, PT_PDC,  &pdc,   NULL);
+        if (MP_probe_design_send_data(pdc)) {
+            aw_message ("Connection to PT_SERVER lost (3)");
+            return NULL;
+        }
 
-    if (MP_probe_design_send_data(pdc)) {
-        aw_message ("Connection to PT_SERVER lost (3)");
-        return NULL;
-    }
+        //aw_message("Running DB-query");
 
-    //aw_message("Running DB-query");
+        if (aisc_put(mp_pd_gl.link,PT_LOCS, mp_pd_gl.locs,
+                     LOCS_MATCH_REVERSED,       match_kompl,        // Komplement
+                     LOCS_MATCH_SORT_BY,        match_weight,       // Weighted
+                     LOCS_MATCH_COMPLEMENT,     0,              // ???
+                     LOCS_MATCH_MAX_MISMATCHES,     match_mis,      // Mismatches
+                     LOCS_MATCH_MAX_SPECIES,        100000,         // ???
+                     LOCS_SEARCHMATCH,          match_seq,      // Sequence
+                     NULL)){
+            free(probe);
+            aw_message ("Connection to PT_SERVER lost (4)");
+            return NULL;
+        }
 
-    if (aisc_put(mp_pd_gl.link,PT_LOCS, mp_pd_gl.locs,
-                 LOCS_MATCH_REVERSED,       match_kompl,        // Komplement
-                 LOCS_MATCH_SORT_BY,        match_weight,       // Weighted
-                 LOCS_MATCH_COMPLEMENT,     0,              // ???
-                 LOCS_MATCH_MAX_MISMATCHES,     match_mis,      // Mismatches
-                 LOCS_MATCH_MAX_SPECIES,        100000,         // ???
-                 LOCS_SEARCHMATCH,          match_seq,      // Sequence
-                 NULL)){
-        free(probe);
-        aw_message ("Connection to PT_SERVER lost (4)");
-        return NULL;
-    }
+        bs.data = 0;
+        aisc_get( mp_pd_gl.link, PT_LOCS, mp_pd_gl.locs,
+                  LOCS_MATCH_LIST,  &match_list,
+                  LOCS_MATCH_LIST_CNT,  &match_list_cnt,
+                  LOCS_MP_MATCH_STRING, &bs,
+                  LOCS_ERROR,       &locs_error,
+                  NULL);
+        if (*locs_error) {
+            aw_message(locs_error);
+        }
+        free(locs_error);
 
-    bs.data = 0;
-    aisc_get( mp_pd_gl.link, PT_LOCS, mp_pd_gl.locs,
-              LOCS_MATCH_LIST,  &match_list,
-              LOCS_MATCH_LIST_CNT,  &match_list_cnt,
-              LOCS_MP_MATCH_STRING, &bs,
-              LOCS_ERROR,       &locs_error,
-              NULL);
-    if (*locs_error) {
-        aw_message(locs_error);
-    }
-    free(locs_error);
-
-    toksep[0] = 1;
-    toksep[1] = 0;
-    if (bs.data)
-    {
-        ret_list = new MO_Mismatch*[match_list_cnt];
-
-        match_name = strtok(bs.data, toksep);
-        match_mismatches = strtok(0, toksep);
-        match_wmismatches = strtok(0, toksep);
-
-        while (match_name && match_mismatches && match_wmismatches)
+        toksep[0] = 1;
+        toksep[1] = 0;
+        if (bs.data)
         {
-            ret_list[i] = new MO_Mismatch;
-            ret_list[i]->nummer = convert->get_index_by_entry(match_name);
-            if (match_weight == NON_WEIGHTED)
-                ret_list[i]->mismatch = atof(match_mismatches);
-            else                            // WEIGHTED und WEIGHTED_PLUS_POS
-                ret_list[i]->mismatch = atof(match_wmismatches);
+            ret_list = new MO_Mismatch*[match_list_cnt];
 
-
-            match_name = strtok(0, toksep);
+            match_name = strtok(bs.data, toksep);
             match_mismatches = strtok(0, toksep);
             match_wmismatches = strtok(0, toksep);
 
-            i++;
+            while (match_name && match_mismatches && match_wmismatches)
+            {
+                ret_list[i] = new MO_Mismatch;
+                ret_list[i]->nummer = convert->get_index_by_entry(match_name);
+                if (match_weight == NON_WEIGHTED)
+                    ret_list[i]->mismatch = atof(match_mismatches);
+                else                            // WEIGHTED und WEIGHTED_PLUS_POS
+                    ret_list[i]->mismatch = atof(match_wmismatches);
+
+
+                match_name = strtok(0, toksep);
+                match_mismatches = strtok(0, toksep);
+                match_wmismatches = strtok(0, toksep);
+
+                i++;
+            }
         }
+        else
+            aw_message("No matching species found.");
+
+        *number_of_species = match_list_cnt;
+
+        aisc_close(mp_pd_gl.link);
+        free(bs.data);
+
     }
-    else
-        aw_message("No matching species found.");
-
-    *number_of_species = match_list_cnt;
-
-    aisc_close(mp_pd_gl.link);
-    free(bs.data);
-
-
-
     return ret_list;
 }
 
