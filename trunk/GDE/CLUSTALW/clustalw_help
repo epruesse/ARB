@@ -165,8 +165,8 @@ screen.  The scores are converted to distances for the trees.
 
 FAST-APPROXIMATE alignment parameters:
 
-These similarity scores are calculated from fast, approximate, global align-
-ments, which are controlled by 4 parameters.   2 techniques are used to make
+These similarity scores are calculated from fast, approximate, global alignments,
+which are controlled by 4 parameters.   2 techniques are used to make
 these alignments very fast: 1) only exactly matching fragments (k-tuples) are
 considered; 2) only the 'best' diagonals (the ones with most k-tuple matches)
 are used.
@@ -279,8 +279,8 @@ alignments (e.g. PRETTY, PROFILEMAKE, PLOTALIGN).  It is the same as the GCG
 
 PHYLIP format output can be used for input to the PHYLIP package of Joe 
 Felsenstein.  This is an extremely widely used package for doing every 
-imaginable form of phylogenetic analysis (MUCH more than the the modest intro-
-duction offered by this program).
+imaginable form of phylogenetic analysis (MUCH more than the the modest
+introduction offered by this program).
 
 NBRF-PIR:  this is the same as the standard PIR format with ONE ADDITION.  Gap
 characters "-" are used to indicate the positions of gaps in the multiple 
