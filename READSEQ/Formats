@@ -78,8 +78,8 @@ Note (30Dec92): There is various processing done by the main program (in readseq
   output formats, the writeSeq subroutine does not handle interleaving, nor some of
   the formatting at the top and end of output files.  While seqFileFormat, listSeqs,
   and readSeq subroutines are fairly self-contained, the writeSeq depends a lot on
-  auxilliary processing.  At some point, this may be revised so writeSeq is self-
-  contained.
+  auxilliary processing.  At some point, this may be revised so writeSeq is
+  self-contained.
 
 Note 2: The NCBI toolkit (ftp from ncbi.nlm.nih.gov) is needed for the ASN.1 format
   reading (see ureadasn.c).  A bastard (but workable I hope) ASN.1 format is written
