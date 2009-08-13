@@ -12,28 +12,57 @@ TITLE		Visualisation of Sequence Associated Information (SAI) in Primary and Sec
 
 OCCURRENCE	In Sequence Editors - Primary Editor (ARB_EDIT4) and Secondary Editor
 
-DESCRIPTION This function can be used to Visualise Sequence Associated Informations (SAI) in the Primary Structure and Secondary Structure Editor windows.
+DESCRIPTION
+
+            This function can be used to Visualise Sequence Associated Informations (SAI)
+            in the Primary Structure and Secondary Structure Editor windows.
             
             Steps to use VISUALISATION of SAIs in Primary Structure Editor:
 
-               1. Select SAI to be visualised from the SAI list (all SAIs present in the ARB Database).  
-               2. Select the Color Translation Table (CTT) in the CTT list, if found. Or create one by pressing CREATE button. You can also copy the existing CTT and modify.
-               3. Once CTT is created, define desired colors (RANGE 0 to RANGE 9) for the respective characters in the selected SAI to paint as background of the sequence.
-               4. You can also change the COLOR RANGE by going to PROPERTIES->CHANGE COLORS AND FONTS menu.
-               5. Then, choose the visualisation options. You can opt to visualise only MARKED species or ALL species in the primary editor.
+               1. Select SAI to be visualised from the SAI list (all SAIs present in the
+               ARB Database).
+
+               2. Select the Color Translation Table (CTT) in the CTT list, if found. Or
+               create one by pressing CREATE button. You can also copy the existing CTT
+               and modify.
+
+               3. Once CTT is created, define desired colors (RANGE 0 to RANGE 9) for the
+               respective characters in the selected SAI to paint as background of the
+               sequence.
+
+               4. You can also change the COLOR RANGE by going to PROPERTIES->CHANGE
+               COLORS AND FONTS menu.
+
+               5. Then, choose the visualisation options. You can opt to visualise only
+               MARKED species or ALL species in the primary editor.
+
                6. Finally, be sure to check ENABLE VISUALISATION check box.
 
-            If Color Translation Tables were defined for each existing/displayed SAIs in the Primary Editor, one can navigate through different SAIs in the editor and visulaize the same instantly. To enable this feature, AUTOSELECT SAI should be enabled in Visualize SAI window (VIEW->VISUALIZE SAIs menu).
+            If Color Translation Tables were defined for each existing/displayed SAIs in
+            the Primary Editor, one can navigate through different SAIs in the editor and
+            visulaize the same instantly. To enable this feature, AUTOSELECT SAI should be
+            enabled in Visualize SAI window (VIEW->VISUALIZE SAIs menu).
 
-            Sequence Associated Information can also be visualised in Secondary Structure Editor.        
+            Sequence Associated Information can also be visualised in Secondary Structure
+            Editor.
     
-               To Visualise SAI in Secondary Structure editor window - Go to PROPERTIES menu, click on CHANGE DISPLAY sub-menu and select Visulaise SAI check box.
+               To Visualise SAI in Secondary Structure editor window - Go to PROPERTIES
+               menu, click on CHANGE DISPLAY sub-menu and select Visulaise SAI check box.
 
-               You can also change the colors used to display SAIs by going to PROPERTIES->CHANGE COLORS AND FONTS menu in the Secondary Editor Window.
+               You can also change the colors used to display SAIs by going to
+               PROPERTIES->CHANGE COLORS AND FONTS menu in the Secondary Editor Window.
 
-NOTES	    If SAIs are to be visualised in Secondary Structure Editor window, one should select SAI, define CTT and check ENABLE VISUALISATION check box in Primary structure editor window using VISUALISE SAI function (under VIEW menu in PRIMARY EDITOR).
+NOTES       If SAIs are to be visualised in Secondary Structure Editor window, one should
+            select SAI, define CTT and check ENABLE VISUALISATION check box in Primary
+            structure editor window using VISUALISE SAI function (under VIEW menu in
+            PRIMARY EDITOR).
             
-            Inorder to retain the settings of CTT and associated SAIs, one should save the properties by going to PROPERTIES->SAVE PROPERTIES menu in primary editor. Plese note that the CTT definitions are stored in the local file (.arb_prop/edit4.arb) and deleting or modifying this file will lose all the information about CTT definitions used for visualization of SAIs for future sessions. 
+            Inorder to retain the settings of CTT and associated SAIs, one should save the
+            properties by going to PROPERTIES->SAVE PROPERTIES menu in primary
+            editor. Plese note that the CTT definitions are stored in the local file
+            (.arb_prop/edit4.arb) and deleting or modifying this file will lose all the
+            information about CTT definitions used for visualization of SAIs for future
+            sessions.
 
 EXAMPLES	None
 

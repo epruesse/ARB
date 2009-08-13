@@ -12,29 +12,50 @@ TITLE		Protein Viewer
 
 OCCURRENCE	ARB_EDIT->View->ProteinViewer
 
-DESCRIPTION  Use this function to display AminoAcid sequence along with the DNA sequence.
+DESCRIPTION     Use this function to display AminoAcid sequence along with the DNA sequence.
                     
-    There are six possible reading frames in every sequence, three starting at positions 1, 2 and 3 and going in 5'---->3' direction of a given sequence, and another three starting at positions 1, 2, and 3 and going in 5'--->3' direction of a given sequence of the complementary sequence.
+                There are six possible reading frames in every sequence, three starting at
+                positions 1, 2 and 3 and going in 5'---->3' direction of a given sequence,
+                and another three starting at positions 1, 2, and 3 and going in 5'--->3'
+                direction of a given sequence of the complementary sequence.
 
-    CODON TABLE:      
-    Select the desired codon table from the list of standard codon tables normally used in translating protein genes.
+                CODON TABLE:
 
-    START POSITION:   
-    Select the start position where the translation should begin at (base position). eg., 1, 2 or 3. 
+                      Select the desired codon table from the list of standard codon
+                      tables normally used in translating protein genes.
 
-    STRAND TYPE:
-    Check the "Forward Strand" to use the given sequence (as displayed) for translation. And checking "Complementary Strand" uses complementary sequence of the displayed sequence for tranlation.
+                START POSITION:
 
-    By checking "Translate from database fields" , ProteinViewer extracts "translation/codon table" and "start position" from the database and uses the same for tranlation.
+                      Select the start position where the translation should begin at
+                      (base position). eg., 1, 2 or 3.
 
-    By default, the translated (aminoacid) sequence will be displayed as single letter codes. eg., A for Arginine, etc., But you can disply three letter aminoacid code (eg., Met for methionine) in the translated sequence by checking "Display Aminoacid names" checkbox.
+                STRAND TYPE:
 
-    Display options "text" and "box" will display aminoacid codes or colored boxes in the tranlated sequence, respectively.
+                      Check the "Forward Strand" to use the given sequence (as displayed)
+                      for translation. And checking "Complementary Strand" uses
+                      complementary sequence of the displayed sequence for tranlation.
 
-    Diplay at "Marked", "Selected", "Cursor" and "All" will toggle the display of aminoacid sequence only for marked, selected, cursor position and all species in the editor, respectively.
+                By checking "Translate from database fields" , ProteinViewer extracts
+                "translation/codon table" and "start position" from the database and uses
+                the same for tranlation.
 
-    SAVE AMINOACID SEQUENCE ALIGNMENT:
-    Once the alignement is refiened according to the aminoacid sequence, you can save the translated (aminoacid) sequence to the database as a new alignment.
+                By default, the translated (aminoacid) sequence will be displayed as
+                single letter codes. eg., A for Arginine, etc., But you can disply three
+                letter aminoacid code (eg., Met for methionine) in the translated sequence
+                by checking "Display Aminoacid names" checkbox.
+
+                Display options "text" and "box" will display aminoacid codes or colored
+                boxes in the tranlated sequence, respectively.
+
+                Diplay at "Marked", "Selected", "Cursor" and "All" will toggle the display
+                of aminoacid sequence only for marked, selected, cursor position and all
+                species in the editor, respectively.
+
+                SAVE AMINOACID SEQUENCE ALIGNMENT:
+
+                      Once the alignement is refiened according to the aminoacid sequence,
+                      you can save the translated (aminoacid) sequence to the database as
+                      a new alignment.
 
 NOTES		None
 
