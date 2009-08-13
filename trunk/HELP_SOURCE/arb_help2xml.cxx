@@ -163,6 +163,15 @@ private:
                     lineBuffer2[o2] = 0;
                     strcpy(lineBuffer, lineBuffer2);
                 }
+
+                char *eol = strchr(lineBuffer, 0)-1;
+                while (eol >= lineBuffer && eol[0] == ' ') eol--;
+                if (eol > lineBuffer) {
+                    // now eol points to last character
+                    if (eol[0] == '-' && isalnum(eol[-1])) {
+                        add_warning("manual hyphenation detected", lineNo);
+                    }
+                }
             }
         }
     }
@@ -1081,8 +1090,11 @@ static string locate_document(const string& docname) {
 }
 
 static void add_link_attributes(XML_Tag& link, LinkType type, const string& dest, size_t source_line) {
-    if (type == LT_UNKNOWN) throw LineAttachedMessage("Invalid link", source_line);
-    
+    if (type == LT_UNKNOWN) {
+        string msg = string("Invalid link (dest='")+dest+"')";
+        throw LineAttachedMessage(msg, source_line);
+    }
+
     link.add_attribute("dest", dest);
     link.add_attribute("type", LinkType2id(type));
     link.add_attribute("source_line", source_line);
