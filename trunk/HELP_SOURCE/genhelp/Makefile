@@ -1,6 +1,6 @@
 
 STD = standard.header
-AUTOSECTION = sed -e 's/^\([^ ]\)/SECTION \1/'
+AUTOSECTION = sed -e 's/^\([^ \#]\)/SECTION \1/'
 AUTOTITLE = sed -e '1 s/^SECTION/TITLE/'
 ARBHOME=../..
 
@@ -38,9 +38,8 @@ changes.hlp : $(ARBHOME)/arb_CHANGES.txt
 agde_%.hlp : $(GDEGENDIR)/%.help
 	@echo Updating $@ from $< 
 	@cp $(STD) $@
-	@echo "# BUILD FROM: $< (which is generated itself)" >>$@
-	@echo "#       see $(GDEBASE)/HELP_PLAIN " >>$@
-	@echo "#       or else see $(GDEBASE)/Makefile.helpfiles for special rules" >>$@
+	@echo "# BUILD FROM: $<" >>$@
+	@echo "#             (which is generated itself)" >>$@
 	@echo "" >>$@
 	@echo "UP agde.hlp" >>$@
 	@cat $< | $(AUTOSECTION) | $(AUTOTITLE) >> $@
