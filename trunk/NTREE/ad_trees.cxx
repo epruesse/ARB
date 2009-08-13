@@ -227,8 +227,15 @@ static GB_ERROR tree_append_remark(GBDATA *gb_tree, const char *add_to_remark) {
         char *old_remark       = GB_read_string(gb_remark);
         if (!old_remark) error = GB_await_error();
         else {
-            GB_CSTR new_remark = GBS_global_string("%s\n%s", old_remark, add_to_remark);
-            error              = GB_write_string(gb_remark, new_remark);
+            GBS_strstruct *new_remark = GBS_stropen(2000);
+
+            GBS_strcat(new_remark, old_remark);
+            GBS_chrcat(new_remark, '\n');
+            GBS_strcat(new_remark, add_to_remark);
+
+            error = GB_write_string(gb_remark, GBS_mempntr(new_remark));
+            
+            GBS_strforget(new_remark);
         }
         free(old_remark);
     }
