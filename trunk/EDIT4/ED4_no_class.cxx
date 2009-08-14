@@ -301,7 +301,7 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
     work_info->working_terminal = terminal;
 
     if (terminal->is_sequence_terminal()) {
-        work_info->mode        = awar_edit_modus;
+        work_info->mode        = awar_edit_mode;
         work_info->direction   = awar_edit_direction;
         work_info->is_sequence = 1;
     }
@@ -310,7 +310,7 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
         work_info->is_sequence = 0;
 
         if (terminal->is_pure_text_terminal()) {
-            work_info->mode = awar_edit_modus;  // AD_INSERT; // why is AD_INSERT forced here ?
+            work_info->mode = awar_edit_mode;  // AD_INSERT; // why is AD_INSERT forced here ?
         }
         else if (terminal->is_columnStat_terminal()) {
             work_info->mode = AD_NOWRITE;
@@ -510,7 +510,7 @@ static int get_max_slider_xpos() {
     AW_pos max_xpos = horizontal_link->extension.size[WIDTH] // overall width of virtual scrolling area
         - (rect.r - x); // minus width of visible scroll-area (== relative width of horizontal scrollbar)
 
-    if (max_xpos<0) max_xpos = 0; // happens when window-content is smaller then window (e.g. if ARB_EDIT4 is not filled)
+    if (max_xpos<0) max_xpos = 0; // happens when window-content is smaller than window (e.g. if ARB_EDIT4 is not filled)
     return int(max_xpos+0.5);
 }
 
@@ -525,7 +525,7 @@ static int get_max_slider_ypos() {
     AW_pos max_ypos = vertical_link->extension.size[HEIGHT] // overall width of virtual scrolling area
         - (rect.b - y); // minus width of visible scroll-area (== relative width of horizontal scrollbar)
 
-    if (max_ypos<0) max_ypos = 0; // happens when window-content is smaller then window (e.g. if ARB_EDIT4 is not filled)
+    if (max_ypos<0) max_ypos = 0; // happens when window-content is smaller than window (e.g. if ARB_EDIT4 is not filled)
     return int(max_ypos+0.5);
 }
 
@@ -541,7 +541,7 @@ void ED4_vertical_change_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
     ED4_window *win = ED4_ROOT->get_ed4w();
     int old_slider_pos = win->slider_pos_vertical;
 
-    { // correct slider_pos if neccessary
+    { // correct slider_pos if necessary
         int max_slider_ypos = get_max_slider_ypos();
 
         if (aww->slider_pos_vertical>max_slider_ypos) aww->set_vertical_scrollbar_position(max_slider_ypos);
@@ -572,7 +572,7 @@ void ED4_horizontal_change_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
     ED4_window *win = ED4_ROOT->get_ed4w();
     int old_slider_pos = win->slider_pos_horizontal;
 
-    { // correct slider_pos if neccessary
+    { // correct slider_pos if necessary
         int max_slider_xpos = get_max_slider_xpos();
 
         if (aww->slider_pos_horizontal>max_slider_xpos) aww->set_horizontal_scrollbar_position(max_slider_xpos);
@@ -605,7 +605,7 @@ void ED4_scrollbar_change_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
     int old_hslider_pos = win->slider_pos_horizontal;
     int old_vslider_pos = win->slider_pos_vertical;
 
-    { // correct slider_pos if neccessary
+    { // correct slider_pos if necessary
         int max_slider_xpos = get_max_slider_xpos();
         int max_slider_ypos = get_max_slider_ypos();
 
@@ -895,7 +895,7 @@ void ED4_refresh_window( AW_window *aww, AW_CL cd_called_from_menu, AW_CL /*cd2*
     ED4_main_manager *mainman = ED4_ROOT->main_manager;
     if (mainman) { // avoids a crash durin startup
         if (mainman->update_info.delete_requested) {
-            mainman->delete_requested_childs();
+            mainman->delete_requested_children();
         }
 
         //    ED4_ROOT->deselect_all();
@@ -1365,7 +1365,7 @@ void ED4_load_new_config(char *string)
     free(config_data_top);
 }
 
-static long ED4_get_edit_modus(AW_root *root)
+static long ED4_get_edit_mode(AW_root *root)
 {
     if (!root->awar(AWAR_EDIT_MODE)->read_int()) {
         return AD_ALIGN;
@@ -1375,7 +1375,7 @@ static long ED4_get_edit_modus(AW_root *root)
 
 void ed4_changesecurity(AW_root *root, AW_CL /*cd1*/)
 {
-    long mode = ED4_get_edit_modus(root);
+    long mode = ED4_get_edit_mode(root);
     long level;
     const char *awar_name = 0;
 
@@ -1394,7 +1394,7 @@ void ed4_changesecurity(AW_root *root, AW_CL /*cd1*/)
 
 void ed4_change_edit_mode(AW_root *root, AW_CL cd1)
 {
-    awar_edit_modus = (ad_edit_modus)ED4_get_edit_modus(root);
+    awar_edit_mode = (ad_edit_mode)ED4_get_edit_mode(root);
     ed4_changesecurity(root, cd1);
 }
 
@@ -1419,7 +1419,7 @@ void ED4_new_editor_window( AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/ )
     AW_device  *device;
     ED4_window *new_window = 0;
     
-    if (ED4_ROOT->generate_window( &device, &new_window) == ED4_R_BREAK) // don't open more then five windows
+    if (ED4_ROOT->generate_window( &device, &new_window) == ED4_R_BREAK) // don't open more than five windows
         return;
 
     ED4_ROOT->use_window(new_window);

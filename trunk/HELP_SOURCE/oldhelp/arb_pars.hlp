@@ -59,7 +59,7 @@ DESCRIPTION	The 'ARB_Parsimony' and 'ARB_NT' windows are similar. 'ARB_
 			Tree/quick add marked species:
 
 				Add all marked species to this tree.
-				No local rearangements are performed.
+				No local rearrangements are performed.
 				If the species are already in the tree do
 				nothing.
 
@@ -74,11 +74,11 @@ DESCRIPTION	The 'ARB_Parsimony' and 'ARB_NT' windows are similar. 'ARB_
 
 			Tree/add marked species:
 
-				Quick add plus local rearangements.
+				Quick add plus local rearrangements.
 
 			Tree/add selected species:
 
-				Quick add sel. species plus local rearangements.
+				Quick add sel. species plus local rearrangements.
 
 			Tree/Optimization/Local
 

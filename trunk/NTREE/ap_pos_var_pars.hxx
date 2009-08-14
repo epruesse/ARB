@@ -8,7 +8,7 @@ class AP_pos_var {
     long           timer;       // for the status box
     long           treesize;    // max value for slider
     GB_UINT4      *frequencies[256]; // count every occurrence
-    GB_UINT4      *transitions; // minumum transitions
+    GB_UINT4      *transitions; // minimum transitions
     GB_UINT4      *transversions; // minimum transversions (dna only)
     unsigned char  char_2_freq[256]; // mapper (~ toupper)
     long           char_2_transition[256]; // a->1 c->2 g->4 ...

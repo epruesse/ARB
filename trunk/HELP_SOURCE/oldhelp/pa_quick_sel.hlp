@@ -22,11 +22,11 @@ NOTES		The current parsimony value (number of base changes needed) is
 		while calculating).
 
 		This tool should be used for the positioning of 'species' for
-		which only partial or preliminary sequence data are availble.
+		which only partial or preliminary sequence data are available.
 
 EXAMPLES	None
 
 WARNINGS	The phylogenetic information conferred by the new sequence is
-		not used for global treee optimization.
+		not used for global tree optimization.
 
 BUGS		No bugs known

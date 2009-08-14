@@ -24,7 +24,7 @@ DESCRIPTION	This tool allows to calculate distance and similarity matrices
 			the keyboard.
 
 		Select minimum and maximum similarities for the individual
-			columns to be included for similarty or distance matrix
+			columns to be included for similarity or distance matrix
 			calculation by typing the values (50 means the most
 			frequent base at a particular position is shared by at
 			least 50% of all marked sequences (species)) after the
@@ -34,7 +34,7 @@ DESCRIPTION	This tool allows to calculate distance and similarity matrices
 		Define whether alignment gaps and ambiguities within individual
 			marked sequences (species) should be taken into account:
 
-			Use the rigth mouse button to display the submenus
+			Use the right mouse button to display the submenus
 			associated to the items below the 'markerline:' prompt
 			by pressing the respective buttons.
 
@@ -52,15 +52,15 @@ DESCRIPTION	This tool allows to calculate distance and similarity matrices
 					is present in any of the marked
 					sequences.
 
-				treat as abiguous:
+				treat as ambiguous:
 					Take the respective symbol as an
 					unambiguous residue.
 
 		2. After selecting columns define how to treat ambiguities for
 			distance calculations:
 
-			Use the rigth mouse button to display the submenus
-			associated to the itemss below the 'distance matrix:'
+			Use the right mouse button to display the submenus
+			associated to the items below the 'distance matrix:'
 			prompt by pressing the respective buttons.
 
 				don't count:
@@ -77,14 +77,14 @@ DESCRIPTION	This tool allows to calculate distance and similarity matrices
 
 			Use the right mouse button to display the 'CALCULATE'
 			menu and select 'markerline' (profile) or 'distance
-			matrix' by releasing the mouse button while the curser
+			matrix' by releasing the mouse button while the cursor
 			is positioned on the respective menu button.
 
 		4. Display results:
 
 			Use the right mouse button to display the 'VIEW'
 			menu and select 'species', 'markerline' or 'distance
-			matrix' by releasing the mouse button while the curser
+			matrix' by releasing the mouse button while the cursor
 			is positioned on the respective menu button. The names,
 			the aligment of the marked sequences and the
 			conservation profile, or the distance matrix are shown
@@ -123,7 +123,7 @@ DESCRIPTION	This tool allows to calculate distance and similarity matrices
 			To export distances and profiles (not graphs!!) to
 			ascii files, use the right mouse button to display the
 			'SAVE' menu and select the corresponding menu item by
-			releasing the mouse button while the curser is
+			releasing the mouse button while the cursor is
 			positioned on it.
 
 				uncoded mline:

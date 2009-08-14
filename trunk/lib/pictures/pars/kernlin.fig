@@ -93,7 +93,7 @@
 4 0 18 12 0 -1 0 0.00000 4 15 56 399 259 $incdepth
 4 0 18 12 0 -1 0 0.00000 4 15 39 239 384 $static
 4 0 18 12 0 -1 0 0.00000 4 15 298 54 174 Number of randomly chosen nodes from the subtree
-4 0 18 12 0 -1 0 0.00000 4 15 166 54 379 Enable static path  reduction:
+4 0 18 12 0 -1 0 0.00000 4 15 166 54 379 Enable static path reduction:
 4 0 18 12 0 -1 0 0.00000 4 15 119 69 414 Pathes in each depth
 4 0 18 12 0 -1 0 0.00000 4 15 84 69 529 Relative Costs
 4 0 18 12 0 -1 0 0.00000 4 15 34 364 624 Depth
@@ -103,12 +103,12 @@
 4 0 18 10 0 -1 0 0.00000 4 12 33 159 659 $maxx
 4 0 0 10 0 -1 0 0.00000 4 12 40 74 629 start costs
 4 0 18 10 0 -1 0 0.00000 4 12 28 74 659 $start
-4 0 18 10 0 -1 0 0.00000 4 12 274 69 309 Each rekursion step multiplies the number of paths by 8
+4 0 18 10 0 -1 0 0.00000 4 12 274 69 309 Each recursion step multiplies the number of paths by 8
 4 0 18 10 0 -1 0 0.00000 4 12 337 69 324 (e.g. depth = 8  -> ~16 million paths -> two heuristic path reductions)
 4 0 18 10 0 -1 0 0.00000 4 12 257 69 189 ( 0.0 == no nodes, 1.0 all nodes,  2.0 all nodes twice)
 4 0 18 12 0 -1 0 0.00000 4 15 180 54 484 Enable dynamic path reduction:
-4 0 0 10 0 -1 0 0.00000 4 12 101 339 533 getrs worse than this line
-4 0 0 10 0 -1 0 0.00000 4 12 85 339 519 Stop rekursion if tree
+4 0 0 10 0 -1 0 0.00000 4 12 101 339 533 get's worse than this line
+4 0 0 10 0 -1 0 0.00000 4 12 85 339 519 Stop recursion if tree
 4 1 18 12 0 -1 0 0.00000 4 15 271 239 119 K.L. is a heuristic  approach to find the best tree
 4 0 18 12 0 -1 0 0.00000 4 15 236 54 254 If a better tree is found, increase depth by
 4 0 0 10 0 -1 0 0.00000 4 12 80 144 629 Worst trees at depth

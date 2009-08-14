@@ -61,7 +61,7 @@ inline char *PRD_strdup(const char *s) {
 //
 // getPrimerSequence
 //
-// note : the sequence isnt stored in the Item, therefore must be given
+// note : the sequence isn't stored in the Item, therefore must be given
 //
 char* Item::getPrimerSequence( const char *sequence_ )
 {

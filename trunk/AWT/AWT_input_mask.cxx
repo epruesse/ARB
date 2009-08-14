@@ -2386,7 +2386,7 @@ void AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_ite
                 registerType(item_type, awm, open_window_cb);
             }
             else if (item_type == AWT_IT_UNKNOWN) {
-                aw_message(GBS_global_string("Unkown @ITEMTYPE '%s' in '%s'", descriptor->get_itemtypename(), descriptor->get_internal_maskname()));
+                aw_message(GBS_global_string("Unknown @ITEMTYPE '%s' in '%s'", descriptor->get_itemtypename(), descriptor->get_internal_maskname()));
             }
         }
         if (entries_made) awm->insert_separator();

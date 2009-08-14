@@ -173,7 +173,7 @@ checksum(string, numofstr)
     return(cksum);
 }
 /* --------------------------------------------------------------------
- *   Fcuntion gcg_out_origin().
+ *   Function gcg_out_origin().
  *       Output sequence data in gcg format.
  */
 void

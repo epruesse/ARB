@@ -382,7 +382,7 @@ namespace AW {
     }
 
 #if defined(DEBUG)
-    // dont use these in release code - they are only approximizations!
+    // don't use these in release code - they are only approximations!
     
     // test whether two doubles are "equal" (slow - use for assertions only!)
     inline bool are_equal(const double& d1, const double& d2) {

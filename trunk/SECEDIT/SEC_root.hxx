@@ -438,7 +438,7 @@ public:
     void setFixpoint(const Position& p) { fixpoint = p; }
     void setAttachPoints(const Position& left, const Position& right) { rightAttach = right; leftAttach = left; }
 
-    // interator methods
+    // iterator methods
 
     const SEC_segment *get_next_segment() const { return next_segment; }
     SEC_segment *get_next_segment() { return next_segment; }
@@ -545,13 +545,13 @@ public:
 // -----------------
 
 class SEC_loop : public SEC_base {
-    double   Circumferance;     // unit is in "segment-base-distances"
+    double   Circumference;     // unit is in "segment-base-distances"
     Position center;            // center point of loop
     SEC_helix_strand *primary_strand; // primary strand of loop
     // loop orientation points towards that strand
     // for non-root-loops, this strand points towards root
     
-    void compute_circumferance();
+    void compute_circumference();
     void compute_radius();
 
     SEC_base *get_parent() { return is_root_loop() ? 0 : get_rootside_helix(); }
@@ -571,7 +571,7 @@ public:
     void paint_constraints(AW_device *device);
 
     const Position& get_center() const { return center; }
-    const double& get_circumferance() const { return Circumferance; } 
+    const double& get_circumference() const { return Circumference; } 
 
     bool is_root_loop() const;
 

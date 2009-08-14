@@ -165,7 +165,7 @@ static void create_print_awars(AW_root *awr, AWT_canvas *ntw) {
             free(print_command);
         }
 
-        // contraints and automatica: 
+        // constraints and automatics: 
     
         awr->awar(AWAR_PRINT_TREE_PSIZEX)->set_minmax(0.1, 100);
         awr->awar(AWAR_PRINT_TREE_PSIZEY)->set_minmax(0.1, 100);
@@ -521,7 +521,7 @@ static long calc_mag_from_psize(AW_root *awr, double papersize, double gfxsize, 
             }
             if (usableSize<0.1) aw_message("Usable size very low. Wrong overlap amount?");
         }
-        usableSize += papersize * wantedpages; // add (partial) page (dont subtract overlapAmount)
+        usableSize += papersize * wantedpages; // add (partial) page (don't subtract overlapAmount)
     }
     else {
         usableSize = wantedpages*papersize;

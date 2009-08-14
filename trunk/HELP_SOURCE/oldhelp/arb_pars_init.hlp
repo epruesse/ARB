@@ -22,13 +22,13 @@ DESCRIPTION	Set basic options for the parsimony program. If you do not want
 NOTES		After pressing go, no species is added, no tree is changed,
 		you only get a new window (with some action buttons).	
 
-WARNINGS	You can only change filter settings at startup time.
+WARNINGS	You can only change filter settings at start-up time.
 		You should use filters in combination with large databases
 		to speed up computation.
 		Gaps ('-') are treated as bases, so check for gaps at
 		the beginning or end of short sequences. Replace them by
 		'.'.
 
-BUGS		All sequences are read at startup time.  Sequence changes
+BUGS		All sequences are read at start-up time.  Sequence changes
 		afterwards are ignored.  Restart arb_parsimony if you want
 		them to take effect.

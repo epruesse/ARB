@@ -1253,7 +1253,7 @@ print_file(name, header)
          *     ^? for del char
          *     M-c for ascii codes > 0x3f
          * - prefix parents and backslash ['(', ')', '\'] by backslash
-         *   (escape character in postcript)
+         *   (escape character in postscript)
          */
         /* Form feed */
         if (c == '\f' && interpret) {
@@ -1801,7 +1801,7 @@ main(argc, argv)
     page_height = (double)(HEIGHT - MARGIN) * PIXELS_INCH;
     page_width = (double)(WIDTH - MARGIN) * PIXELS_INCH;
 
-    /* Postcript prologue printing */
+    /* Postscript prologue printing */
     print_prologue();
 
     /* Print files designated or standard input */

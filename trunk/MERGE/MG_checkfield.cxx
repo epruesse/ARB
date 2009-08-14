@@ -79,7 +79,7 @@ char *GBS_diff_strings(char *str1,char * &str2, char *exclude , long ToUpper, lo
         do { c2= *(s2++); } while (tab[c2] < 0);
         if (tab[c1] != tab[c2]) {   /* difference found */
             if (correct) {
-                /* check subsitution */
+                /* check substitution */
                 {
                     int c = s2[-1];
                     s2[-1] = s1[-1];

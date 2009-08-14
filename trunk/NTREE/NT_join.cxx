@@ -19,8 +19,8 @@
 extern GBDATA *GLOBAL_gb_main;
 
 #define AWAR_SPECIES_JOIN_FIELD "/tmp/NT/species_join/field"
-#define AWAR_SPECIES_JOIN_SEP   "/tmp/NT/species_join/seperator"
-#define AWAR_SPECIES_JOIN_SEP2  "/tmp/NT/species_join/seperator_sequences"
+#define AWAR_SPECIES_JOIN_SEP   "/tmp/NT/species_join/separator"
+#define AWAR_SPECIES_JOIN_SEP2  "/tmp/NT/species_join/separator_sequences"
 
 GB_ERROR nt_species_join(GBDATA *dest, GBDATA *source, int deep, char *sep, char *sep2) {
     GB_TYPES dtype = GB_read_type(dest);

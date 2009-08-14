@@ -34,7 +34,7 @@ ALI_TLIST<ali_family_member *> *ALI_PROFILE::find_family(ALI_SEQUENCE *Sequence,
     unsigned long number;
 
     /*
-     * Initialisation
+     * Initialization
      */
     family_list = new ALI_TLIST<ali_family_member *>;
 
@@ -214,7 +214,7 @@ void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list,
     ali_message("Calculating costs for substitution");
     for (p = 0; p < prof_len; p++) {
         /*
-         * Initialisation
+         * Initialization
          */
         for (i = 0; i < 7; i++)
             a[i] = w[i] = sm[5][i] = sm[i][5] = sm[6][i] = sm[i][6] = 0.0;

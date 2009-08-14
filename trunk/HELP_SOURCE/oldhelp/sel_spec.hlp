@@ -17,7 +17,7 @@ TITLE		Select species
 
 OCCURRENCE	ARB_NT/Species/Search
 
-DESCRIPTION	An Individual species can be selecetd from 'Hit list'.
+DESCRIPTION	An Individual species can be selected from 'Hit list'.
 		The 'SPECIES INFO' window showing all 'DATABASE FIELDS' and
 		the corresponding entries is initiated or updated.
 		The 'name' of that species appears within the species

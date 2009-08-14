@@ -57,7 +57,7 @@ typedef struct S_GB_SINGLE_DICT_TREE
 
 /****************************************************/
 
-#define COMPRESSABLE(type) ((type) >= GB_BYTES && (type)<=GB_STRING)
+#define COMPRESSIBLE(type) ((type) >= GB_BYTES && (type)<=GB_STRING)
 #define DICT_MEM_WEIGHT    4
 
 #define WORD_HELPFUL(wordlen, occurrences)      ((long)((occurrences)*3 + DICT_MEM_WEIGHT*(2*sizeof(GB_NINT)+(wordlen))) \
@@ -291,7 +291,7 @@ GB_ERROR gb_convert_V2_to_V3(GBDATA *gb_main){
  * unsigned int compressed:1;
  *     if compressed==0:
  *         unsigned int last:1;         ==1 -> this is the last block
- *         unsigned int len:6;          length of uncompressable bytes
+ *         unsigned int len:6;          length of uncompressible bytes
  *         char[len];
  *     if compressed==1:
  *         unsigned int idxlen:1;       ==0 -> 10-bit index
@@ -608,8 +608,8 @@ char *gb_compress_by_dictionary(GB_DICTIONARY *dict, GB_CSTR s_source, long size
     cu_str source           = (cu_str)s_source;
     u_str  dest;
     u_str  buffer;
-    cu_str unknown          = source; /* start of uncompressable bytes */
-    u_str  lastUncompressed = NULL; /* ptr to start of last block of uncompressable bytes (in dest) */
+    cu_str unknown          = source; /* start of uncompressible bytes */
+    u_str  lastUncompressed = NULL; /* ptr to start of last block of uncompressible bytes (in dest) */
 
 #if defined(ASSERTION_USED)
     const long org_size = size;
@@ -657,7 +657,7 @@ char *gb_compress_by_dictionary(GB_DICTIONARY *dict, GB_CSTR s_source, long size
                 }
             }
 
-            while (length) {    /* if there were uncompressable bytes */
+            while (length) {    /* if there were uncompressible bytes */
                 int take = (int)min(length,63);
 
 #ifdef COUNT_CHUNKS
@@ -798,7 +798,7 @@ static void test_dictionary(GB_DICTIONARY *dict, O_gbdByKey *gbk, long *uncompSu
         GBDATA *gbd = gbk->gbds[cnt];
         int type = GB_TYPE(gbd);
 
-        if (COMPRESSABLE(type)) {
+        if (COMPRESSIBLE(type)) {
             long size;
             cu_str data = get_data_n_size(gbd, &size);
             u_str copy;
@@ -1510,7 +1510,7 @@ static int count_dtree_leafs(GB_DICT_TREE tree, int deep, int *maxdeep) {
 }
 
 static int COUNT(GB_DICT_TREE tree) {
-    /* counts sum of # of occurencies of tree */
+    /* counts sum of # of occurrences of tree */
     int cnt = 0;
 
     switch(tree.single->typ) {
@@ -1574,7 +1574,7 @@ static GB_DICT_TREE removeSubsequentString(GB_DICT_TREE *tree_pntr, cu_str buffe
                         if (!tree.single->count) { /* empty subtree -> delete myself */
                             GB_DICT_TREE brother = tree.single->brother;
 
-                            tree.single->brother.exists = NULL; /* elsewise it would be free'ed by free_dtree */
+                            tree.single->brother.exists = NULL; /* elsewise it would be freed by free_dtree */
                             free_dtree(tree);
                             *tree_pntr = tree = brother;
                         }
@@ -1810,7 +1810,7 @@ static GB_DICT_TREE build_dict_tree(O_gbdByKey *gbk, long maxmem, long maxdeep, 
             GBDATA *gbd = gbk->gbds[cnt];
             int type =  GB_TYPE(gbd);
 
-            if (COMPRESSABLE(type)) {
+            if (COMPRESSIBLE(type)) {
                 long   size;
                 cu_str data = get_data_n_size(gbd, &size);
                 cu_str lastWord;
@@ -2213,7 +2213,7 @@ static void downheap2(int *heap, GB_DICTIONARY *dict, int me, int num) {
 static void sort_dict_offsets(GB_DICTIONARY *dict) {
     /* 1. sorts the 'dict->offsets' by frequency
      *    (frequency of each offset is stored in the 'dict->resort' with the same index)
-     * 2. initializes & sorts 'dict->resort' in alphabethical order
+     * 2. initializes & sorts 'dict->resort' in alphabetic order
      */
     int  i;
     int  num   = dict->words;
@@ -2396,7 +2396,7 @@ static GB_ERROR readAndWrite(O_gbdByKey *gbkp) {
         GBDATA *gbd  = gbkp->gbds[i];
         int     type = GB_TYPE(gbd);
 
-        if (COMPRESSABLE(type)) {
+        if (COMPRESSIBLE(type)) {
             long size;
             char *data;
 

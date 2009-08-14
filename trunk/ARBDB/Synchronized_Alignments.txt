@@ -1,4 +1,7 @@
 
+ *** This is just a draft, it's not implemented ***
+
+
         Automatic synchronization of DNA- and Protein-Alignments
         ========================================================
 
@@ -17,7 +20,7 @@
 
         sync_flag-value         meaning
         --------------------------------------------------------------------------------
-        SYNC_NOT                species should not be syncronized (this is the default
+        SYNC_NOT                species should not be synchronized (this is the default
                                 value in case of missing sync_flag).
 
         SYNC_OK                 both alignments (ALI_DNA and ALI_PRO) are synchronized.
@@ -27,10 +30,10 @@
         SYNC_DNA                ALI_DNA is not up to date and has to be re-aligned.
 
 
-  * If /species_data/species_xxx/ali_dna does not exist no syncronization will be done
+  * If /species_data/species_xxx/ali_dna does not exist no synchronization will be done
     for this species!!
 
-- Changed read/write-machanism for synced alignments (this affects only .../ali_xx/data):
+- Changed read/write-mechanism for synchronized alignments (this affects only .../ali_xx/data):
 
   * reading ali_dna/data:       if sync_flag==SYNC_DNA => re-align;
                                 read data;

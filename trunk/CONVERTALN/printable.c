@@ -49,8 +49,7 @@ to_printable(inf, outf, informat)
         } else if(informat==MACKE)  {
             init_macke();
             eof=macke_in_name(ifp);
-        } else error(48,
-                     "UNKNOW input format when converting to PRINABLE format.");
+        } else error(48, "UNKNOWN input format when converting to PRINTABLE format.");
         if(eof==EOF) break;
         if(informat==ALMA)  {
             alma_key_word(data.alma.id, 0, temp, TOKENNUM);
@@ -60,8 +59,7 @@ to_printable(inf, outf, informat)
             embl_key_word(data.embl.id, 0, temp, TOKENNUM);
         } else if(informat==MACKE)  {
             Cpystr(temp, data.macke.seqabbr);
-        } else error(120,
-                     "UNKNOW input format when converting to PRINABLE format.");
+        } else error(120, "UNKNOWN input format when converting to PRINTABLE format.");
         total_seq++;
 
         if((name = Dupstr(temp))==NULL&&temp!=NULL) { out_of_memory=1; break; }
@@ -80,8 +78,7 @@ to_printable(inf, outf, informat)
     } while(!out_of_memory);
 
     if(out_of_memory)   {   /* cannot hold all seqs into mem. */
-        fprintf(stderr,
-                "Rerun the conversion throught one seq. by one seq. base.\n");
+        fprintf(stderr, "Out of memory: Rerun the conversion sequence by sequence.\n");
         destroy_FILE_BUFFER(ifp); fclose(ofp);
         to_printable_1x1(inf, outf, informat);
         return;
@@ -166,7 +163,7 @@ to_printable_1x1(inf, outf, informat)
                 init_macke();
                 eof=macke_in_name(ifp);
             } else error(129,
-                         "UNKNOW input format when converting to PRINTABLE format.");
+                         "UNKNOWN input format when converting to PRINTABLE format.");
             if(eof==EOF) break;
             if(informat==ALMA)  {
                 alma_key_word(data.alma.id, 0, temp, TOKENNUM);
@@ -177,7 +174,7 @@ to_printable_1x1(inf, outf, informat)
             } else if(informat==MACKE)  {
                 macke_key_word(data.macke.name, 0, temp, TOKENNUM);
             } else error(131,
-                         "UNKNOW input format when converting to PRINTABLE format.");
+                         "UNKNOWN input format when converting to PRINTABLE format.");
             Freespace(&name);
             name = Dupstr(temp);
             if(data.seq_length>maxsize)

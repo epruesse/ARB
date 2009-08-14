@@ -1,5 +1,5 @@
 This is version 4.3 of a2ps, a program to format an ascii file for
-printing in a postcript printer. As the copyright indicates, this
+printing on a postscript printer. As the copyright indicates, this
 distribution can be freely redistributed.
 
 Initial version was a shell program written by evan@csli (Evan
@@ -26,7 +26,7 @@ Some notes on the distribution:
        Default values correspond to A4 format (11.64 x 8.27). In USA, you use
        use in general 11.0 x 8.5.
     b) Total lateral (left+right) or vertical (top+bottom) margins. It must
-       be also a real constant, specifying inchs (by default 1.2).
+       be also a real constant, specifying inches (by default 1.2).
        - MARGIN
     c) Directory separator (by default '/')
        - DIR_SEP char

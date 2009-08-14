@@ -1,7 +1,7 @@
 /*=======================================================================================*/
 /*                                                                                       */
 /*    File       : ED4_visualizeSAI.cxx                                                  */
-/*    Purpose    : To Visualise the Sequence Associated Information (SAI) in the Editor  */
+/*    Purpose    : To Visualize the Sequence Associated Information (SAI) in the Editor  */
 /*    Author     : Yadhu Kumar (yadhu@mikro.biologie.tu-muenchen.de)                     */
 /*    web site   : http://www.arb-home.de/                                               */
 /*                                                                                       */
@@ -37,7 +37,7 @@
 #define AWAR_SAI_ALL_SPECIES          AWAR_SAI_CLR_TAB "all_species" // 1 = all / 0 = marked
 #define AWAR_SAI_AUTO_SELECT          AWAR_SAI_CLR_TAB "auto_select" // 1 = auto select / 0 = manual select
 #define AWAR_SAI_CLR_TRANS_TABLE      AWAR_SAI_CLR_TAB "clr_trans_table" // current translation table
-#define AWAR_SAI_CLR_TRANS_TAB_NAMES  AWAR_SAI_CLR_TAB "clr_trans_tab_names" // ;-seperated list of existing translation tables
+#define AWAR_SAI_CLR_TRANS_TAB_NAMES  AWAR_SAI_CLR_TAB "clr_trans_tab_names" // ;-separated list of existing translation tables
 #define AWAR_SAI_CLR_TRANS_TAB_REL    AWAR_SAI_CLR_TAB "sai_relation/" // container to store trans tables for each SAI
 #define AWAR_SAI_CLR_DEFAULTS_CREATED AWAR_SAI_CLR_TAB "defaults_created" // whether defaults have been created (create only once)
 
@@ -53,7 +53,7 @@
 extern GBDATA *GLOBAL_gb_main;
 
 static bool clrDefinitionsChanged       = false;
-static bool inCallback                  = false; // used to avoid multiple refreshs
+static bool inCallback                  = false; // used to avoid multiple refreshes
 static bool in_colorDefChanged_callback = false; // used to avoid colorDef correction
 
 // --------------------------------------------------------------------------------
@@ -178,7 +178,7 @@ static void colorDefChanged_callback(AW_root *awr, AW_CL cl_awarNo) {
 
                 char    *colorDef = GBS_strclose(clrDefStr);
                 AW_awar *awar_def = awr->awar_string(getClrDefAwar(clrTabName), "", AW_ROOT_DEFAULT);
-                awar_def->write_string(colorDef); // writing clr defnition to clr trans table awar
+                awar_def->write_string(colorDef); // writing clr definition to clr trans table awar
                 free(colorDef);
             }
         }
@@ -253,7 +253,7 @@ static void colorDefTabNameChanged_callback(AW_root *awr) {
         colorDefChanged_callback(awr, 0); // correct first def manually
     }
     {
-        // store the selected tabel as default for this SAI:
+        // store the selected table as default for this SAI:
         char *saiName = awr->awar(AWAR_SAI_SELECT)->read_string();
         if (saiName[0]) {
             char buf[100];
@@ -353,7 +353,7 @@ static void autoselect_cb(AW_root *aw_root) {
 static void set_autoselect_cb(AW_root *aw_root) {
     static bool callback_active = false;
 
-    if (aw_root->awar(AWAR_SAI_AUTO_SELECT)->read_int()) { // auto select is avtivated
+    if (aw_root->awar(AWAR_SAI_AUTO_SELECT)->read_int()) { // auto select is activated
         aw_root->awar(AWAR_SAI_NAME)->add_callback(autoselect_cb);
         callback_active = true;
     }
@@ -398,7 +398,7 @@ void ED4_createVisualizeSAI_Awars(AW_root *aw_root, AW_default aw_def) {  // ---
     aw_root->awar_string(AWAR_SAI_CLR_TRANS_TAB_NEW_NAME, "", aw_def);
     aw_root->awar_string(AWAR_SAI_CLR_TRANS_TAB_NAMES,    "", aw_def);
 
-    for (int i=0;i<10;i++){   // initialising 10 color definition string AWARS
+    for (int i=0;i<10;i++){   // initializing 10 color definition string AWARS
        AW_awar *def_awar = aw_root->awar_string(getAwarName(i),"",aw_def);
        def_awar->add_callback(colorDefChanged_callback, (AW_CL)i);
     }
@@ -617,7 +617,7 @@ const char *ED4_getSaiColorString(AW_root *awr, int start, int end) {
 
 /* -------------------- Creating Windows and Display dialogs -------------------- */
 
-static AW_window *create_copyColorTranslationTable_window(AW_root *aw_root){  // creates copy color tranlation table window
+static AW_window *create_copyColorTranslationTable_window(AW_root *aw_root){  // creates copy color translation table window
     AW_window_simple *aws = new AW_window_simple;
     aws->init( aw_root, "COPY_CLR_TR_TABLE", "Copy Color Translation Table");
     aws->load_xfig("ad_al_si.fig");
@@ -639,7 +639,7 @@ static AW_window *create_copyColorTranslationTable_window(AW_root *aw_root){  //
     return (AW_window *)aws;
 }
 
-static AW_window *create_createColorTranslationTable_window(AW_root *aw_root){ // creates create color tranlation table window
+static AW_window *create_createColorTranslationTable_window(AW_root *aw_root){ // creates create color translation table window
     AW_window_simple *aws = new AW_window_simple;
     aws->init( aw_root, "CREATE_CLR_TR_TABLE", "Create Color Translation Table");
     aws->load_xfig("ad_al_si.fig");
@@ -682,7 +682,7 @@ static void reverseColorTranslationTable(AW_window *aww) {
     }
 }
 
-static AW_window *create_editColorTranslationTable_window(AW_root *aw_root){  // creates edit color tranlation table window
+static AW_window *create_editColorTranslationTable_window(AW_root *aw_root){  // creates edit color translation table window
     static AW_window_simple *aws = 0;
     if(aws) return (AW_window *)aws;
 

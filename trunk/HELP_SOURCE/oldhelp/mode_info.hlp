@@ -26,14 +26,14 @@ DESCRIPTION	The 'INFO MODE' allows you to show or modify information assigned to
 
 		Select a species or an existing group:
 
-			Move the cusor to the respective node and
-			press the left mouse button. The corresponding infor-
-			mation is displayed within the 'SPECIES INFORMATION'
+			Move the cursor to the respective node and
+			press the left mouse button. The corresponding
+                        information is displayed within the 'SPECIES INFORMATION'
 			window.
 
 		Create and select a group:
 
-			Move the cusor to any corner or edge of the triangle
+			Move the cursor to any corner or edge of the triangle
 			(radial tree) or rectangle (dendrogram) representing
 			the desired group and press the right mouse button.
 			The corresponding information is displayed within the

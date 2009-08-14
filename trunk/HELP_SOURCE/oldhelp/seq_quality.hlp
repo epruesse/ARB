@@ -30,9 +30,8 @@ DESCRIPTION     'Calculate sequence quality' tries to measure the quality of seq
 
 		In the section "weights" you have quite a few options to fill in.
 
-                These are some of the criteria used to evaluate the quality of the sequences.
+                These are some of the criteria used to evaluate the quality of the sequences..
                 The values represent the share of the criteria in the final evaluation-formula.
-                A higher value means emphasation.
                 All values represent percentages, therefore all values together should sum up to 100.
 
         THE VALUES:
@@ -59,11 +58,11 @@ DESCRIPTION     'Calculate sequence quality' tries to measure the quality of seq
                         Every species' sequence is compared against the consensus sequences
                         of all groups of which the species is a member.
 
-                        That comparation uses conformity with and deviation from the consensus sequence.
+                        That comparison uses conformity with and deviation from the consensus sequence.
 
 #		        A consensus is computed from sequences in one group and then from subgroups to groups.
 #                        So "multilevel" consensi are generated.
-#                        The value consists of two analyses: Every sequence is tested against every level of the consensus.
+#                        The value consists of two analysis: Every sequence is tested against every level of the consensus.
 #                        Conformity and deviation from the consensus are measured.
 
 		IUPAC:
@@ -80,7 +79,7 @@ NOTES		Generally speaking the consensus is the mightiest tool to evaluate the qu
 
 		Be aware that the computation is very complex and can easily take hours to finish.
 		So if you don't see the statusbar moving in the first ten minutes it just means
-		that you are analysing a huge database.
+		that you are analyzing a huge database.
 
 EXAMPLES	None
 

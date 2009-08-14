@@ -26,7 +26,7 @@ DESCRIPTION	In order to work with alignments of genes you first have to
                 groups of genes and to calculate your trees using these
                 alignment(s).
 
-NOTES		It's possible to export these gene-species to a seperate ARB
+NOTES		It's possible to export these gene-species to a separate ARB
                 database using the merge tool.
 
 EXAMPLES	None

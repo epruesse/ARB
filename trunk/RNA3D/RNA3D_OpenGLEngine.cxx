@@ -31,7 +31,7 @@ RNA3D_Global::RNA3D_Global(){
     OpenGLEngineState = -1;
     iRotateMolecule   = 0;
     bPointSpritesSupported           = false;
-    bEColiRefInitialised             = false;
+    bEColiRefInitialized             = false;
     bMapSaiDispListCreated           = false;
     bAutoRotate                      = false;
     bRotateMolecule                  = false;
@@ -110,7 +110,7 @@ using namespace std;
 void ShowVendorInformation(){
     const GLubyte *vendor = NULL;
     vendor = glGetString(GL_VENDOR);   cout<<"Vendor  : "<<vendor<<endl;
-    vendor = glGetString(GL_RENDERER); cout<<"Rederer : "<<vendor<<endl;
+    vendor = glGetString(GL_RENDERER); cout<<"Renderer: "<<vendor<<endl;
     vendor = glGetString(GL_VERSION);  cout<<"Version : "<<vendor<<endl;
 }
 
@@ -379,7 +379,7 @@ void MapSelectedSpeciesChanged_CB(AW_root *awr) {
 }
 
 void MapSaiToEcoliTemplateChanged_CB(AW_root *awr) {
-    //if SAI changed in EDIT4 then diplay lists should be recalculated
+    //if SAI changed in EDIT4 then display lists should be recalculated
 
     if (RNA3D->cStructure->iMapEnable  &&
         RNA3D->cStructure->iMapSAI     &&
@@ -410,7 +410,7 @@ void MapSearchStringsToEcoliTemplateChanged_CB(AW_root *awr) {
 
 void CursorPositionChanged_CB(AW_root *awr) {
 
-    if(RNA3D->bEColiRefInitialised) {
+    if(RNA3D->bEColiRefInitialized) {
         long iCursorPos = awr->awar(AWAR_CURSOR_POSITION)->read_int();
         long EColiPos   = RNA3D->cStructure->EColiRef->abs_2_rel(iCursorPos);
 

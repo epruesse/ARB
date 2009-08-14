@@ -37,7 +37,7 @@
 //  SmartPtr<type, Counted<type, custom_dealloc_ptr<type, deallocator> > >      uses custom deallocator
 //
 // --------------------------------------------------------------------------------
-// macros for convinience:
+// macros for convenience:
 
 #define SmartArrayPtr(type)               SmartPtr<type, Counted<type, auto_delete_array_ptr<type> > >
 #define SmartMallocPtr(type)              SmartPtr<type, Counted<type, auto_free_ptr<type> > >

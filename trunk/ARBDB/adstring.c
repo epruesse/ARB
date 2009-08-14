@@ -104,7 +104,7 @@ GB_ERROR gb_scan_directory(char *basename, struct gb_scandir *sd) { /* goes to h
 
 char *GB_find_all_files(const char *dir,const char *mask, GB_BOOL filename_only) {
     /* Returns a string containing the filenames of all files matching mask.
-       The single filenames are seperated by '*'.
+       The single filenames are separated by '*'.
        if 'filename_only' is true -> string contains only filenames w/o path
        
        returns 0 if no files found (or directory not found).
@@ -373,7 +373,7 @@ static size_t last_global_string_size = 0;
 
 static GB_CSTR gbs_vglobal_string(const char *templat, va_list parg, int allow_reuse)
 {
-    static char buffer[GLOBAL_STRING_BUFFERS][GBS_GLOBAL_STRING_SIZE+2]; // serveral buffers - used alternately
+    static char buffer[GLOBAL_STRING_BUFFERS][GBS_GLOBAL_STRING_SIZE+2]; // several buffers - used alternately
     static int  idx                             = 0;
     static char lifetime[GLOBAL_STRING_BUFFERS] = { };
     static char nextIdx[GLOBAL_STRING_BUFFERS] = { };
@@ -688,7 +688,7 @@ char *gbs_add_path(char *path,char *name)
 /* --------------------------- */
 /*      escape characters      */
 
-char *GBS_remove_escape(char *com)  /* \ is the escape charakter
+char *GBS_remove_escape(char *com)  /* \ is the escape character
                                      */
 {
     char *result,*s,*d;
@@ -1629,7 +1629,7 @@ static GB_ERROR g_bs_add_value_tag_to_hash(GBDATA *gb_main, GB_HASH *hash, char 
 static GB_ERROR g_bs_convert_string_to_tagged_hash(GB_HASH *hash, char *s,char *default_tag,const char *del,
                                                    GBDATA *gb_main, const char *rtag,const char *srt, const char *aci, GBDATA *gbd){
     char *se;           /* string end */
-    char *sa;           /* string anfang and tag end */
+    char *sa;           /* string start and tag end */
     char *ts;           /* tag start */
     char *t;
     GB_ERROR error = 0;
@@ -1732,7 +1732,7 @@ static void g_bs_free_hash_of_hashes(GB_HASH *hash) {
 
 char *GBS_merge_tagged_strings(const char *s1, const char *tag1, const char *replace1, const char *s2, const char *tag2, const char *replace2){
     /* Create a tagged string from two tagged strings:
-     * a tagged string is somthing like '[tag,tag,tag] string [tag] string [tag,tag] string'
+     * a tagged string is something like '[tag,tag,tag] string [tag] string [tag,tag] string'
      * 
      * if 's2' is not empty, then delete tag 'replace1' in 's1'
      * if 's1' is not empty, then delete tag 'replace2' in 's2'
@@ -1935,7 +1935,7 @@ char *GBS_fread_string(FILE *in) {
     return GBS_strclose(strstr);
 }
 
-/* does similiar decoding as GBS_fread_string but works directly on an existing buffer
+/* does similar decoding as GBS_fread_string but works directly on an existing buffer
  * (WARNING : GBS_fconvert_string is used by gb_read_file which reads ARB ASCII databases!!)
  *
  * inserts \0 behind decoded string (removes the closing '"')

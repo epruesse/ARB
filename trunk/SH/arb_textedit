@@ -4,7 +4,7 @@ if [ -z "$ARB_TEXTEDIT" ]; then
         echo '$ARB_TEXTEDIT not set! Searching for an editor..'
         echo ''
 
-        # try to find an editor (order = basic to convinient; last found is used):
+        # try to find an editor (order = basic to convenient; last found is used):
 
         if [ -x "`which edit`" ] ; then ARB_TEXTEDIT=edit ; fi
         if [ -x "`which vi`" ] ; then ARB_TEXTEDIT=vi ; fi

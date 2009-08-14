@@ -79,10 +79,10 @@ static long sorted_primes[KNOWN_PRIMES] = {
 
 static unsigned char bit_val[8] = { 1, 2, 4, 8, 16, 32, 64, 128 };
 
-static int bit_value(const unsigned char *erastothenes, long num) { // 'num' is odd and lowest 'num' is 3
+static int bit_value(const unsigned char *eratosthenes, long num) { // 'num' is odd and lowest 'num' is 3
     long bit_num  = ((num-1) >> 1)-1; // 3->0 5->1 7->2 etc.
     long byte_num = bit_num >> 3; // div 8
-    char byte     = erastothenes[byte_num];
+    char byte     = eratosthenes[byte_num];
 
     gb_assert(bit_num >= 0);
     gb_assert((num&1) == 1);    // has to odd
@@ -91,10 +91,10 @@ static int bit_value(const unsigned char *erastothenes, long num) { // 'num' is 
 
     return (byte & bit_val[bit_num]) ? 1 : 0;
 }
-static void set_bit_value(unsigned char *erastothenes, long num, int val) { // 'num' is odd and lowest 'num' is 3; val is 0 or 1
+static void set_bit_value(unsigned char *eratosthenes, long num, int val) { // 'num' is odd and lowest 'num' is 3; val is 0 or 1
     long bit_num  = ((num-1) >> 1)-1; // 3->0 5->1 7->2 etc.
     long byte_num = bit_num >> 3; // div 8
-    char byte     = erastothenes[byte_num];
+    char byte     = eratosthenes[byte_num];
 
     gb_assert(bit_num >= 0);
     gb_assert((num&1) == 1);    // has to odd
@@ -107,31 +107,31 @@ static void set_bit_value(unsigned char *erastothenes, long num, int val) { // '
     else {
         byte &= (0xff - bit_val[bit_num]);
     }
-    erastothenes[byte_num] = byte;
+    eratosthenes[byte_num] = byte;
 }
 
 static void calculate_primes_upto() {
     {
         long           bits_needed  = CALC_PRIMES_UP_TO/2+1; // only need bits for odd numbers
         long           bytes_needed = (bits_needed/8)+1;
-        unsigned char *erastothenes = GB_calloc(bytes_needed, 1); // bit = 1 means "is not a prime"
+        unsigned char *eratosthenes = GB_calloc(bytes_needed, 1); // bit = 1 means "is not a prime"
         long           prime_count  = 0;
         long           num;
 
-        printf("erastothenes' size = %li\n", bytes_needed);
+        printf("eratosthenes' size = %li\n", bytes_needed);
 
-        if (!erastothenes) {
+        if (!eratosthenes) {
             GB_internal_error("out of memory");
             return;
         }
 
         for (num = 3; num <= CALC_PRIMES_UP_TO; num += 2) {
-            if (bit_value(erastothenes, num) == 0) { // is a prime number
+            if (bit_value(eratosthenes, num) == 0) { // is a prime number
                 long num2;
                 prime_count++;
                 for (num2 = num*2; num2 <= CALC_PRIMES_UP_TO; num2 += num) { // with all multiples
                     if ((num2&1) == 1) { // skip even numbers
-                        set_bit_value(erastothenes, num2, 1);
+                        set_bit_value(eratosthenes, num2, 1);
                     }
                 }
             }
@@ -146,10 +146,10 @@ static void calculate_primes_upto() {
             int  printed      = 0;
 
             for (num = 3; num <= CALC_PRIMES_UP_TO; num += 2) {
-                if (bit_value(erastothenes, num) == 0) { // is a prime number
+                if (bit_value(eratosthenes, num) == 0) { // is a prime number
                     long diff = num-last_prime;
                     if ((diff*PRIME_UNDENSITY)<num) {
-                        set_bit_value(erastothenes, num, 1); // delete unneeded prime
+                        set_bit_value(eratosthenes, num, 1); // delete unneeded prime
                     }
                     else {
                         prime_count2++; // count needed primes
@@ -165,7 +165,7 @@ static void calculate_primes_upto() {
 
             index = 0;
             for (num = 3; num <= CALC_PRIMES_UP_TO; num += 2) {
-                if (bit_value(erastothenes, num) == 0) { // is a prime number
+                if (bit_value(eratosthenes, num) == 0) { // is a prime number
                     if (printed>128) {
                         printf("\n    ");
                         printed = 4;
@@ -181,7 +181,7 @@ static void calculate_primes_upto() {
             printf("\n};\n\n");
         }
 
-        free(erastothenes);
+        free(eratosthenes);
     }
     fflush(stdout);
     exit(1);
@@ -262,7 +262,7 @@ GB_HASH *GBS_create_hash(long user_size, GB_CASE case_sens) {
 }
 
 GB_HASH *GBS_create_dynaval_hash(long user_size, GB_CASE case_sens, void (*freefun)(long)) {
-    /* like GBS_create_hash, but values stored in hash get free'd using 'freefun'
+    /* like GBS_create_hash, but values stored in hash get freed using 'freefun'
      */
     GB_HASH *hs = GBS_create_hash(user_size, case_sens);
     hs->freefun = freefun;
@@ -446,7 +446,7 @@ static long write_hash(GB_HASH *hs, char *key, GB_BOOL copyKey, long val) {
         if (!val) delete_from_list(hs, i, e); // (val == 0 is not stored, cause 0 is the default value)
         else      e->val = val;
 
-        if (!copyKey) free(key); // already had an entry -> delete usused mem
+        if (!copyKey) free(key); // already had an entry -> delete unused mem
     }
     else if (val != 0) {        // don't store 0
         // create new hash entry
@@ -459,7 +459,7 @@ static long write_hash(GB_HASH *hs, char *key, GB_BOOL copyKey, long val) {
         hs->nelem++;
     }
     else {
-        if (!copyKey) free(key); // don't need an entry -> delete usused mem
+        if (!copyKey) free(key); // don't need an entry -> delete unused mem
     }
     return oldval;
 }
@@ -813,7 +813,7 @@ long gbs_hashi_index(long key, long size)
 {
     long x;
     x = (key * (long long)97)%size;     // make one multiplier a (long long) to avoid
-    if (x<0) x+= size;                  // int overflow and abort if compield with -ftrapv
+    if (x<0) x+= size;                  // int overflow and abort if compiled with -ftrapv
     return x;
 }
 
@@ -996,7 +996,7 @@ char *delete_old_cache_entries(struct gb_cache_struct *cs, long needed_size, lon
         cs->entries[i].gbd->cache_index = 0;
         cs->entries[i].next = cs->firstfree_entry;
         cs->firstfree_entry = i;
-        /* delete all unused memorys */
+        /* delete all unused memory */
         if (data || ( needed_size != cs->entries[i].sizeof_data)  ) {
             free(cs->entries[i].data);
         }else{

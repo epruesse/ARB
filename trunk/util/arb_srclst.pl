@@ -236,7 +236,7 @@ sub dontUseIfMatching($\@\$) {
   my ($str,$regexp_arr_r,$use_r) = @_;
   my $matches = matchingExpr($str,@$regexp_arr_r);
   if ($matches>0) {
-    if ($debug_matching!=0) { print "'$str' matches '".$$regexp_arr_r[$matches-1]."' => dont use!\n"; }
+    if ($debug_matching!=0) { print "'$str' matches '".$$regexp_arr_r[$matches-1]."' => don't use!\n"; }
     $$use_r = 0;
   }
 }

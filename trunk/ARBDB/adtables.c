@@ -8,7 +8,7 @@
 
 /* *************** tables, for ARB BIO storage *******************
 
- *  hierarchical organisation:
+ *  hierarchical organization:
 
 
  *  main:

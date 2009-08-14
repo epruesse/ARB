@@ -138,7 +138,7 @@ static GB_BOOL insdel_shall_be_applied_to(GBDATA *gb_data, enum insDelTarget tar
     GB_BOOL     apply = GB_TRUE;
     const char *key   = GB_read_key_pntr(gb_data);
 
-    if (key[0] == '_') {        // dont apply to keys starting with '_'
+    if (key[0] == '_') {        // don't apply to keys starting with '_'
         switch (target) {
             case IDT_SECSTRUCT:
             case IDT_SPECIES:

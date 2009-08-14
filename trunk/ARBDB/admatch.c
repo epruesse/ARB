@@ -401,7 +401,7 @@ GB_CSTR GBS_find_string(GB_CSTR str, GB_CSTR substr, int match_mode) {
 GB_BOOL GBS_string_matches(const char *str, const char *search, GB_CASE case_sens)
 /* Wildcards in 'search' string:
  *      ?   one character
- *      *   serveral characters
+ *      *   several characters
  *
  * if 'case_sens' == GB_IGNORE_CASE -> change all letters to uppercase
  * 
@@ -529,11 +529,11 @@ ATTRIBUTED(__ATTR__USERESULT,
                     char    *psym;
                     klz = gbs_search_second_bracket(p);
                     if (klz) {          /* reference found: $(gbd) */
-                        int seperator = 0;
+                        int separator = 0;
                         *klz = 0;
                         psym = strpbrk(p,"#|:");
                         if (psym) {
-                            seperator = *psym;
+                            separator = *psym;
                             *psym =0;
                         }
                         if (*p){
@@ -541,7 +541,7 @@ ATTRIBUTED(__ATTR__USERESULT,
                         }else{
                             gb_entry = gb_container;
                         }
-                        if (psym) *psym = seperator;
+                        if (psym) *psym = separator;
 
                         if (!gb_entry || gb_entry == gb_container) {
                             GBS_reference_not_found = 1;
@@ -551,7 +551,7 @@ ATTRIBUTED(__ATTR__USERESULT,
                         }
                         if (entry) {
                             char *h;
-                            switch(seperator) {
+                            switch(separator) {
                                 case ':':
                                     h = GBS_string_eval(entry,psym+1,gb_container);
                                     if (!h) return GB_await_error();
@@ -633,7 +633,7 @@ static char *gbs_compress_command(const char *com) {
      *   ':' by GBS_SEP
      *   '?' by GBS_WILD if followed by a number or '?'
      *   '*' by GBS_MWILD  or '('
-     * \ is the escape charakter
+     * \ is the escape character
      */
     char *result,*s,*d;
     int   ch;

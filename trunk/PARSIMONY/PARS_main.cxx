@@ -898,7 +898,7 @@ static void nt_add_partial(AW_window */*aww*/, AWT_canvas *ntw) {
 }
 
 // -----------------------------
-//      add marked / seleted
+//      add marked / selected
 // -----------------------------
 
 // normal versions :
@@ -1087,7 +1087,7 @@ static AW_window *NT_create_tree_setting(AW_root *aw_root)
     aws->create_input_field(AWAR_DTREE_BASELINEWIDTH,4);
     aws->at_newline();
 
-    aws->label("Relativ vert. Dist");
+    aws->label("Relative vert. Dist");
     aws->create_input_field(AWAR_DTREE_VERICAL_DIST,4);
     aws->at_newline();
 
@@ -1464,7 +1464,7 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_adfiltercbstruct) {
 
     if (ap_main->commands.add_marked)           NT_quick_add(awm,ntw,0);
     if (ap_main->commands.add_selected)         NT_quick_add(awm,ntw,1);
-    if (ap_main->commands.calc_branch_lenths)   NT_branch_lengths(awm,ntw);
+    if (ap_main->commands.calc_branch_lengths)  NT_branch_lengths(awm,ntw);
     if (ap_main->commands.calc_bootstrap)       NT_bootstrap(awm,ntw,0);
     if (ap_main->commands.quit)                 pars_exit(awm);
 
@@ -1536,11 +1536,11 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_adfiltercbstruct) {
         awm->close_sub_menu();
         awm->insert_menu_topic("reset", "Reset optimal parsimony", "s", "", AWM_ALL, (AW_CB)pars_reset_optimal_parsimony, (AW_CL)ntw, 0);
         awm->insert_separator();
-        awm->insert_menu_topic("beautify_tree",      "Beautify Tree",            "B", "resorttree.hlp",       AWM_ALL, (AW_CB)NT_resort_tree_cb, (AW_CL)ntw, 0);
-        awm->insert_menu_topic("calc_branch_lenths", "Calculate Branch Lengths", "L", "pa_branchlengths.hlp", AWM_ALL, (AW_CB)NT_branch_lengths, (AW_CL)ntw, 0);
+        awm->insert_menu_topic("beautify_tree",       "Beautify Tree",            "B", "resorttree.hlp",       AWM_ALL, (AW_CB)NT_resort_tree_cb, (AW_CL)ntw, 0);
+        awm->insert_menu_topic("calc_branch_lengths", "Calculate Branch Lengths", "L", "pa_branchlengths.hlp", AWM_ALL, (AW_CB)NT_branch_lengths, (AW_CL)ntw, 0);
         awm->insert_separator();
-        awm->insert_menu_topic("calc_upper_bootstrap_indep", "Calculate Upper Bootstrap Limit (dependend NNI)",   "d", "pa_bootstrap.hlp", AWM_ALL, (AW_CB)NT_bootstrap,        (AW_CL)ntw, 0);
-        awm->insert_menu_topic("calc_upper_bootstrap_dep",   "Calculate Upper Bootstrap Limit (independend NNI)", "i", "pa_bootstrap.hlp", AWM_ALL, (AW_CB)NT_bootstrap,        (AW_CL)ntw, 1);
+        awm->insert_menu_topic("calc_upper_bootstrap_indep", "Calculate Upper Bootstrap Limit (dependent NNI)",   "d", "pa_bootstrap.hlp", AWM_ALL, (AW_CB)NT_bootstrap,        (AW_CL)ntw, 0);
+        awm->insert_menu_topic("calc_upper_bootstrap_dep",   "Calculate Upper Bootstrap Limit (independent NNI)", "i", "pa_bootstrap.hlp", AWM_ALL, (AW_CB)NT_bootstrap,        (AW_CL)ntw, 1);
         awm->insert_menu_topic("tree_remove_remark",         "Remove Bootstrap Values",                           "V", "trm_boot.hlp",     AWM_ALL, (AW_CB)NT_remove_bootstrap, (AW_CL)ntw, 0);
     }
 
@@ -1865,7 +1865,7 @@ int main(int argc, char **argv)
             continue;
         }
         if (!strcmp(argv[0],"-calc_branchlengths")){
-            ap_main->commands.calc_branch_lenths = 1;
+            ap_main->commands.calc_branch_lengths = 1;
             continue;
         }
         if (!strcmp(argv[0],"-calc_bootstrap")){

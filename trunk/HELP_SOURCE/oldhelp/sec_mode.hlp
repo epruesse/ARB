@@ -27,7 +27,7 @@ DESCRIPTION	ZOOM MODE       Mode to zoom the displayed secondary structure.
 
 			Right mouse button removes the clicked helix region.
 
-                        Tipp: If you display SAI: HELIX it's easy to detect the helix
+                        Hint: If you display SAI: HELIX it's easy to detect the helix
                               regions.
 
 		SET ROOT MODE

@@ -80,7 +80,7 @@ static char *set_suffix(const char *name, const char *suffix) {
 
     if (GB_is_directory(GBS_mempntr(out))) {
         // if 'out' contains a directory now, 'name' was lacking a filename
-        // (it was only a directory then)
+        // (in this case it was only a directory)
         GBS_strcat(out, "/noname"); // invent a name
     }
 

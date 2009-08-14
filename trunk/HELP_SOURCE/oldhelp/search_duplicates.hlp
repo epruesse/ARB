@@ -24,7 +24,7 @@ DESCRIPTION     Searches groups of species containing
                 The first occurrence is NOT marked, all following occurrences get marked - so you can easily
                 perform some action on duplicates.
 
-NOTES		If you select 'that dont match the query' in the search window,
+NOTES		If you select 'that don't match the query' in the search window,
                 this function instead searches for unique entries!
 
 EXAMPLES	None

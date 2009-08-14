@@ -28,7 +28,7 @@ SECTION Configuration
 
                      The left textfield contains one or more base-pairs. Each base
                      pair contains two characters (bases, gaps-characters, ...).
-                     Base-pairs are seperated by spaces (' '). 
+                     Base-pairs are separated by spaces (' '). 
 
                      The right textfield contains the helix symbol used for each
                      of the specified pairs.

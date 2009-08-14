@@ -18,7 +18,7 @@
  *      Fasman, G. (1978). Prediction of the secondary structure of proteins from
  *      their amino acid sequence. Advanced Enzymology, 47, 45-148.".
  * 
- *  \attention The used method for secondary structure prediciton is fast which
+ *  \attention The used method for secondary structure prediction is fast which
  *             was the main reason for choosing it. Performance is important
  *             for a large number of sequences loaded in the editor. However, it
  *             is not very accurate and should only be used as rough estimation.
@@ -44,7 +44,7 @@
 #define PFOLD_AWAR_MATCH_METHOD      "Pfold/match_method" ///< Selected method for computing the match quality (see #PFOLD_MATCH_METHOD).
 #define PFOLD_AWAR_SAI_FILTER        "Pfold/SAI_filter"   ///< Filter SAIs for given criteria (string); used in option menu for SAI selection.
 
-//TODO: move satic vaiables to .cpp file?
+//TODO: move static variables to .cpp file?
 
 /** \brief Protein secondary structure types.
  *
@@ -139,7 +139,7 @@ typedef enum {
  *  \param[in]  end           The end of the match computation (visible area in editor)
  *  \param[out] result_buffer Result buffer for match symbols
  *  \param[in]  match_method  Method for structure match computation
- *  \return     Error description, if an error occured; 0 otherwise
+ *  \return     Error description, if an error occurred; 0 otherwise
  *
  *  This function compares a protein secondary structure with a primary structure
  *  (= amino acid sequence) or another secondary structure depending on \a match_method.
@@ -184,7 +184,7 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
  *  \param[in]  gb_main        Main database
  *  \param[in]  alignment_name Name of the alignment to search for
  *  \param[out] protstruct_len Length of reference protein secondary structure SAI
- *  \return     Error description, if an error occured; 0 otherwise
+ *  \return     Error description, if an error occurred; 0 otherwise
  *
  *  The function searches the database \a gb_main for the currently selected SAI
  *  as defined by #PFOLD_AWAR_SELECTED_SAI and assigns the data of the alignment

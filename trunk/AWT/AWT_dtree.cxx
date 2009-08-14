@@ -546,7 +546,7 @@ void AWT_show_bootstrap_circle(AW_device *device, const char *bootstrap, double 
     if (radius < 0) return;     // skip too small circles
 
     // Note : radius goes against infinite, if bootstrap values go against zero
-    //        For this reason we do some limitaion here:
+    //        For this reason we do some limitation here:
 
     // printf("bootstrap=%i -> radius=%f\n", atoi(bootstrap), radius);
 
@@ -960,8 +960,8 @@ void AWT_graphic_tree::key_command(AWT_COMMAND_MODE /*cmd*/, AW_key_mod key_modi
     }
 }
 
-inline double discrete_ruler_lenght(double analog_ruler_lenth, double min_length) {
-    double drl = int(analog_ruler_lenth*10+0.5)/10.0;
+inline double discrete_ruler_length(double analog_ruler_length, double min_length) {
+    double drl = int(analog_ruler_length*10+0.5)/10.0;
     if (drl<min_length) {
         drl = min_length;
     }
@@ -1118,7 +1118,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                             sprintf(awar,"ruler/size");
                             tree_awar = show_ruler(device, this->drag_gc);
                             double rulerSize = *GBT_readOrCreate_float(this->tree_static->gb_tree, awar, 0.0);
-                            GBT_write_float(this->tree_static->gb_tree, awar, discrete_ruler_lenght(rulerSize, 0.1));
+                            GBT_write_float(this->tree_static->gb_tree, awar, discrete_ruler_length(rulerSize, 0.1));
                             tree_awar = show_ruler(device, this->drag_gc);
                         }
                         break;
@@ -1126,7 +1126,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         sprintf(awar,"ruler/size");
                         h = *GBT_readOrCreate_float(this->tree_static->gb_tree, awar, 0.0);
                         if (button == AWT_M_RIGHT) {
-                            GBT_write_float(this->tree_static->gb_tree, awar, discrete_ruler_lenght(h, 0.1));
+                            GBT_write_float(this->tree_static->gb_tree, awar, discrete_ruler_length(h, 0.1));
                         }
                         tree_awar = show_ruler(device, this->drag_gc);
 
@@ -1141,7 +1141,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
 
                         double h_rounded = h;
                         if (button==AWT_M_RIGHT) { // if right mouse button is used -> adjust to 1 digit behind comma
-                            h_rounded = discrete_ruler_lenght(h, 0.1);
+                            h_rounded = discrete_ruler_length(h, 0.1);
                             GBT_write_float(this->tree_static->gb_tree, awar, h_rounded);
                             show_ruler(device, this->drag_gc);
                             GBT_write_float(this->tree_static->gb_tree, awar, h);
@@ -1160,7 +1160,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         if (button==AWT_M_RIGHT) { // if right mouse button is used -> adjust to 1 digit behind comma
                             sprintf(awar,"ruler/size");
                             double rulerSize = *GBT_readOrCreate_float(this->tree_static->gb_tree, awar, 0.0);
-                            GBT_write_float(this->tree_static->gb_tree, awar, discrete_ruler_lenght(rulerSize, 0.1));
+                            GBT_write_float(this->tree_static->gb_tree, awar, discrete_ruler_length(rulerSize, 0.1));
                         }
                         break;
                     default:
@@ -1317,7 +1317,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                             ey * sin(this->rot_orientation);
 
                         if (button==AWT_M_RIGHT) { // if right mouse button is used -> adjust to 1 digit behind comma
-                            len = discrete_ruler_lenght(len, 0.0);
+                            len = discrete_ruler_length(len, 0.0);
                         }
                         else if (len<0.0) {
                             len = 0.0;
@@ -1731,7 +1731,7 @@ void AWT_graphic_tree::set_tree_type(AP_tree_sort type)
             exports.dont_scroll     = 0;
             break;
 
-        case AP_TREE_IRS: // folded dendogram
+        case AP_TREE_IRS: // folded dendrogram
             exports.dont_fit_x      = 1;
             exports.dont_fit_y      = 1;
             exports.dont_fit_larger = 0;
@@ -1742,7 +1742,7 @@ void AWT_graphic_tree::set_tree_type(AP_tree_sort type)
             exports.dont_scroll     = 1;
             break;
 
-        case AP_TREE_NORMAL: // normal dendogram
+        case AP_TREE_NORMAL: // normal dendrogram
             exports.dont_fit_x      = 0;
             exports.dont_fit_y      = 1;
             exports.dont_fit_larger = 0;
@@ -1856,7 +1856,7 @@ GB_ERROR AWT_graphic_tree::save(GBDATA */*dummy*/, const char */*name*/, AW_CL /
             error = ta.close(error);
 
             if (!error) {
-                aw_message(GBS_global_string("Tree '%s' lost all leafes and has been deleted", tree_name));
+                aw_message(GBS_global_string("Tree '%s' lost all leaves and has been deleted", tree_name));
 #if defined(DEVEL_RALF)
 #warning somehow update selected tree
 
@@ -2018,7 +2018,7 @@ double AWT_graphic_tree::show_dendrogram(AP_tree *at, double x_father, double x_
         }
 
         if (at->name && (disp_device->filter & text_filter) ){
-            // text darstellen
+            // display text
             const char *data = make_node_text_nds(this->gb_main, at->gb_node,0,at->get_gbt_tree(), tree_name);
 
             //             offset = scale*0.4;

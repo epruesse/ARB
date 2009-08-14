@@ -111,10 +111,10 @@ extern char PT_count_bits[PT_B_MAX+1][256]; // returns how many bits are set
     / **** chain elems *** /
         PT_PNTR     next element
         short/int   name
-                if bit[15] than integer
+                if bit[15] then integer
                 -1 not allowed
         short/int   rel pos
-                if bit[15] than integer
+                if bit[15] then integer
         short/int   apos short if bit[15] = 0]
 ]
 
@@ -125,8 +125,8 @@ extern char PT_count_bits[PT_B_MAX+1][256]; // returns how many bits are set
     [PT_PNTR    father]     if main->mode
     short/int   ref abs pos int if bit[0]
 [   char/short/int      rel name [ to last name eg. rel names 10 30 20 50 -> abs names = 10 40 60 110
-                if bit[7] than short
-                if bit[7] and bit[6] than integer
+                if bit[7] then short
+                if bit[7] and bit[6] then integer
                 -1 not allowed
     short/int       rel pos
                 if bit[15] -> the next bytes are the apos else use ref_abs_pos

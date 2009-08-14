@@ -59,7 +59,7 @@ static char *translate_gene_sequence(GBDATA *gb_gene, GB_ERROR& error, int& tran
 enum GEN_remove_state {
     GRS_NO_CHANGE           = 0,  // no translation found
     GRS_FAILED              = 1,  // error is set
-    GRS_TRANSLATION_REMOVED = 2,  // translation was present, reproducable and has been removed
+    GRS_TRANSLATION_REMOVED = 2,  // translation was present, reproducible and has been removed
     GRS_TRANSLATION_FAILED  = 4,  // translation differed (wrote ARB translation to field  'ARB_translation')
     GRS_START_CODON_WRONG   = 8,  // translation differed only in start codon
     GRS_NOTE_ADDED          = 16, // note has been added
@@ -226,11 +226,11 @@ GB_ERROR GEN_testAndRemoveTranslations(GBDATA *gb_gene_data, void (*warn)(AW_CL 
         static bool first_warning = true;
         if (first_warning) { // show details once 
             warn(cd,
-                 "Note: Reproducable translations were removed from database.\n"
+                 "Note: Reproducible translations were removed from database.\n"
                  "      Failed translations were left in database and an additional\n"
                  "      field 'ARB_translation' was added.");
             warn(cd, GBS_global_string("- %i genes had no translation entry", no_entry));
-            warn(cd, GBS_global_string("- %i translations were reproducable", ok));
+            warn(cd, GBS_global_string("- %i translations were reproducible", ok));
             first_warning = false;
         }
         if (wrong_start_codon>0) {

@@ -8,7 +8,7 @@
 #include <aw_keysym.hxx>
 #endif
 
-// Makrodefinitionen
+// macro definitions
 #define  p_r        prvt
 #define  p_global   (root->prvt)
 #define  p_aww(aww) (aww->p_w)

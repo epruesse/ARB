@@ -230,7 +230,7 @@ static char *gbt_read_quoted_string(TreeReader *reader){
 
 static void setBranchName(TreeReader *reader, GBT_TREE *node, char *name) {
     /* detect bootstrap values */
-    /* name has to be stored in node or must be free'ed */
+    /* name has to be stored in node or must be freed */
     
     char   *end       = 0;
     double  bootstrap = strtod(name, &end);

@@ -34,7 +34,7 @@ typedef AW_window *(*AW_PPP)(AW_root*,AW_CL,AW_CL);
 typedef const char *AWAR;
 typedef long        AW_bitset;
 typedef double      AW_pos;
-typedef float       AW_grey_level;                  // <0 dont fill  0.0 white 1.0 black
+typedef float       AW_grey_level;                  // <0 don't fill  0.0 white 1.0 black
 typedef GBDATA     *AW_default;
 typedef AW_bitset   AW_active;                      // bits to activate/inactivate buttons
 typedef int         AW_font;
@@ -164,7 +164,7 @@ public:
     GB_HASH         *hash_table_for_variables;
     bool             variable_set_by_toggle_field;
     int              number_of_toggle_fields;
-    int              number_of_option_menues;
+    int              number_of_option_menus;
     char            *program_name;
 
     void            *get_aw_var_struct(char *awar);
@@ -198,7 +198,7 @@ public:
     enum { AW_MONO_COLOR, AW_RGB_COLOR }    color_mode;
 
     void init_variables( AW_default database );
-    void init_root( const char *programmname , bool no_exit);
+    void init_root(const char *programname, bool no_exit);
     void main_loop(void);
     void process_events(void); // might block
     void process_pending_events(void); // non-blocking

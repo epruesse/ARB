@@ -12,7 +12,7 @@
 #include <inline.h>
 
 void AW_clip::set_cliprect(AW_rectangle *rect, bool allow_oversize) {
-    clip_rect = *rect;  // coordintes : (0,0) = top-left-corner
+    clip_rect = *rect;  // coordinates : (0,0) = top-left-corner
     if (!allow_oversize){
         if (clip_rect.t < common->screen.t) clip_rect.t = common->screen.t;
         if (clip_rect.b > common->screen.b) clip_rect.b = common->screen.b;
@@ -243,7 +243,7 @@ AW_GC_Xm::~AW_GC_Xm(void) {
 }
 
 
-void AW_GC_Xm::set_fill(AW_grey_level grey_leveli) {    // <0 dont fill  0.0 white 1.0 black
+void AW_GC_Xm::set_fill(AW_grey_level grey_leveli) {    // <0 don't fill  0.0 white 1.0 black
     grey_level = grey_leveli;
 }
 
@@ -751,13 +751,13 @@ int AW_device::text_overlay( int gc, const char *opt_str, long opt_len, // eithe
     if (top_font_overlap || clip_rect.t == 0) {                                                 // check clip border inside screen
         if (Y0+(AW_pos)(xfs->max_bounds.descent) < clip_rect.t) return 0; // draw outside screen
     }else {
-        if (Y0-(AW_pos)(xfs->max_bounds.ascent) < clip_rect.t) return 0; // dont cross the clip border
+        if (Y0-(AW_pos)(xfs->max_bounds.ascent) < clip_rect.t) return 0; // don't cross the clip border
     }
 
     if (bottom_font_overlap || clip_rect.b == common->screen.b) {                               // check clip border inside screen drucken
         if (Y0-(AW_pos)(xfs->max_bounds.ascent) > clip_rect.b) return 0;             // draw outside screen
     }else {
-        if (Y0+(AW_pos)(xfs->max_bounds.descent)> clip_rect.b) return 0;             // dont cross the clip border
+        if (Y0+(AW_pos)(xfs->max_bounds.descent)> clip_rect.b) return 0;             // don't cross the clip border
     }
 
     if (!opt_len) {

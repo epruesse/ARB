@@ -61,7 +61,7 @@ struct TimeStats
   ULONG ts_OutputTime;           /* time for generating output */
 };
 
-/* global persistant data structure */
+/* global persistent data structure */
 struct PTPanGlobal
 {
   struct Node pg_Node;           /* linkage */

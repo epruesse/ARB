@@ -80,7 +80,7 @@ void AP_tree_edge::initialize(AP_tree_nlen *tree)
 
 void AP_tree_edge::tailDistance(AP_tree_nlen *n)
 {
-    ap_assert(!n->is_leaf);    // otherwise call was not neccessary!
+    ap_assert(!n->is_leaf);    // otherwise call was not necessary!
 
     int i0 = n->indexOf(this);          // index of this
     int i1 = i0==0 ? 1 : 0;             // the indices of the other two nodes (beside n)
@@ -282,7 +282,7 @@ AP_tree_edge* AP_tree_edge::unlink()
 
 void AP_tree_edge::calcDistance()
 {
-    ap_assert(!distanceOK());  // otherwise call was not neccessary
+    ap_assert(!distanceOK());  // otherwise call was not necessary
     ap_assert (node[0]->distance!=node[1]->distance);
 
     if (node[0]->distance < node[1]->distance)  // node[1] has wrong distance
@@ -301,7 +301,7 @@ void AP_tree_edge::calcDistance()
 
             if (!node[1]->is_leaf)
             {
-                for (int e=0; e<3; e++)     // recursively correct distance where neccessary
+                for (int e=0; e<3; e++)     // recursively correct distance where necessary
                 {
                     AP_tree_edge *ed = node[1]->edge[e];
                     if (ed && ed!=this && !ed->distanceOK()) ed->calcDistance();
@@ -325,7 +325,7 @@ void AP_tree_edge::calcDistance()
 
             if (!node[0]->is_leaf)
             {
-                for (int e=0; e<3; e++)     // recursively correct distance where neccessary
+                for (int e=0; e<3; e++)     // recursively correct distance where necessary
                 {
                     AP_tree_edge *ed = node[0]->edge[e];
                     if (ed && ed!=this && !ed->distanceOK()) ed->calcDistance();
@@ -625,7 +625,7 @@ double ap_calc_bootstrap_remark_sub(int seq_len, char *old, char *ne){
                 for (int minus_add = 1; minus_add>=-1;minus_add-=2){
                     int first_minus = 1;
                     for (int n_minus = sum[0]; n_minus<max_minus && n_minus>=0; first_minus = 0, n_minus+=minus_add){
-                        if (minus_add < 0 && first_minus) continue; // dont double count center
+                        if (minus_add < 0 && first_minus) continue; // don't double count center
                         int n_zeros = seq_len - n_minus * 2 - tsum; // number of minus
                         int n_plus = tsum + n_minus; // number of plus ones  (n_ones + n_minus + n_zeros = seq_len)
 

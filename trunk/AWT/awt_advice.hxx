@@ -27,7 +27,7 @@ enum AWT_Advice_Type {
     AWT_ADVICE_SIMPLE     = 0,  // nothing of the following
     AWT_ADVICE_TOGGLE     = 1,  // visible toggle to switch off advice (otherwise advice appears only once)
     AWT_ADVICE_HELP       = 2,  // advice has corresponding help file
-    AWT_ADVICE_HELP_POPUP = 4, // this helpfile should popup immidiately
+    AWT_ADVICE_HELP_POPUP = 4, // this helpfile should popup immediately
 
 } ;
 

@@ -12,7 +12,7 @@ TITLE		 CONCATENATION of ALIGNMENTS / SEQUENCES
 
 DESCRIPTION
 
-            With the help of concatenation function, one can cancatenate the aligned
+            With the help of concatenation function, one can concatenate the aligned
             sequences, which are contained in the same species preserving the ALIGNMENT.
             Before using concatenation function make sure that the species contains more
             than two aligned or unaligned sequences.
@@ -31,7 +31,7 @@ DESCRIPTION
             and "down" arrow keys (located by the side of "Alignments to be concatenated"
             list) before performing actual concatenation.
 
-            Pressing CLEAR LIST button clears the alignemts list selected for
+            Pressing CLEAR LIST button clears the alignments list selected for
             concatenation.
 
             Use "Alignment Separator" to specify the tag/separator between the alignments

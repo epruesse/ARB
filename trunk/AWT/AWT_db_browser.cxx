@@ -560,9 +560,9 @@ static void update_browser_selection_list(AW_root *aw_root, AW_CL cl_aww, AW_CL 
 
         if (!is_root) aww->insert_selection(id, GBS_global_string("%-*s   parent container", maxkeylen, ".."), BROWSE_CMD_GO_UP);
 
-        // collect childs and sort them
+        // collect children and sort them
 
-        vector<list_entry> sorted_childs;
+        vector<list_entry> sorted_children;
 
         for (GBDATA *child = GB_child(node); child; child = GB_nextChild(child)) {
             list_entry entry;
@@ -579,13 +579,13 @@ static void update_browser_selection_list(AW_root *aw_root, AW_CL cl_aww, AW_CL 
 
             char *content = 0;
             if (entry.type == GB_DB) {
-                // the childs listed here are displayed behind the container entry
-                const char *known_childs[] = { "@name", "name", "key_name", "alignment_name", "group_name", "key_text", 0 };
-                for (int i = 0; known_childs[i]; ++i) {
-                    GBDATA *gb_known = GB_entry(entry.gbd, known_childs[i]);
+                // the children listed here are displayed behind the container entry
+                const char *known_children[] = { "@name", "name", "key_name", "alignment_name", "group_name", "key_text", 0 };
+                for (int i = 0; known_children[i]; ++i) {
+                    GBDATA *gb_known = GB_entry(entry.gbd, known_children[i]);
 
                     if (gb_known && GB_read_type(gb_known) != GB_DB && GB_nextEntry(gb_known) == 0) { // exactly one child exits
-                        content = GBS_global_string_copy("[%s=%s]", known_childs[i], GB_read_as_string(gb_known));
+                        content = GBS_global_string_copy("[%s=%s]", known_children[i], GB_read_as_string(gb_known));
                         break;
                     }
                 }
@@ -608,15 +608,15 @@ static void update_browser_selection_list(AW_root *aw_root, AW_CL cl_aww, AW_CL 
             entry.content = content;
             free(content);
 
-            sorted_childs.push_back(entry);
+            sorted_children.push_back(entry);
         }
 
         list_entry::sort_order = (SortOrder)aw_root->awar(AWAR_DBB_ORDER)->read_int();
         if (list_entry::sort_order != SORT_NONE) {
-            sort(sorted_childs.begin(), sorted_childs.end());
+            sort(sorted_children.begin(), sorted_children.end());
         }
 
-        for (vector<list_entry>::iterator ch = sorted_childs.begin(); ch != sorted_childs.end(); ++ch) {
+        for (vector<list_entry>::iterator ch = sorted_children.begin(); ch != sorted_children.end(); ++ch) {
             const list_entry&  entry            = *ch;
             const char        *key_name         = entry.key_name;
             char              *numbered_keyname = 0;

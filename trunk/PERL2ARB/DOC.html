@@ -52,7 +52,7 @@ Basic idea:
 			...
 			...
 		ARB:commit_transaction($gb_main);	// everything is ok
-		$error = ARB::save($gb_main,"new_db.arb", "a");	// save in ascii frmt
+		$error = ARB::save($gb_main,"new_db.arb", "a");	// save in ascii format
 
 	***************************** END 1 *********************
 
@@ -252,7 +252,7 @@ $error = ARB::save($gb_main,"path of the database",mode)
 	mode
 		a		ascii format
 		b		binary format
-	Only if you have opened a database on a file your are allowd to
+	Only if you have opened a database on a file you are allowed to
 	save it, otherwise the server has to do it.
 	You may not change the path of the database, it is used
 	for security. If you want to save the database to a new
@@ -266,7 +266,7 @@ $error = ARB::save_quick($gb_main,"existing path of the database");
 	autoincremented number between 0 and 7
 
 $error = ARB::save_quick_as($gb_main,"new path");
-	Fake an existing database by create a symbolik link and
+	Fake an existing database by create a symbolic link and
 	then call ARB::save_quick
 
 $error = ARB::close($gb_main);
@@ -286,7 +286,7 @@ $error = ARB::commit_transaction($gb_main);
 $error = ARB::push_transaction($gb_main);
 	Increments an internal counter. If the counter was previously
 	0 then calls begin_transaction. This is usefull when working
-	in a soubroutine and not knowing whether your calling funtion
+	in a subroutine and not knowing whether your calling function
 	had opened a transaction already.
 $error = ARB::pop_transaction($gb_main);
 	Decrements the internal counter. If the counter gets zero,
@@ -312,7 +312,7 @@ $gb_xxx = ARB::search($gb_start_search_point,"path/in/the/database",
 		"TYPE_OF_ELEMENT_YOU_WANT_CREATE/none"
 	search a database element if all keys are unique
 
-$gb_xxx = ARB::find($gb_start_sourch_point, "[key]", "[value]",
+$gb_xxx = ARB::find($gb_start_search_point, "[key]", "[value]",
 	"search_mode"
 
 
@@ -343,7 +343,7 @@ $val = ARB::read_as_string($gb_xxx);	// read and convert to string
 
 $val = ARB::read_bits($gb_xxx,char_0,char_1);
 	convert a bit array into a string,
-	a '0' will be convertet into char_0
+	a '0' will be converted into char_0
 	a '1' into char_1
 
 	eg: ARB:read_bits($gb_xxx, "-", "+" ); returns a '-' '+' string
@@ -361,7 +361,7 @@ $error = ARB::write_bits($gb_xxx, "value", char_0); // convert a string
 				// into bitarray, all characters !=
 				// char_0 will converted to 1 else 0
 
-$error = ARB::write_as_string($gb_xxx); try to interprete the value and
+$error = ARB::write_as_string($gb_xxx); try to interpret the value and
 				// convert it automatically to the right
 				// format
 
@@ -421,7 +421,7 @@ $clock = ARB::read_clock($gb_xxx);
 
 $error = ARB::set_temporary($gb_xxx);
 	Marks a field in the database as a temporary field.
-	That means that this fiels is never saved to a file.
+	That means that this field is never saved to a file.
 $error = ARB::clear_temporary($gb_xxx);
 	Clears tmp flag
 
@@ -501,14 +501,14 @@ $error = ARB::set_undo_mem($gb_main, size_in_bytes);
 
 $time = ARB::last_saved_clock($gb_main);
 	transaction number when the database was last saved
-	Can only be called from the server programm
+	Can only be called from the server program
 
 $time = ARB::last_saved_time($gb_main);
 	the same but in seconds after 1 Jan 0:00 1970
 
 $error = ARB::set_cache_size($gb_main, "size_in_bytes");
 	ARB uses datacompression for long strings. If some strings
-	are used very intensivly the program bay slow down.
+	are used very intensely the program may slow down.
 	Therefor a small cache is used and it's size can be set
 	by this function. If you are working with sequences, a value
 	of 1 or 2 meg seems reasonable

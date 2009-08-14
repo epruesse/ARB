@@ -23,7 +23,7 @@ ULONG                       physical_memory = 0;
 int gene_flag = 0;
 
 gene_struct_list           all_gene_structs; // stores all gene_structs
-gene_struct_index_arb      gene_struct_arb2internal; // sorted by arb speces+gene name
+gene_struct_index_arb      gene_struct_arb2internal; // sorted by arb species+gene name
 gene_struct_index_internal gene_struct_internal2arb; // sorted by internal name
 
 // list<gene_struct *>  names_list_idp;

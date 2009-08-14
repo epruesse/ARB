@@ -220,11 +220,11 @@ LocationPtr parseLocation(const string& source) {
             return new SimpleLocation(pos1, pos2, uncertain1, uncertain2);
         }
 
-        size_t inbetween = source.find("^");
-        if (inbetween != string::npos) {
+        size_t in_between = source.find("^");
+        if (in_between != string::npos) {
             char   uncertain1, uncertain2;
-            size_t pos1 = parsePosition(source.substr(0, inbetween), uncertain1);
-            size_t pos2 = parsePosition(source.substr(inbetween+1), uncertain2);
+            size_t pos1 = parsePosition(source.substr(0, in_between), uncertain1);
+            size_t pos2 = parsePosition(source.substr(in_between+1), uncertain2);
 
             if (uncertain1 == '=' && uncertain2 == '=' && pos2 == pos1+1) {
                 return new SimpleLocation(pos1, pos2, '+', '-');

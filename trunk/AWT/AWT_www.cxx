@@ -131,9 +131,9 @@ void awt_www_select_change(AW_window *aww,AW_CL selected){
 static void www_init_config(AWT_config_definition& cdef) {
     for (int i=0;i<WWW_COUNT; i++) {
         char buf[256];
-        sprintf(buf, AWAR_WWW_SELECT_TEMPLATE, i); cdef.add(buf, "active",     i);
-        sprintf(buf, AWAR_WWW_DESC_TEMPLATE,   i); cdef.add(buf, "desciption", i);
-        sprintf(buf, AWAR_WWW_TEMPLATE,        i); cdef.add(buf, "template",   i);
+        sprintf(buf, AWAR_WWW_SELECT_TEMPLATE, i); cdef.add(buf, "active",      i);
+        sprintf(buf, AWAR_WWW_DESC_TEMPLATE,   i); cdef.add(buf, "description", i);
+        sprintf(buf, AWAR_WWW_TEMPLATE,        i); cdef.add(buf, "template",    i);
     }
 }
 static char *www_store_config(AW_window *aww, AW_CL /*cl1*/, AW_CL /*cl2*/) {
@@ -210,7 +210,7 @@ AW_window *AWT_open_www_window(AW_root *aw_root,AW_CL cgb_main){
     aws->create_button(0,"SEL");
 
     aws->at_x(descx);
-    aws->create_button(0,"DESCRITPION");
+    aws->create_button(0,"DESCRIPTION");
 
     aws->at_x(srtx);
     aws->create_button(0,"URL");

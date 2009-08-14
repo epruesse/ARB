@@ -36,7 +36,7 @@ public:
     void             add(AWT_species_set *set);                                                    // max 2 * nspecies !!!
     AWT_species_set *search(AWT_species_set *set,long *best_cost);
     int              search(AWT_species_set *set,FILE *log_file);                                  // set's best_cost & best_node
-    GB_ERROR         copy_node_infos(FILE *log, bool delete_old_nodes, bool nodes_with_marked_only);
+    GB_ERROR         copy_node_information(FILE *log, bool delete_old_nodes, bool nodes_with_marked_only);
     AWT_species_set *find_best_matches_info(AP_tree *tree_source, FILE *log, bool setinner_node);
     AWT_species_set *move_tree_2_ssr(AP_tree *node);
 };

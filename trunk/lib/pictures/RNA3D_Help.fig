@@ -198,7 +198,7 @@ Single
 -6
 6 990 6885 7020 7110
 4 2 -1 0 0 18 12 0.0000 4 165 450 7020 7065 $help\001
-4 0 -1 0 0 2 14 0.0000 4 165 5400 990 7020 For detailed help regarding respective diplay buttons click \001
+4 0 -1 0 0 2 14 0.0000 4 165 5400 990 7020 For detailed help regarding respective display buttons click \001
 -6
 2 1 0 1 0 7 50 0 -1 0.000 0 0 -1 0 0 1
 	 405 45
@@ -219,7 +219,7 @@ Single
 4 0 -1 0 0 0 13 0.0000 4 165 2160 2925 4770 : Closes the application\001
 4 0 -1 0 0 0 13 0.0000 4 165 4410 2925 4365 : Redraws the structure with new settings/changes\001
 4 0 -1 0 0 0 13 0.0000 4 165 3960 2925 4005 : Removes the cut / Displays entire molecule\001
-4 0 -1 0 0 0 13 0.0000 4 150 4320 2925 3645 : Cuts the molecule at the centre for clear view\001
+4 0 -1 0 0 0 13 0.0000 4 150 4320 2925 3645 : Cuts the molecule at the center for clear view\001
 4 0 -1 0 0 0 13 0.0000 4 165 3600 2925 3285 : DISABLEs the respective display option\001
 4 0 -1 0 0 0 13 0.0000 4 165 3510 2925 2925 : ENABLEs the respective display option\001
 4 0 -1 0 0 0 13 0.0000 4 165 2520 2925 2565 : Changes the color settings\001

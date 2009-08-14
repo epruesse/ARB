@@ -731,7 +731,7 @@ AW_window *NT_submit_bug(AW_root *aw_root, int bug_report){
             custom_text = strdup("Bug occurred in:\n"
                                  "    [which part of ARB?]\n"
                                  "\n"
-                                 "The bug [ ] is reproducable\n"
+                                 "The bug [ ] is reproducible\n"
                                  "        [ ] occurs randomly\n"
                                  "        [ ] occurs with specific data\n"
                                  "\n"
@@ -839,12 +839,12 @@ void NT_mark_long_branches(AW_window *aww, AW_CL ntwcl){
     char *val = aw_input("Enter min.rel.diff.(%),min.abs.diff");
     if (val) {
         GB_ERROR  error = 0;
-        char     *komma = strchr(val, ',');
+        char     *comma = strchr(val, ',');
 
-        if (!komma) error = "Expected ','";
+        if (!comma) error = "Expected ','";
         else {
             float min_rel_diff = atof(val)/100.0;
-            float min_abs_diff = atof(komma+1);
+            float min_abs_diff = atof(comma+1);
 
             AWT_canvas     *ntw = (AWT_canvas *)ntwcl;
             GB_transaction  dummy(ntw->gb_main);

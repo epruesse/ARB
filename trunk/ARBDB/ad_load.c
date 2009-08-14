@@ -628,7 +628,7 @@ long gb_read_bin_rek(FILE *in,GBCONTAINER *gbd,long nitems,long version,long rev
                 gb2 = gb_make_entry(gbd,NULL,-1,(GBQUARK)key,(GB_TYPES)type2);
             }
             if (!Main->keys[key].key) {
-                GB_internal_error("Some database fields have no field indentifier -> setting to 'main'");
+                GB_internal_error("Some database fields have no field identifier -> setting to 'main'");
                 gb_write_index_key(GB_FATHER(gbd),gbd->index,0);
             }
         }
@@ -1129,7 +1129,7 @@ long gb_read_bin(FILE *in,GBCONTAINER *gbd, int diff_file_allowed)
         freedup(Main->dates[j], buffer);
     }
     if (j>=255) {
-        gb_read_bin_error(in,(GBDATA *)gbd,"more then 255 dates are not allowed");
+        gb_read_bin_error(in,(GBDATA *)gbd,"more than 255 dates are not allowed");
         return 1;
     }
     Main->last_updated = (unsigned int)j;

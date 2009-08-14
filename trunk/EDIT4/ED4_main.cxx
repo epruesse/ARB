@@ -55,7 +55,7 @@ long           all_found;       // nr of species which haven't been found
 long           species_read;    // nr of species read; important during loading
 GBS_strstruct *not_found_message;
 long           max_seq_terminal_length; // global maximum of sequence terminal length
-ED4_EDITMODI   awar_edit_modus;
+ED4_EDITMODI   awar_edit_mode;
 long           awar_edit_direction;
 bool           move_cursor;     // only needed for editing in consensus
 bool           DRAW;
@@ -120,7 +120,7 @@ inline const char *id(ED4_base *base)
     return base->id ? base->id : "???";
 }
 
-static void childs(ED4_manager *manager)
+static void children(ED4_manager *manager)
 {
     int i;
     int anz = manager->children->members();
@@ -147,7 +147,7 @@ void baum(ED4_base *base)
 
     printf("[%2i] %-30s", level, id(base));
     if (base->is_manager()) {
-        childs(base->to_manager());
+        children(base->to_manager());
     }
     printf("\n");
 
@@ -379,7 +379,7 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
     create_naligner_variables(root, AW_ROOT_DEFAULT);
     create_galigner_variables(root, AW_ROOT_DEFAULT);
 
-    awar_edit_modus = AD_ALIGN;
+    awar_edit_mode = AD_ALIGN;
 
     int def_sec_level = 0;
 #ifdef DEBUG
@@ -390,7 +390,7 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
     root->awar_int( AWAR_EDIT_SECURITY_LEVEL_ALIGN, def_sec_level,AW_ROOT_DEFAULT)->add_callback(ed4_changesecurity,(AW_CL) def_sec_level);
     root->awar_int( AWAR_EDIT_SECURITY_LEVEL_CHANGE, def_sec_level,AW_ROOT_DEFAULT)->add_callback(ed4_changesecurity,(AW_CL) def_sec_level);
 
-    //    root->awar_int( AWAR_EDIT_MODE, (long) awar_edit_modus )->add_target_var((long *) &awar_edit_modus)->add_callback(ed4_changesecurity,(AW_CL) 0);
+    //    root->awar_int( AWAR_EDIT_MODE, (long) awar_edit_mode )->add_target_var((long *) &awar_edit_mode)->add_callback(ed4_changesecurity,(AW_CL) 0);
 
     root->awar_int( AWAR_EDIT_MODE,   0)->add_callback(ed4_change_edit_mode, (AW_CL)0);
     root->awar_int( AWAR_INSERT_MODE, 1)->add_callback(ed4_change_edit_mode, (AW_CL)0);
@@ -527,7 +527,7 @@ int main(int argc, char **argv)
                 "database           name of database or ':' to connect to arb-database-server\n"
                 "\n"
                 "Options:\n"
-                "-c config          loads configuration 'config' (dafault: 'default_configuration')\n"
+                "-c config          loads configuration 'config' (default: 'default_configuration')\n"
                 "\n"
                 );
     }

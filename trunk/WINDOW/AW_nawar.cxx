@@ -556,7 +556,7 @@ AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, const char *va
                 GB_write_float( gb_def, (double)var_double_value );
                 break;
             default:
-                GB_warningf("AWAR '%s' cannot be created because of inallowed type",var_name);
+                GB_warningf("AWAR '%s' cannot be created because of disallowed type",var_name);
                 break;
         }
     }

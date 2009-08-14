@@ -133,7 +133,7 @@ void Plot::embed()
     XWithdrawWindow(m_parent_display, m_gnuplot_window, 0);
 
     // THE REPARENTING MUST BE TRIED MULTIPLE TIMES TO WORK.
-    // DONT ASK ME WHY...
+    // DON'T ASK ME WHY...
     for(int c= 0; c < 100; c++)
     {
         XReparentWindow(m_parent_display, m_gnuplot_window, m_parent_window, 0, 0);
@@ -184,7 +184,7 @@ FILE *Plot::open_command_pipe()
     strcpy(m_temp_name, "/tmp/plot_XXXXXX");
         if((mkstemp(m_temp_name)) == -1) return NULL;
 
-    // AS MKTEMP ALSO CREATES THE FILE ITSELF (WHAT WE DONT WANT) REMOVE IT
+    // AS MKTEMP ALSO CREATES THE FILE ITSELF (WHAT WE DON'T WANT) REMOVE IT
     // RIGHT AFTER ITS CREATION FOR FURTHER USE AS A PIPE
     unlink(m_temp_name);
 

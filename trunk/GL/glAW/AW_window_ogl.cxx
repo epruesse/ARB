@@ -44,7 +44,7 @@
 // #include "GLwDrawA.h"
 #include "GLwMDrawA.h" /** Provides a special motif widget class */
 
-/* defined here by Yadhu inorder to make it more General */
+/* defined here by Yadhu in order to make it more General */
 bool AW_alpha_Size_Supported = false;
 
 
@@ -70,7 +70,7 @@ void AW_window_menu_modes_opengl::init(AW_root *root_in, const char *wid,
 #if defined(DUMP_MENU_LIST)
     initMenuListing(windowname);
 #endif // DUMP_MENU_LIST
-    root = root_in; // for makro
+    root = root_in; // for macro
     window_name = strdup(windowname);
     window_defaults_name = GBS_string_2_key(wid);
 

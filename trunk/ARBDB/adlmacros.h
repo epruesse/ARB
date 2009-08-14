@@ -22,7 +22,7 @@
 # define GB_PUT_SECURITY_WRITE(gb,i)  ((gb)->flags.security_write  = (i))
 # define GB_PUT_SECURITY_DELETE(gb,i) ((gb)->flags.security_delete = (i))
 
-/********************* RELATIVE ADRESSING **********/
+/********************* RELATIVE ADDRESSING **********/
 
 #if (MEMORY_TEST==1)
 

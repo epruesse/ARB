@@ -92,7 +92,7 @@ void DI_dmatrix::init (DI_MATRIX *matrix) {
         total_cells_vert=m->nentries;
     }
     set_scrollbar_steps( cell_width,cell_height,50,50);
-    resized();  // initalize window_size dependend parameters
+    resized();  // initialize window_size dependent parameters
 }
 
 DI_MATRIX *DI_dmatrix::get_matrix(){

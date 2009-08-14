@@ -102,7 +102,7 @@ public:
 
     int get_linePropertyGC(int gc1, int gc2) {
         // of the GCs of two positions, it returns the GC which is
-        // defining the properties for the background painted inbetween the two positions
+        // defining the properties for the background painted in-between the two positions
         sec_assert(gc1 >= SEC_GC_FIRST_DATA && gc1 <= SEC_GC_LAST_DATA);
         sec_assert(gc2 >= SEC_GC_FIRST_DATA && gc2 <= SEC_GC_LAST_DATA);
         return line_property_gc[gc1][gc2];
@@ -236,7 +236,7 @@ void SEC_root::paintPosAnnotation(AW_device *device, int gc, size_t absPos, cons
         if (posDrawn) { // absPos was drawn
             pos = *posDrawn;
         }
-        else { // absPos was not drawn -> use position inbetween
+        else { // absPos was not drawn -> use position in-between
             pos = mid12;
         }
     }
@@ -1023,7 +1023,7 @@ GB_ERROR SEC_root::paint(AW_device *device) {
         device->set_line_attributes(SEC_SKELE_LOOP, displayParams.skeleton_thickness, AW_SOLID);
         device->set_line_attributes(SEC_GC_BONDS, displayParams.bond_thickness, AW_SOLID);
 
-        // mark the rootLoop with a box and print stucture number
+        // mark the rootLoop with a box and print structure number
         {
             const Position&  loop_center = rootLoop->get_center();
             const char      *structId    = db->structure()->name();
@@ -1065,7 +1065,7 @@ GB_ERROR SEC_root::paint(AW_device *device) {
         
         // paint cursor:
         if (!drawnPositions->empty() &&
-            (device->filter&(AW_PRINTER|AW_PRINTER_EXT)) == 0) // dont print/xfig-export cursor
+            (device->filter&(AW_PRINTER|AW_PRINTER_EXT)) == 0) // don't print/xfig-export cursor
         {
             size_t   abs1, abs2;
             Position pos1, pos2;

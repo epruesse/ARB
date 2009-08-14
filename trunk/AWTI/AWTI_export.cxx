@@ -753,7 +753,7 @@ void AWTC_create_export_awars(AW_root *awr, AW_default def) {
     AW_awar *awar_ali = awr->awar_string(AWAR_EXPORT_FILTER_ALI, "", def);
     awar_ali->map("presets/use"); // map to default alignment
 
-    awr->awar_int(AWAR_EXPORT_CUTSTOP, 0, def); // dont cut stop-codon
+    awr->awar_int(AWAR_EXPORT_CUTSTOP, 0, def); // don't cut stop-codon
 }
 
 static char *get_format_default_suffix(const char *formname, GB_ERROR& error) {

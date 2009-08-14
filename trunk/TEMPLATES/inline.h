@@ -1,7 +1,7 @@
 //  ==================================================================== //
 //                                                                       //
 //    File      : inline.h                                               //
-//    Purpose   : general purpose inlined funcions                       //
+//    Purpose   : general purpose inlined functions                      //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in June 2002             //

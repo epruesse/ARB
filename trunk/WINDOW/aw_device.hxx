@@ -221,8 +221,8 @@ public:
     int box_clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out);
 
     void set_top_clip_border(int top, bool allow_oversize = false);
-    void set_bottom_clip_border(int bottom, bool allow_oversize = false); // absolut
-    void set_bottom_clip_margin(int bottom, bool allow_oversize = false); // relativ
+    void set_bottom_clip_border(int bottom, bool allow_oversize = false); // absolute
+    void set_bottom_clip_margin(int bottom, bool allow_oversize = false); // relative
     void set_left_clip_border(int left, bool allow_oversize = false);
     void set_right_clip_border(int right, bool allow_oversize = false);
     void set_cliprect(AW_rectangle *rect, bool allow_oversize = false);
@@ -316,7 +316,7 @@ class AW_gc: public AW_clip {
 public:
     void new_gc(int gc);
     int  new_gc(void);
-    void set_fill(int gc,AW_grey_level grey_level); // <0 dont fill  0.0 white 1.0 black
+    void set_fill(int gc,AW_grey_level grey_level); // <0 don't fill  0.0 white 1.0 black
     void set_font(int gc,AW_font fontnr, int size, int *found_size); 
     void set_line_attributes(int gc,AW_pos width,AW_linestyle style);
     void set_function(int gc,AW_function function);

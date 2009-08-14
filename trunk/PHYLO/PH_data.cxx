@@ -172,7 +172,7 @@ GB_ERROR PHDATA::calculate_matrix(const char */*cancel*/,double /*alpha*/,PH_TRA
     for(i=0;i<long(strlen(real_chars));i++) compare[(unsigned char)real_chars[i]]=true;
     for(i=0;i<long(strlen(all_chars));i++) reference_table[(unsigned char)all_chars[i]]=i;
 
-    // rna or dna sequence: set synonymes
+    // rna or dna sequence: set synonyms
     if(bases_used) {
         reference_table[(unsigned char)'U'] = reference_table[(unsigned char)'T']; /* T=U */
         reference_table[(unsigned char)'u'] = reference_table[(unsigned char)'t'];

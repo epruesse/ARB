@@ -212,7 +212,7 @@ char *MG_remap::remap(const char *sequence){
     int i;
     for (i=0;i<len;i++){
         int c = sequence[i];
-        if (c == '.' || c == '-'){ // dont write gaps, maybe we have to compress the alignment
+        if (c == '.' || c == '-'){ // don't write gaps, maybe we have to compress the alignment
             skippedchar = c;
             skippedgaps ++;
             continue;
@@ -222,7 +222,7 @@ char *MG_remap::remap(const char *sequence){
         if (new_pos<0){     // no remap, try soft remap
             new_pos = soft_remap_tab[i];
         }
-        if (new_pos >=0){   // if found a map than force map
+        if (new_pos >=0){   // if found a map then force map
             while (lastposset < new_pos){ // insert gaps
                 if (within_sequence){
                     GBS_chrcat(outs,'-');
@@ -249,7 +249,7 @@ char *MG_remap::remap(const char *sequence){
     }
     for (i = lastposread+1;i < slen;i++){   // fill overlength rest of sequence
         int c = sequence[i];
-        if (strchr(gap_chars,c)) continue; // dont fill with gaps
+        if (strchr(gap_chars,c)) continue; // don't fill with gaps
         GBS_chrcat(outs,c);
     }
     return GBS_strclose(outs);

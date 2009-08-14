@@ -1123,7 +1123,7 @@ void gene_extract_cb(AW_window *aww, AW_CL cl_pmode){
                 eg2ps                           = new EG2PS_data(ali, gb_species_data, gen_count_marked_genes);
             }
 
-            PersistantNameServerConnection stayAlive;
+            PersistentNameServerConnection stayAlive;
 
             GEN_perform_command(aww, (GEN_PERFORM_MODE)cl_pmode, do_mark_command_for_one_species, GEN_EXTRACT_MARKED, (AW_CL)eg2ps);
             delete eg2ps;

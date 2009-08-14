@@ -338,7 +338,7 @@ void concatenateAlignments(AW_window *aws) {
 
     int no_of_sel_alignments = aws->get_no_of_entries(con_alignment_list); //getting number of selected alignments
     int found[no_of_sel_alignments], missing[no_of_sel_alignments];
-    for (int j = 0; j<no_of_sel_alignments; j++) { found[j] = 0; missing[j] = 0; }  //initialising found and missing alis
+    for (int j = 0; j<no_of_sel_alignments; j++) { found[j] = 0; missing[j] = 0; }  //initializing found and missing alis
 
     const char *const_ali_name = con_alignment_list->first_element();
     long new_alignment_len     = 0;
@@ -395,7 +395,7 @@ void concatenateAlignments(AW_window *aws) {
                     }
                     else {
                         char *speciesName = GB_read_string(GB_entry(gb_species, "full_name"));
-                        char *question    = GBS_global_string_copy("\"%s\" alignment doesn`t exist in \"%s\"!", const_ali_name, speciesName);
+                        char *question    = GBS_global_string_copy("\"%s\" alignment doesn't exist in \"%s\"!", const_ali_name, speciesName);
                         int skip_ali      = ask_about_missing_alignment.get_answer(question, "Insert Gaps for Missing Alignment,Skip Missing Alignment", "all", true);
                         if (!skip_ali) {
                             ali_len = GBT_get_alignment_len(GLOBAL_gb_main, const_ali_name);
@@ -749,7 +749,7 @@ static void mergeSimilarSpecies(AW_window *aws, AW_CL cl_mergeSimilarConcatenate
         const char *name             = GBT_read_name(gb_species);
 
         if (!gb_species_field) {
-            // exit if species doesnt have any data in the selected field
+            // exit if species doesn't have any data in the selected field
             error = GBS_global_string("Species '%s' does not contain data in selected field '%s'", name, merge_field_name);
         }
         else {
@@ -764,7 +764,7 @@ static void mergeSimilarSpecies(AW_window *aws, AW_CL cl_mergeSimilarConcatenate
                 const char *next_name             = GBT_read_name(gb_species_next);
 
                 if (!gb_next_species_field) {
-                    // exit if species doesnt have any data in the selected field
+                    // exit if species doesn't have any data in the selected field
                     error = GBS_global_string("Species '%s' does not contain data in selected field '%s'", next_name, merge_field_name);
                 }
                 else {
@@ -896,7 +896,7 @@ AW_window *NT_createConcatenationWindow(AW_root *aw_root) {
 
     aws->at("merge_species");
     aws->callback(AW_POPUP, (AW_CL)NT_createMergeSimilarSpeciesWindow, 0);
-    aws->create_button("MERGE_SPECIES","MERGE SIMILAR SPECEIES","M");
+    aws->create_button("MERGE_SPECIES","MERGE SIMILAR SPECIES","M");
 
     aws->at("merge_concatenate");
     aws->callback(AW_POPUP, (AW_CL)NT_createMergeSimilarSpeciesAndConcatenateWindow, 0);

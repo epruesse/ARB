@@ -9,7 +9,7 @@ UP  rna3d_general.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Mapping Secondary Structural Infomation
+TITLE		Mapping Secondary Structural Information
 
 OCCURRENCE	In ARB primary structure editor (ARB_EDIT4) -> RNA3D
 
@@ -58,7 +58,7 @@ DESCRIPTION
 
             The tertiary interactions observed in small subunit rRNA can be displayed in
             the three-dimensional conformations of small subunit rRNA by enabling this
-            check box. The tertiary information data is from Gauthert et al.
+            check box. The tertiary information data is from Gautheret et al.
 
     Color settings related to helix, skeleton, mid-helix, helix number and tertiary
     interactions can be changed using “Color Settings” of the main RNA3D window.

@@ -267,7 +267,7 @@ void main3(AW_root *aw_root)
     if (GB_read_clients(GLOBAL_gb_main)==0) {
         GB_ERROR error = GBCMS_open(":",0,GLOBAL_gb_main);
         if (error) {
-            aw_message("THIS PROGRAM IS NOT THE ONLY DB SERVER !!!\nDONT USE ANY ARB PROGRAM !!!!");
+            aw_message("THIS PROGRAM IS NOT THE ONLY DB SERVER !!!\nDON'T USE ANY ARB PROGRAM !!!!");
         }else{
             aw_root->add_timed_callback(NT_SERVE_DB_TIMER, (AW_RCB)serve_db_interrupt,0,0);
             error = nt_check_database_consistency();

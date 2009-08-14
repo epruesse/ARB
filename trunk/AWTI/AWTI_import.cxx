@@ -24,7 +24,7 @@ inline const char *name_only(const char *fullpath) {
 }
 
 static char *awtc_fgets(char *s, int size, FILE *stream) {
-    // same as fgets but also works with file in MACOS format
+    // same as fgets but also works with file in MacOS format
     int i;
     for (i = 0; i<(size-1); ++i) {
         int byte = fgetc(stream);
@@ -43,7 +43,7 @@ static char *awtc_fgets(char *s, int size, FILE *stream) {
 
 bool awtc_read_string_pair(FILE *in, char *&s1, char *&s2, size_t& lineNr) {
     // helper function to read import/export filters.
-    // returns true if sucessfully read
+    // returns true if successfully read
     // 
     // 's1' is set to a heap-copy of the first token on line
     // 's2' is set to a heap-copy of the rest of the line (or NULL if only one token is present)
@@ -518,16 +518,16 @@ static int awtc_next_file(void) {
 }
 char *awtc_read_line(int tab,char *sequencestart, char *sequenceend){
     /* two modes:   tab == 0 -> read single lines,
-       different files are seperated by sequenceend,
+       different files are separated by sequenceend,
        tab != 0 join lines that start after position tab,
-       joined lines are seperated by '|'
+       joined lines are separated by '|'
        except lines that match sequencestart
        (they may be part of sequence if read_this_sequence_line_too = 1 */
 
     static char *in_queue = 0;      // read data
     static int b2offset = 0;
     const int BUFSIZE = 8000;
-    const char *SEPERATOR = "|";    // line seperator
+    const char *SEPARATOR = "|";    // line separator
     struct input_format_struct *ifo;
     ifo = awtcig.ifo;
     char *p;
@@ -601,7 +601,7 @@ char *awtc_read_line(int tab,char *sequencestart, char *sequenceend){
             in_queue = ifo->b1;
             return ifo->b2;
         }
-        strncpy(ifo->b2+b2offset, SEPERATOR, BUFSIZE - 4- b2offset);
+        strncpy(ifo->b2+b2offset, SEPARATOR, BUFSIZE - 4- b2offset);
         b2offset += strlen(ifo->b2+b2offset);
 
         p = ifo->b1;

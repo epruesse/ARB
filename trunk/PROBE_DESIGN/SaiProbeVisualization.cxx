@@ -167,7 +167,7 @@ static void createSaiProbeAwars(AW_root *aw_root) {
     // creating awars specific for the painting routine
     aw_root->awar_int(AWAR_SPV_DISP_SAI, 0, AW_ROOT_DEFAULT); // to display SAI values
 
-    for (int i = 0; i < 10; i++){   // initialising 10 color definition string AWARS
+    for (int i = 0; i < 10; i++){   // initializing 10 color definition string AWARS
        AW_awar *def_awar = aw_root->awar_string(getAwarName(i),"", AW_ROOT_DEFAULT);
        def_awar->add_callback(colorDefChanged_callback, (AW_CL)i);
     }
@@ -632,7 +632,7 @@ static void saiColorDefs_restore_config(AW_window *aww, const char *stored_strin
     cdef.write(stored_string);
 }
 
-static AW_window *create_colorTranslationTable_window(AW_root *aw_root){  // creates color tranlation table window
+static AW_window *create_colorTranslationTable_window(AW_root *aw_root){  // creates color translation table window
     //window to define color translations of selected SAI
     static AW_window_simple *aws = 0;
     if(aws) return (AW_window *)aws;

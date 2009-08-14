@@ -13,7 +13,7 @@ TITLE		NOTES:   rdp
 OCCURRENCE	ARB_IMPORT
 
 DESCRIPTION	This is a well designed reader for files from RDP.
-		It reads a lot of additional informations.
+		It reads a lot of additional information.
 
 NOTES		Destination fields are tagged by [RDP]	
 

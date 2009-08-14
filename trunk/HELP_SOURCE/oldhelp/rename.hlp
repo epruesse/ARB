@@ -13,17 +13,16 @@ UP	mg_names.hlp
 TITLE		Generate new names
 
 OCCURRENCE	ARB_NT/Species/Generate new names
-		ARB_INTRO <MERGE TWO ARB DATABASES> ARB_MERGE <Check Consistency
-		of Names> CHECK NAMES <RENAME DATASBASE .>
+                ARB_MERGE/Check Names/Rename species
 
 DESCRIPTION	Starts the 'NAME SERVER' to update names within the specified
-		database according to the information storted in the file
+		database according to the information stored in the file
 		'$ARBHOME/lib/nas/names.dat'.
 
 		Press the 'GO' button.
 
 NOTES		It is possible to link names.dat to a central names.dat, but you should
-                be aware, that there may occur temporary inconsitencies, if multiple users
+                be aware, that there may occur temporary inconsistencies, if multiple users
                 use the nameserver at the same time.
 
                 The name server examines names.dat and terminates within 5-10 seconds if

@@ -865,18 +865,17 @@ AP_FLOAT AP_tree_nlen::nn_interchange_rek(AP_BOOL openclosestatus, int &Abort,in
 Section Kernighan-Lin
 ********************************************************/
 
-void            AP_tree_nlen::
-kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width_max, const int rek_deep_max,
-              double(*funktion) (double, double *, int), double *param_liste, int param_anz,
-              AP_FLOAT pars_best, AP_FLOAT pars_start, AP_FLOAT pars_prev,
-              AP_KL_FLAG rek_width_type, AP_BOOL *abort_flag)
+void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width_max, const int rek_deep_max,
+                                 double(*function) (double, double *, int), double *param_liste, int param_anz,
+                                 AP_FLOAT pars_best, AP_FLOAT pars_start, AP_FLOAT pars_prev,
+                                 AP_KL_FLAG rek_width_type, AP_BOOL *abort_flag)
 {
     //
-    // rek_deep Rekursionstiefe
-    // rek_2_width Verzweigungsgrad
-    // neg_counter zaehler fuer die Aeste in denen Kerninghan Lin schon angewendet wurde
-    // funktino Funktion fuer den dynamischen Schwellwert
-    // pars_ Verschiedene Parsimonywerte
+    // rek_deep         Rekursionstiefe
+    // rek_2_width      Verzweigungsgrad
+    // neg_counter      zaehler fuer die Aeste in denen Kerninghan Lin schon angewendet wurde
+    // function         Funktion fuer den dynamischen Schwellwert
+    // pars_            Verschiedene Parsimonywerte
 
     AP_FLOAT help, pars[8];
     //acht parsimony werte
@@ -889,7 +888,7 @@ kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width_max, const int rek
     int             i, t, bubblesort_change = 0;
     //
     int             rek_width, rek_width_static = 0, rek_width_dynamic = 0;
-    AP_FLOAT        schwellwert = funktion(rek_deep, param_liste, param_anz) + pars_start;
+    AP_FLOAT        schwellwert = function(rek_deep, param_liste, param_anz) + pars_start;
 
     //parameterausgabe
 
@@ -920,7 +919,7 @@ kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width_max, const int rek
         pars_refpntr[2] = pars_refpntr[3] = 0;
         pars_refpntr[4] = pars_refpntr[5] = 0;
         pars_refpntr[6] = pars_refpntr[7] = 0;
-        //      cout << "NEW REKURSION\n\n";
+        //      cout << "NEW RECURSION\n\n";
     }else{
         pars_refpntr[0] = pars_refpntr[1] = static_cast<AP_tree_nlen *>(this->leftson);
         pars_refpntr[2] = pars_refpntr[3] = static_cast<AP_tree_nlen *>(this->rightson);
@@ -1057,7 +1056,7 @@ kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width_max, const int rek
                 cout << "found better !\n";
                 pars_refpntr[pars_ref[i]]->kernighan_rek(rek_deep + 1, rek_2_width,
                                                          rek_2_width_max, rek_deep_max + 4,
-                                                         funktion, param_liste, param_anz,
+                                                         function, param_liste, param_anz,
                                                          pars_best, pars_start, pars[i],
                                                          AP_STATIC, &flag);
                 *abort_flag = AP_TRUE;
@@ -1066,7 +1065,7 @@ kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width_max, const int rek
             default:
                 pars_refpntr[pars_ref[i]]->kernighan_rek(rek_deep + 1, rek_2_width,
                                                          rek_2_width_max, rek_deep_max,
-                                                         funktion, param_liste, param_anz,
+                                                         function, param_liste, param_anz,
                                                          pars_best, pars_start, pars[i],
                                                          rek_width_type, abort_flag);
                 break;
@@ -1078,7 +1077,7 @@ kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width_max, const int rek
             for (i=0;i<visited_subtrees;i++)  cout << "  " << pars[i];
             cout << "\n";
             if (!rek_deep){
-                cout << "NEW REKURSION\n\n";
+                cout << "NEW RECURSION\n\n";
             }
             cout.flush();
 

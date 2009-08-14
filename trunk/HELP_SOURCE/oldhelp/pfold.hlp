@@ -63,7 +63,7 @@ SECTION REFERENCES
 
 	[2] DSSP
 	
-		The DSSP program was developped to standardize secondary structure
+		The DSSP program was developed to standardize secondary structure
 		assignment. It assigns protein secondary structures to amino acid
 		sequences from the amino acids' crystallographic atom coordinates
 		as specified by protein entries in the Protein Data Bank (PDB). The
@@ -76,7 +76,7 @@ SECTION REFERENCES
 
 NOTES
 
-	The used method for protein secondary structure prediciton, i.e. the Chou-Faman
+	The used method for protein secondary structure prediction, i.e. the Chou-Faman
 	algorithm, is fast which was the main reason for choosing it. Performance is
 	important for a large number of sequences loaded in the editor. However, it
 	is not very accurate and should only be used as rough estimation. Thus, the
@@ -87,7 +87,7 @@ EXAMPLES 	None
 
 WARNINGS
 
-	!!! Protein secondary sttructure in the field 'sec_struct' is not aligned
+	!!! Protein secondary structure in the field 'sec_struct' is not aligned
 	automatically with the sequence (yet). It has to be aligned manually !!!
 
 BUGS

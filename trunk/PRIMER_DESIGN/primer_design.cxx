@@ -242,21 +242,21 @@ void primer_design_event_check_gc_factor( AW_window *aww ) {
 void primer_design_event_check_primer_length( AW_window *aww, AW_CL cl_max_changed) {
     AW_root *root        = aww->get_root();
     int      max_changed = int(cl_max_changed);
-    int      min_lenght  = root->awar(AWAR_PRIMER_DESIGN_LENGTH_MIN)->read_int();
-    int      max_lenght  = root->awar(AWAR_PRIMER_DESIGN_LENGTH_MAX)->read_int();
+    int      min_length  = root->awar(AWAR_PRIMER_DESIGN_LENGTH_MIN)->read_int();
+    int      max_length  = root->awar(AWAR_PRIMER_DESIGN_LENGTH_MAX)->read_int();
 
-    if (max_lenght<1) max_lenght = 1;
-    if (min_lenght<1) min_lenght = 1;
+    if (max_length<1) max_length = 1;
+    if (min_length<1) min_length = 1;
 
-    if (min_lenght >= max_lenght) {
-        if (max_changed) min_lenght = max_lenght-1;
-        else max_lenght             = min_lenght+1;
+    if (min_length >= max_length) {
+        if (max_changed) min_length = max_length-1;
+        else max_length             = min_length+1;
     }
 
-    if (min_lenght<1) min_lenght = 1;
+    if (min_length<1) min_length = 1;
 
-    root->awar(AWAR_PRIMER_DESIGN_LENGTH_MIN)->write_int(min_lenght);
-    root->awar(AWAR_PRIMER_DESIGN_LENGTH_MAX)->write_int(max_lenght);
+    root->awar(AWAR_PRIMER_DESIGN_LENGTH_MIN)->write_int(min_length);
+    root->awar(AWAR_PRIMER_DESIGN_LENGTH_MAX)->write_int(max_length);
 
     primer_design_event_update_memory(aww);
 }

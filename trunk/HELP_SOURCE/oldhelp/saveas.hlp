@@ -22,7 +22,7 @@ DESCRIPTION	Copies the current version of the database including any
 		Select a file name from the 'Directories and Files' subwindow or
 			type the full path and file name to the subwindow
 			'FILE NAME:', press the <SAVE> button and wait until the
-			'SAVE ARB DB' window disappeares.
+			'SAVE ARB DB' window disappears.
 
 NOTES		The suffix shown in the 'SUFFIX' subwindow is appended to the
 		file name. It has to be '.arb' to make the file readable to

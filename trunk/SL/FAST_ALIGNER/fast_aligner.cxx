@@ -62,7 +62,7 @@ enum FA_alignTarget {
 };
 
 struct AlignParams {
-    // int temporary;        // // ==1 -> create only temporary aligment report into alignment (2=resident,0=none)
+    // int temporary;        // // ==1 -> create only temporary alignment report into alignment (2=resident,0=none)
     FA_report report;
     bool      showGapsMessages;  // display messages about missing gaps in master? 
     int       firstColumn;       // first column of range to be aligned (0..len-1)
@@ -1451,7 +1451,7 @@ static void appendNameAndUsedBasePositions(char **toString, GBDATA *gb_species, 
     }
     else {
         newString = currInfo;
-        currInfo  = 0; // dont free
+        currInfo  = 0; // don't free
     }
 
     freeset(*toString, newString);
@@ -1634,7 +1634,7 @@ static GB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
             aw_message(warning);
         }
         else {
-            // assuming relatives are sorted! (nearest to farer)
+            // assuming relatives are sorted! (nearest to farthest)
             
             // get data pointers
             typedef GBDATA *GBDATAP;
@@ -2706,7 +2706,7 @@ AW_window *AWTC_create_faligner_window(AW_root *root, AW_CL cd2)
     aws->at("mirror");
     aws->create_option_menu(FA_AWAR_MIRROR, "Turn check", "");
     aws->insert_option        ("Never turn sequence",         "", FA_TURN_NEVER);
-    aws->insert_default_option("User acknowledgement",        "", FA_TURN_INTERACTIVE);
+    aws->insert_default_option("User acknowledgment ",        "", FA_TURN_INTERACTIVE);
     aws->insert_option        ("Automatically turn sequence", "", FA_TURN_ALWAYS);
     aws->update_option_menu();
 

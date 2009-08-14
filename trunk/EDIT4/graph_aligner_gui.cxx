@@ -117,11 +117,11 @@ static void galigner_start(AW_window *window, AW_CL cd2) {
     pt_db += strlen(pt_db)+3;
     GB_ERROR gb_error;
 
-    // start pt server if neccessary
+    // start pt server if necessary
     gb_error = arb_look_and_start_server(AISC_MAGIC_NUMBER,tmp.str().c_str(),
                                          GLOBAL_gb_main);
     if (gb_error) {
-        cerr << "Canot contact PT server. Aborting" << endl;
+        cerr << "Cannot contact PT server. Aborting" << endl;
         cerr << " ID: \"" << tmp.str().c_str()
              << "\" PORT: \"" << pt_server
              << "\" DB: \"" << pt_db  << endl

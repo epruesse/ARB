@@ -45,7 +45,7 @@ void search_get_area( AED_window *aedw, AED_area_entry  *get_area_current,
         //----------------------------------------selektierte sequence
         if(get_area_current->is_selected != 0) {
             ptr_adt_edit->selection = 1;
-            // im Alignement selektierten String gefunden
+            // im Alignment selektierten String gefunden
         }
         //---------------------------------------------------end selec
 
@@ -375,7 +375,7 @@ void compl_get_area(  AED_window *aedw, AED_area_entry  *get_area_current, ADT_C
         //----------------------------------------selektierte sequence
         if(get_area_current->is_selected != 0) {
             ptr_adt_edit->selection = 1;
-            // im Alignement selektierten String gefunden
+            // im Alignment selektierten String gefunden
         }
         //---------------------------------------------------end selec
 

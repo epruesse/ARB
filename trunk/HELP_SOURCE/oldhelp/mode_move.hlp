@@ -37,8 +37,8 @@ DESCRIPTION	The 'MOVE MODE' allows to change the topology of the
 		Within the 'ARB_PARSIMONY' window, this mode can be used to test
 		tree topologies with respect to maximum parsimony criteria by
 		moving subtrees. The current parsimony value is shown after the
-		'Current Par' pormpt and can be compared with the 'Optimum Par'
-		value of the iinitial tree.
+		'Current Par' prompt and can be compared with the 'Optimum Par'
+		value of the initial tree.
 
 
 NOTES		Short descriptions of the 'MODE' and the functions assigned

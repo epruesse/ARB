@@ -10,7 +10,7 @@ UP	glossary.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		ARB_PHYLO - Create filters by base frequency
 
-OCCURRENCE	ARB_NT/SAI/Create Filter/by Base Frequncy
+OCCURRENCE	ARB_NT/SAI/Create Filter/by Base Frequency
 
 DESCRIPTION	Calculate base frequencies and/or a base frequency filter.
 
@@ -51,7 +51,7 @@ DESCRIPTION	Calculate base frequencies and/or a base frequency filter.
 
                               The corresponding characters are counted like regular sequence characters,
                               but never interpreted as "being the most homologous character".
-                              Compared with 'dont count' it will result in lower base frequencies, cause
+                              Compared with 'don't count' it will result in lower base frequencies, cause
                               the overall number of characters occurring per column will be higher.
 
                         treat as regular character
@@ -84,7 +84,7 @@ EXAMPLES	To create a filter which hits all columns containing sequence data, use
 
                    - all alignment columns
                    - similarity 0 to 100
-                   - both gaps: 'dont count (ignore)'
+                   - both gaps: 'don't count (ignore)'
                    - ambiguity codes: 'treat as regular character'
                    - lowercase chars: 'treat as uppercase char'
 

@@ -35,7 +35,7 @@ void awt_create_dtree_awars(AW_root *aw_root,AW_default def);
 
 
 typedef enum {
-    AP_TREE_NORMAL, // normal tree display (dendogram)
+    AP_TREE_NORMAL, // normal tree display (dendrogram)
     AP_TREE_RADIAL, // radial tree display
     AP_TREE_IRS, // like AP_TREE_NORMAL, with folding line
     AP_LIST_NDS,
@@ -94,11 +94,11 @@ class AWT_graphic_tree : public AWT_graphic {
     double          rot_spread;
     AW_clicked_text rot_ct;
 
-    AW_device *disp_device; // device for  rekursiv Funktions
+    AW_device *disp_device; // device for recursive functions
 
     AW_bitset line_filter,vert_line_filter, text_filter,mark_filter;
     AW_bitset ruler_filter, root_filter;
-    int       treemodus;
+    int       treemode;
     bool      nds_show_all;
 
     void scale_text_koordinaten(AW_device *device, int gc, double& x,double& y,double orientation,int flag );

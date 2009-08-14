@@ -32,11 +32,11 @@ NOTES		The colors are not set correctly. Please set different 'CS' colors
 		The program assumes that your tree is correct.
 
 WARNINGS	This is only a prototype, don't expect something perfect.
-		All sequences which should be analysed should be marked and
+		All sequences which should be analyzed should be marked and
 		in the tree shown by ARB_NT !!!!!
 
 BUGS		The colors are not set correctly by default.
-		The programm can only be started once.
+		The program can only be started once.
 
 SECTION         DETAILED COLUMN STATISTIC
 
@@ -63,7 +63,7 @@ SECTION         DETAILED COLUMN STATISTIC
 		(or for the sum of two base characters), all four rows are
 		displayed in color 'Range 0'.
 
-		[significance is 90% (hardcoded) - will be made utilisable soon]
+		[significance is 90% (hardcoded) - will be made utilizable soon]
 
 		The single (or two) base character(s) responsive for the
 		significance will be displayed in colors 'Range 1' to 'Range 8'

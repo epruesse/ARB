@@ -14,11 +14,11 @@ TITLE		Suggest Valid Names
 OCCURRENCE	ARB_NT/species/Valid Names/Suggest Valid Names
 
 DESCRIPTION     Looks in the list of valid names for perfect matching entry with a species full name.
-                Either a valid name, a heronym, a homonym or change of name.
+                Either a valid name, a heteronym, a homonym or change of name.
                 On matching the the valid name is written to a new database container
                 called Valid_Name in the field NameString. A second field of this container called DescType
                 tells about the species full name's status. I.e. whether it is the valid name, a heteronym,
-                a homonym or mispelled. Three letters indicate species or genus, and three letter the status.
+                a homonym or misspelled. Three letters indicate species or genus, and three letter the status.
 
 NOTES		Subspecies are not taken into account yet.
 

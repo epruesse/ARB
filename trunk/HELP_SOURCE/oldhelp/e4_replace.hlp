@@ -25,6 +25,6 @@ DESCRIPTION	This menu allows you to replace parts in the sequence data.
 EXAMPLES	None
 		
 WARNINGS	There are no further questions if you press GO.
-		If you pressed GO accidently, press UNDO to clean up the mess.
+		If you pressed GO accidentally, press UNDO to clean up the mess.
 
 BUGS		None

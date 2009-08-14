@@ -85,7 +85,7 @@ struct aisc_bytes_list {
 
 
 extern char  *aisc_object_names[];
-extern char **aisc_attribut_names_list[];
+extern char **aisc_attribute_names_list[];
 
 extern aisc_talking_func_long  *aisc_talking_functions_get[];
 extern aisc_talking_func_long  *aisc_talking_functions_set[];
@@ -237,13 +237,13 @@ const char *aisc_get_object_names(long i)
 
 const char *aisc_get_object_attribute(long i,long j)
 {
-    if ((i<0) || (i>=AISC_MAX_OBJECT) || (!aisc_attribut_names_list[i])) {
+    if ((i<0) || (i>=AISC_MAX_OBJECT) || (!aisc_attribute_names_list[i])) {
         return "<null>";
     }
-    if ((j<0) || (j>=AISC_MAX_ATTR) || (!aisc_attribut_names_list[i][j])){
+    if ((j<0) || (j>=AISC_MAX_ATTR) || (!aisc_attribute_names_list[i][j])){
         return "<unknown attribute>";
     }
-    return aisc_attribut_names_list[i][j];
+    return aisc_attribute_names_list[i][j];
 }
 
 /************************************* find the mach name and id *************************************/
@@ -268,7 +268,7 @@ const char *aisc_get_m_id(const char *path, char **m_name, int *id)
     }
     if (!strcmp(path,":")) {
         path = (char *)getenv("SOCKET");
-        if (!path) return "ENVIROMENT SOCKET NOT FOUNT";
+        if (!path) return "environment socket not found";
     }
     p = (char *) strchr(path, ':');
     if (path[0] == '*' || path[0] == ':'){      /* UNIX MODE */
@@ -513,7 +513,7 @@ aisc_talking_get(long *in_buf, int size, long *out_buf, int max_size)
         }
         function = functions[attribute];
         if (!function) {
-            sprintf(error_buf, "DONT KNOW ATTRIBUTE %li",
+            sprintf(error_buf, "DON'T KNOW ATTRIBUTE %li",
                     attribute);
             aisc_server_error = error_buf;
             break;
@@ -655,7 +655,7 @@ long aisc_talking_sets(long *in_buf,int size, long *out_buf,long *object, int ob
         attribute       = code &0x0000ffff;
         type            = code &0xff000000;
         if (attribute > AISC_MAX_ATTR) {
-            sprintf(error_buf,"ATTRIBUTE %li DOESNT EXIST",
+            sprintf(error_buf,"ATTRIBUTE %li DOESN'T EXIST",
                     attribute);
             aisc_server_error = error_buf;
             attribute = 0;
@@ -667,7 +667,7 @@ long aisc_talking_sets(long *in_buf,int size, long *out_buf,long *object, int ob
             function = functions[attribute];
         }
         if (!function){
-            sprintf(error_buf,"ATTRIBUTE %li DOESNT EXIST",
+            sprintf(error_buf,"ATTRIBUTE %li DOESN'T EXIST",
                     attribute);
             aisc_server_error = error_buf;
             break;
@@ -824,7 +824,7 @@ aisc_talking_create(long *in_buf, int size, long *out_buf, int max_size)
         type = code & 0xff000000;
         object_type = in_buf[in_pos++];
         if (!functions) {
-            sprintf(error_buf, "AISC_CREATE_SERVER_ERROR: FATHER %s DOESNT HAVE TARGET-ATTRIBUTE %s",
+            sprintf(error_buf, "AISC_CREATE_SERVER_ERROR: FATHER %s DOESN'T HAVE TARGET-ATTRIBUTE %s",
                     aisc_get_object_names(father_type), aisc_get_object_attribute(father_type,attribute));
             aisc_server_error = error_buf;
             break;
@@ -835,7 +835,7 @@ aisc_talking_create(long *in_buf, int size, long *out_buf, int max_size)
         }
         function = functions[attribute];
         if (!function) {
-            sprintf(error_buf, "AISC_CREATE_SERVER_ERROR: FATHER %s FATHER DOESNT HAVE TARGET-ATTRIBUTE %s",
+            sprintf(error_buf, "AISC_CREATE_SERVER_ERROR: FATHER %s FATHER DOESN'T HAVE TARGET-ATTRIBUTE %s",
                     aisc_get_object_names(father_type), aisc_get_object_attribute(father_type,attribute));
             aisc_server_error = error_buf;
             break;
@@ -890,7 +890,7 @@ aisc_talking_copy(long *in_buf, int size, long *out_buf, int max_size)
         attribute = code & 0x0000ffff;
         type = code & 0xff000000;
         if (!functions) {
-            aisc_server_error = "AISC_COPY_SERVER_ERROR: FATHER DOESNT HAVE TARGET-ATTRIBUTES";
+            aisc_server_error = "AISC_COPY_SERVER_ERROR: FATHER DOESN'T HAVE TARGET-ATTRIBUTES";
             break;
         }
         if (attribute > AISC_MAX_ATTR) {
@@ -899,7 +899,7 @@ aisc_talking_copy(long *in_buf, int size, long *out_buf, int max_size)
         }
         function = functions[attribute];
         if (!function) {
-            sprintf(error_buf, "AISC_COPY_SERVER_ERROR: FATHER %s DOESNT HAVE TARGET-ATTRIBUTE %s",
+            sprintf(error_buf, "AISC_COPY_SERVER_ERROR: FATHER %s DOESN'T HAVE TARGET-ATTRIBUTE %s",
                     aisc_get_object_names(father_type), aisc_get_object_attribute(father_type,attribute));
             aisc_server_error = error_buf;
             break;
@@ -957,7 +957,7 @@ aisc_talking_find(long *in_buf, int size, long *out_buf, int max_size)
         attribute = code & 0x0000ffff;
         type = code & 0xff000000;
         if (!functions) {
-            aisc_server_error = "AISC_FIND_SERVER_ERROR: FATHER DONT KNOW ATTRIBUTES FOR SEARCH";
+            aisc_server_error = "AISC_FIND_SERVER_ERROR: FATHER DON'T KNOW ATTRIBUTES FOR SEARCH";
             break;
         }
         if (attribute > AISC_MAX_ATTR) {
@@ -966,7 +966,7 @@ aisc_talking_find(long *in_buf, int size, long *out_buf, int max_size)
         }
         function = functions[attribute];
         if (!function) {
-            sprintf(error_buf, "AISC_FIND_SERVER_ERROR: FATHER %s DONT KNOW ATTRIBUTE %s FOR SEARCH",
+            sprintf(error_buf, "AISC_FIND_SERVER_ERROR: FATHER %s DON'T KNOW ATTRIBUTE %s FOR SEARCH",
                     aisc_get_object_names(father_type), aisc_get_object_attribute(father_type,attribute));
             aisc_server_error = error_buf;
             break;
@@ -1317,7 +1317,7 @@ struct Hs_struct *aisc_accept_calls(struct Hs_struct *hs)
         if(!anz){ /* timed out */
             return hs;
         }
-        /*** an event has occured! ***/
+        /*** an event has occurred! ***/
         if( (timeout.tv_usec>=0)&&(timeout.tv_usec<100000)) timeout.tv_usec = 100000;
 
         if(FD_ISSET(hs->hso,&set)){

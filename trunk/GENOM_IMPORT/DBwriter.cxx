@@ -436,7 +436,7 @@ void DBwriter::finalizeOrganism(const MetaInfo& meta, const References& refs, Im
     // finalize genes data
     if (gb_gene_data) {
         renumberDuplicateGenes();            // renumber genes with equal names
-        testAndRemoveTranslations(importer); // test translations and remove reproducable translations
+        testAndRemoveTranslations(importer); // test translations and remove reproducible translations
         hideUnwantedGenes();
     }
     else GB_warning("No genes have been written (missing feature table?)");

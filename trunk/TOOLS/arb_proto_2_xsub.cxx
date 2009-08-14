@@ -225,7 +225,7 @@ int main(int argc, char **argv)
         fprintf(stderr, "type='%s'  func_name='%s'  arguments='%s'\n", type, func_name, arguments);
 #endif // DUMP
 
-        /* exclude some funtions */
+        /* exclude some functions */
 
         if (!strcmp(func_name,"GBT_add_data")) continue;
 

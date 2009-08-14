@@ -11,7 +11,7 @@ class Item {
 public:
 
     PRD_Sequence_Pos end_pos;
-    PRD_Sequence_Pos start_pos;           // index in sequence (or -1 if not yet calcutaled)
+    PRD_Sequence_Pos start_pos;           // index in sequence (or -1 if not yet calculated)
     PRD_Sequence_Pos offset;              // index of base in sequence : left = index of first base of primer, right = index of last base of primer
     int              length;              // count of bases in primer
 

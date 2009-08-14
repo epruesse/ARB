@@ -86,7 +86,7 @@ bool CMain::DB_Connect()
         // TRY TO CONNECT TO THE DEFAULT ARB DATABASE; EXIT IF AN ERROR OCCURS
         if(ARB_connect(NULL))
         {
-            // IF A CONNECTON IS ESTABLISHED: ALSO CONNECT TO THE CONFIG DB
+            // IF A CONNECTION IS ESTABLISHED: ALSO CONNECT TO THE CONFIG DB
             // (NO 'ACCESS-FAILED' CHECK HERE AT THE MOMENT)
             CONFIG_connect();
 
@@ -141,7 +141,7 @@ void CMain::MainLoop()
 *
 *  RETURNVALUE:
 *        0 = EVERYTHING IS FINE
-        -1 = AN ERROR OCCURED (UNABLE TO ESTABLISH DB CONNECTION)
+        -1 = AN ERROR OCCURRED (UNABLE TO ESTABLISH DB CONNECTION)
 ****************************************************************************/
 int CMain::Run(int argc, char **argv)
 {

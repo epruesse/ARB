@@ -13,7 +13,7 @@ TITLE		Consensus Parameters
 
 OCCURRENCE	ARB_NT/SAI/Consensus/expert
 
-DESCRIPTION	Allows to define the paramters for consensus calculation.
+DESCRIPTION	Allows to define the parameters for consensus calculation.
 
 		The left part of the 'Expert Window' is similar to the
 		'Consensus' window the right part contains descriptions of the

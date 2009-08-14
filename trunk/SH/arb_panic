@@ -2,12 +2,12 @@
 
 umask 066 # user read/write
 
-seperator() {
+separator() {
     echo "*************************************** $*"
 }
 
 err () {
-    seperator ERROR 1>&2
+    separator ERROR 1>&2
     echo "`basename $0`: $@" 1>&2
     exit 1
 }
@@ -15,7 +15,7 @@ err () {
 
 chooser="/tmp/arb_pids_${USER}_*"
 
-seperator PANIC
+separator PANIC
 echo "  This Module tries to save a running database"
 echo "  There may be more than one database server (ARB_NT):"
 echo "          --------------------------------"
@@ -25,7 +25,7 @@ for i in $chooser ; do
 done
 echo "          --------------------------------"
 
-seperator
+separator
 echo "Please choose one line and enter the rightmost number"
 
 read ARB_PID
@@ -33,7 +33,7 @@ if [ ! -f /tmp/arb_pids_${USER}_${ARB_PID} ]; then
     err "Incorrect Choice"
 fi
 
-seperator
+separator
 echo "Please enter full path (to save DB):"
 read FILE
 
@@ -53,7 +53,7 @@ done
 if [ "$ok" = "false" ]; then
     err "Sorry could not find a running server"
 fi
-seperator
+separator
 echo "Wait until database is saved (or press <ctrl-c> to abort)"
 while [ -f $panicfile ]; do
     echo "[waiting]"
@@ -72,7 +72,7 @@ while [ -f $panicfile ]; do
     fi
 done
 
-seperator
+separator
 echo "enter 'kill'    if you want to kill the server and its clients"
 echo "enter 'killall' if you want to kill ALL servers and clients"
 

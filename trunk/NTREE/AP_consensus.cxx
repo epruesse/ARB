@@ -32,7 +32,7 @@
  *
  * Dependencies:       Needs consens.fig and CON_groups.fig
  *
- * Description: This module calculates the consensus of sequencies of
+ * Description: This module calculates the consensus of sequences of
  *              bases or amino acids. The result can be one or more lines
  *              of characters and it is written to the extended data of
  *              the alignment.
@@ -82,7 +82,7 @@ enum {
  *
  * Description:       This function creates one or more result strings out
  *                    of table statistic. Memory for result is allocated
- *                    and later freeded in function CON_calculate_cb
+ *                    and later freed in function CON_calculate_cb
  *
  * NOTE:              Usage of groupflags and groupnames see function
  *                    CON_makegrouptable.
@@ -509,14 +509,14 @@ GB_ERROR CON_export(char *savename,char *align,int **statistic,char *result,int 
         for(col=0;col<maxalignlen;col++)
         {
             int group2=1;
-            float highest=0,relativ;
+            float highest=0,relative;
             int diffchar;
             if (absolutrow[col]){
                 while( (diffchar=neworder[group2++]) ){
-                    relativ=(float)statistic[diffchar][col]
+                    relative=(float)statistic[diffchar][col]
                         /(float)absolutrow[col];
-                    if(relativ>highest) highest=relativ;
-                    additional[diffchar][col]=relativ;
+                    if(relative>highest) highest=relative;
+                    additional[diffchar][col]=relative;
                 }
                 additional[0][col]=highest;
             }else{
@@ -524,16 +524,16 @@ GB_ERROR CON_export(char *savename,char *align,int **statistic,char *result,int 
             }
         }
 
-        GBDATA *gb_relativ=GB_search(gb_graph,"MAX",GB_FLOATS);
-        err=GB_write_floats(gb_relativ,additional[0],maxalignlen);
+        GBDATA *gb_relative=GB_search(gb_graph,"MAX",GB_FLOATS);
+        err=GB_write_floats(gb_relative,additional[0],maxalignlen);
 
         for(group=1;group<numdiffchars;group++)
         {
             char ch = groupnames[neworder[group]];
             if (ch <'A' || ch>'Z') continue;
             sprintf(charname,"N%c",ch);
-            gb_relativ=GB_search(gb_graph,charname,GB_FLOATS);
-            err=GB_write_floats(gb_relativ,additional[group],maxalignlen);
+            gb_relative=GB_search(gb_graph,charname,GB_FLOATS);
+            err=GB_write_floats(gb_relative,additional[group],maxalignlen);
         }
 
         free(charname);
@@ -627,7 +627,7 @@ void CON_calculate_cb(AW_window *aw )
         }
 
 
-        /* creating the table for characters and allocating memory for 'statistc' */
+        /* creating the table for characters and allocating memory for 'statistic' */
         int *statistic[MAX_AMINOS+1];
         int  convtable[256];
         CON_maketables(convtable,statistic,maxalignlen,isamino);
@@ -894,7 +894,7 @@ AP_open_consensus_window( AW_root *aw_root)
 /* -----------------------------------------------------------------
  * Function:           CON_calc_max_freq_cb( AW_window *aw)
  *
- * Description:       Gets the maximum frequence for each columns.
+ * Description:       Gets the maximum frequency for each columns.
  *
  * NOTE:
  *

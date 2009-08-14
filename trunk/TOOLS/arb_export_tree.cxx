@@ -15,7 +15,7 @@ int main(int argc, char **argv){
         fprintf(stderr, "\narb_export_tree - exports tree from running ARB to stdout\n"
                         "syntax: arb_export_tree [--bifurcated] TREE_NAME\n"
                         "        --bifurcated     write a bifurcated tree (default is a trifurcated tree)\n"
-                        "        --nobranchlens   do not write branchlenghts\n"
+                        "        --nobranchlens   do not write branchlengths\n"
                         "        --doublequotes   use doublequotes (default is singlequotes)\n"
                         "\n"
                 "Note: If TREE_NAME is '\?\?\?\?' or '' an empty tree is written.");

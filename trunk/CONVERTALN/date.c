@@ -252,7 +252,7 @@ char
     if(Cmpstr("Jan", date_string+4)==1)
         Catstr(temp, "January");
     else if(Cmpstr("Feb", date_string+4)==1)
-        Catstr(temp, "Feburary");
+        Catstr(temp, "February");
     else if(Cmpstr("Mar", date_string+4)==1)
         Catstr(temp, "March");
     else if(Cmpstr("Apr", date_string+4)==1)
@@ -270,7 +270,7 @@ char
     else if(Cmpstr("Oct", date_string+4)==1)
         Catstr(temp, "October");
     else if(Cmpstr("Nov", date_string+4)==1)
-        Catstr(temp, "Novemember");
+        Catstr(temp, "November");
     else if(Cmpstr("Dec", date_string+4)==1)
         Catstr(temp, "December");
 

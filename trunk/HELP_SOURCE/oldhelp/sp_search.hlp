@@ -22,7 +22,7 @@ OCCURRENCE	ARB_NT/Species/search
 		top area>
 
 DESCRIPTION	Searches for a (set of) species (not SAIs)
-		that match (dont match) a query or are marked.
+		that match (don't match) a query or are marked.
 
 		The database is scanned for 'species' (see 'HELP')
 		which contain (or do not contain) the search string within the

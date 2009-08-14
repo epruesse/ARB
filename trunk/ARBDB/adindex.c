@@ -465,7 +465,7 @@ GB_ERROR g_b_undo_entry(GB_MAIN_TYPE *Main,struct g_b_undo_entry_struct *ue){
                         gbd->flags.saved_flags = pflags->flags;
                         pflags->flags = ue->flag;
                         if (GB_FATHER(gb_father)){
-                            gb_touch_header(gb_father); /* dont touch father of main */
+                            gb_touch_header(gb_father); /* don't touch father of main */
                         }
                     }
                 }
@@ -710,14 +710,18 @@ void gb_check_in_undo_delete(GB_MAIN_TYPE *Main,GBDATA *gbd, int deep){
         UNDO    exported  functions (to USER)
 ******************************************************************************************/
 
+GB_ERROR GB_request_undo_type(GBDATA *gb_main, GB_UNDO_TYPE type) {
+    /* Define how to undo DB changes.
+     * 
+     * This function should be called just before opening a transaction,
+     * otherwise its effect will be delayed.
+     * 
+     * Possible types are:
+     *      GB_UNDO_UNDO        enable undo
+     *      GB_UNDO_NONE        disable undo
+     *      GB_UNDO_KILL        disable undo and remove old undos !!
+     */
 
-/** define how to undo the next items, this function should be called just before opening
-    a transaction, otherwise it's affect will be delayed
-    posissible types are:   GB_UNDO_UNDO        enable undo
-    *               GB_UNDO_NONE        disable undo
-    *               GB_UNDO_KILL        disable undo and remove old undos !!
-    */
-GB_ERROR GB_request_undo_type(GBDATA *gb_main, GB_UNDO_TYPE type){
     GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
     Main->requested_undo_type = type;
     if (!Main->local_mode) {
@@ -795,8 +799,9 @@ char *GB_undo_info(GBDATA *gb_main,GB_UNDO_TYPE type) {
     }
 }
 
-/** set the maxmimum memory used for undoing */
 GB_ERROR GB_set_undo_mem(GBDATA *gbd, long memsize){
+    /* set the maximum memory used for undoing */
+
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     if (memsize < _GBCMC_UNDOCOM_SET_MEM){
         return GB_export_errorf("Not enough UNDO memory specified: should be more than %i",

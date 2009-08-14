@@ -43,10 +43,10 @@ AD_MARK
 #define ADPP_IS_ALIGN_CHARACTER(chr) (strchr (ALIGN_STRING,chr))
 
 const int MINCACH = 1;
-const int MAXCACH = 0;  // schaltet cach ein bei open Funktionen
+const int MAXCACH = 0;  // schaltet cache ein bei open Funktionen
 const int CORE = 1;
 
-typedef enum ad_edit_modus {
+typedef enum ad_edit_mode {
     AD_allign       = 0,    // add & remove of . possible (default)
     AD_nowrite      = 1,    // no edits allowed
     AD_replace      = 2,    // all edits
@@ -73,10 +73,10 @@ class AD_ERR
 
 class AD_ERR
 {
-    int modus;      // Mode  0 = Errors, 1 = Warnings
-    int  anzahl;    // Number of errors
-    char *text;     // error text
-        
+    int   mode;                                     // Mode  0 = Errors, 1 = Warnings
+    int   anzahl;                                   // Number of errors
+    char *text;                                     // error text
+
 public:
     AD_ERR();               // create error
     AD_ERR(const char *errorstring); // create error
@@ -133,9 +133,9 @@ public:
     AD_ERR *open(const char *);
     AD_ERR *open(const char *,int );
     AD_ERR *close();
-    AD_ERR *save(const char *modus);
-    AD_ERR *save_as(const char *modus);
-    AD_ERR *save_home(const char *modus);
+    AD_ERR *save(const char *mode);
+    AD_ERR *save_as(const char *mode);
+    AD_ERR *save_home(const char *mode);
     AD_ERR *push_transaction();
     AD_ERR *pop_transaction();
     AD_ERR *begin_transaction();

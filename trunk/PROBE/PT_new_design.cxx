@@ -198,7 +198,7 @@ struct ptnd_chain_count_mishits {
     int operator()(int name, int apos, int rpos) {
         char *probe = psg.probe;
         if (apos>psg.apos) psg.apos = apos;
-        if (psg.data[name].is_group) return 0;              /* dont count group or neverminds */
+        if (psg.data[name].is_group) return 0;              /* don't count group or neverminds */
         if (probe) {
             rpos+=psg.height;
             while (*probe && psg.data[name].data[rpos]) {
@@ -478,7 +478,7 @@ static void ptnd_cp_tprobe_2_probepart(PT_pdc *pdc)
         }
     }
 }
-static void ptnd_duplikate_probepart_rek(PT_pdc *pdc, char *insequence, int deep, double dt,double sum_bonds, PT_probeparts *parts)
+static void ptnd_duplicate_probepart_rek(PT_pdc *pdc, char *insequence, int deep, double dt,double sum_bonds, PT_probeparts *parts)
 {
     PT_probeparts *newparts;
     int            base;
@@ -507,15 +507,15 @@ static void ptnd_duplikate_probepart_rek(PT_pdc *pdc, char *insequence, int deep
         /* this mismatch splits the probe in several domains */
         ndt = split + dt;
         nsum_bonds = sum_bonds+max_bind-split;
-        ptnd_duplikate_probepart_rek(pdc,sequence,deep+1,ndt,nsum_bonds,parts);
+        ptnd_duplicate_probepart_rek(pdc,sequence,deep+1,ndt,nsum_bonds,parts);
     }
     free(sequence);
 }
-static void ptnd_duplikate_probepart(PT_pdc *pdc)
+static void ptnd_duplicate_probepart(PT_pdc *pdc)
 {
     PT_probeparts       *parts;
     for (parts = pdc->parts; parts; parts = parts->next)
-        ptnd_duplikate_probepart_rek(pdc,parts->sequence,0,parts->dt,0.0, parts);
+        ptnd_duplicate_probepart_rek(pdc,parts->sequence,0,parts->dt,0.0, parts);
 
     while (( parts = pdc->parts ))
         destroy_PT_probeparts(parts);   /* delete the source */
@@ -561,7 +561,7 @@ static void ptnd_sort_parts(PT_pdc *pdc)
     }
     free((char *)my_list);
 }
-static void ptnd_remove_duplikated_probepart(PT_pdc *pdc)
+static void ptnd_remove_duplicated_probepart(PT_pdc *pdc)
 {
     PT_probeparts       *parts, *parts_next;
     for (       parts = pdc->parts;
@@ -629,7 +629,7 @@ static void ptnd_check_part_inc_dt(PT_pdc *pdc, PT_probeparts *parts,
             psg.data[name].match = match;
         }
         match->name = name;
-        match->b_pos = apos - parts->start;     /* thats not correct !!! */
+        match->b_pos = apos - parts->start;     /* that's not correct !!! */
         match->rpos = rpos-parts->start;
         match->N_mismatches = -1;       /* there are no mismatches in this mode */
         match->mismatches = -1;
@@ -664,7 +664,7 @@ struct ptnd_chain_check_part {
     int     pos;
     int     base;
 
-    if (!ptnd.new_match && psg.data[name].is_group) return 0;           /* dont count group or neverminds */
+    if (!ptnd.new_match && psg.data[name].is_group) return 0;           /* don't count group or neverminds */
     if (probe) {
         pos = rpos+psg.height;
         while (probe[height] && (base = psg.data[name].data[pos])) {
@@ -1053,9 +1053,9 @@ extern "C" int PT_start_design(PT_pdc *pdc, int /*dummy*/) {
     ptnd_check_position(pdc);
     ptnd_check_bonds(pdc,ptnd.new_match);
     ptnd_cp_tprobe_2_probepart(pdc);
-    ptnd_duplikate_probepart(pdc);
+    ptnd_duplicate_probepart(pdc);
     ptnd_sort_parts(pdc);
-    ptnd_remove_duplikated_probepart(pdc);
+    ptnd_remove_duplicated_probepart(pdc);
     ptnd_check_probepart(pdc);
     while (pdc->parts) destroy_PT_probeparts(pdc->parts);
     ptnd_calc_quality(pdc);
@@ -1083,9 +1083,9 @@ void ptnd_new_match(PT_local * locs, char *probestring)
     aisc_link(&pdc->ptprobes, tprobe);
     ptnd_check_bonds(pdc,ptnd.new_match);
     ptnd_cp_tprobe_2_probepart(pdc);
-    ptnd_duplikate_probepart(pdc);
+    ptnd_duplicate_probepart(pdc);
     ptnd_sort_parts(pdc);
-    ptnd_remove_duplikated_probepart(pdc);
+    ptnd_remove_duplicated_probepart(pdc);
     ptnd_check_probepart(pdc);
     
     while (pdc->parts)                  destroy_PT_probeparts(pdc->parts);

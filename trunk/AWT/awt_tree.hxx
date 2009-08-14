@@ -176,14 +176,14 @@ public:
 class AP_matrix {       // Matrix
 public:
     AP_FLOAT **m;
-    char    **x_description; // optional discription, strdupped
+    char    **x_description; // optional description, strdupped
     char    **y_description;
     long    size;
     AP_matrix(long si);
     ~AP_matrix(void);
     void create_awars(AW_root *awr,const char *awar_prefix);
     void read_awars(AW_root *awr,const char *awar_prefix);
-    void normize();     // set average non diag element to 1.0 (only for descripted elements
+    void normize();     // set average non diag element to 1.0 (only for described elements)
     void create_input_fields(AW_window *aww,const char *awar_prefix);
     void set_description(const char *xstring,const char *ystring);
     void    set(int i, int j, AP_FLOAT val) { m[i][j] = val;};
@@ -227,7 +227,7 @@ class AP_tree_root {
 public:
     GBDATA  *gb_main;
     GBDATA  *gb_tree;
-    GBDATA  *gb_tree_gone; // if all leafes have been removed by tree operations, remember 'gb_tree' here (see inform_about_changed_root)
+    GBDATA  *gb_tree_gone; // if all leaves have been removed by tree operations, remember 'gb_tree' here (see inform_about_changed_root)
     GBDATA *gb_species_data;
     GBDATA *gb_table_data;
     long    tree_timer;
@@ -357,7 +357,7 @@ public:
 
     virtual void insert(AP_tree *new_brother);
     virtual void remove(void);                      // no delete of father
-    virtual void swap_assymetric(AP_TREE_SIDE modus); // 0 = AP_LEFT_son  1=AP_RIGHT_son
+    virtual void swap_assymetric(AP_TREE_SIDE mode); // 0 = AP_LEFT_son  1=AP_RIGHT_son
     void         swap_sons(void);                   // exchange sons
 
     GB_ERROR     cantMoveTo(AP_tree *new_brother);  // use this to detect impossible moves

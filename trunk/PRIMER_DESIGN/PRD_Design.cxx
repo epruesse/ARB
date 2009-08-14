@@ -457,7 +457,7 @@ void PrimerDesign::findNextPrimer( Node *start_at_, int depth_, int *counter_, i
         //     (*counter_)++;
         //     printf( "findNextPrimer : %3i",depth_ );
 
-        //     // print last_base_indizes
+        //     // print last_base_indices
         //     if ( direction_ == FORWARD ) printf( "%7li           ",start_at_->last_base_index );
         //                             else printf( "      0           " );
 

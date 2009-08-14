@@ -76,7 +76,7 @@ typedef enum {
     AW_Mouse_Drag       = 5
 } AW_event_type;
 
-typedef const char *AW_label;       // label for buttons menues etc
+typedef const char *AW_label;       // label for buttons menus etc
 // "fsdf" simple label  // no '/' symbol !!!
 // "awarname/asdf"  // awar name (any '/' in string)
 // "#file.bitmap"   // bitmap in $ARBHOME/lib/pixmaps/file.bitmap
@@ -84,7 +84,7 @@ typedef const char *AW_label;       // label for buttons menues etc
 
 struct AW_event {
     AW_event_type       type;       /* AW_Keyboard or AW_Mouse */
-    unsigned long       time;       /* time in msec, when event occured */
+    unsigned long       time;       /* time in msec, when event occurred */
     //***** button fields
     unsigned int        button;     /* which mouse button was pressed 1,2,3 */
     int         x,y;        /* pointer x,y coordinates in the event window */
@@ -276,7 +276,7 @@ public:
     //******************* Global layout functions **********************
 
     void show();                                    // show newly created window or unhide hidden window (aka closed window)
-    void hide();                                    // hide (dont destroy) a window (<->show)
+    void hide();                                    // hide (don't destroy) a window (<->show)
 
     void activate() { show(); wm_activate(); }      // make_visible, pop window to front and give it the focus
 
@@ -470,7 +470,7 @@ public:
     void insert_default_option ( AW_label choice_label, const char *mnemonic, float var_value,       const char *name_of_color = 0 );
 
     void update_option_menu( void );
-    void update_option_menu( AW_option_menu_struct *); // dont use this
+    void update_option_menu( AW_option_menu_struct *); // don't use this
 
 
     // ***** toggle_field is a static menu (all items are visible and only one is selected)

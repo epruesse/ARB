@@ -83,7 +83,7 @@ char *DI_MATRIX::compress(GBT_TREE *tree){
         memcpy(found_groups, groups, groupcnt*sizeof(*groups));
     }
 
-    int nongroupcnt = 0; // count # of species NOT in groups and copy then to 'groups'
+    int nongroupcnt = 0; // count # of species NOT in groups and copy them to 'groups'
     for (i=0;i<nentries;i++) {
         if (entries[i]->name && entries[i]->group_nr == -1) { // species not in groups
             groups[nongroupcnt] = new DI_ENTRY(entries[i]->name,this);

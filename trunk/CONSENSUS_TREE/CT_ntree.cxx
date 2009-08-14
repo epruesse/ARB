@@ -66,7 +66,7 @@ void print_ntindex(NT_NODE *tree)
 }
 
 
-/* build a new node and store the parttion p in it */
+/* build a new node and store the partition p in it */
 NT_NODE *new_ntnode(PART *p)
 {
     NT_NODE *n;
@@ -100,14 +100,14 @@ void del_tree(NT_NODE *tree)
 }
 
 
-/* Initialisation of the tree */
+/* Initialization of the tree */
 void ntree_init(void)
 {
     PART *r;
 
-    /* Destruct old Tree */
+    /* Destruct old tree */
     del_tree(ntree);
-    /* Set Root = max. Patition */
+    /* Set root = max. partition */
     ntree = NULL;
     r=part_root();
     ntree=new_ntnode(r);
@@ -146,12 +146,12 @@ void insert_son(NT_NODE *f_node, NT_NODE *s_node, NSONS *nson)
 }
 
 
-/* Construct a multitree under that constrain that it is posssible for the tree
-   be a binaerytree in the end. To enable this it is important to follow two
+/* Construct a multitree under that constrain that it is possible for the tree
+   be a binary tree in the end. To enable this it is important to follow two
    ideas:
    1. a son fits only under a father if the father has every bit set that the son
    has plus it should be possible to insert as many sons as necessary to result
-   in a binaerytree
+   in a binary tree
    2. for any two brothers A,B: brotherA and brotherB == 0                       */
 int ins_ntree(NT_NODE *tree, PART *newpart)
 {
@@ -213,8 +213,8 @@ int ins_ntree(NT_NODE *tree, PART *newpart)
 /* Insert a partition in the NTree. To do this I try two insert it in both
    possible representations. ins_ntree do the hole work. If it fit in none
    of them I delete the partition.
-   attention: The parttion is detruced afterwards.
-   The tree is never empty, because it is initalised with a root */
+   attention: The partition is destructed afterwards.
+   The tree is never empty, because it is initialized with a root */
 void insert_ntree(PART *part)
 {
     ntree_count++;

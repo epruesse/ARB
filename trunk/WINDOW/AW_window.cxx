@@ -74,7 +74,7 @@ AW_timer_cb_struct::~AW_timer_cb_struct(void) {
 }
 
 void AW_root::make_sensitive(Widget w, AW_active mask) {
-    // Dont call make_sensitive directly!
+    // Don't call make_sensitive directly!
     // 
     // Simply set sens_mask(AWM_EXP) and after creating the expert-mode-only widgets,
     // set it back using sens_mask(AWM_ALL)
@@ -86,7 +86,7 @@ void AW_root::make_sensitive(Widget w, AW_active mask) {
 
     if (mask != AWM_ALL) { // no need to make widget sensitive, if its shown unconditionally
         prvt->button_list = new AW_buttons_struct(mask, w, prvt->button_list);
-        if (!(mask & global_mask)) XtSetSensitive(w, False); // disable widget if mask doesnt match
+        if (!(mask & global_mask)) XtSetSensitive(w, False); // disable widget if mask doesn't match
     }
 }
 
@@ -701,7 +701,7 @@ bool AW_cb_struct::is_equal(const AW_cb_struct& other) const {
 #if defined(DEBUG) && 0
                     if (equal) {
                         fprintf(stderr,
-                                "callback '%s' instanciated twice with different windows (w1='%s' w2='%s') -- assuming the callbacks are equal\n",
+                                "callback '%s' instantiated twice with different windows (w1='%s' w2='%s') -- assuming the callbacks are equal\n",
                                 id, aw->get_window_id(), other.aw->get_window_id());
                     }
 #endif // DEBUG
@@ -1307,7 +1307,7 @@ static int aw_status_dummy2(const char *val) {
     return aw_status((char *)val);
 }
 
-void AW_root::init_root(const char *programmname, bool no_exit) {
+void AW_root::init_root(const char *programname, bool no_exit) {
     // Initialisiert eine gesamte X-Anwendung
     int a = 0;
     int i;
@@ -1316,7 +1316,7 @@ void AW_root::init_root(const char *programmname, bool no_exit) {
     char *fallback_resources[100];
 
     p_r-> no_exit = no_exit;
-    program_name  = strdup(programmname);
+    program_name  = strdup(programname);
 
     for (i=0; i<1000; i++) {
         if (aw_fb[i].fb == 0)
@@ -1334,7 +1334,7 @@ void AW_root::init_root(const char *programmname, bool no_exit) {
     GB_install_status2((gb_status_func2_type)aw_status_dummy2);
 
     // @@@ FIXME: the next line hangs if program runs inside debugger
-    p_r->toplevel_widget = XtOpenApplication(&(p_r->context), programmname, 
+    p_r->toplevel_widget = XtOpenApplication(&(p_r->context), programname, 
             NULL, 0, // XrmOptionDescRec+numOpts
             &a, /*&argc*/
             NULL, /*argv*/
@@ -1567,7 +1567,7 @@ AW_color AW_window::alloc_named_data_color(int colnum, char *colorname) {
     } else {
         if (colnum>=color_table_size) {
             color_table = (unsigned long *)realloc((char *)color_table, (8
-                    + colnum)*sizeof(long)); // valgrinders : never free'd because AW_window never is free'd
+                    + colnum)*sizeof(long)); // valgrinders : never freed because AW_window never is freed
             memset( (char *)(color_table+color_table_size), -1, (int)(8
                     + colnum - color_table_size) * sizeof(long));
             color_table_size = 8+colnum;
@@ -1988,7 +1988,7 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid,
 #if defined(DUMP_MENU_LIST)
     initMenuListing(windowname);
 #endif // DUMP_MENU_LIST
-    root = root_in; // for makro
+    root = root_in; // for macro
     window_name = strdup(windowname);
     window_defaults_name = GBS_string_2_key(wid);
 
@@ -2200,7 +2200,7 @@ void AW_window_menu::init(AW_root *root_in, const char *wid,
 #if defined(DUMP_MENU_LIST)
     initMenuListing(windowname);
 #endif // DUMP_MENU_LIST
-    root = root_in; // for makro
+    root = root_in; // for macro
     window_name = strdup(windowname);
     window_defaults_name = GBS_string_2_key(wid);
 
@@ -2388,7 +2388,7 @@ void AW_window_menu::init(AW_root *root_in, const char *wid,
 void AW_window_simple::init(AW_root *root_in, const char *wid,
         const char *windowname) {
     //Arg args[10];
-    root = root_in; // for makro
+    root = root_in; // for macro
 
     int width = 100; // this is only the minimum size!
     int height = 100;
@@ -2427,7 +2427,7 @@ void AW_window_simple_menu::init(AW_root *root_in, const char *wid,
         const char *windowname) {
     //  Arg args[10];
 
-    root = root_in; // for makro
+    root = root_in; // for macro
 
     const char *help_button = "HELP";
     const char *help_mnemonic = "H";
@@ -2508,7 +2508,7 @@ void AW_window_message::init(AW_root *root_in, const char *windowname,
         bool allow_close) {
     //  Arg args[10];
 
-    root = root_in; // for makro
+    root = root_in; // for macro
 
     int width = 100;
     int height = 100;
@@ -2618,7 +2618,7 @@ int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active M
     (XtPointer) cb2);
 
     if (!p_w->modes_f_callbacks) {
-        p_w->modes_f_callbacks = (AW_cb_struct **)GB_calloc(sizeof(AW_cb_struct*),AW_NUMBER_OF_F_KEYS); // valgrinders : never free'd because AW_window never is free'd
+        p_w->modes_f_callbacks = (AW_cb_struct **)GB_calloc(sizeof(AW_cb_struct*),AW_NUMBER_OF_F_KEYS); // valgrinders : never freed because AW_window never is freed
     }
     if (!p_w->modes_widgets) {
         p_w->modes_widgets = (Widget *)GB_calloc(sizeof(Widget),AW_NUMBER_OF_F_KEYS);

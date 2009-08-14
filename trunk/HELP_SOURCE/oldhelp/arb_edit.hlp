@@ -32,7 +32,7 @@ OCCURRENCE	ARB_NT/Sequence/Other sequence editors/Edit marked sequences (ARB)
 DESCRIPTION	The editor allows you to view and modify the sequences of 'marked
 		species' (see LINK{glossary.hlp}) and 'SAI' (sequence associated
 		information) data stored in the data base, and to insert
-		new data. Potential scondary structure is automatically checked
+		new data. Potential secondary structure is automatically checked
 		and the information can be displayed with the primary structure.
 		Protection levels can be assigned to the sequences and 'SAI'
 		entries individually.
@@ -42,7 +42,7 @@ DESCRIPTION	The editor allows you to view and modify the sequences of 'marked
 		exported to the database. All sequence changes made by other
 		ARB tools are exported to the editor every 5 seconds.
 
-		Multiple editors can be used synchronuously.
+		Multiple editors can be used synchronously.
 
 
 	Display:

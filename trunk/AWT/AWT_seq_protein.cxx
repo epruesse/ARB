@@ -266,7 +266,7 @@ AP_FLOAT AP_sequence_protein::combine(  const AP_sequence * lefts, const    AP_s
 
             if (p[idx]&APP_GAP) { // contains a gap
                 mutations = 1;  // count first gap as mutation
-                // @@@ FIXME:  rethink then line above. maybe it should be 3 mutations ?
+                // @@@ FIXME:  rethink the line above. maybe it should be 3 mutations ?
 
 #if !defined(MULTIPLE_GAPS_ARE_MULTIPLE_MUTATIONS)
                 // count multiple mutations as 1 mutation

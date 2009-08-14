@@ -20,7 +20,7 @@ char **name_tbl = NULL;
 
 
 
-/* Initialise the modul */
+/* Initialize the module */
 void rb_init(char **names)
 {
     name_tbl = names;
@@ -36,7 +36,7 @@ char *get_name(int idx)
 }
 
 
-/* build a remark with the procentile representation of the partition */
+/* build a remark with the percentage representation of the partition */
 char *rb_remark(const char *info, int perc, char *txt)
 {
     char *txt2;
@@ -70,7 +70,7 @@ RB_INFO *rbtree(NT_NODE *tree, GBT_TREE *father)
 
     gbtnode->father = father;
 
-    info->node = gbtnode;                                /* return-infos */
+    info->node = gbtnode;                                /* return-information */
     info->percent = tree->part->percent;
     info->len = tree->part->len;
     nsonp = tree->son_list;

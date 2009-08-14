@@ -32,7 +32,7 @@ static void  CreateRNA3DAwars(AW_root *root){
     root->awar_float(AWAR_3D_HELIX_SIZE, 0.5, AW_ROOT_DEFAULT); 
     root->awar_int(AWAR_3D_DISPLAY_TERTIARY_INTRACTIONS, 0, AW_ROOT_DEFAULT); 
 
-    // Genral Molecule Display Section
+    // General Molecule Display Section
     root->awar_int(AWAR_3D_MOL_BACKBONE, 1, AW_ROOT_DEFAULT); 
     root->awar_int(AWAR_3D_MOL_COLORIZE, 0, AW_ROOT_DEFAULT); 
     root->awar_int(AWAR_3D_MAP_SPECIES, 0, AW_ROOT_DEFAULT); 
@@ -62,7 +62,7 @@ void RNA3D_StartApplication(AW_root *awr){
 
     CreateRNA3DAwars(awr);
 
-    // Creating and Initialising Motif/OpenGL window and 
+    // Creating and Initializing Motif/OpenGL window and 
     // rendering the structure
     {
         static AW_window *aw_3D = 0;

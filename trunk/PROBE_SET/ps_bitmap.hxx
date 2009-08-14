@@ -678,7 +678,7 @@ void PS_BitMap_Counted::printGNUplot( const char *_title, char *_buffer, PS_File
         }
     }
 
-    // write dataset seperator and header of counters
+    // write dataset separator and header of counters
     size = sprintf( _buffer, "\n\n# speciesID count (of trues)\n" );
     _file->put( _buffer, size );
 
@@ -692,7 +692,7 @@ void PS_BitMap_Counted::printGNUplot( const char *_title, char *_buffer, PS_File
         ++species_per_count[ count_true_per_index[ row ] ];
     }
 
-    // write dataset seperator and header of counters
+    // write dataset separator and header of counters
     size = sprintf( _buffer, "\n\n# count (of trues) count (of species)\n" );
     _file->put( _buffer, size );
     for ( map<long,long>::iterator count = species_per_count.begin();
@@ -715,7 +715,7 @@ void PS_BitMap_Counted::recalcCounters() {
         for (long col = 0; col <= row_data->getMaxUsedIndex(); ++col) {
             if (row_data->Get(col)) {
                 ++count_true_per_index[ col ];
-                if (row != col) ++count_true_per_index[ row ]; // dont count diagonal trues twice
+                if (row != col) ++count_true_per_index[ row ]; // don't count diagonal trues twice
             }
         }
     }

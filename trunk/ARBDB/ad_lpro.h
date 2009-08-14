@@ -203,7 +203,7 @@ GBDATA *gb_search_marked P_((GBCONTAINER *gbc, GBQUARK key_quark, int firstindex
 void gb_install_command_table P_((GBDATA *gb_main, struct GBL_command_table *table));
 char *gbs_search_second_x P_((const char *str));
 char *gbs_search_second_bracket P_((const char *source));
-char *gbs_search_next_seperator P_((const char *source, const char *seps));
+char *gbs_search_next_separator P_((const char *source, const char *seps));
 
 /* ad_save_load.c */
 char *gb_findExtension P_((char *path));

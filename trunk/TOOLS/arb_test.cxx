@@ -1,7 +1,7 @@
 // =============================================================== //
 //                                                                 //
 //   File      : arb_test.cxx                                      //
-//   Purpose   : small test programm (not part of ARB)             //
+//   Purpose   : small test program (not part of ARB)              //
 //               If you need to test sth, you may completely       // 
 //               overwrite and checkin this.                       //
 //                                                                 //

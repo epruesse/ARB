@@ -38,7 +38,7 @@ SEC_helix_strand::SEC_helix_strand()
 
 SEC_loop::SEC_loop(SEC_root *root_)
     : SEC_base(root_)
-    , Circumferance(0)
+    , Circumference(0)
     , center(0, 0)
     , primary_strand(0)
 {}
@@ -295,7 +295,7 @@ void SEC_loop::check_integrity(SEC_CHECK_TYPE what) const {
     }
 
     if (what&CHECK_SIZE) {
-        sec_assert(Circumferance>0);
+        sec_assert(Circumference>0);
         sec_assert(drawnSize()>0);
     }
     if (what&CHECK_POSITIONS) {

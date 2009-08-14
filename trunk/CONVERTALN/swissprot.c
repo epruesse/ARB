@@ -73,7 +73,7 @@ protein_to_macke(inf, outf)
         error(95, temp);
     }
 
-    /* seq irelenvant header */
+    /* seq irrelevant header */
     init();
     macke_out_header(ofp);
     for(indi=0; indi<3; indi++) {
@@ -246,7 +246,7 @@ protein_key_word(line, index, key, length)
     key[indj] = '\0';
 }
 /* ------------------------------------------------------------ */
-/*  Function protein_chcek_blanks().
+/*  Function protein_check_blanks().
     /*    Check if there is (numb) blanks at beginning of line.
 */
 int
@@ -687,7 +687,7 @@ ptom()  {
                                                   sizeof(char*)*(remnum+1));
         data.macke.remarks[remnum++] = Dupstr(temp);
     }
-    /* Maybe redudantly */
+    /* Maybe redundantly */
     if(Lenstr(data.protein.comments)>1) {
         for(indj=0, indk=0; data.protein.comments[indj]!='\0'; indj++)
         {
@@ -732,7 +732,7 @@ protein_to_genbank(inf, outf)
         error(96, temp);
     }
 
-    /* seq irelenvant header */
+    /* seq irrelevant header */
     init();
     /* rewind(ifp); */
     init_genbank();
@@ -807,7 +807,7 @@ protein_to_paup(inf, outf)
     fprintf(ofp, "#NEXUS\n");
     today = today_date();
     if(today[Lenstr(today)-1]=='\n') today[Lenstr(today)-1] = '\0';
-    fprintf(ofp, "[! RDP - the Ribsomal Database Project, (%s).]\n", today);
+    fprintf(ofp, "[! RDP - the Ribosomal Database Project, (%s).]\n", today);
     fprintf(ofp, "[! To get started, send HELP to rdp@info.mcs.anl.gov ]\n");
     fprintf(ofp, "BEGIN DATA;\n   DIMENSIONS\n");
     fprintf(ofp, "      NTAX = %6d\n      NCHAR = %6d\n      ;\n", total_seq, maxsize);

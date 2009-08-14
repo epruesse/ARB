@@ -52,7 +52,7 @@ AD_ERR *AD_MAIN::open(const char *path) {
         return 0;
     } else
     {
-        return new AD_ERR("database doesnt exist");
+        return new AD_ERR("database doesn't exist");
     }
 }
 

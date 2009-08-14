@@ -34,7 +34,7 @@ class awt_hotkeys {
 private:
     bool used[26];
     bool USED[26];
-    char artifical;
+    char artificial;
     char current[2];
 
     awt_hotkeys(const awt_hotkeys& other); // copying not allowed
@@ -44,13 +44,13 @@ public:
         for (int i = 0; i<26; ++i) {
             USED[i] = used[i] = false;
         }
-        artifical  = '0';
+        artificial  = '0';
         current[0] = current[1] = 0;
     }
     virtual ~awt_hotkeys() {}
 
     // return a unique hotkey (returns an empty string if no hotkey left)
-    const char* artifical_hotkey();
+    const char* artificial_hotkey();
     // return a unique hotkey for label (uses one character from label if possible)
     const char* hotkey(const std::string& label);
 };

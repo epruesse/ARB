@@ -25,7 +25,7 @@
 # -----------------------------------------------------
 # The ARB source code is aware of the following defines:
 #
-# NDEBUG                doesnt compile the DEBUG sections
+# NDEBUG                doesn't compile the DEBUG sections
 # DEVEL_$(DEVELOPER)    developer-dependent flag (enables you to have private sections in code)
 #                       DEVELOPER='ANY' (default setting) will be ignored
 #                       configurable in config.makefile
@@ -192,7 +192,7 @@ else
 endif
 
 cflags += -pipe
-cflags += -fmessage-length=0# dont wrap compiler output
+cflags += -fmessage-length=0# don't wrap compiler output
 cflags += -funit-at-a-time
 cflags += -fPIC
 
@@ -241,7 +241,7 @@ else
 # OPENGL=0
 
 GL_LIBS:=# no opengl -> no libs
-GL:=# dont build ARB openGL libs
+GL:=# don't build ARB openGL libs
 
 endif
 
@@ -365,7 +365,7 @@ first_target:
 		@echo ' up           - shortcut for depends+proto+tags'
 		@echo ' modified     - rebuild files modified in svn checkout (touches files!)'
 		@echo ''
-		@echo 'Internal maintainance:'
+		@echo 'Internal maintenance:'
 		@echo ''
 		@echo ' release     - build a release (increases minor version number)'
 		@echo ' stable      - like "release", but increase major version number'
@@ -938,7 +938,7 @@ lib/lib%.$(SHARED_LIB_SUFFIX): LIBLINK/lib%.$(SHARED_LIB_SUFFIX)
 # 	cp $< $@
 
 #***************************************************************************************
-#			Recursive calls to submakefiles
+#			Recursive calls to sub-makefiles
 #***************************************************************************************
 
 include SOURCE_TOOLS/export2sub

@@ -18,7 +18,7 @@ void destree_init(GB_HASH *hash)
 
 
 /* destruct GBT-Tree and build partitions. This is done recursive by concatenate
-   all sons to build the father partition. All partitions are iinserted in the
+   all sons to build the father partition. All partitions are inserted in the
    hashtable */
 /* caution: I use the fact that each inner node must have two sons. */
 PART *dtree(GBT_TREE *tree, int weight, GBT_LEN len)
@@ -48,7 +48,7 @@ PART *dtree(GBT_TREE *tree, int weight, GBT_LEN len)
 }
 
 
-/* it is nessasary to destruct the left and the right side seperatly, because
+/* it is necessary to destruct the left and the right side separately, because
    the root is only a virtual node and must be ignored. Moreover the left and
    rightson are the same partition. So I may only insert right son.            */
 void des_tree(GBT_TREE *tree, int weight)

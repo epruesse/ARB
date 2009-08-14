@@ -215,7 +215,7 @@ while (not $in->eof) {
           if (defined $array_r) {
             my @lines = ();
             if (scalar(@$array_r)>1) {
-              push @lines, $unmark_rest."Multiple occurrances of '$file' - not sure which location is the correct one\n";
+              push @lines, $unmark_rest."Multiple occurrences of '$file' - not sure which location is the correct one\n";
             }
 
             if ($reason eq $called_from) { # its a caller

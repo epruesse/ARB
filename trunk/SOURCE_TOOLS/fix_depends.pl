@@ -71,7 +71,7 @@ print "# For formatting issues see SOURCE_TOOLS/fix_depends.pl\n";
 # sort dependency lines
 
 sub beautiful($$) {
-  # sorts files alphabethically (ign. case)
+  # sorts files alphabetically (ign. case)
   # sorts local dependencies first (for each file)
   my ($a,$b) = @_;
   my ($ap,$bp) = ('','');

@@ -257,7 +257,7 @@ public:
             middle_gain  = middle_child->first;
         }
         PS_CandidateByGainMapIter to_delete = children.end();
-        // delete unwanted childs depending on filling level
+        // delete unwanted children depending on filling level
         if (_filling_level < 50.0) {
             if (children.size() <= 3) return;
             for ( PS_CandidateByGainMapIter c = children.begin();

@@ -25,7 +25,7 @@ Major changes for arb_5.00:
  - Secondary structures for proteins (DSSP)
  - Distance matrix (arb_dist): mark by distance to selected
  - ARB core
-   * many bugfixes and improvements to reliabilty
+   * many bugfixes and improvements to reliability
    * faster sorting (general speedup)
    * improved sequence compression (avoid worse trees, better ratio)
    * improved handling of temporary files (permission/removal)
@@ -68,7 +68,7 @@ Major changes in ARB 07.12.07org:
  - improved import-filter error-messages
  - NDS-display of groups (e.g. in tree) is now handled by ACI-command 'taxonomy'. This gives
    several new possibilities:
-   * export taxonony via 'Export NDS list'
+   * export taxonomy via 'Export NDS list'
    * display taxonomy in Editor etc.
    * display of cascaded taxonomies
    * display taxonomy of tree_1 in tree_2
@@ -139,7 +139,7 @@ Major changes in Beta 2003_08_22:
  - save/load fixed for multi probes
  - Binary SAIs are editable in ARB_EDIT4
  - Information windows are detachable (allows to have multiple windows showing different items)
- - Scanning for hidden/unknown database fields improved and seperated;
+ - Scanning for hidden/unknown database fields improved and separated;
    possibility to remove unused fields.
  - new tabbed format in 'Export NDS' and 'Export matrix' (useful for star-calc/excel/etc.)
  - updated fastDNAml to 1.2.2

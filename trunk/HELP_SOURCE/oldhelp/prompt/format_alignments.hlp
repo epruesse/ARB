@@ -12,7 +12,7 @@ TITLE		FORMAT ALIGNMENTS
 
 OCCURRENCE	ARB_NT
 
-DESCRIPTION     Many functions of ARB expect all sequences of an alignent to
+DESCRIPTION     Many functions of ARB expect all sequences of an alignment to
                 be of the same length (Note: "length" doesn't mean "number
                 of bases" here).
 

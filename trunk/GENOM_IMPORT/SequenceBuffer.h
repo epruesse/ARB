@@ -37,7 +37,7 @@ enum Base { BC_A, BC_C, BC_G, BC_T, BC_OTHER, BC_ALL, BC_COUNTERS };
 
 class BaseCounter {
     string source;              // where does information originate from
-    size_t count[BC_COUNTERS];  // number of occurances of single bases
+    size_t count[BC_COUNTERS];  // number of occurrences of single bases
 
     SmartPtr<CharCounter> char_count; // character counter (used by addLine)
 

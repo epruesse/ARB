@@ -25,7 +25,7 @@ static Struct2Dinfo   *start2D                 = NULL;
 static Struct2Dplus3D *start2D3D               = NULL;
 static HelixNrInfo    *start                   = NULL;
 static CurrSpecies    *startSp                 = NULL;
-static bool            bOldSpecesDataExists    = false;
+static bool            bOldSpeciesDataExists   = false;
 static Insertions     *startIns                = NULL;
 static bool            bOldInsertionDataExists = false;
 static bool            bStartPosStored         = false;
@@ -177,7 +177,7 @@ void Structure3D::DeleteOldMoleculeData(){
     // Delete insertions data
     DeleteOldInsertionData();
 
-    //Delelte mapped species data
+    // Delete mapped species data
     DeleteOldSpeciesData ();
 }
 
@@ -392,7 +392,7 @@ void Structure3D::Store2D3Dinfo(Struct2Dinfo *s2D, Struct3Dinfo *s3D) {
     }
 }
 
-//=========== Combining Secondary Structrue Data with 3D Coordinates =======================//
+//=========== Combining Secondary Structure Data with 3D Coordinates =======================//
 
 void Structure3D::Combine2Dand3DstructureInfo(void) {
     Struct3Dinfo *temp3D;
@@ -1121,7 +1121,7 @@ void Structure3D::StoreCurrSpeciesDifference(char base, int pos){
 
             if (startSp == NULL){
                 startSp = data;
-                bOldSpecesDataExists = true;
+                bOldSpeciesDataExists = true;
             }
             else {
                 temp = startSp;
@@ -1145,7 +1145,7 @@ void Structure3D::DeleteOldSpeciesData(){
     }
     startSp = NULL; 
 
-    bOldSpecesDataExists = false;
+    bOldSpeciesDataExists = false;
 }
 
 void Structure3D::GenerateBaseDifferencePositionDisplayList(){
@@ -1408,10 +1408,10 @@ void Structure3D::MapCurrentSpeciesToEcoliTemplate(AW_root *awr){
                 else {
                     const char *pTemplateSeqData  = GB_read_char_pntr(gbTemplateSeqData);
 
-                    if(!RNA3D->bEColiRefInitialised) {
+                    if(!RNA3D->bEColiRefInitialized) {
                         EColiRef = new BI_ecoli_ref();
                         EColiRef->init(gb_main);
-                        RNA3D->bEColiRefInitialised = true;
+                        RNA3D->bEColiRefInitialized = true;
                     }
 
                     char buf[100];
@@ -1425,7 +1425,7 @@ void Structure3D::MapCurrentSpeciesToEcoliTemplate(AW_root *awr){
                     if (pSeqData && pTemplateSeqData) {
                         int iSeqLen = strlen(pTemplateSeqData); 
 
-                        if(bOldSpecesDataExists) {
+                        if(bOldSpeciesDataExists) {
                             DeleteOldSpeciesData();
                         }
 
@@ -1512,7 +1512,7 @@ void Structure3D::MapSearchStringsToEcoliTemplate(AW_root * /*awr*/){
                     glBegin(GL_POINTS);
                 }
                 for (int i = iStartPos; i < iEndPos; i++) {
-                    if(RNA3D->bEColiRefInitialised) {
+                    if(RNA3D->bEColiRefInitialized) {
                         long absPos   = (long) i;
                         long EColiPos = EColiRef->abs_2_rel(absPos);
 
@@ -1542,7 +1542,7 @@ void Structure3D::MapSearchStringsToEcoliTemplate(AW_root * /*awr*/){
                 int iLastClr = 0; int iLastPos = 0; Vector3 vLastPt;
                 glBegin(GL_LINES);
                 for (int i = iStartPos; i < iEndPos; i++) {
-                    if(RNA3D->bEColiRefInitialised) {
+                    if(RNA3D->bEColiRefInitialized) {
                         long absPos   = (long) i;
                         long EColiPos = EColiRef->abs_2_rel(absPos);
 
@@ -1595,7 +1595,7 @@ void Structure3D::MapSaiToEcoliTemplate(AW_root *awr){
                     glBegin(GL_POINTS);
                 }
                 for (int i = iStartPos; i < iEndPos; i++) {
-                    if(RNA3D->bEColiRefInitialised) {
+                    if(RNA3D->bEColiRefInitialized) {
                         long absPos   = (long) i;
                         long EColiPos = EColiRef->abs_2_rel(absPos);
 

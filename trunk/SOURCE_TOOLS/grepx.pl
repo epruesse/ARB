@@ -490,7 +490,7 @@ sub grepfile($$\$) {
 
         if ($matches==0 and $arbSpecials==1) {
           if (shall_skip_file($file)==1) {
-            print "grepx: Unlisted occurance(s) in $file\n";
+            print "grepx: Unlisted occurrence(s) in $file\n";
             return (0,0);
           }
         }
@@ -671,7 +671,7 @@ sub grep_collected_files(\%$) {
     if ($cmp==0) {
       $cmp = $depth{$a} <=> $depth{$b}; # depth in directory tree
       if ($cmp==0) {
-        $cmp = $a cmp $b; # alphabethically
+        $cmp = $a cmp $b; # alphabetically
       }
     }
     return $cmp;

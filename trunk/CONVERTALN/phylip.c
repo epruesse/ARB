@@ -62,7 +62,7 @@ void to_phylip(inf, outf, informat,readstdin)
         } else if(informat==MACKE)  {
             init_macke();
             eof=macke_in_name(ifp);
-        } else error(34, "UNKNOW input format when converting to PHYLIP format.");
+        } else error(34, "UNKNOWN input format when converting to PHYLIP format.");
         if(eof==EOF) break;
         if(informat==ALMA)  {
             alma_key_word(data.alma.id, 0, temp, TOKENNUM);
@@ -72,7 +72,7 @@ void to_phylip(inf, outf, informat,readstdin)
             embl_key_word(data.embl.id, 0, temp, TOKENNUM);
         } else if(informat==MACKE)  {
             Cpystr(temp, data.macke.seqabbr);
-        } else error(119, "UNKNOW input format when converting to PHYLIP format.");
+        } else error(119, "UNKNOWN input format when converting to PHYLIP format.");
         total_seq++;
 
         if((name = Dupstr(temp))==NULL&&temp!=NULL) { out_of_memory=1; break; }
@@ -86,8 +86,7 @@ void to_phylip(inf, outf, informat,readstdin)
     } while(!out_of_memory);
 
     if(out_of_memory)   {   /* cannot hold all seqs into mem. */
-        fprintf(stderr,
-                "Rerun the conversion throught one seq. by one seq. base.\n");
+        fprintf(stderr, "Out of memory: Rerun the conversion sequence by sequence.\n");
         destroy_FILE_BUFFER(ifp); fclose(ofp);
         to_phylip_1x1(inf, outf, informat);
         return;

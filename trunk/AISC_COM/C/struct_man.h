@@ -4,6 +4,9 @@
  *
  */
 
+#ifndef STRUCT_MAN_H
+#define STRUCT_MAN_H
+
 #ifndef P_
 # if defined(__STDC__) || defined(__cplusplus)
 #  define P_(s) s
@@ -50,3 +53,7 @@ int aisc_server_dllstring_2_bytestring P_((dllpublic_ext *pb, bytestring *bs, in
 #endif
 
 #undef P_
+
+#else
+#error struct_man.h included twice
+#endif /* STRUCT_MAN_H */

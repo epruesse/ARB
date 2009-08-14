@@ -74,7 +74,7 @@ AED_window::AED_window(void) {
     cursor_is_managed = false;
     one_area_entry_is_selected = false;
 
-    edit_modus = AED_ALIGN;
+    edit_mode = AED_ALIGN;
 
     info_area_height = 50;
     edit_info_area = false;
@@ -1577,12 +1577,12 @@ static void change_direction(AW_window *aww,AED_window *aedw)
 
 static void change_insert_mode(AW_window *aww,AED_window *aedw)
 {
-    switch(aedw->edit_modus) {
-        case AED_ALIGN:     aedw->edit_modus = AED_INSERT;break;
-        case AED_INSERT:    aedw->edit_modus = AED_REPLACE;break;
-        case AED_REPLACE:   aedw->edit_modus = AED_ALIGN;break;
+    switch(aedw->edit_mode) {
+        case AED_ALIGN:     aedw->edit_mode = AED_INSERT;break;
+        case AED_INSERT:    aedw->edit_mode = AED_REPLACE;break;
+        case AED_REPLACE:   aedw->edit_mode = AED_ALIGN;break;
     }
-    aww->get_root()->awar(AWAR_EDIT_MODE)->write_int(aedw->edit_modus);
+    aww->get_root()->awar(AWAR_EDIT_MODE)->write_int(aedw->edit_mode);
 }
 
 static void aed_double_click( AW_window *aw, AED_window         *aedw ) {
@@ -1631,7 +1631,7 @@ static void aed_input( AW_window *aw, AW_CL cd1, AW_CL cd2 ) {
     }else if (event.type == AW_Keyboard_Press && event.keycode == AW_KEY_F2){
         change_direction(aedw->aww,aedw);
     }else if ( event.type == AW_Keyboard_Press && aedw->cursor_is_managed ) {
-        switch(aedw->edit_modus) {
+        switch(aedw->edit_mode) {
             case AED_ALIGN:     area_entry->adt_sequence->changemode(AD_allign);break;
             case AED_INSERT:    area_entry->adt_sequence->changemode(AD_insert);break;
             case AED_REPLACE:   area_entry->adt_sequence->changemode(AD_replace);break;
@@ -1915,7 +1915,7 @@ static void ED_calc_ecoli_pos(AW_root *root){
     long apos = root->awar(AWAR_CURSOR_POSITION_LOCAL)->read_int();
     long rpos = edg.ref->abs_2_rel(apos);
     
-    root->awar(AWAR_CURSER_POS_REF_ECOLI)->write_int(rpos);
+    root->awar(AWAR_CURSOR_POS_REF_ECOLI)->write_int(rpos);
 }
 
 static char *ED_create_sequences_for_gde(void *THIS, GBDATA **&the_species,
@@ -2001,13 +2001,13 @@ static void create_edit_variables(AW_root *root, AW_default awr, AED_window *aed
     root->awar_string( AWAR_SPECIES_NAME,   "",     GLOBAL_gb_main);
     root->awar_int( AWAR_CURSOR_POSITION_LOCAL, 0,      AW_ROOT_DEFAULT);
     root->awar_int( AWAR_CURSOR_POSITION,   0,      GLOBAL_gb_main);
-    root->awar_int( AWAR_CURSER_POS_REF_ECOLI, 0,AW_ROOT_DEFAULT);
+    root->awar_int( AWAR_CURSOR_POS_REF_ECOLI, 0,AW_ROOT_DEFAULT);
     root->awar_int( AWAR_LINE_SPACING,      7)  ->add_target_var(&aed_root.line_spacing);
     root->awar_int( AWAR_CENTER_SPACING,        -1) ->add_target_var(&aed_root.center_spacing);
     root->awar_int( AWAR_HELIX_AT_SAIS,         1)  ->add_target_var((long *)&aed_root.helix_at_extendeds);
     root->awar_int( AWAR_SECURITY_LEVEL, 0,AW_ROOT_DEFAULT);
     root->awar(AWAR_SECURITY_LEVEL)->add_callback(aed_changesecurity,(AW_CL)aedw);
-    root->awar_int( AWAR_EDIT_MODE,         aedw->edit_modus)   ->add_target_var((long *)&aedw->edit_modus);
+    root->awar_int( AWAR_EDIT_MODE,         aedw->edit_mode)   ->add_target_var((long *)&aedw->edit_mode);
     root->awar_int( AWAR_EDIT_DIRECTION,        1)          ->add_target_var((long *)&aedw->edit_direction);
     root->awar_int( AWAR_EDIT_MULTI_SEQ, 0,AW_ROOT_DEFAULT);
     root->awar(AWAR_CURSOR_POSITION_LOCAL)->add_callback(ED_calc_ecoli_pos);
@@ -2200,8 +2200,8 @@ void aed_create_window(AED_root *aedr) {
 
     awmm->label("E.coli");
     awmm->callback((AW_CB)jump_to_cursor_position,(AW_CL)aed_window,
-                   (AW_CL)AWAR_CURSER_POS_REF_ECOLI);
-    awmm->create_input_field(AWAR_CURSER_POS_REF_ECOLI,4);
+                   (AW_CL)AWAR_CURSOR_POS_REF_ECOLI);
+    awmm->create_input_field(AWAR_CURSOR_POS_REF_ECOLI,4);
 
     awmm->label("Mode");
     awmm->create_option_menu(AWAR_EDIT_MODE,0,0);

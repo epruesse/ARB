@@ -13,7 +13,7 @@
 #ifndef AWT_ITEM_SEL_LIST_HXX
 #define AWT_ITEM_SEL_LIST_HXX
 
-/***********************    FIELD INFORMATIONS  ************************/
+/***********************    FIELD INFORMATION  ************************/
 
 enum awt_selected_fields {
     AWT_SF_STANDARD = 0,

@@ -66,7 +66,7 @@ struct Vector3 {
     // adding 2 vectors
     Vector3 operator+(Vector3 v) { return Vector3(v.x + x, v.y + y, v.z + z); }
 
-    // substracting 2 vectors
+    // subtracting 2 vectors
     Vector3 operator-(Vector3 v) { return Vector3(x - v.x, y - v.y, z - v.z); }
 
     //multiply by scalars
@@ -102,7 +102,7 @@ public:
     bool bDisplayMask;
     bool bDisplayComments;
 
-    bool bEColiRefInitialised;
+    bool bEColiRefInitialized;
     bool bMapSearchStringsDispListCreated;
     bool bMapSaiDispListCreated;
 

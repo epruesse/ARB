@@ -81,7 +81,7 @@ static void awt_edit_changed_cb(GBDATA *dummy, struct adawcbstruct *cbs, GB_CB_T
         cbs->gb_edit = 0;
     }
     if (cbs->gb_edit) {
-        if (awt_check_scanner_key_data(cbs,cbs->gb_edit)) {     // doesnt exist
+        if (awt_check_scanner_key_data(cbs,cbs->gb_edit)) {     // doesn't exist
             aws->get_root()->awar(cbs->def_dest)->write_string("");
         }else{
             char *data;
@@ -444,7 +444,7 @@ static void awt_scanner_scan_list(GBDATA *dummy, struct adawcbstruct *cbs)
     for (int existing = 1; existing >= 0; --existing) {
         for (GBDATA *gb_key = GB_entry(gb_key_data,CHANGEKEY); gb_key; gb_key = GB_nextEntry(gb_key)) {
             GBDATA *gb_key_hidden = GB_entry(gb_key,CHANGEKEY_HIDDEN);
-            if (gb_key_hidden && GB_read_int(gb_key_hidden)) continue; // dont show hidden fields in 'species information' window
+            if (gb_key_hidden && GB_read_int(gb_key_hidden)) continue; // don't show hidden fields in 'species information' window
 
             GBDATA *gb_key_name = GB_entry(gb_key,CHANGEKEY_NAME);
             if (!gb_key_name) continue;

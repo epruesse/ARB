@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : MG_gene_species.cxx                                    //
 //    Purpose   : Transfer fields from organism and gene when            //
-//                tranferring gene species                               //
+//                transferring gene species                              //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2002             //

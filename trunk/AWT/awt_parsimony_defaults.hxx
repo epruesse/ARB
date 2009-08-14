@@ -20,7 +20,7 @@
 
 // When MULTIPLE_GAPS_ARE_MULTIPLE_MUTATIONS is 'undefined' it compiles
 // an EXPERIMENTAL VERSION of parsimony that counts multiple
-// consequetive gaps as one mutation.
+// consecutive gaps as one mutation.
 // Our tests show that this method produces bad trees.
 //
 // Recommended setting is 'defined'.

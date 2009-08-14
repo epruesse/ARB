@@ -104,7 +104,7 @@ public:
     }
 
     explicit PS_BitSet_Fast( bool _bias, long _capacity ) : PS_BitSet( _bias,_capacity ) {
-        // we just altered member functions so we dont do anything here
+        // we just altered member functions so we don't do anything here
         // but call correct base class constructor to prevent
         // the call of PS_BitSet() without parameters
         //printf( "PS_BitSet_Fast(%p) ", this );
@@ -388,7 +388,7 @@ void PS_BitSet_Fast::setFalse( const long _index ) {
 
 
 //   as i assume that a user of the _FAST variant knows how much
-//   data will be stored in the set we dont adjust the given
+//   data will be stored in the set we don't adjust the given
 //   capacity to bigger chunks as PS_BitSet::reserve does
 bool PS_BitSet_Fast::reserve( const long _capacity ) {
     unsigned char *new_data;

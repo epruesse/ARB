@@ -28,7 +28,7 @@ const int ST_MAX_SEQ_PART = 256;
 // should be greater than the editor width
 // otherwise extrem performance penalties
 const int ST_BUCKET_SIZE = 16;
-// at minumum ST_BUCKET_SIZE characters are calculated per call
+// at minimum ST_BUCKET_SIZE characters are calculated per call
 const int LD_BUCKET_SIZE = 4; // log dualis of ST_BUCKET_SIZE
 
 class ST_base_vector {
@@ -107,7 +107,7 @@ class ST_ML {
     ST_sequence_ml *do_tree(AP_tree *node);
     void undo_tree(AP_tree *node); //opposite of do_tree
     void insert_tree_into_hash_rek(AP_tree *node);
-    void create_matrizes(double max_disti, int nmatrizes);
+    void create_matrices(double max_disti, int nmatrices);
     void create_frequencies();
     static long delete_species(const char *key, long val, void *cd_st_ml);
 public:
@@ -123,10 +123,10 @@ public:
     ST_base_vector *base_frequencies; // column independent
     ST_base_vector *inv_base_frequencies; // column independent
     float *rates; // column independent
-    double max_dist; // max_dist for rate_matrizes
-    double step_size; // max_dist/step_size matrizes
+    double max_dist; // max_dist for rate_matrices
+    double step_size; // max_dist/step_size matrices
     int max_matr;
-    ST_rate_matrix *rate_matrizes; // for each distance a new matrix
+    ST_rate_matrix *rate_matrices; // for each distance a new matrix
     long alignment_len;
     AWT_csp *awt_csp;
     void set_modified(int *what = 0);
@@ -140,7 +140,7 @@ public:
     GB_ERROR init(const char *tree_name, const char *alignment_name,
             const char *species_names, int marked_only,
             const char *filter_string, AWT_csp *awt_csp);
-    // species_names is 0 -> all [marked] species (else species_names is a (char)1 seperated list of species)
+    // species_names is 0 -> all [marked] species (else species_names is a (char)1 separated list of species)
     // filter_string==0 -> no filter
 
     void clear_all(); // delete all caches

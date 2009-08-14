@@ -17,10 +17,10 @@ struct gb_local_data *gb_local = 0;
 long *arbdb_stat;
 #endif
 
-char *GB_rel(void *struct_adress,long rel_adress)
+char *GB_rel(void *struct_address,long rel_address)
 {
-    if (!rel_adress) return NULL;
-    return (char*)struct_adress+rel_adress;
+    if (!rel_address) return NULL;
+    return (char*)struct_address+rel_address;
 }
 /********************************************************************************************
                     GB local data
@@ -277,7 +277,8 @@ void GB_init_gb(void) {
 
 GB_ERROR gb_unfold(GBCONTAINER *gbd, long deep, int index_pos)
 {
-    /* get data from server if deep than get subitems too.
+    /* get data from server.
+     * if deep, then get subitems too.
      * If index_pos >= 0, get indexed item from server
      *               <0, get all items
      */
@@ -1620,7 +1621,7 @@ GB_ERROR GB_set_compression(GBDATA *gb_main, GB_COMPRESSION_MASK disable_compres
 ********************************************************************************************/
 
 
-/** if the temporary flag is set, than that entry (including all subentries) will not be saved*/
+/** if the temporary flag is set, then that entry (including all subentries) will not be saved*/
 GB_ERROR GB_set_temporary(GBDATA *gbd)
 {
     GB_TEST_TRANSACTION(gbd);
@@ -1652,7 +1653,7 @@ long GB_read_temporary(GBDATA *gbd) {
 GB_ERROR GB_push_local_transaction(GBDATA *gbd) {
     /* Starts a read only transaction !!;
        be sure that all data is cached
-       be extremely carefull !!!!! */
+       be extremely careful !!!!! */
     
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     if (Main->transaction>0) {
@@ -2335,7 +2336,7 @@ GB_ERROR GB_resort_data_base(GBDATA *gb_main, GBDATA **new_order_list, long list
         return GB_export_error("Sorry: this program is not the arbdb server, you cannot resort your data");
 
     if (GB_read_clients(gb_main)>0)
-        return GB_export_errorf("There are %li clients (editors, tree programms) connected to this server,\n"
+        return GB_export_errorf("There are %li clients (editors, tree programs) connected to this server,\n"
                                 "please close clients and rerun operation",
                                 GB_read_clients(gb_main));
 
