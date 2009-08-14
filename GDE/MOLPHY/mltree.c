@@ -1510,7 +1510,7 @@ LPMATRIX lklptrn;
 		printf("%3d%4d%10.2f%6d%6d\n", i, maxtree, lklmax, nptrn, nsite);
 	}
 	if (allsame > 0)
-		printf("\nsame bootstrap likelihood occured %d times\n", allsame);
+		printf("\nsame bootstrap likelihood occurred %d times\n", allsame);
 	free_dvector(boots);
 	free_ivector(addweight);
 } /*_ bootstrap */

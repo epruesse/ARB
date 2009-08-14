@@ -90,7 +90,7 @@ GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name)
             error = GBS_global_string("Database is corrupted:\n"
                                       "Found %li duplicated species with identical names!\n"
                                       "Fix the problem using\n"
-                                      "   'Search For Equal Fields and Mark Duplikates'\n"
+                                      "   'Search For Equal Fields and Mark Duplicates'\n"
                                       "in ARB_NTREE search tool, save DB and restart ARB."
                                       , duplicates);
         }

@@ -222,7 +222,7 @@ const char *aisc_client_get_m_id(const char *path, char **m_name, int *id) {
     }
     if (!strcmp(path,":")) {
         path = (char *)getenv("SOCKET");
-        if (!path) return "ENVIROMENT SOCKET NOT FOUNT";
+        if (!path) return "environment socket not found";
     }
     p = (char *) strchr(path, ':');
     if (path[0] == '*' || path[0] == ':'){      /* UNIX MODE */
@@ -466,7 +466,7 @@ int aisc_get_message(aisc_com *link)
 
 
 
-int aisc_get(aisc_com *link, int o_type, long objekt, ...)
+int aisc_get(aisc_com *link, int o_type, long object, ...)
 {
     /* goes to header: __ATTR__SENTINEL  */
     long    *arg_pntr[MAX_AISC_SET_GET];
@@ -485,8 +485,8 @@ int aisc_get(aisc_com *link, int o_type, long objekt, ...)
     mes_cnt = 2;
     arg_cnt = 0;
     count =4;
-    va_start(parg,objekt);
-    link->aisc_mes_buffer[mes_cnt++] = objekt;
+    va_start(parg,object);
+    link->aisc_mes_buffer[mes_cnt++] = object;
     while( (code=va_arg(parg,long)) ) {
         attribute       = code &0x0000ffff;
         type            = code &0xff000000;
@@ -581,7 +581,7 @@ int aisc_get(aisc_com *link, int o_type, long objekt, ...)
     return 0;
 }
 
-long    *aisc_debug_info(aisc_com *link,int o_type,long objekt,int attribute)
+long    *aisc_debug_info(aisc_com *link,int o_type,long object,int attribute)
 {
     int mes_cnt;
     int o_t;
@@ -602,7 +602,7 @@ long    *aisc_debug_info(aisc_com *link,int o_type,long objekt,int attribute)
         CORE;
         return 0;
     };
-    link->aisc_mes_buffer[mes_cnt++] = objekt;
+    link->aisc_mes_buffer[mes_cnt++] = object;
     link->aisc_mes_buffer[mes_cnt++] = attribute;
     link->aisc_mes_buffer[0] = mes_cnt - 2;
     link->aisc_mes_buffer[1] = AISC_DEBUG_INFO+link->magic;
@@ -719,17 +719,17 @@ static int      aisc_collect_sets(aisc_com *link,
     return mes_cnt;
 }
 
-int     aisc_put(       aisc_com        *link, int o_type, long objekt, ...)
+int     aisc_put(       aisc_com        *link, int o_type, long object, ...)
 {
     /* goes to header: __ATTR__SENTINEL  */
     int mes_cnt,arg_cnt;
     va_list     parg;
     int len;
     arg_cnt = mes_cnt = 2;
-    link->aisc_mes_buffer[mes_cnt++] = objekt;
+    link->aisc_mes_buffer[mes_cnt++] = object;
     link->aisc_mes_buffer[mes_cnt++] = o_type;
 
-    va_start(parg,objekt);
+    va_start(parg,object);
     if (!(mes_cnt = aisc_collect_sets(link, mes_cnt,parg,o_type,4))) return 1;
 
     if (mes_cnt > 3) {
@@ -747,17 +747,17 @@ int     aisc_put(       aisc_com        *link, int o_type, long objekt, ...)
     return 0;
 }
 
-int     aisc_nput(      aisc_com        *link, int o_type, long objekt, ...)
+int     aisc_nput(      aisc_com        *link, int o_type, long object, ...)
 {
     /* goes to header: __ATTR__SENTINEL  */
     int mes_cnt,arg_cnt;
     va_list     parg;
     int len;
     arg_cnt = mes_cnt = 2;
-    link->aisc_mes_buffer[mes_cnt++] = objekt;
+    link->aisc_mes_buffer[mes_cnt++] = object;
     link->aisc_mes_buffer[mes_cnt++] = o_type;
 
-    va_start(parg,objekt);
+    va_start(parg,object);
     if (!(mes_cnt = aisc_collect_sets(link, mes_cnt,parg,o_type,4))) {
         return 1;
     }
@@ -876,12 +876,12 @@ int aisc_copy(  aisc_com *link, int s_type, long source, int father_type,
 
 
 
-int aisc_delete(aisc_com *link,int objekt_type,long source)
+int aisc_delete(aisc_com *link,int object_type,long source)
 {
     int len,mes_cnt;
 
     mes_cnt = 2;
-    link->aisc_mes_buffer[mes_cnt++] = objekt_type;
+    link->aisc_mes_buffer[mes_cnt++] = object_type;
     link->aisc_mes_buffer[mes_cnt++] = source;
     link->aisc_mes_buffer[0] = mes_cnt - 2;
     link->aisc_mes_buffer[1] = AISC_DELETE+link->magic;

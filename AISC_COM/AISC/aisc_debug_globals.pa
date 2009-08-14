@@ -1,7 +1,7 @@
 
 IF $(argc) = 5,6
 ELSE
-        ERROR   Falsche Parameteranzahl: Syntax aisc xxx.pa xxx.aisc outfile exeternfile [import_proto]
+        ERROR   Wrong number of parameters: Syntax: aisc xxx.pa xxx.aisc outfile externfile [import_proto]
 ENDIF
 #               ************** LOAD DATA **************
 DATA AISC { $(#FILE $(argv[2])) };

@@ -399,7 +399,7 @@ char *readXmlTree(char *fname) {
         char          *tmp      = 0;
         GBS_strstruct *buf      = GBS_stropen(strlen(fname));
 
-        // extract path from fname inorder to place a copy of dtd file required to validate xml file
+        // extract path from fname in order to place a copy of dtd file required to validate xml file
         for (char *tok = strtok(tmpFname,"/"); tok; ) {
             tmp = tok;
             tok = strtok(0,"/");

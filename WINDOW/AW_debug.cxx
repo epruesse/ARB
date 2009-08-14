@@ -88,7 +88,7 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "NAME_SERVER_ADMIN/REMOVE_SUPERFLUOUS_ENTRIES_IN_NAMES_FILE", 2);
     GBS_write_hash(dontCallHash, "PRINT_CANVAS/PRINT", 2);
     GBS_write_hash(dontCallHash, "PT_SERVER_ADMIN/CREATE_TEMPLATE", 2);
-    GBS_write_hash(dontCallHash, "SELECT_CONFIFURATION/START", 2);
+    GBS_write_hash(dontCallHash, "SELECT_CONFIGURATION/START", 2);
 #endif
     
     // avoid saving

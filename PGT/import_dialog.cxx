@@ -1211,7 +1211,7 @@ void importDialog::changedDatatypeCallback(Widget, XtPointer callData)
     XmCHARSET_TEXT, XmCHARSET_TEXT,
     NULL, 0, XmOUTPUT_ALL);
 
-    // IF AN EVENT OCCURED...
+    // IF AN EVENT OCCURRED...
     if(cb->event)
     {
         // DEPENDING ON THE SELECTED STRING, SET THE NEW COLUMN DATATYPE

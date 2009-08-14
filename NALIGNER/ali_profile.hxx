@@ -10,7 +10,7 @@
 #define ALI_PROFILE_BORDER_LEFT '['
 #define ALI_PROFILE_BORDER_RIGHT ']'
 
-typedef void ALI_MAP_; /* make modul independent */
+typedef void ALI_MAP_; /* make module independent */
 
 
 typedef struct {

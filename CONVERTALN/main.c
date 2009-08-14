@@ -263,7 +263,7 @@ file_exist(file_name)
     char    temp[TOKENNUM];
 
     if(Lenstr(file_name)<=0)    {
-        sprintf(temp, "ilegal file name: %s, EXIT.", file_name);
+        sprintf(temp, "illegal file name: %s, EXIT.", file_name);
         error(152, temp);
     }
     return((fopen(file_name, "r")!=NULL));

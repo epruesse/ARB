@@ -11,7 +11,7 @@ SUB	ecoliref.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		SAI Sequence Associated Information
 
-DESCRIPTION	The main database devides all sequences into two groups:
+DESCRIPTION	The main database divides all sequences into two groups:
 
                     1. Species sequences -> Species
                     2. All other sequences -> SAI ( masks, filters, profiles )

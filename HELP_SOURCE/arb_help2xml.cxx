@@ -1099,7 +1099,7 @@ static void add_link_attributes(XML_Tag& link, LinkType type, const string& dest
     link.add_attribute("type", LinkType2id(type));
     link.add_attribute("source_line", source_line);
 
-    if (type&(LT_HLP|LT_PDF|LT_PS)) {               // other links (www, email) cannot be checked for existance here
+    if (type&(LT_HLP|LT_PDF|LT_PS)) {               // other links (www, email) cannot be checked for existence here
         string fullhelp = ((type&LT_HLP) ? locate_helpfile : locate_document)(dest);
         if (fullhelp.empty()) {
             link.add_attribute("missing", "1");
@@ -1277,7 +1277,7 @@ void Helpfile::extractInternalLinks() {
                                 check_duplicates(link_target, "AUTO-SUB", auto_references, false); // check only sublinks here
                             }
                             catch (string& err) {
-                                ; // ingore duplicated link in text
+                                ; // ignore duplicated link in text
                             }
                             auto_references.push_back(Link(link_target, sec.StartLineno()));
                         }

@@ -1340,7 +1340,7 @@ GB_ERROR gb_check_saveable(GBDATA *gbd,const char *path,const char *flags){
 
     if ( !strchr(flags,'q')){
         mode = GB_mode_of_link(path);
-        if (mode >=0 && !(mode & S_IWUSR)){ /* no write access -> lookes like a master file */
+        if (mode >=0 && !(mode & S_IWUSR)){ /* no write access -> looks like a master file */
             return GB_export_errorf(
                                     "Your selected file '%s' already exists and is write protected\n"
                                     "    It looks like that your file is a master arb file which is\n"

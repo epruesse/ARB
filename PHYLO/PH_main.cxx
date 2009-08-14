@@ -433,7 +433,7 @@ AW_window *create_phyl_main_window(AW_root *aw_root,PH_root *ph_root,AWT_graphic
     AW_window_menu_modes *awm = new AW_window_menu_modes();
     awm->init(aw_root,"ARB_PHYLO", "ARB_PHYLO", 830,630);
 
-    // create menues and menu inserts with callbacks
+    // create menus and menu inserts with callbacks
     //
 
     AW_gc_manager gcmiddle = AW_manage_GC( awm,

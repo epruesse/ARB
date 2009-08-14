@@ -563,7 +563,7 @@ public:
         , aws(0)
         , shall_reload_on_reinit(false)
     {}
-    // Initialisation is done in awt_create_input_mask
+    // Initialization is done in awt_create_input_mask
     // see also :  AWT_initialize_input_mask
 
     virtual ~awt_input_mask();

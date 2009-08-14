@@ -111,7 +111,7 @@ void GLRenderer::DisplayMappedSpBasePositions(void){
 }
 
 void GLRenderer::DisplayHelixMidPoints(Texture2D *cImages){
-    glPointSize(fHelixSize + 5); // size will be propotional to the Helix Thickness specified !!
+    glPointSize(fHelixSize + 5); // size will be proportional to the Helix Thickness specified !!
     glBindTexture(GL_TEXTURE_2D, cImages->texture[CIRCLE]);
     G->SetColor(RNA3D_GC_HELIX_MIDPOINT);
     glCallList(HELIX_NUMBERS_POINTS);

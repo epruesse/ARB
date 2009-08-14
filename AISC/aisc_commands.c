@@ -89,7 +89,7 @@ static char *find_string(const char *str,const char *key)
 
 static char *calc_rest_line(/*const*/ char *str, int size, int presize)
 {
-    /* wertet einen Puffer str aus , str[-1] muss exestieren !!! */
+    /* wertet einen Puffer str aus , str[-1] muss existieren !!! */
     char *ld;
     char *p;
     char *br;

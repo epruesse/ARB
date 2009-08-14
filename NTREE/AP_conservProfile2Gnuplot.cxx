@@ -87,7 +87,7 @@ AW_window *AP_openConservationPorfileWindow( AW_root *root ){
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE","CLOSE","C");
 
-    aws->at("help");aws->callback(AW_POPUP_HELP,(AW_CL)"coservProfile2Gnuplot.hlp");
+    aws->at("help");aws->callback(AW_POPUP_HELP,(AW_CL)"conservProfile2Gnuplot.hlp");
     aws->create_button("HELP","HELP","H");
 
     awt_create_selection_box(aws,AP_AWAR_CONSPRO);

@@ -22,7 +22,7 @@ DESCRIPTION     What to do with gaps?
                             the result will be shown as '-'.
 
                             If the switch is 'off', the algorithm will virtually remove all gaps.
-                            That means if you have a coloumn with two 'A's
+                            That means if you have a column with two 'A's
                             and 500 gaps the program thinks of 100% 'A'.
                             (If the switch is 'on', the relative number of 'A's would be 2%)
 

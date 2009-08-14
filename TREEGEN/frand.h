@@ -16,7 +16,7 @@ typedef struct S_Frand
 } *Frand;
 
 /* Um den Frequenzgenerator an der selben Stelle wiederaufzusetzen, */
-/* muá der Wert 'val' gemerkt und sp„ter wiedereingesetzt werden. */
+/* muss der Wert 'val' gemerkt und spaeter wiedereingesetzt werden. */
 
 #ifdef __cplusplus
 extern "C" {

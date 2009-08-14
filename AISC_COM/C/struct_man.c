@@ -142,7 +142,7 @@ const char *aisc_link(dllpublic_ext * parent, dllheader_ext * mh) {
     }
     if (parent->key != mh->key) {
         CORE;
-        return "Parent key doesnt match Object key";
+        return "Parent key doesn't match Object key";
     }
     if (mh->ident) {
         if (strlen(mh->ident) <= 0) {
@@ -370,7 +370,7 @@ int aisc_server_dllstring_2_bytestring(dllpublic_ext * pb,bytestring *bs,int off
     int *ptr;
     dllheader_ext * mh;
     char        *strptr,*str;
-    int stringlenghts;
+    int stringlengths;
 
     if (bs->data) free(bs->data);
     bs->data = 0;
@@ -378,14 +378,14 @@ int aisc_server_dllstring_2_bytestring(dllpublic_ext * pb,bytestring *bs,int off
     if (pb->cnt == 0) return 0;
 
     size = sizeof(int) * (pb->cnt+1);
-    stringlenghts = 0;
+    stringlengths = 0;
     for (mh=pb->first;mh;mh=mh->next) {
         str = *(char **) (((char *)mh)+offset);
         if (str) {
-            stringlenghts += strlen(str)+1;
+            stringlengths += strlen(str)+1;
         }
     }
-    bs->size = size+stringlenghts;
+    bs->size = size+stringlengths;
     ptr = (int *)malloc(bs->size);
     bs->data = (char *)ptr;
     strptr = ((char *)ptr)+size;

@@ -50,7 +50,7 @@ xi, xv, ttratio,          /*  transition/transversion info */
     freqa, freqc, freqg, freqt,  /*  base frequencies */
     freqr, freqy, invfreqr, invfreqy,
     freqar, freqcy, freqgr, freqty,
-    fracchange;    /*  random matching fraquency (in a sense) */
+    fracchange;    /*  random matching frequency (in a sense) */
 
 int
 info[maxsites+1],         /*  number of informative nucleotides */
@@ -281,7 +281,7 @@ void getoptions ()
                 }
                 break;
 
-            case 'M':   /*  Minimum infomative sequences  */
+            case 'M':   /*  Minimum informative sequences  */
                 if (mininfo > 0) {
                     printf("ERROR: Unexpected Min informative residues data\n");
                     anerror = TRUE;

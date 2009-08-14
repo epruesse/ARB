@@ -1242,7 +1242,7 @@ static void getdecl(FILE *f, const char *header) {
 static void Usage(void){
     fprintf(stderr, "Usage: %s [flags] [files ...]", ourname);
     fputs("\nSupported flags:"
-          "\n   -a               make a funcion list for aisc_includes (default: generate C prototypes)"
+          "\n   -a               make a function list for aisc_includes (default: generate C prototypes)"
           "\n"
           "\n   -e               put an explicit \"extern\" keyword in declarations"
           "\n"

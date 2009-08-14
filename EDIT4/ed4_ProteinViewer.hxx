@@ -73,13 +73,13 @@ AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root);
 // callback function to update sequence change in EDITOR
 void PV_AA_SequenceUpdate_CB(GB_CB_TYPE gbtype);
 
-// refresh all AA sequene terminals
+// refresh all AA_sequence_terminal's
 void PV_RefreshWindow(AW_root *root);
 
-// Creates new AA sequence terminals for new species added to the editor ** called from ED4_cursor.cxx **
+// Creates new AA_sequence_terminal's for new species added to the editor ** called from ED4_cursor.cxx **
 void PV_AddCorrespondingAAseqTerminals(class ED4_species_name_terminal *spNameTerm);
 
-// Creates new AA sequence terminals when newly marked species is loaded
+// Creates new AA_sequence_terminal's when newly marked species is loaded
 void PV_AddAAseqTerminalsToLoadedSpecies();
 
 // flags to use in display options

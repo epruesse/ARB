@@ -26,7 +26,7 @@ DESCRIPTION	Copies just one field from all listed species (left side)
 			Append all fields of listed species in db I
 			to corresponding field and species of db II
 
-NOTES		Transfering fields that are not of string type in append mode
+NOTES		Transferring fields that are not of string type in append mode
 		does not work
 
 

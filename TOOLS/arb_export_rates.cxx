@@ -117,7 +117,7 @@ int main(int argc, char **argv){
             for (int appears_in_header = 0; appears_in_header <= 1; ++appears_in_header) {
                 for (int arg = 0; arg < argc; ++arg) { // print [other_fastdnaml_args]*
                     if (!argv[arg][0]) continue; // skip empty arguments
-                    if (!argv[arg][1]) continue; // dont print single character commands again on a own line
+                    if (!argv[arg][1]) continue; // don't print single character commands again on a own line
                     if (APPEARS_IN_HEADER(argv[arg][0]) != appears_in_header) continue;
                     fputc('\n', stdout);
                     fputs(argv[arg], stdout);

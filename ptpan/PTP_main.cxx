@@ -469,7 +469,7 @@ int main(int argc, char *argv[])
       }
       if(!LoadIndexHeader(pg))
       {
-        forcebuild = TRUE; /* an error occured while loading the index header */
+        forcebuild = TRUE; /* an error occurred while loading the index header */
       }
     }
     if(forcebuild)

@@ -723,21 +723,21 @@ ED4_ERROR *ED4_Edit_String::command( AW_key_mod keymod, AW_key_code keycode, cha
                 break;
             case AW_KEY_ASCII: {
 
-                //      Tastaturbelegung:
+                //      keyboard layout:
                 //
                 //      - CTRL-A    Align                               ok
-                //      - CTRL-E    Edit/Align umschalten               ok
-                //      - CTRL-I    Insert/Replace umschalten           ok
+                //      - CTRL-E    Toggle edit/align                   ok
+                //      - CTRL-I    Toggle insert/replace               ok
                 //      - CTRL-J    Jump opposite helix position        ok
                 //      - CTRL-L    Refresh                             ok
                 //      - CTRL-R    set aligner reference species       ok
                 //      - CTRL-S    Repeat last search                  ok
-                //      - CTRL-U    Undo                                @@@ absturz!!!
+                //      - CTRL-U    Undo                                @@@ crashes!!!
 
 
                 if (key >0 && key<=26) { // CTRL-Keys
                     switch (key+'A'-1) {
-                        case 'R':  { // CTRL-R = set aligner refernce species
+                        case 'R':  { // CTRL-R = set aligner reference species
                             if (is_consensus) { cannot_handle = 1; return 0; };
 
                             AWTC_set_reference_species_name(0, (AW_CL)ED4_ROOT->aw_root);

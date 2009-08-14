@@ -151,10 +151,10 @@ PS_BitSet::IndexSet      __TARGET_ID_SET;
 //  (of the difference between __SPECIES_COUNT and the lowest
 //  count of trues per species) higher than the lowest count
 //  of trues for the species in __SOURCE_ID_SET
-#define __TRESHOLD_PERCENTAGE_NEXT_SOURCE_ID_SET  5
+#define __THRESHOLD_PERCENTAGE_NEXT_SOURCE_ID_SET  5
 //  target_id must be at least in 95% of total target_id_sets
 //  to be in __TARGET_ID_SET
-#define __TRESHOLD_PERCENTAGE_NEXT_TARGET_ID_SET 95
+#define __THRESHOLD_PERCENTAGE_NEXT_TARGET_ID_SET 95
 
 SpeciesID               __MIN_SETS_ID;
 SpeciesID               __MAX_SETS_ID;
@@ -307,8 +307,8 @@ void PS_find_probe_for_sets( const PS_NodePtr _ps_node, PS_CandidatePtr _candida
     __PATH.insert( id );
 
     //
-    // dont look at path until ID is greater than lowest ID in the sets of IDs
-    // also dont use a node if its already used as candidate
+    // don't look at path until ID is greater than lowest ID in the sets of IDs
+    // also don't use a node if its already used as candidate
     //
     if ((id >= __MIN_SETS_ID) && has_probes && !_candidate_parent->alreadyUsedNode(_ps_node)) {
         ++__PROBES_COUNTER;
@@ -406,10 +406,10 @@ void PS_calc_next_speciesid_sets() {
     // 
     SpeciesID highest_count;
     SpeciesID lowest_count;
-    float     treshold;
+    float     threshold;
     SpeciesID count;
 
-    // first pass -- get lowest count of trues and calc treshold
+    // first pass -- get lowest count of trues and calc threshold
     lowest_count  = __SPECIES_COUNT;
     highest_count = 0;
     for ( SpeciesID id = __MIN_ID;
@@ -420,15 +420,15 @@ void PS_calc_next_speciesid_sets() {
         if (count > highest_count) highest_count = count;
         if (count < lowest_count)  lowest_count  = count;
     }
-    treshold = ( ((__SPECIES_COUNT-lowest_count) * __TRESHOLD_PERCENTAGE_NEXT_SOURCE_ID_SET) / 100.0 ) + lowest_count;
-    printf( "PS_calc_next_speciesid_sets() : SOURCE count 1's [%i..%i]  treshold (%.3f)", lowest_count, highest_count, treshold );
+    threshold = ( ((__SPECIES_COUNT-lowest_count) * __THRESHOLD_PERCENTAGE_NEXT_SOURCE_ID_SET) / 100.0 ) + lowest_count;
+    printf( "PS_calc_next_speciesid_sets() : SOURCE count 1's [%i..%i]  threshold (%.3f)", lowest_count, highest_count, threshold );
 
-    // second pass -- get IDs where count is below or equal treshold
+    // second pass -- get IDs where count is below or equal threshold
     __SOURCE_ID_SET.clear();
     for ( SpeciesID id = __MIN_ID;
           id <= __MAX_ID;
           ++id) {
-        if (__MAP->getCountFor( id ) <= treshold) __SOURCE_ID_SET.insert( id );
+        if (__MAP->getCountFor( id ) <= threshold) __SOURCE_ID_SET.insert( id );
     }
     PS_print_set_ranges( " __SOURCE_ID_SET", __SOURCE_ID_SET );
 
@@ -456,7 +456,7 @@ void PS_calc_next_speciesid_sets() {
     }
     //PS_print_map_ranges( "PS_calc_next_speciesid_sets() : count_falses_per_id", count_falses_per_id, false );
 
-    // second -- get highest count of falses and calc treshold
+    // second -- get highest count of falses and calc threshold
     lowest_count  = __SPECIES_COUNT;
     highest_count = 0;
     for ( ID2IDMapCIter count_per_id = count_falses_per_id.begin();
@@ -786,7 +786,7 @@ void PS_make_map_for_candidate( PS_CandidatePtr _candidate ) {
 //     //printf( "\n" );
 //     //PS_print_map_ranges( "PS_calc_next_speciesid_sets_for_candidate() : count_falses_per_id", count_falses_per_id, false );
 
-//     // second -- get highest count of falses and calc treshold
+//     // second -- get highest count of falses and calc threshold
 //     lowest_count  = __SPECIES_COUNT;
 //     highest_count = 0;
 //     for ( ID2IDMapCIter count_per_id = count_falses_per_id.begin();
@@ -906,8 +906,8 @@ void PS_get_next_candidates_descend( PS_NodePtr _ps_node, PS_CandidateSet &_leaf
     __PATH.insert( id );
 
     //
-    // dont look at path until ID is greater than lowest ID in the sets of IDs
-    // also dont use a node if its already used as candidate
+    // don't look at path until ID is greater than lowest ID in the sets of IDs
+    // also don't use a node if its already used as candidate
     //
     if ((id >= __MIN_SETS_ID) && has_probes) {
         unsigned long total_gain_of_node   = 0;
@@ -930,7 +930,7 @@ void PS_get_next_candidates_descend( PS_NodePtr _ps_node, PS_CandidateSet &_leaf
                                    __CANDIDATES_TODO,
                                    __CANDIDATES_FINISHED ); fflush( stdout );
 
-            // next leaf-candidate if __PATH doesnt fulfill matching criteria
+            // next leaf-candidate if __PATH doesn't fulfill matching criteria
             unsigned long matches = candidate->matchPathOnOneFalseIDs( __PATH );
             if (matches < candidate->one_false_IDs_matches) continue;
 

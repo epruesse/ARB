@@ -48,7 +48,7 @@ alma_to_macke(inf, outf)
     }
 
     init();
-    /* macke format seq irrelenvant header */
+    /* macke format seq irrelevant header */
     macke_out_header(ofp);
     for(indi=0; indi<3; indi++) {
         FILE_BUFFER_rewind(ifp);
@@ -458,7 +458,7 @@ gcg_in(fp)
     }
 }
 /* ----------------------------------------------------------------
- *   Fnction staden_in().
+ *   Function staden_in().
  *       Read in sequence data in STADEN format.
  */
 void

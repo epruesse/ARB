@@ -61,7 +61,7 @@ class DBwriter : public Noncopyable {
     // following data is valid for one organism write :
     GBDATA      *gb_organism;   // current organism
     GBDATA      *gb_gene_data;  // current gene data
-    NameCounter  generatedGenes; // helper to create unique gene names (key = name, value = count occurances)
+    NameCounter  generatedGenes; // helper to create unique gene names (key = name, value = count occurrences)
 
     void testAndRemoveTranslations(Importer& importer); // test and delete translations (if test was ok). warns via Importer
     void hideUnwantedGenes();

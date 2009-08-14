@@ -25,7 +25,7 @@ private:
     SearchParameter *current;   // points to the currently examined position in the list
 
     Node             *root;     // rootnode of primertree to be searched in
-    bool              expand_IUPAC_Codes; // enable/disable expasnion of IUPAC codes
+    bool              expand_IUPAC_Codes; // enable/disable expansion of IUPAC codes
     PRD_Sequence_Pos  min_distance_to_next_match; // if a match is found out of that distance its ignored (not deleted)
 
     void init( Node *root_, PRD_Sequence_Pos min_distance_to_next_match_, bool expand_IUPAC_Codes_ );

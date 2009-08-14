@@ -646,7 +646,7 @@ double di_protdist::pos_2_tt(int pos) {
 
 void            di_protdist::build_akt_predikt(double tt)
 {
-    /* take an aktual slope from the hash table, else calculate a new one */
+    /* take an actual slope from the hash table, else calculate a new one */
     int             pos = tt_2_pos(tt);
     if (!slopes[pos]){
         build_predikt_table(pos);

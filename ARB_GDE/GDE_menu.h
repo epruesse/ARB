@@ -51,7 +51,7 @@ typedef struct GmenuItemtype
     char             *method;   /* commandline produced */
     GfileFormat      *input;    /* input definitions */
     GfileFormat      *output;   /* output definitions */
-    GmenuItemArg     *arg;      /* arguement definitions */
+    GmenuItemArg     *arg;      /* argument definitions */
     char              meta;     /* Meta character for function */
     char              seqtype;  /* A -> amino, N -> nucleotide, '-' -> no sequence, otherwise both */
     char             *help;     /* commandline help */

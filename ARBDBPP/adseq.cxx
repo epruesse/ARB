@@ -565,7 +565,7 @@ int AD_SEQ::time_stamp(void)
 
 
 /*** EDIT Functions *******/
-// dont call put operations !!!!!!!!!!
+// don't call put operations !!!!!!!!!!
 
 AD_ERR * AD_SEQ::insert(char *text,long position, int direction) {
     long i;
@@ -692,7 +692,7 @@ AD_ERR *AD_SEQ::push(long position, int direction) {
     long end = this->get_next_gap(position,direction);
     if ( end < 0   || end  >= seq_len  )
         return 0;       // end reached
-    if (end == position) return 0;              // dont push '.'
+    if (end == position) return 0;              // don't push '.'
 
     int gap = '-';
     int offset;

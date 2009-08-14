@@ -883,7 +883,7 @@ embl_out_comments(fp)
     }
 }
 /* --------------------------------------------------------------
- *      Fucntion embl_print_comment().
+ *      Function embl_print_comment().
  *              Print one embl comment  line, wrap around if over
  *                      column 80.
  */
@@ -920,7 +920,7 @@ void embl_print_comment(fp, key, string, offset, indent)
             for(; indj>=0&&!last_word(string[indj+indi]);
                 indj--) ;
 
-            /* print left margine */
+            /* print left margin */
             if(string[indi]==' ') indk = 1;
             else indk = 0;
 
@@ -996,7 +996,7 @@ embl_to_macke(inf, outf, format)
     }
 
     init();
-    /* macke format seq irelenvant header */
+    /* macke format seq irrelevant header */
     macke_out_header(ofp);
     for(indi=0; indi<3; indi++) {
         FILE_BUFFER_rewind(ifp);

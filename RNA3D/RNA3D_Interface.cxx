@@ -237,7 +237,7 @@ static void RefreshCanvas(AW_root *awr) {
     RefreshOpenGLDisplay();
 }
 
-static void SyncronizeColorsWithEditor(AW_window *aww) {
+static void SynchronizeColorsWithEditor(AW_window *aww) {
     // overwrites color settings with those from EDIT4
 
     AW_copy_GCs(aww->get_root(), "ARB_EDIT4", "RNA3D", false,
@@ -262,10 +262,10 @@ static void Change3DMolecule_CB(AW_root *awr) {
     RNA3D->cStructure->Combine2Dand3DstructureInfo();  // Combining Secondary Structure data with 3D Coordinates
     RNA3D->cStructure->GenerateDisplayLists();         // Generating Display Lists for Rendering
 
-    // recaluculate the mapping information
+    // recalculate the mapping information
     awr->awar(AWAR_SPECIES_NAME)->touch();
 
-    // recaluculate helix numbering
+    // recalculate helix numbering
     awr->awar(AWAR_3D_HELIX_FROM)->touch();
 
     // render new structure in OpenGL window
@@ -548,7 +548,7 @@ static AW_window *CreateMapSequenceData_window(AW_root *aw_root) {
     aws->button_length(0);
     aws->create_button("CLOSE","#closeText.xpm");
 
-    aws->callback(SyncronizeColorsWithEditor);
+    aws->callback(SynchronizeColorsWithEditor);
     aws->at("sync");
     aws->button_length(35);
     aws->create_button("SYNC","SYNCHRONIZE COLORS WITH EDITOR");

@@ -68,7 +68,7 @@ DESCRIPTION     Syntax of POSIX extended regular expressions as used in ARB
                   '|'          marks an alternative
                                (e.g. '/bacter|spiri/i' matches all strings containing "bacter" or "spiri")
 
-                  '()'         marks a subexpression. Subexpressions can be used to seperate alternatives
+                  '()'         marks a subexpression. Subexpressions can be used to separate alternatives
                                or to mark parts for use in the replace expression (see below).
 
                                (e.g.    '/bact|spiri.*cens/'   match '/bact/'       or '/spiri.*cens/',

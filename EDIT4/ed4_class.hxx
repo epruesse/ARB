@@ -711,7 +711,7 @@ public:
     ED4_index                 index; //defines the order of child objects
     ED4_base                 *width_link; //concerning the hierarchy
     ED4_base                 *height_link; //concerning the hierarchy
-    ED4_extension             extension; //contains relativ info about graphical properties
+    ED4_extension             extension; //contains relative info about graphical properties
     ED4_list                  linked_objects; //linked list of objects which are depending from this object
     ED4_update_info           update_info; //info about things to be done for the object, i.e. refresh; flag structure
     struct {
@@ -738,7 +738,7 @@ public:
     virtual void changed_by_database();
     virtual void deleted_from_database();
 
-    virtual bool remove_deleted_childs();
+    virtual bool remove_deleted_children();
 
     // functions concerned with graphic output
     virtual int adjust_clipping_rectangle(void); //sets scrolling area in AW_MIDDLE_AREA
@@ -751,14 +751,14 @@ public:
     bool is_visible(AW_pos x, AW_pos y, ED4_direction direction);
     bool is_visible(AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2, ED4_direction direction);
 
-    //functions concerned with links in the hierarchy
+    // functions concerned with links in the hierarchy
     virtual ED4_returncode  set_links(ED4_base *width_link, ED4_base *height_link);
     virtual ED4_returncode  link_changed(ED4_base *link);
 
-    //functions concerned with special initialisation
+    // functions concerned with special initialization
     virtual void set_properties  (ED4_properties prop);
 
-    //functions concerned with coordinate transformation
+    // functions concerned with coordinate transformation
 
     void update_world_coords_cache();
     void calc_rel_coords( AW_pos *x, AW_pos *y );
@@ -776,14 +776,14 @@ public:
         actualTimestamp++;
     }
 
-    //functions which refer to the object as a child, i.e. travelling down the hierarchy
+    // functions which refer to the object as a child, i.e. travelling down the hierarchy
     virtual ED4_returncode  set_refresh (int clear=1)=0;
     virtual ED4_returncode  resize_requested_by_child(void)=0;
     virtual ED4_returncode  resize_requested_by_parent(void)=0;
 
     virtual ED4_returncode  delete_requested_by_parent(void)=0;
     virtual ED4_returncode  delete_requested_by_child(void);
-    virtual ED4_returncode  delete_requested_childs(void)=0;
+    virtual ED4_returncode  delete_requested_children(void)=0;
 
     virtual ED4_returncode  calc_size_requested_by_parent( void )=0;
     virtual ED4_returncode  move_requested_by_parent( ED4_move_info *mi )=0;
@@ -909,7 +909,7 @@ public:
     virtual void changed_by_database();
     virtual void deleted_from_database();
 
-    virtual bool  remove_deleted_childs();
+    virtual bool  remove_deleted_children();
 
     //functions concerned with graphics
     virtual ED4_returncode  Show(int refresh_all=0, int is_cleared=0);
@@ -924,7 +924,7 @@ public:
     virtual ED4_returncode      resize_requested_by_parent( void );
 
     virtual ED4_returncode  delete_requested_by_parent(void);
-    virtual ED4_returncode  delete_requested_childs(void);
+    virtual ED4_returncode  delete_requested_children(void);
 
     virtual ED4_returncode  calc_size_requested_by_parent( void );
     virtual ED4_returncode  move_requested_by_parent( ED4_move_info *mi );
@@ -940,7 +940,7 @@ public:
     virtual ED4_returncode  refresh_requested_by_child(void);
     ED4_base            *get_defined_level(ED4_level lev) const;
 
-    // functions refering the consensus
+    // functions referring the consensus
 
     ED4_returncode      create_group( ED4_group_manager **group_manager, GB_CSTR group_name);
 
@@ -1007,7 +1007,7 @@ public:
     virtual void changed_by_database(void);
     virtual void deleted_from_database(void);
 
-    virtual bool  remove_deleted_childs();
+    virtual bool  remove_deleted_children();
 
     //functions concerning graphic output
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0) = 0;
@@ -1026,7 +1026,7 @@ public:
     virtual ED4_returncode      resize_requested_by_parent(void);
 
     virtual ED4_returncode  delete_requested_by_parent(void);
-    virtual ED4_returncode  delete_requested_childs(void);
+    virtual ED4_returncode  delete_requested_children(void);
 
     virtual ED4_returncode  move_requested_by_parent( ED4_move_info *mi );
     virtual ED4_returncode  event_sent_by_parent(AW_event *event, AW_window *aww);
@@ -1646,9 +1646,9 @@ public:
 // -----------------------------------------------------------------------------------------------------
 //         class ED4_AA_sequence_terminal: public ED4_sequence_terminal_basic
 // -----------------------------------------------------------------------------------------------------
-// NOTE: ED4_AA_sequence_terminal is a separte terminal class used to Open Reading Frames (ORFs)
+// NOTE: ED4_AA_sequence_terminal is a separate terminal class used to Open Reading Frames (ORFs)
 //       for the corresponding gene (DNA) sequence. It is used in ProteinViewer Module and should not be 
-//       used for drawing aminoacid sequence alone as in protien alignment. Aminoacid sequences are 
+//       used for drawing aminoacid sequence alone as in protein alignment. Aminoacid sequences are 
 //       handled by the standard "ED4_sequence_terminal" class.
 // ------------------------------------------------------------------------------------------------------
 
@@ -1787,7 +1787,7 @@ public:
 
     virtual int get_length() const { return 1+strlen(id); }
 
-    virtual bool remove_deleted_childs();
+    virtual bool remove_deleted_children();
 
 #if defined(IMPLEMENT_DUMP)
     virtual void dump(size_t indent) const;

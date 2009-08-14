@@ -92,7 +92,7 @@ static GBDATA *find_sub_by_quark(GBDATA *father, int key_quark, GB_TYPES type, c
        
        GB_STRING/GB_LINK: compares string (case_sensitive or not)
        GB_INT: compares values
-       GB_FLOAT: dito (val MUST be a 'double*')
+       GB_FLOAT: ditto (val MUST be a 'double*')
        others: not implemented yet
 
        Note: to search for non-char*-values use GB_find_int()
@@ -282,7 +282,7 @@ static GBDATA *gb_find_internal(GBDATA *gbd, const char *key, GB_TYPES type, con
     switch (gbs) {
         case down_level:    return GB_find_subcontent_by_quark((GBDATA*)gbc, key_quark, type, val, case_sens, after);
         case down_2_level:  return find_sub_sub_by_quark((GBDATA*)gbc, key, key_quark, type, val, case_sens, after);
-        default:            GB_internal_errorf("Unknown seach type %li",gbs); return NULL;
+        default:            GB_internal_errorf("Unknown search type %li",gbs); return NULL;
     }
 }
 
@@ -315,11 +315,11 @@ NOT4PERL GBDATA *GB_find_int(GBDATA *gbd, const char *key, long val, long gbs) {
 /* ---------------------------------------------------- */
 
 GBDATA *GB_child(GBDATA *father) {
-    // return first child (or NULL if no childs)
+    // return first child (or NULL if no children)
     return GB_find(father, NULL, down_level);
 }
 GBDATA *GB_nextChild(GBDATA *child) {
-    // return next child after 'child' (or NULL if no more childs)
+    // return next child after 'child' (or NULL if no more children)
     return GB_find(child, NULL, this_level|search_next);
 }
 
@@ -421,7 +421,7 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag
     char   *s1, *s2;
     GBDATA *gbp, *gbsp;
     int     len;
-    int     seperator = 0;
+    int     separator = 0;
     char    buffer[GB_PATH_MAX];
 
     /*fprintf(stderr, "gb_search(%p, %s, %li, %i)\n", gbd, str, create, internflag);*/
@@ -476,9 +476,9 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag
 
         s2 = gb_first_non_key_character(s1);
         if (s2) {
-            seperator = *s2;
+            separator = *s2;
             *(s2++) = 0;
-            if (seperator == '-') {
+            if (separator == '-') {
                 if ((*s2)  != '>'){
                     GB_export_errorf("Invalid key for gb_search '%s'",str);
                     GB_print_error();
@@ -492,7 +492,7 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag
             gbsp = GB_get_father(gbp);
         } else {
             gbsp = GB_entry(gbp, s1);
-            if (gbsp && seperator == '-'){ /* follow link !!! */
+            if (gbsp && separator == '-'){ /* follow link !!! */
                 if (GB_TYPE(gbsp) != GB_LINK){
                     if (create){
                         GB_export_error("Cannot create links on the fly in GB_search");
@@ -501,7 +501,7 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag
                     return NULL;
                 }
                 gbsp = GB_follow_link(gbsp);
-                seperator = 0;
+                separator = 0;
                 if (!gbsp) return NULL; /* cannot resolve link  */
             }
             while (gbsp && create) {
@@ -518,7 +518,7 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag
         }
         if (!gbsp) {
             if(!create) return NULL; /* read only mode */
-            if (seperator == '-'){
+            if (separator == '-'){
                 GB_export_error("Cannot create linked objects");
                 return NULL; /* do not create linked objects */
             }
@@ -770,8 +770,8 @@ char *gbs_search_second_bracket(const char *source)
 }
 
 
-char *gbs_search_next_seperator(const char *source,const char *seps){
-    /* search the next seperator */
+char *gbs_search_next_separator(const char *source,const char *seps){
+    /* search the next separator */
     static char tab[256];
     static int flag = 0;
     int c;
@@ -979,14 +979,14 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
 
         /*** loop over all commands ***/
         for (s1 = s1; s1 ; s1 = s2) {
-            int seperator;
+            int separator;
             GBL_COMMAND command;
-            s2= gbs_search_next_seperator(s1,"|;,");
+            s2= gbs_search_next_separator(s1,"|;,");
             if (s2) {
-                seperator = *(s2);
+                separator = *(s2);
                 *(s2++) = 0;
             }else{
-                seperator = 0;
+                separator = 0;
             }
             /* collect the parameters */
             memset((char*)in,0,sizeof(GBL)*GBL_MAX_ARGUMENTS);
@@ -1013,7 +1013,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
                         char *p1,*p2;
                         bracket[slen-1] = 0;
                         for (p1 = bracket; p1 ; p1 = p2) {
-                            p2 = gbs_search_next_seperator(p1,";,");
+                            p2 = gbs_search_next_separator(p1,";,");
                             if (p2) {
                                 *(p2++) = 0;
                             }
@@ -1113,7 +1113,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
 
             if (error) break;
 
-            if (seperator == '|') {         /* swap in and out in pipes */
+            if (separator == '|') {         /* swap in and out in pipes */
                 GBL *h;
                 for (i=0;i<argcinput;i++) {
                     if (orig[i].str)    free(orig[i].str);

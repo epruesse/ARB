@@ -40,7 +40,7 @@ const char *AW_get_nameserver_addid(GBDATA *gb_main) {
 }
 
 GB_ERROR AW_select_nameserver(GBDATA *gb_main, GBDATA *gb_other_main) {
-    // if entry AWAR_NAMESERVER_ADDID isnt defined yet, try to detect a reasonable value
+    // if entry AWAR_NAMESERVER_ADDID isn't defined yet, try to detect a reasonable value
     // from arb_tcp.dat. Ask user if multiple servers are defined.
     // 
     // if gb_other_main is defined try to use value from there.
@@ -125,7 +125,7 @@ private:
     aisc_com   *link;
     T_AN_LOCAL  locs;
     T_AN_MAIN   com;
-    int         persistant;     // if true -> connection will not be closed
+    int         persistent;     // if true -> connection will not be closed
     time_t      linktime;       // time, when link has been established
 
     //  ----------------------------------
@@ -147,13 +147,13 @@ private:
     NameServerConnection& operator=(const NameServerConnection& /*other*/);
 
     GB_ERROR reconnect(GBDATA *gb_main) { // reconnect ignoring consistency
-        int old_persistant = persistant;
+        int old_persistent = persistent;
 
         printf("Reconnecting name server\n");
 
-        persistant = 0; // otherwise disconnect() won't disconnect
+        persistent = 0; // otherwise disconnect() won't disconnect
         disconnect();
-        persistant = old_persistant; // restore previous persistancy
+        persistent = old_persistent; // restore previous persistence
 
         return connect(gb_main);
     }
@@ -186,10 +186,10 @@ public:
         link       = 0;
         locs       = 0;
         com        = 0;
-        persistant = 0;
+        persistent = 0;
     }
     virtual ~NameServerConnection() {
-        gb_assert(persistant == 0); // forgot to remove persistancy ?
+        gb_assert(persistent == 0); // forgot to remove persistence ?
         disconnect();
     }
 
@@ -261,7 +261,7 @@ public:
     }
 
     void disconnect() {
-        if (persistant == 0) {
+        if (persistent == 0) {
             if (link) {
                 aisc_close(link);
             }
@@ -269,14 +269,14 @@ public:
         }
     }
     
-    void persistancy(bool persist) {
+    void persistence(bool persist) {
         if (persist) {
-            ++persistant;
+            ++persistent;
         }
         else {
-            --persistant;
-            if (persistant <= 0) {
-                persistant = 0;
+            --persistent;
+            if (persistent <= 0) {
+                persistent = 0;
                 disconnect();
             }
         }
@@ -289,11 +289,11 @@ public:
 
 static NameServerConnection name_server;
 
-PersistantNameServerConnection::PersistantNameServerConnection() {
-    name_server.persistancy(true);
+PersistentNameServerConnection::PersistentNameServerConnection() {
+    name_server.persistence(true);
 }
-PersistantNameServerConnection::~PersistantNameServerConnection() {
-    name_server.persistancy(false);
+PersistentNameServerConnection::~PersistentNameServerConnection() {
+    name_server.persistence(false);
 }
 
 // --------------------------------------------------------------------------------

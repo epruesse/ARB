@@ -50,9 +50,9 @@ int AW_repeated_question::get_answer(const char *question, const char *buttons, 
             const char *r       = buttons;
 
             while (1) {
-                const char *komma = strchr(r, ',');
-                if (!komma) komma = strchr(r, 0);
-                int         len   = komma-r;
+                const char *comma = strchr(r, ',');
+                if (!comma) comma = strchr(r, 0);
+                int         len   = comma-r;
 
                 if (!dont_ask_again) {
                     if (w>new_buttons) *w++ = '^'; // not in front of first button
@@ -65,15 +65,15 @@ int AW_repeated_question::get_answer(const char *question, const char *buttons, 
 
                 button_count++;
 
-                if (!komma[0]) break;
-                r = komma+1;
+                if (!comma[0]) break;
+                r = comma+1;
             }
             if (add_abort) {
                 const char *abort      = "^ABORT";
                 strcpy(w, abort); w += strlen(abort);
             }
             else {
-                --w; // delete komma at end
+                --w; // delete comma at end
             }
             w[0] = 0;
 

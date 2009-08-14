@@ -42,7 +42,7 @@ typedef enum
     ED4_G_COLOR_8,
     ED4_G_COLOR_9,
 
-    ED4_G_CBACK_0,  // Ranges for column statitics
+    ED4_G_CBACK_0,  // Ranges for column statistics
     ED4_G_CBACK_1,
     ED4_G_CBACK_2,
     ED4_G_CBACK_3,

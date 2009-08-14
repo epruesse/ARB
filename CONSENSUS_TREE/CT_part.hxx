@@ -16,7 +16,7 @@ int   son(PART *son, PART *father);
 int   brothers(PART *p1, PART *p2);void part_invert(PART *p);
 void  part_or(PART *s, PART *d);
 void  part_copy(PART *s, PART *d);
-void  part_standart(PART *p);
+void  part_standard(PART *p);
 int   calc_index(PART *p);
 void  part_free(PART *p);
 int   part_cmp(PART *p1, PART *p2);int part_key(PART *p);

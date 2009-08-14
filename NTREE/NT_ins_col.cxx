@@ -55,7 +55,7 @@ AW_window *create_insertchar_window(AW_root *root, AW_default def)
     if (aws) return aws;
     aws = new AW_window_simple;
 
-    aws->init( root, "INSERT_COLOUM", "INSERT CHAR");
+    aws->init( root, "INSERT_COLUMN", "INSERT CHAR");
 
     aws->load_xfig("inschar.fig");
     aws->button_length(8);

@@ -166,7 +166,7 @@ void SearchFIFO::iterateWith ( PRD_Sequence_Pos pos_, unsigned char base_ )
             // get childnode of parameters current node
             child = current->node->childByBase( base_ );
 
-            // erase parameter if child doesnt exist
+            // erase parameter if child doesn't exist
             if ( child == NULL ) {
                 erase( current );
             }

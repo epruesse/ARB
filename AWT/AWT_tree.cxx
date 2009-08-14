@@ -257,7 +257,7 @@ AP_weights::~AP_weights(void)
 }
 
 /*****************************************************************************************
- ************           Matrizes                            **********
+ ************           Matrices                            **********
  *****************************************************************************************/
 
 void AP_matrix::set_description(const char *xstring,const char *ystring){
@@ -1148,7 +1148,7 @@ GB_ERROR AP_tree::move_group_info(AP_tree *new_group) {
             if (!new_group->gb_node) {
                 error = GB_export_error("Internal Error: Target node has a database entry (but no name)");
             }
-            else { /* exchange two group infos */
+            else { /* exchange information of two groups */
                 GBDATA *tmp_node   = new_group->gb_node;
                 char   *tmp_name   = new_group->name;
                 new_group->gb_node = gb_node;
@@ -1425,7 +1425,7 @@ void AP_tree::delete_tree() {
 
 void AP_tree::_load_sequences_rek(char *use,GB_BOOL set_by_gbdata,long nnodes, long *counter) {
     /* uses sequence -> filter !!!
-     * loads all sequences rekursivly
+     * loads all sequences recursively
      * clears sequence->is_set_flag
      * flag = 0 with loading - 1 = without
      *  use = alignment

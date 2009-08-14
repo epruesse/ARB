@@ -226,8 +226,8 @@ static void aw_status_write( int fd, int cmd) {
 }
 
 static int aw_status_read_byte(int fd, int poll_flag)
-    /* read one byte from the pipe, if poll ==1 then dont wait for any
-       data, but return EOF */
+    /* read one byte from the pipe,
+     * if poll ==1 then don't wait for any data, but return EOF */
 {
     int erg;
     unsigned char buffer[2];
@@ -254,8 +254,8 @@ static int aw_status_read_byte(int fd, int poll_flag)
 }
 
 static int aw_status_read_int(int fd, int poll_flag) {
-    /* read one integer from the pipe, if poll ==1 then dont wait for any
-       data, but return EOF */
+    /* read one integer from the pipe,
+     * if poll ==1 then don't wait for any data, but return EOF */
 
     int erg;
     unsigned char buffer[sizeof(int)+1];
@@ -904,7 +904,7 @@ extern "C" {
         int        val      = (int)(gauge*AW_GAUGE_GRANULARITY);
 
         if (val != last_val) {
-            if (val>0 || gauge == 0.0) {            // dont write 0 on low gauge (cause 0 resets the timer)
+            if (val>0 || gauge == 0.0) {            // don't write 0 on low gauge (cause 0 resets the timer)
                 aw_assert(gauge <= 1.0);            // please fix the gauge calculation in caller!
                 aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_GAUGE);
                 safe_write(aw_stg.fd_to[1], (char*)&val, sizeof(int));
@@ -982,7 +982,7 @@ void aw_popup_exit(const char *msg, bool fixedSizeButtons, const char *helpfile)
 int aw_question(const char *question, const char *buttons, bool fixedSizeButtons, const char *helpfile) {
     // return 0 for first button, 1 for second button, 2 for third button, ...
     //
-    // the single buttons are seperated by kommas (e.g. "YES,NO")
+    // the single buttons are separated by commas (e.g. "YES,NO")
     // If the button-name starts with ^ it starts a new row of buttons
     // (if a button named 'EXIT' is pressed the program terminates using exit(EXIT_FAILURE))
     //
@@ -1058,14 +1058,14 @@ int aw_question(const char *question, const char *buttons, bool fixedSizeButtons
             char   *pos               = button_list;
 
             while (1) {
-                char *komma       = strchr(pos, ',');
-                if (!komma) komma = strchr(pos, 0);
+                char *comma       = strchr(pos, ',');
+                if (!comma) comma = strchr(pos, 0);
 
-                size_t len                                   = komma-pos;
+                size_t len                                   = comma-pos;
                 if (len>max_button_length) max_button_length = len;
 
-                if (!komma[0]) break;
-                pos = komma+1;
+                if (!comma[0]) break;
+                pos = comma+1;
             }
 
             aw_msg->button_length(max_button_length+1);
@@ -1266,7 +1266,7 @@ void input_history_cb(AW_window *aw, AW_CL cl_mode) {
 
 void input_cb(AW_window *aw, AW_CL cd1) {
     // any previous contents were passed to client (who is responsible to free the resources)
-    // so DONT free aw_input_cb_result here:
+    // so DON'T free aw_input_cb_result here:
     aw_input_cb_result        = 0;
     aw_string_selected_button = int(cd1);
 
@@ -1414,7 +1414,7 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
     //      title           window title
     //      prompt          prompt at input field
     //      default_input   default value (if NULL => "").
-    //      value_list      Existing selections (seperated by ';') or NULL if no selection exists
+    //      value_list      Existing selections (separated by ';') or NULL if no selection exists
     //      buttons         String containing answer button names separated by ',' (default is "OK,Cancel")
     //                      Use aw_string_selected_button() to detect which has been pressed.
     //      check_fun       function to correct input (or NULL for no check). The function may return NULL to indicate no correction
@@ -2096,7 +2096,7 @@ void AW_POPUP_HELP(AW_window *aw,AW_CL /*char */ helpcd) {
     
     if (!GBS_string_matches(help_file,"*.ps",GB_IGNORE_CASE) &&
         !GBS_string_matches(help_file,"*.pdf",GB_IGNORE_CASE))
-    { // dont open help if postscript or pdf file
+    { // don't open help if postscript or pdf file
         helpwindow->activate();
     }
 }

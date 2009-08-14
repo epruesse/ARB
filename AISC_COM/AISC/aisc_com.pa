@@ -154,7 +154,7 @@ FOR $(STRUCT)
 ENDFOR
 P       $1$(OBJECT_KEY)_MAX$5=$6$(MAX_OBJECT)*0x10000,
 P       $1$(OBJECT_KEY)_INDEX$5=$60x1ff0000
-P       } Aisc_Objekt_Type;$n$n
+P       } Aisc_Object_Type;$n$n
 
 CREATE $(A)
 CREATE $(add) 0

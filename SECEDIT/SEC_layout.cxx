@@ -59,24 +59,24 @@ const Angle& SEC_oriented::calc_rel_angle() {
 // ------------------------------------
 
 void SEC_segment::calculate_segment_size() {
-    alpha = ((get_region()->get_base_count()+1) / loop->get_circumferance()) * (2*M_PI);
+    alpha = ((get_region()->get_base_count()+1) / loop->get_circumference()) * (2*M_PI);
 }
 
-void SEC_loop::compute_circumferance(void) {  // Calculates the circumferance of the loop by counting the bases of the loop
+void SEC_loop::compute_circumference(void) {  // Calculates the circumference of the loop by counting the bases of the loop
     SEC_root *sroot = get_root();
     double    dbs   = sroot->display_params().distance_between_strands;
 
-    Circumferance = 0;
+    Circumference = 0;
     for (SEC_segment_iterator seg(this); seg; ++seg) {
         SEC_region *reg = seg->get_region();
         reg->update_base_count(sroot);
-        Circumferance += reg->get_base_count() + 1 + dbs;
+        Circumference += reg->get_base_count() + 1 + dbs;
     }
 }
 
 void SEC_loop::compute_radius(void) {
-    compute_circumferance();
-    setStandardSize(Circumferance / (2 * M_PI));
+    compute_circumference();
+    setStandardSize(Circumference / (2 * M_PI));
 }
 
 void SEC_loop::calculate_loop_size() {
@@ -149,7 +149,7 @@ void SEC_loop::calculate_loop_coordinates() {
     Angle current(center, loop_fixpoint);
 
     double dbs                   = get_root()->display_params().distance_between_strands;
-    double angle_between_strands = ( dbs / Circumferance) * (2*M_PI); //angle between two strands
+    double angle_between_strands = ( dbs / Circumference) * (2*M_PI); //angle between two strands
 
     SEC_segment      *seg     = strand_away->get_next_segment();
     SEC_helix_strand *pstrand = strand_away;

@@ -1161,7 +1161,7 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
                         m = (l+h)/2-1;
                         while (children->member(m)->flag.hidden) {
                             if (m==l) {
-                                // all childs between l..h are flag.hidden
+                                // all children between l..h are flag.hidden
                                 goto no_visible_child_found;
                             }
                             m--;
@@ -1235,7 +1235,8 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
             }
 
             if (last_window_reached) {
-                if (!flags_cleared && child->is_manager() && child->update_info.refresh) {      // if we didn't show a manager we must clear its childs refresh flags
+                if (!flags_cleared && child->is_manager() && child->update_info.refresh) {
+                    // if we didn't show a manager we must clear its children's refresh flags
                     child->to_manager()->clear_refresh();
                 }
                 else {
@@ -1311,14 +1312,14 @@ ED4_returncode ED4_manager::delete_requested_by_parent() {
     return ED4_R_OK;
 }
 
-ED4_returncode ED4_terminal::delete_requested_childs() {
+ED4_returncode ED4_terminal::delete_requested_children() {
     e4_assert(update_info.delete_requested);
     e4_assert(flag.deleted);
 
     delete this;
     return ED4_R_WARNING;       // == remove all links to me
 }
-ED4_returncode ED4_manager::delete_requested_childs() {
+ED4_returncode ED4_manager::delete_requested_children() {
     e4_assert(update_info.delete_requested);
 
     int i;
@@ -1326,7 +1327,7 @@ ED4_returncode ED4_manager::delete_requested_childs() {
 
     for (i=0; (child=children->member(i))!=NULL; i++) {
         if (child->update_info.delete_requested) {
-            ED4_returncode removed = child->delete_requested_childs();
+            ED4_returncode removed = child->delete_requested_children();
             if (removed==ED4_R_WARNING) {
                 children->delete_member(child);
                 if (i) i--;

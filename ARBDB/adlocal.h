@@ -43,7 +43,7 @@ void ad_use(int dummy, ...);
 
 #endif
 
-/* ================ Assert's ======================== */
+/* ================ Assertions ======================== */
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
@@ -71,7 +71,7 @@ void ad_use(int dummy, ...);
 #define GB_MAX_MAPPED_FILES 10
 
 
-/********** RELATIVE ADRESSING *************/
+/********** RELATIVE ADDRESSING *************/
 
 #if (MEMORY_TEST==1)
 typedef void                          *GB_REL_ADD;
@@ -83,14 +83,14 @@ typedef struct gb_if_entries          *GB_REL_IFES;
 typedef struct gb_index_files_struct  *GB_REL_IFS;
 typedef struct gb_if_entries         **GB_REL_PIFES;
 #else
-typedef long                           GB_REL_ADD;       /* relative adress */
-typedef long                           GB_REL_STRING;    /* relative adress */
-typedef long                           GB_REL_GBDATA;    /* relative adress */
-typedef long                           GB_REL_CONTAINER; /* relative adress */
-typedef long                           GB_REL_HLS;       /* relative adress */
-typedef long                           GB_REL_IFES;      /* relative adress */
-typedef long                           GB_REL_IFS;       /* relative adress */
-typedef long                           GB_REL_PIFES;     /* relative adress */
+typedef long                           GB_REL_ADD;       /* relative address */
+typedef long                           GB_REL_STRING;    /* relative address */
+typedef long                           GB_REL_GBDATA;    /* relative address */
+typedef long                           GB_REL_CONTAINER; /* relative address */
+typedef long                           GB_REL_HLS;       /* relative address */
+typedef long                           GB_REL_IFES;      /* relative address */
+typedef long                           GB_REL_IFS;       /* relative address */
+typedef long                           GB_REL_PIFES;     /* relative address */
 #endif
 
 typedef short GB_MAIN_IDX;      /* random-index */
@@ -251,7 +251,7 @@ struct gb_key_struct {
 };
 
 struct gb_quick_save_struct {
-    char *quick_save_disabled;  /* GB_BOOL if set, than text decsribes reason*/
+    char *quick_save_disabled;  /* GB_BOOL if set, then text describes reason */
     int   last_index;
 };
 
@@ -422,11 +422,11 @@ struct gb_flag_types {      /* public flags, abort possible */
     unsigned int compressed_data:1;
     unsigned int unused:1;      /* last bit saved */
     unsigned int user_flags:8;
-    unsigned int temporary:1;   /* ==1 -> dont save entry */
+    unsigned int temporary:1;   /* ==1 -> don't save entry */
     unsigned int saved_flags:8;
 };
 struct gb_flag_types2 {     /* private flags, abortable */
-    /* uncritic section undoable */
+    /* uncritical section, undoable */
     unsigned int last_updated:8;
     unsigned int usr_ref:7;     /* for user access  */
     /* critic section, do not update any below */

@@ -33,8 +33,8 @@ DESCRIPTION	Finds and replaces substrings within fields/tagged subfields of
 
 		REG: Simple Regular Expressions (not for beginners)
 
-			'/Seach RegExpr/Replace String/'  or
-			'/Seach RegExpr/'
+			'/Search RegExpr/Replace String/'  or
+			'/Search RegExpr/'
 			(see LINK{regexpr.hlp} for more details)
 
 		SRT: Replaces substrings
@@ -44,7 +44,7 @@ DESCRIPTION	Finds and replaces substrings within fields/tagged subfields of
                         Example: remove all spaces with SRT ': ='
 
 			Different search/replace commands can be performed
-			simultanously and have to be seperated by ':'
+			simultaneously and have to be separated by ':'
 
                                       ':search1=replace1:search2=replace2:  ...  :searchn=replacen'.
 

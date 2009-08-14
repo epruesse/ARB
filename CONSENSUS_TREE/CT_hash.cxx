@@ -14,7 +14,7 @@ int Hash_max_count=0;
 HNODE *Hashlist[HASH_MAX];
 HNODE *Sortedlist = NULL;
 
-/** initalize Hashtable and free old data */
+/** initialize Hashtable and free old data */
 void hash_init(void)
 {
     Hash_max_count = 0;
@@ -58,7 +58,7 @@ void hash_free(void)
 
 
 /** return the first element (with the highest hitnumber) from the linear sorted
-    list and calculate percentile appearence of this parition in all trees and
+    list and calculate percentaged appearance of this partition in all trees and
     calculate the average pathlength.
     The element is removed from the list afterwards */
 PART *hash_getpart(void)
@@ -81,14 +81,14 @@ PART *hash_getpart(void)
 
 
 /** insert part in hashtable with weight
-    @PARAMTER   part    the one to insert, is destructed afterwards
+    @PARAMETER   part    the one to insert, is destructed afterwards
     weight  the weight of the part                       */
 void hash_insert(PART *part, int weight)
 {
     int key;
     HNODE *hp;
 
-    part_standart(part);
+    part_standard(part);
 
     key = part_key(part);
     key %= HASH_MAX;
@@ -128,7 +128,7 @@ void hash_insert(PART *part, int weight)
 /** sort the current hash list in a linear sorted list, the current hash
     is empty afterwards. I use a simple trick speed up the function:
     build for every hitnumber one list and put all elements with that hitnumber
-    in it. After that i conect the list together, what results in a sorted list
+    in it. After that i connect the list together, what results in a sorted list
 */
 void build_sorted_list(void)
 {
@@ -162,7 +162,7 @@ void build_sorted_list(void)
 
     head = NULL;
     tail = NULL;
-    /* concatinate lists */
+    /* concatenate lists */
     for(i=Hash_max_count-1; i>=0; i--) {
         if(heads[i]) {
             if(!head) {

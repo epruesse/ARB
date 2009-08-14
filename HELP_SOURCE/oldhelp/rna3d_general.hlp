@@ -16,7 +16,7 @@ SUB     rna3d_mapSeqData.hlp
 TITLE		Visualization of Three-dimensional structure of small subunit (16S) rRNA
 
 
-OCCURRENCE	In Primary Sequnce Editor (ARB_EDIT4)
+OCCURRENCE	In Primary Sequence Editor (ARB_EDIT4)
 
 DESCRIPTION  
 
@@ -24,9 +24,9 @@ DESCRIPTION
     rRNA in OpenGL 3D environment. The annotation of RNA three-dimensional structures
     consists of a preprocessing of the information embedded in their 3D coordinates. It
     processes PDB structural information stored in the PDB file (1M5G) and used for
-    further structural analysis and searches. To provide user with the more detatiled
+    further structural analysis and searches. To provide user with the more detailed
     perspective of 16S rRNA structure, structural information corresponding to the
-    ribosmal protiens were excluded during processing. The extracted structural informaion
+    ribosomal proteins were excluded during processing. The extracted structural information
     is then fed to OpenGL engine, where it is further transformed into a hierarchy of
     OpenGL objects, which encode molecule chains, residues and base positions. At this
     stage, further processing may occur, for example when the user requests the mapping of
@@ -37,8 +37,8 @@ DESCRIPTION
     
 NOTES
 
-    More information regarding merging secondary structure infomation and mapping
-    individual rRNA sequence,sequence associated data, oligonucleotide probes can be found
+    More information regarding merging secondary structure information and mapping
+    individual rRNA sequence,sequence associated data, oligo-nucleotide probes can be found
     in the respective help files. See "Subtopics" section.
 
 EXAMPLES	None

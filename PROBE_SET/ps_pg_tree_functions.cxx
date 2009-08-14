@@ -36,11 +36,11 @@ GB_ERROR PG_initSpeciesMaps(GBDATA *pb_main) {
     if (!mapping) return GB_export_error("Can't read mapping");
     
     while (mapping[0]) {
-      const char *komma     = strchr(mapping, ',');   if (!komma) break;
-      const char *semicolon = strchr(komma, ';');     if (!semicolon) break;
-      string      name(mapping, komma-mapping);
-      komma+=1;
-      string idnum(komma,semicolon-komma);
+      const char *comma     = strchr(mapping, ',');   if (!comma) break;
+      const char *semicolon = strchr(comma, ';');     if (!semicolon) break;
+      string      name(mapping, comma-mapping);
+      comma+=1;
+      string idnum(comma,semicolon-comma);
       SpeciesID   id        = atoi(idnum.c_str());
 
       __NAME2ID_MAP[name] = id;

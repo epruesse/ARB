@@ -1,30 +1,21 @@
 
 DIRECTORIES
 
-                bin             binaries: arb_programms and links to DEPOT
+                bin             binaries: arb programs and external tools
 
                 SH              /bin/sh commands
 
-                DEPOT           external programms (phylip blast ..)
-                DEPOT/xfig      xfig
-                DEPOT/ghostview
-                DEPOT/phylip
-                DEPOT/etc
-                DEPOT/gde
-
                 GDEHELP         GDE help Files and menus
 
-                man             manuals, but not for man
-                Xlib            X11 libraries
-
-                lib             All libraries
-                lib/pts         The pt_server files
+                lib             Shared libraries
+                lib/pts         The PT_server files
                 lib/nas         The name server files
-                lib/pictures    All xfig background graphics
+                lib/pictures    All xfig window layouts
                 lib/pixmaps     All pixmaps
-                lib/arb_prop    Default defaults
+                lib/arb_prop    Default properties
                 lib/submit      submission forms
-                lib/help        all arb help files              
+                lib/help        ARB help files
+                lib/help_html   HTML version of ARB help
 
 
 IMPORTANT FILES

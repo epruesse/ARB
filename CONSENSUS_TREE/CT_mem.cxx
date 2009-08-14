@@ -1,4 +1,4 @@
-/* Modul zur Verwaltung des Speicherplatzes */
+/* memory handling */
 
 #include <stdlib.h>
 #include <string.h>
@@ -11,7 +11,7 @@ void *getmem(size_t size)
     p = malloc(size);
 
     if (!p) {
-        fprintf(stderr, "Error occured in Module CONSENSUS! Not enough Memory left\n");
+        fprintf(stderr, "Error occurred in Module CONSENSUS! Not enough Memory left\n");
         return 0;
     }
 

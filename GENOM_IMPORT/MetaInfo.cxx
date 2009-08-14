@@ -67,7 +67,7 @@ string References::tagged_content(const string& refkey) const
 {
     string content;
 
-    if (ref_count == 1) { // only one reference -> dont tag
+    if (ref_count == 1) { // only one reference -> don't tag
         RefVectorCIter  i           = refs.begin();
         const string   *ref_content = i->get(refkey);
 

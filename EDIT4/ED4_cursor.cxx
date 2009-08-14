@@ -643,7 +643,7 @@ void ED4_get_and_jump_to_species(GB_CSTR species_name)
             }
             ED4_ROOT->main_manager->update_info.set_resize(1);
             ED4_ROOT->main_manager->resize_requested_by_parent();
-            /* it should create new AA Sequence terminals if the protien viewer is enabled */
+            /* it should create new AA Sequence terminals if the protein viewer is enabled */
         }
         delete string;
     }
@@ -1259,7 +1259,7 @@ void ED4_terminal::scroll_into_view(AW_window *aww) { // scroll y-position only
 
     AW_pos termw_y_upper = termw_y - term_height; // upper border of terminal
 
-    if (termw_y_upper > coords->top_area_height) { // dont scroll if terminal is in top area (always visible)
+    if (termw_y_upper > coords->top_area_height) { // don't scroll if terminal is in top area (always visible)
         if (termw_y_upper < coords->window_upper_clip_point) {
 #if defined(DEBUG) && 0
             printf("termw_y(%i)-term_height(%i) < window_upper_clip_point(%i)\n",

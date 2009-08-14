@@ -294,7 +294,7 @@ static GB_ERROR NT_convert_gene_locations(GBDATA *gb_main, size_t species_count,
                 if (!gb_pos_start) {
                     GBDATA *gb_pos_begin = GB_entry(gb_gene, "pos_begin"); // test for old format
                     if (!gb_pos_begin) {
-                        error = "Neighter 'pos_begin' nor 'pos_start' found - format of gene location is unknown";
+                        error = "Neither 'pos_begin' nor 'pos_start' found - format of gene location is unknown";
                     }
                 }
 
@@ -809,7 +809,7 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
             int combinations = 0; // possible key/dict combinations
 
             DictMap   use;      // keyname -> dictionary (which dictionary to use)
-            StringSet multiDecompressable; // keys which can be decompressed with multiple dictionaries
+            StringSet multiDecompressible; // keys which can be decompressed with multiple dictionaries
 
             for (int pass = 1; pass <= 2; ++pass) {
                 for (Dicts::iterator di = dicts.begin(); di != dicts.end(); ++di) {
@@ -830,7 +830,7 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
                                             use[keyname] = d;
                                         }
                                         else { // already have another dictionary working with keyname
-                                            multiDecompressable.insert(keyname);
+                                            multiDecompressible.insert(keyname);
                                         }
                                     }
                                     aw_status(++cnt/double(combinations));
@@ -841,23 +841,23 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
                 }
             }
 
-            StringSet notDecompressable; // keys which can be decompressed with none of the dictionaries
+            StringSet notDecompressible; // keys which can be decompressed with none of the dictionaries
             for (Keys::iterator ki = keys.begin(); ki != keys.end(); ++ki) {
                 KeyInfoPtr    k       = ki->second;
                 const string& keyname = k->getName();
 
                 if (k->isCompressed()) {
-                    if (!contains(use, keyname)) notDecompressable.insert(keyname);
-                    if (contains(multiDecompressable, keyname)) use.erase(keyname);
+                    if (!contains(use, keyname)) notDecompressible.insert(keyname);
+                    if (contains(multiDecompressible, keyname)) use.erase(keyname);
                 }
             }
 
             bool dataLost   = false;
             int  reassigned = 0;
 
-            if (!notDecompressable.empty()) {
-                // bad .. found undecompressable data
-                int nd_count = notDecompressable.size();
+            if (!notDecompressible.empty()) {
+                // bad .. found undecompressible data
+                int nd_count = notDecompressible.size();
                 aw_message(GBS_global_string("Detected corrupted dictionary compression\n"
                                              "Data of %i DB-keys is lost and will be deleted", nd_count));
 
@@ -869,7 +869,7 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
                 long      deleted    = 0;
                 long      notDeleted = 0;
                 
-                for (StringSet::iterator ki = notDecompressable.begin(); !error && ki != notDecompressable.end(); ++ki) {
+                for (StringSet::iterator ki = notDecompressible.begin(); !error && ki != notDecompressible.end(); ++ki) {
                     const string& keyname    = *ki;
 
                     error = deleteDataOfKey(gb_main, GB_key_2_quark(gb_main, keyname.c_str()), deletedData, deleted, notDeleted);
@@ -889,8 +889,8 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
                 }
             }
 
-            if (!error && !multiDecompressable.empty()) {
-                for (StringSet::iterator ki = multiDecompressable.begin(); !error && ki != multiDecompressable.end(); ++ki) {
+            if (!error && !multiDecompressible.empty()) {
+                for (StringSet::iterator ki = multiDecompressible.begin(); !error && ki != multiDecompressible.end(); ++ki) {
                     const string&   keyname  = *ki;
                     int             possible = 0;
                     vector<DictPtr> possibleDicts;
@@ -945,7 +945,7 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
                 }
             }
 
-            // now all redundencies should be eliminated and we can assign dictionaries to affected keys
+            // now all redundancies should be eliminated and we can assign dictionaries to affected keys
             if (!error) {
                 for (Keys::iterator ki = keys.begin(); !error && ki != keys.end(); ++ki) {
                     KeyInfoPtr    k       = ki->second;

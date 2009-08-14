@@ -14,7 +14,7 @@ void ad_use(int dummy, ...)  {
 #endif
 
 /********************************************************************************************
-                    GB data manangement
+                    GB data management
 ********************************************************************************************/
 void gb_touch_entry(GBDATA * gbd, GB_CHANGED val) {
     GBCONTAINER *gbc;
@@ -600,7 +600,7 @@ void gb_abortdata(GBDATA *gbd)
 void gb_save_extern_data_in_ts(GBDATA *gbd){
     /* Saves gbd->info into gbd->ext->old
      *  destroys gbd->info !!!!
-     *  dont call with GBCONTAINER */
+     *  don't call with GBCONTAINER */
     GB_CREATE_EXT(gbd);
     GB_INDEX_CHECK_OUT(gbd);
     if (gbd->ext->old || (GB_ARRAY_FLAGS(gbd).changed == gb_created)){
@@ -855,7 +855,7 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA * gbd, long mode,int *pson_creat
                     error = gbcmc_sendupdate_create(gbd);
                     if (type == GB_DB) {
                         gb_set_update_in_server_flags(((GBCONTAINER *)gbd));
-                        /* set all childrens update_in_server flags */
+                        /* set all children update_in_server flags */
                     }
                     gbd->flags2.update_in_server = 1;
                     if (error)  return error;

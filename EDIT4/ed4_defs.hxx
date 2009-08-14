@@ -19,7 +19,7 @@ class ED4_database;
 typedef const char  ED4_ERROR;
 typedef int     ED4_COORDINATE;
 
-typedef enum ad_edit_modus {
+typedef enum ad_edit_mode {
     AD_ALIGN,   // add & remove of . possible (default)
     AD_NOWRITE, // no edits allowed
     AD_NOWRITE_IF_COMPRESSED,
@@ -45,7 +45,7 @@ extern long           all_found; // nr of species which haven't been found
 extern long           species_read; // nr of species read; important during loading
 extern GBS_strstruct *not_found_message;
 extern long           max_seq_terminal_length; // global maximum of sequence terminal length
-extern ED4_EDITMODI   awar_edit_modus;
+extern ED4_EDITMODI   awar_edit_mode;
 extern long           awar_edit_direction;
 extern bool           move_cursor; //only needed for editing in consensus
 extern bool           DRAW;
@@ -316,7 +316,7 @@ struct ED4_work_info
     ED4_EDITMODI mode;
 
     bool    is_sequence;        // ==1 -> special handling for sequences
-    bool    cannot_handle;      // if TRUE than cannot edit
+    bool    cannot_handle;      // if TRUE then cannot edit
 
     ED4_CursorJumpType cursor_jump;
     bool    refresh_needed;

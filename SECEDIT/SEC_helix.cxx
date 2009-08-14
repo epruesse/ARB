@@ -44,7 +44,7 @@ const size_t *SEC_root::getHelixPositions(const char *helixNr) const {
 // -------------------------------------------
 // current way to save folded helices:
 //
-// save a list of helix-numbers (with sign) seperated by ';'
+// save a list of helix-numbers (with sign) separated by ';'
 // strand start-positions are saved as 'num'
 // segment start-positions are saved as '!num'
 

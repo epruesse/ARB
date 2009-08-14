@@ -78,22 +78,22 @@ AWT_species_set *AWT_species_set_root::search(AWT_species_set *set,long *best_co
 }
 
 int AWT_species_set_root::search(AWT_species_set *set,FILE *log_file){
-    long netto_cost;
+    long net_cost;
     double best_cost;
-    AWT_species_set *bs = this->search(set,&netto_cost);
-    best_cost = netto_cost + set->unfound_species_count * 0.0001;
+    AWT_species_set *bs = this->search(set,&net_cost);
+    best_cost = net_cost + set->unfound_species_count * 0.0001;
     if (best_cost < bs->best_cost){
         bs->best_cost = best_cost;
         bs->best_node = set->node;
     }
     if (log_file){
-        if ( netto_cost){
+        if ( net_cost){
             fprintf(log_file, "Node '%s' placed not optimal, %li errors\n",
                     set->node->name,
-                    netto_cost);
+                    net_cost);
         }
     }
-    return netto_cost;
+    return net_cost;
 }
 
 // --------------------------------------------------------------------------------
@@ -194,7 +194,7 @@ static bool containsMarkedSpecies(const AP_tree *tree) {
     return containsMarkedSpecies(tree->leftson) || containsMarkedSpecies(tree->rightson);
 }
 
-GB_ERROR AWT_species_set_root::copy_node_infos(FILE *log, bool delete_old_nodes, bool nodes_with_marked_only) {
+GB_ERROR AWT_species_set_root::copy_node_information(FILE *log, bool delete_old_nodes, bool nodes_with_marked_only) {
     GB_ERROR error = 0;
     long j;
 
@@ -306,8 +306,8 @@ void AWT_move_info(GBDATA *gb_main, const char *tree_source,const char *tree_des
                 AWT_species_set *root_setr = ssr->find_best_matches_info(source->rightson, log, compare_node_info);
 
                 if (!compare_node_info) {
-                    aw_status("Copy Node Informations");
-                    ssr->copy_node_infos(log, delete_old_nodes, nodes_with_marked_only);
+                    aw_status("Copy Node Information");
+                    ssr->copy_node_information(log, delete_old_nodes, nodes_with_marked_only);
                 }
                 
                 long             dummy         = 0;

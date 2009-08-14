@@ -934,7 +934,7 @@ void parseProteinModel(analdef *adef)
   
   if (!f)
     {
-      printf( "Could not open external AA subsitution model file: %s\n", proteinModelFileName);
+      printf( "Could not open external AA substitution model file: %s\n", proteinModelFileName);
       exit(-1);
     }
 

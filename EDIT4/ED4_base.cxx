@@ -27,18 +27,18 @@ ED4_group_manager *ED4_base::is_in_folded_group() const
     return group->is_in_folded_group();
 }
 
-bool ED4_base::remove_deleted_childs()
+bool ED4_base::remove_deleted_children()
 {
     e4_assert(0);
     return false;
 }
 
-bool ED4_terminal::remove_deleted_childs()
+bool ED4_terminal::remove_deleted_children()
 {
     if (flag.deleted) {
         if (get_species_pointer() != 0) {
 #if defined(DEBUG)
-            printf("ED4_terminal: has non-zero species_pointer in remove_deleted_childs (resetting to zero)\n");
+            printf("ED4_terminal: has non-zero species_pointer in remove_deleted_children (resetting to zero)\n");
 #endif // DEBUG
             set_species_pointer(0);
         }
@@ -49,12 +49,12 @@ bool ED4_terminal::remove_deleted_childs()
 
     return false;
 }
-bool ED4_sequence_info_terminal::remove_deleted_childs()
+bool ED4_sequence_info_terminal::remove_deleted_children()
 {
     if (flag.deleted) {
         if (get_species_pointer() != 0) {
 #if defined(DEBUG)
-            printf("ED4_sequence_info_terminal: has non-zero species_pointer in remove_deleted_childs (resetting to zero)\n");
+            printf("ED4_sequence_info_terminal: has non-zero species_pointer in remove_deleted_children (resetting to zero)\n");
 #endif // DEBUG
             set_species_pointer(0);
         }
@@ -66,7 +66,7 @@ bool ED4_sequence_info_terminal::remove_deleted_childs()
     return false;
 }
 
-bool ED4_manager::remove_deleted_childs()
+bool ED4_manager::remove_deleted_children()
 {
     int  i;
     bool deletion_occurred = false;
@@ -75,9 +75,9 @@ bool ED4_manager::remove_deleted_childs()
 
     for (i=0; i<children->members(); i++) {
         ED4_base *child = children->member(i);
-        if (child->remove_deleted_childs()) {
+        if (child->remove_deleted_children()) {
             deletion_occurred = true;
-            goto restart;       // because order of childs may have changed
+            goto restart;       // because order of children may have changed
         }
     }
 
@@ -88,7 +88,7 @@ bool ED4_manager::remove_deleted_childs()
             return true;
         }
 #if defined(DEBUG)
-        printf("ED4_manager::remove_deleted_childs: I have no parent\n");
+        printf("ED4_manager::remove_deleted_children: I have no parent\n");
 #endif // DEBUG
     }
     else if (deletion_occurred) {
@@ -106,7 +106,7 @@ void ED4_base::changed_by_database(void)
 }
 
 void ED4_manager::changed_by_database(void) {
-    remove_deleted_childs();
+    remove_deleted_children();
     set_refresh(1);
     if (parent) {
         parent->refresh_requested_by_child();
@@ -207,7 +207,7 @@ void ED4_text_terminal::deleted_from_database()
         seq_man->delete_requested_by_child();
     }
     else {
-        e4_assert(0); // not prepated for that situation
+        e4_assert(0); // not prepared for that situation
     }
 }
 
@@ -798,7 +798,7 @@ ED4_terminal *ED4_base::get_prev_terminal()
 
 bool ED4_base::has_parent(ED4_manager *Parent)
 {
-    // return true if 'parent' is a perent of this
+    // return true if 'parent' is a parent of this
 
     if (is_manager()) {
         if (this == static_cast<ED4_base*>(Parent)) {
@@ -1201,10 +1201,10 @@ void ED4_base::calc_rel_coords(AW_pos *x, AW_pos *y) // calculates coordinates r
 {
     AW_pos   world_x, world_y;
 
-    calc_world_coords( &world_x, &world_y );                                            // calculate world coordinates of current object
+    calc_world_coords( &world_x, &world_y );        // calculate world coordinates of current object
 
-    *x -= world_x;                                                                              // calculate relative coordinates by substracting world
-    *y -= world_y;                                                                              // coords of current object
+    *x -= world_x;                                  // calculate relative coordinates by subtracting world
+    *y -= world_y;                                  // coords of current object
 }
 
 

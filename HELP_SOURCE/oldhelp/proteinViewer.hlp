@@ -33,11 +33,11 @@ DESCRIPTION     Use this function to display AminoAcid sequence along with the D
 
                       Check the "Forward Strand" to use the given sequence (as displayed)
                       for translation. And checking "Complementary Strand" uses
-                      complementary sequence of the displayed sequence for tranlation.
+                      complementary sequence of the displayed sequence for translation.
 
                 By checking "Translate from database fields" , ProteinViewer extracts
                 "translation/codon table" and "start position" from the database and uses
-                the same for tranlation.
+                the same for translation.
 
                 By default, the translated (aminoacid) sequence will be displayed as
                 single letter codes. eg., A for Arginine, etc., But you can disply three
@@ -45,15 +45,15 @@ DESCRIPTION     Use this function to display AminoAcid sequence along with the D
                 by checking "Display Aminoacid names" checkbox.
 
                 Display options "text" and "box" will display aminoacid codes or colored
-                boxes in the tranlated sequence, respectively.
+                boxes in the translated sequence, respectively.
 
-                Diplay at "Marked", "Selected", "Cursor" and "All" will toggle the display
+                Display at "Marked", "Selected", "Cursor" and "All" will toggle the display
                 of aminoacid sequence only for marked, selected, cursor position and all
                 species in the editor, respectively.
 
                 SAVE AMINOACID SEQUENCE ALIGNMENT:
 
-                      Once the alignement is refiened according to the aminoacid sequence,
+                      Once the alignment is refined according to the aminoacid sequence,
                       you can save the translated (aminoacid) sequence to the database as
                       a new alignment.
 

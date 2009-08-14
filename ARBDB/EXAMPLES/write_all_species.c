@@ -14,7 +14,7 @@ int main(int argc,char **argv)
     gb_main = GB_open(path,"r");
     if(!gb_main)
     {
-        printf("konnte Datenbank nicht oeffnen\n");
+        printf("could not open database '%s'\n", path);
         return(-1);
     }
     fehler=GB_begin_transaction(gb_main);

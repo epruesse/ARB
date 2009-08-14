@@ -8,11 +8,11 @@ SUB	pos_var_pars.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile strunk********
-TITLE		Estimate Parameters from Coloumn Statistics
+TITLE		Estimate Parameters from Column Statistics
 
 OCCURRENCE	ARB_DIST
 
-DESCRIPTION	In a standart RNA, base frequencies are not equally
+DESCRIPTION	In a standard RNA, base frequencies are not equally
 		distributed. Especially in the archea subclass we find
 		extremely G+C rich sequences.
 		This yielded in a couple of new rate corrections, algorithms
@@ -25,14 +25,14 @@ DESCRIPTION	In a standart RNA, base frequencies are not equally
 		not equally distributed within a sequence. Especially helical
 		parts have a significant higher G+C content than non
 		helical parts.
-		One strait forward algorhythm would calculate each frequency
-		independently for each coloumn.
+		One strait forward algorithm would calculate each frequency
+		independently for each column.
 		Especially for small datasets the resulting frequencies would
 		look like random data, as too few examples are analyzed.
 
 		In ARB we implemented a combination of the 2 approaches.
 			Lets say we want to estimate a Parameter 'P' with
-			a maximum variance 'maxvar', so we need a minumum
+			a maximum variance 'maxvar', so we need a minimum
 			samples 'minsap'.
 
  			- All sequence positions a clustered according to
@@ -44,12 +44,12 @@ DESCRIPTION	In a standart RNA, base frequencies are not equally
 			  to the variability of the sequences to get a
 			  minimum of independent events.
 
-			- The final parameter estimate for a coloumn is a
+			- The final parameter estimate for a column is a
 			  weighted sum between the estimate for the
 			  cluster and the estimate for the single position.
 
-		You can give your favourite method a higher weight by
-		controlling the smothing parameter:
+		You can give your favorite method a higher weight by
+		controlling the smoothing parameter:
 
 			Less smoothing -> independent parameter estimates
 
@@ -70,7 +70,7 @@ WARNINGS	Problems may occur when
 		or
 
 			 1. Much smoothing of parameters is selected and
-			 2. your are anlazing ribosomal RNA and
+			 2. you are analyzing ribosomal RNA and
 			 3. 'Use Helix Information' is turned off
 
 

@@ -46,12 +46,12 @@ public:
 char *AWTC_makeUniqueShortName(const char *prefix, UniqueNameDetector& existingNames);
 char *AWTC_generate_random_name(UniqueNameDetector& existingNames);
 
-struct PersistantNameServerConnection {
-    // create a PersistantNameServerConnection instance while calling AWTC_generate_one_name
+struct PersistentNameServerConnection {
+    // create a PersistentNameServerConnection instance while calling AWTC_generate_one_name
     // to avoid repeated re-connections to name server
     bool dummy;
-    PersistantNameServerConnection();
-    ~PersistantNameServerConnection();
+    PersistentNameServerConnection();
+    ~PersistentNameServerConnection();
 };
 
 int AWTC_name_quality(const char *short_name); 

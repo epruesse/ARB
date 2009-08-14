@@ -1,4 +1,4 @@
-/* genabnk and Macke converting program */
+/* genbank and Macke converting program */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,7 +41,7 @@ genbank_to_macke(inf, outf)
         sprintf(temp, "CANNOT open output file %s, exit.\n", outf);
         error(1, temp);
     }
-    /* seq irelenvant header */
+    /* seq irrelevant header */
     init();
     init_gm_data();
     macke_out_header(ofp);
@@ -380,8 +380,8 @@ char *genbank_get_strain()  {
 }
 /* --------------------------------------------------------------------
  *   Function genbank_get_subspecies().
- *       Get subspecies information from SOURCE, DEFENITION, or
- *       COMMENT line of Genabnk data file.
+ *       Get subspecies information from SOURCE, DEFINITION, or
+ *       COMMENT line of Genbank data file.
  */
 char
 *genbank_get_subspecies()   {
@@ -1070,7 +1070,7 @@ mtog_genbank_def_and_source()   {
 }
 /* -------------------------------------------------------------------
  *   Function get_string().
- *       Get the rest of the string untill reaching certain
+ *       Get the rest of the string until reaching certain
  *           terminators, such as ';', ',', '.',...
  *       Always append "\n" at the end of the returned string.
  */
@@ -1099,7 +1099,7 @@ get_string(line, temp, index)
 }
 /* -------------------------------------------------------------------
  *   Function get_atcc_string().
- *       Get the rest of the string untill reaching certain
+ *       Get the rest of the string until reaching certain
  *           terminators, such as ';', ',', '.',...
  */
 void

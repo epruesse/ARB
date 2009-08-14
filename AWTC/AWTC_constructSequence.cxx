@@ -414,7 +414,7 @@ void overlappingBases(AWTC_CompactedSubSequence *comp1, int reverse1, AWTC_Compa
             end1--;
         }
     }
-    else    // both normal -> compare end of comp1 whith start of comp2
+    else    // both normal -> compare end of comp1 with start of comp2
     {
         const char *end1 = comp1->text(comp1->length()-1);
         const char *start2 = comp2->text();
@@ -451,7 +451,7 @@ char *AWTC_constructSequence(int parts, const char **seqs, int minMatchingBases,
 
     int s;
     for (s=0; s<parts; s++) {
-        comp[s] = new AWTC_CompactedSubSequence(seqs[s], strlen(seqs[s]), "contructed by AWTC_constructSequence()");
+        comp[s] = new AWTC_CompactedSubSequence(seqs[s], strlen(seqs[s]), "constructed by AWTC_constructSequence()");
         if (comp[s]->length()==0) {
             printf("AWTC_constructSequence called with empty sequence (seq #%i)\n", s);
             return NULL;

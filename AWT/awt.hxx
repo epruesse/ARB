@@ -129,10 +129,10 @@ The items are placed at
 2. "$at_prefix""box"
 3. "$at_prefix""file_name"
 
-if show_dir== true than show directories and files
+if show_dir== true, then show directories and files
 else only files
 
-pwd is a 'shell enviroment variable' which indicates the base directory
+pwd is a 'shell environment variable' which indicates the base directory
 ( mainly PWD or ARBHOME ) */
 
 char *awt_get_selected_fullname(AW_root *awr, const char *awar_prefix);
@@ -172,7 +172,7 @@ public:
 
     const char *ere_pos_fig;    // rebuild enlarge reduce
     const char *where_pos_fig;  // current, marked or all species (used for sub-items of species)
-    const char *by_pos_fig;     // fit query dont fit, marked
+    const char *by_pos_fig;     // fit query don't fit, marked
 
     const char *qbox_pos_fig;   // key box for queries
     const char *rescan_pos_fig; // rescan label

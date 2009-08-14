@@ -17,7 +17,7 @@ DESCRIPTION	Search
 		Search patterns
 
 			In the text field you can enter multiple search patterns.
-			Different patterns are seperated by newlines or commas.
+			Different patterns are separated by newlines or commas.
 
 			'?' is treated as single letter wildcard
 

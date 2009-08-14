@@ -405,7 +405,7 @@ static long write_GBDATA(GB_MAIN_TYPE *Main,GBDATA *gbd, int quark, FILE *out, l
                     ftwrite_aligned(headercopy, headermemsize, out);
                     free(headercopy);
 
-                }else{      /* Calc new indizes and size of header */
+                }else{      /* Calc new indices and size of header */
                     int valid=0;    /* no of non-temporary items */
                     for (item=0; item<nitems; item++)
                     {
@@ -707,7 +707,7 @@ int gb_save_mapfile(GB_MAIN_TYPE *Main, GB_CSTR path)
 int gb_is_valid_mapfile(const char *path, struct gb_map_header *mheader, int verbose)
 
 {
-    /* Dont map anything in memory debug mode */
+    /* Don't map anything in memory debug mode */
 #if  ( MEMORY_TEST == 1)
     GBUSE(path);
     GBUSE(mheader);

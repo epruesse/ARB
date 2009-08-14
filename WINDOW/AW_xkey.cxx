@@ -35,7 +35,7 @@ static awXKeymap_modfree awxkeymap_modfree[] = {
 };
 
 // manual key defs
-// keys where all (or most) modifiers dont work should go here
+// keys where all (or most) modifiers don't work should go here
 static awXKeymap awxkeymap[] = {
     // sun keypad ? 
     { XK_Shift_R, XK_R10, "Shift-Left",  AW_KEYMODE_SHIFT, AW_KEY_LEFT,  0},

@@ -406,7 +406,7 @@ macke_in_name(fp)
     return(EOF+1);
 }
 /* ------------------------------------------------------------
- *   Fucntion macke_out_header().
+ *   Function macke_out_header().
  *       Output the Macke format header.
  */
 void
@@ -422,7 +422,7 @@ macke_out_header(fp)
     Freespace(&date);
 }
 /* ------------------------------------------------------------
- *   Fucntion macke_out0().
+ *   Function macke_out0().
  *       Output the Macke format each sequence format.
  */
 void
@@ -467,7 +467,7 @@ macke_out0(fp, format)
                     data.macke.seqabbr, token, direction);
 }
 /* ---------------------------------------------------------------
- *   Fucntion macke_out1().
+ *   Function macke_out1().
  *       Output sequences information.
  */
 void macke_out1(fp)
@@ -729,7 +729,7 @@ void macke_out2(fp)
     char temp[LINENUM];
 
     if (data.seq_length > MACKELIMIT) {
-        sprintf(temp, "Lenght of sequence data is %d over AE2's limit %d.\n",
+        sprintf(temp, "Length of sequence data is %d over AE2's limit %d.\n",
                 data.seq_length, MACKELIMIT);
         warning(145, temp);
     }

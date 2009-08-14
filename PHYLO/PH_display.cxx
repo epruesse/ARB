@@ -114,7 +114,7 @@ void PH_display::initialize (display_type dpyt)
             aw_message("init: unknown display type (maybe not implemented yet)");
             break;
     }  // switch
-    resized();  // initalize window_size dependend parameters
+    resized();  // initialize window_size dependent parameters
 }
 
 

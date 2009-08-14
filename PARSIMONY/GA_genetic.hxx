@@ -39,12 +39,12 @@ public:
     GA_tree * tree1;
     long id0;
     long id1;
-    GA_JOB_MODE modus;
+    GA_JOB_MODE mode;
     void  printl() {
         cout << "JOB Clu0 " << cluster0 <<
             " tr " << id0 <<
             " *  CLu1 " << cluster1 << " tr " << id1 <<
-            " * mode " << modus << " crit " << criteria
+            " * mode " << mode << " crit " << criteria
              << "\n";cout.flush(); };
     void calcCrit(AP_FLOAT crit0,AP_FLOAT crit1) {
         criteria = crit0 + crit1; };

@@ -52,7 +52,7 @@ typedef struct gb_data_base_type GBDATA;
 
 struct AW_variable_struct {
     AW_variable_struct( AW_VARIABLE_TYPE var_type,
-                        const char *var_name, const char *var_value, double var_double_value, long *var_adress,
+                        const char *var_name, const char *var_value, double var_double_value, long *var_address,
                         AW_default default_file, AW_root *root );
 
     AW_VARIABLE_TYPE  variable_type;

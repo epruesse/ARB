@@ -19,7 +19,7 @@ DESCRIPTION	Allows to delete/hide fields.
 		Choose the 'Delete field in list' item from the 'FIELDS' menu to
 		display the 'DELETE FIELD' window. Select a field from the
 		'Fields' subwindow and press the HIDE FIELD>
-		(the field and its entry are no loger displayed in the 'SPECIES/GENE
+		(the field and its entry are no longer displayed in the 'SPECIES/GENE
 		INFORMATION' window) or the <DELETE FIELD> (field
 		and its entry are deleted) button.
 

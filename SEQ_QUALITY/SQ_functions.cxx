@@ -596,7 +596,7 @@ GB_ERROR SQ_pass1_no_tree(SQ_GroupData * globalData, GBDATA * gb_main,
                             sequenceLength, gb_quality_ali);
                     delete ambi_chan;
 
-                    /*claculate the number of strong, weak and no helixes */
+                    /*calculate the number of strong, weak and no helixes */
                     SQ_helix *heli_chan = new SQ_helix(sequenceLength);
                     heli_chan->SQ_calc_helix_layout(rawSequence, gb_main,
                             alignment_name, gb_quality_ali, filter);
@@ -684,7 +684,7 @@ GB_ERROR SQ_pass2(const SQ_GroupData * globalData, GBDATA * gb_main,
 
                 /*
                  calculate the average number of bases in group, and the difference of
-                 a single seqeunce in group from it
+                 a single sequence in group from it
                  */
                 GBDATA *gb_result1 = GB_search(gb_quality_ali,
                         "number_of_bases", GB_INT);
@@ -704,7 +704,7 @@ GB_ERROR SQ_pass2(const SQ_GroupData * globalData, GBDATA * gb_main,
 
                 /*
                  calculate the average gc proportion in group, and the difference of
-                 a single seqeunce in group from it
+                 a single sequence in group from it
                  */
                 GBDATA *gb_result6 = GB_search(gb_quality_ali, "GC_proportion",
                         GB_FLOAT);
@@ -923,7 +923,7 @@ GB_ERROR SQ_pass2_no_tree(const SQ_GroupData * globalData, GBDATA * gb_main,
 
                     /*
                      calculate the average number of bases in group, and the difference of
-                     a single seqeunce in group from it
+                     a single sequence in group from it
                      */
                     GBDATA *gb_result1 = GB_search(gb_quality_ali,
                             "number_of_bases", GB_INT);
@@ -943,7 +943,7 @@ GB_ERROR SQ_pass2_no_tree(const SQ_GroupData * globalData, GBDATA * gb_main,
 
                     /*
                      calculate the average gc proportion in group, and the difference of
-                     a single seqeunce in group from it
+                     a single sequence in group from it
                      */
                     GBDATA *gb_result6 = GB_search(gb_quality_ali,
                             "GC_proportion", GB_FLOAT);

@@ -98,7 +98,7 @@ importTable *fileopenCSV(char *filename, int delimiter)
 
         }
 
-        // CHECK IF INCONSISTENCIES HAVE OCCURED AND ABORT IF NECESSARY
+        // CHECK IF INCONSISTENCIES HAVE OCCURRED AND ABORT IF NECESSARY
         if(inconsistencies)
         {
             iS.close();
@@ -247,7 +247,7 @@ int importCSV(importTable *table, importData *data)
     ARB_begin_transaction();
 
     // ENTER EXPERIMENT DATA ENTRY
-    // IF THERE IS NO PROETOME_DATA ENTRY, CREATE A NEW ONE
+    // IF THERE IS NO PROTEOME_DATA ENTRY, CREATE A NEW ONE
     gb_proteom_data = GB_search(gb_experiment, "proteome_data", GB_CREATE_CONTAINER);
     pgt_assert(gb_proteom_data); // @@@ error handling is missing
 

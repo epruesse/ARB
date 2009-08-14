@@ -58,7 +58,7 @@ foreach (<>) {
     my ($file,$line,$msg) = ($1,$2,$');
 
     if ($msg =~ $reg_shadow_warning) {
-      if (not $' =~ /this/) { # dont store this warnings (no location follows)
+      if (not $' =~ /this/) { # don't store this warnings (no location follows)
         store_shadow($_);
         $_ = undef;
       }
@@ -67,7 +67,7 @@ foreach (<>) {
       if (not defined $shadow_warning) { warning('no shadow_warning seen'); }
       else {
         if ($file =~ $reg_user_include or $file eq '<built-in>') {
-          # dont warn about /usr/include or <built-in> shadowing
+          # don't warn about /usr/include or <built-in> shadowing
           $_ = undef;
           @included = ();
           $location_info = undef;

@@ -40,7 +40,7 @@ EXAMPLES	1. Write a date of sequence modification (03.27.95) to the
 			Press:				'APPEND'
 
 
-WARNINGS	Exept for the 'name' field, there are no different protection
+WARNINGS	Except for the 'name' field, there are no different protection
 		levels for different fields. Take care not to write to  fields
 		which should contain unique entries for the corresponding
 		species/genes such as accession numbers. 

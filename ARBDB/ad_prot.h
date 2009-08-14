@@ -117,7 +117,7 @@ GB_BOOL GBS_string_matches_regexp P_((const char *str, const GBS_MATCHER *expr))
 char *GBS_string_eval P_((const char *insource, const char *icommand, GBDATA *gb_container));
 
 /* arbdb.c */
-char *GB_rel P_((void *struct_adress, long rel_adress));
+char *GB_rel P_((void *struct_address, long rel_address));
 NOT4PERL GB_ERROR GB_safe_atof P_((const char *str, double *res));
 double GB_atof P_((const char *str));
 GB_BUFFER GB_give_buffer P_((size_t size));

@@ -374,7 +374,7 @@ static GB_ERROR insert_genes_of_organism(GBDATA *gb_organism, GBDATA *gb_species
     int intergene_counter_old     = intergene_counter;
 
     GBDATA *gb_ali_genom = GBT_read_sequence(gb_organism, GENOM_ALIGNMENT);
-    gp_assert(gb_ali_genom);                                                       // existance has to be checked by caller!
+    gp_assert(gb_ali_genom);                                                       // existence has to be checked by caller!
     
     const char *ali_genom       = GB_read_char_pntr(gb_ali_genom);
     if (!ali_genom) error       = GB_await_error();

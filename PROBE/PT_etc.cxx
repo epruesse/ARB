@@ -141,7 +141,7 @@ static const char *get_list_part(const char *list, int& offset) {
 
 #undef MAX_LIST_PART_SIZE
 
-/* read the name list seperated by # and set the flag for the group members,
+/* read the name list separated by # and set the flag for the group members,
    + returns a list of names which have not been found */
 
 char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checksums, const char*& error) {

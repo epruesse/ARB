@@ -414,7 +414,7 @@ long gbcm_write_two(int socket, long a, long c)
 
 
 /** read two values:    length and any user long
- *  if data are send be gbcm_write_two than b should be zero
+ *  if data are send be gbcm_write_two then b should be zero
  *  and is not used !!! */
 
 long gbcm_read_two(int socket, long a, long *b, long *c)
@@ -734,7 +734,7 @@ char *GB_map_FILE(FILE *in,int writeable){
         buffer = (char*)mmap(NULL, size, PROT_READ, MAP_SHARED, fi, 0);
     }
     if (buffer == MAP_FAILED){
-        GB_export_errorf("GB_map_file: Error Out of Memory: mmap failes (errno: %i)", errno);
+        GB_export_errorf("GB_map_file: Error: Out of Memory: mmap failed (errno: %i)", errno);
         return NULL;
     }
     return buffer;
@@ -825,8 +825,8 @@ GB_ERROR GB_xcmd(const char *cmd, GB_BOOL background, GB_BOOL wait_only_if_error
     /* goes to header: __ATTR__USERESULT */
     
     // runs a command in an xterm
-    // if 'background' is true -> run asyncronous
-    // if 'wait_only_if_error' is true -> asyncronous does wait for keypress only if cmd fails
+    // if 'background' is true -> run asynchronous
+    // if 'wait_only_if_error' is true -> asynchronous does wait for keypress only if cmd fails
 
     void       *strstruct = GBS_stropen(1024);
     const char *xt        = GB_getenv("ARB_XCMD"); // doc in arb_envar.hlp
@@ -1177,10 +1177,10 @@ GB_ULONG GB_get_physical_memory(void) {
            "         (it assumes you have %ul Mb,  but does not use more)\n\n", memsize/1024);
 #endif
 
-    GB_ULONG nettomemsize = memsize - 10240;         /* reduce by 10Mb (for kernel etc.) */
+    GB_ULONG net_memsize = memsize - 10240;         /* reduce by 10Mb (for kernel etc.) */
 
     // detect max allocateable memory by ... allocating
-    GB_ULONG max_malloc_try = nettomemsize*1024;
+    GB_ULONG max_malloc_try = net_memsize*1024;
     GB_ULONG max_malloc     = 0;
     {
         GB_ULONG step_size  = 4096;
@@ -1201,11 +1201,11 @@ GB_ULONG GB_get_physical_memory(void) {
         max_malloc /= 1024;
     }
 
-    GB_ULONG usedmemsize = (MIN(nettomemsize,max_malloc)*95)/100;  /* arb uses max. 95 % of available memory (was 70% in the past) */
+    GB_ULONG usedmemsize = (MIN(net_memsize,max_malloc)*95)/100;  /* arb uses max. 95 % of available memory (was 70% in the past) */
 
 #if defined(DEBUG)
     printf("- memsize(real)        = %20lu k\n", memsize);
-    printf("- memsize(netto)       = %20lu k\n", nettomemsize);
+    printf("- memsize(net)         = %20lu k\n", net_memsize);
     printf("- memsize(max_malloc)  = %20lu k\n", max_malloc);
 #endif /* DEBUG */
     printf("- memsize(used by ARB) = %20lu k\n", usedmemsize);
@@ -1265,7 +1265,7 @@ GB_CSTR GB_get_full_path(const char *anypath) {
 
 GB_CSTR GB_concat_path(GB_CSTR anypath_left, GB_CSTR anypath_right) {
     // concats left and right part of a path.
-    // '/' is inserted inbetween
+    // '/' is inserted in-between
     //
     // if one of the arguments is NULL = > returns the other argument
 
@@ -1354,7 +1354,7 @@ FILE *GB_fopen_tempfile(const char *filename, const char *fmode, char **res_full
     }
 
     if (error) {
-        // dont care if anything fails here..
+        // don't care if anything fails here..
         if (fp) { fclose(fp); fp = 0; }
         if (file) { unlink(file); file = 0; }
         GB_export_error(error);

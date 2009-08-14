@@ -70,7 +70,7 @@ public:
     // tree reconstruction methods:
     void insert(AP_tree *new_brother);
     void remove(void);
-    void swap_assymetric(AP_TREE_SIDE modus);
+    void swap_assymetric(AP_TREE_SIDE mode);
     void moveTo(AP_tree *new_brother, AP_FLOAT rel_pos); // if unsure, use cantMoveTo to test if possible
     void set_root();
 
@@ -89,14 +89,14 @@ public:
                        int        *rek_breite,
                        int         rek_breite_anz,
                        const int   rek_deep_max,
-                       double (*funktion)(double,double *,int),
+                       double    (*function)(double,double *,int),
                        double     *param_liste,
                        int         param_anz,
                        AP_FLOAT    pars_best,
                        AP_FLOAT    pars_start,
                        AP_FLOAT    pars_prev,
                        AP_KL_FLAG  searchflag,
-                       AP_BOOL    *abbruch_flag);
+                       AP_BOOL    *abort_flag);
 
     // for crossover creates a list of 3 times the nodes with all
     // ancestors in it

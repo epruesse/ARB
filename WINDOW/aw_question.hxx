@@ -57,7 +57,7 @@ public:
 
     int get_answer(const char *question, const char *buttons, const char *to_all, bool add_abort);
     // return 0 for first button, 1 for second button, 2 for third button, ...
-    // the single buttons are seperated by kommas (i.e. "YES,NO")
+    // the single buttons are separated by commas (i.e. "YES,NO")
     // if add_abort is true an 'ABORT' button is added behind the last
 };
 

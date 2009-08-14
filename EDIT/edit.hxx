@@ -1,4 +1,4 @@
-#define AWAR_CURSER_POS_REF_ECOLI "tmp/edit/curser_ref_ecoli"
+#define AWAR_CURSOR_POS_REF_ECOLI "tmp/edit/cursor_ref_ecoli"
 #define AWAR_SPECIES_DEST "tmp/edit/species_name_dest"
 #define AWAR_LINE_SPACING "edit/line_spacing"
 #define AWAR_CENTER_SPACING "edit/center_spacing"
@@ -224,7 +224,7 @@ public:
     int            drag_x, drag_y;
     AW_pos         drag_x_correcting, drag_y_correcting;
 
-    long edit_modus;
+    long edit_mode;
     long edit_direction;
     int  owntimestamp;
 

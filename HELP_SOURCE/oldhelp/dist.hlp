@@ -38,14 +38,14 @@ DESCRIPTION	Reconstructs a tree for all or marked species by first
 
 		4. Display the 'Select Filter' window by pressing the button
                    after the 'Filter' prompt and define an alignment-
-                   associated mask which defines aligment positions to
+                   associated mask which defines alignment positions to
                    include for treeing.
 
 		5. Define Weights: !!! not implemented !!!
 
 		6. Select rate matrix: !!! not implemented !!!
 
-                     7. Type characters for the exclusion of aligment postions to
+                     7. Type characters for the exclusion of alignment postions to
 			the 'Exclude Column' subwindow. The positions are
 			excluded from the calculation of binary distance values
 			if one of the specified characters is present in one or

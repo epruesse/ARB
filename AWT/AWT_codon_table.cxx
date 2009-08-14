@@ -517,7 +517,7 @@ bool AWT_is_codon(char protein, const char *dna, const AWT_allowedCode& allowed_
         else {
             bool correct_disallowed_translation = false;
 
-            // search for allowed correct translation possibity:
+            // search for allowed correct translation possibility:
             for (int code_nr=0; code_nr<AWT_CODON_TABLES; code_nr++) {
                 if (AWT_codon_def[code_nr].aa[codon_nr] == protein) { // does it translate correct?
                     if (allowed_code.is_allowed(code_nr)) { // is this code allowed?
@@ -642,7 +642,7 @@ static int expandMore(const char *bufferStart, int no_of_condons, char*&to_buffe
                     found = strstr(startSearch, result);
                     if (!found) break;
                     int pos = (found-bufferStart);
-                    if ((pos%3)==0) break; // yes aready here!
+                    if ((pos%3)==0) break; // yes already here!
                     startSearch = found+1; // was misaligned -> try behind
                 }
 

@@ -55,7 +55,7 @@ static struct {
     int                  is_size_device;
 } irs_gl;
 
-void draw_top_seperator(){
+void draw_top_separator(){
     int gc = AWT_GC_GROUPS;
     int y;
     irs_gl.ftrst_species = GB_FALSE;
@@ -94,7 +94,7 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset, int type){
     if (node->is_leaf) {
         irs_gl.y+=irs_gl.step_y;
         if (irs_gl.ftrst_species) {
-            draw_top_seperator();
+            draw_top_separator();
         }
         int x = x_offset;
         int y = irs_gl.y + irs_gl.font_height_2;
@@ -137,8 +137,8 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset, int type){
         int vsize = node->gr.view_sum * irs_gl.step_y;
         int y_center = irs_gl.y + (vsize>>1) + irs_gl.step_y;
         if ( irs_gl.y >= irs_gl.min_y) {
-            if (irs_gl.ftrst_species) { // A name of a group just under the seperator
-                draw_top_seperator();
+            if (irs_gl.ftrst_species) { // A name of a group just under the separator
+                draw_top_separator();
             }
             int topy = irs_gl.y+irs_gl.step_y - 2;
             int boty = irs_gl.y+irs_gl.step_y+ vsize + 2;
@@ -182,8 +182,8 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset, int type){
 
     if (node_string != NULL) {          //  A node name should be displayed
         if (last_y >= irs_gl.min_y) {
-            if (irs_gl.ftrst_species) { // A name of a group just under the seperator
-                draw_top_seperator();
+            if (irs_gl.ftrst_species) { // A name of a group just under the separator
+                draw_top_separator();
             }
             last_y = irs_gl.y + irs_gl.step_y;
         }else{
@@ -222,7 +222,7 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset, int type){
         left_y = irs_gl.min_y;
     }
 
-    y_center = (left_y + right_y) / 2; // clip conter on bottom border
+    y_center = (left_y + right_y) / 2; // clip center(?) on bottom border
 
     if (right_y > irs_gl.min_y && right_y < irs_gl.max_y) { // visible right branch in lower part of display
 

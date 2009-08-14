@@ -95,11 +95,11 @@ GB_ERROR AWT_csp::go(AP_filter *filter){
     GBDATA *gb_freqs = 0;
     if (!error) {
         gb_ali = GB_entry(gb_sai,alignment_name);
-        if (!gb_ali) error = GB_export_error("Please select a valid Column Statist");
+        if (!gb_ali) error = GB_export_error("Please select a valid Column Statistic");
     }
     if (!error) {
         gb_freqs = GB_entry(gb_ali,"FREQUENCIES");
-        if (!gb_ali) error = GB_export_error("Please select a valid Column Statist");
+        if (!gb_ali) error = GB_export_error("Please select a valid Column Statistic");
     }
     if (error) {
         free(sai_name);
@@ -127,7 +127,7 @@ GB_ERROR AWT_csp::go(AP_filter *filter){
         weights[i] = 1;
     }
 
-    if (!error && use_helix) {            // calculate weigths and helix filter
+    if (!error && use_helix) {            // calculate weights and helix filter
         BI_helix helix;
         error = helix.init(this->gb_main,alignment_name);
         if (error){
@@ -157,7 +157,7 @@ GB_ERROR AWT_csp::go(AP_filter *filter){
     GBDATA *gb_freq;
     GB_UINT4 *freqi[256];
     for (i=0;i<256; i++) freqi[i] = 0;
-    int wf;                 // ********* read the frequence statistic
+    int wf;                 // ********* read the frequency statistic
     for (gb_freq = GB_child(gb_freqs); gb_freq; gb_freq = GB_nextChild(gb_freq)) {
         char *key = GB_read_key(gb_freq);
         if (key[0] == 'N' && key[1] && !key[2]) {

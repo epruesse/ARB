@@ -64,8 +64,8 @@ char *DI_MATRIX::analyse(AW_root *awrdummy)
     }
 
     if (min_len * 1.3 < max_len) {
-        aw_message("Warning: The length of sequences differ significantly\n"
-                   "        be carefull, neighbour joining is sensitiv to\n"
+        aw_message("Warning: The length of sequences differs significantly\n"
+                   "        be careful, neighbour joining is sensitive to\n"
                    "        this kind of error");
     }
     mean_gc = ((float) mean_gci) / mean_len / nentries;

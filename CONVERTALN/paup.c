@@ -60,7 +60,7 @@ to_paup(inf, outf, informat)
             init_macke();
             eof=macke_in_name(ifp);
         } else error(63,
-                     "UNKNOW input format when converting to PAUP format.");
+                     "UNKNOWN input format when converting to PAUP format.");
         if(eof==EOF) break;
         if(informat==ALMA)  {
             alma_key_word
@@ -74,7 +74,7 @@ to_paup(inf, outf, informat)
         } else if(informat==MACKE)  {
             Cpystr(temp, data.macke.seqabbr);
         } else error(118,
-                     "UNKNOW input format when converting to PAUP format.");
+                     "UNKNOWN input format when converting to PAUP format.");
 
         total_seq++;
 
@@ -92,8 +92,7 @@ to_paup(inf, outf, informat)
 
     if(out_of_memory)   {
         /* cannot hold all seqs into mem. */
-        fprintf(stderr,
-                "Rerun the conversion throught one seq. by one seq. base.\n");
+        fprintf(stderr, "Out of memory: Rerun the conversion sequence by sequence.\n");
 
         destroy_FILE_BUFFER(ifp); fclose(ofp);
         to_paup_1x1(inf, outf, informat);
@@ -126,7 +125,7 @@ to_paup(inf, outf, informat)
         today[Lenstr(today)-1] = '\0';
 
     fprintf(ofp,
-            "[! RDP - the Ribsomal Database Project, (%s).]\n", today);
+            "[! RDP - the Ribosomal Database Project, (%s).]\n", today);
 
     fprintf(ofp,
             "[! To get started, send HELP to rdp@info.mcs.anl.gov ]\n");
@@ -187,7 +186,7 @@ to_paup_1x1(inf, outf, informat)
                 init_macke();
                 eof=macke_in_name(ifp);
             } else error(127,
-                         "UNKNOW input format when converting to PAUP format.");
+                         "UNKNOWN input format when converting to PAUP format.");
 
             if(eof==EOF) break;
             if(informat==ALMA)  {
@@ -203,7 +202,7 @@ to_paup_1x1(inf, outf, informat)
                 macke_key_word
                     (data.macke.name, 0, temp, TOKENNUM);
             } else error(70,
-                         "UNKNOW input format when converting to PAUP format.");
+                         "UNKNOWN input format when converting to PAUP format.");
 
             Freespace(&name);
             name = Dupstr(temp);
@@ -238,7 +237,7 @@ to_paup_1x1(inf, outf, informat)
     if(today[Lenstr(today)-1]=='\n') today[Lenstr(today)-1] = '\0';
 
     fprintf(ofp,
-            "[! RDP - the Ribsomal Database Project, (%s).]\n", today);
+            "[! RDP - the Ribosomal Database Project, (%s).]\n", today);
 
     fprintf(ofp,
             "[! To get started, send HELP to rdp@info.mcs.anl.gov ]\n");
@@ -252,7 +251,7 @@ to_paup_1x1(inf, outf, informat)
 }
 /* -----------------------------------------------------------
  *   Function paup_verify_name().
- *       Verify short_id in PUAP format.
+ *       Verify short_id in PAUP format.
  */
 void
 paup_verify_name(string)
@@ -344,7 +343,7 @@ paup_print_header(ofp)
         today[Lenstr(today)-1] = '\0';
 
     fprintf(ofp,
-            "[! RDP - the Ribsomal Database Project, (%s).]\n",
+            "[! RDP - the Ribosomal Database Project, (%s).]\n",
             today);
 
     fprintf(ofp,

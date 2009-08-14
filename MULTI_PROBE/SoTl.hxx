@@ -144,7 +144,7 @@ public:
     // several times. If there is the need to insert an object only once
     // in the list, the flag duplicates has to be set to FALSE.
     // Finally the relation has to be set, by which the list is sorted.
-    // The possiblilities are : RELATION_GREATER and RELATION_LESS
+    // The possibilities are : RELATION_GREATER and RELATION_LESS
     positiontype        insert_sorted_by_address_of_object(     Type *object,
                                                                 int relation=RELATION_LESS,
                                                                 BOOL duplicates=TRUE );
@@ -376,7 +376,7 @@ template <class Type> inline Type *List<Type>::get_first()
 
 template <class Type> inline Type *List<Type>::get_last()
 {
-    if (last && ! sotl)                     //behaviour of a normal linked list
+    if (last && ! sotl)                     //behavior of a normal linked list
     {
         last_asked_list_elem = last;
         return last->elem;
@@ -399,7 +399,7 @@ template <class Type> inline Type *List<Type>::get_prev()
 
     if (last_asked_list_elem){
 
-        if (!sotl)              //behaviour of a normal linked list
+        if (!sotl)              //behavior of a normal linked list
         {
             last_asked_list_elem = last_asked_list_elem->get_prev();
 
@@ -429,7 +429,7 @@ template <class Type> inline Type *List<Type>::get_next()
 
     if (last_asked_list_elem){
 
-        if (!sotl)              //behaviour of a normal linked list
+        if (!sotl)              //behavior of a normal linked list
         {
             last_asked_list_elem = last_asked_list_elem->next;
 

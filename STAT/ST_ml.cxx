@@ -306,8 +306,8 @@ void ST_sequence_ml::go(const ST_sequence_ml * lefts, double leftl, const ST_seq
             distr = -distr;
         if (distr > maxm)
             distr = maxm;
-        st_ml->rate_matrizes[distl].mult(lb, dest);
-        st_ml->rate_matrizes[distr].mult(rb, &hbv);
+        st_ml->rate_matrices[distl].mult(lb, dest);
+        st_ml->rate_matrices[distr].mult(rb, &hbv);
         dest->mult(&hbv);
         dest->check_overflow();
         if (dest->lik != 1) {
@@ -336,7 +336,7 @@ void ST_sequence_ml::calc_out(ST_sequence_ml * next_branch, double dist) {
             distl = -distl;
         if (distl > maxm)
             distl = maxm;
-        st_ml->rate_matrizes[distl].mult(lefts, out);
+        st_ml->rate_matrices[distl].mult(lefts, out);
 
         // correct frequencies
         for (int i = ST_A; i < ST_MAX_BASE; i++) {
@@ -371,7 +371,7 @@ ST_ML::~ST_ML() {
     delete not_valid;
     delete[]base_frequencies;
     delete[]inv_base_frequencies;
-    delete[]rate_matrizes;
+    delete[]rate_matrices;
     if (!awt_csp) {
         delete rates;
         delete ttratio;
@@ -475,16 +475,16 @@ void ST_ML::insert_tree_into_hash_rek(AP_tree * node) {
     }
 }
 
-void ST_ML::create_matrizes(double max_disti, int nmatrizes) {
+void ST_ML::create_matrices(double max_disti, int nmatrices) {
     max_dist = max_disti;
-    if (rate_matrizes)
-        delete rate_matrizes;
-    rate_matrizes = new ST_rate_matrix[nmatrizes];
-    max_matr = nmatrizes;
+    if (rate_matrices)
+        delete rate_matrices;
+    rate_matrices = new ST_rate_matrix[nmatrices];
+    max_matr = nmatrices;
     step_size = max_dist / max_matr;
     int i;
     for (i = 0; i < max_matr; i++) {
-        rate_matrizes[i].set((i + 1) * step_size, 0); // ttratio[i]
+        rate_matrices[i].set((i + 1) * step_size, 0); // ttratio[i]
     }
 }
 
@@ -610,8 +610,8 @@ GB_ERROR ST_ML::init(const char *tree_name, const char *alignment_namei,
     tree_root->sequence_template = new ST_sequence_ml(tree_root, this);
     tree_root->tree->load_sequences_rek(alignment_name, GB_TRUE, GB_TRUE);
 
-    /* create matrizes */
-    create_matrizes(2.0, 1000);
+    /* create matrices */
+    create_matrices(2.0, 1000);
 
     ST_sequence_ml::tmp_out = new ST_base_vector[alignment_len];
     is_inited = 1;

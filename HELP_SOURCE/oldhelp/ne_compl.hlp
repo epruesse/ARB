@@ -17,7 +17,7 @@ DESCRIPTION	Complements and/or reverses (part of) sequences. This is helpful
 		if sequences were entered the wrong way round or if
 		potential higher order structure elements should be studied.
 
-		Select a sequence by positoning the cursor on its name and
+		Select a sequence by positioning the cursor on its name and
 			pressing the left mouse button.
 
 		Choose the 'Complement' item from the 'ARB_EDIT/EDIT' menu to
@@ -37,7 +37,7 @@ DESCRIPTION	Complements and/or reverses (part of) sequences. This is helpful
 			button.
 
 		Press <REST SEQUENCE> or <REST EDITOR> to complement or
-			reverse the sequence from the curent cursor position to
+			reverse the sequence from the current cursor position to
 			the (right) end of the sequence or the (right) end of
 			the last (bottom) edited sequence, respectively.
 

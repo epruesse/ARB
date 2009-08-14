@@ -21,7 +21,7 @@
 configDialog::configDialog(MDialog *d)
     : MDialog(d)
 {
-    // PRDEFINE VARIABLES
+    // PREDEFINE VARIABLES
     m_top= NULL;
     m_crosshairText= NULL;
     m_crosshairArea= NULL;
@@ -375,7 +375,7 @@ void configDialog::createWindow()
         XmNorientation, XmHORIZONTAL,
         NULL);
 
-    // LABEL WIDGET (PROTEIN INFOS)
+    // LABEL WIDGET (PROTEIN INFORMATION)
     Widget label_08= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
         XmNlabelString, CreateDlgString("DISPLAYED PROTEIN INFO"),
@@ -387,7 +387,7 @@ void configDialog::createWindow()
         XmNrightAttachment, XmATTACH_FORM,
         NULL);
 
-    // TEXT FIELD - PROTEIN INFOS
+    // TEXT FIELD - PROTEIN INFORMATION
     m_info_ProteinText= XtVaCreateManagedWidget("textField",
         xmTextWidgetClass, m_top,
         XmNheight, 80,
@@ -399,7 +399,7 @@ void configDialog::createWindow()
         NULL);
     XtAddCallback(m_info_ProteinText, XmNvalueChangedCallback, staticTextChangedCallback, this);
 
-    // LABEL WIDGET (GENE INFOS)
+    // LABEL WIDGET (GENE INFORMATION)
     Widget label_09= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
         XmNlabelString, CreateDlgString("DISPLAYED GENE INFO"),
@@ -411,7 +411,7 @@ void configDialog::createWindow()
         XmNrightAttachment, XmATTACH_FORM,
         NULL);
 
-    // TEXT FIELD - GENE INFOS
+    // TEXT FIELD - GENE INFORMATION
     m_info_GeneText= XtVaCreateManagedWidget("textField",
         xmTextWidgetClass, m_top,
         XmNheight, 80,
@@ -568,7 +568,7 @@ void configDialog::drawColoredSpot(Widget area, int r , int g , int b)
 
     XFlush(display);
 
-    // FREE OUR GC AS WE DONT NEED IT ANYMORE
+    // FREE OUR GC AS WE DON'T NEED IT ANYMORE
     XFreeGC(display, gc);
 }
 

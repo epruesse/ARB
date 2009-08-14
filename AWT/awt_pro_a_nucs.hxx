@@ -87,7 +87,7 @@ private:
     unsigned char      index_2_spro[64]; // 64 > max_aa
     
     int realmax_aa;             // number of real AA + stop codon
-    int max_aa;                 // plus ambigous codes
+    int max_aa;                 // plus ambiguous codes
 
     void build_table(unsigned char pbase, const char *tri_pro, const char *nuc);
     long *create_pro_to_bits() const;

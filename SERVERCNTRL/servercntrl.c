@@ -188,7 +188,7 @@ GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env, G
         else {
             if (strcmp(file, "!ASSUME_RUNNING") == 0) {
                 // assume pt-server is running on a host,  w/o access to common network drive
-                // i.e. we cannot check for the existance of the database file
+                // i.e. we cannot check for the existence of the database file
             }
             else if (GB_size_of_file(file) <= 0) {
                 if (strncmp(arb_tcp_env, "ARB_NAME_SERVER", 15) == 0) {

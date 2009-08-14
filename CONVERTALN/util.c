@@ -71,7 +71,7 @@ void warning(warning_num, warning_message)
         fprintf(stderr, "WARNING(%d): %s\n", warning_num, warning_message);
 }
 /* ------------------------------------------------------------
- *   Function Reallspace().
+ *   Function Reallocspace().
  *       Realloc a continue space, expand or shrink the
  *       original space.
  */

@@ -101,7 +101,7 @@ static void mark_species(GBT_TREE *node, Store_species **extra_marked_species) {
    S    SAI
 
    String
-   Seperator (char)1
+   Separator (char)1
 
    X::  Y '\0'
    Y::  eps
@@ -144,7 +144,7 @@ int nt_build_conf_string_rek(GB_HASH *used, GBT_TREE *tree, GBS_strstruct *memfi
                              int use_species_aside, // # of species to mark left and right of marked species
                              int *auto_mark, // # species to extra-mark (if not already marked)
                              int marked_at_left, // # of species which were marked (looking to left)
-                             int *marked_at_right) // # of species which are marked (when returning from rekursion)
+                             int *marked_at_right) // # of species which are marked (when returning from recursion)
 {
     if (!tree) return 0;
     if (tree->is_leaf){
@@ -187,7 +187,7 @@ int nt_build_conf_string_rek(GB_HASH *used, GBT_TREE *tree, GBS_strstruct *memfi
                 }
 
                 while (marked_back) {
-                    GBS_chrcat(memfile,1);              // Seperated by 1
+                    GBS_chrcat(memfile,1);              // Separated by 1
                     GBS_strcat(memfile,"L");
                     GBS_strcat(memfile,marked_back->getNode()->name);
                     GBS_write_hash(used,marked_back->getNode()->name,1);        // Mark species
@@ -203,7 +203,7 @@ int nt_build_conf_string_rek(GB_HASH *used, GBT_TREE *tree, GBS_strstruct *memfi
             *auto_mark = use_species_aside;
         }
 
-        GBS_chrcat(memfile,1);              // Seperated by 1
+        GBS_chrcat(memfile,1);              // Separated by 1
         GBS_strcat(memfile,"L");
         GBS_strcat(memfile,tree->name);
         GBS_write_hash(used,tree->name,1);      // Mark species
@@ -215,7 +215,7 @@ int nt_build_conf_string_rek(GB_HASH *used, GBT_TREE *tree, GBS_strstruct *memfi
     long oldpos = GBS_memoffset(memfile);
     if (tree->gb_node && tree->name){       // but we are a group
         GBDATA *gb_grouped = GB_entry(tree->gb_node,"grouped");
-        GBS_chrcat(memfile,1);              // Seperated by 1
+        GBS_chrcat(memfile,1);              // Separated by 1
         if (gb_grouped && GB_read_byte(gb_grouped)) {
             GBS_strcat(memfile,"F");
         }else{
@@ -230,7 +230,7 @@ int nt_build_conf_string_rek(GB_HASH *used, GBT_TREE *tree, GBS_strstruct *memfi
     nspecies += nt_build_conf_string_rek(used, tree->rightson, memfile, extra_marked_species, use_species_aside, auto_mark, right_of_leftson, marked_at_right);
 
     if (tree->gb_node && tree->name){       // but we are a group
-        GBS_chrcat(memfile,1);          // Seperated by 1
+        GBS_chrcat(memfile,1);          // Separated by 1
         GBS_chrcat(memfile,'E');        // Group end indicated by 'E'
     }
 
@@ -257,15 +257,15 @@ static long nt_build_sai_string_by_hash(const char *key, long val, void *cd_sai_
 
     if (!last_group_name || strncmp(key, last_group_name, sep-key)) { // new group
         if (last_group_name){
-            GBS_chrcat(sai_middle,1);               // Seperated by 1
+            GBS_chrcat(sai_middle,1);               // Separated by 1
             GBS_chrcat(sai_middle,'E');             // End of old group
         }
-        GBS_chrcat(sai_middle,1);                   // Seperated by 1
+        GBS_chrcat(sai_middle,1);                   // Separated by 1
         GBS_strcat(sai_middle,"FSAI:");
         GBS_strncat(sai_middle,key,sep-key);
         sai_builder->last_group_name = key;
     }
-    GBS_chrcat(sai_middle,1);                       // Seperated by 1
+    GBS_chrcat(sai_middle,1);                       // Separated by 1
     GBS_strcat(sai_middle,"S");
     GBS_strcat(sai_middle,sep+1);
     return val;
@@ -287,7 +287,7 @@ void nt_build_sai_string(GBS_strstruct *topfile, GBS_strstruct *middlefile){
         char *name = GB_read_string(gb_name);
 
         if (strcmp(name,  "HELIX") == 0  || strcmp(name,  "HELIX_NR") == 0 || strcmp(name,  "ECOLI") == 0) {
-            GBS_chrcat(topfile,1);              // Seperated by 1
+            GBS_chrcat(topfile,1);              // Separated by 1
             GBS_strcat(topfile,"S");
             GBS_strcat(topfile,name);
         }
@@ -314,7 +314,7 @@ void nt_build_sai_string(GBS_strstruct *topfile, GBS_strstruct *middlefile){
     struct SAI_string_builder sai_builder = { middlefile, 0};
     GBS_hash_do_sorted_loop(hash, nt_build_sai_string_by_hash, GBS_HCF_sortedByKey, &sai_builder);
     if (sai_builder.last_group_name) {
-        GBS_chrcat(middlefile,1);               // Seperated by 1
+        GBS_chrcat(middlefile,1);               // Separated by 1
         GBS_chrcat(middlefile,'E');             // End of old group
     }
 
@@ -326,7 +326,7 @@ void nt_build_sai_string(GBS_strstruct *topfile, GBS_strstruct *middlefile){
 }
 
 void nt_build_conf_marked(GB_HASH *used, GBS_strstruct *file){
-    GBS_chrcat(file,1);             // Seperated by 1
+    GBS_chrcat(file,1);             // Separated by 1
     GBS_strcat(file,"FMore Sequences");
     GBDATA *gb_species;
     for (gb_species = GBT_first_marked_species(GLOBAL_gb_main);
@@ -343,7 +343,7 @@ void nt_build_conf_marked(GB_HASH *used, GBS_strstruct *file){
         free(name);
     }
 
-    GBS_chrcat(file,1); // Seperated by 1
+    GBS_chrcat(file,1); // Separated by 1
     GBS_chrcat(file,'E');   // Group end indicated by 'E'
 }
 
@@ -362,7 +362,7 @@ AW_window *NT_start_editor_on_old_configuration(AW_root *awr){
     if (aws) return (AW_window *)aws;
     awr->awar_string(AWAR_CONFIGURATION,"default_configuration",GLOBAL_gb_main);
     aws = new AW_window_simple;
-    aws->init( awr, "SELECT_CONFIFURATION", "SELECT A CONFIGURATION");
+    aws->init( awr, "SELECT_CONFIGURATION", "SELECT A CONFIGURATION");
     aws->at(10,10);
     aws->auto_space(0,0);
     awt_create_selection_list_on_configurations(GLOBAL_gb_main,(AW_window *)aws,AWAR_CONFIGURATION);

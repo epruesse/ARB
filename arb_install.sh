@@ -34,24 +34,24 @@ untar() {
     fi
 }
 
-seperator() {
+separator() {
     echo ''
     echo '*******************************************'
 }
 
-seperator
+separator
 echo 'Welcome to the ARB Package'
-seperator
+separator
 echo '  Note:   - You may abort this script with ctrl-"C"'
 echo '          - You can rerun this script as often as you like'
 echo '          - Old ARB data will be kept if requested (in this case'
 echo '            you can simply change some options)'
 echo '          - Pressing <return> will select the value in brackets'
-seperator
+separator
 echo 'Please answer some questions:'
-seperator
+separator
 echo 'Enter path where to install ARB ?'
-echo '  ARB is not a single programm but a set of programs, datafiles ...'
+echo '  ARB is not a single program but a set of programs, datafiles ...'
 echo '  To install ARB correctly all files are stored in a single '
 echo '  directory. This script creates such a directory and copies all'
 echo '  data into it, sets the correct permissions and optionally installs'
@@ -102,7 +102,7 @@ if test -d $ARBHOME; then
     cp $ARBHOME/lib/arb_tcp.dat arb_tcp_`date +%Y%m%d`.dat
 
     if test -w $ARBHOME; then
-        seperator
+        separator
         echo 'The destination directory'
         echo "    $ARBHOME"
         echo 'already exists!'
@@ -142,7 +142,7 @@ cd $ARBHOME
 ARBHOME=`pwd`
 
 if test -d lib/pictures; then
-    seperator
+    separator
     echo "Old ARB package found (type n to change only some options)."
     echo "  Do you want to update the old package: (y/n)[y]"
     read var;
@@ -157,7 +157,7 @@ else
     untar arb.tgz;
 fi
 
-seperator
+separator
 echo 'Specify PT_SERVER files location'
 echo '  ARB needs a writeable directory to store the pt_server files. '
 echo '  Those files are needed for fast database search'
@@ -223,7 +223,7 @@ case "$pt_dir" in
     (cd lib;ln -s $pt_dir pts;)
 esac
 
-seperator
+separator
 echo 'Who is responsible for the PT_SERVER index files ?'
 echo '  Answer  y: if you trust your users (less administration)'
 echo '          n: if YOU want to administrate all PT_SERVER files'
@@ -244,9 +244,9 @@ case "$var" in
     echo ">>> flags unchanged";;
 esac
 
-seperator
+separator
 echo 'NameServer installation'
-echo '  The NameServer is a programm, that synchronizes all species names'
+echo '  The NameServer is a program, that synchronizes all species names'
 echo '  of the databases of different users.'
 echo '  Users that import foreign data into their database and want to'
 echo '  export those data to other ARB users should be allowed to change'
@@ -270,7 +270,7 @@ case "$var" in
     echo ">>> flags unchanged";;
 esac
 
-seperator
+separator
 echo 'Networking'
 echo '  To speed up calculation one special host can be assigned as'
 echo '  the PT_SERVER host. That means that all database search is done'
@@ -302,7 +302,7 @@ case "$var" in
     mv $bckup lib/arb_tcp.dat;
     echo ">>> old lib/arb_tcp.dat restored";;
     n)
-    seperator
+    separator
     echo "Enter the name of your host for the pt_server"
     read host
     echo "Checking connection to $host"
@@ -319,10 +319,10 @@ case "$var" in
     echo ">>> server installed";;
 esac
 
-seperator
+separator
 echo ">>> Installation Complete"
 
-seperator
+separator
 SHELL_ANS=0
 
 while [ "$SHELL_ANS" = "0" ]; do

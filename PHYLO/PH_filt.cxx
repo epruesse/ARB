@@ -151,7 +151,7 @@ float *PH_filter::calculate_column_homology(void){
     for(i=0;i<PHDATA::ROOT->get_seq_len();i++) mline[i]=-1.0;  // all columns invalid
     for(i=0;i<256;i++){
         mask[i]            = false;
-        reference_table[i] = num_all_chars;         // invalid and synonyme characters
+        reference_table[i] = num_all_chars;         // invalid and synonym characters
     }
 
     // set valid characters
@@ -160,7 +160,7 @@ float *PH_filter::calculate_column_homology(void){
         reference_table[(unsigned char)all_chars[i]] = i;
     }
 
-    // rna or dna sequence: set synonymes
+    // rna or dna sequence: set synonyms
     if(isNUC){
         reference_table[(unsigned char)'U'] = reference_table[(unsigned char)'T']; /* T=U */
         reference_table[(unsigned char)'u'] = reference_table[(unsigned char)'t'];

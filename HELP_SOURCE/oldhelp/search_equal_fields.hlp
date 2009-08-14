@@ -29,7 +29,7 @@ DESCRIPTION     Searches for
                 in the DB I hitlist are queried and searched for equal entries (or words in entries).
                 Search is performed only in the field selected in the first query of DB II.
 
-                If you select 'that dont match' in the search&query windows, species are only listed
+                If you select 'that don't match' in the search&query windows, species are only listed
                 if they have an entry which doesn't exist in other DB.  
 
 NOTES		As a shortcut to search for equal entries, you can enter an empty 'Search string' in
@@ -37,7 +37,7 @@ NOTES		As a shortcut to search for equal entries, you can enter an empty 'Search
 
                 If you need to search for empty fields,
                    * either use the second query or
-                   * search for '*' and select 'dont match'
+                   * search for '*' and select 'don't match'
 
 EXAMPLES	None
 

@@ -177,7 +177,7 @@ int AD_SPECIES_destroy(GBDATA *gb_species,AD_SPECIES *ad_species)
 
     if (ad_species->gb_species != gb_species) {
         // muessen uebereinstimmen
-        new AD_ERR(" strange CALLBACK occured - int AD_SPECIES",CORE);
+        new AD_ERR(" strange CALLBACK occurred - int AD_SPECIES",CORE);
     }
 
     if (ad_species->spname) delete ad_species->spname;

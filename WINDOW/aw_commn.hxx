@@ -26,7 +26,7 @@ public:
 
     AW_GC_Xm(class AW_common *common);
     ~AW_GC_Xm();
-    void set_fill(AW_grey_level grey_level); // <0 dont fill  0.0 white 1.0 black
+    void set_fill(AW_grey_level grey_level); // <0 don't fill  0.0 white 1.0 black
     void set_font(AW_font font_nr, int size, int *found_size);
     void set_lineattributes(AW_pos width, AW_linestyle style);
     void set_function(AW_function function);

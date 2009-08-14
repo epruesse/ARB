@@ -36,7 +36,7 @@ DESCRIPTION     Delete old names file
                        ARB automatically generates accession numbers if they are missing.
                        e.g if you import plain sequence data.
 
-                       Use this to get rid of all nameserver entried using ARB_xxx accession
+                       Use this to get rid of all nameserver entries using ARB_xxx accession
                        numbers.
 
                 Additional species ID field
@@ -53,7 +53,7 @@ DESCRIPTION     Delete old names file
                        This setting is database-specific - so you have to set it for each database
                        where it's needed. 
 
-                       For each field you use, a seperate name server will be generated.
+                       For each field you use, a separate name server will be generated.
                        That means:
 
                        - You have to add a new entry into arb_tcp.dat (except for field 'start'

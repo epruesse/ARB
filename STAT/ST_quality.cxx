@@ -130,7 +130,7 @@ void st_ml_add_sequence_part_to_stat(ST_ML * st_ml, AWT_csp * /*awt_csp */,
                 max = v;
         }
         AWT_dna_base base = awt_dna_table.char_to_enum(source_sequence[pos]);
-        if (base != ST_UNKNOWN && base != ST_GAP) { // dont count gaps
+        if (base != ST_UNKNOWN && base != ST_GAP) { // don't count gaps
             double val = max / (0.0001 + vec->b[base]);
             double log_val = log(val);
             info->ss2.add(pos * 2 / seq_len, log_val);

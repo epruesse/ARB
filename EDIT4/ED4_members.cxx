@@ -23,11 +23,11 @@ ED4_returncode ED4_members::search_target_species( ED4_extension *location,  ED4
     // -1 if list is empty or no_of_members if search reached end of list
     ED4_index   current_index = 0,
         old_index,
-        rel_pos,                                                                // relativ position, i.e. on screen, to check
+        rel_pos,                                                                // relative position, i.e. on screen, to check
         rel_size;
     AW_pos              abs_pos_x = 0,
         abs_pos_y = 0,
-        abs_pos;                                                                // relativ size of object, to check
+        abs_pos;                                                                // relative size of object, to check
     ED4_base    *current_member;
 
 

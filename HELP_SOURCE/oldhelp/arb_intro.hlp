@@ -40,7 +40,7 @@ NOTES		A suffix typed or displayed in the 'Suffix' subwindow is used as
 
 		ARB databases stored in any directory with read and write
 		permission can be opened starting 'arb' from the current
-		directory. Find the path by sucessively selecting the
+		directory. Find the path by successively selecting the
 		corresponding directories from the 'Existing Files and
 		Directories' subwindow.
 

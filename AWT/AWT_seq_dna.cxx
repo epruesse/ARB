@@ -72,7 +72,7 @@ void AP_sequence_parsimony::set(const char *isequence)
         int iseqlen = strlen(isequence);
 
         for (int i = 0; i<sequence_len; ++i) {
-            int pos = root->filter->bootstrap[i]; // enthaelt zufallsfolge
+            int pos = root->filter->bootstrap[i]; // contains random indices
 
 //             printf("i=%i pos=%i sequence_len=%li iseqlen=%i\n", i, pos, sequence_len, iseqlen);
 
@@ -327,7 +327,7 @@ AP_FLOAT AP_sequence_parsimony::real_len(void)  // count all bases
     long i;
     long sum = 0;
     unsigned char *p = (unsigned char*)sequence;
-    for (i=0;i<256;i++){    // count ambigous characters half
+    for (i=0;i<256;i++){    // count ambiguous characters half
         hits[i] = 1;
     }
     hits[AP_A] = 2;     // real characters full

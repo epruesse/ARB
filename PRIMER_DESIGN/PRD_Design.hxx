@@ -35,7 +35,7 @@ private:
     Range primer2;
 
     // Abstand der Primer (bzgl. der Basen dazwischen, <=0 = ignorieren)
-    // min/max distance of primers (regading number of bases between, <=0 = ignore)
+    // min/max distance of primers (regarding number of bases between, <=0 = ignore)
 
     Range primer_distance;
 
@@ -64,7 +64,7 @@ private:
     double temperature_factor;
 
     // wird ein Primer ausserhalb dieser Distanz nocheinmal gefunden wird das Vorkommen ignoriert ( <= 0 = eindeutig )
-    // is a primer found again out of this range its occurence is ignored ( <=0 = explict match )
+    // is a primer found again out of this range its occurrence is ignored ( <=0 = explicit match )
 
     int  min_distance_to_next_match;
 

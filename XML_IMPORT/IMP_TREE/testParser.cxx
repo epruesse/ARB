@@ -47,7 +47,7 @@ int main(int argC, char* argV[])
 
     //  Create the handler object and install it as the document and error
     //  handler for the parser. Then parse the file and catch any exceptions
-    //  that propogate out
+    //  that propagate out
 
     ofstream outFile;
     outFile.open(fileName, ios::out); //open destination file to write

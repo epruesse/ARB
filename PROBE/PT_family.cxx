@@ -96,7 +96,7 @@ static int mark_all_matches( PT_local *locs,
     return 0;
 }
 
-/* Clear all informations in psg.data[i].stat */
+/* Clear all information in psg.data[i].stat */
 static void clear_statistic(){
     int i;
     for (i = 0; i < psg.data_count; i++)
@@ -104,7 +104,7 @@ static void clear_statistic(){
 }
 
 
-/* Calculate the statistic informations for the family */
+/* Calculate the statistic information for the family */
 static void make_match_statistic(int probe_len, int sequence_length) {
     int i;
     /*
@@ -181,7 +181,7 @@ static int make_PT_family_list(PT_local *locs) {
     return 0;
 }
 
-/* Check the probe for inconsitencies */
+/* Check the probe for inconsistencies */
 inline int probe_is_ok(char *probe, int probe_len, char first_c, char second_c)
 {
     int i;

@@ -635,7 +635,7 @@ static void ED4_pfold_resolve_overlaps(const unsigned char *sequence, char *stru
  *  \param[out] structures Predicted secondary structures (#ALPHA_HELIX, #BETA_SHEET, 
  *                         #BETA_TURN and #STRUCTURE_SUMMARY, in this order)
  *  \param[in]  length     Size of \a sequence and \a structures[i]
- *  \return     Error description, if an error occured; 0 otherwise
+ *  \return     Error description, if an error occurred; 0 otherwise
  * 
  *  This function predicts the protein secondary structures from the amino acid
  *  sequence according to the Chou-Fasman algorithm. In a first step, nucleation sites
@@ -675,7 +675,7 @@ static GB_ERROR ED4_pfold_predict_structure(const unsigned char *sequence, char 
  *  \param[in]  sequence  Amino acid sequence
  *  \param[out] structure Predicted secondary structure summary
  *  \param[in]  length    Size of \a sequence and \a structure
- *  \return     Error description, if an error occured; 0 otherwise
+ *  \return     Error description, if an error occurred; 0 otherwise
  *
  *  Basically the same as
  *  ED4_pfold_predict_structure(const char *sequence, char *structures[4], int length)
@@ -881,7 +881,7 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
                         
                         // map to match characters and store in result_buffer
                         int prob_normalized = ED4_pfold_round_sym(prob * 9);
-                        //e4_assert(prob_normalized >= 0 && prob_normalized <= 9); // if this happens check if normalization is correct or some undefined charachters mess everything up
+                        //e4_assert(prob_normalized >= 0 && prob_normalized <= 9); // if this happens check if normalization is correct or some undefined characters mess everything up
                         char prob_symbol = *pair_chars[STRUCT_UNKNOWN];
                         if (prob_normalized >= 0 && prob_normalized <= 9) {
                             prob_symbol = pair_chars_2[prob_normalized]; 

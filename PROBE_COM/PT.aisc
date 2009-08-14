@@ -64,7 +64,7 @@ PT_probeparts, TPROBEPARTS,     9,      (~a part of a probe to search in the Pre
 PT_pdc_specials, SPECIALS,      10,     (~ non standard substrings of a probe ~), {
     @TYPE,  @IDENT, @REF,   @ACC,   @KEY,           @KEYC,  @INIT,          @DOCU;
     dllh,   mh,     t,      ,       (~~),           0,      ,               (~Header~);
-    int,    mode,   t,      ,       MODE,           9,      ,               (~ ==1 -> split domains; ==0 -> dont split domains ~);
+    int,    mode,   t,      ,       MODE,           9,      ,               (~ ==1 -> split domains; ==0 -> don't split domains ~);
     double, ll,     t,      ,       LLEFT,          10,     ,               (~ the bond value of the character left of the left ~);
     double, l,      t,      ,       LEFT,           11,     ,               (~ The bond value left character ~);
     double, c,      t,      ,       CENTER,         12,     ,               (~ The center character~);
@@ -115,7 +115,7 @@ PT_pdc, PDC,    12,     (~ The new probe design ~), {
     PT_pdc_specials,specials,       d,      ,       SPECIALS,       15,     ,                       (~ Exceptions of splitting domains~);
     int,            looplen,        t,      ,       LOOPLEN,        17,     4,                      (~ The Loop Length of a probe ~);
     int,            probelen,       t,      ,       PROBELENGTH,    20,     18,                     (~the length of the probe~);
-    double,         mintemp,        t,      ,       MINTEMP,        22,     30.0,                   (~minimum temperuture~);
+    double,         mintemp,        t,      ,       MINTEMP,        22,     30.0,                   (~minimum temperature~);
     double,         maxtemp,        t,      ,       MAXTEMP,        23,     100.0,                  (~maximum temperature~);
     double,         min_gc,         t,      ,       MINGC,          25,     .3,                     (~the minimum GC content~);
     double,         max_gc,         t,      ,       MAXGC,          26,     1.0,                    (~the maximum GC content~);
@@ -126,8 +126,8 @@ PT_pdc, PDC,    12,     (~ The new probe design ~), {
     int,            mishit,         t,      ,       MISHIT,         36,     0,                      (~the maximum mis hits~);
     int,            clipresult,     t,      ,       CLIPRESULT,     40,     40,                     (~Clip the Result list~);
     int,            pos_groups,     vt,     ,       ,               ,       ,                       (~Position of Groups~), SIZE ALPHA_SIZE;
-    bytestring,     checksums,      t,      w,      CHECKSUMS,      44,     ,                       (~a list of sequence checksums seperated by '#' is optional~);
-    bytestring,     names,          t,      w,      NAMES,          45,     ,                       (~a list of names seperated by '#' is expected~);
+    bytestring,     checksums,      t,      w,      CHECKSUMS,      44,     ,                       (~a list of sequence checksums separated by '#' is optional~);
+    bytestring,     names,          t,      w,      NAMES,          45,     ,                       (~a list of names separated by '#' is expected~);
     bytestring,     PT_unknown_names,%,     r,      UNKNOWN_NAMES,  46,     ,                       (~List of unknown names~);
     PT_sequence,    sequences,      d,      ,       SEQUENCE,       47,     ,                       (~Additional Sequences~);
     int,            PT_start_design,%,      w,      GO,             50,     ,                       (~Start the design procedure~);
@@ -214,7 +214,7 @@ PT_local, LOCS,         6,      (~local communication buffer~), {
     PT_pdc,         pdc,                  d,    ,       ,       PROBE_DESIGN_CONFIG,  40,     ,                     (~The new probe design~);
     PT_exProb,      ep,                   d,    ,       ,       PROBE_FIND_CONFIG,    42,     ,                     (~Find all existing probes~);
 
-    # com-codes 50-59 were used by find-family, dont re-use for some time (ralf 10/2008)
+    # com-codes 50-59 were used by find-family, don't re-use for some time (ralf 10/2008)
 
     aisc_string,    user,                 t,    rw,     ,       USER,                 60,     "unknown",            (~the username~);
     aisc_string,    address,              t,    rw,     ,       ADDRESS,              61,     "unknown",            (~the useraddress~);

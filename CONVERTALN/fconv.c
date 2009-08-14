@@ -147,7 +147,7 @@ init()  {
     data.macke.author                  = NULL;
     data.macke.strain                  = NULL;
     data.macke.subspecies              = NULL;
-    /* initialize gnebank format */
+    /* initialize genbank format */
     data.gbk.locus                     = NULL;
     data.gbk.definition                = NULL;
     data.gbk.accession                 = NULL;
@@ -207,7 +207,7 @@ init()  {
     data.alma.defgap                   = '-';
     data.alma.num_of_sequence          = 0;
     data.alma.sequence                 = NULL;
-    /* inital NBRF data format */
+    /* initial NBRF data format */
     data.nbrf.id                       = NULL;
     data.nbrf.description              = NULL;
     /* initial sequence data */

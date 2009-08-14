@@ -45,7 +45,7 @@ struct gbm_struct {
     struct gbm_data_struct  *gds;           /* free data area */
     size_t             size;            /* free size of current table */
     size_t             allsize;     /* full size of all tables */
-    struct gbm_table_struct *first; /* linkes list of tables */
+    struct gbm_table_struct *first; /* link list of tables */
     struct gbm_data_struct  *tables[GBM_MAX_TABLES + 1];    /* free entries */
     long             tablecnt[GBM_MAX_TABLES + 1];  /* number of free entries */
     long             useditems[GBM_MAX_TABLES + 1]; /* number of used items (everything) */
@@ -104,7 +104,7 @@ NOT4PERL void *GB_calloc(unsigned int nelem, unsigned int elsize)
         memset(mem,0,size);
     }
     else {
-        fprintf(stderr,"Panic Error:    Unsufficient memory: tried to get %i*%i bytes : Increase Swap space\n",nelem,elsize);
+        fprintf(stderr,"Panic Error: insufficient memory: tried to get %i*%i bytes\n",nelem,elsize);
     }
     return mem;
 }
@@ -185,7 +185,7 @@ NOT4PERL void *GB_recalloc(void *ptr, unsigned int oelem, unsigned int nelem, un
         }
     }
     else {
-        fprintf(stderr,"Panic Error:    Unsufficient memory: tried to get %i*%i bytes : Increase Swap space\n",nelem,elsize);
+        fprintf(stderr,"Panic Error: insufficient memory: tried to get %i*%i bytes\n",nelem,elsize);
     }
 
     return mem;

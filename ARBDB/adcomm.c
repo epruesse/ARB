@@ -1262,7 +1262,7 @@ long gbcm_read_bin(int socket,GBCONTAINER *gbd, long *buffer, long mode, GBDATA 
             int types = GB_TYPE(gb_source);
             gb2 = gb_source;
             if (types != type) {
-                GB_internal_error("Type changed in client: Connection abortet\n");
+                GB_internal_error("Type changed in client: Connection aborted\n");
                 return GBCM_SERVER_FAULT;
             }
             if (mode>0) {   /* transactions only in server */
@@ -2096,7 +2096,7 @@ GB_ERROR GB_install_pid(int mode) {
     if (lastpid != -25) {
         long pid = getpid();
 
-        if (pid != lastpid) {   // dont install pid multiple times
+        if (pid != lastpid) {   // don't install pid multiple times
             char *pidfile_name;
             {
                 const char *user    = GB_getenvUSER();

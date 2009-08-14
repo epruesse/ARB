@@ -38,7 +38,7 @@ DESCRIPTION	The editor allows you to view and modify the sequences of 'marked
 		exported to the database. All sequence changes made by other
 		ARB tools are exported to the editor every 5 seconds.
 
-		Multiple editors can be used synchronuously.
+		Multiple editors can be used synchronously.
 
 
 	Display:
@@ -126,7 +126,7 @@ DESCRIPTION	The editor allows you to view and modify the sequences of 'marked
 
 			Edit-mode:
 
-				Edit-mode is devided into two submodes: Insert-mode
+				Edit-mode is divided into two submodes: Insert-mode
 				and Replace-mode. Toggle between these submodes
 				with the 'Insert/Replace' button on the menuboard
 				or with CTRL-I.

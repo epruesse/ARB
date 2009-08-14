@@ -95,17 +95,17 @@ DESCRIPTION
          mutations, and missing residues can be changed using 'Color Settings' of the main
          RNA3D window.
 
-         MAPPING OLIGONUCLEOTIDE PROBES:
+         MAPPING OLIGO-NUCLEOTIDE PROBES:
 
-                The localization of the proposed oligonucleotide probe targets can be
+                The localization of the proposed oligo-nucleotide probe targets can be
                 visualized in customizable background colors with in the rRNA crystal
                 structure. Using the navigation capabilities of RNA3D tool (see
                 “Navigation” section), one can get an idea about the probable binding
                 site of the proposed probe with respect to the structural conformation of
                 rRNA.
 
-                Oligonucleotide probes are designed using integrated Probe Design and
-                Probe Match tools of ARB. The selected oligonucleotide probe in probe
+                Oligo-nucleotide probes are designed using integrated Probe Design and
+                Probe Match tools of ARB. The selected oligo-nucleotide probe in probe
                 match window is directly mapped onto the rRNA 3D structure by enabling
                 “Map Search Patterns” check box.
 

@@ -161,7 +161,7 @@ PTM2 *PT_init(int base_count)
     return ptmain;
 }
 
-/******************************** funtions for all stages !!!!! *********************************/
+/******************************** functions for all stages !!!!! *********************************/
 
 
 /******************************** Debug Functions all stages *********************************/
@@ -378,7 +378,7 @@ PT_create_leaf(PTM2 *ptmain, POS_TREE ** pfather, PT_BASES base, int rpos, int a
 }
 
 
-/******************************** funtions for stage 1: save *********************************/
+/******************************** functions for stage 1: save *********************************/
 
 void PTD_clear_fathers(PTM2 *ptmain, POS_TREE * node)       /* stage 1*/
 {
@@ -798,7 +798,7 @@ long PTD_write_leafs_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos
     return pos;
 }
 
-/******************************** funtions for stage 2-3: load *********************************/
+/******************************** functions for stage 2-3: load *********************************/
 
 void PTD_read_leafs_from_disk(char *fname,PTM2 *ptmain, POS_TREE **pnode) {
     GB_ERROR  error  = NULL;

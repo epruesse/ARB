@@ -464,7 +464,7 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
                         if (abspos >= 0 && size_t(abspos) < sec_root->max_index()) {
                             sec_root->paintSearchPatternStrings(device, abspos, world.xpos()+1, world.ypos());
                         }
-                        // dont refresh here!
+                        // don't refresh here!
                     }
                     else {
                         sec_assert(button == AWT_M_RIGHT);
@@ -495,7 +495,7 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd,
         error = handleKey(event, key_modifier, key_code, key_char);
     }
     else {
-        if (button != AWT_M_MIDDLE && cmd != AWT_MODE_ZOOM) { // dont handle scroll + zoom
+        if (button != AWT_M_MIDDLE && cmd != AWT_MODE_ZOOM) { // don't handle scroll + zoom
             AW_CL    cd1, cd2;
             Position world = device->rtransform(Position(screen_x, screen_y)); // current click position
 

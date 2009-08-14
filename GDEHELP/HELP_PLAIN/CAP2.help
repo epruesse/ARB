@@ -155,7 +155,7 @@ T
 
 
    Slight modifications by S. Smith on Mon Feb 17 10:18:34 EST 1992.
-   These changes allow for command line arguements for several
+   These changes allow for command line arguments for several
    of the hard coded parameters, as well as a slight modification to
    the output routine to support GDE format.  Changes are commented
    as: Mod by S.S.

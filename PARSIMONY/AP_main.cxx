@@ -18,7 +18,7 @@ using namespace std;
 AP_ERR
 *************************/
 
-int AP_ERR::modus = 0;
+int AP_ERR::mode = 0;
 
 AP_ERR::~AP_ERR()
 {
@@ -30,7 +30,7 @@ AP_ERR::AP_ERR (const char *pntr)
 // setzt den Fehlertext und zeigt ihn an
 {
     text = pntr;
-    if (modus == 0) {
+    if (mode == 0) {
         cout << "\n*** WARNING *** \n" << text <<"\n";
         cout.flush();
     }
@@ -39,7 +39,7 @@ AP_ERR::AP_ERR (const char *pntr)
 AP_ERR::AP_ERR (const char *pntr,const char *pntr2)
 {
     text = pntr2;
-    if (modus == 0) {
+    if (mode == 0) {
         cout << "\n***** WARNING  in " << pntr << "\n" << text <<"\n";
         cout.flush();
     }
@@ -69,7 +69,7 @@ const char *AP_ERR::show()
 }
 
 void AP_ERR::set_mode(int i) {
-    modus = i;
+    mode = i;
 }
 
 /**************

@@ -516,7 +516,7 @@ static format_props detect_format_props(PT_local *locs, bool show_gpos) {
     format.show_ecoli      = psg.ecoli; // display only if there is ecoli
     format.show_gpos       = show_gpos; // display only for gene probe matches
 
-    // minumum values (caused by header widths) :
+    // minimum values (caused by header widths) :
     format.name_width         = gene_flag ? 8 : 4; // 'organism' or 'name'
     format.gene_or_full_width = 8; // 'genename' or 'fullname'
     format.pos_width          = 3; // 'pos'

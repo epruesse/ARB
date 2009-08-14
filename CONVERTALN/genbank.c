@@ -205,7 +205,7 @@ int genbank_comment_subkey_word(line, index, key, length)
     return(indi+1);
 }
 /* ------------------------------------------------------------
- *  Function genbank_chcek_blanks().
+ *  Function genbank_check_blanks().
  *      Check if there is (numb) of blanks at beginning
  *          of line.
  */
@@ -457,7 +457,7 @@ const char *genbank_comments(line, fp)
         if((eof = Fgetline(line, LINENUM, fp))==NULL)
             return(eof);
     }
-    /* make up data to match the logic reasoning for next statment */
+    /* make up data to match the logic reasoning for next statement */
     for(indi=0; indi<12; line[indi++]=' ') ; eof = "NONNULL";
 
     for( ;eof!=NULL&&(genbank_check_blanks(line, 12) ||line[0]=='\n'); ) {
@@ -752,11 +752,6 @@ void
 genbank_out(fp)
      FILE    *fp;
 {
-    /*  void    genbank_print_lines(), genbank_out_origin(); */
-    /*  void    genbank_print_comment(), count_base(); */
-    /*  char    temp[LONGTEXT]; */
-    /*  void    genbank_out_one_entry(), genbank_out_one_comment(); */
-    /*  int Lenstr(), deterninator(); */
     int indi, /*indj, indk,*/ length;
     int base_a, base_t, base_g, base_c, base_other;
 
@@ -979,8 +974,8 @@ void genbank_out_one_comment(fp, string, key, skindent, cnindent)
         genbank_print_comment(fp, key, string, skindent, cnindent);
 }
 /* --------------------------------------------------------------
- *  Fucntion genbank_print_lines().
- *      Print one grnbank line, wrap around if over
+ *  Function genbank_print_lines().
+ *      Print one genbank line, wrap around if over
  *          column 80.
  */
 void genbank_print_lines(fp, string, flag, separators)
@@ -1011,7 +1006,7 @@ void genbank_print_lines(fp, string, flag, separators)
             if(indj==0) indj=ibuf;
             else if(string[indi+indj+1]==' ') indj++;
 
-            /* print left margine */
+            /* print left margin */
             if(!first_time)
                 fprintf(fp, "            ");
             else first_time = 0;
@@ -1031,8 +1026,8 @@ void genbank_print_lines(fp, string, flag, separators)
     }
 }
 /* --------------------------------------------------------------
- *  Fucntion genbank_print_comment().
- *      Print one grnbank line, wrap around if over
+ *  Function genbank_print_comment().
+ *      Print one genbank line, wrap around if over
  *          column 80.
  */
 void genbank_print_comment(fp, key, string, offset, indent)
@@ -1068,7 +1063,7 @@ void genbank_print_comment(fp, key, string, offset, indent)
             for(;indj>=0&&!last_word(string[indj+indi]);
                 indj--) ;
 
-            /* print left margine */
+            /* print left margin */
             if(string[indi]==' ') indk = 1;
             else indk = 0;
 
@@ -1085,7 +1080,7 @@ void genbank_print_comment(fp, key, string, offset, indent)
     }   /* for each char */
 }
 /* ---------------------------------------------------------------
- *   Fcuntion genbank_out_origin().
+ *   Function genbank_out_origin().
  *       Output sequence data in genbank format.
  */
 void

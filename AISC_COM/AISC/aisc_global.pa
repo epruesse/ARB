@@ -69,7 +69,7 @@ FOR $(STRUCT)
                 GOSUB clearlist
                 SET $(nummer) = 0
                 SET $(aisc_string) = $(pre)$(SKEY)_
-                P static const char *$(pre)$(STRUCT)_attribut_names[] = {
+                P static const char *$(pre)$(STRUCT)_attribute_names[] = {
                 GOSUB make_attr_names
                 GOSUB printlist
                 P $10$n};$n
@@ -77,12 +77,12 @@ FOR $(STRUCT)
 ENDFOR
 P $n
 
-############## generate attribut names struct list #############
+############## generate attribute names struct list #############
 GOSUB clearobjlist
-P const char *aisc_attribut_names_list[] = {
+P const char *aisc_attribute_names_list[] = {
 FOR $(STRUCT)
         IF $(SKEY)
-             SET $(list2[$(SKEYC)]) = $1(const char *)$(pre)$(STRUCT)_attribut_names
+             SET $(list2[$(SKEYC)]) = $1(const char *)$(pre)$(STRUCT)_attribute_names
         ENDIF
 ENDFOR
 GOSUB printobjlist

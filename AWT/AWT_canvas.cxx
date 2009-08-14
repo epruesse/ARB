@@ -237,7 +237,7 @@ void AWT_canvas::zoom(AW_device *device, bool zoomIn, const Rectangle& wanted_pa
     }
 
     if (isClick) { // very small part or single click
-        // -> zomm by 10 % on click position
+        // -> zoom by 10 % on click position
         Vector wanted_diagonal = current.diagonal()*0.45;
 
         Position clickPos     = device->rtransform(wanted_part.centroid());

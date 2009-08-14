@@ -30,7 +30,7 @@ class AWT_config {
     // stores one specific configuration (key->value pairs)
     // 
     // this class allows to modify the config_string before calling AWT_config_definition::write().
-    // This is e.g. neccessary if some config-entries change and you want to support
+    // This is e.g. necessary if some config-entries change and you want to support
     // automatic conversion from old format to new format.
 
     AWT_config_mapping *mapping;

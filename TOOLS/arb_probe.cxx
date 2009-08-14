@@ -331,7 +331,7 @@ int main(int argc,char ** argv){
     P.SERVERID = getInt("serverid" ,0,0,100,   "Server Id, look into $ARBHOME/lib/arb_tcp.dat");
 
     P.DESIGNCPLIPOUTPUT = getInt("designmaxhits",100,10,10000,  "Maximum Number of Probe Design Suggestions");
-    P.DESINGNAMES       = getString("designnames","",       "List of short names seperated by '#'");
+    P.DESINGNAMES       = getString("designnames","",       "List of short names separated by '#'");
     P.sequence          = 0;
     while  ((P.DESIGNSEQUENCE = getString("designsequence",0,       "Additional Sequences, will be added to the target group"))) {
         apd_sequence *s  = new apd_sequence;
@@ -348,7 +348,7 @@ int main(int argc,char ** argv){
     P.MAXBOND           = getInt("desingmaxbond",0,0,10,    "Not implemented");
 
     P.MINPOS = getInt("desingminpos",0,0,10000,  "Minimum ecoli position");
-    P.MAXPOS = getInt("desingmaxpos",10000,0,10000,  "Maximumm ecoli position");
+    P.MAXPOS = getInt("desingmaxpos",10000,0,10000,  "Maximum ecoli position");
 
     P.MISHIT     = getInt("designmishit",0,0,10000,  "Number of allowed hits outside the selected group");
     P.MINTARGETS = getInt("designmintargets",50,0,100,   "Minimum percentage of hits within the selected species");

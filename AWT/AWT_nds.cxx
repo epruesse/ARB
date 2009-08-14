@@ -582,7 +582,7 @@ enum { MNTN_COMPRESSED = 0, MNTN_SPACED = 1, MNTN_TABBED = 2 };
 
 const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode, GBT_TREE *species, const char *tree_name)
 {
-    // mode == MNTN_COMPRESSED      compress info (no tabbing, seperate single fields by komma)
+    // mode == MNTN_COMPRESSED      compress info (no tabbing, separate single fields by comma)
     // mode == MNTN_SPACED          format info (using spaces)
     // mode == MNTN_TABBED          format info (using 1 tab per column - for easy import into star-calc, excel, etc. )
 
@@ -677,8 +677,8 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode, GBT_TREE
         if (!skip_display) {
             switch (mode) {
                 case MNTN_COMPRESSED:
-                    if (!field_was_printed) break; // no komma no space if nothing printed yet
-                    awt_nds_ms->append(','); // seperate single fields by komma in compressed mode
+                    if (!field_was_printed) break; // no comma no space if nothing printed yet
+                    awt_nds_ms->append(','); // separate single fields by comma in compressed mode
                     // fall-through
                 case MNTN_SPACED:
                     awt_nds_ms->append(' '); // print at least one space if not using tabs

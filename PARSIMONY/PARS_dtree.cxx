@@ -42,7 +42,7 @@ tree_init()
 
         Filter & weights setup
         loads sequences at the leafs and
-        initalize filters & weights for the tree
+        initialize filters & weights for the tree
         ( AP_tree_nlen expected )
 
 **************************/

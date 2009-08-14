@@ -40,7 +40,7 @@ void OpenGLGraphics::SetOpenGLBackGroundColor() {
     g = (float) xcolor.green / 65535.0;
     b = (float) xcolor.blue / 65535.0;
 
-    // set OpenGL Backgroud Color to the widget's backgroud     
+    // set OpenGL background color to the widget's background     
     glClearColor(r, g, b, 1);
 
     // extern ColorRGBf ApplicationBGColor;

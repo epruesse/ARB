@@ -12,7 +12,7 @@
 #include "CT_mem.hxx"
 #include "CT_part.hxx"
 
-PELEM   cutmask;        /* this mask is nessary to cut the not
+PELEM   cutmask;        /* this mask is necessary to cut the not
                            needed bits from the last long       */
 int     longs = 0,      /* number of longs per part             */
     plen = 0;       /* number of bits per part              */
@@ -25,7 +25,7 @@ void part_init(int len)
 {
     int i, j;
 
-    /* cutmask is nessary to cut unused bits */
+    /* cutmask is necessary to cut unused bits */
     j = 8 * sizeof(PELEM);
     j = len %j;
     if(!j) j += 8 * sizeof(PELEM);
@@ -82,7 +82,7 @@ void part_free(PART *p)
 }
 
 
-/** build a partion that totaly constited of 111111...1111 that is needed to
+/** build a partion that totally consists of 111111...1111 that is needed to
     build the root of a specific ntree */
 PART *part_root(void)
 {
@@ -122,7 +122,7 @@ int son(PART *son, PART *father)
 }
 
 
-/** test if two parts are brothers, brothers mean that ervery bit in p1 is
+/** test if two parts are brothers, brothers mean that every bit in p1 is
     different from p2 and vice versa. needed in CT_ntree
     @PARAMETER  p1  part
     p2  part */
@@ -151,7 +151,7 @@ void part_invert(PART *p)
 
 /** d  = s or d
     @PARMETER   s   source
-    d   destionation*/
+    d   destination*/
 void part_or(PART *s, PART *d)
 {
     int i;
@@ -200,7 +200,7 @@ void part_setlen(PART *p, GBT_LEN len)
 }
 
 
-/** set the percentile appearence of this part in "entrytrees" */
+/** set the percentaged appearance of this part in "entrytrees" */
 void part_setperc(PART *p, int perc)
 {
     p->percent = perc;
@@ -228,10 +228,10 @@ void part_copy(PART *s, PART *d)
 }
 
 
-/** standartize the partitions, two parts are equal if one is just the inverted
-    version of the other so the standart is defined that the version is the
-    representant, whos first bit is equal 1 */
-void part_standart(PART *p)
+/** standardize the partitions, two parts are equal if one is just the inverted
+    version of the other so the standard is defined that the version is the
+    representant, whose first bit is equal 1 */
+void part_standard(PART *p)
 {
     int i;
 

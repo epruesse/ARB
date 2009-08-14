@@ -108,7 +108,7 @@ int randomCluster() {
     return cluster;
 }
 AP_ERR * make_start_population(GBDATA *gbmain,AP_tree *tree) {
-    // makes random startpopultation
+    // makes random start population
     // (at least two trees in each cluster)
     static int msp = 0;
     msp ++;
@@ -157,7 +157,7 @@ void start_genetic(GBDATA *gbmain) {
         GAgenetic = new GA_genetic;
         GAgenetic->init(gbmain);
     }
-    fprintf(GAgenetic->fout,"\n**** Genetic ALGORITHEM *****\n");
+    fprintf(GAgenetic->fout,"\n**** Genetic ALGORITHM *****\n");
     make_start_population(gbmain,ap_main->tree_root);
 
     //
@@ -191,7 +191,7 @@ void start_genetic(GBDATA *gbmain) {
         cluster = randomCluster();
         job = GAgenetic->get_job(cluster);
         if (job != 0) {
-            switch(job->modus) {
+            switch(job->mode) {
                 case GA_CROSSOVER: {
                     GA_tree * gaTree = new GA_tree;
                     gaTree->tree = crossover(job->tree0->tree,job->tree1->tree);
@@ -221,7 +221,7 @@ void start_genetic(GBDATA *gbmain) {
                     break;
             }
             fprintf(GAgenetic->fout,"\njob %d in cluster %d : %d executed, mode %d"
-                    ,job,job->cluster0,job->cluster1,job->modus);
+                    ,job,job->cluster0,job->cluster1,job->mode);
             GAgenetic->put_optimized(job->tree0,cluster);
         } else {
             fprintf(GAgenetic->fout,"\nno job found");

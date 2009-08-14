@@ -230,7 +230,7 @@ void PS_find_probes_for_pairs( const PS_NodePtr _ps_node, ID2IDSet &_pairs ) {
     __PATHSET->insert( id );
 
     //
-    // dont look at path until ID is greater than lowest ID in the set of ID-pairs
+    // don't look at path until ID is greater than lowest ID in the set of ID-pairs
     //
     if ((id >= __ONEMATCH_MIN_ID) && has_probes) {
         for (ID2IDSetCIter pair=_pairs.begin(); pair != _pairs.end(); ++pair) {

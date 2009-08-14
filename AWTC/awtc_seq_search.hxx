@@ -266,7 +266,7 @@ class AWTC_alignBuffer                  // alignment result buffer
     //
     // '?'      base was just inserted (not aligned)
     // '-'      master and slave are equal
-    // '+'      gap in masert excl-or slave
+    // '+'      gap in master excl-or slave
     // '~'      master base and slave base are related
     // '#'      master base and slave base are NOT related (mismatch)
 
@@ -481,7 +481,7 @@ public:
 };
 
 
-class AWTC_FastSearchOccurrence          // iterates through all Occurances of one character triple
+class AWTC_FastSearchOccurrence          // iterates through all occurrences of one character triple
 {
     const AWTC_FastSearchSequence&      mySequence;
     const AWTC_TripleOffset             *myOffset;

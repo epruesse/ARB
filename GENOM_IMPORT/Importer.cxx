@@ -348,7 +348,7 @@ bool GenebankImporter::readFeatureTableLine(string& line) {
 }
 
 static bool splitGenebankTag(const string& line, string& tag, string& content) {
-    // split a line into tag (incl. preceeding spaces) and content
+    // split a line into tag (incl. preceding spaces) and content
     // returns true, if line suffices the format requirements
     // Note: returns tag="" at wrapped lines
 

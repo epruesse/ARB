@@ -8,14 +8,14 @@ UP	glossary.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE	    Visualisation of Sequence Associated Information (SAI) of Probe Match Results.
+TITLE	    Visualization of Sequence Associated Information (SAI) of Probe Match Results.
 
 OCCURRENCE	
     In ARB primary Window (ARB_NT) : Probes (MENU) -> Match Probes (SUBMENU)
 
 DESCRIPTION
 
-    This window aides Visualization of Sequence Associated Informations (SAIs) of the
+    This window aides Visualization of Sequence Associated Information (SAIs) of the
     Potential Probe Targets that were designed (PROBE DESIGN TOOL) and matched using PROBE
     MATCH TOOL.
 
@@ -39,7 +39,7 @@ DESCRIPTION
 
 NOTES
 
-    Color Translation Defnitions defined for various SAIs can be saved by clicking SAVE
+    Color Translation Definitions defined for various SAIs can be saved by clicking SAVE
     button in DEFINE COLOR TRANSLATION window. (Press STORE to save the definitions and
     press RESTORE to restore the saved definitions).
 

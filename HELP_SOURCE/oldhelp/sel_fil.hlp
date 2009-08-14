@@ -29,7 +29,7 @@ DESCRIPTION	Any sequence of symbols stored as 'sequence associated
 		The selected filter is displayed in the subwindow on the bottom.
 
 		All bases may be simplified, leaving only transversions
-		and simplidfied amino-acid-groups, allowing transversion
+		and simplified amino-acid-groups, allowing transversion
 		parsimony/fdnaml/distmethods
 
 NOTES		Any nucleotide sequence can be copied to SAI (sequence
@@ -63,7 +63,7 @@ EXAMPLES	Include only positions which are occupied by a residue within
 			2. Select the new 'SAI' from 	the 'Select a Filter'
 				subwindow.
 
-			3. Type non-nucleotide and ambiguoity symbols to the
+			3. Type non-nucleotide and ambiguity symbols to the
 				'Exclude Column' subwindow (.-acguRYS ....).
 
 WARNINGS	None

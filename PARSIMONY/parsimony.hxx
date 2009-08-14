@@ -31,7 +31,7 @@ public:
     struct {
         unsigned  int add_marked:1;
         unsigned  int add_selected:1;
-        unsigned  int calc_branch_lenths:1;
+        unsigned  int calc_branch_lengths:1;
         unsigned  int calc_bootstrap:1;
         unsigned  int quit:1;
     } commands;

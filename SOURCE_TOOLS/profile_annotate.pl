@@ -67,7 +67,7 @@ sub add_percentages(\@) {
   my $maxnr     = scalar(@$lines_r);
   my $totals    = undef;
   my $dummy;
-  my $seperator = undef;
+  my $separator = undef;
 
   while (not defined $totals && $nr<$maxnr) {
     my $line = $$lines_r[$nr++];
@@ -75,13 +75,13 @@ sub add_percentages(\@) {
     if ($line =~ /PROGRAM TOTALS$/o) {
       ($totals,$dummy) = scanLine($line);
     }
-    elsif (not defined $seperator) {
-      if ($line =~ /^-+$/o) { $seperator = $line; }
+    elsif (not defined $separator) {
+      if ($line =~ /^-+$/o) { $separator = $line; }
     }
   }
 
   if (not defined $totals) { die "Could not parse PROGRAM TOTALS"; }
-  if (not defined $seperator) { die "No separator found"; }
+  if (not defined $separator) { die "No separator found"; }
 
   my $last_line = pop @out;
   ($last_line,$dummy) = percentize($last_line,$totals);

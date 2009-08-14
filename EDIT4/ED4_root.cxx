@@ -99,7 +99,7 @@ ED4_returncode ED4_root::refresh_window_simple(int redraw)
 ED4_returncode ED4_root::refresh_window(int redraw) // this function should only be used for window specific updates (i.e. cursor placement)
 {
     if (main_manager->update_info.delete_requested) {
-        main_manager->delete_requested_childs();
+        main_manager->delete_requested_children();
         redraw = 1;
     }
 
@@ -118,7 +118,7 @@ ED4_returncode ED4_root::refresh_all_windows(int redraw)
     last_window_reached = 0;
 
     if (main_manager->update_info.delete_requested) {
-        main_manager->delete_requested_childs();
+        main_manager->delete_requested_children();
         redraw = 1;
     }
 
@@ -1413,7 +1413,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
         }
     }
 
-    if (ED4_window::no_of_windows == MAXWINDOWS)                            // no more then 5 windows allowed
+    if (ED4_window::no_of_windows == MAXWINDOWS)                            // no more than 5 windows allowed
     {
         aw_message(GBS_global_string("Restricted to %i windows", MAXWINDOWS));
         return ED4_R_BREAK;

@@ -27,8 +27,6 @@
 
 using namespace std;
 
-// Hi Lothar,
-// ich hab ein paar CodeComments (CC : ) fuer Dich eingefuegt, die sich auf die Compiler-Warnungen beziehen.
 
 namespace validNames{
 

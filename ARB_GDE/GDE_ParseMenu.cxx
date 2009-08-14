@@ -208,7 +208,7 @@ void ParseMenu()
              */
         }
         /*
-         *  arg: defines the symbol for a command line arguement.
+         *  arg: defines the symbol for a command line argument.
          *      this is used for substitution into the itemmethod
          *      definition.
          */
@@ -291,7 +291,7 @@ void ParseMenu()
         }
         /*
          *  arglabel: Text label displayed in the dialog box for
-         *      this argument.  It should be a discriptive label.
+         *      this argument.  It should be a descriptive label.
          */
         else if(Find(in_line,"arglabel:"))
         {
@@ -368,7 +368,7 @@ void ParseMenu()
             }
         }
         /*
-         *  argoptional: Flag specifying that an arguement is optional
+         *  argoptional: Flag specifying that an argument is optional
          */
         else if(Find(in_line,"argoptional:"))
             thisarg->optional = TRUE;

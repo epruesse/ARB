@@ -18,7 +18,7 @@ if ((not -d $ARBHOME) or (not -f $ARBHOME.'/arb_LICENSE.txt')) {
 
 my $TEMPLATES    = $ARBHOME.'/TEMPLATES';       if (not -d $TEMPLATES)    { die "no such directory '$TEMPLATES'"; }
 my $SOURCE_TOOLS = $ARBHOME.'/SOURCE_TOOLS';    if (not -d $SOURCE_TOOLS) { die "no such directory '$SOURCE_TOOLS'"; }
-my $mv_if_diff   = $SOURCE_TOOLS.'/mv_if_diff'; if (not -x $mv_if_diff)   { die "no such skript '$mv_if_diff'"; }
+my $mv_if_diff   = $SOURCE_TOOLS.'/mv_if_diff'; if (not -x $mv_if_diff)   { die "no such script '$mv_if_diff'"; }
 
 # --------------------------------------------------------------------------------
 

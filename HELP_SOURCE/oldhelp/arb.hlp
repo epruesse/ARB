@@ -107,7 +107,7 @@ SECTION         ARB MODULES
 	ARB_PROTECTION
 
 		Up to six hierarchical protection levels can be individually
-		asigned to database entries to prevent unintended modification
+		assigned to database entries to prevent unintended modification
 		or loss of data.
 
 	ARB_NAMES
@@ -120,7 +120,7 @@ SECTION         ARB MODULES
 
 		ARB tools and integrated foreign software (PHYLIP [4], DE SOETE
 		[1], fastDNAml [4]) allow calculation of similarity/distance
-		matrices, conservation profiles, selection masks and phylogentic
+		matrices, conservation profiles, selection masks and phylogenetic
 		tree reconstruction using different treeing approaches.
 
 	ARB_PROBE

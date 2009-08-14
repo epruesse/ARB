@@ -299,13 +299,15 @@ const AWT_distance_meter *AWT_translator::getDistanceMeter() const {
 //      Distance functions
 // ---------------------------
 
-static int nuc_dist(const AWT_translator *translator, unsigned char p1, unsigned char p2) {  // nucleotid changes between two aa
+static int nuc_dist(const AWT_translator *translator, unsigned char p1, unsigned char p2) {
+    // calculate minimum necessary nucleotide-mutations for a given amino-acid-mutation
+    
     const struct arb_r2a_pro_2_nuc *s1,*s2;
-    s1 = translator->S2str(p1);
-    s2 = translator->S2str(p2);
+    s1                                      = translator->S2str(p1);
+    s2                                      = translator->S2str(p2);
     if ( (!s1) || (!s2) ) return -1;
-    struct arb_r2a_pro_2_nucs *n1,*n2;
-    long mindist = 3;
+    struct arb_r2a_pro_2_nucs      *n1,*n2;
+    long                            mindist = 3;
     // Check all combinations, if any combination is valid -> zero distance
     for (   n1 = s1->nucs; n1; n1=n1->next){
         for (   n2 = s2->nucs; n2; n2=n2->next){

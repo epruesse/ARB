@@ -162,7 +162,7 @@ static void CPRO_readandallocate(char **&speciesdata,GBDATA **&speciesdatabase,
     speciesdata=(char **)calloc((size_t)CPRO.numspecies,sizeof(char *));
     CPRO.agonist=(char *)calloc((size_t)CPRO.numspecies,sizeof(char));
     CPRO.antagonist=(char *)calloc((size_t)CPRO.numspecies,sizeof(char));
-    speciesdatabase=(GBDATA **)calloc((size_t)CPRO.numspecies+1,sizeof(GBDATA *)); // Null termintated
+    speciesdatabase=(GBDATA **)calloc((size_t)CPRO.numspecies+1,sizeof(GBDATA *)); // Null terminated
     GBDATA *alidata;
 
     long countspecies=0;
@@ -462,7 +462,7 @@ static void CPRO_readneededdata(char **speciesdata,GBDATA **speciesdatabase,
  *                                   (without consequences)
  *
  * Description:    This function compares every sequence with every sequence.
- *                 It devides the matrix into segments and goes through each
+ *                 It divides the matrix into segments and goes through each
  *                 segment. Width of a segment depends on CPRO.partition.
  *                 MAX_MEMORY/2 is available.
  *                 When a new segment is entered, the corresponding

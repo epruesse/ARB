@@ -885,7 +885,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
                     // char *space1       = strchr(match_info+off, ' '); // space between species and gene name
                     // char *space2       = 0;
                     // if (space1) space2 = strchr(space1+1, ' '); // space after gene name
-                    // if (space1 && space2) { // ok - parsing sucessful
+                    // if (space1 && space2) { // ok - parsing successful
                     //     int len       = space2-space1-1;
                     //     // delete [] gene_str;
                     //     gene_str      = new char[len+1];
@@ -979,7 +979,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
                 free(gene_str);
             }
 
-            if (error) error = GBS_global_string("%s", error); // make static copy (error may be free'd by delete parser)
+            if (error) error = GBS_global_string("%s", error); // make static copy (error may be freed by delete parser)
             delete parser;
             free(result);
 
@@ -1227,8 +1227,8 @@ AW_window *create_probe_design_expert_window( AW_root *root)  {
         aws->at(buffer);
         sprintf(buffer,"probe_design/exceptions/nr%i/MODE",i);
         aws->create_option_menu( buffer, NULL , "" );
-        aws->insert_option( "dont use", "d", -1 );
-        aws->insert_option( "dont split", "d", 0 );
+        aws->insert_option( "don't use", "d", -1 );
+        aws->insert_option( "don't split", "d", 0 );
         aws->insert_option( "split", "d", 1 );
         aws->update_option_menu();
 
@@ -1492,7 +1492,7 @@ static void resolve_IUPAC_target_string(AW_root *, AW_CL cl_aww, AW_CL cl_selid)
                     /*else      aww->insert_default_selection(selection_id, buffer, buffer); */
                     not_last--;
 
-                    // permutatate indices:
+                    // permute indices:
                     int nidx = bases_to_resolve-1;
                     int done = 0;
                     while (!done && nidx>=0) {
@@ -1754,9 +1754,9 @@ void pd_query_pt_server(AW_window *aww)
     GBS_strstruct *strstruct = GBS_stropen(1024);
     GBS_strcat(strstruct,   "echo Contents of directory ARBHOME/lib/pts:;echo;"
                "(cd $ARBHOME/lib/pts; ls -l);"
-               "echo; echo Disk Space for PT_server files:; echo;"
+               "echo; echo Disk space for PT_server files:; echo;"
                "df $ARBHOME/lib/pts;");
-    GBS_strcat(strstruct,"echo;echo Running ARB Programms:;");
+    GBS_strcat(strstruct,"echo;echo 'Running ARB programs:';");
 
     {
         const char *server  = GBS_read_arb_tcp(pt_server);

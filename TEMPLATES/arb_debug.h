@@ -14,7 +14,7 @@
 #if defined(DEBUG)
 
 // if you get the valgrind warning
-// "Conditional jump or move depends on uninitialised value"
+// "Conditional jump or move depends on uninitialized value"
 // for a complex statement, use the following macro to find out
 // which part of the statement is the cause.
 

@@ -33,7 +33,7 @@ extern adfiltercbstruct *agde_filtercd;
 
 /*
   ReplaceArgs():
-  Replace all command line arguements with the appropriate values
+  Replace all command line arguments with the appropriate values
   stored for the chosen menu item.
 
   Copyright (c) 1989-1990, University of Illinois board of trustees.  All
@@ -52,10 +52,10 @@ static char *ReplaceArgs(AW_root *awr,char *Action,GmenuItem *gmenuitem,int numb
     /*
      *  The basic idea is to replace all of the symbols in the method
      *  string with the values picked in the dialog box.  The method
-     *  is the general command line structure.  All arguements have three
+     *  is the general command line structure.  All arguments have three
      *  parts, a label, a method, and a value.  The method never changes, and
      *  is used to represent '-flag's for a given function.  Values are the
-     *  associated arguements that some flags require.  All symbols that
+     *  associated arguments that some flags require.  All symbols that
      *  require argvalue replacement should have a '$' infront of the symbol
      *  name in the itemmethod definition.  All symbols without the '$' will
      *  be replaced by their argmethod.  There is currently no way to do a label

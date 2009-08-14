@@ -48,7 +48,7 @@ SECTION         PARAMETERS
 
                        The 'Quick mode' works well for many sequence types and is approx. 4 times
                        faster than the 'Complete mode'. For some sequence types it completely fails,
-                       e.g. if there are repetetive areas containing many 'AAAAA'
+                       e.g. if there are repetitive areas containing many 'AAAAA'
 
                 Match score:
 

@@ -49,11 +49,11 @@ WARNINGS        If there are duplicated entries (same accession number -
 
                 Normally merging is not allowed when there are duplicated species.
 
-                You may overide that behavior by checking 'Allow merging duplicates',
+                You may override that behavior by checking 'Allow merging duplicates',
                 but be warned:
 
                     It is VERY DANGEROUS to merge when duplicated species are in your
-                    databases, cause there is no garantee, that duplicates with the
+                    databases, cause there is no guarantee, that duplicates with the
                     same .NUM suffix refer to the same species.
                     You may easily overwrite or duplicate your data!
 

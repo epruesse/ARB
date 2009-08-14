@@ -308,7 +308,7 @@ void aw_root_init_font(Display *tool_d)
                     for (int c = 0; c<count; ++c) {
                         const char *fontname  = fontlist[iso][c];
                         int         size      = parsesize(fontname);
-                        flist[found_fonts].fn = fontname; // valid as long fontlist[iso] is not free'd!
+                        flist[found_fonts].fn = fontname; // valid as long fontlist[iso] is not freed!
                         flist[found_fonts].s  = size;
                         found_fonts++;
                     }

@@ -186,7 +186,7 @@ imageDialog::~imageDialog()
 
     for(spot_it= m_spotList.begin(); spot_it != m_spotList.end(); spot_it++)
     {
-//         if((*spot_it).text) free((*spot_it).text); // DONT! POINTER TO DESCR.LIST!!!
+//         if((*spot_it).text) free((*spot_it).text); // DON'T! POINTER TO DESCR.LIST!!!
         if((*spot_it).id) free((*spot_it).id);
     }
     m_spotList.clear();
@@ -277,7 +277,7 @@ void imageDialog::createWindow()
     // CALLBACK FOR DRAWING AREA: IF XIMAGE NEEDS REDRAW
     XtAddCallback(m_drawingArea, XmNexposeCallback, staticImageRedrawCallback, this);
 
-    // CALLBACK FOR DRAWING AREA: IF A MOUSE (KEYBOARD) EVENT OCCURED
+    // CALLBACK FOR DRAWING AREA: IF A MOUSE (KEYBOARD) EVENT OCCURRED
     XtAddCallback(m_drawingArea, XmNinputCallback, staticImageEventCallback, this);
 
     // FILL TOOLBARS WITH WIDGETS
@@ -1359,7 +1359,7 @@ int imageDialog::fillBlankImage()
     // TIFF DATA AVAILABLE
     m_hasImagedata= true;
 
-    // FREE OUR GC AS WE DONT NEED IT ANYMORE
+    // FREE OUR GC AS WE DON'T NEED IT ANYMORE
     XFreeGC(display, gc);
 
     return 0;
@@ -1396,7 +1396,7 @@ void imageDialog::imageRedrawCallback()
     // COPY PIXMAP TO DRAWING AREA
     XCopyArea(display, m_pixmap, window, gc, 0, 0, m_width, m_height, 0, 0);
 
-    // FREE OUR GC AS WE DONT NEED IT ANYMORE
+    // FREE OUR GC AS WE DON'T NEED IT ANYMORE
     XFreeGC(display, gc);
 }
 
@@ -1973,7 +1973,7 @@ void imageDialog::PGT_config_callback()
     // SETTINGS HAVE CHANGED - SO FETCH NEW SETTINGS...
     getSettings();
 
-    // SPOT LIST MAY HAVE CHANGED ASWELL - CREATE A NEW ONE...
+    // SPOT LIST MAY HAVE CHANGED AS WELL - CREATE A NEW ONE...
     createDescriptions();
     createSpotList();
 
@@ -2072,7 +2072,7 @@ bool imageDialog::createSpotList()
     vector<SPOT>::iterator spot_it;
     for(spot_it= m_spotList.begin(); spot_it != m_spotList.end(); ++spot_it)
     {
-//         if((*spot_it).text) free((*spot_it).text); // DONT! ALSO POINTER TO DESCR.LIST!!!
+//         if((*spot_it).text) free((*spot_it).text); // DON'T! ALSO POINTER TO DESCR.LIST!!!
         if((*spot_it).id) free((*spot_it).id);
     }
     m_spotList.clear();
@@ -2169,13 +2169,13 @@ bool imageDialog::createDescriptions()
     if(!gb_genome) return false;
 
     // FETCH NECESSARY AWARS
-    char *awar_protein_infos= get_CONFIG(CONFIG_PGT_INFO_PROTEIN);
-    char *awar_gene_infos=    get_CONFIG(CONFIG_PGT_INFO_GENE);
+    char *awar_protein_information= get_CONFIG(CONFIG_PGT_INFO_PROTEIN);
+    char *awar_gene_information=    get_CONFIG(CONFIG_PGT_INFO_GENE);
     char *awar_protein_id=    get_CONFIG(CONFIG_PGT_ID_PROTEIN);
     char *awar_gene_id=       get_CONFIG(CONFIG_PGT_ID_GENE);
     char *awar_protein_x=     const_cast<char*>("x_coordinate"); // DEBUG - HARDCODED
     char *awar_protein_y=     const_cast<char*>("y_coordinate"); // DEBUG - HARDCODED
-    if(!awar_protein_infos || !awar_gene_infos ||
+    if(!awar_protein_information || !awar_gene_information ||
        !awar_protein_id || !awar_gene_id) return false;
 
     // CREATE BUFFERS
@@ -2248,7 +2248,7 @@ bool imageDialog::createDescriptions()
 //         // IF WE HAVE AN IDENTIFIER...
 //         if((id && (strlen(id) > 0)) || ((x + y) != 0))
 //         {
-            strncpy(buf, awar_protein_infos, 1023);
+            strncpy(buf, awar_protein_information, 1023);
             token= strtok(buf, ",; ");
             while(token)
             {
@@ -2286,7 +2286,7 @@ bool imageDialog::createDescriptions()
 
             if(gb_gene)
             {
-                strncpy(buf, awar_gene_infos, 1023);
+                strncpy(buf, awar_gene_information, 1023);
                 token= strtok(buf, ",; ");
                 while(token)
                 {
