@@ -1,7 +1,11 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
 .SUFFIXES: .o .c .cxx .depend
 
-include AD_MOBJECTS.h
+HeaderFile = AD_MOBJECTS.h
+CheckHEADER := $(shell if [ -e $(HeaderFile) ] ; then echo 1 ; else echo 0 ; fi)
+ifeq ($(CheckHEADER),1)
+    include $(HeaderFile)
+endif
 
 
 OBJECTS = $(GB_O) $(GB_T) $(GB_PP) $(GB_X)
