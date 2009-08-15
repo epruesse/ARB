@@ -77,7 +77,7 @@ void  * AP_STACK::get() {
         pointer = first;
     } else {
         if ( pointer->next == 0) {
-            new AP_ERR("AP_STACK: get()"," more get() than element in stack");
+            new AP_ERR("AP_STACK: get()"," more get() than elements in stack");
             pointer = 0;
             return 0;
         } else {

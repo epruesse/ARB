@@ -527,7 +527,7 @@ int main(int argc, char **argv)
                 "database           name of database or ':' to connect to arb-database-server\n"
                 "\n"
                 "Options:\n"
-                "-c config          loads configuration 'config' (dafault: 'default_configuration')\n"
+                "-c config          loads configuration 'config' (default: 'default_configuration')\n"
                 "\n"
                 );
     }

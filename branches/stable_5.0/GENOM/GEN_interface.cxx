@@ -526,7 +526,7 @@ AW_window *create_gene_create_window(AW_root *root)
     aws->at("input2"); aws->create_input_field(AWAR_GENE_POS2,12);
 
     aws->at("toggle");
-    aws->label("Complentary strand");
+    aws->label("Complementary strand");
     aws->create_toggle(AWAR_GENE_COMPLEMENT);
 
     aws->at("ok");
@@ -680,8 +680,8 @@ AW_window *GEN_create_gene_query_window(AW_root *aw_root) {
     gene_query_global_cbs = cbs;
 
     aws->create_menu("More search",     "s" );
-    aws->insert_menu_topic("gen_search_equal_fields_within_db", "Search For Equal Fields and Mark Duplikates",               "E", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, cbs, 0);
-    aws->insert_menu_topic("gen_search_equal_words_within_db",  "Search For Equal Words Between Fields and Mark Duplikates", "W", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, cbs, 1);
+    aws->insert_menu_topic("gen_search_equal_fields_within_db", "Search For Equal Fields and Mark Duplicates",               "E", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, cbs, 0);
+    aws->insert_menu_topic("gen_search_equal_words_within_db",  "Search For Equal Words Between Fields and Mark Duplicates", "W", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, cbs, 1);
 
     aws->button_length(7);
 

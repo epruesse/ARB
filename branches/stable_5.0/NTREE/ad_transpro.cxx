@@ -337,7 +337,7 @@ static int synchronizeCodons(const char *proteins, const char *dna, int minCatch
 
 #define SYNC_LENGTH 4
 // every X in amino-alignment, it represents 1 to 3 bases in DNA-Alignment
-// SYNC_LENGTH is the # of codons which will be syncronized (ahead!)
+// SYNC_LENGTH is the # of codons which will be synchronized (ahead!)
 // before deciding "X was realigned correctly"
 
 GB_ERROR arb_transdna(GBDATA *gb_main, char *ali_source, char *ali_dest, long *neededLength)
@@ -504,7 +504,7 @@ GB_ERROR arb_transdna(GBDATA *gb_main, char *ali_source, char *ali_dest, long *n
                             if (sync_possibilities==0) {
                                 delete sync_possible_with_catchup;
                                 failed = 1;
-                                fail_reason = "Can't syncronize after 'X'";
+                                fail_reason = "Can't synchronize after 'X'";
                                 break;
                             }
                             if (sync_possibilities>1) {
@@ -520,7 +520,7 @@ GB_ERROR arb_transdna(GBDATA *gb_main, char *ali_source, char *ali_dest, long *n
                         }
                         else if (!synchronizeCodons(protein, d, x_count, x_count*3, &catchUp, allowed_code, allowed_code_left)) {
                             failed = 1;
-                            fail_reason = "Can't syncronize after 'X'";
+                            fail_reason = "Can't synchronize after 'X'";
                             break;
                         }
 
@@ -640,7 +640,7 @@ GB_ERROR arb_transdna(GBDATA *gb_main, char *ali_source, char *ali_dest, long *n
         else {
             nt_assert(strlen(buffer) == (unsigned)ali_len);
 
-            // re-alignment sucessfull
+            // re-alignment successful
             error             = GB_write_string(gb_dest_data, buffer);
             if (!error) error = GBT_write_string(gb_species, "codon_start", "1"); // after re-alignment codon_start is always 1
         }

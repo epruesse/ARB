@@ -306,7 +306,7 @@ void AWT_move_info(GBDATA *gb_main, const char *tree_source,const char *tree_des
                 AWT_species_set *root_setr = ssr->find_best_matches_info(source->rightson, log, compare_node_info);
 
                 if (!compare_node_info) {
-                    aw_status("Copy Node Informations");
+                    aw_status("Copy Node Information");
                     ssr->copy_node_infos(log, delete_old_nodes, nodes_with_marked_only);
                 }
                 

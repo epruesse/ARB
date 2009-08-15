@@ -10,7 +10,7 @@ const int GB_MAX_CACHED_ENTRIES = 8192;             /* maximum number of cached 
 const int GB_MAX_QUICK_SAVE_INDEX = 99;       /* Maximum extension-index of quick saves (Maximum 99) */
 const int GB_MAX_QUICK_SAVES      = 10;       /* maximum number of quick saves */
 
-const int GB_MAX_LOCAL_SEARCH = 256;           /* Maximum number of childs before doing a earch in the database server */
+const int GB_MAX_LOCAL_SEARCH = 256;           /* Maximum number of children before doing a search in the database server */
 
 const int GBTUM_SHORT_STRING_SIZE = 128;       /* the maximum strlen which is stored in short string format */
 const int GB_HUFFMAN_MIN_SIZE     = 128;       /* min length, before huffmann code is used */

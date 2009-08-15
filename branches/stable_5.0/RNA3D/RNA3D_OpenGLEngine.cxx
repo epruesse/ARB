@@ -110,7 +110,7 @@ using namespace std;
 void ShowVendorInformation(){
     const GLubyte *vendor = NULL;
     vendor = glGetString(GL_VENDOR);   cout<<"Vendor  : "<<vendor<<endl;
-    vendor = glGetString(GL_RENDERER); cout<<"Rederer : "<<vendor<<endl;
+    vendor = glGetString(GL_RENDERER); cout<<"Renderer: "<<vendor<<endl;
     vendor = glGetString(GL_VERSION);  cout<<"Version : "<<vendor<<endl;
 }
 

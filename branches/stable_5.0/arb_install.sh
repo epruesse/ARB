@@ -51,7 +51,7 @@ seperator
 echo 'Please answer some questions:'
 seperator
 echo 'Enter path where to install ARB ?'
-echo '  ARB is not a single programm but a set of programs, datafiles ...'
+echo '  ARB is not a single program but a set of programs, datafiles ...'
 echo '  To install ARB correctly all files are stored in a single '
 echo '  directory. This script creates such a directory and copies all'
 echo '  data into it, sets the correct permissions and optionally installs'
@@ -246,7 +246,7 @@ esac
 
 seperator
 echo 'NameServer installation'
-echo '  The NameServer is a programm, that synchronizes all species names'
+echo '  The NameServer is a program, that synchronizes all species names'
 echo '  of the databases of different users.'
 echo '  Users that import foreign data into their database and want to'
 echo '  export those data to other ARB users should be allowed to change'

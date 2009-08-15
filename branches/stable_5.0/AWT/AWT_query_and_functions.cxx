@@ -417,7 +417,7 @@ long awt_query_update_list(void *dummy, struct adaqbsstruct *cbs) {
 }
 // Mark listed species
 // mark = 1 -> mark listed
-// mark | 8 -> don'd change rest
+// mark | 8 -> don't change rest
 void awt_do_mark_list(void *dummy, struct adaqbsstruct *cbs, long mark)
 {
     AWUSE(dummy);
@@ -1020,7 +1020,7 @@ static void awt_do_query(void *dummy, struct adaqbsstruct *cbs, AW_CL cl_ext_que
             GB_HASH    *ref_hash  = awt_create_ref_hash(cbs, first_key, ext_query == AWT_EXT_QUERY_COMPARE_WORDS);
 
 #if defined(DEBUG)
-            printf("query: search indentical %s in field %s%s\n",
+            printf("query: search identical %s in field %s%s\n",
                    (ext_query == AWT_EXT_QUERY_COMPARE_WORDS ? "words" : "values"),
                    first_key,
                    cbs->expect_hit_in_ref_list ? " of species listed in other hitlist" : "");
@@ -1295,7 +1295,7 @@ void awt_copy_selection_list_2_queried_species(struct adaqbsstruct *cbs, AW_sele
     if (type != AWT_QUERY_MATCH || mode != AWT_QUERY_GENERATE) { // different behavior as in the past -> advice
         AWT_advice("'Move to hitlist' now depends on the values selected for\n"
                    " * 'Search/Add/Keep species' and\n"
-                   " * 'that match/dont match the query'\n"
+                   " * 'that match/don't match the query'\n"
                    "in the search tool.",
                    AWT_ADVICE_TOGGLE|AWT_ADVICE_HELP,
                    "Behavior changed",
@@ -1478,7 +1478,7 @@ void awt_search_equal_entries(AW_window *,struct adaqbsstruct *cbs, bool tokeniz
 
         if (type != AWT_QUERY_MATCH) {
             AWT_advice("'Find equal entries' now depends on the values selected for\n"
-                       " * 'that match/dont match the query'\n"
+                       " * 'that match/don't match the query'\n"
                        "in the search tool.",
                        AWT_ADVICE_TOGGLE|AWT_ADVICE_HELP,
                        "Behavior changed",
@@ -2332,7 +2332,7 @@ void awt_do_set_list(void *, struct adaqbsstruct *cbs, long append) {
                             }
                             else {
                                 char *name = GBT_read_string(gb_item,"name");
-                                error = GB_export_errorf("Field '%s' of %s '%s' has incombatible type", key, cbs->selector->item_name, name);
+                                error = GB_export_errorf("Field '%s' of %s '%s' has incompatible type", key, cbs->selector->item_name, name);
                                 free(name);
                             }
                         }
@@ -2700,7 +2700,7 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
         aws->at(awtqs->by_pos_fig);
         aws->create_toggle_field(cbs->awar_by,"","");
         aws->insert_toggle("that match the query","M",(int)AWT_QUERY_MATCH);
-        aws->insert_toggle("that dont match the q.","D",(int)AWT_QUERY_DONT_MATCH);
+        aws->insert_toggle("that don't match the q.","D",(int)AWT_QUERY_DONT_MATCH);
         aws->insert_toggle("that are marked","A",(int)AWT_QUERY_MARKED);
         aws->update_toggle_field();
     }

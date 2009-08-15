@@ -731,7 +731,7 @@ AW_window *NT_submit_bug(AW_root *aw_root, int bug_report){
             custom_text = strdup("Bug occurred in:\n"
                                  "    [which part of ARB?]\n"
                                  "\n"
-                                 "The bug [ ] is reproducable\n"
+                                 "The bug [ ] is reproducible\n"
                                  "        [ ] occurs randomly\n"
                                  "        [ ] occurs with specific data\n"
                                  "\n"

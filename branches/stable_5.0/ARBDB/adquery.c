@@ -92,7 +92,7 @@ static GBDATA *find_sub_by_quark(GBDATA *father, int key_quark, GB_TYPES type, c
        
        GB_STRING/GB_LINK: compares string (case_sensitive or not)
        GB_INT: compares values
-       GB_FLOAT: dito (val MUST be a 'double*')
+       GB_FLOAT: ditto (val MUST be a 'double*')
        others: not implemented yet
 
        Note: to search for non-char*-values use GB_find_int()
@@ -282,7 +282,7 @@ static GBDATA *gb_find_internal(GBDATA *gbd, const char *key, GB_TYPES type, con
     switch (gbs) {
         case down_level:    return GB_find_subcontent_by_quark((GBDATA*)gbc, key_quark, type, val, case_sens, after);
         case down_2_level:  return find_sub_sub_by_quark((GBDATA*)gbc, key, key_quark, type, val, case_sens, after);
-        default:            GB_internal_errorf("Unknown seach type %li",gbs); return NULL;
+        default:            GB_internal_errorf("Unknown search type %li",gbs); return NULL;
     }
 }
 
@@ -315,11 +315,11 @@ NOT4PERL GBDATA *GB_find_int(GBDATA *gbd, const char *key, long val, long gbs) {
 /* ---------------------------------------------------- */
 
 GBDATA *GB_child(GBDATA *father) {
-    // return first child (or NULL if no childs)
+    // return first child (or NULL if no children)
     return GB_find(father, NULL, down_level);
 }
 GBDATA *GB_nextChild(GBDATA *child) {
-    // return next child after 'child' (or NULL if no more childs)
+    // return next child after 'child' (or NULL if no more children)
     return GB_find(child, NULL, this_level|search_next);
 }
 
@@ -771,7 +771,7 @@ char *gbs_search_second_bracket(const char *source)
 
 
 char *gbs_search_next_seperator(const char *source,const char *seps){
-    /* search the next seperator */
+    /* search the next separator */
     static char tab[256];
     static int flag = 0;
     int c;

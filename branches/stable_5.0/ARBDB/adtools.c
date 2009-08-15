@@ -838,9 +838,9 @@ char *GB_generate_notification(GBDATA *gb_main,
                                const char *message, void *client_data)
 {
     /* generates a call to 'arb_notify', meant to be inserted into some external system call.
-     * When that call is executed, the callback instanciated here will be called.
+     * When that call is executed, the callback instantiated here will be called.
      *
-     * Tip : To return variable results from the shell skript, use the name of an environment
+     * Tip : To return variable results from the shell script, use the name of an environment
      *       variable in 'message' (e.g. "$RESULT")
      */
 
@@ -925,7 +925,7 @@ GB_ERROR GB_notify(GBDATA *gb_main, int id, const char *message) {
                 error = "Missing 'message' entry";
             }
             else {
-                /* callback the instanciating DB client */
+                /* callback the instantiating DB client */
                 error = GB_write_string(gb_message, message);
             }
         }

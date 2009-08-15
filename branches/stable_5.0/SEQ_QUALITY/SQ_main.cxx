@@ -170,7 +170,7 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
                     aw_message("Missing node(s) or unusable tree structure.\nPlease fix the tree before running the quality check tool.");
                     break;
                 default:
-                    aw_message("An error occured while traversing the tree.\nPlease fix the tree before running the quality check tool.");
+                    aw_message("An error occurred while traversing the tree.\nPlease fix the tree before running the quality check tool.");
                     break;
                 }
                 aw_closestatus();

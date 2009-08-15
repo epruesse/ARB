@@ -125,7 +125,7 @@ void awt_create_selection_list_on_trees(GBDATA *gb_main,AW_window *aws,const cha
 
 // ******************** selection boxes on pt-servers ********************
 
-#define PT_SERVERNAME_LENGTH        23 // thats for buttons
+#define PT_SERVERNAME_LENGTH        23 // that's for buttons
 #define PT_SERVERNAME_SELLIST_WIDTH 30 // this for lists
 #define PT_SERVER_TRACKLOG_TIMER    10000 // every 10 seconds
 
@@ -595,7 +595,7 @@ AW_window *create_save_box_for_selection_lists(AW_root *aw_root,AW_CL selid)
     }
 
     AW_window_simple *aws       = new AW_window_simple;
-    char             *window_id = GBS_global_string_copy("SAVE_SELECTCION_BOX_%s", var_id);
+    char             *window_id = GBS_global_string_copy("SAVE_SELECTION_BOX_%s", var_id);
 
     aws->init(aw_root, window_id, "SAVE BOX");
     aws->load_xfig("sl_s_box.fig");
@@ -849,9 +849,9 @@ void AWT_edit(const char *path, awt_fileChanged_cb callback, AW_window *aww, GBD
             aw_message(error); error = NULL;
             if (callback) error = GB_remove_last_notification(gb_main);
         }
-        else { // sucessfully started editor
+        else { // successfully started editor
             // Can't be sure editor really started when callback is used (see command above).
-            // But it doesnt matter, cause arb_notify is called anyway and removes all callbacks
+            // But it doesn't matter, cause arb_notify is called anyway and removes all callbacks
             if (callback) {
                 // add timed callback tracking file change
                 AW_root *aw_root = aww->get_root();

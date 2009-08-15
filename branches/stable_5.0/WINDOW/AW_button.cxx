@@ -75,7 +75,7 @@ static void aw_cp_awar_2_widget_cb(AW_root *root, AW_widget_list_for_variable *w
         }
         free(var_value);
     }
-    root->value_changed = false;     // Maybe value changed is set because Motig calls me
+    root->value_changed = false;     // Maybe value changed is set because Motif calls me
 }
 
 
@@ -1986,7 +1986,7 @@ AW_selection_list* AW_window::copySelectionList(AW_selection_list *sourceList, A
 
     if (destinationList) clear_selection_list(destinationList);
     else {
-        printf(" Destination list not initialised!!\n");
+        printf(" Destination list not initialized!!\n");
         return 0;
     }
 
@@ -2070,7 +2070,7 @@ GB_ERROR AW_window::save_selection_list( AW_selection_list * selection_list, con
             res  = fprintf( fd, "%s\n",sep );
         }
         else {
-            res = fprintf( fd, "%s\n", list_table->displayed ); // save plain (no interpratation)
+            res = fprintf( fd, "%s\n", list_table->displayed ); // save plain (no interpretation)
         }
 
         if (res<0) {
@@ -2106,20 +2106,20 @@ GB_ERROR AW_window::load_selection_list( AW_selection_list *selection_list, cons
             ko = strchr(pl,','); // look for ','
 
             if (ko) {
-                if (selection_list->value_equal_display) { // here no komma should occur
+                if (selection_list->value_equal_display) { // here no comma should occur
                     if (correct_old_format == -1) {
                         correct_old_format = aw_ask_sure(GBS_global_string("'%s' seems to be in old selection-list-format. Try to correct?", *fname));
                     }
 
                     if (correct_old_format == 1) {
                         *ko = '#'; // restore (was converted by old-version save)
-                        ko  = 0; // ignore komma
+                        ko  = 0; // ignore comma
                     }
                 }
             }
 
             if (ko) *(ko++) = 0;
-            else ko         = pl; // if no komma -> display same as value
+            else ko         = pl; // if no comma -> display same as value
 
             while (*ko == ' ' || *ko == '\t') ko++;
 

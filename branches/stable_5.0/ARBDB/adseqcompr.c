@@ -10,7 +10,7 @@
 #define MAX_SEQUENCE_PER_MASTER 50 /* was 18 till May 2008 */
 
 #if defined(DEBUG)
-/* dont do optimize, only create tree and save to DB */
+/* don't do optimize, only create tree and save to DB */
 /* #define SAVE_COMPRESSION_TREE_TO_DB */
 #endif /* DEBUG */
 
@@ -525,7 +525,7 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, const ch
                         GBDATA    *gbd    = seqs[si].gbd;
 
                         if (GB_read_clock(gbd) >= main_clock){
-                            GB_warning("A Species seems to be more than once in the tree");
+                            GB_warning("A species seems to be more than once in the tree");
                         }
                         else {
                             char *seq        = GB_read_string(gbd);
@@ -618,7 +618,7 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, const ch
                         if (mi>0) { /*  master available */
                             GBDATA *gbd = masters[si]->gbd;
 
-                            ad_assert(mi>si); /* we don't want a rekursion, because we cannot uncompress sequence compressed masters, Main->gb_master_data is wrong */
+                            ad_assert(mi>si); /* we don't want a recursion, because we cannot uncompress sequence compressed masters, Main->gb_master_data is wrong */
 
                             if (gb_read_nr(gbd) != si) { /* Check database */
                                 GB_internal_error("Sequence Compression: Master Index Conflict");

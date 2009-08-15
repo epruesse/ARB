@@ -40,14 +40,14 @@ typedef enum gb_call_back_type {
 /* --------------------------------------------------------------------------------
  * The following function handle char*'s, which either own a heap copy or are NULL.
  *
- * freeset:  assigns a heap-copy to a variable (variable is automatically free'd)
+ * freeset:  assigns a heap-copy to a variable (variable is automatically freed)
  * freedup:  similar to freeset, but strdup's the rhs-expression
  * reassign: similar to freeset, but rhs must be variable and will be set to NULL
  * nulldup:  like strdup, but pass-through NULL
  *
  * Note: freeset, freedup and reassign may safely use the changed variable in the rhs-expression!
  *
- * @@@ the complete section could go into a seperate header,
+ * @@@ the complete section could go into a separate header,
  * but it makes no sense atm, cause we need GB_strdup for C compilation
  * (using a macro would evaluate 'str' in nulldup twice - which is not ok)
  *

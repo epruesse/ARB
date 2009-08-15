@@ -1078,7 +1078,7 @@ kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width_max, const int rek
             for (i=0;i<visited_subtrees;i++)  cout << "  " << pars[i];
             cout << "\n";
             if (!rek_deep){
-                cout << "NEW REKURSION\n\n";
+                cout << "NEW RECURSION\n\n";
             }
             cout.flush();
 

@@ -526,7 +526,7 @@ GB_ERROR DI_MATRIX::haeschoe(const char *path)
     FILE *out = fopen(path,"w");
     if (!out) return "Cannot open file";
 
-    aw_openstatus("Calculating Distanz Matrix");
+    aw_openstatus("Calculating Distance Matrix");
     aw_status("Calculating global rate matrix");
 
     fprintf(out,"Pairs in helical regions:\n");
@@ -547,7 +547,7 @@ GB_ERROR DI_MATRIX::haeschoe(const char *path)
     long   row,col,pos,s_len;
     char *seq1,*seq2;
     s_len = tree_root->filter->real_len;
-    fprintf(out,"\nDistanzmatrix (Helixdist Helixlen Nonhelixdist Nonhelixlen):");
+    fprintf(out,"\nDistance matrix (Helixdist Helixlen Nonhelixdist Nonhelixlen):");
     fprintf(out,"\n%li",nentries);
     const int MAXDISTDEBUG = 1000;
     double distdebug[MAXDISTDEBUG];
@@ -651,7 +651,7 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, DI_T
     if (transformation == DI_TRANSFORMATION_HAESCH) {
         GB_ERROR error = haeschoe("outfile");
         if (error) return error;
-        return "Your matrizes have been written to 'outfile'\nSorry I can not make a tree";
+        return "Your matrices have been written to 'outfile'\nSorry I can not make a tree";
     }
     int user_matrix_enabled = awr->awar(AWAR_DIST_MATRIX_DNA_ENABLED)->read_int();
     if (user_matrix_enabled){   // set transformation Matrix
@@ -829,7 +829,7 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, DI_T
                                 M += hits[i][i];;
                             }
                             if (N==0) N=1;
-                            if (transformation == DI_TRANSFORMATION_OLSEN){ // Calc sum square freq inividually for each line
+                            if (transformation == DI_TRANSFORMATION_OLSEN){ // Calc sum square freq individually for each line
                                 S_square = 0.0;
                                 for (i=0;i<AP_MAX; i++) S_square+= frequencies[i]*frequencies[i];
                                 b = 1.0 - S_square/((double)N*(double)N);
@@ -1167,7 +1167,7 @@ AW_window *DI_create_save_matrix_window(AW_root *aw_root, char *base_name)
 static AW_window *awt_create_select_cancel_window(AW_root *aw_root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "SELECT_CHARS_TO_CANCEL_COLOUM", "CANCEL SELECT");
+    aws->init( aw_root, "SELECT_CHARS_TO_CANCEL_COLUMN", "CANCEL SELECT");
     aws->load_xfig("di_cancel.fig");
 
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
@@ -1387,7 +1387,7 @@ static void di_autodetect_callback(AW_window *aww)
         return;
     }
 
-    aw_openstatus("Analysing data...");
+    aw_openstatus("Analyzing data...");
     aw_status("Read the database");
 
     DI_MATRIX *phm = new DI_MATRIX(GLOBAL_gb_main,aw_root);

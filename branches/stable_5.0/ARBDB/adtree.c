@@ -58,7 +58,7 @@ static GBT_TREE *fixDeletedSon(GBT_TREE *tree) {
     }
     else { // root node
         if (delNode->tree_is_one_piece_of_memory) {
-            // dont change root -> copy instead
+            // don't change root -> copy instead
             memcpy(delNode, tree, sizeof(GBT_TREE));
             tree = delNode;
         }
@@ -84,7 +84,7 @@ GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TREE_REMOVE_TYPE mode, GB_HASH *s
 
             if (species_hash) {
                 gb_node = (GBDATA*)GBS_read_hash(species_hash, tree->name);
-                ad_assert(tree->gb_node == 0); // dont call linked tree with 'species_hash'!
+                ad_assert(tree->gb_node == 0); // don't call linked tree with 'species_hash'!
             }
             else gb_node = tree->gb_node;
 
@@ -524,11 +524,11 @@ GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_nodes, 
 
 /** Loads a tree from the database into any user defined structure.
     make sure that the first eight members members of your
-    structure looks exectly like GBT_TREE, You should send the size
+    structure looks exactly like GBT_TREE, You should send the size
     of your structure ( minimum sizeof GBT_TREE) to this
     function.
 
-    If size < 0 then the tree is allocated as just one big piece of memery,
+    If size < 0 then the tree is allocated as just one big piece of memory,
     which can be freed by free((char *)root_of_tree) + deleting names or
     by GBT_delete_tree.
 

@@ -59,7 +59,7 @@ static int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned c
     else {
         size_t fl = filter->filter_len;
         if (fl < maxalignlen) {
-            aw_message("Warning Your filter is shorter than the alignment len");
+            aw_message("Warning: Your filter is shorter than the alignment len");
             maxalignlen = fl;
         }
     }

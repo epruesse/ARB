@@ -1856,7 +1856,7 @@ GB_ERROR AWT_graphic_tree::save(GBDATA */*dummy*/, const char */*name*/, AW_CL /
             error = ta.close(error);
 
             if (!error) {
-                aw_message(GBS_global_string("Tree '%s' lost all leafes and has been deleted", tree_name));
+                aw_message(GBS_global_string("Tree '%s' lost all leaves and has been deleted", tree_name));
 #if defined(DEVEL_RALF)
 #warning somehow update selected tree
 

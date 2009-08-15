@@ -294,7 +294,7 @@ static GB_ERROR NT_convert_gene_locations(GBDATA *gb_main, size_t species_count,
                 if (!gb_pos_start) {
                     GBDATA *gb_pos_begin = GB_entry(gb_gene, "pos_begin"); // test for old format
                     if (!gb_pos_begin) {
-                        error = "Neighter 'pos_begin' nor 'pos_start' found - format of gene location is unknown";
+                        error = "Neither 'pos_begin' nor 'pos_start' found - format of gene location is unknown";
                     }
                 }
 
@@ -945,7 +945,7 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
                 }
             }
 
-            // now all redundencies should be eliminated and we can assign dictionaries to affected keys
+            // now all redundancies should be eliminated and we can assign dictionaries to affected keys
             if (!error) {
                 for (Keys::iterator ki = keys.begin(); !error && ki != keys.end(); ++ki) {
                     KeyInfoPtr    k       = ki->second;

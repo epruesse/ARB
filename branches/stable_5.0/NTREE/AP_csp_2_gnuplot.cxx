@@ -457,7 +457,7 @@ AW_window *AP_open_csp_2_gnuplot_window( AW_root *root ){
 
     aws->at("smooth");
     aws->create_option_menu(AP_AWAR_CSP_SMOOTH);
-    aws->insert_option("Dont Smooth","D",0);
+    aws->insert_option("Don't smooth","D",0);
     aws->insert_option("Smooth 1","1",1);
     aws->insert_option("Smooth 2","2",2);
     aws->insert_option("Smooth 3","3",3);

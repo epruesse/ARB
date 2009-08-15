@@ -1227,8 +1227,8 @@ AW_window *create_probe_design_expert_window( AW_root *root)  {
         aws->at(buffer);
         sprintf(buffer,"probe_design/exceptions/nr%i/MODE",i);
         aws->create_option_menu( buffer, NULL , "" );
-        aws->insert_option( "dont use", "d", -1 );
-        aws->insert_option( "dont split", "d", 0 );
+        aws->insert_option( "don't use", "d", -1 );
+        aws->insert_option( "don't split", "d", 0 );
         aws->insert_option( "split", "d", 1 );
         aws->update_option_menu();
 
@@ -1754,9 +1754,9 @@ void pd_query_pt_server(AW_window *aww)
     GBS_strstruct *strstruct = GBS_stropen(1024);
     GBS_strcat(strstruct,   "echo Contents of directory ARBHOME/lib/pts:;echo;"
                "(cd $ARBHOME/lib/pts; ls -l);"
-               "echo; echo Disk Space for PT_server files:; echo;"
+               "echo; echo Disk space for PT_server files:; echo;"
                "df $ARBHOME/lib/pts;");
-    GBS_strcat(strstruct,"echo;echo Running ARB Programms:;");
+    GBS_strcat(strstruct,"echo;echo 'Running ARB programs:';");
 
     {
         const char *server  = GBS_read_arb_tcp(pt_server);

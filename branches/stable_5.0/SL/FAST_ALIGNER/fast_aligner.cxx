@@ -2706,7 +2706,7 @@ AW_window *AWTC_create_faligner_window(AW_root *root, AW_CL cd2)
     aws->at("mirror");
     aws->create_option_menu(FA_AWAR_MIRROR, "Turn check", "");
     aws->insert_option        ("Never turn sequence",         "", FA_TURN_NEVER);
-    aws->insert_default_option("User acknowledgement",        "", FA_TURN_INTERACTIVE);
+    aws->insert_default_option("User acknowledgment",         "", FA_TURN_INTERACTIVE);
     aws->insert_option        ("Automatically turn sequence", "", FA_TURN_ALWAYS);
     aws->update_option_menu();
 

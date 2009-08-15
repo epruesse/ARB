@@ -55,9 +55,9 @@ typedef struct gb_data_base_type2   *GB_REL_CONTAINER;
 
 #else
 
-typedef long GB_REL_STRING;       /* relative adress */
-typedef long GB_REL_GBDATA;       /* relative adress */
-typedef long GB_REL_CONTAINER;    /* relative adress */
+typedef long GB_REL_STRING;       /* relative address */
+typedef long GB_REL_GBDATA;       /* relative address */
+typedef long GB_REL_CONTAINER;    /* relative address */
 
 #endif /*MEMORY_TEST==1*/
 
@@ -81,7 +81,7 @@ struct gb_flag_types {      /* public flags */
     unsigned int        compressed_data: 1;
     unsigned int        unused: 1;  /* last bit saved */
     unsigned int        user_flags:8;
-    unsigned int        temporary:1;    /* ==1 -> dont save entry */
+    unsigned int        temporary:1;    /* ==1 -> don't save entry */
     unsigned int        saved_flags:8;
 };
 

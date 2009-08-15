@@ -11,7 +11,7 @@ extern const int GB_MAX_CACHED_ENTRIES      ;       /* maximum number of cached 
 extern const int GB_MAX_QUICK_SAVE_INDEX    ;       /* Maximum extension-index of quick saves (Maximum 99) */
 extern const int GB_MAX_QUICK_SAVES     ;       /* maximum number of quick saves */
 
-extern const int GB_MAX_LOCAL_SEARCH        ;       /* Maximum number of childs before doing a earch in the database server */
+extern const int GB_MAX_LOCAL_SEARCH        ;       /* Maximum number of children before doing a search in the database server */
 
 extern const int GBTUM_SHORT_STRING_SIZE    ;       /* the maximum strlen which is stored in short string format */
 extern const int GB_HUFFMAN_MIN_SIZE        ;       /* min length, before huffmann code is used */

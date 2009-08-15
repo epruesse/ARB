@@ -159,7 +159,7 @@ static GB_ERROR trace_params(int argc, const GBL *argv, struct gbl_param *ppara,
                         break;
 
                     case GB_BIT:
-                        // 'param=' is same as 'param' or 'param=1' (historical reason, dont change)
+                        // 'param=' is same as 'param' or 'param=1' (historical reason, don't change)
                         *(int *)para->varaddr = (value[0] ? atoi(value) : 1);
                         break;
 
@@ -1861,7 +1861,7 @@ static const char *get_taxonomy(GBDATA *gb_species_or_group, const char *tree_na
             *error = "Container has 'name' and 'group_name' entry - can't detect container type";
         }
         else {
-            *error = "Container has neighter 'name' nor 'group_name' entry - can't detect container type";
+            *error = "Container has neither 'name' nor 'group_name' entry - can't detect container type";
         }
     }
 
