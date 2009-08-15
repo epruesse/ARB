@@ -31,7 +31,7 @@ SECTION         ALGORITHM
 		       /	B      \
                       c                 d
 
-		exchange a with b ( or a with d ) and count all coloums in the alignment
+		exchange a with b ( or a with d ) and count all columns in the alignment
 		with a greater/smaller/equal minimal number of mutations
 		than the original tree.
 

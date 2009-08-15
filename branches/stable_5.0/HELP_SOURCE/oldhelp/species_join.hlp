@@ -24,7 +24,7 @@ DESCRIPTION
               to set a similarity-criterion used to detect
               candidates for joining (for e.g., full_name).
 
-            - Check seperators for fields and sequences.
+            - Check separators for fields and sequences.
 
             - Press GO to start.
 

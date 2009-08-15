@@ -9,7 +9,7 @@ UP	arb_edit.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Printing from Eitor
+TITLE		Printing from Editor
 
 OCCURRENCE	ARB_NT/ARB_EDIT/File/Pretty Print
 

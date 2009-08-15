@@ -57,5 +57,5 @@ ARB requirements on Ubuntu 8.04
 
 
 [Note:]
-You may use the provided install skript, e.g.
+You may use the provided install script, e.g.
     sudo SH/arb_installubuntu4arb.sh

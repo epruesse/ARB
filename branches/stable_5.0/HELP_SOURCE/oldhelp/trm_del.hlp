@@ -8,9 +8,9 @@ UP	glossary.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Remove Zoombies
+TITLE		Remove Zombies
 
-OCCURRENCE	ARB_NT/Tree/Remove Zoombies
+OCCURRENCE	ARB_NT/Tree/Remove Zombies
 
 DESCRIPTION	Removes 'deleted' species from the currently displayed tree.
 

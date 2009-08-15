@@ -12,7 +12,7 @@ TITLE		Check the Quality of Sequences
 
 OCCURRENCE	ARB_NT
 
-DESCRIPTION	Takes sequences, a tree and a coloumn statistic as input,
+DESCRIPTION	Takes sequences, a tree and a column statistic as input,
 		and generates a short sequence quality output string, which
 		will be stored into the database under a user defined key.
 

@@ -27,7 +27,7 @@ Single
 6 5625 6750 10875 7650
 6 5700 6975 9075 7650
 4 0 -1 0 0 0 10 0.0000 4 165 3060 5700 7200 Use '?' as single letter wildcard \001
-4 0 -1 0 0 0 10 0.0000 4 165 4950 5700 7425 Use ',' or newline as seperator between search patterns\001
+4 0 -1 0 0 0 10 0.0000 4 165 4950 5700 7425 Use ',' or newline as separator between search patterns\001
 4 0 -1 0 0 0 10 0.0000 4 165 3960 5700 7650 '#' initiates a comment for a search pattern\001
 -6
 2 1 0 3 -1 -1 0 0 -1 0.000 0 0 -1 0 0 2

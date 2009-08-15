@@ -24,8 +24,8 @@ DESCRIPTION	Allows to adjust values indicating the relative strengths of
 
 		Define threshold for splitting melting domains:
 
-			Type a value to the 'Theshold for Splitting' subwindow.
-			This value is substracted from the mean of all pairing
+			Type a value to the 'Threshold for Splitting' subwindow.
+			This value is subtracted from the mean of all pairing
 			values of the potential probe target hybrid. If the
 			resulting value is lower than that of a particular
 			mispairing, it is assumed that the remaining base paired

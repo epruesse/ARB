@@ -28,7 +28,7 @@ DESCRIPTION	In this release, 'ARB Parsimony' cannot be used to reconstruct
 		criteria including the new information for calculation.
 
 		Filters for the in- or exclusion of alignment columns
-		('ARB_NT/SAI; ARB_NT/Tree/Dist Matrix) can be seleted.
+		('ARB_NT/SAI; ARB_NT/Tree/Dist Matrix) can be selected.
 
                 After selecting one of the parsimony items in 'Tree/Add species to existing tree'
 		the 'SET PARSIMONY OPTIONS' window appears:

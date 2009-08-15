@@ -44,7 +44,7 @@ NOTES		In our database releases we provide SAIs named 'gaps_...'.
                 These SAIs are the best candidates for alignment preservation.
 
                 When merging similar databases with many species, searching adapt candidates
-                may take a loong time. Press KILL in the status window to abort the process.
+                may take a long time. Press KILL in the status window to abort the process.
 
 EXAMPLES	None
 

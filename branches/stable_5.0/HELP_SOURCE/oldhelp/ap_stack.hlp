@@ -25,7 +25,7 @@ DESCRIPTION	Allows to temporarily store tree topologies.
 		Click on the <RESTORE> button to restore stored trees. Your current tree
                 will be discarded.
 
-NOTES		The initial tree will be stored at program startup.
+NOTES		The initial tree will be stored at program start-up.
 
                 When you restore the last tree from the tree stack it will be stored again automatically,
                 to support further restores.

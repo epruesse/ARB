@@ -15,7 +15,7 @@ To install a precompiled ARB
 4a. If you're using Ubuntu please refer to:
 
   * the detailed list of packets to install for ARB:    arb_UBUNTU.txt
-  * the package-install-skript for ubuntu:              SH/arb_installubuntu4arb.sh
+  * the package-install-script for ubuntu:              SH/arb_installubuntu4arb.sh
 
 --------------------------------------------------------------------------------
 4b. Otherwise use your package manager to install the

@@ -60,7 +60,7 @@ Welcome to the 'ARB' Sequence Database Tools
 
         Change your .cshrc/.profile files:
 
-                Set the enviroment variable ARBHOME
+                Set the environment variable ARBHOME
                 to the ARB installation directory
                 Append   $ARBHOME/bin   to your PATH
 

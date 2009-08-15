@@ -23,8 +23,11 @@ TITLE		SHOW IRS DENDROGRAM
 OCCURRENCE	ARB_NT (top area)
 
 DESCRIPTION	Trees can be displayed as dendrograms or radial trees.
-                Dendograms have two styles: The normal style and the
-                IRS style.
+
+                Dendrograms have two styles:
+                    * The normal style and
+                    * the IRS style.
+
 		To display the IRS style dendrogram press the third small button
                 below the tree_name in the top area.
 

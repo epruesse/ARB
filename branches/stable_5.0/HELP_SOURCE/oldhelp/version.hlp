@@ -18,7 +18,7 @@ SECTION OLD VERSION LIST
 
         1.0:	1993-94		Openwin Version
 
-        2.0.0b	Juni 95		Full Motif Version,
+        2.0.0b	June 95		Full Motif Version,
         			Phylip included,
         			Final database but untested
         			Only online help available
@@ -27,18 +27,16 @@ SECTION OLD VERSION LIST
         			Phylip running fully in background
         			save/load branch labels to NEWICK Format
 
-        2.1.0	Nov		GDE editor can save
+        2.1.0	November	GDE editor can save
         			NEW ALI editor from Niels, Fogt ...
         			a lot of bug fixes:
         				- database fixes
         				- recover from corrupt database
         				...
-        2.1.1	Jan		GDE is working now
-        			compress matrixes is possible
+        2.1.1	January 96	GDE is working now
+        			compressing matrices is possible
 
-        	April		Vacation
-
-        	Mai		Save Changes as
+        	May		Save Changes as
         			Parsimony inserts species sorted by sequence length
         			bug fixes:	- import by readseq improved
 
@@ -57,7 +55,7 @@ SECTION OLD VERSION LIST
         2.3b	September	much better sequence compression
         			bug fix: probes for groups
 
-        2.4b	Oktober		Tags implemented, Tags can be used to subdivide fields
+        2.4b	October		Tags implemented, Tags can be used to subdivide fields
         			resize of most windows does work
 
         2.5b	November	Overall Compression
@@ -67,7 +65,7 @@ SECTION OLD VERSION LIST
         				-	Equal Fields
         	December	Linux Version
 
-        	Januar		Macros
+        	January 97	Macros
 
         	February	One major bug fixed in the database system
         			Prototype of the new editor
@@ -78,7 +76,7 @@ SECTION OLD VERSION LIST
         	April		Fast Aligner
         			Merge preserves alignment
 
-        	Feb'99 		ARB_EDIT4 now is the default editor.
+        	February 99 	ARB_EDIT4 now is the default editor.
         			Code for amino-DNA-translation/realignment
         			completely rewritten.
 

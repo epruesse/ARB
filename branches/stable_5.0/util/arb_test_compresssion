@@ -34,7 +34,7 @@ arb_2_ascii test.$1/$1_o2.arb test.$1/$1_o2_a.arb
 echo '    generate optimized2 map ascii file'
 arb_2_ascii test.$1/$1_o2m.arb test.$1/$1_o2m_a.arb
 
-echo '    reganerate binary ascii'
+echo '    regenerate binary ascii'
 arb_2_bin test.$1/$1_a.arb test.$1/$1_ab.arb
 arb_2_ascii test.$1/$1_ab.arb test.$1/$1_aba.arb
 

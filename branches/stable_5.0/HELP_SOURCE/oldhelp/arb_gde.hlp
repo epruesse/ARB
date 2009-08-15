@@ -18,7 +18,7 @@ DESCRIPTION	Provides access to the integrated GDE software.
 EXAMPLES	None
 
 WARNINGS	Some of the GDE tools are not available or do not run properly
-		blast/fasta require proberly installed databases
+		blast/fasta require properly installed databases
 
 BUGS		No bugs known
 

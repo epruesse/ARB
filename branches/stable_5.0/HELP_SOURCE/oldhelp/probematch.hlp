@@ -85,7 +85,7 @@ DESCRIPTION	Finds and displays all occurrences of a given target and/or
 
 
 NOTES		Unlike the 'ARB_PROBE_DESIGN' tool, the 'ARB_PROBE_MATCH' tool
-		does not depend on the consistancy of the current and the
+		does not depend on the consistency of the current and the
 		'PT_SERVER' database. Any 'PT_SERVER' database containing
 		homologous or non-homologous, aligned or crude data can be
 		searched for potential probe target matches.

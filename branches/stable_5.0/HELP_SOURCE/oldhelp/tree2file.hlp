@@ -48,25 +48,28 @@ DESCRIPTION	Exports a ONE page screenshot of the displayed tree to a
 
 					Total Tree = Full tree
 
-		Select a file name from the 'Directories and Files' subwindow
-			or type it to the 'File Name' subwindow.
+		Select a file name from the 'Directories and Files' subwindow or type it
+		to the 'File Name' subwindow.
 
 		Save and/or edit the data:
 
 			Press one of the buttons in the last line of the
 			'Export TREE TO FILE' window
 
-				- SAVE:		exports the data
+				- SAVE:
 
-				- S & XFIG 	Writes the data to the speci-
-						fied file and edits the file.
-						(xfig language has to selected)
+                                    exports the data
 
-				- S & GHOST	Writes the data to the speci-
-						fied file and displays the
-						preview. (postscript language
-						has to be selected). The
-						previewer allows tree printing.
+				- S & XFIG
+
+                                    Writes the data to the specified file and edits the file.
+                                    (xfig language has to selected)
+
+				- S & GHOST
+
+                                    Writes the data to the specified file and displays the
+                                    preview. (postscript language has to be selected). The
+                                    previewer allows tree printing.
 
 
 NOTES		The suffix shown or typed in the 'Suffix' subwindow is used as a

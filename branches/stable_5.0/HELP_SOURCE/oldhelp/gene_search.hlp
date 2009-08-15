@@ -21,7 +21,7 @@ OCCURRENCE	ARB_NT/Genes/search
 		ARB_GENEMAP/Genes/search
 
 DESCRIPTION	Searches for a (set of) genes
-		that match (dont match) a query or are marked.
+		that match (don't match) a query or are marked.
 		
 		The database is scanned for 'genes' which contain (or do not
 		contain) the search string within the specified 'field'. 

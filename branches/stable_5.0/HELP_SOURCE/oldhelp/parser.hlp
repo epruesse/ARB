@@ -13,7 +13,7 @@ DESCRIPTION	The String Parser is used to search and replace substrings.
 
 
 OCCURRENCE      TREE/Species/Search:PARSE FIELD
-                TREE/Proporties/NDS
+                TREE/Properties/NDS
 
 
 SECTION         SYNTAX
@@ -21,7 +21,7 @@ SECTION         SYNTAX
         'search=replace'	means search all occurrences of 'search'
 				and replace it by 'replace'
 
-	Different search/replace commands can be seperated by ':':
+	Different search/replace commands can be separated by ':':
 
         	'search1=replace1:search2=replace2: ... :searchn=replacen'
 
@@ -29,8 +29,8 @@ SECTION SPECIAL CHARACTERS
 
 	Search && Replace string:
 
-		:               seperates two commands
-		=               seperates the search from the replace string
+		:               separates two commands
+		=               separates the search from the replace string
 		\               Escape symbol
 		\\              the '\' symbol itself
 		|               newline

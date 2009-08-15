@@ -75,7 +75,7 @@ DESCRIPTION
 			windows.
 
 		"Menu bars" at the top of windows (if present) are used to
-			expose menu choises. The menus are displayed after
+			expose menu choices. The menus are displayed after
 			clicking on the prompts of the menu bar.
 
 		"Menu buttons" are raised rectangular buttons containing a small
@@ -84,7 +84,7 @@ DESCRIPTION
 
 		"Menus" initiate actions after clicking on the items.
 
-		"Scroll bars" at the exterme right and bottom of windows and
+		"Scroll bars" at the extreme right and bottom of windows and
 			subwindows allow to move through the display area in
 			various increments.
 
@@ -97,7 +97,7 @@ DESCRIPTION
 		"Middle and right mouse buttons" are used for modifying the main display
 			(see LINK{mode.hlp})
 
-		"Press" means hold down the mous button while completeing an
+		"Press" means hold down the mouse button while completing an
 			operation.
 
 		"Release" means to let go of the mouse button.

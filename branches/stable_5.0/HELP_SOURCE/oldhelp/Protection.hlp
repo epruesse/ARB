@@ -14,7 +14,7 @@ OCCURRENCE	ARB_NT/Protection
 
 DESCRIPTION	An individual protection level (0 - 6) can be assigned to
 		all types of database entries (sequences and additional
-		information stored in the paticular 'field'). 
+		information stored in the particular 'field'). 
 		To modify any entries, a protection level has to be selected
 		from the 'Protection' menu of the main window equal or higher
 		than that assigned to the data.

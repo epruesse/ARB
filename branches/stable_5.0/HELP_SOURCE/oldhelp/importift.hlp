@@ -59,7 +59,7 @@ SECTION         BRIEF DESCRIPTION
                 $> will ve replaced by the intermediate file name
 
 DESCRIPTION     First of all the converter appends all import files maching
-                the filepattern into one file. The files are seperated by the
+                the filepattern into one file. The files are separated by the
                 string defined with the keyword  SEQUENCEEND.
 
                 1. Search the first line matching the pattern defined by BEGIN
@@ -73,7 +73,7 @@ DESCRIPTION     First of all the converter appends all import files maching
 
                         - run commands with the concatenated lines
 
-                   Known commands are (they are exucuted in the order listed here):
+                   Known commands are (they are executed in the order listed here):
 
                          - SRT "SRT_STRING"
 

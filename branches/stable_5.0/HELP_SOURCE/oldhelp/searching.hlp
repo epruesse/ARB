@@ -50,7 +50,7 @@ SECTION SEARCH EXPRESSION
                         '*pseu*'        matches all fields with the substring 'pseu'
                         'pyrococcus*'   matches all fields starting with 'pyrococcus'
                         '*bact*ther*'   matches all fields with the substring 'bact' followed by 'ther'
-                                        (there may be many characters inbetween or none, i.e. it as
+                                        (there may be many characters in-between or none, i.e. it as
                                         well matches 'bactther')
 
                - if the first character is '<' or '>' and the rest is a number,

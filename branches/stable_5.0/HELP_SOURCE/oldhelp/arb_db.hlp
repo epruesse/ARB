@@ -83,9 +83,9 @@ NOTES ASCII format
         		[ali_xxx]               // the alignment container(s)
                         [gene_data]             // container containing genes
 
-        extended::=                             // analoguous to species
+        extended::=                             // analogous to species
 
-        gene::=                                 // analoguous to species
+        gene::=                                 // analogous to species
 
         ali_xxx::=	'data'			// the sequence
         		...			// additional sequence information
@@ -96,7 +96,7 @@ NOTES ASCII format
 
         alignment::=	'alignment_name'	// name of the alignment (prefix 'ali_')
         		'alignment_len'		// length of longest sequence
-        		'alignment_write_security' // default write sequerity
+        		'alignment_write_security' // default write security
         		'alignment_type'	// dna or pro
         		'aligned'		// ==1 when all sequences have the same
         					// length else 0

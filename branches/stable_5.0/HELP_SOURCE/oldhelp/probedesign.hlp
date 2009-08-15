@@ -93,7 +93,7 @@ WARNINGS	Take care that only and all species are marked for which a group
 		unmarked and treated as non-targets.
 
 		Consequently, useful target sites may be not detected.
-		Similarily, marked species not related to the target species and
+		Similarly marked species not related to the target species and
 		not contained in the displayed tree will be treated as targets.
 
 BUGS		No bugs known

@@ -14,11 +14,11 @@ TITLE		Search List of Valid Names Manually
 OCCURRENCE	ARB_NT/species/Valid Names/Search manually
 
 DESCRIPTION     Allow the user to select a appropriate valid name from the list
-                of available names manually. This is neccessary because the automatic suggestion works
+                of available names manually. This is necessary because the automatic suggestion works
                 only for 100% identical entries. A preselection from the list of all
                 available names can be made by giving any number of initial characters.
                 A name selection in the list can then assigned to the current selected species
-                and is written to the fiels Valid_Names/NameString, description type then is manually.
+                and is written to the fields Valid_Names/NameString, description type then is manually.
 
 
 NOTES		Subspecies are currently not taken into account.

@@ -109,7 +109,7 @@ SECTION         STANDARD FIELDS
                 During import ARB removes all 'translation' qualifiers from the feature
                 table, if it can reproduce them.
 
-                ARB_translation          if 'translation' was NOT reproducable, this
+                ARB_translation          if 'translation' was NOT reproducible, this
                                          contains the result of the translation. In
                                          this case the 'translation' has not been removed by ARB.
                 ARB_translation_note     additional information about reproduction

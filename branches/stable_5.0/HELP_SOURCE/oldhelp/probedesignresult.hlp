@@ -23,7 +23,7 @@ DESCRIPTION	The 'PD RESULT' window is displayed automatically after
 		The target and probe sequences are given in the first and last
 			columns of the display area, respectively.
 
-		The length of the psoposed probe is given in column 2.
+		The length of the proposed probe is given in column 2.
 
 		Columns 3 and 4 indicate the 5'-positions of the target sites
 			within the alignment and the E.coli sequence,
@@ -40,8 +40,8 @@ DESCRIPTION	The 'PD RESULT' window is displayed automatically after
 			particular probe if the temperature would be gradually
 			lowered.
 
-			!!! The columns do only represent virtual temparature
-                            shifts and cannot be assigned to centigrades.!!!
+			!!! The columns do only represent virtual temperature
+                            shifts and cannot be assigned to degree centigrade!!!
 
 		To write the results to an ascii file press the 'SAVE' button
 			to display the 'SELECTION BOX' window.
@@ -50,7 +50,7 @@ DESCRIPTION	The 'PD RESULT' window is displayed automatically after
 
 SECTION         SORTING
 
-                The programm brings the best probes to the front of the list.
+                The program brings the best probes to the front of the list.
 		Best means the product
 
                      group_hits * (min. mismatches to non group sp.)

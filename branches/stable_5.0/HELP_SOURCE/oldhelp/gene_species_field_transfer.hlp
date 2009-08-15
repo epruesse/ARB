@@ -28,7 +28,7 @@ DESCRIPTION     Here you can define which fields (of the origin organism or of t
                          If you choose 'Only use ACI' you have to provide an ACI expression, but
                          no 'Source field'.
 
-                - Check if the example shows your intented result.
+                - Check if the example shows your intended result.
 
 NOTES		The example will be calculated for the gene-species which is selected
                 in the left Hitlist of the 'TRANSFER SPECIES' window.

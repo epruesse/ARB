@@ -32,7 +32,7 @@ DESCRIPTION	Probe design, probe matching, and searching the nearest relatives re
 		does not do the job itself but calls a special
 		SEARCH_PATTERNS_IN_A_BIG_DATABASE_PROGRAM.
 
-		We named this programm PT_SERVER ('Prefix tree server' or
+		We named this program PT_SERVER ('Prefix tree server' or
                 synonymously 'Positional tree server').
 		The PT_SERVER searches for patterns in special database files
 		and sends all matches back to the calling program.

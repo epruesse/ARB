@@ -18,7 +18,7 @@ SECTION Online Sequence Compression
 
 		Online Sequence Compression (OSC) is a way to hide column positions
 		(normally: column positions containing only or many gaps) in order
-		to simplify editing of aligments with wide gaps.
+		to simplify editing of alignments with wide gaps.
 
 		OSC affects only the manner how sequences are DISPLAYED in the
 		editor and does not affect the sequences themselves.

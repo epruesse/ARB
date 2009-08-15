@@ -63,7 +63,7 @@ NOTES           WHAT DOES MULTI PROBE DO NOT
                                         the default selection, if you are mixing probes
                                         with target sequences.
 
-        	Weight mismaches
+        	Weight mismatches
 
                                         If set, minor mismatches and mismatches at
                                         the ends of the probe are down weighted.

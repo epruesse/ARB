@@ -179,24 +179,7 @@ Copyright notices for programs distributes together with ARB
     CONVERT_ALN
 
         convert_aln --  an alignment(or sequence) converter written by Wen-Min Kuan
-                        for the Ribsomal Database Project(RDP), April 28, 1992.
-
-
-
-    TREETOOL
-
-        Written by Mike Maciukenas, at the RDP, with design and
-        implementation guidance by Gary Olsen, Niels Larsen, Carl
-        Woese.
-
-        Copyright (c) 1991, University of Illinois board of
-        trustess. All rights reserved.
-
-        Treetool is a copyrighted program, not in the public
-        domain. It is provided free of charge, and permission is
-        granted to copy and dirstribute, provided that it is not done
-        for profit, and that all copyright messages remain present and
-        intact.
+                        for the Ribosomal Database Project(RDP), April 28, 1992.
 
 
     fastdnaml

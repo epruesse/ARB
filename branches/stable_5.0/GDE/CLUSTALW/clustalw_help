@@ -196,7 +196,7 @@ parameters and the scoring system, you will have to refer to the documentation.
 Each step in the final multiple alignment consists of aligning two alignments 
 or sequences.  This is done progressively, following the branching order in 
 the GUIDE TREE.  The basic parameters to control this are two gap penalties and
-the scores for various identical-non-indentical residues.  
+the scores for various identical-non-identical residues.  
 
 1) and 2) The GAP PENALTIES are set by menu items 1 and 2. These control the 
 cost of opening up every new gap and the cost of every item in a gap. 

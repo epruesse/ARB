@@ -13,8 +13,8 @@ TITLE		Calculate Branch Lengths
 OCCURRENCE	ARB_NT/Tree/Parsimony/Tree/Calculate Branch Lengths
 
 
-DESCRIPTION	Calculates branch lenghts for the current tree. Branch swapping
-		is used to estimate the significance of tree topologies. 		
+DESCRIPTION	Calculates branchlengths for the current tree. Branch swapping
+		is used to estimate the significance of tree topologies.
 
 NOTES		The branch lengths reflect the significance of edges rather than
 		the number of changed residues.

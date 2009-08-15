@@ -17,7 +17,7 @@ OCCURRENCE	ARB_INTRO <MERGE TWO ARB DATABASES> ARB_MERGE <Transfer Species>
 DESCRIPTION	Allows
                         * database searching,
 			* comparison of the two databases,
-			* transfering data from left to right
+			* transferring data from left to right
 			* realigning sequences to new alignment
 
 	Database Searching:
@@ -76,7 +76,7 @@ DESCRIPTION	Allows
 		By entering the name(s) of some reference species in the input
 		box in the upper center of the TRANSFER SPECIES window, the
 		program will try to find those species in both databases,
-		create a column reference list, and realign all transfered
+		create a column reference list, and realign all transferred
 		sequences.
                 To enable this feature, enable the 'Adapt alignment' toggle.
 

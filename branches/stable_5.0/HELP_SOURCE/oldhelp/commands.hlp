@@ -190,11 +190,11 @@ SECTION COMMANDLIST
 
 		extract_words("chars",val)
 
-                    Search for all words (seperated by ',' ';' ':' ' ' or 'tab') that
+                    Search for all words (separated by ',' ';' ':' ' ' or 'tab') that
                     contain more characters of type chars than val, sort them
-                    alphabetically and write them seperated by ' ' to the output
+                    alphabetically and write them separated by ' ' to the output
 
-	STRING COMPARATION
+	STRING COMPARISON
 
                compare(a,b)             return -1 if a<b, 0 if a=b, 1 if a>b
                equals(a,b)              return 1 if a=b, 0 otherwise
@@ -217,7 +217,7 @@ SECTION COMMANDLIST
 
                 The above functions work as binary operators (see below).
 
-                To avoid 'devision by zero'-errors, the operators 'div', 'per_cent' and 'rest'
+                To avoid 'division by zero'-errors, the operators 'div', 'per_cent' and 'rest'
                 return 0 if the second argument is zero.
 
                 Calculation is performed with integer numbers.
@@ -307,8 +307,8 @@ SECTION COMMANDLIST
 		extract_sequence("chars",rel_len)
 
                         like extract_words, but do not sort words, but rel_len is the minimum
-                        percantage of characters of a word that mach a character in 'chars'
-                        before word is taken. All words will be seperated by white space.
+                        percentage of characters of a word that mach a character in 'chars'
+                        before word is taken. All words will be separated by white space.
 
                 taxonomy([treename,] depth)
 
@@ -441,7 +441,7 @@ SECTION COMMANDLIST
                                  - or as REG (if starts with '/') (see LINK{regexpr.hlp}).
 
                         In escapedCommand you have to escape '\' and '"' by
-                        preceeding a '\'. If you nest calls you have to use multiple escapes
+                        preceding a '\'. If you nest calls you have to use multiple escapes
                         (e.g. inside an export filter - which is in fact an
                         SRT expression - you'll have to use double escapes).
 

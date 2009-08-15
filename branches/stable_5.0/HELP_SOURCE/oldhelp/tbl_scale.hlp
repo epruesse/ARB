@@ -18,7 +18,7 @@ NOTES		Use this when ARB has misinterpreted branchlengths during import of
                 a tree. That happens when one branchlength is slightly above 1.0
                 (i.e. when the treeing program has an error) in which case ARB has
                 assumed that branchlengths are in range [0 .. 100] and
-                has devided them by 100.
+                has divided them by 100.
 
 EXAMPLES	None
 

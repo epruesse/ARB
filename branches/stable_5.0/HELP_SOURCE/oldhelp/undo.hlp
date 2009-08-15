@@ -21,7 +21,7 @@ DESCRIPTION	The undo/redo feature works on your database.
 		  (you've guessed that!)
 		- changing the cursor position in ARB_EDIT4 does not affect DB
 		- changing dialogs does _sometimes_ affect DB (this depends
-		  on whether the value is temporary or permanent).
+		  on whether the value is save in properties or in the DB).
 
 		Note that there is only _one_ undo/redo queue for all applications
 		together, cause they all work on the same DB! 

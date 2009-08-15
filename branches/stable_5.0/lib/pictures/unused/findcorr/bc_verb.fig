@@ -14,7 +14,7 @@
 4 0 18 13 0 -1 0 0.00000 4 17 123 99 319 (factors/parameters)
 4 0 18 13 0 -1 0 0.00000 4 17 107 99 239 (parameter room)
 4 0 18 13 0 -1 0 0.00000 4 17 73 99 264 data matrix 
-4 0 18 13 0 -1 0 0.00000 4 17 103 99 224 covarince matrix
+4 0 18 13 0 -1 0 0.00000 4 17 103 99 224 covariance matrix
 4 0 18 13 0 -1 0 0.00000 4 17 74 99 304 covariances
 4 0 18 13 0 -1 0 0.00000 4 17 148 99 344 transformation matrices
 4 0 18 13 0 -1 0 0.00000 4 17 146 99 359 (factor/parameter room)
@@ -24,7 +24,7 @@
 4 0 18 13 0 -1 0 0.00000 4 17 77 319 359 $transmatrix
 4 0 18 13 0 -1 0 0.00000 4 15 40 59 429 $close
 4 1 18 13 0 -1 0 0.00000 4 15 31 239 89 $info
-4 0 18 13 0 -1 0 0.00000 4 17 179 79 184 addtional commented output
+4 0 18 13 0 -1 0 0.00000 4 17 179 79 184 additional commented output
 4 0 18 13 0 -1 0 0.00000 4 17 56 319 144 $verbose
 4 0 18 13 0 -1 0 0.00000 4 17 115 79 139 additional verbose
 4 0 18 13 0 -1 0 0.00000 4 17 64 319 189 $complete

@@ -16,14 +16,14 @@ NOTES           Further parameters the user has to specify:
         	- select if the complement should be checked, too
         	- select the minimum mismatch that unmarked species should have
                   in the combination
-        	- for weighting mismatches there are three possiblities:
+        	- for weighting mismatches there are three possibilities:
 
         		1. all mismatches are weighted equally
 
         		2. mismatches are weighted depending on which kind of
-                           mismatch occured
+                           mismatch occurred
 
-        		3. mismatches are weighted stronger the nearer it occures
+        		3. mismatches are weighted stronger the nearer it occurs
                            at the center of the probe
 
         	- maximum non-group hits which are allowed for the calculation

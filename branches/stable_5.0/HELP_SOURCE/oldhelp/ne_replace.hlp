@@ -16,7 +16,7 @@ OCCURRENCE	ARB_NT/ARB_EDIT/EDIT/Replace
 DESCRIPTION	Replaces characters or strings within the selected sequence or
 		SAI entry.
 
-		Select a sequence by positoning the curser on the name and
+		Select a sequence by positioning the cursor on the name and
 			pressing the left mouse button. Position the cursor
 			within the SAI or sequence entry.
 

@@ -53,7 +53,7 @@ SECTION Introduction
         minimize the amount of effort required to integrate
         sequence analysis functions into a common
         environment. The GDE takes care of the user
-        interface issues, and allows the programer to
+        interface issues, and allows the programmer to
         concentrate on the analysis itself. Existing programs
         can be tied into the GDE in a matter of hours (or
         minutes) as apposed to days or weeks. Programs
@@ -71,7 +71,7 @@ SECTION Introduction
 
 SECTION What's New for this Release
 
-        GDE 2.2 represents a maintainence release. Several
+        GDE 2.2 represents a maintenance release. Several
         small bugs have been fixed, as well as new editing
         features and user interface elements. Also, I have
         tried to update all of the contributed external
@@ -89,8 +89,8 @@ SECTION What's New for this Release
         included as well. As for new editing features, a
         useful "yanking" feature has been added by Scott
         Ferguson from Exxon Research, and the capability
-        to export the colormap for a seqeunce (see
-        appendicies A/C). Among the bugs fixed in this
+        to export the colormap for a sequence (see
+        appendices A/C). Among the bugs fixed in this
         release are:
 
         Selection mask problems when exporting to
@@ -110,7 +110,7 @@ SECTION System Requirements
         X Windows. It runs in both monochrome, and color,
         and can be run remotely on any system capable of
         running X Windows Release 4. You should have at
-        least 15 meg of free disk space available. The binay
+        least 15 meg of free disk space available. The binary
         release for SparcStations was compiled under
         SunOS 4.1.2 and Openwindows 3.0.
 
@@ -368,7 +368,7 @@ SECTION Using the GDE
         must be used to drive the parameter entry for these
         programs. Programs of the form:
 
-                program_name -a1 argument1 -a2 arguement2 -f inputfile -er errorfile > outputfile
+                program_name -a1 argument1 -a2 argument2 -f inputfile -er errorfile > outputfile
 
         can be specified in the .GDEmenus file directly. As
         this is the general form of most one Unix commands,
@@ -544,7 +544,7 @@ SECTION Appendix C, External functions
 
         		Minimum overlap                 Number of bases required for overlap
         		Percent match within overlap    Percentage match required in the overlap
-                                                        region before merge is alowwed.
+                                                        region before merge is allowed.
 
         	Comments:
 
@@ -613,14 +613,14 @@ SECTION Appendix C, External functions
 
         Author: Don Gilbert
 
-        Parameters: Many, but can easily be run in interactive mdoe.
+        Parameters: Many, but can easily be run in interactive mode.
 
         Comments:
 
         		Readseq is a very useful program for format conversion.
                         The latest versionsupports over a dozen different file formats, as
                         well as formating capabilities for publication. GDE makes of Readseq
-                        for importing and exporting seqeuences as well as a filtering tool to
+                        for importing and exporting sequences as well as a filtering tool to
                         some external functions.
 
 

@@ -14,7 +14,7 @@ OCCURRENCE	ARB_NT/SAI/create SAI/Max Frequency
 
 DESCRIPTION	Finds the most frequent base in each column for all marked
 		species. Than the number of all sequences with this base are
-		devided by:
+		divided by:
 			a: the number of all marked sequences, if not ignoring gaps
 			b: the number of bases in this column, if ignoring gaps
 		The resulting percentage is divided by ten and the second last
@@ -35,7 +35,7 @@ NOTE		The result can be used as a conservation profile and filter:
 EXAMPLES	Say one column contains 7 A's 4 G's and 5 Gaps.
 		Ignoring Gaps will result in 7/11 == 64 %
 		which is converted to '6'.
-		Otherwise we get 7/16 == 44% which will be indecated by a
+		Otherwise we get 7/16 == 44% which will be indicated by a
 		'4' in the target sequence.
 
 NOTE		'-' @#@ are regarded as gaps.

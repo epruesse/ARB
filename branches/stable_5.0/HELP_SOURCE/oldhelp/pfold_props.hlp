@@ -46,7 +46,7 @@ SECTION Configuration
 	Prediction)'). Each line contains two textfields:
 	- The left textfield contains one or more amino acid pairs. Each
 	  pair contains two characters (amino acids, gaps-characters, ...).
-	  Pairs are seperated by spaces (' ').
+	  Pairs are separated by spaces (' ').
 	- The right textfield contains the match symbol used for each
 	  of the specified pairs.
 

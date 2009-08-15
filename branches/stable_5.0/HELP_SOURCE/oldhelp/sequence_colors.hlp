@@ -26,10 +26,10 @@ DESCRIPTION	The ARB_EDIT4 editor uses two tables to translate the
 
                       - In the first row you may choose which set is used for translation.
 
-                      - The first coloumn shows the characters which should be
+                      - The first column shows the characters which should be
                         translated/replaced.
 
-                      - The nth + 1 coloumn holds the data for translation set n.
+                      - The nth + 1 column holds the data for translation set n.
                         Each of its fields has two characters:
 
                            1. the character which should replace the original value,
@@ -57,7 +57,7 @@ EXAMPLES	You may use this feature to show:
 
 		- A simplified version of your amino acid alignment.
 		- Only YR instead of ACGTU
-		- Only ambigous symbols
+		- Only ambiguous symbols
 		- ...
 
 BUGS		No bugs known
