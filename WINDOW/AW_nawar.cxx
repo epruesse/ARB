@@ -77,16 +77,23 @@ const char *AW_awar::read_char_pntr(){
     return GB_read_char_pntr(gb_var);
 }
 
-long AW_awar::read_int(){
+long AW_awar::read_int() {
     if (!gb_var) return 0;
     GB_transaction ta(gb_var);
     return (long)GB_read_int( gb_var );
 }
-double AW_awar::read_float(){
+double AW_awar::read_float() {
     if (!gb_var) return 0.0;
     GB_transaction ta(gb_var);
     return GB_read_float(gb_var);
 }
+
+void *AW_awar::read_pointer() {
+    if (!gb_var) return NULL;
+    GB_transaction ta(gb_var);
+    return GB_read_pointer(gb_var);
+}
+
 
 #if defined(DUMP_AWAR_CHANGES)
 #define AWAR_CHANGE_DUMP(name, where, format) fprintf(stderr, "change awar '%s' " where "(" format ")\n", name, para)
@@ -115,7 +122,8 @@ double AW_awar::read_float(){
 WRITE_SKELETON(write_string, const char*, "%s", GB_write_string) // defines rewrite_string
     WRITE_SKELETON(write_int, long, "%li", GB_write_int) // defines rewrite_int
     WRITE_SKELETON(write_float, double, "%f", GB_write_float) // defines rewrite_float
-    WRITE_SKELETON(write_as_string, const char *, "%s", GB_write_as_string) // defines rewrite_as_string
+    WRITE_SKELETON(write_as_string, const char*, "%s", GB_write_as_string) // defines rewrite_as_string
+    WRITE_SKELETON(write_pointer, void*, "%p", GB_write_pointer) // defines rewrite_pointer
 
 #undef WRITE_SKELETON
 #undef concat
@@ -145,48 +153,55 @@ AW_default aw_check_default_file(AW_default root_default, AW_default default_fil
 
 // for string
 AW_awar *AW_root::awar_string( const char *var_name, const char *default_value, AW_default default_file ) {
-    AW_awar *vs;
-    vs = (AW_awar *)GBS_read_hash(hash_table_for_variables, (char *)var_name);
-    if (vs) return vs;  /* already defined */
-    default_file = aw_check_default_file(this->application_database,default_file,var_name);
-
-    vs = new AW_awar( AW_STRING, var_name, default_value, 0, default_file, this );
-    GBS_write_hash( hash_table_for_variables, (char *)var_name, (long)vs );
+    AW_awar *vs = (AW_awar *)GBS_read_hash(hash_table_for_variables, (char *)var_name);
+    if (!vs) {
+        default_file = aw_check_default_file(this->application_database,default_file,var_name);
+        vs           = new AW_awar(AW_STRING, var_name, default_value, 0, default_file, this);
+        GBS_write_hash(hash_table_for_variables, (char *)var_name, (long)vs);
+    }
     return vs;
 }
 
 
 // for int
-AW_awar *AW_root::awar_int( const char *var_name, long default_value, AW_default default_file ) {
-    AW_awar *vs;
-    vs = (AW_awar *)GBS_read_hash(hash_table_for_variables, (char *)var_name);
-    if (vs) return vs;  /* already defined */
-    default_file = aw_check_default_file(this->application_database,default_file,var_name);
-
-    vs = new AW_awar( AW_INT, var_name, (char *)default_value, 0, default_file, this );
-    GBS_write_hash( hash_table_for_variables, (char *)var_name, (long)vs );
+AW_awar *AW_root::awar_int(const char *var_name, long default_value, AW_default default_file) {
+    AW_awar *vs = (AW_awar *)GBS_read_hash(hash_table_for_variables, (char *)var_name);
+    if (!vs) {
+        default_file = aw_check_default_file(this->application_database,default_file,var_name);
+        vs           = new AW_awar(AW_INT, var_name, (char *)default_value, 0, default_file, this);
+        GBS_write_hash(hash_table_for_variables, (char *)var_name, (long)vs);
+    }
     return vs;
 }
 
 
 // for float
-AW_awar *AW_root::awar_float( const char *var_name, float default_value, AW_default default_file ) {
-    AW_awar *vs;
-    vs = (AW_awar *)GBS_read_hash(hash_table_for_variables, (char *)var_name);
-    if (vs) return vs;  /* already defined */
-    default_file = aw_check_default_file(this->application_database,default_file,var_name);
-
-    vs = new AW_awar( AW_FLOAT, var_name, "", (double)default_value, default_file, this );
-    GBS_write_hash( hash_table_for_variables, (char *)var_name, (long)vs );
+AW_awar *AW_root::awar_float(const char *var_name, float default_value, AW_default default_file) {
+    AW_awar *vs = (AW_awar *)GBS_read_hash(hash_table_for_variables, (char *)var_name);
+    if (!vs) {
+        default_file = aw_check_default_file(this->application_database,default_file,var_name);
+        vs           = new AW_awar(AW_FLOAT, var_name, "", (double)default_value, default_file, this);
+        GBS_write_hash(hash_table_for_variables, (char *)var_name, (long)vs);
+    }
     return vs;
 }
 
-AW_awar *AW_root::awar_no_error( const char *var_name){
+AW_awar *AW_root::awar_pointer(const char *var_name, void *default_value, AW_default default_file) {
+    AW_awar *vs = (AW_awar *)GBS_read_hash(hash_table_for_variables, (char *)var_name);
+    if (!vs) {
+        default_file = aw_check_default_file(this->application_database,default_file,var_name);
+        vs           = new AW_awar(AW_POINTER, var_name, (const char *)default_value, NULL, default_file, this);
+        GBS_write_hash(hash_table_for_variables, (char *)var_name, (long)vs);
+    }
+    return vs;
+}
+
+AW_awar *AW_root::awar_no_error(const char *var_name){
     AW_awar *vs = (AW_awar *)GBS_read_hash(hash_table_for_variables, (char *)var_name);
     return vs;
 }
 
-AW_awar *AW_root::awar( const char *var_name){
+AW_awar *AW_root::awar(const char *var_name){
     AW_awar *vs = (AW_awar *)GBS_read_hash(hash_table_for_variables, (char *)var_name);
     if (vs) return vs;  /* already defined */
     AW_ERROR("AWAR %s not defined",var_name);
@@ -491,14 +506,13 @@ void AW_awar::run_callbacks(){
 void AW_awar::update_target(AW_var_target*pntr){
     if (!pntr->pointer) return;
     switch(variable_type) {
-        case AW_STRING:
-            this->get((char **)pntr->pointer);break;
-        case AW_FLOAT:
-            this->get((double *)pntr->pointer);break;
-        case AW_INT:
-            this->get((long *)pntr->pointer);break;
+        case AW_STRING: this->get((char **)pntr->pointer);break;
+        case AW_FLOAT:  this->get((double *)pntr->pointer);break;
+        case AW_INT:    this->get((long *)pntr->pointer);break;
         default:
+            gb_assert(0);
             GB_warning("Unknown awar type");
+            break;
     }
 }
 
@@ -522,39 +536,54 @@ AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, const char *va
 #endif // DEBUG
 
     this->awar_name = strdup(var_name);
-    this->root = rooti;
-    GBDATA *gb_def = GB_search((GBDATA *)default_file, var_name,GB_FIND);
-    if ( gb_def ) {                                                  // belege Variable mit Datenbankwert
-        AW_VARIABLE_TYPE gbtype;
-        gbtype = (AW_VARIABLE_TYPE) GB_read_type( gb_def );
-        if ( gbtype != var_type ) {
-            GB_warningf("Wrong Awar type %s\n",var_name);
-            GB_delete( gb_def );
+    this->root      = rooti;
+    GBDATA *gb_def  = GB_search((GBDATA *)default_file, var_name,GB_FIND);
+
+    GB_TYPES wanted_gbtype = (GB_TYPES)var_type;
+
+    if ( gb_def ) {                                 // belege Variable mit Datenbankwert
+        GB_TYPES gbtype = GB_read_type(gb_def);
+
+        if (gbtype != wanted_gbtype) {
+            GB_warningf("Existing awar '%s' has wrong type (%i instead of %i) - recreating\n",
+                        var_name, int(gbtype), int(wanted_gbtype));
+            GB_delete(gb_def);
             gb_def = 0;
         }
     }
-    if (!gb_def) {             // belege Variable mit Programmwert
-        gb_def = GB_search( (GBDATA *)default_file, var_name, (GB_TYPES)var_type);
 
-        switch ( var_type ) {
+    if (!gb_def) {                                  // belege Variable mit Programmwert
+        gb_def = GB_search( (GBDATA *)default_file, var_name, wanted_gbtype);
+
+        switch (var_type) {
             case AW_STRING:
 #if defined(DUMP_AWAR_CHANGES)
                 fprintf(stderr, "creating awar_string '%s' with default value '%s'\n", var_name, (char*)var_value);
 #endif // DUMP_AWAR_CHANGES
-                GB_write_string( gb_def, (char *)var_value );
+                GB_write_string(gb_def, (char *)var_value);
                 break;
+                
             case AW_INT:
 #if defined(DUMP_AWAR_CHANGES)
                 fprintf(stderr, "creating awar_int '%s' with default value '%li'\n", var_name, (long)var_value);
 #endif // DUMP_AWAR_CHANGES
-                GB_write_int( gb_def, (long)var_value );
+                GB_write_int(gb_def, (long)var_value);
                 break;
+                
             case AW_FLOAT:
 #if defined(DUMP_AWAR_CHANGES)
                 fprintf(stderr, "creating awar_float '%s' with default value '%f'\n", var_name, (double)var_double_value);
 #endif // DUMP_AWAR_CHANGES
-                GB_write_float( gb_def, (double)var_double_value );
+                GB_write_float(gb_def, (double)var_double_value);
                 break;
+
+            case AW_POINTER: 
+#if defined(DUMP_AWAR_CHANGES)
+                fprintf(stderr, "creating awar_pointer '%s' with default value '%p'\n", var_name, (void*)var_value);
+#endif // DUMP_AWAR_CHANGES
+                GB_write_pointer(gb_def, (void*)var_value);
+                break;
+                
             default:
                 GB_warningf("AWAR '%s' cannot be created because of disallowed type",var_name);
                 break;
@@ -592,6 +621,9 @@ AW_default AW_root::open_default(const char *default_name, bool create_if_missin
 
     if (gb_default) {
         GB_no_transaction(gb_default);
+
+        GBDATA *gb_tmp = GB_search(gb_default, "tmp", GB_CREATE_CONTAINER);
+        GB_set_temporary(gb_tmp);
 #if defined(DEBUG)
         AWT_announce_db_to_browser(gb_default, GBS_global_string("Properties (%s)", default_name));
 #endif // DEBUG
@@ -601,7 +633,7 @@ AW_default AW_root::open_default(const char *default_name, bool create_if_missin
         const char *shown_name      = strrchr(default_name, '/');
         if (!shown_name) shown_name = default_name;
 
-        GBK_terminatef(GBS_global_string("Error loading properties '%s': %s", shown_name, error));
+        GBK_terminatef("Error loading properties '%s': %s", shown_name, error);
     }
     return (AW_default) gb_default;
 }
@@ -625,11 +657,8 @@ AW_error *AW_root::save_default( const char *var_name, const char *file_name) {
 
 AW_error *AW_root::save_default(AW_default aw_default, const char *file_name)
 {
-    GBDATA *gb_tmp;
     GBDATA *gb_main = GB_get_root((GBDATA *)aw_default);
     GB_push_transaction(gb_main);
-    gb_tmp = GB_entry(gb_main,"tmp");
-    if (gb_tmp) GB_set_temporary(gb_tmp);
     aw_update_awar_window_geometry(this);
     GB_pop_transaction(gb_main);
     GB_save_in_home(gb_main,file_name,"a");

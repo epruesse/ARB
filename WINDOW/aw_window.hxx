@@ -501,6 +501,9 @@ public:
     // for float
     void insert_selection(  AW_selection_list * selection_list, const char *displayed, float value );
     void insert_default_selection(  AW_selection_list * selection_list, const char *displayed, float value );
+    // for pointers (only allowed if selection list uses a tmp-awars)
+    void insert_selection(  AW_selection_list * selection_list, const char *displayed, void *pointer );
+    void insert_default_selection(  AW_selection_list * selection_list, const char *displayed, void *pointer );
 
     void delete_selection_from_list(  AW_selection_list * selection_list, const char *displayed_string );
     void conc_list( AW_selection_list * from_list_id,  AW_selection_list * to_list_id);
