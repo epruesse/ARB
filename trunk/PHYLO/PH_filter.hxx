@@ -2,14 +2,16 @@
 #define PH_FILTER_HXX
 
 enum {
-    OPT_START_COL = 0, 
-    OPT_STOP_COL = 1, 
-    OPT_MIN_HOM = 2, 
-    OPT_MAX_HOM = 3, 
-    OPT_FILTER_POINT = 4, 
-    OPT_FILTER_MINUS = 5, 
-    OPT_FILTER_AMBIG = 6, 
-    OPT_FILTER_LOWER = 7, 
+    OPT_START_COL    = 0,
+    OPT_STOP_COL     = 1,
+    OPT_MIN_HOM      = 2,
+    OPT_MAX_HOM      = 3,
+    OPT_FILTER_POINT = 4,
+    OPT_FILTER_MINUS = 5,
+    OPT_FILTER_AMBIG = 6,
+    OPT_FILTER_LOWER = 7,
+
+    OPT_COUNT = 8, 
 };
 
 class PH_filter {
