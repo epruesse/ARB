@@ -324,7 +324,8 @@ void Structure3D::GetSecondaryStructureInfo(void) {
     char  buf[256];
 
     int pos, helixNr, lastHelixNr; lastHelixNr = 0;
-    char info[4]; info[4] = '\0';
+    char info[4];
+    info[3] = '\0';
     bool insideHelix = false;
     bool skip = false;
 
