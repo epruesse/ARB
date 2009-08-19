@@ -250,6 +250,11 @@ AW_select_table_struct::AW_select_table_struct(const char *displayedi, float val
     displayed = copy_string(displayedi);
     float_value = valuei;
 }
+AW_select_table_struct::AW_select_table_struct(const char *displayedi, void *pointer) {
+    memset((char *)this, 0, sizeof(AW_select_table_struct));
+    displayed = copy_string(displayedi);
+    pointer_value = pointer;
+}
 AW_select_table_struct::~AW_select_table_struct(void) {
     free(displayed);
     free(char_value);

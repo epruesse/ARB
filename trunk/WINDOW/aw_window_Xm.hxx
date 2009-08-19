@@ -157,17 +157,26 @@ struct AW_toggle_field_struct {
 struct AW_select_table_struct {
 
     AW_select_table_struct( const char *displayedi, const char *value );
-    ~AW_select_table_struct( void );
     AW_select_table_struct( const char *displayedi, long value );
     AW_select_table_struct( const char *displayedi, float value );
+    AW_select_table_struct( const char *displayedi, void *pointer );
+
+    ~AW_select_table_struct( void );
 
     static char *copy_string(const char *str);
 
-    char                   *displayed;
-    char                   *char_value;
-    long                    int_value;
-    float                   float_value;
-    int                     is_selected; // internal use only
+    char *displayed;
+
+#if defined(DEVEL_RALF)
+#warning make the following variables a union
+#endif // DEVEL_RALF
+    char  *char_value;
+    long   int_value;
+    float  float_value;
+    void  *pointer_value;
+
+    int is_selected;                                // internal use only
+
     AW_select_table_struct *next;
 };
 
