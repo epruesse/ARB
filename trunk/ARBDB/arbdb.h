@@ -124,7 +124,7 @@ typedef enum gb_key_types {
     GB_BYTE        = 2,
     GB_INT         = 3,
     GB_FLOAT       = 4,
-    // 5 is unused
+    GB_POINTER     = 5, // not savable! only allowed in temporary entries
     GB_BITS        = 6,
     // 7 is unused
     GB_BYTES       = 8,
@@ -187,10 +187,11 @@ struct GB_INTern {
 };
 
 union gb_data_base_type_union {
-    int32_t                  i;
-    struct GB_INTern_strings istr;
-    struct GB_INTern         in;
-    struct gb_extern_data    ex;
+    int32_t                   i;
+    void                     *ptr;
+    struct GB_INTern_strings  istr;
+    struct GB_INTern          in;
+    struct gb_extern_data     ex;
 };
 
 struct gb_callback;
