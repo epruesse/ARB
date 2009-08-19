@@ -130,7 +130,7 @@ GB_ERROR PHDATA::calculate_matrix(const char */*cancel*/,double /*alpha*/,PH_TRA
     char       *filter;
     matrix                 = new AP_smatrix(nentries);
     long        i,j,column,reference_table[256];
-    long        options_vector[4];
+    long        options_vector[OPT_COUNT];
     const char *real_chars,*low_chars,*rest_chars;
     char        all_chars[100],*sequence_bufferi,*sequence_bufferj;
     bool        compare[256];
@@ -198,7 +198,7 @@ GB_ERROR PHDATA::calculate_matrix(const char */*cancel*/,double /*alpha*/,PH_TRA
     filter=strdup(aw_root->awar("phyl/filter/filter")->read_string());
 
     // set compare-table according to options_vector
-    switch(options_vector[0]) // '.' in column
+    switch(options_vector[OPT_FILTER_POINT]) // '.' in column
     {
         case 0:  // forget pair
             // do nothing: compare stays false
@@ -207,7 +207,7 @@ GB_ERROR PHDATA::calculate_matrix(const char */*cancel*/,double /*alpha*/,PH_TRA
             compare[(unsigned char)'.']=true;
             break;
     }
-    switch(options_vector[1]) // '-' in column
+    switch(options_vector[OPT_FILTER_MINUS]) // '-' in column
     {
         case 0:  // forget pair
             // do nothing: compare stays false
@@ -216,7 +216,7 @@ GB_ERROR PHDATA::calculate_matrix(const char */*cancel*/,double /*alpha*/,PH_TRA
             compare[(unsigned char)'-']=true;
             break;
     }
-    switch(options_vector[2]) // '.' in column
+    switch(options_vector[OPT_FILTER_AMBIG]) // ambigious character in column
     {
         case 0:                 // forget pair
             // do nothing: compare stays false
@@ -226,7 +226,7 @@ GB_ERROR PHDATA::calculate_matrix(const char */*cancel*/,double /*alpha*/,PH_TRA
             break;
     }
     if(bases_used) {
-        switch(options_vector[1]) // '-' in column
+        switch(options_vector[OPT_FILTER_LOWER]) // lower char in column
         {
             case 0:             // forget pair
                 // do nothing: compare stays false
