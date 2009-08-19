@@ -39,7 +39,7 @@ static GBDATA *awt_get_arbdb_scanner_gbd_and_begin_trans(AW_CL arbdb_scanid)
     AW_root *aw_root = cbs->aws->get_root();
     cbs->may_be_an_error = 0;
     GB_push_transaction(cbs->gb_main);
-    GBDATA *gbd = (GBDATA *)aw_root->awar(cbs->def_gbd)->read_int();
+    GBDATA *gbd = (GBDATA *)aw_root->awar(cbs->def_gbd)->read_pointer();
     if (    !cbs->gb_user ||
             !gbd ||
             cbs->may_be_an_error) {     // something changed in the database
@@ -133,7 +133,7 @@ static void awt_arbdb_scanner_value_change(void *, struct adawcbstruct *cbs)
                 if (!gb_new) error = GB_await_error();
                 else    error      = GB_write_as_string(gb_new,value);
 
-                cbs->aws->get_root()->awar(cbs->def_gbd)->write_int((long)gb_new); // remap arbdb
+                cbs->aws->get_root()->awar(cbs->def_gbd)->write_pointer(gb_new); // remap arbdb
             }
         }
         else { // change old element
@@ -194,7 +194,7 @@ static void awt_arbdb_scanner_value_change(void *, struct adawcbstruct *cbs)
                     } else {
                         error = GB_delete(gbd);
                         if (!error) {
-                            cbs->aws->get_root()->awar(cbs->def_gbd)->write_int((long) gb_key);
+                            cbs->aws->get_root()->awar(cbs->def_gbd)->write_pointer(gb_key);
                         }
                     }
                 }
@@ -249,9 +249,9 @@ static void awt_map_arbdb_edit_box(GBDATA *dummy, struct adawcbstruct *cbs)
     cbs->may_be_an_error = 0;
     GB_push_transaction(cbs->gb_main);
     if (cbs->may_be_an_error) {     // sorry
-        cbs->aws->get_root()->awar(cbs->def_gbd)->write_int((long)0);
+        cbs->aws->get_root()->awar(cbs->def_gbd)->write_pointer(NULL);
     }
-    gbd = (GBDATA *)cbs->aws->get_root()->awar(cbs->def_gbd)->read_int();
+    gbd = (GBDATA *)cbs->aws->get_root()->awar(cbs->def_gbd)->read_pointer();
 
     if (cbs->gb_edit) {
         GB_remove_callback(cbs->gb_edit,(GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE),
@@ -300,7 +300,7 @@ AW_CL awt_create_arbdb_scanner(GBDATA                 *gb_main, AW_window *aws,
     /*************** Create local AWARS *******************/
     sprintf(buffer,"tmp/arbdb_scanner_%i/list",scanner_id);
     cbs->def_gbd = strdup(buffer);
-    aw_root->awar_int( cbs->def_gbd, 0, AW_ROOT_DEFAULT);
+    aw_root->awar_pointer(cbs->def_gbd, 0, AW_ROOT_DEFAULT);
 
     sprintf(buffer,"tmp/arbdb_scanner_%i/find",scanner_id);
     cbs->def_source = strdup(buffer);
@@ -316,7 +316,7 @@ AW_CL awt_create_arbdb_scanner(GBDATA                 *gb_main, AW_window *aws,
 
     aws->at(box_pos_fig);
 
-    cbs->id          = aws->create_selection_list(cbs->def_gbd,0,"",20,10);
+    cbs->id          = aws->create_selection_list(cbs->def_gbd, 0, "", 20, 10);
     cbs->aws         = aws;
     cbs->awr         = aw_root;
     cbs->gb_main     = gb_main;
@@ -385,7 +385,7 @@ static void awt_scanner_scan_rek(GBDATA *gbd,struct adawcbstruct *cbs,int deep, 
     switch (type) {
         case GB_DB: {
             GBS_strcat(out, "<CONTAINER>:");
-            cbs->aws->insert_selection(cbs->id, GBS_mempntr(out), (long)gbd);
+            cbs->aws->insert_selection(cbs->id, GBS_mempntr(out), gbd);
             GBS_strforget(out);
 
             for (GBDATA *gb2 = GB_child(gbd); gb2; gb2 = GB_nextChild(gb2)) {
@@ -395,7 +395,7 @@ static void awt_scanner_scan_rek(GBDATA *gbd,struct adawcbstruct *cbs,int deep, 
         }
         case GB_LINK: {
             GBS_strnprintf(out, 100, "LINK TO '%s'", GB_read_link_pntr(gbd));
-            cbs->aws->insert_selection(cbs->id, GBS_mempntr(out), (long)gbd);
+            cbs->aws->insert_selection(cbs->id, GBS_mempntr(out), gbd);
             GBS_strforget(out);
 
             GBDATA *gb_al = GB_follow_link(gbd);
@@ -416,7 +416,7 @@ static void awt_scanner_scan_rek(GBDATA *gbd,struct adawcbstruct *cbs,int deep, 
             else {
                 GBS_strcat(out, "<unprintable>");
             }
-            cbs->aws->insert_selection(cbs->id, GBS_mempntr(out), (long)gbd);
+            cbs->aws->insert_selection(cbs->id, GBS_mempntr(out), gbd);
             GBS_strforget(out);
             break;
         }
@@ -491,11 +491,11 @@ static void awt_scanner_scan_list(GBDATA *dummy, struct adawcbstruct *cbs)
                             free(data);
                         }
                     }
-                    cbs->aws->insert_selection( cbs->id, buffer, (long)gbd );
+                    cbs->aws->insert_selection(cbs->id, buffer, gbd);
                 }
                 else { // non-existing entry
-                    p[0]=' '; p[1] = ':'; p[2] = 0;
-                    cbs->aws->insert_selection( cbs->id, buffer, (long)gb_key );
+                    p[0] = ' '; p[1] = ':'; p[2] = 0;
+                    cbs->aws->insert_selection(cbs->id, buffer, gb_key);
                 }
             }
         }
@@ -537,7 +537,7 @@ static void awt_scanner_changed_cb(GBDATA *dummy, struct adawcbstruct *cbs, GB_C
                 break;
         }
     }
-    aws->insert_default_selection( cbs->id, "", (long)0 );
+    aws->insert_default_selection( cbs->id, "", (void*)NULL);
     aws->update_selection_list( cbs->id );
     if (cbs->gb_user) {
         GB_transaction ta(cbs->gb_main);
@@ -550,7 +550,7 @@ static void awt_scanner_changed_cb(GBDATA *dummy, struct adawcbstruct *cbs, GB_C
  *********/
 static void awt_scanner_changed_cb2(GBDATA *dummy, struct adawcbstruct *cbs, GB_CB_TYPE gbtype)
 {
-    cbs->aws->get_root()->awar(cbs->def_gbd)->write_int((long)0);
+    cbs->aws->get_root()->awar(cbs->def_gbd)->write_pointer(NULL);
     // unmap edit field
     awt_scanner_changed_cb(dummy,cbs,gbtype);
 }
@@ -578,7 +578,7 @@ void awt_map_arbdb_scanner(AW_CL arbdb_scanid, GBDATA *gb_pntr, int show_only_ma
         }
     }
 
-    cbs->aws->get_root()->awar(cbs->def_gbd)->write_int((long)0);
+    cbs->aws->get_root()->awar(cbs->def_gbd)->write_pointer(NULL);
     awt_scanner_changed_cb(gb_pntr,cbs,GB_CB_CHANGED);
 
     GB_pop_transaction(cbs->gb_main);

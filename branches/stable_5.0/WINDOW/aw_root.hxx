@@ -62,22 +62,22 @@ typedef struct _WidgetRec *Widget;
 #endif // DEBUG
 
 typedef enum {
-    AW_NONE   = 0,
-    AW_BIT    = 1,
-    AW_BYTE   = 2,
-    AW_INT    = 3,
-    AW_FLOAT  = 4,
-    // 5 is unused
-    AW_BITS   = 6,
+    AW_NONE    = 0,
+    AW_BIT     = 1,
+    AW_BYTE    = 2,
+    AW_INT     = 3,
+    AW_FLOAT   = 4,
+    AW_POINTER = 5, 
+    AW_BITS    = 6,
     // 7 is unused
-    AW_BYTES  = 8,
-    AW_INTS   = 9,
-    AW_FLOATS = 10,
-    AW_STRING = 12,
+    AW_BYTES   = 8,
+    AW_INTS    = 9,
+    AW_FLOATS  = 10,
+    AW_STRING  = 12,
     // 13 is reserved (GB_STRING_SHRT)
     // 14 is unused
-    AW_DB     = 15,
-    
+    AW_DB      = 15,
+
     // keep AW_VARIABLE_TYPE consistent with GB_TYPES
     // see ../ARBDB/arbdb.h@sync_GB_TYPES_AW_VARIABLE_TYPE
 
@@ -218,9 +218,10 @@ public:
     AW_awar *awar(const char *awar);
     AW_awar *awar_no_error(const char *awar);
 
-    AW_awar *awar_string(const char *var_name, const char *default_value = "", AW_default default_file = AW_ROOT_DEFAULT);
-    AW_awar *awar_int   (const char *var_name, long default_value = 0,         AW_default default_file = AW_ROOT_DEFAULT);
-    AW_awar *awar_float (const char *var_name, float default_value = 0.0,      AW_default default_file = AW_ROOT_DEFAULT);
+    AW_awar *awar_string (const char *var_name, const char *default_value = "", AW_default default_file = AW_ROOT_DEFAULT);
+    AW_awar *awar_int    (const char *var_name, long default_value = 0,         AW_default default_file = AW_ROOT_DEFAULT);
+    AW_awar *awar_float  (const char *var_name, float default_value = 0.0,      AW_default default_file = AW_ROOT_DEFAULT);
+    AW_awar *awar_pointer(const char *var_name, void *default_value = NULL,     AW_default default_file = AW_ROOT_DEFAULT);
 
     AW_awar *label_is_awar(const char *label); // returns awar, if label refers to one (used by buttons, etc.)
 
@@ -345,13 +346,16 @@ public:
     char       *read_string();
     const char *read_char_pntr();
     char       *read_as_string();
-    double      read_float();
     long        read_int();
+    double      read_float();
+    void       *read_pointer();
 
     GB_ERROR write_string(const char *aw_string);
     GB_ERROR write_as_string(const char *aw_string);
     GB_ERROR write_int(long aw_int);
     GB_ERROR write_float(double aw_double);
+    GB_ERROR write_pointer(void *aw_pointer);
+
     GB_ERROR write_as(char *aw_value) { return write_as_string(aw_value);};
 
     // same as write_-versions above, but always touches the database field
@@ -359,6 +363,8 @@ public:
     GB_ERROR rewrite_as_string(const char *aw_string);
     GB_ERROR rewrite_int(long aw_int);
     GB_ERROR rewrite_float(double aw_double);
+    GB_ERROR rewrite_pointer(void *aw_pointer);
+    
     GB_ERROR rewrite_as(char *aw_value) { return rewrite_as_string(aw_value);};
 
     GB_ERROR toggle_toggle();   /* switches between 1/0 */

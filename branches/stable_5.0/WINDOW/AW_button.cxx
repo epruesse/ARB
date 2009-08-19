@@ -148,18 +148,19 @@ void AW_variable_update_callback( Widget wgt, XtPointer variable_update_struct, 
 
             switch ( vus->awar->variable_type ) {
                 case AW_STRING:
-                    error = vus->awar->write_string( tmp );
+                    error   = vus->awar->write_string( tmp );
                     break;
                 case AW_INT:
-                    h_int = atoi(tmp);
-                    error = vus->awar->write_int( h_int );
+                    h_int   = atoi(tmp);
+                    error   = vus->awar->write_int( h_int );
                     break;
                 case AW_FLOAT:
                     h_float = atof(tmp);
-                    error = vus->awar->write_float( h_float );
+                    error   = vus->awar->write_float( h_float );
                     break;
                 default:
-                    error = GB_export_error("Unknown AWAR type");
+                    gb_assert(0);
+                    error = GB_export_error("Unknown or incompatible AWAR type");
             }
             XtFree( tmp );
             break;
@@ -180,7 +181,13 @@ void AW_variable_update_callback( Widget wgt, XtPointer variable_update_struct, 
                 case AW_STRING: error = vus->awar->write_string( vus->variable_value );      break;
                 case AW_INT:    error = vus->awar->write_int(vus->variable_int_value );      break;
                 case AW_FLOAT:  error = vus->awar->write_float( vus->variable_float_value ); break;
-                default: GB_warning("Unknown AWAR type"); break;
+#if defined(DEVEL_RALF)
+#warning missing implementation for AW_POINTER                     
+#endif // DEVEL_RALF
+                default:
+                    gb_assert(0);
+                    GB_warning("Unknown AWAR type");
+                    break;
             }
             break;
 
@@ -221,7 +228,11 @@ void AW_variable_update_callback( Widget wgt, XtPointer variable_update_struct, 
                 case AW_FLOAT:
                     error = vus->awar->write_float( list_table->float_value );
                     break;
+                case AW_POINTER:
+                    error = vus->awar->write_pointer( list_table->pointer_value );
+                    break;
                 default:
+                    gb_assert(0);
                     error = GB_export_error("Unknown AWAR type");
                     break;
             }
@@ -231,6 +242,7 @@ void AW_variable_update_callback( Widget wgt, XtPointer variable_update_struct, 
         case AW_WIDGET_LABEL_FIELD:
             break;
         default:
+            gb_assert(0);
             GB_warning("Unknown Widget Type");
             break;
     }
@@ -1686,74 +1698,100 @@ inline void option_type_mismatch(const char *triedType) { type_mismatch(triedTyp
 inline void toggle_type_mismatch(const char *triedType) { type_mismatch(triedType, "toggle"); }
 
 void AW_window::insert_selection(AW_selection_list *selection_list, const char *displayed, const char *value) {
-    if ( selection_list->variable_type != AW_STRING ) {
+    if (selection_list->variable_type != AW_STRING) {
         selection_type_mismatch("string");
         return;
     }
 
-    if ( selection_list->list_table ) {
-        selection_list->last_of_list_table->next = new AW_select_table_struct( displayed, value );
+    if (selection_list->list_table) {
+        selection_list->last_of_list_table->next = new AW_select_table_struct(displayed, value);
         selection_list->last_of_list_table = selection_list->last_of_list_table->next;
         selection_list->last_of_list_table->next = NULL;
     }else {
-        selection_list->last_of_list_table = selection_list->list_table = new AW_select_table_struct( displayed, value );
+        selection_list->last_of_list_table = selection_list->list_table = new AW_select_table_struct(displayed, value);
     }
 }
 
 
-void AW_window::insert_default_selection( AW_selection_list *selection_list, const char *displayed, const char *value ) {
-
-    if ( selection_list->variable_type != AW_STRING ) {
+void AW_window::insert_default_selection(AW_selection_list *selection_list, const char *displayed, const char *value) {
+    if (selection_list->variable_type != AW_STRING) {
         selection_type_mismatch("string");
         return;
     }
-    if ( selection_list->default_select ) {
+    if (selection_list->default_select) {
         delete selection_list->default_select;
     }
-    selection_list->default_select = new AW_select_table_struct( displayed, value );
+    selection_list->default_select = new AW_select_table_struct(displayed, value);
 }
 
+#if defined(DEVEL_RALF)
+#warning parameter value must be int32_t
+#endif // DEVEL_RALF
+void AW_window::insert_selection(AW_selection_list *selection_list, const char *displayed, long value) {
 
-void AW_window::insert_selection( AW_selection_list *selection_list, const char *displayed, long value ) {
-
-    if ( selection_list->variable_type != AW_INT ) {
+    if (selection_list->variable_type != AW_INT) {
         selection_type_mismatch("int");
         return;
     }
-    if ( selection_list->list_table ) {
-        selection_list->last_of_list_table->next = new AW_select_table_struct( displayed, value );
+    if (selection_list->list_table) {
+        selection_list->last_of_list_table->next = new AW_select_table_struct(displayed, value);
         selection_list->last_of_list_table = selection_list->last_of_list_table->next;
         selection_list->last_of_list_table->next = NULL;
     }else {
-        selection_list->last_of_list_table = selection_list->list_table = new AW_select_table_struct( displayed, value );
+        selection_list->last_of_list_table = selection_list->list_table = new AW_select_table_struct(displayed, value);
     }
 }
 
-
-void AW_window::insert_default_selection( AW_selection_list *selection_list, const char *displayed, long value ) {
-
-    if ( selection_list->variable_type != AW_INT ) {
+#if defined(DEVEL_RALF)
+#warning parameter value must be int32_t
+#endif // DEVEL_RALF
+void AW_window::insert_default_selection(AW_selection_list *selection_list, const char *displayed, long value) {
+    if (selection_list->variable_type != AW_INT) {
         selection_type_mismatch("int");
         return;
     }
-    if ( selection_list->default_select ) {
+    if (selection_list->default_select) {
         delete selection_list->default_select;
     }
-    selection_list->default_select = new AW_select_table_struct( displayed, value );
+    selection_list->default_select = new AW_select_table_struct(displayed, value);
 }
 
+void AW_window::insert_selection(AW_selection_list * selection_list, const char *displayed, void *pointer) {
+    if (selection_list->variable_type != AW_POINTER) {
+        selection_type_mismatch("pointer");
+        return;
+    }
+    if (selection_list->list_table) {
+        selection_list->last_of_list_table->next = new AW_select_table_struct(displayed, pointer);
+        selection_list->last_of_list_table = selection_list->last_of_list_table->next;
+        selection_list->last_of_list_table->next = NULL;
+    }else {
+        selection_list->last_of_list_table = selection_list->list_table = new AW_select_table_struct(displayed, pointer);
+    }
+}
 
-void AW_window::clear_selection_list( AW_selection_list *selection_list ) {
+void AW_window::insert_default_selection(AW_selection_list * selection_list, const char *displayed, void *pointer) {
+    if (selection_list->variable_type != AW_POINTER) {
+        selection_type_mismatch("pointer");
+        return;
+    }
+    if (selection_list->default_select) {
+        delete selection_list->default_select;
+    }
+    selection_list->default_select = new AW_select_table_struct(displayed, pointer);
+}
+
+void AW_window::clear_selection_list(AW_selection_list *selection_list) {
     AW_select_table_struct *list_table;
     AW_select_table_struct *help;
 
 
-    for ( help = selection_list->list_table; help;  ) {
+    for (help = selection_list->list_table; help; ) {
         list_table = help;
         help = list_table->next;
         delete list_table;
     }
-    if ( selection_list->default_select ) {
+    if (selection_list->default_select) {
         delete selection_list->default_select;
     }
 
@@ -1813,43 +1851,59 @@ void AW_window::update_selection_list( AW_selection_list * selection_list ) {
 void AW_window::update_selection_list_intern( AW_selection_list *selection_list ) {
     AW_select_table_struct *list_table;
 
-    int         pos = 0;
-    char            *global_var_value = NULL;
-    long            global_var_int_value;
-    float           global_var_float_value;
+    int pos = 0;
 
     if (!selection_list->variable_name) return; // not connected to awar
     bool found = false;
     pos = 0;
     switch ( selection_list->variable_type ) {
-        case AW_STRING: global_var_value = root->awar( selection_list->variable_name )->read_string();
+        case AW_STRING: {
+            char *var_value = root->awar( selection_list->variable_name )->read_string();
             for ( list_table = selection_list->list_table; list_table; list_table = list_table->next ) {
-                if ( strcmp( global_var_value, list_table->char_value ) == 0 ) {
+                if ( strcmp( var_value, list_table->char_value ) == 0 ) {
+                    found = true;
+                    break;
+                }
+                pos++;
+            }
+            free(var_value);
+            break;
+        }
+        case AW_INT: {
+            int var_value = root->awar( selection_list->variable_name )->read_int();
+            for ( list_table = selection_list->list_table; list_table; list_table = list_table->next ) {
+                if ( var_value == list_table->int_value ) {
                     found = true;
                     break;
                 }
                 pos++;
             }
             break;
-        case AW_INT:    global_var_int_value = root->awar( selection_list->variable_name )->read_int();
+        }
+        case AW_FLOAT: {
+            float var_value = root->awar( selection_list->variable_name )->read_float();
             for ( list_table = selection_list->list_table; list_table; list_table = list_table->next ) {
-                if ( global_var_int_value == list_table->int_value ) {
+                if ( var_value == list_table->float_value ) {
                     found = true;
                     break;
                 }
                 pos++;
             }
             break;
-        case AW_FLOAT:  global_var_float_value = root->awar( selection_list->variable_name )->read_float();
+        }
+        case AW_POINTER: {
+            void *var_value = root->awar( selection_list->variable_name )->read_pointer();
             for ( list_table = selection_list->list_table; list_table; list_table = list_table->next ) {
-                if ( global_var_float_value == list_table->float_value ) {
+                if ( var_value == list_table->pointer_value ) {
                     found = true;
                     break;
                 }
                 pos++;
             }
             break;
+        }
         default:
+            gb_assert(0);
             GB_warning("Unknown AWAR type");
             break;
     }
@@ -1872,10 +1926,10 @@ void AW_window::update_selection_list_intern( AW_selection_list *selection_list 
             XmListSetBottomPos(selection_list->select_list_widget,pos + 1 );
         }
 
-    }else{
-        AW_ERROR("Selection list '%s' has no default selection",selection_list->variable_name);
     }
-    free(global_var_value);
+    else {
+        AW_ERROR("Selection list '%s' has no default selection", selection_list->variable_name);
+    }
 }
 
 void AW_selection_list::selectAll(){
@@ -2430,6 +2484,10 @@ void AW_window::update_option_menu(AW_option_menu_struct *oms) {
             float  global_var_float_value = 0;
             char  *var_name               = oms->variable_name;
 
+#if defined(DEVEL_RALF)
+#warning missing implementation for AW_POINTER
+#endif // DEVEL_RALF
+            
             switch ( oms->variable_type ) {
                 case AW_STRING: global_var_value       = root->awar( var_name )->read_string(); break;
                 case AW_INT:    global_var_int_value   = root->awar( var_name )->read_int(); break;
@@ -2443,7 +2501,10 @@ void AW_window::update_option_menu(AW_option_menu_struct *oms) {
                     case AW_STRING: found_choice = ((strcmp( global_var_value, active_choice->variable_value ) == 0) ); break;
                     case AW_INT:    found_choice = (global_var_int_value   == active_choice->variable_int_value );      break;
                     case AW_FLOAT:  found_choice = (global_var_float_value == active_choice->variable_float_value );    break;
-                    default: GB_warning("Unknown AWAR type"); break;
+                    default:
+                        gb_assert(0);
+                        GB_warning("Unknown AWAR type");
+                        break;
                 }
                 if (found_choice) break;
                 active_choice = active_choice->next;
@@ -2697,11 +2758,18 @@ void AW_window::update_toggle_field( int toggle_field_number ) {
             long   global_var_int_value   = 0;
             float  global_var_float_value = 0;
 
+#if defined(DEVEL_RALF)
+#warning missing implementation for AW_POINTER
+#endif // DEVEL_RALF
+            
             switch ( toggle_field_list->variable_type ) {
                 case AW_STRING: global_var_value       = root->awar( toggle_field_list->variable_name )->read_string(); break;
                 case AW_INT:    global_var_int_value   = root->awar( toggle_field_list->variable_name )->read_int();    break;
                 case AW_FLOAT:  global_var_float_value = root->awar( toggle_field_list->variable_name )->read_float();  break;
-                default: GB_warning("Unknown AWAR type"); break;
+                default:
+                    gb_assert(0);
+                    GB_warning("Unknown AWAR type");
+                    break;
             }
 
             bool found_toggle = false;
@@ -2710,7 +2778,10 @@ void AW_window::update_toggle_field( int toggle_field_number ) {
                     case AW_STRING: found_toggle = (strcmp( global_var_value, active_toggle->variable_value ) == 0);  break;
                     case AW_INT:    found_toggle = (global_var_int_value == active_toggle->variable_int_value);       break;
                     case AW_FLOAT:  found_toggle = (global_var_float_value == active_toggle->variable_float_value);   break;
-                    default: GB_warning("Unknown AWAR type"); break;
+                    default:
+                        gb_assert(0);
+                        GB_warning("Unknown AWAR type");
+                        break;
                 }
                 if (found_toggle) break;
                 active_toggle = active_toggle->next;

@@ -425,6 +425,11 @@ int GB_read_byte(GBDATA *gbd)
     return gbd->info.i;
 }
 
+void *GB_read_pointer(GBDATA *gbd) {
+    GB_TEST_READ(gbd,GB_POINTER,"GB_read_pointer");
+    return gbd->info.ptr;
+}
+
 double GB_read_float(GBDATA *gbd)
 {
     XDR xdrs;
@@ -751,11 +756,23 @@ GB_ERROR GB_write_int(GBDATA *gbd,long i) {
     GB_TEST_WRITE(gbd,GB_INT,"GB_write_int");
     if ((long)((int32_t)i) != i) {
         gb_assert(0);
+        GB_warningf("Warning: 64bit incompatibility detected\nNo data written to '%s'\n", GB_get_db_path(gbd));
         return "GB_INT out of range (signed, 32bit)";
     }
     if (gbd->info.i != (int32_t)i){
         gb_save_extern_data_in_ts(gbd);
         gbd->info.i = i;
+        gb_touch_entry(gbd,gb_changed);
+        GB_DO_CALLBACKS(gbd);
+    }
+    return 0;
+}
+
+GB_ERROR GB_write_pointer(GBDATA *gbd, void *pointer) {
+    GB_TEST_WRITE(gbd,GB_POINTER,"GB_write_pointer");
+    if (gbd->info.ptr != pointer) {
+        gb_save_extern_data_in_ts(gbd);
+        gbd->info.ptr = pointer;
         gb_touch_entry(gbd,gb_changed);
         GB_DO_CALLBACKS(gbd);
     }
@@ -1301,6 +1318,14 @@ GBDATA *GB_create(GBDATA *father,const char *key, GB_TYPES type)
                          GB_read_key_pntr(father),GB_TYPE(father),key);
         return NULL;
     };
+
+    if (type == GB_POINTER) {
+        if (!GB_in_temporary_branch(father)) {
+            GB_export_error("GB_create: pointers only allowed in temporary branches");
+            return NULL;
+        }
+    }
+
     gbd = gb_make_entry((GBCONTAINER *)father, key, -1,0,type);
     gb_touch_header(GB_FATHER(gbd));
     gb_touch_entry(gbd,gb_created);
@@ -1641,10 +1666,22 @@ GB_ERROR GB_clear_temporary(GBDATA *gbd)
     return 0;
 }
 
-long GB_read_temporary(GBDATA *gbd) {
+GB_BOOL GB_is_temporary(GBDATA *gbd) {
     GB_TEST_TRANSACTION(gbd);
     return (long)gbd->flags.temporary;
 }
+
+GB_BOOL GB_in_temporary_branch(GBDATA *gbd) {
+    // returns true, if 'gbd' is member of a temporary subtree
+
+    if (GB_is_temporary(gbd)) return GB_TRUE;
+
+    GBDATA *gb_parent = GB_get_father(gbd);
+    if (!gb_parent) return GB_FALSE;
+
+    return GB_in_temporary_branch(gb_parent);
+}
+
 
 /********************************************************************************************
                     TRANSACTIONS

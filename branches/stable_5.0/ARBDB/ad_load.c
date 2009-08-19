@@ -1509,7 +1509,8 @@ GBDATA *GB_login(const char *cpath,const char *opent,const char *user)
                             GB_print_error();
                         }
                         else {
-                            gbd = 0;
+                            gbd   = 0;
+                            error = GB_await_error();
                         }
                     }
 
@@ -1593,6 +1594,8 @@ GBDATA *GB_login(const char *cpath,const char *opent,const char *user)
         Main->local_mode = GB_TRUE;
         GB_begin_transaction((GBDATA *)gbd);
     }
+
+    gb_assert(error || gbd);
     
     if (error) {
         GB_export_error(error);
