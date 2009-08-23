@@ -155,7 +155,7 @@ AW_CL awt_create_selection_list_on_scandb(GBDATA                 *gb_main,
     cbs->def_filter            = (char *)type_filter;
     cbs->selector              = selector;
     cbs->add_pseudo_fields     = field_filter & AWT_SF_PSEUDO;
-    cbs->include_hidden_fields = field_filter & AWT_SF_PSEUDO;
+    cbs->include_hidden_fields = field_filter & AWT_SF_HIDDEN;
 
     if (rescan_xfig_label) {
         int x, y;
