@@ -758,6 +758,8 @@ void aw_initstatus( void )
 {
     int error;
 
+    aw_assert(aw_stg.pid == 0); // do not init status twice!
+
     error = pipe(aw_stg.fd_to);
     if (error) {
         printf("Cannot create socketpair\n");

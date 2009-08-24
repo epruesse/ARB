@@ -22,7 +22,6 @@ double SUMUNMARKEDFACTOR = 1.0;
 
 MP_Main::MP_Main(AW_root *awr,AWT_canvas *ntwt)
 {
-    aw_initstatus();
     aw_root = awr;
     ntw     = ntwt;
     stc     = NULL;
