@@ -40,8 +40,6 @@ MP_Main::~MP_Main()
     delete stc;
     delete mp_window;
 
-    delete glob_old_seq;
-    glob_old_seq = NULL;
     new_pt_server = TRUE;
 }
 
