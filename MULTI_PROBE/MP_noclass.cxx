@@ -433,7 +433,7 @@ void    MP_take_manual_sequence(AW_window *aww)
     aws->update_selection_list( selected_list );
     mp_main->get_aw_root()->awar(MP_AWAR_SEQUENZEINGABE)->write_string("");
     mp_main->get_aw_root()->awar(MP_AWAR_SELECTEDPROBES)->write_string(new_seq);
-    delete new_seq;
+    delete [] new_seq;
 }
 
 
@@ -577,7 +577,8 @@ void MP_mark_probes_in_tree(AW_window *aww)
 
     {
         char *sel = mp_main->get_aw_root()->awar(MP_AWAR_RESULTPROBES)->read_string();
-        a_probe   = MP_get_probes(sel); //haelt jetzt Sondenstring
+        a_probe   = MP_get_probes(sel);             //haelt jetzt Sondenstring
+        
         if (! a_probe || ! a_probe[0]) {
             free(a_probe);
             free(sel);
@@ -586,6 +587,7 @@ void MP_mark_probes_in_tree(AW_window *aww)
 
         mism_temp2 = MP_get_comment(2,sel);
         mism_temp  = mism_temp2;
+        free(sel);
     }
 
     char **probe_field = new char*[MAXMISMATCHES];
@@ -695,7 +697,8 @@ void MP_Comment(AW_window *aww, AW_CL com)      //Comment fuer Auswahl eintragen
     int         len_spaces      = 0;
     char       *ecol;
     const char *successor_value = aww->get_element_of_index(result_probes_list,
-                                                            aww->get_index_of_element(result_probes_list, aw_str2)+1);
+                                                            aww->get_index_of_element(result_probes_list, aw_str2) // this mem is lost, @@ fix
+                                                            +1);
 
     // remove all '#' from new comment
     for (char *aw_str3 = aw_str; aw_str3[0]; ++aw_str3) {
@@ -707,7 +710,7 @@ void MP_Comment(AW_window *aww, AW_CL com)      //Comment fuer Auswahl eintragen
     new_val = MP_get_probes(aw_str2);
     if (!new_val || !new_val[0])
     {
-        delete new_val;
+        free(new_val);
         return;
     }
 
@@ -722,9 +725,9 @@ void MP_Comment(AW_window *aww, AW_CL com)      //Comment fuer Auswahl eintragen
 
     new_list_string = new char[21+strlen(aw_str2)+2*strlen(SEPARATOR)+1+strlen(ecol)+1];    //1 fuer 0-Zeichen
     sprintf(new_list_string,"%.20s%s%s%s%s%s%s%s",comment,spaces,SEPARATOR,misms,SEPARATOR,ecol,SEPARATOR,new_val);
-    delete new_val;
-    delete misms;
-    delete ecol;
+    free(new_val);
+    free(misms);
+    free(ecol);
 
     aww->delete_selection_from_list( result_probes_list, aw_str2 );
     aww->insert_selection( result_probes_list, new_list_string, new_list_string );
@@ -735,23 +738,24 @@ void MP_Comment(AW_window *aww, AW_CL com)      //Comment fuer Auswahl eintragen
     else {
         awr->awar(MP_AWAR_RESULTPROBES)->write_string(new_list_string);
     }
-    delete new_list_string;
+    delete [] new_list_string;
+    free(aw_str2);
+    free(aw_str);
 }
 
-void    MP_leftright(AW_window *aww)
-{
+void MP_leftright(AW_window *aww) {
     char *sel = mp_main->get_aw_root()->awar(MP_AWAR_PROBELIST)->read_string();
 
-    if (!sel ||  !sel[0])
-        return;
-
-    aww->insert_selection( selected_list, sel, sel );
-    aww->delete_selection_from_list( probelist, sel);
-    aww->insert_default_selection( probelist, "", "" );
-    mp_main->get_aw_root()->awar(MP_AWAR_PROBELIST)->write_string("");
-    aww->sort_selection_list( selected_list, 0, 1);
-    aww->update_selection_list( selected_list );
-    aww->update_selection_list( probelist );
+    if (sel && sel[0]) {
+        aww->insert_selection( selected_list, sel, sel );
+        aww->delete_selection_from_list( probelist, sel);
+        aww->insert_default_selection( probelist, "", "" );
+        mp_main->get_aw_root()->awar(MP_AWAR_PROBELIST)->write_string("");
+        aww->sort_selection_list( selected_list, 0, 1);
+        aww->update_selection_list( selected_list );
+        aww->update_selection_list( probelist );
+    }
+    free(sel);
 }
 
 void    MP_rightleft(AW_window *aww)    // von rechts nach links

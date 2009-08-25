@@ -301,10 +301,10 @@ void nt_build_sai_string(GBS_strstruct *topfile, GBS_strstruct *middlefile){
             char *cn = new char[strlen(gn) + strlen(name) + 2];
             sprintf(cn,"%s%c%s",gn,1,name);
             GBS_write_hash(hash,cn,1);
-            free(name);
             delete [] cn;
             free(gn);
         }
+        free(name);
     }
 
     // open surrounding SAI-group:

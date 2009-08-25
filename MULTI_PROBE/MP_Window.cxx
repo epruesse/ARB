@@ -367,7 +367,7 @@ MP_Window::MP_Window(AW_root *aw_root)
     aws->load_xfig("multiprobe.fig");
 
     aws->at("close");
-    aws->callback(MP_cache_sonden);
+    // aws->callback(MP_cache_sonden); // had no effect (apart from memleak), cause overwritten in next line (and done by MP_close_main as well)
     aws->callback(MP_close_main);
     aws->create_button("CLOSE","CLOSE");
 

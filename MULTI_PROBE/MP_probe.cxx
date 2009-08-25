@@ -137,7 +137,7 @@ void ProbeValuation::insert_in_result_list(probe_combi_statistic *pcs)      //pc
         {
             if (strcmp(elem->view_string, new_list_string) == 0)
             {
-                delete new_list_string;
+                delete [] new_list_string;
                 delete rs->ps;
                 delete rs;
                 return;
@@ -234,7 +234,7 @@ void ProbeValuation::init_valuation()
                     temp_probe->probe_index = i;
                     temp_probe->allowed_mismatches = j;
                     temp_probe->e_coli_pos = atoi(ptr = MP_get_comment(3,ptr2));
-                    delete ptr;
+                    free(ptr);
 
                     probe_pool[counter++] = temp_probe;
                 }

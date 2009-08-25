@@ -457,6 +457,7 @@ char *awt_create_string_on_configurations(GBDATA *gb_main) {
         result = GBS_strclose(out);
     }
 
+    GBT_free_names(config);
     GB_pop_transaction(gb_main);
     return result;
 }
