@@ -21,8 +21,6 @@ BOOL MP_is_probe(char *seq);
 int  get_random(int min, int max); //gibt eine Zufallszahl x mit der Eigenschaft : min <= x <= max
 void init_system3_tab();
 
-char *glob_old_seq = NULL;
-
 int        **system3_tab      = NULL;
 static int   system3_tab_size = 0;
 
@@ -47,9 +45,6 @@ int get_random(int min,int max) {
 void MP_new_sequence(AW_window *aww) {
     AWUSE(aww);
     mp_main->get_aw_root()->awar_string(MP_AWAR_SEQUENZEINGABE)->write_string("");
-
-    delete glob_old_seq;
-    glob_old_seq = NULL;
 
     char *res = aw_input2awar("Enter target sequence", MP_AWAR_SEQUENZEINGABE);
     free(res);
@@ -81,8 +76,6 @@ void MP_close_main(AW_window *aww)
     delete mp_main->get_stc();
     mp_main->set_stc(NULL);
 
-    delete glob_old_seq;
-    glob_old_seq = NULL;
     new_pt_server = TRUE;
 }
 
@@ -416,11 +409,6 @@ void    MP_take_manual_sequence(AW_window *aww)
     if (! MP_is_probe(seq)){
         aw_message("This is not a valid probe !!!");
         return;
-    }
-
-
-    if (glob_old_seq){
-        aww->delete_selection_from_list( selected_list, glob_old_seq );
     }
 
     new_seq = new char[strlen(seq)+5+7];
@@ -806,8 +794,6 @@ void MP_selected_chosen(AW_window *aww)
 
     if (!selected || !selected[0])
         return;
-
-    glob_old_seq = strdup(selected);
 
     probe = MP_get_comment(3,selected);
     mp_main->get_aw_root()->awar(MP_AWAR_ECOLIPOS)->write_int(atoi(probe));
