@@ -503,11 +503,11 @@ void AW_awar::run_callbacks(){
 }
 
 // send data to all variables
-void AW_awar::update_target(AW_var_target*pntr){
+void AW_awar::update_target(AW_var_target *pntr){
     if (!pntr->pointer) return;
     switch(variable_type) {
         case AW_STRING: this->get((char **)pntr->pointer);break;
-        case AW_FLOAT:  this->get((double *)pntr->pointer);break;
+        case AW_FLOAT:  this->get((float *)pntr->pointer);break;
         case AW_INT:    this->get((long *)pntr->pointer);break;
         default:
             gb_assert(0);
