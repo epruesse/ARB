@@ -390,17 +390,24 @@ ifeq ($(strip $(CONFIG_MAKEFILE_FOUND)),)
 		@cp $< $@
 		@echo '$(ARBHOME)/$@:1: has been generated.'
 		@echo 'Please edit $@ to configure your system!'
+		@echo --------------------------------------------------------------------------------
+		@false
 else
 		@echo '$(ARBHOME)/$<:1: is more recent than'
 		@echo '$(ARBHOME)/$@:1:'
 		@ls -al config.makefile*
-		@echo "you may either:"
-		@echo "- ignore it and touch $@"
-		@echo "- merge difference between $@ and $< (recommended)"
-		@echo "- remove $@, run make again and edit the freshly generated $@"
-endif
 		@echo --------------------------------------------------------------------------------
-		@false
+		@echo "Updating $@ (if this fails, check manually)"
+		SOURCE_TOOLS/update_config_makefile.pl
+		@echo "Sucessfully updated $@"
+		@echo --------------------------------------------------------------------------------
+		@ls -al config.makefile*
+		@echo --------------------------------------------------------------------------------
+		@echo "Diff to your old config.makefile:"
+		@echo --------------------------------------------------------------------------------
+		diff $@.bak $@
+		@echo --------------------------------------------------------------------------------
+endif
 
 # check if everything is configured correctly
 
