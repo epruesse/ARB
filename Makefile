@@ -390,7 +390,6 @@ ifeq ($(strip $(CONFIG_MAKEFILE_FOUND)),)
 		@cp $< $@
 		@echo '$(ARBHOME)/$@:1: has been generated.'
 		@echo 'Please edit $@ to configure your system!'
-		@echo '(not needed for linux systems - simply type "make all")'
 else
 		@echo '$(ARBHOME)/$<:1: is more recent than'
 		@echo '$(ARBHOME)/$@:1:'

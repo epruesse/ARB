@@ -15,13 +15,13 @@ TRACESYM := 1# insert symbols for meaningful backtraces into executables
 # Include features using OPENGL? 
 OPENGL := 1
 
-# 0 = use old PTSERVER
+# 0 = use old PTSERVER (recommended)
 # 1 = use the new PTPan implementation as pt-server (Not tested very well, do NOT use!)
 # 2 = compile both, use old (recommended for development only)
 PTPAN := 0
 
-ARB_64 := 0# compile 64bit ARB version (still very buggy!)
-#BUILDHOST_64 := 1# whether build host is 64bit (value defaults to ARB_64). Uncomment for Cross-Compile
+ARB_64 := 0# compile 64bit ARB version
+#BUILDHOST_64 := 1# whether build host is 64bit (value defaults to ARB_64). Needed for cross-compile
 
 # --------------------------------------------------------------------------------
 # target machine section
