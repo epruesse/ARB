@@ -32,7 +32,8 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
-#define GA_AWAR_ROOT "galigner/"
+#define GA_AWAR_ROOT "sina/"
+#define GA_AWAR_CMD GA_AWAR_ROOT "command"
 #define GA_AWAR_TGT GA_AWAR_ROOT "target"
 #define GA_AWAR_SAI GA_AWAR_ROOT "sai"
 #define GA_AWAR_ALIGNMENT GA_AWAR_ROOT "alignment"
@@ -54,12 +55,13 @@ using std::endl;
 #define GA_AWAR_THREADS GA_AWAR_ROOT "threads"
 #define GA_AWAR_QSIZE GA_AWAR_ROOT "qsize"
 
-void create_galigner_variables(AW_root *root, AW_default db1) {
+void create_sina_variables(AW_root *root, AW_default db1) {
+    root->awar_string(GA_AWAR_CMD, "sina", db1);
     root->awar_int(GA_AWAR_TGT, 2, db1);
     root->awar_int(AWAR_PT_SERVER, 0, db1);
     root->awar_string(GA_AWAR_SAI, "none", db1);
     root->awar_int(GA_AWAR_PROTECTION, 0, db1);
-    root->awar_string(GA_AWAR_LOGLEVEL, "normal", db1);
+    root->awar_string(GA_AWAR_LOGLEVEL, "3", db1);
     root->awar_int(GA_AWAR_TURN_CHECK, 1, db1);
     root->awar_int(GA_AWAR_REALIGN, 1, db1);
     root->awar_int(GA_AWAR_PTLOAD, 0, db1);
@@ -77,142 +79,115 @@ void create_galigner_variables(AW_root *root, AW_default db1) {
     root->awar_int(GA_AWAR_QSIZE, 1, db1);
 }
 
-int galign_mask() {
-    char       *galign      = GB_executable("galign");
+AW_active sina_mask(AW_root *root) {
+    const char *sinaName    = root->awar(GA_AWAR_CMD)->read_char_pntr();
+    char       *sina        = GB_executable(sinaName);
     const char *fail_reason = 0;
 
-    if (galign) {
-        int       galign_vers = system("galign --int-version");
-        const int expected    = 20;
+    if (sina) {
+        int exitstatus = system(GBS_global_string("%s --has-cli-vers 1", sina));
+        exitstatus     = WEXITSTATUS(exitstatus);
 
-        galign_vers = WEXITSTATUS(galign_vers);
-        free(galign);
+        switch (exitstatus) {
+        case EXIT_SUCCESS:
+            break;
+            
+        case EXIT_FAILURE:
+            fail_reason = "Incompatible SINA and ARB versions";
+            break;
 
-        if (galign_vers == expected) {
-            printf("Found galign\n");
-            return AWM_ALL;
+        case 127:                                   // libs missing
+        default:                                    // unexpected
+            fail_reason = GBS_global_string("Could execute SINA binary '%s' (exitstatus was %i)",
+                                            sinaName, exitstatus);
+            break;
         }
-        fail_reason = GBS_global_string("galign version mismatch (found=%i, expected=%i)", galign_vers, expected);
+        free(sina);
     }
     else {
-        fail_reason = "galign not found";
+        fail_reason = GBS_global_string("%s not found", sinaName);
     }
 
-    printf("Note: SILVA Aligner disabled (%s)\n", fail_reason);
-    // @@@ print note about download possibility ?
+    if (fail_reason) {
+        fprintf(stderr,
+                "Note: SINA (SILVA Aligner) disabled (Reason: %s)\n"
+                "      Visit http://www.ribocon.com/sina/ for more information.\n",
+                fail_reason);
+    }
 
-    return AWM_DISABLED;
+    return fail_reason ? AWM_DISABLED : AWM_ALL;
 }
 
-static void galigner_start(AW_window *window, AW_CL cd2) {
+static void sina_start(AW_window *window, AW_CL cd2) {
+    GB_ERROR gb_error;
     AW_root *root = window->get_root();
-    cerr << "Starting Aligner..." << endl;
+    cerr << "Starting SINA..." << endl;
 
     // make string from pt server selection
     int pt = root->awar(AWAR_PT_SERVER)->read_int();
-    std::stringstream tmp;
-    tmp << "ARB_PT_SERVER" << pt;
-    const char *pt_server = GBS_read_arb_tcp(tmp.str().c_str());
+    const char *pt_server;
+    std::stringstream ptnam;
+    ptnam << "ARB_PT_SERVER" << pt;
+    pt_server = GBS_read_arb_tcp(ptnam.str().c_str());
+    if (!pt_server) {
+        aw_message("Unable to find definition for chosen PT-server");
+        return;
+    }
     const char *pt_db = pt_server + strlen(pt_server) +1;
     pt_db += strlen(pt_db)+3;
-    GB_ERROR gb_error;
 
     // start pt server if necessary
-    gb_error = arb_look_and_start_server(AISC_MAGIC_NUMBER,tmp.str().c_str(),
+    gb_error = arb_look_and_start_server(AISC_MAGIC_NUMBER,ptnam.str().c_str(),
                                          GLOBAL_gb_main);
     if (gb_error) {
-        cerr << "Cannot contact PT server. Aborting" << endl;
-        cerr << " ID: \"" << tmp.str().c_str()
-             << "\" PORT: \"" << pt_server
-             << "\" DB: \"" << pt_db  << endl
-             << "\" GBERROR: \"" << gb_error << "\"" << endl;
-        GB_export_error("Cannot contact PT server");
-
+        std::stringstream tmp;
+        tmp << "Cannot contact PT server. Aborting" << endl
+            << " ID: \"" << tmp.str().c_str()
+            << "\" PORT: \"" << pt_server
+            << "\" DB: \"" << pt_db  << endl
+            << "\" GBERROR: \"" << gb_error << "\"" << endl;
+        aw_message(tmp.str().c_str());
         return;
     }
 
-    const char *turn_check;
-    if (root->awar(GA_AWAR_TURN_CHECK)->read_int())
-        turn_check = "all";
-    else
-        turn_check = "none";
-
-    int pipe_fds[2];
-    if (pipe(pipe_fds) == -1) {
-        cerr << "Unable to create pipe! Aborting." << endl;
-        //fixme do errorhandling
+    // create temporary file
+    char* tmpfile_tpl = GB_unique_filename("sina_select","tmp");
+    char* tmpfile;
+    FILE* tmpfile_F = GB_fopen_tempfile(tmpfile_tpl,"w", &tmpfile);
+    if (!tmpfile_F) {
+        std::stringstream tmp;
+        tmp << "Error: Unable to create temporary file \"" << tmpfile << "\"!";
+        aw_message(tmp.str().c_str());
         return;
     }
-
-    pid_t me = fork();
-    if (!me) { // we are child
-        close(pipe_fds[1]); // close write end of pipe
-        dup2(pipe_fds[0], STDIN_FILENO); // copy read end over stdin
-
-        if (execlp("galign", "galign",
-                   "--arb-db", ":",
-                   "--pt-port", pt_server,
-                   "--pt-db", pt_db,
-                   "--no-pt-start",
-                   root->awar(GA_AWAR_PTLOAD)->read_int()?"--pt-load":"",
-                   root->awar(GA_AWAR_COPYMARKREF)->read_int()?"--copymarkref":"",
-                   "--arb-filter",
-                   root->awar(GA_AWAR_SAI)->read_string(),
-                   "--input-type", "arb",
-                   "--turn", turn_check,
-                   "--print",
-                   root->awar(GA_AWAR_LOGLEVEL)->read_string(),
-                   root->awar(GA_AWAR_REALIGN)->read_int()?"--realign":"",
-                   "--protection-level",
-                   root->awar(GA_AWAR_PROTECTION)->read_as_string(),
-                   "--penalties",
-                   root->awar(GA_AWAR_GAP_PEN)->read_as_string(),
-                   root->awar(GA_AWAR_GAP_EXT)->read_as_string(),
-                   "--familyparam",
-                   root->awar(GA_AWAR_FS_MIN)->read_as_string(),
-                   root->awar(GA_AWAR_FS_MAX)->read_as_string(),
-                   root->awar(GA_AWAR_FS_MSC)->read_as_string(),
-                   "--overhang-placement",
-                   root->awar(GA_AWAR_OVERHANG)->read_string(),
-                   "--ncpu",
-                   root->awar(GA_AWAR_THREADS)->read_as_string(),
-                   "--queue-size",
-                   root->awar(GA_AWAR_QSIZE)->read_as_string(),
-                   "--min-full",
-                   root->awar(GA_AWAR_MIN_FULL)->read_as_string(),
-                   "--full-minlen",
-                   root->awar(GA_AWAR_FULL_MINLEN)->read_as_string(),
-#ifdef DEBUG
-                   "--arb-debug",
-#endif
-                   (char*) NULL) == -1) {
-            perror("Executing galign failed");
-        }
-        close (pipe_fds[0]);
-        _exit(0); // kill this process, but don't remove tempfiles, etc.
-    }
-    close(pipe_fds[0]); // close read end of pipe;
+    GB_remove_on_exit(tmpfile);
 
     std::vector<std::string> spec_names;
     switch(root->awar(GA_AWAR_TGT)->read_int()) {
     case 0: //current
     {
         char *spec_name = root->awar(AWAR_SPECIES_NAME)->read_string();
-        if (spec_name)
-            spec_names.push_back(std::string(spec_name));
+        if (spec_name) {
+            fwrite(spec_name, strlen(spec_name), 1, tmpfile_F);
+            fwrite("\n", 1, 1, tmpfile_F);
+        } else {
+            aw_message("Unable to get name of currently active species");
+            return;
+        }
     }
     break;
     case 1: //selected
     {
         struct AWTC_faligner_cd *cd = (struct AWTC_faligner_cd *)cd2;
-        int num_selected = 0;
         GB_begin_transaction(GLOBAL_gb_main);
+        int num_selected = 0;
         for (GBDATA *gb_spec = cd->get_first_selected_species(&num_selected);
              gb_spec; gb_spec = cd->get_next_selected_species()) {
             GBDATA *gbd_name = GB_find(gb_spec, "name", down_level);
             if (gbd_name) {
                 const char *str = GB_read_char_pntr(gbd_name);
-                spec_names.push_back(std::string(str));
+                fwrite(str, strlen(str), 1, tmpfile_F);
+                fwrite("\n", 1, 1, tmpfile_F);
             }
         }
         GB_commit_transaction(GLOBAL_gb_main);
@@ -226,23 +201,44 @@ static void galigner_start(AW_window *window, AW_CL cd2) {
             GBDATA *gbd_name = GB_find(gb_spec, "name", down_level);
             if (gbd_name) {
                 const char *str = GB_read_char_pntr(gbd_name);
-                spec_names.push_back(std::string(str));
+                fwrite(str, strlen(str), 1, tmpfile_F);
+                fwrite("\n", 1, 1, tmpfile_F);
             }
         }
         GB_commit_transaction(GLOBAL_gb_main);
     }
     break;
     }
+    fclose(tmpfile_F);
 
-    for(std::vector<std::string>::iterator it  = spec_names.begin();
-        it != spec_names.end(); ++it) {
-        write(pipe_fds[1], it->c_str(), it->size());
-        write(pipe_fds[1], "\n", 1);
-    }
+    // build command line
+    std::stringstream cmdline;
+    cmdline << root->awar(GA_AWAR_CMD)->read_string()
+        << " -i :"
+        << " --queue-size " << root->awar(GA_AWAR_QSIZE)->read_as_string()
+        << " --ncpu " << root->awar(GA_AWAR_THREADS)->read_as_string()
+        << " --verbosity " << root->awar(GA_AWAR_LOGLEVEL)->read_as_string()
+        << " --ptdb " << (root->awar(GA_AWAR_PTLOAD)->read_int()?pt_db:":")
+        << " --ptport " << pt_server
+        << " --turn " << (root->awar(GA_AWAR_TURN_CHECK)->read_int()?"all":"none")
+        << (root->awar(GA_AWAR_REALIGN)->read_int()?" --realign":"")
+        << " --overhang " <<  root->awar(GA_AWAR_OVERHANG)->read_string()
+        << " --filter " << root->awar(GA_AWAR_SAI)->read_string()
+        << " --fs-min " << root->awar(GA_AWAR_FS_MIN)->read_as_string()
+        << " --fs-msc " << root->awar(GA_AWAR_FS_MSC)->read_as_string()
+        << " --fs-max " << root->awar(GA_AWAR_FS_MAX)->read_as_string()
+        << " --fs-req " << "1"
+        << " --fs-req-full " << root->awar(GA_AWAR_MIN_FULL)->read_as_string()
+        << " --fs-full-len " << root->awar(GA_AWAR_FULL_MINLEN)->read_as_string()
+        << " --pen-gap " <<  root->awar(GA_AWAR_GAP_PEN)->read_as_string()
+        << " --pen-gapext " <<  root->awar(GA_AWAR_GAP_EXT)->read_as_string()
+        << (root->awar(GA_AWAR_COPYMARKREF)->read_int()?" --markcopy":"")
+        << " --prot-level " << root->awar(GA_AWAR_PROTECTION)->read_as_string()
+        << " --select-file " << tmpfile;
 
-    close(pipe_fds[1]);
-    waitpid(me, NULL, 0);
-    cerr << "ARB: Finished Aligning.";
+    gb_error = GB_xcmd(cmdline.str().c_str(), GB_TRUE, GB_FALSE);
+
+    aw_message("SINA finished aligning.");
 }
 
 
@@ -284,12 +280,12 @@ static AW_window* create_select_sai_window(AW_root *root) {
 }
 
 AW_window_simple*
-new_galigner_simple(AW_root *root, AW_CL cd2, bool adv) {
+new_sina_simple(AW_root *root, AW_CL cd2, bool adv) {
     int closex, closey, startx, starty, winx, winy;
     const int hgap = 10;
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init(root, "galigner", "Graph Aligner");
+    aws->init(root, "SINA", "SINA (SILVA Incremental Aligner)");
 
     aws->button_length(12);
     aws->at(10,10);
@@ -300,7 +296,7 @@ new_galigner_simple(AW_root *root, AW_CL cd2, bool adv) {
     aws->get_at_position(&closex, &closey);
 
     aws->at_shift(10,0);
-    aws->callback(show_galigner_window, cd2, 0);
+    aws->callback(show_sina_window, cd2, 0);
     aws->label_length(0);
     aws->label("Show advanced options");
     aws->create_toggle(GA_AWAR_ADVANCED);
@@ -379,10 +375,14 @@ new_galigner_simple(AW_root *root, AW_CL cd2, bool adv) {
         aws->label("bases as reference");
 
         aws->at_newline();
-        aws->label("Aligner threads");
+        aws->label("Max threads");
         aws->create_input_field(GA_AWAR_THREADS,3);
         aws->label("Queue size");
         aws->create_input_field(GA_AWAR_QSIZE,3);
+
+        aws->at_newline();
+        aws->label("SINA command");
+        aws->create_input_field(GA_AWAR_CMD,20);
 
         aws->at_shift(0,hgap);
     }
@@ -403,41 +403,41 @@ new_galigner_simple(AW_root *root, AW_CL cd2, bool adv) {
 
     aws->at_newline();
     aws->create_option_menu(GA_AWAR_LOGLEVEL, "Logging level", "L");
-    aws->insert_option("silent", 0, "silent");
-    aws->insert_option("quiet", 0, "quiet");
-    aws->insert_default_option("normal", 0, "normal");
-    aws->insert_option("verbose", 0, "verbose");
-    aws->insert_option("debug", 0, "debug");
-    aws->insert_option("debug_graph", 0, "debug_graph");
+    aws->insert_option("silent", 0, "1");
+    aws->insert_option("quiet", 0, "2");
+    aws->insert_default_option("normal", 0, "3");
+    aws->insert_option("verbose", 0, "4");
+    aws->insert_option("debug", 0, "5");
+    aws->insert_option("debug more", 0, "6");
     aws->update_option_menu();
 
     aws->get_window_size(winx, winy);
     aws->get_at_position(&startx, &starty);
 
     aws->at(winx-closex+5,closey);
-    aws->callback(AW_POPUP_HELP, (AW_CL) "galign_main.hlp");
+    aws->callback(AW_POPUP_HELP, (AW_CL) "sina_main.hlp");
     aws->create_button("HELP", "HELP");
 
     aws->at(winx-closex+5, starty);
-    aws->callback(galigner_start, cd2);
+    aws->callback(sina_start, cd2);
     aws->highlight();
     aws->create_button("Start", "Start", "S");
 
     return aws;
 }
 
-void show_galigner_window(AW_window *aw, AW_CL cd2, AW_CL) {
+void show_sina_window(AW_window *aw, AW_CL cd2, AW_CL) {
     static AW_window_simple *ga_aws = 0;
     static AW_window_simple *ga_aws_adv = 0;
 
     AW_root *root = aw->get_root();
     if (root->awar(GA_AWAR_ADVANCED)->read_int()) {
-        if (!ga_aws_adv) ga_aws_adv = new_galigner_simple(root, cd2, true);
+        if (!ga_aws_adv) ga_aws_adv = new_sina_simple(root, cd2, true);
         ga_aws_adv->show();
         if (ga_aws) ga_aws->hide();
     }
     else {
-        if (!ga_aws) ga_aws = new_galigner_simple(root, cd2, false);
+        if (!ga_aws) ga_aws = new_sina_simple(root, cd2, false);
         ga_aws->show();
         if (ga_aws_adv) ga_aws_adv->hide();
     }
