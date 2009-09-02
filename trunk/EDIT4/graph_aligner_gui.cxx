@@ -61,7 +61,7 @@ void create_sina_variables(AW_root *root, AW_default db1) {
     root->awar_int(AWAR_PT_SERVER, 0, db1);
     root->awar_string(GA_AWAR_SAI, "none", db1);
     root->awar_int(GA_AWAR_PROTECTION, 0, db1);
-    root->awar_string(GA_AWAR_LOGLEVEL, "3", db1);
+    root->awar_string(GA_AWAR_LOGLEVEL, "3", db1); // @@@ change to int? 
     root->awar_int(GA_AWAR_TURN_CHECK, 1, db1);
     root->awar_int(GA_AWAR_REALIGN, 1, db1);
     root->awar_int(GA_AWAR_PTLOAD, 0, db1);
@@ -151,9 +151,14 @@ static void sina_start(AW_window *window, AW_CL cd2) {
     }
 
     // create temporary file
-    char* tmpfile_tpl = GB_unique_filename("sina_select","tmp");
     char* tmpfile;
-    FILE* tmpfile_F = GB_fopen_tempfile(tmpfile_tpl,"w", &tmpfile);
+    FILE* tmpfile_F;
+    {
+        char* tmpfile_tpl = GB_unique_filename("sina_select","tmp");
+        tmpfile_F         = GB_fopen_tempfile(tmpfile_tpl,"w", &tmpfile);
+        free(tmpfile_tpl);
+    }
+
     if (!tmpfile_F) {
         std::stringstream tmp;
         tmp << "Error: Unable to create temporary file \"" << tmpfile << "\"!";
@@ -212,31 +217,37 @@ static void sina_start(AW_window *window, AW_CL cd2) {
     fclose(tmpfile_F);
 
     // build command line
-    std::stringstream cmdline;
-    cmdline << root->awar(GA_AWAR_CMD)->read_string()
-        << " -i :"
-        << " --queue-size " << root->awar(GA_AWAR_QSIZE)->read_as_string()
-        << " --ncpu " << root->awar(GA_AWAR_THREADS)->read_as_string()
-        << " --verbosity " << root->awar(GA_AWAR_LOGLEVEL)->read_as_string()
-        << " --ptdb " << (root->awar(GA_AWAR_PTLOAD)->read_int()?pt_db:":")
-        << " --ptport " << pt_server
-        << " --turn " << (root->awar(GA_AWAR_TURN_CHECK)->read_int()?"all":"none")
-        << (root->awar(GA_AWAR_REALIGN)->read_int()?" --realign":"")
-        << " --overhang " <<  root->awar(GA_AWAR_OVERHANG)->read_string()
-        << " --filter " << root->awar(GA_AWAR_SAI)->read_string()
-        << " --fs-min " << root->awar(GA_AWAR_FS_MIN)->read_as_string()
-        << " --fs-msc " << root->awar(GA_AWAR_FS_MSC)->read_as_string()
-        << " --fs-max " << root->awar(GA_AWAR_FS_MAX)->read_as_string()
-        << " --fs-req " << "1"
-        << " --fs-req-full " << root->awar(GA_AWAR_MIN_FULL)->read_as_string()
-        << " --fs-full-len " << root->awar(GA_AWAR_FULL_MINLEN)->read_as_string()
-        << " --pen-gap " <<  root->awar(GA_AWAR_GAP_PEN)->read_as_string()
-        << " --pen-gapext " <<  root->awar(GA_AWAR_GAP_EXT)->read_as_string()
-        << (root->awar(GA_AWAR_COPYMARKREF)->read_int()?" --markcopy":"")
-        << " --prot-level " << root->awar(GA_AWAR_PROTECTION)->read_as_string()
-        << " --select-file " << tmpfile;
+    {
+        GBS_strstruct *cl = GBS_stropen(2000);
+    
+        GBS_strcat(cl, root->awar(GA_AWAR_CMD)->read_char_pntr());
+        GBS_strcat(cl, " -i :");
+        GBS_strcat(cl, " --queue-size ");  GBS_intcat(cl,   root->awar(GA_AWAR_QSIZE)->read_int());
+        GBS_strcat(cl, " --ncpu ");        GBS_intcat(cl,   root->awar(GA_AWAR_THREADS)->read_int());
+        GBS_strcat(cl, " --verbosity ");   GBS_strcat(cl,   root->awar(GA_AWAR_LOGLEVEL)->read_char_pntr());
+        GBS_strcat(cl, " --ptdb ");        GBS_strcat(cl,   root->awar(GA_AWAR_PTLOAD)->read_int()?pt_db:":");
+        GBS_strcat(cl, " --ptport ");      GBS_strcat(cl,   pt_server);
+        GBS_strcat(cl, " --turn ");        GBS_strcat(cl,   root->awar(GA_AWAR_TURN_CHECK)->read_int()?"all":"none");
+        GBS_strcat(cl, " --overhang ");    GBS_strcat(cl,   root->awar(GA_AWAR_OVERHANG)->read_char_pntr());
+        GBS_strcat(cl, " --filter ");      GBS_strcat(cl,   root->awar(GA_AWAR_SAI)->read_char_pntr());
+        GBS_strcat(cl, " --fs-min ");      GBS_intcat(cl,   root->awar(GA_AWAR_FS_MIN)->read_int());
+        GBS_strcat(cl, " --fs-msc ");      GBS_floatcat(cl, root->awar(GA_AWAR_FS_MSC)->read_float());
+        GBS_strcat(cl, " --fs-max ");      GBS_intcat(cl,   root->awar(GA_AWAR_FS_MAX)->read_int());
+        GBS_strcat(cl, " --fs-req 1");
+        GBS_strcat(cl, " --fs-req-full "); GBS_intcat(cl,   root->awar(GA_AWAR_MIN_FULL)->read_int());
+        GBS_strcat(cl, " --fs-full-len "); GBS_intcat(cl,   root->awar(GA_AWAR_FULL_MINLEN)->read_int());
+        GBS_strcat(cl, " --pen-gap ");     GBS_floatcat(cl, root->awar(GA_AWAR_GAP_PEN)->read_float());
+        GBS_strcat(cl, " --pen-gapext ");  GBS_floatcat(cl, root->awar(GA_AWAR_GAP_EXT)->read_float());
+        GBS_strcat(cl, " --prot-level ");  GBS_intcat(cl,   root->awar(GA_AWAR_PROTECTION)->read_int());
+        GBS_strcat(cl, " --select-file "); GBS_strcat(cl,   tmpfile);
 
-    gb_error = GB_xcmd(cmdline.str().c_str(), GB_TRUE, GB_FALSE);
+        if (root->awar(GA_AWAR_REALIGN)->read_int())     GBS_strcat(cl, " --realign");
+        if (root->awar(GA_AWAR_COPYMARKREF)->read_int()) GBS_strcat(cl, " --markcopy");
+
+        gb_error = GB_xcmd(GBS_mempntr(cl), GB_TRUE, GB_FALSE);
+        GBS_strforget(cl);
+    }
+    free(tmpfile);
 
     aw_message("SINA finished aligning.");
 }
