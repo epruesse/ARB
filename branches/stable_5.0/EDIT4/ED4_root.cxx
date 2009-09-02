@@ -1547,11 +1547,11 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->insert_menu_topic(0,               "Test (test split & merge)", "T", 0, AWM_ALL, ED4_testSplitNMerge, 1, 0);
 #endif
     SEP________________________SEP;
-    awmm->insert_menu_topic("fast_aligner",       INTEGRATED_ALIGNERS_TITLE " [Ctrl-A]", "I", "faligner.hlp",     AWM_ALL,       AW_POPUP,                               (AW_CL)ED4_create_faligner_window,(AW_CL)&faligner_client_data);
-    awmm->insert_menu_topic("fast_align_set_ref", "Set aligner reference [Ctrl-R]",      "R", "faligner.hlp",     AWM_ALL,       (AW_CB)AWTC_set_reference_species_name, (AW_CL)aw_root, 0);
-    awmm->insert_menu_topic("align_sequence",     "Old aligner from ARB_EDIT",           "O", "ne_align_seq.hlp", AWM_EXP,       AW_POPUP,                               (AW_CL)create_naligner_window, 0 );
-    awmm->insert_menu_topic("graph_aligner",      "SILVA aligner (SINA)",                "S", "galign_main.hlp",  galign_mask(), show_galigner_window,                   (AW_CL)&faligner_client_data, 0);
-    awmm->insert_menu_topic("del_ali_tmp",        "Remove all aligner Entries",          "v", 0,                  AWM_ALL,       ED4_remove_faligner_entries,            1, 0)  ;
+    awmm->insert_menu_topic("fast_aligner",       INTEGRATED_ALIGNERS_TITLE " [Ctrl-A]", "I", "faligner.hlp",     AWM_ALL,            AW_POPUP,                               (AW_CL)ED4_create_faligner_window, (AW_CL)&faligner_client_data);
+    awmm->insert_menu_topic("fast_align_set_ref", "Set aligner reference [Ctrl-R]",      "R", "faligner.hlp",     AWM_ALL,            (AW_CB)AWTC_set_reference_species_name, (AW_CL)aw_root,                    0);
+    awmm->insert_menu_topic("align_sequence",     "Old aligner from ARB_EDIT",           "O", "ne_align_seq.hlp", AWM_EXP,            AW_POPUP,                               (AW_CL)create_naligner_window,     0);
+    awmm->insert_menu_topic("sina",               "SINA (SILVA Incremental Aligner)",    "S", "sina_main.hlp",    sina_mask(aw_root), show_sina_window,                       (AW_CL)&faligner_client_data,      0);
+    awmm->insert_menu_topic("del_ali_tmp",        "Remove all aligner Entries",          "v", 0,                  AWM_ALL,            ED4_remove_faligner_entries,            1,                                 0);
     SEP________________________SEP;
     awmm->insert_menu_topic("missing_bases", "Dot potentially missing bases", "D", "missbase.hlp", AWM_EXP, ED4_popup_dot_missing_bases_window, 0, 0);
     SEP________________________SEP;
