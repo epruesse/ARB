@@ -377,7 +377,7 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
 #endif // DEBUG
 
     create_naligner_variables(root, AW_ROOT_DEFAULT);
-    create_galigner_variables(root, AW_ROOT_DEFAULT);
+    create_sina_variables(root, AW_ROOT_DEFAULT);
 
     awar_edit_mode = AD_ALIGN;
 
