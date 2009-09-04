@@ -45,7 +45,7 @@ brk malloc_error_break
 
 set print pretty
 set print array
-set print array-indexes
+#set print array-indexes
 set print null-stop
 set print elements 2000
 set print repeats 100

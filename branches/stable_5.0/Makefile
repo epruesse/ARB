@@ -202,7 +202,7 @@ XHOME:=/usr/X11R6
 XINCLUDES:=-I$(XHOME)/include
 
 ifdef DARWIN
-	XINCLUDES := -I/sw/include -I$(OSX_SDK)/usr/X11/include -I$(OSX_SDK)/usr/include/krb5
+	XINCLUDES := -I/sw/include -I$(OSX_SDK)/usr/X11/include -I$(OSX_SDK)/usr/include/krb5 -I/usr/OpenMotif/include #Snow Leopard couldn't find OpenMotif
 endif
 
 ifdef DARWIN
