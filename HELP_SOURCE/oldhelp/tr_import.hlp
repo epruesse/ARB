@@ -11,7 +11,7 @@ UP	treeadm.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Load a Tree
 
-OCCURRENCE	ARB_NT/Tree/Copy\Delete\Export\Import/IMPORT
+OCCURRENCE	ARB_NT/Tree Admin/Import
 
 DESCRIPTION	Allows to import a tree written in Newick format.
 
