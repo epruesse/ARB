@@ -14,7 +14,8 @@ Major changes for arb_5.00:
    * result sorting
  - Nameservers with add.field have to be started with default value
    You need to correct parameter -f in lib/arb_tcp.dat (according to lib/arb_tcp_org.dat)
- - Multiple pt-servers may be used in parallel
+ - multiple PT-servers may be used in parallel
+ - fixed multiprobe
  - type-conversion for DB fields
  - SILVA compatible import filters
  - Newick tree export:
