@@ -2843,7 +2843,7 @@ static void exit_duplicate_mnemonic() {
 
 // --------------------------------------------------------------------------------
 
-void AW_window::create_menu(AW_label name, const char *mnemonic, const char *helpText, AW_active Mask) {
+void AW_window::create_menu(AW_label name, const char *mnemonic, AW_active Mask) {
     aw_assert(legal_mask(Mask));
     p_w->menu_deep = 0;
 #ifdef DEBUG
@@ -2852,7 +2852,7 @@ void AW_window::create_menu(AW_label name, const char *mnemonic, const char *hel
 #if defined(DUMP_MENU_LIST)
     dumpCloseAllSubMenus();
 #endif // DUMP_MENU_LIST
-    insert_sub_menu(name, mnemonic, helpText, Mask);
+    insert_sub_menu(name, mnemonic, Mask);
 }
 
 void AW_window::all_menus_created() { // this is called by AW_window::show() (i.e. after all menus have been created)
@@ -2867,9 +2867,8 @@ void AW_window::all_menus_created() { // this is called by AW_window::show() (i.
 #endif // DEBUG
 }
 
-void AW_window::insert_sub_menu(AW_label name, const char *mnemonic, const char *helpText, AW_active Mask) {
+void AW_window::insert_sub_menu(AW_label name, const char *mnemonic, AW_active Mask) {
     aw_assert(legal_mask(Mask));
-    AWUSE(helpText);
     Widget shell, Label;
 
     TuneBackground(p_w->menu_bar[p_w->menu_deep], TUNE_SUBMENU); // set background color for submenus

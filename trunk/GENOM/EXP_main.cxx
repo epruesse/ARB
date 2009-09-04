@@ -136,7 +136,7 @@ void EXP_create_experiments_submenu(AW_window_menu_modes *awm, bool submenu) {
     const char *hotkey = "x";
 
     if (submenu) awm->insert_sub_menu(title, hotkey);
-    else awm->create_menu(title, hotkey, "no.hlp", AWM_ALL);
+    else awm->create_menu(title, hotkey, AWM_ALL);
 
     {
         AWMIMT( "experiment_info",   "Experiment information", "i", "experiment_info.hlp", AWM_ALL,EXP_popup_experiment_window, 0, 0);

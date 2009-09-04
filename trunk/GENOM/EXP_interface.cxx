@@ -493,14 +493,14 @@ AW_window *EXP_create_experiment_window(AW_root *aw_root) {
     ad_global_scannerid   = scannerid;
     ad_global_scannerroot = aws->get_root();
 
-    aws->create_menu("EXPERIMENT",     "E", "spa_experiment.hlp",  AD_F_ALL );
+    aws->create_menu("EXPERIMENT", "E", AD_F_ALL);
     aws->insert_menu_topic("experiment_delete", "Delete",     "D","spa_delete.hlp",       AD_F_ALL,   (AW_CB)experiment_delete_cb, 0, 0);
     aws->insert_menu_topic("experiment_rename", "Rename ...", "R","spa_rename.hlp",   AD_F_ALL,   AW_POPUP, (AW_CL)create_experiment_rename_window, 0);
     aws->insert_menu_topic("experiment_copy",   "Copy ...",   "y","spa_copy.hlp",         AD_F_ALL,   AW_POPUP, (AW_CL)create_experiment_copy_window, 0);
     aws->insert_menu_topic("experiment_create", "Create ...", "C","spa_create.hlp",   AD_F_ALL,   AW_POPUP, (AW_CL)create_experiment_create_window, 0);
     aws->insert_separator();
 
-    aws->create_menu("FIELDS",     "F", "experiment_fields.hlp",  AD_F_ALL );
+    aws->create_menu("FIELDS", "F", AD_F_ALL);
     EXP_create_field_items(aws);
 
     {

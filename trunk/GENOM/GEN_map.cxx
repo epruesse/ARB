@@ -1478,7 +1478,7 @@ void GEN_create_organism_submenu(AW_window_menu_modes *awm, bool submenu/*, AWT_
     const char *hotkey = "O";
 
     if (submenu) awm->insert_sub_menu(title, hotkey);
-    else awm->create_menu(title, hotkey, "no.hlp", AWM_ALL);
+    else awm->create_menu(title, hotkey, AWM_ALL);
 
     {
         AWMIMT( "organism_info", "Organism information", "i", "organism_info.hlp", AWM_ALL,GEN_popup_organism_window,  0, 0);
@@ -1503,7 +1503,7 @@ void GEN_create_gene_species_submenu(AW_window_menu_modes *awm, bool submenu/*, 
     const char *hotkey = "S";
 
     if (submenu) awm->insert_sub_menu(title, hotkey);
-    else awm->create_menu(title, hotkey, "no.hlp", AWM_ALL);
+    else awm->create_menu(title, hotkey, AWM_ALL);
 
     {
         AWMIMT("mark_gene_species",             "Mark All gene-species",              "A", "gene_species_mark.hlp", AWM_ALL, mark_gene_species, 1, 0);
@@ -1526,7 +1526,7 @@ struct GEN_update_info {
 void GEN_create_genes_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE/*, AWT_canvas *ntree_canvas*/) {
     // gen_assert(ntree_canvas != 0);
 
-    awm->create_menu("Genome", "G", "no.hlp",    AWM_ALL);
+    awm->create_menu("Genome", "G", AWM_ALL);
     {
 #if defined(DEBUG)
         AWMIMT("debug_awars", "[DEBUG] Show main AWARs", "", "no.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_create_awar_debug_window, 0);
@@ -1580,7 +1580,7 @@ void GEN_create_genes_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE/*, A
 #undef AWMIMT
 
 void GEN_create_hide_submenu(AW_window_menu_modes *awm) {
-    awm->create_menu("Hide","H","no.hlp", AWM_ALL);
+    awm->create_menu("Hide", "H", AWM_ALL);
     {
         GEN_insert_hide_submenu(awm, "gene_hide_marked", "Hide marked genes", "H", "gene_hide.hlp", GEN_HIDE_MARKED);
         GEN_insert_hide_submenu(awm, "gene_unhide_marked", "Unhide marked genes", "U", "gene_hide.hlp", GEN_UNHIDE_MARKED);
@@ -1636,7 +1636,7 @@ void GEN_map_window::init(AW_root *awr) {
     // --------------
 
     // File Menu
-    create_menu("File", "F", "no.hlp",  AWM_ALL );
+    create_menu("File", "F", AWM_ALL );
     insert_menu_topic( "close", "Close", "C","quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
     insert_menu_topic( "new_view", "New view", "v","new_view.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_map,(AW_CL)window_nr+1);
 
@@ -1649,7 +1649,7 @@ void GEN_map_window::init(AW_root *awr) {
     GEN_create_hide_submenu(this); // Hide Menu
 
     // Properties Menu
-    create_menu("Properties","r","no.hlp", AWM_ALL);
+    create_menu("Properties", "r", AWM_ALL);
     insert_menu_topic("gene_props_menu",   "Menu: Colors and Fonts ...",   "M","props_frame.hlp",  AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window, 0 );
     // @@@ FIXME: replace AW_preset_window by local function returning same window for all mapped views
     insert_menu_topic("gene_props",        "GENEMAP: Colors and Fonts ...","C","gene_props_data.hlp",AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager );

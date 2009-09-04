@@ -931,14 +931,14 @@ static void callallcallbacks(AW_window *aww, AW_CL mode, AW_CL) {
 
 
 void AWT_create_debug_menu(AW_window *awmm) {
-    awmm->create_menu("4debug", "4", NULL, AWM_ALL);
+    awmm->create_menu("4debug", "4", AWM_ALL);
 
     awmm->insert_menu_topic("-db_browser", "Browse loaded database(s)", "B", "db_browser.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_db_browser, 0);
     awmm->insert_menu_topic("-dump_gcs",   "Dump GCs",                  "G", "",               AWM_ALL, dump_gcs, 0,                        0);
     
     awmm->insert_separator();
     {
-        awmm->insert_sub_menu("Callbacks (dangerous! use at your own risk)", "C", NULL, AWM_ALL);
+        awmm->insert_sub_menu("Callbacks (dangerous! use at your own risk)", "C", AWM_ALL);
         awmm->insert_menu_topic("!run_all_cbs_alph",  "Call all callbacks (alpha-order)",     "a", "", AWM_ALL, callallcallbacks, 0,  0);
         awmm->insert_menu_topic("!run_all_cbs_nalph", "Call all callbacks (alpha-reverse)",   "l", "", AWM_ALL, callallcallbacks, 1,  0);
         awmm->insert_menu_topic("!run_all_cbs_loc",   "Call all callbacks (code-order)",      "c", "", AWM_ALL, callallcallbacks, 2,  0);

@@ -1213,8 +1213,8 @@ AW_window *create_speciesOrganismWindow(AW_root *aw_root, bool organismWindow)
     ad_global_scannerid = scannerid;
     ad_global_scannerroot = aws->get_root();
 
-    if (organismWindow) aws->create_menu("ORGANISM",     "O", "spa_organism.hlp",  AWM_ALL );
-    else                aws->create_menu("SPECIES",     "S", "spa_species.hlp",  AWM_ALL );
+    if (organismWindow) aws->create_menu("ORGANISM",    "O", AWM_ALL);
+    else                aws->create_menu("SPECIES",     "S", AWM_ALL);
 
     aws->insert_menu_topic("species_delete",        "Delete",        "D","spa_delete.hlp",   AWM_ALL,   ad_species_delete_cb, 0, 0);
     aws->insert_menu_topic("species_rename",        "Rename",        "R","spa_rename.hlp",   AWM_ALL,   ad_species_rename_cb, 0, 0);
@@ -1223,7 +1223,7 @@ AW_window *create_speciesOrganismWindow(AW_root *aw_root, bool organismWindow)
     aws->insert_menu_topic("species_convert_2_sai", "Convert to SAI","S","sp_sp_2_ext.hlp",AWM_ALL,    (AW_CB)move_species_to_extended, 0, 0);
     aws->insert_separator();
 
-    aws->create_menu("FIELDS",     "F", "spa_fields.hlp",  AWM_ALL );
+    aws->create_menu("FIELDS", "F", AWM_ALL);
     ad_spec_create_field_items(aws);
 
     {
