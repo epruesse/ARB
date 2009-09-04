@@ -2140,7 +2140,8 @@ static AW_window *create_awt_colorizer_window(AW_root *aw_root, GBDATA *gb_main,
     aws->create_button("CLOSE","CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP,(AW_CL)(mode == AWT_COL_COLORIZE_LISTED ? "set_color_of_listed.hlp" : "colorize.hlp"));
+    if (mode == AWT_COL_COLORIZE_LISTED) aws->callback(AW_POPUP_HELP, (AW_CL)"set_color_of_listed.hlp");
+    else                                 aws->callback(AW_POPUP_HELP, (AW_CL)"colorize.hlp");
     aws->create_button("HELP","HELP","H");
 
     aws->at("colorize");

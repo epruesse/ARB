@@ -8,15 +8,9 @@ UP	glossary.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Save Defaults
+TITLE		Save properties
 
-OCCURRENCE	ARB_NT/File/Save Defaults
-		ARB_NT/Tree/Neighbour joining/File/Save Defaults
-		ARB_NT/ARB_EDIT/File
-		ARB_EDIT4/Properties/Save defaults
-		ARB_SECEDIT/Properties/Save defaults
-		ARB_GENEMAP/Properties/Save defaults
-		ARB_MERGE/File/Save properties
+OCCURRENCE	In 'Properties' menus
 
 DESCRIPTION	Saves the userdefined setup (colours, fonts, ...) to files
 		'~/.arb_prop/*' located in the users home directory.

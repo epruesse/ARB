@@ -671,8 +671,7 @@ AW_window *create_tool_replace( AW_root *root, AED_window *aedwindow ) {
     aws->button_length( 14 );
 
     //  aws->at( "reopen" );
-    //  aws->callback     ( AW_POPUP, (AW_CL)create_tool_replace,
-    //                                                  (AW_CL)aedwindow  );
+    //  aws->callback     ( AW_POPUP, (AW_CL)create_tool_replace,(AW_CL)aedwindow  );
     //  aws->create_button( "REOPEN", "R" );
 
     aws->at("replace");
