@@ -44,7 +44,6 @@ Welcome to the 'ARB' Sequence Database Tools
                 'arb_install.sh'                //install script
                 'arb_README.txt'                //this file
                 'arb.tgz'                       //all the libs and bin
-                'zcat'                          //decompress
 
         are located and type '/bin/sh arb_install.sh'
 
