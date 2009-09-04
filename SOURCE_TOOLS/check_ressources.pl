@@ -104,6 +104,7 @@ sub scanExistingRessources() {
   scanFilesAndIndex(%picture,  @pictures,  $ARBHOME.'/lib/pictures',        '.*\.(fig|vfont)$',                 1, 0);
   scanFilesAndIndex(%pixmap,   @pixmaps,   $ARBHOME.'/lib/pixmaps',         '.*\.(bitmap|xpm)$',                1, 0);
   scanFilesAndIndex(%helpfile, @helpfiles, $ARBHOME.'/HELP_SOURCE/oldhelp', '.*\.(hlp|ps|pdf|ps\.gz|pdf\.gz)$', 1, 0);
+  scanFilesAndIndex(%helpfile, @helpfiles, $ARBHOME.'/HELP_SOURCE/genhelp', '.*\.(hlp|ps|pdf|ps\.gz|pdf\.gz)$', 1, 0);
 
   foreach (sort keys %unknown) {
     if (/readme[^\/]*$/i) {
@@ -336,7 +337,7 @@ sub isHelpPopup($) {
 }
 sub isHelpRef($) {
   my ($res_param) = @_;
-  if ($res_param =~ /\.hlp$/o) { return ($res_param); }
+  if ($res_param =~ /\.(hlp|ps|pdf)$/o) { return ($res_param); }
   return ();
 }
 
@@ -358,7 +359,6 @@ my @defs =
    [ qr/\b(PGT_LoadPixmap)\b/,             [ 1 ],         \%pixmap,      \&isPGTres,      ],
    [ qr/\b(callback)\b/,                   [ -1, -2 ],    \%helpfile,    \&isHelpPopup,   ],
    [ qr/\b(create_button)\b/,              [ 2 ],         \%pixmap,      \&isBitmapRef,   ],
-   [ qr/\b(create_menu)\b/,                [ -3 ],        \%helpfile,    \&isHelpRef,     ],
    [ qr/\b(create_mode)\b/,                [ 1 ],         \%pixmap,      \&acceptAll,     ],
    [ qr/\b(create_mode)\b/,                [ 2 ],         \%helpfile,    \&isHelpRef,     ],
    [ qr/\b(create_toggle)\b/,              [ -2, -3 ],    \%pixmap,      \&isBitmapRef,   ],
@@ -438,6 +438,10 @@ sub scanCodeFile($) {
                     my $used = 0;
                   UNQUOTED: foreach my $unquoted (@unquoted) {
                       my $full_ressource_idx = $$idx_r{$unquoted};
+                      if (not defined $full_ressource_idx and $unquoted =~ /\.(ps|pdf)$/o) {
+                        $unquoted .= '.gz';  # try zipped version
+                        $full_ressource_idx = $$idx_r{$unquoted};
+                      }
                       if (defined $full_ressource_idx) { # existing ressource
                         my $full_ressource = $rel2full{$unquoted};
                         if (not defined $full_ressource) { die "expected ressource '$unquoted' to be defined"; }
@@ -523,7 +527,7 @@ sub referenceHelp($) {
     $newHelpRef++;
   }
   else {
-    if ($referred =~ /\.pdf$/) {
+    if ($referred =~ /\.(pdf|ps)$/) {
       referenceHelp($referred.'.gz');
     }
     elsif ($referred =~ /\@/) {
@@ -545,12 +549,12 @@ sub scanHelpFile($) {
       open(FILE,'<'.$file) || die "can't read '$file' (Reason: $!)";
       my @file = <FILE>;
       my $flines = scalar(@file);
-      unshift @file, undef; # line 0
+      unshift @file, undef;     # line 0
       my $lineNr = 0;
-      eval {
-        for ($lineNr=1; $lineNr<=$flines; $lineNr++) {
+      for ($lineNr=1; $lineNr<=$flines; $lineNr++) {
+        eval {
           $_ = $file[$lineNr];
-          if (/#/) { $_ = $`; } # skip comments
+          if (/#/) { $_ = $`; }  # skip comments
           if (/^\s*(SUB|UP)\s+(.*)$/o) {
             referenceHelp($2);
           }
@@ -561,13 +565,13 @@ sub scanHelpFile($) {
               $_ = $rest;
             }
           }
+        };
+        if ($@) {
+          chomp($@);
+          print "$file:$lineNr: Error: $@\n";
+          $errors++;
+          # if ($@ =~ /enough/) { die "enough"; }
         }
-      };
-      if ($@) {
-        chomp($@);
-        print "$file:$lineNr: Error: $@\n";
-        $errors++;
-        # if ($@ =~ /enough/) { die "enough"; }
       }
       close(FILE);
       $helpScanned{$file} = 1;
