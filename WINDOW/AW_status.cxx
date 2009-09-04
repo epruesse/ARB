@@ -1741,7 +1741,7 @@ static void aw_help_edit_help(AW_window *aww) {
         const char *base = GB_path_in_ARBLIB("help", NULL);
 #endif // DEBUG
 
-        const char *copy_cmd = GBS_global_string("cp %s/FORM.hlp %s", base, helpfile);
+        const char *copy_cmd = GBS_global_string("cp %s/FORM.hlp %s", base, helpfile); // def_hlp_res("FORM.hlp"); (see check_ressources.pl)
         printf("[Executing '%s']\n", copy_cmd);
         system(copy_cmd);
     }
