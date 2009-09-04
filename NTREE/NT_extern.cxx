@@ -1141,7 +1141,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 #endif // DEBUG
 
     if (clone){
-        awm->create_menu("File", "F", "nt_file.hlp", AWM_ALL);
+        awm->create_menu("File", "F", AWM_ALL);
         AWMIMT("close", "Close", "C", 0, AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
     }
     else {
@@ -1155,7 +1155,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         AWMIMT("table_admin",       "Table Admin (unfinished/unknown purpose)",  "A","tableadm.hlp",     AWM_ALL, AW_POPUP,(AW_CL)AWT_create_tables_admin_window, (AW_CL)GLOBAL_gb_main);
 #endif // DEBUG
 
-        awm->create_menu("File",     "F", "nt_file.hlp",  AWM_ALL );
+        awm->create_menu("File", "F", AWM_ALL);
         {
             AWMIMT("save_changes", "Quicksave changes",          "s", "save.hlp",      AWM_ALL, (AW_CB)NT_save_quick_cb, 0, 0);
             AWMIMT("save_all_as",  "Save whole database as ...", "w", "save.hlp",      AWM_ALL, AW_POPUP,(AW_CL)NT_create_save_as, (AW_CL)"tmp/nt/arbdb");
@@ -1208,7 +1208,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         // ----------------
         //      Species
         // ----------------
-        awm->create_menu("Species","c","species.hlp", AWM_ALL);
+        awm->create_menu("Species", "c", AWM_ALL);
         {
             AWMIMT("species_search", "Search and query",    "q", "sp_search.hlp", AWM_ALL, AW_POPUP,                (AW_CL)ad_create_query_window, 0);
             AWMIMT("species_info",   "Species information", "i", "sp_info.hlp",   AWM_ALL, NT_popup_species_window, 0,                             0);
@@ -1237,7 +1237,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             }
             awm->close_sub_menu();
 
-            awm->insert_sub_menu("Merge Species",      "g", 0, AWM_EXP);
+            awm->insert_sub_menu("Merge Species", "g", AWM_EXP);
             {
                 AWMIMT("merge_species", "Create merged species from similar species", "m", "sp_merge.hlp",     AWM_EXP, AW_POPUP, (AW_CL)NT_createMergeSimilarSpeciesWindow, 0);
                 AWMIMT("join_marked",   "Join Marked Species",                        "J", "join_species.hlp", AWM_EXP, AW_POPUP, (AW_CL)create_species_join_window,         0);
@@ -1252,7 +1252,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
             AWMIMT( "new_names",    "Generate New Names",   "e", "sp_rename.hlp",   AWM_ALL, AW_POPUP,   (AW_CL)AWTC_create_rename_window,      (AW_CL)GLOBAL_gb_main );
 
-            awm->insert_sub_menu("Valid Names ...",     "V", 0, AWM_EXP);
+            awm->insert_sub_menu("Valid Names ...", "V", AWM_EXP);
             {
                 AWMIMT("imp_names",    "Import names from file", "I", "vn_import.hlp",  AWM_EXP, NT_importValidNames,  0, 0);
                 AWMIMT("del_names",    "Delete names from DB",   "D", "vn_delete.hlp",  AWM_EXP, NT_deleteValidNames,  0, 0);
@@ -1270,7 +1270,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         // -----------------
         //      Sequence
         // -----------------
-        awm->create_menu("Sequence","S","sequence.hlp",   AWM_ALL);
+        awm->create_menu("Sequence", "S", AWM_ALL);
         {
             AWMIMT("seq_admin",   "Sequence/Alignment Admin", "A", "ad_align.hlp",   AWM_ALL,  AW_POPUP, (AW_CL)NT_create_alignment_window, 0);
             AWMIMT("ins_del_col", "Insert/Delete Column",     "I", "insdelchar.hlp", AWM_ALL,  AW_POPUP, (AW_CL)create_insertchar_window,   0);
@@ -1284,7 +1284,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             }
             awm->close_sub_menu();
 
-            awm->insert_sub_menu("Other sequence editors", "O", 0, AWM_EXP);
+            awm->insert_sub_menu("Other sequence editors", "O", AWM_EXP);
             {
                 AWMIMT("arb_edit", "ARB Editor (old)", "o", "arb_edit.hlp", AWM_EXP, (AW_CB)NT_system_cb, (AW_CL)"arb_edit &",  0);
             }
@@ -1316,7 +1316,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         // ------------
         //      SAI
         // ------------
-        awm->create_menu("SAI","A","extended.hlp",    AWM_ALL);
+        awm->create_menu("SAI", "A", AWM_ALL);
         {
             AWMIMT("sai_admin", "Manage SAIs",                "S","ad_extended.hlp",  AWM_ALL,    AW_POPUP, (AW_CL)NT_create_extendeds_window,   0 );
             awm->insert_sub_menu("Create SAI using ...", "C");
@@ -1343,7 +1343,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         // ---------------
         //      Probes
         // ---------------
-        awm->create_menu("Probes","P","probe_menu.hlp", AWM_ALL);
+        awm->create_menu("Probes", "P", AWM_ALL);
         {
             AWMIMT("probe_design",      "Design Probes",             "D", "probedesign.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_probe_design_window, (AW_CL)is_genome_db );
             AWMIMT("probe_multi",       "Calculate Multi-Probes",    "u", "multiprobe.hlp",  AWM_ALL, AW_POPUP, (AW_CL)MP_main, (AW_CL)ntw           );
@@ -1360,7 +1360,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     // -------------
     //      Tree
     // -------------
-    awm->create_menu("Tree", "T", "nt_tree.hlp",  AWM_ALL );
+    awm->create_menu("Tree", "T", AWM_ALL);
     {
         if (!clone) {
             awm->insert_sub_menu("Add Species to Existing Tree", "A");
@@ -1403,7 +1403,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
                 GDE_load_menu(awm,AWM_ALL,"Phylogeny max. Likelyhood");
                 awm->close_sub_menu();
 
-                awm->insert_sub_menu("Other methods", "O", 0, AWM_EXP);
+                awm->insert_sub_menu("Other methods", "O", AWM_EXP);
                 GDE_load_menu(awm,AWM_EXP,"Phylogeny (Other)");
                 awm->close_sub_menu();
             }
@@ -1479,7 +1479,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         }
 
         if (is_genome_db) {
-            awm->insert_sub_menu("Other..",  "O", 0, AWM_EXP);
+            awm->insert_sub_menu("Other..",  "O", AWM_EXP);
             {
                 AWMIMT(awm->local_id("tree_pseudo_species_to_organism"), "Change pseudo species to organisms in tree", "p", "tree_pseudo.hlp",        AWM_EXP, (AW_CB)NT_pseudo_species_to_organism, (AW_CL)ntw, 0);
             }
@@ -1491,28 +1491,28 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         // --------------
         //      Tools
         // --------------
-        awm->create_menu("Tools","o","nt_etc.hlp", AWM_ALL);
+        awm->create_menu("Tools", "o", AWM_ALL);
         {
             AWMIMT("names_admin",      "Name server admin",    "s","namesadmin.hlp",   AWM_ALL, AW_POPUP, (AW_CL)AW_create_namesadmin_window, (AW_CL)GLOBAL_gb_main );
-            awm->insert_sub_menu("DB admin", "D", 0, AWM_EXP);
+            awm->insert_sub_menu("DB admin", "D", AWM_EXP);
             {
                 AWMIMT("db_admin", "Re-repair DB", "R", "rerepair.hlp", AWM_EXP, NT_rerepair_DB, (AW_CL)GLOBAL_gb_main, 0);
             }
             awm->close_sub_menu();
-            awm->insert_sub_menu("Network", "N", 0, AWM_EXP);
+            awm->insert_sub_menu("Network", "N", AWM_EXP);
             {
                 GDE_load_menu(awm,AWM_EXP,"User");
             }
             awm->close_sub_menu();
             SEP________________________SEP();
 
-            awm->insert_sub_menu("GDE specials","G", 0, AWM_EXP);
+            awm->insert_sub_menu("GDE specials","G", AWM_EXP);
             {
                 GDE_load_menu(awm,AWM_EXP,0,0);
             }
             awm->close_sub_menu();
 
-            awm->insert_sub_menu("WL specials","W", 0, AWM_EXP);
+            awm->insert_sub_menu("WL specials","W", AWM_EXP);
             {
                 AWMIMT(awm->local_id("view_probe_group_result"), "View probe group result", "V", "",             AWM_EXP, AW_POPUP, (AW_CL)create_probe_group_result_window, (AW_CL)ntw);
             }
@@ -1524,7 +1524,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         // -------------------
         //      Properties
         // -------------------
-        awm->create_menu("Properties","r","properties.hlp", AWM_ALL);
+        awm->create_menu("Properties", "r", AWM_ALL);
         {
             AWMIMT("props_menu",    "Frame settings", "F","props_frame.hlp",      AWM_ALL, AW_POPUP, (AW_CL)AWT_preset_window, 0 );
             awm->insert_sub_menu("Tree settings",  "T");

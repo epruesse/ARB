@@ -454,7 +454,7 @@ void aed_popup_config_window(AW_window *aw, AW_CL cd1, AW_CL cd2) {
         aedw->config_window_created = true;
 
         aedw->config_window->init(aedw->root->aw_root,"EDIT_CONFIG", "ARB_EDIT_CONFIG",200,200);
-        aedw->config_window->create_menu("Window", "W", "no help", AWM_ALL );
+        aedw->config_window->create_menu("Window", "W", AWM_ALL);
         aedw->config_window->insert_menu_topic(0, "hide",        "h", "no help", AWM_ALL, aed_config_window_popdown, (AW_CL)aedw, (AW_CL)0);
         aedw->config_window->insert_menu_topic(0, "bigger info", "h", "no help", AWM_ALL, aed_config_1,              (AW_CL)aedw, (AW_CL)0);
 

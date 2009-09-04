@@ -1346,7 +1346,7 @@ static void TEST_buildAndDumpChain(AW_window *, AWT_canvas *)
 
 static void init_TEST_menu(AW_window_menu_modes *awm,AWT_canvas *ntw)
 {
-    awm->create_menu("Test[debug]", "T", "",  AWM_ALL );
+    awm->create_menu("Test[debug]", "T", AWM_ALL );
 
     awm->insert_menu_topic(0, "Test edges",         "T", "", AWM_ALL, (AW_CB)TEST_testWholeTree,     (AW_CL)ntw, 0);
     awm->insert_menu_topic(0, "Mix tree",           "M", "", AWM_ALL, (AW_CB)TEST_mixTree,           (AW_CL)ntw, 0);
@@ -1477,18 +1477,18 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_adfiltercbstruct) {
     AWT_create_debug_menu(awm);
 #endif // DEBUG
 
-    awm->create_menu("File",     "F", "pars_file.hlp",  AWM_ALL );
+    awm->create_menu("File", "F", AWM_ALL);
     {
         awm->insert_menu_topic("print_tree", "Print Tree ...",          "P","tree2prt.hlp", AWM_ALL, AWT_popup_print_window, (AW_CL)ntw, 0 );
         awm->insert_menu_topic( "quit",     "Quit",             "Q","quit.hlp",     AWM_ALL, (AW_CB)PARS_export_cb, (AW_CL)ntw,2);
     }
 
-    awm->create_menu("Species", "S", "nt_tree.hlp",  AWM_ALL );
+    awm->create_menu("Species", "S", AWM_ALL);
     {
         NT_insert_mark_submenus(awm, ntw, 0);
 
     }
-    awm->create_menu("Tree", "T", "nt_tree.hlp",  AWM_ALL );
+    awm->create_menu("Tree", "T", AWM_ALL);
     {
 
         awm->insert_menu_topic( "nds",      "NDS (Node Display Setup) ...",      "N","props_nds.hlp",    AWM_ALL, AW_POPUP, (AW_CL)AWT_create_nds_window, (AW_CL)ntw->gb_main );
@@ -1548,7 +1548,7 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_adfiltercbstruct) {
     init_TEST_menu(awm,ntw);
 #endif // TEST_FUNCTIONS
 
-    awm->create_menu("Properties","r","properties.hlp", AWM_ALL);
+    awm->create_menu("Properties", "r", AWM_ALL);
     {
         awm->insert_menu_topic("props_menu",  "Menu: Colors and Fonts ...",              "M", "props_frame.hlp",      AWM_ALL, AW_POPUP,(AW_CL)AW_preset_window,        0);
         awm->insert_menu_topic("props_tree",  "Tree: Colors and Fonts ...",              "C", "pars_props_data.hlp",  AWM_ALL, AW_POPUP,(AW_CL)AW_create_gc_window,     (AW_CL)aw_gc_manager );
@@ -1558,7 +1558,7 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_adfiltercbstruct) {
     }
     awm->button_length(5);
 
-    awm->create_menu("ETC","E","nt_etc.hlp", AWM_ALL);
+    awm->create_menu("ETC", "E", AWM_ALL);
     {
         awm->insert_menu_topic("reset_logical_zoom",    "Reset Logical Zoom",   "L","rst_log_zoom.hlp", AWM_ALL, (AW_CB)NT_reset_lzoom_cb, (AW_CL)ntw, 0 );
         awm->insert_menu_topic("reset_physical_zoom",   "Reset Physical Zoom",  "P","rst_phys_zoom.hlp",AWM_ALL, (AW_CB)NT_reset_pzoom_cb, (AW_CL)ntw, 0 );

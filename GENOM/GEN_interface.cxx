@@ -597,14 +597,14 @@ AW_window *GEN_create_gene_window(AW_root *aw_root) {
         ad_global_scannerid   = scannerid;
         ad_global_scannerroot = aws->get_root();
 
-        aws->create_menu("GENE",     "G", "spa_gene.hlp",  AD_F_ALL );
+        aws->create_menu("GENE", "G", AD_F_ALL);
         aws->insert_menu_topic("gene_delete",   "Delete",       "D","spa_delete.hlp",       AD_F_ALL,   (AW_CB)gene_delete_cb, 0, 0);
         aws->insert_menu_topic("gene_rename",   "Rename ...",   "R","spa_rename.hlp",   AD_F_ALL,   AW_POPUP, (AW_CL)create_gene_rename_window, 0);
         aws->insert_menu_topic("gene_copy",     "Copy ...",     "y","spa_copy.hlp",         AD_F_ALL,   AW_POPUP, (AW_CL)create_gene_copy_window, 0);
         aws->insert_menu_topic("gene_create",   "Create ...",   "C","spa_create.hlp",   AD_F_ALL,   AW_POPUP, (AW_CL)create_gene_create_window, 0);
         aws->insert_separator();
 
-        aws->create_menu("FIELDS",     "F", "gene_fields.hlp",  AD_F_ALL );
+        aws->create_menu("FIELDS", "F", AD_F_ALL);
         GEN_create_field_items(aws);
 
         {

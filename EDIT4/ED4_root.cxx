@@ -1488,7 +1488,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     AWT_create_debug_menu(awmm);
 #endif // DEBUG
 
-    awmm->create_menu("File", "F", "No Help", AWM_ALL );
+    awmm->create_menu("File", "F", AWM_ALL);
 
     awmm->insert_menu_topic("new_win",        "New Editor Window",     "W", 0, AWM_ALL, ED4_new_editor_window,         0,                                             0)   ;
     awmm->insert_menu_topic("save_config",    "Save Configuration",    "S", 0, AWM_ALL, (AW_CB)ED4_save_configuration, (AW_CL) 0,                                     (int)0 );
@@ -1507,7 +1507,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     //  Create
     // ------------------------------
 
-    awmm->create_menu("Create", "C", 0, AWM_ALL);
+    awmm->create_menu("Create", "C", AWM_ALL);
     awmm->insert_menu_topic("create_species",                "Create new species",                "n", 0, AWM_ALL, AW_POPUP, (AW_CL)ED4_create_new_seq_window, (int)0);
     awmm->insert_menu_topic("create_species_from_consensus", "Create new species from consensus", "u", 0, AWM_ALL, AW_POPUP, (AW_CL)ED4_create_new_seq_window, (int)1);
     awmm->insert_menu_topic("copy_species",                  "Copy current species",              "C", 0, AWM_ALL, AW_POPUP, (AW_CL)ED4_create_new_seq_window, (int)2);
@@ -1519,7 +1519,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     //  Edit
     // ------------------------------
 
-    awmm->create_menu( "Edit", "E", 0, AWM_ALL);
+    awmm->create_menu( "Edit", "E", AWM_ALL);
     awmm->insert_menu_topic("refresh",     "Refresh [Ctrl-L]",           "f",  0, AWM_ALL, ED4_refresh_window,                   1, 0);
     awmm->insert_menu_topic("load_actual", "Load current species [GET]", "G", 0, AWM_ALL, ED4_get_and_jump_to_actual_from_menu, 0, 0);
     awmm->insert_menu_topic("load_marked", "Load marked species",        "m", 0, AWM_ALL, ED4_get_marked_from_menu,             0, 0);
@@ -1561,7 +1561,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     //  View
     // ------------------------------
 
-    awmm->create_menu("View", "V", 0, AWM_ALL);
+    awmm->create_menu("View", "V", AWM_ALL);
     awmm->insert_sub_menu("Search", "S");
     {
         int         s;
@@ -1621,7 +1621,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     //  Block
     // ------------------------------
 
-    awmm->create_menu("Block", "B", 0, AWM_ALL);
+    awmm->create_menu("Block", "B", AWM_ALL);
 
     awmm->insert_menu_topic("select_marked",   "Select marked species",   "e", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_SELECT_MARKED)  , 0);
     awmm->insert_menu_topic("deselect_marked", "Deselect marked species", "k", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_DESELECT_MARKED), 0);
@@ -1654,7 +1654,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     //  Properties
     // ------------------------------
 
-    awmm->create_menu("Properties",   "P", "Select something",    AWM_ALL);
+    awmm->create_menu("Properties", "P", AWM_ALL);
     
     awmm->insert_menu_topic("props_frame",     "Frame Settings ",       "F", 0,                  AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window,                       0);
     awmm->insert_menu_topic("props_options",   "Editor Options ",       "O", "e4_options.hlp",   AWM_ALL, AW_POPUP, (AW_CL)ED4_create_level_1_options_window,      0);
