@@ -408,14 +408,15 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, const ch
     long     ali_len    = GBT_get_alignment_len(gb_main, ali_name);
     int      main_clock = GB_read_clock(gb_main);
 
+    GB_ERROR warning = NULL;
+
     if (ali_len<0){
-        GB_ERROR warning = GBS_global_string("Skipping alignment '%s' (not a valid alignment; len=%li).", ali_name, ali_len);
-        GB_information(warning);
+        warning = GBS_global_string("Skipping alignment '%s' (not a valid alignment; len=%li).", ali_name, ali_len);
     }
     else {
         int leafcount = g_b_count_leafs(tree);
         if (!leafcount) {
-            error = GB_export_errorf("Tree contains no sequences with data in '%s'", ali_name);
+            error = "Tree is empty";
         }
         else {
             /* Distribute masters in tree */
@@ -427,48 +428,55 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, const ch
             GB_status(0);
 
             init_indices_and_count_sons(tree, &seqcount, ali_name);
-            distribute_masters(tree, &mastercount, &max_compSteps);
+            if (!seqcount) {
+                warning = GBS_global_string("Tree contains no sequences with data in '%s'\n"
+                                            "Skipping compression for this alignment",
+                                            ali_name);
+            }
+            else {
+                distribute_masters(tree, &mastercount, &max_compSteps);
 
 #if defined(SAVE_COMPRESSION_TREE_TO_DB)
-            {
-                error = GBT_link_tree((GBT_TREE*)tree, gb_main, 0, NULL, NULL);
-                if (!error) error = GBT_write_tree(gb_main,0,"tree_compression_new",(GBT_TREE*)tree);
-                GB_information("Only generated compression tree (do NOT save DB anymore)");
-                return error;
-            }
+                {
+                    error = GBT_link_tree((GBT_TREE*)tree, gb_main, 0, NULL, NULL);
+                    if (!error) error = GBT_write_tree(gb_main,0,"tree_compression_new",(GBT_TREE*)tree);
+                    GB_information("Only generated compression tree (do NOT save DB anymore)");
+                    return error;
+                }
 #endif /* SAVE_COMPRESSION_TREE_TO_DB */
 
-            // detect degenerated trees
-            {
-                int min_masters   = ((seqcount-1)/MAX_SEQUENCE_PER_MASTER)+1;
-                int min_compSteps = 1;
+                // detect degenerated trees
                 {
-                    int m = min_masters;
-                    while (m>1) {
-                        m            = ((m-1)/MAX_SEQUENCE_PER_MASTER)+1;
-                        min_masters += m;
-                        min_compSteps++;
+                    int min_masters   = ((seqcount-1)/MAX_SEQUENCE_PER_MASTER)+1;
+                    int min_compSteps = 1;
+                    {
+                        int m = min_masters;
+                        while (m>1) {
+                            m            = ((m-1)/MAX_SEQUENCE_PER_MASTER)+1;
+                            min_masters += m;
+                            min_compSteps++;
+                        }
+                    }
+
+                    int acceptable_masters   = (3*min_masters)/2; // accept 50% overhead
+                    int acceptable_compSteps = 11*min_compSteps; // accept 1000% overhead
+
+                    if (mastercount>acceptable_masters || max_compSteps>acceptable_compSteps) {
+                        GB_warningf("Tree is ill-suited for compression (cause of deep branches)\n"
+                                    "                    Used tree   Optimal tree   Overhead\n"
+                                    "Compression steps       %5i          %5i      %4i%% (speed)\n"
+                                    "Master sequences        %5i          %5i      %4i%% (size)\n"
+                                    "If you like to restart with a better tree,\n"
+                                    "press 'Abort' to stop compression",
+                                    max_compSteps, min_compSteps, (100*max_compSteps)/min_compSteps-100,
+                                    mastercount, min_masters, (100*mastercount)/min_masters-100);
                     }
                 }
 
-                int acceptable_masters   = (3*min_masters)/2; // accept 50% overhead
-                int acceptable_compSteps = 11*min_compSteps; // accept 1000% overhead
-
-                if (mastercount>acceptable_masters || max_compSteps>acceptable_compSteps) {
-                    GB_warningf("Tree is ill-suited for compression (cause of deep branches)\n"
-                                "                    Used tree   Optimal tree   Overhead\n"
-                                "Compression steps       %5i          %5i      %4i%% (speed)\n"
-                                "Master sequences        %5i          %5i      %4i%% (size)\n"
-                                "If you like to restart with a better tree,\n"
-                                "press 'Abort' to stop compression",
-                                max_compSteps, min_compSteps, (100*max_compSteps)/min_compSteps-100,
-                                mastercount, min_masters, (100*mastercount)/min_masters-100);
-                }
+                ad_assert(mastercount>0);
             }
 
-            ad_assert(mastercount>0);
-
-            {
+            if (!warning) {
                 GBDATA              *gb_master_ali     = 0;
                 GBDATA              *old_gb_master_ali = 0;
                 GB_Sequence         *seqs              = 0;
@@ -699,6 +707,9 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, const ch
             }
         }
     }
+
+    if (warning) GB_information(warning);
+    
     return error;
 }
 
