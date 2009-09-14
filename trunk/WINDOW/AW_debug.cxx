@@ -109,7 +109,7 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "ARB_NT/mark_long_branches",                            5);
     GBS_write_hash(dontCallHash, "ARB_NT/tree_scale_lengths",                            5);
     GBS_write_hash(dontCallHash, "CREATE_USER_MASK/CREATE",                              5);
-    GBS_write_hash(dontCallHash, "GDE__import__Import_sequences_using_Readseq_slow_/GO", 5);
+    GBS_write_hash(dontCallHash, "GDE__Import__Import_sequences_using_Readseq_slow_/GO", 5);
     GBS_write_hash(dontCallHash, "INFO_OF_ALIGNMENT/DELETE",                             5);
     GBS_write_hash(dontCallHash, "LOAD_SELECTION_BOX/LOAD",                              5);
     GBS_write_hash(dontCallHash, "MULTI_PROBE/CREATE_NEW_SEQUENCE",                      5);
@@ -119,14 +119,14 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "PT_SERVER_ADMIN/KILL_ALL_SERVERS",                     5);
     GBS_write_hash(dontCallHash, "PT_SERVER_ADMIN/KILL_SERVER",                          5);
     GBS_write_hash(dontCallHash, "PT_SERVER_ADMIN/UPDATE_SERVER",                        5);
+    GBS_write_hash(dontCallHash, "REALIGN_DNA/REALIGN",                                  5);
     GBS_write_hash(dontCallHash, "SPECIES_QUERY/DELETE_LISTED",                          5);
-    GBS_write_hash(dontCallHash, "SPECIES_QUERY/SAVELOAD_CONFIG",                        5);
+    GBS_write_hash(dontCallHash, "SPECIES_QUERY/SAVELOAD_CONFIG_spec",                   5);
     GBS_write_hash(dontCallHash, "SPECIES_SELECTIONS/RENAME",                            5);
     GBS_write_hash(dontCallHash, "SPECIES_SELECTIONS/STORE",                             5);
-    GBS_write_hash(dontCallHash, "del_marked",                                           5);
-    GBS_write_hash(dontCallHash, "REALIGN_DNA/REALIGN",                                  5);
     GBS_write_hash(dontCallHash, "TREE_PROPS/SAVELOAD_CONFIG",                           5);
     GBS_write_hash(dontCallHash, "WWW_PROPS/SAVELOAD_CONFIG",                            5);
+    GBS_write_hash(dontCallHash, "del_marked",                                           5);
 #endif
 
     GB_HASH *autodontCallHash = GBS_create_hash(30, GB_MIND_CASE);
