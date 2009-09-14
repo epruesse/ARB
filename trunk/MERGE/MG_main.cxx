@@ -98,7 +98,7 @@ AW_window *MG_save_result_cb(AW_root *aw_root, char *base_name)
 
     aws = new AW_window_simple;
     aws->init( aw_root, "MERGE_SAVE_WHOLE_DB", "SAVE WHOLE DATABASE");
-    aws->load_xfig("sel_box.fig");
+    aws->load_xfig("sel_box_user3.fig");
 
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE","CLOSE","C");
@@ -115,11 +115,8 @@ AW_window *MG_save_result_cb(AW_root *aw_root, char *base_name)
     aws->at("user2");
     aws->create_button(0,"Database Description");
 
-
-
-    aws->callback( (AW_CB0)AW_POPDOWN);
-    aws->at("cancel4");
-    aws->create_button("CLOSE","CANCEL","C");
+    aws->at("user3");
+    aws->create_text_field(AWAR_DB_COMMENT);
 
     aws->callback( (AW_CB0)AW_POPDOWN);
     aws->at("cancel4");
@@ -127,10 +124,6 @@ AW_window *MG_save_result_cb(AW_root *aw_root, char *base_name)
 
     aws->at("save4");aws->callback(MG_save_cb);
     aws->create_button("SAVE","SAVE","S");
-
-
-    aws->at("user3");
-    aws->create_text_field(AWAR_DB_COMMENT);
 
     return (AW_window *)aws;
 }

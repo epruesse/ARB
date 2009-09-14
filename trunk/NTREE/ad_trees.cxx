@@ -333,7 +333,7 @@ AW_window *create_tree_export_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
     aws->init( root, "SAVE_TREE", "TREE SAVE");
-    aws->load_xfig("sel_box.fig");
+    aws->load_xfig("sel_box_user2.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
     aws->at("close");
@@ -486,7 +486,7 @@ AW_window *create_tree_import_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
     aws->init( root, "LOAD_TREE", "TREE LOAD");
-    aws->load_xfig("sel_box.fig");
+    aws->load_xfig("sel_box_tree.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
     aws->at("close");
