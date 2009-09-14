@@ -95,7 +95,7 @@ Note: The BSD flavor of sed provided with OS X will not work with ARB.  You need
         
         % tar xzvf arbsrc.tgz
   
-        or chech out from svn
+        or check out from svn
   
     % svn co --username coder --password gimmeARBsource http://svn.mikro.biologie.tu-muenchen.de/svn/branches/stable_5.0 ARB
   
