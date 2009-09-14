@@ -117,7 +117,7 @@ void export_nds_cb(AW_window *aww,AW_CL print_flag) {
 AW_window *create_nds_export_window(AW_root *root){
     AW_window_simple *aws = new AW_window_simple;
     aws->init( root, "EXPORT_NDS_OF_MARKED", "EXPORT NDS OF MARKED SPECIES");
-    aws->load_xfig("sel_box.fig");
+    aws->load_xfig("sel_box_nds.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
     aws->at("close");

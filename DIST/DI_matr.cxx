@@ -1136,7 +1136,7 @@ AW_window *DI_create_save_matrix_window(AW_root *aw_root, char *base_name)
     if (aws) return aws;
     aws = new AW_window_simple;
     aws->init( aw_root, "SAVE_MATRIX", "Save Matrix");
-    aws->load_xfig("sel_box.fig");
+    aws->load_xfig("sel_box_user.fig");
 
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CANCEL","C");
