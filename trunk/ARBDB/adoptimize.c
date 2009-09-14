@@ -2496,10 +2496,13 @@ GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
             if (!gbk[idx].cnt) continue; /* there are no entries with this quark */
 
             type = GB_TYPE(gbk[idx].gbds[0]);
+            GB_begin_transaction(gb_main);
             compression_mask = gb_get_compression_mask(Main, idx, type);
-            if ((compression_mask & GB_COMPRESSION_DICTIONARY)==0) continue; /* compression with dictionary is not allowed */
-            if (strcmp(key_name,"data")==0) continue;
-            if (strcmp(key_name,"quality")==0) continue;
+            GB_commit_transaction(gb_main);
+
+            if ((compression_mask & GB_COMPRESSION_DICTIONARY) == 0) continue; /* compression with dictionary is not allowed */
+            if (strcmp(key_name,"data")                        == 0) continue;
+            if (strcmp(key_name,"quality")                     == 0) continue;
 #endif
 
             printf("- dictionary for '%s' (idx=%i)\n", key_name, idx);
