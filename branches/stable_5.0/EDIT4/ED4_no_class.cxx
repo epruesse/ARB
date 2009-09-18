@@ -1786,7 +1786,7 @@ static GB_ERROR createDataFromConsensus(GBDATA *gb_species, ED4_group_manager *g
     GBDATA *gb_ali = GB_search(gb_species, ali, GB_DB);
     if (gb_ali) {
         GBDATA *gb_data = GB_search(gb_ali, "data", GB_STRING);
-        error = GB_write_pntr(gb_data, consensus, len, len);
+        error = GB_write_pntr(gb_data, consensus, len+1, len);
     }
     else {
         error = GB_export_errorf("Can't find alignment '%s'", ali);
