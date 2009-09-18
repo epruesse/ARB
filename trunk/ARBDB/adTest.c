@@ -278,7 +278,14 @@ static void GB_dump_internal(GBDATA *gbd, int *lines_allowed) {
         }
     }
 
-    if (content==0) content           = "<zero content - illegal!>";
+    if (content==0) {
+        if (GB_have_error()) {
+            content = GBS_global_string("<failed to read content (error is '%s')>", GB_await_error());
+        }
+        else {
+            content = "<illegal zero content, but no error - severe bug?!>";
+        }
+    }
     if (content_len == 0) content_len = strlen(content);
 
     {

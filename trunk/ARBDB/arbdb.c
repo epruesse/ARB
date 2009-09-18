@@ -844,11 +844,14 @@ GB_ERROR GB_write_pntr(GBDATA *gbd,const char *s, long bytes_size, long stored_s
     const char   *d;
     int           compression_mask;
     long          memsize;
+    GB_TYPES      type = GB_TYPE(gbd);
+
+    gb_assert(type != GB_STRING || (stored_size == bytes_size-1)); // size constraint for strings not fulfilled!
 
     gb_free_cache(Main,gbd);
     gb_save_extern_data_in_ts(gbd);
 
-    compression_mask = gb_get_compression_mask(Main, key, GB_TYPE(gbd));
+    compression_mask = gb_get_compression_mask(Main, key, type);
 
     if (compression_mask){
         d = gb_compress_data(gbd, key, s, bytes_size, &memsize, compression_mask, GB_FALSE);
