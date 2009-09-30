@@ -497,7 +497,6 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
     database->calc_no_of_all(area_string_top, &group_count, &species_count);
     total_no_of_groups = group_count;
     total_no_of_species = species_count;
-    loading = 1;
 
     /*****YKADI COMMENT****************/
     //  MIDDLE  REGION -- counts no of species and sais including groups
@@ -507,8 +506,7 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
     total_no_of_groups += group_count;
     total_no_of_species += species_count;
 
-    status_count_total = total_no_of_species;
-    status_count_curr  = 0;
+    aw_status_counter species_progress(total_no_of_species);
 
     GB_push_transaction( GLOBAL_gb_main );
 
@@ -570,15 +568,12 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
             y+=3;
 
 
-            if (total_no_of_species > MINSPECFORSTATWIN) {
-                aw_openstatus("Reading species from database");
-                aw_status((double)0);
-            }
-
+            aw_openstatus("Reading species from database");
+            aw_status((double)0);
 
             reference = new AWT_reference(GLOBAL_gb_main);
             database->scan_string(top_multi_species_manager, ref_terminals.get_ref_sequence_info(), ref_terminals.get_ref_sequence(),
-                                  area_string_top, &index, &y);
+                                  area_string_top, &index, &y, species_progress);
             GB_pop_transaction( GLOBAL_gb_main );
 
             const int TOP_MID_LINE_HEIGHT   = 3;
@@ -633,12 +628,10 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
             {
                 GB_transaction dummy(GLOBAL_gb_main);
                 database->scan_string(mid_multi_species_manager, ref_terminals.get_ref_sequence_info(), ref_terminals.get_ref_sequence(),
-                                      area_string_middle, &index, &y);
+                                      area_string_middle, &index, &y, species_progress);
             }
 
-            if (total_no_of_species > MINSPECFORSTATWIN) {
-                aw_closestatus();
-            }
+            aw_closestatus();
 
             {
                 ED4_spacer_terminal *mid_bot_spacer_terminal = new ED4_spacer_terminal( "Middle_Bot_Spacer_Terminal", 0, y, 880, 10, device_manager);
@@ -683,20 +676,18 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
     resize_all();
 
 
-    if (total_no_of_species > MINSPECFORSTATWIN)
+    // build consensi
     {
         aw_openstatus("Initializing consensi");
         aw_status((double)0);
-    }
 
-    status_count_total = total_no_of_groups + 1; // 1 is root_group_man
-    status_count_curr  = 0;
+        aw_status_counter progress(total_no_of_groups+1); // 1 is root_group_man
 
-    root_group_man->create_consensus(root_group_man);
-    e4_assert(root_group_man->table().ok());
+        root_group_man->create_consensus(root_group_man, &progress);
+        e4_assert(root_group_man->table().ok());
 
-    if (total_no_of_species > MINSPECFORSTATWIN)
         aw_closestatus();
+    }
 
     //  main_manager->check_all();
 
@@ -706,7 +697,6 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
     // calc size and display:
 
     resize_all();
-    loading = 0;
 
     x_link = y_link = NULL;
     if (main_manager)

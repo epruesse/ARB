@@ -61,11 +61,6 @@ bool           move_cursor;     // only needed for editing in consensus
 bool           DRAW;
 bool           last_window_reached; // needed for refreshing all windows (if TRUE refresh/...-flags will be cleared)
 
-size_t status_count_total;                          // used for consensus progress bar
-size_t status_count_curr;
-
-bool loading;
-
 void ED4_config_change_cb(AW_root *)
 {
 

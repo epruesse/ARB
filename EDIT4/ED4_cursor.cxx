@@ -614,7 +614,7 @@ void ED4_get_and_jump_to_species(GB_CSTR species_name)
         sprintf(string, "-L%s", species_name);
         ED4_ROOT->database->fill_species(insert_into_manager,
                                          ED4_ROOT->ref_terminals.get_ref_sequence_info(), ED4_ROOT->ref_terminals.get_ref_sequence(),
-                                         string, &index, &y, 0, &lot, insert_into_manager->calc_group_depth());
+                                         string, &index, &y, 0, &lot, insert_into_manager->calc_group_depth(), NULL);
         loaded = 1;
 
         {
@@ -718,7 +718,7 @@ void ED4_get_marked_from_menu(AW_window *, AW_CL, AW_CL) {
                         *bp++ = 0;
                         ED4_ROOT->database->fill_species(insert_into_manager,
                                                          ED4_ROOT->ref_terminals.get_ref_sequence_info(), ED4_ROOT->ref_terminals.get_ref_sequence(),
-                                                         buffer, &index, &y, 0, &lot, group_depth);
+                                                         buffer, &index, &y, 0, &lot, group_depth, NULL);
                         bp = buffer;
                         index = 0;
                     }
@@ -748,7 +748,7 @@ void ED4_get_marked_from_menu(AW_window *, AW_CL, AW_CL) {
             *bp++ = 0;
             ED4_ROOT->database->fill_species(insert_into_manager,
                                              ED4_ROOT->ref_terminals.get_ref_sequence_info(), ED4_ROOT->ref_terminals.get_ref_sequence(),
-                                             buffer, &index, &y, 0, &lot, group_depth);
+                                             buffer, &index, &y, 0, &lot, group_depth, NULL);
         }
 
         aw_closestatus();

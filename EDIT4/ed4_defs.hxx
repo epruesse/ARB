@@ -51,11 +51,6 @@ extern bool           move_cursor; //only needed for editing in consensus
 extern bool           DRAW;
 extern bool           last_window_reached; //only needed for refreshing all windows
 
-extern size_t status_count_total; // used for consensus progress bar
-extern size_t status_count_curr;
-
-extern bool loading;
-
 // globally used defines and flags
 
 #define INFINITE    -1
@@ -79,9 +74,8 @@ extern bool loading;
 
 #define MAX_POSSIBLE_SEQ_LENGTH     100000000
 
-#define MAXCHARTABLE    256                     // Maximum of Consensustable
-#define MAXWINDOWS  5
-#define MINSPECFORSTATWIN   200
+#define MAXCHARTABLE 256                            // Maximum of Consensustable
+#define MAXWINDOWS   5
 
 #define AWAR_EDIT_MODE                  "tmp/edit4/edit_mode"
 #define AWAR_INSERT_MODE                "tmp/edit4/insert_mode"
