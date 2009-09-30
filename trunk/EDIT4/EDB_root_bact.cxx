@@ -324,7 +324,8 @@ ED4_returncode  EDB_root_bact::fill_species(ED4_multi_species_manager  *multi_sp
                                             ED4_index                  *y,
                                             ED4_index                   actual_local_position,
                                             ED4_index                  *length_of_terminals, /*height of terminals is meant*/
-                                            int                         group_depth)
+                                            int                         group_depth,
+                                            aw_status_counter          *progress)
 {
 #define SHIPSIZE 1024
 
@@ -392,9 +393,7 @@ ED4_returncode  EDB_root_bact::fill_species(ED4_multi_species_manager  *multi_sp
             ship[lauf] = '\0'; // speciesname-generation is finished
             lauf = 0;
 
-            if (aw_status(++status_count_curr/double(status_count_total)) == 1) { // Kill has been Pressed
-                aw_closestatus();
-                delete ship;
+            if (progress && progress->inc_and_update() == 1) { // Kill has been Pressed
                 ED4_exit();
             }
 
@@ -419,7 +418,8 @@ ED4_index EDB_root_bact::scan_string(ED4_multi_species_manager  *parent,
                                      ED4_sequence_terminal      *ref_sequence_terminal,
                                      char                       *str,
                                      int                        *index,
-                                     ED4_index                  *y)
+                                     ED4_index                  *y,
+                                     aw_status_counter&          progress)
 {
     ED4_multi_species_manager *multi_species_manager = NULL;
     ED4_bracket_terminal      *bracket_terminal      = NULL;
@@ -442,7 +442,7 @@ ED4_index EDB_root_bact::scan_string(ED4_multi_species_manager  *parent,
             length_of_terminals = 0;
 
             fill_species(parent, ref_sequence_info_terminal, ref_sequence_terminal, str, index,
-                         y, local_count_position, &length_of_terminals, group_depth);
+                         y, local_count_position, &length_of_terminals, group_depth, &progress);
 
             local_count_position += length_of_terminals;
             ED4_counter ++;     // counter is only needed to generate
@@ -463,7 +463,7 @@ ED4_index EDB_root_bact::scan_string(ED4_multi_species_manager  *parent,
             y_old = local_count_position;
             ED4_counter++;
 
-            local_count_position += scan_string(multi_species_manager, ref_sequence_info_terminal, ref_sequence_terminal, str, index, y);
+            local_count_position += scan_string(multi_species_manager, ref_sequence_info_terminal, ref_sequence_terminal, str, index, y, progress);
             sprintf(namebuffer, "Group_Spacer_Terminal_End.%ld", ED4_counter);
 
             local_count_position += SPACERHEIGHT;

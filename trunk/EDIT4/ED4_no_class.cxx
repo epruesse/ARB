@@ -1155,7 +1155,7 @@ static void createGroupFromSelected(GB_CSTR group_name, GB_CSTR field_name, GB_C
         list_elem = list_elem->next();
     }
 
-    group_manager->create_consensus(group_manager);
+    group_manager->create_consensus(group_manager, NULL);
     group_manager->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager()->count_all_children_and_set_group_id();
 
     {
@@ -1970,6 +1970,8 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
                         ED4_group_manager *group_man = cursor_terminal->get_parent(ED4_L_GROUP)->to_group_manager();
                         SpeciesMergeList sml = 0; // list of species in group
 
+                        aw_openstatus("Merging fields");
+
                         group_man->route_down_hierarchy((void**)&sml, (void**)gb_species_data, add_species_to_merge_list);
                         if (sml==0) {
                             error = "Please choose a none empty group!";
@@ -1985,12 +1987,11 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
                         if (!error) error = createDataFromConsensus(gb_new_species, group_man); // insert consensus as 'data'
 
                         if (!error) {
-                            char *doneFields = strdup(";name;"); // all fields which are already merged
-                            int doneLen = strlen(doneFields);
-                            SpeciesMergeList sl = sml;
-                            int sl_length = SpeciesMergeListLength(sml);
-                            int *fieldStat = new int[sl_length]; // 0 = not used yet ; -1 = don't has field ;
-                            // 1..n = field content (same number means same content)
+                            char             *doneFields = strdup(";name;full_name;"); // all fields which are already merged
+                            int               doneLen    = strlen(doneFields);
+                            SpeciesMergeList  sl         = sml;
+                            int               sl_length  = SpeciesMergeListLength(sml);
+                            int              *fieldStat  = new int[sl_length]; // 0 = not used yet ; -1 = don't has field ; 1..n = field content, same number means same content
 
                             while (sl && !error) { // with all species do..
                                 char *newFields = GB_get_subfields(sl->species);
@@ -2010,9 +2011,10 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
                                         e4_assert(fieldEnd[0]==';');
                                         fieldEnd[0] = 0;
 
+                                        aw_status(fieldName);
                                         GBDATA *gb_field = GB_search(sl->species, fieldName, GB_FIND);
                                         e4_assert(gb_field); // field has to exist, cause it was found before
-                                        int type = gb_field->flags.type; //GB_TYPE(gb_field);
+                                        int type         = gb_field->flags.type; //GB_TYPE(gb_field);
                                         if (type==GB_STRING) { // we only merge string fields
                                             int i;
                                             int doneSpecies = 0;
@@ -2156,11 +2158,13 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
                                 }
                                 free(newFields);
                                 sl = sl->next;
+                                if (aw_status() == 1) error = "Aborted by user";
                             }
                             free(doneFields);
                             free(fieldStat);
                         }
                         freeSpeciesMergeList(sml); sml = 0;
+                        aw_closestatus();
                     }
                 }
                 else { // copy species or create from consensus (copy fields from one species)

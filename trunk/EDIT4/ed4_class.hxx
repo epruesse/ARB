@@ -90,59 +90,61 @@ class ed_key;
 class EDB_root_bact {
 
 public:
-    char        *make_string();             //just for debuggig
-    char        *make_top_bot_string();         //just for debugging
+    char *make_string();
+    char *make_top_bot_string();
 
-    void calc_no_of_all(char *string_to_scan,   // group gets the number of groups in string_to_scan,
-                        long *group,        // species gets the number of species in string_to_scan
+    void calc_no_of_all(char *string_to_scan,       // group gets the number of groups in string_to_scan,
+                        long *group,                // species gets the number of species in string_to_scan
                         long *species);
 
-    ED4_returncode fill_species(ED4_multi_species_manager *multi_species_manager,
+    ED4_returncode fill_species(ED4_multi_species_manager  *multi_species_manager,
                                 ED4_sequence_info_terminal *ref_sequence_info_terminal,
-                                ED4_sequence_terminal *ref_sequence_terminal,
-                                char *string,
-                                int *index,
-                                ED4_index *y,
-                                ED4_index actual_local_position,
-                                ED4_index *length_of_terminals,
-                                int group_depth);
+                                ED4_sequence_terminal      *ref_sequence_terminal,
+                                char                       *string,
+                                int                        *index,
+                                ED4_index                  *y,
+                                ED4_index                   actual_local_position,
+                                ED4_index                  *length_of_terminals,
+                                int                         group_depth,
+                                aw_status_counter          *progress);
 
-    ED4_returncode fill_data(ED4_multi_species_manager *multi_species_manager,
+    ED4_returncode fill_data(ED4_multi_species_manager  *multi_species_manager,
                              ED4_sequence_info_terminal *ref_sequence_info_terminal,
-                             ED4_sequence_terminal *ref_sequence_terminal,
-                             char *string,
-                             ED4_index *y,
-                             ED4_index actual_local_position,
-                             ED4_index *length_of_terminals,
-                             int group_depth,
-                             ED4_datamode datamode);        // flag only needed for loading a new configuration
+                             ED4_sequence_terminal      *ref_sequence_terminal,
+                             char                       *string,
+                             ED4_index                  *y,
+                             ED4_index                   actual_local_position,
+                             ED4_index                  *length_of_terminals,
+                             int                         group_depth,
+                             ED4_datamode                datamode); // flag only needed for loading a new configuration
 
     ED4_returncode search_sequence_data_rek(ED4_multi_sequence_manager *multi_sequence_manager,
                                             ED4_sequence_info_terminal *ref_sequence_info_terminal,
-                                            ED4_sequence_terminal *ref_sequence_terminal,
-                                            GBDATA *gb_datamode,
-                                            int count_too,
-                                            ED4_index *seq_coords,
-                                            ED4_index *max_seq_terminal_length,
-                                            ED4_alignment alignment_flag);
+                                            ED4_sequence_terminal      *ref_sequence_terminal,
+                                            GBDATA                     *gb_datamode,
+                                            int                         count_too,
+                                            ED4_index                  *seq_coords,
+                                            ED4_index                  *max_seq_terminal_length,
+                                            ED4_alignment               alignment_flag);
 
-    ED4_index scan_string(ED4_multi_species_manager *parent,
+    ED4_index scan_string(ED4_multi_species_manager  *parent,
                           ED4_sequence_info_terminal *ref_sequence_info_terminal,
-                          ED4_sequence_terminal *ref_sequence_terminal,
-                          char *string,
-                          int *index,
-                          ED4_index *y);
+                          ED4_sequence_terminal      *ref_sequence_terminal,
+                          char                       *string,
+                          int                        *index,
+                          ED4_index                  *y,
+                          aw_status_counter&          progress);
 
-    ED4_returncode create_group_header(ED4_multi_species_manager *parent,
-                                       ED4_sequence_info_terminal *ref_sequence_info_terminal,
-                                       ED4_sequence_terminal *ref_sequence_terminal,
-                                       ED4_multi_species_manager **multi_species_manager,
-                                       ED4_bracket_terminal **bracket_terminal,
-                                       ED4_index *y,
-                                       char *groupname,
-                                       int group_depth,
-                                       bool is_folded,
-                                       ED4_index local_count_position);
+    ED4_returncode create_group_header(ED4_multi_species_manager   *parent,
+                                       ED4_sequence_info_terminal  *ref_sequence_info_terminal,
+                                       ED4_sequence_terminal       *ref_sequence_terminal,
+                                       ED4_multi_species_manager  **multi_species_manager,
+                                       ED4_bracket_terminal       **bracket_terminal,
+                                       ED4_index                   *y,
+                                       char                        *groupname,
+                                       int                          group_depth,
+                                       bool                         is_folded,
+                                       ED4_index                    local_count_position);
 
     char *generate_config_string(char *confname);
 
@@ -928,8 +930,8 @@ public:
 
     virtual ED4_returncode  calc_size_requested_by_parent( void );
     virtual ED4_returncode  move_requested_by_parent( ED4_move_info *mi );
-    void                        create_consensus(ED4_group_manager *upper_group_manager);
-    virtual ED4_returncode      route_down_hierarchy(void **arg1, void **arg2, ED4_returncode (*function) (void **, void **, ED4_base *));
+    void                    create_consensus(ED4_group_manager *upper_group_manager, aw_status_counter *progress);
+    virtual ED4_returncode  route_down_hierarchy(void **arg1, void **arg2, ED4_returncode (*function) (void **, void **, ED4_base *));
 
     virtual ED4_base*       find_first_that(ED4_level level, int (*condition)(ED4_base *to_test, AW_CL arg), AW_CL arg);
     virtual ED4_base*       find_first_that(ED4_level level, int (*condition)(ED4_base *to_test));
@@ -1157,7 +1159,7 @@ public:
     AW_font_group  font_group;
 
     //Initializing functions
-    ED4_returncode  create_hierarchy(char *area_string_middle, char *area_string_top); // flag only needed for loading a new configuration
+    ED4_returncode  create_hierarchy(char *area_string_middle, char *area_string_top);
     ED4_returncode  init_alignment();
     void recalc_font_group();
 
