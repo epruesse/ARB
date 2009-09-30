@@ -421,9 +421,10 @@ int main(int argc, char **argv)
     aw_root->awar(AWAR_DB_PATH)->add_callback(AWAR_DB_PATH_changed_cb);
 
     init_Advisor(aw_root, aw_default);
-
-    if (argc==3) {              // looks like merge
-        if (argv[1][0] != '-') { // not if first argument is a switch 
+    AWT_install_cb_guards();
+    
+    if (argc==3) {                                  // looks like merge
+        if (argv[1][0] != '-') { // not if first argument is a switch
             MG_create_all_awars(aw_root,aw_default,argv[1],argv[2]);
             nt_intro_start_merge(0,aw_root);
             aw_root->main_loop();

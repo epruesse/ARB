@@ -275,6 +275,8 @@ void AWT_browser_forget_db(GBDATA *gb_main);
 void AWT_create_debug_menu(AW_window *awmm);
 #endif // DEBUG
 
+void AWT_install_cb_guards();
+
 #else
 #error awt.hxx included twice
 #endif // AWT_HXX

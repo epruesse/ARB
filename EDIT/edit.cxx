@@ -2349,6 +2349,7 @@ int main(int argc,char **argv) {
     aed_root.aw_root->init_root("ARB_EDITOR", false);     // initialize window-system 
 
     aed_create_window(&aed_root); // creates editor window and inserts callbacks
+    AWT_install_cb_guards();
     aed_root.aw_root->main_loop(); // let's enter main-loop
 
     return EXIT_SUCCESS;

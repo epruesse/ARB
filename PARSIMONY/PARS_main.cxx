@@ -1903,6 +1903,7 @@ int main(int argc, char **argv)
     aww = create_pars_init_window(aw_root);
     aww->show();
 
+    AWT_install_cb_guards();
     aw_root->main_loop();
     return EXIT_SUCCESS;
 }

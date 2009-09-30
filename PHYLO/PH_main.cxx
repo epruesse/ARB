@@ -613,6 +613,7 @@ main(int argc, char **argv)
     GBT_free_names(alignment_names);
     GB_pop_transaction(GLOBAL_gb_main);
 
+    AWT_install_cb_guards();
     aw_root->main_loop();
     return EXIT_SUCCESS;
 }

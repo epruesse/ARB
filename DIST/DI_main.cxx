@@ -74,6 +74,7 @@ int main(int argc, char **argv)
     aww = DI_create_matrix_window(aw_root);
     aww->show();
 
+    AWT_install_cb_guards();
     aw_root->main_loop();
     return 0;
 }

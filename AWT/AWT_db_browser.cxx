@@ -955,3 +955,28 @@ void AWT_create_debug_menu(AW_window *awmm) {
 }
 
 #endif // DEBUG
+
+// ------------------------
+//      callback guards
+
+static void before_callback_guard() {
+    if (GB_have_error()) {
+        GB_ERROR error = GB_await_error();
+        aw_message(GBS_global_string("Error not clear before calling callback\n"
+                                     "Unhandled error was:\n"
+                                     "%s", error));
+    }
+}
+static void after_callback_guard() {
+    if (GB_have_error()) {
+        GB_ERROR error = GB_await_error();
+        aw_message(GBS_global_string("Error not handled by callback!\n"
+                                     "Unhandled error was:\n"
+                                     "'%s'", error));
+    }
+}
+
+void AWT_install_cb_guards() {
+    AW_cb_struct::set_AW_cb_guards(before_callback_guard, after_callback_guard);
+}
+

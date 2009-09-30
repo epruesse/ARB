@@ -34,6 +34,7 @@ int main(int argc,char **argv){
         exit(-1);
     }
     aw_root->window_hide();
+    AWT_install_cb_guards();
     aw_root->main_loop();
     return 0;
 }
