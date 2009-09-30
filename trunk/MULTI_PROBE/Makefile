@@ -80,6 +80,7 @@ MP_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+MP_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_main.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -103,6 +104,7 @@ MP_mo_liste.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/arbdbt.h
+MP_mo_liste.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/aw_root.hxx
@@ -123,6 +125,7 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/arbdbt.h
+MP_noclass.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -167,6 +170,7 @@ MP_probe.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+MP_probe.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_probe.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -222,6 +226,7 @@ MP_sonde.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/arbdbt.h
+MP_sonde.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MP_sonde.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -244,6 +249,7 @@ MP_sondentopf.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arbdbt.h
+MP_sondentopf.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -265,6 +271,7 @@ MP_Window.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+MP_Window.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_Window.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_device.hxx

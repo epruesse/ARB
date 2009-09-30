@@ -51,6 +51,7 @@ AWT_advice.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_advice.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_advice.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_advice.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AWT_advice.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_advice.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_advice.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWT_advice.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -67,6 +68,7 @@ AWT_asciiprint.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWT_asciiprint.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -80,6 +82,7 @@ AWT_attributes.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AWT_attributes.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AWT_attributes.o: $(ARBHOME)/INCLUDE/aw_root.hxx
@@ -93,6 +96,7 @@ AWT_canio.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWT_canio.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -109,6 +113,7 @@ AWT_canvas.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWT_canvas.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -125,6 +130,7 @@ AWT_changekey.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_changekey.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_changekey.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_changekey.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWT_changekey.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_changekey.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_changekey.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWT_changekey.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -141,6 +147,7 @@ AWT_codon_table.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_codon_table.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_codon_table.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_codon_table.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AWT_codon_table.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_codon_table.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_codon_table.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWT_codon_table.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -155,6 +162,7 @@ AWT_config_manager.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AWT_config_manager.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -174,6 +182,7 @@ AWT_csp.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_csp.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_csp.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_csp.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWT_csp.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_csp.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_csp.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AWT_csp.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -193,6 +202,7 @@ AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -217,6 +227,7 @@ AWT_dtree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_dtree.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_dtree.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_dtree.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWT_dtree.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_dtree.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_dtree.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWT_dtree.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -236,6 +247,7 @@ AWT_file_selection.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_file_selection.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_file_selection.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_file_selection.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWT_file_selection.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_file_selection.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_file_selection.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWT_file_selection.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -256,6 +268,7 @@ AWT_filter.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWT_filter.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -279,6 +292,7 @@ AWT_input_mask.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWT_input_mask.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -299,6 +313,7 @@ AWT_irstree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_irstree.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_irstree.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_irstree.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWT_irstree.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_irstree.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_irstree.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWT_irstree.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -318,6 +333,7 @@ AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -341,6 +357,7 @@ AWT_macro.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AWT_macro.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWT_macro.o: $(ARBHOME)/INCLUDE/aw_global.hxx
@@ -353,6 +370,7 @@ AWT_map_key.o: awt_map_key.hxx
 AWT_map_key.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AWT_map_key.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWT_map_key.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -371,6 +389,7 @@ AWT_nds.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_nds.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_nds.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_nds.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWT_nds.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_nds.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_nds.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWT_nds.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -389,6 +408,7 @@ AWT_nei.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_nei.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_nei.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_nei.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWT_nei.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_nei.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_nei.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AWT_nei.o: $(ARBHOME)/INCLUDE/aw_root.hxx
@@ -404,6 +424,7 @@ AWT_preset.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_preset.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_preset.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_preset.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWT_preset.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_preset.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_preset.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AWT_preset.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -423,6 +444,7 @@ AWT_pro_a_nucs.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_pro_a_nucs.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_pro_a_nucs.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_pro_a_nucs.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWT_pro_a_nucs.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_pro_a_nucs.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_pro_a_nucs.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWT_pro_a_nucs.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -445,6 +467,7 @@ AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -468,6 +491,7 @@ AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -486,6 +510,7 @@ AWT_seq_colors.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWT_seq_colors.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -504,6 +529,7 @@ AWT_seq_dna.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_seq_dna.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_seq_dna.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_seq_dna.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWT_seq_dna.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_seq_dna.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_seq_dna.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AWT_seq_dna.o: $(ARBHOME)/INCLUDE/aw_root.hxx
@@ -519,6 +545,7 @@ AWT_seq_protein.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_seq_protein.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_seq_protein.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_seq_protein.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWT_seq_protein.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_seq_protein.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_seq_protein.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AWT_seq_protein.o: $(ARBHOME)/INCLUDE/aw_root.hxx
@@ -534,6 +561,7 @@ AWT_seq_simple_pro.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_seq_simple_pro.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_seq_simple_pro.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_seq_simple_pro.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWT_seq_simple_pro.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_seq_simple_pro.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_seq_simple_pro.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AWT_seq_simple_pro.o: $(ARBHOME)/INCLUDE/aw_root.hxx
@@ -548,6 +576,7 @@ AWT_tables.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWT_tables.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWT_tables.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -568,6 +597,7 @@ AWT_translate.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_translate.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_translate.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_translate.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWT_translate.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_translate.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_translate.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWT_translate.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -587,6 +617,7 @@ AWT_tree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_tree.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_tree.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_tree.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWT_tree.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_tree.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_tree.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AWT_tree.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -609,6 +640,7 @@ AWT_tree_cb.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_tree_cb.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_tree_cb.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_tree_cb.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWT_tree_cb.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_tree_cb.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_tree_cb.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWT_tree_cb.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -629,6 +661,7 @@ AWT_tree_cmp.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_tree_cmp.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_tree_cmp.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_tree_cmp.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWT_tree_cmp.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_tree_cmp.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_tree_cmp.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AWT_tree_cmp.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -646,6 +679,7 @@ AWT_www.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWT_www.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_www.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_device.hxx

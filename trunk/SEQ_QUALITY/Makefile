@@ -41,6 +41,7 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arbdb.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arbdbt.h
+SQ_functions.o: $(ARBHOME)/INCLUDE/arbtools.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/attributes.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -73,6 +74,7 @@ SQ_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
+SQ_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 SQ_main.o: $(ARBHOME)/INCLUDE/attributes.h
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx

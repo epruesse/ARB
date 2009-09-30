@@ -38,6 +38,7 @@ ST_ml.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ST_ml.o: $(ARBHOME)/INCLUDE/arbdb.h
 ST_ml.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ST_ml.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ST_ml.o: $(ARBHOME)/INCLUDE/arbtools.h
 ST_ml.o: $(ARBHOME)/INCLUDE/attributes.h
 ST_ml.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -56,6 +57,7 @@ ST_quality.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arbdb.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ST_quality.o: $(ARBHOME)/INCLUDE/arbtools.h
 ST_quality.o: $(ARBHOME)/INCLUDE/attributes.h
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -75,6 +77,7 @@ ST_window.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ST_window.o: $(ARBHOME)/INCLUDE/arbdb.h
 ST_window.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ST_window.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ST_window.o: $(ARBHOME)/INCLUDE/arbtools.h
 ST_window.o: $(ARBHOME)/INCLUDE/attributes.h
 ST_window.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx

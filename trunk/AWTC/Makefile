@@ -37,6 +37,7 @@ AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/attributes.h
 AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -52,6 +53,7 @@ AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/attributes.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -68,6 +70,7 @@ AWTC_seq_search.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWTC_seq_search.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWTC_seq_search.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWTC_seq_search.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AWTC_seq_search.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWTC_seq_search.o: $(ARBHOME)/INCLUDE/attributes.h
 AWTC_seq_search.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 
@@ -78,6 +81,7 @@ AWTC_submission.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWTC_submission.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/attributes.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_device.hxx

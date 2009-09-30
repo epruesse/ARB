@@ -61,6 +61,7 @@ SEC_bonddef.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/arbdb.h
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/arbdbt.h
+SEC_bonddef.o: $(ARBHOME)/INCLUDE/arbtools.h
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/attributes.h
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/aw_root.hxx
@@ -313,6 +314,7 @@ SEC_toggle.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/arbdb.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/arbdbt.h
+SEC_toggle.o: $(ARBHOME)/INCLUDE/arbtools.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/attributes.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx

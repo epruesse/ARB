@@ -97,6 +97,7 @@ primer_design.o: $(ARBHOME)/INCLUDE/arb_assert.h
 primer_design.o: $(ARBHOME)/INCLUDE/arbdb.h
 primer_design.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 primer_design.o: $(ARBHOME)/INCLUDE/arbdbt.h
+primer_design.o: $(ARBHOME)/INCLUDE/arbtools.h
 primer_design.o: $(ARBHOME)/INCLUDE/attributes.h
 primer_design.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_device.hxx
