@@ -44,6 +44,7 @@ AW_names_admin.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AW_names_admin.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -61,6 +62,7 @@ AW_rename.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AW_rename.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_rename.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_device.hxx

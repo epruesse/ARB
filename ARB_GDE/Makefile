@@ -51,6 +51,7 @@ GDE.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GDE.o: $(ARBHOME)/INCLUDE/arbdb.h
 GDE.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 GDE.o: $(ARBHOME)/INCLUDE/arbdbt.h
+GDE.o: $(ARBHOME)/INCLUDE/arbtools.h
 GDE.o: $(ARBHOME)/INCLUDE/attributes.h
 GDE.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -72,6 +73,7 @@ GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/arbdb.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/arbdbt.h
+GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/arbtools.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/attributes.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -98,6 +100,7 @@ GDE_event.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GDE_event.o: $(ARBHOME)/INCLUDE/arbdb.h
 GDE_event.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 GDE_event.o: $(ARBHOME)/INCLUDE/arbdbt.h
+GDE_event.o: $(ARBHOME)/INCLUDE/arbtools.h
 GDE_event.o: $(ARBHOME)/INCLUDE/attributes.h
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -122,6 +125,7 @@ GDE_FileIO.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/arbdb.h
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/arbdbt.h
+GDE_FileIO.o: $(ARBHOME)/INCLUDE/arbtools.h
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/attributes.h
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -140,6 +144,7 @@ GDE_Genbank.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/arbdb.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+GDE_Genbank.o: $(ARBHOME)/INCLUDE/arbtools.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/attributes.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -158,6 +163,7 @@ GDE_HGLfile.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/arbdb.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+GDE_HGLfile.o: $(ARBHOME)/INCLUDE/arbtools.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/attributes.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -177,6 +183,7 @@ GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/arbdb.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/arbtools.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/attributes.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx

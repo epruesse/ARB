@@ -37,6 +37,7 @@ ed_conf.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ed_conf.o: $(ARBHOME)/INCLUDE/arbdb++.hxx
 ed_conf.o: $(ARBHOME)/INCLUDE/arbdb.h
 ed_conf.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+ed_conf.o: $(ARBHOME)/INCLUDE/arbtools.h
 ed_conf.o: $(ARBHOME)/INCLUDE/attributes.h
 ed_conf.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ed_conf.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -55,6 +56,7 @@ edit.o: $(ARBHOME)/INCLUDE/arbdb++.hxx
 edit.o: $(ARBHOME)/INCLUDE/arbdb.h
 edit.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 edit.o: $(ARBHOME)/INCLUDE/arbdbt.h
+edit.o: $(ARBHOME)/INCLUDE/arbtools.h
 edit.o: $(ARBHOME)/INCLUDE/attributes.h
 edit.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 edit.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -77,6 +79,7 @@ edit_naligner.o: $(ARBHOME)/INCLUDE/arb_assert.h
 edit_naligner.o: $(ARBHOME)/INCLUDE/arbdb.h
 edit_naligner.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 edit_naligner.o: $(ARBHOME)/INCLUDE/arbdbt.h
+edit_naligner.o: $(ARBHOME)/INCLUDE/arbtools.h
 edit_naligner.o: $(ARBHOME)/INCLUDE/attributes.h
 edit_naligner.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 edit_naligner.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -95,6 +98,7 @@ edit_tools.o: $(ARBHOME)/INCLUDE/arb_assert.h
 edit_tools.o: $(ARBHOME)/INCLUDE/arbdb++.hxx
 edit_tools.o: $(ARBHOME)/INCLUDE/arbdb.h
 edit_tools.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+edit_tools.o: $(ARBHOME)/INCLUDE/arbtools.h
 edit_tools.o: $(ARBHOME)/INCLUDE/attributes.h
 edit_tools.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 edit_tools.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx

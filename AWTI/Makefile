@@ -38,6 +38,7 @@ AWTI_export.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWTI_export.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/attributes.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -64,6 +65,7 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWTI_import.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/attributes.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_global.hxx

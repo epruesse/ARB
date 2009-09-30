@@ -41,6 +41,7 @@ ClustalV.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ClustalV.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ClustalV.o: $(ARBHOME)/INCLUDE/arbdb.h
 ClustalV.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+ClustalV.o: $(ARBHOME)/INCLUDE/arbtools.h
 ClustalV.o: $(ARBHOME)/INCLUDE/attributes.h
 ClustalV.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ClustalV.o: $(ARBHOME)/INCLUDE/awtc_seq_search.hxx
@@ -54,6 +55,7 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/arb_assert.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arbdb.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arbdbt.h
+fast_aligner.o: $(ARBHOME)/INCLUDE/arbtools.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/attributes.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_device.hxx

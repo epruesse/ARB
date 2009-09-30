@@ -40,6 +40,7 @@ PH_data.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PH_data.o: $(ARBHOME)/INCLUDE/arbdb.h
 PH_data.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PH_data.o: $(ARBHOME)/INCLUDE/arbdbt.h
+PH_data.o: $(ARBHOME)/INCLUDE/arbtools.h
 PH_data.o: $(ARBHOME)/INCLUDE/attributes.h
 PH_data.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -61,6 +62,7 @@ PH_display.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PH_display.o: $(ARBHOME)/INCLUDE/arbdb.h
 PH_display.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PH_display.o: $(ARBHOME)/INCLUDE/arbdbt.h
+PH_display.o: $(ARBHOME)/INCLUDE/arbtools.h
 PH_display.o: $(ARBHOME)/INCLUDE/attributes.h
 PH_display.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -81,6 +83,7 @@ PH_filt.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PH_filt.o: $(ARBHOME)/INCLUDE/arbdb.h
 PH_filt.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PH_filt.o: $(ARBHOME)/INCLUDE/arbdbt.h
+PH_filt.o: $(ARBHOME)/INCLUDE/arbtools.h
 PH_filt.o: $(ARBHOME)/INCLUDE/attributes.h
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -102,6 +105,7 @@ PH_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PH_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 PH_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PH_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
+PH_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 PH_main.o: $(ARBHOME)/INCLUDE/attributes.h
 PH_main.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -124,6 +128,7 @@ PH_matr.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PH_matr.o: $(ARBHOME)/INCLUDE/arbdb.h
 PH_matr.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PH_matr.o: $(ARBHOME)/INCLUDE/arbdbt.h
+PH_matr.o: $(ARBHOME)/INCLUDE/arbtools.h
 PH_matr.o: $(ARBHOME)/INCLUDE/attributes.h
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -145,6 +150,7 @@ PH_root.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PH_root.o: $(ARBHOME)/INCLUDE/arbdb.h
 PH_root.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PH_root.o: $(ARBHOME)/INCLUDE/arbdbt.h
+PH_root.o: $(ARBHOME)/INCLUDE/arbtools.h
 PH_root.o: $(ARBHOME)/INCLUDE/attributes.h
 PH_root.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 PH_root.o: $(ARBHOME)/INCLUDE/aw_root.hxx
