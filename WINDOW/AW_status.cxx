@@ -886,8 +886,7 @@ void aw_closestatus( void )
     aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_CLOSE);
 }
 
-int aw_status( const char *text )
-{
+int aw_status(const char *text) {
     if (!text) text = "";
 
     aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_TEXT);
@@ -898,31 +897,22 @@ int aw_status( const char *text )
     return aw_status();
 }
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+int aw_status(double gauge) {
+    static int last_val = -1;
+    int        val      = (int)(gauge*AW_GAUGE_GRANULARITY);
 
-    int aw_status( double gauge ) {
-        static int last_val = -1;
-        int        val      = (int)(gauge*AW_GAUGE_GRANULARITY);
-
-        if (val != last_val) {
-            if (val>0 || gauge == 0.0) {            // don't write 0 on low gauge (cause 0 resets the timer)
-                aw_assert(gauge <= 1.0);            // please fix the gauge calculation in caller!
-                aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_GAUGE);
-                safe_write(aw_stg.fd_to[1], (char*)&val, sizeof(int));
-            }
-            last_val = val;
+    if (val != last_val) {
+        if (val>0 || gauge == 0.0) {            // only write 0 if gauge really is 0 (cause 0 resets the timer)
+            aw_assert(gauge <= 1.0);            // please fix the gauge calculation in caller!
+            aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_GAUGE);
+            safe_write(aw_stg.fd_to[1], (char*)&val, sizeof(int));
         }
-        return aw_status();
+        last_val = val;
     }
-
-#ifdef __cplusplus
+    return aw_status();
 }
-#endif
 
-int aw_status( void )
-{
+int aw_status() {
     char *str = 0;
     int cmd;
     if (aw_stg.mode == AW_STATUS_ABORT) return AW_STATUS_ABORT;

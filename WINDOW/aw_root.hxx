@@ -18,6 +18,9 @@
 #ifndef ARBDB_BASE_H
 #include <arbdb_base.h>
 #endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 
 
 #define AW_ROOT_DEFAULT (aw_main_root_default)
@@ -122,23 +125,26 @@ int aw_string_selection_button();   // returns index of last selected button (de
 
 void AW_ERROR(const char *templat, ...) __ATTR__FORMAT(1);
 
+// ---------------------
+//      progress bar
+
 void aw_initstatus( void );     // call this function only once as early as possible
 void aw_openstatus( const char *title ); // show status
 void aw_closestatus( void );    // hide status
 
-int aw_status( const char *text );      // return 1 if exit button is pressed + set statustext
+int aw_status(const char *text);                    // return 1 if exit button is pressed + set statustext
+int aw_status(double gauge);                        // return 1 if exit button is pressed + set progress bar
+int aw_status();                                    // return 1 if exit button is pressed
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-    int aw_status( double gauge );  // return 1 if exit button is pressed + set statusslider
-
-#ifdef __cplusplus
-}
-#endif
-
-int aw_status( void );      // return 1 if exit button is pressed
+class aw_status_counter : Noncopyable {             // progress object
+    int counter;
+    int maxcount;
+public:
+    aw_status_counter(int overall) : counter(0) , maxcount(overall) {}
+    void inc(int incr = 1) { counter += incr; aw_assert(counter <= maxcount); }
+    int update() { return aw_status(counter/double(maxcount)); }
+    int inc_and_update() { inc(); return update(); }
+};
 
 void aw_error( const char *text, const char *text2 );   // internal error: asks for core
 
