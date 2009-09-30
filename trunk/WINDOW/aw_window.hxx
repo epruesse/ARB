@@ -102,10 +102,16 @@ void AW_clock_cursor(AW_root *);
 void AW_normal_cursor(AW_root *);
 
 /*************************************************************************/
+
+typedef void (*AW_cb_struct_guard)();
+
 class AW_cb_struct {
     AW_CL         cd1;
     AW_CL         cd2;
     AW_cb_struct *next;
+
+    static AW_cb_struct_guard guard_before;
+    static AW_cb_struct_guard guard_after;
 
 public:
     // ************ This is not the public section *************
@@ -131,6 +137,11 @@ public:
     AW_CL get_cd1() const { return cd1; }
     AW_CL get_cd2() const { return cd2; }
 #endif // DEBUG
+
+    static void set_AW_cb_guards(AW_cb_struct_guard before, AW_cb_struct_guard after) {
+        guard_before = before;
+        guard_after  = after;
+    }
 };
 
 

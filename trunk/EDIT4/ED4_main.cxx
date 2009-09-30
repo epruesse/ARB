@@ -661,6 +661,7 @@ int main(int argc, char **argv)
         PV_CallBackFunction(ED4_ROOT->aw_root);
     }
 
+    AWT_install_cb_guards();
     ED4_ROOT->aw_root->main_loop(); // enter main-loop
 }
 

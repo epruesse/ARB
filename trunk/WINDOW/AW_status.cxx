@@ -862,7 +862,8 @@ void aw_initstatus( void )
         // install callback
         aws->get_root()->add_timed_callback_never_disabled(30, aw_status_timer_listen_event, 0, 0); // use short delay for first callback
 
-        aw_root->main_loop(); // never returns
+        // do NOT AWT_install_cb_guards here!
+        aw_root->main_loop();                       // never returns
     }
 }
 

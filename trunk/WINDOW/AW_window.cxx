@@ -717,6 +717,9 @@ bool AW_cb_struct::is_equal(const AW_cb_struct& other) const {
     return equal;
 }
 
+AW_cb_struct_guard AW_cb_struct::guard_before = NULL;
+AW_cb_struct_guard AW_cb_struct::guard_after  = NULL;
+
 void AW_cb_struct::run_callback(void) {
     AW_PPP g;
     if (next)
@@ -753,6 +756,8 @@ void AW_cb_struct::run_callback(void) {
         }
     }
 
+    if (guard_before) guard_before();
+    
     if (f == AW_POPUP) {
         if (pop_up_window) { // already exists
             pop_up_window->activate();
@@ -771,6 +776,8 @@ void AW_cb_struct::run_callback(void) {
     } else {
         f(aw, cd1, cd2);
     }
+    
+    if (guard_after) guard_after();
 }
 
 bool AW_cb_struct::contains(void (*g)(AW_window*,AW_CL ,AW_CL)) {
