@@ -1,6 +1,12 @@
 Provided by: Matt Cottrell
-revised Sept 4, 2009
+revised Sept 30, 2009
 
+If you are looking for an easy way to install ARB on OS X, then see the instructions in the file
+ARB_OS_X_MacPorts.txt.  There you will find instructions for installing ARB, including all of the
+necesary dependencies using MacPorts the easy way.
+
+Continue with the steps below only if you want to build ARB and its dependencies by hand the hard way.
+______________________________________________________________________________________________________
 
 Building 64-bit ARB on Mac OS X (Snow Leopard 10.6)
 
