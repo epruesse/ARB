@@ -1,7 +1,10 @@
 
 Welcome to the 'ARB' Sequence Database Tools
 
-/*********** System Requirements *************/
+
+System Requirements
+------------------- 
+
 
         ARB is currently developed on Linux PCs only.
 
@@ -21,31 +24,52 @@ Welcome to the 'ARB' Sequence Database Tools
         Note : Memory is more important than a fast processor!
 
 
-/*********** Files needed to install ARB *************/
+Files needed to install ARB
+---------------------------
 
         File                    
 
         'arb_install.sh'        // install script
-        'arb.tgz'               // ARB program
+        'arb.*.tgz'             // ARB program
 
-        Note: do not uncompress and untar arb.tar.gz directly,
-              use the install script !!!
 
-/*********** Install/Update ARB *************/
+        Available ARB versions:
 
-        ARB consists of more than 750 files which are installed into a single
+        'arb.32.*.tgz'          // 32 bit versions
+        'arb.64.*.tgz'          // 64 bit versions
+
+        'arb.*.SuSE*.tgz        // SuSE version
+        'arb.*.Ubuntu*.tgz      // Ubuntu version (recommended)
+
+        'arb.*.OPENGL.tgz'      // OPENGL version (contains RNA3D, a 3D-molecule-viewer)
+
+
+        Choose a 32-bit-version, if your system is 32-bit,
+        choose a 64-bit-version, if your system is 64-bit.
+
+        Normally one of the Ubuntu versions should work for you, only
+        use one of the SuSE versions, if the Ubuntu version has problems
+        (e.g. does not display group names in ARB_EDIT4).
+
+
+Install/Update ARB
+------------------
+
+        ARB consists of more than 1200 files which are installed into a single
         directory. Creating this directory, copying all data into it, and setting
         the permissions correctly is done by the installation script
 
-                'arb_install'
+                'arb_install.sh'
 
         Goto the directory, where the files
 
-                'arb_install.sh'                //install script
-                'arb_README.txt'                //this file
-                'arb.tgz'                       //all the libs and bin
+                'arb_install.sh'                // install script
+                'arb_README.txt'                // this file
+                'arb.*.tgz'                     // ARB binaries
 
-        are located and type '/bin/sh arb_install.sh'
+        are located and type
+
+                '/bin/sh arb_install.sh'
 
         Answer all questions asked by the script.
 
@@ -70,13 +94,16 @@ Welcome to the 'ARB' Sequence Database Tools
 
                         'arb'
 
-/*********** Additional information *************/
+
+Additional information
+----------------------
 
         * See arb_INSTALL.txt for additional software needed and/or useful
           together with ARB.
 
 
-/*********** PT_server *************/
+PT_server
+---------
 
         To Install 'ARB' you have to know that some modules use a so
         called 'pt_server' (prefix tree server).
@@ -96,7 +123,9 @@ Welcome to the 'ARB' Sequence Database Tools
         host. The first user starts the pt_server, and all other users
         can connect to it.
 
-/*********** What you should know:      Swap *************/
+
+What you should know: Swap
+--------------------------
 
         Arb needs a lot of virtual memory
         (about 50 Mbyte for 5000 Sequences, Length = 3000).
@@ -112,7 +141,8 @@ Welcome to the 'ARB' Sequence Database Tools
         man pages: 'man -k swap')
 
 
-/************* The Database ************/
+The Database
+------------
 
         In the current release a small dataset (demo.arb) is provided.
         This database contains a selection of artificial and real-life
@@ -124,28 +154,31 @@ Welcome to the 'ARB' Sequence Database Tools
         stability of ARB on your system.
 
 
-/*********** Bugs *************/
+Bugs
+----
 
         ARB is running properly and stably on our systems. However, it
         may be that there are bugs never detected by us or never
         appearing on our systems. Please don't hesitate to inform us
         about any bugs. A detailed description of the steps performed
         before the problem was evident and of the number and types of
-        modules running at the same time would extremely be helpful to
+        modules running at the same time would be extremely helpful to
         our computer scientists.
 
         Please report bugs into our bug tracker at
                http://bugs.arb-home.de/
 
 
-/*********** Support *************/
+Support
+-------
 
         Please send any comments, bug reports or questions to
 
                 arb@arb-home.de
 
 
-/*********** Copyright Notice *************/
+Copyright Notice
+----------------
 
         Please see the file
 
@@ -153,7 +186,9 @@ Welcome to the 'ARB' Sequence Database Tools
 
         in the ARB installation directory.
 
-/*********** Disclaimer *************/
+
+Disclaimer
+----------
 
         THE AUTHORS OF ARB GIVE NO WARRANTIES, EXPRESSED OR IMPLIED
         FOR THE SOFTWARE AND DOCUMENTATION PROVIDED, INCLUDING, BUT

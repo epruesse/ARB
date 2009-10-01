@@ -5,7 +5,8 @@ To install a precompiled ARB
 1. download the needed files from our homepage http://www.arb-home.de/
    and save them into a directory of your choice (i.e. ~/arb-install/ )
 
-   Files needed: 'arb.tgz' and 'arb_install.sh'
+   Files needed: 'arb.*.tgz' and 'arb_install.sh'
+                 (see arb_README.txt for details on different versions)
 
 2. get root
 3. run arb_install.sh and follow the instructions
@@ -40,12 +41,6 @@ Software that is useful together with ARB:
 - xfig (+ fig2dev to print from xfig)
 - perl5
 - treetool
-
---------------------------------------------------------------------------------
-If you don't want to use the 3D features in ARB, you may as well install  
-the Non-OPENGL version of ARB:
-
-Instead of downloading arb.tgz, download arb_noOPENGL.tgz.
 
 --------------------------------------------------------------------------------
 Libraries needed to run 32-bit ARB on 64-bit machine:
