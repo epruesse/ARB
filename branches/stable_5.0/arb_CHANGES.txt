@@ -1,5 +1,14 @@
 ARB change log
 
+
+Fixes for arb_5.1:
+
+ * fixed a bug in 'Create species from consensus' (created sequence was corrupted)
+ * fixed 2 bugs in optimize DB (alignment w/o data, missing transaction)
+ * updated installation instructions, fixed install script, added OSX instruction (thx to Matt Cottrell)
+ * fixed broken demo.arb
+
+
 Major changes for arb_5.00:
 
  - ARB 64bit version
