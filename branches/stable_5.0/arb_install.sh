@@ -29,6 +29,12 @@ untar() {
     fi
     if gunzip --stdout $cwd/$1 | tar xfv -; then
         echo ">>> $1 uncompressed and untared"
+        if [ ! -e bin/arb_ntree ]; then
+            err "bin/arb_ntree not found"
+        fi
+        if [ ! -x bin/arb_ntree ]; then
+            err "bin/arb_ntree not executable"
+        fi
     else
         err "Error in uncompressing or untaring $1"
     fi
@@ -85,16 +91,27 @@ fi
 
 cwd=`pwd`
 
-if test ! -f arb.tgz; then
-    # link any arb.32.*.tgz or arb.64.*.tgz to arb.tgz
-    ln -s arb.[36][24].*.tgz arb.tgz
-    if test ! -L arb.tgz; then
-        err "Failed to link any arb-tarball to arb.tgz (maybe there are multiple arb.32/64*.tgz in this directory)"
+if [ ! -f arb.tgz ]; then
+    if [ -e arb.[36][24].*.tgz ]; then
+        # link any arb.32.*.tgz or arb.64.*.tgz to arb.tgz
+        ln -s arb.[36][24].*.tgz arb.tgz
+        ls -al arb.tgz arb.[36][24].*.tgz 
+        if [ ! -L arb.tgz ]; then
+            err "Failed to link any arb-tarball to arb.tgz (maybe there are multiple arb.32/64*.tgz in this directory)"
+        fi
+    else
+        err "Expected arb.32.*.tgz or arb.64.*.tgz in current directory."
     fi
-    if test ! -f arb.tgz; then
-        ls -al arb.tgz
-        err "arb.tgz does not link to an arb-tarball"
-    fi
+else
+    ls -al arb.tgz arb.[36][24].*.tgz 
+fi
+
+if [ ! -L arb.tgz ]; then
+    err "arb.tgz should be a link to an arb-tarball (arb.*.tgz)"
+fi
+if [ ! -f arb.tgz ]; then
+    rm arb.tgz
+    err "arb.tgz does not link to a file"
 fi
 
 if test -d $ARBHOME; then
