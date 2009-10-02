@@ -270,13 +270,14 @@ GB_ERROR arb_look_and_kill_server(int magic_number, const char *arb_tcp_env)
 
         glservercntrl.link = (aisc_com *) aisc_open(tcp_id, &glservercntrl.com, magic_number);
         if (glservercntrl.link) {
+            aisc_close(glservercntrl.link);
+            glservercntrl.link = 0;
+
             const char *command = GBS_global_string("%s -kill -T%s &", server, tcp_id);
             /* sprintf(command, "%s -kill -T%s &", server, tcp_id); */
             if (system(command)) {
                 error = GB_export_errorf("Cannot execute '%s'",command);
             }
-            aisc_close(glservercntrl.link);
-            glservercntrl.link = 0;
         }
         else {
             error= GB_export_error("I cannot kill your server because I cannot find it");
