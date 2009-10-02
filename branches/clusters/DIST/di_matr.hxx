@@ -94,7 +94,7 @@ public:
     void    clear(DI_MUT_MATR &hits);
     void    make_sym(DI_MUT_MATR &hits);
     void    rate_write(DI_MUT_MATR &hits,FILE *out);
-    long    *create_helix_filter(BI_helix *helix,AP_filter *filter);
+    long    *create_helix_filter(BI_helix *helix, const AP_filter *filter);
     // 0 non helix 1 helix; compressed filter
     GB_ERROR calculate_rates(DI_MUT_MATR &hrates,DI_MUT_MATR &nrates,DI_MUT_MATR &pairs,long *filter);
     GB_ERROR haeschoe(const char *path);

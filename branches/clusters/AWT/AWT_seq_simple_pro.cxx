@@ -9,7 +9,7 @@
 
 #define awt_assert(bed) arb_assert(bed)
 
-AP_sequence_simple_protein::AP_sequence_simple_protein(AP_tree_root *rooti) : AP_sequence(rooti) {
+AP_sequence_simple_protein::AP_sequence_simple_protein(ARB_Tree_root *rooti) : AP_sequence(rooti) {
     sequence = 0;
 }
 
@@ -29,21 +29,21 @@ void AP_sequence_simple_protein::set(const char *isequence) {
     unsigned char  c;
     ap_pro        *d;
 
-    AWT_translator *translator = AWT_get_user_translator(this->root->gb_main);
+    AWT_translator *translator = AWT_get_user_translator(this->root->get_gb_main());
 
     const struct arb_r2a_pro_2_nuc * const *s2str = translator->S2strArray();
-    sequence_len = root->filter->real_len;
+    sequence_len = root->get_filter()->real_len;
     sequence = new ap_pro[sequence_len+1];
     memset(sequence,s2str['.']->index,(size_t)(sizeof(ap_pro) * sequence_len));
     s = isequence;
     d = sequence;
-    const uchar *simplify = root->filter->simplify;
+    const uchar *simplify = root->get_filter()->simplify;
     int sindex = s2str['s']->index;
-    if (root->filter->bootstrap){
+    if (root->get_filter()->bootstrap){
         int iseqlen = strlen(isequence);
         int i;
-        for (i=root->filter->real_len-1;i>=0;i--){
-            int pos = root->filter->bootstrap[i];
+        for (i=root->get_filter()->real_len-1;i>=0;i--){
+            int pos = root->get_filter()->bootstrap[i];
             if (pos >= iseqlen) continue;
             c = s[pos];
             if (! (s2str[c] ) ) {   // unknown character
@@ -54,8 +54,8 @@ void AP_sequence_simple_protein::set(const char *isequence) {
             d[i] = ind;
         }
     }else{
-        char *f = root->filter->filter_mask;
-        int i = root->filter->filter_len;
+        char *f = root->get_filter()->filter_mask;
+        int i = root->get_filter()->filter_len;
         while ( (c = (*s++)) ) {
             if (!i) break;
             i--;

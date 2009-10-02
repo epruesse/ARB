@@ -49,7 +49,7 @@ char *DI_MATRIX::analyse(AW_root *awrdummy)
         act_gci = 0;
         act_len = 0;
         sequ = entries[row]->sequence_parsimony->sequence;
-        for(pos=0; pos<tree_root->filter->real_len; pos++) {
+        for(pos=0; pos<tree_root->get_filter()->real_len; pos++) {
             ch = sequ[pos];
             if(ch == AP_C || ch == AP_G) act_gci++;
             if(ch == AP_A || ch == AP_C || ch == AP_G || ch == AP_T) act_len++;

@@ -219,7 +219,7 @@ AP_weights::AP_weights(void) {
     memset ((char *)this,0,sizeof(AP_weights));
 }
 
-char *AP_weights::init(AP_filter *fil)
+char *AP_weights::init(const AP_filter *fil)
 {
     int i;
     if (fil->update<= this->update) return 0;
@@ -235,7 +235,7 @@ char *AP_weights::init(AP_filter *fil)
     return 0;
 }
 
-char *AP_weights::init(GB_UINT4 *w, AP_filter *fil)
+char *AP_weights::init(GB_UINT4 *w, const AP_filter *fil)
 {
     int i,j;
     if (fil->update<= this->update) return 0;
@@ -416,7 +416,7 @@ long AP_sequence::global_combineCount;
 AP_sequence::~AP_sequence(void) { ; }
 AP_FLOAT AP_sequence::real_len(void) { return 0.0; }
 
-AP_sequence::AP_sequence(AP_tree_root *rooti){
+AP_sequence::AP_sequence(ARB_Tree_root *rooti){
     cashed_real_len = -1.0;
     is_set_flag = AP_FALSE;
     sequence_len = 0;
@@ -446,12 +446,27 @@ void AP_tree_tree_deleted(GBDATA * gbd, class AP_tree_root * tr /* , GB_CB_TYPE 
 }
 
 AP_tree_root::AP_tree_root(GBDATA * gb_maini, class AP_tree * tree_protoi,const char *name)
+    : ARB_Tree_root(gb_maini)
+    , gb_tree(NULL)
+    , gb_tree_gone(NULL)
+    , gb_species_data(NULL)
+    , gb_table_data(NULL)
+    , tree_timer(NULL)
+    , species_timer(NULL)
+    , table_timer(NULL)
+    , tree_name(NULL)
+    , tree_template(NULL)
+    , tree(NULL)
+    , sequence_template(NULL)
+    , rates(NULL)
+    , matrix(NULL)
 {
-    memset((char *) this, 0, sizeof(AP_tree_root));
+    // memset((char *) this, 0, sizeof(AP_tree_root));
+
     if (tree_protoi) {
         tree_template = tree_protoi->dup();
     }
-    gb_main = gb_maini;
+    // gb_main = gb_maini;
     if (name){
         tree_name = strdup(name);
         GB_push_transaction(gb_main);
@@ -1108,7 +1123,7 @@ static GB_ERROR tree_write_tree_rek(GBDATA *gb_tree, AP_tree * THIS) {
 
 const char *AP_tree::saveTree() {
     GBDATA     *gb_tree   = tree_root->gb_tree;
-    GBDATA     *gb_main   = tree_root->gb_main;
+    GBDATA     *gb_main   = tree_root->get_gb_main();
     const char *tree_name = tree_root->tree_name;
     
     GB_ERROR error = GB_push_transaction(gb_main);
@@ -1178,7 +1193,7 @@ GB_ERROR AP_tree::move_group_info(AP_tree *new_group) {
 
 void AP_tree::update(  )
 {
-    GB_transaction dummy(tree_root->gb_main);
+    GB_transaction dummy(tree_root->get_gb_main());
     this->tree_root->update_timers();
 }
 
@@ -1362,7 +1377,7 @@ AP_FLOAT AP_tree::costs(void){
 }
 
 GB_ERROR AP_tree::load(AP_tree_root *tree_static, bool link_to_database, bool insert_delete_cbs, bool show_status, int *zombies, int *duplicates) {
-    GBDATA   *gb_main   = tree_static->gb_main;
+    GBDATA   *gb_main   = tree_static->get_gb_main();
     char     *tree_name = tree_static->tree_name;
     GB_ERROR  error     = GB_push_transaction(gb_main);
 
@@ -1392,15 +1407,15 @@ GB_ERROR AP_tree::load(AP_tree_root *tree_static, bool link_to_database, bool in
 }
 
 GB_ERROR AP_tree::relink() {
-    GB_transaction dummy(tree_root->gb_main); // open close a transaction
-    GB_ERROR error = GBT_link_tree(get_gbt_tree(), tree_root->gb_main, GB_FALSE, 0, 0); // no status
+    GB_transaction dummy(tree_root->get_gb_main()); // open close a transaction
+    GB_ERROR error = GBT_link_tree(get_gbt_tree(), tree_root->get_gb_main(), GB_FALSE, 0, 0); // no status
     tree_root->update_timers();
     return error;
 }
 
 AP_UPDATE_FLAGS AP_tree::check_update( )
 {
-    GBDATA *gb_main = this->tree_root->gb_main;
+    GBDATA *gb_main = this->tree_root->get_gb_main();
     if (!gb_main) return AP_UPDATE_RELOADED;
     GB_transaction dummy(gb_main);
 

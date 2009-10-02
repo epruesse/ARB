@@ -16,7 +16,7 @@
 
 // start of implementation of class AP_sequence_protein:
 
-AP_sequence_protein::AP_sequence_protein(AP_tree_root *tree_root)
+AP_sequence_protein::AP_sequence_protein(ARB_Tree_root *tree_root)
     : AP_sequence(tree_root)
 {
     sequence = 0;
@@ -147,18 +147,18 @@ static void update_min_mutations(int code_nr, const AWT_distance_meter *distance
 
 void AP_sequence_protein::set(const char *isequence)
 {
-    AWT_translator *translator = AWT_get_user_translator(this->root->gb_main);
+    AWT_translator *translator = AWT_get_user_translator(this->root->get_gb_main());
     update_min_mutations(translator->CodeNr(), translator->getDistanceMeter());
 
-    sequence_len = root->filter->real_len;
+    sequence_len = root->get_filter()->real_len;
     sequence     = new AP_PROTEINS[sequence_len+1];
 
-    awt_assert(root->filter->bootstrap == 0); // bootstrapping not implemented for protein parsimony
+    awt_assert(root->get_filter()->bootstrap == 0); // bootstrapping not implemented for protein parsimony
 
-    const uchar *simplify   = root->filter->simplify;
-    char        *filt       = root->filter->filter_mask;
+    const uchar *simplify   = root->get_filter()->simplify;
+    char        *filt       = root->get_filter()->filter_mask;
     int          left_bases = sequence_len;
-    long         filter_len = root->filter->filter_len;
+    long         filter_len = root->get_filter()->filter_len;
 
     awt_assert(filt);
 
@@ -226,7 +226,7 @@ AP_FLOAT AP_sequence_protein::combine(  const AP_sequence * lefts, const    AP_s
     const AP_sequence_protein *right = (const AP_sequence_protein *)rights;
 
     if (!sequence) {
-        sequence_len = root->filter->real_len;
+        sequence_len = root->get_filter()->real_len;
         sequence = new AP_PROTEINS[sequence_len +1];
     }
 
@@ -238,14 +238,14 @@ AP_FLOAT AP_sequence_protein::combine(  const AP_sequence * lefts, const    AP_s
     char     *mutpsite = 0;
 
     if (mutation_per_site) { // count site specific mutations in mutation_per_site
-        w        = root->weights->weights;
+        w        = root->get_weights()->weights;
         mutpsite = mutation_per_site;
     }
-    else if (root->weights->dummy_weights) { // no weights, no mutation_per_site
+    else if (root->get_weights()->dummy_weights) { // no weights, no mutation_per_site
         ;
     }
     else { // weighted (but don't count mutation_per_site)
-        w = root->weights->weights;
+        w = root->get_weights()->weights;
     }
 
     long result = 0;
@@ -358,8 +358,8 @@ void AP_sequence_protein::partial_match(const AP_sequence* part_, long *overlapP
     const AP_PROTEINS         *pf   = sequence;
     const AP_PROTEINS         *pp   = part->sequence;
 
-    GB_UINT4 *w                          = 0;
-    if (!root->weights->dummy_weights) w = root->weights->weights;
+    GB_UINT4 *w = 0;
+    if (!root->get_weights()->dummy_weights) w = root->get_weights()->weights;
 
     long min_end; // minimum of both last non-gap positions
 

@@ -151,7 +151,7 @@ inline void ST_rate_matrix::mult(ST_base_vector * in, ST_base_vector * out) {
 }
 #endif
 
-ST_sequence_ml::ST_sequence_ml(AP_tree_root * rooti, ST_ML * st_mli) :
+ST_sequence_ml::ST_sequence_ml(ARB_Tree_root * rooti, ST_ML * st_mli) :
     AP_sequence(rooti) {
     gb_data = 0;
     st_ml = st_mli;

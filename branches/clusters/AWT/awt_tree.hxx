@@ -144,8 +144,8 @@ public:
     bool       dummy_weights;   // if true all weights are == 1
 
     AP_weights(void);
-    char *init(AP_filter *fil); // init weights
-    char *init(GB_UINT4 *w, AP_filter *fil);
+    char *init(const AP_filter *fil); // init weights
+    char *init(GB_UINT4 *w, const AP_filter *fil);
     ~AP_weights(void);
 };
 
@@ -190,14 +190,14 @@ public:
     AP_FLOAT get(int i, int j) { return m[i][j];};
 };
 
-class AP_tree_root;
+class ARB_Tree_root;
 
 class AP_sequence {
 protected:
     AP_FLOAT cashed_real_len;
 
 public:
-    AP_tree_root *root;
+    ARB_Tree_root *root;
     static char *mutation_per_site; // if != 0 then mutations are set by combine
     static char *static_mutation_per_site[3];   // if != 0 then mutations are set by combine
 
@@ -208,7 +208,7 @@ public:
 
     static long global_combineCount;
 
-    AP_sequence(AP_tree_root *rooti);
+    AP_sequence(ARB_Tree_root *rooti);
     virtual ~AP_sequence(void);
 
     virtual AP_sequence *dup(void) = 0;             // used to get the real new element
@@ -223,42 +223,66 @@ public:
 
 class AP_tree;
 
-class AP_tree_root {
-public:
-    GBDATA  *gb_main;
-    GBDATA  *gb_tree;
-    GBDATA  *gb_tree_gone; // if all leaves have been removed by tree operations, remember 'gb_tree' here (see inform_about_changed_root)
-    GBDATA *gb_species_data;
-    GBDATA *gb_table_data;
-    long    tree_timer;
-    long    species_timer;
-    long    table_timer;
-    char    *tree_name;
-    AP_tree *tree_template;
-    AP_sequence     *sequence_template;
-
-    AP_filter *filter;
+class ARB_Tree_root {
+    AP_filter  *filter;
     AP_weights *weights;
-    AP_rates  *rates;
-    AP_smatrix *matrix;
+    
+protected:
+    GBDATA *gb_main;
+
+public:
+    ARB_Tree_root(GBDATA *gb_main_)
+        : filter(0)
+        , weights(0)
+        , gb_main(gb_main_)
+    {
+    }
+
+    virtual ~ARB_Tree_root() {
+        delete weights;
+        delete filter;
+    }
+
+    void set_filter(AP_filter *filter_) { delete filter; filter = filter_; }
+    void set_weights(AP_weights *weights_) { delete weights; weights = weights_; }
+
+    const AP_filter *get_filter() const { return filter; }
+    const AP_weights *get_weights() const { return weights; }
+
+    GBDATA *get_gb_main() const { return gb_main; }
+};
+
+
+class AP_tree_root : public ARB_Tree_root {
+public:
+    GBDATA      *gb_tree;
+    GBDATA      *gb_tree_gone;                      // if all leaves have been removed by tree operations, remember 'gb_tree' here (see inform_about_changed_root)
+    GBDATA      *gb_species_data;
+    GBDATA      *gb_table_data;
+    long         tree_timer;
+    long         species_timer;
+    long         table_timer;
+    char        *tree_name;
+    AP_tree     *tree_template;
+    AP_tree     *tree;
+    AP_sequence *sequence_template;
+    AP_rates    *rates;
+    AP_smatrix  *matrix;
 
     AP_tree_root(GBDATA *gb_main, AP_tree *tree_proto,const char *name);
-    void update_timers(void);       // update the timer
+    virtual ~AP_tree_root();
+    
+    void    update_timers(void);                    // update the timer
     GB_BOOL is_tree_updated(void);
     GB_BOOL is_species_updated(void);
-
 
     char        *(*root_changed)(void *cd,  AP_tree *old,  AP_tree *newroot);
     void        *root_changed_cd;
     char        *(*node_deleted)(void *cd,  AP_tree *old);
     void        *node_deleted_cd;
 
-    AP_tree *tree;
     char        *inform_about_changed_root( AP_tree *old,  AP_tree *newroot);
-
     char        *inform_about_delete( AP_tree *old);
-
-    ~AP_tree_root();
 };
 
 

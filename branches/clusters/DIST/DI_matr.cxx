@@ -253,8 +253,8 @@ extern "C" int qsort_strcmp(const void *str1ptr, const void *str2ptr) {
 char *DI_MATRIX::load(char *usei, AP_filter *filter, AP_weights *weights, LoadWhat what, GB_CSTR sort_tree_name, bool show_warnings, GBDATA **species_list) {
     delete tree_root;
     tree_root = new AP_tree_root(gb_main,0,0);
-    tree_root->filter = filter;
-    tree_root->weights = weights;
+    tree_root->set_filter(filter);
+    tree_root->set_weights(weights);
     this->use = strdup(usei);
     this->gb_main = GLOBAL_gb_main;
     GB_push_transaction(gb_main);
@@ -447,7 +447,7 @@ void DI_MATRIX::rate_write(DI_MUT_MATR &hits,FILE *out){
     }
 }
 
-long *DI_MATRIX::create_helix_filter(BI_helix *helix,AP_filter *filter){
+long *DI_MATRIX::create_helix_filter(BI_helix *helix, const AP_filter *filter){
     long *result = (long *)calloc(sizeof(long),(size_t)filter->real_len);
     long *temp = (long *)calloc(sizeof(long),(size_t)filter->real_len);
     int i,count;
@@ -479,7 +479,7 @@ GB_ERROR DI_MATRIX::calculate_rates(DI_MUT_MATR &hrates,DI_MUT_MATR &nrates,DI_M
     }
     long   row,col,pos,s_len;
     unsigned char *seq1,*seq2;
-    s_len = tree_root->filter->real_len;
+    s_len = tree_root->get_filter()->real_len;
     this->clear(hrates);
     this->clear(nrates);
     this->clear(pairs);
@@ -530,7 +530,7 @@ GB_ERROR DI_MATRIX::haeschoe(const char *path)
     aw_status("Calculating global rate matrix");
 
     fprintf(out,"Pairs in helical regions:\n");
-    long *filter = create_helix_filter(helix,tree_root->filter);
+    long *filter = create_helix_filter(helix,tree_root->get_filter());
     error = calculate_rates(temp,temp2,pairs,filter);
     if (error){
         aw_closestatus();
@@ -546,7 +546,7 @@ GB_ERROR DI_MATRIX::haeschoe(const char *path)
 
     long   row,col,pos,s_len;
     char *seq1,*seq2;
-    s_len = tree_root->filter->real_len;
+    s_len = tree_root->get_filter()->real_len;
     fprintf(out,"\nDistance matrix (Helixdist Helixlen Nonhelixdist Nonhelixlen):");
     fprintf(out,"\n%li",nentries);
     const int MAXDISTDEBUG = 1000;
@@ -620,7 +620,7 @@ char *DI_MATRIX::calculate_overall_freqs(double rel_frequencies[AP_MAX], char *c
     char *seq1;
     int   pos;
     int   b;
-    long  s_len = tree_root->filter->real_len;
+    long  s_len = tree_root->get_filter()->real_len;
 
     memset((char *) &hits2[0], 0, sizeof(hits2));
     for (row = 0; row < nentries; row++) {
@@ -673,7 +673,7 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, DI_T
 
     matrix = new AP_smatrix(nentries);
 
-    long   s_len = tree_root->filter->real_len;
+    long   s_len = tree_root->get_filter()->real_len;
     long   hits[AP_MAX][AP_MAX];
     int    row;
     int    col;
@@ -885,7 +885,7 @@ GB_ERROR DI_MATRIX::calculate_pro(DI_TRANSFORMATION transformation){
     }
     matrix = new AP_smatrix(nentries);
 
-    di_protdist prodist(whichcode, whichcat, nentries,entries, tree_root->filter->real_len,matrix);
+    di_protdist prodist(whichcode, whichcat, nentries,entries, tree_root->get_filter()->real_len,matrix);
     return prodist.makedists();
 }
 

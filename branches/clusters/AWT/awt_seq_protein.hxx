@@ -51,7 +51,7 @@ private:
     AP_sequence_protein(const AP_sequence_protein& other); // copying not allowed
     AP_sequence_protein& operator = (const AP_sequence_protein& other); // assignment not allowed
 public:
-    AP_sequence_protein(AP_tree_root *root);
+    AP_sequence_protein(ARB_Tree_root *root);
     virtual ~AP_sequence_protein();
 
     AP_sequence *dup();     // used to get the real new element

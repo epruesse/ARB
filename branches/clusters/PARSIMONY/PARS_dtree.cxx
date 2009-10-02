@@ -76,8 +76,9 @@ void NT_tree_init(AWT_graphic_tree *agt, adfiltercbstruct *pars_global_filter) {
         }
 
         tr->sequence_template = sproto;
-        tr->filter = awt_get_filter(agt->aw_root, pars_global_filter);
-        tr->weights = new AP_weights();
+        tr->set_filter(awt_get_filter(agt->aw_root, pars_global_filter));
+
+        AP_weights *weights  = new AP_weights;
 
         awt_csp->go(0);
         int i;
@@ -87,11 +88,13 @@ void NT_tree_init(AWT_graphic_tree *agt, adfiltercbstruct *pars_global_filter) {
                     awt_csp->weights[i] *= (int)(2.0/ awt_csp->rates[i]);
                 }
             }
-            tr->weights->init(awt_csp->weights , tr->filter);
-        }else{
-            tr->weights->init(tr->filter);
+            weights->init(awt_csp->weights, tr->get_filter());
         }
-        tree->load_sequences_rek(use,GB_FALSE,GB_TRUE);         // load with sequences
+        else {
+            weights->init(tr->get_filter());
+        }
+        tr->set_weights(weights);
+        tree->load_sequences_rek(use,GB_FALSE,GB_TRUE); // load with sequences
     }
     tree->tree_root->root_changed_cd = (void*)agt;
     tree->tree_root->root_changed = AWT_graphic_parsimony_root_changed;

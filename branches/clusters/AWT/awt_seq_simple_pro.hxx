@@ -24,7 +24,7 @@ class AP_sequence_simple_protein :  public  AP_sequence {
 public:
     ap_pro      *sequence;
     //static char   *table;
-    AP_sequence_simple_protein(AP_tree_root *rooti);
+    AP_sequence_simple_protein(ARB_Tree_root *rooti);
     ~AP_sequence_simple_protein(void);
     AP_sequence     *dup(void);     // used to get the real new element
     void set(const char *sequence);

@@ -553,7 +553,7 @@ void AP_tree_edge::countSpecies(int deep,const AP_tree_nlen *skip)
     tree optimization
 **************************/
 void ap_init_bootstrap_remark(AP_tree_nlen *son_node){
-    int seq_len = son_node->sequence->root->filter->real_len;
+    int seq_len = son_node->sequence->root->get_filter()->real_len;
     AP_sequence::static_mutation_per_site[0] = (char *)GB_calloc(sizeof(char),seq_len);
     AP_sequence::static_mutation_per_site[1] = (char *)GB_calloc(sizeof(char),seq_len);
     AP_sequence::static_mutation_per_site[2] = (char *)GB_calloc(sizeof(char),seq_len);
@@ -654,7 +654,7 @@ double ap_calc_bootstrap_remark_sub(int seq_len, char *old, char *ne){
 
 void ap_calc_bootstrap_remark(AP_tree_nlen *son_node,AP_BL_MODE mode){
     if (!son_node->is_leaf){
-        int seq_len = son_node->sequence->root->filter->real_len;
+        int seq_len = son_node->sequence->root->get_filter()->real_len;
         float one = ap_calc_bootstrap_remark_sub(seq_len,
                                                  &AP_sequence::static_mutation_per_site[0][0],
                                                  &AP_sequence::static_mutation_per_site[1][0]);
