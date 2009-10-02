@@ -44,14 +44,16 @@ typedef float GBT_LEN;
 
 #ifdef FAKE_VTAB_PTR
 /* if defined, FAKE_VTAB_PTR contains 'char' */
-typedef FAKE_VTAB_PTR virtualTable;
+typedef FAKE_VTAB_PTR  virtualTable;
+#define GBT_VTAB_AND_TREE_ELEMENTS(type)        \
+    virtualTable      *dummy_virtual;           \
+    GBT_TREE_ELEMENTS(type)
+#else
+#define GBT_VTAB_AND_TREE_ELEMENTS(type) GBT_TREE_ELEMENTS(type)
 #endif
 
 typedef struct gbt_tree_struct {
-#ifdef FAKE_VTAB_PTR
-    virtualTable *dummy_virtual; /* simulate pointer to virtual-table used in AP_tree */
-#endif
-    GBT_TREE_ELEMENTS(struct gbt_tree_struct);
+    GBT_VTAB_AND_TREE_ELEMENTS(struct gbt_tree_struct);
 } GBT_TREE;
 
 typedef enum { // bit flags
