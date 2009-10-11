@@ -58,6 +58,11 @@ DESCRIPTION     Arb is aware of several environment variables:
                             directory name where your local ARB-macros will be saved to/loaded from
                             (default: $HOME/.arb_prop/macros )
 
+                    ARBCONFIG
+
+                            directory name where your local ARB-configs will be saved to/loaded from
+                            (default: $HOME/.arb_prop/cfgSave )
+
                     ARB_GS
 
                             name of postscript viewer used by ARB
@@ -77,6 +82,11 @@ DESCRIPTION     Arb is aware of several environment variables:
 
                             directory where ARB searches for *.ps, *.ps.gz, *.pdf
                             and *.pdf.gz (default: $ARBHOME/lib/help)
+
+                    ARB_HTMLDOC
+
+                            directory where ARB searches for *.html help files
+                            (default: $ARBHOME/lib/help_html)
 
 NOTES		Short description of how to set an environment variable:
 

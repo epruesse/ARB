@@ -316,6 +316,7 @@ GB_CSTR GB_getenvHOME P_((void));
 GB_CSTR GB_getenvARBHOME P_((void));
 GB_CSTR GB_getenvARBMACRO P_((void));
 GB_CSTR GB_getenvARBMACROHOME P_((void));
+GB_CSTR GB_getenvARBCONFIG P_((void));
 GB_CSTR GB_getenvPATH P_((void));
 GB_CSTR GB_getenvARB_GS P_((void));
 GB_CSTR GB_getenvARB_PDFVIEW P_((void));

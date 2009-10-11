@@ -814,7 +814,7 @@ GB_ERROR GB_system(const char *system_command) {
 
 GB_ERROR GB_xterm(void) {
     /* goes to header: __ATTR__USERESULT */
-    const char *xt = GB_getenv("ARB_XTERM"); // doc in arb_envar.hlp
+    const char *xt = GB_getenv("ARB_XTERM"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_XTERM
     if (!xt) xt = "xterm -sl 1000 -sb -geometry 120x40";
 
     const char *command = GBS_global_string("%s &", xt);
@@ -829,7 +829,7 @@ GB_ERROR GB_xcmd(const char *cmd, GB_BOOL background, GB_BOOL wait_only_if_error
     // if 'wait_only_if_error' is true -> asynchronous does wait for keypress only if cmd fails
 
     void       *strstruct = GBS_stropen(1024);
-    const char *xt        = GB_getenv("ARB_XCMD"); // doc in arb_envar.hlp
+    const char *xt        = GB_getenv("ARB_XCMD"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_XCMD
     if (!xt) xt           = "xterm -sl 1000 -sb -geometry 140x30 -e";
     GBS_strcat(strstruct, "(");
     GBS_strcat(strstruct, xt);
@@ -1011,7 +1011,7 @@ GB_CSTR GB_getenvHOME(void) {
 GB_CSTR GB_getenvARBHOME(void) {
     static char *arbhome = 0;
     if (!arbhome) {
-        arbhome = getenv_existing_directory("ARBHOME"); // doc in arb_envar.hlp
+        arbhome = getenv_existing_directory("ARBHOME"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBHOME
         if (!arbhome){
             fprintf(stderr, "ERROR: Environment Variable ARBHOME not found !!!\n"
                     "   Please set 'ARBHOME' to the installation path of ARB\n");
@@ -1024,25 +1024,37 @@ GB_CSTR GB_getenvARBHOME(void) {
 GB_CSTR GB_getenvARBMACRO(void) {
     static const char *am = 0;
     if (!am) {
-        am          = getenv_existing_directory("ARBMACRO"); // doc in arb_envar.hlp
+        am          = getenv_existing_directory("ARBMACRO"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBMACRO
         if (!am) am = strdup(GB_path_in_ARBLIB("macros", NULL));
     }
     return am;
 }
 
-GB_CSTR GB_getenvARBMACROHOME(void) {
-    static const char *amh = 0;
-    if (!amh) {
-        amh = getenv_existing_directory("ARBMACROHOME"); // doc in arb_envar.hlp
-        if (!amh) {
-            amh = GBS_eval_env("$(HOME)/.arb_prop/macros");
-            if (!GB_is_directory(amh)) {
-                GB_ERROR error = GB_create_directory(amh);
-                if (error) GB_warningf("Failed to create directory '%s' (Reason: %s)", amh, error);
+static GB_CSTR getenv_autodirectory(const char *envvar, const char *defaultDirectory) {
+    static const char *dir = 0;
+    if (!dir) {
+        dir = getenv_existing_directory(envvar); 
+        if (!dir) {
+            dir = GBS_eval_env(defaultDirectory);
+            if (!GB_is_directory(dir)) {
+                GB_ERROR error = GB_create_directory(dir);
+                if (error) GB_warningf("Failed to create directory '%s' (Reason: %s)", dir, error);
             }
         }
     }
+    return dir;
+}
+
+GB_CSTR GB_getenvARBMACROHOME(void) {
+    static const char *amh = 0;
+    if (!amh) amh = getenv_autodirectory("ARBMACROHOME", "$(HOME)/.arb_prop/macros");  // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBMACROHOME
     return amh;
+}
+
+GB_CSTR GB_getenvARBCONFIG(void) {
+    static const char *ac = 0;
+    if (!ac) ac = getenv_autodirectory("ARBCONFIG", "$(HOME)/.arb_prop/cfgSave"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBCONFIG
+    return ac;
 }
 
 GB_CSTR GB_getenvPATH() {
@@ -1067,7 +1079,7 @@ GB_CSTR GB_getenvPATH() {
 GB_CSTR GB_getenvARB_GS(void) {
     static const char *gs = 0;
     if (!gs) {
-        gs = getenv_executable("ARB_GS"); // doc in arb_envar.hlp
+        gs = getenv_executable("ARB_GS"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_GS
         if (!gs) gs = GB_find_executable("Postscript viewer", "gv", "ghostview", NULL);
     }
     return gs;
@@ -1076,7 +1088,7 @@ GB_CSTR GB_getenvARB_GS(void) {
 GB_CSTR GB_getenvARB_PDFVIEW(void) {
     static const char *pdfview = 0;
     if (!pdfview) {
-        pdfview = getenv_executable("ARB_PDFVIEW"); // doc in arb_envar.hlp
+        pdfview = getenv_executable("ARB_PDFVIEW"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_PDFVIEW
         if (!pdfview) pdfview = GB_find_executable("PDF viewer", "epdfview", "xpdf", "kpdf", "acroread", "gv", NULL);
     }
     return pdfview;
@@ -1085,7 +1097,7 @@ GB_CSTR GB_getenvARB_PDFVIEW(void) {
 GB_CSTR GB_getenvARB_TEXTEDIT(void) {
     static const char *editor = 0;
     if (!editor) {
-        editor = getenv_executable("ARB_TEXTEDIT"); // doc in arb_envar.hlp
+        editor = getenv_executable("ARB_TEXTEDIT"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_TEXTEDIT
         if (!editor) editor = "arb_textedit"; // a smart editor shell script
     }
     return editor;
@@ -1094,7 +1106,7 @@ GB_CSTR GB_getenvARB_TEXTEDIT(void) {
 GB_CSTR GB_getenvDOCPATH(void) {
     static const char *dp = 0;
     if (!dp) {
-        char *res = getenv_existing_directory("ARB_DOC"); // doc in arb_envar.hlp
+        char *res = getenv_existing_directory("ARB_DOC"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_DOC
         if (res) dp = res;
         else     dp = strdup(GB_path_in_ARBLIB("help", NULL));
     }
@@ -1104,7 +1116,7 @@ GB_CSTR GB_getenvDOCPATH(void) {
 GB_CSTR GB_getenvHTMLDOCPATH(void) {
     static const char *dp = 0;
     if (!dp) {
-        char *res = getenv_existing_directory("ARB_HTMLDOC"); // doc in arb_envar.hlp
+        char *res = getenv_existing_directory("ARB_HTMLDOC"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_HTMLDOC
         if (res) dp = res;
         else     dp = strdup(GB_path_in_ARBLIB("help_html", NULL));
     }
@@ -1115,8 +1127,9 @@ GB_CSTR GB_getenvHTMLDOCPATH(void) {
 GB_CSTR GB_getenv(const char *env){
     if (strncmp(env, "ARB", 3) == 0) {
 
-        // doc in arb_envar.hlp
+        // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp
 
+        if (strcmp(env, "ARBCONFIG")    == 0) return GB_getenvARBCONFIG();
         if (strcmp(env, "ARBMACROHOME") == 0) return GB_getenvARBMACROHOME();
         if (strcmp(env, "ARBMACRO")     == 0) return GB_getenvARBMACRO();
         if (strcmp(env, "ARBHOME")      == 0) return GB_getenvARBHOME();
