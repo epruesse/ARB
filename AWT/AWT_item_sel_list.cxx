@@ -131,6 +131,7 @@ AW_CL awt_create_selection_list_on_scandb(GBDATA                 *gb_main,
             aw_popup->create_button("CLOSE", "CLOSE", "C");
 
             aw_popup->window_fit();
+            aw_popup->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
 
             win_for_sellist = aw_popup;
         }
