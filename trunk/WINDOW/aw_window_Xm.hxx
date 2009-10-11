@@ -344,6 +344,7 @@ void        AW_server_callback(Widget wgt, XtPointer aw_cb_struct, XtPointer cal
 void message_cb( AW_window *aw, AW_CL cd1 );
 void input_cb( AW_window *aw, AW_CL cd1 );
 void input_history_cb( AW_window *aw, AW_CL cl_mode); 
+void file_selection_cb(AW_window *aw, AW_CL cd1);
 // ------------------------------------------------------------
 
 Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int width, int height, int posx, int posy);

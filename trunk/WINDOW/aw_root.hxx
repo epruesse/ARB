@@ -123,6 +123,8 @@ char *aw_string_selection2awar(const char *title, const char *prompt, const char
 
 int aw_string_selection_button();   // returns index of last selected button (destroyed by aw_string_selection and aw_input)
 
+char *aw_file_selection(const char *title, const char *dir, const char *def_name, const char *suffix);
+
 void AW_ERROR(const char *templat, ...) __ATTR__FORMAT(1);
 
 // ---------------------

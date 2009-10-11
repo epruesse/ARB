@@ -1179,9 +1179,22 @@ int aw_string_selection_button() {
 #define AW_INPUT_AWAR       "tmp/input/string"
 #define AW_INPUT_TITLE_AWAR "tmp/input/title"
 
+#define AW_FILE_SELECT_BASE        "tmp/file_select"
+#define AW_FILE_SELECT_DIR_AWAR    AW_FILE_SELECT_BASE "/directory"
+#define AW_FILE_SELECT_FILE_AWAR   AW_FILE_SELECT_BASE "/file_name"
+#define AW_FILE_SELECT_FILTER_AWAR AW_FILE_SELECT_BASE "/filter"
+#define AW_FILE_SELECT_TITLE_AWAR  AW_FILE_SELECT_BASE "/title"
+
 static void create_input_awars(AW_root *aw_root) {
     aw_root->awar_string(AW_INPUT_TITLE_AWAR, "", AW_ROOT_DEFAULT);
     aw_root->awar_string(AW_INPUT_AWAR,       "", AW_ROOT_DEFAULT);
+}
+
+static void create_fileSelection_awars(AW_root *aw_root) {
+    aw_root->awar_string(AW_FILE_SELECT_TITLE_AWAR, "", AW_ROOT_DEFAULT);
+    aw_root->awar_string(AW_FILE_SELECT_DIR_AWAR, "", AW_ROOT_DEFAULT);
+    aw_root->awar_string(AW_FILE_SELECT_FILE_AWAR, "", AW_ROOT_DEFAULT);
+    aw_root->awar_string(AW_FILE_SELECT_FILTER_AWAR, "", AW_ROOT_DEFAULT);
 }
 
 // -------------------------
@@ -1269,10 +1282,25 @@ void input_cb(AW_window *aw, AW_CL cd1) {
     }
 }
 
+void file_selection_cb(AW_window *aw, AW_CL cd1) {
+    // any previous contents were passed to client (who is responsible to free the resources)
+    // so DON'T free aw_input_cb_result here:
+    aw_input_cb_result        = 0;
+    aw_string_selected_button = int(cd1);
+
+    if (cd1 >= 0) {              // <0 = cancel button -> no result
+        // create heap-copy of result -> client will get the owner
+        aw_input_cb_result = aw->get_root()->awar(AW_FILE_SELECT_FILE_AWAR)->read_as_string();
+    }
+}
+
 #define INPUT_SIZE 50           // size of input prompts in aw_input and aw_string_selection
 
 static AW_window_message *new_input_window(AW_root *root, const char *title, const char *buttons) {
-    // helper for aw_input and aw_string_selection    
+    // helper for aw_input and aw_string_selection
+    // 
+    // 'buttons' comma separated list of button names (buttons starting with \n force a newline)   
+    
     AW_window_message *aw_msg = new AW_window_message;
 
     aw_msg->init(root, title, false);
@@ -1301,18 +1329,35 @@ static AW_window_message *new_input_window(AW_root *root, const char *title, con
 
     }
 
-    aw_msg->button_length(maxlen+1); 
-    
+    aw_msg->button_length(maxlen+1);
+
+#define MAXBUTTONSPERLINE 5
+
     aw_msg->at_newline();
     aw_msg->callback(input_history_cb, -1); aw_msg->create_button("bwd", "<<", 0);
     aw_msg->callback(input_history_cb,  1); aw_msg->create_button("fwd", ">>", 0);
+    int thisLine = 2;
 
-    if (butCount>3) aw_msg->at_newline(); // approx. 5 buttons (2+3) fit into one line
+    // @@@ add a history button (opening a window with elements from history)
+
+    if (butCount>(MAXBUTTONSPERLINE-thisLine) && butCount <= MAXBUTTONSPERLINE) { // approx. 5 buttons (2+3) fit into one line
+        aw_msg->at_newline();
+        thisLine = 0;
+    }
 
     if (buttons) {
         for (int b = 0; b<butCount; b++) {
-            aw_msg->callback(input_cb, b);         // use b == 0 as result for 1st button, 1 for 2nd button, etc.
-            aw_msg->create_button(button_names[b], button_names[b], "");
+            const char *name    = button_names[b];
+            bool        forceLF = name[0] == '\n';
+
+            if (thisLine >= MAXBUTTONSPERLINE || forceLF) {
+                aw_msg->at_newline();
+                thisLine = 0;
+                if (forceLF) name++;
+            }
+            aw_msg->callback(input_cb, b);          // use b == 0 as result for 1st button, 1 for 2nd button, etc.
+            aw_msg->create_button(name, name, "");
+            thisLine++;
         }
         GBT_free_names(button_names);
         button_names = 0;
@@ -1533,54 +1578,49 @@ char *aw_string_selection2awar(const char *title, const char *prompt, const char
     return result;
 }
 
-/***********************************************************************/
-/*****************      AW_FILESELECTION     *******************/
-/***********************************************************************/
+// --------------------------
+//      aw_file_selection
 
-#define AW_FILE_SELECT_DIR_AWAR    "tmp/file_select/directory"
-#define AW_FILE_SELECT_FILE_AWAR   "tmp/file_select/file_name"
-#define AW_FILE_SELECT_FILTER_AWAR "tmp/file_select/filter"
-#define AW_FILE_SELECT_TITLE_AWAR  "tmp/file_select/title"
-
-#if defined(DEVEL_RALF)
-#warning aw_file_selection is unused. it is thought to work as 'Browse' button at places where currently a plain input field is used to enter filenames
-#endif // DEVEL_RALF
-
-char *aw_file_selection( const char *title, const char *dir, const char *def_name, const char *suffix )
-
-{
-    aw_assert(0); // function is not used yet
+char *aw_file_selection( const char *title, const char *dir, const char *def_name, const char *suffix ) {
     AW_root *root = AW_root::THIS;
 
-    static AW_window_message *aw_msg = 0;
-    root->awar_string(AW_FILE_SELECT_TITLE_AWAR)->write_string((char *)title);
-    root->awar_string(AW_FILE_SELECT_DIR_AWAR)->write_string((char *)dir);
-    root->awar_string(AW_FILE_SELECT_FILE_AWAR)->write_string((char *)def_name);
-    root->awar_string(AW_FILE_SELECT_FILTER_AWAR)->write_string((char *)suffix);
+    static AW_window_simple *aw_msg = 0;
+    if (!aw_msg) create_fileSelection_awars(root);
+
+    {
+        char *edir      = GBS_eval_env(dir);
+        char *edef_name = GBS_eval_env(def_name);
+
+        root->awar(AW_FILE_SELECT_TITLE_AWAR) ->write_string(title);
+        root->awar(AW_FILE_SELECT_DIR_AWAR)   ->write_string(edir);
+        root->awar(AW_FILE_SELECT_FILE_AWAR)  ->write_string(edef_name);
+        root->awar(AW_FILE_SELECT_FILTER_AWAR)->write_string(suffix);
+
+        free(edef_name);
+        free(edir);
+    }
 
     if (!aw_msg) {
-        aw_msg = new AW_window_message;
+        aw_msg = new AW_window_simple;
 
-        aw_msg->init( root, "ENTER A STRING", false);
+        aw_msg->init(root, "AW_FILE_SELECTION", "File selection");
+        aw_msg->allow_delete_window(false); // disable closing the window
+        
+        aw_msg->load_xfig("fileselect.fig");
 
-        aw_msg->label_length( 0 );
-        aw_msg->button_length( 30 );
+        aw_msg->at("title");
+        aw_msg->create_button(0, AW_FILE_SELECT_TITLE_AWAR);
 
-        aw_msg->at( 10, 10 );
-        aw_msg->auto_space( 10, 10 );
-        aw_msg->create_button( 0,AW_FILE_SELECT_TITLE_AWAR );
+        awt_create_selection_box(aw_msg, AW_FILE_SELECT_BASE);
 
-        aw_msg->at_newline();
-        // awt_create_selection_box(aw_msg,"tmp/file_select",80,30);
+        aw_msg->button_length(7);
 
-        aw_msg->at_newline();
-
-        aw_msg->button_length( 0 );
-
-        aw_msg->callback     ( input_cb, 0 );
+        aw_msg->at("ok");
+        aw_msg->callback     ( file_selection_cb, 0 );
         aw_msg->create_button( "OK", "OK", "O" );
 
-        aw_msg->callback     ( input_cb, -1 );
+        aw_msg->at("cancel");
+        aw_msg->callback     ( file_selection_cb, -1 );
         aw_msg->create_button( "CANCEL", "CANCEL", "C" );
 
         aw_msg->window_fit();
