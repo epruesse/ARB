@@ -10,12 +10,21 @@ UP	glossary.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Help on configurations
 
-OCCURRENCE	Anywhere (buttons with disk icon)
+OCCURRENCE	Anywhere (buttons with config icon)
 
-DESCRIPTION     This provides a general way to store and restore some settings
-                from the previous window.
+DESCRIPTION     This provides a general way to store and restore settings
+                from the window, where this has been called from.
 
-NOTES		To save stored settings permanently, SAVE PROPERTIES!
+                - STORE: stores current settings into properties.
+                - RESTORE: restores settings from properties.
+                - DELETE: delete stored settings from properties
+                - SAVE: STORE and save stored settings to a file 
+                - LOAD: load settings from a file, STORE and RESTORE
+
+NOTES		To save stored settings permanently, use SAVE PROPERTIES!
+
+                Saving configurations allows you to share them with other users.
+                The configs are saved in ~/.arb_prop/cfgSave/
 
 EXAMPLES	None
 
