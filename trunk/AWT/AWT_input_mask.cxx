@@ -1529,8 +1529,7 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                 free(window_id);
             }
             aws->load_xfig(0, true);
-
-            aws->recalc_size_at_show = 1; // ignore user size!
+            aws->recalc_size_atShow(AW_RESIZE_DEFAULT); // ignore user size!
 
             aws->auto_space(x_spacing, y_spacing);
             aws->at_newline();

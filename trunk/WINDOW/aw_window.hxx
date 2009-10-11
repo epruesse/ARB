@@ -189,10 +189,28 @@ public:
 struct AW_option_menu_struct;
 struct aw_toggle_data;
 
+enum AW_SizeRecalc {
+    AW_KEEP_SIZE      = 0,                          // do not resize
+    AW_RESIZE_DEFAULT = 1,                          // do resize to default size
+    AW_RESIZE_USER    = 2,                          // do resize to user size (or default size if that is bigger)
+    AW_RESIZE_ANY     = 3                           // keep AW_RESIZE_USER or set AW_RESIZE_DEFAULT
+};
+
+enum AW_PosRecalc {
+    AW_KEEP_POS            = 0,                     // do not change position on show
+    AW_REPOS_TO_CENTER     = 1,                     // center the window on show
+    AW_REPOS_TO_MOUSE      = 2,                     // move the window under the current mouse position
+    AW_REPOS_TO_MOUSE_ONCE = 3,                     // like AW_REPOS_TO_MOUSE, but only done once!
+};
+
 class AW_window {
-private:
+    enum AW_SizeRecalc recalc_size_at_show;
+    enum AW_PosRecalc  recalc_pos_at_show;
+
     void all_menus_created();
     void create_toggle(const char *var_name, aw_toggle_data *tdata);
+
+    void show_internal(void *grab);
 
 protected:
     AW_root *root;
@@ -221,18 +239,25 @@ public:
     long           color_table_size;
     unsigned long *color_table;
 
-    int recalc_size_at_show;
-    // 0 = do not resize
-    // 1 = do resize to default size
-    // 2 = do resize to user size (or default size if that is bigger)
-
     int number_of_timed_title_changes;
 
     void /*AW_xfig*/    *xfig_data;
 
-    void create_window_variables( void );
-    void show_grabbed(void);
-    void set_window_title_intern( char *title );
+    void create_window_variables();
+
+    void recalc_pos_atShow(AW_PosRecalc pr) { recalc_pos_at_show = pr; }
+    AW_PosRecalc get_recalc_pos_atShow() const { return recalc_pos_at_show; }
+
+    void recalc_size_atShow(enum AW_SizeRecalc sr) {
+        if (sr == AW_RESIZE_ANY) {
+            sr = (recalc_size_at_show == AW_RESIZE_USER) ? AW_RESIZE_USER : AW_RESIZE_DEFAULT;
+        }
+        recalc_size_at_show = sr;
+    }
+
+    void allow_delete_window(bool allow_close);
+    void show_grabbed();
+    void set_window_title_intern(char *title);
 
     int calculate_string_width( int columns );
     int calculate_string_height( int columns, int offset );
@@ -369,11 +394,20 @@ public:
 
 
     // ************** Control window size  *********
-    void set_window_size( int width, int height );
-    void get_window_size( int& width, int& height );
-    void window_fit(void); // Recalculate the size of a window with buttons
-    void align(void); // Position dialog in the center the screen
+    void set_window_size(int width, int height);
+    void get_window_size(int& width, int& height);
+    void window_fit(void);                          // Recalculate the size of a window with buttons
 
+
+    // ************** Control window position  *********
+    void set_window_pos(int width, int height);
+    void get_window_pos(int& xpos, int& ypos);
+
+    // *****************
+    
+    void get_screen_size(int& width, int& height);
+    bool get_mouse_pos(int& x, int& y);
+    
     // ************** ********************************************************************  *********
     // ************** Create buttons: First set modify flags and finally create the button  *********
     // ************** ********************************************************************  *********

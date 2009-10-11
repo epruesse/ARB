@@ -258,6 +258,7 @@ AW_window *awt_popup_selection_list_on_pt_servers(AW_root *aw_root, const char *
     aw_popup->create_button("CLOSE", "CLOSE", "C");
 
     aw_popup->window_fit();
+    aw_popup->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
 
     announce_pt_server_selection_list(aw_popup, id);
     fill_pt_server_selection_list(aw_popup, id);
@@ -626,6 +627,8 @@ AW_window *create_save_box_for_selection_lists(AW_root *aw_root,AW_CL selid)
     free(awar_line_anz);
     free(var_id);
 
+    aws->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
+    
     return aws;
 }
 
@@ -672,7 +675,10 @@ AW_window *create_load_box_for_selection_lists(AW_root *aw_root, AW_CL selid)
     aws->create_button("LOAD", "LOAD","L");
 
     awt_create_selection_box((AW_window *)aws,base_name);
-    return (AW_window*) aws;
+    
+    aws->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
+
+    return aws;
 }
 
 
@@ -734,9 +740,11 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const ch
 
     aws->create_button("LOAD", "LOAD","L");
 
-    awt_create_selection_box((AW_window *)aws,base_name);
+    awt_create_selection_box(aws,base_name);
     free(base_name);
-    return (AW_window*) aws;
+    aws->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
+    
+    return aws;
 }
 
 /* ************************************************** */
@@ -895,6 +903,7 @@ void AWT_popup_select_species_field_window(AW_window *aww, AW_CL cl_awar_name, A
                                             "tmp/viewkeys/key_text_select",
                                             AWT_NDS_FILTER,
                                             "scandb","rescandb", &AWT_species_selector, 20, 10);
+        aws->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
     }
     aws->activate();
 }

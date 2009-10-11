@@ -297,6 +297,8 @@ public:
 /**********************************************************************/
 const int AW_NUMBER_OF_F_KEYS = 20;
 
+#define AW_FIX_POS_ON_EXPOSE -12345
+
 class AW_window_Motif {
 public:
 
@@ -336,11 +338,13 @@ void        aw_root_init_font(Display *tool_d);
 const char *aw_str_2_label(const char *str,AW_window *aww);
 void        AW_label_in_awar_list(AW_window *aww,Widget widget,const char *str);
 void        AW_server_callback(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data);
-void        aw_message_timer_listen_event(AW_root *awr, AW_CL cl1, AW_CL cl2);
-void        message_cb( AW_window *aw, AW_CL cd1 );
-// void        macro_message_cb( AW_window *aw, AW_CL cd1 );
-void        input_cb( AW_window *aw, AW_CL cd1 );
-void        input_history_cb( AW_window *aw, AW_CL cl_mode); // internal
+
+// ------------------------------------------------------------
+// do not use the following functions
+void message_cb( AW_window *aw, AW_CL cd1 );
+void input_cb( AW_window *aw, AW_CL cd1 );
+void input_history_cb( AW_window *aw, AW_CL cl_mode); 
+// ------------------------------------------------------------
 
 Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int width, int height, int posx, int posy);
 void   aw_realize_widget(AW_window *aww);

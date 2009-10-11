@@ -63,7 +63,7 @@ void AW_window::at_set_min_size(int xmin, int ymin) {
     if (xmin > _at->max_x_size) _at->max_x_size = xmin; // this looks wrong, but its right!
     if (ymin > _at->max_y_size) _at->max_y_size = ymin;
 
-    if (recalc_size_at_show) {
+    if (recalc_size_at_show != AW_KEEP_SIZE) {
         set_window_size(_at->max_x_size+1000, _at->max_y_size+1000);
     }
 }

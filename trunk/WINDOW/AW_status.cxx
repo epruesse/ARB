@@ -943,7 +943,7 @@ void message_cb( AW_window *aw, AW_CL cd1 ) {
 
 
 
-void aw_message_timer_listen_event(AW_root *awr, AW_CL cl1, AW_CL cl2)
+static void aw_message_timer_listen_event(AW_root *awr, AW_CL cl1, AW_CL cl2)
 {
 #if defined(TRACE_STATUS_MORE)
     fprintf(stderr, "in aw_message_timer_listen_event\n"); fflush(stdout);
@@ -1030,7 +1030,7 @@ int aw_question(const char *question, const char *buttons, bool fixedSizeButtons
         GBS_write_hash(hash_windows, hindex, (long)aw_msg);
 
         aw_msg->init( root, "QUESTION BOX", false);
-        aw_msg->recalc_size_at_show = 1; // force size recalc (ignores user size)
+        aw_msg->recalc_size_atShow(AW_RESIZE_DEFAULT); // force size recalc (ignores user size)
 
         aw_msg->label_length( 10 );
 
@@ -1105,9 +1105,9 @@ int aw_question(const char *question, const char *buttons, bool fixedSizeButtons
         }
 
         aw_msg->window_fit();
-        aw_msg->align();
     }
     free(hindex);
+    aw_msg->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
     aw_msg->show_grabbed();
 
     free(button_list);
@@ -1354,18 +1354,13 @@ char *aw_input(const char *title, const char *prompt, const char *default_input)
 
     aw_assert(GB_get_transaction_level(inAwar->gb_var) <= 0); // otherwise history would not work
 
-    if (!aw_msg) {
-        aw_msg = new_input_window(root, title, NULL);
-        aw_msg->window_fit();
-    }
-    else {
-        aw_msg->set_window_title(title);
-        aw_msg->window_fit();
-    }
-    
+    if (!aw_msg) aw_msg = new_input_window(root, title, NULL);
+    else aw_msg->set_window_title(title);
+
     aw_msg->window_fit();
+    aw_msg->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
     aw_msg->show_grabbed();
-    char dummy[] = "";
+    char dummy[]       = "";
     aw_input_cb_result = dummy;
 
     root->add_timed_callback_never_disabled(AW_MESSAGE_LISTEN_DELAY, aw_message_timer_listen_event, (AW_CL)aw_msg, 0);
@@ -1482,6 +1477,7 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
     aw_msg->update_selection_list(sel);
 
     // do modal loop :
+    aw_msg->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
     aw_msg->show_grabbed();
     char dummy[] = "";
     aw_input_cb_result = dummy;
@@ -1590,6 +1586,7 @@ char *aw_file_selection( const char *title, const char *dir, const char *def_nam
         aw_msg->window_fit();
     }
 
+    aw_msg->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
     aw_msg->show_grabbed();
     char dummy[] = "";
     aw_input_cb_result = dummy;
