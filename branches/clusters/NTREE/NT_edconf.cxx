@@ -1,26 +1,21 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+// =============================================================== //
+//                                                                 //
+//   File      : NT_edconf.cxx                                     //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <ad_config.h>
-#include <aw_awars.hxx>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
 
-#include "nt_edconf.hxx"
+#include "nt_internal.h"
 
-#include <awt.hxx>
-#include <awt_canvas.hxx>
-#include <awt_tree.hxx>
-#include <awt_dtree.hxx>
 #include <awt_sel_boxes.hxx>
+#include <aw_window.hxx>
+#include <aw_awars.hxx>
+#include <ad_config.h>
 
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
-#endif
 #define nt_assert(bed) arb_assert(bed)
 
 extern GBDATA *GLOBAL_gb_main;

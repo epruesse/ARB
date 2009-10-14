@@ -10,9 +10,8 @@
 #include <aw_window.hxx>
 #include <awt.hxx>
 #include <awt_canvas.hxx>
-#include <awt_tree.hxx>
-#include <awt_dtree.hxx>
-#include <awt_tree_cb.hxx>
+#include <AP_Tree.hxx>
+#include <TreeCallbacks.hxx>
 
 #include "MultiProbe.hxx"
 #include "mp_proto.hxx"

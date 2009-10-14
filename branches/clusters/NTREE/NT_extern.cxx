@@ -1,60 +1,49 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+// =============================================================== //
+//                                                                 //
+//   File      : NT_extern.cxx                                     //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_awars.hxx>
-
-#include "ad_trees.hxx"
-#include "ad_spec.hxx"
-#include <awt_nds.hxx>
-#include <awt_canvas.hxx>
-#include <aw_preset.hxx>
-#include <aw_global.hxx>
-#include <awt_preset.hxx>
-#include <awt_advice.hxx>
-#include <awt_config_manager.hxx>
-#include <awt_sel_boxes.hxx>
-#include <awt_macro.hxx>
-
-#include <AW_rename.hxx>
-#include <awtc_submission.hxx>
-#include <gde.hxx>
-
-#include <awt_www.hxx>
-#include <awt_tree.hxx>
-#include <awt_dtree.hxx>
-#include <awt_tree_cb.hxx>
-#include "ntree.hxx"
-#include "nt_cb.hxx"
-#include "nt_sort.hxx"
-#include "ap_consensus.hxx"
-#include "ap_csp_2_gnuplot.hxx"
-#include "ap_conservProfile2Gnuplot.hxx"
-#include <awti_export.hxx>
-#include "nt_join.hxx"
-#include "nt_edconf.hxx"
-#include "ap_pos_var_pars.hxx"
-#include <arb_version.h>
 #include "nt_internal.h"
+#include "ntree.hxx"
+#include "ad_spec.hxx"
+#include "ad_trees.hxx"
+#include "ap_consensus.hxx"
+#include "seq_quality.h"
+#include "nt_join.hxx"
+
 #include <st_window.hxx>
-#include <probe_design.hxx>
-#include <primer_design.hxx>
 #include <GEN.hxx>
 #include <EXP.hxx>
+
+#include <TreeCallbacks.hxx>
+#include <AW_rename.hxx>
+#include <probe_design.hxx>
+#include <primer_design.hxx>
+#include <gde.hxx>
+#include <awtc_submission.hxx>
+
+#include <awti_export.hxx>
+
+#include <awt_preset.hxx>
+#include <awt_macro.hxx>
+#include <awt_advice.hxx>
+#include <awt_config_manager.hxx>
 #include <awt_input_mask.hxx>
+#include <awt_sel_boxes.hxx>
+#include <awt_www.hxx>
+#include <awt_nds.hxx>
 
-#include "seq_quality.h"
-#include "NT_trackAliChanges.h"
-#include "NT_dbrepair.hxx"
+#include <aw_preset.hxx>
+#include <aw_global.hxx>
+#include <aw_awars.hxx>
 
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
-#endif
+#include <arb_version.h>
+
 #define nt_assert(bed) arb_assert(bed)
 
 void create_probe_design_variables(AW_root *aw_root,AW_default def,AW_default global);

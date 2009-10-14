@@ -22,6 +22,10 @@
 #ifndef BI_HELIX_HXX
 #include <BI_helix.hxx>
 #endif
+#ifndef AP_FILTER_HXX
+#include <AP_filter.hxx>
+#endif
+
 
 class SQ_helix {
 public:

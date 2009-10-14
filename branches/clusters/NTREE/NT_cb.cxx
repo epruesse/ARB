@@ -1,24 +1,21 @@
-#include <stdio.h>
-#include <stdlib.h>
+// =============================================================== //
+//                                                                 //
+//   File      : NT_cb.cxx                                         //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <arbdb.h>
-#include <arbdbt.h>
-
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_awars.hxx>
-#include <awt_canvas.hxx>
-#include <awt.hxx>
-
-#include <awt_tree.hxx>
-#include <awt_dtree.hxx>
-#include <awt_sel_boxes.hxx>
-#include "ad_trees.hxx"
-#include "ntree.hxx"
 #include "nt_internal.h"
 #include "nt_cb.hxx"
+#include "ntree.hxx"
+#include "ad_trees.hxx"
 
+#include <awt_canvas.hxx>
+#include <awt_sel_boxes.hxx>
+#include <aw_awars.hxx>
 
 #define AWT_TREE(ntw) ((AWT_graphic_tree *)ntw->tree_disp)
 

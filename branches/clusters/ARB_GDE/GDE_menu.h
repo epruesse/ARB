@@ -1,7 +1,24 @@
+// =============================================================== //
+//                                                                 //
+//   File      : GDE_menu.h                                        //
+//   Purpose   :                                                   //
+//                                                                 //
+// =============================================================== //
+
+#ifndef GDE_MENU_H
+#define GDE_MENU_H
+
+#ifndef GDE_HXX
+#include "gde.hxx"
+#endif
+#ifndef GDE_DEF_H
+#include "GDE_def.h"
+#endif
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
+
 #define gde_assert(bed) arb_assert(bed)
 
 typedef struct GargChoicetype
@@ -42,6 +59,8 @@ typedef struct GfileFormattype
     char *name;                 /* file name */
 } GfileFormat;
 
+class AW_window;
+
 typedef struct GmenuItemtype
 {
     int               numargs;  /* number of agruments to cmnd */
@@ -72,7 +91,7 @@ typedef struct Gmenutype
     char       meta;            /* Meta character for menu */
 } Gmenu;
 
-// typedef unsigned char uchar;
+typedef unsigned char uchar;
 
 extern struct choose_get_sequence_struct {
     char *(*get_sequences)(void *THIS, GBDATA **&the_species, uchar **&the_names, uchar **&the_sequences, long &numberspecies,long &maxalignlen);
@@ -80,3 +99,7 @@ extern struct choose_get_sequence_struct {
     void *THIS;
 } gde_cgss;
 
+
+#else
+#error GDE_menu.h included twice
+#endif // GDE_MENU_H

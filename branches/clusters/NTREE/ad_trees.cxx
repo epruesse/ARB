@@ -1,29 +1,24 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <memory.h>
-// #include <malloc.h>
-#include <string.h>
-#include <unistd.h>
-
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_awars.hxx>
-#include <aw_global.hxx>
-#include <awt.hxx>
-#include <TreeRead.h>
-#include <TreeWrite.h>
-#include <awt_tree_cmp.hxx>
-#include <awt_sel_boxes.hxx>
-#include <awt_nds.hxx>
+// =============================================================== //
+//                                                                 //
+//   File      : ad_trees.cxx                                      //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include "ad_trees.hxx"
+#include "nt_tree_cmp.hxx"
 
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
-#endif
+#include <TreeRead.h>
+#include <TreeWrite.h>
+#include <awt_sel_boxes.hxx>
+#include <awt_nds.hxx>
+#include <awt.hxx>
+#include <aw_awars.hxx>
+#include <aw_global.hxx>
+
 #define nt_assert(bed) arb_assert(bed)
 
 extern GBDATA *GLOBAL_gb_main;

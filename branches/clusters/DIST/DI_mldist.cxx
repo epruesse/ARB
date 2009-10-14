@@ -1,29 +1,22 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <memory.h>
-// #include <malloc.h>
-#include <string.h>
+// =============================================================== //
+//                                                                 //
+//   File      : DI_mldist.cxx                                     //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <math.h>
-
-#include <arbdb.h>
-#include <arbdbt.h>
-
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_preset.hxx>
-#include <awt.hxx>
-
-#include <awt_tree.hxx>
-#include "dist.hxx"
-#include <awt_csp.hxx>
-
-#include "di_matr.hxx"
 #include "di_mldist.hxx"
+#include "di_matr.hxx"
 
-#define epsilon         0.000001/* a small number */
+#include <AP_seq_simple_pro.hxx>
 
+#include <cmath>
+
+
+#define epsilon 0.000001                            // a small number
 
 void di_mldist::givens(di_ml_matrix a,long i,long j,long n,double ctheta,double stheta,GB_BOOL left)
 {

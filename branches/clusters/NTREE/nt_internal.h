@@ -16,6 +16,17 @@
 
 
 /* AP_consensus.cxx */
+
+#ifndef ARBDBT_H
+#include <arbdbt.h>
+#endif
+#ifndef AW_ROOT_HXX
+#include <aw_root.hxx>
+#endif
+
+class AW_window;
+class AWT_canvas;
+
 AW_window *AP_open_con_expert_window(AW_root *aw_root);
 AW_window *AP_open_consensus_window(AW_root *aw_root);
 AW_window *AP_open_max_freq_window(AW_root *aw_root);

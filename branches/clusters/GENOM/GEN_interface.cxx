@@ -1,25 +1,14 @@
-#include <cstdlib>
-#include <cstring>
-#include <awt.hxx>
-#include <awt_canvas.hxx>
+#include "GEN_local.hxx"
+
 #include <awt_item_sel_list.hxx>
 #include <awt_sel_boxes.hxx>
 #include <aw_awars.hxx>
 #include <db_scanner.hxx>
 
-#include <arbdbt.h>
-#include <probe_design.hxx>
-
 #include <ntree.hxx>
 #include <../NTREE/ad_spec.hxx>
 #include <../NTREE/nt_internal.h>
 
-#ifndef GEN_LOCAL_HXX
-#include "GEN_local.hxx"
-#endif
-#ifndef GEN_NDS_HXX
-#include "GEN_nds.hxx"
-#endif
 
 using namespace std;
 

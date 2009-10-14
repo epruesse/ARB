@@ -11,6 +11,10 @@
 #ifndef AWT_CSP_HXX
 #define AWT_CSP_HXX
 
+#ifndef ARBDBT_H
+#include <arbdbt.h>
+#endif
+
 
 /*
   Create a window, that allows you to get weights from the sais
@@ -22,6 +26,7 @@
 
 class AW_root;
 class AW_window;
+class AP_filter;
 
 #define AWT_CSP_AWAR_CSP_NAME "/name=/name"
 #define AWT_CSP_AWAR_CSP_ALIGNMENT "/name=/alignment"

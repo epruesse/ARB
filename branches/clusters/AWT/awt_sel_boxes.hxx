@@ -13,7 +13,14 @@
 #ifndef AWT_SEL_BOXES_HXX
 #define AWT_SEL_BOXES_HXX
 
-class  AP_filter;
+#ifndef ARBDBT_H
+#include <arbdbt.h>
+#endif
+#ifndef AW_ROOT_HXX
+#include <aw_root.hxx>
+#endif
+
+class AP_filter;
 struct adfiltercbstruct;
 
 /**************************************************************************

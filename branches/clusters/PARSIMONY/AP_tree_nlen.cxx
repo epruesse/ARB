@@ -1,23 +1,22 @@
-#include <stdio.h>
-#include <stdlib.h>
-// #include <malloc.h>
-#include <string.h>
-#include <iostream>
-#include <math.h>
-#include <arbdb.h>
-#include <arbdbt.h>
-//
-#include <awt_tree.hxx>
-#include <awt_seq_dna.hxx>
-#include "AP_buffer.hxx"
-#include "parsimony.hxx"
-#include "pars_debug.hxx"
+// =============================================================== //
+//                                                                 //
+//   File      : AP_tree_nlen.cxx                                  //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Ralf Westram (coder@reallysoft.de) in Summer 1995    //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #include "ap_tree_nlen.hxx"
-// #include <aw_root.hxx>
+#include "pars_debug.hxx"
+
+#include <AP_seq_dna.hxx>
 
 using namespace std;
 
-#define ap_assert(x) arb_assert(x)
+// #define ap_assert(x) arb_assert(x)
 
 // ---------------------------------
 //      Section base operations:

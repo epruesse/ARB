@@ -1,35 +1,31 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-// #include <malloc.h>
-#include <iostream>
-#include <limits.h>
-#include <arbdb.h>
-#include <arbdbt.h>
+// =============================================================== //
+//                                                                 //
+//   File      : PARS_main.cxx                                     //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_preset.hxx>
-#include <aw_awars.hxx>
-#include <awt_canvas.hxx>
-#include <awt.hxx>
-#include <awt_nds.hxx>
-
-#include <awt_tree.hxx>
-#include <awt_dtree.hxx>
-#include <awt_tree_cb.hxx>
-#include <awt_sel_boxes.hxx>
-
-#include <awt_csp.hxx>
-
-#include "AP_buffer.hxx"
 #include "parsimony.hxx"
-#include "ap_tree_nlen.hxx"
 #include "pars_main.hxx"
 #include "pars_dtree.hxx"
+#include "pars_klprops.hxx"
+#include "ap_tree_nlen.hxx"
+
+#include <aw_awars.hxx>
+#include <aw_preset.hxx>
+
+#include <awt.hxx>
+#include <awt_csp.hxx>
+#include <awt_nds.hxx>
+#include <awt_sel_boxes.hxx>
+
+#include <TreeCallbacks.hxx>
 
 #include <list>
+
 
 #if defined(DEBUG)
 # define TEST_FUNCTIONS
@@ -46,8 +42,6 @@ NT_global *GLOBAL_NT;
 // waaah more globals :(
 AP_main *ap_main;
 AWT_csp *awt_csp = 0;
-
-AW_window *create_kernighan_window(AW_root *aw_root);
 
 static void pars_export_tree(void){
     // GB_ERROR error = GLOBAL_NT->tree->tree_root->AP_tree::saveTree();
@@ -1907,5 +1901,4 @@ int main(int argc, char **argv)
     aw_root->main_loop();
     return EXIT_SUCCESS;
 }
-
 

@@ -1,22 +1,13 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <memory.h>
-
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <awt.hxx>
-#include <aw_awars.hxx>
-#include <awt_tree.hxx>
-
-#include "gde.hxx"
 #include "GDE_def.h"
-#include "GDE_menu.h"
-#include "GDE_extglob.h"
-#include "AW_rename.hxx"
+#include "GDE_proto.h"
+
+#include <AW_rename.hxx>
+#include <AP_filter.hxx>
+#include <aw_awars.hxx>
+
+/*AISC_MKPT_PROMOTE:#ifndef GDE_EXTGLOB_H*/
+/*AISC_MKPT_PROMOTE:#include "GDE_extglob.h"*/
+/*AISC_MKPT_PROMOTE:#endif*/
 
 typedef unsigned int UINT;
 

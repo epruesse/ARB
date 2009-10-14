@@ -1,28 +1,21 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <memory.h>
-// #include <malloc.h>
-#include <string.h>
+// =============================================================== //
+//                                                                 //
+//   File      : DI_protdist.cxx                                   //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+#include "di_protdist.hxx"
+#include "di_matr.hxx"
 
 #include <math.h>
 
-#include <arbdb.h>
-#include <arbdbt.h>
+#define di_assert(cond) arb_assert(cond)
 
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_preset.hxx>
-#include <awt.hxx>
-
-#include <awt_tree.hxx>
-#include "dist.hxx"
-#include <awt_csp.hxx>
-
-#include "di_matr.hxx"
-#include "di_protdist.hxx"
-
-#define epsilon         0.000001/* a small number */
+#define epsilon 0.000001        /* a small number */
 
 double   di_protdist::pameigs[20] = {
     -0.022091252, -0.019297602, 0.000004760, -0.017477817,

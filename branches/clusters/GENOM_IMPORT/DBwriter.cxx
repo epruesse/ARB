@@ -15,7 +15,7 @@
 #include <AW_rename.hxx>
 #include <arbdbt.h>
 #include <adGene.h>
-#include <awt_translate.hxx>
+#include <Translate.hxx>
 #include <aw_question.hxx>
 #include <GEN.hxx>
 

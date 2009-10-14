@@ -1,23 +1,22 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
+// =============================================================== //
+//                                                                 //
+//   File      : ad_transpro.cxx                                   //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_awars.hxx>
-#include <aw_window.hxx>
-#include <awt.hxx>
-#include <awt_codon_table.hxx>
+#include "nt_internal.h"
+
 #include <awt_sel_boxes.hxx>
-#include <awt_pro_a_nucs.hxx>
-#include <awt_translate.hxx>
+#include <Translate.hxx>
+#include <AP_codon_table.hxx>
+#include <AP_pro_a_nucs.hxx>
+#include <aw_awars.hxx>
+#include <cctype>
 
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
-#endif
 #define nt_assert(bed) arb_assert(bed)
 
 extern GBDATA *GLOBAL_gb_main;
@@ -342,7 +341,7 @@ static int synchronizeCodons(const char *proteins, const char *dna, int minCatch
 
 GB_ERROR arb_transdna(GBDATA *gb_main, char *ali_source, char *ali_dest, long *neededLength)
 {
-    AWT_initialize_codon_tables();
+    AP_initialize_codon_tables();
 
     GBDATA *gb_source = GBT_get_alignment(gb_main,ali_source); if (!gb_source) return "Please select a valid source alignment";
     GBDATA *gb_dest   = GBT_get_alignment(gb_main,ali_dest);   if (!gb_dest)   return "Please select a valid destination alignment";

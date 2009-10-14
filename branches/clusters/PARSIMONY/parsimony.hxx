@@ -1,10 +1,27 @@
-#define AWAR_ALIGNMENT      "tmp/pars/alignment"
-#define AWAR_FILTER_NAME    "tmp/pars/filter/name"
-#define AWAR_FILTER_FILTER  "tmp/pars/filter/filter"
-#define AWAR_FILTER_ALIGNMENT   "tmp/pars/filter/alignment"
-#define AWAR_PARSIMONY      "tmp/pars/parsimony"
-#define AWAR_BEST_PARSIMONY "tmp/pars/best_parsimony"
-#define AWAR_STACKPOINTER   "tmp/pars/stackpointer"
+// =============================================================== //
+//                                                                 //
+//   File      : parsimony.hxx                                     //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+#ifndef PARSIMONY_HXX
+#define PARSIMONY_HXX
+
+#ifndef AP_BUFFER_HXX
+#include "AP_buffer.hxx"
+#endif
+
+#define AWAR_ALIGNMENT        "tmp/pars/alignment"
+#define AWAR_FILTER_NAME      "tmp/pars/filter/name"
+#define AWAR_FILTER_FILTER    "tmp/pars/filter/filter"
+#define AWAR_FILTER_ALIGNMENT "tmp/pars/filter/alignment"
+#define AWAR_PARSIMONY        "tmp/pars/parsimony"
+#define AWAR_BEST_PARSIMONY   "tmp/pars/best_parsimony"
+#define AWAR_STACKPOINTER     "tmp/pars/stackpointer"
 
 #define NNI_MODES // uncomment to hide NNI/K.L. mode buttons
 
@@ -58,3 +75,7 @@ public:
 } *ap_main;
 
 extern GBDATA *GLOBAL_gb_main;
+
+#else
+#error parsimony.hxx included twice
+#endif // PARSIMONY_HXX

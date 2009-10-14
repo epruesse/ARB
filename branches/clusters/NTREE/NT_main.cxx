@@ -1,32 +1,25 @@
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <adGene.h>
-
-#include <servercntrl.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_awars.hxx>
-#include <aw_question.hxx>
-#include <aw_global.hxx>
-#include <awt_canvas.hxx>
-#include <awt_advice.hxx>
-
-#include <awt_tree.hxx>
-#include <awt_dtree.hxx>
-#include <awt.hxx>
-#include <awti_import.hxx>
-
-#include <mg_merge.hxx>
+// =============================================================== //
+//                                                                 //
+//   File      : NT_main.cxx                                       //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include "nt_internal.h"
 #include "ntree.hxx"
 #include "nt_cb.hxx"
-#include "NT_dbrepair.hxx"
 
+#include <mg_merge.hxx>
+#include <awti_import.hxx>
+#include <awt_advice.hxx>
+#include <awt.hxx>
+#include <aw_global.hxx>
+#include <aw_question.hxx>
+#include <aw_awars.hxx>
+#include <adGene.h>
 #include <arb_version.h>
 
 using namespace std;

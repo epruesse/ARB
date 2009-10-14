@@ -12,16 +12,16 @@
 //  ==================================================================== // 
 
 #include "awt.hxx"
-#include "awt_tree.hxx"
+
+#include <arbdbt.h>
 #include <inline.h>
+#include <smartptr.h>
+#include <AP_Tree.hxx>
 
 #include <string>
 #include <vector>
 #include <map>
 #include <algorithm>
-
-#include <cstring>
-#include <smartptr.h>
 
 // do includes above (otherwise depends depend on DEBUG)
 #if defined(DEBUG)

@@ -1,26 +1,28 @@
-#include "ad_spec.hxx"
+// =============================================================== //
+//                                                                 //
+//   File      : ad_spec.cxx                                       //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <arbdbt.h>
-#include <aw_awars.hxx>
-#include <awt_www.hxx>
-#include <awt_tree.hxx>
-#include <awt_canvas.hxx>
-#include <awt_dtree.hxx>
-#include <awtlocal.hxx>
-#include <awt_item_sel_list.hxx>
-#include <awt_sel_boxes.hxx>
-#include <db_scanner.hxx>
+
+#include "ad_spec.hxx"
+#include "nt_internal.h"
+#include "ntree.hxx"
+
 #include <awtc_next_neighbours.hxx>
 #include <AW_rename.hxx>
-#include <ntree.hxx>
-#include <nt_internal.h>
+#include <db_scanner.hxx>
+#include <awt_item_sel_list.hxx>
+#include <awtlocal.hxx>
+#include <awt_www.hxx>
+#include <awt_canvas.hxx>
+#include <awt_sel_boxes.hxx>
+#include <aw_awars.hxx>
 
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
-#endif
 #define nt_assert(bed) arb_assert(bed)
 
 extern GBDATA *GLOBAL_gb_main;

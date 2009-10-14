@@ -1,17 +1,9 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <memory.h>
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include "awt.hxx"
-#include "awt_tree.hxx"
-#include "BI_helix.hxx"
 #include "awt_csp.hxx"
 #include "awt_sel_boxes.hxx"
 
+#include <AP_filter.hxx>
+#include <BI_helix.hxx>
+#include <aw_window.hxx>
 
 
 void awt_csp_rescan_sais(AW_root *awr, AW_CL csp_cd){

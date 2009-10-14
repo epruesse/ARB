@@ -1,35 +1,32 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <memory.h>
-// #include <malloc.h>
-#include <string.h>
+// =============================================================== //
+//                                                                 //
+//   File      : DI_matr.cxx                                       //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <math.h>
-#include <time.h>
-#include <limits.h>
-
-#include <arbdb.h>
-#include <arbdbt.h>
-
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_preset.hxx>
-#include <aw_global.hxx>
-#include <aw_awars.hxx>
+#include "di_matr.hxx"
+#include "di_view_matrix.hxx"
+#include "di_protdist.hxx"
+#include "dist.hxx"
 
 #include <awt.hxx>
-#include <awt_tree.hxx>
+#include <awt_csp.hxx>
 #include <awt_sel_boxes.hxx>
 #include <awt_macro.hxx>
-#include <awt_csp.hxx>
-
-#include "dist.hxx"
+#include <aw_global.hxx>
+#include <aw_awars.hxx>
+#include <aw_preset.hxx>
+#include <AP_seq_dna.hxx>
 #include <BI_helix.hxx>
 #include <CT_ctree.hxx>
-#include "di_matr.hxx"
-#include "di_protdist.hxx"
-#include "di_view_matrix.hxx"
+#include <neighbourjoin.hxx>
+
+#include <climits>
+#include <ctime>
 
 #define di_assert(cond) arb_assert(cond)
 

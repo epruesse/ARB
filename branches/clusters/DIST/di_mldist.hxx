@@ -1,3 +1,21 @@
+// =============================================================== //
+//                                                                 //
+//   File      : di_mldist.hxx                                     //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+#ifndef DI_MLDIST_HXX
+#define DI_MLDIST_HXX
+
+#ifndef ARBDBT_H
+#include <arbdbt.h>
+#endif
+
+
 const int DI_ML_RESOLUTION   = 1000; // max res
 const int DI_ML_MAX_DIST     = 10; // max dist
 const int DI_ML_MAX_MAT_SIZE = 16;
@@ -6,6 +24,9 @@ const int DI_ML_MAX_MAT_SIZE = 16;
 typedef double di_ml_matrix[DI_ML_MAX_MAT_SIZE][DI_ML_MAX_MAT_SIZE];
 typedef double di_pml_matrix[DI_ML_MAX_MAT_SIZE][DI_ML_MAX_MAT_SIZE];
 typedef char   di_bool_matrix[DI_ML_MAX_MAT_SIZE][DI_ML_MAX_MAT_SIZE];
+
+class DI_ENTRY;
+class AP_smatrix;
 
 class di_mldist {
     long spp;                   // number of species
@@ -63,3 +84,7 @@ public:
     
     const char *makedists();    // calculate the distance matrix
 };
+
+#else
+#error di_mldist.hxx included twice
+#endif // DI_MLDIST_HXX

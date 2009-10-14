@@ -1,29 +1,26 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+// =============================================================== //
+//                                                                 //
+//   File      : PARS_dtree.cxx                                    //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_preset.hxx>
-#include <awt_canvas.hxx>
-#include <awt_tree.hxx>
-#include <awt_seq_dna.hxx>
-#include <awt_seq_protein.hxx>
-
-#include <awt_csp.hxx>
-#include <awt.hxx>
-#include <awt_dtree.hxx>
-#include <awt_sel_boxes.hxx>
-#include "pars_dtree.hxx"
-
-#include "AP_buffer.hxx"
 #include "parsimony.hxx"
-#include "ap_tree_nlen.hxx"
+#include "pars_dtree.hxx"
 #include "pars_main.hxx"
 #include "pars_debug.hxx"
+#include "ap_tree_nlen.hxx"
+
+#include <AP_seq_dna.hxx>
+#include <AP_seq_protein.hxx>
+
+#include <awt_csp.hxx>
+#include <awt_sel_boxes.hxx>
+
+#include <aw_preset.hxx>
 
 extern AWT_csp *awt_csp;
 

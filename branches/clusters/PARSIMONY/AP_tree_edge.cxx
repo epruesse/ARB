@@ -1,19 +1,18 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <iostream>
-#include <iomanip>
-#include <memory.h>
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <string.h>
-#include <awt_tree.hxx>
+// =============================================================== //
+//                                                                 //
+//   File      : AP_tree_edge.cxx                                  //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Ralf Westram (coder@reallysoft.de) in Summer 1995    //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include "AP_buffer.hxx"
-#include "parsimony.hxx"
 #include "ap_tree_nlen.hxx"
 
-// #include <aw_root.hxx>
+#include <cmath>
+#include <iomanip>
 
 using namespace std;
 

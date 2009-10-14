@@ -1,23 +1,15 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <memory.h>
-#include <string.h>
+// =============================================================== //
+//                                                                 //
+//   File      : distanalyse.cxx                                   //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <math.h>
-
-#include <arbdb.h>
-#include <arbdbt.h>
-
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-
-#include <awt.hxx>
-
-#include <awt_tree.hxx>
-#include "dist.hxx"
 #include "di_matr.hxx"
-
+#include <AP_seq_dna.hxx>
 
 
 char *DI_MATRIX::analyse(AW_root *awrdummy)

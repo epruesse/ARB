@@ -1,3 +1,10 @@
+#ifndef GDE_DEF_H
+#define GDE_DEF_H
+
+#ifndef ARBDBT_H
+#include <arbdbt.h>
+#endif
+
 /*
 
 Copyright (c) 1990,1991,1992 Steven Smith at the Harvard Genome Laboratory.
@@ -235,6 +242,8 @@ typedef struct
 
 extern NA_Alignment *DataSet;
 
-
 #define getcmask(a,b) (b < ((a)->offset))?0:((a)->cmask[(b-(a)->offset)])
 
+#else
+#error GDE_def.h included twice
+#endif // GDE_DEF_H

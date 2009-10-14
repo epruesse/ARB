@@ -1,24 +1,13 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-// #include <malloc.h>
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_global.hxx>
-#include <awt.hxx>
-#include <awt_tree.hxx>
-#include <inline.h>
-
 #include "awti_export.hxx"
 #include "awti_exp_local.hxx"
-#include "awt_sel_boxes.hxx"
-#include "aw_awars.hxx"
 
-#include "xml.hxx"
+#include <aw_awars.hxx>
+#include <aw_global.hxx>
+#include <awt.hxx>
+#include <awt_sel_boxes.hxx>
+#include <AP_filter.hxx>
+#include <xml.hxx>
+#include <inline.h>
 
 #define awte_assert(cond) arb_assert(cond)
 

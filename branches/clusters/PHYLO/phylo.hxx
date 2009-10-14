@@ -1,17 +1,15 @@
-/////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////
-//                                                             //
-//                    FILENAME: phylo.hxx                      //
-//                                                             //
-/////////////////////////////////////////////////////////////////
-//                                                             //
-// contains: abstract classes and                              //
-//           global needed definitions,declarations and        //
-//           functions                                         //
-//                                                             //
-/////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////
+// =============================================================== //
+//                                                                 //
+//   File      : phylo.hxx                                         //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
+#ifndef PHYLO_HXX
+#define PHYLO_HXX
 
 #ifndef _CPP_CSTDIO
 #include <cstdio>
@@ -22,14 +20,15 @@
 #ifndef ARBDBT_H
 #include <arbdbt.h>
 #endif
-#ifndef AWT_TREE_HXX
-#include <awt_tree.hxx>
+#ifndef AW_ROOT_HXX
+#include <aw_root.hxx>
 #endif
-
+#ifndef AP_MATRIX_HXX
+#include <AP_matrix.hxx>
+#endif
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
-
 #ifndef PH_FILTER_HXX
 #include "PH_filter.hxx"
 #endif
@@ -131,8 +130,6 @@ public:
 
 long AP_timer(void);
 
-GBT_TREE *neighbourjoining(char **names, AP_FLOAT **m, long size, size_t structure_size);
-
 /////////////////////////////////////////////////////////////////
 //                                                             //
 // class_name : PHDATA                                         //
@@ -191,4 +188,6 @@ public:
     
 };
 
-
+#else
+#error phylo.hxx included twice
+#endif // PHYLO_HXX

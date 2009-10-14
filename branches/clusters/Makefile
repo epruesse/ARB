@@ -630,6 +630,9 @@ ARCHS = \
 			WINDOW/libAW.a \
 			XML/XML.a \
 
+# ----------------------- 
+#     library packets     
+
 ARCHS_CLIENT_PROBE = PROBE_COM/client.a
 ARCHS_CLIENT_NAMES = NAMES_COM/client.a
 ARCHS_MAKEBIN = AISC_MKPTPS/dummy.a AISC/dummy.a
@@ -640,6 +643,20 @@ ARCHS_COMMUNICATION =	NAMES_COM/server.a \
 # communication libs need aisc and aisc_mkpts:
 $(ARCHS_COMMUNICATION:.a=.dummy) : $(ARCHS_MAKEBIN:.a=.dummy)
 
+ARCHS_SEQUENCE = \
+		SL/SEQUENCE/SEQUENCE.a \
+		SL/PRONUC/PRONUC.a \
+
+ARCHS_TREE = \
+		$(ARCHS_SEQUENCE) \
+		SL/FILTER/FILTER.a \
+		SL/ARB_TREE/ARB_TREE.a \
+
+# parsimony tree (used by NTREE, PARSIMONY, STAT(->EDIT[4]), DIST(obsolete!))
+ARCHS_AP_TREE = \
+		$(ARCHS_TREE) \
+		SL/AP_TREE/AP_TREE.a \
+
 #***************************************************************************************
 #		Individual Programs Section
 #***************************************************************************************
@@ -648,6 +665,9 @@ $(ARCHS_COMMUNICATION:.a=.dummy) : $(ARCHS_MAKEBIN:.a=.dummy)
 NTREE = bin/arb_ntree
 ARCHS_NTREE = \
 		$(ARCHS_CLIENT_PROBE) \
+		$(ARCHS_AP_TREE) \
+		SL/TREEDISP/TREEDISP.a \
+		STAT/STAT.a \
 		ARB_GDE/ARB_GDE.a \
 		AWTC/AWTC.a \
 		AWTI/AWTI.a \
@@ -665,9 +685,9 @@ ARCHS_NTREE = \
 		SL/FILE_BUFFER/FILE_BUFFER.a \
 		SL/HELIX/HELIX.a \
 		SL/REGEXPR/REGEXPR.a \
+		SL/TRANSLATE/TRANSLATE.a \
 		SL/TREE_READ/TREE_READ.a \
 		SL/TREE_WRITE/TREE_WRITE.a \
-		STAT/STAT.a \
 		XML/XML.a \
 
 $(NTREE): $(ARCHS_NTREE:.a=.dummy) NAMES_COM/server.dummy shared_libs
@@ -689,11 +709,12 @@ $(RNA3D): $(ARCHS_RNA3D:.a=.dummy) shared_libs
 #***********************************	arb_edit **************************************
 EDIT = bin/arb_edit
 ARCHS_EDIT = \
+		$(ARCHS_AP_TREE) \
+		STAT/STAT.a \
 		NAMES_COM/client.a \
 		SERVERCNTRL/SERVERCNTRL.a \
 		EDIT/EDIT.a \
 		ARB_GDE/ARB_GDE.a \
-		STAT/STAT.a \
 		XML/XML.a \
 		SL/HELIX/HELIX.a \
 		SL/AW_HELIX/AW_HELIX.a \
@@ -710,12 +731,13 @@ $(EDIT): $(ARCHS_EDIT:.a=.dummy) shared_libs
 EDIT4 = bin/arb_edit4
 
 ARCHS_EDIT4 := \
+		$(ARCHS_AP_TREE) \
+		STAT/STAT.a \
 		NAMES_COM/client.a \
 		AWTC/AWTC.a \
 		EDIT4/EDIT4.a \
 		SECEDIT/SECEDIT.a \
 		SERVERCNTRL/SERVERCNTRL.a \
-		STAT/STAT.a \
 		ARB_GDE/ARB_GDE.a \
 		ISLAND_HOPPING/ISLAND_HOPPING.a \
 		SL/FAST_ALIGNER/FAST_ALIGNER.a \
@@ -723,6 +745,7 @@ ARCHS_EDIT4 := \
 		SL/AW_HELIX/AW_HELIX.a \
 		SL/AW_NAME/AW_NAME.a \
 		SL/FILE_BUFFER/FILE_BUFFER.a \
+		SL/TRANSLATE/TRANSLATE.a \
 		XML/XML.a \
 
 ifeq ($(OPENGL),1)
@@ -758,6 +781,7 @@ WETC = bin/arb_wetc
 ARCHS_WETC = \
 		WETC/WETC.a \
 		SL/HELIX/HELIX.a \
+		SL/FILTER/FILTER.a \
 		XML/XML.a \
 
 $(WETC): $(ARCHS_WETC:.a=.dummy) shared_libs
@@ -776,6 +800,9 @@ ARCHS_DIST = \
 		CONSENSUS_TREE/CONSENSUS_TREE.a \
 		EISPACK/EISPACK.a \
 		SL/HELIX/HELIX.a \
+		$(ARCHS_AP_TREE) \
+		SL/MATRIX/MATRIX.a \
+		SL/NEIGHBOURJOIN/NEIGHBOURJOIN.a \
 		XML/XML.a \
 
 $(DIST): $(ARCHS_DIST:.a=.dummy) shared_libs
@@ -788,11 +815,14 @@ $(DIST): $(ARCHS_DIST:.a=.dummy) shared_libs
 #***********************************	arb_pars **************************************
 PARSIMONY = bin/arb_pars
 ARCHS_PARSIMONY = \
+		$(ARCHS_AP_TREE) \
+		SL/TREEDISP/TREEDISP.a \
 		NAMES_COM/client.a \
 		SERVERCNTRL/SERVERCNTRL.a \
 		PARSIMONY/PARSIMONY.a \
 		SL/HELIX/HELIX.a \
 		SL/AW_NAME/AW_NAME.a \
+		SL/TRANSLATE/TRANSLATE.a \
 		XML/XML.a \
 
 $(PARSIMONY): $(ARCHS_PARSIMONY:.a=.dummy) shared_libs
@@ -845,6 +875,8 @@ PHYLO = bin/arb_phylo
 ARCHS_PHYLO = \
 		PHYLO/PHYLO.a \
 		SL/HELIX/HELIX.a \
+		SL/FILTER/FILTER.a \
+		SL/MATRIX/MATRIX.a \
 		XML/XML.a \
 
 $(PHYLO): $(ARCHS_PHYLO:.a=.dummy) shared_libs
@@ -1125,6 +1157,7 @@ pgt:	$(PGT)
 xml:	XML/XML.dummy
 xmlin:  XML_IMPORT/XML_IMPORT.dummy# broken
 templ:	TEMPLATES/TEMPLATES.dummy
+stat:   STAT/STAT.a $(NTREE) $(EDIT) $(EDIT4)
 
 #********************************************************************************
 
@@ -1170,6 +1203,7 @@ proto: proto_tools
 		SERVERCNTRL/SERVERCNTRL.proto \
 		AISC_COM/AISC_COM.proto \
 		GDE/GDE.proto \
+		SL/SL.proto \
 
 #********************************************************************************
 

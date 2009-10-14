@@ -11,6 +11,10 @@
 #ifndef NTREE_HXX
 #define NTREE_HXX
 
+#ifndef AW_WINDOW_HXX
+#include <aw_window.hxx>
+#endif
+
 #define NT_AW_TRUE  1
 #define NT_AW_FALSE 0
 

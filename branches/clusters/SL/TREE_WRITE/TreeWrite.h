@@ -11,6 +11,10 @@
 #ifndef TREEWRITE_H
 #define TREEWRITE_H
 
+#ifndef ARBDBT_H
+#include <arbdbt.h>
+#endif
+
 typedef void        (*TREE_make_node_text_init)(GBDATA *gb_main);
 typedef const char *(*TREE_make_node_text)     (GBDATA *gb_main, GBDATA * gbd, int mode, GBT_TREE *species, const char *tree_name);
 

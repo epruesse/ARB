@@ -1,5 +1,23 @@
-#ifndef _AP_BUFFER_INC
-#define _AP_BUFFER_INC
+// =============================================================== //
+//                                                                 //
+//   File      : AP_buffer.hxx                                     //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+#ifndef AP_BUFFER_HXX
+#define AP_BUFFER_HXX
+
+#ifndef AP_SEQUENCE_HXX
+#include <AP_sequence.hxx>
+#endif
+#ifndef AP_TREE_HXX
+#include <AP_Tree.hxx>
+#endif
+
 
 /*******************
 
@@ -150,4 +168,6 @@ public:
     void append(AP_main_stack * stack) { AP_LIST::append((void *)stack); }
 };
 
-#endif
+#else
+#error AP_buffer.hxx included twice
+#endif // AP_BUFFER_HXX

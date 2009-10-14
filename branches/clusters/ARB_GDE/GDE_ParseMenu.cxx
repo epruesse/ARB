@@ -1,21 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-// #include <malloc.h>
-#include <ctype.h>
-#include <assert.h>
-
-#include <arbdb.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <awt.hxx>
-
-#include "gde.hxx"
-#include "GDE_menu.h"
-#include "GDE_def.h"
-#include "GDE_global.h"
 #include "GDE_extglob.h"
+#include <ctype.h>
 
 static int getline(FILE *file,char *string)
 {
@@ -467,7 +451,7 @@ void ParseMenu()
         }
     }
 
-    assert(num_menus>0); // if this fails, the file ARB_GDEmenus contained no menus (maybe file has zero size)
+    gde_assert(num_menus>0); // if this fails, the file ARB_GDEmenus contained no menus (maybe file has zero size)
 
     return;
 }

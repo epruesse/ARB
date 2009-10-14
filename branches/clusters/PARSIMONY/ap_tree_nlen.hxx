@@ -1,7 +1,35 @@
-#include <iostream>
-#include <limits.h>
+// =============================================================== //
+//                                                                 //
+//   File      : ap_tree_nlen.hxx                                  //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Ralf Westram (coder@reallysoft.de) in Summer 1995    //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#define ap_assert(x) arb_assert(x)
+#ifndef AP_TREE_NLEN_HXX
+#define AP_TREE_NLEN_HXX
+
+#ifndef _CPP_IOSTREAM
+#include <iostream>
+#endif
+#ifndef _CPP_CLIMITS
+#include <climits>
+#endif
+#ifndef ARBDBT_H
+#include <arbdbt.h>
+#endif
+#ifndef AP_TREE_HXX
+#include <AP_Tree.hxx>
+#endif
+#ifndef AP_BUFFER_HXX
+#include "AP_buffer.hxx"
+#endif
+#ifndef PARSIMONY_HXX
+#include "parsimony.hxx"
+#endif
 
 class AP_tree_nlen;
 
@@ -258,3 +286,7 @@ inline AP_tree_edge *rootEdge() {
 }
 
 /**************************************************/
+
+#else
+#error ap_tree_nlen.hxx included twice
+#endif // AP_TREE_NLEN_HXX

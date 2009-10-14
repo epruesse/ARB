@@ -17,9 +17,6 @@
 #include <awt_iupac.hxx>
 
 #include <awt_canvas.hxx>
-#include <awt_tree.hxx>
-#include <awt_dtree.hxx>
-#include <awt_tree_cb.hxx>
 #include <awt_config_manager.hxx>
 #include <awt_canvas.hxx>
 #include <awt_sel_boxes.hxx>
@@ -33,7 +30,7 @@
 #include "SaiProbeVisualization.hxx"
 #include "probe_match_parser.hxx"
 
-void NT_group_not_marked_cb(void *dummy, AWT_canvas *ntw); // real prototype is in awt_tree_cb.hxx
+#include <TreeCallbacks.hxx>
 
 // general awars
 

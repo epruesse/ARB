@@ -1,16 +1,17 @@
-#include <cstdio>
-#include <cmath>
-#include <cstring>
-#include <memory.h>
-#include <iostream>
+// =============================================================== //
+//                                                                 //
+//   File      : AP_main.cxx                                       //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <awt_tree.hxx>
-
-#include "AP_buffer.hxx"
-#include "parsimony.hxx"
 #include "AP_error.hxx"
+#include "parsimony.hxx"
+
+#include <iostream>
 
 using namespace std;
 

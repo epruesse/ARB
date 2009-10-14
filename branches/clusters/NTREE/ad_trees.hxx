@@ -11,6 +11,10 @@
 #ifndef AD_TREES_HXX
 #define AD_TREES_HXX
 
+#ifndef AW_ROOT_HXX
+#include <aw_root.hxx>
+#endif
+
 #define AWAR_TREE_NAME "tmp/ad_tree/tree_name"
 
 void       create_trees_var(AW_root *aw_root, AW_default aw_def);

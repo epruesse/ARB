@@ -1,3 +1,26 @@
+// =============================================================== //
+//                                                                 //
+//   File      : di_matr.hxx                                       //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+#ifndef DI_MATR_HXX
+#define DI_MATR_HXX
+
+#ifndef AP_PRO_A_NUCS_HXX
+#include <AP_pro_a_nucs.hxx>
+#endif
+#ifndef AP_TREE_HXX
+#include <AP_Tree.hxx>
+#endif
+#ifndef AP_MATRIX_HXX
+#include <AP_matrix.hxx>
+#endif
+
 
 #define AWAR_DIST_PREFIX           "dist/"
 #define AWAR_DIST_CORR_TRANS       AWAR_DIST_PREFIX "correction/trans"
@@ -29,10 +52,13 @@ typedef enum {
 
 enum DI_MATRIX_TYPE {
     DI_MATRIX_FULL,
-    DI_MATRIX_COMPRESSED };
+    DI_MATRIX_COMPRESSED
+};
 
 class DI_MATRIX;
 class AW_root;
+class AP_sequence_parsimony;
+class AP_sequence_simple_protein;
 
 class DI_ENTRY {
 public:
@@ -110,3 +136,7 @@ public:
 
 
 AW_window *DI_create_save_matrix_window(AW_root *aw_root, char *base_name);
+
+#else
+#error di_matr.hxx included twice
+#endif // DI_MATR_HXX

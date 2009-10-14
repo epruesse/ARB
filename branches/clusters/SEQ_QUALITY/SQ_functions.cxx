@@ -25,7 +25,6 @@
 #include <aw_window.hxx>
 #include <aw_preset.hxx>
 #include <awt.hxx>
-#include <awt_tree.hxx>
 
 #include "SQ_GroupData.h"
 #include "SQ_ambiguities.h"

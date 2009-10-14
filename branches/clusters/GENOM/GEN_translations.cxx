@@ -10,13 +10,12 @@
 //                                                                 //
 // =============================================================== //
 
-#include <arbdbt.h>
-#include <awt_translate.hxx>
-#include <awt_codon_table.hxx>
-#include <aw_question.hxx>
-
-#include "GEN.hxx"
 #include "GEN_local.hxx"
+
+#include <Translate.hxx>
+#include <AP_codon_table.hxx>
+#include <aw_question.hxx>
+#include <arbdbt.h>
 
 using namespace std;
 

@@ -1,4 +1,24 @@
-#define AWAR_PVP_SAI "tmp/pos_var_pars/sai"
+// =============================================================== //
+//                                                                 //
+//   File      : ap_pos_var_pars.hxx                               //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+#ifndef AP_POS_VAR_PARS_HXX
+#define AP_POS_VAR_PARS_HXX
+
+#ifndef ARBDBT_H
+#include <arbdbt.h>
+#endif
+
+class AW_window;
+class AW_root;
+
+#define AWAR_PVP_SAI  "tmp/pos_var_pars/sai"
 #define AWAR_PVP_TREE "tmp/pos_var_pars/tree"
 
 AW_window *AP_open_pos_var_pars_window( AW_root *root );
@@ -31,3 +51,7 @@ public:
     GB_ERROR delete_old_sai(const char *sai_name);
     GB_ERROR save_sai(const char *sai_name);
 };
+
+#else
+#error ap_pos_var_pars.hxx included twice
+#endif // AP_POS_VAR_PARS_HXX

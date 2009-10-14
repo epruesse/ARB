@@ -8,7 +8,6 @@
 #include <arbdb.h>
 #include <arbdbt.h>
 #include <aw_awars.hxx>
-#include <awt_tree.hxx>
 #include <awt_csp.hxx>
 #include "st_ml.hxx"
 

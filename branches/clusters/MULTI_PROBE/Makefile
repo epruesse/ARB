@@ -121,7 +121,11 @@ MP_noclass.o: SoTl.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+MP_noclass.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
+MP_noclass.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
+MP_noclass.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/arb_assert.h
+MP_noclass.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -136,13 +140,11 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/awt.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
-MP_noclass.o: $(ARBHOME)/INCLUDE/awt_dtree.hxx
-MP_noclass.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
-MP_noclass.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
-MP_noclass.o: $(ARBHOME)/INCLUDE/awt_tree_cb.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/client.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/servercntrl.h
+MP_noclass.o: $(ARBHOME)/INCLUDE/TreeCallbacks.hxx
+MP_noclass.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 
 MP_permute.o: MP_externs.hxx
 MP_permute.o: MP_probe.hxx
@@ -229,10 +231,7 @@ MP_sonde.o: $(ARBHOME)/INCLUDE/arbdbt.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
-MP_sonde.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 MP_sonde.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-MP_sonde.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
-MP_sonde.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 MP_sonde.o: $(ARBHOME)/INCLUDE/client.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/servercntrl.h
@@ -245,7 +244,11 @@ MP_sondentopf.o: SoTl.hxx
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+MP_sondentopf.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
+MP_sondentopf.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
+MP_sondentopf.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arb_assert.h
+MP_sondentopf.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -254,8 +257,6 @@ MP_sondentopf.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-MP_sondentopf.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
-MP_sondentopf.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/client.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/servercntrl.h
@@ -268,9 +269,11 @@ MP_Window.o: MultiProbe.hxx
 MP_Window.o: SoTl.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 MP_Window.o: $(ARBHOME)/INCLUDE/ad_prot.h
+MP_Window.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+MP_Window.o: $(ARBHOME)/INCLUDE/arbdbt.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_Window.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_awars.hxx

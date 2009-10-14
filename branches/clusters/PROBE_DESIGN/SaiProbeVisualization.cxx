@@ -17,9 +17,6 @@
 #include <awt_sel_boxes.hxx>
 
 #include <awt_canvas.hxx>
-#include <awt_tree.hxx>
-#include <awt_dtree.hxx>
-#include <awt_tree_cb.hxx>
 #include <awt_config_manager.hxx>
 
 #include "SaiProbeVisualization.hxx"

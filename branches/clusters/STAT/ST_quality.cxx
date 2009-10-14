@@ -11,7 +11,6 @@
 #include <BI_helix.hxx>
 
 #include <aw_root.hxx>
-#include <awt_tree.hxx>
 #include <awt_csp.hxx>
 #include "st_ml.hxx"
 #include "st_window.hxx"

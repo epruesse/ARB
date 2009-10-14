@@ -1,6 +1,28 @@
+// =============================================================== //
+//                                                                 //
+//   File      : st_ml.hxx                                         //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+#ifndef ST_ML_HXX
+#define ST_ML_HXX
+
+#ifndef AP_SEQUENCE_HXX
+#include <AP_sequence.hxx>
+#endif
+#ifndef AP_TREE_HXX
+#include <AP_Tree.hxx>
+#endif
+
+
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
+
 #define st_assert(bed) arb_assert(bed)
 
 enum AWT_dna_base {
@@ -156,3 +178,7 @@ public:
 
     int refresh_needed();
 };
+
+#else
+#error st_ml.hxx included twice
+#endif // ST_ML_HXX

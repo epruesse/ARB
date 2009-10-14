@@ -1,23 +1,22 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <memory.h>
-#include <string.h>
+// =============================================================== //
+//                                                                 //
+//   File      : DI_view_matrix.cxx                                //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <arbdb.h>
-#include <arbdbt.h>
-
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_preset.hxx>
-#include <aw_awars.hxx>
-
-#include <awt_tree.hxx>
-#include <awt_canvas.hxx>
+#include "di_view_matrix.hxx"
+#include "di_matr.hxx"
 #include "dist.hxx"
 
-#include <di_matr.hxx>
-#include <di_view_matrix.hxx>
+#include <aw_window.hxx>
+#include <aw_awars.hxx>
+#include <aw_preset.hxx>
+
+#include <awt_canvas.hxx>
 
 void vertical_change_cb  (AW_window *aww,DI_dmatrix *dis) { dis->monitor_vertical_scroll_cb(aww); }
 void horizontal_change_cb(AW_window *aww,DI_dmatrix *dis) { dis->monitor_horizontal_scroll_cb(aww); }

@@ -1,30 +1,28 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <unistd.h>
-#include <sys/types.h>
+// =============================================================== //
+//                                                                 //
+//   File      : AP_csp_2_gnuplot.cxx                              //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_awars.hxx>
-#include <aw_global.hxx>
-#include <awt.hxx>
-#include <awt_tree.hxx>
-#include <awt_csp.hxx>
-#include <awt_sel_boxes.hxx>
+#include "nt_internal.h"
 #include "ap_csp_2_gnuplot.hxx"
 
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
-#endif
+#include <awt_sel_boxes.hxx>
+#include <awt.hxx>
+#include <awt_csp.hxx>
+#include <AP_filter.hxx>
+#include <aw_global.hxx>
+#include <aw_awars.hxx>
+
+#include <unistd.h>
+
 #define nt_assert(bed) arb_assert(bed)
 
 extern GBDATA *GLOBAL_gb_main;
-
 
 // ------------------------------------------------------------------------------------------------------------------------------
 //      static GB_ERROR split_stat_filename(const char *fname, char **dirPtr, char **name_prefixPtr, char **name_postfixPtr)
