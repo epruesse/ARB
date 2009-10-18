@@ -88,6 +88,8 @@ else
         apt-get -y install \
             valgrind \
             ctags \
+            doxygen \
+            doxygen-doc \
 
     else
         echo "Error: Unknown parameter '$1'"
