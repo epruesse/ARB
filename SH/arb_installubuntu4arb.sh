@@ -9,9 +9,17 @@
 #   Please report working tests and/or send needed changes to devel@arb-home.de
 # ]
 
+listwords() {
+    if [ ! -z "$1" ]; then
+        echo "    $1"
+        shift 
+        listwords $*
+    fi
+}
+
 if [ -z "$1" ]; then
     echo ""
-    echo "Usage: arb_UBUNTU_installTools.sh what"
+    echo "Usage: arb_installubuntu4arb.sh what"
     echo ""
     echo "what                installs"
     echo ""
@@ -22,76 +30,107 @@ if [ -z "$1" ]; then
     echo "compile_OpenGL      things needed to compile and run the openGL-version of ARB"
     echo ""
     echo "develop             install 'compile_OpenGL' plus some optional development tools"
+    echo "devdox              install 'develop' plus things needed for doxygen (big)" 
     echo ""
 else
-    
-    if [ "$1" == "arb_noOpenGL" ]; then
-        apt-get -y install \
-            gnuplot \
-            gv \
-            libmotif3 \
-            xfig \
-            transfig \
-            treetool \
+    ARB_PACKAGES=/tmp/$USER.arb_installubuntu4arb
+    if [ "$1" == "echo" ]; then
+        if [ "$2" == "arb_noOpenGL" ]; then
+            echo \
+                gnuplot \
+                gv \
+                libmotif3 \
+                xfig \
+                transfig \
+                treetool \
 
-    elif [ "$1" == "arb_OpenGL" ]; then
-        $0 arb_noOpenGL
-        apt-get -y install \
-            libpng12-0 \
+        elif [ "$2" == "arb_OpenGL" ]; then
+            $0 echo arb_noOpenGL
+            echo \
+                libpng12-0 \
 
-    elif [ "$1" == "compile_common" ]; then
-        apt-get -y install \
-            g++ \
-            libmotif-dev \
-            libtiff4-dev \
-            libx11-dev \
-            libxaw7-dev \
-            libxext-dev \
-            libxp-dev \
-            libxpm-dev \
-            libxt-dev \
-            lynx \
-            libxml2-utils \
-            sablotron \
-            x11proto-print-dev \
-            xutils-dev \
+        elif [ "$2" == "compile_common" ]; then
+            echo \
+                g++ \
+                libmotif-dev \
+                libtiff4-dev \
+                libx11-dev \
+                libxaw7-dev \
+                libxext-dev \
+                libxp-dev \
+                libxpm-dev \
+                libxt-dev \
+                lynx \
+                libxml2-utils \
+                sablotron \
+                x11proto-print-dev \
+                xutils-dev \
 
-    elif [ "$1" == "compile_noOpenGL" ]; then
-        $0 arb_noOpenGL
-        $0 compile_common
+        elif [ "$2" == "compile_noOpenGL" ]; then
+            $0 echo arb_noOpenGL
+            $0 echo compile_common
             
-    elif [ "$1" == "compile_OpenGL" ]; then
-        $0 arb_OpenGL
-        $0 compile_common
-        apt-get -y install \
-            freeglut3-dev \
-            libglew1.5-dev \
-            libpng12-dev \
+        elif [ "$2" == "compile_OpenGL" ]; then
+            $0 echo arb_OpenGL
+            $0 echo compile_common
+            echo \
+                freeglut3-dev \
+                libglew1.5-dev \
+                libpng12-dev \
+                
+            echo \
+                libglw-mesa-arb \
+                >> $ARB_PACKAGES
 
-        DISTRIB=`cat /etc/lsb-release | grep DISTRIB_CODENAME | perl -npe 's/^.*=//'`
-        SOURCE="deb http://dev.mikro.biologie.tu-muenchen.de/debian $DISTRIB non-free"
+        elif [ "$2" == "develop" ]; then
+            $0 echo compile_OpenGL
+            echo \
+                valgrind \
+                ctags \
 
-        apt-get install libglw-mesa-arb || ( \
-            echo "-----------------------------------------" ;\
-            echo "Install of arb-specific libraries failed!" ;\
-            echo "Did you add the line" ;\
-            echo "$SOURCE" ;\
-            echo "to /etc/apt/sources.list, e.g. using" ;\
-            echo "" ;\
-            echo "sudo bash -c 'echo $SOURCE >> /etc/apt/sources.list'" ;\
-            echo "sudo aptitude update" ;\
-            echo "???" ;\
-            )
+        elif [ "$2" == "devdox" ]; then
+            $0 echo develop
+            echo \
+                doxygen \
+                texlive-latex-base \
+                texlive-base-bin \
 
-    elif [ "$1" == "develop" ]; then
-        $0 compile_OpenGL
-        apt-get -y install \
-            valgrind \
-            ctags \
-            doxygen \
-            doxygen-doc \
-
+        else
+            echo error_unknown_target_$2
+        fi
     else
-        echo "Error: Unknown parameter '$1'"
+        echo "Ubuntu for ARB installer"
+        test -f $ARB_PACKAGES && rm $ARB_PACKAGES
+        PACKAGES=`$0 echo $1`
+        ALLPACKAGES=`echo $PACKAGES;test -f $ARB_PACKAGES && cat $ARB_PACKAGES`
+        echo "Packages needed for '$1': `echo $ALLPACKAGES | wc -w`"
+        # listwords $PACKAGES
+
+        echo '-------------------- [apt start]'
+        apt-get -y install $PACKAGES
+        echo '-------------------- [apt end]'
+
+        if [ -f $ARB_PACKAGES ]; then
+            echo "Packages provided by ARB developers: `cat $ARB_PACKAGES | wc -w`"
+            listwords `cat $ARB_PACKAGES`
+            DISTRIB=`cat /etc/lsb-release | grep DISTRIB_CODENAME | perl -npe 's/^.*=//'`
+            SOURCE="deb http://dev.mikro.biologie.tu-muenchen.de/debian $DISTRIB non-free"
+            echo '-------------------- [apt start]'
+            apt-get install \
+                `cat $ARB_PACKAGES` \
+                || ( \
+                echo "-----------------------------------------" ;\
+                echo "Install of arb-specific libraries failed!" ;\
+                echo "Did you add the line" ;\
+                echo "$SOURCE" ;\
+                echo "to /etc/apt/sources.list, e.g. using" ;\
+                echo "" ;\
+                echo "sudo bash -c 'echo $SOURCE >> /etc/apt/sources.list'" ;\
+                echo "sudo aptitude update" ;\
+                echo "???" ;\
+                )
+            echo '-------------------- [apt end]'
+        fi
+        test -f $ARB_PACKAGES && rm $ARB_PACKAGES
     fi
 fi
