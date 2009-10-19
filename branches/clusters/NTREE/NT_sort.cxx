@@ -1,17 +1,20 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-// #include <malloc.h>
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_awars.hxx>
-#include <awt.hxx>
-#include <awt_item_sel_list.hxx>
+// =============================================================== //
+//                                                                 //
+//   File      : NT_sort.cxx                                       //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include "nt_sort.hxx"
+#include "ntree.hxx"
+#include "nt_cb.hxx"
+
+#include <awt_item_sel_list.hxx>
+#include <awt.hxx>
+
+#define NT_RESORT_FILTER (1<<GB_STRING)|(1<<GB_INT)|(1<<GB_FLOAT)
 
 // test
 
@@ -125,11 +128,10 @@ GB_ERROR NT_resort_data_base(GBT_TREE *tree, const char *key1, const char *key2,
     return GB_end_transaction(GLOBAL_gb_main, error);
 }
 
-void NT_resort_data_by_phylogeny(AW_window *dummy, GBT_TREE **ptree){
+void NT_resort_data_by_phylogeny(AW_window *, AW_CL, AW_CL) {
     aw_openstatus("resorting data");
-    AWUSE(dummy);
     GB_ERROR error = 0;
-    GBT_TREE *tree = *ptree;
+    GBT_TREE *tree = nt_get_current_tree_root();
     if (!tree) error = "Please select/build a tree first";
     if (!error) error = NT_resort_data_base(tree,0,0,0);
     aw_closestatus();

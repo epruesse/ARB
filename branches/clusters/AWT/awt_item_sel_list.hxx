@@ -23,6 +23,8 @@ enum awt_selected_fields {
     AWT_SF_ALL      = ((AWT_SF_HIDDEN<<1)-1), 
 };
 
+struct ad_item_selector;
+
 AW_CL awt_create_selection_list_on_scandb(GBDATA                 *gb_main,
                                           AW_window              *aws,
                                           const char             *varname,

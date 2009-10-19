@@ -57,16 +57,6 @@
 #include <awt.hxx>
 #include <awt_sel_boxes.hxx>
 
-/*AISC_MKPT_PROMOTE:#ifndef ARBDBT_H*/
-/*AISC_MKPT_PROMOTE:#include <arbdbt.h>*/
-/*AISC_MKPT_PROMOTE:#endif*/
-/*AISC_MKPT_PROMOTE:#ifndef AW_ROOT_HXX*/
-/*AISC_MKPT_PROMOTE:#include <aw_root.hxx>*/
-/*AISC_MKPT_PROMOTE:#endif*/
-/*AISC_MKPT_PROMOTE:*/
-/*AISC_MKPT_PROMOTE:class AW_window;*/
-/*AISC_MKPT_PROMOTE:class AWT_canvas;*/
-
 #define AWAR_MAX_FREQ   "tmp/CON_MAX_FREQ/"
 
 #define AWAR_MAX_FREQ_NO_GAPS AWAR_MAX_FREQ "no_gaps"

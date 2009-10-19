@@ -17,6 +17,16 @@
 #include <awt_sel_boxes.hxx>
 #include <aw_awars.hxx>
 
+/*AISC_MKPT_PROMOTE:#ifndef ARBDBT_H*/
+/*AISC_MKPT_PROMOTE:#include <arbdbt.h>*/
+/*AISC_MKPT_PROMOTE:#endif*/
+/*AISC_MKPT_PROMOTE:#ifndef AW_ROOT_HXX*/
+/*AISC_MKPT_PROMOTE:#include <aw_root.hxx>*/
+/*AISC_MKPT_PROMOTE:#endif*/
+/*AISC_MKPT_PROMOTE:*/
+/*AISC_MKPT_PROMOTE:class AW_window;*/
+/*AISC_MKPT_PROMOTE:class AWT_canvas;*/
+
 #define AWT_TREE(ntw) ((AWT_graphic_tree *)ntw->tree_disp)
 
 void NT_delete_mark_all_cb(void *, AWT_canvas *ntw) {

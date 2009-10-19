@@ -2,14 +2,14 @@
 
 .SUFFIXES: .o .cxx .depend
 
-
+#                         Note: NT_cb.o should be first object (needed by 'proto')
 CPP_OBJECTS = \
+	NT_cb.o \
 	AP_consensus.o \
 	AP_conservProfile2Gnuplot.o \
 	AP_cprofile.o \
 	AP_csp_2_gnuplot.o \
 	AP_pos_var_pars.o \
-	NT_cb.o \
 	NT_concatenate.o \
 	NT_dbrepair.o \
 	NT_edconf.o \
@@ -339,6 +339,7 @@ NT_dbrepair.o: $(ARBHOME)/INCLUDE/GEN.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/inline.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/smartptr.h
 
+NT_edconf.o: nt_cb.hxx
 NT_edconf.o: nt_internal.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/ad_config.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -500,7 +501,8 @@ NT_main.o: $(ARBHOME)/INCLUDE/awti_import.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/mg_merge.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/svn_revision.h
 
-NT_sort.o: nt_sort.hxx
+NT_sort.o: nt_cb.hxx
+NT_sort.o: ntree.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 NT_sort.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_sort.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -510,7 +512,6 @@ NT_sort.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arbdbt.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arbtools.h
 NT_sort.o: $(ARBHOME)/INCLUDE/attributes.h
-NT_sort.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_position.hxx
