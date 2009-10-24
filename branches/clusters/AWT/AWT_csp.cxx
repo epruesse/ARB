@@ -70,13 +70,16 @@ AWT_csp::~AWT_csp(void){
 GB_ERROR AWT_csp::go(AP_filter *filter){
     this->exit();
     GB_transaction dummy(this->gb_main);
-    long alignment_length = GBT_get_alignment_len(this->gb_main, alignment_name);
+    long alignment_length_l = GBT_get_alignment_len(this->gb_main, alignment_name);
     GB_ERROR error = 0;
-    if (alignment_length <= 1)
+    if (alignment_length_l <= 1) {
         return GB_export_errorf("Unknown Alignment Size: Name '%s'\n"
                                 "   Select a Valid Alignment",alignment_name);
-    if (filter && filter->filter_len != alignment_length)
+    }
+    size_t alignment_length = alignment_length_l;
+    if (filter && filter->get_length() != alignment_length) {
         return GB_export_error( "Incompatible filter_len" );
+    }
     seq_len = 0;
 
     char *sai_name = awr->awar(awar_name)->read_string();
@@ -97,19 +100,20 @@ GB_ERROR AWT_csp::go(AP_filter *filter){
         free(sai_name);
         return error;
     }
-    if (filter)         seq_len = (size_t)filter->real_len;
 
-    else            seq_len = (size_t)alignment_length;
+    seq_len = filter ? filter->get_filtered_length() : alignment_length;
 
-    unsigned long i;
-    unsigned long j;
-    delete [] weights; weights = new GB_UINT4[seq_len];
-    delete [] rates;   rates   = new float[seq_len];
-    delete [] ttratio; ttratio = new float[seq_len];
+    delete [] weights; weights  = new GB_UINT4[seq_len];
+    delete [] rates;   rates    = new float[seq_len];
+    delete [] ttratio; ttratio  = new float[seq_len];
     delete [] is_helix;is_helix = new unsigned char[seq_len];
-    delete [] mut_sum; mut_sum = new GB_UINT4[seq_len];
-    delete [] freq_sum;freq_sum    = new GB_UINT4[seq_len];
-    delete desc;    desc = 0;
+    delete [] mut_sum; mut_sum  = new GB_UINT4[seq_len];
+    delete [] freq_sum;freq_sum = new GB_UINT4[seq_len];
+
+    delete desc; desc = 0;
+
+    size_t i;
+    size_t j;
     for (i=0;i<256;i++) { delete frequency[i];frequency[i]=0;}
 
     long use_helix = awr->awar(awar_enable_helix)->read_int();
@@ -128,8 +132,8 @@ GB_ERROR AWT_csp::go(AP_filter *filter){
             goto no_helix;
         }
         error = 0;
-        for (j=i=0;i<(unsigned long)alignment_length;i++) {
-            if (!filter || filter->filter_mask[i]) {
+        for (j=i=0;i<alignment_length;i++) {
+            if (!filter || filter->use_position(i)) {
                 if (helix.pairtype(i) == HELIX_PAIR) {
                     is_helix[j] = 1;
                     weights[j] = 1;
@@ -169,8 +173,8 @@ GB_ERROR AWT_csp::go(AP_filter *filter){
     unsigned long max_freq_sum = 0;
     for (wf = 0; wf<256;wf++) {     // ********* calculate sum of mutations
         if (!freqi[wf]) continue;   // ********* calculate nbases for each col.
-        for (j=i=0;i<(unsigned long)alignment_length;i++) {
-            if (filter && !filter->filter_mask[i]) continue;
+        for (j=i=0;i<alignment_length;i++) {
+            if (filter && !filter->use_position(i)) continue;
             freq_sum[j] += freqi[wf][i];
             mut_sum[j] = minmut[i];
             j++;
@@ -184,8 +188,8 @@ GB_ERROR AWT_csp::go(AP_filter *filter){
     for (wf = 0; wf<256;wf++) {
         if (!freqi[wf]) continue;
         frequency[wf] = new float[seq_len];
-        for (j=i=0;i<(unsigned long)alignment_length;i++) {
-            if (filter && !filter->filter_mask[i]) continue;
+        for (j=i=0;i<alignment_length;i++) {
+            if (filter && !filter->use_position(i)) continue;
             if (freq_sum[j] > min_freq_sum) {
                 frequency[wf][j] = freqi[wf][i]/(float)freq_sum[j];
             }else{
@@ -196,8 +200,8 @@ GB_ERROR AWT_csp::go(AP_filter *filter){
         }
     }
 
-    for (j=i=0;i<(unsigned long)alignment_length;i++) { // ******* calculate rates
-        if (filter && !filter->filter_mask[i]) continue;
+    for (j=i=0;i<alignment_length;i++) { // ******* calculate rates
+        if (filter && !filter->use_position(i)) continue;
         if (!weights[j]) {
             rates[j] = 1.0;
             ttratio[j] = 0.5;

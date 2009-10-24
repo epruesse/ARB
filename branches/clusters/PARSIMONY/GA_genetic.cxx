@@ -7,7 +7,7 @@
 // #include <malloc.h>
 #include <iostream.h>
 #include "AP_buffer.hxx"
-#include "parsimony.hxx"
+#include "ap_main.hxx"
 #include "ap_tree_nlen.hxx"
 #include "GA_genetic.hxx"
 

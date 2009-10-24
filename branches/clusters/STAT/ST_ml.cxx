@@ -150,7 +150,7 @@ inline void ST_rate_matrix::mult(ST_base_vector * in, ST_base_vector * out) {
 }
 #endif
 
-ST_sequence_ml::ST_sequence_ml(ARB_Tree_root * rooti, ST_ML * st_mli) :
+ST_sequence_ml::ST_sequence_ml(ARB_tree_root * rooti, ST_ML * st_mli) :
     AP_sequence(rooti) {
     gb_data = 0;
     st_ml = st_mli;
@@ -360,11 +360,7 @@ ST_ML::ST_ML(GBDATA * gb_maini) {
 }
 
 ST_ML::~ST_ML() {
-    if (tree_root) {
-        delete tree_root->tree;
-        tree_root->tree = 0;
-        delete tree_root;
-    }
+    delete tree_root;
     free(alignment_name);
     if (hash_2_ap_tree) GBS_free_hash(hash_2_ap_tree);
     delete not_valid;
@@ -468,9 +464,10 @@ void ST_ML::insert_tree_into_hash_rek(AP_tree * node) {
     node->gr.gc = 0;
     if (node->is_leaf) {
         GBS_write_hash(hash_2_ap_tree, node->name, (long) node);
-    } else {
-        insert_tree_into_hash_rek(node->leftson);
-        insert_tree_into_hash_rek(node->rightson);
+    }
+    else {
+        insert_tree_into_hash_rek(node->get_leftson());
+        insert_tree_into_hash_rek(node->get_rightson());
     }
 }
 
@@ -495,7 +492,7 @@ long ST_ML::delete_species(const char *key, long val, void *cd_st_ml) {
     }
     else {
         AP_tree *leaf   = (AP_tree *) val;
-        AP_tree *father = leaf->father;
+        AP_tree *father = leaf->get_father();
         leaf->remove();
         delete father;                              // deletes me also
         
@@ -506,9 +503,9 @@ long ST_ML::delete_species(const char *key, long val, void *cd_st_ml) {
 inline GB_ERROR tree_size_ok(AP_tree_root *tree_root) {
     GB_ERROR error = NULL;
 
-    if (!tree_root->tree || tree_root->tree->is_leaf) {
-        const char *tree_name = tree_root->tree_name;
-        
+    AP_tree *root = tree_root->get_root_node();
+    if (!root || root->is_leaf) {
+        const char *tree_name = tree_root->get_tree_name();
         error = GBS_global_string("Too few species remained in tree '%s'", tree_name);
     }
     return error;
@@ -536,15 +533,9 @@ GB_ERROR ST_ML::init(const char *tree_name, const char *alignment_namei,
         free(alignment_name);
         return GB_await_error();
     }
-    AP_tree *tree = new AP_tree(0);
-    tree_root = new AP_tree_root(gb_main, tree, tree_name);
-    error = tree->load(tree_root, 0, GB_FALSE, GB_FALSE, 0, 0); // tree is not linked !!!
-    if (error) {
-        delete tree;            tree      = 0;
-        delete tree_root;       tree_root = 0;
-        return error;
-    }
-    tree_root->tree = tree;
+    
+    tree_root = new AP_tree_root(gb_main, AP_tree(0), false);
+    tree_root->loadFromDB(tree_name); // tree is not linked!
 
     // aw_openstatus("Initializing Online Statistic");
     /* send species into hash table */
@@ -552,7 +543,7 @@ GB_ERROR ST_ML::init(const char *tree_name, const char *alignment_namei,
     // aw_status("Loading Tree");
     /* delete species */
     if (species_names) { // keep names
-        tree_root->tree->remove_leafs(gb_main, AWT_REMOVE_DELETED);
+        tree_root->remove_leafs(AWT_REMOVE_DELETED);
 
         error = tree_size_ok(tree_root);
         if (error) return ta.close(error);
@@ -566,20 +557,20 @@ GB_ERROR ST_ML::init(const char *tree_name, const char *alignment_namei,
             if (n) *(n++) = 1;
         }
 
-        insert_tree_into_hash_rek(tree_root->tree);
+        insert_tree_into_hash_rek(tree_root->get_root_node());
         GBS_hash_do_loop(hash_2_ap_tree, delete_species, this);
         GBS_free_hash(keep_species_hash);
         keep_species_hash = 0;
-        GBT_link_tree((GBT_TREE *) tree_root->tree, gb_main, GB_FALSE, 0, 0);
+        GBT_link_tree(tree_root->get_root_node()->get_gbt_tree(), gb_main, GB_FALSE, 0, 0);
     }
     else { // keep marked
-        GBT_link_tree((GBT_TREE *) tree_root->tree, gb_main, GB_FALSE, 0, 0);
-        tree_root->tree->remove_leafs(gb_main, (marked_only ? AWT_REMOVE_NOT_MARKED : 0)|AWT_REMOVE_DELETED);
+        GBT_link_tree(tree_root->get_root_node()->get_gbt_tree(), gb_main, GB_FALSE, 0, 0);
+        tree_root->remove_leafs((marked_only ? AWT_REMOVE_NOT_MARKED : 0)|AWT_REMOVE_DELETED);
         
         error = tree_size_ok(tree_root);
         if (error) return ta.close(error);
 
-        insert_tree_into_hash_rek(tree_root->tree);
+        insert_tree_into_hash_rek(tree_root->get_root_node());
     }
 
     /* calc frequencies */
@@ -607,7 +598,7 @@ GB_ERROR ST_ML::init(const char *tree_name, const char *alignment_namei,
     /* load sequences */
     // aw_status("load sequences");
     tree_root->sequence_template = new ST_sequence_ml(tree_root, this);
-    tree_root->tree->load_sequences_rek(alignment_name, GB_TRUE, GB_TRUE);
+    tree_root->get_root_node()->load_sequences_rek(alignment_name, GB_TRUE, GB_TRUE);
 
     /* create matrices */
     create_matrices(2.0, 1000);
@@ -632,8 +623,8 @@ ST_sequence_ml *ST_ML::do_tree(AP_tree * node) {
     if (node->is_leaf) {
         seq->set_sequence();
     } else {
-        ST_sequence_ml *ls = do_tree(node->leftson);
-        ST_sequence_ml *rs = do_tree(node->rightson);
+        ST_sequence_ml *ls = do_tree(node->get_leftson());
+        ST_sequence_ml *rs = do_tree(node->get_rightson());
         seq->go(ls, node->leftlen, rs, node->rightlen);
     }
     seq->last_updated = 1;
@@ -642,7 +633,7 @@ ST_sequence_ml *ST_ML::do_tree(AP_tree * node) {
 
 void ST_ML::clear_all() {
     GB_transaction dummy(gb_main);
-    undo_tree(tree_root->tree);
+    undo_tree(tree_root->get_root_node());
     latest_modification = GB_read_clock(gb_main);
 }
 
@@ -654,8 +645,8 @@ void ST_ML::undo_tree(AP_tree * node) {
     }
     seq->ungo();
     if (!node->is_leaf) {
-        undo_tree(node->leftson);
-        undo_tree(node->rightson);
+        undo_tree(node->get_leftson());
+        undo_tree(node->get_rightson());
     }
 }
 
@@ -678,26 +669,24 @@ ST_sequence_ml *ST_ML::get_ml_vectors(char *species_name, AP_tree * node,
     ST_sequence_ml *seq = (ST_sequence_ml *) node->sequence;
 
     if (start_ali_pos != base || end_ali_pos > to) {
-        undo_tree(tree_root->tree); // undo everything
+        undo_tree(tree_root->get_root_node()); // undo everything
         base = start_ali_pos;
         to = end_ali_pos;
     }
 
     AP_tree *pntr;
-    for (pntr = node->father; pntr; pntr = pntr->father) {
+    for (pntr = node->get_father(); pntr; pntr = pntr->get_father()) {
         ST_sequence_ml *sequ = (ST_sequence_ml *) pntr->sequence;
-        if (sequ)
-            sequ->ungo();
+        if (sequ) sequ->ungo();
     }
 
     node->set_root();
 
     // get the sequence of my brother
-    AP_tree *brother = node->brother();
+    AP_tree *brother = node->get_brother();
     ST_sequence_ml *seq_of_brother = do_tree(brother);
 
-    seq->calc_out(seq_of_brother, node->father->leftlen
-                  + node->father->rightlen);
+    seq->calc_out(seq_of_brother, node->father->leftlen + node->father->rightlen);
     return seq;
 }
 

@@ -33,7 +33,6 @@ probe_design.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 probe_design.o: $(ARBHOME)/INCLUDE/ad_prot.h
 probe_design.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 probe_design.o: $(ARBHOME)/INCLUDE/adGene.h
-probe_design.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -57,6 +56,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_iupac.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/client.h
+probe_design.o: $(ARBHOME)/INCLUDE/downcast.h
 probe_design.o: $(ARBHOME)/INCLUDE/GEN.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/PT_com.h
 probe_design.o: $(ARBHOME)/INCLUDE/servercntrl.h

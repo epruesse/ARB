@@ -184,19 +184,21 @@ void NT_mark_tree_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode)
     GB_transaction    gb_dummy(ntw->gb_main);
 
     gtree->check_update(ntw->gb_main);
+    AP_tree *tree_root = gtree->get_root_node();
+    
     switch (mark_mode&MARK_MODE_UPPER_BITS) {
         case 0:                 // all sequences
-            gtree->mark_species_in_tree(gtree->tree_root, mark_mode&MARK_MODE_LOWER_BITS);
+            gtree->mark_species_in_tree(tree_root, mark_mode&MARK_MODE_LOWER_BITS);
             break;
         case 4:                 // full sequences only
-            gtree->mark_species_in_tree_that(gtree->tree_root, mark_mode&MARK_MODE_LOWER_BITS, nt_sequence_is_partial, (void*)0);
+            gtree->mark_species_in_tree_that(tree_root, mark_mode&MARK_MODE_LOWER_BITS, nt_sequence_is_partial, (void*)0);
             break;
         case 8:                 // partial sequences only
-            gtree->mark_species_in_tree_that(gtree->tree_root, mark_mode&MARK_MODE_LOWER_BITS, nt_sequence_is_partial, (void*)1);
+            gtree->mark_species_in_tree_that(tree_root, mark_mode&MARK_MODE_LOWER_BITS, nt_sequence_is_partial, (void*)1);
             break;
         case 16: {               // species with data in alignment only
             char *ali = GBT_get_default_alignment(ntw->gb_main);
-            if (ali) gtree->mark_species_in_tree_that(gtree->tree_root, mark_mode&MARK_MODE_LOWER_BITS, nt_species_has_alignment, (void*)ali);
+            if (ali) gtree->mark_species_in_tree_that(tree_root, mark_mode&MARK_MODE_LOWER_BITS, nt_species_has_alignment, (void*)ali);
             free(ali);
             break;
         }
@@ -257,7 +259,7 @@ void NT_mark_nontree_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode)
         // Note: changed to ignore case (ralf 2007-07-06)
     }
 
-    NT_remove_species_in_tree_from_hash(gtree->tree_root, cd.hash);
+    NT_remove_species_in_tree_from_hash(gtree->get_root_node(), cd.hash);
 
     cd.mark_mode_upper_bits = mark_mode&MARK_MODE_UPPER_BITS;
     cd.ali                  = cd.mark_mode_upper_bits == 16 ? GBT_get_default_alignment(ntw->gb_main) : 0;
@@ -470,7 +472,7 @@ static void nt_group_tree(AWT_canvas *ntw, int mode, int color_group) {
     GB_transaction gb_dummy(ntw->gb_main);
 
     AWT_TREE(ntw)->check_update(ntw->gb_main);
-    AWT_TREE(ntw)->group_tree(AWT_TREE(ntw)->tree_root, mode, color_group);
+    AWT_TREE(ntw)->group_tree(AWT_TREE(ntw)->get_root_node(), mode, color_group);
     nt_save_changed_tree(ntw);
 }
 
@@ -550,7 +552,7 @@ void NT_reset_lzoom_cb(void *dummy, AWT_canvas *ntw)
     AWUSE(dummy);
     GB_transaction gb_dummy(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
-    AWT_TREE(ntw)->tree_root_display = AWT_TREE(ntw)->tree_root;
+    AWT_TREE(ntw)->tree_root_display = AWT_TREE(ntw)->get_root_node();
     ntw->zoom_reset();
     ntw->refresh();
 }
@@ -578,9 +580,12 @@ void NT_remove_leafs(void *, AWT_canvas *ntw, long mode) {
     GB_transaction ta(ntw->gb_main);
 
     AWT_TREE(ntw)->check_update(ntw->gb_main);
-    if (AWT_TREE(ntw)->tree_root) {
-        AWT_TREE(ntw)->tree_root->remove_leafs(ntw->gb_main, (int)mode);
-        if (AWT_TREE(ntw)->tree_root) AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
+    AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
+    if (tree_root) {
+        AWT_TREE(ntw)->tree_static->remove_leafs((int)mode);
+
+        tree_root = AWT_TREE(ntw)->get_root_node(); // root might have changed -> get again
+        if (tree_root) tree_root->compute_tree(ntw->gb_main);
         nt_save_changed_tree(ntw);
     }
     else {
@@ -595,9 +600,9 @@ void NT_remove_bootstrap(AW_window*, AW_CL cl_ntw, AW_CL) // delete all bootstra
     
     AWT_TREE(ntw)->check_update(ntw->gb_main);
 
-    AP_tree *tree_root = AWT_TREE(ntw)->tree_root;
+    AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
     if (tree_root) {
-        tree_root->remove_bootstrap(ntw->gb_main);
+        tree_root->remove_bootstrap();
         tree_root->compute_tree(ntw->gb_main);
         nt_save_changed_tree(ntw);
     }
@@ -609,9 +614,9 @@ void NT_reset_branchlengths(AW_window*, AW_CL cl_ntw, AW_CL) // set all branchle
     GB_transaction  gb_dummy(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
 
-    AP_tree *tree_root = AWT_TREE(ntw)->tree_root;
+    AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
     if (tree_root){
-        tree_root->reset_branchlengths(ntw->gb_main);
+        tree_root->reset_branchlengths();
         tree_root->compute_tree(ntw->gb_main);
         nt_save_changed_tree(ntw);
     }
@@ -625,10 +630,10 @@ void NT_move_boot_branch(AW_window*, AW_CL cl_ntw, AW_CL cl_direction) // copy b
 
     AWT_TREE(ntw)->check_update(ntw->gb_main);
 
-    AP_tree *tree_root = AWT_TREE(ntw)->tree_root;
+    AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
     if (tree_root) {
-        if (direction == 0) tree_root->bootstrap2branchlen(ntw->gb_main);
-        else                tree_root->branchlen2bootstrap(ntw->gb_main);
+        if (direction == 0) tree_root->bootstrap2branchlen();
+        else                tree_root->branchlen2bootstrap();
 
         tree_root->compute_tree(ntw->gb_main);
         nt_save_changed_tree(ntw);
@@ -648,9 +653,9 @@ void NT_scale_tree(AW_window*, AW_CL cl_ntw, AW_CL) // scale branchlengths
         double      factor = atof(answer);
         GB_transaction ta(ntw->gb_main);
 
-        AP_tree *tree_root = AWT_TREE(ntw)->tree_root;
+        AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
         if (tree_root){
-            tree_root->scale_branchlengths(ntw->gb_main, factor);
+            tree_root->scale_branchlengths(factor);
             tree_root->compute_tree(ntw->gb_main);
             nt_save_changed_tree(ntw);
         }
@@ -668,12 +673,12 @@ void NT_jump_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL auto_expand_groups)
     char *name = aww->get_root()->awar(AWAR_SPECIES_NAME)->read_string();
     if (name[0]){
         AP_tree * found = AWT_TREE(ntw)->search(AWT_TREE(ntw)->tree_root_display,name);
-        if (!found && AWT_TREE(ntw)->tree_root_display != AWT_TREE(ntw)->tree_root){
-            found = AWT_TREE(ntw)->search(AWT_TREE(ntw)->tree_root,name);
+        if (!found && AWT_TREE(ntw)->tree_root_display != AWT_TREE(ntw)->get_root_node()){
+            found = AWT_TREE(ntw)->search(AWT_TREE(ntw)->get_root_node(), name);
             if (found) {
                 // now i found a species outside logical zoomed tree
                 aw_message("Species found outside displayed subtree: zoom reset done");
-                AWT_TREE(ntw)->tree_root_display = AWT_TREE(ntw)->tree_root;
+                AWT_TREE(ntw)->tree_root_display = AWT_TREE(ntw)->get_root_node();
                 ntw->zoom_reset();
             }
         }
@@ -687,10 +692,10 @@ void NT_jump_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL auto_expand_groups)
                             found->gr.grouped = 0;
                             changed = true;
                         }
-                        found = found->father;
+                        found = found->get_father();
                     }
                     if (changed) {
-                        AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
+                        AWT_TREE(ntw)->get_root_node()->compute_tree(ntw->gb_main);
                         GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main, 0, 0, 0);
                         if (error) aw_message(error);
                         ntw->zoom_reset();
@@ -750,10 +755,10 @@ void NT_jump_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL auto_expand_groups)
                 }
             case AP_TREE_RADIAL:{
                 AWT_TREE(ntw)->tree_root_display = 0;
-                AWT_TREE(ntw)->jump(AWT_TREE(ntw)->tree_root, name);
+                AWT_TREE(ntw)->jump(AWT_TREE(ntw)->get_root_node(), name);
                 if (!AWT_TREE(ntw)->tree_root_display) {
                     aw_message(GBS_global_string("Sorry, I didn't find the species '%s' in this tree", name));
-                    AWT_TREE(ntw)->tree_root_display = AWT_TREE(ntw)->tree_root;
+                    AWT_TREE(ntw)->tree_root_display = AWT_TREE(ntw)->get_root_node();
                 }
                 ntw->zoom_reset();
                 ntw->refresh();
@@ -815,7 +820,7 @@ void NT_recompute_cb(AW_window *,AWT_canvas *ntw, AW_CL cl2) {
     AWT_graphic_tree *gt = dynamic_cast<AWT_graphic_tree*>(ntw->tree_disp);
     awt_assert(gt);
 
-    gt->tree_root->compute_tree(ntw->gb_main);
+    gt->get_root_node()->compute_tree(ntw->gb_main);
     AWT_expose_cb (ntw->aww, ntw, cl2 );
 }
 
@@ -823,9 +828,10 @@ void NT_remove_species_in_tree_from_hash(AP_tree *tree,GB_HASH *hash) {
     if (!tree) return;
     if (tree->is_leaf && tree->name) {
         GBS_write_hash(hash,tree->name,0);  // delete species in hash table
-    }else{
-        NT_remove_species_in_tree_from_hash(tree->leftson,hash);
-        NT_remove_species_in_tree_from_hash(tree->rightson,hash);
+    }
+    else {
+        NT_remove_species_in_tree_from_hash(tree->get_leftson(),hash);
+        NT_remove_species_in_tree_from_hash(tree->get_rightson(),hash);
     }
 }
 

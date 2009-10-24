@@ -113,8 +113,8 @@ struct AP_tree_edge_data
 
 
 struct AP_tree_buffer {
-    unsigned long  controll;    // used for internal buffer check
-    unsigned int   count;       // counts how often the entry is buffered
+    unsigned long  controll;                        // used for internal buffer check
+    unsigned int   count;                           // counts how often the entry is buffered
     AP_STACK_MODE  mode;
     AP_sequence   *sequence;
     AP_FLOAT       mutation_rate;
@@ -122,6 +122,7 @@ struct AP_tree_buffer {
     AP_tree       *father;
     AP_tree       *leftson;
     AP_tree       *rightson;
+    AP_tree_root  *root;
     GBDATA        *gb_node;
 
     int distance;   // distance to border (pushed with STRUCTURE!)

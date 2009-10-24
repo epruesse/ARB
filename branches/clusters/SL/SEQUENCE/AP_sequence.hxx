@@ -24,14 +24,14 @@ typedef enum {
 
 typedef double AP_FLOAT;
 
-class ARB_Tree_root;
+class ARB_tree_root;
 
 class AP_sequence {
 protected:
     AP_FLOAT cashed_real_len;
 
 public:
-    ARB_Tree_root *root;
+    ARB_tree_root *root;
     static char *mutation_per_site; // if != 0 then mutations are set by combine
     static char *static_mutation_per_site[3];   // if != 0 then mutations are set by combine
 
@@ -42,7 +42,7 @@ public:
 
     static long global_combineCount;
 
-    AP_sequence(ARB_Tree_root *rooti);
+    AP_sequence(ARB_tree_root *rooti);
     virtual ~AP_sequence(void);
 
     virtual AP_sequence *dup(void) = 0;             // used to get the real new element

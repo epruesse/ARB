@@ -33,7 +33,6 @@ AP_buffer.o: AP_error.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-AP_buffer.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -45,14 +44,15 @@ AP_buffer.o: $(ARBHOME)/INCLUDE/arbtools.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+AP_buffer.o: $(ARBHOME)/INCLUDE/downcast.h
 
 AP_main.o: AP_buffer.hxx
 AP_main.o: AP_error.hxx
-AP_main.o: parsimony.hxx
+AP_main.o: ap_main.hxx
+AP_main.o: ap_tree_nlen.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AP_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-AP_main.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -63,11 +63,18 @@ AP_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AP_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 AP_main.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_main.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
+AP_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AP_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+AP_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+AP_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AP_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+AP_main.o: $(ARBHOME)/INCLUDE/downcast.h
+AP_main.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 
 AP_tree_edge.o: AP_buffer.hxx
+AP_tree_edge.o: ap_main.hxx
 AP_tree_edge.o: ap_tree_nlen.hxx
-AP_tree_edge.o: parsimony.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -83,15 +90,15 @@ AP_tree_edge.o: $(ARBHOME)/INCLUDE/arbtools.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/downcast.h
 
 AP_tree_nlen.o: AP_buffer.hxx
+AP_tree_nlen.o: ap_main.hxx
 AP_tree_nlen.o: ap_tree_nlen.hxx
 AP_tree_nlen.o: pars_debug.hxx
-AP_tree_nlen.o: parsimony.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-AP_tree_nlen.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/AP_seq_dna.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
@@ -104,6 +111,7 @@ AP_tree_nlen.o: $(ARBHOME)/INCLUDE/arbtools.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+AP_tree_nlen.o: $(ARBHOME)/INCLUDE/downcast.h
 
 PARS_debug.o: pars_debug.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -120,11 +128,11 @@ PARS_debug.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 
 PARS_dtree.o: AP_buffer.hxx
+PARS_dtree.o: ap_main.hxx
 PARS_dtree.o: ap_tree_nlen.hxx
 PARS_dtree.o: pars_debug.hxx
 PARS_dtree.o: pars_dtree.hxx
 PARS_dtree.o: pars_main.hxx
-PARS_dtree.o: parsimony.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -150,6 +158,7 @@ PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/awt_csp.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
+PARS_dtree.o: $(ARBHOME)/INCLUDE/downcast.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 
 PARS_klprops.o: pars_klprops.hxx
@@ -165,15 +174,14 @@ PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 
 PARS_main.o: AP_buffer.hxx
+PARS_main.o: ap_main.hxx
 PARS_main.o: ap_tree_nlen.hxx
 PARS_main.o: pars_dtree.hxx
 PARS_main.o: pars_klprops.hxx
 PARS_main.o: pars_main.hxx
-PARS_main.o: parsimony.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PARS_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PARS_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-PARS_main.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -196,5 +204,6 @@ PARS_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/awt_csp.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
+PARS_main.o: $(ARBHOME)/INCLUDE/downcast.h
 PARS_main.o: $(ARBHOME)/INCLUDE/TreeCallbacks.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx

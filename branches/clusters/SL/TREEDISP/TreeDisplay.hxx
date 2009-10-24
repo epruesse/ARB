@@ -20,7 +20,9 @@
 #ifndef AWT_CANVAS_HXX
 #include <awt_canvas.hxx>
 #endif
-
+#ifndef DOWNCAST_H
+#include <downcast.h>
+#endif
 
 #define AWAR_DTREE_BASELINEWIDTH   "awt/dtree/baselinewidth"
 #define AWAR_DTREE_VERICAL_DIST    "awt/dtree/verticaldist"
@@ -41,7 +43,7 @@ void awt_create_dtree_awars(AW_root *aw_root,AW_default def);
 
 #define PH_CLICK_SPREAD   0.10
 
-#define AWT_TREE(ntw) ((AWT_graphic_tree *)ntw->tree_disp)
+#define AWT_TREE(ntw) DOWNCAST(AWT_graphic_tree*, (ntw)->tree_disp)
 
 
 typedef enum {
@@ -143,24 +145,27 @@ protected:
     AP_tree         *rot_at;
 
     void rot_show_line( AW_device *device );
-    
+
 public:
 
     // *********** read only variables !!!
+
     AW_root      *aw_root;
     AP_tree_sort  tree_sort;
-    AP_tree *     tree_root;
-    AP_tree *     tree_root_display;
+    AP_tree      *tree_root_display;                // @@@ what is this used for ?
     AP_tree_root *tree_static;
     GBDATA       *gb_main;
-    char         *tree_name;
+    AP_FLOAT      x_cursor;
+    AP_FLOAT      y_cursor;
 
-    AP_FLOAT x_cursor,y_cursor;
     // *********** public section
-    AWT_graphic_tree(AW_root *aw_root, GBDATA *gb_main);
-    virtual ~AWT_graphic_tree(void);
 
-    void init(AP_tree * tree_prot);
+    AWT_graphic_tree(AW_root *aw_root, GBDATA *gb_main);
+    virtual ~AWT_graphic_tree();
+
+    AP_tree *get_root_node() { return tree_static ? tree_static->get_root_node() : NULL; }
+
+    void init(const AP_tree& tree_prototype);
     virtual AW_gc_manager init_devices(AW_window *,AW_device *,AWT_canvas *ntw,AW_CL);
 
     virtual void show(AW_device *device);
@@ -186,18 +191,18 @@ public:
 
     void detect_group_state(AP_tree *at, AWT_graphic_tree_group_state *state, AP_tree *skip_this_son);
 
-    int       group_tree(struct AP_tree *at, int mode, int color_group);
-    int       group_rest_tree(AP_tree *at, int mode, int color_group);
-    int       resort_tree(int mode, struct AP_tree *at = 0 );
-    GB_ERROR  create_group(AP_tree * at) __ATTR__USERESULT;
-    void      toggle_group(AP_tree * at);
-    void      jump(AP_tree *at, const char *name);
-    AP_tree  *search(AP_tree *root, const char *name);
-    GB_ERROR  load(GBDATA *gb_main, const char *name,AW_CL link_to_database, AW_CL insert_delete_cbs) __ATTR__USERESULT;
-    GB_ERROR  save(GBDATA *gb_main, const char *name,AW_CL cd1, AW_CL cd2) __ATTR__USERESULT;
-    int       check_update(GBDATA *gb_main); // reload tree if needed
-    void      update(GBDATA *gb_main);
-    void      set_tree_type(AP_tree_sort type);
+    int      group_tree(struct AP_tree *at, int mode, int color_group);
+    void     group_rest_tree(AP_tree *at, int mode, int color_group);
+    int      resort_tree(int mode, struct AP_tree *at = 0 );
+    GB_ERROR create_group(AP_tree * at) __ATTR__USERESULT;
+    void     toggle_group(AP_tree * at);
+    void     jump(AP_tree *at, const char *name);
+    AP_tree *search(AP_tree *root, const char *name);
+    GB_ERROR load(GBDATA *gb_main, const char *name,AW_CL link_to_database, AW_CL insert_delete_cbs) __ATTR__USERESULT;
+    GB_ERROR save(GBDATA *gb_main, const char *name,AW_CL cd1, AW_CL cd2) __ATTR__USERESULT;
+    int      check_update(GBDATA *gb_main);         // reload tree if needed
+    void     update(GBDATA *gb_main);
+    void     set_tree_type(AP_tree_sort type);
 
     double get_irs_tree_ruler_scale_factor() const { return irs_tree_ruler_scale_factor; }
     void get_zombies_and_duplicates(int& zomb, int& dups) const { zomb = zombies; dups = duplicates; }

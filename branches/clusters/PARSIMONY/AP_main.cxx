@@ -9,7 +9,10 @@
 // =============================================================== //
 
 #include "AP_error.hxx"
-#include "parsimony.hxx"
+#include "ap_main.hxx"
+#include "ap_tree_nlen.hxx"
+
+#include <TreeDisplay.hxx>
 
 #include <iostream>
 
@@ -212,9 +215,12 @@ void AP_main::push_node(AP_tree * node,AP_STACK_MODE mode) {
     if (node->push(mode,stack_level))   stack->push(node);
 }
 
-
-void AP_main::set_tree_root(AP_tree *new_root) {
-    // removes old root and sets it
-    // to the father of the new_root
-    *ap_main->tree_root = new_root;
+AP_tree_nlen *AP_main::get_root_node() {
+    return DOWNCAST(AP_tree_nlen*, agt->get_root_node());
 }
+
+void AP_main::set_tree_root(AWT_graphic_tree *agt_) {
+    ap_assert(agt == 0 && agt_ != 0);               // do only once
+    agt = agt_;
+}
+

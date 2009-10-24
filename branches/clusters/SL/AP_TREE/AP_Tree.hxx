@@ -20,26 +20,15 @@
 
 #define GROUPED_SUM 2   // min. no of species in a group which should be drawn as box
 
-class AW_window;
-class AW_root;
-
 #ifndef ARB_TREE_HXX
 #include <ARB_Tree.hxx>
 #endif
-
-// #ifndef AP_FILTER_HXX
-// #include <AP_filter.hxx>
-// #endif
 #ifndef AP_SEQUENCE_HXX
 #include <AP_sequence.hxx>
 #endif
-// #ifndef AWT_PRO_A_NUCS_HXX
-// #include <awt_pro_a_nucs.hxx>
-// #endif
 #ifndef AW_COLOR_GROUPS_HXX
 #include <aw_color_groups.hxx>
 #endif
-
 
 // typedef unsigned char uchar;
 enum {
@@ -62,21 +51,21 @@ enum {
 
     AWT_GC_FIRST_COLOR_GROUP,
     AWT_GC_MAX = AWT_GC_FIRST_COLOR_GROUP+AW_COLOR_GROUPS
-};                              // AW_gc
+}; // AW_gc
 
 enum AP_STACK_MODE {
-    NOTHING=0,  // nothing to buffer in AP_tree node
-    STRUCTURE=1,    // only structure
-    SEQUENCE=2, // only sequence
-    BOTH=3,     // sequence & treestructure is buffered
-    ROOT=7  // old root is buffered
+    NOTHING   = 0,                                                      // nothing to buffer in AP_tree node
+    STRUCTURE = 1,                                                      // only structure
+    SEQUENCE  = 2,                                                      // only sequence
+    BOTH      = 3,                                                      // sequence & treestructure is buffered
+    ROOT      = 7                                                       // old root is buffered
 };
 
 enum AP_UPDATE_FLAGS {
-    AP_UPDATE_OK = 0,
+    AP_UPDATE_OK       = 0,
     AP_UPDATE_RELINKED = -1,
     AP_UPDATE_RELOADED = 1,
-    AP_UPDATE_ERROR = 2
+    AP_UPDATE_ERROR    = 2
 };
 
 enum AP_TREE_SIDE {  // flags zum kennzeichnen von knoten
@@ -113,38 +102,64 @@ public:
     void print(void);
 };
 
+// ---------------------------------------------
+//      downcasts for AP_tree and AP_tree_root
+
+#ifndef DOWNCAST_H
+#include <downcast.h>
+#endif
+
+#define AP_TREE_CAST(arb_tree)                 DOWNCAST(AP_tree*, arb_tree)
+#define AP_TREE_CONST_CAST(arb_tree)           DOWNCAST(const AP_tree*, arb_tree)
+#define AP_TREE_ROOT_CAST(arb_tree_root)       DOWNCAST(AP_tree_root*, arb_tree_root)
+#define AP_TREE_ROOT_CONST_CAST(arb_tree_root) DOWNCAST(const AP_tree_root*, arb_tree_root)
+
+// ---------------------
+//      AP_tree_root
+
 class AP_tree;
 
-class AP_tree_root : public ARB_Tree_root {
+typedef void (*AP_rootChangedCb)(void *cd, AP_tree *old, AP_tree *newroot);
+typedef void (*AP_nodeDelCb)(void *cd, AP_tree *del);
+
+class AP_tree_root : public ARB_tree_root {
+    AP_rootChangedCb  root_changed_cb;
+    void             *root_changed_cd;
+    AP_nodeDelCb      node_deleted_cb;
+    void             *node_deleted_cd;
+
 public:
-    GBDATA      *gb_tree;
-    GBDATA      *gb_tree_gone;                      // if all leaves have been removed by tree operations, remember 'gb_tree' here (see inform_about_changed_root)
+    GBDATA      *gb_tree_gone;                      // if all leaves have been removed by tree operations, remember 'ARB_tree_root::gb_tree' here (see change_root)
     GBDATA      *gb_species_data;
     GBDATA      *gb_table_data;
     long         tree_timer;
     long         species_timer;
     long         table_timer;
-    char        *tree_name;
-    AP_tree     *tree_template;
-    AP_tree     *tree;
     AP_sequence *sequence_template;
     AP_rates    *rates;
-    // AP_smatrix  *matrix;
 
-    AP_tree_root(GBDATA *gb_main, AP_tree *tree_proto,const char *name);
+    AP_tree_root(GBDATA *gb_main, const AP_tree& tree_proto, bool add_delete_callbacks);
     virtual ~AP_tree_root();
+
+    // ARB_tree interface
+    AP_tree *get_root_node() { return AP_TREE_CAST(ARB_tree_root::get_root_node()); }
+    virtual void change_root(AP_tree *old, AP_tree *newroot);
     
-    void    update_timers(void);                    // update the timer
-    GB_BOOL is_tree_updated(void);
-    GB_BOOL is_species_updated(void);
+    virtual GB_ERROR loadFromDB(const char *name);
+    virtual GB_ERROR saveToDB();
 
-    char        *(*root_changed)(void *cd,  AP_tree *old,  AP_tree *newroot);
-    void        *root_changed_cd;
-    char        *(*node_deleted)(void *cd,  AP_tree *old);
-    void        *node_deleted_cd;
+    // AP_tree_root interface
 
-    char        *inform_about_changed_root( AP_tree *old,  AP_tree *newroot);
-    char        *inform_about_delete( AP_tree *old);
+    void update_timers(void);                       // update the timer
+    bool is_tree_updated(void);
+    bool is_species_updated(void);
+
+    void inform_about_delete(AP_tree *old);
+
+    void set_root_changed_callback(AP_rootChangedCb cb, void *cd);
+    void set_node_deleted_callback(AP_nodeDelCb cb, void *cd);
+
+    void remove_leafs(int awt_remove_type);
 };
 
 
@@ -202,47 +217,61 @@ public:
 };
 
 
-
-class AP_tree {
+class AP_tree : public ARB_tree {
 public:
-    virtual     ~AP_tree(void); // leave this here to force creation of virtual table
-private:
-    void    _load_sequences_rek(char *use,GB_BOOL set_by_gbdata, long max, long *counter) ; // uses seq->filter
-protected:
-
-public:
-    GBT_TREE_ELEMENTS( AP_tree);
     AP_tree_members    gr;
     AP_branch_members  br;
     AP_FLOAT           mutation_rate;
     unsigned long      stack_level;
-    AP_tree_root      *tree_root;
-    AP_sequence       *sequence;
+    AP_sequence       *sequence; // @@@ create class ARB_seq_tree holding sequences
+
+    // ------------------
+    //      functions
+private:
+    void _load_sequences_rek(char *use,GB_BOOL set_by_gbdata, long max, long *counter) ; // uses seq->filter
+    void load_node_info();                          // load linewidth etc from DB
+
+public:
 
     AP_tree(AP_tree_root *tree_root);
+    virtual ~AP_tree(); // leave this here to force creation of virtual table
 
-    GBT_TREE *get_gbt_tree() { return (GBT_TREE*)this; }
+    // ARB_tree interface
+    virtual AP_tree *dup() const;
+    // ARB_tree interface (end)
 
-    int     compute_tree(GBDATA *gb_main);
+    AP_tree *get_father() { return AP_TREE_CAST(father); }
+    const AP_tree *get_father() const { return AP_TREE_CONST_CAST(father); }
+    AP_tree *get_leftson() { return AP_TREE_CAST(leftson); }
+    const AP_tree *get_leftson() const { return AP_TREE_CONST_CAST(leftson); }
+    AP_tree *get_rightson() { return AP_TREE_CAST(rightson); }
+    const AP_tree *get_rightson() const { return AP_TREE_CONST_CAST(rightson); }
+    AP_tree *get_brother() { return AP_TREE_CAST(ARB_tree::get_brother()); }
+    const AP_tree *get_brother() const { return AP_TREE_CONST_CAST(ARB_tree::get_brother()); }
 
-    int arb_tree_set_leafsum_viewsum(); // count all visible leafs -> gr.viewsum + gr.leafsum
-    int arb_tree_leafsum2();// count all leafs
+    AP_tree_root *get_tree_root() const {
+        ARB_tree_root *base = ARB_tree::get_tree_root();
+        return base ? AP_TREE_ROOT_CAST(base) : NULL;
+    }
+    AP_tree *get_root() { return AP_TREE_CAST(ARB_tree::get_root()); }
+
+    int compute_tree(GBDATA *gb_main);
+
+    int arb_tree_set_leafsum_viewsum();             // count all visible leafs -> gr.viewsum + gr.leafsum
+    int arb_tree_leafsum2();                        // count all leafs
 
     void calc_hidden_flag(int father_is_hidden);
-    virtual int calc_color();// start a transaction first
+    virtual int calc_color();                       // start a transaction first
 
-    virtual int calc_color_probes(GB_HASH *hashptr);        //new function for coloring the tree; ak
+    virtual int calc_color_probes(GB_HASH *hashptr); //new function for coloring the tree; ak
 
     GBT_LEN arb_tree_min_deep();
     GBT_LEN arb_tree_deep();
 
     void         load_sequences_rek(char *use,GB_BOOL set_by_gbdata,GB_BOOL show_status) ; // uses seq->filter
-    virtual void parsimony_rek();
-
-    virtual AP_tree *dup(void);
 
     virtual void insert(AP_tree *new_brother);
-    virtual void remove(void);                      // no delete of father
+    virtual void remove(void);                      // remove this+father (but do not delete)
     virtual void swap_assymetric(AP_TREE_SIDE mode); // 0 = AP_LEFT_son  1=AP_RIGHT_son
     void         swap_sons(void);                   // exchange sons
 
@@ -250,77 +279,69 @@ public:
     virtual void moveTo(AP_tree *new_brother,AP_FLOAT rel_pos); // move to new brother
 
     virtual void set_root(void);
-    virtual void delete_tree(void);
-    virtual void remove_leafs(GBDATA *gb_main,int awt_remove_type);
 
-    void remove_bootstrap(GBDATA *); // remove bootstrap values from subtree
-    void reset_branchlengths(GBDATA *); // reset branchlengths of subtree to 0.1
-    void scale_branchlengths(GBDATA *gb_main, double factor);
-    void bootstrap2branchlen(GBDATA *); // copy bootstraps to branchlengths
-    void branchlen2bootstrap(GBDATA *); // copy branchlengths to bootstraps
+    void remove_bootstrap();                        // remove bootstrap values from subtree
+    void reset_branchlengths();                     // reset branchlengths of subtree to 0.1
+    void scale_branchlengths(double factor);
+    void bootstrap2branchlen();                     // copy bootstraps to branchlengths
+    void branchlen2bootstrap();                     // copy branchlengths to bootstraps
 
-    virtual void test_tree(void) const;
-
-    virtual AP_FLOAT costs(void);       /* cost of a tree (number of changes ..)*/
-
+    // @@@ the following functions should not be here! design error
+    virtual void parsimony_rek(); 
     virtual AP_BOOL     push(AP_STACK_MODE, unsigned long);
     virtual void        pop(unsigned long);
     virtual AP_BOOL     clear(  unsigned long stack_update, unsigned long user_push_counter);
     virtual void        unhash_sequence(void);
+    virtual AP_FLOAT costs(void);                   // cost of a tree (number of changes ..)
 
-    void move_gbt_2_ap(GBT_TREE *tree, bool insert_remove_cb);   // moves all node/leaf information from struct GBT_TREE to AP_tree
-    void load_node_info();  // load linewidth etc
+    virtual void move_gbt_info(GBT_TREE *tree);  
 
-    GB_ERROR load(AP_tree_root *tree_static,
-                  bool link_to_database, bool insert_delete_cbs, bool show_status,
-                  int *zombies, int *duplicates) __ATTR__USERESULT;
-
-    virtual GB_ERROR saveTree() __ATTR__USERESULT; 
-    GB_ERROR relink() __ATTR__USERESULT;
+    GB_ERROR tree_write_tree_rek(GBDATA *gb_tree);
+    GB_ERROR relink() __ATTR__USERESULT; // @@@ move to AP_tree_root
 
     virtual AP_UPDATE_FLAGS check_update();
 
     virtual void update();
 
+private:
+    void buildLeafList_rek(AP_tree **list, long& num);
+    void buildNodeList_rek(AP_tree **list, long& num);
+    void buildBranchList_rek(AP_tree **list, long& num, bool create_terminal_branches, int deep);
 
+public:
     void buildLeafList(AP_tree **&list, long &num); // returns a list of leafs
     void buildNodeList(AP_tree **&list, long &num); // returns a list of nodes (leafs and internal nodes, but not root)
-    void buildBranchList(AP_tree **&list, long &num, AP_BOOL create_terminal_branches, int deep);
+    void buildBranchList(AP_tree **&list, long &num, bool create_terminal_branches, int deep);
 
     AP_tree **getRandomNodes(int nnodes); // returns a list of random nodes (no leafs)
 
-    AP_BOOL is_son(AP_tree *father);
-    AP_tree *brother(void) const;
-    void set_fatherson(AP_tree *new_son);
-    void set_fathernotson(AP_tree *new_son);
+    void replace_self(AP_tree *new_son);
+    void set_brother(AP_tree *new_son);
 
-    virtual void clear_branch_flags(void);
-    void touch_branch(void) { if (!father->father) father->leftson->br.touched =1 ; else this->br.touched=1; };
-    int get_branch_flag(void) { return (!father->father) ? father->leftson->br.touched : this->br.touched; } ;
+    virtual void clear_branch_flags();
 
-    GBT_LEN get_branchlength() const {
-        if (father) {
-            if (father->rightson == this) return father->rightlen;
-            return father->leftlen;
-        }
-        return 0;
+    void touch_branch() {
+        AP_tree *flagBranch    = father->father ? this : AP_TREE_CAST(father->leftson);
+        flagBranch->br.touched = 1;
     }
-    void set_branchlength(GBT_LEN newlen) {
-        if (father) {
-            if (father->rightson == this)
-                father->rightlen = newlen;
-            else
-                father->leftlen  = newlen;
-        }
+    int get_branch_flag() const {
+        const AP_tree *flagBranch = father->father ? this : AP_TREE_CONST_CAST(father->leftson);
+        return flagBranch->br.touched;
     }
 
     GB_ERROR move_group_info(AP_tree *new_group) __ATTR__USERESULT;
-    void     mark_duplicates(GBDATA *gb_main);
-    void     mark_long_branches(GBDATA *gb_main, double min_rel_diff, double min_abs_diff);
-    void     mark_deep_branches(GBDATA *gb_main,int rel_depth);
-    void     mark_degenerated_branches(GBDATA *gb_main,double degeneration_factor);
-    void     justify_branch_lenghs(GBDATA *gb_main);
-    void     relink_tree(GBDATA *gb_main, void (*relinker)(GBDATA *&ref_gb_node, char *&ref_name, GB_HASH *organism_hash), GB_HASH *organism_hash);
+
+    void mark_duplicates(GBDATA *gb_main);
+    void mark_long_branches(GBDATA *gb_main, double min_rel_diff, double min_abs_diff);
+    void mark_deep_branches(GBDATA *gb_main,int rel_depth);
+    void mark_degenerated_branches(GBDATA *gb_main,double degeneration_factor);
+
+    void justify_branch_lenghs(GBDATA *gb_main);
+    void relink_tree(GBDATA *gb_main, void (*relinker)(GBDATA *&ref_gb_node, char *&ref_name, GB_HASH *organism_hash), GB_HASH *organism_hash);
+
+    void reset_spread();
+    void reset_rotation();
+    void reset_line_width();
 };
 
 #else

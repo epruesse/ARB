@@ -23,7 +23,7 @@ public:
     char        *sequence;                          // AP_BASES
     static char *table;
 
-    AP_sequence_parsimony(ARB_Tree_root *rooti);
+    AP_sequence_parsimony(ARB_tree_root *rooti);
     ~AP_sequence_parsimony(void);
 
     AP_sequence *dup(void);                         // used to get the real new element

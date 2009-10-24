@@ -801,10 +801,11 @@ void NT_mark_degenerated_branches(AW_window *aww, AW_CL ntwcl) {
     if (val) {
         AWT_canvas     *ntw = (AWT_canvas *)ntwcl;
         GB_transaction  dummy(ntw->gb_main);
-        
+
         NT_mark_all_cb(aww,(AW_CL)ntw, (AW_CL)0);
-        AWT_TREE(ntw)->tree_root->mark_degenerated_branches(ntw->gb_main,atof(val));
-        AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
+        AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
+        tree_root->mark_degenerated_branches(ntw->gb_main,atof(val));
+        tree_root->compute_tree(ntw->gb_main);
         free(val);
         ntw->refresh();
     }
@@ -817,8 +818,9 @@ void NT_mark_deep_branches(AW_window *aww, AW_CL ntwcl) {
         GB_transaction  dummy(ntw->gb_main);
         
         NT_mark_all_cb(aww,(AW_CL)ntw, (AW_CL)0);
-        AWT_TREE(ntw)->tree_root->mark_deep_branches(ntw->gb_main,atoi(val));
-        AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
+        AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
+        tree_root->mark_deep_branches(ntw->gb_main,atoi(val));
+        tree_root->compute_tree(ntw->gb_main);
         free(val);
         ntw->refresh();
     }
@@ -839,8 +841,9 @@ void NT_mark_long_branches(AW_window *aww, AW_CL ntwcl){
             GB_transaction  dummy(ntw->gb_main);
 
             NT_mark_all_cb(aww,(AW_CL)ntw, (AW_CL)0);
-            AWT_TREE(ntw)->tree_root->mark_long_branches(ntw->gb_main, min_rel_diff, min_abs_diff);
-            AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
+            AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
+            tree_root->mark_long_branches(ntw->gb_main, min_rel_diff, min_abs_diff);
+            tree_root->compute_tree(ntw->gb_main);
             ntw->refresh();
         }
         if (error) aw_message(error);
@@ -852,17 +855,20 @@ void NT_mark_duplicates(AW_window *aww, AW_CL ntwcl){
     AWT_canvas *ntw = (AWT_canvas *)ntwcl;
     GB_transaction dummy(ntw->gb_main);
     NT_mark_all_cb(aww,(AW_CL)ntw, (AW_CL)0);
-    AWT_TREE(ntw)->tree_root->mark_duplicates(ntw->gb_main);
-    AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
+    AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
+    tree_root->mark_duplicates(ntw->gb_main);
+    tree_root->compute_tree(ntw->gb_main);
     ntw->refresh();
 }
 
 void NT_justify_branch_lenghs(AW_window *, AW_CL cl_ntw, AW_CL){
-    AWT_canvas *ntw = (AWT_canvas *)cl_ntw;
-    GB_transaction dummy(ntw->gb_main);
-    if (AWT_TREE(ntw)->tree_root){
-        AWT_TREE(ntw)->tree_root->justify_branch_lenghs(ntw->gb_main);
-        AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
+    AWT_canvas     *ntw       = (AWT_canvas *)cl_ntw;
+    GB_transaction  dummy(ntw->gb_main);
+    AP_tree        *tree_root = AWT_TREE(ntw)->get_root_node();
+    
+    if (tree_root){
+        tree_root->justify_branch_lenghs(ntw->gb_main);
+        tree_root->compute_tree(ntw->gb_main);
         GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
         if (error) aw_message(error);
         ntw->refresh();
@@ -893,12 +899,14 @@ static void relink_pseudo_species_to_organisms(GBDATA *&ref_gb_node, char *&ref_
 }
 
 void NT_pseudo_species_to_organism(AW_window *, AW_CL ntwcl){
-    AWT_canvas     *ntw = (AWT_canvas *)ntwcl;
+    AWT_canvas     *ntw       = (AWT_canvas *)ntwcl;
     GB_transaction  dummy(ntw->gb_main);
-    if (AWT_TREE(ntw)->tree_root){
+    AP_tree        *tree_root = AWT_TREE(ntw)->get_root_node();
+
+    if (tree_root){
         GB_HASH *organism_hash = GBT_create_organism_hash(ntw->gb_main);
-        AWT_TREE(ntw)->tree_root->relink_tree(ntw->gb_main, relink_pseudo_species_to_organisms, organism_hash);
-        AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
+        tree_root->relink_tree(ntw->gb_main, relink_pseudo_species_to_organisms, organism_hash);
+        tree_root->compute_tree(ntw->gb_main);
         GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
         if (error) aw_message(error);
         ntw->refresh();
@@ -1046,7 +1054,7 @@ void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main) {
 
 GBT_TREE *nt_get_current_tree_root() {
     if (GLOBAL_NT.tree) {
-        AP_tree *root = GLOBAL_NT.tree->tree_root;
+        AP_tree *root = GLOBAL_NT.tree->get_root_node();
         if (root) {
             return (GBT_TREE*)root;
         }
@@ -1277,8 +1285,8 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
             awm->insert_sub_menu("Edit Sequences","E");
             {
-                AWMIMT("new_arb_edit4",  "Using marked species and tree", "m", "arb_edit4.hlp", AWM_ALL, (AW_CB)NT_start_editor_on_tree, 0, 0);
-                AWMIMT("new2_arb_edit4", "... plus relatives",            "r", "arb_edit4.hlp", AWM_ALL, (AW_CB)NT_start_editor_on_tree, -1, 0);
+                AWMIMT("new_arb_edit4",  "Using marked species and tree", "m", "arb_edit4.hlp", AWM_ALL, NT_start_editor_on_tree, 0, 0);
+                AWMIMT("new2_arb_edit4", "... plus relatives",            "r", "arb_edit4.hlp", AWM_ALL, NT_start_editor_on_tree, -1, 0);
                 AWMIMT("old_arb_edit4",  "Using earlier configuration",   "c", "arb_edit4.hlp", AWM_ALL, AW_POPUP,                       (AW_CL)NT_start_editor_on_old_configuration, 0);
             }
             awm->close_sub_menu();

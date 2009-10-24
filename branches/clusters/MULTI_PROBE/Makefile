@@ -121,7 +121,6 @@ MP_noclass.o: SoTl.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-MP_noclass.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -141,6 +140,7 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/awt.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/client.h
+MP_noclass.o: $(ARBHOME)/INCLUDE/downcast.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/servercntrl.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/TreeCallbacks.hxx
@@ -244,7 +244,6 @@ MP_sondentopf.o: SoTl.hxx
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-MP_sondentopf.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -258,6 +257,7 @@ MP_sondentopf.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/client.h
+MP_sondentopf.o: $(ARBHOME)/INCLUDE/downcast.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/servercntrl.h
 

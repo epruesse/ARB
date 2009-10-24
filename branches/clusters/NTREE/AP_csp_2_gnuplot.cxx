@@ -234,11 +234,13 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
         char *filterstring     = aww->get_root()->awar(AP_AWAR_FILTER_FILTER)->read_string();
         char *alignment_name   = aww->get_root()->awar(AP_AWAR_FILTER_ALIGNMENT)->read_string();
         long  alignment_length = GBT_get_alignment_len(GLOBAL_gb_main,alignment_name);
-        error                  = filter.init(filterstring,"0",alignment_length);
+
+        filter.init(filterstring, "0", alignment_length);
+        
         free(alignment_name);
         free(filterstring);
 
-        if (!error) error = csp->go(&filter);
+        error = csp->go(&filter);
 
         if (!error && !csp->seq_len) error = "Please select column statistic";
     }

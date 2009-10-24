@@ -42,9 +42,8 @@ AP_tree_nlen::AP_tree_nlen(AP_tree_root *Tree_root)
     //    cout << "AP_tree_nlen-constructor\n";
 }
 
-AP_tree *AP_tree_nlen::dup(void)
-{
-    return (AP_tree *) new AP_tree_nlen(this->tree_root);
+AP_tree_nlen *AP_tree_nlen::dup() const {
+    return new AP_tree_nlen(get_tree_root());
 }
 
 AP_UPDATE_FLAGS AP_tree_nlen::check_update(void)
@@ -221,8 +220,8 @@ void AP_tree_nlen::insert(AP_tree *new_brother) {
     ap_main->push_node(new_brother, STRUCTURE);
 
     if (new_brother->father) {
-        ap_main->push_node(new_brother->father, BOTH);
-        for (pntr = new_brother->father->father; pntr; pntr = pntr->father) {
+        ap_main->push_node(new_brother->get_father(), BOTH);
+        for (pntr = new_brother->get_father()->get_father(); pntr; pntr = pntr->get_father()) {
             ap_main->push_node(pntr, SEQUENCE);
         }
 
@@ -285,16 +284,16 @@ void AP_tree_nlen::remove(void) {
     ap_assert(father);
 
     ap_main->push_node(this, STRUCTURE);
-    ap_main->push_node(brother(), STRUCTURE);
+    ap_main->push_node(get_brother(), STRUCTURE);
 
-    for (pntr = father->father; pntr; pntr = pntr->father) {
+    for (pntr = get_father()->get_father(); pntr; pntr = pntr->get_father()) {
         ap_main->push_node(pntr, SEQUENCE);
     }
 
     if (father->father) {
         AP_tree_nlen *grandPa = Father()->Father();
 
-        ap_main->push_node(father, BOTH);
+        ap_main->push_node(get_father(), BOTH);
         ap_main->push_node(grandPa, STRUCTURE);
 
         edgeTo(Father())->unlink();
@@ -322,13 +321,11 @@ void AP_tree_nlen::remove(void) {
         
         ap_main->push_node(lson,STRUCTURE);
         ap_main->push_node(rson,STRUCTURE);
-        ap_main->push_node(father, ROOT);
+        ap_main->push_node(get_father(), ROOT);
 
-        ap_main->set_tree_root(oldBrother);
+        // get_tree_root()->change_root(get_father(), oldBrother);
 
-        //  delete edgeTo(oldBrother);
         oldBrother->edgeTo(lson)->unlink();
-        //  delete oldBrother->edgeTo(lson);
         oldEdge = oldBrother->edgeTo(rson)->unlink();
         AP_tree::remove();
         oldEdge->relink(lson,rson);
@@ -355,7 +352,7 @@ void AP_tree_nlen::swap_assymetric(AP_TREE_SIDE mode) {
 
             ap_main->push_node(this, BOTH);
             ap_main->push_node(movedSon,STRUCTURE);
-            ap_main->push_node(father, SEQUENCE);
+            ap_main->push_node(get_father(), SEQUENCE);
             ap_main->push_node(nephew, STRUCTURE);
             ap_main->push_node(oldBrother, BOTH);
 
@@ -370,13 +367,13 @@ void AP_tree_nlen::swap_assymetric(AP_TREE_SIDE mode) {
     }
     else {
         ap_main->push_node(this, BOTH);
-        ap_main->push_node(father, BOTH);
+        ap_main->push_node(get_father(), BOTH);
         ap_main->push_node(oldBrother, STRUCTURE);
         ap_main->push_node(movedSon,STRUCTURE);
 
         // from father to root buffer all sequences
 
-        for (AP_tree *pntr = father->father; pntr ; pntr = pntr->father) {
+        for (AP_tree *pntr = get_father()->get_father(); pntr ; pntr = pntr->get_father()) {
             ap_main->push_node(pntr, SEQUENCE);
         }
 
@@ -404,7 +401,7 @@ void AP_tree_nlen::set_root() {
     AP_tree *old_root;
     {
         AP_tree *pntr;
-        for (pntr = father; pntr->father; pntr = pntr->father) {
+        for (pntr = get_father(); pntr->father; pntr = pntr->get_father()) {
             ap_main->push_node(pntr, BOTH);
             old_brother = pntr;
         }
@@ -412,7 +409,7 @@ void AP_tree_nlen::set_root() {
     }
 
     if (old_brother) {
-        old_brother = old_brother->brother();
+        old_brother = old_brother->get_brother();
         ap_main->push_node(old_brother , STRUCTURE);
     }
 
@@ -444,44 +441,44 @@ void AP_tree_nlen::moveTo(AP_tree *new_brother,AP_FLOAT rel_pos) {
     AP_tree *pntr;
 
     ap_main->push_node(this , STRUCTURE);
-    ap_main->push_node(brother(), STRUCTURE);
+    ap_main->push_node(get_brother(), STRUCTURE);
 
     if (father->father) {
-        AP_tree *grandpa = father->father;
+        AP_tree *grandpa = get_father()->get_father();
 
-        ap_main->push_node(father , BOTH);
+        ap_main->push_node(get_father(), BOTH);
 
         if (grandpa->father) {
             ap_main->push_node(grandpa, BOTH);
-            for  (pntr = grandpa->father; pntr; pntr = pntr->father) {
+            for  (pntr = grandpa->get_father(); pntr; pntr = pntr->get_father()) {
                 ap_main->push_node( pntr, SEQUENCE);
             }
         }
         else { // grandson of root
             ap_main->push_node(grandpa, ROOT);
-            ap_main->push_node(father->brother(), STRUCTURE);
+            ap_main->push_node(get_father()->get_brother(), STRUCTURE);
         }
     }
     else { // son of root
-        ap_main->push_node(father , ROOT);
+        ap_main->push_node(get_father(), ROOT);
 
-        if (!brother()->is_leaf) {
-            ap_main->push_node(brother()->leftson, STRUCTURE);
-            ap_main->push_node(brother()->rightson, STRUCTURE);
+        if (!get_brother()->is_leaf) {
+            ap_main->push_node(get_brother()->get_leftson(), STRUCTURE);
+            ap_main->push_node(get_brother()->get_rightson(), STRUCTURE);
         }
     }
 
     ap_main->push_node(new_brother , STRUCTURE);
     if (new_brother->father) {
         if (new_brother->father->father) {
-            ap_main->push_node(new_brother->father , BOTH);
+            ap_main->push_node(new_brother->get_father(), BOTH);
         }
         else { // move to son of root
-            ap_main->push_node(new_brother->father , BOTH);
-            ap_main->push_node(new_brother->brother(), STRUCTURE);
+            ap_main->push_node(new_brother->get_father(), BOTH);
+            ap_main->push_node(new_brother->get_brother(), STRUCTURE);
         }
 
-        for  (pntr = new_brother->father->father; pntr; pntr = pntr->father) {
+        for (pntr = new_brother->get_father()->get_father(); pntr; pntr = pntr->get_father()) {
             ap_main->push_node( pntr, SEQUENCE);
         }
     }
@@ -614,16 +611,6 @@ void AP_tree_nlen::moveTo(AP_tree *new_brother,AP_FLOAT rel_pos) {
     }
 }
 
-/*-----------------------
-  costs
-  -----------------------*/
-
-AP_FLOAT AP_tree_nlen::costs(void) { /* cost of a tree (number of changes ..) */
-    if (! this->tree_root->sequence_template) return 0.0;
-    this->parsimony_rek();
-    return (AP_FLOAT)this->mutation_rate;
-}
-
 /*******************************************
 
 Section Buffer Operations:
@@ -652,8 +639,6 @@ AP_BOOL AP_tree_nlen::clear(unsigned long datum, unsigned long user_buffer_count
     // returns AP_TRUE if the first element is removed
     // AP_FALSE if it is copied into the previous level
     // according if user_buffer is greater than datum
-
-    //    cout << "clear\n";
 
     AP_tree_buffer * buff;
     AP_BOOL         result;
@@ -715,12 +700,12 @@ AP_BOOL AP_tree_nlen::push(AP_STACK_MODE mode, unsigned long datum) {
     }
 
     if ( (mode & STRUCTURE) && !(new_buff->mode & STRUCTURE) ) {
-        //  cout << "push structure " << *this << '\n';
-        new_buff->father   = father;
-        new_buff->leftson  = leftson;
-        new_buff->rightson = rightson;
+        new_buff->father   = get_father();
+        new_buff->leftson  = get_leftson();
+        new_buff->rightson = get_rightson();
         new_buff->leftlen  = leftlen;
         new_buff->rightlen = rightlen;
+        new_buff->root     = get_tree_root();
         new_buff->gb_node  = gb_node;
         new_buff->distance = distance;
 
@@ -763,13 +748,12 @@ void AP_tree_nlen::pop(unsigned long datum) { /* pop old tree costs */
     AP_STACK_MODE   mode = buff->mode;
 
     if (mode&STRUCTURE) {
-        //  cout << "pop structure " << this << '\n';
-
         father   = buff->father;
         leftson  = buff->leftson;
         rightson = buff->rightson;
         leftlen  = buff->leftlen;
         rightlen = buff->rightlen;
+        set_tree_root(buff->root);
         gb_node  = buff->gb_node;
         distance = buff->distance;
 
@@ -794,8 +778,7 @@ void AP_tree_nlen::pop(unsigned long datum) { /* pop old tree costs */
     }
 
     if (ROOT==mode) {
-        //  cout << "root popped:" << this << "\n";
-        ap_main->set_tree_root(this);
+        buff->root->change_root(buff->root->get_root_node(), this);
     }
 
     stack_level = buff->controll;
@@ -806,7 +789,7 @@ void AP_tree_nlen::pop(unsigned long datum) { /* pop old tree costs */
 Section Parsimony:
 ********************************************************/
 
-void AP_tree_nlen::parsimony_rek(void)
+void AP_tree_nlen::parsimony_rek()
 {
     if (sequence && sequence->is_set_flag) return;
 
@@ -823,18 +806,24 @@ void AP_tree_nlen::parsimony_rek(void)
         return;
     }
 
-    if (sequence == 0) sequence = tree_root->sequence_template->dup();
+    if (sequence == 0) sequence = get_tree_root()->sequence_template->dup();
 
     AP_FLOAT mutations_for_combine = sequence->combine(Leftson()->sequence, Rightson()->sequence);
     mutation_rate                  = Leftson()->mutation_rate + Rightson()->mutation_rate + mutations_for_combine;
 
 #if defined(DEBUG) && 0
     printf("mutation-rates: left=%f right=%f combine=%f overall=%f %s\n",
-           Leftson()->mutation_rate, rightson->mutation_rate, mutations_for_combine, mutation_rate,
+           Leftson()->mutation_rate, Rightson()->mutation_rate, mutations_for_combine, mutation_rate,
            fullname());
 #endif // DEBUG
 
     sequence->is_set_flag = AP_TRUE;
+}
+
+AP_FLOAT AP_tree_nlen::costs(void) { /* cost of a tree (number of changes ..) */
+    if (! this->get_tree_root()->sequence_template) return 0.0;
+    this->parsimony_rek();
+    return (AP_FLOAT)this->mutation_rate;
 }
 
 /********************************************************
@@ -908,7 +897,7 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
     //Referenzzeiger auf die vier Kanten und
     // zwei swapmoeglichkeiten initialisieren
     //
-    AP_tree *this_brother = this->brother();
+    AP_tree *this_brother = this->get_brother();
     if (rek_deep == 0) {
         for (i = 0; i < 8; i+=2) {
             pars_side_ref[i] = AP_LEFT;
@@ -928,7 +917,7 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
             pars_refpntr[6] = pars_refpntr[7] = static_cast<AP_tree_nlen *>(this_brother);
         } else {
             //an der Wurzel nehme linken und rechten Sohns des Bruders
-            if (this->brother()->is_leaf == GB_FALSE) {
+            if (this->get_brother()->is_leaf == GB_FALSE) {
                 pars_refpntr[4] = pars_refpntr[5] = static_cast<AP_tree_nlen *>(this_brother->leftson);
                 pars_refpntr[6] = pars_refpntr[7] = static_cast<AP_tree_nlen *>(this_brother->rightson);
             } else {
@@ -949,7 +938,7 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
 
     ap_main->push();
     this->set_root();
-    (*ap_main->tree_root)->costs();
+    rootNode()->costs();
 
     int             visited_subtrees = 0;
     int     better_subtrees = 0;
@@ -961,12 +950,12 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
         if (pars_refpntr[i]->is_leaf) continue;
         if (!pars_refpntr[i]->kernighan == AP_NONE) continue;
         if (pars_refpntr[i]->gr.hidden) continue;
-        if (pars_refpntr[i]->father->gr.hidden) continue;
+        if (pars_refpntr[i]->get_father()->gr.hidden) continue;
 
         //nur wenn kein Blatt ist
         ap_main->push();
         pars_refpntr[i]->swap_assymetric(pars_side_ref[i]);
-        pars[i] = (*ap_main->tree_root)->costs();
+        pars[i] = rootNode()->costs();
         if (pars[i] < pars_best) {
             better_subtrees++;
             pars_best      = pars[i];
@@ -1047,7 +1036,7 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
         //Markieren
         pars_refpntr[pars_ref[i]]->swap_assymetric(pars_side_ref[pars_ref[i]]);
         //vertausche seite
-        (*ap_main->tree_root)->parsimony_rek();
+        rootNode()->parsimony_rek();
         switch (rek_width_type) {
             case AP_BETTER:{
                 //starte kerninghan_rek mit rekursionstiefe 3, statisch
@@ -1297,7 +1286,7 @@ int AP_tree_nlen::test(void) const
         }
     }
 
-    test_tree();    // AP_tree::
+    ASSERT_VALID_TREE(this);
 
     return 0;
 }

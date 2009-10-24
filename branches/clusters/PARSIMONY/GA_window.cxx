@@ -14,7 +14,7 @@
 #include <awt.hxx>
 // #include <malloc.h>
 #include "AP_buffer.hxx"
-#include "parsimony.hxx"
+#include "ap_main.hxx"
 #include "ap_tree_nlen.hxx"
 #include "GA_genetic.hxx"
 #include "phwin.hxx"

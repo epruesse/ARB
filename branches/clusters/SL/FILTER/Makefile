@@ -44,3 +44,4 @@ AP_filter.o: $(ARBHOME)/INCLUDE/arbdb.h
 AP_filter.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AP_filter.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AP_filter.o: $(ARBHOME)/INCLUDE/attributes.h
+AP_filter.o: $(ARBHOME)/INCLUDE/inline.h

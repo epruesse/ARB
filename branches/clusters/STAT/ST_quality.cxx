@@ -9,6 +9,7 @@
 #include <arbdbt.h>
 #include <aw_awars.hxx>
 #include <BI_helix.hxx>
+#include <AP_filter.hxx>
 
 #include <aw_root.hxx>
 #include <awt_csp.hxx>
@@ -193,7 +194,8 @@ void st_ml_add_quality_string_to_species(GBDATA * gb_main,
 GB_ERROR st_ml_check_sequence_quality(GBDATA * gb_main, const char *tree_name,
         const char *alignment_name, AWT_csp * awt_csp, int bucket_size,
         int marked_only, st_report_enum report, const char *filter_string,
-        const char *dest_field) {
+        const char *dest_field)
+{
     AP_filter filter;
     int seq_len = GBT_get_alignment_len(gb_main, alignment_name);
     filter.init(filter_string, "0 ", seq_len);
@@ -205,7 +207,7 @@ GB_ERROR st_ml_check_sequence_quality(GBDATA * gb_main, const char *tree_name,
     }
 
     GB_HASH *species_to_info_hash = GBS_create_hash(GBT_get_species_count(gb_main), GB_IGNORE_CASE);
-    GB_CSTR *snames = GBT_get_species_names_of_tree((GBT_TREE *) st_ml.tree_root->tree);
+    GB_CSTR *snames = GBT_get_species_names_of_tree(st_ml.tree_root->get_root_node()->get_gbt_tree());
 
     int pos;
     aw_openstatus("Sequence Quality Check");

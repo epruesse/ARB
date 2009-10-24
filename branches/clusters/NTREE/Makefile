@@ -369,7 +369,6 @@ NT_extern.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 NT_extern.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_extern.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_extern.o: $(ARBHOME)/INCLUDE/adGene.h
-NT_extern.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -403,6 +402,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_www.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awtc_submission.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awti_export.hxx
+NT_extern.o: $(ARBHOME)/INCLUDE/downcast.h
 NT_extern.o: $(ARBHOME)/INCLUDE/EXP.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/gde.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/GEN.hxx
@@ -541,7 +541,6 @@ NT_tree_cmp.o: nt_tree_cmp.hxx
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-NT_tree_cmp.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -553,6 +552,7 @@ NT_tree_cmp.o: $(ARBHOME)/INCLUDE/arbtools.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+NT_tree_cmp.o: $(ARBHOME)/INCLUDE/downcast.h
 
 NT_validManual.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 NT_validManual.o: $(ARBHOME)/INCLUDE/ad_prot.h

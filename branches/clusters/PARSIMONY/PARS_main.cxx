@@ -8,7 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
-#include "parsimony.hxx"
+#include "ap_main.hxx"
 #include "pars_main.hxx"
 #include "pars_dtree.hxx"
 #include "pars_klprops.hxx"
@@ -43,7 +43,17 @@ NT_global *GLOBAL_NT;
 AP_main *ap_main;
 AWT_csp *awt_csp = 0;
 
-static void pars_export_tree(void){
+static void pars_saveNrefresh_changed_tree(AWT_canvas *ntw) {
+    ap_assert((AWT_TREE(ntw) == GLOBAL_NT->tree));
+
+    GB_ERROR error = GLOBAL_NT->tree->save(ntw->gb_main,0,0,0);
+    if (error) aw_message(error);
+    
+    ntw->zoom_reset();
+    ntw->refresh();
+}
+
+static void pars_export_tree(){
     // GB_ERROR error = GLOBAL_NT->tree->tree_root->AP_tree::saveTree();
     GB_ERROR error = GLOBAL_NT->tree->save(0, 0, 0, 0);
     if (error) aw_message(error);
@@ -81,12 +91,11 @@ void AP_user_pop_cb(AW_window *aww,AWT_canvas *ntw)
         return;
     }
     ap_main->user_pop();
-    (*ap_main->tree_root)->compute_tree(GLOBAL_gb_main);
-    ntw->zoom_reset();
-    ntw->refresh();
-    (*ap_main->tree_root)->test_tree();
+    rootNode()->compute_tree(GLOBAL_gb_main);
+    ASSERT_VALID_TREE(rootNode());
     aww->get_root()->awar(AWAR_STACKPOINTER)->write_int(ap_main->user_push_counter);
-    pars_export_tree();
+
+    pars_saveNrefresh_changed_tree(ntw);
 
     if (ap_main->user_push_counter <= 0) { // last tree was popped => push again
         AP_user_push_cb(aww, ntw);
@@ -116,8 +125,8 @@ static long insert_species_in_tree_test(const char *key,long val, void *cd_isits
     InsertData *isits = (InsertData*)cd_isits;
     if (isits->abort_flag) return val;
 
-    AP_tree *tree = (*ap_main->tree_root);
-    GBDATA *gb_node = (GBDATA *)val;
+    AP_tree *tree    = rootNode();
+    GBDATA  *gb_node = (GBDATA *)val;
 
     GB_begin_transaction(GLOBAL_gb_main);
 
@@ -136,7 +145,7 @@ static long insert_species_in_tree_test(const char *key,long val, void *cd_isits
     leaf->name = strdup(key);
     leaf->is_leaf = GB_TRUE;
 
-    leaf->sequence = leaf->tree_root->sequence_template->dup();
+    leaf->sequence = leaf->get_tree_root()->sequence_template->dup();
     leaf->sequence->set(GB_read_char_pntr(gb_data));
     GB_commit_transaction (GLOBAL_gb_main);
 
@@ -201,11 +210,11 @@ static long insert_species_in_tree_test(const char *key,long val, void *cd_isits
     tree->buildBranchList(blist,bsum,AP_TRUE,-1);   // get all branches
     AP_sequence::global_combineCount = 0;
 
-    AP_tree *bestposl = tree->leftson;
-    AP_tree *bestposr = tree->rightson;
+    AP_tree *bestposl = tree->get_leftson();
+    AP_tree *bestposr = tree->get_rightson();
     leaf->insert(bestposl);
     AP_FLOAT best_parsimony,akt_parsimony;
-    best_parsimony = akt_parsimony = (*ap_main->tree_root)->costs();
+    best_parsimony = akt_parsimony = rootNode()->costs();
 
     for (counter = 0; !isits->abort_flag && blist[counter]; counter += 2)
     {
@@ -231,7 +240,7 @@ static long insert_species_in_tree_test(const char *key,long val, void *cd_isits
         }
 
         leaf->moveTo(bl,0.5);
-        akt_parsimony = (*ap_main->tree_root)->costs();
+        akt_parsimony = rootNode()->costs();
 
         if (akt_parsimony<best_parsimony)
         {
@@ -321,7 +330,7 @@ static int sort_sequences_by_length(const char*, long leaf0_ptr, const char*, lo
 static long transform_gbd_to_leaf(const char *key,long val, void *) {
     if (!val) return val;
 
-    AP_tree *tree    = (*ap_main->tree_root);
+    AP_tree *tree    = rootNode();
     GBDATA  *gb_node = (GBDATA *)val;
     GBDATA  *gb_data = GBT_read_sequence(gb_node,ap_main->use);
     
@@ -335,7 +344,7 @@ static long transform_gbd_to_leaf(const char *key,long val, void *) {
     leaf->gb_node = gb_node;
     leaf->name = strdup(key);
     leaf->is_leaf = GB_TRUE;
-    leaf->sequence = leaf->tree_root->sequence_template->dup();
+    leaf->sequence = leaf->get_tree_root()->sequence_template->dup();
     leaf->sequence->set(GB_read_char_pntr(gb_data));
     return (long)leaf;
 }
@@ -347,8 +356,7 @@ static AP_tree *insert_species_in_tree(const char *key, AP_tree *leaf, void *cd_
     InsertData *isits = (InsertData*)cd_isits;
     if (isits->abort_flag) return leaf;
 
-    AP_tree *tree = (*ap_main->tree_root);
-
+    AP_tree *tree = rootNode();
 
     if (leaf->sequence->real_len() < MIN_SEQUENCE_LENGTH) {
         sprintf(AW_ERROR_BUFFER,"Species %s has too short sequence (%i, minimum is %i)",
@@ -374,11 +382,11 @@ static AP_tree *insert_species_in_tree(const char *key, AP_tree *leaf, void *cd_
     tree->buildBranchList(blist,bsum,AP_TRUE,-1);       // get all branches
     AP_sequence::global_combineCount = 0;
 
-    AP_tree *bestposl = tree->leftson;
-    AP_tree *bestposr = tree->rightson;
+    AP_tree *bestposl = tree->get_leftson();
+    AP_tree *bestposr = tree->get_rightson();
     leaf->insert(bestposl);
     AP_FLOAT best_parsimony,akt_parsimony;
-    best_parsimony = akt_parsimony = (*ap_main->tree_root)->costs();
+    best_parsimony = akt_parsimony = rootNode()->costs();
 
     for (counter = 0;!isits->abort_flag && blist[counter];counter += 2) {
         if (isits->singlestatus && (counter & 0xf) == 0) {
@@ -396,7 +404,7 @@ static AP_tree *insert_species_in_tree(const char *key, AP_tree *leaf, void *cd_
         }
 
         leaf->moveTo(bl,0.5);
-        akt_parsimony = (*ap_main->tree_root)->costs();
+        akt_parsimony = rootNode()->costs();
         if (akt_parsimony < best_parsimony) {
             best_parsimony = akt_parsimony;
             bestposl = bl;
@@ -417,7 +425,7 @@ static AP_tree *insert_species_in_tree(const char *key, AP_tree *leaf, void *cd_
         ((AP_tree_nlen *)bestposl->father)->
             nn_interchange_rek(AP_FALSE, isits->abort_flag, deep, AP_BL_NNI_ONLY, GB_TRUE);
     }
-    AP_tree *brother = leaf->brother();
+    AP_tree *brother = leaf->get_brother();
     if (    brother->is_leaf &&     // brother is a short sequence
             brother->sequence->real_len() *2  < leaf->sequence->real_len() &&
             leaf->father->father){      // There are more than two species
@@ -455,10 +463,10 @@ static long count_hash_elements(const char *,long val, void *cd_isits) {
 static void nt_add(AW_window *, AWT_canvas *ntw, int what, AP_BOOL quick, int test)
 {
     GB_begin_transaction(GLOBAL_gb_main);
-    GB_HASH *hash = 0;
-    GB_ERROR error = 0;
-    AP_tree *oldrootleft = (*ap_main->tree_root)->leftson;
-    AP_tree *oldrootright = (*ap_main->tree_root)->rightson;
+    GB_HASH  *hash         = 0;
+    GB_ERROR  error        = 0;
+    AP_tree  *oldrootleft  = rootNode()->get_leftson();
+    AP_tree  *oldrootright = rootNode()->get_rightson();
     aw_openstatus("Search selected species");
 
     if (what)
@@ -487,7 +495,7 @@ static void nt_add(AW_window *, AWT_canvas *ntw, int what, AP_BOOL quick, int te
     GB_commit_transaction(GLOBAL_gb_main);
 
     if (!error) {
-        NT_remove_species_in_tree_from_hash(*ap_main->tree_root,hash);
+        NT_remove_species_in_tree_from_hash(rootNode(), hash);
 
         InsertData isits(quick);
 
@@ -513,7 +521,7 @@ static void nt_add(AW_window *, AWT_canvas *ntw, int what, AP_BOOL quick, int te
         aw_status("Calculating Branch lengths");
         rootEdge()->nni_rek(AP_FALSE,isits.abort_flag,-1, GB_FALSE ,AP_BL_BL_ONLY);
 
-        rootNode()->test_tree();
+        ASSERT_VALID_TREE(rootNode());
         rootNode()->compute_tree(GLOBAL_gb_main);
 
         if (oldrootleft->father == oldrootright) oldrootleft->set_root();
@@ -526,8 +534,7 @@ static void nt_add(AW_window *, AWT_canvas *ntw, int what, AP_BOOL quick, int te
     if (error) aw_message(error);
 
     AWT_TREE(ntw)->resort_tree(0);
-    ntw->zoom_reset();
-    if (!error) pars_export_tree();
+    pars_saveNrefresh_changed_tree(ntw);
 }
 
 // -----------------------------------------
@@ -654,8 +661,8 @@ static GB_ERROR nt_best_partial_match_rek(list<PartialSequence>& partial, AP_tre
             }
         }
         else {
-            error             = nt_best_partial_match_rek(partial, tree->leftson);
-            if (!error) error = nt_best_partial_match_rek(partial, tree->rightson);
+            error             = nt_best_partial_match_rek(partial, tree->get_leftson());
+            if (!error) error = nt_best_partial_match_rek(partial, tree->get_rightson());
         }
     }
     return error;
@@ -673,8 +680,8 @@ static void count_partial_and_full(AP_tree *at, int *partial, int *full, int *zo
         }
     }
     else {
-        count_partial_and_full(at->leftson,  partial, full, zombies, default_value, define_if_undef);
-        count_partial_and_full(at->rightson, partial, full, zombies, default_value, define_if_undef);
+        count_partial_and_full(at->get_leftson(),  partial, full, zombies, default_value, define_if_undef);
+        count_partial_and_full(at->get_rightson(), partial, full, zombies, default_value, define_if_undef);
     }
 }
 
@@ -691,8 +698,8 @@ static AP_tree *find_least_deep_leaf(AP_tree *at, int depth, int *min_depth) {
         return 0;
     }
 
-    AP_tree *left  = find_least_deep_leaf(at->leftson, depth+1, min_depth);
-    AP_tree *right = find_least_deep_leaf(at->rightson, depth+1, min_depth);
+    AP_tree *left  = find_least_deep_leaf(at->get_leftson(), depth+1, min_depth);
+    AP_tree *right = find_least_deep_leaf(at->get_rightson(), depth+1, min_depth);
 
     return right ? right : left;
 }
@@ -753,7 +760,7 @@ static void nt_add_partial(AW_window */*aww*/, AWT_canvas *ntw) {
             if (!error && !marked_found) error = "There are no marked species";
 
             if (!error) {
-                NT_remove_species_in_tree_from_hash(*ap_main->tree_root,partial_hash); // skip all species which are in tree
+                NT_remove_species_in_tree_from_hash(rootNode(), partial_hash); // skip all species which are in tree
                 GBS_hash_do_loop(partial_hash, push_partial, &partial); // build partial list from hash
 
                 int partials_already_in_tree = partial_marked_sequences - partial.size();
@@ -768,7 +775,7 @@ static void nt_add_partial(AW_window */*aww*/, AWT_canvas *ntw) {
 
         if (!error) {
             // find best matching full sequence for each partial sequence
-            error = nt_best_partial_match_rek(partial, *ap_main->tree_root);
+            error = nt_best_partial_match_rek(partial, rootNode());
 
             list<PartialSequence>::iterator i = partial.begin();
             list<PartialSequence>::iterator e = partial.end();
@@ -790,7 +797,7 @@ static void nt_add_partial(AW_window */*aww*/, AWT_canvas *ntw) {
 
                 AP_tree *part_leaf  = i->release();
                 AP_tree *full_seq   = const_cast<AP_tree*>(i->get_best_match());
-                AP_tree *brother    = full_seq->brother();
+                AP_tree *brother    = full_seq->get_brother();
                 int      is_partial = 0;
                 AP_tree *target     = 0;
 
@@ -840,7 +847,7 @@ static void nt_add_partial(AW_window */*aww*/, AWT_canvas *ntw) {
                     part_leaf->insert(target);
                     
                     // we need to create the sequence of the father node!
-                    AP_tree *father = part_leaf->father;
+                    AP_tree *father = part_leaf->get_father();
                     father->costs();
 
                     // ensure full-sequence is always on top
@@ -886,9 +893,8 @@ static void nt_add_partial(AW_window */*aww*/, AWT_canvas *ntw) {
         GB_commit_transaction(GLOBAL_gb_main);
     }
 
-//     AWT_TREE(ntw)->resort_tree(0);
-    ntw->zoom_reset();
-    if (!error) pars_export_tree();
+    //     AWT_TREE(ntw)->resort_tree(0);
+    pars_saveNrefresh_changed_tree(ntw);
 }
 
 // -----------------------------
@@ -991,9 +997,7 @@ static void NT_branch_lengths(AW_window *, AWT_canvas *ntw) {
     aw_closestatus();
     AWT_TREE(ntw)->resort_tree(0);
 
-    ntw->zoom_reset();
-    ntw->refresh();
-    pars_export_tree();
+    pars_saveNrefresh_changed_tree(ntw);
 }
 
 static void NT_bootstrap(AW_window *aw,AWT_canvas *ntw,AW_CL limit_only)
@@ -1007,18 +1011,16 @@ static void NT_bootstrap(AW_window *aw,AWT_canvas *ntw,AW_CL limit_only)
 
     AWT_TREE(ntw)->resort_tree(0);
 
-    AWT_TREE(ntw)->tree_root_display = AWT_TREE(ntw)->tree_root;
-    ntw->zoom_reset();
-    ntw->refresh();
-    pars_export_tree();
+    AWT_TREE(ntw)->tree_root_display = AWT_TREE(ntw)->get_root_node();
+    pars_saveNrefresh_changed_tree(ntw);
 }
 
 static void NT_optimize(AW_window *, AWT_canvas *ntw)
 {
     aw_openstatus("Optimize Tree");
 
-    PARS_optimizer_cb((*ap_main->tree_root));
-    rootNode()->test_tree();
+    PARS_optimizer_cb(rootNode());
+    ASSERT_VALID_TREE(rootNode());
 
     aw_openstatus("Calculating Branch Lengths");
     int abort_flag = AP_FALSE;
@@ -1026,9 +1028,7 @@ static void NT_optimize(AW_window *, AWT_canvas *ntw)
     AWT_TREE(ntw)->resort_tree(0);
     rootNode()->compute_tree(GLOBAL_gb_main);
     aw_closestatus();
-    ntw->zoom_reset();
-    ntw->refresh();
-    pars_export_tree();
+    pars_saveNrefresh_changed_tree(ntw);
 }
 
 static void NT_recursiveNNI(AW_window *,AWT_canvas *ntw)
@@ -1053,9 +1053,7 @@ static void NT_recursiveNNI(AW_window *,AWT_canvas *ntw)
     AWT_TREE(ntw)->resort_tree(0);
     rootNode()->compute_tree(GLOBAL_gb_main);
     aw_closestatus();
-    ntw->zoom_reset();
-    ntw->refresh();
-    pars_export_tree();
+    pars_saveNrefresh_changed_tree(ntw);
 }
 
 static AW_window *NT_create_tree_setting(AW_root *aw_root)
@@ -1172,7 +1170,7 @@ static void testTree(AP_tree_nlen *tree,int *nodeCount, int *edgeCount)
 static void TEST_testWholeTree(AW_window *, AWT_canvas *)
 // Tests the whole tree structure (edges and nodes) for consistency
 {
-    AP_tree_nlen *root  = (AP_tree_nlen*)*ap_main->tree_root;
+    AP_tree_nlen *root  = rootNode();
     int           nodes = 0;
     int           edges = 0;
 
@@ -1195,7 +1193,7 @@ static void TEST_testWholeTree(AW_window *, AWT_canvas *)
         }
     }
 
-    root->test_tree();
+    ASSERT_VALID_TREE(root);
     testTree(root, &nodes, &edges);
 
     cout << "Nodes tested: " << nodes << '\n'
@@ -1203,34 +1201,6 @@ static void TEST_testWholeTree(AW_window *, AWT_canvas *)
 }
 #endif // TEST_FUNCTIONS
 
-static int dumpNodes(AP_tree_nlen *node)
-{
-    int cnt = 1;
-
-    cout << *node
-         << "(llen=" << node->leftlen
-         << ",rlen=" << node->rightlen << ")\n";
-
-    if (!node->is_leaf)
-    {
-        cnt += dumpNodes(node->Leftson());
-        cnt += dumpNodes(node->Rightson());
-    }
-
-    return cnt;
-}
-
-#if defined(TEST_FUNCTIONS)
-static void TEST_dumpNodes(AW_window *, AWT_canvas *)
-{
-    AP_tree_nlen *root = (AP_tree_nlen*)*ap_main->tree_root;
-    int cnt;
-
-    cout << "----- Dumping all nodes in tree\n";
-    cnt = dumpNodes(root);
-    cout << "----- " << cnt << "nodes dumped!\n";
-}
-#endif // TEST_FUNCTIONS
 
 static void setBranchlens(AP_tree_nlen *node,double newLen)
 {
@@ -1245,7 +1215,7 @@ static void setBranchlens(AP_tree_nlen *node,double newLen)
 #if defined(TEST_FUNCTIONS)
 static void TEST_setBranchlen(AW_window *, AWT_canvas *ntw)
 {
-    AP_tree_nlen *root = (AP_tree_nlen*)*ap_main->tree_root;
+    AP_tree_nlen *root = rootNode();
 
     setBranchlens(root,1.0);
     refreshTree(ntw);
@@ -1273,7 +1243,7 @@ static void TEST_performRandomMoves(AW_window *aww,AWT_canvas *ntw)
     AP_tree_nlen *source = getRandomSonOf(root,1,0);
     AP_tree_nlen *dest = getRandomSonOf(root,1,0);
 
-    if (source!=dest && !dest->is_son(source))
+    if (source!=dest && !dest->is_inside(source))
     {
         root->setBranchlen(1.0,1.0);
         source->setBranchlen(1.0,1.0);
@@ -1307,6 +1277,28 @@ static void TEST_performRandomMoves(AW_window *aww,AWT_canvas *ntw)
 */
 
 #if defined(TEST_FUNCTIONS)
+
+
+static void TEST_treeStats(AW_window *, AWT_canvas *) {
+    ARB_tree_info tinfo;
+    AP_tree_nlen *root = rootNode();
+
+    {
+        GB_transaction ta(root->get_tree_root()->get_gb_main());
+        root->calcTreeInfo(tinfo);
+    }
+
+    puts("Tree stats:");
+    
+    printf("nodes      =%6zu\n", tinfo.nodes());
+    printf(" inner     =%6zu\n", tinfo.innerNodes);
+    printf("  groups   =%6zu\n", tinfo.groups);
+    printf(" leafs     =%6zu\n", tinfo.leafs);
+    printf("  unlinked =%6zu (zombies?)\n", tinfo.unlinked);
+    printf("  linked   =%6zu\n", tinfo.linked());
+    printf("   marked  =%6zu\n", tinfo.marked);
+}
+
 static void TEST_mixTree(AW_window *, AWT_canvas *ntw)
 {
     rootEdge()->mixTree(100);
@@ -1315,7 +1307,7 @@ static void TEST_mixTree(AW_window *, AWT_canvas *ntw)
 
 static void TEST_sortTreeByName(AW_window *, AWT_canvas *ntw)
 {
-    AP_tree_nlen *root = (AP_tree_nlen*)*ap_main->tree_root;
+    AP_tree_nlen *root = rootNode();
 
     root->sortByName();
     refreshTree(ntw);
@@ -1323,7 +1315,7 @@ static void TEST_sortTreeByName(AW_window *, AWT_canvas *ntw)
 
 static void TEST_buildAndDumpChain(AW_window *, AWT_canvas *)
 {
-    AP_tree_nlen *root = (AP_tree_nlen*)*ap_main->tree_root;
+    AP_tree_nlen *root = rootNode();
 
     root->Leftson()->edgeTo(root->Rightson())->testChain(2);
     root->Leftson()->edgeTo(root->Rightson())->testChain(3);
@@ -1344,9 +1336,9 @@ static void init_TEST_menu(AW_window_menu_modes *awm,AWT_canvas *ntw)
 
     awm->insert_menu_topic(0, "Test edges",         "T", "", AWM_ALL, (AW_CB)TEST_testWholeTree,     (AW_CL)ntw, 0);
     awm->insert_menu_topic(0, "Mix tree",           "M", "", AWM_ALL, (AW_CB)TEST_mixTree,           (AW_CL)ntw, 0);
-    awm->insert_menu_topic(0, "Dump nodes",         "D", "", AWM_ALL, (AW_CB)TEST_dumpNodes,         (AW_CL)ntw, 0);
+    awm->insert_menu_topic(0, "Tree statistics",    "s", "", AWM_ALL, (AW_CB)TEST_treeStats,         (AW_CL)ntw, 0);
     awm->insert_menu_topic(0, "Set branchlens",     "b", "", AWM_ALL, (AW_CB)TEST_setBranchlen,      (AW_CL)ntw, 0);
-    awm->insert_menu_topic(0, "Sort tree by name",  "S", "", AWM_ALL, (AW_CB)TEST_sortTreeByName,    (AW_CL)ntw, 0);
+    awm->insert_menu_topic(0, "Sort tree by name",  "o", "", AWM_ALL, (AW_CB)TEST_sortTreeByName,    (AW_CL)ntw, 0);
     awm->insert_menu_topic(0, "Build & dump chain", "c", "", AWM_ALL, (AW_CB)TEST_buildAndDumpChain, (AW_CL)ntw, 0);
     awm->insert_separator();
     awm->insert_menu_topic(0, "Add marked species",          "A", "pa_quick.hlp", AWM_ALL, (AW_CB)NT_quick_add_test,  (AW_CL)ntw, 0);
@@ -1434,22 +1426,22 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_adfiltercbstruct) {
     {
         aw_openstatus("load tree");
         NT_reload_tree_event(awr,ntw,GB_TRUE);          // load first tree and set delete callbacks
-        if (!GLOBAL_NT->tree->tree_root) {
+        if (!GLOBAL_NT->tree->get_root_node()) {
             aw_closestatus();
             aw_popup_exit("I cannot load the selected tree");
         }
 
-        AP_tree_edge::initialize((AP_tree_nlen*)*ap_main->tree_root);   // builds edges
-        GLOBAL_NT->tree->tree_root->remove_leafs(ntw->gb_main, AWT_REMOVE_DELETED);
+        AP_tree_edge::initialize(rootNode());   // builds edges
+        GLOBAL_NT->tree->tree_static->remove_leafs(AWT_REMOVE_DELETED);
 
         adfiltercbstruct *acbs = (adfiltercbstruct*)cd_adfiltercbstruct;
         NT_tree_init(GLOBAL_NT->tree, acbs);
             
-        GLOBAL_NT->tree->tree_root->remove_leafs(ntw->gb_main, AWT_REMOVE_DELETED | AWT_REMOVE_NO_SEQUENCE);
+        GLOBAL_NT->tree->tree_static->remove_leafs(AWT_REMOVE_DELETED | AWT_REMOVE_NO_SEQUENCE);
 
         GB_commit_transaction(ntw->gb_main);
         aw_status("Calculating inner nodes");
-        GLOBAL_NT->tree->tree_root->costs();
+        GLOBAL_NT->tree->get_root_node()->costs();
 
         aw_closestatus();
     }

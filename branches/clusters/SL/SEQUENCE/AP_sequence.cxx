@@ -17,7 +17,7 @@ long AP_sequence::global_combineCount;
 AP_sequence::~AP_sequence(void) { ; }
 AP_FLOAT AP_sequence::real_len(void) { return 0.0; }
 
-AP_sequence::AP_sequence(ARB_Tree_root *rooti){
+AP_sequence::AP_sequence(ARB_tree_root *rooti){
     cashed_real_len = -1.0;
     is_set_flag = AP_FALSE;
     sequence_len = 0;

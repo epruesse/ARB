@@ -20,55 +20,96 @@
 typedef unsigned char uchar;
 
 enum AWT_FILTER_SIMPLIFY {
-    AWT_FILTER_SIMPLIFY_NONE,
+    AWT_FILTER_SIMPLIFY_NOT_INITIALIZED = -1, 
+    AWT_FILTER_SIMPLIFY_NONE            = 0,
     AWT_FILTER_SIMPLIFY_DNA,
-    AWT_FILTER_SIMPLIFY_PROTEIN
+    AWT_FILTER_SIMPLIFY_PROTEIN,
 };
 
-
-
 class AP_filter {
-public:
-    char  *filter_mask;                             // 0 1
-    long   filter_len;
-    long   real_len;                                // how many 1
-    long   update;
-    uchar  simplify[256];
-    int   *filterpos_2_seqpos;
-    int   *bootstrap;                               // if set then sizeof(bootstrap) == real_len; bootstrap[i] points to random original positions [0..filter_len]
+    bool   *filter_mask;                            // true means "use position"
+    size_t  filter_len;                             // length of 'filter_mask'
+    size_t  real_len;                               // how many 'true's are in 'filter_mask'
+    long    update;                                 // timestamp
 
-    GB_ERROR init(const char *filter,const char *zerobases, long size);
-    GB_ERROR init(long size);
-    void    calc_filter_2_seq();
-    void    enable_bootstrap();
-    void    enable_simplify(AWT_FILTER_SIMPLIFY type);
-    char    *to_string();   // convert to 0/1 string
-    AP_filter(void);
-    ~AP_filter(void);
+    uchar               simplify[256];              // base -> simplified base
+    AWT_FILTER_SIMPLIFY simplify_type;
+
+    // if not NULL, then sizeof(bootstrap) == real_len
+    // bootstrap[i] points to random original positions [0..filter_len[
+    size_t *bootstrap;
+
+    size_t *filterpos_2_seqpos;                     // filterpos -> sequencepos
+
+    void calc_filterpos_2_seqpos();
+    void resize(size_t newLen);
+
+public:
+    AP_filter();
+    AP_filter(const AP_filter& other);
+    ~AP_filter();
+
+    void init(const char *filter,const char *zerobases, size_t size);
+    void init(size_t size);
+
+    long get_timestamp() const { return update; }
+    size_t get_filtered_length() const { return real_len; }
+    size_t get_length() const { return filter_len; }
+
+    bool use_position(size_t pos) const {           // returns true if filter is set for position 'pos'
+        af_assert(pos<filter_len);
+        return filter_mask[pos];
+    }
+
+    const size_t *get_filterpos_2_seqpos() const { 
+        if (!filterpos_2_seqpos) {
+            // this is no modification, it's lazy initialization:
+            const_cast<AP_filter*>(this)->calc_filterpos_2_seqpos();
+        }
+        return filterpos_2_seqpos;
+    }
+
+    void enable_simplify(AWT_FILTER_SIMPLIFY type); // default is AWT_FILTER_SIMPLIFY_NONE
+    const uchar *get_simplify_table() const {
+        if (simplify_type == AWT_FILTER_SIMPLIFY_NOT_INITIALIZED) {
+            // this is no modification, it's lazy initialization: 
+            const_cast<AP_filter*>(this)->enable_simplify(AWT_FILTER_SIMPLIFY_NONE);
+        }
+        return simplify;
+    }
+
+    void enable_bootstrap();
+    const size_t *get_bootstrap() const { return bootstrap; }
+
+    char *to_string() const;                              // convert to 0/1 string
 };
 
 
 
 class AP_weights {
-protected:
-    friend class AP_sequence;
-    friend class AP_sequence_parsimony;
-    friend class AP_sequence_protein;
-    friend class AP_sequence_protein_old;
-
     GB_UINT4 *weights;
+    size_t    weight_len;
+    size_t    alloc_len;
+
+    long update;
+
+    void resize(size_t newLen);
 
 public:
-    
-    long       weight_len;
-    AP_filter *filter;
-    long       update;
-    bool       dummy_weights;   // if true all weights are == 1
 
-    AP_weights(void);
-    char *init(const AP_filter *fil); // init weights
-    char *init(GB_UINT4 *w, const AP_filter *fil);
-    ~AP_weights(void);
+    AP_weights();
+    AP_weights(const AP_weights& other);
+    ~AP_weights();
+
+    void init(const AP_filter *fil);                // init weights
+    void init(GB_UINT4 *w, size_t wlen, const AP_filter *fil);
+
+    GB_UINT4 weight(size_t idx) const {
+        af_assert(idx<weight_len);
+        return weights[idx];
+    }
+
+    size_t length() const { return weight_len; }
 };
 
 long AP_timer(void);

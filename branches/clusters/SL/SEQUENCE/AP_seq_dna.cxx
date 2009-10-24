@@ -1,6 +1,8 @@
 #include "AP_seq_dna.hxx"
+#include "AP_parsimony_defaults.hxx"
 
 #include <AP_pro_a_nucs.hxx>
+#include <AP_filter.hxx>
 #include <ARB_Tree.hxx>
 
 
@@ -11,7 +13,7 @@ char *AP_sequence_parsimony::table;
 
 ******************************/
 
-AP_sequence_parsimony::AP_sequence_parsimony(ARB_Tree_root *rooti) : AP_sequence(rooti)
+AP_sequence_parsimony::AP_sequence_parsimony(ARB_tree_root *rooti) : AP_sequence(rooti)
 {
     sequence = 0;
 }
@@ -34,38 +36,40 @@ void AP_sequence_parsimony::build_table(void)
 
 
 
-/************************************************************************
-combine(const AP_sequence *lefts, const AP_sequence *rights)
-set(char *isequence)
-
-for wagner & fitch parsimony algorithm
-is_set_flag is used by AP_tree_nlen::parsimony_rek()
-*************************************************************************/
+/* --------------------------------------------------------------------------------
+ * combine(const AP_sequence *lefts, const AP_sequence *rights)
+ * set(char *isequence)
+ *
+ * for wagner & fitch parsimony algorithm
+ *
+ * Note: is_set_flag is used by AP_tree_nlen::parsimony_rek()
+ *       see ../../PARSIMONY/AP_tree_nlen.cxx@parsimony_rek
+*/
 
 // #define SHOW_SEQ
 
 void AP_sequence_parsimony::set(const char *isequence)
 {
     //      char *s,*d,*f1,c;
-    sequence_len = root->get_filter()->real_len;
+    sequence_len = root->get_filter()->get_filtered_length();
     sequence     = new char[sequence_len+1];
     memset(sequence,AP_N,(size_t)sequence_len+1);
     //     s            = isequence;
     //     d            = sequence;
     //     f1           = root->filter->filter_mask;
 
-    const uchar *simplify = root->get_filter()->simplify;
+    const uchar *simplify = root->get_filter()->get_simplify_table();
     if (!table) this->build_table();
 
-    if (root->get_filter()->bootstrap) {
-        int iseqlen = strlen(isequence);
+    const size_t *bootstrap = root->get_filter()->get_bootstrap();
+    if (bootstrap) {
+        size_t iseqlen = strlen(isequence);
 
         for (int i = 0; i<sequence_len; ++i) {
-            int pos = root->get_filter()->bootstrap[i]; // contains random indices
+            size_t pos = bootstrap[i]; // contains random indices
 
 //             printf("i=%i pos=%i sequence_len=%li iseqlen=%i\n", i, pos, sequence_len, iseqlen);
 
-            ap_assert(pos >= 0);
             ap_assert(pos<iseqlen);
             if (pos >= iseqlen) continue;
 
@@ -89,13 +93,13 @@ void AP_sequence_parsimony::set(const char *isequence)
 
     }
     else {
-        char *filt       = root->get_filter()->filter_mask;
-        int   left_bases = sequence_len;
-        int   filter_len = root->get_filter()->filter_len;
-        int   oidx       = 0; // for output sequence
+        const AP_filter *filt       = root->get_filter();
+        int              left_bases = sequence_len;
+        int              filter_len = filt->get_length();
+        int              oidx       = 0;            // for output sequence
 
         for (int idx = 0; idx<filter_len && left_bases; ++idx) {
-            if (filt[idx]) {
+            if (filt->use_position(idx)) {
                 unsigned char c = (unsigned char)isequence[idx];
                 sequence[oidx++] = table[simplify[c]];
                 --left_bases;
@@ -123,6 +127,10 @@ void AP_sequence_parsimony::set(const char *isequence)
     cashed_real_len = -1.0;
 }
 
+#if !defined(AP_PARSIMONY_DEFAULTS_HXX)
+#error AP_parsimony_defaults.hxx not included
+#endif // AP_PARSIMONY_DEFAULTS_HXX
+
 AP_FLOAT AP_sequence_parsimony::combine( const AP_sequence *lefts, const AP_sequence *rights) {
     //   char *p1,*p2,*p;
     //   char c1,c2;
@@ -132,7 +140,7 @@ AP_FLOAT AP_sequence_parsimony::combine( const AP_sequence *lefts, const AP_sequ
     const AP_sequence_parsimony *right = (const AP_sequence_parsimony *)rights;
 
     if (sequence == 0)  {
-        sequence_len = root->get_filter()->real_len;
+        sequence_len = root->get_filter()->get_filtered_length();
         sequence = new char[sequence_len +1];
     }
 
@@ -143,21 +151,9 @@ AP_FLOAT AP_sequence_parsimony::combine( const AP_sequence *lefts, const AP_sequ
     //  result         = 0;
     //  char *end_seq1 = p1 + sequence_len;
 
-    GB_UINT4 *w        = 0;
-    char     *mutpsite = 0;
-
-    if (mutation_per_site) { // count site specific mutations in mutation_per_site
-        w        = root->get_weights()->weights;
-        mutpsite = mutation_per_site;
-    }
-    else if (root->get_weights()->dummy_weights) { // no weights, no mutation_per_site
-        ;
-    }
-    else { // weighted (but don't count mutation_per_site)
-        w = root->get_weights()->weights;
-    }
-
-    long result = 0;
+    char             *mutpsite = mutation_per_site;
+    long              result   = 0;
+    const AP_weights *weights  = root->get_weights();
 
     for (long idx = 0; idx<sequence_len; ++idx) {
         char c1 = p1[idx];
@@ -187,8 +183,8 @@ AP_FLOAT AP_sequence_parsimony::combine( const AP_sequence *lefts, const AP_sequ
 
             // now count mutation :
 
-            if (mutpsite) mutpsite[idx]++; // count mutations per site (unweighted)
-            result += w ? w[idx] : 1; // count weighted or simple
+            if (mutpsite) mutpsite[idx]++;          // count mutations per site (unweighted)
+            result += weights->weight(idx);         // count weighted or simple
         }
         else {
             p[idx] = c1&c2; // store common bases for both subtrees
@@ -246,10 +242,9 @@ void AP_sequence_parsimony::partial_match(const AP_sequence* part_, long *overla
     const char *pf = sequence;
     const char *pp = part->sequence;
 
-    GB_UINT4 *w                          = 0;
-    if (!root->get_weights()->dummy_weights) w = root->get_weights()->weights;
+    const AP_weights *weights = root->get_weights();
 
-    long min_end; // minimum of both last non-gap positions
+    long min_end;                                   // minimum of both last non-gap positions
 
     for (min_end = sequence_len-1; min_end >= 0; --min_end) {
         char both = pf[min_end]|pp[min_end];
@@ -295,7 +290,7 @@ void AP_sequence_parsimony::partial_match(const AP_sequence* part_, long *overla
         if (max_start <= min_end) { // if sequences overlap
             for (long idx = max_start; idx <= min_end; ++idx) {
                 if ((pf[idx]&pp[idx]) == 0) { // bases are distinct (aka mismatch)
-                    penalty += w ? w[idx] : 1;
+                    penalty += weights->weight(idx);
                 }
             }
             overlap = min_end-max_start+1;
@@ -310,26 +305,32 @@ void AP_sequence_parsimony::partial_match(const AP_sequence* part_, long *overla
 
 AP_FLOAT AP_sequence_parsimony::real_len(void)  // count all bases
 {
-    if (!sequence) return -1.0;
-    if (cashed_real_len>=0.0) return cashed_real_len;
-    char hits[256];
-    long i;
-    long sum = 0;
-    unsigned char *p = (unsigned char*)sequence;
-    for (i=0;i<256;i++){    // count ambiguous characters half
-        hits[i] = 1;
+    if (!sequence) {
+        cashed_real_len = -1.0;
     }
-    hits[AP_A] = 2;     // real characters full
-    hits[AP_C] = 2;
-    hits[AP_G] = 2;
-    hits[AP_T] = 2;
-    hits[AP_S] = 0;     // count no gaps
-    hits[AP_N] = 0;     // no Ns
-    GB_UINT4 *w = root->get_weights()->weights;
+    else if (cashed_real_len<0.0) {
+        char hits[256];
+        long i;
 
-    for ( i = sequence_len; i ;i-- ) {  // all but no gaps
-        sum += hits[*(p++)] * *(w++);
+        for (i=0;i<256;i++) {                           // count ambiguous characters half
+            hits[i] = 1;
+        }
+        hits[AP_A] = 2;                                 // real characters full
+        hits[AP_C] = 2;
+        hits[AP_G] = 2;
+        hits[AP_T] = 2;
+        hits[AP_S] = 0;                                 // count no gaps
+        hits[AP_N] = 0;                                 // no Ns
+
+        const AP_weights *weights = root->get_weights();
+        unsigned char    *p       = (unsigned char*)sequence;
+    
+        long sum = 0;
+        for (i = 0; i<sequence_len; ++i) {
+            sum += hits[p[i]] * weights->weight(i);
+        }
+
+        cashed_real_len = sum * 0.5;
     }
-    cashed_real_len = sum * .5;
-    return sum * .5;
+    return cashed_real_len;
 }

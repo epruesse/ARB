@@ -27,9 +27,21 @@
 #ifndef AP_BUFFER_HXX
 #include "AP_buffer.hxx"
 #endif
-#ifndef PARSIMONY_HXX
-#include "parsimony.hxx"
+#ifndef AP_MAIN_HXX
+#include <ap_main.hxx>
 #endif
+
+// ---------------------------------------------
+//      downcasts for AP_tree_nlen
+
+#ifndef DOWNCAST_H
+#include <downcast.h>
+#endif
+
+#define AP_TREE_NLEN_CAST(arb_tree)       DOWNCAST(AP_tree_nlen*, arb_tree)
+#define AP_TREE_NLEN_CONST_CAST(arb_tree) DOWNCAST(const AP_tree_nlen*, arb_tree)
+
+
 
 class AP_tree_nlen;
 
@@ -63,7 +75,7 @@ typedef enum {
 class AP_tree_edge;
 
 class AP_tree_nlen : public AP_tree {           /* tree that is independent of branch lengths and root */
-    AP_tree *dup(void);
+    AP_tree_nlen *dup() const;
 
     AP_BOOL clear(unsigned long stack_update,unsigned long user_push_counter);
     void    unhash_sequence(void);
@@ -82,10 +94,10 @@ class AP_tree_nlen : public AP_tree {           /* tree that is independent of b
 protected:
 
 public:
-    AP_FLOAT costs(void);       /* cost of a tree (number of changes ..)*/
+    AP_FLOAT costs();           /* cost of a tree (number of changes ..)*/
     AP_BOOL  push(AP_STACK_MODE, unsigned long); /* push state of costs */
     void     pop(unsigned long); /* pop old tree costs */
-    
+
     virtual AP_UPDATE_FLAGS check_update(); // disable  load !!!!
 
 
@@ -143,10 +155,14 @@ public:
 
     // casted access to neighbours:
 
-    AP_tree_nlen *Father() const { return (AP_tree_nlen*)father; }
-    AP_tree_nlen *Brother() const { return (AP_tree_nlen*)brother(); }
-    AP_tree_nlen *Leftson() const { return (AP_tree_nlen*)leftson; }
-    AP_tree_nlen *Rightson() const { return (AP_tree_nlen*)rightson; }
+    AP_tree_nlen *Father()   { return AP_TREE_NLEN_CAST(get_father()); }
+    AP_tree_nlen *Brother()  { return AP_TREE_NLEN_CAST(get_brother()); }
+    AP_tree_nlen *Leftson()  { return AP_TREE_NLEN_CAST(get_leftson()); }
+    AP_tree_nlen *Rightson() { return AP_TREE_NLEN_CAST(get_rightson()); }
+    const AP_tree_nlen *Father() const { return AP_TREE_NLEN_CONST_CAST(get_father()); }
+    const AP_tree_nlen *Brother() const { return AP_TREE_NLEN_CONST_CAST(get_brother()); }
+    const AP_tree_nlen *Leftson() const { return AP_TREE_NLEN_CONST_CAST(get_leftson()); }
+    const AP_tree_nlen *Rightson() const { return AP_TREE_NLEN_CONST_CAST(get_rightson()); }
 
     // AP_tree_edge access functions:
 
@@ -278,7 +294,7 @@ std::ostream& operator<<(std::ostream&, const AP_tree_edge&);
 /******** two easy-access-functions for the root *********/
 
 inline AP_tree_nlen *rootNode() {
-    return ((AP_tree_nlen*)*ap_main->tree_root);
+    return ap_main->get_root_node();
 }
 
 inline AP_tree_edge *rootEdge() {

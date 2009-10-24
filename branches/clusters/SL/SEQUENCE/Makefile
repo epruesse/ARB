@@ -40,6 +40,7 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
+AP_seq_dna.o: AP_parsimony_defaults.hxx
 AP_seq_dna.o: AP_seq_dna.hxx
 AP_seq_dna.o: AP_sequence.hxx
 AP_seq_dna.o: $(ARBHOME)/INCLUDE/ad_k_prot.h

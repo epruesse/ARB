@@ -188,7 +188,6 @@ AWT_db_browser.o: awt.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-AWT_db_browser.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -204,6 +203,7 @@ AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/downcast.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/inline.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/smartptr.h
 

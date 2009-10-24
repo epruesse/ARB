@@ -111,7 +111,7 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset, int type){
             if (node->gb_node && GB_read_flag(node->gb_node)){
                 NT_scalebox(gc,x, irs_gl.y, NT_BOX_WIDTH);
             }
-            str = make_node_text_nds(gb_main,node->gb_node,0,node->get_gbt_tree(), tree_name);
+            str = make_node_text_nds(gb_main,node->gb_node,0,node->get_gbt_tree(), tree_static->get_tree_name());
             irs_gl.device->text(gc,str, x, y,0.0,-1, (AW_CL)node,0);
         }
         return irs_gl.y;
@@ -123,10 +123,10 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset, int type){
     if (node->gb_node){
         if (!irs_gl.is_size_device){
             if (!node->father) { // root node - don't try to get taxonomy
-                node_string = tree_name;
+                node_string = tree_static->get_tree_name();
             }
             else {
-                node_string = make_node_text_nds(gb_main,node->gb_node,0,node->get_gbt_tree(), tree_name);
+                node_string = make_node_text_nds(gb_main,node->gb_node,0,node->get_gbt_tree(), tree_static->get_tree_name());
             }
         }else{
             node_string = "0123456789";
@@ -202,10 +202,10 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset, int type){
     int y_center;
 
     left_x = (int)(x_offset + 0.9 + irs_gl.x_scale * node->leftlen);
-    left_y = paint_irs_sub_tree(node->leftson, left_x, type);
+    left_y = paint_irs_sub_tree(node->get_leftson(), left_x, type);
 
     right_x = int(x_offset + 0.9 + irs_gl.x_scale * node->rightlen);
-    right_y = paint_irs_sub_tree(node->rightson, right_x, type);
+    right_y = paint_irs_sub_tree(node->get_rightson(), right_x, type);
 
 
     /* *********************** draw structure ************************ */
@@ -215,7 +215,7 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset, int type){
             if (node->leftson->remark_branch ) {
                 AWT_show_remark_branch(disp_device, node->leftson->remark_branch, node->leftson->is_leaf, left_x, left_y, 1, text_filter, (AW_CL)node->leftson, 0);
             }
-            irs_gl.device->line(node->leftson->gr.gc,x_offset,left_y,  left_x,   left_y, -1, (AW_CL)node->leftson,0); //  ***
+            irs_gl.device->line(node->get_leftson()->gr.gc,x_offset,left_y,  left_x,   left_y, -1, (AW_CL)node->leftson,0); //  ***
         }
     }else{
         left_y = irs_gl.min_y;
@@ -228,11 +228,11 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset, int type){
         if (node->rightson->remark_branch ) {
             AWT_show_remark_branch(disp_device, node->rightson->remark_branch, node->rightson->is_leaf, right_x, right_y, 1, text_filter, (AW_CL)node->rightson, 0);
         }
-        irs_gl.device->line(node->rightson->gr.gc,x_offset,right_y,  right_x,   right_y, -1, (AW_CL)node->rightson,0);
+        irs_gl.device->line(node->get_rightson()->gr.gc,x_offset,right_y,  right_x,   right_y, -1, (AW_CL)node->rightson,0);
     }
 
-    irs_gl.device->line(node->leftson->gr.gc, x_offset,y_center,x_offset, left_y,  -1, (AW_CL)node,0);
-    irs_gl.device->line(node->rightson->gr.gc,x_offset,y_center,x_offset, right_y, -1, (AW_CL)node,0);
+    irs_gl.device->line(node->get_leftson()->gr.gc, x_offset,y_center,x_offset, left_y,  -1, (AW_CL)node,0);
+    irs_gl.device->line(node->get_rightson()->gr.gc,x_offset,y_center,x_offset, right_y, -1, (AW_CL)node,0);
     irs_gl.ruler_y = y_center;
 
     if (node_string != 0) {             //  A node name should be displayed
@@ -260,7 +260,7 @@ int AWT_graphic_tree::draw_slot(int x_offset, GB_BOOL draw_at_tips){
     if (!draw_at_tips) no_compress = 1;
     for (i=0;i<irs_gl.nodes_ntip;i++){
         AP_tree *tip = irs_gl.nodes_id[i];
-        const char *str = make_node_text_nds(gb_main,tip->gb_node,no_compress,tip->get_gbt_tree(), tree_name);
+        const char *str = make_node_text_nds(gb_main,tip->gb_node,no_compress,tip->get_gbt_tree(), tree_static->get_tree_name());
         int len = irs_gl.device->get_string_size(tip->gr.gc,str,0);
         int x = 0;
         int y = irs_gl.nodes_ypos[i]+ irs_gl.font_height_2;

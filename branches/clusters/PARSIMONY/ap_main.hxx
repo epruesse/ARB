@@ -1,6 +1,6 @@
 // =============================================================== //
 //                                                                 //
-//   File      : parsimony.hxx                                     //
+//   File      : ap_main.hxx                                       //
 //   Purpose   :                                                   //
 //                                                                 //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -8,8 +8,8 @@
 //                                                                 //
 // =============================================================== //
 
-#ifndef PARSIMONY_HXX
-#define PARSIMONY_HXX
+#ifndef AP_MAIN_HXX
+#define AP_MAIN_HXX
 
 #ifndef AP_BUFFER_HXX
 #include "AP_buffer.hxx"
@@ -34,48 +34,51 @@ enum PARS_pars_type {
     PARS_TRANSVERSION
 };
 
-extern class AP_main {
-private:
-    class AP_main_stack *stack;
-    class AP_main_list  list;
-    unsigned long       stack_level;
+class AP_tree_nlen;
+class AWT_graphic_tree;
+class AP_main {
+    AP_main_stack    *stack;
+    AP_main_list      list;
+    unsigned long     stack_level;
+    AWT_graphic_tree *agt;                          // provides access to tree!
 
 public:
     // *************** read only
-    char    *use;
-    unsigned long       user_push_counter;
+    char          *use;
+    unsigned long  user_push_counter;
+
     // ************** real public
     struct {
-        unsigned  int add_marked:1;
-        unsigned  int add_selected:1;
-        unsigned  int calc_branch_lengths:1;
-        unsigned  int calc_bootstrap:1;
-        unsigned  int quit:1;
+        unsigned int add_marked:1;
+        unsigned int add_selected:1;
+        unsigned int calc_branch_lengths:1;
+        unsigned int calc_bootstrap:1;
+        unsigned int quit:1;
     } commands;
 
-    unsigned long       combineCount;
-    AP_main(void);
-    ~AP_main(void);
-    class AP_tree **tree_root;
+    unsigned long combineCount;
+
+    AP_main();
+    ~AP_main();
+
+    void set_tree_root(AWT_graphic_tree *agt_);
+    AP_tree_nlen *get_root_node();
+
     GB_ERROR open(char *db_server);
-    // char *test(char *ratename, char *treename);
-    void set_tree_root(AP_tree *new_root);
 
     AP_BOOL buffer_cout;
 
-    void user_push(void);
-    void user_pop(void);
-    void push(void);
-    void pop(void);
+    void user_push();
+    void user_pop();
+    void push();
+    void pop();
     void push_node(AP_tree * node,AP_STACK_MODE);
-    void clear(void);               // clears all buffers
+    void clear();               // clears all buffers
+};
 
-
-
-} *ap_main;
-
-extern GBDATA *GLOBAL_gb_main;
+extern AP_main *ap_main;
+extern GBDATA  *GLOBAL_gb_main;
 
 #else
-#error parsimony.hxx included twice
-#endif // PARSIMONY_HXX
+#error ap_main.hxx included twice
+#endif // AP_MAIN_HXX

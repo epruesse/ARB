@@ -1,6 +1,8 @@
 #include "AP_seq_protein.hxx"
 #include "AP_parsimony_defaults.hxx"
 #include <AP_pro_a_nucs.hxx>
+
+#include <AP_filter.hxx>
 #include <ARB_Tree.hxx>
 
 #include <inline.h>
@@ -9,9 +11,7 @@
 
 // #define ap_assert(bed) arb_assert(bed)
 
-// start of implementation of class AP_sequence_protein:
-
-AP_sequence_protein::AP_sequence_protein(ARB_Tree_root *tree_root)
+AP_sequence_protein::AP_sequence_protein(ARB_tree_root *tree_root)
     : AP_sequence(tree_root)
 {
     sequence = 0;
@@ -145,29 +145,28 @@ void AP_sequence_protein::set(const char *isequence)
     AWT_translator *translator = AWT_get_user_translator(this->root->get_gb_main());
     update_min_mutations(translator->CodeNr(), translator->getDistanceMeter());
 
-    sequence_len = root->get_filter()->real_len;
+    sequence_len = root->get_filter()->get_filtered_length();
     sequence     = new AP_PROTEINS[sequence_len+1];
 
-    ap_assert(root->get_filter()->bootstrap == 0); // bootstrapping not implemented for protein parsimony
+    ap_assert(root->get_filter()->get_bootstrap() == 0); // bootstrapping not implemented for protein parsimony
 
-    const uchar *simplify   = root->get_filter()->simplify;
-    char        *filt       = root->get_filter()->filter_mask;
-    int          left_bases = sequence_len;
-    long         filter_len = root->get_filter()->filter_len;
+    const AP_filter *filt       = root->get_filter();
+    const uchar     *simplify   = filt->get_simplify_table();
+    int              left_bases = sequence_len;
+    long             filter_len = filt->get_length();
 
     ap_assert(filt);
 
     int oidx = 0;               // index for output sequence
 
     for (int idx = 0; idx<filter_len && left_bases; ++idx) {
-        if (filt[idx]) {
+        if (filt->use_position(idx)) {
             char        c = toupper(simplify[safeCharIndex(isequence[idx])]);
             AP_PROTEINS p = APP_ILLEGAL;
 
 #if defined(SHOW_SEQ)
             fputc(c, stdout);
 #endif // SHOW_SEQ
-
 
             if (c >= 'A' && c <= 'Z')       p = prot2AP_PROTEIN[c-'A'];
             else if (c == '-' || c == '.')  p = APP_GAP;
@@ -212,6 +211,10 @@ void AP_sequence_protein::set(const char *isequence)
 //     }
 
 
+#if !defined(AP_PARSIMONY_DEFAULTS_HXX)
+#error AP_parsimony_defaults.hxx not included
+#endif // AP_PARSIMONY_DEFAULTS_HXX
+
 
 AP_FLOAT AP_sequence_protein::combine(  const AP_sequence * lefts, const    AP_sequence *rights)
 {
@@ -221,31 +224,19 @@ AP_FLOAT AP_sequence_protein::combine(  const AP_sequence * lefts, const    AP_s
     const AP_sequence_protein *right = (const AP_sequence_protein *)rights;
 
     if (!sequence) {
-        sequence_len = root->get_filter()->real_len;
+        sequence_len = root->get_filter()->get_filtered_length();
         sequence = new AP_PROTEINS[sequence_len +1];
     }
 
-    const AP_PROTEINS *p1 = left->sequence;
-    const AP_PROTEINS *p2 = right->sequence;
-    AP_PROTEINS       *p  = sequence;
-
-    GB_UINT4 *w        = 0;
-    char     *mutpsite = 0;
-
-    if (mutation_per_site) { // count site specific mutations in mutation_per_site
-        w        = root->get_weights()->weights;
-        mutpsite = mutation_per_site;
-    }
-    else if (root->get_weights()->dummy_weights) { // no weights, no mutation_per_site
-        ;
-    }
-    else { // weighted (but don't count mutation_per_site)
-        w = root->get_weights()->weights;
-    }
+    const AP_PROTEINS *p1       = left->sequence;
+    const AP_PROTEINS *p2       = right->sequence;
+    AP_PROTEINS       *p        = sequence;
+    const AP_weights  *weights  = root->get_weights();
+    char              *mutpsite = mutation_per_site;
 
     long result = 0;
-    // check if initialized for correct instance of translator: 
-    ap_assert(min_mutations_initialized_for_codenr == AWT_get_user_translator()->CodeNr()); 
+    // check if initialized for correct instance of translator:
+    ap_assert(min_mutations_initialized_for_codenr == AWT_get_user_translator()->CodeNr());
 
     for (long idx = 0; idx<sequence_len; ++idx) {
         AP_PROTEINS c1 = p1[idx];
@@ -296,7 +287,7 @@ AP_FLOAT AP_sequence_protein::combine(  const AP_sequence * lefts, const    AP_s
             ap_assert(mutations >= 0 && mutations <= 3);
 
             if (mutpsite) mutpsite[idx] += mutations; // count mutations per site (unweighted)
-            result                      += mutations * (w ? w[idx] : 1); // count weighted or simple
+            result += mutations * weights->weight(idx); // count weighted or simple
 
         }
         else {
@@ -349,14 +340,12 @@ void AP_sequence_protein::partial_match(const AP_sequence* part_, long *overlapP
     //
     // algorithm is similar to AP_sequence_protein::combine()
 
-    const AP_sequence_protein *part = (const AP_sequence_protein *)part_;
-    const AP_PROTEINS         *pf   = sequence;
-    const AP_PROTEINS         *pp   = part->sequence;
+    const AP_sequence_protein *part    = (const AP_sequence_protein *)part_;
+    const AP_PROTEINS         *pf      = sequence;
+    const AP_PROTEINS         *pp      = part->sequence;
+    const AP_weights          *weights = root->get_weights();
 
-    GB_UINT4 *w = 0;
-    if (!root->get_weights()->dummy_weights) w = root->get_weights()->weights;
-
-    long min_end; // minimum of both last non-gap positions
+    long min_end;                                   // minimum of both last non-gap positions
 
     for (min_end = sequence_len-1; min_end >= 0; --min_end) {
         AP_PROTEINS both = AP_PROTEINS(pf[min_end]|pp[min_end]);
@@ -422,7 +411,7 @@ void AP_sequence_protein::partial_match(const AP_sequence* part_, long *overlapP
                             }
                         }
                     }
-                    penalty += (w ? w[idx] : 1)*mutations;
+                    penalty += weights->weight(idx)*mutations;
                 }
             }
             overlap = (min_end-max_start+1)*3;
@@ -448,7 +437,7 @@ AP_FLOAT AP_sequence_protein::real_len()
     return sum;
 }
 
-// -end- of implementation of class AP_sequence_protein.
+
 
 
 
