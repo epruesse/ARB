@@ -8,22 +8,24 @@
 //                                                                 //
 // =============================================================== //
 
-#include "di_matr.hxx"
-#include "di_view_matrix.hxx"
 #include "di_protdist.hxx"
 #include "dist.hxx"
+#include "di_view_matrix.hxx"
+#include "di_matr.hxx"
+#include "di_awars.hxx"
 
-#include <awt.hxx>
-#include <awt_csp.hxx>
-#include <awt_sel_boxes.hxx>
-#include <awt_macro.hxx>
-#include <aw_global.hxx>
-#include <aw_awars.hxx>
-#include <aw_preset.hxx>
+#include <neighbourjoin.hxx>
 #include <AP_seq_dna.hxx>
+#include <AP_filter.hxx>
 #include <BI_helix.hxx>
 #include <CT_ctree.hxx>
-#include <neighbourjoin.hxx>
+#include <awt_macro.hxx>
+#include <awt.hxx>
+#include <awt_sel_boxes.hxx>
+#include <awt_csp.hxx>
+#include <aw_preset.hxx>
+#include <aw_awars.hxx>
+#include <aw_global.hxx>
 
 #include <climits>
 #include <ctime>
@@ -32,30 +34,15 @@
 
 // --------------------------------------------------------------------------------
 
-#define AWAR_DIST_FILTER_PREFIX      AWAR_DIST_PREFIX "filter/"
-#define AWAR_DIST_COLUMN_STAT_PREFIX AWAR_DIST_PREFIX "col_stat/"
-#define AWAR_DIST_TREE_PREFIX        AWAR_DIST_PREFIX "tree/"
-
-#define AWAR_DIST_MATRIX_DNA_BASE    AWAR_DIST_PREFIX "dna/matrix"
-#define AWAR_DIST_MATRIX_DNA_ENABLED "tmp/" AWAR_DIST_MATRIX_DNA_BASE "/enable"
-
-#define AWAR_DIST_WHICH_SPECIES   AWAR_DIST_PREFIX "which_species"
-#define AWAR_DIST_ALIGNMENT       AWAR_DIST_PREFIX "alignment"
 #define AWAR_DIST_BOOTSTRAP_COUNT AWAR_DIST_PREFIX "bootstrap/count"
 #define AWAR_DIST_CANCEL_CHARS    AWAR_DIST_PREFIX "cancel/chars"
-
-#define AWAR_DIST_FILTER_ALIGNMENT AWAR_DIST_FILTER_PREFIX "alignment"
-#define AWAR_DIST_FILTER_NAME      AWAR_DIST_FILTER_PREFIX "name"
-#define AWAR_DIST_FILTER_FILTER    AWAR_DIST_FILTER_PREFIX "filter"
-#define AWAR_DIST_FILTER_SIMPLIFY  AWAR_DIST_FILTER_PREFIX "simplify"
 
 #define AWAR_DIST_COLUMN_STAT_ALIGNMENT AWAR_DIST_COLUMN_STAT_PREFIX "alignment"
 #define AWAR_DIST_COLUMN_STAT_NAME      AWAR_DIST_COLUMN_STAT_PREFIX "name"
 
-#define AWAR_DIST_TREE_STD_NAME  AWAR_DIST_TREE_PREFIX "tree_name"
-#define AWAR_DIST_TREE_CURR_NAME "tmp/" AWAR_DIST_TREE_PREFIX "curr_tree_name"
 #define AWAR_DIST_TREE_SORT_NAME "tmp/" AWAR_DIST_TREE_PREFIX "sort_tree_name"
 #define AWAR_DIST_TREE_COMP_NAME "tmp/" AWAR_DIST_TREE_PREFIX "compr_tree_name"
+#define AWAR_DIST_TREE_STD_NAME  AWAR_DIST_TREE_PREFIX "tree_name"
 
 #define AWAR_DIST_SAVE_MATRIX_TYPE     AWAR_DIST_SAVE_MATRIX_BASE "/type"
 #define AWAR_DIST_SAVE_MATRIX_FILENAME AWAR_DIST_SAVE_MATRIX_BASE "/file_name"
@@ -162,7 +149,7 @@ void DI_create_matrix_variables(AW_root *aw_root, AW_default def)
 
     aw_root->awar_float(AWAR_DIST_MIN_DIST, 0.0);
     aw_root->awar_float(AWAR_DIST_MAX_DIST, 0.0);
-    
+
     aw_root->awar_string(AWAR_SPECIES_NAME, "", GLOBAL_gb_main);
 
     GB_push_transaction(GLOBAL_gb_main);
@@ -445,16 +432,18 @@ void DI_MATRIX::rate_write(DI_MUT_MATR &hits,FILE *out){
 }
 
 long *DI_MATRIX::create_helix_filter(BI_helix *helix, const AP_filter *filter){
-    long *result = (long *)calloc(sizeof(long),(size_t)filter->real_len);
-    long *temp = (long *)calloc(sizeof(long),(size_t)filter->real_len);
-    int i,count;
-    count = 0;
-    for (i=0;i<filter->filter_len;i++) {
-        if (filter->filter_mask[i]) {
+    long   *result = (long *)calloc(sizeof(long), filter->get_filtered_length());
+    long   *temp   = (long *)calloc(sizeof(long), filter->get_filtered_length());
+    int     count  = 0;
+    size_t  i;
+
+    for (i=0; i<filter->get_length(); i++) {
+        if (filter->use_position(i)) {
             temp[i] = count;
             if (helix->pairtype(i)== HELIX_PAIR) {
                 result[count] = helix->opposite_position(i);
-            }else{
+            }
+            else {
                 result[count] = -1;
             }
             count++;
@@ -476,7 +465,7 @@ GB_ERROR DI_MATRIX::calculate_rates(DI_MUT_MATR &hrates,DI_MUT_MATR &nrates,DI_M
     }
     long   row,col,pos,s_len;
     unsigned char *seq1,*seq2;
-    s_len = tree_root->get_filter()->real_len;
+    s_len = tree_root->get_filter()->get_filtered_length();
     this->clear(hrates);
     this->clear(nrates);
     this->clear(pairs);
@@ -543,7 +532,7 @@ GB_ERROR DI_MATRIX::haeschoe(const char *path)
 
     long   row,col,pos,s_len;
     char *seq1,*seq2;
-    s_len = tree_root->get_filter()->real_len;
+    s_len = tree_root->get_filter()->get_filtered_length();
     fprintf(out,"\nDistance matrix (Helixdist Helixlen Nonhelixdist Nonhelixlen):");
     fprintf(out,"\n%li",nentries);
     const int MAXDISTDEBUG = 1000;
@@ -617,7 +606,7 @@ char *DI_MATRIX::calculate_overall_freqs(double rel_frequencies[AP_MAX], char *c
     char *seq1;
     int   pos;
     int   b;
-    long  s_len = tree_root->get_filter()->real_len;
+    long  s_len = tree_root->get_filter()->get_filtered_length();
 
     memset((char *) &hits2[0], 0, sizeof(hits2));
     for (row = 0; row < nentries; row++) {
@@ -670,7 +659,7 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, DI_T
 
     matrix = new AP_smatrix(nentries);
 
-    long   s_len = tree_root->get_filter()->real_len;
+    long   s_len = tree_root->get_filter()->get_filtered_length();
     long   hits[AP_MAX][AP_MAX];
     int    row;
     int    col;
@@ -882,7 +871,7 @@ GB_ERROR DI_MATRIX::calculate_pro(DI_TRANSFORMATION transformation){
     }
     matrix = new AP_smatrix(nentries);
 
-    di_protdist prodist(whichcode, whichcat, nentries,entries, tree_root->get_filter()->real_len,matrix);
+    di_protdist prodist(whichcode, whichcat, nentries, entries, tree_root->get_filter()->get_filtered_length(), matrix);
     return prodist.makedists();
 }
 

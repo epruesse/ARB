@@ -10,12 +10,13 @@
 
 #include "di_matr.hxx"
 #include <AP_seq_dna.hxx>
+#include <AP_filter.hxx>
 
 
 char *DI_MATRIX::analyse(AW_root *awrdummy)
 {
     AWUSE(awrdummy);
-    long  row, pos;
+    long  row;
     char *sequ, ch, dummy[280];
 
     long    act_gci, mean_gci=0;
@@ -40,8 +41,10 @@ char *DI_MATRIX::analyse(AW_root *awrdummy)
     for(row=0; row<nentries; row++) {
         act_gci = 0;
         act_len = 0;
-        sequ = entries[row]->sequence_parsimony->sequence;
-        for(pos=0; pos<tree_root->get_filter()->real_len; pos++) {
+        sequ    = entries[row]->sequence_parsimony->sequence;
+        
+        size_t flen = tree_root->get_filter()->get_filtered_length();
+        for (size_t pos=0; pos<flen; pos++) {
             ch = sequ[pos];
             if(ch == AP_C || ch == AP_G) act_gci++;
             if(ch == AP_A || ch == AP_C || ch == AP_G || ch == AP_T) act_len++;
