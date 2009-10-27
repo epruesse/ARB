@@ -2449,11 +2449,6 @@ void AWT_graphic_tree::show(AW_device *device)  {
     if (tree_static && tree_static->get_gb_tree()) {
         check_update(gb_main);
     }
-    if (!tree_root_display) { // if there is no tree
-        if (sort_is_tree_style(tree_sort)) { // but display style needs tree
-            set_tree_type(AP_LIST_NDS); // => switch display style
-        }
-    }
 
     disp_device = device;
 
@@ -2475,38 +2470,58 @@ void AWT_graphic_tree::show(AW_device *device)  {
 
     x_cursor = y_cursor = 0.0;
 
-    switch (tree_sort) {
-        case AP_TREE_NORMAL:
-            if (!tree_root_display) return;
-            y_pos = 0.05;
-            show_dendrogram(tree_root_display, 0, 0);
-            list_tree_ruler_y = y_pos + 2.0 * scaled_branch_distance;
-            break;
+    if (!tree_root_display && sort_is_tree_style(tree_sort)) { // if there is no tree, but display style needs tree
+        static const char *no_tree_text[] = {
+            "No tree (selected)",
+            "",
+            "In the top area you may click on",
+            "- the listview-button to see a plain list of species",
+            "- the tree-selection-button to select a tree",
+            NULL
+        };
 
-        case AP_TREE_RADIAL:
-            if (!tree_root_display)   return;
-            NT_emptybox(tree_root_display->gr.gc, 0, 0, NT_ROOT_WIDTH);
-            show_radial_tree(tree_root_display, 0,0,2*M_PI, 0.0,0, 0, tree_root_display->gr.left_linewidth);
-            break;
+        double y_start = y_cursor - 2*scaled_branch_distance;
+        for (int i = 0; no_tree_text[i]; ++i) {
+            device->text(AWT_GC_CURSOR, no_tree_text[i], x_cursor, y_cursor);
+            y_cursor += scaled_branch_distance;
+        }
+        double y_end = y_cursor;
 
-        case AP_TREE_IRS:
-            show_irs_tree(tree_root_display,disp_device,fontinfo->max_letter.height);
-            list_tree_ruler_y = y_pos;
-            break;
-
-        case AP_LIST_NDS:       // this is the list all/marked species mode (no tree)
-            show_nds_list(gb_main, true);
-            break;
-
-        case AP_LIST_SIMPLE:    // simple list of names (used at startup only)
-            show_nds_list(gb_main, false);
-            break;            
+        x_cursor -= scaled_branch_distance; 
+        device->line(AWT_GC_CURSOR, x_cursor, y_start, x_cursor, y_end);
     }
-    if (x_cursor != 0.0 || y_cursor != 0.0) {
-        NT_emptybox(AWT_GC_CURSOR, x_cursor, y_cursor, NT_SELECTED_WIDTH);
-    }
-    if (sort_is_tree_style(tree_sort)) { // show rulers in tree-style display modes
-        show_ruler(device, AWT_GC_CURSOR);
+    else {
+        switch (tree_sort) {
+            case AP_TREE_NORMAL:
+                y_pos             = 0.05;
+                show_dendrogram(tree_root_display, 0, 0);
+                list_tree_ruler_y = y_pos + 2.0 * scaled_branch_distance;
+                break;
+
+            case AP_TREE_RADIAL:
+                NT_emptybox(tree_root_display->gr.gc, 0, 0, NT_ROOT_WIDTH);
+                show_radial_tree(tree_root_display, 0,0,2*M_PI, 0.0,0, 0, tree_root_display->gr.left_linewidth);
+                break;
+
+            case AP_TREE_IRS:
+                show_irs_tree(tree_root_display,disp_device,fontinfo->max_letter.height);
+                list_tree_ruler_y = y_pos;
+                break;
+
+            case AP_LIST_NDS:       // this is the list all/marked species mode (no tree)
+                show_nds_list(gb_main, true);
+                break;
+
+            case AP_LIST_SIMPLE:    // simple list of names (used at startup only)
+                show_nds_list(gb_main, false);
+                break;            
+        }
+        if (x_cursor != 0.0 || y_cursor != 0.0) {
+            NT_emptybox(AWT_GC_CURSOR, x_cursor, y_cursor, NT_SELECTED_WIDTH);
+        }
+        if (sort_is_tree_style(tree_sort)) { // show rulers in tree-style display modes
+            show_ruler(device, AWT_GC_CURSOR);
+        }
     }
 }
 
