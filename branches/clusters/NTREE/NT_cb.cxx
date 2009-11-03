@@ -27,7 +27,8 @@
 /*AISC_MKPT_PROMOTE:class AW_window;*/
 /*AISC_MKPT_PROMOTE:class AWT_canvas;*/
 
-#define AWT_TREE(ntw) ((AWT_graphic_tree *)ntw->tree_disp)
+// #define AWT_TREE(ntw) ((AWT_graphic_tree *)ntw->tree_disp)
+#define AWT_TREE(ntw) DOWNCAST(AWT_graphic_tree *, (ntw)->tree_disp)
 
 void NT_delete_mark_all_cb(void *, AWT_canvas *ntw) {
     if (aw_ask_sure("Are you sure to delete species ??\n"

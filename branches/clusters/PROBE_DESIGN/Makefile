@@ -33,6 +33,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 probe_design.o: $(ARBHOME)/INCLUDE/ad_prot.h
 probe_design.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 probe_design.o: $(ARBHOME)/INCLUDE/adGene.h
+probe_design.o: $(ARBHOME)/INCLUDE/AliView.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/arb_assert.h

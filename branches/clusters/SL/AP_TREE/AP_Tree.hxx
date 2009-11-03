@@ -95,11 +95,11 @@ public:
     AP_filter *filter;
     long       update;
 
-    AP_rates(void);
+    AP_rates();
     char *init(AP_filter *fil);
     char *init(AP_FLOAT * ra, AP_filter *fil);
-    ~AP_rates(void);
-    void print(void);
+    ~AP_rates();
+    void print();
 };
 
 // ---------------------------------------------
@@ -128,17 +128,17 @@ class AP_tree_root : public ARB_tree_root {
     AP_nodeDelCb      node_deleted_cb;
     void             *node_deleted_cd;
 
+    GBDATA *gb_species_data;                        // @@@ needed ?
+    
 public:
-    GBDATA      *gb_tree_gone;                      // if all leaves have been removed by tree operations, remember 'ARB_tree_root::gb_tree' here (see change_root)
-    GBDATA      *gb_species_data;
-    GBDATA      *gb_table_data;
-    long         tree_timer;
-    long         species_timer;
-    long         table_timer;
-    AP_sequence *sequence_template;
-    AP_rates    *rates;
+    GBDATA   *gb_tree_gone;                         // if all leaves have been removed by tree operations, remember 'ARB_tree_root::gb_tree' here (see change_root)
+    GBDATA   *gb_table_data;
+    long      tree_timer;
+    long      species_timer;
+    long      table_timer;
+    AP_rates *rates;
 
-    AP_tree_root(GBDATA *gb_main, const AP_tree& tree_proto, bool add_delete_callbacks);
+    AP_tree_root(AliView *aliView, const AP_tree& tree_proto, AP_sequence *seq_proto, bool add_delete_callbacks);
     virtual ~AP_tree_root();
 
     // ARB_tree interface
@@ -150,16 +150,17 @@ public:
 
     // AP_tree_root interface
 
-    void update_timers(void);                       // update the timer
-    bool is_tree_updated(void);
-    bool is_species_updated(void);
+    void update_timers();                           // update the timer
+    bool is_tree_updated();
+    bool is_species_updated();
 
     void inform_about_delete(AP_tree *old);
 
     void set_root_changed_callback(AP_rootChangedCb cb, void *cd);
     void set_node_deleted_callback(AP_nodeDelCb cb, void *cd);
 
-    void remove_leafs(int awt_remove_type);
+    void remove_leafs(int awt_remove_type); 
+    ARB_edge find_innermost_edge();
 };
 
 
@@ -218,22 +219,19 @@ public:
 
 
 class AP_tree : public ARB_tree {
-public:
-    AP_tree_members    gr;
-    AP_branch_members  br;
-    AP_FLOAT           mutation_rate;
-    unsigned long      stack_level;
-    AP_sequence       *sequence; // @@@ create class ARB_seq_tree holding sequences
+public: // @@@ fix public member
+    AP_tree_members   gr;
+    AP_branch_members br;
+    unsigned long     stack_level;
 
     // ------------------
     //      functions
 private:
-    void _load_sequences_rek(char *use,GB_BOOL set_by_gbdata, long max, long *counter) ; // uses seq->filter
     void load_node_info();                          // load linewidth etc from DB
 
 public:
 
-    AP_tree(AP_tree_root *tree_root);
+    explicit AP_tree(AP_tree_root *tree_root);
     virtual ~AP_tree(); // leave this here to force creation of virtual table
 
     // ARB_tree interface
@@ -268,17 +266,15 @@ public:
     GBT_LEN arb_tree_min_deep();
     GBT_LEN arb_tree_deep();
 
-    void         load_sequences_rek(char *use,GB_BOOL set_by_gbdata,GB_BOOL show_status) ; // uses seq->filter
-
     virtual void insert(AP_tree *new_brother);
-    virtual void remove(void);                      // remove this+father (but do not delete)
+    virtual void remove();                          // remove this+father (but do not delete)
     virtual void swap_assymetric(AP_TREE_SIDE mode); // 0 = AP_LEFT_son  1=AP_RIGHT_son
-    void         swap_sons(void);                   // exchange sons
+    void         swap_sons();                       // exchange sons
 
     GB_ERROR     cantMoveTo(AP_tree *new_brother);  // use this to detect impossible moves
     virtual void moveTo(AP_tree *new_brother,AP_FLOAT rel_pos); // move to new brother
 
-    virtual void set_root(void);
+    virtual void set_root();
 
     void remove_bootstrap();                        // remove bootstrap values from subtree
     void reset_branchlengths();                     // reset branchlengths of subtree to 0.1
@@ -286,18 +282,10 @@ public:
     void bootstrap2branchlen();                     // copy bootstraps to branchlengths
     void branchlen2bootstrap();                     // copy branchlengths to bootstraps
 
-    // @@@ the following functions should not be here! design error
-    virtual void parsimony_rek(); 
-    virtual AP_BOOL     push(AP_STACK_MODE, unsigned long);
-    virtual void        pop(unsigned long);
-    virtual AP_BOOL     clear(  unsigned long stack_update, unsigned long user_push_counter);
-    virtual void        unhash_sequence(void);
-    virtual AP_FLOAT costs(void);                   // cost of a tree (number of changes ..)
-
     virtual void move_gbt_info(GBT_TREE *tree);  
 
     GB_ERROR tree_write_tree_rek(GBDATA *gb_tree);
-    GB_ERROR relink() __ATTR__USERESULT; // @@@ move to AP_tree_root
+    GB_ERROR relink() __ATTR__USERESULT; // @@@ used ? if yes -> move to AP_tree_root or ARB_tree_root  
 
     virtual AP_UPDATE_FLAGS check_update();
 
@@ -310,7 +298,7 @@ private:
 
 public:
     void buildLeafList(AP_tree **&list, long &num); // returns a list of leafs
-    void buildNodeList(AP_tree **&list, long &num); // returns a list of nodes (leafs and internal nodes, but not root)
+    void buildNodeList(AP_tree **&list, long &num); // returns a list of inner nodes (w/o root)
     void buildBranchList(AP_tree **&list, long &num, bool create_terminal_branches, int deep);
 
     AP_tree **getRandomNodes(int nnodes); // returns a list of random nodes (no leafs)
@@ -342,6 +330,7 @@ public:
     void reset_spread();
     void reset_rotation();
     void reset_line_width();
+    
 };
 
 #else

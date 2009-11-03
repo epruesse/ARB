@@ -36,8 +36,9 @@ const char *DI_MATRIX::save(char *filename,enum DI_SAVE_TYPE type)
         case DI_SAVE_READABLE:
         case DI_SAVE_TABBED:
             {
+                GBDATA         *gb_main  = get_gb_main();
                 GB_transaction  dummy(gb_main);
-                size_t          app_size = 200; // maximum width for NDS output (and max. height for vertical one)
+                size_t          app_size = 200;     // maximum width for NDS output (and max. height for vertical one)
                 size_t          maxnds   = 0;
                 bool            tabbed   = (type == DI_SAVE_TABBED);
                 double          min      = matrix->get(1,0) * 100.0;

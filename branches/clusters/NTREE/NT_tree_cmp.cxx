@@ -271,21 +271,21 @@ void AWT_move_info(GBDATA *gb_main, const char *tree_source,const char *tree_des
 
     GB_begin_transaction(gb_main);
 
-    AP_tree_root *rsource = new AP_tree_root(gb_main, AP_tree(0), false);
-    AP_tree_root *rdest   = new AP_tree_root(gb_main, AP_tree(0), false);
+    AP_tree_root rsource(new AliView(gb_main), AP_tree(0), NULL, false);
+    AP_tree_root rdest  (new AliView(gb_main), AP_tree(0), NULL, false);
 
     aw_openstatus("Comparing Topologies");
 
     aw_status("Load Tree 1");
-    error             = rsource->loadFromDB(tree_source);
-    if (!error) error = rsource->linkToDB(0, 0);
+    error             = rsource.loadFromDB(tree_source);
+    if (!error) error = rsource.linkToDB(0, 0);
     if (!error) {
         aw_status("Load Tree 2");
-        error             = rdest->loadFromDB(tree_dest);
-        if (!error) error = rdest->linkToDB(0, 0);
+        error             = rdest.loadFromDB(tree_dest);
+        if (!error) error = rdest.linkToDB(0, 0);
         if (!error) {
-            AP_tree *source = rsource->get_root_node();
-            AP_tree *dest   = rdest->get_root_node();
+            AP_tree *source = rsource.get_root_node();
+            AP_tree *dest   = rdest.get_root_node();
 
             long                  nspecies = dest->arb_tree_leafsum2();
             AWT_species_set_root *ssr      = new AWT_species_set_root(gb_main, nspecies);
@@ -320,8 +320,8 @@ void AWT_move_info(GBDATA *gb_main, const char *tree_source,const char *tree_des
 
                 AP_tree *root = new_rootr->get_root();
 
-                error             = GBT_write_tree(gb_main, rdest->get_gb_tree(), 0, root->get_gbt_tree());
-                if (!error) error = GBT_write_tree(gb_main, rsource->get_gb_tree(), 0, source->get_gbt_tree());
+                error             = GBT_write_tree(gb_main, rdest.get_gb_tree(), 0, root->get_gbt_tree());
+                if (!error) error = GBT_write_tree(gb_main, rsource.get_gb_tree(), 0, source->get_gbt_tree());
             }
         }
     }
@@ -332,9 +332,6 @@ void AWT_move_info(GBDATA *gb_main, const char *tree_source,const char *tree_des
     }
 
     aw_closestatus();
-
-    delete rsource;
-    delete rdest;
 
     GB_end_transaction_show_error(gb_main, error, aw_message);
 }

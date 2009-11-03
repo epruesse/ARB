@@ -1,6 +1,6 @@
 // =========================================================== //
 //                                                             //
-//   File      : awtfilter.hxx                                 //
+//   File      : awt_filter.hxx                                //
 //   Purpose   :                                               //
 //                                                             //
 //   Institute of Microbiology (Technical University Munich)   //
@@ -8,8 +8,8 @@
 //                                                             //
 // =========================================================== //
 
-#ifndef AWTFILTER_HXX
-#define AWTFILTER_HXX
+#ifndef AWT_FILTER_HXX
+#define AWT_FILTER_HXX
 
 
 struct adfiltercbstruct {
@@ -38,5 +38,5 @@ struct adfiltercbstruct {
 };
 
 #else
-#error awtfilter.hxx included twice
-#endif // AWTFILTER_HXX
+#error awt_filter.hxx included twice
+#endif // AWT_FILTER_HXX

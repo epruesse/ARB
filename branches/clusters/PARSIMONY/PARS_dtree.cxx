@@ -20,6 +20,7 @@
 
 #include <awt_csp.hxx>
 #include <awt_sel_boxes.hxx>
+#include <awt_filter.hxx>
 
 #include <aw_preset.hxx>
 
@@ -31,6 +32,40 @@ static void AWT_graphic_parsimony_root_changed(void *cd, AP_tree *old, AP_tree *
     if (old == agt->tree_root_display) agt->tree_root_display = newroot;
 }
 
+static AliView *pars_generate_aliview(adfiltercbstruct *pars_global_filter) {
+    AliView    *aliview;
+    AP_filter  *filter   = awt_get_filter(pars_global_filter->awr, pars_global_filter);
+    AP_weights *weights  = new AP_weights;
+    char       *ali_name = GBT_read_string(pars_global_filter->gb_main,AWAR_ALIGNMENT);
+    long        ali_len  = GBT_get_alignment_len(pars_global_filter->gb_main, ali_name);
+    
+    if (ali_len <=1) {
+        aw_popup_exit("No valid alignment selected! Try again");
+    }
+    
+    awt_csp->go(0);
+    int i;
+    if (awt_csp->rates){
+        for (i=0;i<ali_len;i++){
+            if (awt_csp->rates[i]>0.0000001){
+                awt_csp->weights[i] *= (int)(2.0/ awt_csp->rates[i]);
+            }
+        }
+        weights->init(awt_csp->weights, awt_csp->seq_len, filter);
+    }
+    else {
+        weights->init(filter);
+    }
+
+
+    aliview = new AliView(pars_global_filter->gb_main, *filter, *weights, ali_name);
+
+    free(ali_name);
+    delete weights;
+    delete filter;
+
+    return aliview;
+}
 
 /**************************
 tree_init()
@@ -41,59 +76,21 @@ tree_init()
         ( AP_tree_nlen expected )
 
 **************************/
-void NT_tree_init(AWT_graphic_tree *agt, adfiltercbstruct *pars_global_filter) {
 
-    AP_tree *tree = agt->get_root_node();
+void PARS_tree_init(AWT_graphic_tree *agt) {
+    ap_assert(agt->get_root_node());
+
     GB_transaction dummy(GLOBAL_gb_main);
 
-    if (!tree) {
-        return;
-    }
-    char *use = GBT_read_string(GLOBAL_gb_main,AWAR_ALIGNMENT);
-
-    long ali_len = GBT_get_alignment_len(GLOBAL_gb_main,use);
+    const char *use = agt->tree_static->get_aliview()->get_aliname();
+    
+    long ali_len = GBT_get_alignment_len(GLOBAL_gb_main, use);
     if (ali_len <=1) {
         aw_popup_exit("No valid alignment selected! Try again");
     }
 
-
-    GB_BOOL is_aa = GBT_is_alignment_protein(GLOBAL_gb_main,use);
-    //
-    // filter & weights setup
-    //
-    if (!tree->get_tree_root()->sequence_template) {
-        AP_tree_root *tr = tree->get_tree_root();
-        AP_sequence *sproto;
-        if (is_aa) {
-            sproto = (AP_sequence *)new AP_sequence_protein(tr);
-        }else{
-            sproto = (AP_sequence *)new AP_sequence_parsimony(tr);
-        }
-
-        tr->sequence_template = sproto;
-        tr->set_filter(awt_get_filter(agt->aw_root, pars_global_filter));
-
-        AP_weights *weights  = new AP_weights;
-
-        awt_csp->go(0);
-        int i;
-        if (awt_csp->rates){
-            for (i=0;i<ali_len;i++){
-                if (awt_csp->rates[i]>0.0000001){
-                    awt_csp->weights[i] *= (int)(2.0/ awt_csp->rates[i]);
-                }
-            }
-            weights->init(awt_csp->weights, awt_csp->seq_len, tr->get_filter());
-        }
-        else {
-            weights->init(tr->get_filter());
-        }
-        tr->set_weights(weights);
-        tree->load_sequences_rek(use,GB_FALSE,GB_TRUE); // load with sequences
-    }
-    tree->get_tree_root()->set_root_changed_callback(AWT_graphic_parsimony_root_changed, agt);
-
-    ap_main->use = use;
+    agt->tree_static->set_root_changed_callback(AWT_graphic_parsimony_root_changed, agt);
+    freedup(ap_main->use, use);
 }
 
 static int ap_global_abort_flag;
@@ -111,13 +108,12 @@ double funktion_quadratisch(double x,double *param_list,int param_anz) {
 
 
 void PARS_kernighan_cb(AP_tree *tree) {
-
     GB_push_transaction(GLOBAL_gb_main);
 
-    AP_sequence::global_combineCount = 0;
+    long prevCombineCount = AP_sequence::combine_count();
 
     AP_FLOAT pars_start, pars_prev;
-    pars_prev  = pars_start = GLOBAL_NT->tree->get_root_node()->costs();
+    pars_prev  = pars_start = AP_TREE_NLEN_CAST(GLOBAL_PARS->tree->get_root_node())->costs();
 
     int rek_deep_max = *GBT_read_int(GLOBAL_gb_main,"genetic/kh/maxdepth");
 
@@ -207,7 +203,7 @@ void PARS_kernighan_cb(AP_tree *tree) {
 
             if (better_tree_found) {
                 ap_main->clear();
-                pars_start =  GLOBAL_NT->tree->get_root_node()->costs();
+                pars_start =  AP_TREE_NLEN_CAST(GLOBAL_PARS->tree->get_root_node())->costs();
                 char buffer[100];
                 sprintf(buffer,"New Parsimony: %f",pars_start);
                 abort_flag |= aw_status(buffer);
@@ -219,28 +215,32 @@ void PARS_kernighan_cb(AP_tree *tree) {
     aw_closestatus();
     delete list;
     ap_global_abort_flag |= abort_flag;
-    printf("Combines: %li\n", AP_sequence::global_combineCount);
-    return;
+    printf("Combines: %li\n", AP_sequence::combine_count()-prevCombineCount);
 }
 
 void PARS_optimizer_cb(AP_tree *tree) {
-    AWT_graphic_tree *agt          = GLOBAL_NT->tree;
+    AWT_graphic_tree *agt          = GLOBAL_PARS->tree;
     AP_tree          *oldrootleft  = agt->get_root_node()->get_leftson();
     AP_tree          *oldrootright = agt->get_root_node()->get_rightson();
 
     for (ap_global_abort_flag = 0;!ap_global_abort_flag;){
-        AP_FLOAT old_pars = agt->get_root_node()->costs();
-        
-        ((AP_tree_nlen *)tree)->nn_interchange_rek(AP_TRUE,ap_global_abort_flag,-1,AP_BL_NNI_ONLY, GB_TRUE); // only not hidden
+        AP_FLOAT old_pars = AP_TREE_NLEN_CAST(agt->get_root_node())->costs();
+
+        ((AP_tree_nlen *)tree)->nn_interchange_rek(AP_TRUE, ap_global_abort_flag, -1); 
         if (ap_global_abort_flag) break;
+
+        if (old_pars != AP_TREE_NLEN_CAST(agt->get_root_node())->costs()) { // NNI found better tree
+            continue;
+        }
+
         PARS_kernighan_cb(tree);
-        if (old_pars == agt->get_root_node()->costs()) {
+        if (old_pars == AP_TREE_NLEN_CAST(agt->get_root_node())->costs()) {
             ap_global_abort_flag = 1;
         }
     }
     if (oldrootleft->father == oldrootright) oldrootleft->set_root();
     else oldrootright->set_root();
-    agt->get_root_node()->costs();
+    AP_TREE_NLEN_CAST(agt->get_root_node())->costs();
     aw_closestatus();
 }
 
@@ -248,9 +248,23 @@ AWT_graphic_parsimony::AWT_graphic_parsimony(AW_root *root, GBDATA *gb_maini)
     : AWT_graphic_tree(root,gb_maini)
 {}
 
-AWT_graphic_tree *PARS_generate_tree(AW_root *root) {
-    AWT_graphic_parsimony *apdt = new AWT_graphic_parsimony(root,GLOBAL_gb_main);
-    apdt->init(AP_tree_nlen(0));
+AWT_graphic_tree *PARS_generate_tree(AW_root *root, adfiltercbstruct *pars_global_filter) {
+    AliView     *aliview   = pars_generate_aliview(pars_global_filter);
+    AP_sequence *seq_templ = 0;
+
+    GBDATA *gb_main = aliview->get_gb_main();
+    {
+        GB_transaction ta(gb_main);
+        GB_BOOL        is_aa = GBT_is_alignment_protein(gb_main, aliview->get_aliname());
+
+        if (is_aa) seq_templ = new AP_sequence_protein(aliview);
+        else seq_templ       = new AP_sequence_parsimony(aliview);
+    }
+
+    AWT_graphic_parsimony *apdt = new AWT_graphic_parsimony(root, aliview->get_gb_main());
+
+    apdt->init(AP_tree_nlen(0), aliview, seq_templ, true, false);
+
     ap_main->set_tree_root(apdt);
     return apdt;
 }
@@ -291,14 +305,14 @@ AWT_graphic_parsimony::init_devices(AW_window *aww, AW_device *device, AWT_canva
 
 void AWT_graphic_parsimony::show(AW_device *device)
 {
-    long     parsval       = 0;
-    AP_tree *root_node     = GLOBAL_NT->tree->get_root_node();
-    if (root_node) parsval = root_node->costs();
+    long          parsval   = 0;
+    AP_tree_nlen *root_node = AP_TREE_NLEN_CAST(GLOBAL_PARS->tree->get_root_node());
+    if (root_node) parsval  = root_node->costs();
 
-    GLOBAL_NT->awr->awar(AWAR_PARSIMONY)->write_int(parsval);
-    long best = GLOBAL_NT->awr->awar(AWAR_BEST_PARSIMONY)->read_int();
+    GLOBAL_PARS->awr->awar(AWAR_PARSIMONY)->write_int(parsval);
+    long best = GLOBAL_PARS->awr->awar(AWAR_BEST_PARSIMONY)->read_int();
     if (parsval < best || 0==best) {
-        GLOBAL_NT->awr->awar(AWAR_BEST_PARSIMONY)->write_int( parsval);
+        GLOBAL_PARS->awr->awar(AWAR_BEST_PARSIMONY)->write_int( parsval);
     }
     this->AWT_graphic_tree::show(device);
 }
@@ -384,8 +398,6 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
                             case AWT_M_RIGHT:
                                 error = source->move_group_info(dest);
                                 break;
-                            default:
-                                error = "????? 45338";
                         }
 
                         //                             default:
@@ -425,13 +437,15 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
                         break;
                     }
                     case AWT_M_RIGHT: {
-                        AP_sequence::global_combineCount = 0;
-                        ap_global_abort_flag             = AP_FALSE;
-                        AP_tree_nlen *atn = DOWNCAST(AP_tree_nlen*, get_root_node());
+                        long          prevCombineCount = AP_sequence::combine_count();
+                        ap_global_abort_flag           = AP_FALSE;
+                        AP_tree_nlen *atn              = DOWNCAST(AP_tree_nlen*, get_root_node());
+
                         atn->nn_interchange_rek(AP_TRUE,ap_global_abort_flag,-1);
-                        printf("Combines: %li\n", AP_sequence::global_combineCount);
-                        exports.refresh = 1;
-                        exports.save    = 1;
+                        printf("Combines: %li\n", AP_sequence::combine_count()-prevCombineCount);
+
+                        exports.refresh       = 1;
+                        exports.save          = 1;
                         ASSERT_VALID_TREE(get_root_node());
                         recalc_branch_lengths = true;
                         break;

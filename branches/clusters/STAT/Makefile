@@ -34,6 +34,8 @@ ST_ml.o: st_ml.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ST_ml.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ST_ml.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+ST_ml.o: $(ARBHOME)/INCLUDE/AliView.hxx
+ST_ml.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -43,7 +45,6 @@ ST_ml.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ST_ml.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ST_ml.o: $(ARBHOME)/INCLUDE/arbtools.h
 ST_ml.o: $(ARBHOME)/INCLUDE/attributes.h
-ST_ml.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/awt_csp.hxx
@@ -55,6 +56,7 @@ ST_quality.o: st_window.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ST_quality.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ST_quality.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+ST_quality.o: $(ARBHOME)/INCLUDE/AliView.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
@@ -78,6 +80,7 @@ ST_window.o: st_window.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ST_window.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ST_window.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+ST_window.o: $(ARBHOME)/INCLUDE/AliView.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/arb_assert.h

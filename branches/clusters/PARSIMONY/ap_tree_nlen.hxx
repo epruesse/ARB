@@ -69,19 +69,13 @@ typedef enum {
     AP_BL_BL_ONLY            = 2, // try to calculate the branch lengths
     AP_BL_NNI_BL             = 3, // better tree & branch lengths
     AP_BL_BOOTSTRAP_LIMIT    = 4, // calculate upper bootstrap limits
-    AP_BL_BOOTSTRAP_ESTIMATE = 12 // calculate estimate of bootstrap
+    AP_BL_BOOTSTRAP_ESTIMATE = 12 // calculate estimate of bootstrap (includes AP_BL_BOOTSTRAP_LIMIT)
 } AP_BL_MODE;
 
 class AP_tree_edge;
 
-class AP_tree_nlen : public AP_tree {           /* tree that is independent of branch lengths and root */
-    AP_tree_nlen *dup() const;
-
-    AP_BOOL clear(unsigned long stack_update,unsigned long user_push_counter);
-    void    unhash_sequence(void);
-    void    createListRekUp(AP_CO_LIST *list,int *cn);
-    void    createListRekSide(AP_CO_LIST *list,int *cn);
-
+class AP_tree_nlen : public AP_tree {
+    /* tree that is independent of branch lengths and root */
 
     AP_TREE_SIDE kernighan;     // Flag zum markieren
     int          distance;      // distance to tree border (0=leaf, INT_MAX=UNKNOWN)
@@ -91,31 +85,40 @@ class AP_tree_nlen : public AP_tree {           /* tree that is independent of b
     AP_tree_edge *edge[3];      // the edges to the father and the sons
     int           index[3];     // index to node[] in AP_tree_edge
 
-protected:
+    AP_FLOAT mutation_rate;
+
+
+    
+    AP_tree_nlen *dup() const;
+
+    void createListRekUp(AP_CO_LIST *list,int *cn);
+    void createListRekSide(AP_CO_LIST *list,int *cn);
 
 public:
-    AP_FLOAT costs();           /* cost of a tree (number of changes ..)*/
-    AP_BOOL  push(AP_STACK_MODE, unsigned long); /* push state of costs */
-    void     pop(unsigned long); /* pop old tree costs */
-
-    virtual AP_UPDATE_FLAGS check_update(); // disable  load !!!!
-
-
     AP_tree_nlen(AP_tree_root *tree_root);
     virtual ~AP_tree_nlen() {}
+
+    void     unhash_sequence();
+    AP_FLOAT costs(char *mutPerSite = NULL);        /* cost of a tree (number of changes ..)*/
+
+    AP_BOOL push(AP_STACK_MODE, unsigned long); /* push state of costs */
+    void    pop(unsigned long); /* pop old tree costs */
+    AP_BOOL clear(unsigned long stack_update,unsigned long user_push_counter);
+
+    virtual AP_UPDATE_FLAGS check_update(); // disable  load !!!!
 
     void copy(AP_tree_nlen *tree);
     int  Distance();
 
     // tree reconstruction methods:
     void insert(AP_tree *new_brother);
-    void remove(void);
+    void remove();
     void swap_assymetric(AP_TREE_SIDE mode);
     void moveTo(AP_tree *new_brother, AP_FLOAT rel_pos); // if unsure, use cantMoveTo to test if possible
     void set_root();
 
     // tree optimization methods:
-    void parsimony_rek();
+    void parsimony_rek(char *mutPerSite = NULL);
 
     AP_FLOAT nn_interchange_rek(AP_BOOL     openclosestatus,
                                 int        &abort,
@@ -148,9 +151,7 @@ public:
 
     void setBranchlen(double leftLen,double rightLen) { leftlen = leftLen; rightlen = rightLen; }
 
-    int         test() const;
     const char* fullname() const;
-
     const char* sortByName();
 
     // casted access to neighbours:
@@ -177,18 +178,23 @@ public:
     void linkAllEdges(AP_tree_edge *edge1, AP_tree_edge *edge2, AP_tree_edge *edge3);
     void unlinkAllEdges(AP_tree_edge **edgePtr1, AP_tree_edge **edgePtr2, AP_tree_edge **edgePtr3);
 
-    //void      destroyAllEdges();
+    char *getSequenceCopy();
 
-    // test stuff:
+#if defined(CHECK_TREE_STRUCTURE)
+    void assert_edges_valid() const;
+    void assert_valid() const;
+#endif // CHECK_TREE_STRUCTURE
 
-    char *getSequence();
-
+    
     friend      class AP_tree_edge;
     friend      std::ostream& operator<<(std::ostream&,const AP_tree_nlen&);
 };
 
 
 /************ AP_tree_edge  ************/
+
+class MutationsPerSite;
+
 class AP_tree_edge
 {
     // the following members are stored/restored by
@@ -218,7 +224,7 @@ class AP_tree_edge
                              const AP_tree_nlen *skip        = NULL,
                              AP_tree_edge       *comesFrom   = NULL);
 
-    long sizeofChain(void);
+    long sizeofChain();
     void calcDistance();
     void tailDistance(AP_tree_nlen*);
     
@@ -266,7 +272,8 @@ public:
                      AP_BL_MODE    mode        = AP_BL_NNI_ONLY,
                      AP_tree_nlen *skipNode    = NULL);
 
-    AP_FLOAT nni(AP_FLOAT pars_one, AP_BL_MODE mode);
+    AP_FLOAT nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, MutationsPerSite *mps);
+    AP_FLOAT nni(AP_FLOAT pars_one, AP_BL_MODE mode) { return nni_mutPerSite(pars_one, mode, NULL); }
 
     // test methods:
 
@@ -276,7 +283,7 @@ public:
     void testChain(int deep);
 
     int Distance() const { ap_assert(distanceOK()); return (node[0]->distance+node[1]->distance) >> 1; }
-    int distanceToBorder(int maxsearch=INT_MAX,AP_tree_nlen *skip=NULL) const;  // obsolete
+    int distanceToBorder(int maxsearch=INT_MAX,AP_tree_nlen *skip=NULL) const; // obsolete
 
     static int dumpNNI;             // should NNI dump its values?
     static int distInsertBorder; // distance from insert pos to tree border
@@ -285,8 +292,10 @@ public:
 
     void countSpecies(int deep=-1,const AP_tree_nlen* skip=NULL);
 
-    static int speciesInTree;   // no of species (leafs) in tree
-    static int nodesInTree;     // no of nodes in tree
+    static int speciesInTree;                       // no of species (leafs) in tree (updated by countSpecies)
+    static int nodesInTree;                         // no of nodes in tree - including leafs, but w/o rootnode (updated by countSpecies)
+
+    static int edgesInTree() { return nodesInTree-1; } // (updated by countSpecies)
 };
 
 std::ostream& operator<<(std::ostream&, const AP_tree_edge&);

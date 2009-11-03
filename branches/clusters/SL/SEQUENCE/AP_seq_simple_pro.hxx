@@ -18,21 +18,31 @@
 typedef enum {
     ala, arg, asn, asp, cys, gln, glu, gly, his, ileu, leu, lys, met, phe, pro,
     ser, thr, trp, tyr, val, stop, del, asx, glx, unk, quest
-}               aas;
+} aas;
 
 typedef unsigned char ap_pro;   // aas but only one character used
 
 class AP_sequence_simple_protein : public AP_sequence {
+    ap_pro *sequence;
+    //static char   *table;
+
+    AP_FLOAT count_weighted_bases() const;
+
+    void set(const char *sequence);
+    void unset();
 
 public:
-    ap_pro      *sequence;
-    //static char   *table;
-    AP_sequence_simple_protein(ARB_tree_root *rooti);
-    ~AP_sequence_simple_protein(void);
-    AP_sequence     *dup(void);     // used to get the real new element
-    void set(const char *sequence);
-    AP_FLOAT combine( const AP_sequence *lefts, const AP_sequence *rights);
+
+    AP_sequence_simple_protein(const AliView *aliview);
+    ~AP_sequence_simple_protein();
+
+    AP_sequence *dup() const;                             // used to get the real new element
+
+    AP_FLOAT combine(const AP_sequence *lefts, const AP_sequence *rights, char *mutation_per_site = 0);
     void partial_match(const AP_sequence* part, long *overlap, long *penalty) const;
+
+    const ap_pro *get_sequence() const { return sequence; }
+    ap_pro *get_sequence() { return sequence; }
 };
 
 

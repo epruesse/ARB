@@ -163,6 +163,7 @@ symlink ../AWT/awt_attributes.hxx INCLUDE/awt_attributes.hxx &&
 symlink ../AWT/awt_canvas.hxx INCLUDE/awt_canvas.hxx &&
 symlink ../AWT/awt_config_manager.hxx INCLUDE/awt_config_manager.hxx &&
 symlink ../AWT/awt_csp.hxx INCLUDE/awt_csp.hxx &&
+symlink ../AWT/awt_filter.hxx INCLUDE/awt_filter.hxx &&
 symlink ../AWT/awt_hotkeys.hxx INCLUDE/awt_hotkeys.hxx &&
 symlink ../AWT/awt_input_mask.hxx INCLUDE/awt_input_mask.hxx &&
 symlink ../AWT/awt_item_sel_list.hxx INCLUDE/awt_item_sel_list.hxx &&
@@ -196,6 +197,7 @@ symlink ../PROBE_DESIGN/probe_design.hxx INCLUDE/probe_design.hxx &&
 symlink ../SECEDIT/secedit_extern.hxx INCLUDE/secedit_extern.hxx &&
 symlink ../SERVERCNTRL/servercntrl.h INCLUDE/servercntrl.h &&
 symlink ../SEQ_QUALITY/seq_quality.h INCLUDE/seq_quality.h &&
+symlink ../SL/ALIVIEW/AliView.hxx INCLUDE/AliView.hxx &&
 symlink ../SL/AW_HELIX/AW_helix.hxx INCLUDE/AW_helix.hxx &&
 symlink ../SL/FILTER/AP_filter.hxx INCLUDE/AP_filter.hxx &&
 symlink ../SL/AW_NAME/AW_rename.hxx INCLUDE/AW_rename.hxx &&

@@ -3,7 +3,7 @@
 .SUFFIXES: .o .c .cxx .depend
 
 C_OBJECTS = 
-CPP_OBJECTS = AP_Tree.o
+CPP_OBJECTS = AliView.o
 OBJECTS=$(C_OBJECTS) $(CPP_OBJECTS)
 
 $(MAIN): $(OBJECTS)
@@ -35,21 +35,13 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
-AP_Tree.o: AP_Tree.hxx
-AP_Tree.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
-AP_Tree.o: $(ARBHOME)/INCLUDE/ad_prot.h
-AP_Tree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-AP_Tree.o: $(ARBHOME)/INCLUDE/AliView.hxx
-AP_Tree.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
-AP_Tree.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
-AP_Tree.o: $(ARBHOME)/INCLUDE/arb_assert.h
-AP_Tree.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
-AP_Tree.o: $(ARBHOME)/INCLUDE/arbdb.h
-AP_Tree.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-AP_Tree.o: $(ARBHOME)/INCLUDE/arbdbt.h
-AP_Tree.o: $(ARBHOME)/INCLUDE/arbtools.h
-AP_Tree.o: $(ARBHOME)/INCLUDE/attributes.h
-AP_Tree.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
-AP_Tree.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-AP_Tree.o: $(ARBHOME)/INCLUDE/awt_attributes.hxx
-AP_Tree.o: $(ARBHOME)/INCLUDE/downcast.h
+AliView.o: AliView.hxx
+AliView.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+AliView.o: $(ARBHOME)/INCLUDE/ad_prot.h
+AliView.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+AliView.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
+AliView.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AliView.o: $(ARBHOME)/INCLUDE/arbdb.h
+AliView.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AliView.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AliView.o: $(ARBHOME)/INCLUDE/attributes.h

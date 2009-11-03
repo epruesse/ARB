@@ -104,7 +104,7 @@ void AWT_graphic_tree::mark_species_in_tree(AP_tree *at, int mark_mode) {
 
     if (!at) return;
 
-    GB_transaction dummy(tree_static->gb_species_data);
+    GB_transaction ta(tree_static->get_gb_main());
     if (at->is_leaf) {
         if(at->gb_node) {       // not a zombie
             switch (mark_mode) {
@@ -133,7 +133,7 @@ void AWT_graphic_tree::mark_species_in_tree_that(AP_tree *at, int mark_mode, int
 
     if (!at) return;
 
-    GB_transaction dummy(tree_static->gb_species_data);
+    GB_transaction dummy(tree_static->get_gb_main());
     if (at->is_leaf) {
         if(at->gb_node) {       // not a zombie
             int oldMark = GB_read_flag(at->gb_node);
@@ -158,7 +158,7 @@ void AWT_graphic_tree::mark_species_in_rest_of_tree(AP_tree *at, int mark_mode) 
     if (at) {
         AP_tree *pa = at->get_father();
         if (pa) {
-            GB_transaction dummy(tree_static->gb_species_data);
+            GB_transaction dummy(tree_static->get_gb_main());
 
             mark_species_in_tree(at->get_brother(), mark_mode);
             mark_species_in_rest_of_tree(pa, mark_mode);
@@ -171,7 +171,7 @@ void AWT_graphic_tree::mark_species_in_rest_of_tree_that(AP_tree *at, int mark_m
     if (at) {
         AP_tree *pa = at->get_father();
         if (pa) {
-            GB_transaction dummy(tree_static->gb_species_data);
+            GB_transaction dummy(tree_static->get_gb_main());
 
             mark_species_in_tree_that(at->get_brother(), mark_mode, condition, cd);
             mark_species_in_rest_of_tree_that(pa, mark_mode, condition, cd);
@@ -329,7 +329,7 @@ int AWT_graphic_tree::group_tree(AP_tree *at, int mode, int color_group)    // r
 
     if (!at) return 1;
 
-    GB_transaction dummy(this->tree_static->gb_species_data);
+    GB_transaction dummy(tree_static->get_gb_main());
 
     if (at->is_leaf) {
         int ungroup_me = 0;
@@ -368,7 +368,7 @@ int AWT_graphic_tree::group_tree(AP_tree *at, int mode, int color_group)    // r
             }
         }
     }
-    if (!at->father) get_root_node()->compute_tree(tree_static->gb_species_data);
+    if (!at->father) get_root_node()->compute_tree(tree_static->get_gb_main());
 
     return flag;
 }
@@ -1542,6 +1542,12 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                             get_root_node()->compute_tree(gb_main);
                         }
                         break;
+                    case AWT_M_RIGHT:
+                        AP_TREE_CAST(tree_static->find_innermost_edge().son())->set_root();
+                        exports.save       = 1;
+                        exports.zoom_reset = 1;
+                        get_root_node()->compute_tree(gb_main);
+                        break;
                 }
             } /* if type */
             break;
@@ -1567,11 +1573,9 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
 
         case AWT_MODE_MARK:
             if (type == AW_Mouse_Press && (cl->exists || ct->exists)) {
-                if (cl->exists) at = (AP_tree *)cl->client_data1;
-                else at            = (AP_tree *)ct->client_data1;
-
+                at = (AP_tree *)(cl->exists ? cl->client_data1 : ct->client_data1);
                 if (at) {
-                    GB_transaction dummy(this->tree_static->gb_species_data);
+                    GB_transaction ta(tree_static->get_gb_main());
 
                     if (type == AW_Mouse_Press) {
                         switch (button) {
@@ -1593,12 +1597,8 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
         case AWT_MODE_NONE:
         case AWT_MODE_SELECT:
             if(type==AW_Mouse_Press && (cl->exists || ct->exists) && button != AWT_M_MIDDLE){
-                GB_transaction dummy(this->tree_static->gb_species_data);
-                if (cl->exists) {
-                    at = (AP_tree *)cl->client_data1;
-                }else{
-                    at = (AP_tree *)ct->client_data1;
-                }
+                GB_transaction ta(tree_static->get_gb_main());
+                at = (AP_tree *)(cl->exists ? cl->client_data1 : ct->client_data1);
                 if (!at) break;
 
                 this->exports.refresh = 1;        // No refresh needed !! AD_map_viewer will do the refresh (needed by arb_pars)
@@ -1610,24 +1610,16 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
 
         case AWT_MODE_MOD:
             if(type==AW_Mouse_Press && (cl->exists || ct->exists) ){
-                GB_transaction dummy(this->tree_static->gb_species_data);
-                if (cl->exists) {
-                    at = (AP_tree *)cl->client_data1;
-                }else{
-                    at = (AP_tree *)ct->client_data1;
-                }
+                GB_transaction ta(tree_static->get_gb_main());
+                at = (AP_tree *)(cl->exists ? cl->client_data1 : ct->client_data1);
                 if (!at) break;
                 AD_map_viewer(at->gb_node,ADMVT_INFO);
             }
             break;
         case AWT_MODE_WWW:
             if(type==AW_Mouse_Press && (cl->exists || ct->exists) ){
-                GB_transaction dummy(this->tree_static->gb_species_data);
-                if (cl->exists) {
-                    at = (AP_tree *)cl->client_data1;
-                }else{
-                    at = (AP_tree *)ct->client_data1;
-                }
+                GB_transaction ta(tree_static->get_gb_main());
+                at = (AP_tree *)(cl->exists ? cl->client_data1 : ct->client_data1);
                 if (!at) break;
                 AD_map_viewer(at->gb_node,ADMVT_WWW);
             }
@@ -1707,6 +1699,7 @@ AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_rooti, GBDATA *gb_maini) : AWT_gr
     tree_root_display = 0;
     y_pos             = 0;
     tree_proto        = 0;
+    link_to_database  = false;
     tree_static       = 0;
     baselinewidth     = 0;
     species_name      = 0;
@@ -1722,18 +1715,20 @@ AWT_graphic_tree::~AWT_graphic_tree() {
     delete tree_static;
 }
 
-void AWT_graphic_tree::init(const AP_tree& tree_prototype) {
-    tree_proto = tree_prototype.dup();
+void AWT_graphic_tree::init(const AP_tree& tree_prototype, AliView *aliview, AP_sequence *seq_prototype, bool link_to_database_, bool insert_delete_cbs) {
+    tree_static = new AP_tree_root(aliview, tree_prototype, seq_prototype, insert_delete_cbs);
+
+    awt_assert(!insert_delete_cbs || link_to_database); // inserting delete callbacks w/o linking to DB has no effect!
+    link_to_database = link_to_database_;
 }
 
 void AWT_graphic_tree::unload() {
-    delete tree_static;
-    tree_static       = 0;
+    delete tree_static->get_root_node();
     rot_at            = 0;
     tree_root_display = 0;
 }
 
-GB_ERROR AWT_graphic_tree::load(GBDATA *, const char *name, AW_CL cl_link_to_database, AW_CL cl_insert_delete_cbs) {
+GB_ERROR AWT_graphic_tree::load(GBDATA *, const char *name, AW_CL /*cl_link_to_database*/, AW_CL /*cl_insert_delete_cbs*/) {
     GB_ERROR error = 0;
 
     if (name[0] == 0 || strcmp(name, "tree_????") == 0) { // no tree selected
@@ -1742,31 +1737,27 @@ GB_ERROR AWT_graphic_tree::load(GBDATA *, const char *name, AW_CL cl_link_to_dat
         duplicates = 0;
     }
     else {
-        bool link_to_database  = (bool)cl_link_to_database;
-        bool insert_delete_cbs = (bool)cl_insert_delete_cbs;
-
-        awt_assert(!insert_delete_cbs || link_to_database); // inserting delete callbacks w/o linking to DB has no effect!
-
-        AP_tree_root *tr = new AP_tree_root(gb_main, *tree_proto, insert_delete_cbs);
-        error            = tr->loadFromDB(name);
-
-        if (!error && link_to_database) {
-            error = tr->linkToDB(&zombies, &duplicates);
+        {
+            char *name_dup = strdup(name); // name might be freed by unload()
+            unload();
+            error = tree_static->loadFromDB(name_dup);
+            free(name_dup);
         }
-
-        unload();
+        
+        if (!error && link_to_database) {
+            error = tree_static->linkToDB(&zombies, &duplicates);
+        }
 
         if (error) {
-            delete tr;
+            delete tree_static->get_root_node();
         }
         else {
-            tree_static       = tr;
             tree_root_display = get_root_node();
 
             get_root_node()->compute_tree(gb_main);
 
-            tr->set_root_changed_callback(AWT_graphic_tree_root_changed, this);
-            tr->set_node_deleted_callback(AWT_graphic_tree_node_deleted, this);
+            tree_static->set_root_changed_callback(AWT_graphic_tree_root_changed, this);
+            tree_static->set_node_deleted_callback(AWT_graphic_tree_node_deleted, this);
         }
     }
 
@@ -2538,8 +2529,8 @@ void AWT_graphic_tree::info(AW_device *device, AW_pos x, AW_pos y,
 }
 
 AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main) {
-    AWT_graphic_tree *apdt = new AWT_graphic_tree(root,gb_main);
-    apdt->init(AP_tree(0));
+    AWT_graphic_tree *apdt    = new AWT_graphic_tree(root, gb_main);
+    apdt->init(AP_tree(0), new AliView(gb_main), NULL, true, false); // tree w/o sequence data
     return apdt;
 }
 

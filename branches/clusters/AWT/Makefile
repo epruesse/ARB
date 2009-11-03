@@ -188,6 +188,7 @@ AWT_db_browser.o: awt.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/AliView.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -226,8 +227,8 @@ AWT_file_selection.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_file_selection.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 
 AWT_filter.o: awt.hxx
+AWT_filter.o: awt_filter.hxx
 AWT_filter.o: awt_sel_boxes.hxx
-AWT_filter.o: awtfilter.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/ad_t_prot.h

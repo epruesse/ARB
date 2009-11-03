@@ -146,17 +146,17 @@ public:
     void print();
 };
 
-
+class AP_tree_nlen;
 
 class AP_main_stack : public AP_STACK {
 protected:
     unsigned long last_user_buffer;
 public:
     friend class AP_main;
-    void push(AP_tree *value) { AP_STACK::push((void *)value); }
-    AP_tree * pop() { return (AP_tree *) AP_STACK::pop(); }
-    AP_tree * get() { return (AP_tree *) AP_STACK::get(); }
-    AP_tree * get_first() { return (AP_tree *) AP_STACK::get_first(); }
+    void push(AP_tree_nlen *value) { AP_STACK::push((void *)value); }
+    AP_tree_nlen *pop() { return (AP_tree_nlen*)AP_STACK::pop(); }
+    AP_tree_nlen *get() { return (AP_tree_nlen*)AP_STACK::get(); }
+    AP_tree_nlen *get_first() { return (AP_tree_nlen*)AP_STACK::get_first(); }
     void print();
 };
 

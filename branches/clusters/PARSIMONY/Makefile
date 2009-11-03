@@ -33,6 +33,7 @@ AP_buffer.o: AP_error.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+AP_buffer.o: $(ARBHOME)/INCLUDE/AliView.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -53,6 +54,7 @@ AP_main.o: ap_tree_nlen.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AP_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+AP_main.o: $(ARBHOME)/INCLUDE/AliView.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -78,6 +80,7 @@ AP_tree_edge.o: ap_tree_nlen.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/AliView.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
@@ -99,6 +102,7 @@ AP_tree_nlen.o: pars_debug.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+AP_tree_nlen.o: $(ARBHOME)/INCLUDE/AliView.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/AP_seq_dna.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
@@ -136,6 +140,7 @@ PARS_dtree.o: pars_main.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+PARS_dtree.o: $(ARBHOME)/INCLUDE/AliView.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/AP_seq_dna.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/AP_seq_protein.hxx
@@ -157,6 +162,7 @@ PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/awt_csp.hxx
+PARS_dtree.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/downcast.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
@@ -182,6 +188,7 @@ PARS_main.o: pars_main.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PARS_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PARS_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+PARS_main.o: $(ARBHOME)/INCLUDE/AliView.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/arb_assert.h

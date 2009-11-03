@@ -89,18 +89,15 @@ class BI_helix;
 
 enum LoadWhat { DI_LOAD_ALL, DI_LOAD_MARKED, DI_LOAD_LIST };
 
-class DI_MATRIX {
-private:
+class DI_MATRIX : Noncopyable {
     friend class DI_ENTRY;
 
-    GBDATA       *gb_main;
-    GBDATA       *gb_species_data;
-    char         *use;
-    long          seq_len;
-    char          cancel_columns[256];
-    AP_tree_root *tree_root;
-    AW_root      *aw_root;             // only link
-    long          entries_mem_size;
+    GBDATA  *gb_species_data;
+    long     seq_len;
+    char     cancel_columns[256];
+    AW_root *aw_root;                               // only link
+    long     entries_mem_size;
+    AliView *aliview;
 
 public:
     GB_BOOL            is_AA;
@@ -110,10 +107,14 @@ public:
     AP_smatrix        *matrix;
     DI_MATRIX_TYPE     matrix_type;
 
-    DI_MATRIX(GBDATA *gb_main,AW_root *awr);
-    ~DI_MATRIX(void);
+    DI_MATRIX(const AliView& aliview, AW_root *awr);
+    ~DI_MATRIX();
 
-    char *load(char *use, AP_filter *filter, AP_weights *weights, LoadWhat what, GB_CSTR sort_tree_name, bool show_warnings, GBDATA **species_list);
+    GBDATA *get_gb_main() const { return aliview->get_gb_main(); }
+    const char *get_aliname() const { return aliview->get_aliname(); }
+    const AliView *get_aliview() const { return aliview; }
+
+    char *load(LoadWhat what, GB_CSTR sort_tree_name, bool show_warnings, GBDATA **species_list);
     char *unload(void);
     const char *save(char *filename,enum DI_SAVE_TYPE type);
 
@@ -128,7 +129,7 @@ public:
     GB_ERROR calculate(AW_root *awr, char *cancel, double alpha, DI_TRANSFORMATION transformation);
     char *calculate_overall_freqs(double rel_frequencies[AP_MAX],char *cancel_columns);
     GB_ERROR calculate_pro(DI_TRANSFORMATION transformation);
-    char *analyse(AW_root *aw_root);
+    void analyse();
 
     int search_group(GBT_TREE *node,GB_HASH *hash, long *groupcnt,char *groupname, DI_ENTRY **groups);       // @@ OLIVER
     char *compress(GBT_TREE *tree);

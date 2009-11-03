@@ -112,7 +112,7 @@ public:
     size_t length() const { return weight_len; }
 };
 
-long AP_timer(void);
+long AP_timer();
 
 #else
 #error AP_filter.hxx included twice

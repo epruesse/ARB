@@ -5,6 +5,7 @@
 #include <AP_filter.hxx>
 #include <ARB_Tree.hxx>
 
+#include <inline.h>
 
 char *AP_sequence_parsimony::table;
 
@@ -13,23 +14,21 @@ char *AP_sequence_parsimony::table;
 
 ******************************/
 
-AP_sequence_parsimony::AP_sequence_parsimony(ARB_tree_root *rooti) : AP_sequence(rooti)
+AP_sequence_parsimony::AP_sequence_parsimony(const AliView *aliview)
+    : AP_sequence(aliview)
+    , seq_pars(0)
 {
-    sequence = 0;
 }
 
-AP_sequence_parsimony::~AP_sequence_parsimony(void)
-{
-    if (sequence != 0) delete [] sequence;
-    sequence = 0;
+AP_sequence_parsimony::~AP_sequence_parsimony() {
+    delete [] seq_pars;
 }
 
-AP_sequence *AP_sequence_parsimony::dup(void)
-{
-    return new AP_sequence_parsimony(root);
+AP_sequence *AP_sequence_parsimony::dup() const {
+    return new AP_sequence_parsimony(get_aliview());
 }
 
-void AP_sequence_parsimony::build_table(void)
+void AP_sequence_parsimony::build_table()
 {
     table = (char *)AP_create_dna_to_ap_bases();
 }
@@ -50,25 +49,19 @@ void AP_sequence_parsimony::build_table(void)
 
 void AP_sequence_parsimony::set(const char *isequence)
 {
-    //      char *s,*d,*f1,c;
-    sequence_len = root->get_filter()->get_filtered_length();
-    sequence     = new char[sequence_len+1];
-    memset(sequence,AP_N,(size_t)sequence_len+1);
-    //     s            = isequence;
-    //     d            = sequence;
-    //     f1           = root->filter->filter_mask;
+    size_t sequence_len = get_filter()->get_filtered_length();
+    seq_pars     = new char[sequence_len+1];
+    memset(seq_pars, AP_N, (size_t)sequence_len+1);
 
-    const uchar *simplify = root->get_filter()->get_simplify_table();
+    const uchar *simplify = get_filter()->get_simplify_table();
     if (!table) this->build_table();
 
-    const size_t *bootstrap = root->get_filter()->get_bootstrap();
+    const size_t *bootstrap = get_filter()->get_bootstrap();
     if (bootstrap) {
         size_t iseqlen = strlen(isequence);
 
-        for (int i = 0; i<sequence_len; ++i) {
+        for (size_t i = 0; i<sequence_len; ++i) {
             size_t pos = bootstrap[i]; // contains random indices
-
-//             printf("i=%i pos=%i sequence_len=%li iseqlen=%i\n", i, pos, sequence_len, iseqlen);
 
             ap_assert(pos<iseqlen);
             if (pos >= iseqlen) continue;
@@ -79,21 +72,11 @@ void AP_sequence_parsimony::set(const char *isequence)
             fputc(simplify[c], stdout);
 #endif // SHOW_SEQ
 
-            sequence[i] = table[simplify[c]];
-
+            seq_pars[i] = table[simplify[c]];
         }
-
-        //         int i;
-        //         for (i=root->filter->real_len-1;i>=0;i--){
-        //             int pos = root->filter->bootstrap[i]; // enthaelt zufallsfolge
-        //             if (pos >= iseqlen) continue;
-        //             c = s[pos];
-        //             d[i] = table[simplify[c]];
-        //         }
-
     }
     else {
-        const AP_filter *filt       = root->get_filter();
+        const AP_filter *filt       = get_filter();
         int              left_bases = sequence_len;
         int              filter_len = filt->get_length();
         int              oidx       = 0;            // for output sequence
@@ -101,37 +84,32 @@ void AP_sequence_parsimony::set(const char *isequence)
         for (int idx = 0; idx<filter_len && left_bases; ++idx) {
             if (filt->use_position(idx)) {
                 unsigned char c = (unsigned char)isequence[idx];
-                sequence[oidx++] = table[simplify[c]];
+                seq_pars[oidx++] = table[simplify[c]];
                 --left_bases;
 #if defined(SHOW_SEQ)
                 fputc(simplify[c], stdout);
 #endif                          // SHOW_SEQ
             }
         }
-
-        //         while ( (c = (*s++)) ) {
-        //             if (!i) break;
-        //             if (*(f++)) { // use current position ?
-        //                 i--;            // decrement leftover positions
-        //                 *(d++) = table[simplify[c]];
-        //             }
-        //         }
     }
 
 #if defined(SHOW_SEQ)
     fputc('\n', stdout);
 #endif // SHOW_SEQ
 
-    update          = AP_timer();
-    is_set_flag     = AP_TRUE;
-    cashed_real_len = -1.0;
+    mark_sequence_set(true);
+}
+
+void AP_sequence_parsimony::unset() {
+    delete [] seq_pars; seq_pars = 0;
+    mark_sequence_set(false);
 }
 
 #if !defined(AP_PARSIMONY_DEFAULTS_HXX)
 #error AP_parsimony_defaults.hxx not included
 #endif // AP_PARSIMONY_DEFAULTS_HXX
 
-AP_FLOAT AP_sequence_parsimony::combine( const AP_sequence *lefts, const AP_sequence *rights) {
+AP_FLOAT AP_sequence_parsimony::combine( const AP_sequence *lefts, const AP_sequence *rights, char *mutation_per_site) {
     //   char *p1,*p2,*p;
     //   char c1,c2;
     //   long result;
@@ -139,23 +117,20 @@ AP_FLOAT AP_sequence_parsimony::combine( const AP_sequence *lefts, const AP_sequ
     const AP_sequence_parsimony *left = (const AP_sequence_parsimony *)lefts;
     const AP_sequence_parsimony *right = (const AP_sequence_parsimony *)rights;
 
-    if (sequence == 0)  {
-        sequence_len = root->get_filter()->get_filtered_length();
-        sequence = new char[sequence_len +1];
+    size_t sequence_len = get_filter()->get_filtered_length();
+    if (seq_pars == 0)  {
+        seq_pars = new char[sequence_len +1];
     }
 
-    const char *p1 = left->sequence;
-    const char *p2 = right->sequence;
-    char       *p  = sequence;
+    const char *p1       = left->get_sequence();
+    const char *p2       = right->get_sequence();
+    char       *p        = seq_pars;
+    char       *mutpsite = mutation_per_site;
+    long        result   = 0;
 
-    //  result         = 0;
-    //  char *end_seq1 = p1 + sequence_len;
+    const AP_weights *weights = get_weights();
 
-    char             *mutpsite = mutation_per_site;
-    long              result   = 0;
-    const AP_weights *weights  = root->get_weights();
-
-    for (long idx = 0; idx<sequence_len; ++idx) {
+    for (size_t idx = 0; idx<sequence_len; ++idx) {
         char c1 = p1[idx];
         char c2 = p2[idx];
 
@@ -216,12 +191,10 @@ AP_FLOAT AP_sequence_parsimony::combine( const AP_sequence *lefts, const AP_sequ
 #undef P2
 #endif // DEBUG
 
-    global_combineCount++;
-    this->is_set_flag = AP_TRUE;
-    cashed_real_len   = -1.0;
+    inc_combine_count();
+    mark_sequence_set(true);
 
     ap_assert(result >= 0.0);
-
     return (AP_FLOAT)result;
 }
 
@@ -239,14 +212,14 @@ void AP_sequence_parsimony::partial_match(const AP_sequence* part_, long *overla
 
     const AP_sequence_parsimony *part = (const AP_sequence_parsimony *)part_;
 
-    const char *pf = sequence;
-    const char *pp = part->sequence;
+    const char *pf = get_sequence();
+    const char *pp = part->get_sequence();
 
-    const AP_weights *weights = root->get_weights();
+    const AP_weights *weights = get_weights();
 
     long min_end;                                   // minimum of both last non-gap positions
 
-    for (min_end = sequence_len-1; min_end >= 0; --min_end) {
+    for (min_end = get_sequence_length()-1; min_end >= 0; --min_end) {
         char both = pf[min_end]|pp[min_end];
         if (both != AP_S) { // last non-gap found
             if (pf[min_end] != AP_S) { // occurred in full sequence
@@ -303,34 +276,33 @@ void AP_sequence_parsimony::partial_match(const AP_sequence* part_, long *overla
 
 
 
-AP_FLOAT AP_sequence_parsimony::real_len(void)  // count all bases
-{
-    if (!sequence) {
-        cashed_real_len = -1.0;
-    }
-    else if (cashed_real_len<0.0) {
-        char hits[256];
-        long i;
+AP_FLOAT AP_sequence_parsimony::count_weighted_bases() const { // count all bases
+    AP_FLOAT wcount;
 
-        for (i=0;i<256;i++) {                           // count ambiguous characters half
-            hits[i] = 1;
-        }
-        hits[AP_A] = 2;                                 // real characters full
+    static char *hits = 0;
+    if (!hits) {
+        hits = (char*)malloc(256);
+        memset(hits, 1, 256);                       // count ambiguous characters half
+        
+        hits[AP_A] = 2;                             // real characters full
         hits[AP_C] = 2;
         hits[AP_G] = 2;
         hits[AP_T] = 2;
-        hits[AP_S] = 0;                                 // count no gaps
-        hits[AP_N] = 0;                                 // no Ns
-
-        const AP_weights *weights = root->get_weights();
-        unsigned char    *p       = (unsigned char*)sequence;
-    
-        long sum = 0;
-        for (i = 0; i<sequence_len; ++i) {
-            sum += hits[p[i]] * weights->weight(i);
-        }
-
-        cashed_real_len = sum * 0.5;
+        hits[AP_S] = 0;                             // count no gaps
+        hits[AP_N] = 0;                             // no Ns
     }
-    return cashed_real_len;
+
+    const AP_weights *weights = get_weights();
+    const  char      *p       = get_sequence();
+
+    long   sum          = 0;
+    size_t sequence_len = get_sequence_length();
+    
+    for (size_t i = 0; i<sequence_len; ++i) {
+        sum += hits[safeCharIndex(p[i])] * weights->weight(i);
+    }
+
+    wcount = sum * 0.5;
+    return wcount;
 }
+

@@ -94,9 +94,11 @@ class AWT_graphic_tree : public AWT_graphic {
     // variables - tree compatibility
 
     AP_tree * tree_proto;
-    double    y_pos;
-    double    list_tree_ruler_y;
-    double    irs_tree_ruler_scale_factor;
+    bool link_to_database; // link on load ? 
+
+    double y_pos;
+    double list_tree_ruler_y;
+    double irs_tree_ruler_scale_factor;
 
     AWT_scaled_font_limits scaled_font;
     double                 scaled_branch_distance; // vertical distance between branches (may be extra-scaled in options)
@@ -165,7 +167,7 @@ public:
 
     AP_tree *get_root_node() { return tree_static ? tree_static->get_root_node() : NULL; }
 
-    void init(const AP_tree& tree_prototype);
+    void init(const AP_tree& tree_prototype, AliView *aliview, AP_sequence *seq_prototype, bool link_to_database_, bool insert_delete_cbs);
     virtual AW_gc_manager init_devices(AW_window *,AW_device *,AWT_canvas *ntw,AW_CL);
 
     virtual void show(AW_device *device);
@@ -198,8 +200,8 @@ public:
     void     toggle_group(AP_tree * at);
     void     jump(AP_tree *at, const char *name);
     AP_tree *search(AP_tree *root, const char *name);
-    GB_ERROR load(GBDATA *gb_main, const char *name,AW_CL link_to_database, AW_CL insert_delete_cbs) __ATTR__USERESULT;
-    GB_ERROR save(GBDATA *gb_main, const char *name,AW_CL cd1, AW_CL cd2) __ATTR__USERESULT;
+    GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL , AW_CL ) __ATTR__USERESULT;
+    GB_ERROR save(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) __ATTR__USERESULT;
     int      check_update(GBDATA *gb_main);         // reload tree if needed
     void     update(GBDATA *gb_main);
     void     set_tree_type(AP_tree_sort type);
@@ -208,7 +210,7 @@ public:
     void get_zombies_and_duplicates(int& zomb, int& dups) const { zomb = zombies; dups = duplicates; }
 };
 
-AWT_graphic_tree *NT_generate_tree( AW_root *root,GBDATA *gb_main );
+AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main);
 bool              AWT_show_remark_branch(AW_device *device, const char *remark_branch, bool is_leaf, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
 
 #else

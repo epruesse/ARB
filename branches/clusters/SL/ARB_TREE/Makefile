@@ -39,7 +39,9 @@ ARB_Tree.o: ARB_Tree.hxx
 ARB_Tree.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+ARB_Tree.o: $(ARBHOME)/INCLUDE/AliView.hxx
 ARB_Tree.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
+ARB_Tree.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 ARB_Tree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/arbdb.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/arbdb_base.h

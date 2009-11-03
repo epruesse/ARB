@@ -62,6 +62,7 @@ public:
     ~AP_main();
 
     void set_tree_root(AWT_graphic_tree *agt_);
+    AWT_graphic_tree *get_tree_root() { return agt; }
     AP_tree_nlen *get_root_node();
 
     GB_ERROR open(char *db_server);
@@ -72,7 +73,7 @@ public:
     void user_pop();
     void push();
     void pop();
-    void push_node(AP_tree * node,AP_STACK_MODE);
+    void push_node(AP_tree_nlen *node,AP_STACK_MODE);
     void clear();               // clears all buffers
 };
 

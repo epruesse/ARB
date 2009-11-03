@@ -38,7 +38,7 @@ inline DERIVED safe_downcast(BASE expr) {
 
 #else
 
-#define DOWNCAST(totype, expr) static_cast<totype>(expr);
+#define DOWNCAST(totype, expr) ((totype)(expr))
 
 #endif // SAFE_DOWNCASTS
 

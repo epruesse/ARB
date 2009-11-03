@@ -76,7 +76,7 @@ nt_mode_event( AW_window *aws, AWT_canvas *ntw, AWT_COMMAND_MODE mode)
             text = "NNI & KL OPTIMIZER   L: select subtree R: whole tree";
             break;
         case AWT_MODE_SETROOT:
-            text = "SET ROOT MODE   LEFT: set root";
+            text = "SET ROOT MODE   LEFT: set root  RIGHT: search optimal root";
             break;
         case AWT_MODE_RESET:
             text = "RESET MODE   LEFT: reset rotation  MIDDLE: reset angles  RIGHT: reset linewidth";
@@ -784,12 +784,10 @@ inline const char *plural(int val) {
     return "s"+(val == 1);
 }
 
-void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw, GB_BOOL set_delete_cbs)
-{
+void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw) {
     GB_push_transaction(ntw->gb_main);
-    char *tree_name = awr->awar(ntw->user_awar)->read_string();
-
-    GB_ERROR error = ntw->tree_disp->load(ntw->gb_main, tree_name,1,set_delete_cbs);    // linked
+    char     *tree_name = awr->awar(ntw->user_awar)->read_string();
+    GB_ERROR  error     = ntw->tree_disp->load(ntw->gb_main, tree_name, 0, 0);
     if (error) {
         aw_message(error);
     }

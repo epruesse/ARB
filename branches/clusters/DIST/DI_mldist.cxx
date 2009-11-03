@@ -223,12 +223,12 @@ const char *di_mldist::makedists()
         }
         {
             /* move all unknown characters to del */
-            ap_pro *seq1 = entries[i]->sequence_protein->sequence;
+            ap_pro *seq = entries[i]->sequence_protein->get_sequence();
             for (k = 0; k <chars ; k++) {
-                b1 = seq1[k];
+                b1 = seq[k];
                 if (b1 <=val) continue;
                 if (b1 == asx || b1 == glx) continue;
-                seq1[k] = del;
+                seq[k] = del;
             }
         }
 
@@ -242,8 +242,8 @@ const char *di_mldist::makedists()
                 pos = tt_2_pos(tt);
                 tt = pos_2_tt(pos);
                 build_akt_predikt(tt);
-                ap_pro *seq1 = entries[i]->sequence_protein->sequence;
-                ap_pro *seq2 = entries[j]->sequence_protein->sequence;
+                const ap_pro *seq1 = entries[i]->sequence_protein->get_sequence();
+                const ap_pro *seq2 = entries[j]->sequence_protein->get_sequence();
                 for (k = chars; k >0; k--) {
                     b1 = *(seq1++);
                     b2 = *(seq2++);

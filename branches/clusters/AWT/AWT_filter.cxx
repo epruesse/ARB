@@ -1,5 +1,5 @@
 #include "awt.hxx"
-#include "awtfilter.hxx"
+#include "awt_filter.hxx"
 #include "awt_sel_boxes.hxx"
 
 #include <aw_awars.hxx>
@@ -374,6 +374,8 @@ AW_window *awt_create_select_filter_win(AW_root *aw_root, AW_CL res_of_create_se
 AP_filter *awt_get_filter(AW_root *aw_root, adfiltercbstruct *acbs) {
     AP_filter *filter      = new AP_filter;
     bool       initialized = false;
+
+    awt_assert(aw_root == acbs->awr); // @@@ if this doesnt fail, remove aw_root from params
 
     if (acbs) {
         GB_push_transaction(acbs->gb_main);

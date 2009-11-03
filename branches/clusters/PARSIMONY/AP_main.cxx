@@ -82,11 +82,11 @@ AP_main
 
 ***************/
 
-AP_main::AP_main(void) {
+AP_main::AP_main() {
     memset((char *)this,0,sizeof(AP_main));
 }
 
-AP_main::~AP_main(void) {
+AP_main::~AP_main() {
     if (use) delete use;
     if (stack) delete stack;
 }
@@ -98,12 +98,12 @@ GB_ERROR AP_main::open(char *db_server) {
     return error;
 }
 
-void AP_main::user_push(void) {
+void AP_main::user_push() {
     this->user_push_counter = stack_level + 1;
     this->push();
 }
 
-void AP_main::user_pop(void) {
+void AP_main::user_pop() {
     // checks if user_pop possible
     if (user_push_counter == stack_level) {
         this->pop();    // changes user_push_counter if user pop
@@ -113,7 +113,7 @@ void AP_main::user_pop(void) {
     return;
 }
 
-void AP_main::push(void) {
+void AP_main::push() {
     // if count > 1 the nodes are buffered more than once
     // WARNING:: node only has to be buffered once in the stack
     //
@@ -124,8 +124,8 @@ void AP_main::push(void) {
     stack->last_user_buffer = this->user_push_counter;
 }
 
-void AP_main::pop(void) {
-    AP_tree *knoten;
+void AP_main::pop() {
+    AP_tree_nlen *knoten;
     if (!stack) {
         new AP_ERR("AP_main::pop()","Stack underflow !");
         return;
@@ -150,7 +150,7 @@ void AP_main::pop(void) {
     return;
 }
 
-void AP_main::clear(void) {
+void AP_main::clear() {
     // removes count elements from the list
     // because the current tree is used
     //
@@ -158,8 +158,9 @@ void AP_main::clear(void) {
     // moves all not previous buffered nodes in the
     // previous stack
 
-    AP_tree * knoten;
-    AP_main_stack * new_stack;
+    AP_tree_nlen  *knoten;
+    AP_main_stack *new_stack;
+
     if (!stack) {
         new AP_ERR("AP_main::clear","Stack underflow !");
         return;
@@ -198,7 +199,7 @@ void AP_main::clear(void) {
 
 }
 
-void AP_main::push_node(AP_tree * node,AP_STACK_MODE mode) {
+void AP_main::push_node(AP_tree_nlen *node, AP_STACK_MODE mode) {
     //
     //  stores node
     //

@@ -369,6 +369,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 NT_extern.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_extern.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_extern.o: $(ARBHOME)/INCLUDE/adGene.h
+NT_extern.o: $(ARBHOME)/INCLUDE/AliView.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -541,6 +542,7 @@ NT_tree_cmp.o: nt_tree_cmp.hxx
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+NT_tree_cmp.o: $(ARBHOME)/INCLUDE/AliView.hxx
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/arb_assert.h

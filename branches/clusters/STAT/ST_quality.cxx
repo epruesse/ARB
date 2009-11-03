@@ -90,52 +90,56 @@ st_cq_info::~st_cq_info() {
 }
 
 void st_ml_add_sequence_part_to_stat(ST_ML * st_ml, AWT_csp * /*awt_csp */,
-        const char *species_name, int seq_len, int bucket_size,
-        GB_HASH * species_to_info_hash, int start, int end) {
-
+                                     const char *species_name, int seq_len, int bucket_size,
+                                     GB_HASH * species_to_info_hash, int start, int end)
+{
     AP_tree *node = st_ml_convert_species_name_to_node(st_ml, species_name);
-    if (!node)
-        return;
-    ST_sequence_ml *sml = st_ml->get_ml_vectors(0, node, start, end);
-    if (!sml)
-        return; // no statistic available
-    st_cq_info *info;
-    if (start > 0) {
-        info = (st_cq_info *) GBS_read_hash(species_to_info_hash, species_name);
-    } else {
-        info = new st_cq_info(seq_len, bucket_size);
-        GBS_write_hash(species_to_info_hash, species_name, long (info));
-    }
-    int pos;
-    const char *source_sequence = 0;
-    int source_sequence_len = 0;
+    if (node) {
+        ST_sequence_ml *sml = st_ml->get_ml_vectors(0, node, start, end);
+        if (sml) {
+            st_cq_info *info;
+            if (start > 0) {
+                info = (st_cq_info *) GBS_read_hash(species_to_info_hash, species_name);
+            }
+            else {
+                info = new st_cq_info(seq_len, bucket_size);
+                GBS_write_hash(species_to_info_hash, species_name, long (info));
+            }
+    
+            int         pos;
+            const char *source_sequence     = 0;
+            int         source_sequence_len = 0;
 
-    if (sml->gb_data) {
-        source_sequence_len = GB_read_string_count(sml->gb_data);
-        source_sequence = GB_read_char_pntr(sml->gb_data);
-    }
-    if (end > source_sequence_len) {
-        end = source_sequence_len;
-    }
+            // if (sml->gb_data) {
+            GBDATA *gb_data = sml->get_bound_species_data();
+            if (gb_data) {
+                source_sequence_len = GB_read_string_count(gb_data);
+                source_sequence     = GB_read_char_pntr(gb_data);
+            }
+            if (end > source_sequence_len) {
+                end = source_sequence_len;
+            }
 
-    ST_base_vector *vec = sml->tmp_out + start;
-    for (pos = start; pos < end; vec++, pos++) {
-        double max = 0;
-        double v;
-        int    b;
+            ST_base_vector *vec = sml->tmp_out + start;
+            for (pos = start; pos < end; vec++, pos++) {
+                double max = 0;
+                double v;
+                int    b;
         
-        for (b = ST_A; b < ST_MAX_BASE; b++) {
-            v = vec->b[b];
-            if (v > max)
-                max = v;
-        }
-        AWT_dna_base base = awt_dna_table.char_to_enum(source_sequence[pos]);
-        if (base != ST_UNKNOWN && base != ST_GAP) { // don't count gaps
-            double val = max / (0.0001 + vec->b[base]);
-            double log_val = log(val);
-            info->ss2.add(pos * 2 / seq_len, log_val);
-            info->ss5.add(pos * 5 / seq_len, log_val);
-            info->ssu.add(pos * info->ssu.size / seq_len, log_val);
+                for (b = ST_A; b < ST_MAX_BASE; b++) {
+                    v = vec->b[b];
+                    if (v > max)
+                        max = v;
+                }
+                AWT_dna_base base = awt_dna_table.char_to_enum(source_sequence[pos]);
+                if (base != ST_UNKNOWN && base != ST_GAP) { // don't count gaps
+                    double val = max / (0.0001 + vec->b[base]);
+                    double log_val = log(val);
+                    info->ss2.add(pos * 2 / seq_len, log_val);
+                    info->ss5.add(pos * 5 / seq_len, log_val);
+                    info->ssu.add(pos * info->ssu.size / seq_len, log_val);
+                }
+            }
         }
     }
 }

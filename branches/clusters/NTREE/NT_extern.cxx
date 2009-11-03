@@ -1096,7 +1096,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
     if (!clone) AW_init_color_group_defaults("arb_ntree");
 
-    GLOBAL_NT.tree = NT_generate_tree(awr,GLOBAL_gb_main);
+    GLOBAL_NT.tree = NT_generate_tree(awr, GLOBAL_gb_main);
 
     AWT_canvas *ntw;
     {
@@ -1114,14 +1114,14 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
         if (existing_tree_name) {
             awr->awar(awar_tree)->write_string(existing_tree_name);
-            NT_reload_tree_event(awr,ntw,GB_FALSE); // load first tree !!!!!!!
+            NT_reload_tree_event(awr, ntw); // load first tree
         }
         else {
             AWT_advice("Your database contains no tree.", AWT_ADVICE_TOGGLE|AWT_ADVICE_HELP, 0, "no_tree.hlp");
             GLOBAL_NT.tree->set_tree_type(AP_LIST_NDS); // no tree -> show NDS list 
         }
 
-        awr->awar( awar_tree)->add_callback( (AW_RCB)NT_reload_tree_event, (AW_CL)ntw,(AW_CL)GB_FALSE);
+        awr->awar( awar_tree)->add_callback( (AW_RCB)NT_reload_tree_event, (AW_CL)ntw, 0);
 
         free(existing_tree_name);
         free(tree_name);

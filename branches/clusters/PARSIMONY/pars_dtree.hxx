@@ -33,8 +33,7 @@ public:
 
 };
 
-struct adfiltercbstruct;
-void NT_tree_init(AWT_graphic_tree *agt, adfiltercbstruct *pars_global_filter);
+void PARS_tree_init(AWT_graphic_tree *agt);
 void PARS_optimizer_cb(AP_tree *tree);
 
 #else

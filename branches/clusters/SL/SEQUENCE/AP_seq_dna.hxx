@@ -16,20 +16,25 @@
 #endif
 
 class AP_sequence_parsimony : public AP_sequence {
-private:
-    void    build_table(void);
+    void build_table();
+    AP_FLOAT count_weighted_bases() const;
+
+    void set(const char *sequence);
+    void unset();
+
+    char *seq_pars;                                 // AP_BASES
 
 public:
-    char        *sequence;                          // AP_BASES
     static char *table;
 
-    AP_sequence_parsimony(ARB_tree_root *rooti);
-    ~AP_sequence_parsimony(void);
+    AP_sequence_parsimony(const AliView *aliview);
+    ~AP_sequence_parsimony();
 
-    AP_sequence *dup(void);                         // used to get the real new element
-    void         set(const char *sequence);
-    AP_FLOAT     combine(   const AP_sequence * lefts, const    AP_sequence *rights) ;
-    AP_FLOAT     real_len(void);
+    const char *get_sequence() const { lazy_load_sequence(); ap_assert(seq_pars); return seq_pars; }
+    const unsigned char *get_usequence() const { return (const unsigned char*)get_sequence(); }
+
+    AP_sequence *dup() const;                         // used to get the real new element
+    AP_FLOAT combine(const AP_sequence *lefts, const AP_sequence *rights, char *mutation_per_site) ;
     void partial_match(const AP_sequence* part, long *overlap, long *penalty) const;
 };
 

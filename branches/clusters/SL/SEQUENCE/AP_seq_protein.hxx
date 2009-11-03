@@ -48,20 +48,20 @@ enum AP_PROTEINS {
     APP_Z = APP_E | APP_Q,      // Glx ( = Glu | Gln )
 };
 
-class AP_sequence_protein :  public  AP_sequence {
+class AP_sequence_protein : public AP_sequence {
 private:
     AP_PROTEINS *sequence;
 
-    AP_sequence_protein(const AP_sequence_protein& other); // copying not allowed
-    AP_sequence_protein& operator = (const AP_sequence_protein& other); // assignment not allowed
+    AP_FLOAT count_weighted_bases() const;
+    void set(const char *isequence);
+    void unset();
+
 public:
-    AP_sequence_protein(ARB_tree_root *root);
+    AP_sequence_protein(const AliView *aliview);
     virtual ~AP_sequence_protein();
 
-    AP_sequence *dup();     // used to get the real new element
-    void         set(const char *isequence);
-    AP_FLOAT     combine(const AP_sequence * lefts, const AP_sequence *rights) ;
-    AP_FLOAT     real_len();
+    AP_sequence *dup() const;     // used to get the real new element
+    AP_FLOAT     combine(const AP_sequence* lefts, const AP_sequence *rights, char *mutation_per_site = 0);
     void partial_match(const AP_sequence* part, long *overlap, long *penalty) const;
 };
 

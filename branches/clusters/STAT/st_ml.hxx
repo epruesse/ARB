@@ -76,38 +76,46 @@ class ST_ML;
 class AWT_csp;
 
 /** Note: Because we have only limited memory we split the
- sequence into ST_MAX_SEQ_PART long parts */
-class ST_sequence_ml : private AP_sequence {
+    sequence into ST_MAX_SEQ_PART long parts */
+
+
+class ST_sequence_ml : public AP_sequence {
     friend class ST_ML;
+
+    AP_FLOAT count_weighted_bases() const;
+
 public:
 
-    GBDATA *gb_data; // the sequence
     static ST_base_vector *tmp_out; // len = alignment length
 
 protected:
 
-    ST_ML *st_ml; // link to a global ST object
-    ST_base_vector *sequence; // A part of the sequence
-    int last_updated;
-    ST_ML_Color *color_out;
-    int *color_out_valid_till; // color_out is valid up to
-
-public:
-    void delete_sequence(); // remove link to database
-    void sequence_change(); // sequence has changed in db
-    AP_FLOAT combine(const AP_sequence* lefts, const AP_sequence *rights);
-    void partial_match(const AP_sequence* part, long *overlap, long *penalty) const;
-    ST_sequence_ml(ARB_tree_root *rooti, ST_ML *st_ml);
-    ~ST_sequence_ml();
-    AP_sequence *dup(void);
+    ST_ML          *st_ml;                          // link to a global ST object
+    ST_base_vector *sequence;                       // A part of the sequence
+    int             last_updated;
+    ST_ML_Color    *color_out;
+    int            *color_out_valid_till;           // color_out is valid up to
 
     void set(const char *sequence);
-    void set_gb(GBDATA *gbd);
+    void unset();
 
-    void set_sequence(); // start at st_ml->base
+public:
 
-    void go(const ST_sequence_ml *lefts, double leftl,
-            const ST_sequence_ml *rights, double rightl);
+    ST_sequence_ml(const AliView *aliview, ST_ML *st_ml_);
+    virtual ~ST_sequence_ml();
+    
+    AP_sequence *dup(void) const;
+    AP_FLOAT     combine(const AP_sequence* lefts, const AP_sequence *rights, char *mutation_per_site = 0);
+    void partial_match(const AP_sequence* part, long *overlap, long *penalty) const;
+
+    GB_ERROR bind_to_species(GBDATA *gb_species);
+    void     unbind_from_species();
+    GBDATA *get_bound_species_data() const { return AP_sequence::get_bound_species_data(); }
+
+    void sequence_change();                         // sequence has changed in db
+    void set_sequence();                            // start at st_ml->base
+
+    void go(const ST_sequence_ml *lefts, double leftl, const ST_sequence_ml *rights, double rightl);
     void ungo(); // undo go
 
     void calc_out(ST_sequence_ml *sequence_of_brother, double dist);
@@ -118,41 +126,45 @@ class AW_window;
 typedef void (*AW_CB0)(AW_window*);
 
 class ST_ML {
-    char *alignment_name;
-    friend AP_tree *st_ml_convert_species_name_to_node(ST_ML *st_ml,
-            const char *species_name);
-    GB_HASH *hash_2_ap_tree; // hash table to get from name to tree_node
-    GB_HASH *keep_species_hash; // temporary hash to find
-    int refresh_n;
-    int *not_valid; // which columns are valid
+    friend AP_tree *st_ml_convert_species_name_to_node(ST_ML *st_ml, const char *species_name);
+
+    char    *alignment_name;
+    GB_HASH *hash_2_ap_tree;                        // hash table to get from name to tree_node
+    GB_HASH *keep_species_hash;                     // temporary hash to find
+    int      refresh_n;
+    int     *not_valid;                             // which columns are valid
+
+    ST_sequence_ml *getOrCreate_seq(AP_tree *node);
 
     ST_sequence_ml *do_tree(AP_tree *node);
-    void undo_tree(AP_tree *node); //opposite of do_tree
-    void insert_tree_into_hash_rek(AP_tree *node);
-    void create_matrices(double max_disti, int nmatrices);
-    void create_frequencies();
-    static long delete_species(const char *key, long val, void *cd_st_ml);
+    void            undo_tree(AP_tree *node);       //opposite of do_tree
+    void            insert_tree_into_hash_rek(AP_tree *node);
+    void            create_matrices(double max_disti, int nmatrices);
+    void            create_frequencies();
+    static long     delete_species(const char *key, long val, void *cd_st_ml);
+
 public:
     AP_tree_root *tree_root;
-    int latest_modification; // last mod;
-    int base;
-    int to;
-    AW_CB0 refresh_func;
-    AW_window *aw_window;
+    int           latest_modification;              // last mod;
+    int           base;
+    int           to;
+    AW_CB0        refresh_func;
+    AW_window    *aw_window;
 
-    GBDATA *gb_main;
-    float *ttratio; // column independent
-    ST_base_vector *base_frequencies; // column independent
-    ST_base_vector *inv_base_frequencies; // column independent
-    float *rates; // column independent
-    double max_dist; // max_dist for rate_matrices
-    double step_size; // max_dist/step_size matrices
-    int max_matr;
-    ST_rate_matrix *rate_matrices; // for each distance a new matrix
-    long alignment_len;
-    AWT_csp *awt_csp;
+    GBDATA         *gb_main;
+    float          *ttratio;                        // column independent
+    ST_base_vector *base_frequencies;               // column independent
+    ST_base_vector *inv_base_frequencies;           // column independent
+    float          *rates;                          // column independent
+    double          max_dist;                       // max_dist for rate_matrices
+    double          step_size;                      // max_dist/step_size matrices
+    int             max_matr;
+    ST_rate_matrix *rate_matrices;                  // for each distance a new matrix
+    long            alignment_len;
+    AWT_csp        *awt_csp;
+    
     void set_modified(int *what = 0);
-    void set_refresh(); // set flag for refresh
+    void set_refresh();                             // set flag for refresh
 
     ~ST_ML();
     ST_ML(GBDATA *gb_main);

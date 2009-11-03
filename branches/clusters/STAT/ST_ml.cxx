@@ -1,15 +1,11 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <memory.h>
-// #include <malloc.h>
-#include <ctype.h>
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_awars.hxx>
-#include <awt_csp.hxx>
 #include "st_ml.hxx"
+
+#include <awt_csp.hxx>
+#include <AP_filter.hxx>
+
+#include <cctype>
+#include <cmath>
+
 
 #define st_assert(bed) arb_assert(bed)
 
@@ -150,63 +146,67 @@ inline void ST_rate_matrix::mult(ST_base_vector * in, ST_base_vector * out) {
 }
 #endif
 
-ST_sequence_ml::ST_sequence_ml(ARB_tree_root * rooti, ST_ML * st_mli) :
-    AP_sequence(rooti) {
-    gb_data = 0;
-    st_ml = st_mli;
-    sequence = new ST_base_vector[ST_MAX_SEQ_PART];
-    color_out = NULL;
-    color_out_valid_till = NULL;
-    last_updated = 0;
+ST_sequence_ml::ST_sequence_ml(const AliView *aliview, ST_ML *st_ml_)
+    : AP_sequence(aliview)
+    , st_ml(st_ml_)
+    , sequence(new ST_base_vector[ST_MAX_SEQ_PART])
+    , last_updated(0)
+    , color_out(NULL)
+    , color_out_valid_till(NULL)
+{
 }
 
-void st_sequence_callback(GBDATA *, int *cl, gb_call_back_type) {
+ST_sequence_ml::~ST_sequence_ml() {
+    delete [] sequence;
+    delete color_out;
+    delete color_out_valid_till;
+
+    unbind_from_species();
+}
+
+static void st_sequence_callback(GBDATA *, int *cl, gb_call_back_type) {
     ST_sequence_ml *seq = (ST_sequence_ml *) cl;
     seq->sequence_change();
 }
 
-void st_sequence_del_callback(GBDATA *, int *cl, gb_call_back_type) {
+static void st_sequence_del_callback(GBDATA *, int *cl, gb_call_back_type) {
     ST_sequence_ml *seq = (ST_sequence_ml *) cl;
-    seq->delete_sequence();
+    seq->unbind_from_species();
 }
 
-void ST_sequence_ml::delete_sequence() {
-    if (gb_data)
-        GB_remove_callback(gb_data, GB_CB_CHANGED, st_sequence_callback,
-                           (int *) this);
-    if (gb_data)
-        GB_remove_callback(gb_data, GB_CB_DELETE, st_sequence_del_callback,
-                           (int *) this);
-    gb_data = 0;
+
+GB_ERROR ST_sequence_ml::bind_to_species(GBDATA *gb_species) {
+    GB_ERROR error = AP_sequence::bind_to_species(gb_species);
+    if (!error) {
+        GBDATA *gb_seq = get_bound_species_data();
+        st_assert(gb_seq);
+
+        error             = GB_add_callback(gb_seq, GB_CB_CHANGED, st_sequence_callback, (int *) this);
+        if (!error) error = GB_add_callback(gb_seq, GB_CB_DELETE, st_sequence_del_callback, (int *) this);
+    }
+    return error;
+}
+void ST_sequence_ml::unbind_from_species() {
+    GBDATA *gb_seq = get_bound_species_data();
+    st_assert(gb_seq);
+    GB_remove_callback(gb_seq, GB_CB_CHANGED, st_sequence_callback, (int *) this);
+    GB_remove_callback(gb_seq, GB_CB_DELETE, st_sequence_del_callback, (int *) this);
+    AP_sequence::unbind_from_species();
 }
 
 void ST_sequence_ml::sequence_change() {
     st_ml->clear_all();
-
 }
 
-ST_sequence_ml::~ST_sequence_ml() {
-    delete[]sequence;
-    delete color_out;
-    delete color_out_valid_till;
-
-    delete_sequence();
-}
-
-AP_sequence *ST_sequence_ml::dup() {
-    return new ST_sequence_ml(root, st_ml);
-}
-
-void ST_sequence_ml::set_gb(GBDATA * gbd) {
-    delete_sequence();
-    gb_data = gbd;
-    GB_add_callback(gb_data, GB_CB_CHANGED, st_sequence_callback, (int *) this);
-    GB_add_callback(gb_data, GB_CB_DELETE, st_sequence_del_callback,
-                    (int *) this);
+AP_sequence *ST_sequence_ml::dup() const {
+    return new ST_sequence_ml(get_aliview(), st_ml);
 }
 
 void ST_sequence_ml::set(const char *) {
-    st_assert(0); // function does nothing, so i assert it wont be called -- ralf may 2008
+    st_assert(0);                                   // hmm why not perform set_sequence() here ?
+}
+
+void ST_sequence_ml::unset() {
 }
 
 /** Transform the sequence from character to vector, from st_ml->base to 'to' */
@@ -216,6 +216,7 @@ void ST_sequence_ml::set_sequence() {
     const char *source_sequence     = 0;
     int         source_sequence_len = 0;
 
+    GBDATA *gb_data = get_bound_species_data();
     if (gb_data) {
         source_sequence_len = (int) GB_read_string_count(gb_data);
         source_sequence = GB_read_char_pntr(gb_data);
@@ -241,8 +242,9 @@ void ST_sequence_ml::set_sequence() {
     }
 }
 
-AP_FLOAT ST_sequence_ml::combine(const AP_sequence *, const AP_sequence *) {
-    return 0.0;
+AP_FLOAT ST_sequence_ml::combine(const AP_sequence *, const AP_sequence *, char *) {
+    st_assert(0);
+    return -1.0;
 }
 
 // void ST_sequence_ml::partial_match(const AP_sequence *part, long *overlap, long *penalty) const
@@ -347,11 +349,16 @@ void ST_sequence_ml::calc_out(ST_sequence_ml * next_branch, double dist) {
 }
 
 void ST_sequence_ml::print() {
-    int i;
-    for (i = 0; i < ST_MAX_SEQ_PART; i++) {
-        printf("POS %3i  %c     ", i, GB_read_char_pntr(gb_data)[i]);
+    const char *data = GB_read_char_pntr(get_bound_species_data());
+    for (int i = 0; i < ST_MAX_SEQ_PART; i++) {
+        printf("POS %3i  %c     ", i, data[i]);
         printf("\n");
     }
+}
+
+AP_FLOAT ST_sequence_ml::count_weighted_bases() const {
+    st_assert(0);
+    return -1.0;
 }
 
 ST_ML::ST_ML(GBDATA * gb_maini) {
@@ -533,9 +540,18 @@ GB_ERROR ST_ML::init(const char *tree_name, const char *alignment_namei,
         free(alignment_name);
         return GB_await_error();
     }
-    
-    tree_root = new AP_tree_root(gb_main, AP_tree(0), false);
-    tree_root->loadFromDB(tree_name); // tree is not linked!
+
+    {
+        AP_filter  filter; filter.init(alignment_len);
+        AP_weights weights; weights.init(&filter);
+
+        AliView        *aliview   = new AliView(gb_main, filter, weights, alignment_name);
+        ST_sequence_ml *seq_templ = new ST_sequence_ml(aliview, this);
+
+        tree_root = new AP_tree_root(aliview, AP_tree(0), seq_templ, false);
+        // do not delete 'aliview' or 'seq_templ' (they belong to 'tree_root' now)
+    }
+    tree_root->loadFromDB(tree_name);               // tree is not linked!
 
     // aw_openstatus("Initializing Online Statistic");
     /* send species into hash table */
@@ -595,11 +611,6 @@ GB_ERROR ST_ML::init(const char *tree_name, const char *alignment_namei,
 
     latest_modification = GB_read_clock(gb_main);
 
-    /* load sequences */
-    // aw_status("load sequences");
-    tree_root->sequence_template = new ST_sequence_ml(tree_root, this);
-    tree_root->get_root_node()->load_sequences_rek(alignment_name, GB_TRUE, GB_TRUE);
-
     /* create matrices */
     create_matrices(2.0, 1000);
 
@@ -609,25 +620,36 @@ GB_ERROR ST_ML::init(const char *tree_name, const char *alignment_namei,
     return 0;
 }
 
+ST_sequence_ml *ST_ML::getOrCreate_seq(AP_tree *node) {
+    ST_sequence_ml *seq = DOWNCAST(ST_sequence_ml*, node->get_seq());
+    if (!seq) {
+        seq = new ST_sequence_ml(tree_root->get_aliview(), this); // @@@ why not use dup() ?
+        
+        node->set_seq(seq);
+        if (node->is_leaf) {
+            st_assert(node->gb_node);
+            seq->bind_to_species(node->gb_node);
+        }
+    }
+    return seq;
+}
+
 /** go through the tree and calculate the ST_base_vector from bottom to top */
 ST_sequence_ml *ST_ML::do_tree(AP_tree * node) {
-    ST_sequence_ml *seq = static_cast<ST_sequence_ml*>(node->sequence);
-    if (!seq) {
-        seq = new ST_sequence_ml(tree_root, this);
-        node->sequence = (AP_sequence *) seq;
+    ST_sequence_ml *seq = getOrCreate_seq(node);
+    if (!seq->last_updated) {
+        if (node->is_leaf) {
+            seq->set_sequence();
+        }
+        else {
+            ST_sequence_ml *ls = do_tree(node->get_leftson());
+            ST_sequence_ml *rs = do_tree(node->get_rightson());
+            seq->go(ls, node->leftlen, rs, node->rightlen);
+        }
+
+        seq->last_updated = 1;
     }
 
-    if (seq->last_updated)
-        return seq; // already valid !!!
-
-    if (node->is_leaf) {
-        seq->set_sequence();
-    } else {
-        ST_sequence_ml *ls = do_tree(node->get_leftson());
-        ST_sequence_ml *rs = do_tree(node->get_rightson());
-        seq->go(ls, node->leftlen, rs, node->rightlen);
-    }
-    seq->last_updated = 1;
     return seq;
 }
 
@@ -638,11 +660,7 @@ void ST_ML::clear_all() {
 }
 
 void ST_ML::undo_tree(AP_tree * node) {
-    ST_sequence_ml *seq = static_cast<ST_sequence_ml*>(node->sequence);
-    if (!seq) {
-        seq = new ST_sequence_ml(tree_root, this);
-        node->sequence = (AP_sequence *) seq;
-    }
+    ST_sequence_ml *seq = getOrCreate_seq(node);
     seq->ungo();
     if (!node->is_leaf) {
         undo_tree(node->get_leftson());
@@ -666,7 +684,7 @@ ST_sequence_ml *ST_ML::get_ml_vectors(char *species_name, AP_tree * node,
 
     st_assert((end_ali_pos - start_ali_pos + 1) <= ST_MAX_SEQ_PART);
 
-    ST_sequence_ml *seq = (ST_sequence_ml *) node->sequence;
+    ST_sequence_ml *seq = getOrCreate_seq(node);
 
     if (start_ali_pos != base || end_ali_pos > to) {
         undo_tree(tree_root->get_root_node()); // undo everything
@@ -676,14 +694,14 @@ ST_sequence_ml *ST_ML::get_ml_vectors(char *species_name, AP_tree * node,
 
     AP_tree *pntr;
     for (pntr = node->get_father(); pntr; pntr = pntr->get_father()) {
-        ST_sequence_ml *sequ = (ST_sequence_ml *) pntr->sequence;
+        ST_sequence_ml *sequ = getOrCreate_seq(pntr);
         if (sequ) sequ->ungo();
     }
 
     node->set_root();
 
     // get the sequence of my brother
-    AP_tree *brother = node->get_brother();
+    AP_tree        *brother        = node->get_brother();
     ST_sequence_ml *seq_of_brother = do_tree(brother);
 
     seq->calc_out(seq_of_brother, node->father->leftlen + node->father->rightlen);
@@ -730,7 +748,7 @@ int ST_ML::update_ml_likelihood(char *result[4], int *latest_update,
         get_ml_vectors(0, node, seq_start, seq_end);
     }
 
-    ST_sequence_ml *seq = (ST_sequence_ml *) node->sequence;
+    ST_sequence_ml *seq = getOrCreate_seq(node);
 
     for (int pos = 0; pos < alignment_len; pos++) {
         ST_base_vector & vec = seq->tmp_out[pos];
@@ -756,25 +774,23 @@ int ST_ML::update_ml_likelihood(char *result[4], int *latest_update,
 
 ST_ML_Color *ST_ML::get_color_string(char *species_name, AP_tree * node,
                                      int start_ali_pos, int end_ali_pos)
-//  (Re-)Calculates the color string of a given node for sequence positions start_ali_pos..end_ali_pos
 {
-
-    // if node isn't given search it using species name:
+    //  (Re-)Calculates the color string of a given node for sequence positions start_ali_pos..end_ali_pos
     if (!node) {
-        if (!hash_2_ap_tree)
-            return 0;
+        // if node isn't given, search it using species name:
+        if (!hash_2_ap_tree) return 0;
         node = (AP_tree *) GBS_read_hash(hash_2_ap_tree, species_name);
-        if (!node)
-            return 0;
+        if (!node) return 0;
     }
+
     // align start_ali_pos/end_ali_pos to previous/next pos divisible by ST_BUCKET_SIZE:
     start_ali_pos &= ~(ST_BUCKET_SIZE - 1);
-    end_ali_pos = (end_ali_pos & ~(ST_BUCKET_SIZE - 1)) + ST_BUCKET_SIZE - 1;
-    if (end_ali_pos > alignment_len)
-        end_ali_pos = alignment_len;
+    end_ali_pos    = (end_ali_pos & ~(ST_BUCKET_SIZE - 1)) + ST_BUCKET_SIZE - 1;
+    
+    if (end_ali_pos > alignment_len) end_ali_pos = alignment_len;
 
     double          val;
-    ST_sequence_ml *seq = (ST_sequence_ml *) node->sequence;
+    ST_sequence_ml *seq = getOrCreate_seq(node);
     int             pos;
 
     if (!seq->color_out) {      // allocate mem for color_out if we not already have it
@@ -807,9 +823,10 @@ ST_ML_Color *ST_ML::get_color_string(char *species_name, AP_tree * node,
     const char *source_sequence = 0;
     int source_sequence_len = 0;
 
-    if (seq->gb_data) {
-        source_sequence_len = GB_read_string_count(seq->gb_data);
-        source_sequence = GB_read_char_pntr(seq->gb_data);
+    GBDATA *gb_data = seq->get_bound_species_data();
+    if (gb_data) {
+        source_sequence_len = GB_read_string_count(gb_data);
+        source_sequence     = GB_read_char_pntr(gb_data);
     }
     // create color string in 'outs':
     ST_ML_Color *outs   = seq->color_out + start_ali_pos;
@@ -847,3 +864,4 @@ ST_ML_Color *ST_ML::get_color_string(char *species_name, AP_tree * node,
     }
     return seq->color_out;
 }
+
