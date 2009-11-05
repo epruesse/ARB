@@ -43,6 +43,7 @@ else
                 xfig \
                 transfig \
                 treetool \
+                xterm \
 
         elif [ "$2" == "arb_OpenGL" ]; then
             $0 echo arb_noOpenGL
