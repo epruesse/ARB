@@ -47,10 +47,7 @@ static GBDATA *DB_create_container(GBDATA *parent, const char *name, bool mark) 
     GBDATA *gb_container = GB_create_container(parent, name);
     if (!gb_container) throw DBerror(GBS_global_string("Failed to create container '%s'", name));
 
-    if (mark) {
-        GB_ERROR err = GB_write_flag(gb_container, 1);
-        if (err) throw DBerror(GBS_global_string("Failed to mark %s", name), err);
-    }
+    if (mark) GB_write_flag(gb_container, 1);
 
     return gb_container;
 }

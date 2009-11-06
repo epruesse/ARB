@@ -921,11 +921,10 @@ static void gen_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene
 static long gen_count_marked_genes = 0; // used to count marked genes
 
 static void do_mark_command_for_one_species(int imode, GBDATA *gb_species, AW_CL cl_user) {
-    GEN_MARK_MODE mode  = (GEN_MARK_MODE)imode;
-    GB_ERROR      error = 0;
+    GEN_MARK_MODE mode = (GEN_MARK_MODE)imode;
 
     for (GBDATA *gb_gene = GEN_first_gene(gb_species);
-         !error && gb_gene;
+         gb_gene;
          gb_gene = GEN_next_gene(gb_gene))
     {
         bool mark_flag     = GB_read_flag(gb_gene) != 0;
@@ -974,12 +973,8 @@ static void do_mark_command_for_one_species(int imode, GBDATA *gb_species, AW_CL
             }
         }
 
-        if (mark_flag != org_mark_flag) {
-            error = GB_write_flag(gb_gene, mark_flag?1:0);
-        }
+        if (mark_flag != org_mark_flag) GB_write_flag(gb_gene, mark_flag?1:0);
     }
-
-    if (error) aw_message(error);
 }
 
 static void do_hide_command_for_one_species(int imode, GBDATA *gb_species, AW_CL /*cl_user*/) {

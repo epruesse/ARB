@@ -37,7 +37,7 @@ GBDATA *GBT_find_or_create_item_rel_item_data(GBDATA *gb_item_data, const char *
                 if (!gb_item) error = GB_await_error();
                 else {
                     error = GBT_write_string(gb_item, id_field, id); // write item identifier
-                    if (!error && markCreated) error = GB_write_flag(gb_item, 1); // mark generated item
+                    if (!error && markCreated) GB_write_flag(gb_item, 1); // mark generated item
                 }
             }
             error = GB_end_transaction(gb_item_data, error);
@@ -293,8 +293,11 @@ char *GBT_create_unique_species_name(GBDATA *gb_main, const char *default_name) 
 /********************************************************************************************
                     mark and unmark species
 ********************************************************************************************/
-void GBT_mark_all(GBDATA *gb_main, int flag)
-{
+void GBT_mark_all(GBDATA *gb_main, int flag) {
+    // flag == 0 -> unmark
+    // flag == 1 -> mark
+    // flag == 2 -> invert
+
     GBDATA *gb_species;
     GB_push_transaction(gb_main);
 

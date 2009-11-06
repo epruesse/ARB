@@ -1742,12 +1742,10 @@ static void awt_colorize_marked(AW_window *aww, AW_CL cl_cmd) {
 }
 
 // @@@ awt_mark_colored is obsolete! (will be replaced by dynamic coloring in the future)
-static void awt_mark_colored(AW_window *aww, AW_CL cl_cmd, AW_CL cl_mode)
-{
+static void awt_mark_colored(AW_window *aww, AW_CL cl_cmd, AW_CL cl_mode) {
     const color_mark_data  *cmd         = (struct color_mark_data *)cl_cmd;
     const ad_item_selector *sel         = cmd->sel;
     int                     mode        = int(cl_mode); // 0 = unmark 1 = mark 2 = invert
-    GB_ERROR                error       = 0;
     AW_root                *aw_root     = aww->get_root();
     int                     color_group = aw_root->awar(AWAR_COLORIZE)->read_int();
     AWT_QUERY_RANGE         range       = AWT_QUERY_ALL_SPECIES; // @@@ FIXME: make customizable
@@ -1755,30 +1753,29 @@ static void awt_mark_colored(AW_window *aww, AW_CL cl_cmd, AW_CL cl_mode)
     GB_transaction trans_dummy(cmd->gb_main);
 
     for (GBDATA *gb_item_container = sel->get_first_item_container(cmd->gb_main, aw_root, range);
-         !error && gb_item_container;
+         gb_item_container;
          gb_item_container = sel->get_next_item_container(gb_item_container, range))
+    {
+        for (GBDATA *gb_item = sel->get_first_item(gb_item_container);
+             gb_item;
+             gb_item = sel->get_next_item(gb_item))
         {
-            for (GBDATA *gb_item = sel->get_first_item(gb_item_container);
-                 !error && gb_item;
-                 gb_item       = sel->get_next_item(gb_item))
-                {
-                    long my_color = AW_find_color_group(gb_item, true);
-                    if (my_color == color_group) {
-                        bool marked = GB_read_flag(gb_item);
+            long my_color = AW_find_color_group(gb_item, true);
+            if (my_color == color_group) {
+                bool marked = GB_read_flag(gb_item);
 
-                        switch (mode) {
-                        case 0: marked = 0; break;
-                        case 1: marked = 1; break;
-                        case 2: marked = !marked; break;
-                        default : awt_assert(0); break;
-                        }
-
-                        error = GB_write_flag(gb_item, marked);
-                    }
+                switch (mode) {
+                    case 0: marked = 0; break;
+                    case 1: marked = 1; break;
+                    case 2: marked = !marked; break;
+                    default : awt_assert(0); break;
                 }
-        }
 
-    if (error) GB_export_error(error);
+                GB_write_flag(gb_item, marked);
+            }
+        }
+    }
+
 }
 
 // --------------------------------------------------------------------------------

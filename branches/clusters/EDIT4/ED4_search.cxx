@@ -1445,10 +1445,9 @@ void ED4_search(AW_window */*aww*/, AW_CL searchDescriptor)
 void ED4_mark_matching_species(AW_window */*aww*/, AW_CL cl_pattern) {
     ED4_SearchPositionType  pattern  = ED4_SearchPositionType(cl_pattern);
     ED4_terminal           *terminal = ED4_ROOT->root_group_man->get_first_terminal();
-    GB_ERROR                error    = 0;
     GB_transaction          ta(GLOBAL_gb_main);
 
-    while (terminal && !error) {
+    while (terminal) {
         if (terminal->is_sequence_terminal()) {
             ED4_sequence_terminal *seq_terminal = terminal->to_sequence_terminal();
             ED4_SearchResults&     results      = seq_terminal->results();
@@ -1461,17 +1460,12 @@ void ED4_mark_matching_species(AW_window */*aww*/, AW_CL cl_pattern) {
                 if (!species_man->flag.is_consensus) {
                     GBDATA *gbd = species_man->get_species_pointer();
                     e4_assert(gbd);
-                    error = GB_write_flag(gbd, 1);
+                    GB_write_flag(gbd, 1);
                 }            
             }
         }
 
         terminal = terminal->get_next_terminal();
-    }
-
-    if (error) {
-        error = ta.close(error);
-        aw_message(error);
     }
 }
 
