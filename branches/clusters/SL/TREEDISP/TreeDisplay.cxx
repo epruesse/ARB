@@ -1608,7 +1608,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
             }
             break;
 
-        case AWT_MODE_MOD:
+        case AWT_MODE_EDIT:
             if(type==AW_Mouse_Press && (cl->exists || ct->exists) ){
                 GB_transaction ta(tree_static->get_gb_main());
                 at = (AP_tree *)(cl->exists ? cl->client_data1 : ct->client_data1);

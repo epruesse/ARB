@@ -521,7 +521,7 @@ void GEN_mode_event( AW_window *aws, AW_CL cl_win, AW_CL cl_mode) {
             text="ZOOM MODE    LEFT: drag to zoom   RIGHT: zoom out";
             break;
         }
-        case AWT_MODE_MOD: {
+        case AWT_MODE_EDIT: {
             text="INFO MODE    LEFT: click for info";
             break;
         }
@@ -1660,7 +1660,7 @@ void GEN_map_window::init(AW_root *awr) {
 
     create_mode("select.bitmap", "gen_mode.hlp", AWM_ALL, GEN_mode_event, (AW_CL)this, (AW_CL)AWT_MODE_SELECT);
     create_mode("pzoom.bitmap",  "gen_mode.hlp", AWM_ALL, GEN_mode_event, (AW_CL)this, (AW_CL)AWT_MODE_ZOOM);
-    create_mode("info.bitmap",   "gen_mode.hlp", AWM_ALL, GEN_mode_event, (AW_CL)this, (AW_CL)AWT_MODE_MOD);
+    create_mode("info.bitmap",   "gen_mode.hlp", AWM_ALL, GEN_mode_event, (AW_CL)this, (AW_CL)AWT_MODE_EDIT);
 
     // ------------------
     //      info area

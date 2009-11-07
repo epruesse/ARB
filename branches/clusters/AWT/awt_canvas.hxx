@@ -23,7 +23,7 @@ typedef enum {
     AWT_MODE_GROUP,
     AWT_MODE_ZOOM,          // no command
     AWT_MODE_LZOOM,
-    AWT_MODE_MOD, // species info
+    AWT_MODE_EDIT, // species info
     AWT_MODE_WWW,
     AWT_MODE_LINE,
     AWT_MODE_ROT,

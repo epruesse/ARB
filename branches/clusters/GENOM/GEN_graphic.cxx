@@ -116,7 +116,7 @@ void GEN_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
                 break;
             }
             case AWT_MODE_SELECT:
-            case AWT_MODE_MOD: {
+            case AWT_MODE_EDIT: {
                 if(button==AWT_M_LEFT) {
                     GEN_gene *gene = 0;
                     if (ct) gene   = (GEN_gene*)ct->client_data1;
@@ -126,7 +126,7 @@ void GEN_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
                         GB_transaction dummy(gb_main);
                         aw_root->awar(AWAR_LOCAL_GENE_NAME(window_nr))->write_string(gene->Name().c_str());
 
-                        if (cmd == AWT_MODE_MOD) {
+                        if (cmd == AWT_MODE_EDIT) {
                             GEN_create_gene_window(aw_root)->activate();
                         }
                     }

@@ -42,8 +42,8 @@ nt_mode_event( AW_window *aws, AWT_canvas *ntw, AWT_COMMAND_MODE mode)
         case AWT_MODE_LZOOM:
             text = "LOGICAL ZOOM MODE   LEFT: show subtree  RIGHT: go up one step";
             break;
-        case AWT_MODE_MOD:
-            text = "MODIFY MODE   LEFT: select node M: assign info to internal node";
+        case AWT_MODE_EDIT:
+            text = "INFO MODE    LEFT: click for info";
             break;
         case AWT_MODE_WWW:
             text = "CLICK NODE TO SEARCH WEB (See <PROPS/WWW...> also";

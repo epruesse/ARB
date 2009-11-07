@@ -218,7 +218,7 @@ static void sec_mode_event(AW_window *aws, AW_CL cl_secroot, AW_CL cl_mode)
             sec_root->set_show_constraints(SEC_ANY_TYPE);
             break;
         }
-        case AWT_MODE_MOD: {
+        case AWT_MODE_EDIT: {
             text="CONSTRAINT MODE    LEFT: modify constraint";
             sec_root->set_show_constraints(SEC_ANY_TYPE);
             break;
@@ -755,7 +755,7 @@ AW_window *SEC_create_main_window(AW_root *awr, GBDATA *gb_main) {
     awm->create_mode("setroot.bitmap",     "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_SETROOT);
     awm->create_mode("rot.bitmap",         "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_ROT);
     awm->create_mode("stretch.bitmap",     "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_STRETCH);
-    awm->create_mode("info.bitmap",        "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_MOD);
+    awm->create_mode("info.bitmap",        "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_EDIT);
     awm->create_mode("sec_setcurs.bitmap", "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_LINE);
     awm->create_mode("probeInfo.bitmap",   "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_PROINFO);
 

@@ -309,7 +309,7 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
                 }
                 break;
             }
-            case AWT_MODE_MOD:  // edit constraints
+            case AWT_MODE_EDIT:  // edit constraints
                 if (button==AWT_M_LEFT && event==AW_Mouse_Press) {
                     error = change_constraints(elem);
                     if (!error) {
@@ -488,7 +488,7 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd,
                           AW_event_type event, AW_pos screen_x, AW_pos screen_y,
                           AW_clicked_line *cl, AW_clicked_text *ct)
 {
-    if (cmd != AWT_MODE_MOD && cmd != AWT_MODE_STRETCH) sec_root->set_show_constraints(SEC_NO_TYPE);
+    if (cmd != AWT_MODE_EDIT && cmd != AWT_MODE_STRETCH) sec_root->set_show_constraints(SEC_NO_TYPE);
 
     GB_ERROR error = 0;
     if (event== AW_Keyboard_Press || event == AW_Keyboard_Release) {
