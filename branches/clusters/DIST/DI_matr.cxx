@@ -9,6 +9,7 @@
 // =============================================================== //
 
 #include "di_protdist.hxx"
+#include "di_clusters.hxx"
 #include "dist.hxx"
 #include "di_view_matrix.hxx"
 #include "di_matr.hxx"
@@ -87,9 +88,9 @@ static AW_window *create_dna_matrix_window(AW_root *aw_root){
     return aws;
 }
 
-void DI_create_matrix_variables(AW_root *aw_root, AW_default def)
+void DI_create_matrix_variables(AW_root *aw_root, AW_default def, AW_default db)
 {
-    GB_transaction dummy(GLOBAL_gb_main);
+    GB_transaction dummy(db);
     DI_dna_matrix.set_description("","");
     DI_dna_matrix.x_description[AP_A] = strdup("A");
     DI_dna_matrix.x_description[AP_C] = strdup("C");
@@ -115,7 +116,7 @@ void DI_create_matrix_variables(AW_root *aw_root, AW_default def)
 
     aw_root->awar_string(AWAR_DIST_WHICH_SPECIES, "marked", def)->add_callback(delete_matrix_cb);
     {
-        char *default_ali = GBT_get_default_alignment(GLOBAL_gb_main);
+        char *default_ali = GBT_get_default_alignment(db);
         aw_root->awar_string( AWAR_DIST_ALIGNMENT,"",def)      ->add_callback(delete_matrix_cb)->write_string(default_ali);
         free(default_ali);
     }
@@ -138,7 +139,7 @@ void DI_create_matrix_variables(AW_root *aw_root, AW_default def)
 
     aw_root->awar_string(AWAR_DIST_TREE_STD_NAME,  "tree_nj", def);
     {
-        char *currentTree = aw_root->awar_string(AWAR_TREE, "", GLOBAL_gb_main)->read_string();
+        char *currentTree = aw_root->awar_string(AWAR_TREE, "", db)->read_string();
         aw_root->awar_string(AWAR_DIST_TREE_CURR_NAME, currentTree, def);
         aw_root->awar_string(AWAR_DIST_TREE_SORT_NAME, currentTree, def)->add_callback(delete_matrix_cb);
         free(currentTree);
@@ -150,14 +151,16 @@ void DI_create_matrix_variables(AW_root *aw_root, AW_default def)
     aw_root->awar_float(AWAR_DIST_MIN_DIST, 0.0);
     aw_root->awar_float(AWAR_DIST_MAX_DIST, 0.0);
 
-    aw_root->awar_string(AWAR_SPECIES_NAME, "", GLOBAL_gb_main);
+    aw_root->awar_string(AWAR_SPECIES_NAME, "", db);
 
-    GB_push_transaction(GLOBAL_gb_main);
+    DI_create_cluster_awars(aw_root, def, db);
 
-    GBDATA *gb_species_data = GB_search(GLOBAL_gb_main,"species_data",GB_CREATE_CONTAINER);
+    GB_push_transaction(db);
+
+    GBDATA *gb_species_data = GB_search(db,"species_data",GB_CREATE_CONTAINER);
     GB_add_callback(gb_species_data,GB_CB_CHANGED,(GB_CB)delete_matrix_cb,0);
 
-    GB_pop_transaction(GLOBAL_gb_main);
+    GB_pop_transaction(db);
 
 }
 
@@ -1541,7 +1544,7 @@ static void di_define_save_tree_name_cb(AW_window *aww) {
 
 AW_window *DI_create_matrix_window(AW_root *aw_root) {
     AW_window_simple_menu *aws = new AW_window_simple_menu;
-    aws->init( aw_root, "NEIGHBOUR JOINING", "NEIGHBOUR JOINING");
+    aws->init( aw_root, "NEIGHBOUR JOINING", "NEIGHBOUR JOINING [ARB_DIST]");
     aws->load_xfig("di_ge_ma.fig");
     aws->button_length( 10 );
 
@@ -1568,6 +1571,9 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     aws->insert_menu_topic("save_props",  "Save Properties (in ~/.arb_prop/dist.arb)", "S", "savedef.hlp",     AWM_ALL, (AW_CB)AW_save_defaults, 0, 0       );
 
     aws->insert_help_topic("help ...", "h", "dist.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"dist.hlp", 0);
+
+    // ------------------
+    //      left side
 
     aws->at( "which_species" );
     aws->create_option_menu( AWAR_DIST_WHICH_SPECIES );
@@ -1624,9 +1630,15 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
 
     aws->update_option_menu();
 
+    aws->at("autodetect");   // auto
+    aws->callback(di_autodetect_callback);
+    aws->sens_mask(AWM_EXP);
+    aws->create_button("AUTODETECT_CORRECTION", "AUTODETECT","A");
+    aws->sens_mask(AWM_ALL);
+
     // -------------------
     //      right side
-    // -------------------
+
 
     aws->at("mark_distance");
     aws->callback(di_mark_by_distance);
@@ -1640,73 +1652,66 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
 
     // -----------------
 
-    aws->button_length(18);
-
-    //     aws->at("compress");
-    //     aws->callback(AW_POPUP,  (AW_CL)create_select_compress_tree,0);
-    //     aws->help_text("compress_tree.hlp");
-    //     aws->create_button("CALC_COMPRESSED_MATRIX", "Calculate\nCompressed M. ...","C");
-
-    aws->at("compress");
-    aws->callback(di_compress_tree_cb);
-    aws->create_button("CALC_COMPRESSED_MATRIX", "Calculate\nCompressed Matrix","C");
-
-    aws->at("calculate");
-    aws->callback(di_calculate_full_matrix_cb);
-    aws->create_button("CALC_FULL_MATRIX", "Calculate\nFull Matrix","F");
-
-    aws->button_length(13);
-
-    aws->at("save_matrix");
-    aws->callback(AW_POPUP, (AW_CL)DI_create_save_matrix_window,(AW_CL)AWAR_DIST_SAVE_MATRIX_BASE);
-    aws->create_button("SAVE_MATRIX", "Save matrix","M");
-
-    aws->at("view_matrix");
-    aws->callback(di_view_matrix_cb);
-    aws->create_button("VIEW_MATRIX", "View matrix","V");
+    // tree selection
 
     aws->at("tree_list");
     awt_create_selection_list_on_trees(GLOBAL_gb_main,(AW_window *)aws,AWAR_DIST_TREE_CURR_NAME);
 
+    aws->at("detect_clusters");
+    aws->callback(AW_POPUP, (AW_CL)DI_create_cluster_detection_window, (AW_CL)dist_filter_cl);
+    aws->create_autosize_button("DETECT_CLUSTERS", "Detect homogenous clusters in tree","D");
+
+    // matrix calculation
+
     aws->button_length(18);
+    aws->at("calculate");
+    aws->callback(di_calculate_full_matrix_cb);
+    aws->create_button("CALC_FULL_MATRIX", "Calculate\nFull Matrix","F");
+    aws->at("compress");
+    aws->callback(di_compress_tree_cb);
+    aws->create_button("CALC_COMPRESSED_MATRIX", "Calculate\nCompressed Matrix","C");
 
-    aws->at("t_calculate");
-    aws->callback(di_calculate_tree_cb,0);
-    aws->create_button("CALC_TREE", "Calculate \ntree","C");
-
-    aws->at("bootstrap");
-    aws->callback(di_calculate_tree_cb,1);
-    aws->create_button("CALC_BOOTSTRAP_TREE", "Calculate \nbootstrap tree");
-
-    aws->at("bcount");
-    aws->create_input_field(AWAR_DIST_BOOTSTRAP_COUNT, 7);
-
-    aws->at("autodetect");   // auto
-    aws->callback(di_autodetect_callback);
-    aws->sens_mask(AWM_EXP);
-    aws->create_button("AUTODETECT_CORRECTION", "AUTODETECT","A");
-    aws->sens_mask(AWM_ALL);
-
-    aws->at("sort_tree_name");
-    aws->create_input_field(AWAR_DIST_TREE_SORT_NAME,12);
-    aws->at("compr_tree_name");
-    aws->create_input_field(AWAR_DIST_TREE_COMP_NAME,12);
-    aws->at("calc_tree_name");
-    aws->create_input_field(AWAR_DIST_TREE_STD_NAME,12);
+    aws->button_length(13);
+    aws->at("save_matrix");
+    aws->callback(AW_POPUP, (AW_CL)DI_create_save_matrix_window,(AW_CL)AWAR_DIST_SAVE_MATRIX_BASE);
+    aws->create_button("SAVE_MATRIX", "Save matrix","M");
+    aws->at("view_matrix");
+    aws->callback(di_view_matrix_cb);
+    aws->create_button("VIEW_MATRIX", "View matrix","V");
 
     aws->button_length(22);
-
     aws->at("use_compr_tree");
     aws->callback(di_define_compression_tree_name_cb);
     aws->create_button("USE_COMPRESSION_TREE", "Use to compress", "");
-
     aws->at("use_sort_tree");
     aws->callback(di_define_sort_tree_name_cb);
     aws->create_button("USE_SORT_TREE", "Use to sort", "");
 
+    aws->at("compr_tree_name");
+    aws->create_input_field(AWAR_DIST_TREE_COMP_NAME,12);
+    aws->at("sort_tree_name");
+    aws->create_input_field(AWAR_DIST_TREE_SORT_NAME,12);
+
+    // tree calculation
+
+    aws->button_length(18);
+    aws->at("t_calculate");
+    aws->callback(di_calculate_tree_cb,0);
+    aws->create_button("CALC_TREE", "Calculate \ntree","C");
+    aws->at("bootstrap");
+    aws->callback(di_calculate_tree_cb,1);
+    aws->create_button("CALC_BOOTSTRAP_TREE", "Calculate \nbootstrap tree");
+
+    aws->button_length(22);
     aws->at("use_existing");
     aws->callback(di_define_save_tree_name_cb);
     aws->create_button("USE_NAME", "Use as new tree name", "");
+
+    aws->at("calc_tree_name");
+    aws->create_input_field(AWAR_DIST_TREE_STD_NAME,12);
+    
+    aws->at("bcount");
+    aws->create_input_field(AWAR_DIST_BOOTSTRAP_COUNT, 7);
 
     GB_pop_transaction(GLOBAL_gb_main);
     return (AW_window *)aws;

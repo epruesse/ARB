@@ -11,6 +11,13 @@
 #ifndef AWT_FILTER_HXX
 #define AWT_FILTER_HXX
 
+#ifndef ARBDBT_H
+#include <arbdbt.h>
+#endif
+
+class AW_window;
+class AW_root;
+class AW_selection_list;
 
 struct adfiltercbstruct {
     AW_window *aw_filt;

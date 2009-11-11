@@ -3,6 +3,9 @@
 .SUFFIXES: .o .cxx .depend
 
 CPP_OBJECTS = \
+	DI_foundclusters.o \
+	DI_clusters.o \
+	DI_clustertree.o \
 	DI_compress_matrix.o \
 	DI_main.o \
 	DI_matr.o \
@@ -37,6 +40,52 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
+DI_clusters.o: di_awars.hxx
+DI_clusters.o: di_clusters.hxx
+DI_clusters.o: di_clustertree.hxx
+DI_clusters.o: di_foundclusters.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/ad_prot.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/AliView.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/AP_seq_dna.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/AP_seq_simple_pro.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/arb_assert.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/arbdb.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/arbdbt.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/arbtools.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/attributes.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/downcast.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/smartptr.h
+
+DI_clustertree.o: di_clustertree.hxx
+DI_clustertree.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/ad_prot.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/AliView.hxx
+DI_clustertree.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
+DI_clustertree.o: $(ARBHOME)/INCLUDE/arb_assert.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
+DI_clustertree.o: $(ARBHOME)/INCLUDE/arbdb.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/arbdbt.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/arbtools.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/attributes.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+DI_clustertree.o: $(ARBHOME)/INCLUDE/downcast.h
+
 DI_compress_matrix.o: di_matr.hxx
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -57,6 +106,29 @@ DI_compress_matrix.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/downcast.h
 
+DI_foundclusters.o: di_clustertree.hxx
+DI_foundclusters.o: di_foundclusters.hxx
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/ad_prot.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/AliView.hxx
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/arb_assert.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/arbdb.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/arbdbt.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/arbtools.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/attributes.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/downcast.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/smartptr.h
+
 DI_main.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 DI_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -75,6 +147,7 @@ DI_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/servercntrl.h
 
 DI_matr.o: di_awars.hxx
+DI_matr.o: di_clusters.hxx
 DI_matr.o: di_matr.hxx
 DI_matr.o: di_protdist.hxx
 DI_matr.o: di_view_matrix.hxx

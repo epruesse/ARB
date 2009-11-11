@@ -11,6 +11,10 @@
 #ifndef DIST_HXX
 #define DIST_HXX
 
+#ifndef ARBDBT_H
+#include <arbdbt.h>
+#endif
+
 #define di_assert(cond) arb_assert(cond)
 
 extern GBDATA *GLOBAL_gb_main;
