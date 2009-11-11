@@ -79,18 +79,17 @@ tree_init()
 
 void PARS_tree_init(AWT_graphic_tree *agt) {
     ap_assert(agt->get_root_node());
+    ap_assert(agt == ap_main->get_tree_root());
 
     GB_transaction dummy(GLOBAL_gb_main);
-
-    const char *use = agt->tree_static->get_aliview()->get_aliname();
     
-    long ali_len = GBT_get_alignment_len(GLOBAL_gb_main, use);
+    const char *use     = ap_main->get_aliname();
+    long        ali_len = GBT_get_alignment_len(GLOBAL_gb_main, use);
     if (ali_len <=1) {
         aw_popup_exit("No valid alignment selected! Try again");
     }
 
     agt->tree_static->set_root_changed_callback(AWT_graphic_parsimony_root_changed, agt);
-    freedup(ap_main->use, use);
 }
 
 static int ap_global_abort_flag;

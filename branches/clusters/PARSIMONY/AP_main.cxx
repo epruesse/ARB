@@ -87,7 +87,6 @@ AP_main::AP_main() {
 }
 
 AP_main::~AP_main() {
-    if (use) delete use;
     if (stack) delete stack;
 }
 
@@ -170,7 +169,6 @@ void AP_main::clear() {
             if (stack->size() > 0) {
                 while (stack->size() > 0) {
                     knoten = stack->pop();
-                    //if (buffer_cout == AP_TRUE) knoten->printl();
                     knoten->clear(stack_level,user_push_counter);
                 }
             }
@@ -223,5 +221,9 @@ AP_tree_nlen *AP_main::get_root_node() {
 void AP_main::set_tree_root(AWT_graphic_tree *agt_) {
     ap_assert(agt == 0 && agt_ != 0);               // do only once
     agt = agt_;
+}
+
+const char *AP_main::get_aliname() const {
+    return agt->tree_static->get_aliview()->get_aliname();
 }
 

@@ -82,23 +82,23 @@ void PARS_export_cb(AW_window *aww, AWT_canvas *, AW_CL mode){
 void AP_user_push_cb(AW_window *aww, AWT_canvas *)
 {
     ap_main->user_push();
-    aww->get_root()->awar(AWAR_STACKPOINTER)->write_int(ap_main->user_push_counter);
+    aww->get_root()->awar(AWAR_STACKPOINTER)->write_int(ap_main->get_user_push_counter());
 }
 
 void AP_user_pop_cb(AW_window *aww,AWT_canvas *ntw)
 {
-    if (ap_main->user_push_counter<=0) {
+    if (ap_main->get_user_push_counter()<=0) {
         aw_message("No tree on stack.");
         return;
     }
     ap_main->user_pop();
     rootNode()->compute_tree(GLOBAL_gb_main);
     ASSERT_VALID_TREE(rootNode());
-    aww->get_root()->awar(AWAR_STACKPOINTER)->write_int(ap_main->user_push_counter);
+    aww->get_root()->awar(AWAR_STACKPOINTER)->write_int(ap_main->get_user_push_counter());
 
     pars_saveNrefresh_changed_tree(ntw);
 
-    if (ap_main->user_push_counter <= 0) { // last tree was popped => push again
+    if (ap_main->get_user_push_counter() <= 0) { // last tree was popped => push again
         AP_user_push_cb(aww, ntw);
     }
 }
@@ -771,7 +771,7 @@ static void nt_add_partial(AW_window */*aww*/, AWT_canvas *ntw) {
             {
                 ++marked_found;
 
-                if (GBT_read_sequence(gb_marked,ap_main->use)) { // species has sequence in alignment
+                if (GBT_read_sequence(gb_marked,ap_main->get_aliname())) { // species has sequence in alignment
                     const char *name = GBT_read_name(gb_marked);
 
                     switch (GBT_is_partial(gb_marked, 1, true)) { // marks undef as 'partial sequence'
@@ -805,7 +805,7 @@ static void nt_add_partial(AW_window */*aww*/, AWT_canvas *ntw) {
 
                 int partials_already_in_tree = partial_marked_sequences - partial.size();
 
-                if (no_data>0) aw_message(GBS_global_string("%i marked species have no data in '%s'", no_data, ap_main->use));
+                if (no_data>0) aw_message(GBS_global_string("%i marked species have no data in '%s'", no_data, ap_main->get_aliname()));
                 if (full_marked_sequences>0) aw_message(GBS_global_string("%i marked species are declared full sequences", full_marked_sequences));
                 if (partials_already_in_tree>0) aw_message(GBS_global_string("%i marked species are already in tree", partials_already_in_tree));
 
@@ -1252,9 +1252,10 @@ static void pars_reset_optimal_parsimony(AW_window *aww, AW_CL *cl_ntw) {
 
 
 
-static void pars_start_cb(AW_window *aw_parent, AW_CL cd_adfiltercbstruct) {
+static void pars_start_cb(AW_window *aw_parent, AW_CL cd_adfiltercbstruct, AW_CL cl_cmds) {
     adfiltercbstruct *acbs = (adfiltercbstruct*)cd_adfiltercbstruct;
-    AW_root *awr = aw_parent->get_root();
+    PARS_commands    *cmds = (PARS_commands*)cl_cmds;
+    AW_root          *awr  = aw_parent->get_root();
     GB_begin_transaction(GLOBAL_gb_main);
     {
         GB_ERROR error = pars_check_size(awr);
@@ -1317,11 +1318,11 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_adfiltercbstruct) {
 
     awr->awar( AWAR_COLOR_GROUPS_USE)->add_callback( (AW_RCB)NT_recompute_cb, (AW_CL)ntw,0);
 
-    if (ap_main->commands.add_marked)           NT_quick_add(awm,ntw,NT_ADD_MARKED);
-    if (ap_main->commands.add_selected)         NT_quick_add(awm,ntw,NT_ADD_SELECTED);
-    if (ap_main->commands.calc_branch_lengths)  NT_branch_lengths(awm,ntw);
-    if (ap_main->commands.calc_bootstrap)       NT_bootstrap(awm,ntw,0);
-    if (ap_main->commands.quit)                 pars_exit(awm);
+    if (cmds->add_marked)           NT_quick_add(awm,ntw,NT_ADD_MARKED);
+    if (cmds->add_selected)         NT_quick_add(awm,ntw,NT_ADD_SELECTED);
+    if (cmds->calc_branch_lengths)  NT_branch_lengths(awm,ntw);
+    if (cmds->calc_bootstrap)       NT_bootstrap(awm,ntw,0);
+    if (cmds->quit)                 pars_exit(awm);
 
     GB_transaction dummy(ntw->gb_main);
 
@@ -1536,8 +1537,7 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_adfiltercbstruct) {
     AP_user_push_cb(aw_parent, ntw); // push initial tree
 }
 
-static AW_window *create_pars_init_window(AW_root *awr)
-{
+static AW_window *create_pars_init_window(AW_root *awr, const PARS_commands *cmds) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init( awr, "PARS_PROPS", "SET PARSIMONY OPTIONS");
     aws->load_xfig("pars/init.fig");
@@ -1558,7 +1558,7 @@ static AW_window *create_pars_init_window(AW_root *awr)
     aws->callback(AW_POPUP, (AW_CL)awt_create_select_filter_win, (AW_CL)filtercd);
     aws->create_button("SELECT_FILTER",AWAR_FILTER_NAME);
 
-    aws->callback(pars_start_cb, (AW_CL)filtercd);
+    aws->callback(pars_start_cb, (AW_CL)filtercd, (AW_CL)cmds);
     aws->at("go");
     aws->create_button("GO","GO","G");
 
@@ -1574,7 +1574,7 @@ static AW_window *create_pars_init_window(AW_root *awr)
     aws->callback(AW_POPUP,(AW_CL)create_csp_window,(AW_CL)awt_csp);
     aws->create_button("SELECT_CSP","tmp/pars/csp/name");
 
-    return (AW_window *)aws;
+    return aws;
 }
 
 static void create_parsimony_variables(AW_root *aw_root, AW_default def)
@@ -1704,41 +1704,30 @@ int main(int argc, char **argv)
 
     const char *db_server = ":";
 
+    PARS_commands cmds;
+
     while (argc>=2 && argv[1][0] == '-'){
         argc--;
         argv++;
-        if (!strcmp(argv[0],"-quit")){
-            ap_main->commands.quit = 1;
-            continue;
-        }
-        if (!strcmp(argv[0],"-add_marked")){
-            ap_main->commands.add_marked = 1;
-            continue;
-        }
-        if (!strcmp(argv[0],"-add_selected")){
-            ap_main->commands.add_selected = 1;
-            continue;
-        }
-        if (!strcmp(argv[0],"-calc_branchlengths")){
-            ap_main->commands.calc_branch_lengths = 1;
-            continue;
-        }
-        if (!strcmp(argv[0],"-calc_bootstrap")){
-            ap_main->commands.calc_bootstrap = 1;
-            continue;
-        }
-        GB_export_errorf("Unknown option '%s'",argv[0]);
-        GB_print_error();
-        printf("    Options:                Meaning:\n"
-               "\n"
-               "    -add_marked             add marked species   (without changing topology)\n"
-               "    -add_selected           add selected species (without changing topology)\n"
-               "    -calc_branchlengths     calculate branch lengths only\n"
-               "    -calc_bootstrap         estimate bootstrap values\n"
-               "    -quit                   quit after performing operations\n"
-               );
+        if (!strcmp(argv[0],"-quit"))                    cmds.quit = 1;
+        else if (!strcmp(argv[0],"-add_marked"))         cmds.add_marked = 1;
+        else if (!strcmp(argv[0],"-add_selected"))       cmds.add_selected = 1;
+        else if (!strcmp(argv[0],"-calc_branchlengths")) cmds.calc_branch_lengths = 1;
+        else if (!strcmp(argv[0],"-calc_bootstrap"))     cmds.calc_bootstrap = 1;
+        else {
+            GB_export_errorf("Unknown option '%s'",argv[0]);
+            GB_print_error();
+            printf("    Options:                Meaning:\n"
+                   "\n"
+                   "    -add_marked             add marked species   (without changing topology)\n"
+                   "    -add_selected           add selected species (without changing topology)\n"
+                   "    -calc_branchlengths     calculate branch lengths only\n"
+                   "    -calc_bootstrap         estimate bootstrap values\n"
+                   "    -quit                   quit after performing operations\n"
+                   );
 
-        exit(-1);
+            exit(-1);
+        }
     }
 
 
@@ -1755,7 +1744,7 @@ int main(int argc, char **argv)
 
     pars_create_all_awars(aw_root,aw_default);
 
-    aww = create_pars_init_window(aw_root);
+    aww = create_pars_init_window(aw_root, &cmds);
     aww->show();
 
     AWT_install_cb_guards();

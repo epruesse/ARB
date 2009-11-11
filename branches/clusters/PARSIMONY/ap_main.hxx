@@ -34,40 +34,44 @@ enum PARS_pars_type {
     PARS_TRANSVERSION
 };
 
+struct PARS_commands {
+    bool add_marked;
+    bool add_selected;
+    bool calc_branch_lengths;
+    bool calc_bootstrap;
+    bool quit;
+
+    PARS_commands()
+        : add_marked(false)
+        , add_selected(false)
+        , calc_branch_lengths(false) 
+        , calc_bootstrap(false) 
+        , quit(false) 
+    {
+    }
+};
+
 class AP_tree_nlen;
 class AWT_graphic_tree;
+
 class AP_main {
     AP_main_stack    *stack;
     AP_main_list      list;
     unsigned long     stack_level;
     AWT_graphic_tree *agt;                          // provides access to tree!
+    unsigned long     user_push_counter;
 
 public:
-    // *************** read only
-    char          *use;
-    unsigned long  user_push_counter;
-
-    // ************** real public
-    struct {
-        unsigned int add_marked:1;
-        unsigned int add_selected:1;
-        unsigned int calc_branch_lengths:1;
-        unsigned int calc_bootstrap:1;
-        unsigned int quit:1;
-    } commands;
-
-    unsigned long combineCount;
-
     AP_main();
     ~AP_main();
 
     void set_tree_root(AWT_graphic_tree *agt_);
     AWT_graphic_tree *get_tree_root() { return agt; }
     AP_tree_nlen *get_root_node();
+    const char *get_aliname() const;
+    unsigned long get_user_push_counter() const { return user_push_counter; }
 
     GB_ERROR open(char *db_server);
-
-    AP_BOOL buffer_cout;
 
     void user_push();
     void user_pop();

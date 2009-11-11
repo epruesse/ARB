@@ -26,10 +26,7 @@ AP_ERR * make_start_population(GBDATA *gbmain,AP_tree *tree);
 extern FILE *GAout;
 extern GA_genetic *GAgenetic;
 
-void start_genetic_cb(AW_window *aww,AW_CL cld1) {
-    AWUSE(cld1);
-    AW_root *aw_root = aww->get_root();
-    //aw_root->awar("kh/costs")->write_string((long)ap_main->combineCount);
+void start_genetic_cb(AW_window *,AW_CL ) {
     start_genetic(ap_main->gb_main);
 }
 
