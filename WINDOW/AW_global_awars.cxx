@@ -106,7 +106,8 @@ static void AWAR_AWM_MASK_changed_cb(AW_root *awr) {
 }
 
 GB_ERROR ARB_init_global_awars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main) {
-    aw_assert(!initialized);    // don't call twice!
+    aw_assert(!initialized);                        // don't call twice!
+    aw_assert(aw_def != gb_main);                   // awars in DB are global by definition
 
     initialized  = true;
     gb_main4awar = gb_main;
