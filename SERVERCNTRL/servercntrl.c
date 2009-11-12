@@ -362,3 +362,18 @@ struct arb_params *arb_trace_argv(int *argc, char **argv)
     *argc = d;
     return erg;
 }
+
+void free_arb_params(struct arb_params *params) {
+    free(params->species_name);
+    free(params->extended_name);
+    free(params->alignment);
+    free(params->default_file);
+    free(params->field);
+    free(params->job_server);
+    free(params->db_server);
+    free(params->mgr_server);
+    free(params->pt_server);
+    free(params->tcp);
+
+    free(params);
+}
