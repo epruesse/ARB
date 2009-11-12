@@ -155,13 +155,18 @@ void DI_create_matrix_variables(AW_root *aw_root, AW_default def, AW_default db)
 
     DI_create_cluster_awars(aw_root, def, db);
 
-    GB_push_transaction(db);
+#if defined(DEBUG)
+    AWT_create_db_browser_awars(aw_root, def);
+#endif // DEBUG
 
-    GBDATA *gb_species_data = GB_search(db,"species_data",GB_CREATE_CONTAINER);
-    GB_add_callback(gb_species_data,GB_CB_CHANGED,(GB_CB)delete_matrix_cb,0);
+    {
+        GB_push_transaction(db);
 
-    GB_pop_transaction(db);
+        GBDATA *gb_species_data = GB_search(db,"species_data",GB_CREATE_CONTAINER);
+        GB_add_callback(gb_species_data,GB_CB_CHANGED,(GB_CB)delete_matrix_cb,0);
 
+        GB_pop_transaction(db);
+    }
 }
 
 DI_ENTRY::DI_ENTRY(GBDATA *gbd, DI_MATRIX *phmatri) {
@@ -1070,15 +1075,6 @@ static void di_mark_by_distance(AW_window *aww) {
     }
 }
 
-static void DI_timer(AW_root *aw_root, AW_CL cl_gbmain, AW_CL cd2) {
-    GBDATA *gb_main = reinterpret_cast<GBDATA*>(cl_gbmain);
-    {
-        GB_transaction ta(gb_main);
-        GB_tell_server_dont_wait(gb_main); // trigger database callbacks
-    }
-    aw_root->add_timed_callback(500, DI_timer, cl_gbmain, cd2);
-}
-
 static void selected_species_changed_cb(AW_root* , AW_CL cl_viewer) {
     if (di_dmatrix) {
         AW_window *viewer = reinterpret_cast<AW_window*>(cl_viewer);
@@ -1100,8 +1096,6 @@ static void di_view_matrix_cb(AW_window *aww){
         
         AW_awar *awar_sel = aw_root->awar(AWAR_SPECIES_NAME);
         awar_sel->add_callback(selected_species_changed_cb, AW_CL(viewer));
-
-        aw_root->add_timed_callback(2000, DI_timer, AW_CL(GLOBAL_gb_main), 0);
     }
 
     di_dmatrix->init();
@@ -1558,6 +1552,10 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
 
 
     GB_push_transaction(GLOBAL_gb_main);
+
+#if defined(DEBUG)
+    AWT_create_debug_menu(aws);
+#endif // DEBUG
 
     //  aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
     //  aws->create_button("CLOSE","C");

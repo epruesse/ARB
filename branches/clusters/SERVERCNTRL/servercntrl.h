@@ -38,6 +38,7 @@ GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env, G
 GB_ERROR arb_look_and_kill_server(int magic_number, const char *arb_tcp_env);
 void arb_print_server_params(void);
 struct arb_params *arb_trace_argv(int *argc, char **argv);
+void free_arb_params(struct arb_params *params);
 
 #ifdef __cplusplus
 }
