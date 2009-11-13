@@ -3,8 +3,8 @@
 SELF=$ARBHOME/SOURCE_TOOLS/generate_all_links.sh
 
 finderr() {
-    FOUND=`grep -Hn "$1" $SELF`
-    if [ -z $FOUND ]; then
+    FOUND=`grep -Hn "$1" $SELF | perl -ne '/^[^:]+:[^:]+:/; print $&."\n";'`
+    if [ -z "$FOUND" ]; then
         echo "$SELF:8: $2 ($1 not located -- search manually)"
     else
         echo "$FOUND $2"
@@ -34,7 +34,7 @@ symlink() {
 
     (test -e $DIR/$1 || finderr $1 "Target '$DIR/$1 does not exists (anymore)" ) &&
     (test -e $2 || (test -h $2 &&
-                    (finderr $2 "Warning Symlink '$2' points to nowhere -- removing wrong link";ls -al $2;rm $2;true)
+                    (finderr $2 "Note: Symlink '$2' pointed to nowhere -- removing wrong link";ls -al $2;rm $2;true)
                     ) || true) &&
     symlink_maybe_no_target $1 $2
 }
