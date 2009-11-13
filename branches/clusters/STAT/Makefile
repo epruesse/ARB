@@ -69,13 +69,16 @@ ST_quality.o: $(ARBHOME)/INCLUDE/arbtools.h
 ST_quality.o: $(ARBHOME)/INCLUDE/attributes.h
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
+ST_quality.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ST_quality.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+ST_quality.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ST_quality.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/awt_csp.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/downcast.h
 
 ST_window.o: st_ml.hxx
-ST_window.o: st_quality.hxx
 ST_window.o: st_window.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ST_window.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -99,6 +102,6 @@ ST_window.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/awt.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/awt_csp.hxx
+ST_window.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
-ST_window.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/downcast.h

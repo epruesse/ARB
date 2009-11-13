@@ -1,17 +1,21 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_window.hxx>
-#include <aw_awars.hxx>
-#include <awt.hxx>
-#include <awt_csp.hxx>
-#include <awt_item_sel_list.hxx>
-#include <awt_sel_boxes.hxx>
+// ================================================================ //
+//                                                                  //
+//   File      : ST_window.cxx                                      //
+//   Purpose   :                                                    //
+//                                                                  //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
+
 #include "st_window.hxx"
 #include "st_ml.hxx"
-#include "st_quality.hxx"
+
+#include <aw_awars.hxx>
+#include <awt.hxx>
+#include <awt_item_sel_list.hxx>
+#include <awt_csp.hxx>
+#include <awt_filter.hxx>
 
 void st_ok_cb(AW_window *aww, ST_ML *st_ml) {
     AW_root        *root           = aww->get_root();

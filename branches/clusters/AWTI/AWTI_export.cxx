@@ -4,7 +4,7 @@
 #include <aw_awars.hxx>
 #include <aw_global.hxx>
 #include <awt.hxx>
-#include <awt_sel_boxes.hxx>
+#include <awt_filter.hxx>
 #include <AP_filter.hxx>
 #include <xml.hxx>
 #include <inline.h>

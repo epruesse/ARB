@@ -65,6 +65,7 @@ GDE.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+GDE.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 GDE.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 
 GDE_arbdb_io.o: gde.hxx
@@ -107,7 +108,7 @@ GDE_event.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-GDE_event.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
+GDE_event.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 
 GDE_FileIO.o: gde.hxx
 GDE_FileIO.o: GDE_def.h

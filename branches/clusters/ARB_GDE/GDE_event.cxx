@@ -1,7 +1,7 @@
 #include "GDE_extglob.h"
 #include "GDE_awars.h"
 
-#include <awt_sel_boxes.hxx>
+#include <awt_filter.hxx>
 #include <aw_window.hxx>
 #include <AP_filter.hxx>
 

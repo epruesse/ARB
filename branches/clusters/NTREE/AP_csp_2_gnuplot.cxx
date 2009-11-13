@@ -11,7 +11,7 @@
 #include "nt_internal.h"
 #include "ap_csp_2_gnuplot.hxx"
 
-#include <awt_sel_boxes.hxx>
+#include <awt_filter.hxx>
 #include <awt.hxx>
 #include <awt_csp.hxx>
 #include <AP_filter.hxx>

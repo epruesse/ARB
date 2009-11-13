@@ -209,6 +209,7 @@ PARS_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/awt_csp.hxx
+PARS_main.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/downcast.h

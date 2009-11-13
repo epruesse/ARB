@@ -21,6 +21,7 @@
 #include <awt_csp.hxx>
 #include <awt_nds.hxx>
 #include <awt_sel_boxes.hxx>
+#include <awt_filter.hxx>
 
 #include <TreeCallbacks.hxx>
 

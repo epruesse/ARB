@@ -10,10 +10,8 @@ OBJECTS =	\
 		AWT_canvas.o \
 		AWT_changekey.o \
 		AWT_config_manager.o \
-		AWT_csp.o \
 		AWT_db_browser.o \
 		AWT_file_selection.o \
-		AWT_filter.o \
 		AWT_hotkeys.o \
 		AWT_input_mask.o \
 		AWT_item_sel_list.o \
@@ -165,25 +163,6 @@ AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 
-AWT_csp.o: awt_csp.hxx
-AWT_csp.o: awt_sel_boxes.hxx
-AWT_csp.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
-AWT_csp.o: $(ARBHOME)/INCLUDE/ad_prot.h
-AWT_csp.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-AWT_csp.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
-AWT_csp.o: $(ARBHOME)/INCLUDE/arb_assert.h
-AWT_csp.o: $(ARBHOME)/INCLUDE/arbdb.h
-AWT_csp.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-AWT_csp.o: $(ARBHOME)/INCLUDE/arbdbt.h
-AWT_csp.o: $(ARBHOME)/INCLUDE/arbtools.h
-AWT_csp.o: $(ARBHOME)/INCLUDE/attributes.h
-AWT_csp.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-AWT_csp.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-AWT_csp.o: $(ARBHOME)/INCLUDE/aw_position.hxx
-AWT_csp.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-AWT_csp.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AWT_csp.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
-
 AWT_db_browser.o: awt.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -225,26 +204,6 @@ AWT_file_selection.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_file_selection.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_file_selection.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_file_selection.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-
-AWT_filter.o: awt.hxx
-AWT_filter.o: awt_filter.hxx
-AWT_filter.o: awt_sel_boxes.hxx
-AWT_filter.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
-AWT_filter.o: $(ARBHOME)/INCLUDE/ad_prot.h
-AWT_filter.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-AWT_filter.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
-AWT_filter.o: $(ARBHOME)/INCLUDE/arb_assert.h
-AWT_filter.o: $(ARBHOME)/INCLUDE/arbdb.h
-AWT_filter.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-AWT_filter.o: $(ARBHOME)/INCLUDE/arbdbt.h
-AWT_filter.o: $(ARBHOME)/INCLUDE/arbtools.h
-AWT_filter.o: $(ARBHOME)/INCLUDE/attributes.h
-AWT_filter.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
-AWT_filter.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-AWT_filter.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-AWT_filter.o: $(ARBHOME)/INCLUDE/aw_position.hxx
-AWT_filter.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-AWT_filter.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 
 AWT_hotkeys.o: awt_hotkeys.hxx
 

@@ -11,6 +11,12 @@
 #ifndef ST_WINDOW_HXX
 #define ST_WINDOW_HXX
 
+#ifndef ARBDBT_H
+#include <arbdbt.h>
+#endif
+#ifndef AW_WINDOW_HXX
+#include <aw_window.hxx>
+#endif
 
 #define ST_ML_AWAR "tmp/st_ml/"
 #define ST_ML_AWAR_CSP                  ST_ML_AWAR "name"

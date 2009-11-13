@@ -49,7 +49,7 @@ AWTI_export.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/awt.hxx
-AWTI_export.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
+AWTI_export.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/inline.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/xml.hxx
 

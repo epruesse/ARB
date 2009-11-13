@@ -1,22 +1,23 @@
 
 ARCHS_ALL = \
 	ALIVIEW/ALIVIEW.dummy  \
-	NEIGHBOURJOIN/NEIGHBOURJOIN.dummy  \
-	MATRIX/MATRIX.dummy  \
 	AP_TREE/AP_TREE.dummy  \
 	ARB_TREE/ARB_TREE.dummy  \
-	PRONUC/PRONUC.dummy  \
-	SEQUENCE/SEQUENCE.dummy  \
-	FILTER/FILTER.dummy  \
-	TREE_READ/TREE_READ.dummy  \
-	TREE_WRITE/TREE_WRITE.dummy  \
-	HELIX/HELIX.dummy  \
 	AW_HELIX/AW_HELIX.dummy  \
 	AW_NAME/AW_NAME.dummy  \
 	DB_SCANNER/DB_SCANNER.dummy  \
-	FILE_BUFFER/FILE_BUFFER.dummy  \
-	REGEXPR/REGEXPR.dummy  \
 	FAST_ALIGNER/FAST_ALIGNER.dummy  \
+	FILE_BUFFER/FILE_BUFFER.dummy  \
+	FILTER/FILTER.dummy  \
+	GUI_ALIVIEW/GUI_ALIVIEW.dummy  \
+	HELIX/HELIX.dummy  \
+	MATRIX/MATRIX.dummy  \
+	NEIGHBOURJOIN/NEIGHBOURJOIN.dummy  \
+	PRONUC/PRONUC.dummy  \
+	REGEXPR/REGEXPR.dummy  \
+	SEQUENCE/SEQUENCE.dummy  \
+	TREE_READ/TREE_READ.dummy  \
+	TREE_WRITE/TREE_WRITE.dummy  \
 
 # --------------------------------------------------------------------------------
 # If a package is available as debian package it should go here

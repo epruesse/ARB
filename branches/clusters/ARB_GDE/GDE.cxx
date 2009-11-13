@@ -2,6 +2,7 @@
 #include "GDE_awars.h"
 
 #include <awt_sel_boxes.hxx>
+#include <awt_filter.hxx>
 #include <aw_window.hxx>
 
 /*AISC_MKPT_PROMOTE:#ifndef GDE_MENU_H*/

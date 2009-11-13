@@ -253,7 +253,7 @@ AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/awt.hxx
 AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/awt_csp.hxx
-AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
+AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 
 AP_pos_var_pars.o: ap_pos_var_pars.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
