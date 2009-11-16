@@ -4,6 +4,7 @@
 
 C_OBJECTS = 
 CPP_OBJECTS = \
+	GUI_aliview.o \
 	AWT_csp.o \
 	AWT_filter.o \
 
@@ -39,9 +40,11 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
 AWT_csp.o: awt_csp.hxx
+AWT_csp.o: awt_filter.hxx
 AWT_csp.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_csp.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_csp.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+AWT_csp.o: $(ARBHOME)/INCLUDE/AliView.hxx
 AWT_csp.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 AWT_csp.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_csp.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -76,3 +79,17 @@ AWT_filter.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/awt.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
+
+GUI_aliview.o: awt_csp.hxx
+GUI_aliview.o: awt_filter.hxx
+GUI_aliview.o: gui_aliview.hxx
+GUI_aliview.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+GUI_aliview.o: $(ARBHOME)/INCLUDE/ad_prot.h
+GUI_aliview.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+GUI_aliview.o: $(ARBHOME)/INCLUDE/AliView.hxx
+GUI_aliview.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
+GUI_aliview.o: $(ARBHOME)/INCLUDE/arb_assert.h
+GUI_aliview.o: $(ARBHOME)/INCLUDE/arbdb.h
+GUI_aliview.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+GUI_aliview.o: $(ARBHOME)/INCLUDE/arbdbt.h
+GUI_aliview.o: $(ARBHOME)/INCLUDE/attributes.h

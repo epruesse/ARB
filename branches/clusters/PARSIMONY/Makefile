@@ -165,6 +165,7 @@ PARS_dtree.o: $(ARBHOME)/INCLUDE/awt_csp.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/downcast.h
+PARS_dtree.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 
 PARS_klprops.o: pars_klprops.hxx
@@ -213,5 +214,6 @@ PARS_main.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/downcast.h
+PARS_main.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/TreeCallbacks.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx

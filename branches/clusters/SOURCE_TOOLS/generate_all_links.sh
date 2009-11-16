@@ -206,6 +206,7 @@ symlink ../SL/FILE_BUFFER/FileBuffer.h INCLUDE/FileBuffer.h &&
 symlink ../SL/FILTER/AP_filter.hxx INCLUDE/AP_filter.hxx &&
 symlink ../SL/GUI_ALIVIEW/awt_csp.hxx INCLUDE/awt_csp.hxx &&
 symlink ../SL/GUI_ALIVIEW/awt_filter.hxx INCLUDE/awt_filter.hxx &&
+symlink ../SL/GUI_ALIVIEW/gui_aliview.hxx INCLUDE/gui_aliview.hxx &&
 symlink ../SL/HELIX/BI_helix.hxx INCLUDE/BI_helix.hxx &&
 symlink ../SL/MATRIX/AP_matrix.hxx INCLUDE/AP_matrix.hxx &&
 symlink ../SL/NEIGHBOURJOIN/neighbourjoin.hxx INCLUDE/neighbourjoin.hxx &&

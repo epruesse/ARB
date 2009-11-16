@@ -15,14 +15,14 @@
 
 class AW_root;
 class AWT_graphic_tree;
-struct adfiltercbstruct;
+class WeightedFilter;
 
 extern struct PARS_global {
     AW_root          *awr;
     AWT_graphic_tree *tree;
 } *GLOBAL_PARS;
 
-AWT_graphic_tree *PARS_generate_tree(AW_root *root, adfiltercbstruct *pars_global_filter);
+AWT_graphic_tree *PARS_generate_tree(AW_root *root, WeightedFilter *pars_weighted_filter);
 
 
 #else

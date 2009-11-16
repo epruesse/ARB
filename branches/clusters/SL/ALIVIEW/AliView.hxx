@@ -34,7 +34,10 @@ public:
     ~AliView();
 
     const char *get_aliname() const { return aliname; }
+    
     const AP_filter *get_filter() const { return filter; }
+    AP_filter *get_filter() { return filter; }
+
     const AP_weights *get_weights() const { return weights; }
     GBDATA *get_gb_main() const { return gb_main; }
 

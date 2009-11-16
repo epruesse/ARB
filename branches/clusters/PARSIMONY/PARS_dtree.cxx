@@ -22,9 +22,9 @@
 #include <awt_sel_boxes.hxx>
 #include <awt_filter.hxx>
 
-#include <aw_preset.hxx>
+#include <gui_aliview.hxx>
 
-extern AWT_csp *awt_csp;
+#include <aw_preset.hxx>
 
 static void AWT_graphic_parsimony_root_changed(void *cd, AP_tree *old, AP_tree *newroot) {
     AWT_graphic_tree *agt = (AWT_graphic_tree*)cd;
@@ -32,38 +32,16 @@ static void AWT_graphic_parsimony_root_changed(void *cd, AP_tree *old, AP_tree *
     if (old == agt->tree_root_display) agt->tree_root_display = newroot;
 }
 
-static AliView *pars_generate_aliview(adfiltercbstruct *pars_global_filter) {
-    AliView    *aliview;
-    AP_filter  *filter   = awt_get_filter(pars_global_filter->awr, pars_global_filter);
-    AP_weights *weights  = new AP_weights;
-    char       *ali_name = GBT_read_string(pars_global_filter->gb_main,AWAR_ALIGNMENT);
-    long        ali_len  = GBT_get_alignment_len(pars_global_filter->gb_main, ali_name);
-    
-    if (ali_len <=1) {
-        aw_popup_exit("No valid alignment selected! Try again");
+static AliView *pars_generate_aliview(WeightedFilter *pars_weighted_filter) {
+    GBDATA *gb_main = pars_weighted_filter->get_gb_main();
+    char *ali_name;
+    {
+        GB_transaction ta(gb_main);
+        ali_name = GBT_read_string(gb_main,AWAR_ALIGNMENT);
     }
-    
-    awt_csp->go(0);
-    int i;
-    if (awt_csp->rates){
-        for (i=0;i<ali_len;i++){
-            if (awt_csp->rates[i]>0.0000001){
-                awt_csp->weights[i] *= (int)(2.0/ awt_csp->rates[i]);
-            }
-        }
-        weights->init(awt_csp->weights, awt_csp->seq_len, filter);
-    }
-    else {
-        weights->init(filter);
-    }
-
-
-    aliview = new AliView(pars_global_filter->gb_main, *filter, *weights, ali_name);
-
+    AliView *aliview = pars_weighted_filter->create_aliview(ali_name);
+    if (!aliview) aw_popup_exit(GB_await_error());
     free(ali_name);
-    delete weights;
-    delete filter;
-
     return aliview;
 }
 
@@ -247,8 +225,8 @@ AWT_graphic_parsimony::AWT_graphic_parsimony(AW_root *root, GBDATA *gb_maini)
     : AWT_graphic_tree(root,gb_maini)
 {}
 
-AWT_graphic_tree *PARS_generate_tree(AW_root *root, adfiltercbstruct *pars_global_filter) {
-    AliView     *aliview   = pars_generate_aliview(pars_global_filter);
+AWT_graphic_tree *PARS_generate_tree(AW_root *root, WeightedFilter *pars_weighted_filter) {
+    AliView     *aliview   = pars_generate_aliview(pars_weighted_filter);
     AP_sequence *seq_templ = 0;
 
     GBDATA *gb_main = aliview->get_gb_main();

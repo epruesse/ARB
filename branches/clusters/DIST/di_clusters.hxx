@@ -17,7 +17,7 @@
 #endif
 
 void DI_create_cluster_awars(AW_root *aw_root, AW_default def, AW_default db);
-AW_window *DI_create_cluster_detection_window(AW_root *aw_root, AW_CL cl_adfiltercbstruct);
+AW_window *DI_create_cluster_detection_window(AW_root *aw_root, AW_CL cl_weightedFilter);
 
 #else
 #error di_clusters.hxx included twice

@@ -135,8 +135,13 @@ public:
     char *compress(GBT_TREE *tree);
 };
 
+class WeightedFilter;
+struct save_matrix_params {
+    const char           *awar_base;
+    const WeightedFilter *weighted_filter;
+};
 
-AW_window *DI_create_save_matrix_window(AW_root *aw_root, char *base_name);
+AW_window *DI_create_save_matrix_window(AW_root *aw_root, save_matrix_params *save_params);
 
 #else
 #error di_matr.hxx included twice

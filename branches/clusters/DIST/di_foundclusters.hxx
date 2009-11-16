@@ -15,9 +15,10 @@
 #ifndef ARBDBT_H
 #include <arbdbt.h>
 #endif
-#ifndef AWT_FILTER_HXX
-#include <awt_filter.hxx>
+#ifndef GUI_ALIVIEW_HXX
+#include <gui_aliview.hxx>
 #endif
+
 
 #ifndef SMARTPTR_H
 #include <smartptr.h>
@@ -43,6 +44,7 @@
 
 class ClusterTree;
 class AW_selection_list;
+class AW_window;
 
 // ---------------------
 //      Cluster
@@ -99,11 +101,11 @@ typedef ClusterIDs::const_iterator    ClusterIDsIter;
 enum ClusterSubset {
     STORED_CLUSTERS,
     SHOWN_CLUSTERS,
-    UNKNOWN_CLUSTERS, 
+    UNKNOWN_CLUSTERS,
 };
 
 struct ClustersData {
-    adfiltercbstruct  *dist_filter;
+    WeightedFilter    &weighted_filter;
     AW_selection_list *clusterList;
     KnownClusters      known_clusters;              // contains all known clusters
     ClusterIDs         shown;                       // clusters shown in selection list
@@ -126,8 +128,8 @@ struct ClustersData {
 
 public:
 
-    ClustersData(adfiltercbstruct *dist_filter_)
-        : dist_filter(dist_filter_)
+    ClustersData(WeightedFilter& weighted_filter_)
+        : weighted_filter(weighted_filter_)
         , clusterList(0)
         , order(SORT_BY_MEANDIST)
         , sort_needed(true)
@@ -175,8 +177,8 @@ public:
 
     void update_selection_list(AW_window *aww);
 
-    GBDATA *get_gb_main() const { return dist_filter->gb_main; }
-    AW_root *get_aw_root() const { return dist_filter->awr; }
+    GBDATA *get_gb_main() const { return weighted_filter.get_gb_main(); }
+    AW_root *get_aw_root() const { return weighted_filter.get_aw_root(); }
 
 };
 

@@ -87,29 +87,22 @@ public:
 
 
 class AP_weights {
+    size_t    len;
     GB_UINT4 *weights;
-    size_t    weight_len;
-    size_t    alloc_len;
-
-    long update;
-
-    void resize(size_t newLen);
 
 public:
 
-    AP_weights();
+    AP_weights(const AP_filter *fil); // dummy weights (all columns weighted equal)
+    AP_weights(GB_UINT4 *w, size_t wlen, const AP_filter *fil);
     AP_weights(const AP_weights& other);
     ~AP_weights();
 
-    void init(const AP_filter *fil);                // init weights
-    void init(GB_UINT4 *w, size_t wlen, const AP_filter *fil);
-
     GB_UINT4 weight(size_t idx) const {
-        af_assert(idx<weight_len);
+        af_assert(idx<len);
         return weights[idx];
     }
 
-    size_t length() const { return weight_len; }
+    size_t length() const { return len; }
 };
 
 long AP_timer();

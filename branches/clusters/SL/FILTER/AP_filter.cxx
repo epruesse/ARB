@@ -174,59 +174,38 @@ void AP_filter::enable_bootstrap(){
 // -------------------
 //      AP_weights
 
-AP_weights::AP_weights() {
-    memset(this, 0, sizeof(AP_weights));
+AP_weights::AP_weights(const AP_filter *fil)
+    : len(fil->get_filtered_length())
+    , weights(new GB_UINT4[len])
+{
+    for (size_t i = 0; i<len; ++i) weights[i] = 1;
+}
+
+AP_weights::AP_weights(GB_UINT4 *w, size_t wlen, const AP_filter *fil)
+    : len(fil->get_filtered_length())
+    , weights(new GB_UINT4[len])
+{
+    af_assert(wlen == fil->get_length());
+    
+    size_t i,j;
+    for (j=i=0; i<wlen; ++j) {
+        if (fil->use_position(j)) {
+            weights[i++] = w[j];
+        }
+    }
+    af_assert(j <= fil->get_length());
+    af_assert(i == fil->get_filtered_length());
 }
 
 AP_weights::AP_weights(const AP_weights& other)
-    : weights(new GB_UINT4[other.weight_len])
-    , weight_len(other.weight_len)
-    , alloc_len(other.weight_len)
-    , update(other.update)
+    : len(other.len)
+    , weights(new GB_UINT4[len])
 {
-    memcpy(weights, other.weights, weight_len*sizeof(*weights));
+    memcpy(weights, other.weights, len*sizeof(*weights));
 }
 
 AP_weights::~AP_weights() {
     delete [] weights;
-}
-
-void AP_weights::resize(size_t newLen) {
-    af_assert(newLen>0);
-    if (newLen>alloc_len) {
-        delete [] weights;
-        weights   = new GB_UINT4[newLen];
-        alloc_len = newLen;
-    }
-    weight_len = newLen;
-}
-
-void AP_weights::init(const AP_filter *fil) {
-    if (fil->get_timestamp() > update) {
-        resize(fil->get_filtered_length());
-        for (size_t i=0; i<weight_len; ++i) {
-            weights[i] = 1;
-        }
-        update = fil->get_timestamp();
-    }
-}
-
-void AP_weights::init(GB_UINT4 *w, size_t len, const AP_filter *fil) {
-    af_assert(len == fil->get_length());
-
-    if (fil->get_timestamp() > this->update) {
-        resize(fil->get_filtered_length());
-
-        size_t i,j;
-        for (j=i=0; i<weight_len; ++j) {
-            if (fil->use_position(j)) {
-                weights[i++] = w[j];
-            }
-        }
-        af_assert(j <= fil->get_length());
-        af_assert(i == fil->get_filtered_length());
-        update = fil->get_timestamp();
-    }
 }
 
 long AP_timer(void) {

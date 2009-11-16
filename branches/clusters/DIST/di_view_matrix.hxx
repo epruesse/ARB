@@ -75,7 +75,8 @@ public:
     // if matrix == 0, use DI_MATRIX::root
 };
 
-AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix);
+struct save_matrix_params;
+AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix, save_matrix_params *sparam);
 
 
 #else

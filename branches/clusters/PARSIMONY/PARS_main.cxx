@@ -22,29 +22,31 @@
 #include <awt_nds.hxx>
 #include <awt_sel_boxes.hxx>
 #include <awt_filter.hxx>
+#include <gui_aliview.hxx>
 
 #include <TreeCallbacks.hxx>
 
 #include <list>
 
-
 #if defined(DEBUG)
 # define TEST_FUNCTIONS
 #endif // DEBUG
-
 
 using namespace std;
 
 AW_HEADER_MAIN
 
+#define AWAR_CSP_NAME "tmp/pars/csp/name"
+
 GBDATA *GLOBAL_gb_main;                             // global gb_main for arb_pars
+
+
 
 #warning make GLOBAL_PARS static!
 PARS_global *GLOBAL_PARS;
 
 // waaah more globals :(
 AP_main *ap_main;
-AWT_csp *awt_csp = 0; 
 
 static void pars_saveNrefresh_changed_tree(AWT_canvas *ntw) {
     ap_assert((AWT_TREE(ntw) == GLOBAL_PARS->tree));
@@ -1253,10 +1255,10 @@ static void pars_reset_optimal_parsimony(AW_window *aww, AW_CL *cl_ntw) {
 
 
 
-static void pars_start_cb(AW_window *aw_parent, AW_CL cd_adfiltercbstruct, AW_CL cl_cmds) {
-    adfiltercbstruct *acbs = (adfiltercbstruct*)cd_adfiltercbstruct;
-    PARS_commands    *cmds = (PARS_commands*)cl_cmds;
-    AW_root          *awr  = aw_parent->get_root();
+static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL cl_cmds) {
+    WeightedFilter *wfilt = (WeightedFilter*)cd_weightedFilter;
+    PARS_commands  *cmds  = (PARS_commands*)cl_cmds;
+    AW_root        *awr   = aw_parent->get_root();
     GB_begin_transaction(GLOBAL_gb_main);
     {
         GB_ERROR error = pars_check_size(awr);
@@ -1276,7 +1278,7 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_adfiltercbstruct, AW_CL
 
     AW_gc_manager aw_gc_manager = 0;
 
-    GLOBAL_PARS->tree = PARS_generate_tree(awr, acbs);
+    GLOBAL_PARS->tree = PARS_generate_tree(awr, wfilt);
 
     AWT_canvas *ntw;
     {
@@ -1554,14 +1556,16 @@ static AW_window *create_pars_init_window(AW_root *awr, const PARS_commands *cmd
     aws->at("help");
     aws->create_button("HELP","HELP","H");
 
+    WeightedFilter *weighted_filter = // do NOT free (bound to callbacks)
+        new WeightedFilter(GLOBAL_gb_main, aws->get_root(), AWAR_FILTER_NAME, AWAR_CSP_NAME);
+
     aws->at("filter");
-    adfiltercbstruct *filtercd = awt_create_select_filter(aws->get_root(),GLOBAL_gb_main,AWAR_FILTER_NAME);
-    aws->callback(AW_POPUP, (AW_CL)awt_create_select_filter_win, (AW_CL)filtercd);
+    aws->callback(AW_POPUP, (AW_CL)awt_create_select_filter_win, (AW_CL)weighted_filter->get_adfiltercbstruct());
     aws->create_button("SELECT_FILTER",AWAR_FILTER_NAME);
 
-    aws->callback(pars_start_cb, (AW_CL)filtercd, (AW_CL)cmds);
-    aws->at("go");
-    aws->create_button("GO","GO","G");
+    aws->at("weights");
+    aws->callback(AW_POPUP,(AW_CL)create_csp_window,(AW_CL)weighted_filter->get_csp());
+    aws->create_button("SELECT_CSP", AWAR_CSP_NAME);
 
     aws->at("alignment");
     awt_create_selection_list_on_ad(GLOBAL_gb_main,(AW_window *)aws,AWAR_ALIGNMENT,"*=");
@@ -1569,11 +1573,9 @@ static AW_window *create_pars_init_window(AW_root *awr, const PARS_commands *cmd
     aws->at("tree");
     awt_create_selection_list_on_trees(GLOBAL_gb_main,(AW_window *)aws,AWAR_TREE);
 
-    awt_csp = new AWT_csp(GLOBAL_gb_main,awr,"tmp/pars/csp/name");
-
-    aws->at("weights");
-    aws->callback(AW_POPUP,(AW_CL)create_csp_window,(AW_CL)awt_csp);
-    aws->create_button("SELECT_CSP","tmp/pars/csp/name");
+    aws->callback(pars_start_cb, (AW_CL)weighted_filter, (AW_CL)cmds);
+    aws->at("go");
+    aws->create_button("GO","GO","G");
 
     return aws;
 }

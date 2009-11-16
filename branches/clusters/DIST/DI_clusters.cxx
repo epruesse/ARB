@@ -100,9 +100,8 @@ static void save_results(AW_window *aww, ClusterTreeRoot *tree) {
 }
 
 static void calculate_clusters(AW_window *aww) {
-    GBDATA           *gb_main     = global_data->get_gb_main();
-    adfiltercbstruct *dist_filter = global_data->dist_filter;
-    GB_ERROR          error       = NULL;
+    GBDATA   *gb_main = global_data->get_gb_main();
+    GB_ERROR  error   = NULL;
 
     // calculate ClusterTree
     ClusterTreeRoot *tree = NULL;
@@ -111,11 +110,8 @@ static void calculate_clusters(AW_window *aww) {
         AW_root        *aw_root = aww->get_root();
 
         {
-
-            AP_filter  *filter  = awt_get_filter(aw_root, dist_filter);
-            AP_weights  weights; weights.init(filter);
-            char       *use     = aw_root->awar(AWAR_DIST_ALIGNMENT)->read_string();
-            AliView    *aliview = new AliView(gb_main, *filter, weights, use); // do not free!
+            char    *use     = aw_root->awar(AWAR_DIST_ALIGNMENT)->read_string();
+            AliView *aliview = global_data->weighted_filter.create_aliview(use);
 
             AP_sequence *seq = GBT_is_alignment_protein(gb_main,use)
                 ? (AP_sequence*)new AP_sequence_simple_protein(aliview)
@@ -128,7 +124,6 @@ static void calculate_clusters(AW_window *aww) {
 
             delete seq;
             free(use);
-            delete filter;
         }
 
         aw_openstatus("Loading tree");
@@ -328,11 +323,11 @@ static void load_clusters(AW_window *aww) {
 // ---------------------------------
 //      cluster detection window
 
-AW_window *DI_create_cluster_detection_window(AW_root *aw_root, AW_CL cl_adfiltercbstruct) {
+AW_window *DI_create_cluster_detection_window(AW_root *aw_root, AW_CL cl_weightedFilter) {
     static AW_window_simple *aws = 0;
     if (!aws) {
         cl_assert(!global_data);
-        global_data = new ClustersData((adfiltercbstruct*)cl_adfiltercbstruct);
+        global_data = new ClustersData(*(WeightedFilter*)cl_weightedFilter);
 
         aws = new AW_window_simple;
         aws->init(aw_root, "DETECT_CLUSTERS", "Detect clusters in tree");

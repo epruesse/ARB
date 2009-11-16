@@ -65,9 +65,9 @@ DI_clusters.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-DI_clusters.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/downcast.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 DI_clustertree.o: di_clustertree.hxx
@@ -125,8 +125,8 @@ DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-DI_foundclusters.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/downcast.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 DI_main.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -181,11 +181,13 @@ DI_matr.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/awt.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/awt_csp.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/awt_macro.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/CT_ctree.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/downcast.h
+DI_matr.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/neighbourjoin.hxx
 
 DI_mldist.o: di_matr.hxx
