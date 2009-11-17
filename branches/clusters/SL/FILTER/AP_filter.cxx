@@ -15,15 +15,18 @@
 // ------------------
 //      AP_filter
 
-AP_filter::AP_filter()
-    : filter_mask(NULL)
-    , filter_len(0)
-    , real_len(0)
-    , update(0)
-    , simplify_type(AWT_FILTER_SIMPLIFY_NOT_INITIALIZED)
-    , bootstrap(NULL)
-    , filterpos_2_seqpos(NULL)
-{
+void AP_filter::init(size_t size) {
+    filter_mask        = new bool[size];
+    filter_len         = size;
+    update             = AP_timer();
+    simplify_type      = AWT_FILTER_SIMPLIFY_NOT_INITIALIZED;
+    bootstrap          = NULL;
+    filterpos_2_seqpos = NULL;
+}
+
+
+AP_filter::AP_filter(size_t size) {
+    make_permeable(size);
 }
 
 AP_filter::AP_filter(const AP_filter& other)
@@ -47,29 +50,19 @@ AP_filter::AP_filter(const AP_filter& other)
     }
 }
 
-
 AP_filter::~AP_filter(void) {
     delete [] bootstrap;
     delete [] filter_mask;
     delete [] filterpos_2_seqpos;
 }
 
-void AP_filter::resize(size_t newLen) {
-    delete [] filter_mask;
-    filter_mask = new bool[newLen];
-    filter_len  = newLen;
-
-    delete [] bootstrap;                bootstrap          = NULL;
-    delete [] filterpos_2_seqpos;       filterpos_2_seqpos = NULL;
-}
-
-void AP_filter::init(const char *ifilter, const char *zerobases, size_t size) {
-    if (!ifilter || !*ifilter) {                    // select all
-        init(size);
+AP_filter::AP_filter(const char *ifilter, const char *zerobases, size_t size) {
+    if (!ifilter || !*ifilter) {
+        make_permeable(size);
     }
     else {
-        resize(size);
-
+        init(size);
+        
         bool   char2mask[256];
         size_t i;
 
@@ -89,19 +82,14 @@ void AP_filter::init(const char *ifilter, const char *zerobases, size_t size) {
             filter_mask[i] = true;
             real_len++;
         }
-        update = AP_timer();
     }
 }
 
-
-
-void AP_filter::init(size_t size) {
-    resize(size);
+void AP_filter::make_permeable(size_t size) {
+    init(size);
     real_len = filter_len;
     for (size_t i = 0; i < size; i++) filter_mask[i] = true;
-    update = AP_timer();
 }
-
 
 char *AP_filter::to_string() const {
     char *data = new char[filter_len+1];
@@ -170,6 +158,7 @@ void AP_filter::enable_bootstrap(){
         bootstrap[i] = r;
     }
 }
+
 
 // -------------------
 //      AP_weights

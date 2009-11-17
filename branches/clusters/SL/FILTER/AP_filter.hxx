@@ -42,15 +42,15 @@ class AP_filter {
     size_t *filterpos_2_seqpos;                     // filterpos -> sequencepos
 
     void calc_filterpos_2_seqpos();
-    void resize(size_t newLen);
+
+    void init(size_t size);
+    void make_permeable(size_t size);
 
 public:
-    AP_filter();
+    AP_filter(size_t size); // permeable filter (passes all columns)
+    AP_filter(const char *filter, const char *zerobases, size_t size);
     AP_filter(const AP_filter& other);
     ~AP_filter();
-
-    void init(const char *filter,const char *zerobases, size_t size);
-    void init(size_t size);
 
     long get_timestamp() const { return update; }
     size_t get_filtered_length() const { return real_len; }

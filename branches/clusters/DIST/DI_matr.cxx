@@ -1362,18 +1362,19 @@ static void di_autodetect_callback(AW_window *aww)
 
     AliView *aliview;
     {
-        AP_filter *ap_filter = new AP_filter;
-        long       flen      = strlen(filter_str);
+        AP_filter *ap_filter = NULL;
+        long       flen  = strlen(filter_str);
+
         if (flen == ali_len){
-            ap_filter->init(filter_str,"0",ali_len);
+            ap_filter = new AP_filter(filter_str, "0", ali_len);
         }
         else {
             if (flen) {
                 aw_message("WARNING: YOUR FILTER LEN IS NOT THE ALIGNMENT LEN\nFILTER IS TRUNCATED WITH ZEROS OR CUTTED");
-                ap_filter->init(filter_str,"0",ali_len);
+                ap_filter = new AP_filter(filter_str, "0", ali_len);
             }
             else {
-                ap_filter->init(ali_len);
+                ap_filter = new AP_filter(ali_len); // unfiltered
             }
         }
 

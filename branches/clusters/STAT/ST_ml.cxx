@@ -542,9 +542,8 @@ GB_ERROR ST_ML::init(const char *tree_name, const char *alignment_namei,
     }
 
     {
-        AP_filter  filter; filter.init(alignment_len);
-        AP_weights weights(&filter);
-
+        AP_filter       filter(alignment_len);      // unfiltered
+        AP_weights      weights(&filter);
         AliView        *aliview   = new AliView(gb_main, filter, weights, alignment_name);
         ST_sequence_ml *seq_templ = new ST_sequence_ml(aliview, this);
 

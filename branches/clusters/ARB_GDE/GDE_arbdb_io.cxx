@@ -43,8 +43,7 @@ static int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned c
     gde_assert((the_species==0) != (the_names==0));
 
     if (filter==0) {
-        allocatedFilter = new AP_filter;
-        allocatedFilter->init(maxalignlen);
+        allocatedFilter = new AP_filter(maxalignlen);
         filter          = allocatedFilter;
     }
     else {
@@ -149,10 +148,8 @@ static int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned c
             if (modified) {
                 size_t len = filter->get_length();
 
-                if (!allocatedFilter) allocatedFilter = new AP_filter();
-                allocatedFilter->init(filterString, NULL, len);
-                
-                filter = allocatedFilter;
+                delete allocatedFilter;
+                filter = allocatedFilter = new AP_filter(filterString, NULL, len);
             }
 
             free(filterString);

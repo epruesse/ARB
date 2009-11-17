@@ -196,47 +196,46 @@ void st_ml_add_quality_string_to_species(GBDATA * gb_main,
 }
 
 GB_ERROR st_ml_check_sequence_quality(GBDATA * gb_main, const char *tree_name,
-        const char *alignment_name, AWT_csp * awt_csp, int bucket_size,
-        int marked_only, st_report_enum report, const char *filter_string,
-        const char *dest_field)
+                                      const char *alignment_name, AWT_csp * awt_csp, int bucket_size,
+                                      int marked_only, st_report_enum report, const char *filter_string,
+                                      const char *dest_field)
 {
-    AP_filter filter;
-    int seq_len = GBT_get_alignment_len(gb_main, alignment_name);
-    filter.init(filter_string, "0 ", seq_len);
-    ST_ML st_ml(gb_main);
-    GB_ERROR error = st_ml.init(tree_name, alignment_name, 0, marked_only,
-            filter_string, awt_csp);
-    if (error) {
-        return error;
-    }
+    int       seq_len = GBT_get_alignment_len(gb_main, alignment_name);
+    AP_filter filter(filter_string, "0 ", seq_len);
+    ST_ML     st_ml(gb_main);
+    GB_ERROR  error   = st_ml.init(tree_name, alignment_name, 0, marked_only, filter_string, awt_csp);
 
-    GB_HASH *species_to_info_hash = GBS_create_hash(GBT_get_species_count(gb_main), GB_IGNORE_CASE);
-    GB_CSTR *snames = GBT_get_species_names_of_tree(st_ml.tree_root->get_root_node()->get_gbt_tree());
+    if (!error) {
+        GB_HASH *species_to_info_hash = GBS_create_hash(GBT_get_species_count(gb_main), GB_IGNORE_CASE);
+        GB_CSTR *snames               = GBT_get_species_names_of_tree(st_ml.tree_root->get_root_node()->get_gbt_tree());
 
-    int pos;
-    aw_openstatus("Sequence Quality Check");
-    for (pos = 0; pos < seq_len; pos += ST_MAX_SEQ_PART) {
-        int end = pos + ST_MAX_SEQ_PART - 1;
-        if (end > seq_len)
-            end = seq_len;
-        if (aw_status(pos / double (seq_len))) {
-            return "aborted";
+        int pos;
+        aw_openstatus("Sequence Quality Check");
+        for (pos = 0; pos < seq_len; pos += ST_MAX_SEQ_PART) {
+            int end = pos + ST_MAX_SEQ_PART - 1;
+            if (end > seq_len)
+                end = seq_len;
+            if (aw_status(pos / double (seq_len))) {
+                return "aborted";
+            }
+            const char **pspecies_name;
+            for (pspecies_name = snames; *pspecies_name; pspecies_name++) {
+                st_ml_add_sequence_part_to_stat(&st_ml, awt_csp, *pspecies_name,
+                                                seq_len, bucket_size, species_to_info_hash, pos, end);
+            }
         }
+        aw_status("Generating Result String");
         const char **pspecies_name;
         for (pspecies_name = snames; *pspecies_name; pspecies_name++) {
-            st_ml_add_sequence_part_to_stat(&st_ml, awt_csp, *pspecies_name,
-                    seq_len, bucket_size, species_to_info_hash, pos, end);
+            st_ml_add_quality_string_to_species(gb_main, alignment_name,
+                                                *pspecies_name, seq_len, bucket_size, species_to_info_hash,
+                                                report, dest_field);
         }
+        aw_closestatus();
+
+        free(snames);
+        GBS_free_hash(species_to_info_hash);
     }
-    aw_status("Generating Result String");
-    const char **pspecies_name;
-    for (pspecies_name = snames; *pspecies_name; pspecies_name++) {
-        st_ml_add_quality_string_to_species(gb_main, alignment_name,
-                *pspecies_name, seq_len, bucket_size, species_to_info_hash,
-                report, dest_field);
-    }
-    aw_closestatus();
-    free(snames);
-    GBS_free_hash(species_to_info_hash);
-    return NULL;
+
+    return error;
 }

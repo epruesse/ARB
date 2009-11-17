@@ -40,11 +40,9 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
 AWT_csp.o: awt_csp.hxx
-AWT_csp.o: awt_filter.hxx
 AWT_csp.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_csp.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_csp.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-AWT_csp.o: $(ARBHOME)/INCLUDE/AliView.hxx
 AWT_csp.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 AWT_csp.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_csp.o: $(ARBHOME)/INCLUDE/arbdb.h

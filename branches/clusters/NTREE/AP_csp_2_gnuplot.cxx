@@ -227,7 +227,6 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
     GB_transaction  dummy(GLOBAL_gb_main);
     AWT_csp        *csp   = (AWT_csp *)cspcd;
     GB_ERROR        error = 0;
-    AP_filter       filter;
     int             mode  = int(cl_mode);
 
     if (mode != 2) {
@@ -235,8 +234,8 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
         char *alignment_name   = aww->get_root()->awar(AP_AWAR_FILTER_ALIGNMENT)->read_string();
         long  alignment_length = GBT_get_alignment_len(GLOBAL_gb_main,alignment_name);
 
-        filter.init(filterstring, "0", alignment_length);
-        
+        AP_filter filter(filterstring, "0", alignment_length);
+
         free(alignment_name);
         free(filterstring);
 

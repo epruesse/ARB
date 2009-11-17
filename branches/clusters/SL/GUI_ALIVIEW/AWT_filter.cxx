@@ -372,10 +372,9 @@ AW_window *awt_create_select_filter_win(AW_root *aw_root, AW_CL res_of_create_se
 }
 
 AP_filter *awt_get_filter(AW_root *aw_root, adfiltercbstruct *acbs) {
-    AP_filter *filter      = new AP_filter;
-    bool       initialized = false;
+    AP_filter *filter = NULL;
 
-    awt_assert(aw_root == acbs->awr); // @@@ if this doesnt fail, remove aw_root from params
+    awt_assert(aw_root == acbs->awr);               // @@@ if this doesnt fail, remove aw_root from params
 
     if (acbs) {
         GB_push_transaction(acbs->gb_main);
@@ -391,21 +390,16 @@ AP_filter *awt_get_filter(AW_root *aw_root, adfiltercbstruct *acbs) {
         }
 
         if (len != -1) { // have alignment
-            filter->init(filter_string,"0",len);
-            initialized = true;
-
+            filter  = new AP_filter(filter_string, "0", len);
             int sim = aw_root->awar(acbs->def_simplify)->read_int();
             filter->enable_simplify((AWT_FILTER_SIMPLIFY)sim);
             free(filter_string);
         }
-            
+
         GB_pop_transaction(acbs->gb_main);
     }
 
-    if (!initialized) {
-        filter->init("","0",10);
-    }
-
+    if (!filter) filter = new AP_filter("", "0", 10);
     return filter;
 }
 
