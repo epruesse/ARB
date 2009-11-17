@@ -109,7 +109,7 @@ public:
     void partial_match(const AP_sequence* part, long *overlap, long *penalty) const;
 
     GB_ERROR bind_to_species(GBDATA *gb_species);
-    void     unbind_from_species();
+    void     unbind_from_species(bool remove_callbacks);
     GBDATA *get_bound_species_data() const { return AP_sequence::get_bound_species_data(); }
 
     void sequence_change();                         // sequence has changed in db

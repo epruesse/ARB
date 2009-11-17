@@ -161,7 +161,7 @@ ST_sequence_ml::~ST_sequence_ml() {
     delete color_out;
     delete color_out_valid_till;
 
-    unbind_from_species();
+    unbind_from_species(true);
 }
 
 static void st_sequence_callback(GBDATA *, int *cl, gb_call_back_type) {
@@ -171,7 +171,7 @@ static void st_sequence_callback(GBDATA *, int *cl, gb_call_back_type) {
 
 static void st_sequence_del_callback(GBDATA *, int *cl, gb_call_back_type) {
     ST_sequence_ml *seq = (ST_sequence_ml *) cl;
-    seq->unbind_from_species();
+    seq->unbind_from_species(false);
 }
 
 
@@ -186,11 +186,13 @@ GB_ERROR ST_sequence_ml::bind_to_species(GBDATA *gb_species) {
     }
     return error;
 }
-void ST_sequence_ml::unbind_from_species() {
-    GBDATA *gb_seq = get_bound_species_data();
-    st_assert(gb_seq);
-    GB_remove_callback(gb_seq, GB_CB_CHANGED, st_sequence_callback, (int *) this);
-    GB_remove_callback(gb_seq, GB_CB_DELETE, st_sequence_del_callback, (int *) this);
+void ST_sequence_ml::unbind_from_species(bool remove_callbacks) {
+    if (remove_callbacks) {
+        GBDATA *gb_seq = get_bound_species_data();
+        st_assert(gb_seq);
+        GB_remove_callback(gb_seq, GB_CB_CHANGED, st_sequence_callback, (int *) this);
+        GB_remove_callback(gb_seq, GB_CB_DELETE, st_sequence_del_callback, (int *) this);
+    }
     AP_sequence::unbind_from_species();
 }
 
