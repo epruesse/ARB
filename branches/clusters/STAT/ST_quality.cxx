@@ -197,13 +197,11 @@ void st_ml_add_quality_string_to_species(GBDATA * gb_main,
 
 GB_ERROR st_ml_check_sequence_quality(GBDATA * gb_main, const char *tree_name,
                                       const char *alignment_name, AWT_csp * awt_csp, int bucket_size,
-                                      int marked_only, st_report_enum report, const char *filter_string,
-                                      const char *dest_field)
+                                      int marked_only, st_report_enum report, const char *dest_field)
 {
-    int       seq_len = GBT_get_alignment_len(gb_main, alignment_name);
-    AP_filter filter(filter_string, "0 ", seq_len);
-    ST_ML     st_ml(gb_main);
-    GB_ERROR  error   = st_ml.init(tree_name, alignment_name, 0, marked_only, filter_string, awt_csp);
+    int      seq_len = GBT_get_alignment_len(gb_main, alignment_name);
+    ST_ML    st_ml(gb_main);
+    GB_ERROR error   = st_ml.init(tree_name, alignment_name, 0, marked_only, awt_csp, true);
 
     if (!error) {
         GB_HASH *species_to_info_hash = GBS_create_hash(GBT_get_species_count(gb_main), GB_IGNORE_CASE);

@@ -171,22 +171,19 @@ public:
     void print();
     int is_inited;
 
-    GB_ERROR init(const char *tree_name, const char *alignment_name,
-            const char *species_names, int marked_only,
-            const char *filter_string, AWT_csp *awt_csp);
-    // species_names is 0 -> all [marked] species (else species_names is a (char)1 separated list of species)
-    // filter_string==0 -> no filter
+    GB_ERROR init(const char *tree_name,
+                  const char *alignment_name,
+                  const char *species_names,        // 0 -> all [marked] species (else species_names is a (char)1 separated list of species)
+                  int         marked_only,
+                  AWT_csp    *awt_csp,
+                  bool        show_status) __ATTR__USERESULT;
 
-    void clear_all(); // delete all caches
+    void clear_all();                               // delete all caches
 
+    ST_sequence_ml *get_ml_vectors(char *species_name, AP_tree *node, int start_ali_pos, int end_ali_pos);
+    ST_ML_Color *get_color_string(char *species_name, AP_tree *node, int start_ali_pos, int end_ali_pos);
 
-    ST_sequence_ml *get_ml_vectors(char *species_name, AP_tree *node,
-            int start_ali_pos, int end_ali_pos);
-    ST_ML_Color *get_color_string(char *species_name, AP_tree *node,
-            int start_ali_pos, int end_ali_pos);
-
-    int update_ml_likelihood(char *result[4], int *latest_update,
-            char *species_name, AP_tree *node);
+    int update_ml_likelihood(char *result[4], int *latest_update, char *species_name, AP_tree *node);
 
     int refresh_needed();
 };

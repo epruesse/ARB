@@ -523,102 +523,120 @@ inline GB_ERROR tree_size_ok(AP_tree_root *tree_root) {
 /** this is the real constructor, call only once */
 GB_ERROR ST_ML::init(const char *tree_name, const char *alignment_namei,
                      const char *species_names, int marked_only,
-                     const char * /*filter_string */, AWT_csp * awt_cspi) {
-
-    GB_transaction ta(gb_main);
+                     AWT_csp *awt_cspi, bool show_status)
+{
     GB_ERROR error = 0;
+
     if (is_inited) {
-        return GB_export_error("Sorry, once you selected a column statistic you cannot change parameters");
-    }
-    GB_ERROR awt_csp_error = 0;
-    awt_csp = awt_cspi;
-    awt_csp_error = awt_csp->go();
-    if (awt_csp_error) {
-        fprintf(stderr, "%s\n", awt_csp_error);
-    }
-    alignment_name = strdup(alignment_namei);
-    alignment_len = GBT_get_alignment_len(gb_main, alignment_name);
-    if (alignment_len < 10) {
-        free(alignment_name);
-        return GB_await_error();
-    }
-
-    {
-        AP_filter       filter(alignment_len);      // unfiltered
-        AP_weights      weights(&filter);
-        AliView        *aliview   = new AliView(gb_main, filter, weights, alignment_name);
-        ST_sequence_ml *seq_templ = new ST_sequence_ml(aliview, this);
-
-        tree_root = new AP_tree_root(aliview, AP_tree(0), seq_templ, false);
-        // do not delete 'aliview' or 'seq_templ' (they belong to 'tree_root' now)
-    }
-    tree_root->loadFromDB(tree_name);               // tree is not linked!
-
-    // aw_openstatus("Initializing Online Statistic");
-    /* send species into hash table */
-    hash_2_ap_tree = GBS_create_hash(1000, GB_MIND_CASE);
-    // aw_status("Loading Tree");
-    /* delete species */
-    if (species_names) { // keep names
-        tree_root->remove_leafs(AWT_REMOVE_DELETED);
-
-        error = tree_size_ok(tree_root);
-        if (error) return ta.close(error);
-
-        char *l, *n;
-        keep_species_hash = GBS_create_hash(GBT_get_species_hash_size(gb_main), GB_MIND_CASE);
-        for (l = (char *) species_names; l; l = n) {
-            n = strchr(l, 1);
-            if (n) *n = 0;
-            GBS_write_hash(keep_species_hash, l, 1);
-            if (n) *(n++) = 1;
-        }
-
-        insert_tree_into_hash_rek(tree_root->get_root_node());
-        GBS_hash_do_loop(hash_2_ap_tree, delete_species, this);
-        GBS_free_hash(keep_species_hash);
-        keep_species_hash = 0;
-        GBT_link_tree(tree_root->get_root_node()->get_gbt_tree(), gb_main, GB_FALSE, 0, 0);
-    }
-    else { // keep marked
-        GBT_link_tree(tree_root->get_root_node()->get_gbt_tree(), gb_main, GB_FALSE, 0, 0);
-        tree_root->remove_leafs((marked_only ? AWT_REMOVE_NOT_MARKED : 0)|AWT_REMOVE_DELETED);
-        
-        error = tree_size_ok(tree_root);
-        if (error) return ta.close(error);
-
-        insert_tree_into_hash_rek(tree_root->get_root_node());
-    }
-
-    /* calc frequencies */
-
-    if (!awt_csp_error) {
-        rates = awt_csp->rates;
-        ttratio = awt_csp->ttratio;
+        error = "Column statistic can't be re-initialized";
     }
     else {
-        rates = new float[alignment_len];
-        ttratio = new float[alignment_len];
-        for (int i = 0; i < alignment_len; i++) {
-            rates[i] = 1.0;
-            ttratio[i] = 2.0;
+        GB_transaction ta(gb_main);
+        GB_ERROR       awt_csp_error = 0;
+
+        if (show_status) aw_openstatus("Activating column statistic");
+
+        awt_csp       = awt_cspi;
+        awt_csp_error = awt_csp->go();
+
+        if (awt_csp_error) fprintf(stderr, "%s\n", awt_csp_error);
+
+        alignment_name = strdup(alignment_namei);
+        alignment_len  = GBT_get_alignment_len(gb_main, alignment_name);
+
+        if (alignment_len < 10) {
+            error = GB_await_error();
         }
-        awt_csp = 0;
+        else {
+            {
+                AP_filter       filter(alignment_len);      // unfiltered
+                AP_weights      weights(&filter);
+                AliView        *aliview   = new AliView(gb_main, filter, weights, alignment_name);
+                ST_sequence_ml *seq_templ = new ST_sequence_ml(aliview, this);
+
+                tree_root = new AP_tree_root(aliview, AP_tree(0), seq_templ, false);
+                // do not delete 'aliview' or 'seq_templ' (they belong to 'tree_root' now)
+            }
+
+            if (show_status) aw_status("load tree");
+            tree_root->loadFromDB(tree_name);       // tree is not linked!
+            
+            if (show_status) aw_status("link tree");
+            hash_2_ap_tree = GBS_create_hash(1000, GB_MIND_CASE); // send species into hash table
+
+            /* delete species */
+            if (species_names) { // keep names
+                tree_root->remove_leafs(AWT_REMOVE_DELETED);
+
+                error = tree_size_ok(tree_root);
+                if (!error) {
+                    char *l, *n;
+                    keep_species_hash = GBS_create_hash(GBT_get_species_hash_size(gb_main), GB_MIND_CASE);
+                    for (l = (char *) species_names; l; l = n) {
+                        n = strchr(l, 1);
+                        if (n) *n = 0;
+                        GBS_write_hash(keep_species_hash, l, 1);
+                        if (n) *(n++) = 1;
+                    }
+
+                    insert_tree_into_hash_rek(tree_root->get_root_node());
+                    GBS_hash_do_loop(hash_2_ap_tree, delete_species, this);
+                    GBS_free_hash(keep_species_hash);
+                    keep_species_hash = 0;
+                    GBT_link_tree(tree_root->get_root_node()->get_gbt_tree(), gb_main, GB_BOOL(show_status), 0, 0);
+                }
+            }
+            else { // keep marked
+                GBT_link_tree(tree_root->get_root_node()->get_gbt_tree(), gb_main, GB_BOOL(show_status), 0, 0);
+                tree_root->remove_leafs((marked_only ? AWT_REMOVE_NOT_MARKED : 0)|AWT_REMOVE_DELETED);
+        
+                error = tree_size_ok(tree_root);
+                if (!error) insert_tree_into_hash_rek(tree_root->get_root_node());
+            }
+
+            if (!error) {
+                /* calc frequencies */
+                if (show_status) aw_status("calculating frequencies");
+
+                if (!awt_csp_error) {
+                    rates = awt_csp->rates;
+                    ttratio = awt_csp->ttratio;
+                }
+                else {
+                    rates = new float[alignment_len];
+                    ttratio = new float[alignment_len];
+                    for (int i = 0; i < alignment_len; i++) {
+                        rates[i] = 1.0;
+                        ttratio[i] = 2.0;
+                    }
+                    awt_csp = 0;
+                }
+                create_frequencies();
+
+                /* set update time */
+
+                latest_modification = GB_read_clock(gb_main);
+
+                /* create matrices */
+                create_matrices(2.0, 1000);
+
+                ST_sequence_ml::tmp_out = new ST_base_vector[alignment_len];
+                is_inited = 1;
+            }
+            if (error) {
+                delete tree_root;               tree_root      = NULL;
+                GBS_free_hash(hash_2_ap_tree);  hash_2_ap_tree = NULL;
+            }
+        }
+
+        if (error) {
+            free(alignment_name);
+            error = ta.close(error);
+        }
+
+        if (show_status) aw_closestatus();
     }
-    // aw_status("build frequencies");
-    create_frequencies();
-
-    /* set update time */
-
-    latest_modification = GB_read_clock(gb_main);
-
-    /* create matrices */
-    create_matrices(2.0, 1000);
-
-    ST_sequence_ml::tmp_out = new ST_base_vector[alignment_len];
-    is_inited = 1;
-    // aw_closestatus();
-    return 0;
+    return error;
 }
 
 ST_sequence_ml *ST_ML::getOrCreate_seq(AP_tree *node) {
