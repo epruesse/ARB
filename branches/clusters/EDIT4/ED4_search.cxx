@@ -250,7 +250,7 @@ SearchTreeNode *SearchTreeNode::insert_unified_pattern(GB_CSTR pattern, GB_CSTR 
 
 void SearchTreeNode::findMatches(int off, GB_CSTR seq, int len, int mismatches, int mismatch_list[MAX_MISMATCHES])
 {
-    e4_assert(mismatches < MAX_MISMATCHES);
+    e4_assert(mismatches <= MAX_MISMATCHES);
     if (len) {
         int matches = c=='?' || c==seq[0];
         int use_mismatch = 0;
