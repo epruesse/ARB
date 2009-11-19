@@ -632,6 +632,10 @@ void SEC_helix_strand::paint_strands(AW_device *device, const Vector& strand_vec
 
     sec_assert(Region[1]->get_base_count() == base_count); // not aligned ?
 
+    if (base_count<1) {
+        return; // completely skip painting on strands w/o any base
+    }
+
     if (allocated<base_count) {
         delete [] data;
         data      = new StrandPositionData[base_count];
