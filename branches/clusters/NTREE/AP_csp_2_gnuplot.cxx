@@ -378,7 +378,7 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
                         }
 
                         fprintf(out, "%s \"%s\" %s title \"%s\"\n", plot_command[int(plotted)], fname, smooth, makeTitle(fname));
-                        fprintf(out, "pause -1 \"Press RETURN to close gnuplot\"\n");
+                        fprintf(out, "pause mouse any \"Any key or button will terminate gnuplot\"\n");
                         fclose(out);
                         out = 0;
 
