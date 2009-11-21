@@ -188,7 +188,7 @@ void AWTC_build_reverse_complement(AW_window *aw, AW_CL cd2)  {
             GBDATA *gb_species = GBT_first_marked_species(GLOBAL_gb_main);
 
             if (!gb_species) {
-                error = GB_export_error("There is no marked species");
+                error = "There is no marked species";
             }
             while (gb_species) {
                 error = reverseComplement(gb_species, alignment, max_protection);
@@ -205,7 +205,7 @@ void AWTC_build_reverse_complement(AW_window *aw, AW_CL cd2)  {
             GBDATA *gb_species = get_first_selected_species(&count);
 
             if (!gb_species) {
-                error = GB_export_error("There is no selected species!");
+                error = "There is no selected species!";
             }
             while (gb_species) {
                 error = reverseComplement(gb_species, alignment, max_protection);
@@ -518,9 +518,8 @@ static inline void recalcUsedBuffer(char **bufPtr, long *lenPtr, long *usedPtr, 
 }
 #endif
 
-static inline GB_ERROR bufferTooSmall()
-{
-    return GB_export_error("Cannot align - reserved buffer is to small");
+ATTRIBUTED(__ATTR__USERESULT, static inline GB_ERROR bufferTooSmall()) {
+    return "Cannot align - reserved buffer is to small";
 }
 
 static inline long insertsToNextBase(AWTC_alignBuffer *alignBuffer, const AWTC_SequencePosition& master)
@@ -709,11 +708,12 @@ static inline GB_ERROR insertAligned(AWTC_alignBuffer *alignBuffer,
     return NULL;
 }
 
-static inline GB_ERROR cannot_fast_align(const AWTC_CompactedSubSequence& master, long moffset, long mlength,
-                                         const AWTC_CompactedSubSequence& slaveSequence, long soffset, long slength,
-                                         int max_seq_length,
-                                         AWTC_alignBuffer *alignBuffer,
-                                         AWTC_fast_align_report *report)
+ATTRIBUTED(__ATTR__USERESULT, 
+           static inline GB_ERROR cannot_fast_align(const AWTC_CompactedSubSequence& master, long moffset, long mlength,
+                                                    const AWTC_CompactedSubSequence& slaveSequence, long soffset, long slength,
+                                                    int max_seq_length,
+                                                    AWTC_alignBuffer *alignBuffer,
+                                                    AWTC_fast_align_report *report))
 {
     const char *mtext = master.text(moffset);
     const char *stext = slaveSequence.text(soffset);
@@ -737,7 +737,7 @@ static inline GB_ERROR cannot_fast_align(const AWTC_CompactedSubSequence& master
                 case GB_AT_RNA:
                 case GB_AT_DNA: is_dna = 1; break;
                 case GB_AT_AA:  is_dna = 0; break;
-                default: error = GB_export_error("Unknown alignment type - aligner aborted"); break;
+                default: error = "Unknown alignment type - aligner aborted"; break;
             }
 
             if (!error) {
@@ -1157,14 +1157,15 @@ static GB_ERROR writeStringToAlignment(GBDATA *gb_species, GB_CSTR alignment, GB
 
 // --------------------------------------------------------------------------------
 
-static GB_ERROR alignCompactedTo(AWTC_CompactedSubSequence     *toAlignSequence,
-                                 const AWTC_FastSearchSequence *alignTo,
-                                 int                            max_seq_length,
-                                 GB_CSTR                        alignment,
-                                 long                           toAlignChksum,
-                                 GBDATA                        *gb_toAlign,
-                                 GBDATA                        *gb_alignTo,      // may be NULL
-                                 const AlignParams&             ali_params)
+ATTRIBUTED(__ATTR__USERESULT, 
+           static GB_ERROR alignCompactedTo(AWTC_CompactedSubSequence     *toAlignSequence,
+                                            const AWTC_FastSearchSequence *alignTo,
+                                            int                            max_seq_length,
+                                            GB_CSTR                        alignment,
+                                            long                           toAlignChksum,
+                                            GBDATA                        *gb_toAlign,
+                                            GBDATA                        *gb_alignTo,      // may be NULL
+                                            const AlignParams&             ali_params))
 // if only part of the sequence should be aligned, then this functions already gets only the part
 // (i.o.w.: toAlignSequence, alignTo and toAlignChksum refer to the partial sequence)
 {
@@ -1241,7 +1242,7 @@ static GB_ERROR alignCompactedTo(AWTC_CompactedSubSequence     *toAlignSequence,
 
     if (!error) {
         if (calcSequenceChecksum(alignBuffer.text(), alignBuffer.length())!=toAlignChksum) { // sequence-chksum changed
-            error = GB_export_error("Internal aligner error (sequence checksum changed) -- aborted");
+            error = "Internal aligner error (sequence checksum changed) -- aborted";
 
 # ifdef DEBUG
             AWTC_CompactedSubSequence alignedSlave(alignBuffer.text(), alignBuffer.length(), toAlignSequence->name());
@@ -1254,7 +1255,7 @@ static GB_ERROR alignCompactedTo(AWTC_CompactedSubSequence     *toAlignSequence,
                 GBDATA *gbd = GBT_add_data(gb_toAlign, alignment, "data", GB_STRING);
 
                 if (!gbd) {
-                    error = GB_export_error("Can't find/create sequence data");
+                    error = "Can't find/create sequence data";
                 }
                 else {
                     if (ali_params.firstColumn!=0 || ali_params.lastColumn!=-1) { // we aligned just a part of the sequence
@@ -1269,7 +1270,7 @@ static GB_ERROR alignCompactedTo(AWTC_CompactedSubSequence     *toAlignSequence,
                             memcpy(buffer+ali_params.firstColumn, alignBuffer.text()+ali_params.firstColumn, lenToCopy);  // copy in the aligned part
 
                             if (calcSequenceChecksum(buffer, len)!=wholeChksum) {
-                                error = GB_export_error("Internal aligner error (sequence checksum changed) -- aborted");
+                                error = "Internal aligner error (sequence checksum changed) -- aborted";
                             }
                             else {
                                 GB_write_string(gbd,"");
@@ -1360,9 +1361,10 @@ GB_ERROR AWTC_delete_temp_entries(GBDATA *gb_species, GB_CSTR alignment)
 }
 
 ATTRIBUTED(__ATTR__USERESULT, static GB_ERROR GB_align_error(GB_ERROR olderr, GBDATA *gb_toAlign, GBDATA *gb_alignTo))
+{
     // used by alignTo() and alignToNextRelative() to transform errors coming from subroutines
     // can be used by higher functions
-{
+
     const char *name_toAlign = AWTC_read_name(gb_toAlign);
     const char *name_alignTo = AWTC_read_name(gb_alignTo);
 
@@ -1801,27 +1803,27 @@ static GB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
     return error;
 }
 
-// --------------------------------------------------------------------------------
-//  AWTC_aligner()
-// --------------------------------------------------------------------------------
+// ---------------------
+//      AWTC_aligner
 
-static GB_ERROR AWTC_aligner(
-                             // define alignment target(s):
-                             FA_alignTarget                  alignWhat,
-                             GB_CSTR                         alignment,                  // name of alignment to use (==NULL -> use default)
-                             GB_CSTR                         toalign,                    // name of species to align (used if alignWhat == FA_CURRENT)
-                             AWTC_get_first_selected_species get_first_selected_species, // used if alignWhat == FA_SELECTED
-                             AWTC_get_next_selected_species  get_next_selected_species,  // --- "" ---
+ATTRIBUTED(__ATTR__USERESULT,
+           static GB_ERROR AWTC_aligner(
+                                        // define alignment target(s):
+                                        FA_alignTarget                  alignWhat,
+                                        GB_CSTR                         alignment,                  // name of alignment to use (==NULL -> use default)
+                                        GB_CSTR                         toalign,                    // name of species to align (used if alignWhat == FA_CURRENT)
+                                        AWTC_get_first_selected_species get_first_selected_species, // used if alignWhat == FA_SELECTED
+                                        AWTC_get_next_selected_species  get_next_selected_species,  // --- "" ---
 
-                             // define reference sequence(s):
-                             GB_CSTR                     reference,     // name of reference species
-                             AWTC_get_consensus_func     get_consensus, // function to get consensus seq
-                             const SearchRelativeParams& relSearch,     // params to search for relatives
+                                        // define reference sequence(s):
+                                        GB_CSTR                     reference,     // name of reference species
+                                        AWTC_get_consensus_func     get_consensus, // function to get consensus seq
+                                        const SearchRelativeParams& relSearch,     // params to search for relatives
 
-                             // general params:
-                             FA_turn            turnAllowed,
-                             const AlignParams& ali_params,
-                             int                maxProtection)   // protection level
+                                        // general params:
+                                        FA_turn            turnAllowed,
+                                        const AlignParams& ali_params,
+                                        int                maxProtection))   // protection level
 {
     // (reference==NULL && get_consensus==NULL -> use next relative for (each) sequence)
 
@@ -1841,9 +1843,7 @@ static GB_ERROR AWTC_aligner(
 
     if (!error && !alignment) {
         alignment = (GB_CSTR)GBT_get_default_alignment(GLOBAL_gb_main); // get default alignment
-        if (!alignment) {
-            error = GB_export_error("No default alignment");
-        }
+        if (!alignment) error = "No default alignment";
     }
 
     if (!error && alignment) {
@@ -1853,9 +1853,9 @@ static GB_ERROR AWTC_aligner(
 
             if (pt_server_alignmentType != GB_AT_RNA &&
                 pt_server_alignmentType != GB_AT_DNA) {
-                error = GB_export_error("pt_servers only support RNA/DNA sequences.\n"
-                                        "In the aligner window you may specify a RNA/DNA alignment \n"
-                                        "and use a pt_server build on that alignment.");
+                error = "pt_servers only support RNA/DNA sequences.\n"
+                    "In the aligner window you may specify a RNA/DNA alignment \n"
+                    "and use a pt_server build on that alignment.";
             }
         }
     }
