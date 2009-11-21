@@ -24,9 +24,6 @@
 
 extern GBDATA *GLOBAL_gb_main;
 
-// ------------------------------------------------------------------------------------------------------------------------------
-//      static GB_ERROR split_stat_filename(const char *fname, char **dirPtr, char **name_prefixPtr, char **name_postfixPtr)
-// ------------------------------------------------------------------------------------------------------------------------------
 static GB_ERROR split_stat_filename(const char *fname, char **dirPtr, char **name_prefixPtr, char **name_postfixPtr) {
     // 'fname' is sth like 'directory/prefix.sth_gnu'
     // 'dirPtr' is set to a malloc-copy of 'directory'
@@ -63,9 +60,7 @@ static GB_ERROR split_stat_filename(const char *fname, char **dirPtr, char **nam
 
     return 0;
 }
-// -------------------------------------------------------------------------------------------
-//      static char * get_overlay_files(AW_root *awr, const char *fname, GB_ERROR& error)
-// -------------------------------------------------------------------------------------------
+
 static char * get_overlay_files(AW_root *awr, const char *fname, GB_ERROR& error) {
     nt_assert(!error);
 
@@ -398,46 +393,50 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
                         break;
                     }
                     case PT_PLOT_TYPES:
-                    case PT_UNKNOWN: nt_assert(0); break;
+                    case PT_UNKNOWN:
+                        error = "Please select what to plot";
+                        break;
                 }
 
                 const GB_UINT4 *weights = csp->get_weights();
 
-                for (size_t j=0; j<csplen; ++j) {
-                    if (!weights[j]) continue;
-                    fprintf(out,"%i ",j); // print X coordinate
+                if (!error) {
+                    for (size_t j=0; j<csplen; ++j) {
+                        if (!weights[j]) continue;
+                        fprintf(out,"%i ",j); // print X coordinate
 
-                    double val;
-                    switch (stat_type) {
-                        case STAT_AMOUNT:  {
-                            float A  = data.amount.A[j];
-                            float C  = data.amount.C[j];
-                            float G  = data.amount.G[j];
-                            float TU = data.amount.TU[j];
+                        double val;
+                        switch (stat_type) {
+                            case STAT_AMOUNT:  {
+                                float A  = data.amount.A[j];
+                                float C  = data.amount.C[j];
+                                float G  = data.amount.G[j];
+                                float TU = data.amount.TU[j];
                             
-                            float amount = A+C+G+TU;
+                                float amount = A+C+G+TU;
 
-                            switch (plot_type) {
-                                case PT_GC_RATIO: val = (G+C)/amount; break;
-                                case PT_GA_RATIO: val = (G+A)/amount; break;
-                                case PT_BASE_A:   val = A/amount; break;
-                                case PT_BASE_C:   val = C/amount; break;
-                                case PT_BASE_G:   val = G/amount; break;
-                                case PT_BASE_TU:  val = TU/amount; break;
+                                switch (plot_type) {
+                                    case PT_GC_RATIO: val = (G+C)/amount; break;
+                                    case PT_GA_RATIO: val = (G+A)/amount; break;
+                                    case PT_BASE_A:   val = A/amount; break;
+                                    case PT_BASE_C:   val = C/amount; break;
+                                    case PT_BASE_G:   val = G/amount; break;
+                                    case PT_BASE_TU:  val = TU/amount; break;
                                     
-                                default: nt_assert(0); break;
+                                    default: nt_assert(0); break;
+                                }
+                                break;
                             }
-                            break;
-                        }
-                        case STAT_SIMPLE_FLOAT: val = data.floatVals[j]; break;
-                        case STAT_SIMPLE_BOOL:  val = data.boolVals[j]; break;
-                        case STAT_SORT:         val = data.sorted->get(plot_type, j); break;
+                            case STAT_SIMPLE_FLOAT: val = data.floatVals[j]; break;
+                            case STAT_SIMPLE_BOOL:  val = data.boolVals[j]; break;
+                            case STAT_SORT:         val = data.sorted->get(plot_type, j); break;
                             
-                        case STAT_UNKNOWN: nt_assert(0); break;
-                    }
+                            case STAT_UNKNOWN: nt_assert(0); break;
+                        }
 
-                    double smoothed = val/smooth + smoothed *(smooth-1)/(smooth);
-                    fprintf(out,"%f\n",smoothed); // print Y coordinate
+                        double smoothed = val/smooth + smoothed *(smooth-1)/(smooth);
+                        fprintf(out,"%f\n",smoothed); // print Y coordinate
+                    }
                 }
 
                 if (stat_type == STAT_SORT) delete data.sorted;
