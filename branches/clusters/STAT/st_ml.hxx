@@ -152,17 +152,17 @@ public:
     AW_window    *aw_window;
 
     GBDATA         *gb_main;
-    float          *ttratio;                        // column independent
+    const float    *ttratio;                        // column independent
     ST_base_vector *base_frequencies;               // column independent
     ST_base_vector *inv_base_frequencies;           // column independent
-    float          *rates;                          // column independent
+    const float    *rates;                          // column independent
     double          max_dist;                       // max_dist for rate_matrices
     double          step_size;                      // max_dist/step_size matrices
     int             max_matr;
     ST_rate_matrix *rate_matrices;                  // for each distance a new matrix
     long            alignment_len;
     AWT_csp        *awt_csp;
-    
+
     void set_modified(int *what = 0);
     void set_refresh();                             // set flag for refresh
 

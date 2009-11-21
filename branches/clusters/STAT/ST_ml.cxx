@@ -376,7 +376,7 @@ ST_ML::~ST_ML() {
     delete[]base_frequencies;
     delete[]inv_base_frequencies;
     delete[]rate_matrices;
-    if (!awt_csp) {
+    if (!awt_csp) { // rates and ttratio have been allocated (see ST_ML::init) 
         delete rates;
         delete ttratio;
     }
@@ -387,85 +387,69 @@ void ST_ML::print() {
     ;
 }
 
-/** Translate characters to base frequencies */
 void ST_ML::create_frequencies() {
-    ST_base_vector  *out       = new ST_base_vector[alignment_len];
-    int              i, j;
-    float          **frequency = 0;
+    // Translate characters to base frequencies
 
-    base_frequencies     = out;
+    base_frequencies     = new ST_base_vector[alignment_len];
     inv_base_frequencies = new ST_base_vector[alignment_len];
 
-    if (awt_csp)
-        frequency = awt_csp->frequency;
-
-    if (!frequency) {
-        for (i = 0; i < alignment_len; i++) {
-            for (j = ST_A; j < ST_MAX_BASE; j++) {
-                out[i].b[j] = 1.0;
+    if (!awt_csp) {
+        for (int i = 0; i < alignment_len; i++) {
+            for (int j = ST_A; j < ST_MAX_BASE; j++) {
+                base_frequencies[i].b[j]     = 1.0;
                 inv_base_frequencies[i].b[j] = 1.0;
             }
-            out[i].lik = 1.0;
+            base_frequencies[i].lik     = 1.0;
             inv_base_frequencies[i].lik = 1.0;
         }
-        return;
     }
-
-    for (i = 0; i < alignment_len; i++) {
-        for (j = ST_A; j < ST_MAX_BASE; j++) {
-            out[i].b[j] = 0.01; // minimal frequency
-        }
-
-        if (frequency['A'])
-            out[i].b[ST_A] += frequency['A'][i];
-        if (frequency['a'])
-            out[i].b[ST_A] += frequency['a'][i];
-
-        if (frequency['C'])
-            out[i].b[ST_C] += frequency['C'][i];
-        if (frequency['c'])
-            out[i].b[ST_C] += frequency['c'][i];
-
-        if (frequency['G'])
-            out[i].b[ST_G] += frequency['G'][i];
-        if (frequency['g'])
-            out[i].b[ST_G] += frequency['g'][i];
-
-        if (frequency['T'])
-            out[i].b[ST_T] += frequency['T'][i];
-        if (frequency['t'])
-            out[i].b[ST_T] += frequency['t'][i];
-        if (frequency['U'])
-            out[i].b[ST_T] += frequency['U'][i];
-        if (frequency['u'])
-            out[i].b[ST_T] += frequency['u'][i];
-
-        if (frequency['-'])
-            out[i].b[ST_GAP] += frequency['-'][i];
-
-        double sum = 0.0;
-
-        for (j = ST_A; j < ST_MAX_BASE; j++)
-            sum += out[i].b[j];
-        for (j = ST_A; j < ST_MAX_BASE; j++)
-            out[i].b[j] += sum * .01; // smoothen frequencies to  avoid crazy values
-        double min = out[i].b[ST_A];
-        for (sum = 0, j = ST_A; j < ST_MAX_BASE; j++) {
-            sum += out[i].b[j];
-            if (out[i].b[j] < min)
-                min = out[i].b[j];
-        }
-        for (j = ST_A; j < ST_MAX_BASE; j++) {
-            if (sum > 0.01) { // valid column ??
-                out[i].b[j] *= ST_MAX_BASE / sum;
-            } else {
-                out[i].b[j] = 1.0; // no
+    else {
+        for (int i = 0; i < alignment_len; i++) {
+            for (int j = ST_A; j < ST_MAX_BASE; j++) {
+                base_frequencies[i].b[j] = 0.01; // minimal frequency
             }
-            inv_base_frequencies[i].b[j] = min / out[i].b[j];
-        }
-        out[i].lik = 1.0;
-        inv_base_frequencies[i].lik = 1.0;
 
+            static struct {
+                unsigned char c;
+                AWT_dna_base  b;
+            } toCount[] = {
+                { 'A', ST_A }, { 'a', ST_A },
+                { 'C', ST_C }, { 'c', ST_C },
+                { 'G', ST_G }, { 'g', ST_G },
+                { 'T', ST_T }, { 't', ST_T },
+                { 'U', ST_T }, { 'u', ST_T },
+                { '-', ST_GAP },
+                { 0, ST_UNKNOWN },
+            };
+
+            for (int j = 0; toCount[j].c; ++j) {
+                const float *freq = awt_csp->get_frequencies(toCount[j].c);
+                if (freq) base_frequencies[i].b[toCount[j].b] += freq[i];
+            }
+
+            double sum = 0.0;
+
+            for (int j = ST_A; j < ST_MAX_BASE; j++) sum                      += base_frequencies[i].b[j];
+            for (int j = ST_A; j < ST_MAX_BASE; j++) base_frequencies[i].b[j] += sum * .01; // smoothen frequencies to avoid crazy values
+
+            double min = base_frequencies[i].b[ST_A];
+            sum        = 0.0;
+            for (int j = ST_A; j < ST_MAX_BASE; j++) {
+                sum += base_frequencies[i].b[j];
+                if (base_frequencies[i].b[j] < min) min = base_frequencies[i].b[j];
+            }
+            for (int j = ST_A; j < ST_MAX_BASE; j++) {
+                if (sum > 0.01) { // valid column ??
+                    base_frequencies[i].b[j] *= ST_MAX_BASE / sum;
+                }
+                else {
+                    base_frequencies[i].b[j] = 1.0; // no
+                }
+                inv_base_frequencies[i].b[j] = min / base_frequencies[i].b[j];
+            }
+            base_frequencies[i].lik     = 1.0;
+            inv_base_frequencies[i].lik = 1.0;
+        }
     }
 }
 
@@ -537,7 +521,7 @@ GB_ERROR ST_ML::init(const char *tree_name, const char *alignment_namei,
         if (show_status) aw_openstatus("Activating column statistic");
 
         awt_csp       = awt_cspi;
-        awt_csp_error = awt_csp->go();
+        awt_csp_error = awt_csp->go(NULL);
 
         if (awt_csp_error) fprintf(stderr, "%s\n", awt_csp_error);
 
@@ -599,17 +583,21 @@ GB_ERROR ST_ML::init(const char *tree_name, const char *alignment_namei,
                 if (show_status) aw_status("calculating frequencies");
 
                 if (!awt_csp_error) {
-                    rates = awt_csp->rates;
-                    ttratio = awt_csp->ttratio;
+                    rates   = awt_csp->get_rates();
+                    ttratio = awt_csp->get_ttratio();
                 }
                 else {
-                    rates = new float[alignment_len];
-                    ttratio = new float[alignment_len];
+                    float *alloc_rates   = new float[alignment_len];
+                    float *alloc_ttratio = new float[alignment_len];
+
                     for (int i = 0; i < alignment_len; i++) {
-                        rates[i] = 1.0;
-                        ttratio[i] = 2.0;
+                        alloc_rates[i]   = 1.0;
+                        alloc_ttratio[i] = 2.0;
                     }
-                    awt_csp = 0;
+                    rates   = alloc_rates;
+                    ttratio = alloc_ttratio;
+                    
+                    awt_csp = 0;                    // mark rates and ttratio as "allocated"
                 }
                 create_frequencies();
 

@@ -93,7 +93,7 @@ class AP_weights {
 public:
 
     AP_weights(const AP_filter *fil); // dummy weights (all columns weighted equal)
-    AP_weights(GB_UINT4 *w, size_t wlen, const AP_filter *fil);
+    AP_weights(const GB_UINT4 *w, size_t wlen, const AP_filter *fil);
     AP_weights(const AP_weights& other);
     ~AP_weights();
 

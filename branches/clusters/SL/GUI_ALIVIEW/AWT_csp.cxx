@@ -6,16 +6,20 @@
 #include <aw_window.hxx>
 
 
-void awt_csp_rescan_sais(AW_root *awr, AW_CL csp_cd){
-    AWT_csp *csp = (AWT_csp *)csp_cd;
-    GB_transaction dummy(csp->gb_main);
-    free(csp->alignment_name);
-    free(csp->type_path);
-    csp->alignment_name = awr->awar(csp->awar_alignment)->read_string();
-    csp->type_path = GBS_string_eval(csp->alignment_name,"*=*1/_TYPE",0);
-    if (csp->sai_sel_box_id) {
-        awt_create_selection_list_on_extendeds_update(0,csp->sai_sel_box_id);
+void AWT_csp::refresh_sai_selection() {
+    GB_transaction ta(gb_main);
+
+    freeset(alignment_name, awr->awar(awar_alignment)->read_string());
+    freeset(type_path, GBS_string_eval(alignment_name, "*=*1/_TYPE", 0));
+
+    if (sai_sel_box_id) {
+        awt_create_selection_list_on_extendeds_update(0, sai_sel_box_id);
     }
+}
+
+void awt_csp_rescan_sais(AW_root *, AW_CL cl_csp) {
+    AWT_csp *csp = (AWT_csp *)cl_csp;
+    csp->refresh_sai_selection();
 }
 
 AWT_csp::AWT_csp(GBDATA *gb_maini, AW_root *awri, const char *awar_template) {
@@ -27,37 +31,39 @@ AWT_csp::AWT_csp(GBDATA *gb_maini, AW_root *awri, const char *awar_template) {
 
     memset((char *)this,0,sizeof(AWT_csp));
 
-    this->gb_main = gb_maini;
-    this->awr     = awri;
+    gb_main = gb_maini;
+    awr     = awri;
 
-    this->awar_name         = GBS_string_eval(awar_template,AWT_CSP_AWAR_CSP_NAME,0);
-    this->awar_alignment    = GBS_string_eval(awar_template,AWT_CSP_AWAR_CSP_ALIGNMENT,0);
-    this->awar_smooth       = GBS_string_eval(awar_template,AWT_CSP_AWAR_CSP_SMOOTH,0);
-    this->awar_enable_helix = GBS_string_eval(awar_template,AWT_CSP_AWAR_CSP_ENABLE_HELIX,0);
+    awar_name         = GBS_string_eval(awar_template,AWT_CSP_AWAR_CSP_NAME,0);
+    awar_alignment    = GBS_string_eval(awar_template,AWT_CSP_AWAR_CSP_ALIGNMENT,0);
+    awar_smooth       = GBS_string_eval(awar_template,AWT_CSP_AWAR_CSP_SMOOTH,0);
+    awar_enable_helix = GBS_string_eval(awar_template,AWT_CSP_AWAR_CSP_ENABLE_HELIX,0);
 
     awr->awar_string(awar_name, "NONE");
     awr->awar_string(awar_alignment);
     awr->awar_int(awar_smooth);
     awr->awar_int(awar_enable_helix, 1);
 
-    awr->awar(this->awar_alignment)->add_callback( awt_csp_rescan_sais, (AW_CL)this);
-    awt_csp_rescan_sais(awr, (AW_CL)this);
+    awr->awar(awar_alignment)->add_callback(awt_csp_rescan_sais, (AW_CL)this);
+    refresh_sai_selection();                        // same as awt_csp_rescan_sais(this)
 }
 
 void AWT_csp::exit(){
-    delete [] weights; weights = NULL;
-    delete [] rates;   rates   = NULL;
-    delete [] ttratio; ttratio = NULL;
-    delete [] is_helix;is_helix= NULL;
-    delete [] mut_sum; mut_sum = NULL;
-    delete [] freq_sum;freq_sum= NULL;
-    delete desc;    desc    = NULL;
-    int i;
-    for (i=0;i<256;i++){
+    delete [] weights;  weights  = NULL;
+    delete [] rates;    rates    = NULL;
+    delete [] ttratio;  ttratio  = NULL;
+    delete [] is_helix; is_helix = NULL;
+    delete [] mut_sum;  mut_sum  = NULL;
+    delete [] freq_sum; freq_sum = NULL;
+    delete desc;        desc     = NULL;
+    
+    for (int i=0; i<256; i++) {
         delete [] frequency[i];
         frequency[i] = NULL;
     }
+    seq_len = 0; // mark invalid
 }
+
 AWT_csp::~AWT_csp(void){
     this->exit();
     delete awar_name;
@@ -65,7 +71,6 @@ AWT_csp::~AWT_csp(void){
     delete awar_smooth;
     delete awar_enable_helix;
 }
-
 
 GB_ERROR AWT_csp::go(AP_filter *filter){
     this->exit();
@@ -82,11 +87,11 @@ GB_ERROR AWT_csp::go(AP_filter *filter){
     }
     seq_len = 0;
 
-    char *sai_name = awr->awar(awar_name)->read_string();
-    GBDATA *gb_sai = GBT_find_SAI(this->gb_main, sai_name);
-    if (!gb_sai)
-        error= GB_export_error("Please select a valid Column Statistic");
-    GBDATA *gb_ali = 0;
+    char   *sai_name   = awr->awar(awar_name)->read_string();
+    GBDATA *gb_sai     = GBT_find_SAI(this->gb_main, sai_name);
+    if (!gb_sai) error = GB_export_error("Please select a valid Column Statistic");
+    
+    GBDATA *gb_ali   = 0;
     GBDATA *gb_freqs = 0;
     if (!error) {
         gb_ali = GB_entry(gb_sai,alignment_name);
@@ -106,7 +111,7 @@ GB_ERROR AWT_csp::go(AP_filter *filter){
     delete [] weights; weights  = new GB_UINT4[seq_len];
     delete [] rates;   rates    = new float[seq_len];
     delete [] ttratio; ttratio  = new float[seq_len];
-    delete [] is_helix;is_helix = new unsigned char[seq_len];
+    delete [] is_helix;is_helix = new bool[seq_len];
     delete [] mut_sum; mut_sum  = new GB_UINT4[seq_len];
     delete [] freq_sum;freq_sum = new GB_UINT4[seq_len];
 
@@ -119,8 +124,8 @@ GB_ERROR AWT_csp::go(AP_filter *filter){
     long use_helix = awr->awar(awar_enable_helix)->read_int();
 
     for (j=i=0;i<seq_len;i++) {
-        is_helix[i] = 0;
-        weights[i] = 1;
+        is_helix[i] = false;
+        weights[i]  = 1;
     }
 
     if (!error && use_helix) {            // calculate weights and helix filter
@@ -135,12 +140,12 @@ GB_ERROR AWT_csp::go(AP_filter *filter){
         for (j=i=0;i<alignment_length;i++) {
             if (!filter || filter->use_position(i)) {
                 if (helix.pairtype(i) == HELIX_PAIR) {
-                    is_helix[j] = 1;
-                    weights[j] = 1;
+                    is_helix[j] = true;
+                    weights[j]  = 1;
                 }
                 else{
-                    is_helix[j] = 0;
-                    weights[j] = 2;
+                    is_helix[j] = false;
+                    weights[j]  = 2;
                 }
                 j++;
             }
@@ -234,6 +239,16 @@ GB_ERROR AWT_csp::go(AP_filter *filter){
     return error;
 }
 
+void AWT_csp::weight_by_inverseRates() const {
+    for (size_t i = 0; i<seq_len; ++i) {
+        if (rates[i]>0.0000001) {
+            weights[i] *= (int)(2.0 / rates[i]);
+        }
+    }
+}
+
+
+
 void AWT_csp::print(void) {
     unsigned int j;
     int wf;
@@ -244,11 +259,7 @@ void AWT_csp::print(void) {
     if (!seq_len) return;
     for (j=0;j<seq_len;j++){
         if (!weights[j]) continue;
-        if (is_helix[j]) {
-            printf("#");
-        }else{
-            printf(".");
-        }
+        fputc(".#"[is_helix[j]], stdout);
         printf( "%i:    minmut %5i  freqs %5i   rates  %5f  tt %5f  ",
                 j, mut_sum[j], freq_sum[j], rates[j], ttratio[j]);
         for (wf = 0;wf<256;wf++) {
@@ -268,7 +279,7 @@ void AWT_csp::print(void) {
 
 char *awt_csp_sai_filter(GBDATA *gb_extended, AW_CL csp_cd) {
     AWT_csp *csp     = (AWT_csp*)csp_cd;
-    GBDATA  *gb_type = GB_search(gb_extended, csp->type_path, GB_FIND);
+    GBDATA  *gb_type = GB_search(gb_extended, csp->get_type_path(), GB_FIND);
     char    *result  = 0;
 
     if (gb_type) {
@@ -288,15 +299,17 @@ char *awt_csp_sai_filter(GBDATA *gb_extended, AW_CL csp_cd) {
     return result;
 }
 
+void AWT_csp::create_sai_selection(AW_window *aww) {
+    GB_transaction ta(gb_main);
+    sai_sel_box_id = awt_create_selection_list_on_extendeds(gb_main, aww, awar_name, awt_csp_sai_filter, (AW_CL)this);
+}
 
 void create_selection_list_on_csp(AW_window *aws, AWT_csp *csp){
-    GB_transaction dummy(csp->gb_main);
-    csp->sai_sel_box_id = awt_create_selection_list_on_extendeds(csp->gb_main,
-                                                                 aws, csp->awar_name, awt_csp_sai_filter, (AW_CL)csp);
+    csp->create_sai_selection(aws);
 }
 
 AW_window *create_csp_window(AW_root *aw_root, AWT_csp *csp){
-    GB_transaction dummy(csp->gb_main);
+    GB_transaction dummy(csp->get_gb_main());
     AW_window_simple *aws = new AW_window_simple;
     aws->init( aw_root, "SELECT_CSP", "Select Column Statistic");
     aws->load_xfig("awt/col_statistic.fig");
@@ -311,7 +324,7 @@ AW_window *create_csp_window(AW_root *aw_root, AWT_csp *csp){
     create_selection_list_on_csp(aws,csp);
 
     aws->at("smooth");
-    aws->create_toggle_field(csp->awar_smooth);
+    aws->create_toggle_field(csp->get_awar_smooth());
     aws->insert_toggle("Calculate each column (nearly) independently","D",0);
     aws->insert_toggle("Smooth parameter estimates a little","M",1);
     aws->insert_toggle("Smooth parameter estimates across columns","S",2);
@@ -319,6 +332,6 @@ AW_window *create_csp_window(AW_root *aw_root, AWT_csp *csp){
 
     aws->at("helix");
     aws->label("Use Helix Information (SAI 'HELIX')");
-    aws->create_toggle(csp->awar_enable_helix);
+    aws->create_toggle(csp->get_awar_enable_helix());
     return (AW_window *)aws;
 }

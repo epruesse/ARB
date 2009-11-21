@@ -35,18 +35,11 @@ AP_weights *WeightedFilter::create_weights(const AP_filter *filter) const {
     bool        haveRates = false;
     if (csp) {
         csp->go(0);
-        haveRates = csp->rates != NULL;
+        haveRates = csp->has_rates();
     }
     if (haveRates) {
-        long ali_len = filter->get_length();
-
-        for (long i=0; i<ali_len; i++) {
-            if (csp->rates[i]>0.0000001) {
-                csp->weights[i] *= (int)(2.0/ csp->rates[i]);
-            }
-        }
-
-        weights = new AP_weights(csp->weights, csp->seq_len, filter);
+        csp->weight_by_inverseRates();
+        weights = new AP_weights(csp->get_weights(), csp->get_length(), filter);
     }
     else {
         weights = new AP_weights(filter);
