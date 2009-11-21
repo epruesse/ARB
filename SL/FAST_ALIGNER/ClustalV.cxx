@@ -408,9 +408,8 @@ static GB_ERROR n_decode(const unsigned char *naseq, unsigned char *seq, int l) 
 }
 #endif
 
-static inline GB_ERROR MAXLENtooSmall()
-{
-    return GB_export_error("AWTC_ClustalV-aligner: MAXLEN is dimensioned to small for this sequence");
+ATTRIBUTED(__ATTR__USERESULT, static inline GB_ERROR MAXLENtooSmall()) {
+    return "AWTC_ClustalV-aligner: MAXLEN is dimensioned to small for this sequence";
 }
 
 static inline void *ckalloc(size_t bytes)

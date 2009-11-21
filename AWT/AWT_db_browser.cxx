@@ -973,6 +973,9 @@ static void after_callback_guard() {
         aw_message(GBS_global_string("Error not handled by callback!\n"
                                      "Unhandled error was:\n"
                                      "'%s'", error));
+#if defined(DEVEL_RALF)
+        awt_assert(0);
+#endif // DEVEL_RALF
     }
 }
 

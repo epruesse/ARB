@@ -1030,14 +1030,13 @@ int GB_get_my_security(GBDATA *gbd)
     return GB_MAIN(gbd)->security_level;
 }
 
-GB_ERROR gb_security_error(GBDATA *gbd){
-    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    const char *error  = GB_export_errorf("Protection: Attempt to change a level-%i-'%s'-entry, \n"
-                                          "but your current security level is only %i",
-                                          GB_GET_SECURITY_WRITE(gbd),
-                                          GB_read_key_pntr(gbd),
-                                          Main->security_level);
-
+GB_ERROR gb_security_error(GBDATA *gbd) { /* goes to header: __ATTR__USERESULT  */
+    GB_MAIN_TYPE *Main  = GB_MAIN(gbd);
+    const char   *error = GBS_global_string("Protection: Attempt to change a level-%i-'%s'-entry,\n"
+                                            "but your current security level is only %i",
+                                            GB_GET_SECURITY_WRITE(gbd),
+                                            GB_read_key_pntr(gbd),
+                                            Main->security_level);
 #if defined(DEBUG)
     fprintf(stderr, "%s\n", error);
 #endif /* DEBUG */

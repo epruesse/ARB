@@ -38,7 +38,7 @@ GB_ERROR gb_unfold P_((GBCONTAINER *gbd, long deep, int index_pos));
 int gb_read_nr P_((GBDATA *gbd));
 GB_ERROR gb_write_compressed_pntr P_((GBDATA *gbd, const char *s, long memsize, long stored_size));
 int gb_get_compression_mask P_((GB_MAIN_TYPE *Main, GBQUARK key, int gb_type));
-GB_ERROR gb_security_error P_((GBDATA *gbd));
+GB_ERROR gb_security_error P_((GBDATA *gbd)) __ATTR__USERESULT;
 GB_CSTR gb_read_key_pntr P_((GBDATA *gbd));
 GBQUARK gb_key_2_quark P_((GB_MAIN_TYPE *Main, const char *s));
 GBDATA *gb_create P_((GBDATA *father, const char *key, GB_TYPES type));
