@@ -4,8 +4,8 @@ use ARB;
 
 $gb_main = ARB::open(":","r");
 if (! $gb_main ) {
-    $error = ARB::get_error();
-    print ("$error\n");
+    $error = ARB::await_error();
+    print ("Error: $error\n");
     exit 0;
 }
 

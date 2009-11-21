@@ -295,7 +295,7 @@ GB_ERROR GB_print_error() {
     return GB_error_buffer;
 }
 
-GB_ERROR GB_get_error() {
+NOT4PERL GB_ERROR GB_get_error() {
     /* goes to header: __ATTR__DEPRECATED  */
 
     /* This function is deprecated.
