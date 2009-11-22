@@ -490,7 +490,6 @@ ED4_root.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/awt.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/awt_map_key.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
-ED4_root.o: $(ARBHOME)/INCLUDE/awtc_constructSequence.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/fast_aligner.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/gde.hxx

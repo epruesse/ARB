@@ -35,6 +35,34 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
+AWTC_constructSequence.o: awtc_constructSequence.hxx
+AWTC_constructSequence.o: awtc_seq_search.hxx
+AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/ad_prot.h
+AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/arbdb.h
+AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/arbtools.h
+AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/attributes.h
+AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+
+AWTC_seq_search.o: awtc_seq_search.hxx
+AWTC_seq_search.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+AWTC_seq_search.o: $(ARBHOME)/INCLUDE/ad_prot.h
+AWTC_seq_search.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AWTC_seq_search.o: $(ARBHOME)/INCLUDE/arbdb.h
+AWTC_seq_search.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AWTC_seq_search.o: $(ARBHOME)/INCLUDE/arbtools.h
+AWTC_seq_search.o: $(ARBHOME)/INCLUDE/attributes.h
+AWTC_seq_search.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+
+ClustalV.o: awtc_seq_search.hxx
 ClustalV.o: ClustalV.hxx
 ClustalV.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ClustalV.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -44,8 +72,8 @@ ClustalV.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ClustalV.o: $(ARBHOME)/INCLUDE/arbtools.h
 ClustalV.o: $(ARBHOME)/INCLUDE/attributes.h
 ClustalV.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ClustalV.o: $(ARBHOME)/INCLUDE/awtc_seq_search.hxx
 
+fast_aligner.o: awtc_seq_search.hxx
 fast_aligner.o: ClustalV.hxx
 fast_aligner.o: fast_aligner.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -66,5 +94,4 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/awt.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/awtc_next_neighbours.hxx
-fast_aligner.o: $(ARBHOME)/INCLUDE/awtc_seq_search.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/island_hopping.h
