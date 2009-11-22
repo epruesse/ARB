@@ -383,7 +383,7 @@ static char pam250mt[]={
 static char *matptr = pam250mt;
 
 #if (defined(DISPLAY_DIFF) || defined(MATRIX_DUMP))
-static GB_ERROR p_decode(const unsigned char *naseq, unsigned char *seq, int l) {
+static void p_decode(const unsigned char *naseq, unsigned char *seq, int l) {
     int len = strlen(amino_acid_order);
 
     for (int i=1; i<=l && naseq[i]; i++)
@@ -391,11 +391,9 @@ static GB_ERROR p_decode(const unsigned char *naseq, unsigned char *seq, int l) 
         awtc_assert(naseq[i]<len);
         seq[i] = amino_acid_order[naseq[i]];
     }
-
-    return 0;
 }
 
-static GB_ERROR n_decode(const unsigned char *naseq, unsigned char *seq, int l) {
+static void n_decode(const unsigned char *naseq, unsigned char *seq, int l) {
     int len = strlen(nucleic_acid_order);
 
     for (int i=1; i<=l && naseq[i]; i++)
@@ -403,8 +401,6 @@ static GB_ERROR n_decode(const unsigned char *naseq, unsigned char *seq, int l) 
         awtc_assert(naseq[i]<len);
         seq[i] = nucleic_acid_order[naseq[i]];
     }
-
-    return 0;
 }
 #endif
 
