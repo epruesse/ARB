@@ -1104,7 +1104,7 @@ static int res_index(const char *t,char c)
     return 0;
 }
 
-static GB_ERROR p_encode(const unsigned char *seq, unsigned char *naseq, int l) /* code seq as ints .. use -2 for gap */ {
+static void p_encode(const unsigned char *seq, unsigned char *naseq, int l) /* code seq as ints .. use -2 for gap */ {
     bool warned = false;
 
     for(int i=1; i<=l; i++) {
@@ -1128,11 +1128,9 @@ static GB_ERROR p_encode(const unsigned char *seq, unsigned char *naseq, int l) 
         awtc_assert(c>0 || c == -2);
         naseq[i] = c;
     }
-
-    return 0;
 }
 
-static GB_ERROR n_encode(const unsigned char *seq,unsigned char *naseq,int l)
+static void n_encode(const unsigned char *seq,unsigned char *naseq,int l)
 {                                       /* code seq as ints .. use -2 for gap */
     int i;
     /*  static char *nucs="ACGTU";      */
@@ -1154,8 +1152,6 @@ static GB_ERROR n_encode(const unsigned char *seq,unsigned char *naseq,int l)
         awtc_assert(c>0);
         naseq[i] = c;
     }
-
-    return 0;
 }
 
 GB_ERROR AWTC_ClustalV_align(int is_dna, int weighted,
@@ -1210,23 +1206,19 @@ GB_ERROR AWTC_ClustalV_align(int is_dna, int weighted,
 #endif
 
         {
-            GB_ERROR (*encode)(const unsigned char*,unsigned char*,int) = dnaflag ? n_encode : p_encode;
+            void (*encode)(const unsigned char*,unsigned char*,int) = dnaflag ? n_encode : p_encode;
 
-            error = encode((const unsigned char*)(seq1-1), seq_array[1], length1);
-            if (!error) {
-                seqlen_array[1] = length1;
-                error = encode((const unsigned char*)(seq2-1), seq_array[2], length2);
-                if (!error) {
-                    seqlen_array[2] = length2;
+            encode((const unsigned char*)(seq1-1), seq_array[1], length1);
+            seqlen_array[1] = length1;
+            encode((const unsigned char*)(seq2-1), seq_array[2], length2);
+            seqlen_array[2] = length2;
 
-                    do_align(/* gap_open,*/ score, max(length1,length2));
-                    int alignedLength = add_ggaps(max_seq_length);
+            do_align(/* gap_open,*/ score, max(length1,length2));
+            int alignedLength = add_ggaps(max_seq_length);
 
-                    *resultPtr1   = result[1]+1;
-                    *resultPtr2   = result[2]+1;
-                    *resLengthPtr = alignedLength;
-                }
-            }
+            *resultPtr1   = result[1]+1;
+            *resultPtr2   = result[2]+1;
+            *resLengthPtr = alignedLength;
         }
     }
 
