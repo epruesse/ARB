@@ -131,16 +131,20 @@ static int overallSequenceNumber;
 
 // --------------------------------------------------------------------------------
 
-static inline GB_ERROR species_not_found(GB_CSTR species_name) {
-    return GB_export_errorf("No species '%s' found!", species_name);
+ATTRIBUTED(__ATTR__USERESULT, 
+           static inline GB_ERROR species_not_found(GB_CSTR species_name))
+{
+    return GBS_global_string("No species '%s' found!", species_name);
 }
 
-static GB_ERROR reverseComplement(GBDATA *gb_species, GB_CSTR ali, int max_protection) {
+ATTRIBUTED(__ATTR__USERESULT, 
+           static GB_ERROR reverseComplement(GBDATA *gb_species, GB_CSTR ali, int max_protection))
+{
     GBDATA *gbd = GBT_read_sequence(gb_species, ali);
     GB_ERROR error = 0;
 
     if (!gbd) {
-        error = GB_export_errorf("No 'data' found for species '%s'", GBT_read_name(gb_species));
+        error = GBS_global_string("No 'data' found for species '%s'", GBT_read_name(gb_species));
     }
     else {
         int my_protection = GB_read_security_write(gbd);
@@ -158,7 +162,7 @@ static GB_ERROR reverseComplement(GBDATA *gb_species, GB_CSTR ali, int max_prote
             }
         }
         else { // protection error
-            error = GB_export_errorf("Cannot reverse-complement species '%s' because of protection level", GBT_read_name(gb_species));
+            error = GBS_global_string("Cannot reverse-complement species '%s' because of protection level", GBT_read_name(gb_species));
         }
 
     }
@@ -1128,7 +1132,7 @@ static AWTC_CompactedSubSequence *readCompactedSequence(GBDATA      *gb_species,
         }
     }
     else {
-        error = GB_export_errorf("No 'data' found for species '%s'", GBT_read_name(gb_species));
+        error = GBS_global_string("No 'data' found for species '%s'", GBT_read_name(gb_species));
         if (dataPtr) *dataPtr = NULL; // (user must not care to free data if we fail)
     }
 
@@ -1138,7 +1142,9 @@ static AWTC_CompactedSubSequence *readCompactedSequence(GBDATA      *gb_species,
     return seq;
 }
 
-static GB_ERROR writeStringToAlignment(GBDATA *gb_species, GB_CSTR alignment, GB_CSTR data_name, GB_CSTR str, bool temporary) {
+ATTRIBUTED(__ATTR__USERESULT, 
+           static GB_ERROR writeStringToAlignment(GBDATA *gb_species, GB_CSTR alignment, GB_CSTR data_name, GB_CSTR str, bool temporary))
+{
     GBDATA   *gb_ali  = GB_search(gb_species, alignment, GB_DB);
     GB_ERROR  error   = NULL;
     GBDATA   *gb_name = GB_search(gb_ali, data_name, GB_STRING);
@@ -1149,7 +1155,7 @@ static GB_ERROR writeStringToAlignment(GBDATA *gb_species, GB_CSTR alignment, GB
         if (temporary && !error) error = GB_set_temporary(gb_name);
     }
     else {
-        error = GB_export_errorf("Cannot create entry '%s' for '%s'", data_name, GBT_read_name(gb_species));
+        error = GBS_global_string("Cannot create entry '%s' for '%s'", data_name, GBT_read_name(gb_species));
     }
 
     return error;
@@ -1499,7 +1505,7 @@ static GB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
 
             GBDATA *gbd = GBT_read_sequence(gb_toAlign, relSearch.pt_server_alignment); // use a different alignment for next relative search
             if (!gbd) {
-                error = GB_export_errorf("Species '%s' has no data in alignment '%s'", GBT_read_name(gb_toAlign), relSearch.pt_server_alignment);
+                error = GBS_global_string("Species '%s' has no data in alignment '%s'", GBT_read_name(gb_toAlign), relSearch.pt_server_alignment);
             }
             else {
                 toAlignExpSequence = GB_read_string(gbd);
@@ -2206,13 +2212,13 @@ ATTRIBUTED(__ATTR__USERESULT,
     error = GB_end_transaction(GLOBAL_gb_main, error);
 
     if (wasNotAllowedToAlign>0) {
-        const char *mess = GB_export_errorf("%i species were not aligned (because of protection level)", wasNotAllowedToAlign);
+        const char *mess = GBS_global_string("%i species were not aligned (because of protection level)", wasNotAllowedToAlign);
         aw_popup_ok(mess);
     }
 
     if (err_count) {
         if (error) aw_message(error);
-        error = GB_export_errorf("Aligner produced %i error%c", err_count, err_count==1 ? '\0' : 's');
+        error = GBS_global_string("Aligner produced %i error%c", err_count, err_count==1 ? '\0' : 's');
     }
 
     return error;
