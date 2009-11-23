@@ -71,13 +71,13 @@ sub findORF($$$$$) {
       my $gb_genome = ARB::get_father($gb_gene_data);
       $gb_orf = BIO::create_nonexisting_gene($gb_genome, $orf);
       if (!$gb_orf) {
-        my $reason = ARB::get_error();
+        my $reason = ARB::await_error();
         $error = "cannot create gene '$orf' ($reason)";
       }
       else {
         my $gb_locus_tag = ARB::search($gb_orf, "locus_tag", "STRING");
         if (!$gb_locus_tag) {
-          my $reason = ARB::get_error();
+          my $reason = ARB::await_error();
           $error = "cannot create field 'locus_tag' ($reason)";
         }
         else {
@@ -105,7 +105,7 @@ sub write_entry($$$$$$) {
   if (!$gb_field) {
     $gb_field = ARB::search($gb_container, $field_name, $field_type);
     if (!$gb_field) {
-      my $reason = ARB::get_error();
+      my $reason = ARB::await_error();
       $error = "Can't create '$field_name' ($reason)";
     }
   }

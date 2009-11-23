@@ -4,6 +4,8 @@
  *  http://www.mikro.biologie.tu-muenchen.de/                                    *
  *********************************************************************************/
 
+#warning unused 
+ 
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>

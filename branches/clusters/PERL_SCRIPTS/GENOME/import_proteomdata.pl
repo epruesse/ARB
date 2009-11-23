@@ -53,7 +53,7 @@ my @head   = GI::tokenize_columns(<IMPORT>,"$lineno of $importfilename");
 my ($gb_genome,$genome_name) = GI::findCurrentGenome();
 my $gb_gene_data = ARB::search($gb_genome, "gene_data", "CONTAINER");
 if (!$gb_gene_data) {
-  my $reason = ARB::get_error();
+  my $reason = ARB::await_error();
   GI::error("Couldn't find or create container 'gene_data' for organism '$genome_name' ($reason)");
 }
 GI::unmarkGenesOfGenome($gb_genome);
@@ -77,7 +77,7 @@ ORF: foreach (<IMPORT>) { # loop over all lines from inputfile
     }
 
     if (!$gb_substrate) {
-      my $reason = ARB::get_error();
+      my $reason = ARB::await_error();
       $error = "Could not create container '$substrate_field' ($reason)";
     }
     else {

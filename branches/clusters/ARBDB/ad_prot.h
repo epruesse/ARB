@@ -40,7 +40,7 @@ GB_ERROR GB_export_error P_((const char *error));
 GB_ERROR GB_export_errorf P_((const char *templat, ...)) __ATTR__FORMAT(1);
 GB_ERROR GB_export_IO_error P_((const char *action, const char *filename));
 GB_ERROR GB_print_error P_((void));
-GB_ERROR GB_get_error P_((void)) __ATTR__DEPRECATED;
+NOT4PERL GB_ERROR GB_get_error P_((void)) __ATTR__DEPRECATED;
 GB_BOOL GB_have_error P_((void));
 GB_ERROR GB_await_error P_((void));
 void GB_clear_error P_((void));

@@ -174,9 +174,8 @@ symlink ../AWT/awt_sel_boxes.hxx INCLUDE/awt_sel_boxes.hxx &&
 symlink ../AWT/awt_seq_colors.hxx INCLUDE/awt_seq_colors.hxx &&
 symlink ../AWT/awt_www.hxx INCLUDE/awt_www.hxx &&
 symlink ../AWT/awtlocal.hxx INCLUDE/awtlocal.hxx &&
-symlink ../AWTC/awtc_constructSequence.hxx INCLUDE/awtc_constructSequence.hxx &&
+# symlink ../AWTC/awtc_constructSequence.hxx INCLUDE/awtc_constructSequence.hxx &&
 symlink ../AWTC/awtc_next_neighbours.hxx INCLUDE/awtc_next_neighbours.hxx &&
-symlink ../AWTC/awtc_seq_search.hxx INCLUDE/awtc_seq_search.hxx &&
 symlink ../AWTC/awtc_submission.hxx INCLUDE/awtc_submission.hxx &&
 symlink ../AWTI/awti_export.hxx INCLUDE/awti_export.hxx &&
 symlink ../AWTI/awti_import.hxx INCLUDE/awti_import.hxx &&
