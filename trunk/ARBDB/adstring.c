@@ -317,7 +317,8 @@ GB_ERROR GB_await_error() {
         reassign(err, GB_error_buffer);
         return err;
     }
-    ad_assert(0); // please correct error handling 
+    ad_assert(0);               // please correct error handling
+    
     return "Program logic error: Something went wrong, but reason is unknown";
 }
 
@@ -326,7 +327,7 @@ void GB_clear_error() {         /* clears the error buffer */
 }
 
 #if defined(DEVEL_RALF)
-#warning search for 'GBS_global_string.*error' and replace with GB_failedTo_error
+#warning search for 'GBS_global_string.*error' and replace with GB_failedTo_error or GB_append_exportedError
 #endif /* DEVEL_RALF */
 GB_ERROR GB_failedTo_error(const char *do_something, const char *special, GB_ERROR error) {
     if (error) {
@@ -336,6 +337,21 @@ GB_ERROR GB_failedTo_error(const char *do_something, const char *special, GB_ERR
         else {
             error = GBS_global_string("Failed to %s.\n(Reason: %s)", do_something, error);
         }
+    }
+    return error;
+}
+
+GB_ERROR GB_append_exportedError(GB_ERROR error) {
+    // If an error has been exported, it gets appended as reason to given 'error'.
+    // If error is NULL, the exported error is returned (if any)
+    // 
+    // This is e.g. useful if you search for SOMETHING in the DB w/o success (i.e. get NULL as result).
+    // In that case you can't be sure, whether SOMETHING just does not exist or whether it was not
+    // found because some other error occurred.
+
+    if (GB_have_error()) {
+        if (error) return GBS_global_string("%s (Reason: %s)", error, GB_await_error());
+        return GB_await_error();
     }
     return error;
 }

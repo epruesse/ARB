@@ -45,6 +45,7 @@ GB_BOOL GB_have_error P_((void));
 GB_ERROR GB_await_error P_((void));
 void GB_clear_error P_((void));
 GB_ERROR GB_failedTo_error P_((const char *do_something, const char *special, GB_ERROR error));
+GB_ERROR GB_append_exportedError P_((GB_ERROR error));
 void GBS_reuse_buffer P_((GB_CSTR global_buffer));
 GB_CSTR GBS_global_string P_((const char *templat, ...)) __ATTR__FORMAT(1);
 char *GBS_global_string_copy P_((const char *templat, ...)) __ATTR__FORMAT(1);
