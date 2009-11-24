@@ -47,7 +47,7 @@ public:
 
     ED4_Edit_String();
     void init_edit();
-    void edit(ED4_work_info *info);
+    GB_ERROR edit(ED4_work_info *info) __ATTR__USERESULT;
     void finish_edit();
     ~ED4_Edit_String();
 
