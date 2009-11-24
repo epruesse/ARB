@@ -1022,8 +1022,7 @@ ED4_Edit_String::~ED4_Edit_String()
     free(old_seq);
 }
 
-void ED4_Edit_String::edit(ED4_work_info *info)
-{
+GB_ERROR ED4_Edit_String::edit(ED4_work_info *info) {
     e4_assert(info->working_terminal != 0);
 
     if (info->direction == 0) { // 5'<-3'
@@ -1101,6 +1100,7 @@ void ED4_Edit_String::edit(ED4_work_info *info)
         }
 
         bool write_fault = 0;
+
         err = command(info->event.keymodifier,
                       info->event.keycode,
                       map_key,
@@ -1114,6 +1114,8 @@ void ED4_Edit_String::edit(ED4_work_info *info)
                       write_fault,
                       info->gb_data,
                       info->is_sequence);
+
+        e4_assert(!(err && info->cannot_handle));
 
         if (write_fault) {
             e4_assert(info->mode==AD_NOWRITE);
@@ -1154,7 +1156,7 @@ void ED4_Edit_String::edit(ED4_work_info *info)
         info->out_seq_position = remap->screen_to_sequence(info->char_position);
     }
 
-    info->error = (char *)err;
+    return err;
 }
 
 void ED4_Edit_String::finish_edit()

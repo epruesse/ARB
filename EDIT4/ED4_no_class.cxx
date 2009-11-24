@@ -197,7 +197,6 @@ static GB_ERROR call_edit( ED4_base *object, AW_CL cl_work_info) {
                 new_work_info.refresh_needed   = false;
                 new_work_info.cursor_jump      = ED4_JUMP_KEEP_VISIBLE;
                 new_work_info.out_string       = NULL;
-                new_work_info.error            = NULL;
                 new_work_info.mode             = work_info->mode;
                 new_work_info.direction        = work_info->direction;
                 new_work_info.cannot_handle    = false;
@@ -216,7 +215,7 @@ static GB_ERROR call_edit( ED4_base *object, AW_CL cl_work_info) {
                 new_work_info.repeat_count = 1;
 
                 ED4_ROOT->edit_string->init_edit(  );
-                ED4_ROOT->edit_string->edit( &new_work_info );
+                error = ED4_ROOT->edit_string->edit( &new_work_info );
 
                 //         if (ED4_ROOT->edit_string->old_seq)
                 //         {
@@ -230,10 +229,7 @@ static GB_ERROR call_edit( ED4_base *object, AW_CL cl_work_info) {
                 //             temp_parent->check_bases(seq, seq_len, species_manager);
                 //         }
 
-                if (new_work_info.error) {
-                    error = new_work_info.error;
-                }
-                else if (new_work_info.out_string) {
+                if (!error && new_work_info.out_string) {
                     e4_assert(species_manager->flag.is_consensus);
                     object->id = new_work_info.out_string;
                 }
@@ -287,8 +283,7 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
     work_info->out_seq_position = cursor->get_sequence_pos();
     work_info->refresh_needed   = false;
     work_info->cursor_jump      = ED4_JUMP_KEEP_VISIBLE;
-    work_info->out_string       = NULL; // nur falls new malloc
-    work_info->error            = NULL;
+    work_info->out_string       = NULL;             // nur falls new malloc
     work_info->repeat_count     = repeatCount;
 
     ED4_terminal *terminal = cursor->owner_of_cursor->to_terminal();
@@ -331,7 +326,7 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
 
     ED4_Edit_String     *edit_string     = new ED4_Edit_String;
     ED4_species_manager *species_manager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
-    char                *error           = NULL;
+    GB_ERROR             error           = NULL;
 
     GB_push_transaction(GLOBAL_gb_main);
 
@@ -340,13 +335,14 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
 
         work_info->string = terminal->id = group_manager->table().build_consensus_string();
 
-        edit_string->edit(work_info);
+        error = edit_string->edit(work_info);
+
         cursor->jump_sequence_pos(aww, work_info->out_seq_position, ED4_JUMP_KEEP_VISIBLE);
 
         work_info->string = 0;
 
         if (work_info->cannot_handle) {
-            // group_manager = terminal->get_parent( ED4_L_GROUP )->to_group_manager();
+            e4_assert(!error); // see ED4_Edit_String::edit()
             move_cursor = 1;
             if (!ED4_ROOT->edit_string) {
                 ED4_ROOT->edit_string = new ED4_Edit_String();
@@ -359,7 +355,7 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
         terminal->id = 0;
     }
     else {
-        edit_string->edit( work_info );
+        error = edit_string->edit( work_info );
 
         // ED4_ROOT->main_manager->Show(); // original version
         ED4_ROOT->main_manager->Show(1, 0); // temporary fix for worst-refresh problems
@@ -368,9 +364,8 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
 
     edit_string->finish_edit();
 
-    if (work_info->error || (error && *error == 1)) {
-        // hier evtl. nochmal route_down_hierarchy aufrufen ?!!
-        aw_message(work_info->error);
+    if (error) {
+        aw_message(error);
         GB_abort_transaction(GLOBAL_gb_main);
         ED4_ROOT->refresh_all_windows(0);
     }

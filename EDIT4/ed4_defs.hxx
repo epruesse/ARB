@@ -317,8 +317,7 @@ struct ED4_work_info
 
     long    out_seq_position;   // sequence position (after editing)
 
-    char    *out_string;        // nur falls new malloc
-    char    *error;
+    char     *out_string;                           // nur falls new malloc
 
     int     repeat_count;       // only for keystrokes: contains # of times key should be repeated
 
