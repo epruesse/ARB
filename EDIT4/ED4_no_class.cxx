@@ -106,8 +106,7 @@ void ED4_expose_recalculations() {
         ED4_terminal *top_middle_line_terminal = ED4_ROOT->main_manager->get_top_middle_line_terminal();
 
         ED4_ROOT->main_manager->get_top_middle_spacer_terminal()->extension.size[HEIGHT] = TERMINALHEIGHT - top_middle_line_terminal->extension.size[HEIGHT];
-
-        ED4_ROOT->main_manager->route_down_hierarchy(NULL, NULL, &update_terminal_extension );
+        ED4_ROOT->main_manager->route_down_hierarchy(update_terminal_extension);
         ED4_ROOT->resize_all(); // may change mapping
 
         int new_screenwidth = ED4_ROOT->root_group_man->remap()->sequence_to_screen(MAXSEQUENCECHARACTERLENGTH);
@@ -168,98 +167,95 @@ void ED4_resize_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
     GB_pop_transaction(GLOBAL_gb_main);
 }
 
-ED4_returncode call_edit( void **error, void **work_info_ptr, ED4_base *object )    // called after editing consensus to edit single sequences
-{
-    ED4_work_info *work_info = (ED4_work_info*)(*work_info_ptr);
-    ED4_work_info new_work_info;
-    ED4_base    *species_manager = NULL;
-//     ED4_manager  *temp_parent;
-    GB_TYPES    gb_type;
+static GB_ERROR call_edit( ED4_base *object, AW_CL cl_work_info) {
+    // called after editing consensus to edit single sequences
+    GB_ERROR error = NULL;
 
-    if (((char **) error)[0] || !object->is_terminal())
-        return ED4_R_BREAK;
-
-    if (object->get_species_pointer()) {
-        gb_type = GB_read_type(object->get_species_pointer());
-    }
-    else {
-        gb_type = GB_NONE;
-    }
-
-    species_manager = object->get_parent( ED4_L_SPECIES );
-
-    if (!species_manager || species_manager->flag.is_SAI) { // don't edit SAI's if editing the consensus
-        return ED4_R_BREAK;
-    }
-
-    if ((object->dynamic_prop & ED4_P_CURSOR_ALLOWED) &&
-        !species_manager->flag.is_consensus &&
-        (object->dynamic_prop & ED4_P_ALIGNMENT_DATA)) // edit all aligned data - even if not consensus relevant
-    {
-        new_work_info.event            = work_info->event;
-        new_work_info.char_position    = work_info->char_position;
-        new_work_info.out_seq_position = work_info->out_seq_position;
-        new_work_info.refresh_needed   = false;
-        new_work_info.cursor_jump      = ED4_JUMP_KEEP_VISIBLE;
-        new_work_info.out_string       = NULL;
-        new_work_info.error            = NULL;
-        new_work_info.mode             = work_info->mode;
-        new_work_info.direction        = work_info->direction;
-        new_work_info.cannot_handle    = false;
-        new_work_info.is_sequence      = work_info->is_sequence;
-        new_work_info.working_terminal = object->to_terminal();
+    if (object->is_terminal()) {
+        GB_TYPES gb_type;
 
         if (object->get_species_pointer()) {
-            new_work_info.gb_data   = object->get_species_pointer();
-            new_work_info.string    = NULL;
+            gb_type = GB_read_type(object->get_species_pointer());
         }
         else {
-            new_work_info.gb_data   = NULL;
-            new_work_info.string    = object->id;
+            gb_type = GB_NONE;
         }
 
-        new_work_info.repeat_count = 1;
+        ED4_base *species_manager = object->get_parent(ED4_L_SPECIES);
 
-        ED4_ROOT->edit_string->init_edit(  );
-        ED4_ROOT->edit_string->edit( &new_work_info );
+        if (species_manager && !species_manager->flag.is_SAI) { // don't edit SAI's if editing the consensus
+            if ((object->dynamic_prop & ED4_P_CURSOR_ALLOWED) &&
+                !species_manager->flag.is_consensus           &&
+                (object->dynamic_prop & ED4_P_ALIGNMENT_DATA)) // edit all aligned data - even if not consensus relevant
+            {
+                ED4_work_info *work_info = (ED4_work_info*)cl_work_info;
+                ED4_work_info  new_work_info;
 
-//         if (ED4_ROOT->edit_string->old_seq)
-//         {
-//             temp_parent = species_manager->get_parent( ED4_L_MULTI_SPECIES )->to_manager();
+                new_work_info.event            = work_info->event;
+                new_work_info.char_position    = work_info->char_position;
+                new_work_info.out_seq_position = work_info->out_seq_position;
+                new_work_info.refresh_needed   = false;
+                new_work_info.cursor_jump      = ED4_JUMP_KEEP_VISIBLE;
+                new_work_info.out_string       = NULL;
+                new_work_info.error            = NULL;
+                new_work_info.mode             = work_info->mode;
+                new_work_info.direction        = work_info->direction;
+                new_work_info.cannot_handle    = false;
+                new_work_info.is_sequence      = work_info->is_sequence;
+                new_work_info.working_terminal = object->to_terminal();
 
-//             ((ED4_terminal *)object)->actual_timestamp = GB_read_clock(gb_main);
+                if (object->get_species_pointer()) {
+                    new_work_info.gb_data   = object->get_species_pointer();
+                    new_work_info.string    = NULL;
+                }
+                else {
+                    new_work_info.gb_data   = NULL;
+                    new_work_info.string    = object->id;
+                }
 
-//             char *seq = ED4_ROOT->edit_string->old_seq;
-//             int seq_len = ED4_ROOT->edit_string->old_seq_len;
+                new_work_info.repeat_count = 1;
 
-//             temp_parent->check_bases(seq, seq_len, species_manager);
-//         }
+                ED4_ROOT->edit_string->init_edit(  );
+                ED4_ROOT->edit_string->edit( &new_work_info );
 
-        if (new_work_info.error) {
-            ((char **) (error))[0] = new_work_info.error;
-        }
-        else if (new_work_info.out_string) {
-            e4_assert(species_manager->flag.is_consensus);
-            object->id = new_work_info.out_string;
-        }
+                //         if (ED4_ROOT->edit_string->old_seq)
+                //         {
+                //             temp_parent = species_manager->get_parent( ED4_L_MULTI_SPECIES )->to_manager();
 
-        if (new_work_info.refresh_needed) {
-            object->set_refresh();
-            object->parent->refresh_requested_by_child();
+                //             ((ED4_terminal *)object)->actual_timestamp = GB_read_clock(gb_main);
 
-            if (object->is_sequence_terminal()) {
-                ED4_sequence_terminal *seq_term = object->to_sequence_terminal();
-                seq_term->results().searchAgain();
+                //             char *seq = ED4_ROOT->edit_string->old_seq;
+                //             int seq_len = ED4_ROOT->edit_string->old_seq_len;
+
+                //             temp_parent->check_bases(seq, seq_len, species_manager);
+                //         }
+
+                if (new_work_info.error) {
+                    error = new_work_info.error;
+                }
+                else if (new_work_info.out_string) {
+                    e4_assert(species_manager->flag.is_consensus);
+                    object->id = new_work_info.out_string;
+                }
+
+                if (new_work_info.refresh_needed) {
+                    object->set_refresh();
+                    object->parent->refresh_requested_by_child();
+
+                    if (object->is_sequence_terminal()) {
+                        ED4_sequence_terminal *seq_term = object->to_sequence_terminal();
+                        seq_term->results().searchAgain();
+                    }
+                }
+
+                if (move_cursor) {
+                    ED4_ROOT->get_ed4w()->cursor.jump_sequence_pos(ED4_ROOT->get_aww(), new_work_info.out_seq_position, ED4_JUMP_KEEP_VISIBLE);
+                    move_cursor = 0;
+                }
             }
         }
-
-        if (move_cursor) {
-            ED4_ROOT->get_ed4w()->cursor.jump_sequence_pos(ED4_ROOT->get_aww(), new_work_info.out_seq_position, ED4_JUMP_KEEP_VISIBLE);
-            move_cursor = 0;
-        }
     }
-
-    return ED4_R_OK;
+    return error;
 }
 
 static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
@@ -355,7 +351,7 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
             if (!ED4_ROOT->edit_string) {
                 ED4_ROOT->edit_string = new ED4_Edit_String();
             }
-            group_manager->route_down_hierarchy((void **) &error, (void **) &work_info, call_edit);
+            group_manager->route_down_hierarchy(call_edit, (AW_CL)work_info);
             group_manager->rebuild_consensi( group_manager, ED4_U_UP_DOWN);
         }
 
@@ -1056,8 +1052,7 @@ void ED4_show_detailed_column_stats(AW_window *aww, AW_CL, AW_CL)
     ED4_ROOT->refresh_all_windows(0);
 }
 
-ED4_returncode update_terminal_extension( void **/*arg1*/, void **/*arg2*/, ED4_base *this_object )
-{
+GB_ERROR update_terminal_extension(ED4_base *this_object) {
     if (this_object->is_terminal()){
         if (this_object->is_spacer_terminal()){
             if (this_object->parent->is_device_manager()) { // the rest is managed by reference links
@@ -1083,7 +1078,7 @@ ED4_returncode update_terminal_extension( void **/*arg1*/, void **/*arg2*/, ED4_
         this_object->parent->resize_requested_by_child();
     }
 
-    return ED4_R_OK;
+    return NULL;
 }
 
 #define SIGNIFICANT_FIELD_CHARS 30 // length used to compare field contents (in createGroupFromSelected)
@@ -1398,9 +1393,8 @@ void ed4_change_edit_mode(AW_root *root, AW_CL cd1)
     ed4_changesecurity(root, cd1);
 }
 
-ED4_returncode rebuild_consensus(void **/*arg1*/, void **/*arg2*/, ED4_base *object)                // arg1 and arg2 are NULL-values !!!
-{
-    if ( object->flag.is_consensus) {
+GB_ERROR rebuild_consensus(ED4_base *object) {
+    if (object->flag.is_consensus) {
         ED4_species_manager *spec_man = object->to_species_manager();
         spec_man->do_callbacks();
 
@@ -1409,7 +1403,7 @@ ED4_returncode rebuild_consensus(void **/*arg1*/, void **/*arg2*/, ED4_base *obj
         sequence_data_terminal->set_refresh();
         sequence_data_terminal->parent->refresh_requested_by_child();
     }
-    return ED4_R_OK;
+    return NULL;
 }
 
 void ED4_new_editor_window( AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/ )
@@ -1805,26 +1799,30 @@ struct S_SpeciesMergeList {
 };
 typedef struct S_SpeciesMergeList *SpeciesMergeList;
 
-static ED4_returncode add_species_to_merge_list(void **SpeciesMergeListPtr, void **GBDATAPtr, ED4_base *base)
-{
+static GB_ERROR add_species_to_merge_list(ED4_base *base, AW_CL cl_SpeciesMergeListPtr, AW_CL cl_gb_species_data) {
+    GB_ERROR error = NULL;
+
     if (base->is_species_name_terminal()) {
-        ED4_species_name_terminal *name_term       = base->to_species_name_terminal();
-        char                      *species_name    = name_term->resolve_pointer_to_string_copy();
-        GBDATA                    *gb_species_data = (GBDATA*)GBDATAPtr;
-        GBDATA                    *gb_species      = GBT_find_species_rel_species_data(gb_species_data, species_name);
+        ED4_species_name_terminal *name_term = base->to_species_name_terminal();
+        char   *species_name    = name_term->resolve_pointer_to_string_copy();
+        GBDATA *gb_species_data = (GBDATA*)cl_gb_species_data;
+        GBDATA *gb_species      = GBT_find_species_rel_species_data(gb_species_data, species_name);
 
         if (gb_species) {
-            SpeciesMergeList *smlp = (SpeciesMergeList*)SpeciesMergeListPtr;
+            SpeciesMergeList *smlp = (SpeciesMergeList*)cl_SpeciesMergeListPtr;
             SpeciesMergeList sml = new S_SpeciesMergeList;
             sml->species = gb_species;
             sml->species_name = strdup(species_name);
             sml->next = *smlp;
             *smlp = sml;
         }
+        else {
+            error = GB_append_exportedError(GBS_global_string("can't find species '%s'", species_name));
+        }
 
         free(species_name);
     }
-    return ED4_R_OK;
+    return error;
 }
 static int SpeciesMergeListLength(SpeciesMergeList sml)
 {
@@ -1972,10 +1970,8 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
 
                         aw_openstatus("Merging fields");
 
-                        group_man->route_down_hierarchy((void**)&sml, (void**)gb_species_data, add_species_to_merge_list);
-                        if (sml==0) {
-                            error = "Please choose a none empty group!";
-                        }
+                        group_man->route_down_hierarchy(add_species_to_merge_list, (AW_CL)&sml, (AW_CL)gb_species_data);
+                        if (!error && !sml) error = "Please choose a none empty group!";
 
                         if (!error) {
                             GBDATA *gb_source = sml->species;

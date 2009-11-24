@@ -35,7 +35,7 @@ struct dot_insert_stat {
     size_t sequences_checked;
 };
 
-static ED4_returncode dot_sequence_by_consensus(void **cl_insert_stat, void **, ED4_base *base) {
+static GB_ERROR dot_sequence_by_consensus(ED4_base *base, AW_CL cl_insert_stat) {
     GB_ERROR error = 0;
 
     if (base->is_sequence_info_terminal()) {
@@ -91,11 +91,7 @@ static ED4_returncode dot_sequence_by_consensus(void **cl_insert_stat, void **, 
         }
     }
 
-    if (error) {
-        GB_export_error(error);
-        return ED4_R_ERROR;
-    }
-    return ED4_R_OK;
+    return error;
 }
 
 static void dot_missing_bases(AW_window *aww) {
@@ -197,8 +193,7 @@ static void dot_missing_bases(AW_window *aww) {
         if (!error) {
             e4_assert(stat.pos_count);
             GB_transaction ta(GLOBAL_gb_main);
-            ED4_returncode result = group_manager->route_down_hierarchy((void**)&stat, NULL, &dot_sequence_by_consensus);
-            if (result == ED4_R_ERROR) error = GB_await_error();
+            error = group_manager->route_down_hierarchy(dot_sequence_by_consensus, (AW_CL)&stat);
 
             if (stat.sequences_checked == 0 && !error) {
                 error = GBS_global_string("Group contains no %ssequences", stat.marked_only ? "marked " : "");

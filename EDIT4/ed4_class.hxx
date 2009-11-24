@@ -667,9 +667,9 @@ public:
     void change_table_length(int new_length);
 };
 
-// --------------------------------------------------------------------------------
-//     class ED4_species_pointer
-// --------------------------------------------------------------------------------
+// ----------------------------
+//      ED4_species_pointer
+
 class ED4_species_pointer // @@@ shall be renamed into ED4_gbdata_pointer to reflect general usage
 {
     GBDATA *species_pointer;    // points to database
@@ -689,10 +689,15 @@ public:
     }
 };
 
-// --------------------------------------------------------------------------------
-//     class ED4_base
-// --------------------------------------------------------------------------------
-class ED4_base                          //functions and variables which are available in all objects
+// -----------------
+//      ED4_base
+
+class ED4_base;
+typedef GB_ERROR (*ED4_cb)(ED4_base *, AW_CL, AW_CL);
+typedef GB_ERROR (*ED4_cb1)(ED4_base *, AW_CL);
+typedef GB_ERROR (*ED4_cb0)(ED4_base *);
+
+class ED4_base                                      // base object
 {
     ED4_species_pointer my_species_pointer;
     ED4_base(const ED4_base&);  // copy-constructor not allowed
@@ -792,9 +797,12 @@ public:
     virtual ED4_returncode  event_sent_by_parent(AW_event *event, AW_window *aww);
     virtual ED4_returncode  move_requested_by_child(ED4_move_info *moveinfo)=0;
 
-    virtual ED4_returncode  handle_move(ED4_move_info *moveinfo)=0;
-    virtual ED4_returncode  route_down_hierarchy(void **arg1, void **arg2, ED4_returncode (*function) (void **, void **, ED4_base *));
-    int             calc_group_depth();
+    virtual ED4_returncode  handle_move(ED4_move_info *moveinfo) = 0;
+    virtual GB_ERROR route_down_hierarchy(ED4_cb cb, AW_CL cd1, AW_CL cd2);
+    virtual GB_ERROR route_down_hierarchy(ED4_cb1 cb, AW_CL cd) { return route_down_hierarchy(ED4_cb(cb), cd, NULL); }
+    virtual GB_ERROR route_down_hierarchy(ED4_cb0 cb) { return route_down_hierarchy(ED4_cb(cb), NULL, NULL); }
+    
+    int calc_group_depth();
 
     //general purpose functions
     virtual ED4_base        *search_ID(const char *id)=0;
@@ -930,8 +938,10 @@ public:
 
     virtual ED4_returncode  calc_size_requested_by_parent( void );
     virtual ED4_returncode  move_requested_by_parent( ED4_move_info *mi );
-    void                    create_consensus(ED4_group_manager *upper_group_manager, aw_status_counter *progress);
-    virtual ED4_returncode  route_down_hierarchy(void **arg1, void **arg2, ED4_returncode (*function) (void **, void **, ED4_base *));
+    void             create_consensus(ED4_group_manager *upper_group_manager, aw_status_counter *progress);
+    virtual GB_ERROR route_down_hierarchy(ED4_cb cb, AW_CL cd1, AW_CL cd2);
+    virtual GB_ERROR route_down_hierarchy(ED4_cb1 cb, AW_CL cd) { return route_down_hierarchy(ED4_cb(cb), cd, NULL); }
+    virtual GB_ERROR route_down_hierarchy(ED4_cb0 cb) { return route_down_hierarchy(ED4_cb(cb), NULL, NULL); }
 
     virtual ED4_base*       find_first_that(ED4_level level, int (*condition)(ED4_base *to_test, AW_CL arg), AW_CL arg);
     virtual ED4_base*       find_first_that(ED4_level level, int (*condition)(ED4_base *to_test));
@@ -1911,7 +1921,7 @@ AW_window   *ED4_create_group_species_by_field_window( AW_root *aw_root);
 void        ED4_timer           (AW_root   *ar , AW_CL cd1, AW_CL cd2 );
 void        ED4_timer_refresh       ();
 
-ED4_returncode  update_terminal_extension   (void **arg1, void **arg2, ED4_base *this_object );
+GB_ERROR    update_terminal_extension(ED4_base *this_object);
 
 void        ED4_load_new_config         (char *string);
 void        ED4_start_editor_on_configuration   (AW_window *aww);
@@ -1925,8 +1935,7 @@ void        ED4_set_helixnr         (AW_window *aww, char *awar_name, bool callb
 void        ed4_changesecurity      (AW_root *root, AW_CL cd1);
 void        ed4_change_edit_mode        (AW_root *root, AW_CL cd1);
 
-ED4_returncode  call_edit           (void **error, void **work_info, ED4_base *object ); // function for editing sequences
-ED4_returncode  rebuild_consensus       (void **arg1, void **arg2, ED4_base *object);
+GB_ERROR rebuild_consensus(ED4_base *object);
 
 void ED4_exit() __ATTR__NORETURN;
 
