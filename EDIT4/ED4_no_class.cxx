@@ -351,7 +351,7 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
             if (!ED4_ROOT->edit_string) {
                 ED4_ROOT->edit_string = new ED4_Edit_String();
             }
-            group_manager->route_down_hierarchy(call_edit, (AW_CL)work_info);
+            error = group_manager->route_down_hierarchy(call_edit, (AW_CL)work_info);
             group_manager->rebuild_consensi( group_manager, ED4_U_UP_DOWN);
         }
 
@@ -1966,12 +1966,14 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
                     }
                     else {
                         ED4_group_manager *group_man = cursor_terminal->get_parent(ED4_L_GROUP)->to_group_manager();
-                        SpeciesMergeList sml = 0; // list of species in group
+                        SpeciesMergeList   sml       = 0; // list of species in group
 
                         aw_openstatus("Merging fields");
 
-                        group_man->route_down_hierarchy(add_species_to_merge_list, (AW_CL)&sml, (AW_CL)gb_species_data);
-                        if (!error && !sml) error = "Please choose a none empty group!";
+                        error = group_man->route_down_hierarchy(add_species_to_merge_list, (AW_CL)&sml, (AW_CL)gb_species_data);
+                        if (!error && !sml) {
+                            error = "Please choose a none empty group!";
+                        }
 
                         if (!error) {
                             GBDATA *gb_source = sml->species;
