@@ -404,15 +404,12 @@ ED4_returncode ED4_root::resize_all( void )
     return ( ED4_R_OK );
 }
 
-static ED4_returncode change_char_table_length(void **new_length_intPtr, void **/*not_used*/, ED4_base *base)
-{
+static GB_ERROR change_char_table_length(ED4_base *base, AW_CL new_length) {
     if (base->is_group_manager()) {
-        int new_length = *(int*)new_length_intPtr;
         ED4_group_manager *group_man = base->to_group_manager();
         group_man->table().change_table_length(new_length);
     }
-
-    return ED4_R_OK;
+    return NULL;
 }
 
 void ED4_alignment_length_changed(GBDATA *gb_alignment_len, int */*cl*/, GB_CB_TYPE IF_DEBUG(gbtype)) // callback from database
@@ -444,8 +441,7 @@ void ED4_alignment_length_changed(GBDATA *gb_alignment_len, int */*cl*/, GB_CB_T
         //ED4_expose_all_windows();
 
         if (was_increased) {
-            int *new_length_ptr = &new_length;
-            ED4_ROOT->main_manager->route_down_hierarchy((void**)new_length_ptr, 0, change_char_table_length);
+            ED4_ROOT->main_manager->route_down_hierarchy(change_char_table_length, new_length);
             ED4_ROOT->root_group_man->remap()->mark_compile_needed_force();
         }
     }
@@ -849,13 +845,14 @@ void ED4_reload_ecoli_cb(AW_window *aww,AW_CL cd1, AW_CL cd2)
 //  recursion through all species
 // --------------------------------------------------------------------------------
 
-static GB_ERROR do_sth_with_species_error = NULL;
+typedef GB_ERROR (*ED4_Species_Callback)(GBDATA*, AW_CL);
 
-ED4_returncode do_sth_with_species(void **arg1, void **arg2, ED4_base *base)
-{
-    if (!do_sth_with_species_error && base->is_species_manager()) {
-        GB_ERROR (*what_to_do_with_species)(GBDATA*,void**) = (GB_ERROR (*)(GBDATA*,void**))arg1;
-        ED4_species_manager *species_manager = base->to_species_manager();
+GB_ERROR do_sth_with_species(ED4_base *base, AW_CL cl_spec_cb, AW_CL cd) {
+    GB_ERROR error = NULL;
+
+    if (base->is_species_manager()) {
+        ED4_Species_Callback       cb                    = (ED4_Species_Callback)cl_spec_cb;
+        ED4_species_manager       *species_manager       = base->to_species_manager();
         ED4_species_name_terminal *species_name_terminal = species_manager->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
 
         if (species_name_terminal->get_species_pointer()) {
@@ -863,21 +860,20 @@ ED4_returncode do_sth_with_species(void **arg1, void **arg2, ED4_base *base)
 
             e4_assert(species_name);
             GBDATA *species = GBT_find_species(GLOBAL_gb_main, species_name);
-            if (species) do_sth_with_species_error = what_to_do_with_species(species, arg2);
-            delete species_name;
+
+            error = species
+                ? cb(species, cd)
+                : GB_append_exportedError(GBS_global_string("can't find species '%s'", species_name));
+
+            free(species_name);
         }
     }
 
-    return ED4_R_OK;
+    return error;
 }
 
-
-GB_ERROR ED4_with_all_loaded_species(GB_ERROR (*what_to_do_with_species)(GBDATA*,void**), void **arg)
-{
-    ED4_ROOT->root_group_man->route_down_hierarchy((void**)what_to_do_with_species, arg, do_sth_with_species);
-    GB_ERROR error = do_sth_with_species_error;
-    do_sth_with_species_error = NULL;
-    return error;
+static GB_ERROR ED4_with_all_loaded_species(ED4_Species_Callback cb, AW_CL cd) {
+    return ED4_ROOT->root_group_man->route_down_hierarchy(do_sth_with_species, (AW_CL)cb, cd);
 }
 
 // --------------------------------------------------------------------------------
@@ -972,19 +968,15 @@ struct AWTC_faligner_cd faligner_client_data =
  get_first_selected_species,    // aligner fetches first and..
  get_next_selected_species,         // .. following selected species via this functions
  0 // AW_helix (needed for island_hopping)
- };
+};
 
-static GB_ERROR ED4_delete_temp_entries(GBDATA *species, void **alignment_char_ptr)
-{
-    GB_CSTR alignment = (GB_CSTR)alignment_char_ptr;
-    GB_ERROR error = AWTC_delete_temp_entries(species, alignment);
-
-    return error;
+static GB_ERROR ED4_delete_temp_entries(GBDATA *species, AW_CL cl_alignment_name) {
+    return AWTC_delete_temp_entries(species, (GB_CSTR)cl_alignment_name);
 }
 
 void ED4_remove_faligner_entries(AW_window *, AW_CL, AW_CL) {
     GB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
-    if (!error) error = ED4_with_all_loaded_species(ED4_delete_temp_entries, (void**)ED4_ROOT->alignment_name);
+    if (!error) error = ED4_with_all_loaded_species(ED4_delete_temp_entries, (AW_CL)ED4_ROOT->alignment_name);
     GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
 }
 

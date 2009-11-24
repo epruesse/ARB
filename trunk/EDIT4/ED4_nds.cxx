@@ -49,7 +49,7 @@ static void NDS_changed(AW_root *root, AW_CL refresh)
 
     if (int(refresh)) {
         ED4_calc_terminal_extentions();
-        ED4_ROOT->main_manager->route_down_hierarchy(0,0,update_terminal_extension);
+        ED4_ROOT->main_manager->route_down_hierarchy(update_terminal_extension);
         ED4_gc_is_modified(ED4_ROOT->get_aww(), 0, 0);
     }
 }

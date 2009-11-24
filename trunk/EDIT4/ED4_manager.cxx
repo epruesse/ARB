@@ -149,7 +149,7 @@ ED4_returncode ED4_manager::rebuild_consensi(ED4_base *start_species, ED4_update
                     multi_species_manager = group_manager->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
                     for (i=0; i<multi_species_manager->children->members(); i++) {
                         if (multi_species_manager->children->member(i)->flag.is_consensus) {
-                            rebuild_consensus(NULL, NULL, multi_species_manager->children->member(i));
+                            rebuild_consensus(multi_species_manager->children->member(i));
                         }
                     }
                 }
@@ -164,7 +164,7 @@ ED4_returncode ED4_manager::rebuild_consensi(ED4_base *start_species, ED4_update
                 temp_parent = temp_parent->parent;
             }
             if (first_group_manager)
-                first_group_manager->route_down_hierarchy(NULL, NULL, rebuild_consensus);
+                first_group_manager->route_down_hierarchy(rebuild_consensus);
             break;
     }
     return ED4_R_OK;

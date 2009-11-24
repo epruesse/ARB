@@ -660,26 +660,19 @@ ED4_returncode ED4_base::generate_configuration_string(char **generated_string)
     return ED4_R_OK;
 }
 
-ED4_returncode ED4_base::route_down_hierarchy(void **arg1, void **arg2, ED4_returncode (*function) (void **, void **, ED4_base *))
-// executes 'function' for every element in hierarchy
-{
-    function(arg1, arg2, this);
-    return ED4_R_OK;
+GB_ERROR ED4_base::route_down_hierarchy(ED4_cb cb, AW_CL cd1, AW_CL cd2) {
+    // executes 'cb' for every element in hierarchy
+    return cb(this, cd1, cd2);
 }
 
-ED4_returncode ED4_manager::route_down_hierarchy(void **arg1, void **arg2, ED4_returncode (*function) (void **, void **, ED4_base *))
-{
-    int i;
-
-    function(arg1, arg2, this);
-
-    if (children) {
-        for (i=0; i < children->members(); i++) {
-            children->member(i)->route_down_hierarchy(arg1, arg2, function);
+GB_ERROR ED4_manager::route_down_hierarchy(ED4_cb cb, AW_CL cd1, AW_CL cd2) {
+    GB_ERROR error = cb(this, cd1, cd2);
+    if (children && !error) {
+        for (int i=0; i <children->members() && !error; i++) {
+            error = children->member(i)->route_down_hierarchy(cb, cd1, cd2);
         }
     }
-
-    return ED4_R_OK;
+    return error;
 }
 
 ED4_base *ED4_manager::find_first_that(ED4_level level, int (*condition)(ED4_base *to_test, AW_CL arg), AW_CL arg)

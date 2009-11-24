@@ -422,7 +422,7 @@ void ED4_consensus_definition_changed(AW_root*, AW_CL,AW_CL) {
     ED4_ROOT->refresh_all_windows(1);
 }
 
-static ED4_returncode toggle_consensus_display(void **show, void **, ED4_base *base) {
+static GB_ERROR toggle_consensus_display(ED4_base *base, AW_CL show) {
     if (base->flag.is_consensus) {
         ED4_manager *consensus_man = base->to_manager();
         ED4_spacer_terminal *spacer = consensus_man->parent->get_defined_level(ED4_L_SPACER)->to_spacer_terminal();
@@ -439,12 +439,12 @@ static ED4_returncode toggle_consensus_display(void **show, void **, ED4_base *b
         }
     }
 
-    return ED4_R_OK;
+    return NULL;
 }
 
 void ED4_consensus_display_changed(AW_root *root, AW_CL, AW_CL) {
     int show = root->awar(ED4_AWAR_CONSENSUS_SHOW)->read_int();
-    ED4_ROOT->root_group_man->route_down_hierarchy((void**)show, 0, toggle_consensus_display);
+    ED4_ROOT->root_group_man->route_down_hierarchy(toggle_consensus_display, show);
     ED4_ROOT->refresh_all_windows(1);
 }
 
