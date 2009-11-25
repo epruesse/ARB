@@ -236,7 +236,7 @@ GB_ERROR GB_export_errorf(const char *templat, ...) {
     char     buffer[GBS_GLOBAL_STRING_SIZE];
     char    *p = buffer;
     va_list  parg;
-    
+
     memset(buffer,0,1000);
 
 #if defined(DEVEL_RALF)

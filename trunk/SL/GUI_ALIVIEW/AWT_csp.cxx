@@ -76,8 +76,8 @@ GB_ERROR AWT_csp::go(AP_filter *filter){
     exit(); // delete previously calculated stats
 
     GB_transaction dummy(gb_main);
-    GB_ERROR       error = 0;
-    size_t         alignment_length;
+    GB_ERROR       error            = 0;
+    size_t         alignment_length = 0;
     {
         long alignment_length_l = GBT_get_alignment_len(gb_main, alignment_name);
         if (alignment_length_l <= 1) {

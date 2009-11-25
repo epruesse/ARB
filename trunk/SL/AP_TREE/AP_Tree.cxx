@@ -161,7 +161,9 @@ AP_tree *AP_tree::dup() const {
     return new AP_tree(get_tree_root());
 }
 
+#if defined(DEVEL_RALF)
 #warning move to ARB_tree ? 
+#endif // DEVEL_RALF
 void AP_tree::replace_self(AP_tree *new_son) {
     ap_assert(father);
     if (father) {
@@ -169,7 +171,9 @@ void AP_tree::replace_self(AP_tree *new_son) {
         else                    father->rightson = new_son;
     }
 }
+#if defined(DEVEL_RALF)
 #warning move to ARB_tree ? 
+#endif // DEVEL_RALF
 void AP_tree::set_brother(AP_tree *new_son) {
     ap_assert(father);
     if (father) {
@@ -230,10 +234,12 @@ void AP_tree::insert(AP_tree *new_brother) {
     }
 }
 
+#if defined(DEVEL_RALF)
+#warning move to ARB_tree ? 
+#endif // DEVEL_RALF
 void AP_tree_root::change_root(AP_tree *old, AP_tree *newroot) {
     if (root_changed_cb) root_changed_cb(root_changed_cd, old, newroot);
     if (!newroot) {                                 // tree empty
-#warning move to ARB_tree ? 
         GBDATA *gbtree = get_gb_tree();
         if (gbtree) {
             ap_assert(gb_tree_gone == 0);          // no tree should be remembered yet
@@ -934,7 +940,9 @@ AP_UPDATE_FLAGS AP_tree::check_update() {
     }
 }
 
+#if defined(DEVEL_RALF)
 #warning buildLeafList, buildNodeList and buildBranchList should return a AP_tree_list (new class!)
+#endif // DEVEL_RALF
 
 void AP_tree::buildLeafList_rek(AP_tree **list,long& num) {
     // builds a list of all species
