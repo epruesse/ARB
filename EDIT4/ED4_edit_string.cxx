@@ -36,7 +36,7 @@ void ED4_init_is_align_character(GB_CSTR gap_chars)
     }
 }
 
-ED4_ERROR * ED4_Edit_String::insert(char *text,long position, int direction, int removeAtNextGap) {
+GB_ERROR  ED4_Edit_String::insert(char *text,long position, int direction, int removeAtNextGap) {
     long i;
     int text_len = strlen(text);
     if (text_len ==0) return 0;
@@ -117,7 +117,7 @@ ED4_ERROR * ED4_Edit_String::insert(char *text,long position, int direction, int
                              direction >= 0 ? "\nMaybe your sequences are not formatted?" : "");
 }
 
-ED4_ERROR *ED4_Edit_String::remove(int len, long position, int direction, int insertAtNextGap) {
+GB_ERROR ED4_Edit_String::remove(int len, long position, int direction, int insertAtNextGap) {
 
     int rest_len; // bases between cursor-position and the directed sequence end
 
@@ -169,7 +169,7 @@ ED4_ERROR *ED4_Edit_String::remove(int len, long position, int direction, int in
 }
 
 /*
-  ED4_ERROR *ED4_Edit_String::remove(int len, long position, int direction, int insertAtNextGap) {
+  GB_ERROR ED4_Edit_String::remove(int len, long position, int direction, int insertAtNextGap) {
   long new_len;
   long i;
 
@@ -219,7 +219,7 @@ ED4_ERROR *ED4_Edit_String::remove(int len, long position, int direction, int in
 
 */
 
-ED4_ERROR *ED4_Edit_String::replace(char *text,long position, int direction) {
+GB_ERROR ED4_Edit_String::replace(char *text,long position, int direction) {
     int text_len = strlen(text);
     int i;
     if (direction>=0){
@@ -241,7 +241,7 @@ ED4_ERROR *ED4_Edit_String::replace(char *text,long position, int direction) {
     return 0;
 }
 
-ED4_ERROR *ED4_Edit_String::swap_gaps(long position, char ch){
+GB_ERROR ED4_Edit_String::swap_gaps(long position, char ch){
     long i;
     for (i = position; i < seq_len; i++) {
         if ( !ADPP_IS_ALIGN_CHARACTER(seq[i])) break;
@@ -255,7 +255,7 @@ ED4_ERROR *ED4_Edit_String::swap_gaps(long position, char ch){
 }
 
 
-// ED4_ERROR *ED4_Edit_String::check_base(char chr,long position, int direction)
+// GB_ERROR ED4_Edit_String::check_base(char chr,long position, int direction)
 // {
 //     if (direction<0) position--;
 
@@ -270,7 +270,7 @@ ED4_ERROR *ED4_Edit_String::swap_gaps(long position, char ch){
 //     return 0;
 // }
 
-ED4_ERROR *ED4_Edit_String::moveBase(long source_position, long dest_position, unsigned char gap_to_use)
+GB_ERROR ED4_Edit_String::moveBase(long source_position, long dest_position, unsigned char gap_to_use)
 {
     e4_assert(source_position!=dest_position);
 #ifdef SAFE_EDITING
@@ -301,11 +301,11 @@ ED4_ERROR *ED4_Edit_String::moveBase(long source_position, long dest_position, u
     return 0;
 }
 
-ED4_ERROR *ED4_Edit_String::shiftBases(long source_pos, long last_source, long dest_pos, int direction, long *last_dest, unsigned char gap_to_use)
+GB_ERROR ED4_Edit_String::shiftBases(long source_pos, long last_source, long dest_pos, int direction, long *last_dest, unsigned char gap_to_use)
     // shifts bases from source_pos-last_source to dest_pos
     // last_dest is set to the position after the last dest_pos (direction<0 ? pos. right of bases : pos. left of bases)
 {
-    ED4_ERROR *err = 0;
+    GB_ERROR err = 0;
 
     //    printf("shiftBases(%li,%li,%li,%i,%c)\n", source_pos, last_source, dest_pos, direction, gap_to_use);
 
@@ -407,7 +407,7 @@ unsigned char ED4_Edit_String::get_gap_type(long pos, int direction)
     return '-';
 }
 
-ED4_ERROR *ED4_Edit_String::command( AW_key_mod keymod, AW_key_code keycode, char key, int direction, ED4_EDITMODI mode, bool is_consensus,
+GB_ERROR ED4_Edit_String::command( AW_key_mod keymod, AW_key_code keycode, char key, int direction, ED4_EDITMODI mode, bool is_consensus,
                                      long &seq_pos, bool &changed_flag, ED4_CursorJumpType& cursor_jump, bool &cannot_handle, bool &write_fault, GBDATA* gb_data, bool is_sequence)
 {
     changed_flag = 0;
@@ -445,7 +445,7 @@ ED4_ERROR *ED4_Edit_String::command( AW_key_mod keymod, AW_key_code keycode, cha
         }
     }
 
-    ED4_ERROR *ad_err = 0;
+    GB_ERROR ad_err = 0;
     long h;
     bool reinterpret_key = true;
 
@@ -1047,7 +1047,7 @@ GB_ERROR ED4_Edit_String::edit(ED4_work_info *info) {
     }
 
     int map_key = ED4_ROOT->edk->map_key(info->event.character);
-    ED4_ERROR *err = 0;
+    GB_ERROR err = 0;
 
     nrepeat_zero_requested = 1;
     if (!nrepeat) {

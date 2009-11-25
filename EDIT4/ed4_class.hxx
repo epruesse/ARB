@@ -817,11 +817,11 @@ public:
     bool has_parent(ED4_manager *Parent);
     bool is_child_of(ED4_manager *Parent) { return has_parent(Parent); }
 
-    ED4_group_manager       *is_in_folded_group() const;
-    virtual char        *resolve_pointer_to_string_copy(int *str_len = 0) const;
-    virtual const char      *resolve_pointer_to_char_pntr(int *str_len = 0) const;
-    virtual ED4_ERROR       *write_sequence(const char *seq, int seq_len);
-    char            *get_name_of_species();                 // go from terminal to name of species
+    ED4_group_manager  *is_in_folded_group() const;
+    virtual char       *resolve_pointer_to_string_copy(int *str_len = 0) const;
+    virtual const char *resolve_pointer_to_char_pntr(int *str_len = 0) const;
+    virtual GB_ERROR    write_sequence(const char *seq, int seq_len);
+    char               *get_name_of_species();        // go from terminal to name of species
 
     // functions which refer to the selected object(s), i.e. across the hierarchy
     virtual ED4_base        *get_competent_child( AW_pos x, AW_pos y, ED4_properties relevant_prop)=0;
@@ -1052,11 +1052,11 @@ public:
     virtual ED4_returncode      kill_object();
 
     //general purpose functions
-    virtual ED4_base  *search_ID(const char *id);
-    virtual char *resolve_pointer_to_string_copy(int *str_len = 0) const; // concerning terminal and database
-    virtual const char      *resolve_pointer_to_char_pntr(int *str_len = 0) const; // concerning terminal and database
-    virtual ED4_ERROR *write_sequence(const char *seq, int seq_len);
-    virtual ED4_returncode  remove_callbacks();
+    virtual ED4_base      *search_ID(const char *id);
+    virtual char          *resolve_pointer_to_string_copy(int *str_len = 0) const; // concerning terminal and database
+    virtual const char    *resolve_pointer_to_char_pntr(int *str_len = 0) const; // concerning terminal and database
+    virtual GB_ERROR       write_sequence(const char *seq, int seq_len);
+    virtual ED4_returncode remove_callbacks();
 
     void scroll_into_view(AW_window *aww);
     inline bool setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfoldGroups, ED4_CursorJumpType jump_type);
