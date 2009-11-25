@@ -1419,7 +1419,9 @@ GB_CSTR ED4_columnStat_terminal::build_probe_match_string(int start_pos, int end
 
 ED4_returncode ED4_columnStat_terminal::draw(int /*only_text*/)
 {
+#if defined(DEVEL_RALF)
 #warning test drawing of ED4_columnStat_terminal
+#endif // DEVEL_RALF
     if (!update_likelihood()) {
         aw_popup_ok("Can't calculate likelihood.");
         return ED4_R_IMPOSSIBLE;

@@ -85,7 +85,9 @@ bool SEC_root::perform_autoscroll() {
                 nailedAbsPos = -1;
                 autoscroll   = 0;
 
+#if defined(DEVEL_RALF)
 #warning make the refresh invisible
+#endif // DEVEL_RALF
                 canvas->refresh();
 
                 nailedAbsPos = absPos;
