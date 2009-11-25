@@ -1,5 +1,23 @@
-#ifndef _AP_BUFFER_INC
-#define _AP_BUFFER_INC
+// =============================================================== //
+//                                                                 //
+//   File      : AP_buffer.hxx                                     //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+#ifndef AP_BUFFER_HXX
+#define AP_BUFFER_HXX
+
+#ifndef AP_SEQUENCE_HXX
+#include <AP_sequence.hxx>
+#endif
+#ifndef AP_TREE_HXX
+#include <AP_Tree.hxx>
+#endif
+
 
 /*******************
 
@@ -95,8 +113,8 @@ struct AP_tree_edge_data
 
 
 struct AP_tree_buffer {
-    unsigned long  controll;    // used for internal buffer check
-    unsigned int   count;       // counts how often the entry is buffered
+    unsigned long  controll;                        // used for internal buffer check
+    unsigned int   count;                           // counts how often the entry is buffered
     AP_STACK_MODE  mode;
     AP_sequence   *sequence;
     AP_FLOAT       mutation_rate;
@@ -104,6 +122,7 @@ struct AP_tree_buffer {
     AP_tree       *father;
     AP_tree       *leftson;
     AP_tree       *rightson;
+    AP_tree_root  *root;
     GBDATA        *gb_node;
 
     int distance;   // distance to border (pushed with STRUCTURE!)
@@ -127,17 +146,17 @@ public:
     void print();
 };
 
-
+class AP_tree_nlen;
 
 class AP_main_stack : public AP_STACK {
 protected:
     unsigned long last_user_buffer;
 public:
     friend class AP_main;
-    void push(AP_tree *value) { AP_STACK::push((void *)value); }
-    AP_tree * pop() { return (AP_tree *) AP_STACK::pop(); }
-    AP_tree * get() { return (AP_tree *) AP_STACK::get(); }
-    AP_tree * get_first() { return (AP_tree *) AP_STACK::get_first(); }
+    void push(AP_tree_nlen *value) { AP_STACK::push((void *)value); }
+    AP_tree_nlen *pop() { return (AP_tree_nlen*)AP_STACK::pop(); }
+    AP_tree_nlen *get() { return (AP_tree_nlen*)AP_STACK::get(); }
+    AP_tree_nlen *get_first() { return (AP_tree_nlen*)AP_STACK::get_first(); }
     void print();
 };
 
@@ -150,4 +169,6 @@ public:
     void append(AP_main_stack * stack) { AP_LIST::append((void *)stack); }
 };
 
-#endif
+#else
+#error AP_buffer.hxx included twice
+#endif // AP_BUFFER_HXX

@@ -7,7 +7,7 @@
 // #include <malloc.h>
 #include <iostream.h>
 #include "AP_buffer.hxx"
-#include "parsimony.hxx"
+#include "ap_main.hxx"
 #include "ap_tree_nlen.hxx"
 #include "GA_genetic.hxx"
 
@@ -15,7 +15,7 @@
 #define AP_PUT_DATA 1
 
 
-GA_genetic::GA_genetic(void) {
+GA_genetic::GA_genetic() {
     gb_tree_start = 0;
     gb_tree_opt   = 0;
     gb_joblist    = 0;
@@ -26,7 +26,7 @@ GA_genetic::GA_genetic(void) {
     min_job       = 1;
 }
 
-GA_genetic::~GA_genetic(void) {
+GA_genetic::~GA_genetic() {
     if (fout) {
         if (fclose(fout) != 0) {
             new AP_ERR("~GA_genetic","couldn't close output");

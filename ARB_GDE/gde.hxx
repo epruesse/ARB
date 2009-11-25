@@ -11,6 +11,10 @@
 #ifndef GDE_HXX
 #define GDE_HXX
 
+#ifndef AW_ROOT_HXX
+#include <aw_root.hxx>
+#endif
+
 typedef unsigned char uchar;
 typedef enum { CGSS_WT_DEFAULT, CGSS_WT_EDIT, CGSS_WT_EDIT4 } gde_cgss_window_type;
 

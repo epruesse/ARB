@@ -33,8 +33,12 @@ probe_design.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 probe_design.o: $(ARBHOME)/INCLUDE/ad_prot.h
 probe_design.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 probe_design.o: $(ARBHOME)/INCLUDE/adGene.h
+probe_design.o: $(ARBHOME)/INCLUDE/AliView.hxx
+probe_design.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
+probe_design.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/arb_assert.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_error.h
+probe_design.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/arbdb.h
 probe_design.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 probe_design.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -51,17 +55,16 @@ probe_design.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
-probe_design.o: $(ARBHOME)/INCLUDE/awt_dtree.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_iupac.hxx
-probe_design.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
-probe_design.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
-probe_design.o: $(ARBHOME)/INCLUDE/awt_tree_cb.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/client.h
+probe_design.o: $(ARBHOME)/INCLUDE/downcast.h
 probe_design.o: $(ARBHOME)/INCLUDE/GEN.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/PT_com.h
 probe_design.o: $(ARBHOME)/INCLUDE/servercntrl.h
 probe_design.o: $(ARBHOME)/INCLUDE/smartptr.h
+probe_design.o: $(ARBHOME)/INCLUDE/TreeCallbacks.hxx
+probe_design.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 
 probe_match_parser.o: probe_match_parser.hxx
 probe_match_parser.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -87,7 +90,6 @@ SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arbtools.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/attributes.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
-SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -97,10 +99,6 @@ SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
-SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_dtree.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
-SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
-SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
-SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_tree_cb.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/smartptr.h

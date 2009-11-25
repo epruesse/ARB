@@ -1,21 +1,15 @@
-#include <stdio.h>
-#include <stdlib.h>
-// #include <malloc.h>
-#include <memory.h>
-#include <string.h>
-#include <arbdb.h>
-#include <arbdbt.h>
-
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <awt_tree.hxx>
-#include "dist.hxx"
-#include <awt_nds.hxx>
-#include <awt_csp.hxx>
+// =============================================================== //
+//                                                                 //
+//   File      : DI_save_matr.cxx                                  //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include "di_matr.hxx"
-
+#include <awt_nds.hxx>
 
 const char *DI_MATRIX::save(char *filename,enum DI_SAVE_TYPE type)
 {
@@ -42,8 +36,9 @@ const char *DI_MATRIX::save(char *filename,enum DI_SAVE_TYPE type)
         case DI_SAVE_READABLE:
         case DI_SAVE_TABBED:
             {
+                GBDATA         *gb_main  = get_gb_main();
                 GB_transaction  dummy(gb_main);
-                size_t          app_size = 200; // maximum width for NDS output (and max. height for vertical one)
+                size_t          app_size = 200;     // maximum width for NDS output (and max. height for vertical one)
                 size_t          maxnds   = 0;
                 bool            tabbed   = (type == DI_SAVE_TABBED);
                 double          min      = matrix->get(1,0) * 100.0;
@@ -141,9 +136,10 @@ const char *DI_MATRIX::save(char *filename,enum DI_SAVE_TYPE type)
 
                         if (!tabbed) fputc(' ', out);
 
-                        if (val2 > max) max  = val2;
-                        if (val2 < min) min  = val2;
-                        sum                 += val;
+                        if (val2 > max) max = val2;
+                        if (val2 < min) min = val2;
+                        
+                        sum += val2; // ralf: before this added 'val' (which was included somehow)
                     }
                     fprintf(out,"\n");
                 }

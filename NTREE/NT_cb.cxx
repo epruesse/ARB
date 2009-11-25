@@ -1,26 +1,34 @@
-#include <stdio.h>
-#include <stdlib.h>
+// =============================================================== //
+//                                                                 //
+//   File      : NT_cb.cxx                                         //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <arbdb.h>
-#include <arbdbt.h>
-
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_awars.hxx>
-#include <awt_canvas.hxx>
-#include <awt.hxx>
-
-#include <awt_tree.hxx>
-#include <awt_dtree.hxx>
-#include <awt_sel_boxes.hxx>
-#include "ad_trees.hxx"
-#include "ntree.hxx"
 #include "nt_internal.h"
 #include "nt_cb.hxx"
+#include "ntree.hxx"
+#include "ad_trees.hxx"
 
+#include <awt_canvas.hxx>
+#include <awt_sel_boxes.hxx>
+#include <aw_awars.hxx>
 
-#define AWT_TREE(ntw) ((AWT_graphic_tree *)ntw->tree_disp)
+/*AISC_MKPT_PROMOTE:#ifndef ARBDBT_H*/
+/*AISC_MKPT_PROMOTE:#include <arbdbt.h>*/
+/*AISC_MKPT_PROMOTE:#endif*/
+/*AISC_MKPT_PROMOTE:#ifndef AW_ROOT_HXX*/
+/*AISC_MKPT_PROMOTE:#include <aw_root.hxx>*/
+/*AISC_MKPT_PROMOTE:#endif*/
+/*AISC_MKPT_PROMOTE:*/
+/*AISC_MKPT_PROMOTE:class AW_window;*/
+/*AISC_MKPT_PROMOTE:class AWT_canvas;*/
+
+// #define AWT_TREE(ntw) ((AWT_graphic_tree *)ntw->tree_disp)
+#define AWT_TREE(ntw) DOWNCAST(AWT_graphic_tree *, (ntw)->tree_disp)
 
 void NT_delete_mark_all_cb(void *, AWT_canvas *ntw) {
     if (aw_ask_sure("Are you sure to delete species ??\n"

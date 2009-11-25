@@ -10,9 +10,8 @@
 #include <aw_window.hxx>
 #include <awt.hxx>
 #include <awt_canvas.hxx>
-#include <awt_tree.hxx>
-#include <awt_dtree.hxx>
-#include <awt_tree_cb.hxx>
+#include <AP_Tree.hxx>
+#include <TreeCallbacks.hxx>
 
 #include "MultiProbe.hxx"
 #include "mp_proto.hxx"
@@ -62,7 +61,7 @@ void MP_close_main(AW_window *aww)
 
     GB_transaction dummy(ntw->gb_main);
 
-    AP_tree *ap_tree = AWT_TREE(ntw)->tree_root;
+    AP_tree *ap_tree = AWT_TREE(ntw)->get_root_node();
     if (ap_tree) ap_tree->calc_color();
 
     if (ntw->gb_main)
@@ -539,7 +538,7 @@ void MP_show_probes_in_tree(AW_window *aww)
     mp_main->get_stc()->sondentopf->gen_color_hash(mp_gl_awars.no_of_probes);
 
     GB_transaction dummy(ntw->gb_main);
-    AWT_TREE(ntw)->tree_root->calc_color_probes(mp_main->get_stc()->sondentopf->get_color_hash());
+    AWT_TREE(ntw)->get_root_node()->calc_color_probes(mp_main->get_stc()->sondentopf->get_color_hash());
 
     if (ntw->gb_main)
         ntw->tree_disp->update(ntw->gb_main);
@@ -825,7 +824,7 @@ void MP_normal_colors_in_tree(AW_window *aww)
 
     GB_transaction dummy(ntw->gb_main);
 
-    AWT_TREE(ntw)->tree_root->calc_color();
+    AWT_TREE(ntw)->get_root_node()->calc_color();
 
     if (ntw->gb_main)
         ntw->tree_disp->update(ntw->gb_main);

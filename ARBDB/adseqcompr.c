@@ -17,10 +17,7 @@
 /* -------------------------------------------------------------------------------- */
 
 typedef struct gb_seq_compr_tree {
-#ifdef FAKE_VTAB_PTR
-    virtualTable *dummy_virtual; /* simulate pointer to virtual-table used in AP_tree */
-#endif
-    GBT_TREE_ELEMENTS(struct gb_seq_compr_tree);
+    GBT_VTAB_AND_TREE_ELEMENTS(struct gb_seq_compr_tree);
 
     int index;                  /* master(inner nodes) or sequence(leaf nodes) index */
     int sons;                   /* sons with sequence or masters (in subtree) */

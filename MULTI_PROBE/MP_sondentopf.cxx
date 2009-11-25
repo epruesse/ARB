@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <arbdbt.h>
-#include <awt_tree.hxx>
+#include <aw_root.hxx>
+#include <AP_Tree.hxx> // needed for GCs
 #include <math.h>
 
 //############################################################################################

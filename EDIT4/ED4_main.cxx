@@ -19,7 +19,7 @@
 #include <AW_helix.hxx>
 #include <st_window.hxx>
 #include <gde.hxx>
-#include<awt_pro_a_nucs.hxx>
+#include <AP_pro_a_nucs.hxx>
 
 #include <ed4_extern.hxx>
 

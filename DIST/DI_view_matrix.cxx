@@ -1,23 +1,22 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <memory.h>
-#include <string.h>
+// =============================================================== //
+//                                                                 //
+//   File      : DI_view_matrix.cxx                                //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <arbdb.h>
-#include <arbdbt.h>
-
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_preset.hxx>
-#include <aw_awars.hxx>
-
-#include <awt_tree.hxx>
-#include <awt_canvas.hxx>
+#include "di_view_matrix.hxx"
+#include "di_matr.hxx"
 #include "dist.hxx"
 
-#include <di_matr.hxx>
-#include <di_view_matrix.hxx>
+#include <aw_window.hxx>
+#include <aw_awars.hxx>
+#include <aw_preset.hxx>
+
+#include <awt_canvas.hxx>
 
 void vertical_change_cb  (AW_window *aww,DI_dmatrix *dis) { dis->monitor_vertical_scroll_cb(aww); }
 void horizontal_change_cb(AW_window *aww,DI_dmatrix *dis) { dis->monitor_horizontal_scroll_cb(aww); }
@@ -549,7 +548,7 @@ static void di_bind_dist_awars(AW_root *aw_root, DI_dmatrix *dmatrix) {
     aw_root->awar_float(AWAR_DIST_MAX_DIST)->add_callback(di_view_set_distances, 1, (AW_CL)dmatrix);
 }
 
-AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix){
+AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix, save_matrix_params *sparam) {
     di_bind_dist_awars(awr, dmatrix);
     AW_window_menu *awm = new AW_window_menu();
     awm->init(awr,"SHOW_MATRIX", "ARB_SHOW_MATRIX", 800,600);
@@ -579,7 +578,7 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix){
                       NULL);
 
     awm->create_menu("File","F");
-    awm->insert_menu_topic("save_matrix",   "Save Matrix to File",  "S","save_matrix.hlp",  AWM_ALL, AW_POPUP, (AW_CL)DI_create_save_matrix_window, (AW_CL)AWAR_DIST_SAVE_MATRIX_BASE);
+    awm->insert_menu_topic("save_matrix",   "Save Matrix to File",  "S","save_matrix.hlp",  AWM_ALL, AW_POPUP, (AW_CL)DI_create_save_matrix_window, (AW_CL)sparam);
     awm->insert_menu_topic("close",     "Close",    "C",0,  AWM_ALL,    (AW_CB)AW_POPDOWN, (AW_CL)0, 0 );
 
     awm->create_menu("Props","P");

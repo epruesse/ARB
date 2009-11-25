@@ -1,16 +1,11 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <memory.h>
-// #include <malloc.h>
-#include <ctype.h>
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_awars.hxx>
-#include <awt_tree.hxx>
-#include <awt_csp.hxx>
 #include "st_ml.hxx"
+
+#include <awt_csp.hxx>
+#include <AP_filter.hxx>
+
+#include <cctype>
+#include <cmath>
+
 
 #define st_assert(bed) arb_assert(bed)
 
@@ -151,63 +146,69 @@ inline void ST_rate_matrix::mult(ST_base_vector * in, ST_base_vector * out) {
 }
 #endif
 
-ST_sequence_ml::ST_sequence_ml(AP_tree_root * rooti, ST_ML * st_mli) :
-    AP_sequence(rooti) {
-    gb_data = 0;
-    st_ml = st_mli;
-    sequence = new ST_base_vector[ST_MAX_SEQ_PART];
-    color_out = NULL;
-    color_out_valid_till = NULL;
-    last_updated = 0;
+ST_sequence_ml::ST_sequence_ml(const AliView *aliview, ST_ML *st_ml_)
+    : AP_sequence(aliview)
+    , st_ml(st_ml_)
+    , sequence(new ST_base_vector[ST_MAX_SEQ_PART])
+    , last_updated(0)
+    , color_out(NULL)
+    , color_out_valid_till(NULL)
+{
 }
 
-void st_sequence_callback(GBDATA *, int *cl, gb_call_back_type) {
+ST_sequence_ml::~ST_sequence_ml() {
+    delete [] sequence;
+    delete color_out;
+    delete color_out_valid_till;
+
+    unbind_from_species(true);
+}
+
+static void st_sequence_callback(GBDATA *, int *cl, gb_call_back_type) {
     ST_sequence_ml *seq = (ST_sequence_ml *) cl;
     seq->sequence_change();
 }
 
-void st_sequence_del_callback(GBDATA *, int *cl, gb_call_back_type) {
+static void st_sequence_del_callback(GBDATA *, int *cl, gb_call_back_type) {
     ST_sequence_ml *seq = (ST_sequence_ml *) cl;
-    seq->delete_sequence();
+    seq->unbind_from_species(false);
 }
 
-void ST_sequence_ml::delete_sequence() {
-    if (gb_data)
-        GB_remove_callback(gb_data, GB_CB_CHANGED, st_sequence_callback,
-                           (int *) this);
-    if (gb_data)
-        GB_remove_callback(gb_data, GB_CB_DELETE, st_sequence_del_callback,
-                           (int *) this);
-    gb_data = 0;
+
+GB_ERROR ST_sequence_ml::bind_to_species(GBDATA *gb_species) {
+    GB_ERROR error = AP_sequence::bind_to_species(gb_species);
+    if (!error) {
+        GBDATA *gb_seq = get_bound_species_data();
+        st_assert(gb_seq);
+
+        error             = GB_add_callback(gb_seq, GB_CB_CHANGED, st_sequence_callback, (int *) this);
+        if (!error) error = GB_add_callback(gb_seq, GB_CB_DELETE, st_sequence_del_callback, (int *) this);
+    }
+    return error;
+}
+void ST_sequence_ml::unbind_from_species(bool remove_callbacks) {
+    if (remove_callbacks) {
+        GBDATA *gb_seq = get_bound_species_data();
+        st_assert(gb_seq);
+        GB_remove_callback(gb_seq, GB_CB_CHANGED, st_sequence_callback, (int *) this);
+        GB_remove_callback(gb_seq, GB_CB_DELETE, st_sequence_del_callback, (int *) this);
+    }
+    AP_sequence::unbind_from_species();
 }
 
 void ST_sequence_ml::sequence_change() {
     st_ml->clear_all();
-
 }
 
-ST_sequence_ml::~ST_sequence_ml() {
-    delete[]sequence;
-    delete color_out;
-    delete color_out_valid_till;
-
-    delete_sequence();
-}
-
-AP_sequence *ST_sequence_ml::dup() {
-    return new ST_sequence_ml(root, st_ml);
-}
-
-void ST_sequence_ml::set_gb(GBDATA * gbd) {
-    delete_sequence();
-    gb_data = gbd;
-    GB_add_callback(gb_data, GB_CB_CHANGED, st_sequence_callback, (int *) this);
-    GB_add_callback(gb_data, GB_CB_DELETE, st_sequence_del_callback,
-                    (int *) this);
+AP_sequence *ST_sequence_ml::dup() const {
+    return new ST_sequence_ml(get_aliview(), st_ml);
 }
 
 void ST_sequence_ml::set(const char *) {
-    st_assert(0); // function does nothing, so i assert it wont be called -- ralf may 2008
+    st_assert(0);                                   // hmm why not perform set_sequence() here ?
+}
+
+void ST_sequence_ml::unset() {
 }
 
 /** Transform the sequence from character to vector, from st_ml->base to 'to' */
@@ -217,6 +218,7 @@ void ST_sequence_ml::set_sequence() {
     const char *source_sequence     = 0;
     int         source_sequence_len = 0;
 
+    GBDATA *gb_data = get_bound_species_data();
     if (gb_data) {
         source_sequence_len = (int) GB_read_string_count(gb_data);
         source_sequence = GB_read_char_pntr(gb_data);
@@ -242,8 +244,9 @@ void ST_sequence_ml::set_sequence() {
     }
 }
 
-AP_FLOAT ST_sequence_ml::combine(const AP_sequence *, const AP_sequence *) {
-    return 0.0;
+AP_FLOAT ST_sequence_ml::combine(const AP_sequence *, const AP_sequence *, char *) {
+    st_assert(0);
+    return -1.0;
 }
 
 // void ST_sequence_ml::partial_match(const AP_sequence *part, long *overlap, long *penalty) const
@@ -348,11 +351,16 @@ void ST_sequence_ml::calc_out(ST_sequence_ml * next_branch, double dist) {
 }
 
 void ST_sequence_ml::print() {
-    int i;
-    for (i = 0; i < ST_MAX_SEQ_PART; i++) {
-        printf("POS %3i  %c     ", i, GB_read_char_pntr(gb_data)[i]);
+    const char *data = GB_read_char_pntr(get_bound_species_data());
+    for (int i = 0; i < ST_MAX_SEQ_PART; i++) {
+        printf("POS %3i  %c     ", i, data[i]);
         printf("\n");
     }
+}
+
+AP_FLOAT ST_sequence_ml::count_weighted_bases() const {
+    st_assert(0);
+    return -1.0;
 }
 
 ST_ML::ST_ML(GBDATA * gb_maini) {
@@ -361,18 +369,14 @@ ST_ML::ST_ML(GBDATA * gb_maini) {
 }
 
 ST_ML::~ST_ML() {
-    if (tree_root) {
-        delete tree_root->tree;
-        tree_root->tree = 0;
-        delete tree_root;
-    }
+    delete tree_root;
     free(alignment_name);
     if (hash_2_ap_tree) GBS_free_hash(hash_2_ap_tree);
     delete not_valid;
     delete[]base_frequencies;
     delete[]inv_base_frequencies;
     delete[]rate_matrices;
-    if (!awt_csp) {
+    if (!awt_csp) { // rates and ttratio have been allocated (see ST_ML::init) 
         delete rates;
         delete ttratio;
     }
@@ -383,85 +387,69 @@ void ST_ML::print() {
     ;
 }
 
-/** Translate characters to base frequencies */
 void ST_ML::create_frequencies() {
-    ST_base_vector  *out       = new ST_base_vector[alignment_len];
-    int              i, j;
-    float          **frequency = 0;
+    // Translate characters to base frequencies
 
-    base_frequencies     = out;
+    base_frequencies     = new ST_base_vector[alignment_len];
     inv_base_frequencies = new ST_base_vector[alignment_len];
 
-    if (awt_csp)
-        frequency = awt_csp->frequency;
-
-    if (!frequency) {
-        for (i = 0; i < alignment_len; i++) {
-            for (j = ST_A; j < ST_MAX_BASE; j++) {
-                out[i].b[j] = 1.0;
+    if (!awt_csp) {
+        for (int i = 0; i < alignment_len; i++) {
+            for (int j = ST_A; j < ST_MAX_BASE; j++) {
+                base_frequencies[i].b[j]     = 1.0;
                 inv_base_frequencies[i].b[j] = 1.0;
             }
-            out[i].lik = 1.0;
+            base_frequencies[i].lik     = 1.0;
             inv_base_frequencies[i].lik = 1.0;
         }
-        return;
     }
-
-    for (i = 0; i < alignment_len; i++) {
-        for (j = ST_A; j < ST_MAX_BASE; j++) {
-            out[i].b[j] = 0.01; // minimal frequency
-        }
-
-        if (frequency['A'])
-            out[i].b[ST_A] += frequency['A'][i];
-        if (frequency['a'])
-            out[i].b[ST_A] += frequency['a'][i];
-
-        if (frequency['C'])
-            out[i].b[ST_C] += frequency['C'][i];
-        if (frequency['c'])
-            out[i].b[ST_C] += frequency['c'][i];
-
-        if (frequency['G'])
-            out[i].b[ST_G] += frequency['G'][i];
-        if (frequency['g'])
-            out[i].b[ST_G] += frequency['g'][i];
-
-        if (frequency['T'])
-            out[i].b[ST_T] += frequency['T'][i];
-        if (frequency['t'])
-            out[i].b[ST_T] += frequency['t'][i];
-        if (frequency['U'])
-            out[i].b[ST_T] += frequency['U'][i];
-        if (frequency['u'])
-            out[i].b[ST_T] += frequency['u'][i];
-
-        if (frequency['-'])
-            out[i].b[ST_GAP] += frequency['-'][i];
-
-        double sum = 0.0;
-
-        for (j = ST_A; j < ST_MAX_BASE; j++)
-            sum += out[i].b[j];
-        for (j = ST_A; j < ST_MAX_BASE; j++)
-            out[i].b[j] += sum * .01; // smoothen frequencies to  avoid crazy values
-        double min = out[i].b[ST_A];
-        for (sum = 0, j = ST_A; j < ST_MAX_BASE; j++) {
-            sum += out[i].b[j];
-            if (out[i].b[j] < min)
-                min = out[i].b[j];
-        }
-        for (j = ST_A; j < ST_MAX_BASE; j++) {
-            if (sum > 0.01) { // valid column ??
-                out[i].b[j] *= ST_MAX_BASE / sum;
-            } else {
-                out[i].b[j] = 1.0; // no
+    else {
+        for (int i = 0; i < alignment_len; i++) {
+            for (int j = ST_A; j < ST_MAX_BASE; j++) {
+                base_frequencies[i].b[j] = 0.01; // minimal frequency
             }
-            inv_base_frequencies[i].b[j] = min / out[i].b[j];
-        }
-        out[i].lik = 1.0;
-        inv_base_frequencies[i].lik = 1.0;
 
+            static struct {
+                unsigned char c;
+                AWT_dna_base  b;
+            } toCount[] = {
+                { 'A', ST_A }, { 'a', ST_A },
+                { 'C', ST_C }, { 'c', ST_C },
+                { 'G', ST_G }, { 'g', ST_G },
+                { 'T', ST_T }, { 't', ST_T },
+                { 'U', ST_T }, { 'u', ST_T },
+                { '-', ST_GAP },
+                { 0, ST_UNKNOWN },
+            };
+
+            for (int j = 0; toCount[j].c; ++j) {
+                const float *freq = awt_csp->get_frequencies(toCount[j].c);
+                if (freq) base_frequencies[i].b[toCount[j].b] += freq[i];
+            }
+
+            double sum = 0.0;
+
+            for (int j = ST_A; j < ST_MAX_BASE; j++) sum                      += base_frequencies[i].b[j];
+            for (int j = ST_A; j < ST_MAX_BASE; j++) base_frequencies[i].b[j] += sum * .01; // smoothen frequencies to avoid crazy values
+
+            double min = base_frequencies[i].b[ST_A];
+            sum        = 0.0;
+            for (int j = ST_A; j < ST_MAX_BASE; j++) {
+                sum += base_frequencies[i].b[j];
+                if (base_frequencies[i].b[j] < min) min = base_frequencies[i].b[j];
+            }
+            for (int j = ST_A; j < ST_MAX_BASE; j++) {
+                if (sum > 0.01) { // valid column ??
+                    base_frequencies[i].b[j] *= ST_MAX_BASE / sum;
+                }
+                else {
+                    base_frequencies[i].b[j] = 1.0; // no
+                }
+                inv_base_frequencies[i].b[j] = min / base_frequencies[i].b[j];
+            }
+            base_frequencies[i].lik     = 1.0;
+            inv_base_frequencies[i].lik = 1.0;
+        }
     }
 }
 
@@ -469,9 +457,10 @@ void ST_ML::insert_tree_into_hash_rek(AP_tree * node) {
     node->gr.gc = 0;
     if (node->is_leaf) {
         GBS_write_hash(hash_2_ap_tree, node->name, (long) node);
-    } else {
-        insert_tree_into_hash_rek(node->leftson);
-        insert_tree_into_hash_rek(node->rightson);
+    }
+    else {
+        insert_tree_into_hash_rek(node->get_leftson());
+        insert_tree_into_hash_rek(node->get_rightson());
     }
 }
 
@@ -496,7 +485,7 @@ long ST_ML::delete_species(const char *key, long val, void *cd_st_ml) {
     }
     else {
         AP_tree *leaf   = (AP_tree *) val;
-        AP_tree *father = leaf->father;
+        AP_tree *father = leaf->get_father();
         leaf->remove();
         delete father;                              // deletes me also
         
@@ -507,9 +496,9 @@ long ST_ML::delete_species(const char *key, long val, void *cd_st_ml) {
 inline GB_ERROR tree_size_ok(AP_tree_root *tree_root) {
     GB_ERROR error = NULL;
 
-    if (!tree_root->tree || tree_root->tree->is_leaf) {
-        const char *tree_name = tree_root->tree_name;
-        
+    AP_tree *root = tree_root->get_root_node();
+    if (!root || root->is_leaf) {
+        const char *tree_name = tree_root->get_tree_name();
         error = GBS_global_string("Too few species remained in tree '%s'", tree_name);
     }
     return error;
@@ -518,145 +507,171 @@ inline GB_ERROR tree_size_ok(AP_tree_root *tree_root) {
 /** this is the real constructor, call only once */
 GB_ERROR ST_ML::init(const char *tree_name, const char *alignment_namei,
                      const char *species_names, int marked_only,
-                     const char * /*filter_string */, AWT_csp * awt_cspi) {
-
-    GB_transaction ta(gb_main);
+                     AWT_csp *awt_cspi, bool show_status)
+{
     GB_ERROR error = 0;
+
     if (is_inited) {
-        return GB_export_error("Sorry, once you selected a column statistic you cannot change parameters");
-    }
-    GB_ERROR awt_csp_error = 0;
-    awt_csp = awt_cspi;
-    awt_csp_error = awt_csp->go();
-    if (awt_csp_error) {
-        fprintf(stderr, "%s\n", awt_csp_error);
-    }
-    alignment_name = strdup(alignment_namei);
-    alignment_len = GBT_get_alignment_len(gb_main, alignment_name);
-    if (alignment_len < 10) {
-        free(alignment_name);
-        return GB_await_error();
-    }
-    AP_tree *tree = new AP_tree(0);
-    tree_root = new AP_tree_root(gb_main, tree, tree_name);
-    error = tree->load(tree_root, 0, GB_FALSE, GB_FALSE, 0, 0); // tree is not linked !!!
-    if (error) {
-        delete tree;            tree      = 0;
-        delete tree_root;       tree_root = 0;
-        return error;
-    }
-    tree_root->tree = tree;
-
-    // aw_openstatus("Initializing Online Statistic");
-    /* send species into hash table */
-    hash_2_ap_tree = GBS_create_hash(1000, GB_MIND_CASE);
-    // aw_status("Loading Tree");
-    /* delete species */
-    if (species_names) { // keep names
-        tree_root->tree->remove_leafs(gb_main, AWT_REMOVE_DELETED);
-
-        error = tree_size_ok(tree_root);
-        if (error) return ta.close(error);
-
-        char *l, *n;
-        keep_species_hash = GBS_create_hash(GBT_get_species_hash_size(gb_main), GB_MIND_CASE);
-        for (l = (char *) species_names; l; l = n) {
-            n = strchr(l, 1);
-            if (n) *n = 0;
-            GBS_write_hash(keep_species_hash, l, 1);
-            if (n) *(n++) = 1;
-        }
-
-        insert_tree_into_hash_rek(tree_root->tree);
-        GBS_hash_do_loop(hash_2_ap_tree, delete_species, this);
-        GBS_free_hash(keep_species_hash);
-        keep_species_hash = 0;
-        GBT_link_tree((GBT_TREE *) tree_root->tree, gb_main, GB_FALSE, 0, 0);
-    }
-    else { // keep marked
-        GBT_link_tree((GBT_TREE *) tree_root->tree, gb_main, GB_FALSE, 0, 0);
-        tree_root->tree->remove_leafs(gb_main, (marked_only ? AWT_REMOVE_NOT_MARKED : 0)|AWT_REMOVE_DELETED);
-        
-        error = tree_size_ok(tree_root);
-        if (error) return ta.close(error);
-
-        insert_tree_into_hash_rek(tree_root->tree);
-    }
-
-    /* calc frequencies */
-
-    if (!awt_csp_error) {
-        rates = awt_csp->rates;
-        ttratio = awt_csp->ttratio;
+        error = "Column statistic can't be re-initialized";
     }
     else {
-        rates = new float[alignment_len];
-        ttratio = new float[alignment_len];
-        for (int i = 0; i < alignment_len; i++) {
-            rates[i] = 1.0;
-            ttratio[i] = 2.0;
+        GB_transaction ta(gb_main);
+        GB_ERROR       awt_csp_error = 0;
+
+        if (show_status) aw_openstatus("Activating column statistic");
+
+        awt_csp       = awt_cspi;
+        awt_csp_error = awt_csp->go(NULL);
+
+        if (awt_csp_error) fprintf(stderr, "%s\n", awt_csp_error);
+
+        alignment_name = strdup(alignment_namei);
+        alignment_len  = GBT_get_alignment_len(gb_main, alignment_name);
+
+        if (alignment_len < 10) {
+            error = GB_await_error();
         }
-        awt_csp = 0;
+        else {
+            {
+                AP_filter       filter(alignment_len);      // unfiltered
+                AP_weights      weights(&filter);
+                AliView        *aliview   = new AliView(gb_main, filter, weights, alignment_name);
+                ST_sequence_ml *seq_templ = new ST_sequence_ml(aliview, this);
+
+                tree_root = new AP_tree_root(aliview, AP_tree(0), seq_templ, false);
+                // do not delete 'aliview' or 'seq_templ' (they belong to 'tree_root' now)
+            }
+
+            if (show_status) aw_status("load tree");
+            tree_root->loadFromDB(tree_name);       // tree is not linked!
+            
+            if (show_status) aw_status("link tree");
+            hash_2_ap_tree = GBS_create_hash(1000, GB_MIND_CASE); // send species into hash table
+
+            /* delete species */
+            if (species_names) { // keep names
+                tree_root->remove_leafs(AWT_REMOVE_DELETED);
+
+                error = tree_size_ok(tree_root);
+                if (!error) {
+                    char *l, *n;
+                    keep_species_hash = GBS_create_hash(GBT_get_species_hash_size(gb_main), GB_MIND_CASE);
+                    for (l = (char *) species_names; l; l = n) {
+                        n = strchr(l, 1);
+                        if (n) *n = 0;
+                        GBS_write_hash(keep_species_hash, l, 1);
+                        if (n) *(n++) = 1;
+                    }
+
+                    insert_tree_into_hash_rek(tree_root->get_root_node());
+                    GBS_hash_do_loop(hash_2_ap_tree, delete_species, this);
+                    GBS_free_hash(keep_species_hash);
+                    keep_species_hash = 0;
+                    GBT_link_tree(tree_root->get_root_node()->get_gbt_tree(), gb_main, GB_BOOL(show_status), 0, 0);
+                }
+            }
+            else { // keep marked
+                GBT_link_tree(tree_root->get_root_node()->get_gbt_tree(), gb_main, GB_BOOL(show_status), 0, 0);
+                tree_root->remove_leafs((marked_only ? AWT_REMOVE_NOT_MARKED : 0)|AWT_REMOVE_DELETED);
+        
+                error = tree_size_ok(tree_root);
+                if (!error) insert_tree_into_hash_rek(tree_root->get_root_node());
+            }
+
+            if (!error) {
+                /* calc frequencies */
+                if (show_status) aw_status("calculating frequencies");
+
+                if (!awt_csp_error) {
+                    rates   = awt_csp->get_rates();
+                    ttratio = awt_csp->get_ttratio();
+                }
+                else {
+                    float *alloc_rates   = new float[alignment_len];
+                    float *alloc_ttratio = new float[alignment_len];
+
+                    for (int i = 0; i < alignment_len; i++) {
+                        alloc_rates[i]   = 1.0;
+                        alloc_ttratio[i] = 2.0;
+                    }
+                    rates   = alloc_rates;
+                    ttratio = alloc_ttratio;
+                    
+                    awt_csp = 0;                    // mark rates and ttratio as "allocated"
+                }
+                create_frequencies();
+
+                /* set update time */
+
+                latest_modification = GB_read_clock(gb_main);
+
+                /* create matrices */
+                create_matrices(2.0, 1000);
+
+                ST_sequence_ml::tmp_out = new ST_base_vector[alignment_len];
+                is_inited = 1;
+            }
+            if (error) {
+                delete tree_root;               tree_root      = NULL;
+                GBS_free_hash(hash_2_ap_tree);  hash_2_ap_tree = NULL;
+            }
+        }
+
+        if (error) {
+            free(alignment_name);
+            error = ta.close(error);
+        }
+
+        if (show_status) aw_closestatus();
     }
-    // aw_status("build frequencies");
-    create_frequencies();
+    return error;
+}
 
-    /* set update time */
-
-    latest_modification = GB_read_clock(gb_main);
-
-    /* load sequences */
-    // aw_status("load sequences");
-    tree_root->sequence_template = new ST_sequence_ml(tree_root, this);
-    tree_root->tree->load_sequences_rek(alignment_name, GB_TRUE, GB_TRUE);
-
-    /* create matrices */
-    create_matrices(2.0, 1000);
-
-    ST_sequence_ml::tmp_out = new ST_base_vector[alignment_len];
-    is_inited = 1;
-    // aw_closestatus();
-    return 0;
+ST_sequence_ml *ST_ML::getOrCreate_seq(AP_tree *node) {
+    ST_sequence_ml *seq = DOWNCAST(ST_sequence_ml*, node->get_seq());
+    if (!seq) {
+        seq = new ST_sequence_ml(tree_root->get_aliview(), this); // @@@ why not use dup() ?
+        
+        node->set_seq(seq);
+        if (node->is_leaf) {
+            st_assert(node->gb_node);
+            seq->bind_to_species(node->gb_node);
+        }
+    }
+    return seq;
 }
 
 /** go through the tree and calculate the ST_base_vector from bottom to top */
 ST_sequence_ml *ST_ML::do_tree(AP_tree * node) {
-    ST_sequence_ml *seq = static_cast<ST_sequence_ml*>(node->sequence);
-    if (!seq) {
-        seq = new ST_sequence_ml(tree_root, this);
-        node->sequence = (AP_sequence *) seq;
+    ST_sequence_ml *seq = getOrCreate_seq(node);
+    if (!seq->last_updated) {
+        if (node->is_leaf) {
+            seq->set_sequence();
+        }
+        else {
+            ST_sequence_ml *ls = do_tree(node->get_leftson());
+            ST_sequence_ml *rs = do_tree(node->get_rightson());
+            seq->go(ls, node->leftlen, rs, node->rightlen);
+        }
+
+        seq->last_updated = 1;
     }
 
-    if (seq->last_updated)
-        return seq; // already valid !!!
-
-    if (node->is_leaf) {
-        seq->set_sequence();
-    } else {
-        ST_sequence_ml *ls = do_tree(node->leftson);
-        ST_sequence_ml *rs = do_tree(node->rightson);
-        seq->go(ls, node->leftlen, rs, node->rightlen);
-    }
-    seq->last_updated = 1;
     return seq;
 }
 
 void ST_ML::clear_all() {
     GB_transaction dummy(gb_main);
-    undo_tree(tree_root->tree);
+    undo_tree(tree_root->get_root_node());
     latest_modification = GB_read_clock(gb_main);
 }
 
 void ST_ML::undo_tree(AP_tree * node) {
-    ST_sequence_ml *seq = static_cast<ST_sequence_ml*>(node->sequence);
-    if (!seq) {
-        seq = new ST_sequence_ml(tree_root, this);
-        node->sequence = (AP_sequence *) seq;
-    }
+    ST_sequence_ml *seq = getOrCreate_seq(node);
     seq->ungo();
     if (!node->is_leaf) {
-        undo_tree(node->leftson);
-        undo_tree(node->rightson);
+        undo_tree(node->get_leftson());
+        undo_tree(node->get_rightson());
     }
 }
 
@@ -676,29 +691,27 @@ ST_sequence_ml *ST_ML::get_ml_vectors(char *species_name, AP_tree * node,
 
     st_assert((end_ali_pos - start_ali_pos + 1) <= ST_MAX_SEQ_PART);
 
-    ST_sequence_ml *seq = (ST_sequence_ml *) node->sequence;
+    ST_sequence_ml *seq = getOrCreate_seq(node);
 
     if (start_ali_pos != base || end_ali_pos > to) {
-        undo_tree(tree_root->tree); // undo everything
+        undo_tree(tree_root->get_root_node()); // undo everything
         base = start_ali_pos;
         to = end_ali_pos;
     }
 
     AP_tree *pntr;
-    for (pntr = node->father; pntr; pntr = pntr->father) {
-        ST_sequence_ml *sequ = (ST_sequence_ml *) pntr->sequence;
-        if (sequ)
-            sequ->ungo();
+    for (pntr = node->get_father(); pntr; pntr = pntr->get_father()) {
+        ST_sequence_ml *sequ = getOrCreate_seq(pntr);
+        if (sequ) sequ->ungo();
     }
 
     node->set_root();
 
     // get the sequence of my brother
-    AP_tree *brother = node->brother();
+    AP_tree        *brother        = node->get_brother();
     ST_sequence_ml *seq_of_brother = do_tree(brother);
 
-    seq->calc_out(seq_of_brother, node->father->leftlen
-                  + node->father->rightlen);
+    seq->calc_out(seq_of_brother, node->father->leftlen + node->father->rightlen);
     return seq;
 }
 
@@ -742,7 +755,7 @@ int ST_ML::update_ml_likelihood(char *result[4], int *latest_update,
         get_ml_vectors(0, node, seq_start, seq_end);
     }
 
-    ST_sequence_ml *seq = (ST_sequence_ml *) node->sequence;
+    ST_sequence_ml *seq = getOrCreate_seq(node);
 
     for (int pos = 0; pos < alignment_len; pos++) {
         ST_base_vector & vec = seq->tmp_out[pos];
@@ -768,25 +781,23 @@ int ST_ML::update_ml_likelihood(char *result[4], int *latest_update,
 
 ST_ML_Color *ST_ML::get_color_string(char *species_name, AP_tree * node,
                                      int start_ali_pos, int end_ali_pos)
-//  (Re-)Calculates the color string of a given node for sequence positions start_ali_pos..end_ali_pos
 {
-
-    // if node isn't given search it using species name:
+    //  (Re-)Calculates the color string of a given node for sequence positions start_ali_pos..end_ali_pos
     if (!node) {
-        if (!hash_2_ap_tree)
-            return 0;
+        // if node isn't given, search it using species name:
+        if (!hash_2_ap_tree) return 0;
         node = (AP_tree *) GBS_read_hash(hash_2_ap_tree, species_name);
-        if (!node)
-            return 0;
+        if (!node) return 0;
     }
+
     // align start_ali_pos/end_ali_pos to previous/next pos divisible by ST_BUCKET_SIZE:
     start_ali_pos &= ~(ST_BUCKET_SIZE - 1);
-    end_ali_pos = (end_ali_pos & ~(ST_BUCKET_SIZE - 1)) + ST_BUCKET_SIZE - 1;
-    if (end_ali_pos > alignment_len)
-        end_ali_pos = alignment_len;
+    end_ali_pos    = (end_ali_pos & ~(ST_BUCKET_SIZE - 1)) + ST_BUCKET_SIZE - 1;
+    
+    if (end_ali_pos > alignment_len) end_ali_pos = alignment_len;
 
     double          val;
-    ST_sequence_ml *seq = (ST_sequence_ml *) node->sequence;
+    ST_sequence_ml *seq = getOrCreate_seq(node);
     int             pos;
 
     if (!seq->color_out) {      // allocate mem for color_out if we not already have it
@@ -819,9 +830,10 @@ ST_ML_Color *ST_ML::get_color_string(char *species_name, AP_tree * node,
     const char *source_sequence = 0;
     int source_sequence_len = 0;
 
-    if (seq->gb_data) {
-        source_sequence_len = GB_read_string_count(seq->gb_data);
-        source_sequence = GB_read_char_pntr(seq->gb_data);
+    GBDATA *gb_data = seq->get_bound_species_data();
+    if (gb_data) {
+        source_sequence_len = GB_read_string_count(gb_data);
+        source_sequence     = GB_read_char_pntr(gb_data);
     }
     // create color string in 'outs':
     ST_ML_Color *outs   = seq->color_out + start_ali_pos;
@@ -859,3 +871,4 @@ ST_ML_Color *ST_ML::get_color_string(char *species_name, AP_tree * node,
     }
     return seq->color_out;
 }
+

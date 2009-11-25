@@ -13,14 +13,13 @@
 #include "ed4_ProteinViewer.hxx"
 #include "ed4_class.hxx"
 
-#include <awt_pro_a_nucs.hxx>
-#include <awt_codon_table.hxx>
-#include <awt_translate.hxx>
+#include <AP_pro_a_nucs.hxx>
+#include <AP_codon_table.hxx>
+#include <Translate.hxx>
 #include <awt_seq_colors.hxx>
 #include <aw_question.hxx>
 #include <aw_preset.hxx>
 #include <aw_awars.hxx>
-#include <arbdbt.h>
 
 #include <iostream>
 
@@ -632,7 +631,7 @@ static void TranslateGeneToAminoAcidSequence(AW_root */*root*/, ED4_AA_sequence_
                     char base = str_SeqData[j++];
                     const char *AAname = 0;
                     if(base>='A' && base<='Z') {
-                        AAname = AWT_get_protein_name(base);
+                        AAname = AP_get_protein_name(base);
                     }
                     else if (base=='*') {
                         AAname = "End";

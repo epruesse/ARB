@@ -3,8 +3,11 @@
 #include <aw_window.hxx>
 #include <awt.hxx>
 
+#include <AP_pro_a_nucs.hxx>
+
 #include <cstring>
 #include <cstdlib>
+
 
 #warning module completely unused
 

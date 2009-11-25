@@ -1,14 +1,23 @@
 
 ARCHS_ALL = \
-	TREE_READ/TREE_READ.dummy  \
-	TREE_WRITE/TREE_WRITE.dummy  \
-	HELIX/HELIX.dummy  \
+	ALIVIEW/ALIVIEW.dummy  \
+	AP_TREE/AP_TREE.dummy  \
+	ARB_TREE/ARB_TREE.dummy  \
 	AW_HELIX/AW_HELIX.dummy  \
 	AW_NAME/AW_NAME.dummy  \
 	DB_SCANNER/DB_SCANNER.dummy  \
-	FILE_BUFFER/FILE_BUFFER.dummy  \
-	REGEXPR/REGEXPR.dummy  \
 	FAST_ALIGNER/FAST_ALIGNER.dummy  \
+	FILE_BUFFER/FILE_BUFFER.dummy  \
+	FILTER/FILTER.dummy  \
+	GUI_ALIVIEW/GUI_ALIVIEW.dummy  \
+	HELIX/HELIX.dummy  \
+	MATRIX/MATRIX.dummy  \
+	NEIGHBOURJOIN/NEIGHBOURJOIN.dummy  \
+	PRONUC/PRONUC.dummy  \
+	REGEXPR/REGEXPR.dummy  \
+	SEQUENCE/SEQUENCE.dummy  \
+	TREE_READ/TREE_READ.dummy  \
+	TREE_WRITE/TREE_WRITE.dummy  \
 
 # --------------------------------------------------------------------------------
 # If a package is available as debian package it should go here
@@ -43,6 +52,8 @@ depends: $(ARCHS:.dummy=.depend)
 
 clean: $(ARCHS:.dummy=.clean)
 
+proto: TREEDISP/TREEDISP.proto 
+
 %.depend:
 	@cp -p $(@D)/Makefile $(@D)/Makefile.old # save old Makefile
 	@$(MAKE) -C $(@D) -r  depends
@@ -63,6 +74,10 @@ clean: $(ARCHS:.dummy=.clean)
 %.clean:
 	@$(MAKE) -C $(@D) \
 		clean
+
+%.proto:
+	@$(MAKE) -C $(@D) \
+		proto
 
 # the end of the above command avoids that the output of parallel make calls gets mixed up 
 

@@ -11,15 +11,18 @@
 #ifndef ST_WINDOW_HXX
 #define ST_WINDOW_HXX
 
+#ifndef ARBDBT_H
+#include <arbdbt.h>
+#endif
+#ifndef AW_WINDOW_HXX
+#include <aw_window.hxx>
+#endif
 
 #define ST_ML_AWAR "tmp/st_ml/"
 #define ST_ML_AWAR_CSP                  ST_ML_AWAR "name"
 #define ST_ML_AWAR_ALIGNMENT            ST_ML_AWAR "alignment"
 #define ST_ML_AWAR_CQ_BUCKET_SIZE       ST_ML_AWAR "bucket_size"
 
-#define ST_ML_AWAR_CQ_FILTER_NAME       ST_ML_AWAR "filter/name"
-#define ST_ML_AWAR_CQ_FILTER_ALIGNMENT  ST_ML_AWAR "filter/alignment"
-#define ST_ML_AWAR_CQ_FILTER_FILTER     ST_ML_AWAR "filter/filter"
 #define ST_ML_AWAR_CQ_MARKED_ONLY       ST_ML_AWAR "marked_only"
 #define ST_ML_AWAR_CQ_DEST_FIELD        ST_ML_AWAR "dest_field"
 #define ST_ML_AWAR_CQ_REPORT            ST_ML_AWAR "report"
@@ -52,8 +55,7 @@ AW_window *st_create_quality_check_window(AW_root * aw_root, GBDATA * gb_main);
 
 GB_ERROR st_ml_check_sequence_quality(GBDATA * gb_main, const char *tree_name,
                                       const char *alignment_name, AWT_csp * awt_csp, int bucket_size,
-                                      int marked_only, st_report_enum report, const char *filter_string,
-                                      const char *dest_field);
+                                      int marked_only, st_report_enum report, const char *dest_field);
 
 
 #else

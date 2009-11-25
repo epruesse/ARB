@@ -16,6 +16,17 @@
 
 
 /* NT_cb.cxx */
+
+#ifndef ARBDBT_H
+#include <arbdbt.h>
+#endif
+#ifndef AW_ROOT_HXX
+#include <aw_root.hxx>
+#endif
+
+class AW_window;
+class AWT_canvas;
+
 void NT_delete_mark_all_cb(void *, AWT_canvas *ntw);
 AW_window *NT_open_select_tree_window(AW_root *awr, char *awar_tree);
 void NT_select_last_tree(AW_window *aww, char *awar_tree);
@@ -58,6 +69,7 @@ void NT_pseudo_species_to_organism(AW_window *, AW_CL ntwcl);
 void NT_update_marked_counter(AW_window *aww, long count);
 void NT_popup_species_window(AW_window *aww, AW_CL dummy_1x, AW_CL dummy_2x);
 void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main);
+GBT_TREE *nt_get_current_tree_root(void);
 AW_window *create_nt_main_window(AW_root *awr, AW_CL clone);
 
 #else

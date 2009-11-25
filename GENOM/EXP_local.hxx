@@ -15,6 +15,12 @@
 #ifndef EXP_LOCAL_HXX
 #define EXP_LOCAL_HXX
 
+#ifndef EXP_HXX
+#include <EXP.hxx>
+#endif
+#ifndef AW_ROOT_HXX
+#include <aw_root.hxx>
+#endif
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif

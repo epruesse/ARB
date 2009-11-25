@@ -1,21 +1,4 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <memory.h>
-
-#include <arbdb.h>
-#include <arbdbt.h>
-
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_preset.hxx>
-
-#include <awt_tree.hxx>
-#include "dist.hxx"
-
-#include <di_matr.hxx>
-#include <di_view_matrix.hxx>
+#include "di_matr.hxx"
 
 /*  returns 1 only if groupname != null and there are species for that group */
 int DI_MATRIX::search_group(GBT_TREE *node,GB_HASH *hash, long *groupcnt,char *groupname, DI_ENTRY **groups){

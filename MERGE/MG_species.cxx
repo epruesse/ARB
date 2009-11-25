@@ -685,8 +685,8 @@ void MG_transfer_fields_cb(AW_window *aww){
                                 if (!s1 || !s2) error = GB_await_error();
                                 else {
                                     if (!GBS_find_string(s2,s1,0)) {
-                                        error             = GB_write_string(gb_field2, GBS_global_string("%s %s", s2, s1));
-                                        if (!error) error = GB_write_flag(gb_species2,1);
+                                        error = GB_write_string(gb_field2, GBS_global_string("%s %s", s2, s1));
+                                        if (!error) GB_write_flag(gb_species2,1);
                                     }
                                 }
 
@@ -694,8 +694,8 @@ void MG_transfer_fields_cb(AW_window *aww){
                                 free(s2);
                             }
                             else { // not GB_STRING
-                                error             = GB_copy(gb_field2,gb_field1);
-                                if (!error) error = GB_write_flag(gb_species2, 1);
+                                error = GB_copy(gb_field2,gb_field1);
+                                if (!error) GB_write_flag(gb_species2, 1);
                                 if (transfer_of_alignment && !error){
                                     error = MG_transfer_sequence(&rm,gb_species1,gb_species2);
                                 }
@@ -826,7 +826,7 @@ void MG_move_field_cb(AW_window *aww){
                         else error            = GB_copy(gb_field2,gb_field1);
                     }
                 }
-                if (!error) error = GB_write_flag(gb_species2,1);
+                if (!error) GB_write_flag(gb_species2,1);
             }
         }
         if (!error) error = MG_transfer_fields_info(field);
@@ -1159,7 +1159,7 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
             if (!D_species) error = GB_await_error();
             else {
                 error             = GB_copy_with_protection(D_species, M_species, GB_TRUE);
-                if (!error) error = GB_write_flag(D_species,1); // mark species
+                if (!error) GB_write_flag(D_species,1); // mark species
                 if (!error) error = GB_write_usr_private(D_species,255); // put in hitlist
                 if (!error) error = GBT_write_string(D_species, "name", m_name);
             }

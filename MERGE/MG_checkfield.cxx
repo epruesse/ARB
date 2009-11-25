@@ -246,8 +246,8 @@ void mg_check_field_cb(AW_window *aww){
                                     long corrected = 0;
                                     GBS_diff_strings(s1,s2,exclude,ToUpper,correct,&positions1,&positions2,&corrected);
                                     if (corrected) {
-                                        error             = GB_write_as_string(gb_field2,s2);
-                                        if (!error) error = GB_write_flag(gb_species2,1);
+                                        error = GB_write_as_string(gb_field2,s2);
+                                        if (!error) GB_write_flag(gb_species2,1);
                                     }
                                 }
                                 else {

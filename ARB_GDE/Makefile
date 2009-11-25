@@ -1,9 +1,15 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
 .SUFFIXES: .o .cxx .depend
 
-CPP_OBJECTS =   GDE_ParseMenu.o GDE.o GDE_event.o \
-	GDE_arbdb_io.o  GDE_HGLfile.o\
-	GDE_Genbank.o GDE_FileIO.o
+CPP_OBJECTS =   \
+	GDE.o \
+	GDE_FileIO.o \
+	GDE_Genbank.o \
+	GDE_HGLfile.o \
+	GDE_ParseMenu.o \
+	GDE_arbdb_io.o \
+	GDE_event.o \
+	GDE_global.o \
 
 CPP_FILES=$(CPP_OBJECTS:.o=.cxx)
 
@@ -12,10 +18,11 @@ $(MAIN): $(CPP_OBJECTS)
 .cxx.o:
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES)
 
-proto: GDE_proto.h
-
 GDE_proto.h: $(CPP_FILES) Makefile
-	../MAKEBIN/aisc_mkpt -G -A -E -w GDE_proto.h $(CPP_FILES) > GDE_proto.h.tmp
+	$(MAKE) proto
+
+proto:
+	../MAKEBIN/aisc_mkpt -P -G -A -E -w GDE_proto.h $(CPP_FILES) > GDE_proto.h.tmp
 	../SOURCE_TOOLS/mv_if_diff GDE_proto.h.tmp GDE_proto.h
 
 clean:
@@ -59,7 +66,7 @@ GDE.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-GDE.o: $(ARBHOME)/INCLUDE/awt.hxx
+GDE.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 GDE.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 GDE.o: $(ARBHOME)/INCLUDE/smartptr.h
 
@@ -71,6 +78,7 @@ GDE_arbdb_io.o: GDE_proto.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/arb_error.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -79,16 +87,8 @@ GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/arbtools.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/attributes.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
-GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
-GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/awt.hxx
-GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
-GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 GDE_event.o: gde.hxx
@@ -100,6 +100,7 @@ GDE_event.o: GDE_proto.h
 GDE_event.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 GDE_event.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GDE_event.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+GDE_event.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GDE_event.o: $(ARBHOME)/INCLUDE/arb_error.h
 GDE_event.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -107,16 +108,12 @@ GDE_event.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 GDE_event.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GDE_event.o: $(ARBHOME)/INCLUDE/arbtools.h
 GDE_event.o: $(ARBHOME)/INCLUDE/attributes.h
-GDE_event.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-GDE_event.o: $(ARBHOME)/INCLUDE/awt.hxx
-GDE_event.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
-GDE_event.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
-GDE_event.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
+GDE_event.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 GDE_FileIO.o: gde.hxx
@@ -134,12 +131,7 @@ GDE_FileIO.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/arbtools.h
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/attributes.h
-GDE_FileIO.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-GDE_FileIO.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-GDE_FileIO.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-GDE_FileIO.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-GDE_FileIO.o: $(ARBHOME)/INCLUDE/awt.hxx
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 GDE_Genbank.o: gde.hxx
@@ -149,19 +141,34 @@ GDE_Genbank.o: GDE_menu.h
 GDE_Genbank.o: GDE_proto.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/ad_prot.h
+GDE_Genbank.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/arb_error.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/arbdb.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+GDE_Genbank.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/arbtools.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/attributes.h
-GDE_Genbank.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-GDE_Genbank.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-GDE_Genbank.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-GDE_Genbank.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-GDE_Genbank.o: $(ARBHOME)/INCLUDE/awt.hxx
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/smartptr.h
+
+GDE_global.o: gde.hxx
+GDE_global.o: GDE_def.h
+GDE_global.o: GDE_extglob.h
+GDE_global.o: GDE_menu.h
+GDE_global.o: GDE_proto.h
+GDE_global.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+GDE_global.o: $(ARBHOME)/INCLUDE/ad_prot.h
+GDE_global.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+GDE_global.o: $(ARBHOME)/INCLUDE/arb_assert.h
+GDE_global.o: $(ARBHOME)/INCLUDE/arb_error.h
+GDE_global.o: $(ARBHOME)/INCLUDE/arbdb.h
+GDE_global.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+GDE_global.o: $(ARBHOME)/INCLUDE/arbdbt.h
+GDE_global.o: $(ARBHOME)/INCLUDE/arbtools.h
+GDE_global.o: $(ARBHOME)/INCLUDE/attributes.h
+GDE_global.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+GDE_global.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 GDE_HGLfile.o: gde.hxx
 GDE_HGLfile.o: GDE_def.h
@@ -170,38 +177,31 @@ GDE_HGLfile.o: GDE_menu.h
 GDE_HGLfile.o: GDE_proto.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/ad_prot.h
+GDE_HGLfile.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/arb_error.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/arbdb.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+GDE_HGLfile.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/arbtools.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/attributes.h
-GDE_HGLfile.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-GDE_HGLfile.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-GDE_HGLfile.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-GDE_HGLfile.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-GDE_HGLfile.o: $(ARBHOME)/INCLUDE/awt.hxx
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 GDE_ParseMenu.o: gde.hxx
 GDE_ParseMenu.o: GDE_def.h
 GDE_ParseMenu.o: GDE_extglob.h
-GDE_ParseMenu.o: GDE_global.h
 GDE_ParseMenu.o: GDE_menu.h
 GDE_ParseMenu.o: GDE_proto.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/ad_prot.h
+GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/arb_error.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/arbdb.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/arbtools.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/attributes.h
-GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/awt.hxx
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/smartptr.h

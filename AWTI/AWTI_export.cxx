@@ -1,24 +1,13 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-// #include <malloc.h>
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_global.hxx>
-#include <awt.hxx>
-#include <awt_tree.hxx>
-#include <inline.h>
-
 #include "awti_export.hxx"
 #include "awti_exp_local.hxx"
-#include "awt_sel_boxes.hxx"
-#include "aw_awars.hxx"
 
-#include "xml.hxx"
+#include <aw_awars.hxx>
+#include <aw_global.hxx>
+#include <awt.hxx>
+#include <awt_filter.hxx>
+#include <AP_filter.hxx>
+#include <xml.hxx>
+#include <inline.h>
 
 #define awte_assert(cond) arb_assert(cond)
 
@@ -172,11 +161,11 @@ class export_sequence_data {
     bool                 cut_stop_codon;
     int                  compress; // 0 = no;1 = vertical gaps; 2 = all gaps;
 
-    size_t  max_ali_len;        // length of alignment
-    int    *export_column;      // list of exported seq data positions
-    int     columns;            // how many columns get exported
+    size_t  max_ali_len;                            // length of alignment
+    size_t *export_column;                          // list of exported seq data positions
+    size_t  columns;                                // how many columns get exported
 
-    GBDATA *single_species;     // if != NULL -> first/next only return that species (used to export to multiple files) 
+    GBDATA *single_species;     // if != NULL -> first/next only return that species (used to export to multiple files)
 
 public:
 
@@ -213,10 +202,10 @@ public:
             find_next  = GBT_next_species;
         }
 
-        if (size_t(filter->filter_len) < max_ali_len) {
-            aw_message(GBS_global_string("Warning: Your filter is shorter than the alignment (%li<%zu)",
-                                         filter->filter_len, max_ali_len));
-            max_ali_len = filter->filter_len;
+        if (filter->get_length() < max_ali_len) {
+            aw_message(GBS_global_string("Warning: Your filter is shorter than the alignment (%zu<%zu)",
+                                         filter->get_length(), max_ali_len));
+            max_ali_len = filter->get_length();
         }
     }
 
@@ -275,11 +264,12 @@ GB_ERROR export_sequence_data::detectVerticalGaps() {
 
     awte_assert(!in_single_mode());
 
-    filter->calc_filter_2_seq();
     if (compress == 1) {        // compress vertical gaps!
-        int  gap_columns        = filter->real_len;
-        int *gap_column         = new int[gap_columns+1];
-        memcpy(gap_column, filter->filterpos_2_seqpos, gap_columns*sizeof(*gap_column));
+        size_t  gap_columns = filter->get_filtered_length();
+        size_t *gap_column  = new size_t[gap_columns+1];
+
+        const size_t *filterpos_2_seqpos = filter->get_filterpos_2_seqpos();
+        memcpy(gap_column, filterpos_2_seqpos, gap_columns*sizeof(*gap_column));
         gap_column[gap_columns] = max_ali_len;
 
         size_t spec_count  = count_species();
@@ -301,8 +291,8 @@ GB_ERROR export_sequence_data::detectVerticalGaps() {
             const unsigned char *sdata = get_seq_data(gb_species, slen, err);
 
             if (!err) {
-                int j = 0;
-                int i;
+                size_t j = 0;
+                size_t i;
                 for (i = 0; i<gap_columns; ++i) {
                     if (isGap(sdata[gap_column[i]])) {
                         gap_column[j++] = gap_column[i]; // keep gap column
@@ -310,9 +300,10 @@ GB_ERROR export_sequence_data::detectVerticalGaps() {
                     // otherwise it's overwritten
                 }
 
-                int skipped_columns  = i-j;
-                gap_columns      -= skipped_columns;
-                awte_assert(gap_columns >= 0);
+                awte_assert(i >= j);
+                size_t skipped_columns  = i-j;
+                awte_assert(gap_columns >= skipped_columns);
+                gap_columns            -= skipped_columns;
             }
             ++count;
             if (count >= next_stat) {
@@ -324,15 +315,15 @@ GB_ERROR export_sequence_data::detectVerticalGaps() {
         aw_status(1.0);
 
         if (!err) {
-            columns       = filter->real_len - gap_columns;
-            export_column = new int[columns];
+            columns       = filter->get_filtered_length() - gap_columns;
+            export_column = new size_t[columns];
 
-            int gpos = 0;           // index into array of vertical gaps
-            int epos = 0;           // index into array of exported columns
-            int flen = filter->real_len;
-            int a;
+            size_t gpos = 0;           // index into array of vertical gaps
+            size_t epos = 0;           // index into array of exported columns
+            size_t flen = filter->get_filtered_length();
+            size_t a;
             for (a = 0; a<flen && gpos<gap_columns; ++a) {
-                int fpos = filter->filterpos_2_seqpos[a];
+                size_t fpos = filterpos_2_seqpos[a];
                 if (fpos == gap_column[gpos]) { // only gaps here -> skip column
                     gpos++;
                 }
@@ -343,20 +334,21 @@ GB_ERROR export_sequence_data::detectVerticalGaps() {
                 }
             }
             for (; a<flen; ++a) {
-                export_column[epos++] = filter->filterpos_2_seqpos[a];
+                export_column[epos++] = filterpos_2_seqpos[a];
             }
 
             awte_assert(epos == columns);
         }
 
         delete [] gap_column;
-        delete [] filter->filterpos_2_seqpos;
-        filter->filterpos_2_seqpos = 0;
     }
     else { // compress all or none (simply use filter)
-        export_column              = filter->filterpos_2_seqpos;
-        filter->filterpos_2_seqpos = 0;
-        columns                    = filter->real_len;
+        const size_t *filterpos_2_seqpos = filter->get_filterpos_2_seqpos();
+
+        columns       = filter->get_filtered_length();
+        export_column = new size_t[columns];
+
+        memcpy(export_column, filterpos_2_seqpos, columns*sizeof(*filterpos_2_seqpos));
     }
 
     seq = new char[columns+1];
@@ -376,8 +368,8 @@ const char *export_sequence_data::get_export_sequence(GBDATA *gb_species, size_t
             error = strdup(curr_error);
         }
         else {
-            int          i;
-            const uchar *simplify = filter->simplify;
+            size_t       i;
+            const uchar *simplify = filter->get_simplify_table();
 
             if (cut_stop_codon) {
                 const unsigned char *stop_codon = (const unsigned char *)memchr(data, '*', len);
@@ -387,7 +379,7 @@ const char *export_sequence_data::get_export_sequence(GBDATA *gb_species, size_t
             }
 
             if (compress == 2) { // compress all gaps
-                int j = 0;
+                size_t j = 0;
                 for (i = 0; i<columns; ++i) {
                     size_t seq_pos = export_column[i];
                     if (seq_pos<len) {

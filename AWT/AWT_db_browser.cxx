@@ -12,8 +12,10 @@
 //  ==================================================================== // 
 
 #include "awt.hxx"
-#include "awt_tree.hxx"
+
+#include <arbdbt.h>
 #include <inline.h>
+#include <AP_Tree.hxx>
 
 #include <string>
 #include <vector>

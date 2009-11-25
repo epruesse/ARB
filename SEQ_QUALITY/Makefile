@@ -37,6 +37,7 @@ SQ_functions.o: SQ_physical_layout.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/ad_prot.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+SQ_functions.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arb_error.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -44,7 +45,6 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arbtools.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/attributes.h
-SQ_functions.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -53,8 +53,6 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/awt.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/awt_iupac.hxx
-SQ_functions.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
-SQ_functions.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/smartptr.h
 
@@ -64,7 +62,6 @@ SQ_GroupData.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SQ_GroupData.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 SQ_GroupData.o: $(ARBHOME)/INCLUDE/attributes.h
 
-SQ_main.o: ../AWT/awtfilter.hxx
 SQ_main.o: seq_quality.h
 SQ_main.o: SQ_functions.h
 SQ_main.o: SQ_GroupData.h
@@ -79,14 +76,12 @@ SQ_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 SQ_main.o: $(ARBHOME)/INCLUDE/attributes.h
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
-SQ_main.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/awt.hxx
-SQ_main.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
+SQ_main.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
-SQ_main.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/smartptr.h

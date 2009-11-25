@@ -12,27 +12,22 @@
 //                                                                       //
 //  ==================================================================== //
 
-#include <awt.hxx>
-#include <awt_canvas.hxx>
-#include <awt_item_sel_list.hxx>
-#include <awt_sel_boxes.hxx>
-#include <arbdbt.h>
-#include <aw_awars.hxx>
-#include <db_scanner.hxx>
-
-#include "EXP.hxx"
-#include "EXP_interface.hxx"
 #include "EXP_local.hxx"
+#include "EXP_interface.hxx"
 
-#include "GEN.hxx"
 #include "GEN_local.hxx"
 #include "GEN_interface.hxx"
 
+#include <db_scanner.hxx>
+
+#include <awt_sel_boxes.hxx>
+#include <awt_item_sel_list.hxx>
+#include <awt.hxx>
+
+#include <aw_awars.hxx>
+
 #include "../NTREE/ad_spec.hxx"
 #include <../NTREE/nt_internal.h>
-
-#include <cstdlib>
-#include <cstring>
 
 using namespace std;
 

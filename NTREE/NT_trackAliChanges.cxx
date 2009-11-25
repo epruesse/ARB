@@ -9,16 +9,11 @@
 //                                                                 //
 // =============================================================== //
 
-#include <cstdlib>
-#include <cstring>
-#include <ctime>
-
-
-#include <awt.hxx>
-#include <awt_sel_boxes.hxx>
-#include <arbdbt.h>
-
 #include "NT_trackAliChanges.h"
+
+#include <awt_sel_boxes.hxx>
+#include <aw_window.hxx>
+#include <ctime>
 
 extern GBDATA *GLOBAL_gb_main;
 

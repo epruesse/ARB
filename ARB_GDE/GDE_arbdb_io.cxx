@@ -1,22 +1,13 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <memory.h>
-
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <awt.hxx>
-#include <aw_awars.hxx>
-#include <awt_tree.hxx>
-
-#include "gde.hxx"
 #include "GDE_def.h"
-#include "GDE_menu.h"
-#include "GDE_extglob.h"
-#include "AW_rename.hxx"
+#include "GDE_proto.h"
+
+#include <AW_rename.hxx>
+#include <AP_filter.hxx>
+#include <aw_awars.hxx>
+
+/*AISC_MKPT_PROMOTE:#ifndef GDE_EXTGLOB_H*/
+/*AISC_MKPT_PROMOTE:#include "GDE_extglob.h"*/
+/*AISC_MKPT_PROMOTE:#endif*/
 
 typedef unsigned int UINT;
 
@@ -40,24 +31,23 @@ extern int Default_PROColor_LKUP[],Default_NAColor_LKUP[];
 
 static int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned char **the_names,
                            unsigned char **the_sequences, unsigned long numberspecies,
-                           unsigned long maxalignlen, AP_filter *filter, GapCompression compress,
+                           unsigned long maxalignlen, const AP_filter *filter, GapCompression compress,
                            bool cutoff_stop_codon)
 {
     GBDATA      *gb_name;
     GBDATA      *gb_species;
     GBDATA      *gbd;
-    int          newfiltercreated = 0;
     NA_Sequence *this_elem;
+    AP_filter   *allocatedFilter = 0;
 
     gde_assert((the_species==0) != (the_names==0));
 
     if (filter==0) {
-        filter = new AP_filter;
-        filter->init(maxalignlen);
-        newfiltercreated=1;
+        allocatedFilter = new AP_filter(maxalignlen);
+        filter          = allocatedFilter;
     }
     else {
-        size_t fl = filter->filter_len;
+        size_t fl = filter->get_length();
         if (fl < maxalignlen) {
             aw_message("Warning: Your filter is shorter than the alignment len");
             maxalignlen = fl;
@@ -90,7 +80,7 @@ static int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned c
     uchar **sequfilt = (uchar**)calloc((unsigned int)numberspecies+1,sizeof(uchar*));
 
     if (compress==COMPRESS_ALL) { // compress all gaps and filter positions
-        long          len = filter->real_len;
+        long          len = filter->get_filtered_length();
         unsigned long i;
 
         for (i=0;i<numberspecies;i++) {
@@ -99,7 +89,7 @@ static int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned c
             for (unsigned long col=0;(col<maxalignlen);col++) {
                 char c = the_sequences[i][col];
                 if (!c) break;
-                if ((filter->filter_mask[col]) && (c!='-') && (c!='.')) {
+                if ((filter->use_position(col)) && (c!='-') && (c!='.')) {
                     sequfilt[i][newcount++] = c;
                 }
             }
@@ -133,8 +123,11 @@ static int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned c
                 }
             }
 
+            bool  modified     = false;
+            char *filterString = filter->to_string();
+
             for (i=0; i<maxalignlen; i++) {
-                if (filter->filter_mask[i]) {
+                if (filter->use_position(i)) {
                     bool wantColumn = false;
 
                     for (size_t n=0; n<numberspecies; n++) {
@@ -146,14 +139,23 @@ static int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned c
                         }
                     }
                     if (!wantColumn) {
-                        filter->filter_mask[i] = 0;
-                        filter->real_len--;
+                        filterString[i] = '0';
+                        modified        = true;
                     }
                 }
             }
+
+            if (modified) {
+                size_t len = filter->get_length();
+
+                delete allocatedFilter;
+                filter = allocatedFilter = new AP_filter(filterString, NULL, len);
+            }
+
+            free(filterString);
         }
 
-        long   len = filter->real_len;
+        long   len = filter->get_filtered_length();
         size_t i;
 
         for (i=0;i<numberspecies;i++) {
@@ -164,10 +166,10 @@ static int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned c
             sequfilt[i][len] = 0;
             memset(sequfilt[i],'.',len); // Generate empty sequences
 
-            size_t col;
-            for (col=0; (col<maxalignlen) && (c=the_sequences[i][col]); col++) {
-                if (filter->filter_mask[col]) {
-                    sequfilt[i][newcount++] = filter->simplify[c];
+            const uchar *simplify = filter->get_simplify_table();
+            for (size_t col=0; (col<maxalignlen) && (c=the_sequences[i][col]); col++) {
+                if (filter->use_position(col)) {
+                    sequfilt[i][newcount++] = simplify[c];
                 }
             }
         }
@@ -302,7 +304,7 @@ static int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned c
         }
         free(sequfilt);
     }
-    if (newfiltercreated) delete filter;
+    delete allocatedFilter;
     return 0;
 }
 

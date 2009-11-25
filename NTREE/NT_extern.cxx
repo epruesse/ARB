@@ -1,60 +1,49 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+// =============================================================== //
+//                                                                 //
+//   File      : NT_extern.cxx                                     //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_awars.hxx>
-
-#include "ad_trees.hxx"
-#include "ad_spec.hxx"
-#include <awt_nds.hxx>
-#include <awt_canvas.hxx>
-#include <aw_preset.hxx>
-#include <aw_global.hxx>
-#include <awt_preset.hxx>
-#include <awt_advice.hxx>
-#include <awt_config_manager.hxx>
-#include <awt_sel_boxes.hxx>
-#include <awt_macro.hxx>
-
-#include <AW_rename.hxx>
-#include <awtc_submission.hxx>
-#include <gde.hxx>
-
-#include <awt_www.hxx>
-#include <awt_tree.hxx>
-#include <awt_dtree.hxx>
-#include <awt_tree_cb.hxx>
-#include "ntree.hxx"
-#include "nt_cb.hxx"
-#include "nt_sort.hxx"
-#include "ap_consensus.hxx"
-#include "ap_csp_2_gnuplot.hxx"
-#include "ap_conservProfile2Gnuplot.hxx"
-#include <awti_export.hxx>
-#include "nt_join.hxx"
-#include "nt_edconf.hxx"
-#include "ap_pos_var_pars.hxx"
-#include <arb_version.h>
 #include "nt_internal.h"
+#include "ntree.hxx"
+#include "ad_spec.hxx"
+#include "ad_trees.hxx"
+#include "ap_consensus.hxx"
+#include "seq_quality.h"
+#include "nt_join.hxx"
+
 #include <st_window.hxx>
-#include <probe_design.hxx>
-#include <primer_design.hxx>
 #include <GEN.hxx>
 #include <EXP.hxx>
+
+#include <TreeCallbacks.hxx>
+#include <AW_rename.hxx>
+#include <probe_design.hxx>
+#include <primer_design.hxx>
+#include <gde.hxx>
+#include <awtc_submission.hxx>
+
+#include <awti_export.hxx>
+
+#include <awt_preset.hxx>
+#include <awt_macro.hxx>
+#include <awt_advice.hxx>
+#include <awt_config_manager.hxx>
 #include <awt_input_mask.hxx>
+#include <awt_sel_boxes.hxx>
+#include <awt_www.hxx>
+#include <awt_nds.hxx>
 
-#include "seq_quality.h"
-#include "NT_trackAliChanges.h"
-#include "NT_dbrepair.hxx"
+#include <aw_preset.hxx>
+#include <aw_global.hxx>
+#include <aw_awars.hxx>
 
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
-#endif
+#include <arb_version.h>
+
 #define nt_assert(bed) arb_assert(bed)
 
 void create_probe_design_variables(AW_root *aw_root,AW_default def,AW_default global);
@@ -812,10 +801,11 @@ void NT_mark_degenerated_branches(AW_window *aww, AW_CL ntwcl) {
     if (val) {
         AWT_canvas     *ntw = (AWT_canvas *)ntwcl;
         GB_transaction  dummy(ntw->gb_main);
-        
+
         NT_mark_all_cb(aww,(AW_CL)ntw, (AW_CL)0);
-        AWT_TREE(ntw)->tree_root->mark_degenerated_branches(ntw->gb_main,atof(val));
-        AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
+        AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
+        tree_root->mark_degenerated_branches(ntw->gb_main,atof(val));
+        tree_root->compute_tree(ntw->gb_main);
         free(val);
         ntw->refresh();
     }
@@ -828,8 +818,9 @@ void NT_mark_deep_branches(AW_window *aww, AW_CL ntwcl) {
         GB_transaction  dummy(ntw->gb_main);
         
         NT_mark_all_cb(aww,(AW_CL)ntw, (AW_CL)0);
-        AWT_TREE(ntw)->tree_root->mark_deep_branches(ntw->gb_main,atoi(val));
-        AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
+        AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
+        tree_root->mark_deep_branches(ntw->gb_main,atoi(val));
+        tree_root->compute_tree(ntw->gb_main);
         free(val);
         ntw->refresh();
     }
@@ -850,8 +841,9 @@ void NT_mark_long_branches(AW_window *aww, AW_CL ntwcl){
             GB_transaction  dummy(ntw->gb_main);
 
             NT_mark_all_cb(aww,(AW_CL)ntw, (AW_CL)0);
-            AWT_TREE(ntw)->tree_root->mark_long_branches(ntw->gb_main, min_rel_diff, min_abs_diff);
-            AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
+            AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
+            tree_root->mark_long_branches(ntw->gb_main, min_rel_diff, min_abs_diff);
+            tree_root->compute_tree(ntw->gb_main);
             ntw->refresh();
         }
         if (error) aw_message(error);
@@ -863,17 +855,20 @@ void NT_mark_duplicates(AW_window *aww, AW_CL ntwcl){
     AWT_canvas *ntw = (AWT_canvas *)ntwcl;
     GB_transaction dummy(ntw->gb_main);
     NT_mark_all_cb(aww,(AW_CL)ntw, (AW_CL)0);
-    AWT_TREE(ntw)->tree_root->mark_duplicates(ntw->gb_main);
-    AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
+    AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
+    tree_root->mark_duplicates(ntw->gb_main);
+    tree_root->compute_tree(ntw->gb_main);
     ntw->refresh();
 }
 
 void NT_justify_branch_lenghs(AW_window *, AW_CL cl_ntw, AW_CL){
-    AWT_canvas *ntw = (AWT_canvas *)cl_ntw;
-    GB_transaction dummy(ntw->gb_main);
-    if (AWT_TREE(ntw)->tree_root){
-        AWT_TREE(ntw)->tree_root->justify_branch_lenghs(ntw->gb_main);
-        AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
+    AWT_canvas     *ntw       = (AWT_canvas *)cl_ntw;
+    GB_transaction  dummy(ntw->gb_main);
+    AP_tree        *tree_root = AWT_TREE(ntw)->get_root_node();
+    
+    if (tree_root){
+        tree_root->justify_branch_lenghs(ntw->gb_main);
+        tree_root->compute_tree(ntw->gb_main);
         GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
         if (error) aw_message(error);
         ntw->refresh();
@@ -904,12 +899,14 @@ static void relink_pseudo_species_to_organisms(GBDATA *&ref_gb_node, char *&ref_
 }
 
 void NT_pseudo_species_to_organism(AW_window *, AW_CL ntwcl){
-    AWT_canvas     *ntw = (AWT_canvas *)ntwcl;
+    AWT_canvas     *ntw       = (AWT_canvas *)ntwcl;
     GB_transaction  dummy(ntw->gb_main);
-    if (AWT_TREE(ntw)->tree_root){
+    AP_tree        *tree_root = AWT_TREE(ntw)->get_root_node();
+
+    if (tree_root){
         GB_HASH *organism_hash = GBT_create_organism_hash(ntw->gb_main);
-        AWT_TREE(ntw)->tree_root->relink_tree(ntw->gb_main, relink_pseudo_species_to_organisms, organism_hash);
-        AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
+        tree_root->relink_tree(ntw->gb_main, relink_pseudo_species_to_organisms, organism_hash);
+        tree_root->compute_tree(ntw->gb_main);
         GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
         if (error) aw_message(error);
         ntw->refresh();
@@ -1055,6 +1052,16 @@ void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main) {
     }
 }
 
+GBT_TREE *nt_get_current_tree_root() {
+    if (GLOBAL_NT.tree) {
+        AP_tree *root = GLOBAL_NT.tree->get_root_node();
+        if (root) {
+            return (GBT_TREE*)root;
+        }
+    }
+    return NULL;
+}
+
 //--------------------------------------------------------------------------------------------------
 
 // ##########################################
@@ -1089,7 +1096,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
     if (!clone) AW_init_color_group_defaults("arb_ntree");
 
-    GLOBAL_NT.tree = NT_generate_tree(awr,GLOBAL_gb_main);
+    GLOBAL_NT.tree = NT_generate_tree(awr, GLOBAL_gb_main);
 
     AWT_canvas *ntw;
     {
@@ -1107,12 +1114,14 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
         if (existing_tree_name) {
             awr->awar(awar_tree)->write_string(existing_tree_name);
-            NT_reload_tree_event(awr,ntw,GB_FALSE); // load first tree !!!!!!!
-        }else{
+            NT_reload_tree_event(awr, ntw); // load first tree
+        }
+        else {
             AWT_advice("Your database contains no tree.", AWT_ADVICE_TOGGLE|AWT_ADVICE_HELP, 0, "no_tree.hlp");
+            GLOBAL_NT.tree->set_tree_type(AP_LIST_NDS); // no tree -> show NDS list 
         }
 
-        awr->awar( awar_tree)->add_callback( (AW_RCB)NT_reload_tree_event, (AW_CL)ntw,(AW_CL)GB_FALSE);
+        awr->awar( awar_tree)->add_callback( (AW_RCB)NT_reload_tree_event, (AW_CL)ntw, 0);
 
         free(existing_tree_name);
         free(tree_name);
@@ -1216,8 +1225,8 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             SEP________________________SEP();
 
             NT_insert_mark_submenus(awm, ntw, 1);
-            AWMIMT("species_colors",  "Set Colors",     "l", "mark_colors.hlp",   AWM_ALL, AW_POPUP,               (AW_CL)NT_create_species_colorize_window, 0);
-            AWMIMT("selection_admin", "Configurations", "o", "configuration.hlp", AWM_ALL, NT_popup_configuration_admin, (AW_CL)&(GLOBAL_NT.tree->tree_root),      (AW_CL)0);
+            AWMIMT("species_colors",  "Set Colors",     "l", "mark_colors.hlp",   AWM_ALL, AW_POPUP,                     (AW_CL)NT_create_species_colorize_window, 0);
+            AWMIMT("selection_admin", "Configurations", "o", "configuration.hlp", AWM_ALL, NT_popup_configuration_admin, 0,                                        0);
 
             SEP________________________SEP();
 
@@ -1232,8 +1241,8 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
             awm->insert_sub_menu("Sort Species",         "r");
             {
-                AWMIMT("sort_by_field", "According to Database Entries", "D", "sp_sort_fld.hlp",  AWM_ALL, AW_POPUP,                           (AW_CL)NT_build_resort_window,       0);
-                AWMIMT("sort_by_tree",  "According to Phylogeny",        "P", "sp_sort_phyl.hlp", AWM_ALL, (AW_CB)NT_resort_data_by_phylogeny, (AW_CL)&(GLOBAL_NT.tree->tree_root), 0);
+                AWMIMT("sort_by_field", "According to Database Entries", "D", "sp_sort_fld.hlp",  AWM_ALL, AW_POPUP,                    (AW_CL)NT_build_resort_window, 0);
+                AWMIMT("sort_by_tree",  "According to Phylogeny",        "P", "sp_sort_phyl.hlp", AWM_ALL, NT_resort_data_by_phylogeny, 0,                             0);
             }
             awm->close_sub_menu();
 
@@ -1278,8 +1287,8 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
             awm->insert_sub_menu("Edit Sequences","E");
             {
-                AWMIMT("new_arb_edit4",  "Using marked species and tree", "m", "arb_edit4.hlp", AWM_ALL, (AW_CB)NT_start_editor_on_tree, (AW_CL)&(GLOBAL_NT.tree->tree_root),         0);
-                AWMIMT("new2_arb_edit4", "... plus relatives",            "r", "arb_edit4.hlp", AWM_ALL, (AW_CB)NT_start_editor_on_tree, (AW_CL)&(GLOBAL_NT.tree->tree_root),         -1);
+                AWMIMT("new_arb_edit4",  "Using marked species and tree", "m", "arb_edit4.hlp", AWM_ALL, NT_start_editor_on_tree, 0, 0);
+                AWMIMT("new2_arb_edit4", "... plus relatives",            "r", "arb_edit4.hlp", AWM_ALL, NT_start_editor_on_tree, -1, 0);
                 AWMIMT("old_arb_edit4",  "Using earlier configuration",   "c", "arb_edit4.hlp", AWM_ALL, AW_POPUP,                       (AW_CL)NT_start_editor_on_old_configuration, 0);
             }
             awm->close_sub_menu();
@@ -1551,7 +1560,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->create_mode("group.bitmap",    "mode_group.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_GROUP);
     awm->create_mode("pzoom.bitmap",    "mode_pzoom.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_ZOOM);
     awm->create_mode("lzoom.bitmap",    "mode_lzoom.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_LZOOM);
-    awm->create_mode("modify.bitmap",   "mode_info.hlp",   AWM_ALL, (AW_CB)NT_modify_cb,  (AW_CL)ntw, (AW_CL)AWT_MODE_MOD);
+    awm->create_mode("modify.bitmap",   "mode_info.hlp",   AWM_ALL, (AW_CB)NT_modify_cb,  (AW_CL)ntw, (AW_CL)AWT_MODE_EDIT);
     awm->create_mode("www_mode.bitmap", "mode_www.hlp",    AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_WWW);
 
     awm->create_mode("line.bitmap",    "mode_width.hlp",    AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_LINE);
@@ -1707,7 +1716,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->at(db_alignx, second_liney);
     
     awm->at_set_to(false, false, ((2-is_genome_db)*EDIT_XSIZE), EDIT_YSIZE);
-    awm->callback((AW_CB)NT_start_editor_on_tree, (AW_CL)&(GLOBAL_NT.tree->tree_root), 0);
+    awm->callback(NT_start_editor_on_tree, 0, 0);
     awm->help_text("arb_edit4.hlp");
     awm->create_button("EDIT_SEQUENCES", "#edit.xpm");
 
@@ -1764,7 +1773,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->at(db_infox, second_uppery);
     awm->button_length(13);
     awm->help_text("marked_species.hlp");
-    awm->callback(NT_popup_configuration_admin, (AW_CL)&(GLOBAL_NT.tree->tree_root), 0);
+    awm->callback(NT_popup_configuration_admin, 0, 0);
     awm->create_button(0, AWAR_MARKED_SPECIES_COUNTER);
     {
         GBDATA *gb_species_data = GB_search(GLOBAL_gb_main,"species_data",GB_CREATE_CONTAINER);

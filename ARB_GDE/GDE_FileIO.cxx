@@ -1,19 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-// #include <malloc.h>
-#include <string.h>
-
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <awt.hxx>
-
-#include "gde.hxx"
-#include "GDE_def.h"
-#include "GDE_menu.h"
-#include "GDE_extglob.h"
+#include "GDE_proto.h"
 
 int MAX(int a,int b)
 {

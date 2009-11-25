@@ -1,22 +1,13 @@
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <cmath>
-
-#include <arbdb.h>
-#include <arbdbt.h>
-// #include <malloc.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <awt.hxx>
-#include <awt_sel_boxes.hxx>
-
-#include "gde.hxx"
-#include "GDE_menu.h"
-#include "GDE_def.h"
 #include "GDE_extglob.h"
 #include "GDE_awars.h"
+
+#include <awt_sel_boxes.hxx>
+#include <awt_filter.hxx>
+#include <aw_window.hxx>
+
+/*AISC_MKPT_PROMOTE:#ifndef GDE_MENU_H*/
+/*AISC_MKPT_PROMOTE:#include "GDE_menu.h"*/
+/*AISC_MKPT_PROMOTE:#endif*/
 
 adfiltercbstruct *agde_filtercd = 0;
 
