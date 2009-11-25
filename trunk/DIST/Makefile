@@ -36,6 +36,7 @@ DI_compress_matrix.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arb_assert.h
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arb_error.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arbdb.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -52,10 +53,12 @@ DI_compress_matrix.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/awt_seq_dna.hxx
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/awt_seq_simple_pro.hxx
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 DI_main.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 DI_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
+DI_main.o: $(ARBHOME)/INCLUDE/arb_error.h
 DI_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 DI_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 DI_main.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -69,6 +72,7 @@ DI_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/servercntrl.h
+DI_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 DI_matr.o: di_matr.hxx
 DI_matr.o: di_protdist.hxx
@@ -78,6 +82,7 @@ DI_matr.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 DI_matr.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_matr.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arb_assert.h
+DI_matr.o: $(ARBHOME)/INCLUDE/arb_error.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arbdb.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -102,6 +107,7 @@ DI_matr.o: $(ARBHOME)/INCLUDE/awt_seq_simple_pro.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/CT_ctree.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 DI_mldist.o: di_matr.hxx
 DI_mldist.o: di_mldist.hxx
@@ -110,6 +116,7 @@ DI_mldist.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 DI_mldist.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_mldist.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 DI_mldist.o: $(ARBHOME)/INCLUDE/arb_assert.h
+DI_mldist.o: $(ARBHOME)/INCLUDE/arb_error.h
 DI_mldist.o: $(ARBHOME)/INCLUDE/arbdb.h
 DI_mldist.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 DI_mldist.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -128,6 +135,7 @@ DI_mldist.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 DI_mldist.o: $(ARBHOME)/INCLUDE/awt_seq_dna.hxx
 DI_mldist.o: $(ARBHOME)/INCLUDE/awt_seq_simple_pro.hxx
 DI_mldist.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
+DI_mldist.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 DI_protdist.o: di_matr.hxx
 DI_protdist.o: di_protdist.hxx
@@ -136,6 +144,7 @@ DI_protdist.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/arb_assert.h
+DI_protdist.o: $(ARBHOME)/INCLUDE/arb_error.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/arbdb.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -154,6 +163,7 @@ DI_protdist.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 DI_protdist.o: $(ARBHOME)/INCLUDE/awt_seq_dna.hxx
 DI_protdist.o: $(ARBHOME)/INCLUDE/awt_seq_simple_pro.hxx
 DI_protdist.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
+DI_protdist.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 DI_save_matr.o: di_matr.hxx
 DI_save_matr.o: dist.hxx
@@ -161,6 +171,7 @@ DI_save_matr.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/arb_assert.h
+DI_save_matr.o: $(ARBHOME)/INCLUDE/arb_error.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/arbdb.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -178,6 +189,7 @@ DI_save_matr.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 DI_save_matr.o: $(ARBHOME)/INCLUDE/awt_seq_dna.hxx
 DI_save_matr.o: $(ARBHOME)/INCLUDE/awt_seq_simple_pro.hxx
 DI_save_matr.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
+DI_save_matr.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 DI_view_matrix.o: di_matr.hxx
 DI_view_matrix.o: di_view_matrix.hxx
@@ -186,6 +198,7 @@ DI_view_matrix.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/arb_assert.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/arb_error.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/arbdb.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -204,6 +217,7 @@ DI_view_matrix.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/awt_seq_dna.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/awt_seq_simple_pro.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 distanalyse.o: di_matr.hxx
 distanalyse.o: dist.hxx
@@ -211,6 +225,7 @@ distanalyse.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 distanalyse.o: $(ARBHOME)/INCLUDE/ad_prot.h
 distanalyse.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 distanalyse.o: $(ARBHOME)/INCLUDE/arb_assert.h
+distanalyse.o: $(ARBHOME)/INCLUDE/arb_error.h
 distanalyse.o: $(ARBHOME)/INCLUDE/arbdb.h
 distanalyse.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 distanalyse.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -227,3 +242,4 @@ distanalyse.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/awt_seq_dna.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/awt_seq_simple_pro.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
+distanalyse.o: $(ARBHOME)/INCLUDE/smartptr.h

@@ -35,6 +35,7 @@ ST_ml.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ST_ml.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ST_ml.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ST_ml.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ST_ml.o: $(ARBHOME)/INCLUDE/arb_error.h
 ST_ml.o: $(ARBHOME)/INCLUDE/arbdb.h
 ST_ml.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ST_ml.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -46,6 +47,7 @@ ST_ml.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/awt_csp.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
+ST_ml.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 ST_quality.o: st_ml.hxx
 ST_quality.o: st_quality.hxx
@@ -54,6 +56,7 @@ ST_quality.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ST_quality.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ST_quality.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ST_quality.o: $(ARBHOME)/INCLUDE/arb_error.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arbdb.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -66,6 +69,7 @@ ST_quality.o: $(ARBHOME)/INCLUDE/awt_csp.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+ST_quality.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 ST_window.o: st_ml.hxx
 ST_window.o: st_quality.hxx
@@ -74,6 +78,7 @@ ST_window.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ST_window.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ST_window.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ST_window.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ST_window.o: $(ARBHOME)/INCLUDE/arb_error.h
 ST_window.o: $(ARBHOME)/INCLUDE/arbdb.h
 ST_window.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ST_window.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -92,3 +97,4 @@ ST_window.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
+ST_window.o: $(ARBHOME)/INCLUDE/smartptr.h

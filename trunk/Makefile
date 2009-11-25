@@ -1117,7 +1117,7 @@ sq:	SEQ_QUALITY/SEQ_QUALITY.dummy
 
 sec:	SECEDIT/SECEDIT.dummy
 
-e4:	wetc help readseq menus $(EDIT4)
+e4:	$(EDIT4) wetc help readseq menus 
 gi:	GENOM_IMPORT/GENOM_IMPORT.dummy
 wetc:	$(WETC)
 

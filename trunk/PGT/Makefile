@@ -54,6 +54,7 @@ arb_interface.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 arb_interface.o: $(ARBHOME)/INCLUDE/ad_prot.h
 arb_interface.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 arb_interface.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_interface.o: $(ARBHOME)/INCLUDE/arb_error.h
 arb_interface.o: $(ARBHOME)/INCLUDE/arbdb.h
 arb_interface.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 arb_interface.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -61,6 +62,7 @@ arb_interface.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_interface.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_interface.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 arb_interface.o: $(ARBHOME)/INCLUDE/EXP.hxx
+arb_interface.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 config_dialog.o: arb_interface.hxx
 config_dialog.o: config_dialog.hxx

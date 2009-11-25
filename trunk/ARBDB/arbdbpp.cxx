@@ -19,6 +19,9 @@ GB_transaction::GB_transaction(GBDATA *gb_main)
     }
 }
 
+ARB_ERROR GB_transaction::close(ARB_ERROR& error) {
+    return close(error.deliver());
+}
 GB_ERROR GB_transaction::close(GB_ERROR error) {
     // abort transaction if error != NULL
 

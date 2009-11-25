@@ -26,7 +26,6 @@
 
 #include <set>
 #include <string>
-#include <smartptr.h>
 #include <cassert>
 
 using namespace std;

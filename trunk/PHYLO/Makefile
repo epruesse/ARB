@@ -37,6 +37,7 @@ PH_data.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PH_data.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PH_data.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PH_data.o: $(ARBHOME)/INCLUDE/arb_assert.h
+PH_data.o: $(ARBHOME)/INCLUDE/arb_error.h
 PH_data.o: $(ARBHOME)/INCLUDE/arbdb.h
 PH_data.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PH_data.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -50,6 +51,7 @@ PH_data.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
+PH_data.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 PH_display.o: PH_display.hxx
 PH_display.o: PH_filter.hxx
@@ -59,6 +61,7 @@ PH_display.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PH_display.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PH_display.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PH_display.o: $(ARBHOME)/INCLUDE/arb_assert.h
+PH_display.o: $(ARBHOME)/INCLUDE/arb_error.h
 PH_display.o: $(ARBHOME)/INCLUDE/arbdb.h
 PH_display.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PH_display.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -72,6 +75,7 @@ PH_display.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
+PH_display.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 PH_filt.o: PH_filter.hxx
 PH_filt.o: phwin.hxx
@@ -80,6 +84,7 @@ PH_filt.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PH_filt.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PH_filt.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PH_filt.o: $(ARBHOME)/INCLUDE/arb_assert.h
+PH_filt.o: $(ARBHOME)/INCLUDE/arb_error.h
 PH_filt.o: $(ARBHOME)/INCLUDE/arbdb.h
 PH_filt.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PH_filt.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -93,6 +98,7 @@ PH_filt.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
+PH_filt.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 PH_main.o: PH_display.hxx
 PH_main.o: PH_filter.hxx
@@ -102,6 +108,7 @@ PH_main.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PH_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PH_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PH_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
+PH_main.o: $(ARBHOME)/INCLUDE/arb_error.h
 PH_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 PH_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PH_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -118,6 +125,7 @@ PH_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
+PH_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 PH_matr.o: PH_filter.hxx
 PH_matr.o: phylo.hxx
@@ -125,6 +133,7 @@ PH_matr.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PH_matr.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PH_matr.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PH_matr.o: $(ARBHOME)/INCLUDE/arb_assert.h
+PH_matr.o: $(ARBHOME)/INCLUDE/arb_error.h
 PH_matr.o: $(ARBHOME)/INCLUDE/arbdb.h
 PH_matr.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PH_matr.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -140,6 +149,7 @@ PH_matr.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/awt.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
+PH_matr.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 PH_root.o: PH_filter.hxx
 PH_root.o: phylo.hxx
@@ -147,6 +157,7 @@ PH_root.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PH_root.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PH_root.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PH_root.o: $(ARBHOME)/INCLUDE/arb_assert.h
+PH_root.o: $(ARBHOME)/INCLUDE/arb_error.h
 PH_root.o: $(ARBHOME)/INCLUDE/arbdb.h
 PH_root.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PH_root.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -156,3 +167,4 @@ PH_root.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 PH_root.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PH_root.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 PH_root.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
+PH_root.o: $(ARBHOME)/INCLUDE/smartptr.h

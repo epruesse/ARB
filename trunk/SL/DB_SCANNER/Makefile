@@ -40,6 +40,7 @@ db_scanner.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 db_scanner.o: $(ARBHOME)/INCLUDE/ad_prot.h
 db_scanner.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arb_assert.h
+db_scanner.o: $(ARBHOME)/INCLUDE/arb_error.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arbdb.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -55,3 +56,4 @@ db_scanner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/awt.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/awtlocal.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/inline.h
+db_scanner.o: $(ARBHOME)/INCLUDE/smartptr.h

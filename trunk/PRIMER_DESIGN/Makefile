@@ -94,6 +94,7 @@ primer_design.o: $(ARBHOME)/INCLUDE/ad_prot.h
 primer_design.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 primer_design.o: $(ARBHOME)/INCLUDE/adGene.h
 primer_design.o: $(ARBHOME)/INCLUDE/arb_assert.h
+primer_design.o: $(ARBHOME)/INCLUDE/arb_error.h
 primer_design.o: $(ARBHOME)/INCLUDE/arbdb.h
 primer_design.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 primer_design.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -108,3 +109,4 @@ primer_design.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/awt.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/GEN.hxx
+primer_design.o: $(ARBHOME)/INCLUDE/smartptr.h

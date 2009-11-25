@@ -78,6 +78,7 @@ MP_main.o: SoTl.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 MP_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
+MP_main.o: $(ARBHOME)/INCLUDE/arb_error.h
 MP_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_main.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -91,6 +92,7 @@ MP_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/client.h
 MP_main.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_main.o: $(ARBHOME)/INCLUDE/servercntrl.h
+MP_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 MP_mo_liste.o: MP_externs.hxx
 MP_mo_liste.o: MP_probe.hxx
@@ -101,6 +103,7 @@ MP_mo_liste.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/arb_assert.h
+MP_mo_liste.o: $(ARBHOME)/INCLUDE/arb_error.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -111,6 +114,7 @@ MP_mo_liste.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/client.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/servercntrl.h
+MP_mo_liste.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 MP_noclass.o: MP_externs.hxx
 MP_noclass.o: MP_probe.hxx
@@ -122,6 +126,7 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/arb_assert.h
+MP_noclass.o: $(ARBHOME)/INCLUDE/arb_error.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -143,6 +148,7 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/awt_tree_cb.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/client.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/servercntrl.h
+MP_noclass.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 MP_permute.o: MP_externs.hxx
 MP_permute.o: MP_probe.hxx
@@ -168,6 +174,7 @@ MP_probe.o: SoTl.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 MP_probe.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arb_assert.h
+MP_probe.o: $(ARBHOME)/INCLUDE/arb_error.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -181,6 +188,7 @@ MP_probe.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/client.h
 MP_probe.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_probe.o: $(ARBHOME)/INCLUDE/servercntrl.h
+MP_probe.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 MP_probe_combi_statistic.o: MP_externs.hxx
 MP_probe_combi_statistic.o: MP_probe.hxx
@@ -223,6 +231,7 @@ MP_sonde.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/arb_assert.h
+MP_sonde.o: $(ARBHOME)/INCLUDE/arb_error.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -236,6 +245,7 @@ MP_sonde.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 MP_sonde.o: $(ARBHOME)/INCLUDE/client.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/servercntrl.h
+MP_sonde.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 MP_sondentopf.o: MP_externs.hxx
 MP_sondentopf.o: MP_probe.hxx
@@ -246,6 +256,7 @@ MP_sondentopf.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arb_assert.h
+MP_sondentopf.o: $(ARBHOME)/INCLUDE/arb_error.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -259,6 +270,7 @@ MP_sondentopf.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/client.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/servercntrl.h
+MP_sondentopf.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 MP_Window.o: MP_externs.hxx
 MP_Window.o: MP_probe.hxx
@@ -269,6 +281,7 @@ MP_Window.o: SoTl.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 MP_Window.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arb_assert.h
+MP_Window.o: $(ARBHOME)/INCLUDE/arb_error.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -285,3 +298,4 @@ MP_Window.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/client.h
 MP_Window.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_Window.o: $(ARBHOME)/INCLUDE/servercntrl.h
+MP_Window.o: $(ARBHOME)/INCLUDE/smartptr.h
