@@ -47,7 +47,7 @@ using namespace std;
 #define AWAR_CLUSTER_RESTORE_LABEL AWAR_CLUSTER_PREFIX_TEMP "rlabel" // label of restore button
 
 void DI_create_cluster_awars(AW_root *aw_root, AW_default def, AW_default db) {
-    aw_root->awar_float(AWAR_CLUSTER_MAXDIST, 0.5, def)->set_minmax(0.0, 100.0);
+    aw_root->awar_float(AWAR_CLUSTER_MAXDIST, 3.0, def)->set_minmax(0.0, 100.0);
     aw_root->awar_int(AWAR_CLUSTER_MINSIZE, 7, def)->set_minmax(2, INT_MAX);
     aw_root->awar_int(AWAR_CLUSTER_AUTOMARK, 1, def);
     aw_root->awar_int(AWAR_CLUSTER_MARKREP, 0, def);
