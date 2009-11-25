@@ -16,8 +16,7 @@
 class ED4_root;
 class ED4_database;
 
-typedef const char  ED4_ERROR;
-typedef int     ED4_COORDINATE;
+typedef int ED4_COORDINATE;
 
 typedef enum ad_edit_mode {
     AD_ALIGN,   // add & remove of . possible (default)

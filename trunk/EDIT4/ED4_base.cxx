@@ -430,7 +430,7 @@ bool ED4_base::is_visible(AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2, ED4_direct
 char *ED4_base::resolve_pointer_to_string_copy(int *) const { return NULL; }
 const char *ED4_base::resolve_pointer_to_char_pntr(int *) const { return NULL; }
 
-ED4_ERROR *ED4_base::write_sequence(const char */*seq*/, int /*seq_len*/)
+GB_ERROR ED4_base::write_sequence(const char */*seq*/, int /*seq_len*/)
 {
     e4_assert(0);
     return 0;

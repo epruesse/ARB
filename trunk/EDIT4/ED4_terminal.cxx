@@ -220,9 +220,9 @@ const char *ED4_terminal::resolve_pointer_to_char_pntr(int *str_len) const
     return db_pointer;
 }
 
-ED4_ERROR *ED4_terminal::write_sequence(const char *seq, int seq_len)
+GB_ERROR ED4_terminal::write_sequence(const char *seq, int seq_len)
 {
-    ED4_ERROR *err = 0;
+    GB_ERROR err = 0;
     GBDATA *gbd = get_species_pointer();
     e4_assert(gbd); // we must have a link to the database!
 
