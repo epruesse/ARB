@@ -106,7 +106,7 @@ void ED4_expose_recalculations() {
         ED4_terminal *top_middle_line_terminal = ED4_ROOT->main_manager->get_top_middle_line_terminal();
 
         ED4_ROOT->main_manager->get_top_middle_spacer_terminal()->extension.size[HEIGHT] = TERMINALHEIGHT - top_middle_line_terminal->extension.size[HEIGHT];
-        ED4_ROOT->main_manager->route_down_hierarchy(update_terminal_extension);
+        ED4_ROOT->main_manager->route_down_hierarchy(update_terminal_extension).expect_no_error();
         ED4_ROOT->resize_all(); // may change mapping
 
         int new_screenwidth = ED4_ROOT->root_group_man->remap()->sequence_to_screen(MAXSEQUENCECHARACTERLENGTH);
@@ -167,7 +167,7 @@ void ED4_resize_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
     GB_pop_transaction(GLOBAL_gb_main);
 }
 
-static GB_ERROR call_edit( ED4_base *object, AW_CL cl_work_info) {
+static ARB_ERROR call_edit( ED4_base *object, AW_CL cl_work_info) {
     // called after editing consensus to edit single sequences
     GB_ERROR error = NULL;
 
@@ -326,7 +326,7 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
 
     ED4_Edit_String     *edit_string     = new ED4_Edit_String;
     ED4_species_manager *species_manager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
-    GB_ERROR             error           = NULL;
+    ARB_ERROR            error           = NULL;
 
     GB_push_transaction(GLOBAL_gb_main);
 
@@ -364,25 +364,20 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
 
     edit_string->finish_edit();
 
-    if (error) {
-        aw_message(error);
-        GB_abort_transaction(GLOBAL_gb_main);
-        ED4_ROOT->refresh_all_windows(0);
-    }
-    else {
-        GB_pop_transaction( GLOBAL_gb_main );
+    if (error) work_info->refresh_needed = true;
 
-        if (work_info->refresh_needed) {
-            GB_transaction dummy(GLOBAL_gb_main);
+    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
 
-            terminal->set_refresh();
-            terminal->parent->refresh_requested_by_child();
-            if (terminal->is_sequence_terminal()) {
-                ED4_sequence_terminal *seq_term = terminal->to_sequence_terminal();
-                seq_term->results().searchAgain();
-            }
-            ED4_ROOT->refresh_all_windows(0);
+    if (work_info->refresh_needed) {
+        GB_transaction dummy(GLOBAL_gb_main);
+
+        terminal->set_refresh();
+        terminal->parent->refresh_requested_by_child();
+        if (terminal->is_sequence_terminal()) {
+            ED4_sequence_terminal *seq_term = terminal->to_sequence_terminal();
+            seq_term->results().searchAgain();
         }
+        ED4_ROOT->refresh_all_windows(0);
     }
 
     delete edit_string;
@@ -1047,7 +1042,7 @@ void ED4_show_detailed_column_stats(AW_window *aww, AW_CL, AW_CL)
     ED4_ROOT->refresh_all_windows(0);
 }
 
-GB_ERROR update_terminal_extension(ED4_base *this_object) {
+ARB_ERROR update_terminal_extension(ED4_base *this_object) {
     if (this_object->is_terminal()){
         if (this_object->is_spacer_terminal()){
             if (this_object->parent->is_device_manager()) { // the rest is managed by reference links
@@ -1388,7 +1383,7 @@ void ed4_change_edit_mode(AW_root *root, AW_CL cd1)
     ed4_changesecurity(root, cd1);
 }
 
-GB_ERROR rebuild_consensus(ED4_base *object) {
+ARB_ERROR rebuild_consensus(ED4_base *object) {
     if (object->flag.is_consensus) {
         ED4_species_manager *spec_man = object->to_species_manager();
         spec_man->do_callbacks();
@@ -1794,7 +1789,7 @@ struct S_SpeciesMergeList {
 };
 typedef struct S_SpeciesMergeList *SpeciesMergeList;
 
-static GB_ERROR add_species_to_merge_list(ED4_base *base, AW_CL cl_SpeciesMergeListPtr, AW_CL cl_gb_species_data) {
+static ARB_ERROR add_species_to_merge_list(ED4_base *base, AW_CL cl_SpeciesMergeListPtr, AW_CL cl_gb_species_data) {
     GB_ERROR error = NULL;
 
     if (base->is_species_name_terminal()) {
@@ -1843,14 +1838,14 @@ inline bool nameIsUnique(const char *short_name, GBDATA *gb_species_data) {
     return GBT_find_species_rel_species_data(gb_species_data, short_name)==0;
 }
 
-static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
-    // creation_mode ==     0 -> create new species
-    //                      1 -> create new species from group konsensus
-    //                      2 -> copy current species
-{
+static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode) {
+    // creation_mode == 0 -> create new species
+    //                  1 -> create new species from group konsensus
+    //                  2 -> copy current species
+    
     enum e_creation_mode { CREATE_NEW_SPECIES, CREATE_FROM_CONSENSUS, COPY_SPECIES } creation_mode = (enum e_creation_mode)(cl_creation_mode);
-    GB_CSTR new_species_full_name = ED4_ROOT->aw_root->awar(ED4_AWAR_SPECIES_TO_CREATE)->read_string(); // this contains the full_name now!
-    GB_CSTR error = 0;
+    GB_CSTR   new_species_full_name = ED4_ROOT->aw_root->awar(ED4_AWAR_SPECIES_TO_CREATE)->read_string(); // this contains the full_name now!
+    ARB_ERROR error                 = 0;
 
     e4_assert(creation_mode>=0 && creation_mode<=2);
 
@@ -1921,7 +1916,7 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
             }
 
             if (error) {        // try to make a random name
-                const char *msg = GBS_global_string("%s\nGenerating a random name instead.", error);
+                const char *msg = GBS_global_string("%s\nGenerating a random name instead.", error.deliver());
                 aw_message(msg);
                 error           = 0;
 
@@ -2199,12 +2194,12 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
         free(new_species_name);
     }
 
-    if (error) aw_popup_ok(error);
+    aw_message_if(error);
 }
 
 AW_window *ED4_create_new_seq_window(AW_root *root, AW_CL cl_creation_mode)
-    // creation_mode ==     0 -> create new species
-    //                      1 -> create new species from group konsensus
+// creation_mode ==     0 -> create new species
+//                      1 -> create new species from group konsensus
     //                      2 -> copy current species
 {
     AW_window_simple *aws = new AW_window_simple;

@@ -12,6 +12,7 @@
 #include "ClustalV.hxx"
 #include "awtc_seq_search.hxx"
 
+
 /* ---------------------------------------------------------------- */
 
 #define MASTER_GAP_OPEN                 50
@@ -47,8 +48,7 @@
 #define TRUE    1
 #define FALSE   0
 
-static GB_ERROR error;
-static bool     module_initialized = false;
+static bool module_initialized = false;
 
 typedef int Boolean;
 
@@ -404,30 +404,32 @@ static void n_decode(const unsigned char *naseq, unsigned char *seq, int l) {
 }
 #endif
 
-ATTRIBUTED(__ATTR__USERESULT, static inline GB_ERROR MAXLENtooSmall()) {
+static inline ARB_ERROR MAXLENtooSmall() {
     return "AWTC_ClustalV-aligner: MAXLEN is dimensioned to small for this sequence";
 }
 
-static inline void *ckalloc(size_t bytes)
-{
+static inline void *ckalloc(size_t bytes, ARB_ERROR& error) {
+    if (error) return NULL;
+
     void *ret = malloc(bytes);
 
     if (!ret) error = "out of memory";
     return ret;
 }
 
-static void init_myers(long max_seq_length) {
-    if (!error) {
-        naa1 = (int **)ckalloc(MAX_BASETYPES * sizeof (int *) );
-        naa2 = (int **)ckalloc(MAX_BASETYPES * sizeof (int *) );
-        naas = (int **)ckalloc(MAX_BASETYPES * sizeof (int *) );
-    
-        for(int i=0;i<MAX_BASETYPES && !error; i++) {
-            naa1[i] = (int *)ckalloc((max_seq_length+1)*sizeof(int));
-            naa2[i] = (int *)ckalloc((max_seq_length+1)*sizeof(int));
-            naas[i] = (int *)ckalloc((max_seq_length+1)*sizeof(int));
-        }
+static ARB_ERROR init_myers(long max_seq_length) {
+    ARB_ERROR error;
+
+    naa1 = (int **)ckalloc(MAX_BASETYPES * sizeof (int *), error);
+    naa2 = (int **)ckalloc(MAX_BASETYPES * sizeof (int *), error);
+    naas = (int **)ckalloc(MAX_BASETYPES * sizeof (int *), error);
+
+    for(int i=0;i<MAX_BASETYPES && !error; i++) {
+        naa1[i] = (int *)ckalloc((max_seq_length+1)*sizeof(int), error);
+        naa2[i] = (int *)ckalloc((max_seq_length+1)*sizeof(int), error);
+        naas[i] = (int *)ckalloc((max_seq_length+1)*sizeof(int), error);
     }
+    return error; 
 }
 
 static void make_pamo(int nv)
@@ -497,19 +499,23 @@ static void exit_myers(void) {
     free(naa1);
 }
 
-static void init_show_pair(long max_seq_length)
-{
+static ARB_ERROR init_show_pair(long max_seq_length) {
+    ARB_ERROR error;
+
 #if defined(DEBUG)
     displ_size = (2*max_seq_length +1);
 #endif // DEBUG
-    displ      = (int *) ckalloc( (2*max_seq_length +1) * sizeof (int) );
+
+    displ      = (int *) ckalloc( (2*max_seq_length +1) * sizeof (int), error);
     last_print = 0;
 
-    zza = (int *)ckalloc( (max_seq_length+1) * sizeof (int) );
-    zzb = (int *)ckalloc( (max_seq_length+1) * sizeof (int) );
+    zza = (int *)ckalloc( (max_seq_length+1) * sizeof (int), error);
+    zzb = (int *)ckalloc( (max_seq_length+1) * sizeof (int), error);
 
-    zzc = (int *)ckalloc( (max_seq_length+1) * sizeof (int) );
-    zzd = (int *)ckalloc( (max_seq_length+1) * sizeof (int) );
+    zzc = (int *)ckalloc( (max_seq_length+1) * sizeof (int), error);
+    zzd = (int *)ckalloc( (max_seq_length+1) * sizeof (int), error);
+
+    return error;
 }
 
 void exit_show_pair(void)
@@ -1150,32 +1156,34 @@ static void n_encode(const unsigned char *seq,unsigned char *naseq,int l)
     }
 }
 
-GB_ERROR AWTC_ClustalV_align(int is_dna, int weighted,
-                             const char *seq1, int length1,
-                             const char *seq2, int length2,
-                             const int *gapsBefore1,
-                             int max_seq_length,
-                             char **resultPtr1,
-                             char **resultPtr2,
-                             int *resLengthPtr,
-                             int *score)
+ARB_ERROR AWTC_ClustalV_align(int          is_dna,
+                              int          weighted,
+                              const char  *seq1,
+                              int          length1,
+                              const char  *seq2,
+                              int          length2,
+                              const int   *gapsBefore1,
+                              int          max_seq_length,
+                              char       **resultPtr1,
+                              char       **resultPtr2,
+                              int         *resLengthPtr,
+                              int *score)
 {
-    error = 0;
+    ARB_ERROR error;
     gapsBeforePosition = gapsBefore1;
 
     if (!module_initialized) { // initialize only once
         dnaflag = is_dna;
         is_weight = weighted;
 
-        init_myers(max_seq_length);
-        init_show_pair(max_seq_length);
+        error             = init_myers(max_seq_length);
+        if (!error) error = init_show_pair(max_seq_length);
         make_pamo(0);
         fill_pam();
 
-        for (int i=1; i<=2; i++)
-        {
-            seq_array[i] = (unsigned char*)ckalloc((max_seq_length+2)*sizeof(char));
-            result[i] = (char*)ckalloc((max_seq_length+2)*sizeof(char));
+        for (int i=1; i<=2 && !error; i++) {
+            seq_array[i] = (unsigned char*)ckalloc((max_seq_length+2)*sizeof(char), error);
+            result[i] = (char*)ckalloc((max_seq_length+2)*sizeof(char), error);
             group[i] = i;
         }
 

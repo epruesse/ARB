@@ -25,6 +25,7 @@
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
+
 #define awtc_assert(bed) arb_assert(bed)
 
 #define SEQ_CHARS   26
@@ -472,9 +473,9 @@ public:
     AWTC_FastSearchSequence(const AWTC_CompactedSubSequence& seq);
     ~AWTC_FastSearchSequence() {}
 
-    GB_ERROR fast_align(const AWTC_CompactedSubSequence& align_to, AWTC_alignBuffer *alignBuffer,
-                        int max_seq_length, int matchScore, int mismatchScore,
-                        AWTC_fast_align_report *report) const;
+    ARB_ERROR fast_align(const AWTC_CompactedSubSequence& align_to, AWTC_alignBuffer *alignBuffer,
+                         int max_seq_length, int matchScore, int mismatchScore,
+                         AWTC_fast_align_report *report) const;
 
     const AWTC_CompactedSubSequence& sequence() const {return *mySequence;}
     const AWTC_TripleOffset *find(const char *triple) const { return myOffset[triple_index(triple)]; }
