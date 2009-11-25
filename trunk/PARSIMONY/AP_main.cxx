@@ -1,16 +1,20 @@
-#include <cstdio>
-#include <cmath>
-#include <cstring>
-#include <memory.h>
-#include <iostream>
+// =============================================================== //
+//                                                                 //
+//   File      : AP_main.cxx                                       //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <awt_tree.hxx>
-
-#include "AP_buffer.hxx"
-#include "parsimony.hxx"
 #include "AP_error.hxx"
+#include "ap_main.hxx"
+#include "ap_tree_nlen.hxx"
+
+#include <TreeDisplay.hxx>
+
+#include <iostream>
 
 using namespace std;
 
@@ -78,12 +82,11 @@ AP_main
 
 ***************/
 
-AP_main::AP_main(void) {
+AP_main::AP_main() {
     memset((char *)this,0,sizeof(AP_main));
 }
 
-AP_main::~AP_main(void) {
-    if (use) delete use;
+AP_main::~AP_main() {
     if (stack) delete stack;
 }
 
@@ -94,12 +97,12 @@ GB_ERROR AP_main::open(char *db_server) {
     return error;
 }
 
-void AP_main::user_push(void) {
+void AP_main::user_push() {
     this->user_push_counter = stack_level + 1;
     this->push();
 }
 
-void AP_main::user_pop(void) {
+void AP_main::user_pop() {
     // checks if user_pop possible
     if (user_push_counter == stack_level) {
         this->pop();    // changes user_push_counter if user pop
@@ -109,7 +112,7 @@ void AP_main::user_pop(void) {
     return;
 }
 
-void AP_main::push(void) {
+void AP_main::push() {
     // if count > 1 the nodes are buffered more than once
     // WARNING:: node only has to be buffered once in the stack
     //
@@ -120,8 +123,8 @@ void AP_main::push(void) {
     stack->last_user_buffer = this->user_push_counter;
 }
 
-void AP_main::pop(void) {
-    AP_tree *knoten;
+void AP_main::pop() {
+    AP_tree_nlen *knoten;
     if (!stack) {
         new AP_ERR("AP_main::pop()","Stack underflow !");
         return;
@@ -146,7 +149,7 @@ void AP_main::pop(void) {
     return;
 }
 
-void AP_main::clear(void) {
+void AP_main::clear() {
     // removes count elements from the list
     // because the current tree is used
     //
@@ -154,8 +157,9 @@ void AP_main::clear(void) {
     // moves all not previous buffered nodes in the
     // previous stack
 
-    AP_tree * knoten;
-    AP_main_stack * new_stack;
+    AP_tree_nlen  *knoten;
+    AP_main_stack *new_stack;
+
     if (!stack) {
         new AP_ERR("AP_main::clear","Stack underflow !");
         return;
@@ -165,7 +169,6 @@ void AP_main::clear(void) {
             if (stack->size() > 0) {
                 while (stack->size() > 0) {
                     knoten = stack->pop();
-                    //if (buffer_cout == AP_TRUE) knoten->printl();
                     knoten->clear(stack_level,user_push_counter);
                 }
             }
@@ -194,7 +197,7 @@ void AP_main::clear(void) {
 
 }
 
-void AP_main::push_node(AP_tree * node,AP_STACK_MODE mode) {
+void AP_main::push_node(AP_tree_nlen *node, AP_STACK_MODE mode) {
     //
     //  stores node
     //
@@ -211,9 +214,16 @@ void AP_main::push_node(AP_tree * node,AP_STACK_MODE mode) {
     if (node->push(mode,stack_level))   stack->push(node);
 }
 
-
-void AP_main::set_tree_root(AP_tree *new_root) {
-    // removes old root and sets it
-    // to the father of the new_root
-    *ap_main->tree_root = new_root;
+AP_tree_nlen *AP_main::get_root_node() {
+    return DOWNCAST(AP_tree_nlen*, agt->get_root_node());
 }
+
+void AP_main::set_tree_root(AWT_graphic_tree *agt_) {
+    ap_assert(agt == 0 && agt_ != 0);               // do only once
+    agt = agt_;
+}
+
+const char *AP_main::get_aliname() const {
+    return agt->tree_static->get_aliview()->get_aliname();
+}
+

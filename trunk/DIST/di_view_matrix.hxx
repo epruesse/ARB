@@ -10,8 +10,8 @@
 #ifndef DI_VIEW_MATRIX_HXX
 #define DI_VIEW_MATRIX_HXX
 
-#ifndef AW_WINDOW_HXX
-#include <aw_window.hxx>
+#ifndef AW_ROOT_HXX
+#include <aw_root.hxx>
 #endif
 
 #define SPECIES_NAME_LEN 10    // only for displaying speciesnames
@@ -25,6 +25,10 @@ typedef enum  {
     DI_G_ABOVE_DIST,
     DI_G_LAST                   // must be last
 } DI_gc;
+
+class AW_device;
+class AW_event;
+class DI_MATRIX;
 
 class DI_dmatrix {
     AW_pos  screen_width;         // dimensions of main screen
@@ -71,7 +75,8 @@ public:
     // if matrix == 0, use DI_MATRIX::root
 };
 
-AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix);
+struct save_matrix_params;
+AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix, save_matrix_params *sparam);
 
 
 #else

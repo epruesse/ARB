@@ -630,6 +630,9 @@ ARCHS = \
 			WINDOW/libAW.a \
 			XML/XML.a \
 
+# ----------------------- 
+#     library packets     
+
 ARCHS_CLIENT_PROBE = PROBE_COM/client.a
 ARCHS_CLIENT_NAMES = NAMES_COM/client.a
 ARCHS_MAKEBIN = AISC_MKPTPS/dummy.a AISC/dummy.a
@@ -640,6 +643,21 @@ ARCHS_COMMUNICATION =	NAMES_COM/server.a \
 # communication libs need aisc and aisc_mkpts:
 $(ARCHS_COMMUNICATION:.a=.dummy) : $(ARCHS_MAKEBIN:.a=.dummy)
 
+ARCHS_SEQUENCE = \
+		SL/SEQUENCE/SEQUENCE.a \
+		SL/ALIVIEW/ALIVIEW.a \
+		SL/PRONUC/PRONUC.a \
+
+ARCHS_TREE = \
+		$(ARCHS_SEQUENCE) \
+		SL/FILTER/FILTER.a \
+		SL/ARB_TREE/ARB_TREE.a \
+
+# parsimony tree (used by NTREE, PARSIMONY, STAT(->EDIT[4]), DIST(obsolete!))
+ARCHS_AP_TREE = \
+		$(ARCHS_TREE) \
+		SL/AP_TREE/AP_TREE.a \
+
 #***************************************************************************************
 #		Individual Programs Section
 #***************************************************************************************
@@ -648,6 +666,7 @@ $(ARCHS_COMMUNICATION:.a=.dummy) : $(ARCHS_MAKEBIN:.a=.dummy)
 NTREE = bin/arb_ntree
 ARCHS_NTREE = \
 		$(ARCHS_CLIENT_PROBE) \
+		$(ARCHS_AP_TREE) \
 		ARB_GDE/ARB_GDE.a \
 		AWTC/AWTC.a \
 		AWTI/AWTI.a \
@@ -663,8 +682,11 @@ ARCHS_NTREE = \
 		SL/AW_NAME/AW_NAME.a \
 		SL/DB_SCANNER/DB_SCANNER.a \
 		SL/FILE_BUFFER/FILE_BUFFER.a \
+		SL/GUI_ALIVIEW/GUI_ALIVIEW.a \
 		SL/HELIX/HELIX.a \
 		SL/REGEXPR/REGEXPR.a \
+		SL/TRANSLATE/TRANSLATE.a \
+		SL/TREEDISP/TREEDISP.a \
 		SL/TREE_READ/TREE_READ.a \
 		SL/TREE_WRITE/TREE_WRITE.a \
 		STAT/STAT.a \
@@ -689,15 +711,17 @@ $(RNA3D): $(ARCHS_RNA3D:.a=.dummy) shared_libs
 #***********************************	arb_edit **************************************
 EDIT = bin/arb_edit
 ARCHS_EDIT = \
+		$(ARCHS_AP_TREE) \
+		ARB_GDE/ARB_GDE.a \
+		EDIT/EDIT.a \
 		NAMES_COM/client.a \
 		SERVERCNTRL/SERVERCNTRL.a \
-		EDIT/EDIT.a \
-		ARB_GDE/ARB_GDE.a \
-		STAT/STAT.a \
-		XML/XML.a \
-		SL/HELIX/HELIX.a \
 		SL/AW_HELIX/AW_HELIX.a \
 		SL/AW_NAME/AW_NAME.a \
+		SL/GUI_ALIVIEW/GUI_ALIVIEW.a \
+		SL/HELIX/HELIX.a \
+		STAT/STAT.a \
+		XML/XML.a \
 
 $(EDIT): $(ARCHS_EDIT:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_EDIT) $(GUI_LIBS) || ( \
@@ -710,19 +734,22 @@ $(EDIT): $(ARCHS_EDIT:.a=.dummy) shared_libs
 EDIT4 = bin/arb_edit4
 
 ARCHS_EDIT4 := \
-		NAMES_COM/client.a \
+		$(ARCHS_AP_TREE) \
+		ARB_GDE/ARB_GDE.a \
 		AWTC/AWTC.a \
 		EDIT4/EDIT4.a \
+		ISLAND_HOPPING/ISLAND_HOPPING.a \
+		NAMES_COM/client.a \
 		SECEDIT/SECEDIT.a \
 		SERVERCNTRL/SERVERCNTRL.a \
-		STAT/STAT.a \
-		ARB_GDE/ARB_GDE.a \
-		ISLAND_HOPPING/ISLAND_HOPPING.a \
-		SL/FAST_ALIGNER/FAST_ALIGNER.a \
-		SL/HELIX/HELIX.a \
 		SL/AW_HELIX/AW_HELIX.a \
 		SL/AW_NAME/AW_NAME.a \
+		SL/FAST_ALIGNER/FAST_ALIGNER.a \
 		SL/FILE_BUFFER/FILE_BUFFER.a \
+		SL/GUI_ALIVIEW/GUI_ALIVIEW.a \
+		SL/HELIX/HELIX.a \
+		SL/TRANSLATE/TRANSLATE.a \
+		STAT/STAT.a \
 		XML/XML.a \
 
 ifeq ($(OPENGL),1)
@@ -758,6 +785,7 @@ WETC = bin/arb_wetc
 ARCHS_WETC = \
 		WETC/WETC.a \
 		SL/HELIX/HELIX.a \
+		SL/FILTER/FILTER.a \
 		XML/XML.a \
 
 $(WETC): $(ARCHS_WETC:.a=.dummy) shared_libs
@@ -771,11 +799,15 @@ $(WETC): $(ARCHS_WETC:.a=.dummy) shared_libs
 DIST = bin/arb_dist
 ARCHS_DIST = \
 		$(ARCHS_CLIENT_PROBE) \
-		DIST/DIST.a \
-		SERVERCNTRL/SERVERCNTRL.a \
+		$(ARCHS_AP_TREE) \
 		CONSENSUS_TREE/CONSENSUS_TREE.a \
+		DIST/DIST.a \
 		EISPACK/EISPACK.a \
+		SERVERCNTRL/SERVERCNTRL.a \
+		SL/GUI_ALIVIEW/GUI_ALIVIEW.a \
 		SL/HELIX/HELIX.a \
+		SL/MATRIX/MATRIX.a \
+		SL/NEIGHBOURJOIN/NEIGHBOURJOIN.a \
 		XML/XML.a \
 
 $(DIST): $(ARCHS_DIST:.a=.dummy) shared_libs
@@ -788,11 +820,15 @@ $(DIST): $(ARCHS_DIST:.a=.dummy) shared_libs
 #***********************************	arb_pars **************************************
 PARSIMONY = bin/arb_pars
 ARCHS_PARSIMONY = \
+		$(ARCHS_AP_TREE) \
 		NAMES_COM/client.a \
-		SERVERCNTRL/SERVERCNTRL.a \
 		PARSIMONY/PARSIMONY.a \
-		SL/HELIX/HELIX.a \
+		SERVERCNTRL/SERVERCNTRL.a \
 		SL/AW_NAME/AW_NAME.a \
+		SL/GUI_ALIVIEW/GUI_ALIVIEW.a \
+		SL/HELIX/HELIX.a \
+		SL/TRANSLATE/TRANSLATE.a \
+		SL/TREEDISP/TREEDISP.a \
 		XML/XML.a \
 
 $(PARSIMONY): $(ARCHS_PARSIMONY:.a=.dummy) shared_libs
@@ -845,6 +881,8 @@ PHYLO = bin/arb_phylo
 ARCHS_PHYLO = \
 		PHYLO/PHYLO.a \
 		SL/HELIX/HELIX.a \
+		SL/FILTER/FILTER.a \
+		SL/MATRIX/MATRIX.a \
 		XML/XML.a \
 
 $(PHYLO): $(ARCHS_PHYLO:.a=.dummy) shared_libs
@@ -1125,6 +1163,7 @@ pgt:	$(PGT)
 xml:	XML/XML.dummy
 xmlin:  XML_IMPORT/XML_IMPORT.dummy# broken
 templ:	TEMPLATES/TEMPLATES.dummy
+stat:   STAT/STAT.a $(NTREE) $(EDIT) $(EDIT4)
 
 #********************************************************************************
 
@@ -1170,6 +1209,7 @@ proto: proto_tools
 		SERVERCNTRL/SERVERCNTRL.proto \
 		AISC_COM/AISC_COM.proto \
 		GDE/GDE.proto \
+		SL/SL.proto \
 
 #********************************************************************************
 

@@ -13,7 +13,14 @@
 #ifndef AWT_SEL_BOXES_HXX
 #define AWT_SEL_BOXES_HXX
 
-class  AP_filter;
+#ifndef ARBDBT_H
+#include <arbdbt.h>
+#endif
+#ifndef AW_ROOT_HXX
+#include <aw_root.hxx>
+#endif
+
+class AP_filter;
 struct adfiltercbstruct;
 
 /**************************************************************************
@@ -67,28 +74,6 @@ char *awt_create_string_on_configurations(GBDATA *gb_main);
 AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const char *file_extension, char **set_file_name_awar,
                                void (*callback)(AW_window*), // set callback ..
                                AW_window* (*create_popup)(AW_root *, AW_default)); // .. or create_popup  (both together not allowed)
-
-/***********************    FILTERS     ************************/
-adfiltercbstruct *awt_create_select_filter(AW_root *aw_root,GBDATA *gb_main, const char *def_name);
-/* Create a data structure for filters (needed for awt_create_select_filter_win */
-/* Create a filter selection box, this box needs 3 AWARS:
-   1. "$def_name"
-   2. "$def_name:/name=/filter"
-   3. "$def_name:/name=/alignment"
-   and some internal awars
-*/
-void awt_set_awar_to_valid_filter_good_for_tree_methods(GBDATA *gb_main,AW_root *awr, const char *awar_name);
-
-AW_window *awt_create_select_filter_win(AW_root *aw_root, AW_CL cd_adfiltercbstruct);
-/* not just the box, but the whole window */
-
-AP_filter *awt_get_filter(AW_root *aw_root, adfiltercbstruct *acbs);
-
-char *AWT_get_combined_filter_name(AW_root *aw_root, GB_CSTR prefix);
-
-#define AWT_NDS_FILTER (1<<GB_STRING)|(1<<GB_BYTE)|(1<<GB_INT)|(1<<GB_FLOAT)|(1<<GB_BITS)|(1<<GB_LINK)
-#define AWT_PARS_FILTER (1<<GB_STRING)|(1<<GB_BYTE)|(1<<GB_INT)|(1<<GB_FLOAT)|(1<<GB_BITS)|(1<<GB_LINK)
-#define AWT_STRING_FILTER (1<<GB_STRING)|(1<<GB_BITS)|(1<<GB_LINK)
 
 /***********************    species fields     ************************/
 

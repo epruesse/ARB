@@ -3,8 +3,8 @@
 SELF=$ARBHOME/SOURCE_TOOLS/generate_all_links.sh
 
 finderr() {
-    FOUND=`grep -Hn "$1" $SELF`
-    if [ -z $FOUND ]; then
+    FOUND=`grep -Hn "$1" $SELF | perl -ne '/^[^:]+:[^:]+:/; print $&."\n";'`
+    if [ -z "$FOUND" ]; then
         echo "$SELF:8: $2 ($1 not located -- search manually)"
     else
         echo "$FOUND $2"
@@ -34,7 +34,7 @@ symlink() {
 
     (test -e $DIR/$1 || finderr $1 "Target '$DIR/$1 does not exists (anymore)" ) &&
     (test -e $2 || (test -h $2 &&
-                    (finderr $2 "Warning Symlink '$2' points to nowhere -- removing wrong link";ls -al $2;rm $2;true)
+                    (finderr $2 "Note: Symlink '$2' pointed to nowhere -- removing wrong link";ls -al $2;rm $2;true)
                     ) || true) &&
     symlink_maybe_no_target $1 $2
 }
@@ -120,6 +120,7 @@ symlink ../TEMPLATES/arb_version.h INCLUDE/arb_version.h &&
 symlink ../TEMPLATES/arbtools.h INCLUDE/arbtools.h &&
 symlink ../TEMPLATES/attributes.h INCLUDE/attributes.h &&
 symlink ../TEMPLATES/config_parser.h INCLUDE/config_parser.h &&
+symlink ../TEMPLATES/downcast.h INCLUDE/downcast.h &&
 symlink ../TEMPLATES/inline.h INCLUDE/inline.h &&
 symlink ../TEMPLATES/output.h INCLUDE/output.h &&
 symlink ../TEMPLATES/perf_timer.h INCLUDE/perf_timer.h &&
@@ -139,16 +140,16 @@ symlink_maybe_no_target ../PROBE_COM/PT_server.h            INCLUDE/PT_server.h 
 symlink_maybe_no_target ../PROBE_COM/PT_server_prototypes.h INCLUDE/PT_server_prototypes.h &&
 
 symlink ../AISC_COM/C/aisc_func_types.h INCLUDE/aisc_func_types.h &&
+symlink ../AISC_COM/C/aisc_global.h INCLUDE/aisc_global.h &&
 symlink ../AISC_COM/C/client.h INCLUDE/client.h &&
 symlink ../AISC_COM/C/client_privat.h INCLUDE/client_privat.h &&
 symlink ../AISC_COM/C/server.h INCLUDE/server.h &&
 symlink ../AISC_COM/C/struct_man.h INCLUDE/struct_man.h &&
-symlink ../AISC_COM/C/aisc_global.h INCLUDE/aisc_global.h &&
 symlink ../ARBDB/adGene.h INCLUDE/adGene.h &&
-symlink ../ARBDB/ad_prot.h INCLUDE/ad_prot.h &&
 symlink ../ARBDB/ad_config.h INCLUDE/ad_config.h &&
-symlink ../ARBDB/ad_t_prot.h INCLUDE/ad_t_prot.h &&
 symlink ../ARBDB/ad_k_prot.h INCLUDE/ad_k_prot.h &&
+symlink ../ARBDB/ad_prot.h INCLUDE/ad_prot.h &&
+symlink ../ARBDB/ad_t_prot.h INCLUDE/ad_t_prot.h &&
 symlink ../ARBDB/arb_assert.h INCLUDE/arb_assert.h &&
 symlink ../ARBDB/arbdb.h INCLUDE/arbdb.h &&
 symlink ../ARBDB/arbdb_base.h INCLUDE/arbdb_base.h &&
@@ -161,10 +162,7 @@ symlink ../AWT/awt_advice.hxx INCLUDE/awt_advice.hxx &&
 symlink ../AWT/awt_asciiprint.hxx INCLUDE/awt_asciiprint.hxx &&
 symlink ../AWT/awt_attributes.hxx INCLUDE/awt_attributes.hxx &&
 symlink ../AWT/awt_canvas.hxx INCLUDE/awt_canvas.hxx &&
-symlink ../AWT/awt_codon_table.hxx INCLUDE/awt_codon_table.hxx &&
 symlink ../AWT/awt_config_manager.hxx INCLUDE/awt_config_manager.hxx &&
-symlink ../AWT/awt_csp.hxx INCLUDE/awt_csp.hxx &&
-symlink ../AWT/awt_dtree.hxx INCLUDE/awt_dtree.hxx &&
 symlink ../AWT/awt_hotkeys.hxx INCLUDE/awt_hotkeys.hxx &&
 symlink ../AWT/awt_input_mask.hxx INCLUDE/awt_input_mask.hxx &&
 symlink ../AWT/awt_item_sel_list.hxx INCLUDE/awt_item_sel_list.hxx &&
@@ -173,16 +171,8 @@ symlink ../AWT/awt_macro.hxx INCLUDE/awt_macro.hxx &&
 symlink ../AWT/awt_map_key.hxx INCLUDE/awt_map_key.hxx &&
 symlink ../AWT/awt_nds.hxx INCLUDE/awt_nds.hxx &&
 symlink ../AWT/awt_preset.hxx INCLUDE/awt_preset.hxx &&
-symlink ../AWT/awt_pro_a_nucs.hxx INCLUDE/awt_pro_a_nucs.hxx &&
 symlink ../AWT/awt_sel_boxes.hxx INCLUDE/awt_sel_boxes.hxx &&
 symlink ../AWT/awt_seq_colors.hxx INCLUDE/awt_seq_colors.hxx &&
-symlink ../AWT/awt_seq_dna.hxx INCLUDE/awt_seq_dna.hxx &&
-symlink ../AWT/awt_seq_protein.hxx INCLUDE/awt_seq_protein.hxx &&
-symlink ../AWT/awt_seq_simple_pro.hxx INCLUDE/awt_seq_simple_pro.hxx &&
-symlink ../AWT/awt_translate.hxx INCLUDE/awt_translate.hxx &&
-symlink ../AWT/awt_tree.hxx INCLUDE/awt_tree.hxx &&
-symlink ../AWT/awt_tree_cb.hxx INCLUDE/awt_tree_cb.hxx &&
-symlink ../AWT/awt_tree_cmp.hxx INCLUDE/awt_tree_cmp.hxx &&
 symlink ../AWT/awt_www.hxx INCLUDE/awt_www.hxx &&
 symlink ../AWT/awtlocal.hxx INCLUDE/awtlocal.hxx &&
 # symlink ../AWTC/awtc_constructSequence.hxx INCLUDE/awtc_constructSequence.hxx &&
@@ -203,21 +193,41 @@ symlink ../NTREE/ntree.hxx INCLUDE/ntree.hxx &&
 symlink ../PRIMER_DESIGN/primer_design.hxx INCLUDE/primer_design.hxx &&
 symlink ../PROBE_DESIGN/probe_design.hxx INCLUDE/probe_design.hxx &&
 symlink ../SECEDIT/secedit_extern.hxx INCLUDE/secedit_extern.hxx &&
-symlink ../SERVERCNTRL/servercntrl.h INCLUDE/servercntrl.h &&
 symlink ../SEQ_QUALITY/seq_quality.h INCLUDE/seq_quality.h &&
+symlink ../SERVERCNTRL/servercntrl.h INCLUDE/servercntrl.h &&
+symlink ../SL/ALIVIEW/AliView.hxx INCLUDE/AliView.hxx &&
+symlink ../SL/AP_TREE/AP_Tree.hxx INCLUDE/AP_Tree.hxx &&
+symlink ../SL/ARB_TREE/ARB_Tree.hxx INCLUDE/ARB_Tree.hxx &&
 symlink ../SL/AW_HELIX/AW_helix.hxx INCLUDE/AW_helix.hxx &&
 symlink ../SL/AW_NAME/AW_rename.hxx INCLUDE/AW_rename.hxx &&
 symlink ../SL/DB_SCANNER/db_scanner.hxx INCLUDE/db_scanner.hxx &&
 symlink ../SL/FAST_ALIGNER/fast_aligner.hxx INCLUDE/fast_aligner.hxx &&
 symlink ../SL/FILE_BUFFER/FileBuffer.h INCLUDE/FileBuffer.h &&
+symlink ../SL/FILTER/AP_filter.hxx INCLUDE/AP_filter.hxx &&
+symlink ../SL/GUI_ALIVIEW/awt_csp.hxx INCLUDE/awt_csp.hxx &&
+symlink ../SL/GUI_ALIVIEW/awt_filter.hxx INCLUDE/awt_filter.hxx &&
+symlink ../SL/GUI_ALIVIEW/gui_aliview.hxx INCLUDE/gui_aliview.hxx &&
 symlink ../SL/HELIX/BI_helix.hxx INCLUDE/BI_helix.hxx &&
+symlink ../SL/MATRIX/AP_matrix.hxx INCLUDE/AP_matrix.hxx &&
+symlink ../SL/NEIGHBOURJOIN/neighbourjoin.hxx INCLUDE/neighbourjoin.hxx &&
+symlink ../SL/PRONUC/AP_codon_table.hxx INCLUDE/AP_codon_table.hxx &&
+symlink ../SL/PRONUC/AP_pro_a_nucs.hxx INCLUDE/AP_pro_a_nucs.hxx &&
 symlink ../SL/REGEXPR/RegExpr.hxx INCLUDE/RegExpr.hxx &&
+symlink ../SL/SEQUENCE/AP_seq_dna.hxx INCLUDE/AP_seq_dna.hxx &&
+symlink ../SL/SEQUENCE/AP_seq_protein.hxx INCLUDE/AP_seq_protein.hxx &&
+symlink ../SL/SEQUENCE/AP_seq_simple_pro.hxx INCLUDE/AP_seq_simple_pro.hxx &&
+symlink ../SL/SEQUENCE/AP_sequence.hxx INCLUDE/AP_sequence.hxx &&
+symlink ../SL/TRANSLATE/Translate.hxx INCLUDE/Translate.hxx &&
+symlink ../SL/TREEDISP/TreeCallbacks.hxx INCLUDE/TreeCallbacks.hxx &&
+symlink ../SL/TREEDISP/TreeDisplay.hxx INCLUDE/TreeDisplay.hxx &&
 symlink ../SL/TREE_READ/TreeRead.h INCLUDE/TreeRead.h &&
 symlink ../SL/TREE_WRITE/TreeWrite.h INCLUDE/TreeWrite.h &&
 symlink ../STAT/st_window.hxx INCLUDE/st_window.hxx &&
 symlink ../WINDOW/aw_awars.hxx INCLUDE/aw_awars.hxx &&
 symlink ../WINDOW/aw_color_groups.hxx INCLUDE/aw_color_groups.hxx &&
 symlink ../WINDOW/aw_device.hxx INCLUDE/aw_device.hxx &&
+symlink ../WINDOW/aw_font_group.hxx INCLUDE/aw_font_group.hxx &&
+symlink ../WINDOW/aw_global.hxx INCLUDE/aw_global.hxx &&
 symlink ../WINDOW/aw_global_awars.hxx INCLUDE/aw_global_awars.hxx &&
 symlink ../WINDOW/aw_keysym.hxx INCLUDE/aw_keysym.hxx &&
 symlink ../WINDOW/aw_position.hxx INCLUDE/aw_position.hxx &&
@@ -225,9 +235,7 @@ symlink ../WINDOW/aw_preset.hxx INCLUDE/aw_preset.hxx &&
 symlink ../WINDOW/aw_question.hxx INCLUDE/aw_question.hxx &&
 symlink ../WINDOW/aw_root.hxx INCLUDE/aw_root.hxx &&
 symlink ../WINDOW/aw_window.hxx INCLUDE/aw_window.hxx &&
-symlink ../WINDOW/aw_global.hxx INCLUDE/aw_global.hxx &&
 symlink ../WINDOW/aw_window_Xm_interface.hxx INCLUDE/aw_window_Xm_interface.hxx &&
-symlink ../WINDOW/aw_font_group.hxx INCLUDE/aw_font_group.hxx &&
 symlink ../XML/xml.hxx INCLUDE/xml.hxx &&
 
 # gl stuff

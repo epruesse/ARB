@@ -10,34 +10,14 @@
 /*                                                                                       */
 /*=======================================================================================*/
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <time.h>
-#include <string.h>
-#include <memory.h>
-#include <iostream>
+#include "nt_internal.h"
 
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_awars.hxx>
 #include <awt.hxx>
-#include <AW_rename.hxx>
-#include <awt_tree.hxx>
-#include <awt_canvas.hxx>
 #include <awt_item_sel_list.hxx>
 #include <awt_sel_boxes.hxx>
-#include "awtlocal.hxx"
+#include <AW_rename.hxx>
 #include <aw_question.hxx>
-#include "nt_internal.h"
-#include <nt_sort.hxx>   // for sorting database entries
 
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
-#endif
 #define nt_assert(bed) arb_assert(bed)
 
 using namespace std;

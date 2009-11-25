@@ -1,34 +1,29 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <unistd.h>
-#include <sys/types.h>
+// =============================================================== //
+//                                                                 //
+//   File      : AP_csp_2_gnuplot.cxx                              //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_awars.hxx>
-#include <aw_global.hxx>
-#include <awt.hxx>
-#include <awt_tree.hxx>
-#include <awt_csp.hxx>
-#include <awt_sel_boxes.hxx>
+#include "nt_internal.h"
 #include "ap_csp_2_gnuplot.hxx"
 
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
-#endif
+#include <awt_filter.hxx>
+#include <awt.hxx>
+#include <awt_csp.hxx>
+#include <AP_filter.hxx>
+#include <aw_global.hxx>
+#include <aw_awars.hxx>
+
+#include <unistd.h>
+
 #define nt_assert(bed) arb_assert(bed)
 
 extern GBDATA *GLOBAL_gb_main;
 
-
-// ------------------------------------------------------------------------------------------------------------------------------
-//      static GB_ERROR split_stat_filename(const char *fname, char **dirPtr, char **name_prefixPtr, char **name_postfixPtr)
-// ------------------------------------------------------------------------------------------------------------------------------
 static GB_ERROR split_stat_filename(const char *fname, char **dirPtr, char **name_prefixPtr, char **name_postfixPtr) {
     // 'fname' is sth like 'directory/prefix.sth_gnu'
     // 'dirPtr' is set to a malloc-copy of 'directory'
@@ -65,9 +60,7 @@ static GB_ERROR split_stat_filename(const char *fname, char **dirPtr, char **nam
 
     return 0;
 }
-// -------------------------------------------------------------------------------------------
-//      static char * get_overlay_files(AW_root *awr, const char *fname, GB_ERROR& error)
-// -------------------------------------------------------------------------------------------
+
 static char * get_overlay_files(AW_root *awr, const char *fname, GB_ERROR& error) {
     nt_assert(!error);
 
@@ -218,9 +211,70 @@ static const char *makeTitle(const char *fname) {
     return title;
 }
 
-// ------------------------------------------------------------------------------
-//      void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode)
-// ------------------------------------------------------------------------------
+// -------------------
+//      SortedFreq
+
+class SortedFreq {
+    float *freq[4]; 
+
+public:
+    SortedFreq(const AWT_csp *csp);
+    ~SortedFreq();
+
+    float get(PlotType plot_type, size_t pos) const {
+        float f;
+        switch (plot_type) {
+            case PT_MOST_FREQUENT_BASE:   f = freq[0][pos]; break;
+            case PT_SECOND_FREQUENT_BASE: f = freq[1][pos]; break;
+            case PT_THIRD_FREQUENT_BASE:  f = freq[2][pos]; break;
+            case PT_LEAST_FREQUENT_BASE:  f = freq[3][pos]; break;
+            default: nt_assert(0); break;
+        }
+        return f;
+    }
+};
+
+SortedFreq::SortedFreq(const AWT_csp *csp) {
+    size_t len = csp->get_length();
+    for (int i = 0; i<4; ++i) { // 4 best frequencies
+        freq[i] = new float[len];
+        for (size_t p = 0; p<len; ++p) freq[i][p] = 0.0; // clear
+    }
+
+    for (unsigned int c = 0; c<256; ++c) { // all character stats
+        const float *cfreq = csp->get_frequencies((unsigned char)c);
+        if (cfreq) {
+            for (size_t p = 0; p<len; ++p) {            // all positions
+                if (freq[3][p] < cfreq[p]) {
+                    freq[3][p] = cfreq[p];          // found higher freq
+
+                    for (int i = 3; i > 0; --i) { // bubble upwards to sort 
+                        if (freq[i-1][p] >= freq[i][p]) break; // sorted!
+
+                        float f      = freq[i][p];
+                        freq[i][p]   = freq[i-1][p];
+                        freq[i-1][p] = f;
+                    }
+                }
+            }
+        }
+    }
+
+#if defined(DEBUG)
+    for (size_t p = 0; p<len; ++p) {                // all positions
+        nt_assert(freq[0][p] >= freq[1][p]);
+        nt_assert(freq[1][p] >= freq[2][p]);
+        nt_assert(freq[2][p] >= freq[3][p]);
+    }
+#endif // DEBUG
+}
+SortedFreq::~SortedFreq() {
+    for (int i = 0; i<4; ++i) delete [] freq[i];
+}
+
+// ----------------------------
+//      AP_csp_2_gnuplot_cb
+
 void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
     // cl_mode = 0 -> write file
     // cl_mode = 1 -> write file and run gnuplot
@@ -229,20 +283,21 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
     GB_transaction  dummy(GLOBAL_gb_main);
     AWT_csp        *csp   = (AWT_csp *)cspcd;
     GB_ERROR        error = 0;
-    AP_filter       filter;
     int             mode  = int(cl_mode);
 
     if (mode != 2) {
         char *filterstring     = aww->get_root()->awar(AP_AWAR_FILTER_FILTER)->read_string();
         char *alignment_name   = aww->get_root()->awar(AP_AWAR_FILTER_ALIGNMENT)->read_string();
         long  alignment_length = GBT_get_alignment_len(GLOBAL_gb_main,alignment_name);
-        error                  = filter.init(filterstring,"0",alignment_length);
+
+        AP_filter filter(filterstring, "0", alignment_length);
+
         free(alignment_name);
         free(filterstring);
 
-        if (!error) error = csp->go(&filter);
+        error = csp->go(&filter);
 
-        if (!error && !csp->seq_len) error = "Please select column statistic";
+        if (!error && !csp->get_length()) error = "Please select column statistic";
     }
 
     if (!error) {
@@ -275,81 +330,121 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
             nt_assert(out || error);
 
             if (!error) {
-                char         *type     = aww->get_root()->awar(AP_AWAR_CSP_SUFFIX)->read_string();
-                long          smooth   = aww->get_root()->awar(AP_AWAR_CSP_SMOOTH)->read_int()+1;
-                double        val;
-                double        smoothed = 0;
-                unsigned int  j;
-                float        *f[4];
+                char   *type   = aww->get_root()->awar(AP_AWAR_CSP_SUFFIX)->read_string();
+                long    smooth = aww->get_root()->awar(AP_AWAR_CSP_SMOOTH)->read_int()+1;
+                size_t  csplen = csp->get_length();
 
-                if (type[0] == 'f') { // sort frequencies
-                    int wf;
-                    int c = 0;
-
-                    for (wf = 0; wf <256 && c <4; wf++) {
-                        if (csp->frequency[wf]) f[c++] = csp->frequency[wf];
-                    }
-                    int k,l;
-                    for (k=3;k>0;k--) {
-                        for (l=0;l<k;l++) {
-                            for (j=0;j<csp->seq_len; j++) {
-                                if (f[l][j] > f[l+1][j]) {
-                                    float h;
-                                    h = f[l][j];
-                                    f[l][j] = f[l+1][j];
-                                    f[l+1][j] = h;
-                                }
-                            }
-                        }
-                    }
-                }
+                enum {
+                    STAT_AMOUNT,
+                    STAT_SIMPLE_FLOAT,
+                    STAT_SIMPLE_BOOL,
+                    STAT_SORT,
+                    STAT_UNKNOWN
+                } stat_type = STAT_UNKNOWN;
+                union {
+                    struct {
+                        const float *A;
+                        const float *C;
+                        const float *G;
+                        const float *TU;
+                    } amount;                       // STAT_AMOUNT
+                    const float *floatVals;         // STAT_SIMPLE_FLOAT
+                    const bool  *boolVals;          // STAT_SIMPLE_BOOL
+                    SortedFreq  *sorted;            // STAT_SORT
+                } data;
 
                 PlotType plot_type = string2PlotType(type);
-                nt_assert(plot_type != PT_UNKNOWN); // 'type' is not a PlotType
-
-                for (j=0;j<csp->seq_len; j++) {
-                    if (!csp->weights[j]) continue;
-                    fprintf(out,"%i ",j);
-
-                    double amount =
-                        csp->frequency[(unsigned char)'A'][j] + csp->frequency[(unsigned char)'C'][j] +
-                        csp->frequency[(unsigned char)'G'][j] + csp->frequency[(unsigned char)'U'][j] ;
-
-                    switch (plot_type) {
-                        case PT_GC_RATIO:
-                            val = ( csp->frequency[(unsigned char)'G'][j] + csp->frequency[(unsigned char)'C'][j] ) / amount;
-                            break;
-                        case PT_GA_RATIO:
-                            val = ( csp->frequency[(unsigned char)'G'][j] + csp->frequency[(unsigned char)'A'][j] ) / amount;
-                            break;
-
-                        case PT_BASE_A: val  = csp->frequency[(unsigned char)'A'][j] / amount; break;
-                        case PT_BASE_C: val  = csp->frequency[(unsigned char)'C'][j] / amount; break;
-                        case PT_BASE_G: val  = csp->frequency[(unsigned char)'G'][j] / amount; break;
-                        case PT_BASE_TU: val = csp->frequency[(unsigned char)'U'][j] / amount; break;
-
-                        case PT_RATE:                   val = csp->rates[j]; break;
-                        case PT_TT_RATIO:               val = csp->ttratio[j]; break;
-                        case PT_HELIX:                  val = csp->is_helix[j]; break;
-
-                        case PT_MOST_FREQUENT_BASE:     val = f[3][j]; break;
-                        case PT_SECOND_FREQUENT_BASE:   val = f[2][j]; break;
-                        case PT_THIRD_FREQUENT_BASE:    val = f[1][j]; break;
-                        case PT_LEAST_FREQUENT_BASE:    val = f[0][j]; break;
-                        default:  {
-                            nt_assert(0); // unknown calculation requested..
-                            val = 0;
-                        }
+                switch (plot_type) {
+                    case PT_GC_RATIO:
+                    case PT_GA_RATIO:
+                    case PT_BASE_A:
+                    case PT_BASE_C:
+                    case PT_BASE_G:
+                    case PT_BASE_TU: {
+                        stat_type = STAT_AMOUNT;
+                        
+                        data.amount.A  = csp->get_frequencies('A');
+                        data.amount.C  = csp->get_frequencies('C');
+                        data.amount.G  = csp->get_frequencies('G');
+                        data.amount.TU = csp->get_frequencies('U');
+                        break;
                     }
-                    smoothed = val/smooth + smoothed *(smooth-1)/(smooth);
-                    fprintf(out,"%f\n",smoothed);
+                    case PT_RATE:
+                        stat_type = STAT_SIMPLE_FLOAT;
+                        data.floatVals = csp->get_rates();
+                        break;
+
+                    case PT_TT_RATIO:
+                        stat_type = STAT_SIMPLE_FLOAT;
+                        data.floatVals = csp->get_ttratio();
+                        break;
+
+                    case PT_HELIX:  {
+                        stat_type = STAT_SIMPLE_BOOL;
+                        data.boolVals  = csp->get_is_helix();
+                        break;
+                    }
+                    case PT_MOST_FREQUENT_BASE:
+                    case PT_SECOND_FREQUENT_BASE:
+                    case PT_THIRD_FREQUENT_BASE:
+                    case PT_LEAST_FREQUENT_BASE:  {
+                        stat_type   = STAT_SORT;
+                        data.sorted = new SortedFreq(csp);
+                        break;
+                    }
+                    case PT_PLOT_TYPES:
+                    case PT_UNKNOWN:
+                        error = "Please select what to plot";
+                        break;
                 }
 
+                const GB_UINT4 *weights = csp->get_weights();
+
+                if (!error) {
+                    for (size_t j=0; j<csplen; ++j) {
+                        if (!weights[j]) continue;
+                        fprintf(out,"%i ",j); // print X coordinate
+
+                        double val;
+                        switch (stat_type) {
+                            case STAT_AMOUNT:  {
+                                float A  = data.amount.A[j];
+                                float C  = data.amount.C[j];
+                                float G  = data.amount.G[j];
+                                float TU = data.amount.TU[j];
+                            
+                                float amount = A+C+G+TU;
+
+                                switch (plot_type) {
+                                    case PT_GC_RATIO: val = (G+C)/amount; break;
+                                    case PT_GA_RATIO: val = (G+A)/amount; break;
+                                    case PT_BASE_A:   val = A/amount; break;
+                                    case PT_BASE_C:   val = C/amount; break;
+                                    case PT_BASE_G:   val = G/amount; break;
+                                    case PT_BASE_TU:  val = TU/amount; break;
+                                    
+                                    default: nt_assert(0); break;
+                                }
+                                break;
+                            }
+                            case STAT_SIMPLE_FLOAT: val = data.floatVals[j]; break;
+                            case STAT_SIMPLE_BOOL:  val = data.boolVals[j]; break;
+                            case STAT_SORT:         val = data.sorted->get(plot_type, j); break;
+                            
+                            case STAT_UNKNOWN: nt_assert(0); break;
+                        }
+
+                        double smoothed = val/smooth + smoothed *(smooth-1)/(smooth);
+                        fprintf(out,"%f\n",smoothed); // print Y coordinate
+                    }
+                }
+
+                if (stat_type == STAT_SORT) delete data.sorted;
                 free(type);
                 fclose(out);
                 out = 0;
             }
-            
+
             if (!error) {
                 aww->get_root()->awar(AP_AWAR_CSP_DIRECTORY)->touch(); // reload file selection box
 
@@ -379,7 +474,7 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
                         }
 
                         fprintf(out, "%s \"%s\" %s title \"%s\"\n", plot_command[int(plotted)], fname, smooth, makeTitle(fname));
-                        fprintf(out, "pause -1 \"Press RETURN to close gnuplot\"\n");
+                        fprintf(out, "pause mouse any \"Any key or button will terminate gnuplot\"\n");
                         fclose(out);
                         out = 0;
 
@@ -498,3 +593,5 @@ AW_window *AP_open_csp_2_gnuplot_window( AW_root *root ){
 
     return (AW_window *)aws;
 }
+
+

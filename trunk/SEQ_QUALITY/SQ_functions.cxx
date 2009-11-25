@@ -25,7 +25,6 @@
 #include <aw_window.hxx>
 #include <aw_preset.hxx>
 #include <awt.hxx>
-#include <awt_tree.hxx>
 
 #include "SQ_GroupData.h"
 #include "SQ_ambiguities.h"
@@ -410,23 +409,19 @@ GB_ERROR SQ_evaluate(GBDATA * gb_main, const SQ_weights & weights, bool marked_o
 }
 
 char *SQ_fetch_filtered_sequence(GBDATA * read_sequence, AP_filter * filter) {
-    if (!read_sequence)
-        return 0;
-
-    const char *rawSequence = GB_read_char_pntr(read_sequence);
-    int filteredLength = filter->real_len;
-
-    if (filter->filterpos_2_seqpos == 0)
-        filter->calc_filter_2_seq();
-
-    char *filteredSequence = (char *) malloc(filteredLength * sizeof(char));
-
-    if (filteredSequence) {
-        for (int i = 0; i < filteredLength; ++i) {
-            filteredSequence[i] = rawSequence[filter->filterpos_2_seqpos[i]];
+    char *filteredSequence = 0;
+    if (read_sequence) {
+        const char   *rawSequence        = GB_read_char_pntr(read_sequence);
+        int           filteredLength     = filter->get_filtered_length();
+        const size_t *filterpos_2_seqpos = filter->get_filterpos_2_seqpos();
+        
+        filteredSequence = (char*)malloc(filteredLength * sizeof(char));
+        if (filteredSequence) {
+            for (int i = 0; i < filteredLength; ++i) {
+                filteredSequence[i] = rawSequence[filterpos_2_seqpos[i]];
+            }
         }
     }
-
     return filteredSequence;
 }
 
@@ -472,7 +467,7 @@ GB_ERROR SQ_pass1(SQ_GroupData * globalData, GBDATA * gb_main, GBT_TREE * node,
             if (read_sequence) {
                 char *rawSequence = SQ_fetch_filtered_sequence(read_sequence,
                         filter);
-                int sequenceLength = filter->real_len;
+                int sequenceLength = filter->get_filtered_length();
 
                 /*calculate physical layout of sequence */
                 {
@@ -575,7 +570,7 @@ GB_ERROR SQ_pass1_no_tree(SQ_GroupData * globalData, GBDATA * gb_main,
                 if (read_sequence) {
                     char *rawSequence = SQ_fetch_filtered_sequence(
                             read_sequence, filter);
-                    int sequenceLength = filter->real_len;
+                    int sequenceLength = filter->get_filtered_length();
 
                     /*calculate physical layout of sequence */
                     SQ_physical_layout *ps_chan = new SQ_physical_layout();

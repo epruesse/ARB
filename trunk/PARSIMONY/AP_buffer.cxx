@@ -1,13 +1,17 @@
-#include <cstdio>
-#include <memory.h>
-#include <iostream>
-
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <awt_tree.hxx>
+// =============================================================== //
+//                                                                 //
+//   File      : AP_buffer.cxx                                     //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include "AP_buffer.hxx"
 #include "AP_error.hxx"
+
+#include <iostream>
 
 using namespace std;
 

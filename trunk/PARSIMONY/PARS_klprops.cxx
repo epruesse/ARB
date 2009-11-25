@@ -1,30 +1,17 @@
-#include <stdio.h>
-#include <stdlib.h>
-// #include <malloc.h>
-#include <arbdb.h>
-#include <arbdbt.h>
+// =============================================================== //
+//                                                                 //
+//   File      : PARS_klprops.cxx                                  //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <aw_root.hxx>
-#include <aw_device.hxx>
+#include "pars_klprops.hxx"
+
 #include <aw_window.hxx>
-#include <aw_preset.hxx>
-#include <aw_awars.hxx>
-#include <awt_canvas.hxx>
-#include <awt.hxx>
-#include <awt_nds.hxx>
 
-#include <awt_tree.hxx>
-#include <awt_dtree.hxx>
-#include <awt_tree_cb.hxx>
-
-#include "AP_buffer.hxx"
-#include "parsimony.hxx"
-#include "ap_tree_nlen.hxx"
-#include "pars_main.hxx"
-#include "pars_dtree.hxx"
-
-extern AW_window *preset_window( AW_root *root );
-extern AW_window *genetic_window(AW_root *root);
 
 AW_window *create_kernighan_window(AW_root *aw_root) {
 

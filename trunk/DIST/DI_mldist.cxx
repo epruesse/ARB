@@ -1,29 +1,22 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <memory.h>
-// #include <malloc.h>
-#include <string.h>
+// =============================================================== //
+//                                                                 //
+//   File      : DI_mldist.cxx                                     //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <math.h>
-
-#include <arbdb.h>
-#include <arbdbt.h>
-
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_preset.hxx>
-#include <awt.hxx>
-
-#include <awt_tree.hxx>
-#include "dist.hxx"
-#include <awt_csp.hxx>
-
-#include "di_matr.hxx"
 #include "di_mldist.hxx"
+#include "di_matr.hxx"
 
-#define epsilon         0.000001/* a small number */
+#include <AP_seq_simple_pro.hxx>
 
+#include <cmath>
+
+
+#define epsilon 0.000001                            // a small number
 
 void di_mldist::givens(di_ml_matrix a,long i,long j,long n,double ctheta,double stheta,GB_BOOL left)
 {
@@ -230,12 +223,12 @@ const char *di_mldist::makedists()
         }
         {
             /* move all unknown characters to del */
-            ap_pro *seq1 = entries[i]->sequence_protein->sequence;
+            ap_pro *seq = entries[i]->sequence_protein->get_sequence();
             for (k = 0; k <chars ; k++) {
-                b1 = seq1[k];
+                b1 = seq[k];
                 if (b1 <=val) continue;
                 if (b1 == asx || b1 == glx) continue;
-                seq1[k] = del;
+                seq[k] = del;
             }
         }
 
@@ -249,8 +242,8 @@ const char *di_mldist::makedists()
                 pos = tt_2_pos(tt);
                 tt = pos_2_tt(pos);
                 build_akt_predikt(tt);
-                ap_pro *seq1 = entries[i]->sequence_protein->sequence;
-                ap_pro *seq2 = entries[j]->sequence_protein->sequence;
+                const ap_pro *seq1 = entries[i]->sequence_protein->get_sequence();
+                const ap_pro *seq2 = entries[j]->sequence_protein->get_sequence();
                 for (k = chars; k >0; k--) {
                     b1 = *(seq1++);
                     b2 = *(seq2++);

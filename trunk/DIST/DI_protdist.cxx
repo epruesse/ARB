@@ -1,28 +1,21 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <memory.h>
-// #include <malloc.h>
-#include <string.h>
+// =============================================================== //
+//                                                                 //
+//   File      : DI_protdist.cxx                                   //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+#include "di_protdist.hxx"
+#include "di_matr.hxx"
 
 #include <math.h>
 
-#include <arbdb.h>
-#include <arbdbt.h>
+#define di_assert(cond) arb_assert(cond)
 
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_preset.hxx>
-#include <awt.hxx>
-
-#include <awt_tree.hxx>
-#include "dist.hxx"
-#include <awt_csp.hxx>
-
-#include "di_matr.hxx"
-#include "di_protdist.hxx"
-
-#define epsilon         0.000001/* a small number */
+#define epsilon 0.000001        /* a small number */
 
 double   di_protdist::pameigs[20] = {
     -0.022091252, -0.019297602, 0.000004760, -0.017477817,
@@ -675,7 +668,7 @@ const char *di_protdist::makedists()
         }
         {
             /* move all unknown characters to del */
-            ap_pro *seq1 = entries[i]->sequence_protein->sequence;
+            ap_pro *seq1 = entries[i]->sequence_protein->get_sequence();
             for (k = 0; k <chars ; k++) {
                 b1 = seq1[k];
                 if (b1 <=val) continue;
@@ -698,8 +691,8 @@ const char *di_protdist::makedists()
                     pos = tt_2_pos(tt);
                     tt = pos_2_tt(pos);
                     build_akt_predikt(tt);
-                    ap_pro *seq1 = entries[i]->sequence_protein->sequence;
-                    ap_pro *seq2 = entries[j]->sequence_protein->sequence;
+                    const ap_pro *seq1 = entries[i]->sequence_protein->get_sequence();
+                    const ap_pro *seq2 = entries[j]->sequence_protein->get_sequence();
                     for (k = chars; k >0; k--) {
                         b1 = *(seq1++);
                         b2 = *(seq2++);
@@ -741,8 +734,8 @@ const char *di_protdist::makedists()
             } else {                    // cat < kimura
                 m = 0;
                 n = 0;
-                ap_pro *seq1 = entries[i]->sequence_protein->sequence;
-                ap_pro *seq2 = entries[j]->sequence_protein->sequence;
+                const ap_pro *seq1 = entries[i]->sequence_protein->get_sequence();
+                const ap_pro *seq2 = entries[j]->sequence_protein->get_sequence();
                 for (k = chars; k >0; k--) {
                     b1 = *(seq1++);
                     b2 = *(seq2++);

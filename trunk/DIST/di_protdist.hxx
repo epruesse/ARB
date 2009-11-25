@@ -1,5 +1,21 @@
+// =============================================================== //
+//                                                                 //
+//   File      : di_protdist.hxx                                   //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-const int di_max_aa     = stop; // mussed be 20
+#ifndef DI_PROTDIST_HXX
+#define DI_PROTDIST_HXX
+
+#ifndef AP_SEQ_SIMPLE_PRO_HXX
+#include <AP_seq_simple_pro.hxx>
+#endif
+
+const int di_max_aa     = stop; // must be 20
 const int di_max_paa    = unk;  // includes virtual aa
 const int di_resolution = 1000; // max res
 const int di_max_dist   = 10;   // max dist
@@ -17,6 +33,9 @@ typedef enum {
 typedef double di_aa_matrix[di_max_aa][di_max_aa];
 typedef double di_paa_matrix[di_max_paa][di_max_paa];
 typedef char   di_bool_matrix[di_max_paa][di_max_paa];
+
+class DI_ENTRY;
+class AP_smatrix;
 
 class di_protdist {
     static double pameigs[20];
@@ -85,3 +104,7 @@ public:
     
     const char *makedists();    // calculate the distance matrix
 };
+
+#else
+#error di_protdist.hxx included twice
+#endif // DI_PROTDIST_HXX

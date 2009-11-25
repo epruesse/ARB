@@ -13,38 +13,15 @@
 #endif
 
 
-/* GDE_ParseMenu.cxx */
-void ParseMenu(void);
-int Find(const char *target, const char *key);
-int Find2(const char *target, const char *key);
-void Error(const char *msg) __ATTR__NORETURN;
-void crop(char *input, char *head, char *tail);
-
 /* GDE.cxx */
+
+#ifndef GDE_MENU_H
+#include "GDE_menu.h"
+#endif
+
 char *GDE_makeawarname(GmenuItem *gmenuitem, long i);
 void GDE_load_menu(AW_window *awm, AW_active mask, const char *menulabel, const char *menuitemlabel);
 void create_gde_var(AW_root *aw_root, AW_default aw_def, char *(*get_sequences )(void *THIS, GBDATA **&the_species, uchar **&the_names, uchar **&the_sequences, long &numberspecies, long &maxalignlen ), gde_cgss_window_type wt, void *THIS);
-
-/* GDE_event.cxx */
-void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL cd);
-
-/* GDE_arbdb_io.cxx */
-void ReadArbdb_plain(char *filename, NA_Alignment *dataset, int type);
-int ReadArbdb2(NA_Alignment *dataset, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon);
-int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon);
-int getelem(NA_Sequence *a, int b);
-void putelem(NA_Sequence *a, int b, NA_Base c);
-
-/* GDE_HGLfile.cxx */
-void ReadGDE(char *filename, NA_Alignment *dataset, int type);
-int WriteGDE(NA_Alignment *aln, char *filename, int method, int maskable);
-void SeqNorm(NA_Sequence *seq);
-char *uniqueID(void);
-
-/* GDE_Genbank.cxx */
-void ReadGen(char *filename, NA_Alignment *dataset, int type);
-int WriteGen(NA_Alignment *aln, char *filename, int method, int maskable);
-void SetTime(void *b);
 
 /* GDE_FileIO.cxx */
 int MAX(int a, int b);
@@ -65,6 +42,39 @@ int WriteStatus(NA_Alignment *aln, char *filename, int method);
 void ReadStatus(char *filename);
 void NormalizeOffset(NA_Alignment *aln);
 int WriteCMask(NA_Alignment *aln, char *filename, int method, int maskable);
+
+/* GDE_Genbank.cxx */
+void ReadGen(char *filename, NA_Alignment *dataset, int type);
+int WriteGen(NA_Alignment *aln, char *filename, int method, int maskable);
+void SetTime(void *b);
+
+/* GDE_HGLfile.cxx */
+void ReadGDE(char *filename, NA_Alignment *dataset, int type);
+int WriteGDE(NA_Alignment *aln, char *filename, int method, int maskable);
+void SeqNorm(NA_Sequence *seq);
+char *uniqueID(void);
+
+/* GDE_ParseMenu.cxx */
+void ParseMenu(void);
+int Find(const char *target, const char *key);
+int Find2(const char *target, const char *key);
+void Error(const char *msg) __ATTR__NORETURN;
+void crop(char *input, char *head, char *tail);
+
+/* GDE_arbdb_io.cxx */
+
+#ifndef GDE_EXTGLOB_H
+#include "GDE_extglob.h"
+#endif
+
+void ReadArbdb_plain(char *filename, NA_Alignment *dataset, int type);
+int ReadArbdb2(NA_Alignment *dataset, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon);
+int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon);
+int getelem(NA_Sequence *a, int b);
+void putelem(NA_Sequence *a, int b, NA_Base c);
+
+/* GDE_event.cxx */
+void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL cd);
 
 #else
 #error GDE_proto.h included twice

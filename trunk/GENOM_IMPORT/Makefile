@@ -83,10 +83,10 @@ DBwriter.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 DBwriter.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 DBwriter.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DBwriter.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-DBwriter.o: $(ARBHOME)/INCLUDE/awt_translate.hxx
 DBwriter.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 DBwriter.o: $(ARBHOME)/INCLUDE/GEN.hxx
 DBwriter.o: $(ARBHOME)/INCLUDE/smartptr.h
+DBwriter.o: $(ARBHOME)/INCLUDE/Translate.hxx
 
 Feature.o: defs.h
 Feature.o: Feature.h

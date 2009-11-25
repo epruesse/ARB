@@ -238,7 +238,7 @@ GB_ERROR GB_write_usr_public P_((GBDATA *gbd, long flags));
 long GB_read_usr_public P_((GBDATA *gbd));
 long GB_read_usr_private P_((GBDATA *gbd));
 GB_ERROR GB_write_usr_private P_((GBDATA *gbd, long ref));
-GB_ERROR GB_write_flag P_((GBDATA *gbd, long flag));
+void GB_write_flag P_((GBDATA *gbd, long flag));
 int GB_read_flag P_((GBDATA *gbd));
 void GB_touch P_((GBDATA *gbd));
 GB_ERROR GB_print_debug_information P_((void *dummy, GBDATA *gb_main));

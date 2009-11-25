@@ -18,7 +18,7 @@
 AW_HEADER_MAIN
 
 AW_window *DI_create_matrix_window(AW_root *aw_root);
-void       DI_create_matrix_variables(AW_root *aw_root, AW_default aw_def);
+void       DI_create_matrix_variables(AW_root *aw_root, AW_default aw_def, AW_default db);
 #ifdef FINDCORR
 AW_window *bc_create_main_window( AW_root *awr);
 void       bc_create_bc_variables(AW_root *awr, AW_default awd);
@@ -80,7 +80,7 @@ int main(int argc, char **argv)
         free_arb_params(params);
     }
 
-    DI_create_matrix_variables(aw_root,aw_default);
+    DI_create_matrix_variables(aw_root, aw_default, GLOBAL_gb_main);
 #ifdef FINDCORR
     bc_create_bc_variables(aw_root,aw_default);
 #endif

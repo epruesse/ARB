@@ -39,7 +39,7 @@ depend.init:
 .cxx.depend:
 	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
 
-# DO NOT DELETE
+# DO NOT DELETE THIS LINE -- make depend depends on it.
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
@@ -70,7 +70,6 @@ EXP_interface.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/awt.hxx
-EXP_interface.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
@@ -157,7 +156,6 @@ GEN_interface.o: ../NTREE/ad_spec.hxx
 GEN_interface.o: ../NTREE/nt_internal.h
 GEN_interface.o: GEN.hxx
 GEN_interface.o: GEN_local.hxx
-GEN_interface.o: GEN_nds.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -176,12 +174,10 @@ GEN_interface.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/awt.hxx
-GEN_interface.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/ntree.hxx
-GEN_interface.o: $(ARBHOME)/INCLUDE/probe_design.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 GEN_map.o: ../NTREE/ad_spec.hxx
@@ -248,6 +244,7 @@ GEN_translations.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/adGene.h
+GEN_translations.o: $(ARBHOME)/INCLUDE/AP_codon_table.hxx
 GEN_translations.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/arb_error.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -262,6 +259,5 @@ GEN_translations.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 GEN_translations.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_translations.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GEN_translations.o: $(ARBHOME)/INCLUDE/awt.hxx
-GEN_translations.o: $(ARBHOME)/INCLUDE/awt_codon_table.hxx
-GEN_translations.o: $(ARBHOME)/INCLUDE/awt_translate.hxx
 GEN_translations.o: $(ARBHOME)/INCLUDE/smartptr.h
+GEN_translations.o: $(ARBHOME)/INCLUDE/Translate.hxx

@@ -1,29 +1,24 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <memory.h>
-// #include <malloc.h>
-#include <string.h>
-#include <unistd.h>
-
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_awars.hxx>
-#include <aw_global.hxx>
-#include <awt.hxx>
-#include <TreeRead.h>
-#include <TreeWrite.h>
-#include <awt_tree_cmp.hxx>
-#include <awt_sel_boxes.hxx>
-#include <awt_nds.hxx>
+// =============================================================== //
+//                                                                 //
+//   File      : ad_trees.cxx                                      //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include "ad_trees.hxx"
+#include "nt_tree_cmp.hxx"
 
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
-#endif
+#include <TreeRead.h>
+#include <TreeWrite.h>
+#include <awt_sel_boxes.hxx>
+#include <awt_nds.hxx>
+#include <awt.hxx>
+#include <aw_awars.hxx>
+#include <aw_global.hxx>
+
 #define nt_assert(bed) arb_assert(bed)
 
 extern GBDATA *GLOBAL_gb_main;
@@ -183,9 +178,11 @@ void create_trees_var(AW_root *aw_root, AW_default aw_def)
 }
 
 void tree_rename_cb(AW_window *aww) {
-    char     *source = aww->get_root()->awar(AWAR_TREE_NAME)->read_string();
-    char     *dest   = aww->get_root()->awar(AWAR_TREE_DEST)->read_string();
-    GB_ERROR  error  = GBT_check_tree_name(dest);
+    AW_root  *aw_root   = aww->get_root();
+    AW_awar  *awar_tree = aw_root->awar(AWAR_TREE_NAME);
+    char     *source    = awar_tree->read_string();
+    char     *dest      = aw_root->awar(AWAR_TREE_DEST)->read_string();
+    GB_ERROR  error     = GBT_check_tree_name(dest);
 
     if (!error) {
         error = GB_begin_transaction(GLOBAL_gb_main);
@@ -210,11 +207,13 @@ void tree_rename_cb(AW_window *aww) {
                 }
             }
         }
+        
+        if (!error) awar_tree->write_string(dest);
         error = GB_end_transaction(GLOBAL_gb_main, error);
     }
 
     aww->hide_or_notify(error);
-    
+
     free(dest);
     free(source);
 }
@@ -678,28 +677,41 @@ AW_window *create_tree_cmp_window(AW_root *root){
     return aws;
 }
 void ad_tr_delete_cb(AW_window *aww){
-    GB_ERROR  error  = 0;
-    char     *source = aww->get_root()->awar(AWAR_TREE_NAME)->read_string();
+    AW_awar  *awar_tree = aww->get_root()->awar(AWAR_TREE_NAME);
+    char     *source    = awar_tree->read_string();
 
-    GB_begin_transaction(GLOBAL_gb_main);
+    // 1. switch to next tree
+    {
+        GB_transaction ta(GLOBAL_gb_main);
+        char *newname = GBT_get_next_tree_name(GLOBAL_gb_main, source);
 
-    GBDATA *gb_tree = GBT_get_tree(GLOBAL_gb_main,source);
-    if (gb_tree) {
-        char *newname = GBT_get_next_tree_name(GLOBAL_gb_main,source);
-        error = GB_delete(gb_tree);
-        if (!error && newname) {
-            aww->get_root()->awar(AWAR_TREE_NAME)->write_string(strcmp(newname, source) == 0 ? "" : newname);
-        }
+        awar_tree->write_string(!newname || (strcmp(newname, source) == 0) ? "" : newname);
         free(newname);
     }
-    else {
-        error = "Please select a tree first";
+
+    // 2. delete old tree
+    {
+        GB_ERROR  error   = GB_begin_transaction(GLOBAL_gb_main);
+        GBDATA   *gb_tree = GBT_get_tree(GLOBAL_gb_main,source);
+        if (gb_tree) {
+            char *newname = GBT_get_next_tree_name(GLOBAL_gb_main,source);
+            error = GB_delete(gb_tree);
+            if (!error && newname) {
+                awar_tree->write_string(strcmp(newname, source) == 0 ? "" : newname);
+            }
+            free(newname);
+        }
+        else {
+            error = "Please select a tree first";
+        }
+
+        error = GB_end_transaction(GLOBAL_gb_main, error);
+        if (error) {
+            aw_message(error);
+            awar_tree->write_string(source); // switch back to failed tree
+        }
     }
 
-    if (!error) GB_commit_transaction(GLOBAL_gb_main);
-    else    GB_abort_transaction(GLOBAL_gb_main);
-
-    if (error) aw_message(error);
     free(source);
 }
 

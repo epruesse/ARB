@@ -251,6 +251,7 @@ ED4_main.o: $(ARBHOME)/INCLUDE/ad_config.h
 ED4_main.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ED4_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+ED4_main.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_main.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_main.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -270,7 +271,6 @@ ED4_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/awt_map_key.hxx
-ED4_main.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/gde.hxx
@@ -442,6 +442,8 @@ ED4_ProteinViewer.o: ed4_search.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/AP_codon_table.hxx
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -460,11 +462,9 @@ ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/awt.hxx
-ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/awt_codon_table.hxx
-ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
-ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/awt_translate.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/smartptr.h
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/Translate.hxx
 
 ED4_RNA3D.o: ../RNA3D/RNA3D_Main.hxx
 ED4_RNA3D.o: ed4_RNA3D.hxx

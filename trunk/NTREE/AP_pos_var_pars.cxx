@@ -1,20 +1,20 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <ctype.h>
-#include <string.h>
-// #include <malloc.h>
-#include <memory.h>
-#include <math.h>
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <awt.hxx>
-#include <awt_tree.hxx>
-#include <awt_sel_boxes.hxx>
+// =============================================================== //
+//                                                                 //
+//   File      : AP_pos_var_pars.cxx                               //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include "ap_pos_var_pars.hxx"
+
+#include <AP_pro_a_nucs.hxx>
+#include <awt_sel_boxes.hxx>
+#include <aw_window.hxx>
+
+#include <cctype>
 
 #define ap_assert(cond) arb_assert(cond)
 

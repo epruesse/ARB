@@ -3,7 +3,6 @@
 #include <string.h>
 #include <arbdbt.h>
 #include <aw_root.hxx>
-#include <awt_tree.hxx>
 #include <math.h>
 
 extern int MP_probe_design_send_data(T_PT_PDC  pdc);

@@ -1,23 +1,5 @@
-#include <sys/time.h>
-#include <stdio.h>
-#include <stdlib.h>
-// #include <malloc.h>
-#include <string.h>
-#include <time.h>
-
-//#include <xview/xview.h>
-//#include <xview/panel.h>
-
-#include <arbdb.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <awt.hxx>
-
-#include "gde.hxx"
-#include "GDE_menu.h"
-#include "GDE_def.h"
 #include "GDE_extglob.h"
+#include <time.h>
 
 /*
   Copyright (c) 1990,1991,1992 Steven Smith at the Harvard Genome Laboratory.

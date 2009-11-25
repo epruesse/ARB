@@ -1,26 +1,21 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+// =============================================================== //
+//                                                                 //
+//   File      : NT_edconf.cxx                                     //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <ad_config.h>
-#include <aw_awars.hxx>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
+#include "nt_cb.hxx"
+#include "nt_internal.h"
 
-#include "nt_edconf.hxx"
-
-#include <awt.hxx>
-#include <awt_canvas.hxx>
-#include <awt_tree.hxx>
-#include <awt_dtree.hxx>
 #include <awt_sel_boxes.hxx>
+#include <aw_window.hxx>
+#include <aw_awars.hxx>
+#include <ad_config.h>
 
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
-#endif
 #define nt_assert(bed) arb_assert(bed)
 
 extern GBDATA *GLOBAL_gb_main;
@@ -378,11 +373,9 @@ AW_window *NT_start_editor_on_old_configuration(AW_root *awr){
     return (AW_window *)aws;
 }
 
-void NT_start_editor_on_tree(AW_window *, GBT_TREE **ptree, int use_species_aside){
-    GB_ERROR error = NT_create_configuration(0,ptree,CONFNAME, use_species_aside);
-    if (!error) {
-        GBCMC_system(GLOBAL_gb_main, "arb_edit4 -c "CONFNAME" &");
-    }
+void NT_start_editor_on_tree(AW_window *, AW_CL cl_use_species_aside, AW_CL) {
+    GB_ERROR error = NT_create_configuration(0, nt_get_current_tree_root(), CONFNAME, (int)cl_use_species_aside);
+    if (!error) GBCMC_system(GLOBAL_gb_main, "arb_edit4 -c "CONFNAME" &");
 }
 
 enum extractType {
@@ -476,9 +469,8 @@ void nt_delete_configuration(AW_window *aww){
 }
 
 
-GB_ERROR NT_create_configuration(AW_window *, GBT_TREE **ptree,const char *conf_name, int use_species_aside){
-    GBT_TREE *tree = *ptree;
-    char     *to_free = 0;
+GB_ERROR NT_create_configuration(AW_window *, GBT_TREE *tree, const char *conf_name, int use_species_aside) {
+    char *to_free = 0;
 
     if (!conf_name) {
         char *existing_configs = awt_create_string_on_configurations(GLOBAL_gb_main);
@@ -491,7 +483,7 @@ GB_ERROR NT_create_configuration(AW_window *, GBT_TREE **ptree,const char *conf_
         static int last_used_species_aside = 3;
         {
             const char *val                    = GBS_global_string("%i", last_used_species_aside);
-            char       *use_species            = aw_input("Enter number of extra species to view aside marked:", val);
+            char       *use_species            = aw_input("How many extra species to view aside marked:", val);
             if (use_species) use_species_aside = atoi(use_species);
             free(use_species);
         }
@@ -550,9 +542,8 @@ GB_ERROR NT_create_configuration(AW_window *, GBT_TREE **ptree,const char *conf_
     return error;
 }
 
-void nt_store_configuration(AW_window */*aww*/, AW_CL cl_GBT_TREE_ptr) {
-    GBT_TREE **ptree = (GBT_TREE**)cl_GBT_TREE_ptr;
-    GB_ERROR   err   = NT_create_configuration(0, ptree, 0, 0);
+static void nt_store_configuration(AW_window *) {
+    GB_ERROR err = NT_create_configuration(0, nt_get_current_tree_root(), 0, 0);
     if (err) aw_message(err);
 }
 
@@ -585,70 +576,64 @@ void nt_rename_configuration(AW_window *aww) {
     if (err) aw_message(err);
     free(old_name);
 }
-//  --------------------------------------------------------------------------------------
-//      AW_window *create_configuration_admin_window(AW_root *root, GBT_TREE **ptree)
-//  --------------------------------------------------------------------------------------
-AW_window *create_configuration_admin_window(AW_root *root, GBT_TREE **ptree) {
+
+static AW_window *create_configuration_admin_window(AW_root *root) {
     static AW_window_simple *aws = 0;
-    if (aws) return aws;
+    if (!aws) {
+        init_config_awars(root);
 
-    init_config_awars(root);
+        aws = new AW_window_simple;
+        aws->init(root, "SPECIES_SELECTIONS", "Species Selections");
+        aws->load_xfig("nt_selection.fig");
 
-    aws = new AW_window_simple;
-    aws->init(root, "SPECIES_SELECTIONS", "Species Selections");
-    aws->load_xfig("nt_selection.fig");
+        aws->at("close");
+        aws->callback( (AW_CB0)AW_POPDOWN);
+        aws->create_button("CLOSE","CLOSE","C");
 
-    aws->at("close");
-    aws->callback( (AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");
+        aws->at("help");
+        aws->callback(AW_POPUP_HELP,(AW_CL)"configuration.hlp");
+        aws->create_button("HELP","HELP","H");
 
-    aws->at("help");
-    aws->callback(AW_POPUP_HELP,(AW_CL)"configuration.hlp");
-    aws->create_button("HELP","HELP","H");
+        aws->at("list");
+        awt_create_selection_list_on_configurations(GLOBAL_gb_main, aws, AWAR_CONFIGURATION);
 
-    aws->at("list");
-    awt_create_selection_list_on_configurations(GLOBAL_gb_main, aws, AWAR_CONFIGURATION);
+        aws->at("store");
+        aws->callback(nt_store_configuration);
+        aws->create_button("STORE","STORE","S");
 
-    aws->at("store");
-    aws->callback(nt_store_configuration, (AW_CL)ptree);
-    aws->create_button("STORE","STORE","S");
+        aws->at("extract");
+        aws->callback(nt_extract_configuration, CONF_EXTRACT);
+        aws->create_button("EXTRACT","EXTRACT","E");
 
-    aws->at("extract");
-    aws->callback(nt_extract_configuration, CONF_EXTRACT);
-    aws->create_button("EXTRACT","EXTRACT","E");
+        aws->at("mark");
+        aws->callback(nt_extract_configuration, CONF_MARK);
+        aws->create_button("MARK","MARK","M");
 
-    aws->at("mark");
-    aws->callback(nt_extract_configuration, CONF_MARK);
-    aws->create_button("MARK","MARK","M");
+        aws->at("unmark");
+        aws->callback(nt_extract_configuration, CONF_UNMARK);
+        aws->create_button("UNMARK","UNMARK","U");
 
-    aws->at("unmark");
-    aws->callback(nt_extract_configuration, CONF_UNMARK);
-    aws->create_button("UNMARK","UNMARK","U");
+        aws->at("invert");
+        aws->callback(nt_extract_configuration, CONF_INVERT);
+        aws->create_button("INVERT","INVERT","I");
 
-    aws->at("invert");
-    aws->callback(nt_extract_configuration, CONF_INVERT);
-    aws->create_button("INVERT","INVERT","I");
+        aws->at("combine");
+        aws->callback(nt_extract_configuration, CONF_COMBINE);
+        aws->create_button("COMBINE","COMBINE","C");
 
-    aws->at("combine");
-    aws->callback(nt_extract_configuration, CONF_COMBINE);
-    aws->create_button("COMBINE","COMBINE","C");
+        aws->at("delete");
+        aws->callback(nt_delete_configuration);
+        aws->create_button("DELETE","DELETE","D");
 
-    aws->at("delete");
-    aws->callback(nt_delete_configuration);
-    aws->create_button("DELETE","DELETE","D");
-
-    aws->at("rename");
-    aws->callback(nt_rename_configuration);
-    aws->create_button("RENAME","RENAME","R");
-
+        aws->at("rename");
+        aws->callback(nt_rename_configuration);
+        aws->create_button("RENAME","RENAME","R");
+    }
     return aws;
 }
 
-void NT_popup_configuration_admin(AW_window *aw_main, AW_CL cl_GBT_TREE_ptr, AW_CL) {
-    GBT_TREE  **ptree   = (GBT_TREE**)cl_GBT_TREE_ptr;
-    AW_root    *aw_root = aw_main->get_root();
-    AW_window  *aww     = create_configuration_admin_window(aw_root, ptree);
-
+void NT_popup_configuration_admin(AW_window *aw_main, AW_CL, AW_CL) {
+    AW_window *aww = create_configuration_admin_window(aw_main->get_root());
     aww->activate();
 }
 

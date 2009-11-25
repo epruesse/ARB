@@ -1,30 +1,12 @@
-#include <unistd.h>
-#include <netdb.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-//#include <xview/xview.h>
-//#include <xview/panel.h>
-#include <arbdb.h>
-#include <arbdbt.h>
-// #include <malloc.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <awt.hxx>
-#include <awt_tree.hxx>
-#include <awt_sel_boxes.hxx>
-#include <gde.hxx>
-#include "GDE_menu.h"
-#include "GDE_def.h"
 #include "GDE_extglob.h"
 #include "GDE_awars.h"
 
-#include <string>
+#include <awt_filter.hxx>
+#include <aw_window.hxx>
+#include <AP_filter.hxx>
+
 #include <set>
+#include <string>
 
 using namespace std;
 

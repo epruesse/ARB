@@ -1,18 +1,21 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_window.hxx>
-#include <aw_awars.hxx>
-#include <awt.hxx>
-#include <awt_tree.hxx>
-#include <awt_csp.hxx>
-#include <awt_item_sel_list.hxx>
-#include <awt_sel_boxes.hxx>
+// ================================================================ //
+//                                                                  //
+//   File      : ST_window.cxx                                      //
+//   Purpose   :                                                    //
+//                                                                  //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
+
 #include "st_window.hxx"
 #include "st_ml.hxx"
-#include "st_quality.hxx"
+
+#include <aw_awars.hxx>
+#include <awt.hxx>
+#include <awt_item_sel_list.hxx>
+#include <awt_csp.hxx>
+#include <awt_filter.hxx>
 
 void st_ok_cb(AW_window *aww, ST_ML *st_ml) {
     AW_root        *root           = aww->get_root();
@@ -21,7 +24,7 @@ void st_ok_cb(AW_window *aww, ST_ML *st_ml) {
     int             marked_only    = root->awar_int(ST_ML_AWAR_CQ_MARKED_ONLY)->read_int();
 
     GB_ERROR error    = GB_push_transaction(st_ml->gb_main);
-    if (!error) error = st_ml->init(tree_name, alignment_name, (char *) 0, marked_only, (char *) 0, st_ml->awt_csp);
+    if (!error) error = st_ml->init(tree_name, alignment_name, NULL, marked_only, st_ml->awt_csp, true);
     if (!error && st_ml->refresh_func) st_ml->refresh_func(st_ml->aw_window);
 
     error = GB_end_transaction(st_ml->gb_main, error);
@@ -33,7 +36,7 @@ void st_ok_cb(AW_window *aww, ST_ML *st_ml) {
 
 AW_window *st_create_main_window(AW_root * root, ST_ML * st_ml, AW_CB0 refresh_func, AW_window * win) {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init(root, "ENABLE_ONLINE_STATISTIC", "ACTIVATE ONLINE STATISTIC");
+    aws->init(root, "COLUMN_STATISTIC", "COLUMN STATISTIC");
 
     aws->load_xfig("stat_main.fig");
 
@@ -106,28 +109,26 @@ int st_is_inited(ST_ML * st_ml) {
 }
 
 void st_check_cb(AW_window * aww, GBDATA * gb_main, AWT_csp * awt_csp) {
-    GB_begin_transaction(gb_main);
+    GB_transaction ta(gb_main);
+
     AW_root *r = aww->get_root();
+
     char *alignment_name = r->awar(ST_ML_AWAR_ALIGNMENT)->read_string();
-    int bucket_size = r->awar(ST_ML_AWAR_CQ_BUCKET_SIZE)->read_int();
-    char *tree_name = r->awar(AWAR_TREE)->read_string();
-    char *dest_field = r->awar(ST_ML_AWAR_CQ_DEST_FIELD)->read_string();
-    int marked_only = r->awar(ST_ML_AWAR_CQ_MARKED_ONLY)->read_int();
-    char *filter_string = r->awar(ST_ML_AWAR_CQ_FILTER_FILTER)->read_string();
+    int   bucket_size    = r->awar(ST_ML_AWAR_CQ_BUCKET_SIZE)->read_int();
+    char *tree_name      = r->awar(AWAR_TREE)->read_string();
+    char *dest_field     = r->awar(ST_ML_AWAR_CQ_DEST_FIELD)->read_string();
+    int   marked_only    = r->awar(ST_ML_AWAR_CQ_MARKED_ONLY)->read_int();
+    
     st_report_enum report = (st_report_enum) r->awar(ST_ML_AWAR_CQ_REPORT)->read_int();
-    GB_ERROR error = st_ml_check_sequence_quality(gb_main, tree_name,
-            alignment_name, awt_csp, bucket_size, marked_only, report,
-            filter_string, dest_field);
-    free(filter_string);
+    GB_ERROR       error  = st_ml_check_sequence_quality(gb_main, tree_name, alignment_name,
+                                                         awt_csp, bucket_size, marked_only,
+                                                         report, dest_field);
     free(dest_field);
     free(alignment_name);
     free(tree_name);
-    if (error) {
-        aw_message(error);
-        GB_abort_transaction(gb_main);
-    } else {
-        GB_commit_transaction(gb_main);
-    }
+
+    error = ta.close(error);
+    if (error) aw_message(error);
 }
 
 AW_window *st_create_quality_check_window(AW_root * root, GBDATA * gb_main) {
@@ -158,17 +159,9 @@ AW_window *st_create_quality_check_window(AW_root * root, GBDATA * gb_main) {
     root->awar_string(ST_ML_AWAR_CQ_DEST_FIELD, "tmp");
     root->awar_int(ST_ML_AWAR_CQ_REPORT, 0);
 
-    root->awar_string(ST_ML_AWAR_CQ_FILTER_NAME, "ECOLI");
-    root->awar_string(ST_ML_AWAR_CQ_FILTER_ALIGNMENT);
-    root->awar_string(ST_ML_AWAR_CQ_FILTER_FILTER);
-
     root->awar_string(ST_ML_AWAR_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);
-    root->awar_string(ST_ML_AWAR_CQ_FILTER_ALIGNMENT)->
-    map(AWAR_DEFAULT_ALIGNMENT);
 
     awt_csp = new AWT_csp(gb_main, root, ST_ML_AWAR_CSP);
-    //AW_CL filter_cl =
-    awt_create_select_filter(root, gb_main, ST_ML_AWAR_CQ_FILTER_NAME);
 
     aws->at("which");
     {

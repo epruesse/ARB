@@ -1,3 +1,16 @@
+// ================================================================ //
+//                                                                  //
+//   File      : ap_csp_2_gnuplot.hxx                               //
+//   Purpose   :                                                    //
+//                                                                  //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
+
+#ifndef AP_CSP_2_GNUPLOT_HXX
+#define AP_CSP_2_GNUPLOT_HXX
+
 #define AP_AWAR_CSP                         "tmp/ntree/csp_2_gnuplot"
 #define AP_AWAR_CSP_NAME                    AP_AWAR_CSP "/name"
 #define AP_AWAR_CSP_ALIGNMENT               AP_AWAR_CSP "/alignment"
@@ -14,3 +27,7 @@
 #define AP_AWAR_FILTER_FILTER    AP_AWAR_CSP "/ap_filter/filter"
 
 AW_window *AP_open_csp_2_gnuplot_window( AW_root *root );
+
+#else
+#error ap_csp_2_gnuplot.hxx included twice
+#endif // AP_CSP_2_GNUPLOT_HXX

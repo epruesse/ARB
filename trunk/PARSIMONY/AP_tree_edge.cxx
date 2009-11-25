@@ -1,19 +1,20 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <iostream>
-#include <iomanip>
-#include <memory.h>
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <string.h>
-#include <awt_tree.hxx>
+// =============================================================== //
+//                                                                 //
+//   File      : AP_tree_edge.cxx                                  //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Ralf Westram (coder@reallysoft.de) in Summer 1995    //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include "AP_buffer.hxx"
-#include "parsimony.hxx"
 #include "ap_tree_nlen.hxx"
 
-// #include <aw_root.hxx>
+#include <AP_filter.hxx>
+
+#include <cmath>
+#include <iomanip>
 
 using namespace std;
 
@@ -443,7 +444,7 @@ void AP_tree_edge::testChain(int deep)
     cout << "Edges in Chain = " << inChain << '\n';
 }
 
-int AP_tree_edge::dumpChain(void) const
+int AP_tree_edge::dumpChain() const
 {
     //    cout << this << '\n';
     return next ? 1+next->dumpChain() : 1;
@@ -478,7 +479,7 @@ AP_tree_edge* AP_tree_edge::buildChain(int deep, GB_BOOL skip_hidden,
     return last;
 }
 
-long AP_tree_edge::sizeofChain(void){
+long AP_tree_edge::sizeofChain(){
     AP_tree_edge *f;
     long c= 0;
     for (f=this; f ; f = f->next) c++;
@@ -552,24 +553,30 @@ void AP_tree_edge::countSpecies(int deep,const AP_tree_nlen *skip)
 /**************************
     tree optimization
 **************************/
-void ap_init_bootstrap_remark(AP_tree_nlen *son_node){
-    int seq_len = son_node->sequence->root->filter->real_len;
-    AP_sequence::static_mutation_per_site[0] = (char *)GB_calloc(sizeof(char),seq_len);
-    AP_sequence::static_mutation_per_site[1] = (char *)GB_calloc(sizeof(char),seq_len);
-    AP_sequence::static_mutation_per_site[2] = (char *)GB_calloc(sizeof(char),seq_len);
-}
 
-double fak(int n,int m){
-    double res = 1.0;
-    while (n>m){
-        res *= n;
-        n--;
+class MutationsPerSite {
+    char   *Data;
+    size_t  length;
+
+public:
+    MutationsPerSite(size_t len)
+        : Data((char*)GB_calloc(sizeof(char), len*3))
+        , length(len)
+    { }
+    ~MutationsPerSite() {
+        free(Data);
     }
-    return res;
-}
 
+    char *data(int block) {
+        ap_assert(block >= 0 && block<3);
+        return Data+block*length;
+    }
+    const char *data(int block) const {
+        return const_cast<MutationsPerSite*>(this)->data(block);
+    }
+};
 
-double ap_calc_bootstrap_remark_sub(int seq_len, char *old, char *ne){
+double ap_calc_bootstrap_remark_sub(int seq_len, const char *old, const char *ne){
     int i;
     int sum[3];
     sum[0] = 0;
@@ -652,18 +659,16 @@ double ap_calc_bootstrap_remark_sub(int seq_len, char *old, char *ne){
     return prob;
 }
 
-void ap_calc_bootstrap_remark(AP_tree_nlen *son_node,AP_BL_MODE mode){
+static void ap_calc_bootstrap_remark(AP_tree_nlen *son_node, AP_BL_MODE mode, const MutationsPerSite& mps) {
     if (!son_node->is_leaf){
-        int seq_len = son_node->sequence->root->filter->real_len;
-        float one = ap_calc_bootstrap_remark_sub(seq_len,
-                                                 &AP_sequence::static_mutation_per_site[0][0],
-                                                 &AP_sequence::static_mutation_per_site[1][0]);
-        float two = ap_calc_bootstrap_remark_sub(seq_len,
-                                                 &AP_sequence::static_mutation_per_site[0][0],
-                                                 &AP_sequence::static_mutation_per_site[2][0]);
+        size_t seq_len = son_node->get_seq()->get_sequence_length();
+        float  one     = ap_calc_bootstrap_remark_sub(seq_len, mps.data(0), mps.data(1));
+        float  two     = ap_calc_bootstrap_remark_sub(seq_len, mps.data(0), mps.data(2));
+        
         if ((mode & AP_BL_BOOTSTRAP_ESTIMATE) == AP_BL_BOOTSTRAP_ESTIMATE){
             one = one * two;    // assume independent bootstrap values for both nnis
-        }else{
+        }
+        else {
             if (two<one) one = two; // dependent bootstrap values, take minimum (safe)
         }
         const char *text = 0;
@@ -676,15 +681,11 @@ void ap_calc_bootstrap_remark(AP_tree_nlen *son_node,AP_BL_MODE mode){
         freedup(son_node->remark_branch, text);
         freedup(son_node->Brother()->remark_branch, text);
     }
-    
-    freeset(AP_sequence::static_mutation_per_site[0], NULL);
-    freeset(AP_sequence::static_mutation_per_site[1], NULL);
-    freeset(AP_sequence::static_mutation_per_site[2], NULL);
 }
 
 
 void ap_calc_leaf_branch_length(AP_tree_nlen *leaf){
-    AP_FLOAT Seq_len = leaf->sequence->real_len();
+    AP_FLOAT Seq_len = leaf->get_seq()->weighted_base_count();
     if (Seq_len <=1.0) Seq_len = 1.0;
 
     AP_FLOAT parsbest = rootNode()->costs();
@@ -718,7 +719,7 @@ void ap_calc_branch_lengths(AP_tree_nlen */*root*/, AP_tree_nlen *son, double /*
     static double s_new = 0.0;
     static double s_old = 0.0;
 
-    AP_FLOAT seq_len = son->sequence->real_len();
+    AP_FLOAT seq_len = son->get_seq()->weighted_base_count();
     if (seq_len <=1.0) seq_len = 1.0;
     blen *= 0.5 / seq_len * 2.0;        // doubled counted sum * corr
 
@@ -818,17 +819,20 @@ AP_FLOAT AP_tree_edge::nni_rek(AP_BOOL useStatus, int &Abort, int deep, GB_BOOL 
                 new_parsimony = rootNode()->costs();
             }
         }
-        if (mode & AP_BL_BOOTSTRAP_LIMIT){
+        if (mode & AP_BL_BOOTSTRAP_LIMIT) {
             if (fath->father){
                 son->set_root();
                 new_parsimony = rootNode()->costs();
             }
-            ap_init_bootstrap_remark(son);
+
+            MutationsPerSite mps(son->get_seq()->get_sequence_length());
+            new_parsimony = follow->nni_mutPerSite(new_parsimony, mode, &mps);
+            ap_calc_bootstrap_remark(son, mode, mps);
         }
-        new_parsimony = follow->nni(new_parsimony, mode);
-        if (mode & AP_BL_BOOTSTRAP_LIMIT){
-            ap_calc_bootstrap_remark(son,mode);
+        else {
+            new_parsimony = follow->nni(new_parsimony, mode);
         }
+        
         if (useStatus ? aw_status(++count/(double)cs) : aw_status()) { Abort = 1; break; }
     }
 
@@ -856,9 +860,9 @@ int AP_tree_edge::basesChanged;
 int AP_tree_edge::speciesInTree;
 int AP_tree_edge::nodesInTree;
 
-AP_FLOAT AP_tree_edge::nni(AP_FLOAT pars_one, AP_BL_MODE mode)
+AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, MutationsPerSite *mps)
 {
-    AP_tree_nlen *root = (AP_tree_nlen *) (*ap_main->tree_root);
+    AP_tree_nlen *root = rootNode();
 
     if (node[0]->is_leaf || node[1]->is_leaf) { // a son at root
 #if 0
@@ -889,51 +893,52 @@ AP_FLOAT AP_tree_edge::nni(AP_FLOAT pars_one, AP_BL_MODE mode)
     AP_tree_nlen *son = sonNode();
     int     betterValueFound = 0;
     {               // ******** original tree
-        if ( (mode & AP_BL_BOOTSTRAP_LIMIT)){
+        if ((mode & AP_BL_BOOTSTRAP_LIMIT)) {
             root->costs();
-            char *ms = AP_sequence::static_mutation_per_site[0];
-            AP_sequence::mutation_per_site = ms;
             son->unhash_sequence();
-            son->father->unhash_sequence();
+            son->Father()->unhash_sequence();
             ap_assert(!son->father->father);
             AP_tree_nlen *brother = son->Brother();
             brother->unhash_sequence();
-            pars_one = 0.0;
+
+            ap_assert(mps);
+            pars_one = root->costs(mps->data(0));
         }
-        if (pars_one==0.0) pars_one = root->costs();
+        else if (pars_one==0.0) {
+            pars_one = root->costs();
+        }
     }
     {               // ********* first nni
         ap_main->push();
         son->swap_assymetric(AP_LEFT);
-        char *ms = AP_sequence::static_mutation_per_site[1];
-        AP_sequence::mutation_per_site = ms;
-        pars_two = root->costs();
+        pars_two = root->costs(mps ? mps->data(1) : NULL);
 
         if (pars_two <= parsbest){
-            if ((mode & AP_BL_NNI_ONLY)==0) ap_main->pop();
-            else                ap_main->clear();
-            parsbest = pars_two;
+            if ((mode & AP_BL_NNI_ONLY) == 0) ap_main->pop();
+            else                              ap_main->clear();
+            
+            parsbest         = pars_two;
             betterValueFound = (int)(pars_one-pars_two);
-        }else{
+        }
+        else {
             ap_main->pop();
         }
     }
     {               // ********** second nni
         ap_main->push();
         son->swap_assymetric(AP_RIGHT);
-        char *ms = AP_sequence::static_mutation_per_site[2];
-        AP_sequence::mutation_per_site = ms;
-        pars_three = root->costs();
+        pars_three = root->costs(mps ? mps->data(2) : NULL);
 
         if (pars_three <= parsbest){
-            if ((mode & AP_BL_NNI_ONLY)==0) ap_main->pop();
-            else                ap_main->clear();
-            parsbest = pars_three;
+            if ((mode & AP_BL_NNI_ONLY) == 0) ap_main->pop();
+            else                              ap_main->clear();
+            
+            parsbest         = pars_three;
             betterValueFound = (int)(pars_one-pars_three);
-        }else{
+        }
+        else {
             ap_main->pop();
         }
-        AP_sequence::mutation_per_site = 0;
     }
 
     if (mode & AP_BL_BL_ONLY){  // ************* calculate branch lengths **************
@@ -1028,3 +1033,4 @@ void AP_tree_edge::mixTree(int cnt)
         }
     }
 }
+

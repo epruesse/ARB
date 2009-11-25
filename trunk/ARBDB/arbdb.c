@@ -2488,7 +2488,7 @@ GB_ERROR GB_write_usr_private(GBDATA *gbd,long ref) {
             flag access
 ********************************************************************************************/
 
-GB_ERROR GB_write_flag(GBDATA *gbd,long flag)
+void GB_write_flag(GBDATA *gbd,long flag)
 {
     GBCONTAINER *gbc  = (GBCONTAINER *)gbd;
     int          prev;
@@ -2509,7 +2509,6 @@ GB_ERROR GB_write_flag(GBDATA *gbd,long flag)
         gb_touch_header(GB_FATHER(gbd));
         GB_DO_CALLBACKS(gbd);
     }
-    return 0;
 }
 
 int GB_read_flag(GBDATA *gbd)

@@ -20,8 +20,14 @@ enum awt_selected_fields {
     AWT_SF_PSEUDO   = 1,
     AWT_SF_HIDDEN   = 2,
     // continue with 4, 8
-    AWT_SF_ALL      = ((AWT_SF_HIDDEN<<1)-1), 
+    AWT_SF_ALL      = ((AWT_SF_HIDDEN<<1)-1),
 };
+
+#define AWT_NDS_FILTER    (1<<GB_STRING)|(1<<GB_BYTE)|(1<<GB_INT)|(1<<GB_FLOAT)|(1<<GB_BITS)|(1<<GB_LINK)
+#define AWT_PARS_FILTER   (1<<GB_STRING)|(1<<GB_BYTE)|(1<<GB_INT)|(1<<GB_FLOAT)|(1<<GB_BITS)|(1<<GB_LINK)
+#define AWT_STRING_FILTER (1<<GB_STRING)|(1<<GB_BITS)|(1<<GB_LINK)
+
+struct ad_item_selector;
 
 AW_CL awt_create_selection_list_on_scandb(GBDATA                 *gb_main,
                                           AW_window              *aws,

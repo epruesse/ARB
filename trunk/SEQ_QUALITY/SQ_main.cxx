@@ -22,8 +22,7 @@
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <awt.hxx>
-#include <awt_tree.hxx>
-#include "../AWT/awtfilter.hxx"
+#include <awt_filter.hxx>
 #include <awt_sel_boxes.hxx>
 #include <aw_awars.hxx>
 

@@ -12,9 +12,12 @@
 #ifndef AWTI_EXPORT_HXX
 #define AWTI_EXPORT_HXX
 
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
+#ifndef ARBDBT_H
+#include <arbdbt.h>
 #endif
+
+class AW_window;
+class AW_root;
 
 AW_window *open_AWTC_export_window(AW_root *awr,GBDATA *gb_main);
 

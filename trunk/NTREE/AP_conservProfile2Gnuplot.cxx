@@ -1,23 +1,19 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <unistd.h>
-#include <sys/types.h>
+// =============================================================== //
+//                                                                 //
+//   File      : AP_conservProfile2Gnuplot.cxx                     //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_awars.hxx>
-#include <aw_global.hxx>
+#include "nt_internal.h"
+
 #include <awt.hxx>
-#include <awt_tree.hxx>
-#include <awt_canvas.hxx>
-#include <awt_csp.hxx>
 #include "ap_conservProfile2Gnuplot.hxx"
-//#include "nt_cb.hxx"
+
+#include <aw_global.hxx>
 
 extern GBDATA *GLOBAL_gb_main;
 

@@ -1378,7 +1378,7 @@ static int aw_status_dummy(double val) {
 }
 
 static int aw_status_dummy2(const char *val) {
-    return aw_status((char *)val);
+    return aw_status(val);
 }
 
 void AW_root::init_root(const char *programname, bool no_exit) {
