@@ -19,7 +19,6 @@
 #include <EXP.hxx> 
 #include <aw_color_groups.hxx> 
 
-#include <smartptr.h>
 #include <inline.h>
 
 #include <map>

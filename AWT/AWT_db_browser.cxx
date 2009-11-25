@@ -21,7 +21,6 @@
 #include <algorithm>
 
 #include <cstring>
-#include <smartptr.h>
 
 // do includes above (otherwise depends depend on DEBUG)
 #if defined(DEBUG)

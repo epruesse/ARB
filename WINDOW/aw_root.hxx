@@ -5,10 +5,10 @@
 #include <stdio.h>
 #endif
 
-#ifndef aw_assert
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
+#ifndef aw_assert
 #define aw_assert(bed) arb_assert(bed)
 #endif
 
@@ -21,7 +21,9 @@
 #ifndef ARBTOOLS_H
 #include <arbtools.h>
 #endif
-
+#ifndef ARB_ERROR_H
+#include <arb_error.h>
+#endif
 
 #define AW_ROOT_DEFAULT (aw_main_root_default)
 class        AW_root;
@@ -105,10 +107,12 @@ void aw_popup_exit(const char *msg, bool fixedSizeButtons = true, const char *he
 // asynchronous messages:
 extern char AW_ERROR_BUFFER[1024];
 
-void aw_set_local_message();                                           // no message window, AWAR_ERROR_MESSAGES instead
+void aw_set_local_message();                        // no message window, AWAR_ERROR_MESSAGES instead
 void aw_message(const char *msg);
-void aw_message();                                                     // prints AW_ERROR_BUFFER;
-void aw_macro_message(const char *temp, ...) __ATTR__FORMAT(1);        // gives control to the user
+inline void aw_message_if(ARB_ERROR& error) { GB_ERROR err = error.deliver(); if (err) aw_message(err); }
+
+void aw_message();                                  // prints AW_ERROR_BUFFER;
+void aw_macro_message(const char *temp, ...) __ATTR__FORMAT(1); // gives control to the user
 
 // Read a string from the user :
 char *aw_input(const char *title, const char *prompt, const char *default_input);

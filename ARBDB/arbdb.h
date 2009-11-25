@@ -291,6 +291,10 @@ inline char *GBS_find_string(char *str, GB_CSTR key, int match_mode) {
 
 // --------------------------------------------------------------------------------
 
+#ifndef ARB_ERROR_H
+#include <arb_error.h>
+#endif
+
 struct gb_data_base_type2;
 class GB_transaction : Noncopyable {
     GBDATA *ta_main;
@@ -303,9 +307,20 @@ public:
 
     bool ok() const { return ta_open && !ta_err; } // ready to work on DB? 
     GB_ERROR close(GB_ERROR error); // abort transaction if error (e.g.: 'return ta.close(error);')
+    ARB_ERROR close(ARB_ERROR& error); // abort transaction if error (e.g.: 'return ta.close(error);')
 };
 
 int GB_info(struct gb_data_base_type2 *gbd);
+
+// --------------------------------------------------------------------------------
+
+inline void GB_end_transaction_show_error(GBDATA *gbd, ARB_ERROR& error, void (*error_handler)(GB_ERROR)) {
+    GB_end_transaction_show_error(gbd, error.deliver(), error_handler);
+}
+inline ARB_ERROR GB_end_transaction(GBDATA *gbd, ARB_ERROR& error) {
+    return GB_end_transaction(gbd, error.deliver());
+}
+// --------------------------------------------------------------------------------
 
 #endif /*__cplusplus*/
 

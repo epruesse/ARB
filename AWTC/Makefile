@@ -33,6 +33,7 @@ AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -46,11 +47,13 @@ AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/client.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/PT_com.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/servercntrl.h
+AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AWTC_submission.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AWTC_submission.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -63,3 +66,4 @@ AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/awt.hxx
+AWTC_submission.o: $(ARBHOME)/INCLUDE/smartptr.h

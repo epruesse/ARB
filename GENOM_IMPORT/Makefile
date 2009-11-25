@@ -70,6 +70,7 @@ DBwriter.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DBwriter.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 DBwriter.o: $(ARBHOME)/INCLUDE/adGene.h
 DBwriter.o: $(ARBHOME)/INCLUDE/arb_assert.h
+DBwriter.o: $(ARBHOME)/INCLUDE/arb_error.h
 DBwriter.o: $(ARBHOME)/INCLUDE/arbdb.h
 DBwriter.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 DBwriter.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -112,6 +113,7 @@ GenomeImport.o: types.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arb_assert.h
+GenomeImport.o: $(ARBHOME)/INCLUDE/arb_error.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arbdb.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arbtools.h
