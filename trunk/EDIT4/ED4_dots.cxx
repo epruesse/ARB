@@ -35,8 +35,8 @@ struct dot_insert_stat {
     size_t sequences_checked;
 };
 
-static GB_ERROR dot_sequence_by_consensus(ED4_base *base, AW_CL cl_insert_stat) {
-    GB_ERROR error = 0;
+static ARB_ERROR dot_sequence_by_consensus(ED4_base *base, AW_CL cl_insert_stat) {
+    ARB_ERROR error = 0;
 
     if (base->is_sequence_info_terminal()) {
         ED4_sequence_info_terminal *seq_term = base->to_sequence_info_terminal();
@@ -99,9 +99,9 @@ static void dot_missing_bases(AW_window *aww) {
     ED4_cursor *cursor   = &ed4w->cursor;
     ED4_base   *selected = cursor->owner_of_cursor;
 
-    GB_ERROR             error       = 0;
+    ARB_ERROR            error       = 0;
     ED4_species_manager *species_man = 0;
-    
+
     if (selected) {
         species_man = selected->get_parent(ED4_L_SPECIES)->to_species_manager();
         if (species_man && !species_man->flag.is_consensus) species_man = 0;
@@ -216,7 +216,7 @@ static void dot_missing_bases(AW_window *aww) {
         }
     }
 
-    if (error) aw_message(error);
+    aw_message_if(error);
 }
 
 void ED4_create_dot_missing_bases_awars(AW_root *aw_root, AW_default aw_def) {

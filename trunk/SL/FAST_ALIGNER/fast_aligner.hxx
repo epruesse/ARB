@@ -12,7 +12,6 @@
 #ifndef FAST_ALIGNER_HXX
 #define FAST_ALIGNER_HXX
 
-
 #define INTEGRATED_ALIGNERS_TITLE "Integrated Aligners"
 
 typedef char*   (*AWTC_get_consensus_func)(const char *species_name, int start_pos, int end_pos);
@@ -40,8 +39,8 @@ void       AWTC_create_faligner_variables(AW_root *root,AW_default db1);
 void       AWTC_awar_set_current_sequence(AW_root *root, AW_default db1);
 void       AWTC_set_reference_species_name(AW_window */*aww*/, AW_CL cl_AW_root);
 
-void AWTC_start_faligning(AW_window *aw, AW_CL cd2);
-GB_ERROR AWTC_delete_temp_entries(GBDATA *gb_main, GB_CSTR alignment);
+void      AWTC_start_faligning(AW_window *aw, AW_CL cd2);
+ARB_ERROR AWTC_delete_temp_entries(GBDATA *gb_main, GB_CSTR alignment);
 
 // --------------------------------------------------------------------------------
 

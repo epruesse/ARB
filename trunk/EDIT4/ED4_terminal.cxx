@@ -300,7 +300,7 @@ ED4_returncode ED4_terminal::remove_callbacks()                     //removes ca
     return ED4_R_OK;
 }
 
-static GB_ERROR ed4_remove_species_manager_callbacks(ED4_base *base) {
+static ARB_ERROR ed4_remove_species_manager_callbacks(ED4_base *base) {
     if (base->is_species_manager()) {
         base->to_species_manager()->remove_all_callbacks();
     }
@@ -364,7 +364,7 @@ ED4_returncode ED4_terminal::kill_object()
 
     if (group_manager) {
         group_manager->parent = NULL;
-        group_manager->route_down_hierarchy(ed4_remove_species_manager_callbacks);
+        group_manager->route_down_hierarchy(ed4_remove_species_manager_callbacks).expect_no_error();
         delete group_manager;
     }
 
