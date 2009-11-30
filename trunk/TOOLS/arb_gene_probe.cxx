@@ -215,7 +215,7 @@ static GBDATA *create_gene_species(GBDATA *gb_species_data2, const char *interna
     // Note: 'sequence' is not necessarily 0-terminated!
 
 #if defined(DEBUG)
-    char *firstSem = strchr(long_name, ';');
+    const char *firstSem = strchr(long_name, ';');
     gp_assert(firstSem);
     CHECK_SEMI_ESCAPED(firstSem+1);
 #endif // DEBUG

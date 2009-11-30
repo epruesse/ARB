@@ -523,7 +523,7 @@ void SAI_graphic::paint(AW_device *device) {
 
                     if (!tok_suffix) {
                         // handle special case where no suffix exists
-                        char *end = strchr(probeRegion, 0);
+                        const char *end = strchr(probeRegion, 0);
                         if (end>probeRegion && end[-1] == '-') tok_suffix = "";
                     }
 

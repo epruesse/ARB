@@ -482,7 +482,7 @@ struct counterPair {
 };
 
 inline void insert_history_selection(AW_window *aww, AW_selection_list *sel, const char *entry, int wanted_db) {
-    char *colon = strchr(entry, ':');
+    const char *colon = strchr(entry, ':');
     if (colon && (atoi(entry) == wanted_db)) {
         aww->insert_selection(sel, colon+1, colon+1);
     }
