@@ -311,7 +311,7 @@ inline const char *extractKeyword(const char *line, string& keyword) {
     // returns NULL if no keyword was found
     // otherwise returns position behind keyword and sets value of 'keyword'
 
-    char *space = strchr(line, ' ');
+    const char *space = strchr(line, ' ');
     if (space && space>line) {
         keyword = string(line, 0, space-line);
         return space;

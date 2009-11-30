@@ -1845,7 +1845,7 @@ static void pd_export_pt_server(AW_window *aww)
         }
 
         if (!error) { // set pt-server database file to same permissions as pts directory
-            char *dir = strrchr(file,'/');
+            char *dir = const_cast<char*>(strrchr(file,'/'));
             if (dir) {
                 *dir = 0;
                 long modi = GB_mode_of_file(file);

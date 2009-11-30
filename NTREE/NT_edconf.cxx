@@ -244,7 +244,7 @@ struct SAI_string_builder {
 static long nt_build_sai_string_by_hash(const char *key, long val, void *cd_sai_builder) {
     struct SAI_string_builder *sai_builder = (struct SAI_string_builder*)cd_sai_builder;
 
-    char *sep = strchr(key,1);
+    const char *sep = strchr(key,1);
     if (!sep) return val;                           // what's wrong
 
     struct GBS_strstruct *sai_middle      = sai_builder->sai_middle;
