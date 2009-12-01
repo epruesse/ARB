@@ -19,7 +19,7 @@ static awtcig_struct awtcig;
 #define MAX_COMMENT_LINES 2000
 
 inline const char *name_only(const char *fullpath) {
-    char *lslash = strrchr(fullpath, '/');
+    const char *lslash = strrchr(fullpath, '/');
     return lslash ? lslash+1 : fullpath;
 }
 

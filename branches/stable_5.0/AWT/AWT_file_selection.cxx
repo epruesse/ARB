@@ -142,7 +142,7 @@ int AWT_is_link(const char *path) {
 }
 
 char *AWT_extract_directory(const char *path) {
-    char *lslash = strrchr(path, '/');
+    const char *lslash = strrchr(path, '/');
     if (!lslash) return 0;
 
     char *result        = strdup(path);

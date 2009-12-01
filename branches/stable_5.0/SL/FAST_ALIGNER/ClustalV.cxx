@@ -286,8 +286,8 @@ int AWTC_baseMatch(char c1, char c2)    // c1,c2 == ACGUTRS...
 //          2 for improbably mutations
 //          -1 if one char is illegal
 {
-    char *p1 = strchr(nucleic_acid_order, c1);
-    char *p2 = strchr(nucleic_acid_order, c2);
+    const char *p1 = strchr(nucleic_acid_order, c1);
+    const char *p2 = strchr(nucleic_acid_order, c2);
 
     awtc_assert(c1);
     awtc_assert(c2);

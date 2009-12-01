@@ -12,6 +12,7 @@
 #include "FileBuffer.h"
 #include <cstdlib>
 #include <cstring>
+#include <cstdio>
 #include <errno.h>
 
 using namespace std;
