@@ -94,7 +94,6 @@ int main(int argc, char **argv)
     
     aw_root->add_timed_callback(2000, DI_timer, AW_CL(GLOBAL_gb_main), 0);
     aw_root->main_loop();
-    return 0;
 }
 
 void AD_map_viewer(GBDATA *dummy,AD_MAP_VIEWER_TYPE)
