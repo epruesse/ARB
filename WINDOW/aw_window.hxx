@@ -203,9 +203,12 @@ enum AW_PosRecalc {
     AW_REPOS_TO_MOUSE_ONCE = 3,                     // like AW_REPOS_TO_MOUSE, but only done once!
 };
 
+typedef void (*aw_hide_cb)(AW_window *aww);
+
 class AW_window {
     enum AW_SizeRecalc recalc_size_at_show;
     enum AW_PosRecalc  recalc_pos_at_show;
+    aw_hide_cb         hide_cb;
 
     void all_menus_created();
     void create_toggle(const char *var_name, aw_toggle_data *tdata);
@@ -256,6 +259,8 @@ public:
     }
 
     void allow_delete_window(bool allow_close);
+    void on_hide(aw_hide_cb call_on_hide) { hide_cb = call_on_hide; }
+
     void show_grabbed();
     void set_window_title_intern(char *title);
 

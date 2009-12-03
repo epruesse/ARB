@@ -3312,6 +3312,7 @@ void AW_window::show_grabbed(void) {
 
 void AW_window::hide(void) {
     if (window_is_shown) {
+        if (hide_cb) hide_cb(this);
         get_root()->window_hide();
         window_is_shown = false;
     }
