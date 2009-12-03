@@ -272,3 +272,12 @@ void ClustersData::update_selection_list(AW_window *aww) {
     aww->update_selection_list(clusterList);
 }
 
+void ClustersData::free(AW_window *aww) {
+    // delete calculated/stored data
+
+    shown.clear();
+    stored.clear();
+    update_selection_list(aww);
+    known_clusters.clear();
+}
+

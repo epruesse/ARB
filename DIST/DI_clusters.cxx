@@ -65,6 +65,14 @@ enum AffectedClusters { ALL_CLUSTERS, SEL_CLUSTER };
 static ClustersData *global_data = 0;
 
 // ------------------------
+
+static void di_forget_global_data(AW_window *aww) {
+    di_assert(global_data);
+    global_data->free(aww);
+    // do not delete 'global_data' itself, it will be reused when window is opened again
+}
+
+// ------------------------
 //      Update contents
 
 static void update_cluster_sellist(AW_window *aww) {
@@ -332,6 +340,8 @@ AW_window *DI_create_cluster_detection_window(AW_root *aw_root, AW_CL cl_weighte
         aws = new AW_window_simple;
         aws->init(aw_root, "DETECT_CLUSTERS", "Detect clusters in tree");
         aws->load_xfig("di_clusters.fig");
+
+        aws->on_hide(di_forget_global_data);
 
         // -------------------
         //      upper area

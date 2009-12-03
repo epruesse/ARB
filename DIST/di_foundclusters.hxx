@@ -180,6 +180,7 @@ public:
     GBDATA *get_gb_main() const { return weighted_filter.get_gb_main(); }
     AW_root *get_aw_root() const { return weighted_filter.get_aw_root(); }
 
+    void free(AW_window *aww);
 };
 
 #else
