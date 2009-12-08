@@ -482,27 +482,31 @@ GB_ERROR g_b_undo_entry(GB_MAIN_TYPE *Main,struct g_b_undo_entry_struct *ue){
 
 
 
-GB_ERROR g_b_undo(GB_MAIN_TYPE *Main, GBDATA *gb_main, struct g_b_undo_header_struct *uh){
-    GB_ERROR error = 0;
-    struct g_b_undo_struct *u;
-    struct g_b_undo_entry_struct *ue,*next;
-    if (!uh->stack) return GB_export_error("Sorry no more undos/redos available");
+GB_ERROR g_b_undo(GB_MAIN_TYPE *Main, GBDATA *gb_main, struct g_b_undo_header_struct *uh) { /* goes to header: __ATTR__USERESULT */
+    GB_ERROR error = NULL;
 
-    GB_begin_transaction(gb_main);
-
-    u=uh->stack;
-    for (ue=u->entries; ue; ue = next) {
-        next = ue->next;
-        error = g_b_undo_entry(Main,ue);
-        delete_g_b_undo_entry_struct(ue);
-        u->entries = next;
-        if (error) break;
+    if (!uh->stack) {
+        error = "Sorry no more undos/redos available";
     }
-    uh->sizeof_this -= u->sizeof_this;  /* remove undo from list */
-    uh->stack = u->next;
-    delete_g_b_undo_struct(u);
+    else {
+        struct g_b_undo_struct       *u = uh->stack;
+        struct g_b_undo_entry_struct *ue,*next;
 
-    return GB_end_transaction(gb_main, error);
+        error = GB_begin_transaction(gb_main);
+
+        for (ue=u->entries; ue && !error; ue = next) {
+            next = ue->next;
+            error = g_b_undo_entry(Main,ue);
+            delete_g_b_undo_entry_struct(ue);
+            u->entries = next;
+        }
+        uh->sizeof_this -= u->sizeof_this;          /* remove undo from list */
+        uh->stack        = u->next;
+
+        delete_g_b_undo_struct(u);
+        error = GB_end_transaction(gb_main, error);
+    }
+    return error;
 }
 
 GB_CSTR g_b_read_undo_key_pntr(GB_MAIN_TYPE *Main, struct g_b_undo_entry_struct *ue){
@@ -710,7 +714,7 @@ void gb_check_in_undo_delete(GB_MAIN_TYPE *Main,GBDATA *gbd, int deep){
         UNDO    exported  functions (to USER)
 ******************************************************************************************/
 
-GB_ERROR GB_request_undo_type(GBDATA *gb_main, GB_UNDO_TYPE type) {
+GB_ERROR GB_request_undo_type(GBDATA *gb_main, GB_UNDO_TYPE type) { /* goes to header: __ATTR__USERESULT */
     /* Define how to undo DB changes.
      * 
      * This function should be called just before opening a transaction,
@@ -720,18 +724,22 @@ GB_ERROR GB_request_undo_type(GBDATA *gb_main, GB_UNDO_TYPE type) {
      *      GB_UNDO_UNDO        enable undo
      *      GB_UNDO_NONE        disable undo
      *      GB_UNDO_KILL        disable undo and remove old undos !!
+     *
+     * Note: if GB_request_undo_type returns an error, local undo type remains unchanged
      */
 
-    GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
-    Main->requested_undo_type = type;
+    GB_MAIN_TYPE *Main  = GB_MAIN(gb_main);
+    GB_ERROR      error = NULL;
+
     if (!Main->local_mode) {
-        if (type == GB_UNDO_NONE || type == GB_UNDO_KILL) {
-            return gbcmc_send_undo_commands(gb_main,_GBCMC_UNDOCOM_REQUEST_NOUNDO);
-        }else{
-            return gbcmc_send_undo_commands(gb_main,_GBCMC_UNDOCOM_REQUEST_UNDO);
-        }
+        enum gb_undo_commands cmd = (type == GB_UNDO_NONE || type == GB_UNDO_KILL)
+            ? _GBCMC_UNDOCOM_REQUEST_NOUNDO
+            : _GBCMC_UNDOCOM_REQUEST_UNDO;
+        error = gbcmc_send_undo_commands(gb_main, cmd);
     }
-    return 0;
+    if (!error) Main->requested_undo_type = type;
+
+    return error;
 }
 
 GB_UNDO_TYPE GB_get_requested_undo_type(GBDATA *gb_main){
@@ -740,35 +748,53 @@ GB_UNDO_TYPE GB_get_requested_undo_type(GBDATA *gb_main){
 }
 
 
-/** undo/redo the last transaction */
-GB_ERROR GB_undo(GBDATA *gb_main,GB_UNDO_TYPE type) {
-    GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
-    GB_UNDO_TYPE old_type = GB_get_requested_undo_type(gb_main);
-    GB_ERROR error = 0;
+GB_ERROR GB_undo(GBDATA *gb_main,GB_UNDO_TYPE type) { /* goes to header: __ATTR__USERESULT */
+    /* undo/redo the last transaction */
+
+    GB_MAIN_TYPE *Main  = GB_MAIN(gb_main);
+    GB_ERROR      error = 0;
+
     if (!Main->local_mode) {
         switch (type) {
             case GB_UNDO_UNDO:
-                return gbcmc_send_undo_commands(gb_main,_GBCMC_UNDOCOM_UNDO);
+                error = gbcmc_send_undo_commands(gb_main,_GBCMC_UNDOCOM_UNDO);
+                break;
+
             case GB_UNDO_REDO:
-                return gbcmc_send_undo_commands(gb_main,_GBCMC_UNDOCOM_REDO);
-            default:    GB_internal_error("unknown undo type in GB_undo");
-                return GB_export_error("Internal UNDO error");
+                error = gbcmc_send_undo_commands(gb_main,_GBCMC_UNDOCOM_REDO);
+                break;
+
+            default:
+                GB_internal_error("unknown undo type in GB_undo");
+                error = "Internal UNDO error";
+                break;
         }
     }
-    switch (type){
-        case GB_UNDO_UNDO:
-            GB_request_undo_type(gb_main,GB_UNDO_REDO);
-            error =  g_b_undo(Main,gb_main,Main->undo->u);
-            GB_request_undo_type(gb_main,old_type);
-            break;
-        case GB_UNDO_REDO:
-            GB_request_undo_type(gb_main,GB_UNDO_UNDO_REDO);
-            error =  g_b_undo(Main,gb_main,Main->undo->r);
-            GB_request_undo_type(gb_main,old_type);
-            break;
-        default:
-            error = GB_export_error("GB_undo: unknown undo type specified");
+    else {
+        GB_UNDO_TYPE old_type = GB_get_requested_undo_type(gb_main);
+        switch (type){
+            case GB_UNDO_UNDO:
+                error = GB_request_undo_type(gb_main,GB_UNDO_REDO);
+                if (!error) {
+                    error = g_b_undo(Main,gb_main,Main->undo->u);
+                    ASSERT_NO_ERROR(GB_request_undo_type(gb_main,old_type));
+                }
+                break;
+
+            case GB_UNDO_REDO:
+                error = GB_request_undo_type(gb_main,GB_UNDO_UNDO_REDO);
+                if (!error) {
+                    error = g_b_undo(Main,gb_main,Main->undo->r);
+                    ASSERT_NO_ERROR(GB_request_undo_type(gb_main,old_type));
+                }
+                break;
+
+            default:
+                error = "GB_undo: unknown undo type specified";
+                break;
+        }
     }
+
     return error;
 }
 

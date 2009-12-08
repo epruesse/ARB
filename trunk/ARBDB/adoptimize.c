@@ -2597,10 +2597,10 @@ GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
 }
 
 GB_ERROR GB_optimize(GBDATA *gb_main) {
-    unsigned long maxKB     = GB_get_physical_memory();
+    unsigned long maxKB          = GB_get_physical_memory();
     long          maxMem;
-    GB_ERROR      error     = 0;
-    GB_UNDO_TYPE  undo_type = GB_get_requested_undo_type(gb_main);
+    GB_ERROR      error          = 0;
+    GB_UNDO_TYPE  prev_undo_type = GB_get_requested_undo_type(gb_main);
 
 #ifdef DEBUG
     maxKB /= 2;
@@ -2609,12 +2609,11 @@ GB_ERROR GB_optimize(GBDATA *gb_main) {
     if (maxKB<=(LONG_MAX/1024)) maxMem = maxKB*1024;
     else                        maxMem = LONG_MAX;
 
-    GB_request_undo_type(gb_main,GB_UNDO_KILL);
-
-    error = gb_create_dictionaries(GB_MAIN(gb_main), maxMem);
-
-    GB_disable_quicksave(gb_main,"Database optimized");
-    GB_request_undo_type(gb_main,undo_type);
-
+    error = GB_request_undo_type(gb_main, GB_UNDO_KILL);
+    if (!error) {
+        error = gb_create_dictionaries(GB_MAIN(gb_main), maxMem);
+        if (!error) GB_disable_quicksave(gb_main,"Database optimized");
+        ASSERT_NO_ERROR(GB_request_undo_type(gb_main, prev_undo_type));
+    }
     return error;
 }

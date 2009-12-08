@@ -261,9 +261,9 @@ void GB_free_dictionary P_((struct DictData *dd));
 /* adindex.c */
 GB_ERROR GB_create_index P_((GBDATA *gbd, const char *key, GB_CASE case_sens, long estimated_size));
 NOT4PERL void GB_dump_indices P_((GBDATA *gbd));
-GB_ERROR GB_request_undo_type P_((GBDATA *gb_main, GB_UNDO_TYPE type));
+GB_ERROR GB_request_undo_type P_((GBDATA *gb_main, GB_UNDO_TYPE type)) __ATTR__USERESULT;
 GB_UNDO_TYPE GB_get_requested_undo_type P_((GBDATA *gb_main));
-GB_ERROR GB_undo P_((GBDATA *gb_main, GB_UNDO_TYPE type));
+GB_ERROR GB_undo P_((GBDATA *gb_main, GB_UNDO_TYPE type)) __ATTR__USERESULT;
 char *GB_undo_info P_((GBDATA *gb_main, GB_UNDO_TYPE type));
 GB_ERROR GB_set_undo_mem P_((GBDATA *gbd, long memsize));
 
