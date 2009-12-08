@@ -167,7 +167,7 @@ int gbcms_talking_disable_wait_for_new_request P_((int socket, long *hsin, void 
 int gbcms_talking P_((int con, long *hs, void *sin));
 GB_ERROR gbcm_write_bin P_((int socket, GBDATA *gbd, long *buffer, long mode, long deep, int send_headera));
 long gbcm_read_bin P_((int socket, GBCONTAINER *gbd, long *buffer, long mode, GBDATA *gb_source, void *cs_main));
-GB_ERROR gbcm_unfold_client P_((GBCONTAINER *gbd, long deep, long index_pos));
+GB_ERROR gbcm_unfold_client P_((GBCONTAINER *gbd, long deep, long index_pos)) __ATTR__USERESULT;
 GB_ERROR gbcmc_begin_sendupdate P_((GBDATA *gbd));
 GB_ERROR gbcmc_end_sendupdate P_((GBDATA *gbd));
 GB_ERROR gbcmc_sendupdate_create P_((GBDATA *gbd));
@@ -181,7 +181,7 @@ GB_ERROR gbcmc_abort_transaction P_((GBDATA *gbd));
 GB_ERROR gbcms_add_to_delete_list P_((GBDATA *gbd));
 GB_ERROR gbcmc_unfold_list P_((int socket, GBDATA *gbd));
 long gbcmc_key_alloc P_((GBDATA *gbd, const char *key));
-GB_ERROR gbcmc_send_undo_commands P_((GBDATA *gbd, enum gb_undo_commands command));
+GB_ERROR gbcmc_send_undo_commands P_((GBDATA *gbd, enum gb_undo_commands command)) __ATTR__USERESULT;
 char *gbcmc_send_undo_info_commands P_((GBDATA *gbd, enum gb_undo_commands command));
 GB_ERROR gbcm_login P_((GBCONTAINER *gb_main, const char *user));
 long gbcmc_close P_((struct gbcmc_comm *link));

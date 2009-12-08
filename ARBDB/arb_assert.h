@@ -168,6 +168,18 @@
 #endif
 
 /* ------------------------------------------------------------ */
+/* assert specific result (DEBUG only) and silence __ATTR__USERESULT warnings */
+
+#define ASSERT_RESULT(Type, Expected, Expr) do {        \
+        Type value = (Expr);                            \
+        arb_assert(value == (Expected));                \
+        value             = value;                      \
+    } while(0)
+
+#define ASSERT_NULL_RESULT(ptrExpr) ASSERT_RESULT(const void*, NULL, ptrExpr)
+#define ASSERT_NO_ERROR(error)      ASSERT_RESULT(GB_ERROR, NULL, error)
+
+/* ------------------------------------------------------------ */
 
 #ifdef DEVEL_RELEASE
 #ifdef ASSERTION_USED

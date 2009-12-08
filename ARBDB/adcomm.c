@@ -1432,61 +1432,60 @@ long gbcm_read_bin(int socket,GBCONTAINER *gbd, long *buffer, long mode, GBDATA 
 
     return GBCM_SERVER_OK;
 }
+
+#define SEND_ERROR() GBS_global_string("cannot send data to server (errcode=%zu)", __LINE__)
+
 /**************************************************************************************
                 unfold client
 ***************************************************************************************/
-GB_ERROR gbcm_unfold_client(GBCONTAINER *gbd, long deep, long index_pos)
-     /* read data from a server
-        deep = -1   read whole data
-        deep = 0...n    read to deep
-        index_pos  == -1 read all clients
-        index_pos == -2 read all clients + header array
-    */
-{
-    int socket;
-    long    buffer[256];
-    long    nitems[1];
-    long    item;
-    long    irror=0;
+GB_ERROR gbcm_unfold_client(GBCONTAINER *gbd, long deep, long index_pos) { /* goes to header: __ATTR__USERESULT */
+    /* read data from a server
+     * deep       = -1   read whole data
+     * deep       = 0...n    read to deep
+     * index_pos == -1 read all clients
+     * index_pos == -2 read all clients + header array
+     */
+    
+    int  socket;
+    long buffer[256];
+    long nitems[1];
+    long item;
+    long irror = 0;
+
+    GB_ERROR error = NULL;
 
     socket = GBCONTAINER_MAIN(gbd)->c_link->socket;
     gbcm_read_flush(socket);
-    if (gbcm_write_two(socket,GBCM_COMMAND_UNFOLD,gbd->server_id)){
-        return GB_export_error("Cannot send data to Server");
-    }
-    if (gbcm_write_two(socket,GBCM_COMMAND_SETDEEP,deep)){
-        return GB_export_error("Cannot send data to Server");
-    }
-    if (gbcm_write_two(socket,GBCM_COMMAND_SETINDEX,index_pos)){
-        return GB_export_error("Cannot send data to Server");
-    }
-    if (gbcm_write_flush(socket)){
-        return GB_export_error("Cannot send data to Server");
-    }
+    
+    if      (gbcm_write_two  (socket,GBCM_COMMAND_UNFOLD,gbd->server_id)) error = SEND_ERROR();
+    else if (gbcm_write_two  (socket,GBCM_COMMAND_SETDEEP,deep)         ) error = SEND_ERROR();
+    else if (gbcm_write_two  (socket,GBCM_COMMAND_SETINDEX,index_pos)   ) error = SEND_ERROR();
+    else if (gbcm_write_flush(socket)                                   ) error = SEND_ERROR();
+    else {
+        if (index_pos == -2){
+            irror = gbcm_read_bin(socket,0,buffer,0,(GBDATA*)gbd,0);
+        }
+        else {
+            if (gbcm_read_two(socket,GBCM_COMMAND_SEND_COUNT,0,nitems)) irror = 1;
+            else {
+                for (item=0; !irror && item<nitems[0];item++) {
+                    irror = gbcm_read_bin(socket,gbd,buffer,0,0,0);
+                }
+            }
+        }
 
-    if (index_pos == -2){
-        irror = gbcm_read_bin(socket,0,buffer,0,(GBDATA*)gbd,0);
-    }else{
-        if (gbcm_read_two(socket,GBCM_COMMAND_SEND_COUNT,0,nitems)) {
-            irror = 1;
-        }else{
-            for (item=0;item<nitems[0];item++){
-                irror = gbcm_read_bin(socket,gbd,buffer,0,0,0);
-                if (irror) break;
+        if (irror) {
+            error = GB_export_errorf("GB_unfold (%s) read error",GB_read_key_pntr((GBDATA*)gbd));
+        }
+        else {
+            gbcm_read_flush(socket);
+            if (index_pos < 0){
+                gbd->flags2.folded_container = 0;
             }
         }
     }
-    if (irror) {
-        GB_ERROR error;
-        error = GB_export_errorf("GB_unfold (%s) read error",GB_read_key_pntr((GBDATA*)gbd));
-        return error;
-    }
 
-    gbcm_read_flush(socket);
-    if (index_pos < 0){
-        gbd->flags2.folded_container = 0;
-    }
-    return 0;
+    return error;
 }
 
 /**************************************************************************************
@@ -1834,7 +1833,7 @@ GBDATA *GBCMC_find(GBDATA *gbd, const char *key, GB_TYPES type, const char *str,
     socket = Main->c_link->socket;
 
     if (gbcm_write_two(socket,GBCM_COMMAND_FIND,gbd->server_id)){
-        GB_export_error("Cannot send data to Server");
+        GB_export_error(SEND_ERROR());
         GB_print_error();
         return 0;
     }
@@ -1884,7 +1883,7 @@ long gbcmc_key_alloc(GBDATA *gbd,const char *key)   {
     socket = Main->c_link->socket;
 
     if (gbcm_write_two(socket,GBCM_COMMAND_KEY_ALLOC,gbd->server_id)){
-        GB_export_error("Cannot send data to Server");
+        GB_export_error(SEND_ERROR());
         GB_print_error();
         return 0;
     }
@@ -1914,7 +1913,7 @@ int GBCMC_system(GBDATA *gbd,const char *ss) {
     socket = Main->c_link->socket;
 
     if (gbcm_write_two(socket,GBCM_COMMAND_SYSTEM,gbd->server_id)){
-        GB_export_error("Cannot send data to Server");
+        GB_export_error(SEND_ERROR());
         GB_print_error();
         return -1;
     }
@@ -1930,28 +1929,27 @@ int GBCMC_system(GBDATA *gbd,const char *ss) {
     return 0;
 }
 
-/** send an undo command !!! */
-GB_ERROR gbcmc_send_undo_commands(GBDATA *gbd, enum gb_undo_commands command){
-    int socket;
-    GB_ERROR result;
-    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    if (Main->local_mode)
-        GB_internal_error("gbcmc_send_undo_commands: cannot call a server in a server");
-    socket = Main->c_link->socket;
+GB_ERROR gbcmc_send_undo_commands(GBDATA *gbd, enum gb_undo_commands command) { /* goes to header: __ATTR__USERESULT */
+    /* send an undo command */
 
-    if (gbcm_write_two(socket,GBCM_COMMAND_UNDO,gbd->server_id)){
-        return GB_export_error("Cannot send data to Server 456");
+    GB_ERROR      error = NULL;
+    GB_MAIN_TYPE *Main  = GB_MAIN(gbd);
+
+    if (Main->local_mode) {
+        GB_internal_error("gbcmc_send_undo_commands: cannot call a server in a server");
     }
-    if (gbcm_write_two(socket,GBCM_COMMAND_UNDO_CMD,command)){
-        return GB_export_error("Cannot send data to Server 96f");
+    else {
+        int socket = Main->c_link->socket;
+
+        if      (gbcm_write_two  (socket,GBCM_COMMAND_UNDO,gbd->server_id)) error = SEND_ERROR();
+        else if (gbcm_write_two  (socket,GBCM_COMMAND_UNDO_CMD,command)   ) error = SEND_ERROR();
+        else if (gbcm_write_flush(socket)                                 ) error = SEND_ERROR();
+        else {
+            error = gbcm_read_string(socket);
+            gbcm_read_flush(socket);
+        }
     }
-    if (gbcm_write_flush(socket)) {
-        return GB_export_error("Cannot send data to Server 536");
-    }
-    result = gbcm_read_string(socket);
-    gbcm_read_flush(socket);
-    if (result) GB_export_errorf("%s",result);
-    return result;
+    return error;
 }
 
 char *gbcmc_send_undo_info_commands(GBDATA *gbd, enum gb_undo_commands command){

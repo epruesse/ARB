@@ -107,10 +107,11 @@ void *gbcms_sigpipe()
 /**************************************************************************************
                 private read and write socket functions
 ***************************************************************************************/
-void gbcm_read_flush(int socket)
-{gb_local->write_ptr = gb_local->write_buffer;
- gb_local->write_free = gb_local->write_bufsize;
- socket = socket;}
+void gbcm_read_flush(int socket) {
+    gb_local->write_ptr  = gb_local->write_buffer;
+    gb_local->write_free = gb_local->write_bufsize;
+    socket               = socket; // @@@ wtf? 
+}
 
 long gbcm_read_buffered(int socket,char *ptr, long size)
 {
@@ -154,9 +155,7 @@ long gbcm_read(int socket,char *ptr,long size)
     return size;
 }
 
-int
-gbcm_write_flush(int socket)
-{
+int gbcm_write_flush(int socket) {
     char *ptr;
     long    leftsize,writesize;
     ptr = gb_local->write_buffer;
