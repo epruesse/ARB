@@ -724,7 +724,7 @@ private:
         if (!reflow) {
             size_t reststart = text.find('\n', 1);
             if (reststart != string::npos) {
-                int    rest_indent;
+                int    rest_indent = -1;
                 string rest        = text.substr(reststart);
                 bool   rest_reflow = shouldReflow(rest, rest_indent);
 

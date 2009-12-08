@@ -251,7 +251,6 @@ char *DI_MATRIX::load(LoadWhat what, GB_CSTR sort_tree_name, bool show_warnings,
     entries = (DI_ENTRY **)calloc(sizeof(DI_ENTRY*),(size_t)entries_mem_size);
 
     nentries = 0;
-    GBDATA *gb_species;
     DI_ENTRY *phentry;
 
     int tree_size;
@@ -259,7 +258,7 @@ char *DI_MATRIX::load(LoadWhat what, GB_CSTR sort_tree_name, bool show_warnings,
     tree_size++;
     GB_CSTR *species_in_sort_tree = 0;
 
-    int no_of_species;
+    int no_of_species = -1;
     switch (what) {
         case DI_LOAD_ALL:
             no_of_species = GBT_get_species_count(gb_main);
@@ -294,7 +293,7 @@ char *DI_MATRIX::load(LoadWhat what, GB_CSTR sort_tree_name, bool show_warnings,
             }
 
             for (int i=0; i<tree_size; i++) { // read all marked species in tree
-                gb_species = GBT_find_species_rel_species_data(gb_species_data, species_in_sort_tree[i]);
+                GBDATA *gb_species = GBT_find_species_rel_species_data(gb_species_data, species_in_sort_tree[i]);
                 if (!gb_species) {
                     if (show_warnings) {
                         aw_message(GB_export_errorf("Species '%s' found in tree '%s' but NOT in database.",
@@ -348,6 +347,7 @@ char *DI_MATRIX::load(LoadWhat what, GB_CSTR sort_tree_name, bool show_warnings,
         int count   = 0;
         int listIdx = 0;
 
+        GBDATA *gb_species = NULL;
         switch (what) {
             case DI_LOAD_ALL:    gb_species = GBT_first_species_rel_species_data(gb_species_data); break;
             case DI_LOAD_MARKED: gb_species = GBT_first_marked_species_rel_species_data(gb_species_data); break;
