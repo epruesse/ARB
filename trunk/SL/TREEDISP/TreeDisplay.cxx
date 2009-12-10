@@ -2072,7 +2072,8 @@ double AWT_graphic_tree::show_dendrogram(AP_tree *at, double x_father, double x_
         }
     }
 
-#if defined(DEBUG)
+#if defined(DEBUG) && 0
+    // display group-node-address
     if (at->gb_node) {
         disp_device->text(at->gr.gc, GBS_global_string("%p(gb_node)", at->gb_node), x_father, (ny0+ny1)/2, 0, text_filter, (AW_CL)at, 0);
     }

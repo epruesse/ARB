@@ -37,9 +37,6 @@
 
 #define cl_assert(cond) arb_assert(cond)
 
-#define CLUSTER_TREE_CONST_CAST(node) DOWNCAST(const ClusterTree*, node)
-#define CLUSTER_TREE_CAST(node)       DOWNCAST(ClusterTree*, node)
-
 class AP_sequence;
 class ClusterTree;
 class aw_status_counter;
@@ -66,7 +63,7 @@ public:
     ClusterTreeRoot(AliView *aliview, AP_sequence *seqTemplate_, AP_FLOAT maxDistance_, size_t minClusterSize_);
     virtual ~ClusterTreeRoot();
 
-    ClusterTree *get_root_node() { return CLUSTER_TREE_CAST(ARB_tree_root::get_root_node()); }
+    ClusterTree *get_root_node() { return DOWNCAST(ClusterTree*, ARB_tree_root::get_root_node()); }
 
     GB_ERROR find_clusters();
     size_t get_minClusterSize() const { return minClusterSize; }
@@ -120,7 +117,8 @@ typedef LeafRelations::const_iterator    LeafRelationCIter;
 // --------------------
 //      ClusterTree
 
-class ClusterTree : public ARB_tree {
+
+class ClusterTree : public ARB_countedTree {
     ClusterState state;
 
     size_t leaf_count;                              // number of leafs in subtree
@@ -137,8 +135,8 @@ class ClusterTree : public ARB_tree {
     void calc_branch_dists();
 
 public:
-    ClusterTree(ARB_tree_root *tree_root_)
-        : ARB_tree(tree_root_)
+    ClusterTree(ClusterTreeRoot *tree_root_)
+        : ARB_countedTree(tree_root_)
         , state(CS_UNKNOWN)
         , leaf_count(0)
         , clus_count(0)
@@ -155,21 +153,11 @@ public:
         delete branchDists;
         delete branchDepths;
     }
+    DEFINE_TREE_ACCESSORS(ClusterTreeRoot, ClusterTree);
 
     virtual ClusterTree *dup() const {              // create new ClusterTree element from prototype
-        return new ClusterTree(get_tree_root());
+        return new ClusterTree(const_cast<ClusterTreeRoot*>(get_tree_root()));
     }
-
-    ClusterTree *get_father() { return CLUSTER_TREE_CAST(father); }
-    const ClusterTree *get_father() const { return CLUSTER_TREE_CONST_CAST(father); }
-    ClusterTree *get_leftson() { return CLUSTER_TREE_CAST(leftson); }
-    const ClusterTree *get_leftson() const { return CLUSTER_TREE_CONST_CAST(leftson); }
-    ClusterTree *get_rightson() { return CLUSTER_TREE_CAST(rightson); }
-    const ClusterTree *get_rightson() const { return CLUSTER_TREE_CONST_CAST(rightson); }
-    ClusterTree *get_brother() { return CLUSTER_TREE_CAST(ARB_tree::get_brother()); }
-    const ClusterTree *get_brother() const { return CLUSTER_TREE_CONST_CAST(ARB_tree::get_brother()); }
-
-    ClusterTreeRoot *get_tree_root() const  { return DOWNCAST(ClusterTreeRoot*, ARB_tree::get_tree_root()); }
 
     size_t get_cluster_count() const { return clus_count; }
     size_t get_leaf_count() const { return leaf_count; }

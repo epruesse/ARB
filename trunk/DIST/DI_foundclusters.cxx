@@ -38,7 +38,9 @@ static AP_FLOAT calc_mean_dist_to(const ClusterTree *distance_to, const LeafRela
     return sum/count;
 }
 
-Cluster::Cluster(ClusterTree *ct) {
+Cluster::Cluster(ClusterTree *ct)
+    : next_name(NULL)
+{
     cl_assert(ct->get_state() == CS_IS_CLUSTER);
 
     id = unused_id++;
@@ -89,7 +91,7 @@ Cluster::Cluster(ClusterTree *ct) {
     generate_name(ct);
 }
 
-static string *get_downgroups(const ClusterTree *ct, size_t& group_members) {
+static string *get_downgroups(const ARB_countedTree *ct, size_t& group_members) {
     string *result = NULL;
     if (ct->is_leaf) {
         group_members = 0;
@@ -118,50 +120,80 @@ static string *get_downgroups(const ClusterTree *ct, size_t& group_members) {
     }
     return result;
 }
-static string *get_upgroup(const ClusterTree *ct, size_t& group_members) {
+static const char *get_upgroup(const ARB_countedTree *ct, const ARB_countedTree*& upgroupPtr) {
+    const char *name = NULL;
     if (ct->gb_node) {
-        group_members = ct->get_leaf_count();
-        return new string(ct->name);
+        upgroupPtr = ct;
+        name    = ct->name;
     }
     else {
-        const ClusterTree *father = ct->get_father();
+        const ARB_countedTree *father = ct->get_father();
         if (father) {
-            return get_upgroup(father, group_members);
+            name = get_upgroup(father, upgroupPtr);
         }
         else {
-            group_members = ct->get_leaf_count();
-            return new string("<WHOLE_TREE>");
+            upgroupPtr = ct;
+            name       = "WHOLE_TREE";
         }
     }
+
+    cl_assert(name);
+    return name;
 }
 
-void Cluster::generate_name(const ClusterTree *ct) {
+void Cluster::generate_name(const ARB_countedTree *ct) {
     cl_assert(!ct->is_leaf);
 
     if (ct->gb_node) {                              // cluster root is a group
         name = ct->name;
     }
     else {
-        size_t  downgroup_members;
-        size_t  upgroup_members;
-        string *downgroups = get_downgroups(ct, downgroup_members);
-        string *upgroup   = get_upgroup(ct, upgroup_members);
+        size_t                 downgroup_members;
+        string                *downgroup_names = get_downgroups(ct, downgroup_members);
+        const ARB_countedTree *upgroup         = NULL;
+        const char            *upgroup_name    = get_upgroup(ct, upgroup);
+        size_t                 upgroup_members = upgroup->get_leaf_count();
 
         size_t cluster_members = ct->get_leaf_count();
 
-        AP_FLOAT up_rel   = upgroup_members ? (AP_FLOAT)cluster_members/upgroup_members : 0.0; // used for: xx% of upgroup (big is good)
+        cl_assert(upgroup_members>0); // if no group, whole tree should have been returned
+
+        AP_FLOAT up_rel   = (AP_FLOAT)cluster_members/upgroup_members; // used for: xx% of upgroup (big is good)
         AP_FLOAT down_rel = (AP_FLOAT)downgroup_members/cluster_members; // used for: downgroup(s) + (1-xx)% outgroup (big is good)
 
         if (up_rel>down_rel) { // prefer up_percent
-            name = string(GBS_global_string("%4.1f%% of %s", up_rel*100.0, upgroup->c_str()));
+            name = string(GBS_global_string("%4.1f%% of %s", up_rel*100.0, upgroup_name));
         }
         else {
-            name = string(GBS_global_string("%s + %4.1f%% outgroup", downgroups->c_str(), (1-down_rel)*100.0));
+            name = string(GBS_global_string("%s + %4.1f%% outgroup", downgroup_names->c_str(), (1-down_rel)*100.0));
         }
 
-        delete upgroup;
-        delete downgroups;
+        delete downgroup_names;
     }
+}
+
+string Cluster::build_group_name(const ARB_countedTree *ct) {
+    // similar to generate_name()
+    // - contains relative position in up-group (instead of percentages)
+
+    string group_name;
+
+    cl_assert(!ct->is_leaf);
+    if (ct->gb_node) {                              // cluster root is a group
+        group_name = ct->name;
+    }
+    else {
+        const ARB_countedTree *upgroup         = NULL;
+        const char            *upgroup_name    = get_upgroup(ct, upgroup);
+        size_t                 upgroup_members = upgroup->get_leaf_count();
+        size_t                 cluster_members = ct->get_leaf_count();
+
+        size_t cluster_pos1 = ct->relative_position_in(upgroup)+1; // range [1..upgroup_members]
+        size_t cluster_posN = cluster_pos1+cluster_members-1;
+
+        group_name = GBS_global_string("%i-%i/%i_%s", cluster_pos1, cluster_posN, upgroup_members, upgroup_name);
+    }
+    return group_name;
 }
 
 const char *Cluster::description() const {
@@ -173,32 +205,33 @@ const char *Cluster::description() const {
                              name.c_str());
 }
 
+
 // ---------------------
 //      ClustersData
 
 void ClustersData::add(ClusterPtr clus, ClusterSubset subset) {
     known_clusters[clus->get_ID()] = clus;
-    get_subset(subset)->push_back(clus->get_ID());
+    get_subset(subset).push_back(clus->get_ID());
 }
 
 void ClustersData::remove(ClusterPtr clus, ClusterSubset subset) {
     int pos = get_pos(clus, subset);
     if (pos != -1) {
-        ClusterIDs           *ids      = get_subset(subset);
-        ClusterIDs::iterator  toRemove = ids->begin();
+        ClusterIDs&           ids      = get_subset(subset);
+        ClusterIDs::iterator  toRemove = ids.begin();
         advance(toRemove, pos);
-        ids->erase(toRemove);
+        ids.erase(toRemove);
         known_clusters.erase(clus->get_ID());
     }
 }
 
 void ClustersData::clear(ClusterSubset subset) {
-    ClusterIDs     *ids    = get_subset(subset);
-    ClusterIDsIter  id_end = ids->end();
-    for (ClusterIDsIter  id = ids->begin(); id != id_end; ++id) {
+    ClusterIDs&     ids    = get_subset(subset);
+    ClusterIDsIter  id_end = ids.end();
+    for (ClusterIDsIter  id = ids.begin(); id != id_end; ++id) {
         known_clusters.erase(*id);
     }
-    ids->clear();
+    ids.clear();
 }
 
 void ClustersData::store(ID id) {
@@ -280,4 +313,6 @@ void ClustersData::free(AW_window *aww) {
     update_selection_list(aww);
     known_clusters.clear();
 }
+
+
 
