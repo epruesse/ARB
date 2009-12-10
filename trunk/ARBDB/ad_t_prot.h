@@ -59,7 +59,7 @@ GB_ERROR GB_remove_last_notification P_((GBDATA *gb_main));
 GB_ERROR GB_notify P_((GBDATA *gb_main, int id, const char *message));
 
 /* adseqcompr.c */
-GB_ERROR GBT_compress_sequence_tree2 P_((GBDATA *gb_main, const char *tree_name, const char *ali_name));
+GB_ERROR GBT_compress_sequence_tree2 P_((GBDATA *gb_main, const char *tree_name, const char *ali_name)) __ATTR__USERESULT;
 void GBT_compression_test P_((void *dummy, GBDATA *gb_main));
 
 /* adtables.c */
