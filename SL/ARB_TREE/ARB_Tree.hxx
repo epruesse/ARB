@@ -179,6 +179,10 @@ public:
         return of_father->rightson == this;
     }
 
+    // order in dendogram:
+    bool is_upper_son(const ARB_tree *of_father) const { return is_leftson(of_father); }
+    bool is_lower_son(const ARB_tree *of_father) const { return is_rightson(of_father); }
+
     ARB_tree *get_root_node() { return const_cast<ARB_tree*>(get_root_node()); }
     const ARB_tree *get_root_node() const {
         const ARB_tree *root = get_tree_root()->get_root_node();
@@ -243,6 +247,30 @@ public:
 #else
 #define ASSERT_VALID_TREE(tree)
 #endif // CHECK_TREE_STRUCTURE
+
+
+// ------------------------
+//      ARB_countedTree
+//      tree who knows its size
+
+struct ARB_countedTree : public ARB_tree { 
+    ARB_countedTree(ARB_tree_root *tree_root_)
+        : ARB_tree(tree_root_)
+    {}
+    virtual ~ARB_countedTree() {}
+    DEFINE_TREE_ACCESSORS(ARB_tree_root, ARB_countedTree);
+
+    virtual size_t get_leaf_count() const = 0;
+    virtual void init_tree()              = 0;      /* impl. shall initialize the tree
+                                                     * (including some kind of leaf counter)
+                                                     * needs to be called manually */
+
+    size_t relative_position_in(const ARB_countedTree *upgroup) const;
+};
+
+
+// ----------------------
+//      ARB_edge_type
 
 enum ARB_edge_type {
     EDGE_TO_ROOT, // edge points towards the root node

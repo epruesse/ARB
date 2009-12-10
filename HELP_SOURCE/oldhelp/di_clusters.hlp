@@ -86,7 +86,11 @@ SECTION Working with found clusters
 
                 Delete results
 
-                       You can delete results using 'Delete selected' or 'Clear list'.
+                        You can delete results using 'Delete selected' or 'Clear list'.
+
+                Cluster groups
+
+                        Create groups for found clusters
 
                 @@@ Load/Save (not implemented)
 
@@ -104,7 +108,22 @@ NOTES           The performance of the cluster detection is very sensitive to th
                   distance (e.g. 0.01) and if you don't find any clusters, increase
                   the distance stepwise.
 
-EXAMPLES	None
+EXAMPLES        One use case is to reduce a given tree by removing clones or very nearly
+                related species and only keeping one of them as representative of
+                the so formed OTU.
+
+                Steps:
+
+                        - search clusters
+                        - examine found clusters and delete those you'd like to keep
+                        - uncheck 'Mark representative' and click 'Mark all'
+                        - in ARB_NTREE call 'Tree/Remove species from tree/Remove marked'
+
+                Another use case is to create groups.
+
+                        If you choose higher values for the maximum distance allowed
+                        in found clusters and for the minimum cluster size, the found
+                        clusters might be good candidates to create groups.
 
 WARNINGS	None
 

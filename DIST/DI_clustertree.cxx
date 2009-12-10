@@ -403,4 +403,3 @@ const ClusterTree *ClusterTree::commonFatherWith(const ClusterTree *other) const
     }
 }
 
-
