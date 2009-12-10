@@ -43,6 +43,11 @@ inline DERIVED safe_downcast(BASE expr) {
 #endif // SAFE_DOWNCASTS
 
 
+// helper macro to overwrite accessor functions in derived classes
+#define DEFINE_DOWNCAST_ACCESSORS(CLASS, NAME, VALUE)                   \
+    CLASS *NAME() { return DOWNCAST(CLASS*, VALUE); }                   \
+    const CLASS *NAME() const { return DOWNCAST(const CLASS*, VALUE); }
+
 #else
 #error downcast.h included twice
 #endif // DOWNCAST_H

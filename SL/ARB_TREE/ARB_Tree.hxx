@@ -18,6 +18,9 @@
 #ifndef ALIVIEW_HXX
 #include <AliView.hxx>
 #endif
+#ifndef DOWNCAST_H
+#include <downcast.h>
+#endif
 
 #define at_assert(cond) arb_assert(cond)
 
@@ -68,6 +71,8 @@ public:
     const char *get_tree_name() const { return tree_name; } // NULL if no tree loaded (or tree disappeared from DB)
 
     ARB_tree *get_root_node() { return rootNode; }
+    const ARB_tree *get_root_node() const { return rootNode; }
+
     const ARB_tree *get_nodeTemplate() const { return nodeTemplate; }
 
     virtual GB_ERROR loadFromDB(const char *name) __ATTR__USERESULT;
@@ -174,12 +179,14 @@ public:
         return of_father->rightson == this;
     }
 
-    bool is_root() const { return father == NULL; }
-    ARB_tree *get_root() {
-        ARB_tree *up              = this;
-        while (!up->is_root()) up = up->father;
-        return up;
+    ARB_tree *get_root_node() { return const_cast<ARB_tree*>(get_root_node()); }
+    const ARB_tree *get_root_node() const {
+        const ARB_tree *root = get_tree_root()->get_root_node();
+        at_assert(is_inside(root)); // this is not in tree - behavior of get_root_node() changed!
+        return root;
     }
+
+    bool is_root_node() const { return get_root_node() == this; }
 
     ARB_tree *get_brother() {
         at_assert(father);
@@ -218,6 +225,19 @@ public:
 
 };
 
+// macros to overwrite accessors in classes derived from ARB_tree_root or ARB_tree:
+#define DEFINE_TREE_ROOT_ACCESSORS(RootType, TreeType)                  \
+    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_root_node, ARB_tree_root::get_root_node()); \
+
+#define DEFINE_TREE_ACCESSORS(RootType, TreeType)                       \
+    DEFINE_DOWNCAST_ACCESSORS(RootType, get_tree_root, ARB_tree::get_tree_root()); \
+    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_father, father); \
+    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_leftson, leftson); \
+    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_rightson, rightson); \
+    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_brother, ARB_tree::get_brother()); \
+    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_root_node, ARB_tree::get_root_node()); \
+
+
 #if defined(CHECK_TREE_STRUCTURE)
 #define ASSERT_VALID_TREE(tree) (tree)->assert_valid()
 #else
@@ -238,14 +258,14 @@ class ARB_edge {
 
     ARB_edge_type detectType() {
         at_assert(to != from);
-        at_assert(!from->is_root());                // edges cannot be at root - use edge between sons of root!
-        at_assert(!to->is_root());
+        at_assert(!from->is_root_node());                // edges cannot be at root - use edge between sons of root!
+        at_assert(!to->is_root_node());
 
         if (from->father == to) return EDGE_TO_ROOT;
         if (to->father == from) return EDGE_TO_LEAF;
 
         at_assert(from->get_brother() == to);       // no edge exists between 'from' and 'to'
-        at_assert(to->father->is_root());
+        at_assert(to->father->is_root_node());
         return ROOT_EDGE;
     }
 
@@ -289,7 +309,7 @@ public:
         if (type == EDGE_TO_ROOT) {
             if (from->is_rightson(to)) return ARB_edge(to, to->leftson, EDGE_TO_LEAF);
             ARB_tree *father = to->father;
-            if (father->is_root()) return ARB_edge(to, to->get_brother(), ROOT_EDGE);
+            if (father->is_root_node()) return ARB_edge(to, to->get_brother(), ROOT_EDGE);
             return ARB_edge(to, father, EDGE_TO_ROOT);
         }
         if (to->is_leaf) return inverse();

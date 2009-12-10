@@ -47,3 +47,4 @@ ARB_Tree.o: $(ARBHOME)/INCLUDE/arbdb.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/attributes.h
+ARB_Tree.o: $(ARBHOME)/INCLUDE/downcast.h

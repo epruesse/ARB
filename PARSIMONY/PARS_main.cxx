@@ -573,7 +573,7 @@ static void nt_add(AW_window *, AWT_canvas *ntw, AddWhat what, AP_BOOL quick, in
         }
         else {
             ARB_edge innermost = rootNode()->get_tree_root()->find_innermost_edge();
-            AP_TREE_CAST(innermost.son())->set_root();
+            DOWNCAST(AP_tree*, innermost.son())->set_root();
         }
 
         aw_closestatus();

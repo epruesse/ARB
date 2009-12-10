@@ -128,7 +128,7 @@ void ClusterTree::init_tree() {
     }
     else {
         depth = 1;
-        cl_assert(is_root());
+        cl_assert(is_root_node());
     }
 
     if (is_leaf) {
