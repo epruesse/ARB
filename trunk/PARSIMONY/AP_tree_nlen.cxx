@@ -39,7 +39,7 @@ AP_tree_nlen::AP_tree_nlen(AP_tree_root *Tree_root)
 }
 
 AP_tree_nlen *AP_tree_nlen::dup() const {
-    return new AP_tree_nlen(get_tree_root());
+    return new AP_tree_nlen(const_cast<AP_tree_root*>(get_tree_root()));
 }
 
 AP_UPDATE_FLAGS AP_tree_nlen::check_update() {

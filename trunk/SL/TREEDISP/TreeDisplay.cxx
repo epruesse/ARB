@@ -1543,7 +1543,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         }
                         break;
                     case AWT_M_RIGHT:
-                        AP_TREE_CAST(tree_static->find_innermost_edge().son())->set_root();
+                        DOWNCAST(AP_tree*, tree_static->find_innermost_edge().son())->set_root();
                         exports.save       = 1;
                         exports.zoom_reset = 1;
                         get_root_node()->compute_tree(gb_main);

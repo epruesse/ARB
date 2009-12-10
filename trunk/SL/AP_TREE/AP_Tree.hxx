@@ -30,7 +30,6 @@
 #include <aw_color_groups.hxx>
 #endif
 
-// typedef unsigned char uchar;
 enum {
     AWT_GC_CURSOR=0,
     AWT_GC_BRANCH_REMARK,
@@ -102,18 +101,6 @@ public:
     void print();
 };
 
-// ---------------------------------------------
-//      downcasts for AP_tree and AP_tree_root
-
-#ifndef DOWNCAST_H
-#include <downcast.h>
-#endif
-
-#define AP_TREE_CAST(arb_tree)                 DOWNCAST(AP_tree*, arb_tree)
-#define AP_TREE_CONST_CAST(arb_tree)           DOWNCAST(const AP_tree*, arb_tree)
-#define AP_TREE_ROOT_CAST(arb_tree_root)       DOWNCAST(AP_tree_root*, arb_tree_root)
-#define AP_TREE_ROOT_CONST_CAST(arb_tree_root) DOWNCAST(const AP_tree_root*, arb_tree_root)
-
 // ---------------------
 //      AP_tree_root
 
@@ -140,11 +127,12 @@ public:
 
     AP_tree_root(AliView *aliView, const AP_tree& tree_proto, AP_sequence *seq_proto, bool add_delete_callbacks);
     virtual ~AP_tree_root();
+    DEFINE_TREE_ROOT_ACCESSORS(AP_tree_root, AP_tree);
 
-    // ARB_tree interface
-    AP_tree *get_root_node() { return AP_TREE_CAST(ARB_tree_root::get_root_node()); }
+    // ARB_tree_root interface
+
     virtual void change_root(AP_tree *old, AP_tree *newroot);
-    
+
     virtual GB_ERROR loadFromDB(const char *name);
     virtual GB_ERROR saveToDB();
 
@@ -208,11 +196,11 @@ public:
 
 struct AP_branch_members {
 public:
-    unsigned int kl_marked:1;       // kernighan lin marked
+    // unsigned int kl_marked:1;       // kernighan lin marked (not used)
     unsigned int touched:1;         // nni and kl
 
     void clear() {
-        kl_marked = 0;
+        // kl_marked = 0;
         touched = 0;
     }
 };
@@ -233,25 +221,11 @@ public:
 
     explicit AP_tree(AP_tree_root *tree_root);
     virtual ~AP_tree(); // leave this here to force creation of virtual table
+    DEFINE_TREE_ACCESSORS(AP_tree_root, AP_tree);
 
     // ARB_tree interface
     virtual AP_tree *dup() const;
     // ARB_tree interface (end)
-
-    AP_tree *get_father() { return AP_TREE_CAST(father); }
-    const AP_tree *get_father() const { return AP_TREE_CONST_CAST(father); }
-    AP_tree *get_leftson() { return AP_TREE_CAST(leftson); }
-    const AP_tree *get_leftson() const { return AP_TREE_CONST_CAST(leftson); }
-    AP_tree *get_rightson() { return AP_TREE_CAST(rightson); }
-    const AP_tree *get_rightson() const { return AP_TREE_CONST_CAST(rightson); }
-    AP_tree *get_brother() { return AP_TREE_CAST(ARB_tree::get_brother()); }
-    const AP_tree *get_brother() const { return AP_TREE_CONST_CAST(ARB_tree::get_brother()); }
-
-    AP_tree_root *get_tree_root() const {
-        ARB_tree_root *base = ARB_tree::get_tree_root();
-        return base ? AP_TREE_ROOT_CAST(base) : NULL;
-    }
-    AP_tree *get_root() { return AP_TREE_CAST(ARB_tree::get_root()); }
 
     int compute_tree(GBDATA *gb_main);
 
@@ -296,6 +270,8 @@ private:
     void buildNodeList_rek(AP_tree **list, long& num);
     void buildBranchList_rek(AP_tree **list, long& num, bool create_terminal_branches, int deep);
 
+    const AP_tree *flag_branch() const { return get_father()->get_father() ? this : get_father()->get_leftson(); }
+
 public:
     void buildLeafList(AP_tree **&list, long &num); // returns a list of leafs
     void buildNodeList(AP_tree **&list, long &num); // returns a list of inner nodes (w/o root)
@@ -308,14 +284,8 @@ public:
 
     virtual void clear_branch_flags();
 
-    void touch_branch() {
-        AP_tree *flagBranch    = father->father ? this : AP_TREE_CAST(father->leftson);
-        flagBranch->br.touched = 1;
-    }
-    int get_branch_flag() const {
-        const AP_tree *flagBranch = father->father ? this : AP_TREE_CONST_CAST(father->leftson);
-        return flagBranch->br.touched;
-    }
+    void touch_branch() { const_cast<AP_tree*>(flag_branch())->br.touched = 1; }
+    int get_branch_flag() const { return flag_branch()->br.touched; }
 
     GB_ERROR move_group_info(AP_tree *new_group) __ATTR__USERESULT;
 

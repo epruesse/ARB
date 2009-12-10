@@ -158,7 +158,7 @@ AP_tree::~AP_tree() {
 }
 
 AP_tree *AP_tree::dup() const {
-    return new AP_tree(get_tree_root());
+    return new AP_tree(const_cast<AP_tree_root*>(get_tree_root()));
 }
 
 #if defined(DEVEL_RALF)
@@ -183,8 +183,7 @@ void AP_tree::set_brother(AP_tree *new_son) {
 }
 
 void AP_tree::clear_branch_flags() {
-    this->br.touched = 0;
-    this->br.kl_marked = 0;
+    br.clear();
     if (!is_leaf) {
         get_leftson()->clear_branch_flags();
         get_rightson()->clear_branch_flags();
@@ -331,7 +330,7 @@ GB_ERROR AP_tree::cantMoveTo(AP_tree *new_brother) {
     if (!father)                                error = "Can't move the root of the tree";
     else if (!new_brother->father)              error = "Can't move to the root of the tree";
     else if (new_brother->father == father)     error = "Already there";
-    else if (father->is_root())                 error = "Can't move son of root";
+    else if (!father->father)                   error = "Can't move son of root";
     else if (new_brother->is_inside(this))      error = "Can't move a subtree into itself";
 
     return error;
@@ -1238,7 +1237,7 @@ void AP_tree::bootstrap2branchlen() { // copy bootstraps to branchlengths
 void AP_tree::branchlen2bootstrap() {               // copy branchlengths to bootstraps
     freeset(remark_branch, NULL);
     if (!is_leaf) {
-        if (!is_root()) {
+        if (!is_root_node()) {
             remark_branch = GBS_global_string_copy("%i%%", int(get_branchlength()*100.0 + .5));
         }
 
