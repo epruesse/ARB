@@ -1159,6 +1159,9 @@ void aw_message(const char *msg) {
     }
 }
 
+#if defined(DEVEL_RALF)
+#warning remove AW_ERROR_BUFFER
+#endif // DEVEL_RALF
 char AW_ERROR_BUFFER[1024];
 
 void aw_message() { aw_message(AW_ERROR_BUFFER); }
@@ -1919,8 +1922,8 @@ static void aw_help_helpfile_changed_cb(AW_root *awr) {
             aw_help_global.history = strdup(help_file);
         }
 
-        char *helptext=GB_read_file(help_file);
-        if(helptext) {
+        char *helptext = GB_read_file(help_file);
+        if (helptext) {
             char *ptr;
             char *h,*h2,*tok;
 
@@ -1959,11 +1962,16 @@ static void aw_help_helpfile_changed_cb(AW_root *awr) {
             awr->awar(AWAR_HELPTEXT)->write_string(ptr);
             free(ptr);
             free(helptext);
-        }else{
+        }
+        else {
             sprintf(AW_ERROR_BUFFER,"I cannot find the help file '%s'\n\n"
                     "Please help us to complete the ARB-Help by submitting\n"
                     "this missing helplink via ARB_NT/File/About/SubmitBug\n"
-                    "Thank you.\n",help_file);
+                    "Thank you.\n"
+                    "\n"
+                    "Details:\n"
+                    "%s",
+                    help_file, GB_await_error());
             awr->awar(AWAR_HELPTEXT)->write_string(AW_ERROR_BUFFER);
         }
     }
