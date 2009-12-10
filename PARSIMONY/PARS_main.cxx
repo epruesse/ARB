@@ -264,7 +264,7 @@ static long insert_species_in_tree_test(const char *key,long val, void *cd_isits
     int baseDiff = 0;
 
     {
-        AP_tree_nlen *fath = ((AP_tree_nlen*)bestposl)->Father()->Father();
+        AP_tree_nlen *fath = ((AP_tree_nlen*)bestposl)->get_father()->get_father();
 
         char *seq_with_leaf;
         char *seq_without_leaf;
@@ -303,7 +303,7 @@ static long insert_species_in_tree_test(const char *key,long val, void *cd_isits
     if (!isits->quick_add_flag ) {
         int           deep    = -1;
         AP_tree_nlen *bestpos = (AP_tree_nlen*)bestposl;
-        AP_tree_edge *e       = bestpos->edgeTo(bestpos->Father());
+        AP_tree_edge *e       = bestpos->edgeTo(bestpos->get_father());
 
         if ((isits->currentspecies & 0xf ) == 0)  deep = -1;
 
@@ -337,8 +337,8 @@ static long transform_gbd_to_leaf(const char *key, long val, void *) {
 
     GBDATA       *gb_node = (GBDATA *)val;
     AP_tree_root *troot   = ap_main->get_tree_root()->tree_static;
+    AP_tree_nlen *leaf    = DOWNCAST(AP_tree_nlen*, troot->get_nodeTemplate()->dup());
 
-    AP_tree *leaf = DOWNCAST(const AP_tree*, troot->get_nodeTemplate())->dup();
     leaf->gb_node = gb_node;
     leaf->name    = strdup(key);
     leaf->is_leaf = GB_TRUE;
@@ -481,7 +481,7 @@ static AP_tree *insert_species_in_tree(const char *key, AP_tree *leaf, void *cd_
 }
 
 static long hash_insert_species_in_tree(const char *key, long leaf, void *cd_isits) {
-    return (long)insert_species_in_tree(key, (AP_tree*)leaf, cd_isits);
+    return (long)insert_species_in_tree(key, (AP_tree_nlen*)leaf, cd_isits);
 }
 
 static long count_hash_elements(const char *,long val, void *cd_isits) {
@@ -591,20 +591,20 @@ static void nt_add(AW_window *, AWT_canvas *ntw, AddWhat what, AP_BOOL quick, in
 // -----------------------------------------
 
 class PartialSequence {
-    GBDATA          *gb_species;
-    mutable AP_tree *self;            // self converted to leaf (ready for insertion)
-    const AP_tree   *best_full_match; // full sequence position which matched best
-    long             overlap;         // size of overlapping region
-    long             penalty;         // weighted mismatches
-    bool             released;
-    bool             multi_match;
-    string           multi_list;      // list of equal-rated insertion-points (not containing self)
+    GBDATA               *gb_species;
+    mutable AP_tree_nlen *self;                     // self converted to leaf (ready for insertion)
+    const AP_tree_nlen   *best_full_match;          // full sequence position which matched best
+    long                  overlap;                  // size of overlapping region
+    long                  penalty;                  // weighted mismatches
+    bool                  released;
+    bool                  multi_match;
+    string                multi_list;               // list of equal-rated insertion-points (not containing self)
 
-    AP_tree *get_self() const {
+    AP_tree_nlen *get_self() const {
         if (!self) {
             ap_assert(!released); // request not possible, because leaf has already been released!
             
-            self = (AP_tree*)transform_gbd_to_leaf(GBT_read_name(gb_species), (long)gb_species, NULL);
+            self = (AP_tree_nlen*)transform_gbd_to_leaf(GBT_read_name(gb_species), (long)gb_species, NULL);
             ap_assert(self);
         }
         return self;
@@ -620,9 +620,9 @@ public:
     ~PartialSequence() { ap_assert(self == 0); }
 
     GBDATA *get_species() const { return gb_species; }
-    const AP_tree *get_best_match() const { return best_full_match; }
+    const AP_tree_nlen *get_best_match() const { return best_full_match; }
     AP_FLOAT get_branchlength() const { return AP_FLOAT(penalty)/overlap; }
-    void test_match(const AP_tree *leaf_full);
+    void test_match(const AP_tree_nlen *leaf_full);
     bool is_multi_match() const { return multi_match; }
 
     const char *get_name() const {
@@ -636,10 +636,10 @@ public:
         return string(best_full_match->name)+multi_list;
     }
 
-    AP_tree *release() {
-        AP_tree *s = self;
-        self       = 0;
-        released   = true;
+    AP_tree_nlen *release() {
+        AP_tree_nlen *s = self;
+        self            = 0;
+        released        = true;
         return s;
     }
 
@@ -651,7 +651,7 @@ public:
 
 };
 
-void PartialSequence::test_match(const AP_tree *leaf_full) {
+void PartialSequence::test_match(const AP_tree_nlen *leaf_full) {
     long curr_overlap;
     long curr_penalty;
 
@@ -690,7 +690,7 @@ void PartialSequence::test_match(const AP_tree *leaf_full) {
     }
 }
 
-static GB_ERROR nt_best_partial_match_rek(list<PartialSequence>& partial, AP_tree *tree) {
+static GB_ERROR nt_best_partial_match_rek(list<PartialSequence>& partial, const AP_tree_nlen *tree) {
     GB_ERROR error = 0;
 
     if (tree) {
@@ -717,7 +717,7 @@ static GB_ERROR nt_best_partial_match_rek(list<PartialSequence>& partial, AP_tre
     return error;
 }
 
-static void count_partial_and_full(AP_tree *at, int *partial, int *full, int *zombies, int default_value, int define_if_undef) {
+static void count_partial_and_full(const AP_tree_nlen *at, int *partial, int *full, int *zombies, int default_value, int define_if_undef) {
     if (at->is_leaf) {
         if (at->gb_node) {
             int is_partial = GBT_is_partial(at->gb_node, default_value, define_if_undef);
@@ -734,7 +734,7 @@ static void count_partial_and_full(AP_tree *at, int *partial, int *full, int *zo
     }
 }
 
-static AP_tree *find_least_deep_leaf(AP_tree *at, int depth, int *min_depth) {
+static const AP_tree_nlen *find_least_deep_leaf(const AP_tree_nlen *at, int depth, int *min_depth) {
     if (depth >= *min_depth) {
         return 0; // already found better or equal
     }
@@ -747,10 +747,13 @@ static AP_tree *find_least_deep_leaf(AP_tree *at, int depth, int *min_depth) {
         return 0;
     }
 
-    AP_tree *left  = find_least_deep_leaf(at->get_leftson(), depth+1, min_depth);
-    AP_tree *right = find_least_deep_leaf(at->get_rightson(), depth+1, min_depth);
+    const AP_tree_nlen *left  = find_least_deep_leaf(at->get_leftson(), depth+1, min_depth);
+    const AP_tree_nlen *right = find_least_deep_leaf(at->get_rightson(), depth+1, min_depth);
 
     return right ? right : left;
+}
+inline AP_tree_nlen *find_least_deep_leaf(AP_tree_nlen *at, int depth, int *min_depth) {
+    return const_cast<AP_tree_nlen*>(find_least_deep_leaf(const_cast<const AP_tree_nlen*>(at), depth, min_depth));
 }
 
 static long push_partial(const char *, long val, void *cd_partial) {
@@ -844,11 +847,11 @@ static void nt_add_partial(AW_window */*aww*/, AWT_canvas *ntw) {
                                                  name, i->get_multilist().c_str()));
                 }
 
-                AP_tree *part_leaf  = i->release();
-                AP_tree *full_seq   = const_cast<AP_tree*>(i->get_best_match());
-                AP_tree *brother    = full_seq->get_brother();
-                int      is_partial = 0;
-                AP_tree *target     = 0;
+                AP_tree_nlen *part_leaf  = i->release();
+                AP_tree_nlen *full_seq   = const_cast<AP_tree_nlen*>(i->get_best_match());
+                AP_tree_nlen *brother    = full_seq->get_brother();
+                int           is_partial = 0;
+                AP_tree_nlen *target     = 0;
 
                 if (brother->is_leaf) {
                     if (brother->gb_node) {
@@ -896,7 +899,7 @@ static void nt_add_partial(AW_window */*aww*/, AWT_canvas *ntw) {
                     part_leaf->insert(target);
                     
                     // we need to create the sequence of the father node!
-                    AP_tree_nlen *father = AP_TREE_NLEN_CAST(part_leaf->get_father());
+                    AP_tree_nlen *father = part_leaf->get_father();
                     father->costs();
 
                     // ensure full-sequence is always on top
@@ -1133,8 +1136,8 @@ static void setBranchlens(AP_tree_nlen *node,double newLen)
 
     if (!node->is_leaf)
     {
-        setBranchlens(node->Leftson(),newLen);
-        setBranchlens(node->Rightson(),newLen);
+        setBranchlens(node->get_leftson(),newLen);
+        setBranchlens(node->get_rightson(),newLen);
     }
 }
 #if defined(TEST_FUNCTIONS)
@@ -1184,17 +1187,17 @@ static void TEST_buildAndDumpChain(AW_window *, AWT_canvas *)
 {
     AP_tree_nlen *root = rootNode();
 
-    root->Leftson()->edgeTo(root->Rightson())->testChain(2);
-    root->Leftson()->edgeTo(root->Rightson())->testChain(3);
-    root->Leftson()->edgeTo(root->Rightson())->testChain(4);
-    root->Leftson()->edgeTo(root->Rightson())->testChain(5);
-    root->Leftson()->edgeTo(root->Rightson())->testChain(6);
-    root->Leftson()->edgeTo(root->Rightson())->testChain(7);
-    root->Leftson()->edgeTo(root->Rightson())->testChain(8);
-    root->Leftson()->edgeTo(root->Rightson())->testChain(9);
-    root->Leftson()->edgeTo(root->Rightson())->testChain(10);
-    root->Leftson()->edgeTo(root->Rightson())->testChain(11);
-    root->Leftson()->edgeTo(root->Rightson())->testChain(-1);
+    root->get_leftson()->edgeTo(root->get_rightson())->testChain(2);
+    root->get_leftson()->edgeTo(root->get_rightson())->testChain(3);
+    root->get_leftson()->edgeTo(root->get_rightson())->testChain(4);
+    root->get_leftson()->edgeTo(root->get_rightson())->testChain(5);
+    root->get_leftson()->edgeTo(root->get_rightson())->testChain(6);
+    root->get_leftson()->edgeTo(root->get_rightson())->testChain(7);
+    root->get_leftson()->edgeTo(root->get_rightson())->testChain(8);
+    root->get_leftson()->edgeTo(root->get_rightson())->testChain(9);
+    root->get_leftson()->edgeTo(root->get_rightson())->testChain(10);
+    root->get_leftson()->edgeTo(root->get_rightson())->testChain(11);
+    root->get_leftson()->edgeTo(root->get_rightson())->testChain(-1);
 }
 
 static void init_TEST_menu(AW_window_menu_modes *awm,AWT_canvas *ntw)
@@ -1318,7 +1321,7 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
             error = GB_end_transaction(ntw->gb_main, error);
             if (!error) {
                 aw_status("Calculating inner nodes");
-                AP_TREE_NLEN_CAST(GLOBAL_PARS->tree->get_root_node())->costs();
+                GLOBAL_PARS->get_root_node()->costs();
             }
         }
         aw_closestatus();

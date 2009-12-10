@@ -26,6 +26,10 @@
 
 #include <aw_preset.hxx>
 
+inline AP_tree_nlen *PARS_global::get_root_node() {
+    return DOWNCAST(AP_tree_nlen*, tree->get_root_node());
+}
+
 static void AWT_graphic_parsimony_root_changed(void *cd, AP_tree *old, AP_tree *newroot) {
     AWT_graphic_tree *agt = (AWT_graphic_tree*)cd;
 
@@ -90,7 +94,7 @@ void PARS_kernighan_cb(AP_tree *tree) {
     long prevCombineCount = AP_sequence::combine_count();
 
     AP_FLOAT pars_start, pars_prev;
-    pars_prev  = pars_start = AP_TREE_NLEN_CAST(GLOBAL_PARS->tree->get_root_node())->costs();
+    pars_prev  = pars_start = GLOBAL_PARS->get_root_node()->costs();
 
     int rek_deep_max = *GBT_read_int(GLOBAL_gb_main,"genetic/kh/maxdepth");
 
@@ -180,7 +184,7 @@ void PARS_kernighan_cb(AP_tree *tree) {
 
             if (better_tree_found) {
                 ap_main->clear();
-                pars_start =  AP_TREE_NLEN_CAST(GLOBAL_PARS->tree->get_root_node())->costs();
+                pars_start =  GLOBAL_PARS->get_root_node()->costs();
                 char buffer[100];
                 sprintf(buffer,"New Parsimony: %f",pars_start);
                 abort_flag |= aw_status(buffer);
@@ -201,23 +205,23 @@ void PARS_optimizer_cb(AP_tree *tree) {
     AP_tree          *oldrootright = agt->get_root_node()->get_rightson();
 
     for (ap_global_abort_flag = 0;!ap_global_abort_flag;){
-        AP_FLOAT old_pars = AP_TREE_NLEN_CAST(agt->get_root_node())->costs();
+        AP_FLOAT old_pars = DOWNCAST(AP_tree_nlen*, agt->get_root_node())->costs();
 
         ((AP_tree_nlen *)tree)->nn_interchange_rek(AP_TRUE, ap_global_abort_flag, -1); 
         if (ap_global_abort_flag) break;
 
-        if (old_pars != AP_TREE_NLEN_CAST(agt->get_root_node())->costs()) { // NNI found better tree
+        if (old_pars != DOWNCAST(AP_tree_nlen*, agt->get_root_node())->costs()) { // NNI found better tree
             continue;
         }
 
         PARS_kernighan_cb(tree);
-        if (old_pars == AP_TREE_NLEN_CAST(agt->get_root_node())->costs()) {
+        if (old_pars == DOWNCAST(AP_tree_nlen*, agt->get_root_node())->costs()) {
             ap_global_abort_flag = 1;
         }
     }
     if (oldrootleft->father == oldrootright) oldrootleft->set_root();
     else oldrootright->set_root();
-    AP_TREE_NLEN_CAST(agt->get_root_node())->costs();
+    DOWNCAST(AP_tree_nlen*, agt->get_root_node())->costs();
     aw_closestatus();
 }
 
@@ -283,7 +287,7 @@ AWT_graphic_parsimony::init_devices(AW_window *aww, AW_device *device, AWT_canva
 void AWT_graphic_parsimony::show(AW_device *device)
 {
     long          parsval   = 0;
-    AP_tree_nlen *root_node = AP_TREE_NLEN_CAST(GLOBAL_PARS->tree->get_root_node());
+    AP_tree_nlen *root_node = GLOBAL_PARS->get_root_node();
     if (root_node) parsval  = root_node->costs();
 
     GLOBAL_PARS->awr->awar(AWAR_PARSIMONY)->write_int(parsval);
