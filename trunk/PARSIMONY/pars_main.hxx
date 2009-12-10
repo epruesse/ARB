@@ -17,10 +17,14 @@ class AW_root;
 class AWT_graphic_tree;
 class WeightedFilter;
 
-extern struct PARS_global {
+struct PARS_global {
     AW_root          *awr;
     AWT_graphic_tree *tree;
-} *GLOBAL_PARS;
+
+    AP_tree_nlen *get_root_node();
+};
+
+extern PARS_global *GLOBAL_PARS;
 
 AWT_graphic_tree *PARS_generate_tree(AW_root *root, WeightedFilter *pars_weighted_filter);
 

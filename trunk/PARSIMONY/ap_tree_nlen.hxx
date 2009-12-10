@@ -38,11 +38,6 @@
 #include <downcast.h>
 #endif
 
-#define AP_TREE_NLEN_CAST(arb_tree)       DOWNCAST(AP_tree_nlen*, arb_tree)
-#define AP_TREE_NLEN_CONST_CAST(arb_tree) DOWNCAST(const AP_tree_nlen*, arb_tree)
-
-
-
 class AP_tree_nlen;
 
 struct AP_CO_LIST {     // liste fuer crossover
@@ -89,14 +84,17 @@ class AP_tree_nlen : public AP_tree {
 
 
     
-    AP_tree_nlen *dup() const;
-
     void createListRekUp(AP_CO_LIST *list,int *cn);
     void createListRekSide(AP_CO_LIST *list,int *cn);
 
 public:
     AP_tree_nlen(AP_tree_root *tree_root);
     virtual ~AP_tree_nlen() {}
+    DEFINE_TREE_ACCESSORS(AP_tree_root, AP_tree_nlen);
+
+    // ARB_tree interface
+    virtual AP_tree_nlen *dup() const;
+    // ARB_tree interface (end)
 
     void     unhash_sequence();
     AP_FLOAT costs(char *mutPerSite = NULL);        /* cost of a tree (number of changes ..)*/
@@ -114,7 +112,7 @@ public:
     void insert(AP_tree *new_brother);
     void remove();
     void swap_assymetric(AP_TREE_SIDE mode);
-    void moveTo(AP_tree *new_brother, AP_FLOAT rel_pos); // if unsure, use cantMoveTo to test if possible
+    void moveTo(AP_tree_nlen *new_brother, AP_FLOAT rel_pos); // if unsure, use cantMoveTo to test if possible
     void set_root();
 
     // tree optimization methods:
@@ -153,17 +151,6 @@ public:
 
     const char* fullname() const;
     const char* sortByName();
-
-    // casted access to neighbours:
-
-    AP_tree_nlen *Father()   { return AP_TREE_NLEN_CAST(get_father()); }
-    AP_tree_nlen *Brother()  { return AP_TREE_NLEN_CAST(get_brother()); }
-    AP_tree_nlen *Leftson()  { return AP_TREE_NLEN_CAST(get_leftson()); }
-    AP_tree_nlen *Rightson() { return AP_TREE_NLEN_CAST(get_rightson()); }
-    const AP_tree_nlen *Father() const { return AP_TREE_NLEN_CONST_CAST(get_father()); }
-    const AP_tree_nlen *Brother() const { return AP_TREE_NLEN_CONST_CAST(get_brother()); }
-    const AP_tree_nlen *Leftson() const { return AP_TREE_NLEN_CONST_CAST(get_leftson()); }
-    const AP_tree_nlen *Rightson() const { return AP_TREE_NLEN_CONST_CAST(get_rightson()); }
 
     // AP_tree_edge access functions:
 
@@ -255,7 +242,7 @@ public:
     int isConnectedTo(const AP_tree_nlen *n) const              { return node[0]==n || node[1]==n; }
     int indexOf(const AP_tree_nlen *n) const                    { ap_assert(isConnectedTo(n)); return node[1] == n; }
     AP_tree_nlen* otherNode(const AP_tree_nlen *n) const        { return node[1-indexOf(n)]; }
-    AP_tree_nlen* sonNode() const                               { return node[0]->Father() == node[1] ? node[0] : node[1]; }
+    AP_tree_nlen* sonNode() const                               { return node[0]->get_father() == node[1] ? node[0] : node[1]; }
     AP_tree_edge* Next() const                                  { return next; }
     long Age() const                                            { return age; }
 
@@ -307,7 +294,7 @@ inline AP_tree_nlen *rootNode() {
 }
 
 inline AP_tree_edge *rootEdge() {
-    return rootNode()->Leftson()->edgeTo(rootNode()->Rightson());
+    return rootNode()->get_leftson()->edgeTo(rootNode()->get_rightson());
 }
 
 /**************************************************/

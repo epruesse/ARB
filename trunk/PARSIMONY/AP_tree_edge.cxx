@@ -54,29 +54,29 @@ static void buildSonEdges(AP_tree_nlen *tree)
 {
     if (!tree->is_leaf)
     {
-        buildSonEdges(tree->Leftson());
-        buildSonEdges(tree->Rightson());
+        buildSonEdges(tree->get_leftson());
+        buildSonEdges(tree->get_rightson());
 
         // to ensure the nodes contain the correct distance to the border
         // we MUST build all son edges before creating the father edge
 
-        new AP_tree_edge(tree, tree->Leftson());
-        new AP_tree_edge(tree, tree->Rightson());
+        new AP_tree_edge(tree, tree->get_leftson());
+        new AP_tree_edge(tree, tree->get_rightson());
     }
 }
 
-void AP_tree_edge::initialize(AP_tree_nlen *tree)
+void AP_tree_edge::initialize(AP_tree_nlen *tree) {
     // Builds all edges in the hole tree
     // The root node is skipped - instead his two sons are connected with an edge
-{
-    while (tree->Father()) tree = tree->Father();   // go up to root
-    buildSonEdges(tree->Leftson());         // link left subtree
-    buildSonEdges(tree->Rightson());            // link right subtree
+
+    while (tree->get_father()) tree = tree->get_father(); // go up to root
+    buildSonEdges(tree->get_leftson());             // link left subtree
+    buildSonEdges(tree->get_rightson());            // link right subtree
 
     // to ensure the nodes contain the correct distance to the border
     // we MUST build all son edges before creating the root edge
 
-    new AP_tree_edge(tree->Leftson(),tree->Rightson()); // link brothers
+    new AP_tree_edge(tree->get_leftson(),tree->get_rightson()); // link brothers
 }
 
 void AP_tree_edge::tailDistance(AP_tree_nlen *n)
@@ -679,7 +679,7 @@ static void ap_calc_bootstrap_remark(AP_tree_nlen *son_node, AP_BL_MODE mode, co
             text = "100%";
         }
         freedup(son_node->remark_branch, text);
-        freedup(son_node->Brother()->remark_branch, text);
+        freedup(son_node->get_brother()->remark_branch, text);
     }
 }
 
@@ -723,7 +723,7 @@ void ap_calc_branch_lengths(AP_tree_nlen */*root*/, AP_tree_nlen *son, double /*
     if (seq_len <=1.0) seq_len = 1.0;
     blen *= 0.5 / seq_len * 2.0;        // doubled counted sum * corr
 
-    AP_tree_nlen *fathr = son->Father();
+    AP_tree_nlen *fathr = son->get_father();
     double old_len = 0.0;
     if (!fathr->father){    // at root
         old_len = fathr->leftlen + fathr->rightlen;
@@ -812,7 +812,7 @@ AP_FLOAT AP_tree_edge::nni_rek(AP_BOOL useStatus, int &Abort, int deep, GB_BOOL 
         AP_tree_nlen *son = follow->sonNode();
         AP_tree_nlen *fath = son;
 
-        if (follow->otherNode(fath)==fath->Father()) fath = fath->Father();
+        if (follow->otherNode(fath)==fath->get_father()) fath = fath->get_father();
         if (fath->father){
             if (fath->father->father){
                 fath->set_root();
@@ -896,9 +896,9 @@ AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, Mutati
         if ((mode & AP_BL_BOOTSTRAP_LIMIT)) {
             root->costs();
             son->unhash_sequence();
-            son->Father()->unhash_sequence();
+            son->get_father()->unhash_sequence();
             ap_assert(!son->father->father);
-            AP_tree_nlen *brother = son->Brother();
+            AP_tree_nlen *brother = son->get_brother();
             brother->unhash_sequence();
 
             ap_assert(mps);

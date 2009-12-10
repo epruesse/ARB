@@ -191,9 +191,9 @@ void AP_tree_nlen::linkAllEdges(AP_tree_edge *edge1, AP_tree_edge *edge2, AP_tre
     ap_assert(edge[1]==NULL);
     ap_assert(edge[2]==NULL);
 
-    edge1->relink(this,Father()->Father() ? Father() : Brother());
-    edge2->relink(this,Leftson());
-    edge3->relink(this,Rightson());
+    edge1->relink(this,get_father()->get_father() ? get_father() : get_brother());
+    edge2->relink(this,get_leftson());
+    edge3->relink(this,get_rightson());
 }
 
 /********************************************
@@ -213,21 +213,21 @@ Section Tree operations:
 
 void AP_tree_nlen::assert_edges_valid() const {
     if (!is_root()) {                               // root has no edges
-        if (Father()->is_root()) {                  // sons of root have one edge between them
-            ap_assert(edgeTo(Brother()) == Brother()->edgeTo(this));
+        if (get_father()->is_root()) {                  // sons of root have one edge between them
+            ap_assert(edgeTo(get_brother()) == get_brother()->edgeTo(this));
         }
         else {
-            ap_assert(edgeTo(Father()) == Father()->edgeTo(this));
+            ap_assert(edgeTo(get_father()) == get_father()->edgeTo(this));
             if (!is_leaf) {
-                ap_assert(edgeTo(Leftson()) == Leftson()->edgeTo(this));
-                ap_assert(edgeTo(Rightson()) == Rightson()->edgeTo(this));
+                ap_assert(edgeTo(get_leftson()) == get_leftson()->edgeTo(this));
+                ap_assert(edgeTo(get_rightson()) == get_rightson()->edgeTo(this));
             }
         }
     }
 
     if (!is_leaf) {
-        Leftson()->assert_edges_valid();
-        Rightson()->assert_edges_valid();
+        get_leftson()->assert_edges_valid();
+        get_rightson()->assert_edges_valid();
     }
 }
 
@@ -250,25 +250,25 @@ void AP_tree_nlen::insert(AP_tree *new_brother) {
     ap_main->push_node(newBrother, STRUCTURE);
 
     if (new_brother->father) {
-        ap_main->push_node(newBrother->Father(), BOTH);
-        AP_tree_nlen *newGrandpa = newBrother->Father()->Father();
-        for (pntr = newGrandpa; pntr; pntr = pntr->Father()) {
+        ap_main->push_node(newBrother->get_father(), BOTH);
+        AP_tree_nlen *newGrandpa = newBrother->get_father()->get_father();
+        for (pntr = newGrandpa; pntr; pntr = pntr->get_father()) {
             ap_main->push_node(pntr, SEQUENCE);
         }
 
         if (newGrandpa) {
-            oldEdge = newBrother->edgeTo(newBrother->Father())->unlink();
+            oldEdge = newBrother->edgeTo(newBrother->get_father())->unlink();
             AP_tree::insert(new_brother);
-            oldEdge->relink(Father(),Father()->Father());
+            oldEdge->relink(get_father(),get_father()->get_father());
         }
         else { // insert to son of root
-            oldEdge = newBrother->edgeTo(newBrother->Brother())->unlink();
+            oldEdge = newBrother->edgeTo(newBrother->get_brother())->unlink();
             AP_tree::insert(new_brother);
-            oldEdge->relink(Father(),Father()->Brother());
+            oldEdge->relink(get_father(),get_father()->get_brother());
         }
 
-        new AP_tree_edge(this,Father());
-        new AP_tree_edge(Father(),newBrother);
+        new AP_tree_edge(this,get_father());
+        new AP_tree_edge(get_father(),newBrother);
     }
     else {                                          // insert at root
         if (newBrother->is_leaf) {                  // tree contains exactly one species (only legal during insert)
@@ -276,8 +276,8 @@ void AP_tree_nlen::insert(AP_tree *new_brother) {
             new AP_tree_edge(newBrother, this);    // build the root edge
         }
         else {
-            AP_tree_nlen *lson = newBrother->Leftson();
-            AP_tree_nlen *rson = newBrother->Rightson();
+            AP_tree_nlen *lson = newBrother->get_leftson();
+            AP_tree_nlen *rson = newBrother->get_rightson();
 
             ap_main->push_node(lson, STRUCTURE);
             ap_main->push_node(rson, STRUCTURE);
@@ -314,7 +314,7 @@ void AP_tree_nlen::remove() {
     // In the last case the two unlinked edges will be re-used, cause their
     // memory location was stored in the tree-stack.
 
-    AP_tree_nlen *oldBrother = Brother();
+    AP_tree_nlen *oldBrother = get_brother();
 
     ASSERT_VALID_TREE(this);
 
@@ -323,8 +323,8 @@ void AP_tree_nlen::remove() {
     ap_main->push_node(this, STRUCTURE);
     ap_main->push_node(oldBrother, STRUCTURE);
 
-    AP_tree_nlen *grandPa = Father()->Father();
-    for (AP_tree_nlen *pntr = grandPa; pntr; pntr = pntr->Father()) {
+    AP_tree_nlen *grandPa = get_father()->get_father();
+    for (AP_tree_nlen *pntr = grandPa; pntr; pntr = pntr->get_father()) {
         ap_main->push_node(pntr, SEQUENCE);
     }
 
@@ -332,29 +332,29 @@ void AP_tree_nlen::remove() {
     if (grandPa) {
         ASSERT_VALID_TREE(grandPa);
 
-        ap_main->push_node(Father(), BOTH);
+        ap_main->push_node(get_father(), BOTH);
         ap_main->push_node(grandPa, STRUCTURE);
 
-        edgeTo(Father())->unlink();                 // LOST_EDGE
-        Father()->edgeTo(oldBrother)->unlink();     // LOST_EDGE
+        edgeTo(get_father())->unlink();                 // LOST_EDGE
+        get_father()->edgeTo(oldBrother)->unlink();     // LOST_EDGE
 
         if (grandPa->father) {
-            oldEdge = Father()->edgeTo(grandPa)->unlink();
+            oldEdge = get_father()->edgeTo(grandPa)->unlink();
             AP_tree::remove();
             oldEdge->relink(oldBrother,grandPa);
         }
         else { // remove grandson of root
-            AP_tree_nlen *uncle = Father()->Brother();
+            AP_tree_nlen *uncle = get_father()->get_brother();
             ap_main->push_node(uncle,STRUCTURE);
 
-            oldEdge = Father()->edgeTo(uncle)->unlink();
+            oldEdge = get_father()->edgeTo(uncle)->unlink();
             AP_tree::remove();
             oldEdge->relink(oldBrother,uncle);
         }
         ASSERT_VALID_TREE(grandPa);
     }
     else {                                          // remove son of root
-        AP_tree_nlen *oldRoot = Father();
+        AP_tree_nlen *oldRoot = get_father();
         ASSERT_VALID_TREE(oldRoot);
 
         if (oldBrother->is_leaf) {
@@ -386,8 +386,8 @@ void AP_tree_nlen::remove() {
             //     /    \                                                                .
             //    lson  rson
             // 
-            AP_tree_nlen *lson = oldBrother->Leftson();
-            AP_tree_nlen *rson = oldBrother->Rightson();
+            AP_tree_nlen *lson = oldBrother->get_leftson();
+            AP_tree_nlen *rson = oldBrother->get_rightson();
 
             ap_assert(lson && rson);
 
@@ -420,19 +420,19 @@ void AP_tree_nlen::swap_assymetric(AP_TREE_SIDE mode) {
     ap_assert(father);                              // cannot swap root (has no brother)
     ap_assert(mode == AP_LEFT || mode == AP_RIGHT); // illegal mode
 
-    AP_tree_nlen *oldBrother = Brother();
-    AP_tree_nlen *movedSon   = mode == AP_LEFT ? Leftson() : Rightson();
+    AP_tree_nlen *oldBrother = get_brother();
+    AP_tree_nlen *movedSon   = mode == AP_LEFT ? get_leftson() : get_rightson();
 
     if (!father->father) {
         //son of root case
         //take leftson of brother to exchange with
 
         if (!oldBrother->is_leaf) { // swap needed ?
-            AP_tree_nlen *nephew = oldBrother->Leftson();
+            AP_tree_nlen *nephew = oldBrother->get_leftson();
 
             ap_main->push_node(this, BOTH);
             ap_main->push_node(movedSon,STRUCTURE);
-            ap_main->push_node(Father(), SEQUENCE);
+            ap_main->push_node(get_father(), SEQUENCE);
             ap_main->push_node(nephew, STRUCTURE);
             ap_main->push_node(oldBrother, BOTH);
 
@@ -447,23 +447,23 @@ void AP_tree_nlen::swap_assymetric(AP_TREE_SIDE mode) {
     }
     else {
         ap_main->push_node(this, BOTH);
-        ap_main->push_node(Father(), BOTH);
+        ap_main->push_node(get_father(), BOTH);
         ap_main->push_node(oldBrother, STRUCTURE);
         ap_main->push_node(movedSon,STRUCTURE);
 
         // from father to root buffer all sequences
 
-        for (AP_tree_nlen *pntr = Father()->Father(); pntr ; pntr = pntr->Father()) {
+        for (AP_tree_nlen *pntr = get_father()->get_father(); pntr ; pntr = pntr->get_father()) {
             ap_main->push_node(pntr, SEQUENCE);
         }
 
         AP_tree_edge *edge1 = edgeTo(movedSon)->unlink();
-        AP_tree_edge *edge2 = Father()->edgeTo(oldBrother)->unlink();
+        AP_tree_edge *edge2 = get_father()->edgeTo(oldBrother)->unlink();
 
         AP_tree::swap_assymetric(mode);
 
         edge1->relink(this,oldBrother);
-        edge2->relink(Father(),movedSon);
+        edge2->relink(get_father(),movedSon);
     }
 }
 
@@ -481,7 +481,7 @@ void AP_tree_nlen::set_root() {
     AP_tree_nlen *old_root    = 0;
     {
         AP_tree_nlen *pntr;
-        for (pntr = Father(); pntr->father; pntr = pntr->Father()) {
+        for (pntr = get_father(); pntr->father; pntr = pntr->get_father()) {
             ap_main->push_node(pntr, BOTH);
             old_brother = pntr;
         }
@@ -489,7 +489,7 @@ void AP_tree_nlen::set_root() {
     }
 
     if (old_brother) {
-        old_brother = old_brother->Brother();
+        old_brother = old_brother->get_brother();
         ap_main->push_node(old_brother , STRUCTURE);
     }
 
@@ -514,86 +514,86 @@ GB_INLINE void sort(AP_tree_edge **e1, AP_tree_edge **e2, AP_tree_edge **e3) {
     sort(e1,e2);
 }
 
-void AP_tree_nlen::moveTo(AP_tree *new_brother,AP_FLOAT rel_pos) {
+void AP_tree_nlen::moveTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
     ap_assert(father);
-    ap_assert(new_brother->father);
+    ap_assert(newBrother->father);
 
     AP_tree_nlen *pntr;
 
     ap_main->push_node(this , STRUCTURE);
-    ap_main->push_node(Brother(), STRUCTURE);
+    ap_main->push_node(get_brother(), STRUCTURE);
 
     if (father->father) {
-        AP_tree_nlen *grandpa = Father()->Father();
+        AP_tree_nlen *grandpa = get_father()->get_father();
 
-        ap_main->push_node(Father(), BOTH);
+        ap_main->push_node(get_father(), BOTH);
 
         if (grandpa->father) {
             ap_main->push_node(grandpa, BOTH);
-            for  (pntr = grandpa->Father(); pntr; pntr = pntr->Father()) {
+            for  (pntr = grandpa->get_father(); pntr; pntr = pntr->get_father()) {
                 ap_main->push_node( pntr, SEQUENCE);
             }
         }
         else { // grandson of root
             ap_main->push_node(grandpa, ROOT);
-            ap_main->push_node(Father()->Brother(), STRUCTURE);
+            ap_main->push_node(get_father()->get_brother(), STRUCTURE);
         }
     }
     else { // son of root
-        ap_main->push_node(Father(), ROOT);
+        ap_main->push_node(get_father(), ROOT);
 
         if (!get_brother()->is_leaf) {
-            ap_main->push_node(Brother()->Leftson(), STRUCTURE);
-            ap_main->push_node(Brother()->Rightson(), STRUCTURE);
+            ap_main->push_node(get_brother()->get_leftson(), STRUCTURE);
+            ap_main->push_node(get_brother()->get_rightson(), STRUCTURE);
         }
     }
 
-    AP_tree_nlen *newBrother = AP_TREE_NLEN_CAST(new_brother);
+    // AP_tree_nlen *newBrother = AP_TREE_NLEN_CAST(new_brother);
     
     ap_main->push_node(newBrother , STRUCTURE);
-    if (new_brother->father) {
-        if (new_brother->father->father) {
-            ap_main->push_node(newBrother->Father(), BOTH);
+    if (newBrother->father) {
+        if (newBrother->father->father) {
+            ap_main->push_node(newBrother->get_father(), BOTH);
         }
         else { // move to son of root
-            ap_main->push_node(newBrother->Father(), BOTH);
-            ap_main->push_node(newBrother->Brother(), STRUCTURE);
+            ap_main->push_node(newBrother->get_father(), BOTH);
+            ap_main->push_node(newBrother->get_brother(), STRUCTURE);
         }
 
-        for (pntr = newBrother->Father()->Father(); pntr; pntr = pntr->Father()) {
+        for (pntr = newBrother->get_father()->get_father(); pntr; pntr = pntr->get_father()) {
             ap_main->push_node(pntr, SEQUENCE);
         }
     }
 
-    AP_tree_nlen *thisFather        = Father();
-    AP_tree_nlen *grandFather       = thisFather->Father();
-    AP_tree_nlen *oldBrother        = Brother();
-    AP_tree_nlen *newBrothersFather = newBrother->Father();
-    int           edgesChange       = ! (father==new_brother || new_brother->father==this->father);
+    AP_tree_nlen *thisFather        = get_father();
+    AP_tree_nlen *grandFather       = thisFather->get_father();
+    AP_tree_nlen *oldBrother        = get_brother();
+    AP_tree_nlen *newBrothersFather = newBrother->get_father();
+    int           edgesChange       = ! (father==newBrother || newBrother->father==father);
     AP_tree_edge *e1,*e2,*e3,*e4;
 
     if (edgesChange) {
-        if (thisFather==newBrothersFather->Father()) { // son -> son of brother
+        if (thisFather==newBrothersFather->get_father()) { // son -> son of brother
             if (grandFather) {
-                if(grandFather->Father()) {
+                if(grandFather->get_father()) {
                     //          cout << "son -> son of brother\n";
 
                     thisFather->unlinkAllEdges(&e1,&e2,&e3);
                     e4 = newBrother->edgeTo(oldBrother)->unlink();
 
-                    AP_tree::moveTo(new_brother,rel_pos);
+                    AP_tree::moveTo(newBrother,rel_pos);
 
                     sort(&e1,&e2,&e3);              // sort by age (e1==oldest edge)
                     e1->relink(oldBrother,grandFather);     // use oldest edge at remove position
                     thisFather->linkAllEdges(e2,e3,e4);
                 }
                 else { // grandson of root -> son of brother
-                    AP_tree_nlen *uncle = thisFather->Brother();
+                    AP_tree_nlen *uncle = thisFather->get_brother();
 
                     thisFather->unlinkAllEdges(&e1,&e2,&e3);
                     e4 = newBrother->edgeTo(oldBrother)->unlink();
 
-                    AP_tree::moveTo(new_brother,rel_pos);
+                    AP_tree::moveTo(newBrother,rel_pos);
 
                     sort(&e1,&e2,&e3);  // sort by age (e1==oldest edge)
                     e1->relink(oldBrother,uncle);
@@ -602,7 +602,7 @@ void AP_tree_nlen::moveTo(AP_tree *new_brother,AP_FLOAT rel_pos) {
             }
             else { // son of root -> grandson of root
                 oldBrother->unlinkAllEdges(&e1,&e2,&e3);
-                AP_tree::moveTo(new_brother,rel_pos);
+                AP_tree::moveTo(newBrother,rel_pos);
                 thisFather->linkAllEdges(e1,e2,e3);
             }
         }
@@ -611,14 +611,14 @@ void AP_tree_nlen::moveTo(AP_tree *new_brother,AP_FLOAT rel_pos) {
                 thisFather->unlinkAllEdges(&e1,&e2,&e3);
                 e4 = grandFather->edgeTo(newBrother)->unlink();
 
-                AP_tree::moveTo(new_brother,rel_pos);
+                AP_tree::moveTo(newBrother,rel_pos);
 
                 sort(&e1,&e2,&e3);
                 e1->relink(oldBrother,grandFather);
                 thisFather->linkAllEdges(e2,e3,e4);
             }
             else { // no edges change if we move grandson of root -> son of root
-                AP_tree::moveTo(new_brother,rel_pos);
+                AP_tree::moveTo(newBrother,rel_pos);
             }
         }
         else {
@@ -631,30 +631,30 @@ void AP_tree_nlen::moveTo(AP_tree *new_brother,AP_FLOAT rel_pos) {
                 oldBrother->unlinkAllEdges(&e1,&e2,&e3);
                 e4 = newBrother->edgeTo(newBrothersFather)->unlink();
 
-                AP_tree::moveTo(new_brother,rel_pos);
+                AP_tree::moveTo(newBrother,rel_pos);
 
                 sort(&e1,&e2,&e3);
-                e1->relink(oldBrother->Leftson(),oldBrother->Rightson()); // new root-edge
+                e1->relink(oldBrother->get_leftson(),oldBrother->get_rightson()); // new root-edge
                 thisFather->linkAllEdges(e2,e3,e4);     // old root
             }
-            else if (!grandFather->Father()) { // grandson of root
-                if (newBrothersFather->Father()->Father()==NULL) { // grandson of root -> grandson of root
+            else if (!grandFather->get_father()) { // grandson of root
+                if (newBrothersFather->get_father()->get_father()==NULL) { // grandson of root -> grandson of root
                     thisFather->unlinkAllEdges(&e1,&e2,&e3);
                     e4 = newBrother->edgeTo(newBrothersFather)->unlink();
 
-                    AP_tree::moveTo(new_brother,rel_pos);
+                    AP_tree::moveTo(newBrother,rel_pos);
 
                     sort(&e1,&e2,&e3);
                     e1->relink(oldBrother,newBrothersFather);   // new root-edge
                     thisFather->linkAllEdges(e2,e3,e4);
                 }
                 else {
-                    AP_tree_nlen *uncle = thisFather->Brother();
+                    AP_tree_nlen *uncle = thisFather->get_brother();
 
                     thisFather->unlinkAllEdges(&e1,&e2,&e3);
                     e4 = newBrother->edgeTo(newBrothersFather)->unlink();
 
-                    AP_tree::moveTo(new_brother,rel_pos);
+                    AP_tree::moveTo(newBrother,rel_pos);
 
                     sort(&e1,&e2,&e3);
                     e1->relink(oldBrother,uncle);
@@ -662,13 +662,13 @@ void AP_tree_nlen::moveTo(AP_tree *new_brother,AP_FLOAT rel_pos) {
                 }
             }
             else {
-                if (newBrothersFather->Father()==NULL) { // move to son of root
-                    AP_tree_nlen *newBrothersBrother = newBrother->Brother();
+                if (newBrothersFather->get_father()==NULL) { // move to son of root
+                    AP_tree_nlen *newBrothersBrother = newBrother->get_brother();
 
                     thisFather->unlinkAllEdges(&e1,&e2,&e3);
                     e4 = newBrother->edgeTo(newBrothersBrother)->unlink();
 
-                    AP_tree::moveTo(new_brother,rel_pos);
+                    AP_tree::moveTo(newBrother,rel_pos);
 
                     sort(&e1,&e2,&e3);
                     e1->relink(oldBrother,grandFather);
@@ -678,7 +678,7 @@ void AP_tree_nlen::moveTo(AP_tree *new_brother,AP_FLOAT rel_pos) {
                     thisFather->unlinkAllEdges(&e1,&e2,&e3);
                     e4 = newBrother->edgeTo(newBrothersFather)->unlink();
 
-                    AP_tree::moveTo(new_brother,rel_pos);
+                    AP_tree::moveTo(newBrother,rel_pos);
 
                     sort(&e1,&e2,&e3);
                     e1->relink(oldBrother,grandFather);
@@ -688,7 +688,7 @@ void AP_tree_nlen::moveTo(AP_tree *new_brother,AP_FLOAT rel_pos) {
         }
     }
     else { // edgesChange==0
-        AP_tree::moveTo(new_brother,rel_pos);
+        AP_tree::moveTo(newBrother,rel_pos);
     }
 }
 
@@ -871,8 +871,8 @@ void AP_tree_nlen::parsimony_rek(char *mutPerSite) {
         }
 
         if (!sequence->got_sequence()) {
-            AP_tree_nlen *lson = Leftson();
-            AP_tree_nlen *rson = Rightson();
+            AP_tree_nlen *lson = get_leftson();
+            AP_tree_nlen *rson = get_rightson();
 
             ap_assert(lson);
             ap_assert(rson);
@@ -918,7 +918,7 @@ AP_FLOAT AP_tree_nlen::nn_interchange_rek(AP_BOOL openclosestatus, int &Abort,in
         return e->nni_rek(openclosestatus,Abort,deep,skip_hidden,mode,e->otherNode(this));
     }
 
-    return edgeTo(Father())->nni_rek(openclosestatus,Abort,deep,skip_hidden,mode,Father());
+    return edgeTo(get_father())->nni_rek(openclosestatus,Abort,deep,skip_hidden,mode,get_father());
 }
 
 
@@ -1294,8 +1294,8 @@ const char* AP_tree_nlen::sortByName()
 {
     if (name) return name;  // leaves
 
-    const char *n1 = Leftson()->sortByName();
-    const char *n2 = Rightson()->sortByName();
+    const char *n1 = get_leftson()->sortByName();
+    const char *n2 = get_rightson()->sortByName();
 
     if (strcmp(n1,n2)<0) return n1;
 
@@ -1308,8 +1308,8 @@ const char *AP_tree_nlen::fullname() const
 {
     if (!name) {
         static char *buffer;
-        char        *lName = strdup(Leftson()->fullname());
-        char        *rName = strdup(Rightson()->fullname());
+        char        *lName = strdup(get_leftson()->fullname());
+        char        *rName = strdup(get_rightson()->fullname());
         int          len   = strlen(lName)+strlen(rName)+4;
 
         if (buffer) free(buffer);
