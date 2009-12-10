@@ -210,6 +210,7 @@ dyhfjtt.o: protml.h
 getseq.o: ../../INCLUDE/arb_assert.h
 getseq.o: matrixut.h
 getseq.o: molphy.h
+getseq.o: prot_tml.h
 getseq.o: protml.h
 
 matrixut.o: ../../INCLUDE/arb_assert.h
@@ -241,6 +242,7 @@ njmtree.o: protml.h
 njtree.o: ../../INCLUDE/arb_assert.h
 njtree.o: matrixut.h
 njtree.o: molphy.h
+njtree.o: prot_tml.h
 njtree.o: protml.h
 
 protml.o: ../../INCLUDE/arb_assert.h
