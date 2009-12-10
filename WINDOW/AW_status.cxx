@@ -35,18 +35,23 @@ using namespace std;
 
 #define AW_GAUGE_PERCENT(pc) ((pc)*AW_GAUGE_GRANULARITY/100)
 
-#define AW_STATUS_KILL_DELAY        4000 // in ms
-#define AW_STATUS_LISTEN_DELAY      300 // in ms
-#define AW_STATUS_HIDE_DELAY        60 // in sec
-#define AW_STATUS_PIPE_CHECK_DELAY  1000*2 // in ms (a pipe check every 2 seconds)
+#define AW_STATUS_KILL_DELAY       4000             // in ms
+#define AW_STATUS_LISTEN_DELAY     300              // in ms
+#define AW_STATUS_HIDE_DELAY       60               // in sec
+#define AW_STATUS_PIPE_CHECK_DELAY 1000*2           // in ms (a pipe check every 2 seconds)
 
-#define AWAR_STATUS         "tmp/Status/"
-#define AWAR_STATUS_TITLE   AWAR_STATUS "Title"
-#define AWAR_STATUS_TEXT    AWAR_STATUS "Text"
-#define AWAR_STATUS_GAUGE   AWAR_STATUS "Gauge"
-#define AWAR_STATUS_ELAPSED AWAR_STATUS "Elapsed"
+#define AWAR_STATUS         "tmp/status/"
+#define AWAR_STATUS_TITLE   AWAR_STATUS "title"
+#define AWAR_STATUS_TEXT    AWAR_STATUS "text"
+#define AWAR_STATUS_GAUGE   AWAR_STATUS "gauge"
+#define AWAR_STATUS_ELAPSED AWAR_STATUS "elapsed"
 
-#define AWAR_QUESTION "tmp/Question"
+#define AWAR_QUESTION "tmp/question"
+
+#define AWAR_HELP       "tmp/help/"
+#define AWAR_HELPFILE   AWAR_HELP "file"
+#define AWAR_HELPTEXT   AWAR_HELP "text"
+#define AWAR_HELPSEARCH AWAR_HELP "search"
 
 #define AW_MESSAGE_LISTEN_DELAY 500 // look in ms whether a father died
 #define AW_MESSAGE_LINES        500
@@ -1721,7 +1726,7 @@ static char *get_full_qualified_help_file_name(const char *helpfile, bool path_f
 }
 
 static char *get_full_qualified_help_file_name(AW_root *awr, bool path_for_edit = false) {
-    char *helpfile = awr->awar("tmp/aw_window/helpfile")->read_string();
+    char *helpfile = awr->awar(AWAR_HELPFILE)->read_string();
     char *qualified = get_full_qualified_help_file_name(helpfile, path_for_edit);
     free(helpfile);
     return qualified;
@@ -1813,7 +1818,7 @@ static void aw_help_select_newest_in_history(AW_root *aw_root) {
         const char *sep      = strchr(history, '#');
         char       *lastHelp = sep ? GB_strpartdup(history, sep-1) : strdup(history);
 
-        aw_root->awar("tmp/aw_window/helpfile")->write_string(lastHelp);
+        aw_root->awar(AWAR_HELPFILE)->write_string(lastHelp);
         free(lastHelp);
     }
 }
@@ -1886,7 +1891,7 @@ static void aw_help_helpfile_changed_cb(AW_root *awr) {
     char *help_file = get_full_qualified_help_file_name(awr);
 
     if (!strlen(help_file)) {
-        awr->awar("tmp/aw_window/helptext")->write_string("no help");
+        awr->awar(AWAR_HELPTEXT)->write_string("no help");
     }
     else if (GBS_string_matches(help_file,"*.ps",GB_IGNORE_CASE) ){ // Postscript file
         GB_ERROR error = aw_help_show_external_format(help_file, GB_getenvARB_GS());
@@ -1951,7 +1956,7 @@ static void aw_help_helpfile_changed_cb(AW_root *awr) {
             if (!ptr) ptr = helptext;
             ptr = GBS_string_eval(ptr,"{*\\:*}=*2",0);
 
-            awr->awar("tmp/aw_window/helptext")->write_string(ptr);
+            awr->awar(AWAR_HELPTEXT)->write_string(ptr);
             free(ptr);
             free(helptext);
         }else{
@@ -1959,7 +1964,7 @@ static void aw_help_helpfile_changed_cb(AW_root *awr) {
                     "Please help us to complete the ARB-Help by submitting\n"
                     "this missing helplink via ARB_NT/File/About/SubmitBug\n"
                     "Thank you.\n",help_file);
-            awr->awar("tmp/aw_window/helptext")->write_string(AW_ERROR_BUFFER);
+            awr->awar(AWAR_HELPTEXT)->write_string(AW_ERROR_BUFFER);
         }
     }
     free(help_file);
@@ -1978,7 +1983,7 @@ static void aw_help_browse(AW_window *aww) {
 
 static void aw_help_search(AW_window *aww) {
     GB_ERROR  error      = 0;
-    char     *searchtext = aww->get_root()->awar("tmp/aw_window/search_expression")->read_string();
+    char     *searchtext = aww->get_root()->awar(AWAR_HELPSEARCH)->read_string();
 
     if (searchtext[0]==0) error = "Empty searchstring";
     else {
@@ -2048,7 +2053,7 @@ static void aw_help_search(AW_window *aww) {
                     if (results>0) freedup(last_help, helpfilename);
 
                     fclose(helpfp);
-                    aww->get_root()->awar("tmp/aw_window/helpfile")->write_string(helpfilename); // display results in helpwindow
+                    aww->get_root()->awar(AWAR_HELPFILE)->write_string(helpfilename); // display results in helpwindow
                 }
                 free(result);
             }
@@ -2068,10 +2073,10 @@ void AW_POPUP_HELP(AW_window *aw,AW_CL /*char */ helpcd) {
     char    *help_file = (char*)helpcd;
 
     if (!helpwindow) {
-        awr->awar_string( "tmp/aw_window/helptext", "" , AW_ROOT_DEFAULT);
-        awr->awar_string( "tmp/aw_window/search_expression", "" , AW_ROOT_DEFAULT);
-        awr->awar_string( "tmp/aw_window/helpfile", "" , AW_ROOT_DEFAULT);
-        awr->awar("tmp/aw_window/helpfile")->add_callback(aw_help_helpfile_changed_cb);
+        awr->awar_string(AWAR_HELPTEXT,   "", AW_ROOT_DEFAULT);
+        awr->awar_string(AWAR_HELPSEARCH, "", AW_ROOT_DEFAULT);
+        awr->awar_string(AWAR_HELPFILE,   "", AW_ROOT_DEFAULT);
+        awr->awar(AWAR_HELPFILE)->add_callback(aw_help_helpfile_changed_cb);
 
         helpwindow = new AW_window_simple;
         helpwindow->init(awr,"HELP","HELP WINDOW");
@@ -2089,26 +2094,26 @@ void AW_POPUP_HELP(AW_window *aw,AW_CL /*char */ helpcd) {
 
 
         helpwindow->at("super");
-        aw_help_global.upid = helpwindow->create_selection_list("tmp/aw_window/helpfile",0,0,3,3);
+        aw_help_global.upid = helpwindow->create_selection_list(AWAR_HELPFILE,0,0,3,3);
         helpwindow->insert_default_selection(aw_help_global.upid,"   ","");
         helpwindow->update_selection_list(aw_help_global.upid);
 
         helpwindow->at("sub");
-        aw_help_global.downid = helpwindow->create_selection_list("tmp/aw_window/helpfile",0,0,3,3);
+        aw_help_global.downid = helpwindow->create_selection_list(AWAR_HELPFILE,0,0,3,3);
         helpwindow->insert_default_selection(aw_help_global.downid,"   ","");
         helpwindow->update_selection_list(aw_help_global.downid);
         aw_help_global.aww = helpwindow;
         aw_help_global.history = 0;
 
         helpwindow->at("text");
-        helpwindow->create_text_field("tmp/aw_window/helptext",3,3);
+        helpwindow->create_text_field(AWAR_HELPTEXT,3,3);
 
         helpwindow->at("browse");
         helpwindow->callback(aw_help_browse);
         helpwindow->create_button("BROWSE", "BROWSE", "B");
 
         helpwindow->at("expression");
-        helpwindow->create_input_field("tmp/aw_window/search_expression");
+        helpwindow->create_input_field(AWAR_HELPSEARCH);
 
         helpwindow->at("search");
         helpwindow->callback(aw_help_search);
@@ -2122,7 +2127,7 @@ void AW_POPUP_HELP(AW_window *aw,AW_CL /*char */ helpcd) {
 
     aw_assert(help_file);
 
-    awr->awar("tmp/aw_window/helpfile")->write_string(help_file);
+    awr->awar(AWAR_HELPFILE)->write_string(help_file);
     
     if (!GBS_string_matches(help_file,"*.ps",GB_IGNORE_CASE) &&
         !GBS_string_matches(help_file,"*.pdf",GB_IGNORE_CASE))
