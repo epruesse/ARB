@@ -26,7 +26,7 @@
 
 #include <aw_preset.hxx>
 
-inline AP_tree_nlen *PARS_global::get_root_node() {
+AP_tree_nlen *PARS_global::get_root_node() {
     return DOWNCAST(AP_tree_nlen*, tree->get_root_node());
 }
 
