@@ -6,6 +6,8 @@ ELSE
 ENDIF
 
 DATA AISC { $(#FILE $(argv[2])) };
+DUMPDATA DUMP/aisc.pa__$(argv[2]).dump
+
 MOVETO $(AISC/PROJECT)
 
 OPEN save $(argv[3])
