@@ -5,7 +5,9 @@ ELSE
 ENDIF
 
 DATA AISC { $(#FILE $(argv[2])) }, EXTERN { $(#FILE $(argv[4])) };
-OPEN save $(argv[3]) 
+DUMPDATA DUMP/aisc_server.pa__$(argv[2]).dump
+
+OPEN save $(argv[3])
 OPEN import $(argv[5])
 # ************************* SET EXTERN FUNCTIONS ***************************
 MOVETO $(EXTERN/.)

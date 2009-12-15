@@ -293,12 +293,28 @@ static void write_prg(CL * cl, FILE * out, int deep)
 }
 */
 
-static int do_com_dbg(char *str)
-{
-    write_aisc(gl->root, stdout, 0);
-    str = str;
+static int do_com_dumpdata(const char *filename) {
+    if (!gl->root) {
+        print_error("DUMPDATA can only be used after DATA");
+        return 1;
+    }
+    FILE *out = stdout;
+    if (filename[0]) {
+        printf("Dumping data to '%s'\n", filename);
+        out = fopen(filename, "wt");
+        if (!out) {
+            printf_error("cant open file '%s' to DUMPDATA", filename);
+            return 1;
+        }
+    }
+    else {
+        puts("DUMPDATA:");
+    }
+    write_aisc(gl->root, out, 0);
+    if (filename[0]) fclose(out);
     return 0;
 }
+
 static int do_com_data(char *str)
 {
     char           *in;
@@ -1047,7 +1063,7 @@ int run_prg(void) {
         COMMAND(gl->linebuf,"PP",2,do_com_print2);
         COMMAND(gl->linebuf,"EXIT",4,do_com_exit);
         COMMAND_NOFAIL(gl->linebuf,"DATA",4,do_com_data);
-        COMMAND(gl->linebuf,"DBG",3,do_com_dbg);
+        COMMAND_NOFAIL(gl->linebuf,"DUMPDATA",8,do_com_dumpdata);
 
         printf_error("Unknown Command '%s'", gl->pc->str);
         return -1;
