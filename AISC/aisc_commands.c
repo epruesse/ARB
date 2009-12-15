@@ -267,13 +267,13 @@ static void write_aisc(AD * ad, FILE * out, int deep)
                 fprintf(out, ",");
             flag = 1;
             if (item->sub) {
-                fprintf(out, "%s {\n", item->key);
+                fprintf(out, "'%s'={\n", item->key);
                 write_aisc(item->sub, out, deep + 1);
                 for (i = 0; i <= deep; i++)
                     fprintf(out, "\t");
                 fprintf(out, "}");
             } else {
-                fprintf(out, "\t%s (~%s~)", item->key, item->val);
+                fprintf(out, "\t'%s'=(~%s~)", item->key, item->val ? item->val : "");
             }
         }
         fprintf(out, ";\n");
