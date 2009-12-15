@@ -301,24 +301,27 @@ static AD *read_aisc_line(char ** in, HS ** hs)
         switch (is_m) {
             case 2:
                 return first_item;      /* } */
-            case 3:     /* { */
-                ITEM_MAKE;
-                hitem = read_aisc(in);
+            case 3: {     /* { */
+                AD *hitem2 = read_aisc(in);
                 if (gl->error_flag)
                     return 0;
-                if ((header) && (header->key)) {
-                    item->key = header->key;
-                }else{
-                    item->key = "{";
+                if (hitem2) {
+                    ITEM_MAKE;
+                    if ((header) && (header->key)) {
+                        item->key = header->key;
+                    }else{
+                        item->key = "{";
+                    }
+                    item->sub                     = hitem2;
+                    if (hitem2)      hitem2->father = item;
                 }
-                item->sub = hitem;
-                if (hitem)      hitem->father = item;
                 if (gl->lastchar != '}') {
                     p_error_nocbr();
                     return 0;
                 }
                 get_byte(in);
                 break;
+            }
             case 4:     /* , */
                 if ((header) && (header->key)) {
                 } else {
