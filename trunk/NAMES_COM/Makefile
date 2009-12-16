@@ -1,5 +1,6 @@
 # The file, where all structures are described
 MAIN_SOURCE = names.aisc
+MAIN_HEADER = aisc_include.header
 
 # Your own server functions
 PRIVATE_SERVER_OBJECTS = names_extern.o
@@ -21,7 +22,7 @@ AISC_DEPENDS = $(wildcard AISC/*.pa) $(AISC_COMPILER) $(AISC_PROTOTYPER)
 
 include AISC/export2sub
 
-server.a: $(MAIN_SOURCE) $(PRIVATE_SERVER_OBJECTS:.o=.c) $(PUBLIC_SOURCES) $(AISC_DEPENDS)
+server.a: $(MAIN_SOURCE) $(PRIVATE_SERVER_OBJECTS:.o=.c) $(PUBLIC_SOURCES) $(AISC_DEPENDS) $(MAIN_HEADER)
 	@$(MAKE) -r -f AISC/Makefile
 
 depends:
