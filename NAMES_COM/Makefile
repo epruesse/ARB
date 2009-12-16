@@ -16,7 +16,8 @@ CLIENTCOMPILER = $(COMPILER)
 
 # AISC dependencies
 AISC_COMPILER=../MAKEBIN/aisc
-AISC_DEPENDS = $(wildcard AISC/*.pa) $(AISC_COMPILER)
+AISC_PROTOTYPER=../MAKEBIN/aisc_mkpt
+AISC_DEPENDS = $(wildcard AISC/*.pa) $(AISC_COMPILER) $(AISC_PROTOTYPER)
 
 include AISC/export2sub
 
