@@ -1,7 +1,16 @@
+/* ================================================================ */
+/*                                                                  */
+/*   File      : aisc_mix.c                                         */
+/*   Purpose   :                                                    */
+/*                                                                  */
+/*   Institute of Microbiology (Technical University Munich)        */
+/*   http://www.arb-home.de/                                        */
+/*                                                                  */
+/* ================================================================ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-/* #include <malloc.h> */
 
 #include "aisc.h"
 
@@ -57,7 +66,7 @@ CL *aisc_calc_blocks(CL * co, CL * afor, CL * aif, int up) {
                     if (up) return co;
                 }else if(co->command == ELSEIF) {
                     CL *cod;
-                    cod = make_CL();
+                    cod = calloc_CL();
                     *cod = *co;
                     cod->command = IF;
                     co->command = ELSE;
@@ -142,7 +151,7 @@ int aisc_calc_special_commands(void)
         if (!strncmp(co->str,"IF",2)) {
             buf1 = co->str+2;
             co->command = IF;
-            READ_SPACES(buf1);
+            SKIP_SPACE_LF(buf1);
             buf2 = strdup(buf1);
             free(co->str);
             co->str = buf2;
@@ -151,7 +160,7 @@ int aisc_calc_special_commands(void)
         if (!strncmp(co->str,"ELSEIF",6)) {
             buf1 = co->str+6;
             co->command = ELSEIF;
-            READ_SPACES(buf1);
+            SKIP_SPACE_LF(buf1);
             buf2 = strdup(buf1);
             free(co->str);
             co->str = buf2;
@@ -160,7 +169,7 @@ int aisc_calc_special_commands(void)
         if (!strncmp(co->str,"ELSE",4)) {
             buf1 = co->str+4;
             co->command = ELSE;
-            READ_SPACES(buf1);
+            SKIP_SPACE_LF(buf1);
             buf2 = strdup(buf1);
             free(co->str);
             co->str = buf2;
@@ -169,7 +178,7 @@ int aisc_calc_special_commands(void)
         if (!strncmp(co->str,"ENDIF",5)) {
             buf1 = co->str+5;
             co->command = ENDIF;
-            READ_SPACES(buf1);
+            SKIP_SPACE_LF(buf1);
             buf2 = strdup(buf1);
             free(co->str);
             co->str = buf2;
@@ -178,7 +187,7 @@ int aisc_calc_special_commands(void)
         if (!strncmp(co->str,"FOR",3)) {
             buf1 = co->str+3;
             co->command = FOR;
-            READ_SPACES(buf1);
+            SKIP_SPACE_LF(buf1);
             buf2 = strdup(buf1);
             free(co->str);
             co->str = buf2;
@@ -187,7 +196,7 @@ int aisc_calc_special_commands(void)
         if (!strncmp(co->str,"ENDFOR",6)) {
             buf1 = co->str+6;
             co->command = ENDFOR;
-            READ_SPACES(buf1);
+            SKIP_SPACE_LF(buf1);
             buf2 = strdup(buf1);
             free(co->str);
             co->str = buf2;
@@ -196,7 +205,7 @@ int aisc_calc_special_commands(void)
         if (!strncmp(co->str,"NEXT",4)) {
             buf1 = co->str+4;
             co->command = NEXT;
-            READ_SPACES(buf1);
+            SKIP_SPACE_LF(buf1);
             buf2 = strdup(buf1);
             free(co->str);
             co->str = buf2;
@@ -206,27 +215,28 @@ int aisc_calc_special_commands(void)
             char *s,*s2;
             buf1 = co->str+8;
             co->command = FUNCTION;
-            READ_SPACES(buf1);
-            for (s=buf1;!gl->b_tab[(int)(*s)];s++) ;
+            SKIP_SPACE_LF(buf1);
+            for (s=buf1;!is_SPACE_SEP_LF_EOS(*s);s++) ;
             if (*s) {
                 *s = 0;
                 s++;
-                READ_SPACES(s);
+                SKIP_SPACE_LF(s);
                 s2 = strdup(s);
             }else{
                 s2 = strdup("");
             }
-            buf2 = strdup(buf1);
+            buf2    = strdup(buf1);
             free(co->str);
             co->str = s2;
             sprintf(string_buf,"%li",(long)co);
             write_hash(gl->fns,buf2,string_buf);
+            free(buf2);
             continue;
         }
         if (!strncmp(co->str,"LABEL",5)) {
             buf1 = co->str+5;
             co->command = LABEL;
-            READ_SPACES(buf1);
+            SKIP_SPACE_LF(buf1);
             buf2 = strdup(buf1);
             free(co->str);
             co->str = buf2;
@@ -324,8 +334,8 @@ char *write_hash(struct hash_struct *hs,const char *key,const char *val)
 
     return 0;
 }
-int free_hash(struct hash_struct *hs)
-{
+
+int free_hash(struct hash_struct *hs) {
     int i;
     int e2;
     struct hash_entry *e,*ee;
@@ -338,6 +348,7 @@ int free_hash(struct hash_struct *hs)
             free((char *)e);
         }
     }
-    free ((char *)hs);
+    free(hs->entries);
+    free(hs);
     return 0;
 }

@@ -1,9 +1,18 @@
+/* ================================================================ */
+/*                                                                  */
+/*   File      : aisc_commands.c                                    */
+/*   Purpose   :                                                    */
+/*                                                                  */
+/*   Institute of Microbiology (Technical University Munich)        */
+/*   http://www.arb-home.de/                                        */
+/*                                                                  */
+/* ================================================================ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
 #include <unistd.h>
-/* #include <malloc.h> */
 #include <memory.h>
 
 #include "aisc.h"
@@ -109,7 +118,7 @@ static char *calc_rest_line(/*const*/ char *str, int size, int presize)
         lastbr = str+2;
     }
     p = str+2;
-    READ_SPACES(p);
+    SKIP_SPACE_LF(p);
     if (*p == 0) {
         print_error("unbalanced brackets; EOL found");
         return 0;
@@ -132,36 +141,39 @@ static char *calc_rest_line(/*const*/ char *str, int size, int presize)
         *br = c;
     }else if (*p == '+') {
         path = p + 1;
-        READ_SPACES(path);
+        SKIP_SPACE_LF(path);
         fi = strpbrk(path, "+,");
         if (!fi) {
             print_error("NO '+,;' found in ADD FUNCTION");
             return 0;
         }
         *(fi++) = 0;
-        READ_SPACES(fi);
+        SKIP_SPACE_LF(fi);
         sprintf(string_buf, "%li", atol(path) + atol(fi));
         fi = strdup(string_buf);
     }else if (*p == '*') {
         path = p + 1;
-        READ_SPACES(path);
+        SKIP_SPACE_LF(path);
         fi = strpbrk(path, "*,");
         if (!fi) {
             print_error("NO '*,;' found in ADD FUNCTION");
             return 0;
         }
         *(fi++) = 0;
-        READ_SPACES(fi);
+        SKIP_SPACE_LF(fi);
         sprintf(string_buf, "%li", atol(path) * atol(fi));
         fi = strdup(string_buf);
     } else if (*p == '#') {
         if (!strncmp(p, "#FILE", 5)) {
-            for (path = p + 5; gl->s2_tab[(unsigned)(path[0])]; path++) ;
+            for (path = p + 5; is_SPACE_LF_EOS(path[0]); path++) ;
             fi = read_aisc_file(path);
             if (!fi) return 0;
 
             {
-                int         file_len      = strlen(fi);
+                int file_len = strlen(fi);
+
+                aisc_assert(gl->line_path);
+                
                 const char *previous_file = gl->line_path ? gl->line_path : "unknown.file";
                 int         previous_line = gl->line_path ? gl->line_cnt : 0;
                 int         buflen        = file_len+strlen(path)+strlen(previous_file)+100;
@@ -238,7 +250,7 @@ static int calc_line2(char *str, char *buf)
         len = gl->bufsize - 10;
     memcpy(buf, str, len + 1);
     ld = buf;
-    READ_SPACES(ld);
+    SKIP_SPACE_LF(ld);
     ld = find_string(buf, "$(");
     if (strncmp(ld,"$(",2)) {
         print_error("No Identifier specified");
@@ -253,45 +265,34 @@ static int calc_line2(char *str, char *buf)
     return 0;
 }
 
-static void write_aisc(AD * ad, FILE * out, int deep)
-{
-    AD             *item, *line;
-    int             i;
-    int             flag;
-    for (line = ad; line; line = line->next_line) {
-        for (i = 0; i < deep; i++)
-            fprintf(out, "\t");
-        flag = 0;
-        for (item = line; item; item = item->next_item) {
-            if (flag)
-                fprintf(out, ",");
-            flag = 1;
-            if (item->sub) {
-                fprintf(out, "'%s'={\n", item->key);
-                write_aisc(item->sub, out, deep + 1);
-                for (i = 0; i <= deep; i++)
-                    fprintf(out, "\t");
-                fprintf(out, "}");
-            } else {
-                fprintf(out, "\t'%s'=(~%s~)", item->key, item->val ? item->val : "");
+inline void print_tabs(int count, FILE *out) {
+    while (count--) fputc('\t', out);
+}
+
+static void write_aisc(const TokenListBlock *block, FILE *out, int indentation) {
+    for (const TokenList *list = block->first_list(); list; list = list->next_list()) {
+        print_tabs(indentation, out);
+
+        const Token *first = list->first_token();
+        for (const Token *tok = first; tok; tok = tok->next_token()) {
+            if (tok != first) fputc(',', out);
+
+            if (tok->is_block()) {
+                fprintf(out, "'%s'={\n", tok->get_key());
+                const TokenListBlock *content = tok->get_content();
+                if (content) write_aisc(content, out, indentation + 1);
+                print_tabs(indentation+1, out);
+                fputc('}', out);
+            }
+            else {
+                fprintf(out, "\t'%s'=(~%s~)",
+                        tok->get_key(),
+                        tok->has_value() ? tok->get_value() : "");
             }
         }
         fprintf(out, ";\n");
     }
 }
-
-/*
-static void write_prg(CL * cl, FILE * out, int deep)
-{
-    CL             *line;
-    int             i;
-    for (line = cl; line; line = line->next) {
-        for (i = 0; i < deep; i++)
-            fprintf(out, "\t");
-        fprintf(out, "%5i  %s\n", line->linenr, line->str);
-    }
-}
-*/
 
 static int do_com_dumpdata(const char *filename) {
     if (!gl->root) {
@@ -317,16 +318,21 @@ static int do_com_dumpdata(const char *filename) {
 
 static int do_com_data(char *str)
 {
-    char           *in;
     if (strlen(str) < 2) {
         printf_error("no parameter '%s'", gl->pc->str);
         return 1;
     }
-    in = str;
-    gl->lastchar = ' ';
-    gl->line_cnt = 1;
-    gl->line_path = gl->pc->path;
-    gl->root = read_aisc(&in);
+
+    const char *in = str;
+
+    gl->lastchar        = ' ';
+    gl->last_line_start = in;
+    gl->line_cnt        = 1;
+    free(gl->line_path);
+    gl->line_path       = strdup(gl->pc->path);
+    
+    gl->root = parse_aisc_TokenListBlock(in);
+
     if (!gl->root) {
         printf_error("occurred in following script-part: '%s'", gl->pc->str);
         return 1;
@@ -471,7 +477,7 @@ static int do_com_open(char *str)
     FILE           *file;
     int             i;
     char           *fn;
-    READ_SPACES(str);
+    SKIP_SPACE_LF(str);
     str = strtok(str, " \t,;\n");
     fn = strtok(0, " \t,;\n");
     if (!fn) {
@@ -507,18 +513,15 @@ static int do_com_open(char *str)
 
     gl->fouts[i]      = strdup(str);
     gl->fouts_name[i] = strdup(fn);
-    gl->outs[i]       = file;
-
-    /* fprintf(stderr, "do_com_open creates file '%s' (type='%s')\n", gl->fouts_name[i], gl->fouts[i]); */
+    gl->outs[i] = file;
 
     return 0;
 }
-void aisc_remove_files()
-{
-    int             i;
-    for (i = 0; i < OPENFILES; i++) {
+void aisc_remove_files() {
+    for (int i = 0; i < OPENFILES; i++) {
         if (gl->fouts[i]) {
             fclose(gl->outs[i]);
+            gl->outs[i] = NULL;
             if (gl->fouts_name[i]) {
                 fprintf(stderr, "Unlinking %s\n", gl->fouts_name[i]);
                 unlink(gl->fouts_name[i]);
@@ -527,16 +530,16 @@ void aisc_remove_files()
     }
 }
 
-static int do_com_close(char *str)
-{
+static int do_com_close(char *str) {
     int             i;
-    READ_SPACES(str);
+    SKIP_SPACE_LF(str);
     str = strtok(str, " \t,;\n");
     for (i = 0; i < OPENFILES; i++) {
         if (gl->fouts[i]) {
             if (!strcmp(gl->fouts[i], str)) {
                 fclose(gl->outs[i]);
-                /* fprintf(stderr, "do_com_close(%s)\n", gl->fouts_name[i]); */
+                gl->outs[i] = NULL;
+                
                 free(gl->fouts[i]);
                 free(gl->fouts_name[i]);
                 gl->fouts[i]      = 0;
@@ -554,7 +557,7 @@ static int do_com_close(char *str)
 static int do_com_out(char *str)
 {
     int             i;
-    READ_SPACES(str);
+    SKIP_SPACE_LF(str);
     str = strtok(str, " \t,;\n");
     for (i = 0; i < OPENFILES; i++) {
         if (gl->fouts[i]) {
@@ -564,23 +567,24 @@ static int do_com_out(char *str)
             }
         }
     }
-    printf_error("File '%s' not opened for OUT Command", str);
+    printf_error("File '%s' not opened for OUT command", str);
     return 1;
 }
 
 static int do_com_moveto(char *str)
 {
-    AD             *fo;
-    char           *st;
-    char           *co;
-    char *p;
+    const Token *fo;
+    char        *st;
+    char        *co;
+    char        *p;
+
     st = find_string(str, "$(");
     if (!st) {
         print_error("no $( found");
         return 1;
     };
     st += 2;
-    READ_SPACES(st);
+    SKIP_SPACE_LF(st);
     co = strchr(st, ')');
     if (!co) {
         print_error("no ) found");
@@ -589,9 +593,9 @@ static int do_com_moveto(char *str)
     *co = 0;
     p = strrchr(st, '/');
     if (p) {
-        fo = aisc_find_var_hier(gl->cursor, st, 0, 0, 0);
+        fo = aisc_find_var_hier(gl->cursor, st, LOOKUP_LIST);
     } else {
-        fo = aisc_find_var_hier(gl->cursor, st, 0, 1, 0);
+        fo = aisc_find_var_hier(gl->cursor, st, LOOKUP_BLOCK);
     }
     if (!fo){
     }else{
@@ -624,10 +628,10 @@ static int do_com_set(char *str)
         printf_error("undefined Ident '%s' in SET (use CREATE first)", st);
         return 1;
     }
-    READ_SPACES(co);
+    SKIP_SPACE_LF(co);
     if (*co == '=') {
         *(co++) = 0;
-        READ_SPACES(co);
+        SKIP_SPACE_LF(co);
     }
     write_hash(hs, st, co);
     return 0;
@@ -655,10 +659,10 @@ static int do_com_create(char *str)
         printf_error("Ident '%s' in CREATE already defined", st);
         return 1;
     }
-    READ_SPACES(co);
+    SKIP_SPACE_LF(co);
     if (*co == '=') {
         *(co++) = 0;
-        READ_SPACES(co);
+        SKIP_SPACE_LF(co);
     }
     write_hash(gl->st->hs, st, co);
     return 0;
@@ -686,15 +690,17 @@ static int do_com_if(char *str)
     aisc_assert(equ>str);
     if (equ[-1] == '!') op += 8;
 
-    READ_RSPACES(la);
-    *(++la) = 0;
+    --la; 
+    SKIP_SPACE_LF_BACKWARD(la);
+    *(++la) = 0; 
     equ++;
     while (equ) {
-        READ_SPACES(equ);
+        SKIP_SPACE_LF(equ);
         kom2 = kom = strchr(equ, ',');
         if (kom) {
             kom2++;
-            READ_RSPACES(kom);
+            --kom;
+            SKIP_SPACE_LF_BACKWARD(kom);
             *(++kom) = 0;
         }
         /* printf("- str='%s' equ='%s'\n", str, equ); */
@@ -756,19 +762,30 @@ int do_com_push(const char *str)
     return 0;
 }
 
-static int do_com_pop(const char *str)
-{
-    struct stack_struct *st;
-    st = gl->st;
+static void pop_stack() {
+    aisc_assert(gl->sp>0);
+    
+    struct stack_struct *st = gl->st;
     free_hash(st->hs);
-    if (gl->sp-- <=1) {
+    gl->cursor = st->cursor;
+    gl->st     = st->next;
+    free(st);
+    gl->sp--;
+    
+}
+
+void free_stack() {
+    while (gl->st) {
+        pop_stack();
+    }
+}
+
+static int do_com_pop(const char *) {
+    if (gl->sp<2) {
         print_error("Nothing to Pop");
         return 1;
     }
-    gl->cursor = st->cursor;
-    gl->st = st->next;
-    free((char *)st);
-    str = str;
+    pop_stack();
     return 0;
 }
 
@@ -780,11 +797,11 @@ static int do_com_gosub(char *str)
     CL *fun;
     int err;
     if (do_com_push("")) return 1;
-    for (s = str; !gl->b_tab[(int)(*s)]; s++) ;
+    for (s = str; !is_SPACE_SEP_LF_EOS(*s); s++) ;
     if (*s) {
         *s = 0;
         s++;
-        READ_SPACES(s);
+        SKIP_SPACE_LF(s);
         params = strdup(s);
     }else{
         params = strdup("");
@@ -799,17 +816,17 @@ static int do_com_gosub(char *str)
     err = calc_line(gl->pc->str, gl->linebuf);
     if (err)    return err;
     fpara = gl->linebuf;
-    READ_SPACES(fpara);
+    SKIP_SPACE_LF(fpara);
     for (para = params; *para;para=npara,fpara=nfpara){
         if (!*fpara) {
             printf_error("Too many Parameters %s",para);
             return 1;
         }
-        for (s = para; !gl->c_tab[(int)(*s)]; s++) ;
-        if (*s) {npara = s+1;READ_SPACES(npara);} else npara = s;
+        for (s = para; !is_SEP_LF_EOS(*s); s++) ;
+        if (*s) {npara = s+1;SKIP_SPACE_LF(npara);} else npara = s;
         *s = 0;
-        for (s = fpara; !gl->c_tab[(int)(*s)]; s++) ;
-        if (*s) {nfpara = s+1;READ_SPACES(nfpara);} else nfpara = s;
+        for (s = fpara; !is_SEP_LF_EOS(*s); s++) ;
+        if (*s) {nfpara = s+1;SKIP_SPACE_LF(nfpara);} else nfpara = s;
         *s = 0;
         s = read_hash( gl->st->hs,para);
         if (s) {
@@ -854,22 +871,26 @@ static int do_com_exit(char *str)
 
 static int do_com_for(char *str)
 {
-    AD             *fo;
-    char           *st;
-    char           *co;
-    char           *p;
-    char           *eq;
+    const Token *fo;
+    char        *st;
+    char        *co;
+    char        *p;
+    char        *eq;
+
     struct hash_struct *hs;
-    st = find_string(str, "$(");
+    st  = find_string(str, "$(");
     st += 2;
-    READ_SPACES(st);
-    co = strchr(st, ')');
+
+    SKIP_SPACE_LF(st);
+    
+    co      = strchr(st, ')');
     *(co++) = 0;
-    eq = strchr(co, '=');
+    eq      = strchr(co, '=');
+
     if (eq) {
         char           *to;
         *(eq++) = 0;
-        READ_SPACES(eq);
+        SKIP_SPACE_LF(eq);
         to = find_string(eq, "TO");
         if (!to) {
             print_error("TO not found in FOR :( FOR $(i) = a TO b )");
@@ -877,7 +898,7 @@ static int do_com_for(char *str)
         }
         *to = 0;
         to += 2;
-        READ_SPACES(to);
+        SKIP_SPACE_LF(to);
         if (do_com_for_add(gl->pc)) return 1;
         gl->pc->fd->forval = atol(eq);
         gl->pc->fd->forend = atol(to);
@@ -893,16 +914,21 @@ static int do_com_for(char *str)
         sprintf(string_buf, "%li", gl->pc->fd->forval);
         write_hash(hs, st, string_buf);
         gl->pc->fd->forstr = strdup(st);
-    } else {
-        p = strrchr(st, '/');
-        if (p)
-            str = p + 1;
-        else
-            str = st;
+    }
+    else {
+        p       = strrchr(st, '/');
         if (p) {
-            fo = aisc_find_var_hier(gl->cursor, st, 0, 0, 0);
-        } else {
-            fo = aisc_find_var_hier(gl->cursor, st, 0, 1, 0);
+            str = p + 1;
+        }
+        else {
+            str = st;
+        }
+
+        if (p) {
+            fo = aisc_find_var_hier(gl->cursor, st, LOOKUP_LIST);
+        }
+        else {
+            fo = aisc_find_var_hier(gl->cursor, st, LOOKUP_BLOCK);
         }
         if (!fo) {
             gl->nextpc = gl->pc->NEXT->next;
@@ -918,11 +944,12 @@ static int do_com_for(char *str)
 
 static int do_com_next(const char *str)
 {
-    AD             *fo;
-    char           *p;
+    const Token        *fo;
+    char               *p;
     struct hash_struct *hs;
+
     if (gl->pc->FOR->fd->forcursor) {
-        fo = aisc_find_var(gl->cursor, gl->pc->FOR->fd->forstr, 1, 1, 0);
+        fo = aisc_find_var(gl->cursor, gl->pc->FOR->fd->forstr, LOOKUP_BLOCK_REST);
         if (!fo) {
             gl->cursor = gl->pc->FOR->fd->forcursor;
             gl->nextpc = gl->pc->FOR->ENDFOR->next;
@@ -951,7 +978,7 @@ static int do_com_next(const char *str)
 #define COMMAND(str,string,len,func)                            \
     if ( string[0] == str[0] && !strncmp(string,str,len)) {     \
         char *s=str+len;                                        \
-        READ_SPACES(s);                                         \
+        SKIP_SPACE_LF(s);                                       \
         if (func(s)) break;                                     \
         continue;                                               \
     }
@@ -959,7 +986,7 @@ static int do_com_next(const char *str)
 #define COMMAND_NOFAIL(str,string,len,func)                     \
     if ( string[0] == str[0] && !strncmp(string,str,len)) {     \
         char *s=str+len;                                        \
-        READ_SPACES(s);                                         \
+        SKIP_SPACE_LF(s);                                       \
         if (func(s)) return -1;                                 \
         continue;                                               \
     }
@@ -1016,31 +1043,27 @@ int run_prg(void) {
             continue;
         }
         if (!strncmp(gl->pc->str, "MOVETO", 6)) {
-            if (calc_line2(gl->pc->str + 7, gl->linebuf))
-                break;
-            if (do_com_moveto(gl->linebuf))
-                break;
+            if (calc_line2(gl->pc->str + 7, gl->linebuf)) break;
+            if (do_com_moveto(gl->linebuf)) break;
             continue;
         }
         if (!strncmp(gl->pc->str, "SET", 3)) {
-            if (calc_line2(gl->pc->str + 4, gl->linebuf))
-                break;
-            if (do_com_set(gl->linebuf))
-                break;
+            if (calc_line2(gl->pc->str + 4, gl->linebuf)) break;
+            if (do_com_set(gl->linebuf)) break;
             continue;
         }
         if (!strncmp(gl->pc->str, "CREATE", 6)) {
-            if (calc_line2(gl->pc->str + 7, gl->linebuf))
-                break;
-            if (do_com_create(gl->linebuf))
-                break;
+            if (calc_line2(gl->pc->str + 7, gl->linebuf)) break;
+            if (do_com_create(gl->linebuf)) break;
             continue;
         }
         gl->s_pos = 0;
-        gl->line_path = 0;
+
+        free(gl->line_path);
+        gl->line_path = strdup(gl->prg->path);
+        
         err = calc_line(gl->pc->str, gl->linebuf);
-        if (err)
-            return err;
+        if (err) return err;
 
         COMMAND2(gl->linebuf,"PRINT",5,do_com_print);
         COMMAND2(gl->linebuf,"P ",2,do_com_print);
@@ -1065,7 +1088,7 @@ int run_prg(void) {
         COMMAND_NOFAIL(gl->linebuf,"DATA",4,do_com_data);
         COMMAND_NOFAIL(gl->linebuf,"DUMPDATA",8,do_com_dumpdata);
 
-        printf_error("Unknown Command '%s'", gl->pc->str);
+        printf_error("Unknown command '%s'", gl->pc->str);
         return -1;
     }
 
