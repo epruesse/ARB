@@ -1016,14 +1016,18 @@ static void emit(Word *wlist, Word *plist, long startline) {
             }
         }
         if (refs) {
-            printf("\tlink%i,\t{\n", refs);
+            printf("\tlink%i", refs);
             refs = 0;
         }else{
-            printf("\tterm,\t{\n");
+            printf("\tterm");
         }
+
         refs = 0;
-        printf("\t@TYPE,\t@IDENT,\t@REF;\n");
-        if (strcmp(plist->string, "void")) { /* if parameter is not 'void' */
+
+        if (strcmp(plist->string, "void") != 0) {    /* if parameter is not 'void' */
+            printf(",\t{\n");
+            printf("\t@TYPE,\t@IDENT,\t@REF;\n");
+
             int name_seen       = 0;
             int unnamed_counter = 1;
             for (w = plist; w; w = w->next) {
@@ -1057,8 +1061,9 @@ static void emit(Word *wlist, Word *plist, long startline) {
             } else {
                 printf("\tterm;\n");
             }
+            printf("}");
         }
-        printf("};\n\n");
+        printf(";\n\n");
         return;
     }
     DEBUG_PRINT("emit called\n");
