@@ -167,10 +167,9 @@ GBDATA *GB_search_numbered(GBDATA *gbd, const char *str, long /*enum gb_search_e
                     GBDATA *gb_parent = 0;
                     {
                         if (previous_slash) { // found a slash
-                            int   parent_path_len = previous_slash-str;
-                            char *parent_path     = (char*)malloc(parent_path_len+1); memcpy(parent_path, str, parent_path_len); parent_path[parent_path_len] = 0;
+                            char *parent_path = GB_strpartdup(str, previous_slash-1);
 
-                            // parent path may not contain brackets -> search normal
+                            // we are sure parent path does not contain brackets -> search normal
                             if (parent_path[0] == 0) { // that means : root-item is numbered (e.g. '/species_data[7]/...')
                                 gb_parent = GB_get_root(gbd);
                             }
@@ -189,9 +188,9 @@ GBDATA *GB_search_numbered(GBDATA *gbd, const char *str, long /*enum gb_search_e
                     if (gb_parent) {
                         GBDATA *gb_son = 0;
                         {
-                            int   key_name_len = first_bracket-previous_slash-1;
-                            char *key_name     = (char*)malloc(key_name_len+1); memcpy(key_name, previous_slash+1, key_name_len); key_name[key_name_len] = 0;
-                            int   c            = 0;
+                            const char  name_start = previous_slash ? previous_slash+1 : str;
+                            char       *key_name   = GB_strpartdup(name_start, first_bracket-1);
+                            int         c          = 0;
 
                             gb_son = GB_entry(gb_parent, key_name);
                             while (c<count && gb_son) {
