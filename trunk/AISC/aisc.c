@@ -301,7 +301,7 @@ static char *SETSOURCE(const char *& in, enum TOKEN& foundTokenType) {
 
         if (!comma) p_err(in, "comma expected after '@SETSOURCE filename' (injected code)");
         else {
-            char *end = strchr(comma, '@');
+            const char *end = strchr(comma, '@');
 
             if (!end) p_err(in, "'@' expected after '@SETSOURCE filename,line' (injected code)");
             else {
