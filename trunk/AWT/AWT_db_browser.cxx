@@ -188,7 +188,7 @@ GBDATA *GB_search_numbered(GBDATA *gbd, const char *str, long /*enum gb_search_e
                     if (gb_parent) {
                         GBDATA *gb_son = 0;
                         {
-                            const char  name_start = previous_slash ? previous_slash+1 : str;
+                            const char *name_start = previous_slash ? previous_slash+1 : str;
                             char       *key_name   = GB_strpartdup(name_start, first_bracket-1);
                             int         c          = 0;
 
