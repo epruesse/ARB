@@ -207,10 +207,12 @@ void PARS_optimizer_cb(AP_tree *tree) {
     for (ap_global_abort_flag = 0;!ap_global_abort_flag;){
         AP_FLOAT old_pars = DOWNCAST(AP_tree_nlen*, agt->get_root_node())->costs();
 
-        ((AP_tree_nlen *)tree)->nn_interchange_rek(AP_TRUE, ap_global_abort_flag, -1); 
+        // AP_FLOAT this_pars = ((AP_tree_nlen *)tree)->nn_interchange_rek(AP_TRUE, ap_global_abort_flag, -1);
+        AP_FLOAT this_pars = ((AP_tree_nlen *)tree)->nn_interchange_rek(AP_TRUE, ap_global_abort_flag, -1, AP_BL_NNI_ONLY, GB_FALSE);
         if (ap_global_abort_flag) break;
 
-        if (old_pars != DOWNCAST(AP_tree_nlen*, agt->get_root_node())->costs()) { // NNI found better tree
+        // if (old_pars != DOWNCAST(AP_tree_nlen*, agt->get_root_node())->costs()) { // NNI found better tree
+        if (old_pars != this_pars) { // NNI found better tree
             continue;
         }
 
@@ -409,7 +411,7 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
                             at                   = (AP_tree *)cl->client_data1;
                             ap_global_abort_flag = AP_FALSE;
                             AP_tree_nlen *atn = DOWNCAST(AP_tree_nlen*, at);
-                            atn->nn_interchange_rek(AP_TRUE,ap_global_abort_flag,-1);
+                            atn->nn_interchange_rek(AP_TRUE,ap_global_abort_flag,-1, AP_BL_NNI_ONLY, GB_FALSE);
                             exports.refresh = 1;
                             exports.save    = 1;
                             ASSERT_VALID_TREE(get_root_node());
@@ -422,7 +424,7 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
                         ap_global_abort_flag           = AP_FALSE;
                         AP_tree_nlen *atn              = DOWNCAST(AP_tree_nlen*, get_root_node());
 
-                        atn->nn_interchange_rek(AP_TRUE,ap_global_abort_flag,-1);
+                        atn->nn_interchange_rek(AP_TRUE,ap_global_abort_flag,-1, AP_BL_NNI_ONLY, GB_FALSE);
                         printf("Combines: %li\n", AP_sequence::combine_count()-prevCombineCount);
 
                         exports.refresh       = 1;

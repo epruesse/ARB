@@ -236,16 +236,23 @@ void AP_tree::insert(AP_tree *new_brother) {
 #if defined(DEVEL_RALF)
 #warning move to ARB_tree ? 
 #endif // DEVEL_RALF
-void AP_tree_root::change_root(AP_tree *old, AP_tree *newroot) {
-    if (root_changed_cb) root_changed_cb(root_changed_cd, old, newroot);
+void AP_tree_root::change_root(AP_tree *oldroot, AP_tree *newroot) {
+    if (root_changed_cb) root_changed_cb(root_changed_cd, oldroot, newroot);
+    if (!oldroot) {
+        ap_assert(newroot);
+        if (gb_tree_gone) {                         // when tree was temporarily deleted (e.g. by 'Remove & add all')
+            set_gb_tree(gb_tree_gone);              // re-use previous DB entry
+            gb_tree_gone = NULL;
+        }
+    }
     if (!newroot) {                                 // tree empty
         GBDATA *gbtree = get_gb_tree();
         if (gbtree) {
-            ap_assert(gb_tree_gone == 0);          // no tree should be remembered yet
-            gb_tree_gone = gbtree;                 // remember for deletion (done in AP_tree::save)
+            ap_assert(gb_tree_gone == NULL);        // no tree should be remembered yet
+            gb_tree_gone = gbtree;                  // remember for deletion (done in AP_tree::save)
         }
     }
-    ARB_tree_root::change_root(old, newroot);
+    ARB_tree_root::change_root(oldroot, newroot);
 }
 
 void AP_tree_root::inform_about_delete(AP_tree *del) {

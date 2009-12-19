@@ -338,26 +338,15 @@ void AP_tree_edge::calcDistance()
     ap_assert(distanceOK());   // invariant of AP_tree_edge (if fully constructed)
 }
 
-void AP_tree_edge::relink(AP_tree_nlen *node1,AP_tree_nlen *node2)
-{
-    //    cout << "------ relink" << endl;
-
+void AP_tree_edge::relink(AP_tree_nlen *node1,AP_tree_nlen *node2) {
     node[0] = node1;
     node[1] = node2;
 
-    node1->edge[index[0] = node1->unusedEdge()] = this;
-    node2->edge[index[1] = node2->unusedEdge()] = this;
+    node1->edge[index[0] = node1->unusedEdgeIndex()] = this;
+    node2->edge[index[1] = node2->unusedEdgeIndex()] = this;
 
     node1->index[index[0]] = 0;
     node2->index[index[1]] = 1;
-
-    //    if (node1->is_leaf) node1->distance = 0;
-    //    if (node2->is_leaf) node2->distance = 0;
-
-    //    cout << "relink (dist = (" << node1->distance << ","
-    //                     << node2->distance << "))" << endl;
-
-    //    if (!distanceOK()) calcDistance();
 }
 
 /**************************
@@ -585,8 +574,9 @@ double ap_calc_bootstrap_remark_sub(int seq_len, const char *old, const char *ne
     for (i=0;i<seq_len;i++){
         int diff = ne[i] - old[i];
         if (diff > 1 || diff < -1){
-            GB_export_errorf("diff by nni at one position not in [-1,1]: %i:%i - %i",diff,old[i],ne[i]);
-            GB_print_error();
+#if defined(DEBUG)
+            fprintf(stderr, "diff by nni at one position not in [-1,1]: %i:%i - %i", diff, old[i], ne[i]);
+#endif // DEBUG
             continue;
         }
         sum[diff+1] ++;
@@ -775,6 +765,9 @@ void ap_check_leaf_bl(AP_tree_nlen *node){
     }
 }
 
+#if defined(DEVEL_RALF)
+#warning fix interfaces of AP_tree_nlen::nn_interchange_rek and AP_tree_edge::nni_rek (use a struct as param)
+#endif // DEVEL_RALF
 AP_FLOAT AP_tree_edge::nni_rek(AP_BOOL useStatus, int &Abort, int deep, GB_BOOL skip_hidden,
                                AP_BL_MODE mode, AP_tree_nlen *skipNode)
 {
@@ -1028,7 +1021,8 @@ void AP_tree_edge::mixTree(int cnt)
         AP_tree_edge *follow = this;
 
         while (follow) {
-            follow->sonNode()->swap_assymetric(GB_random(2) ? AP_LEFT : AP_RIGHT);
+            AP_tree_nlen *son = follow->sonNode();
+            if (!son->is_leaf) son->swap_assymetric(GB_random(2) ? AP_LEFT : AP_RIGHT);
             follow = follow->next;
         }
     }
