@@ -83,7 +83,7 @@ class AP_tree_nlen : public AP_tree {
     AP_FLOAT mutation_rate;
 
 
-    
+
     void createListRekUp(AP_CO_LIST *list,int *cn);
     void createListRekSide(AP_CO_LIST *list,int *cn);
 
@@ -109,20 +109,24 @@ public:
     int  Distance();
 
     // tree reconstruction methods:
-    void insert(AP_tree *new_brother);
+    void insert(AP_tree_nlen *new_brother);
     void remove();
     void swap_assymetric(AP_TREE_SIDE mode);
     void moveTo(AP_tree_nlen *new_brother, AP_FLOAT rel_pos); // if unsure, use cantMoveTo to test if possible
     void set_root();
 
+    // overload virtual methods from AP_tree:
+    void insert(AP_tree *new_brother) { insert(DOWNCAST(AP_tree_nlen*, new_brother)); }
+    void moveTo(AP_tree *node, AP_FLOAT rel_pos) { moveTo(DOWNCAST(AP_tree_nlen*, node), rel_pos); }
+    
     // tree optimization methods:
     void parsimony_rek(char *mutPerSite = NULL);
 
     AP_FLOAT nn_interchange_rek(AP_BOOL     openclosestatus,
                                 int        &abort,
                                 int         deep, // -1 means: do whole subtree
-                                AP_BL_MODE  mode        = AP_BL_NNI_ONLY,
-                                GB_BOOL     skip_hidden = GB_FALSE);
+                                AP_BL_MODE  mode        /*= AP_BL_NNI_ONLY*/,
+                                GB_BOOL     skip_hidden /*= GB_FALSE*/);
 
     AP_FLOAT nn_interchange(AP_FLOAT parsimony,AP_BL_MODE mode);
 
@@ -158,7 +162,7 @@ public:
 
     AP_tree_edge* edgeTo(const AP_tree_nlen *brother) const;
     AP_tree_edge* nextEdge(const AP_tree_edge *thisEdge=NULL) const;
-    int unusedEdge() const;
+    int unusedEdgeIndex() const; // [0..2], -1 if none
 
     // more complex edge functions:
 

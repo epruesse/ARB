@@ -123,6 +123,8 @@ struct InsertData {
         , currentspecies(0)
     {
     }
+
+    bool every_sixteenth() { return (currentspecies & 0xf) == 0; }
 };
 
 static long insert_species_in_tree_test(const char *key,long val, void *cd_isits) {
@@ -223,8 +225,8 @@ static long insert_species_in_tree_test(const char *key,long val, void *cd_isits
 
     for (counter = 0; !isits->abort_flag && blist[counter]; counter += 2)
     {
-        if (isits->singlestatus && (counter & 0xf) == 0) {
-            isits->abort_flag = (AP_BOOL)aw_status(counter/(bsum*2.0));
+        if (isits->singlestatus && isits->every_sixteenth()) {
+            isits->abort_flag = aw_status(counter/(bsum*2.0));
         }
 
         bl = (AP_tree_nlen *)blist[counter];
@@ -305,7 +307,7 @@ static long insert_species_in_tree_test(const char *key,long val, void *cd_isits
         AP_tree_nlen *bestpos = (AP_tree_nlen*)bestposl;
         AP_tree_edge *e       = bestpos->edgeTo(bestpos->get_father());
 
-        if ((isits->currentspecies & 0xf ) == 0)  deep = -1;
+        if (isits->every_sixteenth())  deep = -1;
 
         aw_status("optimization");
         e->dumpNNI = 1;
@@ -352,14 +354,11 @@ static long transform_gbd_to_leaf(const char *key, long val, void *) {
     return (long)leaf;
 }
 
-static AP_tree *insert_species_in_tree(const char *key, AP_tree *leaf, void *cd_isits)
-{
+static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf, InsertData *isits) {
     if (!leaf) return leaf;
-
-    InsertData *isits = (InsertData*)cd_isits;
     if (isits->abort_flag) return leaf;
 
-    AP_tree *tree = rootNode();
+    AP_tree_nlen *tree = rootNode();
 
     if (leaf->get_seq()->weighted_base_count() < MIN_SEQUENCE_LENGTH) {
         sprintf(AW_ERROR_BUFFER,
@@ -381,7 +380,7 @@ static AP_tree *insert_species_in_tree(const char *key, AP_tree *leaf, void *cd_
     }
 
     if (!tree) {                                    // no tree yet
-        static AP_tree *last_inserted = NULL;
+        static AP_tree_nlen *last_inserted = NULL; // @@@ move 'last_inserted' into 'InsertData'
 
         if (!last_inserted) {                       // store 1st leaf
             last_inserted = leaf;
@@ -402,86 +401,111 @@ static AP_tree *insert_species_in_tree(const char *key, AP_tree *leaf, void *cd_
 
         ASSERT_VALID_TREE(tree);
 
-        AP_tree      **blist;
-        AP_tree_nlen  *bl,*blf;
-        long           bsum    = 0;
-        long           counter = 0;
+        AP_tree_nlen **branchlist;
+        long           bsum = 0;
 
-        tree->buildBranchList(blist,bsum,AP_TRUE,-1);   // get all branches
-
-        AP_tree *bestposl = tree->get_leftson();
-        AP_tree *bestposr = tree->get_rightson();
-        leaf->insert(bestposl);
-
-        ASSERT_VALID_TREE(rootNode());
-        
-        AP_FLOAT best_parsimony,akt_parsimony;
-        best_parsimony = akt_parsimony = rootNode()->costs();
-
-        for (counter = 0;!isits->abort_flag && blist[counter];counter += 2) {
-            if (isits->singlestatus && (counter & 0xf) == 0) {
-                isits->abort_flag = (AP_BOOL)aw_status(counter/(bsum*2.0));
-            }
-            bl = (AP_tree_nlen *)blist[counter];
-            blf = (AP_tree_nlen *)blist[counter+1];
-            if (blf->father == bl ) {
-                bl = (AP_tree_nlen *)blist[counter+1];
-                blf = (AP_tree_nlen *)blist[counter];
-            }
-
-            if (bl->father) {   //->father
-                bl->set_root();
-            }
-
-            leaf->moveTo(bl,0.5);
-            akt_parsimony = rootNode()->costs();
-            if (akt_parsimony < best_parsimony) {
-                best_parsimony = akt_parsimony;
-                bestposl = bl;
-                bestposr = blf;
-            }
-
+        {
+            AP_tree **blist;
+            tree->buildBranchList(blist, bsum, AP_TRUE, -1); // get all branches
+            branchlist = (AP_tree_nlen**)blist;
         }
-        delete blist;blist = 0;
+
+        AP_tree_nlen *bestposl = tree->get_leftson();
+        AP_tree_nlen *bestposr = tree->get_rightson();
+
+        ap_assert(tree == rootNode());
+        leaf->insert(bestposl);
+        tree = NULL;                                // tree may have changed
+        
+        {
+            AP_FLOAT curr_parsimony = rootNode()->costs();
+            AP_FLOAT best_parsimony = curr_parsimony;
+
+            ASSERT_VALID_TREE(rootNode());
+
+            for (long counter = 0; !isits->abort_flag && branchlist[counter]; counter += 2) {
+                if (isits->singlestatus && isits->every_sixteenth()) {
+                    isits->abort_flag = aw_status(counter/(bsum*2.0));
+                }
+                AP_tree_nlen *bl  = branchlist[counter];
+                AP_tree_nlen *blf = branchlist[counter+1];
+
+                if (blf->father == bl ) {
+                    bl  = branchlist[counter+1];
+                    blf = branchlist[counter];
+                }
+
+                if (bl->father) {
+                    bl->set_root();
+                }
+
+                ASSERT_VALID_TREE(rootNode());
+
+                leaf->moveTo(bl,0.5);
+                ASSERT_VALID_TREE(rootNode());
+                
+                curr_parsimony = rootNode()->costs();
+                ASSERT_VALID_TREE(rootNode());
+
+                if (curr_parsimony < best_parsimony) {
+                    best_parsimony = curr_parsimony;
+                    bestposl = bl;
+                    bestposr = blf;
+                }
+
+            }
+        }
+        delete branchlist;branchlist = 0;
         if (bestposl->father != bestposr){
             bestposl = bestposr;
         }
+        
+        ASSERT_VALID_TREE(rootNode());
+
         leaf->moveTo(bestposl,0.5);
 
+        ASSERT_VALID_TREE(rootNode());
+        
         if (!isits->quick_add_flag) {
             int deep = 5;
-            if ( (isits->currentspecies & 0xf ) == 0)  deep = -1;
+            if (isits->every_sixteenth()) deep = -1;
             aw_status("optimization");
-            ((AP_tree_nlen *)bestposl->father)->
-                nn_interchange_rek(AP_FALSE, isits->abort_flag, deep, AP_BL_NNI_ONLY, GB_TRUE);
+            bestposl->get_father()->nn_interchange_rek(AP_FALSE, isits->abort_flag, deep, AP_BL_NNI_ONLY, GB_TRUE);
+            ASSERT_VALID_TREE(rootNode());
         }
-        AP_tree *brother = leaf->get_brother();
-        if (brother->is_leaf &&     // brother is a short sequence
-            2 * brother->get_seq()->weighted_base_count() < leaf->get_seq()->weighted_base_count() &&
-            leaf->father->father) // There are more than two species
-        {      
-            brother->remove();
-            leaf->remove();
-            isits->currentspecies--;
-            char *label = GBS_global_string_copy("2:%s",leaf->name);
-            insert_species_in_tree(label, leaf, cd_isits); // reinsert species
-            delete label;
-            isits->currentspecies--;
-            label = GBS_global_string_copy("shortseq:%s",brother->name);
-            insert_species_in_tree(label, brother, cd_isits);  // reinsert short sequence
-            delete label;
+        AP_tree_nlen *brother = leaf->get_brother();
+        if (brother->is_leaf && leaf->father->father) {
+            bool brother_is_short = 2 * brother->get_seq()->weighted_base_count() < leaf->get_seq()->weighted_base_count();
+
+            if (brother_is_short) {
+                brother->remove();
+                leaf->remove();
+
+                for (int firstUse = 1; firstUse >= 0; --firstUse) {
+                    AP_tree_nlen *to_insert = firstUse ? leaf : brother;
+                    const char   *format    = firstUse ? "2:%s" : "shortseq:%s";
+                    
+                    char *label = GBS_global_string_copy(format, to_insert->name);
+                    isits->currentspecies--;        // undo counter increment done by insert_species_in_tree
+                    insert_species_in_tree(label, to_insert, isits);
+                    free(label);
+                }
+            }
         }
 
         if (!isits->singlestatus) {
             isits->abort_flag |= aw_status(isits->currentspecies/(double)isits->maxspecies);
         }
+        
+        ASSERT_VALID_TREE(rootNode());
     }
 
     return leaf;
 }
 
 static long hash_insert_species_in_tree(const char *key, long leaf, void *cd_isits) {
-    return (long)insert_species_in_tree(key, (AP_tree_nlen*)leaf, cd_isits);
+    InsertData *isits = (InsertData*)cd_isits;
+    return (long)insert_species_in_tree(key, (AP_tree_nlen*)leaf, isits);
 }
 
 static long count_hash_elements(const char *,long val, void *cd_isits) {
@@ -538,8 +562,9 @@ static void nt_add(AW_window *, AWT_canvas *ntw, AddWhat what, AP_BOOL quick, in
         }
     }
 
-    ap_assert(hash);
     if (!error) {
+        ap_assert(hash);
+        
         NT_remove_species_in_tree_from_hash(rootNode(), hash);
 
         InsertData isits(quick);
@@ -1727,8 +1752,8 @@ int main(int argc, char **argv)
         else if (!strcmp(argv[0],"-calc_branchlengths")) cmds.calc_branch_lengths = 1;
         else if (!strcmp(argv[0],"-calc_bootstrap"))     cmds.calc_bootstrap = 1;
         else {
-            GB_export_errorf("Unknown option '%s'",argv[0]);
-            GB_print_error();
+            fprintf(stderr, "Unknown option '%s'\n", argv[0]);
+            
             printf("    Options:                Meaning:\n"
                    "\n"
                    "    -add_marked             add marked species   (without changing topology)\n"
@@ -1738,7 +1763,7 @@ int main(int argc, char **argv)
                    "    -quit                   quit after performing operations\n"
                    );
 
-            exit(-1);
+            exit(EXIT_FAILURE);
         }
     }
 

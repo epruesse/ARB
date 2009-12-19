@@ -133,7 +133,7 @@ ostream& operator<<(ostream& out, const AP_tree_nlen& node)
 
 Section Edge operations:
 
-    unusedEdge
+    unusedEdgeIndex
     edgeTo
     nextEdge
     unlinkAllEdges
@@ -141,27 +141,17 @@ Section Edge operations:
 
 ********************************************/
 
-int AP_tree_nlen::unusedEdge() const
-{
-    int e;
-
-    for (e=0; e<3; e++) if (edge[e]==NULL) return e;
-
-    // cout << "No unused edge found at" << *this << '\n';
+int AP_tree_nlen::unusedEdgeIndex() const {
+    for (int e=0; e<3; e++) if (edge[e]==NULL) return e;
     return -1;
 }
 
-AP_tree_edge* AP_tree_nlen::edgeTo(const AP_tree_nlen *neighbour) const
-{
-    int e;
-
-    for (e=0; e<3; e++) {
+AP_tree_edge* AP_tree_nlen::edgeTo(const AP_tree_nlen *neighbour) const {
+    for (int e=0; e<3; e++) {
         if (edge[e]!=NULL && edge[e]->node[1-index[e]]==neighbour) {
             return edge[e];
         }
     }
-    // cout << "AP_tree_nlen::edgeTo: " << *this << "\nhas no edge to " << *neighbour << '\n';
-    ap_assert(0);
     return NULL;
 }
 
@@ -196,31 +186,29 @@ void AP_tree_nlen::linkAllEdges(AP_tree_edge *edge1, AP_tree_edge *edge2, AP_tre
     edge3->relink(this,get_rightson());
 }
 
-/********************************************
-
-Section Tree operations:
-
-    insert
-    remove
-    swap
-    set_root
-    move
-    costs
-
-********************************************/
+// -----------------------------
+//      Check tree structure
 
 #if defined(CHECK_TREE_STRUCTURE)
 
+inline const AP_tree_edge *edge_between(const AP_tree_nlen *node1, const AP_tree_nlen *node2) {
+    AP_tree_edge *edge_12 = node1->edgeTo(node2);
+    AP_tree_edge *edge_21 = node2->edgeTo(node1);
+
+    ap_assert(edge_12 == edge_21); // nodes should agree about their edge
+    return edge_12;
+}
+
 void AP_tree_nlen::assert_edges_valid() const {
-    if (!is_root()) {                               // root has no edges
-        if (get_father()->is_root()) {                  // sons of root have one edge between them
-            ap_assert(edgeTo(get_brother()) == get_brother()->edgeTo(this));
+    if (get_father()) {                             // root has no edges
+        if (!get_father()->get_father()) {          // sons of root have one edge between them
+            ap_assert(edge_between(this, get_brother()));
         }
         else {
-            ap_assert(edgeTo(get_father()) == get_father()->edgeTo(this));
+            ap_assert(edge_between(this, get_father()));
             if (!is_leaf) {
-                ap_assert(edgeTo(get_leftson()) == get_leftson()->edgeTo(this));
-                ap_assert(edgeTo(get_rightson()) == get_rightson()->edgeTo(this));
+                ap_assert(edge_between(this, get_leftson()));
+                ap_assert(edge_between(this, get_rightson()));
             }
         }
     }
@@ -232,16 +220,52 @@ void AP_tree_nlen::assert_edges_valid() const {
 }
 
 void AP_tree_nlen::assert_valid() const {
+    ap_assert(this);
     assert_edges_valid();
     AP_tree::assert_valid();
 }
 
 #endif
 
-void AP_tree_nlen::insert(AP_tree *new_brother) {
+// -------------------------
+//      Tree operations:
+//
+// insert
+// remove
+// swap
+// set_root
+// move
+// costs
+
+
+inline void push_all_upnode_sequences(AP_tree_nlen *nodeBelow) {
+    for  (AP_tree_nlen *upnode = nodeBelow->get_father();
+          upnode;
+          upnode = upnode->get_father())
+    {
+        ap_main->push_node(upnode, SEQUENCE);
+    }
+}
+
+inline void sortOldestFirst(AP_tree_edge **e1, AP_tree_edge **e2) {
+    if ((*e1)->Age() > (*e2)->Age()) {
+        swap(*e1, *e2);
+    }
+}
+
+inline void sortOldestFirst(AP_tree_edge **e1, AP_tree_edge **e2, AP_tree_edge **e3) {
+    sortOldestFirst(e1,e2);
+    sortOldestFirst(e2,e3);
+    sortOldestFirst(e1,e2);
+}
+
+
+void AP_tree_nlen::insert(AP_tree_nlen *new_brother) {
     //  inserts a node at the father-edge of new_brother
 
-    AP_tree_nlen *pntr;
+    ASSERT_VALID_TREE(this);
+    ASSERT_VALID_TREE(new_brother);
+    
     AP_tree_nlen *newBrother = dynamic_cast<AP_tree_nlen*>(new_brother);
     ap_assert(new_brother);
 
@@ -250,25 +274,25 @@ void AP_tree_nlen::insert(AP_tree *new_brother) {
     ap_main->push_node(newBrother, STRUCTURE);
 
     if (new_brother->father) {
-        ap_main->push_node(newBrother->get_father(), BOTH);
-        AP_tree_nlen *newGrandpa = newBrother->get_father()->get_father();
-        for (pntr = newGrandpa; pntr; pntr = pntr->get_father()) {
-            ap_main->push_node(pntr, SEQUENCE);
-        }
+        AP_tree_nlen *brothersFather = newBrother->get_father();
+        ap_main->push_node(brothersFather, BOTH);
+        push_all_upnode_sequences(brothersFather);
 
-        if (newGrandpa) {
+        if (brothersFather->get_father()) {
             oldEdge = newBrother->edgeTo(newBrother->get_father())->unlink();
             AP_tree::insert(new_brother);
-            oldEdge->relink(get_father(),get_father()->get_father());
+            oldEdge->relink(get_father(), get_father()->get_father());
         }
         else { // insert to son of root
             oldEdge = newBrother->edgeTo(newBrother->get_brother())->unlink();
             AP_tree::insert(new_brother);
-            oldEdge->relink(get_father(),get_father()->get_brother());
+            oldEdge->relink(get_father(), get_father()->get_brother());
         }
 
         new AP_tree_edge(this,get_father());
         new AP_tree_edge(get_father(),newBrother);
+        
+        ASSERT_VALID_TREE(get_father()->get_father());
     }
     else {                                          // insert at root
         if (newBrother->is_leaf) {                  // tree contains exactly one species (only legal during insert)
@@ -283,9 +307,6 @@ void AP_tree_nlen::insert(AP_tree *new_brother) {
             ap_main->push_node(rson, STRUCTURE);
 
             oldEdge = lson->edgeTo(rson)->unlink();
-#if defined(DEBUG)
-            cout << "old Edge = " << oldEdge << '\n';
-#endif // DEBUG
 
             AP_tree::insert(new_brother);
 
@@ -293,6 +314,8 @@ void AP_tree_nlen::insert(AP_tree *new_brother) {
             new AP_tree_edge(newBrother,rson);
             new AP_tree_edge(newBrother,lson);
         }
+        
+        ASSERT_VALID_TREE(get_father());
     }
 }
 
@@ -322,13 +345,10 @@ void AP_tree_nlen::remove() {
 
     ap_main->push_node(this, STRUCTURE);
     ap_main->push_node(oldBrother, STRUCTURE);
-
-    AP_tree_nlen *grandPa = get_father()->get_father();
-    for (AP_tree_nlen *pntr = grandPa; pntr; pntr = pntr->get_father()) {
-        ap_main->push_node(pntr, SEQUENCE);
-    }
+    push_all_upnode_sequences(get_father());
 
     AP_tree_edge *oldEdge;
+    AP_tree_nlen *grandPa = get_father()->get_father();
     if (grandPa) {
         ASSERT_VALID_TREE(grandPa);
 
@@ -451,11 +471,7 @@ void AP_tree_nlen::swap_assymetric(AP_TREE_SIDE mode) {
         ap_main->push_node(oldBrother, STRUCTURE);
         ap_main->push_node(movedSon,STRUCTURE);
 
-        // from father to root buffer all sequences
-
-        for (AP_tree_nlen *pntr = get_father()->get_father(); pntr ; pntr = pntr->get_father()) {
-            ap_main->push_node(pntr, SEQUENCE);
-        }
+        push_all_upnode_sequences(get_father());
 
         AP_tree_edge *edge1 = edgeTo(movedSon)->unlink();
         AP_tree_edge *edge2 = get_father()->edgeTo(oldBrother)->unlink();
@@ -467,10 +483,6 @@ void AP_tree_nlen::swap_assymetric(AP_TREE_SIDE mode) {
     }
 }
 
-
-/*-----------------------
-  set_root
-  -----------------------*/
 void AP_tree_nlen::set_root() {
     if (!father || !father->father) return; // already root
 
@@ -497,29 +509,13 @@ void AP_tree_nlen::set_root() {
     AP_tree::set_root();
 }
 
-/*-----------------------
-  move
-  -----------------------*/
-GB_INLINE void sort(AP_tree_edge **e1, AP_tree_edge **e2) {
-    if ((*e1)->Age() > (*e2)->Age()) {
-        AP_tree_edge *tmp = *e1;
-        *e1 = *e2;
-        *e2 = tmp;
-    }
-}
-
-GB_INLINE void sort(AP_tree_edge **e1, AP_tree_edge **e2, AP_tree_edge **e3) {
-    sort(e1,e2);
-    sort(e2,e3);
-    sort(e1,e2);
-}
-
 void AP_tree_nlen::moveTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
     ap_assert(father);
     ap_assert(newBrother->father);
 
-    AP_tree_nlen *pntr;
+    ASSERT_VALID_TREE(rootNode());
 
+    // push everything that will be modified onto stack
     ap_main->push_node(this , STRUCTURE);
     ap_main->push_node(get_brother(), STRUCTURE);
 
@@ -530,9 +526,7 @@ void AP_tree_nlen::moveTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
 
         if (grandpa->father) {
             ap_main->push_node(grandpa, BOTH);
-            for  (pntr = grandpa->get_father(); pntr; pntr = pntr->get_father()) {
-                ap_main->push_node( pntr, SEQUENCE);
-            }
+            push_all_upnode_sequences(grandpa);
         }
         else { // grandson of root
             ap_main->push_node(grandpa, ROOT);
@@ -548,8 +542,6 @@ void AP_tree_nlen::moveTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
         }
     }
 
-    // AP_tree_nlen *newBrother = AP_TREE_NLEN_CAST(new_brother);
-    
     ap_main->push_node(newBrother , STRUCTURE);
     if (newBrother->father) {
         if (newBrother->father->father) {
@@ -559,10 +551,7 @@ void AP_tree_nlen::moveTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
             ap_main->push_node(newBrother->get_father(), BOTH);
             ap_main->push_node(newBrother->get_brother(), STRUCTURE);
         }
-
-        for (pntr = newBrother->get_father()->get_father(); pntr; pntr = pntr->get_father()) {
-            ap_main->push_node(pntr, SEQUENCE);
-        }
+        push_all_upnode_sequences(newBrother->get_father());
     }
 
     AP_tree_nlen *thisFather        = get_father();
@@ -576,15 +565,13 @@ void AP_tree_nlen::moveTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
         if (thisFather==newBrothersFather->get_father()) { // son -> son of brother
             if (grandFather) {
                 if(grandFather->get_father()) {
-                    //          cout << "son -> son of brother\n";
-
                     thisFather->unlinkAllEdges(&e1,&e2,&e3);
                     e4 = newBrother->edgeTo(oldBrother)->unlink();
 
                     AP_tree::moveTo(newBrother,rel_pos);
 
-                    sort(&e1,&e2,&e3);              // sort by age (e1==oldest edge)
-                    e1->relink(oldBrother,grandFather);     // use oldest edge at remove position
+                    sortOldestFirst(&e1,&e2,&e3);
+                    e1->relink(oldBrother,grandFather); // use oldest edge at remove position
                     thisFather->linkAllEdges(e2,e3,e4);
                 }
                 else { // grandson of root -> son of brother
@@ -595,7 +582,7 @@ void AP_tree_nlen::moveTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
 
                     AP_tree::moveTo(newBrother,rel_pos);
 
-                    sort(&e1,&e2,&e3);  // sort by age (e1==oldest edge)
+                    sortOldestFirst(&e1,&e2,&e3);
                     e1->relink(oldBrother,uncle);
                     thisFather->linkAllEdges(e2,e3,e4);
                 }
@@ -613,7 +600,7 @@ void AP_tree_nlen::moveTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
 
                 AP_tree::moveTo(newBrother,rel_pos);
 
-                sort(&e1,&e2,&e3);
+                sortOldestFirst(&e1,&e2,&e3);
                 e1->relink(oldBrother,grandFather);
                 thisFather->linkAllEdges(e2,e3,e4);
             }
@@ -633,7 +620,7 @@ void AP_tree_nlen::moveTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
 
                 AP_tree::moveTo(newBrother,rel_pos);
 
-                sort(&e1,&e2,&e3);
+                sortOldestFirst(&e1,&e2,&e3);
                 e1->relink(oldBrother->get_leftson(),oldBrother->get_rightson()); // new root-edge
                 thisFather->linkAllEdges(e2,e3,e4);     // old root
             }
@@ -644,7 +631,7 @@ void AP_tree_nlen::moveTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
 
                     AP_tree::moveTo(newBrother,rel_pos);
 
-                    sort(&e1,&e2,&e3);
+                    sortOldestFirst(&e1,&e2,&e3);
                     e1->relink(oldBrother,newBrothersFather);   // new root-edge
                     thisFather->linkAllEdges(e2,e3,e4);
                 }
@@ -656,7 +643,7 @@ void AP_tree_nlen::moveTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
 
                     AP_tree::moveTo(newBrother,rel_pos);
 
-                    sort(&e1,&e2,&e3);
+                    sortOldestFirst(&e1,&e2,&e3);
                     e1->relink(oldBrother,uncle);
                     thisFather->linkAllEdges(e2,e3,e4);
                 }
@@ -670,7 +657,7 @@ void AP_tree_nlen::moveTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
 
                     AP_tree::moveTo(newBrother,rel_pos);
 
-                    sort(&e1,&e2,&e3);
+                    sortOldestFirst(&e1,&e2,&e3);
                     e1->relink(oldBrother,grandFather);
                     thisFather->linkAllEdges(e2,e3,e4);
                 }
@@ -680,7 +667,7 @@ void AP_tree_nlen::moveTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
 
                     AP_tree::moveTo(newBrother,rel_pos);
 
-                    sort(&e1,&e2,&e3);
+                    sortOldestFirst(&e1,&e2,&e3);
                     e1->relink(oldBrother,grandFather);
                     thisFather->linkAllEdges(e2,e3,e4);
                 }
@@ -690,6 +677,9 @@ void AP_tree_nlen::moveTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
     else { // edgesChange==0
         AP_tree::moveTo(newBrother,rel_pos);
     }
+    
+    ASSERT_VALID_TREE(this);
+    ASSERT_VALID_TREE(rootNode());
 }
 
 /*******************************************
@@ -904,6 +894,9 @@ AP_FLOAT AP_tree_nlen::costs(char *mutPerSite) {
 Section NNI
 ********************************************************/
 
+#if defined(DEVEL_RALF)
+#warning fix interfaces of AP_tree_nlen::nn_interchange_rek and AP_tree_edge::nni_rek (use a struct as param)
+#endif // DEVEL_RALF
 AP_FLOAT AP_tree_nlen::nn_interchange_rek(AP_BOOL openclosestatus, int &Abort,int deep, AP_BL_MODE mode, GB_BOOL skip_hidden)
 {
     if (!father)

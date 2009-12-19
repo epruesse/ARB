@@ -268,6 +268,7 @@ bool ARB_tree::is_inside(const ARB_tree *subtree) const {
 #if defined(CHECK_TREE_STRUCTURE)
 
 void ARB_tree::assert_valid() const {
+    at_assert(this);
     if (!is_leaf) {
         at_assert(rightson);
         at_assert(leftson);

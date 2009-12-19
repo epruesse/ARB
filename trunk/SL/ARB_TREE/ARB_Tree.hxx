@@ -26,7 +26,7 @@
 
 #if defined(DEBUG)
 #if defined(DEVEL_RALF)
-// #define CHECK_TREE_STRUCTURE
+#define CHECK_TREE_STRUCTURE
 #endif // DEVEL_RALF
 #endif // DEBUG
 
@@ -51,6 +51,13 @@ class ARB_tree_root : public Noncopyable {
     bool isLinkedToDB;
     bool addDeleteCallbacks;
 
+protected:
+    void set_gb_tree(GBDATA *gbTree) {
+        at_assert(!gb_tree || gb_tree == gbTree);
+        at_assert(tree_name);
+        gb_tree = gbTree;
+    }
+
 public:
     ARB_tree_root(AliView *aliView, const ARB_tree& nodeTempl, AP_sequence *seqTempl, bool add_delete_callbacks);
 
@@ -64,9 +71,9 @@ public:
     const AP_weights *get_weights() const { return ali->get_weights(); }
 
     GBDATA *get_gb_main() const { return ali->get_gb_main(); }
-    
+
     GBDATA *get_gb_tree() const { return gb_tree; } // NULL if no tree loaded (or tree disappeared from DB)
-    void tree_deleted_cb(GBDATA *gb_tree_del); // internal
+    void tree_deleted_cb(GBDATA *gb_tree_del);      // internal
 
     const char *get_tree_name() const { return tree_name; } // NULL if no tree loaded (or tree disappeared from DB)
 
