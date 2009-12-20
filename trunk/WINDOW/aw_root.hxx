@@ -145,11 +145,35 @@ int aw_status();                                    // return 1 if exit button i
 class aw_status_counter : Noncopyable {             // progress object
     int counter;
     int maxcount;
+    int autoUpdateEvery;
+    int nextAutoUpdate;
+    bool aborted;
+
+    void track_abort(int aw_status_result) { if (aw_status_result) aborted = true; }
+    void init(int overallCount) {
+        counter         = 0;
+        maxcount        = overallCount;
+        autoUpdateEvery = overallCount <= 250 ? 1 : int(overallCount/250.0+0.5);
+        nextAutoUpdate  = counter+autoUpdateEvery;
+    }
+    
 public:
-    aw_status_counter(int overall) : counter(0) , maxcount(overall) {}
-    void inc(int incr = 1) { counter += incr; aw_assert(counter <= maxcount); }
-    int update() { return aw_status(counter/double(maxcount)); }
-    int inc_and_update() { inc(); return update(); }
+    aw_status_counter(int overallCount) : aborted(false) {
+        init(overallCount);
+    }
+
+    void inc(int incr = 1) {
+        counter += incr;
+        aw_assert(counter <= maxcount);
+        if (counter >= nextAutoUpdate) {
+            update();
+            nextAutoUpdate += autoUpdateEvery;
+        }
+    }
+    void update() { track_abort(aw_status(counter/double(maxcount))); }
+
+    bool aborted_by_user() const { return aborted; }
+    void restart(int overallCount) { init(overallCount); update(); }
 };
 
 void aw_error( const char *text, const char *text2 );   // internal error: asks for core

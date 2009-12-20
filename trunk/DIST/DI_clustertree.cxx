@@ -238,9 +238,8 @@ void ClusterTree::detect_clusters(aw_status_counter& progress) {
         lson->oblivion(false);
         rson->oblivion(false);
 
-        if (progress.inc_and_update()) {
-            throw "aborted on userrequest";
-        }
+        progress.inc();
+        if (progress.aborted_by_user()) throw "aborted on userrequest";
     }
 
     cl_assert(state != CS_MAYBE_CLUSTER);
