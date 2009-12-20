@@ -393,8 +393,9 @@ ED4_returncode  EDB_root_bact::fill_species(ED4_multi_species_manager  *multi_sp
             ship[lauf] = '\0'; // speciesname-generation is finished
             lauf = 0;
 
-            if (progress && progress->inc_and_update() == 1) { // Kill has been Pressed
-                ED4_exit();
+            if (progress) {
+                progress->inc();
+                if (progress->aborted_by_user()) ED4_exit();
             }
 
             fill_data(multi_species_manager, ref_sequence_info_terminal, ref_sequence_terminal, ship /*species name*/,

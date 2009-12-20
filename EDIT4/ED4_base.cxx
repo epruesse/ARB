@@ -939,8 +939,9 @@ void ED4_manager::create_consensus(ED4_group_manager *upper_group_manager, aw_st
         group_manager->table().init(MAXSEQUENCECHARACTERLENGTH);
         group_manager_for_child = group_manager;
 
-        if (progress && progress->inc_and_update() == 1) {   // Kill has been Pressed
-            ED4_exit();
+        if (progress) {
+            progress->inc();
+            if (progress->aborted_by_user()) ED4_exit();
         }
     }
     int i;
