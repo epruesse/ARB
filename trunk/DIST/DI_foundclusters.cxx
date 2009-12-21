@@ -271,7 +271,7 @@ public:
          ClusterPtr cl1 = known.find(id1)->second;
          ClusterPtr cl2 = known.find(id2)->second;
 
-         cl_assert(!cl1.Null() && !cl2.Null());
+         cl_assert(!cl1.isNull() && !cl2.isNull());
 
          return cl1->lessByOrder(*cl2, order);
      }

@@ -144,14 +144,14 @@ FeatureLinePtr Importer::getFeatureTableLine() {
 
 FeatureLinePtr Importer::getUnwrappedFeatureTableLine() {
     FeatureLinePtr fline = getFeatureTableLine();
-    if (!fline.Null()) {
+    if (!fline.isNull()) {
         if (fline->type & FL_META_CONTINUED) throw "Expected start of feature or qualifier";
 
         if (0 == (fline->type & (FL_QUALIFIER_NODATA|FL_QUALIFIER_QUOTED))) {
             // qualifier/featurestart may be wrapped
             FeatureLinePtr next_fline = getFeatureTableLine();
 
-            while (!next_fline.Null() &&
+            while (!next_fline.isNull() &&
                    fline->type != FL_QUALIFIER_QUOTED) // already seen closing quote
             {
                 if ((next_fline->type&FL_META_CONTINUED) == 0) {
@@ -181,7 +181,7 @@ FeatureLinePtr Importer::getUnwrappedFeatureTableLine() {
                 next_fline = getFeatureTableLine();
             }
 
-            if (!next_fline.Null()) backFeatureTableLine(next_fline);
+            if (!next_fline.isNull()) backFeatureTableLine(next_fline);
         }
     }
     return fline;
@@ -191,17 +191,17 @@ FeaturePtr Importer::parseFeature() {
     FeaturePtr     feature;
     FeatureLinePtr fline = getUnwrappedFeatureTableLine();
 
-    if (!fline.Null()) {         // found a feature table line
+    if (!fline.isNull()) {         // found a feature table line
         if (fline->type != FL_START) throw "Expected feature start";
 
         feature = new Feature(fline->name, fline->rest);
 
         fline = getUnwrappedFeatureTableLine();
-        while (!fline.Null() && (fline->type & FL_META_QUALIFIER)) {
+        while (!fline.isNull() && (fline->type & FL_META_QUALIFIER)) {
             feature->addQualifiedEntry(fline->name, fline->rest);
             fline = getUnwrappedFeatureTableLine();
         }
-        if (!fline.Null()) backFeatureTableLine(fline);
+        if (!fline.isNull()) backFeatureTableLine(fline);
     }
 
     return feature;
@@ -210,7 +210,7 @@ FeaturePtr Importer::parseFeature() {
 void Importer::parseFeatureTable() {
     FeaturePtr feature = parseFeature();
 
-    while (!feature.Null()) {
+    while (!feature.isNull()) {
         feature->expectLocationInSequence(expectedSeqLength);
         feature->fixEmptyQualifiers();
         db_writer.writeFeature(*feature);
@@ -687,12 +687,12 @@ void GenebankImporter::parseSequence(const string& tag, const string& headerline
     }
 
     // parse sequence data
-    size_t         est_seq_size = headerCount.Null() ? 500000 : headerCount->getCount(BC_ALL);
+    size_t         est_seq_size = headerCount.isNull() ? 500000 : headerCount->getCount(BC_ALL);
     SequenceBuffer seqData(est_seq_size);
     {
         string line;
 
-        if (!headerCount.Null()) {
+        if (!headerCount.isNull()) {
             // if BASE COUNT was present, check ORIGIN line
             // otherwise ORIGIN line has already been read
             expectLine(line);
@@ -735,7 +735,7 @@ void GenebankImporter::parseSequence(const string& tag, const string& headerline
         }
     }
 
-    if (headerCount.Null()) {
+    if (headerCount.isNull()) {
         warning("No 'BASE COUNT' found. Base counts have not been validated.");
     }
     else {

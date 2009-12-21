@@ -243,7 +243,7 @@ public:
     T& operator*() { tpl_assert(object); return *(object->getPointer()); }
 
     /** test if SmartPtr is 0 */
-    bool Null() const { return object==0; }
+    bool isNull() const { return object==0; }
 
     /** set SmartPtr to 0 */
     void SetNull() { Unbind(); }

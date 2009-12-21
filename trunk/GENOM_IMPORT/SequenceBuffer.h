@@ -56,7 +56,7 @@ public:
 
     void startLineCounter();
     void addLine(const string& line) {
-        gi_assert(!char_count.Null()); // call startLineCounter before!
+        gi_assert(!char_count.isNull()); // call startLineCounter before!
         char_count->countChars(line);
     }
 

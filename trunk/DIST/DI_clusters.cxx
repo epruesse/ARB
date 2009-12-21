@@ -203,7 +203,7 @@ static int with_affected_clusters_do(AW_root *aw_root, AffectedClusters affected
 
         if (selID) {
             ClusterPtr selCluster = global_data->clusterWithID(selID);
-            cl_assert(!selCluster.Null());
+            cl_assert(!selCluster.isNull());
             fun(selCluster, cd);
             affCount++;
         }
@@ -609,7 +609,7 @@ static void group_clusters(AW_window *, AW_CL cl_Group_Action, AW_CL cl_aw_clust
     ARB_ERROR error = groupBuilder.get_error();
     if (error) {
         ClusterPtr bad = groupBuilder.get_bad_cluster();
-        if (!bad.Null()) {
+        if (!bad.isNull()) {
             select_cluster(bad->get_ID());
             aw_message("Problematic cluster has been highlighted");
         }

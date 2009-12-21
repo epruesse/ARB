@@ -173,7 +173,7 @@ public:
     const awt_input_mask_global *mask_global() const { return global; }
     awt_input_mask_global *mask_global() { return global; }
 
-    bool has_name() const { return !name.Null(); }
+    bool has_name() const { return !name.isNull(); }
     const std::string& get_name() const { awt_assert(has_name()); return *name; }
     GB_ERROR set_name(const std::string& name_, bool is_global);
     GB_ERROR remove_name();

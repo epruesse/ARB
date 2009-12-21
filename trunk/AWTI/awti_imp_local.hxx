@@ -84,7 +84,7 @@ public:
     const std::string *get(char c) const {
         awti_assert(c >= 'a' && c <= 'z');
         StringPtr v = value[c-'a'];
-        return v.Null() ? NULL : &*v;
+        return v.isNull() ? NULL : &*v;
     }
 };
 

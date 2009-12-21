@@ -17,8 +17,7 @@ void CharCounter::clear() {
     all = 0;
 }
 
-void CharCounter::countChars(const string& line)
-{
+void CharCounter::countChars(const string& line) {
     string::const_iterator e = line.end();
     for (string::const_iterator i = line.begin(); i != e; ++i) {
         ++count[static_cast<unsigned char>(*i)];
@@ -28,9 +27,8 @@ void CharCounter::countChars(const string& line)
 
 // --------------------------------------------------------------------------------
 
-void BaseCounter::calcOverallCounter()
-{
-    gi_assert(char_count.Null()); // may not be used for line counted BaseCounter
+void BaseCounter::calcOverallCounter() {
+    gi_assert(char_count.isNull()); // may not be used for line counted BaseCounter
     gi_assert(count[BC_ALL] == 0); // already have a value for overall counter
 
     size_t all                          = 0;
@@ -41,8 +39,7 @@ void BaseCounter::calcOverallCounter()
     }
 }
 
-void BaseCounter::checkOverallCounter() const
-{
+void BaseCounter::checkOverallCounter() const {
     catchUpWithLineCounter();
 
     size_t all = 0;
@@ -56,9 +53,8 @@ void BaseCounter::checkOverallCounter() const
     }
 }
 
-void BaseCounter::catchUpWithLineCounter() const
-{
-    if (!char_count.Null()) {
+void BaseCounter::catchUpWithLineCounter() const {
+    if (!char_count.isNull()) {
         CharCounter& cc  = const_cast<CharCounter&>(*char_count);
         size_t       all = cc.getCount(); // all bases
 
@@ -84,9 +80,8 @@ void BaseCounter::catchUpWithLineCounter() const
     }
 }
 
-void BaseCounter::startLineCounter()
-{
-    gi_assert(char_count.Null());
+void BaseCounter::startLineCounter() {
+    gi_assert(char_count.isNull());
     char_count = new CharCounter;
 }
 

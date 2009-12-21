@@ -327,7 +327,7 @@ public:
 SmartPtr<DB_browser> DB_browser::the_browser;
 
 static DB_browser *get_the_browser(bool autocreate = true) {
-    if (DB_browser::the_browser.Null() && autocreate) {
+    if (DB_browser::the_browser.isNull() && autocreate) {
         DB_browser::the_browser = new DB_browser;
     }
     return &*DB_browser::the_browser;
