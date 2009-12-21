@@ -1516,7 +1516,7 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
 
         // create window
         if (!error) {
-            awt_assert(!mask.Null());
+            awt_assert(!mask.isNull());
             AW_window_simple*& aws = mask->get_window();
             aws                    = new AW_window_simple;
 
@@ -1676,7 +1676,7 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                                                 // and never free them -> so we don't need pointer
                                                 new awt_variable(mask->mask_global(), id, true, def_value, error);
                                             }
-                                            awt_assert(handler.Null());
+                                            awt_assert(handler.isNull());
                                         }
                                         else {
                                             handler = new awt_variable(mask->mask_global(), id, false, def_value, error);
@@ -1689,7 +1689,7 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                                     check_last_parameter(error, command);
 
                                     if (!error) {
-                                        if (lasthandler.Null()) {
+                                        if (lasthandler.isNull()) {
                                             error = "ID() may only be used BEHIND another element";
                                         }
                                         else {
@@ -1842,8 +1842,8 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                                 //      insert handler(s)
                                 //  --------------------------
 
-                                if (!handler.Null() && !error) {
-                                    if (!radio_edit_handler.Null()) { // special radio handler
+                                if (!handler.isNull() && !error) {
+                                    if (!radio_edit_handler.isNull()) { // special radio handler
                                         const awt_radio_button *radio = dynamic_cast<const awt_radio_button*>(&*handler);
                                         awt_assert(radio);
 
@@ -1999,7 +1999,7 @@ GB_ERROR AWT_initialize_input_mask(AW_root *root, GBDATA *gb_main, const awt_ite
         awt_input_mask_ptr newMask = awt_create_input_mask(root, gb_main, sel, mask_name, local, error, unlink_old);
         if (error) {
             error = GBS_global_string("Error reading %s (%s)", mask_name, error);
-            if (!old_mask.Null()) { // are we doing a reload or changemask ?
+            if (!old_mask.isNull()) { // are we doing a reload or changemask ?
                 input_mask_list[internal_mask_name] = old_mask; // error loading modified mask -> put old one back to mask-list
                 unlink_old                          = false;
             }
