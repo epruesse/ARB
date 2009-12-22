@@ -11,7 +11,7 @@ void PS_Database::reinit( const char *_name, bool _readonly ) {
     }
     db_name2id_map.clear();
     db_id2name_map.clear();
-    if (!db_rootnode.Null()) db_rootnode.SetNull();
+    if (!db_rootnode.isNull()) db_rootnode.SetNull();
     db_rootnode = new PS_Node( -1 );
 }
 
@@ -52,13 +52,13 @@ void PS_Database::writeMappings( PS_FileBuffer *_file, ID2NameMap &_id2name_map 
 }
 
 void PS_Database::readTree( PS_FileBuffer *_file ) {
-    if (!db_rootnode.Null()) db_rootnode.SetNull();     // discard old tree
+    if (!db_rootnode.isNull()) db_rootnode.SetNull();     // discard old tree
     db_rootnode = new PS_Node( -1 );
     db_rootnode->load( _file );
 }
 
 void PS_Database::writeTree( PS_FileBuffer *_file ) {
-    if (db_rootnode.Null()) return;                     // no tree, no write
+    if (db_rootnode.isNull()) return;                     // no tree, no write
     db_rootnode->save( _file );
 }
 
@@ -184,7 +184,7 @@ bool PS_Database::merge( const char *_other_db_name ) {
     }
     // merge in tree if mappings differ
     else {
-        if (db_path.Null()) db_path = new PS_Node(-1);
+        if (db_path.isNull()) db_path = new PS_Node(-1);
         return db_path->read( other_db_file, this );
     }
 }

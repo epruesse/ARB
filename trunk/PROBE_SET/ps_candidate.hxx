@@ -188,7 +188,7 @@ public:
     }
 
     bool alreadyUsedNode( const PS_NodePtr _ps_node ) const {
-        if (node.Null()) return false;
+        if (node.isNull()) return false;
         if (_ps_node == node) {
             return true;
         } else {
@@ -314,7 +314,7 @@ public:
             printf( "|  " );
         }
         printf( "\n" );
-        if (node.Null()) {
+        if (node.isNull()) {
             for (unsigned long i = 0; i < _depth; ++i) {
                 printf( "|  " );
             }
@@ -366,7 +366,7 @@ public:
                 gain,
                 depth,
                 path.size() );
-        if (node.Null()) {
+        if (node.isNull()) {
             printf( "node (undefined)  children (%2zu)  ", children.size() );
         } else {
             printf( "node (%p)  children (%2zu)  ", &(*node), children.size() );
