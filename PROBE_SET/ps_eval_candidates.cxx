@@ -38,7 +38,7 @@ void PS_get_node_paths( PS_CandidateSet &_leaf_candidates, PS_Candidate2NodeSetP
         PS_CandidatePtr  candidate      = &(*candidate_sptr);
         nodepath.clear();
         while ((candidate) &&
-               (!candidate->node.Null())) {
+               (!candidate->node.isNull())) {
             nodepath.insert( &(*(candidate->node)) );
             candidate = candidate->parent;
         }
@@ -478,7 +478,7 @@ int main( int   argc,
     }
     printf( "\n" );
     // write paths
-    while (c && !c->node.Null()) {
+    while (c && !c->node.isNull()) {
         PS_ProbeSetCIter probe = c->node->getProbesBegin();
         unsigned long temp = PS_calc_temp( *probe );
         if (temp < min_temp) min_temp = temp;
