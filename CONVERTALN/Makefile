@@ -16,18 +16,18 @@ OBJECT= \
 	util.o \
 
 
-.SUFFIXES: .o .c .cxx .depend
+.SUFFIXES: .o .cxx .depend
 
 BINARY=$(ARBHOME)/bin/arb_convert_aln
 
 $(BINARY): $(OBJECT)
 	$(LINK_EXECUTABLE) $@ $(OBJECT) ../SL/FILE_BUFFER/FILE_BUFFER.a $(LIBPATH) -lARBDB
 
-.c.o:
+.cxx.o:
 	$(CPP) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
 
 proto:
-	../MAKEBIN/aisc_mkpt -A -w prototypes.h $(OBJECT:.o=.c) >prototypes.h.tmp
+	../MAKEBIN/aisc_mkpt -A -w prototypes.h $(OBJECT:.o=.cxx) >prototypes.h.tmp
 	../SOURCE_TOOLS/mv_if_diff prototypes.h.tmp prototypes.h
 
 clean:

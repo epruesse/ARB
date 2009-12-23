@@ -8,7 +8,7 @@
 #define PROTOTYPES_H
 
 
-/* alma.c */
+/* alma.cxx */
 void init_alma(void);
 void alma_to_macke(char *inf, char *outf);
 void alma_to_genbank(char *inf, char *outf);
@@ -30,11 +30,11 @@ FILE *alma_out(FILE *fp, int format);
 FILE *alma_out_entry_header(FILE *fp, char *entry_id, char *filename, int format_type);
 void alma_out_gaps(FILE *fp);
 
-/* convert.c */
+/* convert.cxx */
 int realloc_sequence_data(int total_seqs);
 void free_sequence_data(int used_entries);
 
-/* date.c */
+/* date.cxx */
 char *genbank_date(char *other_date);
 void find_date(char *date_string, int *month, int *day, int *year);
 int two_char(char *string, char determ);
@@ -45,7 +45,7 @@ int is_genbank_date(char *string);
 char *today_date(void);
 char *gcg_date(char *date_string);
 
-/* embl.c */
+/* embl.cxx */
 void init_em_data(void);
 void init_embl(void);
 char embl_in(FILE_BUFFER fp);
@@ -85,12 +85,12 @@ void gtoe_comments(void);
 void macke_to_embl(char *inf, char *outf);
 int partial_mtoe(void);
 
-/* fconv.c */
+/* fconv.cxx */
 void convert(char *inf, char *outf, int intype, int outype);
 void init(void);
 void init_seq_data(void);
 
-/* gcg.c */
+/* gcg.cxx */
 void to_gcg(int intype, char *inf);
 void gcg_seq_out(FILE *ofp, char *key);
 void gcg_doc_out(char *line, FILE *ofp);
@@ -99,7 +99,7 @@ void gcg_out_origin(FILE *fp);
 void gcg_output_filename(char *prefix, char *name);
 int gcg_seq_length(void);
 
-/* genbank.c */
+/* genbank.cxx */
 void init_genbank(void);
 char genbank_in(FILE_BUFFER fp);
 void genbank_key_word(char *line, int index, char *key, int length);
@@ -125,7 +125,7 @@ void genbank_out_origin(FILE *fp);
 void genbank_to_genbank(char *inf, char *outf);
 void init_reference(Reference *ref, int flag);
 
-/* macke.c */
+/* macke.cxx */
 void init_macke(void);
 char macke_in(FILE_BUFFER fp1, FILE_BUFFER fp2, FILE_BUFFER fp3);
 char *macke_one_entry_in(FILE_BUFFER fp, const char *key, char *oldname, char **var, char *line, int index);
@@ -143,13 +143,13 @@ int macke_key_word(char *line, int index, char *key, int length);
 int macke_in_one_line(char *string);
 void macke_out2(FILE *fp);
 
-/* main.c */
+/* main.cxx */
 int file_type(char *filename);
 int isnum(char *string);
 int file_exist(char *file_name);
 void change_file_suffix(char *old_file, char *file_name, int type);
 
-/* mg.c */
+/* mg.cxx */
 void init_gm_data(void);
 void genbank_to_macke(char *inf, char *outf);
 int gtom(void);
@@ -171,7 +171,7 @@ void mtog_genbank_def_and_source(void);
 void get_string(char *line, char *temp, int index);
 void get_atcc_string(char *line, char *temp, int index);
 
-/* paup.c */
+/* paup.cxx */
 void init_paup(void);
 void to_paup(char *inf, char *outf, int informat);
 void to_paup_1x1(char *inf, char *outf, int informat);
@@ -179,22 +179,22 @@ void paup_verify_name(char **string);
 void paup_print_line(char *string, char *sequence, int seq_length, int index, int first_line, FILE *fp);
 void paup_print_header(FILE *ofp);
 
-/* phylip.c */
+/* phylip.cxx */
 void init_phylip(void);
 void to_phylip(char *inf, char *outf, int informat, int readstdin);
 void to_phylip_1x1(char *inf, char *outf, int informat);
 void phylip_print_line(char *name, char *sequence, int seq_length, int index, FILE *fp);
 
-/* printable.c */
+/* printable.cxx */
 void to_printable(char *inf, char *outf, int informat);
 void to_printable_1x1(char *inf, char *outf, int informat);
 void printable_print_line(char *id, char *sequence, int start, int base_count, FILE *fp);
 
-/* routines.c */
+/* routines.cxx */
 void count_base(int *base_a, int *base_t, int *base_g, int *base_c, int *base_other);
 void replace_entry(char **string1, const char *string2);
 
-/* util.c */
+/* util.cxx */
 int Cmpcasestr(const char *s1, const char *s2);
 int Cmpstr(const char *s1, const char *s2);
 void Freespace(void *pointer);
