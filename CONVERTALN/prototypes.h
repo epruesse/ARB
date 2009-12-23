@@ -37,7 +37,7 @@ void free_sequence_data(int used_entries);
 /* date.cxx */
 char *genbank_date(char *other_date);
 void find_date(char *date_string, int *month, int *day, int *year);
-int two_char(char *string, char determ);
+bool two_char(char *str, char determ);
 void find_date_long_form(char *date_string, int *month, int *day, int *year);
 int ismonth(char *string);
 int isdatenum(char *string);

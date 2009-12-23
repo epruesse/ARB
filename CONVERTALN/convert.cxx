@@ -11,26 +11,29 @@
 #include "convert.h"
 #include "global.h"
 
-struct global_data data; 
+struct global_data data;
 
-int realloc_sequence_data(int total_seqs) {
-    if (total_seqs>data.allocated) {
-        data.allocated = (int)(data.allocated*1.5)+5;
+int realloc_sequence_data(int total_seqs)
+{
+    if (total_seqs > data.allocated) {
+        data.allocated = (int)(data.allocated * 1.5) + 5;
 
-        data.ids     =(char**)Reallocspace((char *)data.ids,     sizeof(char*)*data.allocated);
-        data.seqs    =(char**)Reallocspace((char *)data.seqs,    sizeof(char*)*data.allocated);
-        data.lengths =(int*)  Reallocspace((char *)data.lengths, sizeof(int)  *data.allocated);
+        data.ids = (char **)Reallocspace((char *)data.ids, sizeof(char *) * data.allocated);
+        data.seqs = (char **)Reallocspace((char *)data.seqs, sizeof(char *) * data.allocated);
+        data.lengths = (int *)Reallocspace((char *)data.lengths, sizeof(int) * data.allocated);
 
         if (!data.ids || !data.seqs || !data.lengths) {
-            return 0; // failed
+            return 0;           // failed
         }
     }
-    return 1; // success
+    return 1;                   // success
 }
 
-void free_sequence_data(int used_entries) {
+void free_sequence_data(int used_entries)
+{
     int indi;
-    for(indi=0; indi<used_entries; indi++)  {
+
+    for (indi = 0; indi < used_entries; indi++) {
         Freespace(&(data.ids[indi]));
         Freespace(&(data.seqs[indi]));
     }
@@ -40,4 +43,3 @@ void free_sequence_data(int used_entries) {
 
     data.allocated = 0;
 }
-
