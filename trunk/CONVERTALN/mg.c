@@ -12,7 +12,7 @@ extern int  warning_out;
  *   Initialize data structure of genbank and Macke formats.
  */
 void
-init_gm_data()  {
+init_gm_data(void) {
     /*  void    init_macke(), init_genbank(); */
 
     init_macke();
@@ -23,8 +23,7 @@ init_gm_data()  {
  *   Convert from Genbank format to Macke format.
  */
 void
-genbank_to_macke(inf, outf)
-     char   *inf, *outf;
+genbank_to_macke(char *inf, char *outf)
 {
     FILE        *IFP, *ofp;
     FILE_BUFFER  ifp;
@@ -102,7 +101,7 @@ genbank_to_macke(inf, outf)
  *       Convert from Genbank format to Macke format.
  */
 int
-gtom()  {
+gtom(void) {
     /*  void    genbank_key_word(), error(), Freespace(), Cpystr(); */
     /*  void    Append(), gtom_remarks(), replace_entry(); */
     /*  char    *Catstr(); */
@@ -195,7 +194,7 @@ gtom()  {
  *       Create Macke remarks.
  */
 void
-gtom_remarks()  {
+gtom_remarks(void) {
 
     int remnum, len;
     int indi, indj;
@@ -285,10 +284,7 @@ gtom_remarks()  {
  *  Function gtom_copy_remark().
  *      If string length > 1 then copy string with key to remark.
  */
-void gtom_copy_remark(string, key, remnum)
-     char *string;
-     const char *key;
-     int  *remnum;
+void gtom_copy_remark(char *string, const char *key, int *remnum)
 {
     /*  int Lenstr(); */
     /*  char    *Dupstr(); */
@@ -307,7 +303,7 @@ void gtom_copy_remark(string, key, remnum)
  *       Get strain from DEFINITION, COMMENT or SOURCE line in
  *       Genbank data file.
  */
-char *genbank_get_strain()  {
+char *genbank_get_strain(void) {
 
     int indj, indk;
     /*  int find_pattern(), Lenstr(); */
@@ -384,7 +380,7 @@ char *genbank_get_strain()  {
  *       COMMENT line of Genbank data file.
  */
 char
-*genbank_get_subspecies()   {
+*genbank_get_subspecies(void) {
 
     int indj, indk;
     /*  int find_pattern(), Lenstr(); */
@@ -419,7 +415,7 @@ char
                                     "subsp.="))>=0) {
                 /* skip the key word */
                 for(indj+=indk;
-                    data.gbk.comments.others[indj]!='='; indj++);
+                    data.gbk.comments.others[indj]!='='; indj++) ;
                 indj++;
                 /* skip blank spaces */
                 indj=Skip_white_space(data.gbk.comments.others, indj);
@@ -469,8 +465,7 @@ char
  *       sometime mistakenly written into it.
  */
 void
-correct_subspecies(subspecies)
-     char    *subspecies;
+correct_subspecies(char *subspecies)
 {
     int indj;
 
@@ -486,7 +481,7 @@ correct_subspecies(subspecies)
  *       Get atcc from SOURCE line in Genbank data file.
  */
 char
-*genbank_get_atcc() {
+*genbank_get_atcc(void) {
 
     /*  int Lenstr(); */
     char    temp[LONGTEXT];
@@ -508,8 +503,7 @@ char
 /*  Function get_atcc().
  */
 char
-*get_atcc(source)
-     char    *source;
+*get_atcc(char *source)
 {
 
     static int  cc_num=16;
@@ -559,9 +553,7 @@ char
 /*  Function paren_string()
  */
 int
-paren_string(string, pstring, index)
-     char    *string, *pstring;
-     int index;
+paren_string(char *string, char *pstring, int index)
 {
     int pcount=0, len, indi;
 
@@ -579,7 +571,7 @@ paren_string(string, pstring, index)
  *       Count num of remarks needed in order to alloc spaces.
  */
 int
-num_of_remark() {
+num_of_remark(void) {
 
     int remnum, /*indi, */indj, length;
 
@@ -640,8 +632,7 @@ num_of_remark() {
  *       Convert from macke format to genbank format.
  */
 void
-macke_to_genbank(inf, outf)
-     char   *inf, *outf;
+macke_to_genbank(char *inf, char *outf)
 {
     FILE        *IFP1, *IFP2, *IFP3, *ofp;
     FILE_BUFFER  ifp1, ifp2, ifp3;
@@ -697,7 +688,7 @@ macke_to_genbank(inf, outf)
  *       Convert Macke format to Genbank format.
  */
 int
-mtog() {
+mtog(void) {
     int indi;
     /*  int len, Lenstr(), Cmpstr(); */
     char    temp[LONGTEXT];
@@ -777,7 +768,7 @@ mtog() {
  *       Decode remarks of Macke to GenBank format.
  */
 void
-mtog_decode_ref_and_remarks()   {
+mtog_decode_ref_and_remarks(void) {
 
     int indi, indj;
     int acount, tcount, jcount, rcount, scount;
@@ -979,9 +970,7 @@ mtog_decode_ref_and_remarks()   {
  *       Convert one remark back to GenBank format.
  */
 void
-mtog_copy_remark(string, indi, indj)
-     char    **string;
-     int *indi, indj;
+mtog_copy_remark(char **string, int *indi, int indj)
 {
     /*  void    Freespace(); */
     /*  char    *macke_copyrem(); */
@@ -994,9 +983,7 @@ mtog_copy_remark(string, indi, indj)
  *  Function macke_copyrem().
  *      uncode rem lines.
  */
-char *macke_copyrem(strings, index, maxline, pointer)
-     char **strings;
-     int   *index, maxline, pointer;
+char *macke_copyrem(char **strings, int *index, int maxline, int pointer)
 {
     char    *string;
     int indi;
@@ -1017,7 +1004,7 @@ char *macke_copyrem(strings, index, maxline, pointer)
  *           group likes.
  */
 void
-mtog_genbank_def_and_source()   {
+mtog_genbank_def_and_source(void) {
 
     /*  int Lenstr(); */
     /*  void    Freespace(), Append(), Append_rm_eoln(), Append_char(); */
@@ -1075,9 +1062,7 @@ mtog_genbank_def_and_source()   {
  *       Always append "\n" at the end of the returned string.
  */
 void
-get_string(line, temp, index)
-     char    *line, *temp;
-     int index;
+get_string(char *line, char *temp, int index)
 {
     int indk, len, paren_num;
     /*  int not_ending_mark(); */
@@ -1103,9 +1088,7 @@ get_string(line, temp, index)
  *           terminators, such as ';', ',', '.',...
  */
 void
-get_atcc_string(line, temp, index)
-     char    *line, *temp;
-     int index;
+get_atcc_string(char *line, char *temp, int index)
 {
     int indk, len, paren_num;
 

@@ -16,8 +16,7 @@ static const char   *mon[12] = {"JAN", "FEB", "MAR", "APR", "MAY",
  *       Convert the date to be in genbank date form.
  */
 char
-*genbank_date(other_date)
-     char    *other_date;
+*genbank_date(char *other_date)
 {
     char    *gdate, /*token[SIZE],*/ temp[SIZE];
     int day, month, year;
@@ -60,9 +59,7 @@ char
  *       Find day, month, year from date string.
  */
 void
-find_date(date_string, month, day, year)
-     char    *date_string;
-     int *month, *day, *year;
+find_date(char *date_string, int *month, int *day, int *year)
 {
     /*  int two_char(), Lenstr(); */
     int index, indi, count, nums[3];
@@ -94,8 +91,7 @@ find_date(date_string, month, day, year)
  *       Return true if string has two determinator char.
  */
 int
-two_char(string, determ)
-     char    *string, determ;
+two_char(char *string, char determ)
 {
     int len, indi;
 
@@ -113,9 +109,7 @@ two_char(string, determ)
  *           like day-of-week, month, day, time, year.
  */
 void
-find_date_long_form(date_string, month, day, year)
-     char    *date_string;
-     int *month, *day, *year;
+find_date_long_form(char *date_string, int *month, int *day, int *year)
 {
     int indi, index, length, /*count,*/ nums[3], num;
     char    token[SIZE];
@@ -150,8 +144,7 @@ find_date_long_form(date_string, month, day, year)
  *           Case insensitive.
  */
 int
-ismonth(string)
-     char    *string;
+ismonth(char *string)
 {
     int num=0;
 
@@ -187,8 +180,7 @@ ismonth(string)
  *           If not day or year, return 0.
  */
 int
-isdatenum(string)
-     char    *string;
+isdatenum(char *string)
 {
     int length, num, indi;
 
@@ -208,8 +200,7 @@ isdatenum(string)
  *           day(2 digits)-MONTH(in letters)-year(4 digits).
  */
 int
-is_genbank_date(string)
-     char    *string;
+is_genbank_date(char *string)
 {
     /*  int Lenstr(); */
 
@@ -221,7 +212,7 @@ is_genbank_date(string)
  *       Get today's date.
  */
 char
-*today_date()   {
+*today_date(void) {
     /*  struct tm   *local_tm, *localtime(); */
     struct timeval  tp;
     struct timezone tzp;
@@ -240,8 +231,7 @@ char
  *       Create gcg format of date.
  */
 char
-*gcg_date(date_string)
-     char    *date_string;
+*gcg_date(char *date_string)
 {
     static char date[128], temp[128], time[128];
     int day, year;

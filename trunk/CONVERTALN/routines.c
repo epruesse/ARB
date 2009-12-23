@@ -7,8 +7,7 @@
  *       Count bases A, T, G, C and others.
  */
 void
-count_base(base_a, base_t, base_g, base_c, base_other)
-    int *base_a, *base_t, *base_g, *base_c, *base_other;
+count_base(int *base_a, int *base_t, int *base_g, int *base_c, int *base_other)
 {
     int indi;
 
@@ -41,9 +40,7 @@ count_base(base_a, base_t, base_g, base_c, base_other)
  *   Function replace_entry().
  *       Free space of string1 and replace string1 by string2.
  */
-void replace_entry(string1, string2)
-     char       **string1;
-     const char  *string2;
+void replace_entry(char **string1, const char *string2)
 {
     /*  void    Freespace(); */
     /*  char    *Dupstr(); */

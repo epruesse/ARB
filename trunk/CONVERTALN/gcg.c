@@ -7,9 +7,7 @@
  *       Convert from whatever to GCG format.
  */
 void
-to_gcg(intype, inf)
-     int    intype;
-     char *inf;
+to_gcg(int intype, char *inf)
 {
     FILE        *IFP1, *IFP2, *IFP3, *ofp;
     FILE_BUFFER  ifp1 = 0, ifp2 = 0, ifp3 = 0;
@@ -115,9 +113,7 @@ to_gcg(intype, inf)
  *       Output sequence data in gcg format.
  */
 void
-gcg_seq_out(ofp, key)
-     FILE    *ofp;
-     char    *key;
+gcg_seq_out(FILE *ofp, char *key)
 {
     /*  int indi, indj, indk; */
     /*  char    *today_date(), *gcg_date(); */
@@ -133,9 +129,7 @@ gcg_seq_out(ofp, key)
  *       Output non-sequence data(document) of gcg format.
  */
 void
-gcg_doc_out(line, ofp)
-     char    *line;
-     FILE    *ofp;
+gcg_doc_out(char *line, FILE *ofp)
 {
     int indi, len;
     int previous_is_dot;
@@ -154,9 +148,7 @@ gcg_doc_out(line, ofp)
  *       Calculate checksum for GCG format.
  */
 int
-checksum(string, numofstr)
-     char    *string;
-     int numofstr;
+checksum(char *string, int numofstr)
 {
     int cksum=0, indi, count=0, charnum;
 
@@ -177,8 +169,7 @@ checksum(string, numofstr)
  *       Output sequence data in gcg format.
  */
 void
-gcg_out_origin(fp)
-     FILE    *fp;
+gcg_out_origin(FILE *fp)
 {
 
     int indi, indj, indk;
@@ -201,8 +192,7 @@ gcg_out_origin(fp)
  *           append ".RDP" as suffix.
  */
 void
-gcg_output_filename(prefix, name)
-     char    *prefix, *name;
+gcg_output_filename(char *prefix, char *name)
 {
     int indi, len;
 
@@ -215,7 +205,7 @@ gcg_output_filename(prefix, name)
  *       Calculate sequence length without gap.
  */
 int
-gcg_seq_length()    {
+gcg_seq_length(void) {
 
     int indi, len;
 

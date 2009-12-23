@@ -177,7 +177,7 @@ int main(int argc, char *argv[]) {
 
     if(argc==4) {               /* default output file */
         /*         argv            = (char**)Reallocspace(argv, sizeof(char*)*5); */
-        const char **argv_new = calloc(sizeof(char*), 5);
+        const char **argv_new = (const char **)calloc(sizeof(char*), 5);
         memcpy(argv_new, argv, sizeof(char*)*4);
         argv_new[4]     = "";
         argv            = (char**)argv_new;
@@ -207,8 +207,7 @@ int main(int argc, char *argv[]) {
  *      the file type.  File type could be Genbank, Macke,...
  */
 int
-file_type(filename)
-     char   *filename;
+file_type(char *filename)
 {
     /*  char    line[LINENUM]; */
     char    token[LINENUM], temp[LINENUM];
@@ -239,8 +238,7 @@ file_type(filename)
  *      Return TRUE if the string is an integer number.
  */
 int
-isnum(string)
-     char   *string;
+isnum(char *string)
 {
     int indi, length, flag;
 
@@ -255,8 +253,7 @@ isnum(string)
  *          name is valid or not.
  */
 int
-file_exist(file_name)
-     char   *file_name;
+file_exist(char *file_name)
 {
     /*  int Lenstr(); */
     /*  void    error(); */
@@ -273,9 +270,7 @@ file_exist(file_name)
  *      Define the default file name by changing suffix.
  */
 void
-change_file_suffix(old_file, file_name, type)
-     char   *old_file, *file_name;
-     int    type;
+change_file_suffix(char *old_file, char *file_name, int type)
 {
     int indi, indj;
     /*  char    *Catstr(); */
