@@ -11,7 +11,7 @@
  *   Initialize macke entry.
  */
 void
-init_macke()    {
+init_macke(void) {
 
     /*  void    Freespace(); */
     /*  char    *Dupstr(); */
@@ -57,10 +57,7 @@ init_macke()    {
  *      Read in one sequence data from Macke file.
  */
 char
-macke_in(fp1, fp2, fp3)
-     FILE_BUFFER  fp1;
-     FILE_BUFFER  fp2;
-     FILE_BUFFER  fp3;
+macke_in(FILE_BUFFER fp1, FILE_BUFFER fp2, FILE_BUFFER fp3)
 {
     static  char    line1[LINENUM];
     static  char    line2[LINENUM];
@@ -186,11 +183,7 @@ macke_in(fp1, fp2, fp3)
  *      Get one Macke entry.
  */
 char
-*macke_one_entry_in(fp, key, oldname, var, line, index)
-     FILE_BUFFER  fp;
-     const char  *key;
-     char        *oldname, **var, *line;
-     int          index;
+*macke_one_entry_in(FILE_BUFFER fp, const char *key, char *oldname, char **var, char *line, int index)
 {
     char *eof;
 
@@ -206,10 +199,7 @@ char
  *  Function macke_continue_line().
  *      Append macke continue line.
  */
-char *macke_continue_line(key, oldname, var, line, fp)
-     const char *key;
-     char       *oldname, **var, *line;
-     FILE_BUFFER fp;
+char *macke_continue_line(const char *key, char *oldname, char **var, char *line, FILE_BUFFER fp)
 {
     char    *eof, name[TOKENNUM], newkey[TOKENNUM];
     int index;
@@ -236,9 +226,7 @@ char *macke_continue_line(key, oldname, var, line, fp)
  *      Read in sequence data in macke file.
  */
 char
-*macke_origin(key, line, fp)
-     char *key, *line;
-     FILE_BUFFER    fp;
+*macke_origin(char *key, char *line, FILE_BUFFER fp)
 {
     int   index, indj, seqnum;
     char *eof, name[TOKENNUM], seq[LINENUM];
@@ -288,9 +276,7 @@ char
  *       Find the key in Macke line.
  */
 int
-macke_abbrev(line, key, index)
-     char    *line, *key;
-     int index;
+macke_abbrev(char *line, char *key, int index)
 {
     int indi;
 
@@ -311,9 +297,7 @@ macke_abbrev(line, key, index)
  *           it is continued line.
  */
 int
-macke_rem_continue_line(strings, index)
-     char    **strings;
-     int index;
+macke_rem_continue_line(char **strings, int index)
 {
     if(strings[index][0]==':'&&strings[index][1]==' '
        &&strings[index][2]==' ')
@@ -325,8 +309,7 @@ macke_rem_continue_line(strings, index)
  *       Read in next sequence name and data only.
  */
 char
-macke_in_name(fp)
-     FILE_BUFFER fp;
+macke_in_name(FILE_BUFFER fp)
 {
     static  char    line[LINENUM];
     static  int first_time = 1;
@@ -410,8 +393,7 @@ macke_in_name(fp)
  *       Output the Macke format header.
  */
 void
-macke_out_header(fp)
-     FILE    *fp;
+macke_out_header(FILE *fp)
 {
     char    *date;
     /*  void    Freespace(), Cypstr(); */
@@ -426,9 +408,7 @@ macke_out_header(fp)
  *       Output the Macke format each sequence format.
  */
 void
-macke_out0(fp, format)
-     FILE    *fp;
-     int format;
+macke_out0(FILE *fp, int format)
 {
     /*  int Lenstr(); */
     char    token[TOKENNUM], direction[TOKENNUM];
@@ -470,8 +450,7 @@ macke_out0(fp, format)
  *   Function macke_out1().
  *       Output sequences information.
  */
-void macke_out1(fp)
-     FILE    *fp;
+void macke_out1(FILE *fp)
 {
     /*  void    macke_print_line_78(), macke_print_keyword_rem(); */
     char temp[LINENUM];
@@ -558,9 +537,7 @@ void macke_out1(fp)
  *           RDP group)
  */
 void
-macke_print_keyword_rem(index, fp)
-     int index;
-     FILE    *fp;
+macke_print_keyword_rem(int index, FILE *fp)
 {
     int indj, indk, indl, lineno, len, maxc;
 
@@ -609,9 +586,7 @@ macke_print_keyword_rem(index, fp)
  *           78(MACKEMAXCHAR) column.
  */
 void
-macke_print_line_78(fp, line1, line2)
-     FILE    *fp;
-     char    *line1, *line2;
+macke_print_line_78(FILE *fp, char *line1, char *line2)
 {
     int len, indi, indj, indk, ibuf;
 
@@ -649,11 +624,7 @@ macke_print_line_78(fp, line1, line2)
  *       Find the key in Macke line.
  */
 int
-macke_key_word(line, index, key, length)
-     char    *line;
-     int index;
-     char    *key;
-     int length;
+macke_key_word(char *line, int index, char *key, int length)
 {
     int indi;
 
@@ -674,8 +645,7 @@ macke_key_word(line, index, key, length)
  *  Function macke_in_one_line().
  *      Check if string should be in one line.
  */
-int macke_in_one_line(string)
-     char *string;
+int macke_in_one_line(char *string)
 {
     char keyword[TOKENNUM];
     int  iskey;
@@ -722,8 +692,7 @@ int macke_in_one_line(string)
  *   Function macke_out2().
  *       Output Macke format sequences data.
  */
-void macke_out2(fp)
-     FILE *fp;
+void macke_out2(FILE *fp)
 {
     int  indj, indk;
     char temp[LINENUM];

@@ -11,9 +11,7 @@
  *                      to desired out type and save the result in
  *                      the out file.
  */
-void convert(inf, outf, intype, outype)
-     char *inf, *outf;
-     int   intype, outype;
+void convert(char *inf, char *outf, int intype, int outype)
 {
     int dd;             /* copy stdin to outfile after first line */
     dd = 0;
@@ -128,7 +126,7 @@ void convert(inf, outf, intype, outype)
  *              any program.
  */
 void
-init()  {
+init(void) {
 
     /* initialize macke format */
     data.macke.seqabbr                 = NULL;
@@ -226,7 +224,7 @@ init()  {
  *              Init. seq. data.
  */
 void
-init_seq_data() {
+init_seq_data(void) {
     data.numofseq = 0;
     data.seq_length = 0;
 }

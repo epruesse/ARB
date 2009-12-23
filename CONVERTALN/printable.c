@@ -9,9 +9,7 @@
  *       Convert from some format to PRINTABLE format.
  */
 void
-to_printable(inf, outf, informat)
-     char   *inf, *outf;
-     int    informat;
+to_printable(char *inf, char *outf, int informat)
 {
     FILE        *IFP, *ofp;
     FILE_BUFFER  ifp;
@@ -122,9 +120,7 @@ to_printable(inf, outf, informat)
  *       Convert from one foramt to PRINTABLE format, one seq by one seq.
  */
 void
-to_printable_1x1(inf, outf, informat)
-     char   *inf, *outf;
-     int    informat;
+to_printable_1x1(char *inf, char *outf, int informat)
 {
     FILE        *IFP, *ofp;
     FILE_BUFFER  ifp;
@@ -222,11 +218,7 @@ to_printable_1x1(inf, outf, informat)
  *       print one printable line.
  */
 void
-printable_print_line(id, sequence, start, base_count, fp)
-     char    *id, *sequence;
-     int start;
-     int base_count;
-     FILE    *fp;
+printable_print_line(char *id, char *sequence, int start, int base_count, FILE *fp)
 {
     int indi, index, count, bnum, /*length,*/ seq_length;
 

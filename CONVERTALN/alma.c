@@ -10,7 +10,7 @@ extern int  warning_out;
  *   Function init_alma().
  *       Init. ALMA data.
  */
-void init_alma()    {
+void init_alma(void) {
     Freespace(&(data.alma.id));
     Freespace(&(data.alma.filename));
     Freespace(&(data.alma.sequence));
@@ -26,8 +26,7 @@ void init_alma()    {
  *       Convert from ALMA format to Macke format.
  */
 void
-alma_to_macke(inf, outf)
-     char   *inf, *outf;
+alma_to_macke(char *inf, char *outf)
 {
     FILE        *IFP, *ofp;
     FILE_BUFFER  ifp;
@@ -99,8 +98,7 @@ alma_to_macke(inf, outf)
  *       Convert from ALMA format to GenBank format.
  */
 void
-alma_to_genbank(inf, outf)
-     char   *inf, *outf;
+alma_to_genbank(char *inf, char *outf)
 {
     FILE        *IFP, *ofp;
     FILE_BUFFER  ifp;
@@ -145,8 +143,7 @@ alma_to_genbank(inf, outf)
  *       Read in one ALMA sequence data.
  */
 char
-alma_in(fp)
-     FILE_BUFFER fp;
+alma_in(FILE_BUFFER fp)
 {
     char    eoen, *eof, line[LINENUM];
     /*  char    temp[LINENUM]; */
@@ -217,11 +214,7 @@ alma_in(fp)
  *       Get the key_word from line beginning at index.
  */
 int
-alma_key_word(line, index, key, length)
-     char    *line;
-     int index;
-     char    *key;
-     int length;
+alma_key_word(char *line, int index, char *key, int length)
 {
     int indi, indj;
 
@@ -240,10 +233,7 @@ alma_key_word(line, index, key, length)
  *       Read in one ALMA entry lines.
  */
 void
-alma_one_entry(line, index, datastring)
-     char    *line;
-     int index;
-     char    **datastring;
+alma_one_entry(char *line, int index, char **datastring)
 {
     int indi, length;
     /*  void    replace_entry(); */
@@ -261,8 +251,7 @@ alma_one_entry(line, index, datastring)
  *       Get sequence data and merge with gaps(alignment).
  */
 char
-*alma_in_gaps(fp)
-     FILE_BUFFER fp;
+*alma_in_gaps(FILE_BUFFER fp)
 {
     int return_num, gaps, residues, count=0;
     int indi, numofseq, bases_not_matching;
@@ -355,7 +344,7 @@ char
  *       Read in sequence data.
  */
 void
-alma_in_sequence()  {
+alma_in_sequence(void) {
 
     char         temp[LINENUM];
     FILE        *IFP; /* ex-infile */
@@ -388,8 +377,7 @@ alma_in_sequence()  {
  *       Read in nbrf data.
  */
 void
-nbrf_in(fp)
-     FILE_BUFFER fp;
+nbrf_in(FILE_BUFFER fp)
 {
     int length, index, reach_end;
     char    line[LINENUM], temp[TOKENNUM], *eof;
@@ -444,8 +432,7 @@ nbrf_in(fp)
  *       Read in one data entry in UWGCG format.
  */
 void
-gcg_in(fp)
-     FILE_BUFFER    fp;
+gcg_in(FILE_BUFFER fp)
 {
     char line[LINENUM];
 
@@ -462,8 +449,7 @@ gcg_in(fp)
  *       Read in sequence data in STADEN format.
  */
 void
-staden_in(fp)
-     FILE_BUFFER fp;
+staden_in(FILE_BUFFER fp)
 {
     char    line[LINENUM];
     int len, start, indi;
@@ -493,7 +479,7 @@ staden_in(fp)
  *       Convert one ALMA entry to Macke entry.
  */
 int
-atom()
+atom(void)
 {
     /*  int indi, len; */
     /*  char    *Dupstr(), *Reallocspace(); */
@@ -524,8 +510,7 @@ atom()
  *       Convert from EMBL to ALMA.
  */
 void
-embl_to_alma(inf, outf)
-     char   *inf, *outf;
+embl_to_alma(char *inf, char *outf)
 {
     FILE        *IFP, *ofp;
     FILE_BUFFER  ifp;
@@ -573,8 +558,7 @@ embl_to_alma(inf, outf)
  *       Convert from GenBank to ALMA.
  */
 void
-genbank_to_alma(inf, outf)
-     char   *inf, *outf;
+genbank_to_alma(char *inf, char *outf)
 {
     FILE        *IFP, *ofp;
     FILE_BUFFER  ifp;
@@ -626,8 +610,7 @@ genbank_to_alma(inf, outf)
  *       Convert from MACKE to ALMA.
  */
 void
-macke_to_alma(inf, outf)
-     char   *inf, *outf;
+macke_to_alma(char *inf, char *outf)
 {
     FILE        *IFP1, *IFP2, *IFP3, *ofp;
     FILE_BUFFER  ifp1, ifp2, ifp3;
@@ -688,7 +671,7 @@ macke_to_alma(inf, outf)
  *       Convert from EMBL to ALMA format.
  */
 int
-etoa()
+etoa(void)
 {
     char    temp[TOKENNUM], t1[TOKENNUM], t2[TOKENNUM], t3[TOKENNUM];
     /*  char    *Dupstr(), *Catstr(); */
@@ -716,8 +699,7 @@ etoa()
  *       Output alma format header.
  */
 void
-alma_out_header(fp)
-     FILE    *fp;
+alma_out_header(FILE *fp)
 {
     fprintf(fp, "SCREEN WIDTH>   80\n");
     fprintf(fp, "ID COLUMN>    1\n");
@@ -788,9 +770,7 @@ alma_out_header(fp)
  *       Output one alma entry.
  */
 FILE *
-alma_out(fp, format)
-     FILE   *fp;
-     int    format;
+alma_out(FILE *fp, int format)
 {
     int   indi, len;
     char  filename[TOKENNUM];
@@ -811,10 +791,7 @@ alma_out(fp, format)
  *      Output one ALMA entry header.
  */
 FILE *
-alma_out_entry_header(fp, entry_id, filename, format_type)
-     FILE    *fp;
-     char    *entry_id, *filename;
-     int format_type;
+alma_out_entry_header(FILE *fp, char *entry_id, char *filename, int format_type)
 {
     char  temp[TOKENNUM];
     FILE *outfile = 0;
@@ -856,8 +833,7 @@ alma_out_entry_header(fp, entry_id, filename, format_type)
  *       Output gaps information of one ALMA entry.
  */
 void
-alma_out_gaps(fp)
-     FILE    *fp;
+alma_out_gaps(FILE *fp)
 {
     int indi, index, residue, gnum, rnum, tempcount;
 

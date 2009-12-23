@@ -14,7 +14,7 @@ extern int  warning_out;
  *  Function init_genbank().
  *  Initialize genbank entry.
  */
-void init_genbank() {
+void init_genbank(void) {
 
     /*  void    Freespace(); */
     /*  char    *Dupstr(); */
@@ -72,8 +72,7 @@ void init_genbank() {
  *  Function genbank_in().
  *      Read in one genbank entry.
  */
-char genbank_in(fp)
-     FILE_BUFFER fp;
+char genbank_in(FILE_BUFFER fp)
 {
     char        line[LINENUM], key[TOKENNUM] /*, temp[LINENUM]*/;
     const char *eof;
@@ -159,11 +158,7 @@ char genbank_in(fp)
  *  Function genbank_key_word().
  *      Get the key_word from line beginning at index.
  */
-void genbank_key_word(line, index, key, length)
-     char *line;
-     int   index;
-     char *key;
-     int   length;
+void genbank_key_word(char *line, int index, char *key, int length)
 {
     int indi, indj;
 
@@ -182,11 +177,7 @@ void genbank_key_word(line, index, key, length)
  *      Get the subkey_word in comment lines beginning
  *          at index.
  */
-int genbank_comment_subkey_word(line, index, key, length)
-     char *line;
-     int   index;
-     char *key;
-     int   length;
+int genbank_comment_subkey_word(char *line, int index, char *key, int length)
 {
     int indi, indj;
 
@@ -209,9 +200,7 @@ int genbank_comment_subkey_word(line, index, key, length)
  *      Check if there is (numb) of blanks at beginning
  *          of line.
  */
-int genbank_check_blanks(line, numb)
-     char *line;
-     int   numb;
+int genbank_check_blanks(char *line, int numb)
 {
     int blank=1, indi, indk;
 
@@ -230,10 +219,8 @@ int genbank_check_blanks(line, numb)
  *          of line, it is a continue line of the
  *          current command.
  */
-char *genbank_continue_line(string, line, numb, fp)
-     char **string, *line;
-     int    numb;               /* number of blanks needed to define a continue line */
-     FILE_BUFFER  fp;
+char *genbank_continue_line(char **string, char *line, int numb, FILE_BUFFER fp)
+/* numb = number of blanks needed to define a continue line */
 {
     int ind;
     /*  int Lenstr(); */
@@ -261,9 +248,7 @@ char *genbank_continue_line(string, line, numb, fp)
  *  Function genbank_one_entry_in().
  *      Read in genbank one entry lines.
  */
-char *genbank_one_entry_in(datastring, line, fp)
-     char **datastring, *line;
-     FILE_BUFFER  fp;
+char *genbank_one_entry_in(char **datastring, char *line, FILE_BUFFER fp)
 {
     int index;
     /*  int Skip_white_space(), Lenstr(); */
@@ -282,10 +267,7 @@ char *genbank_one_entry_in(datastring, line, fp)
  *  Function genbank_one_comment_entry().
  *      Read in one genbank sub-entry in comments lines.
  */
-char *genbank_one_comment_entry(datastring, line, start_index, fp)
-     char **datastring, *line;
-     int    start_index;
-     FILE_BUFFER  fp;
+char *genbank_one_comment_entry(char **datastring, char *line, int start_index, FILE_BUFFER fp)
 {
     int index;
     /*  int Skip_white_space(), Lenstr(); */
@@ -304,9 +286,7 @@ char *genbank_one_comment_entry(datastring, line, start_index, fp)
  *      Read in genbank SOURCE lines and also ORGANISM
  *          lines.
  */
-char *genbank_source(line, fp)
-     char *line;
-     FILE_BUFFER fp;
+char *genbank_source(char *line, FILE_BUFFER fp)
 {
     int     index;
     /*      int     Skip_white_space(); */
@@ -331,9 +311,7 @@ char *genbank_source(line, fp)
  *  Function genbank_reference().
  *      Read in genbank REFERENCE lines.
  */
-char *genbank_reference(line, fp)
-     char *line;
-     FILE_BUFFER fp;
+char *genbank_reference(char *line, FILE_BUFFER fp)
 {
 #define AUTH    0
 #define TIT 1
@@ -440,9 +418,7 @@ char *genbank_reference(line, fp)
  *  Function genbank_comments().
  *      Read in genbank COMMENTS lines.
  */
-const char *genbank_comments(line, fp)
-     char *line;
-     FILE_BUFFER fp;
+const char *genbank_comments(char *line, FILE_BUFFER fp)
 {
     int index, indi, ptr/*, genbank_check_blanks()*/;
     /*  int Lenstr(), Skip_white_space(); */
@@ -556,9 +532,7 @@ const char *genbank_comments(line, fp)
  *       Read in genbank sequence data.
  */
 char
-*genbank_origin(line, fp)
-     char   *line;
-     FILE_BUFFER    fp;
+*genbank_origin(char *line, FILE_BUFFER fp)
 {
     char    *eof;
     int index;
@@ -601,10 +575,7 @@ char
  *      Skip the lines of unidentified keyword.
  */
 char
-*genbank_skip_unidentified(line, fp, blank_num)
-     char        *line;
-     FILE_BUFFER  fp;
-     int    blank_num;
+*genbank_skip_unidentified(char *line, FILE_BUFFER fp, int blank_num)
 {
     char    *eof;
     /*  int genbank_check_blanks(); */
@@ -620,7 +591,7 @@ char
  *       Verify accession information.
  */
 void
-genbank_verify_accession()
+genbank_verify_accession(void)
 {
     int   indi, /*index,*/ len, count, remainder;
     char  temp[LONGTEXT];
@@ -692,7 +663,7 @@ genbank_verify_accession()
  *       Verify keywords.
  */
 void
-genbank_verify_keywords()   {
+genbank_verify_keywords(void) {
 
     int indi, count, len;
     /*  void    Append_char(), warning(); */
@@ -717,8 +688,7 @@ genbank_verify_keywords()   {
  *       information instead of whole records).
  */
 char
-genbank_in_locus(fp)
-     FILE_BUFFER fp;
+genbank_in_locus(FILE_BUFFER fp)
 {
     char    line[LINENUM], key[TOKENNUM];
     char    *eof, eoen;
@@ -749,8 +719,7 @@ genbank_in_locus(fp)
  *       Output in a genbank format.
  */
 void
-genbank_out(fp)
-     FILE    *fp;
+genbank_out(FILE *fp)
 {
     int indi, /*indj, indk,*/ length;
     int base_a, base_t, base_g, base_c, base_other;
@@ -939,13 +908,7 @@ genbank_out(fp)
  *      otherwise print key and "No information" w/wo
  *      period at the end depending on flag period.
  */
-void genbank_out_one_entry(fp, string, key, flag, patterns, period)
-     FILE       *fp;
-     char       *string;
-     const char *key;
-     int         flag;
-     const char *patterns;
-     int         period;
+void genbank_out_one_entry(FILE *fp, char *string, const char *key, int flag, const char *patterns, int period)
 {
     /*  int Lenstr(); */
     /*  void    genbank_print_lines(); */
@@ -961,11 +924,9 @@ void genbank_out_one_entry(fp, string, key, flag, patterns, period)
  *  Function genbank_out_one_comment().
  *      print out one genbank comment sub-keyword.
  */
-void genbank_out_one_comment(fp, string, key, skindent, cnindent)
-     FILE *fp;
-     char *string;
-     const char *key;
-     int   skindent, cnindent;  /* subkeyword indent and  continue line indent */
+void genbank_out_one_comment(FILE *fp, char *string, const char *key, int skindent, int cnindent)
+/* skindent = subkeyword indent */
+/* cnindent = continue line indent */
 {
     /*  int Lenstr(); */
     /*  void    genbank_print_comment(); */
@@ -978,11 +939,7 @@ void genbank_out_one_comment(fp, string, key, skindent, cnindent)
  *      Print one genbank line, wrap around if over
  *          column 80.
  */
-void genbank_print_lines(fp, string, flag, separators)
-     FILE       *fp;
-     char       *string;
-     int         flag;
-     const char *separators;
+void genbank_print_lines(FILE *fp, char *string, int flag, const char *separators)
 {
     int first_time=1, indi, indj, indk /*,indl*/;
     int ibuf, len;
@@ -1001,7 +958,7 @@ void genbank_print_lines(fp, string, flag, separators)
             for(;indj>0
                     &&((!flag&&!last_word(string[indj+indi]))
                        ||(flag&&!is_separator(string[indj+indi], separators)));
-                indj--);
+                indj--) ;
 
             if(indj==0) indj=ibuf;
             else if(string[indi+indj+1]==' ') indj++;
@@ -1030,11 +987,7 @@ void genbank_print_lines(fp, string, flag, separators)
  *      Print one genbank line, wrap around if over
  *          column 80.
  */
-void genbank_print_comment(fp, key, string, offset, indent)
-     FILE       *fp;
-     char       *string;
-     const char *key;
-     int         offset, indent;
+void genbank_print_comment(FILE *fp, const char *key, char *string, int offset, int indent)
 {
     int first_time=1, indi, indj, indk, indl;
     int len;
@@ -1084,8 +1037,7 @@ void genbank_print_comment(fp, key, string, offset, indent)
  *       Output sequence data in genbank format.
  */
 void
-genbank_out_origin(fp)
-     FILE    *fp;
+genbank_out_origin(FILE *fp)
 {
 
     int indi, indj, indk;
@@ -1113,8 +1065,7 @@ genbank_out_origin(fp)
  *       Convert from genbank to genbank.
  */
 void
-genbank_to_genbank(inf, outf)
-     char   *inf, *outf;
+genbank_to_genbank(char *inf, char *outf)
 {
     FILE        *IFP, *ofp;
     FILE_BUFFER  ifp;
@@ -1153,9 +1104,7 @@ genbank_to_genbank(inf, outf)
  *       Init. new reference record(init. value is "\n").
  */
 void
-init_reference(ref, flag)
-     Reference *ref;
-     int flag;
+init_reference(Reference *ref, int flag)
 {
     /*  char    *Dupstr(); */
 

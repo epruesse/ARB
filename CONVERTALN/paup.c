@@ -6,7 +6,7 @@
  *   Function init_paup().
  *       Init. paup data.
  */
-void init_paup() {
+void init_paup(void) {
     free_sequence_data(data.paup.ntax);
     data.paup.ntax = 0;
     data.paup.nchar = 0;
@@ -16,9 +16,7 @@ void init_paup() {
  *       Convert from some format to PAUP format.
  */
 void
-to_paup(inf, outf, informat)
-     char   *inf, *outf;
-     int    informat;
+to_paup(char *inf, char *outf, int informat)
 {
     FILE        *IFP, *ofp;
     FILE_BUFFER  ifp;
@@ -143,9 +141,7 @@ to_paup(inf, outf, informat)
  *           one seq by one seq.
  */
 void
-to_paup_1x1(inf, outf, informat)
-     char   *inf, *outf;
-     int    informat;
+to_paup_1x1(char *inf, char *outf, int informat)
 {
     FILE        *IFP, *ofp;
     FILE_BUFFER  ifp;
@@ -254,8 +250,7 @@ to_paup_1x1(inf, outf, informat)
  *       Verify short_id in PAUP format.
  */
 void
-paup_verify_name(string)
-     char    **string;
+paup_verify_name(char **string)
 {
     int indi, len, index;
     char    temp[TOKENNUM];
@@ -290,11 +285,7 @@ paup_verify_name(string)
  *      print paup file.
  */
 void
-paup_print_line(string, sequence, seq_length, index, first_line, fp)
-     char *string, *sequence;
-     int   seq_length;
-     int   index, first_line;
-     FILE *fp;
+paup_print_line(char *string, char *sequence, int seq_length, int index, int first_line, FILE *fp)
 {
     int indi, indj, length;
 
@@ -332,8 +323,7 @@ paup_print_line(string, sequence, seq_length, index, first_line, fp)
  *       Print out the header of each paup format.
  */
 void
-paup_print_header(ofp)
-     FILE    *ofp;
+paup_print_header(FILE *ofp)
 {
     char    *today;
 

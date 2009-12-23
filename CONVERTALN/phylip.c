@@ -5,22 +5,20 @@
 #include <assert.h>
 #include <errno.h>
 
-
 /* ---------------------------------------------------------------
  *   Function init_phylip().
  *       Initialize genbank entry.
  */
-void init_phylip()  {
+void init_phylip(void) {
 
 }
+
+
 /* ---------------------------------------------------------------
  *  Function to_phylip()
  *      Convert from some format to PHYLIP format.
  */
-void to_phylip(inf, outf, informat,readstdin)
-     char *inf, *outf;
-     int   informat;
-     int   readstdin;
+void to_phylip(char *inf, char *outf, int informat, int readstdin)
 {
     FILE        *IFP, *ofp;
     FILE_BUFFER  ifp;
@@ -147,9 +145,7 @@ void to_phylip(inf, outf, informat,readstdin)
  *       Convert from one format to PHYLIP format, one seq by one seq.
  */
 void
-to_phylip_1x1(inf, outf, informat)
-     char   *inf, *outf;
-     int    informat;
+to_phylip_1x1(char *inf, char *outf, int informat)
 {
     FILE        *IFP, *ofp;
     FILE_BUFFER  ifp;
@@ -225,11 +221,7 @@ to_phylip_1x1(inf, outf, informat)
  *      Print phylip line.
  */
 void
-phylip_print_line(name, sequence, seq_length, index, fp)
-     char *name, *sequence;
-     int   seq_length;
-     int    index;
-     FILE   *fp;
+phylip_print_line(char *name, char *sequence, int seq_length, int index, FILE *fp)
 {
     int indi, indj, length, bnum;
 
@@ -263,3 +255,6 @@ phylip_print_line(name, sequence, seq_length, index, fp)
     }
     fprintf(fp, "\n");
 }
+
+
+
