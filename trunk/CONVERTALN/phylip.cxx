@@ -9,7 +9,8 @@
  *   Function init_phylip().
  *       Initialize genbank entry.
  */
-void init_phylip(void) {
+void init_phylip(void)
+{
 
 }
 
@@ -20,24 +21,29 @@ void init_phylip(void) {
  */
 void to_phylip(char *inf, char *outf, int informat, int readstdin)
 {
-    FILE        *IFP, *ofp;
-    FILE_BUFFER  ifp;
-    int          maxsize, current, total_seq;
-    int          out_of_memory, indi;
-    char         temp[TOKENNUM], eof;
-    char        *name;
+    FILE *IFP, *ofp;
 
-    if((IFP=fopen(inf, "r"))==NULL) {
+    FILE_BUFFER ifp;
+
+    int maxsize, current, total_seq;
+
+    int out_of_memory, indi;
+
+    char temp[TOKENNUM], eof;
+
+    char *name;
+
+    if ((IFP = fopen(inf, "r")) == NULL) {
         sprintf(temp, "Cannot open input file %s, exit\n", inf);
         error(64, temp);
     }
-    ifp              = create_FILE_BUFFER(inf, IFP);
-    if(Lenstr(outf) <= 0) {
+    ifp = create_FILE_BUFFER(inf, IFP);
+    if (Lenstr(outf) <= 0) {
         ofp = stdout;
-        assert(0); // can't use stdout (because rewind is used below)
+        assert(0);              // can't use stdout (because rewind is used below)
         error(140, "Cannot write to standard output, EXIT\n");
     }
-    else if((ofp=fopen(outf, "w"))==NULL)   {
+    else if ((ofp = fopen(outf, "w")) == NULL) {
         sprintf(temp, "Cannot open output file %s, exit\n", outf);
         error(117, temp);
     }
@@ -47,74 +53,100 @@ void to_phylip(char *inf, char *outf, int informat, int readstdin)
     init();
     init_phylip();
     total_seq = 0;
-    do  {
-        if(informat==ALMA)  {
+    do {
+        if (informat == ALMA) {
             init_alma();
-            eof=alma_in(ifp);
-        } else if(informat==GENBANK)    {
+            eof = alma_in(ifp);
+        }
+        else if (informat == GENBANK) {
             init_genbank();
-            eof=genbank_in_locus(ifp);
-        } else if(informat==EMBL||informat==PROTEIN)    {
+            eof = genbank_in_locus(ifp);
+        }
+        else if (informat == EMBL || informat == PROTEIN) {
             init_embl();
-            eof=embl_in_id(ifp);
-        } else if(informat==MACKE)  {
+            eof = embl_in_id(ifp);
+        }
+        else if (informat == MACKE) {
             init_macke();
-            eof=macke_in_name(ifp);
-        } else error(34, "UNKNOWN input format when converting to PHYLIP format.");
-        if(eof==EOF) break;
-        if(informat==ALMA)  {
+            eof = macke_in_name(ifp);
+        }
+        else
+            error(34, "UNKNOWN input format when converting to PHYLIP format.");
+        if (eof == EOF)
+            break;
+        if (informat == ALMA) {
             alma_key_word(data.alma.id, 0, temp, TOKENNUM);
-        } else if(informat==GENBANK)    {
+        }
+        else if (informat == GENBANK) {
             genbank_key_word(data.gbk.locus, 0, temp, TOKENNUM);
-        } else if(informat==EMBL||informat==PROTEIN)    {
+        }
+        else if (informat == EMBL || informat == PROTEIN) {
             embl_key_word(data.embl.id, 0, temp, TOKENNUM);
-        } else if(informat==MACKE)  {
+        }
+        else if (informat == MACKE) {
             Cpystr(temp, data.macke.seqabbr);
-        } else error(119, "UNKNOWN input format when converting to PHYLIP format.");
+        }
+        else
+            error(119, "UNKNOWN input format when converting to PHYLIP format.");
         total_seq++;
 
-        if((name = Dupstr(temp))==NULL&&temp!=NULL) { out_of_memory=1; break; }
-        if(data.seq_length>maxsize) maxsize = data.seq_length;
+        if ((name = Dupstr(temp)) == NULL && temp != NULL) {
+            out_of_memory = 1;
+            break;
+        }
+        if (data.seq_length > maxsize)
+            maxsize = data.seq_length;
 
-        if (!realloc_sequence_data(total_seq)) { out_of_memory = 1; break; }
+        if (!realloc_sequence_data(total_seq)) {
+            out_of_memory = 1;
+            break;
+        }
 
-        data.ids[total_seq-1]     = name;
-        data.seqs[total_seq-1]    = (char*)Dupstr(data.sequence);
-        data.lengths[total_seq-1] = Lenstr(data.sequence);
-    } while(!out_of_memory);
+        data.ids[total_seq - 1] = name;
+        data.seqs[total_seq - 1] = (char *)Dupstr(data.sequence);
+        data.lengths[total_seq - 1] = Lenstr(data.sequence);
+    } while (!out_of_memory);
 
-    if(out_of_memory)   {   /* cannot hold all seqs into mem. */
+    if (out_of_memory) {        /* cannot hold all seqs into mem. */
         fprintf(stderr, "Out of memory: Rerun the conversion sequence by sequence.\n");
-        destroy_FILE_BUFFER(ifp); fclose(ofp);
+        destroy_FILE_BUFFER(ifp);
+        fclose(ofp);
         to_phylip_1x1(inf, outf, informat);
         return;
     }
-    current         = 0;
+    current = 0;
     int headersize1 = fprintf(ofp, "%8d %8d", maxsize, current);
-    if (readstdin){
+
+    if (readstdin) {
         int c;
+
         int spaced = 0;
+
         while (1) {
             c = getchar();
-            if (c == EOF) break; /* read all from stdin now (not only one line)*/
+            if (c == EOF)
+                break;          /* read all from stdin now (not only one line) */
             /*      if (c == EOF||c=='\n') break; */
             if (!spaced) {
                 fputc(' ', ofp);
                 spaced = 1;
             }
-            fputc(c,ofp);
+            fputc(c, ofp);
         }
 
     }
-    fprintf(ofp,"\n");
+    fprintf(ofp, "\n");
 
-    while(maxsize>current)  {
-        for(indi=0; indi<total_seq; indi++) {
+    while (maxsize > current) {
+        for (indi = 0; indi < total_seq; indi++) {
             phylip_print_line(data.ids[indi], data.seqs[indi], data.lengths[indi], current, ofp);
         }
-        if(current==0) current +=(SEQLINE-10);
-        else current += SEQLINE;
-        if(maxsize>current) fprintf(ofp, "\n");
+        if (current == 0)
+            current += (SEQLINE - 10);
+        else
+            current += SEQLINE;
+        if (maxsize > current)
+            fprintf(ofp, "\n");
     }
     /* rewrite output header */
     errno = 0;
@@ -128,7 +160,8 @@ void to_phylip(char *inf, char *outf, int informat, int readstdin)
 
     int headersize2 = fprintf(ofp, "%8d %8d", total_seq, maxsize);
 
-    destroy_FILE_BUFFER(ifp); fclose(ofp);
+    destroy_FILE_BUFFER(ifp);
+    fclose(ofp);
 
     if (headersize1 != headersize2) {
         sprintf(temp, "Failed to rewrite header (headersize differs: %i != %i), EXIT\n", headersize1, headersize2);
@@ -140,121 +173,151 @@ void to_phylip(char *inf, char *outf, int informat, int readstdin)
     fprintf(stderr, "Total %d sequences have been processed\n", total_seq);
 #endif
 }
+
 /* ---------------------------------------------------------------
  *   Function to_phylip_1x1()
  *       Convert from one format to PHYLIP format, one seq by one seq.
  */
-void
-to_phylip_1x1(char *inf, char *outf, int informat)
+void to_phylip_1x1(char *inf, char *outf, int informat)
 {
-    FILE        *IFP, *ofp;
-    FILE_BUFFER  ifp;
-    int          maxsize, current, total_seq;
-    char         temp[TOKENNUM], eof;
-    char        *name;
+    FILE *IFP, *ofp;
 
-    if((IFP=fopen(inf, "r"))==NULL) {
+    FILE_BUFFER ifp;
+
+    int maxsize, current, total_seq;
+
+    char temp[TOKENNUM], eof;
+
+    char *name;
+
+    if ((IFP = fopen(inf, "r")) == NULL) {
         sprintf(temp, "Cannot open input file %s, exit\n", inf);
         error(123, temp);
     }
-    ifp              = create_FILE_BUFFER(inf, IFP);
-    if(Lenstr(outf) <= 0)   ofp = stdout;
-    else if((ofp=fopen(outf, "w"))==NULL)   {
+    ifp = create_FILE_BUFFER(inf, IFP);
+    if (Lenstr(outf) <= 0)
+        ofp = stdout;
+    else if ((ofp = fopen(outf, "w")) == NULL) {
         sprintf(temp, "Cannot open output file %s, exit\n", outf);
         error(124, temp);
     }
-    maxsize = 1; current = 0;
+    maxsize = 1;
+    current = 0;
     name = NULL;
     fprintf(ofp, "%4d %4d\n", maxsize, current);
-    while(maxsize>current)  {
+    while (maxsize > current) {
         init();
         FILE_BUFFER_rewind(ifp);
         total_seq = 0;
-        do  {   /* read in one sequence */
+        do {                    /* read in one sequence */
             init_phylip();
-            if(informat==ALMA)  {
+            if (informat == ALMA) {
                 init_alma();
-                eof=alma_in(ifp);
-            } else if(informat==GENBANK)    {
+                eof = alma_in(ifp);
+            }
+            else if (informat == GENBANK) {
                 init_genbank();
-                eof=genbank_in_locus(ifp);
-            } else if(informat==EMBL||informat==PROTEIN)    {
+                eof = genbank_in_locus(ifp);
+            }
+            else if (informat == EMBL || informat == PROTEIN) {
                 init_embl();
-                eof=embl_in_id(ifp);
-            } else if(informat==MACKE)  {
+                eof = embl_in_id(ifp);
+            }
+            else if (informat == MACKE) {
                 init_macke();
-                eof=macke_in_name(ifp);
-            } else error(128, "UNKNOWN input format when converting to PHYLIP format.");
-            if(eof==EOF) break;
-            if(informat==ALMA)  {
+                eof = macke_in_name(ifp);
+            }
+            else
+                error(128, "UNKNOWN input format when converting to PHYLIP format.");
+            if (eof == EOF)
+                break;
+            if (informat == ALMA) {
                 alma_key_word(data.alma.id, 0, temp, TOKENNUM);
-            } else if(informat==GENBANK)    {
+            }
+            else if (informat == GENBANK) {
                 genbank_key_word(data.gbk.locus, 0, temp, TOKENNUM);
-            } else if(informat==EMBL||informat==PROTEIN)    {
+            }
+            else if (informat == EMBL || informat == PROTEIN) {
                 embl_key_word(data.embl.id, 0, temp, TOKENNUM);
-            } else if(informat==MACKE)  {
+            }
+            else if (informat == MACKE) {
                 macke_key_word(data.macke.name, 0, temp, TOKENNUM);
-            } else error(130, "UNKNOWN input format when converting to PHYLIP format.");
+            }
+            else
+                error(130, "UNKNOWN input format when converting to PHYLIP format.");
             Freespace(&name);
             name = Dupstr(temp);
-            if(data.seq_length>maxsize) maxsize = data.seq_length;
+            if (data.seq_length > maxsize)
+                maxsize = data.seq_length;
             phylip_print_line(name, data.sequence, 0, current, ofp);
             total_seq++;
-        } while(1);
-        if(current==0)  current += (SEQLINE-10);
-        else current += SEQLINE;
-        if(maxsize>current) fprintf(ofp, "\n");
-    }   /* print block by block */
+        } while (1);
+        if (current == 0)
+            current += (SEQLINE - 10);
+        else
+            current += SEQLINE;
+        if (maxsize > current)
+            fprintf(ofp, "\n");
+    }                           /* print block by block */
 
     rewind(ofp);
     fprintf(ofp, "%4d %4d", total_seq, maxsize);
 
-    destroy_FILE_BUFFER(ifp); fclose(ofp);
+    destroy_FILE_BUFFER(ifp);
+    fclose(ofp);
 
 #ifdef log
     fprintf(stderr, "Total %d sequences have been processed\n", total_seq);
 #endif
 
 }
+
 /* --------------------------------------------------------------
  *  Function phylip_print_line().
  *      Print phylip line.
  */
-void
-phylip_print_line(char *name, char *sequence, int seq_length, int index, FILE *fp)
+void phylip_print_line(char *name, char *sequence, int seq_length, int index, FILE * fp)
 {
     int indi, indj, length, bnum;
 
-    if(index==0)    {
-        if(Lenstr(name)>10) {
+    if (index == 0) {
+        if (Lenstr(name) > 10) {
             /* truncate id length of seq ID is greater than 10 */
-            for(indi=0; indi<10; indi++) fputc(name[indi], fp);
+            for (indi = 0; indi < 10; indi++)
+                fputc(name[indi], fp);
             bnum = 1;
-        } else  {
+        }
+        else {
             fprintf(fp, "%s", name);
-            bnum = 10 - Lenstr(name)+1;
+            bnum = 10 - Lenstr(name) + 1;
         }
         /* fill in blanks to make up 10 chars for ID. */
-        for(indi=0; indi<bnum; indi++) fputc(' ', fp);
+        for (indi = 0; indi < bnum; indi++)
+            fputc(' ', fp);
         length = SEQLINE - 10;
-    } else if(index>=data.seq_length) length = 0;
-    else length = SEQLINE;
+    }
+    else if (index >= data.seq_length)
+        length = 0;
+    else
+        length = SEQLINE;
 
-    if (seq_length == 0) seq_length = Lenstr(sequence);
-    for(indi=indj=0; indi<length; indi++) {
-        if((index+indi)<seq_length) {
-            char c= sequence[index+indi];
-            if (c=='.') c= '?';
-            fputc(c,fp);
+    if (seq_length == 0)
+        seq_length = Lenstr(sequence);
+    for (indi = indj = 0; indi < length; indi++) {
+        if ((index + indi) < seq_length) {
+            char c = sequence[index + indi];
+
+            if (c == '.')
+                c = '?';
+            fputc(c, fp);
             indj++;
-            if(indj==10 && (index+indi)<(seq_length-1) && indi<(length-1)) {
+            if (indj == 10 && (index + indi) < (seq_length - 1) && indi < (length - 1)) {
                 fputc(' ', fp);
-                indj=0;
+                indj = 0;
             }
-        } else break;
+        }
+        else
+            break;
     }
     fprintf(fp, "\n");
 }
-
-
-
