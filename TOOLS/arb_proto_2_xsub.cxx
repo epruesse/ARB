@@ -456,7 +456,7 @@ public:
         while (last[0] == ' ') --last;
 
         const char *name_start = last;
-        while (is_ID_char(name_start[0])) --name_start;
+        while (name_start >= code && is_ID_char(name_start[0])) --name_start;
         name_start++;
 
         if (name_start>code) {
