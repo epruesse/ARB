@@ -250,7 +250,7 @@ unsigned char GB_BIT_compress_data[] = {
     0
 };
 
-void gb_init_gb(void) {
+void GB_init_gb(void) {
     if (!gb_local) {
         gb_local = (struct gb_local_data *)gbm_get_mem(sizeof(struct gb_local_data),0);
 
