@@ -333,7 +333,7 @@ void concatenateAlignments(AW_window *aws) {
 
     if (!error) { /// handle error
         GBDATA *gb_presets          = GB_search(GLOBAL_gb_main, "presets", GB_CREATE_CONTAINER);
-        GBDATA *gb_alignment_exists = GB_find_string(gb_presets, "alignment_name", new_ali_name, GB_IGNORE_CASE, down_2_level);
+        GBDATA *gb_alignment_exists = GB_find_string(gb_presets, "alignment_name", new_ali_name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
         GBDATA *gb_new_alignment    = 0;
         char   *seq_type            = aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->read_string();
 

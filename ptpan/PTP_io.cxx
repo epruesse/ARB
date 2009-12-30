@@ -669,7 +669,7 @@ BOOL OpenDataBase(struct PTPanGlobal *pg)
   }
   GB_begin_transaction(pg->pg_MainDB);
   /* open the species data */
-  if(!(pg->pg_SpeciesData = GB_find(pg->pg_MainDB, "species_data", down_level)))
+  if(!(pg->pg_SpeciesData = GB_find(pg->pg_MainDB, "species_data", SEARCH_CHILD)))
   {
     printf("Database %s is empty\n", pg->pg_DBName);
     return(FALSE);
@@ -865,7 +865,7 @@ BOOL LoadSpecies(struct PTPanGlobal *pg)
     STRPTR spname;
 
     /* get name */
-    gb_name = GB_find(gb_species, "name", down_level);
+    gb_name = GB_find(gb_species, "name", SEARCH_CHILD);
     if(!gb_name)
     {
       ignorecount++;
@@ -874,14 +874,14 @@ BOOL LoadSpecies(struct PTPanGlobal *pg)
     spname = GB_read_string(gb_name);
 
     /* get alignments */
-    gb_ali = GB_find(gb_species, pg->pg_AlignmentName, down_level);
+    gb_ali = GB_find(gb_species, pg->pg_AlignmentName, SEARCH_CHILD);
     if(!gb_ali)
     {
       ignorecount++;
       free(spname);
       continue; /* too bad, no alignment information found */
     }
-    gb_data = GB_find(gb_ali, "data", down_level);
+    gb_data = GB_find(gb_ali, "data", SEARCH_CHILD);
     if(!gb_data)
     {
       ignorecount++;
@@ -899,7 +899,7 @@ BOOL LoadSpecies(struct PTPanGlobal *pg)
     ps->ps_SeqDataDB = gb_data;
     ps->ps_IsGroup = TRUE;
     ps->ps_Name = spname;
-    gb_name = GB_find(gb_species, "full_name", down_level);
+    gb_name = GB_find(gb_species, "full_name", SEARCH_CHILD);
     if(gb_name)
     {
       ps->ps_FullName = GB_read_string(gb_name);

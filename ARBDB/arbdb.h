@@ -14,6 +14,10 @@
 #endif
 #define gb_assert(bed) arb_assert(bed)
 
+#ifndef __cplusplus
+#error please compile as C++
+#endif
+
 #define NOT4PERL
 /* function definitions starting with NOT4PERL are not included into the ARB-perl-interface */
 
@@ -108,7 +112,7 @@ typedef enum {
     GB_UNDO_UNDO_REDO   /* internal makes undo redoable */
 }   GB_UNDO_TYPE;
 
-typedef enum { GB_IGNORE_CASE = 0 , GB_MIND_CASE = 1, GB_CASE_UNDEFINED = 2 } GB_CASE;
+enum GB_CASE { GB_IGNORE_CASE = 0 , GB_MIND_CASE = 1, GB_CASE_UNDEFINED = 2 };
 
 struct gb_transaction_save;
 
@@ -118,13 +122,13 @@ struct gb_transaction_save;
 
 typedef int GB_COMPRESSION_MASK;
 
-typedef enum gb_key_types {
+enum GB_TYPES {
     GB_NONE        = 0,
     GB_BIT         = 1,
     GB_BYTE        = 2,
     GB_INT         = 3,
     GB_FLOAT       = 4,
-    GB_POINTER     = 5, // not savable! only allowed in temporary entries
+    GB_POINTER     = 5,                             // not savable! only allowed in temporary entries
     GB_BITS        = 6,
     // 7 is unused
     GB_BYTES       = 8,
@@ -138,24 +142,24 @@ typedef enum gb_key_types {
 
     // keep GB_TYPES consistent with AW_VARIABLE_TYPE
     // see ../WINDOW/aw_root.hxx@sync_GB_TYPES_AW_VARIABLE_TYPE
-    
-    GB_TYPE_MAX = 16
 
-} GB_TYPES;
+    GB_TYPE_MAX = 16,
 
-enum gb_search_enum {
-    GB_FIND = 0,
-    GB_CREATE_CONTAINER = GB_DB /* create other types: use GB_TYPES */
+    GB_CREATE_CONTAINER = GB_DB,
+    GB_FIND             = GB_NONE,
+
 };
 
 #define GB_TYPE_2_CHAR "-bcif-B-CIFlSS-%"
 
-enum gb_search_types {
-    this_level = 1,
-    down_level = 2,
-    down_2_level = 4,
-    search_next = 8 /* search after item : this_level,down_level*/
+enum GB_SEARCH_TYPE {
+    SEARCH_BROTHER       = 1,                       // [was: this_level]
+    SEARCH_CHILD         = 2,                       // [was: down_level]
+    SEARCH_GRANDCHILD    = 4,                       // [was: down_2_level]
+    SEARCH_NEXT_BROTHER  = SEARCH_BROTHER+8,        // [was: this_level|search_next]
+    SEARCH_CHILD_OF_NEXT = SEARCH_CHILD+8,          // [was: down_level|search_next]
 };
+
 /********************* public end ******************/
 
 /********************* client/server ******************/
@@ -226,57 +230,25 @@ typedef enum
 
 /*********** Sort ***********/
 
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-    typedef long (*GB_MERGE_SORT)(void *, void *, char *cd);
-    /*#define GB_MERGE_SORT long (*)(void *, void *, char *cd )*/
-
-#ifdef __cplusplus
-}
-#endif
+typedef long (*GB_MERGE_SORT)(void *, void *, char *cd);
 
 struct GBL_command_table;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-    typedef GBDATA* (*GB_Link_Follower)(GBDATA *GB_root,GBDATA *GB_elem,const char *link);
-    typedef int (*gbs_hash_compare_function) (const char *key0, long val0, const char *key1, long val1);
-    typedef int (*gb_compare_function)(const void *p0, const void *p1, void *client_data);
-    typedef long (*gb_hash_loop_type)(const char *key, long val, void *client_data);
-    typedef void (*gb_warning_func_type)(const char *msg);
-    typedef void (*gb_information_func_type)(const char *msg);
-    typedef int (*gb_status_func_type)(double val);
-    typedef int (*gb_status_func2_type)(const char *val);
-    typedef void (*gb_error_handler_type)(const char *msg);
-    typedef const char* (*gb_export_sequence_cb)(GBDATA *gb_species, size_t *seq_len, GB_ERROR *error);
-
-#ifdef __cplusplus
-}
-#endif
-
-#if defined(__GNUG__) || defined(__cplusplus)
-extern "C" {
-#endif
-
-# define P_(s) s
+typedef GBDATA* (*GB_Link_Follower)(GBDATA *GB_root,GBDATA *GB_elem,const char *link);
+typedef int (*gbs_hash_compare_function) (const char *key0, long val0, const char *key1, long val1);
+typedef int (*gb_compare_function)(const void *p0, const void *p1, void *client_data);
+typedef long (*gb_hash_loop_type)(const char *key, long val, void *client_data);
+typedef void (*gb_warning_func_type)(const char *msg);
+typedef void (*gb_information_func_type)(const char *msg);
+typedef int (*gb_status_func_type)(double val);
+typedef int (*gb_status_func2_type)(const char *val);
+typedef void (*gb_error_handler_type)(const char *msg);
+typedef const char* (*gb_export_sequence_cb)(GBDATA *gb_species, size_t *seq_len, GB_ERROR *error);
 
 #include <ad_prot.h>
 #ifdef ADLOCAL_H
 #include <ad_lpro.h>
 #endif /*ADLOCAL_H*/
-
-#undef P_
-
-#if defined(__GNUG__) || defined(__cplusplus)
-}
-#endif
-
-#ifdef __cplusplus
 
 #ifndef ARBTOOLS_H
 #include <arbtools.h>
@@ -321,8 +293,6 @@ inline ARB_ERROR GB_end_transaction(GBDATA *gbd, ARB_ERROR& error) {
     return GB_end_transaction(gbd, error.deliver());
 }
 // --------------------------------------------------------------------------------
-
-#endif /*__cplusplus*/
 
 #define GB_INLINE inline
 

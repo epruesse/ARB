@@ -10,9 +10,9 @@
 
 #define VERBOSE 0
 
-static const char *actType = "none";
-static void *actData = NULL;
-static int  actQuark = 0;
+static const char *actType  = "none";
+static void       *actData  = NULL;
+static GBQUARK     actQuark = 0;
 
 void err_hook() {
     int x=2;
@@ -31,7 +31,7 @@ void err_hook() {
 #define errGBD(gbd,quark,mess) err(gbd,quark,"GBDATA",mess)
 #define errGBC(gbc,quark,mess) err(gbc,quark,"GBCONTAINER",mess)
 
-void testData(GB_MAIN_TYPE *Main, GBDATA *gbd, long server_id, int key_quark)
+void testData(GB_MAIN_TYPE *Main, GBDATA *gbd, long server_id, GBQUARK key_quark)
 {
     int err = 0;
 
@@ -42,14 +42,15 @@ void testData(GB_MAIN_TYPE *Main, GBDATA *gbd, long server_id, int key_quark)
     if (gbd->server_id != server_id) errGBD(gbd, key_quark, "illegal server id");
 }
 
-void testContainer(GB_MAIN_TYPE *Main,GBCONTAINER *gbc, long server_id, int key_quark)
+void testContainer(GB_MAIN_TYPE *Main,GBCONTAINER *gbc, long server_id, GBQUARK key_quark)
 {
     struct gb_header_list_struct *header;
-    int     item,
-        err=0;
-    const char  *oldType   = actType;
-    void    *oldData  = actData;
-    int     oldQuark  = actQuark;
+
+    int         item;
+    int         err      = 0;
+    const char *oldType  = actType;
+    void       *oldData  = actData;
+    GBQUARK     oldQuark = actQuark;
 
 #if (VERBOSE>=1)
     printf("Teste (GBCONTAINER*)0x%p (=%s)\n", gbc, Main->keys[key_quark].key);
@@ -64,9 +65,10 @@ void testContainer(GB_MAIN_TYPE *Main,GBCONTAINER *gbc, long server_id, int key_
 
     header = GB_DATA_LIST_HEADER(gbc->d);
     for (item=0; item<gbc->d.nheader; item++) {
-        GBDATA *gbd = GB_HEADER_LIST_GBD(header[item]);
+        GBDATA      *gbd   = GB_HEADER_LIST_GBD(header[item]);
         GBCONTAINER *father;
-        int     type, quark = header[item].flags.key_quark;
+        int          type;
+        GBQUARK      quark = header[item].flags.key_quark;
 
         if (!gbd) continue;
 
@@ -304,7 +306,7 @@ static void GB_dump_internal(GBDATA *gbd, int *lines_allowed) {
             if (lines_allowed) (*lines_allowed)--;
         }
         else {
-            char          *buffer  = malloc(wrappos+1);
+            char          *buffer  = (char*)malloc(wrappos+1);
             unsigned long  rest    = content_len;
             const char    *from    = content;
             int            cleared = 0;
@@ -375,7 +377,7 @@ static GB_ERROR gb_fix_recursive(GBDATA *gbd) {
         }
     }
     else {
-        int key_quark = GB_KEY_QUARK(gbd);
+        GBQUARK key_quark = GB_KEY_QUARK(gbd);
         if (key_quark == 0) {
             GB_MAIN_TYPE *Main         = GB_MAIN(gbd);
             const char   *new_key_try  = GBS_global_string("illegal_zero_key_%s", GB_get_type_name(gbd));

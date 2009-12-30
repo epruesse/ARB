@@ -112,7 +112,7 @@ static GB_INLINE long min(long a, long b) {
 
 static void g_b_opti_scanGbdByKey(GB_MAIN_TYPE *Main, GBDATA *gbd, O_gbdByKey *gbk)
 {
-    unsigned int quark;
+    GBQUARK quark;
 
     if (GB_TYPE(gbd) == GB_DB)  /* CONTAINER */
     {
@@ -210,7 +210,7 @@ static GB_ERROR gb_convert_compression(GBDATA *source) {
                 string = gb_uncompress_bytes(GB_GETDATA(source), data_size, &new_size);
                 if (string) {
                     ad_assert(new_size == data_size);
-                    string = gbs_malloc_copy(string, data_size);
+                    string = GB_memdup(string, data_size);
                 }
                 break;
 
@@ -219,7 +219,7 @@ static GB_ERROR gb_convert_compression(GBDATA *source) {
                 string = gb_uncompress_longs_old(GB_GETDATA(source), elems, &new_size);
                 if (string) {
                     ad_assert(new_size == data_size);
-                    string = gbs_malloc_copy(string, data_size);
+                    string = GB_memdup(string, data_size);
                 }
                 break;
 

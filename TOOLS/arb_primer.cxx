@@ -97,7 +97,7 @@ char *arb_prm_read(int /*prmanz*/)
 
     gb_presets = GB_entry(aprm.gb_main,"presets");
 
-    gb_source = GB_find_string(gb_presets,"alignment_name",aprm.source,GB_IGNORE_CASE,down_2_level);
+    gb_source = GB_find_string(gb_presets, "alignment_name", aprm.source, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
     gb_len = GB_brother(gb_source,"alignment_len");
     aprm.al_len = GB_read_int(gb_len);
 

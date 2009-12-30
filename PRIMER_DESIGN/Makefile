@@ -55,9 +55,12 @@ PRD_Design.o: PRD_SequenceIterator.hxx
 PRD_Design.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/arb_assert.h
+PRD_Design.o: $(ARBHOME)/INCLUDE/arb_error.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/arbdb.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+PRD_Design.o: $(ARBHOME)/INCLUDE/arbtools.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/attributes.h
+PRD_Design.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 PRD_Item.o: PRD_Globals.hxx
 PRD_Item.o: PRD_Item.hxx

@@ -35,7 +35,7 @@
 #include "ed4_nds.hxx"
 #include "ed4_secedit.hxx"
 #include "ed4_visualizeSAI.hxx"
-#include "edit_naligner.hxx"
+#include "ed4_naligner.hxx"
 #include "ed4_ProteinViewer.hxx"
 #include "ed4_protein_2nd_structure.hxx"
 #include "graph_aligner_gui.hxx"

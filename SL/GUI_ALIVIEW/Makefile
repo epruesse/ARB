@@ -91,7 +91,10 @@ GUI_aliview.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/AliView.hxx
 GUI_aliview.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 GUI_aliview.o: $(ARBHOME)/INCLUDE/arb_assert.h
+GUI_aliview.o: $(ARBHOME)/INCLUDE/arb_error.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/arbdb.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/arbdbt.h
+GUI_aliview.o: $(ARBHOME)/INCLUDE/arbtools.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/attributes.h
+GUI_aliview.o: $(ARBHOME)/INCLUDE/smartptr.h

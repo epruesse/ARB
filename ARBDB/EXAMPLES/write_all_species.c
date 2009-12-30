@@ -24,7 +24,7 @@ int main(int argc,char **argv)
         return(-1);
     }
     gb_species=GB_search(gb_main,"species_data/species",GB_FIND);
-    for(;gb_species;gb_species=GB_find(gb_species,0,0,this_level+search_next))
+    for(; gb_species; gb_species=GB_find(gb_species,0,0,SEARCH_NEXT_BROTHER))
     {
         gb_speciesname=GB_search(gb_species,"name",GB_FIND);
         species_name=GB_read_string(gb_speciesname);

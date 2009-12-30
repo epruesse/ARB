@@ -9,6 +9,8 @@ MAKETHIS=$(MAKE) -f $(THIS)
 
 LIB=$(ARBHOME)/lib
 ARBDB=$(ARBHOME)/ARBDB
+
+# code in -> ../TOOLS/arb_proto_2_xsub.cxx
 ARB_PROTO_2_XSUB=$(ARBHOME)/bin/arb_proto_2_xsub
 
 HEADERS = \
@@ -28,7 +30,7 @@ TARGET_SO=$(LIB)/ARB.$(SO)
 
 TARGETS=$(TARGET_PM) $(TARGET_SO)
 
-XS_DEPENDS = Makefile ARB.xs debug.h Makefile.PL
+XS_DEPENDS = Makefile Makefile.main ARB.xs debug.h Makefile.PL
 
 # ------------------------------------------------------------
 # variables for Makefile
@@ -67,7 +69,7 @@ ARB.c : $(XS_DEPENDS)
 	( $(MAKE) "dflags=${dflags}" $@ || \
 		(echo "------ failed.. retry once"; \
 		 $(MAKE) "dflags=${dflags}" $@ ))
-	@echo "-------- end of MakeMaker-Makefile" 
+	@echo "-------- end of MakeMaker-Makefile"
 
 Makefile : $(MACH).PL typemap  
 	( PATH=/usr/arb/bin:${PATH}; \
@@ -78,9 +80,9 @@ Makefile : $(MACH).PL typemap
 Makefile.PL : $(MACH).PL
 	cp -p $< $@
 
-ARB.xs : $(ARB_PROTO_2_XSUB) proto.h ARB.xs.default
+ARB.xs : $(ARB_PROTO_2_XSUB) proto.h ARB.default.xs perlmain_source.c typemap
 	-@test -f $@ && chmod a+w $@
-	LD_LIBRARY_PATH=$(LIB):$(LD_LIBRARY_PATH) $(ARB_PROTO_2_XSUB) proto.h ARB.xs.default > $@
+	LD_LIBRARY_PATH=$(LIB):$(LD_LIBRARY_PATH) $(ARB_PROTO_2_XSUB) proto.h ARB.default.xs typemap >$@
 	@test -f $@ && chmod a-w $@
 
 proto.h : $(HEADERS) $(THIS) depends.stamp

@@ -72,7 +72,7 @@ static int extern_c_seen       = 0;                 /* true if extern "C" was pa
 static int search__attribute__ = 0;                 /* search for gnu-extension __attribute__(()) ? */
 static int search__ATTR__      = 0;                 /* search for ARB-__attribute__-macros (__ATTR__) ? */
 
-static const char *include_wrapper = NULL;             /* add include wrapper (contains name of header or NULL) */
+static const char *include_wrapper = NULL;          /* add include wrapper (contains name of header or NULL) */
 
 static int inquote      = 0;                        /* in a quote?? */
 static int newline_seen = 1;                        /* are we at the start of a line */
@@ -102,14 +102,13 @@ static void error(const char *msg) {
     errorAt(linenum, msg);
 }
 
-/* char *sym_part = 0;*/        /* create only prototypes starting with 'sym_start' */
-/* int sym_part_len = 0; */
-
-typedef struct sym_part {
+struct SymPart {
     char *part;
-    int len; /* strlen(part) */
-    struct sym_part *next;
-} SymPart;
+    int   len;                                      // len of part
+    bool  atStart;                                  // part has to match at start of name
+    
+    SymPart *next;
+};
 
 static SymPart *symParts = 0; /* create only prototypes for parts in this list */
 
@@ -119,11 +118,12 @@ static void addSymParts(const char *parts) {
     char *s = strtok(p, sep);
 
     while (s) {
-        SymPart *sp = malloc(sizeof(*sp));
+        SymPart *sp = (SymPart*)malloc(sizeof(*sp));
 
-        sp->part = strdup(s);
-        sp->len = strlen(s);
-        sp->next = symParts;
+        sp->atStart = s[0] == '^';
+        sp->part    = strdup(sp->atStart ? s+1 : s);
+        sp->len     = strlen(sp->part);
+        sp->next    = symParts;
 
         symParts = sp;
 
@@ -133,16 +133,21 @@ static void addSymParts(const char *parts) {
     free(p);
 }
 
-static int containsSymPart(const char *name) {
-    SymPart *sp = symParts;
-    int contains = 0;
+static bool matchesSymPart(const char *name) {
+    SymPart *sp       = symParts;
+    bool     matches = 0;
 
-    while (sp && !contains) {
-        contains = strstr(name, sp->part)!=0;
+    while (sp && !matches) {
+        if (sp->atStart) {
+            matches = strncmp(name, sp->part, sp->len) == 0;
+        }
+        else {
+            matches = strstr(name, sp->part) != NULL;
+        }
         sp = sp->next;
     }
 
-    return contains;
+    return matches;
 }
 
 static void freeSymParts() {
@@ -162,8 +167,6 @@ typedef struct word {
     char   string[1];
 } Word;
 
-/* #include "mkptypes.h" */
-
 /*
  * Routines for manipulating lists of words.
  */
@@ -174,7 +177,7 @@ static Word *word_alloc(const char *s)
 
     /* note that sizeof(Word) already contains space for a terminating null
      * however, we add 1 so that typefixhack can promote "float" to "double"
-     *  by just doing a strcpy.
+     * by just doing a strcpy.
      */
     w = (Word *) malloc(sizeof(Word) + strlen(s) + 1);
     strcpy(w->string, s);
@@ -362,16 +365,15 @@ static void search_comment_for_attribute() {
     }
 }
 
-struct promotion;
 struct promotion {
-    char             *to_promote; // text to promote to header
-    struct promotion *next;
+    char      *to_promote;                          // text to promote to header
+    promotion *next;
 };
 
-static struct promotion *promotions = 0;
+static promotion *promotions = 0;
 
 static void add_promotion(char *to_promote) {
-    struct promotion *new_promotion = malloc(sizeof(struct promotion));
+    promotion *new_promotion = (promotion*)malloc(sizeof(promotion));
     new_promotion->to_promote       = to_promote;
     new_promotion->next             = 0;
 
@@ -379,7 +381,7 @@ static void add_promotion(char *to_promote) {
         promotions = new_promotion;
     }
     else { // append
-        struct promotion *last = promotions;
+        promotion *last = promotions;
         while (last->next) last = last->next;
 
         last->next = new_promotion;
@@ -387,12 +389,12 @@ static void add_promotion(char *to_promote) {
 }
 
 static void print_promotions() {
-    struct promotion *p = promotions;
+    promotion *p = promotions;
 
     if (promotions) fputc('\n', stdout);
 
     while (p) {
-        struct promotion *next = p->next;
+        promotion *next = p->next;
 
         printf("%s\n", p->to_promote);
         free(p->to_promote);
@@ -436,7 +438,7 @@ static void search_comment_for_promotion() {
         }
         else {
             int   promo_length = eol-behind_promo;
-            char *to_promote   = malloc(promo_length+1);
+            char *to_promote   = (char*)malloc(promo_length+1);
 
             memcpy(to_promote, behind_promo, promo_length);
             to_promote[promo_length] = 0;
@@ -1220,7 +1222,7 @@ static void getdecl(FILE *f, const char *header) {
                     if (w->string[0]==':' && w->string[1]==0) oktoprint = 0; /* do not emit prototypes for member functions */
                 }
 
-                if (oktoprint && symParts && !containsSymPart(w->string)) { /* name does not contain sym_part */
+                if (oktoprint && symParts && !matchesSymPart(w->string)) { /* name does not contain sym_part */
                     oktoprint = 0; /* => do not emit prototype */
                 }
             }
@@ -1257,6 +1259,7 @@ static void Usage(void){
           "\n   -i               promote declarations for inline functions"
           "\n   -m               promote declaration of 'main()' (default is to skip it)"
           "\n   -F part[,part]*  only promote declarations for functionnames containing one of the parts"
+          "                      if 'part' starts with a '^' functionname has to start with rest of part\n"
           "\n"
           "\n   -W               don't promote types in old style declarations"
           "\n   -x               omit parameter names in prototypes"

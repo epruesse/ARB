@@ -27,11 +27,11 @@ static void test_GB_iterate_DB() { // iterate through all DB elements
     iterate(gb_main);
 }
 static void test_GB_find_string() {
-    GB_find_string(gb_species_data,"full_name","asdfasdf", GB_IGNORE_CASE, down_2_level);
+    GB_find_string(gb_species_data,"full_name","asdfasdf", GB_IGNORE_CASE, SEARCH_GRANDCHILD);
 }
 static void test_GB_find_string_indexed() {
     // field 'name' is indexed by GBT_open!
-    GB_find_string(gb_species_data,"name","asdfasdf", GB_IGNORE_CASE, down_2_level);
+    GB_find_string(gb_species_data,"name","asdfasdf", GB_IGNORE_CASE, SEARCH_GRANDCHILD);
 }
 
 // --------------------------------------------------------------------------------

@@ -80,7 +80,7 @@ GBDATA *GBT_find_item_rel_item_data(GBDATA *gb_item_data, const char *id_field, 
     // 
     // Note: If you expect the item to exist, use GBT_expect_item_rel_item_data!
 
-    GBDATA *gb_item_id = GB_find_string(gb_item_data, id_field, id_value, GB_IGNORE_CASE, down_2_level);
+    GBDATA *gb_item_id = GB_find_string(gb_item_data, id_field, id_value, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
     return gb_item_id ? GB_get_father(gb_item_id) : 0;
 }
 
@@ -89,7 +89,7 @@ GBDATA *GBT_expect_item_rel_item_data(GBDATA *gb_item_data, const char *id_field
 
     GBDATA *gb_found = GBT_find_item_rel_item_data(gb_item_data, id_field, id_value);
     if (!gb_found && !GB_have_error()) { // item simply not exists
-        GBDATA     *gb_any   = GB_find(gb_item_data, id_field, down_2_level);
+        GBDATA     *gb_any   = GB_find(gb_item_data, id_field, SEARCH_GRANDCHILD);
         const char *itemname = gb_any ? GB_read_key_pntr(GB_get_father(gb_any)) : "<item>";
         GB_export_errorf("Could not find %s with %s '%s'", itemname, id_field, id_value);
     }
@@ -231,7 +231,7 @@ char *GBT_create_unique_item_identifier(GBDATA *gb_item_container, const char *i
         unique_id = strdup(default_id); // default_id is unused
     }
     else {
-        char   *generated_id  = malloc(strlen(default_id)+20);
+        char   *generated_id  = (char*)malloc(strlen(default_id)+20);
         size_t  min_num = 1;
 
 #define GENERATE_ID(num) sprintf(generated_id,"%s%zi", default_id, num);
@@ -371,8 +371,8 @@ char *GBT_store_marked_species(GBDATA *gb_main, int unmark_all)
        if (unmark_all != 0) then unmark them too
     */
 
-    void   *out = GBS_stropen(10000);
-    GBDATA *gb_species;
+    GBS_strstruct *out = GBS_stropen(10000);
+    GBDATA        *gb_species;
 
     for (gb_species = GBT_first_marked_species(gb_main);
          gb_species;

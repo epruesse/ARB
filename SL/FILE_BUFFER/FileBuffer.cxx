@@ -82,16 +82,16 @@ bool FileBuffer::getLine_intern(string& line)
     return true;
 }
 
-string FileBuffer::lineError(const char *msg) {
+string FileBuffer::lineError(const string& msg) const {
     static char   *buffer;
     static size_t  allocated = 0;
 
     size_t len;
     if (showFilename) {
-        len = strlen(msg)+filename.length()+100;
+        len = msg.length()+filename.length()+100;
     }
     else {
-        len = strlen(msg)+100;
+        len = msg.length()+100;
     }
 
     if (len>allocated) {
@@ -104,14 +104,14 @@ string FileBuffer::lineError(const char *msg) {
 #if defined(DEBUG)
         int printed =
 #endif // DEBUG
-            sprintf(buffer, "while reading %s (line #%li):\n%s", filename.c_str(), lineNumber, msg);
+            sprintf(buffer, "%s:%zu: %s", filename.c_str(), lineNumber, msg.c_str());
         fb_assert((size_t)printed < allocated);
     }
     else {
 #if defined(DEBUG)
         int printed =
 #endif // DEBUG
-            sprintf(buffer, "while reading line #%li:\n%s", lineNumber, msg);
+            sprintf(buffer, "while reading line #%zu:\n%s", lineNumber, msg.c_str());
         fb_assert((size_t)printed < allocated);
     }
     
@@ -143,16 +143,16 @@ inline FileBuffer *to_FileBuffer(FILE_BUFFER fb) {
     return fileBuffer;
 }
 
-extern "C" FILE_BUFFER create_FILE_BUFFER(const char *filename, FILE *in) {
+FILE_BUFFER create_FILE_BUFFER(const char *filename, FILE *in) {
     FileBuffer *fb = new FileBuffer(filename, in);
     return reinterpret_cast<FILE_BUFFER>(fb);
 }
 
-extern "C" void destroy_FILE_BUFFER(FILE_BUFFER file_buffer) {
+void destroy_FILE_BUFFER(FILE_BUFFER file_buffer) {
     delete to_FileBuffer(file_buffer);
 }
 
-extern "C" const char *FILE_BUFFER_read(FILE_BUFFER file_buffer, size_t *lengthPtr) {
+const char *FILE_BUFFER_read(FILE_BUFFER file_buffer, size_t *lengthPtr) {
     static string  line;
 
     if (to_FileBuffer(file_buffer)->getLine(line)) {
@@ -162,12 +162,12 @@ extern "C" const char *FILE_BUFFER_read(FILE_BUFFER file_buffer, size_t *lengthP
     return 0;
 }
 
-extern "C" void FILE_BUFFER_back(FILE_BUFFER file_buffer, const char *backline) {
+void FILE_BUFFER_back(FILE_BUFFER file_buffer, const char *backline) {
     static string line;
     line = backline;
     to_FileBuffer(file_buffer)->backLine(line);
 }
 
-extern "C" void FILE_BUFFER_rewind(FILE_BUFFER file_buffer) {
+void FILE_BUFFER_rewind(FILE_BUFFER file_buffer) {
     to_FileBuffer(file_buffer)->rewind();
 }

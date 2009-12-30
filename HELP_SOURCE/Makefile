@@ -253,7 +253,7 @@ $(XML_DEPEND) : arb_help2xml.cxx
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
 
 $(HELP2XML): arb_help2xml.o $(LIBS)
-	$(LINK_EXECUTABLE) $@ $< $(LIBS) $(LIBPATH) -lARBDB
+	$(LINK_EXECUTABLE) $@ $< $(LIBS) $(LIBPATH) $(ARBDB_LIB)
 
 DEPENDS = $(TOOL_OBJECTS:.o=.depend)
 depends: $(DEPENDS)

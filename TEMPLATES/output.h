@@ -86,7 +86,7 @@ public:
         max_points = maxP;
     }
 
-    void point() {
+    void point() { // for use as simple progress indicator
         if (!printing_points) {
             goto_indentation();
             printing_points = true;

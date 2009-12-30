@@ -27,7 +27,10 @@ typedef const char *GB_CBUFFER; /* points to a piece of mem (readable only)*/
 
 typedef struct gb_data_base_type GBDATA;
 
-typedef enum { GB_FALSE = 0 , GB_TRUE = 1 } GB_BOOL;
+// @@@ TODO: GB_BOOL/GB_TRUE/GB_FALSE should be replaced by bool/true/false in code 
+typedef bool GB_BOOL;
+const bool   GB_FALSE = false;
+const bool   GB_TRUE  = true;
 
 typedef enum gb_call_back_type {
     GB_CB_NONE        = 0,
@@ -53,7 +56,9 @@ typedef enum gb_call_back_type {
  *
  */
 
-#define freeset(var,str) do { typeof(var) freesetvar = (str); free(var); (var) = freesetvar; } while(0)
+ 
+#define freeset(var, heapCopy) do { typeof(var) freesetvar = (heapCopy); free(var); (var) = freesetvar; } while(0)
+// Note: expression 'heapCopy' may contain 'var' 
 
 #ifdef __cplusplus
 
@@ -70,17 +75,15 @@ inline void reassign(char *& dstvar, char *& srcvar)            { freeset(dstvar
 
 #else
 
+#error please compile as C++
+
 #define nulldup(str)        GB_strdup(str)
 #define freedup(var,str)    freeset(var, nulldup(str))
 #define reassign(dvar,svar) do { freeset(dvar, svar); (svar) = NULL; } while(0)
 
 #endif
+
 /* -------------------------------------------------------------------------------- */
-
-
-#ifndef P_
-#define P_(s) s
-#endif
 
 #ifndef AD_K_PROT_H
 #include <ad_k_prot.h>

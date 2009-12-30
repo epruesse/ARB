@@ -12,9 +12,6 @@
 
 #include <inline.h>
 
-extern "C" { char *gbs_malloc_copy(char *,long); }
-
-
 /* change a sequence with normal bases the PT_? format and delete all other signs */
 int compress_data(char *probestring)
 {
@@ -260,7 +257,7 @@ void probe_read_alignments() {
                     pid.checksum = GB_checksum(data, hsize, 1, ".-");
                     int   size = probe_compress_sequence(data, hsize);
 
-                    pid.data = (char *)gbs_malloc_copy(data, size);
+                    pid.data = GB_memdup(data, size);
                     pid.size = size;
                     
                     free(data);

@@ -20,16 +20,18 @@
  /* ------------------------ */
  /*      string matcher      */
 
-struct GBS_string_matcher {
-    enum {
-        SM_ANY,                 // matches any string
-        SM_WILDCARDED,          // match with wildcards (GBS_string_matches)
-        SM_REGEXPR,             // match using regexpr
-    } type;
+enum string_matcher_type {
+    SM_INVALID = -1,
+    SM_ANY     = 0,             // matches any string
+    SM_WILDCARDED,              // match with wildcards (GBS_string_matches)
+    SM_REGEXPR,                 // match using regexpr
+};
 
-    GB_CASE    case_flag;
-    char      *wildexpr;
-    GBS_REGEX *regexpr;
+struct GBS_string_matcher {
+    string_matcher_type  type;
+    GB_CASE              case_flag;
+    char                *wildexpr;
+    GBS_REGEX           *regexpr;
 };
 
 GBS_MATCHER *GBS_compile_matcher(const char *search_expr, GB_CASE case_flag) {
@@ -37,10 +39,10 @@ GBS_MATCHER *GBS_compile_matcher(const char *search_expr, GB_CASE case_flag) {
      * or NULL (in which case an error was exported)
      */
 
-    GBS_MATCHER *matcher = malloc(sizeof(*matcher));
+    GBS_MATCHER *matcher = (GBS_MATCHER*)malloc(sizeof(*matcher));
     GB_ERROR     error   = 0;
 
-    matcher->type      = -1;
+    matcher->type      = SM_INVALID;
     matcher->case_flag = case_flag;
     matcher->wildexpr  = NULL;
     matcher->regexpr   = NULL;
@@ -73,6 +75,10 @@ GBS_MATCHER *GBS_compile_matcher(const char *search_expr, GB_CASE case_flag) {
         }
     }
 
+    if (matcher->type == SM_INVALID) {
+        error = GBS_global_string("Failed to create GBS_MATCHER from '%s'", search_expr);
+    }
+
     if (error) {
         GBS_free_matcher(matcher);
         matcher = 0;
@@ -93,7 +99,7 @@ void GBS_free_matcher(GBS_MATCHER *matcher) {
 struct GBS_regex { regex_t compiled; }; // definition exists twice (see ../SL/REGEXPR/RegExpr.cxx)
 
 GBS_REGEX *GBS_compile_regexpr(const char *regexpr, GB_CASE case_flag, GB_ERROR *error) {
-    GBS_REGEX *comreg  = malloc(sizeof(*comreg));
+    GBS_REGEX *comreg  = (GBS_REGEX*)malloc(sizeof(*comreg));
     int        cflags  = REG_EXTENDED|(case_flag == GB_IGNORE_CASE ? REG_ICASE : 0)|REG_NEWLINE;
     int        errcode = regcomp(&comreg->compiled, regexpr, cflags);
 
@@ -151,7 +157,7 @@ const char *GBS_unwrap_regexpr(const char *regexpr_in_slashes, GB_CASE *case_fla
 
             if (len>max_len) {
                 max_len = len*3/2;
-                freeset(result_buffer, malloc(max_len+1));
+                freeset(result_buffer, (char*)malloc(max_len+1));
             }
 
             memcpy(result_buffer, regexpr_in_slashes+1, len);
@@ -483,7 +489,7 @@ GB_BOOL GBS_string_matches_regexp(const char *str, const GBS_MATCHER *expr) {
             matches = GBS_regmatch_compiled(str, expr->regexpr, NULL) != NULL;
             break;
         }
-        default: {
+        case SM_INVALID: {
             ad_assert(0);
             break;
         }
@@ -503,7 +509,7 @@ GB_BOOL GBS_string_matches_regexp(const char *str, const GBS_MATCHER *expr) {
 int GBS_reference_not_found;
 
 ATTRIBUTED(__ATTR__USERESULT,
-           static GB_ERROR gbs_build_replace_string(void *strstruct,
+           static GB_ERROR gbs_build_replace_string(GBS_strstruct *strstruct,
                                                     char *bar,char *wildcards, long max_wildcard,
                                                     char **mwildcards, long max_mwildcard, GBDATA *gb_container))
 {
@@ -724,7 +730,7 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
     char *bar;
     char *in;
     char *nextdp;
-    void *strstruct;
+    GBS_strstruct *strstruct;
     char *command;
 
     if (!icommand || !icommand[0]) return strdup(insource);
@@ -779,7 +785,7 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
                             source += strlen(source);
                             goto gbs_pars_successfull;      /* successfull search and end wildcard*/
                         }
-                        while ( (c=*(search++)) && c!=GBS_MWILD && c!=GBS_WILD );   /* search the next wildcardstring */
+                        while ( (c=*(search++)) && c!=GBS_MWILD && c!=GBS_WILD ) ;   /* search the next wildcardstring */
                         search--;                   /* back one character */
                         *search = 0;
                         what_wild_card = c;
@@ -809,7 +815,7 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
                         }else{
                             char *buf1;
                             buf1 = search-1;
-                            while ( (c=*(search++)) && c!=GBS_MWILD && c!=GBS_WILD );   /* search the next wildcardstring */
+                            while ( (c=*(search++)) && c!=GBS_MWILD && c!=GBS_WILD ) ;   /* search the next wildcardstring */
                             search--;                   /* back one character */
                             *search = 0;
                             what_wild_card = c;

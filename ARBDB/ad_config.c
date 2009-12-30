@@ -90,7 +90,7 @@ char **GBT_get_configuration_names(GBDATA *gb_main) {
 
 GBDATA *GBT_find_configuration(GBDATA *gb_main,const char *name){
     GBDATA *gb_configuration_data = GB_search(gb_main,AWAR_CONFIG_DATA,GB_DB);
-    GBDATA *gb_configuration_name = GB_find_string(gb_configuration_data,"name",name,GB_IGNORE_CASE,down_2_level);
+    GBDATA *gb_configuration_name = GB_find_string(gb_configuration_data, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
     return gb_configuration_name ? GB_get_father(gb_configuration_name) : 0;
 }
 
@@ -120,7 +120,7 @@ GBT_config *GBT_load_configuration_data(GBDATA *gb_main, const char *name, GB_ER
         *error = GBS_global_string("No such configuration '%s'", name);
     }
     else {
-        config              = GB_calloc(1, sizeof(*config));
+        config              = (GBT_config*)GB_calloc(1, sizeof(*config));
         config->top_area    = GBT_read_string(gb_configuration, "top_area");
         config->middle_area = GBT_read_string(gb_configuration, "middle_area");
 
@@ -163,7 +163,7 @@ void GBT_free_configuration_data(GBT_config *data) {
 }
 
 GBT_config_parser *GBT_start_config_parser(const char *config_string) {
-    GBT_config_parser *parser = GB_calloc(1, sizeof(*parser));
+    GBT_config_parser *parser = (GBT_config_parser*)GB_calloc(1, sizeof(*parser));
 
     parser->config_string = nulldup(config_string);
     parser->parse_pos     = 0;
@@ -172,7 +172,7 @@ GBT_config_parser *GBT_start_config_parser(const char *config_string) {
 }
 
 GBT_config_item *GBT_create_config_item() {
-    GBT_config_item *item = GB_calloc(1, sizeof(*item));;
+    GBT_config_item *item = (GBT_config_item*)GB_calloc(1, sizeof(*item));;
     item->type            = CI_UNKNOWN;
     item->name            = 0;
     return item;
@@ -222,7 +222,7 @@ GB_ERROR GBT_parse_next_config_item(GBT_config_parser *parser, GBT_config_item *
                 if (!behind_name) behind_name = strchr(start_of_name, '\0'); /* eos */
                 gb_assert(behind_name);
 
-                item->name = GB_calloc(1, behind_name-start_of_name+1);
+                item->name = (char*)GB_calloc(1, behind_name-start_of_name+1);
                 memcpy(item->name, start_of_name, behind_name-start_of_name);
                 pos       = behind_name-str;
                 break;
@@ -240,7 +240,7 @@ GB_ERROR GBT_parse_next_config_item(GBT_config_parser *parser, GBT_config_item *
     return error;
 }
 
-void GBT_append_to_config_string(const GBT_config_item *item, void *strstruct) {
+void GBT_append_to_config_string(const GBT_config_item *item, GBS_strstruct *strstruct) {
     /* strstruct has to be created by GBS_stropen() */
 
     ad_assert((item->type & (CI_UNKNOWN|CI_END_OF_CONFIG)) == 0);

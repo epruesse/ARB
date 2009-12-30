@@ -161,10 +161,7 @@ GB_ERROR gbt_rename_tree_rek(GBT_TREE *tree,int tree_index){
     return 0;
 }
 
-#ifdef __cplusplus
-extern "C"
-#endif
-GB_ERROR GBT_commit_rename_session(int (*show_status)(double gauge), int (*show_status_text)(const char *)){
+GB_ERROR GBT_commit_rename_session(int (*show_status)(double gauge), int (*show_status_text)(const char *)) {
     GB_ERROR error = 0;
 
     // rename species in trees
@@ -218,7 +215,7 @@ GB_ERROR GBT_commit_rename_session(int (*show_status)(double gauge), int (*show_
                         char              **configStrPtr = (mode == 0 ? &config->top_area : &config->middle_area);
                         GBT_config_parser  *parser       = GBT_start_config_parser(*configStrPtr);
                         GBT_config_item    *item         = GBT_create_config_item();
-                        void               *strstruct    = GBS_stropen(1000);
+                        GBS_strstruct      *strstruct    = GBS_stropen(1000);
 
                         error = GBT_parse_next_config_item(parser, item);
                         while (!error && item->type != CI_END_OF_CONFIG) {

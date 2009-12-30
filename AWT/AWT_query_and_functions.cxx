@@ -1546,7 +1546,7 @@ void awt_do_pars_list(void *dummy, struct adaqbsstruct *cbs)
         GBDATA *gb_key_name;
         {
             GBDATA *gb_key_data = GB_search(cbs->gb_main, cbs->selector->change_key_path, GB_CREATE_CONTAINER);
-            while (!error && !(gb_key_name = GB_find_string(gb_key_data,CHANGEKEY_NAME,key,GB_IGNORE_CASE,down_2_level))) {
+            while (!error && !(gb_key_name = GB_find_string(gb_key_data, CHANGEKEY_NAME, key, GB_IGNORE_CASE, SEARCH_GRANDCHILD))) {
                 const char *question = GBS_global_string("The destination field '%s' does not exists", key);
                 if (aw_question(question, "Create Field (Type STRING),Cancel")) {
                     error = "Aborted by user";
@@ -1628,7 +1628,7 @@ void awt_do_pars_list(void *dummy, struct adaqbsstruct *cbs)
                                 }
                                 else {
                                     if (!gb_new) {
-                                        gb_new = GB_search(gb_item, key, GB_read_int(gb_key_type));
+                                        gb_new = GB_search(gb_item, key, (GB_TYPES)GB_read_int(gb_key_type));
                                         if (!gb_new) error = GB_await_error();
                                     }
                                     if (!error) error = GB_write_as_string(gb_new, parsed);
@@ -1954,7 +1954,7 @@ static void awt_loadsave_colorset(AW_window *aws, AW_CL cl_csd, AW_CL cl_mode) {
         GBDATA *gb_colorset_root = get_colorset_root(csd);
         awt_assert(gb_colorset_root);
 
-        GBDATA *gb_colorset_name = GB_find_string(gb_colorset_root, "name", name, GB_IGNORE_CASE, down_2_level);
+        GBDATA *gb_colorset_name = GB_find_string(gb_colorset_root, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
         GBDATA *gb_colorset      = gb_colorset_name ? GB_get_father(gb_colorset_name) : 0;
         if (mode == 0) {        // save-mode
             if (!gb_colorset) { // create new (otherwise overwrite w/o comment)
@@ -2295,7 +2295,7 @@ void awt_do_set_list(void *, struct adaqbsstruct *cbs, long append) {
         GBDATA *gb_key_data     = GB_search(cbs->gb_main, cbs->selector->change_key_path, GB_CREATE_CONTAINER);
         if (!gb_key_data) error = GB_await_error();
         else {
-            GBDATA *gb_key_name = GB_find_string(gb_key_data,CHANGEKEY_NAME,key,GB_IGNORE_CASE,down_2_level);
+            GBDATA *gb_key_name = GB_find_string(gb_key_data, CHANGEKEY_NAME, key, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
             if (!gb_key_name) {
                 error = GBS_global_string("The destination field '%s' does not exists", key);
             }
@@ -2343,7 +2343,7 @@ void awt_do_set_list(void *, struct adaqbsstruct *cbs, long append) {
                     }
                 }
                 else {
-                    gb_new = GB_search(gb_item, key, GB_read_int(gb_key_type));
+                    gb_new = GB_search(gb_item, key, (GB_TYPES)GB_read_int(gb_key_type));
 
                     if (!gb_new) error = GB_await_error();
                     else error         = GB_write_as_string(gb_new,value);
@@ -2395,7 +2395,7 @@ void awt_do_set_protection(void *, struct adaqbsstruct *cbs) {
 
     GB_begin_transaction(cbs->gb_main);
     GBDATA *gb_key_data = GB_search(cbs->gb_main, cbs->selector->change_key_path, GB_CREATE_CONTAINER);
-    GBDATA *gb_key_name = GB_find_string(gb_key_data,CHANGEKEY_NAME,key,GB_IGNORE_CASE,down_2_level);
+    GBDATA *gb_key_name = GB_find_string(gb_key_data, CHANGEKEY_NAME, key, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
     if (!gb_key_name) {
         error = GBS_global_string("The destination field '%s' does not exists", key);
     }

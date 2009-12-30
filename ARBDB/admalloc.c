@@ -109,9 +109,14 @@ NOT4PERL void *GB_calloc(unsigned int nelem, unsigned int elsize)
     return mem;
 }
 
+#if defined(DEVEL_RALF)
+#warning GB_strdup is obsolete now
+/* see also comments about GB_strdup in arbdb_base.h */
+#endif /* DEVEL_RALF */
+
 char *GB_strdup(const char *p) {
     /* does strdup(), but working with NULL
-     * (Note: use nulldup() instead!)  
+     * (Note: use nulldup() instead!)
      */
     return p ? strdup(p) : NULL;
 }
@@ -144,10 +149,10 @@ char *GB_strpartdup(const char *start, const char *end) {
         int len = end-start+1;
 
         if (len >= 0) {
-            const char *eos = memchr(start, 0, len);
+            const char *eos = (const char *)memchr(start, 0, len);
 
             if (eos) len = eos-start;
-            result = malloc(len+1);
+            result = (char*)malloc(len+1);
             memcpy(result, start, len);
             result[len] = 0;
         }
@@ -316,12 +321,14 @@ static int getClusterIndex(size_t size) /* searches the index of the
     return l;
 }
 
-void gbm_put_memblk(char *memblk, size_t size) /* gives any memory block (allocated or not)
-                                                  into the responsibility of this module;
-                                                  the block has to be aligned!!! */
+void gbm_put_memblk_impl(char *memblk, size_t size)
 {
-    struct gbb_data  *block;
-    int idx;
+    /* gives any memory block (allocated or not)
+       into the responsibility of this module;
+       the block has to be aligned!!! */
+
+    struct gbb_data *block;
+    int              idx;
 
     TEST();
 
@@ -351,7 +358,7 @@ void gbm_put_memblk(char *memblk, size_t size) /* gives any memory block (alloca
     TEST();
 }
 
-static char *gbm_get_memblk(size_t size)
+static char *gbm_get_memblk_impl(size_t size)
 {
     struct gbb_data  *block = NULL;
     int           trials = GBB_MAX_TRIALS,
@@ -425,7 +432,7 @@ static char *gbm_get_memblk(size_t size)
 }
 
 
-char *gbm_get_mem(size_t size, long index)
+char *gbm_get_mem_impl(size_t size, long index)
 {
     unsigned long           nsize, pos;
     char                   *erg;
@@ -485,7 +492,7 @@ char *gbm_get_mem(size_t size, long index)
     return erg;
 }
 
-void gbm_free_mem(char *data, size_t size, long index)
+void gbm_free_mem_impl(char *data, size_t size, long index)
 {
     long               nsize, pos;
     struct gbm_struct *ggi;

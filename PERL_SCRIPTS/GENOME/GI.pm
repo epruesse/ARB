@@ -62,7 +62,7 @@ sub findORF($$$$$) {
   my ($gb_gene_data,$genome_name,$orf,$create,$verbose) = @_;
   my $error;
   my $gb_orf;
-  my $gb_locus_tag = ARB::find_string($gb_gene_data, "locus_tag", $orf, 1, "down_2");
+  my $gb_locus_tag = ARB::find_string($gb_gene_data, "locus_tag", $orf, 1, "grandchild");
   if (!$gb_locus_tag) {
     if ($create==0) {
       $error = "no gene with locus_tag '$orf' found for organism '$genome_name'";

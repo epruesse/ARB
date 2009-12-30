@@ -173,7 +173,7 @@ inline GB_MAIN_TYPE *GB_MAIN(GBCONTAINER *gbc)                              { re
 
 #ifdef __cplusplus
 
-inline int GB_KEY_QUARK(GBDATA *gbd)                        { return GB_DATA_LIST_HEADER(GB_FATHER(gbd)->d)[gbd->index].flags.key_quark; }
+inline GBQUARK GB_KEY_QUARK(GBDATA *gbd)                    { return GB_DATA_LIST_HEADER(GB_FATHER(gbd)->d)[gbd->index].flags.key_quark; }
 inline char *GB_KEY(GBDATA *gbd)                            { return GB_MAIN(gbd)->keys[GB_KEY_QUARK(gbd)].key; }
 inline GB_TYPES GB_TYPE(GBDATA *gbd)                        { return GB_TYPES(gbd->flags.type); }
 inline GB_TYPES GB_TYPE(GBCONTAINER *gbd)                   { return GB_TYPES(gbd->flags.type); }
@@ -199,8 +199,8 @@ inline gb_header_flags& GB_ARRAY_FLAGS(GBCONTAINER *gbc)    { return GB_DATA_LIS
 
 #ifdef __cplusplus
 
-inline long GB_QUARK_2_GBMINDEX(GB_MAIN_TYPE *Main, int key_quark)  { return (Main->keys[key_quark].nref<GBM_MAX_UNINDEXED_ENTRIES) ? 0 : key_quark; }
-inline long GB_GBD_2_GBMINDEX(GBDATA *gbd)                          { return GB_QUARK_2_GBMINDEX(GB_MAIN(gbd), GB_KEY_QUARK(gbd)); }
+inline long GB_QUARK_2_GBMINDEX(GB_MAIN_TYPE *Main, GBQUARK key_quark)  { return (Main->keys[key_quark].nref<GBM_MAX_UNINDEXED_ENTRIES) ? 0 : key_quark; }
+inline long GB_GBD_2_GBMINDEX(GBDATA *gbd)                              { return GB_QUARK_2_GBMINDEX(GB_MAIN(gbd), GB_KEY_QUARK(gbd)); }
 
 #else
 
@@ -422,7 +422,7 @@ inline void GB_SETSMD(GBDATA *gbd, long siz, long memsiz, char *dat) {
     GB_INDEX_CHECK_IN(gbd);
 }
 
-inline void GB_SETSMDMALLOC(GBDATA *gbd, long siz, long memsiz, char *dat) {
+inline void GB_SETSMDMALLOC(GBDATA *gbd, long siz, long memsiz, const char *dat) {
     gb_assert(dat);
     if (GB_CHECKINTERN(siz,memsiz)) {
         GB_SETINTERN(gbd);
@@ -521,9 +521,9 @@ do {                                                                            
 
 #ifdef __cplusplus
 
-inline void _GB_CHECK_IN_UNDO_DELETE(GB_MAIN_TYPE *Main, GBDATA *gbd) {
+inline void _GB_CHECK_IN_UNDO_DELETE(GB_MAIN_TYPE *Main, GBDATA *& gbd) {
     if (Main->undo_type) gb_check_in_undo_delete(Main,gbd,0);
-    else gb_delete_entry(gbd);
+    else gb_delete_entry(&gbd);
 }
 inline void _GB_CHECK_IN_UNDO_CREATE(GB_MAIN_TYPE *Main, GBDATA *gbd) {
     if (Main->undo_type) gb_check_in_undo_create(Main,gbd);

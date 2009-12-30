@@ -65,7 +65,7 @@ GBDATA* GEN_expect_gene_data(GBDATA *gb_species) {
 }
 
 GBDATA* GEN_find_gene_rel_gene_data(GBDATA *gb_gene_data, const char *name) {
-    GBDATA *gb_name = GB_find_string(gb_gene_data, "name", name, GB_IGNORE_CASE, down_2_level); 
+    GBDATA *gb_name = GB_find_string(gb_gene_data, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD); 
 
     if (gb_name) return GB_get_father(gb_name); // found existing gene
     return 0;
@@ -107,7 +107,7 @@ GBDATA* GEN_find_or_create_gene_rel_gene_data(GBDATA *gb_gene_data, const char *
         GB_export_error("Missing gene name");
     }
     else {
-        GBDATA *gb_name = GB_find_string(gb_gene_data, "name", name, GB_IGNORE_CASE, down_2_level);
+        GBDATA *gb_name = GB_find_string(gb_gene_data, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
 
         if (gb_name) {
             gb_gene = GB_get_father(gb_name); // found existing gene
@@ -174,9 +174,9 @@ struct GEN_position *GEN_new_position(int parts, GB_BOOL joinable) {
         memset(pos->start_pos, 0, data_size);
     }
     else {
-        pos             = GB_calloc(1, sizeof(*pos));
+        pos             = (GEN_position*)GB_calloc(1, sizeof(*pos));
         pos->parts      = parts;
-        pos->start_pos  = GB_calloc(1, data_size);
+        pos->start_pos  = (size_t*)GB_calloc(1, data_size);
         pos->stop_pos   = pos->start_pos+parts;
         pos->complement = (unsigned char*)(pos->stop_pos+parts);
     }
@@ -295,7 +295,7 @@ struct GEN_position *GEN_read_position(GBDATA *gb_gene) {
     if (!error) {
         pos = GEN_new_position(parts, joinable);
 
-        char **parseTable = GB_calloc(parts, sizeof(*parseTable));
+        char **parseTable = (char**)GB_calloc(parts, sizeof(*parseTable));
 
         error =             parsePositions(gb_gene, "pos_start", parts, pos->start_pos, parseTable);
         if (!error) error = parsePositions(gb_gene, "pos_stop",  parts, pos->stop_pos,  parseTable);
@@ -427,10 +427,10 @@ GB_ERROR GEN_write_position(GBDATA *gb_gene, const struct GEN_position *pos) {
             if (!error) error = GB_write_int(gb_pos_joined, pos->parts * (pos->joinable ? 1 : -1)); // neg. parts means not joinable
 
             if (!error) {
-                void *start      = GBS_stropen(12*pos->parts);
-                void *stop       = GBS_stropen(12*pos->parts);
-                void *complement = GBS_stropen(2*pos->parts);
-                void *uncertain  = GBS_stropen(3*pos->parts);
+                GBS_strstruct *start      = GBS_stropen(12*pos->parts);
+                GBS_strstruct *stop       = GBS_stropen(12*pos->parts);
+                GBS_strstruct *complement = GBS_stropen(2*pos->parts);
+                GBS_strstruct *uncertain  = GBS_stropen(3*pos->parts);
 
                 for (p = 0; p<pos->parts; ++p) {
                     if (p>0) {

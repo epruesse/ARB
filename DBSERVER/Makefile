@@ -31,7 +31,10 @@ depend.init:
 db_server.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 db_server.o: $(ARBHOME)/INCLUDE/ad_prot.h
 db_server.o: $(ARBHOME)/INCLUDE/arb_assert.h
+db_server.o: $(ARBHOME)/INCLUDE/arb_error.h
 db_server.o: $(ARBHOME)/INCLUDE/arbdb.h
 db_server.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+db_server.o: $(ARBHOME)/INCLUDE/arbtools.h
 db_server.o: $(ARBHOME)/INCLUDE/attributes.h
 db_server.o: $(ARBHOME)/INCLUDE/servercntrl.h
+db_server.o: $(ARBHOME)/INCLUDE/smartptr.h

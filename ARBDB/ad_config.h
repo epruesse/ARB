@@ -14,10 +14,6 @@
 #ifndef AD_CONFIG_H
 #define AD_CONFIG_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #define AWAR_CONFIG_DATA "configuration_data"
 #define AWAR_CONFIG      "configuration"
 
@@ -63,7 +59,7 @@ extern "C" {
     void               GBT_free_config_parser(GBT_config_parser *parser);
 
     GB_ERROR         GBT_parse_next_config_item(GBT_config_parser *parser, GBT_config_item *item);
-    void             GBT_append_to_config_string(const GBT_config_item *item, void *strstruct);
+    void             GBT_append_to_config_string(const GBT_config_item *item, GBS_strstruct *strstruct);
 
     GBT_config_item *GBT_create_config_item();
     void             GBT_free_config_item(GBT_config_item *item);
@@ -71,10 +67,6 @@ extern "C" {
 #if defined(DEBUG)
         void GBT_test_config_parser(GBDATA *gb_main);
 #endif // DEBUG
-
-#ifdef __cplusplus
-}
-#endif
 
 #else
 #error ad_config.h included twice

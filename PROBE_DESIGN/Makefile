@@ -71,11 +71,13 @@ probe_match_parser.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/ad_prot.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arb_assert.h
+probe_match_parser.o: $(ARBHOME)/INCLUDE/arb_error.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arbdb.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arbdbt.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arbtools.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/attributes.h
+probe_match_parser.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 SaiProbeVisualization.o: probe_match_parser.hxx
 SaiProbeVisualization.o: SaiProbeVisualization.hxx

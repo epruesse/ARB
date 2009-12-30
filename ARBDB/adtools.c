@@ -309,7 +309,7 @@ char **GBT_split_string(const char *namelist, char separator, int *countPtr) {
         }
     }
 
-    char **result = malloc((sepCount+2)*sizeof(*result)); // 3 separators -> 4 names (plus terminal NULL)
+    char **result = (char**)malloc((sepCount+2)*sizeof(*result)); // 3 separators -> 4 names (plus terminal NULL)
     int    count  = 0;
 
     for (; count < sepCount; ++count) {
@@ -744,16 +744,16 @@ const char *GBT_remote_touch_awar(GBDATA *gb_main, const char *application, cons
 
 typedef void (*notify_cb_type)(const char *message, void *client_data);
 
-struct NCB {
+struct NotifyCb {
     notify_cb_type  cb;
     void           *client_data;
 };
 
 static void notify_cb(GBDATA *gb_message, int *cb_info, GB_CB_TYPE cb_type) {
-    GB_remove_callback(gb_message, GB_CB_CHANGED|GB_CB_DELETE, notify_cb, cb_info); // @@@ cbproblematic
+    GB_remove_callback(gb_message, GB_CB_TYPE(GB_CB_CHANGED|GB_CB_DELETE), notify_cb, cb_info); // @@@ cbproblematic
 
-    int         cb_done = 0;
-    struct NCB *pending = (struct NCB*)cb_info;
+    int              cb_done = 0;
+    struct NotifyCb *pending = (NotifyCb*)cb_info;
 
     if (cb_type == GB_CB_CHANGED) {
         GB_ERROR    error   = 0;
@@ -809,7 +809,7 @@ static int allocateNotificationID(GBDATA *gb_main, int *cb_info) {
                                 GBDATA *gb_message = GB_searchOrCreate_string(gb_notification, "message", "");
                                 
                                 if (gb_message) {
-                                    error = GB_add_callback(gb_message, GB_CB_CHANGED|GB_CB_DELETE, notify_cb, cb_info);
+                                    error = GB_add_callback(gb_message, GB_CB_TYPE(GB_CB_CHANGED|GB_CB_DELETE), notify_cb, cb_info);
                                     if (!error) {
                                         id = newid; /* success */
                                     }
@@ -844,9 +844,9 @@ char *GB_generate_notification(GBDATA *gb_main,
      *       variable in 'message' (e.g. "$RESULT")
      */
 
-    int         id;
-    char       *arb_notify_call = 0;
-    struct NCB *pending         = malloc(sizeof(*pending));
+    int       id;
+    char     *arb_notify_call = 0;
+    NotifyCb *pending         = (NotifyCb*)malloc(sizeof(*pending));
 
     pending->cb          = cb;
     pending->client_data = client_data;
@@ -872,7 +872,7 @@ GB_ERROR GB_remove_last_notification(GBDATA *gb_main) {
             GBDATA *gb_counter = GB_entry(gb_notify, "counter");
             if (gb_counter) {
                 int     id    = GB_read_int(gb_counter);
-                GBDATA *gb_id = GB_find_int(gb_notify, "id", id, down_2_level);
+                GBDATA *gb_id = GB_find_int(gb_notify, "id", id, SEARCH_GRANDCHILD);
 
                 if (!gb_id) {
                     error = GBS_global_string("No notification for ID %i", id);
@@ -913,7 +913,7 @@ GB_ERROR GB_notify(GBDATA *gb_main, int id, const char *message) {
         gb_assert(0);           // GB_generate_notification() has not been called!
     }
     else {
-        GBDATA *gb_id = GB_find_int(gb_notify, "id", id, down_2_level);
+        GBDATA *gb_id = GB_find_int(gb_notify, "id", id, SEARCH_GRANDCHILD);
 
         if (!gb_id) {
             error = GBS_global_string("No notification for ID %i", id);

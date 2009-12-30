@@ -97,7 +97,7 @@ char *GBT_complementNucSequence(const char *s, int len, char T_or_U) {
     return n;
 }
 
-GB_ERROR GBT_determine_T_or_U(GB_alignment_type alignment_type, char *T_or_U, const char *supposed_target) {
+NOT4PERL GB_ERROR GBT_determine_T_or_U(GB_alignment_type alignment_type, char *T_or_U, const char *supposed_target) {
     switch (alignment_type)
     {
         case GB_AT_RNA: *T_or_U = 'U'; break;
@@ -110,21 +110,12 @@ GB_ERROR GBT_determine_T_or_U(GB_alignment_type alignment_type, char *T_or_U, co
     return 0;
 }
 
-/* GB_ERROR GBT_reverseComplementNucSequence(char *seq, long length, GB_alignment_type alignment_type) */
-void GBT_reverseComplementNucSequence(char *seq, long length, char T_or_U)
-{
+NOT4PERL void GBT_reverseComplementNucSequence(char *seq, long length, char T_or_U) {
     long     i,l;
-    /*     char     T_or_U = 0; */
-    /*     GB_ERROR error  = GBT_determine_T_or_U(alignment_type, &T_or_U, "reverse-complement"); */
-
-    /*     if (!error) { */
     for (i=0,l=length-1; i <= l; i++,l--) {
         char c = seq[i];
 
         seq[i] = GBT_complementNucleotide(seq[l], T_or_U);
         seq[l] = GBT_complementNucleotide(c, T_or_U);
     }
-    /*     } */
-
-    /*     return error; */
 }

@@ -26,9 +26,6 @@
 #define unlikely  -1.0E300  /* low likelihood for initialization */
 #define decimal_point   '.'
 
-#define TRUE             1
-#define FALSE            0
-
 #define ABS(x)    (((x)< 0)  ? -(x) : (x))
 #define MIN(x,y)  (((x)<(y)) ?  (x) : (y))
 #define MAX(x,y)  (((x)>(y)) ?  (x) : (y))
@@ -36,8 +33,6 @@
 #define nint(x)   ((int) ((x)>0 ? ((x)+0.5) : ((x)-0.5)))
 #define aint(x)   ((double) ((int) (x)))
 
-
-typedef  int  boolean;
 
 typedef  double  xtype;
 
@@ -57,25 +52,25 @@ typedef  struct noderec {
     int              xcoord, ycoord, ymin, ymax;
     char             name[nmlngth+1];     /*  Space for null termination  */
     char            *tip;                 /*  Pointer to sequence data  */
-    } node, *nodeptr;
+} node, *nodeptr;
 
 typedef  struct {
-    double           likelihood;
-    double           log_f[maxpatterns];
-    node            *nodep[2*maxsp-1];
-    node            *start;
-    int              mxtips;
-    int              ntips;
-    int              nextnode;
-    int              opt_level;
-    boolean          smoothed;
-    boolean          rooted;
-    } tree;
+    double  likelihood;
+    double  log_f[maxpatterns];
+    node   *nodep[2*maxsp-1];
+    node   *start;
+    int     mxtips;
+    int     ntips;
+    int     nextnode;
+    int     opt_level;
+    bool    smoothed;
+    bool    rooted;
+} tree;
 
 typedef  struct {
-    double           tipmax;
-    int              tipy;
-    } drawdata;
+    double tipmax;
+    int    tipy;
+} drawdata;
 
 
 

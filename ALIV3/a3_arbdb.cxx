@@ -56,7 +56,7 @@ void A3Arbdb::close ( void )
 {
    char   *sequence = NULL;
    GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_FIND);
-   GBDATA *gb_seq          = GB_find_string(gb_species_data,"name",name,GB_IGNORE_CASE,down_2_level);
+   GBDATA *gb_seq          = GB_find_string(gb_species_data, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
 
    if (gb_seq)
    {
@@ -81,7 +81,7 @@ int A3Arbdb::put_sequence_string(char *name, char *sequence) {
     GB_change_my_security(gb_main,6,"passwd");
 
     GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_FIND);
-    GBDATA *gb_seq = GB_find_string(gb_species_data,"name",name,GB_IGNORE_CASE,down_2_level);
+    GBDATA *gb_seq = GB_find_string(gb_species_data, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
 
     if (gb_seq) {
         GBDATA *gb_ali = GB_brother(gb_seq,alignment);

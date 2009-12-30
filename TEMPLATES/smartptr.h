@@ -57,9 +57,8 @@
 // 
 // typedef SmartCustomPtr(GEN_position, GEN_free_position) GEN_position_Ptr;
 // GEN_position_Ptr gp = GEN_new_position(5, GB_FALSE); // will be deallocated using GEN_free_position()
-// 
+//
 // --------------------------------------------------------------------------------
-
 
 #ifdef NDEBUG
 #ifdef DUMP_SMART_PTRS
@@ -243,7 +242,10 @@ public:
     T& operator*() { tpl_assert(object); return *(object->getPointer()); }
 
     /** test if SmartPtr is 0 */
-    bool isNull() const { return object==0; }
+    bool isNull() const { return object == 0; }
+    
+    /** test if SmartPtr is NOT 0 */
+    bool isSet() const { return !isNull(); }
 
     /** set SmartPtr to 0 */
     void SetNull() { Unbind(); }

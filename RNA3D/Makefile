@@ -215,7 +215,10 @@ RNA3D_Textures.o: RNA3D_Textures.hxx
 RNA3D_Textures.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 RNA3D_Textures.o: $(ARBHOME)/INCLUDE/ad_prot.h
 RNA3D_Textures.o: $(ARBHOME)/INCLUDE/arb_assert.h
+RNA3D_Textures.o: $(ARBHOME)/INCLUDE/arb_error.h
 RNA3D_Textures.o: $(ARBHOME)/INCLUDE/arbdb.h
 RNA3D_Textures.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+RNA3D_Textures.o: $(ARBHOME)/INCLUDE/arbtools.h
 RNA3D_Textures.o: $(ARBHOME)/INCLUDE/attributes.h
 RNA3D_Textures.o: $(ARBHOME)/INCLUDE/GL/glpng.h
+RNA3D_Textures.o: $(ARBHOME)/INCLUDE/smartptr.h

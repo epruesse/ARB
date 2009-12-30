@@ -620,7 +620,7 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode, GBT_TREE
             else { // non-empty field_name
                 GBDATA *gbe;
                 if (awt_nds_ms->rek[i]) {       /* hierarchical key */
-                    gbe = GB_search(gbd,awt_nds_ms->dkeys[i],0);
+                    gbe = GB_search(gbd, awt_nds_ms->dkeys[i], GB_FIND);
                 }
                 else {              /* flat entry */
                     gbe = GB_entry(gbd, awt_nds_ms->dkeys[i]);
@@ -748,7 +748,7 @@ char *make_node_text_list(GBDATA * gbd, FILE *fp)
 
     for (i = 0; i < awt_nds_ms->count; i++) {
         if (awt_nds_ms->rek[i]) {       /* hierarchical key */
-            gbe = GB_search(gbd,awt_nds_ms->dkeys[i],0);
+            gbe = GB_search(gbd, awt_nds_ms->dkeys[i], GB_FIND);
         }else{              /* flat entry */
             gbe = GB_entry(gbd, awt_nds_ms->dkeys[i]);
         }

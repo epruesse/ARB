@@ -835,7 +835,7 @@ int gbcms_talking_find(int socket, long *hsin, void *sin, GBDATA * gbd)
     }
 
     key  = gbcm_read_string(socket);
-    type = gbcm_read_long(socket);
+    type = GB_TYPES(gbcm_read_long(socket));
 
     switch (type) {
         case GB_NONE:
@@ -843,7 +843,7 @@ int gbcms_talking_find(int socket, long *hsin, void *sin, GBDATA * gbd)
             
         case GB_STRING:
             val1      = gbcm_read_string(socket);
-            case_sens = gbcm_read_long(socket);;
+            case_sens = GB_CASE(gbcm_read_long(socket));
             break;
 
         case GB_INT:
@@ -858,10 +858,10 @@ int gbcms_talking_find(int socket, long *hsin, void *sin, GBDATA * gbd)
     }
 
     {
-        enum gb_search_types gbs = gbcm_read_long(socket);
+        GB_SEARCH_TYPE gbs = GB_SEARCH_TYPE(gbcm_read_long(socket));
         gbcm_read_flush(socket);
 
-        if (type == GB_NONE) {
+        if (type == GB_FIND) {
             gbd = GB_find(gbd, key, gbs);
         }
         else if (type == GB_STRING) {
@@ -948,28 +948,23 @@ int gbcms_talking_disable_wait_for_new_request(int socket, long *hsin, void *sin
 /**************************************************************************************
                 server talking
 ***************************************************************************************/
-#ifdef __cplusplus
-extern "C" {
-#endif
-    static int (*(aisc_talking_functions[]))(int,long *,void *,GBDATA *) = {
-        gbcms_talking_unfold,   /* GBCM_COMMAND_UNFOLD */
-        gbcms_talking_get_update, /* GBCM_COMMAND_GET_UPDATA */
-        gbcms_talking_put_update, /* GBCM_COMMAND_PUT_UPDATE */
-        gbcms_talking_updated,  /* GBCM_COMMAND_UPDATED */
-        ( int (*)(int , long *, void *,  GBDATA*) )gbcms_talking_begin_transaction, /* GBCM_COMMAND_BEGIN_TRANSACTION */
-        gbcms_talking_commit_transaction, /* GBCM_COMMAND_COMMIT_TRANSACTION */
-        gbcms_talking_abort_transaction, /* GBCM_COMMAND_ABORT_TRANSACTION */
-        gbcms_talking_init_transaction, /* GBCM_COMMAND_INIT_TRANSACTION */
-        gbcms_talking_find,     /* GBCM_COMMAND_FIND */
-        gbcms_talking_close,    /* GBCM_COMMAND_CLOSE */
-        gbcms_talking_system,   /* GBCM_COMMAND_SYSTEM */
-        gbcms_talking_key_alloc, /* GBCM_COMMAND_KEY_ALLOC */
-        gbcms_talking_undo,     /* GBCM_COMMAND_UNDO */
-        gbcms_talking_disable_wait_for_new_request /* GBCM_COMMAND_DONT_WAIT */
-    };
-#ifdef __cplusplus
-}
-#endif
+
+static int (*(aisc_talking_functions[]))(int,long *,void *,GBDATA *) = {
+    gbcms_talking_unfold,                           /* GBCM_COMMAND_UNFOLD */
+    gbcms_talking_get_update,                       /* GBCM_COMMAND_GET_UPDATA */
+    gbcms_talking_put_update,                       /* GBCM_COMMAND_PUT_UPDATE */
+    gbcms_talking_updated,                          /* GBCM_COMMAND_UPDATED */
+    ( int (*)(int , long *, void *,  GBDATA*) )gbcms_talking_begin_transaction, /* GBCM_COMMAND_BEGIN_TRANSACTION */
+    gbcms_talking_commit_transaction,               /* GBCM_COMMAND_COMMIT_TRANSACTION */
+    gbcms_talking_abort_transaction,                /* GBCM_COMMAND_ABORT_TRANSACTION */
+    gbcms_talking_init_transaction,                 /* GBCM_COMMAND_INIT_TRANSACTION */
+    gbcms_talking_find,                             /* GBCM_COMMAND_FIND */
+    gbcms_talking_close,                            /* GBCM_COMMAND_CLOSE */
+    gbcms_talking_system,                           /* GBCM_COMMAND_SYSTEM */
+    gbcms_talking_key_alloc,                        /* GBCM_COMMAND_KEY_ALLOC */
+    gbcms_talking_undo,                             /* GBCM_COMMAND_UNDO */
+    gbcms_talking_disable_wait_for_new_request      /* GBCM_COMMAND_DONT_WAIT */
+};
 
 int gbcms_talking(int con,long *hs, void *sin)
 {
@@ -1339,8 +1334,8 @@ long gbcm_read_bin(int socket,GBCONTAINER *gbd, long *buffer, long mode, GBDATA 
                 gbc->d.nheader = (int)nheader;
                 hdl = GB_DATA_LIST_HEADER(gbc->d);
                 for (item = 0; item < nheader; item++) {
-                    int old_index = hdl->flags.key_quark;
-                    int new_index = buffer2->key_quark;
+                    GBQUARK old_index = hdl->flags.key_quark;
+                    GBQUARK new_index = buffer2->key_quark;
                     if (new_index && !old_index ) { /* a rename ... */
                         gb_write_index_key(gbc,item,new_index);
                     }
@@ -1816,7 +1811,7 @@ gbcmc_unfold_list(int socket, GBDATA * gbd)
     return 0;
 }
 
-GBDATA *GBCMC_find(GBDATA *gbd, const char *key, GB_TYPES type, const char *str, GB_CASE case_sens, enum gb_search_types gbs) {
+GBDATA *GBCMC_find(GBDATA *gbd, const char *key, GB_TYPES type, const char *str, GB_CASE case_sens, GB_SEARCH_TYPE gbs) {
     /* perform search in DB server (from DB client) */
     union {
         GBDATA *gbd;

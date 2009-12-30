@@ -16,8 +16,7 @@
 #include <arbdbt.h>
 
 // get the container of a species key description
-GBDATA *GBT_get_changekey(GBDATA *gb_main, const char *key,
-                          const char *change_key_path) {
+GBDATA *GBT_get_changekey(GBDATA *gb_main, const char *key, const char *change_key_path) {
 #if defined(DEVEL_RALF)
 #warning check if search for CHANGEKEY_NAME should be case-sensitive!
 #endif // DEVEL_RALF
@@ -26,8 +25,7 @@ GBDATA *GBT_get_changekey(GBDATA *gb_main, const char *key,
                                     GB_CREATE_CONTAINER);
 
     if (gb_key_data) {
-        GBDATA *gb_key_name = GB_find_string(gb_key_data, CHANGEKEY_NAME, key,
-                                             GB_IGNORE_CASE, down_2_level);
+        GBDATA *gb_key_name = GB_find_string(gb_key_data, CHANGEKEY_NAME, key, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
         if (gb_key_name) {
             gb_key = GB_get_father(gb_key_name);
         }
@@ -35,8 +33,7 @@ GBDATA *GBT_get_changekey(GBDATA *gb_main, const char *key,
     return gb_key;
 }
 
-GB_TYPES GBT_get_type_of_changekey(GBDATA *gb_main, const char *field_name,
-                                   const char *change_key_path) {
+GB_TYPES GBT_get_type_of_changekey(GBDATA *gb_main, const char *field_name, const char *change_key_path) {
     GB_TYPES  type = GB_NONE;
     GBDATA   *gbd  = GBT_get_changekey(gb_main,field_name, change_key_path);
 
@@ -64,8 +61,7 @@ GB_ERROR gbt_set_type_of_changekey(GBDATA *gb_main, const char *field_name, GB_T
 }
 
 
-GB_ERROR GBT_add_new_changekey_to_keypath(GBDATA *gb_main,const char *name,
-                                          int type, const char *keypath) {
+GB_ERROR GBT_add_new_changekey_to_keypath(GBDATA *gb_main, const char *name, int type, const char *keypath) {
     GB_ERROR  error  = NULL;
     GBDATA   *gb_key = GBT_get_changekey(gb_main, name, keypath);
     char     *c      = GB_first_non_key_char(name);
@@ -117,15 +113,15 @@ GB_ERROR GBT_add_new_changekey_to_keypath(GBDATA *gb_main,const char *name,
     return error;
 }
 
-GB_ERROR GBT_add_new_changekey(GBDATA *gb_main,const char *name, int type) {
+GB_ERROR GBT_add_new_changekey(GBDATA *gb_main, const char *name, int type) {
     return GBT_add_new_changekey_to_keypath(gb_main, name, type, CHANGE_KEY_PATH);
 }
 
-GB_ERROR GBT_add_new_gene_changekey(GBDATA *gb_main,const char *name, int type) {
+GB_ERROR GBT_add_new_gene_changekey(GBDATA *gb_main, const char *name, int type) {
     return GBT_add_new_changekey_to_keypath(gb_main, name, type, CHANGE_KEY_PATH_GENES);
 }
 
-GB_ERROR GBT_add_new_experiment_changekey(GBDATA *gb_main,const char *name, int type) {
+GB_ERROR GBT_add_new_experiment_changekey(GBDATA *gb_main, const char *name, int type) {
     return GBT_add_new_changekey_to_keypath(gb_main, name, type, CHANGE_KEY_PATH_EXPERIMENTS);
 }
 
@@ -187,14 +183,14 @@ static GB_ERROR write_as_float(GBDATA *gbfield, const char *data, GB_BOOL trimme
 }
 
 
-GB_ERROR GBT_convert_changekey(GBDATA *gb_main, const char *name, int target_type) {
+GB_ERROR GBT_convert_changekey(GBDATA *gb_main, const char *name, GB_TYPES target_type) {
     GB_ERROR error        = GB_push_transaction(gb_main);
     GB_BOOL  need_convert = GB_TRUE;
 
     if (!error) {
         GBDATA *gbkey = GBT_get_changekey(gb_main, name, CHANGE_KEY_PATH);
         if (gbkey) {
-            int source_type = *GBT_read_int(gbkey, CHANGEKEY_TYPE);
+            GB_TYPES source_type = (GB_TYPES)*GBT_read_int(gbkey, CHANGEKEY_TYPE);
             if (source_type == target_type) need_convert = GB_FALSE;
         }
         else {

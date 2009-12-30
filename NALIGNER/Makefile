@@ -61,14 +61,17 @@ ali_aligner.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ali_aligner.o: $(ARBHOME)/INCLUDE/arb_error.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/arbdb.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ali_aligner.o: $(ARBHOME)/INCLUDE/arbtools.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/attributes.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/client.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/server.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/servercntrl.h
+ali_aligner.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 ali_arbdb.o: ali_arbdb.hxx
 ali_arbdb.o: ali_misc.hxx
@@ -79,13 +82,16 @@ ali_arbdb.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ali_arbdb.o: $(ARBHOME)/INCLUDE/arb_error.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/arbdb.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ali_arbdb.o: $(ARBHOME)/INCLUDE/arbtools.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/attributes.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/server.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/servercntrl.h
+ali_arbdb.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 ali_global.o: ali_arbdb.hxx
 ali_global.o: ali_global.hxx
@@ -105,14 +111,17 @@ ali_global.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ali_global.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ali_global.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
 ali_global.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ali_global.o: $(ARBHOME)/INCLUDE/arb_error.h
 ali_global.o: $(ARBHOME)/INCLUDE/arbdb.h
 ali_global.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ali_global.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ali_global.o: $(ARBHOME)/INCLUDE/arbtools.h
 ali_global.o: $(ARBHOME)/INCLUDE/attributes.h
 ali_global.o: $(ARBHOME)/INCLUDE/client.h
 ali_global.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_global.o: $(ARBHOME)/INCLUDE/server.h
 ali_global.o: $(ARBHOME)/INCLUDE/servercntrl.h
+ali_global.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 ali_main.o: ali_aligner.hxx
 ali_main.o: ali_arbdb.hxx
@@ -133,14 +142,17 @@ ali_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ali_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ali_main.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
 ali_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ali_main.o: $(ARBHOME)/INCLUDE/arb_error.h
 ali_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 ali_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ali_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ali_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 ali_main.o: $(ARBHOME)/INCLUDE/attributes.h
 ali_main.o: $(ARBHOME)/INCLUDE/client.h
 ali_main.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_main.o: $(ARBHOME)/INCLUDE/server.h
 ali_main.o: $(ARBHOME)/INCLUDE/servercntrl.h
+ali_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 ali_pathmap.o: ali_misc.hxx
 ali_pathmap.o: ali_pathmap.hxx
@@ -166,14 +178,17 @@ ali_prealigner.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ali_prealigner.o: $(ARBHOME)/INCLUDE/arb_error.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/arbdb.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ali_prealigner.o: $(ARBHOME)/INCLUDE/arbtools.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/attributes.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/client.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/server.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/servercntrl.h
+ali_prealigner.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 ali_profile.o: ali_arbdb.hxx
 ali_profile.o: ali_misc.hxx
@@ -188,15 +203,18 @@ ali_profile.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ali_profile.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ali_profile.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
 ali_profile.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ali_profile.o: $(ARBHOME)/INCLUDE/arb_error.h
 ali_profile.o: $(ARBHOME)/INCLUDE/arbdb.h
 ali_profile.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ali_profile.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ali_profile.o: $(ARBHOME)/INCLUDE/arbtools.h
 ali_profile.o: $(ARBHOME)/INCLUDE/attributes.h
 ali_profile.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ali_profile.o: $(ARBHOME)/INCLUDE/client.h
 ali_profile.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_profile.o: $(ARBHOME)/INCLUDE/server.h
 ali_profile.o: $(ARBHOME)/INCLUDE/servercntrl.h
+ali_profile.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 ali_pt.o: ali_misc.hxx
 ali_pt.o: ali_other_stuff.hxx
@@ -208,14 +226,17 @@ ali_pt.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ali_pt.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ali_pt.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
 ali_pt.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ali_pt.o: $(ARBHOME)/INCLUDE/arb_error.h
 ali_pt.o: $(ARBHOME)/INCLUDE/arbdb.h
 ali_pt.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ali_pt.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ali_pt.o: $(ARBHOME)/INCLUDE/arbtools.h
 ali_pt.o: $(ARBHOME)/INCLUDE/attributes.h
 ali_pt.o: $(ARBHOME)/INCLUDE/client.h
 ali_pt.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_pt.o: $(ARBHOME)/INCLUDE/server.h
 ali_pt.o: $(ARBHOME)/INCLUDE/servercntrl.h
+ali_pt.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 ali_sequence.o: ali_misc.hxx
 ali_sequence.o: ali_sequence.hxx
@@ -234,11 +255,14 @@ ali_solution.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ali_solution.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ali_solution.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
 ali_solution.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ali_solution.o: $(ARBHOME)/INCLUDE/arb_error.h
 ali_solution.o: $(ARBHOME)/INCLUDE/arbdb.h
 ali_solution.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ali_solution.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ali_solution.o: $(ARBHOME)/INCLUDE/arbtools.h
 ali_solution.o: $(ARBHOME)/INCLUDE/attributes.h
 ali_solution.o: $(ARBHOME)/INCLUDE/client.h
 ali_solution.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_solution.o: $(ARBHOME)/INCLUDE/server.h
 ali_solution.o: $(ARBHOME)/INCLUDE/servercntrl.h
+ali_solution.o: $(ARBHOME)/INCLUDE/smartptr.h

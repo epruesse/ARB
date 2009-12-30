@@ -12,7 +12,7 @@ extern "C" {
 #endif
 
 
-/* servercntrl.c */
+/* servercntrl.cxx */
 
 struct arb_params {
     char *species_name;

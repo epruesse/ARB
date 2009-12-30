@@ -5,7 +5,7 @@
 
 struct comparator {
     gb_compare_function  compare;
-    char                *client_data;
+    void                *client_data;
 };
 
 static struct comparator Compare; // current compare function + client data

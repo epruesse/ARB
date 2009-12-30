@@ -48,7 +48,7 @@ static char **get_global_alignments() {
     int      i;
 
     for (i = 0; src_ali_names[i]; ++i) {
-        GBDATA *gb_ali_name = GB_find_string(gb_presets, "alignment_name", src_ali_names[i], GB_IGNORE_CASE, down_2_level);
+        GBDATA *gb_ali_name = GB_find_string(gb_presets, "alignment_name", src_ali_names[i], GB_IGNORE_CASE, SEARCH_GRANDCHILD);
         if (!gb_ali_name) freeset(src_ali_names[i], 0);
     }
 

@@ -3,7 +3,7 @@
 
 # --------------------------------------------------------------------------------
 
-LIBS = -L$(ARBHOME)/LIBLINK -lARBDB $(SYSLIBS)
+LIBS = -L$(ARBHOME)/LIBLINK $(ARBDB_LIB) $(SYSLIBS)
 
 # --------------------------------------------------------------------------------
 
@@ -129,9 +129,12 @@ ps_arb2asciipaths.o: ps_pg_tree_functions.cxx
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/arb_error.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/arbdb.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/arbtools.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/attributes.h
+ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 ps_convert_db.o: ps_database.hxx
 ps_convert_db.o: ps_defs.hxx
@@ -142,8 +145,10 @@ ps_convert_db.o: ps_tools.hxx
 ps_convert_db.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ps_convert_db.o: $(ARBHOME)/INCLUDE/arb_error.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/arbdb.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+ps_convert_db.o: $(ARBHOME)/INCLUDE/arbtools.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/attributes.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/smartptr.h
 
@@ -206,9 +211,12 @@ ps_get_probes.o: ps_pg_tree_functions.cxx
 ps_get_probes.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ps_get_probes.o: $(ARBHOME)/INCLUDE/arb_error.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/arbdb.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+ps_get_probes.o: $(ARBHOME)/INCLUDE/arbtools.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/attributes.h
+ps_get_probes.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 ps_merge_my_dbs.o: ps_database.hxx
 ps_merge_my_dbs.o: ps_defs.hxx

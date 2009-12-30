@@ -290,8 +290,8 @@ void GBS_optimize_hash(GB_HASH *hs) {
 #endif /* DEBUG */
 
         if (new_size>hs->size) { // avoid overflow
-            struct gbs_hash_entry **new_entries = GB_calloc(sizeof(struct gbs_hash_entry*), new_size);
-            size_t                  pos;
+            gbs_hash_entry **new_entries = (gbs_hash_entry**)GB_calloc(sizeof(*new_entries), new_size);
+            size_t           pos;
 
             for (pos = 0; pos<hs->size; ++pos) {
                 struct gbs_hash_entry *e;
@@ -417,7 +417,7 @@ static void delete_from_list(GB_HASH *hs, size_t i, struct gbs_hash_entry *e) {
     }
     else {
         struct gbs_hash_entry *ee;
-        for (ee = hs->entries[i]; ee->next != e; ee = ee->next);
+        for (ee = hs->entries[i]; ee->next != e; ee = ee->next) ;
         if (ee->next == e) {
             ee->next = e->next;
         }
@@ -608,7 +608,7 @@ static gbs_hash_statistic_summary *get_stat_summary(const char *id) {
     if (!stat_hash) stat_hash = GBS_create_hash(10, GB_MIND_CASE);
     found                     = GBS_read_hash(stat_hash, id);
     if (!found) {
-        gbs_hash_statistic_summary *stat = GB_calloc(1, sizeof(*stat));
+        gbs_hash_statistic_summary *stat = (gbs_hash_statistic_summary*)GB_calloc(1, sizeof(*stat));
         init_hash_statistic_summary(stat);
         found                            = (long)stat;
         GBS_write_hash(stat_hash, id, found);
@@ -764,20 +764,12 @@ const char *GBS_hash_next_element_that(GB_HASH *hs, const char *last_key, GB_BOO
     return e ? e->key : NULL;
 }
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+static int wrap_hashCompare4gb_sort(const void *v0, const void *v1, void *sorter) {
+    const struct gbs_hash_entry *e0 = (const struct gbs_hash_entry*)v0;
+    const struct gbs_hash_entry *e1 = (const struct gbs_hash_entry*)v1;
 
-    int wrap_hashCompare4gb_sort(const void *v0, const void *v1, void *sorter) {
-        const struct gbs_hash_entry *e0 = (const struct gbs_hash_entry*)v0;
-        const struct gbs_hash_entry *e1 = (const struct gbs_hash_entry*)v1;
-
-        return ((gbs_hash_compare_function)sorter)(e0->key, e0->val, e1->key, e1->val);
-    }
-
-#ifdef __cplusplus
+    return ((gbs_hash_compare_function)sorter)(e0->key, e0->val, e1->key, e1->val);
 }
-#endif
 
 void GBS_hash_do_sorted_loop(GB_HASH *hs, gb_hash_loop_type func, gbs_hash_compare_function sorter, void *client_data) {
     long   i, j, e2;

@@ -529,7 +529,6 @@ checks: check_setup check_tabs
 # end test section ------------------------------
 
 ARBDB_LIB=-lARBDB
-ARBDBPP_LIB=-lARBDBPP
 
 LIBS = $(ARBDB_LIB) $(SYSLIBS)
 GUI_LIBS = $(LIBS) -lAW -lAWT $(XLIBS)
@@ -586,9 +585,6 @@ ARCHS = \
 			AISC_MKPTPS/dummy.a \
 			ALIV3/ALIV3.a \
 			ARBDB/libARBDB.a \
-			ARBDB2/libARBDB.a \
-			ARBDBPP/libARBDBPP.a \
-			ARBDBS/libARBDB.a \
 			ARB_GDE/ARB_GDE.a \
 			AWT/libAWT.a \
 			AWTC/AWTC.a \
@@ -597,7 +593,6 @@ ARCHS = \
 			CONVERTALN/CONVERTALN.a \
 			DBSERVER/DBSERVER.a \
 			DIST/DIST.a \
-			EDIT/EDIT.a \
 			EDIT4/EDIT4.a \
 			EISPACK/EISPACK.a \
 			GDE/GDE.a \
@@ -654,7 +649,7 @@ ARCHS_TREE = \
 		SL/FILTER/FILTER.a \
 		SL/ARB_TREE/ARB_TREE.a \
 
-# parsimony tree (used by NTREE, PARSIMONY, STAT(->EDIT[4]), DIST(obsolete!))
+# parsimony tree (used by NTREE, PARSIMONY, STAT(->EDIT4), DIST(obsolete!))
 ARCHS_AP_TREE = \
 		$(ARCHS_TREE) \
 		SL/AP_TREE/AP_TREE.a \
@@ -708,28 +703,6 @@ ARCHS_RNA3D = \
 $(RNA3D): $(ARCHS_RNA3D:.a=.dummy) shared_libs
 	@echo $@ currently does not work as standalone application
 	false
-
-#***********************************	arb_edit **************************************
-EDIT = bin/arb_edit
-ARCHS_EDIT = \
-		$(ARCHS_AP_TREE) \
-		ARB_GDE/ARB_GDE.a \
-		EDIT/EDIT.a \
-		NAMES_COM/client.a \
-		SERVERCNTRL/SERVERCNTRL.a \
-		SL/AW_HELIX/AW_HELIX.a \
-		SL/AW_NAME/AW_NAME.a \
-		SL/GUI_ALIVIEW/GUI_ALIVIEW.a \
-		SL/HELIX/HELIX.a \
-		STAT/STAT.a \
-		XML/XML.a \
-
-$(EDIT): $(ARCHS_EDIT:.a=.dummy) shared_libs
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_EDIT) $(GUI_LIBS) || ( \
-		echo Link $@ ; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_EDIT) -lARBDBPP $(GUI_LIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_EDIT) -lARBDBPP $(GUI_LIBS) ; \
-		)
 
 #***********************************	arb_edit4 **************************************
 EDIT4 = bin/arb_edit4
@@ -959,7 +932,7 @@ $(ALIV3): $(ARCHS_ALIV3:.a=.dummy) shared_libs
 
 #***********************************	SHARED LIBRARIES SECTION  **************************************
 
-shared_libs: dball aw awt
+shared_libs: db aw awt
 		@echo -------------------- Updating shared libraries
 		$(MAKE) libs
 
@@ -970,17 +943,12 @@ addlibs:
 				"link_static=$(LINK_STATIC)" \
 	)
 
-libs:	lib/libARBDB.$(SHARED_LIB_SUFFIX) \
-	lib/libARBDBPP.$(SHARED_LIB_SUFFIX) \
-	lib/libARBDO.$(SHARED_LIB_SUFFIX) \
+libs:   lib/libARBDB.$(SHARED_LIB_SUFFIX) \
 	lib/libAW.$(SHARED_LIB_SUFFIX) \
 	lib/libAWT.$(SHARED_LIB_SUFFIX)
 
 lib/lib%.$(SHARED_LIB_SUFFIX): LIBLINK/lib%.$(SHARED_LIB_SUFFIX)
 	cp $< $@
-
-# lib/$(MOTIF_LIBNAME):  $(MOTIF_LIBPATH)
-# 	cp $< $@
 
 #***************************************************************************************
 #			Recursive calls to sub-makefiles
@@ -1081,7 +1049,7 @@ show:
 		@echo ' libraries:'
 		@echo ''
 		@echo '  com    communication libraries'
-		@echo '  dball  ARB database (all versions: db dbs and db2)'
+		@echo '  db     ARB database'
 		@echo '  aw     GUI lib'
 		@echo '  awt    GUI toolkit'
 		@echo '  awtc   general purpose library'
@@ -1116,11 +1084,7 @@ help:   HELP_SOURCE/HELP_SOURCE.dummy
 
 HELP_SOURCE/HELP_SOURCE.dummy: xml menus# need to create some files in GDE-subtree first
 
-dball:	db dbs db2 dp
 db:	ARBDB/libARBDB.dummy
-dbs:	ARBDBS/libARBDB.dummy
-db2:	ARBDB2/libARBDB.dummy
-dp:	ARBDBPP/libARBDBPP.dummy
 aw:	WINDOW/libAW.dummy
 awt:	AWT/libAWT.dummy
 awtc:	AWTC/AWTC.dummy
@@ -1132,7 +1096,6 @@ ge: 	GENOM/GENOM.dummy
 prd: 	PRIMER_DESIGN/PRIMER_DESIGN.dummy
 
 nt:	menus $(NTREE)
-ed:	$(EDIT)
 
 nal:	$(NALIGNER)
 a3:	$(ALIV3)
@@ -1164,7 +1127,7 @@ pgt:	$(PGT)
 xml:	XML/XML.dummy
 xmlin:  XML_IMPORT/XML_IMPORT.dummy# broken
 templ:	TEMPLATES/TEMPLATES.dummy
-stat:   STAT/STAT.a $(NTREE) $(EDIT) $(EDIT4)
+stat:   STAT/STAT.a $(NTREE) $(EDIT4)
 
 #********************************************************************************
 
@@ -1255,7 +1218,7 @@ SOURCE_TOOLS/generate_all_links.stamp: SOURCE_TOOLS/generate_all_links.sh
 gde:		GDE/GDE.dummy
 GDE:		gde
 agde: 		ARB_GDE/ARB_GDE.dummy
-tools:		SL/SL.dummy TOOLS/TOOLS.dummy
+tools:		shared_libs SL/SL.dummy TOOLS/TOOLS.dummy
 convert:	SL/FILE_BUFFER/FILE_BUFFER.dummy shared_libs
 	$(MAKE) CONVERTALN/CONVERTALN.dummy
 
@@ -1300,9 +1263,8 @@ perl: tools
 		"AUTODEPENDS=1" \
 		"dflags=$(dflags)" \
 		all
-	@$(MAKE) testperlscripts
 
-testperlscripts: 
+testperlscripts: perl 
 	@$(MAKE) -C PERL_SCRIPTS/test test
 
 perl_clean:
@@ -1430,11 +1392,8 @@ arbbasic: links preplib
 
 arbbasic2: templ mbin com sl $(GL)
 
-# shared arb libraries
-arbshared: dball aw dp awt
-
 # needed arb applications
-arbapplications: nt pa ed e4 wetc pt na nal di ph ds pgt
+arbapplications: nt pa e4 wetc pt na nal di ph ds pgt
 
 # optionally things (no real harm for ARB if any of them fails):
 arbxtras: tg pst a3 xmlin 
@@ -1447,7 +1406,7 @@ tryxtras:
 		echo "ARB will work nevertheless!" ) )
 
 arb: arbbasic
-	$(MAKE) arbshared arbapplications help
+	$(MAKE) shared_libs arbapplications help
 
 all: checks
 	$(MAKE) links

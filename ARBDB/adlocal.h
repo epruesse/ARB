@@ -39,7 +39,13 @@ void ad_use(int dummy, ...);
 #define gbm_get_memblk(size)            (char*)(GB_calloc(1,size))
 #define gbm_get_mem(size,index)         (char*)(GB_calloc(1,size))
 #define gbm_free_mem(block,size,index)  do { free(block); ADUSE(index); } while(0)
-#define fread(block,size,nelem,stream) (memset(block,0,size*nelem), (fread)(block,size,nelem,stream))
+
+#else
+
+#define gbm_put_memblk(block,size)     gbm_put_memblk_impl(block, size)
+#define gbm_get_memblk(size)           gbm_get_memblk_impl(size)
+#define gbm_get_mem(size,index)        gbm_get_mem_impl(size,index)
+#define gbm_free_mem(block,size,index) gbm_free_mem_impl(block,size,index)
 
 #endif
 
@@ -146,16 +152,7 @@ enum gb_open_types {
     gb_open_read_only_small = 17
 };
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-    typedef void (*GB_CB)(GBDATA *,int *clientdata, GB_CB_TYPE gbtype);
-
-#ifdef __cplusplus
-}
-#endif
-
+typedef void (*GB_CB)(GBDATA *,int *clientdata, GB_CB_TYPE gbtype);
 
 typedef int GBQUARK;
 
@@ -451,7 +448,7 @@ struct gb_if_entries
     GB_REL_GBDATA rel_ie_gbd;   /* Typ: (struct gb_data_base_type *)    */
 };
 
-/** hash index to speed up GB_find(x,x,down_2_level) ***/
+/** hash index to speed up GB_find(x, x, SEARCH_GRANDCHILD) ***/
 
 struct gb_index_files_struct {
     GB_REL_IFS  rel_if_next;    /* Typ: (struct gb_index_files_struct *) */
@@ -595,17 +592,7 @@ typedef struct gbl_command_arguments_struct {
 
 } GBL_command_arguments;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-    typedef GB_ERROR (*GBL_COMMAND)(GBL_command_arguments *args);
-    /* typedef GB_ERROR (*GBL_COMMAND)(GBDATA *gb_ref, char *com, GBL_client_data *cd,
-       int argcinput, GBL *argvinput, int argcparam,GBL *argvparam, int *argcout, GBL **argvout); */
-
-#ifdef __cplusplus
-}
-#endif
+typedef GB_ERROR (*GBL_COMMAND)(GBL_command_arguments *args);
 
 struct GBL_command_table {
     const char *command_identifier;

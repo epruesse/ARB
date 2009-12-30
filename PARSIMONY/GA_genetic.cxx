@@ -951,7 +951,7 @@ AP_ERR *GA_genetic::create_jobs(GA_tree *tree,int cluster) {
             }
             cout << " ** " << t << " count " << count;
             treePerCluster[i] = t;
-            gbcl = GB_find(gbcl,"cl*",this_level|search_next);
+            gbcl = GB_find(gbcl, "cl*", SEARCH_NEXT_BROTHER);
         } else break;
     }
     clusterCount = i;

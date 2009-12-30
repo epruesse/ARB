@@ -120,7 +120,7 @@ static void sort_gbdata_offsets(struct gbdata_offset *gbdo, int num)
 #endif
 }
 
-static struct gbdata_offset *find_gbdata_offset(int quark, GBDATA *gbd){
+static struct gbdata_offset *find_gbdata_offset(GBQUARK quark, GBDATA *gbd){
     struct gbdata_offset *gbdo = gb_gbk[quark].gbdoff;
     long l=0,
         h=gb_gbk[quark].cnt-1,
@@ -158,7 +158,7 @@ static long getrel_GBDATA(long rel_to, GBDATA *gbd)
 
     if (gbd)
     {
-        unsigned int quark = gbd->rel_father ? GB_KEY_QUARK(gbd) : 0; /* cause Main->data->father==NULL !! */
+        GBQUARK quark = gbd->rel_father ? GB_KEY_QUARK(gbd) : 0; /* cause Main->data->father==NULL !! */
         struct gbdata_offset *gbdo = gb_gbk[quark].gbdoff;
         int l=0,
             h=gb_gbk[quark].cnt-1,
@@ -337,7 +337,7 @@ static void convertFlags4Save(struct gb_flag_types *flags, struct gb_flag_types2
     */
 }
 
-static long write_GBDATA(GB_MAIN_TYPE *Main,GBDATA *gbd, int quark, FILE *out, long *offset,GB_MAIN_IDX main_idx)
+static long write_GBDATA(GB_MAIN_TYPE *Main,GBDATA *gbd, GBQUARK quark, FILE *out, long *offset,GB_MAIN_IDX main_idx)
      /*
        if out==NULL -> only calculate size
 
@@ -547,7 +547,7 @@ static long calcGbdOffsets(GB_MAIN_TYPE *Main, gbdByKey gbk)
 
 static void scanGbdByKey(GB_MAIN_TYPE *Main, GBDATA *gbd, gbdByKey gbk)
 {
-    unsigned int quark;
+    GBQUARK quark;
 
     if (gbd->flags.temporary) return;
 

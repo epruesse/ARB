@@ -1,3 +1,25 @@
+/* ================================================================ */
+/*                                                                  */
+/*   File      : ARB_ext.c                                          */
+/*   Purpose   : additional code for perllib                        */
+/*                                                                  */
+/*   Institute of Microbiology (Technical University Munich)        */
+/*   http://www.arb-home.de/                                        */
+/*                                                                  */
+/* ================================================================ */
+
+
+char *static_pntr                 = 0; // see ../TOOLS/arb_proto_2_xsub.cxx@static_pntr
+
+static GB_HASH *gbp_cp_hash_table = 0;
+
+// defined in ../ARBDB/adperl.c@GBP_croak_function
+extern void (*GBP_croak_function)(const char *message);
+
+void GBP_croak(const char *message) {
+    Perl_croak(aTHX_ "ARBDB croaks %s", message);
+}
+
 void GBP_callback(GBDATA *gbd, int *cl, GB_CB_TYPE cb_type){
     char *perl_func;
     char *perl_cl;
@@ -27,8 +49,6 @@ void GBP_callback(GBDATA *gbd, int *cl, GB_CB_TYPE cb_type){
 }
 
 
-static GB_HASH *gbp_cp_hash_table = 0;
-
 GB_ERROR GBP_add_callback(GBDATA *gbd, char *perl_func, char *perl_cl){
     char     *data  = 0;
     char     *arg   = 0;
@@ -42,7 +62,7 @@ GB_ERROR GBP_add_callback(GBDATA *gbd, char *perl_func, char *perl_cl){
     sprintf(data,"%p:%s%c%s",gbd,perl_func,'\1',perl_cl);
     if (!GBS_read_hash(gbp_cp_hash_table,data)){
 	GBS_write_hash(gbp_cp_hash_table,data,(long)data);
-	error = GB_add_callback(gbd,GB_CB_DELETE|GB_CB_CHANGED,GBP_callback, (int *)arg);
+	error = GB_add_callback(gbd, GB_CB_TYPE(GB_CB_DELETE|GB_CB_CHANGED), GBP_callback, (int *)arg);
     }else{
 	free(arg);
     }
@@ -64,10 +84,19 @@ GB_ERROR GBP_remove_callback(GBDATA *gbd, char *perl_func, char *perl_cl){
 	GBS_write_hash(gbp_cp_hash_table,data,0);
 	free(data);
 	free(arg);
-	GB_remove_callback(gbd,GB_CB_DELETE|GB_CB_CHANGED,GBP_callback, (int *)data);
+	GB_remove_callback(gbd, GB_CB_TYPE(GB_CB_DELETE|GB_CB_CHANGED), GBP_callback, (int *)data);
     }
     return 0;
 }
 
 
-char *static_pntr = 0;
+class ARB_init_perl_interface {
+ public:
+    ARB_init_perl_interface() {
+        GBP_croak_function = GBP_croak;
+    }
+};
+
+static ARB_init_perl_interface init; /* automatically initialize this module */
+
+

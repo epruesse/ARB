@@ -493,7 +493,7 @@ void gb_delete_main_entry(GBDATA **gbd_ptr) {
         GBDATA      *gbd2;
         GBCONTAINER *gbc = ((GBCONTAINER *) gbd);
 
-        int sys_quark = GB_key_2_quark(gbd, GB_SYSTEM_FOLDER);
+        GBQUARK sys_quark = GB_key_2_quark(gbd, GB_SYSTEM_FOLDER);
 
         for (pass = 1; pass <= 2; pass++) {
             for (index = 0; index < gbc->d.nheader; index++) {
@@ -771,9 +771,9 @@ char *gb_abort_entry(GBDATA *gbd){
 
 int gb_abort_transaction_local_rek(GBDATA *gbd, long mode) {
     /* delete created, undo changed */
-    GBDATA *gb;
-    enum gb_key_types type;
-    GB_CHANGED change = (GB_CHANGED)GB_ARRAY_FLAGS(gbd).changed;
+    GBDATA     *gb;
+    GB_TYPES    type;
+    GB_CHANGED  change = (GB_CHANGED)GB_ARRAY_FLAGS(gbd).changed;
 
     switch (change) {
         case gb_not_changed:

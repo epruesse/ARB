@@ -9,30 +9,18 @@
 #ifndef AD_K_PROT_H
 #define AD_K_PROT_H
 
-#ifndef P_
-# error P_ is not defined
-#endif
-
 /* define ARB attributes: */
 #ifndef ATTRIBUTES_H
 # include <attributes.h>
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 
 /* adstring.c */
-void GBK_dump_backtrace P_((FILE *out, GB_ERROR error));
-void GBK_install_SIGSEGV_handler P_((GB_BOOL install));
-void GBK_terminate P_((const char *error));
-void GBK_terminatef P_((const char *templat, ...)) __ATTR__FORMAT(1);
-GB_ERROR GBK_assert_msg P_((const char *assertion, const char *file, int linenr));
-
-#ifdef __cplusplus
-}
-#endif
+void GBK_dump_backtrace(FILE *out, GB_ERROR error);
+void GBK_install_SIGSEGV_handler(GB_BOOL install);
+void GBK_terminate(const char *error);
+void GBK_terminatef(const char *templat, ...) __ATTR__FORMAT(1);
+GB_ERROR GBK_assert_msg(const char *assertion, const char *file, int linenr);
 
 #else
 #error ad_k_prot.h included twice
