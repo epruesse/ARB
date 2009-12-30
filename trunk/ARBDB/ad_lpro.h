@@ -25,7 +25,6 @@ void gbs_memcopy(char *dest, const char *source, long len);
 char *gbs_add_path(char *path, char *name);
 
 /* arbdb.c */
-void gb_init_gb(void);
 GB_ERROR gb_unfold(GBCONTAINER *gbd, long deep, int index_pos);
 int gb_read_nr(GBDATA *gbd);
 GB_ERROR gb_write_compressed_pntr(GBDATA *gbd, const char *s, long memsize, long stored_size);
