@@ -656,7 +656,7 @@ void MG_transfer_fields_cb(AW_window *aww){
         {
             if (IS_QUERIED(gb_species1)) {
                 const char *name1       = GBT_read_name(gb_species1);
-                GBDATA     *gb_species2 = GB_find_string(gb_dest_species_data,"name", name1, GB_IGNORE_CASE, down_2_level);
+                GBDATA     *gb_species2 = GB_find_string(gb_dest_species_data,"name", name1, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
 
                 if (!gb_species2) {
                     gb_species2             = GB_create_container(gb_dest_species_data,"species");
@@ -668,11 +668,11 @@ void MG_transfer_fields_cb(AW_window *aww){
                 }
 
                 if (!error) {
-                    GBDATA *gb_field1 = GB_search(gb_species1,field,GB_FIND);
-                    GBDATA *gb_field2 = GB_search(gb_species2,field,GB_FIND);
-                    int     type1;
-                    int     type2;
-                    bool    use_copy   = true;
+                    GBDATA   *gb_field1 = GB_search(gb_species1,field,GB_FIND);
+                    GBDATA   *gb_field2 = GB_search(gb_species2,field,GB_FIND);
+                    GB_TYPES  type1;
+                    GB_TYPES  type2;
+                    bool      use_copy  = true;
 
                     if (gb_field2 && gb_field1){
                         type1 = GB_read_type(gb_field1);
@@ -710,7 +710,7 @@ void MG_transfer_fields_cb(AW_window *aww){
                         }
                         if (gb_field1 && !error) {
                             type1                 = GB_read_type(gb_field1);
-                            gb_field2             = GB_search(gb_species2,field,type1);
+                            gb_field2             = GB_search(gb_species2, field, type1);
                             if (!gb_field2) error = GB_await_error();
                             else error            = GB_copy(gb_field2,gb_field1);
                         }
@@ -805,8 +805,8 @@ void MG_move_field_cb(AW_window *aww){
                 if (!gb_field1) error = GBS_global_string("Species 1 has no field '%s'",field);
 
                 if (!error) {
-                    int     type1     = GB_read_type(gb_field1);
-                    GBDATA *gb_field2 = GB_search(gb_species2, field, GB_FIND);
+                    GB_TYPES  type1     = GB_read_type(gb_field1);
+                    GBDATA   *gb_field2 = GB_search(gb_species2, field, GB_FIND);
 
                     if (gb_field2) {
                         int type2 = GB_read_type(gb_field2);
@@ -821,7 +821,7 @@ void MG_move_field_cb(AW_window *aww){
                     }
 
                     if (!error && !gb_field2) { // destination missing or removed 
-                        gb_field2             = GB_search(gb_species2,field,type1);
+                        gb_field2             = GB_search(gb_species2, field, type1);
                         if (!gb_field2) error = GB_await_error();
                         else error            = GB_copy(gb_field2,gb_field1);
                     }

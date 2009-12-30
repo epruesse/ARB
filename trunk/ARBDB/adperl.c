@@ -1,86 +1,242 @@
+/* ================================================================ */
+/*                                                                  */
+/*   File      : adperl.c                                           */
+/*   Purpose   : helper functions used by perl interface            */
+/*               (see ../PERL2ARB)                                  */
+/*                                                                  */
+/*   Institute of Microbiology (Technical University Munich)        */
+/*   http://www.arb-home.de                                         */
+/*                                                                  */
+/* ================================================================ */
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
 #include "arbdb.h"
 
-GB_UNDO_TYPE GBP_undo_type(char *type){
-    GB_UNDO_TYPE utype = GB_UNDO_NONE;
-    if (!strcasecmp("undo",type)) utype = GB_UNDO_UNDO;
-    if (!strcasecmp("redo",type)) utype = GB_UNDO_REDO;
-    if (utype == GB_UNDO_NONE){
-        GBK_terminate("Usage: ARB::undo(gb_main, 'undo'/'redo')");
+// used by perl interface, see ../PERL2ARB/ARB_ext.c@GBP_croak_function
+void (*GBP_croak_function)(const char *message) = NULL;
+
+static void die(const char *with_last_words) {
+    // raise exception in caller (assuming caller is a perl script)
+
+    if (GBP_croak_function) {
+        GBP_croak_function(with_last_words);
     }
-    return utype;
+    else {
+        fputs("Warning: GBP_croak_function undefined. terminating..\n", stderr);
+        GBK_terminate(with_last_words);
+    }
 }
 
-int GBP_search_mode(char *search_mode){
-    if (!strcasecmp(search_mode,"this")) return this_level;
-    if (!strcasecmp(search_mode,"down")) return down_level;
-    if (!strcasecmp(search_mode,"down_2")) return down_2_level;
-    if (!strcasecmp(search_mode,"this_next")) return this_level | search_next;
-    if (!strcasecmp(search_mode,"down_next")) return down_level | search_next;
-    GB_warningf("Error: ARB::find: Unknown search_mode '%s'\n"
-                "Possible choices are: 'this' 'down' 'down_2' 'this_next' and 'down_next'", search_mode);
-    return down_level;
-}
+/* --------------------------------------------------------------------------------
+ * "generic" enum<->string-conversion
+ */
 
-static const char *gbp_typeconvert[] = {
-    "NONE",
-    "BIT",
-    "BYTE",
-    "INT",
-    "FLOAT",
-    "-----",
-    "BITS",
-    "----",
-    "BYTES",
-    "INTS",
-    "FLOATS",
-    "-----",
-    "STRING",
-    "------",
-    "------",
-    "CONTAINER",
-    0
+
+union known_enum {
+    int as_int;
+
+    GB_SEARCH_TYPE    search_type;
+    GB_CASE           case_sensitivity;
+    GB_TYPES          db_type;
+    GB_UNDO_TYPE      undo_type;
+    GB_alignment_type ali_type;
 };
 
+#define ILLEGAL_VALUE (-666)
 
-const char *GBP_type_to_string(GB_TYPES type){
-    if (type >= GB_TYPE_MAX) {
-        GB_warning("Unknown Type");
-        return "????";
+
+typedef const char *(*enum2string)(known_enum enumValue);
+
+static known_enum next_known_enum_value(known_enum greaterThan, enum2string lookup) {
+    known_enum enumValue, lookupLimit;
+
+    enumValue.as_int   = greaterThan.as_int+1;
+    lookupLimit.as_int = enumValue.as_int+256;
+
+    while (enumValue.as_int <= lookupLimit.as_int) {
+        const char *valueExists = lookup(enumValue);
+        if (valueExists) return enumValue;
+        enumValue.as_int++;
     }
-    return gbp_typeconvert[type];
+
+    enumValue.as_int = ILLEGAL_VALUE;
+    return enumValue;
+}
+
+static known_enum first_known_enum_value(known_enum greaterEqualThan, enum2string lookup) {
+    return (lookup(greaterEqualThan))
+        ? greaterEqualThan
+        : next_known_enum_value(greaterEqualThan, lookup);
+}
+
+static known_enum string2enum(const char *string, enum2string lookup, known_enum start) {
+
+    for (start = first_known_enum_value(start, lookup);
+         start.as_int != ILLEGAL_VALUE;
+         start = next_known_enum_value(start, lookup))
+    {
+        const char *asString = lookup(start);
+        gb_assert(asString);
+        if (strcasecmp(asString, string) == 0) break; // found
+    }
+    return start;
+}
+
+static char *buildAllowedValuesString(known_enum start, enum2string lookup) {
+    char *allowed = NULL;
+
+    for (start = first_known_enum_value(start, lookup);
+         start.as_int != ILLEGAL_VALUE;
+         start = next_known_enum_value(start, lookup))
+    {
+        const char *asString = lookup(start);
+        gb_assert(asString);
+
+        if (allowed) freeset(allowed, GBS_global_string_copy("%s, '%s'", allowed, asString));
+        else allowed = GBS_global_string_copy("'%s'", asString);
+    }
+
+    if (!allowed) allowed = strdup("none (this is a bug)");
+
+    return allowed;
+}
+
+static known_enum string2enum_or_die(const char *enum_name, const char *string, enum2string lookup, known_enum start) {
+    known_enum found = string2enum(string, lookup, start);
+
+    if (found.as_int == ILLEGAL_VALUE) {
+        char *allowed_values = buildAllowedValuesString(start, lookup);
+        char *usage          = GBS_global_string_copy("Error: value '%s' is not a legal %s\n"
+                                                      "Known %ss are: %s",
+                                                      string, enum_name, enum_name, allowed_values);
+        free(allowed_values);
+        die(usage);
+    }
+
+    return found;
+}
+
+/* --------------------------------------------------------------------------------
+ * conversion declarations for different used enums
+ *
+ * To add a new enum type
+ * - write a function to convert your enum-values into a string (example: GBP_gb_search_types_to_string)
+ * - write a reverse-wrapper                                    (example: GBP_string_to_gb_search_types)
+ *
+ * [Code-Tag: enum_conversion_functions]
+ * see also ../TOOLS/arb_proto_2_xsub.cxx@enum_type_replacement
+ */
+
+/* ------------------------ */
+/*      GB_SEARCH_TYPE      */
+
+const char *GBP_GB_SEARCH_TYPE_2_charPtr(GB_SEARCH_TYPE search_type) {
+    switch (search_type) {
+        case SEARCH_BROTHER:       return "brother";
+        case SEARCH_CHILD:         return "child";
+        case SEARCH_GRANDCHILD:    return "grandchild";
+        case SEARCH_NEXT_BROTHER:  return "next_brother";
+        case SEARCH_CHILD_OF_NEXT: return "child_of_next";
+    }
+
+    return NULL;
+}
+
+GB_SEARCH_TYPE GBP_charPtr_2_GB_SEARCH_TYPE(const char *search_mode) {
+    known_enum start; start.as_int = 0;
+    known_enum found  = string2enum_or_die("search-type", search_mode, (enum2string)GBP_GB_SEARCH_TYPE_2_charPtr, start);
+    return found.search_type;
+}
+
+/* ------------------ */
+/*      GB_TYPES      */
+
+const char *GBP_GB_TYPES_2_charPtr(GB_TYPES type) {
+    switch (type) {
+        case GB_NONE:   return "NONE";
+        case GB_BIT:    return "BIT";
+        case GB_BYTE:   return "BYTE";
+        case GB_INT:    return "INT";
+        case GB_FLOAT:  return "FLOAT";
+        case GB_BITS:   return "BITS";
+        case GB_BYTES:  return "BYTES";
+        case GB_INTS:   return "INTS";
+        case GB_FLOATS: return "FLOATS";
+        case GB_STRING: return "STRING";
+        case GB_DB:     return "CONTAINER";
+
+        default: break;
+    }
+    return NULL;
+}
+
+GB_TYPES GBP_charPtr_2_GB_TYPES(const char *type_name) {
+    known_enum start; start.as_int = 0;
+    known_enum found  = string2enum_or_die("db-type", type_name, (enum2string)GBP_GB_TYPES_2_charPtr, start);
+    return found.db_type;
 }
 
 
-GB_TYPES GBP_gb_types(char *type_name){
-    int i;
-    if (!type_name) return GB_NONE;
-    if (type_name[0] == 0) return GB_NONE;
-    for (i=0;i<GB_TYPE_MAX;i++) {
-        if (!strcasecmp(gbp_typeconvert[i],type_name)) return (GB_TYPES)i;
+/* ---------------------- */
+/*      GB_UNDO_TYPE      */
+
+const char *GBP_GB_UNDO_TYPE_2_charPtr(GB_UNDO_TYPE undo_type) {
+    switch (undo_type) {
+        case GB_UNDO_UNDO: return "undo";
+        case GB_UNDO_REDO: return "redo";
+
+        case GB_UNDO_NONE:
+        case GB_UNDO_KILL:
+        case GB_UNDO_UNDO_REDO:
+            break;
     }
-    GB_warningf("ERROR: Unknown type %s (probably used in ARB::create or ARB::search)",type_name);
-    fprintf(stderr,"ERROR: Unknown type %s",type_name);
-    fprintf(stderr,"    Possible Choices:\n");
-    for (i=0;i<GB_TYPE_MAX;i++) {
-        fprintf(stderr,"        %s\n",gbp_typeconvert[i]);
-    }
-    return GB_NONE;
+    return NULL;
 }
 
-GB_UNDO_TYPE GBP_undo_types(const char *type_name){
-    if (!strcasecmp(type_name,"undo")) return GB_UNDO_UNDO;
-    if (!strcasecmp(type_name,"redo")) return GB_UNDO_REDO;
-    GB_internal_errorf("Cannot convert '%s' to undo type,\n"
-                       " only 'redo' / 'undo' allowed\n", type_name);
-    return GB_UNDO_NONE;
+GB_UNDO_TYPE GBP_charPtr_2_GB_UNDO_TYPE(const char *undo_type) {
+    known_enum start; start.as_int = 0;
+    known_enum found  = string2enum_or_die("undo-type", undo_type, (enum2string)GBP_GB_UNDO_TYPE_2_charPtr, start);
+    return found.undo_type;
 }
 
-const char *GBP_undo_type_2_string(GB_UNDO_TYPE type){
-    if (type == GB_UNDO_UNDO) return "UNDO";
-    if (type == GB_UNDO_REDO) return "REDO";
-    return "????";
+
+/* ----------------- */
+/*      GB_CASE      */
+
+const char *GBP_GB_CASE_2_charPtr(GB_CASE sensitivity) {
+    switch (sensitivity) {
+        case GB_IGNORE_CASE:    return "ignore_case";
+        case GB_MIND_CASE:      return "mind_case";
+        case GB_CASE_UNDEFINED: return "case_undef";
+    }
+    return NULL;
+}
+
+GB_CASE GBP_charPtr_2_GB_CASE(const char *sensitivity) {
+    known_enum start; start.as_int = 0;
+    known_enum found  = string2enum_or_die("sensitivity", sensitivity, (enum2string)GBP_GB_CASE_2_charPtr, start);
+    return found.case_sensitivity;
+}
+
+/* --------------------------- */
+/*      GB_alignment_type      */
+
+const char *GBP_GB_alignment_type_2_charPtr(GB_alignment_type ali_type) {
+    switch (ali_type) {
+        case GB_AT_RNA: return "RNA";
+        case GB_AT_DNA: return "DNA";
+        case GB_AT_AA:  return "AMINO";
+
+        case GB_AT_UNKNOWN: break;
+    }
+    return NULL;
+}
+
+GB_alignment_type GBP_charPtr_2_GB_alignment_type(const char *ali_type) {
+    known_enum start; start.as_int = 0;
+    known_enum found  = string2enum_or_die("alignment-type", ali_type, (enum2string)GBP_GB_alignment_type_2_charPtr, start);
+    return found.ali_type;
 }

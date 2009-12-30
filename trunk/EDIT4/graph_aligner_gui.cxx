@@ -188,7 +188,7 @@ static void sina_start(AW_window *window, AW_CL cd2) {
         int num_selected = 0;
         for (GBDATA *gb_spec = cd->get_first_selected_species(&num_selected);
              gb_spec; gb_spec = cd->get_next_selected_species()) {
-            GBDATA *gbd_name = GB_find(gb_spec, "name", down_level);
+            GBDATA *gbd_name = GB_find(gb_spec, "name", SEARCH_CHILD);
             if (gbd_name) {
                 const char *str = GB_read_char_pntr(gbd_name);
                 fwrite(str, strlen(str), 1, tmpfile_F);
@@ -203,7 +203,7 @@ static void sina_start(AW_window *window, AW_CL cd2) {
         GB_begin_transaction(GLOBAL_gb_main);
         for (GBDATA *gb_spec = GBT_first_marked_species(GLOBAL_gb_main);
              gb_spec; gb_spec = GBT_next_marked_species(gb_spec)) {
-            GBDATA *gbd_name = GB_find(gb_spec, "name", down_level);
+            GBDATA *gbd_name = GB_find(gb_spec, "name", SEARCH_CHILD);
             if (gbd_name) {
                 const char *str = GB_read_char_pntr(gbd_name);
                 fwrite(str, strlen(str), 1, tmpfile_F);
@@ -260,7 +260,7 @@ static char* filter_sai(GBDATA *gb_extended, AW_CL /*cd*/) {
     if (gbd) {
         const char* type = GB_read_char_pntr(gbd);
         if (type && strncmp("PV", type, 2) == 0) {
-            gbd    = GB_find(gb_extended, "name", down_level);
+            gbd    = GB_find(gb_extended, "name", SEARCH_CHILD);
             result = GB_read_string(gbd);
         }
     }

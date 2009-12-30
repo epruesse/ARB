@@ -138,6 +138,7 @@ Importer.o: types.h
 Importer.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 Importer.o: $(ARBHOME)/INCLUDE/ad_prot.h
 Importer.o: $(ARBHOME)/INCLUDE/arb_assert.h
+Importer.o: $(ARBHOME)/INCLUDE/arb_error.h
 Importer.o: $(ARBHOME)/INCLUDE/arbdb.h
 Importer.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 Importer.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -153,6 +154,7 @@ Location.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 Location.o: $(ARBHOME)/INCLUDE/ad_prot.h
 Location.o: $(ARBHOME)/INCLUDE/adGene.h
 Location.o: $(ARBHOME)/INCLUDE/arb_assert.h
+Location.o: $(ARBHOME)/INCLUDE/arb_error.h
 Location.o: $(ARBHOME)/INCLUDE/arbdb.h
 Location.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 Location.o: $(ARBHOME)/INCLUDE/arbtools.h

@@ -67,7 +67,7 @@ categs,        /*  number of rate categories */
     sites,         /*  number of input sequence positions */
     weightsum;     /*  sum of weights of positions in analysis */
 
-boolean
+bool
 anerror,       /*  error flag */
     freqsfrom,     /*  use empirical base frequencies */
     interleaved,   /*  input data are in interleaved format */
@@ -99,8 +99,8 @@ FILE *debug;
 void hang(msg) char *msg; {printf("Hanging around: %s\n", msg); while(1);}
 #endif
 
-void getnums ()         /* input number of species, number of sites */
-{ /* getnums */
+void getnums() {
+    /* input number of species, number of sites */
     printf("\n%s, version %s, %s\n\n",
            programName,
            programVersion,
@@ -110,52 +110,48 @@ void getnums ()         /* input number of species, number of sites */
 
     if (fscanf(INFILE, "%d %d", &numsp, &sites) != 2) {
         printf("ERROR: Problem reading number of species and sites\n");
-        anerror = TRUE;
+        anerror = true;
         return;
     }
     printf("%d Species, %d Sites\n\n", numsp, sites);
 
     if (numsp > maxsp) {
         printf("ERROR: Too many species; adjust program constants\n");
-        anerror = TRUE;
+        anerror = true;
     }
     else if (numsp < 4) {
         printf("ERROR: Too few species\n");
-        anerror = TRUE;
+        anerror = true;
     }
 
     if (sites > maxsites) {
         printf("ERROR: Too many sites; adjust program constants\n");
-        anerror = TRUE;
+        anerror = true;
     }
     else if (sites < 1) {
         printf("ERROR: Too few sites\n");
-        anerror = TRUE;
+        anerror = true;
     }
-} /* getnums */
+}
 
 
-boolean digit (ch) int ch; {return (ch >= '0' && ch <= '9'); }
+bool digit(int ch) {return (ch >= '0' && ch <= '9'); }
 
 
-boolean white (ch) int ch; { return (ch == ' ' || ch == '\n' || ch == '\t'); }
+bool white(int ch) { return (ch == ' ' || ch == '\n' || ch == '\t'); }
 
 
-void uppercase (chptr)
-     int *chptr;
-     /* convert character to upper case -- either ASCII or EBCDIC */
-{ /* uppercase */
+void uppercase(int *chptr) {
+    /* convert character to upper case -- either ASCII or EBCDIC */
     int  ch;
     ch = *chptr;
     if ((ch >= 'a' && ch <= 'i') || (ch >= 'j' && ch <= 'r')
         || (ch >= 's' && ch <= 'z'))
         *chptr = ch + 'A' - 'a';
-} /* uppercase */
+}
 
 
-int base36 (ch)
-     int ch;
-{ /* base36 */
+int base36(int ch) {
     if      (ch >= '0' && ch <= '9') return (ch - '0');
     else if (ch >= 'A' && ch <= 'I') return (ch - 'A' + 10);
     else if (ch >= 'J' && ch <= 'R') return (ch - 'J' + 19);
@@ -164,24 +160,20 @@ int base36 (ch)
     else if (ch >= 'j' && ch <= 'r') return (ch - 'j' + 19);
     else if (ch >= 's' && ch <= 'z') return (ch - 's' + 28);
     else return -1;
-} /* base36 */
+}
 
 
-int itobase36 (i)
-     int  i;
-{ /* itobase36 */
+int itobase36(int i) {
     if      (i <  0) return '?';
     else if (i < 10) return (i      + '0');
     else if (i < 19) return (i - 10 + 'A');
     else if (i < 28) return (i - 19 + 'J');
     else if (i < 36) return (i - 28 + 'S');
     else return '?';
-} /* itobase36 */
+}
 
 
-int findch (c)
-     int  c;
-{
+int findch(int c) {
     int ch;
 
     while ((ch = getc(INFILE)) != EOF && ch != c) ;
@@ -189,9 +181,8 @@ int findch (c)
 }
 
 
-void inputweights ()
-/* input the character weights 0, 1, 2 ... 9, A, B, ... Y, Z */
-{ /* inputweights */
+void inputweights() {
+    /* input the character weights 0, 1, 2 ... 9, A, B, ... Y, Z */
     int i, ch, wi;
 
     for (i = 2; i <= nmlngth; i++)  (void) getc(INFILE);
@@ -205,30 +196,29 @@ void inputweights ()
         else if (! white(ch)) {
             printf("ERROR: Bad weight character: '%c'", ch);
             printf("       Weights must be a digit or a letter.\n");
-            anerror = TRUE;
+            anerror = true;
             return;
         }
     }
 
     if (findch('\n') == EOF) {      /* skip to end of line */
         printf("ERROR: Missing newline at end of weight data\n");
-        anerror = TRUE;
+        anerror = true;
     }
-} /* inputweights */
+}
 
 
-void getoptions ()
-{ /* getoptions */
+void getoptions() {
     int  ch, i, extranum;
 
     categs      =     0;  /*  Number of rate categories */
-    freqsfrom   = FALSE;  /*  Use empirical base frequencies */
-    interleaved =  TRUE;  /*  By default, data format is interleaved */
+    freqsfrom   = false;  /*  Use empirical base frequencies */
+    interleaved =  true;  /*  By default, data format is interleaved */
     mininfo     = MIN_INFO; /*  Default minimum number of informative seqs */
-    printdata   = FALSE;  /*  Don't echo data to output stream */
+    printdata   = false;  /*  Don't echo data to output stream */
     ttratio     =   2.0;  /*  Transition/transversion rate ratio */
-    userweights = FALSE;  /*  User-defined position weights */
-    writefile   = FALSE;  /*  Do not write to file */
+    userweights = false;  /*  User-defined position weights */
+    writefile   = false;  /*  Do not write to file */
     extranum    =     0;
 
     while ((ch = getc(INFILE)) != '\n' && ch != EOF) {
@@ -236,26 +226,26 @@ void getoptions ()
         switch (ch) {
             case '1' : printdata    = ! printdata; break;
             case 'C' : categs       = -1; extranum++; break;
-            case 'F' : freqsfrom    = TRUE; break;
+            case 'F' : freqsfrom    = true; break;
             case 'I' : interleaved  = ! interleaved; break;
             case 'L' : break;
             case 'M' : mininfo      = 0; extranum++; break;
             case 'T' : ttratio      = -1.0; extranum++; break;
             case 'U' : break;
-            case 'W' : userweights  = TRUE; weightsum = 0; extranum++; break;
+            case 'W' : userweights  = true; weightsum = 0; extranum++; break;
             case 'Y' : writefile    = ! writefile; break;
             case ' ' : break;
             case '\t': break;
             default  :
                 printf("ERROR: Bad option character: '%c'\n", ch);
-                anerror = TRUE;
+                anerror = true;
                 return;
         }
     }
 
     if (ch == EOF) {
         printf("ERROR: End-of-file in options list\n");
-        anerror = TRUE;
+        anerror = true;
         return;
     }
 
@@ -269,49 +259,49 @@ void getoptions ()
             case 'C':
                 if (categs >= 0) {
                     printf("ERROR: Unexpected Categories data\n");
-                    anerror = TRUE;
+                    anerror = true;
                 }
                 else if (fscanf(INFILE,"%d",&categs) != 1 || findch('\n')==EOF) {
                     printf("ERROR: Problem reading number of rate categories\n");
-                    anerror = TRUE;
+                    anerror = true;
                 }
                 else if (categs < 1 || categs > maxcategories) {
                     printf("ERROR: Bad number of rate categories: %d\n", categs);
-                    anerror = TRUE;
+                    anerror = true;
                 }
                 break;
 
             case 'M':   /*  Minimum informative sequences  */
                 if (mininfo > 0) {
                     printf("ERROR: Unexpected Min informative residues data\n");
-                    anerror = TRUE;
+                    anerror = true;
                 }
                 else if (fscanf(INFILE,"%d",&mininfo)!=1 || findch('\n')==EOF) {
                     printf("ERROR: Problem reading min informative residues\n");
-                    anerror = TRUE;
+                    anerror = true;
                 }
                 else if (mininfo < 2 || mininfo > numsp) {
                     printf("ERROR: Bad number for informative residues: %d\n",
                            mininfo);
-                    anerror = TRUE;
+                    anerror = true;
                 }
                 break;
 
             case 'T':   /*  Transition/transversion ratio  */
                 if (ttratio >= 0.0) {
                     printf("ERROR: Unexpected Transition/transversion data\n");
-                    anerror = TRUE;
+                    anerror = true;
                 }
                 else if (fscanf(INFILE,"%lf",&ttratio)!=1 || findch('\n')==EOF) {
                     printf("ERROR: Problem reading transition/transversion data\n");
-                    anerror = TRUE;
+                    anerror = true;
                 }
                 break;
 
             case 'W':    /*  Weights  */
                 if (! userweights || weightsum > 0) {
                     printf("ERROR: Unexpected Weights data\n");
-                    anerror = TRUE;
+                    anerror = true;
                 }
                 else {
                     inputweights();
@@ -320,7 +310,7 @@ void getoptions ()
 
             default:
                 printf("ERROR: Auxiliary data line starts with '%c'\n", ch);
-                anerror = TRUE;
+                anerror = true;
                 break;
         }
     }
@@ -329,13 +319,13 @@ void getoptions ()
 
     if (categs < 0) {
         printf("ERROR: Category data missing from input\n");
-        anerror = TRUE;
+        anerror = true;
         return;
     }
 
     if (mininfo <= 0) {
         printf("ERROR: Minimum informative residues missing from input\n");
-        anerror = TRUE;
+        anerror = true;
         return;
     }
     else {
@@ -344,7 +334,7 @@ void getoptions ()
 
     if (ttratio < 0.0) {
         printf("ERROR: Transition/transversion data missing from input\n");
-        anerror = TRUE;
+        anerror = true;
         return;
     }
 
@@ -354,15 +344,14 @@ void getoptions ()
     }
     else if (weightsum < 1) {
         printf("ERROR: Weight data invalid or missing from input\n");
-        anerror = TRUE;
+        anerror = true;
         return;
     }
 
-} /* getoptions */
+}
 
 
-void getbasefreqs ()
-{ /* getbasefreqs */
+void getbasefreqs() {
     double  suma, sumb;
 
     if (freqsfrom)  printf("Empirical ");
@@ -372,7 +361,7 @@ void getbasefreqs ()
         if (fscanf(INFILE, "%lf%lf%lf%lf", &freqa, &freqc, &freqg, &freqt) != 4
             || findch('\n') == EOF) {
             printf("ERROR: Problem reading user base frequencies\n");
-            anerror = TRUE;
+            anerror = true;
         }
     }
 
@@ -405,19 +394,18 @@ void getbasefreqs ()
     fracchange = xi*(2*freqa*freqgr + 2*freqc*freqty)
         + xv*(1.0 - freqa*freqa - freqc*freqc
               - freqg*freqg - freqt*freqt);
-} /* getbasefreqs */
+}
 
 
-void getyspace ()
-{ /* getyspace */
+void getyspace() {
     long size;
     int  i;
     char *y0;
 
     size = 4 * (sites/4 + 1);
-    if (! (y0 = malloc((unsigned) (sizeof(char) * size * (numsp+1))))) {
+    if (! (y0 = (char*)malloc((unsigned) (sizeof(char) * size * (numsp+1))))) {
         printf("ERROR: Unable to obtain space for data array\n");
-        anerror = TRUE;
+        anerror = true;
     }
     else {
         for (i = 0; i <= numsp; i++) {
@@ -425,13 +413,10 @@ void getyspace ()
             y0 += size;
         }
     }
-} /* getyspace */
+}
 
 
-void setuptree (tr, numSp)
-     tree  *tr;
-     int    numSp;
-{ /* setuptree */
+void setuptree(tree *tr, int numSp) { 
     int     i, j;
     nodeptr p = 0, q;
 
@@ -467,14 +452,13 @@ void setuptree (tr, numSp)
     tr->ntips      = 0;
     tr->nextnode   = 0;
     tr->opt_level  = 0;
-    tr->smoothed   = FALSE;
+    tr->smoothed   = false;
     if (anerror) printf("ERROR: Unable to obtain sufficient memory");
-} /* setuptree */
+}
 
 
-void freeTreeNode(p)   /*  Free a tree node (sector) */
-     nodeptr  p;
-{ /* freeTreeNode */
+void freeTreeNode(nodeptr p) {
+    /*  Free a tree node (sector) */
     if (p) {
         if (p->x) {
             if (p->x->a) free((char *) p->x->a);
@@ -482,12 +466,9 @@ void freeTreeNode(p)   /*  Free a tree node (sector) */
         }
         free ((char *) p);
     }
-} /* freeTreeNode */
+}
 
-
-void freeTree (tr)
-     tree  *tr;
-{ /* freeTree */
+void freeTree(tree *tr) {
     int  i;
     nodeptr  p, q;
 
@@ -502,17 +483,15 @@ void freeTree (tr)
             freeTreeNode(p);
         }
     }
-} /* freeTree */
+}
 
 
-void getdata (tr)
-     tree  *tr;
+void getdata(tree *tr) {
      /* read sequences */
-{ /* getdata */
     int  i, j, k, l, basesread, basesnew, ch;
     int  meaning[256];          /*  meaning of input characters */
     char *nameptr;
-    boolean  allread, firstpass;
+    bool  allread, firstpass;
 
     for (i = 0; i <= 255; i++) meaning[i] = 0;
     meaning['A'] =  1;
@@ -538,8 +517,8 @@ void getdata (tr)
 
     basesread = basesnew = 0;
 
-    allread = FALSE;
-    firstpass = TRUE;
+    allread = false;
+    firstpass = true;
     ch = ' ';
 
     while (! allread) {
@@ -554,7 +533,7 @@ void getdata (tr)
                     printf("ERROR: Blank name for species %d; ", i);
                     printf("check number of species,\n");
                     printf("       number of sites, and interleave option.\n");
-                    anerror = TRUE;
+                    anerror = true;
                     return;
                 }
 
@@ -573,7 +552,7 @@ void getdata (tr)
 
                 if (ch == EOF) {
                     printf("ERROR: End-of-file in name of species %d\n", i);
-                    anerror = TRUE;
+                    anerror = true;
                     return;
                 }
             }    /* if (firstpass) */
@@ -588,7 +567,7 @@ void getdata (tr)
                         if (i != 1) ch = y[1][j];
                         else {
                             printf("ERROR: Dot (.) found at site %d of sequence 1\n", j);
-                            anerror = TRUE;
+                            anerror = true;
                             return;
                         }
                     }
@@ -598,14 +577,14 @@ void getdata (tr)
                 else {
                     printf("ERROR: Bad base (%c) at site %d of sequence %d\n",
                            ch, j, i);
-                    anerror = TRUE;
+                    anerror = true;
                     return;
                 }
             }
 
             if (ch == EOF) {
                 printf("ERROR: End-of-file at site %d of sequence %d\n", j, i);
-                anerror = TRUE;
+                anerror = true;
                 return;
             }
 
@@ -615,13 +594,13 @@ void getdata (tr)
                 printf("ERROR: Sequences out of alignment\n");
                 printf("       %d (instead of %d) residues read in sequence %d\n",
                        j - basesread, basesnew - basesread, i);
-                anerror = TRUE;
+                anerror = true;
                 return;
             }
 
             while (ch != '\n' && ch != EOF) ch = getc(INFILE); /* flush line */
         }                                                  /* next sequence */
-        firstpass = FALSE;
+        firstpass = false;
         basesread = basesnew;
         allread = (basesread >= sites);
     }
@@ -676,14 +655,13 @@ void getdata (tr)
 
     for (i = 1; i <= sites; i++)  if (info[i] < MIN_INFO)  weight[i] = 0;
 
-} /* getdata */
+}
 
 
-void sitesort ()
-/* Shell sort keeping sites, weights in same order */
-{ /* sitesort */
+void sitesort() {
+    /* Shell sort keeping sites, weights in same order */
     int  gap, i, j, jj, jg, k;
-    boolean  flip, tied;
+    bool  flip, tied;
 
     for (gap = sites/2; gap > 0; gap /= 2) {
         for (i = gap + 1; i <= sites; i++) {
@@ -692,8 +670,8 @@ void sitesort ()
             do {
                 jj = patsite[j];
                 jg = patsite[j+gap];
-                flip = FALSE;
-                tied = TRUE;
+                flip = false;
+                tied = true;
                 for (k = 1; tied && (k <= numsp); k++) {
                     flip = (y[k][jj] >  y[k][jg]);
                     tied = (y[k][jj] == y[k][jg]);
@@ -707,21 +685,20 @@ void sitesort ()
 
         }
     }
-} /* sitesort */
+}
 
 
-void sitecombcrunch ()
-/* combine sites that have identical patterns (and nonzero weight) */
-{ /* sitecombcrunch */
+void sitecombcrunch() {
+    /* combine sites that have identical patterns (and nonzero weight) */
     int  i, sitei, j, sitej, k;
-    boolean  tied;
+    bool  tied;
 
     i = 0;
     patsite[0] = patsite[1];
     patweight[0] = 0;
 
     for (j = 1; j <= sites; j++) {
-        tied = TRUE;
+        tied = true;
         sitei = patsite[i];
         sitej = patsite[j];
 
@@ -742,12 +719,11 @@ void sitecombcrunch ()
 
     endsite = i;
     if (patweight[i] > 0) endsite++;
-} /* sitecombcrunch */
+}
 
 
-void makeweights ()
-/* make up weights vector to avoid duplicate computations */
-{ /* makeweights */
+void makeweights() {
+    /* make up weights vector to avoid duplicate computations */
     int  i;
 
     for (i = 1; i <= sites; i++)  patsite[i] = i;
@@ -756,18 +732,16 @@ void makeweights ()
     if (endsite > maxpatterns) {
         printf("ERROR:  Too many patterns in data\n");
         printf("        Increase maxpatterns to at least %d\n", endsite);
-        anerror = TRUE;
+        anerror = true;
     }
     else {
         printf("Analyzing %d distinct data patterns (columns)\n\n", endsite);
     }
-} /* makeweights */
+}
 
 
-void makevalues (tr)
-     tree  *tr;
-     /* set up fractional likelihoods at tips */
-{ /* makevalues */
+void makevalues(tree *tr) {
+    /* set up fractional likelihoods at tips */
     nodeptr  p;
     int  i, j;
 
@@ -778,14 +752,11 @@ void makevalues (tr)
         p = tr->nodep[i];
         p->tip = &(y[i-1][0]);
     }
+}
 
-} /* makevalues */
 
-
-void empiricalfreqs (tr)
-     tree  *tr;
+void empiricalfreqs(tree *tr) {
      /* Get empirical base frequencies from the data */
-{ /* empiricalfreqs */
     double  sum, suma, sumc, sumg, sumt, wj, fa, fc, fg, ft;
     int  i, j, k, code;
     char *yptr;
@@ -820,12 +791,10 @@ void empiricalfreqs (tr)
         freqg = sumg / sum;
         freqt = sumt / sum;
     }
-} /* empiricalfreqs */
+}
 
 
-void getinput (tr)
-     tree  *tr;
-{ /* getinput */
+void getinput(tree *tr) {
     getnums();                        if (anerror) return;
     getoptions();                     if (anerror) return;
     if (! freqsfrom) getbasefreqs();  if (anerror) return;
@@ -838,11 +807,10 @@ void getinput (tr)
         empiricalfreqs (tr);            if (anerror) return;
         getbasefreqs();
     }
-} /* getinput */
+}
 
 
-xarray *setupxarray ()
-{ /* setupxarray */
+xarray *setupxarray() {
     xarray  *x;
     xtype  *data;
 
@@ -863,14 +831,11 @@ xarray *setupxarray ()
         }
     }
     return x;
-} /* setupxarray */
+}
 
 
-void linkxarray (req, min, freexptr, usedxptr)
-     int  req, min;
-     xarray **freexptr, **usedxptr;
-     /*  Link a set of xarrays */
-{ /* linkxarray */
+void linkxarray(int req, int min, xarray **freexptr, xarray **usedxptr) {
+    /*  Link a set of xarrays */
     xarray  *first, *prev, *x;
     int  i;
 
@@ -890,7 +855,7 @@ void linkxarray (req, min, freexptr, usedxptr)
         }
         else {
             printf("ERROR: Failure to get xarray memory.\n");
-            if (i < min) anerror = TRUE;
+            if (i < min) anerror = true;
         }
     } while ((i < req) && x);
 
@@ -901,12 +866,10 @@ void linkxarray (req, min, freexptr, usedxptr)
 
     *freexptr = first;
     *usedxptr = (xarray *) NULL;
-} /* linkxarray */
+}
 
 
-void setupnodex (tr)
-     tree  *tr;
-{ /* setupnodex */
+void setupnodex(tree *tr) {
     nodeptr  p;
     int  i;
 
@@ -914,77 +877,72 @@ void setupnodex (tr)
         p = tr->nodep[i];
         if ((anerror = !(p->x = setupxarray()))) break;
     }
-} /* setupnodex */
+}
 
-
-xarray *getxtip (p)
-     nodeptr  p;
-{ /* getxtip */
-    xarray  *new;
-    boolean  splice;
+xarray *getxtip(nodeptr p) {
+    xarray *new_xarray;
+    bool  splice;
 
     if (! p) return (xarray *) NULL;
 
-    splice = FALSE;
+    splice = false;
 
     if (p->x) {
-        new = p->x;
-        if (new == new->prev) ;             /* linked to self; leave it */
-        else if (new == usedxtip) usedxtip = usedxtip->next; /* at head */
-        else if (new == usedxtip->prev) ;   /* already at tail */
+        new_xarray = p->x;
+        if (new_xarray == new_xarray->prev) ;             /* linked to self; leave it */
+        else if (new_xarray == usedxtip) usedxtip = usedxtip->next; /* at head */
+        else if (new_xarray == usedxtip->prev) ;   /* already at tail */
         else {                              /* move to tail of list */
-            new->prev->next = new->next;
-            new->next->prev = new->prev;
-            splice = TRUE;
+            new_xarray->prev->next = new_xarray->next;
+            new_xarray->next->prev = new_xarray->prev;
+            splice                 = true;
         }
     }
 
     else if (freextip) {
-        p->x = new = freextip;
-        new->owner = p;
-        if (new->prev != new) {            /* not only member of freelist */
-            new->prev->next = new->next;
-            new->next->prev = new->prev;
-            freextip = new->next;
+        p->x = new_xarray = freextip;
+        new_xarray->owner = p;
+        if (new_xarray->prev != new_xarray) {            /* not only member of freelist */
+            new_xarray->prev->next = new_xarray->next;
+            new_xarray->next->prev = new_xarray->prev;
+            freextip               = new_xarray->next;
         }
         else
             freextip = (xarray *) NULL;
 
-        splice = TRUE;
+        splice = true;
     }
 
     else if (usedxtip) {
         usedxtip->owner->x = (xarray *) NULL;
-        p->x = new = usedxtip;
-        new->owner = p;
-        usedxtip = usedxtip->next;
+        p->x               = new_xarray = usedxtip;
+        new_xarray->owner  = p;
+        usedxtip           = usedxtip->next;
     }
 
     else {
         printf ("ERROR: Unable to locate memory for a tip.\n");
-        anerror = TRUE;
+        anerror = true;
         exit(0);
     }
 
     if (splice) {
         if (usedxtip) {                  /* list is not empty */
-            usedxtip->prev->next = new;
-            new->prev = usedxtip->prev;
-            usedxtip->prev = new;
-            new->next = usedxtip;
+            usedxtip->prev->next = new_xarray;
+            new_xarray->prev     = usedxtip->prev;
+            usedxtip->prev       = new_xarray;
+            new_xarray->next     = usedxtip;
         }
         else
-            usedxtip = new->prev = new->next = new;
+            usedxtip = new_xarray->prev = new_xarray->next = new_xarray;
     }
 
-    return  new;
-} /* getxtip */
+    return  new_xarray;
+}
 
 
-xarray *getxnode (p)
-     nodeptr  p;
-     /* Ensure that internal node p has memory */
-{ /* getxnode */
+xarray *getxnode(nodeptr p) {
+    /* Ensure that internal node p has memory */
     nodeptr  s;
 
     if (! (p->x)) {  /*  Move likelihood array on this node to sector p */
@@ -998,19 +956,18 @@ xarray *getxnode (p)
         }
     }
     return  p->x;
-} /* getxnode */
+}
 
 
-void newview (p)                      /*  Update likelihoods at node */
-     nodeptr  p;
-{ /* newview */
+void newview(nodeptr p) {
+    /*  Update likelihoods at node */
     double   z1, lz1, xvlz1, z2, lz2, xvlz2,
         zz1, zv1, fx1r, fx1y, fx1n, suma1, sumg1, sumc1, sumt1,
         zz2, zv2, fx2r, fx2y, fx2n, ki, tempi, tempj;
     nodeptr  q, r;
     xtype   *x1a, *x1c, *x1g, *x1t, *x2a, *x2c, *x2g, *x2t,
         *x3a, *x3c, *x3g, *x3t;
-    int  i;
+    int      i;
 
     if (p->tip) {             /*  Make sure that data are at tip */
         int code;
@@ -1100,40 +1057,33 @@ void newview (p)                      /*  Update likelihoods at node */
             *x3t++ = sumt1 * (zz2 * (*x2t++ - tempi) + tempj);
         }
     }
-} /* newview */
+}
 
 
-void hookup (p, q, z)
-     nodeptr  p, q;
-     double   z;
-{ /* hookup */
+void hookup(nodeptr p, nodeptr q, double z) {
     p->back = q;
     q->back = p;
     p->z = q->z = z;
-} /* hookup */
+}
 
 
-void initrav (p)
-     nodeptr  p;
-{ /* initrav */
+void initrav(nodeptr p) {
     if (! p->tip) {
         initrav(p->next->back);
         initrav(p->next->next->back);
         newview(p);
     }
-} /* initrav */
-
+}
 
 /*=======================================================================*/
 /*                         Read a tree from a file                       */
 /*=======================================================================*/
 
-int treeFinishCom ()
-{ /* treeFinishCom */
-    int      ch;
-    boolean  inquote;
+int treeFinishCom() {
+    int  ch;
+    bool inquote;
 
-    inquote = FALSE;
+    inquote = false;
     while ((ch = getc(INFILE)) != EOF && (inquote || ch != ']')) {
         if (ch == '[' && ! inquote) {             /* comment; find its end */
             if ((ch = treeFinishCom()) == EOF)  break;
@@ -1142,12 +1092,11 @@ int treeFinishCom ()
     }
 
     return  ch;
-} /* treeFinishCom */
+}
 
 
-int treeGetCh ()
-/* get next nonblank, noncomment character */
-{ /* treeGetCh */
+int treeGetCh() {
+    /* get next nonblank, noncomment character */
     int  ch;
 
     while ((ch = getc(INFILE)) != EOF) {
@@ -1159,66 +1108,61 @@ int treeGetCh ()
     }
 
     return  ch;
-} /* treeGetCh */
+}
 
-
-void treeFlushLabel()
-{
-    int     ch;
-    boolean done;
+void treeFlushLabel() {
+    int  ch;
+    bool done;
 
     if ((ch = treeGetCh()) == EOF)  return;
     done = (ch == ':' || ch == ',' || ch == ')'  || ch == '[' || ch == ';');
 
     if (!done) {
-        boolean quoted = (ch == '\'');
+        bool quoted = (ch == '\'');
         if (quoted) ch = getc(INFILE);
 
         while (! done) {
             if (quoted) {
                 if ((ch = findch('\'')) == EOF)  return;      /* find close quote */
                 ch = getc(INFILE);                            /* check next char */
-                if (ch != '\'') done = TRUE;                  /* not doubled quote */
+                if (ch != '\'') done = true;                  /* not doubled quote */
             }
             else if (ch == ':' || ch == ',' || ch == ')'  || ch == '['
                      || ch == ';' || ch == '\n' || ch == EOF) {
-                done = TRUE;
+                done = true;
             }
             if (! done)  done = ((ch = getc(INFILE)) == EOF);
         }
     }
 
     if (ch != EOF)  (void) ungetc(ch, INFILE);
-} /* treeFlushLabel */
+}
 
 
-int  findTipName (tr, ch)
-     tree  *tr;
-     int    ch;
-{ /* findTipName */
+int findTipName(tree *tr, int ch) {
     nodeptr  q;
-    char  *nameptr, str[nmlngth+1];
-    int  i, n;
-    boolean  found, quoted, done;
+    char    *nameptr, str[nmlngth+1];
+    int      i, n;
+    bool     found, quoted, done;
 
     if ((quoted = (ch == '\'')))  ch = getc(INFILE);
-    done = FALSE;
+    done = false;
     i = 0;
 
     do {
         if (quoted) {
             if (ch == '\'') {
                 ch = getc(INFILE);
-                if (ch != '\'') done = TRUE;
+                if (ch != '\'') done = true;
             }
             else if (ch == EOF)
-                done = TRUE;
+                done = true;
             else if (ch == '\n' || ch == '\t')
                 ch = ' ';
         }
         else if (ch == ':' || ch == ','  || ch == ')'  || ch == '['
                  || ch == '\n' || ch == EOF)
-            done = TRUE;
+            done = true;
         else if (ch == '_' || ch == '\t')
             ch = ' ';
 
@@ -1245,7 +1189,7 @@ int  findTipName (tr, ch)
             do {found = str[i] == *nameptr++;}  while (found && (++i < nmlngth));
         }
         else
-            found = FALSE;
+            found = false;
     } while ((! found) && (++n <= tr->mxtips));
 
     if (! found) {
@@ -1255,11 +1199,10 @@ int  findTipName (tr, ch)
     }
 
     return  (found ? n : 0);
-} /* findTipName */
+}
 
 
-double processLength ()
-{ /* processLength */
+double processLength() {
     double  branch;
     int     ch;
     char    string[41];
@@ -1270,30 +1213,25 @@ double processLength ()
     if (fscanf(INFILE, "%lf", &branch) != 1) {
         printf("ERROR: Problem reading branch length in processLength:\n");
         if (fscanf(INFILE, "%40s", string) == 1)  printf("%s\n", string);
-        anerror = TRUE;
+        anerror = true;
         branch = 0.0;
     }
 
     return  branch;
-} /* processLength */
+}
 
 
-void  treeFlushLen ()
-{ /* treeFlushLen */
+void treeFlushLen() {
     int  ch;
 
     if ((ch = treeGetCh()) == ':')
         (void) processLength();
     else if (ch != EOF)
         (void) ungetc(ch, INFILE);
+}
 
-} /* treeFlushLen */
 
-
-void  treeNeedCh (c1, where)
-     int    c1;
-     char  *where;
-{ /* treeNeedCh */
+void treeNeedCh(int c1, const char *where) {
     int c2, i;
 
     if ((c2 = treeGetCh()) == c1)  return;
@@ -1308,14 +1246,10 @@ void  treeNeedCh (c1, where)
         putchar('\'');
     }
     printf(" found instead\n");
-    anerror = TRUE;
-} /* treeNeedCh */
+    anerror = true;
+}
 
-
-void  addElementLen (tr, p)
-     tree    *tr;
-     nodeptr  p;
-{ /* addElementLen */
+void addElementLen(tree *tr, nodeptr p) {
     double   z, branch;
     nodeptr  q;
     int      n, ch;
@@ -1326,11 +1260,11 @@ void  addElementLen (tr, p)
             if (tr->rooted || n > 2*(tr->mxtips) - 1) {
                 printf("ERROR: Too many internal nodes.  Is tree rooted?\n");
                 printf("       Deepest splitting should be a trifurcation.\n");
-                anerror = TRUE;
+                anerror = true;
                 return;
             }
             else {
-                tr->rooted = TRUE;
+                tr->rooted = true;
             }
         }
         q = tr->nodep[n];
@@ -1345,7 +1279,7 @@ void  addElementLen (tr, p)
 
     else {                               /*  A new tip */
         n = findTipName(tr, ch);
-        if (n <= 0) {anerror = TRUE; return; }
+        if (n <= 0) {anerror = true; return; }
         q = tr->nodep[n];
         if (tr->start->number > n)  tr->start = q;
         (tr->ntips)++;
@@ -1356,20 +1290,17 @@ void  addElementLen (tr, p)
     z = exp(-branch / fracchange);
     if (z > zmax)  z = zmax;
     hookup(p, q, z);
-} /* addElementLen */
+}
 
 
-void uprootTree (tr, p)
-     tree   *tr;
-     nodeptr p;
-{ /* uprootTree */
+void uprootTree(tree *tr, nodeptr p) {
     nodeptr  q, r, s;
     int  n;
 
     if (p->tip || p->back) {
         printf("ERROR: Unable to uproot tree.\n");
         printf("       Inappropriate node marked for removal.\n");
-        anerror = TRUE;
+        anerror = true;
         return;
     }
 
@@ -1377,7 +1308,7 @@ void uprootTree (tr, p)
     if (n != tr->mxtips + tr->ntips - 1) {
         printf("ERROR: Unable to uproot tree.  Inconsistent\n");
         printf("       number of tips and nodes for rooted tree.\n");
-        anerror = TRUE;
+        anerror = true;
         return;
     }
 
@@ -1395,13 +1326,11 @@ void uprootTree (tr, p)
     }
 
     q->back = r->back = s->back = (nodeptr) NULL;
-    tr->rooted = FALSE;
-} /* uprootTree */
+    tr->rooted = false;
+}
 
 
-void treeReadLen (tr)
-     tree  *tr;
-{ /* treeReadLen */
+void treeReadLen(tree *tr) {
     nodeptr  p;
     int  i, ch;
 
@@ -1410,8 +1339,8 @@ void treeReadLen (tr)
     tr->ntips       = 0;
     tr->nextnode    = tr->mxtips + 1;
     tr->opt_level   = 0;
-    tr->smoothed    = FALSE;
-    tr->rooted      = FALSE;
+    tr->smoothed    = false;
+    tr->rooted      = false;
 
     p = tr->nodep[(tr->nextnode)++];
     treeNeedCh('(', "at start of");                  if (anerror)  return;
@@ -1424,7 +1353,7 @@ void treeReadLen (tr)
         }
         else {                                  /*  A rooted format */
             p->next->next->back = (nodeptr) NULL;
-            tr->rooted = TRUE;
+            tr->rooted = true;
             if (ch != EOF)  (void) ungetc(ch, INFILE);
         }
     }
@@ -1444,17 +1373,14 @@ void treeReadLen (tr)
 
     initrav(tr->start);
     initrav(tr->start->back);
-} /* treeReadLen */
+}
 
 /*=======================================================================*/
 /*                           End of Tree Reading                         */
 /*=======================================================================*/
 
 
-double evaluate (tr, p)
-     tree    *tr;
-     nodeptr  p;
-{ /* evaluate */
+double evaluate(tree *tr, nodeptr p) {
     double   sum, z, lz, xvlz,
         ki, zz, zv, fx1a, fx1c, fx1g, fx1t, fx1r, fx1y, fx2r, fx2y,
         suma, sumb, sumc, term;
@@ -1515,19 +1441,18 @@ double evaluate (tr, p)
 
     tr->likelihood = sum;
     return  sum;
-} /* evaluate */
+}
 
 
-void dli_dki (p)  /*  d(Li)/d(ki) */
-     nodeptr  p;
-{ /* dli_dki */
+void dli_dki(nodeptr p) {
+    /*  d(Li)/d(ki) */
     double   z, lz, xvlz;
     double   ki, fx1a, fx1c, fx1g, fx1t, fx1r, fx1y, fx2r, fx2y,
         suma, sumb, sumc;
     double  *rptr;
     xtype   *x1a, *x1c, *x1g, *x1t, *x2a, *x2c, *x2g, *x2t;
     nodeptr  q;
-    int  i, *wptr;
+    int      i, *wptr;
 
 
     q = p->back;
@@ -1574,36 +1499,30 @@ void dli_dki (p)  /*  d(Li)/d(ki) */
         sumb *= exp(ki * xvlz);
         dLidki[i] += *wptr++ * lz * (suma + sumb*xv);
     }
-} /* dli_dki */
+}
 
-
-void spanSubtree (p)
-     nodeptr  p;
-{ /* spanSubtree */
+void spanSubtree(nodeptr p) {
     dli_dki (p);
 
     if (! p->tip) {
         spanSubtree(p->next->back);
         spanSubtree(p->next->next->back);
     }
-} /* spanSubtree */
+} 
 
 
-void findSiteRates (tr, ki_min, ki_max, d_ki, max_error)
-     tree    *tr;
-     double   ki_min, ki_max, d_ki, max_error;
-{ /* findSiteRates */
+void findSiteRates(tree *tr, double ki_min, double ki_max, double d_ki, double max_error) {
     double  inv_d_ki, ki;
     int     i;
 
     if (ki_min <= 0.0 || ki_max <= ki_min) {
         printf("ERROR: Bad rate value limits to findSiteRates\n");
-        anerror = TRUE;
+        anerror = true;
         return;
     }
     else if (d_ki <= 1.0) {
         printf("ERROR: Bad rate step to findSiteRates\n");
-        anerror = TRUE;
+        anerror = true;
         return;
     }
 
@@ -1653,12 +1572,10 @@ void findSiteRates (tr, ki_min, ki_max, d_ki, max_error)
         initrav(tr->start);
         initrav(tr->start->back);
     }
-} /* findSiteRates */
+}
 
 
-double  subtreeLength (p)
-     nodeptr  p;
-{ /* subtreeLength */
+double subtreeLength(nodeptr p) {
     double sum;
 
     sum = -fracchange * log(p->z);
@@ -1668,12 +1585,10 @@ double  subtreeLength (p)
     }
 
     return sum;
-} /* subtreeLength */
+}
 
 
-double  treeLength(tr)
-     tree  *tr;
-{ /* treeLength */
+double treeLength(tree *tr) {
     double sum;
 
     sum = subtreeLength(tr->start->back);
@@ -1683,19 +1598,17 @@ double  treeLength(tr)
     }
 
     return sum;
-} /* treeLength */
+}
 
 
-void categorize (Sites, Categs, Weight, Pattern, Patrate,
-                 categrate, sitecateg)
-     int Sites;
-     int Categs;
-     int Weight[];                                        /* one based */
-int      Pattern[];                                       /* one based */
-double   Patrate[];                                       /* zero based */
-double   categrate[];                                     /* zero based */
-int      sitecateg[];                                     /* one based */
-{ /* categorize */
+void categorize(int    Sites,
+                int    Categs,
+                int    Weight[],                    /* one based */
+                int    Pattern[],                   /* one based */
+                double Patrate[],                   /* zero based */
+                double categrate[],                 /* zero based */
+                int    sitecateg[])                 /* one based */
+{
     double  ki, min_1, min_2, max_1, max_2, a, b;
     int  i, k;
 
@@ -1744,22 +1657,22 @@ int      sitecateg[];                                     /* one based */
         else
             sitecateg[i] = Categs;
     }
-} /* categorize */
+}
 
 
-char *arb_filter;
-char *alignment_name;
-
+char   *arb_filter;
+char   *alignment_name;
 GBDATA *gb_main;
-/** Get the calling filter, needed to expand weights afterwards */
+
 void getArbFilter(){
+    /** Get the calling filter, needed to expand weights afterwards */
     GB_begin_transaction(gb_main);
     arb_filter = GBT_read_string(gb_main,AWAR_GDE_EXPORT_FILTER);
     alignment_name = GBT_get_default_alignment(gb_main);
     GB_commit_transaction(gb_main);
 }
 
-void writeToArb(){
+void writeToArb() {
     char    sai_name[1024];
     char    type_info[1024];
     char    category_string[1024];
@@ -1819,8 +1732,9 @@ void writeToArb(){
     sprintf(type_info, "PVML: Positional Variability by ML (Olsen)");
     gb_sai = GBT_find_or_create_SAI(gb_main,sai_name);
     if (!gb_sai){
-        GB_print_error();
-    }else{
+        fprintf(stderr, "Error: %s\n", GB_await_error());
+    }
+    else {
         gb_data = GBT_add_data(gb_sai, alignment_name, "rates", GB_FLOATS);
         GB_write_floats(gb_data, rates,ali_len);
         gb_data = GBT_add_data(gb_sai, alignment_name, "data", GB_STRING);
@@ -1834,7 +1748,7 @@ void writeToArb(){
     GB_commit_transaction(gb_main);
 }
 
-void openArb(){
+void openArb() {
     gb_main = GB_open(":","rw");
     if (!gb_main){
         GB_warning("Cannot find ARB server");
@@ -1842,18 +1756,17 @@ void openArb(){
     }
 }
 
-void closeArb(){
+void closeArb() {
     GB_close(gb_main);
 }
 
-void wrfile (outfile, Sites, Categs, Weight, categrate, sitecateg)
-     FILE   *outfile;
-     int     Sites;
-     int     Categs;
-     int     Weight[];      /* one based */
-double  categrate[];   /* zero based */
-int     sitecateg[];   /* one based */
-{ /* wrfile */
+void wrfile(FILE   *outfile,
+            int     Sites,
+            int     Categs,
+            int     Weight[],   /* one based */
+            double  categrate[], /* zero based */
+            int     sitecateg[]) /* one based */
+{
 
 
     int  i, k, l;
@@ -1895,12 +1808,10 @@ int     sitecateg[];   /* one based */
         putc('\n', outfile);
     }
 
-} /* wrfile */
+}
 
 
-void summarize (treenum)
-     int    treenum;
-{ /* summarize */
+void summarize(int treenum) {
     int  i;
 
     printf("  Site      Rate\n");
@@ -1943,18 +1854,16 @@ void summarize (treenum)
             }
         }
     }
-} /* summarize */
+}
 
 
-void makeUserRates (tr)
-     tree   *tr;
-{ /* makeUserRates */
+void makeUserRates(tree *tr) {
     double  tree_length;
     int     numtrees, which, i;
 
     if (fscanf(INFILE, "%d", &numtrees) != 1 || findch('\n') == EOF) {
         printf("ERROR: Problem reading number of user trees\n");
-        anerror = TRUE;
+        anerror = true;
         return;
     }
 
@@ -1974,11 +1883,11 @@ void makeUserRates (tr)
         summarize(numtrees == 1 ? 0 : which);            if (anerror) break;
     }
 
-} /* makeUserRates */
+}
 
 
-int main ()
-{ /* Maximum Likelihood Site Rate */
+int main() {
+    /* Maximum Likelihood Site Rate */
     tree   curtree, *tr;
 
 #   if DebugData
@@ -2021,4 +1930,4 @@ int main ()
 #   endif
 
     return 0;
-} /* Maximum Likelihood Site Rate */
+}

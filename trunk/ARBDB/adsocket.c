@@ -1,68 +1,42 @@
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <sys/time.h>
-#include <errno.h>
-#include <string.h>
-#include <memory.h>
-#include <limits.h>
+/* ================================================================ */
+/*                                                                  */
+/*   File      : adsocket.c                                         */
+/*   Purpose   :                                                    */
+/*                                                                  */
+/*   Institute of Microbiology (Technical University Munich)        */
+/*   http://www.arb-home.de/                                        */
+/*                                                                  */
+/* ================================================================ */
 
-#include <sys/socket.h>
-#include <sys/un.h>
+#include <errno.h>
+#include <limits.h>
+#include <netdb.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
-#include <netdb.h>
 #include <signal.h>
-#include <time.h>
+#include <stdarg.h>
+#include <sys/mman.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/un.h>
+#include <unistd.h>
 
 #include "adlocal.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#   include <sys/mman.h>
-}
-#else
-#   include <sys/mman.h>
-#endif
-
-#if defined(SUN4) || defined(SUN5)
-# ifndef __cplusplus
-#  define SIG_PF void (*)()
-# endif
-#else
-# define SIG_PF void (*)(int )
-#endif
+#define SIG_PF void (*)(int )
 
 #if defined(DARWIN)
 # include <sys/sysctl.h>
 #endif /* DARWIN */
-
 
 /************************************ signal handling ****************************************/
 /************************************ valid memory tester ************************************/
 int gbcm_sig_violation_flag;
 int gbcm_pipe_violation_flag;
 
-#if defined(DIGITAL)
-# if defined(__cplusplus)
-extern "C" {    extern void usleep(unsigned int );  }
-# else
-extern void usleep(unsigned int);
-# endif
-#endif // DIGITAL
-
-void GB_usleep(long usec){
-# if defined(SUN5)
-    struct timespec timeout,time2;
-    timeout.tv_sec  = 0;
-    timeout.tv_nsec = usec*1000;
-    nanosleep(&timeout,&time2);
-# else
+void GB_usleep(long usec) {
     usleep(usec);
-# endif
 }
 
 long gbcm_sig_violation_end();
@@ -585,7 +559,7 @@ GB_BOOL GB_is_directory(const char *path) {
     return stat(path, &stt) == 0 && S_ISDIR(stt.st_mode);
 }
 
-long GB_getuid_of_file(char *path){
+long GB_getuid_of_file(const char *path){
     struct stat stt;
     if (stat(path, &stt)) return -1;
     return stt.st_uid;
@@ -827,9 +801,9 @@ GB_ERROR GB_xcmd(const char *cmd, GB_BOOL background, GB_BOOL wait_only_if_error
     // if 'background' is true -> run asynchronous
     // if 'wait_only_if_error' is true -> asynchronous does wait for keypress only if cmd fails
 
-    void       *strstruct = GBS_stropen(1024);
-    const char *xt        = GB_getenv("ARB_XCMD"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_XCMD
-    if (!xt) xt           = "xterm -sl 1000 -sb -geometry 140x30 -e";
+    GBS_strstruct *strstruct = GBS_stropen(1024);
+    const char    *xt        = GB_getenv("ARB_XCMD"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_XCMD
+    if (!xt) xt              = "xterm -sl 1000 -sb -geometry 140x30 -e";
     GBS_strcat(strstruct, "(");
     GBS_strcat(strstruct, xt);
     GBS_strcat(strstruct, " sh -c 'LD_LIBRARY_PATH=\"");
@@ -902,8 +876,8 @@ char *GB_find_executable(GB_CSTR description_of_executable, ...) {
         char *looked_for;
         char *msg;
         {
-            void *buf   = GBS_stropen(100);
-            int   first = 1;
+            GBS_strstruct *buf   = GBS_stropen(100);
+            int            first = 1;
 
             va_start(args, description_of_executable);
             while ((name = va_arg(args, GB_CSTR)) != 0) {
@@ -1200,7 +1174,7 @@ GB_ULONG GB_get_physical_memory(void) {
 
         do {
             void **tmp;
-            while((tmp=malloc(step_size))) {
+            while((tmp=(void**)malloc(step_size))) {
                 *tmp        = head;
                 head        = tmp;
                 max_malloc += step_size;

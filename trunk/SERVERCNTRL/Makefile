@@ -9,7 +9,7 @@ $(MAIN): $(OBJECTS)
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
 
 proto:
-	../MAKEBIN/aisc_mkpt -A -P -C -w servercntrl.h $(OBJECTS:.o=.c) >servercntrl.h.tmp
+	../MAKEBIN/aisc_mkpt -A -P -C -w servercntrl.h $(OBJECTS:.o=.cxx) >servercntrl.h.tmp
 	../SOURCE_TOOLS/mv_if_diff servercntrl.h.tmp servercntrl.h
 
 clean:
@@ -37,8 +37,11 @@ servercntrl.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 servercntrl.o: $(ARBHOME)/INCLUDE/ad_prot.h
 servercntrl.o: $(ARBHOME)/INCLUDE/aisc_global.h
 servercntrl.o: $(ARBHOME)/INCLUDE/arb_assert.h
+servercntrl.o: $(ARBHOME)/INCLUDE/arb_error.h
 servercntrl.o: $(ARBHOME)/INCLUDE/arbdb.h
 servercntrl.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+servercntrl.o: $(ARBHOME)/INCLUDE/arbtools.h
 servercntrl.o: $(ARBHOME)/INCLUDE/attributes.h
 servercntrl.o: $(ARBHOME)/INCLUDE/client.h
 servercntrl.o: $(ARBHOME)/INCLUDE/client_privat.h
+servercntrl.o: $(ARBHOME)/INCLUDE/smartptr.h

@@ -4,9 +4,10 @@
 /*   Purpose   : various string functions                        */
 /*                                                               */
 /*   Institute of Microbiology (Technical University Munich)     */
-/*   http://www.arb-home.de/                                     */
+/*   http://www.arb-home.de                                      */
 /*                                                               */
 /* ============================================================= */
+
 #include "adlocal.h"
 
 #include <stdlib.h>
@@ -19,26 +20,24 @@
 #include <execinfo.h>
 #include <signal.h>
 
-
-
 /********************************************************************************************
                     directory handling
 ********************************************************************************************/
 
 GB_ERROR gb_scan_directory(char *basename, struct gb_scandir *sd) { /* goes to header: __ATTR__USERESULT */
     /* look for quick saves (basename = yyy/xxx no arb ending !!!!) */
-    char *path = strdup(basename);
-    const char *fulldir = ".";
-    char *file = strrchr(path,'/');
-    DIR *dirp;
-    int curindex;
-    char *suffix;
+    char          *path        = strdup(basename);
+    const char    *fulldir     = ".";
+    char          *file        = strrchr(path,'/');
+    DIR           *dirp;
+    int            curindex;
+    char          *suffix;
     struct dirent *dp;
-    struct stat st;
-    const char *oldstyle = ".arb.quick";
-    char    buffer[GB_PATH_MAX];
-    int oldstylelen = strlen(oldstyle);
-    int filelen;
+    struct stat    st;
+    const char    *oldstyle    = ".arb.quick";
+    char           buffer[GB_PATH_MAX];
+    int            oldstylelen = strlen(oldstyle);
+    int            filelen;
 
     if (file) {
         *(file++) = 0;
@@ -287,7 +286,7 @@ GB_ERROR GB_export_IO_error(const char *action, const char *filename) {
     return GB_error_buffer;
 }
 
-GB_ERROR GB_print_error() {
+NOT4PERL GB_ERROR GB_print_error() {
     /* goes to header: __ATTR__DEPRECATED  */
     if (GB_error_buffer){
         fflush(stdout);
@@ -556,6 +555,9 @@ void gbs_uppercase(char *str)
     }
 }
 
+#if defined(DEVEL_RALF)
+#warning replace/implement gbs_memcopy by memmove 
+#endif /* DEVEL_RALF */
 void gbs_memcopy(char *dest, const char *source, long len)
 {
     long        i;
@@ -578,11 +580,9 @@ void gbs_memcopy(char *dest, const char *source, long len)
     }
 }
 
-char *gbs_malloc_copy(const char *source, long len)
-{
-    char *dest;
-    dest = (char *)malloc((size_t)len);
-    memcpy(dest,source,(int)len);
+char *GB_memdup(const char *source, size_t len) {
+    char *dest = (char *)malloc(len);
+    memcpy(dest, source, len);
     return dest;
 }
 
@@ -930,7 +930,7 @@ static void gbs_strensure_mem(struct GBS_strstruct *strstr,long len) {
 
 void GBS_strncat(struct GBS_strstruct *strstr, const char *ptr, size_t len) {
     /* append some bytes string to strstruct
-     * (caution : copies zero byte and things behind!)
+     * (caution : copies zero byte and mem behind if used with wrong len!)
      */
     if (len>0) {
         gbs_strensure_mem(strstr,len+2);
@@ -987,9 +987,9 @@ void GBS_floatcat(struct GBS_strstruct *strstr,double val) {
 }
 
 char *GBS_eval_env(GB_CSTR p){
-    GB_ERROR  error = 0;
-    GB_CSTR   ka;
-    void     *out   = GBS_stropen(1000);
+    GB_ERROR       error = 0;
+    GB_CSTR        ka;
+    GBS_strstruct *out   = GBS_stropen(1000);
 
     while ((ka = GBS_find_string(p,"$(",0))) {
         GB_CSTR kz = strchr(ka,')');
@@ -1094,7 +1094,7 @@ char **GBS_read_dir(const char *dir, const char *mask) {
 
     if (!dirstream) {
         if (GB_is_readablefile(fulldir)) {
-            names    = malloc(2*sizeof(*names));
+            names    = (char**)malloc(2*sizeof(*names));
             names[0] = strdup(fulldir);
             names[1] = NULL;
         }
@@ -1121,7 +1121,7 @@ char **GBS_read_dir(const char *dir, const char *mask) {
         if (matcher) {
             int allocated = 100;
             int entries   = 0;
-            names         = malloc(100*sizeof(*names));
+            names         = (char**)malloc(100*sizeof(*names));
 
             struct dirent *entry;
             while ((entry = readdir(dirstream)) != 0) {
@@ -1136,7 +1136,7 @@ char **GBS_read_dir(const char *dir, const char *mask) {
                         if (!GB_is_directory(full)) { // skip directories
                             if (entries == allocated) {
                                 allocated += allocated>>1; // * 1.5
-                                names      = realloc(names, allocated*sizeof(*names));
+                                names      = (char**)realloc(names, allocated*sizeof(*names));
                             }
                             names[entries++] = strdup(full);
                         }
@@ -1144,7 +1144,7 @@ char **GBS_read_dir(const char *dir, const char *mask) {
                 }
             }
 
-            names          = realloc(names, (entries+1)*sizeof(*names));
+            names          = (char**)realloc(names, (entries+1)*sizeof(*names));
             names[entries] = NULL;
 
             GB_sort((void**)names, 0, entries, GB_string_comparator, 0);
@@ -1280,17 +1280,17 @@ uint32_t GBS_checksum(const char *seq, int ignore_case, const char *exclude)
 */
 
 char *GBS_extract_words( const char *source,const char *chars, float minlen, GB_BOOL sort_output ) {
-    char  *s         = strdup(source);
-    char **ps        = (char **)GB_calloc(sizeof(char *), (strlen(source)>>1) + 1);
-    void  *strstruct = GBS_stropen(1000);
-    char  *f         = s;
-    int    count     = 0;
-    char  *p;
-    char  *h;
-    int    cnt;
-    int    len;
-    int    iminlen   = (int) (minlen+.5);
-    
+    char           *s         = strdup(source);
+    char          **ps        = (char **)GB_calloc(sizeof(char *), (strlen(source)>>1) + 1);
+    GBS_strstruct  *strstruct = GBS_stropen(1000);
+    char           *f         = s;
+    int             count     = 0;
+    char           *p;
+    char           *h;
+    int             cnt;
+    int             len;
+    int             iminlen   = (int) (minlen+.5);
+
     while ( (p = strtok(f," \t,;:|")) ) {
         f = 0;
         cnt = 0;
@@ -1918,8 +1918,8 @@ void GBS_fwrite_string(const char *strngi,FILE *out){
  */
 
 char *GBS_fread_string(FILE *in) {
-    void *strstr = GBS_stropen(1024);
-    int   x;
+    GBS_strstruct *strstr = GBS_stropen(1024);
+    int            x;
 
     while ((x = getc(in)) != '"' ) if (x == EOF) break; /* Search first '"' */
 
@@ -2003,10 +2003,11 @@ char *GBS_fconvert_string(char *buffer) {
 }
 
 char *GBS_replace_tabs_by_spaces(const char *text){
-    int tlen = strlen(text);
-    void *mfile = GBS_stropen(tlen * 3/2);
-    int tabpos = 0;
-    int c;
+    int            tlen   = strlen(text);
+    GBS_strstruct *mfile  = GBS_stropen(tlen * 3/2);
+    int            tabpos = 0;
+    int            c;
+    
     while ((c=*(text++))) {
         if (c == '\t'){
             int ntab = (tabpos + 8) & 0xfffff8;

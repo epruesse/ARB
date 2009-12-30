@@ -338,7 +338,7 @@ GBDATA *find_proteome(GBDATA *gb_exp_entry, char *name) {
         ARB_begin_transaction();
         GBDATA *gb_proteome_data = GB_entry(gb_exp_entry, "proteome_data");
         if (gb_proteome_data) {
-            GBDATA *gb_name = GB_find_string(gb_proteome_data, "name", name, GB_IGNORE_CASE, down_2_level);
+            GBDATA *gb_name = GB_find_string(gb_proteome_data, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
             if (gb_name) gb_proteome = GB_get_father(gb_name);
         }
         ARB_commit_transaction();
@@ -568,7 +568,7 @@ void getEntryNamesList(Widget list, bool clear= false)
     while(gb_sp)
     {
         // FIND EXPERIMENT
-        gb_exp= GB_find(gb_sp, "experiment", down_2_level);
+        gb_exp= GB_find(gb_sp, "experiment", SEARCH_GRANDCHILD);
         while(gb_exp)
         {
             // FIND PROTEIN

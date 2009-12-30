@@ -39,11 +39,6 @@ symlink() {
     symlink_maybe_no_target $1 $2
 }
 
-arbdb_symlink() {
-    symlink ../ARBDB/$1 ARBDBS/$1 &&
-    symlink ../ARBDB/$1 ARBDB2/$1
-}
-
 makedir() {
     mkdir -p $1 || finderr $1 "Failed to create directory '$1'"
 }
@@ -68,24 +63,12 @@ makedir lib/help &&
 
 # Liblink
 
-# symlink ../ARBDB/libARBDB.sl LIBLINK/libARBDB.sl
 symlink_maybe_no_target ../ARBDB/libARBDB.so LIBLINK/libARBDB.so &&
 symlink_maybe_no_target ../ARBDB/libARBDB.so.2.0 LIBLINK/libARBDB.so.2.0 &&
-symlink_maybe_no_target ../ARBDB2/libARBDB.a LIBLINK/libARBDO.a &&
-# symlink ../ARBDB2/libARBDB.sl LIBLINK/libARBDO.sl
-symlink_maybe_no_target ../ARBDB2/libARBDB.so LIBLINK/libARBDO.so &&
-symlink_maybe_no_target ../ARBDB2/libARBDB.so.2.0 LIBLINK/libARBDO.so.2.0 &&
-symlink_maybe_no_target ../ARBDBPP/libARBDBPP.a LIBLINK/libARBDBPP.a &&
-# symlink ../ARBDBPP/libARBDBPP.sl LIBLINK/libARBDBPP.sl
-symlink_maybe_no_target ../ARBDBPP/libARBDBPP.so LIBLINK/libARBDBPP.so &&
-symlink_maybe_no_target ../ARBDBPP/libARBDBPP.so.2.0 LIBLINK/libARBDBPP.so.2.0 &&
-symlink_maybe_no_target ../ARBDBS/libARBDB.a LIBLINK/libARBDB.a &&
 symlink_maybe_no_target ../AWT/libAWT.a LIBLINK/libAWT.a &&
-# symlink ../AWT/libAWT.sl LIBLINK/libAWT.sl
 symlink_maybe_no_target ../AWT/libAWT.so LIBLINK/libAWT.so &&
 symlink_maybe_no_target ../AWT/libAWT.so.2.0 LIBLINK/libAWT.so.2.0 &&
 symlink_maybe_no_target ../WINDOW/libAW.a LIBLINK/libAW.a &&
-# symlink ../WINDOW/libAW.sl LIBLINK/libAW.sl
 symlink_maybe_no_target ../WINDOW/libAW.so LIBLINK/libAW.so &&
 symlink_maybe_no_target ../WINDOW/libAW.so.2.0 LIBLINK/libAW.so.2.0 &&
 
@@ -149,13 +132,12 @@ symlink ../ARBDB/adGene.h INCLUDE/adGene.h &&
 symlink ../ARBDB/ad_config.h INCLUDE/ad_config.h &&
 symlink ../ARBDB/ad_k_prot.h INCLUDE/ad_k_prot.h &&
 symlink ../ARBDB/ad_prot.h INCLUDE/ad_prot.h &&
+symlink ../ARBDB/ad_p_prot.h INCLUDE/ad_p_prot.h &&
 symlink ../ARBDB/ad_t_prot.h INCLUDE/ad_t_prot.h &&
 symlink ../ARBDB/arb_assert.h INCLUDE/arb_assert.h &&
 symlink ../ARBDB/arbdb.h INCLUDE/arbdb.h &&
 symlink ../ARBDB/arbdb_base.h INCLUDE/arbdb_base.h &&
 symlink ../ARBDB/arbdbt.h INCLUDE/arbdbt.h &&
-symlink ../ARBDBPP/adtools.hxx INCLUDE/adtools.hxx &&
-symlink ../ARBDBPP/arbdb++.hxx INCLUDE/arbdb++.hxx &&
 symlink ../ARB_GDE/gde.hxx INCLUDE/gde.hxx &&
 symlink ../AWT/awt.hxx INCLUDE/awt.hxx &&
 symlink ../AWT/awt_advice.hxx INCLUDE/awt_advice.hxx &&
@@ -175,7 +157,6 @@ symlink ../AWT/awt_sel_boxes.hxx INCLUDE/awt_sel_boxes.hxx &&
 symlink ../AWT/awt_seq_colors.hxx INCLUDE/awt_seq_colors.hxx &&
 symlink ../AWT/awt_www.hxx INCLUDE/awt_www.hxx &&
 symlink ../AWT/awtlocal.hxx INCLUDE/awtlocal.hxx &&
-# symlink ../AWTC/awtc_constructSequence.hxx INCLUDE/awtc_constructSequence.hxx &&
 symlink ../AWTC/awtc_next_neighbours.hxx INCLUDE/awtc_next_neighbours.hxx &&
 symlink ../AWTC/awtc_submission.hxx INCLUDE/awtc_submission.hxx &&
 symlink ../AWTI/awti_export.hxx INCLUDE/awti_export.hxx &&
@@ -242,72 +223,12 @@ symlink ../XML/xml.hxx INCLUDE/xml.hxx &&
 symlink ../../GL/glpng/glpng.h INCLUDE/GL/glpng.h &&
 symlink ../../GL/glAW/aw_window_ogl.hxx INCLUDE/GL/aw_window_ogl.hxx &&
 
-# arbdb dirs
-
-arbdb_symlink AD_MOBJECTS.h &&
-arbdb_symlink adChangeKey.c &&
-arbdb_symlink adExperiment.c &&
-arbdb_symlink adGene.c &&
-arbdb_symlink adGene.h &&
-arbdb_symlink adRevCompl.c &&
-arbdb_symlink adTest.c &&
-arbdb_symlink ad_config.c &&
-arbdb_symlink ad_config.h &&
-arbdb_symlink ad_core.c &&
-arbdb_symlink ad_load.c &&
-arbdb_symlink ad_lpro.h &&
-arbdb_symlink ad_prot.h &&
-arbdb_symlink ad_save_load.c &&
-arbdb_symlink ad_t_lpro.h &&
-arbdb_symlink ad_t_prot.h &&
-arbdb_symlink adcomm.c &&
-arbdb_symlink adcompr.c &&
-arbdb_symlink adhash.c &&
-arbdb_symlink adhashtools.c &&
-arbdb_symlink adindex.c &&
-arbdb_symlink adlang1.c &&
-arbdb_symlink adlink.c &&
-arbdb_symlink adlmacros.h &&
-arbdb_symlink adlocal.h &&
-arbdb_symlink adlundo.h &&
-arbdb_symlink admalloc.c &&
-arbdb_symlink admap.c &&
-arbdb_symlink admap.h &&
-arbdb_symlink admatch.c &&
-arbdb_symlink admath.c &&
-arbdb_symlink adoptimize.c &&
-arbdb_symlink adperl.c &&
-arbdb_symlink adquery.c &&
-arbdb_symlink adseqcompr.c &&
-arbdb_symlink adsocket.c &&
-arbdb_symlink adsort.c &&
-arbdb_symlink adstring.c &&
-arbdb_symlink adsystem.c &&
-arbdb_symlink adtables.c &&
-arbdb_symlink adtcp.c &&
-arbdb_symlink adtools.c &&
-arbdb_symlink adali.c &&
-arbdb_symlink adcolumns.c &&
-arbdb_symlink adtree.c &&
-arbdb_symlink adname.c &&
-arbdb_symlink aditem.c &&
-arbdb_symlink adtune.c &&
-arbdb_symlink adtune.h &&
-arbdb_symlink arbdb.c &&
-arbdb_symlink arbdb.h &&
-arbdb_symlink arbdbpp.cxx &&
-arbdb_symlink arbdbt.h &&
-
 # small dirs
 
 symlink ../WINDOW/AW_preset.cxx AWT/AWT_preset.cxx &&
 symlink ../WINDOW/aw_def.hxx AWT/aw_def.hxx &&
 
-symlink ../EDIT/edit_naligner.cxx EDIT4/edit_naligner.cxx &&
-symlink ../EDIT/edit_naligner.hxx EDIT4/edit_naligner.hxx &&
-
 symlink ../LIBLINK          NALIGNER/LIBLINK &&
-
 symlink ../LIBLINK          TOOLS/LIBLINK &&
 
 symlink_maybe_no_target ../AISC/aisc             MAKEBIN/aisc &&

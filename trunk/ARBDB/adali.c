@@ -49,7 +49,7 @@ GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name)
     GBT_find_or_create(Main,"tree_data",7);
 
     if (alignment_name) {
-        GBDATA *gb_ali_name = GB_find_string(gb_presets, "alignment_name", alignment_name, GB_IGNORE_CASE, down_2_level);
+        GBDATA *gb_ali_name = GB_find_string(gb_presets, "alignment_name", alignment_name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
         if (!gb_ali_name) {
             error = GBS_global_string("Alignment '%s' does not exist - it can't be checked.", alignment_name);
         }
@@ -60,7 +60,7 @@ GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name)
         GBDATA *gb_use = GB_entry(gb_presets, "use");
         if (!gb_use) {
             // if we have no default alignment -> look for any alignment
-            GBDATA *gb_ali_name = GB_find_string(gb_presets,"alignment_name",alignment_name,GB_IGNORE_CASE,down_2_level);
+            GBDATA *gb_ali_name = GB_find_string(gb_presets, "alignment_name", alignment_name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
             
             error = gb_ali_name ?
                 GBT_write_string(gb_presets, "use", GB_read_char_pntr(gb_ali_name)) :
@@ -246,7 +246,7 @@ GBDATA *GBT_create_alignment(GBDATA *gbd, const char *name, long len, long align
         }
 
         if (!error) {
-            GBDATA *gb_name = GB_find_string(gb_presets, "alignment_name", name, GB_IGNORE_CASE, down_2_level);
+            GBDATA *gb_name = GB_find_string(gb_presets, "alignment_name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
 
             if (gb_name) error = GBS_global_string("Alignment '%s' already exists", name);
             else {
@@ -565,7 +565,7 @@ GB_ERROR GBT_rename_alignment(GBDATA *gbMain, const char *source, const char *de
 /*      alignment related item functions       */
 
 
-GBDATA *GBT_add_data(GBDATA *species,const char *ali_name, const char *key, GB_TYPES type) {
+NOT4PERL GBDATA *GBT_add_data(GBDATA *species,const char *ali_name, const char *key, GB_TYPES type) {
     /* goes to header: __ATTR__DEPRECATED */
     /* replace this function by GBT_create_sequence_data 
      * the same as GB_search(species, 'ali_name/key', GB_CREATE) */
@@ -712,7 +712,7 @@ GB_ERROR GBT_set_default_alignment(GBDATA *gb_main,const char *alignment_name) {
 
 GBDATA *GBT_get_alignment(GBDATA *gb_main, const char *aliname) {
     GBDATA *gb_presets        = GB_search(gb_main, "presets", GB_CREATE_CONTAINER);
-    GBDATA *gb_alignment_name = GB_find_string(gb_presets,"alignment_name",aliname,GB_IGNORE_CASE,down_2_level);
+    GBDATA *gb_alignment_name = GB_find_string(gb_presets, "alignment_name", aliname, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
     
     if (!gb_alignment_name) {
         GB_export_errorf("alignment '%s' not found", aliname);
@@ -807,7 +807,7 @@ static struct gene_part_pos *gpp = 0;
 static void init_gpp(int parts) {
     if (!gpp) {
         int i;
-        gpp          = malloc(sizeof(*gpp));
+        gpp          = (gene_part_pos*)malloc(sizeof(*gpp));
         gpp->certain = 0;
 
         for (i = 0; i<256; ++i) gpp->offset[i] = 0;
@@ -821,7 +821,7 @@ static void init_gpp(int parts) {
 
     if (!gpp->certain) {
         int forParts           = parts+10;
-        gpp->certain           = malloc(forParts+1);
+        gpp->certain           = (unsigned char *)malloc(forParts+1);
         memset(gpp->certain, '=', forParts);
         gpp->certain[forParts] = 0;
         gpp->parts             = forParts;
@@ -897,7 +897,7 @@ NOT4PERL char *GBT_read_gene_sequence_and_length(GBDATA *gb_gene, GB_BOOL use_re
                 const char *seq_data = gb_cache_genome(gb_seq);
                 char       *resultpos;
 
-                result    = malloc(resultlen+1);
+                result    = (char*)malloc(resultlen+1);
                 resultpos = result;
 
                 if (gene_length) *gene_length = resultlen;

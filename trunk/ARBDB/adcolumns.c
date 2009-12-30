@@ -337,7 +337,7 @@ static GB_ERROR GBT_check_lengths(GBDATA *Main, const char *alignment_name) {
          gb_ali && !error;
          gb_ali = GB_nextEntry(gb_ali))
     {
-        GBDATA *gb_name = GB_find_string(gb_ali,"alignment_name",alignment_name,GB_IGNORE_CASE,down_level);
+        GBDATA *gb_name = GB_find_string(gb_ali, "alignment_name", alignment_name, GB_IGNORE_CASE, SEARCH_CHILD);
 
         if (gb_name) {
             GBDATA *gb_len = GB_entry(gb_ali,"alignment_len");
@@ -371,7 +371,7 @@ GB_ERROR GBT_format_alignment(GBDATA *Main, const char *alignment_name) {
 }
 
 
-GB_ERROR GBT_insert_character(GBDATA *Main, char *alignment_name, long pos, long count, char *char_delete)
+GB_ERROR GBT_insert_character(GBDATA *Main, const char *alignment_name, long pos, long count, const char *char_delete)
 {
     /* if count > 0     insert 'count' characters at pos
      * if count < 0     delete pos to pos+|count|
@@ -417,7 +417,7 @@ GB_ERROR GBT_insert_character(GBDATA *Main, char *alignment_name, long pos, long
              gb_ali && !error;
              gb_ali = GB_nextEntry(gb_ali))
         {
-            GBDATA *gb_name = GB_find_string(gb_ali, "alignment_name", alignment_name, GB_IGNORE_CASE, down_level);
+            GBDATA *gb_name = GB_find_string(gb_ali, "alignment_name", alignment_name, GB_IGNORE_CASE, SEARCH_CHILD);
 
             if (gb_name) {
                 GBDATA *gb_len = GB_entry(gb_ali, "alignment_len");

@@ -27,7 +27,7 @@ CPP_OBJECTS = \
 	ED4_tools.o \
 	ED4_block.o \
 	ED4_visualizeSAI.o \
-	edit_naligner.o \
+	ED4_naligner.o \
 	graph_aligner_gui.o \
 	ED4_dots.o \
 
@@ -240,12 +240,12 @@ ED4_main.o: ed4_defs.hxx
 ED4_main.o: ed4_dots.hxx
 ED4_main.o: ed4_edit_string.hxx
 ED4_main.o: ed4_extern.hxx
+ED4_main.o: ed4_naligner.hxx
 ED4_main.o: ed4_nds.hxx
 ED4_main.o: ed4_protein_2nd_structure.hxx
 ED4_main.o: ed4_ProteinViewer.hxx
 ED4_main.o: ed4_search.hxx
 ED4_main.o: ed4_visualizeSAI.hxx
-ED4_main.o: edit_naligner.hxx
 ED4_main.o: graph_aligner_gui.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/ad_config.h
 ED4_main.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -348,6 +348,26 @@ ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/awt_iupac.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/smartptr.h
+
+ED4_naligner.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+ED4_naligner.o: $(ARBHOME)/INCLUDE/ad_prot.h
+ED4_naligner.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+ED4_naligner.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_naligner.o: $(ARBHOME)/INCLUDE/arb_error.h
+ED4_naligner.o: $(ARBHOME)/INCLUDE/arbdb.h
+ED4_naligner.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+ED4_naligner.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ED4_naligner.o: $(ARBHOME)/INCLUDE/arbtools.h
+ED4_naligner.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
+ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+ED4_naligner.o: $(ARBHOME)/INCLUDE/awt.hxx
+ED4_naligner.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
+ED4_naligner.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 ED4_nds.o: ed4_awars.hxx
 ED4_nds.o: ed4_class.hxx
@@ -488,6 +508,7 @@ ED4_root.o: ed4_class.hxx
 ED4_root.o: ed4_defs.hxx
 ED4_root.o: ed4_dots.hxx
 ED4_root.o: ed4_extern.hxx
+ED4_root.o: ed4_naligner.hxx
 ED4_root.o: ed4_nds.hxx
 ED4_root.o: ed4_protein_2nd_structure.hxx
 ED4_root.o: ed4_ProteinViewer.hxx
@@ -496,7 +517,6 @@ ED4_root.o: ed4_search.hxx
 ED4_root.o: ed4_secedit.hxx
 ED4_root.o: ed4_tools.hxx
 ED4_root.o: ed4_visualizeSAI.hxx
-ED4_root.o: edit_naligner.hxx
 ED4_root.o: graph_aligner_gui.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ED4_root.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -748,26 +768,6 @@ EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/smartptr.h
-
-edit_naligner.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
-edit_naligner.o: $(ARBHOME)/INCLUDE/ad_prot.h
-edit_naligner.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-edit_naligner.o: $(ARBHOME)/INCLUDE/arb_assert.h
-edit_naligner.o: $(ARBHOME)/INCLUDE/arb_error.h
-edit_naligner.o: $(ARBHOME)/INCLUDE/arbdb.h
-edit_naligner.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-edit_naligner.o: $(ARBHOME)/INCLUDE/arbdbt.h
-edit_naligner.o: $(ARBHOME)/INCLUDE/arbtools.h
-edit_naligner.o: $(ARBHOME)/INCLUDE/attributes.h
-edit_naligner.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
-edit_naligner.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-edit_naligner.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-edit_naligner.o: $(ARBHOME)/INCLUDE/aw_position.hxx
-edit_naligner.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-edit_naligner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-edit_naligner.o: $(ARBHOME)/INCLUDE/awt.hxx
-edit_naligner.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
-edit_naligner.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 graph_aligner_gui.o: ed4_defs.hxx
 graph_aligner_gui.o: graph_aligner_gui.hxx

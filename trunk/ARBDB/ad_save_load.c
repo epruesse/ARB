@@ -157,7 +157,7 @@ GB_ERROR gb_create_reference(const char *master){
     return error;
 }
 
-GB_ERROR gb_add_reference(char *master, char *changes){
+GB_ERROR gb_add_reference(const char *master, const char *changes) {
     char       *fullmaster  = gb_full_path(master);
     char       *fullchanges = gb_full_path(changes);
     const char *fullref     = gb_reffile_name(fullmaster);
@@ -1104,7 +1104,7 @@ GB_ERROR GB_delete_database(GB_CSTR filename) {
     return error;
 }
 
-GB_ERROR GB_save_quick_as(GBDATA *gb_main, char *path)
+GB_ERROR GB_save_quick_as(GBDATA *gb_main, const char *path)
 {
     FILE *fmaster;
     long mode;
@@ -1177,7 +1177,7 @@ GB_ERROR GB_save_quick_as(GBDATA *gb_main, char *path)
                     "   If you don't trust him, don't save changes but\n"
                     "   the WHOLE database",full_path_of_source);
     }
-    if (gb_add_reference(full_path_of_source,path)){
+    if (gb_add_reference(full_path_of_source, path)) {
         GB_warning(GB_get_error());
     }
 
@@ -1191,8 +1191,7 @@ GB_ERROR GB_save_quick_as(GBDATA *gb_main, char *path)
 }
 
 
-GB_ERROR GB_save_quick(GBDATA *gb, char *refpath)
-{
+GB_ERROR GB_save_quick(GBDATA *gb, const char *refpath) {
     FILE *out;
     GB_CSTR path;
     GB_CSTR sec_path;

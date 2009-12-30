@@ -107,7 +107,7 @@ char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode)
     first = 0;
     for (i = 0; i < gen_nds_ms->count; i++) {
         if (gen_nds_ms->rek[i]) {       /* hierarchical key */
-            gbe = GB_search(gbd,gen_nds_ms->dkeys[i],0);
+            gbe = GB_search(gbd, gen_nds_ms->dkeys[i], GB_FIND);
         }else{              /* flat entry */
             gbe = GB_entry(gbd, gen_nds_ms->dkeys[i]);
         }

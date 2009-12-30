@@ -40,9 +40,12 @@ TreeWrite.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/ad_prot.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/arb_assert.h
+TreeWrite.o: $(ARBHOME)/INCLUDE/arb_error.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/arbdb.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/arbdbt.h
+TreeWrite.o: $(ARBHOME)/INCLUDE/arbtools.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/attributes.h
+TreeWrite.o: $(ARBHOME)/INCLUDE/smartptr.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/TreeRead.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/xml.hxx

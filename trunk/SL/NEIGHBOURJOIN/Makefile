@@ -43,7 +43,10 @@ NJ.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 NJ.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NJ.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NJ.o: $(ARBHOME)/INCLUDE/arb_assert.h
+NJ.o: $(ARBHOME)/INCLUDE/arb_error.h
 NJ.o: $(ARBHOME)/INCLUDE/arbdb.h
 NJ.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 NJ.o: $(ARBHOME)/INCLUDE/arbdbt.h
+NJ.o: $(ARBHOME)/INCLUDE/arbtools.h
 NJ.o: $(ARBHOME)/INCLUDE/attributes.h
+NJ.o: $(ARBHOME)/INCLUDE/smartptr.h

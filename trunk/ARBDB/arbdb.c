@@ -179,7 +179,7 @@ GB_BUFFER GB_increase_buffer(size_t size) {
     return gb_local->buf1.mem;
 }
 
-int GB_give_buffer_size(){
+NOT4PERL int GB_give_buffer_size(){
     return gb_local->buf1.size;
 }
 
@@ -250,7 +250,7 @@ unsigned char GB_BIT_compress_data[] = {
     0
 };
 
-void GB_init_gb(void) {
+void gb_init_gb(void) {
     if (!gb_local) {
         gb_local = (struct gb_local_data *)gbm_get_mem(sizeof(struct gb_local_data),0);
 
@@ -488,7 +488,7 @@ char *GB_read_string(GBDATA *gbd)
     GB_TEST_READ(gbd,GB_STRING,"GB_read_string");
     d = GB_read_pntr(gbd);
     if (!d) return NULL;
-    return gbs_malloc_copy(d,GB_GETSIZE(gbd)+1);
+    return GB_memdup(d,GB_GETSIZE(gbd)+1);
 }
 
 long GB_read_string_count(GBDATA *gbd)
@@ -509,7 +509,7 @@ char *GB_read_link(GBDATA *gbd)
     GB_TEST_READ(gbd,GB_LINK,"GB_read_link_pntr");
     d = GB_read_pntr(gbd);
     if (!d) return NULL;
-    return gbs_malloc_copy(d,GB_GETSIZE(gbd)+1);
+    return GB_memdup(d,GB_GETSIZE(gbd)+1);
 }
 
 long GB_read_link_count(GBDATA *gbd)
@@ -550,7 +550,7 @@ GB_CSTR GB_read_bits_pntr(GBDATA *gbd,char c_0, char c_1)
 
 char *GB_read_bits(GBDATA *gbd, char c_0, char c_1) {
     GB_CSTR d = GB_read_bits_pntr(gbd,c_0,c_1);
-    return d ? gbs_malloc_copy(d,GB_GETSIZE(gbd)+1) : 0;
+    return d ? GB_memdup(d,GB_GETSIZE(gbd)+1) : 0;
 }
 
 
@@ -568,7 +568,7 @@ long GB_read_bytes_count(GBDATA *gbd)
 
 char *GB_read_bytes(GBDATA *gbd) {
     GB_CSTR d = GB_read_bytes_pntr(gbd);
-    return d ? gbs_malloc_copy(d,GB_GETSIZE(gbd)) : 0;
+    return d ? GB_memdup(d,GB_GETSIZE(gbd)) : 0;
 }
 
 GB_CUINT4 *GB_read_ints_pntr(GBDATA *gbd)
@@ -609,7 +609,7 @@ GB_UINT4 *GB_read_ints(GBDATA *gbd)
 {
     GB_CUINT4 *i = GB_read_ints_pntr(gbd);
     if (!i) return NULL;
-    return  (GB_UINT4 *)gbs_malloc_copy((char *)i,GB_GETSIZE(gbd)*sizeof(GB_UINT4));
+    return  (GB_UINT4 *)GB_memdup((char *)i,GB_GETSIZE(gbd)*sizeof(GB_UINT4));
 }
 
 GB_CFLOAT *GB_read_floats_pntr(GBDATA *gbd)
@@ -654,7 +654,7 @@ float *GB_read_floats(GBDATA *gbd)
     GB_CFLOAT *f;
     f = GB_read_floats_pntr(gbd);
     if (!f) return NULL;
-    return  (float *)gbs_malloc_copy((char *)f,GB_GETSIZE(gbd)*sizeof(float));
+    return  (float *)GB_memdup((char *)f,GB_GETSIZE(gbd)*sizeof(float));
 }
 
 char *GB_read_as_string(GBDATA *gbd)
@@ -868,8 +868,8 @@ GB_ERROR GB_write_pntr(GBDATA *gbd,const char *s, long bytes_size, long stored_s
         memsize = bytes_size;
     }
 
-    GB_SETSMDMALLOC(gbd,stored_size,memsize,d);
-    gb_touch_entry(gbd,gb_changed);
+    GB_SETSMDMALLOC(gbd, stored_size, memsize, d);
+    gb_touch_entry(gbd, gb_changed);
     GB_DO_CALLBACKS(gbd);
 
     return 0;
@@ -2051,11 +2051,11 @@ NOT4PERL GB_BOOL GB_inside_callback(GBDATA *of_gbd, enum gb_call_back_type cbtyp
             GB_CB_TYPE curr_cbtype;
             if (Main->cbld) {       // delete callbacks were not all performed yet
                                     // -> current callback is a delete callback
-                curr_cbtype = g_b_old_callback_list->type & GB_CB_DELETE;
+                curr_cbtype = GB_CB_TYPE(g_b_old_callback_list->type & GB_CB_DELETE);
             }
             else {
                 gb_assert(Main->cbl); // change callback
-                curr_cbtype = g_b_old_callback_list->type & (GB_CB_ALL-GB_CB_DELETE);
+                curr_cbtype = GB_CB_TYPE(g_b_old_callback_list->type & (GB_CB_ALL-GB_CB_DELETE));
             }
             gb_assert(curr_cbtype != GB_CB_NONE); // wtf!? are we inside callback or not?
 

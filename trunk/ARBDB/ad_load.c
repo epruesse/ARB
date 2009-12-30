@@ -47,7 +47,7 @@ static int is_a_unused_reading_buffer(ReadingBuffer rb) {
 #endif /* CHECK_RELEASED_BUFFERS */
 
 static ReadingBuffer allocate_ReadingBuffer() {
-    ReadingBuffer rb = malloc(sizeof(*rb)+READING_BUFFER_SIZE);
+    ReadingBuffer rb = (ReadingBuffer)malloc(sizeof(*rb)+READING_BUFFER_SIZE);
     rb->data         = ((char*)rb)+sizeof(*rb);
     rb->next         = 0;
     rb->read_bytes   = 0;
@@ -118,7 +118,7 @@ typedef unsigned long ReaderPos; // absolute position (relative to ReadingBuffer
 
 
 static Reader openReader(FILE *in) {
-    Reader r = malloc(sizeof(*r));
+    Reader r = (Reader)malloc(sizeof(*r));
 
     gb_assert(unused_reading_buffers == 0);
 
@@ -228,7 +228,7 @@ static int movePosition(Reader r, int offset) {
 static int gotoChar(Reader r, char lookfor) {
     const char *data  = r->current->data + r->current_offset;
     size_t      size  = r->current->read_bytes-r->current_offset;
-    char       *found = memchr(data, lookfor, size);
+    const char *found = (const char *)memchr(data, lookfor, size);
 
     if (found) {
         r->current_offset += (found-data);
@@ -275,7 +275,7 @@ char *getLine(Reader r) {
 
             if (r->current_line_allocated == 0 || r->current_line_size < line_length) { // need alloc
                 freeCurrentLine(r);
-                r->current_line           = malloc(line_length);
+                r->current_line           = (char*)malloc(line_length);
                 r->current_line_size      = line_length;
                 r->current_line_allocated = 1;
 
@@ -1413,7 +1413,7 @@ GBDATA *GB_login(const char *cpath,const char *opent,const char *user)
     }
 
     gbm_init_mem();
-    GB_init_gb();
+    gb_init_gb();
 
     if (GB_install_pid(1)) return 0;
 

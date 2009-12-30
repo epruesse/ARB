@@ -464,7 +464,7 @@ static void PV_WriteTranslatedSequenceToDB(ED4_AA_sequence_terminal *aaSeqTerm, 
 
             // Create alignment data to store the translated sequence
             GBDATA *gb_presets          = GB_search(GLOBAL_gb_main, "presets", GB_CREATE_CONTAINER);
-            GBDATA *gb_alignment_exists = GB_find_string(gb_presets, "alignment_name", newAlignmentName, GB_IGNORE_CASE, down_2_level);
+            GBDATA *gb_alignment_exists = GB_find_string(gb_presets, "alignment_name", newAlignmentName, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
             GBDATA *gb_new_alignment    = 0;
 
             if (gb_alignment_exists) {

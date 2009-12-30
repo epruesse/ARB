@@ -31,8 +31,8 @@
 #include "ed4_ProteinViewer.hxx"
 #include "ed4_protein_2nd_structure.hxx"
 #include "ed4_dots.hxx"
+#include "ed4_naligner.hxx"
 
-#include "edit_naligner.hxx"
 #include "graph_aligner_gui.hxx"
 
 AW_HEADER_MAIN

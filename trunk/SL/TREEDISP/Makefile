@@ -47,10 +47,11 @@ irstree_display.o: TreeDisplay.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 irstree_display.o: $(ARBHOME)/INCLUDE/ad_prot.h
 irstree_display.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-irstree_display.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
+irstree_display.o: $(ARBHOME)/INCLUDE/AliView.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/arb_assert.h
+irstree_display.o: $(ARBHOME)/INCLUDE/arb_error.h
 irstree_display.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/arbdb.h
 irstree_display.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -66,16 +67,19 @@ irstree_display.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
+irstree_display.o: $(ARBHOME)/INCLUDE/downcast.h
+irstree_display.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 TreeCallbacks.o: TreeCallbacks.hxx
 TreeCallbacks.o: TreeDisplay.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/ad_prot.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-TreeCallbacks.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
+TreeCallbacks.o: $(ARBHOME)/INCLUDE/AliView.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/arb_assert.h
+TreeCallbacks.o: $(ARBHOME)/INCLUDE/arb_error.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/arbdb.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -92,15 +96,18 @@ TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/awt.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/awt_advice.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+TreeCallbacks.o: $(ARBHOME)/INCLUDE/downcast.h
+TreeCallbacks.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 TreeDisplay.o: TreeDisplay.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/ad_prot.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-TreeDisplay.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
+TreeDisplay.o: $(ARBHOME)/INCLUDE/AliView.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_assert.h
+TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_error.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arbdb.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -119,3 +126,5 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/awt.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/awt_attributes.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
+TreeDisplay.o: $(ARBHOME)/INCLUDE/downcast.h
+TreeDisplay.o: $(ARBHOME)/INCLUDE/smartptr.h

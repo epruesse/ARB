@@ -40,7 +40,7 @@ $(MAIN): $(CPP_OBJECTS)
 	)
 
 proto:
-	../MAKEBIN/aisc_mkpt -P -A -E -g -F NT_,AP_ -w nt_internal.h $(CPP_SOURCES) >nt_internal.h.tmp
+	../MAKEBIN/aisc_mkpt -P -A -E -g -F ^NT_,^AP_ -w nt_internal.h $(CPP_SOURCES) >nt_internal.h.tmp
 	../SOURCE_TOOLS/mv_if_diff nt_internal.h.tmp nt_internal.h
 	../MAKEBIN/aisc_mkpt -P -A -E -g -w nt_cb.hxx NT_cb.cxx NT_extern.cxx >nt_cb.hxx.tmp
 	../SOURCE_TOOLS/mv_if_diff nt_cb.hxx.tmp nt_cb.hxx

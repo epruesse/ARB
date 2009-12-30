@@ -180,12 +180,12 @@ static GB_ERROR trace_params(int argc, const GBL *argv, struct gbl_param *ppara,
         }
 
         if (!error && !para) { // no parameter found for argument
-            int pcount = 0;
+            int                pcount = 0;
             struct gbl_param **params;
-            int k;
-            char *res;
-            void *str = GBS_stropen(1000);
-            GB_ERROR err;
+            int                k;
+            char              *res;
+            GBS_strstruct     *str    = GBS_stropen(1000);
+            GB_ERROR           err;
 
 
             for (para = ppara; para; para = para->next) pcount++;
@@ -710,10 +710,8 @@ static GB_ERROR gbl_remove(GBL_command_arguments *args)
 
     GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
     for (i=0;i<args->cinput;i++) {         /* go through all orig streams  */
-        void *strstruct;
-        char *p;
-        strstruct = GBS_stropen(1000);
-        for  (p = args->vinput[i].str;*p;p++){
+        GBS_strstruct *strstruct = GBS_stropen(1000);
+        for (char *p = args->vinput[i].str;*p;p++){
             if (!tab[(unsigned int)*p]) {
                 GBS_chrcat(strstruct,*p);
             }
@@ -741,10 +739,8 @@ static GB_ERROR gbl_keep(GBL_command_arguments *args)
 
     GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
     for (i=0;i<args->cinput;i++) {         /* go through all orig streams  */
-        void *strstruct;
-        char *p;
-        strstruct = GBS_stropen(1000);
-        for  (p = args->vinput[i].str;*p;p++){
+        GBS_strstruct *strstruct = GBS_stropen(1000);
+        for (char *p = args->vinput[i].str;*p;p++) {
             if (tab[(unsigned int)*p]) {
                 GBS_chrcat(strstruct,*p);
             }
@@ -834,10 +830,8 @@ static GB_ERROR gbl_translate(GBL_command_arguments *args)
 
     GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
     for (i=0;i<args->cinput;i++) {         /* go through all orig streams  */
-        void *strstruct;
-        char *p;
-        strstruct = GBS_stropen(1000);
-        for  (p = args->vinput[i].str;*p;p++){
+        GBS_strstruct *strstruct = GBS_stropen(1000);
+        for (char *p = args->vinput[i].str;*p;p++) {
             GBS_chrcat(strstruct, tab[(unsigned char)*p]);
         }
         PASS_2_OUT(args, GBS_strclose(strstruct));
@@ -1049,13 +1043,12 @@ static GB_ERROR gbl_cut(GBL_command_arguments *args)
 }
 static GB_ERROR gbl_drop(GBL_command_arguments *args)
 {
-    int       i;
-    int      *dropped;
-    GB_ERROR  error    = 0;
+    GB_ERROR error = 0;
 
     GBL_CHECK_FREE_PARAM(*args->coutput, args->cinput-args->cparam);
 
-    dropped = malloc(args->cinput*sizeof(dropped));
+    int *dropped = (int*)malloc(args->cinput*sizeof(dropped));
+    int  i;
     for (i=0; i<args->cinput;++i) {
         dropped[i] = 0;
     }
@@ -1213,13 +1206,10 @@ static GB_ERROR gbl_merge(GBL_command_arguments *args)
     GBL_CHECK_FREE_PARAM(*args->coutput, 1);
 
     if (args->cinput) {
-        int   i;
-        void *str;
-
-        str = GBS_stropen(1000);
+        GBS_strstruct *str = GBS_stropen(1000);
         GBS_strcat(str, args->vinput[0].str);
 
-        for (i = 1; i<args->cinput; ++i) {
+        for (int i = 1; i<args->cinput; ++i) {
             if (separator) GBS_strcat(str, separator);
             GBS_strcat(str, args->vinput[i].str);
         }
@@ -1413,6 +1403,7 @@ static GB_ERROR gbl_srt(GBL_command_arguments *args) {
 /* numeric binary operators */
 
 typedef int (*numeric_binary_operator)(int i1, int i2);
+
 static char *apply_numeric_binop(const char *arg1, const char *arg2, void *client_data) {
     int                     i1     = atoi(arg1);
     int                     i2     = atoi(arg2);
@@ -1429,12 +1420,12 @@ static int binop_div(int i1, int i2) { return i2 ? i1/i2 : 0; }
 static int binop_rest(int i1, int i2) { return i2 ? i1%i2 : 0; }
 static int binop_per_cent(int i1, int i2) { return i2 ? (i1*100)/i2 : 0; }
 
-static GB_ERROR gbl_plus    (GBL_command_arguments *args){ return gbl_apply_binary_operator(args, apply_numeric_binop, binop_plus    ); }
-static GB_ERROR gbl_minus   (GBL_command_arguments *args){ return gbl_apply_binary_operator(args, apply_numeric_binop, binop_minus   ); }
-static GB_ERROR gbl_mult    (GBL_command_arguments *args){ return gbl_apply_binary_operator(args, apply_numeric_binop, binop_mult    ); }
-static GB_ERROR gbl_div     (GBL_command_arguments *args){ return gbl_apply_binary_operator(args, apply_numeric_binop, binop_div     ); }
-static GB_ERROR gbl_rest    (GBL_command_arguments *args){ return gbl_apply_binary_operator(args, apply_numeric_binop, binop_rest    ); }
-static GB_ERROR gbl_per_cent(GBL_command_arguments *args){ return gbl_apply_binary_operator(args, apply_numeric_binop, binop_per_cent); }
+static GB_ERROR gbl_plus    (GBL_command_arguments *args){ return gbl_apply_binary_operator(args, apply_numeric_binop, (void*)binop_plus    ); }
+static GB_ERROR gbl_minus   (GBL_command_arguments *args){ return gbl_apply_binary_operator(args, apply_numeric_binop, (void*)binop_minus   ); }
+static GB_ERROR gbl_mult    (GBL_command_arguments *args){ return gbl_apply_binary_operator(args, apply_numeric_binop, (void*)binop_mult    ); }
+static GB_ERROR gbl_div     (GBL_command_arguments *args){ return gbl_apply_binary_operator(args, apply_numeric_binop, (void*)binop_div     ); }
+static GB_ERROR gbl_rest    (GBL_command_arguments *args){ return gbl_apply_binary_operator(args, apply_numeric_binop, (void*)binop_rest    ); }
+static GB_ERROR gbl_per_cent(GBL_command_arguments *args){ return gbl_apply_binary_operator(args, apply_numeric_binop, (void*)binop_per_cent); }
 
 
 /********************************************************************************************
@@ -1465,13 +1456,10 @@ static GB_ERROR gbl_select(GBL_command_arguments *args) {
 /********************************************************************************************
                                         Database Functions
 ********************************************************************************************/
-static GB_ERROR gbl_readdb(GBL_command_arguments *args)
-{
-    int i;
-    void *strstr = GBS_stropen(1024);
+static GB_ERROR gbl_readdb(GBL_command_arguments *args) {
+    GBS_strstruct *strstr = GBS_stropen(1024);
 
-
-    for (i=0;i<args->cparam;i++){
+    for (int i=0;i<args->cparam;i++) {
         char *val = GBT_read_as_string(args->gb_ref, args->vparam[i].str);
         if (val) {
             GBS_strcat(strstr, val);
@@ -1702,9 +1690,9 @@ static struct cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *
                 *error = GBS_global_string("Can't find tree '%s'", tree_name);
             }
             else {
-                struct cached_taxonomy *ct            = malloc(sizeof(*ct));
-                long                    nodes         = GBT_count_nodes(tree);
-                int                     group_counter = 0;
+                cached_taxonomy *ct            = (cached_taxonomy*)malloc(sizeof(*ct));
+                long             nodes         = GBT_count_nodes(tree);
+                int              group_counter = 0;
 
                 ct->tree_name = strdup(tree_name);
                 ct->taxonomy  = GBS_create_dynaval_hash((int)(nodes*2), GB_IGNORE_CASE, GBS_dynaval_free);
@@ -2035,7 +2023,6 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args)
             const char *src           = args->vinput[ic].str;
             size_t      data_size     = strlen(src);
             size_t      needed_size;
-            char       *result        = 0;
             int         simple_format = (strcmp(args->command,"format") == 0);
 
             {
@@ -2055,7 +2042,7 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args)
                 needed_size = lines*line_size + firsttab + 1 + 10;
             }
 
-            result = malloc(needed_size);
+            char *result = (char*)malloc(needed_size);
             if (!result) {
                 error = GBS_global_string("Out of memory (tried to alloc %zu bytes)", needed_size);
             }
@@ -2201,12 +2188,10 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args)
 
 #if defined(DEBUG)
                 { /* check for array overflow */
-                    size_t  used_size   = dst-result;
-                    char   *new_result;
-
+                    size_t used_size = dst-result;
                     gb_assert(used_size <= needed_size);
 
-                    new_result = realloc(result, used_size);
+                    char *new_result = (char*)realloc(result, used_size);
                     if (!new_result) {
                         error = "Out of memory";
                     }
@@ -2435,8 +2420,10 @@ static GB_ERROR gbl_diff(GBL_command_arguments *args) {
 /* ------------------------- */
 /*      standard filter      */
 
+enum filter_function { FP_FILTER, FP_MODIFY };
+
 struct filter_params { // used by gbl_filter and gbl_change_gc
-    enum { FP_FILTER, FP_MODIFY } function;
+    filter_function function;
 
     const char *include;
     const char *exclude;
@@ -2618,7 +2605,7 @@ static GB_ERROR gbl_exec(GBL_command_arguments *args)
             {
                 FILE *in = popen(sys,"r");
                 if (in) {
-                    void *str = GBS_stropen(4096);
+                    GBS_strstruct *str = GBS_stropen(4096);
 
                     while ( (i=getc(in)) != EOF ) { GBS_chrcat(str,i); }
                     result = GBS_strclose(str);

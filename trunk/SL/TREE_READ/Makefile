@@ -40,17 +40,23 @@ TreeRead.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 TreeRead.o: $(ARBHOME)/INCLUDE/ad_prot.h
 TreeRead.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arb_assert.h
+TreeRead.o: $(ARBHOME)/INCLUDE/arb_error.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arbdb.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arbdbt.h
+TreeRead.o: $(ARBHOME)/INCLUDE/arbtools.h
 TreeRead.o: $(ARBHOME)/INCLUDE/attributes.h
+TreeRead.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 TreeTools.o: TreeRead.h
 TreeTools.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 TreeTools.o: $(ARBHOME)/INCLUDE/ad_prot.h
 TreeTools.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 TreeTools.o: $(ARBHOME)/INCLUDE/arb_assert.h
+TreeTools.o: $(ARBHOME)/INCLUDE/arb_error.h
 TreeTools.o: $(ARBHOME)/INCLUDE/arbdb.h
 TreeTools.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 TreeTools.o: $(ARBHOME)/INCLUDE/arbdbt.h
+TreeTools.o: $(ARBHOME)/INCLUDE/arbtools.h
 TreeTools.o: $(ARBHOME)/INCLUDE/attributes.h
+TreeTools.o: $(ARBHOME)/INCLUDE/smartptr.h

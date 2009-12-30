@@ -147,7 +147,7 @@ void AWT_create_db_browser_awars(AW_root *aw_root, AW_default aw_def) {
 }
 
 // @@@  this may be moved to ARBDB-sources
-GBDATA *GB_search_numbered(GBDATA *gbd, const char *str, long /*enum gb_search_enum*/ create) {
+GBDATA *GB_search_numbered(GBDATA *gbd, const char *str, GB_TYPES create) {
     if (str) {
         if (str[0] == '/' && str[1] == 0) { // root
             return GB_get_root(gbd);

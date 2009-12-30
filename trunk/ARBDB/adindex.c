@@ -514,7 +514,7 @@ GB_CSTR g_b_read_undo_key_pntr(GB_MAIN_TYPE *Main, struct g_b_undo_entry_struct 
 }
 
 char *g_b_undo_info(GB_MAIN_TYPE *Main, GBDATA *gb_main, struct g_b_undo_header_struct *uh){
-    void *res = GBS_stropen(1024);
+    GBS_strstruct *res = GBS_stropen(1024);
     struct g_b_undo_struct *u;
     struct g_b_undo_entry_struct *ue;
     GBUSE(Main);GBUSE(gb_main);

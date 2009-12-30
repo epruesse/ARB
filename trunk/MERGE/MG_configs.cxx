@@ -50,10 +50,10 @@ void MG_config_rename_cb(AW_window *aww, GBDATA *gbd, int config_nr) {
             GBDATA *gb_config_data     = GB_search(gbd, AWAR_CONFIG_DATA, GB_CREATE_CONTAINER);
             if (!gb_config_data) error = GB_await_error();
             else {
-                GBDATA *gb_dest_name    = GB_find_string(gb_config_data, "name", dest, GB_IGNORE_CASE, down_2_level);
+                GBDATA *gb_dest_name    = GB_find_string(gb_config_data, "name", dest, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
                 if (gb_dest_name) error = GBS_global_string("Configuration '%s' already exists", dest);
                 else {
-                    GBDATA *gb_source_name    = GB_find_string(gb_config_data, "name", source, GB_IGNORE_CASE, down_2_level);
+                    GBDATA *gb_source_name    = GB_find_string(gb_config_data, "name", source, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
                     if (gb_source_name) error = GB_write_string(gb_source_name, dest);
                     else    error             = "Please select a configuration";
                 }
@@ -121,7 +121,7 @@ void MG_config_delete_cb(AW_window *aww,GBDATA *gbd, long config_nr) {
 
     if (!error) {
         GBDATA *gb_config_data = GB_search(gbd, AWAR_CONFIG_DATA, GB_CREATE_CONTAINER);
-        GBDATA *gb_config_name = GB_find_string(gb_config_data, "name", config_name, GB_IGNORE_CASE, down_2_level);
+        GBDATA *gb_config_name = GB_find_string(gb_config_data, "name", config_name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
 
         if (gb_config_name) {
             GBDATA *gb_config = GB_get_father(gb_config_name);
@@ -148,8 +148,8 @@ void MG_transfer_config(AW_window *aww) {
         if (!error) {
             GBDATA *gb_config_data1 = GB_search(GLOBAL_gb_merge, AWAR_CONFIG_DATA, GB_CREATE_CONTAINER);
             GBDATA *gb_config_data2 = GB_search(GLOBAL_gb_dest,  AWAR_CONFIG_DATA, GB_CREATE_CONTAINER);
-            GBDATA *gb_cfgname_1    = GB_find_string(gb_config_data1, "name", source, GB_IGNORE_CASE, down_2_level);
-            GBDATA *gb_cfgname_2    = GB_find_string(gb_config_data2, "name", dest,   GB_IGNORE_CASE, down_2_level);
+            GBDATA *gb_cfgname_1    = GB_find_string(gb_config_data1, "name", source, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
+            GBDATA *gb_cfgname_2    = GB_find_string(gb_config_data2, "name", dest,   GB_IGNORE_CASE, SEARCH_GRANDCHILD);
 
             if (!gb_cfgname_1) {
                 error = "Please select the configuration you want to transfer";

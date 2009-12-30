@@ -226,7 +226,7 @@ void mg_check_field_cb(AW_window *aww){
                         if ((species_count & 0xf) == 0) aw_status(species_count/ (double)sum_species);
 
                         const char *name1 = GBT_read_name(gb_species1);
-                        gb_species2       = GB_find_string(gb_species_data2, "name", name1, GB_IGNORE_CASE, down_2_level);
+                        gb_species2       = GB_find_string(gb_species_data2, "name", name1, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
                         if (!gb_species2) {
                             aw_message(GBS_global_string("WARNING: Species %s not found in DB II", name1));
                         }

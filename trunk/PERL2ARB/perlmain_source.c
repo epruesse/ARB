@@ -66,17 +66,19 @@ main(int argc, char **argv, char **env)
 EXTERN_C void boot_ARB (pTHX_ CV* cv);
 EXTERN_C void boot_DynaLoader (pTHX_ CV* cv);
 
+
 static void
 xs_init(pTHX)
 {
-	char *file = __FILE__;
-	dXSUB_SYS;
-	{
+    const char *file = __FILE__;
+
+    dXSUB_SYS;
+    {
 	newXS("ARB::bootstrap", boot_ARB, file);
-	}
-	{
+    }
+    {
 	/* DynaLoader is a special case */
 
 	newXS("DynaLoader::boot_DynaLoader", boot_DynaLoader, file);
-	}
+    }
 }

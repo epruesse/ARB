@@ -69,24 +69,12 @@ typedef enum { // bit flags
 #define GBT_TREE_AWAR_SRT       " = :\n=:*=tree_*1:tree_tree_*=tree_*1"
 #define GBT_ALI_AWAR_SRT        " =:\n=:*=ali_*1:ali_ali_*=ali_*1"
 
-#define P_(s) s
-
-#if defined(__GNUG__) || defined(__cplusplus)
-extern "C" {
-#endif
-
-    typedef GB_ERROR (*species_callback)(GBDATA *gb_species, int *clientdata);
-
-#if defined(__GNUG__) || defined(__cplusplus)
-}
-#endif
+typedef GB_ERROR (*species_callback)(GBDATA *gb_species, int *clientdata);
 
 # include <ad_t_prot.h>
 # ifdef ADLOCAL_H
 #  include <ad_t_lpro.h>
 # endif
-
-#undef P_
 
 #define CHANGE_KEY_PATH             "presets/key_data"
 #define CHANGE_KEY_PATH_GENES       "presets/gene_key_data"

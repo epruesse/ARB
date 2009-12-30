@@ -24,3 +24,5 @@ export MAKEDEPENDFLAGS MAKEDEPEND
 
 export SEP
 
+export ARBDB_LIB
+

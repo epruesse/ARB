@@ -107,11 +107,11 @@ static GB_ERROR read_arb_tcp_dat(const char *filename, int *versionFound) {
         char   buffer[MAXLINELEN+1];
         char  *lp;
         int    lineNumber = 0;
-        char **tokens     = malloc(MAXTOKENS*sizeof(*tokens));
+        char **tokens     = (char**)malloc(MAXTOKENS*sizeof(*tokens));
 
         int    entries_allocated = 30;
         int    entries           = 0;
-        char **entry             = malloc(entries_allocated*sizeof(*entry));
+        char **entry             = (char**)malloc(entries_allocated*sizeof(*entry));
 
         if (!tokens || !entry) error = "Out of memory";
 
@@ -150,7 +150,7 @@ static GB_ERROR read_arb_tcp_dat(const char *filename, int *versionFound) {
                         }
                         allsize++;      /* additional zero byte */
 
-                        data = malloc(allsize);
+                        data = (char*)malloc(allsize);
                         {
                             char *d = data;
                             for (t = 0; t<tokCount; t++) {
@@ -162,9 +162,8 @@ static GB_ERROR read_arb_tcp_dat(const char *filename, int *versionFound) {
                     }
 
                     if (entries == entries_allocated) {
-                        char **entry2;
                         entries_allocated = (int)(entries_allocated*1.5);
-                        entry2            = realloc(entry, entries_allocated*sizeof(*entry));
+                        char **entry2     = (char**)realloc(entry, entries_allocated*sizeof(*entry));
 
                         if (!entry2) error = "Out of memory";
                         else entry = entry2;
@@ -181,7 +180,7 @@ static GB_ERROR read_arb_tcp_dat(const char *filename, int *versionFound) {
             for (t = 0; t<tokCount; t++) freeset(tokens[t], 0);
         }
 
-        ATD_content = realloc(entry, (entries+1)*sizeof(*entry));
+        ATD_content = (char**)realloc(entry, (entries+1)*sizeof(*entry));
         if (!ATD_content) error = "Out of memory";
         else ATD_content[entries] = 0;
 
@@ -365,7 +364,7 @@ const char * const *GBS_get_arb_tcp_entries(const char *matching) {
         while (ATD_content[count]) count++;
 
         if (matchingEntriesSize != count) {
-            freeset(matchingEntries, malloc((count+1)*sizeof(*matchingEntries)));
+            freeset(matchingEntries, (const char **)malloc((count+1)*sizeof(*matchingEntries)));
             matchingEntriesSize = count;
         }
 

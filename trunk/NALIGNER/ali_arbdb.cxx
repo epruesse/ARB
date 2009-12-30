@@ -51,7 +51,7 @@ char *ALI_ARBDB::get_sequence_string(char *name,int and_mark)
 
     gb_species_data = GB_search(gb_main, "species_data", GB_FIND);
 
-    gb_seq = GB_find_string(gb_species_data, "name", name, GB_IGNORE_CASE, down_2_level);
+    gb_seq = GB_find_string(gb_species_data, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
     if (gb_seq) {
         if (and_mark) GB_write_flag(GB_get_father(gb_seq),1);
         gb_seq = GB_brother(gb_seq, alignment);
@@ -77,7 +77,7 @@ ALI_SEQUENCE *ALI_ARBDB::get_sequence(char *name,int and_mark)
 
     gb_species_data = GB_search(gb_main, "species_data", GB_FIND);
 
-    gb_seq = GB_find_string(gb_species_data, "name", name, GB_IGNORE_CASE, down_2_level);
+    gb_seq = GB_find_string(gb_species_data, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
     if (gb_seq) {
         if (and_mark) GB_write_flag(GB_get_father(gb_seq),1);
         gb_seq = GB_brother(gb_seq, alignment);
@@ -99,7 +99,7 @@ ALI_SEQUENCE *ALI_ARBDB::get_sequence(char *name,int and_mark)
 char *ALI_ARBDB::get_SAI(char *name) {
     char   *extended    = 0;
     GBDATA *gb_sai_data = GBT_get_SAI_data(gb_main);
-    GBDATA *gb_sai      = GB_find_string(gb_sai_data, "name", name, GB_IGNORE_CASE, down_2_level);
+    GBDATA *gb_sai      = GB_find_string(gb_sai_data, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
 
     if (gb_sai) {
         gb_sai = GB_brother(gb_sai, alignment);
@@ -118,7 +118,7 @@ int ALI_ARBDB::put_sequence_string(char *name, char *sequence) {
     GB_change_my_security(gb_main,6,"passwd");
     GBDATA *gb_species_data = GB_search(gb_main, "species_data", GB_FIND);
 
-    GBDATA *gb_seq = GB_find_string(gb_species_data, "name", name, GB_IGNORE_CASE, down_2_level);
+    GBDATA *gb_seq = GB_find_string(gb_species_data, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
     if (gb_seq) {
         GBDATA *gb_ali = GB_brother(gb_seq, alignment);
         if (gb_ali) {
@@ -135,7 +135,7 @@ int ALI_ARBDB::put_sequence(char *name, ALI_SEQUENCE *sequence) {
     GB_change_my_security(gb_main,6,"passwd");
     GBDATA *gb_species_data = GB_search(gb_main, "species_data", GB_FIND);
 
-    GBDATA *gb_seq = GB_find_string(gb_species_data, "name", name, GB_IGNORE_CASE, down_2_level);
+    GBDATA *gb_seq = GB_find_string(gb_species_data, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
     if (gb_seq) {
         GBDATA *gb_ali = GB_brother(gb_seq, alignment);
         if (gb_ali) {
