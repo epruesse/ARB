@@ -15,24 +15,24 @@
 #endif
 
 
-/* adseqcompr.c */
+/* adChangeKey.cxx */
+GB_ERROR gbt_set_type_of_changekey(GBDATA *gb_main, const char *field_name, GB_TYPES type, const char *change_key_path);
+
+/* adname.cxx */
+GB_ERROR gbt_rename_tree_rek(GBT_TREE *tree, int tree_index);
+
+/* adseqcompr.cxx */
 char *gb_compress_seq_by_master(const char *master, int master_len, int master_index, GBQUARK q, const char *seq, long seq_len, long *memsize, int old_flag);
 char *gb_compress_sequence_by_master(GBDATA *gbd, const char *master, int master_len, int master_index, GBQUARK q, const char *seq, int seq_len, long *memsize);
 char *gb_uncompress_by_sequence(GBDATA *gbd, const char *ss, long size, GB_ERROR *error, long *new_size);
 
-/* adtables.c */
+/* adtables.cxx */
 GBDATA *gbt_table_link_follower(GBDATA *gb_main, GBDATA *gb_link, const char *link);
 
-/* adChangeKey.c */
-GB_ERROR gbt_set_type_of_changekey(GBDATA *gb_main, const char *field_name, GB_TYPES type, const char *change_key_path);
-
-/* adtree.c */
+/* adtree.cxx */
 GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_nodes, long structure_size, int size_of_tree, GB_ERROR *error);
 int gbt_sum_leafs(GBT_TREE *tree);
 GB_CSTR *gbt_fill_species_names(GB_CSTR *des, GBT_TREE *tree);
-
-/* adname.c */
-GB_ERROR gbt_rename_tree_rek(GBT_TREE *tree, int tree_index);
 
 #else
 #error ad_t_lpro.h included twice
