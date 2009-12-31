@@ -15,7 +15,7 @@
 #endif
 
 
-/* adperl.c */
+/* adperl.cxx */
 const char *GBP_GB_SEARCH_TYPE_2_charPtr(GB_SEARCH_TYPE search_type);
 GB_SEARCH_TYPE GBP_charPtr_2_GB_SEARCH_TYPE(const char *search_mode);
 const char *GBP_GB_TYPES_2_charPtr(GB_TYPES type);

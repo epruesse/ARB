@@ -15,7 +15,7 @@
 #endif
 
 
-/* adstring.c */
+/* adstring.cxx */
 void GBK_dump_backtrace(FILE *out, GB_ERROR error);
 void GBK_install_SIGSEGV_handler(GB_BOOL install);
 void GBK_terminate(const char *error);
