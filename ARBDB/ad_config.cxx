@@ -230,7 +230,7 @@ GB_ERROR GBT_parse_next_config_item(GBT_config_parser *parser, GBT_config_item *
         }
 
         if (error) { /* stop parser */
-            char *end_of_config = strchr(str+pos, '\0');
+            const char *end_of_config = strchr(str+pos, '\0');
             pos                 = end_of_config-str;
             gb_assert(str[pos] == 0);
         }

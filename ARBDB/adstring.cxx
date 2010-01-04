@@ -1713,7 +1713,7 @@ static long g_bs_read_tagged_hash(const char *value, long subhash, void *cd_g_bs
 static long g_bs_read_final_hash(const char *tag, long value, void *cd_merge_result) {
     struct GBS_strstruct *merge_result = (struct GBS_strstruct*)cd_merge_result;
         
-    char *lk = strrchr(tag,',');
+    char *lk = const_cast<char*>(strrchr(tag,','));
     if (lk) {           /* remove number at end */
         *lk = 0;
         GBS_strcat(merge_result, " [");

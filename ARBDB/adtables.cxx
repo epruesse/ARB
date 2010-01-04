@@ -38,7 +38,7 @@ GBDATA *gbt_table_link_follower(GBDATA *gb_main, GBDATA *gb_link, const char *li
     char *sep;
     GBUSE(gb_main);
     GBUSE(gb_link);
-    sep = strchr(link,':');
+    sep = const_cast<char*>(strchr(link,':'));
     if (!sep){
         GB_export_errorf("Link '%s' is missing second ':' tag", link);
         return NULL;

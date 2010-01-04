@@ -395,7 +395,7 @@ NOT4PERL GB_ERROR GBT_with_stored_species(GBDATA *gb_main, const char *stored, s
     GB_ERROR error = 0;
 
     while (!error) {
-        char   *p   = strchr(stored, ';');
+        const char   *p   = strchr(stored, ';');
         int     len = p ? (p-stored) : (int)strlen(stored);
         GBDATA *gb_species;
 

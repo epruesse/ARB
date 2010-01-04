@@ -14,7 +14,7 @@ GBDATA *GB_follow_link(GBDATA *gb_link){
     GB_Link_Follower lf;
     link = (char *)GB_read_link_pntr(gb_link);
     if (!link) return 0;
-    s = strchr(link,':');
+    s = const_cast<char*>(strchr(link,':'));
     if (!s){
         GB_export_errorf("Your link '%s' does not contain a ':' character",link);
         return 0;
