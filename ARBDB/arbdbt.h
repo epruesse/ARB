@@ -42,7 +42,7 @@ typedef float GBT_LEN;
 #define AWAR_ERROR_CONTAINER    "tmp/message/pending"
 
 #ifdef FAKE_VTAB_PTR
-/* if defined, FAKE_VTAB_PTR contains 'char' */
+// if defined, FAKE_VTAB_PTR contains 'char'
 typedef FAKE_VTAB_PTR  virtualTable;
 #define GBT_VTAB_AND_TREE_ELEMENTS(type)        \
     virtualTable      *dummy_virtual;           \

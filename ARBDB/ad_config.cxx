@@ -1,24 +1,17 @@
-/* ==================================================================== */
-/*                                                                      */
-/*   File      : ad_config.c                                            */
-/*   Purpose   : handle editor configurations                           */
-/*                                                                      */
-/*                                                                      */
-/* Coded by Ralf Westram (coder@reallysoft.de) in May 2005              */
-/* Copyright Department of Microbiology (Technical University Munich)   */
-/*                                                                      */
-/* Visit our web site at: www.arb-home.de                               */ 
-/*                                                                      */
-/* ==================================================================== */
+// =============================================================== //
+//                                                                 //
+//   File      : ad_config.cxx                                     //
+//   Purpose   : editor configurations                             //
+//                                                                 //
+//   Coded by Ralf Westram (coder@reallysoft.de) in May 2005       //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include "arbdbt.h"
 #include "ad_config.h"
 #include "gb_local.h"
-
-
-/* *******************************************************************************************
-   editor configurations
-********************************************************************************************/
 
 char **GBT_get_configuration_names_and_count(GBDATA *gb_main, int *countPtr) {
     /* returns existing configurations (as null terminated array of char* (heap-copies))
@@ -179,7 +172,7 @@ void GBT_free_config_item(GBT_config_item *item) {
 }
 
 GB_ERROR GBT_parse_next_config_item(GBT_config_parser *parser, GBT_config_item *item) {
-    /* the passed 'item' gets filled with parsed data from the config string */
+    // the passed 'item' gets filled with parsed data from the config string
     GB_ERROR error = 0;
 
     const char *str = parser->config_string;
@@ -188,7 +181,7 @@ GB_ERROR GBT_parse_next_config_item(GBT_config_parser *parser, GBT_config_item *
     freeset(item->name, NULL);
     item->type = CI_END_OF_CONFIG;
 
-    if (str[pos]) {             /* if not at 0-byte */
+    if (str[pos]) {             // if not at 0-byte
         char label = str[pos+1];
         item->type = CI_UNKNOWN;
 
@@ -214,7 +207,7 @@ GB_ERROR GBT_parse_next_config_item(GBT_config_parser *parser, GBT_config_item *
                 const char *start_of_name = str+pos+2;
                 const char *behind_name   = strchr(start_of_name, '\1');
 
-                if (!behind_name) behind_name = strchr(start_of_name, '\0'); /* eos */
+                if (!behind_name) behind_name = strchr(start_of_name, '\0'); // eos
                 gb_assert(behind_name);
 
                 item->name = (char*)GB_calloc(1, behind_name-start_of_name+1);
@@ -224,7 +217,7 @@ GB_ERROR GBT_parse_next_config_item(GBT_config_parser *parser, GBT_config_item *
             }
         }
 
-        if (error) { /* stop parser */
+        if (error) { // stop parser
             const char *end_of_config = strchr(str+pos, '\0');
             pos                 = end_of_config-str;
             gb_assert(str[pos] == 0);
@@ -236,7 +229,7 @@ GB_ERROR GBT_parse_next_config_item(GBT_config_parser *parser, GBT_config_item *
 }
 
 void GBT_append_to_config_string(const GBT_config_item *item, GBS_strstruct *strstruct) {
-    /* strstruct has to be created by GBS_stropen() */
+    // strstruct has to be created by GBS_stropen()
 
     gb_assert((item->type & (CI_UNKNOWN|CI_END_OF_CONFIG)) == 0);
 
@@ -334,7 +327,5 @@ void GBT_test_config_parser(GBDATA *gb_main) {
         GBT_free_names(config_names);
     }
 }
-#endif /* DEBUG */
-
-
+#endif // DEBUG
 

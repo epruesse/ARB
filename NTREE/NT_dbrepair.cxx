@@ -564,7 +564,7 @@ static bool testDictionaryCompression(GBDATA *gbd, GBQUARK key_quark, bool testU
                 
             case GB_STRING:
             case GB_LINK:
-                if (GB_get_quark(gb_sub) == key_quark && GB_is_directory_compressed(gb_sub)) {
+                if (GB_get_quark(gb_sub) == key_quark && GB_is_dictionary_compressed(gb_sub)) {
                     if (testUse) return true;
 
                     const char *decompressed = GB_read_char_pntr(gb_sub);
@@ -720,7 +720,7 @@ static GB_ERROR deleteDataOfKey(GBDATA *gbd, GBQUARK key_quark, StringSet& delet
             case GB_STRING:
             case GB_LINK:
                 if (GB_get_quark(gb_sub) == key_quark) {
-                    if (GB_is_directory_compressed(gb_sub)) {
+                    if (GB_is_dictionary_compressed(gb_sub)) {
                         string path(GB_get_db_path(gb_sub));
                         error = GB_delete(gb_sub);
                         if (!error) {
@@ -751,7 +751,7 @@ static char *readFirstCompressedDataOf(GBDATA *gbd, GBQUARK key_quark) {
             case GB_STRING:
             case GB_LINK:
                 if (GB_get_quark(gb_sub) == key_quark) {
-                    if (GB_is_directory_compressed(gb_sub)) {
+                    if (GB_is_dictionary_compressed(gb_sub)) {
                         data = GB_read_as_string(gb_sub);
                     }
                 }

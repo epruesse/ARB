@@ -1,13 +1,13 @@
-/* ================================================================ */
-/*                                                                  */
-/*   File      : adExperiment.c                                     */
-/*   Purpose   : DB-access on experiments                           */
-/*                                                                  */
-/*   Coded by Ralf Westram (coder@reallysoft.de) in December 2008   */
-/*   Institute of Microbiology (Technical University Munich)        */
-/*   http://www.arb-home.de/                                        */
- /*                                                                  */
- /* ================================================================ */
+// =============================================================== //
+//                                                                 //
+//   File      : adExperiment.cxx                                  //
+//   Purpose   : DB-access on experiments                          //
+//                                                                 //
+//   Coded by Ralf Westram (coder@reallysoft.de) in December 2008  //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include <arbdbt.h>
 #include "gb_local.h"
@@ -40,9 +40,7 @@ GBDATA* EXP_next_experiment(GBDATA *gb_experiment) {
 
 
 GBDATA* EXP_find_or_create_experiment_rel_exp_data(GBDATA *gb_experiment_data, const char *name) {
-    /* Search for a experiment, when experiment does not exist create it */
+    // Search for a experiment, when experiment does not exist create it
     return GBT_find_or_create_item_rel_item_data(gb_experiment_data, "experiment", "name", name, GB_FALSE);
 }
-
-
 

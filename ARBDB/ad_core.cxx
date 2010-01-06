@@ -12,7 +12,8 @@
 #include "gb_storage.h"
 #include "gb_index.h"
 
-/** copy all info + external data mem to an one step undo buffer (to abort a transaction */
+// Copy all info + external data mem to an one step undo buffer
+// (needed to abort transactions)
 
 inline void _GB_CHECK_IN_UNDO_DELETE(GB_MAIN_TYPE *Main, GBDATA *& gbd) {
     if (Main->undo_type) gb_check_in_undo_delete(Main,gbd,0);
@@ -26,9 +27,9 @@ inline void _GB_CHECK_IN_UNDO_MODIFY(GB_MAIN_TYPE *Main, GBDATA *gbd) {
 }
 
 
-/********************************************************************************************
-                    GB data management
-********************************************************************************************/
+// ---------------------------
+//      GB data management
+
 void gb_touch_entry(GBDATA * gbd, GB_CHANGED val) {
     GBCONTAINER *gbc;
     GBCONTAINER *gbc_father;
@@ -140,7 +141,7 @@ void gb_set_update_in_server_flags(GBCONTAINER * gbc)
 }
 
 void gb_create_header_array(GBCONTAINER *gbc, int size){
-    /* creates or resizes an old array to children */
+    // creates or resizes an old array to children
     struct gb_header_list_struct *nl, *ol;
 
     if (size <= gbc->d.headermemsize) return;
@@ -153,7 +154,7 @@ void gb_create_header_array(GBCONTAINER *gbc, int size){
     if ((ol=GB_DATA_LIST_HEADER(gbc->d))!=NULL)
     {
         int     idx,
-            maxidx = gbc->d.headermemsize; /* ???: oder ->d.nheader */
+            maxidx = gbc->d.headermemsize; // ???: oder ->d.nheader
 
         for (idx=0; idx<maxidx; idx++)
         {
@@ -162,7 +163,7 @@ void gb_create_header_array(GBCONTAINER *gbc, int size){
 
             if (gbd)
             {
-                gb_assert(gbd->server_id==GBTUM_MAGIC_NUMBER || GB_read_clients(gbd)<0); /* or I am a client */
+                gb_assert(gbd->server_id==GBTUM_MAGIC_NUMBER || GB_read_clients(gbd)<0); // or I am a client
                 SET_GB_HEADER_LIST_GBD(nl[idx],gbd);
             }
         }
@@ -182,7 +183,7 @@ void gb_link_entry(GBCONTAINER* father, GBDATA * gbd, long index_pos)
        else special index position; error when data already exists in index pos */
 
     SET_GB_FATHER(gbd,father);
-    if (father == NULL) {   /* 'main' entry in GB */
+    if (father == NULL) {   // 'main' entry in GB
         return;
     }
 
@@ -213,7 +214,7 @@ void gb_link_entry(GBCONTAINER* father, GBDATA * gbd, long index_pos)
     while (GB_DATA_LIST_HEADER(father->d)[index_pos].flags.changed >= gb_deleted) {
 #if defined(DEBUG)
         fprintf(stderr, "Warning: index_pos %li of father(%p) contains just-deleted entry -> using next index_pos..\n", index_pos, father);
-#endif /* DEBUG */
+#endif // DEBUG
         index_pos = father->d.nheader++;
         gb_create_header_array(father, (int)index_pos+1);
     }
@@ -241,13 +242,11 @@ void gb_unlink_entry(GBDATA * gbd)
     }
 }
 
-void gb_create_extended(GBDATA *gbd){
-    int index;
-    if (gbd->ext) return;
-    index = GB_GBM_INDEX(gbd);
-    gbd->ext = (struct gb_db_extended *)gbm_get_mem(
-                                                    sizeof(struct gb_db_extended),
-                                                    index);
+void gb_create_extended(GBDATA *gbd) {
+    if (!gbd->ext) {
+        int index = GB_GBM_INDEX(gbd);
+        gbd->ext = (struct gb_db_extended *)gbm_get_mem(sizeof(struct gb_db_extended), index);
+    }
 }
 
 GB_MAIN_TYPE *gb_make_gb_main_type(const char *path) {
@@ -256,7 +255,7 @@ GB_MAIN_TYPE *gb_make_gb_main_type(const char *path) {
     Main = (GB_MAIN_TYPE *)gbm_get_mem(sizeof(*Main),0);
     if (path) Main->path = strdup((char*)path);
     Main->key_2_index_hash = GBS_create_hash(20000, GB_MIND_CASE);
-    Main->compression_mask = -1;        /* allow all compressions */
+    Main->compression_mask = -1;        // allow all compressions
     gb_init_cache(Main);
     gb_init_undo_stack(Main);
     gb_init_ctype_table();
@@ -271,10 +270,8 @@ char *gb_destroy_main(GB_MAIN_TYPE *Main) {
     return 0;
 }
 
-/* inserts an object into the dabase hierarchy */
-GBDATA   *gb_make_pre_defined_entry(    GBCONTAINER * father, GBDATA *gbd,
-                                        long index_pos, GBQUARK keyq)
-{
+GBDATA *gb_make_pre_defined_entry(GBCONTAINER *father, GBDATA *gbd, long index_pos, GBQUARK keyq) {
+    // inserts an object into the dabase hierarchy
     GB_MAIN_TYPE *Main = GBCONTAINER_MAIN(father);
 
     SET_GB_FATHER(gbd,father);
@@ -292,8 +289,7 @@ GBDATA   *gb_make_pre_defined_entry(    GBCONTAINER * father, GBDATA *gbd,
     return gbd;
 }
 
-void
-gb_rename_entry(GBCONTAINER *gbc, const char *new_key) {
+void gb_rename_entry(GBCONTAINER *gbc, const char *new_key) {
     GBCONTAINER  *gb_father = GB_FATHER(gbc);
     GB_MAIN_TYPE *Main      = GBCONTAINER_MAIN(gb_father);
     GBQUARK       new_keyq;
@@ -310,8 +306,8 @@ gb_rename_entry(GBCONTAINER *gbc, const char *new_key) {
 }
 
 
-/* creates a terminal database object */
 GBDATA *gb_make_entry(GBCONTAINER * father, const char *key, long index_pos, GBQUARK keyq, GB_TYPES type) {
+    // creates a terminal database object
     GBDATA       *gbd;
     long          gbm_index;
     static char  *buffer = 0;
@@ -357,10 +353,8 @@ GBDATA *gb_make_entry(GBCONTAINER * father, const char *key, long index_pos, GBQ
     return gbd;
 }
 
-/* inserts an object into the dabase hierarchy */
-GBCONTAINER   *gb_make_pre_defined_container(   GBCONTAINER * father, GBCONTAINER *gbd,
-                                                long index_pos, GBQUARK keyq)
-{
+GBCONTAINER *gb_make_pre_defined_container(GBCONTAINER *father, GBCONTAINER *gbd, long index_pos, GBQUARK keyq) {
+    // inserts an object into the dabase hierarchy
     GB_MAIN_TYPE *Main = GBCONTAINER_MAIN(father);
 
     SET_GB_FATHER(gbd,father);
@@ -407,7 +401,7 @@ GBCONTAINER *gb_make_container(GBCONTAINER * father, const char *key, long index
 
         return gbd;
     }
-    else    /* main entry */
+    else    // main entry
     {
         gbd = (GBCONTAINER *) gbm_get_mem(sizeof(GBCONTAINER), 0);
         gbd->flags.type = GB_DB;
@@ -416,8 +410,8 @@ GBCONTAINER *gb_make_container(GBCONTAINER * father, const char *key, long index
     return gbd;
 }
 
-/** Reduce an entry to its absolute minimum and remove it from database */
-void gb_pre_delete_entry(GBDATA *gbd){
+void gb_pre_delete_entry(GBDATA *gbd) {
+    // Reduce an entry to its absolute minimum and remove it from database
     GB_MAIN_TYPE   *Main = GB_MAIN(gbd);
     long    type = GB_TYPE(gbd);
 
@@ -439,8 +433,9 @@ void gb_pre_delete_entry(GBDATA *gbd){
     gb_unlink_entry(gbd);
 
     /* as soon as an entry is deleted, there is
-       no need to keep track of the database entry
-       within the server at the client side */
+     * no need to keep track of the database entry
+     * within the server at the client side
+     */
     if (!Main->local_mode && gbd->server_id) {
         GBS_write_numhash(Main->remote_hash, gbd->server_id, 0);
     }
@@ -472,7 +467,7 @@ void gb_delete_entry(GBDATA **gbd_ptr) {
     }
     gb_pre_delete_entry(gbd);
 
-    /* Now what is left is the core database entry !!! */
+    // what is left now, is the core database entry!
 
     if (type == GB_DB) {
         GBCONTAINER                  *gbc = ((GBCONTAINER *) gbd);
@@ -512,7 +507,7 @@ void gb_delete_main_entry(GBDATA **gbd_ptr) {
                     if (pass == 2 || GB_KEY_QUARK(gbd2) != sys_quark) { // delay deletion of system folder to pass 2
 #if defined(DEBUG)
                         fprintf(stderr, "Deleting root node '%s'\n", GB_get_db_path(gbd2));
-#endif /* DEBUG */
+#endif // DEBUG
                         gb_delete_entry(&gbd2);
                     }
                 }
@@ -522,11 +517,11 @@ void gb_delete_main_entry(GBDATA **gbd_ptr) {
     }
 }
 
-/********************************************************************************************
-                    Data Storage
-********************************************************************************************/
-/******************** Does not increment the refcounter ********************/
+// ---------------------
+//      Data Storage
+
 struct gb_transaction_save *gb_new_gb_transaction_save(GBDATA *gbd){
+    // Note: does not increment the refcounter
     struct gb_transaction_save *ts;
 
     ts = (struct gb_transaction_save *)gbm_get_mem(sizeof(struct gb_transaction_save),GBM_CB_INDEX);
@@ -558,7 +553,7 @@ void gb_add_ref_gb_transaction_save(struct gb_transaction_save *ts){
 void gb_del_ref_gb_transaction_save(struct gb_transaction_save *ts){
     if (!ts) return;
     ts->refcount --;
-    if (ts->refcount <=0) {     /* no more references !!!! */
+    if (ts->refcount <=0) {     // no more references !!!!
         if (ts->flags2.extern_data) {
             if (ts->info.ex.data) {
                 gbm_free_mem(ts->info.ex.data,
@@ -572,16 +567,15 @@ void gb_del_ref_gb_transaction_save(struct gb_transaction_save *ts){
     }
 }
 
-/* remove reference to undo entry and set extern pointer to zero */
 void gb_del_ref_and_extern_gb_transaction_save(struct gb_transaction_save *ts){
+    // remove reference to undo entry and set extern pointer to zero
     if (ts->flags2.extern_data) {
         ts->info.ex.data = 0;
     }
     gb_del_ref_gb_transaction_save(ts);
 }
 
-void gb_abortdata(GBDATA *gbd)
-{
+void gb_abortdata(GBDATA *gbd) {
     struct gb_transaction_save *old;
 
     GB_INDEX_CHECK_OUT(gbd);
@@ -610,8 +604,10 @@ void gb_abortdata(GBDATA *gbd)
 
 void gb_save_extern_data_in_ts(GBDATA *gbd){
     /* Saves gbd->info into gbd->ext->old
-     *  destroys gbd->info !!!!
-     *  don't call with GBCONTAINER */
+     * Destroys gbd->info!
+     * Don't call with GBCONTAINER
+     */
+
     GB_CREATE_EXT(gbd);
     GB_INDEX_CHECK_OUT(gbd);
     if (gbd->ext->old || (GB_ARRAY_FLAGS(gbd).changed == gb_created)){
@@ -623,17 +619,16 @@ void gb_save_extern_data_in_ts(GBDATA *gbd){
 }
 
 
-/********************************************************************************************
-                    Key Management
-********************************************************************************************/
-
-/********** set the key quark of an database field
-        check for indexing data field ***********/
+// -----------------------
+//      Key Management
 
 void gb_write_index_key(GBCONTAINER *father, long index, GBQUARK new_index) {
-    GB_MAIN_TYPE *Main = GBCONTAINER_MAIN(father);
-    struct gb_header_list_struct *hls = GB_DATA_LIST_HEADER(father->d);
-    GBQUARK old_index = hls[index].flags.key_quark;
+    // Set the key quark of an database field.
+    // Check for indexing data field.
+
+    GB_MAIN_TYPE          *Main      = GBCONTAINER_MAIN(father);
+    gb_header_list_struct *hls       = GB_DATA_LIST_HEADER(father->d);
+    GBQUARK                old_index = hls[index].flags.key_quark;
 
     GBCONTAINER *gfather;
     Main->keys[old_index].nref--;
@@ -674,7 +669,7 @@ void gb_write_key(GBDATA *gbd,const char *s) {
         GB_MAIN_TYPE *Main = GB_MAIN(gbd);
         new_index          = (int)GBS_read_hash(Main->key_2_index_hash,s);
         
-        if (!new_index) {                           /* create new index */
+        if (!new_index) {                           // create new index
             new_index = (int)gb_create_key(Main,s,GB_TRUE);
         }
     }
@@ -722,8 +717,8 @@ long gb_create_key(GB_MAIN_TYPE *Main, const char *s, GB_BOOL create_gb_key) {
         GBS_write_hash(Main->key_2_index_hash,s,index);
         if (Main->gb_key_data && create_gb_key){
             gb_load_single_key_data((GBDATA *)Main->data,(GBQUARK)index);
-            /* Warning: starts a big recursion */
-            if (!Main->local_mode){ /* send new gb_key to server, needed for searching */
+            // Warning: starts a big recursion
+            if (!Main->local_mode){ // send new gb_key to server, needed for searching
                 GB_update_server((GBDATA *)Main->data);
             }
         }
@@ -766,17 +761,16 @@ char *gb_abort_entry(GBDATA *gbd){
     return 0;
 }
 
-/********************************************************************************************
-                    Transactions
-********************************************************************************************/
+// ---------------------
+//      Transactions
 
 #if defined(DEVEL_RALF)
 #warning change param for gb_abort_transaction_local_rek to GBDATA **
 #warning remove param 'mode' (unused!)
-#endif /* DEVEL_RALF */
+#endif // DEVEL_RALF
 
 int gb_abort_transaction_local_rek(GBDATA *gbd, long mode) {
-    /* delete created, undo changed */
+    // delete created, undo changed
     GBDATA     *gb;
     GB_TYPES    type;
     GB_CHANGED  change = (GB_CHANGED)GB_ARRAY_FLAGS(gbd).changed;
@@ -814,23 +808,22 @@ int gb_abort_transaction_local_rek(GBDATA *gbd, long mode) {
     return 0;
 }
 
-GB_ERROR gb_commit_transaction_local_rek(GBDATA * gbd, long mode,int *pson_created)
-     /*
- *  commit created
- *  delete  deleted
- *   mode   0   local = server  or begin trans in client or commit_client_in_server
- *   mode   1   remote = client
- *   mode   2   remote = client send only updated data
- */
-{
-    GBDATA         *gb;
-    GB_MAIN_TYPE    *Main = GB_MAIN(gbd);
-    GB_TYPES    type;
-    GB_ERROR error;
-    struct gb_callback *cb;
-    GB_CHANGED      change = (GB_CHANGED)GB_ARRAY_FLAGS(gbd).changed;
-    int send_header;
-    int son_created = 0;
+GB_ERROR gb_commit_transaction_local_rek(GBDATA * gbd, long mode,int *pson_created) {
+    /* commit created / delete deleted
+     *   mode   0   local     = server    or
+     *              begin trans in client or
+     *              commit_client_in_server
+     *   mode   1   remote    = client
+     *   mode   2   remote    = client (only send updated data)
+     */
+    GBDATA       *gb;
+    GB_MAIN_TYPE *Main        = GB_MAIN(gbd);
+    GB_TYPES      type;
+    GB_ERROR      error;
+    gb_callback  *cb;
+    GB_CHANGED    change      = (GB_CHANGED)GB_ARRAY_FLAGS(gbd).changed;
+    int           send_header;
+    int           son_created = 0;
 
     type = (GB_TYPES)GB_TYPE(gbd);
     switch (change) {
@@ -857,11 +850,11 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA * gbd, long mode,int *pson_creat
             if (mode) {
                 if (!gbd->flags2.update_in_server) {
                     if (gbd->server_id) goto gb_changed_label;
-                    /* already created, do only a change */
+                    // already created, do only a change
                     error = gbcmc_sendupdate_create(gbd);
                     if (type == GB_DB) {
                         gb_set_update_in_server_flags(((GBCONTAINER *)gbd));
-                        /* set all children update_in_server flags */
+                        // set all children update_in_server flags
                     }
                     gbd->flags2.update_in_server = 1;
                     if (error)  return error;
@@ -892,7 +885,7 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA * gbd, long mode,int *pson_creat
             }else{
                 _GB_CHECK_IN_UNDO_MODIFY(Main,gbd);
             }
-        default:        /* means gb_son_changed + changed */
+        default:        // means gb_son_changed + changed
 
             if (type == GB_DB)
             {
@@ -920,7 +913,7 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA * gbd, long mode,int *pson_creat
                 if (mode) gbd->flags2.update_in_server = 1;
             }
     gb_commit_do_callbacks:
-            if (mode == 2) {    /* update server; no callbacks */
+            if (mode == 2) {    // update server; no callbacks
                 gbd->flags2.update_in_server = 1;
             }else{
                 GB_CB_TYPE gbtype = GB_CB_CHANGED;
@@ -941,6 +934,7 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA * gbd, long mode,int *pson_creat
 
                 GB_FREE_TRANSACTION_SAVE(gbd);
             }
-    }/*switch*/
+    }
+
     return 0;
 }

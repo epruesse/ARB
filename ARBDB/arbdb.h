@@ -27,7 +27,7 @@
 // ---------------------
 //      simple types
 
-/* 4 Bytes */
+// 4 Bytes
 typedef unsigned int       GB_UINT4;                // @@@ use uint32_t ?
 typedef const unsigned int GB_CUINT4;
 typedef unsigned long      GB_ULONG;
@@ -61,7 +61,7 @@ enum GB_TYPES {                                     // supported DB entry types
     GB_FLOATS      = 10,
     GB_LINK        = 11,
     GB_STRING      = 12,
-    GB_STRING_SHRT = 13,                            /* used automatically during save */
+    GB_STRING_SHRT = 13,                            // used automatically during save
     // 14 is unused
     GB_DB          = 15,
 
@@ -138,25 +138,26 @@ public:
     GB_transaction(GBDATA *gb_main);
     ~GB_transaction();
 
-    bool ok() const { return ta_open && !ta_err; } // ready to work on DB? 
-    GB_ERROR close(GB_ERROR error); // abort transaction if error (e.g.: 'return ta.close(error);')
-    ARB_ERROR close(ARB_ERROR& error); // abort transaction if error (e.g.: 'return ta.close(error);')
+    bool ok() const { return ta_open && !ta_err; }  // ready to work on DB?
+    GB_ERROR close(GB_ERROR error);                 // abort transaction if error (e.g.: 'return ta.close(error);')
+    ARB_ERROR close(ARB_ERROR& error);              // abort transaction if error (e.g.: 'return ta.close(error);')
 };
 
 
 // --------------------------------------------
 //      include generated public prototypes
+
 #include <ad_prot.h>
 
-// --------------------------------------------------------------------------------
-// const wrappers for functions from ad_prot.h
+// ----------------------------------------------------
+//      const wrappers for functions from ad_prot.h
 
 inline char *GBS_find_string(char *str, GB_CSTR key, int match_mode) {
     return const_cast<char*>(GBS_find_string(const_cast<GB_CSTR>(str), key, match_mode));
 }
 
-// --------------------------------------------------------------------------------
-// error delivery functions
+// ---------------------------------
+//      error delivery functions
 
 inline void GB_end_transaction_show_error(GBDATA *gbd, ARB_ERROR& error, void (*error_handler)(GB_ERROR)) {
     GB_end_transaction_show_error(gbd, error.deliver(), error_handler);

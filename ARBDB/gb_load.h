@@ -25,7 +25,7 @@ struct gb_scandir {
     int                  highest_quick_index;
     int                  newest_quick_index;
     unsigned long        date_of_quick_file;
-    gb_scan_quicks_types type;  /* xxx.arb.quick? or xxx.a?? */
+    gb_scan_quicks_types type;  // xxx.arb.quick? or xxx.a??
 };
 
 

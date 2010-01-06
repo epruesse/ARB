@@ -31,7 +31,7 @@
 // ---------------------
 //      simple types
 
-typedef short GB_MAIN_IDX;      /* random-index */
+typedef short GB_MAIN_IDX;      // random-index
 
 // ------------------------------
 //      forward declare types
@@ -54,7 +54,7 @@ enum gb_undo_commands {
     _GBCMC_UNDOCOM_UNDO,
     _GBCMC_UNDOCOM_REDO,
 
-    _GBCMC_UNDOCOM_SET_MEM = 10000      /* Minimum */
+    _GBCMC_UNDOCOM_SET_MEM = 10000      // Minimum
 };
 
 typedef enum gb_changed_types {

@@ -27,7 +27,7 @@
  *
  * ------------------------------------------------------------ */
 
-/* check correct definition of DEBUG/NDEBUG */
+// check correct definition of DEBUG/NDEBUG
 #ifndef NDEBUG
 # ifndef DEBUG
 #  error Neither DEBUG nor NDEBUG is defined!
@@ -43,24 +43,24 @@
 #endif
 
 
-/* only use ONE of the following ASSERT_xxx defines : */
+// only use ONE of the following ASSERT_xxx defines :
 
 #if defined(DEBUG) && !defined(DEVEL_RELEASE)
 
-/* assert that raises SIGSEGV (recommended for DEBUG version!) */
+// assert that raises SIGSEGV (recommended for DEBUG version!)
 // # define ASSERT_CRASH
 # define ASSERT_BACKTRACE_AND_CRASH
-/* test if a bug has to do with assertion code */
-/* # define ASSERT_NONE */
+// test if a bug has to do with assertion code
+// # define ASSERT_NONE
 
 #else
 
-/* no assert (recommended for final version!) */
+// no assert (recommended for final version!)
 # define ASSERT_NONE
-/* assert as error in final version (allows basic debugging of NDEBUG version) */
-/* # define ASSERT_ERROR */
-/* assert as print in final version (allows basic debugging of NDEBUG version) */
-/* # define ASSERT_PRINT */
+// assert as error in final version (allows basic debugging of NDEBUG version)
+// # define ASSERT_ERROR
+// assert as print in final version (allows basic debugging of NDEBUG version)
+// # define ASSERT_PRINT
 
 #endif
 
@@ -76,12 +76,12 @@
         *(int *)0 = 0;                                          \
     } while(0)
 
-/* ------------------------------------------------------------ */
+// ------------------------------------------------------------
 
-/* use ASSERTION_USED for code needed for assertions */
+// use ASSERTION_USED for code needed for assertions
 #define ASSERTION_USED
 
-/* ------------------------------------------------------------ */
+// ------------------------------------------------------------
 
 #if defined(SIMPLE_ARB_ASSERT)
 
@@ -96,7 +96,7 @@
     } while (0)
 #endif
 
-/* ------------------------------------------------------------ */
+// ------------------------------------------------------------
 #else
 
 #ifdef ASSERT_CRASH
@@ -156,8 +156,8 @@
     } while(0)
 #endif // SIMPLE_ARB_ASSERT
 
-/* ------------------------------------------------------------ */
-/* use the following macros for parameters etc. only appearing in one version */
+// ------------------------------------------------------------
+// use the following macros for parameters etc. only appearing in one version
 
 #ifdef DEBUG
 # define IF_DEBUG(x) x
@@ -167,8 +167,8 @@
 # define IF_NDEBUG(x) x
 #endif
 
-/* ------------------------------------------------------------ */
-/* assert specific result (DEBUG only) and silence __ATTR__USERESULT warnings */
+// ------------------------------------------------------------
+// assert specific result (DEBUG only) and silence __ATTR__USERESULT warnings
 
 #define ASSERT_RESULT(Type, Expected, Expr) do {        \
         Type value = (Expr);                            \
@@ -179,7 +179,7 @@
 #define ASSERT_NULL_RESULT(ptrExpr) ASSERT_RESULT(const void*, NULL, ptrExpr)
 #define ASSERT_NO_ERROR(error)      ASSERT_RESULT(GB_ERROR, NULL, error)
 
-/* ------------------------------------------------------------ */
+// ------------------------------------------------------------
 
 #ifdef DEVEL_RELEASE
 #ifdef ASSERTION_USED
@@ -187,7 +187,7 @@
 #endif
 #endif
 
-/* ------------------------------------------------------------ */
+// ------------------------------------------------------------
 
 #if !defined(SIMPLE_ARB_ASSERT)
 #ifndef ADLOCAL_H
@@ -199,5 +199,5 @@
 
 #else
 #error arb_assert.h included twice
-#endif /* ARB_ASSERT_H */
+#endif // ARB_ASSERT_H
 

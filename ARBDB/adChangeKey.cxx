@@ -1,13 +1,13 @@
-/* =========================================================== */
-/*                                                             */
-/*   File      : adChangeKey.c                                 */
-/*   Purpose   : Changekey Management                          */
-/*                                                             */
-/*   Coded by Elmar Pruesse and Ralf Westram in May 2009       */
-/*   Institute of Microbiology (Technical University Munich)   */
-/*   http://www.arb-home.de/                                   */
-/*                                                             */
-/* =========================================================== */
+// =============================================================== //
+//                                                                 //
+//   File      : adChangeKey.cxx                                   //
+//   Purpose   : Changekey management                              //
+//                                                                 //
+//   Coded by Elmar Pruesse and Ralf Westram in May 2009           //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include <arbdbt.h>
 #include "gb_local.h"

@@ -1,15 +1,13 @@
-/*  ====================================================================  */
-/*                                                                        */
-/*    File      : adGene.h                                                */
-/*    Purpose   : Specific defines for ARB genome                         */
-/*                                                                        */
-/*                                                                        */
-/*  Coded by Ralf Westram (coder@reallysoft.de) in July 2002              */
-/*  Copyright Department of Microbiology (Technical University Munich)    */
-/*                                                                        */
-/*  Visit our web site at: http://www.arb-home.de/                        */
-/*                                                                        */
-/*  ====================================================================  */
+// =============================================================== //
+//                                                                 //
+//   File      : adGene.h                                          //
+//   Purpose   : Specific defines for ARB genome                   //
+//                                                                 //
+//   Coded by Ralf Westram (coder@reallysoft.de) in July 2002      //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #ifndef ADGENE_H
 #define ADGENE_H
@@ -60,8 +58,6 @@ struct GEN_position {
 #include "arbdb.h"
 #endif
 
-
 #else
 #error adGene.h included twice
-#endif /* ADGENE_H */
-
+#endif // ADGENE_H
