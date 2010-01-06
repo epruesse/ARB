@@ -36,8 +36,7 @@ float ali_aligner_dellist::update(unsigned long position) {
  * select all gaps with defined costs and put them together 
  * inside an ALI_TARRAY
  */
-ALI_TARRAY<ali_pathmap_up_pointer> *ali_aligner_dellist::starts(float costs,
-                                                                unsigned long y_offset) {
+ALI_TARRAY<ali_pathmap_up_pointer> *ali_aligner_dellist::starts(float costs, unsigned long y_offset) {
     unsigned long counter = 0;
     ali_aligner_dellist_elem *elem;
     ALI_TARRAY<ali_pathmap_up_pointer> *array = 0;
@@ -149,18 +148,17 @@ void ali_aligner_dellist::optimize(unsigned long position) {
  *
  *****************************************************************************/
 
-GB_INLINE float ALI_ALIGNER::minimum2(float v1, float v2)
+inline float ALI_ALIGNER::minimum2(float v1, float v2)
 {
     return (v1 < v2) ? v1 : v2;
 }
 
-GB_INLINE float ALI_ALIGNER::minimum3(float v1, float v2, float v3)
+inline float ALI_ALIGNER::minimum3(float v1, float v2, float v3)
 {
     return (v1 < v2) ? ((v1 < v3) ? v1 : v3) : ((v2 < v3) ? v2 : v3);
 }
 
-GB_INLINE void ALI_ALIGNER::calculate_first_column_first_cell(
-                                                              ali_aligner_cell *akt_cell, ali_aligner_dellist *del_list)
+inline void ALI_ALIGNER::calculate_first_column_first_cell(ali_aligner_cell *akt_cell, ali_aligner_dellist *del_list)
 {
     del_list->make_empty();
 
@@ -175,10 +173,9 @@ GB_INLINE void ALI_ALIGNER::calculate_first_column_first_cell(
     del_list->insert(start_y,akt_cell->d1,ALI_LEFT);
 }
 
-GB_INLINE void ALI_ALIGNER::calculate_first_column_cell(
-                                                        ali_aligner_cell *up_cell, ali_aligner_cell *akt_cell,
-                                                        unsigned long pos_y,
-                                                        ali_aligner_dellist *del_list)
+inline void ALI_ALIGNER::calculate_first_column_cell(ali_aligner_cell *up_cell, ali_aligner_cell *akt_cell,
+                                                     unsigned long pos_y,
+                                                     ali_aligner_dellist *del_list)
 {
     float v1, v2, v3;
     float costs;
@@ -226,8 +223,7 @@ GB_INLINE void ALI_ALIGNER::calculate_first_column_cell(
         profile->w_ins(start_x,positiony);
 }
 
-void ALI_ALIGNER::calculate_first_column(
-                                         ali_aligner_column *akt_col, ali_aligner_dellist *del_list)
+void ALI_ALIGNER::calculate_first_column(ali_aligner_column *akt_col, ali_aligner_dellist *del_list)
 {
     unsigned long cell;
 
@@ -245,9 +241,8 @@ void ALI_ALIGNER::calculate_first_column(
     path_map[0]->optimize(0);
 }
 
-GB_INLINE void ALI_ALIGNER::calculate_first_cell(
-                                                 ali_aligner_cell *left_cell, ali_aligner_cell *akt_cell,
-                                                 unsigned long pos_x, ali_aligner_dellist *del_list)
+void ALI_ALIGNER::calculate_first_cell(ali_aligner_cell *left_cell, ali_aligner_cell *akt_cell,
+                                       unsigned long pos_x, ali_aligner_dellist *del_list)
 {
     float v1, v2, v3;
     unsigned long positionx;
@@ -286,11 +281,10 @@ GB_INLINE void ALI_ALIGNER::calculate_first_cell(
         path_map[2]->set(pos_x,0,ALI_LEFT);
 }
 
-GB_INLINE void ALI_ALIGNER::calculate_cell(
-                                           ali_aligner_cell *diag_cell, ali_aligner_cell *left_cell,
-                                           ali_aligner_cell *up_cell, ali_aligner_cell *akt_cell,
-                                           unsigned long pos_x, unsigned long pos_y,
-                                           ali_aligner_dellist *del_list)
+void ALI_ALIGNER::calculate_cell(ali_aligner_cell *diag_cell, ali_aligner_cell *left_cell,
+                                 ali_aligner_cell *up_cell, ali_aligner_cell *akt_cell,
+                                 unsigned long pos_x, unsigned long pos_y,
+                                 ali_aligner_dellist *del_list)
 {
     float v1, v2, v3;
     float costs;
@@ -360,8 +354,7 @@ GB_INLINE void ALI_ALIGNER::calculate_cell(
         path_map[2]->set(pos_x,pos_y,ALI_LEFT);
 }
 
-void ALI_ALIGNER::calculate_column(
-                                   ali_aligner_column *prev_col, ali_aligner_column *akt_col,
+void ALI_ALIGNER::calculate_column(ali_aligner_column *prev_col, ali_aligner_column *akt_col,
                                    unsigned long pos_x, ali_aligner_dellist *del_list)
 {
     unsigned long cell;
@@ -383,7 +376,7 @@ void ALI_ALIGNER::calculate_column(
     path_map[0]->optimize(pos_x);
 }
 
-void ALI_ALIGNER::calculate_matrix(void)
+void ALI_ALIGNER::calculate_matrix()
 {
     ali_aligner_dellist *del_list;
     ali_aligner_column *akt_col, *prev_col, *h_col;
@@ -956,8 +949,7 @@ void ALI_ALIGNER::mapper_pre_random_up(ALI_TSTACK<unsigned char> *stack,
 /*
  * Select a random entry point from a list of valid entry points
  */
-void ALI_ALIGNER::mapper_pre_random_left(
-                                         ALI_TSTACK<unsigned char> *stack,
+void ALI_ALIGNER::mapper_pre_random_left(ALI_TSTACK<unsigned char> *stack,
                                          ALI_TLIST<ali_pathmap_up_pointer> *list)
 {
     unsigned long number;
@@ -1170,7 +1162,7 @@ struct ali_aligner_tripel {
 /*
  * approximate the number of solutions produced by the path matrix
  */
-unsigned long ALI_ALIGNER::number_of_solutions(void)
+unsigned long ALI_ALIGNER::number_of_solutions()
 {
     float min;
     unsigned long pos_x, pos_y, col_length;
