@@ -1,17 +1,30 @@
-#include <stdio.h>
-#include <stdlib.h>
+// =============================================================== //
+//                                                                 //
+//   File      : ad_core.cxx                                       //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <string.h>
-/* #include <malloc.h> */
+#include "gb_ts.h"
+#include "gb_storage.h"
+#include "gb_index.h"
 
-/*#include "arbdb.h"*/
-#include "adlocal.h"
+/** copy all info + external data mem to an one step undo buffer (to abort a transaction */
 
-#ifndef __cplusplus
-void ad_use(int dummy, ...)  {
-    dummy = 0;
+inline void _GB_CHECK_IN_UNDO_DELETE(GB_MAIN_TYPE *Main, GBDATA *& gbd) {
+    if (Main->undo_type) gb_check_in_undo_delete(Main,gbd,0);
+    else gb_delete_entry(&gbd);
 }
-#endif
+inline void _GB_CHECK_IN_UNDO_CREATE(GB_MAIN_TYPE *Main, GBDATA *gbd) {
+    if (Main->undo_type) gb_check_in_undo_create(Main,gbd);
+}
+inline void _GB_CHECK_IN_UNDO_MODIFY(GB_MAIN_TYPE *Main, GBDATA *gbd) {
+    if (Main->undo_type) gb_check_in_undo_modify(Main,gbd);
+}
+
 
 /********************************************************************************************
                     GB data management
@@ -149,7 +162,7 @@ void gb_create_header_array(GBCONTAINER *gbc, int size){
 
             if (gbd)
             {
-                ad_assert(gbd->server_id==GBTUM_MAGIC_NUMBER || GB_read_clients(gbd)<0); /* or I am a client */
+                gb_assert(gbd->server_id==GBTUM_MAGIC_NUMBER || GB_read_clients(gbd)<0); /* or I am a client */
                 SET_GB_HEADER_LIST_GBD(nl[idx],gbd);
             }
         }
@@ -237,11 +250,10 @@ void gb_create_extended(GBDATA *gbd){
                                                     index);
 }
 
-struct gb_main_type *gb_make_gb_main_type(const char *path)
-{
-    struct gb_main_type *Main;
+GB_MAIN_TYPE *gb_make_gb_main_type(const char *path) {
+    GB_MAIN_TYPE *Main;
 
-    Main = (struct gb_main_type *)gbm_get_mem(sizeof(struct gb_main_type),0);
+    Main = (GB_MAIN_TYPE *)gbm_get_mem(sizeof(*Main),0);
     if (path) Main->path = strdup((char*)path);
     Main->key_2_index_hash = GBS_create_hash(20000, GB_MIND_CASE);
     Main->compression_mask = -1;        /* allow all compressions */
@@ -251,11 +263,10 @@ struct gb_main_type *gb_make_gb_main_type(const char *path)
     return Main;
 }
 
-char *gb_destroy_main(struct gb_main_type *Main)
-{
+char *gb_destroy_main(GB_MAIN_TYPE *Main) {
     if (Main->path) free(Main->path);
     gb_free_undo_stack(Main);
-    gbm_free_mem((char *)Main,sizeof(struct gb_main_type),0);
+    gbm_free_mem((char *)Main, sizeof(*Main), 0);
 
     return 0;
 }
@@ -431,7 +442,7 @@ void gb_pre_delete_entry(GBDATA *gbd){
        no need to keep track of the database entry
        within the server at the client side */
     if (!Main->local_mode && gbd->server_id) {
-        GBS_write_hashi(Main->remote_hash, gbd->server_id, 0);
+        GBS_write_numhash(Main->remote_hash, gbd->server_id, 0);
     }
 
     if (type>= GB_BITS && type < GB_DB) {
@@ -486,7 +497,7 @@ void gb_delete_main_entry(GBDATA **gbd_ptr) {
     GBDATA *gbd  = *gbd_ptr;
     long    type = GB_TYPE(gbd);
 
-    ad_assert(type == GB_DB);
+    gb_assert(type == GB_DB);
     if (type == GB_DB) {
         int          index;
         int          pass;
@@ -575,7 +586,7 @@ void gb_abortdata(GBDATA *gbd)
 
     GB_INDEX_CHECK_OUT(gbd);
     old = gbd->ext->old;
-    ad_assert(old!=0);
+    gb_assert(old!=0);
 
     gbd->flags = old->flags;
     gbd->flags2 = old->flags2;
@@ -675,20 +686,15 @@ void gb_create_key_array(GB_MAIN_TYPE *Main, int index){
         Main->sizeofkeys = index*3/2+1;
         if (Main->keys) {
             int i;
-            Main->keys = (struct gb_key_struct *)
-                realloc((MALLOC_T)Main->keys,
-                        sizeof(struct gb_key_struct) * (size_t)Main->sizeofkeys);
-            memset( (char *)&(Main->keys[Main->keycnt]),
-                    0,
-                    sizeof(struct gb_key_struct) * (size_t)
-                    (Main->sizeofkeys - Main->keycnt));
+            Main->keys = (gb_key_struct *)realloc(Main->keys, sizeof(gb_key_struct) * (size_t)Main->sizeofkeys);
+            memset((char *)&(Main->keys[Main->keycnt]), 0, sizeof(gb_key_struct) * (size_t) (Main->sizeofkeys - Main->keycnt));
             for (i= Main->keycnt; i < Main->sizeofkeys; i++){
                 Main->keys[i].compression_mask = -1;
             }
-        }else{
+        }
+        else {
             Main->sizeofkeys = 1000;
-            Main->keys = (struct gb_key_struct *)
-                GB_calloc(sizeof(struct gb_key_struct) ,(size_t)Main->sizeofkeys);
+            Main->keys = (gb_key_struct *)GB_calloc(sizeof(gb_key_struct), (size_t)Main->sizeofkeys);
         }
     }
 }
@@ -938,4 +944,3 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA * gbd, long mode,int *pson_creat
     }/*switch*/
     return 0;
 }
-

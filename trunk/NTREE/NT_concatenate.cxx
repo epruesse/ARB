@@ -116,7 +116,7 @@ static void createSelectionList_callBack_gb(GBDATA*,int *cl_cas, GB_CB_TYPE cbty
 
 static void createSelectionList_callBack_awar(AW_root *IF_DEBUG(aw_root), AW_CL cl_cas) {
     struct conAlignStruct *cas = (struct conAlignStruct*)cl_cas;
-    gb_assert(aw_root==cas->aws->get_root());
+    nt_assert(aw_root==cas->aws->get_root());
     createSelectionList_callBack(cas);
     //clear the selected alignments and set default to ????
     cas->aws->clear_selection_list(con_alignment_list);
@@ -129,7 +129,7 @@ conAlignStruct* createSelectionList(GBDATA *gb_main,AW_window *aws, const char *
 
 #ifdef DEBUG
     static bool ran=false;
-    gb_assert(!ran);
+    nt_assert(!ran);
     ran=true;                 //prevents calling this function for the second time
 #endif
 
@@ -460,19 +460,18 @@ GB_ERROR checkAndMergeFields( GBDATA *gb_new_species, GB_ERROR error, speciesCon
 
         while (fieldStart[1] && !error) { // with all subfields of the species do..
             char *fieldEnd = strchr(fieldStart+1, ';');
-            gb_assert(fieldEnd);
+            nt_assert(fieldEnd);
             char behind = fieldEnd[1]; fieldEnd[1] = 0;
 
             if (strstr(doneFields, fieldStart)==0) { // field is not merged yet
                 char *fieldName = fieldStart+1;
                 int   fieldLen  = int(fieldEnd-fieldName);
 
-                gb_assert(fieldEnd[0]==';');
+                nt_assert(fieldEnd[0]==';');
                 fieldEnd[0] = 0;
 
-                GBDATA *gb_field = GB_search(sl->species, fieldName, GB_FIND);
-                gb_assert(gb_field); // field has to exist, cause it was found before
-                int type = gb_field->flags.type; //GB_TYPE(gb_field);
+                GBDATA   *gb_field = GB_search(sl->species, fieldName, GB_FIND); // field does to exist (it was found before)
+                GB_TYPES  type     = GB_read_type(gb_field);
 
                 if (type==GB_STRING) { // we only merge string fields
                     int i; int doneSpecies = 0; int nextStat = 1;
@@ -518,7 +517,7 @@ GB_ERROR checkAndMergeFields( GBDATA *gb_new_species, GB_ERROR error, speciesCon
                         }
                         if (!sl2) break;
                     }
-                    gb_assert(nextStat!=1); // this would mean that none of the species contained the field
+                    nt_assert(nextStat!=1); // this would mean that none of the species contained the field
                     {
                         char *new_content     = 0;
                         int   new_content_len = 0;
@@ -547,16 +546,16 @@ GB_ERROR checkAndMergeFields( GBDATA *gb_new_species, GB_ERROR error, speciesCon
                                         names_len += strlen(sl2->species_name)+1;
                                         if (!content) {
                                             gb_field = GB_search(sl2->species, fieldName, GB_FIND);
-                                            gb_assert(gb_field);
+                                            nt_assert(gb_field);
                                             content = GB_read_as_string(gb_field);
                                         }
                                     }
                                     sl2 = sl2->next; i++;
                                 }
-                                gb_assert(content);
+                                nt_assert(content);
                                 int add_len = names_len+1+strlen(content);
                                 char *whole = (char*)malloc(new_content_len+1+add_len+1);
-                                gb_assert(whole);
+                                nt_assert(whole);
                                 char *add = new_content ? whole+sprintf(whole, "%s ", new_content) : whole;
                                 sl2 = sl; i = 0;
                                 int first = 1;
@@ -765,7 +764,7 @@ static void mergeSimilarSpecies(AW_window *aws, AW_CL cl_mergeSimilarConcatenate
 
                 GBDATA *new_species_created = concatenateFieldsCreateNewSpecies(aws, gb_species, scl);
 
-                gb_assert(new_species_created);
+                nt_assert(new_species_created);
                 if (new_species_created) {      // create a list of newly created species
                     addSpeciesToConcatenateList(&newSpeciesList, GBT_read_name(new_species_created));
                 }

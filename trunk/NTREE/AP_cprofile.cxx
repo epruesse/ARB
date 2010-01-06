@@ -639,7 +639,7 @@ static void CPRO_calculate_cb(AW_window *aw,AW_CL which_statistic)
 
     /* fill the CPRO.statistic table */
     char success=CPRO_makestatistic(speciesdata,speciesdatabase,(char)which_statistic);
-    GBUSE(success);
+    // GBUSE(success);
     CPRO_workupstatistic((char)which_statistic);
 
     aw_closestatus();

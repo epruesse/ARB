@@ -1,22 +1,28 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/uio.h>
-#include <errno.h>
-/*#include "arbdb.h"*/
-#include "adlocal.h"
+// =============================================================== //
+//                                                                 //
+//   File      : adcomm.cxx                                        //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <sys/types.h>
+#include <unistd.h>
+
+#include <csignal>
+#include <ctime>
+#include <cerrno>
+
 #include <sys/socket.h>
-#include <sys/un.h>
+#include <sys/time.h>
+
 #include <netinet/in.h>
 #include <netinet/tcp.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <signal.h>
-#include <time.h>
-#include <sys/time.h>
+
+#include "gb_storage.h"
+#include "gb_comm.h"
+#include "gb_localdata.h"
 
 #if defined(SUN4) || defined(SUN5)
 # ifndef __cplusplus
@@ -32,8 +38,7 @@
 
 #define debug_printf(a,b)
 
-#define GBCMS_TRANSACTION_TIMEOUT 60*60
-/* one hour timeout */
+#define GBCMS_TRANSACTION_TIMEOUT 60*60             // one hour timeout
 #define MAX_QUEUE_LEN             5
 
 #define GBCM_COMMAND_UNFOLD             (GBTUM_MAGIC_NUMBER)
@@ -66,9 +71,10 @@
 #define GBCM_COMMAND_SYSTEM_RETURN      (GBTUM_MAGIC_NUMBER+0x10a0000)
 #define GBCM_COMMAND_UNDO_CMD           (GBTUM_MAGIC_NUMBER+0x10a0001)
 
-/*********************************** some structures *************************************/
-/** Store all deleted items in a list */
-struct gbcms_delete_list {
+// ------------------------
+//      some structures
+
+struct gbcms_delete_list {                          // Store all deleted items in a list
     struct gbcms_delete_list *next;
     long            creation_date;
     long            update_date;
@@ -76,11 +82,10 @@ struct gbcms_delete_list {
 };
 
 struct Socinf {
-    struct Socinf *next;
-    int socket;
-    struct  gbcms_delete_list   *dl;    /* point to last deleted item that is sent to
-                                           this client */
-    char    *username;
+    struct Socinf             *next;
+    int                        socket;
+    struct  gbcms_delete_list *dl;                  // point to last deleted item that is sent to this client
+    char                      *username;
 };
 
 void g_bcms_delete_Socinf(struct Socinf *THIS){
@@ -377,7 +382,7 @@ int gbcms_talking_unfold(int socket,long *hsin,void *sin, GBDATA *gb_in)
     long         index_pos[1];
     int          index,start,end;
 
-    GBUSE(hsin);GBUSE(sin);
+    // GBUSE(hsin);GBUSE(sin);
     if ( (error = gbcm_test_address((long *)gbc,GBTUM_MAGIC_NUMBER))) {
         return GBCM_SERVER_FAULT;
     }
@@ -432,7 +437,7 @@ int gbcms_talking_unfold(int socket,long *hsin,void *sin, GBDATA *gb_in)
 int gbcms_talking_get_update(int socket,long *hsin,void *sin,GBDATA *gbd)
 {
     struct Hs_struct *hs = (struct Hs_struct *)hsin;
-    GBUSE(hs);
+    // GBUSE(hs);
     socket = socket;
     gbd = gbd;
     sin = sin;
@@ -454,7 +459,7 @@ gbcms_talking_put_update(int socket, long *hsin, void *sin,GBDATA * gbd_dummy)
     long            *buffer;
     GB_BOOL     end;
     struct Hs_struct *hs = (struct Hs_struct *) hsin;
-    GBUSE(hs); GBUSE(sin);
+    // GBUSE(hs); GBUSE(sin);
     sin = sin;
     gbd_dummy = gbd_dummy;
     cs_main[0] = 0;
@@ -509,7 +514,7 @@ gbcms_talking_put_update(int socket, long *hsin, void *sin,GBDATA * gbd_dummy)
 int gbcms_talking_updated(int socket,long *hsin,void *sin, GBDATA *gbd)
 {
     struct Hs_struct *hs = (struct Hs_struct *)hsin;
-    GBUSE(hs);
+    // GBUSE(hs);
     socket = socket;
     gbd = gbd;
     sin = sin;
@@ -555,8 +560,7 @@ int gbcms_talking_init_transaction(int socket,long *hsin,void *sin,GBDATA *gb_du
     if (gbcm_write_two(socket,GBCM_COMMAND_TRANSACTION_RETURN,(long)gbd)){
         return GBCM_SERVER_FAULT;
     }
-    if (gbcm_write_two(socket,GBCM_COMMAND_TRANSACTION_RETURN,
-                       (long)Main->this_user->userid)){
+    if (gbcm_write_two(socket,GBCM_COMMAND_TRANSACTION_RETURN, (long)Main->this_user->userid)){
         return GBCM_SERVER_FAULT;
     }
     gbcms_write_keys(socket,gbd);
@@ -676,7 +680,7 @@ int gbcms_talking_commit_transaction(int socket,long *hsin,void *sin, GBDATA *gb
 {
     GB_ERROR error = 0;
     struct Hs_struct *hs = (struct Hs_struct *)hsin;
-    GBUSE(hs);
+    // GBUSE(hs);
     sin = sin;
     if ( (error = gbcm_test_address((long *)gbd,GBTUM_MAGIC_NUMBER)) ) {
         GB_export_errorf("address %p not valid 4783",gbd);
@@ -702,7 +706,7 @@ int gbcms_talking_abort_transaction(int socket,long *hsin,void *sin, GBDATA *gbd
 {
     GB_ERROR error;
     struct Hs_struct *hs = (struct Hs_struct *)hsin;
-    GBUSE(hs);
+    // GBUSE(hs);
     sin = sin;
     if ( (error = gbcm_test_address((long *)gbd,GBTUM_MAGIC_NUMBER)) ) {
         GB_export_errorf("address %p not valid 4356",gbd);
@@ -826,7 +830,7 @@ int gbcms_talking_find(int socket, long *hsin, void *sin, GBDATA * gbd)
     void     *buffer[2];
 
     struct Hs_struct *hs = (struct Hs_struct *) hsin;
-    GBUSE(hs);GBUSE(sin);
+    // GBUSE(hs);GBUSE(sin);
 
     if ( (error = gbcm_test_address((long *) gbd, GBTUM_MAGIC_NUMBER)) ) {
         GB_export_errorf("address %p not valid 8734", gbd);
@@ -910,7 +914,7 @@ gbcms_talking_key_alloc(int socket, long *hsin, void *sin, GBDATA * gbd)
     char           *key;
     long            index;
     struct Hs_struct *hs = (struct Hs_struct *) hsin;
-    GBUSE(hs);GBUSE(sin);
+    // GBUSE(hs);GBUSE(sin);
 
     if ( (error = gbcm_test_address((long *) gbd, GBTUM_MAGIC_NUMBER))) {
         GB_export_errorf("address %p not valid 8734", gbd);
@@ -939,9 +943,9 @@ gbcms_talking_key_alloc(int socket, long *hsin, void *sin, GBDATA * gbd)
 
 int gbcms_talking_disable_wait_for_new_request(int socket, long *hsin, void *sin, GBDATA *gbd){
     struct Hs_struct *hs = (struct Hs_struct *) hsin;
-    GBUSE(socket);
-    GBUSE(sin);
-    GBUSE(gbd);
+    // GBUSE(socket);
+    // GBUSE(sin);
+    // GBUSE(gbd);
     hs->wait_for_new_request--;
     return GBCM_SERVER_OK_WAIT;
 }
@@ -1282,7 +1286,7 @@ long gbcm_read_bin(int socket,GBCONTAINER *gbd, long *buffer, long mode, GBDATA 
                 gb_touch_entry(gb2,gb_created);
             }else{
                 gb2->server_id = id;
-                GBS_write_hashi(GB_MAIN(gb2)->remote_hash, id, (long) gb2);
+                GBS_write_numhash(GB_MAIN(gb2)->remote_hash, id, (long) gb2);
             }
             if (cs_main) {
                 struct gbcms_create_struct *cs;
@@ -1511,7 +1515,7 @@ GB_ERROR gbcmc_end_sendupdate(GBDATA *gbd)
         gbd = (GBDATA *)buffer[0];
         if (!gbd) break;
         gbd->server_id = buffer[1];
-        GBS_write_hashi(Main->remote_hash,gbd->server_id,(long)gbd);
+        GBS_write_numhash(Main->remote_hash,gbd->server_id,(long)gbd);
     }
     gbcm_read_flush(socket);
     return 0;
@@ -1619,7 +1623,7 @@ GB_ERROR gbcmc_begin_transaction(GBDATA *gbd)
             return GB_export_error("ARB_DB CLIENT ERROR receive failed 6435");
         }
         d = buffer[1];
-        gb2 = (GBDATA *)GBS_read_hashi(Main->remote_hash,d);
+        gb2 = (GBDATA *)GBS_read_numhash(Main->remote_hash,d);
         if (gb2){
             if (gb2->flags2.folded_container) {
                 mode =-1;   /* read container */
@@ -1698,7 +1702,7 @@ GB_ERROR gbcmc_init_transaction(GBCONTAINER *gbd)
     Main->this_user->userid = (int)buffer[0];
     Main->this_user->userbit = 1<<((int)buffer[0]);
 
-    GBS_write_hashi(Main->remote_hash,gbd->server_id,(long)gbd);
+    GBS_write_numhash(Main->remote_hash,gbd->server_id,(long)gbd);
 
     if (gbcm_read(socket,(char *)buffer, 2 * sizeof(long)) !=  2 * sizeof(long)) {
         return GB_export_error("ARB_DB CLIENT ERROR receive failed 2336");
@@ -1805,7 +1809,7 @@ gbcmc_unfold_list(int socket, GBDATA * gbd)
         error = gbcmc_unfold_list(socket, gbd);
         if (error)
             return error;
-        gb_client = (GBCONTAINER *) GBS_read_hashi(Main->remote_hash, (long) gb_client);
+        gb_client = (GBCONTAINER *) GBS_read_numhash(Main->remote_hash, (long) gb_client);
         gb_unfold(gb_client, 0, (int)readvar[0]);
     }
     return 0;
@@ -1862,7 +1866,7 @@ GBDATA *GBCMC_find(GBDATA *gbd, const char *key, GB_TYPES type, const char *str,
     gbcm_read_two(socket, GBCM_COMMAND_FIND_ERG, 0, &result.l);
     if (result.gbd){
         gbcmc_unfold_list(socket,gbd);
-        result.l = GBS_read_hashi(Main->remote_hash, result.l);
+        result.l = GBS_read_numhash(Main->remote_hash, result.l);
     }
     gbcm_read_flush(socket);
     return result.gbd;
@@ -2145,5 +2149,4 @@ const char *GB_date_string(void) {
 
     return readable;
 }
-
 

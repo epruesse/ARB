@@ -219,7 +219,7 @@ static GB_ERROR PH_create_ml_multiline_SAI(GB_CSTR sai_name, int nr, GBDATA **gb
                                 digit = int(ml);
                                 break;
                             default:
-                                gb_assert(0);
+                                ph_assert(0);
                                 break;
                         }
                         
@@ -446,7 +446,7 @@ AW_window *create_phyl_main_window(AW_root *aw_root,PH_root *ph_root,AWT_graphic
                                            "#MARKER$#FF0000",
                                            "NOT_MARKER$#A270C0",
                                            NULL);
-    AW_gc_manager gcbottom = AW_manage_GC( awm,
+    /*AW_gc_manager gcbottom = */AW_manage_GC( awm,
                                            awm->get_device (AW_BOTTOM_AREA),
                                            PH_GC_0, PH_GC_0_DRAG, AW_GCM_WINDOW_AREA,
                                            resize_callb, 0,0,
@@ -454,7 +454,7 @@ AW_window *create_phyl_main_window(AW_root *aw_root,PH_root *ph_root,AWT_graphic
                                            "pink",
                                            "#FOOTER",NULL);
 
-    GBUSE(gcbottom);
+    // GBUSE(gcbottom);
 
 #if defined(DEBUG)
     AWT_create_debug_menu(awm);

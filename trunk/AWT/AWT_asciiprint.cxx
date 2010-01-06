@@ -290,7 +290,7 @@ void awt_aps_go(AW_window *aww){
                     break;
                 }
                 default:
-                    gb_assert(0);
+                    awt_assert(0);
                     break;
             }
 

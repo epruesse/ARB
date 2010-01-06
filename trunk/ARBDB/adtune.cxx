@@ -1,4 +1,14 @@
-#include <adtune.h>
+// =============================================================== //
+//                                                                 //
+//   File      : adtune.cxx                                        //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+#include <gb_tune.h>
 
 const int GBCM_BUFFER               = 8192;        /* The communication buffer size */
 const int GB_REMOTE_HASH_SIZE       = 0x40000;     /* The initial hash size in any client to find the database entry in the server */

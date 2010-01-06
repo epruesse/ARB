@@ -10,7 +10,7 @@
 /* =============================================================== */
 
 #include <stdio.h>
-#include "adlocal.h"
+#include "gb_local.h"
 #include "arbdbt.h"
 
 #define ITEMS2HASHSIZE(entries) (2*(entries)) /* hash size = 2 * number of entries */

@@ -1,12 +1,20 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <limits.h>
-#include <sys/types.h>
+// =============================================================== //
+//                                                                 //
+//   File      : adoptimize.cxx                                    //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+#include <climits>
 #include <netinet/in.h>
 
-#include "adlocal.h"
-#include "arbdbt.h"
+#include <arbdbt.h>
+
+#include "gb_compress.h"
+#include "gb_dict.h"
 
 #if defined(DEBUG)
 /* #define TEST_DICT */
@@ -82,7 +90,7 @@ typedef struct S_GB_SINGLE_DICT_TREE
 
 /******************** Tool functions *******************/
 
-static GB_INLINE cu_str get_data_n_size(GBDATA *gbd, long *size) {
+static inline cu_str get_data_n_size(GBDATA *gbd, long *size) {
     GB_CSTR data;
     int     type = GB_TYPE(gbd);
 
@@ -96,7 +104,7 @@ static GB_INLINE cu_str get_data_n_size(GBDATA *gbd, long *size) {
         case GB_FLOATS: data = (char*)GB_read_floats_pntr(gbd); break;
         default:
             data = 0;
-            ad_assert(0);
+            gb_assert(0);
             break;
     }
 
@@ -104,7 +112,7 @@ static GB_INLINE cu_str get_data_n_size(GBDATA *gbd, long *size) {
     return (cu_str)data;
 }
 
-static GB_INLINE long min(long a, long b) {
+static inline long min(long a, long b) {
     return a<b ? a : b;
 }
 
@@ -129,8 +137,8 @@ static void g_b_opti_scanGbdByKey(GB_MAIN_TYPE *Main, GBDATA *gbd, O_gbdByKey *g
 
     if (quark)
     {
-        ad_assert(gbk[quark].cnt < Main->keys[quark].nref || quark==0);
-        ad_assert(gbk[quark].gbds != 0);
+        gb_assert(gbk[quark].cnt < Main->keys[quark].nref || quark==0);
+        gb_assert(gbk[quark].gbds != 0);
 
         gbk[quark].gbds[ gbk[quark].cnt ] = gbd;
         gbk[quark].cnt++;
@@ -168,7 +176,7 @@ static O_gbdByKey *g_b_opti_createGbdByKey(GB_MAIN_TYPE *Main)
 
             Main->keys[idx].nref = gbk[idx].cnt;
         }
-        /*ad_assert(gbk[idx].cnt == Main->keys[idx].nref || idx==0);*/
+        /*gb_assert(gbk[idx].cnt == Main->keys[idx].nref || idx==0);*/
     }
     return gbk;
 }
@@ -176,7 +184,7 @@ static O_gbdByKey *g_b_opti_createGbdByKey(GB_MAIN_TYPE *Main)
 static void g_b_opti_freeGbdByKey(GB_MAIN_TYPE *Main, O_gbdByKey *gbk)
 {
     int idx;
-    GBUSE(Main);
+    // GBUSE(Main);
     for (idx=0; idx<gbdByKey_cnt; idx++) free(gbk[idx].gbds);
     free(gbk);
 }
@@ -209,7 +217,7 @@ static GB_ERROR gb_convert_compression(GBDATA *source) {
             case GB_BYTES:
                 string = gb_uncompress_bytes(GB_GETDATA(source), data_size, &new_size);
                 if (string) {
-                    ad_assert(new_size == data_size);
+                    gb_assert(new_size == data_size);
                     string = GB_memdup(string, data_size);
                 }
                 break;
@@ -218,7 +226,7 @@ static GB_ERROR gb_convert_compression(GBDATA *source) {
             case GB_FLOATS:
                 string = gb_uncompress_longs_old(GB_GETDATA(source), elems, &new_size);
                 if (string) {
-                    ad_assert(new_size == data_size);
+                    gb_assert(new_size == data_size);
                     string = GB_memdup(string, data_size);
                 }
                 break;
@@ -256,7 +264,7 @@ static GB_ERROR gb_convert_compression(GBDATA *source) {
                     break;
 
                 default:
-                    ad_assert(0);
+                    gb_assert(0);
                     break;
             }
 
@@ -305,13 +313,13 @@ GB_ERROR gb_convert_V2_to_V3(GBDATA *gb_main){
  *     tag == 64 -> end of dictionary compressed block (if not coded in last uncompressed block)
  */
 
-GB_INLINE int INDEX_DICT_OFFSET(int idx, GB_DICTIONARY *dict) {
-    ad_assert(idx<dict->words);
+inline int INDEX_DICT_OFFSET(int idx, GB_DICTIONARY *dict) {
+    gb_assert(idx<dict->words);
     return ntohl(dict->offsets[idx]);
 }
-GB_INLINE int ALPHA_DICT_OFFSET(int idx, GB_DICTIONARY *dict) {
+inline int ALPHA_DICT_OFFSET(int idx, GB_DICTIONARY *dict) {
     int realIndex;
-    ad_assert(idx<dict->words);
+    gb_assert(idx<dict->words);
     realIndex = ntohl(dict->resort[idx]);
     return INDEX_DICT_OFFSET(realIndex, dict);
 }
@@ -388,7 +396,7 @@ static cu_str lstr(cu_str s, int len) {
 #define BUFLEN 10000
     static unsigned_char buf[BUFLEN];
 
-    ad_assert(len<BUFLEN);
+    gb_assert(len<BUFLEN);
     memcpy(buf,s,len);
     buf[len] = 0;
 
@@ -432,7 +440,7 @@ static void dumpBinary(u_str data, long size) {
 
 #endif
 
-static GB_INLINE int GB_MEMCMP(const void *vm1, const void *vm2, long size) {
+inline int GB_MEMCMP(const void *vm1, const void *vm2, long size) {
     char *c1 = (char*)vm1,
         *c2 = (char*)vm2;
     int diff = 0;
@@ -487,7 +495,7 @@ static int searchWord(GB_DICTIONARY *dict, cu_str source, long size, unsigned lo
         if (equal>ilen) {
             ilen = equal;
             idx  = ntohl(resort[l]);
-            ad_assert(idx<dict->words);
+            gb_assert(idx<dict->words);
         }
 
         l++;
@@ -537,7 +545,7 @@ static char *gb_uncompress_by_dictionary_internal(GB_DICTIONARY *dict, /*GBDATA 
             if (c)      c += SHORTLEN_DECR;
             else        c = *source+++LONGLEN_DECR;
 
-            ad_assert(indexLen>=0 && indexLen<=1);
+            gb_assert(indexLen>=0 && indexLen<=1);
 
             if (indexLen==0) {
                 idx = (idx <<8) | *source++;
@@ -547,7 +555,7 @@ static char *gb_uncompress_by_dictionary_internal(GB_DICTIONARY *dict, /*GBDATA 
                 source += 2;
             }
 
-            ad_assert(idx<(GB_ULONG)dict->words);
+            gb_assert(idx<(GB_ULONG)dict->words);
 
             {
                 cu_str word = text+INDEX_DICT_OFFSET(idx, dict);
@@ -559,7 +567,7 @@ static char *gb_uncompress_by_dictionary_internal(GB_DICTIONARY *dict, /*GBDATA 
 
                 {
                     u_str d = dest;
-                    ad_assert(((d + c) <= word) || (d >= (word + c)));
+                    gb_assert(((d + c) <= word) || (d >= (word + c)));
                     while (c--) *d++ = *word++;
                     dest = d;
                 }
@@ -574,7 +582,7 @@ static char *gb_uncompress_by_dictionary_internal(GB_DICTIONARY *dict, /*GBDATA 
             left -= c;
             {
                 u_str d = dest;
-                ad_assert(((d + c) <= source) || (d >= (source + c)));
+                gb_assert(((d + c) <= source) || (d >= (source + c)));
                 while (c--) *d++ = *source++;
                 dest=d;
             }
@@ -584,7 +592,7 @@ static char *gb_uncompress_by_dictionary_internal(GB_DICTIONARY *dict, /*GBDATA 
     if (append_zero == GB_TRUE) *dest++ = 0;
 
     *new_size = dest-buffer;
-    ad_assert(size >= *new_size); // buffer overflow
+    gb_assert(size >= *new_size); // buffer overflow
 
     return (char *)buffer;
 }
@@ -615,7 +623,7 @@ char *gb_compress_by_dictionary(GB_DICTIONARY *dict, GB_CSTR s_source, long size
     const long org_size = size;
 #endif                          /* ASSERTION_USED */
 
-    ad_assert(size>0); /* compression of zero-length data fails! */
+    gb_assert(size>0); /* compression of zero-length data fails! */
 
     dest = buffer = (u_str)GB_give_other_buffer((GB_CSTR)source, 1+(size/63+1)+size);
     *dest++ = GB_COMPRESSION_DICTIONARY | last_flag;
@@ -673,7 +681,7 @@ char *gb_compress_by_dictionary(GB_DICTIONARY *dict, GB_CSTR s_source, long size
                 length -= take;
             }
 
-            ad_assert(unknown==source);
+            gb_assert(unknown==source);
 
             while (wordFound) { /* as long as we find words in dictionary */
                 int           indexLen      = wordIndex>MAX_SHORT_INDEX;
@@ -682,10 +690,10 @@ char *gb_compress_by_dictionary(GB_DICTIONARY *dict, GB_CSTR s_source, long size
                 int           nextWordLen;
                 unsigned long nextWordIndex;
 
-                ad_assert((long)wordIndex<dict->words);
-                ad_assert((long)wordIndex <= MAX_LONG_INDEX);
-                ad_assert(indexHighBits==(indexHighBits & BITMASK(INDEX_BITS)));
-                ad_assert(wordLen>=MIN_SHORTLEN);
+                gb_assert((long)wordIndex<dict->words);
+                gb_assert((long)wordIndex <= MAX_LONG_INDEX);
+                gb_assert(indexHighBits==(indexHighBits & BITMASK(INDEX_BITS)));
+                gb_assert(wordLen>=MIN_SHORTLEN);
 
                 lastUncompressed = NULL;
 
@@ -766,8 +774,8 @@ char *gb_compress_by_dictionary(GB_DICTIONARY *dict, GB_CSTR s_source, long size
         long  new_size = -1;
         char *test     = gb_uncompress_by_dictionary_internal(dict, (GB_CSTR)buffer+1, org_size + GB_COMPRESSION_TAGS_SIZE_MAX, GB_TRUE, &new_size);
 
-        ad_assert(memcmp(test, s_source, org_size) == 0);
-        ad_assert((org_size+1) == new_size);
+        gb_assert(memcmp(test, s_source, org_size) == 0);
+        gb_assert((org_size+1) == new_size);
     }
 #endif /* ASSERTION_USED */
 
@@ -813,7 +821,7 @@ static void test_dictionary(GB_DICTIONARY *dict, O_gbdByKey *gbk, long *uncompSu
 
 #ifndef NDEBUG
             copy = (u_str)gbm_get_mem(size, GBM_DICT_INDEX);
-            ad_assert(copy!=0);
+            gb_assert(copy!=0);
             memcpy(copy, data, size);
 #endif
 
@@ -968,13 +976,13 @@ static int testCounts(GB_DICT_TREE tree)
                     if (tree.single->son.exists) {
                         int son_cnt = testCounts(tree.single->son);
 #ifdef COUNT_EQUAL
-                        ad_assert(son_cnt==tree.single->count);
+                        gb_assert(son_cnt==tree.single->count);
 #else
-                        ad_assert(son_cnt<=tree.single->count);
+                        gb_assert(son_cnt<=tree.single->count);
 #endif
                     }
 
-                    ad_assert(tree.single->count>0);
+                    gb_assert(tree.single->count>0);
                     cnt += tree.single->count;
                     tree = tree.single->brother;
                 }
@@ -988,12 +996,12 @@ static int testCounts(GB_DICT_TREE tree)
                     if (tree.full->son[idx].exists) {
                         int son_cnt = testCounts(tree.full->son[idx]);
 #ifdef COUNT_EQUAL
-                        ad_assert(son_cnt==tree.full->count[idx]);
+                        gb_assert(son_cnt==tree.full->count[idx]);
 #else
-                        ad_assert(son_cnt<=tree.full->count[idx]);
+                        gb_assert(son_cnt<=tree.full->count[idx]);
 #endif
-                        if (tree.full->usedSons)    ad_assert(tree.full->count[idx]>0);
-                        else                        ad_assert(tree.full->count[idx]==0);
+                        if (tree.full->usedSons)    gb_assert(tree.full->count[idx]>0);
+                        else                        gb_assert(tree.full->count[idx]==0);
 
                         sons++;
                     }
@@ -1004,7 +1012,7 @@ static int testCounts(GB_DICT_TREE tree)
                     cnt += tree.full->count[idx];
                 }
 
-                ad_assert(sons==tree.full->usedSons);
+                gb_assert(sons==tree.full->usedSons);
                 break;
             }
         }
@@ -1026,15 +1034,15 @@ static GB_DICT_TREE test_dtree(GB_DICT_TREE tree)
         switch (tree.full->typ) {
             case SINGLE_NODE: {
 #if defined(TEST_MAX_OCCUR_COUNT)
-                ad_assert(tree.single->count<MAX_OCCUR_COUNT);  /* eher unwahrscheinlich */
+                gb_assert(tree.single->count<MAX_OCCUR_COUNT);  /* quite improbable */
 #endif // TEST_MAX_OCCUR_COUNT
 
                 if (tree.single->son.exists) {
-                    ad_assert(tree.single->count==0);
+                    gb_assert(tree.single->count==0);
                     test_dtree(tree.single->son);
                 }
                 else {
-                    ad_assert(tree.single->count>0);
+                    gb_assert(tree.single->count>0);
                 }
 
                 if (tree.single->brother.exists) test_dtree(tree.single->brother);
@@ -1046,22 +1054,22 @@ static GB_DICT_TREE test_dtree(GB_DICT_TREE tree)
 
                 for (idx=0; idx<256; idx++) {
 #if defined(TEST_MAX_OCCUR_COUNT)
-                    ad_assert(tree.full->count[idx]<MAX_OCCUR_COUNT); /* eher unwahrscheinlich */
+                    gb_assert(tree.full->count[idx]<MAX_OCCUR_COUNT); /* quite improbable */
 #endif // TEST_MAX_OCCUR_COUNT
 
                     if (tree.full->son[idx].exists) {
-                        ad_assert(tree.full->count[idx]==0);
+                        gb_assert(tree.full->count[idx]==0);
                         test_dtree(tree.full->son[idx]);
                         countSons++;
                     }
                     else {
-                        ad_assert(tree.full->count[idx]>=0);
+                        gb_assert(tree.full->count[idx]>=0);
                         if (tree.full->count[idx]>0)
                             countSons++;
                     }
                 }
 
-                ad_assert(countSons==tree.full->usedSons);
+                gb_assert(countSons==tree.full->usedSons);
 
                 break;
             }
@@ -1128,8 +1136,8 @@ GB_DICT_TREE single2full_dtree(GB_DICT_TREE tree, long *memcount)
         while (tree.exists) {
             GB_SINGLE_DICT_TREE *t = tree.single;
 
-            ad_assert(t->typ==SINGLE_NODE);
-            ad_assert(full->son[t->ch].exists==NULL);
+            gb_assert(t->typ==SINGLE_NODE);
+            gb_assert(full->son[t->ch].exists==NULL);
 
             full->son[t->ch] = t->son;
             full->count[t->ch] = t->count;
@@ -1329,14 +1337,14 @@ static GB_DICT_TREE add_dtree_to_dtree(GB_DICT_TREE toAdd, GB_DICT_TREE to, long
 {
     GB_DICT_TREE tree = toAdd;
 
-    ad_assert(toAdd.single->typ==SINGLE_NODE);
+    gb_assert(toAdd.single->typ==SINGLE_NODE);
 
     if (to.exists) {
         switch (to.full->typ) {
             case SINGLE_NODE: {
                 GB_SINGLE_DICT_TREE *left = to.single;
 
-                ad_assert(left!=0);
+                gb_assert(left!=0);
 
                 if (toAdd.single->ch < to.single->ch) {
                     toAdd.single->brother = to;
@@ -1361,9 +1369,9 @@ static GB_DICT_TREE add_dtree_to_dtree(GB_DICT_TREE toAdd, GB_DICT_TREE to, long
             case FULL_NODE: {
                 unsigned_char ch = toAdd.single->ch;
 
-                ad_assert(to.full->son[ch].exists==NULL);
-                ad_assert(to.full->count[ch]==0); /* if this fails, count must be added & tested */
-                ad_assert(toAdd.single->brother.exists==NULL);
+                gb_assert(to.full->son[ch].exists==NULL);
+                gb_assert(to.full->count[ch]==0); /* if this fails, count must be added & tested */
+                gb_assert(toAdd.single->brother.exists==NULL);
 
                 to.full->son[ch] = toAdd.single->son;
                 to.full->count[ch] = toAdd.single->count;
@@ -1400,8 +1408,8 @@ static GB_DICT_TREE add_to_dtree(GB_DICT_TREE tree, cu_str text, long len, long 
                             t->son = add_to_dtree(t->son, text+1, len-1, memcount);     /* add rest of text to subtree */
                         }
                         else {
-                            ad_assert(len==1);
-                            ad_assert(t->son.exists==NULL);
+                            gb_assert(len==1);
+                            gb_assert(t->son.exists==NULL);
                             t->count++;
                         }
 
@@ -1448,13 +1456,13 @@ static long calcCounts(GB_DICT_TREE tree)
 {
     long cnt = 0;
 
-    ad_assert(tree.exists!=0);
+    gb_assert(tree.exists!=0);
 
     switch (tree.full->typ) {
         case SINGLE_NODE: {
             while (tree.exists) {
                 if (tree.single->son.exists) tree.single->count = calcCounts(tree.single->son);
-                ad_assert(tree.single->count>0);
+                gb_assert(tree.single->count>0);
                 cnt += tree.single->count;
                 tree = tree.single->brother;
             }
@@ -1466,10 +1474,10 @@ static long calcCounts(GB_DICT_TREE tree)
             for (idx=0; idx<256; idx++) {
                 if (tree.full->son[idx].exists) {
                     tree.full->count[idx] = calcCounts(tree.full->son[idx]);
-                    ad_assert(tree.full->count[idx]>0);
+                    gb_assert(tree.full->count[idx]>0);
                 }
                 else {
-                    ad_assert(tree.full->count[idx]>=0);
+                    gb_assert(tree.full->count[idx]>=0);
                 }
                 cnt += tree.full->count[idx];
             }
@@ -1484,7 +1492,7 @@ static int count_dtree_leafs(GB_DICT_TREE tree, int deep, int *maxdeep) {
     /* returns # of leafs and max. depth of tree */
     int leafs = 0;
 
-    ad_assert(tree.exists!=0);
+    gb_assert(tree.exists!=0);
 
     if (++deep>*maxdeep) *maxdeep = deep;
 
@@ -1547,8 +1555,8 @@ static GB_DICT_TREE removeSubsequentString(GB_DICT_TREE *tree_pntr, cu_str buffe
 
     rest.exists = NULL;
 
-    ad_assert(tree.exists!=0);
-    ad_assert(len>0);
+    gb_assert(tree.exists!=0);
+    gb_assert(len>0);
 
     switch (tree.full->typ) {
         case SINGLE_NODE: {
@@ -1569,7 +1577,7 @@ static GB_DICT_TREE removeSubsequentString(GB_DICT_TREE *tree_pntr, cu_str buffe
 
                     if (rest.exists) { /* the string was found */
                         tree.single->count -= restCount;
-                        ad_assert(tree.single->count >= 0);
+                        gb_assert(tree.single->count >= 0);
 
                         if (!tree.single->count) { /* empty subtree -> delete myself */
                             GB_DICT_TREE brother = tree.single->brother;
@@ -1605,11 +1613,11 @@ static GB_DICT_TREE removeSubsequentString(GB_DICT_TREE *tree_pntr, cu_str buffe
                 }
 
                 if (rest.exists) {
-                    ad_assert(restCount>0);
+                    gb_assert(restCount>0);
                     tree.full->count[ch] -= restCount;
-                    ad_assert(tree.full->count[ch]>=0);
+                    gb_assert(tree.full->count[ch]>=0);
                     if (tree.full->count[ch]==0) {
-                        ad_assert(tree.full->son[ch].exists==NULL);
+                        gb_assert(tree.full->son[ch].exists==NULL);
 
                         if (--tree.full->usedSons==0) { /* last son deleted -> delete myself */
                             free_dtree(tree);
@@ -1666,7 +1674,7 @@ static int expandBranches(u_str buffer, int deep, int minwordlen, int maxdeep, G
      */
     int expand = 0;             /* calculate count-sum of added subsequent parts */
 
-    ad_assert(tree.exists!=0);
+    gb_assert(tree.exists!=0);
 
     if (deep<maxdeep) {
         switch (tree.full->typ) {
@@ -1687,7 +1695,7 @@ static int expandBranches(u_str buffer, int deep, int minwordlen, int maxdeep, G
                         if (len==minwordlen) {
                             cu_str self = memstr(buffer, deep+1, buf, len);
 
-                            ad_assert(self!=0);
+                            gb_assert(self!=0);
                             if (self==buf)  rest = removeSubsequentString(&root, buf, len, ((100+max_percent)*tree.single->count)/100);
                             else            rest.exists = NULL;
                         }
@@ -1740,7 +1748,7 @@ static int expandBranches(u_str buffer, int deep, int minwordlen, int maxdeep, G
                         if (len==minwordlen) {
                             cu_str self = memstr(buffer, deep+1, buf, len);
 
-                            ad_assert(self!=0);
+                            gb_assert(self!=0);
                             if (self==buf)
                                 rest = removeSubsequentString(&root, buf, len, ((100+max_percent)*tree.full->count[idx])/100);
                             else
@@ -1853,7 +1861,7 @@ static GB_DICT_TREE build_dict_tree(O_gbdByKey *gbk, long maxmem, long maxdeep, 
         if (tree.exists) {
             int  maxdeep2 = 0;
             long counted  = count_dtree_leafs(tree, 0, &maxdeep2);
-            ad_assert(leafs == counted);
+            gb_assert(leafs == counted);
         }
 #endif // DEBUG
 
@@ -1928,7 +1936,7 @@ static GB_DICT_TREE remove_word_from_dtree(GB_DICT_TREE tree, cu_str wordStart, 
      * otherwise: resultBuffer contains the word, returns new tree with word removed
      */
     long removed_single = 0;
-    ad_assert(tree.exists!=0);
+    gb_assert(tree.exists!=0);
     *removed = 0;
 
     if (wordLen) {                      /* search wanted path into tree */
@@ -1938,12 +1946,12 @@ static GB_DICT_TREE remove_word_from_dtree(GB_DICT_TREE tree, cu_str wordStart, 
                     *resultBuffer = *wordStart;
 
                     if (tree.single->son.exists) {
-                        ad_assert(tree.single->count>0);
+                        gb_assert(tree.single->count>0);
                         tree.single->son = remove_word_from_dtree(tree.single->son, wordStart+1, wordLen-1,
                                                                   resultBuffer+1, resultLen, resultFrequency,
                                                                   &removed_single);
                         if (*resultLen) { /* word removed */
-                            ad_assert(tree.single->count>=removed_single);
+                            gb_assert(tree.single->count>=removed_single);
                             tree.single->count -= removed_single;
                             *removed += removed_single;
                             (*resultLen)++;
@@ -2024,13 +2032,13 @@ static GB_DICT_TREE remove_word_from_dtree(GB_DICT_TREE tree, cu_str wordStart, 
         switch(tree.full->typ) {
             case SINGLE_NODE: {
                 *resultBuffer = tree.single->ch;
-                ad_assert(tree.single->count>0);
+                gb_assert(tree.single->count>0);
 
                 if (tree.single->son.exists) {
                     tree.single->son = remove_word_from_dtree(tree.single->son, wordStart, wordLen,
                                                               resultBuffer+1, resultLen, resultFrequency,
                                                               &removed_single);
-                    ad_assert(*resultLen);
+                    gb_assert(*resultLen);
                     (*resultLen)++;
                 }
                 else {
@@ -2039,10 +2047,10 @@ static GB_DICT_TREE remove_word_from_dtree(GB_DICT_TREE tree, cu_str wordStart, 
                     removed_single = tree.single->count;
                 }
 
-                ad_assert(*resultFrequency>0);
+                gb_assert(*resultFrequency>0);
 
                 if (tree.single->son.exists) {
-                    ad_assert(tree.single->count>=removed_single);
+                    gb_assert(tree.single->count>=removed_single);
                     tree.single->count -= removed_single;
                     *removed += removed_single;
                 }
@@ -2067,7 +2075,7 @@ static GB_DICT_TREE remove_word_from_dtree(GB_DICT_TREE tree, cu_str wordStart, 
                         tree.full->son[idx] = remove_word_from_dtree(tree.full->son[idx], wordStart, wordLen,
                                                                      resultBuffer+1, resultLen, resultFrequency,
                                                                      &removed_single);
-                        ad_assert(*resultLen);
+                        gb_assert(*resultLen);
                         (*resultLen)++;
 
                         if (!tree.full->son[idx].exists) { /* son branch removed -> zero count */
@@ -2077,7 +2085,7 @@ static GB_DICT_TREE remove_word_from_dtree(GB_DICT_TREE tree, cu_str wordStart, 
                         }
                         else {
                             tree.full->count[idx] -= removed_single;
-                            ad_assert(tree.full->count[idx]>0);
+                            gb_assert(tree.full->count[idx]>0);
                         }
 
                         break;
@@ -2093,7 +2101,7 @@ static GB_DICT_TREE remove_word_from_dtree(GB_DICT_TREE tree, cu_str wordStart, 
                     }
                 }
 
-                ad_assert(idx<256); /* ad_assert break was used to exit loop (== node had a son) */
+                gb_assert(idx<256); /* gb_assert break was used to exit loop (== node had a son) */
 
                 *removed += removed_single;
 
@@ -2109,9 +2117,9 @@ static GB_DICT_TREE remove_word_from_dtree(GB_DICT_TREE tree, cu_str wordStart, 
 
 #ifdef DEBUG
     if (*resultLen) {
-        ad_assert(*resultLen>0);
-        ad_assert(*resultFrequency>0);
-        ad_assert(*resultLen>=wordLen);
+        gb_assert(*resultLen>0);
+        gb_assert(*resultFrequency>0);
+        gb_assert(*resultLen>=wordLen);
     }
 #endif
 
@@ -2157,7 +2165,7 @@ static void downheap(int *heap, int *heap2, int me, int num) {
     int lson = me*2;
     int rson = lson+1;
 
-    ad_assert(me>=1);
+    gb_assert(me>=1);
     if (lson>num) return;
 
     if (cmp(lson,me)<0) {       /* left son smaller than me?  (we sort in descending order!!!) */
@@ -2188,7 +2196,7 @@ static void downheap2(int *heap, GB_DICTIONARY *dict, int me, int num) {
     int lson = me*2;
     int rson = lson+1;
 
-    ad_assert(me>=1);
+    gb_assert(me>=1);
     if (lson>num) return;
 
     if (cmp(lson,me)>0) {               /* left son bigger than me? */
@@ -2240,7 +2248,7 @@ static void sort_dict_offsets(GB_DICTIONARY *dict) {
     }
 
 #ifdef TEST_SORTED
-    for (i=2,num=dict->words; i<=num; i++) ad_assert(heap2[i-1]>=heap2[i]); /* test if sorted correctly */
+    for (i=2,num=dict->words; i<=num; i++) gb_assert(heap2[i-1]>=heap2[i]); /* test if sorted correctly */
 #endif
 
     /* initialize dict->resort */
@@ -2264,7 +2272,7 @@ static void sort_dict_offsets(GB_DICTIONARY *dict) {
     for (i=1,num=dict->words; i<num; i++) {
         u_str word1 = dict->text+dict->offsets[dict->resort[i-1]];
         u_str word2 = dict->text+dict->offsets[dict->resort[i]];
-        ad_assert(GB_MEMCMP(word1,word2,dict->textlen)<=0);
+        gb_assert(GB_MEMCMP(word1,word2,dict->textlen)<=0);
     }
 #endif
 }
@@ -2343,7 +2351,7 @@ static GB_DICTIONARY *gb_create_dictionary(O_gbdByKey *gbk, long maxmem) {
             dict->words++;
 
             word = dict->text+offset-overlap;
-            ad_assert(overlap==0 || GB_MEMCMP(word,buffer,overlap)==0); /* test overlapping string-part */
+            gb_assert(overlap==0 || GB_MEMCMP(word,buffer,overlap)==0); /* test overlapping string-part */
             memcpy(word, buffer, wordLen);                              /* word -> dictionary string */
             offset += wordLen-overlap;
 
@@ -2358,8 +2366,8 @@ static GB_DICTIONARY *gb_create_dictionary(O_gbdByKey *gbk, long maxmem) {
             wordLen = nextWordLen;
         }
 
-        ad_assert(dict->words <= MAX_LONG_INDEX);
-        ad_assert(dict->words==words);  /* dict->words == # of words stored in dictionary string
+        gb_assert(dict->words <= MAX_LONG_INDEX);
+        gb_assert(dict->words==words);  /* dict->words == # of words stored in dictionary string
                                          * words           == # of words pre-calculated */
 
 #if DEBUG
@@ -2405,7 +2413,7 @@ static GB_ERROR readAndWrite(O_gbdByKey *gbkp) {
 
                 data = gbm_get_mem(size, GBM_DICT_INDEX);
                 memcpy(data, d, size);
-                ad_assert(data[size-1] == 0);
+                gb_assert(data[size-1] == 0);
             }
 
             switch(type) {
@@ -2430,7 +2438,7 @@ static GB_ERROR readAndWrite(O_gbdByKey *gbkp) {
                     if (!error) error = GB_write_floats(gbd, (float*)data, size);
                     break;
                 default:
-                    ad_assert(0);
+                    gb_assert(0);
                     break;
             }
 
@@ -2465,7 +2473,7 @@ GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
         for (idx=0; idx<gbdByKey_cnt; idx++) { /* title author dew_author ebi_journal name ua_tax date full_name ua_title */
             if (gbk[idx].cnt && strcmp(Main->keys[idx].key, "tree")==0) break;
         }
-        ad_assert(idx<gbdByKey_cnt);
+        gb_assert(idx<gbdByKey_cnt);
 #endif
 #endif
 

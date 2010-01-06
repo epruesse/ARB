@@ -577,7 +577,7 @@ class awt_query {
     awt_query_type       type;                      // type of 'query'
     struct {                                        // used for some values of 'type'
         string     str;
-        GBS_REGEX *regexp;
+        GBS_regex *regexp;
         float      number;
     } xquery;
 
@@ -2260,7 +2260,7 @@ AW_window *create_awt_open_parser(AW_root *aw_root, struct adaqbsstruct *cbs)
         filename = AWT_unfold_path("lib/sellists/mod_experiment_fields*.sellst","ARBHOME");
         break;
     default:
-        gb_assert(0);
+        awt_assert(0);
         break;
     }
 

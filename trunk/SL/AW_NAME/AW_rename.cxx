@@ -189,7 +189,7 @@ public:
         persistent = 0;
     }
     virtual ~NameServerConnection() {
-        gb_assert(persistent == 0); // forgot to remove persistence ?
+        aw_assert(persistent == 0); // forgot to remove persistence ?
         disconnect();
     }
 
@@ -630,7 +630,7 @@ static char *makeUniqueShortName(const char *prefix, UniqueNameDetector& existin
     char *result     = 0;
     int   prefix_len = strlen(prefix);
 
-    gb_assert(prefix_len<8); // prefix has to be shorter than 8 chars!
+    aw_assert(prefix_len<8); // prefix has to be shorter than 8 chars!
     if (prefix_len<8) {
         const int max_nums[8] = { 100000000, 10000000, 1000000, 100000, 10000, 1000, 100, 10 };
         static int next_try[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -683,7 +683,7 @@ char *AWTC_makeUniqueShortName(const char *prefix, UniqueNameDetector& existingN
         result = makeUniqueShortName(p, existingNames);
     }
 
-    gb_assert(!result || strlen(result) <= 8);
+    aw_assert(!result || strlen(result) <= 8);
     if (!result) GB_export_errorf("Failed to create unique shortname (prefix='%s')", prefix);
 
     return result;

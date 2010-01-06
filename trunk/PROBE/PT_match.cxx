@@ -21,8 +21,8 @@ static double ptnd_get_wmismatch(PT_pdc *pdc, char *probe, int pos, char ref)
     int maxIdx     = rowIdx + base-(int)PT_A;
     int newIdx     = rowIdx + ref-(int)PT_A;
 
-    arb_assert(maxIdx >= 0 && maxIdx < 16);
-    arb_assert(newIdx >= 0 && newIdx < 16);
+    pt_assert(maxIdx >= 0 && maxIdx < 16);
+    pt_assert(newIdx >= 0 && newIdx < 16);
 
     double max_bind = pdc->bond[maxIdx].val;
     double new_bind = pdc->bond[newIdx].val;
@@ -805,8 +805,6 @@ extern "C" bytestring *MP_all_species_string(PT_local *){
     bs.size = strlen(bs.data)+1;
     return &bs;
 }
-
-
 
 extern "C" int MP_count_all_species(PT_local *)
 {

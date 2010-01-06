@@ -284,11 +284,11 @@ char *DI_MATRIX::load(LoadWhat what, GB_CSTR sort_tree_name, bool show_warnings,
         species_in_sort_tree = GBT_get_species_names_of_tree(sort_tree);
 
         {
-            GB_HASHI *shallLoad = 0;
+            GB_NUMHASH *shallLoad = 0;
             if (what == DI_LOAD_LIST) {
-                shallLoad = GBS_create_hashi(no_of_species);
+                shallLoad = GBS_create_numhash(no_of_species);
                 for (int i = 0; species_list[i]; ++i) {
-                    GBS_write_hashi(shallLoad, (long)species_list[i], 1);
+                    GBS_write_numhash(shallLoad, (long)species_list[i], 1);
                 }
             }
 
@@ -305,7 +305,7 @@ char *DI_MATRIX::load(LoadWhat what, GB_CSTR sort_tree_name, bool show_warnings,
 
                 if ((what == DI_LOAD_ALL)                                ||
                     (what == DI_LOAD_MARKED && GB_read_flag(gb_species)) ||
-                    (what == DI_LOAD_LIST && GBS_read_hashi(shallLoad, (long)gb_species)))
+                    (what == DI_LOAD_LIST && GBS_read_numhash(shallLoad, (long)gb_species)))
                 {
                     in_tree_species++;
                     phentry = new DI_ENTRY(gb_species,this);
@@ -313,7 +313,7 @@ char *DI_MATRIX::load(LoadWhat what, GB_CSTR sort_tree_name, bool show_warnings,
                         entries[nentries++] = phentry;
                         if (nentries == entries_mem_size) {
                             entries_mem_size +=1000;
-                            entries = (DI_ENTRY **)realloc((MALLOC_T)entries,(size_t)(sizeof(DI_ENTRY*)*entries_mem_size));
+                            entries = (DI_ENTRY **)realloc(entries,(size_t)(sizeof(DI_ENTRY*)*entries_mem_size));
                         }
                     }else{
                         delete phentry;
@@ -321,10 +321,10 @@ char *DI_MATRIX::load(LoadWhat what, GB_CSTR sort_tree_name, bool show_warnings,
                 }
             }
 
-            if (shallLoad) GBS_free_hashi(shallLoad);
+            if (shallLoad) GBS_free_numhash(shallLoad);
         }
         out_tree_species = no_of_species-in_tree_species; // # of species not loaded yet (because not in tree)
-        gb_assert(out_tree_species>=0);
+        di_assert(out_tree_species>=0);
         if (out_tree_species) {
             qsort(species_in_sort_tree, tree_size, sizeof(*species_in_sort_tree), qsort_strcmp); // sort species names
 #if defined(DEBUG) && 0
@@ -342,7 +342,7 @@ char *DI_MATRIX::load(LoadWhat what, GB_CSTR sort_tree_name, bool show_warnings,
                                     unknown_species_in_tree, sort_tree_name));
     }
 
-    gb_assert(out_tree_species>=0);
+    di_assert(out_tree_species>=0);
     if (out_tree_species) { // there are species outside the tree (or no valid sort tree selected) => load all marked species not loaded yet
         int count   = 0;
         int listIdx = 0;
@@ -374,7 +374,7 @@ char *DI_MATRIX::load(LoadWhat what, GB_CSTR sort_tree_name, bool show_warnings,
                     entries[nentries++] = phentry;
                     if (nentries == entries_mem_size) {
                         entries_mem_size +=1000;
-                        entries = (DI_ENTRY **)realloc((MALLOC_T)entries,(size_t)(sizeof(DI_ENTRY*)*entries_mem_size));
+                        entries = (DI_ENTRY **)realloc(entries, sizeof(DI_ENTRY*)*entries_mem_size);
                     }
                 }else{
                     delete phentry;
@@ -1216,7 +1216,7 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
             loop_count++;
             di_calculate_tree_show_status(loop_count, bootstrap_count);
 
-            gb_assert(DI_MATRIX::ROOT == 0);
+            di_assert(DI_MATRIX::ROOT == 0);
             di_calculate_matrix(aww, weighted_filter, bootstrap_flag, true);
 
             DI_MATRIX *matr = DI_MATRIX::ROOT;
@@ -1327,7 +1327,7 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
     }
 #if defined(DEBUG)
     else {
-        gb_assert(all_names == 0);
+        di_assert(all_names == 0);
     }
 #endif // DEBUG
 

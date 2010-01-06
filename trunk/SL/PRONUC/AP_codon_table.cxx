@@ -450,7 +450,7 @@ bool AWT_is_codon(char protein, const char *dna, const AWT_allowedCode& allowed_
                 fail_reason = GBS_global_string("Not enough nucleotides (got '%s')", dna);
             }
             else {
-                gb_assert(error_positions);
+                awt_assert(error_positions);
                 if (error_positions==3) { // don't accept codons with 3 errors
                     fail_reason = GBS_global_string("Three consecutive IUPAC codes '%c%c%c'", dna[0], dna[1], dna[2]);
                 }

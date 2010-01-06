@@ -8,13 +8,12 @@
 /*                                                              */
 /* ============================================================ */
 
-#include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
+#include <cctype>
 
-#include <adlocal.h>
 #include <arbdbt.h>
 #include <ad_config.h>
+
+#include "gb_local.h"
 
 /********************************************************************************************
                 Rename one or many species (only one session at a time/ uses

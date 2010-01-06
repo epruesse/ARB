@@ -214,7 +214,7 @@ size_t AW_root::callallcallbacks(int mode) {
             case 1:
             case 3: reverse(callbacks.begin(), callbacks.end()); break; // use reverse order
             case 10: random_shuffle(callbacks.begin(), callbacks.end()); break; // use random order
-            default : gb_assert(0); break;          // unknown mode
+            default : aw_assert(0); break;          // unknown mode
         }
 
         count = callbacks.size();

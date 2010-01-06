@@ -35,7 +35,7 @@
     void     GBT_free_configuration_data(GBT_config *data);
 
 
-    typedef enum {
+    enum GBT_CONFIG_ITEM_TYPE {
         CI_UNKNOWN       = 1,
         CI_GROUP         = 2,
         CI_FOLDED_GROUP  = 4,
@@ -43,10 +43,10 @@
         CI_SAI           = 16,
         CI_CLOSE_GROUP   = 32,
         CI_END_OF_CONFIG = 64,
-    } gbt_config_item_type;
+    };
 
     typedef struct s_gbt_config_item {
-        gbt_config_item_type  type;
+        GBT_CONFIG_ITEM_TYPE  type;
         char                 *name;
     } GBT_config_item;
 

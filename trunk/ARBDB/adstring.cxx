@@ -8,184 +8,22 @@
 /*                                                               */
 /* ============================================================= */
 
-#include "adlocal.h"
-
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <errno.h>
-#include <stdarg.h>
-#include <dirent.h>
-#include <sys/stat.h>
 #include <execinfo.h>
-#include <signal.h>
 
-/********************************************************************************************
-                    directory handling
-********************************************************************************************/
+#include <cstdarg>
+#include <cctype>
+#include <cerrno>
+#include <csignal>
 
-GB_ERROR gb_scan_directory(char *basename, struct gb_scandir *sd) { /* goes to header: __ATTR__USERESULT */
-    /* look for quick saves (basename = yyy/xxx no arb ending !!!!) */
-    char          *path        = strdup(basename);
-    const char    *fulldir     = ".";
-    char          *file        = strrchr(path,'/');
-    DIR           *dirp;
-    int            curindex;
-    char          *suffix;
-    struct dirent *dp;
-    struct stat    st;
-    const char    *oldstyle    = ".arb.quick";
-    char           buffer[GB_PATH_MAX];
-    int            oldstylelen = strlen(oldstyle);
-    int            filelen;
-
-    if (file) {
-        *(file++) = 0;
-        fulldir = path;
-    } else {
-        file = path;
-    }
-
-    memset((char*)sd,0,sizeof(*sd));
-    sd->type = GB_SCAN_NO_QUICK;
-    sd->highest_quick_index = -1;
-    sd->newest_quick_index = -1;
-    sd->date_of_quick_file = 0;
-
-    dirp = opendir(fulldir);
-    if (!dirp){
-        GB_ERROR error = GB_export_errorf("Directory %s of file %s.arb not readable",fulldir,file);
-        free(path);
-        return error;
-    }
-    filelen = strlen(file);
-    for (dp = readdir(dirp); dp != NULL; dp = readdir(dirp)){
-        if (strncmp(dp->d_name,file,filelen)) continue;
-        suffix = dp->d_name + filelen;
-        if (suffix[0] != '.') continue;
-        if (!strncmp(suffix,oldstyle,oldstylelen)){
-            if (sd->type == GB_SCAN_NEW_QUICK){
-                printf("Warning: Found new and old changes files, using new\n");
-                continue;
-            }
-            sd->type = GB_SCAN_OLD_QUICK;
-            curindex = atoi(suffix+oldstylelen);
-            goto check_time_and_date;
-        }
-        if (strlen(suffix) == 4 &&
-            suffix[0] == '.' &&
-            suffix[1] == 'a' &&
-            isdigit(suffix[2]) &&
-            isdigit(suffix[3])){
-            if (sd->type == GB_SCAN_OLD_QUICK){
-                printf("Warning: Found new and old changes files, using new\n");
-            }
-            sd->type = GB_SCAN_NEW_QUICK;
-            curindex = atoi(suffix+2);
-            goto check_time_and_date;
-        }
-        continue;
-    check_time_and_date:
-        if (curindex > sd->highest_quick_index) sd->highest_quick_index = curindex;
-        sprintf(buffer,"%s/%s",fulldir,dp->d_name);
-        stat(buffer,&st);
-        if ((unsigned long)st.st_mtime > sd->date_of_quick_file){
-            sd->date_of_quick_file = st.st_mtime;
-            sd->newest_quick_index = curindex;
-        }
-        continue;
-    }
-    closedir(dirp);
-    free(path);
-    return 0;
-}
+#include "gb_key.h"
 
 
-char *GB_find_all_files(const char *dir,const char *mask, GB_BOOL filename_only) {
-    /* Returns a string containing the filenames of all files matching mask.
-       The single filenames are separated by '*'.
-       if 'filename_only' is true -> string contains only filenames w/o path
-       
-       returns 0 if no files found (or directory not found).
-       in this case an error may be exported  
+#define GBS_GLOBAL_STRING_SIZE 64000
 
-       'mask' may contain wildcards (*?) or
-       it may be a regular expression ('/regexp/')
-    */
-
-    DIR           *dirp;
-    struct dirent *dp;
-    struct stat    st;
-    char          *result = 0;
-    char           buffer[GB_PATH_MAX];
-
-    dirp = opendir(dir);
-    if (dirp) {
-        GBS_MATCHER *matcher = GBS_compile_matcher(mask, GB_IGNORE_CASE);
-        if (matcher) {
-            for (dp = readdir(dirp); dp != NULL; dp = readdir(dirp)) {
-                if (GBS_string_matches_regexp(dp->d_name, matcher)) {
-                    sprintf(buffer,"%s/%s",dir,dp->d_name);
-                    if (stat(buffer,&st) == 0  && S_ISREG(st.st_mode)) { // regular file ?
-                        if (filename_only) strcpy(buffer, dp->d_name);
-                        if (result) {
-                            freeset(result, GBS_global_string_copy("%s*%s", result, buffer));
-                        }
-                        else {
-                            result = strdup(buffer);
-                        }
-                    }
-                }
-            }
-            GBS_free_matcher(matcher);
-        }
-        closedir(dirp);
-    }
-
-    return result;
-}
-
-char *GB_find_latest_file(const char *dir, const char *mask) {
-    /* returns the name of the newest file in dir 'dir' matching 'mask'
-     * or NULL (in this case an error may be exported)
-     *
-     * 'mask' may contain wildcards (*?) or
-     * it may be a regular expression ('/regexp/')
-     */
-    
-    DIR           *dirp;
-    struct dirent *dp;
-    char           buffer[GB_PATH_MAX];
-    struct stat    st;
-    GB_ULONG       newest = 0;
-    char          *result = 0;
-
-    dirp = opendir(dir);
-    if (dirp) {
-        GBS_MATCHER *matcher = GBS_compile_matcher(mask, GB_IGNORE_CASE);
-        if (matcher) {
-            for (dp = readdir(dirp); dp != NULL; dp = readdir(dirp)) {
-                if (GBS_string_matches_regexp(dp->d_name, matcher)) {
-                    sprintf(buffer,"%s/%s",dir,dp->d_name);
-                    if (stat(buffer,&st) == 0) {
-                        if ((GB_ULONG)st.st_mtime > newest) {
-                            newest = st.st_mtime;
-                            freedup(result, dp->d_name);
-                        }
-                    }
-                }
-            }
-            GBS_free_matcher(matcher);
-        }
-        closedir(dirp);
-    }
-    return result;
-}
-
-gb_warning_func_type gb_warning_func;
+gb_warning_func_type     gb_warning_func;
 gb_information_func_type gb_information_func;
-gb_status_func_type gb_status_func;
-gb_status_func2_type gb_status_func2;
+gb_status_func_type      gb_status_func;
+gb_status_func2_type     gb_status_func2;
 
 /********************************************************************************************
                     error handling
@@ -262,7 +100,7 @@ GB_ERROR GB_export_IO_error(const char *action, const char *filename) {
         error_message = strerror(errno);
     }
     else {
-        ad_assert(0);           // unhandled error (which is NOT an IO-Error)
+        gb_assert(0);           // unhandled error (which is NOT an IO-Error)
         error_message =
             "Some unhandled error occurred, but it was not an IO-Error. "
             "Please send detailed information about how the error occurred to devel@arb-home.de "
@@ -286,8 +124,13 @@ GB_ERROR GB_export_IO_error(const char *action, const char *filename) {
     return GB_error_buffer;
 }
 
+#if defined(DEVEL_RALF)
+#warning reactivate deprecation below
+#endif // DEVEL_RALF
+
+
 NOT4PERL GB_ERROR GB_print_error() {
-    /* goes to header: __ATTR__DEPRECATED  */
+    /* goes to header: __XATTR__DEPRECATED  */
     if (GB_error_buffer){
         fflush(stdout);
         fprintf(stderr,"%s\n",GB_error_buffer);
@@ -303,7 +146,7 @@ NOT4PERL GB_ERROR GB_get_error() {
      * - GB_have_error() or
      * - GB_await_error()
      */
-    
+
     return GB_error_buffer;
 }
 
@@ -317,7 +160,7 @@ GB_ERROR GB_await_error() {
         reassign(err, GB_error_buffer);
         return err;
     }
-    ad_assert(0);               // please correct error handling
+    gb_assert(0);               // please correct error handling
     
     return "Program logic error: Something went wrong, but reason is unknown";
 }
@@ -424,7 +267,7 @@ static GB_CSTR gbs_vglobal_string(const char *templat, va_list parg, int allow_r
         for (my_idx = 0; my_idx<GLOBAL_STRING_BUFFERS; my_idx++) {
             printf("buffer[%i]=%p\n", my_idx, buffer[my_idx]);
         }
-        ad_assert(0);       /* GBS_reuse_buffer called with illegal buffer */
+        gb_assert(0);       /* GBS_reuse_buffer called with illegal buffer */
         return 0;
     }
 
@@ -661,7 +504,7 @@ GB_ERROR GB_check_hkey(const char *key) { /* goes to header: __ATTR__USERESULT *
                     start = key_end+2;
                 }
                 else  {
-                    ad_assert(c == '/');
+                    gb_assert(c == '/');
                     start = key_end+1;
                 }
             }
@@ -752,8 +595,8 @@ char *GBS_escape_string(const char *str, const char *chars_to_escape, char escap
     int   j      = 0;
     int   i;
 
-    ad_assert(strlen(chars_to_escape)              <= 26);
-    ad_assert(strchr(chars_to_escape, escape_char) == 0); // escape_char may not be included in chars_to_escape
+    gb_assert(strlen(chars_to_escape)              <= 26);
+    gb_assert(strchr(chars_to_escape, escape_char) == 0); // escape_char may not be included in chars_to_escape
 
     for (i = 0; str[i]; ++i) {
         if (str[i] == escape_char) {
@@ -766,7 +609,7 @@ char *GBS_escape_string(const char *str, const char *chars_to_escape, char escap
                 buffer[j++] = escape_char;
                 buffer[j++] = (found-chars_to_escape+'A');
 
-                ad_assert(found[0]<'A' || found[0]>'Z'); // illegal character in chars_to_escape
+                gb_assert(found[0]<'A' || found[0]>'Z'); // illegal character in chars_to_escape
             }
             else {
 
@@ -790,8 +633,8 @@ char *GBS_unescape_string(const char *str, const char *escaped_chars, char escap
     int escaped_chars_len = strlen(escaped_chars);
 #endif // DEBUG
 
-    ad_assert(strlen(escaped_chars)              <= 26);
-    ad_assert(strchr(escaped_chars, escape_char) == 0); // escape_char may not be included in chars_to_escape
+    gb_assert(strlen(escaped_chars)              <= 26);
+    gb_assert(strchr(escaped_chars, escape_char) == 0); // escape_char may not be included in chars_to_escape
 
     for (i = 0; str[i]; ++i) {
         if (str[i] == escape_char) {
@@ -801,7 +644,7 @@ char *GBS_unescape_string(const char *str, const char *escaped_chars, char escap
             else {
                 int idx = str[i+1]-'A';
 
-                ad_assert(idx >= 0 && idx<escaped_chars_len);
+                gb_assert(idx >= 0 && idx<escaped_chars_len);
                 buffer[j++] = escaped_chars[idx];
             }
             ++i;
@@ -921,7 +764,8 @@ void GBS_str_cut_tail(struct GBS_strstruct *strstr, int byte_count){
 static void gbs_strensure_mem(struct GBS_strstruct *strstr,long len) {
     if (strstr->GBS_strcat_pos + len + 2 >= strstr->GBS_strcat_data_size) {
         strstr->GBS_strcat_data_size = (strstr->GBS_strcat_pos+len+2)*3/2;
-        strstr->GBS_strcat_data      = (char *)realloc((MALLOC_T)strstr->GBS_strcat_data,(size_t)strstr->GBS_strcat_data_size);
+        // strstr->GBS_strcat_data      = (char *)realloc((MALLOC_T)strstr->GBS_strcat_data,(size_t)strstr->GBS_strcat_data_size);
+        strstr->GBS_strcat_data      = (char *)realloc(strstr->GBS_strcat_data, strstr->GBS_strcat_data_size);
 #if defined(DUMP_STRSTRUCT_MEMUSE)
         printf("re-allocated GBS_strstruct to size = %li\n", strstr->GBS_strcat_data_size);
 #endif /* DUMP_STRSTRUCT_MEMUSE */
@@ -1021,145 +865,6 @@ char *GBS_eval_env(GB_CSTR p){
     return GBS_strclose(out);
 }
 
-char *GBS_find_lib_file(const char *filename, const char *libprefix, int warn_when_not_found) {
-    /* Searches files in current dir, $HOME, $ARBHOME/lib/libprefix */
-
-    char *result = 0;
-
-    if (GB_is_readablefile(filename)) {
-        result = strdup(filename);
-    }
-    else {
-        const char *slash = strrchr(filename, '/'); // look for last slash
-
-        if (slash && filename[0] != '.') { // have absolute path
-            filename = slash+1; // only use filename part
-            slash    = 0;
-        }
-
-        const char *fileInHome = GB_concat_full_path(GB_getenvHOME(), filename);
-
-        if (fileInHome && GB_is_readablefile(fileInHome)) {
-            result = strdup(fileInHome);
-        }
-        else {
-            if (slash) filename = slash+1; // now use filename only, even if path starts with '.'
-
-            const char *fileInLib = GB_path_in_ARBLIB(libprefix, filename);
-
-            if (fileInLib && GB_is_readablefile(fileInLib)) {
-                result = strdup(fileInLib);
-            }
-            else {
-                if (warn_when_not_found) {
-                    GB_warningf("Don't know where to find '%s'\n"
-                                "  searched in '.'\n"
-                                "  searched in $(HOME) (for '%s')\n"
-                                "  searched in $(ARBHOME)/lib/%s (for '%s')\n", 
-                                filename, fileInHome, libprefix, fileInLib);
-                }
-            }
-        }
-    }
-
-    return result;
-}
-
-
-
-/* *******************************************************************************************
-   some simple find procedures
-********************************************************************************************/
-
-char **GBS_read_dir(const char *dir, const char *mask) {
-    /* Return names of files in directory 'dir'.
-     * Filter through 'mask':
-     * - mask == NULL -> return all files
-     * -      in format '/expr/' -> use regular expression (case sensitive)
-     * - else it does a simple string match with wildcards ("?*")
-     *
-     * Result is a NULL terminated array of char* (sorted alphanumerically)
-     * Use GBT_free_names() to free the result.
-     *
-     * In case of error, result is NULL and error is exported
-     *
-     * Special case: If 'dir' is the name of a file, return an array with file as only element
-     */
-
-    gb_assert(dir);             // dir == NULL was allowed before 12/2008, forbidden now!
-
-    char  *fulldir   = nulldup(GB_get_full_path(dir));
-    DIR   *dirstream = opendir(fulldir);
-    char **names     = NULL;
-
-    if (!dirstream) {
-        if (GB_is_readablefile(fulldir)) {
-            names    = (char**)malloc(2*sizeof(*names));
-            names[0] = strdup(fulldir);
-            names[1] = NULL;
-        }
-        else {
-            char *lslash = strrchr(fulldir, '/');
-
-            if (lslash) {
-                char *name;
-                lslash[0] = 0;
-                name      = lslash+1;
-                if (GB_is_directory(fulldir)) {
-                    names = GBS_read_dir(fulldir, name);
-                }
-                lslash[0] = '/';
-            }
-
-            if (!names) GB_export_errorf("can't read directory '%s'", fulldir);
-        }
-    }
-    else {
-        if (mask == NULL) mask = "*";
-
-        GBS_MATCHER *matcher = GBS_compile_matcher(mask, GB_MIND_CASE);
-        if (matcher) {
-            int allocated = 100;
-            int entries   = 0;
-            names         = (char**)malloc(100*sizeof(*names));
-
-            struct dirent *entry;
-            while ((entry = readdir(dirstream)) != 0) {
-                const char *name = entry->d_name;
-
-                if (name[0] == '.' && (name[1] == 0 || (name[1] == '.' && name[2] == 0))) {
-                    ; // skip '.' and '..'
-                }
-                else {
-                    if (GBS_string_matches_regexp(name, matcher)) {
-                        const char *full = GB_concat_path(fulldir, name);
-                        if (!GB_is_directory(full)) { // skip directories
-                            if (entries == allocated) {
-                                allocated += allocated>>1; // * 1.5
-                                names      = (char**)realloc(names, allocated*sizeof(*names));
-                            }
-                            names[entries++] = strdup(full);
-                        }
-                    }
-                }
-            }
-
-            names          = (char**)realloc(names, (entries+1)*sizeof(*names));
-            names[entries] = NULL;
-
-            GB_sort((void**)names, 0, entries, GB_string_comparator, 0);
-
-            GBS_free_matcher(matcher);
-        }
-
-        closedir(dirstream);
-    }
-
-    free(fulldir);
-
-    return names;  
-}
-
 long GBS_gcgchecksum( const char *seq )
 /* GCGchecksum */
 {
@@ -1179,7 +884,7 @@ long GBS_gcgchecksum( const char *seq )
 }
 
 /* Table of CRC-32's of all single byte values (made by makecrc.c of ZIP source) */
-const uint32_t crctab[] = {
+uint32_t crctab[] = {
     0x00000000L, 0x77073096L, 0xee0e612cL, 0x990951baL, 0x076dc419L,
     0x706af48fL, 0xe963a535L, 0x9e6495a3L, 0x0edb8832L, 0x79dcb8a4L,
     0xe0d5e91eL, 0x97d2d988L, 0x09b64c2bL, 0x7eb17cbdL, 0xe7b82d07L,
@@ -1362,7 +1067,7 @@ size_t GBS_shorten_repeated_data(char *data) {
 
 #if defined(DEBUG)
 
-    ad_assert(strlen(dataStart) <= orgLen);
+    gb_assert(strlen(dataStart) <= orgLen);
 #endif // DEBUG
     return dest-dataStart;
 }
@@ -1737,8 +1442,8 @@ static char *g_bs_get_string_of_tag_hash(GB_HASH *tag_hash){
 
 long g_bs_free_hash_of_hashes_elem(const char *key, long val, void *dummy) {
     GB_HASH *hash = (GB_HASH*)val;
-    GBUSE(key);
-    GBUSE(dummy);
+    // GBUSE(key);
+    // GBUSE(dummy);
     if (hash) GBS_free_hash(hash);
     return 0;
 }
@@ -1964,7 +1669,7 @@ char *GBS_fconvert_string(char *buffer) {
     char *f = buffer;
     int   x;
 
-    ad_assert(f[-1] == '"');
+    gb_assert(f[-1] == '"');
     /* the opening " has already been read */
 
     while ((x = *f++) != '"') {
@@ -1996,7 +1701,7 @@ char *GBS_fconvert_string(char *buffer) {
     }
 
     if (!x) return 0;           // error (string should not contain 0-character)
-    ad_assert(x == '"');
+    gb_assert(x == '"');
 
     t[0] = 0;
     return f;
@@ -2056,7 +1761,7 @@ const char *GBS_readable_size(unsigned long long size) {
         }
         size /= 1024; // next unit
     }
-    ad_assert(0);
+    gb_assert(0);
     return "<much>";
 }
 

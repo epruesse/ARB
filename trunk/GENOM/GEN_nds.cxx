@@ -96,7 +96,7 @@ char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode)
     //     GBT_TREE *father;
 
     bp = gen_nds_ms->buf;
-    gb_assert(gbd);
+    gen_assert(gbd);
     //     if (!gbd) {
     //         static char hae[] = "??????";
     //         if (!species) return hae;

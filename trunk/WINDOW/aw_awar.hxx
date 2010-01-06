@@ -48,8 +48,6 @@ struct AW_var_callback {
     void run_callback(AW_root *root);
 };
 
-typedef struct gb_data_base_type GBDATA;
-
 struct AW_variable_struct {
     AW_variable_struct( AW_VARIABLE_TYPE var_type,
                         const char *var_name, const char *var_value, double var_double_value, long *var_address,

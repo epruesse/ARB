@@ -1,28 +1,32 @@
-/* ================================================================ */
-/*                                                                  */
-/*   File      : adsocket.c                                         */
-/*   Purpose   :                                                    */
-/*                                                                  */
-/*   Institute of Microbiology (Technical University Munich)        */
-/*   http://www.arb-home.de/                                        */
-/*                                                                  */
-/* ================================================================ */
+// =============================================================== //
+//                                                                 //
+//   File      : adsocket.cxx                                      //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <errno.h>
-#include <limits.h>
+#include <unistd.h>
+
+#include <cerrno>
+#include <climits>
+#include <cstdarg>
+
 #include <netdb.h>
-#include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <signal.h>
-#include <stdarg.h>
 #include <sys/mman.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/un.h>
-#include <unistd.h>
 
-#include "adlocal.h"
+#include "gb_comm.h"
+#include "gb_data.h"
+#include "gb_localdata.h"
+#include "gb_main.h"
 
 #define SIG_PF void (*)(int )
 
@@ -338,7 +342,7 @@ GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *p
 }
 
 
-long    gbcms_close(struct gbcmc_comm *link)
+long gbcms_close(gbcmc_comm *link)
 {
     if (link->socket) {
         close(link->socket);
@@ -758,15 +762,6 @@ GB_ERROR GB_textprint(const char *path){
     GB_ERROR    error   = GB_system(command);
     free(fpath);
     return GB_failedTo_error("print textfile", fpath, error);
-}
-
-GB_CSTR GB_getcwd(void) {
-    // get the current working directory
-    // (directory from which application has been started)
-
-    static char *lastcwd  = 0;
-    if (!lastcwd) lastcwd = (char *)getcwd(0,GB_PATH_MAX);
-    return lastcwd;
 }
 
 #if defined(DEVEL_RALF)
@@ -1374,8 +1369,8 @@ char *GB_unique_filename(const char *name_prefix, const char *suffix) {
 
 static GB_HASH *files_to_remove_on_exit = 0;
 static long exit_remove_file(const char *key, long val, void *unused) {
-    GBUSE(val);
-    GBUSE(unused);
+    // GBUSE(val);
+    // GBUSE(unused);
     if (unlink(key) != 0) {
         fprintf(stderr, "Warning: %s\n", GB_export_IO_error("removing", key));
     }

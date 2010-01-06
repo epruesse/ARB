@@ -292,7 +292,7 @@ static char *complete_newick_comment(const char *comment) {
         openBrackets--;
     }
 
-    gb_assert(openBrackets == 0);
+    tree_assert(openBrackets == 0);
 
     return GBS_strclose(out);
 }
@@ -386,9 +386,7 @@ static void export_tree_rek(GBT_TREE *tree, FILE *out, bool export_branchlens, b
 /* need some additional parameters (no comment, trifurcation) */
 #endif /* DEBUG */
 
-GB_ERROR TREE_export_tree(GBDATA *gb_main,FILE *out,GBT_TREE *tree, bool triple_root, bool export_branchlens, bool dquot) {
-    GBUSE(gb_main);
-    
+GB_ERROR TREE_export_tree(GBDATA *, FILE *out, GBT_TREE *tree, bool triple_root, bool export_branchlens, bool dquot) {
     if (triple_root){
         GBT_TREE *one,*two,*three;
         if (tree->is_leaf){

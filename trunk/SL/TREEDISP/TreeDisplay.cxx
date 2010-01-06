@@ -425,14 +425,14 @@ int AWT_graphic_tree::resort_tree( int mode, struct AP_tree *at ) // run on fath
     }
 
     resort_tree(lmode,at->get_leftson());
-    gb_assert(leafname);
+    awt_assert(leafname);
     const char *leftleafname = leafname;
 
     resort_tree(rmode,at->get_rightson());
-    gb_assert(leafname);
+    awt_assert(leafname);
     const char *rightleafname = leafname;
 
-    gb_assert(leftleafname && rightleafname);
+    awt_assert(leftleafname && rightleafname);
 
     if (leftleafname && rightleafname) {
         int name_cmp = strcmp(leftleafname,rightleafname);

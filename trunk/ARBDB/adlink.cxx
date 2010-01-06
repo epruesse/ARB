@@ -1,9 +1,15 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "adlocal.h"
-/* #include <arbdb.h> */
+// =============================================================== //
+//                                                                 //
+//   File      : adlink.cxx                                        //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
+#include "gb_main.h"
+#include "gb_data.h"
 
 GBDATA *GB_follow_link(GBDATA *gb_link){
     char *s;
@@ -43,5 +49,3 @@ GB_ERROR GB_install_link_follower(GBDATA *gb_main, const char *link_type, GB_Lin
     GBS_write_hash(Main->resolve_link_hash, link_type,(long)link_follower);
     return 0;
 }
-
-

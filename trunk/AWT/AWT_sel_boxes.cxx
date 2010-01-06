@@ -570,18 +570,17 @@ void create_save_box_for_selection_lists_save(AW_window *aws,AW_CL selidcd,AW_CL
     AW_selection_list *selid       = (AW_selection_list *)selidcd;
     char              *awar_prefix = (char *)basenamecd;
 
-    char bline_anz[GB_PATH_MAX];
-    sprintf(bline_anz,"%s/line_anz",awar_prefix);
-
-    AW_root *aw_root  = aws->get_root();
-    long     lineanz  = aw_root->awar(bline_anz)->read_int();
-    char    *filename = awt_get_selected_fullname(aw_root, awar_prefix);
+    char    *bline_anz = GBS_global_string_copy("%s/line_anz",awar_prefix);
+    AW_root *aw_root   = aws->get_root();
+    long     lineanz   = aw_root->awar(bline_anz)->read_int();
+    char    *filename  = awt_get_selected_fullname(aw_root, awar_prefix);
 
     GB_ERROR error = aws->save_selection_list(selid,filename,lineanz);
 
     if (!error) awt_refresh_selection_box(aw_root, awar_prefix);
     aws->hide_or_notify(error);
     free(filename);
+    free(bline_anz);
 }
 
 AW_window *create_save_box_for_selection_lists(AW_root *aw_root,AW_CL selid)

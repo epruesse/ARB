@@ -90,12 +90,12 @@ PTM_destroy_mem(void){  /* destroys all left memory sources */
             PTM.tables[pos] = (char *)i;
         }
     }
-    arb_assert(sum >= 0);
+    pt_assert(sum >= 0);
     return sum;
 }
 void PTM_free_mem(char *data, int size)
 {
-    arb_assert(size > 0);
+    pt_assert(size > 0);
     int  nsize, pos;
     long i;
     nsize = (size + (PTM_ALIGNED - 1)) & (-PTM_ALIGNED);
@@ -399,8 +399,8 @@ void PTD_clear_fathers(PTM2 *ptmain, POS_TREE * node)       /* stage 1*/
 #ifdef ARB_64
 void PTD_put_longlong(FILE * out, ULONG i)
 {
-    arb_assert(i == (unsigned long) i);
-    arb_assert(sizeof(PT_PNTR) == 8);       // this function only work and only get called at 64-bit
+    pt_assert(i == (unsigned long) i);
+    pt_assert(sizeof(PT_PNTR) == 8);       // this function only work and only get called at 64-bit
     int io;
     static unsigned char buf[8];
     PT_WRITE_PNTR(buf,i);
@@ -418,7 +418,7 @@ void PTD_put_longlong(FILE * out, ULONG i)
 #endif
 void PTD_put_int(FILE * out, ULONG i)
 {
-    arb_assert(i == (unsigned int) i);
+    pt_assert(i == (unsigned int) i);
     int io;
     static unsigned char buf[4];
     PT_WRITE_INT(buf,i);
@@ -430,7 +430,7 @@ void PTD_put_int(FILE * out, ULONG i)
 
 void PTD_put_short(FILE * out, ULONG i)
 {
-    arb_assert(i == (unsigned short) i);
+    pt_assert(i == (unsigned short) i);
     int io;
     static unsigned char buf[2];
     PT_WRITE_SHORT(buf,i);
@@ -467,7 +467,7 @@ long PTD_write_tip_to_disk(FILE * out, PTM2 */*ptmain*/,POS_TREE * node,long pos
 #endif
     PTD_set_object_to_saved_status(node,pos,size);
     pos += size-sizeof(PT_PNTR);                /* no father */
-    arb_assert(pos >= 0);
+    pt_assert(pos >= 0);
     return pos;
 }
 
@@ -479,7 +479,7 @@ int ptd_count_chain_entries(char * entry){
         PT_READ_PNTR(entry,next);
         entry = (char *)next;
     }
-    arb_assert(counter >= 0);
+    pt_assert(counter >= 0);
     return counter;
 }
 
@@ -558,7 +558,7 @@ long PTD_write_chain_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node,long pos) 
     putc(PT_CHAIN_END,out);
     pos++;
     PTD_set_object_to_saved_status(node,oldpos,data+sizeof(PT_PNTR)-(char*)node);
-    arb_assert(pos >= 0);
+    pt_assert(pos >= 0);
     return pos;
 }
 
@@ -606,7 +606,7 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node, long *r_po
         if (sons) {
             int memsize;
             long   diff = pos - r_poss[i];
-            arb_assert(diff >= 0);
+            pt_assert(diff >= 0);
             if (diff>max_diff) {
                 max_diff = diff;
                 lasti = i;
@@ -666,7 +666,7 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node, long *r_po
         for (i = PT_QU; i < PT_B_MAX; i++) {    /* set the flag2 */
             if (r_poss[i]){
                 /*u*/ long  diff = pos - r_poss[i];
-                arb_assert(diff >= 0);
+                pt_assert(diff >= 0);
                 if (diff>level) flags2 |= 1<<i;
             }
         }
@@ -675,7 +675,7 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node, long *r_po
         for (i = PT_QU; i < PT_B_MAX; i++) {    /* write the data */
             if (r_poss[i]){
                 /*u*/ long  diff = pos - r_poss[i];
-                arb_assert(diff >= 0);
+                pt_assert(diff >= 0);
 #ifdef ARB_64
                 if (max_diff > 0xffffffff){         // long long / int  (bit[6] in flags2 is set; bit[7] is unset)
                     printf("Warning: max_diff > 0xffffffff is not tested.\n"); 
@@ -738,7 +738,7 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node, long *r_po
 
     PTD_set_object_to_saved_status(node,pos,mysize);
     pos += size-sizeof(PT_PNTR);                /* no father */
-    arb_assert(pos >= 0);
+    pt_assert(pos >= 0);
     return pos;
 }
 
@@ -794,7 +794,7 @@ long PTD_write_leafs_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos
             pos = PTD_write_node_to_disk(out,ptmain,node,r_poss,pos);
         }
     }
-    arb_assert(pos >= 0);
+    pt_assert(pos >= 0);
     return pos;
 }
 
@@ -815,19 +815,19 @@ void PTD_read_leafs_from_disk(char *fname,PTM2 *ptmain, POS_TREE **pnode) {
         bool big_db = false;;
         PT_READ_INT(main, i);
 #ifdef ARB_64
-        if (i == 0xffffffff) {                          // 0xffffffff signalizes that "last_obj" is stored
-            main                       -= 8;            // in the previous 8 byte (in a long long)
-            arb_assert(sizeof(PT_PNTR) == 8);           // 0xffffffff is used as a signal to be compatible with older pt-servers
-            PT_READ_PNTR(main, i);                      // this search tree can only be loaded at 64 Bit
+        if (i == 0xffffffff) {                      // 0xffffffff signalizes that "last_obj" is stored
+            main                      -= 8;         // in the previous 8 byte (in a long long)
+            pt_assert(sizeof(PT_PNTR) == 8);        // 0xffffffff is used as a signal to be compatible with older pt-servers
+            PT_READ_PNTR(main, i);                  // this search tree can only be loaded at 64 Bit
 
             big_db = true;
         }
 #else
         if (i<0) {
-            arb_assert(i == -1);                        // aka 0xffffffff
-            big_db = true;                              // not usable in 32-bit version (fails below)
+            pt_assert(i == -1);                     // aka 0xffffffff
+            big_db = true;                          // not usable in 32-bit version (fails below)
         }
-        arb_assert(i <= INT_MAX);
+        pt_assert(i <= INT_MAX);
 #endif
 
         // try to find info_area 
@@ -845,7 +845,7 @@ void PTD_read_leafs_from_disk(char *fname,PTM2 *ptmain, POS_TREE **pnode) {
             PT_READ_INT(main, magic); main += 4;
             PT_READ_CHAR(main, version); main++;
 
-            arb_assert(PT_SERVER_MAGIC>0 && PT_SERVER_MAGIC<INT_MAX);
+            pt_assert(PT_SERVER_MAGIC>0 && PT_SERVER_MAGIC<INT_MAX);
 
             if (magic == PT_SERVER_MAGIC) {
                 info_detected = true;
@@ -866,7 +866,7 @@ void PTD_read_leafs_from_disk(char *fname,PTM2 *ptmain, POS_TREE **pnode) {
 #endif // ARB_64
 
         if (!error) {
-            arb_assert(i >= 0);
+            pt_assert(i >= 0);
 
             *pnode             = (POS_TREE *)(i+buffer);
             ptmain->mode       = 0;

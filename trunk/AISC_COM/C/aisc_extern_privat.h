@@ -4,6 +4,9 @@
  *
  */
 
+#ifndef AISC_EXTERN_PRIVAT_H
+#define AISC_EXTERN_PRIVAT_H
+
 #ifndef P_
 # if defined(__STDC__) || defined(__cplusplus)
 #  define P_(s) s
@@ -38,3 +41,7 @@ char *aisc_get_keystring_dll_header P_((dll_header *x));
 #endif
 
 #undef P_
+
+#else
+#error aisc_extern_privat.h included twice
+#endif /* AISC_EXTERN_PRIVAT_H */

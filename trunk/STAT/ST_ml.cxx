@@ -89,7 +89,7 @@ void ST_rate_matrix::print() {
 
 #if 0
 
-GB_INLINE void ST_rate_matrix::mult(ST_base_vector * in,
+inline void ST_rate_matrix::mult(ST_base_vector * in,
                                     ST_base_vector * out)
 {
     int     i, j;
@@ -255,7 +255,7 @@ void ST_sequence_ml::partial_match(const AP_sequence *, long *, long *) const {
     // should be unused
 }
 
-GB_INLINE void ST_base_vector::check_overflow()
+inline void ST_base_vector::check_overflow()
 {
     double sum = 0.0;
     int    i;

@@ -9,11 +9,8 @@
 /*                                                             */
 /* =========================================================== */
 
-#include <string.h>
-#include <stdlib.h>
-
-#include <arbdb.h>
 #include <arbdbt.h>
+#include "gb_local.h"
 
 // get the container of a species key description
 GBDATA *GBT_get_changekey(GBDATA *gb_main, const char *key, const char *change_key_path) {

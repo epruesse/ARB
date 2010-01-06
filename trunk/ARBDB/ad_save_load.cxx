@@ -1,17 +1,20 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <string.h>
+// =============================================================== //
+//                                                                 //
+//   File      : ad_save_load.cxx                                  //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #include <unistd.h>
-/* #include <malloc.h> */
-#include <ctype.h>
 #include <sys/stat.h>
-#include <arpa/inet.h>
 #include <netinet/in.h>
 
-/*#include "arbdb.h"*/
-#include "adlocal.h"
-#include "admap.h"
+#include "gb_map.h"
+#include "gb_load.h"
+#include "gb_storage.h"
 
 GB_MAIN_TYPE *gb_main_array[GB_MAIN_ARRAY_SIZE];
 
@@ -45,6 +48,12 @@ char *gb_findExtension(char *path) {
  *
  */
 
+inline void STATIC_BUFFER(char*& strvar, int minlen) {
+    gb_assert(minlen > 0); 
+    if (strvar && (strlen(strvar) < (size_t)(minlen-1))) { freeset(strvar, NULL); }
+    if (!strvar) strvar=(char*)GB_calloc(minlen,1);
+}
+ 
 GB_CSTR gb_oldQuicksaveName(GB_CSTR path, int nr)
 {
     static char *qname = 0;
@@ -1360,7 +1369,4 @@ GB_ERROR gb_check_saveable(GBDATA *gbd,const char *path,const char *flags){
 void GB_disable_path(GBDATA *gbd, const char *path) {
     freeset(GB_MAIN(gbd)->disabled_path, path ? GBS_eval_env(path) : NULL);
 }
-
-
-
 

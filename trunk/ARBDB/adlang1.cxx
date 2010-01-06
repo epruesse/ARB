@@ -1,13 +1,21 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-/* #include <malloc.h> */
-#include <ctype.h>
+// =============================================================== //
+//                                                                 //
+//   File      : adlang1.cxx                                       //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include "adlocal.h"
-#include "arbdbt.h"
-#include "adGene.h"
+#include <cctype>
+
+#include <adGene.h>
+#include <arbdbt.h>
+
+#include "gb_aci.h"
+#include "gb_key.h"
+#include "gb_localdata.h"
 
 #define AWAR_TREE_REFRESH "tmp/focus/tree_refresh" // touch this awar to refresh the tree display
 
@@ -16,7 +24,7 @@
 static gb_export_sequence_cb get_export_sequence = 0;
 
 NOT4PERL void GB_set_export_sequence_hook(gb_export_sequence_cb escb) {
-    ad_assert(!get_export_sequence || !escb); // avoid unwanted overwrite
+    gb_assert(!get_export_sequence || !escb); // avoid unwanted overwrite
     get_export_sequence = escb;
 }
 
@@ -113,7 +121,7 @@ static int gbl_param_bit(const char *param_name, int def, const char *help_text,
 
 #define GBL_CHECK_FREE_PARAM(nr,cnt) do {       \
         if ((nr)+(cnt) >= GBL_MAX_ARGUMENTS) {  \
-            /* ad_assert(0); */                 \
+            /* gb_assert(0); */                 \
             return "max. parameters exceeded";  \
         }                                       \
     }while(0)
@@ -621,7 +629,7 @@ static GB_ERROR gbl_origin(GBL_command_arguments *args) {
             gb_origin = GEN_find_origin_organism(args->gb_ref, 0);
         }
         else {
-            ad_assert(strcmp(args->command, "origin_gene") == 0);
+            gb_assert(strcmp(args->command, "origin_gene") == 0);
             gb_origin = GEN_find_origin_gene(args->gb_ref, 0);
         }
 
@@ -892,7 +900,7 @@ static GB_ERROR gbl_string_convert(GBL_command_arguments *args)
                         last_was_alnum = 0;
                     }
                     break;
-                default : ad_assert(0); break;
+                default : gb_assert(0); break;
             }
         }
 
@@ -1016,7 +1024,7 @@ static GB_ERROR gbl_crop(GBL_command_arguments *args)
             while (pe >= p && strchr(chars_to_crop, pe[0]) != 0) { /* crop at end of line */
                 --pe;
             }
-            ad_assert(pe >= (p-1));
+            gb_assert(pe >= (p-1));
             pe[1] = 0;
         }
 
@@ -1295,7 +1303,7 @@ static GB_ERROR gbl_extract_words(GBL_command_arguments *args)
     GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
     for (i=0;i<args->cinput;i++) {         /* go through all in streams    */
         char *res = GBS_extract_words(args->vinput[i].str, args->vparam[0].str, len, 1);
-        ad_assert(res);
+        gb_assert(res);
         PASS_2_OUT(args, res);
     }
     return 0;
@@ -1314,7 +1322,7 @@ static GB_ERROR gbl_extract_sequence(GBL_command_arguments *args)
     GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
     for (i=0;i<args->cinput;i++) {         /* go through all in streams    */
         char *res = GBS_extract_words(args->vinput[i].str, args->vparam[0].str, len, 0);
-        ad_assert(res);
+        gb_assert(res);
         PASS_2_OUT(args, res);
     }
     return 0;
@@ -1565,7 +1573,7 @@ static void build_taxonomy_rek(GBT_TREE *node, GB_HASH *tax_hash, const char *pa
 static GB_HASH *cached_taxonomies = 0;
 
 static GB_BOOL is_cached_taxonomy(const char *key, long val, void *cl_ct) {
-    GBUSE(key);
+    // GBUSE(key);
     struct cached_taxonomy *ct1 = (struct cached_taxonomy *)val;
     struct cached_taxonomy *ct2 = (struct cached_taxonomy *)cl_ct;
 
@@ -1593,7 +1601,7 @@ static void flush_taxonomy_cb(GBDATA *gbd, int *cd_ct, GB_CB_TYPE cbt) {
     const char             *found = 0;
     GB_ERROR                error = 0;
 
-    GBUSE(cbt);
+    // GBUSE(cbt);
 
     found = tree_of_cached_taxonomy(ct);
 
@@ -1895,7 +1903,7 @@ static GB_ERROR gbl_taxonomy(GBL_command_arguments *args)
             }
         }
 
-        ad_assert(result || error);
+        gb_assert(result || error);
         if (result) PASS_2_OUT(args, result);
     }
     if (tree_name) free(tree_name);
@@ -1967,7 +1975,7 @@ static GB_ERROR gbl_export_sequence(GBL_command_arguments *args) {
                     size_t      len;
                     const char *seq = get_export_sequence(args->gb_ref, &len, &error);
 
-                    ad_assert(error || seq);
+                    gb_assert(error || seq);
                     
                     if (seq) PASS_2_OUT(args, GB_strduplen(seq, len));
                 }
@@ -2373,7 +2381,7 @@ static char *calc_diff(const char *seq, const char *filter, size_t flen, void *p
     // - replace all equal     positions by 'equal_char' (if != 0)
     // - replace all differing positions by 'diff_char'  (if != 0)
 
-    GBUSE(flen);
+    // GBUSE(flen);
 
     struct diff_params *param = (struct diff_params*)paramP;
     char equal_char = param->equalC;

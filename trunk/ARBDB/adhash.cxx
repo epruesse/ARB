@@ -1,26 +1,28 @@
-/********************************************************************************************
-            Some Hash/Cash Procedures
-********************************************************************************************/
+// =============================================================== //
+//                                                                 //
+//   File      : adhash.cxx                                        //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <stdio.h>
-#include <stdlib.h>
-/* #include <malloc.h> */
-#include <string.h>
-#include <ctype.h>
-#include <limits.h>
-#include <float.h>
+#include <climits>
+#include <cfloat>
+#include <cctype>
 
-#include "adlocal.h"
-/*#include "arbdb.h"*/
-
-        /* memory management */
+#include "gb_main.h"
+#include "gb_data.h"
+#include "gb_tune.h"
+#include "gb_hashindex.h"
 
 struct gbs_hash_entry {
     char *key;
     long val;
     struct gbs_hash_entry *next;
 };
-typedef struct gbs_hash_struct {
+struct GB_HASH {
     size_t  size;
     size_t  nelem;
     GB_CASE case_sens;
@@ -29,17 +31,17 @@ typedef struct gbs_hash_struct {
 
     void (*freefun)(long val); // function to free hash values (see GBS_create_dynaval_hash)
 
-} gbs_hash;
-
-struct gbs_hashi_entry {
-    long key;
-    long val;
-    struct gbs_hashi_entry *next;
 };
 
-struct gbs_hashi_struct {
-    long size;
-    struct gbs_hashi_entry **entries;
+struct numhash_entry {
+    long           key;
+    long           val;
+    numhash_entry *next;
+};
+
+struct GB_NUMHASH {
+    long            size;
+    numhash_entry **entries;
 };
 
 /* prime numbers */
@@ -189,7 +191,7 @@ static void calculate_primes_upto() {
 
 #endif /* CALC_PRIMES */
 
-long GBS_get_a_prime(long above_or_equal_this) {
+long gbs_get_a_prime(long above_or_equal_this) {
     // return a prime number above_or_equal_this
     // NOTE: it is not necessarily the next prime number, because we don't calculate all prime numbers!
 
@@ -232,7 +234,7 @@ long GBS_get_a_prime(long above_or_equal_this) {
         return sorted_primes[l];
     }
 
-    fprintf(stderr, "Warning: GBS_get_a_prime failed for value %li (performance bleed)\n", above_or_equal_this);
+    fprintf(stderr, "Warning: gbs_get_a_prime failed for value %li (performance bleed)\n", above_or_equal_this);
     gb_assert(0); // add more primes to sorted_primes[]
 
     return above_or_equal_this;
@@ -247,11 +249,11 @@ GB_HASH *GBS_create_hash(long user_size, GB_CASE case_sens) {
      *  ignore_case == 0 -> 'a != A'
      *  ignore_case != 0 -> 'a == A'
      */
-    
-    struct gbs_hash_struct *hs;
-    long                    size = GBS_get_a_prime(user_size); // use next prime number for hash size
 
-    hs            = (struct gbs_hash_struct *)GB_calloc(sizeof(struct gbs_hash_struct),1);
+    GB_HASH *hs;
+    long     size = gbs_get_a_prime(user_size);     // use next prime number for hash size
+
+    hs            = (GB_HASH*)GB_calloc(sizeof(*hs),1);
     hs->size      = size;
     hs->nelem     = 0;
     hs->case_sens = case_sens;
@@ -283,7 +285,7 @@ static void dump_access(const char *title, GB_HASH *hs, double mean_access) {
 
 void GBS_optimize_hash(GB_HASH *hs) {
     if (hs->nelem > hs->size) {                     /* hash is overfilled (even full is bad) */
-        size_t new_size = GBS_get_a_prime(hs->nelem*3);
+        size_t new_size = gbs_get_a_prime(hs->nelem*3);
 
 #if defined(DEBUG)
         dump_access("Optimizing filled hash", hs, GBS_hash_mean_access_costs(hs));
@@ -575,8 +577,8 @@ void GBS_free_hash(GB_HASH *hs)
 {
     if (!hs) return;
     GBS_free_hash_entries(hs);
-    free((char *)hs->entries);
-    free((char *)hs);
+    free(hs->entries);
+    free(hs);
 }
 
 /* determine hash quality */
@@ -720,7 +722,7 @@ long GBS_hash_count_value(GB_HASH *hs, long val) {
     long i;
     struct gbs_hash_entry *e;
 
-    ad_assert(val != 0); // counting zero values makes no sense (cause these are not stored in the hash)
+    gb_assert(val != 0); // counting zero values makes no sense (cause these are not stored in the hash)
 
     for (i = 0; i<e2; ++i) {
         for (e=hs->entries[i]; e; e=e->next) {
@@ -788,12 +790,12 @@ void GBS_hash_do_sorted_loop(GB_HASH *hs, gb_hash_loop_type func, gbs_hash_compa
         long new_val = func(mtab[i]->key, mtab[i]->val, client_data);
         if (new_val != mtab[i]->val) GBS_write_hash(hs, mtab[i]->key, new_val);
     }
-    free((char *)mtab);
+    free(mtab);
 }
 
 int GBS_HCF_sortedByKey(const char *k0, long v0, const char *k1, long v1) {
-    GBUSE(v0);
-    GBUSE(v1);
+    // GBUSE(v0);
+    // GBUSE(v1);
     return strcmp(k0, k1);
 }
 
@@ -801,8 +803,7 @@ int GBS_HCF_sortedByKey(const char *k0, long v0, const char *k1, long v1) {
                     Some Hash Procedures for [long,long]
 ********************************************************************************************/
 
-long gbs_hashi_index(long key, long size)
-{
+inline long gbs_numhash_index(long key, long size) {
     long x;
     x = (key * (long long)97)%size;     // make one multiplier a (long long) to avoid
     if (x<0) x+= size;                  // int overflow and abort if compiled with -ftrapv
@@ -810,20 +811,20 @@ long gbs_hashi_index(long key, long size)
 }
 
 
-GB_HASHI *GBS_create_hashi(long user_size) {
-    long size = GBS_get_a_prime(user_size);                     // use next prime number for hash size
-    struct gbs_hashi_struct *hs = (struct gbs_hashi_struct *)GB_calloc(sizeof(struct gbs_hashi_struct),1);
+GB_NUMHASH *GBS_create_numhash(long user_size) {
+    long        size = gbs_get_a_prime(user_size);  // use next prime number for hash size
+    GB_NUMHASH *hs   = (GB_NUMHASH *)GB_calloc(sizeof(*hs),1);
 
     hs->size    = size;
-    hs->entries = (struct gbs_hashi_entry **)GB_calloc(sizeof(struct gbs_hashi_entry *),(size_t)size);
+    hs->entries = (numhash_entry **)GB_calloc(sizeof(*(hs->entries)),(size_t)size);
 
     return hs;
 }
 
 
-long GBS_read_hashi(GB_HASHI *hs,long key) {
-    struct gbs_hashi_entry *e;
-    long                    i = gbs_hashi_index(key,hs->size);
+long GBS_read_numhash(GB_NUMHASH *hs,long key) {
+    numhash_entry *e;
+    long           i = gbs_numhash_index(key,hs->size);
 
     for(e = hs->entries[i]; e; e = e->next) {
         if (e->key==key) return e->val;
@@ -831,13 +832,13 @@ long GBS_read_hashi(GB_HASHI *hs,long key) {
     return 0;
 }
 
-long GBS_write_hashi(GB_HASHI *hs,long key,long val) {
-    struct gbs_hashi_entry *e;
-    long                    i2;
-    long                    i = gbs_hashi_index(key,hs->size);
+long GBS_write_numhash(GB_NUMHASH *hs,long key,long val) {
+    numhash_entry *e;
+    long           i2;
+    long           i = gbs_numhash_index(key,hs->size);
 
     if (!val) {
-        struct gbs_hashi_entry *oe;
+        numhash_entry *oe;
         oe = 0;
         for (e = hs->entries[i]; e; e = e->next) {
             if (e->key == key) {
@@ -846,7 +847,7 @@ long GBS_write_hashi(GB_HASHI *hs,long key,long val) {
                 } else {
                     hs->entries[i] = e->next;
                 }
-                gbm_free_mem((char *) e, sizeof(struct gbs_hashi_entry),GBM_HASH_INDEX);
+                gbm_free_mem((char *) e, sizeof(*e), GBM_HASH_INDEX);
                 return 0;
             }
             oe = e;
@@ -862,7 +863,7 @@ long GBS_write_hashi(GB_HASHI *hs,long key,long val) {
             return i2;
         }
     }
-    e = (struct gbs_hashi_entry *)gbm_get_mem(sizeof(struct gbs_hashi_entry),GBM_HASH_INDEX);
+    e = (numhash_entry *)gbm_get_mem(sizeof(*e), GBM_HASH_INDEX);
     e->next = hs->entries[i];
     e->key = key;
     e->val = val;
@@ -870,180 +871,18 @@ long GBS_write_hashi(GB_HASHI *hs,long key,long val) {
     return 0;
 }
 
-void GBS_free_hashi(GB_HASHI *hs) {
-    long                    i;
-    struct gbs_hashi_entry *e,*ee;
-    long                    e2 = hs->size;
+void GBS_free_numhash(GB_NUMHASH *hs) {
+    long e2 = hs->size;
 
-    for (i=0;i<e2;i++) {
-        for (e=hs->entries[i];e;e=ee) {
+    for (long i=0;i<e2;i++) {
+        numhash_entry *ee;
+        for (numhash_entry *e = hs->entries[i]; e; e=ee) {
             ee = e->next;
-            gbm_free_mem((char *)e,sizeof(struct gbs_hashi_entry),GBM_HASH_INDEX);
+            gbm_free_mem((char *)e,sizeof(*e),GBM_HASH_INDEX);
         }
     }
 
-    free ((char *)hs->entries);
-    free ((char *)hs);
+    free(hs->entries);
+    free(hs);
 }
 
-
-
-/********************************************************************************************
-            Cache Cache Cache
-********************************************************************************************/
-
-void gb_init_cache(GB_MAIN_TYPE *Main){
-    int i;
-    if (Main->cache.entries) return;
-    Main->cache.entries = (struct gb_cache_entry_struct *)GB_calloc(sizeof(struct gb_cache_entry_struct),
-                                                                    GB_MAX_CACHED_ENTRIES);
-    Main->cache.max_data_size = GB_TOTAL_CACHE_SIZE;
-    Main->cache.max_entries = GB_MAX_CACHED_ENTRIES;
-    for (i=0;i<GB_MAX_CACHED_ENTRIES-1;i++) {
-        Main->cache.entries[i].next = i+1;
-    }
-    Main->cache.firstfree_entry = 1;
-}
-
-char *gb_read_cache(GBDATA *gbd) {
-    GB_MAIN_TYPE *Main;
-    struct gb_cache_struct *cs;
-    long i;
-    long n,p;
-    if (!(i=gbd->cache_index)) return 0;
-    Main = GB_MAIN(gbd);
-    cs = &Main->cache;
-    n = cs->entries[i].next; p = cs->entries[i].prev;
-    /* remove entry from list */
-    if (i == cs->newest_entry) cs->newest_entry = n;
-    if (i == cs->oldest_entry) cs->oldest_entry = p;
-    cs->entries[n].prev = p;
-    cs->entries[p].next = n;
-    /* check validity */
-    if (GB_GET_EXT_UPDATE_DATE(gbd) > cs->entries[i].clock) {
-        freeset(cs->entries[i].data, NULL);
-        cs->sum_data_size -= cs->entries[i].sizeof_data;
-
-        gbd->cache_index = 0;
-
-        /* insert deleted entry in free list */
-        cs->entries[i].next = cs->firstfree_entry;
-        cs->firstfree_entry = i;
-        return 0;
-    }
-
-    /* insert entry on top of list */
-    cs->entries[i].next = cs->newest_entry;
-    cs->entries[cs->newest_entry].prev = i;
-    cs->newest_entry = i;
-    cs->entries[i].prev = 0;
-    if (!cs->oldest_entry) cs->oldest_entry = i;
-
-    return cs->entries[i].data;
-}
-
-void *gb_free_cache(GB_MAIN_TYPE *Main, GBDATA *gbd) {
-    struct gb_cache_struct *cs;
-    long i;
-    long n,p;
-    if (!(i=gbd->cache_index)) return 0;
-    cs = &Main->cache;
-    n = cs->entries[i].next; p = cs->entries[i].prev;
-    /* remove entry from list */
-    if (i == cs->newest_entry) cs->newest_entry = n;
-    if (i == cs->oldest_entry) cs->oldest_entry = p;
-    cs->entries[n].prev = p;
-    cs->entries[p].next = n;
-
-    /* free cache */
-    freeset(cs->entries[i].data, NULL);
-    cs->sum_data_size -= cs->entries[i].sizeof_data;
-
-    gbd->cache_index = 0;
-
-    /* insert deleted entry in free list */
-    cs->entries[i].next = cs->firstfree_entry;
-    cs->firstfree_entry = i;
-    return 0;
-}
-
-char *delete_old_cache_entries(struct gb_cache_struct *cs, long needed_size, long max_data_size)
-     /* call with max_data_size==0 to flush cache */
-{
-    long n,p;
-    long i;
-    char *data = 0;
-
-    while ( ( (!cs->firstfree_entry) || ( needed_size + cs->sum_data_size >= max_data_size))
-            && cs->oldest_entry) {
-        i = cs->oldest_entry;
-        n = cs->entries[i].next; p = cs->entries[i].prev;
-        /* remove entry from list */
-        if (i == cs->newest_entry) cs->newest_entry = n;
-        if (i == cs->oldest_entry) cs->oldest_entry = p;
-        cs->entries[n].prev = p;
-        cs->entries[p].next = n;
-
-        /* insert deleted entry in free list */
-        cs->entries[i].gbd->cache_index = 0;
-        cs->entries[i].next = cs->firstfree_entry;
-        cs->firstfree_entry = i;
-        /* delete all unused memory */
-        if (data || ( needed_size != cs->entries[i].sizeof_data)  ) {
-            free(cs->entries[i].data);
-        }else{
-            data = cs->entries[i].data;
-        }
-        cs->sum_data_size -= cs->entries[i].sizeof_data;
-        cs->entries[i].data = 0;
-    }
-    return data;
-}
-
-char *gb_flush_cache(GBDATA *gbd)
-{
-    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    struct gb_cache_struct *cs = &Main->cache;
-
-    delete_old_cache_entries(cs, 0, 0);
-    return 0;
-}
-
-char *gb_alloc_cache_index(GBDATA *gbd,long size) {
-    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    struct gb_cache_struct *cs = &Main->cache;
-    long i;
-    char *data = 0;
-
-    data = delete_old_cache_entries(cs, size, cs->max_data_size); /* delete enough old memory */
-
-    i = cs->firstfree_entry;
-    if (!i) {
-        GB_internal_error("internal cache error");
-        return 0;
-    }
-
-    /* get free element */
-    cs->firstfree_entry = cs->entries[i].next;
-    /* insert it on top of used list */
-    cs->entries[i].next = cs->newest_entry;
-    cs->entries[cs->newest_entry].prev = i;
-    cs->newest_entry = i;
-    cs->entries[i].prev = 0;
-    if (!cs->oldest_entry) cs->oldest_entry = i;
-
-    /* create data */
-    cs->sum_data_size += size;
-    if (!data) data = (char *) malloc((int)size);
-    cs->entries[i].sizeof_data = (int)size;
-    cs->entries[i].data = data;
-    cs->entries[i].gbd = gbd;
-    gbd->cache_index = (short)i;
-
-    return data;
-}
-
-char *GB_set_cache_size(GBDATA *gbd, long size){
-    GB_MAIN(gbd)->cache.max_data_size = size;
-    return 0;
-}

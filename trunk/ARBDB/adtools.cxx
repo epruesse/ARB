@@ -8,11 +8,10 @@
 /*                                                              */
 /* ============================================================ */
 
-#include <string.h>
-#include <stdlib.h>
+#include <arbdbt.h>
 
-#include "adlocal.h"
-#include "arbdbt.h"
+#include "gb_data.h"
+#include "gb_main.h"
 
 GBDATA *GBT_find_or_create(GBDATA *Main,const char *key,long delete_level)
 {
@@ -37,17 +36,17 @@ GBDATA *GBT_find_or_create(GBDATA *Main,const char *key,long delete_level)
  */
 
 char *GBT_get_default_helix(GBDATA *gb_main) {
-    GBUSE(gb_main);
+    // GBUSE(gb_main);
     return strdup("HELIX");
 }
 
 char *GBT_get_default_helix_nr(GBDATA *gb_main) {
-    GBUSE(gb_main);
+    // GBUSE(gb_main);
     return strdup("HELIX_NR");
 }
 
 char *GBT_get_default_ref(GBDATA *gb_main) {
-    GBUSE(gb_main);
+    // GBUSE(gb_main);
     return strdup("ECOLI");
 }
 
@@ -163,7 +162,7 @@ static long gbs_scan_db_insert(const char *key, long val, void *cd_insert_data) 
 }
 
 static int gbs_scan_db_compare(const void *left, const void *right, void *unused){
-    GBUSE(unused);
+    // GBUSE(unused);
     return strcmp((GB_CSTR)left+1, (GB_CSTR)right+1);
 }
 
@@ -213,8 +212,8 @@ char **GBT_scan_db(GBDATA *gbd, const char *datapath) {
 static void new_gbt_message_created_cb(GBDATA *gb_pending_messages, int *cd, GB_CB_TYPE cbt) {
     static int avoid_deadlock = 0;
 
-    GBUSE(cd);
-    GBUSE(cbt);
+    // GBUSE(cd);
+    // GBUSE(cbt);
 
     if (!avoid_deadlock) {
         GBDATA *gb_msg;
@@ -532,7 +531,7 @@ GB_ERROR GBT_write_float(GBDATA *gb_container, const char *fieldpath, double con
 
 GBDATA *GB_test_link_follower(GBDATA *gb_main,GBDATA *gb_link,const char *link){
     GBDATA *linktarget = GB_search(gb_main,"tmp/link/string",GB_STRING);
-    GBUSE(gb_link);
+    // GBUSE(gb_link);
     GB_write_string(linktarget,GBS_global_string("Link is '%s'",link));
     return GB_get_father(linktarget);
 }

@@ -1,9 +1,19 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+// =============================================================== //
+//                                                                 //
+//   File      : adseqcompr.cxx                                    //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <adlocal.h>
 #include <arbdbt.h>
+
+#include "gb_tune.h"
+#include "gb_main.h"
+#include "gb_data.h"
+#include "gb_key.h"
 
 /* -------------------------------------------------------------------------------- */
 
@@ -70,7 +80,7 @@ void g_b_Consensus_add(GB_Consensus *gcon, unsigned char *seq, long seq_len){
     int            eq_count;
     const int      max_priority = 255/MAX_SEQUENCE_PER_MASTER; /* No overflow possible */
 
-    ad_assert(max_priority >= 1);
+    gb_assert(max_priority >= 1);
 
     if (seq_len > gcon->len) seq_len = gcon->len;
 
@@ -217,7 +227,7 @@ static int set_masters_with_sons(GB_CTREE *node, int wantedSons, int *mcount) {
     if (!node->is_leaf) {
         if (node->sons == wantedSons) {
             /* insert new master */
-            ad_assert(node->index == -1);
+            gb_assert(node->index == -1);
             node->index = *mcount;
             (*mcount)++;
 
@@ -283,15 +293,15 @@ static void distribute_masters(GB_CTREE *tree, int *mcount, int *max_masters) {
         int maxSons = set_masters_with_sons(tree, wantedSons, mcount);
         wantedSons = maxSons;
     }
-    ad_assert(tree->sons == 1);
+    gb_assert(tree->sons == 1);
 
-    ad_assert(tree->index != -1);
+    gb_assert(tree->index != -1);
     *max_masters = maxCompressionSteps(tree);
 }
 
 /* -------------------------------------------------------------------------------- */
 
-static GB_INLINE long g_b_read_number2(const unsigned char **s) {
+inline long g_b_read_number2(const unsigned char **s) {
     unsigned int c0,c1,c2,c3,c4;
     c0 = (*((*s)++));
     if (c0 & 0x80){
@@ -317,7 +327,7 @@ static GB_INLINE long g_b_read_number2(const unsigned char **s) {
     }
 }
 
-static GB_INLINE void g_b_put_number2(int i, unsigned char **s) {
+inline void g_b_put_number2(int i, unsigned char **s) {
     int j;
     if (i< 0x80 ){ *((*s)++)=i;return; }
     if (i<0x4000) {
@@ -470,7 +480,7 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, const ch
                     }
                 }
 
-                ad_assert(mastercount>0);
+                gb_assert(mastercount>0);
             }
 
             if (!warning) {
@@ -623,7 +633,7 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, const ch
                         if (mi>0) { /*  master available */
                             GBDATA *gbd = masters[si]->gbd;
 
-                            ad_assert(mi>si); /* we don't want a recursion, because we cannot uncompress sequence compressed masters, Main->gb_master_data is wrong */
+                            gb_assert(mi>si); /* we don't want a recursion, because we cannot uncompress sequence compressed masters, Main->gb_master_data is wrong */
 
                             if (gb_read_nr(gbd) != si) { /* Check database */
                                 GB_internal_error("Sequence Compression: Master Index Conflict");
@@ -767,7 +777,7 @@ void GBT_compression_test(void *dummy, GBDATA *gb_main) {
     char     *ali_name  = GBT_get_default_alignment(gb_main);
     char     *tree_name = GBT_read_string(gb_main, "focus/tree_name");
 
-    GBUSE(dummy);
+    // GBUSE(dummy);
     if (!ali_name || !tree_name) error = GB_await_error();
 
     error = GB_end_transaction(gb_main, error);
@@ -836,7 +846,7 @@ char *g_b_uncompress_single_sequence_by_master(const char *s, const char *master
     *(dest++) = 0;              /* NULL of NULL terminated string */
 
     *new_size = dest-buffer;
-    ad_assert(size == *new_size); // buffer overflow
+    gb_assert(size == *new_size); // buffer overflow
 
     return buffer;
 }
@@ -876,7 +886,7 @@ char *gb_uncompress_by_sequence(GBDATA *gbd, const char *ss,long size, GB_ERROR 
             if (gb_master){
                 const char *master = GB_read_char_pntr(gb_master); /* make sure that this is not a buffer !!! */
 
-                ad_assert((GB_read_string_count(gb_master)+1) == size); // size mismatch between master and slave
+                gb_assert((GB_read_string_count(gb_master)+1) == size); // size mismatch between master and slave
                 dest = g_b_uncompress_single_sequence_by_master(ss, master, size, new_size);
             }
             else {

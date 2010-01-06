@@ -1,7 +1,14 @@
-#include <stdio.h>
-#include "arbdb.h"
-#include "arbdbt.h"
+// =============================================================== //
+//                                                                 //
+//   File      : arbdbpp.cxx                                       //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
+#include "gb_local.h"
 
 GB_transaction::GB_transaction(GBDATA *gb_main)
     : ta_main(gb_main)
@@ -52,11 +59,11 @@ GB_transaction::~GB_transaction() {
         if (error) {
             fprintf(stderr, "Error while closing transaction: %s\n", error);
             gb_assert(0); // you need to manually use close()
+        }
     }
 }
-}
 
 
-int GB_info(struct gb_data_base_type2 *gbd){
+int GB_info(GBCONTAINER *gbd){
     return GB_info((GBDATA *)gbd);
 }

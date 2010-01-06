@@ -1107,7 +1107,7 @@ static void createGroupFromSelected(GB_CSTR group_name, GB_CSTR field_name, GB_C
                 GBDATA *gb_field = GB_search(gb_species, field_name, GB_FIND);
 
                 if (gb_field) { // field was found
-                    int type = gb_field->flags.type;
+                    GB_TYPES type = GB_read_type(gb_field);
                     if (type==GB_STRING) {
                         char *found_content = GB_read_as_string(gb_field);
                         move_object = strncmp(found_content, field_content, SIGNIFICANT_FIELD_CHARS)==0;
@@ -1200,7 +1200,7 @@ static void group_species(int use_field, AW_window *use_as_main_window) {
                     }
 
                     if (gb_field) {
-                        int type = gb_field->flags.type;
+                        GB_TYPES type = GB_read_type(gb_field);
 
                         if (type==GB_STRING) {
                             char   *field_content     = GB_read_as_string(gb_field);
@@ -2002,7 +2002,8 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode) {
                                         aw_status(fieldName);
                                         GBDATA *gb_field = GB_search(sl->species, fieldName, GB_FIND);
                                         e4_assert(gb_field); // field has to exist, cause it was found before
-                                        int type         = gb_field->flags.type; //GB_TYPE(gb_field);
+                                        
+                                        GB_TYPES type = GB_read_type(gb_field);
                                         if (type==GB_STRING) { // we only merge string fields
                                             int i;
                                             int doneSpecies = 0;

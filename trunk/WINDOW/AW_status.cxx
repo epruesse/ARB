@@ -174,7 +174,7 @@ static ssize_t safe_write(int fd, const char *buf, int count) {
         return -1;
     }
 
-    gb_assert(count>0); // write nothing - bad idea
+    aw_assert(count>0); // write nothing - bad idea
 
     ssize_t result = -1;
     {
@@ -1697,7 +1697,7 @@ static char *get_full_qualified_help_file_name(const char *helpfile, bool path_f
                 int devel_size = GB_size_of_file(devel_source);
                 int gen_size   = GB_size_of_file(gen_source);
 
-                gb_assert(devel_size <= 0 || gen_size <= 0); // only one of them shall exist
+                aw_assert(devel_size <= 0 || gen_size <= 0); // only one of them shall exist
 
                 if (gen_size>0) {
                     result = GBS_global_string("%s", gen_source); // edit generated doc
@@ -2162,5 +2162,5 @@ void AW_ERROR( const char *templat, ...) {
     fprintf(stderr,"%s\n",buffer);
 
     aw_message(buffer);
-    gb_assert(0);
+    aw_assert(0);
 }
