@@ -1,24 +1,20 @@
-/* ============================================================ */
-/*                                                              */
-/*   File      : adcolumns.c                                    */
-/*   Purpose   : insert/delete columns                          */
-/*                                                              */
-/*   Institute of Microbiology (Technical University Munich)    */
-/*   www.arb-home.de                                            */
-/*                                                              */
-/* ============================================================ */
+// =============================================================== //
+//                                                                 //
+//   File      : adcolumns.cxx                                     //
+//   Purpose   : insert/delete columns                             //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include <arbdbt.h>
 #include <adGene.h>
 
 #include "gb_local.h"
 
-
-/* ----------------------- */
-/*      insert/delete      */
-
-static char *insDelBuffer = 0;
-static size_t insDelBuffer_size;
+static char   *insDelBuffer = 0;
+static size_t  insDelBuffer_size;
 
 static void free_insDelBuffer() {
     freeset(insDelBuffer, 0);
@@ -50,10 +46,10 @@ static const char *gbt_insert_delete(const char *source, long srclen, long destl
     srclen  *= mod;
     destlen *= mod;
 
-    if (!destlen) destlen                       = srclen; /* if no destlen is set then keep srclen */
-    if ((nchar<0) && (pos-nchar>destlen)) nchar = pos-destlen; /* clip maximum characters to delete at end of array */
+    if (!destlen) destlen                       = srclen; // if no destlen is set then keep srclen
+    if ((nchar<0) && (pos-nchar>destlen)) nchar = pos-destlen; // clip maximum characters to delete at end of array
 
-    if (destlen == srclen && (pos>srclen || nchar == 0)) { /* length stays same and clip-range is empty or behind end of sequence */
+    if (destlen == srclen && (pos>srclen || nchar == 0)) { // length stays same and clip-range is empty or behind end of sequence
         /* before 26.2.09 the complete data was copied in this case - but nevertheless NULL(=failure) was returned.
          * I guess this was some test accessing complete data w/o writing anything back to DB,
          * but AFAIK it was not used anywhere --ralf
@@ -61,7 +57,7 @@ static const char *gbt_insert_delete(const char *source, long srclen, long destl
         result = NULL;
     }
     else {
-        long newlen = destlen+nchar;     /* length of result (w/o trailing zero-byte) */
+        long newlen = destlen+nchar;                // length of result (w/o trailing zero-byte)
         if (newlen == 0) {
             result = "";
         }
@@ -77,27 +73,27 @@ static const char *gbt_insert_delete(const char *source, long srclen, long destl
             char *dest = insDelBuffer;
             gb_assert(dest);
 
-            if (pos>srclen) {   /* insert/delete happens inside appended range */
+            if (pos>srclen) {                       // insert/delete happens inside appended range
                 insert_what = insert_tail;
-                pos         = srclen; /* insert/delete directly after source, to avoid illegal access below */
+                pos         = srclen;               // insert/delete directly after source, to avoid illegal access below
             }
 
             gb_assert(pos >= 0);
-            if (pos>0) { /* copy part left of pos */
+            if (pos>0) {                            // copy part left of pos
                 memcpy(dest, source, (size_t)pos);
                 dest   += pos;
                 source += pos; srclen -= pos;
             }
 
-            if (nchar>0) {                          /* insert */
+            if (nchar>0) {                          // insert
                 memset(dest, insert_what, (size_t)nchar);
                 dest += nchar;
             }
-            else if (nchar<0) {                   /* delete */
+            else if (nchar<0) {                     // delete
                 source += -nchar; srclen -= -nchar;
             }
 
-            if (srclen>0) { /* copy rest of source */
+            if (srclen>0) {                         // copy rest of source
                 memcpy(dest, source, (size_t)srclen);
                 dest   += srclen;
                 source += srclen; srclen = 0;
@@ -106,16 +102,16 @@ static const char *gbt_insert_delete(const char *source, long srclen, long destl
             long rest = newlen-(dest-insDelBuffer);
             gb_assert(rest >= 0);
 
-            if (rest>0) { /* append tail */
+            if (rest>0) {                           // append tail
                 memset(dest, insert_tail, rest);
                 dest += rest;
             }
 
-            if (extraByte) dest[0] = 0; /* append zero byte (used for strings) */
+            if (extraByte) dest[0] = 0;             // append zero byte (used for strings)
 
             result = insDelBuffer;
         }
-        *newlenPtr = newlen/mod; /* report result length */
+        *newlenPtr = newlen/mod;                    // report result length
     }
     return result;
 }
@@ -136,15 +132,15 @@ static GB_BOOL insdel_shall_be_applied_to(GBDATA *gb_data, enum insDelTarget tar
     GB_BOOL     apply = GB_TRUE;
     const char *key   = GB_read_key_pntr(gb_data);
 
-    if (key[0] == '_') {        // don't apply to keys starting with '_'
+    if (key[0] == '_') {                            // don't apply to keys starting with '_'
         switch (target) {
             case IDT_SECSTRUCT:
             case IDT_SPECIES:
                 apply = GB_FALSE;
                 break;
-                
+
             case IDT_SAI:
-                if (strcmp(key, "_REF") != 0) { // despite key is _REF
+                if (strcmp(key, "_REF") != 0) {     // despite key is _REF
                     apply = GB_FALSE;
                 }
                 break;
@@ -155,11 +151,11 @@ static GB_BOOL insdel_shall_be_applied_to(GBDATA *gb_data, enum insDelTarget tar
 }
 
 struct insDel_params {
-    char       *ali_name;       // name of alignment
-    long        ali_len;        // wanted length of alignment
-    long        pos;            // start position of insert/delete
-    long        nchar;          // number of elements to insert/delete
-    const char *delete_chars;   // characters allowed to delete (array with 256 entries, value == 0 means deletion allowed)
+    char       *ali_name;                           // name of alignment
+    long        ali_len;                            // wanted length of alignment
+    long        pos;                                // start position of insert/delete
+    long        nchar;                              // number of elements to insert/delete
+    const char *delete_chars;                       // characters allowed to delete (array with 256 entries, value == 0 means deletion allowed)
 };
 
 
@@ -179,7 +175,7 @@ static GB_ERROR gbt_insert_character_gbd(GBDATA *gb_data, enum insDelTarget targ
         if (type >= GB_BITS && type != GB_LINK) {
             long size = GB_read_count(gb_data);
 
-            if (params->ali_len != size || params->nchar != 0) { /* nothing would change */
+            if (params->ali_len != size || params->nchar != 0) { // nothing would change
                 if (insdel_shall_be_applied_to(gb_data, target)) {
                     GB_CSTR source      = 0;
                     long    mod         = sizeof(char);
@@ -197,15 +193,15 @@ static GB_ERROR gbt_insert_character_gbd(GBDATA *gb_data, enum insDelTarget targ
                             insert_tail = '.';
 
                             if (source) {
-                                if (nchar > 0) { /* insert */
-                                    if (pos<size) { /* otherwise insert pos is behind (old and too short) sequence -> dots are inserted at tail */
-                                        if ((pos>0 && source[pos-1] == '.') || source[pos] == '.') { /* dot at insert position? */
-                                            insert_what = '.'; /* insert dots */
+                                if (nchar > 0) {    // insert
+                                    if (pos<size) { // otherwise insert pos is behind (old and too short) sequence -> dots are inserted at tail
+                                        if ((pos>0 && source[pos-1] == '.') || source[pos] == '.') { // dot at insert position?
+                                            insert_what = '.'; // insert dots
                                         }
                                     }
                                 }
-                                else { /* delete */
-                                    long    after        = pos+(-nchar); /* position after deleted part */
+                                else {              // delete
+                                    long    after        = pos+(-nchar); // position after deleted part
                                     long    p;
                                     GB_CSTR delete_chars = params->delete_chars;
 

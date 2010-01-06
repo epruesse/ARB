@@ -36,9 +36,8 @@ struct g_b_undo_entry_struct {
     short                  type;
     short                  flag;
 
-    GBDATA *source;
+    GBDATA *source;                                 // The original(changed) element or father(of deleted)
     int     gbm_index;
-    /* The original(changed element) or father */
     long    sizeof_this;
     union {
         gb_transaction_save *ts;
@@ -48,23 +47,23 @@ struct g_b_undo_entry_struct {
 
 struct g_b_undo_header_struct {
     g_b_undo_struct *stack;
-    long             sizeof_this; /* the size of all existing undos */
-    long             nstack;    /* number of available undos */
+    long             sizeof_this;                   // the size of all existing undos
+    long             nstack;                        // number of available undos
 };
 
 struct g_b_undo_struct {
     g_b_undo_header_struct *father;
     g_b_undo_entry_struct  *entries;
     g_b_undo_struct        *next;
-    long                    time_of_day; /* the begin of the transaction */
-    long                    sizeof_this; /* the size of one undo */
+    long                    time_of_day;            // the begin of the transaction
+    long                    sizeof_this;            // the size of one undo
 };
 
 struct g_b_undo_mgr_struct {
     long                    max_size_of_all_undos;
     g_b_undo_struct        *valid_u;
-    g_b_undo_header_struct *u;  /* undo */
-    g_b_undo_header_struct *r;  /* redo */
+    g_b_undo_header_struct *u;                      // undo
+    g_b_undo_header_struct *r;                      // redo
 };
 
 #else

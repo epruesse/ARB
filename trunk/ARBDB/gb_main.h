@@ -71,7 +71,7 @@ struct gb_cache_struct {
 struct GB_MAIN_TYPE {
     int transaction;
     int aborted_transaction;
-    int local_mode;             // GB_TRUE = server, GB_FALSE = client
+    int local_mode;                                 // GB_TRUE = server, GB_FALSE = client
     int client_transaction_socket;
 
     gbcmc_comm    *c_link;
@@ -88,12 +88,12 @@ struct GB_MAIN_TYPE {
     gb_cache_struct      cache;
     int                  compression_mask;
 
-    int            keycnt;      /* first non used key */
-    long           sizeofkeys;  /* malloc size */
-    long           first_free_key; /* index of first gap */
+    int            keycnt;                          // first non used key
+    long           sizeofkeys;                      // malloc size
+    long           first_free_key;                  // index of first gap
     gb_key_struct *keys;
     GB_HASH       *key_2_index_hash;
-    long           key_clock;   /* trans. nr. of last change */
+    long           key_clock;                       // trans. nr. of last change
 
     char         *keys_new[256];
     unsigned int  last_updated;
@@ -119,14 +119,14 @@ struct GB_MAIN_TYPE {
 
     gb_close_callback_struct *close_callbacks;
 
-    gb_callback_list *cbl;      /* contains change-callbacks (after change, until callbacks are done) */
+    gb_callback_list *cbl;                          // contains change-callbacks (after change, until callbacks are done)
     gb_callback_list *cbl_last;
 
-    gb_callback_list *cbld;     /* contains delete-callbacks (after delete, until callbacks are done) */
+    gb_callback_list *cbld;                         // contains delete-callbacks (after delete, until callbacks are done)
     gb_callback_list *cbld_last;
 
-    gb_user_struct    *users[GB_MAX_USERS]; /* user 0 is server */
-    gb_project_struct *projects[GB_MAX_PROJECTS]; /* projects */
+    gb_user_struct    *users[GB_MAX_USERS];         // user 0 is server
+    gb_project_struct *projects[GB_MAX_PROJECTS];   // projects
 
     gb_user_struct    *this_user;
     gb_project_struct *this_project;

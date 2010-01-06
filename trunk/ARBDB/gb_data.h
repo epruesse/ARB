@@ -1,7 +1,7 @@
 // =============================================================== //
 //                                                                 //
 //   File      : gb_data.h                                         //
-//   Purpose   : GBDATA/GBCONTAINER                                 //
+//   Purpose   : GBDATA/GBCONTAINER                                //
 //                                                                 //
 //   Institute of Microbiology (Technical University Munich)       //
 //   http://www.arb-home.de/                                       //
@@ -69,33 +69,33 @@ struct gb_db_extended {
 
 // --------------------------------------------------------------------------------
 
-struct gb_flag_types { // public flags
+struct gb_flag_types {                                                  // public flags
     unsigned int type:4;
     unsigned int security_delete:3;
     unsigned int security_write:3;
     unsigned int security_read:3;
     unsigned int compressed_data:1;
-    unsigned int unused:1;                          // last bit saved!
+    unsigned int unused:1;                                              // last bit saved!
     unsigned int user_flags:8;
-    unsigned int temporary:1;                       // ==1 -> don't save entry
+    unsigned int temporary:1;                                           // ==1 -> don't save entry
     unsigned int saved_flags:8;
 };
 
-struct gb_flag_types2 {     /* private flags, abortable */
-    /* uncritical section, undoable */
+struct gb_flag_types2 {                                                 // private flags, abortable
+    // uncritical section, undoable
     unsigned int last_updated:8;
-    unsigned int usr_ref:7;     /* for user access  */
-    /* critic section, do not update any below */
+    unsigned int usr_ref:7;                                             // for user access
+    // critic section, do not update any below
     unsigned int folded_container:1;
-    unsigned int update_in_server:1; /* already informed */
-    unsigned int extern_data:1; /* data ref. by pntr*/
-    unsigned int header_changed:1; /* used by container*/
-    unsigned int gbm_index:8;   /* memory section*/
-    unsigned int tisa_index:1;  /* this should be indexed */
-    unsigned int is_indexed:1;  /* this db. field is indexed*/
+    unsigned int update_in_server:1;                                    // already informed
+    unsigned int extern_data:1;                                         // data ref. by pntr
+    unsigned int header_changed:1;                                      // used by container
+    unsigned int gbm_index:8;                                           // memory section
+    unsigned int tisa_index:1;                                          // this should be indexed
+    unsigned int is_indexed:1;                                          // this db. field is indexed
 };
 
-struct gb_flag_types3 {     /* user and project flags (public); not abortable !!! */
+struct gb_flag_types3 {                                                 // user and project flags (public); not abortable !!!
     unsigned int project:8;
     unsigned int unused:24;
 };
@@ -103,10 +103,10 @@ struct gb_flag_types3 {     /* user and project flags (public); not abortable !!
 // --------------------------------------------------------------------------------
 
 struct gb_data_list {
-    GB_REL_HLS rel_header;      /* Typ: (struct gb_header_list_struct *) */
+    GB_REL_HLS rel_header;
     int        headermemsize;
-    int        size;            /* number of valid items */
-    int        nheader;         /* size + deleted items */
+    int        size;                                                    // number of valid items
+    int        nheader;                                                 // size + deleted items
 };
 
 inline gb_header_list_struct *GB_DATA_LIST_HEADER(gb_data_list& dl) {
@@ -126,9 +126,9 @@ struct GBDATA {
     gb_flag_types     flags;
     gb_flag_types2    flags2;
     // member above are same as in GBCONTAINER
-    
+
     gb_data_base_type_union info;
-    int                     cache_index; /* @@@ should be a member of gb_db_extended */
+    int                     cache_index;                                // @@@ should be a member of gb_db_extended
 };
 
 struct GBCONTAINER {
@@ -150,8 +150,8 @@ struct GBCONTAINER {
                                      * >0   index */
     long header_update_date;
 
-    GB_MAIN_IDX main_idx;       /* Typ: (GB_MAIN_TYPE *) */
-    GB_REL_IFS  rel_ifs;        /* Typ: (struct gb_index_files_struct *) */
+    GB_MAIN_IDX main_idx; 
+    GB_REL_IFS  rel_ifs; 
 
 };
 

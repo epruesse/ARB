@@ -1,16 +1,13 @@
-/*  ====================================================================  */
-/*                                                                        */
-/*    File      : adGene.c                                                */
-/*    Purpose   : Basic gene access functions                             */
-/*                                                                        */
-/*                                                                        */
-/*  Coded by Ralf Westram (coder@reallysoft.de) in July 2002              */
-/*  Copyright Department of Microbiology (Technical University Munich)    */
-/*                                                                        */
-/*  Visit our web site at: http://www.arb-home.de/                        */
-/*                                                                        */
-/*                                                                        */
-/*  ====================================================================  */
+// =============================================================== //
+//                                                                 //
+//   File      : adGene.cxx                                        //
+//   Purpose   : Basic gene access functions                       //
+//                                                                 //
+//   Coded by Ralf Westram (coder@reallysoft.de) in July 2002      //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include <adGene.h>
 #include <arbdbt.h>
@@ -96,7 +93,7 @@ GBDATA* GEN_create_nonexisting_gene(GBDATA *gb_species, const char *name) {
 GBDATA* GEN_find_or_create_gene_rel_gene_data(GBDATA *gb_gene_data, const char *name) {
     GBDATA *gb_gene = 0;
 
-    /* Search for a gene, when gene does not exist create it */
+    // Search for a gene, when gene does not exist create it
     if (!name || !name[0]) {
         GB_export_error("Missing gene name");
     }
@@ -147,9 +144,8 @@ GBDATA *GEN_next_marked_gene(GBDATA *gb_gene) {
     return GB_next_marked(gb_gene,"gene");
 }
 
-/* ----------------------- */
-/*      gene position      */
-/* ----------------------- */
+// ----------------------
+//      gene position
 
 static struct GEN_position *lastFreedPosition = 0;
 
@@ -386,7 +382,7 @@ GB_ERROR GEN_write_position(GBDATA *gb_gene, const struct GEN_position *pos) {
     }
 
 #if defined(DEBUG)
-    /* test data */
+    // test data
     if (!error) {
         for (p = 0; p<pos->parts; ++p) {
             char c;
@@ -399,7 +395,7 @@ GB_ERROR GEN_write_position(GBDATA *gb_gene, const struct GEN_position *pos) {
             }
         }
     }
-#endif /* DEBUG */
+#endif // DEBUG
 
     if (!error) {
         if (pos->parts == 1) {
@@ -505,7 +501,7 @@ void GEN_sortAndMergeLocationParts(struct GEN_position *location) {
     for (p = 0; p<parts; ++p) {
         printf("  [%i] %i - %i %i\n", p, location->start_pos[p], location->stop_pos[p], (int)(location->complement[p]));
     }
-#endif /* DEBUG */
+#endif // DEBUG
     
     i = 0;
     for (p = 1; p<parts; p++) {
@@ -528,7 +524,7 @@ void GEN_sortAndMergeLocationParts(struct GEN_position *location) {
     for (p = 0; p<parts; ++p) {
         printf("  [%i] %i - %i %i\n", p, location->start_pos[p], location->stop_pos[p], (int)(location->complement[p]));
     }
-#endif /* DEBUG */
+#endif // DEBUG
 
     free(idx);
 }
@@ -573,9 +569,8 @@ GB_ERROR GEN_organism_not_found(GBDATA *gb_pseudo) {
 
 // @@@ FIXME: missing: GEN_gene_not_found (like GEN_organism_not_found)
 
-/* ---------------------------------- */
-/*      searching pseudo species      */
-/* ---------------------------------- */
+// ------------------------------
+//      search pseudo species
 
 static const char *pseudo_species_hash_key(const char *organism_name, const char *gene_name) {
     return GBS_global_string("%s*%s", organism_name, gene_name);
@@ -636,9 +631,8 @@ GBDATA *GEN_find_pseudo_species(GBDATA *gb_main, const char *organism_name, cons
     return gb_pseudo;
 }
 
-/* --------------------------- */
-/*      searching origins      */
-/* --------------------------- */
+// -----------------------
+//      search origins
 
 GBDATA *GEN_find_origin_organism(GBDATA *gb_pseudo, GB_HASH *organism_hash) {
     // parameter organism_hash:
@@ -723,16 +717,13 @@ GBDATA* GEN_next_marked_pseudo_species(GBDATA *gb_species) {
     return gb_species;
 }
 
-
-
-/* ------------------------ */
-/*        organisms         */
-/* ------------------------ */
+// ------------------
+//      organisms
 
 GB_BOOL GEN_is_organism(GBDATA *gb_species) {
-    gb_assert(GEN_is_genome_db(GB_get_root(gb_species), -1)); /* assert this is a genome db */
-    /* otherwise it is an error to use GEN_is_organism (or its callers)!!!! */
-    
+    gb_assert(GEN_is_genome_db(GB_get_root(gb_species), -1)); // assert this is a genome db
+    // otherwise it is an error to use GEN_is_organism (or its callers)!!!!
+
     return GB_entry(gb_species, GENOM_ALIGNMENT) != 0;
 }
 

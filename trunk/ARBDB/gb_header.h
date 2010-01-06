@@ -17,16 +17,16 @@
 
 
 struct gb_header_flags {
-    unsigned int flags:GB_MAX_USERS; /* public */
-    unsigned int key_quark:24;  /* == 0 -> invalid */
+    unsigned int flags:GB_MAX_USERS;                // public
+    unsigned int key_quark:24;                      // == 0 -> invalid
     unsigned int changed:3;
-    unsigned int ever_changed:1; /* is this element ever changed */
+    unsigned int ever_changed:1;                    // is this element ever changed
 } ;
 
-struct gb_header_list_struct {  /* public fast flags */
+struct gb_header_list_struct {                      // public fast flags
     struct gb_header_flags flags;
 
-    GB_REL_GBDATA rel_hl_gbd;   /* Typ: (GBDATA *) */
+    GB_REL_GBDATA rel_hl_gbd;
     /* pointer to data
        if 0 & !key_index -> free data
        if 0 & key_index -> data only in server */

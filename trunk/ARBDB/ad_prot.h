@@ -409,7 +409,7 @@ GBDATA *GEN_next_marked_organism(GBDATA *gb_organism);
 char *GEN_global_gene_identifier(GBDATA *gb_gene, GBDATA *gb_organism);
 
 /* adcompr.cxx */
-GB_BOOL GB_is_directory_compressed(GBDATA *gbd);
+GB_BOOL GB_is_dictionary_compressed(GBDATA *gbd);
 
 /* adindex.cxx */
 GB_ERROR GB_create_index(GBDATA *gbd, const char *key, GB_CASE case_sens, long estimated_size);

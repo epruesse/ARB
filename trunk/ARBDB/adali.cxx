@@ -1,21 +1,17 @@
-/* ============================================================ */
-/*                                                              */
-/*   File      : adali.c                                        */
-/*   Purpose   : alignment handling                             */
-/*                                                              */
-/*   Institute of Microbiology (Technical University Munich)    */
-/*   http://www.arb-home.de/                                    */
-/*                                                              */
-/* ============================================================ */
+// =============================================================== //
+//                                                                 //
+//   File      : adali.cxx                                         //
+//   Purpose   : alignments                                        //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include <arbdbt.h>
 #include <adGene.h>
 
 #include "gb_local.h"
-
- /********************************************************************************************
-                    check the database !!!
-********************************************************************************************/
 
 static long check_for_species_without_data(const char *species_name, long value, void *counterPtr) {
     if (value == 1) {
@@ -30,14 +26,14 @@ static long check_for_species_without_data(const char *species_name, long value,
 
 #if defined(DEVEL_RALF)
 #warning GBT_check_data ignores given 'alignment_name' if we have a default alignment. seems wrong!
-#endif /* DEVEL_RALF */
+#endif // DEVEL_RALF
 
 
-GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name)
-/* if alignment_name == 0 -> check all existing alignments
- * otherwise check only one alignment
- */
-{
+GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name) {
+    /* alignment_name
+     *  == 0     -> check all existing alignments
+     * otherwise -> check only one alignment
+     */
     GB_ERROR  error             = 0;
     GBDATA   *gb_sd             = GBT_find_or_create(Main,"species_data",7);
     GBDATA   *gb_presets        = GBT_find_or_create(Main,"presets",7);
@@ -120,16 +116,12 @@ GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name)
     return error;
 }
 
-/********************************************************************************************
-                    some alignment header functions
-********************************************************************************************/
-
-char **GBT_get_alignment_names(GBDATA *gbd)
-{
-    /* get all alignment names out of a database
-       (array of strings, the last stringptr is zero)
-       Note: use GBT_free_names() to free strings+array
-    */
+char **GBT_get_alignment_names(GBDATA *gbd) {
+    /* Get names of existing alignments from database.
+     * 
+     * Returns: array of strings, the last element is NULL
+     * (Note: use GBT_free_names() to free result)
+     */
 
     GBDATA *presets;
     GBDATA *ali;
@@ -270,21 +262,24 @@ GBDATA *GBT_create_alignment(GBDATA *gbd, const char *name, long len, long align
     }
 #if defined(DEBUG)
     else gb_assert(!error);
-#endif /* DEBUG */
+#endif // DEBUG
 
     return result;
 }
 
 NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment, GB_HASH *species_name_hash)
-/* check if alignment is of the correct size
-   and whether all data is present.
-   Sets the security deletes and writes.
-
-   If 'species_name_hash' is not NULL,
-   it initially has to contain value == 1 for each existing species.
-   Afterwards it contains value == 2 for each species where an alignment has been found.
-*/
 {
+    /* check
+     * - whether alignment has correct size and
+     * - whether all data is present.
+     *
+     * Sets the security deletes and writes.
+     *
+     * If 'species_name_hash' is not NULL,
+     * - it initially has to contain value == 1 for each existing species.
+     * - afterwards it will contain value  == 2 for each species where an alignment has been found.
+     */
+    
     GBDATA *gb_species_data  = GBT_find_or_create(gb_main,"species_data",7);
     GBDATA *gb_extended_data = GBT_find_or_create(gb_main,"extended_data",7);
 
@@ -484,8 +479,9 @@ static GB_ERROR gbt_rename_alignment_of_item(GBDATA *gb_item_container, const ch
 
 GB_ERROR GBT_rename_alignment(GBDATA *gbMain, const char *source, const char *dest, int copy, int dele)
 {
-    /*  if copy     == 1 then create a copy
-        if dele     == 1 then delete old */
+    /* if copy == 1 then create a copy
+     * if dele == 1 then delete old
+     */
 
     GB_ERROR  error            = 0;
     int       is_case_error    = 0;
@@ -498,7 +494,7 @@ GB_ERROR GBT_rename_alignment(GBDATA *gbMain, const char *source, const char *de
     else if (!gb_extended_data) error = "extended_data not found";
 
 
-    /* create copy and/or delete old alignment description */
+    // create copy and/or delete old alignment description
     if (!error) {
         GBDATA *gb_old_alignment = GBT_get_alignment(gbMain, source);
 
@@ -528,23 +524,23 @@ GB_ERROR GBT_rename_alignment(GBDATA *gbMain, const char *source, const char *de
         }
     }
 
-    /* change default alignment */
+    // change default alignment
     if (!error && dele && copy) {
         error = GBT_write_string(gb_presets, "use", dest);
     }
 
-    /* copy and/or delete alignment entries in species */
+    // copy and/or delete alignment entries in species
     if (!error) {
         error = gbt_rename_alignment_of_item(gb_species_data, "Species", "species", source, dest, copy, dele);
     }
 
-    /* copy and/or delete alignment entries in SAIs */
+    // copy and/or delete alignment entries in SAIs
     if (!error) {
         error = gbt_rename_alignment_of_item(gb_extended_data, "SAI", "extended", source, dest, copy, dele);
     }
 
     if (is_case_error) {
-        /* alignments source and dest only differ in case */
+        // alignments source and dest only differ in case
         char *ali_other = gbt_nonexisting_alignment(gbMain);
         gb_assert(copy);
 
@@ -559,14 +555,16 @@ GB_ERROR GBT_rename_alignment(GBDATA *gbMain, const char *source, const char *de
     return error;
 }
 
-/* ------------------------------------------- */
-/*      alignment related item functions       */
-
+// -----------------------------------------
+//      alignment related item functions
 
 NOT4PERL GBDATA *GBT_add_data(GBDATA *species,const char *ali_name, const char *key, GB_TYPES type) {
-    /* goes to header: __ATTR__DEPRECATED */
-    /* replace this function by GBT_create_sequence_data 
-     * the same as GB_search(species, 'ali_name/key', GB_CREATE) */
+    // goes to header: __ATTR__DEPRECATED
+
+    /* replace this function by GBT_create_sequence_data
+     * the same as GB_search(species, 'ali_name/key', GB_CREATE)
+     */
+    
     GBDATA *gb_gb;
     GBDATA *gb_data;
     if (GB_check_key(ali_name)) {
@@ -606,20 +604,21 @@ NOT4PERL GBDATA *GBT_create_sequence_data(GBDATA *species,const char *ali_name, 
 
 GB_ERROR GBT_write_sequence(GBDATA *gb_data, const char *ali_name, long ali_len, const char *sequence) {
     /* writes a sequence which is generated by GBT_add_data,
-     * cuts sequence after alignment len only if bases e ".-nN" */
+     * cuts sequence after alignment len only if bases e ".-nN"
+     */
     int slen = strlen(sequence);
     int old_char = 0;
     GB_ERROR error = 0;
     if (slen > ali_len) {
         int i;
         for (i= slen -1; i>=ali_len; i--) {
-            if (!strchr("-.nN",sequence[i])) break;     /* real base after end of alignment */
+            if (!strchr("-.nN",sequence[i])) break;     // real base after end of alignment
         }
-        i++;                            /* points to first 0 after alignment */
+        i++;                            // points to first 0 after alignment
         if (i > ali_len){
             GBDATA *gb_main = GB_get_root(gb_data);
             ali_len = GBT_get_alignment_len(gb_main,ali_name);
-            if (slen > ali_len){                /* check for modified alignment len */
+            if (slen > ali_len){                // check for modified alignment len
                 GBT_set_alignment_len(gb_main,ali_name,i);
                 ali_len = i;
             }
@@ -639,7 +638,7 @@ GBDATA *GBT_gen_accession_number(GBDATA *gb_species,const char *ali_name) {
     GBDATA *gb_acc = GB_entry(gb_species,"acc");
     if (!gb_acc) {
         GBDATA *gb_data = GBT_read_sequence(gb_species,ali_name);
-        if (gb_data) {                                     /* found a valid alignment */
+        if (gb_data) {                                     // found a valid alignment
             GB_CSTR     sequence = GB_read_char_pntr(gb_data);
             long        id       = GBS_checksum(sequence,1,".-");
             const char *acc      = GBS_global_string("ARB_%lX", id);
@@ -690,15 +689,11 @@ int GBT_is_partial(GBDATA *gb_species, int default_value, int define_if_undef) {
 
 #if defined(DEVEL_RALF)
 #warning rename GBT_read_sequence - it does not read the sequence itself
-#endif /* DEVEL_RALF */
+#endif // DEVEL_RALF
 GBDATA *GBT_read_sequence(GBDATA *gb_species, const char *aliname) {
     GBDATA *gb_ali = GB_entry(gb_species, aliname);
     return gb_ali ? GB_entry(gb_ali, "data") : 0;
 }
-
-/********************************************************************************************
-                    alignment procedures
-********************************************************************************************/
 
 char *GBT_get_default_alignment(GBDATA *gb_main) {
     return GBT_read_string(gb_main, "presets/use");
@@ -721,7 +716,7 @@ GBDATA *GBT_get_alignment(GBDATA *gb_main, const char *aliname) {
 
 #if defined(DEVEL_RALF)
 #warning recode and change result type to long* ? 
-#endif /* DEVEL_RALF */
+#endif // DEVEL_RALF
 long GBT_get_alignment_len(GBDATA *gb_main, const char *aliname) {
     GBDATA *gb_alignment = GBT_get_alignment(gb_main, aliname);
     return gb_alignment ? *GBT_read_int(gb_alignment, "alignment_len") : -1;
@@ -733,8 +728,8 @@ GB_ERROR GBT_set_alignment_len(GBDATA *gb_main, const char *aliname, long new_le
 
     if (gb_alignment) {
         GB_push_my_security(gb_main);
-        error             = GBT_write_int(gb_alignment, "alignment_len", new_len); /* write new len */
-        if (!error) error = GBT_write_int(gb_alignment, "aligned", 0);             /* mark as unaligned */
+        error             = GBT_write_int(gb_alignment, "alignment_len", new_len); // write new len
+        if (!error) error = GBT_write_int(gb_alignment, "aligned", 0);             // mark as unaligned
         GB_pop_my_security(gb_main);
     }
     else error = GB_export_errorf("Alignment '%s' not found", aliname);
@@ -777,8 +772,8 @@ GB_BOOL GBT_is_alignment_protein(GBDATA *gb_main,const char *alignment_name) {
     return GBT_get_alignment_type(gb_main,alignment_name) == GB_AT_AA;
 }
 
-/* ----------------------- */
-/*      gene sequence      */
+// -----------------------
+//      gene sequence
 
 static const char *gb_cache_genome(GBDATA *gb_genome) {
     static GBDATA *gb_last_genome = 0;

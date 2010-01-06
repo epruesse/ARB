@@ -207,12 +207,12 @@ static void GB_dump_internal(GBDATA *gbd, int *lines_allowed) {
     GB_BOOL        showChildren      = GB_TRUE;
 
     if (father) {
-        int index_pos = (int)gbd->index; /* my index position in father */
-        struct gb_header_list_struct *hls = &(GB_DATA_LIST_HEADER(father->d)[index_pos]);
+        int                    index_pos = (int)gbd->index; // my index position in father
+        gb_header_list_struct *hls       = &(GB_DATA_LIST_HEADER(father->d)[index_pos]);
 
         if (!hls) {
             key_name = GBS_global_string("<no gb_header_list_struct found for index_pos=%i>", index_pos);
-            father = 0; // otherwise crash below
+            father   = 0;                           // otherwise crash below
         }
         else {
             GBDATA *gb_self = GB_HEADER_LIST_GBD(*hls);
@@ -222,7 +222,7 @@ static void GB_dump_internal(GBDATA *gbd, int *lines_allowed) {
                     gb_show_later     = gb_self;
                     whatto_show_later = GBS_global_string_copy("Element linked at index pos of %p", gbd);
                 }
-                father = 0; // otherwise crash below
+                father = 0;                         // otherwise crash below
             }
             // otherwise father looks fine
         }
@@ -236,7 +236,7 @@ static void GB_dump_internal(GBDATA *gbd, int *lines_allowed) {
         }
         else if (is_db_server && father->server_id != GBTUM_MAGIC_NUMBER) {
             key_name = GBS_global_string("<elements parent has illegal server-id %p>", (void*)father->server_id);
-            father   = 0; /* avoids crashes below */
+            father   = 0;                           // avoids crashes below
         }
         else {
             key_name = GB_KEY_QUARK(gbd) ? GB_KEY(gbd) : "<illegal quark=0>";
@@ -247,7 +247,7 @@ static void GB_dump_internal(GBDATA *gbd, int *lines_allowed) {
         key_name     = "<unknown quark - element w/o father>";
         showChildren = GB_FALSE;
     }
-    else { // test if we need a transaction
+    else {                                          // test if we need a transaction
         if (!GB_MAIN(gbd)->transaction) {
             GB_push_transaction(gbd);
             GB_dump_internal(gbd, lines_allowed);
@@ -365,9 +365,8 @@ void GB_dump_no_limit(GBDATA *gbd) {
     GB_dump_internal(gbd, 0);
 }
 
-/* -------------------------------------------------------------------------------- */
-/* Fix database                                                                     */
-/* -------------------------------------------------------------------------------- */
+// ---------------------
+//      Fix database
 
 static GB_ERROR gb_fix_recursive(GBDATA *gbd) {
     GBDATA *gbp;
@@ -391,9 +390,9 @@ static GB_ERROR gb_fix_recursive(GBDATA *gbd) {
             gb_assert(keyq != 0);
             {
                 long gbm_index    = GB_QUARK_2_GBMINDEX(Main, keyq);
-                GB_GBM_INDEX(gbd) = gbm_index; // set new index
+                GB_GBM_INDEX(gbd) = gbm_index;      // set new index
 
-                /* @@@ FIXME: above command has no effect  */
+                // @@@ FIXME: above command has no effect
 
                 printf("Fixed zero key_quark of GBDATA at %p\n", gbd);
                 GB_dump_db_path(gbd);
