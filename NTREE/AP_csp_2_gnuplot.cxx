@@ -403,7 +403,7 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
                 if (!error) {
                     for (size_t j=0; j<csplen; ++j) {
                         if (!weights[j]) continue;
-                        fprintf(out,"%i ",j); // print X coordinate
+                        fprintf(out,"%zu ",j); // print X coordinate
 
                         double val;
                         switch (stat_type) {

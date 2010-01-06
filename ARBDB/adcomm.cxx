@@ -1432,7 +1432,7 @@ long gbcm_read_bin(int socket,GBCONTAINER *gbd, long *buffer, long mode, GBDATA 
     return GBCM_SERVER_OK;
 }
 
-#define SEND_ERROR() GBS_global_string("cannot send data to server (errcode=%zu)", __LINE__)
+#define SEND_ERROR() GBS_global_string("cannot send data to server (errcode=%i)", __LINE__)
 
 /**************************************************************************************
                 unfold client

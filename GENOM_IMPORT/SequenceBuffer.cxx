@@ -48,7 +48,7 @@ void BaseCounter::checkOverallCounter() const {
 
     gi_assert(count[BC_ALL]>0); // forgot to call calcOverallCounter ?
     if (count[BC_ALL] != all) {
-        throw GBS_global_string("Overall bp (=%u) does not match sum (=%u) of single bases (Occurrence: '%s')",
+        throw GBS_global_string("Overall bp (=%lu) does not match sum (=%zu) of single bases (Occurrence: '%s')",
                                 count[BC_ALL], all, source.c_str());
     }
 }
@@ -108,7 +108,7 @@ void BaseCounter::expectEqual(const BaseCounter& other) const {
                     else if (i == BC_ALL)   whichCounter = "overall";
                     else                    whichCounter = "ACGT"[i];
 
-                    error = error+"\n  "+whichCounter+": "+GBS_global_string("%u <> %u", count[i], other.count[i]);
+                    error = error+"\n  "+whichCounter+": "+GBS_global_string("%lu <> %lu", count[i], other.count[i]);
                 }
             }
 

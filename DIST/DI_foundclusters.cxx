@@ -191,7 +191,7 @@ string Cluster::build_group_name(const ARB_countedTree *ct) {
         size_t cluster_pos1 = ct->relative_position_in(upgroup)+1; // range [1..upgroup_members]
         size_t cluster_posN = cluster_pos1+cluster_members-1;
 
-        group_name = GBS_global_string("%i-%i/%i_%s", cluster_pos1, cluster_posN, upgroup_members, upgroup_name);
+        group_name = GBS_global_string("%zu-%zu/%zu_%s", cluster_pos1, cluster_posN, upgroup_members, upgroup_name);
     }
     return group_name;
 }
