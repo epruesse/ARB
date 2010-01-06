@@ -10,7 +10,7 @@
 
 
 
-GB_INLINE int ALI_PROFILE::is_binding_marker(char c) {
+inline int ALI_PROFILE::is_binding_marker(char c) {
     return (c == '~' || c == 'x');
 }
 

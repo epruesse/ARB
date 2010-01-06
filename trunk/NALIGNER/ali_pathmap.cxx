@@ -41,9 +41,8 @@ ALI_PATHMAP::~ALI_PATHMAP(void)
 /*
  * Set a value in the pathmap
  */
-void            ALI_PATHMAP::
-set(unsigned long x, unsigned long y, unsigned char val,
-    ALI_TARRAY < ali_pathmap_up_pointer > *up_pointer)
+void ALI_PATHMAP::set(unsigned long x, unsigned long y, unsigned char val,
+                      ALI_TARRAY < ali_pathmap_up_pointer > *up_pointer)
 {
     if (x >= width || y >= height)
         ali_fatal_error("Out of range", "ALI_PATHMAP::set()");
@@ -72,9 +71,8 @@ set(unsigned long x, unsigned long y, unsigned char val,
 /*
  * Get a value from the pathmap
  */
-void            ALI_PATHMAP::
-get(unsigned long x, unsigned long y, unsigned char *val,
-    ALI_TARRAY < ali_pathmap_up_pointer > **up_pointer)
+void ALI_PATHMAP::get(unsigned long x, unsigned long y, unsigned char *val,
+                      ALI_TARRAY < ali_pathmap_up_pointer > **up_pointer)
 {
     unsigned long   l, counter;
 
@@ -107,8 +105,7 @@ get(unsigned long x, unsigned long y, unsigned char *val,
 /*
  * optimize the pathmap (the dynamic field with up_pointers)
  */
-void            ALI_PATHMAP::
-optimize(unsigned long x)
+void ALI_PATHMAP::optimize(unsigned long x)
 {
     unsigned long   l, counter;
     ALI_TARRAY < ali_pathmap_up_pointer > *(*buffer)[];
@@ -143,8 +140,7 @@ optimize(unsigned long x)
 }
 
 
-void            ALI_PATHMAP::
-print(void)
+void ALI_PATHMAP::print(void)
 {
     ali_pathmap_up_pointer up;
     unsigned long   x, y, i;

@@ -13,9 +13,7 @@ unsigned long   random_stat[6] = {0, 0, 0, 0, 0, 0};
 /*
  * Insert a new map
  */
-void            ali_prealigner_mask::
-insert(ALI_MAP * in_map, float costs)
-{
+void ali_prealigner_mask::insert(ALI_MAP * in_map, float costs) {
     unsigned long   i;
 
     calls++;
@@ -54,10 +52,7 @@ insert(ALI_MAP * in_map, float costs)
 /*
  * Delete expensive parts of solution
  */
-void            ali_prealigner_mask::
-delete_expensive(ALI_PREALIGNER_CONTEXT * context,
-                 ALI_PROFILE * profile)
-{
+void ali_prealigner_mask::delete_expensive(ALI_PREALIGNER_CONTEXT * context, ALI_PROFILE * profile) {
     ALI_MAP        *inverse_map;
     unsigned long   start_hel, end_hel;
     unsigned long   start_seq, end_seq;
@@ -251,24 +246,17 @@ delete_expensive(ALI_PREALIGNER_CONTEXT * context,
  *
  *****************************************************************************/
 
-GB_INLINE float    ALI_PREALIGNER::
-minimum2(float a, float b)
-{
+inline float ALI_PREALIGNER::minimum2(float a, float b) {
     return ((a < b) ? a : b);
 }
 
-GB_INLINE float    ALI_PREALIGNER::
-minimum3(float a, float b, float c)
-{
+inline float ALI_PREALIGNER::minimum3(float a, float b, float c) {
     return ((a < b) ? ((a < c) ? a : c) : ((b < c) ? b : c));
 }
 
 
-GB_INLINE void     ALI_PREALIGNER::
-calculate_first_column_first_cell(
-                                  ali_prealigner_cell * akt_cell)
-{
-    float           v1, v2, v3;
+inline void ALI_PREALIGNER::calculate_first_column_first_cell(ali_prealigner_cell * akt_cell) {
+    float v1, v2, v3;
 
     /***
         v1 = profile->w_ins(start_x,start_y) + profile->w_del(start_y,start_y);
@@ -286,10 +274,9 @@ calculate_first_column_first_cell(
         path_map->set(0, 0, ALI_DIAG);
 }
 
-GB_INLINE void     ALI_PREALIGNER::
-calculate_first_column_cell(
-                            ali_prealigner_cell * up_cell, ali_prealigner_cell * akt_cell,
-                            unsigned long pos_y)
+inline void ALI_PREALIGNER::calculate_first_column_cell(ali_prealigner_cell * up_cell,
+                                                        ali_prealigner_cell * akt_cell,
+                                                        unsigned long pos_y)
 {
     float           v1, v2, v3;
     unsigned long   positiony;
@@ -319,9 +306,7 @@ calculate_first_column_cell(
         path_map->set(0, pos_y, ALI_LEFT);
 }
 
-void            ALI_PREALIGNER::
-calculate_first_column(ali_prealigner_column * akt_column)
-{
+void ALI_PREALIGNER::calculate_first_column(ali_prealigner_column * akt_column) {
     unsigned long   pos_y;
 
     calculate_first_column_first_cell(&(*akt_column->cells)[0]);
@@ -333,10 +318,9 @@ calculate_first_column(ali_prealigner_column * akt_column)
 }
 
 
-GB_INLINE void     ALI_PREALIGNER::
-calculate_first_cell(
-                     ali_prealigner_cell * left_cell, ali_prealigner_cell * akt_cell,
-                     unsigned long pos_x)
+inline void ALI_PREALIGNER::calculate_first_cell(ali_prealigner_cell * left_cell,
+                                                 ali_prealigner_cell * akt_cell,
+                                                 unsigned long pos_x)
 {
     float           v1, v2, v3;
     unsigned long   positionx;
@@ -365,11 +349,9 @@ calculate_first_cell(
         path_map->set(pos_x, 0, ALI_LEFT);
 }
 
-GB_INLINE void     ALI_PREALIGNER::
-calculate_cell(
-               ali_prealigner_cell * diag_cell, ali_prealigner_cell * left_cell,
-               ali_prealigner_cell * up_cell, ali_prealigner_cell * akt_cell,
-               unsigned long pos_x, unsigned long pos_y)
+inline void ALI_PREALIGNER::calculate_cell(ali_prealigner_cell * diag_cell, ali_prealigner_cell * left_cell,
+                                           ali_prealigner_cell * up_cell, ali_prealigner_cell * akt_cell,
+                                           unsigned long pos_x, unsigned long pos_y)
 {
     float           v1, v2, v3;
     unsigned long   positionx, positiony;
@@ -394,10 +376,9 @@ calculate_cell(
         path_map->set(pos_x, pos_y, ALI_LEFT);
 }
 
-void            ALI_PREALIGNER::
-calculate_column(
-                 ali_prealigner_column * prev_col, ali_prealigner_column * akt_col,
-                 unsigned long pos_x)
+void ALI_PREALIGNER::calculate_column(ali_prealigner_column * prev_col,
+                                      ali_prealigner_column * akt_col,
+                                      unsigned long pos_x)
 {
     unsigned long   pos_y;
 
@@ -409,10 +390,9 @@ calculate_column(
                        pos_x, pos_y);
 }
 
-GB_INLINE void     ALI_PREALIGNER::
-calculate_last_column_first_cell(
-                                 ali_prealigner_cell * left_cell, ali_prealigner_cell * akt_cell,
-                                 unsigned long pos_x)
+inline void ALI_PREALIGNER::calculate_last_column_first_cell(ali_prealigner_cell * left_cell,
+                                                             ali_prealigner_cell * akt_cell,
+                                                             unsigned long pos_x)
 {
     float           v1, v2, v3;
     unsigned long   positionx;
@@ -441,11 +421,9 @@ calculate_last_column_first_cell(
         path_map->set(pos_x, 0, ALI_LEFT);
 }
 
-GB_INLINE void     ALI_PREALIGNER::
-calculate_last_column_cell(
-                           ali_prealigner_cell * diag_cell, ali_prealigner_cell * left_cell,
-                           ali_prealigner_cell * up_cell, ali_prealigner_cell * akt_cell,
-                           unsigned long pos_x, unsigned long pos_y)
+inline void ALI_PREALIGNER::calculate_last_column_cell(ali_prealigner_cell * diag_cell, ali_prealigner_cell * left_cell,
+                                                       ali_prealigner_cell * up_cell, ali_prealigner_cell * akt_cell,
+                                                       unsigned long pos_x, unsigned long pos_y)
 {
     float           v1, v2, v3;
     unsigned long   positionx, positiony;
@@ -470,10 +448,9 @@ calculate_last_column_cell(
         path_map->set(pos_x, pos_y, ALI_LEFT);
 }
 
-void            ALI_PREALIGNER::
-calculate_last_column(
-                      ali_prealigner_column * prev_col, ali_prealigner_column * akt_col,
-                      unsigned long pos_x)
+void ALI_PREALIGNER::calculate_last_column(ali_prealigner_column * prev_col,
+                                           ali_prealigner_column * akt_col,
+                                           unsigned long pos_x)
 {
     unsigned long   pos_y;
 
@@ -488,9 +465,7 @@ calculate_last_column(
 }
 
 
-void            ALI_PREALIGNER::
-calculate_matrix(void)
-{
+void ALI_PREALIGNER::calculate_matrix() {
     unsigned long   pos_x;
     ali_prealigner_column *akt_col, *prev_col, *h_col;
 
@@ -516,10 +491,8 @@ calculate_matrix(void)
 
 #if 0
 
-int             ALI_PREALIGNER::
-find_multiple_path(
-                   unsigned long start_x, unsigned long start_y,
-                   unsigned long *end_x, unsigned long *end_y)
+int ALI_PREALIGNER::find_multiple_path(unsigned long start_x, unsigned long start_y,
+                                       unsigned long *end_x, unsigned long *end_y)
 {
     unsigned char   value;
     long            x1, y1, x2, y2;
@@ -609,9 +582,7 @@ find_multiple_path(
 /*
  * Generate a sub_solution by deleting all undefined segments
  */
-void            ALI_PREALIGNER::
-generate_solution(ALI_MAP * map)
-{
+void ALI_PREALIGNER::generate_solution(ALI_MAP * map) {
     ALI_MAP        *seg_map;
     unsigned long   map_pos, map_len;
     unsigned long   start_seg, end_seg, pos_seg;
@@ -662,9 +633,7 @@ generate_solution(ALI_MAP * map)
 /*
  * generate the result mask from an stack of operations
  */
-void            ALI_PREALIGNER::
-generate_result_mask(ALI_TSTACK < unsigned char >*stack)
-{
+void ALI_PREALIGNER::generate_result_mask(ALI_TSTACK < unsigned char >*stack) {
     ALI_SEQUENCE   *seq;
     float           cost_of_bindings;
     ALI_MAP        *map;
@@ -719,9 +688,8 @@ generate_result_mask(ALI_TSTACK < unsigned char >*stack)
 /*
  * Fill the stack with rest DELs or INSs
  */
-void            ALI_PREALIGNER::
-mapper_post(ALI_TSTACK < unsigned char >*stack,
-            unsigned long ins_nu, unsigned long del_nu)
+void ALI_PREALIGNER::mapper_post(ALI_TSTACK < unsigned char >*stack,
+                                 unsigned long ins_nu, unsigned long del_nu)
 {
     if (ins_nu > 0 && del_nu > 0)
         ali_fatal_error("Unexpected values",
@@ -744,9 +712,8 @@ mapper_post(ALI_TSTACK < unsigned char >*stack,
 /*
  * Fill the stack with rest DELs or INSs (with MULTI_FLAG)
  */
-void            ALI_PREALIGNER::
-mapper_post_multi(ALI_TSTACK < unsigned char >*stack,
-                  unsigned long ins_nu, unsigned long del_nu)
+void ALI_PREALIGNER::mapper_post_multi(ALI_TSTACK < unsigned char >*stack,
+                                       unsigned long ins_nu, unsigned long del_nu)
 {
     if (ins_nu > 0 && del_nu > 0)
         ali_fatal_error("Unexpected values",
@@ -769,9 +736,8 @@ mapper_post_multi(ALI_TSTACK < unsigned char >*stack,
 /*
  * generate a stack of operations by taking a random path of the pathmap
  */
-void            ALI_PREALIGNER::
-mapper_random(ALI_TSTACK < unsigned char >*stack,
-              unsigned long pos_x, unsigned long pos_y)
+void ALI_PREALIGNER::mapper_random(ALI_TSTACK < unsigned char >*stack,
+                                   unsigned long pos_x, unsigned long pos_y)
 {
     unsigned long   next_x, next_y;
     unsigned long   random;
@@ -906,9 +872,8 @@ mapper_random(ALI_TSTACK < unsigned char >*stack,
 /*
  * generate a stack of operations by taking every path
  */
-void            ALI_PREALIGNER::
-mapper(ALI_TSTACK < unsigned char >*stack,
-       unsigned long pos_x, unsigned long pos_y)
+void ALI_PREALIGNER::mapper(ALI_TSTACK < unsigned char >*stack,
+                            unsigned long pos_x, unsigned long pos_y)
 {
     unsigned char   value;
     unsigned long   stack_counter = 0;
@@ -1028,9 +993,8 @@ mapper(ALI_TSTACK < unsigned char >*stack,
 
 #if 0
 
-void            ALI_PREALIGNER::
-quick_mapper(ALI_TSTACK < unsigned char >*stack,
-             unsigned long pos_x, unsigned long pos_y)
+void ALI_PREALIGNER::quick_mapper(ALI_TSTACK < unsigned char >*stack,
+                                  unsigned long pos_x, unsigned long pos_y)
 {
     unsigned long   end_x, end_y;
     unsigned char   value;
@@ -1132,9 +1096,7 @@ quick_mapper(ALI_TSTACK < unsigned char >*stack,
 /*
  * make the result map from the path matrix
  */
-void            ALI_PREALIGNER::
-make_map(void)
-{
+void ALI_PREALIGNER::make_map(void) {
     unsigned long   number_of_sol;
     ALI_TSTACK < unsigned char >*stack;
 
@@ -1161,9 +1123,7 @@ make_map(void)
 
 #if 0
 
-void            ALI_PREALIGNER::
-make_quick_map(void)
-{
+void ALI_PREALIGNER::make_quick_map(void) {
     ALI_TSTACK < unsigned char >*stack;
 
     ali_message("Starting quick mapping");
@@ -1184,9 +1144,7 @@ make_quick_map(void)
 /*
  * generate an approximation of a complete solution
  */
-void            ALI_PREALIGNER::
-generate_approximation(ALI_SUB_SOLUTION * work_sol)
-{
+void ALI_PREALIGNER::generate_approximation(ALI_SUB_SOLUTION * work_sol) {
     ALI_MAP        *map;
     ALI_SEQUENCE   *seq;
     char           *ins_marker;
@@ -1211,10 +1169,9 @@ generate_approximation(ALI_SUB_SOLUTION * work_sol)
 /*
  * combine subsolutions for an approximation
  */
-void            ALI_PREALIGNER::
-mapper_approximation(unsigned long area_no,
-                     ALI_TARRAY < ALI_TLIST < ALI_MAP * >*>*map_lists,
-                     ALI_SUB_SOLUTION * work_sol)
+void ALI_PREALIGNER::mapper_approximation(unsigned long area_no,
+                                          ALI_TARRAY < ALI_TLIST < ALI_MAP * >*>*map_lists,
+                                          ALI_SUB_SOLUTION * work_sol)
 {
     ALI_TLIST < ALI_MAP * >*map_list;
     ALI_MAP        *map;
@@ -1262,9 +1219,7 @@ mapper_approximation(unsigned long area_no,
 /*
  * Make an approximation by aligning the undefined sections
  */
-void            ALI_PREALIGNER::
-make_approximation(ALI_PREALIGNER_CONTEXT * context)
-{
+void ALI_PREALIGNER::make_approximation(ALI_PREALIGNER_CONTEXT * context) {
     ALI_SUB_SOLUTION *work_solution;
     ALI_ALIGNER_CONTEXT aligner_context;
     ALI_TARRAY < ALI_TLIST < ALI_MAP * >*>*map_lists;
@@ -1319,9 +1274,7 @@ make_approximation(ALI_PREALIGNER_CONTEXT * context)
 /*
  * approximate the number of solutions in the pathmap
  */
-unsigned long   ALI_PREALIGNER::
-number_of_solutions(void)
-{
+unsigned long ALI_PREALIGNER::number_of_solutions() {
 #define INFINIT 1000000
 #define ADD(a,b)  if (a>=INFINIT || b>=INFINIT) {a = INFINIT;} else {a += b;}
 
