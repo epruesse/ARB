@@ -456,7 +456,7 @@ static void awt_scanner_scan_list(GBDATA *dummy, struct adawcbstruct *cbs)
 
             if ((!existing) == (!gbd)) { // first print only existing; then non-existing entries
                 char *p      = buffer;
-                int   len    = sprintf(p,"%-*s %c", last_max_name_width, name, GB_TYPE_2_CHAR[GB_read_int(gb_key_type)]);
+                int   len    = sprintf(p,"%-*s %c", last_max_name_width, name, GB_type_2_char((GB_TYPES)GB_read_int(gb_key_type)));
 
                 p += len;
 

@@ -1,7 +1,14 @@
-#include <stdlib.h>
-#include <string.h>
+// =============================================================== //
+//                                                                 //
+//   File      : adsort.cxx                                        //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include "arbdb.h"
+#include <arbdb.h>
 
 struct comparator {
     gb_compare_function  compare;
@@ -30,7 +37,7 @@ void GB_sort(void **array, size_t first, size_t behind_last, gb_compare_function
 /*      some comparators      */
 
 int GB_string_comparator(const void *v0, const void *v1, void *unused) {
-    GBUSE(unused);
+    // GBUSE(unused);
     return strcmp((const char *)v0, (const char *)v1);
 }
 

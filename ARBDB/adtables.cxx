@@ -1,9 +1,17 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "adlocal.h"
-/* #include "arbdb.h" */
-#include "arbdbt.h"
+// =============================================================== //
+//                                                                 //
+//   File      : adtables.cxx                                      //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+#include <arbdbt.h>
+
+#include "gb_main.h"
+#include "gb_data.h"
 
 
 /* *************** tables, for ARB BIO storage *******************
@@ -36,8 +44,8 @@ GBDATA *gbt_table_link_follower(GBDATA *gb_main, GBDATA *gb_link, const char *li
     GBDATA *gb_table;
     char save;
     char *sep;
-    GBUSE(gb_main);
-    GBUSE(gb_link);
+    // GBUSE(gb_main);
+    // GBUSE(gb_link);
     sep = const_cast<char*>(strchr(link,':'));
     if (!sep){
         GB_export_errorf("Link '%s' is missing second ':' tag", link);
@@ -62,9 +70,9 @@ GB_ERROR GBT_install_table_link_follower(GBDATA *gb_main){
 
 static void g_bt_table_deleted(GBDATA *gb_table,int *clientdata, GB_CB_TYPE gbtype){
     GB_MAIN_TYPE *Main = gb_get_main_during_cb();
-    GBUSE(gb_table);
-    GBUSE(gbtype);
-    GBUSE(clientdata);
+    // GBUSE(gb_table);
+    // GBUSE(gbtype);
+    // GBUSE(clientdata);
     GBS_free_hash(Main->table_hash);
     Main->table_hash = GBS_create_hash(256, GB_MIND_CASE);
 }

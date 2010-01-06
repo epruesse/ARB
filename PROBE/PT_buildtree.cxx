@@ -101,7 +101,7 @@ POS_TREE *build_pos_tree (POS_TREE *pt, int anfangs_pos, int apos, int RNS_nr, u
 }
 
 /* get the absolute alignment position */
-static GB_INLINE void get_abs_align_pos(char *seq, int &pos)
+inline void get_abs_align_pos(char *seq, int &pos)
 {
     int q_exists = 0;
     if(pos > 3) {
@@ -316,7 +316,7 @@ void enter_stage_1_build_tree(PT_main * main,char *tname) {
         PTD_put_longlong(out, last_obj);            // write last_obj as long long (64 bit)
         PTD_put_int(out, 0xffffffff);               // write 0xffffffff at the end to signal 64bit ptserver is needed
 #else
-        gb_assert(0);
+        pt_assert(0);
 #endif
     }
     else {

@@ -114,14 +114,6 @@ extern "C" int MP_count_all_species P_((PT_local *));
 extern "C" int PT_find_exProb P_((PT_exProb *pep));
 
 /* probe_tree.hxx */
-GB_INLINE const char *PT_READ_CHAIN_ENTRY P_((const char *ptr, int mainapos, int *name, int *apos, int *rpos));
-GB_INLINE char *PT_WRITE_CHAIN_ENTRY P_((const char *const ptr, const int mainapos, int name, const int apos, const int rpos));
-GB_INLINE POS_TREE *PT_read_son P_((PTM2 *ptmain, POS_TREE *node, PT_BASES base));
-GB_INLINE POS_TREE *PT_read_son_stage_1 P_((PTM2 *ptmain, POS_TREE *node, PT_BASES base));
-GB_INLINE PT_NODE_TYPE PT_read_type P_((POS_TREE *node));
-GB_INLINE int PT_read_name P_((PTM2 *ptmain, POS_TREE *node));
-GB_INLINE int PT_read_rpos P_((PTM2 *ptmain, POS_TREE *node));
-GB_INLINE int PT_read_apos P_((PTM2 *ptmain, POS_TREE *node));
 template <typename T >int PT_read_chain P_((PTM2 *ptmain, POS_TREE *node, T func));
 
 #undef P_

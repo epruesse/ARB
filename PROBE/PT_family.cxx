@@ -120,19 +120,18 @@ static void make_match_statistic(int probe_len, int sequence_length) {
     }
 }
 
-extern "C" {
-    struct cmp_probe_abs {
-        bool operator()(const struct probe_input_data* a, const struct probe_input_data* b) {
-            return b->stat.match_count < a->stat.match_count;
-        }
-    };
 
-    struct cmp_probe_rel {
-        bool operator()(const struct probe_input_data* a, const struct probe_input_data* b) {
-            return b->stat.rel_match_count < a->stat.rel_match_count;
-        }
-    };
-}
+struct cmp_probe_abs {
+    bool operator()(const struct probe_input_data* a, const struct probe_input_data* b) {
+        return b->stat.match_count < a->stat.match_count;
+    }
+};
+
+struct cmp_probe_rel {
+    bool operator()(const struct probe_input_data* a, const struct probe_input_data* b) {
+        return b->stat.rel_match_count < a->stat.rel_match_count;
+    }
+};
 
 /*  Make sorted list of family members */
 static int make_PT_family_list(PT_local *locs) {

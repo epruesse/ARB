@@ -1,14 +1,22 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-/* #include <malloc.h> */
+// =============================================================== //
+//                                                                 //
+//   File      : adsystem.cxx                                      //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include <sys/types.h>
-#include <netinet/in.h>         /* hton ntoh */
+#include <netinet/in.h>
 
-#include "adlocal.h"
-/*#include "arbdb.h"*/
-#include "arbdbt.h"
+#include <arbdbt.h>
+
+#include "gb_key.h"
+#include "gb_dict.h"
+
+#define GB_SYSTEM_KEY_DATA "@key_data"
 
 static GB_CSTR gb_read_dict_data(GBDATA *gb_dict, long *size) {
     GB_CSTR data = 0;

@@ -275,7 +275,7 @@ static inline unsigned long long bswap_64(unsigned long long x) {
 /********************* PT_READ_CHAIN_ENTRY ***********************/
 
 
-GB_INLINE const char *PT_READ_CHAIN_ENTRY(const char* ptr,int mainapos,int *name,int *apos,int *rpos) {
+inline const char *PT_READ_CHAIN_ENTRY(const char* ptr,int mainapos,int *name,int *apos,int *rpos) {
     unsigned int rcei;
     unsigned char *rcep = (unsigned char*)ptr;
     int isapos;
@@ -328,7 +328,7 @@ GB_INLINE const char *PT_READ_CHAIN_ENTRY(const char* ptr,int mainapos,int *name
 
 
 /* stage 1 */
-GB_INLINE char *PT_WRITE_CHAIN_ENTRY(const char * const ptr,const int mainapos,int name,const int apos,const int rpos)
+inline char *PT_WRITE_CHAIN_ENTRY(const char * const ptr,const int mainapos,int name,const int apos,const int rpos)
 {
     unsigned char *wcep = (unsigned char *)ptr;
     int  isapos;
@@ -378,7 +378,7 @@ GB_INLINE char *PT_WRITE_CHAIN_ENTRY(const char * const ptr,const int mainapos,i
 }
 // calculate the index of the pointer in a node
 
-GB_INLINE POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
+inline POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
 {
     long i;
     UINT sec;
@@ -388,7 +388,7 @@ GB_INLINE POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
             if (base != (node->flags & 0x7)) return NULL;  // no son
             i = (node->flags >> 3)&0x7;         // this son
             if (!i) i = 1; else i+=2;           // offset mapping
-            arb_assert(i >= 0);
+            pt_assert(i >= 0);
             return (POS_TREE *)(((char *)node)-i);
         }
         if (!( (1<<base) & node->flags)) return NULL;  /* bit not set */
@@ -406,7 +406,7 @@ GB_INLINE POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
                 printf("         (sec & LONG_SON) == true\n"); 
                 offset = 4 * i;
                 if ( (1<<base) & sec) {                             // long
-                    arb_assert(sizeof(PT_PNTR) == 8);               // 64-bit necessary
+                    pt_assert(sizeof(PT_PNTR) == 8);               // 64-bit necessary
                     PT_READ_PNTR((&node->data+1)+offset,i);
                 }else{                                              // int
                     PT_READ_INT((&node->data+1)+offset,i);
@@ -447,7 +447,7 @@ GB_INLINE POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
             }
         }
 #endif
-        arb_assert(i >= 0);
+        pt_assert(i >= 0);
         return (POS_TREE *)(((char*)node)-i);
 
     }else{          // stage 1 or 2 ->father
@@ -458,7 +458,7 @@ GB_INLINE POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
     }
 }
 
-GB_INLINE POS_TREE *PT_read_son_stage_1(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
+inline POS_TREE *PT_read_son_stage_1(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
 {
     long i;
     if (!( (1<<base) & node->flags)) return NULL;  /* bit not set */
@@ -467,12 +467,12 @@ GB_INLINE POS_TREE *PT_read_son_stage_1(PTM2 *ptmain, POS_TREE *node, PT_BASES b
     return (POS_TREE *)(i+ptmain->data_start); // ptmain->data_start == 0x00 in stage 1
 }
 
-GB_INLINE PT_NODE_TYPE PT_read_type(POS_TREE *node)
+inline PT_NODE_TYPE PT_read_type(POS_TREE *node)
 {
     return (PT_NODE_TYPE)PT_GET_TYPE(node);
 }
 
-GB_INLINE int PT_read_name(PTM2 *ptmain,POS_TREE *node)
+inline int PT_read_name(PTM2 *ptmain,POS_TREE *node)
 {
     int i;
     if (node->flags&1){
@@ -480,11 +480,11 @@ GB_INLINE int PT_read_name(PTM2 *ptmain,POS_TREE *node)
     }else{
         PT_READ_SHORT((&node->data)+ptmain->mode,i);
     }
-    arb_assert(i >= 0);
+    pt_assert(i >= 0);
     return i;
 }
 
-GB_INLINE int PT_read_rpos(PTM2 *ptmain,POS_TREE *node)
+inline int PT_read_rpos(PTM2 *ptmain,POS_TREE *node)
 {
     int i;
     char *data = (&node->data)+2+ptmain->mode;
@@ -494,11 +494,11 @@ GB_INLINE int PT_read_rpos(PTM2 *ptmain,POS_TREE *node)
     }else{
         PT_READ_SHORT(data,i);
     }
-    arb_assert(i >= 0);
+    pt_assert(i >= 0);
     return i;
 }
 
-GB_INLINE int PT_read_apos(PTM2 *ptmain,POS_TREE *node)
+inline int PT_read_apos(PTM2 *ptmain,POS_TREE *node)
 {
     int i;
     char *data = (&node->data)+ptmain->mode+4;  /* father 4 name 2 rpos 2 */
@@ -509,7 +509,7 @@ GB_INLINE int PT_read_apos(PTM2 *ptmain,POS_TREE *node)
     }else{
         PT_READ_SHORT(data,i);
     }
-    arb_assert(i >= 0);
+    pt_assert(i >= 0);
     return i;
 }
 

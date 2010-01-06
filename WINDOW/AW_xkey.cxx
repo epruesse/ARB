@@ -69,8 +69,8 @@ static awXKeymap awxkeymap[] = {
     { 0, 0, (char*)1, AW_KEYMODE_NONE, AW_KEY_NONE, 0}
 };
 
-static GB_HASH  *awxkeymap_string_2_key_hash;
-static GB_HASHI *awxkeymap_xkey_2_key_hash;
+static GB_HASH    *awxkeymap_string_2_key_hash;
+static GB_NUMHASH *awxkeymap_xkey_2_key_hash;
 
 const int KEYMAX = 100; // size for hashes
 
@@ -91,7 +91,7 @@ static void map_awXKey(Display *display, const awXKeymap *awxk) {
 
         GBS_write_hash(awxkeymap_string_2_key_hash, awxk->xstr, (long)awxk);
     }
-    GBS_write_hashi(awxkeymap_xkey_2_key_hash, awxk->xkey, (long)awxk);
+    GBS_write_numhash(awxkeymap_xkey_2_key_hash, awxk->xkey, (long)awxk);
 
 #if defined(DEBUG)
     ++mappedKeys;
@@ -102,7 +102,7 @@ void aw_install_xkeys(Display *display) {
     int i;
     
     awxkeymap_string_2_key_hash = GBS_create_hash(KEYMAX, GB_MIND_CASE);
-    awxkeymap_xkey_2_key_hash   = GBS_create_hashi(KEYMAX);
+    awxkeymap_xkey_2_key_hash   = GBS_create_numhash(KEYMAX);
 
     // auto-generate all key/modifier combinations for keys in awxkeymap_modfree
     for (i=0;;++i) {
@@ -215,7 +215,7 @@ const awXKeymap *aw_xkey_2_awkey(XKeyEvent *xkeyevent) {
             printf("_awxkeymap_string_2_key_hash['%s']=", buffer);
 #endif // DUMP_KEYEVENTS
         }
-        else if ( (ptr = GBS_read_hashi(awxkeymap_xkey_2_key_hash,keysym))){
+        else if ( (ptr = GBS_read_numhash(awxkeymap_xkey_2_key_hash,keysym))){
             result    = (awXKeymap*)ptr;
             
 #if defined(DUMP_KEYEVENTS)

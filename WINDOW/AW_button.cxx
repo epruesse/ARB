@@ -159,7 +159,7 @@ void AW_variable_update_callback( Widget wgt, XtPointer variable_update_struct, 
                     error   = vus->awar->write_float( h_float );
                     break;
                 default:
-                    gb_assert(0);
+                    aw_assert(0);
                     error = GB_export_error("Unknown or incompatible AWAR type");
             }
             XtFree( tmp );
@@ -185,7 +185,7 @@ void AW_variable_update_callback( Widget wgt, XtPointer variable_update_struct, 
 #warning missing implementation for AW_POINTER                     
 #endif // DEVEL_RALF
                 default:
-                    gb_assert(0);
+                    aw_assert(0);
                     GB_warning("Unknown AWAR type");
                     break;
             }
@@ -232,7 +232,7 @@ void AW_variable_update_callback( Widget wgt, XtPointer variable_update_struct, 
                     error = vus->awar->write_pointer( list_table->pointer_value );
                     break;
                 default:
-                    gb_assert(0);
+                    aw_assert(0);
                     error = GB_export_error("Unknown AWAR type");
                     break;
             }
@@ -242,7 +242,7 @@ void AW_variable_update_callback( Widget wgt, XtPointer variable_update_struct, 
         case AW_WIDGET_LABEL_FIELD:
             break;
         default:
-            gb_assert(0);
+            aw_assert(0);
             GB_warning("Unknown Widget Type");
             break;
     }
@@ -1903,7 +1903,7 @@ void AW_window::update_selection_list_intern( AW_selection_list *selection_list 
             break;
         }
         default:
-            gb_assert(0);
+            aw_assert(0);
             GB_warning("Unknown AWAR type");
             break;
     }
@@ -2502,7 +2502,7 @@ void AW_window::update_option_menu(AW_option_menu_struct *oms) {
                     case AW_INT:    found_choice = (global_var_int_value   == active_choice->variable_int_value );      break;
                     case AW_FLOAT:  found_choice = (global_var_float_value == active_choice->variable_float_value );    break;
                     default:
-                        gb_assert(0);
+                        aw_assert(0);
                         GB_warning("Unknown AWAR type");
                         break;
                 }
@@ -2767,7 +2767,7 @@ void AW_window::update_toggle_field( int toggle_field_number ) {
                 case AW_INT:    global_var_int_value   = root->awar( toggle_field_list->variable_name )->read_int();    break;
                 case AW_FLOAT:  global_var_float_value = root->awar( toggle_field_list->variable_name )->read_float();  break;
                 default:
-                    gb_assert(0);
+                    aw_assert(0);
                     GB_warning("Unknown AWAR type");
                     break;
             }
@@ -2779,7 +2779,7 @@ void AW_window::update_toggle_field( int toggle_field_number ) {
                     case AW_INT:    found_toggle = (global_var_int_value == active_toggle->variable_int_value);       break;
                     case AW_FLOAT:  found_toggle = (global_var_float_value == active_toggle->variable_float_value);   break;
                     default:
-                        gb_assert(0);
+                        aw_assert(0);
                         GB_warning("Unknown AWAR type");
                         break;
                 }

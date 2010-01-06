@@ -44,9 +44,6 @@ typedef GBDATA     *AW_default;
 typedef AW_bitset   AW_active;                      // bits to activate/inactivate buttons
 typedef int         AW_font;
 
-typedef const char             *GB_ERROR;
-typedef struct gbs_hash_struct  GB_HASH;
-
 extern AW_default aw_main_root_default;
 
 typedef struct _WidgetRec *Widget;
@@ -307,8 +304,6 @@ typedef void (*Awar_CB)(AW_root *, AW_CL, AW_CL);
 typedef void (*Awar_CB2)(AW_root *, AW_CL, AW_CL);
 typedef void (*Awar_CB1)(AW_root *, AW_CL);
 typedef void (*Awar_CB0)(AW_root *);
-
-typedef struct gb_data_base_type GBDATA;
 
 class AW_awar {
     struct {

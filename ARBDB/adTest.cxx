@@ -1,12 +1,14 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/mman.h>
+// =============================================================== //
+//                                                                 //
+//   File      : adTest.cxx                                        //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-/*#include "arbdb.h"*/
-#include "adlocal.h"
-#include "admap.h"
+#include "gb_storage.h"
 
 #define VERBOSE 0
 
@@ -386,7 +388,7 @@ static GB_ERROR gb_fix_recursive(GBDATA *gbd) {
 
             printf("new_key_name='%s'\n", new_key_name);
 
-            ad_assert(keyq != 0);
+            gb_assert(keyq != 0);
             {
                 long gbm_index    = GB_QUARK_2_GBMINDEX(Main, keyq);
                 GB_GBM_INDEX(gbd) = gbm_index; // set new index
@@ -409,5 +411,4 @@ GB_ERROR GB_fix_database(GBDATA *gb_main) {
     if (!err) err = gb_fix_recursive(gb_main);
     return GB_end_transaction(gb_main, err);
 }
-
 

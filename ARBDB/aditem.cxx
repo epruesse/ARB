@@ -10,11 +10,8 @@
 
 /* items are e.g. species, SAIs, genes, etc */
 
-#include <string.h>
-#include <stdlib.h>
-
-#include <adlocal.h>
 #include <arbdbt.h>
+#include "gb_local.h"
 
 
 GBDATA *GBT_find_or_create_item_rel_item_data(GBDATA *gb_item_data, const char *itemname, const char *id_field, const char *id, GB_BOOL markCreated) {
@@ -243,7 +240,7 @@ char *GBT_create_unique_item_identifier(GBDATA *gb_item_container, const char *i
             size_t num_items = GB_number_of_subentries(gb_item_container);
             size_t max_num   = 0;
 
-            ad_assert(num_items); // otherwise deadlock below
+            gb_assert(num_items); // otherwise deadlock below
 
             do {
                 max_num += num_items;
@@ -265,7 +262,7 @@ char *GBT_create_unique_item_identifier(GBDATA *gb_item_container, const char *i
                 // max_num is unused
                 while ((max_num-min_num)>1) {
                     size_t mid = (min_num+max_num)/2;
-                    ad_assert(mid != min_num && mid != max_num);
+                    gb_assert(mid != min_num && mid != max_num);
 
                     GENERATE_ID(mid);
                     gb_item = GBT_find_item_rel_item_data(gb_item_container, id_field, generated_id);
@@ -274,7 +271,7 @@ char *GBT_create_unique_item_identifier(GBDATA *gb_item_container, const char *i
                     else max_num = mid;
                 }
                 GENERATE_ID(max_num);
-                ad_assert(GBT_find_item_rel_item_data(gb_item_container, id_field, generated_id) == NULL);
+                gb_assert(GBT_find_item_rel_item_data(gb_item_container, id_field, generated_id) == NULL);
             }
         }
         unique_id = generated_id;
@@ -418,8 +415,7 @@ NOT4PERL GB_ERROR GBT_with_stored_species(GBDATA *gb_main, const char *stored, s
     return error;
 }
 
-static GB_ERROR restore_mark(GBDATA *gb_species, int *clientdata) {
-    GBUSE(clientdata);
+static GB_ERROR restore_mark(GBDATA *gb_species, int *) {
     GB_write_flag(gb_species, 1);
     return 0;
 }

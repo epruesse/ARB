@@ -289,7 +289,7 @@ void DI_dmatrix::display(bool clear)   // draw area
         const AW_font_information *aw_fi = device->get_font_information(DI_G_NAMES,0);
         name_display_width = cell_width/aw_fi->max_letter.width;
     }
-    gb_assert(name_display_width<BUFLEN);
+    di_assert(name_display_width<BUFLEN);
 
     int sel_x_pos = -1;
 
@@ -526,7 +526,7 @@ void di_change_dist(AW_window *aww, AW_CL cl_mode) {
     AW_root *awr = aww->get_root();
     const char *awar_name;
 
-    gb_assert(cl_mode>=0 && cl_mode<=3);
+    di_assert(cl_mode>=0 && cl_mode<=3);
 
     if (cl_mode<2) { // change min
         awar_name = AWAR_DIST_MIN_DIST;

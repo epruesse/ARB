@@ -9,11 +9,7 @@
 /*                                                                  */
 /* ================================================================ */
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-
-#include "arbdb.h"
+#include "gb_local.h"
 
 // used by perl interface, see ../PERL2ARB/ARB_ext.c@GBP_croak_function
 void (*GBP_croak_function)(const char *message) = NULL;

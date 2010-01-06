@@ -661,7 +661,7 @@ void NT_submit_mail(AW_window *aww, AW_CL cl_awar_base) {
 
         const char *command = GBS_global_string("mail '%s' <%s", plainaddress, mail_file);
 
-        gb_assert(GB_is_privatefile(mail_file, GB_FALSE));
+        nt_assert(GB_is_privatefile(mail_file, GB_FALSE));
 
         error = GB_system(command);
         GB_unlink_or_warn(mail_file, &error);
@@ -787,14 +787,6 @@ void NT_primer_cb(void) {
     GB_ERROR error = GB_xcmd("arb_primer",GB_TRUE, GB_FALSE);
     if (error) aw_message(error);
 }
-
-
-void NT_set_compression(AW_window *, AW_CL dis_compr, AW_CL){
-    GB_transaction dummy(GLOBAL_gb_main);
-    GB_ERROR       error = GB_set_compression(GLOBAL_gb_main,dis_compr);
-    if (error) aw_message(error);
-}
-
 
 void NT_mark_degenerated_branches(AW_window *aww, AW_CL ntwcl) {
     char *val = aw_input("Enter degeneration factor [ 1 .. ]");
@@ -1024,7 +1016,7 @@ void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main) {
 
                 tree = GBT_remove_leafs(tree, mode, species_hash, &removed, &groups_removed);
 
-                gb_assert(removed >= groups_removed);
+                nt_assert(removed >= groups_removed);
 
                 if (!tree) {
                     aw_message(GBS_global_string("'%s' would disappear. Please delete tree manually.", tree_names[t]));

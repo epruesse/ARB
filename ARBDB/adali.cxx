@@ -5,15 +5,13 @@
 /*                                                              */
 /*   Institute of Microbiology (Technical University Munich)    */
 /*   http://www.arb-home.de/                                    */
- /*                                                              */
- /* ============================================================ */
+/*                                                              */
+/* ============================================================ */
 
-#include <string.h>
-#include <stdlib.h>
-
-#include <adlocal.h>
 #include <arbdbt.h>
 #include <adGene.h>
+
+#include "gb_local.h"
 
  /********************************************************************************************
                     check the database !!!
@@ -267,11 +265,11 @@ GBDATA *GBT_create_alignment(GBDATA *gbd, const char *name, long len, long align
     }
 
     if (!result) {
-        ad_assert(error);
+        gb_assert(error);
         GB_export_errorf("in GBT_create_alignment: %s", error);
     }
 #if defined(DEBUG)
-    else ad_assert(!error);
+    else gb_assert(!error);
 #endif /* DEBUG */
 
     return result;
@@ -548,7 +546,7 @@ GB_ERROR GBT_rename_alignment(GBDATA *gbMain, const char *source, const char *de
     if (is_case_error) {
         /* alignments source and dest only differ in case */
         char *ali_other = gbt_nonexisting_alignment(gbMain);
-        ad_assert(copy);
+        gb_assert(copy);
 
         printf("Renaming alignment '%s' -> '%s' -> '%s' (to avoid case-problem)\n", source, ali_other, dest);
 
@@ -768,7 +766,7 @@ GB_alignment_type GBT_get_alignment_type(GBDATA *gb_main, const char *aliname) {
             case 'd': if (strcmp(ali_type, "dna")==0) at = GB_AT_DNA; break;
             case 'a': if (strcmp(ali_type, "ami")==0) at = GB_AT_AA; break;
             case 'p': if (strcmp(ali_type, "pro")==0) at = GB_AT_AA; break;
-            default: ad_assert(0); break;
+            default: gb_assert(0); break;
         }
         free(ali_type);
     }

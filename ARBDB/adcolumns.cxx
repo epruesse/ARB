@@ -8,12 +8,10 @@
 /*                                                              */
 /* ============================================================ */
 
-#include <stdlib.h>
-#include <string.h>
-
-#include <adlocal.h>
 #include <arbdbt.h>
 #include <adGene.h>
+
+#include "gb_local.h"
 
 
 /* ----------------------- */
@@ -177,7 +175,7 @@ static GB_ERROR gbt_insert_character_gbd(GBDATA *gb_data, enum insDelTarget targ
         }
     }
     else {
-        ad_assert(params->pos >= 0);
+        gb_assert(params->pos >= 0);
         if (type >= GB_BITS && type != GB_LINK) {
             long size = GB_read_count(gb_data);
 

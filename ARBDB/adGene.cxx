@@ -12,21 +12,15 @@
 /*                                                                        */
 /*  ====================================================================  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <adGene.h>
+#include <arbdbt.h>
+#include "gb_local.h"
 
-#include "adGene.h"
-#include "arbdbt.h"
-
-//  -----------------------------------------------------------------
-//      bool GEN_is_genome_db(GBDATA *gb_main, int default_value)
-//  -----------------------------------------------------------------
-// default_value == 0 -> default to normal database
-//               == 1 -> default to GENOM database
-//               == -1 -> assume that type is already defined
 
 GB_BOOL GEN_is_genome_db(GBDATA *gb_main, int default_value) {
+    // default_value ==  0 -> default to normal database
+    //               ==  1 -> default to GENOM database
+    //               == -1 -> assume that type is already defined
     GBDATA *gb_genom_db = GB_entry(gb_main, GENOM_DB_TYPE);
 
     if (!gb_genom_db) {         // no DB-type entry -> create one with default

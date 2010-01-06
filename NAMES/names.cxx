@@ -17,6 +17,11 @@
 #include <list>
 #include <string>
 
+#define na_assert(cond) arb_assert(cond)
+
+#define FULLNAME_LEN_MAX 64
+#define NAME_LEN_MIN 2
+
 using namespace std;
 
 // --------------------------------------------------------------------------------
@@ -211,27 +216,26 @@ static void an_remove_short(AN_shorts *an_shorts) {
     free(an_shorts);
 }
 
-static char *nas_string_2_key(const char *str)
-// converts any string to a valid key
-{
+static char *nas_string_2_name(const char *str) {
+    // converts a string to a valid name 
 #if defined(DUMP_NAME_CREATION)
     const char *org_str = str;
 #endif // DUMP_NAME_CREATION
     
-    char buf[GB_KEY_LEN_MAX+1];
+    char buf[FULLNAME_LEN_MAX+1];
     int  i;
     int  c;
-    for (i=0;i<GB_KEY_LEN_MAX;) {
+    for (i=0;i<FULLNAME_LEN_MAX;) {
         c                        = *(str++);
         if (!c) break;
         if (isalpha(c)) buf[i++] = c;
         // name should not contain _'s (not compatible with FastDNAml)
         //else if (c==' ' || c=='_') buf[i++] = '_';
     }
-    for (;i<GB_KEY_LEN_MIN;i++) buf[i] = '0';
+    for (;i<NAME_LEN_MIN;i++) buf[i] = '0';
     buf[i] = 0;
 #if defined(DUMP_NAME_CREATION)
-    printf("nas_string_2_key('%s') = '%s'\n", org_str, buf);
+    printf("nas_string_2_name('%s') = '%s'\n", org_str, buf);
 #endif // DUMP_NAME_CREATION
     return strdup(buf);
 }
@@ -240,18 +244,18 @@ static char *nas_remove_small_vocals(const char *str) {
 #if defined(DUMP_NAME_CREATION)
     const char *org_str = str;
 #endif // DUMP_NAME_CREATION
-    char buf[GB_KEY_LEN_MAX+1];
+    char buf[FULLNAME_LEN_MAX+1];
     int i;
     int c;
 
-    for (i=0; i<GB_KEY_LEN_MAX; ) {
+    for (i=0; i<FULLNAME_LEN_MAX; ) {
         c = *str++;
         if (!c) break;
         if (strchr("aeiouy", c)==0) {
             buf[i++] = c;
         }
     }
-    for (; i<GB_KEY_LEN_MIN; i++) buf[i] = '0';
+    for (; i<NAME_LEN_MIN; i++) buf[i] = '0';
     buf[i] = 0;
 #if defined(DUMP_NAME_CREATION)
     printf("nas_remove_small_vocals('%s') = '%s'\n", org_str, buf);
@@ -269,7 +273,7 @@ static void an_complete_shrt(char *shrt, const char *rest_of_full) {
         shrt[len++] = c;
     }
 
-    while (len<GB_KEY_LEN_MIN) {
+    while (len<NAME_LEN_MIN) {
         shrt[len++] = '0';
     }
 
@@ -320,8 +324,8 @@ static void an_autocaps(char *str) {
 static char *an_get_short(AN_shorts *IF_DEBUG(shorts), dll_public *parent, const char *full){
     AN_shorts *look;
 
-    gb_assert(full);
-    gb_assert(shorts == aisc_main->shorts1); // otherwise prefix_hash does not work!
+    na_assert(full);
+    na_assert(shorts == aisc_main->shorts1); // otherwise prefix_hash does not work!
 
     if (full[0]==0) {
         return strdup("Xxx");
@@ -331,7 +335,7 @@ static char *an_get_short(AN_shorts *IF_DEBUG(shorts), dll_public *parent, const
     char *full1  = strdup(full);
     an_autocaps(full1);
 
-    char *full2 = nas_string_2_key(full1);
+    char *full2 = nas_string_2_name(full1);
 
     look = (AN_shorts *)aisc_find_lib((struct_dllpublic_ext*)parent, full2);
     if (look) {                 /* name is already known */
@@ -564,7 +568,7 @@ static char *make_alpha(const char *str) {
 }
 
 #if defined(DEBUG)
-#define assert_alnum(s) gb_assert(stralnum(s))
+#define assert_alnum(s) na_assert(stralnum(s))
 #else
 #define assert_alnum(s)
 #endif // DEBUG
@@ -696,7 +700,7 @@ extern "C" aisc_string get_short(AN_local *locs)
                 ? an_get_short(aisc_main->shorts1, &(aisc_main->pshorts1), first_name)
                 : strdup(first_advice);
 
-            gb_assert(first_short);
+            na_assert(first_short);
             if (first_short[0] == 0) { // empty?
                 freedup(first_short, "Xxx");
             }
@@ -751,8 +755,8 @@ extern "C" aisc_string get_short(AN_local *locs)
         char test_short[9];
         sprintf(test_short,"%s%s", first_short, second_short);
         
-        gb_assert(size_t(both_len) == strlen(test_short));
-        gb_assert(second_len>=5 && second_len <= 8);
+        na_assert(size_t(both_len) == strlen(test_short));
+        na_assert(second_len>=5 && second_len <= 8);
 
         if (lookup_an_revers(aisc_main, test_short)) {
             if (!nameModHash) nameModHash = GBS_create_hash(100, GB_IGNORE_CASE);
@@ -777,7 +781,7 @@ extern "C" aisc_string get_short(AN_local *locs)
 
                     for (; !foundUnused && count <= limit; ++count) {
                         IF_DEBUG(int printed =) sprintf(printAt, "%li", count);
-                        gb_assert((printed+printOffset) <= 8);
+                        na_assert((printed+printOffset) <= 8);
                         if (!lookup_an_revers(aisc_main, test_short)) foundUnused = true; // name does not exist
                     }
                 }
@@ -804,7 +808,7 @@ extern "C" aisc_string get_short(AN_local *locs)
                         printAt[4-pos] = base36[rest];
                         c              = nextc;
 
-                        gb_assert(pos != 4 || c == 0);
+                        na_assert(pos != 4 || c == 0);
                     }
 
                     if (!lookup_an_revers(aisc_main, test_short)) foundUnused = true; // name does not exist
@@ -813,7 +817,7 @@ extern "C" aisc_string get_short(AN_local *locs)
                 count = count2+100000;
             }
 
-            gb_assert(foundUnused);
+            na_assert(foundUnused);
             GBS_write_hash(nameModHash, test_short_dup, count);
             GBS_optimize_hash(nameModHash);
 
@@ -889,7 +893,7 @@ static void check_list(AN_shorts *start) {
     }
 
     fprintf(stderr, "<ERROR - list is looped>\n");
-    gb_assert(0);
+    na_assert(0);
 }
 #endif // DEBUG
 
@@ -1050,7 +1054,7 @@ static void set_empty_addids(AN_main *main) {
                 aisc_unlink((struct_dllheader_ext*)shrt);
 
                 freedup(shrt->add_id, main->add_field_default);
-                gb_assert(strchr(shrt->mh.ident, 0)[-1] == '*');
+                na_assert(strchr(shrt->mh.ident, 0)[-1] == '*');
                 freeset(shrt->mh.ident, GBS_global_string_copy("%s%s", shrt->mh.ident, main->add_field_default));
             
                 aisc_link(&main->pnames, shrt);

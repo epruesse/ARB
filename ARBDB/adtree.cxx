@@ -8,11 +8,8 @@
 /*                                                              */
 /* ============================================================ */
 
-#include <stdlib.h>
-#include <string.h>
-
-#include <adlocal.h>
 #include <arbdbt.h>
+#include "gb_local.h"
 
 #define GBT_PUT_DATA 1
 #define GBT_GET_SIZE 0
@@ -27,13 +24,13 @@ static GBT_TREE *fixDeletedSon(GBT_TREE *tree) {
     GBT_TREE *delNode = tree;
 
     if (delNode->leftson) {
-        ad_assert(!delNode->rightson);
+        gb_assert(!delNode->rightson);
         tree             = delNode->leftson;
         delNode->leftson = 0;
     }
     else {
-        ad_assert(!delNode->leftson);
-        ad_assert(delNode->rightson);
+        gb_assert(!delNode->leftson);
+        gb_assert(delNode->rightson);
         
         tree              = delNode->rightson;
         delNode->rightson = 0;
@@ -84,7 +81,7 @@ GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TREE_REMOVE_TYPE mode, GB_HASH *s
 
             if (species_hash) {
                 gb_node = (GBDATA*)GBS_read_hash(species_hash, tree->name);
-                ad_assert(tree->gb_node == 0); // don't call linked tree with 'species_hash'!
+                gb_assert(tree->gb_node == 0); // don't call linked tree with 'species_hash'!
             }
             else gb_node = tree->gb_node;
 
@@ -365,7 +362,7 @@ static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tre
             if (!gb_tree) error = "No tree name given";
         }
 
-        ad_assert(gb_tree || error);
+        gb_assert(gb_tree || error);
 
         if (!error) {
             if (!plain_only) {
@@ -384,12 +381,9 @@ static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tre
                 t_size = gbt_write_tree_rek_new(tree, ctree, GBT_PUT_DATA); // write into buffer
                 *(t_size) = 0;
 
-                error = GB_set_compression(gb_main,0); // no more compressions 
-                if (!error) {
-                    error        = GBT_write_string(gb_tree, "tree", ctree);
-                    GB_ERROR err = GB_set_compression(gb_main,-1); // again allow all types of compression 
-                    if (!error) error = err;
-                }
+                gb_set_compression_mask(gb_main,0); // no more compressions
+                error = GBT_write_string(gb_tree, "tree", ctree);
+                gb_set_compression_mask(gb_main,-1); // again allow all types of compression
                 free(ctree);
             }
         }
@@ -933,7 +927,7 @@ GB_CSTR *GBT_get_species_names_of_tree(GBT_TREE *tree){
     GB_CSTR *check =
 #endif // DEBUG
         gbt_fill_species_names(result,tree);
-    ad_assert(check - size == result);
+    gb_assert(check - size == result);
     return result;
 }
 

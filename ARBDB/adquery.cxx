@@ -1,11 +1,24 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-/* #include <malloc.h> */
-#include <ctype.h>
+// =============================================================== //
+//                                                                 //
+//   File      : adquery.cxx                                       //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include "adlocal.h"
-/*#include "arbdb.h"*/
+#include <cctype>
+
+#include "gb_aci.h"
+#include "gb_comm.h"
+#include "gb_index.h"
+#include "gb_key.h"
+#include "gb_localdata.h"
+#include "gb_ta.h"
+
+
+#define GB_PATH_MAX 1024
 
 static void build_GBDATA_path(GBDATA *gbd, char **buffer) {
     GBCONTAINER *gbc = GB_FATHER(gbd);
@@ -273,7 +286,7 @@ static GBDATA *gb_find_internal(GBDATA *gbd, const char *key, GB_TYPES type, con
                 result = GB_find_subcontent_by_quark((GBDATA*)gbc, key_quark, type, val, case_sens, after);
             }
             else {
-                ad_assert(gbs == SEARCH_GRANDCHILD);
+                gb_assert(gbs == SEARCH_GRANDCHILD);
                 result = find_sub_sub_by_quark((GBDATA*)gbc, key, key_quark, type, val, case_sens, after);
             }
         }
@@ -388,7 +401,7 @@ void gb_init_ctype_table(){
     }
 }
 
-static GB_INLINE char *gb_first_non_key_character(const char *str){
+inline char *gb_first_non_key_character(const char *str){
     const char *s = str;
     int c;
     while(1){

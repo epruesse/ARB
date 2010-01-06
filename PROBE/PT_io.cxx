@@ -165,7 +165,7 @@ int probe_compress_sequence(char *seq, int seqsize)
     }
 
 #ifdef ARB_64
-    arb_assert(!((dest - seq) & 0xffffffff00000000));    // must fit into 32 bit
+    pt_assert(!((dest - seq) & 0xffffffff00000000));    // must fit into 32 bit
 #endif    
 
     return dest-seq;

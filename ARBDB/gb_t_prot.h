@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef AD_T_LPRO_H
-#define AD_T_LPRO_H
+#ifndef GB_T_PROT_H
+#define GB_T_PROT_H
 
 /* define ARB attributes: */
 #ifndef ATTRIBUTES_H
@@ -35,5 +35,5 @@ int gbt_sum_leafs(GBT_TREE *tree);
 GB_CSTR *gbt_fill_species_names(GB_CSTR *des, GBT_TREE *tree);
 
 #else
-#error ad_t_lpro.h included twice
-#endif /* AD_T_LPRO_H */
+#error gb_t_prot.h included twice
+#endif /* GB_T_PROT_H */

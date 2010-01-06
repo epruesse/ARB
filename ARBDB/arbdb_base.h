@@ -20,12 +20,15 @@
 #include <attributes.h>
 #endif
 
-typedef const char *GB_CSTR;    /* this is read-only! */
-typedef const char *GB_ERROR;   /* memory management is controlled by the ARBDB lib */
-typedef char       *GB_BUFFER;  /* points to a piece of mem (writeable, but don't free!)*/
-typedef const char *GB_CBUFFER; /* points to a piece of mem (readable only)*/
+#define NOT4PERL                                    // function definitions starting with NOT4PERL are not included into the ARB-perl-interface
 
-typedef struct gb_data_base_type GBDATA;
+typedef const char *GB_CSTR;                        // read-only
+typedef const char *GB_ERROR;                       // memory managed by ARBDB
+typedef char       *GB_BUFFER;                      // points to a piece of mem (writeable, but don't free!)*/
+typedef const char *GB_CBUFFER;                     // points to a piece of mem (readable only)*/
+
+struct GBDATA;
+struct GB_HASH;
 
 // @@@ TODO: GB_BOOL/GB_TRUE/GB_FALSE should be replaced by bool/true/false in code 
 typedef bool GB_BOOL;

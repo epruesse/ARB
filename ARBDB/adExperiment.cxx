@@ -9,7 +9,8 @@
  /*                                                                  */
  /* ================================================================ */
 
-#include "arbdbt.h"
+#include <arbdbt.h>
+#include "gb_local.h"
 
 GBDATA* EXP_get_experiment_data(GBDATA *gb_species) {
     return GB_search(gb_species, "experiment_data", GB_CREATE_CONTAINER);

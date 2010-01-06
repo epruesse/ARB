@@ -1,18 +1,27 @@
-#include <stdio.h>
-#include <stdlib.h>
-/* #include <malloc.h> */
-#include <memory.h>
-#include <string.h>
-#include <limits.h>
-#include "adlocal.h"
-/*#include "arbdb.h"*/
-#include "arbdbt.h"             /* sequence decompression */
+// =============================================================== //
+//                                                                 //
+//   File      : adcompr.cxx                                       //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+#include <climits>
+
+#include <arbdbt.h>
+
+#include "gb_t_prot.h"
+#include "gb_compress.h"
+#include "gb_localdata.h"
 
 
 #if defined(DEBUG)
 /* #define TEST_HUFFMAN_CODE */
 #endif /* DEBUG */
 
+#define GBTUM_COMPRESS_TREE_SIZE 32
 
 /********************************************************************************************
                                         GB uncompress procedures
@@ -715,7 +724,7 @@ static GB_BUFFER gb_uncompress_equal_bytes(GB_CBUFFER s, long size, long *new_si
     }
 
     *new_size = dest-buffer;
-    ad_assert(size >= *new_size); // buffer overflow
+    gb_assert(size >= *new_size); // buffer overflow
 
     return buffer;
 }
@@ -753,7 +762,7 @@ static GB_BUFFER gb_uncompress_huffmann(GB_CBUFFER source, long maxsize, long *n
     gb_free_compress_tree(un_tree);
 
     *new_size = p-buffer;
-    ad_assert(maxsize >= *new_size); // buffer overflow
+    gb_assert(maxsize >= *new_size); // buffer overflow
 
     return buffer;
 }
@@ -761,7 +770,7 @@ static GB_BUFFER gb_uncompress_huffmann(GB_CBUFFER source, long maxsize, long *n
 GB_BUFFER gb_uncompress_bytes(GB_CBUFFER source, long size, long *new_size) {
     char *data = gb_uncompress_huffmann(source, size, new_size);
     if (data) data = gb_uncompress_equal_bytes(data, size, new_size);
-    ad_assert(!data || size >= *new_size); // buffer overflow
+    gb_assert(!data || size >= *new_size); // buffer overflow
     return data;
 }
 
@@ -779,10 +788,10 @@ GB_BUFFER gb_uncompress_longs_old(GB_CBUFFER source, long size, long *new_size)
 
         data = gb_uncompress_equal_bytes(data, size, new_size);
 
-        ad_assert(*new_size == size);
+        gb_assert(*new_size == size);
         res = p = GB_give_other_buffer(data, size);
         
-        ad_assert(sizeof(GB_UINT4) == 4);
+        gb_assert(sizeof(GB_UINT4) == 4);
 
         mi = (GB_UINT4)(size / 4);
         s0 = data + 0 * mi;
@@ -810,7 +819,7 @@ static GB_BUFFER gb_uncompress_longs(GB_CBUFFER data, long size, long *new_size)
 
     res = p = GB_give_other_buffer(data, size);
 
-    ad_assert(sizeof(GB_UINT4) == 4);
+    gb_assert(sizeof(GB_UINT4) == 4);
 
     mi = size / 4;
     s0 = data + 0 * mi;
@@ -882,7 +891,7 @@ GB_BUFFER gb_compress_data(GBDATA *gbd, int key, GB_CBUFFER source, long size, l
         last_flag = 0;
     }
 
-    ad_assert(1);
+    gb_assert(1);
 
     if (max_compr & GB_COMPRESSION_SORTBYTES){
         source = gb_compress_longs(source,size,last_flag);

@@ -24,10 +24,10 @@ void GB_dump_no_limit(GBDATA *gbd);
 GB_ERROR GB_fix_database(GBDATA *gb_main);
 
 /* ad_load.cxx */
+void GB_set_verbose(void);
 void GB_set_next_main_idx(long idx);
 GBDATA *GB_login(const char *cpath, const char *opent, const char *user);
 GBDATA *GB_open(const char *path, const char *opent);
-void GB_set_verbose(void);
 
 /* ad_save_load.cxx */
 GB_ERROR GB_save(GBDATA *gb, const char *path, const char *savetype);
@@ -54,7 +54,6 @@ GB_ERROR GB_install_pid(int mode);
 const char *GB_date_string(void);
 
 /* adhash.cxx */
-long GBS_get_a_prime(long above_or_equal_this);
 GB_HASH *GBS_create_hash(long user_size, GB_CASE case_sens);
 GB_HASH *GBS_create_dynaval_hash(long user_size, GB_CASE case_sens, void (*freefun )(long ));
 void GBS_dynaval_free(long val);
@@ -77,10 +76,12 @@ long GBS_hash_count_value(GB_HASH *hs, long val);
 const char *GBS_hash_next_element_that(GB_HASH *hs, const char *last_key, GB_BOOL (*condition )(const char *key, long val, void *cd ), void *cd);
 void GBS_hash_do_sorted_loop(GB_HASH *hs, gb_hash_loop_type func, gbs_hash_compare_function sorter, void *client_data);
 int GBS_HCF_sortedByKey(const char *k0, long v0, const char *k1, long v1);
-GB_HASHI *GBS_create_hashi(long user_size);
-long GBS_read_hashi(GB_HASHI *hs, long key);
-long GBS_write_hashi(GB_HASHI *hs, long key, long val);
-void GBS_free_hashi(GB_HASHI *hs);
+GB_NUMHASH *GBS_create_numhash(long user_size);
+long GBS_read_numhash(GB_NUMHASH *hs, long key);
+long GBS_write_numhash(GB_NUMHASH *hs, long key, long val);
+void GBS_free_numhash(GB_NUMHASH *hs);
+
+/* adcache.cxx */
 char *GB_set_cache_size(GBDATA *gbd, long size);
 
 /* adhashtools.cxx */
@@ -111,17 +112,17 @@ NOT4PERL void *GB_recalloc(void *ptr, unsigned int oelem, unsigned int nelem, un
 void GB_memerr(void);
 
 /* admatch.cxx */
-GBS_MATCHER *GBS_compile_matcher(const char *search_expr, GB_CASE case_flag);
-void GBS_free_matcher(GBS_MATCHER *matcher);
-GBS_REGEX *GBS_compile_regexpr(const char *regexpr, GB_CASE case_flag, GB_ERROR *error);
-void GBS_free_regexpr(GBS_REGEX *toFree);
+GBS_string_matcher *GBS_compile_matcher(const char *search_expr, GB_CASE case_flag);
+void GBS_free_matcher(GBS_string_matcher *matcher);
+GBS_regex *GBS_compile_regexpr(const char *regexpr, GB_CASE case_flag, GB_ERROR *error);
+void GBS_free_regexpr(GBS_regex *toFree);
 const char *GBS_unwrap_regexpr(const char *regexpr_in_slashes, GB_CASE *case_flag, GB_ERROR *error);
-const char *GBS_regmatch_compiled(const char *str, GBS_REGEX *comreg, size_t *matchlen);
+const char *GBS_regmatch_compiled(const char *str, GBS_regex *comreg, size_t *matchlen);
 const char *GBS_regmatch(const char *str, const char *regExpr, size_t *matchlen, GB_ERROR *error);
 char *GBS_regreplace(const char *str, const char *regReplExpr, GB_ERROR *error);
 GB_CSTR GBS_find_string(GB_CSTR str, GB_CSTR substr, int match_mode);
 GB_BOOL GBS_string_matches(const char *str, const char *search, GB_CASE case_sens);
-GB_BOOL GBS_string_matches_regexp(const char *str, const GBS_MATCHER *expr);
+GB_BOOL GBS_string_matches_regexp(const char *str, const GBS_string_matcher *expr);
 char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_container);
 
 /* admath.cxx */
@@ -137,13 +138,11 @@ void GB_sort(void **array, size_t first, size_t behind_last, gb_compare_function
 int GB_string_comparator(const void *v0, const void *v1, void *unused);
 
 /* adstring.cxx */
-char *GB_find_all_files(const char *dir, const char *mask, GB_BOOL filename_only);
-char *GB_find_latest_file(const char *dir, const char *mask);
 void GB_raise_critical_error(const char *msg);
 GB_ERROR GB_export_error(const char *error);
 GB_ERROR GB_export_errorf(const char *templat, ...) __ATTR__FORMAT(1);
 GB_ERROR GB_export_IO_error(const char *action, const char *filename);
-NOT4PERL GB_ERROR GB_print_error(void) __ATTR__DEPRECATED;
+NOT4PERL GB_ERROR GB_print_error(void);
 NOT4PERL GB_ERROR GB_get_error(void) __ATTR__DEPRECATED;
 GB_BOOL GB_have_error(void);
 GB_ERROR GB_await_error(void);
@@ -177,8 +176,6 @@ void GBS_chrcat(struct GBS_strstruct *strstr, char ch);
 void GBS_intcat(struct GBS_strstruct *strstr, long val);
 void GBS_floatcat(struct GBS_strstruct *strstr, double val);
 char *GBS_eval_env(GB_CSTR p);
-char *GBS_find_lib_file(const char *filename, const char *libprefix, int warn_when_not_found);
-char **GBS_read_dir(const char *dir, const char *mask);
 long GBS_gcgchecksum(const char *seq);
 uint32_t GB_checksum(const char *seq, long length, int ignore_case, const char *exclude);
 uint32_t GBS_checksum(const char *seq, int ignore_case, const char *exclude);
@@ -207,6 +204,13 @@ char *GBS_replace_tabs_by_spaces(const char *text);
 int GBS_strscmp(const char *s1, const char *s2);
 const char *GBS_readable_size(unsigned long long size);
 char *GBS_trim(const char *str);
+
+/* adfile.cxx */
+GB_CSTR GB_getcwd(void);
+char *GB_find_all_files(const char *dir, const char *mask, GB_BOOL filename_only);
+char *GB_find_latest_file(const char *dir, const char *mask);
+char *GBS_find_lib_file(const char *filename, const char *libprefix, int warn_when_not_found);
+char **GBS_read_dir(const char *dir, const char *mask);
 
 /* adsystem.cxx */
 struct DictData *GB_get_dictionary(GBDATA *gb_main, const char *key);
@@ -305,7 +309,6 @@ GB_ERROR GB_delete(GBDATA *source);
 GB_ERROR GB_copy(GBDATA *dest, GBDATA *source);
 GB_ERROR GB_copy_with_protection(GBDATA *dest, GBDATA *source, GB_BOOL copy_all_protections);
 char *GB_get_subfields(GBDATA *gbd);
-GB_ERROR GB_set_compression(GBDATA *gb_main, GB_COMPRESSION_MASK disable_compression);
 GB_ERROR GB_set_temporary(GBDATA *gbd);
 GB_ERROR GB_clear_temporary(GBDATA *gbd);
 GB_BOOL GB_is_temporary(GBDATA *gbd);
@@ -345,6 +348,7 @@ GB_ERROR GB_write_usr_private(GBDATA *gbd, long ref);
 void GB_write_flag(GBDATA *gbd, long flag);
 int GB_read_flag(GBDATA *gbd);
 void GB_touch(GBDATA *gbd);
+char GB_type_2_char(GB_TYPES type);
 GB_ERROR GB_print_debug_information(void *dummy, GBDATA *gb_main);
 int GB_info(GBDATA *gbd);
 long GB_number_of_subentries(GBDATA *gbd);
@@ -466,7 +470,6 @@ GB_ULONG GB_time_of_day(void);
 long GB_last_saved_clock(GBDATA *gb_main);
 GB_ULONG GB_last_saved_time(GBDATA *gb_main);
 GB_ERROR GB_textprint(const char *path) __ATTR__USERESULT;
-GB_CSTR GB_getcwd(void);
 GB_ERROR GB_system(const char *system_command) __ATTR__USERESULT;
 GB_ERROR GB_xterm(void) __ATTR__USERESULT;
 GB_ERROR GB_xcmd(const char *cmd, GB_BOOL background, GB_BOOL wait_only_if_error) __ATTR__USERESULT;

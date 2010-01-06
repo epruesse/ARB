@@ -1,12 +1,17 @@
-#include <stdlib.h>
-#include <stdio.h>
-/* #include <malloc.h> */
-#include <string.h>
-#include <math.h>
-#include <time.h>
+// =============================================================== //
+//                                                                 //
+//   File      : admath.cxx                                        //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-/*#include <arbdb.h>*/
-#include "adlocal.h"
+#include <cmath>
+#include <ctime>
+
+#include "gb_local.h"
 
 double GB_log_fak(int n){
     /* returns log(n!) */
@@ -29,9 +34,8 @@ double GB_log_fak(int n){
     return res[n];
 }
 
-/* ---------------------------------- */
-/*      random number generation      */
-/* ---------------------------------- */
+// ----------------------------------
+//      random number generation
 
 static int randomSeeded = 0;
 

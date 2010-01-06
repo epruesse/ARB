@@ -1,15 +1,27 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <string.h>
+// =============================================================== //
+//                                                                 //
+//   File      : adindex.cxx                                       //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include "adlocal.h"
-/*#include "arbdb.h"*/
-#include "adlundo.h"
+#include <cctype>
 
-#define GB_INDEX_FIND(gbf,ifs,quark)                                        \
-    for (ifs = GBCONTAINER_IFS(gbf); ifs; ifs = GB_INDEX_FILES_NEXT(ifs)) { \
-        if (ifs->key == quark) break;                                       \
+#include "gb_undo.h"
+#include "gb_index.h"
+#include "gb_hashindex.h"
+#include "gb_ts.h"
+#include "gb_storage.h"
+
+#define GB_INDEX_FIND(gbf,ifs,quark)                                    \
+    for (ifs = GBCONTAINER_IFS(gbf);                                    \
+         ifs;                                                           \
+         ifs = GB_INDEX_FILES_NEXT(ifs))                                \
+    {                                                                   \
+        if (ifs->key == quark) break;                                   \
     }
 
 /* write field in index table */
@@ -44,8 +56,7 @@ char *gb_index_check_in(GBDATA *gbd)
         struct gb_if_entries *ifes;
         GB_REL_IFES *entries = GB_INDEX_FILES_ENTRIES(ifs);
 
-        ifes = (struct gb_if_entries *)gbm_get_mem(sizeof(struct gb_if_entries),
-                                                   GB_GBM_INDEX(gbd));
+        ifes = (struct gb_if_entries *)gbm_get_mem(sizeof(struct gb_if_entries), GB_GBM_INDEX(gbd));
 
         SET_GB_IF_ENTRIES_NEXT(ifes,GB_ENTRIES_ENTRY(entries,index));
         SET_GB_IF_ENTRIES_GBD(ifes,gbd);
@@ -136,7 +147,7 @@ GB_ERROR GB_create_index(GBDATA *gbd, const char *key, GB_CASE case_sens, long e
             SET_GBCONTAINER_IFS(gbc,ifs);
 
             ifs->key             = key_quark;
-            ifs->hash_table_size = GBS_get_a_prime(estimated_size);
+            ifs->hash_table_size = gbs_get_a_prime(estimated_size);
             ifs->nr_of_elements  = 0;
             ifs->case_sens       = case_sens;
 
@@ -323,7 +334,7 @@ struct g_b_undo_entry_struct *new_g_b_undo_entry_struct(struct g_b_undo_struct *
 
 
 
-void gb_init_undo_stack(struct gb_main_type *Main){
+void gb_init_undo_stack(GB_MAIN_TYPE *Main){
     Main->undo = (struct g_b_undo_mgr_struct *)GB_calloc(sizeof(struct g_b_undo_mgr_struct),1);
     Main->undo->max_size_of_all_undos = GB_MAX_UNDO_SIZE;
     Main->undo->u = (struct g_b_undo_header_struct *) GB_calloc(sizeof(struct g_b_undo_header_struct),1);
@@ -400,7 +411,7 @@ char *g_b_check_undo_size(GB_MAIN_TYPE *Main){
 }
 
 
-void gb_free_undo_stack(struct gb_main_type *Main){
+void gb_free_undo_stack(GB_MAIN_TYPE *Main){
     delete_g_b_undo_header_struct(Main->undo->u);
     delete_g_b_undo_header_struct(Main->undo->r);
     free((char *)Main->undo);
@@ -517,7 +528,7 @@ char *g_b_undo_info(GB_MAIN_TYPE *Main, GBDATA *gb_main, struct g_b_undo_header_
     GBS_strstruct *res = GBS_stropen(1024);
     struct g_b_undo_struct *u;
     struct g_b_undo_entry_struct *ue;
-    GBUSE(Main);GBUSE(gb_main);
+    // GBUSE(Main);GBUSE(gb_main);
     u=uh->stack;
     if (!u) return strdup("No more undos available");
     for (ue=u->entries; ue; ue = ue->next) {

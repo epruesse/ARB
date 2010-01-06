@@ -502,7 +502,7 @@ static int awtc_next_file(void) {
         }
 
         if (mid_file_name)  {
-            gb_assert(GB_is_privatefile(mid_file_name, GB_FALSE));
+            awti_assert(GB_is_privatefile(mid_file_name, GB_FALSE));
             GB_unlink_or_warn(mid_file_name, &error);
             free(mid_file_name);
         }

@@ -611,7 +611,7 @@ static GB_ERROR AWTI_export_format(AW_root *aw_root, const char *formname, const
                             break;
 
                         case AWTI_EXPORT_INVALID:
-                            gb_assert(0);
+                            awte_assert(0);
                             break;
                     }
                     aw_status(double(count)/allCount);

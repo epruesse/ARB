@@ -1,21 +1,69 @@
+// =============================================================== //
+//                                                                 //
+//   File      : arbdb.cxx                                         //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #if defined(DARWIN)
 #include <stdio.h>
 #endif /* DARWIN */
 
-#include <stdlib.h>
-#include <string.h>
-/* #include <malloc.h> */
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <rpc/types.h>
 #include <rpc/xdr.h>
-#include "adlocal.h"
-/* #include "arbdb.h" */
+
+#include "gb_cb.h"
+#include "gb_comm.h"
+#include "gb_compress.h"
+#include "gb_localdata.h"
+#include "gb_ta.h"
+#include "gb_ts.h"
+
 
 struct gb_local_data *gb_local = 0;
+
 #ifdef ARBDB_SIZEDEBUG
 long *arbdb_stat;
 #endif
+
+#if defined(DEVEL_RALF)
+#warning convert the following macros to inline functions (and rename them)
+#endif // DEVEL_RALF
+
+
+#define GB_TEST_READ(gbd,ty,error)                                      \
+    do {                                                                \
+        GB_TEST_TRANSACTION(gbd);                                       \
+        if (GB_ARRAY_FLAGS(gbd).changed == gb_deleted) {                \
+            GB_internal_errorf("%s: %s",error,"Entry is deleted !!");   \
+            return 0;}                                                  \
+        if ( GB_TYPE(gbd) != ty && (ty != GB_STRING || GB_TYPE(gbd) == GB_LINK)) { \
+            GB_internal_errorf("%s: %s",error,"wrong type");            \
+            return 0;}                                                  \
+    } while(0)
+
+#define GB_TEST_WRITE(gbd,ty,gerror)                                    \
+    do {                                                                \
+        GB_TEST_TRANSACTION(gbd);                                       \
+        if ( GB_ARRAY_FLAGS(gbd).changed == gb_deleted) {               \
+            GB_internal_errorf("%s: %s",gerror,"Entry is deleted !!");  \
+            return 0;}                                                  \
+        if ( GB_TYPE(gbd) != ty && (ty != GB_STRING || GB_TYPE(gbd) != GB_LINK)) { \
+            GB_internal_errorf("%s: %s",gerror,"type conflict !!");     \
+            return 0;}                                                  \
+        if (GB_GET_SECURITY_WRITE(gbd)>GB_MAIN(gbd)->security_level)    \
+            return gb_security_error(gbd);                              \
+    } while(0)
+
+#define GB_TEST_NON_BUFFER(x,gerror)                                    \
+    do {                                                                \
+        if (GB_is_in_buffer(x)) {                                       \
+            GBK_terminatef("%s: you are not allowed to write any data, which you get by pntr", gerror); \
+        }                                                               \
+    } while(0)
+
 
 char *GB_rel(void *struct_address,long rel_address)
 {
@@ -54,7 +102,7 @@ double GB_atof(const char *str) {
 /********************************************************************************************
                     compression tables
 ********************************************************************************************/
-int gb_convert_type_2_compression_flags[] = {
+const int gb_convert_type_2_compression_flags[] = {
     /* GB_NONE  0 */    GB_COMPRESSION_NONE,
     /* GB_BIT   1 */    GB_COMPRESSION_NONE,
     /* GB_BYTE  2 */    GB_COMPRESSION_NONE,
@@ -221,6 +269,10 @@ GB_BUFFER GB_give_other_buffer(GB_CBUFFER buffer, long size) {
 /********************************************************************************************
                     GB local data
 ********************************************************************************************/
+
+#if defined(DEVEL_RALF)
+#warning gb_cs_ok etc. -> uppercase! 
+#endif // DEVEL_RALF
 
 unsigned char GB_BIT_compress_data[] = {
     0x1d,gb_cs_ok,0,0,
@@ -1012,21 +1064,20 @@ GB_ERROR GB_write_as_string(GBDATA *gbd,const char *val)
 /********************************************************************************************
                     Key Information
 ********************************************************************************************/
-int GB_read_security_write(GBDATA *gbd)
-{
-    GB_TEST_TRANSACTION(gbd);
-    return GB_GET_SECURITY_WRITE(gbd);}
-int GB_read_security_read(GBDATA *gbd)
-{
-    GB_TEST_TRANSACTION(gbd);
-    return GB_GET_SECURITY_READ(gbd);}
-int GB_read_security_delete(GBDATA *gbd)
-{
-    GB_TEST_TRANSACTION(gbd);
-    return GB_GET_SECURITY_DELETE(gbd);}
 
-int GB_get_my_security(GBDATA *gbd)
-{
+int GB_read_security_write(GBDATA *gbd) {
+    GB_TEST_TRANSACTION(gbd);
+    return GB_GET_SECURITY_WRITE(gbd);
+}
+int GB_read_security_read(GBDATA *gbd) {
+    GB_TEST_TRANSACTION(gbd);
+    return GB_GET_SECURITY_READ(gbd);
+}
+int GB_read_security_delete(GBDATA *gbd) {
+    GB_TEST_TRANSACTION(gbd);
+    return GB_GET_SECURITY_DELETE(gbd);
+}
+int GB_get_my_security(GBDATA *gbd) {
     return GB_MAIN(gbd)->security_level;
 }
 
@@ -1382,9 +1433,9 @@ GB_ERROR GB_delete(GBDATA *source) {
     gb_main = GB_get_root(source);
 
     if (source->flags.compressed_data) {
-        GB_set_compression(gb_main, 0); /* disable compression */
+        gb_set_compression_mask(gb_main, 0); /* disable compression */
         gb_set_compression(source); /* write data w/o compression (otherwise GB_read_old_value... won't work) */
-        GB_set_compression(gb_main, -1); /* allow all types of compressions */
+        gb_set_compression_mask(gb_main, -1); /* allow all types of compressions */
     }
 
     {
@@ -1593,6 +1644,11 @@ char* GB_get_subfields(GBDATA *gbd)
 /********************************************************************************************
                     Copy Data
 ********************************************************************************************/
+
+#if defined(DEVEL_RALF)
+#warning rename gb_set_compression into gb_recompress (misleading name)
+#endif // DEVEL_RALF
+
 GB_ERROR gb_set_compression(GBDATA *source)
 {
     long type;
@@ -1628,17 +1684,9 @@ GB_ERROR gb_set_compression(GBDATA *source)
     return 0;
 }
 
-GB_ERROR GB_set_compression(GBDATA *gb_main, GB_COMPRESSION_MASK disable_compression){
-    GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
-    GB_ERROR error = 0;
-    if (Main->compression_mask == disable_compression) return 0;
+void gb_set_compression_mask(GBDATA *gb_main, GB_COMPRESSION_MASK disable_compression) {
+    GB_MAIN_TYPE *Main     = GB_MAIN(gb_main);
     Main->compression_mask = disable_compression;
-#if 0
-    GB_push_my_security(gb_main);
-    error = gb_set_compression(gb_main);
-    GB_pop_my_security(gb_main);
-#endif
-    return error;
 }
 
 
@@ -2518,16 +2566,17 @@ int GB_read_flag(GBDATA *gbd)
     else return 0;
 }
 
-/********************************************************************************************
-            touch entry
-********************************************************************************************/
-
 void GB_touch(GBDATA *gbd) {
     GB_TEST_TRANSACTION(gbd);
     gb_touch_entry(gbd,gb_changed);
     GB_DO_CALLBACKS(gbd);
 }
 
+
+char GB_type_2_char(GB_TYPES type) {
+    const char *type2char = "-bcif-B-CIFlSS-%";
+    return type2char[type];
+}
 
 /********************************************************************************************
             debug data
@@ -2601,7 +2650,7 @@ int gb_info(GBDATA *gbd, int deep){
     if (!Main)                  { printf("Oops - I have no main entry!!!\n"); return -1;}
     if (gbd==(GBDATA*)(Main->dummy_father))     { printf("dummy_father!\n"); return -1; }
 
-    printf("%10s Type '%c'  ", GB_read_key_pntr(gbd), GB_TYPE_2_CHAR[type]);
+    printf("%10s Type '%c'  ", GB_read_key_pntr(gbd), GB_type_2_char(type));
 
     switch(type)
     {
@@ -2663,8 +2712,4 @@ long GB_number_of_subentries(GBDATA *gbd)
 
     return subentries;
 }
-
-
-
-
 

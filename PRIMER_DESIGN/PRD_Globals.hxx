@@ -1,7 +1,14 @@
 #ifndef PRD_GLOBALS_HXX
 #define PRD_GLOBALS_HXX
 
-#include <limits.h>              // for LONG_MAX
+#ifndef _CPP_CLIMITS
+#include <climits>
+#endif
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
+
+#define prd_assert(cond) arb_assert(cond)
 
 #ifndef MAX_LONG
 #define MAX_LONG LONG_MAX

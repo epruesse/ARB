@@ -7,7 +7,6 @@
 
 #define GBT_SPECIES_INDEX_SIZE       10000
 #define GBT_SAI_INDEX_SIZE           1000
-#define GB_COMPRESSION_TAGS_SIZE_MAX 100
 
 #define GB_GROUP_NAME_MAX 256
 
@@ -71,10 +70,7 @@ typedef enum { // bit flags
 
 typedef GB_ERROR (*species_callback)(GBDATA *gb_species, int *clientdata);
 
-# include <ad_t_prot.h>
-# ifdef ADLOCAL_H
-#  include <ad_t_lpro.h>
-# endif
+#include <ad_t_prot.h>
 
 #define CHANGE_KEY_PATH             "presets/key_data"
 #define CHANGE_KEY_PATH_GENES       "presets/gene_key_data"

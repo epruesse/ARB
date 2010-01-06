@@ -1967,7 +1967,7 @@ static void pg_result_selected(AW_window */*aww*/) {
         GBT_mark_all(GLOBAL_gb_main, 0); // unmark all species
 
         GBDATA *gb_species_data = GB_search(GLOBAL_gb_main, "species_data", GB_FIND);
-        gb_assert(gb_species_data);
+        pd_assert(gb_species_data);
         GBDATA *pg_group = GB_search(pg_global.pg_main, "probe_groups/group", GB_FIND);
         long count = 0;
         long marked = 0;
@@ -1979,7 +1979,7 @@ static void pg_result_selected(AW_window */*aww*/) {
                     GBDATA     *gb_speciesname = GB_find_string(gb_species_data, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
                     if (gb_speciesname) {
                         GBDATA *gb_species = GB_get_father(gb_speciesname);
-                        gb_assert(gb_species);
+                        pd_assert(gb_species);
                         GB_write_flag(gb_species, 1); // mark species
                         if (!marked) { // select first species
                             aw_root->awar(AWAR_SPECIES_NAME)->write_string(name);

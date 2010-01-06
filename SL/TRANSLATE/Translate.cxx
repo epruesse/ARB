@@ -105,7 +105,7 @@ int AWT_pro_a_nucs_convert(int arb_code_nr, char *data, size_t size, size_t pos,
     // - the length of the translated protein sequence in 'translatedSize' (if != 0)
     // - number of stop-codons in translated sequence as result
 
-    gb_assert(pos <= 2);
+    arb_assert(pos <= 2);
 
     for (char *p = data; *p ; p++) {
         char c = *p;

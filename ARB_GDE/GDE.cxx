@@ -37,20 +37,18 @@ static void GDE_showhelp_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
     }
 }
 
-char *GDE_makeawarname(GmenuItem *gmenuitem,long i)
-{
-    char  name[GB_KEY_LEN_MAX*4+5];
+char *GDE_makeawarname(GmenuItem *gmenuitem,long i) {
     char *gmenu_label     = GBS_string_2_key(gmenuitem->parent_menu->label);
     char *gmenuitem_label = GBS_string_2_key(gmenuitem->label);
     char *arg             = GBS_string_2_key(gmenuitem->arg[i].symbol);
-
-    sprintf(name,"gde/%s/%s/%s", gmenu_label, gmenuitem_label, arg);
     
+    char *name = GBS_global_string_copy("gde/%s/%s/%s", gmenu_label, gmenuitem_label, arg);
+
     free(gmenu_label);
     free(gmenuitem_label);
     free(arg);
 
-    return(strdup(name));
+    return name;
 }
 
 static void GDE_slide_awar_int_cb(AW_window *aws, AW_CL cl_awar_name, AW_CL cd_diff)
@@ -127,7 +125,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root,GmenuItem *gmenuitem) {
 #endif // ASSERTION_USED
         sprintf(bf,"GDE / %s / %s",gmenuitem->parent_menu->label,gmenuitem->label);
     
-    gb_assert(printed<=BUFSIZE);
+    gde_assert(printed<=BUFSIZE);
     char seqtype = gmenuitem->seqtype;
 
     if (gmenuitem->aws == NULL) {

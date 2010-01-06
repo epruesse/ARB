@@ -1,19 +1,29 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <string.h>
-/* #include <malloc.h> */
-#include <ctype.h>
-#include <sys/stat.h>
-#include <time.h>
+// =============================================================== //
+//                                                                 //
+//   File      : ad_load.cxx                                       //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+#include <cctype>
+#include <ctime>
 #include <netinet/in.h>
+#include <sys/stat.h>
 
-/*#include "arbdb.h"*/
-#include "adlocal.h"
-#include "admap.h"
-#include "arbdbt.h"
+#include <arbdbt.h>
 
-#define READING_BUFFER_SIZE (1024*32)
+#include "gb_storage.h"
+#include "gb_localdata.h"
+#include "gb_map.h"
+#include "gb_load.h"
+
+static int gb_verbose_mode = 0;
+void GB_set_verbose(){
+    gb_verbose_mode = 1;
+}
 
 /* ------------------------------------------ */
 /* helper code to read ascii file in portions */
@@ -21,6 +31,8 @@
 /* ----------------------- */
 /*      ReadingBuffer      */
 /* ----------------------- */
+
+#define READING_BUFFER_SIZE (1024*32)
 
 typedef struct reading_buffer_S {
     char                    *data;
@@ -183,7 +195,7 @@ static ReaderPos getPosition(const Reader r) {
     ReaderPos     p = 0;
     ReadingBuffer b = r->first;
     while (b != r->current) {
-        ad_assert(b);
+        gb_assert(b);
         p += b->read_bytes;
         b  = b->next;
     }
@@ -1172,8 +1184,8 @@ long gb_read_bin(FILE *in,GBCONTAINER *gbd, int diff_file_allowed)
 
                     GB_commit_transaction((GBDATA*)gbd);
 
-                    ad_assert(newGbd->main_idx == new_idx);
-                    ad_assert((new_idx % GB_MAIN_ARRAY_SIZE) == new_idx);
+                    gb_assert(newGbd->main_idx == new_idx);
+                    gb_assert((new_idx % GB_MAIN_ARRAY_SIZE) == new_idx);
 
                     gb_main_array[new_idx] = Main;
                     Main->data = newGbd;
@@ -1276,28 +1288,28 @@ GB_MAIN_IDX gb_make_main_idx(GB_MAIN_TYPE *Main)
         gb_next_main_idx_for_mapfile = 0;
     }
 
-    ad_assert((idx%GB_MAIN_ARRAY_SIZE) == idx);
+    gb_assert((idx%GB_MAIN_ARRAY_SIZE) == idx);
     
     gb_main_array[idx] = Main;
 
     return idx;
 }
 
-GB_ERROR gb_login_remote(struct gb_main_type *gb_main,const char *path,const char *opent) {
-    GBCONTAINER *gbd   = gb_main->data;
+GB_ERROR gb_login_remote(GB_MAIN_TYPE *Main, const char *path, const char *opent) {
+    GBCONTAINER *gbd   = Main->data;
     GB_ERROR     error = NULL;
 
-    gb_main->local_mode = GB_FALSE;
-    gb_main->c_link     = gbcmc_open(path);
+    Main->local_mode = GB_FALSE;
+    Main->c_link     = gbcmc_open(path);
 
-    if (!gb_main->c_link) {
+    if (!Main->c_link) {
         error = GBS_global_string("There is no ARBDB server '%s', please start one or add a filename", path);
     }
     else {
-        gbd->server_id       = 0;
-        gb_main->remote_hash = GBS_create_hashi(GB_REMOTE_HASH_SIZE);
-        error                = gb_init_transaction(gbd); /* login in server */
-        
+        gbd->server_id    = 0;
+        Main->remote_hash = GBS_create_numhash(GB_REMOTE_HASH_SIZE);
+        error             = gb_init_transaction(gbd); /* login in server */
+
         if (!error) {
             gbd->flags2.folded_container = 1;
 
@@ -1330,17 +1342,17 @@ GBDATA *GB_login(const char *cpath,const char *opent,const char *user)
         'N' assume new database format (do not check whether to convert old->new compression)
      */
 {
-    GBCONTAINER         *gbd;
-    FILE                *input;
-    long                 i;
-    struct gb_main_type *Main;
-    enum gb_open_types   opentype;
-    GB_CSTR              quickFile           = NULL;
-    int                  ignoreMissingMaster = 0;
-    int                  loadedQuickIndex    = -1;
-    GB_ERROR             error               = 0;
-    char                *path                = strdup(cpath);
-    GB_BOOL              dbCreated           = GB_FALSE;
+    GBCONTAINER        *gbd;
+    FILE               *input;
+    long                i;
+    GB_MAIN_TYPE       *Main;
+    enum gb_open_types  opentype;
+    GB_CSTR             quickFile           = NULL;
+    int                 ignoreMissingMaster = 0;
+    int                 loadedQuickIndex    = -1;
+    GB_ERROR            error               = 0;
+    char               *path                = strdup(cpath);
+    GB_BOOL             dbCreated           = GB_FALSE;
 
     GBK_install_SIGSEGV_handler(GB_TRUE);
 
@@ -1353,7 +1365,7 @@ GBDATA *GB_login(const char *cpath,const char *opent,const char *user)
         ; /* remote access */
     }else if (GBS_string_matches(path,"*.quick?",GB_MIND_CASE)){
         char *ext = gb_findExtension(path);
-        ad_assert(ext!=0);
+        gb_assert(ext!=0);
         if (isdigit(ext[6]))
         {
             loadedQuickIndex = atoi(ext+6);
@@ -1629,10 +1641,4 @@ GBDATA *GB_open(const char *path, const char *opent)
     const char *user;
     user = GB_getenvUSER();
     return GB_login(path,opent,user);
-}
-
-int gb_verbose_mode = 0;
-
-void GB_set_verbose(){
-    gb_verbose_mode = 1;
 }

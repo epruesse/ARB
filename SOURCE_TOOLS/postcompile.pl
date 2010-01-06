@@ -110,6 +110,7 @@ foreach (<>) {
       foreach (@included) {
         push @out, $_.': included from here';
       }
+      @included = ();
     }
   }
 }

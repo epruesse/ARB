@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef AD_LPRO_H
-#define AD_LPRO_H
+#ifndef GB_PROT_H
+#define GB_PROT_H
 
 /* define ARB attributes: */
 #ifndef ATTRIBUTES_H
@@ -27,7 +27,7 @@ GBDATA *gb_search_system_folder_rek(GBDATA *gbd);
 void gb_search_system_folder(GBDATA *gb_main);
 long gb_read_bin(FILE *in, GBCONTAINER *gbd, int diff_file_allowed);
 GB_MAIN_IDX gb_make_main_idx(GB_MAIN_TYPE *Main);
-GB_ERROR gb_login_remote(struct gb_main_type *gb_main, const char *path, const char *opent);
+GB_ERROR gb_login_remote(GB_MAIN_TYPE *Main, const char *path, const char *opent);
 
 /* ad_save_load.cxx */
 char *gb_findExtension(char *path);
@@ -99,7 +99,9 @@ long gbcmc_close(struct gbcmc_comm *link);
 GB_ERROR gbcm_logout(GBCONTAINER *gb_main, char *user);
 
 /* adhash.cxx */
-long gbs_hashi_index(long key, long size);
+long gbs_get_a_prime(long above_or_equal_this);
+
+/* adcache.cxx */
 void gb_init_cache(GB_MAIN_TYPE *Main);
 char *gb_read_cache(GBDATA *gbd);
 void *gb_free_cache(GB_MAIN_TYPE *Main, GBDATA *gbd);
@@ -123,10 +125,12 @@ char *gb_compress_by_dictionary(GB_DICTIONARY *dict, GB_CSTR s_source, long size
 GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem);
 
 /* adstring.cxx */
-GB_ERROR gb_scan_directory(char *basename, struct gb_scandir *sd) __ATTR__USERESULT;
 void gbs_uppercase(char *str);
 void gbs_memcopy(char *dest, const char *source, long len);
 char *gbs_add_path(char *path, char *name);
+
+/* adfile.cxx */
+GB_ERROR gb_scan_directory(char *basename, gb_scandir *sd) __ATTR__USERESULT;
 
 /* adsystem.cxx */
 GB_ERROR gb_load_dictionary_data(GBDATA *gb_main, const char *key, char **dict_data, long *size);
@@ -150,6 +154,7 @@ GBDATA *gb_create_container(GBDATA *father, const char *key);
 void gb_rename(GBCONTAINER *gbc, const char *new_key);
 GB_ERROR gb_delete_force(GBDATA *source);
 GB_ERROR gb_set_compression(GBDATA *source);
+void gb_set_compression_mask(GBDATA *gb_main, GB_COMPRESSION_MASK disable_compression);
 GB_ERROR gb_init_transaction(GBCONTAINER *gbd);
 GB_ERROR gb_add_changed_callback_list(GBDATA *gbd, struct gb_transaction_save *old, GB_CB_TYPE gbtype, GB_CB func, int *clientdata);
 GB_ERROR gb_add_delete_callback_list(GBDATA *gbd, struct gb_transaction_save *old, GB_CB func, int *clientdata);
@@ -168,8 +173,8 @@ void gb_create_header_array(GBCONTAINER *gbc, int size);
 void gb_link_entry(GBCONTAINER *father, GBDATA *gbd, long index_pos);
 void gb_unlink_entry(GBDATA *gbd);
 void gb_create_extended(GBDATA *gbd);
-struct gb_main_type *gb_make_gb_main_type(const char *path);
-char *gb_destroy_main(struct gb_main_type *Main);
+GB_MAIN_TYPE *gb_make_gb_main_type(const char *path);
+char *gb_destroy_main(GB_MAIN_TYPE *Main);
 GBDATA *gb_make_pre_defined_entry(GBCONTAINER *father, GBDATA *gbd, long index_pos, GBQUARK keyq);
 void gb_rename_entry(GBCONTAINER *gbc, const char *new_key);
 GBDATA *gb_make_entry(GBCONTAINER *father, const char *key, long index_pos, GBQUARK keyq, GB_TYPES type);
@@ -217,8 +222,8 @@ char *gb_index_check_in(GBDATA *gbd);
 void gb_index_check_out(GBDATA *gbd);
 GBDATA *gb_index_find(GBCONTAINER *gbf, struct gb_index_files_struct *ifs, GBQUARK quark, const char *val, GB_CASE case_sens, int after_index);
 char *gb_set_undo_type(GBDATA *gb_main, GB_UNDO_TYPE type);
-void gb_init_undo_stack(struct gb_main_type *Main);
-void gb_free_undo_stack(struct gb_main_type *Main);
+void gb_init_undo_stack(GB_MAIN_TYPE *Main);
+void gb_free_undo_stack(GB_MAIN_TYPE *Main);
 char *gb_set_undo_sync(GBDATA *gb_main);
 char *gb_free_all_undos(GBDATA *gb_main);
 char *gb_disable_undo(GBDATA *gb_main);
@@ -254,7 +259,7 @@ int gbcm_write(int socket, const char *ptr, long size);
 void *gbcm_sigio(void);
 GB_ERROR gbcm_get_m_id(const char *path, char **m_name, long *id);
 GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *psocket, char **unix_name);
-long gbcms_close(struct gbcmc_comm *link);
+long gbcms_close(gbcmc_comm *link);
 struct gbcmc_comm *gbcmc_open(const char *path);
 long gbcm_write_two(int socket, long a, long c);
 long gbcm_read_two(int socket, long a, long *b, long *c);
@@ -264,5 +269,5 @@ long gbcm_write_long(int socket, long data);
 long gbcm_read_long(int socket);
 
 #else
-#error ad_lpro.h included twice
-#endif /* AD_LPRO_H */
+#error gb_prot.h included twice
+#endif /* GB_PROT_H */

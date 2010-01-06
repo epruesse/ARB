@@ -510,7 +510,7 @@ void AW_awar::update_target(AW_var_target *pntr){
         case AW_FLOAT:  this->get((float *)pntr->pointer);break;
         case AW_INT:    this->get((long *)pntr->pointer);break;
         default:
-            gb_assert(0);
+            aw_assert(0);
             GB_warning("Unknown awar type");
             break;
     }

@@ -10,11 +10,9 @@
 /*                                                               */
 /* ============================================================= */
 
-#include "adlocal.h"
+#include "gb_local.h"
  
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
+#include <cctype>
 #include <regex.h>
 
  /* ------------------------ */
@@ -31,16 +29,16 @@ struct GBS_string_matcher {
     string_matcher_type  type;
     GB_CASE              case_flag;
     char                *wildexpr;
-    GBS_REGEX           *regexpr;
+    GBS_regex           *regexpr;
 };
 
-GBS_MATCHER *GBS_compile_matcher(const char *search_expr, GB_CASE case_flag) {
+GBS_string_matcher *GBS_compile_matcher(const char *search_expr, GB_CASE case_flag) {
     /* returns a valid string matcher (to be used with GBS_string_matches_regexp)
      * or NULL (in which case an error was exported)
      */
 
-    GBS_MATCHER *matcher = (GBS_MATCHER*)malloc(sizeof(*matcher));
-    GB_ERROR     error   = 0;
+    GBS_string_matcher *matcher = (GBS_string_matcher*)malloc(sizeof(*matcher));
+    GB_ERROR            error   = 0;
 
     matcher->type      = SM_INVALID;
     matcher->case_flag = case_flag;
@@ -76,7 +74,7 @@ GBS_MATCHER *GBS_compile_matcher(const char *search_expr, GB_CASE case_flag) {
     }
 
     if (matcher->type == SM_INVALID) {
-        error = GBS_global_string("Failed to create GBS_MATCHER from '%s'", search_expr);
+        error = GBS_global_string("Failed to create GBS_string_matcher from '%s'", search_expr);
     }
 
     if (error) {
@@ -87,7 +85,7 @@ GBS_MATCHER *GBS_compile_matcher(const char *search_expr, GB_CASE case_flag) {
     return matcher;
 }
 
-void GBS_free_matcher(GBS_MATCHER *matcher) {
+void GBS_free_matcher(GBS_string_matcher *matcher) {
     free(matcher->wildexpr);
     if (matcher->regexpr) GBS_free_regexpr(matcher->regexpr);
     free(matcher);
@@ -98,8 +96,8 @@ void GBS_free_matcher(GBS_MATCHER *matcher) {
 
 struct GBS_regex { regex_t compiled; }; // definition exists twice (see ../SL/REGEXPR/RegExpr.cxx)
 
-GBS_REGEX *GBS_compile_regexpr(const char *regexpr, GB_CASE case_flag, GB_ERROR *error) {
-    GBS_REGEX *comreg  = (GBS_REGEX*)malloc(sizeof(*comreg));
+GBS_regex *GBS_compile_regexpr(const char *regexpr, GB_CASE case_flag, GB_ERROR *error) {
+    GBS_regex *comreg  = (GBS_regex*)malloc(sizeof(*comreg));
     int        cflags  = REG_EXTENDED|(case_flag == GB_IGNORE_CASE ? REG_ICASE : 0)|REG_NEWLINE;
     int        errcode = regcomp(&comreg->compiled, regexpr, cflags);
 
@@ -120,7 +118,7 @@ GBS_REGEX *GBS_compile_regexpr(const char *regexpr, GB_CASE case_flag, GB_ERROR 
     return comreg;
 }
 
-void GBS_free_regexpr(GBS_REGEX *toFree) {
+void GBS_free_regexpr(GBS_regex *toFree) {
     if (toFree) {
         regfree(&toFree->compiled);
         free(toFree);
@@ -147,13 +145,13 @@ const char *GBS_unwrap_regexpr(const char *regexpr_in_slashes, GB_CASE *case_fla
             end--;
         }
         if (regexpr_in_slashes[0] == '/' && end[-1] == '/') {
-            ad_assert(*error == NULL);
+            gb_assert(*error == NULL);
 
             static char   *result_buffer = 0;
             static size_t  max_len    = 0;
 
             size_t len = end-regexpr_in_slashes-2;
-            ad_assert(len>0); // don't accept empty expression
+            gb_assert(len>0); // don't accept empty expression
 
             if (len>max_len) {
                 max_len = len*3/2;
@@ -174,7 +172,7 @@ const char *GBS_unwrap_regexpr(const char *regexpr_in_slashes, GB_CASE *case_fla
     return result;
 }
 
-const char *GBS_regmatch_compiled(const char *str, GBS_REGEX *comreg, size_t *matchlen) {
+const char *GBS_regmatch_compiled(const char *str, GBS_regex *comreg, size_t *matchlen) {
     /* like GBS_regmatch,
      * - but uses a precompiled regular expression
      * - no errors can occur here (beside out of memory, which is not handled)
@@ -212,7 +210,7 @@ const char *GBS_regmatch(const char *str, const char *regExpr, size_t *matchlen,
     const char *unwrapped_expr = GBS_unwrap_regexpr(regExpr, &case_flag, error);
 
     if (unwrapped_expr) {
-        GBS_REGEX *comreg = GBS_compile_regexpr(unwrapped_expr, case_flag, error);
+        GBS_regex *comreg = GBS_compile_regexpr(unwrapped_expr, case_flag, error);
         if (comreg) {
             firstMatch = GBS_regmatch_compiled(str, comreg, matchlen);
             GBS_free_regexpr(comreg);
@@ -261,7 +259,7 @@ char *GBS_regreplace(const char *str, const char *regReplExpr, GB_ERROR *error) 
         else {
             char      *regexpr  = GB_strpartdup(unwrapped_expr, sep-1);
             char      *replexpr = GB_strpartdup(sep+1, NULL);
-            GBS_REGEX *comreg   = GBS_compile_regexpr(regexpr, case_flag, error);
+            GBS_regex *comreg   = GBS_compile_regexpr(regexpr, case_flag, error);
 
             if (comreg) {
                 struct GBS_strstruct *out    = GBS_stropen(1000);
@@ -468,7 +466,7 @@ GB_BOOL GBS_string_matches(const char *str, const char *search, GB_CASE case_sen
     return GB_TRUE;
 }
 
-GB_BOOL GBS_string_matches_regexp(const char *str, const GBS_MATCHER *expr) {
+GB_BOOL GBS_string_matches_regexp(const char *str, const GBS_string_matcher *expr) {
     /* Wildcard or regular expression match
      * Returns GB_TRUE if match
      *
@@ -490,7 +488,7 @@ GB_BOOL GBS_string_matches_regexp(const char *str, const GBS_MATCHER *expr) {
             break;
         }
         case SM_INVALID: {
-            ad_assert(0);
+            gb_assert(0);
             break;
         }
     }

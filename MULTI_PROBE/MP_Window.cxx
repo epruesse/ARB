@@ -123,17 +123,17 @@ AW_window_simple *MP_Window::create_result_window(AW_root *aw_root)
 }
 
 static const char *parse_word(const char *& line, int& wordlen) {
-    gb_assert(line);
+    mp_assert(line);
     
     while (line[0] == ' ') ++line; // eat whitespace
     if (line[0] == 0) return 0; // at EOL
 
     const char *behind_word       = strchr(line, ' ');
     if (!behind_word) behind_word = strchr(line, 0); // get EOL
-    gb_assert(behind_word);
+    mp_assert(behind_word);
 
     wordlen = behind_word-line;
-    gb_assert(wordlen);
+    mp_assert(wordlen);
 
     static char *word_buffer = 0;
     freeset(word_buffer, GB_strndup(line, wordlen));

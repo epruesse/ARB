@@ -78,7 +78,7 @@ void aw_incdec_color(AW_window *aww,const char *action){
         int len = strlen(color);
         if (len==4 || len==7) {
             len = (len-1)/3; // len of one color channel (1 or 2)
-            gb_assert(len==1 || len==2);
+            aw_assert(len==1 || len==2);
 
             int diff = action[2]==action[1] ? 7 : 1;
 
@@ -590,7 +590,7 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
     const char *old_font_base_name = "default";
 
     char background[50];
-    gb_assert(default_background_color[0]);
+    aw_assert(default_background_color[0]);
 
     sprintf(background, "-background$%s", default_background_color);
 

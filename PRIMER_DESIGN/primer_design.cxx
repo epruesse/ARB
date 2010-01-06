@@ -168,7 +168,7 @@ void primer_design_event_go(AW_window *aww) {
 
         if ( !error ) {
             if ( !pdrw_id ) create_primer_design_result_window(aww);
-            gb_assert( pdrw_id );
+            prd_assert( pdrw_id );
 
             // create result-list:
             pdrw->clear_selection_list( pdrw_id );
@@ -302,7 +302,7 @@ void primer_design_event_init( AW_window *aww, AW_CL cl_from_gene) {
     }
 
     if (!error && from_gene) {
-        gb_assert(is_genom_db); // otherwise button should not exist
+        prd_assert(is_genom_db); // otherwise button should not exist
 
         gb_gene = GEN_find_gene(gb_species, selected_gene);
         if (!gb_gene) {

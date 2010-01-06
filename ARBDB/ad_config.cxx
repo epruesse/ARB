@@ -11,15 +11,10 @@
 /*                                                                      */
 /* ==================================================================== */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "arbdb.h"
 #include "arbdbt.h"
 #include "ad_config.h"
+#include "gb_local.h"
 
-#define ad_assert(cond) arb_assert(cond)
 
 /* *******************************************************************************************
    editor configurations
@@ -243,7 +238,7 @@ GB_ERROR GBT_parse_next_config_item(GBT_config_parser *parser, GBT_config_item *
 void GBT_append_to_config_string(const GBT_config_item *item, GBS_strstruct *strstruct) {
     /* strstruct has to be created by GBS_stropen() */
 
-    ad_assert((item->type & (CI_UNKNOWN|CI_END_OF_CONFIG)) == 0);
+    gb_assert((item->type & (CI_UNKNOWN|CI_END_OF_CONFIG)) == 0);
 
     char prefix[] = "\1?";
     if (item->type == CI_CLOSE_GROUP) {
@@ -258,7 +253,7 @@ void GBT_append_to_config_string(const GBT_config_item *item, GBS_strstruct *str
             case CI_GROUP:        label = 'G'; break;
             case CI_FOLDED_GROUP: label = 'F'; break;
 
-            default : ad_assert(0); break;
+            default : gb_assert(0); break;
         }
         prefix[1] = label;
         GBS_strcat(strstruct, prefix);

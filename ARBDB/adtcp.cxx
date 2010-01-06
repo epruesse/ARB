@@ -8,14 +8,12 @@
 /*   www.arb-home.de                                               */
 /* =============================================================== */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
+#include <ctime>
 #include <sys/stat.h>
 
-#include "adlocal.h"
-#include "arbdbt.h"
+#include <arbdbt.h>
+
+#include "gb_local.h"
 
 #if defined(DEBUG)
 /* #define DUMP_ATD_ACCESS */
@@ -338,7 +336,7 @@ const char *GBS_read_arb_tcp(const char *env) {
         }
     }
 
-    ad_assert(result||error);
+    gb_assert(result||error);
     if (error) {
         GB_export_error(error);
         result = 0;

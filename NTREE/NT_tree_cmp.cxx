@@ -231,7 +231,7 @@ GB_ERROR AWT_species_set_root::copy_node_information(FILE *log, bool delete_old_
             GB_dump(cset->node->gb_node);
 
             GBDATA *gb_name = GB_entry(cset->node->gb_node, "group_name");
-            gb_assert(gb_name);
+            nt_assert(gb_name);
             if (gb_name) {
                 char *name = GB_read_string(gb_name);
 
