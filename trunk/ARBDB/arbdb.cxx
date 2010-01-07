@@ -344,7 +344,7 @@ GB_ERROR gb_unfold(GBCONTAINER *gbd, long deep, int index_pos)
     if (index_pos> gbd->d.nheader) gb_create_header_array(gbd,index_pos + 1);
     if (index_pos >= 0  && GB_HEADER_LIST_GBD(header[index_pos])) return 0;
 
-    if (GBCONTAINER_MAIN(gbd)->local_mode == GB_TRUE) {
+    if (GBCONTAINER_MAIN(gbd)->local_mode == true) {
         GB_internal_error("Cannot unfold local_mode database");
         return 0;
     }
@@ -391,7 +391,7 @@ struct gb_close_callback_struct {
 };
 
 #if defined(DEBUG)
-static GB_BOOL atclose_cb_exists(struct gb_close_callback_struct *gccs, gb_close_callback cb) {
+static bool atclose_cb_exists(struct gb_close_callback_struct *gccs, gb_close_callback cb) {
     return gccs && (gccs->cb == cb || atclose_cb_exists(gccs->next, cb));
 }
 #endif /* DEBUG */
@@ -906,7 +906,7 @@ GB_ERROR GB_write_pntr(GBDATA *gbd,const char *s, long bytes_size, long stored_s
     compression_mask = gb_get_compression_mask(Main, key, type);
 
     if (compression_mask){
-        d = gb_compress_data(gbd, key, s, bytes_size, &memsize, compression_mask, GB_FALSE);
+        d = gb_compress_data(gbd, key, s, bytes_size, &memsize, compression_mask, false);
     }
     else {
         d = NULL;
@@ -1205,7 +1205,7 @@ GBQUARK GB_key_2_quark(GBDATA *gbd, const char *s) {
     if (!s) return -1;
     index = GBS_read_hash(Main->key_2_index_hash,s);
     if (!index) {   /* create new index */
-        index = gb_create_key(Main,s,GB_TRUE);
+        index = gb_create_key(Main,s,true);
     }
     return (GBQUARK)index;
 }
@@ -1214,7 +1214,7 @@ GBQUARK GB_get_quark(GBDATA *gbd) {
     return GB_KEY_QUARK(gbd);
 }
 
-GB_BOOL GB_has_key(GBDATA *gbd, const char *key) {
+bool GB_has_key(GBDATA *gbd, const char *key) {
     GBQUARK quark = GB_key_2_quark(gbd, key);
     return (quark == GB_get_quark(gbd));
 }
@@ -1224,7 +1224,7 @@ GBQUARK gb_key_2_quark(GB_MAIN_TYPE *Main, const char *s) {
     if (!s) return 0;
     index = GBS_read_hash(Main->key_2_index_hash,s);
     if (!index) {   /* create new index */
-        index = gb_create_key(Main,s,GB_TRUE);
+        index = gb_create_key(Main,s,true);
     }
     return (GBQUARK)index;
 }
@@ -1276,16 +1276,16 @@ GBDATA *GB_get_root(GBDATA *gbd) {  /* Get the root entry (gb_main) */
     return (GBDATA *)GB_MAIN(gbd)->data;
 }
 
-GB_BOOL GB_check_father(GBDATA *gbd, GBDATA *gb_maybefather) {
+bool GB_check_father(GBDATA *gbd, GBDATA *gb_maybefather) {
     /* Test whether an entry is a subentry of another */
     GBDATA *gbfather;
     for (gbfather = GB_get_father(gbd);
          gbfather;
          gbfather = GB_get_father(gbfather))
     {
-        if (gbfather == gb_maybefather) return GB_TRUE;
+        if (gbfather == gb_maybefather) return true;
     }
-    return GB_FALSE;
+    return false;
 }
 
 GBDATA *gb_create(GBDATA *father,const char *key, GB_TYPES type){
@@ -1475,10 +1475,10 @@ GB_ERROR gb_delete_force(GBDATA *source)    /* delete always */
 #endif /* DEVEL_RALF */
 
 GB_ERROR GB_copy(GBDATA *dest, GBDATA *source) {
-    return GB_copy_with_protection(dest, source, GB_FALSE);
+    return GB_copy_with_protection(dest, source, false);
 }
 
-GB_ERROR GB_copy_with_protection(GBDATA *dest, GBDATA *source, GB_BOOL copy_all_protections) {
+GB_ERROR GB_copy_with_protection(GBDATA *dest, GBDATA *source, bool copy_all_protections) {
     GB_TYPES type;
     GB_ERROR error = 0;
     GBDATA *gb_p;
@@ -1569,7 +1569,7 @@ GB_ERROR GB_copy_with_protection(GBDATA *dest, GBDATA *source, GB_BOOL copy_all_
     gb_touch_entry(dest, GB_NORMAL_CHANGE);
 
     dest->flags.security_read = source->flags.security_read;
-    if (copy_all_protections == GB_TRUE) {
+    if (copy_all_protections == true) {
         dest->flags.security_write  = source->flags.security_write;
         dest->flags.security_delete = source->flags.security_delete;
     }
@@ -1716,18 +1716,18 @@ GB_ERROR GB_clear_temporary(GBDATA *gbd)
     return 0;
 }
 
-GB_BOOL GB_is_temporary(GBDATA *gbd) {
+bool GB_is_temporary(GBDATA *gbd) {
     GB_TEST_TRANSACTION(gbd);
     return (long)gbd->flags.temporary;
 }
 
-GB_BOOL GB_in_temporary_branch(GBDATA *gbd) {
+bool GB_in_temporary_branch(GBDATA *gbd) {
     // returns true, if 'gbd' is member of a temporary subtree
 
-    if (GB_is_temporary(gbd)) return GB_TRUE;
+    if (GB_is_temporary(gbd)) return true;
 
     GBDATA *gb_parent = GB_get_father(gbd);
-    if (!gb_parent) return GB_FALSE;
+    if (!gb_parent) return false;
 
     return GB_in_temporary_branch(gb_parent);
 }
@@ -2089,9 +2089,9 @@ GB_MAIN_TYPE *gb_get_main_during_cb() {
     return g_b_old_main;
 }
 
-NOT4PERL GB_BOOL GB_inside_callback(GBDATA *of_gbd, GB_CB_TYPE cbtype) {
+NOT4PERL bool GB_inside_callback(GBDATA *of_gbd, GB_CB_TYPE cbtype) {
     GB_MAIN_TYPE *Main   = gb_get_main_during_cb();
-    GB_BOOL       inside = GB_FALSE;
+    bool          inside = false;
 
     if (Main) {                 // inside a callback
         gb_assert(g_b_old_callback_list);
@@ -2108,7 +2108,7 @@ NOT4PERL GB_BOOL GB_inside_callback(GBDATA *of_gbd, GB_CB_TYPE cbtype) {
             gb_assert(curr_cbtype != GB_CB_NONE); // wtf!? are we inside callback or not?
 
             if ((cbtype&curr_cbtype) != GB_CB_NONE) {
-                inside = GB_TRUE;
+                inside = true;
             }
         }
     }
@@ -2282,9 +2282,9 @@ GB_ERROR GB_add_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientda
     return GB_add_priority_callback(gbd, type, func, clientdata, 5); // use default priority 5
 }
 
-static void gb_remove_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata, GB_BOOL cd_should_match) {
-    GB_BOOL removed     = GB_FALSE;
-    GB_BOOL exactly_one = cd_should_match; // remove exactly one callback
+static void gb_remove_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata, bool cd_should_match) {
+    bool removed     = false;
+    bool exactly_one = cd_should_match; // remove exactly one callback
 
 #if defined(DEBUG)
     if (GB_inside_callback(gbd, GB_CB_DELETE)) {
@@ -2315,7 +2315,7 @@ static void gb_remove_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *cl
 
                 *cb_ptr = cb->next;
                 gbm_free_mem((char *)cb,sizeof(struct gb_callback),GB_GBM_INDEX(gbd));
-                removed = GB_TRUE;
+                removed = true;
                 if (exactly_one) break;
             }
             else {
@@ -2328,12 +2328,12 @@ static void gb_remove_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *cl
 
 void GB_remove_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata) {
     // remove specific callback (type, func and clientdata must match)
-    gb_remove_callback(gbd, type, func, clientdata, GB_TRUE);
+    gb_remove_callback(gbd, type, func, clientdata, true);
 }
 
 void GB_remove_all_callbacks_to(GBDATA *gbd, GB_CB_TYPE type, GB_CB func) {
     // removes all callbacks 'func' bound to 'gbd' with 'type'
-    gb_remove_callback(gbd, type, func, 0, GB_FALSE);
+    gb_remove_callback(gbd, type, func, 0, false);
 }
 
 GB_ERROR GB_ensure_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata) {

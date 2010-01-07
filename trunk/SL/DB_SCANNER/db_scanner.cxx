@@ -50,7 +50,7 @@ static GBDATA *awt_get_arbdb_scanner_gbd_and_begin_trans(AW_CL arbdb_scanid)
 
 
 
-static GB_BOOL awt_check_scanner_key_data(struct adawcbstruct *cbs,GBDATA *gbd)
+static bool awt_check_scanner_key_data(struct adawcbstruct *cbs,GBDATA *gbd)
 {
     GBDATA *gb_key_data;
     gb_key_data = GB_search(cbs->gb_main,cbs->selector->change_key_path,GB_CREATE_CONTAINER);
@@ -148,7 +148,7 @@ static void awt_arbdb_scanner_value_change(void *, struct adawcbstruct *cbs)
                     if (strlen(value)) {
                         GBT_begin_rename_session(cbs->gb_main,0);
 
-                        error = GBT_rename_species(name, value, GB_FALSE);
+                        error = GBT_rename_species(name, value, false);
 
                         if (error) GBT_abort_rename_session();
                         else GBT_commit_rename_session(aw_status, aw_status);
@@ -308,11 +308,11 @@ AW_CL awt_create_arbdb_scanner(GBDATA                 *gb_main, AW_window *aws,
 
     sprintf(buffer,"tmp/arbdb_scanner_%i/edit_enable",scanner_id);
     cbs->def_filter = strdup(buffer);
-    aw_root->awar_int( cbs->def_filter,GB_TRUE, AW_ROOT_DEFAULT);
+    aw_root->awar_int(cbs->def_filter, true, AW_ROOT_DEFAULT);
 
     sprintf(buffer,"tmp/arbdb_scanner_%i/mark",scanner_id);
     cbs->def_dir = strdup(buffer);
-    aw_root->awar_int( cbs->def_dir,GB_TRUE, AW_ROOT_DEFAULT);
+    aw_root->awar_int( cbs->def_dir, true, AW_ROOT_DEFAULT);
 
     aws->at(box_pos_fig);
 

@@ -150,7 +150,7 @@ NOT4PERL GB_ERROR GB_get_error() {
     return GB_error_buffer;
 }
 
-GB_BOOL GB_have_error() {
+bool GB_have_error() {
     return GB_error_buffer != 0;
 }
 
@@ -984,7 +984,7 @@ uint32_t GBS_checksum(const char *seq, int ignore_case, const char *exclude)
     2. minlen > 1.0  contain more than minlen characters that also exists in chars
 */
 
-char *GBS_extract_words( const char *source,const char *chars, float minlen, GB_BOOL sort_output ) {
+char *GBS_extract_words( const char *source,const char *chars, float minlen, bool sort_output) {
     char           *s         = strdup(source);
     char          **ps        = (char **)GB_calloc(sizeof(char *), (strlen(source)>>1) + 1);
     GBS_strstruct  *strstruct = GBS_stropen(1000);
@@ -1117,7 +1117,7 @@ void sigsegv_handler_dump(int sig) {
     sigsegv_handler_exit(sig);
 }
 
-void GBK_install_SIGSEGV_handler(GB_BOOL install) {
+void GBK_install_SIGSEGV_handler(bool install) {
     signal(SIGSEGV, install ? sigsegv_handler_dump : sigsegv_handler_exit);
 }
 

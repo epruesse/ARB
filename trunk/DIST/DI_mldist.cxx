@@ -18,7 +18,7 @@
 
 #define epsilon 0.000001                            // a small number
 
-void di_mldist::givens(di_ml_matrix a,long i,long j,long n,double ctheta,double stheta,GB_BOOL left)
+void di_mldist::givens(di_ml_matrix a,long i,long j,long n,double ctheta,double stheta, bool left)
 {
     /* Givens transform at i,j for 1..n with angle theta */
     long            k;
@@ -61,9 +61,9 @@ void di_mldist::tridiag(di_ml_matrix a,long n,double accuracy)
     for (i = 2; i < n; i++) {
         for (j = i + 1; j <= n; j++) {
             coeffs(a[i - 2][i - 1], a[i - 2][j - 1], &c, &s, accuracy);
-            givens(a, i, j, n, c, s, GB_TRUE);
-            givens(a, i, j, n, c, s, GB_FALSE);
-            givens(eigvecs, i, j, n, c, s, GB_TRUE);
+            givens(a, i, j, n, c, s, true);
+            givens(a, i, j, n, c, s, false);
+            givens(eigvecs, i, j, n, c, s, true);
         }
     }
 }                               /* tridiag */
@@ -88,9 +88,9 @@ void di_mldist::shiftqr(di_ml_matrix a, long n, double accuracy)
                 a[j][j] -= approx;
             for (j = 1; j < i; j++) {
                 coeffs(a[j - 1][j - 1], a[j][j - 1], &c, &s, accuracy);
-                givens(a, j, j + 1, i, c, s, GB_TRUE);
-                givens(a, j, j + 1, i, c, s, GB_FALSE);
-                givens(eigvecs, j, j + 1, n, c, s, GB_TRUE);
+                givens(a, j, j + 1, i, c, s, true);
+                givens(a, j, j + 1, i, c, s, false);
+                givens(eigvecs, j, j + 1, n, c, s, true);
             }
             for (j = 0; j < i; j++)
                 a[j][j] += approx;

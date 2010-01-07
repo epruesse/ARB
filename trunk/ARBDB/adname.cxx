@@ -61,7 +61,7 @@ GB_ERROR GBT_begin_rename_session(GBDATA *gb_main, int all_flag) {
     return error;
 }
 
-GB_ERROR GBT_rename_species(const char *oldname, const  char *newname, GB_BOOL ignore_protection)
+GB_ERROR GBT_rename_species(const char *oldname, const  char *newname, bool ignore_protection)
 {
     GBDATA   *gb_species;
     GBDATA   *gb_name;

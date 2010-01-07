@@ -542,7 +542,7 @@ static GB_ERROR AWTI_export_format(AW_root *aw_root, const char *formname, const
             char *intermediate_export;
             error = AWTI_export_format(aw_root, efo.new_format, NULL, &intermediate_export);
             if (!error) {
-                awte_assert(GB_is_privatefile(intermediate_export, GB_FALSE));
+                awte_assert(GB_is_privatefile(intermediate_export, false));
 
                 aw_status(GBS_global_string("Converting to %s", efo.suffix));
 

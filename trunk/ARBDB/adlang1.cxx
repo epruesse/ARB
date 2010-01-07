@@ -1572,12 +1572,12 @@ static void build_taxonomy_rek(GBT_TREE *node, GB_HASH *tax_hash, const char *pa
 
 static GB_HASH *cached_taxonomies = 0;
 
-static GB_BOOL is_cached_taxonomy(const char *key, long val, void *cl_ct) {
+static bool is_cached_taxonomy(const char *key, long val, void *cl_ct) {
     // GBUSE(key);
     struct cached_taxonomy *ct1 = (struct cached_taxonomy *)val;
     struct cached_taxonomy *ct2 = (struct cached_taxonomy *)cl_ct;
 
-    return ct1 == ct2 ? GB_TRUE : GB_FALSE;
+    return ct1 == ct2;
 }
 
 static const char *tree_of_cached_taxonomy(struct cached_taxonomy *ct) {
@@ -1690,7 +1690,7 @@ static struct cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *
     if (!cached) {
         GBT_TREE *tree    = GBT_read_tree(gb_main, tree_name, sizeof(*tree));
         if (!tree) *error = GB_await_error();
-        else     *error   = GBT_link_tree(tree, gb_main, GB_FALSE, 0, 0);
+        else     *error   = GBT_link_tree(tree, gb_main, false, 0, 0);
 
         if (!*error) {
             GBDATA *gb_tree = GBT_get_tree(gb_main, tree_name);
@@ -1938,7 +1938,7 @@ static GB_ERROR gbl_sequence(GBL_command_arguments *args) {
                 break;
             }
             case GBT_ITEM_GENE: {
-                char *seq = GBT_read_gene_sequence(args->gb_ref, GB_TRUE, 0);
+                char *seq = GBT_read_gene_sequence(args->gb_ref, true, 0);
 
                 if (!seq) error = GB_await_error();
                 else PASS_2_OUT(args, seq);
@@ -2632,7 +2632,7 @@ static GB_ERROR gbl_exec(GBL_command_arguments *args)
             free(sys);
         }
 
-        gb_assert(GB_is_privatefile(inputname, GB_FALSE));
+        gb_assert(GB_is_privatefile(inputname, false));
         GB_unlink_or_warn(inputname, &error);
         free(inputname);
     }

@@ -246,7 +246,7 @@ LocationPtr parseLocation(const string& source) {
 }
 
 GEN_position *Location::create_GEN_position() const {
-    GEN_position *pos = GEN_new_position(count(), GB_BOOL(getJoinType() == LJT_JOIN));
+    GEN_position *pos = GEN_new_position(count(), getJoinType() == LJT_JOIN);
     GEN_use_uncertainties(pos);
 
 #if defined(DEBUG)

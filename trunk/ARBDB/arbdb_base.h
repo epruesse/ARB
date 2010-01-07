@@ -30,11 +30,6 @@ typedef const char *GB_CBUFFER;                     // points to a piece of mem 
 struct GBDATA;
 struct GB_HASH;
 
-// @@@ TODO: GB_BOOL/GB_TRUE/GB_FALSE should be replaced by bool/true/false in code 
-typedef bool GB_BOOL;
-const bool   GB_FALSE = false;
-const bool   GB_TRUE  = true;
-
 enum GB_CB_TYPE {
     GB_CB_NONE        = 0,
     GB_CB_DELETE      = 1,

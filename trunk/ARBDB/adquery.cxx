@@ -57,8 +57,8 @@ const char *GB_get_GBDATA_path(GBDATA *gbd) {
                     QUERIES
 ********************************************************************************************/
 
-static GB_BOOL gb_find_value_equal(GBDATA *gb, GB_TYPES type, const char *val, GB_CASE case_sens) {
-    GB_BOOL equal = GB_FALSE;
+static bool gb_find_value_equal(GBDATA *gb, GB_TYPES type, const char *val, GB_CASE case_sens) {
+    bool equal = false;
 
 #if defined(DEBUG)
     GB_TYPES realtype = GB_TYPE(gb);
@@ -79,12 +79,12 @@ static GB_BOOL gb_find_value_equal(GBDATA *gb, GB_TYPES type, const char *val, G
             
         case GB_INT: {
             int i                      = GB_read_int(gb);
-            if (i == *(int*)val) equal = GB_TRUE;
+            if (i == *(int*)val) equal = true;
             break;
         }
         case GB_FLOAT: {
             double d                      = GB_read_float(gb);
-            if (d == *(double*)val) equal = GB_TRUE;
+            if (d == *(double*)val) equal = true;
             break;
         }
         default: {
@@ -306,7 +306,7 @@ GBDATA *GB_find_string(GBDATA *gbd, const char *key, const char *str, GB_CASE ca
     // - fieldname 'key'
     // - type GB_STRING and
     // - content matching 'str'
-    // if 'case_sensitive' is GB_TRUE, content is matched case sensitive.
+    // if 'case_sensitive' is true, content is matched case sensitive.
     // GBS_string_matches is used to compare (supports wildcards)
     return gb_find_internal(gbd, key, GB_STRING, str, case_sens, gbs);
 }

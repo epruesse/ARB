@@ -14,10 +14,10 @@
 #include "gb_local.h"
 
 
-GBDATA *GBT_find_or_create_item_rel_item_data(GBDATA *gb_item_data, const char *itemname, const char *id_field, const char *id, GB_BOOL markCreated) {
+GBDATA *GBT_find_or_create_item_rel_item_data(GBDATA *gb_item_data, const char *itemname, const char *id_field, const char *id, bool markCreated) {
     /* Search for a item with field 'id_field' set to given 'id' (id compare is case-insensitive)
      * If item does not exist, create it.
-     * Newly created items are automatically marked, if 'markCreated' is GB_TRUE
+     * Newly created items are automatically marked, if 'markCreated' is true
      * items may be: species, genes, SAIs, ...
      */
 
@@ -51,7 +51,7 @@ GBDATA *GBT_find_or_create_item_rel_item_data(GBDATA *gb_item_data, const char *
 }
 
 GBDATA *GBT_find_or_create_species_rel_species_data(GBDATA *gb_species_data, const char *name) {
-    return GBT_find_or_create_item_rel_item_data(gb_species_data, "species", "name", name, GB_TRUE);
+    return GBT_find_or_create_item_rel_item_data(gb_species_data, "species", "name", name, true);
 }
 
 GBDATA *GBT_find_or_create_species(GBDATA *gb_main, const char *name) {
@@ -60,7 +60,7 @@ GBDATA *GBT_find_or_create_species(GBDATA *gb_main, const char *name) {
 
 GBDATA *GBT_find_or_create_SAI(GBDATA *gb_main,const char *name) {
     /* Search for an SAI, when SAI does not exist, create it */
-    return GBT_find_or_create_item_rel_item_data(GBT_get_SAI_data(gb_main), "extended", "name", name, GB_TRUE);
+    return GBT_find_or_create_item_rel_item_data(GBT_get_SAI_data(gb_main), "extended", "name", name, true);
 }
 
 

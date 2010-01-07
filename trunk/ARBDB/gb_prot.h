@@ -192,7 +192,7 @@ void gb_save_extern_data_in_ts(GBDATA *gbd);
 void gb_write_index_key(GBCONTAINER *father, long index, GBQUARK new_index);
 void gb_write_key(GBDATA *gbd, const char *s);
 void gb_create_key_array(GB_MAIN_TYPE *Main, int index);
-long gb_create_key(GB_MAIN_TYPE *Main, const char *s, GB_BOOL create_gb_key);
+long gb_create_key(GB_MAIN_TYPE *Main, const char *s, bool create_gb_key);
 void gb_free_all_keys(GB_MAIN_TYPE *Main);
 char *gb_abort_entry(GBDATA *gbd);
 int gb_abort_transaction_local_rek(GBDATA *gbd, long mode);
@@ -214,7 +214,7 @@ GB_BUFFER gb_uncompress_bytes(GB_CBUFFER source, long size, long *new_size);
 GB_BUFFER gb_uncompress_longs_old(GB_CBUFFER source, long size, long *new_size);
 GB_BUFFER gb_compress_longs(GB_CBUFFER source, long size, int last_flag);
 GB_DICTIONARY *gb_get_dictionary(GB_MAIN_TYPE *Main, GBQUARK key);
-GB_BUFFER gb_compress_data(GBDATA *gbd, int key, GB_CBUFFER source, long size, long *msize, GB_COMPRESSION_MASK max_compr, GB_BOOL pre_compressed);
+GB_BUFFER gb_compress_data(GBDATA *gbd, int key, GB_CBUFFER source, long size, long *msize, GB_COMPRESSION_MASK max_compr, bool pre_compressed);
 GB_CBUFFER gb_uncompress_data(GBDATA *gbd, GB_CBUFFER source, long size);
 
 /* adindex.cxx */

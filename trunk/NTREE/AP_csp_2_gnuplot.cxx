@@ -81,7 +81,7 @@ static char * get_overlay_files(AW_root *awr, const char *fname, GB_ERROR& error
 #if defined(DEVEL_RALF)
 #warning change error handling for GB_find_all_files() - globally!
 #endif // DEVEL_RALF
-                found_prefix_files             = GB_find_all_files(dir, mask, GB_FALSE);
+                found_prefix_files             = GB_find_all_files(dir, mask, false);
                 if (!found_prefix_files) error = GB_get_error();
             }
             free(mask);
@@ -89,7 +89,7 @@ static char * get_overlay_files(AW_root *awr, const char *fname, GB_ERROR& error
             if (!error) {
                 mask = GBS_global_string_copy("*.%s", name_postfix);
                 if (overlay_postfix) {
-                    found_postfix_files             = GB_find_all_files(dir, mask, GB_FALSE);
+                    found_postfix_files             = GB_find_all_files(dir, mask, false);
                     if (!found_postfix_files) error = GB_get_error();
                 }
                 free(mask);
@@ -480,7 +480,7 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
 
                         if (mode == 1) {
                             char *script = GBS_global_string_copy("gnuplot %s && rm -f %s", command_file, command_file);
-                            GB_xcmd(script, GB_TRUE, GB_TRUE);
+                            GB_xcmd(script, true, true);
                             free(script);
                         }
                         else {

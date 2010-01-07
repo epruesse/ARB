@@ -77,7 +77,7 @@ static void g_bt_table_deleted(GBDATA *gb_table,int *clientdata, GB_CB_TYPE gbty
     Main->table_hash = GBS_create_hash(256, GB_MIND_CASE);
 }
 
-GBDATA *GBT_open_table(GBDATA *gb_table_root,const char *table_name, GB_BOOL read_only){
+GBDATA *GBT_open_table(GBDATA *gb_table_root,const char *table_name, bool read_only){
     /** open a table. This routines is optimized to look for existing tables */
     GBDATA *gb_table;
     GBDATA *gb_table_name;

@@ -144,7 +144,7 @@ static long insert_species_in_tree_test(const char *key,long val, void *cd_isits
     AP_tree *leaf = tree->dup();
     leaf->gb_node = gb_node;
     leaf->name    = strdup(key);
-    leaf->is_leaf = GB_TRUE;
+    leaf->is_leaf = true;
 
     leaf->set_seq(leaf->get_tree_root()->get_seqTemplate()->dup());
     GB_ERROR error = leaf->get_seq()->bind_to_species(gb_node);
@@ -343,7 +343,7 @@ static long transform_gbd_to_leaf(const char *key, long val, void *) {
 
     leaf->gb_node = gb_node;
     leaf->name    = strdup(key);
-    leaf->is_leaf = GB_TRUE;
+    leaf->is_leaf = true;
 
     leaf->set_seq(troot->get_seqTemplate()->dup());
     GB_ERROR error = leaf->get_seq()->bind_to_species(gb_node);
@@ -470,7 +470,7 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
             int deep = 5;
             if (isits->every_sixteenth()) deep = -1;
             aw_status("optimization");
-            bestposl->get_father()->nn_interchange_rek(AP_FALSE, isits->abort_flag, deep, AP_BL_NNI_ONLY, GB_TRUE);
+            bestposl->get_father()->nn_interchange_rek(AP_FALSE, isits->abort_flag, deep, AP_BL_NNI_ONLY, true);
             ASSERT_VALID_TREE(rootNode());
         }
         AP_tree_nlen *brother = leaf->get_brother();
@@ -583,11 +583,11 @@ static void nt_add(AW_window *, AWT_canvas *ntw, AddWhat what, AP_BOOL quick, in
         }
         if (!quick ) {
             aw_status("final optimization");
-            rootEdge()->nni_rek(AP_FALSE,isits.abort_flag,-1,GB_FALSE, AP_BL_NNI_ONLY);
+            rootEdge()->nni_rek(AP_FALSE,isits.abort_flag,-1, false, AP_BL_NNI_ONLY);
         }
 
         aw_status("Calculating Branch lengths");
-        rootEdge()->nni_rek(AP_FALSE,isits.abort_flag,-1, GB_FALSE ,AP_BL_BL_ONLY);
+        rootEdge()->nni_rek(AP_FALSE,isits.abort_flag,-1, false, AP_BL_BL_ONLY);
 
         ASSERT_VALID_TREE(rootNode());
         rootNode()->compute_tree(GLOBAL_gb_main);
@@ -1036,7 +1036,7 @@ static void NT_partial_add(AW_window *aww, AW_CL cl_ntw, AW_CL) {
 static void NT_branch_lengths(AW_window *, AWT_canvas *ntw) {
     aw_openstatus("Calculating Branch Lengths");
     int abort_flag = AP_FALSE;
-    rootEdge()->nni_rek(AP_FALSE, abort_flag, -1, GB_FALSE, AP_BL_BL_ONLY);
+    rootEdge()->nni_rek(AP_FALSE, abort_flag, -1, false, AP_BL_BL_ONLY);
 
     aw_closestatus();
     AWT_TREE(ntw)->resort_tree(0);
@@ -1047,7 +1047,7 @@ static void NT_branch_lengths(AW_window *, AWT_canvas *ntw) {
 static void NT_bootstrap(AW_window *, AWT_canvas *ntw, AW_CL limit_only) {
     aw_openstatus("Calculating Bootstrap Limit");
     int abort_flag = AP_FALSE;
-    rootEdge()->nni_rek(AP_FALSE, abort_flag, -1, GB_FALSE,
+    rootEdge()->nni_rek(AP_FALSE, abort_flag, -1, false,
                         AP_BL_MODE((limit_only ? AP_BL_BOOTSTRAP_LIMIT : AP_BL_BOOTSTRAP_ESTIMATE)|AP_BL_BL_ONLY));
     aw_closestatus();
 
@@ -1066,7 +1066,7 @@ static void NT_optimize(AW_window *, AWT_canvas *ntw)
 
     aw_openstatus("Calculating Branch Lengths");
     int abort_flag = AP_FALSE;
-    rootEdge()->nni_rek(AP_FALSE, abort_flag, -1, GB_FALSE, AP_BL_BL_ONLY);
+    rootEdge()->nni_rek(AP_FALSE, abort_flag, -1, false, AP_BL_BL_ONLY);
     AWT_TREE(ntw)->resort_tree(0);
     rootNode()->compute_tree(GLOBAL_gb_main);
     aw_closestatus();
@@ -1084,13 +1084,13 @@ static void NT_recursiveNNI(AW_window *,AWT_canvas *ntw)
     aw_status(GBS_global_string("Old parsimony: %f", thisPars));
     while (thisPars!=lastPars && abort_flag == AP_FALSE) {
         lastPars    = thisPars;
-        thisPars    = rootEdge()->nni_rek(AP_FALSE, abort_flag, -1, GB_TRUE);
+        thisPars    = rootEdge()->nni_rek(AP_FALSE, abort_flag, -1, true);
         abort_flag |= aw_status(GBS_global_string("New Parsimony: %f",thisPars));
     }
 
     aw_status("Calculating Branch Lengths");
     abort_flag = AP_FALSE;
-    rootEdge()->nni_rek(AP_FALSE, abort_flag, -1, GB_FALSE, AP_BL_BL_ONLY);
+    rootEdge()->nni_rek(AP_FALSE, abort_flag, -1, false, AP_BL_BL_ONLY);
 
     AWT_TREE(ntw)->resort_tree(0);
     rootNode()->compute_tree(GLOBAL_gb_main);

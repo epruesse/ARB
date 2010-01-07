@@ -406,7 +406,7 @@ char *gb_compress_sequence_by_master(GBDATA *gbd,const char *master,int master_l
 {
     long  size;
     char *is  = gb_compress_seq_by_master(master,master_len,master_index,q,seq,seq_len,&size,GB_COMPRESSION_LAST);
-    char *res = gb_compress_data(gbd,0,is,size,memsize, ~(GB_COMPRESSION_DICTIONARY|GB_COMPRESSION_SORTBYTES|GB_COMPRESSION_RUNLENGTH),GB_TRUE);
+    char *res = gb_compress_data(gbd,0,is,size,memsize, ~(GB_COMPRESSION_DICTIONARY|GB_COMPRESSION_SORTBYTES|GB_COMPRESSION_RUNLENGTH),true);
     return res;
 }
 
@@ -748,7 +748,7 @@ GB_ERROR GBT_compress_sequence_tree2(GBDATA *gb_main, const char *tree_name, con
                     CompressionTree *ctree   = (CompressionTree *)GBT_read_tree(gb_main, tree_name, -sizeof(CompressionTree));
                     if (!ctree) error = GBS_global_string("Tree %s not found in database", tree_name);
                     else {
-                        error             = GBT_link_tree((GBT_TREE *)ctree, gb_main, GB_FALSE, 0, 0);
+                        error             = GBT_link_tree((GBT_TREE *)ctree, gb_main, false, 0, 0);
                         if (!error) error = compress_sequence_tree(gb_main, ctree, ali_name);
                         GBT_delete_tree((GBT_TREE *)ctree);
                     }

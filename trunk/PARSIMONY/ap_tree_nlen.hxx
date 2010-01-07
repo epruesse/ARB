@@ -124,9 +124,9 @@ public:
 
     AP_FLOAT nn_interchange_rek(AP_BOOL     openclosestatus,
                                 int        &abort,
-                                int         deep, // -1 means: do whole subtree
-                                AP_BL_MODE  mode        /*= AP_BL_NNI_ONLY*/,
-                                GB_BOOL     skip_hidden /*= GB_FALSE*/);
+                                int         deep,   // -1 means: do whole subtree
+                                AP_BL_MODE  mode,
+                                bool        skip_hidden);
 
     AP_FLOAT nn_interchange(AP_FLOAT parsimony,AP_BL_MODE mode);
 
@@ -210,7 +210,7 @@ class AP_tree_edge
 
     //    int clearValues(int deep,AP_tree_nlen *skip=NULL);    // clears used and data.distance
     AP_tree_edge *buildChain(int                 deep,
-                             GB_BOOL             skip_hidden = GB_FALSE,
+                             bool                skip_hidden = false,
                              int                 distance    = 0,
                              const AP_tree_nlen *skip        = NULL,
                              AP_tree_edge       *comesFrom   = NULL);
@@ -259,7 +259,7 @@ public:
     AP_FLOAT nni_rek(AP_BOOL       openclosestatus,
                      int&          Abort,
                      int           deep,
-                     GB_BOOL       skip_hidden = GB_FALSE,
+                     bool          skip_hidden = false,
                      AP_BL_MODE    mode        = AP_BL_NNI_ONLY,
                      AP_tree_nlen *skipNode    = NULL);
 

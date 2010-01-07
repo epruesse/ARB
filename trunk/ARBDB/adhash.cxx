@@ -432,10 +432,10 @@ static void delete_from_list(GB_HASH *hs, size_t i, struct gbs_hash_entry *e) {
     gbm_free_mem((char *)e,sizeof(struct gbs_hash_entry),GBM_HASH_INDEX);
 }
 
-static long write_hash(GB_HASH *hs, char *key, GB_BOOL copyKey, long val) {
+static long write_hash(GB_HASH *hs, char *key, bool copyKey, long val) {
     /* returns the old value (or 0 if key had no entry)
-     * if 'copyKey' == GB_FALSE, 'key' will be freed (now or later) and may be invalid!
-     * if 'copyKey' == GB_TRUE, 'key' will not be touched in any way!
+     * if 'copyKey' == false, 'key' will be freed (now or later) and may be invalid!
+     * if 'copyKey' == true, 'key' will not be touched in any way!
      */
 
     size_t          i;
@@ -468,7 +468,7 @@ static long write_hash(GB_HASH *hs, char *key, GB_BOOL copyKey, long val) {
 
 long GBS_write_hash(GB_HASH *hs, const char *key, long val) {
     /* returns the old value (or 0 if key had no entry) */
-    return write_hash(hs, (char*)key, GB_TRUE, val);
+    return write_hash(hs, (char*)key, true, val);
 }
 
 long GBS_write_hash_no_strdup(GB_HASH *hs, char *key, long val) {
@@ -476,7 +476,7 @@ long GBS_write_hash_no_strdup(GB_HASH *hs, char *key, long val) {
      * so the user has to 'malloc' the string and give control to the hash.
      * Note: after calling this function 'key' may be invalid!
     */
-    return write_hash(hs, key, GB_FALSE, val);
+    return write_hash(hs, key, false, val);
 }
 
 long GBS_incr_hash(GB_HASH *hs,const char *key) {
@@ -735,8 +735,8 @@ long GBS_hash_count_value(GB_HASH *hs, long val) {
     return count;
 }
 
-const char *GBS_hash_next_element_that(GB_HASH *hs, const char *last_key, GB_BOOL (*condition)(const char *key, long val, void *cd), void *cd) {
-    /* Returns the key of the next element after 'last_key' matching 'condition' (i.e. where condition returns GB_TRUE).
+const char *GBS_hash_next_element_that(GB_HASH *hs, const char *last_key, bool (*condition)(const char *key, long val, void *cd), void *cd) {
+    /* Returns the key of the next element after 'last_key' matching 'condition' (i.e. where condition returns true).
      * If 'last_key' is NULL, the first matching element is returned.
      * Returns NULL if no (more) elements match the 'condition'.
      */

@@ -128,20 +128,20 @@ static GB_CSTR targetType[] = {
     "SeceditStruct", 
 };
 
-static GB_BOOL insdel_shall_be_applied_to(GBDATA *gb_data, enum insDelTarget target) {
-    GB_BOOL     apply = GB_TRUE;
+static bool insdel_shall_be_applied_to(GBDATA *gb_data, enum insDelTarget target) {
+    bool        apply = true;
     const char *key   = GB_read_key_pntr(gb_data);
 
     if (key[0] == '_') {                            // don't apply to keys starting with '_'
         switch (target) {
             case IDT_SECSTRUCT:
             case IDT_SPECIES:
-                apply = GB_FALSE;
+                apply = false;
                 break;
 
             case IDT_SAI:
                 if (strcmp(key, "_REF") != 0) {     // despite key is _REF
-                    apply = GB_FALSE;
+                    apply = false;
                 }
                 break;
         }

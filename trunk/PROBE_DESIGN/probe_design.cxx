@@ -308,7 +308,7 @@ GB_ERROR pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
             }
 
             {
-                char *gene_seq       = GBT_read_gene_sequence(gb_gene, GB_FALSE, 0);
+                char *gene_seq       = GBT_read_gene_sequence(gb_gene, false, 0);
                 if (!gene_seq) error = GB_await_error();
                 else {
                     long        CheckSum = GBS_checksum(gene_seq, 1, ".-");
@@ -1763,7 +1763,7 @@ void pd_query_pt_server(AW_window *aww)
     }
 
     char *sys = GBS_strclose(strstruct);
-    GB_xcmd(sys,GB_TRUE, GB_FALSE);
+    GB_xcmd(sys,true, false);
     free(sys);
 }
 

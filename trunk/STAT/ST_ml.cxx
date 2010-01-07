@@ -567,11 +567,11 @@ GB_ERROR ST_ML::init(const char *tree_name, const char *alignment_namei,
                     GBS_hash_do_loop(hash_2_ap_tree, delete_species, this);
                     GBS_free_hash(keep_species_hash);
                     keep_species_hash = 0;
-                    GBT_link_tree(tree_root->get_root_node()->get_gbt_tree(), gb_main, GB_BOOL(show_status), 0, 0);
+                    GBT_link_tree(tree_root->get_root_node()->get_gbt_tree(), gb_main, show_status, 0, 0);
                 }
             }
             else { // keep marked
-                GBT_link_tree(tree_root->get_root_node()->get_gbt_tree(), gb_main, GB_BOOL(show_status), 0, 0);
+                GBT_link_tree(tree_root->get_root_node()->get_gbt_tree(), gb_main, show_status, 0, 0);
                 tree_root->remove_leafs((marked_only ? AWT_REMOVE_NOT_MARKED : 0)|AWT_REMOVE_DELETED);
         
                 error = tree_size_ok(tree_root);

@@ -306,7 +306,7 @@ void AP_calc_pos_var_pars(AW_window *aww) {
             error = "Please select a valid tree";
         }
         else {
-            GBT_link_tree(tree,GLOBAL_gb_main, GB_TRUE, 0, 0);
+            GBT_link_tree(tree,GLOBAL_gb_main, true, 0, 0);
         }
     }
 

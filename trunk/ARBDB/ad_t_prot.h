@@ -36,7 +36,7 @@ GB_ERROR GBT_format_alignment(GBDATA *Main, const char *alignment_name);
 GB_ERROR GBT_insert_character(GBDATA *Main, const char *alignment_name, long pos, long count, const char *char_delete);
 
 /* aditem.cxx */
-GBDATA *GBT_find_or_create_item_rel_item_data(GBDATA *gb_item_data, const char *itemname, const char *id_field, const char *id, GB_BOOL markCreated);
+GBDATA *GBT_find_or_create_item_rel_item_data(GBDATA *gb_item_data, const char *itemname, const char *id_field, const char *id, bool markCreated);
 GBDATA *GBT_find_or_create_species_rel_species_data(GBDATA *gb_species_data, const char *name);
 GBDATA *GBT_find_or_create_species(GBDATA *gb_main, const char *name);
 GBDATA *GBT_find_or_create_SAI(GBDATA *gb_main, const char *name);
@@ -78,7 +78,7 @@ GBDATA **GBT_gen_species_array(GBDATA *gb_main, long *pspeccnt);
 
 /* adname.cxx */
 GB_ERROR GBT_begin_rename_session(GBDATA *gb_main, int all_flag);
-GB_ERROR GBT_rename_species(const char *oldname, const char *newname, GB_BOOL ignore_protection);
+GB_ERROR GBT_rename_species(const char *oldname, const char *newname, bool ignore_protection);
 GB_ERROR GBT_abort_rename_session(void);
 GB_ERROR GBT_commit_rename_session(int (*show_status )(double gauge ), int (*show_status_text )(const char *));
 
@@ -88,7 +88,7 @@ void GBT_compression_test(void *dummy, GBDATA *gb_main);
 
 /* adtables.cxx */
 GB_ERROR GBT_install_table_link_follower(GBDATA *gb_main);
-GBDATA *GBT_open_table(GBDATA *gb_table_root, const char *table_name, GB_BOOL read_only);
+GBDATA *GBT_open_table(GBDATA *gb_table_root, const char *table_name, bool read_only);
 GBDATA *GBT_first_table(GBDATA *gb_main);
 GBDATA *GBT_next_table(GBDATA *gb_table);
 GBDATA *GBT_first_table_entry(GBDATA *gb_table);
@@ -152,8 +152,8 @@ GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, long st
 GBT_TREE *GBT_read_tree(GBDATA *gb_main, const char *tree_name, long structure_size);
 GBT_TREE *GBT_read_plain_tree(GBDATA *gb_main, GBDATA *gb_ctree, long structure_size, GB_ERROR *error);
 long GBT_count_nodes(GBT_TREE *tree);
-GB_ERROR GBT_link_tree_using_species_hash(GBT_TREE *tree, GB_BOOL show_status, GB_HASH *species_hash, int *zombies, int *duplicates);
-GB_ERROR GBT_link_tree(GBT_TREE *tree, GBDATA *gb_main, GB_BOOL show_status, int *zombies, int *duplicates);
+GB_ERROR GBT_link_tree_using_species_hash(GBT_TREE *tree, bool show_status, GB_HASH *species_hash, int *zombies, int *duplicates);
+GB_ERROR GBT_link_tree(GBT_TREE *tree, GBDATA *gb_main, bool show_status, int *zombies, int *duplicates);
 void GBT_unlink_tree(GBT_TREE *tree);
 GBDATA *GBT_get_tree(GBDATA *gb_main, const char *tree_name);
 long GBT_size_of_tree(GBDATA *gb_main, const char *tree_name);
@@ -188,9 +188,9 @@ GB_ERROR GBT_set_alignment_len(GBDATA *gb_main, const char *aliname, long new_le
 int GBT_get_alignment_aligned(GBDATA *gb_main, const char *aliname);
 char *GBT_get_alignment_type_string(GBDATA *gb_main, const char *aliname);
 GB_alignment_type GBT_get_alignment_type(GBDATA *gb_main, const char *aliname);
-GB_BOOL GBT_is_alignment_protein(GBDATA *gb_main, const char *alignment_name);
-NOT4PERL char *GBT_read_gene_sequence_and_length(GBDATA *gb_gene, GB_BOOL use_revComplement, char partSeparator, size_t *gene_length);
-char *GBT_read_gene_sequence(GBDATA *gb_gene, GB_BOOL use_revComplement, char partSeparator);
+bool GBT_is_alignment_protein(GBDATA *gb_main, const char *alignment_name);
+NOT4PERL char *GBT_read_gene_sequence_and_length(GBDATA *gb_gene, bool use_revComplement, char partSeparator, size_t *gene_length);
+char *GBT_read_gene_sequence(GBDATA *gb_gene, bool use_revComplement, char partSeparator);
 
 #else
 #error ad_t_prot.h included twice

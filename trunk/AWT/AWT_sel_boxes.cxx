@@ -353,7 +353,7 @@ void awt_create_selection_list_on_tables(GBDATA *gb_main,AW_window *aws,const ch
 void awt_create_selection_list_on_table_fields_cb(GBDATA *dummy, struct awt_sel_list_for_tables *cbs){
     AWUSE(dummy);
     cbs->aws->clear_selection_list(cbs->id);
-    GBDATA  *gb_table = GBT_open_table(cbs->gb_main,cbs->table_name, GB_TRUE); // read only
+    GBDATA  *gb_table = GBT_open_table(cbs->gb_main,cbs->table_name, true); // read only
     GBDATA *gb_table_field;
     for (gb_table_field = GBT_first_table_field(gb_table);
          gb_table_field;
@@ -388,7 +388,7 @@ void awt_create_selection_list_on_table_fields(GBDATA *gb_main,AW_window *aws,co
 
     awt_create_selection_list_on_table_fields_cb(0,cbs);
 
-    GBDATA  *gb_table = GBT_open_table(gb_main,table_name, GB_TRUE); // read only
+    GBDATA  *gb_table = GBT_open_table(gb_main,table_name, true); // read only
     if (gb_table){
         GB_add_callback(gb_table,GB_CB_CHANGED,(GB_CB)awt_create_selection_list_on_table_fields_cb, (int *)cbs);
     }

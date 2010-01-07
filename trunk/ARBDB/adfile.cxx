@@ -106,7 +106,7 @@ GB_ERROR gb_scan_directory(char *basename, gb_scandir *sd) { /* goes to header: 
 }
 
 
-char *GB_find_all_files(const char *dir,const char *mask, GB_BOOL filename_only) {
+char *GB_find_all_files(const char *dir,const char *mask, bool filename_only) {
     /* Returns a string containing the filenames of all files matching mask.
        The single filenames are separated by '*'.
        if 'filename_only' is true -> string contains only filenames w/o path

@@ -60,7 +60,7 @@ class di_mldist {
     double p, dp, d2p;
 
 
-    void givens(di_ml_matrix a,long i,long j,long n,double ctheta,double stheta,GB_BOOL left);
+    void givens(di_ml_matrix a,long i,long j,long n,double ctheta,double stheta, bool left);
     void coeffs(double x,double y,double *c,double *s,double accuracy);
     void tridiag(di_ml_matrix a,long n,double accuracy);
     void shiftqr(di_ml_matrix a, long n, double accuracy);

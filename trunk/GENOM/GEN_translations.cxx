@@ -31,7 +31,7 @@ static char *translate_gene_sequence(GBDATA *gb_gene, GB_ERROR& error, int& tran
     // the start codon is copied into result buffer 'startCodon' (has to be sized 4 bytes)
 
     size_t  gene_length;
-    char   *gene_seq     = GBT_read_gene_sequence_and_length(gb_gene, GB_TRUE, 0, &gene_length);
+    char   *gene_seq     = GBT_read_gene_sequence_and_length(gb_gene, true, 0, &gene_length);
     if (!gene_seq) error = GB_await_error();
     else {
         // store start codon in result buffer:

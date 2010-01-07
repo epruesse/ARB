@@ -71,7 +71,7 @@ struct gb_cache_struct {
 struct GB_MAIN_TYPE {
     int transaction;
     int aborted_transaction;
-    int local_mode;                                 // GB_TRUE = server, GB_FALSE = client
+    int local_mode;                                 // 1 = server, 0 = client
     int client_transaction_socket;
 
     gbcmc_comm    *c_link;

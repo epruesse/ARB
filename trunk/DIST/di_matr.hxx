@@ -100,7 +100,7 @@ class DI_MATRIX : Noncopyable {
     AliView *aliview;
 
 public:
-    GB_BOOL            is_AA;
+    bool               is_AA;
     DI_ENTRY         **entries;
     long               nentries;
     static DI_MATRIX  *ROOT;

@@ -72,7 +72,7 @@
 
 #define ARB_SIGSEGV(backtrace) do {                             \
         if (backtrace) GBK_dump_backtrace(NULL, "ARB_SIGSEGV"); \
-        GBK_install_SIGSEGV_handler(GB_FALSE);                  \
+        GBK_install_SIGSEGV_handler(false);                     \
         *(int *)0 = 0;                                          \
     } while(0)
 

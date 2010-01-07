@@ -244,7 +244,7 @@ static void sina_start(AW_window *window, AW_CL cd2) {
         if (root->awar(GA_AWAR_REALIGN)->read_int())     GBS_strcat(cl, " --realign");
         if (root->awar(GA_AWAR_COPYMARKREF)->read_int()) GBS_strcat(cl, " --markcopy");
 
-        gb_error = GB_xcmd(GBS_mempntr(cl), GB_TRUE, GB_FALSE);
+        gb_error = GB_xcmd(GBS_mempntr(cl), true, false);
         GBS_strforget(cl);
     }
     free(tmpfile);

@@ -133,5 +133,5 @@ void NT_system_cb2(AW_window *aww, AW_CL command, AW_CL auto_help_file)
     if (auto_help_file) {
         AW_POPUP_HELP(aww,auto_help_file);
     }
-    GB_xcmd(sys,GB_TRUE, GB_FALSE);
+    GB_xcmd(sys, true, false);
 }
