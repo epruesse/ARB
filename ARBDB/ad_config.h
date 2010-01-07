@@ -24,10 +24,10 @@
     char **GBT_get_configuration_names_and_count(GBDATA *gb_main, int *countPtr);
 
 
-    typedef struct s_gbt_config {
+    struct GBT_config {
         char *top_area;
         char *middle_area;
-    } GBT_config;
+    };
 
     GBT_config *GBT_load_configuration_data(GBDATA *gb_main, const char *name, GB_ERROR *error);
 
@@ -45,15 +45,15 @@
         CI_END_OF_CONFIG = 64,
     };
 
-    typedef struct s_gbt_config_item {
+    struct GBT_config_item {
         GBT_CONFIG_ITEM_TYPE  type;
         char                 *name;
-    } GBT_config_item;
+    };
 
-    typedef struct s_gbt_config_parser {
+    struct GBT_config_parser {
         char *config_string;
         int   parse_pos;
-    } GBT_config_parser;
+    };
 
     GBT_config_parser *GBT_start_config_parser(const char *config_string);
     void               GBT_free_config_parser(GBT_config_parser *parser);

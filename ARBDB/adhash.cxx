@@ -583,14 +583,14 @@ void GBS_free_hash(GB_HASH *hs)
 
 /* determine hash quality */
 
-typedef struct {
+struct gbs_hash_statistic_summary {
     long   count;               // how many stats
     long   min_size, max_size, sum_size;
     long   min_nelem, max_nelem, sum_nelem;
     long   min_collisions, max_collisions, sum_collisions;
     double min_fill_ratio, max_fill_ratio, sum_fill_ratio;
     double min_hash_quality, max_hash_quality, sum_hash_quality;
-} gbs_hash_statistic_summary;
+};
 
 static GB_HASH *stat_hash = 0;
 

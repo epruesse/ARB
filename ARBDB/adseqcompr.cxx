@@ -26,51 +26,51 @@
 
 /* -------------------------------------------------------------------------------- */
 
-typedef struct gb_seq_compr_tree {
-    GBT_VTAB_AND_TREE_ELEMENTS(struct gb_seq_compr_tree);
+struct CompressionTree {
+    GBT_VTAB_AND_TREE_ELEMENTS(CompressionTree);
 
     int index;                  /* master(inner nodes) or sequence(leaf nodes) index */
     int sons;                   /* sons with sequence or masters (in subtree) */
-} GB_CTREE;
+};
 
-typedef struct {
+struct Consensus {
     int            len;
     char           used[256];
     unsigned char *con[256];
-} GB_Consensus;
+};
 
-typedef struct {
+struct Sequence {
     GBDATA *gbd;
     int     master;
-} GB_Sequence;
+};
 
-typedef struct {
+struct MasterSequence {
     GBDATA *gbd;
     int     master;
-} GB_Master;
+};
 
 /* -------------------------------------------------------------------------------- */
 
-GB_Consensus *g_b_new_Consensus(long len){
-    GB_Consensus *gcon = (GB_Consensus *)GB_calloc(sizeof(GB_Consensus),1);
-    int i;
+Consensus *g_b_new_Consensus(long len){
+    Consensus     *gcon = (Consensus *)GB_calloc(sizeof(*gcon),1);
     unsigned char *data = (unsigned char *)GB_calloc(sizeof(char)*256,len);
+    
     gcon->len = len;
 
-    for (i=0;i<256;i++){
+    for (int i=0;i<256;i++){
         gcon->con[i] = data + len*i;
     }
     return gcon;
 }
 
 
-void g_b_delete_Consensus(GB_Consensus *gcon){
+void g_b_delete_Consensus(Consensus *gcon){
     free((char *)gcon->con[0]);
     free((char *)gcon);
 }
 
 
-void g_b_Consensus_add(GB_Consensus *gcon, unsigned char *seq, long seq_len){
+void g_b_Consensus_add(Consensus *gcon, unsigned char *seq, long seq_len){
     int            i;
     int            li;
     int            c;
@@ -118,7 +118,7 @@ void g_b_Consensus_add(GB_Consensus *gcon, unsigned char *seq, long seq_len){
     }
 }
 
-char *g_b_Consensus_get_sequence(GB_Consensus *gcon){
+char *g_b_Consensus_get_sequence(Consensus *gcon){
     int pos;
     unsigned char *s;
     unsigned char *max = (unsigned char *)GB_calloc(sizeof(char), gcon->len);
@@ -143,13 +143,13 @@ char *g_b_Consensus_get_sequence(GB_Consensus *gcon){
 }
 
 
-int g_b_count_leafs(GB_CTREE *node){
+int g_b_count_leafs(CompressionTree *node){
     if (node->is_leaf) return 1;
     node->gb_node = 0;
     return (g_b_count_leafs(node->leftson) + g_b_count_leafs(node->rightson));
 }
 
-void g_b_put_sequences_in_container(GB_CTREE *ctree,GB_Sequence *seqs,GB_Master **masters,GB_Consensus *gcon){
+void g_b_put_sequences_in_container(CompressionTree *ctree,Sequence *seqs,MasterSequence **masters,Consensus *gcon){
     if (ctree->is_leaf){
         if (ctree->index >= 0) {
             GB_CSTR data = GB_read_char_pntr(seqs[ctree->index].gbd);
@@ -168,7 +168,7 @@ void g_b_put_sequences_in_container(GB_CTREE *ctree,GB_Sequence *seqs,GB_Master 
     }
 }
 
-void g_b_create_master(GB_CTREE *node, GB_Sequence *seqs, GB_Master **masters,
+void g_b_create_master(CompressionTree *node, Sequence *seqs, MasterSequence **masters,
                        int masterCount, int *builtMasters, int my_master,
                        const char *ali_name, long seq_len, int *aborted)
 {
@@ -192,8 +192,8 @@ void g_b_create_master(GB_CTREE *node, GB_Sequence *seqs, GB_Master **masters,
         g_b_create_master(node->leftson,seqs,masters,masterCount,builtMasters,my_master,ali_name,seq_len, aborted);
         g_b_create_master(node->rightson,seqs,masters,masterCount,builtMasters,my_master,ali_name,seq_len, aborted);
         if (node->index>=0 && !*aborted) { /* build me */
-            char         *data;
-            GB_Consensus *gcon = g_b_new_Consensus(seq_len);
+            char      *data;
+            Consensus *gcon = g_b_new_Consensus(seq_len);
 
             g_b_put_sequences_in_container(node->leftson,seqs,masters,gcon);
             g_b_put_sequences_in_container(node->rightson,seqs,masters,gcon);
@@ -216,14 +216,14 @@ void g_b_create_master(GB_CTREE *node, GB_Sequence *seqs, GB_Master **masters,
 /*      distribute master sequences      */
 /* ------------------------------------- */
 
-static void subtract_sons_from_tree(GB_CTREE *node, int subtract) {
+static void subtract_sons_from_tree(CompressionTree *node, int subtract) {
     while (node) {
         node->sons -= subtract;
         node        = node->father;
     }
 }
 
-static int set_masters_with_sons(GB_CTREE *node, int wantedSons, int *mcount) {
+static int set_masters_with_sons(CompressionTree *node, int wantedSons, int *mcount) {
     if (!node->is_leaf) {
         if (node->sons == wantedSons) {
             /* insert new master */
@@ -248,7 +248,7 @@ static int set_masters_with_sons(GB_CTREE *node, int wantedSons, int *mcount) {
     return node->sons <= MAX_SEQUENCE_PER_MASTER ? node->sons : 0;
 }
 
-static int maxCompressionSteps(GB_CTREE *node) {
+static int maxCompressionSteps(CompressionTree *node) {
     if (node->is_leaf) {
         return 0;
     }
@@ -266,7 +266,7 @@ static int maxCompressionSteps(GB_CTREE *node) {
     return (left>right ? left : right) + (node->index == -1 ? 0 : 1);
 }
 
-static int init_indices_and_count_sons(GB_CTREE *node, int *scount, const char *ali_name) {
+static int init_indices_and_count_sons(CompressionTree *node, int *scount, const char *ali_name) {
     if (node->is_leaf){
         if (node->gb_node ==0 || !GBT_read_sequence(node->gb_node,(char *)ali_name)) {
             node->index = -1;
@@ -287,7 +287,7 @@ static int init_indices_and_count_sons(GB_CTREE *node, int *scount, const char *
     return node->sons;
 }
 
-static void distribute_masters(GB_CTREE *tree, int *mcount, int *max_masters) {
+static void distribute_masters(CompressionTree *tree, int *mcount, int *max_masters) {
     int wantedSons = MAX_SEQUENCE_PER_MASTER;
     while (wantedSons >= 2) {
         int maxSons = set_masters_with_sons(tree, wantedSons, mcount);
@@ -410,7 +410,7 @@ char *gb_compress_sequence_by_master(GBDATA *gbd,const char *master,int master_l
     return res;
 }
 
-static GB_ERROR compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, const char *ali_name){
+static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, const char *ali_name){
     GB_ERROR error      = 0;
     long     ali_len    = GBT_get_alignment_len(gb_main, ali_name);
     int      main_clock = GB_read_clock(gb_main);
@@ -486,13 +486,13 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, const ch
             if (!warning) {
                 GBDATA              *gb_master_ali     = 0;
                 GBDATA              *old_gb_master_ali = 0;
-                GB_Sequence         *seqs              = 0;
+                Sequence            *seqs              = 0;
                 GB_MAIN_TYPE        *Main              = GB_MAIN(gb_main);
                 GBQUARK              ali_quark         = gb_key_2_quark(Main,ali_name);
                 unsigned long long   sumorg            = 0;
                 unsigned long long   sumold            = 0;
                 unsigned long long   sumnew            = 0;
-                GB_Master          **masters           = (GB_Master **)GB_calloc(sizeof(*masters),leafcount);
+                MasterSequence     **masters           = (MasterSequence **)GB_calloc(sizeof(*masters),leafcount);
                 int                  si;
 
                 {
@@ -516,10 +516,10 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, const ch
                         free(master_data_name);
                     }
                     for (si = 0; si<mastercount; si++) {
-                        masters[si]      = (GB_Master *)GB_calloc(sizeof(GB_Master),1);
+                        masters[si]      = (MasterSequence *)GB_calloc(sizeof(MasterSequence),1);
                         masters[si]->gbd = gb_create(gb_master_ali,"@master",GB_STRING);
                     }
-                    seqs = (GB_Sequence *)GB_calloc(sizeof(*seqs),leafcount);
+                    seqs = (Sequence *)GB_calloc(sizeof(*seqs),leafcount);
                     {
                         int builtMasters = 0;
                         int aborted      = 0;
@@ -535,9 +535,9 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, const ch
                     GB_status(0);
 
                     for (si=0;si<seqcount;si++){
-                        int        mi     = seqs[si].master;
-                        GB_Master *master = masters[mi];
-                        GBDATA    *gbd    = seqs[si].gbd;
+                        int             mi     = seqs[si].master;
+                        MasterSequence *master = masters[mi];
+                        GBDATA         *gbd    = seqs[si].gbd;
 
                         if (GB_read_clock(gbd) >= main_clock){
                             GB_warning("A species seems to be more than once in the tree");
@@ -642,13 +642,13 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, const ch
                             }
 
                             {
-                                GB_Master *master     = masters[mi];
-                                char      *seqm       = GB_read_string(master->gbd);
-                                int        master_len = GB_read_string_count(master->gbd);
-                                char      *seq        = GB_read_string(gbd);
-                                int        seq_len    = GB_read_string_count(gbd);
-                                long       sizes;
-                                char      *ss         = gb_compress_sequence_by_master(gbd,seqm,master_len,mi,ali_quark,seq,seq_len,&sizes);
+                                MasterSequence *master     = masters[mi];
+                                char           *seqm       = GB_read_string(master->gbd);
+                                int             master_len = GB_read_string_count(master->gbd);
+                                char           *seq        = GB_read_string(gbd);
+                                int             seq_len    = GB_read_string_count(gbd);
+                                long            sizes;
+                                char           *ss         = gb_compress_sequence_by_master(gbd,seqm,master_len,mi,ali_quark,seq,seq_len,&sizes);
 
                                 gb_write_compressed_pntr(gbd,ss,sizes,seq_len);
                                 sumnew += sizes;
@@ -745,7 +745,7 @@ GB_ERROR GBT_compress_sequence_tree2(GBDATA *gb_main, const char *tree_name, con
                     tree_name = to_free;
                 }
                 {
-                    GB_CTREE *ctree   = (GB_CTREE *)GBT_read_tree(gb_main, tree_name, -sizeof(GB_CTREE));
+                    CompressionTree *ctree   = (CompressionTree *)GBT_read_tree(gb_main, tree_name, -sizeof(CompressionTree));
                     if (!ctree) error = GBS_global_string("Tree %s not found in database", tree_name);
                     else {
                         error             = GBT_link_tree((GBT_TREE *)ctree, gb_main, GB_FALSE, 0, 0);

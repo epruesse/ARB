@@ -24,44 +24,39 @@ typedef unsigned char        unsigned_char;
 typedef unsigned char       *u_str;
 typedef const unsigned char *cu_str;
 
-struct S_GB_FULL_DICT_TREE;
-struct S_GB_SINGLE_DICT_TREE;
-
 static int gbdByKey_cnt;
-typedef struct  /* one for each diff. keyQuark */
-{
+struct O_gbdByKey { /* one for each diff. keyQuark */
     int      cnt;
     GBDATA **gbds;              /* gbdoff */
-} O_gbdByKey;
+};
 
-typedef union U_GB_DICT_TREE
-{
-    struct S_GB_FULL_DICT_TREE   *full;
-    struct S_GB_SINGLE_DICT_TREE *single;
-    void                         *exists;
+struct FullDictTree;
+struct SingleDictTree;
 
-} GB_DICT_TREE;
+union DictTree {
+    FullDictTree   *full;
+    SingleDictTree *single;
+    void           *exists;
 
-enum GB_DICT_NODE_TYPE { SINGLE_NODE, FULL_NODE };
+};
 
-typedef struct S_GB_FULL_DICT_TREE
-{
-    GB_DICT_NODE_TYPE typ;          /* always FULL_NODE */
-    int               usedSons;
-    int               count[256];
-    GB_DICT_TREE      son[256];     /* index == character */
+enum DictNodeType { SINGLE_NODE, FULL_NODE };
 
-} GB_FULL_DICT_TREE;
+struct FullDictTree {
+    DictNodeType typ;           /* always FULL_NODE */
+    int          usedSons;
+    int          count[256];
+    DictTree     son[256];      /* index == character */
+};
 
-typedef struct S_GB_SINGLE_DICT_TREE
-{
-    GB_DICT_NODE_TYPE typ;          /* always SINGLE_NODE */
-    unsigned_char     ch;           /* the character */
-    int               count;        /* no of occurrences of this branch */
-    GB_DICT_TREE      son;
-    GB_DICT_TREE      brother;
+struct SingleDictTree {
+    DictNodeType  typ;          /* always SINGLE_NODE */
+    unsigned_char ch;           /* the character */
+    int           count;        /* no of occurrences of this branch */
+    DictTree      son;
+    DictTree      brother;
 
-} GB_SINGLE_DICT_TREE;
+};
 
 /****************************************************/
 
@@ -80,8 +75,8 @@ typedef struct S_GB_SINGLE_DICT_TREE
 
 #define MIN_WORD_LEN    8       /* minimum length of words in dictionary */
 #define MAX_WORD_LEN    50      /* maximum length of words in dictionary */
-#define MAX_BROTHERS    10      /* maximum no of brothers linked with GB_SINGLE_DICT_TREE
-                                 * above we use GB_FULL_DICT_TREE */
+#define MAX_BROTHERS    10      /* maximum no of brothers linked with SingleDictTree
+                                 * above we use FullDictTree */
 #define MAX_DIFFER       2      /* percentage of difference (of occurrences of strings) below which two
                                  * consecutive parts are treated as EQUAL # of occurrences */
 #define INCR_DIFFER      1      /* the above percentage is incremented from 0 to MAX_DIFFER by INCR_DIFFER per step */
@@ -922,7 +917,7 @@ static char *strnstr(char *s1, int len, char *s2) {
 # endif
 
 #ifdef DUMP_TREE
-static void dump_dtree(int deep, GB_DICT_TREE tree)
+static void dump_dtree(int deep, DictTree tree)
 {
     static unsigned_char buffer[1024];
 
@@ -962,7 +957,7 @@ static void dump_dtree(int deep, GB_DICT_TREE tree)
 #endif
 
 #ifdef TEST
-static int testCounts(GB_DICT_TREE tree)
+static int testCounts(DictTree tree)
 /*
  * tests if all inner nodes have correct 'count's
  */
@@ -1027,7 +1022,7 @@ static int testCounts(GB_DICT_TREE tree)
 #define MAX_OCCUR_COUNT 600000
 #endif
 
-static GB_DICT_TREE test_dtree(GB_DICT_TREE tree)
+static DictTree test_dtree(DictTree tree)
 /* only correct while tree is under contruction (build_dict_tree()) */
 {
     if (tree.exists) {
@@ -1085,18 +1080,18 @@ static GB_DICT_TREE test_dtree(GB_DICT_TREE tree)
 #endif
 
 
-static GB_DICT_TREE new_dtree(cu_str text, long len, long *memcount)
+static DictTree new_dtree(cu_str text, long len, long *memcount)
 /* creates a new (sub-)tree from 'text' (which has length 'len') */
 {
-    GB_DICT_TREE tree;
+    DictTree tree;
 
     if (len) {
-        GB_SINGLE_DICT_TREE *tail = NULL,
-            *head = NULL;
+        SingleDictTree *tail = NULL;
+        SingleDictTree *head = NULL;
 
         while (len) {
-            if (tail)   tail = tail->son.single = (GB_SINGLE_DICT_TREE*)gbm_get_mem(sizeof(*tail),GBM_DICT_INDEX);
-            else        tail = head = (GB_SINGLE_DICT_TREE*)gbm_get_mem(sizeof(*tail),GBM_DICT_INDEX);
+            if (tail)   tail = tail->son.single = (SingleDictTree*)gbm_get_mem(sizeof(*tail),GBM_DICT_INDEX);
+            else        tail = head = (SingleDictTree*)gbm_get_mem(sizeof(*tail),GBM_DICT_INDEX);
 
             (*memcount) += sizeof(*tail);
 
@@ -1118,10 +1113,10 @@ static GB_DICT_TREE new_dtree(cu_str text, long len, long *memcount)
     return tree;
 }
 
-GB_DICT_TREE single2full_dtree(GB_DICT_TREE tree, long *memcount)
+DictTree single2full_dtree(DictTree tree, long *memcount)
 {
     if (tree.exists && tree.single->typ==SINGLE_NODE) {
-        GB_FULL_DICT_TREE *full = (GB_FULL_DICT_TREE*)gbm_get_mem(sizeof(*full), GBM_DICT_INDEX);
+        FullDictTree *full = (FullDictTree*)gbm_get_mem(sizeof(*full), GBM_DICT_INDEX);
         int idx;
 
         (*memcount) += sizeof(*full);
@@ -1134,7 +1129,7 @@ GB_DICT_TREE single2full_dtree(GB_DICT_TREE tree, long *memcount)
         }
 
         while (tree.exists) {
-            GB_SINGLE_DICT_TREE *t = tree.single;
+            SingleDictTree *t = tree.single;
 
             gb_assert(t->typ==SINGLE_NODE);
             gb_assert(full->son[t->ch].exists==NULL);
@@ -1155,7 +1150,7 @@ GB_DICT_TREE single2full_dtree(GB_DICT_TREE tree, long *memcount)
     return tree;
 }
 
-static void free_dtree(GB_DICT_TREE tree)
+static void free_dtree(DictTree tree)
 {
     if (tree.exists) {
         switch(tree.full->typ) {
@@ -1179,7 +1174,7 @@ static void free_dtree(GB_DICT_TREE tree)
 
 
 
-static GB_DICT_TREE cut_dtree(GB_DICT_TREE tree, int cut_count, long *memcount, long *leafcount)
+static DictTree cut_dtree(DictTree tree, int cut_count, long *memcount, long *leafcount)
 /* removes all branches from 'tree' which are referenced less/equal than cut_count
  * returns: the reduced tree */
 {
@@ -1190,7 +1185,7 @@ static GB_DICT_TREE cut_dtree(GB_DICT_TREE tree, int cut_count, long *memcount, 
 
                 if (!tree.single->son.exists) { /* leaf */
                     if (tree.single->count<=cut_count) { /* leaf with less/equal references */
-                        GB_DICT_TREE brother = tree.single->brother;
+                        DictTree brother = tree.single->brother;
 
                         gbm_free_mem((char*)tree.single, sizeof(*tree.single), GBM_DICT_INDEX);
                         (*memcount) -= sizeof(*tree.single);
@@ -1244,7 +1239,7 @@ static GB_DICT_TREE cut_dtree(GB_DICT_TREE tree, int cut_count, long *memcount, 
 
     return tree;
 }
-static GB_DICT_TREE cut_useless_words(GB_DICT_TREE tree, int deep, long *removed)
+static DictTree cut_useless_words(DictTree tree, int deep, long *removed)
 /* removes/shortens all branches of 'tree' which are not useful for compression
  * 'deep' should be zero (incremented by cut_useless_words)
  * 'removed' will be set to the # of removed occurrences
@@ -1267,7 +1262,7 @@ static GB_DICT_TREE cut_useless_words(GB_DICT_TREE tree, int deep, long *removed
                 }
 
                 if (!tree.single->son.exists && !WORD_HELPFUL(deep,tree.single->count)) {
-                    GB_DICT_TREE brother = tree.single->brother;
+                    DictTree brother = tree.single->brother;
 
                     *removed += tree.single->count;
                     gbm_free_mem((char*)tree.single, sizeof(*tree.single), GBM_DICT_INDEX);
@@ -1330,19 +1325,19 @@ static GB_DICT_TREE cut_useless_words(GB_DICT_TREE tree, int deep, long *removed
     return tree;
 }
 
-static GB_DICT_TREE add_dtree_to_dtree(GB_DICT_TREE toAdd, GB_DICT_TREE to, long *memcount)
+static DictTree add_dtree_to_dtree(DictTree toAdd, DictTree to, long *memcount)
 /* adds 'toAdd' as brother of 'to' (must be leftmost of all SINGLE_NODEs or a FULL_NODE)
  * returns: the leftmost of all SINGLE_NODEs or a FULL_NODE
  */
 {
-    GB_DICT_TREE tree = toAdd;
+    DictTree tree = toAdd;
 
     gb_assert(toAdd.single->typ==SINGLE_NODE);
 
     if (to.exists) {
         switch (to.full->typ) {
             case SINGLE_NODE: {
-                GB_SINGLE_DICT_TREE *left = to.single;
+                SingleDictTree *left = to.single;
 
                 gb_assert(left!=0);
 
@@ -1390,7 +1385,7 @@ static GB_DICT_TREE add_dtree_to_dtree(GB_DICT_TREE toAdd, GB_DICT_TREE to, long
     return tree;
 }
 
-static GB_DICT_TREE add_to_dtree(GB_DICT_TREE tree, cu_str text, long len, long *memcount)
+static DictTree add_to_dtree(DictTree tree, cu_str text, long len, long *memcount)
 /* adds the string 'text' (which has length 'len') to 'tree'
  * returns: new tree
  */
@@ -1398,7 +1393,7 @@ static GB_DICT_TREE add_to_dtree(GB_DICT_TREE tree, cu_str text, long len, long 
     if (tree.exists) {
         switch (tree.full->typ) {
             case SINGLE_NODE: {
-                GB_SINGLE_DICT_TREE *t = tree.single;
+                SingleDictTree *t = tree.single;
                 int count = 0;
 
                 do {
@@ -1452,7 +1447,7 @@ static GB_DICT_TREE add_to_dtree(GB_DICT_TREE tree, cu_str text, long len, long 
     return new_dtree(text,len,memcount);
 }
 
-static long calcCounts(GB_DICT_TREE tree)
+static long calcCounts(DictTree tree)
 {
     long cnt = 0;
 
@@ -1488,7 +1483,7 @@ static long calcCounts(GB_DICT_TREE tree)
     return cnt;
 }
 
-static int count_dtree_leafs(GB_DICT_TREE tree, int deep, int *maxdeep) {
+static int count_dtree_leafs(DictTree tree, int deep, int *maxdeep) {
     /* returns # of leafs and max. depth of tree */
     int leafs = 0;
 
@@ -1517,7 +1512,7 @@ static int count_dtree_leafs(GB_DICT_TREE tree, int deep, int *maxdeep) {
     return leafs;
 }
 
-static int COUNT(GB_DICT_TREE tree) {
+static int COUNT(DictTree tree) {
     /* counts sum of # of occurrences of tree */
     int cnt = 0;
 
@@ -1540,7 +1535,7 @@ static int COUNT(GB_DICT_TREE tree) {
     return cnt;
 }
 
-static GB_DICT_TREE removeSubsequentString(GB_DICT_TREE *tree_pntr, cu_str buffer, int len, int max_occur) {
+static DictTree removeSubsequentString(DictTree *tree_pntr, cu_str buffer, int len, int max_occur) {
     /*
      * searches tree for 'buffer' (length='len')
      *
@@ -1550,7 +1545,7 @@ static GB_DICT_TREE removeSubsequentString(GB_DICT_TREE *tree_pntr, cu_str buffe
      *
      * removes the whole found string from the tree (not only the rest!)
      */
-    GB_DICT_TREE tree = *tree_pntr, rest;
+    DictTree tree = *tree_pntr, rest;
     static int restCount;
 
     rest.exists = NULL;
@@ -1580,7 +1575,7 @@ static GB_DICT_TREE removeSubsequentString(GB_DICT_TREE *tree_pntr, cu_str buffe
                         gb_assert(tree.single->count >= 0);
 
                         if (!tree.single->count) { /* empty subtree -> delete myself */
-                            GB_DICT_TREE brother = tree.single->brother;
+                            DictTree brother = tree.single->brother;
 
                             tree.single->brother.exists = NULL; /* elsewise it would be freed by free_dtree */
                             free_dtree(tree);
@@ -1658,7 +1653,7 @@ static cu_str memstr(cu_str stringStart, int stringStartLen, cu_str inString, in
 }
 
 
-static int expandBranches(u_str buffer, int deep, int minwordlen, int maxdeep, GB_DICT_TREE tree, GB_DICT_TREE root, int max_percent) {
+static int expandBranches(u_str buffer, int deep, int minwordlen, int maxdeep, DictTree tree, DictTree root, int max_percent) {
     /*
      * expands all branches in 'tree'
      *
@@ -1683,7 +1678,7 @@ static int expandBranches(u_str buffer, int deep, int minwordlen, int maxdeep, G
                     buffer[deep] = tree.single->ch;
 
                     if (!tree.single->son.exists) {
-                        GB_DICT_TREE rest;
+                        DictTree rest;
                         u_str buf = buffer+1;
                         int len = deep;
 
@@ -1736,7 +1731,7 @@ static int expandBranches(u_str buffer, int deep, int minwordlen, int maxdeep, G
                     buffer[deep] = idx;
 
                     if (!tree.full->son[idx].exists && tree.full->count[idx])   /* leaf */ {
-                        GB_DICT_TREE rest;
+                        DictTree rest;
                         u_str buf = buffer+1;
                         int len = deep;
 
@@ -1789,7 +1784,7 @@ static int expandBranches(u_str buffer, int deep, int minwordlen, int maxdeep, G
     return expand;
 }
 
-static GB_DICT_TREE build_dict_tree(O_gbdByKey *gbk, long maxmem, long maxdeep, long minwordlen, long *data_sum)
+static DictTree build_dict_tree(O_gbdByKey *gbk, long maxmem, long maxdeep, long minwordlen, long *data_sum)
 /* builds a tree of the most used words
  *
  * 'maxmem' is the amount of memory that will be allocated
@@ -1799,7 +1794,7 @@ static GB_DICT_TREE build_dict_tree(O_gbdByKey *gbk, long maxmem, long maxdeep, 
  * 'data_sum' will be set to the overall-size of data of which the tree was built
  */
 {
-    GB_DICT_TREE tree;
+    DictTree tree;
     long memcount = 0;
     long leafs = 0;
 
@@ -1929,7 +1924,7 @@ static GB_DICT_TREE build_dict_tree(O_gbdByKey *gbk, long maxmem, long maxdeep, 
     return tree;
 }
 
-static GB_DICT_TREE remove_word_from_dtree(GB_DICT_TREE tree, cu_str wordStart, int wordLen, u_str resultBuffer, int *resultLen, long *resultFrequency, long *removed) {
+static DictTree remove_word_from_dtree(DictTree tree, cu_str wordStart, int wordLen, u_str resultBuffer, int *resultLen, long *resultFrequency, long *removed) {
     /* searches 'tree' for a word starting with 'wordStart' an removes it from the tree
      * if there are more than one possibilities, the returned word will be the one with the most occurrences
      * if there was no possibility -> resultLen==0, tree unchanged
@@ -1963,7 +1958,7 @@ static GB_DICT_TREE remove_word_from_dtree(GB_DICT_TREE tree, cu_str wordStart, 
                     }
 
                     if (!tree.single->son.exists && *resultLen) {       /* if no son and a word was found -> remove branch */
-                        GB_DICT_TREE brother = tree.single->brother;
+                        DictTree brother = tree.single->brother;
 
                         *removed += tree.single->count;
                         gbm_free_mem((char*)tree.single, sizeof(*tree.single), GBM_DICT_INDEX);
@@ -2055,7 +2050,7 @@ static GB_DICT_TREE remove_word_from_dtree(GB_DICT_TREE tree, cu_str wordStart, 
                     *removed += removed_single;
                 }
                 else {
-                    GB_DICT_TREE brother = tree.single->brother;
+                    DictTree brother = tree.single->brother;
 
                     *removed += tree.single->count;
                     gbm_free_mem((char*)tree.single, sizeof(*tree.single), GBM_DICT_INDEX);
@@ -2279,8 +2274,8 @@ static void sort_dict_offsets(GB_DICTIONARY *dict) {
 
 /* Warning dictionary is not in network byte order !!!! */
 static GB_DICTIONARY *gb_create_dictionary(O_gbdByKey *gbk, long maxmem) {
-    long data_sum;
-    GB_DICT_TREE  tree = build_dict_tree(gbk, maxmem, MAX_WORD_LEN, MIN_WORD_LEN, &data_sum);
+    long     data_sum;
+    DictTree tree = build_dict_tree(gbk, maxmem, MAX_WORD_LEN, MIN_WORD_LEN, &data_sum);
 
     if (tree.exists) {
         GB_DICTIONARY *dict    = (GB_DICTIONARY*)gbm_get_mem(sizeof(*dict), GBM_DICT_INDEX);
