@@ -344,7 +344,7 @@ static void GB_dump_internal(GBDATA *gbd, int *lines_allowed) {
     if (gb_show_later) {
         if (!lines_allowed || (*lines_allowed)>0) {
             printf("%*s Showing %s:\n", indent, "", whatto_show_later);
-            freeset(whatto_show_later, NULL); 
+            freenull(whatto_show_later); 
             ++indent;
             GB_dump_internal(gb_show_later, lines_allowed);
             --indent;

@@ -77,7 +77,7 @@ protected:
 public:
 
     static char *get_error() { return helix_error; }
-    static void clear_error() { freeset(helix_error, NULL); }
+    static void clear_error() { freenull(helix_error); }
     static void set_error(const char *err) { freedup(helix_error, err); }
 
     BI_helix(void);

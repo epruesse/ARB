@@ -565,7 +565,7 @@ void make_node_text_init(GBDATA *gb_main){
             awt_nds_ms->at_group[count] = at_group;
 
             gbe = GB_entry(gbz, "pars");
-            freeset(awt_nds_ms->parsing[count], 0);
+            freenull(awt_nds_ms->parsing[count]);
             if (gbe && GB_read_string_count(gbe)>1 ) awt_nds_ms->parsing[count] = GB_read_string(gbe);
             count++;
         }

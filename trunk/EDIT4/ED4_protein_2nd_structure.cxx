@@ -989,7 +989,7 @@ GB_ERROR ED4_pfold_set_SAI(char **protstruct, GBDATA *gb_main, const char *align
     char           *SAI_name      = aw_root->awar(PFOLD_AWAR_SELECTED_SAI)->read_string();
     GBDATA         *gb_protstruct = GBT_find_SAI(gb_main, SAI_name);
 
-    freeset(*protstruct, 0);
+    freenull(*protstruct);
 
     if (gb_protstruct) {
         GBDATA *gb_data = GBT_read_sequence(gb_protstruct, alignment_name);

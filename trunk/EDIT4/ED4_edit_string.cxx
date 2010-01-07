@@ -1146,7 +1146,7 @@ GB_ERROR ED4_Edit_String::edit(ED4_work_info *info) {
                     info->out_seq_position = remap->screen_to_sequence(info->char_position);    // correct cursor_pos if protection error occurred
                 }
             }
-            freeset(seq, 0);
+            freenull(seq);
         }
     }
 

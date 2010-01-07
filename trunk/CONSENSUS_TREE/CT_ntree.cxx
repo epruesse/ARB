@@ -96,7 +96,7 @@ void del_tree(NT_NODE *tree)
     /* now is leaf  */
     part_free((tree->part));
     tree->part = NULL;
-    freeset(tree, NULL);
+    freenull(tree);
 }
 
 

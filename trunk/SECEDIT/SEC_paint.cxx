@@ -369,7 +369,7 @@ void SEC_loop::paint_constraints(AW_device *device) {
 #warning move to SEC_db_interface
 #endif // DEVEL_RALF
 void SEC_root::cacheBackgroundColor() {
-    freeset(bg_color, 0);
+    freenull(bg_color);
 
     const ED4_sequence_terminal *sterm = db->get_seqTerminal();
     if (sterm) {

@@ -520,11 +520,11 @@ static ARB_ERROR init_show_pair(long max_seq_length) {
 
 void exit_show_pair(void)
 {
-    freeset(zzd, 0);
-    freeset(zzc, 0);
-    freeset(zzb, 0);
-    freeset(zza, 0);
-    freeset(displ, 0);
+    freenull(zzd);
+    freenull(zzc);
+    freenull(zzb);
+    freenull(zza);
+    freenull(displ);
 #if defined(DEBUG)
     displ_size = 0;
 #endif // DEBUG

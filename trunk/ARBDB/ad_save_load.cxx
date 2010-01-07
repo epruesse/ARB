@@ -39,7 +39,7 @@ char *gb_findExtension(char *path) {
 
 inline void STATIC_BUFFER(char*& strvar, int minlen) {
     gb_assert(minlen > 0); 
-    if (strvar && (strlen(strvar) < (size_t)(minlen-1))) { freeset(strvar, NULL); }
+    if (strvar && (strlen(strvar) < (size_t)(minlen-1))) freenull(strvar);
     if (!strvar) strvar=(char*)GB_calloc(minlen,1);
 }
  
@@ -989,7 +989,7 @@ GB_ERROR GB_save_as(GBDATA *gb,const char *path,const char *savetype)
 
         if (erg==0){
             if (!strchr(savetype,'f')){             // allow quick saving unless saved in 'f' mode
-                freeset(Main->qs.quick_save_disabled, NULL); // delete reason, why quicksaving is disallowed
+                freenull(Main->qs.quick_save_disabled); // delete reason, why quicksaving is disallowed
             }
             if (deleteQuickAllowed && gb_remove_quick_saved(Main,path)) goto error;
         }
@@ -1030,7 +1030,7 @@ GB_ERROR GB_save_as(GBDATA *gb,const char *path,const char *savetype)
             goto error;
         }
     }
-    freeset(sec_path, NULL);
+    freenull(sec_path);
     if (!strchr(savetype,'f')){                     // reset values unless out of order save
         Main->last_saved_transaction = GB_read_clock(gb);
         Main->last_main_saved_transaction = GB_read_clock(gb);

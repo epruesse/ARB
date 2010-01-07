@@ -78,7 +78,7 @@ static void freeContent() {
     if (ATD_content) {
         int c;
         for (c = 0; ATD_content[c]; c++) free(ATD_content[c]);
-        freeset(ATD_content, 0);
+        freenull(ATD_content);
     }
 }
 
@@ -175,7 +175,7 @@ static GB_ERROR read_arb_tcp_dat(const char *filename, int *versionFound) {
             }
 
             if (error) error = GBS_global_string("%s (in line %i of '%s')", error, lineNumber, filename);
-            for (t = 0; t<tokCount; t++) freeset(tokens[t], 0);
+            for (t = 0; t<tokCount; t++) freenull(tokens[t]);
         }
 
         ATD_content = (char**)realloc(entry, (entries+1)*sizeof(*entry));

@@ -23,7 +23,7 @@ double GB_log_fak(int n){
     if (n >= max_n){
         double sum = 0;
         int i;
-        freeset(res, NULL);
+        freenull(res);
         max_n = n + 100;
         res = (double *)GB_calloc(sizeof(double),max_n);
         for (i=1;i<max_n;i++){

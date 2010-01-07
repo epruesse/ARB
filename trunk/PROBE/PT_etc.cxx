@@ -216,7 +216,7 @@ char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checks
     }
 
     char *result = not_found ? GBS_strclose(not_found) : 0;
-    if (error) freeset(result, 0);
+    if (error) freenull(result);
     return result;
 }
 

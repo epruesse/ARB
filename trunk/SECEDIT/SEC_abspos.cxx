@@ -17,7 +17,7 @@
 using namespace std;
 
 void XString::set_length(size_t len) {
-    if (number_found && x_string_len<len) freeset(number_found, 0);
+    if (number_found && x_string_len<len) freenull(number_found);
     x_string_len = len;
     initialized  = false;
 }
@@ -69,7 +69,7 @@ void XString::initialize()
         sec_assert(len == x_string_len);
 
         if (abspos) { // re-initialization
-            if (x_count<x) freeset(abspos, 0); // abspos array too small
+            if (x_count<x) freenull(abspos); // abspos array too small
         }
         x_count = x;
     }

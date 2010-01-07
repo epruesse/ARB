@@ -54,6 +54,7 @@ AP_codon_table.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_codon_table.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_codon_table.o: $(ARBHOME)/INCLUDE/awt.hxx
 AP_codon_table.o: $(ARBHOME)/INCLUDE/awt_iupac.hxx
+AP_codon_table.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_codon_table.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AP_pro_a_nucs.o: AP_codon_table.hxx
@@ -74,5 +75,6 @@ AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/awt.hxx
+AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/inline.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/smartptr.h

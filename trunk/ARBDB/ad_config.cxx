@@ -55,7 +55,7 @@ char **GBT_get_configuration_names_and_count(GBDATA *gb_main, int *countPtr) {
 
                     if (error) {
                         GB_warningf("Failed to rename unnamed configuration to '%s'", new_name);
-                        freeset(new_name, NULL);
+                        freenull(new_name);
                     }
                     freeset(name, new_name);
                 }
@@ -178,7 +178,7 @@ GB_ERROR GBT_parse_next_config_item(GBT_config_parser *parser, GBT_config_item *
     const char *str = parser->config_string;
     int         pos = parser->parse_pos;
 
-    freeset(item->name, NULL);
+    freenull(item->name);
     item->type = CI_END_OF_CONFIG;
 
     if (str[pos]) {             // if not at 0-byte

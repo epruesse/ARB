@@ -683,7 +683,7 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
                     break;
                 }
 
-                freeset(id_copy, 0);
+                freenull(id_copy);
             }
 
             if (flag_fixed_fonts_only) def_font = AW_DEFAULT_FIXED_FONT; // AW_LUCIDA_SANS_TYPEWRITER;

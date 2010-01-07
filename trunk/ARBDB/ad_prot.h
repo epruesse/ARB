@@ -104,7 +104,6 @@ GB_ERROR GB_install_link_follower(GBDATA *gb_main, const char *link_type, GB_Lin
 
 /* admalloc.cxx */
 NOT4PERL void *GB_calloc(unsigned int nelem, unsigned int elsize);
-char *GB_strdup(const char *p);
 char *GB_strduplen(const char *p, unsigned len);
 char *GB_strpartdup(const char *start, const char *end);
 char *GB_strndup(const char *start, int len);

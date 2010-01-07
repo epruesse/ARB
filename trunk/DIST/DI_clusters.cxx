@@ -567,7 +567,7 @@ void GroupBuilder::update_group(ClusterPtr cluster) {
                         }
                         case GROUP_DELETE: {
                             if (group_node->name && prefix_ok(group_node->name)) {
-                                freeset(group_node->name, NULL);
+                                freenull(group_node->name);
                                 group_node->gb_node = NULL; // forget ref to group data (@@@ need to delete group data from DB ? )
 
                                 tree_modified = true;

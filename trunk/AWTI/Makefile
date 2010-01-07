@@ -51,6 +51,7 @@ AWTI_export.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/awt.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
+AWTI_export.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/inline.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/xml.hxx
@@ -79,6 +80,7 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/awt.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/awt_advice.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
+AWTI_import.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/GEN.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/GenomeImport.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/smartptr.h

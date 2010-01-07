@@ -482,7 +482,7 @@ static void awt_selection_box_changed_filename(void *, struct adawcbstruct *cbs)
                         aw_root->awar(cbs->def_name)->write_string(with_previous_name);
                     }
                     else {
-                        freeset(cbs->previous_filename, 0);
+                        freenull(cbs->previous_filename);
                         aw_root->awar(cbs->def_name)->write_string(newName);
                     }
 

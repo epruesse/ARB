@@ -55,5 +55,6 @@ db_scanner.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/awt.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/awtlocal.hxx
+db_scanner.o: $(ARBHOME)/INCLUDE/dupstr.h
 db_scanner.o: $(ARBHOME)/INCLUDE/inline.h
 db_scanner.o: $(ARBHOME)/INCLUDE/smartptr.h

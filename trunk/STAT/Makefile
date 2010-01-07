@@ -50,6 +50,7 @@ ST_ml.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/awt_csp.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/downcast.h
+ST_ml.o: $(ARBHOME)/INCLUDE/dupstr.h
 ST_ml.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 ST_quality.o: st_ml.hxx
@@ -80,6 +81,7 @@ ST_quality.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/awt_csp.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/downcast.h
+ST_quality.o: $(ARBHOME)/INCLUDE/dupstr.h
 ST_quality.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 ST_window.o: st_ml.hxx
@@ -110,4 +112,5 @@ ST_window.o: $(ARBHOME)/INCLUDE/awt_csp.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/downcast.h
+ST_window.o: $(ARBHOME)/INCLUDE/dupstr.h
 ST_window.o: $(ARBHOME)/INCLUDE/smartptr.h

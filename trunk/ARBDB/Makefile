@@ -131,6 +131,7 @@ ad_config.o: gb_prot.h
 ad_config.o: $(ARBHOME)/INCLUDE/arb_error.h
 ad_config.o: $(ARBHOME)/INCLUDE/arbtools.h
 ad_config.o: $(ARBHOME)/INCLUDE/attributes.h
+ad_config.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_config.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 ad_core.o: ad_k_prot.h
@@ -152,6 +153,7 @@ ad_core.o: gb_tune.h
 ad_core.o: $(ARBHOME)/INCLUDE/arb_error.h
 ad_core.o: $(ARBHOME)/INCLUDE/arbtools.h
 ad_core.o: $(ARBHOME)/INCLUDE/attributes.h
+ad_core.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_core.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 ad_load.o: ad_k_prot.h
@@ -176,6 +178,7 @@ ad_load.o: gb_tune.h
 ad_load.o: $(ARBHOME)/INCLUDE/arb_error.h
 ad_load.o: $(ARBHOME)/INCLUDE/arbtools.h
 ad_load.o: $(ARBHOME)/INCLUDE/attributes.h
+ad_load.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_load.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 ad_save_load.o: ad_k_prot.h
@@ -197,6 +200,7 @@ ad_save_load.o: gb_tune.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_error.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arbtools.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/attributes.h
+ad_save_load.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 adali.o: ad_k_prot.h
@@ -212,6 +216,7 @@ adali.o: gb_prot.h
 adali.o: $(ARBHOME)/INCLUDE/arb_error.h
 adali.o: $(ARBHOME)/INCLUDE/arbtools.h
 adali.o: $(ARBHOME)/INCLUDE/attributes.h
+adali.o: $(ARBHOME)/INCLUDE/dupstr.h
 adali.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 adcache.o: ad_k_prot.h
@@ -231,6 +236,7 @@ adcache.o: gb_tune.h
 adcache.o: $(ARBHOME)/INCLUDE/arb_error.h
 adcache.o: $(ARBHOME)/INCLUDE/arbtools.h
 adcache.o: $(ARBHOME)/INCLUDE/attributes.h
+adcache.o: $(ARBHOME)/INCLUDE/dupstr.h
 adcache.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 adChangeKey.o: ad_k_prot.h
@@ -245,6 +251,7 @@ adChangeKey.o: gb_prot.h
 adChangeKey.o: $(ARBHOME)/INCLUDE/arb_error.h
 adChangeKey.o: $(ARBHOME)/INCLUDE/arbtools.h
 adChangeKey.o: $(ARBHOME)/INCLUDE/attributes.h
+adChangeKey.o: $(ARBHOME)/INCLUDE/dupstr.h
 adChangeKey.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 adcolumns.o: ad_k_prot.h
@@ -260,6 +267,7 @@ adcolumns.o: gb_prot.h
 adcolumns.o: $(ARBHOME)/INCLUDE/arb_error.h
 adcolumns.o: $(ARBHOME)/INCLUDE/arbtools.h
 adcolumns.o: $(ARBHOME)/INCLUDE/attributes.h
+adcolumns.o: $(ARBHOME)/INCLUDE/dupstr.h
 adcolumns.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 adcomm.o: ad_k_prot.h
@@ -281,6 +289,7 @@ adcomm.o: gb_tune.h
 adcomm.o: $(ARBHOME)/INCLUDE/arb_error.h
 adcomm.o: $(ARBHOME)/INCLUDE/arbtools.h
 adcomm.o: $(ARBHOME)/INCLUDE/attributes.h
+adcomm.o: $(ARBHOME)/INCLUDE/dupstr.h
 adcomm.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 adcompr.o: ad_k_prot.h
@@ -305,6 +314,7 @@ adcompr.o: gb_tune.h
 adcompr.o: $(ARBHOME)/INCLUDE/arb_error.h
 adcompr.o: $(ARBHOME)/INCLUDE/arbtools.h
 adcompr.o: $(ARBHOME)/INCLUDE/attributes.h
+adcompr.o: $(ARBHOME)/INCLUDE/dupstr.h
 adcompr.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 adExperiment.o: ad_k_prot.h
@@ -319,6 +329,7 @@ adExperiment.o: gb_prot.h
 adExperiment.o: $(ARBHOME)/INCLUDE/arb_error.h
 adExperiment.o: $(ARBHOME)/INCLUDE/arbtools.h
 adExperiment.o: $(ARBHOME)/INCLUDE/attributes.h
+adExperiment.o: $(ARBHOME)/INCLUDE/dupstr.h
 adExperiment.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 adfile.o: ad_k_prot.h
@@ -332,6 +343,7 @@ adfile.o: gb_prot.h
 adfile.o: $(ARBHOME)/INCLUDE/arb_error.h
 adfile.o: $(ARBHOME)/INCLUDE/arbtools.h
 adfile.o: $(ARBHOME)/INCLUDE/attributes.h
+adfile.o: $(ARBHOME)/INCLUDE/dupstr.h
 adfile.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 adGene.o: ad_k_prot.h
@@ -347,6 +359,7 @@ adGene.o: gb_prot.h
 adGene.o: $(ARBHOME)/INCLUDE/arb_error.h
 adGene.o: $(ARBHOME)/INCLUDE/arbtools.h
 adGene.o: $(ARBHOME)/INCLUDE/attributes.h
+adGene.o: $(ARBHOME)/INCLUDE/dupstr.h
 adGene.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 adhash.o: ad_k_prot.h
@@ -364,6 +377,7 @@ adhash.o: gb_tune.h
 adhash.o: $(ARBHOME)/INCLUDE/arb_error.h
 adhash.o: $(ARBHOME)/INCLUDE/arbtools.h
 adhash.o: $(ARBHOME)/INCLUDE/attributes.h
+adhash.o: $(ARBHOME)/INCLUDE/dupstr.h
 adhash.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 adhashtools.o: ad_k_prot.h
@@ -378,6 +392,7 @@ adhashtools.o: gb_prot.h
 adhashtools.o: $(ARBHOME)/INCLUDE/arb_error.h
 adhashtools.o: $(ARBHOME)/INCLUDE/arbtools.h
 adhashtools.o: $(ARBHOME)/INCLUDE/attributes.h
+adhashtools.o: $(ARBHOME)/INCLUDE/dupstr.h
 adhashtools.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 adindex.o: ad_k_prot.h
@@ -401,6 +416,7 @@ adindex.o: gb_undo.h
 adindex.o: $(ARBHOME)/INCLUDE/arb_error.h
 adindex.o: $(ARBHOME)/INCLUDE/arbtools.h
 adindex.o: $(ARBHOME)/INCLUDE/attributes.h
+adindex.o: $(ARBHOME)/INCLUDE/dupstr.h
 adindex.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 aditem.o: ad_k_prot.h
@@ -415,6 +431,7 @@ aditem.o: gb_prot.h
 aditem.o: $(ARBHOME)/INCLUDE/arb_error.h
 aditem.o: $(ARBHOME)/INCLUDE/arbtools.h
 aditem.o: $(ARBHOME)/INCLUDE/attributes.h
+aditem.o: $(ARBHOME)/INCLUDE/dupstr.h
 aditem.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 adlang1.o: ad_k_prot.h
@@ -438,6 +455,7 @@ adlang1.o: gb_tune.h
 adlang1.o: $(ARBHOME)/INCLUDE/arb_error.h
 adlang1.o: $(ARBHOME)/INCLUDE/arbtools.h
 adlang1.o: $(ARBHOME)/INCLUDE/attributes.h
+adlang1.o: $(ARBHOME)/INCLUDE/dupstr.h
 adlang1.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 adlink.o: ad_k_prot.h
@@ -453,6 +471,7 @@ adlink.o: gb_prot.h
 adlink.o: $(ARBHOME)/INCLUDE/arb_error.h
 adlink.o: $(ARBHOME)/INCLUDE/arbtools.h
 adlink.o: $(ARBHOME)/INCLUDE/attributes.h
+adlink.o: $(ARBHOME)/INCLUDE/dupstr.h
 adlink.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 admalloc.o: ad_k_prot.h
@@ -472,6 +491,7 @@ admalloc.o: gb_tune.h
 admalloc.o: $(ARBHOME)/INCLUDE/arb_error.h
 admalloc.o: $(ARBHOME)/INCLUDE/arbtools.h
 admalloc.o: $(ARBHOME)/INCLUDE/attributes.h
+admalloc.o: $(ARBHOME)/INCLUDE/dupstr.h
 admalloc.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 admap.o: ad_k_prot.h
@@ -493,6 +513,7 @@ admap.o: gb_tune.h
 admap.o: $(ARBHOME)/INCLUDE/arb_error.h
 admap.o: $(ARBHOME)/INCLUDE/arbtools.h
 admap.o: $(ARBHOME)/INCLUDE/attributes.h
+admap.o: $(ARBHOME)/INCLUDE/dupstr.h
 admap.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 admatch.o: ad_k_prot.h
@@ -505,6 +526,7 @@ admatch.o: gb_prot.h
 admatch.o: $(ARBHOME)/INCLUDE/arb_error.h
 admatch.o: $(ARBHOME)/INCLUDE/arbtools.h
 admatch.o: $(ARBHOME)/INCLUDE/attributes.h
+admatch.o: $(ARBHOME)/INCLUDE/dupstr.h
 admatch.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 admath.o: ad_k_prot.h
@@ -517,6 +539,7 @@ admath.o: gb_prot.h
 admath.o: $(ARBHOME)/INCLUDE/arb_error.h
 admath.o: $(ARBHOME)/INCLUDE/arbtools.h
 admath.o: $(ARBHOME)/INCLUDE/attributes.h
+admath.o: $(ARBHOME)/INCLUDE/dupstr.h
 admath.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 adname.o: ad_config.h
@@ -532,6 +555,7 @@ adname.o: gb_prot.h
 adname.o: $(ARBHOME)/INCLUDE/arb_error.h
 adname.o: $(ARBHOME)/INCLUDE/arbtools.h
 adname.o: $(ARBHOME)/INCLUDE/attributes.h
+adname.o: $(ARBHOME)/INCLUDE/dupstr.h
 adname.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 adoptimize.o: ad_k_prot.h
@@ -555,6 +579,7 @@ adoptimize.o: gb_tune.h
 adoptimize.o: $(ARBHOME)/INCLUDE/arb_error.h
 adoptimize.o: $(ARBHOME)/INCLUDE/arbtools.h
 adoptimize.o: $(ARBHOME)/INCLUDE/attributes.h
+adoptimize.o: $(ARBHOME)/INCLUDE/dupstr.h
 adoptimize.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 adperl.o: ad_k_prot.h
@@ -567,6 +592,7 @@ adperl.o: gb_prot.h
 adperl.o: $(ARBHOME)/INCLUDE/arb_error.h
 adperl.o: $(ARBHOME)/INCLUDE/arbtools.h
 adperl.o: $(ARBHOME)/INCLUDE/attributes.h
+adperl.o: $(ARBHOME)/INCLUDE/dupstr.h
 adperl.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 adquery.o: ad_k_prot.h
@@ -590,6 +616,7 @@ adquery.o: gb_tune.h
 adquery.o: $(ARBHOME)/INCLUDE/arb_error.h
 adquery.o: $(ARBHOME)/INCLUDE/arbtools.h
 adquery.o: $(ARBHOME)/INCLUDE/attributes.h
+adquery.o: $(ARBHOME)/INCLUDE/dupstr.h
 adquery.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 adRevCompl.o: ad_k_prot.h
@@ -602,6 +629,7 @@ adRevCompl.o: arbdbt.h
 adRevCompl.o: $(ARBHOME)/INCLUDE/arb_error.h
 adRevCompl.o: $(ARBHOME)/INCLUDE/arbtools.h
 adRevCompl.o: $(ARBHOME)/INCLUDE/attributes.h
+adRevCompl.o: $(ARBHOME)/INCLUDE/dupstr.h
 adRevCompl.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 adseqcompr.o: ad_k_prot.h
@@ -622,6 +650,7 @@ adseqcompr.o: gb_tune.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/arb_error.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/arbtools.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/attributes.h
+adseqcompr.o: $(ARBHOME)/INCLUDE/dupstr.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 adsocket.o: ad_k_prot.h
@@ -639,6 +668,7 @@ adsocket.o: gb_prot.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_error.h
 adsocket.o: $(ARBHOME)/INCLUDE/arbtools.h
 adsocket.o: $(ARBHOME)/INCLUDE/attributes.h
+adsocket.o: $(ARBHOME)/INCLUDE/dupstr.h
 adsocket.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 adsort.o: ad_k_prot.h
@@ -649,6 +679,7 @@ adsort.o: arbdb_base.h
 adsort.o: $(ARBHOME)/INCLUDE/arb_error.h
 adsort.o: $(ARBHOME)/INCLUDE/arbtools.h
 adsort.o: $(ARBHOME)/INCLUDE/attributes.h
+adsort.o: $(ARBHOME)/INCLUDE/dupstr.h
 adsort.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 adstring.o: ad_k_prot.h
@@ -667,6 +698,7 @@ adstring.o: gb_tune.h
 adstring.o: $(ARBHOME)/INCLUDE/arb_error.h
 adstring.o: $(ARBHOME)/INCLUDE/arbtools.h
 adstring.o: $(ARBHOME)/INCLUDE/attributes.h
+adstring.o: $(ARBHOME)/INCLUDE/dupstr.h
 adstring.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 adsystem.o: ad_k_prot.h
@@ -688,6 +720,7 @@ adsystem.o: gb_tune.h
 adsystem.o: $(ARBHOME)/INCLUDE/arb_error.h
 adsystem.o: $(ARBHOME)/INCLUDE/arbtools.h
 adsystem.o: $(ARBHOME)/INCLUDE/attributes.h
+adsystem.o: $(ARBHOME)/INCLUDE/dupstr.h
 adsystem.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 adtables.o: ad_k_prot.h
@@ -705,6 +738,7 @@ adtables.o: gb_prot.h
 adtables.o: $(ARBHOME)/INCLUDE/arb_error.h
 adtables.o: $(ARBHOME)/INCLUDE/arbtools.h
 adtables.o: $(ARBHOME)/INCLUDE/attributes.h
+adtables.o: $(ARBHOME)/INCLUDE/dupstr.h
 adtables.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 adtcp.o: ad_k_prot.h
@@ -719,6 +753,7 @@ adtcp.o: gb_prot.h
 adtcp.o: $(ARBHOME)/INCLUDE/arb_error.h
 adtcp.o: $(ARBHOME)/INCLUDE/arbtools.h
 adtcp.o: $(ARBHOME)/INCLUDE/attributes.h
+adtcp.o: $(ARBHOME)/INCLUDE/dupstr.h
 adtcp.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 adTest.o: ad_k_prot.h
@@ -738,6 +773,7 @@ adTest.o: gb_tune.h
 adTest.o: $(ARBHOME)/INCLUDE/arb_error.h
 adTest.o: $(ARBHOME)/INCLUDE/arbtools.h
 adTest.o: $(ARBHOME)/INCLUDE/attributes.h
+adTest.o: $(ARBHOME)/INCLUDE/dupstr.h
 adTest.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 adtools.o: ad_k_prot.h
@@ -755,6 +791,7 @@ adtools.o: gb_prot.h
 adtools.o: $(ARBHOME)/INCLUDE/arb_error.h
 adtools.o: $(ARBHOME)/INCLUDE/arbtools.h
 adtools.o: $(ARBHOME)/INCLUDE/attributes.h
+adtools.o: $(ARBHOME)/INCLUDE/dupstr.h
 adtools.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 adtree.o: ad_k_prot.h
@@ -769,6 +806,7 @@ adtree.o: gb_prot.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_error.h
 adtree.o: $(ARBHOME)/INCLUDE/arbtools.h
 adtree.o: $(ARBHOME)/INCLUDE/attributes.h
+adtree.o: $(ARBHOME)/INCLUDE/dupstr.h
 adtree.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 adtune.o: gb_tune.h
@@ -796,6 +834,7 @@ arbdb.o: gb_tune.h
 arbdb.o: $(ARBHOME)/INCLUDE/arb_error.h
 arbdb.o: $(ARBHOME)/INCLUDE/arbtools.h
 arbdb.o: $(ARBHOME)/INCLUDE/attributes.h
+arbdb.o: $(ARBHOME)/INCLUDE/dupstr.h
 arbdb.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 arbdbpp.o: ad_k_prot.h
@@ -808,4 +847,5 @@ arbdbpp.o: gb_prot.h
 arbdbpp.o: $(ARBHOME)/INCLUDE/arb_error.h
 arbdbpp.o: $(ARBHOME)/INCLUDE/arbtools.h
 arbdbpp.o: $(ARBHOME)/INCLUDE/attributes.h
+arbdbpp.o: $(ARBHOME)/INCLUDE/dupstr.h
 arbdbpp.o: $(ARBHOME)/INCLUDE/smartptr.h

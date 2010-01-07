@@ -1198,7 +1198,7 @@ static void awt_do_query(void *dummy, struct adaqbsstruct *cbs, AW_CL cl_ext_que
                                         gb_key = NULL; // stop!
                                     }
 
-                                    freeset(data, NULL);
+                                    freenull(data);
                                     if (gb_key) {
                                         do { gb_key = GB_nextChild(gb_key); }
                                         while (gb_key && GB_read_type(gb_key) == GB_DB);
@@ -1580,7 +1580,7 @@ void awt_do_pars_list(void *dummy, struct adaqbsstruct *cbs)
             {
                 long use_tag = cbs->aws->get_root()->awar(cbs->awar_use_tag)->read_int();
                 if (!use_tag || !strlen(tag)) {
-                    freeset(tag, 0);
+                    freenull(tag);
                 }
             }
             int double_pars = cbs->aws->get_root()->awar(cbs->awar_double_pars)->read_int();
@@ -2286,7 +2286,7 @@ void awt_do_set_list(void *, struct adaqbsstruct *cbs, long append) {
     }
 
     char *value = cbs->aws->get_root()->awar(cbs->awar_setvalue)->read_string();
-    if (value[0] == 0) freeset(value, 0);
+    if (value[0] == 0) freenull(value);
 
     GB_begin_transaction(cbs->gb_main);
 

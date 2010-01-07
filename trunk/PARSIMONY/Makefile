@@ -47,6 +47,7 @@ AP_buffer.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/downcast.h
+AP_buffer.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AP_main.o: AP_buffer.hxx
@@ -75,6 +76,7 @@ AP_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/downcast.h
+AP_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_main.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 
@@ -99,6 +101,7 @@ AP_tree_edge.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/downcast.h
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AP_tree_nlen.o: AP_buffer.hxx
@@ -123,6 +126,7 @@ AP_tree_nlen.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/downcast.h
+AP_tree_nlen.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 PARS_debug.o: pars_debug.hxx
@@ -139,6 +143,7 @@ PARS_debug.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+PARS_debug.o: $(ARBHOME)/INCLUDE/dupstr.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 PARS_dtree.o: AP_buffer.hxx
@@ -176,6 +181,7 @@ PARS_dtree.o: $(ARBHOME)/INCLUDE/awt_csp.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/downcast.h
+PARS_dtree.o: $(ARBHOME)/INCLUDE/dupstr.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/smartptr.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
@@ -192,6 +198,7 @@ PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+PARS_klprops.o: $(ARBHOME)/INCLUDE/dupstr.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 PARS_main.o: AP_buffer.hxx
@@ -229,6 +236,7 @@ PARS_main.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/downcast.h
+PARS_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 PARS_main.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 PARS_main.o: $(ARBHOME)/INCLUDE/TreeCallbacks.hxx

@@ -218,7 +218,7 @@ char *DI_MATRIX::unload() {
     for (long i=0; i<nentries; i++) {
         delete entries[i];
     }
-    freeset(entries, 0);
+    freenull(entries);
     nentries = 0;
     return 0;
 }

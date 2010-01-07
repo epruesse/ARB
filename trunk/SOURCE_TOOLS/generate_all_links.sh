@@ -104,6 +104,7 @@ symlink ../TEMPLATES/arbtools.h INCLUDE/arbtools.h &&
 symlink ../TEMPLATES/attributes.h INCLUDE/attributes.h &&
 symlink ../TEMPLATES/config_parser.h INCLUDE/config_parser.h &&
 symlink ../TEMPLATES/downcast.h INCLUDE/downcast.h &&
+symlink ../TEMPLATES/dupstr.h INCLUDE/dupstr.h &&
 symlink ../TEMPLATES/inline.h INCLUDE/inline.h &&
 symlink ../TEMPLATES/output.h INCLUDE/output.h &&
 symlink ../TEMPLATES/perf_timer.h INCLUDE/perf_timer.h &&

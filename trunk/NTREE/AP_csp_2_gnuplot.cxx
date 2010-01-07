@@ -196,7 +196,7 @@ static const char *makeTitle(const char *fname) {
     if (rdot) pt = string2PlotType(rdot+1);
 
     static char *title = 0;
-    freeset(title, 0);
+    freenull(title);
 
     if (pt == PT_UNKNOWN) {
         title = GBS_global_string_copy("%s (unknown type)", name);

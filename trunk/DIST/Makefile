@@ -68,6 +68,7 @@ DI_clusters.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/downcast.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/dupstr.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/smartptr.h
 
@@ -87,6 +88,7 @@ DI_clustertree.o: $(ARBHOME)/INCLUDE/arbtools.h
 DI_clustertree.o: $(ARBHOME)/INCLUDE/attributes.h
 DI_clustertree.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_clustertree.o: $(ARBHOME)/INCLUDE/downcast.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/dupstr.h
 DI_clustertree.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 DI_compress_matrix.o: di_matr.hxx
@@ -109,6 +111,7 @@ DI_compress_matrix.o: $(ARBHOME)/INCLUDE/attributes.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/downcast.h
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/dupstr.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 DI_foundclusters.o: di_clustertree.hxx
@@ -132,6 +135,7 @@ DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/downcast.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/dupstr.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/smartptr.h
 
@@ -151,6 +155,7 @@ DI_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+DI_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 DI_main.o: $(ARBHOME)/INCLUDE/servercntrl.h
 DI_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 
@@ -196,6 +201,7 @@ DI_matr.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/CT_ctree.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/downcast.h
+DI_matr.o: $(ARBHOME)/INCLUDE/dupstr.h
 DI_matr.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/neighbourjoin.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -222,6 +228,7 @@ DI_mldist.o: $(ARBHOME)/INCLUDE/attributes.h
 DI_mldist.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 DI_mldist.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_mldist.o: $(ARBHOME)/INCLUDE/downcast.h
+DI_mldist.o: $(ARBHOME)/INCLUDE/dupstr.h
 DI_mldist.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 DI_protdist.o: di_matr.hxx
@@ -246,6 +253,7 @@ DI_protdist.o: $(ARBHOME)/INCLUDE/attributes.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 DI_protdist.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_protdist.o: $(ARBHOME)/INCLUDE/downcast.h
+DI_protdist.o: $(ARBHOME)/INCLUDE/dupstr.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 DI_save_matr.o: di_matr.hxx
@@ -269,6 +277,7 @@ DI_save_matr.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 DI_save_matr.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_save_matr.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
 DI_save_matr.o: $(ARBHOME)/INCLUDE/downcast.h
+DI_save_matr.o: $(ARBHOME)/INCLUDE/dupstr.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 DI_view_matrix.o: di_matr.hxx
@@ -300,6 +309,7 @@ DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/downcast.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/dupstr.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 distanalyse.o: di_matr.hxx
@@ -324,4 +334,5 @@ distanalyse.o: $(ARBHOME)/INCLUDE/attributes.h
 distanalyse.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/downcast.h
+distanalyse.o: $(ARBHOME)/INCLUDE/dupstr.h
 distanalyse.o: $(ARBHOME)/INCLUDE/smartptr.h

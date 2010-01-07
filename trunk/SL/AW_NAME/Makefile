@@ -54,6 +54,7 @@ AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/awt.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/awt_advice.hxx
+AW_names_admin.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AW_rename.o: AW_rename.hxx
@@ -74,6 +75,7 @@ AW_rename.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/client.h
+AW_rename.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_rename.o: $(ARBHOME)/INCLUDE/inline.h
 AW_rename.o: $(ARBHOME)/INCLUDE/names_client.h
 AW_rename.o: $(ARBHOME)/INCLUDE/servercntrl.h

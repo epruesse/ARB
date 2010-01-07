@@ -191,11 +191,11 @@ static const char *export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tree, d
             }
             if (bootstrap) {
                 branch_tag.add_attribute("bootstrap", bootstrap);
-                freeset(bootstrap, 0);
+                freenull(bootstrap);
             }
             if (groupname) {
                 branch_tag.add_attribute("groupname", groupname);
-                freeset(groupname, 0);
+                freenull(groupname);
                 if (folded) branch_tag.add_attribute("folded", "1");
             }
             else {

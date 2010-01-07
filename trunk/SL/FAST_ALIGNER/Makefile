@@ -52,6 +52,7 @@ AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AWTC_seq_search.o: awtc_seq_search.hxx
@@ -64,6 +65,7 @@ AWTC_seq_search.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWTC_seq_search.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWTC_seq_search.o: $(ARBHOME)/INCLUDE/attributes.h
 AWTC_seq_search.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+AWTC_seq_search.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWTC_seq_search.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 ClustalV.o: awtc_seq_search.hxx
@@ -77,6 +79,7 @@ ClustalV.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ClustalV.o: $(ARBHOME)/INCLUDE/arbtools.h
 ClustalV.o: $(ARBHOME)/INCLUDE/attributes.h
 ClustalV.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ClustalV.o: $(ARBHOME)/INCLUDE/dupstr.h
 ClustalV.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 fast_aligner.o: awtc_seq_search.hxx
@@ -101,5 +104,6 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/awt.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/awtc_next_neighbours.hxx
+fast_aligner.o: $(ARBHOME)/INCLUDE/dupstr.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/island_hopping.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/smartptr.h

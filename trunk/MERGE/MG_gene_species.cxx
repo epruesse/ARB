@@ -176,7 +176,7 @@ static char *MG_create_field_content(GBDATA *gb_species, CreationMethod method, 
         if (aci_result) freeset(result, aci_result);
     }
 
-    if (error) freeset(result, 0);
+    if (error) freenull(result);
 
     mg_assert(result||error);
     return result;

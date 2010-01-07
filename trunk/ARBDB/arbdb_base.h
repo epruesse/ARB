@@ -43,51 +43,9 @@ enum GB_CB_TYPE {
     GB_CB_ALL         = 7
 };
 
-/* --------------------------------------------------------------------------------
- * The following function handle char*'s, which either own a heap copy or are NULL.
- *
- * freeset:  assigns a heap-copy to a variable (variable is automatically freed)
- * freedup:  similar to freeset, but strdup's the rhs-expression
- * reassign: similar to freeset, but rhs must be variable and will be set to NULL
- * nulldup:  like strdup, but pass-through NULL
- *
- * Note: freeset, freedup and reassign may safely use the changed variable in the rhs-expression!
- *
- * @@@ the complete section could go into a separate header,
- * but it makes no sense atm, cause we need GB_strdup for C compilation
- * (using a macro would evaluate 'str' in nulldup twice - which is not ok)
- *
- */
-
- 
-#define freeset(var, heapCopy) do { typeof(var) freesetvar = (heapCopy); free(var); (var) = freesetvar; } while(0)
-// Note: expression 'heapCopy' may contain 'var' 
-
-#ifdef __cplusplus
-
-#ifndef _CPP_CSTRING
-#include <cstring>
+#ifndef DUPSTR_H
+#include <dupstr.h>
 #endif
-#ifndef _CPP_CSTDLIB
-#include <cstdlib>
-#endif
-
-inline char *nulldup(const char *str)                           { return str ? strdup(str) : NULL; } // this does the same as GB_strdup
-inline void freedup(char *& strvar, const char *no_heapcopy)    { char *tmp_copy = nulldup(no_heapcopy); free(strvar); strvar = tmp_copy; }
-inline void reassign(char *& dstvar, char *& srcvar)            { freeset(dstvar, srcvar); srcvar = NULL; }
-
-#else
-
-#error please compile as C++
-
-#define nulldup(str)        GB_strdup(str)
-#define freedup(var,str)    freeset(var, nulldup(str))
-#define reassign(dvar,svar) do { freeset(dvar, svar); (svar) = NULL; } while(0)
-
-#endif
-
-/* -------------------------------------------------------------------------------- */
-
 #ifndef AD_K_PROT_H
 #include <ad_k_prot.h>
 #endif

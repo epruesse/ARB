@@ -89,7 +89,7 @@ struct Socinf {
 };
 
 void g_bcms_delete_Socinf(struct Socinf *THIS){
-    freeset(THIS->username, NULL);
+    freenull(THIS->username);
     THIS->next = 0;
     free(THIS);
 }
@@ -235,10 +235,10 @@ void GBCMS_shutdown(GBDATA *gbd) {
         
         if (hs->unix_name){
             unlink(hs->unix_name);
-            freeset(hs->unix_name, NULL);
+            freenull(hs->unix_name);
         }
         close(hs->hso);
-        freeset(Main->server_data, NULL);
+        freenull(Main->server_data);
     }
 }
 
@@ -1999,7 +1999,7 @@ GB_ERROR gbcm_logout(GBCONTAINER *gb_main,char *user)
             Main->users[i]->nusers--;
             if (Main->users[i]->nusers<=0) { // kill user and his projects
                 free(Main->users[i]->username);
-                freeset(Main->users[i], NULL);
+                freenull(Main->users[i]);
                 fprintf(stdout,"The User %s has logged out\n",user);
             }
             return 0;

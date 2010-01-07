@@ -68,6 +68,7 @@ irstree_display.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/downcast.h
+irstree_display.o: $(ARBHOME)/INCLUDE/dupstr.h
 irstree_display.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 TreeCallbacks.o: TreeCallbacks.hxx
@@ -97,6 +98,7 @@ TreeCallbacks.o: $(ARBHOME)/INCLUDE/awt.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/awt_advice.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/downcast.h
+TreeCallbacks.o: $(ARBHOME)/INCLUDE/dupstr.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 TreeDisplay.o: TreeDisplay.hxx
@@ -127,4 +129,5 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/awt_attributes.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/downcast.h
+TreeDisplay.o: $(ARBHOME)/INCLUDE/dupstr.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/smartptr.h

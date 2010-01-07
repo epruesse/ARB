@@ -842,7 +842,7 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
             already_transferred = source;
 
             for (i = 0; i < max_mwildcard; i++) {
-                freeset(mwildcard[i], 0);
+                freenull(mwildcard[i]);
             }
             max_wildcard  = 0;
             max_mwildcard = 0;
@@ -859,7 +859,7 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
         GBS_strcat(strstruct,already_transferred);  /* cat the rest data */
 
         for (i = 0; i < max_mwildcard; i++){
-            freeset(mwildcard[i], 0);
+            freenull(mwildcard[i]);
         }
         max_wildcard  = 0;
         max_mwildcard = 0;

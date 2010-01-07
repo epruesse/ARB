@@ -32,7 +32,7 @@ void TREE_scale(GBT_TREE *tree, double length_scale, double bootstrap_scale) {
         double      bootstrap    = strtod(tree->remark_branch, (char**)&end);
         bool        is_bootstrap = end[0] == '%' && end[1] == 0;
 
-        freeset(tree->remark_branch, 0);
+        freenull(tree->remark_branch);
 
         if (is_bootstrap) {
             bootstrap = bootstrap*bootstrap_scale+0.5;

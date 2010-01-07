@@ -2039,7 +2039,7 @@ static void create_probe_group_result_sel_box(AW_root *aw_root, AW_window *aws) 
     if (pg_global.pg_main) {
         GB_close(pg_global.pg_main);
         pg_global.pg_main = 0;
-        freeset(pg_global.pg_filename, 0);
+        freenull(pg_global.pg_filename);
     }
 
     pg_global.aw_root = aw_root;
@@ -2104,7 +2104,7 @@ static void create_probe_group_result_sel_box(AW_root *aw_root, AW_window *aws) 
     }
     else {
         error = GB_export_errorf("Can't open database '%s'", file_name);
-        freeset(pg_global.pg_filename, 0);
+        freenull(pg_global.pg_filename);
     }
 
     free(file_name);
@@ -2149,7 +2149,7 @@ static void create_probe_group_groups_window(AW_window *aww) {
 //     AW_window *create_probe_group_result_window(AW_root *awr, AW_default cl_AW_canvas_ntw)
 // --------------------------------------------------------------------------------
 AW_window *create_probe_group_result_window(AW_root *awr, AW_default cl_AW_canvas_ntw){
-    freeset(pg_global.awar_pg_result_filename, 0);
+    freenull(pg_global.awar_pg_result_filename);
     pg_global.ntw = (AWT_canvas*)cl_AW_canvas_ntw;
 
     return awt_create_load_box(awr, "arb_probe_group result", "arb", &pg_global.awar_pg_result_filename,

@@ -88,7 +88,7 @@ static char *old_species_marks = 0; // configuration storing marked species
 inline void exp_restore_old_species_marks() {
     if (old_species_marks) {
         GBT_restore_marked_species(GLOBAL_gb_main, old_species_marks);
-        freeset(old_species_marks, 0);
+        freenull(old_species_marks);
     }
 }
 

@@ -47,4 +47,5 @@ AliView.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AliView.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AliView.o: $(ARBHOME)/INCLUDE/arbtools.h
 AliView.o: $(ARBHOME)/INCLUDE/attributes.h
+AliView.o: $(ARBHOME)/INCLUDE/dupstr.h
 AliView.o: $(ARBHOME)/INCLUDE/smartptr.h

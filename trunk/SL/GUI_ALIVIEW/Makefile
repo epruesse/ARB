@@ -58,6 +58,7 @@ AWT_csp.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_csp.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_csp.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AWT_csp.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+AWT_csp.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_csp.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AWT_filter.o: awt_filter.hxx
@@ -80,6 +81,7 @@ AWT_filter.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/awt.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
+AWT_filter.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 GUI_aliview.o: awt_csp.hxx
@@ -97,4 +99,5 @@ GUI_aliview.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/arbtools.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/attributes.h
+GUI_aliview.o: $(ARBHOME)/INCLUDE/dupstr.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/smartptr.h

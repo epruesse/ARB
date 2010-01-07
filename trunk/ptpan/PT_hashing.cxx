@@ -21,7 +21,7 @@ struct HashArray * AllocHashArray(ULONG size)
       ha->ha_InitialSize = ha->ha_Size = size;
       return(ha);
     }
-    freeset(ha, NULL);
+    freenull(ha);
   }
   return(ha);
 }

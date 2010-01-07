@@ -94,7 +94,7 @@ BOOL BuildStdSuffixTree(struct PTPanGlobal *pg)
   printf(">>> Phase 4: Freeing memory and cleaning it up... <<<\n");
 
   /* return some memory not used anymore */
-  freeset(pp->pp_StdSfxNodes, NULL);
+  freenull(pp->pp_StdSfxNodes);
 
   if(GB_rename_file(newtreename, pg->pg_IndexName))
   {
@@ -1023,12 +1023,12 @@ BOOL CreateTreeForPartition(struct PTPanPartition *pp)
   printf(">>> Phase 4: Freeing memory and cleaning it up... <<<\n");
 
   /* return some memory not used anymore */
-  freeset(pp->pp_SfxNodes, NULL);
-  freeset(pp->pp_BranchCode, NULL);
-  freeset(pp->pp_ShortEdgeCode, NULL);
-  freeset(pp->pp_LongEdgeLenCode, NULL);
-  freeset(pp->pp_LongDictRaw, NULL);
-  freeset(pp->pp_LeafBuffer, NULL);
+  freenull(pp->pp_SfxNodes);
+  freenull(pp->pp_BranchCode);
+  freenull(pp->pp_ShortEdgeCode);
+  freenull(pp->pp_LongEdgeLenCode);
+  freenull(pp->pp_LongDictRaw);
+  freenull(pp->pp_LeafBuffer);
 
   pp->pp_LevelStats     = NULL;
   pp->pp_LeafBufferSize = 0;
@@ -1180,7 +1180,7 @@ BOOL BuildMemoryTree(struct PTPanPartition *pp)
   printf("DONE! (%ld KB unused)\n", (pp->pp_Sfx2EdgeOffset - pp->pp_SfxNEdgeOffset) >> 10);
 
   /* free some memory not required anymore */
-  freeset(pp->pp_QuickPrefixLookup, NULL);
+  freenull(pp->pp_QuickPrefixLookup);
 
   printf("Quick Prefix Lookup speedup: %ld%% (%ld)\n",
          (pp->pp_QuickPrefixCount * 100) / pp->pp_Size, pp->pp_QuickPrefixCount);
@@ -1703,7 +1703,7 @@ BOOL CalculateTreeStats(struct PTPanPartition *pp)
     pp->pp_TreePruneDepth,
     pp->pp_TreePruneLength);
 
-  freeset(pp->pp_LevelStats, NULL);
+  freenull(pp->pp_LevelStats);
 
   /* allocate branch histogram */
   pp->pp_BranchCode = (struct HuffCode *) calloc(1UL << pg->pg_AlphaSize,

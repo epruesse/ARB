@@ -153,7 +153,7 @@ static long LMAX(long a,long b)
 }
 
 static void GDE_free(void **p) {
-    freeset(*p, NULL);
+    freenull(*p);
 }
 
 static char *ReplaceFile(char *Action,GfileFormat file)

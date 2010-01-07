@@ -313,7 +313,7 @@ static void initMenuListing(const char *win_name) {
     aw_assert(win_name);
 
     freedup(window_name, win_name);
-    freeset(sub_menu, 0);
+    freenull(sub_menu);
 
     printf("---------------------------------------- list of menus for '%s'\n", window_name);
 }
@@ -343,11 +343,11 @@ static void dumpCloseSubMenu() {
     if (lslash) {
         lslash[0] = 0;
     }
-    else freeset(sub_menu, 0);
+    else freenull(sub_menu);
 }
 
 static void dumpCloseAllSubMenus() {
-    freeset(sub_menu, 0);
+    freenull(sub_menu);
 }
 
 #endif // DUMP_MENU_LIST
@@ -2923,7 +2923,7 @@ static void init_duplicate_mnemonic() {
 static void exit_duplicate_mnemonic() {
     close_test_duplicate_mnemonics(1); // close last menu
     aw_assert(TD_menu_name);
-    freeset(TD_menu_name, 0);
+    freenull(TD_menu_name);
     aw_assert(menu_deep_check == 0);
 }
 #endif
@@ -3600,9 +3600,9 @@ GB_ERROR AW_root::stop_macro_recording() {
     GB_set_mode_of_file(prvt->recording_macro_path, mode | ((mode >> 2)& 0111));
     prvt->recording_macro_file = 0;
 
-    freeset(prvt->recording_macro_path, 0);
-    freeset(prvt->stop_action_name, 0);
-    freeset(prvt->application_name_for_macros, 0);
+    freenull(prvt->recording_macro_path);
+    freenull(prvt->stop_action_name);
+    freenull(prvt->application_name_for_macros);
 
     return 0;
 }
