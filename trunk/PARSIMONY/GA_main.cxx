@@ -17,7 +17,7 @@ void parsimony_func(AP_tree *);
 
 void  buildRandomTreeRek(AP_tree *tree,AP_tree **list,int *num) {
     // builds a list of all species
-    if (tree->is_leaf == AP_TRUE) {
+    if (tree->is_leaf == true) {
         AP_tree_nlen *pntr = new AP_tree_nlen;
         pntr->copy((AP_tree_nlen*)tree);
         pntr->father = 0;

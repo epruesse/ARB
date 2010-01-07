@@ -699,18 +699,19 @@ void AP_tree_nlen::unhash_sequence() {
     if (sequence && !is_leaf) sequence->forget_sequence();
 }
 
-AP_BOOL AP_tree_nlen::clear(unsigned long datum, unsigned long user_buffer_count) {
-    // returns AP_TRUE if the first element is removed
-    // AP_FALSE if it is copied into the previous level
-    // according if user_buffer is greater than datum
+bool AP_tree_nlen::clear(unsigned long datum, unsigned long user_buffer_count) {
+    // returns
+    // - true           if the first element is removed
+    // - false          if it is copied into the previous level
+    // according if user_buffer is greater than datum (wot?)
 
     AP_tree_buffer * buff;
-    AP_BOOL         result;
+    bool             result;
 
     if (!this->stack_level == datum)
     {
         AW_ERROR("AP_tree_nlen::clear: internal control number check failed");
-        return AP_FALSE;
+        return false;
     }
 
     buff = stack.pop();
@@ -722,26 +723,26 @@ AP_BOOL AP_tree_nlen::clear(unsigned long datum, unsigned long user_buffer_count
 
         stack_level = buff->controll;
         delete  buff;
-        result      = AP_TRUE;
+        result      = true;
     }
     else {
         stack_level = datum - 1;
         stack.push(buff);
-        result      = AP_FALSE;
+        result      = false;
     }
 
     return result;
 }
 
 
-AP_BOOL AP_tree_nlen::push(AP_STACK_MODE mode, unsigned long datum) {
+bool AP_tree_nlen::push(AP_STACK_MODE mode, unsigned long datum) {
     // according to mode
     // tree_structure / sequence is buffered in the node
 
     AP_tree_buffer *new_buff;
-    AP_BOOL ret;
+    bool            ret;
 
-    if (is_leaf && !(STRUCTURE & mode)) return AP_FALSE;    // tips push only structure
+    if (is_leaf && !(STRUCTURE & mode)) return false;    // tips push only structure
 
     if (this->stack_level == datum) {
         AP_tree_buffer *last_buffer = stack.get_first();
@@ -749,10 +750,10 @@ AP_BOOL AP_tree_nlen::push(AP_STACK_MODE mode, unsigned long datum) {
 
         if (sequence && (mode & SEQUENCE)) sequence->forget_sequence();
         if (0 == (mode & ~last_buffer->mode)) { // already buffered
-            return AP_FALSE;
+            return false;
         }
         new_buff = last_buffer;
-        ret = AP_FALSE;
+        ret = false;
     }
     else {
         new_buff           = new AP_tree_buffer;
@@ -762,7 +763,7 @@ AP_BOOL AP_tree_nlen::push(AP_STACK_MODE mode, unsigned long datum) {
 
         stack.push(new_buff);
         this->stack_level = datum;
-        ret = AP_TRUE;
+        ret = true;
     }
 
     if ( (mode & STRUCTURE) && !(new_buff->mode & STRUCTURE) ) {
@@ -897,7 +898,7 @@ Section NNI
 #if defined(DEVEL_RALF)
 #warning fix interfaces of AP_tree_nlen::nn_interchange_rek and AP_tree_edge::nni_rek (use a struct as param)
 #endif // DEVEL_RALF
-AP_FLOAT AP_tree_nlen::nn_interchange_rek(AP_BOOL openclosestatus, int &Abort,int deep, AP_BL_MODE mode, bool skip_hidden)
+AP_FLOAT AP_tree_nlen::nn_interchange_rek(bool openclosestatus, int &Abort,int deep, AP_BL_MODE mode, bool skip_hidden)
 {
     if (!father)
     {
@@ -923,7 +924,7 @@ Section Kernighan-Lin
 void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width_max, const int rek_deep_max,
                                  double(*function) (double, double *, int), double *param_liste, int param_anz,
                                  AP_FLOAT pars_best, AP_FLOAT pars_start, AP_FLOAT pars_prev,
-                                 AP_KL_FLAG rek_width_type, AP_BOOL *abort_flag)
+                                 AP_KL_FLAG rek_width_type, bool *abort_flag)
 {
     //
     // rek_deep         Rekursionstiefe
@@ -958,7 +959,7 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
 #endif
     if (rek_deep >= rek_deep_max) return;
     if (is_leaf == true)          return;
-    if (*abort_flag == AP_TRUE)   return;
+    if (*abort_flag == true)   return;
 
     //
     //Referenzzeiger auf die vier Kanten und
@@ -1107,14 +1108,14 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
         switch (rek_width_type) {
             case AP_BETTER:{
                 //starte kerninghan_rek mit rekursionstiefe 3, statisch
-                AP_BOOL flag = AP_FALSE;
+                bool flag = false;
                 cout << "found better !\n";
                 pars_refpntr[pars_ref[i]]->kernighan_rek(rek_deep + 1, rek_2_width,
                                                          rek_2_width_max, rek_deep_max + 4,
                                                          function, param_liste, param_anz,
                                                          pars_best, pars_start, pars[i],
                                                          AP_STATIC, &flag);
-                *abort_flag = AP_TRUE;
+                *abort_flag = true;
                 break;
             }
             default:
@@ -1127,7 +1128,7 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
         }
         pars_refpntr[pars_ref[i]]->kernighan = AP_NONE;
         //Demarkieren
-        if (*abort_flag == AP_TRUE) {
+        if (*abort_flag == true) {
             cout << "   parsimony:  " << pars_best << "took: " << i <<"\n";
             for (i=0;i<visited_subtrees;i++)  cout << "  " << pars[i];
             cout << "\n";
@@ -1142,7 +1143,7 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
             ap_main->pop();
         }
     }
-    if (*abort_flag == AP_TRUE) {       // pop/clear wegen set_root
+    if (*abort_flag == true) {       // pop/clear wegen set_root
         ap_main->clear();
     } else {
         ap_main->pop();
@@ -1162,14 +1163,14 @@ Section Crossover List (Funktionen die die crossover liste aufbauen):
 #if 0
 
 void addToList(AP_CO_LIST *list,int *number,AP_tree_nlen *pntr,CO_LISTEL& wert0,CO_LISTEL& wert1) {
-    if (wert0.isLeaf == AP_TRUE) {
+    if (wert0.isLeaf == true) {
         list[*number].leaf0 = wert0.refLeaf;
         list[*number].node0 = -10;
     } else {
         list[*number].leaf0 = 0;
         list[*number].node0 = wert0.refNode;
     }
-    if (wert1.isLeaf == AP_TRUE) {
+    if (wert1.isLeaf == true) {
         list[*number].leaf1 = wert1.refLeaf;
         list[*number].node1 = -1;
     } else {
@@ -1181,18 +1182,18 @@ void addToList(AP_CO_LIST *list,int *number,AP_tree_nlen *pntr,CO_LISTEL& wert0,
 }
 
 void AP_tree_nlen::createListRekUp(AP_CO_LIST *list,int *cn) {
-    if (this->is_leaf == AP_TRUE) {
-        refUp.init    = AP_TRUE;
-        refUp.isLeaf  = AP_TRUE;
+    if (this->is_leaf == true) {
+        refUp.init    = true;
+        refUp.isLeaf  = true;
         refUp.refLeaf = gb_node;
         return;
     }
-    if (refUp.init == AP_FALSE) {
-        if (leftson->refUp.init == AP_FALSE) leftson->createListRekUp(list,cn);
-        if (rightson->refUp.init == AP_FALSE) rightson->createListRekUp(list,cn);
+    if (refUp.init == false) {
+        if (leftson->refUp.init == false) leftson->createListRekUp(list,cn);
+        if (rightson->refUp.init == false) rightson->createListRekUp(list,cn);
 
-        refUp.init    = AP_TRUE;
-        refUp.isLeaf  = AP_FALSE;
+        refUp.init    = true;
+        refUp.isLeaf  = false;
         refUp.refNode = *cn;
         (*cn)++;
 
@@ -1200,7 +1201,7 @@ void AP_tree_nlen::createListRekUp(AP_CO_LIST *list,int *cn) {
         addToList(list,cn,this,leftson->refUp,rightson->refUp);
         if (father == 0) { // at root
             refRight.init = rightson->refUp.init;
-            if ((refRight.isLeaf = rightson->refUp.isLeaf) == AP_TRUE) {
+            if ((refRight.isLeaf = rightson->refUp.isLeaf) == true) {
                 refRight.refLeaf = rightson->refUp.refLeaf;
             }
             else {
@@ -1208,7 +1209,7 @@ void AP_tree_nlen::createListRekUp(AP_CO_LIST *list,int *cn) {
             }
 
             refLeft.init = leftson->refUp.init;
-            if ((refLeft.isLeaf = leftson->refUp.isLeaf) == AP_TRUE) {
+            if ((refLeft.isLeaf = leftson->refUp.isLeaf) == true) {
                 refLeft.refLeaf = leftson->refUp.refLeaf;
             }
             else {
@@ -1222,30 +1223,30 @@ void AP_tree_nlen::createListRekUp(AP_CO_LIST *list,int *cn) {
 void AP_tree_nlen::createListRekSide(AP_CO_LIST *list,int *cn) {
     //
     // has to be called after createListRekUp !!
-    if (refRight.init == AP_FALSE) {
-        refRight.init    = AP_TRUE;
-        refRight.isLeaf  = AP_FALSE;
+    if (refRight.init == false) {
+        refRight.init    = true;
+        refRight.isLeaf  = false;
         refRight.refNode = *cn;
         (*cn)++;
 
         if (father->leftson == this) {
-            if (father->refLeft.init == AP_FALSE) father->createListRekSide(list,cn);
+            if (father->refLeft.init == false) father->createListRekSide(list,cn);
             addToList(list,cn,this,leftson->refUp,father->refLeft);
         } else {
-            if (father->refRight.init ==  AP_FALSE) father->createListRekSide(list,cn);
+            if (father->refRight.init ==  false) father->createListRekSide(list,cn);
             addToList(list,cn,this,leftson->refUp,father->refRight);
         }
     }
-    if (refLeft.init == AP_FALSE) {
-        refLeft.init    = AP_TRUE;
-        refLeft.isLeaf  = AP_FALSE;
+    if (refLeft.init == false) {
+        refLeft.init    = true;
+        refLeft.isLeaf  = false;
         refLeft.refNode = *cn;
         (*cn)++;
         if (father->leftson == this) {
-            if (father->refLeft.init == AP_FALSE) father->createListRekSide(list,cn);
+            if (father->refLeft.init == false) father->createListRekSide(list,cn);
             addToList(list,cn,this,rightson->refUp,father->refLeft);
         } else {
-            if (father->refRight.init == AP_FALSE) father->createListRekSide(list,cn);
+            if (father->refRight.init == false) father->createListRekSide(list,cn);
             addToList(list,cn,this,rightson->refUp,father->refRight);
         }
     }

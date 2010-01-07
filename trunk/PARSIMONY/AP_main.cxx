@@ -179,7 +179,7 @@ void AP_main::clear() {
         if (stack) {
             new_stack = list.pop();
             while ( (knoten = stack->pop()) ) {
-                if (knoten->clear(stack_level,user_push_counter) != AP_TRUE) {
+                if (knoten->clear(stack_level,user_push_counter) != true) {
                     // node is not cleared because buffered in previous node stack
                     // node is instead copied in previous level
                     if (new_stack) new_stack->push(knoten);
