@@ -1624,7 +1624,7 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
         Main->security_level = 0;
         gbl_install_standard_commands((GBDATA *)gbd);
 
-        if (Main->local_mode == true) {          // i am the server
+        if (Main->local_mode) {                     // i am the server
             GBT_install_message_handler((GBDATA *)gbd);
         }
         if (gb_verbose_mode && !dbCreated) GB_informationf("ARB: Loading '%s' done\n", path);

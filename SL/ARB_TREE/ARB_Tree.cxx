@@ -212,8 +212,8 @@ ARB_tree::ARB_tree(ARB_tree_root *troot)
 
         // if one of the assertions below fails, then there is a problem with the
         // vtable-pointer position (grep for FAKE_VTAB_PTR for more info)
-        tree->is_leaf = false; at_assert(is_leaf == false);
-        tree->is_leaf = true;  at_assert(is_leaf == true);
+        tree->is_leaf = false; at_assert(!is_leaf);
+        tree->is_leaf = true;  at_assert(is_leaf);
         tree->is_leaf = was_leaf;
         
         vtable_ptr_check_done = true;
@@ -225,7 +225,7 @@ ARB_tree::~ARB_tree() {
     free(name);
     free(remark_branch);
 
-    at_assert(tree_is_one_piece_of_memory == false);
+    at_assert(!tree_is_one_piece_of_memory);
     unlink_from_father();
 
     if (tree_root && tree_root->get_root_node() == this) {

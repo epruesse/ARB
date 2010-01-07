@@ -511,11 +511,13 @@ void AW_window::calculate_scrollbars(void) {
     // Anpassung fuer resize, wenn unbeschriebener Bereich vergroessert wird
     if ( -slider_pos_horizontal + get_scrolled_picture_width() < screen.r
             -left_indent_of_horizontal_scrollbar) {
-        if (horizontal == true)
+        if (horizontal) {
             slider_pos_horizontal = (int)(get_scrolled_picture_width()
                     - (screen.r-left_indent_of_horizontal_scrollbar) );
-        else
+        }
+        else {
             slider_pos_horizontal = 0; //slider nach ganz oben, da alles sichtbar
+        }
     }
     XtVaSetValues(p_w->scroll_bar_horizontal, XmNsliderSize, 1, NULL);
     XtVaSetValues(p_w->scroll_bar_horizontal, XmNmaximum, slider_max, NULL);
@@ -563,12 +565,14 @@ void AW_window::calculate_scrollbars(void) {
     if ( -slider_pos_vertical + get_scrolled_picture_height() < screen.b
             -top_indent_of_vertical_scrollbar
             -bottom_indent_of_vertical_scrollbar) {
-        if (vertical == true)
+        if (vertical) {
             slider_pos_vertical = (int)(get_scrolled_picture_height()
                     - (screen.b-top_indent_of_vertical_scrollbar
                             -bottom_indent_of_vertical_scrollbar));
-        else
+        }
+        else {
             slider_pos_vertical = 0; //slider nach ganz oben, da alles sichtbar
+        }
     }
     XtVaSetValues(p_w->scroll_bar_vertical, XmNsliderSize, 1, NULL);
     XtVaSetValues(p_w->scroll_bar_vertical, XmNmaximum, slider_max, NULL);
@@ -1870,7 +1874,7 @@ void aw_set_delete_window_cb(AW_window *aww, Widget shell, bool allow_close) {
     XmRemoveWMProtocolCallback(shell, WM_DELETE_WINDOW, (XtCallbackProc)aw_window_noexit_destroy_cb, (caddr_t)aww);
     XmRemoveWMProtocolCallback(shell, WM_DELETE_WINDOW, (XtCallbackProc)aw_window_destroy_cb,        (caddr_t)aww);
 
-    if (allow_close == false) {
+    if (!allow_close) {
         XmAddWMProtocolCallback(shell, WM_DELETE_WINDOW, (XtCallbackProc)aw_window_avoid_destroy_cb,(caddr_t)aww);
     }
     else {

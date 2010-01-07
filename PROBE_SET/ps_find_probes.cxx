@@ -222,9 +222,9 @@ unsigned long int PS_test_candidate_on_bitmap( float             *_filling_level
                 if (not_in_path_ID == *path_ID)
                     continue;   // obviously a probe cant differ a species from itself
                 if (not_in_path_ID > *path_ID) {
-                    gain += (_map->get( not_in_path_ID, *path_ID ) == false);
+                    gain += !_map->get(not_in_path_ID, *path_ID);
                 } else {
-                    gain += (_map->get( *path_ID, not_in_path_ID ) == false);
+                    gain += !_map->get(*path_ID, not_in_path_ID);
                 }
             }
         }
@@ -244,9 +244,9 @@ unsigned long int PS_test_candidate_on_bitmap( float             *_filling_level
                 if (not_in_path_ID == *path_ID)
                     continue;   // obviously a probe cant differ a species from itself
                 if (not_in_path_ID > *path_ID) {
-                    gain += (__MAP->get( not_in_path_ID, *path_ID ) == false);
+                    gain += !__MAP->get(not_in_path_ID, *path_ID);
                 } else {
-                    gain += (__MAP->get( *path_ID, not_in_path_ID ) == false);
+                    gain += !__MAP->get(*path_ID, not_in_path_ID);
                 }
             }
         }
@@ -499,9 +499,9 @@ void PS_apply_path_to_bitmap( IDSet &_path, const bool _silent = false, PS_BitMa
                   ++path_ID) {
                 if (not_in_path_ID == *path_ID) continue;   // obviously a probe cant differ a species from itself
                 if (not_in_path_ID > *path_ID) {
-                    gain += (_map->set( not_in_path_ID, *path_ID, true ) == false);
+                    gain += !_map->set(not_in_path_ID, *path_ID, true);
                 } else {
-                    gain += (_map->set( *path_ID, not_in_path_ID, true ) == false);
+                    gain += !_map->set(*path_ID, not_in_path_ID, true);
                 }
             }
         }
@@ -520,9 +520,9 @@ void PS_apply_path_to_bitmap( IDSet &_path, const bool _silent = false, PS_BitMa
                   ++path_ID) {
                 if (not_in_path_ID == *path_ID) continue;   // obviously a probe cant differ a species from itself
                 if (not_in_path_ID > *path_ID) {
-                    gain += (__MAP->set( not_in_path_ID, *path_ID, true ) == false);
+                    gain += !__MAP->set(not_in_path_ID, *path_ID, true);
                 } else {
-                    gain += (__MAP->set( *path_ID, not_in_path_ID, true ) == false);
+                    gain += !__MAP->set(*path_ID, not_in_path_ID, true);
                 }
             }
         }

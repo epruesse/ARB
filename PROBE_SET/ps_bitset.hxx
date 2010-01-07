@@ -195,15 +195,6 @@ long PS_BitSet::getCountOfTrues( const long _fill_index) {
 bool PS_BitSet::Set( const long _index, const bool _value ) {
     bs_assert( _index >= 0 );
     reserve( _index );
-//     unsigned char byte   = data[_index / 8];
-//     unsigned char offset = _index % 8;
-//     unsigned char mask   = 1 << offset;
-//     if (_value == true) {
-//         byte = byte |  mask; 
-//     } else {
-//         byte = byte & ~mask;
-//     }
-//     data[_index / 8] = byte;
     bool previous_value = (((data[ _index/8 ] >> (_index % 8)) & 1) == 1); 
     if (_value) {
         data[ _index/8 ] |= 1 << (_index % 8);
@@ -218,15 +209,6 @@ bool PS_BitSet::Set( const long _index, const bool _value ) {
 void PS_BitSet::setTrue( const long _index ) {
     bs_assert( _index >= 0 );
     reserve( _index );
-//     unsigned char byte   = data[_index / 8];
-//     unsigned char offset = _index % 8;
-//     unsigned char mask   = 1 << offset;
-//     if (_value == true) {
-//         byte = byte |  mask; 
-//     } else {
-//         byte = byte & ~mask;
-//     }
-//     data[_index / 8] = byte;
     data[ _index/8 ] &= 1 << (_index % 8);
     if (_index > max_index) max_index = _index;
 }
@@ -235,15 +217,6 @@ void PS_BitSet::setTrue( const long _index ) {
 void PS_BitSet::setFalse( const long _index ) {
     bs_assert( _index >= 0 );
     reserve( _index );
-//     unsigned char byte   = data[_index / 8];
-//     unsigned char offset = _index % 8;
-//     unsigned char mask   = 1 << offset;
-//     if (_value == true) {
-//         byte = byte |  mask; 
-//     } else {
-//         byte = byte & ~mask;
-//     }
-//     data[_index / 8] = byte;
     data[ _index/8 ] &= ~(1 << (_index % 8));
     if (_index > max_index) max_index = _index;
 }
@@ -252,10 +225,6 @@ void PS_BitSet::setFalse( const long _index ) {
 bool PS_BitSet::Get( const long _index ) {
     bs_assert( _index >= 0 );
     reserve( _index );
-//     unsigned char byte   = data[_index / 8];
-//     unsigned char offset = _index % 8;
-//     byte = (byte >> offset);
-//     return (byte & 1 == 1);
     return (((data[ _index/8 ] >> (_index % 8)) & 1) == 1);
 }
 

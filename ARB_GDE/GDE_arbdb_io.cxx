@@ -225,25 +225,13 @@ static int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned c
             this_elem->comments = strdup("no comments");
             this_elem->comments_maxlen = 1 + (this_elem->comments_len = strlen(this_elem->comments));
 
-            //          if (this_elem->rmatrix &&
-            //              IS_REALLY_AA == false) {
-            //                  if (IS_REALLY_AA == false)
-            //                          Ascii2NA((char *)this_elem->sequence,
-            //                                   this_elem->seqlen,
-            //                                   this_elem->rmatrix);
-            //                  else
-            /*
-             * Force the sequence to be AA
-             */
             {
                 this_elem->elementtype = TEXT;
                 this_elem->rmatrix = NULL;
                 this_elem->tmatrix = NULL;
                 this_elem->col_lut = Default_PROColor_LKUP;
             }
-            //          }
         }
-
     }
     else {      // use the_names
         unsigned char *species_name;

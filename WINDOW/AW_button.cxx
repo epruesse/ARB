@@ -2112,7 +2112,7 @@ GB_ERROR AW_window::save_selection_list( AW_selection_list * selection_list, con
     for ( list_table = selection_list->list_table; list_table; list_table = list_table->next) {
         char *sep = 0;
 
-        if (selection_list->value_equal_display == false) {
+        if (!selection_list->value_equal_display) {
             sep = strstr(list_table->displayed,"#"); // interpret displayed as 'value#displayed' (old general behavior)
         }
 
@@ -2696,7 +2696,7 @@ void AW_window::insert_toggle_internal(AW_label toggle_label, const char *mnemon
         _aw_create_toggle_entry(this,p_w->toggle_field,toggle_label,mnemonic,
                                 new AW_variable_update_struct( NULL, AW_WIDGET_TOGGLE_FIELD, root->awar(p_w->toggle_field_var_name), var_value, 0, 0, _callback ),
                                 new AW_toggle_struct( var_value, 0 ),
-                                default_toggle ? true : false);
+                                default_toggle);
     }
 }
 void AW_window::insert_toggle_internal( AW_label toggle_label, const char *mnemonic, int var_value, bool default_toggle) {
@@ -2707,7 +2707,7 @@ void AW_window::insert_toggle_internal( AW_label toggle_label, const char *mnemo
         _aw_create_toggle_entry(this, p_w->toggle_field, toggle_label,mnemonic,
                                 new AW_variable_update_struct( NULL, AW_WIDGET_TOGGLE_FIELD, root->awar(p_w->toggle_field_var_name), 0, var_value, 0, _callback ),
                                 new AW_toggle_struct( var_value, 0 ),
-                                default_toggle ? true : false);
+                                default_toggle);
     }
 }
 void AW_window::insert_toggle_internal( AW_label toggle_label, const char *mnemonic, float var_value, bool default_toggle) {
@@ -2718,7 +2718,7 @@ void AW_window::insert_toggle_internal( AW_label toggle_label, const char *mnemo
         _aw_create_toggle_entry(this, p_w->toggle_field,toggle_label, mnemonic,
                                 new AW_variable_update_struct( NULL, AW_WIDGET_TOGGLE_FIELD, root->awar(p_w->toggle_field_var_name), 0, 0, var_value, _callback ),
                                 new AW_toggle_struct( var_value, 0 ),
-                                default_toggle ? true : false);
+                                default_toggle);
     }
 }
 

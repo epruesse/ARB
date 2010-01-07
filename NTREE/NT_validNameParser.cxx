@@ -103,9 +103,9 @@ namespace validNames{
 
             else{ // begin operators
                 if(*it == string("->")) {
-                    assert(isHetero == false);
-                    assert(isHomo == false);
-                    assert(isValid == true); // only one operator per line allowed
+                    assert(!isHetero);
+                    assert(!isHomo);
+                    assert(isValid); // only one operator per line allowed
                     isRenamed = true;
                     isValid   = false;
 #if defined(DUMP)
@@ -114,9 +114,9 @@ namespace validNames{
                 }
                 else {
                     if(*it == string("=>")){
-                        assert(isRenamed == false);
-                        assert(isHomo == false);
-                        assert(isValid == true);
+                        assert(!isRenamed);
+                        assert(!isHomo);
+                        assert(isValid);
                         isHetero = true;
                         isValid = false;
 #if defined(DUMP)
@@ -125,9 +125,9 @@ namespace validNames{
                     }
                     else {
                         if(*it == string("=")){
-                            assert(isRenamed == false);
-                            assert(isHetero == false);
-                            assert(isValid == true);
+                            assert(!isRenamed);
+                            assert(!isHetero);
+                            assert(isValid);
                             isHomo = true;
                             isValid = false;
 #if defined(DUMP)

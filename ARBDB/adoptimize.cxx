@@ -584,7 +584,7 @@ static char *gb_uncompress_by_dictionary_internal(GB_DICTIONARY *dict, /*GBDATA 
         }
     }
 
-    if (append_zero == true) *dest++ = 0;
+    if (append_zero) *dest++ = 0;
 
     *new_size = dest-buffer;
     gb_assert(size >= *new_size); // buffer overflow
