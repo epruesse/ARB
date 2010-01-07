@@ -768,7 +768,7 @@ GB_alignment_type GBT_get_alignment_type(GBDATA *gb_main, const char *aliname) {
     return at;
 }
 
-GB_BOOL GBT_is_alignment_protein(GBDATA *gb_main,const char *alignment_name) {
+bool GBT_is_alignment_protein(GBDATA *gb_main,const char *alignment_name) {
     return GBT_get_alignment_type(gb_main,alignment_name) == GB_AT_AA;
 }
 
@@ -828,7 +828,7 @@ static void getPartPositions(const struct GEN_position *pos, int part, size_t *s
     *stopPos  = pos->stop_pos [part]+gpp->offset[(pos->stop_uncertain  ? pos->stop_uncertain  : gpp->certain)[part]];
 }
 
-NOT4PERL char *GBT_read_gene_sequence_and_length(GBDATA *gb_gene, GB_BOOL use_revComplement, char partSeparator, size_t *gene_length) {
+NOT4PERL char *GBT_read_gene_sequence_and_length(GBDATA *gb_gene, bool use_revComplement, char partSeparator, size_t *gene_length) {
     // return the sequence data of a gene
     // 
     // if use_revComplement is true -> use data from complementary strand (if complement is set for gene)
@@ -931,6 +931,6 @@ NOT4PERL char *GBT_read_gene_sequence_and_length(GBDATA *gb_gene, GB_BOOL use_re
     return result;
 }
 
-char *GBT_read_gene_sequence(GBDATA *gb_gene, GB_BOOL use_revComplement, char partSeparator) {
+char *GBT_read_gene_sequence(GBDATA *gb_gene, bool use_revComplement, char partSeparator) {
     return GBT_read_gene_sequence_and_length(gb_gene, use_revComplement, partSeparator, 0);
 }

@@ -12,14 +12,14 @@
 
 typedef float GBT_LEN;
 
-#define GBT_TREE_ELEMENTS(type)                     \
-    GB_BOOL         is_leaf;                        \
-    GB_BOOL         tree_is_one_piece_of_memory;    \
-    type            *father,*leftson,*rightson;     \
-    GBT_LEN         leftlen,rightlen;               \
-    GBDATA          *gb_node;                       \
-    char            *name;                          \
-    char            *remark_branch
+#define GBT_TREE_ELEMENTS(type)                 \
+    bool     is_leaf;                           \
+    bool     tree_is_one_piece_of_memory;       \
+    type    *father,*leftson,*rightson;         \
+    GBT_LEN  leftlen,rightlen;                  \
+    GBDATA  *gb_node;                           \
+    char    *name;                              \
+    char    *remark_branch
 
 // remark_branch normally contains some bootstrap value in format 'xx%'
 // if you store other info there, please make sure that this info does not
@@ -27,17 +27,17 @@ typedef float GBT_LEN;
 // Otherwise the tree export routines will not work correctly!
 // --------------------------------------------------------------------------------
 
-#define CLEAR_GBT_TREE_ELEMENTS(tree_obj_ptr)           \
-(tree_obj_ptr)->is_leaf = GB_FALSE;                     \
-(tree_obj_ptr)->tree_is_one_piece_of_memory = GB_FALSE; \
-(tree_obj_ptr)->father = 0;                             \
-(tree_obj_ptr)->leftson = 0;                            \
-(tree_obj_ptr)->rightson = 0;                           \
-(tree_obj_ptr)->leftlen = 0;                            \
-(tree_obj_ptr)->rightlen = 0;                           \
-(tree_obj_ptr)->gb_node = 0;                            \
-(tree_obj_ptr)->name = 0;                               \
-(tree_obj_ptr)->remark_branch = 0
+#define CLEAR_GBT_TREE_ELEMENTS(tree_obj_ptr)                   \
+    (tree_obj_ptr)->is_leaf = false;                            \
+    (tree_obj_ptr)->tree_is_one_piece_of_memory = false;        \
+    (tree_obj_ptr)->father = 0;                                 \
+    (tree_obj_ptr)->leftson = 0;                                \
+    (tree_obj_ptr)->rightson = 0;                               \
+    (tree_obj_ptr)->leftlen = 0;                                \
+    (tree_obj_ptr)->rightlen = 0;                               \
+    (tree_obj_ptr)->gb_node = 0;                                \
+    (tree_obj_ptr)->name = 0;                                   \
+    (tree_obj_ptr)->remark_branch = 0
 
 #define AWAR_ERROR_CONTAINER    "tmp/message/pending"
 

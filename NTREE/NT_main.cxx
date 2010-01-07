@@ -145,10 +145,10 @@ static GB_ERROR nt_check_database_consistency() {
 
 
 void serve_db_interrupt(AW_root *awr){
-    GB_BOOL succes = GBCMS_accept_calls(GLOBAL_gb_main,GB_FALSE);
-    while (succes){
+    bool success = GBCMS_accept_calls(GLOBAL_gb_main, false);
+    while (success){
         awr->check_for_remote_command((AW_default)GLOBAL_gb_main,AWAR_NT_REMOTE_BASE);
-        succes = GBCMS_accept_calls(GLOBAL_gb_main,GB_TRUE);
+        success = GBCMS_accept_calls(GLOBAL_gb_main, true);
     }
 
     awr->add_timed_callback(NT_SERVE_DB_TIMER,(AW_RCB)serve_db_interrupt,0,0);

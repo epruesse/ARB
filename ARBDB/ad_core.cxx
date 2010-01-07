@@ -671,7 +671,7 @@ void gb_write_key(GBDATA *gbd,const char *s) {
         new_index          = (int)GBS_read_hash(Main->key_2_index_hash,s);
         
         if (!new_index) {                           // create new index
-            new_index = (int)gb_create_key(Main,s,GB_TRUE);
+            new_index = (int)gb_create_key(Main, s, true);
         }
     }
     gb_write_index_key(GB_FATHER(gbd), gbd->index, new_index);
@@ -695,7 +695,7 @@ void gb_create_key_array(GB_MAIN_TYPE *Main, int index){
     }
 }
 
-long gb_create_key(GB_MAIN_TYPE *Main, const char *s, GB_BOOL create_gb_key) {
+long gb_create_key(GB_MAIN_TYPE *Main, const char *s, bool create_gb_key) {
     long index;
     if ( Main->first_free_key ) {
         index = Main->first_free_key;

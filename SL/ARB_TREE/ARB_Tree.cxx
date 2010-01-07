@@ -147,7 +147,7 @@ GB_ERROR ARB_tree_root::linkToDB(int *zombies, int *duplicates) {
     
     GB_ERROR error = 0;
     if (!isLinkedToDB) {
-        error = GBT_link_tree(rootNode->get_gbt_tree(), get_gb_main(), GB_FALSE, zombies, duplicates);
+        error = GBT_link_tree(rootNode->get_gbt_tree(), get_gb_main(), false, zombies, duplicates);
         if (!error && addDeleteCallbacks) error = rootNode->add_delete_cb_rec(arb_tree_species_deleted_cb);
         if (!error) {
             if (ali->has_data() && seqTemplate) rootNode->preloadLeafSequences();
@@ -208,12 +208,12 @@ ARB_tree::ARB_tree(ARB_tree_root *troot)
 #if defined(DEBUG)
     if (!vtable_ptr_check_done) {
         GBT_TREE *tree     = get_gbt_tree();        // hack-warning: points to part of this!
-        GB_BOOL   was_leaf = tree->is_leaf;
+        bool      was_leaf = tree->is_leaf;
 
         // if one of the assertions below fails, then there is a problem with the
         // vtable-pointer position (grep for FAKE_VTAB_PTR for more info)
-        tree->is_leaf = GB_FALSE; at_assert(is_leaf == GB_FALSE);
-        tree->is_leaf = GB_TRUE;  at_assert(is_leaf == GB_TRUE);
+        tree->is_leaf = false; at_assert(is_leaf == false);
+        tree->is_leaf = true;  at_assert(is_leaf == true);
         tree->is_leaf = was_leaf;
         
         vtable_ptr_check_done = true;
@@ -225,7 +225,7 @@ ARB_tree::~ARB_tree() {
     free(name);
     free(remark_branch);
 
-    at_assert(tree_is_one_piece_of_memory == GB_FALSE);
+    at_assert(tree_is_one_piece_of_memory == false);
     unlink_from_father();
 
     if (tree_root && tree_root->get_root_node() == this) {

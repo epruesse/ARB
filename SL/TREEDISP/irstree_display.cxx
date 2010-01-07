@@ -32,7 +32,7 @@ const int tipBoxSize    = 4;
 const int nodeBoxWidth  = 5;
 
 static struct {
-    GB_BOOL    ftrst_species;
+    bool       ftrst_species;
     int        y;
     int        min_y;
     int        max_y;
@@ -42,7 +42,7 @@ static struct {
     int        step_y;
     double     x_scale;
     AW_device *device;
-    
+
     int      nodes_xpos[MAXSHOWNNODES];   // needed for Query results drawing
     int      nodes_ypos[MAXSHOWNNODES];
     AP_tree *nodes_id[MAXSHOWNNODES];
@@ -57,7 +57,7 @@ static struct {
 void draw_top_separator(){
     int gc = AWT_GC_GROUPS;
     int y;
-    irs_gl.ftrst_species = GB_FALSE;
+    irs_gl.ftrst_species = false;
     if (!irs_gl.is_size_device){
         for (y = irs_gl.min_y; y< irs_gl.min_y+4;y++){
             irs_gl.device->line(gc,-10000,y,10000,y,-1,(AW_CL)0,(AW_CL)0);
@@ -253,7 +253,7 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset, int type){
     return y_center;
 }
 
-int AWT_graphic_tree::draw_slot(int x_offset, GB_BOOL draw_at_tips){
+int AWT_graphic_tree::draw_slot(int x_offset, bool draw_at_tips){
     int maxx = x_offset;
     int i;
     int no_compress = 0;
@@ -291,7 +291,7 @@ void AWT_graphic_tree::show_irs_tree(AP_tree *at,AW_device *device, int height){
     irs_gl.nodes_ntip     = 0;
     irs_gl.font_height_2  = font_info->max_letter.ascent/2;
     irs_gl.device         = device;
-    irs_gl.ftrst_species  = GB_TRUE;
+    irs_gl.ftrst_species  = true;
     irs_gl.y              = 0;
     irs_gl.min_x          = x;
     irs_gl.max_x          = 100;

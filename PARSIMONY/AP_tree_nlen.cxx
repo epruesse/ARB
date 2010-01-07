@@ -65,7 +65,7 @@ void AP_tree_nlen::copy(AP_tree_nlen *tree)
         this->name = NULL;
     }
 
-    if (is_leaf == GB_TRUE) {
+    if (is_leaf == true) {
         ap_assert(tree->get_seq()); /* oops - AP_tree_nlen expects to have sequences at leafs!
                                      * did you forget to remove_leafs() ? */
 
@@ -897,7 +897,7 @@ Section NNI
 #if defined(DEVEL_RALF)
 #warning fix interfaces of AP_tree_nlen::nn_interchange_rek and AP_tree_edge::nni_rek (use a struct as param)
 #endif // DEVEL_RALF
-AP_FLOAT AP_tree_nlen::nn_interchange_rek(AP_BOOL openclosestatus, int &Abort,int deep, AP_BL_MODE mode, GB_BOOL skip_hidden)
+AP_FLOAT AP_tree_nlen::nn_interchange_rek(AP_BOOL openclosestatus, int &Abort,int deep, AP_BL_MODE mode, bool skip_hidden)
 {
     if (!father)
     {
@@ -957,7 +957,7 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
     cout.flush();
 #endif
     if (rek_deep >= rek_deep_max) return;
-    if (is_leaf == GB_TRUE)       return;
+    if (is_leaf == true)          return;
     if (*abort_flag == AP_TRUE)   return;
 
     //
@@ -984,7 +984,7 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
             pars_refpntr[6] = pars_refpntr[7] = static_cast<AP_tree_nlen *>(this_brother);
         } else {
             //an der Wurzel nehme linken und rechten Sohns des Bruders
-            if (this->get_brother()->is_leaf == GB_FALSE) {
+            if (this->get_brother()->is_leaf == false) {
                 pars_refpntr[4] = pars_refpntr[5] = static_cast<AP_tree_nlen *>(this_brother->leftson);
                 pars_refpntr[6] = pars_refpntr[7] = static_cast<AP_tree_nlen *>(this_brother->rightson);
             } else {

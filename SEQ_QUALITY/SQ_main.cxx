@@ -88,7 +88,7 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
                 tree = GBT_read_tree(GLOBAL_gb_main, treename, sizeof(*tree));
                 if (!tree) error = GB_await_error();
                 else {
-                    error = GBT_link_tree(tree, GLOBAL_gb_main, GB_FALSE, NULL, NULL);
+                    error = GBT_link_tree(tree, GLOBAL_gb_main, false, NULL, NULL);
                     if (!error) {
                         GBT_TREE_REMOVE_TYPE mode = GBT_REMOVE_DELETED;
                         if (marked_only) mode     = GBT_TREE_REMOVE_TYPE(mode|GBT_REMOVE_NOT_MARKED);

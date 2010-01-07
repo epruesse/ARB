@@ -14,7 +14,7 @@
 #include "gb_local.h"
 
 
-GB_BOOL GEN_is_genome_db(GBDATA *gb_main, int default_value) {
+bool GEN_is_genome_db(GBDATA *gb_main, int default_value) {
     // default_value ==  0 -> default to normal database
     //               ==  1 -> default to GENOM database
     //               == -1 -> assume that type is already defined
@@ -149,7 +149,7 @@ GBDATA *GEN_next_marked_gene(GBDATA *gb_gene) {
 
 static struct GEN_position *lastFreedPosition = 0;
 
-struct GEN_position *GEN_new_position(int parts, GB_BOOL joinable) {
+struct GEN_position *GEN_new_position(int parts, bool joinable) {
     struct GEN_position *pos;
 
     size_t pos_size  = parts*sizeof(pos->start_pos[0]);
@@ -268,7 +268,7 @@ static GB_ERROR parsePositions(GBDATA *gb_gene, const char *field_name, int part
 
 struct GEN_position *GEN_read_position(GBDATA *gb_gene) {
     int                  parts         = 1;
-    GB_BOOL              joinable      = GB_FALSE;
+    bool                 joinable      = false;
     GBDATA              *gb_pos_joined = GB_entry(gb_gene, "pos_joined");
     struct GEN_position *pos           = 0;
     GB_ERROR             error         = 0;
@@ -276,7 +276,7 @@ struct GEN_position *GEN_read_position(GBDATA *gb_gene) {
     if (gb_pos_joined) {
         parts = GB_read_int(gb_pos_joined);
         if (parts != 1) { // splitted
-            if (parts>1) joinable = GB_TRUE;
+            if (parts>1) joinable = true;
             else if (parts<-1) parts = -parts; // neg value means "not joinable" (comes from feature location 'order(...)')
             else error = GBS_global_string("Illegal value %i in 'pos_joined'", parts);
         }
@@ -544,7 +544,7 @@ const char *GEN_origin_gene(GBDATA *gb_pseudo) {
     return gb_origin ? GB_read_char_pntr(gb_origin) : 0;
 }
 
-GB_BOOL GEN_is_pseudo_gene_species(GBDATA *gb_species) {
+bool GEN_is_pseudo_gene_species(GBDATA *gb_species) {
     return GEN_origin_organism(gb_species) != 0;
 }
 
@@ -720,7 +720,7 @@ GBDATA* GEN_next_marked_pseudo_species(GBDATA *gb_species) {
 // ------------------
 //      organisms
 
-GB_BOOL GEN_is_organism(GBDATA *gb_species) {
+bool GEN_is_organism(GBDATA *gb_species) {
     gb_assert(GEN_is_genome_db(GB_get_root(gb_species), -1)); // assert this is a genome db
     // otherwise it is an error to use GEN_is_organism (or its callers)!!!!
 

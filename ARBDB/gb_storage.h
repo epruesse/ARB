@@ -27,7 +27,7 @@ inline void GB_INDEX_CHECK_OUT(GBDATA *gbd) { if ((gbd)->flags2.is_indexed) gb_i
 // ---------------------------------------------------------
 //      extern data storage (not directly inside GBDATA)
 
-inline GB_BOOL GB_CHECKINTERN(int size, int memsize) { return size<256 && memsize<SIZOFINTERN; }
+inline bool GB_CHECKINTERN(int size, int memsize) { return size<256 && memsize<SIZOFINTERN; }
 
 inline void GB_SETINTERN(GBDATA *gbd) { gbd->flags2.extern_data = 0; }
 inline void GB_SETEXTERN(GBDATA *gbd) { gbd->flags2.extern_data = 1; }

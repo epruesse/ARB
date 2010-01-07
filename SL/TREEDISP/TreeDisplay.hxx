@@ -86,7 +86,7 @@ class AWT_graphic_tree : public AWT_graphic {
     int zombies; // # of zombies during last load()
     int duplicates; // # of duplicates during last load()
 
-    int draw_slot(int x_offset, GB_BOOL draw_at_tips); // return max_x
+    int draw_slot(int x_offset, bool draw_at_tips); // return max_x
     int paint_irs_sub_tree(AP_tree *node, int x_offset, int type); // returns y pos
 
     void unload();

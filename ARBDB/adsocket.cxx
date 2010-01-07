@@ -498,15 +498,15 @@ long GB_mode_of_link(const char *path)
     return gb_global_stt.st_mode;
 }
 
-GB_BOOL GB_is_regularfile(const char *path){
+bool GB_is_regularfile(const char *path){
     struct stat stt;
     return stat(path, &stt) == 0 && S_ISREG(stt.st_mode);
 }
 
-GB_BOOL GB_is_executablefile(const char *path) {
+bool GB_is_executablefile(const char *path) {
     struct stat stt;
-    GB_BOOL     executable = GB_FALSE;
-    
+    bool        executable = false;
+
     if (stat(path, &stt) == 0) {
         uid_t my_userid = geteuid(); // effective user id
         if (stt.st_uid == my_userid) { // I am the owner of the file
@@ -526,16 +526,16 @@ GB_BOOL GB_is_executablefile(const char *path) {
     return executable;
 }
 
-GB_BOOL GB_is_privatefile(const char *path, GB_BOOL read_private) {
-    // return GB_TRUE, if nobody but user has write permission
-    // if 'read_private' is true, only return GB_TRUE if nobody but user has read permission
+bool GB_is_privatefile(const char *path, bool read_private) {
+    // return true, if nobody but user has write permission
+    // if 'read_private' is true, only return true if nobody but user has read permission
     //
-    // Note: Always returns GB_TRUE for missing files!
+    // Note: Always returns true for missing files!
     //
     // GB_is_privatefile is mainly used to assert that files generated in /tmp have secure permissions
-    
+
     struct stat stt;
-    GB_BOOL     isprivate = GB_TRUE;
+    bool        isprivate = true;
 
     if (stat(path, &stt) == 0) {
         if (read_private) {
@@ -548,17 +548,17 @@ GB_BOOL GB_is_privatefile(const char *path, GB_BOOL read_private) {
     return isprivate;
 }
 
-GB_BOOL GB_is_readablefile(const char *filename) {
+bool GB_is_readablefile(const char *filename) {
     FILE *in = fopen(filename, "r");
 
     if (in) {
         fclose(in);
-        return GB_TRUE;
+        return true;
     }
-    return GB_FALSE;
+    return false;
 }
 
-GB_BOOL GB_is_directory(const char *path) {
+bool GB_is_directory(const char *path) {
     struct stat stt;
     return stat(path, &stt) == 0 && S_ISDIR(stt.st_mode);
 }
@@ -789,7 +789,7 @@ GB_ERROR GB_xterm(void) {
     return GB_system(command);
 }
 
-GB_ERROR GB_xcmd(const char *cmd, GB_BOOL background, GB_BOOL wait_only_if_error) {
+GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) {
     /* goes to header: __ATTR__USERESULT */
     
     // runs a command in an xterm
@@ -1315,7 +1315,7 @@ FILE *GB_fopen_tempfile(const char *filename, const char *fmode, char **res_full
     // (even if fopen failed)
 
     GB_CSTR   file  = GB_concat_path(GB_PATH_TMP, filename);
-    GB_BOOL   write = strpbrk(fmode, "wa") != 0;
+    bool      write = strpbrk(fmode, "wa") != 0;
     GB_ERROR  error = 0;
     FILE     *fp    = 0;
 

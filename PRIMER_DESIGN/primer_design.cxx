@@ -313,7 +313,7 @@ void primer_design_event_init( AW_window *aww, AW_CL cl_from_gene) {
             if (!genPos) {
                 error = GB_await_error();
             }
-            else if (genPos->joinable == GB_FALSE) {
+            else if (genPos->joinable == false) {
                 error = GBS_global_string("Gene '%s' is not joinable", selected_gene);
             }
         }
@@ -331,7 +331,7 @@ void primer_design_event_init( AW_window *aww, AW_CL cl_from_gene) {
 
         if (gb_gene) {
             size_t gene_length;
-            sequence   = GBT_read_gene_sequence_and_length(gb_gene, GB_FALSE, 0, &gene_length);
+            sequence   = GBT_read_gene_sequence_and_length(gb_gene, false, 0, &gene_length);
             if (!sequence) {
                 error = GB_await_error();
             }

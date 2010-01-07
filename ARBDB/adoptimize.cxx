@@ -518,7 +518,7 @@ int look(GB_DICTIONARY *dict, GB_CSTR source) {
 
 
 
-static char *gb_uncompress_by_dictionary_internal(GB_DICTIONARY *dict, /*GBDATA *gbd, */GB_CSTR s_source, const long size, GB_BOOL append_zero, long *new_size) {
+static char *gb_uncompress_by_dictionary_internal(GB_DICTIONARY *dict, /*GBDATA *gbd, */GB_CSTR s_source, const long size, bool append_zero, long *new_size) {
     cu_str source = (cu_str)s_source;
     u_str  dest;
     u_str  buffer;
@@ -584,7 +584,7 @@ static char *gb_uncompress_by_dictionary_internal(GB_DICTIONARY *dict, /*GBDATA 
         }
     }
 
-    if (append_zero == GB_TRUE) *dest++ = 0;
+    if (append_zero == true) *dest++ = 0;
 
     *new_size = dest-buffer;
     gb_assert(size >= *new_size); // buffer overflow
@@ -595,7 +595,7 @@ static char *gb_uncompress_by_dictionary_internal(GB_DICTIONARY *dict, /*GBDATA 
 char *gb_uncompress_by_dictionary(GBDATA *gbd, GB_CSTR s_source, long size, long *new_size)
 {
     GB_DICTIONARY *dict        = gb_get_dictionary(GB_MAIN(gbd), GB_KEY_QUARK(gbd));
-    GB_BOOL        append_zero = GB_TYPE(gbd)==GB_STRING || GB_TYPE(gbd) == GB_LINK;
+    bool           append_zero = GB_TYPE(gbd)==GB_STRING || GB_TYPE(gbd) == GB_LINK;
 
     if (!dict) {
         GB_ERROR error = GBS_global_string("Cannot decompress db-entry '%s' (no dictionary found)\n", GB_get_db_path(gbd));
@@ -767,7 +767,7 @@ char *gb_compress_by_dictionary(GB_DICTIONARY *dict, GB_CSTR s_source, long size
 #if defined(ASSERTION_USED)
     {
         long  new_size = -1;
-        char *test     = gb_uncompress_by_dictionary_internal(dict, (GB_CSTR)buffer+1, org_size + GB_COMPRESSION_TAGS_SIZE_MAX, GB_TRUE, &new_size);
+        char *test     = gb_uncompress_by_dictionary_internal(dict, (GB_CSTR)buffer+1, org_size + GB_COMPRESSION_TAGS_SIZE_MAX, true, &new_size);
 
         gb_assert(memcmp(test, s_source, org_size) == 0);
         gb_assert((org_size+1) == new_size);

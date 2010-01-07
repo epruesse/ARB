@@ -429,22 +429,23 @@ int gbcms_talking_put_update(int socket, long *hsin, void *sin,GBDATA * gbd_dumm
      * - the date
      * - and all changed data
      * from client.
-     * 
+     *
      * command: GBCM_COMMAND_PUT_UPDATE
      */
-    GB_ERROR       error;
-    long        irror;
-    GBDATA         *gbd;
-    struct gbcms_create_struct *cs[1], *cs_main[1];
-    long            *buffer;
-    GB_BOOL     end;
-    struct Hs_struct *hs = (struct Hs_struct *) hsin;
+    GB_ERROR             error;
+    long                 irror;
+    GBDATA              *gbd;
+    gbcms_create_struct *cs[1], *cs_main[1];
+    long                *buffer;
+    bool                 end;
+    Hs_struct           *hs = (Hs_struct *) hsin;
+
     // GBUSE(hs); GBUSE(sin);
-    sin = sin;
-    gbd_dummy = gbd_dummy;
+    sin        = sin;
+    gbd_dummy  = gbd_dummy;
     cs_main[0] = 0;
-    buffer = (long *) GB_give_buffer(1024);
-    end = GB_FALSE;
+    buffer     = (long *) GB_give_buffer(1024);
+    end        = false;
     while (!end) {
         if (gbcm_read(socket, (char *) buffer, sizeof(long) * 3) != sizeof(long) * 3)
             return GBCM_SERVER_FAULT;
@@ -468,7 +469,7 @@ int gbcms_talking_put_update(int socket, long *hsin, void *sin,GBDATA * gbd_dumm
                 if (irror) return GBCM_SERVER_FAULT;
                 break;
             case GBCM_COMMAND_PUT_UPDATE_END:
-                end = GB_TRUE;
+                end = true;
                 break;
             default:
                 return GBCM_SERVER_FAULT;
@@ -874,7 +875,7 @@ int gbcms_talking_key_alloc(int socket, long *hsin, void *sin, GBDATA * gbd) {
     gbcm_read_flush(socket);
 
     if (key)
-        index = gb_create_key(GB_MAIN(gbd),key,GB_FALSE);
+        index = gb_create_key(GB_MAIN(gbd), key, false);
     else
         index = 0;
 
@@ -952,8 +953,8 @@ int gbcms_talking(int con,long *hs, void *sin)
     }
 }
 
-GB_BOOL GBCMS_accept_calls(GBDATA *gbd,GB_BOOL wait_extra_time) {
-    // returns GB_TRUE if served
+bool GBCMS_accept_calls(GBDATA *gbd, bool wait_extra_time) {
+    // returns true if served
 
     Hs_struct    *hs;
     int           con;
@@ -964,9 +965,8 @@ GB_BOOL GBCMS_accept_calls(GBDATA *gbd,GB_BOOL wait_extra_time) {
     GB_MAIN_TYPE *Main          = GB_MAIN(gbd);
     long          in_trans      = GB_read_transaction(gbd);
 
-    if (!Main->server_data) return GB_FALSE;
-    if (in_trans)       return GB_FALSE;
-    if (!Main->server_data) return GB_FALSE;
+    if (!Main->server_data) return false;
+    if (in_trans)           return false;
 
     hs = (struct Hs_struct *)Main->server_data;
 
@@ -1003,10 +1003,10 @@ GB_BOOL GBCMS_accept_calls(GBDATA *gbd,GB_BOOL wait_extra_time) {
 
         if (anz==-1){
             // printf("ERROR: poll in aisc_accept_calls %i\n",errno);
-            return GB_FALSE;
+            return false;
         }
         if (!anz){ // timed out
-            return GB_FALSE;
+            return false;
         }
 
 
@@ -1065,9 +1065,9 @@ GB_BOOL GBCMS_accept_calls(GBDATA *gbd,GB_BOOL wait_extra_time) {
 
     } 
     if (hs->wait_for_new_request>0){
-        return GB_TRUE;
+        return true;
     }
-    return GB_FALSE;
+    return false;
 }
 
 
@@ -1729,11 +1729,11 @@ long GB_read_clients(GBDATA *gbd) {
     return clients;
 }
 
-GB_BOOL GB_is_server(GBDATA *gbd) {
+bool GB_is_server(GBDATA *gbd) {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     return Main->local_mode;
 }
-GB_BOOL GB_is_client(GBDATA *gbd) {
+bool GB_is_client(GBDATA *gbd) {
     return !GB_is_server(gbd);
 }
 
@@ -2060,7 +2060,7 @@ GB_ERROR GB_install_pid(int mode) {
             }
 
             // ensure pid file is private, otherwise someone could inject PIDs which will be killed later 
-            gb_assert(GB_is_privatefile(pid_fullname, GB_FALSE));
+            gb_assert(GB_is_privatefile(pid_fullname, false));
             
             free(pid_fullname);
             free(pidfile_name);

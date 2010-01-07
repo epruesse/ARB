@@ -48,7 +48,7 @@ static GBT_TREE *fixDeletedSon(GBT_TREE *tree) {
         delNode->gb_node = 0;
     }
 
-    delNode->is_leaf = GB_TRUE; // don't try recursive delete
+    delNode->is_leaf = true; // don't try recursive delete
 
     if (delNode->father) { // not root
         GBT_delete_tree(delNode);
@@ -76,8 +76,8 @@ GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TREE_REMOVE_TYPE mode, GB_HASH *s
 
     if (tree->is_leaf) {
         if (tree->name) {
-            GB_BOOL  deleteSelf = GB_FALSE;
-            GBDATA  *gb_node;
+            bool    deleteSelf = false;
+            GBDATA *gb_node;
 
             if (species_hash) {
                 gb_node = (GBDATA*)GBS_read_hash(species_hash, tree->name);
@@ -92,7 +92,7 @@ GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TREE_REMOVE_TYPE mode, GB_HASH *s
                 }
             }
             else { // zombie
-                if (mode & GBT_REMOVE_DELETED) deleteSelf = GB_TRUE;
+                if (mode & GBT_REMOVE_DELETED) deleteSelf = true;
             }
 
             if (deleteSelf) {
@@ -117,7 +117,7 @@ GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TREE_REMOVE_TYPE mode, GB_HASH *s
         }
         else {                  // everything deleted -> delete self
             if (tree->name && groups_removed) (*groups_removed)++;
-            tree->is_leaf = GB_TRUE;
+            tree->is_leaf = true;
             GBT_delete_tree(tree);
             tree          = 0;
         }
@@ -173,7 +173,7 @@ static GB_ERROR gbt_write_tree_nodes(GBDATA *gb_tree, GBT_TREE *node, long *star
     GB_ERROR error = NULL;
 
     if (!node->is_leaf) {
-        GB_BOOL node_is_used = GB_FALSE;
+        bool node_is_used = false;
 
         if (node->name && node->name[0]) {
             if (!node->gb_node) {
@@ -185,7 +185,7 @@ static GB_ERROR gbt_write_tree_nodes(GBDATA *gb_tree, GBT_TREE *node, long *star
                 if (!gb_name) error = GB_await_error();
                 else    error       = GBT_write_group_name(gb_name, node->name);
 
-                node_is_used = GB_TRUE; // wrote groupname -> node is used
+                node_is_used = true; // wrote groupname -> node is used
             }
         }
 
@@ -195,7 +195,7 @@ static GB_ERROR gbt_write_tree_nodes(GBDATA *gb_tree, GBT_TREE *node, long *star
                 while (gb_nonid && strcmp("id", GB_read_key_pntr(gb_nonid)) == 0) {
                     gb_nonid = GB_nextChild(gb_nonid);
                 }
-                if (gb_nonid) node_is_used = GB_TRUE; // found child that is not "id" -> node is used
+                if (gb_nonid) node_is_used = true; // found child that is not "id" -> node is used
             }
 
             if (node_is_used) { // set id for used nodes
@@ -492,7 +492,7 @@ GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_nodes, 
         node->rightson->father = node;
     }
     else if (c=='L') {
-        node->is_leaf = GB_TRUE;
+        node->is_leaf = true;
         p1            = (char *)strchr(*data,1);
 
         gb_assert(p1);
@@ -684,7 +684,7 @@ static GB_ERROR gbt_link_tree_to_hash_rek(GBT_TREE *tree, struct link_tree_data 
     return error;
 }
 
-GB_ERROR GBT_link_tree_using_species_hash(GBT_TREE *tree, GB_BOOL show_status, GB_HASH *species_hash, int *zombies, int *duplicates) {
+GB_ERROR GBT_link_tree_using_species_hash(GBT_TREE *tree, bool show_status, GB_HASH *species_hash, int *zombies, int *duplicates) {
     GB_ERROR              error;
     struct link_tree_data ltd;
     long                  leafs = 0;
@@ -720,7 +720,7 @@ GB_ERROR GBT_link_tree_using_species_hash(GBT_TREE *tree, GB_BOOL show_status, G
     gb_node is set to the database container holding the species data.
     returns the number of zombies and duplicates in 'zombies' and 'duplicates'
 */
-GB_ERROR GBT_link_tree(GBT_TREE *tree,GBDATA *gb_main,GB_BOOL show_status, int *zombies, int *duplicates)
+GB_ERROR GBT_link_tree(GBT_TREE *tree,GBDATA *gb_main,bool show_status, int *zombies, int *duplicates)
 {
     GB_HASH  *species_hash = GBT_create_species_hash(gb_main);
     GB_ERROR  error        = GBT_link_tree_using_species_hash(tree, show_status, species_hash, zombies, duplicates);

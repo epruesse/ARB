@@ -752,7 +752,7 @@ static void gen_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene
     if (!full_species_name) full_species_name = species_name;
 
     char     *full_name = GBS_global_string_copy("%s [%s]", full_species_name, gene_name);
-    char     *sequence  = GBT_read_gene_sequence(gb_gene, GB_TRUE, 0);
+    char     *sequence  = GBT_read_gene_sequence(gb_gene, true, 0);
     GB_ERROR  error     = 0;
 
     if (!sequence) error = GB_await_error();

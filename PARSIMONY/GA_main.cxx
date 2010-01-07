@@ -63,7 +63,7 @@ AP_tree * buildRandomTree(AP_tree *root) {
         ntree->sequence = 0;
         tree0->father = ntree;
         tree1->father = ntree;
-        ntree->is_leaf = GB_FALSE;
+        ntree->is_leaf = false;
         // ################## Laengenberechnung #################3
         ntree->leftlen = .5;
         ntree->rightlen = .5;

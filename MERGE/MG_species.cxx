@@ -208,7 +208,7 @@ char *MG_remap::remap(const char *sequence){
     int skippedgaps = 0;    // number of gaps not written
     int skippedchar = '.';  // last gap character not written
 
-    GB_BOOL within_sequence = GB_FALSE;
+    bool within_sequence = false;
     int i;
     for (i=0;i<len;i++){
         int c = sequence[i];
@@ -240,9 +240,9 @@ char *MG_remap::remap(const char *sequence){
         }
         skippedgaps = 0;
         if (c != '.') {
-            within_sequence = GB_TRUE;
+            within_sequence = true;
         }else{
-            within_sequence = GB_FALSE;
+            within_sequence = false;
         }
         GBS_chrcat(outs,c);
         lastposset++;
@@ -647,9 +647,9 @@ void MG_transfer_fields_cb(AW_window *aww){
         GB_begin_transaction(GLOBAL_gb_dest);
 
         GBDATA    *gb_dest_species_data  = GB_search(GLOBAL_gb_dest,"species_data",GB_CREATE_CONTAINER);
-        GB_BOOL    transfer_of_alignment = GBS_string_matches(field,"ali_*/data",GB_MIND_CASE);
+        bool       transfer_of_alignment = GBS_string_matches(field,"ali_*/data",GB_MIND_CASE);
         MG_remaps  rm(GLOBAL_gb_merge,GLOBAL_gb_dest,aww->get_root());
-        
+
         for (GBDATA *gb_species1 = GBT_first_species(GLOBAL_gb_merge);
              gb_species1 && !error;
              gb_species1 = GBT_next_species(gb_species1))
@@ -1158,7 +1158,7 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
             D_species             = GB_create_container(D_species_data,"species");
             if (!D_species) error = GB_await_error();
             else {
-                error             = GB_copy_with_protection(D_species, M_species, GB_TRUE);
+                error             = GB_copy_with_protection(D_species, M_species, true);
                 if (!error) GB_write_flag(D_species,1); // mark species
                 if (!error) error = GB_write_usr_private(D_species,255); // put in hitlist
                 if (!error) error = GBT_write_string(D_species, "name", m_name);

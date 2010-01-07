@@ -41,6 +41,6 @@ GBDATA* EXP_next_experiment(GBDATA *gb_experiment) {
 
 GBDATA* EXP_find_or_create_experiment_rel_exp_data(GBDATA *gb_experiment_data, const char *name) {
     // Search for a experiment, when experiment does not exist create it
-    return GBT_find_or_create_item_rel_item_data(gb_experiment_data, "experiment", "name", name, GB_FALSE);
+    return GBT_find_or_create_item_rel_item_data(gb_experiment_data, "experiment", "name", name, false);
 }
 

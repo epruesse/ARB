@@ -661,7 +661,7 @@ void NT_submit_mail(AW_window *aww, AW_CL cl_awar_base) {
 
         const char *command = GBS_global_string("mail '%s' <%s", plainaddress, mail_file);
 
-        nt_assert(GB_is_privatefile(mail_file, GB_FALSE));
+        nt_assert(GB_is_privatefile(mail_file, false));
 
         error = GB_system(command);
         GB_unlink_or_warn(mail_file, &error);
@@ -784,7 +784,7 @@ void NT_modify_cb(AW_window *aww,AW_CL cd1,AW_CL cd2)
 }
 
 void NT_primer_cb(void) {
-    GB_ERROR error = GB_xcmd("arb_primer",GB_TRUE, GB_FALSE);
+    GB_ERROR error = GB_xcmd("arb_primer", true, false);
     if (error) aw_message(error);
 }
 

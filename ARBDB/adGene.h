@@ -35,10 +35,10 @@
 
 struct GEN_position {
     int            parts;
-    GB_BOOL        joinable;    // GB_TRUE = join(...), GB_FALSE = order(...) aka not joinable or unknown
+    bool           joinable;                        // true = join(...), false = order(...) aka not joinable or unknown
     size_t        *start_pos;
     size_t        *stop_pos;
-    unsigned char *complement;  // 0       = normal or 1 = complementary
+    unsigned char *complement;                      // 0       = normal or 1 = complementary
 
     // [optional elements]
 

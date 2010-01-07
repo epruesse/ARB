@@ -69,7 +69,7 @@ int main(int argc,char **argv)
             GB_save(gb_main,0,"b");
             timer = LOOPS;
         }
-        GBCMS_accept_calls(gb_main,GB_FALSE);
+        GBCMS_accept_calls(gb_main, false);
     }
     return(0);
 }

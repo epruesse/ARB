@@ -402,14 +402,14 @@ GB_CSTR GBS_find_string(GB_CSTR str, GB_CSTR substr, int match_mode) {
     return 0;
 }
 
-GB_BOOL GBS_string_matches(const char *str, const char *search, GB_CASE case_sens)
+bool GBS_string_matches(const char *str, const char *search, GB_CASE case_sens)
 /* Wildcards in 'search' string:
  *      ?   one character
  *      *   several characters
  *
  * if 'case_sens' == GB_IGNORE_CASE -> change all letters to uppercase
  * 
- * returns GB_TRUE if strings are equal, GB_FALSE otherwise
+ * returns true if strings are equal, false otherwise
  */
 {
     const char *p1,*p2;
@@ -434,49 +434,49 @@ GB_BOOL GBS_string_matches(const char *str, const char *search, GB_CASE case_sen
             }
             if (*p2 != '*' ) {
                 p1 += strlen(p1)-i;     /* check the end of the string */
-                if (p1 < str) return GB_FALSE;
+                if (p1 < str) return false;
                 p2 -= i;
             }
             else {
                 *d  = 0;
                 p1  = GBS_find_string(p1,fsbuf,2+(case_sens == GB_IGNORE_CASE)); // match with '?' wildcard
-                if (!p1) return GB_FALSE;
+                if (!p1) return false;
                 p1 += i;
             }
             continue;
         }
 
-        if (!a) return b ? GB_FALSE : GB_TRUE;
+        if (!a) return !b;
         if (a != b) {
             if (b != '?') {
-                if (!b) return a ? GB_FALSE : GB_TRUE;
+                if (!b) return !a;
                 if (case_sens == GB_IGNORE_CASE) {
                     a = toupper(a);
                     b = toupper(b);
-                    if (a != b) return GB_FALSE;
+                    if (a != b) return false;
                 }
                 else {
-                    return GB_FALSE;
+                    return false;
                 }
             }
         }
         p1++;
         p2++;
     }
-    return GB_TRUE;
+    return true;
 }
 
-GB_BOOL GBS_string_matches_regexp(const char *str, const GBS_string_matcher *expr) {
+bool GBS_string_matches_regexp(const char *str, const GBS_string_matcher *expr) {
     /* Wildcard or regular expression match
-     * Returns GB_TRUE if match
+     * Returns true if match
      *
      * Use GBS_compile_matcher() and GBS_free_matcher() to maintain 'expr'
      */
-    GB_BOOL matches = GB_FALSE;
+    bool matches = false;
 
     switch (expr->type) {
         case SM_ANY: {
-            matches = GB_TRUE;
+            matches = true;
             break;
         }
         case SM_WILDCARDED: {

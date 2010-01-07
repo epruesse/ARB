@@ -302,7 +302,7 @@ static GB_ERROR NT_convert_gene_locations(GBDATA *gb_main, size_t species_count,
                     if (parts<1) error = GBS_global_string("Illegal value in 'pos_joined' (%i)", parts); 
                     
                     GB_ERROR      data_error = 0;   // error in this gene -> don't convert
-                    GEN_position *pos        = GEN_new_position(parts, GB_FALSE); // all were joinable (no information about it was stored)
+                    GEN_position *pos        = GEN_new_position(parts, false); // all were joinable (no information about it was stored)
 
                     // parse old gene information into 'pos'
                     // 

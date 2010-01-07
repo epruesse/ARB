@@ -23,7 +23,7 @@ void ad_table_field_reorder_cb(AW_window *aws,awt_table *awtt) {
     char *source = aws->get_root()->awar(awtt->awar_field_reorder_source)->read_string();
     char *dest =   aws->get_root()->awar(awtt->awar_field_reorder_dest)  ->read_string();
     GB_ERROR warning = 0;
-    GBDATA *gb_table = GBT_open_table(awtt->gb_main, awtt->table_name,GB_TRUE);
+    GBDATA *gb_table = GBT_open_table(awtt->gb_main, awtt->table_name,true);
     if (!gb_table){
         aw_message(GBS_global_string("Table '%s' does not exist",awtt->table_name));
         return;
@@ -92,7 +92,7 @@ AW_window *create_ad_table_field_reorder_window(AW_root *root,awt_table *awtt)
 void awt_table_field_hide_cb(AW_window *aws, awt_table *awtt) {
     GB_begin_transaction(awtt->gb_main);
     GB_ERROR  error    = 0;
-    GBDATA   *gb_table = GBT_open_table(awtt->gb_main, awtt->table_name,GB_TRUE);
+    GBDATA   *gb_table = GBT_open_table(awtt->gb_main, awtt->table_name,true);
 
     if (!gb_table){
         error = GBS_global_string("Table '%s' does not exist",awtt->table_name);
@@ -113,7 +113,7 @@ void awt_table_field_delete_cb(AW_window *aws, awt_table *awtt) {
     GB_begin_transaction(awtt->gb_main);
     
     GB_ERROR  error    = 0;
-    GBDATA   *gb_table = GBT_open_table(awtt->gb_main, awtt->table_name,GB_TRUE);
+    GBDATA   *gb_table = GBT_open_table(awtt->gb_main, awtt->table_name,true);
     if (!gb_table){
         error = GBS_global_string("Table '%s' does not exist",awtt->table_name);
     }
@@ -150,7 +150,7 @@ void ad_table_field_create_cb(AW_window *aws,awt_table *awtt)   {
                    "    that means it is a hierarchical key");
         error = 0;
     }
-    GBDATA *gb_table = GBT_open_table(awtt->gb_main,awtt->table_name,GB_TRUE);
+    GBDATA *gb_table = GBT_open_table(awtt->gb_main,awtt->table_name,true);
     if (gb_table){
         GB_TYPES type = (GB_TYPES)aws->get_root()->awar(awtt->awar_field_new_type)->read_int();
         if(!error) {
@@ -231,7 +231,7 @@ awt_table::~awt_table(){
 
 void   awt_map_table_field_rem(AW_root *aw_root,awt_table *awtt){
     GB_transaction tscope(awtt->gb_main);
-    GBDATA *gb_table = GBT_open_table(awtt->gb_main,awtt->table_name,GB_TRUE);
+    GBDATA *gb_table = GBT_open_table(awtt->gb_main,awtt->table_name,true);
     if (!gb_table){
         aw_root->awar(awtt->awar_field_rem)->unmap();
         return;
@@ -335,7 +335,7 @@ void table_vars_callback(AW_root *aw_root,GBDATA *gb_main)      // Map table var
 {
     GB_push_transaction(gb_main);
     char *tablename = aw_root->awar(AWAR_TABLE_NAME)->read_string();
-    GBDATA *gb_table = GBT_open_table(gb_main,tablename,GB_TRUE);
+    GBDATA *gb_table = GBT_open_table(gb_main,tablename,true);
     if (!gb_table) {
         aw_root->awar(AWAR_TABLE_REM)->unmap();
     }else{
@@ -357,12 +357,12 @@ void table_rename_cb(AW_window *aww,GBDATA *gb_main){
     char     *dest   = aww->get_root()->awar(AWAR_TABLE_DEST)->read_string();
     
     GB_begin_transaction(gb_main);
-    GBDATA *gb_table_dest = GBT_open_table(gb_main,dest,GB_TRUE);
+    GBDATA *gb_table_dest = GBT_open_table(gb_main,dest,true);
     if (gb_table_dest) {
         error = "Table already exists";
     }
     else {
-        GBDATA *gb_table = GBT_open_table(gb_main,source,GB_TRUE);
+        GBDATA *gb_table = GBT_open_table(gb_main,source,true);
         if (gb_table){
             GBDATA *gb_name = GB_search(gb_table,"name",GB_STRING);
             
@@ -382,12 +382,12 @@ void table_copy_cb(AW_window *aww,GBDATA *gb_main){
     char     *dest   = aww->get_root()->awar(AWAR_TABLE_DEST)->read_string();
     
     GB_begin_transaction(gb_main);
-    GBDATA *gb_table_dest = GBT_open_table(gb_main,dest,GB_TRUE);
+    GBDATA *gb_table_dest = GBT_open_table(gb_main,dest,true);
     if (gb_table_dest) {
         error = "Table already exists";
     }
     else {
-        GBDATA *gb_table = GBT_open_table(gb_main,source,GB_TRUE);
+        GBDATA *gb_table = GBT_open_table(gb_main,source,true);
         if (gb_table){
             GBDATA *gb_table_data = GB_entry(gb_main,"table_data");
             gb_table_dest = GB_create_container(gb_table_data,"table");
@@ -409,7 +409,7 @@ void table_create_cb(AW_window *aww,GBDATA *gb_main){
     if (!error) {
         error = GB_check_key(dest);
         if (!error){
-            GBDATA *gb_table     = GBT_open_table(gb_main,dest,GB_FALSE);
+            GBDATA *gb_table     = GBT_open_table(gb_main,dest, false);
             if (!gb_table) error = GB_await_error();
         }
     }
@@ -490,7 +490,7 @@ void awt_table_delete_cb(AW_window *aww,GBDATA *gb_main){
     char     *source = aww->get_root()->awar(AWAR_TABLE_NAME)->read_string();
 
     GB_begin_transaction(gb_main);
-    GBDATA *gb_table = GBT_open_table(gb_main, source, GB_TRUE);
+    GBDATA *gb_table = GBT_open_table(gb_main, source, true);
     if (gb_table) {
         error = GB_delete(gb_table);
     }

@@ -76,8 +76,8 @@ static char gbt_getc(TreeReader *reader) {
 }
 
 static char gbt_read_char(TreeReader *reader) {
-    GB_BOOL done = GB_FALSE;
-    int     c    = ' ';
+    bool done = false;
+    int  c    = ' ';
 
     while (!done) {
         c = gbt_getc(reader);
@@ -108,7 +108,7 @@ static char gbt_read_char(TreeReader *reader) {
                 }
             }
         }
-        else done = GB_TRUE;
+        else done = true;
     }
 
     reader->last_character = c;
@@ -261,7 +261,7 @@ static bool gbt_readNameAndLength(TreeReader *reader, GBT_TREE *node, GBT_LEN *l
     /* reads the branch-length and -name
        '*len' should normally be initialized with TREE_DEFLEN_MARKER 
      * returns the branch-length in 'len' and sets the branch-name of 'node'
-     * returns GB_TRUE if successful, otherwise reader->error gets set
+     * returns true if successful, otherwise reader->error gets set
      */
 
     bool done = false;
@@ -270,7 +270,7 @@ static bool gbt_readNameAndLength(TreeReader *reader, GBT_TREE *node, GBT_LEN *l
             case ';':
             case ',':
             case ')':
-                done = GB_TRUE;
+                done = true;
                 break;
             case ':':
                 gbt_read_char(reader);      /* drop ':' */
@@ -381,7 +381,7 @@ static GBT_TREE *gbt_load_tree_rek(TreeReader *reader, int structuresize, GBT_LE
         char *name = gbt_read_quoted_string(reader);
         if (name) {
             node          = (GBT_TREE*)GB_calloc(1, structuresize);
-            node->is_leaf = GB_TRUE;
+            node->is_leaf = true;
             node->name    = name;
         }
         else {

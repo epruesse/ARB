@@ -204,7 +204,7 @@ static void GB_dump_internal(GBDATA *gbd, int *lines_allowed) {
     GBCONTAINER   *father            = GB_FATHER(gbd);
     GBDATA        *gb_show_later     = 0;
     char          *whatto_show_later = 0;
-    GB_BOOL        showChildren      = GB_TRUE;
+    bool           showChildren      = true;
 
     if (father) {
         int                    index_pos = (int)gbd->index; // my index position in father
@@ -229,7 +229,7 @@ static void GB_dump_internal(GBDATA *gbd, int *lines_allowed) {
     }
 
     if (father) {
-        GB_BOOL is_db_server = GB_is_server(gbd);
+        bool is_db_server = GB_is_server(gbd);
 
         if (is_db_server && gbd->server_id != GBTUM_MAGIC_NUMBER) {
             key_name = GBS_global_string("<element with illegal server-id %p>", (void*)gbd->server_id);
@@ -245,7 +245,7 @@ static void GB_dump_internal(GBDATA *gbd, int *lines_allowed) {
 
     if (!father && !key_name) {
         key_name     = "<unknown quark - element w/o father>";
-        showChildren = GB_FALSE;
+        showChildren = false;
     }
     else {                                          // test if we need a transaction
         if (!GB_MAIN(gbd)->transaction) {
@@ -328,7 +328,7 @@ static void GB_dump_internal(GBDATA *gbd, int *lines_allowed) {
         free(toFree);
     }
 
-    if (type==GB_DB && showChildren == GB_TRUE) {
+    if (type==GB_DB && showChildren == true) {
         GBCONTAINER *gbc = (GBCONTAINER*)gbd;
         GBDATA *gbp;
 

@@ -231,7 +231,7 @@ GB_ERROR TREE_write_XML(GBDATA *gb_main, const char *db_name, const char *tree_n
         GBT_TREE *tree   = GBT_read_tree(gb_main,tree_name,sizeof(GBT_TREE));
         if (!tree) error = GB_await_error();
         else {
-            error = GBT_link_tree(tree,gb_main,GB_TRUE, 0, 0);
+            error = GBT_link_tree(tree, gb_main, true, 0, 0);
             if (!error && node_gen) node_gen->init(gb_main);
 
             if (!error) {
@@ -309,7 +309,7 @@ GB_ERROR TREE_write_Newick(GBDATA *gb_main, char *tree_name, const TREE_node_tex
         GBT_TREE *tree   = GBT_read_tree(gb_main,tree_name,sizeof(GBT_TREE));
         if (!tree) error = GB_await_error();
         else {
-            error = GBT_link_tree(tree,gb_main,GB_TRUE, 0, 0);
+            error = GBT_link_tree(tree, gb_main, true, 0, 0);
             if (!error && node_gen) node_gen->init(gb_main);
 
             if (!error) {

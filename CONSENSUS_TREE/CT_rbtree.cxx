@@ -77,11 +77,11 @@ RB_INFO *rbtree(NT_NODE *tree, GBT_TREE *father)
     if(!nsonp) {                                         /* if node is leaf */
         idx = calc_index(tree->part);
         gbtnode->name = strdup((name_tbl[idx]));     /* test: get_name(idx)); */
-        gbtnode->is_leaf = GB_TRUE;
+        gbtnode->is_leaf = true;
         return info;
     }
 
-    gbtnode->is_leaf = GB_FALSE;
+    gbtnode->is_leaf = false;
     if (info->percent < 10000) {
         gbtnode->remark_branch = rb_remark("", info->percent, gbtnode->remark_branch);
     }

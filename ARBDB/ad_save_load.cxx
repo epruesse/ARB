@@ -1185,8 +1185,7 @@ GB_ERROR GB_save_quick(GBDATA *gb, const char *refpath) {
     }
     fclose(fmaster);
 
-    if (Main->local_mode == GB_FALSE)
-    {
+    if (!Main->local_mode) {
         GB_export_error("You cannot save a remote database");
         GB_print_error();
         return GB_get_error();
@@ -1260,7 +1259,7 @@ GB_ERROR gb_check_saveable(GBDATA *gbd, const char *path, const char *flags) {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     char *fullpath;
     long mode;
-    if (Main->local_mode == GB_FALSE) {
+    if (!Main->local_mode) {
         GB_export_error("You cannot save a remote database, please use save button in master program");
         GB_print_error();
         return GB_get_error();

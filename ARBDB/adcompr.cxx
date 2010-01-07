@@ -863,7 +863,7 @@ GB_DICTIONARY * gb_get_dictionary(GB_MAIN_TYPE *Main, GBQUARK key){
     return Main->keys[key].dictionary;
 }
 
-GB_BOOL GB_is_dictionary_compressed(GBDATA *gbd) {
+bool GB_is_dictionary_compressed(GBDATA *gbd) {
     int         type = GB_TYPE(gbd);
     const char *data = GB_GETDATA(gbd);
 
@@ -883,7 +883,7 @@ GB_BOOL GB_is_dictionary_compressed(GBDATA *gbd) {
                 }
 
                 if (c == GB_COMPRESSION_DICTIONARY) {
-                    return GB_TRUE;
+                    return true;
                 }
                 
                 if (c == GB_COMPRESSION_HUFFMANN) {
@@ -910,13 +910,13 @@ GB_BOOL GB_is_dictionary_compressed(GBDATA *gbd) {
         }
     }
 
-    return GB_FALSE;
+    return false;
 }
 
 // -----------------------------------
 //      Top compression algorithms
 
-GB_BUFFER gb_compress_data(GBDATA *gbd, int key, GB_CBUFFER source, long size, long *msize, GB_COMPRESSION_MASK max_compr, GB_BOOL pre_compressed) {
+GB_BUFFER gb_compress_data(GBDATA *gbd, int key, GB_CBUFFER source, long size, long *msize, GB_COMPRESSION_MASK max_compr, bool pre_compressed) {
     // Compress a data string.
     // 
     // Returns:

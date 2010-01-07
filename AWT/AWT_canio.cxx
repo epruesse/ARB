@@ -449,7 +449,7 @@ void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw) {
             ntw->tree_disp->show(device);
             device->close();
 
-            awt_assert(GB_is_privatefile(xfig, GB_TRUE));
+            awt_assert(GB_is_privatefile(xfig, true));
 
             // ----------------------------------------
             aw_status("Converting to Postscript");
@@ -471,7 +471,7 @@ void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw) {
             }
 
             // if user saves to .ps -> no special file permissions are required 
-            awt_assert(printdest == PDEST_POSTSCRIPT || GB_is_privatefile(dest, GB_FALSE));
+            awt_assert(printdest == PDEST_POSTSCRIPT || GB_is_privatefile(dest, false));
 
             if (!error) {
                 aw_status("Printing");

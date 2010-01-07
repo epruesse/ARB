@@ -341,7 +341,7 @@ AP_tree *GA_genetic::read_tree_rek(char **data)
         node->leftson->father = node;
         node->rightson->father = node;
     }else if (c=='L') {
-        node->is_leaf = GB_TRUE;
+        node->is_leaf = true;
         p1 = (char *)strchr(*data,1);
         *p1 = 0;
         node->name = (char *)strdup(*data);

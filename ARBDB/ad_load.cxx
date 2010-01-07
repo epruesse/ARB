@@ -1099,7 +1099,7 @@ long gb_read_bin(FILE *in,GBCONTAINER *gbd, int diff_file_allowed)
         if (p == buffer) break;
 
         if (*buffer == 1) {                                                   // empty key
-            long index = gb_create_key(Main,0,GB_FALSE);
+            long index = gb_create_key(Main, 0, false);
 
             Main->keys[index].key           = 0;
             Main->keys[index].nref          = 0;
@@ -1108,7 +1108,7 @@ long gb_read_bin(FILE *in,GBCONTAINER *gbd, int diff_file_allowed)
             first_free_key = index;
         }
         else {
-            long index = gb_create_key(Main,buffer,GB_FALSE);
+            long index = gb_create_key(Main, buffer, false);
             
             Main->keys[index].nref = nrefs;
         }
@@ -1294,7 +1294,7 @@ GB_ERROR gb_login_remote(GB_MAIN_TYPE *Main, const char *path, const char *opent
     GBCONTAINER *gbd   = Main->data;
     GB_ERROR     error = NULL;
 
-    Main->local_mode = GB_FALSE;
+    Main->local_mode = false;
     Main->c_link     = gbcmc_open(path);
 
     if (!Main->c_link) {
@@ -1346,9 +1346,9 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
     int            loadedQuickIndex    = -1;
     GB_ERROR       error               = 0;
     char          *path                = strdup(cpath);
-    GB_BOOL        dbCreated           = GB_FALSE;
+    bool           dbCreated           = false;
 
-    GBK_install_SIGSEGV_handler(GB_TRUE);
+    GBK_install_SIGSEGV_handler(true);
 
     if (!opent) opentype = gb_open_all;
     else if (strchr(opent, 'w')) opentype = gb_open_all;
@@ -1427,11 +1427,11 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
     if (GB_install_pid(1)) return 0;
 
     Main = gb_make_gb_main_type(path);
-    Main->local_mode = GB_TRUE;
+    Main->local_mode = true;
 
     if (strchr(opent,'R')) Main->allow_corrupt_file_recovery = 1;
 
-    gb_create_key(Main,"main",GB_FALSE);
+    gb_create_key(Main, "main", false);
 
     Main->dummy_father            = gb_make_container(NULL, 0, -1,0); // create "main"
     Main->dummy_father->main_idx  = gb_make_main_idx(Main);
@@ -1452,7 +1452,7 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
 
             GB_ULONG time_of_main_file  = 0;
             GB_ULONG time_of_quick_file = 0;
-            Main->local_mode            = GB_TRUE;
+            Main->local_mode            = true;
             GB_begin_transaction((GBDATA *)gbd);
             Main->clock                 = 0;        // start clock
 
@@ -1481,7 +1481,7 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
                         found_path = GBS_find_lib_file(path,pre, 0);
                         if (!found_path) {
                             fprintf(stderr,"file %s not found\n", path);
-                            dbCreated = GB_TRUE;
+                            dbCreated = true;
                         }
                         else {
 #if defined(DEBUG)
@@ -1492,7 +1492,7 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
                         }
                     }
                     else {
-                        dbCreated = GB_TRUE;
+                        dbCreated = true;
                     }
 
                     if (dbCreated) printf(" database %s created\n", path);
@@ -1600,7 +1600,7 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
     }
     else {
         GB_disable_quicksave((GBDATA *)gbd,"Database not part of this process");
-        Main->local_mode = GB_TRUE;
+        Main->local_mode = true;
         GB_begin_transaction((GBDATA *)gbd);
     }
 
@@ -1624,7 +1624,7 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
         Main->security_level = 0;
         gbl_install_standard_commands((GBDATA *)gbd);
 
-        if (Main->local_mode == GB_TRUE) {          // i am the server
+        if (Main->local_mode == true) {          // i am the server
             GBT_install_message_handler((GBDATA *)gbd);
         }
         if (gb_verbose_mode && !dbCreated) GB_informationf("ARB: Loading '%s' done\n", path);

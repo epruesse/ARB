@@ -13,10 +13,10 @@ int main(int argc, char **argv)
     int         arg;
     char       *eval;
     const char *fname;
-    int         linemode           = GB_FALSE;
-    int         delete_empty_lines = GB_FALSE;
+    int         linemode           = false;
+    int         delete_empty_lines = false;
     int         startarg;
-    int         patchmode          = GB_FALSE;
+    int         patchmode          = false;
 
     if (argc <=1 || (argc >= 2 && strcmp(argv[1], "--help") == 0)) {
         printf("syntax: arb_replace [-l/L/p] \"old=newdata\" [filepattern]\n");
@@ -28,27 +28,27 @@ int main(int argc, char **argv)
     }
     if (!strcmp(argv[1],"-l")) {
         eval               = argv[2];
-        linemode           = GB_TRUE;
+        linemode           = true;
         startarg           = 3;
     }
     else if (!strcmp(argv[1],"-L")) {
         eval               = argv[2];
-        linemode           = GB_TRUE;
-        delete_empty_lines = GB_TRUE;
+        linemode           = true;
+        delete_empty_lines = true;
         startarg           = 3;
     }
     else if (!strcmp(argv[1],"-p")) {
         eval      = argv[2];
-        patchmode = GB_TRUE;
+        patchmode = true;
         startarg  = 3;
     }
     else {
         eval     = argv[1];
         startarg = 2;
     }
-    int usestdin = GB_FALSE;
+    int usestdin = false;
     if (startarg==argc) {
-        usestdin = GB_TRUE;             // stdin stdout
+        usestdin = true;                            // stdin stdout
         argc++;
     }
 
@@ -63,7 +63,7 @@ int main(int argc, char **argv)
             if (patchmode) {
                 unsigned long size = GB_size_of_file(fname);
                 char *right = strchr(eval,'=');
-                int patched = GB_FALSE;
+                int patched = false;
                 if (!right) {
                     fprintf(stderr,"'=' not found in replace string\n");
                     return -1;
@@ -80,7 +80,7 @@ int main(int argc, char **argv)
                 for (i=0;i<size;i++){
                     if (!strncmp(data+i,eval,leftsize)){
                         strcpy(data+i,right);
-                        patched = GB_TRUE;
+                        patched = true;
                     }
                 }
                 if (patched) {

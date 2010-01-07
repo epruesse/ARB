@@ -122,7 +122,7 @@ GB_ERROR GBT_add_new_experiment_changekey(GBDATA *gb_main, const char *name, int
     return GBT_add_new_changekey_to_keypath(gb_main, name, type, CHANGE_KEY_PATH_EXPERIMENTS);
 }
 
-static GB_ERROR write_as_int(GBDATA *gbfield, const char *data, GB_BOOL trimmed, size_t *rounded) {
+static GB_ERROR write_as_int(GBDATA *gbfield, const char *data, bool trimmed, size_t *rounded) {
     char          *end   = 0;
     unsigned long  i     = strtoul(data, &end, 10);
     GB_ERROR       error = NULL;
@@ -144,7 +144,7 @@ static GB_ERROR write_as_int(GBDATA *gbfield, const char *data, GB_BOOL trimmed,
         }
         else {
             char *trimmed_data = GBS_trim(data);
-            error              = write_as_int(gbfield, trimmed_data, GB_TRUE, rounded);
+            error              = write_as_int(gbfield, trimmed_data, true, rounded);
             free(trimmed_data);
         }
     }
@@ -156,7 +156,7 @@ static GB_ERROR write_as_int(GBDATA *gbfield, const char *data, GB_BOOL trimmed,
     return error;
 }
 
-static GB_ERROR write_as_float(GBDATA *gbfield, const char *data, GB_BOOL trimmed) {
+static GB_ERROR write_as_float(GBDATA *gbfield, const char *data, bool trimmed) {
     char     *end   = 0;
     double    d     = strtod(data, &end);
     GB_ERROR  error = NULL;
@@ -167,7 +167,7 @@ static GB_ERROR write_as_float(GBDATA *gbfield, const char *data, GB_BOOL trimme
         }
         else {
             char *trimmed_data = GBS_trim(data);
-            error              = write_as_float(gbfield, trimmed_data, GB_TRUE);
+            error              = write_as_float(gbfield, trimmed_data, true);
             free(trimmed_data);
         }
     }
@@ -182,13 +182,13 @@ static GB_ERROR write_as_float(GBDATA *gbfield, const char *data, GB_BOOL trimme
 
 GB_ERROR GBT_convert_changekey(GBDATA *gb_main, const char *name, GB_TYPES target_type) {
     GB_ERROR error        = GB_push_transaction(gb_main);
-    GB_BOOL  need_convert = GB_TRUE;
+    bool     need_convert = true;
 
     if (!error) {
         GBDATA *gbkey = GBT_get_changekey(gb_main, name, CHANGE_KEY_PATH);
         if (gbkey) {
             GB_TYPES source_type = (GB_TYPES)*GBT_read_int(gbkey, CHANGEKEY_TYPE);
-            if (source_type == target_type) need_convert = GB_FALSE;
+            if (source_type == target_type) need_convert = false;
         }
         else {
             error = GBS_global_string("Unknown changekey '%s'", name);
@@ -218,11 +218,11 @@ GB_ERROR GBT_convert_changekey(GBDATA *gb_main, const char *name, GB_TYPES targe
                         else {
                             switch (target_type) {
                                 case GB_INT:
-                                    error = write_as_int(gbfield, data, GB_FALSE, &rounded);
+                                    error = write_as_int(gbfield, data, false, &rounded);
                                     break;
 
                                 case GB_FLOAT:
-                                    error = write_as_float(gbfield, data, GB_FALSE);
+                                    error = write_as_float(gbfield, data, false);
                                     break;
 
                                 case GB_STRING:

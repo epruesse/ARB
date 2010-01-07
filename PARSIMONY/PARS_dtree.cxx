@@ -208,7 +208,7 @@ void PARS_optimizer_cb(AP_tree *tree) {
         AP_FLOAT old_pars = DOWNCAST(AP_tree_nlen*, agt->get_root_node())->costs();
 
         // AP_FLOAT this_pars = ((AP_tree_nlen *)tree)->nn_interchange_rek(AP_TRUE, ap_global_abort_flag, -1);
-        AP_FLOAT this_pars = ((AP_tree_nlen *)tree)->nn_interchange_rek(AP_TRUE, ap_global_abort_flag, -1, AP_BL_NNI_ONLY, GB_FALSE);
+        AP_FLOAT this_pars = ((AP_tree_nlen *)tree)->nn_interchange_rek(AP_TRUE, ap_global_abort_flag, -1, AP_BL_NNI_ONLY, false);
         if (ap_global_abort_flag) break;
 
         // if (old_pars != DOWNCAST(AP_tree_nlen*, agt->get_root_node())->costs()) { // NNI found better tree
@@ -238,7 +238,7 @@ AWT_graphic_tree *PARS_generate_tree(AW_root *root, WeightedFilter *pars_weighte
     GBDATA *gb_main = aliview->get_gb_main();
     {
         GB_transaction ta(gb_main);
-        GB_BOOL        is_aa = GBT_is_alignment_protein(gb_main, aliview->get_aliname());
+        bool           is_aa = GBT_is_alignment_protein(gb_main, aliview->get_aliname());
 
         if (is_aa) seq_templ = new AP_sequence_protein(aliview);
         else seq_templ       = new AP_sequence_parsimony(aliview);
@@ -411,7 +411,7 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
                             at                   = (AP_tree *)cl->client_data1;
                             ap_global_abort_flag = AP_FALSE;
                             AP_tree_nlen *atn = DOWNCAST(AP_tree_nlen*, at);
-                            atn->nn_interchange_rek(AP_TRUE,ap_global_abort_flag,-1, AP_BL_NNI_ONLY, GB_FALSE);
+                            atn->nn_interchange_rek(AP_TRUE,ap_global_abort_flag,-1, AP_BL_NNI_ONLY, false);
                             exports.refresh = 1;
                             exports.save    = 1;
                             ASSERT_VALID_TREE(get_root_node());
@@ -424,7 +424,7 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
                         ap_global_abort_flag           = AP_FALSE;
                         AP_tree_nlen *atn              = DOWNCAST(AP_tree_nlen*, get_root_node());
 
-                        atn->nn_interchange_rek(AP_TRUE,ap_global_abort_flag,-1, AP_BL_NNI_ONLY, GB_FALSE);
+                        atn->nn_interchange_rek(AP_TRUE,ap_global_abort_flag,-1, AP_BL_NNI_ONLY, false);
                         printf("Combines: %li\n", AP_sequence::combine_count()-prevCombineCount);
 
                         exports.refresh       = 1;
@@ -494,7 +494,7 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
 
     if (recalc_branch_lengths) {
         int abort_flag = AP_FALSE;
-        rootEdge()->nni_rek(AP_FALSE,abort_flag,-1, GB_FALSE,AP_BL_BL_ONLY);
+        rootEdge()->nni_rek(AP_FALSE,abort_flag,-1, false, AP_BL_BL_ONLY);
 
         beautify_tree = true; // beautify after recalc_branch_lengths
     }
