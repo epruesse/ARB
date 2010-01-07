@@ -768,7 +768,7 @@ void ap_check_leaf_bl(AP_tree_nlen *node){
 #if defined(DEVEL_RALF)
 #warning fix interfaces of AP_tree_nlen::nn_interchange_rek and AP_tree_edge::nni_rek (use a struct as param)
 #endif // DEVEL_RALF
-AP_FLOAT AP_tree_edge::nni_rek(AP_BOOL useStatus, int &Abort, int deep, bool skip_hidden,
+AP_FLOAT AP_tree_edge::nni_rek(bool useStatus, int &Abort, int deep, bool skip_hidden,
                                AP_BL_MODE mode, AP_tree_nlen *skipNode)
 {
     if (!rootNode())        return 0.0;

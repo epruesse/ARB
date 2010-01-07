@@ -99,9 +99,9 @@ public:
     void     unhash_sequence();
     AP_FLOAT costs(char *mutPerSite = NULL);        /* cost of a tree (number of changes ..)*/
 
-    AP_BOOL push(AP_STACK_MODE, unsigned long); /* push state of costs */
-    void    pop(unsigned long); /* pop old tree costs */
-    AP_BOOL clear(unsigned long stack_update,unsigned long user_push_counter);
+    bool push(AP_STACK_MODE, unsigned long); /* push state of costs */
+    void pop(unsigned long);    /* pop old tree costs */
+    bool clear(unsigned long stack_update,unsigned long user_push_counter);
 
     virtual AP_UPDATE_FLAGS check_update(); // disable  load !!!!
 
@@ -122,7 +122,7 @@ public:
     // tree optimization methods:
     void parsimony_rek(char *mutPerSite = NULL);
 
-    AP_FLOAT nn_interchange_rek(AP_BOOL     openclosestatus,
+    AP_FLOAT nn_interchange_rek(bool        openclosestatus,
                                 int        &abort,
                                 int         deep,   // -1 means: do whole subtree
                                 AP_BL_MODE  mode,
@@ -141,7 +141,7 @@ public:
                        AP_FLOAT    pars_start,
                        AP_FLOAT    pars_prev,
                        AP_KL_FLAG  searchflag,
-                       AP_BOOL    *abort_flag);
+                       bool       *abort_flag);
 
     // for crossover creates a list of 3 times the nodes with all
     // ancestors in it
@@ -256,7 +256,7 @@ public:
 
     // tree optimization:
 
-    AP_FLOAT nni_rek(AP_BOOL       openclosestatus,
+    AP_FLOAT nni_rek(bool          openclosestatus,
                      int&          Abort,
                      int           deep,
                      bool          skip_hidden = false,

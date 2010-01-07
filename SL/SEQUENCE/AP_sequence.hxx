@@ -21,11 +21,6 @@
 
 #define ap_assert(cond) arb_assert(cond)
 
-typedef enum {
-    AP_FALSE,
-    AP_TRUE
-} AP_BOOL;
-
 typedef double AP_FLOAT;
 
 long AP_timer();
