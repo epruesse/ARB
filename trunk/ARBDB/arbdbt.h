@@ -51,9 +51,9 @@ typedef FAKE_VTAB_PTR  virtualTable;
 #define GBT_VTAB_AND_TREE_ELEMENTS(type) GBT_TREE_ELEMENTS(type)
 #endif
 
-typedef struct gbt_tree_struct {
-    GBT_VTAB_AND_TREE_ELEMENTS(struct gbt_tree_struct);
-} GBT_TREE;
+struct GBT_TREE {
+    GBT_VTAB_AND_TREE_ELEMENTS(GBT_TREE);
+};
 
 enum GBT_TREE_REMOVE_TYPE {
     GBT_REMOVE_MARKED     = 1,

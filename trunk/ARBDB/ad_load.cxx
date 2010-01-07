@@ -30,22 +30,22 @@ void GB_set_verbose(){
 
 #define READING_BUFFER_SIZE (1024*32)
 
-typedef struct reading_buffer_S {
-    char                    *data;
-    struct reading_buffer_S *next;
-    int                      read_bytes;
-} *ReadingBuffer;
+struct ReadingBuffer {
+    char          *data;
+    ReadingBuffer *next;
+    int            read_bytes;
+};
 
-static ReadingBuffer unused_reading_buffers = 0;
+static ReadingBuffer *unused_reading_buffers = 0;
 
 #if defined(DEBUG)
 // #define CHECK_RELEASED_BUFFERS
 #endif // DEBUG
 
 #if defined(CHECK_RELEASED_BUFFERS)
-static int is_a_unused_reading_buffer(ReadingBuffer rb) {
+static int is_a_unused_reading_buffer(ReadingBuffer *rb) {
     if (unused_reading_buffers) {
-        ReadingBuffer check = unused_reading_buffers;
+        ReadingBuffer *check = unused_reading_buffers;
         for (; check; check = check->next) {
             if (check == rb) return 1;
         }
@@ -54,16 +54,16 @@ static int is_a_unused_reading_buffer(ReadingBuffer rb) {
 }
 #endif // CHECK_RELEASED_BUFFERS
 
-static ReadingBuffer allocate_ReadingBuffer() {
-    ReadingBuffer rb = (ReadingBuffer)malloc(sizeof(*rb)+READING_BUFFER_SIZE);
-    rb->data         = ((char*)rb)+sizeof(*rb);
-    rb->next         = 0;
-    rb->read_bytes   = 0;
+static ReadingBuffer *allocate_ReadingBuffer() {
+    ReadingBuffer *rb = (ReadingBuffer*)malloc(sizeof(*rb)+READING_BUFFER_SIZE);
+    rb->data          = ((char*)rb)+sizeof(*rb);
+    rb->next          = 0;
+    rb->read_bytes    = 0;
     return rb;
 }
 
-static void release_ReadingBuffers(ReadingBuffer rb) {
-    ReadingBuffer last = rb;
+static void release_ReadingBuffers(ReadingBuffer *rb) {
+    ReadingBuffer *last = rb;
 
 #if defined(CHECK_RELEASED_BUFFERS)
     gb_assert(!is_a_unused_reading_buffer(rb));
@@ -78,15 +78,15 @@ static void release_ReadingBuffers(ReadingBuffer rb) {
     last->next              = unused_reading_buffers;
     unused_reading_buffers  = rb;
 }
-static void free_ReadingBuffer(ReadingBuffer rb) {
+static void free_ReadingBuffer(ReadingBuffer *rb) {
     if (rb) {
         if (rb->next) free_ReadingBuffer(rb->next);
         free(rb);
     }
 }
 
-static ReadingBuffer read_another_block(FILE *in) {
-    ReadingBuffer buf = 0;
+static ReadingBuffer *read_another_block(FILE *in) {
+    ReadingBuffer *buf = 0;
     if (unused_reading_buffers) {
         buf                    = unused_reading_buffers;
         unused_reading_buffers = buf->next;
@@ -105,27 +105,27 @@ static ReadingBuffer read_another_block(FILE *in) {
 // ---------------
 //      Reader
 
-typedef struct reader_S {
+struct Reader {
     FILE          *in;
-    ReadingBuffer  first; // allocated
+    ReadingBuffer *first;                           // allocated
     GB_ERROR       error;
 
-    ReadingBuffer current;      // only reference
-    size_t        current_offset; // into 'current->data'
+    ReadingBuffer *current;                         // only reference
+    size_t         current_offset;                  // into 'current->data'
 
     char   *current_line;
-    int     current_line_allocated; // whether 'current_line' was allocated
-    size_t  current_line_size;  // size of 'current_line' (valid if current_line_allocated == 1)
+    int     current_line_allocated;                 // whether 'current_line' was allocated
+    size_t  current_line_size;                      // size of 'current_line' (valid if current_line_allocated == 1)
     size_t  line_number;
 
-} *Reader;
+};
 
 typedef unsigned long ReaderPos; // absolute position (relative to ReadingBuffer 'first')
 #define NOPOS (-1UL)
 
 
-static Reader openReader(FILE *in) {
-    Reader r = (Reader)malloc(sizeof(*r));
+static Reader *openReader(FILE *in) {
+    Reader *r = (Reader*)malloc(sizeof(*r));
 
     gb_assert(unused_reading_buffers == 0);
 
@@ -143,14 +143,14 @@ static Reader openReader(FILE *in) {
     return r;
 }
 
-static void freeCurrentLine(Reader r) {
+static void freeCurrentLine(Reader *r) {
     if (r->current_line_allocated && r->current_line) {
         free(r->current_line);
         r->current_line_allocated = 0;
     }
 }
 
-static GB_ERROR closeReader(Reader r) {
+static GB_ERROR closeReader(Reader *r) {
     GB_ERROR error = r->error;
 
     free_ReadingBuffer(r->first);
@@ -163,12 +163,12 @@ static GB_ERROR closeReader(Reader r) {
     return error;
 }
 
-static void releasePreviousBuffers(Reader r) {
+static void releasePreviousBuffers(Reader *r) {
     /* Release all buffers before current position.
      * Warning: This invalidates all offsets!
      */
-    ReadingBuffer last_rel  = 0;
-    ReadingBuffer old_first = r->first;
+    ReadingBuffer *last_rel  = 0;
+    ReadingBuffer *old_first = r->first;
 
     while (r->first != r->current) {
         last_rel = r->first;
@@ -182,13 +182,13 @@ static void releasePreviousBuffers(Reader r) {
     }
 }
 
-static char *getPointer(const Reader r) {
+static char *getPointer(const Reader *r) {
     return r->current->data + r->current_offset;
 }
 
-static ReaderPos getPosition(const Reader r) {
-    ReaderPos     p = 0;
-    ReadingBuffer b = r->first;
+static ReaderPos getPosition(const Reader *r) {
+    ReaderPos      p = 0;
+    ReadingBuffer *b = r->first;
     while (b != r->current) {
         gb_assert(b);
         p += b->read_bytes;
@@ -198,7 +198,7 @@ static ReaderPos getPosition(const Reader r) {
     return p;
 }
 
-static int gotoNextBuffer(Reader r) {
+static int gotoNextBuffer(Reader *r) {
     if (!r->current->next) {
         if (r->current->read_bytes < READING_BUFFER_SIZE) { // eof
             return 0;
@@ -212,7 +212,7 @@ static int gotoNextBuffer(Reader r) {
     return r->current != 0;
 }
 
-static int movePosition(Reader r, int offset) {
+static int movePosition(Reader *r, int offset) {
     int rest = r->current->read_bytes - r->current_offset - 1;
 
     gb_assert(offset >= 0);     // not implemented for negative offsets
@@ -232,7 +232,7 @@ static int movePosition(Reader r, int offset) {
     return 0;
 }
 
-static int gotoChar(Reader r, char lookfor) {
+static int gotoChar(Reader *r, char lookfor) {
     const char *data  = r->current->data + r->current_offset;
     size_t      size  = r->current->read_bytes-r->current_offset;
     const char *found = (const char *)memchr(data, lookfor, size);
@@ -252,19 +252,19 @@ static int gotoChar(Reader r, char lookfor) {
     return 0;
 }
 
-char *getLine(Reader r) {
+char *getLine(Reader *r) {
     releasePreviousBuffers(r);
 
     {
         ReaderPos      start        = getPosition(r);
-        ReadingBuffer  start_buffer = r->current;
+        ReadingBuffer *start_buffer = r->current;
         char          *start_ptr    = getPointer(r);
         int            eol_found    = gotoChar(r, '\n');
 
         // now current position is on EOL or EOF
 
         ReaderPos      eol        = getPosition(r);
-        ReadingBuffer  eol_buffer = r->current;
+        ReadingBuffer *eol_buffer = r->current;
         char          *eol_ptr    = getPointer(r);
 
         movePosition(r, 1);
@@ -379,7 +379,7 @@ static GB_ERROR set_protection_level(GB_MAIN_TYPE *Main, GBDATA *gbd, const char
     return error;
 }
 
-static GB_ERROR gb_parse_ascii_rek(Reader r, GBCONTAINER *gb_parent, const char *parent_name) {
+static GB_ERROR gb_parse_ascii_rek(Reader *r, GBCONTAINER *gb_parent, const char *parent_name) {
     // if parent_name == 0 -> we are parsing at root-level
     GB_ERROR      error = 0;
     int           done  = 0;
@@ -538,7 +538,7 @@ static GB_ERROR gb_parse_ascii_rek(Reader r, GBCONTAINER *gb_parent, const char 
     return error;
 }
 
-static GB_ERROR gb_parse_ascii(Reader r, GBCONTAINER *gb_parent) {
+static GB_ERROR gb_parse_ascii(Reader *r, GBCONTAINER *gb_parent) {
     GB_ERROR error = gb_parse_ascii_rek(r, gb_parent, 0);
     if (error) {
         error = GBS_global_string("%s in line %zu", error, r->line_number);
@@ -565,8 +565,8 @@ GB_ERROR gb_read_ascii(const char *path, GBCONTAINER *gbd) {
     }
 
     if (!error) {
-        Reader   r        = openReader(in);
-        GB_ERROR cl_error = 0;
+        Reader   *r        = openReader(in);
+        GB_ERROR  cl_error = 0;
 
         GB_search((GBDATA *)gbd,GB_SYSTEM_FOLDER,GB_CREATE_CONTAINER); // Switch to Version 3
 

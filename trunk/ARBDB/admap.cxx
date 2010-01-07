@@ -31,14 +31,12 @@ struct gbdata_offset
     long    offset;                                 // offset in mapfile (initialized with -1)
 };
 
-typedef struct S_gbdByKey                           // one for each diff. keyQuark
-{
+struct gbdByKey {                                   // one for each diff. keyQuark
     int            cnt;
     gbdata_offset *gbdoff;
+};
 
-} *gbdByKey;
-
-static gbdByKey gb_gbk = NULL;
+static gbdByKey *gb_gbk = NULL;
 
 
 inline long MAKEREL(long rel_to, long offset) {
@@ -501,7 +499,7 @@ static long write_GBDATA(GB_MAIN_TYPE *Main,GBDATA *gbd, GBQUARK quark, FILE *ou
     return gbdoffset;
 }
 
-static long writeGbdByKey(GB_MAIN_TYPE *Main, gbdByKey gbk, FILE *out, GB_MAIN_IDX main_idx)
+static long writeGbdByKey(GB_MAIN_TYPE *Main, gbdByKey *gbk, FILE *out, GB_MAIN_IDX main_idx)
 {
     int idx;
     int idx2;
@@ -522,7 +520,7 @@ static long writeGbdByKey(GB_MAIN_TYPE *Main, gbdByKey gbk, FILE *out, GB_MAIN_I
     return offset;
 }
 
-static long calcGbdOffsets(GB_MAIN_TYPE *Main, gbdByKey gbk)
+static long calcGbdOffsets(GB_MAIN_TYPE *Main, gbdByKey *gbk)
 {
     int idx;
     int idx2;
@@ -544,7 +542,7 @@ static long calcGbdOffsets(GB_MAIN_TYPE *Main, gbdByKey gbk)
    handle gbdByKey
    ******************************************************** */
 
-static void scanGbdByKey(GB_MAIN_TYPE *Main, GBDATA *gbd, gbdByKey gbk)
+static void scanGbdByKey(GB_MAIN_TYPE *Main, GBDATA *gbd, gbdByKey *gbk)
 {
     GBQUARK quark;
 
@@ -576,10 +574,10 @@ static void scanGbdByKey(GB_MAIN_TYPE *Main, GBDATA *gbd, gbdByKey gbk)
     gbk[quark].cnt++;
 }
 
-static gbdByKey createGbdByKey(GB_MAIN_TYPE *Main)
+static gbdByKey *createGbdByKey(GB_MAIN_TYPE *Main)
 {
-    int idx;
-    gbdByKey gbk = (gbdByKey)GB_calloc(Main->keycnt, sizeof(*gbk));
+    int       idx;
+    gbdByKey *gbk = (gbdByKey*)GB_calloc(Main->keycnt, sizeof(*gbk));
 
     if (!gbk) goto err1;
 
@@ -614,7 +612,7 @@ static gbdByKey createGbdByKey(GB_MAIN_TYPE *Main)
     return NULL;
 }
 
-static void freeGbdByKey(GB_MAIN_TYPE *Main, gbdByKey gbk)
+static void freeGbdByKey(GB_MAIN_TYPE *Main, gbdByKey *gbk)
 {
     int idx;
 

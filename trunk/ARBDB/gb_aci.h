@@ -17,11 +17,11 @@
 
 #define GBL_MAX_ARGUMENTS 500
 
-typedef struct gbl_struct {
+struct GBL {
     char *str;
-} GBL;
+};
 
-typedef struct gbl_command_arguments_struct {
+struct GBL_command_arguments {
     GBDATA     *gb_ref;                             // the database entry on which the command is applied (may be species, gene, experiment, group and maybe more)
     const char *default_tree_name;                  // if we have a default tree, its name is specified here (NULL otherwise)
     const char *command;                            // the name of the current command
@@ -37,8 +37,7 @@ typedef struct gbl_command_arguments_struct {
     // output streams:
     int  *coutput;
     GBL **voutput;
-
-} GBL_command_arguments;
+};
 
 typedef GB_ERROR (*GBL_COMMAND)(GBL_command_arguments *args);
 
