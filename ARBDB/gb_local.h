@@ -57,14 +57,14 @@ enum gb_undo_commands {
     _GBCMC_UNDOCOM_SET_MEM = 10000      // Minimum
 };
 
-typedef enum gb_changed_types {
-    gb_not_changed       = 0,
-    gb_son_changed       = 2,
-    gb_changed           = 4,
-    gb_created           = 5,
-    gb_deleted           = 6,
-    gb_deleted_in_master = 7
-} GB_CHANGED;
+enum GB_CHANGE {
+    GB_UNCHANGED         = 0,
+    GB_SON_CHANGED       = 2,
+    GB_NORMAL_CHANGE     = 4,
+    GB_CREATED           = 5,
+    GB_DELETED           = 6,
+    GB_DELETED_IN_MASTER = 7
+};
 
 enum GB_COMPRESSION_TYPES {
     GB_COMPRESSION_NONE       = 0,

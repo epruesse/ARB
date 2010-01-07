@@ -70,9 +70,9 @@ static void gb_dump_huffmann_tree(struct gb_compress_tree *t, const char *prefix
         printf("%s", prefix);
 
         switch (command) {
-            case gb_cs_end: printf(" [gb_cs_end]\n"); break;
-            case gb_cs_id: printf(" [gb_cs_id]\n"); break;
-            case gb_cs_ok:  {
+            case GB_CS_END: printf(" [GB_CS_END]\n"); break;
+            case GB_CS_ID: printf(" [GB_CS_ID]\n"); break;
+            case GB_CS_OK:  {
                 long val = (long)t->son[0];
                 printf(": value=%li (='%c')\n", val, (char)val);
                 break;
@@ -98,7 +98,7 @@ static void gb_dump_huffmann_tree(struct gb_compress_tree *t, const char *prefix
     }
 }
 static void gb_dump_huffmann_list(struct gb_compress_list *bc, const char *prefix) {
-    if (bc->command == gb_cd_node) {
+    if (bc->command == GB_CD_NODE) {
         int   len        = strlen(prefix);
         char *my_prefix  = malloc(len+2);
         strcpy(my_prefix, prefix);
@@ -267,7 +267,7 @@ char *gb_compress_bits(const char *source, long size, const unsigned char *c_0, 
     for (len = size, i = 0; len; len--) {
         if (zo_flag == isNull[*(s++)]) {
             zo_flag = 1 - zo_flag;
-            for (command = gb_cs_sub; command != gb_cs_ok;) {
+            for (command = GB_CS_SUB; command != GB_CS_OK;) {
                 if (i>gb_local->bc_size) j = gb_local->bc_size; else j = i;
                 bits = gb_local->bitcompress[j].bits;
                 bitc = gb_local->bitcompress[j].bitcnt;
@@ -279,7 +279,7 @@ char *gb_compress_bits(const char *source, long size, const unsigned char *c_0, 
         }
         i++;
     }
-    for (command = gb_cs_sub; command != gb_cs_ok;) {
+    for (command = GB_CS_SUB; command != GB_CS_OK;) {
         if (i>gb_local->bc_size) j = gb_local->bc_size; else j = i;
         bits = gb_local->bitcompress[j].bits;
         bitc = gb_local->bitcompress[j].bitcnt;
@@ -308,7 +308,7 @@ GB_BUFFER gb_uncompress_bits(const char *source,long size, char c_0, char c_1)
 
     for (pos = 0;pos<size;) {
         lastpos = pos;
-        for (command = gb_cs_sub; command != gb_cs_ok; ) {
+        for (command = GB_CS_SUB; command != GB_CS_OK; ) {
             for (t=Main;!t->leave;) {
                 int bit;
                 GB_READ_BIT(s,ch,bitp,bit);
@@ -505,7 +505,7 @@ long gb_compress_huffmann_pop(long *val,struct gb_compress_list **element)
 
 char *gb_compress_huffmann_rek(struct gb_compress_list *bc,int bits,int bitcnt,char *dest)
 {
-    if(bc->command == gb_cd_node) {
+    if(bc->command == GB_CD_NODE) {
         dest = gb_compress_huffmann_rek(bc->son[0],(bits<<1),bitcnt+1,dest);
         dest = gb_compress_huffmann_rek(bc->son[1],(bits<<1)+1,bitcnt+1,dest);
         gbm_free_mem((char *)bc,sizeof(struct gb_compress_list),GBM_CB_INDEX);
@@ -559,16 +559,16 @@ GB_BUFFER gb_compress_huffmann(GB_CBUFFER source, long size, long *msize, int la
             bitcompress[i].value = (int)i;
             if (bitcompress[i].count>level) {
                 gb_compress_huffmann_add_to_list(bitcompress[i].count, &bitcompress[i]);
-                bitcompress[i].command = gb_cs_ok;
+                bitcompress[i].command = GB_CS_OK;
             }
             else {
                 restcount+= bitcompress[i].count;
                 bitcompress[i].count = 0;
                 id = i;
-                bitcompress[i].command = gb_cs_id;
+                bitcompress[i].command = GB_CS_ID;
             }
         }
-        bitcompress[end].command = gb_cs_end;
+        bitcompress[end].command = GB_CS_END;
 
         gb_compress_huffmann_add_to_list(restcount,&bitcompress[id]);
         gb_compress_huffmann_add_to_list(1,&bitcompress[end]);
@@ -577,16 +577,16 @@ GB_BUFFER gb_compress_huffmann(GB_CBUFFER source, long size, long *msize, int la
             gb_compress_huffmann_pop(&(vali[1]),&element2);
 
             bc          = (struct gb_compress_list *)gbm_get_mem(sizeof(struct gb_compress_list),GBM_CB_INDEX);
-            bc->command = gb_cd_node;
+            bc->command = GB_CD_NODE;
             bc->son[0]  = element1;
             bc->son[1]  = element2;
 
-            if (element1->command == gb_cd_node) {
+            if (element1->command == GB_CD_NODE) {
                 bc->bits = element1->bits+1;
-                if (element2->command == gb_cd_node && element2->bits >= bc->bits) bc->bits = element2->bits+1;
+                if (element2->command == GB_CD_NODE && element2->bits >= bc->bits) bc->bits = element2->bits+1;
             }
             else {
-                if (element2->command == gb_cd_node) {
+                if (element2->command == GB_CD_NODE) {
                     bc->bits = element2->bits+1;
                 }
                 else {
@@ -616,7 +616,7 @@ GB_BUFFER gb_compress_huffmann(GB_CBUFFER source, long size, long *msize, int la
         for (len = size; len; len--) {
             val = *(s++);
             command = bitcompress[val].command;
-            if (command == gb_cs_ok) {
+            if (command == GB_CS_OK) {
                 pbc = &bitcompress[val];
                 bits = pbc->bits;
                 bitc = pbc->bitcnt;
@@ -739,8 +739,8 @@ static GB_BUFFER gb_uncompress_huffmann(GB_CBUFFER source, long maxsize, long *n
             t = t->son[bit];
         }
         command = (long) t->son[1];
-        if (command == gb_cs_end) break;
-        if (command == gb_cs_id) {
+        if (command == GB_CS_END) break;
+        if (command == GB_CS_ID) {
             GB_READ_BITS(s, ch, bitp, 8, val);
         } else {
             val = (long) t->son[0];

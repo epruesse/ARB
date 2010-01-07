@@ -818,7 +818,7 @@ long gb_read_bin_rek_V2(FILE *in,GBCONTAINER *gbd,long nitems,long version,long 
                     }
                     else {
                         header[index].flags.ever_changed = 1;
-                        header[index].flags.changed = gb_deleted;
+                        header[index].flags.changed      = GB_DELETED;
                     }
 
                     break;

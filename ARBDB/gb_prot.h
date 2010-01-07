@@ -164,7 +164,7 @@ GB_CSTR gb_read_pntr_ts(GBDATA *gbd, struct gb_transaction_save *ts);
 int gb_info(GBDATA *gbd, int deep);
 
 /* ad_core.cxx */
-void gb_touch_entry(GBDATA *gbd, GB_CHANGED val);
+void gb_touch_entry(GBDATA *gbd, GB_CHANGE val);
 void gb_touch_header(GBCONTAINER *gbc);
 void gb_untouch_children(GBCONTAINER *gbc);
 void gb_untouch_me(GBDATA *gbc);

@@ -42,7 +42,7 @@ typedef union U_GB_DICT_TREE
 
 } GB_DICT_TREE;
 
-typedef enum { SINGLE_NODE, FULL_NODE } GB_DICT_NODE_TYPE;
+enum GB_DICT_NODE_TYPE { SINGLE_NODE, FULL_NODE };
 
 typedef struct S_GB_FULL_DICT_TREE
 {

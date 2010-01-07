@@ -25,11 +25,11 @@ struct gb_buffer {
     size_t  size;
 };
 
-typedef enum {
+enum ARB_TRANS_TYPE {
     ARB_COMMIT,
     ARB_ABORT,
     ARB_TRANS
-} ARB_TRANS_TYPE;
+};
 
 struct gb_local_data {
     // global data structure used for all open databases

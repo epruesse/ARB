@@ -1483,13 +1483,13 @@ static GB_ERROR gbl_readdb(GBL_command_arguments *args) {
                                         Sequence Functions
 ********************************************************************************************/
 
-typedef enum enum_gbt_item_type {
+enum GBT_ITEM_TYPE {
     GBT_ITEM_UNKNOWN,
     GBT_ITEM_SPECIES,
     GBT_ITEM_GENE
-} gbt_item_type;
+};
 
-static gbt_item_type identify_gb_item(GBDATA *gb_item) {
+static GBT_ITEM_TYPE identify_gb_item(GBDATA *gb_item) {
     /* returns: GBT_ITEM_UNKNOWN    -> unknown database_item
      *          GBT_ITEM_SPECIES    -> /species_data/species
      *          GBT_ITEM_GENE       -> /species_data/species/gene_data/gene */
