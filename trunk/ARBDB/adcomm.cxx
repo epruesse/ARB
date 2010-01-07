@@ -1221,7 +1221,7 @@ long gbcm_read_bin(int socket,GBCONTAINER *gbd, long *buffer, long mode, GBDATA 
             if (types != GB_DB) {
                 gb_save_extern_data_in_ts(gb2);
             }
-            gb_touch_entry(gb2, gb_changed);
+            gb_touch_entry(gb2, GB_NORMAL_CHANGE);
         } else {
             if (mode==-1) goto dont_create_in_a_folded_container;
             if (type == GB_DB) {
@@ -1232,7 +1232,7 @@ long gbcm_read_bin(int socket,GBCONTAINER *gbd, long *buffer, long mode, GBDATA 
                                     GB_DATA_LIST_HEADER(gbd->d)[index_pos].flags.key_quark,(GB_TYPES)type);
             }
             if (mode>0){    // transaction only in server
-                gb_touch_entry(gb2,gb_created);
+                gb_touch_entry(gb2, GB_CREATED);
             }else{
                 gb2->server_id = id;
                 GBS_write_numhash(GB_MAIN(gb2)->remote_hash, id, (long) gb2);
@@ -1296,8 +1296,8 @@ long gbcm_read_bin(int socket,GBCONTAINER *gbd, long *buffer, long mode, GBDATA 
 
 
                     }else{
-                        if ((int)buffer2->changed >= gb_deleted) {
-                            hdl->flags.changed = gb_deleted;
+                        if (buffer2->changed >= GB_DELETED) {
+                            hdl->flags.changed = GB_DELETED;
                             hdl->flags.ever_changed = 1;
                         }
                     }

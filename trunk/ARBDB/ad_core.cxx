@@ -30,12 +30,12 @@ inline void _GB_CHECK_IN_UNDO_MODIFY(GB_MAIN_TYPE *Main, GBDATA *gbd) {
 // ---------------------------
 //      GB data management
 
-void gb_touch_entry(GBDATA * gbd, GB_CHANGED val) {
+void gb_touch_entry(GBDATA * gbd, GB_CHANGE val) {
     GBCONTAINER *gbc;
     GBCONTAINER *gbc_father;
 
     gbd->flags2.update_in_server = 0;
-    if ( val > (GB_CHANGED)(int)GB_ARRAY_FLAGS(gbd).changed) {
+    if ( val > (GB_CHANGE)(int)GB_ARRAY_FLAGS(gbd).changed) {
         GB_ARRAY_FLAGS(gbd).changed = val;
         GB_ARRAY_FLAGS(gbd).ever_changed = 1;
     }
@@ -58,11 +58,13 @@ void gb_touch_entry(GBDATA * gbd, GB_CHANGED val) {
         if (gbc->flags2.update_in_server) {
             gbc->flags2.update_in_server = 0;
         } else {
-            if (GB_ARRAY_FLAGS(gbc).changed >= (unsigned int)gb_son_changed)
+            // if (GB_ARRAY_FLAGS(gbc).changed >= (unsigned int)GB_SON_CHANGED)
+            if (GB_ARRAY_FLAGS(gbc).changed >= GB_SON_CHANGED)
                 return;
         }
-        if (gb_son_changed > (int)GB_ARRAY_FLAGS(gbc).changed) {
-            GB_ARRAY_FLAGS(gbc).changed = gb_son_changed;
+        // if (GB_SON_CHANGED > (int)GB_ARRAY_FLAGS(gbc).changed) {
+        if (GB_ARRAY_FLAGS(gbc).changed < GB_SON_CHANGED) {
+            GB_ARRAY_FLAGS(gbc).changed = GB_SON_CHANGED;
             GB_ARRAY_FLAGS(gbc).ever_changed = 1;
         }
         gbc = gbc_father;
@@ -72,16 +74,16 @@ void gb_touch_entry(GBDATA * gbd, GB_CHANGED val) {
 void gb_touch_header(GBCONTAINER *gbc)
 {
     gbc->flags2.header_changed = 1;
-    gb_touch_entry((GBDATA*)gbc, gb_changed);
+    gb_touch_entry((GBDATA*)gbc, GB_NORMAL_CHANGE);
 }
 
 
 void
 gb_untouch_children(GBCONTAINER * gbc)
 {
-    GBDATA     *gbd;
-    int         index, start, end;
-    GB_CHANGED  changed;
+    GBDATA    *gbd;
+    int        index, start, end;
+    GB_CHANGE  changed;
 
     struct gb_header_list_struct *header = GB_DATA_LIST_HEADER(gbc->d);
 
@@ -101,10 +103,9 @@ gb_untouch_children(GBCONTAINER * gbc)
     {
         if ((gbd = GB_HEADER_LIST_GBD(header[index]))!=NULL)
         {
-            if (    (changed = (GB_CHANGED)header[index].flags.changed) &&
-                    (changed < gb_deleted)  )
-            {
-                header[index].flags.changed = gb_not_changed;
+            changed = (GB_CHANGE)header[index].flags.changed;
+            if (changed != GB_UNCHANGED && changed < GB_DELETED) {
+                header[index].flags.changed = GB_UNCHANGED;
                 if (GB_TYPE(gbd) == GB_DB)
                 {
                     gb_untouch_children((GBCONTAINER *) gbd);
@@ -118,7 +119,7 @@ gb_untouch_children(GBCONTAINER * gbc)
 
 void gb_untouch_me(GBDATA * gbc)
 {
-    GB_DATA_LIST_HEADER(GB_FATHER(gbc)->d)[gbc->index].flags.changed = gb_not_changed;
+    GB_DATA_LIST_HEADER(GB_FATHER(gbc)->d)[gbc->index].flags.changed = GB_UNCHANGED;
     if (GB_TYPE(gbc) == GB_DB){
         gbc->flags2.header_changed = 0;
         ((GBCONTAINER *)gbc)->index_of_touched_one_son = 0;
@@ -211,7 +212,7 @@ void gb_link_entry(GBCONTAINER* father, GBDATA * gbd, long index_pos)
     /* the following code skips just-deleted index position, while searching for an unused
        index position. I'm unsure whether this works w/o problems (ralf 2004-Oct-08) */
     
-    while (GB_DATA_LIST_HEADER(father->d)[index_pos].flags.changed >= gb_deleted) {
+    while (GB_DATA_LIST_HEADER(father->d)[index_pos].flags.changed >= GB_DELETED) {
 #if defined(DEBUG)
         fprintf(stderr, "Warning: index_pos %li of father(%p) contains just-deleted entry -> using next index_pos..\n", index_pos, father);
 #endif // DEBUG
@@ -234,8 +235,8 @@ void gb_unlink_entry(GBDATA * gbd)
         struct gb_header_list_struct *hls = &(GB_DATA_LIST_HEADER(father->d)[index_pos]);
 
         SET_GB_HEADER_LIST_GBD(*hls,NULL);
-        hls->flags.key_quark = 0;
-        hls->flags.changed = gb_deleted;
+        hls->flags.key_quark    = 0;
+        hls->flags.changed      = GB_DELETED;
         hls->flags.ever_changed = 1;
         father->d.size--;
         SET_GB_FATHER(gbd,NULL);
@@ -610,7 +611,7 @@ void gb_save_extern_data_in_ts(GBDATA *gbd){
 
     GB_CREATE_EXT(gbd);
     GB_INDEX_CHECK_OUT(gbd);
-    if (gbd->ext->old || (GB_ARRAY_FLAGS(gbd).changed == gb_created)){
+    if (gbd->ext->old || (GB_ARRAY_FLAGS(gbd).changed == GB_CREATED)){
         GB_FREEDATA(gbd);
     }else{
         gbd->ext->old = gb_new_gb_transaction_save(gbd);
@@ -771,21 +772,21 @@ char *gb_abort_entry(GBDATA *gbd){
 
 int gb_abort_transaction_local_rek(GBDATA *gbd, long mode) {
     // delete created, undo changed
-    GBDATA     *gb;
-    GB_TYPES    type;
-    GB_CHANGED  change = (GB_CHANGED)GB_ARRAY_FLAGS(gbd).changed;
+    GBDATA    *gb;
+    GB_TYPES   type;
+    GB_CHANGE  change = (GB_CHANGE)GB_ARRAY_FLAGS(gbd).changed;
 
     switch (change) {
-        case gb_not_changed:
+        case GB_UNCHANGED:
             return 0;
 
-        case gb_created:
+        case GB_CREATED:
             GB_PUT_SECURITY_DELETE(gbd,0);
             gb_delete_entry(&gbd);
             return 1;
 
-        case gb_deleted:
-            GB_ARRAY_FLAGS(gbd).changed = gb_not_changed;
+        case GB_DELETED:
+            GB_ARRAY_FLAGS(gbd).changed = GB_UNCHANGED;
             // fall-through
         default:
             type = (GB_TYPES)GB_TYPE(gbd);
@@ -821,15 +822,15 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA * gbd, long mode,int *pson_creat
     GB_TYPES      type;
     GB_ERROR      error;
     gb_callback  *cb;
-    GB_CHANGED    change      = (GB_CHANGED)GB_ARRAY_FLAGS(gbd).changed;
+    GB_CHANGE     change      = (GB_CHANGE)GB_ARRAY_FLAGS(gbd).changed;
     int           send_header;
     int           son_created = 0;
 
     type = (GB_TYPES)GB_TYPE(gbd);
     switch (change) {
-        case gb_not_changed:
+        case GB_UNCHANGED:
             return 0;
-        case gb_deleted:
+        case GB_DELETED:
             GB_PUT_SECURITY_DELETE(gbd, 0);
             if (mode) {
                 if (!gbd->flags2.update_in_server) {
@@ -846,7 +847,7 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA * gbd, long mode,int *pson_creat
             }
             gb_delete_entry(&gbd);
             return 0;
-        case gb_created:
+        case GB_CREATED:
             if (mode) {
                 if (!gbd->flags2.update_in_server) {
                     if (gbd->server_id) goto gb_changed_label;
@@ -872,7 +873,7 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA * gbd, long mode,int *pson_creat
             }
             goto gb_commit_do_callbacks;
 
-        case gb_changed:
+        case GB_NORMAL_CHANGE:
             if (mode) {
                 if (!gbd->flags2.update_in_server) {
                 gb_changed_label:;
@@ -885,7 +886,9 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA * gbd, long mode,int *pson_creat
             }else{
                 _GB_CHECK_IN_UNDO_MODIFY(Main,gbd);
             }
-        default:        // means gb_son_changed + changed
+            // fall-through
+            
+        default:                                    // means GB_SON_CHANGED + GB_NORMAL_CHANGE
 
             if (type == GB_DB)
             {

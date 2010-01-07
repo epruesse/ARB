@@ -164,12 +164,12 @@ ST_sequence_ml::~ST_sequence_ml() {
     unbind_from_species(true);
 }
 
-static void st_sequence_callback(GBDATA *, int *cl, gb_call_back_type) {
+static void st_sequence_callback(GBDATA *, int *cl, GB_CB_TYPE) {
     ST_sequence_ml *seq = (ST_sequence_ml *) cl;
     seq->sequence_change();
 }
 
-static void st_sequence_del_callback(GBDATA *, int *cl, gb_call_back_type) {
+static void st_sequence_del_callback(GBDATA *, int *cl, GB_CB_TYPE) {
     ST_sequence_ml *seq = (ST_sequence_ml *) cl;
     seq->unbind_from_species(false);
 }

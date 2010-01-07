@@ -50,12 +50,12 @@ union gb_data_base_type_union {
 // --------------------------------------------------------------------------------
 
 struct gb_callback {
-    gb_callback       *next;
-    GB_CB              func;
-    gb_call_back_type  type;
-    int               *clientdata;
-    short              priority;
-    short              running;
+    gb_callback *next;
+    GB_CB        func;
+    GB_CB_TYPE   type;
+    int         *clientdata;
+    short        priority;
+    short        running;
 };
 
 // --------------------------------------------------------------------------------

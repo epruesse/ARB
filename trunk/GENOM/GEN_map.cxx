@@ -172,7 +172,7 @@ static void reinit_NDS_4_window(GEN_map_window *win) {
     win->get_graphic()->get_gen_root()->reinit_NDS();
 }
 
-static void GEN_NDS_changed(GBDATA *, int *, gb_call_back_type) {
+static void GEN_NDS_changed(GBDATA *, int *, GB_CB_TYPE) {
     GEN_make_node_text_init(GLOBAL_gb_main);
     GEN_map_manager::with_all_mapped_windows(reinit_NDS_4_window);
 

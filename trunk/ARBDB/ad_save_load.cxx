@@ -629,7 +629,7 @@ int gb_is_writeable(struct gb_header_list_struct *header, GBDATA *gbd, long vers
      * 
      * try to avoid to access gbd (to keep it swapped out)
      */
-    if (version == 2 && header->flags.changed==gb_deleted) return 1;    // save delete flag
+    if (version == 2 && header->flags.changed==GB_DELETED) return 1;    // save delete flag
     if (!gbd) return 0;
     if (diff_save) {
         if (!header->flags.ever_changed) return 0;
@@ -659,7 +659,7 @@ int gb_write_bin_sub_containers(FILE *out,GBCONTAINER *gbc,long version,long dif
     for (index = 0; index < gbc->d.nheader; index++){
         GBDATA *h_gbd;
 
-        if (header[index].flags.changed == gb_deleted_in_master){   // count deleted items in master, because of index renaming
+        if (header[index].flags.changed == GB_DELETED_IN_MASTER){   // count deleted items in master, because of index renaming
             counter ++;
             continue;
         }
@@ -667,8 +667,8 @@ int gb_write_bin_sub_containers(FILE *out,GBCONTAINER *gbc,long version,long dif
         h_gbd = GB_HEADER_LIST_GBD(header[index]);
 
         if (!gb_is_writeable(&(header[index]),h_gbd,version,diff_save)) {
-            if (version <= 1 && header[index].flags.changed == gb_deleted) {
-                header[index].flags.changed = gb_deleted_in_master; // mark deleted in master
+            if (version <= 1 && header[index].flags.changed == GB_DELETED) {
+                header[index].flags.changed = GB_DELETED_IN_MASTER; // mark deleted in master
             }
             continue;
         }
@@ -677,7 +677,7 @@ int gb_write_bin_sub_containers(FILE *out,GBCONTAINER *gbc,long version,long dif
             i = (int)gb_write_bin_rek(out,h_gbd,version,diff_save,index-counter);
             if (i) return i;
         }else{
-            if (header[index].flags.changed == gb_deleted ) {
+            if (header[index].flags.changed == GB_DELETED ) {
                 putc(0,out);
                 putc(1,out);
                 gb_put_number(index - counter,out);

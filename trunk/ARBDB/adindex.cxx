@@ -439,7 +439,7 @@ GB_ERROR g_b_undo_entry(GB_MAIN_TYPE *Main,struct g_b_undo_entry_struct *ue){
                 }
                 GB_ARRAY_FLAGS(gbd).flags = ue->flag;
                 gb_touch_header(GB_FATHER(gbd));
-                gb_touch_entry((GBDATA *)gbd,gb_created);
+                gb_touch_entry((GBDATA *)gbd, GB_CREATED);
             }
             break;
         case GB_UNDO_ENTRY_TYPE_MODIFY_ARRAY:
@@ -480,7 +480,7 @@ GB_ERROR g_b_undo_entry(GB_MAIN_TYPE *Main,struct g_b_undo_entry_struct *ue){
                         }
                     }
                 }
-                gb_touch_entry(gbd,gb_changed);
+                gb_touch_entry(gbd, GB_NORMAL_CHANGE);
             }
             break;
         default:

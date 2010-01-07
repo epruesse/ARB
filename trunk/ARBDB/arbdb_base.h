@@ -35,13 +35,13 @@ typedef bool GB_BOOL;
 const bool   GB_FALSE = false;
 const bool   GB_TRUE  = true;
 
-typedef enum gb_call_back_type {
+enum GB_CB_TYPE {
     GB_CB_NONE        = 0,
     GB_CB_DELETE      = 1,
     GB_CB_CHANGED     = 2, // element or son of element changed
     GB_CB_SON_CREATED = 4, // new son created
     GB_CB_ALL         = 7
-} GB_CB_TYPE;
+};
 
 /* --------------------------------------------------------------------------------
  * The following function handle char*'s, which either own a heap copy or are NULL.

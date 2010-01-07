@@ -262,7 +262,7 @@ static void GB_dump_internal(GBDATA *gbd, int *lines_allowed) {
     }
 
     if (father) {
-        if (GB_ARRAY_FLAGS(gbd).changed == gb_deleted) {
+        if (GB_ARRAY_FLAGS(gbd).changed == GB_DELETED) {
             content = "<can't examine - entry is deleted>";
         }
         else {

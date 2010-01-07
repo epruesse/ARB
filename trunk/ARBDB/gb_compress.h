@@ -18,11 +18,11 @@
 #define GB_COMPRESSION_TAGS_SIZE_MAX 100
 
 enum gb_compress_list_commands {
-    gb_cs_ok   = 0,
-    gb_cs_sub  = 1,
-    gb_cs_id   = 2,
-    gb_cs_end  = 3,
-    gb_cd_node = 4
+    GB_CS_OK   = 0,
+    GB_CS_SUB  = 1,
+    GB_CS_ID   = 2,
+    GB_CS_END  = 3,
+    GB_CD_NODE = 4
 };
 
 struct gb_compress_tree {
