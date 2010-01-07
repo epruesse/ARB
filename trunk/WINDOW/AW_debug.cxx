@@ -73,7 +73,6 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "MACROS/EXECUTE",                                     2);
     GBS_write_hash(dontCallHash, "NAME_SERVER_ADMIN/EDIT_NAMES_FILE",                  2);
     GBS_write_hash(dontCallHash, "arb_dist",                                           2);
-    GBS_write_hash(dontCallHash, "arb_edit",                                           2);
     GBS_write_hash(dontCallHash, "arb_pars",                                           2);
     GBS_write_hash(dontCallHash, "arb_pars_quick",                                     2);
     GBS_write_hash(dontCallHash, "arb_phyl",                                           2);

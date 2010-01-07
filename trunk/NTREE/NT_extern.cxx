@@ -1285,11 +1285,6 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             }
             awm->close_sub_menu();
 
-            awm->insert_sub_menu("Other sequence editors", "O", AWM_EXP);
-            {
-                AWMIMT("arb_edit", "ARB Editor (old)", "o", "arb_edit.hlp", AWM_EXP, (AW_CB)NT_system_cb, (AW_CL)"arb_edit &",  0);
-            }
-            awm->close_sub_menu();
             SEP________________________SEP();
 
             awm->insert_sub_menu("Align Sequences",  "S");
