@@ -44,4 +44,5 @@ WETC_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/awt.hxx
+WETC_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 WETC_main.o: $(ARBHOME)/INCLUDE/smartptr.h

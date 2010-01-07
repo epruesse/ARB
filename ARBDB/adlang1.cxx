@@ -217,7 +217,7 @@ static GB_ERROR trace_params(int argc, const GBL *argv, struct gbl_param *ppara,
                 GBS_strcat(str,para->help_text);
                 GBS_strcat(str,"\n");
             }
-            freeset(params, NULL);
+            freenull(params);
             res = GBS_strclose(str);
             err = GB_export_errorf("Unknown Parameter '%s' in command '%s'\n\tPARAMETERS:\n%s",argv[i].str,com,res);
             free(res);

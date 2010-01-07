@@ -61,7 +61,7 @@ ARB_tree_root::~ARB_tree_root() {
 void ARB_tree_root::tree_deleted_cb(GBDATA *gb_tree_del) {
     if (gb_tree == gb_tree_del) {                   // ok - it's my tree
         gb_tree = NULL;
-        freeset(tree_name, NULL);
+        freenull(tree_name);
     }
     else {
         at_assert(0); // callback for wrong tree received
@@ -89,7 +89,7 @@ GB_ERROR ARB_tree_root::loadFromDB(const char *name) {
         if (gb_tree) {
             GB_remove_callback(gb_tree, GB_CB_DELETE, tree_deleted_cbwrapper, (int*)this);
             gb_tree = NULL;
-            freeset(tree_name, NULL);
+            freenull(tree_name);
         }
 
         GBT_TREE *gbt_tree   = GBT_read_tree(gb_main, name, -sizeof(GBT_TREE));

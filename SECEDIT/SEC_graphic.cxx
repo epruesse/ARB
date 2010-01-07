@@ -687,7 +687,7 @@ GB_ERROR SEC_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
         last_saved = GB_read_clock(gb_struct); // mark as loaded
         request_update(SEC_UPDATE_RECOUNT);
         if (load_error) { // previous load error?
-            freeset(load_error, 0);
+            freenull(load_error);
             request_update(SEC_UPDATE_ZOOM_RESET);
         }
     }

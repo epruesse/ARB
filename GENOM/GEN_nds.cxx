@@ -74,7 +74,7 @@ void GEN_make_node_text_init(GBDATA *gb_main) {
             gen_nds_ms->lengths[count] = GB_read_int(GB_entry(gbz, sl));
             //          gen_nds_ms->inherit[count] = GB_read_int(GB_entry(gbz, "inherit"));
             gbe = GB_entry(gbz, "pars");
-            freeset(gen_nds_ms->parsing[count], 0);
+            freenull(gen_nds_ms->parsing[count]);
             if (gbe && GB_read_string_count(gbe)>1 ) gen_nds_ms->parsing[count] = GB_read_string(gbe);
             count++;
         }

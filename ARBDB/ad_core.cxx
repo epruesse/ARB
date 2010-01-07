@@ -736,7 +736,7 @@ void gb_free_all_keys(GB_MAIN_TYPE *Main) {
     for (index = 1; index < Main->keycnt; index++) {
         if (Main->keys[index].key){
             GBS_write_hash(Main->key_2_index_hash, Main->keys[index].key, 0);
-            freeset(Main->keys[index].key, 0);
+            freenull(Main->keys[index].key);
         }
         Main->keys[index].nref = 0;
         Main->keys[index].next_free_key = 0;

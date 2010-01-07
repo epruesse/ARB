@@ -219,7 +219,7 @@ static int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned c
             }
             {
                 AppendNA((NA_Base *)sequfilt[number],strlen((const char *)sequfilt[number]),this_elem);
-                freeset(sequfilt[number], 0);
+                freenull(sequfilt[number]);
             }
 
             this_elem->comments = strdup("no comments");

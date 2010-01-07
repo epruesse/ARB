@@ -15,6 +15,9 @@
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
+#ifndef DUPSTR_H
+#include <dupstr.h>
+#endif
 
 #define aisc_assert(cond) arb_assert(cond)
 
@@ -49,9 +52,6 @@ typedef struct hash_struct {
 } hash;
 
 // ------------------------------------------------------------
-
-#define freeset(var,str) do { typeof(var) freesetvar = (str); free(var); (var) = freesetvar; } while(0)
-inline void reassign(char *& dstvar, char *& srcvar)            { freeset(dstvar, srcvar); srcvar = NULL; }
 
 inline char *copy_string_part(const char *first, const char *last) {
     int   size = last-first+1;

@@ -73,6 +73,7 @@ EXP_interface.o: $(ARBHOME)/INCLUDE/awt.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
+EXP_interface.o: $(ARBHOME)/INCLUDE/dupstr.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 EXP_main.o: ../NTREE/nt_cb.hxx
@@ -97,6 +98,7 @@ EXP_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/awt_input_mask.hxx
+EXP_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 EXP_main.o: $(ARBHOME)/INCLUDE/ntree.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 
@@ -122,6 +124,7 @@ GEN_gene.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+GEN_gene.o: $(ARBHOME)/INCLUDE/dupstr.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 GEN_graphic.o: GEN.hxx
@@ -150,6 +153,7 @@ GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/awt.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/awt_attributes.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+GEN_graphic.o: $(ARBHOME)/INCLUDE/dupstr.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 GEN_interface.o: ../NTREE/ad_spec.hxx
@@ -177,6 +181,7 @@ GEN_interface.o: $(ARBHOME)/INCLUDE/awt.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
+GEN_interface.o: $(ARBHOME)/INCLUDE/dupstr.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/ntree.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/smartptr.h
 
@@ -214,6 +219,7 @@ GEN_map.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/awt.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/awt_input_mask.hxx
+GEN_map.o: $(ARBHOME)/INCLUDE/dupstr.h
 GEN_map.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 GEN_nds.o: GEN_interface.hxx
@@ -236,6 +242,7 @@ GEN_nds.o: $(ARBHOME)/INCLUDE/awt.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
+GEN_nds.o: $(ARBHOME)/INCLUDE/dupstr.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 GEN_translations.o: GEN.hxx
@@ -259,5 +266,6 @@ GEN_translations.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 GEN_translations.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_translations.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GEN_translations.o: $(ARBHOME)/INCLUDE/awt.hxx
+GEN_translations.o: $(ARBHOME)/INCLUDE/dupstr.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/smartptr.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/Translate.hxx

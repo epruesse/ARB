@@ -696,8 +696,8 @@ BOOL LoadEcoliSequence(struct PTPanGlobal *pg)
   free(defaultref);
 
   /* free memory if previously allocated */
-  freeset(pg->pg_EcoliSeq, NULL);
-  freeset(pg->pg_EcoliBaseTable, NULL);
+  freenull(pg->pg_EcoliSeq);
+  freenull(pg->pg_EcoliBaseTable);
 
   /* prepare ecoli sequence */
   if(gb_extdata)
@@ -786,7 +786,7 @@ BOOL CacheSpeciesUnload(struct CacheHandler *, struct PTPanSpecies *ps)
   if(ps->ps_SeqData)
   {
     /* load alignment data */
-    freeset(ps->ps_SeqData, NULL);
+    freenull(ps->ps_SeqData);
     return(TRUE);
   }
   return(FALSE);
@@ -931,7 +931,7 @@ BOOL LoadSpecies(struct PTPanGlobal *pg)
 #endif
 
     ps->ps_RawDataSize = CompressSequenceWithDotsAndHyphens(pg, ps);
-    freeset(ps->ps_SeqData, NULL);
+    freenull(ps->ps_SeqData);
     if (ps->ps_RawDataSize < 0)                                 // TODO: problem, ps_RawDataSize is unsigned...
     {
         printf("%s is corrupt, ignoring!\n", ps->ps_Name);
@@ -1068,8 +1068,8 @@ BOOL LoadIndexHeader(struct PTPanGlobal *pg)
 
   // read Ecoli Sequence
   /* free memory if previously allocated */
-  freeset(pg->pg_EcoliSeq, NULL);
-  freeset(pg->pg_EcoliBaseTable, NULL);
+  freenull(pg->pg_EcoliSeq);
+  freenull(pg->pg_EcoliBaseTable);
 
   fread(&pg->pg_EcoliSeqSize, sizeof(pg->pg_EcoliSeqSize), 1, fh);
   if (pg->pg_EcoliSeqSize > 0)

@@ -318,8 +318,8 @@ void AW_window::unset_at_commands( void ) {
     _at->to_position_exists    = false;
     _at->highlight             = false;
 
-    freeset(_at->helptext_for_next_button, 0);
-    freeset(_at->label_for_inputfield, 0);
+    freenull(_at->helptext_for_next_button);
+    freenull(_at->label_for_inputfield);
     
     _at->background_color = 0;
 }

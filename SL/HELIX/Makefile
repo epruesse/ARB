@@ -46,4 +46,5 @@ BI_helix.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 BI_helix.o: $(ARBHOME)/INCLUDE/arbdbt.h
 BI_helix.o: $(ARBHOME)/INCLUDE/arbtools.h
 BI_helix.o: $(ARBHOME)/INCLUDE/attributes.h
+BI_helix.o: $(ARBHOME)/INCLUDE/dupstr.h
 BI_helix.o: $(ARBHOME)/INCLUDE/smartptr.h

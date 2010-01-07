@@ -257,7 +257,7 @@ static int maxCompressionSteps(CompressionTree *node) {
     int right = maxCompressionSteps(node->rightson);
 
 #if defined(SAVE_COMPRESSION_TREE_TO_DB)
-    freeset(node->name, 0);
+    freenull(node->name);
     if (node->index2 != -1) {
         node->name = GBS_global_string_copy("master_%03i", node->index2);
     }

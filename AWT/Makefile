@@ -68,6 +68,7 @@ AWT_advice.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_advice.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_advice.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_advice.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AWT_advice.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_advice.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AWT_asciiprint.o: awt.hxx
@@ -87,6 +88,7 @@ AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AWT_asciiprint.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AWT_attributes.o: awt_attributes.hxx
@@ -100,6 +102,7 @@ AWT_attributes.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AWT_attributes.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+AWT_attributes.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AWT_canio.o: awt.hxx
@@ -119,6 +122,7 @@ AWT_canio.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AWT_canio.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AWT_canvas.o: awt.hxx
@@ -138,6 +142,7 @@ AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AWT_canvas.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AWT_changekey.o: awt.hxx
@@ -158,6 +163,7 @@ AWT_changekey.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_changekey.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_changekey.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_changekey.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AWT_changekey.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_changekey.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AWT_config_manager.o: awt.hxx
@@ -175,6 +181,7 @@ AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AWT_config_manager.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AWT_db_browser.o: awt.hxx
@@ -199,6 +206,7 @@ AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/downcast.h
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/inline.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/smartptr.h
 
@@ -220,6 +228,7 @@ AWT_file_selection.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_file_selection.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_file_selection.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_file_selection.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AWT_file_selection.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_file_selection.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AWT_hotkeys.o: awt_hotkeys.hxx
@@ -244,6 +253,7 @@ AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AWT_input_mask.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AWT_item_sel_list.o: awt.hxx
@@ -265,6 +275,7 @@ AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AWT_iupac.o: awt_iupac.hxx
@@ -276,6 +287,7 @@ AWT_iupac.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_iupac.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_iupac.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_iupac.o: $(ARBHOME)/INCLUDE/attributes.h
+AWT_iupac.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_iupac.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AWT_macro.o: awt.hxx
@@ -294,6 +306,7 @@ AWT_macro.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_macro.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_macro.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_macro.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AWT_macro.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AWT_map_key.o: awt_map_key.hxx
@@ -308,6 +321,7 @@ AWT_map_key.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_map_key.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_map_key.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_map_key.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AWT_map_key.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AWT_nds.o: awt.hxx
@@ -330,6 +344,7 @@ AWT_nds.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_nds.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_nds.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_nds.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AWT_nds.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_nds.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AWT_preset.o: aw_def.hxx
@@ -353,6 +368,7 @@ AWT_preset.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_preset.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 AWT_preset.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_preset.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AWT_preset.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_preset.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AWT_query_and_functions.o: awt.hxx
@@ -380,6 +396,7 @@ AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/GEN.hxx
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/smartptr.h
 
@@ -405,6 +422,7 @@ AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AWT_seq_colors.o: awt.hxx
@@ -424,6 +442,7 @@ AWT_seq_colors.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AWT_seq_colors.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AWT_tables.o: awt.hxx
@@ -446,6 +465,7 @@ AWT_tables.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_tables.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_tables.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_tables.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AWT_tables.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AWT_www.o: awt.hxx
@@ -467,4 +487,5 @@ AWT_www.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AWT_www.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_www.o: $(ARBHOME)/INCLUDE/smartptr.h

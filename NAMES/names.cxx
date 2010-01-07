@@ -648,7 +648,7 @@ extern "C" aisc_string get_short(AN_local *locs)
 {
     static char *shrt = 0;
 
-    freeset(shrt, 0);
+    freenull(shrt);
 
     NameInformation  info(locs);
     AN_shorts       *an_shorts = lookup_an_shorts(aisc_main, info.get_id());

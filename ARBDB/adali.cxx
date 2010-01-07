@@ -154,7 +154,7 @@ static char *gbt_nonexisting_alignment(GBDATA *gbMain) {
 
     for (counter = 1; !ali_other; ++counter) {
         ali_other = GBS_global_string_copy("ali_x%i", counter);
-        if (GBT_get_alignment(gbMain, ali_other) != 0) freeset(ali_other, 0); // exists -> continue
+        if (GBT_get_alignment(gbMain, ali_other) != 0) freenull(ali_other); // exists -> continue
     }
 
     return ali_other;
@@ -809,7 +809,7 @@ static void init_gpp(int parts) {
         gpp->offset[(int)'-'] = -1;
     }
     else {
-        if (parts>gpp->parts) freeset(gpp->certain, 0);
+        if (parts>gpp->parts) freenull(gpp->certain);
     }
 
     if (!gpp->certain) {

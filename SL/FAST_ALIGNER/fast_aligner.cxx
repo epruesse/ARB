@@ -1513,7 +1513,7 @@ static ARB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
 
         while (next_relatives) {
             next_relatives--;
-            freeset(nearestRelative[next_relatives], 0);
+            freenull(nearestRelative[next_relatives]);
         }
 
         {
@@ -1664,7 +1664,7 @@ static ARB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
                 }
 
                 // delete superfluous relatives
-                for (; i<next_relatives; ++i) freeset(nearestRelative[i], 0);
+                for (; i<next_relatives; ++i) freenull(nearestRelative[i]);
 
                 if (next_relatives>relSearch.maxRelatives) {
                     next_relatives = relSearch.maxRelatives;
@@ -1795,7 +1795,7 @@ static ARB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
 
     delete toAlignSequence;
 
-    for (i=0; i<next_relatives; i++) freeset(nearestRelative[i], 0);
+    for (i=0; i<next_relatives; i++) freenull(nearestRelative[i]);
     delete [] nearestRelative;
 
     return error;

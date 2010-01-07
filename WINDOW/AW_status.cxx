@@ -750,7 +750,7 @@ void aw_clear_message_cb(AW_window *aww)
 {
     int i;
     AW_root *awr = aww->get_root();
-    for (i = 0; i< AW_MESSAGE_LINES; i++) freeset(aw_stg.lines[i], 0);
+    for (i = 0; i< AW_MESSAGE_LINES; i++) freenull(aw_stg.lines[i]);
     awr->awar(AWAR_ERROR_MESSAGES)->write_string("" );
 }
 
@@ -1752,7 +1752,7 @@ static char *get_local_help_url(AW_root *awr) {
             strcpy(result+result_len-5, ".html");
         }
         else {
-            freeset(result, 0);
+            freenull(result);
             GB_export_error("Can't browse that file type.");
         }
     }
@@ -1804,7 +1804,7 @@ static char *aw_ref_to_title(char *ref) {
 
     if (file) {
         result = GBS_string_eval(file,"*\nTITLE*\n*=*2:\t=",0);
-        if (strcmp(file, result)==0) freeset(result, 0);
+        if (strcmp(file, result)==0) freenull(result);
         free(file);
     }
 

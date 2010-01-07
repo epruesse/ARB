@@ -109,18 +109,6 @@ NOT4PERL void *GB_calloc(unsigned int nelem, unsigned int elsize)
     return mem;
 }
 
-#if defined(DEVEL_RALF)
-#warning GB_strdup is obsolete now
-// see also comments about GB_strdup in arbdb_base.h
-#endif // DEVEL_RALF
-
-char *GB_strdup(const char *p) {
-    /* does strdup(), but working with NULL
-     * (Note: use nulldup() instead!)
-     */
-    return p ? strdup(p) : NULL;
-}
-
 char *GB_strduplen(const char *p, unsigned len) {
     // fast replacement for strdup, if len is known
     if (p) {

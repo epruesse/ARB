@@ -166,7 +166,7 @@ GB_ERROR GB_await_error() {
 }
 
 void GB_clear_error() {         /* clears the error buffer */
-    freeset(GB_error_buffer, 0);
+    freenull(GB_error_buffer);
 }
 
 #if defined(DEVEL_RALF)

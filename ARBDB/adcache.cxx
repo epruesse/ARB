@@ -39,7 +39,7 @@ char *gb_read_cache(GBDATA *gbd) {
     cs->entries[p].next = n;
     // check validity
     if (GB_GET_EXT_UPDATE_DATE(gbd) > cs->entries[i].clock) {
-        freeset(cs->entries[i].data, NULL);
+        freenull(cs->entries[i].data);
         cs->sum_data_size -= cs->entries[i].sizeof_data;
 
         gbd->cache_index = 0;
@@ -74,7 +74,7 @@ void *gb_free_cache(GB_MAIN_TYPE *Main, GBDATA *gbd) {
     cs->entries[p].next = n;
 
     // free cache
-    freeset(cs->entries[i].data, NULL);
+    freenull(cs->entries[i].data);
     cs->sum_data_size -= cs->entries[i].sizeof_data;
 
     gbd->cache_index = 0;

@@ -83,6 +83,7 @@ DBwriter.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 DBwriter.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 DBwriter.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DBwriter.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+DBwriter.o: $(ARBHOME)/INCLUDE/dupstr.h
 DBwriter.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 DBwriter.o: $(ARBHOME)/INCLUDE/GEN.hxx
 DBwriter.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -97,6 +98,7 @@ Feature.o: $(ARBHOME)/INCLUDE/arb_assert.h
 Feature.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 Feature.o: $(ARBHOME)/INCLUDE/arbtools.h
 Feature.o: $(ARBHOME)/INCLUDE/attributes.h
+Feature.o: $(ARBHOME)/INCLUDE/dupstr.h
 Feature.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 GenomeImport.o: DBwriter.h
@@ -121,6 +123,7 @@ GenomeImport.o: $(ARBHOME)/INCLUDE/attributes.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 GenomeImport.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 GenomeImport.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+GenomeImport.o: $(ARBHOME)/INCLUDE/dupstr.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/smartptr.h
 
@@ -143,6 +146,7 @@ Importer.o: $(ARBHOME)/INCLUDE/arbdb.h
 Importer.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 Importer.o: $(ARBHOME)/INCLUDE/arbtools.h
 Importer.o: $(ARBHOME)/INCLUDE/attributes.h
+Importer.o: $(ARBHOME)/INCLUDE/dupstr.h
 Importer.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 Importer.o: $(ARBHOME)/INCLUDE/smartptr.h
 
@@ -159,6 +163,7 @@ Location.o: $(ARBHOME)/INCLUDE/arbdb.h
 Location.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 Location.o: $(ARBHOME)/INCLUDE/arbtools.h
 Location.o: $(ARBHOME)/INCLUDE/attributes.h
+Location.o: $(ARBHOME)/INCLUDE/dupstr.h
 Location.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 MetaInfo.o: defs.h
@@ -170,6 +175,7 @@ MetaInfo.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MetaInfo.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MetaInfo.o: $(ARBHOME)/INCLUDE/arbtools.h
 MetaInfo.o: $(ARBHOME)/INCLUDE/attributes.h
+MetaInfo.o: $(ARBHOME)/INCLUDE/dupstr.h
 MetaInfo.o: $(ARBHOME)/INCLUDE/RegExpr.hxx
 
 SequenceBuffer.o: defs.h
@@ -180,6 +186,7 @@ SequenceBuffer.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SequenceBuffer.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 SequenceBuffer.o: $(ARBHOME)/INCLUDE/arbtools.h
 SequenceBuffer.o: $(ARBHOME)/INCLUDE/attributes.h
+SequenceBuffer.o: $(ARBHOME)/INCLUDE/dupstr.h
 SequenceBuffer.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 tools.o: defs.h
@@ -190,3 +197,4 @@ tools.o: $(ARBHOME)/INCLUDE/arb_assert.h
 tools.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 tools.o: $(ARBHOME)/INCLUDE/arbtools.h
 tools.o: $(ARBHOME)/INCLUDE/attributes.h
+tools.o: $(ARBHOME)/INCLUDE/dupstr.h

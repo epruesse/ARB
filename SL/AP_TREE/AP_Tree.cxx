@@ -1201,7 +1201,7 @@ ARB_edge AP_tree_root::find_innermost_edge() {
 // ----------------------------------------
 
 void AP_tree::remove_bootstrap() {
-    freeset(remark_branch, NULL);
+    freenull(remark_branch);
     if (!is_leaf) {
         get_leftson()->remove_bootstrap();
         get_rightson()->remove_bootstrap();
@@ -1242,7 +1242,7 @@ void AP_tree::bootstrap2branchlen() { // copy bootstraps to branchlengths
 }
 
 void AP_tree::branchlen2bootstrap() {               // copy branchlengths to bootstraps
-    freeset(remark_branch, NULL);
+    freenull(remark_branch);
     if (!is_leaf) {
         if (!is_root_node()) {
             remark_branch = GBS_global_string_copy("%i%%", int(get_branchlength()*100.0 + .5));

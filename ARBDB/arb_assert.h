@@ -182,19 +182,17 @@
 // ------------------------------------------------------------
 
 #ifdef DEVEL_RELEASE
-#ifdef ASSERTION_USED
-#error Assertions enabled in release
-#endif
+# ifdef ASSERTION_USED
+#  error Assertions enabled in release
+# endif
 #endif
 
 // ------------------------------------------------------------
 
 #if !defined(SIMPLE_ARB_ASSERT)
-#ifndef ADLOCAL_H
-#ifndef ARBDB_BASE_H
-#include <arbdb_base.h>
-#endif
-#endif
+# ifndef ARBDB_BASE_H
+#  include <arbdb_base.h>
+# endif
 #endif // SIMPLE_ARB_ASSERT
 
 #else

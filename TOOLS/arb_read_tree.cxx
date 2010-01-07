@@ -8,7 +8,7 @@
 
 void add_bootstrap(GBT_TREE *node, double hundred) {
     if (node->is_leaf) {
-        freeset(node->remark_branch, 0);
+        freenull(node->remark_branch);
         return;
     }
 

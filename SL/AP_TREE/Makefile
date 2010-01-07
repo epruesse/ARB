@@ -54,4 +54,5 @@ AP_Tree.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_Tree.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_Tree.o: $(ARBHOME)/INCLUDE/awt_attributes.hxx
 AP_Tree.o: $(ARBHOME)/INCLUDE/downcast.h
+AP_Tree.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/smartptr.h

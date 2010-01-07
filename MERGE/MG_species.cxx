@@ -990,7 +990,7 @@ GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
                 if (d != s) D_alignment_names[s] = 0;
                 ++d;
             }
-            else freeset(D_alignment_names[s], 0);
+            else freenull(D_alignment_names[s]);
             free(type2);
         }
 
@@ -1082,7 +1082,7 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
 
     GBDATA *M_species;
     GBDATA *D_species;
-    freeset(m_name, 0);
+    freenull(m_name);
 
     {
         long M_species_count = GB_number_of_subentries(M_species_data);

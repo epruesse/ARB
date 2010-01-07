@@ -358,7 +358,7 @@ GB_ERROR export_sequence_data::detectVerticalGaps() {
 
 const char *export_sequence_data::get_export_sequence(GBDATA *gb_species, size_t& seq_len, GB_ERROR& err) {
     if (gb_species != last_species_read) {
-        freeset(error, 0);
+        freenull(error);
 
         // read + filter a new species
         GB_ERROR             curr_error;
@@ -626,7 +626,7 @@ static GB_ERROR AWTI_export_format(AW_root *aw_root, const char *formname, const
     if (error) {
         if (*resulting_outname) {
             GB_unlink_or_warn(*resulting_outname, NULL);
-            freeset(*resulting_outname, 0);
+            freenull(*resulting_outname);
         }
     }
 

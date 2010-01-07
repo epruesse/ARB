@@ -51,6 +51,7 @@ SEC_abspos.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_abspos.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 SEC_abspos.o: $(ARBHOME)/INCLUDE/arbtools.h
 SEC_abspos.o: $(ARBHOME)/INCLUDE/attributes.h
+SEC_abspos.o: $(ARBHOME)/INCLUDE/dupstr.h
 
 SEC_bonddef.o: SEC_bonddef.hxx
 SEC_bonddef.o: SEC_defs.hxx
@@ -66,6 +67,7 @@ SEC_bonddef.o: $(ARBHOME)/INCLUDE/arbtools.h
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/attributes.h
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+SEC_bonddef.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 SEC_db.o: SEC_abspos.hxx
@@ -97,6 +99,7 @@ SEC_db.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+SEC_db.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_db.o: $(ARBHOME)/INCLUDE/ed4_extern.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/smartptr.h
 
@@ -130,6 +133,7 @@ SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+SEC_graphic.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/ed4_extern.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/smartptr.h
 
@@ -152,6 +156,7 @@ SEC_helix.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+SEC_helix.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 SEC_io.o: SEC_abspos.hxx
@@ -173,6 +178,7 @@ SEC_io.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+SEC_io.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_io.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 SEC_layout.o: SEC_abspos.hxx
@@ -194,6 +200,7 @@ SEC_layout.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 SEC_layout.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_layout.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SEC_layout.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+SEC_layout.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_layout.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 SEC_main.o: SEC_abspos.hxx
@@ -227,6 +234,7 @@ SEC_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+SEC_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_main.o: $(ARBHOME)/INCLUDE/ed4_extern.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 SEC_main.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -259,6 +267,7 @@ SEC_paint.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/awt_iupac.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+SEC_paint.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/ed4_extern.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/smartptr.h
 
@@ -281,6 +290,7 @@ SEC_read.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 SEC_read.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_read.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SEC_read.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+SEC_read.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_read.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 SEC_split.o: SEC_abspos.hxx
@@ -303,6 +313,7 @@ SEC_split.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 SEC_split.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_split.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SEC_split.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+SEC_split.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_split.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 SEC_structure.o: SEC_abspos.hxx
@@ -324,6 +335,7 @@ SEC_structure.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 SEC_structure.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_structure.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SEC_structure.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+SEC_structure.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_structure.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 SEC_toggle.o: SEC_defs.hxx
@@ -345,4 +357,5 @@ SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+SEC_toggle.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/smartptr.h

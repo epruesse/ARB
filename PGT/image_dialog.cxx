@@ -1625,7 +1625,7 @@ void imageDialog::drawSpots()
     m_numSpots         = 0;
     m_numMarkedSpots   = 0;
     m_numSelectedSpots = 0;
-    freeset(m_selectedSpotName, NULL);
+    freenull(m_selectedSpotName);
 
     // ITERATE THROUGH THE SPOTS
     for(spot_it= m_spotList.begin(); spot_it != m_spotList.end(); ++spot_it)

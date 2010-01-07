@@ -88,6 +88,7 @@ arb_2_ascii.o: $(ARBHOME)/INCLUDE/arbdb.h
 arb_2_ascii.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 arb_2_ascii.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_2_ascii.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_2_ascii.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_2_ascii.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 arb_2_bin.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -100,6 +101,7 @@ arb_2_bin.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 arb_2_bin.o: $(ARBHOME)/INCLUDE/arbdbt.h
 arb_2_bin.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_2_bin.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_2_bin.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_2_bin.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 arb_count_chars.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -112,6 +114,7 @@ arb_count_chars.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 arb_count_chars.o: $(ARBHOME)/INCLUDE/arbdbt.h
 arb_count_chars.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_count_chars.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_count_chars.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_count_chars.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 arb_dnarates.o: DNAml_rates_1_0.h
@@ -126,6 +129,7 @@ arb_dnarates.o: $(ARBHOME)/INCLUDE/arbdbt.h
 arb_dnarates.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_dnarates.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_dnarates.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
+arb_dnarates.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_dnarates.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 arb_export_rates.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -139,6 +143,7 @@ arb_export_rates.o: $(ARBHOME)/INCLUDE/arbdbt.h
 arb_export_rates.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_export_rates.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_export_rates.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
+arb_export_rates.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_export_rates.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 arb_export_tree.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -151,6 +156,7 @@ arb_export_tree.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/arbdbt.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_export_tree.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/TreeWrite.h
 
@@ -165,6 +171,7 @@ arb_gene_probe.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 arb_gene_probe.o: $(ARBHOME)/INCLUDE/arbdbt.h
 arb_gene_probe.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_gene_probe.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_gene_probe.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_gene_probe.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 arb_message.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -177,6 +184,7 @@ arb_message.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 arb_message.o: $(ARBHOME)/INCLUDE/arbdbt.h
 arb_message.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_message.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_message.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_message.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 arb_notify.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -189,6 +197,7 @@ arb_notify.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 arb_notify.o: $(ARBHOME)/INCLUDE/arbdbt.h
 arb_notify.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_notify.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_notify.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_notify.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 arb_perf_test.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -201,6 +210,7 @@ arb_perf_test.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 arb_perf_test.o: $(ARBHOME)/INCLUDE/arbdbt.h
 arb_perf_test.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_perf_test.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_perf_test.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_perf_test.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 arb_primer.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -213,6 +223,7 @@ arb_primer.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 arb_primer.o: $(ARBHOME)/INCLUDE/arbdbt.h
 arb_primer.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_primer.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_primer.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_primer.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 arb_probe.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -224,6 +235,7 @@ arb_probe.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 arb_probe.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_probe.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_probe.o: $(ARBHOME)/INCLUDE/client.h
+arb_probe.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_probe.o: $(ARBHOME)/INCLUDE/PT_com.h
 arb_probe.o: $(ARBHOME)/INCLUDE/servercntrl.h
 arb_probe.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -236,6 +248,7 @@ arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arbdb.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/smartptr.h
 
@@ -249,6 +262,7 @@ arb_read_tree.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/arbdbt.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_read_tree.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/TreeRead.h
 
@@ -260,6 +274,7 @@ arb_replace.o: $(ARBHOME)/INCLUDE/arbdb.h
 arb_replace.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 arb_replace.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_replace.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_replace.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_replace.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 arb_swap_rnastr.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -272,6 +287,7 @@ arb_swap_rnastr.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 arb_swap_rnastr.o: $(ARBHOME)/INCLUDE/arbdbt.h
 arb_swap_rnastr.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_swap_rnastr.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_swap_rnastr.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_swap_rnastr.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 arb_test.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -282,4 +298,5 @@ arb_test.o: $(ARBHOME)/INCLUDE/arbdb.h
 arb_test.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 arb_test.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_test.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_test.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_test.o: $(ARBHOME)/INCLUDE/smartptr.h

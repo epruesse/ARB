@@ -16,8 +16,8 @@
 static char   *insDelBuffer = 0;
 static size_t  insDelBuffer_size;
 
-static void free_insDelBuffer() {
-    freeset(insDelBuffer, 0);
+inline void free_insDelBuffer() {
+    freenull(insDelBuffer);
 }
 
 static const char *gbt_insert_delete(const char *source, long srclen, long destlen, long *newlenPtr, long pos, long nchar, long mod, char insert_what, char insert_tail, int extraByte) {
@@ -64,7 +64,7 @@ static const char *gbt_insert_delete(const char *source, long srclen, long destl
         else {
             size_t neededSpace = newlen+extraByte;
             
-            if (insDelBuffer && insDelBuffer_size<neededSpace) freeset(insDelBuffer, 0);
+            if (insDelBuffer && insDelBuffer_size<neededSpace) freenull(insDelBuffer);
             if (!insDelBuffer) {
                 insDelBuffer_size = neededSpace;
                 insDelBuffer      = (char*)malloc(neededSpace);
@@ -343,7 +343,7 @@ static GB_ERROR GBT_check_lengths(GBDATA *Main, const char *alignment_name) {
             if (!error) error = gbt_insert_character(gb_species_data,  "species",  IDT_SPECIES, &params);
             if (!error) error = gbt_insert_character_secstructs(gb_secstructs, &params);
 
-            freeset(params.ali_name, 0);
+            freenull(params.ali_name);
         }
     }
     free_insDelBuffer();
