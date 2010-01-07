@@ -328,7 +328,7 @@ static void GB_dump_internal(GBDATA *gbd, int *lines_allowed) {
         free(toFree);
     }
 
-    if (type==GB_DB && showChildren == true) {
+    if (type==GB_DB && showChildren) {
         GBCONTAINER *gbc = (GBCONTAINER*)gbd;
         GBDATA *gbp;
 

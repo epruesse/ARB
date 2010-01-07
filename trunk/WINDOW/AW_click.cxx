@@ -107,7 +107,7 @@ int AW_device_click::line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW
             }
         }
 
-        if (best_line == true) {
+        if (best_line) {
             aw_assert(x0 == x0); aw_assert(x1 == x1); // not NAN
             aw_assert(y0 == y0); aw_assert(y1 == y1);
 

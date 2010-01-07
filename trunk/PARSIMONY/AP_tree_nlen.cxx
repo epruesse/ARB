@@ -65,7 +65,7 @@ void AP_tree_nlen::copy(AP_tree_nlen *tree)
         this->name = NULL;
     }
 
-    if (is_leaf == true) {
+    if (is_leaf) {
         ap_assert(tree->get_seq()); /* oops - AP_tree_nlen expects to have sequences at leafs!
                                      * did you forget to remove_leafs() ? */
 
@@ -957,14 +957,9 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
     cout << "\nSchwellwert  " << schwellwert << "\n";
     cout.flush();
 #endif
-    if (rek_deep >= rek_deep_max) return;
-    if (is_leaf == true)          return;
-    if (*abort_flag == true)   return;
+    if (rek_deep >= rek_deep_max || is_leaf || *abort_flag)   return;
 
-    //
-    //Referenzzeiger auf die vier Kanten und
-    // zwei swapmoeglichkeiten initialisieren
-    //
+    // Referenzzeiger auf die vier Kanten und zwei swapmoeglichkeiten initialisieren
     AP_tree *this_brother = this->get_brother();
     if (rek_deep == 0) {
         for (i = 0; i < 8; i+=2) {
@@ -985,7 +980,7 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
             pars_refpntr[6] = pars_refpntr[7] = static_cast<AP_tree_nlen *>(this_brother);
         } else {
             //an der Wurzel nehme linken und rechten Sohns des Bruders
-            if (this->get_brother()->is_leaf == false) {
+            if (!get_brother()->is_leaf) {
                 pars_refpntr[4] = pars_refpntr[5] = static_cast<AP_tree_nlen *>(this_brother->leftson);
                 pars_refpntr[6] = pars_refpntr[7] = static_cast<AP_tree_nlen *>(this_brother->rightson);
             } else {
@@ -1128,7 +1123,7 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
         }
         pars_refpntr[pars_ref[i]]->kernighan = AP_NONE;
         //Demarkieren
-        if (*abort_flag == true) {
+        if (*abort_flag) {
             cout << "   parsimony:  " << pars_best << "took: " << i <<"\n";
             for (i=0;i<visited_subtrees;i++)  cout << "  " << pars[i];
             cout << "\n";
@@ -1143,7 +1138,7 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
             ap_main->pop();
         }
     }
-    if (*abort_flag == true) {       // pop/clear wegen set_root
+    if (*abort_flag) {       // pop/clear wegen set_root
         ap_main->clear();
     } else {
         ap_main->pop();
@@ -1163,14 +1158,14 @@ Section Crossover List (Funktionen die die crossover liste aufbauen):
 #if 0
 
 void addToList(AP_CO_LIST *list,int *number,AP_tree_nlen *pntr,CO_LISTEL& wert0,CO_LISTEL& wert1) {
-    if (wert0.isLeaf == true) {
+    if (wert0.isLeaf) {
         list[*number].leaf0 = wert0.refLeaf;
         list[*number].node0 = -10;
     } else {
         list[*number].leaf0 = 0;
         list[*number].node0 = wert0.refNode;
     }
-    if (wert1.isLeaf == true) {
+    if (wert1.isLeaf) {
         list[*number].leaf1 = wert1.refLeaf;
         list[*number].node1 = -1;
     } else {
@@ -1182,15 +1177,15 @@ void addToList(AP_CO_LIST *list,int *number,AP_tree_nlen *pntr,CO_LISTEL& wert0,
 }
 
 void AP_tree_nlen::createListRekUp(AP_CO_LIST *list,int *cn) {
-    if (this->is_leaf == true) {
+    if (is_leaf) {
         refUp.init    = true;
         refUp.isLeaf  = true;
         refUp.refLeaf = gb_node;
         return;
     }
-    if (refUp.init == false) {
-        if (leftson->refUp.init == false) leftson->createListRekUp(list,cn);
-        if (rightson->refUp.init == false) rightson->createListRekUp(list,cn);
+    if (!refUp.init) {
+        if (!leftson->refUp.init) leftson->createListRekUp(list,cn);
+        if (!rightson->refUp.init) rightson->createListRekUp(list,cn);
 
         refUp.init    = true;
         refUp.isLeaf  = false;
@@ -1223,30 +1218,30 @@ void AP_tree_nlen::createListRekUp(AP_CO_LIST *list,int *cn) {
 void AP_tree_nlen::createListRekSide(AP_CO_LIST *list,int *cn) {
     //
     // has to be called after createListRekUp !!
-    if (refRight.init == false) {
+    if (!refRight.init) {
         refRight.init    = true;
         refRight.isLeaf  = false;
         refRight.refNode = *cn;
         (*cn)++;
 
         if (father->leftson == this) {
-            if (father->refLeft.init == false) father->createListRekSide(list,cn);
+            if (!father->refLeft.init) father->createListRekSide(list,cn);
             addToList(list,cn,this,leftson->refUp,father->refLeft);
         } else {
-            if (father->refRight.init ==  false) father->createListRekSide(list,cn);
+            if (!father->refRight.init) father->createListRekSide(list,cn);
             addToList(list,cn,this,leftson->refUp,father->refRight);
         }
     }
-    if (refLeft.init == false) {
+    if (!refLeft.init) {
         refLeft.init    = true;
         refLeft.isLeaf  = false;
         refLeft.refNode = *cn;
         (*cn)++;
         if (father->leftson == this) {
-            if (father->refLeft.init == false) father->createListRekSide(list,cn);
+            if (!father->refLeft.init) father->createListRekSide(list,cn);
             addToList(list,cn,this,rightson->refUp,father->refLeft);
         } else {
-            if (father->refRight.init == false) father->createListRekSide(list,cn);
+            if (!father->refRight.init) father->createListRekSide(list,cn);
             addToList(list,cn,this,rightson->refUp,father->refRight);
         }
     }

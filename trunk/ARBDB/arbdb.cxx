@@ -270,10 +270,6 @@ GB_BUFFER GB_give_other_buffer(GB_CBUFFER buffer, long size) {
                     GB local data
 ********************************************************************************************/
 
-#if defined(DEVEL_RALF)
-#warning gb_cs_ok etc. -> uppercase! 
-#endif // DEVEL_RALF
-
 unsigned char GB_BIT_compress_data[] = {
     0x1d, GB_CS_OK,  0, 0,
     0x04, GB_CS_OK,  0, 1,
@@ -344,7 +340,7 @@ GB_ERROR gb_unfold(GBCONTAINER *gbd, long deep, int index_pos)
     if (index_pos> gbd->d.nheader) gb_create_header_array(gbd,index_pos + 1);
     if (index_pos >= 0  && GB_HEADER_LIST_GBD(header[index_pos])) return 0;
 
-    if (GBCONTAINER_MAIN(gbd)->local_mode == true) {
+    if (GBCONTAINER_MAIN(gbd)->local_mode) {
         GB_internal_error("Cannot unfold local_mode database");
         return 0;
     }
@@ -1569,7 +1565,7 @@ GB_ERROR GB_copy_with_protection(GBDATA *dest, GBDATA *source, bool copy_all_pro
     gb_touch_entry(dest, GB_NORMAL_CHANGE);
 
     dest->flags.security_read = source->flags.security_read;
-    if (copy_all_protections == true) {
+    if (copy_all_protections) {
         dest->flags.security_write  = source->flags.security_write;
         dest->flags.security_delete = source->flags.security_delete;
     }

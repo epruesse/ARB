@@ -313,7 +313,7 @@ void primer_design_event_init( AW_window *aww, AW_CL cl_from_gene) {
             if (!genPos) {
                 error = GB_await_error();
             }
-            else if (genPos->joinable == false) {
+            else if (!genPos->joinable) {
                 error = GBS_global_string("Gene '%s' is not joinable", selected_gene);
             }
         }

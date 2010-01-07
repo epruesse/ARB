@@ -36,7 +36,7 @@ int AW_repeated_question::get_answer(const char *question, const char *buttons, 
         assert_or_exit(strcmp(buttons_used, buttons) == 0);
     }
 
-    if (answer == -1 || dont_ask_again == false) {
+    if (answer == -1 || !dont_ask_again) {
 
         char   *all             = GBS_global_string_copy(" (%s)", to_all);
         int     all_len         = strlen(all);

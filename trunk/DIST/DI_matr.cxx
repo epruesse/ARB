@@ -1263,7 +1263,7 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
         delete DI_MATRIX::ROOT;
         DI_MATRIX::ROOT = 0;
 
-        error = di_calculate_matrix(aww, weighted_filter, bootstrap_flag, bootstrap_flag ? false : true);
+        error = di_calculate_matrix(aww, weighted_filter, bootstrap_flag, !bootstrap_flag);
         if (error && strcmp(error,"Aborted") == 0) {
             error = 0;          // clear error (otherwise no tree will be read below)
             break;              // end of bootstrap

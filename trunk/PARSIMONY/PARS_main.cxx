@@ -1082,7 +1082,7 @@ static void NT_recursiveNNI(AW_window *,AWT_canvas *ntw)
     AP_FLOAT lastPars = -1.0;
 
     aw_status(GBS_global_string("Old parsimony: %f", thisPars));
-    while (thisPars!=lastPars && abort_flag == false) {
+    while (thisPars!=lastPars && !abort_flag) {
         lastPars    = thisPars;
         thisPars    = rootEdge()->nni_rek(false, abort_flag, -1, true);
         abort_flag |= aw_status(GBS_global_string("New Parsimony: %f",thisPars));
