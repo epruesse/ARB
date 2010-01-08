@@ -792,7 +792,7 @@ int SEC_graphic::check_update(GBDATA *) {
 
     int res = 0;
     if (update_requested & SEC_UPDATE_ZOOM_RESET) {
-        res              = 1; // signal zoom reset
+        res              = 1; // report zoom reset
         update_requested = static_cast<SEC_update_request>(update_requested^SEC_UPDATE_ZOOM_RESET); // clear zoom reset flag
     }
     return res;
