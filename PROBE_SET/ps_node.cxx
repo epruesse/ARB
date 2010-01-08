@@ -41,11 +41,9 @@ bool PS_Node::saveASCII( PS_FileBuffer* _fb, char *buffer ) { // buffer MUST be 
         }
         _fb->put_char( '>' );
     }
-    //
-    // return true to signal success
-    //
+
     _fb->put_char( ']' );
-    return true;
+    return true; // success
 }
 
 
@@ -78,10 +76,7 @@ bool PS_Node::save( PS_FileBuffer* _fb ) {
     for (PS_NodeMapIterator i=children.begin(); i!=children.end(); ++i) {
         i->second->save( _fb );
     }
-    //
-    // return true to signal success
-    //
-    return true;
+    return true; // success
 }
 
 
@@ -127,8 +122,7 @@ bool PS_Node::load( PS_FileBuffer* _fb ) {
             children[new_child->getNum()] = new_child;            // insert new child to childmap
         }
     }
-    // return true to signal success
-    return true;
+    return true; // success
 }
 
 
@@ -179,8 +173,7 @@ bool PS_Node::append( PS_FileBuffer* _fb ) {
             children[childNum] = newChild;                       // insert new child to childmap
         }
     }
-    // return true to signal success
-    return true;
+    return true; // success
 }
 
 
@@ -232,8 +225,5 @@ bool PS_Node::read( PS_FileBuffer* _fb, PS_Callback *_call_destination ) {
         child->read( _fb, _call_destination );                  // read child
         children.erase( 0 );                                    // remove previous child
     }
-    //
-    // return true to signal success
-    //
-    return true;
+    return true; // success
 }
