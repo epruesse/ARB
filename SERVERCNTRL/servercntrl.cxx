@@ -257,8 +257,7 @@ GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env, G
     return error;
 }
 
-GB_ERROR arb_look_and_kill_server(int magic_number, const char *arb_tcp_env)
-{
+GB_ERROR arb_look_and_kill_server(int magic_number, const char *arb_tcp_env) {
     const char *tcp_id;
     GB_ERROR    error = 0;
 
@@ -275,12 +274,12 @@ GB_ERROR arb_look_and_kill_server(int magic_number, const char *arb_tcp_env)
 
             const char *command = GBS_global_string("%s -kill -T%s &", server, tcp_id);
             /* sprintf(command, "%s -kill -T%s &", server, tcp_id); */
-            if (system(command)) {
-                error = GB_export_errorf("Cannot execute '%s'",command);
+            if (system(command) != 0) {
+                error = GBS_global_string("Failed to execute '%s'", command);
             }
         }
         else {
-            error= GB_export_error("I cannot kill your server because I cannot find it");
+            error = "Server is not running";
         }
     }
     return error;
