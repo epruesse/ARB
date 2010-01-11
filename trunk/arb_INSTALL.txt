@@ -73,13 +73,39 @@ To build ARB from source
 2. Unpack the source
 
    e.g.
-        tar -zxvf arbsrc_2003_05_22.tgz
+        tar -zxvf arbsrc.tgz
 
-3. Run
+3. Goto source dir
+
+   e.g.
+        cd arbsrc_6213
+
+4. Set up compile environment
+
+   if you're using bash:
+
+      export ARBHOME=`pwd`
+      export PATH=$ARBHOME/bin:$PATH
+      export LD_LIBRARY_PATH=$ARBHOME/LIBLINK:$LD_LIBRARY_PATH
+
+5. Now either
+
+   a. run
 
         make all
+        arb
 
-   and follow the instructions there.
+      to run arb in compilation directory or
+
+   a. run
+
+        make tarfile
+        ./arb_install.sh
+
+      to install arb for all users
+
+   and follow the instructions there (if any).
+
 
 
 Additional software that is needed to compile ARB:
