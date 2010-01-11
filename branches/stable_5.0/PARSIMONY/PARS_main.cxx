@@ -1717,7 +1717,9 @@ static AW_window *create_pars_init_window(AW_root *awr)
 
     aws->at("weights");
     aws->callback(AW_POPUP,(AW_CL)create_csp_window,(AW_CL)awt_csp);
+    aws->sens_mask(AWM_EXP);
     aws->create_button("SELECT_CSP","tmp/pars/csp/name");
+    aws->sens_mask(AWM_ALL);
 
     return (AW_window *)aws;
 }
