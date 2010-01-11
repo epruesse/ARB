@@ -1599,7 +1599,9 @@ static AW_window *create_pars_init_window(AW_root *awr, const PARS_commands *cmd
 
     aws->at("weights");
     aws->callback(AW_POPUP,(AW_CL)create_csp_window,(AW_CL)weighted_filter->get_csp());
+    aws->sens_mask(AWM_EXP);
     aws->create_button("SELECT_CSP", AWAR_CSP_NAME);
+    aws->sens_mask(AWM_ALL);
 
     aws->at("alignment");
     awt_create_selection_list_on_ad(GLOBAL_gb_main,(AW_window *)aws,AWAR_ALIGNMENT,"*=");
