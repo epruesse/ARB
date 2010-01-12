@@ -21,15 +21,13 @@ void AWTC_message(const char *format, ...)
     char buffer[AWTC_MESSAGE_BUFFERSIZE];
 
     va_start(argp, format);
-#ifndef SUN4
+
 #if defined(ASSERTION_USED)
-    int chars =
+    int chars = 
 #endif // ASSERTION_USED
         vsprintf(buffer, format, argp);
     awtc_assert(chars<AWTC_MESSAGE_BUFFERSIZE);
-#else
-    vsprintf(buffer, format, argp);
-#endif
+    
     va_end(argp);
     aw_message(buffer);
 }

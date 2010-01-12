@@ -1,26 +1,25 @@
-#include <stdio.h>
-#include <stdlib.h>
-/* #include <malloc.h> */
-#include <unistd.h>
-#include <errno.h>
+/* =============================================================== */
+/*                                                                 */
+/*   File      : client.c                                          */
+/*   Purpose   :                                                   */
+/*                                                                 */
+/*   Institute of Microbiology (Technical University Munich)       */
+/*   http://www.arb-home.de/                                       */
+/*                                                                 */
+/* =============================================================== */
 
-#include <ad_varargs.h>
-
-#include <sys/time.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/socket.h>
-#include <sys/un.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netinet/tcp.h>
 #include <netdb.h>
-#include <signal.h>
-#include <string.h>
+#include <netinet/tcp.h>
+#include <sys/stat.h>
+#include <sys/un.h>
+
+#include <unistd.h>
+#include <cstdarg>
+
 #include "client_privat.h"
 #include "client.h"
 
-#include "../INCLUDE/SIG_PF.h"
+#include "../INCLUDE/arb_assert.h"
 
 #include "trace.h"
 
@@ -28,10 +27,16 @@
 
 static const char *err_connection_problems = "CONNECTION PROBLEMS";
 
-int aisc_core_on_error = 1;
-
+int   aisc_core_on_error = 1;
 char *aisc_error;
-#define CORE if (aisc_core_on_error) { *(int *)NULL = 0; };
+
+#define CORE()                                                  \
+    do {                                                        \
+        if (aisc_core_on_error) {                               \
+            ARB_SIGSEGV(true);                                  \
+        }                                                       \
+    } while(0)
+
 aisc_com *aisc_client_link;
 
 int aisc_print_error_to_stderr = 1;
@@ -185,20 +190,12 @@ int aisc_check_error(aisc_com * link)
                 sprintf(errbuf, "SERVER_ERROR %s", (char *)(link->aisc_mes_buffer));
                 link->error = errbuf;
                 PRTERR("AISC_ERROR");
-                CORE;
+                CORE();
                 return 1;
             default:
                 return 0;
         }
     }
-    return 0;
-}
-
-
-/******************************************* signal handling *******************************************/
-
-void *aisc_client_sigio()
-{
     return 0;
 }
 
@@ -352,7 +349,7 @@ const char *aisc_client_open_socket(const char *path, int delay, int do_connect,
 }
 /******************************************* aisc_init_client *******************************************/
 
-void *aisc_init_client( aisc_com *link )
+void *aisc_init_client(aisc_com *link)
 {
     int len,mes_cnt;
     mes_cnt = 2;
@@ -366,6 +363,14 @@ void *aisc_init_client( aisc_com *link )
     }
     aisc_check_error(link);
     return (void *)(link->aisc_mes_buffer[0]);
+}
+
+static void ignore_sigpipe(int) {
+}
+
+static void aisc_free_link(aisc_com *link) {
+    ASSERT_RESULT(SigHandler, ignore_sigpipe, signal(SIGPIPE, link->old_sigpipe_handler));
+    free(link);
 }
 
 aisc_com *aisc_open(const char *path,long *mgr, long magic)
@@ -384,20 +389,20 @@ aisc_com *aisc_open(const char *path,long *mgr, long magic)
         if (*err) PRTERR("ARB_DB_CLIENT_OPEN");
         return 0;
     }
-    signal(SIGPIPE, (SIG_PF) aisc_client_sigio);
+
+    link->old_sigpipe_handler = signal(SIGPIPE, ignore_sigpipe);
+
     *mgr = 0;
     *mgr = (long)aisc_init_client(link);
-    if (!*mgr || link->error){
-        free((char *)link);
+    if (!*mgr || link->error) {
+        aisc_free_link(link);
         return 0;
     }
     aisc_client_link = link;
     return link;
 }
 
-int
-aisc_close(aisc_com * link)
-{
+int aisc_close(aisc_com *link) {
     if (link) {
         if (link->socket) {
             link->aisc_mes_buffer[0] = 0;
@@ -408,7 +413,7 @@ aisc_close(aisc_com * link)
             close(link->socket);
             link->socket = 0;
         }
-        free((char *)link);
+        aisc_free_link(link);
     }
     return 0;
 }
@@ -496,7 +501,7 @@ int aisc_get(aisc_com *link, int o_type, long object, ...)
             sprintf(errbuf, "ARG NR %li DON'T FIT OBJECT", count);
             link->error = errbuf;
             PRTERR("AISC_GET_ERROR");
-            CORE;
+            CORE();
             return      1;
         };
 
@@ -504,7 +509,7 @@ int aisc_get(aisc_com *link, int o_type, long object, ...)
             sprintf(errbuf, "ARG %li IS NOT AN ATTRIBUTE_TYPE", count);
             link->error = errbuf;
             PRTERR("AISC_GET_ERROR");
-            CORE;
+            CORE();
             return      1;
         };
         link->aisc_mes_buffer[mes_cnt++] = code;
@@ -515,7 +520,7 @@ int aisc_get(aisc_com *link, int o_type, long object, ...)
             sprintf(errbuf, "TOO MANY ARGS (>%i)", MAX_AISC_SET_GET);
             link->error = errbuf;
             PRTERR("AISC_GET_ERROR");
-            CORE;
+            CORE();
             return      1;
         }
     }
@@ -572,7 +577,7 @@ int aisc_get(aisc_com *link, int o_type, long object, ...)
                 default:
                     link->error = "UNKNOWN TYPE";
                     PRTERR("AISC_GET_ERROR");
-                    CORE;
+                    CORE();
                     return 1;
             }
         }
@@ -592,14 +597,14 @@ long    *aisc_debug_info(aisc_com *link,int o_type,long object,int attribute)
     if (        (o_t != (int)o_type) ) {
         link->error = "ATTRIBUTE DON'T FIT OBJECT";
         PRTERR("AISC_DEBUG_ERROR");
-        CORE;
+        CORE();
         return 0;
     };
     attribute = attribute&0xffff;
     if(         (attribute > AISC_MAX_ATTR) ) {
         link->error = "CLIENT DEBUG NOT CORRECT TYPE";
         PRTERR("AISC_DEBUG_ERROR");
-        CORE;
+        CORE();
         return 0;
     };
     link->aisc_mes_buffer[mes_cnt++] = object;
@@ -642,14 +647,14 @@ static int      aisc_collect_sets(aisc_com *link,
                 sprintf(errbuf, "ATTRIBUTE ARG NR %i DON'T FIT OBJECT", count);
                 link->error = errbuf;
                 PRTERR("AISC_SET_ERROR");
-                CORE;
+                CORE();
                 return 0;
             }
             if(         (attribute > AISC_MAX_ATTR) ) {
                 sprintf(errbuf, "ARG %i IS NOT AN ATTRIBUTE_TYPE", count);
                 link->error = errbuf;
                 PRTERR("AISC_SET_ERROR");
-                CORE;
+                CORE();
                 return 0;
             }
         }
@@ -677,7 +682,7 @@ static int      aisc_collect_sets(aisc_com *link,
                     sprintf(errbuf, "ARG %i: STRING \'%s\' TOO LONG", count+2, str);
                     link->error = errbuf;
                     PRTERR("AISC_SET_ERROR");
-                    CORE;
+                    CORE();
                     return 0;
                 }
                 ilen = (len)/sizeof(long) +1;
@@ -703,7 +708,7 @@ static int      aisc_collect_sets(aisc_com *link,
             default:
                 link->error = "UNKNOWN TYPE";
                 PRTERR("AISC_SET_ERROR");
-                CORE;
+                CORE();
                 return 0;
         }
 
@@ -712,7 +717,7 @@ static int      aisc_collect_sets(aisc_com *link,
             sprintf(errbuf, "TOO MANY ARGS (>%i)", MAX_AISC_SET_GET);
             link->error = errbuf;
             PRTERR("AISC_SET_ERROR");
-            CORE;
+            CORE();
             return      0;
         }
     }
@@ -790,13 +795,13 @@ int aisc_create(aisc_com *link, int father_type, long father,
     if ( (father_type&0xff00ffff)  ){
         link->error = "FATHER_TYPE UNKNOWN";
         PRTERR("AISC_CREATE_ERROR");
-        CORE;
+        CORE();
         return 1;
     }
     if ( (object_type&0xff00ffff)  ){
         link->error = "OBJECT_TYPE UNKNOWN";
         PRTERR("AISC_CREATE_ERROR");
-        CORE;
+        CORE();
         return 1;
     }
     link->aisc_mes_buffer[mes_cnt++] = father_type;
@@ -806,7 +811,7 @@ int aisc_create(aisc_com *link, int father_type, long father,
     if (father_type != (attribute&0x00ff0000) ) {
         link->error = "ATTRIBUTE TYPE DON'T FIT OBJECT";
         PRTERR("AISC_CREATE_ERROR");
-        CORE;
+        CORE();
         return 1;
     }
     va_start(parg,object);
@@ -836,7 +841,7 @@ int aisc_copy(  aisc_com *link, int s_type, long source, int father_type,
     if (s_type!= object_type) {
         link->error = "OBJECT_TYPE IS DIFFERENT FROM SOURCE_TYPE";
         PRTERR("AISC_COPY_ERROR");
-        CORE;
+        CORE();
         return 1;
     }
 
@@ -844,7 +849,7 @@ int aisc_copy(  aisc_com *link, int s_type, long source, int father_type,
     if ( (father_type&0xff00ffff)  ){
         link->error = "FATHER UNKNOWN";
         PRTERR("AISC_COPY_ERROR");
-        CORE;
+        CORE();
         return 1;
     }
     link->aisc_mes_buffer[mes_cnt++] = source;
@@ -855,7 +860,7 @@ int aisc_copy(  aisc_com *link, int s_type, long source, int father_type,
     if (father_type != (attribute&0x00ff0000) ) {
         link->error = "ATTRIBUTE TYPE DON'T FIT OBJECT";
         PRTERR("AISC_COPY_ERROR");
-        CORE;
+        CORE();
         return 1;
     }
     va_start(parg,object);
@@ -912,13 +917,13 @@ int aisc_find(aisc_com *link,
     if ( (father_type&0xff00ffff)  ){
         link->error = "FATHER_TYPE UNKNOWN";
         PRTERR("AISC_FIND_ERROR");
-        CORE;
+        CORE();
         return 1;
     }
     if (father_type != (attribute & 0x00ff0000) ) {
         link->error = "ATTRIBUTE TYPE DON'T MACH FATHER";
         PRTERR("AISC_FIND_ERROR");
-        CORE;
+        CORE();
     }
     link->aisc_mes_buffer[mes_cnt++] = father_type;
     link->aisc_mes_buffer[mes_cnt++] = father;
@@ -926,7 +931,7 @@ int aisc_find(aisc_com *link,
     if (!ident){
         link->error = "IDENT == NULL";
         PRTERR("AISC_FIND_ERROR");
-        CORE;
+        CORE();
         return 1;
     }
     len = strlen(ident);

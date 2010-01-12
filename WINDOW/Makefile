@@ -292,7 +292,7 @@ AW_status.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_status.o: $(ARBHOME)/INCLUDE/awt.hxx
 AW_status.o: $(ARBHOME)/INCLUDE/awt_www.hxx
 AW_status.o: $(ARBHOME)/INCLUDE/dupstr.h
-AW_status.o: $(ARBHOME)/INCLUDE/SIG_PF.h
+AW_status.o: $(ARBHOME)/INCLUDE/SigHandler.h
 AW_status.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AW_window.o: aw_at.hxx

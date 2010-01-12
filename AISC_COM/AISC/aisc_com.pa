@@ -49,7 +49,10 @@ P $1int$2message_type;
 P $1char$2*message;
 P $1int$2*message_queue;
 P $1int$2magic;
-P $1char$2*error;$n} aisc_com;
+P $1char$2*error;
+P } aisc_com;$n
+
+#  members of aisc_com have to match ../C/client_privat.h@aisc_com_public_members
 
 P #ifndef _AISC_BYTESTRING
 P #define _AISC_BYTESTRING

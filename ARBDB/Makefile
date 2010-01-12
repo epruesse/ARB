@@ -290,6 +290,7 @@ adcomm.o: $(ARBHOME)/INCLUDE/arb_error.h
 adcomm.o: $(ARBHOME)/INCLUDE/arbtools.h
 adcomm.o: $(ARBHOME)/INCLUDE/attributes.h
 adcomm.o: $(ARBHOME)/INCLUDE/dupstr.h
+adcomm.o: $(ARBHOME)/INCLUDE/SigHandler.h
 adcomm.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 adcompr.o: ad_k_prot.h
@@ -669,6 +670,7 @@ adsocket.o: $(ARBHOME)/INCLUDE/arb_error.h
 adsocket.o: $(ARBHOME)/INCLUDE/arbtools.h
 adsocket.o: $(ARBHOME)/INCLUDE/attributes.h
 adsocket.o: $(ARBHOME)/INCLUDE/dupstr.h
+adsocket.o: $(ARBHOME)/INCLUDE/SigHandler.h
 adsocket.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 adsort.o: ad_k_prot.h
@@ -699,6 +701,7 @@ adstring.o: $(ARBHOME)/INCLUDE/arb_error.h
 adstring.o: $(ARBHOME)/INCLUDE/arbtools.h
 adstring.o: $(ARBHOME)/INCLUDE/attributes.h
 adstring.o: $(ARBHOME)/INCLUDE/dupstr.h
+adstring.o: $(ARBHOME)/INCLUDE/SigHandler.h
 adstring.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 adsystem.o: ad_k_prot.h

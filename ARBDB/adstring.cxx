@@ -14,6 +14,9 @@
 #include <cctype>
 #include <cerrno>
 #include <csignal>
+#include <setjmp.h>
+
+#include <SigHandler.h>
 
 #include "gb_key.h"
 
@@ -1107,18 +1110,69 @@ void GBK_dump_backtrace(FILE *out, GB_ERROR error) {
 /* ----------------------- */
 /*      catch SIGSEGV      */
 
-static void sigsegv_handler_exit(int sig) {
+static bool    dump_backtrace_on_sigsegv = false;
+static bool    suppress_sigsegv          = false;
+static jmp_buf return_after_segv;
+
+void sigsegv_handler(int sig) {
+    // Note: sigsegv_handler is intentionally global, to show it in backtrace!
+
+    if (suppress_sigsegv) {
+        longjmp(return_after_segv, 667); // suppress SIGSEGV (see below)
+    }
+
+    if (dump_backtrace_on_sigsegv) {
+        GBK_dump_backtrace(stderr, GBS_global_string("received signal %i", sig));
+    }
     fprintf(stderr, "[Terminating with signal %i]\n", sig);
     exit(EXIT_FAILURE);
 }
-void sigsegv_handler_dump(int sig) {
-    /* sigsegv_handler is intentionally global, to show it in backtrace! */
-    GBK_dump_backtrace(stderr, GBS_global_string("received signal %i", sig));
-    sigsegv_handler_exit(sig);
+
+void GBK_install_SIGSEGV_handler(bool dump_backtrace) {
+    dump_backtrace_on_sigsegv = dump_backtrace;
+
+    SigHandler old_handler = signal(SIGSEGV, sigsegv_handler);
+    if (old_handler && old_handler != sigsegv_handler) {
+#if defined(DEBUG)
+        fprintf(stderr, "GBK_install_SIGSEGV_handler: Did not install SIGSEGV handler (there's already another one installed)\n");
+#endif // DEBUG
+        signal(SIGSEGV, old_handler);               // restore existing signal handler (AISC servers install their own)
+    }
 }
 
-void GBK_install_SIGSEGV_handler(bool install) {
-    signal(SIGSEGV, install ? sigsegv_handler_dump : sigsegv_handler_exit);
+GB_ERROR gbcm_test_address(long *address, long key) {
+    bool segv_occurred = false;
+    long found_key;
+
+    gb_assert(!suppress_sigsegv);
+    suppress_sigsegv = true;
+
+    int trapped = setjmp(return_after_segv);
+    if (!trapped) {                                 // normal execution
+        found_key = *address;
+    }
+    else {
+        gb_assert(trapped == 667);
+        segv_occurred = true;
+    }
+
+    suppress_sigsegv = false;
+
+    GB_ERROR error = NULL;
+    if (segv_occurred) {
+        error = GBS_global_string("ARBDB memory manager error: Cannot access address %p", address);
+    }
+    else if (key && found_key != key) {
+        error = GBS_global_string("ARBDB memory manager error: object at address %p has wrong type (found: 0x%lx, expected: 0x%lx)",
+                                  address, found_key, key);
+    }
+
+    if (error) {
+        fputs(error, stderr);
+        fputc('\n', stderr);
+    }
+
+    return error;
 }
 
 /* ------------------------------------------- */

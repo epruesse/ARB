@@ -17,7 +17,7 @@
 # -----------------------------------------------------
 # ARB Makefile and ARB source code are aware of the following defines:
 #
-# $(MACH)               name of the machine (LINUX,SUN4,SUN5,HP,SGI or DIGITAL; see config.makefile)
+# $(MACH)               name of the machine (LINUX or DARWIN; see config.makefile)
 # DEBUG                 compiles the DEBUG sections
 # DEBUG_GRAPHICS        all X-graphics are flushed immediately (for debugging)
 # ARB_64=0/1            1=>compile 64 bit version

@@ -4,7 +4,6 @@
 #include <ctype.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <signal.h>
 #include <time.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
@@ -19,7 +18,7 @@
 #include <awt.hxx>
 #include "aw_global.hxx"
 
-#include <SIG_PF.h>
+#include <SigHandler.h>
 
 #include <string>
 #include <deque>

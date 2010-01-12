@@ -96,7 +96,7 @@ symlink_maybe_no_target GENH/aisc.h               PROBE_COM/PT_server.h &&
 
 # TEMPLATES directory
 
-symlink ../TEMPLATES/SIG_PF.h INCLUDE/SIG_PF.h &&
+symlink ../TEMPLATES/SigHandler.h INCLUDE/SigHandler.h &&
 symlink ../TEMPLATES/arb_debug.h INCLUDE/arb_debug.h &&
 symlink ../TEMPLATES/arb_error.h INCLUDE/arb_error.h &&
 symlink ../TEMPLATES/arb_version.h INCLUDE/arb_version.h &&

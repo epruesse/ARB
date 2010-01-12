@@ -28,60 +28,22 @@
 #include "gb_localdata.h"
 #include "gb_main.h"
 
-#define SIG_PF void (*)(int )
+#include <SigHandler.h>
 
 #if defined(DARWIN)
 # include <sys/sysctl.h>
 #endif /* DARWIN */
 
-/************************************ signal handling ****************************************/
-/************************************ valid memory tester ************************************/
-int gbcm_sig_violation_flag;
-int gbcm_pipe_violation_flag;
-
 void GB_usleep(long usec) {
     usleep(usec);
 }
 
-long gbcm_sig_violation_end();
 
-GB_ERROR gbcm_test_address(long *address,long key)
-{
-    /* tested ob die Addresse address erlaubt ist,
-       falls ja, dann return NULL, sonst Fehlerstring */
-    /* Falls key != NULL, tested ob *address == key */
-    long i;
-    gbcm_sig_violation_flag = 0;
-    i = *address;
-    if (gbcm_sig_violation_flag) {
-        fprintf(stderr,"MEMORY MANAGER ERROR: SIGNAL SEGV;      ADDRESS 0x%lx",(long)address);
-        return "MEMORY MANAGER ERROR";
-    }
-    if (key){
-        if (i!=key) {
-            fprintf(stderr,"MEMORY MANAGER ERROR: OBJECT KEY (0x%lx) IS NOT OF TYPE 0x%lx",i,key);
-            return "MEMORY MANAGER ERROR";
-        }
-    }
-    return NULL;
-}
-
-
-long gbcm_test_address_end()
-{
-    return 1;
-}
-
-
-/**************************************************************************************
-********************************    valid memory tester (end) *************************
-***************************************************************************************/
-
-void *gbcms_sigpipe()
-{
+static int gbcm_pipe_violation_flag = 0;
+void gbcms_sigpipe(int) {
     gbcm_pipe_violation_flag = 1;
-    return 0;
 }
+
 /**************************************************************************************
                 private read and write socket functions
 ***************************************************************************************/
@@ -91,8 +53,7 @@ void gbcm_read_flush(int socket) {
     socket               = socket; // @@@ wtf? 
 }
 
-long gbcm_read_buffered(int socket,char *ptr, long size)
-{
+static long gbcm_read_buffered(int socket,char *ptr, long size) {
     /* write_ptr ptr to not read data
        write_free   = write_bufsize-size of non read data;
     */
@@ -195,14 +156,9 @@ int gbcm_write(int socket,const char *ptr,long size) {
 
 
 
-void *gbcm_sigio()
-{
-    return 0;
-}
-
 /************************************* find the mach name and id *************************************/
 
-GB_ERROR gbcm_get_m_id(const char *path, char **m_name, long *id) {
+static GB_ERROR gbcm_get_m_id(const char *path, char **m_name, long *id) {
     GB_ERROR error = 0;
 
     if (!path) error = "missing hostname:socketid";
@@ -341,7 +297,9 @@ GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *p
     }
 }
 
-
+#if defined(DEVEL_RALF)
+#warning gbcms_close is unused
+#endif // DEVEL_RALF
 long gbcms_close(gbcmc_comm *link)
 {
     if (link->socket) {
@@ -354,7 +312,9 @@ long gbcms_close(gbcmc_comm *link)
     return 0;
 }
 
-struct gbl_param *ppara;
+static void gbcmc_suppress_sigpipe(int) {
+}
+
 struct gbcmc_comm *gbcmc_open(const char *path)
 {
     struct gbcmc_comm *link;
@@ -370,7 +330,7 @@ struct gbcmc_comm *gbcmc_open(const char *path)
         }
         return 0;
     }
-    signal(SIGPIPE, (SIG_PF) gbcm_sigio);
+    ASSERT_RESULT(SigHandler, SIG_DFL, signal(SIGPIPE, gbcmc_suppress_sigpipe));
     gb_local->iamclient = 1;
     return link;
 }
@@ -1130,7 +1090,7 @@ GB_ULONG GB_get_physical_memory(void) {
     /* Returns the physical available memory size in k available for one process */
     GB_ULONG memsize; /* real existing memory in k */
     
-#if defined(SUN5) || defined(LINUX) 
+#if defined(LINUX) 
     {
         long pagesize = sysconf(_SC_PAGESIZE); 
         long pages    = sysconf(_SC_PHYS_PAGES);
@@ -1152,13 +1112,13 @@ GB_ULONG GB_get_physical_memory(void) {
         memsize = bytes/1024;
     }
 #else
-    memsize = 512*1024; // assume 512 Mb
+    memsize = 1024*1024; // assume 1 Gb
     printf("\n"
            "Warning: ARB is not prepared to detect the memory size on your system!\n"
            "         (it assumes you have %ul Mb,  but does not use more)\n\n", memsize/1024);
 #endif
 
-    GB_ULONG net_memsize = memsize - 10240;         /* reduce by 10Mb (for kernel etc.) */
+    GB_ULONG net_memsize = memsize - 10240;         /* reduce by 10Mb */
 
     // detect max allocateable memory by ... allocating
     GB_ULONG max_malloc_try = net_memsize*1024;
