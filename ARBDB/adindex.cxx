@@ -24,7 +24,7 @@
         if (ifs->key == quark) break;                                   \
     }
 
-/* write field in index table */
+// write field in index table
 char *gb_index_check_in(GBDATA *gbd)
 {
     struct gb_index_files_struct *ifs;
@@ -39,7 +39,7 @@ char *gb_index_check_in(GBDATA *gbd)
 
     quark = GB_KEY_QUARK(gbd);
     GB_INDEX_FIND(gfather,ifs,quark);
-    if (!ifs) return 0;     /* This key is not indexed */
+    if (!ifs) return 0;     // This key is not indexed
 
     if (GB_TYPE(gbd) != GB_STRING && GB_TYPE(gbd) != GB_LINK) return 0;
 
@@ -67,7 +67,7 @@ char *gb_index_check_in(GBDATA *gbd)
     return 0;
 }
 
-/* remove entry from index table */
+// remove entry from index table
 void gb_index_check_out(GBDATA *gbd) {
     if (gbd->flags2.is_indexed) {
         GB_ERROR     error   = 0;
@@ -97,7 +97,7 @@ void gb_index_check_out(GBDATA *gbd) {
                     struct gb_if_entries *ifes;
 
                     for (ifes = GB_ENTRIES_ENTRY(entries,index); ifes; ifes = GB_IF_ENTRIES_NEXT(ifes)) {
-                        if (gbd == GB_IF_ENTRIES_GBD(ifes)) {       /* entry found */
+                        if (gbd == GB_IF_ENTRIES_GBD(ifes)) {       // entry found
                             if (ifes2) SET_GB_IF_ENTRIES_NEXT(ifes2, GB_IF_ENTRIES_NEXT(ifes));
                             else SET_GB_ENTRIES_ENTRY(entries,index,GB_IF_ENTRIES_NEXT(ifes));
 
@@ -139,7 +139,7 @@ GB_ERROR GB_create_index(GBDATA *gbd, const char *key, GB_CASE case_sens, long e
 
         GB_INDEX_FIND(gbc,ifs,key_quark);
 
-        if (!ifs) { /* if not already have index (e.g. if fast-loaded) */
+        if (!ifs) { // if not already have index (e.g. if fast-loaded)
             GBDATA *gbf;
 
             ifs = (struct gb_index_files_struct *)GB_calloc(sizeof(struct gb_index_files_struct),1);
@@ -248,10 +248,10 @@ NOT4PERL void GB_dump_indices(GBDATA *gbd) {
     free(db_path);
 }
 
-#endif /* DEBUG */
+#endif // DEBUG
 
 
-/* find an entry in an hash table */
+// find an entry in an hash table
 GBDATA *gb_index_find(GBCONTAINER *gbf, struct gb_index_files_struct *ifs, GBQUARK quark, const char *val, GB_CASE case_sens, int after_index){
     unsigned long         index;
     GB_CSTR               data;
@@ -285,7 +285,7 @@ GBDATA *gb_index_find(GBCONTAINER *gbf, struct gb_index_files_struct *ifs, GBQUA
         if ( ifather->index < after_index) continue;
         if ( ifather->index >= min_index) continue;
         data = GB_read_char_pntr(igbd);
-        if (GBS_string_matches(data, val, case_sens)) { /* entry found */
+        if (GBS_string_matches(data, val, case_sens)) { // entry found
             result    = igbd;
             min_index = ifather->index;
         }
@@ -314,12 +314,12 @@ char *gb_set_undo_type(GBDATA *gb_main, GB_UNDO_TYPE type){
     return 0;
 }
 
-/** mallocs the main structures to control undo/redo */
+// mallocs the main structures to control undo/redo
 
 void g_b_add_size_to_undo_entry(struct g_b_undo_entry_struct *ue, long size){
-    ue->sizeof_this += size;            /* undo entry */
-    ue->father->sizeof_this += size;        /* one undo */
-    ue->father->father->sizeof_this += size;    /* all undos */
+    ue->sizeof_this                 += size;        // undo entry
+    ue->father->sizeof_this         += size;        // one undo
+    ue->father->father->sizeof_this += size;        // all undos
 }
 
 struct g_b_undo_entry_struct *new_g_b_undo_entry_struct(struct g_b_undo_struct *u){
@@ -374,7 +374,7 @@ void delete_g_b_undo_header_struct(struct g_b_undo_header_struct *uh){
     free((char *)uh);
 }
 
-/********************   check size *****************************/
+//*******************   check size ****************************
 
 char *g_b_check_undo_size2(struct g_b_undo_header_struct *uhs, long size, long max_cnt){
     long csize = 0;
@@ -385,7 +385,7 @@ char *g_b_check_undo_size2(struct g_b_undo_header_struct *uhs, long size, long m
         csize += us->sizeof_this;
         ccnt ++;
         if ( (  (csize + us->next->sizeof_this) > size) ||
-             (ccnt >= max_cnt ) ){ /* delete the rest */
+             (ccnt >= max_cnt ) ){ // delete the rest
             struct g_b_undo_struct *a,*next=0;
 
             for ( a = us->next; a; a = next){
@@ -450,16 +450,16 @@ GB_ERROR g_b_undo_entry(GB_MAIN_TYPE *Main,struct g_b_undo_entry_struct *ue){
                 if (type == GB_DB) {
 
                 }else{
-                    gb_save_extern_data_in_ts(gbd); /* check out and free string */
+                    gb_save_extern_data_in_ts(gbd); // check out and free string
 
                     if (ue->d.ts) { // nothing to undo (e.g. if undoing GB_touch)
                         gbd->flags              = ue->d.ts->flags;
                         gbd->flags2.extern_data = ue->d.ts->flags2.extern_data;
 
-                        memcpy(&gbd->info,&ue->d.ts->info,sizeof(gbd->info)); /* restore old information */
+                        memcpy(&gbd->info,&ue->d.ts->info,sizeof(gbd->info)); // restore old information
                         if (type >= GB_BITS) {
                             if (gbd->flags2.extern_data){
-                                SET_GB_EXTERN_DATA_DATA(gbd->info.ex, ue->d.ts->info.ex.data); /* set relative pointers correctly */
+                                SET_GB_EXTERN_DATA_DATA(gbd->info.ex, ue->d.ts->info.ex.data); // set relative pointers correctly
                             }
 
                             gb_del_ref_and_extern_gb_transaction_save(ue->d.ts);
@@ -476,7 +476,7 @@ GB_ERROR g_b_undo_entry(GB_MAIN_TYPE *Main,struct g_b_undo_entry_struct *ue){
                         gbd->flags.saved_flags = pflags->flags;
                         pflags->flags = ue->flag;
                         if (GB_FATHER(gb_father)){
-                            gb_touch_header(gb_father); /* don't touch father of main */
+                            gb_touch_header(gb_father); // don't touch father of main
                         }
                     }
                 }
@@ -493,7 +493,7 @@ GB_ERROR g_b_undo_entry(GB_MAIN_TYPE *Main,struct g_b_undo_entry_struct *ue){
 
 
 
-GB_ERROR g_b_undo(GB_MAIN_TYPE *Main, GBDATA *gb_main, struct g_b_undo_header_struct *uh) { /* goes to header: __ATTR__USERESULT */
+GB_ERROR g_b_undo(GB_MAIN_TYPE *Main, GBDATA *gb_main, struct g_b_undo_header_struct *uh) { // goes to header: __ATTR__USERESULT
     GB_ERROR error = NULL;
 
     if (!uh->stack) {
@@ -511,7 +511,7 @@ GB_ERROR g_b_undo(GB_MAIN_TYPE *Main, GBDATA *gb_main, struct g_b_undo_header_st
             delete_g_b_undo_entry_struct(ue);
             u->entries = next;
         }
-        uh->sizeof_this -= u->sizeof_this;          /* remove undo from list */
+        uh->sizeof_this -= u->sizeof_this;          // remove undo from list
         uh->stack        = u->next;
 
         delete_g_b_undo_struct(u);
@@ -554,19 +554,15 @@ char *g_b_undo_info(GB_MAIN_TYPE *Main, GBDATA *gb_main, struct g_b_undo_header_
     return GBS_strclose(res);
 }
 
-/*****************************************************************************************
-        UNDO    exported  functions (to ARBDB)
-******************************************************************************************/
-
-/** start a new undoable transaction */
 char *gb_set_undo_sync(GBDATA *gb_main)
 {
+    // start a new undoable transaction
     GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
     char *error = g_b_check_undo_size(Main);
     struct g_b_undo_header_struct *uhs;
     if (error) return error;
-    switch (Main->requested_undo_type) {    /* init the target undo stack */
-        case GB_UNDO_UNDO:      /* that will undo but delete all redos */
+    switch (Main->requested_undo_type) {    // init the target undo stack
+        case GB_UNDO_UNDO:      // that will undo but delete all redos
             uhs         = Main->undo->u;
             break;
         case GB_UNDO_UNDO_REDO: uhs = Main->undo->u; break;
@@ -586,8 +582,8 @@ char *gb_set_undo_sync(GBDATA *gb_main)
     return gb_set_undo_type(gb_main,Main->requested_undo_type);
 }
 
-/* Remove all existing undos/redos */
 char *gb_free_all_undos(GBDATA *gb_main){
+    // Remove all existing undos/redos
     GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
     struct g_b_undo_struct *a,*next;
     for ( a= Main->undo->r->stack; a; a = next){
@@ -607,16 +603,16 @@ char *gb_free_all_undos(GBDATA *gb_main){
 }
 
 
-/* called to finish an undoable section, called at end of gb_commit_transaction */
 char *gb_disable_undo(GBDATA *gb_main){
+    // called to finish an undoable section, called at end of gb_commit_transaction
     GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
     struct g_b_undo_struct *u = Main->undo->valid_u;
     if (!u) return 0;
-    if (!u->entries){       /* nothing to undo, just a read transaction */
+    if (!u->entries){       // nothing to undo, just a read transaction
         u->father->stack = u->next;
         delete_g_b_undo_struct(u);
     }else{
-        if (Main->requested_undo_type == GB_UNDO_UNDO) {    /* remove all redos*/
+        if (Main->requested_undo_type == GB_UNDO_UNDO) {    // remove all redos
             struct g_b_undo_struct *a,*next;
             for ( a= Main->undo->r->stack; a; a = next){
                 next = a->next;
@@ -663,7 +659,7 @@ void gb_check_in_undo_modify(GB_MAIN_TYPE *Main,GBDATA *gbd){
             gb_add_ref_gb_transaction_save(old);
             if (type >= GB_BITS && old->flags2.extern_data && old->info.ex.data ) {
                 ue->type = GB_UNDO_ENTRY_TYPE_MODIFY_ARRAY;
-                /* move external array from ts to undo entry struct */
+                // move external array from ts to undo entry struct
                 g_b_add_size_to_undo_entry(ue,old->info.ex.memsize);
             }
         }
@@ -672,7 +668,7 @@ void gb_check_in_undo_modify(GB_MAIN_TYPE *Main,GBDATA *gbd){
 
 #if defined(DEVEL_RALF)
 #warning change param for gb_check_in_undo_delete to GBDATA **
-#endif /* DEVEL_RALF */
+#endif // DEVEL_RALF
 
 void gb_check_in_undo_delete(GB_MAIN_TYPE *Main,GBDATA *gbd, int deep){
     long type = GB_TYPE(gbd);
@@ -694,9 +690,9 @@ void gb_check_in_undo_delete(GB_MAIN_TYPE *Main,GBDATA *gbd, int deep){
         };
     }else{
         GB_INDEX_CHECK_OUT(gbd);
-        gbd->flags2.tisa_index = 0; /* never check in again */
+        gbd->flags2.tisa_index = 0; // never check in again
     }
-    gb_abort_entry(gbd);            /* get old version */
+    gb_abort_entry(gbd);            // get old version
 
     ue = new_g_b_undo_entry_struct(Main->undo->valid_u);
     ue->type = GB_UNDO_ENTRY_TYPE_DELETED;
@@ -707,7 +703,7 @@ void gb_check_in_undo_delete(GB_MAIN_TYPE *Main,GBDATA *gbd, int deep){
     ue->d.gs.gbd = gbd;
     ue->d.gs.key = GB_KEY_QUARK(gbd);
 
-    gb_pre_delete_entry(gbd);       /* get the core of the entry */
+    gb_pre_delete_entry(gbd);       // get the core of the entry
 
     if (type == GB_DB) {
         g_b_add_size_to_undo_entry(ue,sizeof(GBCONTAINER));
@@ -725,7 +721,7 @@ void gb_check_in_undo_delete(GB_MAIN_TYPE *Main,GBDATA *gbd, int deep){
         UNDO    exported  functions (to USER)
 ******************************************************************************************/
 
-GB_ERROR GB_request_undo_type(GBDATA *gb_main, GB_UNDO_TYPE type) { /* goes to header: __ATTR__USERESULT */
+GB_ERROR GB_request_undo_type(GBDATA *gb_main, GB_UNDO_TYPE type) { // goes to header: __ATTR__USERESULT
     /* Define how to undo DB changes.
      * 
      * This function should be called just before opening a transaction,
@@ -759,8 +755,8 @@ GB_UNDO_TYPE GB_get_requested_undo_type(GBDATA *gb_main){
 }
 
 
-GB_ERROR GB_undo(GBDATA *gb_main,GB_UNDO_TYPE type) { /* goes to header: __ATTR__USERESULT */
-    /* undo/redo the last transaction */
+GB_ERROR GB_undo(GBDATA *gb_main,GB_UNDO_TYPE type) { // goes to header: __ATTR__USERESULT
+    // undo/redo the last transaction
 
     GB_MAIN_TYPE *Main  = GB_MAIN(gb_main);
     GB_ERROR      error = 0;
@@ -810,8 +806,9 @@ GB_ERROR GB_undo(GBDATA *gb_main,GB_UNDO_TYPE type) { /* goes to header: __ATTR_
 }
 
 
-/** get some information about the next undo */
 char *GB_undo_info(GBDATA *gb_main,GB_UNDO_TYPE type) {
+    // get some information about the next undo
+
     GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
     if (!Main->local_mode) {
         switch (type) {
@@ -837,7 +834,7 @@ char *GB_undo_info(GBDATA *gb_main,GB_UNDO_TYPE type) {
 }
 
 GB_ERROR GB_set_undo_mem(GBDATA *gbd, long memsize){
-    /* set the maximum memory used for undoing */
+    // set the maximum memory used for undoing
 
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     if (memsize < _GBCMC_UNDOCOM_SET_MEM){

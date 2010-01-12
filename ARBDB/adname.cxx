@@ -1,12 +1,12 @@
-/* ============================================================ */
-/*                                                              */
-/*   File      : adname.c                                       */
-/*   Purpose   : species names                                  */
-/*                                                              */
-/*   Institute of Microbiology (Technical University Munich)    */
-/*   www.arb-home.de                                            */
-/*                                                              */
-/* ============================================================ */
+// =============================================================== //
+//                                                                 //
+//   File      : adname.cxx                                        //
+//   Purpose   : species names                                     //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include <cctype>
 
@@ -15,14 +15,9 @@
 
 #include "gb_local.h"
 
-/********************************************************************************************
-                Rename one or many species (only one session at a time/ uses
-                commit abort transaction)
-********************************************************************************************/
 struct gbt_renamed_struct {
     int     used_by;
     char    data[1];
-
 };
 
 struct gbt_rename_struct {
@@ -34,11 +29,11 @@ struct gbt_rename_struct {
 } gbtrst;
 
 GB_ERROR GBT_begin_rename_session(GBDATA *gb_main, int all_flag) {
-    /* Starts a rename session.
-     * If whole database shall be renamed, set 'all_flag' == 1.
-     * Use GBT_abort_rename_session() or GBT_commit_rename_session() to end the session.
+    /* Starts a rename session (to rename one or many species)
+     * all_flag == 1 -> rename all species in DB
+     * Call GBT_abort_rename_session() or GBT_commit_rename_session() to close the session.
      */
-    
+
     GB_ERROR error = GB_push_transaction(gb_main);
     if (!error) {
         gbtrst.gb_main         = gb_main;
@@ -140,7 +135,7 @@ GB_ERROR gbt_rename_tree_rek(GBT_TREE *tree,int tree_index){
             struct gbt_renamed_struct *rns = (struct gbt_renamed_struct *)GBS_read_hash(gbtrst.renamed_hash,tree->name);
             if (rns){
                 char *newname;
-                if (rns->used_by == tree_index){ /* species more than once in the tree */
+                if (rns->used_by == tree_index){ // species more than once in the tree
                     sprintf(buffer,"%s_%i", rns->data, counter++);
                     GB_warningf("Species '%s' more than once in '%s', creating zombie '%s'",
                                 tree->name, currentTreeName, buffer);

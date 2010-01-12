@@ -1,12 +1,12 @@
-/* ============================================================= */
-/*                                                               */
-/*   File      : adfile.c                                        */
-/*   Purpose   : various IO related functions                    */
-/*                                                               */
-/*   Institute of Microbiology (Technical University Munich)     */
-/*   http://www.arb-home.de                                      */
-/*                                                               */
-/* ============================================================= */
+// =============================================================== //
+//                                                                 //
+//   File      : adfile.cxx                                        //
+//   Purpose   : various IO related functions                      //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include <climits>
 #include <cctype>
@@ -29,8 +29,8 @@ GB_CSTR GB_getcwd(void) {
     return lastcwd;
 }
 
-GB_ERROR gb_scan_directory(char *basename, gb_scandir *sd) { /* goes to header: __ATTR__USERESULT */
-    /* look for quick saves (basename = yyy/xxx no arb ending !!!!) */
+GB_ERROR gb_scan_directory(char *basename, gb_scandir *sd) { // goes to header: __ATTR__USERESULT
+    // look for quick saves (basename = yyy/xxx no arb ending !!!!)
     char        *path        = strdup(basename);
     const char  *fulldir     = ".";
     char        *file        = strrchr(path,'/');
@@ -188,7 +188,7 @@ char *GB_find_latest_file(const char *dir, const char *mask) {
 }
 
 char *GBS_find_lib_file(const char *filename, const char *libprefix, int warn_when_not_found) {
-    /* Searches files in current dir, $HOME, $ARBHOME/lib/libprefix */
+    // Searches files in current dir, $HOME, $ARBHOME/lib/libprefix
 
     char *result = 0;
 

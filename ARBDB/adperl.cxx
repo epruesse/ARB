@@ -1,13 +1,13 @@
-/* ================================================================ */
-/*                                                                  */
-/*   File      : adperl.c                                           */
-/*   Purpose   : helper functions used by perl interface            */
-/*               (see ../PERL2ARB)                                  */
-/*                                                                  */
-/*   Institute of Microbiology (Technical University Munich)        */
-/*   http://www.arb-home.de                                         */
-/*                                                                  */
-/* ================================================================ */
+// =============================================================== //
+//                                                                 //
+//   File      : adperl.cxx                                        //
+//   Purpose   : helper functions used by perl interface           //
+//               (see ../PERL2ARB)                                 //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include "gb_local.h"
 
@@ -26,10 +26,8 @@ static void die(const char *with_last_words) {
     }
 }
 
-/* --------------------------------------------------------------------------------
- * "generic" enum<->string-conversion
- */
-
+// -------------------------------------------
+//      "generic" enum<->string-conversion
 
 union known_enum {
     int as_int;
@@ -126,8 +124,8 @@ static known_enum string2enum_or_die(const char *enum_name, const char *string, 
  * see also ../TOOLS/arb_proto_2_xsub.cxx@enum_type_replacement
  */
 
-/* ------------------------ */
-/*      GB_SEARCH_TYPE      */
+// ------------------------
+//      GB_SEARCH_TYPE
 
 const char *GBP_GB_SEARCH_TYPE_2_charPtr(GB_SEARCH_TYPE search_type) {
     switch (search_type) {
@@ -147,8 +145,8 @@ GB_SEARCH_TYPE GBP_charPtr_2_GB_SEARCH_TYPE(const char *search_mode) {
     return found.search_type;
 }
 
-/* ------------------ */
-/*      GB_TYPES      */
+// ------------------
+//      GB_TYPES
 
 const char *GBP_GB_TYPES_2_charPtr(GB_TYPES type) {
     switch (type) {
@@ -176,8 +174,8 @@ GB_TYPES GBP_charPtr_2_GB_TYPES(const char *type_name) {
 }
 
 
-/* ---------------------- */
-/*      GB_UNDO_TYPE      */
+// ----------------------
+//      GB_UNDO_TYPE
 
 const char *GBP_GB_UNDO_TYPE_2_charPtr(GB_UNDO_TYPE undo_type) {
     switch (undo_type) {
@@ -199,8 +197,8 @@ GB_UNDO_TYPE GBP_charPtr_2_GB_UNDO_TYPE(const char *undo_type) {
 }
 
 
-/* ----------------- */
-/*      GB_CASE      */
+// -----------------
+//      GB_CASE
 
 const char *GBP_GB_CASE_2_charPtr(GB_CASE sensitivity) {
     switch (sensitivity) {
@@ -217,8 +215,8 @@ GB_CASE GBP_charPtr_2_GB_CASE(const char *sensitivity) {
     return found.case_sensitivity;
 }
 
-/* --------------------------- */
-/*      GB_alignment_type      */
+// ---------------------------
+//      GB_alignment_type
 
 const char *GBP_GB_alignment_type_2_charPtr(GB_alignment_type ali_type) {
     switch (ali_type) {

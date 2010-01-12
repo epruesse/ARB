@@ -78,7 +78,7 @@ static void g_bt_table_deleted(GBDATA *gb_table,int *clientdata, GB_CB_TYPE gbty
 }
 
 GBDATA *GBT_open_table(GBDATA *gb_table_root,const char *table_name, bool read_only){
-    /** open a table. This routines is optimized to look for existing tables */
+    // open a table. This routines is optimized to look for existing tables
     GBDATA *gb_table;
     GBDATA *gb_table_name;
     GBDATA *gb_table_description;
@@ -97,16 +97,16 @@ GBDATA *GBT_open_table(GBDATA *gb_table_root,const char *table_name, bool read_o
     if (gb_table_name) return GB_get_father(gb_table_name);
     if (read_only) return NULL;
 
-                /* now lets create the table */
+    // now lets create the table
     gb_table = GB_create_container(gb_table_data,"table");      GB_add_callback(gb_table,GB_CB_DELETE,g_bt_table_deleted,0);
     gb_table_name = GB_create(gb_table,"name",GB_STRING);
     gb_table_description = GB_create(gb_table,"description",GB_STRING);
-    GB_write_string(gb_table_name,table_name);          GB_write_security_levels(gb_table_name,0,7,7); /* nether delete or change the name */
+    GB_write_string(gb_table_name,table_name);          GB_write_security_levels(gb_table_name,0,7,7); // neither delete nor change the name
     GB_write_string(gb_table_description,"No description");
-    gb_table_entries = GB_create_container(gb_table,"entries"); GB_write_security_levels(gb_table_entries,0,0,7); /* nether delete this */
-    gb_table_fields = GB_create_container(gb_table,"fields");   GB_write_security_levels(gb_table_fields,0,0,7); /* nether intended to be deleted */
-    gb_table_name_field = GBT_open_table_field(gb_table,"name",GB_STRING); /* for the id */
-    GB_write_security_levels(gb_table_name_field,0,0,7); /* Never delete name field */
+    gb_table_entries = GB_create_container(gb_table,"entries"); GB_write_security_levels(gb_table_entries,0,0,7); // never delete this
+    gb_table_fields = GB_create_container(gb_table,"fields");   GB_write_security_levels(gb_table_fields,0,0,7); // not intended to be deleted
+    gb_table_name_field = GBT_open_table_field(gb_table,"name",GB_STRING); // for the id
+    GB_write_security_levels(gb_table_name_field,0,0,7); // never delete name field
     return gb_table;
 }
 
@@ -218,7 +218,7 @@ GBDATA *GBT_open_table_field(GBDATA *gb_table, const char *fieldname, GB_TYPES t
     gb_fields = GB_entry(gb_table,"fields");
     gb_table_field = GB_create_container(gb_fields,"field");
     gb_table_field_name = GB_create(gb_table_field,"name",GB_STRING);
-    GB_write_string(gb_table_field_name,fieldname); GB_write_security_levels(gb_table_field_name,0,7,7); /* never change this */
+    GB_write_string(gb_table_field_name,fieldname); GB_write_security_levels(gb_table_field_name,0,7,7); // never change this
     gb_table_field_type = GB_create(gb_table_field,"type",GB_INT);
     GB_write_int(gb_table_field_type,type_of_field);    GB_write_security_levels(gb_table_field_type,0,7,7);
     gb_table_field_description = GB_create(gb_table_field,"description",GB_STRING);

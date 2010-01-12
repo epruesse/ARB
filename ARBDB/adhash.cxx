@@ -44,7 +44,7 @@ struct GB_NUMHASH {
     numhash_entry **entries;
 };
 
-/* prime numbers */
+// prime numbers
 
 #define KNOWN_PRIMES 279
 static long sorted_primes[KNOWN_PRIMES] = {
@@ -67,15 +67,15 @@ static long sorted_primes[KNOWN_PRIMES] = {
 };
 
 
-/* define CALC_PRIMES only to expand the above table */
+// define CALC_PRIMES only to expand the above table
 #if defined(DEBUG)
-/* #define CALC_PRIMES */
-#endif /* DEBUG */
+// #define CALC_PRIMES
+#endif // DEBUG
 
 #ifdef CALC_PRIMES
 
 #define CALC_PRIMES_UP_TO 100000000L
-#define PRIME_UNDENSITY   20L   /* the higher, the less primes are stored */
+#define PRIME_UNDENSITY   20L   // the higher, the less primes are stored
 
 #warning "please don't define CALC_PRIMES permanently"
 
@@ -140,7 +140,7 @@ static void calculate_primes_upto() {
             // otherwise it is no prime and all multiples are already set to 1
         }
 
-        /* thin out prime numbers (we don't need all of them) */
+        // thin out prime numbers (we don't need all of them)
         {
             long prime_count2 = 0;
             long last_prime   = -1000;
@@ -189,7 +189,7 @@ static void calculate_primes_upto() {
     exit(1);
 }
 
-#endif /* CALC_PRIMES */
+#endif // CALC_PRIMES
 
 long gbs_get_a_prime(long above_or_equal_this) {
     // return a prime number above_or_equal_this
@@ -197,7 +197,7 @@ long gbs_get_a_prime(long above_or_equal_this) {
 
 #if defined(CALC_PRIMES)
     calculate_primes_upto(above_or_equal_this);
-#endif /* CALC_PRIMES */
+#endif // CALC_PRIMES
 
     if (sorted_primes[KNOWN_PRIMES-1] >= above_or_equal_this) {
         int l = 0, h = KNOWN_PRIMES-1;
@@ -207,7 +207,7 @@ long gbs_get_a_prime(long above_or_equal_this) {
 #if defined(DEBUG) && 0
             printf("l=%-3i m=%-3i h=%-3i above_or_equal_this=%li sorted_primes[%i]=%li sorted_primes[%i]=%li sorted_primes[%i]=%li\n",
                    l, m, h, above_or_equal_this, l, sorted_primes[l], m, sorted_primes[m], h, sorted_primes[h]);
-#endif /* DEBUG */
+#endif // DEBUG
             gb_assert(l <= m);
             gb_assert(m <= h);
             if (sorted_primes[m] > above_or_equal_this) {
@@ -264,8 +264,8 @@ GB_HASH *GBS_create_hash(long user_size, GB_CASE case_sens) {
 }
 
 GB_HASH *GBS_create_dynaval_hash(long user_size, GB_CASE case_sens, void (*freefun)(long)) {
-    /* like GBS_create_hash, but values stored in hash get freed using 'freefun'
-     */
+    // like GBS_create_hash, but values stored in hash get freed using 'freefun'
+
     GB_HASH *hs = GBS_create_hash(user_size, case_sens);
     hs->freefun = freefun;
     return hs;
@@ -281,15 +281,15 @@ static void dump_access(const char *title, GB_HASH *hs, double mean_access) {
             "%s: size=%zu elements=%zu mean_access=%.2f hash-speed=%.1f%%\n",
             title, hs->size, hs->nelem, mean_access, 100.0/mean_access);
 }
-#endif /* DEBUG */
+#endif // DEBUG
 
 void GBS_optimize_hash(GB_HASH *hs) {
-    if (hs->nelem > hs->size) {                     /* hash is overfilled (even full is bad) */
+    if (hs->nelem > hs->size) {                     // hash is overfilled (even full is bad)
         size_t new_size = gbs_get_a_prime(hs->nelem*3);
 
 #if defined(DEBUG)
         dump_access("Optimizing filled hash", hs, GBS_hash_mean_access_costs(hs));
-#endif /* DEBUG */
+#endif // DEBUG
 
         if (new_size>hs->size) { // avoid overflow
             gbs_hash_entry **new_entries = (gbs_hash_entry**)GB_calloc(sizeof(*new_entries), new_size);
@@ -317,7 +317,7 @@ void GBS_optimize_hash(GB_HASH *hs) {
         }
 #if defined(DEBUG)
         dump_access("Optimized hash        ", hs, GBS_hash_mean_access_costs(hs));
-#endif /* DEBUG */
+#endif // DEBUG
 
     }
 }
@@ -345,7 +345,7 @@ char *GBS_hashtab_2_string(GB_HASH *hash) {
 }
 
 
-char *GBS_string_2_hashtab(GB_HASH *hash, char *data){  /* destroys data */
+char *GBS_string_2_hashtab(GB_HASH *hash, char *data){  // destroys data
     char *p,*d,*dp;
     int c;
     char *nextp;
@@ -467,7 +467,7 @@ static long write_hash(GB_HASH *hs, char *key, bool copyKey, long val) {
 }
 
 long GBS_write_hash(GB_HASH *hs, const char *key, long val) {
-    /* returns the old value (or 0 if key had no entry) */
+    // returns the old value (or 0 if key had no entry)
     return write_hash(hs, (char*)key, true, val);
 }
 
@@ -475,12 +475,12 @@ long GBS_write_hash_no_strdup(GB_HASH *hs, char *key, long val) {
     /* same as GBS_write_hash, but does no strdup. 'key' is freed later in GBS_free_hash,
      * so the user has to 'malloc' the string and give control to the hash.
      * Note: after calling this function 'key' may be invalid!
-    */
+     */
     return write_hash(hs, key, false, val);
 }
 
 long GBS_incr_hash(GB_HASH *hs,const char *key) {
-    /* returns new value */
+    // returns new value
     size_t                 i;
     struct gbs_hash_entry *e = find_hash_entry(hs, key, &i);
     long                   result;
@@ -502,8 +502,8 @@ long GBS_incr_hash(GB_HASH *hs,const char *key) {
 }
 
 #if defined(DEVEL_RALF)
-/* #define DUMP_HASH_ENTRIES */
-#endif /* DEVEL_RALF */
+// #define DUMP_HASH_ENTRIES
+#endif // DEVEL_RALF
 
 #if defined(DEBUG)
 double GBS_hash_mean_access_costs(GB_HASH *hs) {
@@ -530,7 +530,7 @@ double GBS_hash_mean_access_costs(GB_HASH *hs) {
     }
     return mean_access;
 }
-#endif /* DEBUG */
+#endif // DEBUG
 
 void GBS_free_hash_entries(GB_HASH *hs)
 {
@@ -548,7 +548,7 @@ void GBS_free_hash_entries(GB_HASH *hs)
         }
         printf("\n");
     }
-#endif /* DUMP_HASH_ENTRIES */
+#endif // DUMP_HASH_ENTRIES
 
 #if defined(DEBUG)
     if (e2 >= 30) { // ignore small hashes
@@ -557,10 +557,10 @@ void GBS_free_hash_entries(GB_HASH *hs)
             dump_access("hash-size-warning", hs, mean_access);
 #if defined(DEVEL_RALF)
             gb_assert(mean_access<2.0); // hash with 50% speed or less
-#endif /* DEVEL_RALF */
+#endif // DEVEL_RALF
         }
     }
-#endif /* DEBUG */
+#endif // DEBUG
 
     for (i = 0; i < e2; i++) {
         for (e = hs->entries[i]; e; e = ee) {
@@ -581,7 +581,7 @@ void GBS_free_hash(GB_HASH *hs)
     free(hs);
 }
 
-/* determine hash quality */
+// determine hash quality
 
 struct gbs_hash_statistic_summary {
     long   count;               // how many stats

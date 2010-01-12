@@ -1,14 +1,13 @@
-/* ============================================================ */
-/*                                                              */
-/*   File      : aditem.c                                       */
-/*   Purpose   : item functions                                 */
-/*                                                              */
-/*   Institute of Microbiology (Technical University Munich)    */
-/*   www.arb-home.de                                            */
-/*                                                              */
-/* ============================================================ */
-
-/* items are e.g. species, SAIs, genes, etc */
+// =============================================================== //
+//                                                                 //
+//   File      : aditem.cxx                                        //
+//   Purpose   : item functions                                    //
+//               items are e.g. species, SAIs, genes, etc          //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include <arbdbt.h>
 #include "gb_local.h"
@@ -59,7 +58,7 @@ GBDATA *GBT_find_or_create_species(GBDATA *gb_main, const char *name) {
 }
 
 GBDATA *GBT_find_or_create_SAI(GBDATA *gb_main,const char *name) {
-    /* Search for an SAI, when SAI does not exist, create it */
+    // Search for an SAI, when SAI does not exist, create it
     return GBT_find_or_create_item_rel_item_data(GBT_get_SAI_data(gb_main), "extended", "name", name, true);
 }
 
@@ -93,7 +92,7 @@ GBDATA *GBT_expect_item_rel_item_data(GBDATA *gb_item_data, const char *id_field
     return gb_found;
 }
 
-/* -------------------------------------------------------------------------------- */
+// --------------------------------------------------------------------------------
 
 GBDATA *GBT_get_species_data(GBDATA *gb_main) {
     return GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
@@ -140,7 +139,7 @@ GBDATA *GBT_expect_species(GBDATA *gb_main, const char *name) {
     return GBT_expect_item_rel_item_data(GBT_get_species_data(gb_main), "name", name);
 }
 
-/* -------------------------------------------------------------------------------- */
+// --------------------------------------------------------------------------------
 
 GBDATA *GBT_get_SAI_data(GBDATA *gb_main) {
     return GB_search(gb_main, "extended_data", GB_CREATE_CONTAINER);
@@ -155,7 +154,7 @@ GBDATA *GBT_next_marked_SAI(GBDATA *gb_sai) {
     return GB_next_marked(gb_sai, "extended");
 }
 
-/* Search SAIs */
+// Search SAIs
 GBDATA *GBT_first_SAI_rel_SAI_data(GBDATA *gb_sai_data) {
     return GB_entry(gb_sai_data, "extended");
 }
@@ -185,8 +184,8 @@ GBDATA *GBT_expect_SAI(GBDATA *gb_main, const char *name) {
     return GBT_expect_item_rel_item_data(GBT_get_SAI_data(gb_main), "name", name);
 }
 
-/* --------------------- */
-/*      count items      */
+// ---------------------
+//      count items
 
 long GBT_get_item_count(GBDATA *gb_parent_of_container, const char *item_container_name) {
     // returns elements stored in a container
@@ -210,7 +209,7 @@ long GBT_get_SAI_count(GBDATA *gb_main) {
     return GBT_get_item_count(gb_main, "extended_data");
 }
 
-/* -------------------------------------------------------------------------------- */
+// --------------------------------------------------------------------------------
 
 char *GBT_create_unique_item_identifier(GBDATA *gb_item_container, const char *id_field, const char *default_id) {
     // returns an identifier not used by items in 'gb_item_container'
@@ -385,7 +384,7 @@ char *GBT_store_marked_species(GBDATA *gb_main, int unmark_all)
 }
 
 NOT4PERL GB_ERROR GBT_with_stored_species(GBDATA *gb_main, const char *stored, species_callback doit, int *clientdata) {
-    /* call function 'doit' with all species stored in 'stored' */
+    // call function 'doit' with all species stored in 'stored'
 
 #define MAX_NAME_LEN 20
     char     name[MAX_NAME_LEN+1];
@@ -422,20 +421,19 @@ static GB_ERROR restore_mark(GBDATA *gb_species, int *) {
 
 GB_ERROR GBT_restore_marked_species(GBDATA *gb_main, const char *stored_marked) {
     /* restores the species-marks to a state currently saved
-       into 'stored_marked' by GBT_store_marked_species
-    */
+     * into 'stored_marked' by GBT_store_marked_species
+     */
 
-    GBT_mark_all(gb_main, 0);   /* unmark all species */
+    GBT_mark_all(gb_main, 0);   // unmark all species
     return GBT_with_stored_species(gb_main, stored_marked, restore_mark, 0);
 }
 
-/********************************************************************************************
-                    read species information
-********************************************************************************************/
+// ---------------------------------
+//      read species information
 
 #if defined(DEVEL_RALF)
 #warning rename the following functions to make the difference more obvious??
-#endif /* DEVEL_RALF */
+#endif // DEVEL_RALF
 GB_CSTR GBT_read_name(GBDATA *gb_item) {
     GB_CSTR result      = GBT_read_char_pntr(gb_item, "name");
     if (!result) result = GBS_global_string("<unnamed_%s>", GB_read_key_pntr(gb_item));

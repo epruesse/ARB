@@ -14,11 +14,11 @@
 #include "gb_local.h"
 
 double GB_log_fak(int n){
-    /* returns log(n!) */
+    // returns log(n!)
     static int     max_n = 0;
     static double *res   = 0;
     
-    if (n<=1) return 0.0;       /* log 1 = 0 */
+    if (n<=1) return 0.0;       // log 1 = 0
 
     if (n >= max_n){
         double sum = 0;
@@ -40,7 +40,7 @@ double GB_log_fak(int n){
 static int randomSeeded = 0;
 
 double GB_frandom() {
-    /* produces a random number in range [0.0 .. 1.0] */
+    // produces a random number in range [0.0 .. 1.0]
     if (!randomSeeded) {
         srand(time(0));
         randomSeeded = 1;;
@@ -49,7 +49,7 @@ double GB_frandom() {
 }
 
 int GB_random(int range) {
-    /* produces a random number in range [0 .. range-1] */
+    // produces a random number in range [0 .. range-1]
     if (!randomSeeded) {
         srand(time(0));
         randomSeeded = 1;
@@ -59,7 +59,7 @@ int GB_random(int range) {
     if (range>RAND_MAX) {
         printf("Warning: range to big for random granularity (%i > %i)\n", range, RAND_MAX);
     }
-#endif /* DEBUG */
+#endif // DEBUG
 
     return (int)(rand()*((double)range) / (RAND_MAX+1.0));
 }
