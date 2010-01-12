@@ -64,7 +64,8 @@ CL *aisc_calc_blocks(CL * co, CL * afor, CL * aif, int up) {
                     aif->ENDIF=co;
                     aelse->ENDIF=co;
                     if (up) return co;
-                }else if(co->command == ELSEIF) {
+                }
+                else if(co->command == ELSEIF) {
                     CL *cod;
                     cod = calloc_CL();
                     *cod = *co;
@@ -89,11 +90,13 @@ CL *aisc_calc_blocks(CL * co, CL * afor, CL * aif, int up) {
                     cod->ENDIF=co;
                     aelse->ENDIF=co;
                     if (up) return co;
-                }else if (co->command == ENDIF) {
+                }
+                else if (co->command == ENDIF) {
                     aif->ELSE=co;
                     aif->ENDIF=co;
                     if (up) return co;
-                }else{
+                }
+                else {
                     print_error("IF without ELSE or ENDIF");
                     return 0;
                 }
@@ -124,11 +127,13 @@ CL *aisc_calc_blocks(CL * co, CL * afor, CL * aif, int up) {
                     afor->ENDFOR=co;
                     anext->ENDFOR=co;
 
-                } else  if (co->command == ENDFOR) {
+                }
+                else if (co->command == ENDFOR) {
                     afor->ENDFOR=co;
                     afor->NEXT=co;
                     co->command = NEXT;
-                }else{
+                }
+                else {
                     print_error("FOR without NEXT or ENDFOR");
                     return 0;
                 }
@@ -222,7 +227,8 @@ int aisc_calc_special_commands(void)
                 s++;
                 SKIP_SPACE_LF(s);
                 s2 = strdup(s);
-            }else{
+            }
+            else {
                 s2 = strdup("");
             }
             buf2    = strdup(buf1);

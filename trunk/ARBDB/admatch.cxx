@@ -336,11 +336,13 @@ GB_CSTR GBS_find_string(GB_CSTR str, GB_CSTR substr, int match_mode) {
             for (p1 = str, p2 = substr; *p1;) {
                 if (!(b = *p2)) {
                     return (char *)str;
-                } else {
+                }
+                else {
                     if (b == *p1) {
                         p1++;
                         p2++;
-                    } else {
+                    }
+                    else {
                         p2 = substr;
                         p1 = (++str);
                     }
@@ -353,11 +355,13 @@ GB_CSTR GBS_find_string(GB_CSTR str, GB_CSTR substr, int match_mode) {
             for (p1 = str, p2 = substr; *p1;) {
                 if (!(b = *p2)) {
                     return (char *)str;
-                } else {
+                }
+                else {
                     if (toupper(*p1) == toupper(b)) {
                         p1++;
                         p2++;
-                    } else {
+                    }
+                    else {
                         p2 = substr;
                         p1 = (++str);
                     }
@@ -369,11 +373,13 @@ GB_CSTR GBS_find_string(GB_CSTR str, GB_CSTR substr, int match_mode) {
             for (p1 = str, p2 = substr; *p1;) {
                 if (!(b = *p2)) {
                     return (char *)str;
-                } else {
+                }
+                else {
                     if (b == *p1 || (b=='?')) {
                         p1++;
                         p2++;
-                    } else {
+                    }
+                    else {
                         p2 = substr;
                         p1 = (++str);
                     }
@@ -386,11 +392,13 @@ GB_CSTR GBS_find_string(GB_CSTR str, GB_CSTR substr, int match_mode) {
             for (p1 = str, p2 = substr; *p1;) {
                 if (!(b = *p2)) {
                     return (char *)str;
-                } else {
+                }
+                else {
                     if (toupper(*p1) == toupper(b) || (b=='?') ) {
                         p1++;
                         p2++;
-                    } else {
+                    }
+                    else {
                         p2 = substr;
                         p1 = (++str);
                     }
@@ -542,7 +550,8 @@ ATTRIBUTED(__ATTR__USERESULT,
                         }
                         if (*p){
                             gb_entry = GB_search(gb_container,p,GB_FIND);
-                        }else{
+                        }
+                        else {
                             gb_entry = gb_container;
                         }
                         if (psym) *psym = separator;
@@ -550,7 +559,8 @@ ATTRIBUTED(__ATTR__USERESULT,
                         if (!gb_entry || gb_entry == gb_container) {
                             GBS_reference_not_found = 1;
                             entry = strdup("");
-                        }else{
+                        }
+                        else {
                             entry = GB_read_as_string(gb_entry);
                         }
                         if (entry) {
@@ -615,7 +625,8 @@ ATTRIBUTED(__ATTR__USERESULT,
                         }
                         if (wildcard_num>=max_mwildcard) {
                             GBS_chrcat(strstruct,c);
-                        }else{
+                        }
+                        else {
                             GBS_strcat(strstruct,mwildcards[wildcard_num]);
                         }
                     }
@@ -751,7 +762,8 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
         bar = strchr(doppelpunkt+1, GBS_SET);               // Parse the command string !!!!
         if (bar) {
             *(bar++) = 0;
-        } else {
+        }
+        else {
             GB_export_errorf("SRT ERROR: no '=' found in command '%s' (position > %zi)", icommand, doppelpunkt-command+1);
             free(command);
             free(in);
@@ -810,7 +822,8 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
                                 goto gbs_pars_unsuccessfull;
                             }
                             break;
-                        }else{
+                        }
+                        else {
                             char *buf1;
                             buf1 = search-1;
                             while ( (c=*(search++)) && c!=GBS_MWILD && c!=GBS_WILD ) ;   // search the next wildcardstring

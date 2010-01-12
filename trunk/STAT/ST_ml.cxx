@@ -44,7 +44,8 @@ void ST_base_vector::set(char base, ST_base_vector * inv_frequencies) {
     AWT_dna_base ub = awt_dna_table.char_to_enum(base);
     if (ub != ST_UNKNOWN) {
         b[ub] = 1.0;
-    } else {
+    }
+    else {
         b[ST_A] = k;
         b[ST_C] = k;
         b[ST_G] = k;
@@ -267,7 +268,8 @@ inline void ST_base_vector::check_overflow()
         for (i = 0; i < ST_MAX_BASE; i++)
             b[i] = .25;
         ld_lik -= 5; // ???
-    } else {
+    }
+    else {
         while (sum < 0.25) {
             sum *= 4;
             ld_lik -= 2;
@@ -766,7 +768,8 @@ int ST_ML::update_ml_likelihood(char *result[4], int *latest_update,
             for (i = 0; i < 4; i++) {
                 result[i][pos] = -1;
             }
-        } else {
+        }
+        else {
             double div = 100.0 / sum;
 
             for (i = 0; i < 4; i++) {

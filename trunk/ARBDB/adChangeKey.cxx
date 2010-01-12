@@ -68,14 +68,9 @@ GB_ERROR GBT_add_new_changekey_to_keypath(GBDATA *gb_main, const char *name, int
 
         *GB_first_non_key_char(new_name) = 0;
 
-        if (*c =='/') {
-            error = GBT_add_new_changekey(gb_main, new_name, GB_DB);
-        } else if (*c =='-') {
-            error = GBT_add_new_changekey(gb_main, new_name, GB_LINK);
-        } else {
-            error = GBS_global_string("Cannot add '%s' to your key list "
-                                      "(illegal character '%c')", name, *c);
-        }
+        if      (*c =='/') error = GBT_add_new_changekey(gb_main, new_name, GB_DB);
+        else if (*c =='-') error = GBT_add_new_changekey(gb_main, new_name, GB_LINK);
+        else               error = GBS_global_string("Cannot add '%s' to your key list (illegal character '%c')", name, *c);
 
         free(new_name);
     }
@@ -83,25 +78,19 @@ GB_ERROR GBT_add_new_changekey_to_keypath(GBDATA *gb_main, const char *name, int
     if (!error) {
         if (!gb_key) {          // create new key
             GBDATA *gb_key_data = GB_search(gb_main, keypath, GB_CREATE_CONTAINER);
-            gb_key = gb_key_data ?
-                GB_create_container(gb_key_data, CHANGEKEY)
-                : 0;
-            if (!gb_key) {
-                error = GB_await_error();
-            } else {
-                error = GBT_write_string(gb_key, CHANGEKEY_NAME, name);
-                if (!error)
-                    error = GBT_write_int(gb_key, CHANGEKEY_TYPE, type);
+            gb_key              = gb_key_data ? GB_create_container(gb_key_data, CHANGEKEY) : 0;
+
+            if (!gb_key) error = GB_await_error();
+            else {
+                error             = GBT_write_string(gb_key, CHANGEKEY_NAME, name);
+                if (!error) error = GBT_write_int(gb_key, CHANGEKEY_TYPE, type);
             }
         }
         else {                  // check type of existing key
             long *elem_type = GBT_read_int(gb_key, CHANGEKEY_TYPE);
-            if (!elem_type) {
-                error = GB_await_error();
-            } else if (*elem_type != type) {
-                error = GBS_global_string("Key '%s' exists, "
-                                          "but has different type", name);
-            }
+
+            if (!elem_type)              error = GB_await_error();
+            else if (*elem_type != type) error = GBS_global_string("Key '%s' exists, but has different type", name);
         }
     }
 

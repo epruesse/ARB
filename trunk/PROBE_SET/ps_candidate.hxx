@@ -110,7 +110,8 @@ public:
 //                 //printf( "\n[%i] (%i)", i->first, i->second.size() );
 //             }
             return one_false_IDs->size();
-        } else {
+        }
+        else {
             one_false_IDs = new ID2IDSet();
             false_IDs     = 0;
             //false_IDs     = new ID2IndexSetSet();
@@ -154,7 +155,8 @@ public:
               ++p ) {
             if (_path.find( p->first ) == path_end) {
                 if (_path.find( p->second ) != path_end) ++matches;
-            } else {
+            }
+            else {
                 if (_path.find( p->second ) == path_end) ++matches;
             }
         }
@@ -191,7 +193,8 @@ public:
         if (node.isNull()) return false;
         if (_ps_node == node) {
             return true;
-        } else {
+        }
+        else {
             return parent->alreadyUsedNode( _ps_node );
         }
     }
@@ -205,7 +208,8 @@ public:
             PS_CandidateSPtr new_child( new PS_Candidate(_distance, _gain, _node, _path, this) );
             children[ _gain ] = new_child;
             return 2;
-        } else if (_distance < found->second->distance) {
+        }
+        else if (_distance < found->second->distance) {
             children.erase( _gain );
             PS_CandidateSPtr new_child( new PS_Candidate(_distance, _gain, _node, _path, this) );
             children[ _gain ] = new_child;
@@ -273,7 +277,8 @@ public:
                     to_delete = c;
                 }
             }
-        } else if (_filling_level < 75.0) {
+        }
+        else if (_filling_level < 75.0) {
             if (children.size() <= 2) return;
             for ( PS_CandidateByGainMapIter c = children.begin();
                   c != children.end();
@@ -287,7 +292,8 @@ public:
                     to_delete = c;
                 }
             }
-        } else {
+        }
+        else {
             if (children.size() <= 1) return;
             for ( PS_CandidateByGainMapIter c = children.begin();
                   c != children.end();
@@ -319,12 +325,14 @@ public:
                 printf( "|  " );
             }
             printf( "[%p] depth (%lu) no node\n", this, _depth );
-        } else if (node->countProbes() == 0) {
+        }
+        else if (node->countProbes() == 0) {
             for (unsigned long i = 0; i < _depth; ++i) {
                 printf( "|  " );
             }
             printf( "[%p] depth (%lu)  node (%p)  no probes\n", this, _depth, &(*node) );
-        } else {
+        }
+        else {
             for ( PS_ProbeSetCIter probe = node->getProbesBegin();
                   probe != node->getProbesEnd();
                   ++probe ) {
@@ -368,7 +376,8 @@ public:
                 path.size() );
         if (node.isNull()) {
             printf( "node (undefined)  children (%2zu)  ", children.size() );
-        } else {
+        }
+        else {
             printf( "node (%p)  children (%2zu)  ", &(*node), children.size() );
         }
 //             unsigned long count = 0;
@@ -390,7 +399,8 @@ public:
                       ++p ) {
                     printf( "(%i %i)  ", p->first, p->second );
                 }
-            } else {
+            }
+            else {
                 printf( "none" );
             }
         }
@@ -423,7 +433,8 @@ public:
                 _file->put_int( p->first );
                 _file->put_int( p->second );
             }
-        } else {
+        }
+        else {
             _file->put_ulong( 0 );
         }
         // one_false_IDs_matches

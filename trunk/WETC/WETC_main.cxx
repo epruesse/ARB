@@ -28,7 +28,8 @@ int main(int argc,char **argv){
 
     if (!strcmp(com,"-fileedit")){
         AWT_show_file(aw_root, argv[2]);
-    }else{
+    }
+    else {
         GB_export_error("wrong parameter, allowed: [-fileedit] file");
         GB_print_error();
         exit(-1);

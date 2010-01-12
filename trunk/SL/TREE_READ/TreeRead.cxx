@@ -209,7 +209,8 @@ static char *gbt_read_quoted_string(TreeReader *reader){
             c = gbt_read_char(reader);
             if (c == '\'') goto gbt_lt_double_quot;
         }
-    }else{
+    }
+    else {
         while ( c== '_') c = gbt_read_char(reader);
         while ( c== ' ') c = gbt_read_char(reader);
         while ( (c != ':') && (c!= EOF) && (c!=',') &&

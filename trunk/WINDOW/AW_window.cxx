@@ -615,7 +615,8 @@ static void AW_timer_callback(XtPointer aw_timer_cb_struct, XtIntervalId *id) {
         (unsigned long)25, // wait 25 msec = 1/40 sec
         (XtTimerCallbackProc)AW_timer_callback,
         aw_timer_cb_struct);
-    } else {
+    }
+    else {
         tcbs->f(root, tcbs->cd1, tcbs->cd2);
         delete tcbs; // timer only once
     }
@@ -811,13 +812,15 @@ void AW_cb_struct::run_callback(void) {
             if (g) {
                 pop_up_window = g(aw->get_root(), cd2, 0);
                 pop_up_window->show();
-            } else {
+            }
+            else {
                 aw_message("not implemented -- please report to devel@arb-home.de");
             }
         }
         if (pop_up_window && p_aww(pop_up_window)->popup_cb)
             p_aww(pop_up_window)->popup_cb->run_callback();
-    } else {
+    }
+    else {
         f(aw, cd1, cd2);
     }
     
@@ -884,7 +887,8 @@ void AW_server_callback(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data)
 
     if (cbs->f == AW_POPUP) {
         cbs->run_callback();
-    } else {
+    }
+    else {
         p_global->set_cursor(XtDisplay(p_global->toplevel_widget),
                 XtWindow(p_aww(cbs->aw)->shell),
                 p_global->clock_cursor);
@@ -900,7 +904,8 @@ void AW_server_callback(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data)
             p_global->set_cursor(XtDisplay(p_global->toplevel_widget),
                     XtWindow(p_aww(cbs->aw)->shell),
                     p_global->question_cursor);
-        } else {
+        }
+        else {
             p_global->set_cursor(XtDisplay(p_global->toplevel_widget),
                     XtWindow(p_aww(cbs->aw)->shell),
                     0);
@@ -1137,16 +1142,19 @@ static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAr
         if (area && area->double_click_cb) {
             if ( (ev->xbutton.time - area->click_time ) < 200) {
                 run_double_click_callback = true;
-            } else {
+            }
+            else {
                 run_callback = true;
             }
             area->click_time = ev->xbutton.time;
-        } else {
+        }
+        else {
             run_callback = true;
         }
 
         aww->event.time = ev->xbutton.time;
-    } else if (ev->xbutton.type == ButtonRelease) {
+    }
+    else if (ev->xbutton.type == ButtonRelease) {
         aww->event.type = AW_Mouse_Release;
         aww->event.button = ev->xbutton.button;
         aww->event.x = ev->xbutton.x;
@@ -1157,7 +1165,8 @@ static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAr
         //  aww->event.time     use old time
 
         run_callback = true;
-    } else if (ev->xkey.type == KeyPress || ev->xkey.type == KeyRelease) {
+    }
+    else if (ev->xkey.type == KeyPress || ev->xkey.type == KeyRelease) {
         aww->event.time = ev->xbutton.time;
 
         const awXKeymap *mykey = aw_xkey_2_awkey(&(ev->xkey));
@@ -1167,13 +1176,15 @@ static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAr
 
         if (mykey->awstr) {
             aww->event.character = mykey->awstr[0];
-        } else {
+        }
+        else {
             aww->event.character = 0;
         }
 
         if (ev->xkey.type == KeyPress) {
             aww->event.type = AW_Keyboard_Press;
-        } else {
+        }
+        else {
             aww->event.type = AW_Keyboard_Release;
         }
         aww->event.button = 0;
@@ -1184,7 +1195,8 @@ static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAr
                 <= AW_KEY_F12 && p_aww(aww)->modes_f_callbacks && p_aww(aww)->modes_f_callbacks[mykey->awkey-AW_KEY_F1]
                 && aww->event.type == AW_Keyboard_Press) {
             p_aww(aww)->modes_f_callbacks[mykey->awkey-AW_KEY_F1]->run_callback();
-        } else {
+        }
+        else {
             run_callback = true;
         }
     }
@@ -1199,7 +1211,8 @@ static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAr
     if (run_double_click_callback) {
         if (cbs->help_text == (char*)1) {
             cbs->run_callback();
-        } else {
+        }
+        else {
             if (area)
                 area->double_click_cb->run_callback();
         }
@@ -1346,7 +1359,8 @@ static void aw_root_create_color_map(AW_root *root) {
         p_global->color_table[AW_WINDOW_C1] = white;
         p_global->color_table[AW_WINDOW_C2] = white;
         p_global->color_table[AW_WINDOW_C3] = white;
-    } else { // Color monitor
+    }
+    else { // Color monitor
         const char **awar_2_color;
         int color;
         for (color = 0, awar_2_color = aw_awar_2_color;
@@ -1443,7 +1457,8 @@ void AW_root::init_root(const char *programname, bool no_exit) {
 
     if (fontstruct->max_bounds.width == fontstruct->min_bounds.width) {
         font_width = fontstruct->max_bounds.width;
-    } else {
+    }
+    else {
         font_width = (fontstruct->min_bounds.width
                 + fontstruct->max_bounds.width) / 2;
     }
@@ -1470,7 +1485,8 @@ void AW_root::init_root(const char *programname, bool no_exit) {
     p_r->screen_depth = PlanesOfScreen( XtScreen(p_r->toplevel_widget) );
     if (p_r->screen_depth == 1) {
         color_mode = AW_MONO_COLOR;
-    } else {
+    }
+    else {
         color_mode = AW_RGB_COLOR;
     }
     p_r->colormap = DefaultColormapOfScreen( XtScreen(p_r->toplevel_widget) );
@@ -1642,7 +1658,8 @@ AW_color AW_window::alloc_named_data_color(int colnum, char *colorname) {
                 *color_table_size);
         memset((char *)color_table, -1, (size_t)(color_table_size
                 *sizeof(unsigned long)));
-    } else {
+    }
+    else {
         if (colnum>=color_table_size) {
             color_table = (unsigned long *)realloc((char *)color_table, (8
                     + colnum)*sizeof(long)); // valgrinders : never freed because AW_window never is freed
@@ -1662,12 +1679,14 @@ AW_color AW_window::alloc_named_data_color(int colnum, char *colorname) {
         }
         if (col==1) {
             color_table[colnum] = WhitePixelOfScreen( XtScreen(p_global->toplevel_widget) );
-        } else {
+        }
+        else {
             color_table[colnum] = BlackPixelOfScreen( XtScreen(p_global->toplevel_widget) );
         }
         if (colnum == AW_DATA_BG)
             col *=-1;
-    } else { // Color monitor
+    }
+    else { // Color monitor
         if (color_table[colnum] !=(unsigned long)-1 ) {
             XFreeColors(p_global->display, p_global->colormap, &color_table[colnum],1,0);
         }
@@ -1676,7 +1695,8 @@ AW_color AW_window::alloc_named_data_color(int colnum, char *colorname) {
             sprintf(AW_ERROR_BUFFER, "XAllocColor failed: %s\n", colorname);
             aw_message();
             color_table[colnum] = (unsigned long)-1;
-        } else {
+        }
+        else {
             color_table[colnum] = xcolor_returned.pixel;
         }
     }
@@ -1994,7 +2014,8 @@ Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int 
                                      XmNdeleteResponse, XmDO_NOTHING,
                                      XtNiconPixmap, icon_pixmap, 
                                      NULL);
-    } else {
+    }
+    else {
         shell = XtVaCreatePopupShell("transient", transientShellWidgetClass,
                                      father, 
                                      XmNwidth, width, 
@@ -2787,11 +2808,13 @@ static const char *possible_mnemonics(int menu_deep, const char *topic_name) {
         bool remove = false;
         if (!isalnum(unused[t])) { // remove useless chars
             remove = true;
-        } else {
+        }
+        else {
             char *dup = strchr(unused, unused[t]);
             if (dup && (dup-unused)<t) { // remove duplicated chars
                 remove = true;
-            } else {
+            }
+            else {
                 dup = strchr(unused, oppositeCase(unused[t]));
                 if (dup && (dup-unused)<t) { // char is duplicated with opposite case
                     dup[0] = toupper(dup[0]); // prefer upper case
@@ -2908,7 +2931,8 @@ static void close_test_duplicate_mnemonics(int menu_deep) {
     char *slash = strrchr(TD_menu_name, '|');
     if (slash) {
         slash[0] = 0;
-    } else {
+    }
+    else {
         TD_menu_name[0] = 0;
     }
 }
@@ -3050,7 +3074,8 @@ void AW_window::insert_menu_topic(const char *topic_id, AW_label name,
                 RES_LABEL_CONVERT( name ),
                                           RES_CONVERT( XmNmnemonic, mnemonic ), 
                                           XmNbackground, _at->background_color, NULL );
-    } else {
+    }
+    else {
         button = XtVaCreateManagedWidget( "",
         xmPushButtonWidgetClass,
         p_w->menu_bar[p_w->menu_deep],
@@ -3570,7 +3595,8 @@ GB_ERROR AW_root::start_macro_recording(const char *file,
     char *path = 0;
     if (file[0] == '/') {
         path = strdup(file);
-    } else {
+    }
+    else {
         path = GBS_global_string_copy("%s/%s", GB_getenvARBMACROHOME(), file);
     }
     char *macro_header = GB_read_file("$(ARBHOME)/lib/macro.head");
@@ -3615,7 +3641,8 @@ GB_ERROR AW_root::execute_macro(const char *file) {
     char *path = 0;
     if (file[0] == '/') {
         path = strdup(file);
-    } else {
+    }
+    else {
         path = GBS_global_string_copy("%s/%s", GB_getenvARBMACROHOME(), file);
     }
     const char *com = GBS_global_string("perl %s &", path);
@@ -3711,7 +3738,8 @@ GB_ERROR AW_root::check_for_remote_command(AW_default gb_maind, const char *rm_b
         if (cbs) {
             cbs->run_callback();
             GBT_write_string(gb_main, awar_result, "");
-        } else {
+        }
+        else {
             aw_message(GB_export_errorf("Unknown action '%s' in macro", action));
             GBT_write_string(gb_main, awar_result, GB_await_error());
         }
@@ -3739,7 +3767,8 @@ void AW_window::set_background(const char *colorname, Widget parentWidget) {
         if (XAllocNamedColor(p_global->display, p_global->colormap, colorname, &color, &unused)
                 == 0) {
             fprintf(stderr,"XAllocColor failed: %s\n", colorname);
-        } else {
+        }
+        else {
             _at->background_color = color.pixel;
             colorSet = true;
         }
@@ -3776,7 +3805,8 @@ void AW_window::TuneOrSetBackground(Widget w, const char *color, int modStrength
         default:
             set_background(color, w); // use explicit color
         }
-    } else {
+    }
+    else {
         TuneBackground(w, modStrength);
     }
 }
@@ -3818,11 +3848,13 @@ void AW_window::TuneBackground(Widget w, int modStrength) {
             mod -= 256;
             preferredDir = 1; // increase preferred
         }
-    } else {
+    }
+    else {
         if (modStrength<-255) {
             mod = -modStrength-256;
             preferredDir = -1; // decrease preferred
-        } else {
+        }
+        else {
             invertedMod = true;
             mod = -mod;
         }

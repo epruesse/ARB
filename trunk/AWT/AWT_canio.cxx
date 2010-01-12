@@ -35,7 +35,8 @@ static void awt_print_tree_check_size(void *, AW_CL cl_ntw) {
         size_device->set_filter(AW_SCREEN);
         ntw->tree_disp->show(size_device);
         size_device->get_size_information(&size);
-    }else{
+    }
+    else {
         size_device->get_area_size(&size);
     }
 

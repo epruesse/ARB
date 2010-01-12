@@ -162,13 +162,15 @@ void CON_evaluatestatistic(char   *&result,int **statistic,char **groupflags,
 
         if((highestfr*100.0/numentries)>=fupper)  {
             result[column]=groupnames[highestgr];
-        } else if((highestfr*100/numentries)>=lower){
+        }
+        else if((highestfr*100/numentries)>=lower) {
             char c=groupnames[highestgr];
             if(c>='A' && c<='Z') {
                 c=c-'A'+'a';
             }
             result[column]=c;
-        } else {
+        }
+        else {
             result[column]='.';
         }
     }
@@ -297,13 +299,15 @@ long CON_makestatistic(int **statistic,int *convtable,char *align,int onlymarked
 
     if (onlymarked) {
         nrofspecies = GBT_count_marked_species(GLOBAL_gb_main);
-    } else {
+    }
+    else {
         nrofspecies = GBT_get_species_count(GLOBAL_gb_main);
     }
 
     if (onlymarked) {
         gb_species = GBT_first_marked_species(GLOBAL_gb_main);
-    }else{
+    }
+    else {
         gb_species = GBT_first_species(GLOBAL_gb_main);
     }
 
@@ -328,7 +332,8 @@ long CON_makestatistic(int **statistic,int *convtable,char *align,int onlymarked
         }
         if (onlymarked) {
             gb_species = GBT_next_marked_species(gb_species);
-        }else{
+        }
+        else {
             gb_species = GBT_next_species(gb_species);
         }
     }
@@ -382,7 +387,8 @@ void CON_maketables(int *convtable,int **statistic,long maxalignlen,int isamino)
             statistic[i]=(int*)GB_calloc((unsigned int)maxalignlen,sizeof(int));
         }
         statistic[MAX_BASES]=NULL;
-    }else{
+    }
+    else {
         for(i=0;i<MAX_AMINOS-1;i++)
         {
             convtable['a'+i]=i+1;
@@ -519,7 +525,8 @@ GB_ERROR CON_export(char *savename,char *align,int **statistic,char *result,int 
                     additional[diffchar][col]=relative;
                 }
                 additional[0][col]=highest;
-            }else{
+            }
+            else {
                 additional[0][col]=0.0;
             }
         }
@@ -950,7 +957,8 @@ void CON_calc_max_freq_cb(AW_window *aw){
         if (sum == 0){
             result[pos] = '=';
             result2[pos] = '=';
-        }else{
+        }
+        else {
             result[pos] = "01234567890"[((10*max)/sum)%11];
             result2[pos] = "01234567890"[((100*max)/sum)%10];
         }

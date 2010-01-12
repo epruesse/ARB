@@ -47,7 +47,8 @@ GB_ERROR gb_scan_directory(char *basename, gb_scandir *sd) { // goes to header: 
     if (file) {
         *(file++) = 0;
         fulldir = path;
-    } else {
+    }
+    else {
         file = path;
     }
 

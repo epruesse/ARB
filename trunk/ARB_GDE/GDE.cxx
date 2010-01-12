@@ -271,7 +271,8 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root,GmenuItem *gmenuitem) {
                      int(gmenuitem->arg[i].min) == gmenuitem->arg[i].min &&
                      int(gmenuitem->arg[i].max) == gmenuitem->arg[i].max){
                     aw_root->awar_int(newawar,(long)gmenuitem->arg[i].fvalue,AW_ROOT_DEFAULT);
-                }else{
+                }
+                else {
                     aw_root->awar_float(newawar,gmenuitem->arg[i].fvalue,AW_ROOT_DEFAULT);
                 }
                 aw_root->awar(newawar)->set_minmax(gmenuitem->arg[i].min,gmenuitem->arg[i].max);

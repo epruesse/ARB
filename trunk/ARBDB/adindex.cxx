@@ -434,7 +434,8 @@ GB_ERROR g_b_undo_entry(GB_MAIN_TYPE *Main,struct g_b_undo_entry_struct *ue){
                 int type = GB_TYPE(gbd);
                 if (type == GB_DB) {
                     gbd = (GBDATA *)gb_make_pre_defined_container((GBCONTAINER *)ue->source,(GBCONTAINER *)gbd,-1, ue->d.gs.key);
-                }else{
+                }
+                else {
                     gbd = gb_make_pre_defined_entry((GBCONTAINER *)ue->source,gbd,-1, ue->d.gs.key);
                 }
                 GB_ARRAY_FLAGS(gbd).flags = ue->flag;
@@ -449,7 +450,8 @@ GB_ERROR g_b_undo_entry(GB_MAIN_TYPE *Main,struct g_b_undo_entry_struct *ue){
                 int type  = GB_TYPE(gbd);
                 if (type == GB_DB) {
 
-                }else{
+                }
+                else {
                     gb_save_extern_data_in_ts(gbd); // check out and free string
 
                     if (ue->d.ts) { // nothing to undo (e.g. if undoing GB_touch)
@@ -611,7 +613,8 @@ char *gb_disable_undo(GBDATA *gb_main){
     if (!u->entries){       // nothing to undo, just a read transaction
         u->father->stack = u->next;
         delete_g_b_undo_struct(u);
-    }else{
+    }
+    else {
         if (Main->requested_undo_type == GB_UNDO_UNDO) {    // remove all redos
             struct g_b_undo_struct *a,*next;
             for ( a= Main->undo->r->stack; a; a = next){
@@ -688,7 +691,8 @@ void gb_check_in_undo_delete(GB_MAIN_TYPE *Main,GBDATA *gbd, int deep){
                 gb_check_in_undo_delete(Main,gbd2,deep+1);
             }
         };
-    }else{
+    }
+    else {
         GB_INDEX_CHECK_OUT(gbd);
         gbd->flags2.tisa_index = 0; // never check in again
     }
@@ -707,7 +711,8 @@ void gb_check_in_undo_delete(GB_MAIN_TYPE *Main,GBDATA *gbd, int deep){
 
     if (type == GB_DB) {
         g_b_add_size_to_undo_entry(ue,sizeof(GBCONTAINER));
-    }else{
+    }
+    else {
         if (type >= GB_BITS && gbd->flags2.extern_data) {
             /* we have copied the data structures, now
                mark the old as deleted !!! */

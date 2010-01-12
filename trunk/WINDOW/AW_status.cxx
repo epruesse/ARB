@@ -325,7 +325,8 @@ static int aw_status_read_command(int fd, int poll_flag, char*& str, int *gaugeP
 
         *p  = 0;
         str = strdup(buffer);
-    }else{
+    }
+    else {
         str = 0;
     }
     return cmd;
@@ -784,7 +785,8 @@ void aw_initstatus( void )
         fprintf(stderr, "Forked status! (i am the father)\n"); fflush(stderr);
 #endif // TRACE_STATUS
         return;
-    } else {
+    }
+    else {
         GB_install_pid(1);
 
 #if defined(TRACE_STATUS)

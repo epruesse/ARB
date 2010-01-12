@@ -399,7 +399,8 @@ GB_ERROR TREE_export_tree(GBDATA *, FILE *out, GBT_TREE *tree, bool triple_root,
             one = tree->leftson;
             two = tree->rightson->leftson;
             three = tree->rightson->rightson;
-        }else{
+        }
+        else {
             one = tree->leftson->leftson;
             two = tree->leftson->rightson;
             three = tree->rightson;

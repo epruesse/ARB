@@ -37,10 +37,12 @@ struct lt_probe
         if (abs(p1->quality) == abs(p2->quality)) {
             if (p1->length == p2->length) {
                 return (p1->GC_content < p2->GC_content); // equal quality & length => sort by GC-content
-            } else {
+            }
+            else {
                 return (p1->length < p2->length);         // equal quality => sort by length
             }
-        } else {
+        }
+        else {
             return ((p1->quality < p2->quality));       // sort by quality
         }
     }
@@ -83,7 +85,8 @@ public:
         if (it == children.end()) {
             children[_child->getNum()] = _child;
             return true;
-        } else {
+        }
+        else {
             printf( "child[#%u] already exists\n",_child->getNum() );
             return false;
         }
@@ -95,7 +98,8 @@ public:
             PS_NodePtr new_child(new PS_Node(_id));
             children[_id] = new_child;
             return new_child;
-        } else {
+        }
+        else {
             return it->second;
         }
     }
@@ -132,7 +136,8 @@ public:
             probes = new PS_ProbeSet;
             probes->insert(probe);
             return true;
-        } else {
+        }
+        else {
             pair<PS_ProbeSetCIter,bool> p = probes->insert(probe);
             //          if (!p.second) {
             //              printf( "probe " ); PS_printProbe(probe);

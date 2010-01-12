@@ -152,7 +152,8 @@ void AWT_canvas::zoom_reset( void )
             }
             //             if (tree_disp->exports.dont_fit_y) { // Ralf: old version (IMHO wrong)
             //                 ;
-            //             }else{
+            //             }
+            //             else {
             //                 if (y_scale < x_scale) x_scale = y_scale;
             //             }
         }
@@ -692,7 +693,8 @@ void AWT_canvas::scroll( AW_window *dummy, int dx, int dy, bool dont_update_scro
         csx = dx;
         cdx = 0;
         cwidth = screenwidth-dx;
-    }else{
+    }
+    else {
         csx = 0;
         cdx = -dx;
         cwidth = screenwidth+dx;
@@ -701,7 +703,8 @@ void AWT_canvas::scroll( AW_window *dummy, int dx, int dy, bool dont_update_scro
         csy = dy;
         cdy = 0;
         cheight = screenheight-dy;
-    }else{
+    }
+    else {
         csy = 0;
         cdy = -dy;
         cheight = screenheight+dy;
@@ -737,7 +740,8 @@ void AWT_canvas::scroll( AW_window *dummy, int dx, int dy, bool dont_update_scro
                             0,  -dy,
                             0,  CLIP_OVERLAP);
         }
-    }else{          // redraw everything
+    }
+    else {          // redraw everything
         /* redraw stripes */
         this->shift_x_to_fit -= dx/this->trans_to_fit;
         this->shift_y_to_fit -= dy/this->trans_to_fit;

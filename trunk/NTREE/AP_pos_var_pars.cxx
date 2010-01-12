@@ -93,7 +93,8 @@ const char *AP_pos_var::parsimony(GBT_TREE *tree, GB_UINT4 *bases, GB_UINT4 *tba
             r = rs[i];
             if ( l & r ) {
                 if (bases) bases[i] = l&r;
-            }else{
+            }
+            else {
                 transitions[i] ++;
                 if (bases) bases[i] = l|r;
             }
@@ -101,7 +102,8 @@ const char *AP_pos_var::parsimony(GBT_TREE *tree, GB_UINT4 *bases, GB_UINT4 *tba
             r = rts[i];
             if ( l & r ) {
                 if (tbases) tbases[i] = l&r;
-            }else{
+            }
+            else {
                 transversions[i] ++;
                 if (tbases) tbases[i] = l|r;
             }

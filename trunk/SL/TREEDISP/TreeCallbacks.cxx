@@ -715,10 +715,12 @@ void NT_jump_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL auto_expand_groups)
                     device->transform(xs, ys, x, y);
                     if (y < 0.0) {
                         ntw->scroll(aww, 0, (int) (y - screen.b * .5));
-                    } else if (y > screen.b) {
+                    }
+                    else if (y > screen.b) {
                         ntw->scroll(aww, 0, (int) (y - screen.b * .5));
                     }
-                }else{
+                }
+                else {
                     if (auto_expand_groups){
                         aw_message(GBS_global_string("Sorry, I didn't find the species '%s' in this tree", name));
                     }
@@ -742,10 +744,12 @@ void NT_jump_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL auto_expand_groups)
                         device->transform(xs, ys, x, y);
                         if (y < 0.0) {
                             ntw->scroll(aww, 0, (int) (y - screen.b * .5));
-                        } else if (y > screen.b) {
+                        }
+                        else if (y > screen.b) {
                             ntw->scroll(aww, 0, (int) (y - screen.b * .5));
                         }
-                    }else{
+                    }
+                    else {
                         if (auto_expand_groups){
                             aw_message(GBS_global_string("Sorry, your species '%s' is not marked and therefore not in this list", name));
                         }

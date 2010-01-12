@@ -500,7 +500,8 @@ GB_ERROR checkAndMergeFields( GBDATA *gb_new_species, GB_ERROR error, speciesCon
                                                     doneSpecies++;
                                                 }
                                                 free(content2);
-                                            } else {
+                                            }
+                                            else {
                                                 fieldStat[j] = -1;
                                                 doneSpecies++;
                                             }
@@ -508,7 +509,8 @@ GB_ERROR checkAndMergeFields( GBDATA *gb_new_species, GB_ERROR error, speciesCon
                                         sl3 = sl3->next; j++;
                                     }
                                     free(content); nextStat++;
-                                } else {
+                                }
+                                else {
                                     fieldStat[i] = -1; // field does not exist here
                                     doneSpecies++;
                                 }

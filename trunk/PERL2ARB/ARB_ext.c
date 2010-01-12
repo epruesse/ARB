@@ -36,7 +36,8 @@ void GBP_callback(GBDATA *gbd, int *cl, GB_CB_TYPE cb_type){
     XPUSHs(sv_2mortal(newSVpv(perl_cl, 0)));
     if (cb_type & GB_CB_DELETE) {
 	XPUSHs(sv_2mortal(newSVpv("DELETED", 0)));
-    }else{
+    }
+    else {
 	XPUSHs(sv_2mortal(newSVpv("CHANGED", 0)));
     }
 
@@ -63,7 +64,8 @@ GB_ERROR GBP_add_callback(GBDATA *gbd, char *perl_func, char *perl_cl){
     if (!GBS_read_hash(gbp_cp_hash_table,data)){
 	GBS_write_hash(gbp_cp_hash_table,data,(long)data);
 	error = GB_add_callback(gbd, GB_CB_TYPE(GB_CB_DELETE|GB_CB_CHANGED), GBP_callback, (int *)arg);
-    }else{
+    }
+    else {
 	free(arg);
     }
     free(data);
@@ -80,7 +82,8 @@ GB_ERROR GBP_remove_callback(GBDATA *gbd, char *perl_func, char *perl_cl){
     if (!arg){
 	free(data);
 	return GB_export_errorf("Sorry: You never installed a callback '%s:%s'",perl_func,perl_cl);
-    }else{
+    }
+    else {
 	GBS_write_hash(gbp_cp_hash_table,data,0);
 	free(data);
 	free(arg);

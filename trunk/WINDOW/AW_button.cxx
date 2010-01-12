@@ -112,7 +112,8 @@ AW_variable_update_struct::AW_variable_update_struct(Widget widgeti,
     awar = awari;
     if (var_s_i) {
         variable_value = strdup(var_s_i);
-    } else {
+    }
+    else {
         variable_value = 0;
     }
     variable_int_value = var_i_i; // used for toggles and selection menus
@@ -318,7 +319,8 @@ void     aw_attach_widget(Widget scrolledWindowText,AW_at *_at,int default_width
                         XmNrightAttachment,     XmATTACH_FORM,
                         XmNrightOffset,         right_offset,
                         NULL );
-    }else{
+    }
+    else {
         XtVaSetValues(  scrolledWindowText,
                         XmNrightAttachment,     XmATTACH_OPPOSITE_FORM,
                         XmNrightOffset,         -_at->to_position_x,
@@ -329,7 +331,8 @@ void     aw_attach_widget(Widget scrolledWindowText,AW_at *_at,int default_width
                         XmNwidth,               _at->to_position_x - _at->x_for_next_button,
                         XmNleftAttachment,      XmATTACH_NONE,
                         NULL );
-    }else{
+    }
+    else {
         XtVaSetValues(  scrolledWindowText,
                         XmNleftAttachment,      XmATTACH_FORM,
                         XmNleftOffset,          _at->x_for_next_button,
@@ -347,7 +350,8 @@ void     aw_attach_widget(Widget scrolledWindowText,AW_at *_at,int default_width
                         XmNbottomAttachment,    XmATTACH_FORM,
                         XmNbottomOffset,        bottom_offset,
                         NULL );
-    }else{
+    }
+    else {
         XtVaSetValues(  scrolledWindowText,
                         XmNbottomAttachment,    XmATTACH_OPPOSITE_FORM,
                         XmNbottomOffset,        - _at->to_position_y,
@@ -359,7 +363,8 @@ void     aw_attach_widget(Widget scrolledWindowText,AW_at *_at,int default_width
                         XmNtopAttachment,       XmATTACH_NONE,
                         NULL );
 
-    }else{
+    }
+    else {
         XtVaSetValues(  scrolledWindowText,
                         XmNtopAttachment,       XmATTACH_FORM,
                         XmNtopOffset,           _at->y_for_next_button,
@@ -1176,7 +1181,8 @@ void AW_window::create_text_field( const char *var_name, int columns, int rows )
         if ( _at->y_for_next_button < _at->to_position_y - 18 ) {
             height_of_text = _at->to_position_y - _at->y_for_next_button - 18;
         }
-    }else{
+    }
+    else {
         scrolledWindowText = XtVaCreateManagedWidget( "scrolledWindowText",
                                                       xmScrolledWindowWidgetClass,
                                                       INFO_WIDGET,
@@ -1325,7 +1331,8 @@ AW_selection_list* AW_window::create_selection_list( const char *var_name, const
 
         width_of_last_widget = _at->to_position_x - _at->x_for_next_button;
         height_of_last_widget = _at->to_position_y - _at->y_for_next_button;
-    }else{
+    }
+    else {
         scrolledWindowList = XtVaCreateManagedWidget( "scrolledWindowList1",
                                                       xmScrolledWindowWidgetClass,
                                                       INFO_WIDGET,
@@ -1397,7 +1404,8 @@ AW_selection_list* AW_window::create_selection_list( const char *var_name, const
         if ( p_global->selection_list ) {
             p_global->last_selection_list->next = new AW_selection_list( var_name, type, scrolledList );
             p_global->last_selection_list = p_global->last_selection_list->next;
-        }else {
+        }
+        else {
             p_global->last_selection_list = p_global->selection_list = new AW_selection_list( var_name, type, scrolledList );
         }
     }
@@ -1707,7 +1715,8 @@ void AW_window::insert_selection(AW_selection_list *selection_list, const char *
         selection_list->last_of_list_table->next = new AW_select_table_struct(displayed, value);
         selection_list->last_of_list_table = selection_list->last_of_list_table->next;
         selection_list->last_of_list_table->next = NULL;
-    }else {
+    }
+    else {
         selection_list->last_of_list_table = selection_list->list_table = new AW_select_table_struct(displayed, value);
     }
 }
@@ -1737,7 +1746,8 @@ void AW_window::insert_selection(AW_selection_list *selection_list, const char *
         selection_list->last_of_list_table->next = new AW_select_table_struct(displayed, value);
         selection_list->last_of_list_table = selection_list->last_of_list_table->next;
         selection_list->last_of_list_table->next = NULL;
-    }else {
+    }
+    else {
         selection_list->last_of_list_table = selection_list->list_table = new AW_select_table_struct(displayed, value);
     }
 }
@@ -1765,7 +1775,8 @@ void AW_window::insert_selection(AW_selection_list * selection_list, const char 
         selection_list->last_of_list_table->next = new AW_select_table_struct(displayed, pointer);
         selection_list->last_of_list_table = selection_list->last_of_list_table->next;
         selection_list->last_of_list_table->next = NULL;
-    }else {
+    }
+    else {
         selection_list->last_of_list_table = selection_list->list_table = new AW_select_table_struct(displayed, pointer);
     }
 }
@@ -2268,7 +2279,8 @@ AW_option_menu_struct *AW_window::create_option_menu( const char *var_name, AW_l
                                                    RES_CONVERT( XmNlabelString, help_label ),
                                                    RES_CONVERT( XmNmnemonic, mnemonic ),
                                                    NULL );
-        }else{
+        }
+        else {
             optionMenu1 = XtVaCreateManagedWidget( "optionMenu1",
                                                    xmRowColumnWidgetClass,
                                                    INFO_WIDGET,
@@ -2571,7 +2583,8 @@ void AW_window::create_toggle_field( const char *var_name, int orientation ) {
 //         _at->correct_for_at_center_intern = _at->correct_for_at_center;
         _at->saved_x = _at->x_for_next_button;
         x_for_position_of_option = 10;
-    }else {
+    }
+    else {
         x_for_position_of_option = _at->x_for_next_button;
     }
 
@@ -2596,7 +2609,8 @@ void AW_window::create_toggle_field( const char *var_name, int orientation ) {
         _at->saved_x_correction_for_label = x_correcting_for_label = width_of_label + 10;
 
         p_w->toggle_label = label_for_toggle;
-    } else {
+    }
+    else {
         p_w->toggle_label = NULL;
         _at->saved_x_correction_for_label = 0;
     }
@@ -2612,7 +2626,8 @@ void AW_window::create_toggle_field( const char *var_name, int orientation ) {
                                                 XmNradioAlwaysOne, True,
                                                 XmNfontList, p_global->fontlist,
                                                 NULL );
-    }else{
+    }
+    else {
         toggle_field = XtVaCreateManagedWidget( "rowColumn for toggle field",
                                                 xmRowColumnWidgetClass,
                                                 (_at->attach_any)?INFO_FORM:INFO_WIDGET,
@@ -2639,7 +2654,8 @@ void AW_window::create_toggle_field( const char *var_name, int orientation ) {
     if ( p_global->toggle_field_list ) {
         p_global->last_toggle_field->next = new AW_toggle_field_struct( get_root()->number_of_toggle_fields, var_name, vs->variable_type, toggle_field, _at->correct_for_at_center);
         p_global->last_toggle_field = p_global->last_toggle_field->next;
-    }else {
+    }
+    else {
         p_global->last_toggle_field = p_global->toggle_field_list = new AW_toggle_field_struct( get_root()->number_of_toggle_fields, var_name, vs->variable_type, toggle_field, _at->correct_for_at_center);
     }
 
@@ -2672,11 +2688,13 @@ static Widget _aw_create_toggle_entry(AW_window *aww, Widget toggle_field,
     if (default_toggle) {
         delete p_global->last_toggle_field->default_toggle;
         p_global->last_toggle_field->default_toggle = awts;
-    }else {
+    }
+    else {
         if ( p_global->last_toggle_field->first_toggle ) {
             p_global->last_toggle_field->last_toggle->next = awts;
             p_global->last_toggle_field->last_toggle = awts;
-        }else {
+        }
+        else {
             p_global->last_toggle_field->last_toggle = awts;
             p_global->last_toggle_field->first_toggle = awts;
         }

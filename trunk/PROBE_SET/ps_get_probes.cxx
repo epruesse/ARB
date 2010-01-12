@@ -74,7 +74,8 @@ bool PS_get_probe_for_path( IDSet& _path, unsigned int _GC_content, unsigned int
             for ( unsigned int i = 0; i < _probe_length; ++i ) {                // store probe data
                 _probe_data[i] = buffer[i];
             }
-        } else {
+        }
+        else {
             data = PG_get_next_probe( data );                                   // get next probe
             if (!data) break;
         }
@@ -208,10 +209,12 @@ int main( int   argc,
                     return 1;
                 }
                 printf( "  probe data (%s)  ==> updated\n", probe_buffer );
-            } else {
+            }
+            else {
                 printf( "  probe data (%s)  --> skipped\n", probe_buffer );
             }
-        } else {
+        }
+        else {
             printf( "  probe data (%s)  --> finished\n", probe_buffer );
         }
         temp__file->put( probe_buffer, probe_length );

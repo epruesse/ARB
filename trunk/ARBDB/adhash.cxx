@@ -370,13 +370,15 @@ char *GBS_string_2_hashtab(GB_HASH *hash, char *data){  // destroys data
         else break;
 
         str = (char *)GB_calloc(sizeof(char),strlen+1);
-        for (dp = p, d = str; (c = *dp) ; dp++){
-            if (c==':'){
+        for (dp = p, d = str; (c = *dp) ; dp++) {
+            if (c==':') {
                 if (dp[1] == ':') {
                     *(d++) = c;
                     dp++;
-                }else break;
-            }else{
+                }
+                else break;
+            }
+            else {
                 *(d++) = c;
             }
         }
@@ -844,7 +846,8 @@ long GBS_write_numhash(GB_NUMHASH *hs,long key,long val) {
             if (e->key == key) {
                 if (oe) {
                     oe->next = e->next;
-                } else {
+                }
+                else {
                     hs->entries[i] = e->next;
                 }
                 gbm_free_mem((char *) e, sizeof(*e), GBM_HASH_INDEX);

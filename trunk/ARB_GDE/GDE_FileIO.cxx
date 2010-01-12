@@ -357,7 +357,8 @@ void LoadData(char *filen)
                                               sizeof(NA_Alignment));
             DataNaAln = (NA_Alignment *) DataSet;
             DataSet->rel_offset = 0;
-        } else{
+        }
+        else {
             DataNaAln = (NA_Alignment *) DataSet;
         }
         DataType = NASEQ_ALIGN;
@@ -382,7 +383,8 @@ void LoadData(char *filen)
                                                     sizeof(NA_Alignment));
                     DataNaAln =(NA_Alignment*)DataSet;
                     DataSet->rel_offset = 0;
-                }else{
+                }
+                else {
                     DataNaAln = (NA_Alignment*)DataSet;
                 }
 

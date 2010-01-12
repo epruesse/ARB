@@ -499,7 +499,8 @@ void awt_delete_species_in_list(void *dummy, struct adaqbsstruct *cbs)
     if (error) {
         GB_abort_transaction(cbs->gb_main);
         aw_message(error);
-    }else{
+    }
+    else {
         awt_query_update_list(dummy,cbs);
         GB_commit_transaction(cbs->gb_main);
     }
@@ -1671,7 +1672,8 @@ void awt_predef_prg(AW_root *aw_root, struct adaqbsstruct *cbs){
         aw_root->awar(cbs->awar_parskey)->write_string( kv);
         if (kv != str) free(kv);
         aw_root->awar(cbs->awar_parsvalue)->write_string( brk);
-    }else{
+    }
+    else {
         aw_root->awar(cbs->awar_parsvalue)->write_string( str);
     }
     free(str);
@@ -2889,7 +2891,8 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
 
         if (awtqs->use_menu){
             sprintf(buffer, "Modify Fields of Listed %s", Items); query_rel_menu_entry(aws, "mod_fields_of_listed", query_id, buffer, "F", "mod_field_list.hlp", AWM_ALL, AW_POPUP,(AW_CL)create_awt_open_parser,(AW_CL)cbs);
-        }else{
+        }
+        else {
             aws->at(awtqs->open_parser_pos_fig);
             aws->callback(AW_POPUP,(AW_CL)create_awt_open_parser,(AW_CL)cbs);
             aws->create_button("MODIFY_FIELDS_OF_LISTED", "MODIFY FIELDS\nOF LISTED","F");
@@ -2915,7 +2918,8 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
                                        "search_equal_fields.hlp", AWM_ALL, (AW_CB)awt_do_query,(AW_CL)cbs,AWT_EXT_QUERY_COMPARE_LINES);
                 aws->insert_menu_topic("search_equal_words_and_listed_in_I",  "Search words existing in entries of both DBs and listed in the DB I hitlist","W",
                                        "search_equal_fields.hlp", AWM_ALL, (AW_CB)awt_do_query,(AW_CL)cbs,AWT_EXT_QUERY_COMPARE_WORDS);
-            }else{
+            }
+            else {
                 aws->insert_menu_topic("search_equal_field_in_both_db", "Search entries existing in both DBs","S",
                                        "search_equal_fields.hlp", AWM_ALL, (AW_CB)awt_do_query,(AW_CL)cbs,AWT_EXT_QUERY_COMPARE_LINES);
                 aws->insert_menu_topic("search_equal_word_in_both_db","Search words existing in entries of both DBs","W",

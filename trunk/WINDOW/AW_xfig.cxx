@@ -455,13 +455,15 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
                                 if (!strcmp(p,"$$")) {
                                     this->centerx = x;
                                     this->centery = y;
-                                }else{
+                                }
+                                else {
                                     struct AW_xfig_pos *xpos = new AW_xfig_pos;
                                     xpos->center = align;
                                     xpos->x = x; xpos->y = y;
                                     GBS_write_hash(hash,p+1,(long)xpos);
                                 }
-                            }else{
+                            }
+                            else {
                                 struct AW_xfig_text *xtext = new AW_xfig_text;
                                 xtext->x = x;
                                 xtext->y = y;

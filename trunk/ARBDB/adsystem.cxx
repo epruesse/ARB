@@ -100,7 +100,8 @@ void gb_system_key_changed_cb(GBDATA *gbd,int *cl, GB_CB_TYPE type){
         delete_gb_dictionary(Main->keys[q].dictionary);
         Main->keys[q].dictionary = 0;
         Main->keys[q].gb_key     = 0;
-    }else{
+    }
+    else {
         gb_load_single_key_data(gbd,q);
     }
 }
@@ -140,7 +141,8 @@ void gb_load_single_key_data(GBDATA *gb_main, GBQUARK q) {
         gb_name = GB_find_string(gb_key_data, "@name", key, GB_MIND_CASE, SEARCH_GRANDCHILD);
         if (gb_name){
             gb_key= GB_get_father(gb_name);
-        }else{
+        }
+        else {
             gb_key = gb_create_container(gb_key_data,"@key");
             gb_name = gb_create(gb_key,"@name",GB_STRING);
             GB_write_string(gb_name,key);
@@ -187,7 +189,8 @@ GB_ERROR gb_save_dictionary_data(GBDATA *gb_main,const char *key,const char *dic
         gb_name = GB_find_string(gb_key_data, "@name", key, GB_MIND_CASE, SEARCH_GRANDCHILD);
         if (gb_name){
             gb_key= GB_get_father(gb_name);
-        }else{
+        }
+        else {
             gb_key = gb_create_container(gb_key_data,"@key");
             gb_name = gb_create(gb_key,"@name",GB_STRING);
             GB_write_string(gb_name,key);

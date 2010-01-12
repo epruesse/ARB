@@ -84,7 +84,8 @@ GB_ERROR SQ_reset_quality_calcstate(GBDATA * gb_main) {
                     GB_CREATE_CONTAINER);
             if (!gb_quality_ali) {
                 error = no_data_error(gb_quality, alignment_name);
-            } else {
+            }
+            else {
                 GBDATA *gb_calcstate = GB_search(gb_quality_ali, "calcstate",
                         GB_INT);
                 if (!gb_calcstate)
@@ -225,7 +226,8 @@ GB_ERROR SQ_evaluate(GBDATA * gb_main, const SQ_weights & weights, bool marked_o
     if (marked_only) {
         getFirst = GBT_first_marked_species;
         getNext = GBT_next_marked_species;
-    } else {
+    }
+    else {
         getFirst = GBT_first_species;
         getNext = GBT_next_species;
     }
@@ -448,7 +450,8 @@ GB_ERROR SQ_pass1(SQ_GroupData * globalData, GBDATA * gb_main, GBT_TREE * node,
 
         if (!gb_ali) {
             error = no_data_error(gb_species, alignment_name);
-        } else {
+        }
+        else {
             GBDATA *gb_quality = GB_search(gb_species, "quality",
                     GB_CREATE_CONTAINER);
 
@@ -552,7 +555,8 @@ GB_ERROR SQ_pass1_no_tree(SQ_GroupData * globalData, GBDATA * gb_main,
 
             if (!gb_ali) {
                 error = no_data_error(gb_species, alignment_name);
-            } else {
+            }
+            else {
                 GBDATA *gb_quality = GB_search(gb_species, "quality",
                         GB_CREATE_CONTAINER);
                 if (!gb_quality) {
@@ -647,7 +651,8 @@ GB_ERROR SQ_pass2(const SQ_GroupData * globalData, GBDATA * gb_main,
 
         if (!gb_ali) {
             error = no_data_error(gb_species, alignment_name);
-        } else {
+        }
+        else {
             GBDATA *gb_quality = GB_search(gb_species, "quality",
                     GB_CREATE_CONTAINER);
             if (!gb_quality)
@@ -886,7 +891,8 @@ GB_ERROR SQ_pass2_no_tree(const SQ_GroupData * globalData, GBDATA * gb_main,
             GBDATA *gb_ali = GB_entry(gb_species, alignment_name);
             if (!gb_ali) {
                 error = no_data_error(gb_species, alignment_name);
-            } else {
+            }
+            else {
                 GBDATA *gb_quality = GB_search(gb_species, "quality",
                         GB_CREATE_CONTAINER);
                 if (!gb_quality)
@@ -1118,7 +1124,8 @@ GB_ERROR SQ_count_nr_of_species(GBDATA * gb_main) {
 
             if (!gb_ali) {
                 error = no_data_error(gb_species, alignment_name);
-            } else {
+            }
+            else {
                 GBDATA *gb_quality = GB_search(gb_species, "quality",
                         GB_CREATE_CONTAINER);
                 if (!gb_quality)
@@ -1158,7 +1165,8 @@ void SQ_calc_and_apply_group_data(GBT_TREE * node, GBDATA * gb_main,
         if (node->gb_node) {
             SQ_pass1(data, gb_main, node, filter);seq_assert(data->getSize()> 0);
         }
-    } else {
+    }
+    else {
         SQ_GroupData *leftData= NULL;
         SQ_GroupData *rightData= NULL;
         GBT_TREE *node1 = node->leftson;
@@ -1170,7 +1178,8 @@ void SQ_calc_and_apply_group_data(GBT_TREE * node, GBDATA * gb_main,
                 parentIsEmpty = true;
                 SQ_calc_and_apply_group_data(node1, gb_main, data, filter); // process left branch with empty data
                 seq_assert(data->getSize()> 0);
-            } else {
+            }
+            else {
                 leftData = data->clone(); // create new empty SQ_GroupData
                 SQ_calc_and_apply_group_data(node1, gb_main, leftData, filter); // process left branch
                 seq_assert(leftData->getSize()> 0);
@@ -1191,7 +1200,8 @@ void SQ_calc_and_apply_group_data(GBT_TREE * node, GBDATA * gb_main,
             create_multi_level_consensus(node, data);
             globalcounter++;
             aw_status((double) globalcounter / (double) groupcounter);
-        } else {
+        }
+        else {
             SQ_calc_and_apply_group_data(node1, gb_main, data, filter); // enter left branch
             seq_assert(data->getSize()> 0);
 
@@ -1207,7 +1217,8 @@ void SQ_calc_and_apply_group_data2(GBT_TREE * node, GBDATA * gb_main,
         if (node->gb_node) {
             SQ_pass2(data, gb_main, node, filter);
         }
-    } else {
+    }
+    else {
         GBT_TREE *node1 = node->leftson;
         GBT_TREE *node2 = node->rightson;
 
@@ -1244,7 +1255,8 @@ GB_ERROR SQ_mark_species(GBDATA * gb_main, int condition, bool marked_only) {
     if (marked_only) {
         getFirst = GBT_first_marked_species;
         getNext = GBT_next_marked_species;
-    } else {
+    }
+    else {
         getFirst = GBT_first_species;
         getNext = GBT_next_species;
     }
@@ -1300,7 +1312,8 @@ SQ_TREE_ERROR SQ_check_tree_structure(GBT_TREE * node) {
     if (node->is_leaf) {
         if (!node->gb_node)
             retval = ZOMBIE;
-    } else {
+    }
+    else {
         retval = SQ_check_tree_structure(node->leftson);
         if (retval == NONE)
             retval = SQ_check_tree_structure(node->rightson);

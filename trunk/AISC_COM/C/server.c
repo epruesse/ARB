@@ -267,7 +267,8 @@ static const char *aisc_get_m_id(const char *path, char **m_name, int *id)
         if (p[1] == '~') {
             sprintf(buffer,"%s%s",getenv("HOME"),p+2);
             *m_name = (char *)strdup(buffer);
-        }else{
+        }
+        else {
             *m_name = (char *)strdup(p+1);
         }
         *id = -1;
@@ -327,7 +328,8 @@ static const char *aisc_open_socket(const char *path, int delay, int do_connect,
             if (connect(*psocket, (struct sockaddr*)&so_ad, 16)) {
                 return "";
             }
-        }else{
+        }
+        else {
             static int one = 1;
             setsockopt(*psocket,SOL_SOCKET,SO_REUSEADDR,(const char *)&one,sizeof(one));
             if (bind(*psocket,(struct sockaddr*)&so_ad,16)){
@@ -341,7 +343,8 @@ static const char *aisc_open_socket(const char *path, int delay, int do_connect,
         }
         *unix_name = 0;
         return 0;
-    } else {
+    }
+    else {
         struct sockaddr_un so_ad;
         *psocket = socket(PF_UNIX, SOCK_STREAM, 0);
         if (*psocket <= 0) {
@@ -353,7 +356,8 @@ static const char *aisc_open_socket(const char *path, int delay, int do_connect,
             if (connect(*psocket, (struct sockaddr*)&so_ad, strlen(mach_name)+2)) {
                 return "";
             }
-        }else{
+        }
+        else {
             static int one = 1;
             test = fopen(mach_name,"r");
             if (test) {
@@ -368,7 +372,8 @@ static const char *aisc_open_socket(const char *path, int delay, int do_connect,
             }
             if (unlink(mach_name)) {
                 ;
-            }else{
+            }
+            else {
                 printf("old socket found\n");
             }
             setsockopt(*psocket,SOL_SOCKET,SO_REUSEADDR,(const char *)&one,sizeof(one));
@@ -426,7 +431,8 @@ static void aisc_s_add_to_bytes_queue(char *data,int size) {
     if (aisc_server_bytes_first){
         aisc_server_bytes_last->next = bl;
         aisc_server_bytes_last = bl;
-    }else{
+    }
+    else {
         aisc_server_bytes_first = bl;
         aisc_server_bytes_last = bl;
     }
@@ -528,7 +534,8 @@ static long aisc_talking_get(long *in_buf, int size, long *out_buf, int max_size
         if (type == AISC_ATTR_DOUBLE) {
             dfunction = (aisc_talking_func_double) function;
             derg = dfunction(object);
-        } else {
+        }
+        else {
             erg = function(object);
         }
         if (aisc_server_error) {
@@ -637,7 +644,8 @@ static long aisc_talking_sets(long *in_buf,int size, long *out_buf,long *object,
     if (object_type > (AISC_MAX_OBJECT*0x10000)) {
         object_type = 0;
         aisc_server_error = "UNKNOWN OBJECT";
-    }else{
+    }
+    else {
         aisc_server_error = test_address_valid((void *)object,object_type);
     }
     object_type = object_type>>(16);
@@ -664,7 +672,8 @@ static long aisc_talking_sets(long *in_buf,int size, long *out_buf,long *object,
         }
         if (code == AISC_INDEX) {
             function = (aisc_talking_func_long)aisc_talking_set_index;
-        }else{
+        }
+        else {
             function = functions[attribute];
         }
         if (!function){
@@ -719,7 +728,8 @@ static long aisc_talking_sets(long *in_buf,int size, long *out_buf,long *object,
                     blen = aisc_s_read(aisc_server_con,(char *)ptr,bsize);
                     if (bsize!=blen) {
                         aisc_server_error ="CONNECTION PROBLEMS IN BYTESTRING";
-                    }else{
+                    }
+                    else {
                         bytestring bs;
                         bs.data = (char *)ptr;
                         bs.size = bsize;
@@ -730,7 +740,8 @@ static long aisc_talking_sets(long *in_buf,int size, long *out_buf,long *object,
 
                         function((long)object,&bs);
                     }
-                }else{
+                }
+                else {
                     function((long)object,0);
                 }
                 break;
@@ -786,7 +797,8 @@ long aisc_make_sets(long *obj)
 {
     if (md.size>0) {
         return aisc_talking_sets(md.ibuf,md.size,md.obuf,obj,md.type);
-    }else{
+    }
+    else {
         return 0;
     }
 }
@@ -849,7 +861,8 @@ static long aisc_talking_create(long *in_buf, int size, long *out_buf, int max_s
     if (aisc_server_error) {
         sprintf((char *) out_buf, "%s", aisc_server_error);
         return -((strlen(aisc_server_error) + 1) / sizeof(long) + 1);
-    }else{
+    }
+    else {
         out_buf[0] = (long)erg;
         return 1;
     }
@@ -916,7 +929,8 @@ static long aisc_talking_copy(long *in_buf, int size, long *out_buf, int max_siz
     if (aisc_server_error) {
         sprintf((char *) out_buf, "%s", aisc_server_error);
         return -((strlen(aisc_server_error) + 1) / sizeof(long) + 1);
-    }else{
+    }
+    else {
         out_buf[0] = (long)erg;
         return 1;
     }
@@ -978,7 +992,8 @@ static long aisc_talking_find(long *in_buf, int size, long *out_buf, int max_siz
     if (aisc_server_error) {
         sprintf((char *) out_buf, "%s", aisc_server_error);
         return -((strlen(aisc_server_error) + 1) / sizeof(long) + 1);
-    } else {
+    }
+    else {
         out_buf[0] = (long) erg;
         return 1;
     }
@@ -1025,7 +1040,8 @@ static long aisc_talking_delete(long *in_buf, int size, long *out_buf, int max_s
     for (i = 0; i < 1; i++) {
         if (object_type > (AISC_MAX_OBJECT*0x10000)) {
             aisc_server_error = "AISC_GET_SERVER_ERROR: UNKNOWN OBJECT";
-        } else {
+        }
+        else {
             aisc_server_error = test_address_valid((void *)object, object_type);
         }
         if (aisc_server_error)
@@ -1037,7 +1053,8 @@ static long aisc_talking_delete(long *in_buf, int size, long *out_buf, int max_s
                     aisc_object_names[object_type]);
             aisc_server_error = error_buf;
             break;
-        } else {
+        }
+        else {
             function(object);
         }
     }
@@ -1083,31 +1100,36 @@ static long aisc_talking_debug_info(long *in_buf, int size, long *out_buf, int m
 
         if (!(functionsg=aisc_talking_functions_get[object_type])) {
             out_buf[1] = 2;
-        }else{
+        }
+        else {
             if (!functionsg[attribute])         out_buf[1] = 1;
         };
 
         if (!(functionss=aisc_talking_functions_set[object_type])) {
             out_buf[2] = 2;
-        }else{
+        }
+        else {
             if (!functionss[attribute])         out_buf[2] = 1;
         };
 
         if (!(functions=aisc_talking_functions_find[object_type])) {
             out_buf[3] = 2;
-        }else{
+        }
+        else {
             if (!functions[attribute])  out_buf[3] = 1;
         };
 
         if (!(functions=aisc_talking_functions_create[object_type])) {
             out_buf[4] = 2;
-        }else{
+        }
+        else {
             if (!functions[attribute])  out_buf[4] = 1;
         };
 
         if (!(functions=aisc_talking_functions_copy[object_type])) {
             out_buf[5] = 2;
-        }else{
+        }
+        else {
             if (!functions[attribute])  out_buf[5] = 1;
         };
 
@@ -1115,7 +1137,8 @@ static long aisc_talking_debug_info(long *in_buf, int size, long *out_buf, int m
     if (aisc_server_error) {
         sprintf((char *) out_buf, "%s", aisc_server_error);
         return -((strlen(aisc_server_error) + 1) / sizeof(long) + 1);
-    } else {
+    }
+    else {
         return 20;
     }
 }
@@ -1248,7 +1271,8 @@ static int aisc_talking(int con) {
             (buf, (int)size, out_buf + 2, AISC_MESSAGE_BUFFER_LEN - 2);
         if (size >= 0) {
             out_buf[1] = AISC_CCOM_OK;
-        } else {
+        }
+        else {
             if (size == (long)AISC_NO_ANSWER) {
                 return AISC_SERVER_OK;
             }
@@ -1265,7 +1289,8 @@ static int aisc_talking(int con) {
             }
         }
         return AISC_SERVER_OK;
-    } else {
+    }
+    else {
         return AISC_SERVER_FAULT;
     }
 }
@@ -1300,7 +1325,8 @@ struct Hs_struct *aisc_accept_calls(struct Hs_struct *hs)
         }
         if (hs->timeout >= 0) {
             anz = select(FD_SETSIZE,FD_SET_TYPE &set,NULL,FD_SET_TYPE &setex,&timeout);
-        }else{
+        }
+        else {
             anz = select(FD_SETSIZE,FD_SET_TYPE &set,NULL,FD_SET_TYPE &setex,0);
         }
 
@@ -1334,7 +1360,8 @@ struct Hs_struct *aisc_accept_calls(struct Hs_struct *hs)
                 optval = 1;
                 setsockopt(con,IPPROTO_TCP,TCP_NODELAY,(char *)&optval,4);
             }
-        }else{
+        }
+        else {
             si_last = 0;
 
             for(si=hs->soci; si; si_last=si, si=sinext){
@@ -1352,7 +1379,8 @@ struct Hs_struct *aisc_accept_calls(struct Hs_struct *hs)
                 hs->nsoc--;
                 if (si == hs->soci) {   /* first one */
                     hs->soci = si->next;
-                } else {
+                }
+                else {
                     si_last->next = si->next;
                 }
                 if (si->destroy_callback) {

@@ -120,14 +120,17 @@ void create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL) {
     GBDATA *gb_species = 0;
     if ( !strcmp(species_name, "") || !(gb_species = GBT_find_species(GLOBAL_gb_main, species_name)) ) { 
         error = "Please select a species first.";
-    } else {
+    }
+    else {
         // search for the field "sec_struct"
         GBDATA *gb_species_sec_struct = GB_entry(gb_species, "sec_struct");
         if (!gb_species_sec_struct) {
             error = "Field \"sec_struct\" not found or empty. Please select another species.";
-        } else if ( !(sec_struct = GB_read_string(gb_species_sec_struct)) ) {
+        }
+        else if ( !(sec_struct = GB_read_string(gb_species_sec_struct)) ) {
             error = "Couldn't read field \"sec_struct\". Is it empty?";
-        } else {
+        }
+        else {
             // generate default name and name input field for the new SAI
             {
                 char *sai_default_name = GBS_global_string_copy("%s%s", species_name, strstr(species_name, "_pfold") ? "" : "_pfold");
@@ -137,16 +140,19 @@ void create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL) {
 
             if (!sai_name) {
                 canceled = true;
-            } else if (strspn(sai_name, " ") == strlen(sai_name)) {
+            }
+            else if (strspn(sai_name, " ") == strlen(sai_name)) {
                 error = "Name of SAI is empty. Please enter a valid name.";
-            } else {
+            }
+            else {
                 GBDATA *gb_sai_data = GBT_get_SAI_data(GLOBAL_gb_main);
                 GBDATA *gb_sai      = GBT_find_SAI_rel_SAI_data(gb_sai_data, sai_name);
                 char   *ali_name    = GBT_get_default_alignment(GLOBAL_gb_main);
 
                 if (gb_sai) {
                     error = "SAI with the same name already exists. Please enter another name.";
-                } else {
+                }
+                else {
                     // create SAI container and copy fields from the species to the SAI
                     gb_sai                   = GB_create_container(gb_sai_data, "extended");
                     GBDATA *gb_species_field = GB_child(gb_species);

@@ -108,7 +108,8 @@ char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode)
     for (i = 0; i < gen_nds_ms->count; i++) {
         if (gen_nds_ms->rek[i]) {       /* hierarchical key */
             gbe = GB_search(gbd, gen_nds_ms->dkeys[i], GB_FIND);
-        }else{              /* flat entry */
+        }
+        else {              /* flat entry */
             gbe = GB_entry(gbd, gen_nds_ms->dkeys[i]);
         }
 
@@ -135,7 +136,8 @@ char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode)
                         char buf[20];
                         sprintf(buf,"%%%lii", gen_nds_ms->lengths[i]);
                         sprintf(bp, buf, GB_read_int(gbe));
-                    } else {
+                    }
+                    else {
                         sprintf(bp, "%li", GB_read_int(gbe));
                     }
                     bp += strlen(bp);
@@ -145,7 +147,8 @@ char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode)
                         char buf[20];
                         sprintf(buf,"%%%lii", gen_nds_ms->lengths[i]);
                         sprintf(bp, buf, GB_read_byte(gbe));
-                    } else {
+                    }
+                    else {
                         sprintf(bp, "%i", GB_read_byte(gbe));
                     }
                     bp += strlen(bp);
@@ -198,7 +201,8 @@ char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode)
                 default:
                     break;
             }
-        } else if (mode) {
+        }
+        else if (mode) {
             j = gen_nds_ms->lengths[i];
             if (j + (bp - gen_nds_ms->buf) + 256 > GEN_NDS_STRING_SIZE) {
                 j = GEN_NDS_STRING_SIZE - 256 - (bp - gen_nds_ms->buf);

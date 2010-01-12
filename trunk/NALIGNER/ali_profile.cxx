@@ -292,7 +292,8 @@ void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list,
                 for (j = 0; j < 6; j++) {
                     (*sub_costs)[p][j] += g[i] * sm[seq[i][p]][j];
                 }
-            } else {
+            }
+            else {
                 for (j = 0; j < 6; j++) {
                     (*sub_costs)[p][j] += g[i] * sm[ALI_DOT_CODE][j];
                 }
@@ -339,7 +340,8 @@ void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list,
                 if (p < size_t(seq_len[i]) /* && !ali_is_dot(seq[i][p]) */) {
                     if (l[i] == prof_len + 1 || l[i] >= j + lmin[p]) {
                         (*w_Del)[j] += g[i] * sm[seq[i][p]][4] * context->multi_gap_factor;
-                    }else{
+                    }
+                    else {
                         (*w_Del)[j] += g[i] * sm[seq[i][p]][4];
                     }
                 }
@@ -349,7 +351,8 @@ void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list,
                 else {
                     if (l[i] >= j + lmin[p] && l[i] < prof_len+1) {
                         (*w_Del)[j] += g[i] * sm[ALI_DOT_CODE][4] * context->multi_gap_factor;
-                    }else{
+                    }
+                    else {
                         (*w_Del)[j] += g[i] * sm[ALI_DOT_CODE][4];
                     }
                 }

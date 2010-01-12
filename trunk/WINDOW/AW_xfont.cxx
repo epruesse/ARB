@@ -262,7 +262,8 @@ void aw_root_init_font(Display *tool_d)
 #endif // DUMP_FONT_LOOKUP
             }
             XFreeFontNames(fontlist);
-        } else {
+        }
+        else {
             char templat[200];
             strcpy(templat,x_fontinfo[0].templat); /* nope, check for font size 0 */
             strcat(templat,"0-0-*-*-*-*-*-*");
@@ -271,7 +272,8 @@ void aw_root_init_font(Display *tool_d)
                 printf("Using SCALABLEFONTS!\n");
 #endif // DUMP_FONT_LOOKUP
                 XFreeFontNames(fontlist);
-            }else{
+            }
+            else {
 #if defined(DUMP_FONT_LOOKUP)
                 printf("Not using SCALABLEFONTS!\n");
 #endif // DUMP_FONT_LOOKUP
@@ -663,7 +665,8 @@ inline void CI_GetCharInfo_1D(const XFontStruct *fs, unsigned col, const XCharSt
     if (col >= fs->min_char_or_byte2 && col <= fs->max_char_or_byte2) {
         if (fs->per_char == NULL) {
             cs = &fs->min_bounds;
-        } else {
+        }
+        else {
             cs = &fs->per_char[col - fs->min_char_or_byte2];
             if (CI_NonExistChar(cs)) cs = def;
         }
@@ -720,7 +723,8 @@ inline void CI_GetRowzeroCharInfo_2D(const XFontStruct *fs, unsigned col, const 
         col >= fs->min_char_or_byte2 && col <= fs->max_char_or_byte2) {
         if (fs->per_char == NULL) {
             cs = &fs->min_bounds;
-        } else {
+        }
+        else {
             cs = &fs->per_char[(col - fs->min_char_or_byte2)];
             if (CI_NonExistChar(cs)) cs = def;
         }
@@ -769,7 +773,8 @@ void AW_GC_Xm::set_font(AW_font font_nr, int size, int *found_size)
     for (i = AW_FONTINFO_CHAR_MIN; i <= AW_FONTINFO_CHAR_MAX; i++) {
         if (singlerow) {/* optimization */
             CI_GetCharInfo_1D(xfs, i, def, cs);
-        } else {
+        }
+        else {
             // cs = def;   // X11R4
             CI_GetRowzeroCharInfo_2D(xfs, i, def, cs);
         }

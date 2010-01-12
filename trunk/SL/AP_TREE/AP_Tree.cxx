@@ -644,7 +644,8 @@ static GB_ERROR tree_write_byte(GBDATA *gb_tree, AP_tree *node,short i,const cha
                 GB_delete(gbd);
             }
         }
-    }else{
+    }
+    else {
         if (!node->gb_node){
             node->gb_node = GB_create_container(gb_tree,"node");
 #if defined(DEBUG_tree_write_byte)
@@ -870,7 +871,8 @@ int AP_tree::calc_color() {
     gr.gc = res;
     if (res == AWT_GC_NSELECTED){
         gr.has_marked_children = 0;
-    }else{
+    }
+    else {
         gr.has_marked_children = 1;
     }
     return res;
@@ -893,7 +895,8 @@ int AP_tree::calc_color_probes(GB_HASH *hashptr) {
         else {
             res = AWT_GC_SOME_MISMATCHES;
         }
-    }else{
+    }
+    else {
         l = get_leftson()->calc_color_probes(hashptr);
         r = get_rightson()->calc_color_probes(hashptr);
         

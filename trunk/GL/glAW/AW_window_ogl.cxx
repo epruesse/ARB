@@ -314,7 +314,8 @@ void AW_window_menu_modes_opengl::init(AW_root *root_in, const char *wid,
         XtSetArg(args[n], (char *) GLwNalphaSize, 4); n++;
         AW_alpha_Size_Supported = true;
         printf("Alpha channel supported\n");
-    } else {
+    }
+    else {
         AW_alpha_Size_Supported = false;
         printf("Alpha channel NOT supported\n");
     }

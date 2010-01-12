@@ -23,7 +23,8 @@ void awt_create_select_filter_window_aw_cb(void *dummy, struct adfiltercbstruct 
         GBDATA *gb_species;
         if (target[-1] == '@'){
             gb_species = GBT_find_species(cbs->gb_main,name);
-        }else{
+        }
+        else {
             gb_species = GBT_find_SAI(cbs->gb_main,name);
         }
         if (gb_species){
@@ -38,7 +39,8 @@ void awt_create_select_filter_window_aw_cb(void *dummy, struct adfiltercbstruct 
         aw_root->awar(cbs->def_source)->write_string("No Filter Sequence ->All Columns Selected");
         aw_root->awar(cbs->def_filter)->write_string("");
         aw_root->awar(cbs->def_len)   ->write_int(-1);  // export filter
-    }else{
+    }
+    else {
         GBDATA *gb_name = GB_get_father(gbd);   // ali_xxxx
         gb_name = GB_brother(gb_name,"name");
         char *name2 = GB_read_string(gb_name);
@@ -53,9 +55,11 @@ void awt_create_select_filter_window_aw_cb(void *dummy, struct adfiltercbstruct 
         long i; for (i=0;i<len;i++) {   // build position line
             if (i%10 == 0) {
                 GBS_chrcat(strstruct,'#');
-            }else if (i%5==0) {
+            }
+            else if (i%5==0) {
                 GBS_chrcat(strstruct,'|');
-            }else{
+            }
+            else {
                 GBS_chrcat(strstruct,'.');
             }
         }
@@ -71,7 +75,8 @@ void awt_create_select_filter_window_aw_cb(void *dummy, struct adfiltercbstruct 
 
         if (GB_read_type(gbd) == GB_STRING) {   // read the filter
             str = GB_read_string(gbd);
-        }else{
+        }
+        else {
             str = GB_read_bits(gbd,'-','+');
         }
         GBS_strcat(strstruct,str);
@@ -84,11 +89,13 @@ void awt_create_select_filter_window_aw_cb(void *dummy, struct adfiltercbstruct 
             if (strchr(canc,*s) || (i<min) || (max>0 && i > max) )
             {
                 *s = '0';
-            }else{
+            }
+            else {
                 if (i > _2filter_len || _2filter[i] != '0') {
                     *s = '1';
                     flen++;
-                }else{
+                }
+                else {
                     *s = '0';
                 }
             }

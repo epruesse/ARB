@@ -198,7 +198,8 @@ bool PS_BitSet::Set( const long _index, const bool _value ) {
     bool previous_value = (((data[ _index/8 ] >> (_index % 8)) & 1) == 1); 
     if (_value) {
         data[ _index/8 ] |= 1 << (_index % 8);
-    } else {
+    }
+    else {
         data[ _index/8 ] &= ~(1 << (_index % 8));
     }        
     if (_index > max_index) max_index = _index;
@@ -334,7 +335,8 @@ bool PS_BitSet_Fast::set( const long _index, const bool _value ) {
     bool previous_value = (((data[ _index/8 ] >> (_index % 8)) & 1) == 1); 
     if (_value) {
         data[ _index/8 ] |= 1 << (_index % 8);
-    } else {
+    }
+    else {
         data[ _index/8 ] &= ~(1 << (_index % 8));
     }        
     if (_index > max_index) max_index = _index;

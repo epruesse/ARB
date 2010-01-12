@@ -21,8 +21,8 @@ void fields_vars_callback(AW_root *aw_root)
         aw_root->awar("tmp/fields/fields_type")->unmap();
         aw_root->awar("tmp/fields/fields_rem")->unmap();
         aw_root->awar("tmp/fields/security")->unmap();
-    }else{
-
+    }
+    else {
         GBDATA *ali_name =  GB_search(ali_cont,"fields_name",   GB_STRING);
         GBDATA *ali_father =    GB_search(ali_cont,"fields_father", GB_STRING);
         GBDATA *ali_type =  GB_search(ali_cont,"fields_type",   GB_INT);

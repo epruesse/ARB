@@ -176,7 +176,8 @@ void start_genetic(GBDATA *gbmain) {
                         starttree->id,
                         cluster);
                 delete starttree;
-            } else {
+            }
+            else {
                 fprintf(GAgenetic->fout,"\nNo starttree found in cluster %d",cluster);
             }
         }
@@ -223,7 +224,8 @@ void start_genetic(GBDATA *gbmain) {
             fprintf(GAgenetic->fout,"\njob %d in cluster %d : %d executed, mode %d"
                     ,job,job->cluster0,job->cluster1,job->mode);
             GAgenetic->put_optimized(job->tree0,cluster);
-        } else {
+        }
+        else {
             fprintf(GAgenetic->fout,"\nno job found");
         }
     }

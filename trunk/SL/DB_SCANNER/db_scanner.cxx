@@ -63,9 +63,11 @@ static void awt_arbdb_scanner_delete(void *dummy, struct adawcbstruct *cbs)
     GBDATA *gbd = awt_get_arbdb_scanner_gbd_and_begin_trans((AW_CL)cbs);
     if (!gbd) {
         aw_message("Sorry, cannot perform your operation, please redo it");
-    }else if (awt_check_scanner_key_data(cbs,gbd)) {        // already deleted
+    }
+    else if (awt_check_scanner_key_data(cbs,gbd)) {        // already deleted
         ;
-    }else{
+    }
+    else {
         GB_ERROR error = GB_delete(gbd);
         if (error) aw_message((char *)error);
     }
@@ -83,7 +85,8 @@ static void awt_edit_changed_cb(GBDATA *dummy, struct adawcbstruct *cbs, GB_CB_T
     if (cbs->gb_edit) {
         if (awt_check_scanner_key_data(cbs,cbs->gb_edit)) {     // doesn't exist
             aws->get_root()->awar(cbs->def_dest)->write_string("");
-        }else{
+        }
+        else {
             char *data;
             data = GB_read_as_string(cbs->gb_edit);
             if (!data) {
@@ -92,7 +95,8 @@ static void awt_edit_changed_cb(GBDATA *dummy, struct adawcbstruct *cbs, GB_CB_T
             cbs->aws->get_root()->awar(cbs->def_dest)->write_string(data);
             free(data);
         }
-    }else{
+    }
+    else {
         aws->get_root()->awar(cbs->def_dest)->write_string("");
     }
 }
@@ -191,7 +195,8 @@ static void awt_arbdb_scanner_value_change(void *, struct adawcbstruct *cbs)
                             cbs->selector->change_key_path);
                     if (GB_child(gbd)) {
                         error = "Sorry, cannot perform a deletion.\n(The selected entry has child entries. Delete them first.)";
-                    } else {
+                    }
+                    else {
                         error = GB_delete(gbd);
                         if (!error) {
                             cbs->aws->get_root()->awar(cbs->def_gbd)->write_pointer(gb_key);
@@ -260,7 +265,8 @@ static void awt_map_arbdb_edit_box(GBDATA *dummy, struct adawcbstruct *cbs)
 
     if (cbs->aws->get_root()->awar(cbs->def_filter)->read_int()) {      // edit enabled
         cbs->gb_edit = gbd;
-    }else{
+    }
+    else {
         cbs->gb_edit = 0;       // disable map
     }
     if (cbs->gb_edit) {

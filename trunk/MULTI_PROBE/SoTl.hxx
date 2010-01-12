@@ -509,8 +509,8 @@ template <class Type> inline positiontype List<Type>::insert_after_current( Type
 
         if (!last_asked_list_elem->get_next()){
             result = insert_as_last( object );
-        }else{
-
+        }
+        else {
             help = new list_elem<Type>( object );
             help->set_pos( last_asked_list_elem->get_pos() + 1 );
             help->set_prev(last_asked_list_elem);
@@ -534,8 +534,8 @@ template <class Type> inline positiontype List<Type>::insert_before_current( Typ
 
         if (!last_asked_list_elem->get_prev()){
             result=  insert_as_first( object );
-        }else{
-
+        }
+        else {
             help = new list_elem<Type>( object );
             help->set_pos( last_asked_list_elem->get_pos() - 1 );
             help->set_next(last_asked_list_elem);

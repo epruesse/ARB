@@ -280,7 +280,8 @@ void PH_save_ml_multiline_cb(AW_window *aww) {
     if (error) {
         GB_abort_transaction(GLOBAL_gb_main);
         aw_message(error);
-    }else{
+    }
+    else {
         GB_commit_transaction(GLOBAL_gb_main);
     }
 }
@@ -382,7 +383,8 @@ void PH_save_ml_cb(AW_window *aww) {
     if (error) {
         GB_abort_transaction(GLOBAL_gb_main);
         aw_message(error);
-    }else{
+    }
+    else {
         GB_commit_transaction(GLOBAL_gb_main);
     }
 }

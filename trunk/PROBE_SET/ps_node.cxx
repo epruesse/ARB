@@ -101,7 +101,8 @@ bool PS_Node::load( PS_FileBuffer* _fb ) {
             PS_ProbePtr new_probe(p);                             // make new probe-smartpointer
             probes->insert( new_probe );                          // append new probe to probeset
         }
-    } else {
+    }
+    else {
         probes = 0;                                               // unset probeset
     }
     //
@@ -115,7 +116,8 @@ bool PS_Node::load( PS_FileBuffer* _fb ) {
             children[new_child->getNum()] = new_child;            // insert new child to childmap
             if (i % 200 == 0) printf( "loaded 1st level #%i (%i)\n", i+1, new_child->getNum() );
         }
-    } else {
+    }
+    else {
         for (unsigned int i=0; i<size; ++i) {
             PS_NodePtr new_child(new PS_Node(-1));                // make new child
             new_child->load( _fb );                               // read new child
@@ -167,7 +169,8 @@ bool PS_Node::append( PS_FileBuffer* _fb ) {
         PS_NodeMapIterator it = children.find( childNum );
         if (it != children.end()) {
             it->second->append( _fb );                           // 'update' child
-        } else {
+        }
+        else {
             PS_NodePtr newChild(new PS_Node(childNum));          // make new child
             newChild->append( _fb );                             // read new child
             children[childNum] = newChild;                       // insert new child to childmap

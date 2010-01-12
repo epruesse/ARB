@@ -34,7 +34,8 @@ char *read_aisc_file(char *path)
     char *buffer = 0;
     if ((input = fopen(path, "r")) == 0) {
         fprintf(stderr, " file %s not found\n", path);
-    }else{
+    }
+    else {
         if (fseek(input,0,2)==-1){
             fprintf(stderr, "file %s not seekable\n",path);
         }

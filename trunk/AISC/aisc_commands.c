@@ -70,7 +70,8 @@ static void memcopy(char *dest, const char *source, int len)
         while (i--) {
             *(--d) = *(--s);
         }
-    } else {
+    }
+    else {
         while (i--) {
             *(d++) = *(s++);
         }
@@ -83,10 +84,12 @@ static char *find_string(const char *str,const char *key)
     for (p1=str,p2=key;*p1;) {
         if (!*p2) {
             return (char*)(str);
-        }else{
+        }
+        else {
             if (*p2==*p1){
                 p1 ++; p2++;
-            }else{
+            }
+            else {
                 p2 = key;
                 p1 = (++str);
             }
@@ -114,7 +117,8 @@ static char *calc_rest_line(/*const*/ char *str, int size, int presize)
         lastbr = calc_rest_line(ld, size - (ld - str),presize+2);
         if (!lastbr)
             return 0;
-    }else{
+    }
+    else {
         lastbr = str+2;
     }
     p = str+2;
@@ -133,13 +137,15 @@ static char *calc_rest_line(/*const*/ char *str, int size, int presize)
     br++;
     if (*p == 0) {              /* empty $() */
         fi = strdup("");
-    }else if (presize && (str[-1] == '$')) {    /* quoted */
+    }
+    else if (presize && (str[-1] == '$')) {    /* quoted */
         br[-1] = ')';
         c = *br; *br = 0;
         fi = strdup(str+1);
         /*printf("%s#%s\n",fi,br);*/
         *br = c;
-    }else if (*p == '+') {
+    }
+    else if (*p == '+') {
         path = p + 1;
         SKIP_SPACE_LF(path);
         fi = strpbrk(path, "+,");
@@ -151,7 +157,8 @@ static char *calc_rest_line(/*const*/ char *str, int size, int presize)
         SKIP_SPACE_LF(fi);
         sprintf(string_buf, "%li", atol(path) + atol(fi));
         fi = strdup(string_buf);
-    }else if (*p == '*') {
+    }
+    else if (*p == '*') {
         path = p + 1;
         SKIP_SPACE_LF(path);
         fi = strpbrk(path, "*,");
@@ -163,7 +170,8 @@ static char *calc_rest_line(/*const*/ char *str, int size, int presize)
         SKIP_SPACE_LF(fi);
         sprintf(string_buf, "%li", atol(path) * atol(fi));
         fi = strdup(string_buf);
-    } else if (*p == '#') {
+    }
+    else if (*p == '#') {
         if (!strncmp(p, "#FILE", 5)) {
             for (path = p + 5; is_SPACE_LF_EOS(path[0]); path++) ;
             fi = read_aisc_file(path);
@@ -194,7 +202,8 @@ static char *calc_rest_line(/*const*/ char *str, int size, int presize)
             printf_error("unknown Var_Command '%s'", p);
             return 0;
         }
-    } else {
+    }
+    else {
         fi = get_var_string(p);
     }
     if (fi) {
@@ -380,7 +389,8 @@ static int do_com_write(FILE * out, char *str)
                     continue;
                 }
                 continue;
-            } else {
+            }
+            else {
                 c = gl->outtab[(unsigned)(c)];
             }
         }
@@ -389,14 +399,17 @@ static int do_com_write(FILE * out, char *str)
             gl->tabpos /= gl->tabstop;
             gl->tabpos++;
             gl->tabpos *= gl->tabstop;
-        } else if (c == '\n') {
+        }
+        else if (c == '\n') {
             if (no_nl) {
                 no_nl = 0;
-            } else {
+            }
+            else {
                 putc(c, out);
                 gl->tabpos = 0;
             }
-        } else if (c == '@') {
+        }
+        else if (c == '@') {
             if (strncmp(p, "SETSOURCE", 9) == 0) { /* skip '@SETSOURCE file, line@' */
                 p = strchr(p, '@');
                 if (!p) {
@@ -409,7 +422,8 @@ static int do_com_write(FILE * out, char *str)
                 putc(c, out);
                 gl->tabpos++;
             }
-        } else {
+        }
+        else {
             putc(c, out);
             gl->tabpos++;
         }
@@ -594,11 +608,13 @@ static int do_com_moveto(char *str)
     p = strrchr(st, '/');
     if (p) {
         fo = aisc_find_var_hier(gl->cursor, st, LOOKUP_LIST);
-    } else {
+    }
+    else {
         fo = aisc_find_var_hier(gl->cursor, st, LOOKUP_BLOCK);
     }
     if (!fo){
-    }else{
+    }
+    else {
         gl->cursor = fo;
     }
     return 0;
@@ -803,7 +819,8 @@ static int do_com_gosub(char *str)
         s++;
         SKIP_SPACE_LF(s);
         params = strdup(s);
-    }else{
+    }
+    else {
         params = strdup("");
     }
     fn = read_hash(gl->fns,str);
@@ -954,16 +971,19 @@ static int do_com_next(const char *str)
             gl->cursor = gl->pc->FOR->fd->forcursor;
             gl->nextpc = gl->pc->FOR->ENDFOR->next;
             do_com_for_sub(gl->pc->FOR);
-        } else {
+        }
+        else {
             gl->nextpc = gl->pc->FOR->next;
             gl->cursor = fo;
         }
-    } else {
+    }
+    else {
         gl->pc->FOR->fd->forval++;
         if (gl->pc->FOR->fd->forval > gl->pc->FOR->fd->forend) {
             gl->nextpc = gl->pc->FOR->ENDFOR->next;
             do_com_for_sub(gl->pc->FOR);
-        } else {
+        }
+        else {
             gl->nextpc = gl->pc->FOR->next;
             p = read_hash_local(gl->pc->FOR->fd->forstr,&hs);
             sprintf(string_buf, "%li", gl->pc->FOR->fd->forval);

@@ -309,7 +309,8 @@ void Overlap::dump() const
                     if (x==-1 || y==-1) {
                         if (!xR && !yR)     printf("%4i   ", x==-1 ? y : x);
                         else        printf("       ");
-                    } else {
+                    }
+                    else {
                         printf("%3i|%-3i", overlap(x,xR,y,yR), score(x,xR,y,yR));
                     }
                 }

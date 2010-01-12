@@ -109,7 +109,8 @@ void NT_importValidNames(AW_window*, AW_CL, AW_CL) {
 #endif // DUMP
                     myDescs.push_back(myDesc);
                 }
-            }else{
+            }
+            else {
                 Desco myDesc =  validNames::determineType(*it);
 #if defined(DUMP)
                 std::cout << string("valid name: ") << myDesc.getFirstName() << std::endl

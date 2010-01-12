@@ -297,7 +297,8 @@ static char *gbt_write_tree_rek_new(GBT_TREE *node, char *dest, long mode) {
                 *(dest++) = c;
             }
             *(dest++) = 1;
-        }else{
+        }
+        else {
             dest += strlen(c1) + 2;
         }
     }
@@ -310,17 +311,20 @@ static char *gbt_write_tree_rek_new(GBT_TREE *node, char *dest, long mode) {
             dest += strlen(dest);
             *(dest++) = 1;
             return dest;
-        }else{
+        }
+        else {
             if (node->name) return dest+1+strlen(node->name)+1; // N name term
             return dest+1+1;
         }
-    }else{
+    }
+    else {
         sprintf(buffer,"%g,%g;",node->leftlen,node->rightlen);
         if (mode == GBT_PUT_DATA) {
             *(dest++) = 'N';
             strcpy(dest,buffer);
             dest += strlen(buffer);
-        }else{
+        }
+        else {
             dest += strlen(buffer)+1;
         }
         dest = gbt_write_tree_rek_new(node->leftson,  dest, mode);

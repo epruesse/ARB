@@ -62,7 +62,8 @@ void AP_matrix::create_awars(AW_root *awr,const char *awar_prefix){
                     sprintf(buffer,"%s/B%s/B%s",awar_prefix,x_description[x],y_description[y]);
                     if (x==y){
                         awr->awar_float(buffer,0)->set_minmax(0.0,2.0);
-                    }else{
+                    }
+                    else {
                         awr->awar_float(buffer,1.0)->set_minmax(0.0,2.0);
                     }
                 }

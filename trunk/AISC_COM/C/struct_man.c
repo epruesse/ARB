@@ -107,7 +107,8 @@ void aisc_insert_hash(struct aisc_hash_node **table,char *key,long data)
     hn->data = data;
     if (hnl) {
         hnl->next = hn;
-    }else{
+    }
+    else {
         table[i] = hn;
     }
 }
@@ -153,10 +154,12 @@ const char *aisc_link(dllpublic_ext * parent, dllheader_ext * mh) {
             if (aisc_read_hash((struct aisc_hash_node **)parent->hash, mh->ident)) {
                 CORE;
                 return "Object already in list";
-            } else {
+            }
+            else {
                 aisc_insert_hash((struct aisc_hash_node **)parent->hash, mh->ident, (long)mh);
             }
-        } else {
+        }
+        else {
             parent->hash = (long)aisc_init_hash(HASH_SIZE);
             aisc_insert_hash((struct aisc_hash_node **)parent->hash, mh->ident, (long)mh);
         }
@@ -166,7 +169,8 @@ const char *aisc_link(dllpublic_ext * parent, dllheader_ext * mh) {
         parent->cnt = 1;
         parent->first = mh;
         parent->last = mh;
-    } else {
+    }
+    else {
         parent->cnt++;
         mh->previous = parent->last;
         parent->last->next = mh;
@@ -199,12 +203,14 @@ const char *aisc_unlink(dllheader_ext * mh)
             return "Fatal Error: Object is a copy, not original";
         }
         mh->previous->next = mh->next;
-    } else {
+    }
+    else {
         parent->first = mh->next;
     }
     if (mh->next) {
         mh->next->previous = mh->previous;
-    } else {
+    }
+    else {
         parent->last = mh->previous;
     }
     mh->parent = NULL;
@@ -261,7 +267,8 @@ long trf_create(long old, long new_item)
             if (ts->new_item && (ts->new_item != new_item)) {
                 fprintf(stderr, "ERROR IN trf_commit:\n");
                 *(int *) NULL = 0;
-            }else{
+            }
+            else {
                 ts->new_item = new_item;
                 for (tds = ts->dests; tds; tds = ntds) {
                     *tds->dest = new_item;
@@ -327,7 +334,8 @@ int trf_commit(int errors)      /* if errors == 1 then print errors and CORE */
                         fprintf(stderr, "ERROR IN trf_commit:\n");
                         *(int *) NULL = 0;
                     }
-                } else {
+                }
+                else {
                     for (tds = ts->dests; tds; tds = ntds) {
                         ntds = tds->next;
                         free((char *)tds);
@@ -397,7 +405,8 @@ int aisc_server_dllstring_2_bytestring(dllpublic_ext * pb,bytestring *bs,int off
             memcpy(strptr,str,size+1);
             *(ptr++) = strptr - bs->data;
             strptr += size +1;
-        }else{
+        }
+        else {
             *(ptr++) = 0;
         }
     }

@@ -959,7 +959,8 @@ void ED4_manager::create_consensus(ED4_group_manager *upper_group_manager, aw_st
                 e4_assert(!group_manager_for_child->table().empty());
                 free(db_pointer);
             }
-        }else if (member->is_group_manager()){
+        }
+        else if (member->is_group_manager()) {
             ED4_group_manager *sub_group = member->to_group_manager();
 
             sub_group->create_consensus(sub_group, progress);

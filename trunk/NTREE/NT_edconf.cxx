@@ -213,7 +213,8 @@ int nt_build_conf_string_rek(GB_HASH *used, GBT_TREE *tree, GBS_strstruct *memfi
         GBS_chrcat(memfile,1);              // Separated by 1
         if (gb_grouped && GB_read_byte(gb_grouped)) {
             GBS_strcat(memfile,"F");
-        }else{
+        }
+        else {
             GBS_strcat(memfile,"G");
         }
 

@@ -192,7 +192,8 @@ const char *BI_helix::initFromData(const char *helix_nr_in, const char *helix_in
             if (strchr(RIGHT_HELIX,c)) {
                 entries[pos].pair_type = HELIX_PAIR;
                 entries[stack->pos].pair_type = HELIX_PAIR;
-            }else{
+            }
+            else {
                 c = tolower(c);
                 if (stack->c != c) {
                     bi_assert(!helix_error); // already have an error
@@ -203,7 +204,8 @@ const char *BI_helix::initFromData(const char *helix_nr_in, const char *helix_in
                 if (isalpha(c)) {
                     entries[pos].pair_type = (BI_PAIR_TYPE)(HELIX_NON_STANDARD0+c-'a');
                     entries[stack->pos].pair_type = (BI_PAIR_TYPE)(HELIX_NON_STANDARD0+c-'a');
-                }else{
+                }
+                else {
                     entries[pos].pair_type = HELIX_NO_PAIR;
                     entries[stack->pos].pair_type = HELIX_NO_PAIR;
                 }

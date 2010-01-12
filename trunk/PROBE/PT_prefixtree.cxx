@@ -54,7 +54,8 @@ char *PTM_get_mem(int size)
     if ( (erg = PTM.tables[pos]) ) {
         PT_READ_PNTR( ((char *)PTM.tables[pos]),i);
         PTM.tables[pos] = (char *)i;
-    } else {
+    }
+    else {
         if (PTM.size < nsize) {
             PTM.data         = (char *) calloc(1, PTM_TABLE_SIZE);
             PTM.size         = PTM_TABLE_SIZE;
@@ -101,7 +102,8 @@ void PTM_free_mem(char *data, int size)
     nsize = (size + (PTM_ALIGNED - 1)) & (-PTM_ALIGNED);
     if (nsize > PTM_MAX_SIZE) {
         free(data);
-    } else {
+    }
+    else {
         /* if (data[4] == PTM_magic) PT_CORE */
         pos = nsize >> PTM_LD_ALIGNED;
 
@@ -145,17 +147,11 @@ PTM2 *PT_init(int base_count)
     ptmain->stage1 = 1;
     int i;
     for (i=0;i<256;i++) {
-        if ((i&0xe0) == 0x20) {
-            PTM.flag_2_type[i] = PT_NT_SAVED;
-        }else if ((i&0xe0) == 0x00) {
-            PTM.flag_2_type[i] = PT_NT_LEAF;
-        }else if ((i&0x80) == 0x80) {
-            PTM.flag_2_type[i] = PT_NT_NODE;
-        }else if ((i&0xe0) == 0x40) {
-            PTM.flag_2_type[i] = PT_NT_CHAIN;
-        }else{
-            PTM.flag_2_type[i] = PT_NT_UNDEF;
-        }
+        if      ((i&0xe0) == 0x20) PTM.flag_2_type[i] = PT_NT_SAVED;
+        else if ((i&0xe0) == 0x00) PTM.flag_2_type[i] = PT_NT_LEAF;
+        else if ((i&0x80) == 0x80) PTM.flag_2_type[i] = PT_NT_NODE;
+        else if ((i&0xe0) == 0x40) PTM.flag_2_type[i] = PT_NT_CHAIN;
+        else                       PTM.flag_2_type[i] = PT_NT_UNDEF;
     }
     PT_init_count_bits();
     return ptmain;
@@ -223,7 +219,8 @@ POS_TREE *PT_add_to_chain(PTM2 *ptmain, POS_TREE *node, int name, int apos, int 
     if (node->flags&1){
         PT_READ_INT(data,mainapos);
         data += 4;
-    }else{
+    }
+    else {
         PT_READ_SHORT(data,mainapos);
         data += 2;
     }
@@ -284,7 +281,8 @@ POS_TREE *PT_leaf_to_chain(PTM2 *ptmain, POS_TREE *node)        /* stage 1*/
     if (apos>PT_SHORT_SIZE){                                    // mainapos
         PT_WRITE_INT(data,apos);                                // .
         data+=4; new_elem->flags|=1;                            // .
-    }else{                                                      // .
+    }
+    else {                                                      // .
         PT_WRITE_SHORT(data,apos);                              // .
         data+=2;                                                // .
     }
@@ -352,7 +350,8 @@ PT_create_leaf(PTM2 *ptmain, POS_TREE ** pfather, PT_BASES base, int rpos, int a
         PT_WRITE_INT(dest,name);
         node->flags |= 1;
         dest += 4;
-    }else{
+    }
+    else {
         PT_WRITE_SHORT(dest,name);
         dest += 2;
     }
@@ -360,7 +359,8 @@ PT_create_leaf(PTM2 *ptmain, POS_TREE ** pfather, PT_BASES base, int rpos, int a
         PT_WRITE_INT(dest,rpos);
         node->flags |= 2;
         dest += 4;
-    }else{
+    }
+    else {
         PT_WRITE_SHORT(dest,rpos);
         dest += 2;
     }
@@ -368,7 +368,8 @@ PT_create_leaf(PTM2 *ptmain, POS_TREE ** pfather, PT_BASES base, int rpos, int a
         PT_WRITE_INT(dest,apos);
         node->flags |= 4;
         dest += 4;
-    }else{
+    }
+    else {
         PT_WRITE_SHORT(dest,apos);
         dest += 2;
     }
@@ -443,7 +444,8 @@ void PTD_set_object_to_saved_status(POS_TREE * node, long pos, int size){
     PT_WRITE_PNTR((&node->data),pos);
     if (size < 20){
         node->flags |= size-sizeof(PT_PNTR);
-    }else{
+    }
+    else {
         PT_WRITE_INT((&node->data)+sizeof(PT_PNTR),size);
     }
 }
@@ -540,7 +542,8 @@ long PTD_write_chain_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node,long pos) 
         PTD_put_int(out,mainapos);
         data += 4;
         pos += 4;
-    }else{
+    }
+    else {
         PT_READ_SHORT(data,mainapos);
         PTD_put_short(out,mainapos);
         data += 2;
@@ -622,7 +625,8 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node, long *r_po
             }
             if ( (sons->flags & 0xf) == 0) {
                 PT_READ_INT((&sons->data)+sizeof(PT_PNTR),memsize);
-            }else{
+            }
+            else {
                 memsize = (sons->flags &0xf) + sizeof(PT_PNTR);
             }
             PTM_free_mem((char *)sons,memsize);
@@ -634,7 +638,8 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node, long *r_po
         long flags = 0xc0 | lasti | (max_diff <<3);
         putc((int)flags,out);
         psg.stat.single_node++;
-    }else{                          // multinode
+    }
+    else {                          // multinode
         putc(node->flags,out);
         int flags2 = 0;
         int level;
@@ -644,11 +649,13 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node, long *r_po
             flags2 |= 0x40;
             level = 0xffffffff;
             psg.stat.long_node++;
-        }else if (max_diff > 0xffff){       // int node
+        }
+        else if (max_diff > 0xffff) {       // int node
             flags2 |= 0x80;
             level = 0xffff;
             psg.stat.int_node++;
-        }else{                              // short node
+        }
+        else {                              // short node
             level = 0xff;
             psg.stat.short_node++;
         }
@@ -657,7 +664,8 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node, long *r_po
             flags2 |= 0x80;
             level = 0xffff;
             psg.stat.long_node++;
-        }else{
+        }
+        else {
             max_diff = 0;
             level = 0xff;
             psg.stat.short_node++;
@@ -683,27 +691,32 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node, long *r_po
                         PTD_put_longlong(out,diff);
                         size += 8;
                         psg.stat.longs++;
-                    }else{                          // int              (bit[i] in flags2 is unset)
+                    }
+                    else {                          // int              (bit[i] in flags2 is unset)
                         PTD_put_int(out,diff);
                         size += 4;
                         psg.stat.ints++;
                     }
-                }else if (max_diff > 0xffff){       // int/short        (bit[6] in flags2 is unset; bit[7] is set)
+                }
+                else if (max_diff > 0xffff) {       // int/short        (bit[6] in flags2 is unset; bit[7] is set)
                     if (diff>level) {               // int              (bit[i] in flags2 is set)
                         PTD_put_int(out,diff);
                         size += 4;
                         psg.stat.ints2++;
-                    }else{                          // short            (bit[i] in flags2 is unset)
+                    }
+                    else {                          // short            (bit[i] in flags2 is unset)
                         PTD_put_short(out,diff);
                         size += 2;
                         psg.stat.shorts++;
                     }
-                }else{                              // short/char       (bit[6] in flags2 is unset; bit[7] is unset)
+                }
+                else {                              // short/char       (bit[6] in flags2 is unset; bit[7] is unset)
                     if (diff>level) {               // short            (bit[i] in flags2 is set)
                         PTD_put_short(out,diff);
                         size += 2;
                         psg.stat.shorts2++;
-                    }else{                          // char             (bit[i] in flags2 is unset)
+                    }
+                    else {                          // char             (bit[i] in flags2 is unset)
                         putc((int)diff,out);
                         size += 1;
                         psg.stat.chars++;
@@ -715,17 +728,20 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node, long *r_po
                         PTD_put_int(out,diff);
                         size += 4;
                         psg.stat.longs++;
-                    }else{                          // short
+                    }
+                    else {                          // short
                         PTD_put_short(out,diff);
                         size += 2;
                         psg.stat.shorts++;
                     }
-                }else{                              // short/char  (bit[7] in flags2 not set)
+                }
+                else {                              // short/char  (bit[7] in flags2 not set)
                     if (diff>level) {               // short
                         PTD_put_short(out,diff);
                         size += 2;
                         psg.stat.shorts2++;
-                    }else{                          // char
+                    }
+                    else {                          // char
                         putc((int)diff,out);
                         size += 1;
                         psg.stat.chars++;
@@ -759,13 +775,16 @@ long PTD_write_leafs_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos
         PT_READ_PNTR((&node->data),father);
         *pnodepos = father;
         return 0;
-    }else   if (type == PT_NT_LEAF) {
+    }
+    else if (type == PT_NT_LEAF) {
         *pnodepos = pos;
         pos = (long)PTD_write_tip_to_disk(out,ptmain,node,pos);
-    }else if (type == PT_NT_CHAIN) {
+    }
+    else if (type == PT_NT_CHAIN) {
         *pnodepos = pos;
         pos = (long)PTD_write_chain_to_disk(out,ptmain,node,pos);
-    }else if (type == PT_NT_NODE) {
+    }
+    else if (type == PT_NT_NODE) {
         block[0] = 0;
         o_pos = pos;
         for (i = PT_QU; i < PT_B_MAX; i++) {    /* save all sons */
@@ -777,19 +796,23 @@ long PTD_write_leafs_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos
                 if (r_pos>pos){         // really saved ????
                     son_size[i] = r_pos-pos;
                     pos = r_pos;
-                }else{
+                }
+                else {
                     son_size[i] = 0;
                 }
-            }else{
+            }
+            else {
                 son_size[i] = 0;
             }
         }
         if (block[0] ) {    /* son wrote a block */
             *pblock = 1;
-        }else if (pos-o_pos > PT_BLOCK_SIZE) {
+        }
+        else if (pos-o_pos > PT_BLOCK_SIZE) {
             /* a block is written */
             *pblock = 1;
-        }else{          /* now i can write my data */
+        }
+        else {          /* now i can write my data */
             *pnodepos = pos;
             pos = PTD_write_node_to_disk(out,ptmain,node,r_poss,pos);
         }

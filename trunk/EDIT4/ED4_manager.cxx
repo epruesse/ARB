@@ -344,15 +344,18 @@ ED4_returncode ED4_manager::check_bases(const char *old_sequence, int old_len, c
 #endif
 
             WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, sub_and_add(old_sequence, new_sequence, start_pos, end_pos));
-        } else {
+        }
+        else {
             e4_assert(start_pos==0 && end_pos==-1);
             WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, sub(old_sequence, old_len));
         }
-    } else {
+    }
+    else {
         if (new_sequence) {
             e4_assert(start_pos==0 && end_pos==-1);
             WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, add(new_sequence, new_len));
-        } else {
+        }
+        else {
             return ED4_R_OK;
         }
     }
@@ -372,15 +375,18 @@ ED4_returncode ED4_manager::check_bases(const ED4_char_table *old_table, const E
                 }
             }
             WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, sub_and_add(*old_table, *new_table, start_pos, end_pos));
-        } else {
+        }
+        else {
             e4_assert(start_pos==0 && end_pos==-1);
             WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, sub(*old_table));
         }
-    } else {
+    }
+    else {
         if (new_table) {
             e4_assert(start_pos==0 && end_pos==-1);
             WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, add(*new_table));
-        } else {
+        }
+        else {
             return ED4_R_OK;
         }
     }
@@ -2053,7 +2059,8 @@ GB_ERROR ED4_remap::compile(ED4_root_group_manager *gm)
 
                     if (bases && percent>=above_percent) {
                         set_sequence_to_screen(i,j++);
-                    }else{
+                    }
+                    else {
                         set_sequence_to_screen(i, -j);
                     }
                 }

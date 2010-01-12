@@ -402,7 +402,8 @@ void aw_gc_color_changed_cb(AW_root *root,AW_MGC_awar_cb_struct *cbs, long mode)
     if (color != AW_DATA_BG) {
         cbs->cbs->device->set_foreground_color(cbs->gc,color);
         cbs->cbs->device->set_foreground_color(cbs->gc_drag,color);
-    }else{
+    }
+    else {
         struct AW_MGC_awar_cb_struct *acbs;
         for (acbs = cbs->cbs->next_drag; acbs; acbs=acbs->next){
             cbs->cbs->device->set_foreground_color(acbs->gc_drag,(AW_color)acbs->colorindex);

@@ -568,7 +568,8 @@ void probe_design_event(AW_window *aww)
                 s = strtok(0,"\n");
             }
             free(match_info);
-        }else{
+        }
+        else {
             pd_gl.pd_design->insert_selection( pd_gl.pd_design_id, "There are no results", "" );
         }
 
@@ -630,7 +631,8 @@ void probe_design_event(AW_window *aww)
             if (probe) space = strchr(probe,' ');
             if (probe && space) {
                 *space = 0; probe = strdup(probe);*space=' ';
-            }else{
+            }
+            else {
                 probe = strdup("");
             }
             pd_gl.pd_design->insert_selection( pd_gl.pd_design_id, match_info, probe );

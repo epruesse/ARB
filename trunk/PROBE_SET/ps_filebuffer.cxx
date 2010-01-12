@@ -16,7 +16,8 @@ void PS_FileBuffer::put( const void *_data, int _length ) {
     if (size + _length < BUFFER_SIZE) {
         memcpy( &buffer[size], _data, _length );
         size += _length;
-    } else {
+    }
+    else {
         flush();
         memcpy( buffer,_data,_length );
         size = _length;
@@ -33,7 +34,8 @@ void PS_FileBuffer::get( void *_data, int _length ) {
     if (position + _length <= size) {
         memcpy( _data, &buffer[position], _length );
         position += _length;
-    } else {
+    }
+    else {
         refill();
         memcpy( _data,buffer,_length );
         position = _length;
@@ -77,16 +79,20 @@ void PS_FileBuffer::get_ulong( unsigned long int &_ul ) {
 
     if ((c & 0x80) == 0) {                   // 1-byte
         _ul = c;
-    } else {
+    }
+    else {
         if ((c & 0xC0) == 0x80) {            // 2-byte
             _ul = (unsigned long)(c & 0x3F) << 8;
-        } else {
+        }
+        else {
             if ((c & 0xE0) == 0xC0) {        // 3-byte
                 _ul = (unsigned long)(c & 0x1F) << 16;
-            } else {
+            }
+            else {
                 if ((c & 0xF0) == 0xE0) {    // 4-byte
                     _ul = (unsigned long)(c & 0x0F) << 24;
-                } else {
+                }
+                else {
                     get_char(c);
                     _ul = (unsigned long)c << 24;
                 }
@@ -109,7 +115,8 @@ void PS_FileBuffer::peek( void *_data, int _length ) {
     }
     if (position + _length <= size) {
         memcpy( _data, &buffer[position], _length );
-    } else {
+    }
+    else {
         refill();
         memcpy( _data,buffer,_length );
     }
@@ -155,7 +162,8 @@ void PS_FileBuffer::reinit( const char *_name, bool _readonly ) {
     if (is_readonly) {
         file_flags = O_RDONLY;
         file_mode  = 0;
-    } else {
+    }
+    else {
         file_flags = O_WRONLY | O_CREAT | O_EXCL;
         file_mode  = S_IRUSR | S_IWUSR;
     }
@@ -163,7 +171,8 @@ void PS_FileBuffer::reinit( const char *_name, bool _readonly ) {
     if (file_handle == -1) {
         if (_readonly) {
             fprintf( stderr, "failed to open file '%s' for reading\n",file_name );
-        } else {
+        }
+        else {
             fprintf( stderr, "failed to create file '%s' for writing\nmaybe it already exists ?\n",file_name );
         }
         *(int *)0 = 0;
@@ -184,7 +193,8 @@ PS_FileBuffer::PS_FileBuffer( const char *_name, bool _readonly ) {
     if (is_readonly) {
         file_flags = O_RDONLY;
         file_mode  = 0;
-    } else {
+    }
+    else {
         file_flags = O_WRONLY | O_CREAT | O_EXCL;
         file_mode  = S_IRUSR | S_IWUSR;
     }
@@ -192,7 +202,8 @@ PS_FileBuffer::PS_FileBuffer( const char *_name, bool _readonly ) {
     if (file_handle == -1) {
         if (_readonly) {
             fprintf( stderr, "failed to open file '%s' for reading\n",file_name );
-        } else {
+        }
+        else {
             fprintf( stderr, "failed to create file '%s' for writing\nmaybe it already exists ?\n",file_name );
         }
         *(int *)0 = 0;

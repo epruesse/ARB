@@ -367,7 +367,8 @@ int main(int argc,char ** argv){
 
     if (*P.DESINGNAMES || P.sequence){
         AP_probe_design_event();
-    }else{
+    }
+    else {
         AP_probe_match_event();
     }
     return 0;

@@ -419,7 +419,8 @@ void gbs_memcopy(char *dest, const char *source, long len)
         while (i--) {
             *(--d) = *(--s);
         }
-    } else {
+    }
+    else {
         while (i--) {
             *(d++) = *(s++);
         }
@@ -1009,9 +1010,11 @@ char *GBS_extract_words( const char *source,const char *chars, float minlen, boo
 
         if (minlen == 1.0) {
             if (cnt != len) continue;
-        }else  if (minlen > 1.0) {
+        }
+        else if (minlen > 1.0) {
             if (cnt < iminlen) continue;
-        }else{
+        }
+        else {
             if (len < 3 || cnt < minlen*len) continue;
         }
         ps[count] = p;
@@ -1353,17 +1356,20 @@ int GB_status2( const char *templat, ... ) {
 
     va_list parg;
 
-    if ( gb_status_func2 ) {
-        char    buffer[4000];memset(&buffer[0],0,4000);
+    if (gb_status_func2) {
+        char buffer[4000];
+        memset(&buffer[0],0,4000);
         va_start(parg,templat);
         vsprintf(buffer,templat,parg);
+
         return gb_status_func2(buffer);
-    }else{
-        va_start(parg,templat);
-        vfprintf(stdout,templat,parg);
-        fprintf(stdout,"\n");
-        return 0;
     }
+
+    va_start(parg,templat);
+    vfprintf(stdout,templat,parg);
+    fprintf(stdout,"\n");
+    
+    return 0;
 }
 
 NOT4PERL void GB_install_status2(gb_status_func2_type func2){
@@ -1415,14 +1421,16 @@ static GB_ERROR g_bs_convert_string_to_tagged_hash(GB_HASH *hash, char *s,char *
             error = g_bs_add_value_tag_to_hash(gb_main,hash,default_tag,s,rtag,srt,aci,gbd); // no tag found, use default tag
             if (error) break;
             break;
-        }else{
+        }
+        else {
             *(ts++) = 0;
         }
         sa = strchr(ts,']');
         if (sa){
             *sa++ = 0;
             while (*sa == ' ') sa++;
-        }else{
+        }
+        else {
             error = g_bs_add_value_tag_to_hash(gb_main,hash,default_tag,s,rtag,srt,aci,gbd); // no tag found, use default tag
             if (error) break;
             break;
@@ -1653,16 +1661,20 @@ void GBS_fwrite_string(const char *strngi,FILE *out){
                 putc('t',out);
             else if ( c<25 ) {
                 putc(c+'@',out); // characters ASCII 0..24 encoded as \@..\X    (\n and \t are done above)
-            }else{
+            }
+            else {
                 putc(c+('0'-25),out);// characters ASCII 25..31 encoded as \0..\6
             }
-        }else if (c == '"'){
+        }
+        else if (c == '"') {
             putc('\\',out);
             putc('"',out);
-        }else if (c == '\\'){
+        }
+        else if (c == '\\') {
             putc('\\',out);
             putc('\\',out);
-        }else{
+        }
+        else {
             putc(c,out);
         }
     }

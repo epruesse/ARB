@@ -175,7 +175,8 @@ static void sina_start(AW_window *window, AW_CL cd2) {
         if (spec_name) {
             fwrite(spec_name, strlen(spec_name), 1, tmpfile_F);
             fwrite("\n", 1, 1, tmpfile_F);
-        } else {
+        }
+        else {
             aw_message("Unable to get name of currently active species");
             return;
         }

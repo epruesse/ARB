@@ -971,19 +971,22 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
         pars_refpntr[4] = pars_refpntr[5] = 0;
         pars_refpntr[6] = pars_refpntr[7] = 0;
         //      cout << "NEW RECURSION\n\n";
-    }else{
+    }
+    else {
         pars_refpntr[0] = pars_refpntr[1] = static_cast<AP_tree_nlen *>(this->leftson);
         pars_refpntr[2] = pars_refpntr[3] = static_cast<AP_tree_nlen *>(this->rightson);
         if (father->father != 0) {
             //Referenzzeiger falls nicht an der Wurzel
             pars_refpntr[4] = pars_refpntr[5] = static_cast<AP_tree_nlen *>(this->father);
             pars_refpntr[6] = pars_refpntr[7] = static_cast<AP_tree_nlen *>(this_brother);
-        } else {
+        }
+        else {
             //an der Wurzel nehme linken und rechten Sohns des Bruders
             if (!get_brother()->is_leaf) {
                 pars_refpntr[4] = pars_refpntr[5] = static_cast<AP_tree_nlen *>(this_brother->leftson);
                 pars_refpntr[6] = pars_refpntr[7] = static_cast<AP_tree_nlen *>(this_brother->rightson);
-            } else {
+            }
+            else {
                 pars_refpntr[4] = pars_refpntr[5] = 0;
                 pars_refpntr[6] = pars_refpntr[7] = 0;
             }
@@ -1082,7 +1085,8 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
         }
         if (rek_width_type & AP_DYNAMIK) {
             if (rek_width> rek_width_dynamic) rek_width = rek_width_dynamic;
-        }else   if (!(rek_width_type & AP_STATIC)) {
+        }
+        else if (!(rek_width_type & AP_STATIC)) {
             if (rek_width> 1) rek_width = 1;
         }
 
@@ -1134,13 +1138,15 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
 
             ap_main->clear();
             break;
-        } else {
+        }
+        else {
             ap_main->pop();
         }
     }
     if (*abort_flag) {       // pop/clear wegen set_root
         ap_main->clear();
-    } else {
+    }
+    else {
         ap_main->pop();
     }
     return;
@@ -1161,14 +1167,16 @@ void addToList(AP_CO_LIST *list,int *number,AP_tree_nlen *pntr,CO_LISTEL& wert0,
     if (wert0.isLeaf) {
         list[*number].leaf0 = wert0.refLeaf;
         list[*number].node0 = -10;
-    } else {
+    }
+    else {
         list[*number].leaf0 = 0;
         list[*number].node0 = wert0.refNode;
     }
     if (wert1.isLeaf) {
         list[*number].leaf1 = wert1.refLeaf;
         list[*number].node1 = -1;
-    } else {
+    }
+    else {
         list[*number].leaf1 = 0;
         list[*number].node1 = wert1.refNode;
     }
@@ -1227,7 +1235,8 @@ void AP_tree_nlen::createListRekSide(AP_CO_LIST *list,int *cn) {
         if (father->leftson == this) {
             if (!father->refLeft.init) father->createListRekSide(list,cn);
             addToList(list,cn,this,leftson->refUp,father->refLeft);
-        } else {
+        }
+        else {
             if (!father->refRight.init) father->createListRekSide(list,cn);
             addToList(list,cn,this,leftson->refUp,father->refRight);
         }
@@ -1240,7 +1249,8 @@ void AP_tree_nlen::createListRekSide(AP_CO_LIST *list,int *cn) {
         if (father->leftson == this) {
             if (!father->refLeft.init) father->createListRekSide(list,cn);
             addToList(list,cn,this,rightson->refUp,father->refLeft);
-        } else {
+        }
+        else {
             if (!father->refRight.init) father->createListRekSide(list,cn);
             addToList(list,cn,this,rightson->refUp,father->refRight);
         }

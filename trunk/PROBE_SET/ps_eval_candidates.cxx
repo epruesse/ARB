@@ -186,7 +186,8 @@ bool PS_calc_min_sum_of_square_distances_to_average( PS_NodeSet &_nodepath,
         _min_sum      = min_sum_for_node;
         _best_average = best_average;
         return true;
-    } else {
+    }
+    else {
         printf( "aborted _best_average (%7.3f) _min_sum (%10.3f)      best_average (%7.3f) min_sum_for_node (%10.3f)\n", _best_average, _min_sum, best_average, min_sum_for_node );
         return false;
     }
@@ -505,7 +506,8 @@ int main( int   argc,
                   ++id ) {
                 final_candidates_paths_file->put_int( *id );
             }
-        } else {
+        }
+        else {
             // write inverse path length
             final_candidates_paths_file->put_uint( db->getSpeciesCount() - c->path.size() );
             // write inverse path
