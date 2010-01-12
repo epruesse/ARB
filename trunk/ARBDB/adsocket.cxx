@@ -32,7 +32,7 @@
 
 #if defined(DARWIN)
 # include <sys/sysctl.h>
-#endif /* DARWIN */
+#endif // DARWIN
 
 void GB_usleep(long usec) {
     usleep(usec);
@@ -154,11 +154,8 @@ int gbcm_write(int socket,const char *ptr,long size) {
     return GBCM_SERVER_OK;
 }
 
-
-
-/************************************* find the mach name and id *************************************/
-
 static GB_ERROR gbcm_get_m_id(const char *path, char **m_name, long *id) {
+    // find the mach name and id
     GB_ERROR error = 0;
 
     if (!path) error = "missing hostname:socketid";
@@ -204,7 +201,7 @@ static GB_ERROR gbcm_get_m_id(const char *path, char **m_name, long *id) {
 GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *psocket, char **unix_name) {
     long      socket_id[1];
     char    *mach_name[1];
-    struct in_addr  addr;   /* union -> u_long  */
+    struct in_addr  addr;   // union -> u_long
     struct hostent *he;
     GB_ERROR err;
 
@@ -214,7 +211,7 @@ GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *p
         if (mach_name[0]) free((char *)mach_name[0]);
         return err;
     }
-    if (socket_id[0] >= 0) {    /* TCP */
+    if (socket_id[0] >= 0) {    // TCP
         struct sockaddr_in so_ad;
         memset((char *)&so_ad,0,sizeof(struct sockaddr_in));
         *psocket = socket(PF_INET, SOCK_STREAM, 0);
@@ -227,13 +224,13 @@ GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *p
             return "Unknown host";
         }
 
-        /** simply take first address **/
+        // simply take first address
         addr.s_addr = *(long *) (he->h_addr);
         so_ad.sin_addr = addr;
         so_ad.sin_family = AF_INET;
-        so_ad.sin_port = htons((unsigned short)(socket_id[0])); /* @@@ = pb_socket  */
+        so_ad.sin_port = htons((unsigned short)(socket_id[0])); // @@@ = pb_socket
         if (do_connect){
-            /*printf("Connecting to %X:%i\n",addr.s_addr,socket_id[0]);*/
+            //printf("Connecting to %X:%i\n",addr.s_addr,socket_id[0]);
             if (connect(*psocket,(struct sockaddr *)(&so_ad), sizeof(so_ad))) {
                 GB_warningf("Cannot connect to %s:%li   errno %i",mach_name[0],socket_id[0],errno);
                 return "";
@@ -253,7 +250,7 @@ GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *p
         }
         *unix_name = 0;
         return 0;
-    } else {        /* UNIX */
+    } else {        // UNIX
         struct sockaddr_un so_ad; memset((char *)&so_ad,0,sizeof(so_ad));
         *psocket = socket(PF_UNIX, SOCK_STREAM, 0);
         if (*psocket <= 0) {
@@ -323,7 +320,7 @@ struct gbcmc_comm *gbcmc_open(const char *path)
     link = (struct gbcmc_comm *)GB_calloc(sizeof(struct gbcmc_comm), 1);
     err = gbcm_open_socket(path, TCP_NODELAY, 1, &link->socket, &link->unix_name);
     if (err) {
-        if (link->unix_name) free(link->unix_name); /* @@@ */
+        if (link->unix_name) free(link->unix_name); // @@@
         free((char *)link);
         if(*err){
             GB_internal_errorf("ARB_DB_CLIENT_OPEN\n(Reason: %s)", err);
@@ -558,7 +555,7 @@ void GB_unlink_or_warn(const char *path, GB_ERROR *error) {
     }
 }
 
-char *GB_follow_unix_link(const char *path){    /* returns the real path of a file */
+char *GB_follow_unix_link(const char *path){    // returns the real path of a file
     char buffer[1000];
     char *path2;
     char *pos;
@@ -580,7 +577,7 @@ char *GB_follow_unix_link(const char *path){    /* returns the real path of a fi
     return res;
 }
 
-GB_ERROR GB_symlink(const char *name1, const char *name2){  /* name1 is the existing file !!! */
+GB_ERROR GB_symlink(const char *name1, const char *name2){  // name1 is the existing file !!!
     if (symlink(name1,name2)<0){
         return GB_export_errorf("Cannot create symlink '%s' to file '%s'",name2,name1);
     }
@@ -716,7 +713,7 @@ GB_ULONG GB_last_saved_time(GBDATA *gb_main){
 }
 
 GB_ERROR GB_textprint(const char *path){
-    /* goes to header: __ATTR__USERESULT */
+    // goes to header: __ATTR__USERESULT
     char       *fpath   = GBS_eval_env(path);
     const char *command = GBS_global_string("arb_textprint '%s' &", fpath);
     GB_ERROR    error   = GB_system(command);
@@ -726,9 +723,9 @@ GB_ERROR GB_textprint(const char *path){
 
 #if defined(DEVEL_RALF)
 #warning search for '\b(system)\b\s*\(' and use GB_system instead
-#endif /* DEVEL_RALF */
+#endif // DEVEL_RALF
 GB_ERROR GB_system(const char *system_command) {
-    /* goes to header: __ATTR__USERESULT */
+    // goes to header: __ATTR__USERESULT
     fprintf(stderr, "[Action: '%s']\n", system_command);
     int      res   = system(system_command);
     GB_ERROR error = NULL;
@@ -741,7 +738,7 @@ GB_ERROR GB_system(const char *system_command) {
 }
 
 GB_ERROR GB_xterm(void) {
-    /* goes to header: __ATTR__USERESULT */
+    // goes to header: __ATTR__USERESULT
     const char *xt = GB_getenv("ARB_XTERM"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_XTERM
     if (!xt) xt = "xterm -sl 1000 -sb -geometry 120x40";
 
@@ -750,7 +747,7 @@ GB_ERROR GB_xterm(void) {
 }
 
 GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) {
-    /* goes to header: __ATTR__USERESULT */
+    // goes to header: __ATTR__USERESULT
     
     // runs a command in an xterm
     // if 'background' is true -> run asynchronous
@@ -788,8 +785,8 @@ GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) {
     return error;
 }
 
-/* -------------------------------------------------------------------------------- */
-/* Functions to find an executable */
+// --------------------------------------------------------------------------------
+// Functions to find an executable
 
 char *GB_executable(GB_CSTR exe_name) {
     GB_CSTR     path   = GB_getenvPATH();
@@ -813,7 +810,7 @@ char *GB_executable(GB_CSTR exe_name) {
 }
 
 char *GB_find_executable(GB_CSTR description_of_executable, ...) {
-    /* goes to header: __ATTR__SENTINEL  */
+    // goes to header: __ATTR__SENTINEL
     /* search the path for an executable with any of the given names (...)
      * if any is found, it's full path is returned
      * if none is found, a warning call is returned (which can be executed without harm)
@@ -827,7 +824,7 @@ char *GB_find_executable(GB_CSTR description_of_executable, ...) {
     while (!found && (name = va_arg(args, GB_CSTR)) != 0) found = GB_executable(name);
     va_end(args);
 
-    if (!found) { /* none of the executables has been found */
+    if (!found) { // none of the executables has been found
         char *looked_for;
         char *msg;
         {
@@ -856,8 +853,8 @@ char *GB_find_executable(GB_CSTR description_of_executable, ...) {
     return found;
 }
 
-/* -------------------------------------------------------------------------------- */
-/* Functions to access the environment variables used by ARB: */
+// --------------------------------------------------------------------------------
+// Functions to access the environment variables used by ARB:
 
 static GB_CSTR getenv_ignore_empty(GB_CSTR envvar) {
     GB_CSTR result = getenv(envvar);
@@ -1077,7 +1074,7 @@ GB_CSTR GB_getenv(const char *env){
 
 
 int GB_host_is_local(const char *hostname){
-    /* returns 1 if host is local */
+    // returns 1 if host is local
     if (strcmp(hostname,"localhost")       == 0) return 1;
     if (strcmp(hostname,GB_get_hostname()) == 0) return 1;
     if (strstr(hostname, "127.0.0.")       == hostname) return 1;
@@ -1087,8 +1084,8 @@ int GB_host_is_local(const char *hostname){
 #define MIN(a,b) (((a)<(b))?(a):(b))
 
 GB_ULONG GB_get_physical_memory(void) {
-    /* Returns the physical available memory size in k available for one process */
-    GB_ULONG memsize; /* real existing memory in k */
+    // Returns the physical available memory size in k available for one process
+    GB_ULONG memsize; // real existing memory in k
     
 #if defined(LINUX) 
     {
@@ -1105,7 +1102,7 @@ GB_ULONG GB_get_physical_memory(void) {
         size_t   len;
 
         mib[0] = CTL_HW;
-        mib[1] = HW_MEMSIZE; /*uint64_t: physical ram size */
+        mib[1] = HW_MEMSIZE; //uint64_t: physical ram size
         len = sizeof(bytes);
         sysctl(mib, 2, &bytes, &len, NULL, 0);
 
@@ -1118,7 +1115,7 @@ GB_ULONG GB_get_physical_memory(void) {
            "         (it assumes you have %ul Mb,  but does not use more)\n\n", memsize/1024);
 #endif
 
-    GB_ULONG net_memsize = memsize - 10240;         /* reduce by 10Mb */
+    GB_ULONG net_memsize = memsize - 10240;         // reduce by 10Mb
 
     // detect max allocateable memory by ... allocating
     GB_ULONG max_malloc_try = net_memsize*1024;
@@ -1142,13 +1139,13 @@ GB_ULONG GB_get_physical_memory(void) {
         max_malloc /= 1024;
     }
 
-    GB_ULONG usedmemsize = (MIN(net_memsize,max_malloc)*95)/100;  /* arb uses max. 95 % of available memory (was 70% in the past) */
+    GB_ULONG usedmemsize = (MIN(net_memsize,max_malloc)*95)/100;  // arb uses max. 95 % of available memory (was 70% in the past)
 
 #if defined(DEBUG)
     printf("- memsize(real)        = %20lu k\n", memsize);
     printf("- memsize(net)         = %20lu k\n", net_memsize);
     printf("- memsize(max_malloc)  = %20lu k\n", max_malloc);
-#endif /* DEBUG */
+#endif // DEBUG
     printf("- memsize(used by ARB) = %20lu k\n", usedmemsize);
 
     arb_assert(usedmemsize != 0);
@@ -1156,8 +1153,8 @@ GB_ULONG GB_get_physical_memory(void) {
     return usedmemsize;
 }
 
-/* --------------------------------------------- */
-/* path completion (parts former located in AWT) */
+// ---------------------------------------------
+// path completion (parts former located in AWT)
 
 static int  path_toggle = 0;
 static char path_buf[2][PATH_MAX];

@@ -1,12 +1,12 @@
-/* ============================================================= */
-/*                                                               */
-/*   File      : adstring.c                                      */
-/*   Purpose   : various string functions                        */
-/*                                                               */
-/*   Institute of Microbiology (Technical University Munich)     */
-/*   http://www.arb-home.de                                      */
-/*                                                               */
-/* ============================================================= */
+// =============================================================== //
+//                                                                 //
+//   File      : adstring.cxx                                      //
+//   Purpose   : various string functions                          //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include <execinfo.h>
 
@@ -37,7 +37,7 @@ void GB_raise_critical_error(const char *msg) {
     fprintf(stderr, "A critical error occurred in ARB\nError-Message: %s\n", msg);
 #if defined(DEBUG)
     fprintf(stderr, "Run the debugger to find the location where the error was raised.\n");
-#endif /* DEBUG */
+#endif // DEBUG
     fprintf(stderr, "------------------------------------------------------------\n");
     gb_assert(0);
     exit(-1);
@@ -62,7 +62,7 @@ void GB_raise_critical_error(const char *msg) {
  *
  * use GB_get_error() to import AND clear the error
  */
-#endif /* DEVEL_RALF */
+#endif // DEVEL_RALF
 
 static char *GB_error_buffer = 0;
 
@@ -71,7 +71,7 @@ GB_ERROR GB_export_error(const char *error) { // just a temp hack around format-
 }
 
 GB_ERROR GB_export_errorf(const char *templat, ...) {
-    /* goes to header: __ATTR__FORMAT(1) __ATTR__DEPRECATED */
+    // goes to header: __ATTR__FORMAT(1) __ATTR__DEPRECATED
 
     char     buffer[GBS_GLOBAL_STRING_SIZE];
     char    *p = buffer;
@@ -81,7 +81,7 @@ GB_ERROR GB_export_errorf(const char *templat, ...) {
 
 #if defined(DEVEL_RALF)
 #warning dont prepend error here
-#endif /* DEVEL_RALF */
+#endif // DEVEL_RALF
 
     p += sprintf(buffer,"ARB ERROR: ");
     va_start(parg,templat);
@@ -133,7 +133,7 @@ GB_ERROR GB_export_IO_error(const char *action, const char *filename) {
 
 
 NOT4PERL GB_ERROR GB_print_error() {
-    /* goes to header: __XATTR__DEPRECATED  */
+    // goes to header: __XATTR__DEPRECATED
     if (GB_error_buffer){
         fflush(stdout);
         fprintf(stderr,"%s\n",GB_error_buffer);
@@ -142,7 +142,7 @@ NOT4PERL GB_ERROR GB_print_error() {
 }
 
 NOT4PERL GB_ERROR GB_get_error() {
-    /* goes to header: __ATTR__DEPRECATED  */
+    // goes to header: __ATTR__DEPRECATED
 
     /* This function is deprecated.
      * Instead use either
@@ -168,13 +168,13 @@ GB_ERROR GB_await_error() {
     return "Program logic error: Something went wrong, but reason is unknown";
 }
 
-void GB_clear_error() {         /* clears the error buffer */
+void GB_clear_error() {         // clears the error buffer
     freenull(GB_error_buffer);
 }
 
 #if defined(DEVEL_RALF)
 #warning search for 'GBS_global_string.*error' and replace with GB_failedTo_error or GB_append_exportedError
-#endif /* DEVEL_RALF */
+#endif // DEVEL_RALF
 GB_ERROR GB_failedTo_error(const char *do_something, const char *special, GB_ERROR error) {
     if (error) {
         if (special) {
@@ -202,7 +202,7 @@ GB_ERROR GB_append_exportedError(GB_ERROR error) {
     return error;
 }
 
-/* -------------------------------------------------------------------------------- */
+// --------------------------------------------------------------------------------
 
 #ifdef LINUX
 # define HAVE_VSNPRINTF
@@ -221,13 +221,13 @@ GB_ERROR GB_append_exportedError(GB_ERROR error) {
                        (bufsize), (printed));                           \
     }
 
-/* -------------------------------------------------------------------------------- */
+// --------------------------------------------------------------------------------
 
 #if defined(DEBUG)
 #if defined(DEVEL_RALF)
-/* #define TRACE_BUFFER_USAGE */
-#endif /* DEBUG */
-#endif /* DEVEL_RALF */
+// #define TRACE_BUFFER_USAGE
+#endif // DEBUG
+#endif // DEVEL_RALF
 
 #define GLOBAL_STRING_BUFFERS 4
 
@@ -249,15 +249,15 @@ static GB_CSTR gbs_vglobal_string(const char *templat, va_list parg, int allow_r
         }
     }
 
-    if (allow_reuse == -1) { /* called from GBS_reuse_buffer */
-        /* buffer to reuse is passed in 'templat' */
+    if (allow_reuse == -1) { // called from GBS_reuse_buffer
+        // buffer to reuse is passed in 'templat'
 
         for (my_idx = 0; my_idx<GLOBAL_STRING_BUFFERS; my_idx++) {
             if (buffer[my_idx] == templat) {
                 lifetime[my_idx] = 0;
 #if defined(TRACE_BUFFER_USAGE)
                 printf("Reusing buffer #%i\n", my_idx);
-#endif /* TRACE_BUFFER_USAGE */
+#endif // TRACE_BUFFER_USAGE
                 if (nextIdx[my_idx] == idx) idx = my_idx;
                 return 0;
             }
@@ -265,12 +265,12 @@ static GB_CSTR gbs_vglobal_string(const char *templat, va_list parg, int allow_r
             else {
                 printf("(buffer to reuse is not buffer #%i (%p))\n", my_idx, buffer[my_idx]);
             }
-#endif /* TRACE_BUFFER_USAGE */
+#endif // TRACE_BUFFER_USAGE
         }
         for (my_idx = 0; my_idx<GLOBAL_STRING_BUFFERS; my_idx++) {
             printf("buffer[%i]=%p\n", my_idx, buffer[my_idx]);
         }
-        gb_assert(0);       /* GBS_reuse_buffer called with illegal buffer */
+        gb_assert(0);       // GBS_reuse_buffer called with illegal buffer
         return 0;
     }
 
@@ -281,7 +281,7 @@ static GB_CSTR gbs_vglobal_string(const char *templat, va_list parg, int allow_r
         for (my_idx = nextIdx[idx]; lifetime[my_idx]>0; my_idx = nextIdx[my_idx]) {
 #if defined(TRACE_BUFFER_USAGE)
             printf("decreasing lifetime[%i] (%i->%i)\n", my_idx, lifetime[my_idx], lifetime[my_idx]-1);
-#endif /* TRACE_BUFFER_USAGE */
+#endif // TRACE_BUFFER_USAGE
             lifetime[my_idx]--;
         }
     }
@@ -290,7 +290,7 @@ static GB_CSTR gbs_vglobal_string(const char *templat, va_list parg, int allow_r
 
 #if defined(TRACE_BUFFER_USAGE)
     printf("Printed into global buffer #%i ('%s')\n", my_idx, buffer[my_idx]);
-#endif /* TRACE_BUFFER_USAGE */
+#endif // TRACE_BUFFER_USAGE
 
     last_global_string_size = psize;
 
@@ -302,7 +302,7 @@ static GB_CSTR gbs_vglobal_string(const char *templat, va_list parg, int allow_r
     else {
         printf("Allow reuse of buffer #%i\n", my_idx);
     }
-#endif /* TRACE_BUFFER_USAGE */
+#endif // TRACE_BUFFER_USAGE
 
     return buffer[my_idx];
 }
@@ -313,12 +313,12 @@ static char *gbs_vglobal_string_copy(const char *templat, va_list parg) {
 }
 
 void GBS_reuse_buffer(GB_CSTR global_buffer) {
-    /* If you've just shortely used a buffer, you can put it back here */
+    // If you've just shortely used a buffer, you can put it back here
     gbs_vglobal_string(global_buffer, 0, -1);
 }
 
 GB_CSTR GBS_global_string(const char *templat, ...) {
-    /* goes to header: __ATTR__FORMAT(1)  */
+    // goes to header: __ATTR__FORMAT(1)
 
     va_list parg;
     GB_CSTR result;
@@ -331,7 +331,7 @@ GB_CSTR GBS_global_string(const char *templat, ...) {
 }
 
 char *GBS_global_string_copy(const char *templat, ...) {
-    /* goes to header: __ATTR__FORMAT(1)  */
+    // goes to header: __ATTR__FORMAT(1)
 
     va_list parg;
     char *result;
@@ -345,10 +345,10 @@ char *GBS_global_string_copy(const char *templat, ...) {
 
 #if defined(DEVEL_RALF)
 #warning search for '\b(sprintf)\b\s*\(' and replace by GBS_global_string_to_buffer
-#endif /* DEVEL_RALF */
+#endif // DEVEL_RALF
 
 const char *GBS_global_string_to_buffer(char *buffer, size_t bufsize, const char *templat, ...) {
-    /* goes to header: __ATTR__FORMAT(3)  */
+    // goes to header: __ATTR__FORMAT(3)
 
     va_list parg;
     int     psize;
@@ -366,7 +366,7 @@ size_t GBS_last_global_string_size() {
 }
 
 char *GBS_string_2_key_with_exclusions(const char *str, const char *additional)
-/* converts any string to a valid key (all chars in 'additional' are additionally allowed) */
+// converts any string to a valid key (all chars in 'additional' are additionally allowed)
 {
     char buf[GB_KEY_LEN_MAX+1];
     int i;
@@ -387,7 +387,7 @@ char *GBS_string_2_key_with_exclusions(const char *str, const char *additional)
     return strdup(buf);
 }
 
-char *GBS_string_2_key(const char *str) /* converts any string to a valid key */
+char *GBS_string_2_key(const char *str) // converts any string to a valid key
 {
     return GBS_string_2_key_with_exclusions(str, "");
 }
@@ -403,7 +403,7 @@ void gbs_uppercase(char *str)
 
 #if defined(DEVEL_RALF)
 #warning replace/implement gbs_memcopy by memmove 
-#endif /* DEVEL_RALF */
+#endif // DEVEL_RALF
 void gbs_memcopy(char *dest, const char *source, long len)
 {
     long        i;
@@ -432,8 +432,8 @@ char *GB_memdup(const char *source, size_t len) {
     return dest;
 }
 
-GB_ERROR GB_check_key(const char *key) { /* goes to header: __ATTR__USERESULT */
-    /* test whether all characters are letters, numbers or _ */
+GB_ERROR GB_check_key(const char *key) { // goes to header: __ATTR__USERESULT
+    // test whether all characters are letters, numbers or _
     int  i;
     long len;
 
@@ -453,8 +453,8 @@ GB_ERROR GB_check_key(const char *key) { /* goes to header: __ATTR__USERESULT */
 
     return 0;
 }
-GB_ERROR GB_check_link_name(const char *key) { /* goes to header: __ATTR__USERESULT */
-    /* test whether all characters are letters, numbers or _ */
+GB_ERROR GB_check_link_name(const char *key) { // goes to header: __ATTR__USERESULT
+    // test whether all characters are letters, numbers or _
     int  i;
     long len;
 
@@ -474,9 +474,9 @@ GB_ERROR GB_check_link_name(const char *key) { /* goes to header: __ATTR__USERES
 
     return 0;
 }
-GB_ERROR GB_check_hkey(const char *key) { /* goes to header: __ATTR__USERESULT */
-    /* test whether all characters are letters, numbers or _ */
-    /* additionally allow '/' and '->' for hierarchical keys */
+GB_ERROR GB_check_hkey(const char *key) { // goes to header: __ATTR__USERESULT
+    // test whether all characters are letters, numbers or _
+    // additionally allow '/' and '->' for hierarchical keys
     GB_ERROR err = 0;
 
     if (!key || key[0] == 0) {
@@ -548,11 +548,11 @@ char *gbs_add_path(char *path,char *name)
     return erg;
 }
 
-/* --------------------------- */
-/*      escape characters      */
+// ---------------------------
+//      escape characters
 
-char *GBS_remove_escape(char *com)  /* \ is the escape character
-                                     */
+char *GBS_remove_escape(char *com)  // \ is the escape character
+
 {
     char *result,*s,*d;
     int   ch;
@@ -669,7 +669,7 @@ char *GBS_unescape_string(const char *str, const char *escaped_chars, char escap
 
 #if defined(DEBUG)
 // # define DUMP_STRSTRUCT_MEMUSE
-#endif /* DEBUG */
+#endif // DEBUG
 
 
 struct GBS_strstruct {
@@ -680,7 +680,7 @@ struct GBS_strstruct {
 
 static struct GBS_strstruct *last_used = 0;
 
-struct GBS_strstruct *GBS_stropen(long init_size)   { /* opens a memory file */
+struct GBS_strstruct *GBS_stropen(long init_size)   { // opens a memory file
     struct GBS_strstruct *strstr;
 
     if (last_used && last_used->GBS_strcat_data_size >= init_size) {
@@ -690,7 +690,7 @@ struct GBS_strstruct *GBS_stropen(long init_size)   { /* opens a memory file */
     else {
 #if defined(DUMP_STRSTRUCT_MEMUSE)
         printf("allocating new GBS_strstruct (size = %li)\n", init_size);
-#endif /* DUMP_STRSTRUCT_MEMUSE */
+#endif // DUMP_STRSTRUCT_MEMUSE
         strstr                       = (struct GBS_strstruct *)malloc(sizeof(struct GBS_strstruct));
         strstr->GBS_strcat_data_size = init_size;
         strstr->GBS_strcat_data      = (char *)malloc((size_t)strstr->GBS_strcat_data_size);
@@ -703,14 +703,14 @@ struct GBS_strstruct *GBS_stropen(long init_size)   { /* opens a memory file */
 }
 
 char *GBS_strclose(struct GBS_strstruct *strstr) {
-    /* returns a char* copy of the memory file */
+    // returns a char* copy of the memory file
     
     long  length = strstr->GBS_strcat_pos;
     char *str    = (char*)malloc(length+1);
 
     gb_assert(str);
 
-    memcpy(str, strstr->GBS_strcat_data, length+1); /* copy with 0 */
+    memcpy(str, strstr->GBS_strcat_data, length+1); // copy with 0
     GBS_strforget(strstr);
 
     return str;
@@ -718,7 +718,7 @@ char *GBS_strclose(struct GBS_strstruct *strstr) {
 
 void GBS_strforget(struct GBS_strstruct *strstr) {
     if (last_used) {
-        if (last_used->GBS_strcat_data_size < strstr->GBS_strcat_data_size) { /* last_used is smaller -> keep this */
+        if (last_used->GBS_strcat_data_size < strstr->GBS_strcat_data_size) { // last_used is smaller -> keep this
             struct GBS_strstruct *tmp = last_used;
             last_used                 = strstr;
             strstr                    = tmp;
@@ -741,24 +741,24 @@ void GBS_strforget(struct GBS_strstruct *strstr) {
     if (strstr) {
 #if defined(DUMP_STRSTRUCT_MEMUSE)
         printf("freeing GBS_strstruct (size = %li)\n", strstr->GBS_strcat_data_size);
-#endif /* DUMP_STRSTRUCT_MEMUSE */
+#endif // DUMP_STRSTRUCT_MEMUSE
         free(strstr->GBS_strcat_data);
         free(strstr);
     }
 }
 
 GB_BUFFER GBS_mempntr(struct GBS_strstruct *strstr) {
-    /* returns the memory file */
+    // returns the memory file
     return strstr->GBS_strcat_data;
 }
 
 long GBS_memoffset(struct GBS_strstruct *strstr) {
-    /* returns the offset into the memory file */
+    // returns the offset into the memory file
     return strstr->GBS_strcat_pos;
 }
 
 void GBS_str_cut_tail(struct GBS_strstruct *strstr, int byte_count){
-    /* Removes byte_count characters at the tail of a memfile */
+    // Removes byte_count characters at the tail of a memfile
     strstr->GBS_strcat_pos -= byte_count;
     if (strstr->GBS_strcat_pos < 0) strstr->GBS_strcat_pos = 0;
     strstr->GBS_strcat_data[strstr->GBS_strcat_pos] = 0;
@@ -771,7 +771,7 @@ static void gbs_strensure_mem(struct GBS_strstruct *strstr,long len) {
         strstr->GBS_strcat_data      = (char *)realloc(strstr->GBS_strcat_data, strstr->GBS_strcat_data_size);
 #if defined(DUMP_STRSTRUCT_MEMUSE)
         printf("re-allocated GBS_strstruct to size = %li\n", strstr->GBS_strcat_data_size);
-#endif /* DUMP_STRSTRUCT_MEMUSE */
+#endif // DUMP_STRSTRUCT_MEMUSE
     }
 }
 
@@ -788,14 +788,14 @@ void GBS_strncat(struct GBS_strstruct *strstr, const char *ptr, size_t len) {
 }
 
 void GBS_strcat(struct GBS_strstruct *strstr, const char *ptr) {
-    /* append string to strstruct */
+    // append string to strstruct
     GBS_strncat(strstr, ptr, strlen(ptr));
 }
 
 
 
 void GBS_strnprintf(struct GBS_strstruct *strstr, long len, const char *templat, ...) {
-    /* goes to header: __ATTR__FORMAT(3)  */
+    // goes to header: __ATTR__FORMAT(3)
     char    *buffer;
     int      psize;
     va_list  parg;
@@ -869,7 +869,7 @@ char *GBS_eval_env(GB_CSTR p){
 }
 
 long GBS_gcgchecksum( const char *seq )
-/* GCGchecksum */
+// GCGchecksum
 {
     long i;
     long check  = 0;
@@ -886,7 +886,7 @@ long GBS_gcgchecksum( const char *seq )
     return check;
 }
 
-/* Table of CRC-32's of all single byte values (made by makecrc.c of ZIP source) */
+// Table of CRC-32's of all single byte values (made by makecrc.c of ZIP source)
 uint32_t crctab[] = {
     0x00000000L, 0x77073096L, 0xee0e612cL, 0x990951baL, 0x076dc419L,
     0x706af48fL, 0xe963a535L, 0x9e6495a3L, 0x0edb8832L, 0x79dcb8a4L,
@@ -942,7 +942,7 @@ uint32_t crctab[] = {
     0x2d02ef8dL
 };
 
-uint32_t GB_checksum(const char *seq, long length, int ignore_case , const char *exclude) /* RALF: 02-12-96 */
+uint32_t GB_checksum(const char *seq, long length, int ignore_case , const char *exclude) // RALF: 02-12-96
      /*
       * CRC32checksum: modified from CRC-32 algorithm found in ZIP compression source
       * if ignore_case == true -> treat all characters as uppercase-chars (applies to exclude too)
@@ -977,7 +977,7 @@ uint32_t GB_checksum(const char *seq, long length, int ignore_case , const char 
 }
 
 uint32_t GBS_checksum(const char *seq, int ignore_case, const char *exclude)
-     /* if 'ignore_case' == true -> treat all characters as uppercase-chars (applies to 'exclude' too) */
+     // if 'ignore_case' == true -> treat all characters as uppercase-chars (applies to 'exclude' too)
 {
     return GB_checksum(seq, strlen(seq), ignore_case, exclude);
 }
@@ -1075,8 +1075,8 @@ size_t GBS_shorten_repeated_data(char *data) {
     return dest-dataStart;
 }
 
-/* ----------------------- */
-/*      Error handler      */
+// -----------------------
+//      Error handler
 
 static void gb_error_to_stderr(const char *msg) {
     fprintf(stderr, "%s\n", msg);
@@ -1088,8 +1088,8 @@ NOT4PERL void GB_install_error_handler(gb_error_handler_type aw_message_handler)
     gb_error_handler = aw_message_handler;
 }
 
-/* --------------------- */
-/*      Backtracing      */
+// ---------------------
+//      Backtracing
 
 #define MAX_BACKTRACE 66
 
@@ -1107,8 +1107,8 @@ void GBK_dump_backtrace(FILE *out, GB_ERROR error) {
     fflush(out);
 }
 
-/* ----------------------- */
-/*      catch SIGSEGV      */
+// -----------------------
+//      catch SIGSEGV
 
 static bool    dump_backtrace_on_sigsegv = false;
 static bool    suppress_sigsegv          = false;
@@ -1175,8 +1175,8 @@ GB_ERROR gbcm_test_address(long *address, long key) {
     return error;
 }
 
-/* ------------------------------------------- */
-/*      Error/notification functions           */
+// -------------------------------------------
+//      Error/notification functions
 
 void GB_internal_error(const char *message)  {
     /* Use GB_internal_error, when something goes badly wrong
@@ -1202,7 +1202,7 @@ void GB_internal_error(const char *message)  {
 }
 
 void GB_internal_errorf(const char *templat, ...) {
-    /* goes to header: __ATTR__FORMAT(1)  */
+    // goes to header: __ATTR__FORMAT(1)
     va_list parg;
 
     va_start(parg, templat);
@@ -1228,7 +1228,7 @@ void GBK_terminate(const char *error) {
 }
 
 void GBK_terminatef(const char *templat, ...) {
-    /* goes to header: __ATTR__FORMAT(1)  */
+    // goes to header: __ATTR__FORMAT(1)
     va_list parg;
 
     va_start(parg,templat);
@@ -1267,7 +1267,7 @@ void GB_warning(const char *message) {
     }
 }
 void GB_warningf(const char *templat, ...) {
-    /* goes to header: __ATTR__FORMAT(1)  */
+    // goes to header: __ATTR__FORMAT(1)
 
     va_list parg;
 
@@ -1293,7 +1293,7 @@ void GB_information(const char *message) {
     }
 }
 void GB_informationf(const char *templat, ...) {    
-    /* goes to header: __ATTR__FORMAT(1)  */
+    // goes to header: __ATTR__FORMAT(1)
 
     /* this message is always printed to stdout (regardless whether program uses GUI or not)
      * see also : GB_warning
@@ -1347,9 +1347,9 @@ NOT4PERL void GB_install_status(gb_status_func_type func){
 
 
 int GB_status2( const char *templat, ... ) {
-    /* goes to header: __ATTR__FORMAT(1)  */
+    // goes to header: __ATTR__FORMAT(1)
     
-    /* return value : 0 = ok, 1 = userAbort */
+    // return value : 0 = ok, 1 = userAbort
 
     va_list parg;
 
@@ -1370,8 +1370,8 @@ NOT4PERL void GB_install_status2(gb_status_func2_type func2){
     gb_status_func2 = func2;
 }
 
-/* ------------------------------------------- */
-/*      helper function for tagged fields      */
+// -------------------------------------------
+//      helper function for tagged fields
 
 static GB_ERROR g_bs_add_value_tag_to_hash(GBDATA *gb_main, GB_HASH *hash, char *tag, char *value,const char *rtag, const char *srt, const char *aci, GBDATA *gbd) {
     char    *p;
@@ -1387,12 +1387,12 @@ static GB_ERROR g_bs_add_value_tag_to_hash(GBDATA *gb_main, GB_HASH *hash, char 
         if (!value) return GB_await_error();
     }
 
-    p=value; while ( (p = strchr(p,'[')) ) *p =  '{'; /* replace all '[' by '{' */
-    p=value; while ( (p = strchr(p,']')) ) *p =  '}'; /* replace all ']' by '}' */
+    p=value; while ( (p = strchr(p,'[')) ) *p =  '{'; // replace all '[' by '{'
+    p=value; while ( (p = strchr(p,']')) ) *p =  '}'; // replace all ']' by '}'
 
     sh = (GB_HASH *)GBS_read_hash(hash,value);
     if (!sh){
-        sh = GBS_create_hash(10, GB_IGNORE_CASE); /* Tags are case independent */
+        sh = GBS_create_hash(10, GB_IGNORE_CASE); // Tags are case independent
         GBS_write_hash(hash,value,(long)sh);
     }
 
@@ -1404,15 +1404,15 @@ static GB_ERROR g_bs_add_value_tag_to_hash(GBDATA *gb_main, GB_HASH *hash, char 
 
 static GB_ERROR g_bs_convert_string_to_tagged_hash(GB_HASH *hash, char *s,char *default_tag,const char *del,
                                                    GBDATA *gb_main, const char *rtag,const char *srt, const char *aci, GBDATA *gbd){
-    char *se;           /* string end */
-    char *sa;           /* string start and tag end */
-    char *ts;           /* tag start */
+    char *se;           // string end
+    char *sa;           // string start and tag end
+    char *ts;           // tag start
     char *t;
     GB_ERROR error = 0;
     while (s && s[0]) {
         ts = strchr(s,'[');
         if (!ts){
-            error = g_bs_add_value_tag_to_hash(gb_main,hash,default_tag,s,rtag,srt,aci,gbd); /* no tag found, use default tag */
+            error = g_bs_add_value_tag_to_hash(gb_main,hash,default_tag,s,rtag,srt,aci,gbd); // no tag found, use default tag
             if (error) break;
             break;
         }else{
@@ -1423,7 +1423,7 @@ static GB_ERROR g_bs_convert_string_to_tagged_hash(GB_HASH *hash, char *s,char *
             *sa++ = 0;
             while (*sa == ' ') sa++;
         }else{
-            error = g_bs_add_value_tag_to_hash(gb_main,hash,default_tag,s,rtag,srt,aci,gbd); /* no tag found, use default tag */
+            error = g_bs_add_value_tag_to_hash(gb_main,hash,default_tag,s,rtag,srt,aci,gbd); // no tag found, use default tag
             if (error) break;
             break;
         }
@@ -1433,9 +1433,9 @@ static GB_ERROR g_bs_convert_string_to_tagged_hash(GB_HASH *hash, char *s,char *
             *(se++) = 0;
         }
         for (t = strtok(ts,","); t; t = strtok(0,",")){
-            if (del && strcmp(t,del) == 0) continue; /* test, whether to delete */
+            if (del && strcmp(t,del) == 0) continue; // test, whether to delete
             if (sa[0] == 0) continue;
-            error = g_bs_add_value_tag_to_hash(gb_main,hash,t,sa,rtag,srt,aci,gbd); /* tag found, use  tag */
+            error = g_bs_add_value_tag_to_hash(gb_main,hash,t,sa,rtag,srt,aci,gbd); // tag found, use  tag
             if (error) break;
         }
         s = se;
@@ -1458,12 +1458,12 @@ static long g_bs_read_tagged_hash(const char *value, long subhash, void *cd_g_bs
     struct GBS_strstruct *sub_result = GBS_stropen(100);
         
     GBS_hash_do_sorted_loop((GB_HASH *)subhash, g_bs_merge_tags, GBS_HCF_sortedByKey, sub_result);
-    GBS_intcat(sub_result, counter++); /* create a unique number */
+    GBS_intcat(sub_result, counter++); // create a unique number
 
     str = GBS_strclose(sub_result);
 
     GB_HASH *g_bs_collect_tags_hash = (GB_HASH*)cd_g_bs_collect_tags_hash;
-    GBS_write_hash(g_bs_collect_tags_hash, str,(long)strdup(value)); /* send output to new hash for sorting */
+    GBS_write_hash(g_bs_collect_tags_hash, str,(long)strdup(value)); // send output to new hash for sorting
 
     free(str);
     return 0;
@@ -1473,7 +1473,7 @@ static long g_bs_read_final_hash(const char *tag, long value, void *cd_merge_res
     struct GBS_strstruct *merge_result = (struct GBS_strstruct*)cd_merge_result;
         
     char *lk = const_cast<char*>(strrchr(tag,','));
-    if (lk) {           /* remove number at end */
+    if (lk) {           // remove number at end
         *lk = 0;
         GBS_strcat(merge_result, " [");
         GBS_strcat(merge_result, tag);
@@ -1487,7 +1487,7 @@ static char *g_bs_get_string_of_tag_hash(GB_HASH *tag_hash){
     struct GBS_strstruct *merge_result      = GBS_stropen(256);
     GB_HASH              *collect_tags_hash = GBS_create_dynaval_hash(1024, GB_IGNORE_CASE, GBS_dynaval_free);
 
-    GBS_hash_do_sorted_loop(tag_hash, g_bs_read_tagged_hash, GBS_HCF_sortedByKey, collect_tags_hash);     /* move everything into collect_tags_hash */
+    GBS_hash_do_sorted_loop(tag_hash, g_bs_read_tagged_hash, GBS_HCF_sortedByKey, collect_tags_hash);     // move everything into collect_tags_hash
     GBS_hash_do_sorted_loop(collect_tags_hash, g_bs_read_final_hash, GBS_HCF_sortedByKey, merge_result);
 
     GBS_free_hash(collect_tags_hash);
@@ -1582,9 +1582,9 @@ char *GB_read_as_tagged_string(GBDATA *gbd, const char *tagi){
     char *s;
     char *tag;
     char *buf;
-    char *se;           /* string end */
-    char *sa;           /* string anfang and tag end */
-    char *ts;           /* tag start */
+    char *se;           // string end
+    char *sa;           // string anfang and tag end
+    char *ts;           // tag start
     char *t;
 
     buf = s = GB_read_as_string(gbd);
@@ -1596,7 +1596,7 @@ char *GB_read_as_tagged_string(GBDATA *gbd, const char *tagi){
 
     while(s){
         ts = strchr(s,'[');
-        if (!ts)    goto notfound;      /* no tag */
+        if (!ts)    goto notfound;      // no tag
 
         *(ts++) = 0;
 
@@ -1621,7 +1621,7 @@ char *GB_read_as_tagged_string(GBDATA *gbd, const char *tagi){
         s = se;
     }
  notfound:
-    /* Nothing found */
+    // Nothing found
     free(buf);
     s = 0;
  found:
@@ -1652,9 +1652,9 @@ void GBS_fwrite_string(const char *strngi,FILE *out){
             else if (c == '\t')
                 putc('t',out);
             else if ( c<25 ) {
-                putc(c+'@',out); /* characters ASCII 0..24 encoded as \@..\X    (\n and \t are done above) */
+                putc(c+'@',out); // characters ASCII 0..24 encoded as \@..\X    (\n and \t are done above)
             }else{
-                putc(c+('0'-25),out);/* characters ASCII 25..31 encoded as \0..\6 */
+                putc(c+('0'-25),out);// characters ASCII 25..31 encoded as \0..\6
             }
         }else if (c == '"'){
             putc('\\',out);
@@ -1680,7 +1680,7 @@ char *GBS_fread_string(FILE *in) {
     GBS_strstruct *strstr = GBS_stropen(1024);
     int            x;
 
-    while ((x = getc(in)) != '"' ) if (x == EOF) break; /* Search first '"' */
+    while ((x = getc(in)) != '"' ) if (x == EOF) break; // Search first '"'
 
     if (x != EOF) {
         while ((x = getc(in)) != '"' ){
@@ -1703,7 +1703,7 @@ char *GBS_fread_string(FILE *in) {
                     GBS_chrcat(strstr,x-('0'-25));
                     continue;
                 }
-                /* all other backslashes are simply skipped */
+                // all other backslashes are simply skipped
             }
             GBS_chrcat(strstr,x);
         }
@@ -1724,7 +1724,7 @@ char *GBS_fconvert_string(char *buffer) {
     int   x;
 
     gb_assert(f[-1] == '"');
-    /* the opening " has already been read */
+    // the opening " has already been read
 
     while ((x = *f++) != '"') {
         if (!x) break;
@@ -1749,7 +1749,7 @@ char *GBS_fconvert_string(char *buffer) {
                 *t++ = x-('0'-25);
                 continue;
             }
-            /* all other backslashes are simply skipped */
+            // all other backslashes are simply skipped
         }
         *t++ = x;
     }
@@ -1797,8 +1797,8 @@ int GBS_strscmp(const char *s1, const char *s2) {
 }
 
 const char *GBS_readable_size(unsigned long long size) {
-    /* return human readable size information */
-    /* returned string is maximal 7 characters long */
+    // return human readable size information
+    // returned string is maximal 7 characters long
 
     if (size<1000) return GBS_global_string("%llu b", size);
 

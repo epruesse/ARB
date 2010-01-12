@@ -1,12 +1,12 @@
-/* ============================================================ */
-/*                                                              */
-/*   File      : adtree.c                                       */
-/*   Purpose   : tree functions                                 */
-/*                                                              */
-/*   Institute of Microbiology (Technical University Munich)    */
-/*   www.arb-home.de                                            */
-/*                                                              */
-/* ============================================================ */
+// =============================================================== //
+//                                                                 //
+//   File      : adtree.cxx                                        //
+//   Purpose   : tree functions                                    //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include <arbdbt.h>
 #include "gb_local.h"
@@ -14,8 +14,8 @@
 #define GBT_PUT_DATA 1
 #define GBT_GET_SIZE 0
 
-/* ---------------------- */
-/*      remove leafs      */
+// ----------------------
+//      remove leafs
 
 
 static GBT_TREE *fixDeletedSon(GBT_TREE *tree) {
@@ -126,8 +126,8 @@ GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TREE_REMOVE_TYPE mode, GB_HASH *s
     return tree;
 }
 
-/* ------------------- */
-/*      free tree      */
+// -------------------
+//      free tree
 
 
 void GBT_delete_tree(GBT_TREE *tree)
@@ -231,7 +231,7 @@ static long gbt_write_tree_nodes_old(GBDATA *gb_tree, GBT_TREE *node, long start
         error = GBT_write_group_name(gb_name, node->name);
         if (error) return -1;
     }
-    if (node->gb_node) {         /* delete not used nodes else write id */
+    if (node->gb_node) {         // delete not used nodes else write id
         gb_any = GB_child(node->gb_node);
         if (gb_any) {
             key = GB_read_key_pntr(gb_any);
@@ -250,7 +250,7 @@ static long gbt_write_tree_nodes_old(GBDATA *gb_tree, GBT_TREE *node, long start
                            old, me, node, node->gb_node);
                 }
             }
-#endif /* DEBUG */
+#endif // DEBUG
             error = GB_write_int(gb_id,me);
             GB_write_usr_private(node->gb_node,0);
             if (error) return -1;
@@ -265,7 +265,7 @@ static long gbt_write_tree_nodes_old(GBDATA *gb_tree, GBT_TREE *node, long start
                 printf("deleting node w/o info: tree-node=%p; gb_node=%p prev.id=%i\n",
                        node, node->gb_node, id);
             }
-#endif /* DEBUG */
+#endif // DEBUG
             GB_delete(node->gb_node);
             node->gb_node = 0;
         }
@@ -285,7 +285,7 @@ static long gbt_write_tree_nodes_old(GBDATA *gb_tree, GBT_TREE *node, long start
 #endif
 
 static char *gbt_write_tree_rek_new(GBT_TREE *node, char *dest, long mode) {
-    char buffer[40];        /* just real numbers */
+    char buffer[40];        // just real numbers
     char    *c1;
 
     if ( (c1 = node->remark_branch) ) {
@@ -311,7 +311,7 @@ static char *gbt_write_tree_rek_new(GBT_TREE *node, char *dest, long mode) {
             *(dest++) = 1;
             return dest;
         }else{
-            if (node->name) return dest+1+strlen(node->name)+1; /* N name term */
+            if (node->name) return dest+1+strlen(node->name)+1; // N name term
             return dest+1+1;
         }
     }else{
@@ -444,7 +444,7 @@ GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_nodes, 
     }
     else {
         if (!startid[0]){
-            membase =(char *)GB_calloc(size_of_tree+1,(size_t)(-2*structure_size)); /* because of inner nodes */
+            membase =(char *)GB_calloc(size_of_tree+1,(size_t)(-2*structure_size)); // because of inner nodes
         }
         node = (GBT_TREE *)membase;
         node->tree_is_one_piece_of_memory = 1;
@@ -509,7 +509,7 @@ GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_nodes, 
         else {
             *error = GBS_global_string("Can't interpret tree definition (expected 'N' or 'L' - not '%c')", c);
         }
-        /* GB_internal_error("Error reading tree 362436"); */
+        // GB_internal_error("Error reading tree 362436");
         return NULL;
     }
     return node;
@@ -543,7 +543,7 @@ static GBT_TREE *read_tree_and_size_internal(GBDATA *gb_tree, GBDATA *gb_ctree, 
             GBDATA *gbd = GB_entry(gb_node,"id");
             if (!gbd) continue;
 
-            /*{ GB_export_error("ERROR while reading tree '%s' 4634",tree_name);return NULL;}*/
+            //{ GB_export_error("ERROR while reading tree '%s' 4634",tree_name);return NULL;}
             i = GB_read_int(gbd);
             if ( i<0 || i>= size ) {
                 *error = "An inner node of the tree is corrupt";
@@ -601,11 +601,11 @@ GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main,const char *tree_name, long str
                         if (!gb_ctree) {
                             error = "Sorry - old tree format no longer supported";
                         }
-                        else { /* "new" style tree */
+                        else { // "new" style tree
                             GBT_TREE *tree = read_tree_and_size_internal(gb_tree, gb_ctree, structure_size, size, &error);
                             if (!error) {
                                 gb_assert(tree);
-                                if (tree_size) *tree_size = size; /* return size of tree */
+                                if (tree_size) *tree_size = size; // return size of tree
                                 return tree;
                             }
 
@@ -629,7 +629,7 @@ GBT_TREE *GBT_read_tree(GBDATA *gb_main,const char *tree_name, long structure_si
 GBT_TREE *GBT_read_plain_tree(GBDATA *gb_main, GBDATA *gb_ctree, long structure_size, GB_ERROR *error) {
     GBT_TREE *t;
 
-    gb_assert(error && !*error); /* expect cleared error*/
+    gb_assert(error && !*error); // expect cleared error
 
     GB_push_transaction(gb_main);
     t = read_tree_and_size_internal(0, gb_ctree, structure_size, 0, error);
@@ -650,17 +650,17 @@ long GBT_count_nodes(GBT_TREE *tree){
 
 struct link_tree_data {
     GB_HASH *species_hash;
-    GB_HASH *seen_species;      /* used to count duplicates */
-    int      nodes; /* if != 0 -> update status */;
+    GB_HASH *seen_species;                          // used to count duplicates
+    int      nodes;                                 // if != 0 -> update status
     int      counter;
-    int      zombies;           /* counts zombies */
-    int      duplicates;        /* counts duplicates */
+    int      zombies;                               // counts zombies
+    int      duplicates;                            // counts duplicates
 };
 
 static GB_ERROR gbt_link_tree_to_hash_rek(GBT_TREE *tree, struct link_tree_data *ltd) {
     GB_ERROR error = 0;
     if (tree->is_leaf) {
-        if (ltd->nodes) { /* update status? */
+        if (ltd->nodes) { // update status?
             GB_status(ltd->counter/(double)ltd->nodes);
             ltd->counter++;
         }
@@ -716,12 +716,11 @@ GB_ERROR GBT_link_tree_using_species_hash(GBT_TREE *tree, bool show_status, GB_H
     return error;
 }
 
-/** Link a given tree to the database. That means that for all tips the member
-    gb_node is set to the database container holding the species data.
-    returns the number of zombies and duplicates in 'zombies' and 'duplicates'
-*/
-GB_ERROR GBT_link_tree(GBT_TREE *tree,GBDATA *gb_main,bool show_status, int *zombies, int *duplicates)
-{
+GB_ERROR GBT_link_tree(GBT_TREE *tree,GBDATA *gb_main,bool show_status, int *zombies, int *duplicates) {
+    /* Link a given tree to the database. That means that for all tips the member
+     * gb_node is set to the database container holding the species data.
+     * returns the number of zombies and duplicates in 'zombies' and 'duplicates'
+     */
     GB_HASH  *species_hash = GBT_create_species_hash(gb_main);
     GB_ERROR  error        = GBT_link_tree_using_species_hash(tree, show_status, species_hash, zombies, duplicates);
 
@@ -730,10 +729,9 @@ GB_ERROR GBT_link_tree(GBT_TREE *tree,GBDATA *gb_main,bool show_status, int *zom
     return error;
 }
 
-/** Unlink a given tree from the database.
- */
-void GBT_unlink_tree(GBT_TREE *tree)
-{
+void GBT_unlink_tree(GBT_TREE *tree) {
+    // Unlink a given tree from the database.
+
     tree->gb_node = 0;
     if (!tree->is_leaf) {
         GBT_unlink_tree(tree->leftson);
@@ -743,7 +741,7 @@ void GBT_unlink_tree(GBT_TREE *tree)
 
 
 GBDATA *GBT_get_tree(GBDATA *gb_main, const char *tree_name) {
-    /* returns the datapntr to the database structure, which is the container for the tree */
+    // returns the datapntr to the database structure, which is the container for the tree
     GBDATA *gb_treedata = GB_search(gb_main,"tree_data",GB_CREATE_CONTAINER);
     return GB_entry(gb_treedata, tree_name);
 }
@@ -788,7 +786,7 @@ char *GBT_find_latest_tree(GBDATA *gb_main){
 }
 
 const char *GBT_tree_info_string(GBDATA *gb_main, const char *tree_name, int maxTreeNameLen) {
-    /* maxTreeNameLen shall be the max len of the longest tree name (or -1 -> do not format) */
+    // maxTreeNameLen shall be the max len of the longest tree name (or -1 -> do not format)
 
     const char *result  = 0;
     GBDATA     *gb_tree = GBT_get_tree(gb_main,tree_name);
@@ -841,7 +839,7 @@ GB_ERROR GBT_check_tree_name(const char *tree_name)
 }
 
 char **GBT_get_tree_names_and_count(GBDATA *Main, int *countPtr){
-    /* returns an null terminated array of string pointers */
+    // returns an null terminated array of string pointers
 
     int      count       = 0;
     GBDATA  *gb_treedata = GB_entry(Main,"tree_data");
@@ -932,7 +930,7 @@ GB_CSTR *GBT_get_species_names_of_tree(GBT_TREE *tree){
 }
 
 char *GBT_existing_tree(GBDATA *gb_main, const char *tree_name) {
-    /* search for an existing or an alternate tree */
+    // search for an existing or an alternate tree
     GBDATA *gb_tree     = 0;
     GBDATA *gb_treedata = GB_entry(gb_main,"tree_data");
 

@@ -33,8 +33,8 @@ void GB_sort(void **array, size_t first, size_t behind_last, gb_compare_function
     qsort(array, behind_last-first, sizeof(*array), qsort_compare);
 }
 
-/* -------------------------- */
-/*      some comparators      */
+// --------------------------
+//      some comparators
 
 int GB_string_comparator(const void *v0, const void *v1, void *unused) {
     // GBUSE(unused);

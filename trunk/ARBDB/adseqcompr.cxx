@@ -15,22 +15,22 @@
 #include "gb_data.h"
 #include "gb_key.h"
 
-/* -------------------------------------------------------------------------------- */
+// --------------------------------------------------------------------------------
 
-#define MAX_SEQUENCE_PER_MASTER 50 /* was 18 till May 2008 */
+#define MAX_SEQUENCE_PER_MASTER 50 // was 18 till May 2008
 
 #if defined(DEBUG)
-/* don't do optimize, only create tree and save to DB */
-/* #define SAVE_COMPRESSION_TREE_TO_DB */
-#endif /* DEBUG */
+// don't do optimize, only create tree and save to DB
+// #define SAVE_COMPRESSION_TREE_TO_DB
+#endif // DEBUG
 
-/* -------------------------------------------------------------------------------- */
+// --------------------------------------------------------------------------------
 
 struct CompressionTree {
     GBT_VTAB_AND_TREE_ELEMENTS(CompressionTree);
 
-    int index;                  /* master(inner nodes) or sequence(leaf nodes) index */
-    int sons;                   /* sons with sequence or masters (in subtree) */
+    int index;                  // master(inner nodes) or sequence(leaf nodes) index
+    int sons;                   // sons with sequence or masters (in subtree)
 };
 
 struct Consensus {
@@ -49,7 +49,7 @@ struct MasterSequence {
     int     master;
 };
 
-/* -------------------------------------------------------------------------------- */
+// --------------------------------------------------------------------------------
 
 Consensus *g_b_new_Consensus(long len){
     Consensus     *gcon = (Consensus *)GB_calloc(sizeof(*gcon),1);
@@ -78,13 +78,13 @@ void g_b_Consensus_add(Consensus *gcon, unsigned char *seq, long seq_len){
     int            last;
     unsigned char *p;
     int            eq_count;
-    const int      max_priority = 255/MAX_SEQUENCE_PER_MASTER; /* No overflow possible */
+    const int      max_priority = 255/MAX_SEQUENCE_PER_MASTER; // No overflow possible
 
     gb_assert(max_priority >= 1);
 
     if (seq_len > gcon->len) seq_len = gcon->len;
 
-    /* Search for runs  */
+    // Search for runs
     s = seq;
     last = 0;
     eq_count = 0;
@@ -127,7 +127,7 @@ char *g_b_Consensus_get_sequence(Consensus *gcon){
 
     memset(seq,'@',gcon->len);
 
-    for (c = 1; c<256;c++){ /* Find maximum frequency of non run */
+    for (c = 1; c<256;c++){ // Find maximum frequency of non run
         if (!gcon->used[c]) continue;
         s = gcon->con[c];
         for (pos= 0;pos<gcon->len;pos++){
@@ -191,7 +191,7 @@ void g_b_create_master(CompressionTree *node, Sequence *seqs, MasterSequence **m
         }
         g_b_create_master(node->leftson,seqs,masters,masterCount,builtMasters,my_master,ali_name,seq_len, aborted);
         g_b_create_master(node->rightson,seqs,masters,masterCount,builtMasters,my_master,ali_name,seq_len, aborted);
-        if (node->index>=0 && !*aborted) { /* build me */
+        if (node->index>=0 && !*aborted) { // build me
             char      *data;
             Consensus *gcon = g_b_new_Consensus(seq_len);
 
@@ -212,9 +212,8 @@ void g_b_create_master(CompressionTree *node, Sequence *seqs, MasterSequence **m
     }
 }
 
-/* ------------------------------------- */
-/*      distribute master sequences      */
-/* ------------------------------------- */
+// -------------------------------------
+//      distribute master sequences
 
 static void subtract_sons_from_tree(CompressionTree *node, int subtract) {
     while (node) {
@@ -226,7 +225,7 @@ static void subtract_sons_from_tree(CompressionTree *node, int subtract) {
 static int set_masters_with_sons(CompressionTree *node, int wantedSons, int *mcount) {
     if (!node->is_leaf) {
         if (node->sons == wantedSons) {
-            /* insert new master */
+            // insert new master
             gb_assert(node->index == -1);
             node->index = *mcount;
             (*mcount)++;
@@ -261,7 +260,7 @@ static int maxCompressionSteps(CompressionTree *node) {
     if (node->index2 != -1) {
         node->name = GBS_global_string_copy("master_%03i", node->index2);
     }
-#endif /* SAVE_COMPRESSION_TREE_TO_DB */
+#endif // SAVE_COMPRESSION_TREE_TO_DB
 
     return (left>right ? left : right) + (node->index == -1 ? 0 : 1);
 }
@@ -299,7 +298,7 @@ static void distribute_masters(CompressionTree *tree, int *mcount, int *max_mast
     *max_masters = maxCompressionSteps(tree);
 }
 
-/* -------------------------------------------------------------------------------- */
+// --------------------------------------------------------------------------------
 
 inline long g_b_read_number2(const unsigned char **s) {
     unsigned int c0,c1,c2,c3,c4;
@@ -369,7 +368,7 @@ char *gb_compress_seq_by_master(const char *master,int master_len,int master_ind
         len = master_len;
     }
 
-    last = -1000;       /* Convert Sequence relative to Master */
+    last = -1000;       // Convert Sequence relative to Master
     for( i = len; i>0; i--){
         cm = *(master++);
         cs = *(seq++);
@@ -385,16 +384,16 @@ char *gb_compress_seq_by_master(const char *master,int master_len,int master_ind
         *(d++) = *(seq++);
     }
 
-    {               /* Append run length compression method */
+    {               // Append run length compression method
         unsigned char *buffer2;
         unsigned char *dest2;
         buffer2 = dest2 = (unsigned char *)GB_give_other_buffer((char *)buffer,seq_len+100);
         *(dest2++) = GB_COMPRESSION_SEQUENCE | old_flag;
 
-        g_b_put_number2(master_index,&dest2); /* Tags */
+        g_b_put_number2(master_index,&dest2); // Tags
         g_b_put_number2(q,&dest2);
 
-        gb_compress_equal_bytes_2((char *)buffer,seq_len,memsize,(char *)dest2); /* append runlength compressed sequences to tags */
+        gb_compress_equal_bytes_2((char *)buffer,seq_len,memsize,(char *)dest2); // append runlength compressed sequences to tags
 
         *memsize = *memsize + (dest2-buffer2);
         return (char *)buffer2;
@@ -426,7 +425,7 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, c
             error = "Tree is empty";
         }
         else {
-            /* Distribute masters in tree */
+            // Distribute masters in tree
             int mastercount   = 0;
             int max_compSteps = 0; // in one branch
             int seqcount      = 0;
@@ -450,7 +449,7 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, c
                     GB_information("Only generated compression tree (do NOT save DB anymore)");
                     return error;
                 }
-#endif /* SAVE_COMPRESSION_TREE_TO_DB */
+#endif // SAVE_COMPRESSION_TREE_TO_DB
 
                 // detect degenerated trees
                 {
@@ -508,7 +507,7 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, c
                         char   *master_name      = GBS_global_string_copy("@%s",ali_name);
                         GBDATA *gb_master_data   = gb_search(gb_main, master_data_name,GB_CREATE_CONTAINER,1);
 
-                        /* create a master container, the old is deleted as soon as all sequences are compressed by the new method*/
+                        // create a master container, the old is deleted as soon as all sequences are compressed by the new method
                         gb_master_ali = gb_create_container(gb_master_data, master_name);
                         GB_write_security_delete(gb_master_ali,7);
 
@@ -529,7 +528,7 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, c
                     }
                 }
 
-                /* Compress sequences in tree */
+                // Compress sequences in tree
                 if (!error) {
                     GB_status2("Compressing %i sequences in tree", seqcount);
                     GB_status(0);
@@ -569,9 +568,9 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, c
                     }
                 }
 
-                /* Compress rest of sequences */
+                // Compress rest of sequences
                 if (!error) {
-                    int pass; /* pass 1 : count species to compress, pass 2 : compress species */
+                    int pass; // pass 1 : count species to compress, pass 2 : compress species
                     int speciesNotInTree = 0;
 
                     GB_status2("Compressing sequences NOT in tree");
@@ -589,7 +588,7 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, c
                             GBDATA *gbd = GBT_read_sequence(gb_species,ali_name);
 
                             if(!gbd) continue;
-                            if (GB_read_clock(gbd) >= main_clock) continue; /* Compress only those which are not compressed by masters */
+                            if (GB_read_clock(gbd) >= main_clock) continue; // Compress only those which are not compressed by masters
                             count++;
                             if (pass == 2) {
                                 char *data    = GB_read_string(gbd);
@@ -626,16 +625,16 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, c
                     GB_status2("Compressing %i master-sequences", mastercount);
                     GB_status(0);
 
-                    /* Compress all masters */
+                    // Compress all masters
                     for (si=0;si<mastercount;si++){
                         int mi = masters[si]->master;
 
-                        if (mi>0) { /*  master available */
+                        if (mi>0) { //  master available
                             GBDATA *gbd = masters[si]->gbd;
 
-                            gb_assert(mi>si); /* we don't want a recursion, because we cannot uncompress sequence compressed masters, Main->gb_master_data is wrong */
+                            gb_assert(mi>si); // we don't want a recursion, because we cannot uncompress sequence compressed masters, Main->gb_master_data is wrong
 
-                            if (gb_read_nr(gbd) != si) { /* Check database */
+                            if (gb_read_nr(gbd) != si) { // Check database
                                 GB_internal_error("Sequence Compression: Master Index Conflict");
                                 error = GB_export_error("Sequence Compression: Master Index Conflict");
                                 break;
@@ -720,8 +719,8 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, c
     return error;
 }
 
-GB_ERROR GBT_compress_sequence_tree2(GBDATA *gb_main, const char *tree_name, const char *ali_name) { /* goes to header: __ATTR__USERESULT */
-    /* Compress sequences, call only outside a transaction */
+GB_ERROR GBT_compress_sequence_tree2(GBDATA *gb_main, const char *tree_name, const char *ali_name) { // goes to header: __ATTR__USERESULT
+    // Compress sequences, call only outside a transaction
     GB_ERROR      error = NULL;
     GB_MAIN_TYPE *Main  = GB_MAIN(gb_main);
 
@@ -765,7 +764,7 @@ GB_ERROR GBT_compress_sequence_tree2(GBDATA *gb_main, const char *tree_name, con
 
 #if defined(SAVE_COMPRESSION_TREE_TO_DB)
         error = "fake error";
-#endif /* SAVE_COMPRESSION_TREE_TO_DB */
+#endif // SAVE_COMPRESSION_TREE_TO_DB
     }
     return error;
 }
@@ -794,7 +793,7 @@ void GBT_compression_test(void *dummy, GBDATA *gb_main) {
 
 #endif
 
-/* ******************** Decompress Sequences ******************** */
+// ******************** Decompress Sequences ********************
 
 char *g_b_uncompress_single_sequence_by_master(const char *s, const char *master, long size, long *new_size) {
     const signed char *source = (signed char *)s;
@@ -809,7 +808,7 @@ char *g_b_uncompress_single_sequence_by_master(const char *s, const char *master
 
     for (i=size;i;) {
         j = *(source++);
-        if (j>0) {      /* uncompressed data block */
+        if (j>0) {      // uncompressed data block
             if (j>i) j=i;
             i -= j;
             for (;j;j--) {
@@ -818,8 +817,8 @@ char *g_b_uncompress_single_sequence_by_master(const char *s, const char *master
                 *(dest++) = c;
                 m++;
             }
-        }else{          /* equal bytes compressed */
-            if (!j) break;  /* end symbol */
+        }else{          // equal bytes compressed
+            if (!j) break;  // end symbol
             if (j== -122) {
                 j = *(source++) & 0xff;
                 j |= ((*(source++)) <<8) &0xff00;
@@ -843,7 +842,7 @@ char *g_b_uncompress_single_sequence_by_master(const char *s, const char *master
             }
         }
     }
-    *(dest++) = 0;              /* NULL of NULL terminated string */
+    *(dest++) = 0;              // NULL of NULL terminated string
 
     *new_size = dest-buffer;
     gb_assert(size == *new_size); // buffer overflow
@@ -861,7 +860,7 @@ char *gb_uncompress_by_sequence(GBDATA *gbd, const char *ss,long size, GB_ERROR 
     else {
         GB_MAIN_TYPE *Main    = GB_MAIN(gbd);
         GBDATA       *gb_main = (GBDATA*)Main->data;
-        char         *to_free = GB_check_out_buffer(ss); /* Remove 'ss' from memory management, otherwise load_single_key_data() may destroy it */
+        char         *to_free = GB_check_out_buffer(ss); // Remove 'ss' from memory management, otherwise load_single_key_data() may destroy it
         int           index;
         GBQUARK       quark;
 
@@ -884,7 +883,7 @@ char *gb_uncompress_by_sequence(GBDATA *gbd, const char *ss,long size, GB_ERROR 
         else {
             GBDATA *gb_master = gb_find_by_nr(Main->keys[quark].gb_master_ali,index);
             if (gb_master){
-                const char *master = GB_read_char_pntr(gb_master); /* make sure that this is not a buffer !!! */
+                const char *master = GB_read_char_pntr(gb_master); // make sure that this is not a buffer !!!
 
                 gb_assert((GB_read_string_count(gb_master)+1) == size); // size mismatch between master and slave
                 dest = g_b_uncompress_single_sequence_by_master(ss, master, size, new_size);

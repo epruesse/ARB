@@ -1,12 +1,12 @@
-/* ============================================================ */
-/*                                                              */
-/*   File      : adtools.c                                      */
-/*   Purpose   : misc function                                  */
-/*                                                              */
-/*   Institute of Microbiology (Technical University Munich)    */
-/*   www.arb-home.de                                            */
-/*                                                              */
-/* ============================================================ */
+// =============================================================== //
+//                                                                 //
+//   File      : adtools.cxx                                       //
+//   Purpose   : misc functions                                    //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include <arbdbt.h>
 
@@ -55,8 +55,8 @@ char *GBT_get_default_ref(GBDATA *gb_main) {
                     check routines
 ********************************************************************************************/
 GB_ERROR GBT_check_arb_file(const char *name)
-     /* Checks whether the name of a file seemed to be an arb file */
-     /* if == 0 it was an arb file */
+     // Checks whether the name of a file seemed to be an arb file
+     // if == 0 it was an arb file
 {
     FILE *in;
     long i;
@@ -83,8 +83,8 @@ GB_ERROR GBT_check_arb_file(const char *name)
 /********************************************************************************************
                     analyse the database
 ********************************************************************************************/
-#define GBT_SUM_LEN 4096
-/* maximum length of path */
+
+#define GBT_SUM_LEN 4096                            // maximum length of path
 
 struct DbScanner {
     GB_HASH   *hash_table;
@@ -101,7 +101,7 @@ static void gbt_scan_db_rek(GBDATA *gbd,char *prefix, int deep, struct DbScanner
     int len_of_prefix;
     if (type == GB_DB) {
         len_of_prefix = strlen(prefix);
-        for (gb2 = GB_child(gbd); gb2; gb2 = GB_nextChild(gb2)) {  /* find everything */
+        for (gb2 = GB_child(gbd); gb2; gb2 = GB_nextChild(gb2)) {  // find everything
             if (deep){
                 key = GB_read_key_pntr(gb2);
                 sprintf(&prefix[len_of_prefix],"/%s",key);
@@ -116,7 +116,7 @@ static void gbt_scan_db_rek(GBDATA *gbd,char *prefix, int deep, struct DbScanner
     }
     else {
         if (GB_check_hkey(prefix+1)) {
-            prefix = prefix;        /* for debugging purpose */
+            prefix = prefix;        // for debugging purpose
         }
         else {
             prefix[0] = (char)type;
@@ -191,7 +191,7 @@ char **GBT_scan_db(GBDATA *gbd, const char *datapath) {
     GBS_hash_do_loop(scanner.hash_table, gbs_scan_db_count, &scanner);
 
     scanner.result = (char **)GB_calloc(sizeof(char *),scanner.count+1);
-    /* null terminated result */
+    // null terminated result
 
     scanner.count = 0;
     struct scan_db_insert insert = { &scanner, datapath, };
@@ -248,7 +248,7 @@ void GBT_install_message_handler(GBDATA *gb_main) {
 
 #if defined(DEBUG) && 0
     GBT_message(GB_get_root(gb_pending_messages), GBS_global_string("GBT_install_message_handler installed for gb_main=%p", gb_main));
-#endif /* DEBUG */
+#endif // DEBUG
 }
 
 
@@ -291,7 +291,7 @@ void GBT_message(GBDATA *gb_main, const char *msg) {
 #if defined(DEVEL_RALF)
 #warning search for code which is splitting strings and use GBT_split_string there
 #warning rename to GBS_split_string and move to string functions
-#endif /* DEVEL_RALF */
+#endif // DEVEL_RALF
 
 char **GBT_split_string(const char *namelist, char separator, int *countPtr) {
     // Split 'namelist' into an array of names at 'separator'.
@@ -350,7 +350,7 @@ void GBT_free_names(char **names) {
     free((char *)names);
 }
 
-/* ---------------------------------------- */
+// ----------------------------------------
 /* read value from database field
  * returns 0 in case of error (use GB_await_error())
  * or when field does not exist
@@ -422,7 +422,7 @@ NOT4PERL double *GBT_read_float(GBDATA *gb_container, const char *fieldpath) {
     return result;
 }
 
-/* -------------------------------------------------------------------------------------- */
+// --------------------------------------------------------------------------------------
 /* read value from database field or create field with default_value if missing
  * (same usage as GBT_read_XXX above)
  */
@@ -479,9 +479,9 @@ NOT4PERL double *GBT_readOrCreate_float(GBDATA *gb_container, const char *fieldp
     return result;
 }
 
-/* ------------------------------------------------------------------- */
-/*      overwrite existing or create new database field                */
-/*      (field must not exist twice or more - it has to be unique!!)   */
+// -------------------------------------------------------------------
+//      overwrite existing or create new database field
+//      (field must not exist twice or more - it has to be unique!!)
 
 GB_ERROR GBT_write_string(GBDATA *gb_container, const char *fieldpath, const char *content) {
     GB_ERROR  error = GB_push_transaction(gb_container);
@@ -571,7 +571,7 @@ GBDATA *GBT_open(const char *path,const char *opent,const char *disabled_path)
     }
     gb_tmp = GB_search(gbd,"tmp",GB_CREATE_CONTAINER);
     GB_set_temporary(gb_tmp);
-    {               /* install link followers */
+    {               // install link followers
         GB_MAIN_TYPE *Main = GB_MAIN(gbd);
         Main->table_hash = GBS_create_hash(256, GB_MIND_CASE);
         GB_install_link_follower(gbd,"REF",GB_test_link_follower);
@@ -639,7 +639,7 @@ static GBDATA *gbt_remote_search_awar(GBDATA *gb_main, const char *awar_name) {
 static GB_ERROR gbt_wait_for_remote_action(GBDATA *gb_main, GBDATA *gb_action, const char *awar_read) {
     GB_ERROR error = 0;
 
-    /* wait to end of action */
+    // wait to end of action
 
     while (!error) {
         GB_usleep(2000);
@@ -667,7 +667,7 @@ GB_ERROR GBT_remote_action(GBDATA *gb_main, const char *application, const char 
     gb_action = gbt_remote_search_awar(gb_main, awars.awar_action);
 
     error             = GB_begin_transaction(gb_main);
-    if (!error) error = GB_write_string(gb_action, action_name); /* write command */
+    if (!error) error = GB_write_string(gb_action, action_name); // write command
     error             = GB_end_transaction(gb_main, error);
 
     if (!error) error = gbt_wait_for_remote_action(gb_main, gb_action, awars.awar_result);
@@ -727,10 +727,10 @@ const char *GBT_remote_touch_awar(GBDATA *gb_main, const char *application, cons
 }
 
 
-/* --------------------------- */
-/*      self-notification      */
-/* --------------------------- */
-/* provides a mechanism to notify ARB after some external tool finishes */
+// ---------------------------
+//      self-notification
+// ---------------------------
+// provides a mechanism to notify ARB after some external tool finishes
 
 #define ARB_NOTIFICATIONS "tmp/notify"
 
@@ -769,7 +769,7 @@ static void notify_cb(GBDATA *gb_message, int *cb_info, GB_CB_TYPE cb_type) {
             gb_assert(0);
         }
     }
-    else { /* called from GB_remove_last_notification */
+    else { // called from GB_remove_last_notification
         gb_assert(cb_type == GB_CB_DELETE);
     }
 
@@ -791,11 +791,11 @@ static int allocateNotificationID(GBDATA *gb_main, int *cb_info) {
             GBDATA *gb_counter = GB_searchOrCreate_int(gb_notify, "counter", 0);
 
             if (gb_counter) {
-                int newid = GB_read_int(gb_counter) + 1; /* increment counter */
+                int newid = GB_read_int(gb_counter) + 1; // increment counter
                 error     = GB_write_int(gb_counter, newid);
 
                 if (!error) {
-                    /* change transaction (to never use id twice!) */
+                    // change transaction (to never use id twice!)
                     error             = GB_pop_transaction(gb_main);
                     if (!error) error = GB_push_transaction(gb_main);
 
@@ -810,7 +810,7 @@ static int allocateNotificationID(GBDATA *gb_main, int *cb_info) {
                                 if (gb_message) {
                                     error = GB_add_callback(gb_message, GB_CB_TYPE(GB_CB_CHANGED|GB_CB_DELETE), notify_cb, cb_info);
                                     if (!error) {
-                                        id = newid; /* success */
+                                        id = newid; // success
                                     }
                                 }
                             }
@@ -862,7 +862,7 @@ char *GB_generate_notification(GBDATA *gb_main,
 }
 
 GB_ERROR GB_remove_last_notification(GBDATA *gb_main) {
-    /* aborts the last notification */
+    // aborts the last notification
     GB_ERROR error = GB_push_transaction(gb_main);
 
     if (!error) {
@@ -884,7 +884,7 @@ GB_ERROR GB_remove_last_notification(GBDATA *gb_main) {
                         error = "Missing 'message' entry";
                     }
                     else {
-                        error = GB_delete(gb_message); /* calls notify_cb */
+                        error = GB_delete(gb_message); // calls notify_cb
                     }
                 }
             }
@@ -924,7 +924,7 @@ GB_ERROR GB_notify(GBDATA *gb_main, int id, const char *message) {
                 error = "Missing 'message' entry";
             }
             else {
-                /* callback the instantiating DB client */
+                // callback the instantiating DB client
                 error = GB_write_string(gb_message, message);
             }
         }

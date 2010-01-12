@@ -63,12 +63,12 @@ static void downheap(struct gbdata_offset *heap, int idx, int num)
     gb_assert(idx>=1);
 
     if (idx2>num)
-        return;                     /* no lson -> done */
+        return;                     // no lson -> done
 
-    if (cmp(heap[idx2],heap[idx])>0)            /* lson is bigger than actual */
+    if (cmp(heap[idx2],heap[idx])>0)            // lson is bigger than actual
     {
-        if (idx21 <= num &&             /* rson exists */
-            cmp(heap[idx2],heap[idx21])<0)  /* lson is smaller than rson */
+        if (idx21 <= num &&             // rson exists
+            cmp(heap[idx2],heap[idx21])<0)  // lson is smaller than rson
         {
             swap(heap[idx],heap[idx21]);
             downheap(heap,idx21,num);
@@ -78,8 +78,8 @@ static void downheap(struct gbdata_offset *heap, int idx, int num)
             swap(heap[idx],heap[idx2]);
             downheap(heap,idx2,num);
         }
-    }else if (idx21 <= num &&               /* rson exists */
-              cmp(heap[idx],heap[idx21])<0)         /* rson is bigger than actual */
+    }else if (idx21 <= num &&               // rson exists
+              cmp(heap[idx],heap[idx21])<0)         // rson is bigger than actual
     {
         swap(heap[idx],heap[idx21]);
         downheap(heap,idx21,num);
@@ -98,9 +98,9 @@ static void sort_gbdata_offsets(struct gbdata_offset *gbdo, int num)
     gb_assert(num>=1);
 
     for (i=num/2; i>=1; i--)
-        downheap(heap,i,num); /* make heap */
+        downheap(heap,i,num); // make heap
 
-    while(num>1)    /* sort heap */
+    while(num>1)    // sort heap
     {
         struct gbdata_offset big = heap[1];
 
@@ -111,7 +111,7 @@ static void sort_gbdata_offsets(struct gbdata_offset *gbdo, int num)
     }
 
 #ifdef DEBUG
-    for (i=1; i<onum; i++) { /* test if sorted */
+    for (i=1; i<onum; i++) { // test if sorted
         gb_assert(cmp(heap[i],heap[i+1])<0);
     }
 #endif
@@ -132,7 +132,7 @@ static struct gbdata_offset *find_gbdata_offset(GBQUARK quark, GBDATA *gbd){
         m = (l+h)>>1;
         cmpres = (long)gbd - (long)gbdo[m].gbd;
 
-        if (cmpres == 0){   /* equal m */
+        if (cmpres == 0){   // equal m
             return &gbdo[m];
         }else{
             if (l==h) break;
@@ -142,20 +142,15 @@ static struct gbdata_offset *find_gbdata_offset(GBQUARK quark, GBDATA *gbd){
     }
 
     printf("not found(1): gbd=%lx\n",(long)gbd);
-    gb_assert(0);   /* should never occur */
+    gb_assert(0);   // should never occur
     return 0;
 }
 
-static long getrel_GBDATA(long rel_to, GBDATA *gbd)
-     /*
-      * calcs offset of 'gbd' in mapfile _relative_ to offset 'rel_to'
-      */
-{
-    /* printf("search %x\n", (long)gbd); */
+static long getrel_GBDATA(long rel_to, GBDATA *gbd) {
+    // calcs offset of 'gbd' in mapfile _relative_ to offset 'rel_to'
 
-    if (gbd)
-    {
-        GBQUARK quark = gbd->rel_father ? GB_KEY_QUARK(gbd) : 0; /* cause Main->data->father==NULL !! */
+    if (gbd) {
+        GBQUARK quark = gbd->rel_father ? GB_KEY_QUARK(gbd) : 0; // cause Main->data->father==NULL !!
         struct gbdata_offset *gbdo = gb_gbk[quark].gbdoff;
         int l=0,
             h=gb_gbk[quark].cnt-1,
@@ -171,7 +166,7 @@ static long getrel_GBDATA(long rel_to, GBDATA *gbd)
             m = (l+h)>>1;
             cmpres = (long)gbd - (long)gbdo[m].gbd;
 
-            if (cmpres == 0){   /* equal m */
+            if (cmpres == 0){   // equal m
                 return MAKEREL(rel_to,gbdo[m].offset);
             }else{
                 if (l==h) break;
@@ -182,7 +177,7 @@ static long getrel_GBDATA(long rel_to, GBDATA *gbd)
         }
 
         printf("not found(2): gbd=%lx\n",(long)gbd);
-        gb_assert(0);   /* should never occur */
+        gb_assert(0);   // should never occur
     }
 
     return 0;
@@ -206,9 +201,11 @@ void ftwrite_aligned(const void *ptr, size_t ali_siz, FILE *fil) {
 
 static char alignment_bytes[ALIGN(1)] = { 0 }; // zero-filled buffer with maximum alignment size
 
-/* ftwrite_unaligned does the same as ftwrite_aligned, but does not access uninitialized memory (that's better for valgrind) */
 
 size_t ftwrite_unaligned(const void *ptr, size_t unali_siz, FILE *fil) {
+    // ftwrite_unaligned does the same as ftwrite_aligned,
+    // but does not access uninitialized memory (that's better for valgrind)
+
     if (!writeError) {
         size_t ali_siz   = ALIGN(unali_siz);
         size_t pad_bytes = ali_siz-unali_siz;
@@ -222,9 +219,8 @@ size_t ftwrite_unaligned(const void *ptr, size_t unali_siz, FILE *fil) {
     return 0; // failure
 }
 
-static long write_IE(struct gb_if_entries *ie, FILE *out, long *offset)
-     /* parameters mean the same as in write_GBDATA */
-{
+static long write_IE(struct gb_if_entries *ie, FILE *out, long *offset) {
+    // parameters mean the same as in write_GBDATA
     long ieoffset = ie ? *offset : 0;
 
     while (ie)
@@ -236,7 +232,7 @@ static long write_IE(struct gb_if_entries *ie, FILE *out, long *offset)
             copy.rel_ie_gbd = (GB_REL_GBDATA) getrel_GBDATA(*offset,GB_IF_ENTRIES_GBD(ie));
             copy.rel_ie_next = (GB_REL_IFES)( ie->rel_ie_next ? ALIGN(sizeof(copy)) : 0);
 
-            /* ftwrite(&copy,ALIGN(sizeof(copy)),out); */
+            // ftwrite(&copy,ALIGN(sizeof(copy)),out);
             copy_size = ftwrite_unaligned(&copy,sizeof(copy),out);
         }
         else {
@@ -250,9 +246,8 @@ static long write_IE(struct gb_if_entries *ie, FILE *out, long *offset)
     return ieoffset;
 }
 
-static long write_IFS(struct gb_index_files_struct *ifs, FILE *out, long *offset)
-     /* parameters mean the same as in write_GBDATA */
-{
+static long write_IFS(struct gb_index_files_struct *ifs, FILE *out, long *offset) {
+    // parameters mean the same as in write_GBDATA
     long    ifsoffset,
         nextoffset,
         entriesoffset;
@@ -261,7 +256,7 @@ static long write_IFS(struct gb_index_files_struct *ifs, FILE *out, long *offset
 
     nextoffset = write_IFS(GB_INDEX_FILES_NEXT(ifs), out, offset);
 
-    /* entries */
+    // entries
 
     {
         GB_REL_IFES *ie     = GB_INDEX_FILES_ENTRIES(ifs);
@@ -274,13 +269,13 @@ static long write_IFS(struct gb_index_files_struct *ifs, FILE *out, long *offset
         iecopy = (GB_REL_IFES *)malloc(iesize);
         memcpy(iecopy,ie,iesize);
 
-        /* write index entries an calc absolute offsets */
+        // write index entries an calc absolute offsets
 
         for (idx=0; idx<ifs->hash_table_size; idx++) {
             iecopy[idx] = (GB_REL_IFES) write_IE(GB_ENTRIES_ENTRY(ie,idx),out,offset);
         }
 
-        /* convert to relative offsets and write them */
+        // convert to relative offsets and write them
 
         entriesoffset = *offset;
         for (idx=0; idx<ifs->hash_table_size; idx++) {
@@ -293,7 +288,7 @@ static long write_IFS(struct gb_index_files_struct *ifs, FILE *out, long *offset
         free(iecopy);
     }
 
-    /* ifs */
+    // ifs
 
     {
         struct gb_index_files_struct ifscopy = *ifs;
@@ -348,12 +343,12 @@ static long write_GBDATA(GB_MAIN_TYPE *Main,GBDATA *gbd, GBQUARK quark, FILE *ou
     // GBUSE(Main);
     gb_assert(gbd->flags.temporary==0);
 
-    if (type==GB_DB)    /* CONTAINER */
+    if (type==GB_DB)    // CONTAINER
     {
         GBCONTAINER *gbc = (GBCONTAINER*)gbd, gbccopy = *gbc;
         long headeroffset, ifsoffset;
 
-        /* header */
+        // header
 
         {
             struct gb_header_list_struct *header, *headercopy;
@@ -362,12 +357,12 @@ static long write_GBDATA(GB_MAIN_TYPE *Main,GBDATA *gbd, GBQUARK quark, FILE *ou
 
             headeroffset = *offset;
             header = GB_DATA_LIST_HEADER(gbc->d);
-            gb_assert(PTR_DIFF(&(header[1]),&(header[0]))==sizeof(*header));    /* @@@@ */
+            gb_assert(PTR_DIFF(&(header[1]),&(header[0]))==sizeof(*header));    // @@@@
 
-            if (headermemsize){      /* if container is non-empty */
+            if (headermemsize){      // if container is non-empty
 
                 if (out){
-                    int valid=0;    /* no of non-temporary items */
+                    int valid=0;    // no of non-temporary items
                     headercopy = (struct gb_header_list_struct*) malloc(headermemsize);
                     gb_assert(sizeof(*headercopy)==ALIGN(sizeof(*headercopy)));
                     memset(headercopy,0x0,headermemsize);
@@ -402,8 +397,8 @@ static long write_GBDATA(GB_MAIN_TYPE *Main,GBDATA *gbd, GBQUARK quark, FILE *ou
                     ftwrite_aligned(headercopy, headermemsize, out);
                     free(headercopy);
 
-                }else{      /* Calc new indices and size of header */
-                    int valid=0;    /* no of non-temporary items */
+                }else{      // Calc new indices and size of header
+                    int valid=0;    // no of non-temporary items
                     for (item=0; item<nitems; item++)
                     {
                         GBDATA *gbd2 = GB_HEADER_LIST_GBD(header[item]);
@@ -424,11 +419,11 @@ static long write_GBDATA(GB_MAIN_TYPE *Main,GBDATA *gbd, GBQUARK quark, FILE *ou
             *offset += headermemsize;
         }
 
-        /* ifs */
+        // ifs
 
         ifsoffset = write_IFS(GBCONTAINER_IFS(gbc),out,offset);
 
-        /* gbc */
+        // gbc
 
         gbdoffset = *offset;
         {
@@ -436,14 +431,14 @@ static long write_GBDATA(GB_MAIN_TYPE *Main,GBDATA *gbd, GBQUARK quark, FILE *ou
             if (out) {
                 struct gbdata_offset *dof = find_gbdata_offset(quark, (GBDATA *)gbc);
                 gbccopy.index = dof->index;
-                gb_assert(dof->index <= gbc->index); /* very simple check */
+                gb_assert(dof->index <= gbc->index); // very simple check
 
                 gbccopy.rel_father = (GB_REL_CONTAINER)getrel_GBDATA(gbdoffset,(GBDATA*)GB_FATHER(gbc));
 
                 gbccopy.ext = NULL;
                 convertFlags4Save(&(gbccopy.flags),&(gbccopy.flags2),&(gbccopy.flags3));
                 gbccopy.d.rel_header = (GB_REL_HLS)MAKEREL( gbdoffset+PTR_DIFF(&(gbc->d), gbc),headeroffset);
-                /* rel_header is relative to gbc->d !!! */
+                // rel_header is relative to gbc->d !!!
                 gbccopy.main_idx = main_idx;
                 gbccopy.index_of_touched_one_son = 0;
                 gbccopy.header_update_date = 0;
@@ -457,10 +452,10 @@ static long write_GBDATA(GB_MAIN_TYPE *Main,GBDATA *gbd, GBQUARK quark, FILE *ou
             *offset += gbccopy_size;
         }
     }
-    else        /* GBDATA */
+    else        // GBDATA
     {
         int     ex = gbd->flags2.extern_data;
-        GBDATA  gbdcopy = *gbd; /* make copy to avoid change of mem */
+        GBDATA  gbdcopy = *gbd; // make copy to avoid change of mem
 
         if (ex) {
             long   exoffset = *offset;
@@ -480,7 +475,7 @@ static long write_GBDATA(GB_MAIN_TYPE *Main,GBDATA *gbd, GBQUARK quark, FILE *ou
             if (out) {
                 struct gbdata_offset *dof = find_gbdata_offset(quark, gbd);
                 gbdcopy.index = dof->index;
-                gb_assert(dof->index <= gbd->index); /* very simple check */
+                gb_assert(dof->index <= gbd->index); // very simple check
 
                 gbdcopy.rel_father  = (GB_REL_CONTAINER)getrel_GBDATA(gbdoffset,(GBDATA*)GB_FATHER(gbd));
                 gbdcopy.ext         = NULL;
@@ -548,7 +543,7 @@ static void scanGbdByKey(GB_MAIN_TYPE *Main, GBDATA *gbd, gbdByKey *gbk)
 
     if (gbd->flags.temporary) return;
 
-    if (GB_TYPE(gbd) == GB_DB)  /* CONTAINER */
+    if (GB_TYPE(gbd) == GB_DB)  // CONTAINER
     {
         int         idx;
         GBCONTAINER     *gbc = (GBCONTAINER *)gbd;
@@ -566,11 +561,11 @@ static void scanGbdByKey(GB_MAIN_TYPE *Main, GBDATA *gbd, gbdByKey *gbk)
         printf("KeyQuark==0 found:\n");
         GB_dump_db_path(gbd);
     }
-#endif /* DEBUG */
+#endif // DEBUG
     gb_assert(gbk[quark].gbdoff!=0);
 
     gbk[quark].gbdoff[ gbk[quark].cnt ].gbd = gbd;
-    gbk[quark].gbdoff[ gbk[quark].cnt ].offset = -1; /* -1 is impossible as offset in file */
+    gbk[quark].gbdoff[ gbk[quark].cnt ].offset = -1; // -1 is impossible as offset in file
     gbk[quark].cnt++;
 }
 
@@ -600,7 +595,7 @@ static gbdByKey *createGbdByKey(GB_MAIN_TYPE *Main)
 
     return gbk;
 
-    /* error handling: */
+    // error handling:
 
  err2:  while (idx>=0)
  {
@@ -638,21 +633,21 @@ int gb_save_mapfile(GB_MAIN_TYPE *Main, GB_CSTR path)
 
     calcOffset = calcGbdOffsets(Main,gb_gbk);
 
-    /* write file */
+    // write file
 
     out = fopen(opath, "w");
-    writeError = out==NULL;     /* global flag */
+    writeError = out==NULL;     // global flag
 
     gb_assert(ADMAP_ID_LEN <= strlen(ADMAP_ID));
     memset(&mheader,0,sizeof(mheader));
-    strcpy(mheader.mapfileID,ADMAP_ID); /* header */
+    strcpy(mheader.mapfileID,ADMAP_ID); // header
 
     mheader.version = ADMAP_VERSION;
     mheader.byte_order = ADMAP_BYTE_ORDER;
-    main_idx  = gb_make_main_idx(Main); /* Generate a new main idx */
+    main_idx  = gb_make_main_idx(Main); // Generate a new main idx
     mheader.main_idx = main_idx;
 
-    /* mheader.main_data_offset = getrel_GBDATA(0,(GBDATA*)Main->data); */
+    // mheader.main_data_offset = getrel_GBDATA(0,(GBDATA*)Main->data);
     mheader.main_data_offset = getrel_GBDATA(1,(GBDATA*)Main->data)+1;
 
     ftwrite_unaligned(&mheader, sizeof(mheader), out);
@@ -668,7 +663,7 @@ int gb_save_mapfile(GB_MAIN_TYPE *Main, GB_CSTR path)
     gb_gbk = NULL;
 
     fclose(out);
-    if (!writeError) return 0;  /* no error */
+    if (!writeError) return 0;  // no error
 
  error:
 
@@ -678,36 +673,16 @@ int gb_save_mapfile(GB_MAIN_TYPE *Main, GB_CSTR path)
     return -1;
 }
 
-/*
-  void renameOverwrittenMapfile(const char *path)
-  {
-  char *overwritten = overwriteName(path);
-  FILE *in = fopen(overwritten,"r");
+int gb_is_valid_mapfile(const char *path, struct gb_map_header *mheader, int verbose) {
+    /* Test whether mapfile is valid
+     * returns
+     *     -1   no map file found / MEMORY_TEST (don't use mapfile)
+     *      0   mapfile error
+     *      1   mapfile ok
+     */
 
-  if (in)
-  {
-  fclose(in);
-  remove(path);
-  rename(overwritten,path);
-  }
-  }
-*/
-
-/** Test whether mapfile is valid
- *  returns -1 no map file found
- *      0   mapfile error
- *      1   mapfile ok
- *     -1   MEMORY_TEST (don't use mapfile)
- */
-
-int gb_is_valid_mapfile(const char *path, struct gb_map_header *mheader, int verbose)
-
-{
-    /* Don't map anything in memory debug mode */
-#if  ( MEMORY_TEST == 1)
-    // GBUSE(path);
-    // GBUSE(mheader);
-    // GBUSE(verbose);
+#if ( MEMORY_TEST == 1)
+    // Don't map anything in memory debug mode
     return -1;
 #else
     FILE *in = fopen(path,"r");
@@ -734,13 +709,10 @@ int gb_is_valid_mapfile(const char *path, struct gb_map_header *mheader, int ver
 #endif
 }
 
-/*
-  The module admalloc.c must be able to determine whether a memory block
-  is inside the mapped file. So we store the location of the mapped file in
-  the following both static variables.
-*/
-
-
+/* The module admalloc.c must be able to determine whether a memory block
+ * is inside the mapped file. So we store the location of the mapped file in
+ * the following variables: 
+ */
 static char *fileMappedTo[GB_MAX_MAPPED_FILES];
 static long  fileLen[GB_MAX_MAPPED_FILES];
 static int   mappedFiles = 0;

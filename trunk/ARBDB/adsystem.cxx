@@ -173,7 +173,7 @@ void gb_load_single_key_data(GBDATA *gb_main, GBQUARK q) {
 }
 
 GB_ERROR gb_save_dictionary_data(GBDATA *gb_main,const char *key,const char *dict, int size) {
-    /* if 'dict' is NULL, an existing directory gets deleted */
+    // if 'dict' is NULL, an existing directory gets deleted
     GB_MAIN_TYPE *Main  = GB_MAIN(gb_main);
     GB_ERROR      error = 0;
     gb_main             = (GBDATA *)Main->data;
@@ -199,7 +199,7 @@ GB_ERROR gb_save_dictionary_data(GBDATA *gb_main,const char *key,const char *dic
         else {
             gb_dict = GB_entry(gb_key, "@dictionary");
             if (gb_dict) {
-                GB_delete(gb_dict); /* delete existing dictionary */
+                GB_delete(gb_dict); // delete existing dictionary
             }
         }
         GB_pop_my_security(gb_main);
@@ -218,11 +218,11 @@ GB_ERROR gb_load_key_data_and_dictionaries(GBDATA *gb_main){
     int key;
 
     Main->gb_key_data = gb_key_data;
-    if (!Main->local_mode) return 0;    /* do not create anything at the client side */
+    if (!Main->local_mode) return 0;    // do not create anything at the client side
 
     GB_push_my_security(gb_main);
 
-    /* First step: search unused keys and delete them */
+    // First step: search unused keys and delete them
     for (gb_key = GB_entry(gb_key_data,"@key");
          gb_key;
          gb_key = gb_next_key)
@@ -234,7 +234,7 @@ GB_ERROR gb_load_key_data_and_dictionaries(GBDATA *gb_main){
         gb_next_key = GB_nextEntry(gb_key);
 
         if (quark<=0 || quark >= Main->sizeofkeys || !Main->keys[quark].key){
-            GB_delete(gb_key);  /* delete unused key */
+            GB_delete(gb_key);  // delete unused key
         }
     }
     GB_create_index(gb_key_data, "@name", GB_MIND_CASE, Main->sizeofkeys*2);
@@ -281,7 +281,7 @@ struct DictData *GB_get_dictionary(GBDATA *gb_main, const char *key) {
 }
 
 GB_ERROR GB_set_dictionary(GBDATA *gb_main, const char *key, const struct DictData *dd) {
-    /* if 'dd' == NULL -> delete dictionary */
+    // if 'dd' == NULL -> delete dictionary
     GB_ERROR error;
     if (dd) {
         error = gb_save_dictionary_data(gb_main, key, dd->data, dd->size);

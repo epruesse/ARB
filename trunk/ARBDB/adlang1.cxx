@@ -19,7 +19,7 @@
 
 #define AWAR_TREE_REFRESH "tmp/focus/tree_refresh" // touch this awar to refresh the tree display
 
-/* hook for 'export_sequence' */
+// hook for 'export_sequence'
 
 static gb_export_sequence_cb get_export_sequence = 0;
 
@@ -28,14 +28,14 @@ NOT4PERL void GB_set_export_sequence_hook(gb_export_sequence_cb escb) {
     get_export_sequence = escb;
 }
 
-/* global ACI/SRT debug switch */
+// global ACI/SRT debug switch
 static int trace = 0;
 
 void GB_set_ACISRT_trace(int enable) { trace = enable; }
 int GB_get_ACISRT_trace() { return trace; }
 
 
-/* export stream */
+// export stream
 
 #define PASS_2_OUT(args, s)  do { (*((args)->voutput))[(*((args)->coutput))++].str = (s); } while(0)
 #define COPY_2_OUT(args, s)  PASS_2_OUT(args, strdup(s));
@@ -128,7 +128,7 @@ static int gbl_param_bit(const char *param_name, int def, const char *help_text,
 
 #if defined(DEVEL_RALF)
 #warning remove GBL_MAX_ARGUMENTS - instead allocate dynamic
-#endif /* DEVEL_RALF */
+#endif // DEVEL_RALF
 
 
 static GB_ERROR trace_params(int argc, const GBL *argv, struct gbl_param *ppara, const char *com) {
@@ -234,7 +234,7 @@ static GB_ERROR trace_params(int argc, const GBL *argv, struct gbl_param *ppara,
 ********************************************************************************************/
 
 static char *unEscapeString(const char *escapedString) {
-    /* replaces all \x by x */
+    // replaces all \x by x
     char *result = nulldup(escapedString);
     char *to     = result;
     char *from   = result;
@@ -255,7 +255,7 @@ static char *unEscapeString(const char *escapedString) {
 }
 
 static int gbl_stricmp(const char *s1, const char *s2) {
-    /* case insensitive strcmp */
+    // case insensitive strcmp
     int i;
     for (i = 0; ; ++i) {
         char c1 = tolower(s1[i]);
@@ -272,7 +272,7 @@ static int gbl_stricmp(const char *s1, const char *s2) {
     return 0;
 }
 static int gbl_strincmp(const char *s1, const char *s2, int size2) {
-    /* case insensitive strcmp */
+    // case insensitive strcmp
     int i;
     for (i = 0; i<size2; ++i) {
         char c1 = tolower(s1[i]);
@@ -289,7 +289,7 @@ static int gbl_strincmp(const char *s1, const char *s2, int size2) {
     return 0;
 }
 static const char *gbl_stristr(const char *haystack, const char *needle) {
-    /* case insensitive strstr */
+    // case insensitive strstr
     const char *hp          = haystack;
     char        c1          = toupper(needle[0]);
     char        c2          = tolower(c1);
@@ -333,17 +333,14 @@ static const char *gbl_stristr(const char *haystack, const char *needle) {
     return 0;
 }
 
-/* ***************************** gbl_mid_streams *****************************
- * used as well to copy all streams (e.g. by 'dd')
- */
-
 static GB_ERROR gbl_mid_streams(int arg_cinput, const GBL *arg_vinput,
                                 int *arg_cout, GBL **arg_vout,
                                 int start,int mstart,int end,int relend)
 {
+    // used as well to copy all streams (e.g. by 'dd')
     int i;
     GBL_CHECK_FREE_PARAM(*arg_cout,arg_cinput);
-    for (i=0;i<arg_cinput;i++) {         /* go through all in streams    */
+    for (i=0;i<arg_cinput;i++) {         // go through all in streams
         char *p;
         int c;
 
@@ -354,22 +351,20 @@ static GB_ERROR gbl_mid_streams(int arg_cinput, const GBL *arg_vinput,
         p = arg_vinput[i].str;
         len = strlen(p);
         if (nstart<0) nstart = len - mstart;
-        if (nend<0) nend = len - relend;        /* check rel len */
+        if (nend<0) nend = len - relend;        // check rel len
 
-        if (nstart>len ) nstart = len;  /* check boundaries */
+        if (nstart>len ) nstart = len;  // check boundaries
         if (nstart<0) nstart = 0;
         if (nend>len) nend = len;
         if (nend<nstart) nend = nstart;
 
         c = p[nend];
         p[nend] =0;
-        (*arg_vout)[(*arg_cout)++].str = strdup(p+nstart);     /* export result string */
+        (*arg_vout)[(*arg_cout)++].str = strdup(p+nstart);     // export result string
         p[nend] = c;
     }
     return 0;
 }
-
-/* ***************************** trace ***************************** */
 
 static GB_ERROR gbl_trace(GBL_command_arguments *args) {
     int tmp_trace;
@@ -384,12 +379,12 @@ static GB_ERROR gbl_trace(GBL_command_arguments *args) {
         GB_set_ACISRT_trace(tmp_trace);
     }
 
-    return gbl_mid_streams(args->cinput, args->vinput,args->coutput, args->voutput, 0, 0, -1, 0); /* copy all streams */
+    return gbl_mid_streams(args->cinput, args->vinput,args->coutput, args->voutput, 0, 0, -1, 0); // copy all streams
 }
 
-/********************************************************************************************
-          Binary operators:
-********************************************************************************************/
+// --------------------------
+//      binary operators:
+
 /*
  * Binary operators work on pairs of values.
  * Three different operational modes are implemented for all binary operators:
@@ -497,9 +492,9 @@ static GB_ERROR gbl_command(GBL_command_arguments *args) {
         command = unEscapeString(args->vparam[0].str);
 #if defined(DEBUG)
         printf("executing command '%s'\n", command);
-#endif /* DEBUG */
+#endif // DEBUG
 
-        for (i=0; i<args->cinput && !error; i++) { /* go through all orig streams       */
+        for (i=0; i<args->cinput && !error; i++) { // go through all orig streams
             char *result       = GB_command_interpreter(gb_main, args->vinput[i].str, command, args->gb_ref, args->default_tree_name);
             if (!result) error = GB_await_error();
             else  PASS_2_OUT(args, result);
@@ -534,7 +529,7 @@ static GB_ERROR gbl_eval(GBL_command_arguments *args) {
                 printf("executing '%s'\n", command);
             }
 
-            for (i=0; i<args->cinput && !error; i++) { /* go through all orig streams  */
+            for (i=0; i<args->cinput && !error; i++) { // go through all orig streams
                 char *result       = GB_command_interpreter(gb_main, args->vinput[i].str, command, args->gb_ref, args->default_tree_name);
                 if (!result) error = GB_await_error();
                 else  PASS_2_OUT(args, result);
@@ -597,7 +592,7 @@ static GB_ERROR gbl_do(GBL_command_arguments *args) {
                 printf("executing defined command '%s'='%s' on %i streams\n", name, cmd, args->cinput);
             }
 
-            for (i=0; i<args->cinput && !error; i++) { /* go through all orig streams  */
+            for (i=0; i<args->cinput && !error; i++) { // go through all orig streams
                 char *result       = GB_command_interpreter(gb_main, args->vinput[i].str, cmd, args->gb_ref, args->default_tree_name);
                 if (!result) error = GB_await_error();
                 else  PASS_2_OUT(args, result);
@@ -640,7 +635,7 @@ static GB_ERROR gbl_origin(GBL_command_arguments *args) {
             int     i;
             GBDATA *gb_main = (GBDATA*)GB_MAIN(args->gb_ref)->data;
 
-            for (i=0; i<args->cinput && !error; i++) { /* go through all orig streams  */
+            for (i=0; i<args->cinput && !error; i++) { // go through all orig streams
                 char *result       = GB_command_interpreter(gb_main, args->vinput[i].str, command, gb_origin, args->default_tree_name);
                 if (!result) error = GB_await_error();
                 else  PASS_2_OUT(args, result);
@@ -656,7 +651,7 @@ static GB_ERROR gbl_origin(GBL_command_arguments *args) {
 static GB_ERROR gbl_count(GBL_command_arguments *args)
 {
     int  i;
-    char tab[256];              /* if tab[char] count 'char' */
+    char tab[256];              // if tab[char] count 'char'
 
     if (args->cparam!=1) return "count syntax: count(\"characters to count\")";
 
@@ -665,8 +660,8 @@ static GB_ERROR gbl_count(GBL_command_arguments *args)
         else tab[i] = 0;
     }
     GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
-    for (i=0;i<args->cinput;i++) {         /* go through all orig streams  */
-        long           sum = 0;                     /* count frequencies    */
+    for (i=0;i<args->cinput;i++) {         // go through all orig streams
+        long           sum = 0;                     // count frequencies
         unsigned char *p   = (unsigned char *)args->vinput[i].str;
         while (*p){
             sum += tab[*(p++)];
@@ -679,7 +674,7 @@ static GB_ERROR gbl_count(GBL_command_arguments *args)
 static GB_ERROR gbl_len(GBL_command_arguments *args)
 {
     int i;
-    char tab[256];                              /* if tab[char] count 'char' */
+    char tab[256];                              // if tab[char] count 'char'
     const char *option;
 
     if (args->cparam == 0) option = "";
@@ -691,9 +686,9 @@ static GB_ERROR gbl_len(GBL_command_arguments *args)
         else tab[i] = 1;
     }
     GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
-    for (i=0;i<args->cinput;i++) {         /* go through all orig streams  */
+    for (i=0;i<args->cinput;i++) {         // go through all orig streams
         char *p;
-        long sum = 0;                   /* count frequencies    */
+        long sum = 0;                   // count frequencies
         p = args->vinput[i].str;
         while (*p){
             sum += tab[(unsigned int)*(p++)];
@@ -706,7 +701,7 @@ static GB_ERROR gbl_len(GBL_command_arguments *args)
 static GB_ERROR gbl_remove(GBL_command_arguments *args)
 {
     int i;
-    char tab[256];                              /* if tab[char] count 'char' */
+    char tab[256];                              // if tab[char] count 'char'
 
 
     if (args->cparam!=1) return "remove syntax: remove(\"characters to remove\")";
@@ -717,7 +712,7 @@ static GB_ERROR gbl_remove(GBL_command_arguments *args)
     }
 
     GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
-    for (i=0;i<args->cinput;i++) {         /* go through all orig streams  */
+    for (i=0;i<args->cinput;i++) {         // go through all orig streams
         GBS_strstruct *strstruct = GBS_stropen(1000);
         for (char *p = args->vinput[i].str;*p;p++){
             if (!tab[(unsigned int)*p]) {
@@ -732,7 +727,7 @@ static GB_ERROR gbl_remove(GBL_command_arguments *args)
 static GB_ERROR gbl_keep(GBL_command_arguments *args)
 {
     int  i;
-    char tab[256];                              /* if tab[char] != 0 then keep'char' */
+    char tab[256];                              // if tab[char] != 0 then keep'char'
 
 
     if (args->cparam!=1) return "keep syntax: keep(\"characters not to remove\")";
@@ -746,7 +741,7 @@ static GB_ERROR gbl_keep(GBL_command_arguments *args)
     }
 
     GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
-    for (i=0;i<args->cinput;i++) {         /* go through all orig streams  */
+    for (i=0;i<args->cinput;i++) {         // go through all orig streams
         GBS_strstruct *strstruct = GBS_stropen(1000);
         for (char *p = args->vinput[i].str;*p;p++) {
             if (tab[(unsigned int)*p]) {
@@ -814,7 +809,7 @@ static GB_ERROR gbl_translate(GBL_command_arguments *args)
         replace_other = other[0];
     }
 
-    /* build translation table : */
+    // build translation table :
     {
         const unsigned char *o = (const unsigned char *)args->vparam[0].str;
         const unsigned char *n = (const unsigned char *)args->vparam[1].str;
@@ -837,7 +832,7 @@ static GB_ERROR gbl_translate(GBL_command_arguments *args)
     }
 
     GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
-    for (i=0;i<args->cinput;i++) {         /* go through all orig streams  */
+    for (i=0;i<args->cinput;i++) {         // go through all orig streams
         GBS_strstruct *strstruct = GBS_stropen(1000);
         for (char *p = args->vinput[i].str;*p;p++) {
             GBS_chrcat(strstruct, tab[(unsigned char)*p]);
@@ -854,7 +849,7 @@ static GB_ERROR gbl_echo(GBL_command_arguments *args)
     args->cinput = args->cinput;
     args->vinput = args->vinput;
     GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
-    for (i=0;i<args->cparam;i++) {         /* go through all in streams    */
+    for (i=0;i<args->cparam;i++) {         // go through all in streams
         char *p;
         p = args->vparam[i].str;
         COPY_2_OUT(args, p);
@@ -865,7 +860,7 @@ static GB_ERROR gbl_echo(GBL_command_arguments *args)
 static GB_ERROR gbl_dd(GBL_command_arguments *args)
 {
     if (args->cparam!=0) return "syntax: dd (no parameters)";
-    return gbl_mid_streams(args->cinput, args->vinput,args->coutput, args->voutput, 0, 0, -1, 0); /* copy all streams */
+    return gbl_mid_streams(args->cinput, args->vinput,args->coutput, args->voutput, 0, 0, -1, 0); // copy all streams
 }
 
 static GB_ERROR gbl_string_convert(GBL_command_arguments *args)
@@ -881,7 +876,7 @@ static GB_ERROR gbl_string_convert(GBL_command_arguments *args)
     if (args->cparam!=0) return GBS_global_string("syntax: %s (no parameters)", args->command);
     
     GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
-    for (i=0;i<args->cinput;i++) { /* go through all in streams    */
+    for (i=0;i<args->cinput;i++) { // go through all in streams
         char *p              = strdup(args->vinput[i].str);
         char *pp;
         int   last_was_alnum = 0;
@@ -890,7 +885,7 @@ static GB_ERROR gbl_string_convert(GBL_command_arguments *args)
             switch (mode) {
                 case 0:  pp[0] = tolower(pp[0]); break;
                 case 1:  pp[0] = toupper(pp[0]); break;
-                case 2: /* caps */
+                case 2: // caps
                     if (isalnum(pp[0])) {
                         if (last_was_alnum) pp[0] = tolower(pp[0]);
                         else pp[0]                = toupper(pp[0]);
@@ -953,7 +948,7 @@ static GB_ERROR gbl_tab(GBL_command_arguments *args)
     if (args->cparam!=1) return "tab syntax: tab(#tab)";
     tab = atoi(args->vparam[0].str);
     GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
-    for (i=0;i<args->cinput;i++) {         /* go through all in streams    */
+    for (i=0;i<args->cinput;i++) {         // go through all in streams
         char *p;
         int   len = strlen(args->vinput[i].str);
 
@@ -978,7 +973,7 @@ static GB_ERROR gbl_pretab(GBL_command_arguments *args)
     if (args->cparam!=1) return "pretab syntax: pretab(#tab)";
     tab = atoi(args->vparam[0].str);
     GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
-    for (i=0;i<args->cinput;i++) {         /* go through all in streams    */
+    for (i=0;i<args->cinput;i++) {         // go through all in streams
         char *p;
         int   len = strlen(args->vinput[i].str);
 
@@ -1007,12 +1002,12 @@ static GB_ERROR gbl_crop(GBL_command_arguments *args)
 
     chars_to_crop = args->vparam[0].str;
     GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
-    for (i=0;i<args->cinput;i++) {         /* go through all in streams    */
+    for (i=0;i<args->cinput;i++) {         // go through all in streams
         const char *s = args->vinput[i].str;
         char       *p;
         int         len;
 
-        while (s[0] && strchr(chars_to_crop, s[0]) != 0) s++; /* crop at beg of line */
+        while (s[0] && strchr(chars_to_crop, s[0]) != 0) s++; // crop at beg of line
 
         len = strlen(s);
         p   = (char*)GB_calloc(sizeof(char), len+1);
@@ -1021,7 +1016,7 @@ static GB_ERROR gbl_crop(GBL_command_arguments *args)
         {
             char *pe = p+len-1;
 
-            while (pe >= p && strchr(chars_to_crop, pe[0]) != 0) { /* crop at end of line */
+            while (pe >= p && strchr(chars_to_crop, pe[0]) != 0) { // crop at end of line
                 --pe;
             }
             gb_assert(pe >= (p-1));
@@ -1090,7 +1085,7 @@ static GB_ERROR gbl_dropempty(GBL_command_arguments *args)
     if (args->cparam != 0) return "expect no parameters";
 
     for (i=0; i<args->cinput;++i) {
-        if (args->vinput[i].str[0]) { /* if non-empty */
+        if (args->vinput[i].str[0]) { // if non-empty
             IN_2_OUT(args, i);
         }
     }
@@ -1104,7 +1099,7 @@ static GB_ERROR gbl_dropzero(GBL_command_arguments *args)
     if (args->cparam != 0) return "expect no parameters";
 
     for (i=0; i<args->cinput;++i) {
-        if (atoi(args->vinput[i].str)) { /* if non-zero */
+        if (atoi(args->vinput[i].str)) { // if non-zero
             IN_2_OUT(args, i);
         }
     }
@@ -1177,18 +1172,18 @@ static GB_ERROR backfront_stream(GBL_command_arguments *args, int toback)
     }
 
     if (toback) {
-        if (stream_to_move<(args->cinput-1)) { /* not last */
+        if (stream_to_move<(args->cinput-1)) { // not last
             GBL  new_last = (*args->voutput)[firstout+stream_to_move];
-            /* char *new_last = (*args->voutput)[firstout+stream_to_move].str; */
+            // char *new_last = (*args->voutput)[firstout+stream_to_move].str;
             for (i = stream_to_move+1; i<args->cinput; ++i) {
                 (*args->voutput)[firstout+i-1] = (*args->voutput)[firstout+i];
-                /* (*args->voutput)[firstout+i-1].str = (*args->voutput)[firstout+i].str; */
+                // (*args->voutput)[firstout+i-1].str = (*args->voutput)[firstout+i].str;
             }
             (*args->voutput)[firstout+args->cinput-1] = new_last;
         }
     }
-    else { /* to front */
-        if (stream_to_move != 0) { /* not first */
+    else { // to front
+        if (stream_to_move != 0) { // not first
             GBL new_first = (*args->voutput)[firstout+stream_to_move];
             for (i = stream_to_move-1;  i >= 0; --i) {
                 (*args->voutput)[firstout+i+1] = (*args->voutput)[firstout+i];
@@ -1230,10 +1225,10 @@ static GB_ERROR gbl_merge(GBL_command_arguments *args)
 
 static GB_ERROR gbl_split(GBL_command_arguments *args) {
     const char *separator;
-    int   split_mode = 0;       /* 0 = remove separator, 1 = split before separator, 2 = split behind separator */
+    int   split_mode = 0;       // 0 = remove separator, 1 = split before separator, 2 = split behind separator
 
     switch (args->cparam) {
-        case 0:                 /* default behavior: split into lines and remove LF */
+        case 0:                 // default behavior: split into lines and remove LF
             separator  = "\n";
             break;
         case 2:
@@ -1241,7 +1236,7 @@ static GB_ERROR gbl_split(GBL_command_arguments *args) {
             if (split_mode<0 || split_mode>2) {
                 return GBS_global_string("Illegal split mode '%i' (valid: 0..2)", split_mode);
             }
-            /* fall-through */
+            // fall-through
         case 1:
             separator          = args->vparam[0].str;
             break;
@@ -1254,7 +1249,7 @@ static GB_ERROR gbl_split(GBL_command_arguments *args) {
 
         for (i = 0; i<args->cinput; ++i) {
             char *in   = args->vinput[i].str;
-            char *from = in; /* search from here */
+            char *from = in; // search from here
 
             while (in) {
                 char *splitAt;
@@ -1265,7 +1260,7 @@ static GB_ERROR gbl_split(GBL_command_arguments *args) {
                     size_t  len;
                     char   *copy;
 
-                    if (split_mode == 2) splitAt += sepLen; /* split behind separator */
+                    if (split_mode == 2) splitAt += sepLen; // split behind separator
 
                     len  = splitAt-in;
                     copy = (char*)malloc(len+1);
@@ -1301,7 +1296,7 @@ static GB_ERROR gbl_extract_words(GBL_command_arguments *args)
     len = atof(args->vparam[1].str);
 
     GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
-    for (i=0;i<args->cinput;i++) {         /* go through all in streams    */
+    for (i=0;i<args->cinput;i++) {         // go through all in streams
         char *res = GBS_extract_words(args->vinput[i].str, args->vparam[0].str, len, 1);
         gb_assert(res);
         PASS_2_OUT(args, res);
@@ -1320,7 +1315,7 @@ static GB_ERROR gbl_extract_sequence(GBL_command_arguments *args)
     if (len <0.0 || len > 1.0) return syntax_err;
 
     GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
-    for (i=0;i<args->cinput;i++) {         /* go through all in streams    */
+    for (i=0;i<args->cinput;i++) {         // go through all in streams
         char *res = GBS_extract_words(args->vinput[i].str, args->vparam[0].str, len, 0);
         gb_assert(res);
         PASS_2_OUT(args, res);
@@ -1339,7 +1334,7 @@ static GB_ERROR gbl_check(GBL_command_arguments *args)
     GBL_END_PARAMS;
 
     GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
-    for (i=0;i<args->cinput;i++) {         /* go through all in streams    */
+    for (i=0;i<args->cinput;i++) {         // go through all in streams
         char buf[100];
         long id;
         id = GBS_checksum(args->vinput[i].str,upper,exclude);
@@ -1358,7 +1353,7 @@ static GB_ERROR gbl_gcgcheck(GBL_command_arguments *args)
     GBL_END_PARAMS;
 
     GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
-    for (i=0;i<args->cinput;i++) {         /* go through all in streams    */
+    for (i=0;i<args->cinput;i++) {         // go through all in streams
         char buf[100];
         long id;
         id = GBS_gcgchecksum(args->vinput[i].str);
@@ -1379,7 +1374,7 @@ static GB_ERROR gbl_srt(GBL_command_arguments *args) {
 
     GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
 
-    for (i=0; i<args->cinput && !error; i++) {      /* go through all in streams    */
+    for (i=0; i<args->cinput && !error; i++) {      // go through all in streams
         const char *source    = args->vinput[i].str;
         char       *modsource = 0;
 
@@ -1408,7 +1403,7 @@ static GB_ERROR gbl_srt(GBL_command_arguments *args) {
                                         Calculator Functions
 ********************************************************************************************/
 
-/* numeric binary operators */
+// numeric binary operators
 
 typedef int (*numeric_binary_operator)(int i1, int i2);
 
@@ -1446,7 +1441,7 @@ static GB_ERROR gbl_select(GBL_command_arguments *args) {
 
     GBL_CHECK_FREE_PARAM(*args->coutput, args->cinput);
 
-    for (i=0;i<args->cinput && !error;i++) { /* go through all in streams */
+    for (i=0;i<args->cinput && !error;i++) { // go through all in streams
         int value = atoi(args->vinput[i].str);
         if (value<0 || value >= args->cparam) {
             error = GBS_global_string("Input stream value (%i) is out of bounds (0 to %i)", value, args->cparam-1);
@@ -1517,19 +1512,19 @@ static GBT_ITEM_TYPE identify_gb_item(GBDATA *gb_item) {
     return GBT_ITEM_UNKNOWN;
 }
 
-/* -------------------------------------------------------------------------------- */
-/* taxonomy caching */
+// --------------------------------------------------------------------------------
+// taxonomy caching
 
 struct cached_taxonomy {
-    char    *tree_name;         /* tree for which taxonomy is cached here */
-    int      groups;            /* number of named groups in tree (at time of caching) */
+    char    *tree_name;         // tree for which taxonomy is cached here
+    int      groups;            // number of named groups in tree (at time of caching)
     GB_HASH *taxonomy; /* keys: "!species", ">XXXXgroup" and "<root>".
-                          Species and groups contain their first parent (i.e. '>XXXXgroup' or '<root>').
-                          Species not in hash are not members of tree.
-                          The 'XXXX' in groupname is simply a counter to avoid multiple groups with same name.
-                          The group-db-entries are stored in hash as pointers ('>>%p') and
-                          point to their own group entry ('>XXXXgroup')
-                       */
+                        * Species and groups contain their first parent (i.e. '>XXXXgroup' or '<root>').
+                        * Species not in hash are not members of tree.
+                        * The 'XXXX' in groupname is simply a counter to avoid multiple groups with same name.
+                        * The group-db-entries are stored in hash as pointers ('>>%p') and
+                        * point to their own group entry ('>XXXXgroup')
+                        */
 };
 
 static void free_cached_taxonomy(struct cached_taxonomy *ct) {
@@ -1541,22 +1536,22 @@ static void free_cached_taxonomy(struct cached_taxonomy *ct) {
 static void build_taxonomy_rek(GBT_TREE *node, GB_HASH *tax_hash, const char *parent_group, int *group_counter) {
     if (node->is_leaf) {
         GBDATA *gb_species = node->gb_node;
-        if (gb_species) { /* not zombie */
+        if (gb_species) { // not zombie
             GBS_write_hash(tax_hash, GBS_global_string("!%s", GBT_read_name(gb_species)), (long)strdup(parent_group));
         }
     }
     else {
-        if (node->name) {       /* named group */
+        if (node->name) {       // named group
             char *hash_entry;
             const char *hash_binary_entry;
             (*group_counter)++;
 
             hash_entry = GBS_global_string_copy(">%04x%s", *group_counter, node->name);
-            /* printf("hash_entry='%s' gb_node=%p\n", hash_entry, node->gb_node); */
+            // printf("hash_entry='%s' gb_node=%p\n", hash_entry, node->gb_node);
             GBS_write_hash(tax_hash, hash_entry, (long)strdup(parent_group));
 
             hash_binary_entry = GBS_global_string(">>%p", node->gb_node);
-            /* printf("hash_entry='%s' gb_node=%p\n", hash_binary_entry, node->gb_node); */
+            // printf("hash_entry='%s' gb_node=%p\n", hash_binary_entry, node->gb_node);
             GBS_write_hash(tax_hash, hash_binary_entry, (long)strdup(hash_entry));
 
             build_taxonomy_rek(node->leftson, tax_hash, hash_entry, group_counter);
@@ -1587,7 +1582,7 @@ static const char *tree_of_cached_taxonomy(struct cached_taxonomy *ct) {
     const char *tree = GBS_hash_next_element_that(cached_taxonomies, NULL, is_cached_taxonomy, ct);
 #if defined(DEBUG)
     if (tree) printf("tree_of_cached_taxonomy: tree='%s' ct->tree_name='%s'\n", tree, ct->tree_name);
-#endif /* DEBUG */
+#endif // DEBUG
     return tree;
 }
 
@@ -1608,15 +1603,15 @@ static void flush_taxonomy_cb(GBDATA *gbd, int *cd_ct, GB_CB_TYPE cbt) {
     if (found) {
 #if defined(DEBUG) && 0
         fprintf(stderr, "Deleting cached taxonomy ct=%p (tree='%s')\n", ct, found);
-#endif /* DEBUG */
-        GBS_write_hash(cached_taxonomies, found, 0); /* delete cached taxonomy from hash */
+#endif // DEBUG
+        GBS_write_hash(cached_taxonomies, found, 0); // delete cached taxonomy from hash
         free_cached_taxonomy(ct);
     }
 #if defined(DEBUG) && 0
     else {
         fprintf(stderr, "No tree found for cached_taxonomies ct=%p (already deleted?)\n", ct);
     }
-#endif /* DEBUG */
+#endif // DEBUG
 
     if (!GB_inside_callback(gbd, GB_CB_DELETE)) {
         GB_remove_all_callbacks_to(gbd, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), flush_taxonomy_cb);
@@ -1630,7 +1625,7 @@ static void flush_taxonomy_cb(GBDATA *gbd, int *cd_ct, GB_CB_TYPE cbt) {
                 error = GBS_global_string("%s (while trying to force refresh)", GB_await_error());
             }
             else {
-                GB_touch(gb_tree_refresh); /* Note : force tree update */
+                GB_touch(gb_tree_refresh); // Note : force tree update
             }
         }
     }
@@ -1641,13 +1636,13 @@ static void flush_taxonomy_cb(GBDATA *gbd, int *cd_ct, GB_CB_TYPE cbt) {
 }
 
 static void flush_taxonomy_if_new_group_cb(GBDATA *gb_tree, int *cd_ct, GB_CB_TYPE cbt) {
-    /* detects the creation of new groups and call flush_taxonomy_cb() manually */
+    // detects the creation of new groups and call flush_taxonomy_cb() manually
     struct cached_taxonomy *ct        = (struct cached_taxonomy *)cd_ct;
     const char             *tree_name;
 
 #if defined(DEBUG)
     fprintf(stderr, "flush_taxonomy_if_new_group_cb() has been called (cbt=%i)\n", cbt);
-#endif /* DEBUG */
+#endif // DEBUG
 
     tree_name = tree_of_cached_taxonomy(ct);
     if (tree_name) {
@@ -1659,17 +1654,17 @@ static void flush_taxonomy_if_new_group_cb(GBDATA *gb_tree, int *cd_ct, GB_CB_TY
              gb_group_node = GB_nextEntry(gb_group_node))
         {
             if (GB_entry(gb_group_node, "group_name")) {
-                groups++; /* count named groups only */
+                groups++; // count named groups only
             }
         }
 
 #if defined(DEBUG)
         fprintf(stderr, "cached_groups=%i  counted_groups=%i\n", ct->groups, groups);
-#endif /* DEBUG */
+#endif // DEBUG
         if (groups != ct->groups) {
 #if defined(DEBUG)
             fprintf(stderr, "Number of groups changed -> invoking flush_taxonomy_cb() manually\n");
-#endif /* DEBUG */
+#endif // DEBUG
             flush_taxonomy_cb(gb_tree, cd_ct, cbt);
         }
     }
@@ -1677,7 +1672,7 @@ static void flush_taxonomy_if_new_group_cb(GBDATA *gb_tree, int *cd_ct, GB_CB_TY
     else {
         fprintf(stderr, "cached taxonomy no longer valid.\n");
     }
-#endif /* DEBUG */
+#endif // DEBUG
 }
 
 static struct cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *tree_name, GB_ERROR *error) {
@@ -1722,13 +1717,13 @@ static struct cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *
                         GB_add_callback(gb_tree_entry, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), flush_taxonomy_cb, (int*)ct);
                     }
 
-                    /* add callbacks for all node/group_name subentries */
+                    // add callbacks for all node/group_name subentries
                     for (gb_group_node = GB_entry(gb_tree, "node");
                          gb_group_node;
                          gb_group_node = GB_nextEntry(gb_group_node))
                     {
                         GBDATA *gb_group_name = GB_entry(gb_group_node, "group_name");
-                        if (gb_group_name) { /* group with id = 0 has no name */
+                        if (gb_group_name) { // group with id = 0 has no name
                             GB_remove_all_callbacks_to(gb_group_name, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), flush_taxonomy_cb);
                             GB_add_callback(gb_group_name, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), flush_taxonomy_cb, (int*)ct);
                             ct->groups++;
@@ -1737,7 +1732,7 @@ static struct cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *
                 }
 #if defined(DEBUG)
                 fprintf(stderr, "Created taxonomy hash for '%s' (ct=%p)\n", tree_name, ct);
-#endif /* DEBUG */
+#endif // DEBUG
             }
         }
 
@@ -1798,7 +1793,7 @@ static const char *get_taxonomy(GBDATA *gb_species_or_group, const char *tree_na
         GBDATA *gb_name       = GB_entry(gb_species_or_group, "name");
         GBDATA *gb_group_name = GB_entry(gb_species_or_group, "group_name");
 
-        if (gb_name && !gb_group_name) { /* it's a species */
+        if (gb_name && !gb_group_name) { // it's a species
             char *name = GB_read_string(gb_name);
             if (name) {
                 GB_HASH *tax_hash = tax->taxonomy;
@@ -1808,7 +1803,7 @@ static const char *get_taxonomy(GBDATA *gb_species_or_group, const char *tree_na
                     const char *parent_group = (const char *)found;
 
                     if (strcmp(parent_group, "<root>") == 0) {
-                        result = ""; /* not member of any group */
+                        result = ""; // not member of any group
                     }
                     else {
                         static char *parent = 0;
@@ -1826,7 +1821,7 @@ static const char *get_taxonomy(GBDATA *gb_species_or_group, const char *tree_na
                 *error = GBS_global_string("Species without 'name' entry!");
             }
         }
-        else if (gb_group_name && !gb_name) { /* it's a group */
+        else if (gb_group_name && !gb_name) { // it's a group
             char *group_name = GB_read_string(gb_group_name);
             if (group_name) {
                 if (is_current_tree) {
@@ -1878,7 +1873,7 @@ static GB_ERROR gbl_taxonomy(GBL_command_arguments *args)
         int   count           = -1;
         char *result          = 0;
 
-        if (args->cparam == 1) {   /* only 'count' */
+        if (args->cparam == 1) {   // only 'count'
             if (!args->default_tree_name) {
                 result = strdup("No default tree");
             }
@@ -1888,7 +1883,7 @@ static GB_ERROR gbl_taxonomy(GBL_command_arguments *args)
                 is_current_tree = 1;
             }
         }
-        else { /* 'tree_name', 'count' */
+        else { // 'tree_name', 'count'
             tree_name = strdup(args->vparam[0].str);
             count     = atoi(args->vparam[1].str);
         }
@@ -1931,7 +1926,7 @@ static GB_ERROR gbl_sequence(GBL_command_arguments *args) {
                     GBDATA *gb_seq = GBT_read_sequence(args->gb_ref,use);
 
                     if (gb_seq) PASS_2_OUT(args, GB_read_string(gb_seq));
-                    else        COPY_2_OUT(args, ""); /* if current alignment does not exist -> return empty string */
+                    else        COPY_2_OUT(args, ""); // if current alignment does not exist -> return empty string
 
                     free(use);
                 }
@@ -2064,7 +2059,7 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args)
                      * does word-wrapping at chars in nl
                      */
                 
-                    /* build wrap table */
+                    // build wrap table
                     unsigned char isWrapChar[256];
                     memset(isWrapChar, 0, sizeof(isWrapChar));
                     for (i = 0; nl[i]; ++i) isWrapChar[(unsigned char)nl[i]] = 1;
@@ -2083,16 +2078,16 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args)
                         for (take = width; take > 0; --take) {
                             if (isWrapChar[(unsigned char)src[take]]) break;
                         }
-                        if (take <= 0) { /* no wrap character found -> hard wrap at width */
+                        if (take <= 0) { // no wrap character found -> hard wrap at width
                             take  = move = width;
                         }
-                        else { /* soft wrap at last found wrap character */
+                        else { // soft wrap at last found wrap character
                             move = take+1;
                         }
 
                         for (took = 0; took<take; took++) {
                             char c = src[took];
-                            if (isWrapChar[(unsigned char)c] == 2) { /* forced newline */
+                            if (isWrapChar[(unsigned char)c] == 2) { // forced newline
                                 take = took;
                                 move = take+1;
                                 break;
@@ -2100,7 +2095,7 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args)
                             dst[took] = c;
                         }
 
-                        /* memcpy(dst, src, take); */
+                        // memcpy(dst, src, take);
                         dst       += take;
                         src       += move;
                         rest_data -= move;
@@ -2136,7 +2131,7 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args)
                     }
                 }
                 else {
-                    /* "format_sequence" with gaps and numleft */
+                    // "format_sequence" with gaps and numleft
                     char       *format    = 0;
                     const char *src_start = src;
 
@@ -2179,7 +2174,7 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args)
                         if (rest_data>0) {
                             *dst++ = '\n';
                             if (numleft) {
-                                unsigned int num  = (src-src_start)+1; /* this goes to the '%u' (see comment above) */
+                                unsigned int num  = (src-src_start)+1; // this goes to the '%u' (see comment above)
                                 dst              += sprintf(dst, format, num);
                             }
                             else if (tab>0) {
@@ -2192,10 +2187,10 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args)
                     free(format);
                 }
 
-                *dst++ = 0;         /* close str */
+                *dst++ = 0;         // close str
 
 #if defined(DEBUG)
-                { /* check for array overflow */
+                { // check for array overflow
                     size_t used_size = dst-result;
                     gb_assert(used_size <= needed_size);
 
@@ -2207,7 +2202,7 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args)
                         result = new_result;
                     }
                 }
-#endif /* DEBUG */
+#endif // DEBUG
             }
 
             if (!error) PASS_2_OUT(args, result);
@@ -2369,8 +2364,8 @@ static GB_ERROR apply_filters(GBL_command_arguments *args, struct common_filter_
     return error;
 }
 
-/* ------------------------- */
-/*      calculate diff       */
+// -------------------------
+//      calculate diff
 
 struct diff_params {
     char equalC;
@@ -2425,8 +2420,8 @@ static GB_ERROR gbl_diff(GBL_command_arguments *args) {
     return apply_filters(args, &common_param, calc_diff, &param);
 }
 
-/* ------------------------- */
-/*      standard filter      */
+// -------------------------
+//      standard filter
 
 enum filter_function { FP_FILTER, FP_MODIFY };
 

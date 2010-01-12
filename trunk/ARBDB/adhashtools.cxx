@@ -1,19 +1,18 @@
-/* =============================================================== */
-/*                                                                 */
-/*   File      : adhashtools.c                                     */
-/*   Purpose   : convenience functions for hashes                  */
-/*                                                                 */
-/*   Coded by Ralf Westram (coder@reallysoft.de) in July 2007      */
-/*   Institute of Microbiology (Technical University Munich)       */
-/*   http://www.arb-home.de/                                       */
-/*                                                                 */
-/* =============================================================== */
+// =============================================================== //
+//                                                                 //
+//   File      : adhashtools.cxx                                   //
+//   Purpose   : convenience functions for hashes                  //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include <stdio.h>
 #include "gb_local.h"
 #include "arbdbt.h"
 
-#define ITEMS2HASHSIZE(entries) (2*(entries)) /* hash size = 2 * number of entries */
+#define ITEMS2HASHSIZE(entries) (2*(entries)) // hash size = 2 * number of entries
 
 long GBT_get_species_hash_size(GBDATA *gb_main) {
     return ITEMS2HASHSIZE(GBT_get_species_count(gb_main));
