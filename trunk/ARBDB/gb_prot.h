@@ -56,47 +56,22 @@ char *gb_full_path(const char *path);
 GB_ERROR gb_check_saveable(GBDATA *gbd, const char *path, const char *flags);
 
 /* adcomm.cxx */
-void *gbcms_sighup(void);
-void gbcms_shift_delete_list(void *hsi, void *soi);
-int gbcms_write_deleted(int socket, GBDATA *gbd, long hsin, long client_clock, long *buffer);
-int gbcms_write_updated(int socket, GBDATA *gbd, long hsin, long client_clock, long *buffer);
-int gbcms_write_keys(int socket, GBDATA *gbd);
-int gbcms_talking_unfold(int socket, long *hsin, void *sin, GBDATA *gb_in);
-int gbcms_talking_get_update(int socket, long *hsin, void *sin, GBDATA *gbd);
-int gbcms_talking_put_update(int socket, long *hsin, void *sin, GBDATA *gbd_dummy);
-int gbcms_talking_updated(int socket, long *hsin, void *sin, GBDATA *gbd);
-int gbcms_talking_init_transaction(int socket, long *hsin, void *sin, GBDATA *gb_dummy);
-int gbcms_talking_begin_transaction(int socket, long *hsin, void *sin, long client_clock);
-int gbcms_talking_commit_transaction(int socket, long *hsin, void *sin, GBDATA *gbd);
-int gbcms_talking_abort_transaction(int socket, long *hsin, void *sin, GBDATA *gbd);
-int gbcms_talking_close(int socket, long *hsin, void *sin, GBDATA *gbd);
-int gbcms_talking_system(int socket, long *hsin, void *sin, GBDATA *gbd);
-int gbcms_talking_undo(int socket, long *hsin, void *sin, GBDATA *gbd);
-int gbcms_talking_find(int socket, long *hsin, void *sin, GBDATA *gbd);
-int gbcms_talking_key_alloc(int socket, long *hsin, void *sin, GBDATA *gbd);
-int gbcms_talking_disable_wait_for_new_request(int socket, long *hsin, void *sin, GBDATA *gbd);
-int gbcms_talking(int con, long *hs, void *sin);
-GB_ERROR gbcm_write_bin(int socket, GBDATA *gbd, long *buffer, long mode, long deep, int send_headera);
-long gbcm_read_bin(int socket, GBCONTAINER *gbd, long *buffer, long mode, GBDATA *gb_source, void *cs_main);
 GB_ERROR gbcm_unfold_client(GBCONTAINER *gbd, long deep, long index_pos) __ATTR__USERESULT;
 GB_ERROR gbcmc_begin_sendupdate(GBDATA *gbd);
 GB_ERROR gbcmc_end_sendupdate(GBDATA *gbd);
 GB_ERROR gbcmc_sendupdate_create(GBDATA *gbd);
 GB_ERROR gbcmc_sendupdate_delete(GBDATA *gbd);
 GB_ERROR gbcmc_sendupdate_update(GBDATA *gbd, int send_headera);
-GB_ERROR gbcmc_read_keys(int socket, GBDATA *gbd);
 GB_ERROR gbcmc_begin_transaction(GBDATA *gbd);
 GB_ERROR gbcmc_init_transaction(GBCONTAINER *gbd);
 GB_ERROR gbcmc_commit_transaction(GBDATA *gbd);
 GB_ERROR gbcmc_abort_transaction(GBDATA *gbd);
 GB_ERROR gbcms_add_to_delete_list(GBDATA *gbd);
-GB_ERROR gbcmc_unfold_list(int socket, GBDATA *gbd);
 long gbcmc_key_alloc(GBDATA *gbd, const char *key);
 GB_ERROR gbcmc_send_undo_commands(GBDATA *gbd, enum gb_undo_commands command) __ATTR__USERESULT;
 char *gbcmc_send_undo_info_commands(GBDATA *gbd, enum gb_undo_commands command);
 GB_ERROR gbcm_login(GBCONTAINER *gb_main, const char *user);
 long gbcmc_close(struct gbcmc_comm *link);
-GB_ERROR gbcm_logout(GBCONTAINER *gb_main, char *user);
 
 /* adhash.cxx */
 long gbs_get_a_prime(long above_or_equal_this);
@@ -128,6 +103,7 @@ GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem);
 void gbs_uppercase(char *str);
 void gbs_memcopy(char *dest, const char *source, long len);
 char *gbs_add_path(char *path, char *name);
+GB_ERROR gbcm_test_address(long *address, long key);
 
 /* adfile.cxx */
 GB_ERROR gb_scan_directory(char *basename, gb_scandir *sd) __ATTR__USERESULT;
@@ -248,16 +224,11 @@ char *gbs_search_second_bracket(const char *source);
 char *gbs_search_next_separator(const char *source, const char *seps);
 
 /* adsocket.cxx */
-GB_ERROR gbcm_test_address(long *address, long key);
-long gbcm_test_address_end(void);
-void *gbcms_sigpipe(void);
+void gbcms_sigpipe(int dummy_1x);
 void gbcm_read_flush(int socket);
-long gbcm_read_buffered(int socket, char *ptr, long size);
 long gbcm_read(int socket, char *ptr, long size);
 int gbcm_write_flush(int socket);
 int gbcm_write(int socket, const char *ptr, long size);
-void *gbcm_sigio(void);
-GB_ERROR gbcm_get_m_id(const char *path, char **m_name, long *id);
 GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *psocket, char **unix_name);
 long gbcms_close(gbcmc_comm *link);
 struct gbcmc_comm *gbcmc_open(const char *path);

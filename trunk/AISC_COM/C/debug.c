@@ -1,11 +1,22 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-/* #include <malloc.h> */
-#include <ad_varargs.h>
+/* =============================================================== */
+/*                                                                 */
+/*   File      : debug.c                                           */
+/*   Purpose   :                                                   */
+/*                                                                 */
+/*   Institute of Microbiology (Technical University Munich)       */
+/*   http://www.arb-home.de/                                       */
+/*                                                                 */
+/* =============================================================== */
+
 #include <aisc_com.h>
 #include "client.h"
 #include "aisc_global.h"
+
+#include <cstdarg>
+#include <cstring>
+#include <cstdio>
+#include <cstdlib>
+
 
 #ifdef __cplusplus
 extern "C" {

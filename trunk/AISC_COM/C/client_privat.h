@@ -1,5 +1,21 @@
-#ifndef GLOBAL_H
+// =============================================================== //
+//                                                                 //
+//   File      : client_privat.h                                   //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+#ifndef CLIENT_PRIVAT_H
+#define CLIENT_PRIVAT_H
+
+#ifndef AISC_GLOBAL_H
 #include "aisc_global.h"
+#endif
+#ifndef SIGHANDLER_H
+#include <SigHandler.h>
 #endif
 
 #define AISC_MAX_ATTR           4095
@@ -21,9 +37,13 @@ typedef struct struct_aisc_com {
     int                    *message_queue;
     long                    magic;
     const char             *error;
+
+    // members above have to match ../AISC/aisc_com.pa@aisc_com_public_members
+
     long                    aisc_mes_buffer[AISC_MESSAGE_BUFFER_LEN];
     struct aisc_bytes_list *aisc_client_bytes_first;
     struct aisc_bytes_list *aisc_client_bytes_last;
+    SigHandler              old_sigpipe_handler;
 } aisc_com;
 
 typedef struct struct_bytestring {
@@ -51,3 +71,7 @@ enum aisc_client_command_list {
     AISC_CCOM_ERROR   = AISC_MAGIC_NUMBER + 1,
     AISC_CCOM_MESSAGE = AISC_MAGIC_NUMBER + 2
 };
+
+#else
+#error client_privat.h included twice
+#endif // CLIENT_PRIVAT_H

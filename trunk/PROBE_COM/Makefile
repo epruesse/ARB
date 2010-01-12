@@ -6,7 +6,7 @@ MAIN_HEADER = aisc_include.header
 PRIVATE_SERVER_OBJECTS := PT_extern.o
 
 # Public server/client sources (needed for dependencies)
-PUBLIC_SOURCES := $(wildcard C/*.c)
+PUBLIC_SOURCES := $(wildcard C/*.c) $(wildcard C/*.h)
 
 # Do you want to create save and load
 AISC_SAVE := NO
@@ -26,6 +26,7 @@ server.a:	$(MAIN_SOURCE)	$(PRIVATE_SERVER_OBJECTS:.o=.c) $(PUBLIC_SOURCES) $(AIS
 		@$(MAKE) -r -f AISC/Makefile
 
 depends:
+		@rm .depends
 		@$(MAKE) -r -f AISC/Makefile pregenerate
 
 clean:
