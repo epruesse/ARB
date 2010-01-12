@@ -218,7 +218,8 @@ void awt_aps_go(AW_window *aww){
                             if (next_line){
                                 line_length = next_line - line; // exclusive '\n'
                                 next_line ++;
-                            }else{
+                            }
+                            else {
                                 line_length = strlen(line);
                             }
                             if (line_length > x + default_cpp){
@@ -339,7 +340,8 @@ void AWT_create_ascii_print_window(AW_root *awr, const char *text_to_print,const
             char *print_command;
             if (getenv("PRINTER")){
                 print_command = GBS_eval_env("lpr -h -P$(PRINTER)");
-            }else{
+            }
+            else {
                 print_command = strdup("lpr -h");
             }
 

@@ -187,7 +187,8 @@ char *get_var_string(char *var) {
         if (use_path) {
             in = strdup(cur->get_key());
             if (use_path == 1) {
-            } else {
+            }
+            else {
                 while (1) {
                     const Token *up = cur->parent_block_token();
                     if (!up) break;
@@ -201,7 +202,8 @@ char *get_var_string(char *var) {
                 }
 
             }
-        } else {
+        }
+        else {
             if (cur->is_block()) {
                 printf_error("Ident '%s' is a hierarchical type", var);
                 return 0;
@@ -226,7 +228,8 @@ char *get_var_string(char *var) {
         bar = strchr(doppelpunkt+1, '=');
         if (bar) {
             *(bar++) = 0;
-        } else {
+        }
+        else {
             print_error("Ident replacement is missing an '='");
             return 0;
         }

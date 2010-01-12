@@ -68,7 +68,8 @@ struct PT_chain_print {
         }
         if (locs->sort_by != PT_MATCH_TYPE_INTEGER) {
             if (psg.w_N_mismatches[N_mismatches] + (int)(wmismatches+.5) > psg.deep) return 0;
-        }else{
+        }
+        else {
             if (psg.w_N_mismatches[N_mismatches]+mismatches>psg.deep) return 0;
         }
     }
@@ -132,7 +133,8 @@ int read_names_and_pos(PT_local *locs, POS_TREE *pt)
                 error = 1;
                 return 1;
             }
-        }else{
+        }
+        else {
             for (base = PT_QU; base< PT_B_MAX; base++) {
                 error = read_names_and_pos(locs, PT_read_son(psg.ptmain,pt,(PT_BASES)base));
                 if (error) return error;
@@ -218,7 +220,8 @@ int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int mismatch
     if (!pt) return 0;
     if (locs->sort_by != PT_MATCH_TYPE_INTEGER) {
         if (psg.w_N_mismatches[N_mismatches] + (int)(wmismatches+ 0.5) > psg.deep) return 0;
-    }else{
+    }
+    else {
         if (psg.w_N_mismatches[N_mismatches]+mismatches>psg.deep) return 0;
     }
     if (PT_read_type(pt) == PT_NT_NODE && probe[height] ) {
@@ -235,11 +238,13 @@ int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int mismatch
                     if (locs->pdc) {
                         h = ptnd_get_wmismatch(locs->pdc, probe, height, i);
                         newwmis = wmismatches + psg.pos_to_weight[height] * h;
-                    }else{
+                    }
+                    else {
                         newwmis = wmismatches;
                     }
                     newmis = mismatches+1;
-                }else{
+                }
+                else {
                     newmis = mismatches;
                     newwmis = wmismatches;
                 }
@@ -276,7 +281,8 @@ int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int mismatch
                 pos++;
                 height++;
             }
-        } else {                /* chain */
+        }
+        else {                /* chain */
             psg.probe = probe;
             psg.height = height;
             PT_read_chain(psg.ptmain,pt, PT_chain_print(locs));
@@ -284,7 +290,8 @@ int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int mismatch
         }
         if (locs->sort_by != PT_MATCH_TYPE_INTEGER) {
             if (psg.w_N_mismatches[psg.N_mismatches] + (int)(psg.wmismatches+.5) > psg.deep) return 0;
-        }else{
+        }
+        else {
             if (psg.w_N_mismatches[psg.N_mismatches]+psg.mismatches>psg.deep) return 0;
         }
     }
@@ -394,7 +401,8 @@ void pt_build_pos_to_weight(PT_MATCH_TYPE type, const char *sequence){
     for (p=0;p<slen;p++){
         if (type == PT_MATCH_TYPE_WEIGHTED_PLUS_POS){
             psg.pos_to_weight[p] = calc_position_wmis(p, slen, 0.3, 1.0);
-        }else{
+        }
+        else {
             psg.pos_to_weight[p] = 1.0;
         }
     }
@@ -464,7 +472,8 @@ extern "C" int probe_match(PT_local * locs, aisc_string probestring)
 
     if (psg.deep >=0 ){
         get_info_about_probe(locs, probestring, psg.pt, 0, 0.0, 0, 0);
-    }else{
+    }
+    else {
         ptnd_new_match(locs,    probestring);
     }
     if (locs->pm_reversed) {
@@ -474,7 +483,8 @@ extern "C" int probe_match(PT_local * locs, aisc_string probestring)
         freeset(locs->pm_csequence, psg.main_probe = strdup(rev_pro));
         if (psg.deep >=0 ){
             get_info_about_probe(locs, rev_pro, psg.pt, 0, 0.0, 0, 0);
-        }else{
+        }
+        else {
             ptnd_new_match(locs,        rev_pro);
         }
         free(rev_pro);

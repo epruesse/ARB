@@ -230,7 +230,8 @@ GB_ERROR ED4_Edit_String::replace(char *text,long position, int direction) {
         for ( i = 0; i < text_len ; i ++) {
             seq[i+position] = text[i];
         }
-    }else{
+    }
+    else {
         if ((position - text_len < 0 ) || (position > seq_len)) {
             return GBS_global_string("Replace before start of sequence !");
         }
@@ -673,7 +674,8 @@ GB_ERROR ED4_Edit_String::command( AW_key_mod keymod, AW_key_code keycode, char 
 
                 if (direction>0) {
                     seq_pos -= nrepeat;
-                }else{
+                }
+                else {
                     seq_pos += nrepeat;
                 }
                 if (seq_pos <0 || seq_pos >= seq_len) {

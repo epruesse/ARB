@@ -108,7 +108,8 @@ void PS_detect_weak_differences_stepdown( const PS_NodePtr _ps_node,
                     __MAP->setTrue( inverse_path_ID, path_ID );
                 }
             }
-        } else {
+        }
+        else {
 //            PS_print_path();
 //            PS_print_inverse_path();
             unsigned long int set_ops = __PATH->size()*(__MAX_ID-id-1+__INVERSE_PATH->size());
@@ -137,7 +138,8 @@ void PS_detect_weak_differences_stepdown( const PS_NodePtr _ps_node,
 
                     if (__MAP->get( smaller_ID, bigger_ID )) {
                         __MAP->setTrue( bigger_ID, smaller_ID );
-                    } else {
+                    }
+                    else {
                         __MAP->setTrue( smaller_ID, bigger_ID );
                     }
                 }
@@ -149,7 +151,8 @@ void PS_detect_weak_differences_stepdown( const PS_NodePtr _ps_node,
 
                     if (__MAP->get( smaller_ID, bigger_ID )) {
                         __MAP->setTrue( bigger_ID, smaller_ID );
-                    } else {
+                    }
+                    else {
                         __MAP->setTrue( smaller_ID, bigger_ID );
                     }
                 }
@@ -166,7 +169,8 @@ void PS_detect_weak_differences_stepdown( const PS_NodePtr _ps_node,
         if (_depth < 60) {
             if (c < 10) {
                 __NODES_LEFT[ _depth ] = '0'+c;
-            } else {
+            }
+            else {
                 __NODES_LEFT[ _depth ] = '+';
             }
         }
@@ -197,7 +201,8 @@ void PS_detect_weak_differences( const PS_NodePtr _root_node ) {
     for (PS_NodeMapConstIterator i = _root_node->getChildrenBegin(); i != _root_node->getChildrenEnd(); ++i,++c ) {
         if (_root_node->countChildren()-c-1 < 10) {
             __NODES_LEFT[0] = '0'+_root_node->countChildren()-c-1;
-        } else {
+        }
+        else {
             __NODES_LEFT[0] = '+';
         }
         if ((c < 50) || (c % 100 == 0)) {
@@ -298,12 +303,14 @@ void PS_print_and_evaluate_map( const PS_NodePtr _root_node, const char *_result
             bit2       = __MAP->get( bigger_id, smaller_id );
             if (bit1 && bit2) {
 //                 printf( "2" );
-            } else if (bit1) {
+            }
+            else if (bit1) {
 //                 printf( "1" );
                 oneMatch.insert( ID2IDPair(smaller_id,bigger_id) );
                 if (smaller_id < __ONEMATCH_MIN_ID) __ONEMATCH_MIN_ID = smaller_id;
                 if (bigger_id  > __ONEMATCH_MAX_ID) __ONEMATCH_MAX_ID = bigger_id;
-            } else {
+            }
+            else {
 //                 printf( "0" );
                 if (id1 != id2) noMatch.insert( ID2IDPair(smaller_id,bigger_id) ); // there are no probes to distinguish a species from itself .. obviously
             }
@@ -398,7 +405,8 @@ void PS_print_and_evaluate_map( const PS_NodePtr _root_node, const char *_result
                 if (id == *path_id) continue;   // obviously a probe cant differ a species from itself
                 if (id > *path_id) {
                     preset->setTrue( id,*path_id );
-                } else {
+                }
+                else {
                     preset->setTrue( *path_id,id );
                 }
             }
@@ -459,14 +467,16 @@ int main( int argc,  char *argv[] ) {
     if (argc > 2) {
         if (argv[2][0] == '+') {
             result_filename = argv[2]+1;
-        } else {
+        }
+        else {
             bitmap_filename = argv[2];
         }
     }
     if (argc > 3) {
         if (argv[3][0] == '+') {
             result_filename = argv[3]+1;
-        } else {
+        }
+        else {
             bitmap_filename = argv[3];
         }
     }
@@ -495,7 +505,8 @@ int main( int argc,  char *argv[] ) {
             __MAP->save( mapfile );
             delete mapfile;
         }
-    } else if (bitmap_filename) {
+    }
+    else if (bitmap_filename) {
         printf( "loading bitmap from file %s\n",bitmap_filename+1 );
         PS_FileBuffer *mapfile = new PS_FileBuffer( bitmap_filename+1, PS_FileBuffer::READONLY );
         __MAP->load( mapfile );

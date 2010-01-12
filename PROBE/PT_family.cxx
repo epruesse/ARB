@@ -68,7 +68,8 @@ static int mark_all_matches( PT_local *locs,
             if (mismatches <= max_mismatches)
                 psg.data[ref_name].stat.match_count++;
             return 0;
-        } else {        /* type_of_node == CHAIN !! */
+        }
+        else {        /* type_of_node == CHAIN !! */
             psg.mismatches = mismatches;
             psg.height = height;
             psg.length = length;
@@ -83,11 +84,13 @@ static int mark_all_matches( PT_local *locs,
                 if (*probe != base) {
                     mark_all_matches(locs, pt_son, probe+1, length,
                                      mismatches + 1, height + 1, max_mismatches);
-                } else {
+                }
+                else {
                     mark_all_matches(locs, pt_son, probe+1, length,
                                      mismatches, height + 1, max_mismatches);
                 }
-            } else {
+            }
+            else {
                 mark_all_matches(locs, pt_son, probe, length,
                                  mismatches, height + 1, max_mismatches);
             }
@@ -114,7 +117,8 @@ static void make_match_statistic(int probe_len, int sequence_length) {
         int all_len = min(psg.data[i].size,sequence_length) - probe_len + 1;
         if (all_len <= 0){
             psg.data[i].stat.rel_match_count = 0;
-        }else{
+        }
+        else {
             psg.data[i].stat.rel_match_count = psg.data[i].stat.match_count / (double) (all_len);
         }
     }
@@ -144,13 +148,16 @@ static int make_PT_family_list(PT_local *locs) {
     if (locs->ff_sort_type == 0) {
         if (sort_all) {
             std::sort(my_list, my_list + psg.data_count, cmp_probe_abs());
-        } else {
+        }
+        else {
             std::partial_sort(my_list, my_list + locs->ff_sort_max, my_list + psg.data_count, cmp_probe_abs());
         }
-    } else {
+    }
+    else {
         if (sort_all) {
             std::sort(my_list, my_list + psg.data_count, cmp_probe_rel());
-        } else {
+        }
+        else {
             std::partial_sort(my_list, my_list + locs->ff_sort_max, my_list + psg.data_count, cmp_probe_rel());
         }
     }

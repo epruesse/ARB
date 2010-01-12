@@ -1712,7 +1712,8 @@ void writeToArb() {
             if (weight[i] > 0) {
                 rates[ali_pos] = patrate[pattern[i]];
                 cats[ali_pos] = itobase36(categs - sitecateg[i]);
-            }else{
+            }
+            else {
                 rates[i] = KI_MAX;      /* infinite rate */
                 cats[ali_pos] = '.';
             }

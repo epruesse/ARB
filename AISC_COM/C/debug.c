@@ -96,7 +96,8 @@ const char *aisc_debug_local(aisc_com *link, int key, long object, char *str, ..
                         break;
                     }
             }
-        }else{
+        }
+        else {
             type = 0;
             sprintf(bptr, "%20s, /* ", "Get not implemented");
         }
@@ -115,7 +116,8 @@ const char *aisc_debug_local(aisc_com *link, int key, long object, char *str, ..
                          NULL)) return "connection problems";
             sprintf(bptr,"  %s (%li) */\n",keystr,anz);
             bptr += strlen(bptr);
-        }else{
+        }
+        else {
             sprintf(bptr, "*/\n");
             bptr += strlen(bptr);
         }

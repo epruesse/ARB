@@ -365,7 +365,8 @@ GB_ERROR gb_unfold(GBCONTAINER *gbd, long deep, int index_pos)
     if ( index_pos<0 ) {
         gb_untouch_children(gbd);
         gbd->flags2.folded_container = 0;
-    }else{
+    }
+    else {
         if ( (gb2 = GBCONTAINER_ELEM(gbd,index_pos)) ) {
             if (GB_TYPE(gb2) == GB_DB) gb_untouch_children((GBCONTAINER *)gb2);
             gb_untouch_me(gb2);
@@ -591,7 +592,8 @@ GB_CSTR GB_read_bits_pntr(GBDATA *gbd,char c_0, char c_1)
         if (ca) {
             memcpy(ca,da,size+1);
             return ca;
-        }else{
+        }
+        else {
             return da;
         }
     }
@@ -627,14 +629,16 @@ GB_CUINT4 *GB_read_ints_pntr(GBDATA *gbd)
 
     if (gbd->flags.compressed_data) {
         res = (GB_UINT4 *)GB_read_pntr(gbd);
-    }else{
+    }
+    else {
         res = (GB_UINT4 *)GB_GETDATA(gbd);
     }
     if (!res) return NULL;
 
     if ( 0x01020304 == htonl((u_long)0x01020304) ) {
         return res;
-    }else{
+    }
+    else {
         long      i;
         int       size = GB_GETSIZE(gbd);
         char     *buf2 = GB_give_other_buffer((char *)res,size<<2);
@@ -669,7 +673,8 @@ GB_CFLOAT *GB_read_floats_pntr(GBDATA *gbd)
     GB_TEST_READ(gbd,GB_FLOATS,"GB_read_floats_pntr");
     if (gbd->flags.compressed_data) {
         res = (char *)GB_read_pntr(gbd);
-    }else{
+    }
+    else {
         res = (char *)GB_GETDATA(gbd);
     }
     if (!res) return NULL;
@@ -871,7 +876,8 @@ int gb_get_compression_mask(GB_MAIN_TYPE *Main, GBQUARK key, int gb_type)
 
     if (ks->gb_key_disabled) {
         compression_mask = 0;
-    } else {
+    }
+    else {
         if (!ks->gb_key) gb_load_single_key_data((GBDATA*)Main->data, key);
         compression_mask = gb_convert_type_2_compression_flags[gb_type] & ks->compression_mask;
     }
@@ -1794,7 +1800,8 @@ GB_ERROR GB_pop_transaction(GBDATA *gbd) {
     if (Main->transaction<0) return 0;  // no transaction mode
     if (Main->transaction==1){
         return GB_commit_transaction(gbd);
-    }else{
+    }
+    else {
         Main->transaction--;
     }
     return 0;
@@ -1921,7 +1928,8 @@ GB_ERROR GB_commit_transaction(GBDATA *gbd) {
             Main->transaction = 0;
             return error;
         }
-    }else{
+    }
+    else {
         gb_disable_undo(gbd);
         while(1){
             flag = (GB_CHANGE)GB_ARRAY_FLAGS(gbd).changed;
@@ -2000,7 +2008,8 @@ GB_ERROR gb_add_changed_callback_list(GBDATA *gbd,struct gb_transaction_save *ol
     cbl = (struct gb_callback_list *)gbm_get_mem(sizeof(struct gb_callback_list),GBM_CB_INDEX);
     if (Main->cbl){
         Main->cbl_last->next = cbl;
-    }else{
+    }
+    else {
         Main->cbl = cbl;
     }
     Main->cbl_last = cbl;
@@ -2021,7 +2030,8 @@ GB_ERROR gb_add_delete_callback_list(GBDATA *gbd,struct gb_transaction_save *old
     cbl = (struct gb_callback_list *)gbm_get_mem(sizeof(struct gb_callback_list),GBM_CB_INDEX);
     if (Main->cbld){
         Main->cbld_last->next = cbl;
-    }else{
+    }
+    else {
         Main->cbld = cbl;
     }
     Main->cbld_last = cbl;
@@ -2538,7 +2548,8 @@ void GB_write_flag(GBDATA *gbd,long flag)
 
     if (flag){
         GB_ARRAY_FLAGS(gbc).flags |= ubit;
-    }else{
+    }
+    else {
         GB_ARRAY_FLAGS(gbc).flags &= ~ubit;
     }
     if (prev != (int)GB_ARRAY_FLAGS(gbc).flags) {
@@ -2602,7 +2613,8 @@ GB_ERROR GB_print_debug_information(void *dummy, GBDATA *gb_main){
     for (i=0;i<Main->keycnt;i++) {
         if (Main->keys[i].key) {
             printf("%3i %20s    nref %i\n", i, Main->keys[i].key, (int)Main->keys[i].nref);
-        }else{
+        }
+        else {
             printf("    %3i unused key, next free key = %li\n", i, Main->keys[i].next_free_key);
         }
     }

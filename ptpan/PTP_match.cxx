@@ -153,7 +153,8 @@ void PP_buildPosWeight(SearchQuery *sq)
     for (int pos=0; pos < sq->sq_QueryLen; ++pos) {
         if (sq->sq_SortMode == SORT_HITS_WEIGHTED) {
             sq->sq_PosWeight[pos] = PP_calc_position_wmis(pos, sq->sq_QueryLen, 0.3, 1.0);
-        }else{
+        }
+        else {
             sq->sq_PosWeight[pos] = 1.0;
         }
     }

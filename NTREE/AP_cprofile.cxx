@@ -726,7 +726,8 @@ static void CPRO_memrequirement_cb(AW_root *aw_root)
         }
         if (versus==1) {
         gb_species = GBT_next_marked_species(gb_species);
-        }else{
+        }
+        else {
         gb_species = GBT_next_species(gb_species);
         }
         }

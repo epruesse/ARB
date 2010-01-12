@@ -288,7 +288,8 @@ void AW_GC_Xm::set_foreground_color(unsigned long col) {
     if (function == AW_XOR) {
         if (common->data_colors[0]) {
             col ^= common->data_colors[0][AW_DATA_BG];
-        }else{
+        }
+        else {
             col ^= common->frame_colors[AW_WINDOW_BG];
         }
     }
@@ -384,7 +385,8 @@ void AW_gc::set_foreground_color(int gc, AW_color color) {
     unsigned long col;
     if (color>=AW_DATA_BG) {
         col = common->data_colors[0][color];
-    }else{
+    }
+    else {
         col = common->frame_colors[color];
     }
     common->gcs[gc]->set_foreground_color(col);
@@ -395,7 +397,8 @@ void AW_gc::set_background_color(int gc, AW_color color) {
     unsigned long col;
     if (color>=AW_DATA_BG) {
         col = common->data_colors[0][color];
-    }else{
+    }
+    else {
         col = common->frame_colors[color];
     }
     common->gcs[gc]->set_background_color(col);
@@ -750,19 +753,22 @@ int AW_device::text_overlay( int gc, const char *opt_str, long opt_len, // eithe
 
     if (top_font_overlap || clip_rect.t == 0) {                                                 // check clip border inside screen
         if (Y0+(AW_pos)(xfs->max_bounds.descent) < clip_rect.t) return 0; // draw outside screen
-    }else {
+    }
+    else {
         if (Y0-(AW_pos)(xfs->max_bounds.ascent) < clip_rect.t) return 0; // don't cross the clip border
     }
 
     if (bottom_font_overlap || clip_rect.b == common->screen.b) {                               // check clip border inside screen drucken
         if (Y0-(AW_pos)(xfs->max_bounds.ascent) > clip_rect.b) return 0;             // draw outside screen
-    }else {
+    }
+    else {
         if (Y0+(AW_pos)(xfs->max_bounds.descent)> clip_rect.b) return 0;             // don't cross the clip border
     }
 
     if (!opt_len) {
         opt_len = textlen = strlen(opt_str);
-    }else{
+    }
+    else {
         textlen = opt_len;
     }
 
@@ -794,7 +800,8 @@ int AW_device::text_overlay( int gc, const char *opt_str, long opt_len, // eithe
 
             if (textlen < 0) return 0;
             aw_assert(int(strlen(opt_str)) >= textlen);
-        }else {                                                         // non-monospaced font
+        }
+        else {                                                         // non-monospaced font
             for (h=0; xi < l; h++) {
                 if (!(c = opt_str[h])) return 0;
                 xi += size_per_char[c];
@@ -817,7 +824,8 @@ int AW_device::text_overlay( int gc, const char *opt_str, long opt_len, // eithe
         if (h < textlen) {
             if (inside_clipping_right) {
                 textlen = h;
-            }else{
+            }
+            else {
                 textlen = h+1;
             }
         }

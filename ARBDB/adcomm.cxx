@@ -259,18 +259,10 @@ static GB_ERROR gbcm_write_bin(int socket,GBDATA *gbd, long *buffer, long mode, 
         end = gbc->d.nheader;
         *(struct gb_flag_types3 *)(&buffer[i++]) = gbc->flags3;
 
-        if (send_headera) {
-            buffer[i++] = end;
-        }else{
-            buffer[i++] = -1;
-        }
+        buffer[i++] = send_headera ? end : -1;
+        buffer[i++] = deep ? gbc->d.size : -1;
+        buffer[1]   = i;
 
-        if (deep){
-            buffer[i++] = gbc->d.size;
-        }else{
-            buffer[i++] = -1;
-        }
-        buffer[1] = i;
         if (gbcm_write(socket,(const char *)buffer,i* sizeof(long))) {
             return GB_export_error("ARB_DB WRITE TO SOCKET FAILED");
         }
@@ -303,13 +295,15 @@ static GB_ERROR gbcm_write_bin(int socket,GBDATA *gbd, long *buffer, long mode, 
             debug_printf("\n",0);
         }
 
-    }else if ((unsigned int)GB_TYPE(gbd) < (unsigned int)GB_BITS) {
+    }
+    else if ((unsigned int)GB_TYPE(gbd) < (unsigned int)GB_BITS) {
         buffer[i++] = gbd->info.i;
         buffer[1] = i;
         if (gbcm_write(socket,(const char *)buffer,i*sizeof(long)))  {
             return GB_export_error("ARB_DB WRITE TO SOCKET FAILED");
         }
-    }else{
+    }
+    else {
         long memsize;
         buffer[i++] = GB_GETSIZE(gbd);
         memsize = buffer[i++] = GB_GETMEMSIZE(gbd);
@@ -385,18 +379,21 @@ static long gbcm_read_bin(int socket,GBCONTAINER *gbd, long *buffer, long mode, 
                 gb_save_extern_data_in_ts(gb2);
             }
             gb_touch_entry(gb2, GB_NORMAL_CHANGE);
-        } else {
+        }
+        else {
             if (mode==-1) goto dont_create_in_a_folded_container;
             if (type == GB_DB) {
                 gb2 = (GBDATA *)gb_make_container(gbd, 0, index_pos,
                                                   GB_DATA_LIST_HEADER(gbd->d)[index_pos].flags.key_quark);
-            }else{  // @@@ Header Transaction stimmt nicht
+            }
+            else {  // @@@ Header Transaction stimmt nicht
                 gb2 = gb_make_entry(gbd, 0, index_pos,
                                     GB_DATA_LIST_HEADER(gbd->d)[index_pos].flags.key_quark,(GB_TYPES)type);
             }
             if (mode>0){    // transaction only in server
                 gb_touch_entry(gb2, GB_CREATED);
-            }else{
+            }
+            else {
                 gb2->server_id = id;
                 GBS_write_numhash(GB_MAIN(gb2)->remote_hash, id, (long) gb2);
             }
@@ -414,7 +411,8 @@ static long gbcm_read_bin(int socket,GBCONTAINER *gbd, long *buffer, long mode, 
             ((GBCONTAINER *)gb2)->flags3 =
                 *((struct gb_flag_types3 *)&(buffer[i++]));
         }
-    } else {
+    }
+    else {
     dont_create_in_a_folded_container:
         if (type == GB_DB) {
             flags3 = *((struct gb_flag_types3 *)&(buffer[i++]));
@@ -458,7 +456,8 @@ static long gbcm_read_bin(int socket,GBCONTAINER *gbd, long *buffer, long mode, 
                     if (mode>0) {   // server read data
 
 
-                    }else{
+                    }
+                    else {
                         if (buffer2->changed >= GB_DELETED) {
                             hdl->flags.changed = GB_DELETED;
                             hdl->flags.ever_changed = 1;
@@ -469,7 +468,8 @@ static long gbcm_read_bin(int socket,GBCONTAINER *gbd, long *buffer, long mode, 
                 }
                 if (mode>0){    // transaction only in server
                     gb_touch_header(gbc);
-                }else{
+                }
+                else {
                     gbc->header_update_date = Main->clock;
                 }
             }
@@ -481,7 +481,8 @@ static long gbcm_read_bin(int socket,GBCONTAINER *gbd, long *buffer, long mode, 
                 if (mode==0 && nitems<=1 ) {        // only a partial send
                     gb2->flags2.folded_container = 1;
                 }
-            }else{
+            }
+            else {
                 newmod = -2;
             }
             debug_printf("Client %i \n",nheader);
@@ -494,14 +495,17 @@ static long gbcm_read_bin(int socket,GBCONTAINER *gbd, long *buffer, long mode, 
                 }
             }
             debug_printf("Client done\n",0);
-        } else {
+        }
+        else {
             if ((mode==0) && !gb_source){       // created GBDATA at client
                 gb2->flags2.folded_container = 1;
             }
         }
-    } else if (type < GB_BITS) {
+    }
+    else if (type < GB_BITS) {
         if (mode >=0)   gb2->info.i = buffer[i++];
-    } else {
+    }
+    else {
         if (mode >=0) {
             long  realsize = buffer[i++];
             long  memsize  = buffer[i++];
@@ -514,7 +518,8 @@ static long gbcm_read_bin(int socket,GBCONTAINER *gbd, long *buffer, long mode, 
             if (GB_CHECKINTERN(realsize,memsize)) {
                 GB_SETINTERN(gb2);
                 data = GB_GETDATA(gb2);
-            }else{
+            }
+            else {
                 GB_SETEXTERN(gb2);
                 data = gbm_get_mem((size_t)memsize,GB_GBM_INDEX(gb2));
             }
@@ -526,7 +531,8 @@ static long gbcm_read_bin(int socket,GBCONTAINER *gbd, long *buffer, long mode, 
 
             GB_SETSMD(gb2,realsize,memsize,data);
 
-        } else {            // dummy read (e.g. updata in server && not cached in client
+        }
+        else {            // dummy read (e.g. updata in server && not cached in client
             long memsize;
             char *buffer2;
             i++;
@@ -624,7 +630,8 @@ static int gbcms_write_updated(int socket,GBDATA *gbd,long hsin,long client_cloc
                         return GBCM_SERVER_FAULT;
                 }
             }
-        }else{
+        }
+        else {
             buffer[0] = GBCM_COMMAND_PUT_UPDATE_UPDATE;
             buffer[1] = (long)gbd;
             if (gbcm_write(socket,(const char *)buffer,sizeof(long)*2) ) return GBCM_SERVER_FAULT;
@@ -697,7 +704,8 @@ static int gbcms_talking_unfold(int socket,long *hsin,void *sin, GBDATA *gb_in) 
         if (gbcm_write_two(socket,GBCM_COMMAND_SEND_COUNT, 1)){
             return GBCM_SERVER_FAULT;
         }
-    }else{
+    }
+    else {
         start = 0;
         end = gbc->d.nheader;
         if (gbcm_write_two(socket,GBCM_COMMAND_SEND_COUNT, gbc->d.size)){
@@ -875,7 +883,8 @@ static int gbcms_talking_init_transaction(int socket,long *hsin,void *sin,GBDATA
     if (gb_local->running_client_transaction == ARB_COMMIT) {
         GB_commit_transaction(gbd);
         gbcms_shift_delete_list(hsin,sin);
-    }else{
+    }
+    else {
         GB_abort_transaction(gbd);
     }
     return 0;
@@ -945,7 +954,8 @@ static int gbcms_talking_begin_transaction(int socket,long *hsin,void *sin, long
     if (gb_local->running_client_transaction == ARB_COMMIT) {
         GB_commit_transaction(gbd);
         gbcms_shift_delete_list(hsin,sin);
-    }else{
+    }
+    else {
         GB_abort_transaction(gbd);
     }
     return 0;
@@ -1248,11 +1258,13 @@ static int gbcms_talking(int con,long *hs, void *sin)
         if (!error) {
             buf[0] = GBCM_SERVER_OK;
             return GBCM_SERVER_OK;
-        } else {
+        }
+        else {
             buf[0] = GBCM_SERVER_FAULT;
             return error;
         }
-    } else {
+    }
+    else {
         return GBCM_SERVER_FAULT;
     }
 }
@@ -1298,13 +1310,15 @@ bool GBCMS_accept_calls(GBDATA *gbd, bool wait_extra_time) {
     if (wait_extra_time){
         timeout.tv_sec = 0;
         timeout.tv_usec = 100000;
-    }else{
+    }
+    else {
         timeout.tv_sec = (int)(hs->timeout / 1000);
         timeout.tv_usec = (hs->timeout % 1000) * 1000;
     }
     if (wait_extra_time){
         hs->wait_for_new_request = 1;
-    }else{
+    }
+    else {
         hs->wait_for_new_request = 0;
     }
     {
@@ -1321,7 +1335,8 @@ bool GBCMS_accept_calls(GBDATA *gbd, bool wait_extra_time) {
 
         if ( hs->timeout>=0) {
             anz = select(FD_SETSIZE,FD_SET_TYPE &set,NULL,FD_SET_TYPE &setex,&timeout);
-        }else{
+        }
+        else {
             anz = select(FD_SETSIZE,FD_SET_TYPE &set,NULL,FD_SET_TYPE &setex,0);
         }
 
@@ -1347,7 +1362,8 @@ bool GBCMS_accept_calls(GBDATA *gbd, bool wait_extra_time) {
                 optval[0] = 1;
                 setsockopt(con,IPPROTO_TCP,TCP_NODELAY,(char *)optval,4);
             }
-        }else{
+        }
+        else {
             si_last = 0;
 
             for(si=hs->soci; si; si_last=si, si=sinext){
@@ -1371,7 +1387,8 @@ bool GBCMS_accept_calls(GBDATA *gbd, bool wait_extra_time) {
                 hs->nsoc--;
                 if(si==hs->soci){ // first one
                     hs->soci = si->next;
-                }else{
+                }
+                else {
                     si_last->next = si->next;
                 }
                 if (si->username){
@@ -1506,7 +1523,8 @@ GB_ERROR gbcmc_sendupdate_delete(GBDATA *gbd)
                         GBCM_COMMAND_PUT_UPDATE_DELETE,
                         gbd->server_id) ) {
         return GB_export_errorf("Cannot send '%s' to server",GB_KEY(gbd));
-    }else{
+    }
+    else {
         return 0;
     }
 }
@@ -1586,14 +1604,14 @@ GB_ERROR gbcmc_begin_transaction(GBDATA *gbd)
         d = buffer[1];
         gb2 = (GBDATA *)GBS_read_numhash(Main->remote_hash,d);
         if (gb2){
-            if (gb2->flags2.folded_container) {
-                mode = -1;                          // read container
-            }else{
-                mode = 0;                           // read all
-            }
-        }else{
+            mode = gb2->flags2.folded_container
+                ? -1                                // read container
+                : 0;                                // read all
+        }
+        else {
             mode = -2;                              // read nothing
         }
+        
         switch(buffer[0]) {
             case GBCM_COMMAND_PUT_UPDATE_UPDATE:
                 if (gbcm_read_bin(socket,0,buffer, mode,gb2,0)){
@@ -1721,7 +1739,8 @@ GB_ERROR gbcms_add_to_delete_list(GBDATA *gbd)
     dl->gbd = gbd;
     if (!hs->del_first) {
         hs->del_first = hs->del_last = dl;
-    }else{
+    }
+    else {
         hs->del_last->next = dl;
         hs->del_last = dl;
     }

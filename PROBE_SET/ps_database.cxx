@@ -6,7 +6,8 @@ using namespace std;
 void PS_Database::reinit( const char *_name, bool _readonly ) {
     if (db_file) {
         db_file->reinit( _name, _readonly );
-    } else {
+    }
+    else {
         db_file = new PS_FileBuffer( _name, _readonly );
     }
     db_name2id_map.clear();

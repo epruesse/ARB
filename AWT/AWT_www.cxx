@@ -111,7 +111,8 @@ void awt_openDefaultURL_on_species(AW_window *aww,GBDATA *gb_main){
 
     if (!gb_species){
         error = GB_export_errorf("Cannot find species '%s'",selected_species);
-    }else{
+    }
+    else {
         error = awt_openURL_by_gbd(aw_root,gb_main, gb_species, selected_species);
     }
     if (error) aw_message(error);

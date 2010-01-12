@@ -49,12 +49,14 @@ void arb_asrs_swap()
                 if (*p){
                     ok[1] = *(p++);
                     NEXTBASE(p);
-                }else{
+                }
+                else {
                     ok[1] = '-';
                 }
             }
             fputs(buffer,out);
-        }else{
+        }
+        else {
             fputs(buffer,out);
             break;
         }

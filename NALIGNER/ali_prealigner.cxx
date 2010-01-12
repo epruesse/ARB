@@ -20,7 +20,8 @@ void ali_prealigner_mask::insert(ALI_MAP * in_map, float costs) {
     if (map == 0) {
         map = in_map;
         cost_of_binding = costs;
-    } else {
+    }
+    else {
         if (costs > cost_of_binding) {
             delete          in_map;
             return;
@@ -89,7 +90,8 @@ void ali_prealigner_mask::delete_expensive(ALI_PREALIGNER_CONTEXT * context, ALI
                         map->undefine(j);
                 }
             }
-        } else {
+        }
+        else {
             /*
              * If error was in helix => delete helix total
              */
@@ -131,14 +133,16 @@ void ali_prealigner_mask::delete_expensive(ALI_PREALIGNER_CONTEXT * context, ALI
                             base1 = (profile->sequence())->base(
                                                                 inverse_map->first_reference_base() +
                                                                 inverse_map->position(i));
-                        } else {
+                        }
+                        else {
                             base1 = ALI_GAP_CODE;
                         }
                         if (!inverse_map->is_undefined(compl_pos)) {
                             base2 = (profile->sequence())->base(
                                                                 inverse_map->first_reference_base() +
                                                                 inverse_map->position(compl_pos));
-                        } else {
+                        }
+                        else {
                             base2 = ALI_GAP_CODE;
                         }
                         if (base1 != ALI_GAP_CODE || base2 != ALI_GAP_CODE) {
@@ -215,7 +219,8 @@ void ali_prealigner_mask::delete_expensive(ALI_PREALIGNER_CONTEXT * context, ALI
             if (start_ok_flag == 1) {
                 for (i = start_seq; map->position(i) < long(start_ok); i++) map->undefine(i);
                 for (i = end_seq; map->position(i) > long(end_ok); i--) map->undefine(i);
-            } else {
+            }
+            else {
                 /*
                  * Found bad helizes
                  */
@@ -230,7 +235,8 @@ void ali_prealigner_mask::delete_expensive(ALI_PREALIGNER_CONTEXT * context, ALI
                     if (end_seq - start_seq + 1 >= (unsigned long)((2 * context->intervall_border) + context->intervall_center)) {
                         for (i = start_seq; i < start_seq + context->intervall_border; i++) map->undefine(i);
                         for (i = end_seq; i > end_seq - context->intervall_border; i--) map->undefine(i);
-                    } else {
+                    }
+                    else {
                         for (i = start_seq; i <= end_seq; i++) map->undefine(i);
                     }
                 }
@@ -505,11 +511,13 @@ int ALI_PREALIGNER::find_multiple_path(unsigned long start_x, unsigned long star
     if (value & ALI_LEFT) {
         x1 = start_x - 1;
         y1 = start_y;
-    } else {
+    }
+    else {
         if (value & ALI_DIAG) {
             x1 = start_x - 1;
             y1 = start_y - 1;
-        } else {
+        }
+        else {
             *end_x = start_x;
             *end_y = start_y - 1;
             return 1;
@@ -522,11 +530,13 @@ int ALI_PREALIGNER::find_multiple_path(unsigned long start_x, unsigned long star
     if (value & ALI_UP) {
         x2 = start_x;
         y2 = start_y - 1;
-    } else {
+    }
+    else {
         if (value & ALI_DIAG) {
             x2 = start_x - 1;
             y2 = start_y - 1;
-        } else {
+        }
+        else {
             *end_x = start_x - 1;
             *end_y = start_y;
             return 1;
@@ -542,11 +552,13 @@ int ALI_PREALIGNER::find_multiple_path(unsigned long start_x, unsigned long star
             value = path_map->get_value((unsigned long) x1, (unsigned long) y1);
             if (value & ALI_LEFT) {
                 x1--;
-            } else {
+            }
+            else {
                 if (value & ALI_DIAG) {
                     x1--;
                     y1--;
-                } else {
+                }
+                else {
                     y1--;
                 }
             }
@@ -558,11 +570,13 @@ int ALI_PREALIGNER::find_multiple_path(unsigned long start_x, unsigned long star
             value = path_map->get_value((unsigned long) x2, (unsigned long) y2);
             if (value & ALI_UP) {
                 y2--;
-            } else {
+            }
+            else {
                 if (value & ALI_DIAG) {
                     x2--;
                     y2--;
-                } else {
+                }
+                else {
                     x2--;
                 }
             }
@@ -699,7 +713,8 @@ void ALI_PREALIGNER::mapper_post(ALI_TSTACK < unsigned char >*stack,
         stack->push(ALI_PREALIGNER_INS, ins_nu);
         generate_result_mask(stack);
         stack->pop(ins_nu);
-    } else {
+    }
+    else {
         if (del_nu > 0) {
             stack->push(ALI_PREALIGNER_DEL, del_nu);
             generate_result_mask(stack);
@@ -723,7 +738,8 @@ void ALI_PREALIGNER::mapper_post_multi(ALI_TSTACK < unsigned char >*stack,
         stack->push(ALI_PREALIGNER_INS | ALI_PREALIGNER_MULTI_FLAG, ins_nu);
         generate_result_mask(stack);
         stack->pop(ins_nu);
-    } else {
+    }
+    else {
         if (del_nu > 0) {
             stack->push(ALI_PREALIGNER_DEL | ALI_PREALIGNER_MULTI_FLAG, del_nu);
             generate_result_mask(stack);
@@ -763,12 +779,14 @@ void ALI_PREALIGNER::mapper_random(ALI_TSTACK < unsigned char >*stack,
                 if (value & ALI_UP) {
                     stack->push(ALI_PREALIGNER_DEL);
                     next_y--;
-                } else {
+                }
+                else {
                     if (value & ALI_DIAG) {
                         stack->push(ALI_PREALIGNER_SUB);
                         next_x--;
                         next_y--;
-                    } else {
+                    }
+                    else {
                         stack->push(ALI_PREALIGNER_INS);
                         next_x--;
                     }
@@ -778,11 +796,13 @@ void ALI_PREALIGNER::mapper_random(ALI_TSTACK < unsigned char >*stack,
                 if (value & ALI_UP) {
                     stack->push(ALI_PREALIGNER_DEL);
                     next_y--;
-                } else {
+                }
+                else {
                     if (value & ALI_LEFT) {
                         stack->push(ALI_PREALIGNER_INS);
                         next_x--;
-                    } else {
+                    }
+                    else {
                         stack->push(ALI_PREALIGNER_SUB);
                         next_x--;
                         next_y--;
@@ -794,11 +814,13 @@ void ALI_PREALIGNER::mapper_random(ALI_TSTACK < unsigned char >*stack,
                     stack->push(ALI_PREALIGNER_SUB);
                     next_x--;
                     next_y--;
-                } else {
+                }
+                else {
                     if (value & ALI_UP) {
                         stack->push(ALI_PREALIGNER_DEL);
                         next_y--;
-                    } else {
+                    }
+                    else {
                         stack->push(ALI_PREALIGNER_INS);
                         next_x--;
                     }
@@ -809,11 +831,13 @@ void ALI_PREALIGNER::mapper_random(ALI_TSTACK < unsigned char >*stack,
                     stack->push(ALI_PREALIGNER_SUB);
                     next_x--;
                     next_y--;
-                } else {
+                }
+                else {
                     if (value & ALI_LEFT) {
                         stack->push(ALI_PREALIGNER_INS);
                         next_x--;
-                    } else {
+                    }
+                    else {
                         stack->push(ALI_PREALIGNER_DEL);
                         next_y--;
                     }
@@ -823,11 +847,13 @@ void ALI_PREALIGNER::mapper_random(ALI_TSTACK < unsigned char >*stack,
                 if (value & ALI_LEFT) {
                     stack->push(ALI_PREALIGNER_INS);
                     next_x--;
-                } else {
+                }
+                else {
                     if (value & ALI_UP) {
                         stack->push(ALI_PREALIGNER_DEL);
                         next_y--;
-                    } else {
+                    }
+                    else {
                         stack->push(ALI_PREALIGNER_SUB);
                         next_x--;
                         next_y--;
@@ -838,12 +864,14 @@ void ALI_PREALIGNER::mapper_random(ALI_TSTACK < unsigned char >*stack,
                 if (value & ALI_LEFT) {
                     stack->push(ALI_PREALIGNER_INS);
                     next_x--;
-                } else {
+                }
+                else {
                     if (value & ALI_DIAG) {
                         stack->push(ALI_PREALIGNER_SUB);
                         next_x--;
                         next_y--;
-                    } else {
+                    }
+                    else {
                         stack->push(ALI_PREALIGNER_DEL);
                         next_y--;
                     }
@@ -857,10 +885,12 @@ void ALI_PREALIGNER::mapper_random(ALI_TSTACK < unsigned char >*stack,
 
     if (next_x <= pos_x) {
         mapper_post(stack, next_x + 1, 0);
-    } else {
+    }
+    else {
         if (next_y <= pos_y) {
             mapper_post(stack, 0, next_y + 1);
-        } else {
+        }
+        else {
             mapper_post(stack, 0, 0);
         }
     }
@@ -893,10 +923,12 @@ void ALI_PREALIGNER::mapper(ALI_TSTACK < unsigned char >*stack,
             stack->push(ALI_PREALIGNER_SUB);
             if (pos_y > 0) {
                 mapper_post(stack, 0, pos_y);
-            } else {
+            }
+            else {
                 if (pos_x > 0) {
                     mapper_post(stack, pos_x, 0);
-                } else {
+                }
+                else {
                     mapper_post(stack, 0, 0);
                 }
             }
@@ -948,10 +980,12 @@ void ALI_PREALIGNER::mapper(ALI_TSTACK < unsigned char >*stack,
                 stack->push(ALI_PREALIGNER_SUB);
                 if (pos_y > 0) {
                     mapper_post(stack, 0, pos_y);
-                } else {
+                }
+                else {
                     if (pos_x > 0) {
                         mapper_post(stack, pos_x, 0);
-                    } else {
+                    }
+                    else {
                         mapper_post(stack, 0, 0);
                     }
                 }
@@ -1020,19 +1054,22 @@ void ALI_PREALIGNER::quick_mapper(ALI_TSTACK < unsigned char >*stack,
                     break;
             }
             value = path_map->get_value(pos_x, pos_y);
-        } else {
+        }
+        else {
             if (find_multiple_path(pos_x, pos_y, &end_x, &end_y) == 0)
                 end_x = end_y = 0;
             while (pos_x != end_x || pos_y != end_y) {
                 if (value & ALI_UP) {
                     stack->push(ALI_PREALIGNER_DEL | ALI_PREALIGNER_MULTI_FLAG);
                     pos_y--;
-                } else {
+                }
+                else {
                     if (value & ALI_DIAG) {
                         stack->push(ALI_PREALIGNER_SUB | ALI_PREALIGNER_MULTI_FLAG);
                         pos_x--;
                         pos_y--;
-                    } else {
+                    }
+                    else {
                         stack->push(ALI_PREALIGNER_INS | ALI_PREALIGNER_MULTI_FLAG);
                         pos_x--;
                     }
@@ -1065,7 +1102,8 @@ void ALI_PREALIGNER::quick_mapper(ALI_TSTACK < unsigned char >*stack,
                 stack->push(ALI_PREALIGNER_SUB | ALI_PREALIGNER_MULTI_FLAG);
                 mapper_post_multi(stack, pos_x, pos_y);
         }
-    } else {
+    }
+    else {
         while (pos_x > 0 && value == ALI_LEFT) {
             stack->push(ALI_PREALIGNER_INS);
             pos_x--;
@@ -1111,7 +1149,8 @@ void ALI_PREALIGNER::make_map(void) {
         do {
             mapper_random(stack, end_x - start_x, end_y - start_y);
         } while (result_mask_counter > 0);
-    } else {
+    }
+    else {
         ali_message("Starting systematic mapping");
         mapper(stack, end_x - start_x, end_y - start_y);
     }
@@ -1296,7 +1335,8 @@ unsigned long ALI_PREALIGNER::number_of_solutions() {
     if (end_x - (start_x & 0x01)) {
         elem_akt_col = column1 + col_length - 1;
         elem_left_col = column2 + col_length - 1;
-    } else {
+    }
+    else {
         elem_akt_col = column2 + col_length - 1;
         elem_left_col = column1 + col_length - 1;
     }
@@ -1343,7 +1383,8 @@ unsigned long ALI_PREALIGNER::number_of_solutions() {
         if (pos_x & 0x01) {
             elem_akt_col = column1 + col_length - 1;
             elem_left_col = column2 + col_length - 1;
-        } else {
+        }
+        else {
             elem_akt_col = column2 + col_length - 1;
             elem_left_col = column1 + col_length - 1;
         }

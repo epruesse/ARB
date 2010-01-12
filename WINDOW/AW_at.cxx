@@ -358,7 +358,8 @@ int AW_window::calculate_string_width( int columns ) {
         AW_xfig *xfig = (AW_xfig *)xfig_data;
         //return columns * this->get_root()->font_width;
         return (int)(columns * xfig->font_scale * XFIG_DEFAULT_FONT_WIDTH);   /* stdfont 8x13 */
-    }else {
+    }
+    else {
         return columns * XFIG_DEFAULT_FONT_WIDTH; /* stdfont 8x13 */
     }
 }

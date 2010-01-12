@@ -106,7 +106,8 @@ void AP_main::user_pop() {
     // checks if user_pop possible
     if (user_push_counter == stack_level) {
         this->pop();    // changes user_push_counter if user pop
-    } else {
+    }
+    else {
         new AP_ERR("AP_main::user_pop()","No user pop possible");
     }
     return;
@@ -140,13 +141,7 @@ void AP_main::pop() {
     delete stack;
     stack_level --;
     stack = list.pop();
-
-    if (stack) {
-        user_push_counter = stack->last_user_buffer;
-    }else{
-        user_push_counter = 0;
-    }
-    return;
+    user_push_counter = stack ? stack->last_user_buffer : 0;
 }
 
 void AP_main::clear() {
@@ -175,7 +170,8 @@ void AP_main::clear() {
             delete stack;
             stack = list.pop();
         }
-    } else {
+    }
+    else {
         if (stack) {
             new_stack = list.pop();
             while ( (knoten = stack->pop()) ) {
@@ -187,7 +183,8 @@ void AP_main::clear() {
             }
             delete stack;
             stack = new_stack;
-        } else {
+        }
+        else {
             new AP_ERR("AP_main::clear");
         }
     }

@@ -134,7 +134,8 @@ static struct gbdata_offset *find_gbdata_offset(GBQUARK quark, GBDATA *gbd){
 
         if (cmpres == 0){   // equal m
             return &gbdo[m];
-        }else{
+        }
+        else {
             if (l==h) break;
             if (cmpres < 0) h = m;
             else        l = m+1;
@@ -168,7 +169,8 @@ static long getrel_GBDATA(long rel_to, GBDATA *gbd) {
 
             if (cmpres == 0){   // equal m
                 return MAKEREL(rel_to,gbdo[m].offset);
-            }else{
+            }
+            else {
                 if (l==h) break;
 
                 if (cmpres < 0) h = m;
@@ -300,7 +302,7 @@ static long write_IFS(struct gb_index_files_struct *ifs, FILE *out, long *offset
         ifscopy.rel_entries = (GB_REL_PIFES)MAKEREL(ifsoffset,entriesoffset);
 
         if (out) ifscopy_size = ftwrite_unaligned(&ifscopy, sizeof(ifscopy), out);
-        else   ifscopy_size   = ALIGN(sizeof(ifscopy));
+        else     ifscopy_size = ALIGN(sizeof(ifscopy));
 
         *offset += ifscopy_size;
     }
@@ -397,8 +399,9 @@ static long write_GBDATA(GB_MAIN_TYPE *Main,GBDATA *gbd, GBQUARK quark, FILE *ou
                     ftwrite_aligned(headercopy, headermemsize, out);
                     free(headercopy);
 
-                }else{      // Calc new indices and size of header
-                    int valid=0;    // no of non-temporary items
+                }
+                else {                              // Calc new indices and size of header
+                    int valid = 0;                  // no of non-temporary items
                     for (item=0; item<nitems; item++)
                     {
                         GBDATA *gbd2 = GB_HEADER_LIST_GBD(header[item]);
@@ -411,7 +414,8 @@ static long write_GBDATA(GB_MAIN_TYPE *Main,GBDATA *gbd, GBQUARK quark, FILE *ou
                     gb_assert((size_t)headermemsize >= valid * sizeof(*header));
                     headermemsize = ALIGN(valid * sizeof(*header));
                 }
-            }else{
+            }
+            else {
                 gb_assert(header==0);
                 headeroffset=0;
             }

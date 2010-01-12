@@ -40,7 +40,8 @@ void PH_NEIGHBOURJOINING::remove_taxa_from_dist_list(long i)    // O(n/2)
         if (i==j) continue;
         if (j<i) {
             nd = &(dist_matrix[i][j]);
-        }else{
+        }
+        else {
             nd = &(dist_matrix[j][i]);
         }
         nd->remove();
@@ -58,7 +59,8 @@ void PH_NEIGHBOURJOINING::add_taxa_to_dist_list(long i) // O(n/2)
         if (i==j) continue;
         if (j<i) {
             nd = &(dist_matrix[i][j]);
-        }else{
+        }
+        else {
             nd = &(dist_matrix[j][i]);
         }
         ph_assert(!nd->previous);
@@ -94,7 +96,8 @@ void PH_NEIGHBOURJOINING::remove_taxa_from_swap_tab(long i) // O(n/2)
     for (a=0;a<swap_size;a++){
         if (swap_tab[a] == i){
             source++;
-        }else{
+        }
+        else {
             *(dest++) = *(source++);
         }
     }
@@ -197,12 +200,13 @@ void PH_NEIGHBOURJOINING::join_nodes(long i,long j,AP_FLOAT &leftl,AP_FLOAT& rig
         if (k>i) {
             if (k>j) {
                 d[k][i].val = .5*(d[k][i].val + d[k][j].val - dji);
-            }else{
+            }
+            else {
                 d[k][i].val = .5*(d[k][i].val + d[j][k].val - dji);
             }
-        }else{
+        }
+        else {
             d[i][k].val = 0.5 * (d[i][k].val + d[j][k].val - dji);
-
         }
     }
     add_taxa_to_dist_list(i);

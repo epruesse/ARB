@@ -278,7 +278,8 @@ void PT_inc_base_string_count(char *str,char initval, char maxval, int size)
         if (str[i] >= maxval) {
             str[i] = initval;
             if (!i) str[i]=255; /* end flag */
-        }else{
+        }
+        else {
             break;
         }
     }

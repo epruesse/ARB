@@ -393,7 +393,8 @@ void gb_init_ctype_table(){
     for (i=0;i<256;i++){
         if (islower(i) || isupper(i) || isdigit(i) || i=='_' || i=='@' ){
             gb_ctype_table[i] = 1;
-        }else{
+        }
+        else {
             gb_ctype_table[i] = 0;
         }
     }
@@ -454,13 +455,16 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag
             if (internflag){
                 if (create == GB_CREATE_CONTAINER) {
                     gbsp = gb_create_container(gbd,str);
-                }else{
+                }
+                else {
                     gbsp = gb_create(gbd,str,create);
                 }
-            }else{
+            }
+            else {
                 if (create == GB_CREATE_CONTAINER) {
                     gbsp = GB_create_container(gbd,str);
-                }else{
+                }
+                else {
                     gbsp = gb_create(gbd,str,create);
                 }
             }
@@ -496,7 +500,8 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag
 
         if (strcmp("..", s1) == 0) {
             gbsp = GB_get_father(gbp);
-        } else {
+        }
+        else {
             gbsp = GB_entry(gbp, s1);
             if (gbsp && separator == '-'){ // follow link !!!
                 if (GB_TYPE(gbsp) != GB_LINK){
@@ -511,9 +516,10 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag
                 if (!gbsp) return NULL; // cannot resolve link
             }
             while (gbsp && create) {
-                if (s2){ // non terminal
+                if (s2){                            // non terminal
                     if (GB_DB == GB_TYPE(gbsp)) break;
-                }else{  // terminal
+                }
+                else {                              // terminal
                     if (create == GB_TYPE(gbsp)) break;
                 }
                 GB_internal_errorf("Inconsistent Type %u:%u '%s':'%s', repairing database", create, GB_TYPE(gbsp), str, s1);
@@ -696,7 +702,8 @@ GBDATA *GB_first_marked(GBDATA *gbd, const char *keystring){
     GBQUARK key_quark;
     if (keystring) {
         key_quark = GB_key_2_quark(gbd,keystring);
-    }else{
+    }
+    else {
         key_quark = -1;
     }
     GB_TEST_TRANSACTION(gbd);
@@ -711,7 +718,8 @@ GBDATA *GB_next_marked(GBDATA *gbd, const char *keystring)
 
     if (keystring) {
         key_quark = GB_key_2_quark(gbd,keystring);
-    }else{
+    }
+    else {
         key_quark = -1;
     }
     GB_TEST_TRANSACTION(gbd);
@@ -972,12 +980,14 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
 
     if (strmalloc) {
         orig[0].str = (char *)str;
-    }else{
+    }
+    else {
         orig[0].str = strdup(str);
     }
+    
     argcinput = 1;
-    argcout = 0;
-    error = 0;
+    argcout   = 0;
+    error     = 0;
     {
         char *s1,*s2;
         s1 = buffer;
@@ -991,7 +1001,8 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
             if (s2) {
                 separator = *(s2);
                 *(s2++) = 0;
-            }else{
+            }
+            else {
                 separator = 0;
             }
             // collect the parameters
@@ -1014,7 +1025,8 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
                     slen  = strlen(bracket);
                     if (bracket[slen-1] != ')') {
                         error = "Missing ')'";
-                    }else{
+                    }
+                    else {
                         // go through the parameters
                         char *p1,*p2;
                         bracket[slen-1] = 0;

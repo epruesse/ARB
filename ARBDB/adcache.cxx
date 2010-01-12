@@ -109,7 +109,8 @@ char *delete_old_cache_entries(struct gb_cache_struct *cs, long needed_size, lon
         // delete all unused memory
         if (data || ( needed_size != cs->entries[i].sizeof_data)  ) {
             free(cs->entries[i].data);
-        }else{
+        }
+        else {
             data = cs->entries[i].data;
         }
         cs->sum_data_size -= cs->entries[i].sizeof_data;

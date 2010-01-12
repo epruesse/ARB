@@ -624,14 +624,17 @@ long gb_read_bin_rek(FILE *in,GBCONTAINER *gbd,long nitems,long version,long rev
             if (type2 == (long)GB_DB){
                 gbc = gb_make_container(gbd, buff, -1, 0);
                 gb2 = (GBDATA *)gbc;
-            }else{
+            }
+            else {
                 gb2 = gb_make_entry(gbd, buff, -1, 0, (GB_TYPES)type2);
             }
-        }else{
+        }
+        else {
             if (type2 == (long)GB_DB){
                 gbc = gb_make_container(gbd,NULL,-1,key);
                 gb2 = (GBDATA *)gbc;
-            }else{
+            }
+            else {
                 gb2 = gb_make_entry(gbd,NULL,-1,(GBQUARK)key,(GB_TYPES)type2);
             }
             if (!Main->keys[key].key) {
@@ -683,7 +686,8 @@ long gb_read_bin_rek(FILE *in,GBCONTAINER *gbd,long nitems,long version,long rev
                 if (GB_CHECKINTERN(size,memsize) ){
                     GB_SETINTERN(gb2);
                     p = &(gb2->info.istr.data[0]);
-                }else{
+                }
+                else {
                     GB_SETEXTERN(gb2);
                     p = GB_give_buffer(memsize);
                 }
@@ -878,7 +882,8 @@ long gb_read_bin_rek_V2(FILE *in,GBCONTAINER *gbd,long nitems,long version,long 
             GB_CREATE_EXT(gb2);
             gb2->ext->update_date = gb2->ext->creation_date = Main->clock;
             header[gb2->index].flags.ever_changed = 1;
-        }else{
+        }
+        else {
             Main->keys[key].nref_last_saved++;
         }
 
@@ -935,7 +940,8 @@ long gb_read_bin_rek_V2(FILE *in,GBCONTAINER *gbd,long nitems,long version,long 
                 if (GB_CHECKINTERN(size,memsize) ){
                     GB_SETINTERN(gb2);
                     p = &(gb2->info.istr.data[0]);
-                }else{
+                }
+                else {
                     GB_SETEXTERN(gb2);
                     p = gbm_get_mem((size_t)memsize+1,GB_GBM_INDEX(gb2)); // ralf: added +1 because decompress ran out of this block
                 }
@@ -960,12 +966,10 @@ long gb_read_bin_rek_V2(FILE *in,GBCONTAINER *gbd,long nitems,long version,long 
                 break;
             default:
                 gb_read_bin_error(in,gb2,"Unknown type");
-                if (gb_recover_corrupt_file(gbd,in, NULL)){
-                    if (GBCONTAINER_MAIN(gbd)->allow_corrupt_file_recovery){
-                        return 0;       // loading stopped
-                    }else{
-                        return -1;
-                    }
+                if (gb_recover_corrupt_file(gbd,in, NULL)) {
+                    return GBCONTAINER_MAIN(gbd)->allow_corrupt_file_recovery
+                        ? 0                         // loading stopped
+                        : -1;
                 }
 
                 continue;
@@ -1162,7 +1166,8 @@ long gb_read_bin(FILE *in,GBCONTAINER *gbd, int diff_file_allowed)
             char *path2 = GB_follow_unix_link(Main->path);
             map_path = gb_mapfile_name(path2);
             free(path2);
-        }else{
+        }
+        else {
             map_path = gb_mapfile_name(Main->path);
         }
         merror = gb_is_valid_mapfile(map_path,&mheader, 0);
@@ -1278,7 +1283,8 @@ GB_MAIN_IDX gb_make_main_idx(GB_MAIN_TYPE *Main)
             if (gb_main_array[idx]==NULL)
                 break;
         }
-    }else{
+    }
+    else {
         idx = (short)gb_next_main_idx_for_mapfile;
         gb_next_main_idx_for_mapfile = 0;
     }

@@ -30,7 +30,8 @@ GB_ERROR PG_initSpeciesMaps(GBDATA *pb_main) {
   GBDATA *pb_mapping = GB_entry(pb_main, "species_mapping");
   if (!pb_mapping) {  // error
     GB_export_error("No species mapping");
-  }  else {
+  }
+  else {
     // retrieve mapping from string
     const char *mapping = GB_read_char_pntr(pb_mapping);
     if (!mapping) return GB_export_error("Can't read mapping");

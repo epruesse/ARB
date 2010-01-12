@@ -106,7 +106,8 @@ ED4_returncode ED4_consensus_sequence_terminal::draw( int /*only_text*/ )
                 int seq_pos = rm->screen_to_sequence(pos);
                 if (seq_pos<0){
                     buffer[pos] = ' ';
-                }else{
+                }
+                else {
                     buffer[pos] = cons[seq_pos];
                     e4_assert(buffer[pos]);
                 }

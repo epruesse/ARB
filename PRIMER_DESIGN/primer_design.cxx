@@ -46,13 +46,16 @@ void primer_design_event_update_memory( AW_window *aww ) {
     if (mem > 1073741824) {
         mem = mem / 1073741824;
         root->awar( AWAR_PRIMER_DESIGN_APROX_MEM )->write_string(GBS_global_string("%.1f TB",mem));
-    } else if (mem > 1048576) {
+    }
+    else if (mem > 1048576) {
         mem = mem / 1048576;
         root->awar( AWAR_PRIMER_DESIGN_APROX_MEM )->write_string(GBS_global_string("%.1f MB",mem));
-    } else if (mem > 1024) {
+    }
+    else if (mem > 1024) {
         mem = mem / 1024;
         root->awar( AWAR_PRIMER_DESIGN_APROX_MEM )->write_string(GBS_global_string("%.1f KB",mem));
-    } else {
+    }
+    else {
         root->awar( AWAR_PRIMER_DESIGN_APROX_MEM )->write_string(GBS_global_string("%.0f bytes",mem));
     }
 }

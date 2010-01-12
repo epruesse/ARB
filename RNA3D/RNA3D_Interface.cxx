@@ -53,7 +53,8 @@ static void RotateMoleculeStateChanged(void) {
         XtRemoveWorkProc(workId);
         Spinning = GL_FALSE;
         RNA3D->bAutoRotate = false;
-    } else {
+    }
+    else {
         workId = XtAppAddWorkProc(appContext, SpinMolecule, NULL);
         Spinning = GL_TRUE;
         RNA3D->bAutoRotate = true;

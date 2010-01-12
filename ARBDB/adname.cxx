@@ -148,7 +148,8 @@ GB_ERROR gbt_rename_tree_rek(GBT_TREE *tree,int tree_index){
                 rns->used_by = tree_index;
             }
         }
-    }else{
+    }
+    else {
         gbt_rename_tree_rek(tree->leftson,tree_index);
         gbt_rename_tree_rek(tree->rightson,tree_index);
     }

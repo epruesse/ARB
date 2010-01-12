@@ -411,7 +411,8 @@ int AWT_graphic_tree::resort_tree( int mode, struct AP_tree *at ) // run on fath
         if (rightsize >leftsize ) {
             at->swap_sons();
         }
-    }else{
+    }
+    else {
         if (rightsize < leftsize ) {
             at->swap_sons();
         }
@@ -438,13 +439,15 @@ int AWT_graphic_tree::resort_tree( int mode, struct AP_tree *at ) // run on fath
         int name_cmp = strcmp(leftleafname,rightleafname);
         if (name_cmp<0) { // leftleafname < rightleafname
             leafname = leftleafname;
-        } else { // (name_cmp>=0) aka: rightleafname <= leftleafname
+        }
+        else { // (name_cmp>=0) aka: rightleafname <= leftleafname
             leafname = rightleafname;
             if (rightsize==leftsize && name_cmp>0) { // if sizes of subtrees are equal and rightleafname<leftleafname -> swap branches
                 at->swap_sons();
             }
         }
-    }else{
+    }
+    else {
         if (leftleafname) leafname = leftleafname;
         else leafname = rightleafname;
     }
@@ -1174,7 +1177,8 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         this->rot_show_line(device);
                         if (cl->exists) {
                             this->rot_cl = *cl;
-                        }else{
+                        }
+                        else {
                             rot_cl = old_rot_cl;
                         }
                         this->rot_show_line(device);
@@ -1260,7 +1264,8 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
 
                         if (rot_at == rot_at->father->leftson){
                             len = rot_at->father->leftlen;
-                        }else{
+                        }
+                        else {
                             len = rot_at->father->rightlen;
                         }
 

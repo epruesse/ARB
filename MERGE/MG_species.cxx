@@ -67,7 +67,8 @@ GB_ERROR MG_remap::set(const char *in_reference, const char *out_reference){
         for (i=0;i<in_length;i++){
             remap_tab[i] = -1;
         }
-    }else{
+    }
+    else {
         int inl = strlen (in_reference);
         if (inl > in_length){
             int *new_remap = new int[inl];
@@ -226,12 +227,14 @@ char *MG_remap::remap(const char *sequence){
             while (lastposset < new_pos){ // insert gaps
                 if (within_sequence){
                     GBS_chrcat(outs,'-');
-                }else{
+                }
+                else {
                     GBS_chrcat(outs,'.');
                 }
                 lastposset ++;
             }
-        }else{          // insert not written gaps
+        }
+        else {          // insert not written gaps
             while(skippedgaps>0){
                 GBS_chrcat(outs,skippedchar);
                 lastposset ++;
@@ -241,7 +244,8 @@ char *MG_remap::remap(const char *sequence){
         skippedgaps = 0;
         if (c != '.') {
             within_sequence = true;
-        }else{
+        }
+        else {
             within_sequence = false;
         }
         GBS_chrcat(outs,c);

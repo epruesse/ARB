@@ -235,7 +235,8 @@ GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *p
                 GB_warningf("Cannot connect to %s:%li   errno %i",mach_name[0],socket_id[0],errno);
                 return "";
             }
-        }else{
+        }
+        else {
             int one = 1;
             setsockopt(*psocket, SOL_SOCKET,SO_REUSEADDR,(const char *)&one,sizeof(one));
             if (bind(*psocket, (struct sockaddr *)(&so_ad),sizeof(so_ad))){
@@ -250,7 +251,8 @@ GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *p
         }
         *unix_name = 0;
         return 0;
-    } else {        // UNIX
+    }
+    else {        // UNIX
         struct sockaddr_un so_ad; memset((char *)&so_ad,0,sizeof(so_ad));
         *psocket = socket(PF_UNIX, SOCK_STREAM, 0);
         if (*psocket <= 0) {
@@ -264,7 +266,8 @@ GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *p
                 if (mach_name[0]) free((char *)mach_name[0]);
                 return "";
             }
-        }else{
+        }
+        else {
 #if 0
             FILE    *test;
             test = fopen(mach_name[0],"r");
@@ -280,7 +283,8 @@ GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *p
 #endif
             if (unlink(mach_name[0])) {
                 ;
-            }else{
+            }
+            else {
                 printf("old socket found\n");
             }
             if (bind(*psocket,(struct sockaddr*)(&so_ad),strlen(mach_name[0])+2)){
@@ -367,7 +371,8 @@ long gbcm_read_two(int socket, long a, long *b, long *c)
     }
     if (b) {
         *b = ia[1];
-    }else{
+    }
+    else {
         if (ia[1]!=3) {
             GB_internal_error("receive failed: size not 3\n");
             return GBCM_SERVER_FAULT;
@@ -664,7 +669,8 @@ char *GB_map_FILE(FILE *in,int writeable){
     }
     if (writeable){
         buffer = (char*)mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fi, 0);
-    }else{
+    }
+    else {
         buffer = (char*)mmap(NULL, size, PROT_READ, MAP_SHARED, fi, 0);
     }
     if (buffer == MAP_FAILED){

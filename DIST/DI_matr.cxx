@@ -315,7 +315,8 @@ char *DI_MATRIX::load(LoadWhat what, GB_CSTR sort_tree_name, bool show_warnings,
                             entries_mem_size +=1000;
                             entries = (DI_ENTRY **)realloc(entries,(size_t)(sizeof(DI_ENTRY*)*entries_mem_size));
                         }
-                    }else{
+                    }
+                    else {
                         delete phentry;
                     }
                 }
@@ -376,7 +377,8 @@ char *DI_MATRIX::load(LoadWhat what, GB_CSTR sort_tree_name, bool show_warnings,
                         entries_mem_size +=1000;
                         entries = (DI_ENTRY **)realloc(entries, sizeof(DI_ENTRY*)*entries_mem_size);
                     }
-                }else{
+                }
+                else {
                     delete phentry;
                 }
             }
@@ -479,7 +481,8 @@ GB_ERROR DI_MATRIX::calculate_rates(DI_MUT_MATR &hrates,DI_MUT_MATR &nrates,DI_M
             for (pos = 0; pos < s_len; pos++){
                 if(filter[pos]>=0) {
                     hrates[*seq1][*seq2]++;
-                }else{
+                }
+                else {
                     nrates[*seq1][*seq2]++;
                 }
                 seq1++; seq2++;
@@ -725,14 +728,16 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, DI_T
                             for (y = AP_A; y < AP_MAX; y*=2){
                                 if (x==y){
                                     all_sum += hits[x][y];
-                                }else{
+                                }
+                                else {
                                     diffsum += hits[x][y] * DI_dna_matrix.get(x,y);
                                     all_sum += hits[x][y] * DI_dna_matrix.get(x,y);
                                 }
                             }
                         }
                         dist = diffsum / all_sum;
-                    }else{
+                    }
+                    else {
                         int pos;
                         int b1,b2;
                         for (pos = s_len; pos >=0; pos--){
@@ -749,7 +754,8 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, DI_T
                     }
                     if (transformation==DI_TRANSFORMATION_SIMILARITY){
                         dist =  (1.0-dist);
-                    }else   if (b){
+                    }
+                    else if (b) {
                         double sigma;
                         dist = this->corr(dist,b,sigma);
                     }
@@ -822,7 +828,8 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, DI_T
                                 S_square = 0.0;
                                 for (i=0;i<AP_MAX; i++) S_square+= frequencies[i]*frequencies[i];
                                 b = 1.0 - S_square/((double)N*(double)N);
-                            }else{
+                            }
+                            else {
                                 b = 1.0 - S_square;
                             }
 

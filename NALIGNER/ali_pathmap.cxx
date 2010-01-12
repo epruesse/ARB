@@ -171,7 +171,8 @@ void ALI_PATHMAP::print(void)
                     }
                     printf(") ");
                 }
-            } else {
+            }
+            else {
                 for (y = 0; y < height; y++) {
                     printf("(");
                     if ((*up_pointers)[x][y]) {

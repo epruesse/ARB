@@ -147,7 +147,8 @@ long arb_count_keys(const char */*key*/,long val, void *)
 {
     if (val >1) {
         aprm.key_cnt++;
-    }else{
+    }
+    else {
         aprm.one_key_cnt++;
     }
     return val;
@@ -258,7 +259,8 @@ void arb_prm_primer(int /*prmanz*/)
                 GBS_free_hash(mhash);
                 mhash = hash;
             }
-        }else{
+        }
+        else {
             for (;prmlen>0;prmlen--) best_primer_new[prmlen] = aprm.prmanz+1;
         }
         GBS_free_hash(mhash);
@@ -304,7 +306,8 @@ int main(int argc, char **/*argv*/)
         }
         arb_prm_primer(aprm.prmanz);
         fclose(aprm.out);
-    }else{
+    }
+    else {
         aprm.out = stdout;
         arb_prm_primer(aprm.prmanz);
     }

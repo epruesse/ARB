@@ -55,7 +55,8 @@ int main(int argc, char **argv)
     for (arg = startarg; arg<argc;arg++){
         if (usestdin) {
             fname = "-";
-        }else{
+        }
+        else {
             fname = argv[arg];
         }
         data = GB_read_file(fname);
@@ -93,7 +94,8 @@ int main(int argc, char **argv)
                         fprintf(out,"%s",data);
                         fclose(out);
                         printf("File %s parsed\n",fname);
-                    }else{
+                    }
+                    else {
                         fprintf(stderr,"Write failed %s\n",fname);
                         return -1;
                     }
@@ -120,7 +122,8 @@ int main(int argc, char **argv)
                         if (h[0] || !delete_empty_lines) {
                             fprintf(stdout,"\n");
                         }
-                    }else{
+                    }
+                    else {
                         GBS_strcat(strstruct,h);
                         if (h[0] || !delete_empty_lines) {      // delete empty lines
                             GBS_chrcat(strstruct,'\n');         // insert '\n'
@@ -135,7 +138,8 @@ int main(int argc, char **argv)
                 ndata = GBS_strclose(strstruct);
                 free(h);
 
-            }else{
+            }
+            else {
                 ndata = GBS_string_eval(data,eval,0);
             }
 
@@ -146,13 +150,15 @@ int main(int argc, char **argv)
             if (strcmp(data,ndata)){
                 if (usestdin) {
                     fprintf(stdout,"%s",ndata);
-                }else{
+                }
+                else {
                     out = fopen(fname,"w");
                     if (out) {
                         fprintf(out,"%s",ndata);
                         fclose(out);
                         printf("File %s parsed\n",fname);
-                    }else{
+                    }
+                    else {
                         printf("cannot write %s\n",fname);
                     }
                 }

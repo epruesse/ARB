@@ -162,7 +162,8 @@ Local void addseq(char *s, struct ReadSeqVars * V)
         for  (;*s != 0;s++,count++) {
             if (count < 9 && V->isseqcharfirst8) {
                 if (!(V->isseqcharfirst8) (*s)) continue;
-            }else{
+            }
+            else {
                 if (!(V->isseqchar) (*s)) continue;
             }
             if (V->seqlen >= V->maxseq) {

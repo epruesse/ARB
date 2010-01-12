@@ -28,8 +28,8 @@ void alignment_vars_callback(AW_root *aw_root)
         aw_root->awar("presets/aligned")->unmap();
         aw_root->awar("presets/auto_format")->unmap();
         aw_root->awar("presets/security")->unmap();
-    }else{
-
+    }
+    else {
         GBDATA *ali_name        = GB_search(ali_cont, "alignment_name",           GB_STRING);
         GBDATA *ali_len         = GB_search(ali_cont, "alignment_len",            GB_INT   );
         GBDATA *ali_aligned     = GB_search(ali_cont, "aligned",                  GB_INT   );

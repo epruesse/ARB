@@ -576,7 +576,8 @@ static void ED4_pfold_resolve_overlaps(const unsigned char *sequence, char *stru
             structures[STRUCTURE_SUMMARY][pos] = structure_chars[BETA_TURN];
 
         // if helix and sheet are overlapping and no beta-turn is found -> check which structure has the highest sum of former values
-        } else if ((structures[ALPHA_HELIX][pos] != ' ') && (structures[BETA_SHEET][pos] != ' ')) {
+        }
+        else if ((structures[ALPHA_HELIX][pos] != ' ') && (structures[BETA_SHEET][pos] != ' ')) {
 
             // search start and end of overlap (as long as no beta-turn is found)
             start = pos;
@@ -612,11 +613,13 @@ static void ED4_pfold_resolve_overlaps(const unsigned char *sequence, char *stru
             pos = end - 1;
 
         // if helix and sheet are not overlapping and no beta-turn is found -> set structure accordingly
-        } else {
+        }
+        else {
             // summary at position pos is helix resp. sheet
             if (structures[ALPHA_HELIX][pos] != ' ') {
                 structures[STRUCTURE_SUMMARY][pos] = structure_chars[ALPHA_HELIX];
-            } else if (structures[BETA_SHEET][pos] != ' ') {
+            }
+            else if (structures[BETA_SHEET][pos] != ' ') {
                 structures[STRUCTURE_SUMMARY][pos] = structure_chars[BETA_SHEET];
             }
         }
@@ -825,11 +828,13 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
                     aa = char2AA[structure_cmp[struct_start]];
                     if (struct_start == 0 && aa == -1) { // nothing was found
                         break;
-                    } else if (strchr(struct_chars[current_struct], structure_sai[struct_start]) && aa != -1) {
+                    }
+                    else if (strchr(struct_chars[current_struct], structure_sai[struct_start]) && aa != -1) {
                         prob += cf_former(aa, current_struct) - cf_breaker(aa, current_struct); // sum up probabilities
                         struct_start--;
                         count++;
-                    } else {
+                    }
+                    else {
                         break;
                     }
                 }
@@ -849,13 +854,16 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
                 aa = char2AA[structure_cmp[struct_end]];
                 if (current_struct == NOSTRUCT) { // no structure found -> move on
                     struct_end++;
-                } else if (aa == -1) { // structure found but no corresponding amino acid -> doesn't fit at all 
+                }
+                else if (aa == -1) { // structure found but no corresponding amino acid -> doesn't fit at all 
                     result_buffer[struct_end - start] = pair_chars_2[0];
                     struct_end++;
-                } else if (current_struct == BEND) { // bend found -> fits perfectly everywhere
+                }
+                else if (current_struct == BEND) { // bend found -> fits perfectly everywhere
                     result_buffer[struct_end - start] = pair_chars_2[9];
                     struct_end++;
-                } else { // helix, sheet or beta-turn found -> while structure doesn't change: sum up probabilities
+                }
+                else { // helix, sheet or beta-turn found -> while structure doesn't change: sum up probabilities
                     while (structure_sai[struct_end] != '\0') {
                         // skip gaps
                         while ( strchr(gap_chars, structure_sai[struct_end]) && 
@@ -869,7 +877,8 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
                             prob += cf_former(aa, current_struct) - cf_breaker(aa, current_struct); // sum up probabilities
                             struct_end++;
                             count++;
-                        } else {
+                        }
+                        else {
                             break;
                         }
                     }
@@ -895,7 +904,8 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
                 // find next structure type
                 if (structure_sai[struct_end] == '\0' || structure_cmp[struct_end] == '\0') {
                     break;
-                } else {
+                }
+                else {
                     prob = 0;
                     count = 0;
                     struct_start = struct_end;
@@ -929,7 +939,8 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
                     } else if ( strchr(gap_chars, structure_sai[count + start]) || 
                                 (structures[ALPHA_HELIX][count + start] == ' ' && structures[BETA_SHEET][count + start] == ' ' && structures[BETA_TURN][count + start] == ' ') ) {
                         result_buffer[count] = *pair_chars[STRUCT_PERFECT_MATCH];
-                    } else {
+                    }
+                    else {
                         // search for good match first
                         // if found: stop searching
                         // otherwise: continue searching for a less good match
@@ -1103,7 +1114,8 @@ AW_window *ED4_pfold_create_props_window(AW_root *awr, AW_cb_struct *awcbs) {
         aws->callback(awcbs);
         if (match_method == pfold_match_method_awars[i].value) {
             aws->insert_default_option(mm_aw, "", match_method);
-        } else {
+        }
+        else {
             aws->insert_option(mm_aw, "", pfold_match_method_awars[i].value);
         }
     }
@@ -1156,7 +1168,8 @@ static void ED4_pfold_find_structure(const char *sequence, char *structure, int 
     e4_assert(char2AA); // char2AA not initialized; ED4_pfold_init_statics() failed or hasn't been called yet
     if (s == BETA_TURN) {
         ED4_pfold_find_turns(sequence, structure, length);
-    } else {
+    }
+    else {
         ED4_pfold_find_nucleation_sites(sequence, structure, length, s);
         ED4_pfold_extend_nucleation_sites(sequence, structure, length, s);
     }

@@ -338,7 +338,8 @@ void table_vars_callback(AW_root *aw_root,GBDATA *gb_main)      // Map table var
     GBDATA *gb_table = GBT_open_table(gb_main,tablename,true);
     if (!gb_table) {
         aw_root->awar(AWAR_TABLE_REM)->unmap();
-    }else{
+    }
+    else {
         GBDATA *table_rem = GB_search(gb_table,"description",   GB_STRING);
         aw_root->awar(AWAR_TABLE_REM)->map(table_rem);
     }

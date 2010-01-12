@@ -71,7 +71,8 @@ void AP_STACK::get_init() {
 void  * AP_STACK::get_first() {
     if (first != 0) {
         return first->node;
-    } else {
+    }
+    else {
         return 0;
     }
 }
@@ -79,12 +80,14 @@ void  * AP_STACK::get_first() {
 void  * AP_STACK::get() {
     if (0 == pointer ) {
         pointer = first;
-    } else {
+    }
+    else {
         if ( pointer->next == 0) {
             new AP_ERR("AP_STACK: get()"," more get() than elements in stack");
             pointer = 0;
             return 0;
-        } else {
+        }
+        else {
             pointer = pointer->next;
         }
     }
@@ -166,7 +169,8 @@ void AP_LIST::append(void * new_one) {
         newelem->prev = 0;
         newelem->next = 0;
         pointer = first;
-    } else {
+    }
+    else {
         last->next = newelem;
         newelem->prev = last;
         last = newelem;
@@ -182,13 +186,15 @@ void AP_LIST::remove(void * object) {
     if (elem) {
         if (elem->prev) {
             elem->prev->next = elem->next;
-        } else {
+        }
+        else {
             first = elem->next;
             elem->next->prev = 0;
         }
         if (elem->next) {
             elem->next->prev = elem->prev;
-        } else {
+        }
+        else {
             last = elem->prev;
             elem->prev->next = 0;
         }

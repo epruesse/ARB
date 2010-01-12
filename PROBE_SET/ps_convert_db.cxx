@@ -24,7 +24,8 @@ void PS_detect_probe_length( GBDATA *_ARB_node ) {
         if (ARB_group) {                                    // ps_node has probes
             GBDATA *probe = PG_get_first_probe( ARB_group );
             __PROBE_LENGTH = strlen(PG_read_probe(probe));
-        } else {                                            // ps_node has no probes .. check its children
+        }
+        else {                                            // ps_node has no probes .. check its children
             GBDATA *ARB_child = PS_get_first_node( _ARB_node );
             while (ARB_child && (__PROBE_LENGTH < 0)) {
                 PS_detect_probe_length( ARB_child );
@@ -81,7 +82,8 @@ PS_NodePtr PS_assert_path( const int  _caller_ID, IDVector *_path ) {
         if (current_ID != next_path_ID) {
             //printf( "  %3i",*i );
             current_node = current_node->assertChild( current_ID );
-        } else {
+        }
+        else {
             ++i;
             next_path_ID = (i == _path->end()) ? -1 : *i;
         }
@@ -162,7 +164,8 @@ void PS_extract_probe_data( GBDATA *_ARB_node,               // position in ARB 
             //
             PS_NodePtr current_node = PS_assert_path( id, _inverse_path );
             current_node->addProbes( probes->begin(), probes->end() );
-        } else {
+        }
+        else {
             //
             // insert if 'below' half depth
             //

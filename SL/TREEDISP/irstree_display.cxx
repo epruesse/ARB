@@ -128,7 +128,8 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset, int type){
             else {
                 node_string = make_node_text_nds(gb_main,node->gb_node,0,node->get_gbt_tree(), tree_static->get_tree_name());
             }
-        }else{
+        }
+        else {
             node_string = "0123456789";
         }
     }
@@ -185,7 +186,8 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset, int type){
                 draw_top_separator();
             }
             last_y = irs_gl.y + irs_gl.step_y;
-        }else{
+        }
+        else {
             last_y = irs_gl.min_y;
             irs_gl.min_y += int(irs_gl.step_y * 1.8);
         }
@@ -217,7 +219,8 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset, int type){
             }
             irs_gl.device->line(node->get_leftson()->gr.gc,x_offset,left_y,  left_x,   left_y, -1, (AW_CL)node->leftson,0); //  ***
         }
-    }else{
+    }
+    else {
         left_y = irs_gl.min_y;
     }
 
@@ -266,7 +269,8 @@ int AWT_graphic_tree::draw_slot(int x_offset, bool draw_at_tips){
         int y = irs_gl.nodes_ypos[i]+ irs_gl.font_height_2;
         if (draw_at_tips) {
             x = x_offset + irs_gl.nodes_xpos[i];
-        }else{
+        }
+        else {
             irs_gl.device->text(tip->gr.gc,str,x,irs_gl.nodes_ypos[i],0,-1,(AW_CL)tip,0);
         }
         if (x + len > maxx) maxx = x+len;

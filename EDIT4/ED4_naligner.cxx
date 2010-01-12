@@ -32,7 +32,8 @@ void aed_start_naligning(AW_window *aw) {
             GBS_strcat(strstruct, GBT_read_name(gb_species));
             GBS_strcat(strstruct, "\" ");
         }
-    }else{
+    }
+    else {
         char *species_name = root->awar( AWAR_SPECIES_NAME )->read_string();
         GBS_strcat(strstruct,"\"");
         GBS_strcat(strstruct,species_name);
@@ -47,7 +48,8 @@ void aed_start_naligning(AW_window *aw) {
     if ( root->awar("naligner/against")->read_int() ) {
         GBS_strcat(strstruct," -PARB_PT_SERVER");
         GBS_intcat(strstruct,   root->awar( "naligner/pt_server" )->read_int()  );
-    }else{
+    }
+    else {
         GBS_strcat(strstruct," \"-f");
         char *family = root->awar("naligner/sagainst")->read_string();
         GBS_strcat(strstruct,family);
@@ -82,11 +84,13 @@ void aed_start_naligning(AW_window *aw) {
             if ( i==4 || j==4 ) {               /* gap panelty */
                 if (i==4 && j==4) {
                     GBS_floatcat(strstruct,0.0);
-                }else{
+                }
+                else {
                     GBS_floatcat(strstruct,root->awar("naligner/gap_panelty")->read_float());
                     GBS_chrcat(strstruct,',');
                 }
-            }else{
+            }
+            else {
                 if (i<j) sprintf(var,"naligner/%c%c","acgt-"[i],"acgt-"[j]);
                 else    sprintf(var,"naligner/%c%c","acgt-"[j],"acgt-"[i]);
                 GBS_floatcat(strstruct,root->awar(var)->read_float());

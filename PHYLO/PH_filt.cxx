@@ -26,14 +26,17 @@ char *PH_filter::init(char *ifilter, char *zerobases, long size)
             if (strchr(zerobases, ifilter[i])) {
                 filter[i] = 0;
                 real_len++;
-            } else {
+            }
+            else {
                 filter[i] = 1;
             }
-        } else {
+        }
+        else {
             if (ifilter[i]) {
                 filter[i] = 0;
                 real_len++;
-            } else {
+            }
+            else {
                 filter[i] = 1;
             }
         }
@@ -294,7 +297,8 @@ float *PH_filter::calculate_column_homology(void){
         for(j=startcol;j<send;j++){
             if(mask[sequence_buffer[j]]){
                 chars_counted[j-startcol][reference_table[sequence_buffer[j]]]++;
-            }else{
+            }
+            else {
                 chars_counted[j-startcol][num_all_chars+1]++;
             }
         }

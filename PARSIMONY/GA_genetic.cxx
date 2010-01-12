@@ -236,7 +236,8 @@ long GA_genetic::get_treeid(GBDATA *gbtree) {
         GBDATA *gbid = GB_entry(gbtree,"id");
         if (gbid) {
             return (int)GB_read_int(gbid);
-        } else {
+        }
+        else {
             new AP_ERR("No tree id in Database!");
         }
     }
@@ -287,17 +288,20 @@ char *GA_genetic::write_tree_rek( AP_tree *node, char *dest, long mode)
             dest += strlen(dest);
             *(dest++) = 1;
             return dest;
-        }else{
+        }
+        else {
             if (node->name) return dest+1+strlen(node->name)+1;     /* N name term */
             return dest+1+1;
         }
-    }else{
+    }
+    else {
         sprintf(buffer,"%f,%f;",node->leftlen,node->rightlen);
         if (mode == AP_PUT_DATA) {
             *(dest++) = 'N';
             strcpy(dest,buffer);
             dest += strlen(buffer);
-        }else{
+        }
+        else {
             dest += strlen(buffer)+1;
         }
         dest = write_tree_rek(node->leftson,dest,mode);
@@ -340,13 +344,15 @@ AP_tree *GA_genetic::read_tree_rek(char **data)
         }
         node->leftson->father = node;
         node->rightson->father = node;
-    }else if (c=='L') {
+    }
+    else if (c=='L') {
         node->is_leaf = true;
         p1 = (char *)strchr(*data,1);
         *p1 = 0;
         node->name = (char *)strdup(*data);
         *data = p1+1;
-    }else{
+    }
+    else {
         new AP_ERR("GENETIC","Error reading tree 362436\n");
         return 0;
     }
@@ -606,7 +612,8 @@ AP_ERR *GA_genetic::delete_tree(GBDATA *gb_cluster,GBDATA *gb_tree) {
         ref_count = (int)GB_read_int(gb_ref_count);
         if (ref_count > 0) {
             GB_write_int(gb_ref_count,ref_count - 1);
-        } else {
+        }
+        else {
             GB_delete(gb_tree);
             GBDATA *gb_count = GB_entry(gb_cluster,"count");
             int count = (int)GB_read_int(gb_count);
@@ -867,7 +874,8 @@ AP_ERR * GA_genetic::remove_job(GBDATA *gb_cluster) {
             if (anzahl <= min_job) {
                 if (safty > GA_SAFETY) {
                     new AP_ERR("remove job","get looped");
-                } else {
+                }
+                else {
                     gb_cluster = 0;
                 }
             }

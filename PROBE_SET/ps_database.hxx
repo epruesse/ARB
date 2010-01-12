@@ -95,7 +95,8 @@ class PS_Database : PS_Callback {
           if (it != db_name2id_map.end()) {
               _id = it->second;
               return true;
-          } else {
+          }
+          else {
               return false;
           }
       }
@@ -105,7 +106,8 @@ class PS_Database : PS_Callback {
           if (it != db_id2name_map.end()) {
               _name = it->second;
               return true;
-          } else {
+          }
+          else {
               return false;
           }
       }
@@ -114,7 +116,8 @@ class PS_Database : PS_Callback {
           ID2NameMapCIter it = db_id2name_map.find( _id );
           if (it != db_id2name_map.end()) {
               return (it->second.compare( _name ) == 0); // return false if _name is not the string already stored for _id
-          } else {
+          }
+          else {
               db_id2name_map[ _id   ] = _name;
               db_name2id_map[ _name ] = _id;
               return true;

@@ -264,7 +264,8 @@ void awt_pre_to_view(AW_root *aw_root){
     if (brk) {
         *(brk++) = 0;
         aw_root->awar(AWAR_SELECT_ACISRT)->write_string(brk);
-    }else{
+    }
+    else {
         aw_root->awar(AWAR_SELECT_ACISRT)->write_string(str);
     }
     free(str);
@@ -749,7 +750,8 @@ char *make_node_text_list(GBDATA * gbd, FILE *fp)
     for (i = 0; i < awt_nds_ms->count; i++) {
         if (awt_nds_ms->rek[i]) {       /* hierarchical key */
             gbe = GB_search(gbd, awt_nds_ms->dkeys[i], GB_FIND);
-        }else{              /* flat entry */
+        }
+        else {              /* flat entry */
             gbe = GB_entry(gbd, awt_nds_ms->dkeys[i]);
         }
         if (!gbe) continue;

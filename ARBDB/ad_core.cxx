@@ -43,7 +43,8 @@ void gb_touch_entry(GBDATA * gbd, GB_CHANGE val) {
 
     if ((!gbc->index_of_touched_one_son) || gbc->index_of_touched_one_son == gbd->index+1) {
         gbc->index_of_touched_one_son = gbd->index+1;
-    }else{
+    }
+    else {
         gbc->index_of_touched_one_son = -1;
     }
 
@@ -51,18 +52,18 @@ void gb_touch_entry(GBDATA * gbd, GB_CHANGE val) {
     {
         if ( (!gbc_father->index_of_touched_one_son) || gbc_father->index_of_touched_one_son == gbc->index+1 ) {
             gbc_father->index_of_touched_one_son = gbc->index+1;
-        }else{
+        }
+        else {
             gbc_father->index_of_touched_one_son = -1;
         }
 
         if (gbc->flags2.update_in_server) {
             gbc->flags2.update_in_server = 0;
-        } else {
-            // if (GB_ARRAY_FLAGS(gbc).changed >= (unsigned int)GB_SON_CHANGED)
+        }
+        else {
             if (GB_ARRAY_FLAGS(gbc).changed >= GB_SON_CHANGED)
                 return;
         }
-        // if (GB_SON_CHANGED > (int)GB_ARRAY_FLAGS(gbc).changed) {
         if (GB_ARRAY_FLAGS(gbc).changed < GB_SON_CHANGED) {
             GB_ARRAY_FLAGS(gbc).changed = GB_SON_CHANGED;
             GB_ARRAY_FLAGS(gbc).ever_changed = 1;
@@ -90,17 +91,18 @@ gb_untouch_children(GBCONTAINER * gbc)
     if (gbc->index_of_touched_one_son > 0) {
         start = (int)gbc->index_of_touched_one_son-1;
         end = start + 1;
-    } else {
+    }
+    else {
         if (!gbc->index_of_touched_one_son){
             start = end = 0;
-        }else{
+        }
+        else {
             start = 0;
             end = gbc->d.nheader;
         }
     }
 
-    for (index = start; index < end; index++)
-    {
+    for (index = start; index < end; index++) {
         if ((gbd = GB_HEADER_LIST_GBD(header[index]))!=NULL)
         {
             changed = (GB_CHANGE)header[index].flags.changed;
@@ -193,10 +195,11 @@ void gb_link_entry(GBCONTAINER* father, GBDATA * gbd, long index_pos)
                            "probably %%%% is missing\n", GB_read_key_pntr((GBDATA*)father));
         return;
     }
-    if ( index_pos < 0) {
+    if (index_pos < 0) {
         index_pos = father->d.nheader++;
-    }else{
-        if ( index_pos >= father->d.nheader){
+    }
+    else {
+        if (index_pos >= father->d.nheader) {
             father->d.nheader = (int)index_pos+1;
         }
     }
@@ -613,7 +616,8 @@ void gb_save_extern_data_in_ts(GBDATA *gbd){
     GB_INDEX_CHECK_OUT(gbd);
     if (gbd->ext->old || (GB_ARRAY_FLAGS(gbd).changed == GB_CREATED)){
         GB_FREEDATA(gbd);
-    }else{
+    }
+    else {
         gbd->ext->old = gb_new_gb_transaction_save(gbd);
         SET_GB_EXTERN_DATA_DATA(gbd->info.ex,0);
     }
@@ -701,7 +705,8 @@ long gb_create_key(GB_MAIN_TYPE *Main, const char *s, bool create_gb_key) {
         index = Main->first_free_key;
         Main->first_free_key = Main->keys[index].next_free_key;
         Main->keys[index].next_free_key = 0;
-    }else{
+    }
+    else {
         index = Main->keycnt++;
         gb_create_key_array(Main,(int)index+1);
     }
@@ -745,14 +750,17 @@ void gb_free_all_keys(GB_MAIN_TYPE *Main) {
     Main->keycnt = 1;
 }
 
+#if defined(DEVEL_RALF)
+#warning useless return value - always 0
+#endif // DEVEL_RALF
 char *gb_abort_entry(GBDATA *gbd){
     int type = GB_TYPE(gbd);
+    
     GB_ARRAY_FLAGS(gbd).flags = gbd->flags.saved_flags;
-    if (type == GB_DB){
-        return 0;
-    }else{
+
+    if (type != GB_DB) {
         if (GB_GET_EXT_OLD_DATA(gbd)) {
-            if ( (type >= GB_BITS) ) {
+            if (type >= GB_BITS) {
                 gb_free_cache(GB_MAIN(gbd),gbd);
                 GB_FREEDATA(gbd);
             }
@@ -840,7 +848,8 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA * gbd, long mode,int *pson_creat
                     gbd->flags2.update_in_server = 1;
                 }
                 if (mode == 2) return 0;
-            } else {
+            }
+            else {
                 gbcms_add_to_delete_list(gbd);
                 _GB_CHECK_IN_UNDO_DELETE(Main,gbd);
                 return 0;
@@ -861,7 +870,8 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA * gbd, long mode,int *pson_creat
                     if (error)  return error;
                 }
                 if (mode == 2) return 0;
-            }else{
+            }
+            else {
                 _GB_CHECK_IN_UNDO_CREATE(Main,gbd);
             }
             if (pson_created) {
@@ -883,7 +893,8 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA * gbd, long mode,int *pson_creat
                     if (error) return error;
                     gbd->flags2.update_in_server = 1;
                 }
-            }else{
+            }
+            else {
                 _GB_CHECK_IN_UNDO_MODIFY(Main,gbd);
             }
             // fall-through
@@ -899,14 +910,19 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA * gbd, long mode,int *pson_creat
                 if (gbc->index_of_touched_one_son>0) {
                     start = (int)gbc->index_of_touched_one_son-1;
                     end = start+1;
-                }else{  if (!gbc->index_of_touched_one_son){ start = end = 0;
-                }else{  start = 0; end = gbc->d.nheader; }
+                }
+                else {
+                    if (!gbc->index_of_touched_one_son) {
+                        start = end = 0;
+                    }
+                    else {
+                        start = 0;
+                        end = gbc->d.nheader;
+                    }
                 }
 
-                for (index = start; index < end; index++)
-                {
-                    if ((gb = GB_HEADER_LIST_GBD(hls[index]))!=NULL)
-                    {
+                for (index = start; index < end; index++) {
+                    if ((gb = GB_HEADER_LIST_GBD(hls[index]))!=NULL) {
                         if (!hls[index].flags.changed) continue;
                         error = gb_commit_transaction_local_rek(gb,mode,&son_created);
                         if (error) return error;
@@ -918,7 +934,8 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA * gbd, long mode,int *pson_creat
     gb_commit_do_callbacks:
             if (mode == 2) {    // update server; no callbacks
                 gbd->flags2.update_in_server = 1;
-            }else{
+            }
+            else {
                 GB_CB_TYPE gbtype = GB_CB_CHANGED;
                 if (son_created) {
                     gbtype = (GB_CB_TYPE)(GB_CB_SON_CREATED | GB_CB_CHANGED);

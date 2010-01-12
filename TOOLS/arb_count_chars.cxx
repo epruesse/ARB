@@ -37,7 +37,8 @@ int main(int argc, char **argv){
         filter[(unsigned char)'O'] = 0;
         filter[(unsigned char)'U'] = 0;
         filter[(unsigned char)'Z'] = 0;
-    }else{
+    }
+    else {
         memset(filter,0,256);
         filter[(unsigned char)'A'] = 1;
         filter[(unsigned char)'C'] = 1;

@@ -61,7 +61,8 @@ void PS_print_time_diff( const struct tms *_since, const char *_before, const ch
     
     if (_after) {
         printf( "%s", _after );
-    } else {
+    }
+    else {
         printf( "\n" );
     }
     fflush( stdout );

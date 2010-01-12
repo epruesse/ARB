@@ -188,7 +188,8 @@ void PARS_kernighan_cb(AP_tree *tree) {
                 char buffer[100];
                 sprintf(buffer,"New Parsimony: %f",pars_start);
                 abort_flag |= aw_status(buffer);
-            } else {
+            }
+            else {
                 ap_main->pop();
             }
         }
@@ -339,7 +340,8 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
                         this->rot_show_line(device);
                         if (cl->exists) {
                             this->rot_cl = *cl;
-                        }else{
+                        }
+                        else {
                             rot_cl = old_rot_cl;
                         }
                         this->rot_show_line(device);

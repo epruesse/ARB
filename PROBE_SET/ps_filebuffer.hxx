@@ -54,7 +54,8 @@ public:
         if (size+1 < BUFFER_SIZE) {
             buffer[size] = _c;
             ++size;
-        } else {
+        }
+        else {
             flush();
             buffer[0] = _c;
             size      = 1;
@@ -64,7 +65,8 @@ public:
         if (position < size) {
             _c = buffer[position];
             ++position;
-        } else {
+        }
+        else {
             refill();
             _c       = buffer[0];
             position = 1;
@@ -73,7 +75,8 @@ public:
     unsigned char get_char() {
         if (position < size) {
             return buffer[position++];
-        } else {
+        }
+        else {
             refill();
             position = 1;
             return buffer[0];
@@ -87,7 +90,8 @@ public:
         unsigned long int ul;
         if (_l < 0) {
             ul = (-_l << 1) | 1;
-        } else {
+        }
+        else {
             ul = _l << 1;
         }
         put_ulong( ul );
@@ -97,7 +101,8 @@ public:
         get_ulong( ul );
         if (ul & 1) {
             _l = -(long)(ul >> 1);
-        } else {
+        }
+        else {
             _l = ul >> 1;
         }
     }

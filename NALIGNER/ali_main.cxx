@@ -288,7 +288,8 @@ int main(int argc, char **argv)
         if (align_sequence == 0) {
             ali_error("Can't read sequence from database");
             ali_message("Aborting alignment of sequence");
-        }else {
+        }
+        else {
             char *align_string;
             char *align_string_original;
 

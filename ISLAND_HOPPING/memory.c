@@ -29,7 +29,8 @@ void *newBlock(size_t s) {
 
     if(D&&s<=MINSIZE) {
         v=D; D=((void **)v)[0];
-    } else {
+    }
+    else {
         S=((s<=MINSIZE)?MINSIZE:s)+3*sizeof(void *);
         v=malloc(S);
         if(v==NULL) outOfMemory();
@@ -60,7 +61,8 @@ void freeBlock(void **vv) {
 
     if(s<=MINSIZE) {
         ((void **)v)[0]=D; D=v;
-    } else {
+    }
+    else {
         A-=s+3*sizeof(void *);
         free(v);
     }

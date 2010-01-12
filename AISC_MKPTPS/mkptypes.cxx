@@ -997,7 +997,8 @@ static void emit(Word *wlist, Word *plist, long startline) {
         if (count < 2) {
             printf("int\t");
             w = wlist;
-        } else {
+        }
+        else {
             refs = 0;
             for (w = wlist; w; w = w->next) {
                 if (w->string[0]) {
@@ -1020,7 +1021,8 @@ static void emit(Word *wlist, Word *plist, long startline) {
         if (refs) {
             printf("\tlink%i", refs);
             refs = 0;
-        }else{
+        }
+        else {
             printf("\tterm");
         }
 
@@ -1043,7 +1045,8 @@ static void emit(Word *wlist, Word *plist, long startline) {
                         printf("\tlink%i;\n", refs);
                         refs = 0;
                         continue;
-                    } else {
+                    }
+                    else {
                         printf("\tterm;\n");
                         continue;
                     }
@@ -1060,7 +1063,8 @@ static void emit(Word *wlist, Word *plist, long startline) {
                 }
                 printf("\tlink%i;\n", refs);
                 refs = 0;
-            } else {
+            }
+            else {
                 printf("\tterm;\n");
             }
             printf("}");

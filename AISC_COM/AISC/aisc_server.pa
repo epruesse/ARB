@@ -185,7 +185,8 @@ FOR $(STRUCT)
                 SET $(maintype) $(STRUCT)
                 SET $(access) THIS->
                 GOSUB load_structure
-                P $2}else{
+                P $2}
+                P $2else {
                 P $3printf("Undefined Token %s\n",token);
                 P $2} /* if token */
                 P $1} /*while */
@@ -461,7 +462,8 @@ FUNCTION rec_structure
                                                 P $3if(x){
                                                 P $4$(access).data$6= x->data;
                                                 P $4$(access).size$6= x->size;
-                                                P $3}else{
+                                                P $3}
+                                                P $3else {
                                                 P $4$(access).data$6= 0;
                                                 P $4$(access).size$6= 0;
                                                 P $3}
@@ -706,14 +708,17 @@ FUNCTION load_token
         P $1while(maxsize-->0){
         P $2c = getc(fd);
         P $2if (c==EOF) { *p=0; return EOF;}
-        P $2else if(in_brackets) {
+        P $2else if (in_brackets) {
         P $2    if (c=='\\') { c = getc(fd); *(p++) = c; continue; }
         P $2    if (c!='}') *(p++) = c;else {*p=0;return 0;}
-        P $2}else if (c=='{'){ if (p!=buffer) {*(p++) = '{';*p=0;return 0;}
-        P $2                    else    in_brackets = 1; }
-        P $2else if (c==' '){ if (p!=buffer) {*p=0;return 0;} }
-        P $2else if (c=='\n'){ if (p!=buffer) {*p=0;return 0;} }
-        P $2else if (c=='}') {*(p++) = '}'; *p=0;return 0;}
+        P $2}
+        P $2else if (c=='{') { 
+        P $3if (p!=buffer) { *(p++) = '{'; *p=0; return 0; }
+        P $3else in_brackets = 1; 
+        P $2}
+        P $2else if (c==' ') { if (p!=buffer) { *p=0; return 0; } }
+        P $2else if (c=='\n') { if (p!=buffer) { *p=0; return 0; } }
+        P $2else if (c=='}') { *(p++) = '}'; *p=0; return 0; }
         P $2else *(p++) = c;
         P $1}
         P $1*p = 0; return EOF; /* read error maxsize reached */
@@ -769,10 +774,13 @@ FUNCTION load_structure
                                         P $1};
                                 ENDIF
                         ELSEIF $(REF) ~ d
-                                P $2}else if( !strcmp("$(prekey)$(KEY|NOKEYDEFINED){",token) ) {
+                                P $2}
+                                P $2else if (!strcmp("$(prekey)$(KEY|NOKEYDEFINED){",token)) {
                                 P $3$(TYPE) *cobj = create_$(TYPE)();
-                                P $3{ int error = load_$(TYPE)(cobj,THIS_FD);
-                                P $3if(error) return error; }
+                                P $3{
+                                P $4int error = load_$(TYPE)(cobj,THIS_FD);
+                                P $4if(error) return error; 
+                                P $3}
                                 P $3aisc_link((dllpublic_ext*)&($(ac)p$(IDENT)),(dllheader_ext*)cobj);
                         ELSEIF $(REF) ~ o
                                 P $1fprintf(THIS_FD,"$(prekey)$(KEY) {\n");
@@ -780,7 +788,8 @@ FUNCTION load_structure
                                 P $1if (error) return error; }
                                 P $1fprintf(THIS_FD,"}\n");
                         ELSEIF $(REF) ~ t,e
-                                P $2}else if( !strcmp("$(prekey)$(KEY|NOKEYDEFINED)",token) ) {
+                                P $2}
+                                P $2else if(!strcmp("$(prekey)$(KEY|NOKEYDEFINED)",token)) {
                                 P $3if (aisc_server_load_token(THIS_FD,token,$(TOKENSIZE))) return 1;
                                 IF $(TYPE) = aisc_string
                                         P $3$(access) = strdup(token);

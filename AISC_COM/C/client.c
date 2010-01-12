@@ -88,7 +88,8 @@ static void aisc_c_add_to_bytes_queue(aisc_com *link, char *data, int size)
     if (link->aisc_client_bytes_first){
         link->aisc_client_bytes_last->next = bl;
         link->aisc_client_bytes_last = bl;
-    }else{
+    }
+    else {
         link->aisc_client_bytes_first = bl;
         link->aisc_client_bytes_last = bl;
     }
@@ -137,7 +138,8 @@ int aisc_add_message_queue(aisc_com *link, long size)
 
     if (link->message_queue == 0) {
         link->message_queue = (int *)msg;
-    }else{
+    }
+    else {
         for (mp = (struct aisc_client_message_queue *) link->message_queue; mp->next; mp=mp->next) ;
         mp->next = msg;
     }
@@ -230,7 +232,8 @@ const char *aisc_client_get_m_id(const char *path, char **m_name, int *id) {
         if (p[1] == '~') {
             sprintf(buffer,"%s%s",getenv("HOME"),p+2);
             *m_name = (char *)strdup(buffer);
-        }else{
+        }
+        else {
             *m_name = (char *)strdup(p+1);
         }
         *id = -1;
@@ -296,7 +299,8 @@ static const char *aisc_client_open_socket(const char *path, int delay, int do_c
             if (connect(*psocket, (struct sockaddr *)&so_ad, 16)) {
                 return "";
             }
-        }else{
+        }
+        else {
             char one = 1;
             setsockopt(*psocket,SOL_SOCKET,SO_REUSEADDR,(const char *)&one,sizeof(one));
             if (bind(*psocket,(struct sockaddr *)&so_ad,16)){
@@ -310,7 +314,8 @@ static const char *aisc_client_open_socket(const char *path, int delay, int do_c
         }
         *unix_name = 0;
         return 0;
-    } else {
+    }
+    else {
         struct sockaddr_un so_ad;
         *psocket = socket(PF_UNIX, SOCK_STREAM, 0);
         if (*psocket <= 0) {
@@ -322,7 +327,8 @@ static const char *aisc_client_open_socket(const char *path, int delay, int do_c
             if (connect(*psocket, (struct sockaddr*)&so_ad, strlen(mach_name)+2)) {
                 return "";
             }
-        }else{
+        }
+        else {
             test = fopen(mach_name,"r");
             if (test) {
                 struct stat stt;
@@ -336,7 +342,8 @@ static const char *aisc_client_open_socket(const char *path, int delay, int do_c
             }
             if (unlink(mach_name)) {
                 ;
-            }else{
+            }
+            else {
                 printf("old socket found\n");
             }
             if (bind(*psocket,(struct sockaddr*)&so_ad,strlen(mach_name)+2)){
@@ -570,7 +577,8 @@ int aisc_get(aisc_com *link, int o_type, long object, ...)
 #if defined(DUMP_COMMUNICATION)
                         aisc_dump_hex("aisc_get bytestring: ", (char *)(arg_pntr[i][0]), size);
 #endif /* DUMP_COMMUNICATION */
-                    }else{
+                    }
+                    else {
                         arg_pntr[i][0] = 0;
                     }
                     break;

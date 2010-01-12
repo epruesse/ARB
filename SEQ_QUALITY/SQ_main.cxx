@@ -140,7 +140,8 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
                 aw_openstatus("Marking Sequences...");
                 SQ_mark_species(GLOBAL_gb_main, mark_below, marked_only);
                 aw_closestatus();
-            } else {
+            }
+            else {
                 SQ_GroupData *globalData = new SQ_GroupData_RNA;
                 SQ_count_nr_of_species(GLOBAL_gb_main);
                 aw_openstatus("Calculating pass 1 of 2 ...");
@@ -157,7 +158,8 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
                 }
                 delete globalData;
             }
-        } else {
+        }
+        else {
             aw_openstatus("Checking tree for irregularities...");
             SQ_TREE_ERROR check = NONE;
             if ((check = SQ_check_tree_structure(tree)) != NONE) {
@@ -182,7 +184,8 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
                 SQ_count_nr_of_species(GLOBAL_gb_main);
                 SQ_mark_species(GLOBAL_gb_main, mark_below, marked_only);
                 aw_closestatus();
-            } else {
+            }
+            else {
                 aw_openstatus("Calculating pass 1 of 2...");
                 SQ_reset_counters(tree);
                 SQ_GroupData *globalData = new SQ_GroupData_RNA;

@@ -118,22 +118,25 @@ AW_xfig_vectorfont *aw_read_xfigfont(char *filename) {
     while (l) {
         // (horizontal (uppermost (leftmost)))  line: length is gridx size
         if (l->y0==l->y1) {
-            ly=y=l->y0; if (l->x0 > l->x1) { x = l->x1; rx = l->x0;} else { x=l->x0; rx=l->x1;}
+            ly=y=l->y0;
+            if (l->x0 > l->x1) { x = l->x1; rx = l->x0; } else { x = l->x0; rx = l->x1; }
             if (y<gridxy || (y==gridxy && x<gridxx)) {
-                gridxx=x;
-                gridxy=y;
-                gridxl=l;
-                xfig_gridx=rx-x;
+                gridxx     = x;
+                gridxy     = y;
+                gridxl     = l;
+                xfig_gridx = rx-x;
             }
-        } else if (l->x0==l->x1) {
+        }
+        else if (l->x0==l->x1) {
             // (vertical (leftmost (uppermost)))  line: length is gridy size
             if (l->x0==l->x1) {
-                rx=x=l->x0; if (l->y0 > l->y1) {  y= l->y1; ly = l->y0;} else { y=l->y0; ly=l->y1;}
+                rx=x=l->x0;
+                if (l->y0 > l->y1) { y = l->y1; ly = l->y0; } else { y = l->y0; ly = l->y1; }
                 if (x<gridyx || (x==gridyx && y<gridyy)) {
-                    gridyx=x;
-                    gridyy=y;
-                    gridyl=l;
-                    xfig_gridy=ly-y;
+                    gridyx     = x;
+                    gridyy     = y;
+                    gridyl     = l;
+                    xfig_gridy = ly-y;
                 }
             }
         }
@@ -387,7 +390,8 @@ int    AW_device::zoomtext(int gc, const char *string, AW_pos x,AW_pos y, AW_pos
     // userscale is a user setting, usually 0.7 .. 1
     if (height>0) {
         scale_2=(AW_pos)height/g*aw_root->vectorfont_userscale;
-    } else {
+    }
+    else {
         filteri=filteri&(~AW_DEVICE_SIZE);
         // old zoom independent scaling, assuming height as font point size
         // scale_2=(AW_pos)height/g*(float)aw_root->vectorfont_userscale/get_scale();
@@ -458,7 +462,8 @@ int     AW_device::zoomtext4line(int gc, const char *string, AW_pos height,
         else
             // given string width relative to length of line
             scale_2 = (AW_pos)linelen/gx/strlen(string);
-    } else {
+    }
+    else {
         filteri=filteri&(~AW_DEVICE_SIZE);
         // old zoom independent scaling, assuming height as font point size
         scale_2=-(AW_pos)height/gy*aw_root->vectorfont_userscale/get_scale();

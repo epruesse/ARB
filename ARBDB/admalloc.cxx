@@ -582,7 +582,8 @@ void gbm_debug_mem(GB_MAIN_TYPE *Main)
                     for (j = index; j < Main->keycnt; j+=GBM_MAX_INDEX ) {
                         if (Main->keys[j].key){
                             printf("%15s", Main->keys[j].key);
-                        }else{
+                        }
+                        else {
                             printf("%15s", "*** unused ****");
                         }
                     }

@@ -164,7 +164,8 @@ void nt_create_all_awars(AW_root *awr, AW_default def) {
     awr->awar_string( AWAR_FOOTER, "", def);
     if (GB_read_clients(GLOBAL_gb_main)>=0){
         awr->awar_string( AWAR_TREE, "tree_main", GLOBAL_gb_main);
-    }else{
+    }
+    else {
         awr->awar_string( AWAR_TREE, "tree_main", def);
     }
 
@@ -1077,7 +1078,8 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     if (clone){
         sprintf(awar_tree,AWAR_TREE "_%li", clone);
         sprintf(window_title,"ARB_NT_%li",clone);
-    }else{
+    }
+    else {
         sprintf(awar_tree,AWAR_TREE);
         sprintf(window_title,"ARB_NT");
     }

@@ -29,7 +29,8 @@ void PS_print_paths( const PS_NodePtr _ps_node ) {
         for (PS_NodeMapConstIterator i = _ps_node->getChildrenBegin(); i != _ps_node->getChildrenEnd(); ++i) {
             PS_print_paths( i->second );
         }
-    } else {
+    }
+    else {
         // print path in leaf nodes
         printf( "[%4zu] ",__PATH->size() );
         for (vector<p>::const_iterator i=__PATH->begin(); i != __PATH->end(); ++i ) {

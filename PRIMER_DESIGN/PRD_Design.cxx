@@ -216,7 +216,8 @@ int PrimerDesign::insertNode ( Node *current_, unsigned char base_, PRD_Sequence
             current_->child[index]     = new Node ( current_,base_,pos_,offset_ ); // primer => new child with positive last_base_index
             primer_node_counter_left  += left_;
             primer_node_counter_right += right_;
-        } else {
+        }
+        else {
             current_->child[index] = new Node ( current_,base_,0 ); // no primer => new child with zero position
 
         }

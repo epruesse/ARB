@@ -202,7 +202,8 @@ GB_ERROR AWT_csp::go(AP_filter *filter){
                     if (filter && !filter->use_position(i)) continue;
                     if (freq_sum[j] > min_freq_sum) {
                         frequency[wf][j] = freqi[wf][i]/(float)freq_sum[j];
-                    }else{
+                    }
+                    else {
                         frequency[wf][j] = 0;
                         weights[j] = 0;
                     }
@@ -221,7 +222,8 @@ GB_ERROR AWT_csp::go(AP_filter *filter){
                 rates[j] = (mut_sum[j] / (float)freq_sum[j]);
                 if (transver[i] > 0) {
                     ttratio[j] = (minmut[i] - transver[i]) / (float)transver[i];
-                }else{
+                }
+                else {
                     ttratio[j] = 2.0;
                 }
                 if (ttratio[j] < 0.05) ttratio[j] = 0.05;

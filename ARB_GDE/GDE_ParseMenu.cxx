@@ -346,7 +346,8 @@ void ParseMenu()
             crop(in_line,head,temp);
             if(thisarg->type == TEXT){
                 strcpy(thisarg->textvalue,temp);
-            }else{
+            }
+            else {
                 (void)sscanf(temp,"%lf",&(thisarg->fvalue));
                 thisarg->ivalue = (int) thisarg->fvalue;
             }

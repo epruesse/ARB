@@ -257,7 +257,8 @@ bool PS_BitMap::get( const long _row, const long _col ) {
 bool PS_BitMap::triangle_set( const long _row, const long _col, const bool _value ) {
     if (_row > _col) {
         return set( _col,_row,_value );
-    } else {
+    }
+    else {
         return set( _row,_col,_value );
     }
 }
@@ -266,7 +267,8 @@ bool PS_BitMap::triangle_set( const long _row, const long _col, const bool _valu
 bool PS_BitMap::triangle_get( const long _row, const long _col ) {
     if (_row > _col) {
         return get( _col,_row );
-    } else {
+    }
+    else {
         return get( _row,_col );
     }
 }
@@ -531,7 +533,8 @@ bool PS_BitMap_Counted::set( const long _row, const long _col, const bool _value
     if (_value && !previous_value) {
         ++count_true_per_index[ _row ];
         ++count_true_per_index[ _col ];
-    } else if (!_value && previous_value) {
+    }
+    else if (!_value && previous_value) {
         --count_true_per_index[ _row ];
         --count_true_per_index[ _col ];
     }

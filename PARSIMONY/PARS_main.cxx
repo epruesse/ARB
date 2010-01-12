@@ -1255,7 +1255,8 @@ static GB_ERROR pars_check_size(AW_root *awr){
         for (i=0;filter[i];i++){
             if (filter[i] != '0') ali_len++;
         }
-    }else{
+    }
+    else {
         char *ali_name = awr->awar(AWAR_ALIGNMENT)->read_string();
         ali_len = GBT_get_alignment_len(GLOBAL_gb_main,ali_name);
         delete ali_name;

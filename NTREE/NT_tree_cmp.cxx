@@ -47,7 +47,8 @@ AWT_species_set_root::~AWT_species_set_root(){
 void AWT_species_set_root::add(const char *species_name){
     if (GBS_read_hash(species_hash,species_name) ){
         aw_message(GBS_global_string("Warning: Species '%s' is found more than once in tree", species_name));
-    }else{
+    }
+    else {
         GBS_write_hash(species_hash,species_name,species_counter++);
     }
 }
@@ -107,7 +108,8 @@ AWT_species_set::AWT_species_set(AP_tree *nodei,AWT_species_set_root *ssr,char *
     long species_index = GBS_read_hash(ssr->species_hash,species_name);
     if (species_index){
         bitstring[species_index/8] |= 1 << (species_index %8);
-    }else{
+    }
+    else {
         unfound_species_count = 1;
     }
     this->node = nodei;
@@ -143,7 +145,8 @@ AWT_species_set *AWT_species_set_root::move_tree_2_ssr(AP_tree *node){
         this->add(node->name);
         ss = new AWT_species_set(node,this,node->name);
         //      ssr->add(ss);
-    }else{
+    }
+    else {
         AWT_species_set *ls = move_tree_2_ssr(node->get_leftson());
         AWT_species_set *rs = move_tree_2_ssr(node->get_rightson());
         ss = new AWT_species_set(node,this,ls,rs);
@@ -177,7 +180,8 @@ AWT_species_set *AWT_species_set_root::find_best_matches_info(AP_tree *tree_sour
             sprintf(remark,"# %i",mismatches); // the #-sign is important (otherwise TREE_write_Newick will not work correctly)
             ss->node->remark_branch = strdup(remark);
         }
-    }else{
+    }
+    else {
         if(tree_source->name){
             this->search(ss,log);       // Search optimal position
         }

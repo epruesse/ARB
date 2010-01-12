@@ -144,7 +144,8 @@ struct gb_compress_tree *gb_build_uncompress_tree(const unsigned char *data,long
                     t->son[1] = (struct gb_compress_tree *)gbm_get_mem(sizeof(struct gb_compress_tree),GBM_CB_INDEX);
                 }
                 t=t->son[1];
-            }else{
+            }
+            else {
                 if (!t->son[0]) {
                     t->son[0] = (struct gb_compress_tree *)gbm_get_mem(sizeof(struct gb_compress_tree),GBM_CB_INDEX);
                 }
@@ -158,7 +159,8 @@ struct gb_compress_tree *gb_build_uncompress_tree(const unsigned char *data,long
         t->leave = 1;
         if (short_flag) {
             t->son[0] = (struct gb_compress_tree *)(long)((p[2]<<8)+p[3]);
-        }else{
+        }
+        else {
             t->son[0] = (struct gb_compress_tree *)(long)(p[2]);
         }
         t->son[1] = (struct gb_compress_tree *)(long)p[1]; // command
@@ -479,11 +481,13 @@ void gb_compress_huffmann_add_to_list(long val, struct gb_compress_list *element
         if (searchlast) {
             dat->next = searchlast->next;
             searchlast->next = dat;
-        }else{
+        }
+        else {
             dat->next = gb_compress_huffmann_list;
             gb_compress_huffmann_list = dat;
         }
-    }else{
+    }
+    else {
         gb_compress_huffmann_list = dat;
     }
 }
@@ -497,7 +501,8 @@ long gb_compress_huffmann_pop(long *val,struct gb_compress_list **element)
         *element = dat->element;
         gbm_free_mem((char *)dat,sizeof(struct gb_compress_huffmann_struct),GBM_CB_INDEX);
         return 1;
-    }else{
+    }
+    else {
         GB_internal_error("huffman compression failed");
         return 0;
     }
@@ -510,7 +515,8 @@ char *gb_compress_huffmann_rek(struct gb_compress_list *bc,int bits,int bitcnt,c
         dest = gb_compress_huffmann_rek(bc->son[1],(bits<<1)+1,bitcnt+1,dest);
         gbm_free_mem((char *)bc,sizeof(struct gb_compress_list),GBM_CB_INDEX);
         return dest;
-    }else{
+    }
+    else {
         *(dest++) = bits;
         *(dest++) = bc->command;
         *(dest++) = bc->value;
@@ -621,7 +627,8 @@ GB_BUFFER gb_compress_huffmann(GB_CBUFFER source, long size, long *msize, int la
                 bits = pbc->bits;
                 bitc = pbc->bitcnt;
                 GB_WRITE_BITS(dest, bitptr, bitc, bits, h_i);
-            }else{
+            }
+            else {
                 bits = pbid->bits;
                 bitc = pbid->bitcnt;
                 GB_WRITE_BITS(dest, bitptr, bitc, bits, h_i);
@@ -669,7 +676,8 @@ static GB_BUFFER gb_uncompress_equal_bytes(GB_CBUFFER s, long size, long *new_si
             for (;j;j--) {
                 *(dest++) = (char )(*(source++));
             }
-        }else{                                      // equal bytes compressed
+        }
+        else {                                      // equal bytes compressed
             if (!j) break;                          // end symbol
             if (j== -122) {
                 j = *(source++) & 0xff;
@@ -705,7 +713,8 @@ static GB_BUFFER gb_uncompress_equal_bytes(GB_CBUFFER s, long size, long *new_si
                 }
                 j = k;
                 for (;j;j--) *(dest++) = c;
-            }else{
+            }
+            else {
                 for (;j;j++) *(dest++) = c;
             }
         }
@@ -742,7 +751,8 @@ static GB_BUFFER gb_uncompress_huffmann(GB_CBUFFER source, long maxsize, long *n
         if (command == GB_CS_END) break;
         if (command == GB_CS_ID) {
             GB_READ_BITS(s, ch, bitp, 8, val);
-        } else {
+        }
+        else {
             val = (long) t->son[0];
         }
         *(p++) = (int)val;
@@ -997,16 +1007,21 @@ GB_CBUFFER gb_uncompress_data(GBDATA *gbd, GB_CBUFFER source, long size){
         }
         if (c == GB_COMPRESSION_HUFFMANN) {
             data = gb_uncompress_huffmann(data,size + GB_COMPRESSION_TAGS_SIZE_MAX, &new_size);
-        }else if (c == GB_COMPRESSION_RUNLENGTH) {
+        }
+        else if (c == GB_COMPRESSION_RUNLENGTH) {
             data = gb_uncompress_equal_bytes(data,size + GB_COMPRESSION_TAGS_SIZE_MAX, &new_size);
-        }else if (c == GB_COMPRESSION_DICTIONARY) {
+        }
+        else if (c == GB_COMPRESSION_DICTIONARY) {
             data = gb_uncompress_by_dictionary(gbd, data, size + GB_COMPRESSION_TAGS_SIZE_MAX, &new_size);
-        }else if (c == GB_COMPRESSION_SEQUENCE) {
+        }
+        else if (c == GB_COMPRESSION_SEQUENCE) {
             data = gb_uncompress_by_sequence(gbd,data,size,&error, &new_size);
-        }else if (c == GB_COMPRESSION_SORTBYTES) {
+        }
+        else if (c == GB_COMPRESSION_SORTBYTES) {
             data = gb_uncompress_longs(data,size, &new_size);
-        }else{
-            error = GBS_global_string("Internal Error: Cannot uncompress data of field '%s'",GB_read_key_pntr(gbd));
+        }
+        else {
+            error = GBS_global_string("Internal Error: Cannot uncompress data of field '%s'", GB_read_key_pntr(gbd));
         }
 
         if (!data && !error) error = GB_await_error();

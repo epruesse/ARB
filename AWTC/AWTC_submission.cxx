@@ -158,7 +158,8 @@ static void ed_submit_info_event(AW_window *aww) {
         else {
             aw_message(GB_await_error());
         }
-    }else{
+    }
+    else {
         GBS_strcat(strstruct,"Species not found");
     }
     

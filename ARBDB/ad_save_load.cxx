@@ -289,7 +289,8 @@ long gb_ascii_2_bin(const char *source,GBDATA *gbd) {
     if (*s == ':') {
         size = 0;
         s++;
-    }else{
+    }
+    else {
         for (i=0,k = 8;k && (c = *(s++));k--) {
             A_TO_I(c);
             i = (i<<4)+c;
@@ -370,7 +371,8 @@ GB_BUFFER gb_bin_2_ascii(GBDATA *gbd)
     GB_PUT(compressed,out);
     if (!xtended) {
         *(out++) = ':';
-    }else{
+    }
+    else {
         for (i = 0xf0000000,j=28;j>=0;j-=4,i=i>>4) {
             k = (int)((xtended & i)>>j);
             GB_PUT(k, out);
@@ -446,7 +448,8 @@ static long gb_write_rek(FILE *out, GBCONTAINER *gbc,long deep,long big_hunk) {
             c = gb->flags.security_read;
             GB_PUT_OUT(c,out);
             fprintf(out,"%i\t",gb->flags2.last_updated);
-        }else{
+        }
+        else {
             putc('\t',out);
         }
         switch (GB_TYPE(gb)) {
@@ -550,16 +553,20 @@ long gb_read_number(FILE *in) {
                 if (c0 &0x10) {
                     c4 = getc(in);
                     return c4 | (c3<<8) | (c2<<16) | (c1<<8);
-                }else{
+                }
+                else {
                     return (c3) | (c2<<8 ) | (c1<<16) | ((c0 & 0x0f)<<24);
                 }
-            }else{
+            }
+            else {
                 return (c2) | (c1<<8) | ((c0 & 0x1f)<<16);
             }
-        }else{
+        }
+        else {
             return (c1) | ((c0 & 0x3f)<<8);
         }
-    }else{
+    }
+    else {
         return c0;
     }
 }
@@ -651,7 +658,8 @@ int gb_write_bin_sub_containers(FILE *out,GBCONTAINER *gbc,long version,long dif
 
     if (!is_root){
         gb_put_number(i,out);
-    }else{
+    }
+    else {
         gb_write_out_long(i,out);
     }
 
@@ -676,7 +684,8 @@ int gb_write_bin_sub_containers(FILE *out,GBCONTAINER *gbc,long version,long dif
         if (h_gbd) {
             i = (int)gb_write_bin_rek(out,h_gbd,version,diff_save,index-counter);
             if (i) return i;
-        }else{
+        }
+        else {
             if (header[index].flags.changed == GB_DELETED ) {
                 putc(0,out);
                 putc(1,out);
@@ -800,7 +809,8 @@ int gb_write_bin(FILE *out,GBDATA *gbd,long version) {
         if (Main->keys[i].nref>0) {
             gb_put_number(Main->keys[i].nref,out);
             fprintf(out,"%s",Main->keys[i].key);
-        }else{
+        }
+        else {
             putc(0,out);        // 0 nref
             putc(1,out);        // empty key
         }
@@ -1023,10 +1033,12 @@ GB_ERROR GB_save_as(GBDATA *gb,const char *path,const char *savetype)
             }
             if (Main->qs.quick_save_disabled == 0){ // do we need an ARF file ??
                 gb_create_reference(path);
-            }else{
+            }
+            else {
                 gb_delete_reference(path);          // delete old ARF file
             }
-        }else{
+        }
+        else {
             goto error;
         }
     }
@@ -1100,7 +1112,8 @@ GB_ERROR GB_save_quick_as(GBDATA *gb_main, const char *path)
     mode = GB_mode_of_link(Main->path); // old master
     if (S_ISLNK(mode)){
         org_master = GB_follow_unix_link(Main->path);
-    }else{
+    }
+    else {
         org_master = strdup(Main->path);
     }
 
@@ -1125,7 +1138,8 @@ GB_ERROR GB_save_quick_as(GBDATA *gb_main, const char *path)
     if (strchr(path,'/') || strchr(org_master,'/') ){
         // dest or source in different directory
         full_path_of_source = gb_full_path(org_master);
-    }else{
+    }
+    else {
         full_path_of_source = strdup(org_master);
     }
 

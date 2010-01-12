@@ -92,7 +92,8 @@ void g_b_Consensus_add(Consensus *gcon, unsigned char *seq, long seq_len){
         c = *(s++);
         if (c == last){
             continue;
-        }else{
+        }
+        else {
         inc_hits:
             eq_count = i-li;
             gcon->used[c] = 1;
@@ -101,11 +102,13 @@ void g_b_Consensus_add(Consensus *gcon, unsigned char *seq, long seq_len){
             if (eq_count <= GB_RUNLENGTH_SIZE) {
                 c = max_priority;
                 while (li < i) p[li++] += c;
-            }else{
+            }
+            else {
                 c = max_priority * ( GB_RUNLENGTH_SIZE ) / eq_count;
                 if (c){
                     while (li < i) p[li++] += c;
-                }else{
+                }
+                else {
                     while (li < i) p[li++] |= 1;
                 }
             }
@@ -312,16 +315,20 @@ inline long g_b_read_number2(const unsigned char **s) {
                 if (c0 &0x10) {
                     c4 = (*((*s)++));
                     return c4 | (c3<<8) | (c2<<16) | (c1<<8);
-                }else{
+                }
+                else {
                     return (c3) | (c2<<8 ) | (c1<<16) | ((c0 & 0x0f)<<24);
                 }
-            }else{
+            }
+            else {
                 return (c2) | (c1<<8) | ((c0 & 0x1f)<<16);
             }
-        }else{
+        }
+        else {
             return (c1) | ((c0 & 0x3f)<<8);
         }
-    }else{
+    }
+    else {
         return c0;
     }
 }
@@ -333,13 +340,15 @@ inline void g_b_put_number2(int i, unsigned char **s) {
         j = (i>>8) | 0x80;
         *((*s)++)=j;
         *((*s)++)=i;
-    }else if (i<0x200000) {
+    }
+    else if (i<0x200000) {
         j = (i>>16) | 0xC0;
         *((*s)++)=j;
         j = (i>>8);
         *((*s)++)=j;
         *((*s)++)=i;
-    } else if (i<0x10000000) {
+    }
+    else if (i<0x10000000) {
         j = (i>>24) | 0xE0;
         *((*s)++)=j;
         j = (i>>16);
@@ -375,7 +384,8 @@ char *gb_compress_seq_by_master(const char *master,int master_len,int master_ind
         if (cm==cs && cs != last){
             *(d++) = 0;
             last = 1000;
-        }else{
+        }
+        else {
             *(d++) = cs;
             last = cs;
         }
@@ -808,7 +818,7 @@ char *g_b_uncompress_single_sequence_by_master(const char *s, const char *master
 
     for (i=size;i;) {
         j = *(source++);
-        if (j>0) {      // uncompressed data block
+        if (j>0) {                                  // uncompressed data block
             if (j>i) j=i;
             i -= j;
             for (;j;j--) {
@@ -817,8 +827,9 @@ char *g_b_uncompress_single_sequence_by_master(const char *s, const char *master
                 *(dest++) = c;
                 m++;
             }
-        }else{          // equal bytes compressed
-            if (!j) break;  // end symbol
+        }
+        else {                                      // equal bytes compressed
+            if (!j) break;                          // end symbol
             if (j== -122) {
                 j = *(source++) & 0xff;
                 j |= ((*(source++)) <<8) &0xff00;
@@ -835,7 +846,8 @@ char *g_b_uncompress_single_sequence_by_master(const char *s, const char *master
                 memcpy(dest, m, -j);
                 dest+= -j;
                 m+= -j;
-            } else {
+            }
+            else {
                 memset(dest, c, -j);
                 dest+= -j;
                 m+= -j;

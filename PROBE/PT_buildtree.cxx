@@ -24,11 +24,13 @@ POS_TREE *build_pos_tree (POS_TREE *pt, int anfangs_pos, int apos, int RNS_nr, u
             if (pthelp == pt) { // now we create a new root structure (size will change)
                 PT_create_leaf(psg.ptmain,&pthelp, (PT_BASES)psg.data[RNS_nr].data[i], anfangs_pos, apos, RNS_nr);
                 return pthelp;  // return the new root
-            } else {
+            }
+            else {
                 PT_create_leaf(psg.ptmain,&pthelp, (PT_BASES)psg.data[RNS_nr].data[i], anfangs_pos, apos, RNS_nr);
                 return pt;  // return the old root
             }
-        } else {            // go down the tree
+        }
+        else {            // go down the tree
             pthelp = pt_next;
             height++;
             i++;
@@ -92,7 +94,8 @@ POS_TREE *build_pos_tree (POS_TREE *pt, int anfangs_pos, int apos, int RNS_nr, u
     }
     if (PT_read_type(pthelp) == PT_NT_CHAIN) {
         pthelp = PT_add_to_chain(psg.ptmain,pthelp, RNS_nr, apos, anfangs_pos);
-    } else {
+    }
+    else {
         pthelp = PT_change_leaf_to_node(psg.ptmain,pthelp); /* Blatt loeschen */
         PT_create_leaf(psg.ptmain,&pthelp, (PT_BASES)psg.data[RNS_nr].data[i], anfangs_pos, apos, RNS_nr);  /* zwei neue Blaetter */
         PT_create_leaf(psg.ptmain,&pthelp, (PT_BASES)psg.data[RNS_nr_ref].data[j], anfangs_rpos_ref, anfangs_apos_ref, RNS_nr_ref);
@@ -144,7 +147,8 @@ long PTD_save_partial_tree(FILE *out,PTM2 *ptmain,POS_TREE * node,char *partstri
         if (son) {
             pos = PTD_save_partial_tree(out,ptmain,son,partstring+1,partsize-1,pos,ppos);
         }
-    }else{
+    }
+    else {
         PTD_clear_fathers(ptmain,node);
         long r_pos;
         int blocked;

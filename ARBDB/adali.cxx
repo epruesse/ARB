@@ -140,7 +140,8 @@ char **GBT_get_alignment_names(GBDATA *gbd) {
         name = GB_entry(ali,"alignment_name");
         if (!name) {
             erg[size] = strdup("alignment_name ???");
-        }else{
+        }
+        else {
             erg[size] = GB_read_string(name);
         }
         size ++;

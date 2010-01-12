@@ -227,12 +227,14 @@ static int ptnd_count_mishits2(POS_TREE *pt)
         if (apos>psg.apos) psg.apos = apos;
         if (!psg.data[name].is_group)   return 1;
         return 0;
-    }else if (PT_read_type(pt) == PT_NT_CHAIN) {
+    }
+    else if (PT_read_type(pt) == PT_NT_CHAIN) {
         psg.probe = 0;
         ptnd.mishits = 0;
         PT_read_chain(psg.ptmain,pt, ptnd_chain_count_mishits());
         return ptnd.mishits;
-    }else{
+    }
+    else {
         for (base = PT_QU; base< PT_B_MAX; base++) {
             mishits += ptnd_count_mishits2(PT_read_son(psg.ptmain,pt,(PT_BASES)base));
         }
@@ -271,7 +273,8 @@ extern "C" char *get_design_info(PT_tprobes  *tprobe)
                 apos = tprobe->apos - pdc->pos_groups[c];
                 if (apos > 0) {
                     cs = '+';
-                }else{
+                }
+                else {
                     apos = -apos; cs = '-';
                 }
                 break;
@@ -387,7 +390,8 @@ static int ptnd_count_mishits(char *probe, POS_TREE *pt,int height)
                 if (psg.data[name].data[pos++] != *(probe++))
                     return 0;
             }
-        } else {                /* chain */
+        }
+        else {                /* chain */
             psg.probe = probe;
             psg.height = height;
             ptnd.mishits = 0;
@@ -573,7 +577,8 @@ static void ptnd_remove_duplicated_probepart(PT_pdc *pdc)
                 if (parts->dt < parts_next->dt) {       /* delete higher dt */
                     destroy_PT_probeparts(parts_next);
                     parts_next = parts;
-                }else{
+                }
+                else {
                     destroy_PT_probeparts(parts);
                 }
             }
@@ -623,7 +628,8 @@ static void ptnd_check_part_inc_dt(PT_pdc *pdc, PT_probeparts *parts,
             if (psg.data[name].match->dt < ndt) return;
             /* there is a better hit for that sequence */
             match = psg.data[name].match;
-        }else{
+        }
+        else {
             match = create_PT_probematch();
             aisc_link(&ptnd.locs->ppm, match);
             psg.data[name].match = match;
@@ -672,7 +678,8 @@ struct ptnd_chain_check_part {
                                                 base) < 0.0) ) {
                 dt -= h;
                 split = 1;
-            }else{
+            }
+            else {
                 dt += h;
                 sbond += ptnd_check_max_bond(ptnd.pdc,probe[height]) - h;
             }
@@ -699,12 +706,14 @@ static void ptnd_check_part_all(POS_TREE *pt, double dt, double sum_bonds)
         apos = PT_read_apos(psg.ptmain,pt);
         ptnd_check_part_inc_dt( ptnd.pdc, ptnd.parts,
                                 name,apos,rpos,  dt, sum_bonds);
-    }else if (PT_read_type(pt) == PT_NT_CHAIN) {
+    }
+    else if (PT_read_type(pt) == PT_NT_CHAIN) {
         psg.probe = 0;
         ptnd.dt = dt;
         ptnd.sum_bonds = sum_bonds;
         PT_read_chain(psg.ptmain,pt, ptnd_chain_check_part(0));
-    }else{
+    }
+    else {
         for (base = PT_QU; base< PT_B_MAX; base++) {
             ptnd_check_part_all(PT_read_son(psg.ptmain,pt,(PT_BASES)base),dt,sum_bonds);
         }
@@ -733,14 +742,17 @@ static void ptnd_check_part(char *probe, POS_TREE *pt,int  height, double dt, do
                 if (height < PT_PART_DEEP) {
                     if ( i != probe[height] ) continue;
                     ndt = dt;
-                }else{
+                }
+                else {
                     if (split) {
                         h = ptnd_check_split(ptnd.pdc, probe, height,i);
                         if (h>0.0) ndt = dt+h; else ndt = dt-h;
-                    }else       if ((h = ptnd_check_split(ptnd.pdc, probe, height,i)) < 0.0 ) {
+                    }
+                    else if ((h = ptnd_check_split(ptnd.pdc, probe, height,i)) < 0.0 ) {
                         ndt = dt - h;
                         nsplit = 1;
-                    }else{
+                    }
+                    else {
                         ndt = dt + h;
                         nsum_bonds +=
                             ptnd_check_max_bond(ptnd.pdc,probe[height]) - h;
@@ -769,7 +781,8 @@ static void ptnd_check_part(char *probe, POS_TREE *pt,int  height, double dt, do
                                                  ref)) < 0.0 ) {
                     dt -= h;
                     split = 1;
-                }else{
+                }
+                else {
                     dt += h;
                     sum_bonds += ptnd_check_max_bond(ptnd.pdc,probe[height]) - h;
                 }
@@ -778,7 +791,8 @@ static void ptnd_check_part(char *probe, POS_TREE *pt,int  height, double dt, do
             ptnd_check_part_inc_dt(     ptnd.pdc,ptnd.parts,
                                         name, apos, rpos, dt, sum_bonds);
             return;
-        } else {                /* chain */
+        }
+        else {                /* chain */
             psg.probe = probe;
             psg.height = height;
             ptnd.dt = dt;

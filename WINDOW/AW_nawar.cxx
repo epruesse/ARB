@@ -226,7 +226,8 @@ AW_awar *AW_awar::remove_callback( void (*f)(AW_root*,AW_CL,AW_CL), AW_CL cd1, A
             vc->value_changed_cb_cd2 == cd2){
             if (prev) {
                 prev->next = vc->next;
-            }else{
+            }
+            else {
                 callback_list = vc->next;
             }
             delete vc;
@@ -326,7 +327,8 @@ GB_ERROR AW_awar::toggle_toggle(){
             case AW_FLOAT:      error = this->write_float(1.0);break;
             default: break;
         }
-    }else{
+    }
+    else {
         switch (this->variable_type) {
             case AW_STRING:     error = this->write_string("no");break;
             case AW_INT:        error = this->write_int(0);break;
@@ -343,7 +345,8 @@ GB_ERROR AW_awar::toggle_toggle(){
 AW_awar *AW_awar::set_minmax(float min, float max){
     if (min>max || variable_type == AW_STRING) {
         AW_ERROR("ERROR: set MINMAX for AWAR '%s' invalid",awar_name);
-    }else{
+    }
+    else {
         pp.f.min = min;
         pp.f.max = max;
         update(); // corrects wrong default value
@@ -355,7 +358,8 @@ AW_awar *AW_awar::set_minmax(float min, float max){
 AW_awar *AW_awar::add_target_var( char **ppchr){
     if (variable_type != AW_STRING) {
         AW_ERROR("Cannot set target awar '%s', WRONG AWAR TYPE",awar_name);
-    }else{
+    }
+    else {
         target_list = new AW_var_target((void *)ppchr,target_list);
         update_target(target_list);
     }
@@ -365,7 +369,8 @@ AW_awar *AW_awar::add_target_var( char **ppchr){
 AW_awar *AW_awar::add_target_var( float *pfloat){
     if (variable_type != AW_FLOAT) {
         AW_ERROR("Cannot set target awar '%s', WRONG AWAR TYPE",awar_name);
-    }else{
+    }
+    else {
         target_list = new AW_var_target((void *)pfloat,target_list);
         update_target(target_list);
     }
@@ -375,7 +380,8 @@ AW_awar *AW_awar::add_target_var( float *pfloat){
 AW_awar *AW_awar::add_target_var( long *pint){
     if (variable_type != AW_INT) {
         AW_ERROR("Cannot set target awar '%s', WRONG AWAR TYPE",awar_name);
-    }else{
+    }
+    else {
         target_list = new AW_var_target((void *)pint,target_list);
         update_target(target_list);
     }
@@ -395,7 +401,8 @@ AW_awar *AW_awar::set_srt(const char *srt)
 {
     if (variable_type != AW_STRING) {
         AW_ERROR("ERROR: set SRT for AWAR '%s' invalid",awar_name);
-    }else{
+    }
+    else {
         pp.srt = srt;
     }
     return this;
@@ -648,7 +655,8 @@ AW_error *AW_root::save_default( const char *var_name, const char *file_name) {
     if ( (vs = this->awar( var_name ))  ) {
         AW_root::save_default((AW_default)vs->gb_var, file_name);
         return 0;
-    }else {
+    }
+    else {
         AW_ERROR("AW_root::save_default: Variable %s not defined", var_name);
     }
     return 0;
@@ -671,7 +679,8 @@ AW_default AW_root::get_default(const char *varname) {
     if ( (vs = this->awar( varname )) ) {
         gbd = vs->gb_var;
         return (AW_default)GB_get_root(gbd);
-    }else {
+    }
+    else {
         AW_ERROR("AW_root::get_default: Variable %s not defined", varname);
     }
     return 0;
@@ -683,7 +692,8 @@ AW_default AW_root::get_gbdata( const char *varname) {
     if ( (vs = this->awar( varname )) ) {
         gbd = vs->gb_var;
         return (AW_default)gbd;
-    }else {
+    }
+    else {
         AW_ERROR("AW_root::get_gbdata: Variable %s not defined", varname);
     }
     return 0;

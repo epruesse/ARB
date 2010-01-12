@@ -305,7 +305,8 @@ void PT_build_species_hash(void){
         if (error) {
             delete psg.ecoli;
             psg.ecoli = 0;
-        }else{
+        }
+        else {
             psg.bi_ecoli = ref;
         }
     }

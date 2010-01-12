@@ -123,7 +123,8 @@ void initExtensions() {
     if (strlen(missingExtensions) > 0) {
         printf("ERROR: Some needed extensions are not present:%s\n",missingExtensions);
         char dummy;     scanf( "%c",&dummy);        exit(-1);
-    } else {
+    }
+    else {
 #ifdef DEBUG
         printf("DEBUG: All mandatory extensions seem to be ok.\n");
 #endif // DEBUG
@@ -137,7 +138,8 @@ void initExtensions() {
         printf("Some extra extensions are not present:%s\n",missingExtensions);
         printf("Molecule Display: Quality of Rendering is LOW!!\n");
         RNA3D->bPointSpritesSupported = false;
-    } else {
+    }
+    else {
 #ifdef DEBUG
         printf("DEBUG: All extra extensions seem to be ok as well.\n");
 #endif // DEBUG

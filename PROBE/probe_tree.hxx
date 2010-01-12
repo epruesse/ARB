@@ -266,7 +266,8 @@ static inline unsigned long long bswap_64(unsigned long long x) {
     do {                                                                \
         if (*ptr & 0x80) {                                              \
             PT_READ_INT(ptr,i); ptr+= sizeof(int); i &= 0x7fffffff;     \
-        }else{                                                          \
+        }                                                               \
+        else {                                                          \
             PT_READ_SHORT(ptr,i); ptr+= sizeof(short);                  \
         }                                                               \
     } while(0)
@@ -306,7 +307,8 @@ inline const char *PT_READ_CHAIN_ENTRY(const char* ptr,int mainapos,int *name,in
         else isapos = 0;
         if (rcei&0x40) {
             PT_READ_INT(rcep,rcei); rcep+=4; rcei &= 0x3fffffff;
-        }else{
+        }
+        else {
             PT_READ_SHORT(rcep,rcei); rcep+=2; rcei &= 0x3fff;
         }
         *rpos = (int)rcei;
@@ -314,12 +316,15 @@ inline const char *PT_READ_CHAIN_ENTRY(const char* ptr,int mainapos,int *name,in
             rcei = (*rcep);
             if (rcei&0x80) {
                 PT_READ_INT(rcep,rcei); rcep+=4; rcei &= 0x7fffffff;
-            }else{
+            }
+            else {
                 PT_READ_SHORT(rcep,rcei); rcep+=2; rcei &= 0x7fff;
             }
             *apos = (int)rcei;
-        }else{
-            *apos = (int)mainapos;}
+        }
+        else {
+            *apos = (int)mainapos;
+        }
         ptr = (char *)rcep;
     }
 
@@ -334,11 +339,13 @@ inline char *PT_WRITE_CHAIN_ENTRY(const char * const ptr,const int mainapos,int 
     int  isapos;
     if (name < 0x7f) {      /* write the name */
         *(wcep++) = name;
-    } else if (name <0x3fff) {
+    }
+    else if (name <0x3fff) {
         name |= 0x8000;
         PT_WRITE_SHORT(wcep,name);
         wcep += 2;
-    } else {
+    }
+    else {
         name |= 0xc0000000;
         PT_WRITE_INT(wcep,name);
         wcep += 4;
@@ -359,7 +366,8 @@ inline char *PT_WRITE_CHAIN_ENTRY(const char * const ptr,const int mainapos,int 
         PT_WRITE_SHORT(wcep,rpos);
         *wcep |= isapos;
         wcep += 2;
-    } else {
+    }
+    else {
         PT_WRITE_INT(wcep,rpos);
         *wcep |= 0x40+isapos;
         wcep += 4;
@@ -368,7 +376,8 @@ inline char *PT_WRITE_CHAIN_ENTRY(const char * const ptr,const int mainapos,int 
         if (apos < 0x7fff) {
             PT_WRITE_SHORT(wcep,apos);
             wcep += 2;
-        } else {
+        }
+        else {
             PT_WRITE_INT(wcep,apos);
             *wcep |= 0x80;
             wcep += 4;
@@ -401,31 +410,37 @@ inline POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
                 GBK_terminate("Your pt-server search tree is corrupt! You can not use it anymore.\n"
                               "Error: ((sec & LONG_SON) && (sec & INT_SONS)) == true\n"
                               "       this combination of both flags is not implemented\n");
-            } else {                                                // long/int
+            }
+            else {                                                // long/int
                 printf("Warning: A search tree of this size is not tested.\n"); 
                 printf("         (sec & LONG_SON) == true\n"); 
                 offset = 4 * i;
                 if ( (1<<base) & sec) {                             // long
                     pt_assert(sizeof(PT_PNTR) == 8);               // 64-bit necessary
                     PT_READ_PNTR((&node->data+1)+offset,i);
-                }else{                                              // int
+                }
+                else {                                              // int
                     PT_READ_INT((&node->data+1)+offset,i);
                 }
             }
 
-        } else {
+        }
+        else {
             if (sec & INT_SONS) {                                   // int/short
                 offset = i+i;
                 if ( (1<<base) & sec) {                             // int
                     PT_READ_INT((&node->data+1)+offset,i);
-                }else{                                              // short
+                }
+                else {                                              // short
                     PT_READ_SHORT((&node->data+1)+offset,i);
                 }
-            }else{                                                  // short/char
+            }
+            else {                                                  // short/char
                 offset = i;
                 if ( (1<<base) & sec) {                             // short
                     PT_READ_SHORT((&node->data+1)+offset,i);
-                }else{                                              // char
+                }
+                else {                                              // char
                     PT_READ_CHAR((&node->data+1)+offset,i);
                 }
             }
@@ -435,14 +450,17 @@ inline POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
             offset = i+i;
             if ( (1<<base) & sec) {
                 PT_READ_INT((&node->data+1)+offset,i);
-            }else{
+            }
+            else {
                 PT_READ_SHORT((&node->data+1)+offset,i);
             }
-        }else{
+        }
+        else {
             offset = i;
             if ( (1<<base) & sec) {
                 PT_READ_SHORT((&node->data+1)+offset,i);
-            }else{
+            }
+            else {
                 PT_READ_CHAR((&node->data+1)+offset,i);
             }
         }
@@ -450,7 +468,8 @@ inline POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
         pt_assert(i >= 0);
         return (POS_TREE *)(((char*)node)-i);
 
-    }else{          // stage 1 or 2 ->father
+    }
+    else {          // stage 1 or 2 ->father
         if (!( (1<<base) & node->flags)) return NULL;  /* bit not set */
         base = (PT_BASES)PT_count_bits[base][node->flags];
         PT_READ_PNTR((&node->data)+sizeof(PT_PNTR)*base+ptmain->mode,i);
@@ -477,7 +496,8 @@ inline int PT_read_name(PTM2 *ptmain,POS_TREE *node)
     int i;
     if (node->flags&1){
         PT_READ_INT((&node->data)+ptmain->mode,i);
-    }else{
+    }
+    else {
         PT_READ_SHORT((&node->data)+ptmain->mode,i);
     }
     pt_assert(i >= 0);
@@ -491,7 +511,8 @@ inline int PT_read_rpos(PTM2 *ptmain,POS_TREE *node)
     if (node->flags&1) data+=2;
     if (node->flags&2){
         PT_READ_INT(data,i);
-    }else{
+    }
+    else {
         PT_READ_SHORT(data,i);
     }
     pt_assert(i >= 0);
@@ -506,7 +527,8 @@ inline int PT_read_apos(PTM2 *ptmain,POS_TREE *node)
     if (node->flags&2) data+=2;
     if (node->flags&4){
         PT_READ_INT(data,i);
-    }else{
+    }
+    else {
         PT_READ_SHORT(data,i);
     }
     pt_assert(i >= 0);
@@ -525,7 +547,8 @@ int PT_read_chain(PTM2 *ptmain,POS_TREE *node, T func)
     if (node->flags&1){
         PT_READ_INT(data,pos);
         data += 4;
-    }else{
+    }
+    else {
         PT_READ_SHORT(data,pos);
         data += 2;
     }

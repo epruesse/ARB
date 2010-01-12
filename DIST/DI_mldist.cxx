@@ -29,7 +29,8 @@ void di_mldist::givens(di_ml_matrix a,long i,long j,long n,double ctheta,double 
             d = ctheta * a[i - 1][k] + stheta * a[j - 1][k];
             a[j - 1][k] = ctheta * a[j - 1][k] - stheta * a[i - 1][k];
             a[i - 1][k] = d;
-        } else {
+        }
+        else {
             d = ctheta * a[k][i - 1] + stheta * a[k][j - 1];
             a[k][j - 1] = ctheta * a[k][j - 1] - stheta * a[k][i - 1];
             a[k][i - 1] = d;
@@ -46,7 +47,8 @@ void di_mldist::coeffs(double x,double y,double *c,double *s,double accuracy)
     if (root < accuracy) {
         *c = 1.0;
         *s = 0.0;
-    } else {
+    }
+    else {
         *c = x / root;
         *s = y / root;
     }
@@ -170,7 +172,8 @@ void            di_mldist::build_predikt_table(int pos){
                 akt_slopes[0][b2][b1] = akt_slopes[0][b1][b2];
                 akt_curves[0][b2][b1] = akt_curves[0][b1][b2];
                 akt_infs[0][b2][b1] = 0;
-            }else{
+            }
+            else {
                 akt_infs[0][b1][b2] = 1;
                 akt_infs[0][b2][b1] = 1;
             }
@@ -268,7 +271,8 @@ const char *di_mldist::makedists()
                             break;
                         }
 
-                    } else {
+                    }
+                    else {
                         if ((slope > 0.0 && delta < 0.0) || (slope < 0.0 && delta > 0.0))
                             delta /= -2;
                         if (tt + delta < 0 && tt<= epsilon) {
@@ -276,7 +280,8 @@ const char *di_mldist::makedists()
                         }
                         tt += delta;
                     }
-                } else {
+                }
+                else {
                     delta /= -2;
                     tt += delta;
                     if (tt < 0) tt = 0;

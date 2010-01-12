@@ -599,7 +599,8 @@ double ap_calc_bootstrap_remark_sub(int seq_len, const char *old, const char *ne
             freq[i] = sum[i] / double(asum); // relative frequencies of -1, 0, 1
             if (sum[i] >0){
                 log_freq[i] = log(freq[i]);
-            }else{
+            }
+            else {
                 log_freq[i] = -1e100; // minus infinit
             }
         }
@@ -693,10 +694,12 @@ void ap_calc_leaf_branch_length(AP_tree_nlen *leaf){
     if (!leaf->father->father){ // at root
         leaf->father->leftlen = blen*.5;
         leaf->father->rightlen = blen*.5;
-    }else{
+    }
+    else {
         if (leaf->father->leftson == leaf){
             leaf->father->leftlen = blen;
-        }else{
+        }
+        else {
             leaf->father->rightlen = blen;
         }
     }
@@ -719,11 +722,13 @@ void ap_calc_branch_lengths(AP_tree_nlen */*root*/, AP_tree_nlen *son, double /*
         old_len = fathr->leftlen + fathr->rightlen;
         fathr->leftlen = blen *.5;
         fathr->rightlen = blen *.5;
-    }else{
+    }
+    else {
         if (fathr->leftson == son){
             old_len = fathr->leftlen;
             fathr->leftlen = blen;
-        }else{
+        }
+        else {
             old_len = fathr->rightlen;
             fathr->rightlen = blen;
         }
@@ -749,17 +754,20 @@ void ap_check_leaf_bl(AP_tree_nlen *node){
             if (node->father->leftlen + node->father->rightlen == ap_undef_bl){
                 ap_calc_leaf_branch_length(node);
             }
-        }else if (node->father->leftson == node){
+        }
+        else if (node->father->leftson == node) {
             if (node->father->leftlen == ap_undef_bl){
                 ap_calc_leaf_branch_length(node);
             }
-        }else{
+        }
+        else {
             if (node->father->rightlen == ap_undef_bl){
                 ap_calc_leaf_branch_length(node);
             }
         }
         return;
-    }else{
+    }
+    else {
         if (node->leftlen == ap_undef_bl)   ap_calc_leaf_branch_length((AP_tree_nlen *)node->leftson);
         if (node->rightlen== ap_undef_bl)   ap_calc_leaf_branch_length((AP_tree_nlen *)node->rightson);
     }
@@ -865,7 +873,8 @@ AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, Mutati
 
             if (node[0]->is_leaf){
                 tip = node[0]; brother = node[1];
-            }else{
+            }
+            else {
                 tip = node[1]; brother = node[0];
             }
 

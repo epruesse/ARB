@@ -19,7 +19,8 @@ void PS_print_set_ranges( const char *_set_name, const set<T> &_set, const bool 
     printf( "%s size (%3zu) : ", _set_name, _set.size() );
     if (_set.size() == 0) {
         printf( "(empty)" );
-    } else {
+    }
+    else {
         typename set<T>::const_iterator range_begin = _set.begin();
         typename set<T>::const_iterator range_end   = range_begin;
         typename set<T>::const_iterator it = _set.begin();
@@ -28,10 +29,12 @@ void PS_print_set_ranges( const char *_set_name, const set<T> &_set, const bool 
               ++it ) {
             if (*it == (*range_end)+1) {
                 range_end = it;
-            } else {
+            }
+            else {
                 if (range_end == range_begin) {
                     cout << *range_begin << " ";
-                } else {
+                }
+                else {
                     cout << *range_begin << "-" << *range_end << " ";
                 }
                 range_begin = it;
@@ -51,7 +54,8 @@ void PS_print_map_ranges( const char *_map_name, const map<T1,T2> &_map, const b
     fflush( stdout );
     if (_map.size() == 0) {
         printf( "%s size (  0) : (empty)", _map_name );
-    } else {
+    }
+    else {
         if (_compare_keys) {
             printf( "%s size (%3i) : ", _map_name, _map.size() );
             typename map<T1,T2>::const_iterator range_begin = _map.begin();
@@ -62,10 +66,12 @@ void PS_print_map_ranges( const char *_map_name, const map<T1,T2> &_map, const b
                   ++it ) {
                 if (it->first == range_end->first+1) {
                     range_end = it;
-                } else {
+                }
+                else {
                     if (range_end == range_begin) {
                         cout << "(" << range_begin->first << "," << range_begin->second << ") ";
-                    } else {
+                    }
+                    else {
                         cout << "(" << range_begin->first << "-" << range_end->first << "," << range_begin->second << ") ";
                     }
                     range_begin = it;
@@ -74,10 +80,12 @@ void PS_print_map_ranges( const char *_map_name, const map<T1,T2> &_map, const b
             }
             if (range_end == range_begin) {
                 cout << "(" << range_begin->first << "," << range_begin->second << ") ";
-            } else {
+            }
+            else {
                 cout << "(" << range_begin->first << "-" << range_end->first << "," << range_begin->second << ") ";
             }
-        } else {
+        }
+        else {
             map<T2,set<pair<T1,T1> > > value2indices;
             map<T2,unsigned long int>  value2count;
             pair<T1,T1> range;
@@ -91,13 +99,15 @@ void PS_print_map_ranges( const char *_map_name, const map<T1,T2> &_map, const b
                 if (it->second == cur_value) {
                     if (it->first == range.second+1) {
                         range.second = it->first;
-                    } else {
+                    }
+                    else {
                         value2indices[ cur_value ].insert( range );
                         value2count[ cur_value ] += range.second - range.first +1;
                         range.first  = it->first;
                         range.second = it->first;
                     }
-                } else {
+                }
+                else {
                     value2indices[ cur_value ].insert( range );
                     value2count[ cur_value ] += range.second - range.first +1;
                     range.first  = it->first;
@@ -223,12 +233,14 @@ unsigned long int PS_test_candidate_on_bitmap( float             *_filling_level
                     continue;   // obviously a probe cant differ a species from itself
                 if (not_in_path_ID > *path_ID) {
                     gain += !_map->get(not_in_path_ID, *path_ID);
-                } else {
+                }
+                else {
                     gain += !_map->get(*path_ID, not_in_path_ID);
                 }
             }
         }
-    } else {
+    }
+    else {
         for ( SpeciesID not_in_path_ID = __MIN_ID;
               not_in_path_ID <= __MAX_ID;
               ++not_in_path_ID) {
@@ -245,7 +257,8 @@ unsigned long int PS_test_candidate_on_bitmap( float             *_filling_level
                     continue;   // obviously a probe cant differ a species from itself
                 if (not_in_path_ID > *path_ID) {
                     gain += !__MAP->get(not_in_path_ID, *path_ID);
-                } else {
+                }
+                else {
                     gain += !__MAP->get(*path_ID, not_in_path_ID);
                 }
             }
@@ -500,12 +513,14 @@ void PS_apply_path_to_bitmap( IDSet &_path, const bool _silent = false, PS_BitMa
                 if (not_in_path_ID == *path_ID) continue;   // obviously a probe cant differ a species from itself
                 if (not_in_path_ID > *path_ID) {
                     gain += !_map->set(not_in_path_ID, *path_ID, true);
-                } else {
+                }
+                else {
                     gain += !_map->set(*path_ID, not_in_path_ID, true);
                 }
             }
         }
-    } else { // called for __MAP
+    }
+    else { // called for __MAP
         for ( SpeciesID not_in_path_ID = __MIN_ID;
               not_in_path_ID <= __MAX_ID;
               ++not_in_path_ID) {
@@ -521,7 +536,8 @@ void PS_apply_path_to_bitmap( IDSet &_path, const bool _silent = false, PS_BitMa
                 if (not_in_path_ID == *path_ID) continue;   // obviously a probe cant differ a species from itself
                 if (not_in_path_ID > *path_ID) {
                     gain += !__MAP->set(not_in_path_ID, *path_ID, true);
-                } else {
+                }
+                else {
                     gain += !__MAP->set(*path_ID, not_in_path_ID, true);
                 }
             }
@@ -540,7 +556,8 @@ float PS_filling_level( PS_CandidatePtr _candidate = 0 ) {
     if (_candidate) {
         _candidate->filling_level = percentage;
         _candidate->false_IDs     = __BITS_IN_MAP - trues;
-    } else {
+    }
+    else {
         printf( "PS_filling_level() : bitmap (%lu) now has %lu trues and %lu falses -- %.5f%% filled\n", __BITS_IN_MAP, trues, __BITS_IN_MAP-trues, percentage );
     }
     return percentage;
@@ -1099,7 +1116,8 @@ int main( int   argc,
         printf( "  %i,%i", id1, id2 );
         if (id1 < id2) {
             noMatches.insert( ID2IDPair(id1,id2) );
-        } else {
+        }
+        else {
             noMatches.insert( ID2IDPair(id2,id1) );
         }
     }
@@ -1134,7 +1152,8 @@ int main( int   argc,
         for (id2 = 0; id2 <= __MAX_ID; ++id2 ) {
             if (id1 > id2) {
                 __MAP->setTrue( id1,id2 );
-            } else {
+            }
+            else {
                 __MAP->setTrue( id2,id1 );
             }
         }
@@ -1179,7 +1198,8 @@ int main( int   argc,
         candidates_file = new PS_FileBuffer( candidates_filename, PS_FileBuffer::WRITEONLY );
         __CANDIDATES_ROOT->false_IDs = __BITS_IN_MAP;
         __CANDIDATES_ROOT->save( candidates_file, __BITS_IN_MAP );
-    } else {
+    }
+    else {
         printf( "loading candidates..\n" );
         candidates_file = new PS_FileBuffer( candidates_filename+1, PS_FileBuffer::READONLY );
         __CANDIDATES_ROOT->load( candidates_file, __BITS_IN_MAP, db->getConstRootNode() );

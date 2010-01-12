@@ -40,7 +40,8 @@ void PS_print_paths( GBDATA *_pb_node ) {
             PS_print_paths( pb_child );
             pb_child = PS_get_next_node( pb_child );
         }
-    } else {
+    }
+    else {
         // print path in leaf nodes
         printf( "[%6zu] ",__PATH->size() );
         for (IDVectorCIter i=__PATH->begin(); i != __PATH->end(); ++i ) {
@@ -98,7 +99,8 @@ int main( int argc,
     if (!first_level_node) {
         printf( "no 'node' found in group_tree\n" );
         error = GB_export_error( "no 'node' found in group_tree" );
-    } else {
+    }
+    else {
         printf( "starting with first toplevel nodes\n" );
         // print 1st level nodes (and its subtrees)
         do {

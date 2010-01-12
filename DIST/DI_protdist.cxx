@@ -414,7 +414,8 @@ void di_protdist::givens(di_aa_matrix a,long i,long j,long n,double ctheta,doubl
             d = ctheta * a[i - 1][k] + stheta * a[j - 1][k];
             a[j - 1][k] = ctheta * a[j - 1][k] - stheta * a[i - 1][k];
             a[i - 1][k] = d;
-        } else {
+        }
+        else {
             d = ctheta * a[k][i - 1] + stheta * a[k][j - 1];
             a[k][j - 1] = ctheta * a[k][j - 1] - stheta * a[k][i - 1];
             a[k][i - 1] = d;
@@ -431,7 +432,8 @@ void di_protdist::coeffs(double x,double y,double *c,double *s,double accuracy)
     if (root < accuracy) {
         *c = 1.0;
         *s = 0.0;
-    } else {
+    }
+    else {
         *c = x / root;
         *s = y / root;
     }
@@ -555,49 +557,57 @@ void            di_protdist::build_predikt_table(int pos){
                 d2p = 0.0;
                 if (b1 != asx && b1 != glx && b2 != asx && b2 != glx){
                     predict(tt, b1, b2);
-                } else {
+                }
+                else {
                     if (b1 == asx) {
                         if (b2 == asx) {
                             predict(tt, 2L, 2L);
                             predict(tt, 2L, 3L);
                             predict(tt, 3L, 2L);
                             predict(tt, 3L, 3L);
-                        } else {
+                        }
+                        else {
                             if (b2 == glx) {
                                 predict(tt, 2L, 5L);
                                 predict(tt, 2L, 6L);
                                 predict(tt, 3L, 5L);
                                 predict(tt, 3L, 6L);
-                            } else {
+                            }
+                            else {
                                 predict(tt, 2L, b2);
                                 predict(tt, 3L, b2);
                             }
                         }
-                    } else {
+                    }
+                    else {
                         if (b1 == glx) {
                             if (b2 == asx) {
                                 predict(tt, 5L, 2L);
                                 predict(tt, 5L, 3L);
                                 predict(tt, 6L, 2L);
                                 predict(tt, 6L, 3L);
-                            } else {
+                            }
+                            else {
                                 if (b2 == glx) {
                                     predict(tt, 5L, 5L);
                                     predict(tt, 5L, 6L);
                                     predict(tt, 6L, 5L);
                                     predict(tt, 6L, 6L);
-                                } else {
+                                }
+                                else {
                                     predict(tt, 5L, b2);
                                     predict(tt, 6L, b2);
                                 }
                             }
-                        } else {
+                        }
+                        else {
                             if (b2 == asx) {
                                 predict(tt, b1, 2L);
                                 predict(tt, b1, 3L);
                                 predict(tt, b1, 2L);
                                 predict(tt, b1, 3L);
-                            } else if (b2 == glx) {
+                            }
+                            else if (b2 == glx) {
                                 predict(tt, b1, 5L);
                                 predict(tt, b1, 6L);
                                 predict(tt, b1, 5L);
@@ -613,7 +623,8 @@ void            di_protdist::build_predikt_table(int pos){
                     akt_slopes[0][b2][b1] = akt_slopes[0][b1][b2];
                     akt_curves[0][b2][b1] = akt_curves[0][b1][b2];
                     akt_infs[0][b2][b1] = 0;
-                }else{
+                }
+                else {
                     akt_infs[0][b1][b2] = 1;
                     akt_infs[0][b2][b1] = 1;
                 }
@@ -717,7 +728,8 @@ const char *di_protdist::makedists()
                                 break;
                             }
 
-                        } else {
+                        }
+                        else {
                             if ((slope > 0.0 && delta < 0.0) || (slope < 0.0 && delta > 0.0))
                                 delta /= -2;
                             if (tt + delta < 0 && tt<= epsilon) {
@@ -725,13 +737,15 @@ const char *di_protdist::makedists()
                             }
                             tt += delta;
                         }
-                    } else {
+                    }
+                    else {
                         delta /= -2;
                         tt += delta;
                         if (tt < 0) tt = 0;
                     }
                 } while (iterations < 20);
-            } else {                    // cat < kimura
+            }
+            else {                    // cat < kimura
                 m = 0;
                 n = 0;
                 const ap_pro *seq1 = entries[i]->sequence_protein->get_sequence();
@@ -746,7 +760,8 @@ const char *di_protdist::makedists()
                 }
                 if (n < 5) {            // no info
                     tt = -1.0;
-                }else{
+                }
+                else {
                     switch (whichcat) {
                         case kimura:
                             {
@@ -755,7 +770,8 @@ const char *di_protdist::makedists()
                                 if (drel < 0.0) {
                                     aw_message(GB_export_errorf("DISTANCE BETWEEN SEQUENCES %3ld AND %3ld IS TOO LARGE FOR KIMURA FORMULA", i, j));
                                     tt = -1.0;
-                                }else{
+                                }
+                                else {
                                     tt = -log(drel);
                                 }
                             }
