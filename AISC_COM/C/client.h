@@ -35,7 +35,6 @@ int aisc_add_message_queue P_((aisc_com *link, long size));
 int aisc_check_error P_((aisc_com *link));
 char *aisc_client_get_hostname P_((void));
 const char *aisc_client_get_m_id P_((const char *path, char **m_name, int *id));
-const char *aisc_client_open_socket P_((const char *path, int delay, int do_connect, int *psocket, char **unix_name));
 void *aisc_init_client P_((aisc_com *link));
 aisc_com *aisc_open P_((const char *path, long *mgr, long magic));
 int aisc_close P_((aisc_com *link));
