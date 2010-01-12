@@ -259,7 +259,7 @@ const char *aisc_client_get_m_id(const char *path, char **m_name, int *id) {
     return 0;
 }
 
-const char *aisc_client_open_socket(const char *path, int delay, int do_connect, int *psocket, char **unix_name) {
+static const char *aisc_client_open_socket(const char *path, int delay, int do_connect, int *psocket, char **unix_name) {
     char            buffer[128];
     struct in_addr  addr;                                     /* union -> u_long  */
     struct hostent *he;
@@ -373,19 +373,20 @@ static void aisc_free_link(aisc_com *link) {
     free(link);
 }
 
-aisc_com *aisc_open(const char *path,long *mgr, long magic)
-{
+aisc_com *aisc_open(const char *path,long *mgr, long magic) {
     aisc_com *link;
     const char *err;
-    static char *unix_name = 0;
 
     link = (aisc_com *) calloc(sizeof(aisc_com), 1);
     link->aisc_client_bytes_first = link->aisc_client_bytes_last = NULL;
     link->magic = magic;
-    err = aisc_client_open_socket(path, TCP_NODELAY, 1, &link->socket, &unix_name);
-    if(unix_name) free(unix_name);
+    {
+        static char *unix_name = 0;
+        err = aisc_client_open_socket(path, TCP_NODELAY, 1, &link->socket, &unix_name);
+        freenull(unix_name);
+    }
     if (err) {
-        free((char *)link);
+        free(link);
         if (*err) PRTERR("ARB_DB_CLIENT_OPEN");
         return 0;
     }
