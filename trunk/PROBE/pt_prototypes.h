@@ -19,7 +19,6 @@
 
 
 /* PT_new_design.cxx */
-int ptnd_check_pure P_((char *probe));
 double ptnd_check_split P_((PT_pdc *pdc, char *probe, int pos, char ref));
 extern "C" char *get_design_info P_((PT_tprobes *tprobe));
 extern "C" char *get_design_hinfo P_((PT_tprobes *tprobe));
