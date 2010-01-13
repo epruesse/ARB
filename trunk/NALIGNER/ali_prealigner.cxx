@@ -13,16 +13,8 @@
 
 unsigned long   random_stat[6] = {0, 0, 0, 0, 0, 0};
 
-/*****************************************************************************
- *
- * structure ali_prealigner_mask
- *
- *****************************************************************************/
-
-/*
- * Insert a new map
- */
 void ali_prealigner_mask::insert(ALI_MAP * in_map, float costs) {
+    // Insert a new map
     unsigned long   i;
 
     calls++;
@@ -59,10 +51,8 @@ void ali_prealigner_mask::insert(ALI_MAP * in_map, float costs) {
     }
 }
 
-/*
- * Delete expensive parts of solution
- */
 void ali_prealigner_mask::delete_expensive(ALI_PREALIGNER_CONTEXT * context, ALI_PROFILE * profile) {
+    // Delete expensive parts of solution
     ALI_MAP        *inverse_map;
     unsigned long   start_hel, end_hel;
     unsigned long   start_seq, end_seq;
@@ -83,9 +73,7 @@ void ali_prealigner_mask::delete_expensive(ALI_PREALIGNER_CONTEXT * context, ALI
 
     max_cost = profile->w_sub_maximum() * context->max_cost_of_sub_percent;
 
-    /*
-     * Delete expensive Bases
-     */
+    // Delete expensive Bases
     error_counter = 0;
     for (i = map->first_base(); i <= map->last_base(); i++) {
         if (!(map->is_inserted(i)) &&
@@ -101,9 +89,7 @@ void ali_prealigner_mask::delete_expensive(ALI_PREALIGNER_CONTEXT * context, ALI
             }
         }
         else {
-            /*
-             * If error was in helix => delete helix total
-             */
+            // If error was in helix => delete helix total
             if (error_counter > 0 &&
                 profile->is_in_helix(map->position(i - 1), &start_hel, &end_hel)) {
                 for (j = i - 1; map->position(j) >= long(start_hel); j--) ;
@@ -114,29 +100,21 @@ void ali_prealigner_mask::delete_expensive(ALI_PREALIGNER_CONTEXT * context, ALI
         }
     }
 
-    /*
-     * Delete expensive Helizes
-     */
+    // Delete expensive Helizes
     inverse_map = map->inverse_without_inserts();
     for (i = inverse_map->first_base(); i <= inverse_map->last_base(); i++) {
-        /*
-         * found a helix
-         */
+        // found a helix
         if (profile->is_in_helix(i, &start_hel, &end_hel)) {
             if (i != start_hel)
                 ali_fatal_error("Inconsistent positions",
                                 "ali_prealigner_mask::delete_expensive()");
             compl_pos = profile->complement_position(start_hel);
-            /*
-             * only forward bindings
-             */
+            // only forward bindings
             if (compl_pos > long(end_hel)) {
                 helix_cost = 0.0;
                 helix_counter = 0;
                 while (i <= end_hel) {
-                    /*
-                     * is binding ?
-                     */
+                    // is binding ?
                     if (compl_pos > 0) {
                         if (!inverse_map->is_undefined(i)) {
                             base1 = (profile->sequence())->base(
@@ -181,17 +159,11 @@ void ali_prealigner_mask::delete_expensive(ALI_PREALIGNER_CONTEXT * context, ALI
     }
     delete          inverse_map;
 
-    /*
-     * Check for good parts
-     */
+    // Check for good parts
     for (map_pos = map->first_base(); map_pos <= map->last_base(); map_pos++) {
-        /*
-         * search next defined segment
-         */
+        // search next defined segment
         if (!map->is_undefined(map_pos)) {
-            /* 
-             * find start and end of segment
-             */
+            // find start and end of segment
             start_seq     = map_pos;
             start_mapped  = map->position(map_pos);
             for (map_pos++;
@@ -201,17 +173,13 @@ void ali_prealigner_mask::delete_expensive(ALI_PREALIGNER_CONTEXT * context, ALI
             end_seq    = map_pos - 1;
             end_mapped = map->position(end_seq);
 
-            /*
-             * Check segment for helizes
-             */
+            // Check segment for helizes
             found_helix = 0;
             start_ok_flag = 0;
             for (i = start_seq; i <= end_seq; i++) {
                 if (profile->is_in_helix(map->position(i), &start_hel, &end_hel)) {
                     found_helix++;
-                    /*
-                     * Helix is inside the segment
-                     */
+                    // Helix is inside the segment
                     if (start_hel >= start_mapped && end_hel <= end_mapped) {
                         if (start_ok_flag == 0) {
                             start_ok = start_hel;
@@ -222,24 +190,18 @@ void ali_prealigner_mask::delete_expensive(ALI_PREALIGNER_CONTEXT * context, ALI
                 }
             }
 
-            /*
-             * Found good helizes
-             */
+            // Found good helizes
             if (start_ok_flag == 1) {
                 for (i = start_seq; map->position(i) < long(start_ok); i++) map->undefine(i);
                 for (i = end_seq; map->position(i) > long(end_ok); i--) map->undefine(i);
             }
             else {
-                /*
-                 * Found bad helizes
-                 */
+                // Found bad helizes
                 if (found_helix > 0) {
                     for (i = start_seq; i <= end_seq; i++)
                         map->undefine(i);
                 }
-                /*
-                 * Segment without helix
-                 */
+                // Segment without helix
                 else {
                     if (end_seq - start_seq + 1 >= (unsigned long)((2 * context->intervall_border) + context->intervall_center)) {
                         for (i = start_seq; i < start_seq + context->intervall_border; i++) map->undefine(i);
@@ -491,10 +453,8 @@ void ALI_PREALIGNER::calculate_matrix() {
     delete          prev_col;
 }
 
-/*
- * Generate a sub_solution by deleting all undefined segments
- */
 void ALI_PREALIGNER::generate_solution(ALI_MAP * map) {
+    // Generate a sub_solution by deleting all undefined segments
     ALI_MAP        *seg_map;
     unsigned long   map_pos, map_len;
     unsigned long   start_seg, end_seg, pos_seg;
@@ -503,9 +463,7 @@ void ALI_PREALIGNER::generate_solution(ALI_MAP * map) {
 
     map_len = map->last_base() - map->first_base() + 1;
     for (map_pos = map->first_base(); map_pos <= map->last_base(); map_pos++) {
-        /* 
-         * search for segment
-         */
+        // search for segment
         for (start_seg  = map_pos;
              start_seg <= map->last_base() && map->is_undefined(start_seg);
              start_seg++) ;
@@ -521,9 +479,7 @@ void ALI_PREALIGNER::generate_solution(ALI_MAP * map) {
                                   end_seg,
                                   map->position(start_seg),
                                   map->position(end_seg));
-            /*
-             * Copy segment
-             */
+            // Copy segment
             for (pos_seg = start_seg; pos_seg <= end_seg; pos_seg++) {
                 if (map->is_inserted(pos_seg))
                     seg_map->set(pos_seg,
@@ -542,10 +498,8 @@ void ALI_PREALIGNER::generate_solution(ALI_MAP * map) {
     }
 }
 
-/*
- * generate the result mask from an stack of operations
- */
 void ALI_PREALIGNER::generate_result_mask(ALI_TSTACK < unsigned char >*stack) {
+    // generate the result mask from an stack of operations
     ALI_SEQUENCE   *seq;
     float           cost_of_bindings;
     ALI_MAP        *map;
@@ -591,18 +545,12 @@ void ALI_PREALIGNER::generate_result_mask(ALI_TSTACK < unsigned char >*stack) {
     cost_of_bindings = profile->w_binding(map->first_reference_base(), seq);
     delete          seq;
 
-    /*
-     * make the intersection
-     */
+    // make the intersection
     result_mask.insert(map, cost_of_bindings);
 }
 
-/*
- * Fill the stack with rest DELs or INSs
- */
-void ALI_PREALIGNER::mapper_post(ALI_TSTACK < unsigned char >*stack,
-                                 unsigned long ins_nu, unsigned long del_nu)
-{
+void ALI_PREALIGNER::mapper_post(ALI_TSTACK < unsigned char >*stack, unsigned long ins_nu, unsigned long del_nu) {
+    // Fill the stack with rest DELs or INSs
     if (ins_nu > 0 && del_nu > 0)
         ali_fatal_error("Unexpected values",
                         "ALI_PREALIGNER::mapper_post()");
@@ -622,12 +570,8 @@ void ALI_PREALIGNER::mapper_post(ALI_TSTACK < unsigned char >*stack,
     }
 }
 
-/*
- * Fill the stack with rest DELs or INSs (with MULTI_FLAG)
- */
-void ALI_PREALIGNER::mapper_post_multi(ALI_TSTACK < unsigned char >*stack,
-                                       unsigned long ins_nu, unsigned long del_nu)
-{
+void ALI_PREALIGNER::mapper_post_multi(ALI_TSTACK < unsigned char >*stack, unsigned long ins_nu, unsigned long del_nu) {
+    // Fill the stack with rest DELs or INSs (with MULTI_FLAG)
     if (ins_nu > 0 && del_nu > 0)
         ali_fatal_error("Unexpected values",
                         "ALI_PREALIGNER::mapper_post_multi()");
@@ -647,12 +591,8 @@ void ALI_PREALIGNER::mapper_post_multi(ALI_TSTACK < unsigned char >*stack,
     }
 }
 
-/*
- * generate a stack of operations by taking a random path of the pathmap
- */
-void ALI_PREALIGNER::mapper_random(ALI_TSTACK < unsigned char >*stack,
-                                   unsigned long pos_x, unsigned long pos_y)
-{
+void ALI_PREALIGNER::mapper_random(ALI_TSTACK < unsigned char >*stack, unsigned long pos_x, unsigned long pos_y) {
+    // generate a stack of operations by taking a random path of the pathmap
     unsigned long   next_x, next_y;
     unsigned long   random;
     unsigned char   value;
@@ -797,12 +737,8 @@ void ALI_PREALIGNER::mapper_random(ALI_TSTACK < unsigned char >*stack,
         stack->pop(stack_counter);
 }
 
-/*
- * generate a stack of operations by taking every path
- */
-void ALI_PREALIGNER::mapper(ALI_TSTACK < unsigned char >*stack,
-                            unsigned long pos_x, unsigned long pos_y)
-{
+void ALI_PREALIGNER::mapper(ALI_TSTACK < unsigned char >*stack, unsigned long pos_x, unsigned long pos_y) {
+    // generate a stack of operations by taking every path
     unsigned char   value;
     unsigned long   stack_counter = 0;
 
@@ -842,9 +778,7 @@ void ALI_PREALIGNER::mapper(ALI_TSTACK < unsigned char >*stack,
         }
         return;
     }
-    /*
-     * follow an unique path
-     */
+    // follow an unique path
     while (value == ALI_UP || value == ALI_DIAG || value == ALI_LEFT) {
         stack_counter++;
         switch (value) {
@@ -924,10 +858,8 @@ void ALI_PREALIGNER::mapper(ALI_TSTACK < unsigned char >*stack,
 }
 
 
-/*
- * make the result map from the path matrix
- */
 void ALI_PREALIGNER::make_map(void) {
+    // make the result map from the path matrix
     unsigned long   number_of_sol;
     ALI_TSTACK < unsigned char >*stack;
 
@@ -954,10 +886,8 @@ void ALI_PREALIGNER::make_map(void) {
 }
 
 
-/*
- * generate an approximation of a complete solution
- */
 void ALI_PREALIGNER::generate_approximation(ALI_SUB_SOLUTION * work_sol) {
+    // generate an approximation of a complete solution
     ALI_MAP        *map;
     ALI_SEQUENCE   *seq;
     char           *ins_marker;
@@ -977,19 +907,12 @@ void ALI_PREALIGNER::generate_approximation(ALI_SUB_SOLUTION * work_sol) {
     result_approx.insert(map, ins_marker, binding_costs);
 }
 
-/*
- * combine subsolutions for an approximation
- */
-void ALI_PREALIGNER::mapper_approximation(unsigned long area_no,
-                                          ALI_TARRAY < ALI_TLIST < ALI_MAP * >*>*map_lists,
-                                          ALI_SUB_SOLUTION * work_sol)
-{
+void ALI_PREALIGNER::mapper_approximation(unsigned long area_no, ALI_TARRAY < ALI_TLIST < ALI_MAP * >*>*map_lists, ALI_SUB_SOLUTION * work_sol) {
+    // combine subsolutions for an approximation
     ALI_TLIST < ALI_MAP * >*map_list;
     ALI_MAP        *map;
 
-    /*
-     * stop mapping at last area
-     */
+    // stop mapping at last area
     if (area_no > map_lists->size())
         return;
 
@@ -997,17 +920,13 @@ void ALI_PREALIGNER::mapper_approximation(unsigned long area_no,
         generate_approximation(work_sol);
         return;
     }
-    /*
-     * map area number 'area_no'
-     */
+    // map area number 'area_no'
     map_list = map_lists->get(area_no);
     if (map_list->is_empty())
         ali_fatal_error("Found empty list",
                         "ALI_PREALIGNER::mapper_approximation()");
 
-    /*
-     * combine all possibilities
-     */
+    // combine all possibilities
     map = map_list->first();
     do {
         if (!work_sol->insert(map))
@@ -1027,10 +946,8 @@ void ALI_PREALIGNER::mapper_approximation(unsigned long area_no,
     } while (map != 0);
 }
 
-/*
- * Make an approximation by aligning the undefined sections
- */
 void ALI_PREALIGNER::make_approximation(ALI_PREALIGNER_CONTEXT * context) {
+    // Make an approximation by aligning the undefined sections
     ALI_SUB_SOLUTION *work_solution;
     ALI_ALIGNER_CONTEXT aligner_context;
     ALI_TARRAY < ALI_TLIST < ALI_MAP * >*>*map_lists;
@@ -1050,9 +967,7 @@ void ALI_PREALIGNER::make_approximation(ALI_PREALIGNER_CONTEXT * context) {
 
     map_lists = new ALI_TARRAY < ALI_TLIST < ALI_MAP * >*>(area_number);
 
-    /*
-     * generate Solutions for all free areas
-     */
+    // generate Solutions for all free areas
     area_number = 0;
     while (sub_solution->free_area(&start_seq, &end_seq, &start_ref, &end_ref,
                                    area_number)) {
@@ -1070,9 +985,7 @@ void ALI_PREALIGNER::make_approximation(ALI_PREALIGNER_CONTEXT * context) {
         area_number++;
     }
 
-    /*
-     * combine and evaluate the solutions
-     */
+    // combine and evaluate the solutions
     mapper_approximation(0, map_lists, work_solution);
 
     delete work_solution;
@@ -1081,10 +994,8 @@ void ALI_PREALIGNER::make_approximation(ALI_PREALIGNER_CONTEXT * context) {
 }
 
 
-/*
- * approximate the number of solutions in the pathmap
- */
 unsigned long ALI_PREALIGNER::number_of_solutions() {
+    // approximate the number of solutions in the pathmap
 #define INFINIT 1000000
 #define ADD(a,b)  if (a>=INFINIT || b>=INFINIT) {a = INFINIT;} else {a += b;}
 
@@ -1142,9 +1053,7 @@ unsigned long ALI_PREALIGNER::number_of_solutions() {
             ADD(*(elem_left_col), *elem_akt_col);
         }
         pos_x--;
-        /*
-         * toggle the columns
-         */
+        // toggle the columns
         if (pos_x & 0x01) {
             elem_akt_col = column1 + col_length - 1;
             elem_left_col = column2 + col_length - 1;

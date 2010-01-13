@@ -10,11 +10,8 @@
 
 #include "ali_pt.hxx"
 
-/*
- * Initialize the communication with the pt server
- */
-int ALI_PT::init_communication(void)
-{
+int ALI_PT::init_communication(void) {
+    // Initialize the communication with the pt server
     const char *user = GB_getenvUSER();
 
     /*** create and init local com structure ***/
@@ -203,12 +200,10 @@ int ALI_PT::find_family(ALI_SEQUENCE *sequence, int find_type)
         ali_fatal_error("Out of memory");
 
     if (mode == ServerMode) {
-        /*
-         * Start find_family() at the PT_SERVER
+        /* Start find_family() at the PT_SERVER
          *
          * Here we have to make a loop, until the match count of the
          * first member is big enought
-         *
          */
 
         if (aisc_put(link, PT_LOCS, locs,
@@ -220,9 +215,7 @@ int ALI_PT::find_family(ALI_SEQUENCE *sequence, int find_type)
             return -1;
         }
 
-        /*
-         * Read family list
-         */
+        // Read family list
         aisc_get(link, PT_LOCS, locs, LOCS_FF_FAMILY_LIST, &f_list, NULL);
         if (f_list == 0)
             ali_error("Family not found in PT Server");

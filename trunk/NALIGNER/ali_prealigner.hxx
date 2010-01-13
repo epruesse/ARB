@@ -41,9 +41,7 @@ struct ALI_PREALIGNER_CONTEXT {
     unsigned long error_count;
 };
 
-/*
- * Structure for a cell in the (simple) distance matrix
- */
+// Structure for a cell in the (simple) distance matrix
 struct ali_prealigner_cell {
     float d;
 
@@ -52,9 +50,7 @@ struct ali_prealigner_cell {
     }
 };
 
-/*
- * Structure for a column in the (simple) distance matrix
- */
+// Structure for a column in the (simple) distance matrix
 struct ali_prealigner_column {
     unsigned long column_length;
     ali_prealigner_cell **cells;
@@ -71,9 +67,7 @@ struct ali_prealigner_column {
     }
 };
 
-/*
- * Structure for the intersection of maps
- */
+// Structure for the intersection of maps
 struct ali_prealigner_mask {
     ALI_MAP *map;
     float cost_of_binding;
@@ -95,9 +89,7 @@ struct ali_prealigner_mask {
     }
 };
 
-/*
- * Structure for a approximation of a map
- */
+// Structure for a approximation of a map
 struct ali_prealigner_approx_element {
     ALI_MAP *map;
     char *ins_marker;
@@ -121,9 +113,7 @@ struct ali_prealigner_approx_element {
     }
 };
 
-/*
- * Structure for a list of approximated maps
- */
+// Structure for a list of approximated maps
 struct ali_prealigner_approximation {
     ALI_TLIST<ali_prealigner_approx_element *> *approx_list;
     float cost_of_binding;
@@ -139,9 +129,7 @@ struct ali_prealigner_approximation {
         }
     }
 
-    /*
-     * Insert a new approximation (dependence of the costs)
-     */
+    // Insert a new approximation (dependence of the costs)
     void insert(ALI_MAP *in_map, char *in_insert_marker, float costs) {
         ali_prealigner_approx_element *approx_elem;
 
@@ -211,9 +199,7 @@ struct ali_prealigner_approximation {
 
 
 
-/*
- * Class of the prealigner
- */
+// Class of the prealigner
 class ALI_PREALIGNER {
     ALI_PROFILE *profile;
     ALI_PATHMAP *path_map;

@@ -42,28 +42,15 @@ int TotalRealloc = 0;
 #endif
 
 
-/*
- *       Months of the year
-*/
+// Months of the year
 extern const char *GDEmonth[12];
-/*
-*       Tables for DNA/RNA <--> ASCII translation
-*/
 
+// Tables for DNA/RNA <--> ASCII translation
 extern int Default_RNA_Trans[];
 extern int Default_DNA_Trans[];
 extern int Default_NA_RTrans[];
 
-
-/*
-*       RGB values for the simple palette
-*/
-
-
-/*
-*       Character->color lookup table
-*/
-
+// Character->color lookup table
 extern int Default_NAColor_LKUP[];
 extern int Default_PROColor_LKUP[];
 

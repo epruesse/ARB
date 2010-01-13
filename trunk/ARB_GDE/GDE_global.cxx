@@ -22,18 +22,13 @@ int  TotalRealloc            = 0;
 char FileName[80];
 char current_dir[1024];
 
-/*
- *       Months of the year
- */
+// Months of the year
 const char *GDEmonth[] = {
     "-JAN-","-FEB-","-MAR-","-APR-","-MAY-","-JUN-",
     "-JUL-","-AUG-","-SEP-","-OCT-","-NOV-","-DEC-"
 };
 
-/*
- *       Tables for DNA/RNA <--> ASCII translation
- */
-
+// Tables for DNA/RNA <--> ASCII translation
 int Default_RNA_Trans[128] = {
     '-','A','C','M','G','R','S','V','U','W','Y','H','K','D','B','N',/*Upper*/
     '.','a','c','m','g','r','s','v','u','w','y','h','k','d','b','n',/*lower*/
@@ -68,14 +63,7 @@ int Default_NA_RTrans[128] = {
 };
 
 
-/*
- *       RGB values for the simple palette
- */
-
-
-/*
- *       Character->color lookup table
- */
+// Character->color lookup table
 
 int Default_NAColor_LKUP[128] = {
     13,3,6,13,8,13,13,13,5,13,13,13,13,13,13,13,

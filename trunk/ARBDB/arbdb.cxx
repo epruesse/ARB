@@ -1748,8 +1748,7 @@ GB_ERROR GB_pop_local_transaction(GBDATA *gbd) {
     return 0;
 }
 
-/*
- * recommended transaction usage:
+/* recommended transaction usage:
  * ------------------------------
  * 
  * GB_ERROR myFunc() {

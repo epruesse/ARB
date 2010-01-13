@@ -46,9 +46,7 @@ public:
     unsigned long last_reference_base(void) {
         return last_ref_base;
     }
-    /*
-     * Set position of base to position (relative to first_ref_base)
-     */
+    // Set position of base to position (relative to first_ref_base)
     void set(unsigned long base, unsigned long pos, int insert = -1) {
         unsigned long b;
 

@@ -44,11 +44,9 @@ void Regroup(NA_Alignment *alignment)
 }
 
 
-/*
- *   Print error message, and die
- */
 void ErrorOut5(int code,const char *string)
 {
+    // Print error message, and die
     if (code == 0)
     {
         fprintf(stderr,"Error:%s\n",string);
@@ -58,11 +56,9 @@ void ErrorOut5(int code,const char *string)
 }
 
 
-/*
- *   More robust memory management routines
- */
 char *Calloc(int count,int size)
 {
+    // More robust memory management routines
     char *temp;
     size *= count;
 #ifdef SeeAlloc
@@ -265,8 +261,7 @@ static int FindType(char *name,int *dtype,int *ftype)
     if (file == NULL)
         return(1);
 
-    /*
-     *   Is this a flat file?
+    /*   Is this a flat file?
      *   Get the first non blank line, see if a type marker shows up.
      */
     if (fgets(in_line,GBUFSIZ,file) == 0) {
@@ -280,12 +275,7 @@ static int FindType(char *name,int *dtype,int *ftype)
         *dtype=NASEQ_ALIGN;
         *ftype=NA_FLAT;
     }
-
-    /*
-     *   Else, try genbank
-     */
-    else
-    {
+    else { // try genbank
         fclose(file);
         file = fopen(name,"r");
         *dtype=0;
@@ -302,11 +292,7 @@ static int FindType(char *name,int *dtype,int *ftype)
                 fclose(file);
                 return(0);
             }
-        /*
-         *   and last, try GDE
-         */
-            else if(Find(in_line,"sequence"))
-            {
+            else if(Find(in_line,"sequence")) { // try GDE
                 *dtype = NASEQ_ALIGN;
                 *ftype = GDE;
                 fclose(file);
@@ -325,30 +311,24 @@ static int FindType(char *name,int *dtype,int *ftype)
     return(0);
 }
 
-/*
-  LoadData():
-  Load a data set from the command line argument.
-
-  Copyright (c) 1989, University of Illinois board of trustees.  All rights
-  reserved.  Written by Steven Smith at the Center for Prokaryote Genome
-  Analysis.  Design and implementation guidance by Dr. Gary Olsen and Dr.
-  Carl Woese.
-
-  Copyright (c) 1990,1991,1992 Steven Smith at the Harvard Genome Laboratory.
-  All rights reserved.
-
-*/
-
-void LoadData(char *filen)
-{
-
-    FILE *file;
-    NA_Alignment *DataNaAln;
-    char temp[1024];
-    /*
-     *   Get file name, determine the file type, and away we go..
+void LoadData(char *filen) {
+    /* LoadData():
+     * Load a data set from the command line argument.
+     * 
+     * Copyright (c) 1989, University of Illinois board of trustees.  All rights
+     * reserved.  Written by Steven Smith at the Center for Prokaryote Genome
+     * Analysis.  Design and implementation guidance by Dr. Gary Olsen and Dr.
+     * Carl Woese.
+     * Copyright (c) 1990,1991,1992 Steven Smith at the Harvard Genome Laboratory.
+     * All rights reserved.
      */
-    if(Find2(filen,"gde")!=0)
+
+    FILE         *file;
+    NA_Alignment *DataNaAln;
+    char          temp[1024];
+    
+    // Get file name, determine the file type, and away we go..
+    if(Find2(filen,"gde") != 0)
         strcpy(FileName,filen);
 
     if (strstr(filen,".arb") || strchr(filen, ':')) {   /* ARBDB TYPE */
@@ -418,10 +398,7 @@ void AppendNA(NA_Base *buffer,int len,NA_Sequence *seq)
                                                 len+GBUFSIZ) * sizeof(NA_Base));
         seq->seqmaxlen = seq->seqlen + len+GBUFSIZ;
     }
-    /*
-     *   seqlen is the length, and the index of the next free
-     *   base
-     */
+    // seqlen is the length, and the index of the next free base
     curlen = seq->seqlen + seq->offset;
     for(j=0;j<len;j++)
         putelem(seq,j+curlen,buffer[j]);
@@ -432,10 +409,7 @@ void AppendNA(NA_Base *buffer,int len,NA_Sequence *seq)
 
 void Ascii2NA(char *buffer,int len,int matrix[16])
 {
-    /*
-     *   if the translation matrix exists, use it to
-     *   encode the buffer.
-     */
+    // if the translation matrix exists, use it to encode the buffer.
     int i;
     if(matrix != NULL) {
         for(i=0;i<len;i++) {
@@ -776,12 +750,10 @@ void ReadCMask(const char *filename)
                         Warning("illegal format in colormask");
                         return;
                     }
-                    /*
-                     *  Fixed so that the keyword nodash causes the colormask to be mapped
+                    /*  Fixed so that the keyword nodash causes the colormask to be mapped
                      *  to the sequence, not the alignment.
                      *
                      *  The allocated space is equal the seqlen of the matched sequence.
-                     *
                      */
                     if(aln->element[indx].tmatrix)
                         for(;(getelem(&(aln->element[indx]),jj
@@ -991,10 +963,8 @@ int WriteCMask(NA_Alignment *aln,char *filename,int method,int maskable)
                     for(k=0,kk=0;kk<seqs[j].seqlen;kk++)
                         if(getelem(&(seqs[mask]),kk+offset) == '1')
                             buf[k++] =(getcmask(&(seqs[j]), kk+offset));
-                    /*
-                     *          Looks like k might be one behind?
-                     */
-                }
+                    // @@@ Looks like k might be one behind?
+                }                    
                 fprintf(file,"name:%s\noffset:%d\nlength:%d\nstart:\n",
                         seqs[j].short_name,seqs[j].offset,k);
 

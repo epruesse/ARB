@@ -38,9 +38,7 @@ typedef struct {
     char *use_specified_family;
 } ALI_PT_CONTEXT;
 
-/*
- * class of family members
- */
+// class of family members
 class ali_pt_member {
 public:
     char *name;
@@ -57,10 +55,7 @@ public:
 };
 
 
-/*
- * Class for accessing the PT server
- */
-
+// Class for accessing the PT server
 class ALI_PT {
 private:
     ALI_PT_MODE mode;

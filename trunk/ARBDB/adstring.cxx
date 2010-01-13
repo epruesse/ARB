@@ -943,15 +943,15 @@ uint32_t crctab[] = {
 };
 
 uint32_t GB_checksum(const char *seq, long length, int ignore_case , const char *exclude) // RALF: 02-12-96
-     /*
-      * CRC32checksum: modified from CRC-32 algorithm found in ZIP compression source
-      * if ignore_case == true -> treat all characters as uppercase-chars (applies to exclude too)
-      */
 {
+    /* CRC32checksum: modified from CRC-32 algorithm found in ZIP compression source
+     * if ignore_case == true -> treat all characters as uppercase-chars (applies to exclude too)
+     */
+    
     unsigned long c = 0xffffffffL;
-    long   n = length;
-    int    i;
-    int tab[256];
+    long          n = length;
+    int           i;
+    int           tab[256];
 
     for (i=0;i<256;i++) {
         tab[i] = ignore_case ? toupper(i) : i;

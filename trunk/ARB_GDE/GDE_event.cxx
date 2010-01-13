@@ -506,9 +506,7 @@ void GDE_startaction_cb(AW_window *aw,GmenuItem *gmenuitem,AW_CL cd)
             current_item->output[j].name = preCreateTempfile(buffer);
         }
 
-        /*
-         *  Create the command line for external the function call
-         */
+        // Create the command line for external the function call
         Action = (char*)strdup(current_item->method);
         if(Action == NULL) Error("DO(): Error in duplicating method string");
 
@@ -528,10 +526,7 @@ void GDE_startaction_cb(AW_window *aw,GmenuItem *gmenuitem,AW_CL cd)
         filter_name = AWT_get_combined_filter_name(aw_root, "gde");
         Action = ReplaceString(Action,"$FILTER",filter_name);
 
-        /*
-         *  call and go...
-         */
-
+        // call and go...
         aw_status("calling external program");
         printf("Action: %s\n",Action);
         system(Action);
@@ -552,10 +547,9 @@ void GDE_startaction_cb(AW_window *aw,GmenuItem *gmenuitem,AW_CL cd)
             }
             switch(current_item->output[j].format)
             {
-                /*
-                 *     The LoadData routine must be reworked so that
-                 *     OpenFileName uses it, and so I can remove the
-                 *     major kluge in OpenFileName().
+                /* The LoadData routine must be reworked so that
+                 * OpenFileName uses it, and so I can remove the
+                 * major kluge in OpenFileName().
                  */
                 case GENBANK:
                 case NA_FLAT:

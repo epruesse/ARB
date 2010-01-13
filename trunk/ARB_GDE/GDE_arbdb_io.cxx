@@ -436,9 +436,7 @@ void putelem(NA_Sequence *a,int b,NA_Base c) {
     else {
         temp =(NA_Base*)Calloc(a->seqmaxlen+a->offset-b, sizeof(NA_Base));
         switch (a->elementtype) {
-            /*
-             *  Pad out with gap characters fron the point of insertion to the offset
-             */
+            // Pad out with gap characters fron the point of insertion to the offset
             case MASK:
                 for (j=b;j<a->offset;j++) temp[j-b]='0';
                 break;
