@@ -32,9 +32,7 @@
 #define INTERVALL_BORDER_DEFAULT           5
 #define INTERVALL_CENTER_DEFAULT           5
 
-/*
- * ACHTUNG: muss noch durch parameter belegbar sein
- */
+// ACHTUNG: muss noch durch parameter belegbar sein
 #define MATCHES_MIN_DEFAULT          1000
 #define PERCENT_MIN_DEFAULT          0.75
 #define FAM_LIST_MAX_DEFAULT         5
@@ -75,10 +73,8 @@ void ALI_GLOBAL::init(int *argc, char *argv[])
     default_file = params->default_file;
     db_server = params->db_server;
 
-    /*
-     * Set the defaults
-     */
-
+    // Set the defaults
+    
     for (i = 0; i < 5; i++)
         for (j = 0; j < 5; j++) {
             prof_context.substitute_matrix[i][j] = default_substitute_matrix[i][j];
@@ -116,10 +112,8 @@ void ALI_GLOBAL::init(int *argc, char *argv[])
     pt_context.ext_list_max = EXT_LIST_MAX_DEFAULT;
     pt_context.use_specified_family = USE_SPECIFIED_FAMILY_DEFAULT;
 
-    /*
-     * evaluate the parameters
-     */
-
+    // evaluate the parameters
+    
     for (i = 1; i < *argc;) {
         kill = 0;
         if (strcmp("-nx",argv[i]) == 0 && kill == 0) {
@@ -251,9 +245,7 @@ void ALI_GLOBAL::init(int *argc, char *argv[])
             }
         }
 
-        /* 
-         * ACHTUNG: Unused BEGIN
-         */
+        // ACHTUNG: Unused BEGIN
         if (strncmp("-cl",argv[i],3) == 0 && kill == 0) {
             kill = i;
             pos = argv[i] + 3;
@@ -281,10 +273,8 @@ void ALI_GLOBAL::init(int *argc, char *argv[])
                 break;
             }
         }
-        /*
-         * ACHTUNG: Unused END
-         */
-
+        // ACHTUNG: Unused END
+        
         if (strncmp("-csub",argv[i],5) == 0 && kill == 0) {
             kill = i;
             pos = argv[i] + 5;
@@ -359,10 +349,8 @@ void ALI_GLOBAL::init(int *argc, char *argv[])
             i++;
     }
 
-    /*
-     * Check for consistency
-     */
-
+    // Check for consistency
+    
     if (prof_context.min_family_size > prof_context.max_family_size) {
         ali_warning("minf <= maxf");
     }
@@ -380,10 +368,8 @@ void ALI_GLOBAL::init(int *argc, char *argv[])
         ali_warning("0 <= cl <= cm <= ch <= 1.0");
     }
 
-    /*
-     * Open Database and Pt server
-     */
-
+    // Open Database and Pt server
+    
     ali_message("Connecting to Database server");
     if (arbdb.open(db_server) != 0) {
         ali_error("Can't connect to Database server");

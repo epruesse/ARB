@@ -1,5 +1,4 @@
-/*
- * FIG : Facility for Interactive Generation of figures
+/* FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985 by Supoj Sutanthavibul
  * Copyright (c) 1992 by Brian V. Smith
  *
@@ -234,8 +233,7 @@ void aw_root_init_font(Display *tool_d)
     appres.debug   = true;
 #endif // DUMP_FONT_LOOKUP
 
-    /*
-     * Now initialize the font structure for the X fonts corresponding to the
+    /* Now initialize the font structure for the X fonts corresponding to the
      * Postscript fonts for the canvas.  OpenWindows can use any LaserWriter
      * fonts at any size, so we don't need to load anything if we are using
      * it.
@@ -384,8 +382,7 @@ static void dumpFontInformation(struct xfont *xf) {
 }
 #endif // DEBUG
 
-/*
- * Lookup an X font, "f" corresponding to a Postscript font style that is
+/* Lookup an X font, "f" corresponding to a Postscript font style that is
  * close in size to "s"
  */
 
@@ -661,8 +658,7 @@ inline void CI_GetDefaultInfo_1D(const XFontStruct *fs, const XCharStruct*& cs) 
     CI_GetCharInfo_1D(fs, fs->default_char, NULL, cs);
 }
 
-/*
- * CI_GET_CHAR_INFO_2D - return the charinfo struct for the indicated row and
+/* CI_GET_CHAR_INFO_2D - return the charinfo struct for the indicated row and
  * column.  This is used for fonts that have more than row zero.
  */
 
@@ -692,8 +688,7 @@ inline void CI_GetDefaultInfo_2D(const XFontStruct *fs, const XCharStruct*& cs)
     CI_GetCharInfo_2D (fs, r, c, NULL, cs);
 }
 
-/*
- * CI_GetRowzeroCharInfo_2D - do the same thing as CI_GetCharInfo_1D,
+/* CI_GetRowzeroCharInfo_2D - do the same thing as CI_GetCharInfo_1D,
  * except that the font has more than one row.  This is special case of more
  * general version used in XTextExt16.c since row == 0.  This is used when
  * max_byte2 is not zero.  A further optimization would do the check for

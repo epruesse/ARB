@@ -1,5 +1,4 @@
-/*
- * PNG loader library for OpenGL v1.45 (10/07/00)
+/* PNG loader library for OpenGL v1.45 (10/07/00)
  * by Ben Wyatt ben@wyatt100.freeserve.co.uk
  * Using LibPNG 1.0.2 and ZLib 1.1.3
  *
@@ -18,6 +17,10 @@
  * 2. Altered versions must be plainly marked as such and must not be
  *    misrepresented as being the original source.
  * 3. This notice must not be removed or altered from any source distribution.
+ *
+ * ---------------------------------------------------
+ * This version has been modified for usage inside ARB
+ * http://arb-home.de/
  */
 
 #ifndef _GLPNG_H_

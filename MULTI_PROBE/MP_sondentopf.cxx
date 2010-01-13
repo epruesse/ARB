@@ -6,14 +6,8 @@
 #include <AP_Tree.hxx> // needed for GCs
 #include <math.h>
 
-//############################################################################################
-/*
- */
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Methoden ST_Container ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-ST_Container::ST_Container(int anz_sonden)      // ist ein define das auf 1000 steht. (wir wissen, das das nicht ganz sauber ist so!)
-{
-    long    laenge_markierte;
+ST_Container::ST_Container(int anz_sonden) {
+    long laenge_markierte;
 
     Sondennamen = new List<char>;
 

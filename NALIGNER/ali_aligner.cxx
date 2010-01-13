@@ -17,10 +17,8 @@
  *****************************************************************************/
 
 
-/*
- * increase all multi gaps and update the apropriate costs
- */
 float ali_aligner_dellist::update(unsigned long position) {
+    // increase all multi gaps and update the apropriate costs
     float minimal_costs = 0.0;
     ali_aligner_dellist_elem *elem;
 
@@ -40,20 +38,17 @@ float ali_aligner_dellist::update(unsigned long position) {
     return minimal_costs;
 }
 
-/*
- * select all gaps with defined costs and put them together 
- * inside an ALI_TARRAY
- */
 ALI_TARRAY<ali_pathmap_up_pointer> *ali_aligner_dellist::starts(float costs, unsigned long y_offset) {
+    /* select all gaps with defined costs and put them together 
+     * inside an ALI_TARRAY
+     */
     unsigned long counter = 0;
     ali_aligner_dellist_elem *elem;
     ALI_TARRAY<ali_pathmap_up_pointer> *array = 0;
     ali_pathmap_up_pointer up;
 
     if (!list_of_dels.is_empty()) {
-        /*
-         * Count all elements with given costs
-         */
+        // Count all elements with given costs
         elem = list_of_dels.first();
         if (elem->costs == costs)
             counter++;
@@ -63,9 +58,7 @@ ALI_TARRAY<ali_pathmap_up_pointer> *ali_aligner_dellist::starts(float costs, uns
                 counter++;
         }
 
-        /*
-         * copy all elements with given costs to an array
-         */
+        // copy all elements with given costs to an array
         array = new ALI_TARRAY<ali_pathmap_up_pointer>(counter);
         counter = 0;
         elem = list_of_dels.first();
@@ -87,11 +80,10 @@ ALI_TARRAY<ali_pathmap_up_pointer> *ali_aligner_dellist::starts(float costs, uns
     return array;
 }
 
-/*
- * optimize the list of multi gaps. 
- * delete all gaps which costs will ALLWAYS be higher than others
- */
 void ali_aligner_dellist::optimize(unsigned long position) {
+    /* optimize the list of multi gaps. 
+     * delete all gaps which costs will ALLWAYS be higher than others
+     */
     ali_aligner_dellist_elem *ref, *akt;
     int del_flag;
 
@@ -170,11 +162,8 @@ inline void ALI_ALIGNER::calculate_first_column_first_cell(ali_aligner_cell *akt
 {
     del_list->make_empty();
 
-    /*
-     *   Substitution part
-     */
-    akt_cell->d1 = profile->w_ins_cheap(start_x,start_y) +
-        profile->w_del_cheap(start_y);
+    // Substitution part
+    akt_cell->d1 = profile->w_ins_cheap(start_x,start_y) + profile->w_del_cheap(start_y);
     akt_cell->d2 = profile->w_sub(start_y,start_x);
     akt_cell->d3 = akt_cell->d1;
 
@@ -191,9 +180,7 @@ inline void ALI_ALIGNER::calculate_first_column_cell(ali_aligner_cell *up_cell, 
 
     positiony = start_y + pos_y;
 
-    /*
-     * Deletion part
-     */
+    // Deletion part
     costs = profile->w_del(positiony,positiony);
     v1 = del_list->update(positiony);
     v2 = up_cell->d2 + costs;
@@ -218,17 +205,11 @@ inline void ALI_ALIGNER::calculate_first_column_cell(ali_aligner_cell *up_cell, 
     }
     del_list->optimize(positiony);
 
-    /*
-     * Substitution part
-     */
-    akt_cell->d2 = profile->w_del_multi_cheap(start_y,positiony - 1) +
-        profile->w_sub(positiony,start_x);
+    // Substitution part
+    akt_cell->d2 = profile->w_del_multi_cheap(start_y,positiony - 1) + profile->w_sub(positiony,start_x);
 
-    /*
-     * Insertation part
-     */
-    akt_cell->d3 = profile->w_del_multi_cheap(start_y,positiony) +
-        profile->w_ins(start_x,positiony);
+    // Insertation part
+    akt_cell->d3 = profile->w_del_multi_cheap(start_y,positiony) + profile->w_ins(start_x,positiony);
 }
 
 void ALI_ALIGNER::calculate_first_column(ali_aligner_column *akt_col, ali_aligner_dellist *del_list)
@@ -259,23 +240,15 @@ void ALI_ALIGNER::calculate_first_cell(ali_aligner_cell *left_cell, ali_aligner_
 
     del_list->make_empty();
 
-    /*
-     *   Deletion part
-     */
-    akt_cell->d1 = profile->w_ins_multi_cheap(start_x,positionx) +
-        profile->w_del(start_y,start_y);
+    // Deletion part
+    akt_cell->d1 = profile->w_ins_multi_cheap(start_x,positionx) + profile->w_del(start_y,start_y);
 
     del_list->insert(start_y,akt_cell->d1,ALI_LEFT);
 
-    /*
-     *   Substitution part 
-     */
-    akt_cell->d2 = profile->w_ins_multi_cheap(start_x,positionx - 1) +
-        profile->w_sub(start_y,positionx);
+    // Substitution part 
+    akt_cell->d2 = profile->w_ins_multi_cheap(start_x,positionx - 1) + profile->w_sub(start_y,positionx);
 
-    /*
-     *   Insertation part
-     */
+    // Insertation part
     v1 = left_cell->d1 + profile->w_ins(positionx,start_y);
     v2 = left_cell->d2 + profile->w_ins(positionx,start_y);
     v3 = left_cell->d3 + profile->w_ins_cheap(positionx,start_y);
@@ -301,9 +274,7 @@ void ALI_ALIGNER::calculate_cell(ali_aligner_cell *diag_cell, ali_aligner_cell *
     positionx = start_x + pos_x;
     positiony = start_y + pos_y;
 
-    /*
-     * Deletion part
-     */
+    // Deletion part
     costs = profile->w_del(positiony,positiony);
     v1 = del_list->update(positiony);
     v2 = up_cell->d2 + costs;
@@ -329,9 +300,7 @@ void ALI_ALIGNER::calculate_cell(ali_aligner_cell *diag_cell, ali_aligner_cell *
                 
     del_list->optimize(positiony);
 
-    /*
-     * Substitution part
-     */
+    // Substitution part
     costs = profile->w_sub(positiony,positionx);
     v1 = diag_cell->d1 + costs;
     v2 = diag_cell->d2 + costs;
@@ -345,9 +314,7 @@ void ALI_ALIGNER::calculate_cell(ali_aligner_cell *diag_cell, ali_aligner_cell *
     if (v3 == akt_cell->d2)
         path_map[1]->set(pos_x,pos_y,ALI_LEFT);
 
-    /*
-     * Insertation part
-     */
+    // Insertation part
     costs = profile->w_ins(positionx,positiony);
     v1 = left_cell->d1 + costs;
     v2 = left_cell->d2 + costs;
@@ -413,11 +380,9 @@ void ALI_ALIGNER::calculate_matrix()
 }
 
 
-/*
- * generate a result sequence from an stack of operations
- */
 void ALI_ALIGNER::generate_result(ALI_TSTACK<unsigned char> *stack) 
 {
+    // generate a result sequence from an stack of operations
     ALI_MAP *map;
     long seq_pos, dest_pos;
     long i;
@@ -429,9 +394,7 @@ void ALI_ALIGNER::generate_result(ALI_TSTACK<unsigned char> *stack)
     dest_pos = 0 - 1;
     i = (long) stack->akt_size() - 1;
 
-    /*
-     * handle first part of path
-     */
+    // handle first part of path
     switch (stack->get(i)) {
         case ALI_ALIGNER_INS:
             for (; stack->get(i) == ALI_ALIGNER_INS; i--) {
@@ -445,9 +408,7 @@ void ALI_ALIGNER::generate_result(ALI_TSTACK<unsigned char> *stack)
             break;
     }
 
-    /*
-     * handle rest of path
-     */
+    // handle rest of path
     for (; i >= 0; i--) {
         switch(stack->get(i)) {
             case ALI_ALIGNER_INS:
@@ -479,121 +440,85 @@ void ALI_ALIGNER::generate_result(ALI_TSTACK<unsigned char> *stack)
 }
                                 
 
-/*
- * Fill the stack with initial DELs or INSs
- */
 void ALI_ALIGNER::mapper_pre(ALI_TSTACK<unsigned char> *stack,
                              unsigned long pos_x, unsigned long pos_y,
                              unsigned char operation, int random_mapping_flag)
 {
+    // Fill the stack with initial DELs or INSs
+
     unsigned long random;
-    int plane = 0;
+    int           plane = 0;
 
     if ((pos_x < end_x - start_x && pos_y < end_y - start_y) ||
         (pos_x > end_x - start_x) || (pos_y > end_y - start_y))
-            ali_fatal_error("Unexpected Values","ALI_ALIGNRE::mapper_pre");
+        ali_fatal_error("Unexpected Values","ALI_ALIGNRE::mapper_pre");
 
-if (pos_x < end_x - start_x)
-    stack->push(ALI_ALIGNER_INS,end_x - start_x - pos_x);
-if (pos_y < end_y - start_y)
-    stack->push(ALI_ALIGNER_DEL,end_y - start_y - pos_y);
+    if (pos_x < end_x - start_x) stack->push(ALI_ALIGNER_INS,end_x - start_x - pos_x);
+    if (pos_y < end_y - start_y) stack->push(ALI_ALIGNER_DEL,end_y - start_y - pos_y);
 
-if (random_mapping_flag == 1) {
-    random = GB_random(6);
-    switch(random) {
-        case 0: 
-            if (operation & ALI_UP) {
-                plane = 0;
-            }
-            else {
-                if (operation & ALI_DIAG)
-                    plane = 1;
-                else
-                    plane = 2;
-            }
-            break;
-        case 1:
-            if (operation & ALI_UP) {
-                plane = 0;
-            }
-            else {
-                if (operation & ALI_LEFT)
-                    plane = 2;
-                else
-                    plane = 1;
-            }
-            break;
-        case 2:
-            if (operation & ALI_DIAG) {
-                plane = 1;
-            }
-            else {
-                if (operation & ALI_UP)
-                    plane = 0;
-                else
-                    plane = 2;
-            }
-            break;
-        case 3:
-            if (operation & ALI_DIAG) {
-                plane = 1;
-            }
-            else {
-                if (operation & ALI_LEFT)
-                    plane = 2;
-                else
-                    plane = 0;
-            }
-            break;
-        case 4:
-            if (operation & ALI_LEFT) {
-                plane = 2;
-            }
-            else {
-                if (operation & ALI_UP)
-                    plane = 0;
-                else
-                    plane = 1;
-            }
-            break;
-        case 5:
-            if (operation & ALI_LEFT) {
-                plane = 2;
-            }
-            else {
-                if (operation & ALI_DIAG)
-                    plane = 1;
-                else
-                    plane = 0;
-            }
-            break;
+    if (random_mapping_flag == 1) {
+        random = GB_random(6);
+        switch(random) {
+            case 0: 
+                if (operation & ALI_UP) plane = 0;
+                else {
+                    if (operation & ALI_DIAG) plane = 1;
+                    else plane = 2;
+                }
+                break;
+            case 1:
+                if (operation & ALI_UP) plane = 0;
+                else {
+                    if (operation & ALI_LEFT) plane = 2;
+                    else plane = 1;
+                }
+                break;
+            case 2:
+                if (operation & ALI_DIAG) plane = 1;
+                else {
+                    if (operation & ALI_UP) plane = 0;
+                    else plane = 2;
+                }
+                break;
+            case 3:
+                if (operation & ALI_DIAG) plane = 1;
+                else {
+                    if (operation & ALI_LEFT) plane = 2;
+                    else plane = 0;
+                }
+                break;
+            case 4:
+                if (operation & ALI_LEFT) plane = 2;
+                else {
+                    if (operation & ALI_UP) plane = 0;
+                    else plane = 1;
+                }
+                break;
+            case 5:
+                if (operation & ALI_LEFT) plane = 2;
+                else {
+                    if (operation & ALI_DIAG) plane = 1;
+                    else plane = 0;
+                }
+                break;
+        }
+
+
+        mapper_random(stack,plane,pos_x,pos_y);
+    }
+    else {
+        if (operation & ALI_UP) mapper(stack,0,pos_x,pos_y);
+        if (operation & ALI_DIAG) mapper(stack,1,pos_x,pos_y);
+        if (operation & ALI_LEFT) mapper(stack,2,pos_x,pos_y);
     }
 
-
-    mapper_random(stack,plane,pos_x,pos_y);
- }
- else {
-     if (operation & ALI_UP)
-         mapper(stack,0,pos_x,pos_y);
-     if (operation & ALI_DIAG)
-         mapper(stack,1,pos_x,pos_y);
-     if (operation & ALI_LEFT)
-         mapper(stack,2,pos_x,pos_y);
- }
-
-if (pos_x < end_x - start_x)
-    stack->pop(end_x - start_x - pos_x);
-if (pos_y < end_y - start_y)
-    stack->pop(end_y - start_y - pos_y);
+    if (pos_x < end_x - start_x) stack->pop(end_x - start_x - pos_x);
+    if (pos_y < end_y - start_y) stack->pop(end_y - start_y - pos_y);
 }
 
 
-/*
- * Fill the stack with rest DELs or INSs
- */
-void ALI_ALIGNER::mapper_post(ALI_TSTACK<unsigned char> *stack,
-                              unsigned long ins_nu, unsigned long del_nu)
-{
+void ALI_ALIGNER::mapper_post(ALI_TSTACK<unsigned char> *stack, unsigned long ins_nu, unsigned long del_nu) {
+    // Fill the stack with rest DELs or INSs
     if (ins_nu > 0 && del_nu > 0)
         ali_fatal_error("Unexpected values",
                         "ALI_ALIGNER::mapper_post()");
@@ -614,12 +539,8 @@ void ALI_ALIGNER::mapper_post(ALI_TSTACK<unsigned char> *stack,
 }
 
 
-/*
- * Fill the stack with a random path (of path matrix)
- */
-void ALI_ALIGNER::mapper_random(ALI_TSTACK<unsigned char> *stack, int plane,
-                                unsigned long pos_x, unsigned long pos_y) 
-{
+void ALI_ALIGNER::mapper_random(ALI_TSTACK<unsigned char> *stack, int plane, unsigned long pos_x, unsigned long pos_y) {
+    // Fill the stack with a random path (of path matrix)
     unsigned long random;
     unsigned long stack_counter = 0;
     unsigned char value;
@@ -637,9 +558,7 @@ void ALI_ALIGNER::mapper_random(ALI_TSTACK<unsigned char> *stack, int plane,
             ali_fatal_error("Unexpected value (1)",
                             "ALI_ALIGNER::mapper_random()");
 
-        /*
-         * Set the operation
-         */
+        // Set the operation
         switch(plane) {
             case 0: 
                 stack->push(ALI_ALIGNER_DEL);
@@ -658,9 +577,7 @@ void ALI_ALIGNER::mapper_random(ALI_TSTACK<unsigned char> *stack, int plane,
                 ali_fatal_error("Unexpected plane","ALI_ALIGNER::mapper_random()");
         }
 
-        /*
-         * special handling for LUP values
-         */
+        // special handling for LUP values
         if (value & ALI_LUP) {
             if (plane != 0)
                 ali_fatal_error("LUP only in plane 0 allowed",
@@ -668,13 +585,9 @@ void ALI_ALIGNER::mapper_random(ALI_TSTACK<unsigned char> *stack, int plane,
 
             random = GB_random(2);
 
-            /*
-             * Go the LUP way
-             */
+            // Go the LUP way
             if (random == 0 || value == ALI_LUP) {
-                /*
-                 * Take a pointer by random
-                 */
+                // Take a pointer by random
                 random = GB_random(up_pointer->size());
                 up = up_pointer->get(random);
 
@@ -695,9 +608,7 @@ void ALI_ALIGNER::mapper_random(ALI_TSTACK<unsigned char> *stack, int plane,
             }
         }
 
-        /*
-         * Take the next plane by random
-         */
+        // Take the next plane by random
         random = GB_random(6);
         switch(random) {
             case 0:
@@ -801,22 +712,16 @@ void ALI_ALIGNER::mapper_random(ALI_TSTACK<unsigned char> *stack, int plane,
 }
 
 
-/*
- * Fill the stack with a deterministic path (of path matrix)
- */
-void ALI_ALIGNER::mapper(ALI_TSTACK<unsigned char> *stack, int plane,
-                         unsigned long pos_x, unsigned long pos_y) 
-{
+void ALI_ALIGNER::mapper(ALI_TSTACK<unsigned char> *stack, int plane, unsigned long pos_x, unsigned long pos_y) {
+    // Fill the stack with a deterministic path (of path matrix)
     unsigned long l;
     unsigned char value;
     ALI_TARRAY<ali_pathmap_up_pointer> *up_pointer;
     ali_pathmap_up_pointer up;
     unsigned long next_x, next_y;
 
-    /*
-     * set the operation
-     */
-
+    // set the operation
+    
     switch(plane) {
         case 0: 
             stack->push(ALI_ALIGNER_DEL);
@@ -837,10 +742,8 @@ void ALI_ALIGNER::mapper(ALI_TSTACK<unsigned char> *stack, int plane,
             ali_fatal_error("Unexpected plane","ALI_ALIGNER::mapper()");
     }
 
-    /*
-     * Check if mapping found a end
-     */
-
+    // Check if mapping found a end
+    
     if (next_x > pos_x || next_y > pos_y) {
         if (next_y <= pos_y) {
             if (plane == 0) 
@@ -873,10 +776,8 @@ void ALI_ALIGNER::mapper(ALI_TSTACK<unsigned char> *stack, int plane,
             mapper(stack, 2, next_x, next_y);
         }
 
-        /*
-         * Special handling for long up-pointers
-         */
-
+        // Special handling for long up-pointers
+        
         if (value & ALI_LUP) {
             if (plane != 0)
                 printf("LUP should never be in plane %d\n",plane);
@@ -911,12 +812,8 @@ void ALI_ALIGNER::mapper(ALI_TSTACK<unsigned char> *stack, int plane,
 }
 
 
-/*
- * Select a random entry point from a list of valid entry points
- */
-void ALI_ALIGNER::mapper_pre_random_up(ALI_TSTACK<unsigned char> *stack,
-                                       ALI_TLIST<ali_pathmap_up_pointer> *list)
-{
+void ALI_ALIGNER::mapper_pre_random_up(ALI_TSTACK<unsigned char> *stack, ALI_TLIST<ali_pathmap_up_pointer> *list) {
+    // Select a random entry point from a list of valid entry points
     unsigned long number;
     ali_pathmap_up_pointer p;
 
@@ -937,12 +834,8 @@ void ALI_ALIGNER::mapper_pre_random_up(ALI_TSTACK<unsigned char> *stack,
     mapper_pre(stack, end_x - start_x, p.start - 1, p.operation, 1);
 }
 
-/*
- * Select a random entry point from a list of valid entry points
- */
-void ALI_ALIGNER::mapper_pre_random_left(ALI_TSTACK<unsigned char> *stack,
-                                         ALI_TLIST<ali_pathmap_up_pointer> *list)
-{
+void ALI_ALIGNER::mapper_pre_random_left(ALI_TSTACK<unsigned char> *stack, ALI_TLIST<ali_pathmap_up_pointer> *list) {
+    // Select a random entry point from a list of valid entry points
     unsigned long number;
     ali_pathmap_up_pointer p;
 
@@ -964,11 +857,8 @@ void ALI_ALIGNER::mapper_pre_random_left(ALI_TSTACK<unsigned char> *stack,
 }
 
 
-/*
- * Find on path by random and make a map
- */
-void ALI_ALIGNER::make_map_random(ALI_TSTACK<unsigned char> *stack)
-{
+void ALI_ALIGNER::make_map_random(ALI_TSTACK<unsigned char> *stack) {
+    // Find on path by random and make a map
     unsigned long random;
     float min;
  
@@ -1070,11 +960,8 @@ void ALI_ALIGNER::make_map_random(ALI_TSTACK<unsigned char> *stack)
 }
 
 
-/*
- * find ALL paths and make the apropriate maps
- */
-void ALI_ALIGNER::make_map_systematic(ALI_TSTACK<unsigned char> *stack) 
-{
+void ALI_ALIGNER::make_map_systematic(ALI_TSTACK<unsigned char> *stack) {
+    // find ALL paths and make the apropriate maps
     float min;
     ali_pathmap_up_pointer p;
     ALI_TLIST<ali_pathmap_up_pointer> *list;
@@ -1111,11 +998,8 @@ void ALI_ALIGNER::make_map_systematic(ALI_TSTACK<unsigned char> *stack)
 }
 
 
-/*
- * make the list of result maps
- */
-void ALI_ALIGNER::make_map(void)
-{
+void ALI_ALIGNER::make_map(void) {
+    // make the list of result maps
     ALI_TSTACK<unsigned char> *stack;
 
     stack = new ALI_TSTACK<unsigned char>(end_x - start_x + end_y - start_y + 5);
@@ -1150,11 +1034,8 @@ struct ali_aligner_tripel {
     unsigned long v1, v2, v3;
 };
 
-/*
- * approximate the number of solutions produced by the path matrix
- */
-unsigned long ALI_ALIGNER::number_of_solutions()
-{
+unsigned long ALI_ALIGNER::number_of_solutions() {
+    // approximate the number of solutions produced by the path matrix
     float min;
     unsigned long pos_x, pos_y, col_length;
     unsigned long number;
@@ -1184,9 +1065,7 @@ unsigned long ALI_ALIGNER::number_of_solutions()
 
     number = 0;
 
-    /*
-     * Initialize all end points in the last column
-     */
+    // Initialize all end points in the last column
     min = minimum3(last_cell->d1,last_cell->d2,last_cell->d3);
 
     if (last_cell->d1 == min) {
@@ -1237,16 +1116,12 @@ unsigned long ALI_ALIGNER::number_of_solutions()
         (elem_akt_col)->v2 += 1;
     }
 
-    /*
-     * Calculate all columns, from last to first (without the first)
-     */
+    // Calculate all columns, from last to first (without the first)
     for (pos_x = end_x - start_x; pos_x > 0;) {
 
         elem_left_col->v1 = elem_left_col->v2 = elem_left_col->v3 = 0;
 
-        /*
-         * Calculate all cells, from last to first (without the first)
-         */
+        // Calculate all cells, from last to first (without the first)
         for (pos_y = end_y - start_y; pos_y > 0; pos_y--) {
 
             (elem_left_col - 1)->v1 = (elem_left_col - 1)->v2 =
@@ -1302,10 +1177,8 @@ unsigned long ALI_ALIGNER::number_of_solutions()
             elem_left_col--;
         }
 
-        /*
-         * Calculate the first cell
-         */
-
+        // Calculate the first cell
+        
         number += elem_akt_col->v1;
         number += elem_akt_col->v2;
 
@@ -1321,9 +1194,7 @@ unsigned long ALI_ALIGNER::number_of_solutions()
                             "ALI_ALIGNER::number_of_solutions()");
 
         pos_x--;
-        /*
-         * toggle the columns
-         */
+        // toggle the columns
         if (pos_x & 0x01) {
             elem_akt_col = column1 + col_length - 1;
             elem_left_col = column2 + col_length - 1;
@@ -1333,9 +1204,7 @@ unsigned long ALI_ALIGNER::number_of_solutions()
             elem_left_col = column1 + col_length - 1;
         }
 
-        /*
-         * Initialize end point at last cell of column
-         */
+        // Initialize end point at last cell of column
         if (last_cell->d3 == min) {
             (elem_akt_col)->v1 = (elem_akt_col)->v2 = (elem_akt_col)->v3 = 0;
             list = &(last_cell->left_starts);
@@ -1376,8 +1245,7 @@ unsigned long ALI_ALIGNER::number_of_solutions()
         }
     }
 
-    /*
-     * Calculate the cells of the first column, 
+    /* Calculate the cells of the first column, 
      * from last to first (without first)
      */
     for (pos_y = end_y - start_y; pos_y > 0; pos_y--) {
@@ -1458,9 +1326,7 @@ ALI_ALIGNER::ALI_ALIGNER(ALI_ALIGNER_CONTEXT *context, ALI_PROFILE *prof,
 
     make_map();
 
-    /*
-     * Delete all unused objects
-     */
+    // Delete all unused objects
     delete last_cell;
     delete path_map[0];
     delete path_map[1];

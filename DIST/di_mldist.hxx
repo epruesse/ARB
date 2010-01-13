@@ -33,9 +33,7 @@ class di_mldist {
     long chars;                 // number of characters
     long n_states;              // << DI_ML_MAX_MAT_SIZE
 
-    /*
-     * spp = number of species chars = number of sites in actual sequences
-     */
+    // spp = number of species chars = number of sites in actual sequences
 
     double    fracchange;
     DI_ENTRY **entries;          // link to entries

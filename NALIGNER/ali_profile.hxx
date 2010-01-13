@@ -57,9 +57,7 @@ typedef struct {
 } ALI_PROFILE_CONTEXT;
 
 
-/*
- * Class for a family member
- */
+// Class for a family member
 class ali_family_member {
 public:
     ALI_SEQUENCE *sequence;
@@ -74,9 +72,7 @@ public:
 };
 
 
-/*
- * Class for the profiling
- */
+// Class for the profiling
 class ALI_PROFILE {
     ALI_NORM_SEQUENCE *norm_sequence;
     unsigned long prof_len;

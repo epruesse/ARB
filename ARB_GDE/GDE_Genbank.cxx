@@ -14,14 +14,11 @@
 
 */
 
-/*
- *   CheckType:  Check base composition to see if the sequence
- *   appears to be an amino acid sequence.  If it is, pass back
- *   TRUE, else FALSE.
- */
-static int CheckType(char *seq,int len)
-{
-
+static int CheckType(char *seq,int len) {
+    /*   CheckType:  Check base composition to see if the sequence
+     *   appears to be an amino acid sequence.  If it is, pass back
+     *   TRUE, else FALSE.
+     */
     int j,count1 = 0,count2 = 0;
 
     for(j=0;j<len;j++)
@@ -184,9 +181,7 @@ void ReadGen(char *filename,NA_Alignment *dataset,int type)
                                 ;j<buflen;j++)
                             buffer[j] = '\0';
                     }
-                    /*
-                     *  Search for the fist column of data (whitespace-number-whitespace)data
-                     */
+                    // Search for the fist column of data (whitespace-number-whitespace)data
                     if(start_col == -1)
                     {
                         for(start_col=0; in_line[start_col] == ' ' || in_line[start_col] == '\t';start_col++) ;
@@ -219,9 +214,8 @@ void ReadGen(char *filename,NA_Alignment *dataset,int type)
                     genclen = 0;
                 }
             }
-            /*
-             *      Test if sequence should be converted by the translation table
-             *      If it looks like a protein...
+            /* Test if sequence should be converted by the translation table
+             * If it looks like a protein...
              */
             if(dataset->element[curelem].rmatrix &&
                IS_REALLY_AA == FALSE)
@@ -233,16 +227,12 @@ void ReadGen(char *filename,NA_Alignment *dataset,int type)
                     Ascii2NA((char*)dataset->element[curelem].sequence,
                              dataset->element[curelem].seqlen,
                              dataset->element[curelem].rmatrix);
-                else
-                    /*
-                     *      Force the sequence to be AA
-                     */
-                {
+                else {
+                    // Force the sequence to be AA
                     dataset->element[curelem].elementtype = PROTEIN;
                     dataset->element[curelem].rmatrix = NULL;
                     dataset->element[curelem].tmatrix = NULL;
-                    dataset->element[curelem].col_lut =
-                        Default_PROColor_LKUP;
+                    dataset->element[curelem].col_lut = Default_PROColor_LKUP;
                 }
             }
         }

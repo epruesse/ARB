@@ -73,11 +73,8 @@ const char *ali_man_line[] = {
 };
 
 
-/*
- * Print a short parameter description
- */
-void print_man()
-{
+void print_man() {
+    // Print a short parameter description
     int i;
 
     for (i = 0; ali_man_line[i] != 0; i++) 
@@ -97,11 +94,8 @@ void ali_error(const char *message, const char *func) {
 
 
 
-/*
- * Get one species of a list
- */
-int get_species(char *species_string, unsigned int species_number, char *buffer)
-{
+int get_species(char *species_string, unsigned int species_number, char *buffer) {
+    // Get one species of a list
     while (species_number > 0 && *species_string != '\0') {
         while (*species_string != '\0' && *species_string != ',')
             species_string++;
@@ -147,11 +141,8 @@ int check_base_invariance(char *seq1, char *seq2)
 }
 
 
-/*
- * Convert the working sequenz into the original bases
- */
-int convert_for_back_write(char *seq_new, char *seq_orig)
-{
+int convert_for_back_write(char *seq_new, char *seq_orig) {
+    // Convert the working sequenz into the original bases
 
     while (*seq_new != '\0' && (ali_is_dot(*seq_new) || ali_is_gap(*seq_new)))
         seq_new++;
@@ -247,9 +238,7 @@ int main(int argc, char **argv)
         exit (-1);
     }
         
-    /*
-     * Main loop
-     */
+    // Main loop
     species_number = 0;
     while (get_species(aligs.species_name,species_number,species_name)) {
         species_number++;
@@ -258,9 +247,7 @@ int main(int argc, char **argv)
                 "\nStarting alignment of sequence: %s",species_name);
         ali_message(message_buffer);
 
-        /*
-         * Get all information of the sequence
-         */
+        // Get all information of the sequence
         aligs.arbdb.begin_transaction();
         ALI_SEQUENCE *align_sequence;
         align_sequence = aligs.arbdb.get_sequence(species_name,
@@ -281,15 +268,11 @@ int main(int argc, char **argv)
             if (align_sequence == 0)
                 ali_warning("Can't read sequence from database");
             else {
-                /*
-                 * make profile for sequence
-                 */
+                // make profile for sequence
                 ALI_PROFILE *align_profile;
                 align_profile = new ALI_PROFILE(align_sequence,&aligs.prof_context);
 
-                /* 
-                 * write information about the profile to the database
-                 */
+                // write information about the profile to the database
                 aligs.arbdb.begin_transaction();
                 char *String = align_profile->cheapest_sequence();
                 aligs.arbdb.put_SAI("ALI_CON",String);
@@ -297,9 +280,7 @@ int main(int argc, char **argv)
                 free(String);
                 aligs.arbdb.commit_transaction();
 
-                /*
-                 * make prealignment
-                 */
+                // make prealignment
                 align_prealigner = new ALI_PREALIGNER(&aligs.preali_context,
                                                       align_profile,
                                                       0, align_profile->sequence_length() - 1 ,
@@ -315,9 +296,7 @@ int main(int argc, char **argv)
 
                 align_pre_solution->print();
 
-                /*
-                 * write result of alignment into database
-                 */
+                // write result of alignment into database
                 aligs.arbdb.begin_transaction();
                 String = align_pre_sequence_i->string();
                 aligs.arbdb.put_SAI("ALI_PRE_I",String);
@@ -334,10 +313,7 @@ int main(int argc, char **argv)
                 if (align_pre_approx->is_empty())
                     ali_fatal_error("List of approximations is empty");
 
-                /*
-                 * Write result back to the database
-                 */
-
+                // Write result back to the database
                 approx_elem = align_pre_approx->first();
 
                 sequence = approx_elem->map->sequence(align_profile->sequence());
@@ -355,9 +331,7 @@ int main(int argc, char **argv)
                 aligs.arbdb.commit_transaction();
                 delete sequence;
 
-                /*
-                 * Delete all Objects
-                 */
+                // Delete all Objects
                 free(align_string);
                 free(align_string_original);
                 delete align_pre_solution;

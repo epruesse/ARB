@@ -63,9 +63,7 @@ ALI_NORM_SEQUENCE::ALI_NORM_SEQUENCE(char *Name, char *String)
     int dot_flag;
     char *str;
 
-    /*
-     * Count only _BASES_
-     */
+    // Count only _BASES_
     for (counter = 0, str = String; *str != '\0'; str++)
         if (ali_is_base(*str))
             counter++;

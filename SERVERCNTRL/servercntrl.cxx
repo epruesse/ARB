@@ -3,14 +3,12 @@
 #include <unistd.h>
 #include <string.h>
 #include <ctype.h>
-/* #include <malloc.h> */
 #include <client_privat.h>
 #include <client.h>
 #include <arbdb.h>
 #include <servercntrl.h>
 
-/*
- * The following lines go to servercntrl.h
+/* The following lines go to servercntrl.h
  * edit here, not there!!
  * call 'make proto' to update
  */

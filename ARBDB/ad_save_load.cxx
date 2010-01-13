@@ -839,8 +839,7 @@ int gb_write_bin(FILE *out,GBDATA *gbd,long version) {
 
 
 GB_ERROR GB_save(GBDATA *gb,const char *path,const char *savetype)
-     /*
-      * savetype 'a'    ascii
+     /* savetype 'a'    ascii
       *          'aS'   dump to stdout
       *          'b'    binary
       *          'bm'   binary + mapfile

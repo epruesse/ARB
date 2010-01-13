@@ -15,10 +15,7 @@
 
 class ALI_SEQUENCE;
 
-/*
- * Class for accessing the database
- */
-
+// Class for accessing the database
 class ALI_ARBDB {
 private:
     char *alignment;

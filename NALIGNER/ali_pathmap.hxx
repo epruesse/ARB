@@ -21,9 +21,7 @@
 #define ALI_UP    0x04
 #define ALI_LUP   0x08
 
-/*
- * Structure for a long up pointer (a multi gap)
- */
+// Structure for a long up pointer (a multi gap)
 struct ali_pathmap_up_pointer {
     unsigned long start;
     unsigned char operation;

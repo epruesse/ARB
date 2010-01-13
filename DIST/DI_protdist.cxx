@@ -175,8 +175,7 @@ void di_protdist::cats(di_cattype      wcat)
     cat[(long) arg - (long) ala] = 8;
     cat[(long) his - (long) ala] = 8;
     if (wcat == george) {
-        /*
-         * George, Hunt and Barker: sulfhydryl, small hydrophobic,
+        /* George, Hunt and Barker: sulfhydryl, small hydrophobic,
          * small hydrophilic, aromatic, acid/acid-amide/hydrophilic,
          * basic
          */
@@ -188,8 +187,7 @@ void di_protdist::cats(di_cattype      wcat)
         }
     }
     if (wcat == chemical) {
-        /*
-         * Conn and Stumpf:  monoamino, aliphatic, heterocyclic,
+        /* Conn and Stumpf:  monoamino, aliphatic, heterocyclic,
          * aromatic, dicarboxylic, basic
          */
         for (b = ala; (long) b <= (long) val; b = (aas) ((long) b + 1)) {
@@ -209,12 +207,8 @@ void di_protdist::cats(di_cattype      wcat)
 }                               /* cats */
 
 
-void di_protdist::maketrans()
-{
-    /* 
-     * Make up transition probability matrix from code and category
-     * tables
-     */
+void di_protdist::maketrans() {
+    // Make up transition probability matrix from code and category tables
     long   i, j, k, m, n, s;
     double x, sum = 0;
     long   sub[3], newsub[3];

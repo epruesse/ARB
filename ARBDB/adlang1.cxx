@@ -382,10 +382,7 @@ static GB_ERROR gbl_trace(GBL_command_arguments *args) {
     return gbl_mid_streams(args->cinput, args->vinput,args->coutput, args->voutput, 0, 0, -1, 0); // copy all streams
 }
 
-// --------------------------
-//      binary operators:
-
-/*
+/* ---------------------------------------------------------------------------------------
  * Binary operators work on pairs of values.
  * Three different operational modes are implemented for all binary operators:
  *

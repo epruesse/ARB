@@ -953,11 +953,8 @@ static void dump_dtree(int deep, DictTree tree)
 #endif
 
 #ifdef TEST
-static int testCounts(DictTree tree)
-/*
- * tests if all inner nodes have correct 'count's
- */
-{
+static int testCounts(DictTree tree) {
+    // tests if all inner nodes have correct 'count's
     int cnt = 0;
 
     if (tree.exists) {
@@ -1532,10 +1529,9 @@ static int COUNT(DictTree tree) {
 }
 
 static DictTree removeSubsequentString(DictTree *tree_pntr, cu_str buffer, int len, int max_occur) {
-    /*
-     * searches tree for 'buffer' (length='len')
+    /* searches tree for 'buffer' (length='len')
      *
-     * returns          - rest below found string
+     * returns  - rest below found string
      *            (if found and if the # of occurrences of the string is less/equal than 'max_occur')
      *          - NULL otherwise
      *
@@ -1650,8 +1646,7 @@ static cu_str memstr(cu_str stringStart, int stringStartLen, cu_str inString, in
 
 
 static int expandBranches(u_str buffer, int deep, int minwordlen, int maxdeep, DictTree tree, DictTree root, int max_percent) {
-    /*
-     * expands all branches in 'tree'
+    /* expands all branches in 'tree'
      *
      * this is done by searching every of these branches in 'root' and moving any subsequent parts from there to 'tree'
      * (this is only done, if the # of occurrences of the found part does not exceed the # of occurrences of 'tree' more than 'max_percent' percent)

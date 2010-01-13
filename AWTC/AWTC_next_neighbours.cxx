@@ -97,12 +97,10 @@ GB_ERROR AWTC_FIND_FAMILY::retrieve_family(char *sequence, int oligo_len, int mi
     bs.size = strlen(bs.data)+1;
 
     delete_family_list();
-    /*
-     * Start find_family() at the PT_SERVER
+    /* Start find_family() at the PT_SERVER
      *
      * Here we have to make a loop, until the match count of the
      * first member is big enough
-     *
      */
 
     if (aisc_put(link, PT_LOCS, locs,
@@ -118,9 +116,7 @@ GB_ERROR AWTC_FIND_FAMILY::retrieve_family(char *sequence, int oligo_len, int mi
         return GB_export_error  ("Communication Error (2)");
     }
 
-    /*
-     * Read family list
-     */
+    // Read family list
     aisc_get(link, PT_LOCS, locs,
              LOCS_FF_FAMILY_LIST, &f_list,
              LOCS_FF_FAMILY_LIST_SIZE, &real_hits,

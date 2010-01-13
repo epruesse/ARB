@@ -33,9 +33,7 @@ struct ALI_ALIGNER_CONTEXT {
     long max_number_of_maps;
 };
 
-/*
- * Structure of a cell of the distance matrix
- */
+// Structure of a cell of the distance matrix
 struct ali_aligner_cell {
     float d1, d2, d3;
     ALI_TARRAY<ali_pathmap_up_pointer> *starts;
@@ -50,9 +48,7 @@ struct ali_aligner_cell {
     }
 };
 
-/*
- * Structure of a column of the distance matrix
- */
+// Structure of a column of the distance matrix
 struct ali_aligner_column {
     unsigned long column_length;
     ali_aligner_cell **cells;
@@ -78,9 +74,7 @@ struct ali_aligner_column {
     }
 };
 
-/*
- * Structure of a LONG deletion (multi gap) in the distance matrix
- */
+// Structure of a LONG deletion (multi gap) in the distance matrix
 struct ali_aligner_dellist_elem {
     unsigned long start;
     float costs;
@@ -98,9 +92,7 @@ struct ali_aligner_dellist_elem {
     }
 };
 
-/*
- * Structure of the list of LONG deletions in the distance matrix
- */
+// Structure of the list of LONG deletions in the distance matrix
 struct ali_aligner_dellist {
     ALI_PROFILE *profile;
     ALI_TLIST<ali_aligner_dellist_elem *> list_of_dels;
@@ -172,9 +164,7 @@ struct ali_aligner_dellist {
 };
 
 
-/*
- * Structure of the virtual cell at the left buttom
- */
+// Structure of the virtual cell at the left buttom
 struct ali_aligner_last_cell {
     ALI_PROFILE *profile;
     float d1, d2, d3;
@@ -253,9 +243,7 @@ struct ali_aligner_last_cell {
                    unsigned long start_y, unsigned long end_y) {
         unsigned long cell;
 
-        /*
-         * Value for start := start + 1 (because of -1)
-         */
+        // Value for start := start + 1 (because of -1)
 
         for (cell = 0; cell < akt_col->column_length - 1; cell++)
             update_up(&(*akt_col->cells)[cell], cell + 1, start_y, end_y);
@@ -296,9 +284,7 @@ struct ali_aligner_last_cell {
 };
 
 
-/*
- * Structure for collecting all possible solution
- */
+// Structure for collecting all possible solution
 struct ali_aligner_result {
     ALI_TLIST<ALI_MAP *> *map_list;
 
@@ -325,9 +311,7 @@ struct ali_aligner_result {
 };
 
 
-/*
- * Class of the extended aligner
- */
+// Class of the extended aligner
 class ALI_ALIGNER {
     ALI_PROFILE *profile;
     ALI_PATHMAP *path_map[3];

@@ -84,12 +84,10 @@ static void RemoveQuotes(char *string)
 
 }
 
-/*
- *       OverWrite(), overwrite all non-default data from a sequence entry
- *       onto any entry with the same ID or short name.
- */
-static int OverWrite(NA_Sequence *thiss,NA_Alignment *aln)
-{
+static int OverWrite(NA_Sequence *thiss,NA_Alignment *aln) {
+    /* OverWrite(), overwrite all non-default data from a sequence entry
+     * onto any entry with the same ID or short name.
+     */
     size_t j;
     int indx = -1;
     NA_Sequence *that;
@@ -396,9 +394,7 @@ void ReadGDE(char *filename,NA_Alignment *dataset,int type)
                     else
                         buffer[len++] = line[j];
                 }
-                /*
-                 *       Check pad with null
-                 */
+                // Check pad with null
                 buffer[len] = '\0';
                 if(!done)
                 {
@@ -438,9 +434,7 @@ void ReadGDE(char *filename,NA_Alignment *dataset,int type)
 
                     else
                     {
-                        /*
-                         *                      If not text, ignore spaces...
-                         */
+                        // If not text, ignore spaces...
                         if(this_elem->elementtype !=TEXT)
                         {
                             if(line[j]!=' ' && line[j] !=
@@ -476,17 +470,15 @@ void ReadGDE(char *filename,NA_Alignment *dataset,int type)
             if(this_elem->short_name[0] == '\0')
                 strncpy(this_elem->short_name,this_elem->id,79);
             if(this_elem->seqlen == 0)
-                this_elem->protect=
+                this_elem->protect = 
                     PROT_BASE_CHANGES+
                     PROT_GREY_SPACE+
                     PROT_WHITE_SPACE+
                     PROT_TRANSLATION;
-            genclen = 0;
-            /*
-             *              Make a new sequence entry...
-             */
-
-            success = -1;
+            genclen                = 0;
+            
+            // Make a new sequence entry...
+            success     = -1;
             if(OVERWRITE)
                 success = OverWrite(this_elem,dataset);
 
@@ -615,9 +607,8 @@ int WriteGDE(NA_Alignment *aln,char *filename,int method,int maskable)
                 fprintf(file,"offset            %d\n",this_elem->offset+aln->rel_offset);
             if(method == SELECT_REGION)
             {
-                /*
-                 *       If selecting a region, the offset should be moved to the first
-                 *       non-'0' space in the mask.
+                /* If selecting a region, the offset should be moved to the first
+                 * non-'0' space in the mask.
                  */
                 for(k=this_elem->offset;k<aln->selection_mask_len && aln->selection_mask[k] == '0';k++) ;
                 fprintf(file,"offset        %d\n", aln->rel_offset+k);
@@ -758,11 +749,9 @@ int WriteGDE(NA_Alignment *aln,char *filename,int method,int maskable)
 
 
 
-/*
- *       Normalize seq (remove leading indels in the sequence;
- */
 void SeqNorm(NA_Sequence *seq)
 {
+    // Normalize seq (remove leading indels in the sequence;
     int len,j,shift_width,trailer;
     char *sequence;
     len = seq->seqlen;

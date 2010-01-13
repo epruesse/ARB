@@ -480,9 +480,7 @@ ALI_MAP *ALI_SUB_SOLUTION::make_one_map(void)
     unsigned long first_base_of_first, first_reference_of_first;
     unsigned long last_base_of_last, last_reference_of_last;
 
-    /*
-     * check if maps are closed
-     */
+    // check if maps are closed
     if (map_list.is_empty())
         return 0;
 

@@ -45,16 +45,12 @@ static int mark_all_matches( PT_local *locs,
     }
     type_of_node = PT_read_type(pt);
     if ((type_of_node = PT_read_type(pt)) != PT_NT_NODE) {
-        /*
-         * Found unique solution
-         */
+        // Found unique solution
         if (type_of_node == PT_NT_LEAF) {
             ref2_pos = PT_read_rpos(psg.ptmain,pt);
             ref_pos = ref2_pos + height;
             ref_name = PT_read_name(psg.ptmain,pt);
-            /*
-             * Check rest of probe
-             */
+            // Check rest of probe
             while (mismatches <= max_mismatches && *probe) {
                 if (psg.data[ref_name].data[ref_pos++] != *probe) {
                     mismatches++;
@@ -62,9 +58,7 @@ static int mark_all_matches( PT_local *locs,
                 probe++;
                 height++;
             }
-            /*
-             * Increment count if probe matches
-             */
+            // Increment count if probe matches
             if (mismatches <= max_mismatches)
                 psg.data[ref_name].stat.match_count++;
             return 0;
@@ -110,9 +104,7 @@ static void clear_statistic(){
 /* Calculate the statistic information for the family */
 static void make_match_statistic(int probe_len, int sequence_length) {
     int i;
-    /*
-     * compute statistic for all species in family
-     */
+    // compute statistic for all species in family
     for (i = 0; i < psg.data_count; i++) {
         int all_len = min(psg.data[i].size,sequence_length) - probe_len + 1;
         if (all_len <= 0){

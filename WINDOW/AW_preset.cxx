@@ -540,15 +540,15 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
                            const char  *default_background_color,
                            ...)
 {
-    /*
-     *  Parameter:  aww:    base window
-     *          device: screen device
-     *          base_gc:    first gc number
-     *          base_drag:  one after last gc
-     *          area:       middle,top ...
-     *          changecb:   cb if changed
-     *          cd1,cd2:    free Parameters to changecb
-     *          define_color_groups: true -> add colors for color groups
+    /*  Parameter:
+     *          aww:                    base window
+     *          device:                 screen device
+     *          base_gc:                first gc number
+     *          base_drag:              one after last gc
+     *          area:                   middle,top ...
+     *          changecb:               cb if changed
+     *          cd1,cd2:                free Parameters to changecb
+     *          define_color_groups:    true -> add colors for color groups
      *
      *          ...:        NULL terminated list of \0 terminated strings:
      *

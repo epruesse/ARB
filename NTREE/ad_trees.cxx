@@ -564,8 +564,7 @@ AW_window *create_tree_copy_window(AW_root *root)
 }
 
 void ad_move_tree_info(AW_window *aww,AW_CL mode){
-    /* 
-     * mode == 0 -> move info (=overwrite info from source tree)
+    /* mode == 0 -> move info (=overwrite info from source tree)
      * mode == 1 -> compare info
      * mode == 2 -> add info
      */

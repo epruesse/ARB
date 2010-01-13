@@ -46,9 +46,7 @@ class di_protdist {
     long spp;                   // number of species
     long chars;                 // number of characters
 
-    /*
-     * spp = number of species chars = number of sites in actual sequences
-     */
+    // spp = number of species chars = number of sites in actual sequences
 
     double         freqa, freqc, freqg, freqt, ttratio, xi, xv, ease, fracchange;
     DI_ENTRY      **entries;                                                        // link to entries
