@@ -106,12 +106,13 @@ else
     ls -al arb.tgz arb.[36][24].*.tgz 
 fi
 
-if [ ! -L arb.tgz ]; then
-    err "arb.tgz should be a link to an arb-tarball (arb.*.tgz)"
-fi
 if [ ! -f arb.tgz ]; then
-    rm arb.tgz
-    err "arb.tgz does not link to a file"
+    if [ -L arb.tgz ]; then
+        rm arb.tgz
+        err "arb.tgz does not link to a file - removed link"
+    else
+        err "arb.tgz is neighter file nor link - can't handle"
+    fi
 fi
 
 if test -d $ARBHOME; then
@@ -385,9 +386,9 @@ while [ "$SHELL_ANS" = "0" ]; do
         echo '******************************************';
         echo "     setenv ARBHOME $ARBHOME";
         if test "X${LD_LIBRARY_PATH}" != "X"; then
-            echo '   setenv LD_LIBRARY_PATH $ARBHOME/lib\:$LD_LIBRARY_PATH';
+            echo '     setenv LD_LIBRARY_PATH $ARBHOME/lib\:$LD_LIBRARY_PATH';
         else
-            echo '        setenv LD_LIBRARY_PATH $ARBHOME/lib';
+            echo '     setenv LD_LIBRARY_PATH $ARBHOME/lib';
         fi
         echo '     setenv PATH $ARBHOME/bin\:$PATH';
         echo ' '
