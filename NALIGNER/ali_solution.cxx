@@ -1,8 +1,13 @@
+// =============================================================== //
+//                                                                 //
+//   File      : ali_solution.cxx                                  //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-
-// #include <malloc.h>
-#include <stdlib.h>
-#include "ali_misc.hxx"
 #include "ali_solution.hxx"
 
 
@@ -23,12 +28,10 @@ ALI_MAP::ALI_MAP(unsigned long first_seq, unsigned long last_seq,
     first_ref_base = first_ref;
     last_ref_base = last_ref;
 
-    mapping = (long **) CALLOC((unsigned int) (last_seq_base - first_seq_base + 1),sizeof(long));
-    //mapping = (long (*) [1]) CALLOC((unsigned int) (last_seq_base - first_seq_base + 1),sizeof(long));
-    inserted = (unsigned char **) CALLOC((unsigned int) ((last_seq_base - first_seq_base)/8) + 1,sizeof(unsigned char));
-    //inserted = (unsigned char (*) [1]) CALLOC((unsigned int) ((last_seq_base - first_seq_base)/8) + 1,sizeof(unsigned char));
+    mapping   = (long **)          CALLOC((unsigned int) (last_seq_base - first_seq_base + 1),sizeof(long));
+    inserted  = (unsigned char **) CALLOC((unsigned int) ((last_seq_base - first_seq_base)/8) + 1,sizeof(unsigned char));
     undefined = (unsigned char **) CALLOC((unsigned int) ((last_seq_base - first_seq_base)/8) + 1,sizeof(unsigned char));
-    //undefined = (unsigned char (*) [1]) CALLOC((unsigned int) ((last_seq_base - first_seq_base)/8) + 1,sizeof(unsigned char));
+    
     if (mapping == 0 || inserted == 0 || undefined == 0) {
         ali_fatal_error("Out of memory");
     }
@@ -46,12 +49,10 @@ ALI_MAP::ALI_MAP(ALI_MAP *map)
     first_ref_base = map->first_ref_base;
     last_ref_base = map->last_ref_base;
 
-    mapping = (long **) CALLOC((unsigned int) (last_seq_base - first_seq_base + 1), sizeof(long));
-    //mapping = (long (*) [1]) CALLOC((unsigned int) (last_seq_base - first_seq_base + 1), sizeof(long));
-    inserted = (unsigned char **) CALLOC((unsigned int) ((last_seq_base - first_seq_base) / 8) + 1,sizeof(unsigned char));
-    //inserted = (unsigned char (*) [1]) CALLOC((unsigned int) ((last_seq_base - first_seq_base) / 8) + 1,sizeof(unsigned char));
+    mapping   = (long **)          CALLOC((unsigned int) (last_seq_base - first_seq_base + 1), sizeof(long));
+    inserted  = (unsigned char **) CALLOC((unsigned int) ((last_seq_base - first_seq_base) / 8) + 1,sizeof(unsigned char));
     undefined = (unsigned char **) CALLOC((unsigned int) ((last_seq_base - first_seq_base) / 8) + 1,sizeof(unsigned char));
-    //undefined = (unsigned char (*) [1]) CALLOC((unsigned int) ((last_seq_base - first_seq_base) / 8) + 1,sizeof(unsigned char));
+    
     if (mapping == 0 || inserted == 0 || undefined == 0) {
         ali_fatal_error("Out of memory");
     }
@@ -551,11 +552,4 @@ void ALI_SUB_SOLUTION::print(void)
         }
     }
 }
-
-
-
-
-
-
-
 

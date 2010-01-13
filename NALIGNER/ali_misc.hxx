@@ -1,6 +1,15 @@
+// =============================================================== //
+//                                                                 //
+//   File      : ali_misc.hxx                                      //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#ifndef _ALI_MISC_INC_
-#define _ALI_MISC_INC_
+#ifndef ALI_MISC_HXX
+#define ALI_MISC_HXX
 
 #ifndef _CPP_CSTDIO
 #include <cstdio>
@@ -200,4 +209,6 @@ inline void ali_print_sequence(unsigned char *sequence,          unsigned long l
         printf("%d ",*sequence);
 }
 
-#endif
+#else
+#error ali_misc.hxx included twice
+#endif // ALI_MISC_HXX

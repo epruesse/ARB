@@ -1,13 +1,14 @@
-// ********************* INCLUDE
-#include <stdio.h>
+// =============================================================== //
+//                                                                 //
+//   File      : ali_main.cxx                                      //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-
-#include "ali_misc.hxx"
 #include "ali_global.hxx"
-#include "ali_sequence.hxx"
-#include "ali_profile.hxx"
-#include "ali_aligner.hxx"
-#include "ali_prealigner.hxx"
 
 
 #define HELIX_PAIRS    "helix_pairs"
@@ -314,7 +315,6 @@ int main(int argc, char **argv)
                 char *String = align_profile->cheapest_sequence();
                 aligs.arbdb.put_SAI("ALI_CON",String);
                 freeset(String, align_profile->borders_sequence());
-                //                              aligs.arbdb.put_SAI("ALI_BOR",string,0);
                 free(String);
                 aligs.arbdb.commit_transaction();
 
@@ -394,5 +394,3 @@ int main(int argc, char **argv)
     ali_message("Aligner terminated\n");
     return 0;
 }
-
-

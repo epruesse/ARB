@@ -1,11 +1,28 @@
+// =============================================================== //
+//                                                                 //
+//   File      : ali_pt.hxx                                        //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#ifndef _ALI_PT_INC_
-#define _ALI_PT_INC_
+#ifndef ALI_PT_HXX
+#define ALI_PT_HXX
 
+#ifndef ALI_OTHER_STUFF_HXX
 #include "ali_other_stuff.hxx"
+#endif
+#ifndef ALI_TLIST_HXX
 #include "ali_tlist.hxx"
+#endif
+#ifndef ALI_SEQUENCE_HXX
 #include "ali_sequence.hxx"
+#endif
+#ifndef CLIENT_H
 #include <client.h>
+#endif
 
 typedef enum {ServerMode, SpecifiedMode} ALI_PT_MODE;
 
@@ -43,6 +60,7 @@ public:
 /*
  * Class for accessing the PT server
  */
+
 class ALI_PT {
 private:
     ALI_PT_MODE mode;
@@ -80,4 +98,6 @@ public:
     int next_family_(char **seq_name, int *matches);
 };
 
-#endif
+#else
+#error ali_pt.hxx included twice
+#endif // ALI_PT_HXX

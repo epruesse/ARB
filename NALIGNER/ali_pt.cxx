@@ -1,10 +1,13 @@
-// ********************* INCLUDE
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
+// =============================================================== //
+//                                                                 //
+//   File      : ali_pt.cxx                                        //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include "ali_misc.hxx"
 #include "ali_pt.hxx"
 
 /*

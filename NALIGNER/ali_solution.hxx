@@ -1,15 +1,19 @@
+// =============================================================== //
+//                                                                 //
+//   File      : ali_solution.hxx                                  //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
+#ifndef ALI_SOLUTION_HXX
+#define ALI_SOLUTION_HXX
 
-#ifndef _ALI_SOLUTION_INC_
-#define _ALI_SOLUTION_INC_
-
-
-
-// #include <malloc.h>
-
+#ifndef ALI_PROFILE_HXX
 #include "ali_profile.hxx"
-#include "ali_sequence.hxx"
-#include "ali_tlist.hxx"
+#endif
 
 class ALI_MAP {
     unsigned long first_seq_base, last_seq_base;
@@ -187,5 +191,6 @@ public:
     void print(void);
 };
 
-
-#endif
+#else
+#error ali_solution.hxx included twice
+#endif // ALI_SOLUTION_HXX

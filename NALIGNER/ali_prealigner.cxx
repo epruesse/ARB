@@ -1,4 +1,13 @@
-#include <stdlib.h>
+// =============================================================== //
+//                                                                 //
+//   File      : ali_prealigner.cxx                                //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #include "ali_prealigner.hxx"
 #include "ali_aligner.hxx"
 
@@ -1201,8 +1210,6 @@ void ALI_PREALIGNER::generate_approximation(ALI_SUB_SOLUTION * work_sol) {
     ins_marker = map->insert_marker();
 
     result_approx.insert(map, ins_marker, binding_costs);
-    // delete ins_marker;   @@@
-    // delete map;          @@@
 }
 
 /*
@@ -1294,7 +1301,7 @@ void ALI_PREALIGNER::make_approximation(ALI_PREALIGNER_CONTEXT * context) {
         printf("%d solutions generated\n",
                map_lists->get(area_number)->cardinality());
 
-        delete          aligner;
+        delete aligner;
         area_number++;
     }
 
@@ -1303,8 +1310,7 @@ void ALI_PREALIGNER::make_approximation(ALI_PREALIGNER_CONTEXT * context) {
      */
     mapper_approximation(0, map_lists, work_solution);
 
-    delete          work_solution;
-    // delete               map_lists;      // @@@
+    delete work_solution;
 
     ali_message("Free areas aligned");
 }
@@ -1349,15 +1355,12 @@ unsigned long ALI_PREALIGNER::number_of_solutions() {
             *(elem_left_col - 1) = 0;
             value = path_map->get_value(pos_x, pos_y);
             if (value & ALI_UP) {
-                /* *(elem_akt_col - 1) += *elem_akt_col; */
                 ADD(*(elem_akt_col - 1), *elem_akt_col);
             }
             if (value & ALI_DIAG) {
-                /* *(elem_left_col - 1) += *elem_akt_col; */
                 ADD(*(elem_left_col - 1), *elem_akt_col);
             }
             if (value & ALI_LEFT) {
-                /* *(elem_left_col) += *elem_akt_col; */
                 ADD(*(elem_left_col), *elem_akt_col);
             }
             elem_akt_col--;
@@ -1365,15 +1368,12 @@ unsigned long ALI_PREALIGNER::number_of_solutions() {
         }
         value = path_map->get_value(pos_x, 0);
         if (value & ALI_UP) {
-            /* number += *elem_akt_col; */
             ADD(number, *elem_akt_col);
         }
         if (value & ALI_DIAG) {
-            /* number += *elem_akt_col; */
             ADD(number, *elem_akt_col);
         }
         if (value & ALI_LEFT) {
-            /* *(elem_left_col) += *elem_akt_col; */
             ADD(*(elem_left_col), *elem_akt_col);
         }
         pos_x--;
@@ -1393,21 +1393,17 @@ unsigned long ALI_PREALIGNER::number_of_solutions() {
     for (pos_y = end_y - start_y; pos_y > 0; pos_y--) {
         value = path_map->get_value(0, pos_y);
         if (value & ALI_UP) {
-            /* *(elem_akt_col - 1) += *elem_akt_col; */
             ADD(*(elem_akt_col - 1), *elem_akt_col);
         }
         if (value & ALI_DIAG) {
-            /* number += *elem_akt_col; */
             ADD(number, *elem_akt_col);
         }
         if (value & ALI_LEFT) {
-            /* number += *elem_akt_col; */
             ADD(number, *elem_akt_col);
         }
         elem_akt_col--;
     }
 
-    /* number += *elem_akt_col; */
     ADD(number, *elem_akt_col);
 
     ali_message("End: Checking number of solutions");

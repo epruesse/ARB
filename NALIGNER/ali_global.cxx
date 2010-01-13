@@ -1,9 +1,13 @@
+// =============================================================== //
+//                                                                 //
+//   File      : ali_global.cxx                                    //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "ali_misc.hxx"
 #include "ali_global.hxx"
 
 #define EXCLUSIVE_FLAG_DEFAULT             1
