@@ -418,29 +418,12 @@ void ALI_ALIGNER::calculate_matrix()
  */
 void ALI_ALIGNER::generate_result(ALI_TSTACK<unsigned char> *stack) 
 {
-    /*****
-          unsigned long ic, sc, dc;
-    *****/
-
     ALI_MAP *map;
     long seq_pos, dest_pos;
     long i;
  
     map = new ALI_MAP(start_x,end_x,start_y,end_y);
  
-    /*****************************
-ic = sc = dc = 0;
-for (i = (long) stack->akt_size() - 1; i >= 0; i--)
-        switch(stack->get(i)) {
-                case ALI_ALIGNER_INS: ic++; break;
-                case ALI_ALIGNER_SUB: sc++; break;
-                case ALI_ALIGNER_DEL: dc++; break;
-                default: printf("*");
-        }
-printf("\nStack content: %d * I, %d * S, %d * D\n",ic,sc,dc);
-if (sc + ic != end_x - start_x + 1)
-        printf("ACHTUNG: Insertionen und Substitutionen nicht passend zu Sequenzlaenge (%d)\n",end_x - start_x + 1);
-    *****************************/
 
     seq_pos = start_x - 1;
     dest_pos = 0 - 1;

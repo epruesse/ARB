@@ -14,10 +14,6 @@
 
 #define NAME_BUFFERSIZE 100
 
-//*******************************************
-//* Database functions.     beginning   *
-//*******************************************
-
 void EDB_root_bact::calc_no_of_all(char *string_to_scan, long *group, long *species)
 {
     long i=0;
@@ -636,8 +632,4 @@ EDB_root_bact::EDB_root_bact()
 EDB_root_bact::~EDB_root_bact()
 {
 }
-
-//*******************************************
-//* Database functions.     end     *
-//*******************************************
 

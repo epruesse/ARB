@@ -168,57 +168,6 @@ GB_ERROR ED4_Edit_String::remove(int len, long position, int direction, int inse
     return 0;
 }
 
-/*
-  GB_ERROR ED4_Edit_String::remove(int len, long position, int direction, int insertAtNextGap) {
-  long new_len;
-  long i;
-
-  if (direction<0) {
-  position -= len;
-  }
-  if ((position >= seq_len) || (len == 0) || (seq_len - len < 0)) {
-  return GBS_global_string("Delete outside sequence!");
-  }
-
-  if ((len + position) >= seq_len) {
-  len = (int)(seq_len-position);
-  }
-
-  int rest_len = direction>=0 ? seq_len-position : position;
-
-  if (insertAtNextGap) {
-  int nextGap = get_next_gap(position+len*direction, direction);
-
-  if (nextGap!=-1) {
-  rest_len = (nextGap-position)*direction;
-  }
-  }
-
-  new_len = rest_len-len;
-  if (direction>=0) {
-  for (i=0; i<new_len; i++) {
-  seq[position+i] = seq[position+len+i];
-  }
-  for (; i<rest_len; i++) {
-  seq[position+i] = '.';
-  }
-  }
-  else {
-  for (i=0; i<new_len; i++) {
-  seq[position-i] = seq[position-len-i];
-  }
-  for (; i<rest_len; i++) {
-  seq[position-i] = '.';
-  }
-  }
-
-  e4_assert(seq[seq_len]=='\0');
-
-  return 0;
-  }
-
-*/
-
 GB_ERROR ED4_Edit_String::replace(char *text,long position, int direction) {
     int text_len = strlen(text);
     int i;

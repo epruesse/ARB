@@ -24,7 +24,7 @@ GBDATA *GBT_find_or_create(GBDATA *Main,const char *key,long delete_level)
 }
 
 
-/* the following function were meant to use user defined values.
+/* the following functions were meant to use user defined values.
  *
  * Especially for 'ECOLI' there is already a possibility to
  * specify a different reference in edit4, but there's no

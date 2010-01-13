@@ -1468,33 +1468,6 @@ static void di_compress_tree_cb(AW_window *aww, AW_CL cl_weightedFilter) {
     free(treename);
 }
 
-/*
-  AW_window *create_select_compress_tree(AW_root *awr){
-  static AW_window_simple *aws = 0;
-  if (aws) return (AW_window *)aws;
-
-  aws = new AW_window_simple;
-  aws->init( awr, "SELECT_TREE_TO_COMPRESS_MATRIX", "SELECT A TREE TO COMPRESS MATRIX", 400, 200 );
-  aws->at(10,10);
-  aws->auto_space(0,0);
-  awt_create_selection_list_on_trees(gb_main,(AW_window *)aws,"dist/compress/tree_name");
-  aws->at_newline();
-
-  aws->callback(AW_POPDOWN);
-  aws->create_button("CLOSE", "CLOSE","C");
-
-  aws->callback(di_compress_tree_cb);
-  aws->help_text("compress_tree.hlp");
-  aws->create_button("GO", "DO IT","D");
-
-  aws->callback(AW_POPUP_HELP,(AW_CL)"compress_tree.hlp");
-  aws->create_button("HELP", "HELP","H");
-
-  aws->window_fit();
-  return (AW_window *)aws;
-  }
-*/
-
 static void di_define_sort_tree_name_cb(AW_window *aww) {
     AW_root *aw_root = aww->get_root();
     char *tree_name = aw_root->awar(AWAR_DIST_TREE_CURR_NAME)->read_string();

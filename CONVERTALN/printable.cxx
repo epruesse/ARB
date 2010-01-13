@@ -223,18 +223,6 @@ void to_printable_1x1(char *inf, char *outf, int informat)
             if (current < data.seq_length && data.sequence[current] != '~' && data.sequence[current] != '.' && data.sequence[current] != '-')
                 base_count++;
 
-            /* find if there any non-gap char in the next 62
-             * char of the seq. data
-             * #### count no need to be the first base num
-             for(index=current, count=0;
-             count==0&&index<data.seq_length
-             &&index<(current+PRTLENGTH); index++)
-             if(data.sequence[index]!='~'
-             &&data.sequence[index]!='.'
-             &&data.sequence[index]!='-')
-             { base_count++; count++; }
-             */
-
             printable_print_line(name, data.sequence, current, base_count, ofp);
             total_seq++;
         } while (1);

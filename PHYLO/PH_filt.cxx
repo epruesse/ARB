@@ -336,55 +336,6 @@ float *PH_filter::calculate_column_homology(void){
     free(chars_counted);
     aw_closestatus();
 
-
-    ///////////////////////////////
-    // debugging
-    ///////////////////////////////
-    /*
-       FILE *f_ptr;
-       int used;
-
-       f_ptr=fopen("test.mli","w");
-       for(i=0;i<PHDATA::ROOT->get_seq_len();i++)
-       { if (i%10 == 9)
-       { putc('\n',f_ptr);
-       }
-       fprintf(f_ptr,"%6.2f ",mline[i]);
-       }
-       fprintf(f_ptr,"\n");
-       for(i=0;i<PHDATA::ROOT->get_seq_len();i++)
-       { if(mline[i]<0.0)
-       { putc('-',f_ptr);
-       }
-       else
-       { putc('A'+ (int)( (109.9-mline[i])*0.1 ),f_ptr);
-       }
-       if(i%50==49)
-       { putc('\n',f_ptr);
-       }
-       }
-       fprintf(f_ptr,"\n");
-
-       fprintf(f_ptr,"\n");
-       used=0;
-       fprintf(f_ptr,"\n\n\nstatistics:\n");
-       fprintf(f_ptr,"total number of columns: %d\n",PHDATA::ROOT->get_seq_len());
-       for(i=0;i<PHDATA::ROOT->get_seq_len();i++)
-       {  used += ((options_vector[OPT_MIN_HOM]<=mline[i])
-       &&(options_vector[OPT_MAX_HOM]>=mline[i])) ? 1 : 0;
-       }
-       fprintf(f_ptr,"number of used columns: %d  (%3.1f %%)\n",used,((100.0/(float)PHDATA::ROOT->get_seq_len())*(float)used));
-       fprintf(f_ptr,"number of unused columns: %d  (%3.1f %%)\n",(PHDATA::ROOT->get_seq_len()-used),((100.0/(float)PHDATA::ROOT->get_seq_len())*
-       ((float)PHDATA::ROOT->get_seq_len()-(float)used)));
-
-
-       fclose(f_ptr);
-    */
-    ////////////////////////////////////
-    // end debugging
-    ////////////////////////////////////
-
-
     char *filt=(char *)calloc((int) PHDATA::ROOT->get_seq_len()+1,sizeof(char));
     for(i=0;i<PHDATA::ROOT->get_seq_len();i++)
         filt[i]=((options_vector[OPT_MIN_HOM]<=mline[i])&&(options_vector[OPT_MAX_HOM]>=mline[i])) ? '1' : '0';
@@ -393,7 +344,6 @@ float *PH_filter::calculate_column_homology(void){
     free(filt);
 
     return mline;
-
 }
 
 

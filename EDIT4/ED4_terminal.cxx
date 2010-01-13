@@ -26,10 +26,8 @@
 #include "ed4_nds.hxx"
 #include "ed4_ProteinViewer.hxx"
 
-//*******************************************
-//* Terminal static properties  beginning   *
-//*******************************************
-
+// -----------------------------------
+//      static terminal properties
 
 ED4_object_specification tree_terminal_spec =                       // variables which determine static default properties of predefined (sub-)classes
 {
@@ -120,17 +118,6 @@ ED4_object_specification column_stat_terminal_spec =
     ED4_L_NO_LEVEL,        // restriction level
     0                      // justification value --no meaning for a terminal
 };
-
-//*******************************************
-//* Terminal static properties      end *
-//*******************************************
-
-
-
-
-//*****************************************
-//* ED4_terminal Methods    beginning *
-//*****************************************
 
 
 char *ED4_terminal::resolve_pointer_to_string_copy(int *str_len) const {
@@ -854,16 +841,6 @@ ED4_terminal::~ED4_terminal()
         cursor.init();
     }
 }
-
-//***********************************
-//* ED4_terminal Methods    end *
-//***********************************
-
-
-
-//*********************************************************
-//* Terminal constructors and destructor    beginning *
-//*********************************************************
 
 ED4_tree_terminal::ED4_tree_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent )
     : ED4_terminal( temp_id, x, y, width, height, temp_parent )

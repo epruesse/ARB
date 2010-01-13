@@ -374,8 +374,6 @@ void delete_g_b_undo_header_struct(struct g_b_undo_header_struct *uh){
     free((char *)uh);
 }
 
-//*******************   check size ****************************
-
 char *g_b_check_undo_size2(struct g_b_undo_header_struct *uhs, long size, long max_cnt){
     long csize = 0;
     long ccnt = 0;

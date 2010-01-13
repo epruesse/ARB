@@ -29,11 +29,6 @@
 #include "ed4_tools.hxx"
 #include "ed4_nds.hxx"
 
-//*************************************************
-//* functions concerning no class   beginning *
-//* Most functions are callback functions     *
-  //*************************************************
-
 void ED4_calc_terminal_extentions(){
     const AW_font_information *seq_font_info  = ED4_ROOT->get_device()->get_font_information( ED4_G_SEQUENCES, '=' );
     const AW_font_information *info_font_info = ED4_ROOT->get_device()->get_font_information( ED4_G_STANDARD, '.' );
