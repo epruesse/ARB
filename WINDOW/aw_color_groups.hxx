@@ -24,7 +24,7 @@
 //
 //  - call AW_init_color_group_defaults with current program name
 //
-//  - call AW_manage_GC with define_color_groups set to true;
+//  - call AW_manage_GC with define_color_groups set to true
 //    This defines extra GC's for color_groups (named color_group_xxx)
 //    If such GCs are defined the normal properties window (AW_create_gc_window)
 //    automatically gets a sub-window called 'Edit color-groups'

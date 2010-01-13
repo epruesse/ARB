@@ -67,7 +67,7 @@ class ED4_CursorShape {
 
 public:
 
-    ED4_CursorShape(ED4_CursorType type, /*int x, int y, */int term_height, int character_width, bool reverse_cursor);
+    ED4_CursorShape(ED4_CursorType type, int term_height, int character_width, bool reverse_cursor);
     ~ED4_CursorShape() {}
 
     void draw(AW_device *device, int x, int y) const {
@@ -681,19 +681,18 @@ void ED4_get_marked_from_menu(AW_window *, AW_CL, AW_CL) {
     int marked = GBT_count_marked_species(GLOBAL_gb_main);
 
     if (marked) {
-        GBDATA *gb_species = GBT_first_marked_species(GLOBAL_gb_main);
-        int count = 0;
-        char *buffer = new char[BUFFERSIZE+1];
-        char *bp = buffer;
-        //      int inbuf = 0; // # of names in buffer
+        GBDATA                    *gb_species          = GBT_first_marked_species(GLOBAL_gb_main);
+        int                        count               = 0;
+        char                      *buffer              = new char[BUFFERSIZE+1];
+        char                      *bp                  = buffer;
         ED4_multi_species_manager *insert_into_manager = ED4_new_species_multi_species_manager();
-        ED4_group_manager *group_man = insert_into_manager->get_parent(ED4_L_GROUP)->to_group_manager();
-        int group_depth = insert_into_manager->calc_group_depth();
-        int index = 0;
-        ED4_index y = 0;
-        ED4_index lot = 0;
-        int inserted = 0;
-        char *default_alignment = GBT_get_default_alignment(GLOBAL_gb_main);
+        ED4_group_manager         *group_man           = insert_into_manager->get_parent(ED4_L_GROUP)->to_group_manager();
+        int                        group_depth         = insert_into_manager->calc_group_depth();
+        int                        index               = 0;
+        ED4_index                  y                   = 0;
+        ED4_index                  lot                 = 0;
+        int                        inserted            = 0;
+        char                      *default_alignment   = GBT_get_default_alignment(GLOBAL_gb_main);
 
         aw_openstatus("ARB_EDIT4");
         aw_status("Loading species...");

@@ -164,7 +164,6 @@ void ED4_terminal::changed_by_database(void)
 
                     set_refresh(1);
                     parent->refresh_requested_by_child();
-                    //                     ED4_ROOT->main_manager->Show();
                 }
 
                 delete [] dup_data;
@@ -268,7 +267,7 @@ void ED4_manager::deleted_from_database()
         ED4_ROOT->refresh_all_windows(0);
 
         parent = 0;
-        //      delete this; // crashes when removing callback deleted_from_database()
+        //      delete this; // @@@ crashes when removing callback deleted_from_database()
     }
     else {
         e4_assert(0);
@@ -488,7 +487,7 @@ ED4_returncode ED4_manager::create_group(ED4_group_manager **group_manager, GB_C
     sequence_manager->set_properties( ED4_P_MOVABLE );
     species_manager->children->append_member( sequence_manager );
 
-    sequence_info_terminal = new ED4_sequence_info_terminal( "DATA",/*NULL,*/ 0, 0, SEQUENCEINFOSIZE, TERMINALHEIGHT, sequence_manager );       // Info fuer Gruppe
+    sequence_info_terminal = new ED4_sequence_info_terminal( "DATA", 0, 0, SEQUENCEINFOSIZE, TERMINALHEIGHT, sequence_manager );       // Info fuer Gruppe
     sequence_info_terminal->set_links( ED4_ROOT->ref_terminals.get_ref_sequence_info(), ED4_ROOT->ref_terminals.get_ref_sequence_info() );
     sequence_info_terminal->set_properties( (ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE) );
     sequence_manager->children->append_member( sequence_info_terminal );
@@ -851,12 +850,9 @@ void ED4_manager::generate_id_for_groups() {
 
 int ED4_multi_species_manager::count_all_children_and_set_group_id() // counts all species of a multi_species_manager
 {
-    int counter = 0,
-        i;
+    int   counter = 0;
+    int   i;
     char *name;
-
-
-    //    ED4_multi_species_manager *multi_species_manager = get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
 
     for (i=0; i<children->members(); i++) {
         ED4_base *member = children->member(i);
@@ -883,13 +879,11 @@ int ED4_multi_species_manager::count_all_children_and_set_group_id() // counts a
 
     freeset(consensus_name_terminal->id, name);
 
-    //    update_species_counters();
     return counter;
 }
 
 void ED4_sequence_terminal_basic::calc_intervall_displayed_in_rectangle(AW_rectangle *rect, long *left_index, long *right_index) { // rect contains win-coords
     AW_pos x ,y;
-    // int    length_of_char = ED4_ROOT->font_info[ED4_G_SEQUENCES].get_width();
     int    length_of_char = ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES);
 
     calc_world_coords( &x, &y );
@@ -898,7 +892,7 @@ void ED4_sequence_terminal_basic::calc_intervall_displayed_in_rectangle(AW_recta
     int rel_left_x =  (int)(rect->l-x);
     int rel_right_x = (int)(rect->r-x);
 
-    *left_index  = (int)((rel_left_x-CHARACTEROFFSET)/length_of_char); // - 1;
+    *left_index  = (int)((rel_left_x-CHARACTEROFFSET)/length_of_char); 
     *right_index = (int)((rel_right_x-CHARACTEROFFSET)/length_of_char) + 1;
 
     if (*right_index > MAXSEQUENCECHARACTERLENGTH) *right_index = MAXSEQUENCECHARACTERLENGTH;
@@ -908,7 +902,6 @@ void ED4_sequence_terminal_basic::calc_intervall_displayed_in_rectangle(AW_recta
 void ED4_sequence_terminal_basic::calc_update_intervall(long *left_index, long *right_index )
 {
     AW_pos x ,y;
-    // int    length_of_char = ED4_ROOT->font_info[ED4_G_SEQUENCES].get_width();
     int    length_of_char = ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES);
 
     calc_world_coords( &x, &y );
@@ -920,7 +913,7 @@ void ED4_sequence_terminal_basic::calc_update_intervall(long *left_index, long *
 
     int rel_right_x = (int)( (dev->clip_rect.r-x) + (coords->window_left_clip_point-x) );
 
-    *left_index  = (int)((rel_left_x-CHARACTEROFFSET)/length_of_char); // - 1;
+    *left_index  = (int)((rel_left_x-CHARACTEROFFSET)/length_of_char); 
     *right_index = (int)((rel_right_x-CHARACTEROFFSET)/length_of_char) + 1;
 
     if (*right_index >= MAXSEQUENCECHARACTERLENGTH) *right_index = MAXSEQUENCECHARACTERLENGTH-1;
@@ -1365,9 +1358,6 @@ void ED4_base::check_all()
 {
     AW_pos x,y;
 
-    //  printf("\nName des Aufrufers von Check_All : \t%.40s\n", id);
-    //  if (spec->level & ED4_L_MULTI_SPECIES)
-    //  {
     calc_world_coords( &x, &y);
 
     printf("Typ des Aufrufers :\t\t\t%s\n", is_manager() ? "Manager" : "Terminal");
@@ -1375,16 +1365,7 @@ void ED4_base::check_all()
     printf("Linke obere Ecke x, y : \t\t%f, %f\n", extension.position[0], extension.position[1]);
     printf("Breite und Hoehe x, y : \t\t%f, %f\n", extension.size[0], extension.size[1]);
     printf("World Coords     x, y : \t\t%f, %f\n\n", x, y);
-    //          printf("Laenge des Inhalts    : \t\t%d\n",strlen(resolve_pointer_to_string()));
-    //  }
-
-    //  if ((spec->static_prop & ED4_P_IS_MANAGER) == 1)                                        //only scan further if calling object is manager and has children
-    //  {
-    //          for (i=0; i < children->no_of_members; i++)
-    //                  (children->member_list[i])->check_all();
-    //  }
     printf("***********************************************\n\n");
-
 }
 
 int ED4_base::adjust_clipping_rectangle( void )
@@ -1508,9 +1489,6 @@ ED4_base::ED4_base(GB_CSTR temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos hei
     dynamic_prop = ED4_P_NO_PROP;
     timestamp =  0; // invalid - almost always..
 
-    //  id = new char[strlen(temp_id)+1];
-
-
     if (!strcmp(CONSENSUS,temp_id)) {
         id = NULL;
     }
@@ -1518,7 +1496,6 @@ ED4_base::ED4_base(GB_CSTR temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos hei
         id = (char*)malloc(strlen(temp_id)+1);
         strcpy( id, temp_id);
     }
-
 
     extension.position[X_POS] = x;
     extension.position[Y_POS] = y;

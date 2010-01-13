@@ -322,8 +322,6 @@ AW_window *nt_create_intro_window(AW_root *awr)
     aws->at("copyright");
     aws->create_button(0, GBS_global_string("(C) 1993-" ARB_BUILD_YEAR), 0);
 
-    //  aws->button_length(25);
-
     aws->at("old");
     aws->callback(nt_intro_start_old);
     aws->create_autosize_button("OPEN_SELECTED","OPEN SELECTED","O");

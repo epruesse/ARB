@@ -296,17 +296,6 @@ void create_ad_table_field_admin(AW_window *aww,GBDATA *gb_main,const char *tnam
         aws->callback(AW_POPUP,(AW_CL)create_ad_table_field_reorder_window,(AW_CL)awtt);
         aws->create_button("REORDER","REORDER","R");
 
-
-
-        //    aws->at("rename");
-        //    aws->callback(AW_POPUP,(AW_CL)create_table_field_rename_window,(AW_CL)awtt);
-        //    aws->create_button("RENAME","RENAME","R");
-
-        //    aws->at("copy");
-        //    aws->callback(AW_POPUP,(AW_CL)create_table_field_copy_window,(AW_CL)awtt);
-        //    aws->create_button("COPY","COPY","C");
-
-
         aws->at("list");
         awt_create_selection_list_on_table_fields(gb_main,(AW_window *)aws,table_name,awtt->awar_selected_field);
 
@@ -511,7 +500,7 @@ void create_tables_var(GBDATA *gb_main, AW_root *aw_root){
     aw_create_selection_box_awars(aw_root, AWAR_TABLE_EXPORT, "", "table", "tablefile");
 
     aw_create_selection_box_awars(aw_root, AWAR_TABLE_IMPORT, "", "table", "tablefile");
-    aw_root->awar_string( AWAR_TABLE_IMPORT "/table_name", "table_"); //->set_srt( GBT_TABLE_AWAR_SRT);
+    aw_root->awar_string( AWAR_TABLE_IMPORT "/table_name", "table_"); 
 
     aw_root->awar(AWAR_TABLE_NAME)->add_callback( (AW_RCB1)table_vars_callback,(AW_CL)gb_main);
     table_vars_callback(aw_root,gb_main);

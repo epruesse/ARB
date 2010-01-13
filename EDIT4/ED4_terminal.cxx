@@ -239,7 +239,6 @@ GB_ERROR ED4_terminal::write_sequence(const char *seq, int seq_len)
         if (old_checksum != new_checksum) {
             if (aw_question("Checksum changed!", "Allow, Reject") == 1) {
                 allow_write_data = false;
-                // GB_write_string(info->gb_data, old_seq);
             }
 
         }
@@ -249,7 +248,6 @@ GB_ERROR ED4_terminal::write_sequence(const char *seq, int seq_len)
         GB_TYPES gb_type = GB_read_type(gbd);
         switch(gb_type) {
             case GB_STRING: {
-                //             old_seq = GB_read_char_pntr(gbd);
                 err = GB_write_string(gbd, seq);
                 break;
             }
@@ -420,10 +418,8 @@ ED4_returncode ED4_terminal::draw_drag_box( AW_pos x, AW_pos y, GB_CSTR text, in
         ED4_device_manager *device_manager = ED4_ROOT->main_manager->search_spec_child_rek(ED4_L_DEVICE)->to_device_manager();
         drag_x = 0;
         drag_y = (AW_pos)cursor_y; // cursor_y is already in world coordinates!
-        //  ED4_ROOT->win_to_world_coords( ED4_ROOT->temp_aww, &drag_x, &drag_y );
         location.position[X_POS] = drag_x;
         location.position[Y_POS] = drag_y;
-        //  ED4_base::touch_world_cache();
         device_manager->children->search_target_species( &location, ED4_P_HORIZONTAL, &drag_target, ED4_L_NO_LEVEL );
 
         if (drag_target && !is_sequence_info_terminal()) {
@@ -633,8 +629,6 @@ ED4_returncode  ED4_terminal::event_sent_by_parent( AW_event *event, AW_window *
                             pressed_left_button = 0;
                         }
 
-                        //          ED4_species_manager *species_man = dragged_name_terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
-                        //          char *text = ED4_get_NDS_text(species_man);
                         GB_CSTR text = dragged_name_terminal->get_displayed_text();
 
                         if (dragged_name_terminal->flag.dragged) {
@@ -711,7 +705,6 @@ ED4_returncode  ED4_terminal::event_sent_by_parent( AW_event *event, AW_window *
                         }
 
                         ED4_expose_cb(ED4_ROOT->get_aww(), 0, 0);
-                        //          ED4_ROOT->refresh_all_windows(0);
 
                         pressed_left_button = 0;
                         dragged_name_terminal = 0;
@@ -766,9 +759,6 @@ short ED4_terminal::calc_bounding_box( void )
 
 
     if ( bb_changed ) {
-        //  printf("calc_bounding_box changed by terminal\n");
-        //  dump();
-
         current_list_elem = linked_objects.first();
         while ( current_list_elem ) {
             object = ( ED4_base *) current_list_elem->elem();
@@ -805,11 +795,6 @@ ED4_returncode ED4_terminal::draw(int /*only_text*/)
 
 ED4_returncode ED4_terminal::resize_requested_by_parent( void )
 {
-    // #ifndef NDEBUG
-    //     ED4_base *base = (ED4_base*)this;
-    //     e4_assert(!base->flag.hidden);
-    // #endif
-
     if (update_info.resize) { // likes to resize?
         if (calc_bounding_box()) { // size changed?
             parent->resize_requested_by_child(); // tell parent!
@@ -837,7 +822,7 @@ ED4_base* ED4_terminal::search_ID(const char *temp_id )
 
 int ED4_terminal::adjust_clipping_rectangle( void )                  //set scrolling area in AW_MIDDLE_AREA
 {
-    AW_pos              x, y; //, width, height;
+    AW_pos              x, y;
     AW_rectangle        area_size;
 
     ED4_ROOT->get_device()->get_area_size(&area_size);
@@ -854,10 +839,7 @@ ED4_terminal::ED4_terminal(GB_CSTR temp_id, AW_pos x, AW_pos y, AW_pos width, AW
     ED4_base( temp_id, x, y, width, height, temp_parent )
 {
     memset((char*)&flag, 0, sizeof(flag));
-    //    selected  = 0;
-    //    dragged   = 0;
-    //    deleted   = 0;
-    selection_info = 0;
+    selection_info   = 0;
     actual_timestamp = 0;
 }
 
@@ -1156,7 +1138,6 @@ ED4_sequence_info_terminal::ED4_sequence_info_terminal(const char *temp_id, /*GB
     : ED4_text_terminal( temp_id, x, y, width, height, temp_parent )
 {
     spec = &(sequence_info_terminal_spec);
-    // gbdata = gbd;
 }
 
 
@@ -1209,7 +1190,6 @@ ED4_sequence_terminal::ED4_sequence_terminal(const char *temp_id, AW_pos x, AW_p
     : ED4_sequence_terminal_basic( temp_id, x, y, width, height, temp_parent )
 {
     spec = &(sequence_terminal_spec);
-    //    species_name = NULL;
     st_ml_node = NULL;
 }
 
@@ -1398,7 +1378,6 @@ GB_CSTR ED4_columnStat_terminal::build_probe_match_string(int start_pos, int end
             // '?' is inserted at every base position without significant bases (not at gaps!)
 
             *r++ = "NACMGRSVUWYHKDBN"[found]; // this creates a string containing the full IUPAC code
-            //*r++ = "NACNGNNNUNNNNNNN"[found]; // this creates a string containing only ACGU + N
 
             if (max_insert--==0) {
                 r--;
@@ -1436,7 +1415,7 @@ ED4_returncode ED4_columnStat_terminal::draw(int /*only_text*/)
     AW_pos font_width  = ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES);
 
     AW_pos text_x = x + CHARACTEROFFSET;
-    AW_pos text_y = y + term_height - (font_height /*+ ED4_ROOT->font_info[ED4_G_SEQUENCES].get_descent()*/ );
+    AW_pos text_y = y + term_height - font_height;
 
     AW_device *device = ED4_ROOT->get_device();
     ED4_sequence_terminal *seq_term = corresponding_sequence_terminal();
@@ -1453,7 +1432,6 @@ ED4_returncode ED4_columnStat_terminal::draw(int /*only_text*/)
         if (left>right) return ED4_R_OK;
     }
 
-    //int seq_start = rm->screen_to_sequence(left); // real start of sequence
     char *sbuffer = new char[right+1];  // used to build displayed terminal content  (values = '0'-'9')
     memset(sbuffer, ' ', right);
     sbuffer[right] = 0; // eos

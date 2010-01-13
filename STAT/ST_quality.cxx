@@ -110,7 +110,6 @@ void st_ml_add_sequence_part_to_stat(ST_ML * st_ml, AWT_csp * /*awt_csp */,
             const char *source_sequence     = 0;
             int         source_sequence_len = 0;
 
-            // if (sml->gb_data) {
             GBDATA *gb_data = sml->get_bound_species_data();
             if (gb_data) {
                 source_sequence_len = GB_read_string_count(gb_data);

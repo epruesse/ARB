@@ -92,9 +92,6 @@ static int  last_print;
 
 static const int *gapsBeforePosition;
 
-/* static int gap_open;
-   static int gap_extend;*/
-
 #if defined(DEBUG)
 // #define MATRIX_DUMP
 // #define DISPLAY_DIFF 
@@ -703,8 +700,6 @@ static int diff(int v1,int v2,int v3,int v4, int st,int en)
     }
 #endif
 
-    // q  = gap_open + gap_extend;              // q is replaced for local positions
-
     if(v4<=0) {                                                 // if slave sequence is empty
         if(v3>0) {
             if (last_print<0 && print_ptr>0) {
@@ -882,7 +877,7 @@ static int diff(int v1,int v2,int v3,int v4, int st,int en)
     ctrc = INT_MAX;
     flag = 0;
 
-    for(j=(ctri?0:1);j<=v4;j++) // was j=0;...  (this was erroneous cause it splitted zero-length subsequences)
+    for(j=(ctri?0:1);j<=v4;j++) 
     {
         IF_MATRIX_DUMP(vertical[ctri+MHO][j]=)
             k = zza[j] + zzc[j];                // sum up both calculations (=diagonal=no gaps)
@@ -1024,7 +1019,7 @@ static void do_align( /*int v1,*/ int *score, long act_seq_length)
 #endif
     }
 
-    *score=diff(1,1,l1,l2,master_gap_open(1),master_gap_open(l1+1)/*v1,v1*/);   /* Myers and Miller alignment now */
+    *score=diff(1,1,l1,l2,master_gap_open(1),master_gap_open(l1+1));   /* Myers and Miller alignment now */
 }
 
 /*
@@ -1135,7 +1130,6 @@ static void p_encode(const unsigned char *seq, unsigned char *naseq, int l) /* c
 static void n_encode(const unsigned char *seq,unsigned char *naseq,int l)
 {                                       /* code seq as ints .. use -2 for gap */
     int i;
-    /*  static char *nucs="ACGTU";      */
     int warned = 0;
 
     for(i=1; i<=l; i++) {
@@ -1217,7 +1211,7 @@ ARB_ERROR AWTC_ClustalV_align(int          is_dna,
             encode((const unsigned char*)(seq2-1), seq_array[2], length2);
             seqlen_array[2] = length2;
 
-            do_align(/* gap_open,*/ score, max(length1,length2));
+            do_align(score, max(length1,length2));
             int alignedLength = add_ggaps(max_seq_length);
 
             *resultPtr1   = result[1]+1;

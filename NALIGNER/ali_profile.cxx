@@ -448,42 +448,6 @@ void ALI_PROFILE::delete_comp_helix(char h1[], char h2[], unsigned long h_len,
     }
 }
 
-#if 0
-
-int ALI_PROFILE::map_helix(char h[], unsigned long h_len,
-                           unsigned long start1, unsigned long end1,
-                           unsigned long start2, unsigned long end2)
-{
-    unsigned long p1, p2;
-    unsigned long last1, last2;
-
-    if (end1 >= h_len || end2 >= h_len || start1 > end1 || start2 > end2)
-        ali_fatal_error("Inconsistent parameters","ALI_PROFILE::map_helix()");
-
-    p1 = start1;
-    for (p2 = end2; p2 >= start2 && !is_binding_marker(h[p2]); p2--);
-
-    (*helix_borders)[p1] = ALI_PROFILE_BORDER_LEFT;
-    (*helix_borders)[p2] = ALI_PROFILE_BORDER_RIGHT;
-    last1 = p1;
-    last2 = p2;
-    while (p1 <= end1 && p2 >= start2) {
-        (*helix)[p1] = p2;
-        (*helix)[p2] = p1;
-        last1 = p1;
-        last2 = p2;
-        for (p1++; p1 <= end1 && !is_binding_marker(h[p1]); p1++);
-        for (p2--; p2 >= start2 && !is_binding_marker(h[p2]); p2--);
-    }
-    (*helix_borders)[last1] = ALI_PROFILE_BORDER_RIGHT;
-    (*helix_borders)[last2] = ALI_PROFILE_BORDER_LEFT;
-
-    if (p1 <= end1 || p2 >= start2)
-        return -1;
-
-    return 0;
-}
-#endif
 
 /*
  * initialize the array, representing the helix

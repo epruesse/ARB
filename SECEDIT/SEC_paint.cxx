@@ -146,7 +146,6 @@ void SEC_root::paintAnnotation(AW_device *device, int gc,
     double note_distance  = max(half_height, half_width) * (boxText ? 1.3 : 1.0);
     note_distance         = max(note_distance, noteDistance);
 
-    // Position note_center = pos + pos2note.normal()*(text_len*2*half_charSize);
     Position note_center = pos + pos2note.normal()*note_distance;
 
     if (device->filter & AW_PRINTER) {
@@ -171,11 +170,6 @@ void SEC_root::paintAnnotation(AW_device *device, int gc,
                              left-toLeft*(half_charSize/toLeft.length()), -1, cd1, cd2);
                 device->line(gc, boxText ? note_center : note_center+toRight*(half_width/toRight.length()),
                              right-toRight*(half_charSize/toRight.length()), -1, cd1, cd2);
-
-                // Vector dist = Vector(left, note_center).normalize()*half_charSize;
-                // device->line(gc, boxText ? note_center : note_center-dist, left+dist, -1, cd1, cd2);
-                // dist = Vector(right, note_center).normalize()*half_charSize;
-                // device->line(gc, boxText ? note_center : note_center-dist, right+dist, -1, cd1, cd2);
             }
             else {
                 Vector rightIndent = out;
@@ -746,20 +740,14 @@ void SEC_helix_strand::paint_strands(AW_device *device, const Vector& strand_vec
 
                 sec_assert(abs >= 0);
 
-                // if (abs >= 0) {
-                    base[strand] = db->baseAt(abs);
-                    root->announce_base_position(abs, realPos);
-                // }
-                // else {
-                    // base[strand] = '-';
-                // }
+                base[strand] = db->baseAt(abs);
+                root->announce_base_position(abs, realPos);
 
                 if (!disp.hide_bases) {
                     baseBuf[0]        = base[strand];
                     Position base_pos = realPos + center_char; // center base at realpos
 #if defined(DEBUG)
                     if (disp.show_debug) device->line(gc, realPos, base_pos, -1, self(), abs);
-                    // sprintf(baseBuf+1, "%i", abs);
 #endif // DEBUG
                     
                     device->text(gc, baseBuf, base_pos, 0, -1, self(), abs, 0);
@@ -786,10 +774,6 @@ void SEC_helix_strand::paint(AW_device *device) {
     }
     else { // strand with zero length (contains only one base-pair)
         strand_vec = Vector(rightAttach, leftAttach).rotate90deg();
-// #if defined(DEBUG)
-        // device->set_line_attributes(SEC_GC_HELIX, 1, AW_DOTTED);
-        // device->line(SEC_GC_HELIX, LineVector(fixpoint, strand_vec), -1, 0, 0);
-// #endif // // DEBUG
     }
 
     other_strand->origin_loop->paint(device); // first paint next loop
@@ -927,24 +911,11 @@ void SEC_segment::paint(AW_device *device, SEC_helix_strand *previous_strand_poi
                                    pos, back, gc, nextPos, nextBack, nextGc, SEC_SKELE_LOOP, self(),
                                    disp.edit_direction ? nextAbs : abs);
         
-        // if (disp.show_strSkeleton) {
-            // device->line(SEC_SKELE_LOOP, pos, nextPos, -1, self(), abs);
-        // }
-
         if (i >= 0) {
             // paint base char at pos
-            // baseBuf[0] = abs>0 ? root->sequence[abs] : '?';
             baseBuf[0] = abs>0 ? db->baseAt(abs) : '?';
             Vector   center_char = root->get_center_char_vector(gc);
             Position base_pos    = pos + center_char; // center base character at pos
-                
-// #if defined(DEBUG)
-//             if (disp.show_debug) {
-// #if defined(PAINT_REGION_INDEX)
-//                 sprintf(baseBuf+1, "%i", i);
-// #endif // // PAINT_REGION_INDEX
-//             }
-// #endif // // DEBUG
                 
             if (!disp.hide_bases) {
 #if defined(DEBUG)
@@ -1033,9 +1004,6 @@ GB_ERROR SEC_root::paint(AW_device *device) {
         {
             const Position&  loop_center = rootLoop->get_center();
             const char      *structId    = db->structure()->name();
-
-            // Vector textAdjust = center_char[SEC_GC_DEFAULT];
-            // textAdjust.setx(0); // // only adjust y
 
             AW_CL cd1 = rootLoop->self();
             AW_CL cd2 = -1;

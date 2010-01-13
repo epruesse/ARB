@@ -17,7 +17,6 @@
 #include <awt_map_key.hxx>
 
 #include <fast_aligner.hxx>
-// #include <awtc_constructSequence.hxx>
 
 #include <arb_version.h>
 
@@ -45,42 +44,6 @@
 #endif // ARB_OPENGL
 
 AW_window *AWTC_create_island_hopping_window(AW_root *root, AW_CL );
-
-//*****************************************
-//* ED4_root Methods        beginning *
-//*****************************************
-
-// ED4_returncode ED4_root::resize_all_windows( void )     // resizes all windows for updating folding actions, new groups, movements etc.
-// {
-//     ED4_window   *window, *ed4w_temp;
-//     AW_window    *aw_temp;
-//     AW_device    *dev_temp;
-
-//     ed4w_temp = ED4_ROOT->temp_ed4w;
-//     aw_temp   = ED4_ROOT->temp_aww;
-//     dev_temp  = ED4_ROOT->temp_device;
-
-//     window = ED4_ROOT->first_window;
-//     while (window)
-//     {
-//  ED4_ROOT->temp_aww  = window->aww;
-//  ED4_ROOT->temp_device   = window->aww->get_device(AW_MIDDLE_AREA);
-//  ED4_ROOT->temp_ed4w     = window;
-
-//  ED4_ROOT->resize_all();
-//  ED4_ROOT->temp_ed4w->update_scrolled_rectangle();
-// //   ED4_ROOT->main_manager->clear_whole_background();
-//  ED4_ROOT->show_all();
-
-//  window = window->next;
-//     }
-
-//     ED4_ROOT->temp_ed4w = ed4w_temp;
-//     ED4_ROOT->temp_aww = aw_temp;
-//     ED4_ROOT->temp_device = dev_temp;
-
-//     return ( ED4_R_OK );
-// }
 
 ED4_returncode ED4_root::refresh_window_simple(int redraw)
 {
@@ -204,20 +167,6 @@ ED4_returncode ED4_root::deselect_all( void )
     main_multi_man->deselect_all_species();
 
     return ED4_R_OK;
-
-    //     ED4_list_elem        *current_list_elem;
-    //     ED4_selection_entry  *tmp_entry;
-
-    //     current_list_elem = selected_objects.last();
-
-    //     while ( current_list_elem ) {
-    //  tmp_entry = ( ED4_selection_entry *) current_list_elem->elem();
-    //  ED4_terminal *term = tmp_entry->object;
-    //  remove_from_selected(term);
-    //  current_list_elem = selected_objects.first();
-    //     }
-
-    //     return ( ED4_R_OK );
 }
 
 ED4_returncode  ED4_root::remove_from_selected( ED4_terminal *object )
@@ -437,8 +386,6 @@ void ED4_alignment_length_changed(GBDATA *gb_alignment_len, int */*cl*/, GB_CB_T
             err = ED4_pfold_set_SAI(&ED4_ROOT->protstruct, GLOBAL_gb_main, ED4_ROOT->alignment_name, &ED4_ROOT->protstruct_len); // reload protstruct
             if (err) { aw_message(err); err = 0; }
         }
-        //ED4_ROOT->refresh_all_windows(0);
-        //ED4_expose_all_windows();
 
         if (was_increased) {
             ED4_ROOT->main_manager->route_down_hierarchy(change_char_table_length, new_length).expect_no_error();
@@ -461,7 +408,7 @@ ED4_returncode ED4_root::init_alignment() {
 
     GBDATA *gb_alignment_len = GB_search(gb_alignment,"alignment_len",GB_FIND);
     int alignment_length = GB_read_int(gb_alignment_len);
-    MAXSEQUENCECHARACTERLENGTH = alignment_length; // GBT_get_alignment_len(GLOBAL_gb_main, ED4_ROOT->alignment_name);
+    MAXSEQUENCECHARACTERLENGTH = alignment_length; 
 
     GB_add_callback(gb_alignment_len, (GB_CB_TYPE)GB_CB_CHANGED, (GB_CB)ED4_alignment_length_changed, 0);
 
@@ -591,8 +538,6 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
             y += TOP_MID_SPACER_HEIGHT; // add top-mid_spacer_terminal height
 
             top_multi_species_manager->generate_id_for_groups();
-
-            //  top_area_manager->check_all();
         }
 
         // ********** Top Area end **********
@@ -601,7 +546,6 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
         // ********** Middle Area beginning **********
 
         {
-            //  printf("Middle Area y : %d\n",y);
             middle_area_manager = new ED4_area_manager("Middle_Area_Manager", 0, y, 0, 0, device_manager);
             device_manager->children->append_member(middle_area_manager);
             middle_area_man = middle_area_manager;
@@ -684,8 +628,6 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
 
         aw_closestatus();
     }
-
-    //  main_manager->check_all();
 
     root_group_man->remap()->mark_compile_needed_force();
     root_group_man->update_remap();
@@ -1094,17 +1036,6 @@ static void title_mode_changed(AW_root *aw_root, AW_window *aww)
     }
 }
 
-// static void ED4_unfold_if_folded(AW_window *aww, AW_CL, AW_CL)
-// {
-//     AW_root *aw_root = ED4_ROOT->aw_root;
-//     int title_mode = aw_root->awar(AWAR_EDIT_TITLE_MODE)->read_int();
-
-//     if (title_mode==0) {
-//  aw_root->awar(AWAR_EDIT_TITLE_MODE)->write_int(1);
-//  title_mode_changed(aw_root, aww);
-//     }
-// }
-
 void ED4_undo_redo(AW_window*, AW_CL undo_type)
 {
     GB_ERROR error = GB_undo(GLOBAL_gb_main,(GB_UNDO_TYPE)undo_type);
@@ -1122,7 +1053,6 @@ void ED4_undo_redo(AW_window*, AW_CL undo_type)
             terminal->set_refresh();
             terminal->parent->refresh_requested_by_child();
         }
-        //  aed_expose(aw,cd1,0);
     }
 }
 
@@ -1130,7 +1060,6 @@ void aw_clear_message_cb(AW_window *aww);
 
 void ED4_clear_errors(AW_window*, AW_CL)
 {
-    //    ED4_ROOT->aw_root->awar(AWAR_ERROR_MESSAGES)->write_string("");
     aw_clear_message_cb(ED4_ROOT->get_aww());
 }
 

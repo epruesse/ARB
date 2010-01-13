@@ -244,12 +244,6 @@ void enter_stage_1_build_tree(PT_main * main,char *tname) {
             partsize ++;
             passes     *= 5;
         }
-
-        //     while ( ULONG(total_size*35/1024) > physical_memory) {  /* value by try and error; 35 bytes per base*/
-        //         total_size /= 4;
-        //         partsize ++;
-        //         passes *=5;
-        //     }
     }
 
     printf ("Tree Build: %li bases in %i passes\n",psg.char_count, passes);
@@ -465,14 +459,4 @@ void PT_debug_tree(void)    // show various debug information about the tree
             sume += i*k;
             if (k) printf("chain of size %i occur %i    sc %i   sce %i\n",i,k,sum,sume);
     }
-#if 0
-    sum = 0;
-    for (i=0;i<DEBUG_MAX_CHAIN_SIZE;i++ ) {
-        for (j=0;j<DEBUG_TREE_DEEP;j++ ) {
-            k =     ptds->chainsizes[i][j];
-            sum += k;
-            if (k) printf("chain of size %i at deep %i occur %i     sum:%i\n",i,j,k,sum);
-        }
-    }
-#endif
 }

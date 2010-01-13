@@ -51,7 +51,6 @@ static void AsciiTime(void *b,char *asciitime)
     ARB_TIME *a=(ARB_TIME*)b;
     int j;
     char temp[GBUFSIZ];
-    //extern char month[12][6];
 
     a->dd = 0;
     a->yy = 0;
@@ -274,7 +273,6 @@ void ReadGen(char *filename,NA_Alignment *dataset,int type)
     for(j=0;j<dataset->numelements;j++)
         dataset->maxlen = MAX(dataset->maxlen,
                               dataset->element[j].seqlen+dataset->element[j].offset);
-    //return;
 }
 
 int WriteGen(NA_Alignment *aln,char *filename,int method,int maskable)
@@ -283,14 +281,9 @@ int WriteGen(NA_Alignment *aln,char *filename,int method,int maskable)
     size_t j;
     int k,mask = -1;
     FILE *file;
-    //extern char month[12][6];
     NA_Sequence *this_elem;
     char c;
-    if(aln == NULL)
-        return(1);
-    // ARB
-    //if(aln->na_ddata == NULL)
-    //  return(1);
+    if(aln == NULL) return(1);
 
     file = fopen(filename,"w");
     if(file == NULL)
@@ -440,7 +433,7 @@ int WriteGen(NA_Alignment *aln,char *filename,int method,int maskable)
 void SetTime(void *b)
 {
     ARB_TIME *a=(ARB_TIME*)b;
-    struct tm *tim; //*localtime();
+    struct tm *tim; 
     time_t clock;
 
     clock = time(0);

@@ -320,6 +320,5 @@ di_mldist::di_mldist(long nentries, DI_ENTRY     **entriesi, long seq_len, AP_sm
     spp = nentries;
     chars = seq_len;
 
-    //maketrans();
     qreigen(prob, 20L);
 }

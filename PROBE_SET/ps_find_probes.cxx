@@ -335,19 +335,8 @@ void PS_find_probe_for_sets( const PS_NodePtr _ps_node, PS_CandidatePtr _candida
                 : _candidate_parent->addChild( static_cast<unsigned long>(distance_to_perfect_match), gain, _ps_node, __PATH );
             if (status > 0) {
                 if (status == 2) {
-//                     printf( " PS_find_probe_for_sets() : new candidate: count_matched_source (%li/%.0f) count_matched_target (%li/%.0f) distance (%4.0f) path (%i) gain (%li) node (%p)\n",
-//                             count_matched_source, __SOURCE_PERFECT_MATCH_COUNT,
-//                             count_matched_target, __TARGET_PERFECT_MATCH_COUNT,
-//                             distance_to_perfect_match,
-//                             __PATH.size(), gain, &(*_ps_node) );
                     ++__CANDIDATES_COUNTER;
                     if (__VERBOSE) printf( "%8lup %8luc\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b", __PROBES_COUNTER, __CANDIDATES_COUNTER ); fflush( stdout );
-//                } else {
-//                     printf( " PS_find_probe_for_sets() : upd candidate: count_matched_source (%li/%.0f) count_matched_target (%li/%.0f) distance (%4.0f) path (%i) gain (%li) node (%p)\n",
-//                             count_matched_source, __SOURCE_PERFECT_MATCH_COUNT,
-//                             count_matched_target, __TARGET_PERFECT_MATCH_COUNT,
-//                             distance_to_perfect_match,
-//                             __PATH.size(), gain, &(*_ps_node) );
                 }
                 fflush( stdout );
             } // if status (of addChild)
@@ -386,13 +375,12 @@ void PS_find_probes( const PS_NodePtr _root_node, const int _round, PS_Candidate
     __MIN_SETS_ID = (*__SOURCE_ID_SET.begin()  < *__TARGET_ID_SET.begin())  ? *__SOURCE_ID_SET.begin()  : *__TARGET_ID_SET.begin();
     __MAX_SETS_ID = (*__SOURCE_ID_SET.rbegin() < *__TARGET_ID_SET.rbegin()) ? *__SOURCE_ID_SET.rbegin() : *__TARGET_ID_SET.rbegin();
     printf( "PS_find_probes(%i) : source match %10.3f .. %10.3f   target match %10.3f .. %10.3f\n", _round, __SOURCE_MIN_MATCH_COUNT, __SOURCE_MAX_MATCH_COUNT, __TARGET_MIN_MATCH_COUNT, __TARGET_MAX_MATCH_COUNT ); fflush( stdout );
-    // int c = 0;
     struct tms before;
     times( &before );
     for ( PS_NodeMapConstIterator i = _root_node->getChildrenBegin();
           (i != _root_node->getChildrenEnd()) && (i->first < __MAX_SETS_ID);
-          ++i/*,++c*/ ) {
-        //if (c % 100 == 0) printf( "PS_find_probe_for_sets( %i ) : %i/%i 1st level nodes -> %li/%li candidates of %li probes looked at\n", i->first, c+1, _root_node->countChildren(), __CANDIDATES_COUNTER, __CANDIDATES_TOTAL_COUNTER, __PROBES_TOTAL_COUNTER );
+          ++i )
+    {
         __PATH.clear();
         PS_find_probe_for_sets( i->second, _candidate_parent );
     }
@@ -456,7 +444,6 @@ void PS_calc_next_speciesid_sets() {
     for ( IDSetCIter source_id = __SOURCE_ID_SET.begin();
           source_id != __SOURCE_ID_SET.end();
           ++source_id,++count_iterations ) {
-        //if (count_iterations % 100 == 0) printf( "PS_calc_next_speciesid_sets() : set #%li of %i\n", count_iterations+1, __SOURCE_ID_SET.size() );
         // get 'next_target_set'
         __MAP->getFalseIndicesFor( *source_id, __TARGET_ID_SET );
         // count falses per SpeciesID
@@ -467,7 +454,6 @@ void PS_calc_next_speciesid_sets() {
             if (*target_id != *source_id) ++count_falses_per_id[ *target_id ];
         }
     }
-    //PS_print_map_ranges( "PS_calc_next_speciesid_sets() : count_falses_per_id", count_falses_per_id, false );
 
     // second -- get highest count of falses and calc threshold
     lowest_count  = __SPECIES_COUNT;
@@ -545,7 +531,6 @@ void PS_apply_path_to_bitmap( IDSet &_path, const bool _silent = false, PS_BitMa
     }
     unsigned long int sets =  (__SPECIES_COUNT-_path.size())*_path.size();
     if (!_silent) printf( "PS_apply_path_to_bitmap() : gain %lu of %lu -- %.2f%%  -> wasted %lu\n", gain, sets, ((float)gain/sets)*100.0, sets-gain );
-    //__MAP->recalcCounters();
 }
 
 float PS_filling_level( PS_CandidatePtr _candidate = 0 ) {
@@ -731,128 +716,6 @@ void PS_make_map_for_candidate( PS_CandidatePtr _candidate ) {
     }
 }
 
-// void PS_calc_next_speciesid_sets_for_candidate( PS_CandidatePtr _candidate ) {
-//  make __MAP for _candidate and search for best source/target-sets
-//     //
-//     // 1. __MAP for _candidate
-//     //
-//     PS_make_map_for_candidate( _candidate );
-//     //
-//     // 2. __SOURCE_ID_SET
-//     //    scan bitmap for species that need more matches
-//     //
-//     SpeciesID highest_count;
-//     SpeciesID lowest_count;
-//     SpeciesID count;
-
-//     // first pass -- get lowest/highest count of trues
-//     lowest_count  = __SPECIES_COUNT;
-//     highest_count = 0;
-//     for ( SpeciesID id = __MIN_ID;
-//           id <= __MAX_ID;
-//           ++id) {
-//         count = _candidate->map->getCountFor( id );
-//         if (count == __SPECIES_COUNT-__MIN_ID-1) continue; // i cannot improve species that can be differed from all others
-//         if (count < lowest_count)  lowest_count  = count;
-//         if (count > highest_count) highest_count = count;
-//     }
-//     //printf( "PS_calc_next_speciesid_sets_for_candidate() : SOURCE count 1's [%i..%i]\n", lowest_count, highest_count );
-
-//     // second pass -- get IDs where count is equal to lowest_count or highest_count
-//     IDSet highest_count_src_ids;
-//     IDSet lowest_count_src_ids;
-//     for ( SpeciesID id = __MIN_ID;
-//           id <= __MAX_ID;
-//           ++id) {
-//         count = _candidate->map->getCountFor( id );
-//         if (count == lowest_count) lowest_count_src_ids.insert( id );
-//         if (count == highest_count) highest_count_src_ids.insert( id );
-//     }
-//     if (_candidate->source_set) {
-//         _candidate->source_set->clear();
-//         _candidate->source_set->insert( lowest_count_src_ids.begin(), lowest_count_src_ids.end() );
-//     } else {
-//         _candidate->source_set = new IDSet( lowest_count_src_ids );
-//     }
-//     _candidate->source_set->insert( highest_count_src_ids.begin(), highest_count_src_ids.end() );
-//     //PS_print_set_ranges( "   lowest_count_src_ids", lowest_count_src_ids  );
-//     //PS_print_set_ranges( "  highest_count_src_ids", highest_count_src_ids  );
-//     if (*(_candidate->source_set->begin())  < __MIN_SETS_ID) __MIN_SETS_ID = *(_candidate->source_set->begin());
-//     if (*(_candidate->source_set->rbegin()) > __MAX_SETS_ID) __MAX_SETS_ID = *(_candidate->source_set->rbegin());
-
-//     //
-//     // 3. __TARGET_ID_SET
-//     //    scan bitmap for species IDs that need to be distinguished from MOST species in lowest_count_src_ids
-//     //
-//     ID2IDMap count_falses_per_id;
-
-//     // first -- get the IDs that need differentiation from __SOURCE_ID_SET
-//     for ( IDSetCIter source_id = lowest_count_src_ids.begin();
-//           source_id != lowest_count_src_ids.end();
-//           ++source_id ) {
-//         // get 'next_target_set'
-//         _candidate->map->getFalseIndicesFor( *source_id, __TARGET_ID_SET );
-//         // count falses per SpeciesID
-//         for ( PS_BitSet::IndexSet::iterator target_id = __TARGET_ID_SET.begin();
-//               target_id != __TARGET_ID_SET.end();
-//               ++target_id) {
-//             if ((*target_id < __MIN_ID) || (*target_id > __MAX_ID)) continue; // skip ID's that are outside DB-IDs-range (like zero if __MIN_ID is one)
-//             if (*target_id != *source_id) ++count_falses_per_id[ *target_id ];
-//         }
-//     }
-//     //printf( "\n" );
-//     //PS_print_map_ranges( "PS_calc_next_speciesid_sets_for_candidate() : count_falses_per_id", count_falses_per_id, false );
-
-//     // second -- get highest count of falses and calc threshold
-//     lowest_count  = __SPECIES_COUNT;
-//     highest_count = 0;
-//     for ( ID2IDMapCIter count_per_id = count_falses_per_id.begin();
-//           count_per_id != count_falses_per_id.end();
-//           ++count_per_id ) {
-//         if (count_per_id->second > highest_count) highest_count = count_per_id->second;
-//         if (count_per_id->second < lowest_count)  lowest_count  = count_per_id->second;
-//     }
-//     //printf( "PS_calc_next_speciesid_sets_for_candidate() : TARGET count 0's [%i..%i]\n", lowest_count, highest_count );
-
-//     // third -- put all IDs in __TARGET_ID_SET that are needed most by species from lowest_count_src_ids
-//     if (_candidate->target_set) {
-//         _candidate->target_set->clear();
-//     } else {
-//         _candidate->target_set = new IDSet();
-//     }
-//     __TARGET_ID_SET.clear();
-//     for ( ID2IDMapCIter count_per_id = count_falses_per_id.begin();
-//           count_per_id != count_falses_per_id.end();
-//           ++count_per_id ) {
-//         if (count_per_id->second == highest_count) __TARGET_ID_SET.insert( count_per_id->first );
-//     }
-//     //PS_print_set_ranges( " target_set (by lowest count of trues) ", __TARGET_ID_SET );
-//     _candidate->target_set->insert( __TARGET_ID_SET.begin(), __TARGET_ID_SET.end() );
-
-//     // fourth -- put all IDs in __TARGET_ID_SET that are needed by species from highest_count_src_ids
-//     PS_BitSet::IndexSet next_target_ids;
-//     __TARGET_ID_SET.clear();
-//     for ( IDSetCIter source_id = highest_count_src_ids.begin();
-//           source_id != highest_count_src_ids.end();
-//           ++source_id ) {
-//         // get next target-IDs
-//         _candidate->map->getFalseIndicesFor( *source_id, next_target_ids );
-//         // 'append' target-IDs
-//         for ( PS_BitSet::IndexSet::iterator target_id = next_target_ids.begin();
-//               target_id != next_target_ids.end();
-//               ++target_id) {
-//             if ((*target_id < __MIN_ID) || (*target_id > __MAX_ID)) continue; // skip ID's that are outside DB-IDs-range (like zero if __MIN_ID is one)
-//             if (*target_id != *source_id) __TARGET_ID_SET.insert( *target_id );
-//         }
-//     }
-//     //PS_print_set_ranges( " target_set (by highest count of trues)", __TARGET_ID_SET );
-//     _candidate->target_set->insert( __TARGET_ID_SET.begin(), __TARGET_ID_SET.end() );
-
-//     if (*(__TARGET_ID_SET.begin())  < __MIN_SETS_ID) __MIN_SETS_ID = *(__TARGET_ID_SET.begin());
-//     if (*(__TARGET_ID_SET.rbegin()) > __MAX_SETS_ID) __MAX_SETS_ID = *(__TARGET_ID_SET.rbegin());
-//     //printf( "\n" ); fflush( stdout );
-// }
-
 
 void PS_get_leaf_candidates( PS_CandidatePtr  _candidate_parent,
                              PS_CandidateSet &_leaf_candidates,
@@ -869,47 +732,6 @@ void PS_get_leaf_candidates( PS_CandidatePtr  _candidate_parent,
         PS_get_leaf_candidates( &(*next_candidate->second), _leaf_candidates, _ignore_passes_left );
     }
 }
-
-
-// bool PS_test_candidate_sets_on_path( PS_CandidatePtr _candidate ) {
-//     int round = PS_Candidate::MAX_PASSES - _candidate->passes_left;
-//     __SOURCE_MIN_MATCH_COUNT = (_candidate->source_set->size() * (__MIN_PERCENTAGE_SET_MATCH - (round * 5))) / 100.0;
-//     __SOURCE_MAX_MATCH_COUNT = (_candidate->source_set->size() * (__MAX_PERCENTAGE_SET_MATCH + (round * 5))) / 100.0;
-//     __TARGET_MIN_MATCH_COUNT = (_candidate->target_set->size() * (__MIN_PERCENTAGE_SET_MATCH - (round * 5))) / 100.0;
-//     __TARGET_MAX_MATCH_COUNT = (_candidate->target_set->size() * (__MAX_PERCENTAGE_SET_MATCH + (round * 5))) / 100.0;
-//     long count_matched_source = 0;
-//     long count_matched_target = 0;
-//     SpeciesID  path_id;
-//     IDSetCIter path_end   = __PATH.end();
-//     IDSetCIter path       = __PATH.begin();
-//     IDSetCIter source_end = _candidate->source_set->end();
-//     IDSetCIter source     = _candidate->source_set->begin();
-//     IDSetCIter target_end = _candidate->target_set->end();
-//     IDSetCIter target     = _candidate->target_set->begin();
-
-//     while (path != path_end) {
-//         path_id = *path;
-//         while ((*target < path_id) && (target != target_end)) {
-//             ++target;
-//         }
-//         if ((target != target_end) && (*target == path_id))
-//             ++count_matched_target;
-//         while ((*source < path_id) && (source != source_end)) {
-//             ++source;
-//         }
-//         if ((source != source_end) && (*source == path_id))
-//             ++count_matched_source;
-//         ++path;
-//     }
-
-//     if ((count_matched_source > __SOURCE_MIN_MATCH_COUNT) &&
-//         (count_matched_source < __SOURCE_MAX_MATCH_COUNT) &&
-//         (count_matched_target > __TARGET_MIN_MATCH_COUNT) &&
-//         (count_matched_target < __TARGET_MAX_MATCH_COUNT)) {
-//         return true;
-//     }
-//     return false;
-// }
 
 void PS_get_next_candidates_descend( PS_NodePtr _ps_node, PS_CandidateSet &_leaf_candidates ) {
     //  scan PS_node-tree for next candidates for each of _leaf_candidates
@@ -1031,7 +853,6 @@ void PS_get_next_candidates( const PS_NodePtr  _root_node,
         }
         PS_make_map_for_candidate( &(*candidate) );
         candidate->initFalseIDs( __MIN_ID, __MAX_ID, __MIN_SETS_ID, __MAX_SETS_ID );
-        //candidate->print();
     }
     // scan tree
     printf( "PS_get_next_candidates() : " ); fflush( stdout );
@@ -1228,11 +1049,8 @@ int main( int   argc,
         printf( "\nsearching next candidates [round #%li]..\n", ++round );
         PS_get_next_candidates( db->getConstRootNode(), leaf_candidates );
 
-//         printf( "\nCANDIDATES :\n" );
-//         __CANDIDATES_ROOT->print();
         printf( "rounds %li total ", round );
         PS_print_time_diff( &before );
-        // getchar();
     }
 
     printf( "\nFINAL CANDIDATES:\n" );

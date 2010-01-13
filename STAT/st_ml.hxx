@@ -145,7 +145,7 @@ class ST_ML {
 
 public:
     AP_tree_root *tree_root;
-    int           latest_modification;              // last mod;
+    int           latest_modification;              // last mod
     int           base;
     int           to;
     AW_CB0        refresh_func;

@@ -40,12 +40,6 @@ typedef PS_CandidateByGainMap::const_iterator         PS_CandidateByGainMapCIter
 typedef PS_CandidateByGainMap::reverse_iterator       PS_CandidateByGainMapRIter;
 typedef PS_CandidateByGainMap::const_reverse_iterator PS_CandidateByGainMapCRIter;
 
-// typedef map<float,PS_CandidateSPtr>              PS_CandidateByFillingMap;
-// typedef PS_CandidateByFillingMap::iterator               PS_CandidateByFillingMapIter;
-// typedef PS_CandidateByFillingMap::const_iterator         PS_CandidateByFillingMapCIter;
-// typedef PS_CandidateByFillingMap::reverse_iterator       PS_CandidateByFillingMapRIter;
-// typedef PS_CandidateByFillingMap::const_reverse_iterator PS_CandidateByFillingMapCRIter;
-
 typedef pair<SpeciesID,PS_BitSet::IndexSet>     ID2IndexSetPair;
 typedef set<ID2IndexSetPair>                    ID2IndexSetSet;
 typedef ID2IndexSetSet::iterator                ID2IndexSetSetIter;
@@ -64,8 +58,6 @@ private:
         gain          = _gain;
         passes_left   = MAX_PASSES;
         parent        = _parent;
-        //source_set    = 0;
-        //target_set    = 0;
         false_IDs     = 0;
         one_false_IDs = 0;
         one_false_IDs_matches = 0;
@@ -82,9 +74,6 @@ public:
     unsigned long          gain;
     unsigned int           passes_left;
     PS_Candidate          *parent;
-    //IDSet                 *source_set;
-    //IDSet                 *target_set;
-    //ID2IndexSetSet        *false_IDs;
     unsigned long          false_IDs;
     ID2IDSet              *one_false_IDs;
     unsigned long          one_false_IDs_matches;
@@ -99,22 +88,11 @@ public:
                                       SpeciesID &_max_sets_id ) {
         // if i already have the set return its size
         if (one_false_IDs) {
-//             for (ID2IndexSetSetCIter i = false_IDs->begin();
-//                  i != false_IDs->end();
-//                  ++i ) {
-//                 if (i->first < _min_sets_id) _min_sets_id = i->first;
-//                 if (i->first > _max_sets_id) _max_sets_id = i->first;
-//                 if (*i->second.begin()  < _min_sets_id) _min_sets_id = *i->second.begin();
-//                 if (*i->second.rbegin() > _max_sets_id) _max_sets_id = *i->second.rbegin();
-//                 countFalses += i->second.size();
-//                 //printf( "\n[%i] (%i)", i->first, i->second.size() );
-//             }
             return one_false_IDs->size();
         }
         else {
             one_false_IDs = new ID2IDSet();
             false_IDs     = 0;
-            //false_IDs     = new ID2IndexSetSet();
             PS_BitSet::IndexSet falseIndices;       // temp. set to hold IDs of falses per ID
             // iterate over _min_id .. _max_id range in map
             for ( SpeciesID id1 = _min_id;
@@ -134,14 +112,6 @@ public:
                 if (falseIndices.size() == 1) {
                     one_false_IDs->insert( ID2IDPair(id1,*falseIndices.begin()) );
                 }
-                //false_IDs->insert( ID2IndexSetPair( id1,falseIndices ) );
-                // print
-//                 printf( "\n[%i] (%i) ", id1, falseIndices.size() );
-//                 for ( PS_BitSet::IndexSet::const_iterator i = falseIndices.begin();
-//                       i != falseIndices.end();
-//                       ++i ) {
-//                     printf( " %li", *i );
-//                 }
             }
         }
         return one_false_IDs->size();
@@ -165,12 +135,6 @@ public:
 
     void decreasePasses() {
         --passes_left;
-        if (passes_left == 0) {
-            //if (source_set)    { delete source_set;    source_set = 0; }
-            //if (target_set)    { delete target_set;    target_set = 0; }
-            //if (false_IDs)     { delete false_IDs;     false_IDs  = 0; }
-            //if (one_false_IDs) { delete one_false_IDs; one_false_IDs  = 0; }
-        }
     }
 
     void getParentMap() {
@@ -380,12 +344,6 @@ public:
         else {
             printf( "node (%p)  children (%2zu)  ", &(*node), children.size() );
         }
-//             unsigned long count = 0;
-//             for ( ID2IndexSetSetCIter i = false_IDs->begin();
-//                   i != false_IDs->end();
-//                   ++i ) {
-//                 count += i->second.size();
-//             }
         printf( "(%4lu %4zu)/%lu", one_false_IDs_matches, (one_false_IDs) ? one_false_IDs->size() : 0, false_IDs );
         if (_print_one_false_IDs) {
             printf( "\n" );
@@ -506,8 +464,6 @@ public:
         gain          = 0;
         passes_left   = 0;
         parent        = 0;
-        //source_set    = 0;
-        //target_set    = 0;
         false_IDs     = 0;
         one_false_IDs = 0;
         one_false_IDs_matches = 0;
@@ -517,9 +473,6 @@ public:
     ~PS_Candidate() {
         if (map)           delete map;
         if (one_false_IDs) delete one_false_IDs;
-        //if (false_IDs)     delete false_IDs;
-        //if (source_set)    delete source_set;
-        //if (target_set)    delete target_set;
         if (path.size() > 0) path.clear();
         if (children.size() > 0) children.clear();
     }

@@ -475,18 +475,6 @@ void importDialog::createImportArea()
         NULL);
     XtManageChild(m_sampleList);
     XtAddCallback(m_sampleList, XmNbrowseSelectionCallback, staticSampleListEntryCallback, this);
-
-//     // SAMPLE SCALE (FOR SELECTING THE SAMPLE ENTRY
-//     m_sampleScale= XtVaCreateManagedWidget("sampleScale",
-//         xmScaleWidgetClass, m_top,
-//         XmNtitleString,   CreateDlgString("Entry"),
-//         XmNorientation,    XmHORIZONTAL,
-//         XmNmaximum,       10,
-//         XmNdecimalPoints, 0,
-//         XmNshowValue,     True,
-//         // XmNwidth,         200,
-//         // XmNheight,        100,
-//         NULL);
 }
 
 
@@ -497,8 +485,6 @@ void importDialog::setSpecies(char *species)
 {
     m_species= (char *)malloc((strlen(species) +1)*sizeof(char));
     strcpy(m_species, species);
-
-    // set_species_AWAR(m_species);
 }
 
 
@@ -509,8 +495,6 @@ void importDialog::setExperiment(char *experiment)
 {
     m_experiment= (char *)malloc((strlen(experiment) +1)*sizeof(char));
     strcpy(m_experiment, experiment);
-
-    // set_experiment_AWAR(m_experiment);
 }
 
 
@@ -521,8 +505,6 @@ void importDialog::setProteome(char *proteome)
 {
     m_proteome= (char *)malloc((strlen(proteome) +1)*sizeof(char));
     strcpy(m_proteome, proteome);
-
-    // set_proteom_AWAR(m_proteome);
 }
 
 
@@ -639,10 +621,6 @@ void importDialog::ARBdestinationCallback(Widget, XtPointer)
 
     // SET PROTEOME CALLBACK
     sD->setProteomeCallback(staticProteomeChangedCallback);
-
-
-    //     new selectionDialog(m_shell, &m_species, &m_experiment,
-    //         &m_proteome, staticDataChangedCallback);
 }
 
 
@@ -949,7 +927,6 @@ void importDialog::updateSampleList()
 
     // ADD TITLE LINE TO SAMPLE LIST
     char *title= const_cast<char*>("                  CONTAINER NAME | # | CONTENT...");
-    // char *title= "CONTAINER NAME                   | # | CONTENT...";
     XmListAddItem(m_sampleList, CreateDlgString(title), 0);
 
     //FETCH ALL COLUMN ENTRIES
@@ -1087,7 +1064,6 @@ void importDialog::copyHeaderEntries()
     int columns= m_table->columns;
     char **header= m_table->header;
     char **cell= m_table->cell;
-    // char *entry;
 
     for(int i= 0; i < columns; i++)
     {
@@ -1293,37 +1269,11 @@ void importDialog::externHeaderSelectionCallback(Widget, XtPointer)
 
     static entrySelectionDialog *esD;
 
-//     if(!esD)
-//     {
-        // CREATE NEW SELECTION DIALOG
-        esD= new entrySelectionDialog(this);
+    // CREATE NEW SELECTION DIALOG
+    esD= new entrySelectionDialog(this);
 
-        // ADD ENTRY CHANGED CALLBACK
-        esD->setListCallback(staticExternHeaderChangedCallback);
-//     }
-//     else
-//     {
-//         esD->show();
-//     }
-
-
-
-//     // GET LIST CALLBACK STRUCT (SELECTED ITEM ETC.)
-//     XmListCallbackStruct *cb= (XmListCallbackStruct *)callData;
-//
-//     // GET & SET NEW POSITION
-//     if(cb->item_position > 1) m_activeHeader= cb->item_position - 2;
-//
-//     // JUST TO AVOID COMPLICATIONS
-//     if(m_activeHeader < 0) m_activeHeader= 0;
-//     else if(m_activeHeader >= m_table->columns) m_activeHeader= m_table->columns - 1;
-//
-//     // DEBUG DEBUG DEBUG
-//     printf("DEBUG: ITEM= %d, ACTIVE= %d\n", cb->item_position, m_activeHeader);
-//     // DEBUG DEBUG DEBUG
-//
-//     // UPDATE THE HEADER ENTRIES...
-//     updateHeaderEntries();
+    // ADD ENTRY CHANGED CALLBACK
+    esD->setListCallback(staticExternHeaderChangedCallback);
 }
 
 
@@ -1355,9 +1305,6 @@ void staticExternHeaderChangedCallback(Widget, XtPointer clientData, XtPointer c
 
     // SET NEW HEADER NAME
     iD->setHeaderName(name);
-
-    // UPDATE OUTPUT
-    // iD->updateARBText();
 }
 
 

@@ -96,15 +96,13 @@ MO_Mismatch** Sonde::get_matching_species(BOOL match_kompl, int match_weight, in
             return NULL;
         }
 
-        //aw_message("Running DB-query");
-
         if (aisc_put(mp_pd_gl.link,PT_LOCS, mp_pd_gl.locs,
-                     LOCS_MATCH_REVERSED,       match_kompl,        // Komplement
-                     LOCS_MATCH_SORT_BY,        match_weight,       // Weighted
-                     LOCS_MATCH_COMPLEMENT,     0,              // ???
-                     LOCS_MATCH_MAX_MISMATCHES,     match_mis,      // Mismatches
-                     LOCS_MATCH_MAX_SPECIES,        100000,         // ???
-                     LOCS_SEARCHMATCH,          match_seq,      // Sequence
+                     LOCS_MATCH_REVERSED,       match_kompl, // Komplement
+                     LOCS_MATCH_SORT_BY,        match_weight, // Weighted
+                     LOCS_MATCH_COMPLEMENT,     0,  // ???
+                     LOCS_MATCH_MAX_MISMATCHES, match_mis, // Mismatches
+                     LOCS_MATCH_MAX_SPECIES,    100000, // ???
+                     LOCS_SEARCHMATCH,          match_seq, // Sequence
                      NULL)){
             free(probe);
             aw_message ("Connection to PT_SERVER lost (4)");

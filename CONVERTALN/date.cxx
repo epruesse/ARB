@@ -17,14 +17,11 @@ static const char *mon[12] = {
  *   Function genbank_date().
  *       Convert the date to be in genbank date form.
  */
-char
- *genbank_date(char *other_date)
+char *genbank_date(char *other_date)
 {
-    char *gdate, /*token[SIZE], */ temp[SIZE];
-
-    int day, month, year;
-
-    int length /*, index=0 */ ;
+    char *gdate, temp[SIZE];
+    int   day, month, year;
+    int   length;
 
     length = Lenstr(other_date);
     if (other_date[length - 1] == '\n') {
@@ -126,7 +123,7 @@ bool two_char(char *str, char determ)
  */
 void find_date_long_form(char *date_string, int *month, int *day, int *year)
 {
-    int indi, index, length, /*count, */ nums[3], num;
+    int indi, index, length, nums[3], num;
 
     char token[SIZE];
 
@@ -223,10 +220,7 @@ int isdatenum(char *string)
  *       Return true if it is genbank form of date, which is
  *           day(2 digits)-MONTH(in letters)-year(4 digits).
  */
-int is_genbank_date(char *string)
-{
-    /*  int Lenstr(); */
-
+int is_genbank_date(char *string) {
     if (Lenstr(string) >= 11 && string[2] == '-' && string[6] == '-')
         return (1);
     else
@@ -237,15 +231,10 @@ int is_genbank_date(char *string)
  *   Function today_date().
  *       Get today's date.
  */
-char
- *today_date(void)
-{
-    /*  struct tm   *local_tm, *localtime(); */
-    struct timeval tp;
-
+char *today_date(void) {
+    struct timeval  tp;
     struct timezone tzp;
-
-    char line[SIZE], *return_value;
+    char            line[SIZE], *return_value;
 
     (void)gettimeofday(&tp, &tzp);
 
@@ -260,14 +249,9 @@ char
  *   Function gcg_date().
  *       Create gcg format of date.
  */
-char
- *gcg_date(char *date_string)
-{
+char *gcg_date(char *date_string) {
     static char date[128], temp[128], time[128];
-
     int day, year;
-
-    /*  char *  Catstr(); */
 
     temp[0] = '\0';
     date_string[7] = '\0';

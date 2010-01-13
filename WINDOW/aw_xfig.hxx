@@ -1,54 +1,19 @@
+// =============================================================== //
+//                                                                 //
+//   File      : aw_xfig.hxx                                       //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #ifndef AW_XFIG_HXX
 #define AW_XFIG_HXX
 
-/* -----------------------------------------------------------------
- * Module:                        WINDOW/aw_xfig.hxx
- *
- * Exported Classes:              xfig
- *
- * Description: xfig stuff
- *
- * -----------------------------------------------------------------
- */
 
-/*
- * $Header$
- *
- * $Log$
- * Revision 1.6  2007/03/29 16:54:01  westram
- * - XFIG_DEFAULT_FONT_SIZE -> XFIG_DEFAULT_FONT_WIDTH / XFIG_DEFAULT_FONT_HEIGHT
- * - added private ctor-helper calc_scaling
- * - changed ctor-prototypes of AW_xfig
- *
- * Revision 1.5  2005/01/05 11:25:40  westram
- * - changed include wrapper
- *
- * Revision 1.4  2004/09/22 17:26:39  westram
- * - beautified
- *
- * Revision 1.3  2001/10/18 09:29:53  westram
- * fixes for compiling Solaris debugging version
- *
- * Revision 1.2  2001/08/17 19:56:47  westram
- * * aw_xfig.hxx: - new method AW_xfig::add_line
- *            - new constructor (constructing empty xfig)
- *
- * Revision 1.1.1.1  2000/11/23 09:41:17  westram
- * Erster Import
- *
- * Revision 1.6  1995/03/13  16:53:41  jakobi
- * *** empty log message ***
- *
- * Revision 1.5  1995/03/13  12:23:48  jakobi
- * *** empty log message ***
- *
- */
-
-
-const int XFIG_DEFAULT_FONT_WIDTH = 8;
+const int XFIG_DEFAULT_FONT_WIDTH  = 8;
 const int XFIG_DEFAULT_FONT_HEIGHT = 13;
-
-// const int XFIG_DEFAULT_FONT_SIZE = 13;
 
 const int MAX_LINE_WIDTH  = 20;
 const int MAX_XFIG_LENGTH = 100000;
@@ -125,4 +90,4 @@ x y x y 9999 9999
 
 #else
 #error aw_xfig.hxx included twice
-#endif
+#endif // AW_XFIG_HXX

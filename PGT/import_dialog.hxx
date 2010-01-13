@@ -28,7 +28,6 @@ class importDialog : public MDialog
         void getFilenameCallback(Widget, XtPointer);
         void fileDialogCallback(Widget, XtPointer);
         void ARBdestinationCallback(Widget, XtPointer);
-//         void dataChangedCallback(Widget, XtPointer);
         void setSpecies(char *);
         void setExperiment(char *);
         void setProteome(char *);
@@ -75,7 +74,6 @@ class importDialog : public MDialog
         importTable *m_table;
         bool m_hasTableData;
         int m_activeHeader;
-        //char **m_ARBheader;
         //
         XSLTimporter *m_xslt;
         //

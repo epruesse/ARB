@@ -541,7 +541,6 @@ static void drawIsland(Island *f) {
                i>=0&&i<TELEN&&j>=0&&j<TELEN /* &&score>TE[i][j] */
                ) {
                 TE[i][j]=score;
-                /* TE[i][j]=-1.; */
             }
 #endif
 

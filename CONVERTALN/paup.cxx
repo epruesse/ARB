@@ -286,8 +286,6 @@ void paup_verify_name(char **string)
 
     char temp[TOKENNUM];
 
-    /*  void    Freespace(); */
-
     for (indi = index = 0, len = Lenstr((*string)); indi < len && index == 0; indi++)
         if ((*string)[indi] == '*' || (*string)[indi] == '('
             || (*string)[indi] == ')' || (*string)[indi] == '{'

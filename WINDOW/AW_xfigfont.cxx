@@ -160,16 +160,12 @@ AW_xfig_vectorfont *aw_read_xfigfont(char *filename) {
         l = l->next;
     }
 
-    //fprintf(stderr, "%d %d\n%d %d\n%d %d\n",xfig_gridx, xfig_gridy, xfig_offx, xfig_offy, xfig_maxx, xfig_maxy);
-
     if ((9999==xfig_gridx) || (9999==xfig_gridy) || \
         (9999==xfig_offx) || (9999==xfig_offy) || \
         (!xfig_maxx) || (!xfig_maxy) || (!xfig_gridx) || (!xfig_gridy)){
         sprintf(AW_ERROR_BUFFER,"Error: Cannot determine font grid size for xfig font resource %s,\nplease choose a valid vectorfont in the font selection menu entry\n",filename); aw_message();
         return(NULL);
     }
-
-    // fprintf(stderr, "Processing %d lines (grid size %d %d offset %d %d).\n",i,xfig_gridx,xfig_gridy,xfig_offx,xfig_offy);
 
     // 1.1.3 set framed box as default character for *all* fields
     l = new AW_xfig_line; ll=l;
@@ -204,8 +200,6 @@ AW_xfig_vectorfont *aw_read_xfigfont(char *filename) {
     maxx = (xfig_maxx - xfig_offx) / xfig_gridx + 2;
     maxy = (xfig_maxy - xfig_offy) / xfig_gridy + 2;
 
-    //   fprintf(stderr,"Grid elements prepared: %d,%d.\n",maxx,maxy);
-
     lines= (AW_xfig_line***) malloc((unsigned) sizeof(AW_xfig_line **)*maxx);
     for(i=0;i<maxx;i++)
         lines[i]=(AW_xfig_line**) malloc((unsigned) sizeof(AW_xfig_line *)*maxy);
@@ -234,7 +228,6 @@ AW_xfig_vectorfont *aw_read_xfigfont(char *filename) {
             lines[x][y]->x1   = (l->x1 - xfig_offx) % xfig_gridx;
             lines[x][y]->y0   = (l->y0 - xfig_offy) % xfig_gridy;
             lines[x][y]->y1   = (l->y1 - xfig_offy) % xfig_gridy;
-            //fprintf(stderr, "Valid Line %d,%d to %d,%d from %d,%d , grid %d,%d\n",lines[x][y]->x0,lines[x][y]->y0,lines[x][y]->x1,lines[x][y]->y1,l->x0,l->y0,x,y);
         }
         l = l->next;
     }
@@ -248,7 +241,6 @@ AW_xfig_vectorfont *aw_read_xfigfont(char *filename) {
             if ((x>=maxx) || (y>=maxy) || (x<0) || (y<0) || ((t->y - xfig_offy)<0) || ((t->x - xfig_offx)<0))
             { t = t->next; continue; }
             chars[x][y]=t->text[0];
-            //fprintf(stderr, "Valid Char /%s/ from %d,%d , grid %d,%d (%d,%d)\n",t->text,t->x,t->y,x,y,t->x-xfig_offx,t->y-xfig_offy);
         }
         t = t->next;
     }
@@ -358,7 +350,6 @@ int    AW_device::zoomtext(int gc, const char *string, AW_pos x,AW_pos y, AW_pos
     AW_pos scale_2;
     AW_root *aw_root=common->root;
 
-    //fprintf(stderr,"\n Type=%x Filter=%x\n",type(),filteri);
     // device not in filter
     if (!(type()&filteri)) return(0);
 
@@ -392,10 +383,8 @@ int    AW_device::zoomtext(int gc, const char *string, AW_pos x,AW_pos y, AW_pos
         scale_2=(AW_pos)height/g*aw_root->vectorfont_userscale;
     }
     else {
-        filteri=filteri&(~AW_DEVICE_SIZE);
-        // old zoom independent scaling, assuming height as font point size
-        // scale_2=(AW_pos)height/g*(float)aw_root->vectorfont_userscale/get_scale();
-        scale_2=-(AW_pos)height/g*aw_root->vectorfont_userscale/get_scale();
+        filteri = filteri&(~AW_DEVICE_SIZE);
+        scale_2 = -(AW_pos)height/g*aw_root->vectorfont_userscale/get_scale();
     }
 
 
@@ -454,11 +443,10 @@ int     AW_device::zoomtext4line(int gc, const char *string, AW_pos height,
     linelen=sqrt((lx1-lx0)*(lx1-lx0) + (ly1-ly0)*(ly1-ly0));
 
     if (height>=0) {
-        if (height>0)
+        if (height>0) {
             // font height given in world coordinates (line specifies only angle of text)
-            scale_2=(AW_pos)height/gy*aw_root->vectorfont_userscale;
-        // * use this instead to implement zoom-independent font height
-        // * scale=-(AW_pos)height/gy*aw_root->vectorfont_userscale/get_scale();
+            scale_2 = (AW_pos)height/gy*aw_root->vectorfont_userscale;
+        }
         else
             // given string width relative to length of line
             scale_2 = (AW_pos)linelen/gx/strlen(string);
@@ -525,13 +513,9 @@ int    AW_device::zoomtext1(int gc, const char *string, AW_pos x,AW_pos y, AW_po
     // eg. 1: move string one length to the left, 0 stay, -1 move string one string
     //         length to the right
     if(alignment) {
-        //   x-=(cosrot*l-sinrot*gy)*alignment;
-        //   y-=(sinrot*l+cosrot*gy)*alignment;
-        x-=(cosrot*l*alignment);
-        y-=(sinrot*l*alignment);
+        x -= (cosrot*l*alignment);
+        y -= (sinrot*l*alignment);
     }
-
-    //fprintf(stderr,"AW %d!=type %d",AW_DEVICE_SIZE,type());
 
     // clipping: bounding box is g in every direction
     // clip by upper and lower line of a string box, skip if both are offscreen
@@ -548,8 +532,6 @@ int    AW_device::zoomtext1(int gc, const char *string, AW_pos x,AW_pos y, AW_po
     if (type()==AW_DEVICE_SIZE)
         rrc=line(gc, x+rx0, y+ry0, x+rx1, y+ry1, filteri, cd1, cd2);
 
-    //line(gc, x+rx0, y+ry0, x+rx1, y+ry1, filteri, cd1, cd2);
-
     y0=y1=-gy;
     rx0=cosrot*x0-sinrot*y0;
     ry0=sinrot*x0+cosrot*y0;
@@ -561,11 +543,8 @@ int    AW_device::zoomtext1(int gc, const char *string, AW_pos x,AW_pos y, AW_po
     if (type()==AW_DEVICE_SIZE)
         rrc+=line(gc, x+rx0, y+ry0, x+rx1, y+ry1, filteri, cd1, cd2);
 
-    //line(gc, x+rx0, y+ry0, x+rx1, y+ry1, filteri, cd1, cd2);
-
     // if every point is on the same side outside the cliprect then don't draw
     if(rc) {
-        //   fprintf(stderr, "CLIPPED\n");
         return(0);
     }
     rc=0;
@@ -583,16 +562,12 @@ int    AW_device::zoomtext1(int gc, const char *string, AW_pos x,AW_pos y, AW_po
         return(rc);
     }
 
-    //rx1=cosrot*l; ry1=sinrot*l;
-    //transform(x,y,tx0,ty0); transform(x+rx1,y+ry1,tx1,ty1);
-    //fprintf(stderr,"\nNotClipped %g %g %g %g %g %d %d %d %d\n",get_scale(),tx0,ty0,tx1,ty1,clip_rect.t,clip_rect.b,clip_rect.l,clip_rect.r);
 
     // get line_width (calculate: width = real gy/20; change if linewidth is smaller)
 
     // now print the string
     while(*pstring) {
-        if (/*(*pstring < XFIG_FONT_ELEMS) && */ /* this is always TRUE */
-            aw_root->vectorfont_lines->lines[safeCharIndex(*pstring)]){
+        if (aw_root->vectorfont_lines->lines[safeCharIndex(*pstring)]) {
             // process lines of the active character
             pline=aw_root->vectorfont_lines->lines[safeCharIndex(*pstring)];
             while(pline) {
@@ -629,8 +604,6 @@ int    AW_device::zoomtext1(int gc, const char *string, AW_pos x,AW_pos y, AW_po
 // ************** callback to change the vectorfont  ***********
 void aw_xfig_font_changefont_cb(AW_root *aw_root){
     char *file = aw_root->awar("vectorfont/file_name")->read_string();
-
-    // fprintf(stderr,"Changed to: %s\n", file);
 
     // irrelevant call?
     if ((file[0]=='\0') || (!GB_is_regularfile(file))) { delete file; return; }

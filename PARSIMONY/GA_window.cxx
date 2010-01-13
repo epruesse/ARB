@@ -113,8 +113,6 @@ AW_window *create_genetic_window(AW_root *aw_root,AW_display *awd)
     aws->at("maxTree");
     aws->create_input_field("genetic/presets/maxTree",8);
 
-    //aws->at("bestTree");
-    //aws->create_label("genetic/presets/bestTree",8);
     aws->at("jobCount");
     aws->create_label("genetic/presets/jobCount",8);
 

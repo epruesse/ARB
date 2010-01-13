@@ -71,13 +71,6 @@ void Generation::calc_fitness(int flag, double old_avg_fit)     //reoulette_whee
 
     average_fitness = fitness / (double)probe_combi_array_length;
 
-    //    printf("--------------------------------------------------------------------------------------------------------------------\n");
-    //    printf("BEWERTUNG FUER DIE GENERATION:\n");
-    //    printf("Generation: %d   max: %f   min: %f   avg: %f\n", generation_counter, max_fit, min_fit, average_fitness);
-    //    printf("probe_combi_array_lentgh : %d\n",probe_combi_array_length);
-    //    printf("--------------------------------------------------------------------------------------------------------------------\n");
-
-
     deviation = 0;
 
 
@@ -258,7 +251,6 @@ Generation *Generation::create_next_generation()
     if (len_roulette_wheel <= 1)
         child_generation->set_length();             //probe_combi_array_length muss andere laenge bekommen
 
-    //  printf("Generationenschleife : %d\n",cnt);
     return child_generation;
 }
 

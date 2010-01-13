@@ -141,7 +141,6 @@ AW_window *st_create_quality_check_window(AW_root * root, GBDATA * gb_main) {
             "CHECK QUALITY OF MARKED SEQUENCES");
 
     aws->load_xfig("check_quality.fig");
-    //    aws->load_xfig("stat_main.fig");
 
     aws->callback(AW_POPDOWN);
     aws->at("close");

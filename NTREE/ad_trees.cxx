@@ -744,7 +744,6 @@ static void create_tree_last_window(AW_window *aww) {
 void move_tree_pos(AW_window *aww, AW_CL cl_offset) {
     // moves the tree in the list of trees
     int   offset = (int)cl_offset;
-    // char *source = aww->get_root()->awar(AWAR_TREE_NAME)->read_string();
 
     if (offset == 9999) {
         create_tree_last_window(aww);
@@ -801,10 +800,6 @@ AW_window *create_trees_window(AW_root *aw_root) {
         aws->at("import");
         aws->callback(AW_POPUP,(AW_CL)create_tree_import_window,0);
         aws->create_button("IMPORT","Import","I");
-
-        // aws->at("last");
-        // aws->callback(create_tree_last_window);
-        // aws->create_button("PUT_TO_END","Put to end","P");
 
         aws->button_length(0);
 

@@ -106,7 +106,6 @@
 inline int scaleAndRound(int unscaled, double scaleFactor) {
     double scaled = double(unscaled)*scaleFactor;
     return int(scaled);
-    //return scaled>0 ? int(scaled+0.5) : -int(-scaled+0.5);
 }
 
 //  -------------------------------------------------------------
@@ -362,8 +361,6 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
 
                                 x = scaleAndRound(x, dpi_scale);
                                 y = scaleAndRound(y, dpi_scale);
-                                //                     x = (int)(x*scale);
-                                //                     y = (int)(y*scale);
 
                                 setMinMax(x, minx, maxx);
                                 setMinMax(y, miny, maxy);
@@ -584,18 +581,17 @@ void AW_xfig::print(AW_device *device)
                 }
             }
 
-            device->text(xtext->gc,str,(AW_pos)x,(AW_pos)y,(AW_pos)xtext->center*.5,-1,0,0);        // filter
+            device->text(xtext->gc,str,(AW_pos)x,(AW_pos)y,(AW_pos)xtext->center*.5,-1,0,0);
         }
     }
 
     struct AW_xfig_line *xline;
     for (i=0;i<MAX_LINE_WIDTH; i++){
         device->set_line_attributes(0,(AW_pos)scaleAndRound(i, font_scale),AW_SOLID);
-        //device->set_line_attributes(0,(AW_pos)i,AW_SOLID);
         for (xline = line[i]; xline; xline=xline->next){
             device->line(0, (AW_pos)xline->x0,(AW_pos)xline->y0,
                          (AW_pos)xline->x1,(AW_pos)xline->y1,
-                         -1,0,0);               // filter
+                         -1,0,0); 
         }
     }
 }
@@ -616,12 +612,10 @@ void AW_xfig::create_gcs(AW_device *device, int depth)
     gc = 1;         // create gc for texts
     for (xtext = text; xtext; xtext=xtext->next){
         sprintf(fontstring,"%i-%i",xtext->font,scaleAndRound(xtext->fontsize, font_scale));
-        //sprintf(fontstring,"%i-%i",xtext->font,(int)(dpi_scale * xtext->fontsize));
         if ( !(xtext->gc = (int)GBS_read_hash(gchash,fontstring)) ) {
             device->new_gc( gc );
             device->set_line_attributes( gc, 0.3, AW_SOLID );
             device->set_font( gc, xtext->font, scaleAndRound(xtext->fontsize, font_scale), 0);
-            //device->set_font( gc, xtext->font, (int)(scale * xtext->fontsize) );
             device->set_foreground_color( gc, AW_WINDOW_FG );
             if (depth<=1) device->set_function( gc,AW_XOR);
             xtext->gc = gc;

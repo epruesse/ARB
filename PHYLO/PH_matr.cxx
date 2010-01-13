@@ -87,10 +87,8 @@ void ph_calculate_matrix_cb(AW_window *aww,AW_CL cb1,AW_CL cb2) {
     AW_root *aw_root = aww->get_root();
 
     PH_TRANSFORMATION trans = PH_TRANSFORMATION_NONE;
-    // transformation = aw_root->awar("phyl/correction/transformation")->read_string();
     transformation=strdup(PH_TRANSFORMATION_JUKES_CANTOR_STRING);
 
-    //  double alpha = aw_root->awar("phyl/alpha")->read_float();
     double alpha = 1.0;
     cancel = aw_root->awar("phyl/cancel/chars")->read_string();
     

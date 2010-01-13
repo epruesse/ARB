@@ -33,7 +33,6 @@ struct lt_probe
 {
     bool operator()(const PS_ProbePtr& p1, const PS_ProbePtr& p2) const
     {
-        //printf("\t");PS_printProbe(p1);printf(" < ");PS_printProbe(p2);printf(" ?\n");
         if (abs(p1->quality) == abs(p2->quality)) {
             if (p1->length == p2->length) {
                 return (p1->GC_content < p2->GC_content); // equal quality & length => sort by GC-content
@@ -80,7 +79,6 @@ public:
     // *** children ***
     //
     bool addChild( PS_NodePtr& _child ) {
-        //printf("addChild[%d]\n",child->getNum());
         PS_NodeMapIterator it = children.find(_child->getNum());
         if (it == children.end()) {
             children[_child->getNum()] = _child;
@@ -130,47 +128,33 @@ public:
     // *** probes ***
     //
     bool addProbe( const PS_ProbePtr& probe ) {
-        //printf("addProbe(");PS_printProbe(probe);printf(")\n");
         if (!probes) {
-            //printf( "creating new ProbeSet at node #%u (%p)\n",num,this );
             probes = new PS_ProbeSet;
             probes->insert(probe);
             return true;
         }
         else {
             pair<PS_ProbeSetCIter,bool> p = probes->insert(probe);
-            //          if (!p.second) {
-            //              printf( "probe " ); PS_printProbe(probe);
-            //              printf( " already exists\n" );
-            //          }
-
             return p.second;
         }
     }
 
     void addProbes( PS_ProbeSetCIter _begin, PS_ProbeSetCIter _end ) {
-        //printf( "check for probes...\n" );
         if (_begin == _end) return;
-        //printf( "check for probeset...\n" );
         if (!probes) probes = new PS_ProbeSet;
         for (PS_ProbeSetCIter probe = _begin; probe != _end; ++probe) {
-            //printf( "inserting new probe...\n" );
             probes->insert( *probe );
         }
     }
 
     void addProbesInverted( PS_ProbeSetCIter _begin, PS_ProbeSetCIter _end ) {
-        //printf( "check for probes...\n" );
         if (_begin == _end) return;
-        //printf( "check for probeset...\n" );
         if (!probes) probes = new PS_ProbeSet;
         for (PS_ProbeSetCIter probe = _begin; probe != _end; ++probe) {
-            //printf( "making new probe...\n" );
             PS_ProbePtr new_probe(new PS_Probe);
             new_probe->length     = (*probe)->length;
             new_probe->quality    = -((*probe)->quality);
             new_probe->GC_content = (*probe)->GC_content;
-            //printf( "inserting new probe...\n" );
             probes->insert( new_probe );
         }
     }
@@ -252,13 +236,12 @@ public:
     //
     // *** constructors ***
     //
-    PS_Node( SpeciesID id ) { num = id; probes = 0; } //printf(" constructor PS_Node() num=%d (%d)\n",num,int(this)); }
+    PS_Node( SpeciesID id ) { num = id; probes = 0; }
 
     //
     // *** destructor ***
     //
     ~PS_Node() {
-        //printf("destroying node #%d (%d)\n",num,int(this));
         if (probes) delete probes;
         children.clear();
     }

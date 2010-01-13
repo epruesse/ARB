@@ -379,9 +379,6 @@ AP_ERR *GA_genetic::write_tree( GBDATA *gb_cluster, GA_tree *ga_tree)
     if (!gb_cluster) {
         return new AP_ERR("write tree","no gbdata !");
     }
-    /*if (ga_tree->id > maxTree *max_cluster) {
-      return new AP_ERR("tree id too big!");
-      }*/
     GB_push_transaction(gb_main);
     if (ga_tree->id < 0) {
         ga_tree->id = GB_read_int(gb_treeName);
@@ -551,7 +548,6 @@ GA_tree * GA_genetic::get_start_tree(int cluster) {
     gb_anzahl = GB_entry(gb_cluster,"count");
     anzahl = (int)GB_read_int(gb_anzahl);
     if (anzahl >= 1 ) {
-        // gb_tree = GB_entry(gb_cluster,"tree");
         GBDATA *gbt = get_tree(gb_cluster,-1);
         tree = this->read_tree(gb_cluster,-1);
         GB_pop_transaction(gb_main);
@@ -1013,10 +1009,7 @@ AP_ERR *GA_genetic::create_jobs(GA_tree *tree,int cluster) {
         }
         job->cluster1 = rcl;
         treeid = (int)random()%treePerCluster[rcl];
-        //      while (treelist[rcl][treeid] == job->id0) {
         treeid = (int)random()%treePerCluster[rcl];
-
-        //};
 
         // remove it from treelist by a swap
         job->id1 = treelist[rcl][treeid];

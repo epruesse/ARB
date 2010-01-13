@@ -108,7 +108,6 @@ void MDialog::closeDialog()
     // KILL ALL CHILDREN
     while(m_children.size())
     {
-        // for(vector<MDialog*>::iterator i = m_children.begin(); i != m_children.end(); i++)
         for(vector<MDialog*>::iterator i = m_children.begin(); i != m_children.end(); ++i)
         {
             delete *i;
@@ -124,11 +123,8 @@ void MDialog::closeDialog()
     m_visible= false;
 
     // FREE ALL STRINGS PREVIOUSLY USED BY THE DIALOG
-    // for(vector<XmString>::iterator s = m_strings.begin(); s != m_strings.end(); s++)
     for(vector<XmString>::iterator s = m_strings.begin(); s != m_strings.end(); ++s)
     {
-        // printf("FREEING STRING \"%s\"\n", XmCvtXmStringToCT((XmString)*s)); // DEBUG
-
         XmStringFree((XmString)*s);
     }
     m_strings.clear();
@@ -200,21 +196,6 @@ void MDialog::show()
         XtMapWidget(m_shell);
         m_visible= true;
     }
-
-//    ShellWidget shell_widget= NULL;
-//
-//    if(m_shell != NULL && XtIsSubclass(m_shell, shellWidgetClass))
-//    {
-//       shell_widget= (ShellWidget)m_shell;
-//
-//       if(XtParent(shell_widget) == NULL ||
-//         (XtIsTopLevelShell(shell_widget) &&
-//         XtIsManaged((Widget)shell_widget)) ||
-//         shell_widget->shell.popped_up)
-//       {
-//          XtMapWidget (m_shell);
-//       }
-//    }
 }
 
 
@@ -229,25 +210,6 @@ void MDialog::hide()
         XtUnmapWidget(m_shell);
         m_visible= false;
     }
-
-//    ShellWidget shell_widget= NULL;
-//
-//    if(m_shell != NULL && XtIsSubclass(m_shell, shellWidgetClass))
-//    {
-//       shell_widget= (ShellWidget)m_shell;
-//
-//       if(XtIsTopLevelShell(shell_widget) ||
-//         shell_widget->shell.popped_up)
-//         {
-// #ifdef USE_WITHDRAW_WINDOW
-//             XWithdrawWindow(XtDisplay(m_shell),
-//                 XtWindow(m_shell),
-//                 XScreenNumberOfScreen(XtScreen(m_shell)));
-// #else
-//             XtUnmapWidget(m_shell);
-// #endif
-//         }
-//     }
 }
 
 

@@ -39,7 +39,6 @@ struct make_node_text_struct {
     long  rek[GEN_NDS_COUNT];
     char *dkeys[GEN_NDS_COUNT];
     char *parsing[GEN_NDS_COUNT];
-    //  long  inherit[GEN_NDS_COUNT];
     long  count;
     int   errorclip;
 
@@ -72,7 +71,6 @@ void GEN_make_node_text_init(GBDATA *gb_main) {
                 gen_nds_ms->rek[count] = 0;
             }
             gen_nds_ms->lengths[count] = GB_read_int(GB_entry(gbz, sl));
-            //          gen_nds_ms->inherit[count] = GB_read_int(GB_entry(gbz, "inherit"));
             gbe = GB_entry(gbz, "pars");
             freenull(gen_nds_ms->parsing[count]);
             if (gbe && GB_read_string_count(gbe)>1 ) gen_nds_ms->parsing[count] = GB_read_string(gbe);
@@ -89,39 +87,22 @@ void GEN_make_node_text_init(GBDATA *gb_main) {
 char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode)
 {
     /* if mode ==0 compress info else format info */
-    char     *bp;
-    GBDATA   *gbe;
-    long      i, j;
-    long      first;
-    //     GBT_TREE *father;
+    char   *bp;
+    GBDATA *gbe;
+    long    i, j;
+    long    first;
 
     bp = gen_nds_ms->buf;
     gen_assert(gbd);
-    //     if (!gbd) {
-    //         static char hae[] = "??????";
-    //         if (!species) return hae;
-    //         sprintf(gen_nds_ms->buf,"<%s>",species->name);
-    //         return gen_nds_ms->buf;
-    //     }
 
     first = 0;
     for (i = 0; i < gen_nds_ms->count; i++) {
-        if (gen_nds_ms->rek[i]) {       /* hierarchical key */
+        if (gen_nds_ms->rek[i]) { /* hierarchical key */
             gbe = GB_search(gbd, gen_nds_ms->dkeys[i], GB_FIND);
         }
-        else {              /* flat entry */
+        else {                  /* flat entry */
             gbe = GB_entry(gbd, gen_nds_ms->dkeys[i]);
         }
-
-        //         if (!gbe && gen_nds_ms->inherit[i] && species ) {
-        //             for (    father = species->father;
-        //                     father && !gbe;
-        //                     father = father->father){
-        //                 if (father->gb_node){
-        //                     gbe = GB_entry(father->gb_node, gen_nds_ms->dkeys[i]);
-        //                 }
-        //             }
-        //         }
 
         if (!mode && !gbe) continue;
         if (!mode && first) {
@@ -329,7 +310,6 @@ void GEN_create_select_nds_window(AW_window *aww,char *key_text,AW_CL cgb_main)
                                             (AW_window*)aws,"tmp/gene_viewkey/key_text",
                                             AWT_NDS_FILTER,
                                             "scandb","rescandb", &GEN_item_selector, 20, 10);
-        //aw_root->awar(key_text)->add_callback((AW_RCB1)awt_pop_down_select_nds,(AW_CL)aws);
 
         win =  (AW_window*)aws;
     }
@@ -366,7 +346,7 @@ AW_window *GEN_open_nds_window(AW_root *aw_root,AW_CL cgb_main)
         aws->at_newline();
 
 
-        int showx,fieldselectx,fieldx, /*inheritx,*/ columnx,srtx,srtux;
+        int showx,fieldselectx,fieldx, columnx,srtx,srtux;
 
         aws->auto_space(10,0);
 
@@ -387,10 +367,6 @@ AW_window *GEN_open_nds_window(AW_root *aw_root,AW_CL cgb_main)
             aws->callback((AW_CB)GEN_create_select_nds_window, (AW_CL)strdup(buf),cgb_main);
             aws->get_at_position( &fieldselectx,&dummy );
             aws->create_button("SELECT_NDS","S");
-
-            //      sprintf(buf,"tmp/gene_viewkey_%i/inherit",i);
-            //      aws->get_at_position( &inheritx,&dummy );
-            //      aws->create_toggle(buf);
 
             sprintf(buf,"tmp/gene_viewkey_%i/len1",i);
             aws->get_at_position( &columnx,&dummy );
@@ -418,9 +394,6 @@ AW_window *GEN_open_nds_window(AW_root *aw_root,AW_CL cgb_main)
 
         aws->at_x(fieldx);
         aws->create_button(0,"FIELD");
-
-        //  aws->at_x(inheritx);
-        //  aws->create_button(0,"INH.");
 
         aws->at_x(columnx);
         aws->create_button(0,"WIDTH");

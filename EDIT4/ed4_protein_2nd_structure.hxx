@@ -96,7 +96,6 @@ extern char *pfold_pair_chars[6];
  */
 
 #define PFOLD_PAIR_CHARS_2 "##++~~--  "
-// static char pfold_pair_chars_2[] = "##++~~--  ";
 
 /// Defines the methods for match computation. For details refer to ED4_pfold_calculate_secstruct_match().
 typedef enum {

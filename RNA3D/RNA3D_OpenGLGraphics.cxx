@@ -43,7 +43,6 @@ void OpenGLGraphics::SetOpenGLBackGroundColor() {
     // set OpenGL background color to the widget's background     
     glClearColor(r, g, b, 1);
 
-    // extern ColorRGBf ApplicationBGColor;
     ApplicationBGColor = ColorRGBf(r, g, b);
 }
 
@@ -115,7 +114,6 @@ void OpenGLGraphics::init_font(GLuint base, char* f)
     int last;
 
     /* Need an X Display before calling any Xlib routines. */
-    //  display = XOpenDisplay(0); // glxFont problem : changed XOpenDisplay(0) to glXGetCurrentDisplay() 
     display = glXGetCurrentDisplay();
     if (display == 0) {
         fprintf(stderr, "XOpenDisplay() failed.  Exiting.\n");
@@ -134,7 +132,6 @@ void OpenGLGraphics::init_font(GLuint base, char* f)
             last  = font_info->max_char_or_byte2;
             glXUseXFont(font_info->fid, first, last-first+1, base+first);
         }
-        //XCloseDisplay(display); // glxFont problem 
         display = 0;
     }
 }
@@ -168,26 +165,7 @@ void OpenGLGraphics::InitMainFont(char* f)
 void OpenGLGraphics::PrintString(float x, float y, float z, char *s, void * /*font */) {
     glRasterPos3f(x, y, z);
     print_string(font_base, s);
-    //       for (unsigned int i = 0; i < strlen(s); i++) {
-    //          glutBitmapCharacter(font, s[i]);
-    //     }
 }
-
-void OpenGLGraphics::PrintComment(float /* x */, float /* y */, float /* z */, char */*s */){
-    // if comments are longer break them and display in next line
-    //     int col  = 35;
-
-    //         glRasterPos3f(x, y, z);
-    //         for (unsigned int i = 0; i < strlen(s); i++) {
-    //             if(i%col==0) {
-    //                 y -= 10;
-    //                 glRasterPos3f(x, y, z);
-    //             }
-    //             glutBitmapCharacter(GLUT_BITMAP_8_BY_13, s[i]);
-    //         }
-}
-
-//===============================================================================
 
 void  OpenGLGraphics::DrawBox(float x, float y,  float w, float h)
 {

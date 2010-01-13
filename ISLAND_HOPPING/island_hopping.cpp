@@ -184,10 +184,6 @@ GB_ERROR IslandHopping::do_align() {
         }
         aligned_ref_sequence[o] = 0;
         output_sequence[o]      = 0;
-
-
-        //         memcpy(aligned_ref_sequence, XX, nXY+1);
-        //         memcpy(output_sequence, YY, nXY+1);
     }
 
     free(X);

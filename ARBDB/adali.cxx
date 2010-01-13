@@ -862,8 +862,8 @@ NOT4PERL char *GBT_read_gene_sequence_and_length(GBDATA *gb_gene, bool use_revCo
 
         // test positions and calculate overall result length
         for (p = 0; p<parts && !error; p++) {
-            size_t start; // = pos->start_pos[p];
-            size_t stop; // = pos->stop_pos[p];
+            size_t start; 
+            size_t stop;
             getPartPositions(pos, p, &start, &stop);
 
             if (start<1 || start>(stop+1) || stop > seq_length) { // do not reject zero-length genes (start == stop+1)
@@ -897,9 +897,8 @@ NOT4PERL char *GBT_read_gene_sequence_and_length(GBDATA *gb_gene, bool use_revCo
                 if (gene_length) *gene_length = resultlen;
 
                 for (p = 0; p<parts; ++p) {
-                    size_t start; // = pos->start_pos[p];
-                    size_t stop;  // = pos->stop_pos[p];
-
+                    size_t start;
+                    size_t stop;
                     getPartPositions(pos, p, &start, &stop);
 
                     int len = stop-start+1;

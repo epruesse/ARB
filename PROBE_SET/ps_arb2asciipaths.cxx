@@ -48,7 +48,6 @@ void PS_print_paths( GBDATA *_pb_node ) {
             printf( "%6i ",*i );
         }
         printf( "\n" );
-//      getchar();
     }
 
     // path
@@ -78,7 +77,6 @@ int main( int argc,
         if (!pb_main) error = GB_await_error();
     }
     printf( "loaded database (enter to continue)\n" );
-//  getchar();
 
     GB_transaction dummy(pb_main);
     GBDATA *group_tree = GB_entry( pb_main, "group_tree");

@@ -150,12 +150,6 @@ void AWT_canvas::zoom_reset( void )
             else {
                 ;
             }
-            //             if (tree_disp->exports.dont_fit_y) { // Ralf: old version (IMHO wrong)
-            //                 ;
-            //             }
-            //             else {
-            //                 if (y_scale < x_scale) x_scale = y_scale;
-            //             }
         }
     }
 
@@ -252,11 +246,8 @@ void AWT_canvas::zoom(AW_device *device, bool zoomIn, const Rectangle& wanted_pa
 
         Position zoomedCenter = screenCenter+to_zoomed;
 
-        // wanted = Rectangle(clickPos-wanted_diagonal, 2*wanted_diagonal);
         // zoom-rectangle around center
         wanted = Rectangle(zoomedCenter-wanted_diagonal, 2*wanted_diagonal);
-
-        
     }
     else {
         wanted = Rectangle(device->rtransform(wanted_part));
@@ -520,10 +511,10 @@ void AWT_canvas::set_dragEndpoint(int dragx, int dragy) {
             AW_pos width  = worldinfo.r-worldinfo.l;
             AW_pos height = worldinfo.b-worldinfo.t;
 
-            if (width>height) {     // like dont_fit_x = 1; dont_fit_y = 0;
+            if (width>height) {                     // like dont_fit_x = 1; dont_fit_y = 0;
                 dont_fit_x = true;
             }
-            else { // like dont_fit_y = 1; dont_fit_x = 0;
+            else {                                  // like dont_fit_y = 1; dont_fit_x = 0;
                 dont_fit_y = true;
             }
         }

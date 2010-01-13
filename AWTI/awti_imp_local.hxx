@@ -68,8 +68,6 @@ struct input_format_per_line {
 
 #define IFS_VARIABLES 26                            // 'a'-'z'
 
-// typedef std::map<char, std::string> SetVariables;
-
 class SetVariables {
     typedef SmartPtr<std::string> StringPtr;
     StringPtr value[IFS_VARIABLES];

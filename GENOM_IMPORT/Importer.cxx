@@ -426,7 +426,6 @@ void GenebankImporter::import_section() {
                     case MT_BASIC:      meta.add(prevTag, prevContent, true); break;
                     case MT_HEADER:
                         meta.add(prevTag, prevContent, true); // save header line
-                        // printf("Header not handled yet: '%s'\n", prevContent.c_str());
                         expectedSeqLength = scanSeqlenFromLOCUS(prevContent);
                         break;
                     case MT_REF_DBID: // embl only
@@ -576,7 +575,6 @@ void EmblImporter::import_section() {
                     case MT_BASIC:      meta.add(prevTag, prevContent, true); break;
                     case MT_HEADER:
                         meta.add(prevTag, prevContent, true); 
-                        // printf("Header not handled yet: '%s'\n", prevContent.c_str());
                         expectedSeqLength = scanSeqlenFromID(prevContent);
                         break;
                     default: gi_assert(0); break;

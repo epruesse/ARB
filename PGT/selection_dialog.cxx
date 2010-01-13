@@ -25,7 +25,6 @@ selectionDialog::selectionDialog(MDialog *d, int type)
 {
     if(m_opened)
     {
-//         this->~selectionDialog();
         return;
     }
     else m_opened= true;

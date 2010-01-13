@@ -1036,7 +1036,6 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
 
                     if (!error_this_file) {
                         GB_commit_transaction(GB_MAIN);
-                        // GB_warning("File '%s' successfully imported", fnames[curr]);
                         successfull_imports++;
                         delete_db_type_if_error = false;
                     }

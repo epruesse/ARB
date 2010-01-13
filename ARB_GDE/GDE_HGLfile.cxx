@@ -61,7 +61,6 @@ static void StripSpecial(char *string)
         else if(string[j] == '}')
             string[j] = ')';
     }
-    //return;
 }
 
 
@@ -83,7 +82,6 @@ static void RemoveQuotes(char *string)
         string[j] = '\0';
     }
 
-    //return;
 }
 
 /*
@@ -549,14 +547,9 @@ int WriteGDE(NA_Alignment *aln,char *filename,int method,int maskable)
     int k,mask = -1;
     FILE *file;
     NA_Sequence *this_elem;
-    //extern char month[12][6];
 
-    if(aln == NULL)
-        return(1);
-    //ARB
-    //if(aln->na_ddata == NULL)
-    //      return(1);
-    //ARB END
+    if(aln == NULL) return(1);
+    
     file = fopen(filename,"w");
     if(file == NULL)
     {
@@ -577,7 +570,6 @@ int WriteGDE(NA_Alignment *aln,char *filename,int method,int maskable)
            || (aln->element[j].subselected && method == SELECT_REGION))
         {
             this_elem = &(aln->element[j]);
-            /*SeqNorm(this_elem);*/
             fprintf(file,"{\n");
             if(this_elem->short_name[0])
                 fprintf(file,"name      \"%s\"\n",this_elem->short_name);

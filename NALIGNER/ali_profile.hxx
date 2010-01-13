@@ -116,9 +116,9 @@ class ALI_PROFILE {
                         unsigned long *start, unsigned long *end);
     void delete_comp_helix(char h1[], char h2[], unsigned long h_len,
                            unsigned long start, unsigned long end);
-    int map_helix(char h[], unsigned long h_len,
-                  unsigned long start1, unsigned long end1,
-                  unsigned long start2, unsigned long end2);
+    // int map_helix(char h[], unsigned long h_len,
+                  // unsigned long start1, unsigned long end1,
+                  // unsigned long start2, unsigned long end2);
     void initialize_helix(ALI_PROFILE_CONTEXT *context);
 
 public:

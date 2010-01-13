@@ -296,7 +296,6 @@ void mp_load_list( AW_window *aww, AW_selection_list *selection_list, char *base
     free(data);
 
     aww->insert_default_selection(selection_list,"","");
-    //  aww->sort_selection_list( selection_list );
     aww->update_selection_list(selection_list);
 }
 
@@ -367,7 +366,6 @@ MP_Window::MP_Window(AW_root *aw_root)
     aws->load_xfig("multiprobe.fig");
 
     aws->at("close");
-    // aws->callback(MP_cache_sonden); // had no effect (apart from memleak), cause overwritten in next line (and done by MP_close_main as well)
     aws->callback(MP_close_main);
     aws->create_button("CLOSE","CLOSE");
 
@@ -375,16 +373,9 @@ MP_Window::MP_Window(AW_root *aw_root)
     aws->callback(AW_POPUP_HELP,(AW_CL)"multiprobe.hlp");
     aws->create_button("HELP","HELP");
 
-    //      aws->at("Sequenzeingabe");
-    //  aws->callback(MP_take_manual_sequence);
-    //  aws->create_input_field(MP_AWAR_SEQUENZEINGABE, max_seq_col);
-
     aws->at("Border1");
     aws->callback(MP_cache_sonden);
     aws->create_input_field(MP_AWAR_QUALITYBORDER1, 4);
-
-    //     aws->at("EcoliPos");
-    //     aws->create_input_field(MP_AWAR_ECOLIPOS, 6);
 
     aws->button_length(5);
     aws->at("New");
@@ -498,41 +489,9 @@ MP_Window::MP_Window(AW_root *aw_root)
     aws->callback(MP_cache_sonden);
     aws->create_toggle(MP_AWAR_WEIGHTEDMISMATCHES);
 
-    //  if (0){
-    //      aws->create_toggle_field(MP_AWAR_WEIGHTEDMISMATCHES,1);
-    //      aws->insert_toggle("#weighted1.bitmap","0",0);
-    //      aws->insert_toggle("#weighted3.bitmap","1",1);
-    //      aws->insert_toggle("#weighted2.bitmap","2",2);
-    //      aws->update_toggle_field();
-    //  }
-
     aws->at("Komplement");
     aws->callback(MP_cache_sonden);
     aws->create_toggle(MP_AWAR_COMPLEMENT);
-
-    //  if (0){
-    //      aws->at("Mismatches");
-    //      aws->create_option_menu( MP_AWAR_MISMATCHES, NULL, "");
-    //      aws->callback(MP_cache_sonden);
-    //      aws->insert_option( "0 mismatches", "", 0 );
-    //      aws->insert_option( "1 mismatches", "", 1 );
-    //      aws->insert_option( "2 mismatches", "", 2 );
-    //      aws->insert_option( "3 mismatches", "", 3 );
-    //      aws->insert_option( "4 mismatches", "", 4 );
-    //      aws->insert_option( "5 mismatches", "", 5 );
-    //      aws->update_option_menu();
-    //  }
-    //  if (0){
-    //      aws->at("SingleMismatches");
-    //      aws->create_option_menu( MP_AWAR_SINGLEMISMATCHES, NULL, "");
-    //      aws->insert_option( "0 mismatches", "", 0 );
-    //      aws->insert_option( "1 mismatches", "", 1 );
-    //      aws->insert_option( "2 mismatches", "", 2 );
-    //      aws->insert_option( "3 mismatches", "", 3 );
-    //      aws->insert_option( "4 mismatches", "", 4 );
-    //      aws->insert_option( "5 mismatches", "", 5 );
-    //      aws->update_option_menu();
-    //  }
 
     aws->at("Greyzone");
     aws->callback(MP_cache_sonden);
@@ -564,8 +523,6 @@ MP_Window::MP_Window(AW_root *aw_root)
     awt_create_selection_list_on_pt_servers(aws, MP_AWAR_PTSERVER, true);
 
     aw_root->awar(MP_AWAR_PTSERVER)->add_callback(MP_cache_sonden2); // remove cached probes when changing pt-server
-
-    //     build_pt_server_list();
 }
 
 

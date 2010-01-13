@@ -195,7 +195,6 @@ inline bool getDrawGcs(GEN_iterator& gene, PaintWhat what, const string& curr_ge
         }
         else {
             int color_group = AWT_gene_get_dominant_color(gb_gene);
-            // int color_group = AW_find_color_group(gb_gene);
 
             if (color_group) {
                 draw_gc = text_gc = GEN_GC_FIRST_COLOR_GROUP+color_group-1;
@@ -237,7 +236,6 @@ void GEN_root::paint(AW_device *device) {
                 while (curr != end) {
                     int draw_gc, text_gc;
                     if (getDrawGcs(curr, paint_what, gene_name, draw_gc, text_gc)) {
-                    // if (paint_what || text_gc != GEN_GC_DEFAULT) {
                         double w    = w0*curr->StartPos()-mp2;
                         double sinw = sin(w);
                         double cosw = cos(w);

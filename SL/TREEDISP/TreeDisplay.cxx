@@ -530,12 +530,6 @@ void AWT_show_bootstrap_circle(AW_device *device, const char *bootstrap, double 
 
     // Note : radius goes against infinite, if bootstrap values go against zero
     //        For this reason we do some limitation here:
-
-    // printf("bootstrap=%i -> radius=%f\n", atoi(bootstrap), radius);
-
-    // was 0.06
-// #define BOOTSTRAP_RADIUS_LIMIT (len*2)
-// #define BOOTSTRAP_RADIUS_LIMIT 2.0
 #define BOOTSTRAP_RADIUS_LIMIT max_radius
 
     int gc = AWT_GC_BOOTSTRAP;
@@ -769,13 +763,13 @@ void AWT_graphic_tree::key_command(AWT_COMMAND_MODE /*cmd*/, AW_key_mod key_modi
                     GB_write_flag(gb_species, 1-GB_read_flag(gb_species));
                     break;
                 }
-                case 'I':  {    // I = invert all but current;
+                case 'I':  {    // I = invert all but current
                     int mark = GB_read_flag(gb_species);
                     GBT_mark_all(gb_main, 2);
                     GB_write_flag(gb_species, mark);
                     break;
                 }
-                case 'M':  {    // M = mark/unmark all but current;
+                case 'M':  {    // M = mark/unmark all but current
                     int mark = GB_read_flag(gb_species);
                     GB_write_flag(gb_species, 0); // unmark current
                     GBT_mark_all(gb_main, GBT_first_marked_species(gb_main) == 0);
@@ -1950,11 +1944,7 @@ double AWT_graphic_tree::show_dendrogram(AP_tree *at, double x_father, double x_
 
         if (at->name && (disp_device->filter & text_filter) ){
             // display text
-            const char *data = make_node_text_nds(this->gb_main, at->gb_node,0,at->get_gbt_tree(), tree_static->get_tree_name());
-
-            //             offset = scale*0.4;
-
-
+            const char                *data     = make_node_text_nds(this->gb_main, at->gb_node,0,at->get_gbt_tree(), tree_static->get_tree_name());
             const AW_font_information *fontinfo = disp_device->get_font_information(at->gr.gc,'A');
 
 #if defined(DEBUG) && 0
@@ -2026,8 +2016,6 @@ double AWT_graphic_tree::show_dendrogram(AP_tree *at, double x_father, double x_
 
         disp_device->set_fill(at->gr.gc, grey_level);
         disp_device->filled_area(at->gr.gc, 4, &q[0], line_filter, (AW_CL)at,0);
-
-        // double add_y_offset = scale*0.3;
 
         const AW_font_information *fontinfo    = disp_device->get_font_information(at->gr.gc,'A');
         double                     text_ascent = fontinfo->max_letter.ascent/ disp_device->get_scale() ;
@@ -2143,12 +2131,6 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
             }
             scale_text_koordinaten(disp_device,at->gr.gc, x_center,y_center,tree_orientation,0);
             const char *data =  make_node_text_nds(this->gb_main,at->gb_node,0,at->get_gbt_tree(), tree_static->get_tree_name());
-            // PJ vectorfont - example for calling
-            //                      disp_device->zoomtext(at->gr.gc,data,
-            //                              (AW_pos)x_center,(AW_pos) y_center,
-            //                              0.005, .5-.5*cos(tree_orientation), 0,
-            //                              text_filter, (AW_CL) at, (AW_CL) 0);
-
             disp_device->text(at->gr.gc,data,
                               (AW_pos)x_center,(AW_pos) y_center,
                               (AW_pos) .5 - .5 * cos(tree_orientation),
@@ -2184,12 +2166,6 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
 
             /* insert text (e.g. name of group) */
             const char *data = make_node_text_nds(this->gb_main, at->gb_node,0,at->get_gbt_tree(), tree_static->get_tree_name());
-            //PJ vectorfont - possibly groups should be rendered bigger than species
-            //                        disp_device->zoomtext(at->gr.gc ,data,
-            //                                (AW_pos)x_center,(AW_pos) y_center, 0.01,
-            //                                (AW_pos).5 - .5 * cos(tree_orientation),0 ,
-            //                                text_filter,
-            //                                (AW_CL) at , (AW_CL) 0 );
             disp_device->text(at->gr.gc,data,
                               (AW_pos)x_center,(AW_pos) y_center,
                               (AW_pos).5 - .5 * cos(tree_orientation),
@@ -2339,11 +2315,9 @@ const char *AWT_graphic_tree::show_ruler(AW_device *device, int gc) {
         ruler_x = ruler_add_x + *GBT_readOrCreate_float(gb_tree, awar, ruler_x);
 
         sprintf(awar,"ruler/%s/text_x", tree_awar);
-        // ruler_text_x = *GBT_readOrCreate_float(this->tree_static->gb_tree, awar, ruler_text_x) * ruler_scale;
         ruler_text_x = *GBT_readOrCreate_float(gb_tree, awar, ruler_text_x);
 
         sprintf(awar,"ruler/%s/text_y", tree_awar);
-        // ruler_text_y = *GBT_readOrCreate_float(this->tree_static->gb_tree, awar, ruler_text_y) * ruler_scale;
         ruler_text_y = *GBT_readOrCreate_float(gb_tree, awar, ruler_text_y);
 
         sprintf(awar,"ruler/ruler_width");

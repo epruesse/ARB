@@ -189,7 +189,6 @@ static XtResource backgroundResources[] = {
   {XmNbackground, XmCBackground,XmRPixel, 
    sizeof(Pixel),XtOffset(GLwDrawingAreaWidget,core.background_pixel),
    XmRString,(XtPointer)"lightgrey"},
-   /*XmRCallProc,(XtPointer)_XmBackgroundColorDefault},*/
 
   {XmNbackgroundPixmap,XmCPixmap,XmRXmBackgroundPixmap, 
    sizeof(Pixmap),XtOffset(GLwDrawingAreaWidget,core.background_pixmap),
@@ -199,7 +198,6 @@ static XtResource backgroundResources[] = {
   {XtNbackground,XtCBackground,XtRPixel,sizeof(Pixel),
    XtOffset(GLwDrawingAreaWidget,core.background_pixel),
    XtRString,(XtPointer)"lightgrey"},
-   /*XtRString,(XtPointer)"XtDefaultBackground"},*/
 
   {XtNbackgroundPixmap, XtCPixmap, XtRPixmap, sizeof(Pixmap),
    XtOffset(GLwDrawingAreaWidget,core.background_pixmap),
@@ -217,18 +215,15 @@ static XtResource otherColorResources[] = {
   {XmNforeground,XmCForeground,XmRPixel, 
    sizeof(Pixel),XtOffset(GLwDrawingAreaWidget,primitive.foreground),
    XmRString,(XtPointer)"lighgrey"},
-   /*XmRCallProc, (XtPointer) _XmForegroundColorDefault},*/
 
   {XmNhighlightColor,XmCHighlightColor,XmRPixel,sizeof(Pixel),
    XtOffset(GLwDrawingAreaWidget,primitive.highlight_color),
    XmRString,(XtPointer)"lightgrey"},
-   /*XmRCallProc,(XtPointer)_XmHighlightColorDefault},*/
 
   {XmNhighlightPixmap,XmCHighlightPixmap,XmRPrimHighlightPixmap,
    sizeof(Pixmap),
    XtOffset(GLwDrawingAreaWidget,primitive.highlight_pixmap),
    XmRImmediate,(XtPointer)XmUNSPECIFIED_PIXMAP},
-   /*XmRCallProc,(XtPointer)_XmPrimitiveHighlightPixmapDefault},*/
   };
 #endif
 

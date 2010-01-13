@@ -101,8 +101,6 @@ AW_window *create_seq_colors_window(AW_root *awr, AWT_seq_colors *asc){
     aws->callback     ( AW_POPUP_HELP,(AW_CL)"sequence_colors.hlp" );aws->create_button( "HELP", "HELP" );
     aws->at_newline();
 
-    //    aws->label_length( 6 ); // @@@ has no effect
-    //    aws->button_length( 6 );
     int set;
 
     for (int seqType=0; seqType<2; seqType++) {

@@ -677,8 +677,6 @@ static void child_changed_cb(AW_root *aw_root) {
             GBDATA         *gb_selected_node = GB_search_numbered(gb_main, fullpath, GB_FIND);
 
             string info;
-            // info += GBS_global_string("child='%s'\n", child);
-            // info += GBS_global_string("path='%s'\n", path);
             info += GBS_global_string("fullpath='%s'\n", fullpath);
 
             if (gb_selected_node == 0) {
@@ -893,7 +891,6 @@ AW_window *DB_browser::get_window(AW_root *aw_root) {
 
         aws->at("info");
         aws->create_text_field(AWAR_DBB_INFO, 40, 40);
-        // update_info_selection_list(aw_root, (AW_CL)aws, (AW_CL)info_id);
 
         // add callbacks
         aw_root->awar(AWAR_DBB_BROWSE)->add_callback(child_changed_cb);

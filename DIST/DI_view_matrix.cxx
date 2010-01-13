@@ -78,9 +78,6 @@ void DI_dmatrix::init (DI_MATRIX *matrix) {
         cell_height = max_cell_height;
     }
 
-    //     cell_width = aw_fi->max_letter_width*SPECIES_NAME_LEN;
-    //     cell_height = aw_fi->max_letter_height*2;
-
     cell_offset = 10;  // draw cell_offset pixels above cell base_line
 
     off_dx = cell_width + 2*cell_offset;

@@ -194,7 +194,6 @@ void PH_display::display(void)   // draw area
     char buf[50],cbuf[2];
     long x,y,xpos,ypos;
     AW_window *main_win = PH_used_windows::windowList->phylo_main_window;
-    // AW_font_information *aw_fi=0;
     long minhom;
     long maxhom;
     long startcol,stopcol;
@@ -370,31 +369,14 @@ void PH_display::monitor_vertical_scroll_cb(AW_window *aww)    // draw area
     if(diff==1) // scroll one position up (== \/ arrow pressed)
     {
         device->move_region(0,off_dy,screen_width,vert_page_size*cell_height,0,off_dy-cell_height);
-
-        // device->line(0,0,off_dy+1,100,off_dy+1,-1,0,0);  // source top
-        // device->line(0,0,(vert_page_size-1)*cell_height+off_dy+1,100,
-        //  (vert_page_size-1)*cell_height+off_dy+1,-1,0,0);  // source bottom
-        // device->line(0,0,off_dy-cell_height,50,off_dy-cell_height,-1,0,0); // target top
-
-        device->clear_part(0,off_dy-cell_height+(vert_page_size-1)*cell_height+1,
-                           screen_width,cell_height, -1);
-
-        // device->line(0,6,off_dy-cell_height+(vert_page_size-1)*cell_height+1,
-        // 6,off_dy-cell_height+(vert_page_size)*cell_height,-1,0,0);
-
+        device->clear_part(0,off_dy-cell_height+(vert_page_size-1)*cell_height+1, screen_width,cell_height, -1);
         device->push_clip_scale();
         device->set_top_clip_border((int)(off_dy+(vert_page_size-2)*cell_height));
     }
     else if(diff==-1) // scroll one position down (== /\ arrow pressed)
     {
-        device->move_region(0,off_dy-cell_height,screen_width,(vert_page_size-1)*cell_height+1,0,
-                            off_dy);
-        // device->line(0,0,off_dy-cell_height,50,off_dy-cell_height,-1,0,0);
-        // device->line(0,0,(vert_page_size-1)*cell_height+1+(off_dy-cell_height),
-        //                50,(vert_page_size-1)*cell_height+1+(off_dy-cell_height),-1,0,0);
+        device->move_region(0,off_dy-cell_height,screen_width,(vert_page_size-1)*cell_height+1,0, off_dy);
         device->clear_part(0,off_dy-cell_height,screen_width,cell_height, -1);
-        // device->line(0,0,off_dy-cell_height,50,off_dy-cell_height,-1,0,0);
-        // device->line(0,0,off_dy,50,off_dy,-1,0,0);
         device->push_clip_scale();
         device->set_bottom_clip_border((int)off_dy);
     }
@@ -416,22 +398,8 @@ void PH_display::monitor_horizontal_scroll_cb(AW_window *aww)  // draw area
     // fast scroll
     if(diff==1)   // scroll one position left ( > arrow pressed)
     {
-        device->move_region(off_dx+cell_width,0,
-                            horiz_page_size*cell_width,screen_height,
-                            off_dx,0);
-
-        // device->line(0,off_dx+cell_width,0,off_dx+cell_width,screen_height,-1,0,0);   // left border
-        // device->line(0,horiz_page_size*cell_width+off_dx+cell_width,0,
-        //            horiz_page_size*cell_width+off_dx+cell_width,screen_height,-1,0,0); // right border
-        // device->line(0,off_dx,0,off_dx,screen_height,-1,0,0);  // target
-
+        device->move_region(off_dx+cell_width,0, horiz_page_size*cell_width,screen_height, off_dx,0);
         device->clear_part(off_dx+(horiz_page_size-1)*cell_width,0,cell_width,screen_height, -1);
-
-        // device->line(0,off_dx+(horiz_page_size-1)*cell_width,0,
-        //             off_dx+(horiz_page_size-1)*cell_width,screen_height,-1,0,0);
-        // device->line(0,off_dx+(horiz_page_size-1)*cell_width+cell_width,0,
-        //              off_dx+(horiz_page_size-1)*cell_width+cell_width,screen_height,-1,0,0);
-
         device->push_clip_scale();
         device->set_left_clip_border((int)((horiz_page_size-1)*cell_width));
     }

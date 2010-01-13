@@ -254,7 +254,6 @@ public:
 
     bool not_seen_yet(const string& dir) const { return insertedDirectories.find(dir) == insertedDirectories.end(); }
     void register_directory(const string& dir) {
-        // printf("register_directory '%s'\n", dir.c_str());
         insertedDirectories.insert(dir);
     }
 };
@@ -268,14 +267,10 @@ static void show_soft_link(AW_window *aws, AW_selection_list *sel_id, const char
     string      edir(expanded_dir);
 
     if (unDup.not_seen_yet(edir)) {
-        // printf("New directory '%s' (deduced from '$%s')\n", expanded_dir, envar);
         unDup.register_directory(edir);
         const char *entry = GBS_global_string("$ %-18s(%s)", GBS_global_string("'%s'", envar), expanded_dir);
         aws->insert_selection(sel_id, entry, expanded_dir);
     }
-    // else {
-        // printf("Skipping directory '%s' (deduced from '$%s')\n", expanded_dir, envar);
-    // }
 }
 
 static void awt_create_selection_box_cb(void *dummy, struct adawcbstruct *cbs) {

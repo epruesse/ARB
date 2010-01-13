@@ -10,15 +10,14 @@
 
 #include "GDE_extglob.h"
 
-int DataType; 
-int FileFormat,first_select = FALSE;
-/*int Dirty,OldEditMode,EditMode = INSERT, EditDir = RIGHT;*/
-int DisplayAttr = 0,OVERWRITE = FALSE;
-int SCALE = 1;
-int BlockInput = FALSE; 
+int  DataType;
+int  FileFormat,first_select = FALSE;
+int  DisplayAttr             = 0,OVERWRITE = FALSE;
+int  SCALE                   = 1;
+int  BlockInput              = FALSE;
 #ifdef SeeAlloc
-int TotalCalloc = 0;
-int TotalRealloc = 0;
+int  TotalCalloc             = 0;
+int  TotalRealloc            = 0;
 #endif
 char FileName[80];
 char current_dir[1024];
@@ -172,19 +171,4 @@ const char *three_to_one[23] = {
 };
 
 
-#if 0
-static unsigned char grey0[] = {0,0,0,0,0,0,0,0};
-static unsigned char grey1[] = {138,0,0,0,138,0,0,0};
-static unsigned char grey2[] = {138,0,34,0,138,0,34,0};
-static unsigned char grey3[] = {138,85,34,85,138,85,34,85};
-static unsigned char grey4[] = {117,170,221,170,117,170,221,170};
-static unsigned char grey5[] = {117,255,221,255,117,255,221,255};
-static unsigned char grey6[] = {117,255,255,255,117,255,255,255};
-static unsigned char grey7[] = {255,255,255,255,255,255,255,255};
-
-unsigned char *greys[] = {grey1,grey3,grey3,grey1,grey2,grey3,grey0,grey3,
-                          grey0,grey1,grey2,grey3,grey4,grey5,grey6,grey7};
-char *grey_pm[16]; /*Pixmap instead of char !?!*/
-
-#endif
 

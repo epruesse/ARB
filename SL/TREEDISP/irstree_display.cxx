@@ -65,15 +65,11 @@ void draw_top_separator(){
     }
 }
 
-int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset, int type){
-
+int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset, int type) {
     int left_y;
     int left_x;
     int right_y;
     int right_x;
-
-
-    // if (irs_gl.y > irs_gl.max_clipped_y) irs_gl.max_clipped_y = irs_gl.max_y; // @@@ ralf
 
     /* *********************** Check clipping rectangle ************************ */
     if (!irs_gl.is_size_device){

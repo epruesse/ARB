@@ -140,7 +140,6 @@ void EXP_create_experiments_submenu(AW_window_menu_modes *awm, bool submenu) {
 
     {
         AWMIMT( "experiment_info",   "Experiment information", "i", "experiment_info.hlp", AWM_ALL,EXP_popup_experiment_window, 0, 0);
-//         AWMIMT( "experiment_info",   "Experiment information", "i", "experiment_info.hlp", AWM_ALL,AW_POPUP,   (AW_CL)EXP_create_experiment_window, 0 );
         AWMIMT( "experiment_search", "Search and query",       "q", "experiment_search.hlp", AWM_ALL,AW_POPUP,   (AW_CL)EXP_create_experiment_query_window, 0 );
 
         EXP_create_mask_submenu(awm);

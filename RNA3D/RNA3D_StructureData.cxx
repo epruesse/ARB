@@ -1088,7 +1088,6 @@ void Structure3D::PrepareSecondaryStructureData(void) {
                                 }
                             for(unsigned int j = i; helixNrBuf[j] != '.'; j++) {
                                 helixNr[k++] = helixNrBuf[j];
-                                //                                    out<<helixNrBuf[j];
                             }
                             for(int l = k; l < 4; l++)   helixNr[l] = '\0';
                             k = 0;

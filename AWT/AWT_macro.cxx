@@ -54,7 +54,6 @@ static void awt_start_macro_cb(AW_window *aww,const char *application_name_for_m
     static int toggle = 0;
 
     AW_root  *awr = aww->get_root();
-    //     char     *mn  = awr->awar(AWAR_MACRO_FILENAME)->read_string();
     GB_ERROR  error;
 
     if (!toggle){
@@ -77,26 +76,10 @@ static void awt_start_macro_cb(AW_window *aww,const char *application_name_for_m
     if (error) aw_message(error);
 }
 
-// static void awt_stop_macro_cb(AW_window *aww){
-//     AW_root  *awr   = aww->get_root();
-//     GB_ERROR  error = awr->stop_macro_recording();
-
-//     awt_refresh_selection_box(awr, AWAR_MACRO_BASE);
-//     if (error) aw_message(error);
-// }
-
 static void awt_edit_macro_cb(AW_window *aww){
-    //     char *mn = aww->get_root()->awar(AWAR_MACRO_FILENAME)->read_string();
-    //     char *path = 0;
-    //     if (mn[0] == '/'){
-    //         path = strdup(mn);
-    //     }else{
-    //         path = GBS_global_string_copy("%s/%s",GB_getenvARBMACROHOME(),mn);
-    //     }
     char *path = awt_get_selected_fullname(aww->get_root(), AWAR_MACRO_BASE);
     AWT_edit(path);
     free(path);
-    //     delete mn;
 }
 
 

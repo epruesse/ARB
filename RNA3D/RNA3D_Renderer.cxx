@@ -8,9 +8,6 @@
 
 using namespace std;
 
-// OpenGLGraphics *G = new OpenGLGraphics();
-// ColorRGBf ApplicationBGColor = ColorRGBf(0,0,0);
-
 GLRenderer::GLRenderer(void){
     fSkeletonSize = 0.5;
     iBackBone = iColorise = 0;
@@ -170,14 +167,6 @@ void GLRenderer::DisplayMoleculeName(int /*w*/, int /*h*/, Structure3D *cStr){
         G->PrintString(x, (y-(3*line)), z, buf, GLUT_BITMAP_8_BY_13);
     }
 
-    //     {
-    //         if (RNA3D->bDisplayComments) {
-    //             G->SetColor(RNA3D_GC_COMMENTS);
-    //             G->PrintString(x-w/2.5, y, 0, "[Escape switches off the comments]", GLUT_BITMAP_8_BY_13);
-    //             G->PrintString(x-w/2.5, y-10, 0, "||||||||||||||||||||||||||||||||||", GLUT_BITMAP_8_BY_13);
-    //             G->PrintComment(x-w/2.5, y-10, 0, globalComment);
-    //         }
-    //     }
     glPopMatrix();
 }
 

@@ -13,8 +13,6 @@ extern int warning_out;
  */
 void init_gm_data(void)
 {
-    /*  void    init_macke(), init_genbank(); */
-
     init_macke();
     init_genbank();
 }
@@ -90,7 +88,7 @@ void genbank_to_macke(char *inf, char *outf)
             /* no warning message for next loop */
             warning_out = 0;
         }
-    }                           /* for each seq; loop */
+    }
 
     warning_out = 1;            /* resume warning messages */
 
@@ -106,19 +104,8 @@ void genbank_to_macke(char *inf, char *outf)
  */
 int gtom(void)
 {
-    /*  void    genbank_key_word(), error(), Freespace(), Cpystr(); */
-    /*  void    Append(), gtom_remarks(), replace_entry(); */
-    /*  char    *Catstr(); */
     char temp[LONGTEXT], buffer[TOKENNUM];
-
     char genus[TOKENNUM], species[TOKENNUM];
-
-    /*  char    *genbank_date(), *today_date(); */
-    /*  char    *genbank_get_strain(), *genbank_get_subspecies(); */
-    /*  char    *genbank_get_atcc(); */
-    /*  int Lenstr(), num_of_remark(), Cmpstr(); */
-    /*  int len; */
-    /*  int     indj, indk, remnum; */
 
     /* copy seq abbr, assume every entry in gbk must end with \n\0 */
     /* no '\n' at the end of the string */
@@ -198,14 +185,9 @@ int gtom(void)
  */
 void gtom_remarks(void)
 {
-
-    int remnum, len;
-
-    int indi, indj;
-
+    int  remnum, len;
+    int  indi, indj;
     char temp[LONGTEXT];
-
-    /*  void    gtom_copy_remark(); */
 
     /* remarks in Macke format */
     remnum = num_of_remark();
@@ -294,10 +276,6 @@ void gtom_remarks(void)
  */
 void gtom_copy_remark(char *string, const char *key, int *remnum)
 {
-    /*  int Lenstr(); */
-    /*  char    *Dupstr(); */
-    /*  void    Append(); */
-
     /* copy host organism */
     if (Lenstr(string) > 1) {
         data.macke.remarks[(*remnum)]
@@ -314,14 +292,8 @@ void gtom_copy_remark(char *string, const char *key, int *remnum)
  */
 char *genbank_get_strain(void)
 {
-
-    int indj, indk;
-
-    /*  int find_pattern(), Lenstr(); */
-    /*  int Skip_white_space(), Reach_white_space(); */
+    int  indj, indk;
     char strain[LONGTEXT], temp[LONGTEXT], buffer[LONGTEXT];
-
-    /*  void    get_string(), warning(), Cpystr(); */
 
     strain[0] = '\0';
     /* get strain */
@@ -384,19 +356,9 @@ char *genbank_get_strain(void)
  *       Get subspecies information from SOURCE, DEFINITION, or
  *       COMMENT line of Genbank data file.
  */
-char
- *genbank_get_subspecies(void)
-{
-
-    int indj, indk;
-
-    /*  int find_pattern(), Lenstr(); */
-    /*  int Skip_white_space(), Reach_white_space(); */
+char *genbank_get_subspecies(void) {
+    int  indj, indk;
     char subspecies[LONGTEXT], temp[LONGTEXT], buffer[LONGTEXT];
-
-    /*  char    *Dupstr(); */
-    /*  void    get_string(), warning(), Cpystr(); */
-    /*  void    correct_subspecies(); */
 
     subspecies[0] = '\0';
     /* get subspecies */
@@ -481,15 +443,9 @@ void correct_subspecies(char *subspecies)
  *   Function genbank_get_atcc().
  *       Get atcc from SOURCE line in Genbank data file.
  */
-char
- *genbank_get_atcc(void)
-{
-
-    /*  int Lenstr(); */
-    char temp[LONGTEXT];
-
+char *genbank_get_atcc(void) {
+    char  temp[LONGTEXT];
     char *atcc;
-
 
     atcc = NULL;
     /* get culture collection # */
@@ -507,28 +463,19 @@ char
 /*  Function get_atcc().
  */
 char
- *get_atcc(char *source)
+*get_atcc(char *source)
 {
-
     static int cc_num = 16;
-
-    static const char *CC[16] = { "ATCC", "CCM", "CDC", "CIP", "CNCTC",
+    static const char *CC[16] = {
+        "ATCC", "CCM", "CDC", "CIP", "CNCTC",
         "DSM", "EPA", "JCM", "NADC", "NCDO", "NCTC", "NRCC",
         "NRRL", "PCC", "USDA", "VPI"
     };
-    /*  int indk; */
-    int indi, indj, index;
 
-    int length;
-
-    /*  int find_pattern(), Lenstr(); */
-    /*  int paren_string(), Skip_white_space(), Reach_white_space(); */
+    int  indi, indj, index;
+    int  length;
     char buffer[LONGTEXT], temp[LONGTEXT], pstring[LONGTEXT];
-
     char atcc[LONGTEXT];
-
-    /*  char    *Catstr(), *Dupstr(); */
-    /*  void    get_atcc_string(); */
 
     atcc[0] = '\0';
     for (indi = 0; indi < cc_num; indi++) {
@@ -587,8 +534,7 @@ int paren_string(char *string, char *pstring, int index)
  */
 int num_of_remark(void)
 {
-
-    int remnum, /*indi, */ indj, length;
+    int remnum, indj, length;
 
     remnum = 0;
     /* count references to be put into remarks */
@@ -703,18 +649,8 @@ void macke_to_genbank(char *inf, char *outf)
  */
 int mtog(void)
 {
-    int indi;
-
-    /*  int len, Lenstr(), Cmpstr(); */
+    int  indi;
     char temp[LONGTEXT];
-
-    /*  char    *today_date(); */
-    /*  char    *Dupstr(), *Reallocspace(), *macke_copyrem(); */
-    /*  char    *genbank_date(); */
-    /*  void    Freespace(), Cpystr(), Append(), Append_char(); */
-    /*  void    mtog_genbank_def_and_source(); */
-    /*  void    mtog_decode_ref_and_remarks(); */
-    /*  void    init_reference(), replace_entry(), warning(); */
 
     Cpystr(temp, data.macke.seqabbr);
 
@@ -785,10 +721,6 @@ void mtog_decode_ref_and_remarks(void)
     int acount, tcount, jcount, rcount, scount;
 
     char key[TOKENNUM], temp[LONGTEXT];
-
-    /*  char    *macke_copyrem(), *Reallocspace(), *Dupstr(); */
-    /*  void    Append_char(), Append(), Cpystr(); */
-    /*  void    mtog_copy_remark(), init_reference(); */
 
     data.gbk.numofref = acount = tcount = jcount = rcount = scount = 0;
 
@@ -973,9 +905,6 @@ void mtog_decode_ref_and_remarks(void)
  */
 void mtog_copy_remark(char **string, int *indi, int indj)
 {
-    /*  void    Freespace(); */
-    /*  char    *macke_copyrem(); */
-
     Freespace(string);
     (*string) = (char *)macke_copyrem(data.macke.remarks, indi, data.macke.numofrem, indj);
 }
@@ -987,12 +916,7 @@ void mtog_copy_remark(char **string, int *indi, int indj)
 char *macke_copyrem(char **strings, int *index, int maxline, int pointer)
 {
     char *string;
-
-    int indi;
-
-    /*  int len, length, macke_rem_continue_line(); */
-    /*  char    *Catstr(), *Dupstr(); */
-    /*  void    Append_rp_eoln(); */
+    int   indi;
 
     string = (char *)Dupstr(strings[(*index)] + pointer);
     for (indi = (*index) + 1; indi < maxline && macke_rem_continue_line(strings, indi); indi++)
@@ -1008,11 +932,6 @@ char *macke_copyrem(char **strings, int *index, int maxline, int pointer)
  */
 void mtog_genbank_def_and_source(void)
 {
-
-    /*  int Lenstr(); */
-    /*  void    Freespace(), Append(), Append_rm_eoln(), Append_char(); */
-    /*  void    replace_entry(), warning(); */
-
     if (Lenstr(data.macke.name) > 1)
         replace_entry(&(data.gbk.definition), data.macke.name);
 
@@ -1070,8 +989,6 @@ void mtog_genbank_def_and_source(void)
 void get_string(char *line, char *temp, int index)
 {
     int indk, len, paren_num;
-
-    /*  int not_ending_mark(); */
 
     len = Lenstr(line);
     paren_num = 0;

@@ -504,7 +504,6 @@ int APIENTRY pngLoadF(FILE *fp, int mipmap, int trans, pngInfo *pinfo) {
                 case 1<<12: intf = GL_COLOR_INDEX12_EXT; break;
                 case 1<<16: intf = GL_COLOR_INDEX16_EXT; break;
                 default:
-                    /*printf("Warning: Colour depth %i not recognised\n", cols);*/
                     return 0;
             }
             glColorTableEXT(GL_TEXTURE_2D, GL_RGB8, cols, GL_RGB, GL_UNSIGNED_BYTE, pal);
@@ -533,7 +532,6 @@ int APIENTRY pngLoadF(FILE *fp, int mipmap, int trans, pngInfo *pinfo) {
                         break;
 
                     default:
-                        /*puts("glformat not set");*/
                         return 0;
                 }
 

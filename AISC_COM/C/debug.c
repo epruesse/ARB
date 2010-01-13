@@ -103,7 +103,6 @@ const char *aisc_debug_local(aisc_com *link, int key, long object, char *str, ..
         }
         bptr += strlen(bptr);
         er = (long *)aisc_debug_info(link,key,object,(int)code);
-        /*if (!er[0]) *(bptr++) = 'd'; else *(bptr++) = '-';*/
         if (!er[1]) *(bptr++) = 'g'; else *(bptr++) = '-';
         if (!er[2]) *(bptr++) = 'p'; else *(bptr++) = '-';
         if (!er[3]) *(bptr++) = 'f'; else *(bptr++) = '-';
@@ -126,6 +125,5 @@ const char *aisc_debug_local(aisc_com *link, int key, long object, char *str, ..
     bptr += strlen(bptr);
     free(sm);
     fwrite(buf,strlen(buf),1,stdout);
-    /*printf("%s",buf);*/
     return "";
 }

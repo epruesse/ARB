@@ -313,7 +313,6 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
     bool recalc_branch_lengths = false;
     bool beautify_tree = false;
 
-    //GBDATA *gb_main = this->tree_static->gb_main;
     switch(cmd){
         case AWT_MODE_MOVE:                             // two point commands !!!!!
             if(button==AWT_M_MIDDLE){
@@ -361,14 +360,7 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
                             aw_message("Please drag mouse from source to destination");
                             break;
                         }
-                        //                         if ( dest->is_inside(source)) {
-                        //                             aw_message("This operation is only allowed with two independent subtrees");
-                        //                             break;
-                        //                         }
                         const char *error = 0;
-
-                        //                         switch(cmd){
-                        //                             case AWT_MODE_MOVE:
 
                         switch(button){
                             case AWT_M_LEFT:
@@ -383,16 +375,11 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
                                 break;
                         }
 
-                        //                             default:
-                        //                                 error = "????? 45338";
-                        //                         }
-
                         if (error) aw_message(error);
                         this->exports.refresh = 1;
                         this->exports.save    = 1;
                         this->exports.resize  = 1;
                         ASSERT_VALID_TREE(get_root_node());
-                        //this->tree_root->compute_tree(gb_main);
                         compute_tree = true;
                     }
                     break;

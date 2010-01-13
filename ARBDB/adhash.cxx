@@ -81,7 +81,8 @@ static long sorted_primes[KNOWN_PRIMES] = {
 
 static unsigned char bit_val[8] = { 1, 2, 4, 8, 16, 32, 64, 128 };
 
-static int bit_value(const unsigned char *eratosthenes, long num) { // 'num' is odd and lowest 'num' is 3
+static int bit_value(const unsigned char *eratosthenes, long num) {
+    // 'num' is odd and lowest 'num' is 3
     long bit_num  = ((num-1) >> 1)-1; // 3->0 5->1 7->2 etc.
     long byte_num = bit_num >> 3; // div 8
     char byte     = eratosthenes[byte_num];
@@ -93,7 +94,8 @@ static int bit_value(const unsigned char *eratosthenes, long num) { // 'num' is 
 
     return (byte & bit_val[bit_num]) ? 1 : 0;
 }
-static void set_bit_value(unsigned char *eratosthenes, long num, int val) { // 'num' is odd and lowest 'num' is 3; val is 0 or 1
+static void set_bit_value(unsigned char *eratosthenes, long num, int val) {
+    // 'num' is odd and lowest 'num' is 3; val is 0 or 1
     long bit_num  = ((num-1) >> 1)-1; // 3->0 5->1 7->2 etc.
     long byte_num = bit_num >> 3; // div 8
     char byte     = eratosthenes[byte_num];

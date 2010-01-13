@@ -105,7 +105,6 @@ void MO_Liste::get_all_species()
             i++;
             if (!GBT_find_species(GLOBAL_gb_main, match_name))
             {                               // Testen, ob Bakterium auch im Baum existiert, um
-                //             aw_message("Species differ in tree and chosen PT_Server");
                 pt_server_different = TRUE;
                 return;
             }
@@ -128,9 +127,8 @@ void MO_Liste::get_all_species()
 
 positiontype MO_Liste::fill_marked_bakts()
 {
-    long        j=0;
-    GBDATA      *gb_species;
-    //    GBDATA        *gb_species_data;
+    long    j = 0;
+    GBDATA *gb_species;
 
 
     GB_push_transaction(GLOBAL_gb_main);

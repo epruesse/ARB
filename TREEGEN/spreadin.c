@@ -31,9 +31,6 @@ Spreading newSpreading(double *value, int values)
 
     s->border[values-1] = RAND_MAX;
 
-/*    for (v = 0; v<values; v++) printf("%f -> %i\n", value[v], s->border[v]); */
-/*    printf("---\n"); */
-
     return s;
 }
 /* -------------------------------------------------------------------------- */

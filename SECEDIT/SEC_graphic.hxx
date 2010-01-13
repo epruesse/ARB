@@ -65,7 +65,6 @@ public:
     GBDATA *gb_main;
     AW_root *aw_root;
     SEC_root *sec_root;
-    // SEC_bond_def bond;
 
     GBDATA *gb_struct;          // used to save the structure
     GBDATA *gb_struct_ref;      // used to save reference numbers
@@ -93,8 +92,6 @@ public:
 
     void request_update(SEC_update_request req) { update_requested = static_cast<SEC_update_request>(update_requested|req); }
 };
-
-// extern SEC_graphic *SEC_GRAPHIC;
 
 
 #endif

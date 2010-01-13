@@ -80,9 +80,6 @@ static const char *AP_probe_pt_look_for_server()
 
 
 int probe_design_send_data(T_PT_PDC  pdc) {
-    //    int i;
-    //    char buffer[256];
-
     if (aisc_put(pd_gl.link,PT_PDC, pdc, PDC_CLIPRESULT, P.DESIGNCPLIPOUTPUT, NULL))
         return 1;
 

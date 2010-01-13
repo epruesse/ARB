@@ -609,7 +609,6 @@ AW_window *GEN_create_gene_window(AW_root *aw_root) {
             detach_info->set_detach_button(aws->get_last_widget());
         }
 
-        //     aws->get_root()->awar(AWAR_GENE_NAME)->add_callback(GEN_map_gene,scannerid);
         GEN_map_gene(aws->get_root(),scannerid);
         aws->show();
     }
@@ -641,8 +640,6 @@ AW_window *GEN_create_gene_query_window(AW_root *aw_root) {
     awtqs.gb_main             = GLOBAL_gb_main;
     awtqs.species_name        = AWAR_SPECIES_NAME;
     awtqs.tree_name           = AWAR_TREE;
-    //     awtqs.query_genes  = true;
-    //     awtqs.gene_name    = AWAR_GENE_NAME;
     awtqs.select_bit          = 1;
     awtqs.use_menu            = 1;
     awtqs.ere_pos_fig         = "ere3";

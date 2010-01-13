@@ -25,17 +25,13 @@ int main(int argc, char **argv) {
         gbspec = GB_search(gbmain, "species_data/species", GB_FIND);
 
         for (gbname = GB_entry(gbspec, "name"); gbname; gbname = GB_nextEntry(gbname)) {
-            if(strcmp(GB_read_char_pntr(gbname), gbseqname)) {
+            if (strcmp(GB_read_char_pntr(gbname), gbseqname) != 0) {
                 gbdata = GB_search(GB_get_father(gbname), "ali_xxx/data", GB_find);
                 fprintf(stdout, "%20s: %50s\n", GB_read_char_pntr(gbseqname), GB_read_char_pntr(gbdata));
                 break;
             }
-            else {
-                if(strcmp(GB_read_char_pntr(gbname), GB_read_char_pntr(gbseqname)) < 0) continue;
-                else /* > */ break;
-            }
+            if (strcmp(GB_read_char_pntr(gbname), GB_read_char_pntr(gbseqname)) >= 0) break
         }
-
     }
 
     GB_commit_transaction(gbmain);

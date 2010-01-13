@@ -768,7 +768,6 @@ void GBS_str_cut_tail(struct GBS_strstruct *strstr, int byte_count){
 static void gbs_strensure_mem(struct GBS_strstruct *strstr,long len) {
     if (strstr->GBS_strcat_pos + len + 2 >= strstr->GBS_strcat_data_size) {
         strstr->GBS_strcat_data_size = (strstr->GBS_strcat_pos+len+2)*3/2;
-        // strstr->GBS_strcat_data      = (char *)realloc((MALLOC_T)strstr->GBS_strcat_data,(size_t)strstr->GBS_strcat_data_size);
         strstr->GBS_strcat_data      = (char *)realloc(strstr->GBS_strcat_data, strstr->GBS_strcat_data_size);
 #if defined(DUMP_STRSTRUCT_MEMUSE)
         printf("re-allocated GBS_strstruct to size = %li\n", strstr->GBS_strcat_data_size);

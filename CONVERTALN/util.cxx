@@ -80,8 +80,6 @@ char *Reallocspace(void *block, unsigned int size)
 {
     char *temp, answer;
 
-    /*  void warning(); */
-
     if ((block == NULL && size <= 0) || size <= 0)
         return (NULL);
     if (block == NULL) {
@@ -108,10 +106,8 @@ char *Reallocspace(void *block, unsigned int size)
  */
 char *Dupstr(const char *string)
 {
-    char *temp, answer;
-
-    /*  void    warning(); */
-    unsigned size;
+    char     *temp, answer;
+    unsigned  size;
 
     if (string == NULL)
         return (NULL);
@@ -171,9 +167,6 @@ int Skip_white_space(char *line, int index)
 
     while (line[index] == ' ' || line[index] == '\t')
         ++index;
-    /*     for(; */
-    /*         line[index]                          == ' ' || line[index]=='\t' && line[index]!='\0'; */
-    /*         index++) ; */
     return (index);
 }
 
@@ -244,8 +237,6 @@ void Getstr(char *line, int linenum)
  */
 void Append_char(char **string, char ch)
 {
-    /*  int Lenstr(); */
-    /*  void    Append_rm_eoln(); */
     char temp[10];
 
     if (Lenstr((*string)) <= 0 || (*string)[0] == '\n')
@@ -265,9 +256,6 @@ void Append_char(char **string, char ch)
 void Append_rm_eoln(char **string1, const char *string2)
 {
     int length;
-
-    /*  char    *Reallocspace(); */
-    /*  char    *Catstr(); */
 
     length = Lenstr(*string1);
 
@@ -290,9 +278,6 @@ void Append_rp_eoln(char **string1, char *string2)
 {
     int length;
 
-    /*  char    *Reallocspace(); */
-    /*  char    *Catstr(); */
-
     length = Lenstr(*string1);
     if ((length > 1) && (*string1)[length - 1] == '\n')
         (*string1)[length - 1] = ' ';
@@ -308,9 +293,6 @@ void Append_rp_eoln(char **string1, char *string2)
 void Append(char **string1, const char *string2)
 {
     int length;
-
-    /*  char    *Reallocspace(); */
-    /*  char    *Catstr(); */
 
     length = Lenstr(*string1);
     if (length == 0 && Lenstr(string2) == 0)

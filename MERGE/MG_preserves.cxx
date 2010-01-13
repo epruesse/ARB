@@ -208,7 +208,7 @@ static void find_species_candidates(Candidates& candidates, const char **ali_nam
     aw_status(0.0);
 
     // collect names of all species in source database
-    GB_HASH *src_species = GBT_create_species_hash(GLOBAL_gb_merge/*, 1*/); // Note: changed to ignore case (ralf 2007-07-06)
+    GB_HASH *src_species = GBT_create_species_hash(GLOBAL_gb_merge);
     long     src_count   = GBS_hash_count_elems(src_species);
     long     found       = 0;
     bool     aborted     = false;

@@ -256,21 +256,6 @@ GB_ERROR ED4_Edit_String::swap_gaps(long position, char ch){
 }
 
 
-// GB_ERROR ED4_Edit_String::check_base(char chr,long position, int direction)
-// {
-//     if (direction<0) position--;
-
-//     printf("chr=%c seq[%i]=%c\n", chr, position, seq[position]);
-
-//     if (position <0 && position >= seq_len){
-//  return GBS_global_string("End of sequence reached");
-//     }
-//     if (seq[position] != chr){
-//  return GBS_global_string("Base does not match");
-//     }
-//     return 0;
-// }
-
 GB_ERROR ED4_Edit_String::moveBase(long source_position, long dest_position, unsigned char gap_to_use)
 {
     e4_assert(source_position!=dest_position);
@@ -307,8 +292,6 @@ GB_ERROR ED4_Edit_String::shiftBases(long source_pos, long last_source, long des
     // last_dest is set to the position after the last dest_pos (direction<0 ? pos. right of bases : pos. left of bases)
 {
     GB_ERROR err = 0;
-
-    //    printf("shiftBases(%li,%li,%li,%i,%c)\n", source_pos, last_source, dest_pos, direction, gap_to_use);
 
     if (direction<0) {
         e4_assert(dest_pos<source_pos);
@@ -721,7 +704,6 @@ GB_ERROR ED4_Edit_String::command( AW_key_mod keymod, AW_key_code keycode, char 
                         break;
                 }
 
-                //      nrepeat_zero_requested = 1;
                 break;
             case AW_KEY_ASCII: {
 
@@ -877,7 +859,6 @@ GB_ERROR ED4_Edit_String::command( AW_key_mod keymod, AW_key_code keycode, char 
                 else { // normal characters
                     if (is_consensus) { cannot_handle = 1; return 0; }
                     if (mode==AD_NOWRITE) { write_fault = 1; break; }
-                    //      if (is_compressed_but_no_sequence(is_sequence)) { break; }
 
                     if (key == ' ') { // insert gap
                         if (is_sequence) {

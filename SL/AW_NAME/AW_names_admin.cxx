@@ -38,7 +38,6 @@ static void awtc_remove_arb_acc(AW_window */*aws*/, AW_CL cl_gb_main){
     char *command = GBS_global_string_copy("cp %s %s;"
                                            "arb_replace -l '"
                                            "*ACC {}*=:" // remove entries w/o acc
-                                           // "*ACC {TUM*=:" // remove entries with TUM prefix (disabled Apr 2009 - very old prefix)
                                            "*ACC {ARB*='" // remove entries with 'ARB_' prefix (Note: Nameserver does not store the '_'!)
                                            " %s",
                                            path, newpath, path);

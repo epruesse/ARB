@@ -348,9 +348,9 @@ protected:
     virtual         void  privat_reset(void);
 
 public:
-    AW_device(AW_common *common); // get the device from  AW_window
+    AW_device(AW_common *common); 
     virtual ~AW_device() {}
-    // by device = get_device(area);
+ 
     /***************** The Read Only  Section ******************/
     AW_bitset filter;
     /***************** The real Public Section ******************/

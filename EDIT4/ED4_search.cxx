@@ -431,7 +431,6 @@ SearchTree::SearchTree(const SearchSettings *s)
                     }
                     if (s_complement) {
                         e4_assert(IS_NUCLEOTIDE());
-                        // char T_or_U = ED4_ROOT->alignment_type==GB_AT_DNA ? 'T' : 'U';
                         if (T_or_U) {
                             char *revcomp        = GBT_complementNucSequence(reverse, uni_tok_len, T_or_U);
                             char *revcompComment = appendComment(comment, commentLen, "(reverse complement)");
@@ -824,7 +823,7 @@ char *ED4_SearchPosition::lastShownComment = 0;
 
 ED4_SearchPosition::ED4_SearchPosition(int sp, int ep, ED4_SearchPositionType wf, GB_CSTR found_comment, int mismatches[MAX_MISMATCHES])
 {
-    e4_assert(sp<=ep && sp>=0); // && ep<20000);
+    e4_assert(sp<=ep && sp>=0);
     start_pos = sp;
     end_pos = ep;
     whatsFound = wf;

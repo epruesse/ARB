@@ -38,32 +38,31 @@
 AW_HEADER_MAIN
 
 ED4_root     *ED4_ROOT;
-GBDATA       *GLOBAL_gb_main = NULL; // global gb_main for arb_edit4
+GBDATA       *GLOBAL_gb_main = NULL;                                    // global gb_main for arb_edit4
 ED4_database *main_db;
 
-int  TERMINALHEIGHT;            // this variable replaces the define
+int TERMINALHEIGHT;                                                     // this variable replaces the define
 
 int INFO_TERM_TEXT_YOFFSET;
 int SEQ_TERM_TEXT_YOFFSET;
 
-int  MAXSEQUENCECHARACTERLENGTH; // greatest # of characters in a sequence string terminal
-int  MAXSPECIESWIDTH;
-int  MAXINFOWIDTH;              // # of pixels used to display sequence info ("CONS", "4data", etc.)
+int MAXSEQUENCECHARACTERLENGTH;                                         // greatest # of characters in a sequence string terminal
+int MAXSPECIESWIDTH;
+int MAXINFOWIDTH;                                                       // # of pixels used to display sequence info ("CONS", "4data", etc.)
 
 long           ED4_counter = 0;
-long           all_found;       // nr of species which haven't been found
-long           species_read;    // nr of species read; important during loading
+long           all_found;                                               // nr of species which haven't been found
+long           species_read;                                            // nr of species read; important during loading
 GBS_strstruct *not_found_message;
-long           max_seq_terminal_length; // global maximum of sequence terminal length
+long           max_seq_terminal_length;                                 // global maximum of sequence terminal length
 ED4_EDITMODI   awar_edit_mode;
 long           awar_edit_direction;
-bool           move_cursor;     // only needed for editing in consensus
+bool           move_cursor;                                             // only needed for editing in consensus
 bool           DRAW;
-bool           last_window_reached; // needed for refreshing all windows (if TRUE refresh/...-flags will be cleared)
+bool           last_window_reached;                                     // needed for refreshing all windows (if TRUE refresh/...-flags will be cleared)
 
 void ED4_config_change_cb(AW_root *)
 {
-
     // @@@ FIXME: ok to be empty ? check!
 }
 
@@ -160,9 +159,8 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
                               long &allocated, long &numberspecies, long &maxalign,
                               int show_sequence, int show_SAI, int show_helix, int show_consensus, int show_remark)
 {
-    ED4_terminal *terminal = area_man->get_first_terminal(),
-        *last = area_man->get_last_terminal();
-    //    ED4_multi_species_manager *last_multi = 0;
+    ED4_terminal *terminal = area_man->get_first_terminal();
+    ED4_terminal *last     = area_man->get_last_terminal();
 
     for (;terminal;) {
         if (terminal->is_species_name_terminal()) {
@@ -210,7 +208,7 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
                     ED4_group_manager *group_manager = sequence_terminal->get_parent(ED4_L_GROUP)->to_group_manager();
                     int size = group_manager->table().size();
 
-                    seq       = (char*)GB_calloc(size+1, sizeof(char)); // GB_give_buffer(size+1);
+                    seq       = (char*)GB_calloc(size+1, sizeof(char)); 
                     seq[size] = 0;
                     seq       = group_manager->table().build_consensus_string(0, size-1, seq);
                     seq_len   = size;
@@ -355,7 +353,6 @@ static void ed4_create_mainDB_awars(AW_root *root, const char *config_name) {
     root->awar_string(AWAR_SPECIES_NAME, "", GLOBAL_gb_main);
     root->awar_string(AWAR_SAI_NAME,     "", GLOBAL_gb_main);
     root->awar_string(AWAR_SAI_GLOBAL,   "", GLOBAL_gb_main);
-    //    root->awar_string(AWAR_SAI_COLOR_STR, "", GLOBAL_gb_main); //sai visualization in probe match
 
     root->awar_string(AWAR_EDIT_CONFIGURATION, config_name, GLOBAL_gb_main);
 
@@ -385,8 +382,6 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
     root->awar_int( AWAR_EDIT_SECURITY_LEVEL_ALIGN, def_sec_level,AW_ROOT_DEFAULT)->add_callback(ed4_changesecurity,(AW_CL) def_sec_level);
     root->awar_int( AWAR_EDIT_SECURITY_LEVEL_CHANGE, def_sec_level,AW_ROOT_DEFAULT)->add_callback(ed4_changesecurity,(AW_CL) def_sec_level);
 
-    //    root->awar_int( AWAR_EDIT_MODE, (long) awar_edit_mode )->add_target_var((long *) &awar_edit_mode)->add_callback(ed4_changesecurity,(AW_CL) 0);
-
     root->awar_int( AWAR_EDIT_MODE,   0)->add_callback(ed4_change_edit_mode, (AW_CL)0);
     root->awar_int( AWAR_INSERT_MODE, 1)->add_callback(ed4_change_edit_mode, (AW_CL)0);
 
@@ -401,7 +396,6 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
     root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_HIDE,0)->add_callback(ED4_compression_toggle_changed_cb, AW_CL(1), 0);
     root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_TYPE,0)->add_callback(ED4_compression_changed_cb);
     root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_PERCENT,1)->add_callback(ED4_compression_changed_cb)->set_minmax(1,99);
-//     root->awar_int(ED4_AWAR_COMPRESS_LEFT_COLUMN,0);
 
     root->awar_int(ED4_AWAR_DIGITS_AS_REPEAT, 0);
     root->awar_int(ED4_AWAR_FAST_CURSOR_JUMP, 0);

@@ -342,7 +342,6 @@ GBDATA *GB_nextEntry(GBDATA *entry) { // GB_nextEntry
     // return next child after 'entry', that has the same fieldname
     // (or NULL if 'entry' is last one)    
     return GB_find_sub_by_quark((GBDATA*)GB_FATHER(entry), GB_get_quark(entry), entry);
-    // return GB_find(brother, key, SEARCH_NEXT_BROTHER);
 }
 
 GBDATA *GB_brother(GBDATA *entry, const char *key) {
@@ -430,8 +429,6 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag
     int     len;
     int     separator = 0;
     char    buffer[GB_PATH_MAX];
-
-    //fprintf(stderr, "gb_search(%p, %s, %li, %i)\n", gbd, str, create, internflag);
 
     GB_TEST_TRANSACTION(gbd);
     if (!str) {

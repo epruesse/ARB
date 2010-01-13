@@ -405,23 +405,24 @@ void CON_maketables(int *convtable,int **statistic,long maxalignlen,int isamino)
 /* export results into database */
 GB_ERROR CON_export(char *savename,char *align,int **statistic,char *result,int *convtable,char *groupnames,int onlymarked,long nrofspecies,long maxalignlen,int countgaps,int gapbound,int groupallowed,double fconsidbound,double fupper,int lower,int resultiscomplex)
 {
-    GB_ERROR err;
-    const char *off="off";
-    const char *on="on";
-    char *buffer=(char *)GB_calloc(2000,sizeof(char));
-//     GB_push_transaction(GLOBAL_gb_main);
+    GB_ERROR    err;
+    const char *off    = "off";
+    const char *on     = "on";
+    char       *buffer = (char *)GB_calloc(2000,sizeof(char));
 
     GBDATA *gb_extended = GBT_find_or_create_SAI(GLOBAL_gb_main,savename);
-    GBDATA *gb_data = GBT_add_data(gb_extended, align,"data", GB_STRING);
-    err = GB_write_string(gb_data,result);
-    GBDATA *gb_options= GBT_add_data(gb_extended, align,"_TYPE", GB_STRING);
+    GBDATA *gb_data     = GBT_add_data(gb_extended, align,"data", GB_STRING);
+    err                 = GB_write_string(gb_data,result);
+    GBDATA *gb_options  = GBT_add_data(gb_extended, align,"_TYPE", GB_STRING);
 
-    const char *allvsmarked="all";
-    if(onlymarked) allvsmarked="marked";
-    const char *countgapsstring=off;
-    if(countgaps) countgapsstring=on;
-    const char *simplifystring=off;
-    if(groupallowed) simplifystring=on;
+    const char *allvsmarked    = "all";
+    if(onlymarked) allvsmarked = "marked";
+
+    const char *countgapsstring   = off;
+    if(countgaps) countgapsstring = on;
+    
+    const char *simplifystring      = off;
+    if(groupallowed) simplifystring = on;
 
     sprintf(buffer,"CON: [species: %s]  [number: %ld]  [count gaps: %s] "
             "[threshold for gaps: %d]  [simplify: %s] "

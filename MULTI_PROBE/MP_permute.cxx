@@ -67,7 +67,6 @@ int Bitvector::subset(Bitvector* Obermenge)
         if ( (vector[i] & vector2[i]) != vector[i] )
             return 0;
     }
-    //delete vector2;
     return 1;
 }
 

@@ -43,9 +43,6 @@ typedef struct GmenuItemArgtype
     char       *method;         /* commandline interpretation */
     GargChoice *choice;         /* choices */
     /*ARB BEGIN*/
-    /*  Panel_item  X;*/        /* Xview menu item entry */
-
-
 } GmenuItemArg;
 
 typedef struct GfileFormattype
@@ -75,7 +72,6 @@ typedef struct GmenuItemtype
     char              seqtype;  /* A -> amino, N -> nucleotide, '-' -> no sequence, otherwise both */
     char             *help;     /* commandline help */
     /* ARB BEGIN */
-    /*  Panel_item  X; */       /* Xview panel */
     struct Gmenutype *parent_menu;
     AW_window        *aws;      /* opened window */
 } GmenuItem;
@@ -86,8 +82,6 @@ typedef struct Gmenutype
     char      *label;           /* menu heading */
     GmenuItem *item;            /* menu items */
     /* ARB BEGIN */
-    /*  Panel_item  button;*/       /* Button to activate menu */
-    /*  Menu        X;*/        /* XView menu structure */
     char       meta;            /* Meta character for menu */
 } Gmenu;
 

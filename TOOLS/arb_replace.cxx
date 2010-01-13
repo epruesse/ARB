@@ -20,7 +20,6 @@ int main(int argc, char **argv)
 
     if (argc <=1 || (argc >= 2 && strcmp(argv[1], "--help") == 0)) {
         printf("syntax: arb_replace [-l/L/p] \"old=newdata\" [filepattern]\n");
-        //         printf("     %s %s %s %s",argv[0],argv[1],argv[2],argv[3]);
         printf("        -l      linemode, parse each line separately\n");
         printf("        -L      linemode, parse each line separately, delete empty lines\n");
         printf("        -p      patchmode, (no wildcards allowed, rightside<leftside)\n");

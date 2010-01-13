@@ -205,7 +205,6 @@ static void awt_arbdb_scanner_value_change(void *, struct adawcbstruct *cbs)
                 }
             }
 
-            // if (error) awt_edit_changed_cb(0, cbs, GB_CB_CHANGED); // refresh old value
         }
         free(key_name);
     }

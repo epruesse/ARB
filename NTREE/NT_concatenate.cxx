@@ -716,7 +716,7 @@ static void mergeSimilarSpecies(AW_window *aws, AW_CL cl_mergeSimilarConcatenate
     char    *new_field_name   = aw_root->awar(AWAR_CON_STORE_SIM_SP_NO)->read_string();
 
     speciesConcatenateList scl            = 0; // to build list of similar species
-    speciesConcatenateList newSpeciesList = 0;  // new SPECIES_ConcatenateList;
+    speciesConcatenateList newSpeciesList = 0;  // new SPECIES_ConcatenateList
 
     GB_begin_transaction(GLOBAL_gb_main);       //open database for transaction
 

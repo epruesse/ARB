@@ -33,8 +33,6 @@ class entrySelectionDialog : public MDialog
     protected:
         void createWindow();
 
-//         void getListEntries();
-
     private:
         char *m_entry;
         Widget m_top;

@@ -230,7 +230,6 @@ GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *p
         so_ad.sin_family = AF_INET;
         so_ad.sin_port = htons((unsigned short)(socket_id[0])); // @@@ = pb_socket
         if (do_connect){
-            //printf("Connecting to %X:%i\n",addr.s_addr,socket_id[0]);
             if (connect(*psocket,(struct sockaddr *)(&so_ad), sizeof(so_ad))) {
                 GB_warningf("Cannot connect to %s:%li   errno %i",mach_name[0],socket_id[0],errno);
                 return "";
@@ -268,25 +267,7 @@ GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *p
             }
         }
         else {
-#if 0
-            FILE    *test;
-            test = fopen(mach_name[0],"r");
-            if (test) {
-                fclose(test);
-                if (GB_is_regularfile(mach_name[0])){
-                    GB_ERROR error = 0;
-                    error = GB_export_error("Socket '%s' already exists as a file",mach_name[0]);
-                    free((char *)mach_name[0]);
-                    return error;
-                }
-            }
-#endif
-            if (unlink(mach_name[0])) {
-                ;
-            }
-            else {
-                printf("old socket found\n");
-            }
+            if (unlink(mach_name[0]) == 0) printf("old socket found\n");
             if (bind(*psocket,(struct sockaddr*)(&so_ad),strlen(mach_name[0])+2)){
                 if (mach_name[0]) free((char *)mach_name[0]);
                 return "Could not open socket on Server";

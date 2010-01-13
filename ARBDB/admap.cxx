@@ -234,7 +234,6 @@ static long write_IE(struct gb_if_entries *ie, FILE *out, long *offset) {
             copy.rel_ie_gbd = (GB_REL_GBDATA) getrel_GBDATA(*offset,GB_IF_ENTRIES_GBD(ie));
             copy.rel_ie_next = (GB_REL_IFES)( ie->rel_ie_next ? ALIGN(sizeof(copy)) : 0);
 
-            // ftwrite(&copy,ALIGN(sizeof(copy)),out);
             copy_size = ftwrite_unaligned(&copy,sizeof(copy),out);
         }
         else {
@@ -651,7 +650,6 @@ int gb_save_mapfile(GB_MAIN_TYPE *Main, GB_CSTR path)
     main_idx  = gb_make_main_idx(Main); // Generate a new main idx
     mheader.main_idx = main_idx;
 
-    // mheader.main_data_offset = getrel_GBDATA(0,(GBDATA*)Main->data);
     mheader.main_data_offset = getrel_GBDATA(1,(GBDATA*)Main->data)+1;
 
     ftwrite_unaligned(&mheader, sizeof(mheader), out);

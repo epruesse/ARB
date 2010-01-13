@@ -12,9 +12,6 @@
  */
 void init_macke(void)
 {
-
-    /*  void    Freespace(); */
-    /*  char    *Dupstr(); */
     int indi;
 
     /* initialize macke format */
@@ -59,30 +56,15 @@ void init_macke(void)
  */
 char macke_in(FILE_BUFFER fp1, FILE_BUFFER fp2, FILE_BUFFER fp3)
 {
-    static char line1[LINENUM];
-
-    static char line2[LINENUM];
-
-    static char line3[LINENUM];
-
-    static int first_time = 1;
-
-    char oldname[TOKENNUM], name[TOKENNUM];
-
-    char /*seq[LINENUM], */ key[TOKENNUM], temp[LINENUM];
-
-    char *eof1, *eof2, *eof3;
-
-    /*  char    *Reallocspace(), *Dupstr(); */
-    /*  char    *Fgetline(), *macke_origin(); */
-    /*  char    *macke_one_entry_in(); */
-    int numofrem = 0 /*, seqnum */ ;
-
-    /*  int indj; */
-    int index;
-
-    /*  int Cmpstr(), macke_abbrev(); */
-    /*  void    Freespace(), warning(); */
+    static char  line1[LINENUM];
+    static char  line2[LINENUM];
+    static char  line3[LINENUM];
+    static int   first_time = 1;
+    char         oldname[TOKENNUM], name[TOKENNUM];
+    char         key[TOKENNUM], temp[LINENUM];
+    char        *eof1, *eof2, *eof3;
+    int          numofrem   = 0;
+    int          index;
 
     /* file 1 points to seq. information */
     /* file 2 points to seq. data */
@@ -208,11 +190,7 @@ char
 char *macke_continue_line(const char *key, char *oldname, char **var, char *line, FILE_BUFFER fp)
 {
     char *eof, name[TOKENNUM], newkey[TOKENNUM];
-
-    int index;
-
-    /*  int macke_abbrev(); */
-    /*  void    Append_rp_eoln(); */
+    int   index;
 
     for (eof = Fgetline(line, LINENUM, fp); eof != NULL; eof = Fgetline(line, LINENUM, fp)) {
         if (Lenstr(line) <= 1)
@@ -320,24 +298,13 @@ int macke_rem_continue_line(char **strings, int index)
  */
 char macke_in_name(FILE_BUFFER fp)
 {
-    static char line[LINENUM];
-
-    static int first_time = 1;
-
-    char /*oldname[TOKENNUM], */ name[TOKENNUM];
-
-    char seq[LINENUM] /*, key[TOKENNUM] */ ;
-
-    char *eof;
-
-    /*  char    *Reallocspace(), *Dupstr(); */
-    /*  char    *Fgetline(); */
-    int numofrem = 0, seqnum;
-
-    int index, indj;
-
-    /*  int Cmpstr(), macke_abbrev(); */
-    /*  void    Freespace(); */
+    static char  line[LINENUM];
+    static int   first_time = 1;
+    char         name[TOKENNUM];
+    char         seq[LINENUM];
+    char        *eof;
+    int          numofrem   = 0, seqnum;
+    int          index, indj;
 
     /* skip other information, file index points to seq. data */
     if (first_time) {
@@ -406,8 +373,6 @@ void macke_out_header(FILE * fp)
 {
     char *date;
 
-    /*  void    Freespace(), Cypstr(); */
-
     fprintf(fp, "#-\n#-\n#-\teditor\n");
     date = today_date();
     fprintf(fp, "#-\t%s#-\n#-\n", date);
@@ -420,10 +385,7 @@ void macke_out_header(FILE * fp)
  */
 void macke_out0(FILE * fp, int format)
 {
-    /*  int Lenstr(); */
     char token[TOKENNUM], direction[TOKENNUM];
-
-    /*  void    Cpystr(); */
 
     if (format == PROTEIN) {
         Cpystr(token, "pro");
@@ -458,14 +420,8 @@ void macke_out0(FILE * fp, int format)
  */
 void macke_out1(FILE * fp)
 {
-    /*  void    macke_print_line_78(), macke_print_keyword_rem(); */
     char temp[LINENUM];
-
-    int indi;
-
-    /*  int indj, indk, indl, len, maxc, lineno; */
-    /*  int last_word(), Lenstr(); */
-    /*  int macke_in_one_line(); */
+    int  indi;
 
     if (Lenstr(data.macke.name) > 1) {
         sprintf(temp, "#:%s:name:", data.macke.seqabbr);

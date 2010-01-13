@@ -542,8 +542,6 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status, bool *isWarningPtr)
                 GBT_abort_rename_session();
             }
             else {
-                // aw_status("Renaming species in trees");
-                // aw_status((double)0);
                 GBT_commit_rename_session(aw_status, aw_status);
             }
 
@@ -567,8 +565,6 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status, bool *isWarningPtr)
 void awt_rename_cb(AW_window *aww,GBDATA *gb_main)
 {
     AWUSE(aww);
-    //  int use_advice = (int)aww->get_root()->awar(AWT_RENAME_USE_ADVICE)->read_int();
-    //  int save_data  = (int)aww->get_root()->awar(AWT_RENAME_SAVE_DATA)->read_int();
     aw_openstatus("Generating new names");
     aw_status("Contacting name server");
     GB_ERROR error     = AWTC_pars_names(gb_main,1);

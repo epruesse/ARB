@@ -16,12 +16,7 @@
 #error nono
 #endif // ARB_OPENGL
 
-/** OpenGL header files */
-// #include <GL/glew.h>
-// #include <GL/GLwMDrawA.h>       /** Provides a special motif widget class */
 #define GLX_GLXEXT_PROTOTYPES
-// #include <GL/glx.h>
-// #include <GL/glut.h>
 
 #include <arbdb.h>
 
@@ -41,7 +36,6 @@
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 
-// #include "GLwDrawA.h"
 #include "GLwMDrawA.h" /** Provides a special motif widget class */
 
 /* defined here by Yadhu in order to make it more General */
@@ -57,14 +51,13 @@ AW_window_menu_modes_opengl::~AW_window_menu_modes_opengl(void) {
 void AW_window_menu_modes_opengl::init(AW_root *root_in, const char *wid,
                                        const char *windowname, int width, int height) {
 
-    Widget main_window;
-    Widget help_popup;
-    Widget help_label;
-    Widget separator;
-    Widget form1;
-    Widget form2;
-    //Widget frame;
-    const char *help_button = "HELP";
+    Widget      main_window;
+    Widget      help_popup;
+    Widget      help_label;
+    Widget      separator;
+    Widget      form1;
+    Widget      form2;
+    const char *help_button   = "HELP";
     const char *help_mnemonic = "H";
 
 #if defined(DUMP_MENU_LIST)
@@ -116,11 +109,7 @@ void AW_window_menu_modes_opengl::init(AW_root *root_in, const char *wid,
     form1 = XtVaCreateManagedWidget( "form1",
                                      xmFormWidgetClass,
                                      main_window,
-                                     // XmNwidth, width,
-                                     // XmNheight, height,
                                      XmNresizePolicy, XmRESIZE_NONE,
-                                     // XmNx, 0,
-                                     // XmNy, 0,
                                      NULL);
 
     p_w->mode_area = XtVaCreateManagedWidget( "mode area",
@@ -197,19 +186,6 @@ void AW_window_menu_modes_opengl::init(AW_root *root_in, const char *wid,
                                                                      XmNrightAttachment, XmATTACH_FORM,
                                                                      NULL));
 
-    /*p_w->scroll_bar_horizontal = XtVaCreateWidget( "scroll_bar_horizontal",
-      xmScrollBarWidgetClass, form2,
-      //XmNincrement, 10,
-      NULL );
-
-      p_w->scroll_bar_vertical = XtVaCreateWidget( "scroll_bar_vertical",
-      xmScrollBarWidgetClass, form2,
-      //XmNincrement, 10,
-      NULL );*/
-
-    /// If I define the scroll bars as unmanaged widgets, they won't appear.
-
-    //p_w->scroll_bar_horizontal = XtVaCreateManagedWidget( "scroll_bar_horizontal",
     p_w->scroll_bar_horizontal = XtVaCreateWidget( "scroll_bar_horizontal",
                                                    xmScrollBarWidgetClass,
                                                    form2,
@@ -217,10 +193,6 @@ void AW_window_menu_modes_opengl::init(AW_root *root_in, const char *wid,
                                                    XmNminimum, 0,
                                                    XmNmaximum, AW_SCROLL_MAX,
                                                    XmNincrement, 10,
-
-                                                   //XmNpageIncrement, 1,
-                                                   //XmNinitialDelay, 1,
-
                                                    XmNsliderSize, AW_SCROLL_MAX,
                                                    XmNrightAttachment, XmATTACH_FORM,
                                                    XmNbottomAttachment, XmATTACH_FORM,
@@ -231,7 +203,6 @@ void AW_window_menu_modes_opengl::init(AW_root *root_in, const char *wid,
                                                    XmNrightOffset, 18,
                                                    NULL );
 
-    //p_w->scroll_bar_vertical = XtVaCreateManagedWidget( "scroll_bar_vertical",
     p_w->scroll_bar_vertical = XtVaCreateWidget( "scroll_bar_vertical",
                                                  xmScrollBarWidgetClass,
                                                  form2,
@@ -239,10 +210,6 @@ void AW_window_menu_modes_opengl::init(AW_root *root_in, const char *wid,
                                                  XmNminimum, 0,
                                                  XmNmaximum, AW_SCROLL_MAX,
                                                  XmNincrement, 10,
-
-                                                 //XmNpageIncrement, 1,
-                                                 //XmNinitialDelay, 1,
-
                                                  XmNsliderSize, AW_SCROLL_MAX,
                                                  XmNrightAttachment, XmATTACH_FORM,
                                                  XmNbottomAttachment, XmATTACH_WIDGET,
@@ -254,11 +221,9 @@ void AW_window_menu_modes_opengl::init(AW_root *root_in, const char *wid,
                                                  XmNtopAttachment, XmATTACH_WIDGET,
                                                  XmNtopWidget, INFO_WIDGET,
                                                  NULL );
-    //XmScrollBarSetValues();
 
     p_w->frame = XtVaCreateManagedWidget( "draw_area",
                                           xmFrameWidgetClass,
-                                          //                    xmDrawingAreaWidgetClass,
                                           form2,
                                           XmNshadowType, XmSHADOW_IN,
                                           XmNshadowThickness, 2,
@@ -266,19 +231,7 @@ void AW_window_menu_modes_opengl::init(AW_root *root_in, const char *wid,
                                           XmNtopOffset, 3,
                                           XmNbottomOffset, 3,
                                           XmNrightOffset, 3,
-                                          //XmNbottomAttachment, XmATTACH_WIDGET,
-                                          //    XmNbottomAttachment, XmATTACH_FORM,
-                                          //XmNbottomWidget, p_w->scroll_bar_horizontal,
-
-                                          //XmNtopAttachment, XmATTACH_FORM,
-                                          //    XmNtopAttachment, XmATTACH_WIDGET,
-                                          //    XmNtopWidget, p_w->areas[AW_INFO_AREA]->area,
-
                                           XmNtopOffset, 0,
-                                          //      XmNleftAttachment, XmATTACH_FORM,
-                                          //    XmNrightAttachment, XmATTACH_FORM,
-                                          //XmNrightAttachment, XmATTACH_WIDGET,
-                                          //XmNrightWidget, p_w->scroll_bar_vertical,
                                           NULL);
 
     Arg args[20];
@@ -332,29 +285,6 @@ void AW_window_menu_modes_opengl::init(AW_root *root_in, const char *wid,
 
     p_w->areas[AW_MIDDLE_AREA] =
         new AW_area_management(root,p_w->frame,glw);
-
-    /*p_w->areas[AW_MIDDLE_AREA] =
-      new AW_area_management(root,p_w->frame, XtVaCreateManagedWidget( "draw area",
-      //xmDrawingAreaWidgetClass,
-      glwMDrawingAreaWidgetClass,
-      form2,
-      //p_w->frame,
-      XmNmarginHeight, 0,
-      //XtNresize, TRUE,
-      XmNmarginWidth, 0,
-      XmNbottomAttachment, XmATTACH_FORM,
-      XmNtopAttachment, XmATTACH_WIDGET,
-      XmNtopWidget, p_w->areas[AW_INFO_AREA]->area,
-      XmNleftAttachment, XmATTACH_FORM,
-      XmNrightAttachment, XmATTACH_FORM,
-      NULL));*/
-
-    /*XtVaSetValues( p_w->areas[AW_MIDDLE_AREA]->area,
-      XmNx, 0,
-      XmNy, 0,
-      XmNwidth, 600,
-      XmNheight, 700,
-      NULL );*/
 
     XmMainWindowSetAreas( main_window, p_w->menu_bar[0], (Widget) NULL, (Widget) NULL, (Widget) NULL, form1 );
 

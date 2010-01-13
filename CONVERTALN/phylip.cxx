@@ -124,9 +124,7 @@ void to_phylip(char *inf, char *outf, int informat, int readstdin)
 
         while (1) {
             c = getchar();
-            if (c == EOF)
-                break;          /* read all from stdin now (not only one line) */
-            /*      if (c == EOF||c=='\n') break; */
+            if (c == EOF) break; /* read all from stdin now (not only one line) */
             if (!spaced) {
                 fputc(' ', ofp);
                 spaced = 1;

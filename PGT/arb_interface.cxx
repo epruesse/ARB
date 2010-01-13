@@ -192,48 +192,6 @@ bool ARB_connected() { return global_ARB_available; }
 
 
 /****************************************************************************
-*  SMALL DEBUG FUNCTION -- DUMPS ALL ARB DB ENTRIES -- HELPER
-*
-* DEPRECATED!
-****************************************************************************/
-// void ARB_dump_helper(GBDATA *gb_level, int tabcount)
-// {
-//     char *key;
-//
-//     GBDATA *gb_next_level= GB_child(gb_level);
-//
-//     while(gb_next_level)
-//     {
-//         for(int i=0; i < tabcount; i++) printf("  ");
-//
-//         key= GB_read_key(gb_next_level);
-//
-//         if(key) printf("[%s]\n", key);
-//         else printf("[-]\n");
-//
-//         ARB_dump_helper(gb_next_level, tabcount + 1);
-//
-//         gb_next_level= GB_nextChild(gb_next_level);
-//     }
-// }
-
-
-/****************************************************************************
-*  SMALL DEBUG FUNCTION -- DUMPS ALL ARB DB ENTRIES -- FUNCTION
-*
-* DEPRECATED!
-****************************************************************************/
-// void ARB_dump(GBDATA *gb_main)
-// {
-//     ARB_begin_transaction();
-//
-//     ARB_dump_helper(gb_main, 0);
-//
-//     ARB_commit_transaction();
-// }
-
-
-/****************************************************************************
 *  RETURN CURRENT GBDATA ENTRY
 ****************************************************************************/
 GBDATA *get_gbData() { return global_gbData; }
@@ -831,14 +789,6 @@ void add_imageDialog_callback(const char *awar, void (*cb)(GBDATA *, imageDialog
     add_callback(awar, (GB_CB)cb, (int*)id);
 }
 
-// void add_species_callback(GB_CB callback, void *caller) { add_callback(AWAR_SPECIES_NAME, callback, caller); }
-// void add_experiment_callback(GB_CB callback, void *caller) { add_callback(AWAR_EXPERIMENT_NAME, callback, caller); }
-// void add_proteom_callback(GB_CB callback, void *caller) { add_callback(AWAR_PROTEOM_NAME, callback, caller); }
-// void add_protein_callback(GB_CB callback, void *caller) { add_callback(AWAR_PROTEIN_NAME, callback, caller); }
-// void add_gene_callback(GB_CB callback, void *caller) { add_callback(AWAR_GENE_NAME, callback, caller); }
-// void add_config_callback(GB_CB callback, void *caller) { add_callback(AWAR_CONFIG_CHANGED, callback, caller); }
-
-
 /****************************************************************************
 *  CREATE & CHECK THE AWARS (SET DEFAULT IF THE AWARS ARE EMPTY)
 ****************************************************************************/
@@ -883,7 +833,6 @@ void checkCreateAWARS()
     if(!info_gene_color_CONFIG || (strlen(info_gene_color_CONFIG) == 0))
         set_CONFIG(CONFIG_PGT_INFO_GENE, DEFAULT_INFO_GENE);
 
-//     free(...);
     free(crosshair_color_CONFIG);
     free(unmarked_color_CONFIG);
     free(marked_color_CONFIG);

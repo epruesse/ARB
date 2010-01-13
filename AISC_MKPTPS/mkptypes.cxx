@@ -41,7 +41,6 @@ static void Version(void);
 #endif /* DEBUG */
 
 #ifdef DEBUG_PRINTS 
-/* #define DEBUG_PRINT(s) do{ fputs((s), stderr); check_heap_sanity(); }while(0) */
 #define DEBUG_PRINT(s) fputs((s), stderr)
 #else
 #define DEBUG_PRINT(s)
@@ -195,9 +194,10 @@ static void word_free(Word *w)
     }
 }
 
-/* return the length of a list; empty words are not counted */
 static int List_len(Word *w)
 {
+    // return the length of a list
+    // empty words are not counted 
     int count = 0;
 
     while (w) {
@@ -954,17 +954,6 @@ static Word *getparamlist(FILE *f){
         }
     }
 
-    /* debugging output */
-#if 0
-    printf("/* ");
-    tlist = plist;
-    while (tlist) {
-        printf("'%s', ", tlist->string);
-        tlist = tlist->next;
-    }
-    printf(" */\n");
-#endif
-
     return plist;
 }
 
@@ -1203,8 +1192,6 @@ static void getdecl(FILE *f, const char *header) {
             oktoprint = 0;
         }
 
-        /* for the benefit of compilers that allow "inline" declarations */
-        /* if (strcmp(buf, "inline") == 0 && !sawsomething) continue; */
         if (strcmp(buf, ";")      == 0) goto again;
 
         /* A left parenthesis *might* indicate a function definition */

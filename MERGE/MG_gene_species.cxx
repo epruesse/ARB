@@ -453,7 +453,6 @@ static void MG_aci_changed_cb(AW_root *aw_root) {
 static void MG_update_selection_list_on_field_transfers(AW_root *aw_root, AW_CL cl_aww, AW_CL cl_sel_id) {
     AW_window         *aww     = (AW_window*)cl_aww;
     AW_selection_list *sel_id  = (AW_selection_list*)cl_sel_id;
-//     AW_root           *aw_root = aww->get_root();
 
     aww->clear_selection_list(sel_id);
 

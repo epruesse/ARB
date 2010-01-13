@@ -458,14 +458,9 @@ ED4_returncode ED4_window::scroll_rectangle( int dx, int dy )
     AW_pos right_x  = scrolled_rect.scroll_right->window_pos[X_POS];
     AW_pos bottom_y = scrolled_rect.scroll_bottom->window_pos[Y_POS];
 
-    //     e4_assert((scrolled_rect.scroll_left->dimension-dx)>=0); // if any of these asserts fails, dx or dy is set wrong
-    //     e4_assert((scrolled_rect.scroll_right->dimension+dx)>=0);
-    //     e4_assert((scrolled_rect.scroll_top->dimension-dy)>=0);
-    //     e4_assert((scrolled_rect.scroll_bottom->dimension+dy)>=0);
-
-    scrolled_rect.scroll_left->dimension -= dx;
-    scrolled_rect.scroll_top->dimension -= dy;
-    scrolled_rect.scroll_right->dimension += dx;
+    scrolled_rect.scroll_left->dimension   -= dx;
+    scrolled_rect.scroll_top->dimension    -= dy;
+    scrolled_rect.scroll_right->dimension  += dx;
     scrolled_rect.scroll_bottom->dimension += dy;
 
     skip_move = (ABS(int(dy)) > (bottom_y - top_y - 20)) || (ABS(int(dx)) > (right_x - left_x - 20));
@@ -614,7 +609,7 @@ ED4_window::ED4_window( AW_window *window )
     ED4_ROOT->aw_root->awar_string(awar_path_for_IUPAC,ED4_IUPAC_EMPTY,AW_ROOT_DEFAULT);
 
     sprintf(awar_path_for_helixNr, AWAR_EDIT_HELIXNR, id);
-    ED4_ROOT->aw_root->awar_string(awar_path_for_helixNr, "", AW_ROOT_DEFAULT); // ->set_minmax(-MAX_POSSIBLE_SEQ_LENGTH,MAX_POSSIBLE_SEQ_LENGTH);
+    ED4_ROOT->aw_root->awar_string(awar_path_for_helixNr, "", AW_ROOT_DEFAULT); 
 }
 
 

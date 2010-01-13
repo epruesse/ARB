@@ -24,7 +24,6 @@ entrySelectionDialog::entrySelectionDialog(MDialog *d) : MDialog(d)
 {
     if(m_opened)
     {
-//         this->~entrySelectionDialog();
         return;
     }
     else m_opened= true;

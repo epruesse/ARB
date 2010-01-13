@@ -306,9 +306,7 @@ static int aw_status_read_command(int fd, int poll_flag, char*& str, int *gaugeP
         str = strdup(buffer);
     }
     else if (cmd == AW_STATUS_CMD_GAUGE) {
-        // int gauge = aw_status_read_byte(fd,0);
-        int gauge    = aw_status_read_int(fd,0);
-
+        int gauge = aw_status_read_int(fd,0);
         if (gaugePtr) *gaugePtr = gauge;
 
         char *p = buffer;
@@ -389,9 +387,8 @@ static void aw_status_hide(AW_window *aws)
     aw_stg.hide = 1;
     aws->hide();
 
-    /** install timer event **/
+    // install timer event
     aws->get_root()->add_timed_callback(aw_stg.hide_delay*1000, aw_status_timer_hide_event, 0, 0);
-    //     aws->get_root()->add_timed_callback(AW_STATUS_HIDE_DELAY*60, aw_status_timer_hide_event, 0, 0);
 
     // increase hide delay for next press of hide button
     if (aw_stg.hide_delay < (60*60)) { // max hide delay is 1 hour
@@ -531,7 +528,6 @@ static void aw_insert_message_in_tmp_message_delayed(const char *message) {
                                                               message);
     aw_stg.last_message_time         = t;
     free(copy);
-    // aw_stg.line_cnt++;
 
     aw_stg.need_refresh = true;
 }
@@ -794,8 +790,6 @@ void aw_initstatus( void )
 #endif // TRACE_STATUS
 
         aw_stg.is_child = true; // mark as child
-
-        //         aw_status_wait_for_open(aw_stg.fd_to[0]);
 
         AW_root *aw_root;
         aw_root = new AW_root;

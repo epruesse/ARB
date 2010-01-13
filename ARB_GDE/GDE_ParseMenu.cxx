@@ -122,7 +122,6 @@ void ParseMenu()
             thisitem->numinputs   = 0;
             thisitem->numoutputs  = 0;
             thisitem->numargs     = 0;
-            //thisitem->X         = 0;
             thisitem->help        = NULL;
             thisitem->parent_menu = thismenu;
             thisitem->aws         = NULL; // no window opened yet
@@ -153,7 +152,6 @@ void ParseMenu()
                 } while (c!=0);
             }
 
-            //strcpy(thisitem->method,temp);
         }
         /*
          *  Help file

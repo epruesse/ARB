@@ -62,21 +62,11 @@ int main( void ) {
         map->set( 0,i,true );
         map->set( i,0,true );
         map->set( 9,i,true );
-//         map->set( i,9,true );
     }
     map->print();
 
-//     PS_BitSet *set = new PS_BitSet_Counted( false, 5 );
-//     for (long i = 0; i < 5; i+=2) {
-//         set->set( i,true );
-//     }
-//     set->print();
-//     delete set;
-//     return 0;
-
     PS_FileBuffer *fb1 = new PS_FileBuffer( "testdata",PS_FileBuffer::WRITEONLY );
     map->save( fb1 );
-//     set->save( fb1 );
     fb1->reinit( "testdata",PS_FileBuffer::READONLY );
     PS_BitMap_Counted *map2 = new PS_BitMap_Counted( fb1 );
     map2->print();
@@ -85,14 +75,9 @@ int main( void ) {
     map2->print();
     map2->recalcCounters();
     map2->print();
-//     PS_BitSet *set2 = new PS_BitSet( true );
-//     set2->load( fb1 );
-//     set2->print();
 
     delete map;
     delete map2;
-//     delete set;
-//     delete set2;
     delete fb1;
     return 0;
 

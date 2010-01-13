@@ -62,7 +62,6 @@ enum FA_alignTarget {
 };
 
 struct AlignParams {
-    // int temporary;        // // ==1 -> create only temporary alignment report into alignment (2=resident,0=none)
     FA_report report;
     bool      showGapsMessages;  // display messages about missing gaps in master? 
     int       firstColumn;       // first column of range to be aligned (0..len-1)
@@ -321,20 +320,6 @@ inline int UnalignedBasesList::add_and_recalc_positions(UnalignedBasesList *ubl,
             toCorrect->start = newSequence->expdPosition(cs) - newSequence->no_of_gaps_before(cs);
             toCorrect->end = newSequence->expdPosition(ce)   + newSequence->no_of_gaps_after(ce);
 
-            //      if (cs>0) {
-            //      toCorrect->start = newSequence->expdPosition(cs-1)+1;   // first position after left neighbour (to get all gaps left of part)
-            //      }
-            //      else {
-            //      toCorrect->start = newSequence->expdStartPosition(); //newSequence->expdPosition(cs);
-            //      }
-
-            //      if (ce<newSequence->length()) {
-            //      toCorrect->end = newSequence->expdPosition(ce+1)-1;     // last position before right neighbour (to get all gaps right of part)
-            //      }
-            //      else {
-            //      toCorrect->end = newSequence->expdPosition(ce);
-            //      }
-
 #ifdef DEBUG
             printf("%i/%i\n", toCorrect->start, toCorrect->end);
 #endif
@@ -476,20 +461,19 @@ static inline void dumpSeq(const char *seq, long len, long pos)
     printf("(Pos=%li,Len=%li)", pos, len);
 }
 
-#define dump()                                          \
-do                                              \
-{                                               \
-    double sig = partSignificance(sequence().length(), slaveSequence.length(), bestLength); \
-                                                \
-    printf(" Score = %li (Significance=%f)\n"                           \
-       " Master = ", bestScore, sig);                           \
-       dumpSeq(bestMasterLeft.text(), bestLength, bestMasterLeft.leftOf());         \
-       printf("\n"                                      \
-          " Slave  = ");                                \
-          dumpSeq(bestSlaveLeft.text(), bestLength, bestSlaveLeft.leftOf());        \
-          printf("\n");                                 \
-}                                               \
-while(0)
+#define dump()                                                          \
+    do {                                                                \
+        double sig = partSignificance(sequence().length(), slaveSequence.length(), bestLength); \
+                                                                        \
+        printf(" Score = %li (Significance=%f)\n"                       \
+               " Master = ", bestScore, sig);                           \
+        dumpSeq(bestMasterLeft.text(), bestLength, bestMasterLeft.leftOf()); \
+        printf("\n"                                                     \
+               " Slave  = ");                                           \
+        dumpSeq(bestSlaveLeft.text(), bestLength, bestSlaveLeft.leftOf()); \
+        printf("\n");                                                   \
+    }                                                                   \
+    while(0)
 
 #endif /*DEBUG*/
 
@@ -508,15 +492,6 @@ static inline double partSignificance(long seq1len, long seq2len, long partlen)
 {
     return log3((seq1len-partlen)*(seq2len-partlen)) - partlen;
 }
-
-#if 0
-static inline void recalcUsedBuffer(char **bufPtr, long *lenPtr, long *usedPtr, long used)
-{
-    *bufPtr += used;
-    *lenPtr -= used;
-    *usedPtr += used;
-}
-#endif
 
 inline ARB_ERROR bufferTooSmall() {
     return "Cannot align - reserved buffer is to small";
@@ -608,7 +583,6 @@ static ARB_ERROR insertClustalValigned(AWTC_alignBuffer *alignBuffer,
         }
         else {
             int slave_bases;
-            //int memo = 0;
 
             awtc_assert(masterAlignment[pos]==GAP);
             for (slave_bases=1; pos+slave_bases<alignmentLength && masterAlignment[pos+slave_bases]==GAP; slave_bases++) {
@@ -803,10 +777,6 @@ static ARB_ERROR cannot_fast_align(const AWTC_CompactedSubSequence& master, long
                 int end = slaveSequence.expdPosition(soffset+slength-1);
 
                 unaligned_bases.memorize(start, end);
-                //      int fill = start-alignBuffer->offset();
-                //      if (fill>0) {
-                //          alignBuffer->set(GAP_CHAR, alignQuality(GAP_CHAR, GAP_CHAR), fill);
-                //      }
                 alignBuffer->copy(slaveSequence.text(soffset), '?', slength);   // '?' means not aligned (just inserted)
                 // corrected by at alignBuffer->correctUnalignedPositions()
                 report->count_unaligned_base(slength);
@@ -824,38 +794,33 @@ static ARB_ERROR cannot_fast_align(const AWTC_CompactedSubSequence& master, long
 //      #define's for fast_align()
 // --------------------------------------------------------------------------------
 
-#define TEST_BETTER_SCORE()                                 \
-do                                                          \
-{                                                           \
-    if (score>bestScore)                                    \
-    {                                                       \
-    bestScore = score;                                      \
-    bestLength = masterRight.text() - masterLeft.text();    \
-    bestMasterLeft = masterLeft;                            \
-    bestSlaveLeft = slaveLeft;                              \
-    /*dump();*/                                             \
-    }                                                       \
-}                                                           \
-while (0)
+#define TEST_BETTER_SCORE()                                             \
+    do {                                                                \
+        if (score>bestScore) {                                          \
+            bestScore = score;                                          \
+            bestLength = masterRight.text() - masterLeft.text();        \
+            bestMasterLeft = masterLeft;                                \
+            bestSlaveLeft = slaveLeft;                                  \
+        }                                                               \
+    }                                                                   \
+    while (0)
 
 #define CAN_SCORE_LEFT()    (masterLeft.leftOf() && slaveLeft.leftOf())
 #define CAN_SCORE_RIGHT()   (masterRight.rightOf() && slaveRight.rightOf())
 
-#define SCORE_LEFT()                                                            \
-do                                                                              \
-{                                                                               \
-    score += *(--masterLeft).text()==*(--slaveLeft).text() ? match : mismatch;  \
-    TEST_BETTER_SCORE();                                                        \
-}                                                                               \
-while (0)
+#define SCORE_LEFT()                                                    \
+    do {                                                                \
+        score += *(--masterLeft).text()==*(--slaveLeft).text() ? match : mismatch; \
+        TEST_BETTER_SCORE();                                            \
+    }                                                                   \
+    while (0)
 
-#define SCORE_RIGHT()                                                               \
-do                                                                                  \
-{                                                                                   \
-    score += *(++masterRight).text()==*(++slaveRight).text() ? match : mismatch;    \
-    TEST_BETTER_SCORE();                                                            \
-}                                                                                   \
-while (0)
+#define SCORE_RIGHT()                                                   \
+    do {                                                                \
+        score += *(++masterRight).text()==*(++slaveRight).text() ? match : mismatch; \
+        TEST_BETTER_SCORE();                                            \
+    }                                                                   \
+    while (0)
 
 
 ARB_ERROR AWTC_FastSearchSequence::fast_align(const AWTC_CompactedSubSequence& slaveSequence,
@@ -881,7 +846,6 @@ ARB_ERROR AWTC_FastSearchSequence::fast_align(const AWTC_CompactedSubSequence& s
 
     if (!lowSignificanceInitialized) {
         lowSignificance = log3(0.01);
-        //printf("lowSignificance=%f\n", lowSignificance);
         lowSignificanceInitialized = 1;
     }
 
@@ -938,8 +902,6 @@ ARB_ERROR AWTC_FastSearchSequence::fast_align(const AWTC_CompactedSubSequence& s
 
     if (bestLength) {
         double sig = partSignificance(sequence().length(), slaveSequence.length(), bestLength);
-
-        //dump();
 
         if (sig<lowSignificance) {
             long masterLeftOf = bestMasterLeft.leftOf();
@@ -1001,9 +963,6 @@ ARB_ERROR AWTC_FastSearchSequence::fast_align(const AWTC_CompactedSubSequence& s
                 aligned = 1;
             }
 
-        }
-        else {
-            //printf("Not significant!\n");
         }
     }
 
@@ -1262,7 +1221,6 @@ static ARB_ERROR alignCompactedTo(AWTC_CompactedSubSequence     *toAlignSequence
                         else {
                             int  lenToCopy     = ali_params.lastColumn-ali_params.firstColumn+1;
                             long wholeChksum   = calcSequenceChecksum(buffer,len);
-                            // long partChksum = calcSequenceChecksum(buffer+firstColumn, lenToCopy);
 
                             memcpy(buffer+ali_params.firstColumn, alignBuffer.text()+ali_params.firstColumn, lenToCopy);  // copy in the aligned part
 
@@ -1284,8 +1242,6 @@ static ARB_ERROR alignCompactedTo(AWTC_CompactedSubSequence     *toAlignSequence
                 }
             }
             GB_pop_my_security(gb_toAlign);
-        
-            // if (!error) error = err;
         
             if (!error && ali_params.report != FA_NO_REPORT) {
                 // create temp-entry for slave containing alignment quality:
@@ -1683,7 +1639,6 @@ static ARB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
 
                     if (gb_ref && gb_align) {
                         long        length_ref   = GB_read_string_count(gb_ref);
-                        //                         long        length_align = GB_read_string_count(gb_align);
                         const char *data;
 
                         data = GB_read_char_pntr(gb_ref);

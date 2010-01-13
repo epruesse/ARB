@@ -15,7 +15,7 @@ probe_combi_statistic::probe_combi_statistic(probe **pc, probe_tabs *ps, double 
     if (ps)
         probe_tab = ps;
     else
-        probe_tab = NULL; //new probe_tabs;
+        probe_tab = NULL; // new probe_tabs
 
     probe_combi = new probe*[mp_gl_awars.no_of_probes];
     if (pc)
@@ -135,7 +135,6 @@ probe_combi_statistic *probe_combi_statistic::check_duplicates(GenerationDuplica
 
 void probe_combi_statistic::print(probe *p)
 {
-    //    printf("Eine Sonde entspricht : ");
     printf("Idx:%d alMis:%d  ",p->probe_index, p->allowed_mismatches);
 }
 

@@ -25,7 +25,6 @@ int main( int argc,  char *argv[] ) {
     PS_Database *db = new PS_Database( input_DB_name, PS_Database::READONLY );
     db->load();
     PS_print_time_diff( &before, "(enter to continue)  " );
-//    getchar();
 
     //
     // merge in other databasefiles
@@ -38,7 +37,6 @@ int main( int argc,  char *argv[] ) {
         PS_print_time_diff( &before );
     }
     printf( "Merged databases (enter to continue)\n" );
-//    getchar();
 
     //
     // write one big whole tree to file
@@ -48,13 +46,9 @@ int main( int argc,  char *argv[] ) {
     printf( "Writing output-probe-set-database '%s'..\n",output_DB_name );
     db->saveTo( output_DB_name );
     PS_print_time_diff( &before, "(enter to continue)  " );
-//    getchar();
 
     printf( "cleaning up...\n" );
     if (db) delete db;
-//     printf( "root should be destroyed now\n" );
-//     printf( "(enter to continue)\n" );
-//     getchar();
 
     return 0;
 }

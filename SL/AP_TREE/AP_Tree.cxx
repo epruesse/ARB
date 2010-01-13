@@ -197,8 +197,6 @@ void AP_tree::insert(AP_tree *new_brother) {
     AP_tree  *new_tree = dup();
     AP_FLOAT  laenge;
 
-    // ap_assert(new_brother->get_tree_root()); // brother has to be inside a tree!
-
     new_tree->leftson  = this;
     new_tree->rightson = new_brother;
     new_tree->father   = new_brother->father;
@@ -834,7 +832,6 @@ int AP_tree::calc_color() {
             else {
                 // check for user color
                 long color_group = AWT_species_get_dominant_color(gb_node);
-                // long color_group = AW_find_color_group(gb_node);
                 if (color_group == 0) {
                     res = AWT_GC_NSELECTED;
                 }
@@ -864,7 +861,7 @@ int AP_tree::calc_color() {
         else {
             ap_assert(l != AWT_GC_SELECTED && r != AWT_GC_SELECTED);
             ap_assert(l != AWT_GC_UNDIFF && r != AWT_GC_UNDIFF);
-            res = AWT_GC_NSELECTED; // was : res = AWT_GC_UNDIFF;
+            res = AWT_GC_NSELECTED; 
         }
     }
 
@@ -1027,7 +1024,6 @@ void AP_tree::buildBranchList(AP_tree **&list, long &num, bool create_terminal_b
     }
 
     ap_assert(num >= 0);
-    // if (num<0) num = 0;
 
     list = new AP_tree *[num*2+4];
 
@@ -1490,7 +1486,6 @@ static double ap_just_tree_rek(AP_tree *at){
 
 void AP_tree::justify_branch_lenghs(GBDATA *gb_main){
     // shift branches to create a symmetric looking tree
-    //    double max_deep = gr.tree_depth;
     GB_transaction dummy(gb_main);
     ap_just_tree_rek(this);
 }

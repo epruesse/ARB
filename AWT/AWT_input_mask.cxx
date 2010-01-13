@@ -2040,8 +2040,6 @@ void awt_input_mask::relink(bool unlink) {
 
     for (awt_mask_item_list::iterator h = handlers.begin(); h != handlers.end(); ++h) {
          if ((*h)->is_linked_item()) (*h)->to_linked_item()->link_to(gb_item);
-//         if ((*h)->is_input_handler()) (*h)->to_input_handler()->link_to(gb_item);
-//         else if ((*h)->is_script_viewport()) (*h)->to_script_viewport()->link_to(gb_item);
     }
 }
 
@@ -2053,7 +2051,6 @@ awt_input_mask_descriptor::awt_input_mask_descriptor(const char *title_, const c
     internal_maskname    = (char*)malloc(strlen(maskname_)+2);
     internal_maskname[0] = local ? '0' : '1';
     strcpy(internal_maskname+1, maskname_);
-    //     maskname      = strdup(maskname_);
     itemtypename         = strdup(itemtypename_);
     local_mask           = local;
     hidden               = hidden_;
@@ -2208,7 +2205,6 @@ static void registerType(awt_item_type type, AW_window_menu_modes *awm, AWT_Open
     }
 #if defined(DEBUG)
     else {
-//         awt_assert(alreadyRegistered->second.getWindow() == awm);
         awt_assert(alreadyRegistered->second.getOpenCb() == open_window_cb);
     }
 #endif // DEBUG

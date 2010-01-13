@@ -83,7 +83,6 @@ static void gb_dump_huffmann_tree(struct gb_compress_tree *t, const char *prefix
                 break;
             }
         }
-        // printf("%s %lx %lx\n", prefix, (long)(t->son[0]), (long)(t->son[1]));
     }
     else {
         int   len        = strlen(prefix);
@@ -687,7 +686,6 @@ static GB_BUFFER gb_uncompress_equal_bytes(GB_CBUFFER s, long size, long *new_si
             c = *(source++);
             i += j;
             if (i<0) {
-                // GB_internal_error("Internal Error: Missing end in data");
                 j += -i;
                 i = 0;
             }

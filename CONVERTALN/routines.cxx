@@ -42,9 +42,6 @@ void count_base(int *base_a, int *base_t, int *base_g, int *base_c, int *base_ot
  */
 void replace_entry(char **string1, const char *string2)
 {
-    /*  void    Freespace(); */
-    /*  char    *Dupstr(); */
-
     Freespace(string1);
     (*string1) = (char *)Dupstr(string2);
 

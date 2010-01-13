@@ -67,7 +67,6 @@ void PS_detect_weak_differences_stepdown( const PS_NodePtr _ps_node,
     //
     __PATH->push_back( id );                                                                    // append id to path
     for (SpeciesID i = (_parent_ID < __MIN_ID) ? __MIN_ID : _parent_ID+1; i < id; ++i) {        // append parent_id+1 .. id-1 to inverse path
-        //printf( "%i ",i );
         __INVERSE_PATH->push_back( i );
     }
 
@@ -76,8 +75,6 @@ void PS_detect_weak_differences_stepdown( const PS_NodePtr _ps_node,
     //
     if (_ps_node->hasProbes()) {
         if (_ps_node->hasPositiveProbes() && _ps_node->hasInverseProbes()) {
-//            PS_print_path();
-//            PS_print_inverse_path();
             unsigned long int set_ops = 2*__PATH->size()*(__MAX_ID-id-1+__INVERSE_PATH->size());
             if (ULONG_MAX - __COUNT_SET_OPS < set_ops) {
                 set_ops = set_ops - (ULONG_MAX - __COUNT_SET_OPS);
@@ -110,8 +107,6 @@ void PS_detect_weak_differences_stepdown( const PS_NodePtr _ps_node,
             }
         }
         else {
-//            PS_print_path();
-//            PS_print_inverse_path();
             unsigned long int set_ops = __PATH->size()*(__MAX_ID-id-1+__INVERSE_PATH->size());
             if (ULONG_MAX - __COUNT_SET_OPS < set_ops) {
                 set_ops = set_ops - (ULONG_MAX - __COUNT_SET_OPS);
@@ -295,30 +290,24 @@ void PS_print_and_evaluate_map( const PS_NodePtr _root_node, const char *_result
     __ONEMATCH_MIN_ID = __MAX_ID;
     __ONEMATCH_MAX_ID = __MIN_ID;
     for (SpeciesID id1 = __MIN_ID; id1 <= __MAX_ID; ++id1) {
-//         printf( "[%6i] ",id1 );
         for (SpeciesID id2 = __MIN_ID; id2 <= id1; ++id2) {
             smaller_id = (id1 < id2) ? id1 : id2;
             bigger_id  = (id1 < id2) ? id2 : id1;
             bit1       = __MAP->get( smaller_id, bigger_id );
             bit2       = __MAP->get( bigger_id, smaller_id );
             if (bit1 && bit2) {
-//                 printf( "2" );
             }
             else if (bit1) {
-//                 printf( "1" );
                 oneMatch.insert( ID2IDPair(smaller_id,bigger_id) );
                 if (smaller_id < __ONEMATCH_MIN_ID) __ONEMATCH_MIN_ID = smaller_id;
                 if (bigger_id  > __ONEMATCH_MAX_ID) __ONEMATCH_MAX_ID = bigger_id;
             }
             else {
-//                 printf( "0" );
                 if (id1 != id2) noMatch.insert( ID2IDPair(smaller_id,bigger_id) ); // there are no probes to distinguish a species from itself .. obviously
             }
         }
-//         printf( "\n" );
     }
     printf( "(enter to continue)\n" );
-//    getchar();
 
     printf( "\n\n----------------- no matches ---------------\n\n" );
     if (!_result_filename) {
@@ -327,7 +316,6 @@ void PS_print_and_evaluate_map( const PS_NodePtr _root_node, const char *_result
         }
     }
     printf( "%zu no matches\n(enter to continue)\n", noMatch.size() );
-//    getchar();
 
     printf( "\n\n----------------- one match ---------------\n\n" );
     if (!_result_filename) {
@@ -336,7 +324,6 @@ void PS_print_and_evaluate_map( const PS_NodePtr _root_node, const char *_result
         }
     }
     printf( "%zu one matches\n(enter to continue)\n", oneMatch.size() );
-//    getchar();
     //
     // find paths for pairs
     //
@@ -489,7 +476,6 @@ int main( int argc,  char *argv[] ) {
     __MAX_ID = db->getMaxID();
     __MIN_ID = db->getMinID();
     PS_print_time_diff( &before, "(enter to continue)  " );
-//    getchar();
 
     __MAP = new PS_BitMap_Fast( false, __MAX_ID+1 );
     if (!bitmap_filename || (bitmap_filename[0] != '-')) {
@@ -513,18 +499,15 @@ int main( int argc,  char *argv[] ) {
         delete mapfile;
     }
     printf( "(enter to continue)\n" );
-//    getchar();
 
     times( &before );
     PS_print_and_evaluate_map( db->getRootNode(), result_filename );
     PS_print_time_diff( &before, "(enter to continue)  " );
-//    getchar();
     delete __MAP;
     
     printf( "removing database from memory\n" );
     delete db;
     printf( "(enter to continue)\n" );
-//    getchar();
 
     return 0;
 }

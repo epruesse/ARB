@@ -26,8 +26,6 @@
 #include "SEC_iter.hxx"
 #include "SEC_toggle.hxx"
 
-// SEC_graphic *SEC_GRAPHIC = 0;
-
 using namespace std;
 
 AW_gc_manager SEC_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw, AW_CL)
@@ -528,12 +526,6 @@ SEC_graphic::SEC_graphic(AW_root *aw_rooti, GBDATA *gb_maini)
     , gb_struct_ref(0)
     , last_saved(0)
 {
-    // update_requested = SEC_UPDATE_RELOAD; // // need to load structure!
-
-    // gb_struct     = 0;
-    // gb_struct_ref = 0;
-    // last_saved    = 0;
-
     exports.dont_fit_x    = 0;
     exports.dont_fit_y    = 0;
     exports.left_offset   = 20;
@@ -542,13 +534,8 @@ SEC_graphic::SEC_graphic(AW_root *aw_rooti, GBDATA *gb_maini)
     exports.bottom_offset = 20;
     exports.dont_scroll   = 0;
 
-    // aw_root = aw_rooti;
-    // gb_main = gb_maini;
-    
     rot_ct.exists = false;
     rot_cl.exists = false;
-    
-    // sec_root      = new SEC_root;
 }
 
 SEC_graphic::~SEC_graphic(void) {
