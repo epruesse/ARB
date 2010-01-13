@@ -878,38 +878,6 @@ int WriteStatus(NA_Alignment *aln,char *filename,int method)
     return(0);
 }
 
-void ReadStatus(char *filename)
-{
-    filename=0;
-    /*
-      int i,j;
-      FILE *file;
-      filename=0;
-
-      char in_line[GBUFSIZ],head[GBUFSIZ];
-      file = fopen(filename,"r");
-      for(;!DONE;)
-      {
-      fgets(in_line,GBUFSIZ,file);
-      if(strlen(in_line) == 0)
-      DONE = true;
-      else
-      {
-      sscanf(in_line,"%s",head);
-      if(strncmp(head,"Col",3) != 0)
-      {
-      sscanf(in_line,"%*s %d",head,&(DataSet->nadd->
-      cursor_x),&(DataSet->nadd->cursory);
-      }
-      else if(strncmp(head,"Pos",3) != 0)
-      {
-      }
-      }
-      }
-
-    */
-}
-
 
 void NormalizeOffset(NA_Alignment *aln)
 {

@@ -11,12 +11,17 @@
 #ifndef AW_XFIG_HXX
 #define AW_XFIG_HXX
 
+#ifndef AW_ROOT_HXX
+#include <aw_root.hxx>
+#endif
 
 const int XFIG_DEFAULT_FONT_WIDTH  = 8;
 const int XFIG_DEFAULT_FONT_HEIGHT = 13;
 
 const int MAX_LINE_WIDTH  = 20;
 const int MAX_XFIG_LENGTH = 100000;
+
+class AW_device;
 
 char *aw_get_font_from_xfig(int fontnr);
 

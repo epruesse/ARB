@@ -96,27 +96,6 @@ void ali_error(const char *message, const char *func) {
 }
 
 
-/********************
-void del_test(ALI_PROFILE *prof,long begin, long end)
-{
-   long i;
-
-   printf("**********************\n");
-        for (i = begin; i <= end; i++) {
-                printf("W_DEL(%d,%d)\t\t%f\n",i,end,prof->w_del(i,end));
-        }
-}
-
-void perc_test(ALI_PROFILE *prof,long begin, long end)
-{
-   long i;
-
-   printf("**********************\n");
-        for (i = begin; i <= end; i++) {
-                printf("GAP_PERC(%d,%d)\t\t%f\n",i,end,prof->gap_percent(i,end));
-        }
-}
-********************/
 
 /*
  * Get one species of a list

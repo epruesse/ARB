@@ -1243,12 +1243,6 @@ GB_ERROR GB_save_quick(GBDATA *gb, const char *refpath) {
     return deleteSuperfluousQuicksaves(Main);
 }
 
-/********************************************************************************************
-                    
-********************************************************************************************/
-
-//* returns 0 if user is allowed to save
-
 char *gb_full_path(const char *path) {
     char *res = 0;
     

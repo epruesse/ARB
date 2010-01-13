@@ -298,27 +298,15 @@ inline void ALI_PREALIGNER::calculate_first_column_cell(ali_prealigner_cell * up
 
     positiony = start_y + pos_y;
 
-    /***
-        v1 = up_cell->d + profile->w_del(positiony,positiony);
-        v2 = profile->w_del_multi_unweighted(start_y, positiony - 1) +
-        profile->w_sub(positiony, start_x);
-        v3 = profile->w_del_multi_unweighted(start_y, positiony) +
-        profile->w_ins(start_x,positiony);
-    ***/
     v1 = up_cell->d + profile->w_sub_gap(positiony);
-    v2 = profile->w_sub_multi_gap_cheap(start_y, positiony - 1) +
-        profile->w_sub(positiony, start_x);
-    v3 = profile->w_sub_multi_gap_cheap(start_y, positiony) +
-        profile->w_ins(start_x, positiony);
+    v2 = profile->w_sub_multi_gap_cheap(start_y, positiony - 1) + profile->w_sub(positiony, start_x);
+    v3 = profile->w_sub_multi_gap_cheap(start_y, positiony)     + profile->w_ins(start_x, positiony);
 
     akt_cell->d = minimum3(v1, v2, v3);
 
-    if (v1 == akt_cell->d)
-        path_map->set(0, pos_y, ALI_UP);
-    if (v2 == akt_cell->d)
-        path_map->set(0, pos_y, ALI_DIAG);
-    if (v3 == akt_cell->d)
-        path_map->set(0, pos_y, ALI_LEFT);
+    if (v1 == akt_cell->d) path_map->set(0, pos_y, ALI_UP);
+    if (v2 == akt_cell->d) path_map->set(0, pos_y, ALI_DIAG);
+    if (v3 == akt_cell->d) path_map->set(0, pos_y, ALI_LEFT);
 }
 
 void ALI_PREALIGNER::calculate_first_column(ali_prealigner_column * akt_column) {

@@ -250,28 +250,11 @@ AW_xfig_vectorfont *aw_read_xfigfont(char *filename) {
     //       NOTE: char<XFIG_FONT_ELEMS may be always true ...; XFIG_FONT_ELEMS > ' ' !
     for(i=0;i<maxx;i++)
         for(j=0;j<maxy;j++)
-            /*if (chars[i][j]<XFIG_FONT_ELEMS)*/ /* this is always TRUE */
             if ((chars[i][j]!='\0') && (0<=chars[i][j]) && lines[i][j]) {
                 aw_vectorchar[safeCharIndex(chars[i][j])]=lines[i][j];
             }
     if (aw_vectorchar[' ']==default_symbol)
         aw_vectorchar[' ']=NULL;
-
-
-    /* display data on characters
-       for(i=0;i<XFIG_FONT_ELEMS;i++) {
-       l=aw_vectorchar[i];
-       if (l!=default_symbol) {
-       fprintf(stderr, "Character %d defined",i);
-       if (((i&0x7f)>31)&&(i!=0x7f)) fprintf(stderr,"[(%c)] at %8x",i&0x7f,l);
-       if(l) {
-       fprintf(stderr, ":\n");
-       for (j=1;l;j++,l=l->next)
-       fprintf(stderr, "Line %d from (%d,%d) to (%d,%d)\n",j,l->x0,l->y0,l->x1,l->y1);
-       }
-       }
-       }
-    */
 
 
     // 1.4   free some storage (ATTN -> we used shallow copy for our undefined symbol):

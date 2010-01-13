@@ -302,17 +302,6 @@ void init_system3_tab()
                 hamming_tab[i][j] = hamm_dist;
             }
         }
-        /*
-          for (i=0; i<size_hamming_tab; i++)
-          {
-          for (j=0; j<size_hamming_tab; j++)
-          {
-          printf("%d ", hamming_tab[i][j]);
-          }
-          printf("\n");
-
-          }
-        */
 
         for (i=0; i<size_hamming_tab; i++)
         {

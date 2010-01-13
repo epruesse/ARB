@@ -1951,6 +1951,3 @@ ED4_root::~ED4_root()
     if (protstruct) free(protstruct);
 }
 
-//***********************************
-//* ED4_root Methods        end *
-//***********************************

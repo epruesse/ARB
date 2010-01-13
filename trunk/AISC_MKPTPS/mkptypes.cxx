@@ -8,11 +8,6 @@
  * ... and many others for helpful comments and suggestions.
  */
 
-/* if your compiler claims to be ANSI but doesn't have stddef.h or stdlib.h,
- * change the next line.
- * (and then complain to the supplier of the defective compiler)
- */
-
 /*
  * many extension were made for use in ARB build process
  * by Ralf Westram <ralf@arb-home.de>

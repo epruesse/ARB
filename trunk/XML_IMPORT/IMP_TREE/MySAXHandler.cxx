@@ -120,20 +120,3 @@ void MySAXHandler::warning(const SAXParseException& e)
 }
 
 
-/* -------------------------- type constants ----------------
-   chOpenAngle  = (
-   chCloseAngle = )
-   chForwardSlash = /
-   chBackSlash    = \ 
-   chQuestion    = ?
-   chNull        = 0
-   chSpace       = space
-   chDoubleQuote = "
-   chSingleQuote = '
-   chLF          = newline
-   chEqual       = =
-   chPeriod      = .
-   chSemiColon   = ;
-   chColon       = :
-
--------------------------------------------------------------- */

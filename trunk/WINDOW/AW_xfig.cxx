@@ -1,124 +1,29 @@
-/* -----------------------------------------------------------------
- * Module:                        WINDOW/AW_xfig.cxx
- *
- * Exported Classes:              xfig
- *
- * Description: functions for processing xfig graphics for requesters, ...
- *
- * Integration Notes:
- *
- * 1) cleanup of fopen
- *
- * -----------------------------------------------------------------
- */
+// =============================================================== //
+//                                                                 //
+//   File      : AW_xfig.cxx                                       //
+//   Purpose   : functions for processing xfig graphics            //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-/*
- * $Header$
- *
- * $Log$
- * Revision 1.12  2008/05/30 10:36:48  westram
- * - warnings fixed
- *
- * Revision 1.11  2008/05/26 11:04:52  westram
- * - fixed calls to GBS_create_hash
- *
- * Revision 1.10  2007/07/31 15:38:03  westram
- * - simpler and straight-forward error handling for AW_xfig-ctor
- * - sometimes xfig-files are stored with magnification != 100.00
- *   Now xfig-reader ignores the magnification (previously it expected '100.00'),
- *   does not seem to make any difference!
- * - fixed AWUSE
- *
- * Revision 1.9  2007/04/18 22:00:33  westram
- * - fixed undefined behavior in AW_xfig::print
- *
- * Revision 1.8  2007/03/29 16:53:43  westram
- * - use both font dimensions to calculate scaling factor
- * - added function calc_scaling() and removed dup-code
- *
- * Revision 1.7  2005/03/04 23:14:24  westram
- * - fixed calls to AW_device::clear/clear_part
- *
- * Revision 1.6  2005/01/28 14:32:04  westram
- * - fixed set_font() call
- *
- * Revision 1.5  2003/08/13 11:24:35  westram
- * - Text elements may be X/Y attached
- *
- * Revision 1.4  2002/11/21 18:21:50  westram
- * memory bugfixes
- *
- * Revision 1.3  2001/08/17 19:57:45  westram
- * * AW_xfig.cxx: - implemented AW_xfig::add_line
- *            - implemented new constructor
- *
- * Revision 1.2  2000/11/24 17:23:46  westram
- * *** empty log message ***
- *
- * Revision 1.1.1.1  2000/11/23 09:41:17  westram
- * Erster Import
- *
- * Revision 1.8  1995/03/13  16:53:41  jakobi
- * *** empty log message ***
- *
- * Revision 1.7  1995/03/13  15:22:33  jakobi
- * *** empty log message ***
- *
- * Revision 1.7  1995/03/13  15:22:33  jakobi
- * *** empty log message ***
- *
- * Revision 1.6  1995/03/13  12:23:48  jakobi
- * *** empty log message ***
- *
- */
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <memory.h>
-#include <math.h>
-#include <limits.h>
-#include <string.h>
-#include <arbdb.h>              // hash functions
-#include "aw_root.hxx"
-#include "aw_device.hxx"
 #include "aw_xfig.hxx"
+#include <aw_device.hxx>
 
-/* -----------------------------------------------------------------
- * Function:                     AW_xfig::AW_xfig
- *
- * Arguments:                    xfig file, fontsize (>0: abort on error - use for requesters,
- *                                                    <0: returns NULL on error)
- *
- * Returns:                      graphical data or NULL or exit!
- *
- * Description:                  load xfig graphical data for construction of requesters,
- *                               is also used to load line-data of vectorfont
- *
- * NOTE:
- *
- * Dependencies:
- * -----------------------------------------------------------------
- */
+#include <arbdb.h>
+#include <climits>
 
-// --------------------------------------------------------------------------------
-//     inline int scaleAndRound(int unscaled, double scaleFactor)
-// --------------------------------------------------------------------------------
 inline int scaleAndRound(int unscaled, double scaleFactor) {
     double scaled = double(unscaled)*scaleFactor;
     return int(scaled);
 }
 
-//  -------------------------------------------------------------
-//      inline void setMinMax(int value, int& min, int& max)
-//  -------------------------------------------------------------
 inline void setMinMax(int value, int& min, int& max) {
     if (value<min) min = value;
     if (value>max) max = value;
 }
 
-// --------------------------------------------------------------------------------
-//     class Xfig_Eater
-// --------------------------------------------------------------------------------
 class Xfig_Eater {
     char *buffer;
     const char *delim;
@@ -177,6 +82,14 @@ AW_xfig::AW_xfig(int font_width, int font_height) {
 
 AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
 {
+    /* Arguments:   xfig file, fontsize (>0: abort on error - normal usage!
+     *                                   <0: returns NULL on error)
+     *
+     * Returns:     graphical data or NULL or exit!
+     *
+     * Description: load xfig graphical data for construction of windows,
+     *              is also used to load line-data of vectorfont
+     */
     if (!filename || !strlen(filename)) return;
     
     memset(this,0,sizeof(AW_xfig));
@@ -626,9 +539,6 @@ void AW_xfig::create_gcs(AW_device *device, int depth)
     GBS_free_hash(gchash);
 }
 
-//  --------------------------------------------------------------------------
-//      void AW_xfig::add_line(int x1, int y1, int x2, int y2, int width)
-//  --------------------------------------------------------------------------
 void AW_xfig::add_line(int x1, int y1, int x2, int y2, int width) { // add a line to xfig
     struct AW_xfig_line *xline = new AW_xfig_line;
 

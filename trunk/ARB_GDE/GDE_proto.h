@@ -39,7 +39,6 @@ void Warning(const char *s);
 void InitNASeq(NA_Sequence *seq, int type);
 void ReadCMask(const char *filename);
 int WriteStatus(NA_Alignment *aln, char *filename, int method);
-void ReadStatus(char *filename);
 void NormalizeOffset(NA_Alignment *aln);
 int WriteCMask(NA_Alignment *aln, char *filename, int method, int maskable);
 

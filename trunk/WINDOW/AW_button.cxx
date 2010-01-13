@@ -1489,48 +1489,6 @@ void AW_window::set_list_entry_displayed(const char *new_displayed) {
     freeset(current_list_table->displayed, AW_select_table_struct::copy_string(new_displayed));
 }
 
-/*
-const char *AW_window::get_list_entry(AW_selection_list *selection_list, int val)   //val = 1 initialisiert das Ganze, val=0 holt naechsten Eintrag
-{
-    static int              last        = 0;
-    char                *result;
-
-    if (last == 1 && !val)
-    {
-    last = 2;
-    if (!list_table)
-        return NULL;
-    else
-        return list_table->char_value;;
-    }
-
-    if (last == 2 && !val)
-    return NULL;
-
-    if (val)
-    {
-    last = 0;
-    list_table = NULL;
-    return NULL;
-    }
-
-    if (!list_table)
-    list_table = selection_list->list_table;
-
-    if (!list_table)
-    {
-    last = 2;
-    return NULL;
-    }
-
-    result = list_table->char_value;
-    list_table = list_table->next;
-    if (!list_table || list_table == selection_list->last_of_list_table)
-    last = 1;
-    return result;
-    }
-*/
-
 void AW_window::set_selection_list_suffix(AW_selection_list *selection_list, const char *suffix){
     char filter[200];
     sprintf(filter,"tmp/save_box_sel_%li/filter",(long)selection_list);

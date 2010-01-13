@@ -565,9 +565,6 @@ void GDE_startaction_cb(AW_window *aw,GmenuItem *gmenuitem,AW_CL cd)
                 case COLORMASK:
                     ReadCMask(current_item->output[j].name);
                     break;
-                case STATUS_FILE:
-                    ReadStatus(current_item->output[j].name);
-                    break;
                 default:
                     break;
             }
