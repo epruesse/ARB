@@ -89,7 +89,6 @@ namespace {
                         if (!error) {
                             ConfigMap::const_iterator found = entries.find(key);
                             if (found == entries.end()) {
-                                // fprintf(stderr, "adding value '%s' at key '%s'\n", value, key);
                                 entries[key] = value;
                             }
                             else {

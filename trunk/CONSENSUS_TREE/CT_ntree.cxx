@@ -55,7 +55,7 @@ void print_ntindex(NT_NODE *tree)
     for(nsonp=tree->son_list; nsonp; nsonp=nsonp->next) {
         part_or(nsonp->node->part, p);
     }
-    printf("%d",tree->part->p[0]);   /*calc_index(p, tree->part));*/
+    printf("%d",tree->part->p[0]);   
 
     /* and sons */
     for(nsonp=tree->son_list; nsonp; nsonp=nsonp->next) {

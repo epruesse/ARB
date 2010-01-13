@@ -470,8 +470,7 @@ SEC_db_interface::SEC_db_interface(SEC_graphic *Gfx, AWT_canvas *Ntw)
     relayout_cb->call();
     refresh_cb->call();
 
-    // toggler = new SEC_structure_toggler(gb_main, aliname, gfx);
-    toggler    = 0;
+    toggler = 0;
 
     perform_refresh = true;
 }

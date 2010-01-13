@@ -71,9 +71,6 @@ AP_tree * buildRandomTree(AP_tree *root) {
     }
     tree0 = list[0];
     delete list;
-    //tree0->sequence_proto = root->sequence_proto->dup();
-    //tree0->sequence_proto = root->sequence_proto;
-    //tree0->sequence_proto = (AP_sequence *)new AP_sequence_parsimony;
     return tree0;
 }
 

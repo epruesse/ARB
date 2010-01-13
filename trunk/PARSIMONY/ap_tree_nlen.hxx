@@ -208,7 +208,6 @@ class AP_tree_edge
     //          -1 means we go through the whole tree
     //           0 means we only act on the actual edge
 
-    //    int clearValues(int deep,AP_tree_nlen *skip=NULL);    // clears used and data.distance
     AP_tree_edge *buildChain(int                 deep,
                              bool                skip_hidden = false,
                              int                 distance    = 0,

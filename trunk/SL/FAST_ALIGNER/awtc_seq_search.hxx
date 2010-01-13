@@ -525,7 +525,6 @@ inline AWTC_CompactedSubSequence::AWTC_CompactedSubSequence(const AWTC_Compacted
 }
 
 inline AWTC_CompactedSubSequence::AWTC_CompactedSubSequence(const AWTC_CompactedSubSequence& other, int rel_pos, int Length)
-// substr c-tor
 {
     mySequence = other.mySequence;
     mySequence->referred++;
@@ -534,13 +533,11 @@ inline AWTC_CompactedSubSequence::AWTC_CompactedSubSequence(const AWTC_Compacted
     myLength = Length;
     myText   = mySequence->text()+myPos;
 
-    //printf("work on sub-seq: %li-%li\n", pos, pos+length-1);
-
     awtc_assert((rel_pos+Length)<=mySequence->length());
     awtc_assert(rel_pos>=0);
 }
 
-inline AWTC_CompactedSubSequence::~AWTC_CompactedSubSequence() // d-tor
+inline AWTC_CompactedSubSequence::~AWTC_CompactedSubSequence()
 {
     if (mySequence->referred-- == 1) // last reference
         delete mySequence;

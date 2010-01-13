@@ -29,8 +29,6 @@ int init_bond_matrix(PT_pdc *THIS) {
 extern "C" {
 #endif
 
-    //    aisc_callback_func_proto(destroy_PT_local); /* prototyp */
-
     void pt_destroy_locs(PT_local *THIS) {
         destroy_PT_local(THIS);
     }

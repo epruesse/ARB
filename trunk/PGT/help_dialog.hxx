@@ -24,32 +24,12 @@ class helpDialog : public MDialog
     public:
         helpDialog(MDialog*);
         ~helpDialog();
-        //
-//         void setListCallback(XtCallbackProc);
-//         void triggerListChange();
-//         //
-//         void exitButtonCallback(Widget, XtPointer);
-//         void listCallback(Widget, XtPointer);
     protected:
         void createWindow();
         void createVisualizationHelp(Widget);
 
-//         void getListEntries();
-
     private:
-//         char *m_entry;
-//         //
         Widget m_top;
-//         Widget m_list;
-//         //
-//         XtCallbackProc m_listCallback;
-//         bool m_hasListCallback;
 };
-
-
-// CALLBACK WRAPPER FUNCTIONS (STATIC)
-// void staticEntrySelExitButtonCallback(Widget, XtPointer, XtPointer);
-// void staticListCallback(Widget, XtPointer, XtPointer);
-
 
 #endif // HELP_DIALOG_H

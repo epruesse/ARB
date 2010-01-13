@@ -360,29 +360,6 @@ int probe_design_send_data(AW_root *root, T_PT_PDC  pdc)
                      PDC_BONDVAL,   (double)root->awar(buffer)->read_float(),
                      NULL) ) return 1;
     }
-#if 0
-    T_PT_SPECIALS specials;
-    for (i=0;i<PROBE_DESIGN_EXCEPTION_MAX;i++){
-        char pdcmode[256],pdcll[256],pdcl[256],pdcc[256],pdcr[256],pdcrr[256];
-
-        sprintf(pdcmode,"probe_design/exceptions/nr%i/MODE",i);
-        if (root->awar(pdcmode)->read_int()<0) break;
-        sprintf(pdcll,"probe_design/exceptions/nr%i/LLEFT",i);
-        sprintf(pdcl,"probe_design/exceptions/nr%i/LEFT",i);
-        sprintf(pdcc,"probe_design/exceptions/nr%i/CENTER",i);
-        sprintf(pdcr,"probe_design/exceptions/nr%i/RIGHT",i);
-        sprintf(pdcrr,"probe_design/exceptions/nr%i/RRIGHT",i);
-        if (aisc_create(pd_gl.link,PT_PDC, pdc,
-                        PDC_SPECIALS,   PT_SPECIALS, &specials,
-                        SPECIALS_MODE, root->awar(pdcmode)->read_int(),
-                        SPECIALS_LLEFT, (double)root->awar(pdcll)->read_float(),
-                        SPECIALS_LEFT, (double)root->awar(pdcl)->read_float(),
-                        SPECIALS_CENTER, (double)root->awar(pdcc)->read_float(),
-                        SPECIALS_RIGHT, (double)root->awar(pdcr)->read_float(),
-                        SPECIALS_RRIGHT, (double)root->awar(pdcrr)->read_float(),
-                        NULL)) return 1;
-    }
-#endif
     return 0;
 }
 
@@ -575,22 +552,21 @@ void probe_design_event(AW_window *aww)
 
         //#define TEST_PD
 #if defined(TEST_PD)
-        int my_TPROBE_KEY;
-        char *my_TPROBE_KEYSTRING;
-        int my_TPROBE_CNT;
-        int my_TPROBE_PARENT;
-        int my_TPROBE_LAST;
-        char *my_TPROBE_IDENT;
-        char *my_TPROBE_SEQUENCE;
-        double my_TPROBE_QUALITY;
-        int my_TPROBE_GROUPSIZE;
-        int my_TPROBE_HAIRPIN;
-        int my_TPROBE_WHAIRPIN;
-        //    int my_TPROBE_PERC;
-        double my_TPROBE_TEMPERATURE;
-        int my_TPROBE_MISHIT;
-        int my_TPROBE_APOS;
-        int my_TPROBE_ECOLI_POS;
+        int     my_TPROBE_KEY;
+        char   *my_TPROBE_KEYSTRING;
+        int     my_TPROBE_CNT;
+        int     my_TPROBE_PARENT;
+        int     my_TPROBE_LAST;
+        char   *my_TPROBE_IDENT;
+        char   *my_TPROBE_SEQUENCE;
+        double  my_TPROBE_QUALITY;
+        int     my_TPROBE_GROUPSIZE;
+        int     my_TPROBE_HAIRPIN;
+        int     my_TPROBE_WHAIRPIN;
+        double  my_TPROBE_TEMPERATURE;
+        int     my_TPROBE_MISHIT;
+        int     my_TPROBE_APOS;
+        int     my_TPROBE_ECOLI_POS;
 
 #endif // TEST_PD
 
@@ -876,24 +852,6 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
 
                 if (gene_flag) {
                     gene_str = ppm.get_column_content("genename", true);
-
-                    // #error change parse method for gene name
-                    // // parse the gene name:
-                    // int off = 0;
-                    // while (match_info[off] == ' ') ++off; // search first non-space ( = start of species name)
-                    // char *space1       = strchr(match_info+off, ' '); // space between species and gene name
-                    // char *space2       = 0;
-                    // if (space1) space2 = strchr(space1+1, ' '); // space after gene name
-                    // if (space1 && space2) { // ok - parsing successful
-                    //     int len       = space2-space1-1;
-                    //     // delete [] gene_str;
-                    //     gene_str      = new char[len+1];
-                    //     memcpy(gene_str, space1+1, len);
-                    //     gene_str[len] = 0;
-                    // }
-                    // else {
-                    //     error = "cannot parse gene name from match result";
-                    // }
                 }
 
                 if (!error) {
@@ -1131,16 +1089,6 @@ void create_probe_design_variables(AW_root *root,AW_default db1, AW_default glob
         root->awar_float( buffer, default_bonds[i], db1);
         root->awar(buffer)->set_minmax(0,3.0);
     }
-#if 0
-    for (i=0;i<PROBE_DESIGN_EXCEPTION_MAX;i++){
-        sprintf(buffer, "probe_design/exceptions/nr%i/MODE",   i); root->awar_int  (buffer, -1,  db1);
-        sprintf(buffer, "probe_design/exceptions/nr%i/LLEFT",  i); root->awar_float(buffer, 0.0, db1);
-        sprintf(buffer, "probe_design/exceptions/nr%i/LEFT",   i); root->awar_float(buffer, 0.0, db1);
-        sprintf(buffer, "probe_design/exceptions/nr%i/CENTER", i); root->awar_float(buffer, 0.0, db1);
-        sprintf(buffer, "probe_design/exceptions/nr%i/RIGHT",  i); root->awar_float(buffer, 0.0, db1);
-        sprintf(buffer, "probe_design/exceptions/nr%i/RRIGHT", i); root->awar_float(buffer, 0.0, db1);
-    }
-#endif
     root->awar_float(AWAR_PD_DESIGN_EXP_SPLIT,  .5, db1);
     root->awar_float(AWAR_PD_DESIGN_EXP_DTEDGE, .5, db1);
     root->awar_float(AWAR_PD_DESIGN_EXP_DT,     .5, db1);
@@ -1220,43 +1168,6 @@ AW_window *create_probe_design_expert_window( AW_root *root)  {
         aws->create_input_field(buffer,4);
     }
 
-#if 0
-    for (i=0;i<PROBE_DESIGN_EXCEPTION_MAX;i++) {
-        sprintf(buffer,"m%i",i);
-        aws->at(buffer);
-        sprintf(buffer,"probe_design/exceptions/nr%i/MODE",i);
-        aws->create_option_menu( buffer, NULL , "" );
-        aws->insert_option( "don't use", "d", -1 );
-        aws->insert_option( "don't split", "d", 0 );
-        aws->insert_option( "split", "d", 1 );
-        aws->update_option_menu();
-
-        sprintf(buffer,"ll%i",i);
-        aws->at(buffer);
-        sprintf(buffer,"probe_design/exceptions/nr%i/LLEFT",i);
-        aws->create_input_field(buffer,4);
-
-        sprintf(buffer,"l%i",i);
-        aws->at(buffer);
-        sprintf(buffer,"probe_design/exceptions/nr%i/LEFT",i);
-        aws->create_input_field(buffer,5);
-
-        sprintf(buffer,"c%i",i);
-        aws->at(buffer);
-        sprintf(buffer,"probe_design/exceptions/nr%i/CENTER",i);
-        aws->create_input_field(buffer,5);
-
-        sprintf(buffer,"r%i",i);
-        aws->at(buffer);
-        sprintf(buffer,"probe_design/exceptions/nr%i/RIGHT",i);
-        aws->create_input_field(buffer,5);
-
-        sprintf(buffer,"rr%i",i);
-        aws->at(buffer);
-        sprintf(buffer,"probe_design/exceptions/nr%i/RRIGHT",i);
-        aws->create_input_field(buffer,5);
-    }
-#endif
     return aws;
 }
 
@@ -1325,17 +1236,9 @@ AW_window *create_probe_design_window( AW_root *root, AW_CL cl_genome_db)  {
     aws->highlight();
     aws->create_button("GO","GO","G");
 
-    //  aws->callback( (AW_CB1)AW_save_defaults, (int) def);
-    //  aws->at("save_default");
-    //  aws->create_button("SAVE DEFAULTS","S");
-
     aws->callback(popup_probe_design_result_window);
     aws->at("result");
     aws->create_button("RESULT","RESULT","S");
-
-    //  aws->callback( AW_POPUP, (AW_CL)create_probe_design_window, (int)def);
-    //  aws->at("open");
-    //  aws->create_button("REOPEN","REOPEN","S");
 
     aws->callback( (AW_CB1)AW_POPUP,(AW_CL)create_probe_design_expert_window);
     aws->at("expert");
@@ -1487,8 +1390,7 @@ static void resolve_IUPAC_target_string(AW_root *, AW_CL cl_aww, AW_CL cl_selid)
                         buffer[off] = AWT_iupac_code[idx][index].iupac[resolution_idx[i]];
                     }
 
-                    /*if (not_last) */  aww->insert_selection        (selection_id, buffer, buffer);
-                    /*else      aww->insert_default_selection(selection_id, buffer, buffer); */
+                    aww->insert_selection(selection_id, buffer, buffer);
                     not_last--;
 
                     // permute indices:

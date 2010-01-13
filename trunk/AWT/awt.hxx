@@ -162,25 +162,22 @@ public:
     AWAR    species_name;                           // AWAR containing current species name
     AWAR    tree_name;                              // AWAR containing current tree name
 
-    const ad_item_selector *selector;  // which kind of item do we handle?
+    const ad_item_selector *selector;               // which kind of item do we handle?
 
-    //     bool query_genes;           // true -> create gene query box
-    //     AWAR gene_name;             // AWAR containing current gene name
+    int select_bit;                                 // one of 1 2 4 8 .. 128 (one for each query box)
+    int use_menu;                                   // put additional commands in menu
 
-    int select_bit;             // one of 1 2 4 8 .. 128 (one for each query box)
-    int use_menu;               // put additional commands in menu
+    const char *ere_pos_fig;                        // rebuild enlarge reduce
+    const char *where_pos_fig;                      // current, marked or all species (used for sub-items of species)
+    const char *by_pos_fig;                         // fit query don't fit, marked
 
-    const char *ere_pos_fig;    // rebuild enlarge reduce
-    const char *where_pos_fig;  // current, marked or all species (used for sub-items of species)
-    const char *by_pos_fig;     // fit query don't fit, marked
-
-    const char *qbox_pos_fig;   // key box for queries
-    const char *rescan_pos_fig; // rescan label
-    const char *key_pos_fig;    // the key
-    const char *query_pos_fig;  // the query
+    const char *qbox_pos_fig;                       // key box for queries
+    const char *rescan_pos_fig;                     // rescan label
+    const char *key_pos_fig;                        // the key
+    const char *query_pos_fig;                      // the query
 
 
-    const char *result_pos_fig; // the result box
+    const char *result_pos_fig;                     // the result box
     const char *count_pos_fig;
 
     const char *do_query_pos_fig;
@@ -188,10 +185,10 @@ public:
     const char *do_mark_pos_fig;
     const char *do_unmark_pos_fig;
     const char *do_delete_pos_fig;
-    const char *do_set_pos_fig; // multi set a key
+    const char *do_set_pos_fig;                     // multi set a key
     const char *open_parser_pos_fig;
     const char *do_refresh_pos_fig;
-    AW_CL       create_view_window;     // AW_window *(*create_view_window)(AW_root *aw_root)
+    AW_CL       create_view_window;                 // AW_window *(*create_view_window)(AW_root *aw_root)
 
     const char *info_box_pos_fig;
 

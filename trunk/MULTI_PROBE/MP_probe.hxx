@@ -67,8 +67,7 @@ private:
     void        quicksort(long left,
                           long right);  // Randomized Quicksort
 
-    int         get_dupl_pos();     // gibt Index einer Stelle zurueck, die doppelt vorkommt; field
-    // muss sortiert sein !!!
+    int         get_dupl_pos();     // gibt Index einer Stelle zurueck, die doppelt vorkommt; field muss sortiert sein !!!
     int         modificated_hamming_dist(int one, int two); // pseudo hamming distanz einer Sondenkombi
 
 
@@ -79,11 +78,7 @@ public:
     double      get_expected_children()        { return expected_children; };
     int         sub_expected_children(double val);
     void        init_stats();
-    void        scale(double a, double b)      {    //printf("raw fitness : %f**\n",fitness);
-        fitness = a * fitness + b;
-        //printf("scaled fitness : %f**\n",fitness);
-        //printf("*******************\n\n",fitness);
-    };
+    void        scale(double a, double b)      { fitness = a * fitness + b; };
 
     BOOL        ok_for_next_gen(int &len_roul_wheel);
 

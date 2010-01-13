@@ -18,7 +18,6 @@ void ButtonPressEventHandler( Widget w, XtPointer client_data, XEvent *event, ch
 void ButtonReleaseEventHandler( Widget w, XtPointer client_data, XEvent *event, char* x );
 void MouseMoveEventHandler( Widget w, XtPointer client_data, XEvent *event, char* x );
 void RefreshOpenGLDisplay();
-//void SetOpenGLBackGroundColor();
 
 class AW_root;
 class AW_window;

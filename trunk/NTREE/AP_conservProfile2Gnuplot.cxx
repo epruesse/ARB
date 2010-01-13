@@ -88,9 +88,7 @@ AW_window *AP_openConservationPorfileWindow( AW_root *root ){
 
     awt_create_selection_box(aws,AP_AWAR_CONSPRO);
 
-    aws->at("baseFreqFlt");// aws->callback((AW_CB0)AW_POPDOWN);
-    //    aws->callback(createTipsAndTricks_window);
-    //    aws->callback(AW_POPUP,(AW_CL)NT_system_cb,(AW_CL)"arb_phylo &");
+    aws->at("baseFreqFlt");
     aws->create_button("SELECT_FILTER", AP_AWAR_BASE_FREQ_FILTER_NAME);
 
     aws->at("minX");
@@ -112,7 +110,6 @@ AW_window *AP_openConservationPorfileWindow( AW_root *root ){
     aws->create_toggle_field(AP_AWAR_CONSPRO_SMOOTH_GNUPLOT, 1);
     aws->insert_default_toggle("None","N", "");
     aws->insert_toggle("Unique","U", "smooth unique");
-    //    aws->insert_toggle("CSpline","S", "smooth cspline");
     aws->insert_toggle("Bezier","B", "smooth bezier");
     aws->update_toggle_field();
 
@@ -123,6 +120,6 @@ AW_window *AP_openConservationPorfileWindow( AW_root *root ){
     aws->callback(AP_conservProfile2Gnuplot_callback);
     aws->create_button("DISPLAY_PROFILE","SAVE & DISPLAY CONSERVATION PROFILE");
 
-    return (AW_window *)aws;
+    return aws;
 }
 

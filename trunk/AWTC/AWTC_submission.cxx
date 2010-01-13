@@ -68,33 +68,6 @@ static AW_window *create_calltexe_window(AW_root *root, char *varname)
     return (AW_window *)aws;
 }
 
-#if 0
-static long ed_submit_info_event_sequence(void *strstruct,char *alignment,long modu)
-{
-    int i;
-    char    buffer[256];
-    int size = strlen(alignment);
-    int c;
-    long    seq_len = 0;
-    for (seq_len=i=0;i<size;i++) {
-        c = alignment[i];
-        if (c == '.') continue;
-        if (c == '-') continue;
-
-        if (c==':') c = ';';
-        if (c=='=') c = '-';
-        if ( !(seq_len%modu) ) {
-            sprintf(buffer,"\n%8li ",seq_len+1);
-            GBS_strcat(strstruct,buffer);
-        }
-        if ( !(seq_len%10) ) GBS_strcat(strstruct," ");
-        seq_len++;
-        GBS_chrcat(strstruct,c);
-    }
-    return seq_len;
-}
-#endif
-
 static void ed_submit_info_event_rm(char *string)
 {
     char *p = string;

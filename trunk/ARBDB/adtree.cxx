@@ -215,75 +215,6 @@ static GB_ERROR gbt_write_tree_nodes(GBDATA *gb_tree, GBT_TREE *node, long *star
     return error;
 }
 
-#if 0
-static long gbt_write_tree_nodes_old(GBDATA *gb_tree, GBT_TREE *node, long startid) {
-    long me;
-    GB_ERROR error;
-    const char *key;
-    GBDATA *gb_id,*gb_name,*gb_any;
-    if (node->is_leaf) return 0;
-    me = startid;
-    if (node->name && (strlen(node->name)) ) {
-        if (!node->gb_node) {
-            node->gb_node = GB_create_container(gb_tree,"node");
-        }
-        gb_name = GB_search(node->gb_node,"group_name",GB_STRING);
-        error = GBT_write_group_name(gb_name, node->name);
-        if (error) return -1;
-    }
-    if (node->gb_node) {         // delete not used nodes else write id
-        gb_any = GB_child(node->gb_node);
-        if (gb_any) {
-            key = GB_read_key_pntr(gb_any);
-            if (strcmp(key,"id") == 0) {
-                gb_any = GB_nextChild(gb_any);
-            }
-        }
-
-        if (gb_any){
-            gb_id = GB_search(node->gb_node,"id",GB_INT);
-#if defined(DEBUG) && defined(DEVEL_RALF)
-            {
-                int old = GB_read_int(gb_id);
-                if (old != me) {
-                    printf("id changed in gbt_write_tree_nodes(): old=%i new=%li (tree-node=%p; gb_node=%p)\n",
-                           old, me, node, node->gb_node);
-                }
-            }
-#endif // DEBUG
-            error = GB_write_int(gb_id,me);
-            GB_write_usr_private(node->gb_node,0);
-            if (error) return -1;
-        }
-        else {
-#if defined(DEBUG) && defined(DEVEL_RALF)
-            {
-                GBDATA *gb_id2 = GB_entry(node->gb_node, "id");
-                int     id     = 0;
-                if (gb_id2) id = GB_read_int(gb_id2);
-
-                printf("deleting node w/o info: tree-node=%p; gb_node=%p prev.id=%i\n",
-                       node, node->gb_node, id);
-            }
-#endif // DEBUG
-            GB_delete(node->gb_node);
-            node->gb_node = 0;
-        }
-    }
-    startid++;
-    if (!node->leftson->is_leaf) {
-        startid = gbt_write_tree_nodes(gb_tree,node->leftson,startid);
-        if (startid<0) return startid;
-    }
-
-    if (!node->rightson->is_leaf) {
-        startid = gbt_write_tree_nodes(gb_tree,node->rightson,startid);
-        if (startid<0) return startid;
-    }
-    return startid;
-}
-#endif
-
 static char *gbt_write_tree_rek_new(GBT_TREE *node, char *dest, long mode) {
     char buffer[40];        // just real numbers
     char    *c1;
@@ -513,7 +444,6 @@ GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_nodes, 
         else {
             *error = GBS_global_string("Can't interpret tree definition (expected 'N' or 'L' - not '%c')", c);
         }
-        // GB_internal_error("Error reading tree 362436");
         return NULL;
     }
     return node;
@@ -547,7 +477,6 @@ static GBT_TREE *read_tree_and_size_internal(GBDATA *gb_tree, GBDATA *gb_ctree, 
             GBDATA *gbd = GB_entry(gb_node,"id");
             if (!gbd) continue;
 
-            //{ GB_export_error("ERROR while reading tree '%s' 4634",tree_name);return NULL;}
             i = GB_read_int(gbd);
             if ( i<0 || i>= size ) {
                 *error = "An inner node of the tree is corrupt";

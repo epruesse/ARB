@@ -67,8 +67,6 @@ const float fViewAngle = 40.0;
 const float fClipNear  = 0.5f;
 const float fClipFar   = 100;
 
-// GBDATA *OpenGL_gb_main;
-
 static Display *dpy;
 static GLXContext glx_context;
 
@@ -179,10 +177,6 @@ void InitializeOpenGLEngine(GLint width, GLint height ) {
 
     initExtensions();
 
-    { // Preparing secondary structure masks for RNA3D program
-        //        RNA3D->cStructure->PrepareSecondaryStructureData();
-    }
-
     // Prepare the structure Data  and Generate Display Lists
 
     RNA3D->cStructure->ReadCoOrdinateFile();    // Reading Structure information
@@ -201,7 +195,6 @@ void InitializeOpenGLEngine(GLint width, GLint height ) {
     glEnable(GL_DEPTH_TEST);         // Enables Depth Testing
     glDepthFunc(GL_LEQUAL);          // The Type Of Depth Test To Do
 
-    //    glHint(GL_CLIP_VOLUME_CLIPPING_HINT_EXT,GL_DONT_CARE);
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
     glEnable(GL_TEXTURE_2D);    // Enable Texture Mapping
 
@@ -460,7 +453,7 @@ void DrawStructure(){
 }
 
 void RenderOpenGLScene(Widget w){
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);// | GL_STENCIL_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // setting the BackGround Color of the OpenGL Scene
     RNA3D->cGraphics->SetOpenGLBackGroundColor();

@@ -1341,7 +1341,6 @@ bool GBCMS_accept_calls(GBDATA *gbd, bool wait_extra_time) {
         }
 
         if (anz==-1){
-            // printf("ERROR: poll in aisc_accept_calls %i\n",errno);
             return false;
         }
         if (!anz){ // timed out

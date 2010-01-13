@@ -128,8 +128,6 @@ using std::cout;
             {
                 if (tmp) delete tmp, tmp = NULL;
                 
-//              if (!input.gets(&tmp)) error = 1;
-
                 line--;
             }
 

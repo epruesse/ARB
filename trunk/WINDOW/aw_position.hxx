@@ -88,7 +88,6 @@ namespace AW {
         const double& xpos() const { return x; }
         const double& ypos() const { return y; }
 
-        // void set(const double& X, const double& Y) { x = X; y = Y; }
         void setx(const double& X) { x = X; }
         void sety(const double& Y) { y = Y; }
 
@@ -110,9 +109,8 @@ namespace AW {
     // -------------------------------
 
     class Vector {
-        Position       end; // endpoint of vector (vector starts at Position::origin)
-        // double         x_, y_;
-        mutable double len;     // once calculated, length of vector is stored here (negative value means "not calculated")
+        Position       end;                         // endpoint of vector (vector starts at Position::origin)
+        mutable double len;                         // once calculated, length of vector is stored here (negative value means "not calculated")
 
     public:
         bool valid() const { return end.valid() && (len == len); } // len == len fails if len is NAN
@@ -149,7 +147,6 @@ namespace AW {
             aw_assert(length()>0); // cannot normalize zero-Vector!
             return *this /= length();
         }
-        // bool is_normalized() const { return std::abs(length()-1.0) < EPSILON; }
         bool is_normalized() const { return nearlyEqual(length(), 1); }
 
         Vector& set_length(double new_length) {

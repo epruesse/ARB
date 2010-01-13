@@ -972,9 +972,6 @@ void NT_update_marked_counter(AW_window *aww, long count) {
 }
 
 static void nt_count_marked(AW_window *aww) {
-#if defined(DEBUG)
-//     printf("Counting marked species\n");
-#endif // DEBUG
     long count = GBT_count_marked_species(GLOBAL_gb_main);
     NT_update_marked_counter(aww, count);
 }
@@ -1268,7 +1265,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         //      Genes + Experiment
         //  --------------------------
 
-        if (is_genome_db) GEN_create_genes_submenu(awm, true/*, ntw*/);
+        if (is_genome_db) GEN_create_genes_submenu(awm, true);
 
         // -----------------
         //      Sequence
@@ -1410,14 +1407,12 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
         SEP________________________SEP();
 
-        // if (!clone){
-            awm->insert_sub_menu("Reset zoom",         "z");
-            {
-                AWMIMT(awm->local_id("reset_logical_zoom"),  "Logical zoom",  "L", "rst_log_zoom.hlp",  AWM_ALL, (AW_CB)NT_reset_lzoom_cb, (AW_CL)ntw, 0);
-                AWMIMT(awm->local_id("reset_physical_zoom"), "Physical zoom", "P", "rst_phys_zoom.hlp", AWM_ALL, (AW_CB)NT_reset_pzoom_cb, (AW_CL)ntw, 0);
-            }
-            awm->close_sub_menu();
-        // }
+        awm->insert_sub_menu("Reset zoom",         "z");
+        {
+            AWMIMT(awm->local_id("reset_logical_zoom"),  "Logical zoom",  "L", "rst_log_zoom.hlp",  AWM_ALL, (AW_CB)NT_reset_lzoom_cb, (AW_CL)ntw, 0);
+            AWMIMT(awm->local_id("reset_physical_zoom"), "Physical zoom", "P", "rst_phys_zoom.hlp", AWM_ALL, (AW_CB)NT_reset_pzoom_cb, (AW_CL)ntw, 0);
+        }
+        awm->close_sub_menu();
         awm->insert_sub_menu("Collapse/Expand tree",         "C");
         {
             AWMIMT(awm->local_id("tree_group_all"),         "Group all",               "a", "tgroupall.hlp",   AWM_ALL,  (AW_CB)NT_group_tree_cb,       (AW_CL)ntw, 0);

@@ -41,8 +41,6 @@ analyzeWindow::analyzeWindow(MDialog *d)
 
     m_myplot= new Plot(XtDisplay(m_plotArea), XtWindow(m_plotArea));
 
-    // m_myplot->demo();
-
     XtAddCallback(m_plotArea, XmNresizeCallback, staticResizeGnuplot, this);
 
     resizeGnuplot();
@@ -114,14 +112,6 @@ void analyzeWindow::createWindow()
         XmNrightAttachment, XmATTACH_FORM,
         NULL);
 
-//     m_plotArea= XtVaCreateManagedWidget("area",
-//         xmFormWidgetClass, m_plotManager,
-//         XmNtopAttachment, XmATTACH_FORM,
-//         XmNleftAttachment, XmATTACH_FORM,
-//         XmNbottomAttachment, XmATTACH_FORM,
-//         XmNrightAttachment, XmATTACH_FORM,
-//         NULL);
-
     // FILL TOOLBARS WITH WIDGETS
     createTopToolbar();
     createLeftToolbar();
@@ -161,7 +151,6 @@ void analyzeWindow::createLeftToolbar()
 void analyzeWindow::resizeGnuplot()
 {
     Dimension w, h;
-    // unsigned int w, h;
 
     // GET DIMENSIONS
     XtVaGetValues(m_plotArea,

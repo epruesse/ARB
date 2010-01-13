@@ -64,7 +64,6 @@ public:
 
     static long combine_count() { return global_combineCount; }
 
-    // virtual void set_gb(GBDATA *gb_sequence);      // by default calls set((char *)) // @@@ put into ctor ?
     GB_ERROR bind_to_species(GBDATA *gb_species);
     void     unbind_from_species();
     bool is_bound_to_species() const { return gb_sequence != NULL; }

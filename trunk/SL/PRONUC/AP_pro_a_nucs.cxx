@@ -90,7 +90,6 @@ void AWT_translator::build_table(unsigned char pbase, const char *tri_pro, const
         if (c <= 1) break;
     }
     if (!nucs) {
-        //         nucs       = (struct arb_r2a_pro_2_nucs *)GB_calloc(sizeof(struct arb_r2a_pro_2_nucs),1);
         nucs       = new arb_r2a_pro_2_nucs;
         nucs->next = str->nucs;
         str->nucs  = nucs;

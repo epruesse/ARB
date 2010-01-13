@@ -80,11 +80,6 @@ static GBDATA *EXP_find_experiment_by_id(GBDATA *gb_main, const char *id) {
 
 static char *old_species_marks = 0; // configuration storing marked species
 
-// extern "C" {
-//     typedef  GB_ERROR (*species_callback)(GBDATA *gb_species, int *clientdata);
-//     GB_ERROR GBT_with_stored_species(GBDATA *gb_main, const char *stored, species_callback doit, int *clientdata);
-// }
-
 inline void exp_restore_old_species_marks() {
     if (old_species_marks) {
         GBT_restore_marked_species(GLOBAL_gb_main, old_species_marks);
@@ -216,8 +211,6 @@ AW_window *EXP_create_experiment_query_window(AW_root *aw_root) {
     awtqs.gb_main             = GLOBAL_gb_main;
     awtqs.species_name        = AWAR_SPECIES_NAME;
     awtqs.tree_name           = AWAR_TREE;
-    //     awtqs.query_genes  = true;
-    //     awtqs.gene_name    = AWAR_GENE_NAME;
     awtqs.select_bit          = 1;
     awtqs.use_menu            = 1;
     awtqs.ere_pos_fig         = "ere3";
@@ -509,8 +502,6 @@ AW_window *EXP_create_experiment_window(AW_root *aw_root) {
 
         detach_info->set_detach_button(aws->get_last_widget());
     }
-
-    //     aws->get_root()->awar(AWAR_EXPERIMENT_NAME)->add_callback(EXP_map_experiment,scannerid);
 
     aws->show();
     EXP_map_experiment(aws->get_root(),scannerid);

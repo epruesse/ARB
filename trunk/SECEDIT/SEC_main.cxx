@@ -191,10 +191,8 @@ static void SEC_fit_window_cb(AW_window */*aw*/, AW_CL cl_secroot, AW_CL) {
 static void sec_mode_event(AW_window *aws, AW_CL cl_secroot, AW_CL cl_mode)
 {
     SEC_root         *sec_root = (SEC_root*)cl_secroot;
-    AWT_COMMAND_MODE  mode = (AWT_COMMAND_MODE)cl_mode;
-
-    // SEC_root   *sec_root = SEC_GRAPHIC->sec_root;
-    const char *text     = 0;
+    AWT_COMMAND_MODE  mode     = (AWT_COMMAND_MODE)cl_mode;
+    const char       *text     = 0;
 
     sec_root->set_show_constraints(SEC_NO_TYPE);
 
@@ -763,7 +761,6 @@ AW_window *SEC_create_main_window(AW_root *awr, GBDATA *gb_main) {
 
     awm->set_info_area_height( 250 );
     awm->at(5,2);
-    // awm->auto_space(5,-2);
     awm->auto_space(0,-2);
 
     awm->button_length(0);
@@ -771,14 +768,8 @@ AW_window *SEC_create_main_window(AW_root *awr, GBDATA *gb_main) {
     awm->callback((AW_CB0)AW_POPDOWN);
     awm->create_button("Close", "#quit.xpm"); // use quit button, cause users regard secedit as separate program
 
-    // awm->callback(AW_POPUP_HELP,(AW_CL)"arb_secedit.hlp");
-    // awm->button_length(0);
-    // awm->help_text("help.hlp");
-    // awm->create_button("HELP", "HELP","H");
-
     awm->callback(AW_help_entry_pressed);
     awm->help_text("arb_secedit.hlp");
-    // awm->create_button(0,"?");
     awm->create_button("HELP","#help.xpm");
 
     awm->callback(SEC_undo_cb,(AW_CL)db,(AW_CL)GB_UNDO_UNDO);
@@ -812,7 +803,6 @@ AW_window *SEC_create_main_window(AW_root *awr, GBDATA *gb_main) {
         maxSize.restore(awm->_at);
     }
 
-    // awm->set_info_area_height(awm->get_at_yposition()+6);
     awm->set_info_area_height(awm->get_at_yposition());
 
     return awm;

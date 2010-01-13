@@ -27,22 +27,10 @@ class analyzeWindow : public MDialog
         ~analyzeWindow();
         //
         void resizeGnuplot();
-//         void ARBdataButtonCallback(Widget, XtPointer);
-//         void TIFFnameButtonCallback(Widget, XtPointer);
-//         void setSpecies(char *);
-//         void setExperiment(char *);
-//         void setProteome(char *);
-//         void updateARBText();
-//         void imageFileDialogCallback(Widget, XtPointer);
-//         void imageRedraw();
     protected:
         void createWindow();
         void createTopToolbar();
         void createLeftToolbar();
-//         void updateImage();
-//         void setText(char *, int, int);
-//         void drawCrosshair(int, int);
-//         void displayARBData();
     private:
         Widget m_top;
         Widget m_topToolbar;
@@ -52,41 +40,10 @@ class analyzeWindow : public MDialog
 
         Plot *m_myplot; // DEBUG
 
-//         Widget m_drawingArea;
-//         Widget m_ARBdata;
-//         Widget m_TIFFname;
-//         Widget m_fileDialog;
-//         //
-//         char *m_species;
-//         char *m_experiment;
-//         char *m_proteome;
-//         char *m_x_container;
-//         char *m_y_container;
-//         char *m_id_container;
-//         char *m_vol_container;
-//         //
-//         bool m_hasFileDialog;
-//         bool m_hasTIFFdata;
-//         bool m_hasARBdata;
-//         //
-//         XImage *m_ximage;
-//         TIFFimage *m_image;
-//         int  m_width;
-//         int  m_height;
 };
 
 
 // CALLBACK WRAPPER FUNCTIONS (STATIC)
 void staticResizeGnuplot(Widget, XtPointer, XtPointer);
-
-// void staticARBdataButtonCallback(Widget, XtPointer, XtPointer);
-// void staticTIFFnameButtonCallback(Widget, XtPointer, XtPointer);
-// void staticImageSpeciesCallback(Widget, XtPointer, XtPointer);
-// void staticImageExperimentCallback(Widget, XtPointer, XtPointer);
-// void staticImageProteomeCallback(Widget, XtPointer, XtPointer);
-// void staticImageFileDialogCloseCallback(Widget, XtPointer, XtPointer);
-// void staticImageFileDialogCallback(Widget, XtPointer, XtPointer);
-// void staticImageRedrawCallback(Widget, XtPointer, XtPointer);
-
 
 #endif // ANALYZE_WINDOW_HXX

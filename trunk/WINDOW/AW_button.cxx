@@ -496,10 +496,6 @@ static void calculate_label_size(AW_window *aww, int *width, int *height, bool i
         *width  = 0;
         *height = 0;
     }
-
-    // if (_at->length_of_label_for_inputfield) return _at->length_of_label_for_inputfield;
-    // if (_at->label_for_inputfield) return strlen(_at->label_for_inputfield);
-    // return 0;
 }
 
 
@@ -575,8 +571,6 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
     printf("------------------------------ Button '%s'\n", buttonlabel);
     printf("x_for_next_button=%i y_for_next_button=%i\n", _at->x_for_next_button, _at->y_for_next_button);
 #endif // DUMP_BUTTON_CREATION
-
-    check_at_pos();
 
     if (_callback && ((long)_callback!= 1) )
     {
@@ -737,15 +731,11 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
             int x_shadow      = x_button - shadow_offset;
             int y_shadow      = y_button - shadow_offset;
 
-            // x_button += shadow_offset;
-
             fatherwidget = XtVaCreateManagedWidget( "draw_area",
                                                     xmFrameWidgetClass,
                                                     INFO_WIDGET,
                                                     XmNx, (int)(x_shadow),
                                                     XmNy, (int)(y_shadow),
-                                                    // XmNmarginWidth, 3,
-                                                    // XmNmarginHeight,3,
                                                     XmNshadowType, XmSHADOW_IN,
                                                     XmNshadowThickness, _at->shadow_thickness,
                                                     NULL);
@@ -999,7 +989,6 @@ void AW_window::create_input_field( const char *var_name,  int columns ) {
     char                      *String;
     int                        x_correcting_for_label = 0;
 
-    check_at_pos();
     if (!columns) columns = _at->length_of_buttons;
 
     AW_awar *vs = root->awar(var_name);
@@ -1285,8 +1274,6 @@ AW_selection_list* AW_window::create_selection_list( const char *var_name, const
     if ( _at->label_for_inputfield ) {
         tmp_label = _at->label_for_inputfield;
     }
-
-    check_at_pos();
 
     AW_awar *vs = 0;
     if (var_name) vs = root->awar(var_name);
@@ -1595,27 +1582,6 @@ void AW_window::select_index(AW_selection_list *selection_list, const char *awar
 void AW_window::move_selection(AW_selection_list *selection_list, const char *awar_name, int offset) {
     int index = get_index_of_current_element(selection_list, awar_name);
     select_index(selection_list, awar_name, index+offset);
-
-    //     int curr_idx;
-    //     {
-    //         char *curr_value = list_awar->read_string();
-
-    //         curr_idx = get_index_of_element(selection_list, curr_value);
-    //         free(curr_value);
-    //     }
-
-    //     if (curr_idx == -1) {
-    //         curr_idx = 0;
-    //     }
-    //     else {
-    //         curr_idx += offset;
-    //     }
-
-    //     const char *new_value = get_element_of_index(selection_list, curr_idx);
-    //     if (new_value) {
-    //         list_awar->write_string(new_value);
-    //     }
-    //     return 0;
 }
 
 /*-------------------- function to get index of an entry in the selection lists -------------------- */
@@ -2216,10 +2182,7 @@ AW_option_menu_struct *AW_window::create_option_menu( const char *var_name, AW_l
         tmp_label = _at->label_for_inputfield;
     }
 
-    check_at_pos();
-
     if ( _at->correct_for_at_center ) {
-//         _at->correct_for_at_center_intern = _at->correct_for_at_center;
         if ( tmp_label ) {
             _at->saved_x = _at->x_for_next_button;
             x_for_position_of_menu = 10;
@@ -2266,7 +2229,6 @@ AW_option_menu_struct *AW_window::create_option_menu( const char *var_name, AW_l
 #endif // DUMP_BUTTON_CREATION
 
         help_label = this->align_string( tmp_label, width_help_label);
-        // help_label = this->align_string( tmp_label, calculate_label_length() );
         if (mnemonic && mnemonic[0] && strchr(tmp_label,mnemonic[0])){
             optionMenu1 = XtVaCreateManagedWidget( "optionMenu1",
                                                    xmRowColumnWidgetClass,
@@ -2312,8 +2274,7 @@ AW_option_menu_struct *AW_window::create_option_menu( const char *var_name, AW_l
 
 #if 0
     // setting background color for radio button only does not work.
-    // works only for label and button together, that's not what we want.
-    // 
+    // works only for label and button together, but that's not what we want.
     TuneBackground(optionMenu_shell, TUNE_BUTTON); // set background color for radio button
     XtVaSetValues(optionMenu1, // colorizes background and label
                   XmNbackground, _at->background_color,
@@ -2577,10 +2538,7 @@ void AW_window::create_toggle_field( const char *var_name, int orientation ) {
         tmp_label = _at->label_for_inputfield;
     }
 
-    check_at_pos();
-
     if ( _at->correct_for_at_center ) {
-//         _at->correct_for_at_center_intern = _at->correct_for_at_center;
         _at->saved_x = _at->x_for_next_button;
         x_for_position_of_option = 10;
     }

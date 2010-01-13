@@ -289,7 +289,7 @@ void ARB_tree::assert_valid() const {
     else {                                          // this is root
         if (troot) {
             at_assert(troot->get_root_node()  == this);
-            at_assert(!is_leaf);                    // leaf@root (tree has to have at least 2 leafs);
+            at_assert(!is_leaf);                    // leaf@root (tree has to have at least 2 leafs)
         }
     }
 }

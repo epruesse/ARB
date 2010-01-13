@@ -26,9 +26,6 @@ double awt_aps_get_xy_ratio(AW_root *awr){
             res = 103.0/90.0;
             break;
     }
-    if (psize == AWT_APRINT_PAPERSIZE_US) {
-        //res = res *.96;               // ?????
-    }
     return res;
 }
 
@@ -76,7 +73,6 @@ void awt_aps_calc_pages_needed(AW_root *awr){
 
 void awt_aps_set_magnification_to_fit_xpage(AW_root *awr){
     int x = awr->awar(AWAR_APRINT_SX)->read_int();
-    //int y = awr->awar(AWAR_APRINT_SY)->read_int();
 
     int dx = int(awr->awar(AWAR_APRINT_DX)->read_float()+.5);
     if (dx < 1) dx = 1;
@@ -91,7 +87,6 @@ void awt_aps_set_magnification_to_fit_xpage(AW_root *awr){
 }
 
 void awt_aps_set_magnification_to_fit_ypage(AW_root *awr){
-    //int x = awr->awar(AWAR_APRINT_SX)->read_int();
     int y = awr->awar(AWAR_APRINT_SY)->read_int();
 
     int dy = int(awr->awar(AWAR_APRINT_DY)->read_float()+.5);

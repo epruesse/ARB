@@ -95,10 +95,6 @@ FILE *debug;
 /*                              PROGRAM                                  */
 /*=======================================================================*/
 
-#if 0
-void hang(msg) char *msg; {printf("Hanging around: %s\n", msg); while(1);}
-#endif
-
 void getnums() {
     /* input number of species, number of sites */
     printf("\n%s, version %s, %s\n\n",
@@ -1235,7 +1231,6 @@ void treeNeedCh(int c1, const char *where) {
     int c2, i;
 
     if ((c2 = treeGetCh()) == c1)  return;
-    /* assert(c2 == c1); */ /* stop here with debugger  */
 
     printf("ERROR: Missing '%c' %s tree; ", c1, where);
     if (c2 == EOF)

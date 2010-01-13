@@ -304,8 +304,6 @@ char* EDB_root_bact::make_string()
 
 char* EDB_root_bact::make_top_bot_string()          // is only called when started manually
 {
-    //  char sep_name[2]={ 1, '\0'};            // Trennzeichen
-
     char* configstring;
     configstring = new char[400];
     sprintf(configstring, "%cFSAI's%cSHELIX_PAIRS%cSHELIX_LINE%cSALI_ERR%cSALI_CON%cSALI_INT%cSALI_BIND%cSantibiot%cSmodnuc%cSelong%cStRNA%cSALI_BOR%cSALI_PRE_I%cSALI_PRE%cSALI_INSERTS%cSinseuca2%cSregaps%cSallr5%cSbacr5%cSarcr5%cSeucr5%cSgplr5%cSinsEuca%cSprimer1%cSprimer2%cSbetar5%cSprimer3%cE",1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1);
@@ -558,10 +556,6 @@ ED4_returncode EDB_root_bact::create_group_header(ED4_multi_species_manager   *p
     species_manager->flag.is_consensus = 1;
     (*multi_species_manager)->children->append_member( species_manager );
 
-    // ************
-    //  sprintf(namebuffer, "Sequence_Info_Term%d.%d",counter, count_too ++);
-    // *************
-
     species_name_terminal = new ED4_species_name_terminal(  groupname,0, 0, MAXSPECIESWIDTH-(group_depth*BRACKETWIDTH) , height_terminal, species_manager );
     species_name_terminal->set_properties( (ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE) );    //only some terminals
     species_name_terminal->set_links( NULL, ref_sequence_terminal );
@@ -572,7 +566,7 @@ ED4_returncode EDB_root_bact::create_group_header(ED4_multi_species_manager   *p
     sequence_manager->set_properties( ED4_P_MOVABLE );
     species_manager->children->append_member( sequence_manager );
 
-    sequence_info_terminal = new ED4_sequence_info_terminal( "CONS", /*NULL,*/ 0, 0, SEQUENCEINFOSIZE, height_terminal, sequence_manager ); // Info fuer Gruppe
+    sequence_info_terminal = new ED4_sequence_info_terminal( "CONS", 0, 0, SEQUENCEINFOSIZE, height_terminal, sequence_manager ); // Info fuer Gruppe
     sequence_info_terminal->set_links( ref_sequence_info_terminal, ref_sequence_info_terminal );
     sequence_info_terminal->set_properties( (ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE) );
     sequence_manager->children->append_member( sequence_info_terminal );
@@ -625,8 +619,6 @@ char *EDB_root_bact::generate_config_string(char *confname)                 // a
             if (error) aw_message(error);
 
             GB_commit_transaction( GLOBAL_gb_main );
-
-            //          printf("AREA:\n%s\n\n\n",generated_string);
 
             delete [] generated_string;
             generated_string = NULL;

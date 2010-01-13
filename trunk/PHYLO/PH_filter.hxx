@@ -16,12 +16,12 @@ enum {
 
 class PH_filter {
 public:
-    char *filter;               // 0 1
+    char *filter;                                   // 0 1
     long  filter_len;
-    long  real_len;             // how many 1
+    long  real_len;                                 // how many 1
     long  update;
-    long *options_vector;       // options used to calculate current filter
-    //  float   *markerline;       // line to create filter (according to options_vector)
+    long *options_vector;                           // options used to calculate current filter
+
     char *init(char *filter, char *zerobases, long size);
     char *init(long size);
 

@@ -517,7 +517,6 @@ static void ED4_pfold_find_turns(const unsigned char *sequence, char *structure,
             p_t    *= cf_parameters_norm[aa][3 + count];
         }
         if (count != 0) {
-        //if (count == 4) {
             P_a /= count;
             P_b /= count;
             P_turn /= count;
@@ -672,60 +671,7 @@ static GB_ERROR ED4_pfold_predict_structure(const unsigned char *sequence, char 
     return error;
 }
 
-#if 0
-/** \brief Predicts protein secondary structure from the amino acid sequence.
- *
- *  \param[in]  sequence  Amino acid sequence
- *  \param[out] structure Predicted secondary structure summary
- *  \param[in]  length    Size of \a sequence and \a structure
- *  \return     Error description, if an error occurred; 0 otherwise
- *
- *  Basically the same as
- *  ED4_pfold_predict_structure(const char *sequence, char *structures[4], int length)
- *  except that it returns only the secondary structure summary in \a structure.
- */
-static GB_ERROR ED4_pfold_predict_structure(const char *sequence, char *structure, int length) {
-    GB_ERROR error = 0;
-    
-    // allocate memory
-    char *structures[4];
-    for (int i = 0; i < 4; i++) {
-        structures[i] = new char [length + 1];
-        if (!structures[i]) {
-            error = GB_export_error("Out of memory.");
-            return error;
-        }
-        for (int j = 0; j < length; j++) {
-            structures[i][j] = ' ';
-        }
-        structures[i][length] = '\0';
-    }
-    
-    // predict structure
-    error = ED4_pfold_predict_structure(sequence, structures, length);
-    
-    // write predicted summary to result_buffer
-    if (structure) {
-        for (int i = 0; i < length; i++) {
-            structure[i] = structures[STRUCTURE_SUMMARY][i];
-        }
-        structure[length] = '\0';
-    }
-    
-    // free buffer and return
-    for (int i = 0; i < 4; i++) {
-        if (structures[i]) {
-            delete structures[i];
-            structures[i] = 0;
-        }
-    }
-    return error;
-}
-#endif
-
-
-
-GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai, const unsigned char *structure_cmp, int start, int end, char *result_buffer, PFOLD_MATCH_METHOD match_method /*= SECSTRUCT_SEQUENCE*/) {
+GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai, const unsigned char *structure_cmp, int start, int end, char *result_buffer, PFOLD_MATCH_METHOD match_method) {
     GB_ERROR error = 0;
     e4_assert(structure_sai);
     e4_assert(structure_cmp);
@@ -993,7 +939,7 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
 }
 
 
-GB_ERROR ED4_pfold_set_SAI(char **protstruct, GBDATA *gb_main, const char *alignment_name, long *protstruct_len /*= 0*/) {
+GB_ERROR ED4_pfold_set_SAI(char **protstruct, GBDATA *gb_main, const char *alignment_name, long *protstruct_len) {
     GB_ERROR        error         = 0;
     GB_transaction  ta(gb_main);
     AW_root        *aw_root       = ED4_ROOT->aw_root;
@@ -1124,58 +1070,27 @@ AW_window *ED4_pfold_create_props_window(AW_root *awr, AW_cb_struct *awcbs) {
     
     // create match symbols and/or match types input fields
     //TODO: show only fields that are relevant for current match method -> bind to callback function?
-    //if (match_method == SECSTRUCT_SEQUENCE) {
-        aws->label_length(40);
-        aws->label("Match Symbols (Range 0-100% in steps of 10%)");
+    aws->label_length(40);
+    aws->label("Match Symbols (Range 0-100% in steps of 10%)");
+    aws->callback(awcbs);
+    aws->create_input_field(PFOLD_AWAR_SYMBOL_TEMPLATE_2, 10);
+    aws->at_newline();
+    for (int i = 0; pfold_match_type_awars[i].name; i++) {
+        aws->label_length(12);
+        sprintf(awar, PFOLD_AWAR_PAIR_TEMPLATE, pfold_match_type_awars[i].name);
+        aws->label(pfold_match_type_awars[i].name);
         aws->callback(awcbs);
-        aws->create_input_field(PFOLD_AWAR_SYMBOL_TEMPLATE_2, 10);
+        aws->create_input_field(awar, 30);
+        //TODO: is it possible to disable input field for STRUCT_UNKNOWN?
+        //if (pfold_match_type_awars[i].value == STRUCT_UNKNOWN)
+        if (!i) aws->get_at_position(&ex, &ey);
+        sprintf(awar, PFOLD_AWAR_SYMBOL_TEMPLATE, pfold_match_type_awars[i].name);
+        aws->callback(awcbs);
+        aws->create_input_field(awar, 3);
         aws->at_newline();
-    //} else {
-        for (int i = 0; pfold_match_type_awars[i].name; i++) {
-            aws->label_length(12);
-            sprintf(awar, PFOLD_AWAR_PAIR_TEMPLATE, pfold_match_type_awars[i].name);
-            aws->label(pfold_match_type_awars[i].name);
-            aws->callback(awcbs);
-            aws->create_input_field(awar, 30);
-            //TODO: is it possible to disable input field for STRUCT_UNKNOWN?
-            //if (pfold_match_type_awars[i].value == STRUCT_UNKNOWN)
-            if (!i) aws->get_at_position(&ex, &ey);
-            sprintf(awar, PFOLD_AWAR_SYMBOL_TEMPLATE, pfold_match_type_awars[i].name);
-            aws->callback(awcbs);
-            aws->create_input_field(awar, 3);
-            aws->at_newline();
-        }
-    //}
+    }
     
     aws->window_fit();
     return (AW_window *)aws;
 }
-
-#if 0
-
-/** \brief Predicts the specified secondary structure type from the amino acid sequence.
- *
- *  \param[in]  sequence  Amino acid sequence
- *  \param[out] structure Predicted secondary structure
- *  \param[in]  length    Size of \a sequence and \a structure
- *  \param[in]  s         Secondary structure type (#ALPHA_HELIX, #BETA_SHEET or #BETA_TURN)
- *
- *  The function calls ED4_pfold_find_nucleation_sites() and ED4_pfold_extend_nucleation_sites()
- *  if s is #ALPHA_HELIX or #BETA_SHEET and ED4_pfold_find_turns() if s is #BETA_TURN.
- */
-static void ED4_pfold_find_structure(const char *sequence, char *structure, int length, const PFOLD_STRUCTURE s) {
-    e4_assert(s == ALPHA_HELIX || s == BETA_SHEET || s == BETA_TURN); // incorrect value for s
-    e4_assert(char2AA); // char2AA not initialized; ED4_pfold_init_statics() failed or hasn't been called yet
-    if (s == BETA_TURN) {
-        ED4_pfold_find_turns(sequence, structure, length);
-    }
-    else {
-        ED4_pfold_find_nucleation_sites(sequence, structure, length, s);
-        ED4_pfold_extend_nucleation_sites(sequence, structure, length, s);
-    }
-}
-
-#endif
-
-
 

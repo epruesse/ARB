@@ -118,7 +118,6 @@ AW_CL awt_create_selection_list_on_scandb(GBDATA                 *gb_main,
         {
             AW_window_simple *aw_popup = new AW_window_simple;
             aw_popup->init(aws->get_root(), "SELECT_LIST_ENTRY", "SELECT AN ENTRY");
-            //         aw_popup->load_xfig(0, true);
 
             aw_popup->auto_space(10, 10);
             aw_popup->at_newline();
@@ -143,7 +142,7 @@ AW_CL awt_create_selection_list_on_scandb(GBDATA                 *gb_main,
 
     }
     else { // otherwise just insert the selection list at point
-        id = aws->create_selection_list(varname,0,"",columns,visible_rows); // 20,10);
+        id = aws->create_selection_list(varname,0,"",columns,visible_rows); 
     }
 
     struct adawcbstruct *cbs = new adawcbstruct;

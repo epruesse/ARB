@@ -202,18 +202,14 @@ void arb_prm_primer(int /*prmanz*/)
     GB_HASH *hash;
     GB_HASH *mhash;
     int      sp;
-    //  int             len;
     char    *buffer;
     int      pos;
     int      prmlen;
     int      pspecies;
-
-    int cutoff_cnt;
-
-    int *best_primer_cnt;
-    int *best_primer_new;
-    int *best_primer_swap;
-    //  int     newlen;
+    int      cutoff_cnt;
+    int     *best_primer_cnt;
+    int     *best_primer_new;
+    int     *best_primer_swap;
 
     prmlen = aprm.prmlen + ADD_LEN;
 

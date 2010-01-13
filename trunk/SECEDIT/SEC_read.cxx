@@ -442,7 +442,7 @@ GB_ERROR SEC_root::read_data(const char *input_string, const char *x_string_in) 
 #endif // DEBUG
 
             if (strncmp(string_buffer, "LOOP={", 6) == 0) {
-                SEC_loop *rootLoop = new SEC_loop(this); // , NULL, 0, 0);
+                SEC_loop *rootLoop = new SEC_loop(this); 
 
                 set_root_loop(rootLoop);
                 set_under_construction(true);

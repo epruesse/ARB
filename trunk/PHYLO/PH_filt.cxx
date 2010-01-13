@@ -123,17 +123,16 @@ float *PH_filter::calculate_column_homology(void){
     delete options_vector;
     mline = (float *) calloc((int) PHDATA::ROOT->get_seq_len(),sizeof(float));
 
-    // options_vector = (long *) calloc((isNUC ? 8 : 7),sizeof(long));
-    options_vector    = (long *) calloc(8,sizeof(long));
-    
-    options_vector[OPT_START_COL]                  = aw_root->awar("phyl/filter/startcol")->read_int();
-    options_vector[OPT_STOP_COL]                   = aw_root->awar("phyl/filter/stopcol")->read_int();
-    options_vector[OPT_MIN_HOM]                    = aw_root->awar("phyl/filter/minhom")->read_int();
-    options_vector[OPT_MAX_HOM]                    = aw_root->awar("phyl/filter/maxhom")->read_int();
-    options_vector[OPT_FILTER_POINT]               = aw_root->awar("phyl/filter/point")->read_int(); // '.' in column
-    options_vector[OPT_FILTER_MINUS]               = aw_root->awar("phyl/filter/minus")->read_int(); // '-' in column
-    options_vector[OPT_FILTER_AMBIG]               = aw_root->awar("phyl/filter/rest")->read_int(); // 'MNY....' in column
-    /*if(isNUC)*/ options_vector[OPT_FILTER_LOWER] = aw_root->awar("phyl/filter/lower")->read_int(); // 'acgtu' in column
+    options_vector = (long *) calloc(8,sizeof(long));
+
+    options_vector[OPT_START_COL]    = aw_root->awar("phyl/filter/startcol")->read_int();
+    options_vector[OPT_STOP_COL]     = aw_root->awar("phyl/filter/stopcol")->read_int();
+    options_vector[OPT_MIN_HOM]      = aw_root->awar("phyl/filter/minhom")->read_int();
+    options_vector[OPT_MAX_HOM]      = aw_root->awar("phyl/filter/maxhom")->read_int();
+    options_vector[OPT_FILTER_POINT] = aw_root->awar("phyl/filter/point")->read_int(); // '.' in column
+    options_vector[OPT_FILTER_MINUS] = aw_root->awar("phyl/filter/minus")->read_int(); // '-' in column
+    options_vector[OPT_FILTER_AMBIG] = aw_root->awar("phyl/filter/rest")->read_int(); // 'MNY....' in column
+    options_vector[OPT_FILTER_LOWER] = aw_root->awar("phyl/filter/lower")->read_int(); // 'acgtu' in column
 
     delete_when_max[0] = '\0';
 

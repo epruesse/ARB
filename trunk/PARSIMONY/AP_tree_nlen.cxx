@@ -75,14 +75,6 @@ void AP_tree_nlen::copy(AP_tree_nlen *tree)
         
         ap_assert(0); //  this will not work, but is only used in GA_genetic.
                       //  Use some kind of SmartPtr there!
-
-        // if (tree->sequence) {
-        // this->sequence = tree->sequence;
-        // }
-        // else {
-        // cout << "empty sequence at leaf";
-        // this->sequence = 0;
-        // }
     }
 }
 
@@ -414,9 +406,6 @@ void AP_tree_nlen::remove() {
             ap_main->push_node(lson,STRUCTURE);
             ap_main->push_node(rson,STRUCTURE);
             ap_main->push_node(oldRoot, ROOT);
-
-            // get_tree_root()->change_root(get_father(), oldBrother);
-            // don't do this here (already done in AP_tree::remove())
 
             edgeTo(oldBrother)->unlink();           // LOST_EDGE
             oldBrother->edgeTo(lson)->unlink();     // LOST_EDGE
@@ -948,15 +937,6 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
 
     //parameterausgabe
 
-#if 0
-    cout << "DEEP  " << rek_deep << "   ";
-    cout << "  maxdeep " << rek_deep_max << " suche " << rek_width_type << " abbruch " << *abort_flag;
-    cout << "\npbest    " << pars_best << " pstart  " << pars_start << " pprev  " << pars_prev << "\nParam : ";
-    for (i = 0; i < param_anz; i++)
-        cout << i << " : " << param_liste[i] << "    ";
-    cout << "\nSchwellwert  " << schwellwert << "\n";
-    cout.flush();
-#endif
     if (rek_deep >= rek_deep_max || is_leaf || *abort_flag)   return;
 
     // Referenzzeiger auf die vier Kanten und zwei swapmoeglichkeiten initialisieren
@@ -970,7 +950,6 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
         pars_refpntr[2] = pars_refpntr[3] = 0;
         pars_refpntr[4] = pars_refpntr[5] = 0;
         pars_refpntr[6] = pars_refpntr[7] = 0;
-        //      cout << "NEW RECURSION\n\n";
     }
     else {
         pars_refpntr[0] = pars_refpntr[1] = static_cast<AP_tree_nlen *>(this->leftson);
@@ -1068,10 +1047,6 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
     display_out(pars, visited_subtrees, pars_prev, pars_start, rek_deep);
     //Darstellen
 
-
-    //  for (i=0;i<visited_subtrees;i++)  cout << "  " << pars[i];
-
-
     if (rek_deep < rek_2_width_max) rek_width_static = rek_2_width[rek_deep];
     else rek_width_static                            = 1;
 
@@ -1093,9 +1068,6 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
     }
 
     if (rek_width > visited_subtrees)   rek_width = visited_subtrees;
-
-    //  cout << "   rek_width:  " << rek_width << "\n";
-    //  cout.flush();
 
     for (i=0;i < rek_width; i++) {
         ap_main->push();

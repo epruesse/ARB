@@ -45,7 +45,7 @@ void PS_Database::writeMappings( PS_FileBuffer *_file, ID2NameMap &_id2name_map 
     for (ID2NameMapCIter i = _id2name_map.begin(); i != _id2name_map.end(); ++i ) {
         // write id
         _file->put( &(i->first), sizeof(SpeciesID) );
-        // write name;
+        // write name
         unsigned int length_of_name = i->second.size();
         _file->put_uint( length_of_name );
         _file->put( i->second.c_str(), length_of_name );        

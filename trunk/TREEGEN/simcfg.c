@@ -129,8 +129,6 @@ static struct S_cfgLine cfg_lines[] =
     { "Loop-GC-Rate",       "0.5 0.001 0.001",  decodeFrand,        &loopGcRate,        "G:C rate in loop regions" },
     { "Loop-AT-Rate",       "0.5 0.001 0.001",  decodeFrand,        &loopAtRate,        "A:T rate in loop regions" },
 
-/*    { "", "", decode, &, "" }, */
-
     { NULL, 0, 0, 0, 0 }
 };
 

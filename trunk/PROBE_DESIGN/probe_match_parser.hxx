@@ -37,7 +37,6 @@ public:
 
     bool getColumnRange(const char *columnName, int *startCol, int *endCol) const;
 
-    // bool parse_match(const char *match, const char *& result_probeRegion, int& result_startPos, GB_ERROR& error);
     friend class ParsedProbeMatch;
 };
 

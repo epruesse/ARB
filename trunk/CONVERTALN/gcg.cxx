@@ -117,12 +117,7 @@ void to_gcg(int intype, char *inf)
  *   Function gcg_seq_out().
  *       Output sequence data in gcg format.
  */
-void gcg_seq_out(FILE * ofp, char *key)
-{
-    /*  int indi, indj, indk; */
-    /*  char    *today_date(), *gcg_date(); */
-    /*  void    gcg_out_origin(); */
-
+void gcg_seq_out(FILE * ofp, char *key) {
     fprintf(ofp, "\n%s  Length: %d  %s  Type: N  Check: %d  ..\n\n", key, gcg_seq_length(), gcg_date(today_date()), checksum(data.sequence, data.seq_length));
     gcg_out_origin(ofp);
 }

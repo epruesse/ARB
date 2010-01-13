@@ -27,10 +27,6 @@ void       bc_create_bc_variables(AW_root *awr, AW_default awd);
 GBDATA *GLOBAL_gb_main; // global gb_main for arb_dist
 
 
-// #if 0
-//  awm->insert_menu_topic("base_correlation","base correlation ...","b","no help",AWM_ALL, AW_POPUP, (AW_CL)bc_create_main_window, 0);
-// #endif
-
 static void DI_timer(AW_root *aw_root, AW_CL cl_gbmain, AW_CL cd2) {
     GBDATA *gb_main = reinterpret_cast<GBDATA*>(cl_gbmain);
     {

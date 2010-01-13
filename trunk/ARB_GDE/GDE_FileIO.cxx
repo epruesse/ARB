@@ -600,13 +600,7 @@ int WriteNA_Flat(NA_Alignment *aln,char *filename,int method,int maskable)
 }
 
 
-void Warning(const char *s)
-{
-    /*extern Frame frame;
-      extern Panel_item left_foot,right_foot;
-      Beep();
-      xv_set(frame,FRAME_RIGHT_FOOTER,s,0);
-      xv_set(right_foot,PANEL_LABEL_STRING,s,0);*/
+void Warning(const char *s) {
     aw_message(s);
 }
 
@@ -689,7 +683,6 @@ void ReadCMask(const char *filename)
     bool IGNORE_DASH = false;
     int  offset;
     
-    /*NA_DisplayData *NAdd;*/
     NA_Alignment *aln;
 
     size_t  j;
@@ -699,11 +692,6 @@ void ReadCMask(const char *filename)
 
     if(DataSet == NULL) return;
 
-    /*NAdd = (NA_DisplayData*)((NA_Alignment*)DataSet)->na_ddata;
-
-    if(NAdd == NULL)
-    return;
-    */
     aln = (NA_Alignment*)DataSet;
 
     curname[0] = '\0';
@@ -716,7 +704,6 @@ void ReadCMask(const char *filename)
         return;
     }
 
-    /*NAdd->color_type = COLOR_ALN_MASK;*/
     for(;fgets(in_line,GBUFSIZ,file) !=0;)
     {
         if(Find(in_line,"offset:"))
@@ -747,7 +734,6 @@ void ReadCMask(const char *filename)
             if(curlen == 0)
             {
                 Warning("illegal format in colormask");
-                /*NAdd->color_type = orig_ctype;*/
                 return;
             }
             if(strlen(curname) != 0)
@@ -763,7 +749,6 @@ void ReadCMask(const char *filename)
                                             .seqmaxlen+1+aln->element[j].offset
                                             ,sizeof(int));
                         aln->element[j].cmask = colors;
-                        /*NAdd->color_type = COLOR_SEQ_MASK;*/
                         indx = j;
                         j = aln->numelements;
                     }
@@ -776,7 +761,6 @@ void ReadCMask(const char *filename)
                 colors=(int*)Calloc(curlen,sizeof(int));
                 aln->cmask = colors;
                 aln->cmask_len = curlen;
-                /*NAdd->color_type = COLOR_ALN_MASK;*/
                 for(j=0;j<curlen;j++)
                     colors[j] = 12;
             }
@@ -789,9 +773,7 @@ void ReadCMask(const char *filename)
                     offset = aln->element[indx].offset;
                     if(fgets(in_line,GBUFSIZ,file)==NULL)
                     {
-                        Warning
-                            ("illegal format in colormask");
-                        /*NAdd->color_type = orig_ctype;*/
+                        Warning("illegal format in colormask");
                         return;
                     }
                     /*
@@ -827,9 +809,7 @@ void ReadCMask(const char *filename)
                 {
                     if(fgets(in_line,GBUFSIZ,file)==NULL)
                     {
-                        Warning
-                            ("illegal format in colormask");
-                        /*NAdd->color_type = orig_ctype;*/
+                        Warning("illegal format in colormask");
                         return;
                     }
                     sscanf(in_line,"%d",&(colors[j]));
@@ -839,15 +819,12 @@ void ReadCMask(const char *filename)
         }
 
     }
-    /*RepaintAll(true);*/
     return;
 }
 
 
 int WriteStatus(NA_Alignment *aln,char *filename,int method)
 {
-    //  extern int EditMode;
-    //  NA_DisplayData *NAdd;
     NA_Sequence *this_seq;
     int j;
     FILE *file;
@@ -856,12 +833,6 @@ int WriteStatus(NA_Alignment *aln,char *filename,int method)
     if(DataSet == NULL)
         return(1);
 
-    /*
-      NAdd = (NA_DisplayData*)((NA_Alignment*)DataSet)->na_ddata;
-      if(NAdd == NULL)
-      return(1);
-    */
-
     file = fopen(filename,"w");
     if (file == NULL)
     {
@@ -869,10 +840,6 @@ int WriteStatus(NA_Alignment *aln,char *filename,int method)
         return(1);
     }
     fprintf(file,"File_format: %s\n",FileFormat==GENBANK?"genbank":"flat");
-    /*
-      fprintf(file,"EditMode: %s\n",EditMode==INSERT?"insert":
-      "check");
-    */
 
     this_seq = &(aln->element[1]); /* Nadd->cursor !? */
     if(this_seq->id != NULL)

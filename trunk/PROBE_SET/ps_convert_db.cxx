@@ -42,27 +42,18 @@ PS_NodePtr PS_assert_inverse_path( const int  _max_depth, const int  _caller_ID,
     SpeciesID  current_ID;
 
     // handle given path
-    //printf( "        %i : PS_assert_inverse_path (%i) [ given path :", _caller_ID, _path->size() );
     int c = 0;
     for (IDVectorCIter i = _path->begin(); i != _path->end(); ++i,++c) {
         current_ID   = *i;
         current_node = current_node->assertChild( current_ID );
-        //if ((c % 20) == 0) printf( "\n" );
-        //printf( "  %3i",current_ID );
     }
-
-    //printf( "\nimplicit path :" );
 
     // handle implicit path
     c = 0;
     for (current_ID = _caller_ID+1; current_ID <= _max_depth; ++current_ID,++c) {
         current_node = current_node->assertChild( current_ID );
-
-        //if ((c % 20) == 0) printf( "\n" );
-        //printf( "  %3i",current_ID );
     }
 
-    //printf( " ] -> (%p,%i)\n", &(*current_node), current_node->getNum() );
     return current_node;
 }
 
@@ -73,14 +64,11 @@ PS_NodePtr PS_assert_path( const int  _caller_ID, IDVector *_path ) {
     SpeciesID  next_path_ID;
 
     // handle given path
-    //printf( "        %i : PS_assert_path (%i) [ given path :", _caller_ID, _path->size() );
     int c = 0;
     IDVectorCIter i = _path->begin();
     next_path_ID = (i == _path->end()) ? -1 : *i;
     for (SpeciesID current_ID = __MIN_ID; current_ID <= _caller_ID; ++current_ID,++c) {
-        //if ((c % 20) == 0) printf( "\n" );
         if (current_ID != next_path_ID) {
-            //printf( "  %3i",*i );
             current_node = current_node->assertChild( current_ID );
         }
         else {
@@ -88,7 +76,6 @@ PS_NodePtr PS_assert_path( const int  _caller_ID, IDVector *_path ) {
             next_path_ID = (i == _path->end()) ? -1 : *i;
         }
     }
-    //printf( " ] -> (%p,%i)\n", &(*current_node), current_node->getNum() );
 
     return current_node;
 }
@@ -147,12 +134,9 @@ void PS_extract_probe_data( GBDATA *_ARB_node,               // position in ARB 
     //
     // enlarge inverse path
     //
-    //printf( "%i %i %i : enlarge path (%i) [ ", _depth, _parent_ID, id, _inverse_path->size() );
     for (int i=_parent_ID+1; ((i < id) && (i >= 0)); ++i) {
-        //printf( "%i ",i );
         _inverse_path->push_back(i);
     }
-    //printf( "] (%i)\n", _inverse_path->size() );
 
     //
     // insertion if ARB_node had probes
@@ -177,7 +161,6 @@ void PS_extract_probe_data( GBDATA *_ARB_node,               // position in ARB 
     //
     // child(ren)
     //
-    //printf( "%i %i %i : children\n", _depth, _parent_ID, id );
     GBDATA *ARB_child = PS_get_first_node( _ARB_node );               // get first child if exists
     while (ARB_child) {
         PS_extract_probe_data( ARB_child, _max_depth, _depth+1, id, _inverse_path );
@@ -187,12 +170,9 @@ void PS_extract_probe_data( GBDATA *_ARB_node,               // position in ARB 
     //
     // shrink inverse path
     //
-    //printf( "%i %i %i : shrink path (%i) [ ", _depth, _parent_ID, id, _inverse_path->size() );
     while ((_inverse_path->back() > _parent_ID) && (!_inverse_path->empty())) {
-        //printf( "%i ",_inverse_path->back() );
         _inverse_path->pop_back();
     }
-    //printf( "] (%i)\n", _inverse_path->size() );
 }
 
 
@@ -225,7 +205,6 @@ int main(  int  _argc,
     }
     printf( "..loaded database (enter to continue)  " );
     PS_print_time_diff( &before );
-    //  getchar();
 
     GB_transaction dummy( ARB_main );
     GBDATA *group_tree = GB_entry(ARB_main, "group_tree");
@@ -260,7 +239,6 @@ int main(  int  _argc,
     __MAX_ID = __ID2NAME_MAP.rbegin()->first;
     printf( "IDs %i .. %i\n(enter to continue)  ", __MIN_ID, __MAX_ID );
     PS_print_time_diff( &before );
-//  getchar();
 
     //
     // create output database
@@ -310,7 +288,6 @@ int main(  int  _argc,
     printf( "done after %u 1st level nodes\n",c );
     printf( "(enter to continue)  " );
     PS_print_time_diff( &before );
-//  getchar();
 
     //
     // write database to file

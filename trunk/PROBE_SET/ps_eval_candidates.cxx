@@ -96,20 +96,12 @@ void PS_calc_sums_for_nodepath( PS_NodeSet &_nodepath, ULSet &_sums ) {
 
             // calc sums
             temperatures.insert( temperature );
-//             printf( "node [%p] temp (%lu) sums ( ", *node, temperature );
 
             for ( ULSet::iterator sum = _sums.begin();
                   sum != _sums.end();
                   ++sum ) {
                 sums_for_node.insert( *sum + temperature );
             }
-
-//             for ( ULSet::iterator sum = sums_for_node.begin();
-//                   sum != sums_for_node.end();
-//                   ++sum ) {
-//                 printf( "%lu ", *sum );
-//             }
-//             printf( ")\n");
         }
 
         // store sums_for_node in _sums
@@ -139,7 +131,6 @@ bool PS_calc_min_sum_of_square_distances_to_average( PS_NodeSet &_nodepath,
             if ((_min_sum > 0) && (average->second > _min_sum)) continue;
 
             // iterate over probes of node
-//             printf( "\nnode [%p] avg (%.3f,%.3f)", *node, average->first, average->second );
             sums_for_average.clear();
             temperatures.clear();
 
@@ -158,12 +149,10 @@ bool PS_calc_min_sum_of_square_distances_to_average( PS_NodeSet &_nodepath,
                 float distance = fabsf( average->first - temperature );
                 float sum      = average->second + ( distance * distance );
                 sums_for_average.insert( sum );
-//                 printf( "  temp (%lu) sum (%.3f)",  temperature, sum );
             }
 
             // store min sum
             average->second  = *sums_for_average.begin();
-//             printf( "  -> %.3f", average->second );
         }
 
         // update min sum for node
@@ -177,9 +166,7 @@ bool PS_calc_min_sum_of_square_distances_to_average( PS_NodeSet &_nodepath,
                 best_average     = average->first;
             }
         }
-//         printf( " => min_sum_for_node (%.3f) @ average (%.3f)", min_sum_for_node, best_average );
     }
-//     printf( "\n" );
 
     if ((_min_sum < 0) || (min_sum_for_node < _min_sum)) {
         printf( "UPDATED _best_average (%7.3f) _min_sum (%10.3f)  <-  best_average (%7.3f) min_sum_for_node (%10.3f)\n", _best_average, _min_sum, best_average, min_sum_for_node );
@@ -204,16 +191,13 @@ void PS_eval_node_paths( PS_Candidate2NodeSetPairByLengthMap &_paths,
     sums.insert( 0 );
     PS_calc_sums_for_nodepath( stored_path->second.second, sums );
     // calc average GC-contents
-//     printf( "averages : ( " );
     FFMap averages;
     for ( ULSet::iterator sum = sums.begin();
           sum != sums.end();
           ++sum ) {
         float avg = (float)(*sum) / stored_path->first;
         averages[ avg ] = 0.0;
-//         printf( "%7.3f,  0.000 ", avg );
     }
-//         printf( ")\n" );
     // search minimum of sum of square distance to average
     _min_sum_of_square_distances_to_average = -1;
     printf( "[%p] distance: ", stored_path->second.first );
@@ -221,13 +205,6 @@ void PS_eval_node_paths( PS_Candidate2NodeSetPairByLengthMap &_paths,
                                                     averages,
                                                     _best_average,
                                                     _min_sum_of_square_distances_to_average );
-//     printf( "averages : ( " );
-//     for (FFMap::iterator avg = averages.begin();
-//          avg != averages.end();
-//          ++avg ) {
-//         printf( "%7.3f,%7.3f ", avg->first, avg->second );
-//     }
-//     printf( ")\n\n" );
 
     // iterate over remaining candidates
     PS_Candidate2NodeSetPairByLengthMap::iterator best_candidate = stored_path;
@@ -242,15 +219,12 @@ void PS_eval_node_paths( PS_Candidate2NodeSetPairByLengthMap &_paths,
 
         // calc averages
         averages.clear();
-//         printf( "averages : ( " );
         for ( ULSet::iterator sum = sums.begin();
               sum != sums.end();
               ++sum ) {
             float avg = (float)(*sum) / stored_path->first;
             averages[ avg ] = 0.0;
-//             printf( "%7.3f,  0.000 ", avg );
         }
-//         printf( ")\n" );
 
         // search min distance
         printf( "[%p] distance: ", stored_path->second.first );
@@ -260,13 +234,6 @@ void PS_eval_node_paths( PS_Candidate2NodeSetPairByLengthMap &_paths,
                                                             _min_sum_of_square_distances_to_average )) {
             best_candidate = stored_path;
         }
-//         printf( "averages : ( " );
-//         for (FFMap::iterator avg = averages.begin();
-//              avg != averages.end();
-//              ++avg ) {
-//             printf( "%7.3f,%7.3f ", avg->first, avg->second );
-//         }
-//         printf( ")\n\n" );
     }
 
     // remove all but best candidate
@@ -304,7 +271,6 @@ void PS_remove_bad_probes( PS_NodeSet        &_nodes,
         }
 
         // remove probes with distance > min_distance
-//         printf( "average (%.3f) min_distance (%.3f)\n", _average, min_distance );
         PS_ProbeSetCIter to_delete = node->getProbesEnd();
         for ( PS_ProbeSetCIter probe = node->getProbesBegin();
               probe != node->getProbesEnd();
@@ -315,14 +281,6 @@ void PS_remove_bad_probes( PS_NodeSet        &_nodes,
             }
             float distance = fabsf( _average -  PS_calc_temp( *probe ) );
             if (distance > min_distance) {
-//                 printf( "node [%p] probes (%u) delete probe l(%u) gc(%u) temp(%lu) distance(%.3f)\n",
-//                         node,
-//                         node->countProbes(),
-//                         (*probe)->length,
-//                         (*probe)->GC_content,
-//                         PS_calc_temp( *probe ),
-//                         distance );
-//                 fflush( stdout );
                 to_delete = probe;
             }
         }
@@ -343,7 +301,6 @@ void PS_remove_bad_probes( PS_NodeSet        &_nodes,
             }
 
             // remove probes with length < max_length
-//             printf( "max_length (%u)\n", max_length );
             for ( PS_ProbeSetCIter probe = node->getProbesBegin();
                   probe != node->getProbesEnd();
                   ++probe ) {
@@ -352,11 +309,6 @@ void PS_remove_bad_probes( PS_NodeSet        &_nodes,
                     to_delete = node->getProbesEnd();
                 }
                 if ((*probe)->length < max_length) {
-//                     printf( "node [%p] probes (%u) delete probe l(%u)\n",
-//                         node,
-//                         node->countProbes(),
-//                         (*probe)->length );
-//                     fflush( stdout );
                     to_delete = probe;
                 }
             }
@@ -403,9 +355,6 @@ int main( int   argc,
     candidates_root->load( candidates_file, bits_in_map, db->getConstRootNode() );
     delete candidates_file;
     printf( "..loaded candidates file (enter to continue)\n" ); fflush( stdout );
-
-//     printf( "probes per candidate..\n" );
-//     candidates_root->printProbes( max_id - db->getMinID() + 1 );
 
     //
     // scan candidates-tree for leaf candidates

@@ -305,7 +305,6 @@ public:
         pos = pp;
     }
 
-    // const GEN_position *getPosition() const { return &*pos; }
     const GEN_positionPtr& getPosition() const { return pos; }
 
     const char *getName() const {
@@ -347,8 +346,6 @@ public:
     hasType(const char *t) : type(t) {}
     bool operator()(const PosGene& pg) { return pg.hasType(type); }
 };
-
-// typedef SmartPtr<PosGene> PosGenePtr;
 
 void DBwriter::hideUnwantedGenes() {
     typedef vector<PosGene> Genes;

@@ -244,8 +244,6 @@ void AW_window::at_attach(bool attach_x, bool attach_y) {
 // use negative offsets to set offset from right/lower border to to-position
 
 void AW_window::at_set_to(bool attach_x, bool attach_y, int xoff, int yoff) {
-//     aw_assert(attach_x || attach_y); // use at_unset_to() to un-attach
-
     _at->attach_any = attach_x || attach_y;
     _at->attach_x   = attach_x;
     _at->attach_y   = attach_y;
@@ -258,8 +256,6 @@ void AW_window::at_set_to(bool attach_x, bool attach_y, int xoff, int yoff) {
     if (_at->to_position_y > _at->max_y_size) _at->max_y_size = _at->to_position_y;
 
     _at->correct_for_at_center = 0;
-
-//     _at->correct_for_at_center = xoff <= 0 ? 0 : 2; // justify left (=0) or right (=2)
 }
 
 void AW_window::at_unset_to() {
@@ -289,12 +285,6 @@ bool AW_window::at_ifdef(const  char *at_id) {
     return false;
 }
 
-void AW_window::check_at_pos( void ) {
-    if (_at->x_for_next_button<10){
-        //  printf("X Position should be greater 10\n");
-    }
-}
-
 void AW_window::get_at_position(int *x, int *y) { *x = _at->x_for_next_button; *y = _at->y_for_next_button; }
 int AW_window::get_at_xposition() { return _at->x_for_next_button; }
 int AW_window::get_at_yposition() { return _at->y_for_next_button; }
@@ -308,8 +298,6 @@ void AW_window::restore_at_size_and_attach( const AW_at_size *at_size ) {
 }
 
 void AW_window::unset_at_commands( void ) {
-    // _at->widget_mask = AWM_ALL; // disabled 2009/Aug/5, cause this resets expert-mask after creating widget
-
     _callback   = NULL;
     _d_callback = NULL;
 
@@ -356,7 +344,6 @@ void AW_window::increment_at_commands( int width, int height ) {
 int AW_window::calculate_string_width( int columns ) {
     if ( xfig_data ) {
         AW_xfig *xfig = (AW_xfig *)xfig_data;
-        //return columns * this->get_root()->font_width;
         return (int)(columns * xfig->font_scale * XFIG_DEFAULT_FONT_WIDTH);   /* stdfont 8x13 */
     }
     else {

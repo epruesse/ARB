@@ -203,9 +203,6 @@ void ExposeOpenGLWindow( Widget  w, XtPointer /*client_data*/, XEvent *event, ch
     static bool ok = false;
 
     if ( RNA3D->OpenGLEngineState == NOT_CREATED ) {
-        // extern GBDATA* OpenGL_gb_main;
-        // OpenGL_gb_main = gb_main;
-
         InitializeOpenGLWindow( w );
 
         XExposeEvent *evt;

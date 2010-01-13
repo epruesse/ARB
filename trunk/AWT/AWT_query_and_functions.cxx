@@ -911,7 +911,6 @@ bool awt_query::matches(const char *data, GBDATA *gb_item) const {
             break;
         }
         case AQT_OCCURS: {                          // query expression occurs in data (equiv to '*expr*')
-            // hit = GBS_find_string(xquery.str.c_str(), data, 1) != 0;
             hit = GBS_find_string(data, xquery.str.c_str(), 1) != 0;
             break;
         }
@@ -2471,19 +2470,6 @@ void awt_toggle_flag(AW_window *aww, struct adaqbsstruct *cbs) {
         GB_write_flag(gb_item, 1-flag);
     }
     awt_query_update_list(aww,cbs);
-
-    //  GB_transaction dummy(cbs->gb_main);
-    //  char *sname = aww->get_root()->awar(cbs->species_name)->read_string();
-    //  if (sname[0]){
-    //      GBDATA *gb_species = GBT_find_species(cbs->gb_main,sname);
-    //      if (gb_species) {
-    //          long flag = GB_read_flag(gb_species);
-    //          GB_write_flag(gb_species,1-flag);
-    //      }
-    //  }
-
-    //  delete sname;
-    //  awt_query_update_list(aww,cbs);
 }
 
 //  -----------------------------------------------------
@@ -2569,12 +2555,8 @@ static void awt_new_selection_made(AW_root *aw_root, AW_CL cl_awar_selection, AW
     free(item_name);
 }
 
-static void query_box_init_config(AWT_config_definition& cdef, struct adaqbsstruct *cbs) { // this defines what is saved/restored to/from configs
-    //  don't save these
-    //     cdef.add(cbs->awar_ere, "action");
-    //     cdef.add(cbs->awar_where, "range");
-    //     cdef.add(cbs->awar_by, "by");
-
+static void query_box_init_config(AWT_config_definition& cdef, struct adaqbsstruct *cbs) {
+    // this defines what is saved/restored to/from configs
     for (int key_id = 0; key_id<AWT_QUERY_SEARCHES; ++key_id) {
         cdef.add(cbs->awar_keys[key_id], "key", key_id);
         cdef.add(cbs->awar_queries[key_id], "query", key_id);
@@ -2783,13 +2765,11 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
         aws->d_callback((AW_CB1)awt_toggle_flag,(AW_CL)cbs);
 
         {
-            char    *this_awar_name = GBS_global_string_copy("tmp/dbquery_%s/select", query_id);
+            char    *this_awar_name = GBS_global_string_copy("tmp/dbquery_%s/select", query_id); // do not free this, cause it's passed to awt_new_selection_made
             AW_awar *awar           = aw_root->awar_string( this_awar_name, "", AW_ROOT_DEFAULT);
 
             cbs->result_id = aws->create_selection_list(this_awar_name,"","",5,5);
             awar->add_callback(awt_new_selection_made, (AW_CL)this_awar_name, (AW_CL)cbs);
-
-            //free(this_awar_name); do not free this, cause it's passed to awt_new_selection_made
         }
         aws->insert_default_selection( cbs->result_id, "end of list", "" );
         aws->update_selection_list( cbs->result_id );

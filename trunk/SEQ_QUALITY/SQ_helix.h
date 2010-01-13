@@ -148,10 +148,6 @@ void SQ_helix::SQ_calc_helix_layout(const char *seq, GBDATA * gb_main,
         }
     }
 
-    //     /*if (count_strong_helix != 0)*/ count_strong_helix = count_strong_helix / 2;
-    //     /*if (count_weak_helix   != 0)*/ count_weak_helix = count_weak_helix / 2;
-    //     /*if (count_no_helix     != 0)*/ count_no_helix = count_no_helix / 2;
-
     GBDATA *gb_result1 = GB_search(gb_quality, "number_of_no_helix", GB_INT);
     seq_assert(gb_result1);
     GB_write_int(gb_result1, count_no_helix);

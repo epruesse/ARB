@@ -687,8 +687,8 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
                 freenull(id_copy);
             }
 
-            if (flag_fixed_fonts_only) def_font = AW_DEFAULT_FIXED_FONT; // AW_LUCIDA_SANS_TYPEWRITER;
-            else def_font                       = AW_DEFAULT_NORMAL_FONT; // AW_LUCIDA_SANS;
+            if (flag_fixed_fonts_only) def_font = AW_DEFAULT_FIXED_FONT;
+            else def_font                       = AW_DEFAULT_NORMAL_FONT;
 
             if ((area != AW_GCM_DATA_AREA) || !first) {
                 device->new_gc(base_gc);
@@ -890,9 +890,7 @@ struct attached_window {
 };
 
 void AW_create_gc_color_groups_name_window(AW_window */*aww*/, AW_CL cl_aw_root, AW_CL cl_gcmgr) {
-    AW_root       *aw_root = (AW_root*)cl_aw_root;
-//     aw_gc_manager *gcmgr   = (aw_gc_manager*)cl_gcmgr;
-
+    AW_root *aw_root = (AW_root*)cl_aw_root;
     static struct attached_window *head = 0;
 
     // search for attached window:
@@ -939,9 +937,6 @@ void AW_create_gc_color_groups_name_window(AW_window */*aww*/, AW_CL cl_aw_root,
     aws->activate();
 }
 
-//  ------------------------------------------------------------------------------------------------
-//      void AW_create_gc_color_groups_window(AW_window *aww, AW_CL cl_aw_root, AW_CL cl_gcmgr)
-//  ------------------------------------------------------------------------------------------------
 void AW_create_gc_color_groups_window(AW_window */*aww*/, AW_CL cl_aw_root, AW_CL cl_gcmgr) {
     aw_assert(color_groups_initialized);
 
@@ -1046,7 +1041,6 @@ AW_window *AW_create_gc_window(AW_root * aw_root, AW_gc_manager id_par)
 void awt_xfig_font_resetfont_cb(AW_window *aws){
     AW_root *aw_root = aws->get_root();
     aw_root->awar("vectorfont/file_name")->write_string("lib/pictures/fontgfx.vfont");
-    //AW_POPDOWN(aws);
 }
 
 void awt_xfig_font_create_filerequest(AW_window *aw) {

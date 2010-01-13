@@ -229,8 +229,6 @@ static char *nas_string_2_name(const char *str) {
         c                        = *(str++);
         if (!c) break;
         if (isalpha(c)) buf[i++] = c;
-        // name should not contain _'s (not compatible with FastDNAml)
-        //else if (c==' ' || c=='_') buf[i++] = '_';
     }
     for (;i<NAME_LEN_MIN;i++) buf[i] = '0';
     buf[i] = 0;
@@ -994,7 +992,6 @@ static void check_for_case_error(AN_main *main) {
             an_autocaps(cap_name);
 
             if (strcmp(cap_name, shrt->shrt) != 0) {
-                // fprintf(stderr, "Deleting entry '%s'\n", shrt->shrt);
                 an_remove_short(shrt);
                 deleted_names++;
             }

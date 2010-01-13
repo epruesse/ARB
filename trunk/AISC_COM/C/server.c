@@ -632,9 +632,6 @@ static long aisc_talking_sets(long *in_buf,int size, long *out_buf,long *object,
 
     aisc_talking_func_long function;
     aisc_talking_func_long *functions;
-    /*     long     (*function)(...); */
-    /*     typedef          long (*tfunction)(...); */
-    /*     tfunction       *functions; */
     in_pos = out_pos = 0;
     aisc_server_index = -1;
     aisc_server_error   = NULL;
@@ -1028,7 +1025,6 @@ static long aisc_talking_delete(long *in_buf, int size, long *out_buf, int max_s
     long             object_type;
 
     aisc_talking_func_long function;
-    /*     long             (*function)(...); */
 
     int             i;
     long             object;

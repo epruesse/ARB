@@ -218,7 +218,6 @@ class AW_window {
 protected:
     AW_root *root;
 
-    void check_at_pos( void );
     void create_devices(void);
     void set_background(const char *colorname, Widget w);
 
@@ -273,14 +272,13 @@ public:
     void update_input_field( int *widget, const char *var_value );
     void update_text_field( int *widget, const char *var_value );
 
-    void create_invisible( int columns );
-    // void update_option_menu( int option_menu_number );
+    void  create_invisible( int columns );
     void *_create_option_entry(AW_VARIABLE_TYPE type, const char *name, const char *mnemonic,const char *name_of_color );
-    void update_toggle_field( int toggle_field_number );
-    void update_selection_list_intern( AW_selection_list *selection_list );
-    void _set_activate_callback(void *widget);
-    void unset_at_commands( void );
-    void increment_at_commands( int width, int height );
+    void  update_toggle_field( int toggle_field_number );
+    void  update_selection_list_intern( AW_selection_list *selection_list );
+    void  _set_activate_callback(void *widget);
+    void  unset_at_commands( void );
+    void  increment_at_commands( int width, int height );
 
 
     AW_color    alloc_named_data_color(int colnum, char *colorname);
@@ -479,7 +477,6 @@ public:
     void d_callback( AW_cb_struct * /*owner*/awcbs); // Calls f with
     // *** create the buttons ********
 
-    //    void   create_button( const char *macro_name, AW_label label,const char *mnemonic = 0); // simple button; shadow only when callback
     void   create_button( const char *macro_name, AW_label label,const char *mnemonic = 0, const char *color = 0); // simple button; shadow only when callback
     void   create_autosize_button( const char *macro_name, AW_label label,const char *mnemonic = 0, unsigned xtraSpace = 1); // as above, but ignores button_length
     Widget get_last_widget() const;

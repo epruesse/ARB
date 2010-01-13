@@ -25,26 +25,25 @@ class AP_filter;
 #include "GDE_proto.h"
 #endif
 
-extern Gmenu menu[GDEMAXMENU];
-extern int num_menus;
+extern Gmenu   menu[GDEMAXMENU];
+extern int     num_menus;
 extern GBDATA *GLOBAL_gb_main;
+extern int     DataType;
+extern int     FileFormat,first_select;
+extern int     DisplayAttr,OVERWRITE;
+extern int     SCALE;
+extern int     BlockInput;
+extern char    FileName[80];
+extern char    current_dir[1024];
 
-/* global.h */
-extern int DataType;
-extern int FileFormat,first_select;
-/*int Dirty,OldEditMode,EditMode = INSERT, EditDir = RIGHT;*/
-extern int DisplayAttr,OVERWRITE;
-extern int SCALE;
-extern int BlockInput;
 #ifdef SeeAlloc
-int TotalCalloc = 0;
+int TotalCalloc  = 0;
 int TotalRealloc = 0;
 #endif
-extern char FileName[80];
-extern char current_dir[1024];
+
 
 /*
-*       Months of the year
+ *       Months of the year
 */
 extern const char *GDEmonth[12];
 /*
@@ -74,20 +73,6 @@ extern const char *universal[512];
 extern const char *yeast[512];
 
 extern const char *three_to_one[23];
-#if 0
-
-extern unsigned char grey0;
-extern unsigned char grey1;
-extern unsigned char grey2;
-extern unsigned char grey3;
-extern unsigned char grey4;
-extern unsigned char grey5;
-extern unsigned char grey6;
-extern unsigned char grey7;
-
-extern unsigned char **greys;
-extern char **grey_pm; /*Pixmap instead of char !?!*/
-#endif
 
 #else
 #error GDE_extglob.h included twice

@@ -258,7 +258,7 @@ void to_printable_1x1(char *inf, char *outf, int informat)
  */
 void printable_print_line(char *id, char *sequence, int start, int base_count, FILE * fp)
 {
-    int indi, index, count, bnum, /*length, */ seq_length;
+    int indi, index, count, bnum, seq_length;
 
     fprintf(fp, " ");
     if ((bnum = Lenstr(id)) > 10) {

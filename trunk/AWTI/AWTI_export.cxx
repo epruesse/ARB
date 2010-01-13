@@ -44,7 +44,6 @@ AWTI_EXPORT_CMD check_internal(const char *command)  {
 
 struct export_format {
     char *system;
-    // char *internal_command;
     char *new_format;
     char *suffix;
     char *form; // transformed export expression (part behind 'BEGIN')

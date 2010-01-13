@@ -701,9 +701,7 @@ static const char *get_match_hinfo_formatted(PT_probematch *ml, const format_pro
         return result;
     }
     // Else set header of result
-    const char *result = "There are no targets";
-    // pt_assert(result);
-    return result;
+    return "There are no targets";
 }
 
 static void gene_rel_2_abs(PT_probematch *ml) {

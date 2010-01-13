@@ -46,45 +46,41 @@ static void Usage ( void )
         
         while (!error)
         {
-//          if      (!input.gets(&line) && !input.eof()) error = 2;
-//          else if (strlen(line))
+            PSolution *psol = new PSolution;
+
+            if (!psol) error = 3;
+            else
             {
-                PSolution *psol = new PSolution;
+                str tmp = strtok(line,",");
 
-                if (!psol) error = 3;
-                else
+                while (!error && tmp)
                 {
-                    str tmp = strtok(line,",");
+                    HMatch *m = new HMatch;
 
-                    while (!error && tmp)
+                    if (!m) error = 4;
+                    else
                     {
-                        HMatch *m = new HMatch;
+                        sscanf(tmp,"%d%d",&m->first,&m->last);
 
-                        if (!m) error = 4;
-                        else
-                        {
-                            sscanf(tmp,"%d%d",&m->first,&m->last);
+                        psol->match.Add(m);
+                        psol->score += (m->last - m->first + 1);
 
-                            psol->match.Add(m);
-                            psol->score += (m->last - m->first + 1);
-
-                            tmp = strtok(NULL,",");
-                        }
-                    }
-
-                    if (!error)
-                    {
-                        psol->match.Sort(hmatchcmp);
-                        pre->Add(psol);
+                        tmp = strtok(NULL,",");
                     }
                 }
 
-                delete line;
+                if (!error)
+                {
+                    psol->match.Sort(hmatchcmp);
+                    pre->Add(psol);
+                }
             }
+
+            delete line;
 
             if (input.eof()) break;
         }
-        
+
         if (!error) pre->Sort(psolcmp);
     }
 
@@ -118,40 +114,27 @@ static void Usage ( void )
             if (!(seq && fam)) error = 2;
             else
             {
-//              DArray *pre = ReadMatches("matches.txt");
-
                 cout << "\n" << seq;
-//              cout << "\n" << fam << "\n";
                 
-//              if (!pre) error = 3;
-//              else
+                BI_helix    helix;
+                const char *err = helix.init(db.gb_main);
+                size_t      pos = 0;
+
+                if (err) cout << err << ", " << helix.size();
+
+                while (pos < helix.size())
                 {
-                    BI_helix    helix;
-                    const char *err = helix.init(db.gb_main);
-                    size_t      pos = 0;
-
-                    if (err) cout << err << ", " << helix.size();
-
-                    while (pos < helix.size())
+                    if (helix.pairtype(pos) != HELIX_PAIR) cout << ".";
+                    else
                     {
-                        if (helix.pairtype(pos) != HELIX_PAIR) cout << ".";
-                        else
-                        {
-                            if (helix.opposite_position(pos) < pos) cout << "]";
-                            else cout << "[";
-                        }
-
-                        pos++;
+                        if (helix.opposite_position(pos) < pos) cout << "]";
+                        else cout << "[";
                     }
 
-                    cout << flush;
-
-//                  Aligner  ali(seq[2],seq[0],seq[1],*pre);
-//                  DArray  &tmp = ali.Align();
-
-//                  delete &tmp;
-//                  delete  pre;
+                    pos++;
                 }
+
+                cout << flush;
             }
 
             if (seq) delete seq;

@@ -171,7 +171,6 @@ static O_gbdByKey *g_b_opti_createGbdByKey(GB_MAIN_TYPE *Main)
 
             Main->keys[idx].nref = gbk[idx].cnt;
         }
-        //gb_assert(gbk[idx].cnt == Main->keys[idx].nref || idx==0);
     }
     return gbk;
 }
@@ -401,7 +400,6 @@ static cu_str lstr(cu_str s, int len) {
 #if DUMP_COMPRESSION_TEST>=2
 
 static cu_str dict_word(GB_DICTIONARY *dict, int idx, int len) {
-    //     GB_NINT *offset = dict->offsets;
     return lstr(dict->text+INDEX_DICT_OFFSET(idx, dict), len);
 }
 
@@ -452,7 +450,6 @@ static int searchWord(GB_DICTIONARY *dict, cu_str source, long size, unsigned lo
     int      l      = 0;
     int      h      = dict->words-1;
     cu_str   text   = dict->text;
-    //     GB_NINT *offset = dict->offsets;
     GB_NINT *resort = dict->resort;
     int      dsize  = dict->textlen;
     int      ilen   = 0;
@@ -523,7 +520,6 @@ static char *gb_uncompress_by_dictionary_internal(GB_DICTIONARY *dict, /*GBDATA 
     u_str  dest;
     u_str  buffer;
     cu_str text   = dict->text;
-    //     GB_NINT *offset = dict->offsets;
     int    done   = 0;
     long   left   = size;
 
@@ -1844,7 +1840,6 @@ static DictTree build_dict_tree(O_gbdByKey *gbk, long maxmem, long maxdeep, long
         }
     }
 
-    //test_dtree(tree);
     {
         int cutoff = 1;
 
@@ -2121,28 +2116,6 @@ static DictTree remove_word_from_dtree(DictTree tree, cu_str wordStart, int word
     return tree;
 }
 
-#if 0
-#  define TEST_SORTED
-static void dump_dictionary(GB_DICTIONARY *dict)
-{
-    int idx;
-
-    printf("dictionary\n"
-           "  words = %i\n"
-           "  textlen = %i\n",
-           dict->words,
-           dict->textlen);
-
-    for (idx=0; idx<dict->words; idx++) {
-        u_str word = dict->text+ALPHA_DICT_OFFSET(idx, dict);
-        // dict->offsets[dict->resort[idx]]; // @@@@ ntoh
-
-        printf("    word%03i='%s' (%i)\n", idx, lstr(word,30), ntohl(dict->resort[idx]));
-    }
-}
-#endif
-
-
 #define cmp(i1,i2)      (heap2[i1]-heap2[i2])
 #define swap(i1,i2) do                          \
     {                                           \
@@ -2242,10 +2215,6 @@ static void sort_dict_offsets(GB_DICTIONARY *dict) {
         num--;
     }
 
-#ifdef TEST_SORTED
-    for (i=2,num=dict->words; i<=num; i++) gb_assert(heap2[i-1]>=heap2[i]); // test if sorted correctly
-#endif
-
     // initialize dict->resort
 
     for (i=0, num=dict->words; i<num; i++) dict->resort[i] = i;
@@ -2262,14 +2231,6 @@ static void sort_dict_offsets(GB_DICTIONARY *dict) {
         heap2[num] = big;
         num--;
     }
-
-#ifdef TEST_SORTED
-    for (i=1,num=dict->words; i<num; i++) {
-        u_str word1 = dict->text+dict->offsets[dict->resort[i-1]];
-        u_str word2 = dict->text+dict->offsets[dict->resort[i]];
-        gb_assert(GB_MEMCMP(word1,word2,dict->textlen)<=0);
-    }
-#endif
 }
 
 // Warning dictionary is not in network byte order !!!!
@@ -2450,8 +2411,6 @@ GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
     long compressed_sum = 0;
 #endif // TEST_DICT
 
-    //error = GB_begin_transaction((GBDATA*)Main->data);
-
     printf("Creating GBDATA-Arrays..\n");
 
     if (!error) {
@@ -2477,7 +2436,6 @@ GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
 #else
         // create dictionaries for all indices (this is the normal operation)
         for (idx = gbdByKey_cnt-1; idx >= 1 && !error; --idx)
-            // for (idx = 1; idx<gbdByKey_cnt && !error; ++idx)
 #endif
 
         {
@@ -2593,7 +2551,6 @@ GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
         printf("Done.\n");
 
         g_b_opti_freeGbdByKey(Main,gbk);
-        // error = GB_commit_transaction((GBDATA*)Main->data);
     }
 
     return error;

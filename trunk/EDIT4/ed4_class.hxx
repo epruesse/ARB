@@ -84,9 +84,8 @@ class AW_helix;
 class ST_ML;
 class ed_key;
 
-// --------------------------------------------------------------------------------
-//     class EDB_root_bact
-// --------------------------------------------------------------------------------
+
+
 class EDB_root_bact {
 
 public:
@@ -153,11 +152,6 @@ public:
     ~EDB_root_bact();
 };
 
-
-
-// --------------------------------------------------------------------------------
-//     struct ED4_object_specification
-// --------------------------------------------------------------------------------
 struct ED4_object_specification
 {
     ED4_properties static_prop;
@@ -173,14 +167,9 @@ struct ED4_object_specification
 
 };                              //Manager coordinates Layout
 
-
-// --------------------------------------------------------------------------------
-//     class ED4_folding_line
-// --------------------------------------------------------------------------------
-class ED4_folding_line
-//properties of an object, i.e. concerning rectangles on screen showing sequences
-{
-    ED4_folding_line(const ED4_folding_line&); // copy-constructor not allowed
+class ED4_folding_line {
+    // properties of an object, i.e. concerning rectangles on screen showing sequences
+    ED4_folding_line(const ED4_folding_line&);      // copy-constructor not allowed
 public:
     AW_pos            world_pos[2];
     AW_pos            window_pos[2];
@@ -193,9 +182,6 @@ public:
     ~ED4_folding_line();
 };
 
-// --------------------------------------------------------------------------------
-//     struct ED4_scroll_links
-// --------------------------------------------------------------------------------
 struct ED4_scroll_links
 {
     ED4_base *link_for_hor_slider;
@@ -203,11 +189,7 @@ struct ED4_scroll_links
 
 };
 
-// --------------------------------------------------------------------------------
-//     struct ED4_scrolled_rectangle
-// --------------------------------------------------------------------------------
-struct ED4_scrolled_rectangle
-{
+struct ED4_scrolled_rectangle {
     ED4_folding_line *scroll_top, *scroll_bottom, *scroll_left, *scroll_right;
     ED4_base         *x_link, *y_link, *width_link, *height_link;
     AW_pos            world_x, world_y, width, height;
@@ -228,11 +210,7 @@ struct ED4_scrolled_rectangle
     }
 };
 
-// --------------------------------------------------------------------------------
-//     class ED4_list_elem
-// --------------------------------------------------------------------------------
-class ED4_list_elem
-{
+class ED4_list_elem {
     void          *my_elem;
     ED4_list_elem *my_next;
 public:
@@ -246,12 +224,9 @@ public:
 };
 
 
-// --------------------------------------------------------------------------------
-//     class ED4_list
-// --------------------------------------------------------------------------------
-class ED4_list
-// class which implements a general purpose linked list of void*
-{
+class ED4_list {
+    // class which implements a general purpose linked list of void*
+    
     ED4_list_elem *my_first;
     ED4_list_elem *my_last;
     ED4_index      my_no_of_entries;
@@ -273,13 +248,7 @@ public:
     ~ED4_list();
 };
 
-class ED4_window;
-
-// --------------------------------------------------------------------------------
-//     class ED4_base_position
-// --------------------------------------------------------------------------------
-class ED4_base_position
-{
+class ED4_base_position {
     const ED4_base *calced4base;
     int      *seq_pos;
     int       count;
@@ -316,10 +285,6 @@ enum ED4_CursorType {
 };
 
 extern int ED4_update_global_cursor_awars_allowed;
-
-// --------------------------------------------------------------------------------
-//     class ED4_cursor
-// --------------------------------------------------------------------------------
 
 typedef bool (*ED4_TerminalTest)(ED4_base *terminal, int seqPos);
 
@@ -386,9 +351,7 @@ public:
     ~ED4_cursor();
 };
 
-// --------------------------------------------------------------------------------
-//     class ED4_window
-// --------------------------------------------------------------------------------
+
 class ED4_window
 {
     ED4_window(const ED4_window&); // copy-constructor not allowed
@@ -404,23 +367,23 @@ public:
     ED4_coords              coords;
     static int              no_of_windows;
 
-    char awar_path_for_cursor[50]; // position in current sequence, range=[1;len]
-    char awar_path_for_Ecoli[50]; // position relative to ecoli
-    char awar_path_for_basePos[50]; // base position in current sequence (# of bases left to cursor)
-    char awar_path_for_IUPAC[50]; // IUPAC decoder content for current position
-    char awar_path_for_helixNr[50]; // # of helix (or 0) for current position
+    char awar_path_for_cursor[50];                  // position in current sequence, range = [1;len]
+    char awar_path_for_Ecoli[50];                   // position relative to ecoli
+    char awar_path_for_basePos[50];                 // base position in current sequence (# of bases left to cursor)
+    char awar_path_for_IUPAC[50];                   // IUPAC decoder content for current position
+    char awar_path_for_helixNr[50];                 // # of helix (or 0) for current position
 
     bool       is_hidden;
     ED4_cursor cursor;
 
-    //ED4_window controlling functions
+    // ED4_window controlling functions
     static ED4_window *insert_window(AW_window *new_aww); //append to window list
 
     void        delete_window( ED4_window *window); //delete from window list
     void        reset_all_for_new_config(); //reset structures for loading new config
     ED4_window *get_matching_ed4w( AW_window *aww );
 
-    //functions concerned the scrolled area
+    // functions concerned the scrolled area
     ED4_returncode      update_scrolled_rectangle( void );
     ED4_returncode      set_scrollbar_indents( void );
     ED4_returncode      scroll_rectangle( int dx, int dy );
@@ -437,12 +400,8 @@ public:
     ~ED4_window();
 };
 
-// --------------------------------------------------------------------------------
-//     class ED4_members
-// --------------------------------------------------------------------------------
-class ED4_members
-//contains children related functions from members of a manager
-{
+class ED4_members {
+    // contains children related functions from members of a manager
     ED4_members(const ED4_members&);    // copy-constructor not allowed
 
     ED4_manager  *my_owner;     //who is controlling this object
@@ -490,11 +449,7 @@ public:
 #define SHORT_TABLE_MAX_VALUE 0xff
 #define LONG_TABLE_ELEM_SIZE  4
 
-// --------------------------------------------------------------------------------
-//     class ED4_bases_table
-// --------------------------------------------------------------------------------
-class ED4_bases_table
-{
+class ED4_bases_table {
     int table_entry_size;       // how many bytes are used for each element of 'no_of_bases' (1 or 4 bytes)
     union {
         unsigned char *shortTable;
@@ -579,11 +534,8 @@ typedef ED4_bases_table *ED4_bases_table_ptr;
 # define TEST_CHAR_TABLE_INTEGRITY // uncomment to remove tests for ED4_char_table
 #endif // DEBUG
 
-// --------------------------------------------------------------------------------
-//     class ED4_char_table
-// --------------------------------------------------------------------------------
-class ED4_char_table
-{
+
+class ED4_char_table {
     ED4_bases_table_ptr *bases_table;
     int                  sequences; // # of sequences added to the table
     int                  ignore; // this table will be ignored when calculating tables higher in hierarchy
@@ -711,20 +663,20 @@ class ED4_base                                      // base object
 
 public:
 
-    ED4_manager              *parent; //Points to parent
-    ED4_object_specification *spec; //contains information about Objectproperties
-    ED4_properties            dynamic_prop; //contains info about what i am, what i can do, what i should do
-    char                     *id; //globally unique name in hierarchy
-    ED4_index                 index; //defines the order of child objects
-    ED4_base                 *width_link; //concerning the hierarchy
-    ED4_base                 *height_link; //concerning the hierarchy
-    ED4_extension             extension; //contains relative info about graphical properties
-    ED4_list                  linked_objects; //linked list of objects which are depending from this object
-    ED4_update_info           update_info; //info about things to be done for the object, i.e. refresh; flag structure
+    ED4_manager              *parent;               //Points to parent
+    ED4_object_specification *spec;                 //contains information about Objectproperties
+    ED4_properties            dynamic_prop;         //contains info about what i am, what i can do, what i should do
+    char                     *id;                   //globally unique name in hierarchy
+    ED4_index                 index;                //defines the order of child objects
+    ED4_base                 *width_link;           //concerning the hierarchy
+    ED4_base                 *height_link;          //concerning the hierarchy
+    ED4_extension             extension;            //contains relative info about graphical properties
+    ED4_list                  linked_objects;       //linked list of objects which are depending from this object
+    ED4_update_info           update_info;          //info about things to be done for the object, i.e. refresh; flag structure
     struct {
-        unsigned int hidden:1;  //flag whether object is hidden or not
-        unsigned int is_consensus:1; //indicates whether object is consensus(manager)
-        unsigned int is_SAI:1;  //indicates whether object is extendend
+        unsigned int hidden:1;                      //flag whether object is hidden or not
+        unsigned int is_consensus:1;                //indicates whether object is consensus(manager)
+        unsigned int is_SAI:1;                      //indicates whether object is extendend
     } flag;
 
     void draw_bb(int color);
@@ -900,9 +852,6 @@ public:
     ED4_area_manager            *to_area_manager() const            { e4_assert(is_area_manager());     return (ED4_area_manager *)this; }
 };
 
-// --------------------------------------------------------------------------------
-//     class ED4_manager : public ED4_base
-// --------------------------------------------------------------------------------
 class ED4_manager : public ED4_base
 {
     ED4_manager(const ED4_manager&); // copy-constructor not allowed
@@ -997,20 +946,16 @@ public:
 };
 
 
-// --------------------------------------------------------------------------------
-//     class ED4_terminal : public ED4_base
-// --------------------------------------------------------------------------------
 class ED4_terminal : public ED4_base
 {
-    ED4_terminal(const ED4_terminal&); // copy-constructor not allowed
+    ED4_terminal(const ED4_terminal&);              // copy-constructor not allowed
 public:
     struct {
-        unsigned int        selected:1;     //Flag for 'Object selected'
-        unsigned int        dragged:1;      //Flag for 'Object dragged'
-        unsigned int        deleted:1;
+        unsigned int selected:1;                    //Flag for 'Object selected'
+        unsigned int dragged:1;                     //Flag for 'Object dragged'
+        unsigned int deleted:1;
     } flag;
-    //    unsigned int      has_callback:1;
-    ED4_selection_entry *selection_info; //Info about i.e. Position
+    ED4_selection_entry *selection_info;            //Info about i.e. Position
     long                 actual_timestamp;
 
 #if defined(IMPLEMENT_DUMP)
@@ -1071,9 +1016,6 @@ typedef enum {
     ED4_SM_MARK
 } ED4_species_mode;
 
-// --------------------------------------------------------------------------------
-//     class ED4_reference_terminals
-// --------------------------------------------------------------------------------
 class ED4_reference_terminals
 {
     ED4_sequence_info_terminal *ref_sequence_info;
@@ -1095,27 +1037,24 @@ public:
     ~ED4_reference_terminals() { clear(); }
 };
 
-// --------------------------------------------------------------------------------
-//     class ED4_root
-// --------------------------------------------------------------------------------
-class ED4_root
-{
+
+class ED4_root {
     int ED4_ROOT;
-    ED4_root(const ED4_root&);  // copy-constructor not allowed
+    ED4_root(const ED4_root&);                      // copy-constructor not allowed
+    
 public:
-    AW_root                 *aw_root; // Points to 'AW-Window-Controller'
-    AW_default               db; // Default Properties database
-    const char              *db_name; // name of Default Properties database
-    ED4_window              *first_window; // Points to List of Main Windows of ED4
-    ED4_main_manager        *main_manager; // Points to Main manager of ED4
-    ED4_area_manager        *middle_area_man; // Points to middle area
+    AW_root                 *aw_root;               // Points to 'AW-Window-Controller'
+    AW_default               db;                    // Default Properties database
+    const char              *db_name;               // name of Default Properties database
+    ED4_window              *first_window;          // Points to List of Main Windows of ED4
+    ED4_main_manager        *main_manager;          // Points to Main manager of ED4
+    ED4_area_manager        *middle_area_man;       // Points to middle area
     ED4_area_manager        *top_area_man;
     ED4_root_group_manager  *root_group_man;
-    EDB_root_bact           *database; // Points to Object which controls Data
+    EDB_root_bact           *database;              // Points to Object which controls Data
     ED4_list                 selected_objects;
     ED4_scroll_links         scroll_links;
-    bool                     folding_action; // flag tells whether action was folding action or not
-    //    ED4_cursor            has_cursor[MAXWINDOWS]; // class for cursor handling
+    bool                     folding_action;        // flag tells whether action was folding action or not
     ED4_reference_terminals  ref_terminals;
     ED4_species_mode         species_mode;
     ED4_scroll_picture       scroll_picture;
@@ -1124,14 +1063,14 @@ public:
     GB_alignment_type        alignment_type;
     AWT_reference           *reference;
     AWT_seq_colors          *sequence_colors;
-    AW_gc_manager           aw_gc_manager;
+    AW_gc_manager            aw_gc_manager;
     ST_ML                   *st_ml;
     AW_helix                *helix;
     int                      helix_spacing;
     long                     helix_add_spacing;
     long                     terminal_add_spacing;
-    char                    *protstruct; // protein structure summary
-    long                     protstruct_len; // protein structure summary
+    char                    *protstruct;            // protein structure summary
+    long                     protstruct_len;        // protein structure summary
     ed_key                  *edk;
     ED4_Edit_String         *edit_string;
     int                      column_stat_activated;
@@ -1208,14 +1147,12 @@ public:
     ~ED4_root();
 };
 
-//***************************************
-//* Manager specifications   beginning  *
-//***************************************
-// All manager class only differ in their static properties. This kind of construction was chosen for using a minimum of RAM
+// ------------------------
+//      manager classes
+//      
+// All manager classes only differ in their static properties.
+// This kind of construction was chosen for using a minimum of RAM
 
-// --------------------------------------------------------------------------------
-//     class ED4_main_manager : public ED4_manager
-  // --------------------------------------------------------------------------------
 class ED4_main_manager : public ED4_manager // first in hierarchy
 {
     // these terminals are redrawn after refresh (with increase clipping area)
@@ -1241,9 +1178,6 @@ public:
     virtual ED4_returncode resize_requested_by_parent(void);
 };
 
-// --------------------------------------------------------------------------------
-//     class ED4_device_manager : public ED4_manager
-// --------------------------------------------------------------------------------
 class ED4_device_manager : public ED4_manager
 {
     ED4_device_manager(const ED4_device_manager&); // copy-constructor not allowed
@@ -1256,9 +1190,6 @@ public:
 #endif // IMPLEMENT_DUMP
 };
 
-// --------------------------------------------------------------------------------
-//     class ED4_area_manager : public ED4_manager
-// --------------------------------------------------------------------------------
 class ED4_area_manager : public ED4_manager
 {
     ED4_area_manager(const ED4_area_manager&); // copy-constructor not allowed
@@ -1270,9 +1201,6 @@ public:
 #endif // IMPLEMENT_DUMP
 };
 
-// --------------------------------------------------------------------------------
-//     class ED4_multi_species_manager : public ED4_manager
-// --------------------------------------------------------------------------------
 class ED4_multi_species_manager : public ED4_manager
 {
     int species;    // # of species (-1 == unknown)
@@ -1313,9 +1241,6 @@ public:
     void        mark_selected_species(int mark);
 };
 
-// --------------------------------------------------------------------------------
-//     class ED4_group_manager : public ED4_manager
-// --------------------------------------------------------------------------------
 class ED4_group_manager : public ED4_manager
 {
     ED4_group_manager(const ED4_group_manager&); // copy-constructor not allowed
@@ -1342,21 +1267,17 @@ public:
     void reinit_char_table();
 };
 
-typedef enum
-    {
-        ED4_RM_NONE,            // no remapping (normal mode)
-        ED4_RM_SHOW_ABOVE,              // Show all positions, where xxx% of all edited sequences have any base
-        ED4_RM_MAX_ALIGN,           // ------------------------- any edited sequence has a base
-        ED4_RM_MAX_EDIT,            // like ED4_RM_MAX_ALIGN, but bases are pushed OVER remapped gaps (not INTO)
-        ED4_RM_DYNAMIC_GAPS,        // gaps shown as spaces (more gaps => more spaces)
+typedef enum {
+    ED4_RM_NONE,                                    // no remapping (normal mode)
+    ED4_RM_SHOW_ABOVE,                              // Show all positions, where xxx% of all edited sequences have any base
+    ED4_RM_MAX_ALIGN,                               // ------------------------- any edited sequence has a base
+    ED4_RM_MAX_EDIT,                                // like ED4_RM_MAX_ALIGN, but bases are pushed OVER remapped gaps (not INTO)
+    ED4_RM_DYNAMIC_GAPS,                            // gaps shown as spaces (more gaps => more spaces)
 
-        ED4_RM_MODES
+    ED4_RM_MODES
 
-    } ED4_remap_mode;
+} ED4_remap_mode;
 
-// --------------------------------------------------------------------------------
-//     class ED4_remap
-// --------------------------------------------------------------------------------
 class ED4_remap {
 
     ED4_remap_mode mode;
@@ -1423,9 +1344,6 @@ public:
     }
 };
 
-// --------------------------------------------------------------------------------
-//     class ED4_root_group_manager : public ED4_group_manager
-// --------------------------------------------------------------------------------
 class ED4_root_group_manager : public ED4_group_manager
 {
     ED4_remap my_remap;
@@ -1446,10 +1364,6 @@ public:
     virtual ED4_returncode resize_requested_by_parent( void );
 };
 
-// -----------------------------------------------
-//      callback decls for ED4_species_manager
-// -----------------------------------------------
-
 typedef void (*ED4_species_manager_cb)(ED4_species_manager*, AW_CL);
 
 class ED4_species_manager_cb_data {
@@ -1466,9 +1380,6 @@ public:
     }
 };
 
-// --------------------------------------------------------------------------------
-//     class ED4_species_manager : public ED4_manager
-// --------------------------------------------------------------------------------
 class ED4_species_manager : public ED4_manager
 {
     std::set<ED4_species_manager_cb_data> callbacks;
@@ -1491,9 +1402,6 @@ public:
     void do_callbacks();
 };
 
-// --------------------------------------------------------------------------------
-//     class ED4_multi_sequence_manager : public ED4_manager
-// --------------------------------------------------------------------------------
 class ED4_multi_sequence_manager : public ED4_manager
 {
     ED4_multi_sequence_manager(const ED4_multi_sequence_manager&); // copy-constructor not allowed
@@ -1506,9 +1414,6 @@ public:
 #endif // IMPLEMENT_DUMP
 };
 
-// --------------------------------------------------------------------------------
-//     class ED4_sequence_manager : public ED4_manager
-// --------------------------------------------------------------------------------
 class ED4_sequence_manager : public ED4_manager
 {
     ED4_sequence_manager(const ED4_sequence_manager&); // copy-constructor not allowed
@@ -1521,11 +1426,11 @@ public:
 #endif // IMPLEMENT_DUMP
 };
 
-// --------------------------------------------------------------------------------
-//     class ED4_multi_name_manager : public ED4_manager // contains info concerning the species; it's linked into speciesmanager
-// --------------------------------------------------------------------------------
-class ED4_multi_name_manager : public ED4_manager // contains info concerning the species; it's linked into speciesmanager
+class ED4_multi_name_manager : public ED4_manager
 {
+    // contains info concerning the species
+    // it's linked into speciesmanager
+    
     ED4_multi_name_manager(const ED4_multi_name_manager&); // copy-constructor not allowed
 public:
     ED4_multi_name_manager  ( const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0  );
@@ -1537,11 +1442,10 @@ public:
 };
 
 
-// --------------------------------------------------------------------------------
-//     class ED4_name_manager : public ED4_manager // contains speciesname and other info concerning the species; it's linked into speciesmanager
-// --------------------------------------------------------------------------------
-class ED4_name_manager : public ED4_manager // contains speciesname and other info concerning the species; it's linked into speciesmanager
+class ED4_name_manager : public ED4_manager 
 {
+    // contains speciesname and other info concerning the species
+    // it's linked into speciesmanager
     ED4_name_manager(const ED4_name_manager&); // copy-constructor not allowed
 public:
     ED4_name_manager( const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0  );
@@ -1552,19 +1456,11 @@ public:
 #endif // IMPLEMENT_DUMP
 };
 
-//***************************************
-//* Manager specifications  end *
-//***************************************
+
+// -------------------------
+//      terminal classes
 
 
-
-//***************************************
-//* Terminal specifications beginning   *
-//***************************************
-
-// --------------------------------------------------------------------------------
-//     class ED4_tree_terminal : public ED4_terminal
-// --------------------------------------------------------------------------------
 class ED4_tree_terminal : public ED4_terminal
 {
     ED4_tree_terminal(const ED4_tree_terminal&); // copy-constructor not allowed
@@ -1580,9 +1476,6 @@ public:
 #endif // IMPLEMENT_DUMP
 };
 
-// --------------------------------------------------------------------------------
-//     class ED4_bracket_terminal : public ED4_terminal
-// --------------------------------------------------------------------------------
 class ED4_bracket_terminal : public ED4_terminal
 {
     ED4_bracket_terminal(const ED4_bracket_terminal&); // copy-constructor not allowed
@@ -1598,9 +1491,6 @@ public:
 #endif // IMPLEMENT_DUMP
 };
 
-// --------------------------------------------------------------------------------
-//     class ED4_text_terminal : public ED4_terminal
-// --------------------------------------------------------------------------------
 class ED4_text_terminal : public ED4_terminal
 {
     ED4_text_terminal(const ED4_text_terminal&); // copy-constructor not allowed
@@ -1620,24 +1510,6 @@ public:
 #endif // IMPLEMENT_DUMP
 };
 
-/* Beispielklasse :
-
-class Beispiel : public ED4_terminal
-{
-public:
-.
-.
-.
-
-Beispiel(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent); // Construktorparameter an parents weitergeben
-~Beispiel();
-};
-
-*/
-
-// --------------------------------------------------------------------------------
-//         class ED4_sequence_terminal_basic: public ED4_text_terminal
-// --------------------------------------------------------------------------------
 class ED4_sequence_terminal_basic: public ED4_text_terminal
 {
 public:
@@ -1658,17 +1530,12 @@ public:
     
 };
 
-// -----------------------------------------------------------------------------------------------------
-//         class ED4_AA_sequence_terminal: public ED4_sequence_terminal_basic
-// -----------------------------------------------------------------------------------------------------
-// NOTE: ED4_AA_sequence_terminal is a separate terminal class used to Open Reading Frames (ORFs)
-//       for the corresponding gene (DNA) sequence. It is used in ProteinViewer Module and should not be 
-//       used for drawing aminoacid sequence alone as in protein alignment. Aminoacid sequences are 
-//       handled by the standard "ED4_sequence_terminal" class.
-// ------------------------------------------------------------------------------------------------------
-
-class ED4_AA_sequence_terminal: public ED4_sequence_terminal_basic
-{
+class ED4_AA_sequence_terminal: public ED4_sequence_terminal_basic {
+    // NOTE: ED4_AA_sequence_terminal is a separate terminal class used to display Open Reading Frames (ORFs)
+    //       for the corresponding gene (DNA) sequence. It is used in ProteinViewer Module and should not be
+    //       used for drawing aminoacid sequence alone as in protein alignment. Aminoacid sequences are
+    //       handled by the standard "ED4_sequence_terminal" class.
+    
     virtual ED4_returncode  draw( int only_text = 0 );
     ED4_AA_sequence_terminal(const ED4_AA_sequence_terminal&);
 public:
@@ -1686,9 +1553,6 @@ public:
     void SET_aaSequence_pointer(char *aaSeq) { aaSequence = new char[strlen(aaSeq)]; aaSequence = aaSeq;}
 };
 
-// --------------------------------------------------------------------------------
-//     class ED4_sequence_terminal : public ED4_text_terminal
-// --------------------------------------------------------------------------------
 class ED4_sequence_terminal : public ED4_sequence_terminal_basic
 {
     mutable ED4_SearchResults searchResults;
@@ -1720,9 +1584,6 @@ public:
 #endif // IMPLEMENT_DUMP
 };
 
-// --------------------------------------------------------------------------------
-//     class ED4_columnStat_terminal : public ED4_text_terminal
-// --------------------------------------------------------------------------------
 class ED4_columnStat_terminal : public ED4_text_terminal
 {
     char *likelihood[4];        // likelihood-array for each base (ACGU) [length of array = alignment_length]
@@ -1755,9 +1616,6 @@ public:
 #endif // IMPLEMENT_DUMP
 };
 
-// --------------------------------------------------------------------------------
-//     class ED4_species_name_terminal : public ED4_text_terminal
-// --------------------------------------------------------------------------------
 class ED4_species_name_terminal : public ED4_text_terminal
 {
     ED4_species_name_terminal(const ED4_species_name_terminal&); // copy-constructor not allowed
@@ -1780,12 +1638,8 @@ public:
 #endif // IMPLEMENT_DUMP
 };
 
-// --------------------------------------------------------------------------------
-//     class ED4_sequence_info_terminal : public ED4_text_terminal
-// --------------------------------------------------------------------------------
 class ED4_sequence_info_terminal : public ED4_text_terminal
 {
-    // now handled via ED4_species_pointer // GBDATA *gbdata;
     ED4_sequence_info_terminal(const ED4_sequence_info_terminal&); // copy-constructor not allowed
 public:
     ED4_sequence_info_terminal( const char *id, /*GBDATA *gbd,*/ AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent );
@@ -1809,9 +1663,6 @@ public:
 #endif // IMPLEMENT_DUMP
 };
 
-// --------------------------------------------------------------------------------
-//     class ED4_pure_text_terminal : public ED4_text_terminal
-// --------------------------------------------------------------------------------
 class ED4_pure_text_terminal : public ED4_text_terminal
 {
     ED4_pure_text_terminal(const ED4_pure_text_terminal&);  // copy-constructor not allowed
@@ -1826,9 +1677,6 @@ public:
 #endif // IMPLEMENT_DUMP
 };
 
-// --------------------------------------------------------------------------------
-//     class ED4_consensus_sequence_terminal : public ED4_sequence_terminal
-// --------------------------------------------------------------------------------
 class ED4_consensus_sequence_terminal : public ED4_sequence_terminal
 {
     virtual ED4_returncode  draw( int only_text = 0 );
@@ -1846,9 +1694,6 @@ public:
 #endif // IMPLEMENT_DUMP
 };
 
-// --------------------------------------------------------------------------------
-//     class ED4_spacer_terminal : public ED4_terminal
-// --------------------------------------------------------------------------------
 class ED4_spacer_terminal : public ED4_terminal
 {
     ED4_spacer_terminal(const ED4_spacer_terminal&); // copy-constructor not allowed
@@ -1864,9 +1709,6 @@ public:
 #endif // IMPLEMENT_DUMP
 };
 
-// --------------------------------------------------------------------------------
-//     class ED4_line_terminal : public ED4_terminal
-// --------------------------------------------------------------------------------
 class ED4_line_terminal : public ED4_terminal
 {
     ED4_line_terminal(const ED4_line_terminal&); // copy-constructor not allowed
@@ -1882,22 +1724,17 @@ public:
 #endif // IMPLEMENT_DUMP
 };
 
-//***************************************
-//* Terminal specifications     end *
-//***************************************
 
-//**************************************************
-//* inline expansion which need complete classdefs *
-//**************************************************
+// ----------------------------------------------
+//      inlines which need complete classdefs
 
 inline bool ED4_terminal::setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfoldGroups, ED4_CursorJumpType jump_type) {
     ED4_species_manager *sm = get_parent(ED4_L_SPECIES)->to_species_manager();
     return sm->setCursorTo(cursor, seq_pos, unfoldGroups, jump_type);
 }
 
-//***************************************
-//* Prototype functions without a class *
-//***************************************
+// --------------------------------------------
+//      Prototype functions without a class
 
 extern      ST_ML *st_ml;
 

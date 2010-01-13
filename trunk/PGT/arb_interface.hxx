@@ -61,9 +61,6 @@ int CONFIG_disconnect();
 bool ARB_begin_transaction();
 bool ARB_commit_transaction();
 
-// void ARB_dump(GBDATA *);                 // DEPRECATED
-// void ARB_dump_helper(GBDATA *, int);     // DEPRECATED
-
 bool ARB_connected();
 GBDATA *get_gbData();
 //
@@ -80,8 +77,6 @@ void getSpeciesList(Widget, bool);
 void getExperimentList(Widget, char *, bool);
 void getProteomeList(Widget, char *, char *, bool);
 void getEntryNamesList(Widget, bool);
-
-// extern void addLogEntry(char *, ...);    // DEPRECATED
 
 bool check_create_AWAR(GBDATA *, const char *AWAR_path, bool);
 void set_AWAR(const char *AWAR_path, char *content);
@@ -109,14 +104,6 @@ class imageDialog;
 
 void add_mainDialog_callback (const char *awar, void(*cb)( GBDATA *, mainDialog *,  GB_CB_TYPE), mainDialog *md);
 void add_imageDialog_callback(const char *awar, void(*cb)( GBDATA *, imageDialog *, GB_CB_TYPE), imageDialog *id);
-
-// void add_callback(const char *, GB_CB, void *);
-// void add_species_callback(GB_CB, void *);
-// void add_experiment_callback(GB_CB, void *);
-// void add_proteom_callback(GB_CB, void *);
-// void add_protein_callback(GB_CB, void *);
-// void add_gene_callback(GB_CB, void *);
-// void add_config_callback(GB_CB, void *);
 
 //
 void checkCreateAWARS();

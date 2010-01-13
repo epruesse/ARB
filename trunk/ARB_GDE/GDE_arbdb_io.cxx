@@ -395,7 +395,6 @@ int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, GapCompress
         int size = strlen(data);
         if (size > maxalignlen) size = (int)maxalignlen;
         strncpy(the_sequences[i],data,size);
-        //printf("%s \n",the_sequences[i]);
     }
     InsertDatainGDE(dataset,the_species,0,(unsigned char **)the_sequences, numberspecies,maxalignlen,filter,compress, cutoff_stop_codon);
     for (i=0;i<numberspecies;i++) {

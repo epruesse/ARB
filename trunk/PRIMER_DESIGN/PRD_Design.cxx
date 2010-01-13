@@ -12,7 +12,6 @@
 #include <cstdlib>
 #include <cmath>
 
-// using namespace std; (does not work well with Solaris CC)
 using std::printf;
 using std::deque;
 using std::cout;
@@ -275,8 +274,6 @@ void PrimerDesign::buildPrimerTrees ()
     primer1.print("buildPrimerTrees : pos1\t\t","\n");
     primer2.print("buildPrimerTrees : pos2\t\t","\n");
     primer_length.print("buildPrimerTrees : length\t","\n");
-    //    printf("buildPrimerTrees : 0123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789\n");
-    //    printf("buildPrimerTrees : %s\n",sequence);
     printf("buildPrimerTrees : (pos,base,delivered,last_base_index)\n" );
 #endif
 
@@ -453,33 +450,8 @@ void PrimerDesign::findNextPrimer( Node *start_at_, int depth_, int *counter_, i
               (start_at_->child[0] != NULL) ? 'C' : ' ',
               (start_at_->child[3] != NULL) ? 'T' : ' ',
               (start_at_->child[2] != NULL) ? 'X' : ' ' );
+    
     if ( primer_length.includes(depth_) && start_at_->isValidPrimer() )
-        //   {
-        //     (*counter_)++;
-        //     printf( "findNextPrimer : %3i",depth_ );
-
-        //     // print last_base_indices
-        //     if ( direction_ == FORWARD ) printf( "%7li           ",start_at_->last_base_index );
-        //                             else printf( "      0           " );
-
-        //     // print bases
-        //     deque<char> primer;
-        //     if ( direction_ == FORWARD )
-        //     {
-        //       printf( "%7li               '",followUp( start_at_, &primer, direction_ ) );
-        //       primer.pop_front();                                                     // erase 'base' of root-node
-        //     }
-        //     else
-        //     {
-        //       printf( "%7li               '",start_at_->last_base_index );
-        //       followUp( start_at_, &primer, direction_ );
-        //       primer.pop_back();                                                      // erase 'base' of root-node
-        //     }
-        //     copy( primer.begin(), primer.end(), ostream_iterator<char>(cout) );
-        //     printf( "'\n" );
-        //   }
-
-        // children
         depth_++;
     for ( int i=0; i < 4; i++ )
         if ( start_at_->child[i] != NULL ) findNextPrimer( start_at_->child[i],  depth_, counter_, direction_ );

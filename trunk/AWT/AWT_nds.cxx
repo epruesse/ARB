@@ -466,7 +466,6 @@ AW_window *AWT_create_nds_window(AW_root *aw_root,AW_CL cgb_main) {
         aws->auto_space(10,0);
 
         int i;
-        // for (i=0;i<NDS_COUNT; i++) {
         for (i=0;i<NDS_PER_PAGE; i++) {
             aws->get_at_position( &leafx,&dummy );
             aws->create_toggle(viewkeyAwarName(i, "leaf"));

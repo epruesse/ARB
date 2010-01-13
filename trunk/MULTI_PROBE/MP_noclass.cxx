@@ -431,11 +431,7 @@ void MP_show_probes_in_tree_move(AW_window *aww, AW_CL cl_backward, AW_CL cl_res
     bool               backward           = bool(cl_backward);
     AW_selection_list *resultProbesList = (AW_selection_list*)cl_result_probes_list;
 
-    //     aw_message(GBS_global_string("backward='%i'", int(backward)));
-
-    //     aww->move_selection(resultProbesList, mp_main->get_aw_root()->awar(MP_AWAR_RESULTPROBES), backward ? -1 : 1);
     aww->move_selection(resultProbesList, MP_AWAR_RESULTPROBES, backward ? -1 : 1);
-
     MP_show_probes_in_tree(aww);
 }
 

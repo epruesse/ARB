@@ -1288,14 +1288,6 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
         }
         tree = neighbourjoining(names,matr->matrix->m,matr->nentries,sizeof(GBT_TREE));
 
-#if 0
-        // save all generated trees for debugging
-        FILE *out = fopen(GBS_global_string("tree_%i",loop_count),"w");
-        TREE_export_tree(gb_main, out, tree, false, true, false);
-        printf(";\n"); // aka empty tree
-        fclose(out);
-#endif
-
         if (bootstrap_flag){
             insert_ctree(tree,1);
             GBT_delete_tree(tree); tree = 0;
@@ -1468,7 +1460,6 @@ static void di_compress_tree_cb(AW_window *aww, AW_CL cl_weightedFilter) {
         aw_message(error);
     }
     else {
-        //  aww->hide();
         if (di_dmatrix){
             di_dmatrix->resized();
             di_dmatrix->display(false);
@@ -1546,9 +1537,6 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     AWT_create_debug_menu(aws);
 #endif // DEBUG
 
-    //  aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-    //  aws->create_button("CLOSE","C");
-
     aws->create_menu("FILE", "F", AWM_ALL);
     aws->insert_menu_topic("macros", "Macros  ...", "M", "macro.hlp", AWM_ALL, (AW_CB)AW_POPUP, (AW_CL)awt_open_macro_window,(AW_CL)"NEIGHBOUR_JOINING");
     aws->insert_menu_topic("quit",   "Quit",        "Q", "quit.hlp",  AWM_ALL, (AW_CB)di_exit,  0,  0                                                 );
@@ -1615,7 +1603,6 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     aws->insert_option("Cat. Hall(exp)",          "c", (int)DI_TRANSFORMATION_CATEGORIES_HALL    );
     aws->insert_option("Cat. Barker(exp)",        "c", (int)DI_TRANSFORMATION_CATEGORIES_BARKER  );
     aws->insert_option("Cat.Chem (exp)",          "c", (int)DI_TRANSFORMATION_CATEGORIES_CHEMICAL);
-    // aws->insert_option("Maximum Likelihood (exp)", "l", (int)DI_TRANSFORMATION_NONE);
     aws->insert_default_option("unknown", "u", (int)DI_TRANSFORMATION_NONE);
 
     aws->update_option_menu();

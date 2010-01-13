@@ -51,10 +51,6 @@ importTable *fileopenCSV(char *filename, int delimiter)
     // ALLOCATE MEM FOR IMPORTTABLE STRUCTURE
     importTable *table= NULL;
 
-//     // ALLOCATE MEM FOR IMPORTTABLE STRUCTURE
-//     importTable *table= (importTable *)malloc(sizeof(importTable));
-//     if(!table) return NULL;
-
     // ALLOCATE MEMORY FOR READ BUFFER
     char *buffer= (char *)malloc(sizeof(char) * 10241);
     buffer[10240]=0;
@@ -120,21 +116,8 @@ importTable *fileopenCSV(char *filename, int delimiter)
         table= createImportTable(rows, total_columns);
         if(!table) return NULL;
 
-//         cells= (char **)malloc(rows * total_columns * sizeof(char *));
-//         if(!cells)
-//         {
-//             iS.close();
-//             free(table);
-//             free(buffer);
-//             printf("CSV-IMPORTER: unable to allocate memory for the table data.\n");
-//             return NULL;
-//         }
-
-        cells= table->cell;
-//         table->rows= rows;
-//         table->columns= total_columns;
-
-        cell_index= 0;
+        cells      = table->cell;
+        cell_index = 0;
 
         while(iS.getline(buffer, 10240))
         {
@@ -160,20 +143,17 @@ importTable *fileopenCSV(char *filename, int delimiter)
 
                 start_ptr= end_ptr + 1;
             }
-            // if(*start_ptr)
-            //{
-                end_ptr= start_ptr;
-                while((*end_ptr) && (*end_ptr != 0x0D) && (*end_ptr != 0x0A)) end_ptr++;
+            end_ptr= start_ptr;
+            while((*end_ptr) && (*end_ptr != 0x0D) && (*end_ptr != 0x0A)) end_ptr++;
 
-                cell_size= (int)(end_ptr - start_ptr) + 1;
-                cell= (char *)malloc(cell_size * sizeof(char));
+            cell_size= (int)(end_ptr - start_ptr) + 1;
+            cell= (char *)malloc(cell_size * sizeof(char));
 
-                *end_ptr= 0;
-                strncpy(cell, start_ptr, cell_size);
+            *end_ptr= 0;
+            strncpy(cell, start_ptr, cell_size);
 
-                cells[cell_index]= cell;
-                cell_index++;
-            //}
+            cells[cell_index]= cell;
+            cell_index++;
         }
     }
     else
@@ -210,12 +190,6 @@ int importCSV(importTable *table, importData *data)
     int rows= table->rows;
     int columns= table->columns;
 
-//     GBDATA *gb_main= get_gbData();
-//     GBDATA *gb_prot, *gb_exp, *gb_prot_data, *gb_prot_name;
-//     GBDATA *gb_protein, *gb_protein_entry;
-//     char *head, *content;
-//     int rows= table->rows;
-//     int columns= table->columns;
     // CHECK IF AN ARB CONNECTION IS GIVEN
     if(!gb_main)
     {
@@ -464,15 +438,6 @@ void identifyColumns(importTable *table)
 
             // CHANGE COLUMN TYPE IF A HIGHER DATATYPE IS FOUND
             if(cellType > colType) colType= cellType;
-
-//            // DEBUG DEBUG DEBUG
-//             if(cellType > colType)
-//             {
-//                 printf("COLUMN %d: ENTRY \'%s\' SWITCHED FROM %d TO %d\n",
-//                        c, cell[(r * columns) + c], colType, cellType);
-//                 colType= cellType;
-//             }
-//            // DEBUG DEBUG DEBUG
 }
 
         columnType[c]= colType;

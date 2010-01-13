@@ -171,10 +171,6 @@ void PH_NEIGHBOURJOINING::get_min_ij(long& mini, long& minj)    // O(n*n/speedup
             stat++;
         }
     }
-
-
-    //printf("stat %li of %li   mini %li minj %li\n",
-    //  stat,swap_size*(swap_size-1)/2,mini,minj);
 }
 
 void PH_NEIGHBOURJOINING::join_nodes(long i,long j,AP_FLOAT &leftl,AP_FLOAT& rightl)

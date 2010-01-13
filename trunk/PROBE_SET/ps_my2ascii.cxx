@@ -32,7 +32,6 @@ int main( int argc,  char *argv[] ) {
     printf( "Opening input-probe-set-database '%s'..\n", input_DB_name );
     root->load( ps_db_fb );
     printf( "loaded database (enter to continue)\n" );
-//     getchar();
 
     //
     // write as ASCII
@@ -43,7 +42,6 @@ int main( int argc,  char *argv[] ) {
     char *buffer = (char *)malloc( 512 );
     root->saveASCII( ps_db_fb,buffer );
     printf( "(enter to continue)\n" );
-//     getchar();
 
     //
     // clean up
@@ -51,7 +49,6 @@ int main( int argc,  char *argv[] ) {
     free( buffer );
     delete ps_db_fb;
     printf( "(enter to continue)\n" );
-//     getchar();
 
     return 0;
 }

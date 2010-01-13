@@ -55,7 +55,7 @@ public:
     }
 
     const char *getProbeTarget() const {
-        // sai_assert(probeTarget); // always need a target
+        sai_assert(probeTarget); // always need a target
         return probeTarget;
     }
     size_t getProbeTargetLen() const {

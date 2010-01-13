@@ -153,8 +153,8 @@ public:
         my_score -= Score;
     }
 
-    int score() const       {return my_score; /*my_length ? my_score/my_length : 0;*/}
-    int length() const      {return my_length;}
+    int score() const { return my_score; }
+    int length() const { return my_length; }
     int way(int num, int& reverse) const {reverse = my_way[num]<0; return abs(my_way[num])-1;}
 
     void dump() const {
@@ -545,8 +545,6 @@ char *AWTC_constructSequence(int parts, const char **seqs, int minMatchingBases,
 #endif
 
 #ifdef TEST_THIS_MODULE
-// typedef const char *cstr;
-// typedef char *str;
 
 #define PARTS           10
 #define OVERLAPPING_BASES   100

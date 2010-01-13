@@ -628,7 +628,7 @@ ED4_returncode  ED4_manager::handle_move(ED4_move_info *mi) {
         parent_man->to_multi_species_manager()->invalidate_species_counters();
 
         object->extension.position[X_POS] = rel_x + x_off;
-        object->extension.position[Y_POS] = rel_y; // was: rel_y + y_off;
+        object->extension.position[Y_POS] = rel_y; 
         ED4_base::touch_world_cache();
 
         object->parent = this;
@@ -882,8 +882,6 @@ ED4_returncode ED4_manager::distribute_children(void) {
     AW_pos     max_rel_size   = 0;
     AW_pos     max_other_size = 0;
     ED4_base  *current_child;
-
-    //    printf("distribute_children this=%p\n", this);
 
     // set extension-indexes rel_pos and rel_size according to properties
     if (spec->static_prop & ED4_P_HORIZONTAL) {
@@ -1143,8 +1141,6 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
             rect.b = rect.t+(clip_rect.b-clip_rect.t);
         }
 
-        //      draw_bb(ED4_G_STANDARD); // debugging only!
-
         // binary search to find first visible child
 
         int first_visible_child = 0;
@@ -1252,8 +1248,6 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
             }
         }
     }
-
-    //    if (last_window_reached) update_info.refresh = 0;
 
 #ifdef TEST_REFRESH_FLAG
     e4_assert(refresh_flag_ok());
@@ -2031,10 +2025,6 @@ GB_ERROR ED4_remap::compile(ED4_root_group_manager *gm)
             screen_len = sequence_len;
             break;
         }
-            //      case ED4_RM_SHOW_ABOVE_30: {
-            //          above_percent = 30;
-            //          goto calc_percent;
-            //      }
         case ED4_RM_SHOW_ABOVE: {
             above_percent = show_above_percent;
             goto calc_percent;

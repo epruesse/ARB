@@ -11,15 +11,11 @@
 
 adfiltercbstruct *agde_filtercd = 0;
 
-Gmenu menu[GDEMAXMENU];
-int num_menus = 0,repeat_cnt = 0;
-//Frame frame,pframe,infoframe;
-//Panel popup,infopanel;
-//Panel_item left_foot,right_foot;
-//Canvas EditCan,EditNameCan;
-int DisplayType;
-GmenuItem *current_item;
-NA_Alignment *DataSet = NULL;
+Gmenu         menu[GDEMAXMENU];
+int           num_menus = 0,repeat_cnt = 0;
+int           DisplayType;
+GmenuItem    *current_item;
+NA_Alignment *DataSet   = NULL;
 
 char GDEBLANK[] = "\0";
 
@@ -367,8 +363,6 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root,GmenuItem *gmenuitem) {
             }
 
             aws->at_newline();
-            // if((gmenuitem->numargs<8) || GDE_odd(i)) aws->at_newline();
-            // else aws->at_shift( 50,0 );
         }
         aws->at_newline();
         aws->window_fit();
@@ -465,7 +459,6 @@ void create_gde_var(AW_root  *aw_root, AW_default aw_def,
     gde_cgss.wt = wt;
     gde_cgss.THIS= THIS;
 
-    // aw_root->awar_string("tmp/gde/helptext", "help", aw_def); // only occurrence
     aw_root->awar_string(AWAR_GDE_ALIGNMENT, "", aw_def);
 
     switch (gde_cgss.wt)

@@ -179,9 +179,6 @@ void AP_tree_edge::tailDistance(AP_tree_nlen *n)
             }
         }
 
-        //  cout << "e1=" << *e1 << endl;
-        //  cout << "e2=" << *e2 << endl;
-
         cout << "d(n)=" << n->distance <<
             " d(n1)=" << n1->distance <<
             " d(n2)=" << n2->distance <<
@@ -189,9 +186,6 @@ void AP_tree_edge::tailDistance(AP_tree_nlen *n)
             " D(e2)=" << e2->Distance() <<
             " dtb(e1)=" << e1->distanceToBorder(INT_MAX,n) <<
             " dtb(e2)=" << e2->distanceToBorder(INT_MAX,n) << endl;
-
-        //  ap_assert(e1->Distance()==e1->distanceToBorder(INT_MAX,n));
-        //  ap_assert(e2->Distance()==e2->distanceToBorder(INT_MAX,n));
     }
     else
     {
@@ -204,15 +198,10 @@ void AP_tree_edge::tailDistance(AP_tree_nlen *n)
             if (n1->distance>n->distance) e1->tailDistance(n1);
             n->distance = n1->distance+1;
 
-            //      cout << "e1=" << *e1 << endl;
-
             cout << "d(n)=" << n->distance <<
                 " d(n1)=" << n1->distance <<
                 " D(e1)=" << e1->Distance() <<
                 " dtb(e1)=" << e1->distanceToBorder(INT_MAX,n) << endl;
-
-
-            //      ap_assert(e1->Distance()==e1->distanceToBorder(INT_MAX,n));
         }
         else if (e2)
         {
@@ -225,14 +214,10 @@ void AP_tree_edge::tailDistance(AP_tree_nlen *n)
             if (n2->distance>n->distance) e2->tailDistance(n2);
             n->distance = n2->distance+1;
 
-            //      cout << "e2=" << *e2 << endl;
-
             cout << "d(n)=" << n->distance <<
                 " d(n2)=" << n2->distance <<
                 " D(e2)=" << e2->Distance() <<
                 " dtb(e2)=" << e2->distanceToBorder(INT_MAX,n) << endl;
-
-            //      ap_assert(e2->Distance()==e2->distanceToBorder(INT_MAX,n));
         }
         else
         {
@@ -245,33 +230,7 @@ void AP_tree_edge::tailDistance(AP_tree_nlen *n)
 AP_tree_edge* AP_tree_edge::unlink()
 {
     ap_assert(this!=0);
-
-    //    cout << "------ unlink" << endl;
-
-    //    switch (node[0]->distance-node[1]->distance)
-    //    {
-    //     case -1: // n1->distance > n0->distance
-    //  {
-    //      ap_assert(!node[1]->is_leaf);
-    //      tailDistance(node[1]);
-    //      break;
-    //  }
-    //     case 0:  // equal -> distances remain correct
-    //  {
-    //      break;
-    //  }
-    //     case 1:  // n0->distance > n1->distance
-    //  {
-    //      ap_assert(!node[0]->is_leaf);
-    //      tailDistance(node[0]);
-    //      break;
-    //  }
-    //     default:
-    //  {
-    //      cerr << "error in distances" << endl;
-    //  }
-    //    }
-
+    
     node[0]->edge[index[0]] = NULL;
     node[1]->edge[index[1]] = NULL;
 
@@ -406,25 +365,6 @@ Recursive methods:
 
 **************************/
 
-/*
-int AP_tree_edge::clearValues(int deep, AP_tree_nlen *skip)
-{
-    int cnt = 1;
-
-    used = 0;
-    data.distance = 0;
-
-    if (deep--)
-    for (int n=0; n<2; n++)
-        if (node[n]!=skip && !node[n]->is_leaf)
-        for (int e=0; e<3; e++)
-            if (node[n]->edge[e]!=this)
-            cnt += node[n]->edge[e]->clearValues(deep,node[n]);
-
-    return cnt;
-}
-*/
-
 void AP_tree_edge::testChain(int deep)
 {
     cout << "Building chain (deep=" << deep << ")\n";
@@ -435,7 +375,6 @@ void AP_tree_edge::testChain(int deep)
 
 int AP_tree_edge::dumpChain() const
 {
-    //    cout << this << '\n';
     return next ? 1+next->dumpChain() : 1;
 }
 
@@ -481,7 +420,6 @@ int AP_tree_edge::distanceToBorder(int maxsearch,AP_tree_nlen *skipNode) const
 {
     if ((node[0] && node[0]->is_leaf) || (node[1] && node[1]->is_leaf))
     {
-        //  cout << "dtb(" << *this << ")=" << 0 << endl;
         return 0;
     }
 
@@ -502,7 +440,6 @@ int AP_tree_edge::distanceToBorder(int maxsearch,AP_tree_nlen *skipNode) const
         }
     }
 
-    //    cout << "dtb(" << *this << ")=" << maxsearch+1 << endl;
     return maxsearch;
 }
 
@@ -609,7 +546,6 @@ double ap_calc_bootstrap_remark_sub(int seq_len, const char *old, const char *ne
         double log_fak_seq_len = GB_log_fak(seq_len);
         double log_eps = log(1e-11);
 
-        //printf("********* %i %i %i     max %i\n",sum[0],sum[1],sum[2],max);
         // loop over all delta_mutations, begin in the middle
         for ( int tsum_add = 1; tsum_add >= -1; tsum_add -= 2){
             int tsum = sum[2]-sum[0];
@@ -638,7 +574,6 @@ double ap_calc_bootstrap_remark_sub(int seq_len, const char *old, const char *ne
                             break; // cannot go with so many minus, try next
                         }
                         double a = exp(log_a);
-                        //printf("\t\t%i %i %6f %e\n",tsum,n_minus,log_a,a);
                         prob += a;
                     }
                 }
@@ -646,7 +581,6 @@ double ap_calc_bootstrap_remark_sub(int seq_len, const char *old, const char *ne
         end:;
         }
     }
-    //printf("&&&&&&&& result %e\n",prob);
     return prob;
 }
 
@@ -685,11 +619,6 @@ void ap_calc_leaf_branch_length(AP_tree_nlen *leaf){
     AP_FLOAT Blen     = parsbest - rootNode()->costs();
     ap_main->pop();
     double   blen     = Blen/Seq_len;
-
-#if defined(DEBUG)
-    // printf("Blen=%f name=%s\n", Blen, leaf->name);
-#endif // DEBUG
-
 
     if (!leaf->father->father){ // at root
         leaf->father->leftlen = blen*.5;
@@ -736,7 +665,6 @@ void ap_calc_branch_lengths(AP_tree_nlen */*root*/, AP_tree_nlen *son, double /*
     if (old_len< 1e-5) old_len = 1e-5;
     s_new += blen;
     s_old += old_len;
-    //printf("slen %5i Old\t%f, new\t%f, :\t%f\t%f\n",int(seq_len),old_len,blen,blen/old_len,s_new/s_old);
 
     if (son->leftson->is_leaf){
         ap_calc_leaf_branch_length((AP_tree_nlen*)son->leftson);

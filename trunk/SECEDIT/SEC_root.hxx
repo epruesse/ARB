@@ -582,7 +582,6 @@ public:
 
     void set_fixpoint_strand(SEC_helix_strand *strand) { primary_strand = strand; }
 
-    // void flip_rootside_helices(SEC_helix_strand *new_fixpoint_strand, const Angle& new_rel_angle);
     void toggle_root(SEC_loop *root_loop);
 
     void set_center(const Position& p) { center = p; }

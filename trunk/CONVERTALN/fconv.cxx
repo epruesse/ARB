@@ -103,8 +103,6 @@ void convert(char *inf, char *outf, int intype, int outype)
     }
     else if (intype == PROTEIN && outype == GENBANK) {
         error(78, "GenBank doesn't maintain protein data.");
-        /* embl_to_genbank(inf, outf, PROTEIN); */
-        /* protein_to_genbank(inf, outf);  */
     }
     else if (intype == PROTEIN && outype == PAUP) {
         to_paup(inf, outf, PROTEIN);
@@ -114,7 +112,6 @@ void convert(char *inf, char *outf, int intype, int outype)
     }
     else if (intype == PROTEIN && outype == EMBL) {
         error(58, "EMBL doesn't maintain protein data.");
-        /* embl_to_embl(inf, outf, PROTEIN); */
     }
     else if (intype == PROTEIN && outype == PRINTABLE) {
         to_printable(inf, outf, PROTEIN);

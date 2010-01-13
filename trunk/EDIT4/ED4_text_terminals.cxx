@@ -242,13 +242,11 @@ ED4_returncode ED4_AA_sequence_terminal::draw( int /*only_text*/ )
         }
     }
 
-    // int seq_start = rm->screen_to_sequence(left); // real start of sequence
     int seq_end = rm->screen_to_sequence(right);
 
     // mark all strings as unused
     memset(color_is_used,0,sizeof(color_is_used));
 
-    //    int    iDisplayAminoAcids = ED4_ROOT->aw_root->awar(AWAR_PROTVIEW_DISPLAY_AA)->read_int();
     int iDisplayMode = ED4_ROOT->aw_root->awar(AWAR_PROTVIEW_DISPLAY_OPTIONS)->read_int();
     {
         unsigned char *aaSequence_copy = (unsigned char *) strdup(aaSequence);
@@ -318,7 +316,6 @@ ED4_returncode ED4_AA_sequence_terminal::draw( int /*only_text*/ )
 
     // output strings -- when display aminoacid sequence selected
     if((iDisplayMode == PV_AA_NAME) || (iDisplayMode == PV_AA_CODE)) {
-        //    if (!iDisplayAsColoredBox || iDisplayAminoAcids) { 
         int gc;
         for (gc = 0; gc < ED4_G_DRAG; gc++){
             if (!color_is_used[gc]) continue;
@@ -444,7 +441,6 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
         int                  selection_col1, selection_col2;
         int                  is_selected  = ED4_get_selected_range(this, &selection_col1, &selection_col2);
         int                  color_group  = AWT_species_get_dominant_color(spec_man->get_species_pointer());
-        // int                  color_group  = AW_find_color_group(spec_man->get_species_pointer());
 
         if (species_name &&
             ED4_ROOT->column_stat_activated &&

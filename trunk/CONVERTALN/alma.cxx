@@ -88,7 +88,7 @@ void alma_to_macke(char *inf, char *outf)
             /* no warning messages for next loop */
             warning_out = 0;
         }
-    }                           /* for each seq; loop */
+    } 
     warning_out = 1;            /* resume warning messages */
 
 #ifdef log
@@ -133,7 +133,7 @@ void alma_to_genbank(char *inf, char *outf)
             init_macke();
             init_genbank();
         }
-    }                           /* for each seq; loop */
+    } 
 
 #ifdef log
     fprintf(stderr, "Total %d sequences have been processed\n", data.numofseq);
@@ -147,14 +147,8 @@ void alma_to_genbank(char *inf, char *outf)
 char alma_in(FILE_BUFFER fp)
 {
     char eoen, *eof, line[LINENUM];
-
-    /*  char    temp[LINENUM]; */
     char key[TOKENNUM], *format;
-
     int indi, len, index;
-
-    /*  int alma_key_word(); */
-    /*  void    alma_one_entry(), Freespace(), error(); */
 
     /* end-of-entry; set to be 'y' after reaching end of entry */
     format = NULL;
@@ -245,8 +239,6 @@ void alma_one_entry(char *line, int index, char **datastring)
 {
     int indi, length;
 
-    /*  void    replace_entry(); */
-
     index = Skip_white_space(line, index);
 
     for (indi = index, length = Lenstr(line + index) + index; indi < length; indi++)
@@ -260,18 +252,11 @@ void alma_one_entry(char *line, int index, char **datastring)
  *   Function alma_in_gaps().
  *       Get sequence data and merge with gaps(alignment).
  */
-char
- *alma_in_gaps(FILE_BUFFER fp)
-{
-    int return_num, gaps, residues, count = 0;
-
-    int indi, numofseq, bases_not_matching;
-
-    char line[LINENUM], gap_chars[LINENUM];
-
+char *alma_in_gaps(FILE_BUFFER fp) {
+    int   return_num, gaps, residues, count = 0;
+    int   indi, numofseq, bases_not_matching;
+    char  line[LINENUM], gap_chars[LINENUM];
     char *eof;
-
-    /*  void    alma_in_sequence(), warning(); */
 
     alma_in_sequence();
 
@@ -409,12 +394,7 @@ void alma_in_sequence(void)
 void nbrf_in(FILE_BUFFER fp)
 {
     int length, index, reach_end;
-
     char line[LINENUM], temp[TOKENNUM], *eof;
-
-    /*  char    *Fgetline(), *Dupstr(); */
-    /*  char    *Reallocspace(); */
-    /*  void    Cpystr(), replace_entry(), error(); */
 
     if ((eof = Fgetline(line, LINENUM, fp)) == NULL)
         error(52, "Cannot find id line in NBRF file, Exit.");
@@ -503,12 +483,7 @@ void staden_in(FILE_BUFFER fp)
  *   Function atom().
  *       Convert one ALMA entry to Macke entry.
  */
-int atom(void)
-{
-    /*  int indi, len; */
-    /*  char    *Dupstr(), *Reallocspace(); */
-    /*  void    replace_entry(), error(); */
-
+int atom(void) {
     if (data.alma.format == NBRF) {
         data.macke.numofrem = 1;
         data.macke.remarks = (char **)Reallocspace((char *)data.macke.remarks, (unsigned)(sizeof(char *)));
@@ -702,10 +677,6 @@ void macke_to_alma(char *inf, char *outf)
 int etoa(void)
 {
     char temp[TOKENNUM], t1[TOKENNUM], t2[TOKENNUM], t3[TOKENNUM];
-
-    /*  char    *Dupstr(), *Catstr(); */
-    /*  void    embl_key_word(), Cpystr(); */
-    /*  void    replace_entry(); */
 
     embl_key_word(data.embl.id, 0, temp, TOKENNUM);
     if (Lenstr(data.embl.dr) > 1) {

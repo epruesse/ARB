@@ -11,8 +11,6 @@ extern int warning_out;
  */
 void init_em_data(void)
 {
-    /*  void    init_macke(), init_embl(); */
-
     init_macke();
     init_embl();
 }
@@ -21,13 +19,8 @@ void init_em_data(void)
  *      Function init_embl().
  *              Initialize embl entry.
  */
-void init_embl(void)
-{
-
+void init_embl(void) {
     int indi;
-
-    /*  void    Freespace(); */
-    /*  char    *Dupstr(); */
 
     /* initialize embl format */
     Freespace(&(data.embl.id));
@@ -87,20 +80,10 @@ void init_embl(void)
  *      Function embl_in().
  *              Read in one embl entry.
  */
-char embl_in(FILE_BUFFER fp)
-{
-    char line[LINENUM], key[TOKENNUM];
-
+char embl_in(FILE_BUFFER fp) {
+    char  line[LINENUM], key[TOKENNUM];
     char *eof, eoen;
-
-    /*  char    *embl_date(); */
-    /*  char    *embl_version(); */
-    /*  char    *embl_comments(), *embl_origin(); */
-    /*  char    *embl_skip_unidentified(); */
-    /*  char    *Dupstr(), *temp; */
-    /*  void    embl_key_word(), warning(), error(), Append_char(); */
-    /*  void    replace_entry(), embl_verify_title(); */
-    int refnum;
+    int   refnum;
 
     eoen = ' ';                 /* end-of-entry, set to be 'y' after '//' is read */
 
@@ -216,16 +199,9 @@ char embl_in(FILE_BUFFER fp)
  *      Function embl_in_id().
  *              Read in one embl entry.
  */
-char embl_in_id(FILE_BUFFER fp)
-{
+char embl_in_id(FILE_BUFFER fp) {
     char line[LINENUM], key[TOKENNUM];
-
     char *eof, eoen;
-
-    /*  char    *embl_one_entry(), *embl_origin(); */
-    /*  char    *embl_skip_unidentified(); */
-    /*  void    embl_key_word(), warning(), error(); */
-    /*  int     Lenstr(); */
 
     eoen = ' ';
     /* end-of-entry, set to be 'y' after '//' is read */
@@ -308,15 +284,9 @@ int embl_check_blanks(char *line, int numb)
  *              if there are (numb) blanks at the beginning of line,
  *                      it is a continue line of the current command.
  */
-char
- *embl_continue_line(char *pattern, char **string, char *line, FILE_BUFFER fp)
-{
-    int ind;
-
-    /*  int     embl_check_blanks(), Skip_white_space(); */
+char *embl_continue_line(char *pattern, char **string, char *line, FILE_BUFFER fp) {
+    int  ind;
     char key[TOKENNUM], *eof, temp[LINENUM];
-
-    /*  void    Cpystr(), embl_key_word(), Append_rp_eoln(); */
 
     /* check continue lines */
     for (eof = Fgetline(line, LINENUM, fp); eof != NULL; eof = Fgetline(line, LINENUM, fp)) {
@@ -343,14 +313,9 @@ char
  *      Function embl_one_entry().
  *              Read in one embl entry lines.
  */
-char
- *embl_one_entry(char *line, FILE_BUFFER fp, char **entry, char *key)
-{
-    int index;
-
+char *embl_one_entry(char *line, FILE_BUFFER fp, char **entry, char *key) {
+    int   index;
     char *eof;
-
-    /*  void    error(), replace_entry(); */
 
     index = Skip_white_space(line, p_nonkey_start);
     replace_entry(entry, line + index);
@@ -363,13 +328,9 @@ char
  *      Function embl_verify_title().
  *              Verify title.
  */
-void embl_verify_title(int refnum)
-{
+void embl_verify_title(int refnum) {
     int len;
-
     char *temp;
-
-    /*  void    Append(), Append_char(), replace_entry(); */
 
     Append_char(&(data.embl.reference[refnum].title), ';');
 
@@ -394,15 +355,9 @@ void embl_verify_title(int refnum)
  *      Function embl_date().
  *              Read in embl DATE lines.
  */
-char
- *embl_date(char *line, FILE_BUFFER fp)
-{
-    int index;
-
+char *embl_date(char *line, FILE_BUFFER fp) {
+    int   index;
     char *eof, key[TOKENNUM];
-
-    /*  void    error(), embl_key_word(), replace_entry(); */
-    /*  void    warning(); */
 
     index = Skip_white_space(line, p_nonkey_start);
     replace_entry(&(data.embl.dateu), line + index);
@@ -437,8 +392,6 @@ char
 
     char *eof;
 
-    /*  char    *Reallocspace(), *Fgetline(); */
-
     index = Skip_white_space(line, p_nonkey_start);
     if (data.embl.numofref == 0) {
         data.embl.numofref = 1;
@@ -464,18 +417,10 @@ char
  *      Function embl_comments().
  *              Read in embl comment lines.
  */
-char
- *embl_comments(char *line, FILE_BUFFER fp)
-{
-    int index, offset;
-
-    /*  int     Skip_white_space(); */
+char *embl_comments(char *line, FILE_BUFFER fp) {
+    int   index, offset;
     char *eof;
-
-    char key[TOKENNUM];
-
-    /*  char    *Dupstr(); */
-    /*  void    Append(); */
+    char  key[TOKENNUM];
 
     for (; line[0] == 'C' && line[1] == 'C';) {
 
@@ -583,15 +528,9 @@ char
  *              if there are (numb) blanks at the beginning of line,
  *              it is a continue line of the current command.
  */
-char
- *embl_skip_unidentified(char *pattern, char *line, FILE_BUFFER fp)
-{
-    /*  int     Lenstr(), Cmpstr(); */
+char *embl_skip_unidentified(char *pattern, char *line, FILE_BUFFER fp) {
     char *eof;
-
-    char key[TOKENNUM];
-
-    /*  void    embl_key_word(); */
+    char  key[TOKENNUM];
 
     /* check continue lines */
     for (eof = Fgetline(line, LINENUM, fp); eof != NULL; eof = Fgetline(line, LINENUM, fp)) {
@@ -633,15 +572,9 @@ int embl_comment_key(char *line, char *key)
  *              If not RDP defined comment, should not call
  *                      this function.
  */
-char *embl_one_comment_entry(FILE_BUFFER fp, char **datastring, char *line, int start_index)
-{
-    int index;
-
-    /*  int     Skip_white_space(), Lenstr(), Blank_num(); */
+char *embl_one_comment_entry(FILE_BUFFER fp, char **datastring, char *line, int start_index) {
+    int   index;
     char *eof, temp[LINENUM];
-
-    /*  char    *eof, *Fgetline(), *Dupstr(), temp[LINENUM]; */
-    /*  void    replace_entry(), Cpystr(), Append_rp_eoln(); */
 
     index = Skip_white_space(line, start_index);
     replace_entry(datastring, line + index);
@@ -694,14 +627,8 @@ char
  *      Function embl_out().
  *              Output EMBL data.
  */
-void embl_out(FILE * fp)
-{
-    /*  int     Lenstr(); */
-    /*  int     base_a, base_t, base_g, base_c, base_other; */
-    int indi /*, indj, indk, len */ ;
-
-    /*  void    embl_print_lines(), embl_out_comments(); */
-    /*  void    embl_out_origin(); */
+void embl_out(FILE * fp) {
+    int indi;
 
     if (Lenstr(data.embl.id) > 1)
         fprintf(fp, "ID   %sXX\n", data.embl.id);
@@ -809,8 +736,6 @@ void embl_print_lines(FILE * fp, const char *key, char *Data, int flag, const ch
 void embl_out_comments(FILE * fp)
 {
     int indi, len;
-
-    /*  void    embl_print_comment(); */
 
     if (data.embl.comments.orginf.exist == 1) {
         fprintf(fp, "CC   Organism information\n");
@@ -934,13 +859,9 @@ void embl_print_comment(FILE * fp, const char *key, char *string, int offset, in
  *      Function embl_out_origin().
  *              Print out the sequence data of EMBL format.
  */
-void embl_out_origin(FILE * fp)
-{
+void embl_out_origin(FILE * fp) {
     int base_a, base_c, base_t, base_g, base_other;
-
     int indi, indj, indk;
-
-    /*  void    count_base(); */
 
     /* print seq data */
     count_base(&base_a, &base_t, &base_g, &base_c, &base_other);
@@ -1031,7 +952,7 @@ void embl_to_macke(char *inf, char *outf, int format)
             /* no warning messages for next loop */
             warning_out = 0;
         }
-    }                           /* for each seq; loop */
+    } 
 
     warning_out = 1;
 
@@ -1044,14 +965,9 @@ void embl_to_macke(char *inf, char *outf, int format)
  *      Function etom().
  *              Convert from embl format to Macke format.
  */
-int etom(void)
-{
-    /*  void init_genbank(); */
-    /*  int     etog(), gtom(); */
-
+int etom(void) {
     init_genbank();
-    if (etog())
-        return gtom();
+    if (etog()) return gtom();
     return 0;
 }
 
@@ -1154,19 +1070,10 @@ void embl_to_genbank(char *inf, char *outf)
  *      Function etog()
  *              Convert from embl to genbank format.
  */
-int etog(void)
-{
-
-    int indi;
-
+int etog(void) {
+    int  indi;
     char key[TOKENNUM], temp[LONGTEXT];
-
     char t1[TOKENNUM], t2[TOKENNUM], t3[TOKENNUM];
-
-    /*  char    *Dupstr(), *genbank_date(); */
-    /*  void    embl_key_word(), Cpystr(); */
-    /*  void    etog_comments(), etog_reference(), Append_char(); */
-    /*  void    replace_entry(); */
 
     embl_key_word(data.embl.id, 0, key, TOKENNUM);
     if (Lenstr(data.embl.dr) > 1) {
@@ -1233,17 +1140,11 @@ int etog(void)
  *      Function etog_reference().
  *              Convert reference from EMBL to GenBank format.
  */
-void etog_reference(void)
-{
-
+void etog_reference(void) {
     int indi, len, start, end;
-
     char temp[LONGTEXT];
 
-    /*  char    *etog_author(), *etog_journal(); */
-
     data.gbk.numofref = data.embl.numofref;
-
     data.gbk.reference = (Reference *) calloc(1, sizeof(Reference) * data.embl.numofref);
 
     for (indi = 0; indi < data.embl.numofref; indi++) {
@@ -1303,14 +1204,9 @@ void etog_reference(void)
  *      Function etog_author().
  *              Convert EMBL author format to Genbank author format.
  */
-char
- *etog_author(char *string)
-{
-    int indi, /*indj, */ indk, len, index;
-
+char *etog_author(char *string) {
+    int  indi, indk, len, index;
     char token[TOKENNUM], *author;
-
-    /*  void    Append(); */
 
     author = (char *)Dupstr("");
     for (indi = index = 0, len = Lenstr(string) - 1; indi < len; indi++, index++) {
@@ -1343,16 +1239,10 @@ char
  *      Function etog_journal().
  *              Convert jpurnal part from EMBL to GenBank format.
  */
-char
- *etog_journal(char *string)
-{
-    int indi, len, index;
-
+char *etog_journal(char *string) {
+    int   indi, len, index;
     char *journal, *new_journal;
-
-    char token[TOKENNUM];
-
-    /*  void    Freespace(), Append(); */
+    char  token[TOKENNUM];
 
     sscanf(string, "%s", token);
     if (Cmpstr(token, "(in)") == EQ || Cmpstr(token, "Submitted") == EQ || Cmpstr(token, "Unpublished") == EQ) {
@@ -1395,13 +1285,7 @@ char
  *      Function etog_comments().
  *              Convert comment part from EMBL to GenBank.
  */
-void etog_comments(void)
-{
-
-    /*  int     Lenstr(); */
-    /*  void    replace_entry(); */
-    /*  char    *Dupsstr(); */
-
+void etog_comments(void) {
     /* RDP defined Organism Information comments */
     data.gbk.comments.orginf.exist = data.embl.comments.orginf.exist;
 
@@ -1468,7 +1352,6 @@ void genbank_to_embl(char *inf, char *outf)
     init();
     init_genbank();
     init_embl();
-    /* rewind(ifp); */
     while (genbank_in(ifp) != EOF) {
         data.numofseq++;
         if (gtoe())
@@ -1489,16 +1372,9 @@ void genbank_to_embl(char *inf, char *outf)
  *      Function gtoe().
  *              Genbank to EMBL.
  */
-int gtoe(void)
-{
-    /*  void    genbank_key_word(), replace_entry(); */
-    /*  void    Cpystr(), Upper_case(); */
-    /*  void    genbank_key_word(), Append(), Append_char(); */
-    /*  void    gtoe_comments(), gtoe_reference(); */
+int gtoe(void) {
     char token[TOKENNUM], temp[LONGTEXT], rdpid[TOKENNUM];
-
-    /*  char    *Dupstr(), *today_date(), *genbank_date(); */
-    int indi /*,length */ ;
+    int  indi;
 
     genbank_key_word(data.gbk.locus, 0, token, TOKENNUM);
     Cpystr(temp, token);
@@ -1572,17 +1448,10 @@ int gtoe(void)
  *      Function gtoe_reference().
  *              Convert references from GenBank to EMBL.
  */
-void gtoe_reference(void)
-{
-
-    int indi, start, end, refnum;
-
+void gtoe_reference(void) {
+    int  indi, start, end, refnum;
     char token[TOKENNUM];
-
     char t1[TOKENNUM], t2[TOKENNUM], t3[TOKENNUM];
-
-    /*  char    *gtoe_author(), *gtoe_journal(); */
-    /*  void    embl_verify_title(), Append_char(); */
 
     data.embl.numofref = data.gbk.numofref;
 
@@ -1630,14 +1499,9 @@ void gtoe_reference(void)
  *      Function gtoe_author().
  *              Convert GenBank author to EMBL author.
  */
-char
- *gtoe_author(char *author)
-{
-    int indi, len, index, odd;
-
+char *gtoe_author(char *author) {
+    int   indi, len, index, odd;
     char *auth, *string;
-
-    /*  void    Append(), Freespace(); */
 
     /* replace " and " by ", " */
     auth = (char *)Dupstr(author);
@@ -1672,14 +1536,9 @@ char
  *      Function gtoe_journal().
  *              Convert GenBank journal to EMBL journal.
  */
-char
- *gtoe_journal(char *string)
-{
+char *gtoe_journal(char *string) {
     char token[TOKENNUM], *journal;
-
-    int indi, indj, index, len;
-
-    /*  void    Append_char(); */
+    int  indi, indj, index, len;
 
     sscanf(string, "%s", token);
     if (Cmpstr(token, "(in)") == EQ || Cmpstr(token, "Unpublished") == EQ || Cmpstr(token, "Submitted") == EQ) {
@@ -1711,12 +1570,7 @@ char
  *      Function gtoe_comments().
  *              Convert comment part from GenBank to EMBL.
  */
-void gtoe_comments(void)
-{
-    /*  int     Lenstr(); */
-    /*  void    replace_entry(); */
-    /*  char    *Dupsstr(); */
-
+void gtoe_comments(void) {
     /* RDP defined Organism Information comments */
     data.embl.comments.orginf.exist = data.gbk.comments.orginf.exist;
 
@@ -1831,13 +1685,8 @@ void macke_to_embl(char *inf, char *outf)
  *              Handle subspecies information when converting from
  *                      Macke to EMBL.
  */
-int partial_mtoe(void)
-{
-
+int partial_mtoe(void) {
     int indj, indk;
-
-    /*  int     not_ending_mark(); */
-    /*  void    Freespace(), Append(), Append_rm_eoln(); */
 
     if (Lenstr(data.macke.strain) > 1) {
         if ((indj = find_pattern(data.embl.comments.others, "*source:")) >= 0 && (indk = find_pattern(data.embl.comments.others + indj, "strain=")) >= 0) {

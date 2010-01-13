@@ -88,28 +88,6 @@ void ST_rate_matrix::print() {
     }
 }
 
-#if 0
-
-inline void ST_rate_matrix::mult(ST_base_vector * in,
-                                    ST_base_vector * out)
-{
-    int     i, j;
-    float  *pm = &m[0][0];
-    double  sum;
-
-    for (i = ST_MAX_BASE - 1; i >= 0; i--) {
-        sum = 0;
-        for (j = ST_MAX_BASE - 1; j >= 0; j--) {
-            sum += *(pm++) * in->b[j];
-        }
-        out->b[i] = sum;
-    }
-    out->ld_lik = in->ld_lik;
-    out->lik = in->lik;
-}
-
-#else
-
 inline void ST_base_vector::mult(ST_base_vector * other) {
     float  *a  = &b[0];
     float  *c  = &other->b[0];
@@ -145,7 +123,6 @@ inline void ST_rate_matrix::mult(ST_base_vector * in, ST_base_vector * out) {
     out->ld_lik = in->ld_lik;
     out->lik = in->lik;
 }
-#endif
 
 ST_sequence_ml::ST_sequence_ml(const AliView *aliview, ST_ML *st_ml_)
     : AP_sequence(aliview)
@@ -382,7 +359,6 @@ ST_ML::~ST_ML() {
         delete rates;
         delete ttratio;
     }
-    //delete awt_csp; // no sorry
 }
 
 void ST_ML::print() {

@@ -33,27 +33,21 @@ namespace validNames{
 
     TokLPtr tokenize(const string& description, TokLPtr tokenLP)
     {
-        //   TokLPtr tokenLP = new TokL;
         size_t tokenEnd = 0;
         size_t tokenBegin = 0;
-        //    std::cout  <<description.size() << std::endl;
 
         while (tokenEnd != description.size()){ // CC : warning: comparison between signed and unsigned (tokenEnd sollte nicht 'int' sondern 'unsigned' sein)
             tokenEnd = description.find_first_of(' ', tokenBegin);
-            //    std::cout << string("TokenBegin:\t") << tokenBegin << "\t" <<
-            //  string("TokenEnd:\t") << tokenEnd << std::endl;
             if (tokenEnd == string::npos) tokenEnd = description.size();
             int tokLength = tokenEnd - tokenBegin;
             if (tokLength != 0){
                 tokenLP->push_back(description.substr(tokenBegin,tokenEnd - tokenBegin));
-                //    std::cout << string("pushedToken:\t") << description.substr(tokenBegin,tokenEnd - tokenBegin) << std::endl;
             }
-            //    std::cout << description.substr(tokenBegin,tokenEnd - tokenBegin) << std::endl;
             tokenBegin = tokenEnd + 1;
 
         }
         return tokenLP;
-    } // end tokenize
+    } 
 
 
 
@@ -85,14 +79,12 @@ namespace validNames{
         bool isHomo = false;
         bool isGenus = false;
         bool isSee = false;
-        //  bool isSpecies = false;
         bool isCorr = false;
 
 
 
         for( TokL::iterator it = tokenLP->begin();it != tokenLP->end(); it ++, ssp++)
         {//begin of token iteration
-            //      std::cout << "entering analysis loop" << std::endl;
             if(isUpperCase(*it)) {
                 isGenus = true;
 #if defined(DUMP)
@@ -155,8 +147,6 @@ namespace validNames{
                                         std::cout << "subspecies detected at position: >>>"<< ssp << "<<<" << std::endl;
 #endif // DUMP
                                         ssp == 2 ? sspPos[0] = ssp : sspPos[1] = ssp;
-                                        //      : sspPos[1] == 0 ? sspPos[1] = ssp
-                                        //      : 10000,exit (102); // bad hack to fake return value
                                         // max. one subsp. on each operator side
 #if defined(DUMP)
                                         std::cout << "position of subsp.: " << sspPos[0] << "\tand: " << sspPos[1] << std::endl;
@@ -223,7 +213,6 @@ namespace validNames{
                             std::cout << "isValid set to false "  << std::endl;
 #endif // DUMP
                             actType = NOTYPE;
-                            //    exit(25);
                         }
                     }
                 }
@@ -312,24 +301,18 @@ namespace validNames{
         }// end of species part
 
 
-        // check line for -> or => or =
-        //}
-
 #if defined(DUMP)
         std::cout << descriptionString << std::endl;
         std::cout << "classified as " << actType << std::endl ;
 #endif // DUMP
 
-        //Desco actDesc(actType);
         Desco actDesc(actType, isCorr, descNames[0],descNames[1],descNames[2],descNames[3],descNames[4],descNames[5] );
         delete tokenLP;
         return actDesc;
-        //  return actType;
     }; // end determineType
 
 
     string Desco::getFirstName(){
-        //  return nameParts[0] + nameParts[1] + nameParts[2];
         string tmp = firstgen;
         if (!firstspec.empty()){
             tmp = tmp + " " + firstspec;
@@ -351,7 +334,6 @@ namespace validNames{
             }
         }
         return tmp;
-        //  return nameParts[3] + nameParts[4] + nameParts[5];
     } // Desco::getSecondName()
 
 

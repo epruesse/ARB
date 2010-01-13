@@ -96,7 +96,6 @@ XML_Attribute *XML_Attribute::append_to(XML_Attribute *queue) {
 //  ---------------------------------------------------
 void XML_Attribute::print(FILE *out) const {
     fprintf(out, " %s=\"%s\"", name.c_str(), encodeEntities(content, true).c_str());
-//     out << " " << name << "=\"" << content << "\"";
     if (next) next->print(out);
 }
 
@@ -254,8 +253,6 @@ void XML_Text::open(FILE *)
 //  ----------------------------------------
 void XML_Text::close(FILE *out) {
     if (father && !father->Opened()) father->open(out);
-    //fputc('\n', out); to_indent(out, Indent());
-//     fputs(content.c_str(), out);
     fputs(encodeEntities(content).c_str(), out);
 }
 

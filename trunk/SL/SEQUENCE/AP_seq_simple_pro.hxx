@@ -24,7 +24,6 @@ typedef unsigned char ap_pro;   // aas but only one character used
 
 class AP_sequence_simple_protein : public AP_sequence {
     ap_pro *sequence;
-    //static char   *table;
 
     AP_FLOAT count_weighted_bases() const;
 

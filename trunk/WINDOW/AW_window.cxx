@@ -1201,13 +1201,6 @@ static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAr
         }
     }
 
-    //  this is done above :
-    //     else if (ev->xkey.type == KeyRelease) { // added Jan 98 to fetch multiple keystrokes in EDIT4 (may cause side effects)
-    //         aww->event.time = ev->xbutton.time;
-    //         aww->event.type = AW_Keyboard_Release;
-    //         run_callback = true;
-    //     }
-
     if (run_double_click_callback) {
         if (cbs->help_text == (char*)1) {
             cbs->run_callback();
@@ -1258,10 +1251,9 @@ static void AW_motionCB(Widget w, XtPointer aw_cb_struct, XEvent *ev, Boolean*) 
     AWUSE(w);
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
 
-    cbs->aw->event.type = AW_Mouse_Drag;
-    //  cbs->aw->event.button   = cbs->aw->event.button;
-    cbs->aw->event.x = ev->xmotion.x;
-    cbs->aw->event.y = ev->xmotion.y;
+    cbs->aw->event.type    = AW_Mouse_Drag;
+    cbs->aw->event.x       = ev->xmotion.x;
+    cbs->aw->event.y       = ev->xmotion.y;
     cbs->aw->event.keycode = AW_KEY_NONE;
 
     cbs->run_callback();
@@ -2090,16 +2082,14 @@ void aw_realize_widget(AW_window *aww) {
     p_aww(aww)->WM_top_offset = AW_FIX_POS_ON_EXPOSE;
 }
 
-void AW_window_menu_modes::init(AW_root *root_in, const char *wid,
-        const char *windowname, int width, int height) {
-    Widget main_window;
-    Widget help_popup;
-    Widget help_label;
-    Widget separator;
-    Widget form1;
-    Widget form2;
-    //Widget frame;
-    const char *help_button = "HELP";
+void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *windowname, int  width, int height) {
+    Widget      main_window;
+    Widget      help_popup;
+    Widget      help_label;
+    Widget      separator;
+    Widget      form1;
+    Widget      form2;
+    const char *help_button   = "HELP";
     const char *help_mnemonic = "H";
 
 #if defined(DUMP_MENU_LIST)
@@ -2302,16 +2292,14 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid,
     create_window_variables();
 }
 
-void AW_window_menu::init(AW_root *root_in, const char *wid,
-        const char *windowname, int width, int height) {
-    Widget main_window;
-    Widget help_popup;
-    Widget help_label;
-    Widget separator;
-    Widget form1;
-    Widget form2;
-    //Widget frame;
-    const char *help_button = "HELP";
+void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windowname, int width, int height) {
+    Widget      main_window;
+    Widget      help_popup;
+    Widget      help_label;
+    Widget      separator;
+    Widget      form1;
+    Widget      form2;
+    const char *help_button   = "HELP";
     const char *help_mnemonic = "H";
 
 #if defined(DUMP_MENU_LIST)
@@ -2502,15 +2490,13 @@ void AW_window_menu::init(AW_root *root_in, const char *wid,
     create_window_variables();
 }
 
-void AW_window_simple::init(AW_root *root_in, const char *wid,
-        const char *windowname) {
-    //Arg args[10];
+void AW_window_simple::init(AW_root *root_in, const char *wid, const char *windowname) {
     root = root_in; // for macro
 
-    int width = 100; // this is only the minimum size!
+    int width  = 100;                               // this is only the minimum size!
     int height = 100;
-    int posx = 50;
-    int posy = 50;
+    int posx   = 50;
+    int posy   = 50;
 
     window_name = strdup(windowname);
     window_defaults_name = GBS_string_2_key(wid);
@@ -2518,8 +2504,7 @@ void AW_window_simple::init(AW_root *root_in, const char *wid,
     p_w->shell= aw_create_shell(this, true, true, width, height, posx, posy);
 
     // add this to disable resize or maximize in simple dialogs (avoids broken layouts)
-    // XtVaSetValues(p_w->shell, XmNmwmFunctions, MWM_FUNC_MOVE | MWM_FUNC_CLOSE,
-    //         NULL);
+    // XtVaSetValues(p_w->shell, XmNmwmFunctions, MWM_FUNC_MOVE | MWM_FUNC_CLOSE, NULL);
 
     Widget form1 = XtVaCreateManagedWidget("forms", xmFormWidgetClass,
             p_w->shell, 
@@ -2540,10 +2525,7 @@ void AW_window_simple::init(AW_root *root_in, const char *wid,
     create_devices();
 }
 
-void AW_window_simple_menu::init(AW_root *root_in, const char *wid,
-        const char *windowname) {
-    //  Arg args[10];
-
+void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *windowname) {
     root = root_in; // for macro
 
     const char *help_button = "HELP";
@@ -2621,16 +2603,13 @@ void AW_window_simple_menu::init(AW_root *root_in, const char *wid,
     create_devices();
 }
 
-void AW_window_message::init(AW_root *root_in, const char *windowname,
-        bool allow_close) {
-    //  Arg args[10];
-
+void AW_window_message::init(AW_root *root_in, const char *windowname, bool allow_close) {
     root = root_in; // for macro
 
-    int width = 100;
+    int width  = 100;
     int height = 100;
-    int posx = 50;
-    int posy = 50;
+    int posx   = 50;
+    int posy   = 50;
 
     window_name = strdup(windowname);
     window_defaults_name = GBS_string_2_key(window_name);
@@ -2653,7 +2632,6 @@ void AW_window_message::init(AW_root *root_in, const char *windowname,
                     NULL));
 
     aw_realize_widget(this);
-    //  create_devices();
 }
 
 void AW_window::set_info_area_height(int height) {
@@ -2868,7 +2846,6 @@ static void test_duplicate_mnemonics(int menu_deep, const char *topic_name, cons
             }
         }
         else {
-            // fprintf(stderr, "- menu_deep=%i, TD_menu_name='%s', topic_name='%s' mnemonic='%s'\n", menu_deep, TD_menu_name, topic_name, mnemonic);
             if (strchr(topic_name, mnemonic[0])) {  // occurs in menu text
                 int topics = TD_topics[menu_deep];
                 int t;
@@ -3256,17 +3233,9 @@ void AW_window::show_internal(void *cl_grab) {
             int user_width = tmp_root->awar(aw_awar_name_width(this))->read_int();
             int user_height = tmp_root->awar(aw_awar_name_height(this))->read_int();
 
-#if defined(DEBUG)
-            // printf("default size = %i/%i  user size = %i/%i\n", default_width, default_height, user_width, user_height);
-#endif // DEBUG
-            if (user_width<default_width)
-                user_width = default_width;
-            if (user_height<default_height)
-                user_height = default_height;
+            if (user_width<default_width) user_width = default_width;
+            if (user_height<default_height) user_height = default_height;
 
-#if defined(DEBUG)
-            // printf("using size = %i/%i\n", user_width, user_height);
-#endif // DEBUG
             set_window_size(user_width, user_height);
         }
         recalc_size_at_show = AW_KEEP_SIZE;
@@ -3386,14 +3355,8 @@ AW_ProcessEventType AW_root::peek_key_event(AW_window */*aww*/) {
     XEvent xevent;
     Boolean result = XtAppPeekEvent(p_r->context,&xevent);
 
-#if defined(DEBUG) && 0
-    printf("peek_key_event\n");
-#endif // DEBUG
-    if (!result)
-        return NO_EVENT;
-    if ( (xevent.type != KeyPress) && (xevent.type != KeyRelease))
-        return NO_EVENT;
-    //XKeyEvent *kev = &xevent.xkey;
+    if (!result) return NO_EVENT;
+    if ( (xevent.type != KeyPress) && (xevent.type != KeyRelease)) return NO_EVENT;
     return (AW_ProcessEventType)xevent.type;
 }
 

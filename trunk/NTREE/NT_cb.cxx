@@ -27,7 +27,6 @@
 /*AISC_MKPT_PROMOTE:class AW_window;*/
 /*AISC_MKPT_PROMOTE:class AWT_canvas;*/
 
-// #define AWT_TREE(ntw) ((AWT_graphic_tree *)ntw->tree_disp)
 #define AWT_TREE(ntw) DOWNCAST(AWT_graphic_tree *, (ntw)->tree_disp)
 
 void NT_delete_mark_all_cb(void *, AWT_canvas *ntw) {
@@ -65,7 +64,6 @@ AW_window * NT_open_select_tree_window(AW_root *awr,char *awar_tree) {
     aws->load_xfig("select_simple.fig");
 
     aws->at("selection");
-//  aws->callback((AW_CB0)AW_POPDOWN);
     awt_create_selection_list_on_trees(GLOBAL_gb_main,(AW_window *)aws,awar_tree);
 
     aws->at("close");
@@ -99,11 +97,9 @@ AW_window *NT_open_select_alignment_window(AW_root *awr)
     aws->load_xfig("select_simple.fig");
 
     aws->at("selection");
-    //  aws->at(10,10);
     aws->auto_space(0,0);
     aws->callback((AW_CB0)AW_POPDOWN);
     awt_create_selection_list_on_ad(GLOBAL_gb_main,(AW_window *)aws,AWAR_DEFAULT_ALIGNMENT,"*=");
-    //  aws->at_newline();
 
     aws->at("close");
     aws->callback(AW_POPDOWN);

@@ -397,7 +397,6 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
 // if 'only_query' is true, then only report availability
 // if 'only_query' is false, then actually load the font and store the loaded fontstruct in 'fontstPtr'
 {
-    // char          fn[128];      memset(fn,0,128);
     bool          found;
     struct xfont *newfont, *nf, *oldnf;
 
@@ -442,7 +441,6 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
         }
     }
     if (found) {                /* found exact size (or only larger available) */
-        // strcpy(fn,nf->fname);  /* put the name in fn */
         if (verboose) {
             if (s < nf->size) fprintf(stderr, "Font size %d not found, using larger %d point\n", s, nf->size);
             if (appres.debug) fprintf(stderr, "Detected font %s\n", nf->fname);
@@ -450,7 +448,6 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
     }
     else if (!appres.SCALABLEFONTS) { /* not found, use largest available */
         nf = oldnf;
-        // strcpy(fn,nf->fname);           /* put the name in fn */
         if (verboose) {
             if (s > nf->size) fprintf(stderr, "Font size %d not found, using smaller %d point\n", s, nf->size);
             if (appres.debug) fprintf(stderr, "Using font %s for size %d\n", nf->fname, s);
@@ -476,7 +473,6 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
             /* OpenWindows fonts, create font name like times-roman-13 */
 
             nf->fname = GBS_global_string_copy("%s-%d", x_fontinfo[f].templat, s);
-            // sprintf(fn, "%s-%d", x_fontinfo[f].templat, s);
         }
         else {
             // X11 fonts, create a full XLFD font name
@@ -485,13 +481,9 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
 
             for (int iso = 0; iso<KNOWN_ISO_VERSIONS; ++iso) {
                 char *fontname = GBS_global_string_copy("%s%d-*-*-*-*-*-%s-*", x_fontinfo[f].templat, s, known_iso_versions[iso]);
-                // sprintf(fn, "%s%d-*-*-*-*-*-%s-*", x_fontinfo[f].templat, s, known_iso_versions[iso]);
 #if defined(DUMP_FONT_LOOKUP)
                 fprintf(stderr, "Checking for '%s' (x_fontinfo[%i].templat='%s')\n", fontname, f, x_fontinfo[f].templat);
 #endif
-
-                // PIX_FONT fontst = XQueryFont(tool_d, fontname);
-                // PIX_FONT fontst = XLoadQueryFont(tool_d, fontname); // @@@ why loaded here and not below (at least use XQueryFont instead!)
 
                 int    matching_fonts_found;
                 char **matching_fonts = XListFonts(tool_d, fontname, 1, &matching_fonts_found);
@@ -503,12 +495,6 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
                     break;
                 }
 
-                //                 if (fontst) {
-                //                     XFreeFontInfo(fontst); // only did query -- loading done below
-                //                     // nf->fstruct = fontst;
-                //                     nf->fname      = fontname;
-                //                     break;
-                //                 }
                 free(fontname);
             }
             // @@@ what if nf->fstruct is 0 now ?
@@ -602,7 +588,6 @@ static char *caps(char *sentence) {
 const char *AW_root::font_2_ascii(AW_font font_nr)
 {
     aw_assert(font_nr >= 0);
-    // if (font_nr < 0) return "FIXED";
     if (font_nr<0 || font_nr>=AW_NUM_FONTS ) return 0;
 
     const char        *readable_fontname = 0;
@@ -643,7 +628,6 @@ const char *AW_root::font_2_ascii(AW_font font_nr)
         readable_fontname = xf.templat;
     }
     return readable_fontname;
-    // return (ps_fontinfo[font_nr+1].name);
 }
 
 int AW_root::font_2_xfig(AW_font font_nr)
@@ -775,7 +759,6 @@ void AW_GC_Xm::set_font(AW_font font_nr, int size, int *found_size)
             CI_GetCharInfo_1D(xfs, i, def, cs);
         }
         else {
-            // cs = def;   // X11R4
             CI_GetRowzeroCharInfo_2D(xfs, i, def, cs);
         }
         if (cs) {

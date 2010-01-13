@@ -15,11 +15,7 @@ extern int warning_out;
  *  Function init_genbank().
  *  Initialize genbank entry.
  */
-void init_genbank(void)
-{
-
-    /*  void    Freespace(); */
-    /*  char    *Dupstr(); */
+void init_genbank(void) {
     int indi;
 
     /* initialize genbank format */
@@ -75,24 +71,10 @@ void init_genbank(void)
  *  Function genbank_in().
  *      Read in one genbank entry.
  */
-char genbank_in(FILE_BUFFER fp)
-{
-    char line[LINENUM], key[TOKENNUM] /*, temp[LINENUM] */ ;
-
+char genbank_in(FILE_BUFFER fp) {
+    char        line[LINENUM], key[TOKENNUM];
     const char *eof;
-
-    char eoen;
-
-    /*     char *Fgetline(); */
-    /*     char *genbank_one_entry_in(); */
-    /*     char *genbank_source(), *genbank_reference(); */
-    /*     char *genbank_comments(), *genbank_origin(); */
-    /*     char *genbank_skip_unidentified(); */
-    /*     void genbank_key_word(), warning(), error(); */
-    /*     void Append_char(); */
-    /*     void genbank_verify_accession(), genbank_verify_keywords(); */
-    /*     int  Lenstr(); */
-    /*     static   int count = 0; */
+    char        eoen;
 
     eoen = ' ';
     /* end-of-entry, set to be 'y' after '//' is read */
@@ -249,14 +231,8 @@ int genbank_check_blanks(char *line, int numb)
 char *genbank_continue_line(char **string, char *line, int numb, FILE_BUFFER fp)
 /* numb = number of blanks needed to define a continue line */
 {
-    int ind;
-
-    /*  int Lenstr(); */
-    /*  int genbank_check_blanks(), Skip_white_space(); */
+    int   ind;
     char *eof, temp[LINENUM];
-
-    /*  char    *Fgetline(); */
-    /*  void    Cpystr(), Append_rp_eoln(); */
 
     /* check continue lines */
     for (eof = Fgetline(line, LINENUM, fp); eof != NULL && (genbank_check_blanks(line, numb)
@@ -280,13 +256,8 @@ char *genbank_continue_line(char **string, char *line, int numb, FILE_BUFFER fp)
  */
 char *genbank_one_entry_in(char **datastring, char *line, FILE_BUFFER fp)
 {
-    int index;
-
-    /*  int Skip_white_space(), Lenstr(); */
+    int   index;
     char *eof;
-
-    /*  char    *genbank_continue_line(), *Dupstr(); */
-    /*  void    error(), Freespace(); */
 
     index = Skip_white_space(line, 12);
     Freespace(datastring);
@@ -302,13 +273,8 @@ char *genbank_one_entry_in(char **datastring, char *line, FILE_BUFFER fp)
  */
 char *genbank_one_comment_entry(char **datastring, char *line, int start_index, FILE_BUFFER fp)
 {
-    int index;
-
-    /*  int Skip_white_space(), Lenstr(); */
+    int   index;
     char *eof;
-
-    /*  char *genbank_continue_line(), *Dupstr(); */
-    /*  void    error(), Freespace(); */
 
     index = Skip_white_space(line, start_index);
     Freespace(datastring);
@@ -324,16 +290,9 @@ char *genbank_one_comment_entry(char **datastring, char *line, int start_index, 
  */
 char *genbank_source(char *line, FILE_BUFFER fp)
 {
-    int index;
-
-    /*      int     Skip_white_space(); */
+    int   index;
     char *eof;
-
-    /*  char    *genbank_continue_line(), *Dupstr(); */
-    /*  char    *genbank_one_entry_in(); */
     char *dummy, key[TOKENNUM];
-
-    /*  void    Freespace(), genbank_key_word(); */
 
     eof = genbank_one_entry_in(&(data.gbk.source), line, fp);
     genbank_key_word(line, 2, key, TOKENNUM);
@@ -353,22 +312,13 @@ char *genbank_source(char *line, FILE_BUFFER fp)
  */
 char *genbank_reference(char *line, FILE_BUFFER fp)
 {
-#define AUTH    0
-#define TIT 1
-#define JOUR    2
-    /*  void    genbank_key_word(), error(), warning(); */
-    /*  void    Freespace(), init_reference(); */
-    /*  void    Append_char(); */
+#define AUTH 0
+#define TIT  1
+#define JOUR 2
     char *eof, key[TOKENNUM];
-
-    /*  char    *Dupstr(), *genbank_skip_unidentified(); */
-    char temp[LINENUM];
-
-    /*  char    *Reallocspace(), *genbank_one_entry_in(); */
-    int /*index, indi, */ refnum;
-
-    /*  int Cmpstr(), Skip_white_space(); */
-    int acount = 0, tcount = 0, jcount = 0, scount = 0;
+    char  temp[LINENUM];
+    int   refnum;
+    int   acount = 0, tcount = 0, jcount = 0, scount = 0;
 
     sscanf(line + 12, "%d", &refnum);
     if (refnum <= data.gbk.numofref) {
@@ -457,17 +407,9 @@ char *genbank_reference(char *line, FILE_BUFFER fp)
  */
 const char *genbank_comments(char *line, FILE_BUFFER fp)
 {
-    int index, indi, ptr /*, genbank_check_blanks() */ ;
-
-    /*  int Lenstr(), Skip_white_space(); */
-    /*  int Cmpstr(), genbank_comment_subkey_word(); */
+    int         index, indi, ptr;
     const char *eof;
-
-    /*  char    *Fgetline(), *Dupstr(); */
-    char key[TOKENNUM];
-
-    /*  char    *genbank_one_comment_entry(); */
-    /*  void    Freespace(), Append(); */
+    char        key[TOKENNUM];
 
     if (Lenstr(line) <= 12) {
         if ((eof = Fgetline(line, LINENUM, fp)) == NULL)
@@ -588,14 +530,9 @@ const char *genbank_comments(char *line, FILE_BUFFER fp)
  *   Function genbank_origin().
  *       Read in genbank sequence data.
  */
-char
- *genbank_origin(char *line, FILE_BUFFER fp)
-{
+char *genbank_origin(char *line, FILE_BUFFER fp) {
     char *eof;
-
-    int index;
-
-    /*  void    warning(); */
+    int   index;
 
     data.seq_length = 0;
     data.sequence[data.seq_length] = '\0';      // needed if sequence data is empty
@@ -634,8 +571,6 @@ char
 {
     char *eof;
 
-    /*  int genbank_check_blanks(); */
-
     for (eof = Fgetline(line, LINENUM, fp); eof != NULL && genbank_check_blanks(line, blank_num); eof = Fgetline(line, LINENUM, fp)) ;
 
     return (eof);
@@ -647,12 +582,8 @@ char
  */
 void genbank_verify_accession(void)
 {
-    int indi, /*index, */ len, count, remainder;
-
+    int  indi, len, count, remainder;
     char temp[LONGTEXT];
-
-    /*  char *Reallocspace(); */
-    /*  void  warning(); */
 
     if (Cmpstr(data.gbk.accession, "No information\n") == EQ)
         return;
@@ -711,10 +642,7 @@ void genbank_verify_accession(void)
  */
 void genbank_verify_keywords(void)
 {
-
     int indi, count, len;
-
-    /*  void    Append_char(), warning(); */
 
     /* correct missing '.' at the end */
     Append_char(&(data.gbk.keywords), '.');
@@ -738,12 +666,8 @@ void genbank_verify_keywords(void)
  */
 char genbank_in_locus(FILE_BUFFER fp)
 {
-    char line[LINENUM], key[TOKENNUM];
-
+    char  line[LINENUM], key[TOKENNUM];
     char *eof, eoen;
-
-    /*  char    *genbank_one_entry_in(), *genbank_origin(); */
-    /*  void    genbank_key_word(), warning(), error(); */
 
     eoen = ' ';                 /* end-of-entry, set to be 'y' after '//' is read */
     for (eof = Fgetline(line, LINENUM, fp); eof != NULL && eoen != 'y';) {
@@ -775,8 +699,7 @@ char genbank_in_locus(FILE_BUFFER fp)
  */
 void genbank_out(FILE * fp)
 {
-    int indi, /*indj, indk, */ length;
-
+    int indi, length;
     int base_a, base_t, base_g, base_c, base_other;
 
     /* Assume the last char of each field is '\n' */
@@ -916,9 +839,6 @@ void genbank_out(FILE * fp)
  */
 void genbank_out_one_entry(FILE * fp, char *string, const char *key, int flag, const char *patterns, int period)
 {
-    /*  int Lenstr(); */
-    /*  void    genbank_print_lines(); */
-
     if (Lenstr(string) > 1) {
         fprintf(fp, "%s", key);
         genbank_print_lines(fp, string, flag, patterns);
@@ -937,9 +857,6 @@ void genbank_out_one_comment(FILE * fp, char *string, const char *key, int skind
 /* skindent = subkeyword indent */
 /* cnindent = continue line indent */
 {
-    /*  int Lenstr(); */
-    /*  void    genbank_print_comment(); */
-
     if (Lenstr(string) > 1)
         genbank_print_comment(fp, key, string, skindent, cnindent);
 }
@@ -951,7 +868,7 @@ void genbank_out_one_comment(FILE * fp, char *string, const char *key, int skind
  */
 void genbank_print_lines(FILE * fp, char *string, int flag, const char *separators)
 {
-    int first_time = 1, indi, indj, indk /*,indl */ ;
+    int first_time = 1, indi, indj, indk;
 
     int ibuf, len;
 
@@ -1110,7 +1027,6 @@ void genbank_to_genbank(char *inf, char *outf)
     }
     init();
     init_genbank();
-    /* rewind(ifp); */
     while (genbank_in(ifp) != EOF) {
         data.numofseq++;
         genbank_out(ofp);
@@ -1131,8 +1047,6 @@ void genbank_to_genbank(char *inf, char *outf)
  */
 void init_reference(Reference * ref, int flag)
 {
-    /*  char    *Dupstr(); */
-
     if (flag == REF)
         ref->ref = Dupstr("\n");
     if (flag != AUTHOR)

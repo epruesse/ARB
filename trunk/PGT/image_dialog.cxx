@@ -143,10 +143,6 @@ imageDialog::imageDialog(MDialog *d) : MDialog(d)
     add_imageDialog_callback(AWAR_PROTEIN_NAME,   static_ARB_protein_callback, this);
     add_imageDialog_callback(AWAR_GENE_NAME,      static_ARB_gene_callback,    this);
     add_imageDialog_callback(AWAR_CONFIG_CHANGED, static_PGT_config_callback,  this);
-
-    // add_protein_callback(static_ARB_protein_callback, this);
-    // add_gene_callback(static_ARB_gene_callback, this);
-    // add_config_callback(static_PGT_config_callback, this);
 }
 
 
@@ -186,7 +182,6 @@ imageDialog::~imageDialog()
 
     for(spot_it= m_spotList.begin(); spot_it != m_spotList.end(); spot_it++)
     {
-//         if((*spot_it).text) free((*spot_it).text); // DON'T! POINTER TO DESCR.LIST!!!
         if((*spot_it).id) free((*spot_it).id);
     }
     m_spotList.clear();
@@ -1429,7 +1424,6 @@ void imageDialog::imageRedraw()
     else drawSpots();
 
     // COPY PIXMAP TO DRAWING AREA
-//     XPutImage(display, window, gc, m_ximage, 0, 0, 0, 0, m_width, m_height);
     XCopyArea(display, m_pixmap, window, gc, 0, 0, m_width, m_height, 0, 0);
 
     // UPDATE THE STATUS LABEL WHENEVER THE IMAGE IS REDRAWN
@@ -1448,7 +1442,6 @@ void imageDialog::setText(const char *text, int x, int y)
     // SET ENVIRONMENT VARIABLES
     Display *display= XtDisplay(m_drawingArea);
     Window window= XtWindow(m_drawingArea);
-    // GC gc= XCreateGC(display, m_pixmap, 0, 0);
     GC gc= XCreateGC(display, window, 0, 0);
 
     // SET TEXT COLOR
@@ -1488,7 +1481,6 @@ void imageDialog::drawCrosshair(int x, int y)
 {
     // SET ENVIRONMENT VARIABLES
     Display *display= XtDisplay(m_drawingArea);
-//     Window window= XtWindow(m_drawingArea);
     GC gc= XCreateGC(display, m_pixmap, 0, 0);
 
     // RED COLOR
@@ -1748,7 +1740,6 @@ void imageDialog::markSpotAtPos(int button, int x, int y)
 {
     // LOCAL VARIABLES
     GBDATA *gb_data= NULL;
-//     GBDATA *gb_proteome= NULL;
     GBDATA *gb_proteine_data= NULL;
     GBDATA *gb_protein= NULL;
     GBDATA *gb_nearest_protein= NULL;
@@ -1846,9 +1837,6 @@ void imageDialog::markSpotAtPos(int button, int x, int y)
 ****************************************************************************/
 static void static_ARB_protein_callback(GBDATA *, imageDialog *iD, GB_CB_TYPE)
 {
-     // // GET POINTER OF THE ORIGINAL CALLER
-    // imageDialog *iD= (imageDialog *)clientData;
-
     // CALL CLASS MEMBER FUNCTION
     iD->ARB_protein_callback();
 }
@@ -1876,9 +1864,6 @@ void imageDialog::ARB_protein_callback()
 ****************************************************************************/
 static void static_ARB_gene_callback(GBDATA *, imageDialog *iD, GB_CB_TYPE)
 {
-     // // GET POINTER OF THE ORIGINAL CALLER
-    // imageDialog *iD= (imageDialog *)clientData;
-
     // CALL CLASS MEMBER FUNCTION
     iD->ARB_gene_callback();
 }
@@ -1957,9 +1942,6 @@ void imageDialog::ARB_gene_callback()
 ****************************************************************************/
 static void static_PGT_config_callback(GBDATA *, imageDialog *iD, GB_CB_TYPE)
 {
-     // // GET POINTER OF THE ORIGINAL CALLER
-    // imageDialog *iD= (imageDialog *)clientData;
-
     // CALL CLASS MEMBER FUNCTION
     iD->PGT_config_callback();
 }
@@ -2072,7 +2054,6 @@ bool imageDialog::createSpotList()
     vector<SPOT>::iterator spot_it;
     for(spot_it= m_spotList.begin(); spot_it != m_spotList.end(); ++spot_it)
     {
-//         if((*spot_it).text) free((*spot_it).text); // DON'T! ALSO POINTER TO DESCR.LIST!!!
         if((*spot_it).id) free((*spot_it).id);
     }
     m_spotList.clear();
@@ -2119,16 +2100,13 @@ bool imageDialog::createSpotList()
             spot.diameter= (int)sqrt((4 * spot.area)/(4 * 3.141592));
         }
 
-//         if(spot.id && (strlen(spot.id) > 0))
-//         {
-            // CREATE KEY BUFFER
-            genGeneKey(keyBuf, spot.id, spot.x, spot.y);
+        // CREATE KEY BUFFER
+        genGeneKey(keyBuf, spot.id, spot.x, spot.y);
 
-            // FETCH DESCRIPTOR FROM DESCRIPTOR LIST (HASH-ARRAY)
-            char *descr= m_descriptorList[keyBuf];
+        // FETCH DESCRIPTOR FROM DESCRIPTOR LIST (HASH-ARRAY)
+        char *descr= m_descriptorList[keyBuf];
 
-            if(descr) spot.text= descr;
-//         }
+        if(descr) spot.text= descr;
 
         // ADD SPOT TO LIST
         m_spotList.push_back(spot);
@@ -2245,14 +2223,49 @@ bool imageDialog::createDescriptions()
         if(gb_protein_x) x= GB_read_float(gb_protein_x);
         if(gb_protein_y) y= GB_read_float(gb_protein_y);
 
-//         // IF WE HAVE AN IDENTIFIER...
-//         if((id && (strlen(id) > 0)) || ((x + y) != 0))
-//         {
-            strncpy(buf, awar_protein_information, 1023);
+        strncpy(buf, awar_protein_information, 1023);
+        token= strtok(buf, ",; ");
+        while(token)
+        {
+            gb_entry= GB_entry(gb_protein, token);
+
+            // DO WE HAVE THE SELECTED CONTAINER?
+            if(gb_entry)
+            {
+                // FETCH WHATEVER IS IN THERE
+                entry= GB_read_as_string(gb_entry);
+
+                // APPEND THIS TO OUR STRING
+                if(entry && (strlen(entry) > 0))
+                {
+                    // DO WE NEED A SEPARATOR?
+                    if(first_token) first_token= false;
+                    else strncat(descriptor, ";", 2);
+
+                    // APPEND ENTRY TO DESCRIPTOR
+                    strncat(descriptor, entry, 1023 - strlen(descriptor));
+                }
+
+                // FREE OBSOLETE STRING MEM
+                if(entry) free(entry);
+            }
+            // FETCH NEXT TOKEN
+            token= strtok(NULL, ",; ");
+        }
+
+        // FETCH GENE
+        if(id && (strlen(id) > 0))
+            gb_gene= m_gene_GBDATA_map[id];
+        else
+            gb_gene= NULL;
+
+        if(gb_gene)
+        {
+            strncpy(buf, awar_gene_information, 1023);
             token= strtok(buf, ",; ");
             while(token)
             {
-                gb_entry= GB_entry(gb_protein, token);
+                gb_entry= GB_entry(gb_gene, token);
 
                 // DO WE HAVE THE SELECTED CONTAINER?
                 if(gb_entry)
@@ -2271,52 +2284,13 @@ bool imageDialog::createDescriptions()
                         strncat(descriptor, entry, 1023 - strlen(descriptor));
                     }
 
-                    // FREE OBSOLETE STRING MEM
-                    if(entry) free(entry);
+                    // WE DO NOT NEED THE ENTRY ANYMORE...
+                    free(entry);
                 }
                 // FETCH NEXT TOKEN
                 token= strtok(NULL, ",; ");
             }
-
-            // FETCH GENE
-            if(id && (strlen(id) > 0))
-                gb_gene= m_gene_GBDATA_map[id];
-            else
-                gb_gene= NULL;
-
-            if(gb_gene)
-            {
-                strncpy(buf, awar_gene_information, 1023);
-                token= strtok(buf, ",; ");
-                while(token)
-                {
-                    gb_entry= GB_entry(gb_gene, token);
-
-                    // DO WE HAVE THE SELECTED CONTAINER?
-                    if(gb_entry)
-                    {
-                        // FETCH WHATEVER IS IN THERE
-                        entry= GB_read_as_string(gb_entry);
-
-                        // APPEND THIS TO OUR STRING
-                        if(entry && (strlen(entry) > 0))
-                        {
-                            // DO WE NEED A SEPARATOR?
-                            if(first_token) first_token= false;
-                            else strncat(descriptor, ";", 2);
-
-                            // APPEND ENTRY TO DESCRIPTOR
-                            strncat(descriptor, entry, 1023 - strlen(descriptor));
-                        }
-
-                        // WE DO NOT NEED THE ENTRY ANYMORE...
-                        free(entry);
-                    }
-                    // FETCH NEXT TOKEN
-                    token= strtok(NULL, ",; ");
-                }
-            }
-//         }
+        }
 
         // CREATE KEY BUFFER
         genGeneKey(buf, id, x, y);
@@ -2325,20 +2299,7 @@ bool imageDialog::createDescriptions()
         char *d_append= strdup(descriptor);
         char *d_id= strdup(buf);
 
-//         // SUBOPTIMAL !?!? -- DEBUG -- WURDE VORHER BEREITS GELOESCHT!
-//         descr_it= m_descriptorList.find(d_id);
-//         if(descr_it != m_descriptorList.end())
-//         {
-//             free(((*descr_it).first));
-//             free(((*descr_it).second));
-//             m_descriptorList.erase(descr_it);
-//         }
-
         m_descriptorList[d_id] = d_append;
-
-        // FREE OBSOLETE STRINGS
-        // free(d_id);
-        // free(id);
 
         // FETCH NEXT PROTEIN FROM LIST
         ai_assert(GB_has_key(gb_protein, "protein"));

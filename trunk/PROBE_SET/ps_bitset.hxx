@@ -73,7 +73,6 @@ public:
     }
 
     virtual ~PS_BitSet() {
-//         if (data) printf( "~PS_BitSet(%p) free(%p(%lu))\n", this, data, capacity/8 );
         if (data) free( data );
     }
 };
@@ -97,22 +96,15 @@ public:
     virtual bool reserve( const long _capacity );
 
     explicit PS_BitSet_Fast( PS_FileBuffer *_file, const long _fill_index = -1 ) : PS_BitSet(false,-1,0) {
-        //printf( "PS_BitSet_Fast(%p)\n\t", this );
         data = 0;
         load( _file, _fill_index );
-        //printf( "\tbias(%1i) max_index(%li) capacity(%li)\n", bias, max_index, capacity );
     }
 
     explicit PS_BitSet_Fast( bool _bias, long _capacity ) : PS_BitSet( _bias,_capacity ) {
         // we just altered member functions so we don't do anything here
         // but call correct base class constructor to prevent
         // the call of PS_BitSet() without parameters
-        //printf( "PS_BitSet_Fast(%p) ", this );
     }
-
-//     virtual ~PS_BitSet_Fast() {
-//         printf( "~PS_BitSet_Fast(%p) ", this );
-//     }
 };
 
 
@@ -248,7 +240,6 @@ bool PS_BitSet::reserve( const long _capacity ) {
     }
     new_capacity_bytes = ((new_capacity_bytes / 32)+1)*32;              // adjust requested size to bigger chunks
     new_data = (unsigned char *)malloc( new_capacity_bytes );           // get new memory
-    //printf( "PS_BitSet::reserve(%p) new_data = malloc(%li) = %p\n", this, new_capacity_bytes, new_data );
     if (new_data == 0) return false;
     memset( new_data,bias ? 0xFF : 0,new_capacity_bytes );              // set memory to bias value
     if (capacity > 0) memcpy( new_data,data,old_capacity_bytes );       // copy old values
@@ -369,7 +360,6 @@ bool PS_BitSet_Fast::reserve( const long _capacity ) {
         if (new_capacity_bytes <= old_capacity_bytes) return true;      // smaller or same size requested ?
     }
     new_data = (unsigned char *)malloc( new_capacity_bytes );           // get new memory
-    //printf( "PS_BitSet::reserve(%p) new_data = malloc(%li) = %p\n", this, new_capacity_bytes, new_data );
     if (new_data == 0) return false;
     memset( new_data,bias ? 0xFF : 0,new_capacity_bytes );              // set memory to bias value
     if (capacity > 0) memcpy( new_data,data,old_capacity_bytes );       // copy old values

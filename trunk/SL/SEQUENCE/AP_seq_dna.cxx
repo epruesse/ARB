@@ -110,10 +110,6 @@ void AP_sequence_parsimony::unset() {
 #endif // AP_PARSIMONY_DEFAULTS_HXX
 
 AP_FLOAT AP_sequence_parsimony::combine( const AP_sequence *lefts, const AP_sequence *rights, char *mutation_per_site) {
-    //   char *p1,*p2,*p;
-    //   char c1,c2;
-    //   long result;
-
     const AP_sequence_parsimony *left = (const AP_sequence_parsimony *)lefts;
     const AP_sequence_parsimony *right = (const AP_sequence_parsimony *)rights;
 

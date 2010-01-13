@@ -14,17 +14,14 @@
 #include <string>
 #endif
 
-//  ----------------------------------------
+// ------------------------------------------
 //      display classes for ARB_GENE_MAP:
-//  ----------------------------------------
 
 class  GEN_root;
 class  GEN_graphic;
 struct GEN_position;
 
-//  -----------------------
-//      class GEN_gene
-//  -----------------------
+
 class GEN_gene {
 private:
     GBDATA              *gb_gene;
@@ -34,8 +31,6 @@ private:
     long                 pos1;
     long                 pos2;
     bool                 complement;
-
-    //     int       level; // on which "level" the gene is printed
 
     // Note: if a gene is joined from several parts it is represented in several GEN_gene's!
 
@@ -57,7 +52,6 @@ public:
     long EndPos() const { return pos2; } // last position of gene (1..n)
     long Length() const { return pos2-pos1+1; }
     bool Complement() const { return complement; }
-    //     int Level() const { return level; }
     const std::string& NodeInfo() const { return nodeInfo; }
     const std::string& Name() const { return name; } // returns the short name of the gene
     const GBDATA *GbGene() const { return gb_gene; }
@@ -69,9 +63,7 @@ public:
 typedef std::multiset<GEN_gene> GEN_gene_set;
 typedef GEN_gene_set::iterator GEN_iterator;
 
-//  -----------------------
-//      class GEN_root
-//  -----------------------
+
 class GEN_root {
 private:
     GBDATA      *gb_main;

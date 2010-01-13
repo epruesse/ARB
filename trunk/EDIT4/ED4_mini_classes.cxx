@@ -338,7 +338,6 @@ void ED4_bases_table::change_table_length(int new_length, int default_entry)
             new_table[new_length] = no_of_bases.shortTable[no_of_entries];
             if (growth>0) {
                 for (int e=no_of_entries; e<new_length; ++e) new_table[e] = default_entry;
-                //memset(new_table+no_of_entries, 0, growth*sizeof(*new_table));
             }
 
             delete [] no_of_bases.shortTable;
@@ -351,7 +350,6 @@ void ED4_bases_table::change_table_length(int new_length, int default_entry)
             new_table[new_length] = no_of_bases.longTable[no_of_entries];
             if (growth>0) {
                 for (int e=no_of_entries; e<new_length; ++e) new_table[e] = default_entry;
-                //memset(new_table+no_of_entries, 0, growth*sizeof(*new_table));
             }
 
             delete [] no_of_bases.longTable;
@@ -418,7 +416,6 @@ void ED4_consensus_definition_changed(AW_root*, AW_CL,AW_CL) {
     }
 
     BK_up_to_date = 0;
-    // ED4_ROOT->root_group_man->Show();
     ED4_ROOT->refresh_all_windows(1);
 }
 
@@ -603,12 +600,11 @@ char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *
 //              ED4_char_table::
 // --------------------------------------------------------------------------------
 
-// bool ED4_char_table::tables_are_valid = true;
-bool ED4_char_table::initialized = false;
-unsigned char ED4_char_table::char_to_index_tab[MAXCHARTABLE];
+bool           ED4_char_table::initialized       = false;
+unsigned char  ED4_char_table::char_to_index_tab[MAXCHARTABLE];
 unsigned char *ED4_char_table::upper_index_chars = 0;
 unsigned char *ED4_char_table::lower_index_chars = 0;
-int ED4_char_table::used_bases_tables = 0;
+int            ED4_char_table::used_bases_tables = 0;
 
 inline void ED4_char_table::set_char_to_index(unsigned char c, int index)
 {
@@ -1066,28 +1062,10 @@ void ED4_char_table::sub_and_add(const char *old_string, const char *new_string,
     test();
 }
 
-void ED4_char_table::change_table_length(int new_length)
-{
-    int c;
-
-    //     int bases1, gaps1;
-    //     bases_and_gaps_at(0, &bases1, &gaps1);
-
-    //     int table_thickness = bases1+gaps1;
-    //     bool gaps_inserted = false;
-
-    // test(); fails because MAXSEQUENCECHARACTERLENGTH is already incremented
-
-    for (c=0; c<used_bases_tables; c++) {
-        //         int default_entry = 0;
-        //         if (!gaps_inserted && ADPP_IS_ALIGN_CHARACTER(upper_index_chars[c])) {
-        //             default_entry = table_thickness;
-        //             gaps_inserted = true;
-        //         }
-        //         linear_table(c).change_table_length(new_length, default_entry);
+void ED4_char_table::change_table_length(int new_length) {
+    for (int c=0; c<used_bases_tables; c++) {
         linear_table(c).change_table_length(new_length, 0);
     }
-
     test();
 }
 

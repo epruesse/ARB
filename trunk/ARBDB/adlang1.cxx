@@ -143,7 +143,7 @@ static GB_ERROR trace_params(int argc, const GBL *argv, struct gbl_param *ppara,
             int len = strlen(para->param_name);
 
             if (strncmp(argument, para->param_name, len) == 0) { 
-                const char *value = argument+len; // set to start of value;
+                const char *value = argument+len; // set to start of value
 
                 if (para->type == GB_BIT) {
                     // GB_BIT is special cause param_name does NOT contain trailing '='
@@ -1174,10 +1174,8 @@ static GB_ERROR backfront_stream(GBL_command_arguments *args, int toback)
     if (toback) {
         if (stream_to_move<(args->cinput-1)) { // not last
             GBL  new_last = (*args->voutput)[firstout+stream_to_move];
-            // char *new_last = (*args->voutput)[firstout+stream_to_move].str;
             for (i = stream_to_move+1; i<args->cinput; ++i) {
                 (*args->voutput)[firstout+i-1] = (*args->voutput)[firstout+i];
-                // (*args->voutput)[firstout+i-1].str = (*args->voutput)[firstout+i].str;
             }
             (*args->voutput)[firstout+args->cinput-1] = new_last;
         }
@@ -1547,11 +1545,9 @@ static void build_taxonomy_rek(GBT_TREE *node, GB_HASH *tax_hash, const char *pa
             (*group_counter)++;
 
             hash_entry = GBS_global_string_copy(">%04x%s", *group_counter, node->name);
-            // printf("hash_entry='%s' gb_node=%p\n", hash_entry, node->gb_node);
             GBS_write_hash(tax_hash, hash_entry, (long)strdup(parent_group));
 
             hash_binary_entry = GBS_global_string(">>%p", node->gb_node);
-            // printf("hash_entry='%s' gb_node=%p\n", hash_binary_entry, node->gb_node);
             GBS_write_hash(tax_hash, hash_binary_entry, (long)strdup(hash_entry));
 
             build_taxonomy_rek(node->leftson, tax_hash, hash_entry, group_counter);
@@ -2095,7 +2091,6 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args)
                             dst[took] = c;
                         }
 
-                        // memcpy(dst, src, take);
                         dst       += take;
                         src       += move;
                         rest_data -= move;

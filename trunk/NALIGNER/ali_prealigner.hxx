@@ -257,8 +257,6 @@ class ALI_PREALIGNER {
 
     void calculate_matrix(void);
 
-    int find_multiple_path(unsigned long start_x, unsigned long start_y,
-                           unsigned long *end_x, unsigned long *end_y);
     void generate_solution(ALI_MAP *map);
     void generate_result_mask(ALI_TSTACK<unsigned char> *stack);
     void mapper_pre(ALI_TSTACK<unsigned char> *stack,
@@ -271,10 +269,7 @@ class ALI_PREALIGNER {
                        unsigned long pos_x, unsigned long pos_y);
     void mapper(ALI_TSTACK<unsigned char> *stack,
                 unsigned long pos_x, unsigned long pos_y);
-    void quick_mapper(ALI_TSTACK<unsigned char> *stack,
-                      unsigned long pos_x, unsigned long pos_y);
     void make_map(void);
-    void make_quick_map(void);
 
     void generate_approximation(ALI_SUB_SOLUTION *work_sol);
     void mapper_approximation(unsigned long area_number,

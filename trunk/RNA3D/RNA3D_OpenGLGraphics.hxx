@@ -38,7 +38,6 @@ struct OpenGLGraphics {
     void ScreenToWinCoordinates(int x, int y, GLdouble *winPos);
 
     void PrintString(float x, float y, float z, char *s, void *font);
-    void PrintComment(float x, float y, float z, char *s);
 
     void init_font(GLuint base, char* f);
     void print_string(GLuint base, char* s);

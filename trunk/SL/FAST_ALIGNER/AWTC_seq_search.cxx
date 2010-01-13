@@ -99,12 +99,6 @@ AWTC_CompactedSequence::AWTC_CompactedSequence(const char *Text, int Length, con
         }
     }
 
-    //    if (lastWasPoint) {
-    //  storePoints(myLength+1);
-    //    }
-
-    //awtc_assert(myLength);    // otherwise Text does only contain gaps
-
     myText           = new char[myLength+1];
     myText[myLength] = 0;
 
@@ -142,7 +136,6 @@ AWTC_CompactedSequence::~AWTC_CompactedSequence()
 
     delete[] expdPositionTab;
     if (points) delete points;
-    //    delete[] compPositionTab;
 
     free(myName);
 }

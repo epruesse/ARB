@@ -65,7 +65,6 @@ static string vstrf(const char *format, va_list argPtr) {
 
         // otherwise resize buffer :
         buf_size += buf_size/2;
-        //                 cerr << "Reallocate vstrf-buffer to size=" << buf_size << endl;
         delete [] buffer;
         buffer    = new char[buf_size];
     }
@@ -196,7 +195,6 @@ public:
 
 
 typedef list<string> Strings;
-// typedef list<string> Section;
 
 class Section {
     Strings content;
@@ -319,7 +317,6 @@ inline const char *extractKeyword(const char *line, string& keyword) {
     else if (!space) { // test for keyword w/o content behind
         if (line[0]) { // not empty
             keyword = line;
-//             cout << "keyword='" << keyword << "'\n";
             return strchr(line, 0);
         }
     }
@@ -394,8 +391,6 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
         Strings::iterator p = sec.Content().begin();
 
         *p = string("\n")+spaces+*p;
-//         advance(p, sec.size()-1);
-//         *p = *p+string("\n");
     }
 }
 string cutoff_hlp_extension(const string& s) __ATTR__DEPRECATED;
@@ -527,9 +522,6 @@ void Helpfile::readHelp(istream& in, const string& filename) {
 
     catch (string& err) { throw LineAttachedMessage(err, read.getLineNo()); }
     catch (const char *err) { throw LineAttachedMessage(err, read.getLineNo()); }
-
-    // catch (string& err) { throw strf("%s:%i: %s", filename.c_str(), read.getLineNo(), err.c_str()); }
-    // catch (const char *err) { throw strf("%s:%i: %s", filename.c_str(), read.getLineNo(), err); }
 }
 
 static bool shouldReflow(const string& s, int& foundIndentation) {
@@ -739,17 +731,9 @@ private:
                         h2x_assert(textstart != string::npos);
 #endif // DEBUG
 
-                        // text = string("\n")+string(rest_indent, ' ')
-                        // + text.substr(textstart, reststart-textstart)+rest;
-
                         text   = text.substr(0, reststart)+correctIndentation(rest, -8);
                         reflow = shouldReflow(text, indentation);
                     }
-//                     else {
-//                         char buffer[100];
-//                         sprintf(buffer, "rest_indent=%i first_indent=%i ", rest_indent, first_indent);
-//                         text = string("\n")+string(first_indent, ' ')+buffer+text;
-//                     }
                 }
             }
         }
@@ -1268,8 +1252,6 @@ void Helpfile::extractInternalLinks() {
                         link_target.find("file://") == string::npos &&
                         link_target.find('@')       == string::npos)
                     {
-                        // string rest_noext = cutoff_hlp_extension(link_target);
-
                         try {
                             check_duplicates(link_target, "SUB", references, true); // check only sublinks here
                             try {

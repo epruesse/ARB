@@ -65,10 +65,9 @@ ST_Container::~ST_Container()
 
 Sonde* ST_Container::cache_Sonde(char *name, int allowed_mis, double outside_mis)
 {
-    long    hashreturnval;
-    char*   name_for_plist = strdup(name);
-    //char* hashname = name;
-    Sonde* s = new Sonde(name, allowed_mis, outside_mis);
+    long   hashreturnval;
+    char*  name_for_plist = strdup(name);
+    Sonde* s              = new Sonde(name, allowed_mis, outside_mis);
 
     Sondennamen->insert_as_first(name_for_plist);
     s->gen_Hitliste(Bakterienliste);
@@ -131,7 +130,6 @@ Sondentopf::~Sondentopf()
         while (stmp)
         {
             ltmp->remove_first();
-            //delete stmp;
             stmp = ltmp->get_first();
         }
         Listenliste->remove_first();
@@ -140,8 +138,6 @@ Sondentopf::~Sondentopf()
     }
 
     delete Listenliste;
-    //delete BaktList;
-    //delete Auswahllist;
     GBS_free_hash(color_hash);
 }
 

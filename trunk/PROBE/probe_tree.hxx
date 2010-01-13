@@ -8,7 +8,6 @@
 #define PTM_TABLE_SIZE        (1024*256)
 #define PTM_ALIGNED           1
 #define PTM_LD_ALIGNED        0
-// #define PTM_MAX_TABLES        64
 #define PTM_MAX_TABLES        256 // -- ralf testing
 #define PTM_MAX_SIZE          (PTM_MAX_TABLES*PTM_ALIGNED)
 #define PT_CHAIN_END          0xff
@@ -16,7 +15,6 @@
 #define PT_SHORT_SIZE         0xffff
 #define PT_BLOCK_SIZE         0x800
 #define PT_INIT_CHAIN_SIZE    20
-// #define PT_NEXT_CHAIN_SIZE(x) = (x*3/2);
 
 typedef void * PT_PNTR;
 
@@ -352,14 +350,6 @@ inline char *PT_WRITE_CHAIN_ENTRY(const char * const ptr,const int mainapos,int 
     }
 
     if (apos == mainapos) isapos = 0; else isapos = 0x80;
-
-    /* tell about old decompression error */
-
-    /* #if defined(DEBUG)
-    if (rpos < 0x7fff && rpos > 0x3fff) {
-    printf("REMARK: Was wrong data (name = %d, apos = %d, rpos = %d)\n", name, apos, rpos);
-    }
-    #endif */
 
     if (rpos < 0x3fff) {        /* write the rpos */
            /*0x7fff, mit der rpos vorher verglichen wurde war zu groß*/

@@ -237,14 +237,7 @@ static long insert_species_in_tree_test(const char *key,long val, void *cd_isits
             blf = (AP_tree_nlen *)blist[counter];
         }
 
-        //      if (blf->father) {  //->father
-        //          blf->set_root();
-        //      }
-
-        if (bl->father)     //->father
-        {
-            bl->set_root();
-        }
+        if (bl->father) bl->set_root();
 
         leaf->moveTo(bl,0.5);
         akt_parsimony = rootNode()->costs();
@@ -697,8 +690,6 @@ void PartialSequence::test_match(const AP_tree_nlen *leaf_full) {
             if (!multi_match) dump();
             printf("Another equal match is against '%s' (overlap=%li penalty=%li)\n", leaf_full->name, curr_overlap, curr_penalty);
 #endif // DEBUG
-            //             aw_message("Several full sequences match equal against one partial sequence");
-            //             aw_message("Please save a copy of the current database and inform Ralf!!!!");
 
             multi_match  = true;
             multi_list.append(1, '/');
@@ -970,7 +961,6 @@ static void nt_add_partial(AW_window */*aww*/, AWT_canvas *ntw) {
         GB_commit_transaction(GLOBAL_gb_main);
     }
 
-    //     AWT_TREE(ntw)->resort_tree(0);
     pars_saveNrefresh_changed_tree(ntw);
 }
 
@@ -1559,10 +1549,6 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
         maxSize.restore(awm->_at);
     }
 
-//     awm->button_length(AWAR_FOOTER_MAX_LEN);
-//     awm->create_button(0,AWAR_FOOTER);
-
-//     awm->at_newline();
     awm->get_at_position( &db_treex,&db_treey );
     awm->set_info_area_height( db_treey+6 );
 

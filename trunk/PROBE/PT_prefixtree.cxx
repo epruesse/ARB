@@ -406,7 +406,6 @@ void PTD_put_longlong(FILE * out, ULONG i)
     static unsigned char buf[8];
     PT_WRITE_PNTR(buf,i);
 
-//    fwrite(buf, 0x01, 0x08, out);
     io = buf[0]; putc(io,out);              // TODO: replace with fwrite
     io = buf[1]; putc(io,out);
     io = buf[2]; putc(io,out);

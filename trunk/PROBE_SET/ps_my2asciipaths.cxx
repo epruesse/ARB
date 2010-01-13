@@ -37,7 +37,6 @@ void PS_print_paths( const PS_NodePtr _ps_node ) {
             printf( "%4i%c ",i->second,i->first ? '+' : ' ' );
         }
         printf( "\n" );
-//      getchar();
     }
 
     // path
@@ -63,7 +62,6 @@ int main( int argc,  char *argv[] ) {
     PS_NodePtr     root(new PS_Node(-1));
     root->load( fb );
     printf( "loaded database (enter to continue)\n" );
-//     getchar();
 
 
     for (PS_NodeMapConstIterator i = root->getChildrenBegin(); i != root->getChildrenEnd(); ++i) {
@@ -71,13 +69,11 @@ int main( int argc,  char *argv[] ) {
     }
 
     printf( "(enter to continue)\n" );
-//     getchar();
     
     delete fb;
     root.SetNull();
     printf( "root should be destroyed now\n" );
     printf( "(enter to continue)\n" );
-//     getchar();
 
     return 0;
 }

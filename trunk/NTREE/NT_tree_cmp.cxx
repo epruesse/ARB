@@ -144,7 +144,6 @@ AWT_species_set *AWT_species_set_root::move_tree_2_ssr(AP_tree *node){
     if (node->is_leaf){
         this->add(node->name);
         ss = new AWT_species_set(node,this,node->name);
-        //      ssr->add(ss);
     }
     else {
         AWT_species_set *ls = move_tree_2_ssr(node->get_leftson());

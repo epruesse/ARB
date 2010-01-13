@@ -487,13 +487,13 @@ static void CPRO_readneededdata(char **speciesdata,GBDATA **speciesdatabase,
  */
 static char CPRO_makestatistic(char **speciesdata,GBDATA **speciesdatabase, unsigned char which_statistic)
 {
-    long widthmatrix=CPRO.partition;
-    long n=CPRO.numspecies;
-    long comparesneeded=n*n;    // (n*n-n)/2;
-    long compares=0;
-    long numofsegments=CPRO.numspecies/widthmatrix +1;
-    long segmentx=0,segmenty=0,elemx=0,elemy=0;
-    long elemx1=0,elemx2=0,elemy1=0,elemy2=0;
+    long widthmatrix    = CPRO.partition;
+    long n              = CPRO.numspecies;
+    long comparesneeded = n*n;
+    long compares       = 0;
+    long numofsegments  = CPRO.numspecies/widthmatrix +1;
+    long segmentx       = 0,segmenty=0,elemx=0,elemy=0;
+    long elemx1         = 0,elemx2=0,elemy1=0,elemy2=0;
 
     if(CPRO.result[which_statistic].statisticexists)
     {
@@ -513,9 +513,7 @@ static char CPRO_makestatistic(char **speciesdata,GBDATA **speciesdatabase, unsi
         {
             elemy1=widthmatrix*segmenty;
             elemy2=widthmatrix*(segmenty+1)-1;
-            //printf("Partition by %ld , %ld\n",elemx1,elemy1);
-            CPRO_readneededdata(speciesdata,speciesdatabase,
-                                elemx1,elemx2,elemy1,elemy2,which_statistic);
+            CPRO_readneededdata(speciesdata,speciesdatabase, elemx1,elemx2,elemy1,elemy2,which_statistic);
             for(elemx=elemx1;elemx<=elemx2;elemx++)
             {
                 for(elemy=elemy1;elemy<=elemy2;elemy++)
@@ -711,31 +709,8 @@ static void CPRO_memrequirement_cb(AW_root *aw_root)
         return;
     }
 
-
-    /*  GBDATA *gb_species;
-        versus==1 -> marked vs marked
-        if (versus==1) {
-        gb_species = GBT_first_marked_species(gb_species_data);
-        } else {
-        gb_species = GBT_first_species(gb_species_data);
-        }
-        while(gb_species)
-        {
-        if(GBT_read_sequence(gb_species,align)){
-        nrofspecies++;
-        }
-        if (versus==1) {
-        gb_species = GBT_next_marked_species(gb_species);
-        }
-        else {
-        gb_species = GBT_next_species(gb_species);
-        }
-        }
-        CPRO.numspecies=nrofspecies; */
     long mem;
 
-    /*if(CPRO.numspecies<=2*CPRO.partition) mem=CPRO.numspecies*len;
-      else mem=CPRO.partition*2*len; */
     mem=CPRO.partition*len*2;    // *2, because of row and column in matrix
     sprintf(buf,"%li KB",long(mem/1024));
     aw_root->awar("tmp/cpro/mempartition")->write_string(buf);
@@ -1101,7 +1076,6 @@ void CPRO_columnplus_cb(AW_window *aws, AW_CL /*which_statistic*/, AW_CL)
 {
     AW_root *awr = aws->get_root();
     awr->awar(AWAR_CURSOR_POSITION)->write_int(CPRO.column+1);
-    /*if(CPRO.column<CPRO.result[which_statistic].maxalignlen) { awr->awar(AWAR_CURSOR_POSITION)->write_int(CPRO.column+1); }*/
 }
 
 void CPRO_savestatistic_cb(AW_window *aw,AW_CL which_statistic)
@@ -1345,7 +1319,6 @@ float CPRO_getmaximum(long column,char transversion,
             if(interest-interval>maximum) maximum=interest-interval;
         }
     }
-    //printf("\n");
     return(maximum);
 }
 
@@ -1511,15 +1484,12 @@ AW_window *CPRO_showstatistic_cb( AW_root *aw_root, AW_CL which_statistic)
     char buf[20];
     sprintf(buf,"SHOW STATISTIC %d\n",(int)which_statistic+1);
     AW_window_simple *aws=new AW_window_simple;
-    aws->init( aw_root,buf,buf /*,400,(int)(10+which_statistic*300)*/);
+    aws->init(aw_root, buf, buf);
     aws->load_xfig("cpro/show.fig");
     aws->button_length(6);
 
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE","CLOSE","C");
-
-    //aws->at("xpert");aws->callback(AW_POPUP,(AW_CL)CPRO_xpert_cb,0);
-
 
     aws->at("column");
     aws->create_input_field(AWAR_CURSOR_POSITION,4);
@@ -1546,7 +1516,6 @@ AW_window *CPRO_showstatistic_cb( AW_root *aw_root, AW_CL which_statistic)
     aw_root->awar("cpro/gridvertical")->add_callback((AW_RCB)CPRO_column_cb,(AW_CL)aws,which_statistic);
 
     aws->at("maxdistance");
-    //aws->label("max distance");
     aws->create_input_field("cpro/maxdistance",3);
 
     aws->set_resize_callback (AW_INFO_AREA, CPRO_resize_cb, which_statistic, 0);

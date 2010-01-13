@@ -108,7 +108,7 @@ void aw_set_local_message();                        // no message window, AWAR_E
 void aw_message(const char *msg);
 inline void aw_message_if(ARB_ERROR& error) { GB_ERROR err = error.deliver(); if (err) aw_message(err); }
 
-void aw_message();                                  // prints AW_ERROR_BUFFER;
+void aw_message();                                  // prints AW_ERROR_BUFFER
 void aw_macro_message(const char *temp, ...) __ATTR__FORMAT(1); // gives control to the user
 
 // Read a string from the user :

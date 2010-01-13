@@ -248,8 +248,6 @@ AW_window *NT_create_dna_2_pro_window(AW_root *root) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init( root, "TRANSLATE_DNA_TO_PRO", "TRANSLATE DNA TO PRO");
 
-    //     aws->auto_off();
-
     aws->load_xfig("transpro.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);

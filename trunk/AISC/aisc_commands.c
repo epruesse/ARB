@@ -142,7 +142,6 @@ static char *calc_rest_line(/*const*/ char *str, int size, int presize)
         br[-1] = ')';
         c = *br; *br = 0;
         fi = strdup(str+1);
-        /*printf("%s#%s\n",fi,br);*/
         *br = c;
     }
     else if (*p == '+') {
@@ -695,8 +694,6 @@ static int do_com_if(char *str)
     for (equ = str;*equ;equ++) {
         if (*equ =='=') { op = 0; break;}
         if (*equ =='~') { op = 1; break;}
-        /*if (*equ =='<') { op = 2; break;}
-          if (*equ =='>') { op = 3; break;}*/
     }
     la = equ;
     if (!*la) { // no operator found -> assume condition true, even if empty or undefined
@@ -719,16 +716,11 @@ static int do_com_if(char *str)
             SKIP_SPACE_LF_BACKWARD(kom);
             *(++kom) = 0;
         }
-        /* printf("- str='%s' equ='%s'\n", str, equ); */
         switch (op) {
             case 0:     if (!strcmp(str, equ)) return 0; break;
             case 8:     if ( strcmp(str, equ)) return 0; break;
             case 1:     if ( find_string(str, equ)) return 0; break;
             case 9:     if (!find_string(str, equ)) return 0; break;
-                /* case 2:     if (strcmp(str, equ)< 0) return 0; break; */
-                /* case 10:if (strcmp(str, equ)>=0) return 0; break; */
-                /* case 3:     if (strcmp(str, equ)> 0) return 0; break; */
-                /* case 11:if (strcmp(str, equ) <= 0) return 0; break; */
             default :
                 printf_error("Unhandled operator (op=%i)", op);
                 return 1;

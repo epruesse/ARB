@@ -196,11 +196,9 @@ public:
 
 struct AP_branch_members {
 public:
-    // unsigned int kl_marked:1;       // kernighan lin marked (not used)
     unsigned int touched:1;         // nni and kl
 
     void clear() {
-        // kl_marked = 0;
         touched = 0;
     }
 };

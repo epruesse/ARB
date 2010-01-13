@@ -340,7 +340,6 @@ AW_window *MG_create_alignment_window(AW_root *root,AW_CL db_nr)
 
     aws->at("security");
     sprintf(buffer,"tmp/merge%li/security",db_nr);
-    //  aws->get_root()->awar(buffer)->add_callback(MG_ed_al_check_len_cb,db_nr);
     aws->callback(MG_ed_al_check_len_cb,db_nr);
     aws->create_option_menu(buffer);
     aws->insert_option("0","0",0);

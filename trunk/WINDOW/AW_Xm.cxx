@@ -94,13 +94,11 @@ int AW_device_Xm::text(int gc, const char *str,AW_pos x,AW_pos y, AW_pos alignme
 
 int AW_device_Xm::box(int gc, bool filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
     AWUSE(cd1);AWUSE(cd2);
-    class AW_GC_Xm *gcm            = AW_MAP_GC(gc);
-    AW_pos          x1,y1;
-    AW_pos          X0,Y0,X1,Y1; // Transformed pos
-    AW_pos          CX0,CY0,CX1,CY1; // Clipped line
-    int             drawflag       = 0;
-    // short greylevel             = (short)(gcm->grey_level*22);
-    // if (greylevel>21) greylevel = 21;
+    class AW_GC_Xm *gcm = AW_MAP_GC(gc);
+    AW_pos x1,y1;
+    AW_pos X0,Y0,X1,Y1;                             // Transformed pos
+    AW_pos CX0,CY0,CX1,CY1;                         // Clipped line
+    int    drawflag = 0;
 
     if(filteri & filter) {
         x1 = x0 + width;
@@ -141,13 +139,11 @@ int AW_device_Xm::circle(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width
 
 int AW_device_Xm::arc(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, int start_degrees, int arc_degrees, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
     AWUSE(cd1);AWUSE(cd2);
-    class AW_GC_Xm *gcm            = AW_MAP_GC(gc);
-    AW_pos          X0,Y0,X1,Y1; // Transformed pos
-    AW_pos          XL,YL;      // Left edge of circle pos
-    AW_pos          CX0,CY0,CX1,CY1; // Clipped line
-    int             drawflag       = 0;
-    // short greylevel             = (short)(gcm->grey_level*22);
-    // if (greylevel>21) greylevel = 21;
+    class AW_GC_Xm *gcm = AW_MAP_GC(gc);
+    AW_pos X0,Y0,X1,Y1;                             // Transformed pos
+    AW_pos XL,YL;                                   // Left edge of circle pos
+    AW_pos CX0,CY0,CX1,CY1;                         // Clipped line
+    int    drawflag = 0;
 
     if(filteri & filter) {
 
@@ -192,8 +188,8 @@ void AW_device_Xm::clear(AW_bitset filteri) {
 void AW_device_Xm::clear_part( AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri)
 {
     if (filteri & filter) {
-        AW_pos x1 = x0+width; // -1; // removed -1 -- 14.8.07 ralf
-        AW_pos y1 = y0+height; // -1;
+        AW_pos x1 = x0+width; 
+        AW_pos y1 = y0+height; 
         
         AW_pos X0,Y0,X1,Y1;     // Transformed pos
         this->transform(x0, y0, X0, Y0);

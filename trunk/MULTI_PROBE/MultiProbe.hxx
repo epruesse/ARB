@@ -170,7 +170,6 @@ public:
     AW_window_simple    *get_result_window()    { return result_window; };
 
     AW_window_simple *create_result_window(AW_root *aw_root);
-    //     char          *load_selection_list(  AW_window *aww, int selection_list, char *filename); //modifiziert von AW_window
 
     MP_Window(AW_root *aw_root);
     ~MP_Window();

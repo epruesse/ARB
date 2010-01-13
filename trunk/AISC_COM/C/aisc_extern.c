@@ -53,6 +53,3 @@ char *aisc_get_keystring(int *obj) {
 }
 
 char *aisc_get_keystring_dll_header(dll_header *x) { return aisc_get_keystring((int*)x); }
-/*  char *aisc_get_keystring_AN_revers(AN_revers *x) { return aisc_get_keystring((int*)x); } */
-/*  char *aisc_get_keystring_AN_shorts(AN_shorts *x) { return aisc_get_keystring((int*)x); } */
-/*  char *aisc_get_keystring_AN_local(AN_local *x) { return aisc_get_keystring((int*)x); } */

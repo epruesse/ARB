@@ -217,8 +217,6 @@ void gbm_init_mem(void)
 
         gbb_cluster[i].size  = nextSize;
         gbb_cluster[i].first = NULL;
-
-        //printf("cluster %i: size=%i\n", i, gbb_cluster[i].size);
     }
 
     // last cluster contains ALL bigger blocks
@@ -508,8 +506,6 @@ void gbm_free_mem_impl(char *data, size_t size, long index)
             block->size = size-GBB_HEADER_SIZE;
             block->allocFromSystem = 0;
 
-            // printf("put mapped Block (size=%li)\n", size);
-
             if (size>=(GBB_HEADER_SIZE+GBB_MINSIZE))
                 gbm_put_memblk((char*)block, size);
 
@@ -525,7 +521,6 @@ void gbm_free_mem_impl(char *data, size_t size, long index)
 
             if (block->allocFromSystem)
             {
-                // printf("free %li bytes\n", size);
                 free((char *)block);
             }
             else

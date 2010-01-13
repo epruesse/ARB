@@ -329,7 +329,6 @@ void primer_design_event_init( AW_window *aww, AW_CL cl_from_gene) {
         PRD_Sequence_Pos  right_min, right_max;
         PRD_Sequence_Pos  add_offset = 0;           // offset to add to positions (used for genes)
         long int          dist_min, dist_max;
-        //         long int          length_min, length_max;
         char             *sequence   = 0;
 
         if (gb_gene) {
@@ -395,18 +394,6 @@ void primer_design_event_init( AW_window *aww, AW_CL cl_from_gene) {
             root->awar(AWAR_PRIMER_DESIGN_DIST_MIN)->write_int(dist_min);
             root->awar(AWAR_PRIMER_DESIGN_DIST_MAX)->write_int(dist_max);
 
-            // primer length
-            //         length_min = root->awar(AWAR_PRIMER_DESIGN_LENGTH_MIN)->read_int();
-            //         length_max = root->awar(AWAR_PRIMER_DESIGN_LENGTH_MAX)->read_int();
-            //         if ( length_max > 100 ) length_max = 100;
-            //         if ( length_min >= length_max ) length_min = length_max >> 2;
-            //         root->awar(AWAR_PRIMER_DESIGN_LENGTH_MIN)->write_int(length_min);
-            //         root->awar(AWAR_PRIMER_DESIGN_LENGTH_MAX)->write_int(length_max);
-
-            // GC-ratio/temperature - factors
-            //         root->awar(AWAR_PRIMER_DESIGN_GC_FACTOR)->write_int(50);
-            //         root->awar(AWAR_PRIMER_DESIGN_TEMP_FACTOR)->write_int(50);
-
             // update mem-info
             primer_design_event_update_memory(aww);
 
@@ -415,8 +402,6 @@ void primer_design_event_init( AW_window *aww, AW_CL cl_from_gene) {
             printf ( "primer_design_event_init : left_max   %7li\n",left_max );
             printf ( "primer_design_event_init : right_min  %7li\n",right_min );
             printf ( "primer_design_event_init : right_max  %7li\n",right_max );
-            //         printf ( "primer_design_event_init : length_min %7li\n",length_min );
-            //         printf ( "primer_design_event_init : length_max %7li\n",length_max );
             printf ( "primer_design_event_init : dist_min   %7li\n",dist_min );
             printf ( "primer_design_event_init : dist_max   %7li\n\n",dist_max );
 #endif

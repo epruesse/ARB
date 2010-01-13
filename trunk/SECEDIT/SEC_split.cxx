@@ -441,8 +441,6 @@ GB_ERROR SEC_root::unsplit_loop(SEC_helix_strand *remove_strand) {
 
                 set_root(anotherLoop);
                 setRootTo = loop[1-del]; // afterwards set root back to non-deleted loop
-
-                // recalc();
             }
         }
 

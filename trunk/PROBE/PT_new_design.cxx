@@ -142,17 +142,6 @@ static double pt_get_temperature(const char *probe)
     return t;
 }
 
-#if 0
-int ptnd_check_pure(char *probe)
-{
-    int i;
-    while (( i=*(probe++) )) {
-        if (    i < PT_A || i > PT_T) return 1;
-    }
-    return 0;
-}
-#endif
-
 static void ptnd_calc_quality(PT_pdc *pdc) {
     PT_tprobes *tprobe;
     int         i;
@@ -316,6 +305,9 @@ extern "C" char *get_design_info(PT_tprobes  *tprobe)
     return buffer;
 }
 
+#if defined(DEVEL_RALF)
+#warning fix usage of strlen in get_design_info and add assertion vs buffer overflow
+#endif // DEVEL_RALF
 
 extern "C" char *get_design_hinfo(PT_tprobes  *tprobe) {
     char   *buffer = (char *)GB_give_buffer(2000);
@@ -355,7 +347,6 @@ extern "C" char *get_design_hinfo(PT_tprobes  *tprobe) {
     s += strlen(s);
 
     sprintf(s, "Decrease T by n*.3C -> probe matches n non group species");
-    // s += strlen(s);
 
     return buffer;
 }
@@ -960,8 +951,6 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
         GBS_clear_hash_statistic_summary("inner");
 #endif // DEBUG
 
-        // for (name = 0; name < psg.data_count; name++) {
-        // if(psg.data[name].is_group != 1) continue;
         for (int g = 0; g<group_count; ++g) {
             int      name             = group_idx[g];
             long     possible_tprobes = psg.data[name].size-pdc->probelen+1;
@@ -1005,27 +994,6 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
     GBS_print_hash_statistic_summary("outer");
 #endif // DEBUG
 }
-
-#if 0
-static void ptnd_print_probes(PT_pdc *pdc) {
-    PT_tprobes *tprobe;
-    char        buffer[1024];
-    int         i;
-
-    for (       tprobe = pdc->tprobes;
-                tprobe;
-                tprobe = tprobe->next ) {
-        strncpy(buffer,tprobe->sequence,250);
-        buffer[250] = 0;
-        PT_base_2_string(buffer,0);
-        printf("seq: %s group %i  mishits: %i ",buffer,tprobe->groupsize,tprobe->mishit);
-        for (i=0;i<PERC_SIZE;i++) {
-            printf("%3i,",tprobe->perc[i]);
-        }
-        printf("\n");
-    }
-}
-#endif
 
 extern "C" int PT_start_design(PT_pdc *pdc, int /*dummy*/) {
 
@@ -1075,7 +1043,6 @@ extern "C" int PT_start_design(PT_pdc *pdc, int /*dummy*/) {
     ptnd_calc_quality(pdc);
     ptnd_sort_probes_by(pdc,0);
     ptnd_probe_delete_all_but(pdc,pdc->clipresult);
-    /* ptnd_print_probes(pdc); */
 
     return 0;
 }

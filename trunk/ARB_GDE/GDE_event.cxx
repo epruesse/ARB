@@ -74,8 +74,6 @@ static char *ReplaceArgs(AW_root *awr,char *Action,GmenuItem *gmenuitem,int numb
     char *temp;
     int i,newlen,type;
     symbol = gmenuitem->arg[number].symbol;
-    //method = gmenuitem->arg[number]->method;
-    //textvalue = gmenuitem->arg[number]->textvalue;
     type = gmenuitem->arg[number].type;
     if( (type == SLIDER) )
     {
@@ -483,7 +481,7 @@ void GDE_startaction_cb(AW_window *aw,GmenuItem *gmenuitem,AW_CL cd)
                 flag = true;
             }
         }
-        if(flag && DataSet) select_mode = ALL; // TestSelection();
+        if(flag && DataSet) select_mode = ALL; 
 
         int pid = getpid();
 
@@ -562,8 +560,6 @@ void GDE_startaction_cb(AW_window *aw,GmenuItem *gmenuitem,AW_CL cd)
                 case GENBANK:
                 case NA_FLAT:
                 case GDE:
-                    /*ARB-change:*/
-                    /*OpenFileName(current_item->output[j].name,NULL);*/
                     LoadData(current_item->output[j].name);
                     break;
                 case COLORMASK:

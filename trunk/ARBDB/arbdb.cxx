@@ -933,7 +933,6 @@ GB_ERROR GB_write_pntr(GBDATA *gbd,const char *s, long bytes_size, long stored_s
 GB_ERROR GB_write_string(GBDATA *gbd,const char *s)
 {
     long size;
-    //fprintf(stderr, "GB_write_string(%p, %s);\n", gbd, s);
     GB_TEST_WRITE(gbd,GB_STRING,"GB_write_string");
     GB_TEST_NON_BUFFER(s,"GB_write_string");        // compress would destroy the other buffer
     
@@ -1358,12 +1357,6 @@ GBDATA *GB_create(GBDATA *father,const char *key, GB_TYPES type)
         return NULL;
     }
 
-    //     now checked by GB_check_key
-    //     if ( (*key == '\0')) {
-    //         GB_export_error("GB_create error: empty key");
-    //         return NULL;
-    //     }
-
     if ( !father ) {
         GB_internal_errorf("GB_create error in GB_create:\nno father (key = '%s')",key);
         return NULL;
@@ -1733,9 +1726,8 @@ bool GB_in_temporary_branch(GBDATA *gbd) {
 ********************************************************************************************/
 
 GB_ERROR GB_push_local_transaction(GBDATA *gbd) {
-    /* Starts a read only transaction !!;
-       be sure that all data is cached
-       be extremely careful !!!!! */
+    // Starts a read only transaction.
+    // Be sure that all data is cached. Be extremely careful!
     
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     if (Main->transaction>0) {
@@ -1746,7 +1738,8 @@ GB_ERROR GB_push_local_transaction(GBDATA *gbd) {
 }
 
 GB_ERROR GB_pop_local_transaction(GBDATA *gbd) {
-    // Stops a read only transaction !!; be sure that all data is cached !!!!!
+    // Stops a read only transaction.
+    // Be sure that all data is cached!
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     if (Main->transaction>0){
         return GB_pop_transaction(gbd);

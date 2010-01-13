@@ -736,10 +736,9 @@ void MG_transfer_fields_cb(AW_window *aww){
 
 AW_window *MG_transfer_fields(AW_root *aw_root)
 {
-    GB_transaction dummy(GLOBAL_gb_merge);
-    //  awt_selection_list_rescan(gb_merge,AWT_NDS_FILTER);
-
+    GB_transaction    dummy(GLOBAL_gb_merge);
     AW_window_simple *aws = new AW_window_simple;
+
     aws->init( aw_root, "MERGE_TRANSFER_FIELD", "TRANSFER FIELD");
     aws->load_xfig("merge/mg_transfield.fig");
     aws->button_length(13);

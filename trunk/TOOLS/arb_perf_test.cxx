@@ -110,7 +110,6 @@ static long estimate_loops(test_fun fun) {
     long   duration = run_test(fun, loops, &perCall);
 
     while (duration<1000) {
-        // printf("duration for %li loops was %li\n", loops, duration);
         loops = (loops*10000.0)/duration+1;
         if (loops>0) {
             duration = run_test(fun, loops, &perCall);
@@ -119,7 +118,6 @@ static long estimate_loops(test_fun fun) {
 
     loops = (loops*double(WANTED_TIME))/duration+1;
     if (loops <= 0) loops = LONG_MAX;
-    // printf("estimate_loops=%li\n", loops);
     return loops;
 }
 

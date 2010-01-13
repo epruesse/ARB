@@ -177,10 +177,8 @@ static GB_ERROR perform_block_operation_on_part_of_sequence(ED4_blockoperation b
 void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat) {
     GB_ERROR               error    = GB_begin_transaction(GLOBAL_gb_main);
     ED4_sequence_terminal *err_term = 0;
-    //    ED4_terminal *term        = ED4_ROOT->root_group_man->get_first_terminal();
-
-    ED4_cursor *cursor   = &ED4_ROOT->get_ed4w()->cursor;
-    int         base_pos = (cursor && cursor->owner_of_cursor != 0) ? cursor->get_base_position() : -1;
+    ED4_cursor            *cursor   = &ED4_ROOT->get_ed4w()->cursor;
+    int                    base_pos = (cursor && cursor->owner_of_cursor != 0) ? cursor->get_base_position() : -1;
 
     switch (blocktype) {
         case ED4_BT_NOBLOCK: {
@@ -366,9 +364,8 @@ static void select_and_update(ED4_sequence_terminal *term1, ED4_sequence_termina
         int do_above = 1; // we have to update terminals between last_term1 and term1
         int do_below = 1; // we have to update terminals between term2 and last_term2
 
-        ED4_terminal *term = term1;
-        //      ED4_terminal *start_term = term1;
-        int xRangeChanged = last_pos1!=range_col1 || last_pos2!=range_col2;
+        ED4_terminal *term          = term1;
+        int           xRangeChanged = last_pos1!=range_col1 || last_pos2!=range_col2;
 
         while (term) {
             if (term->is_sequence_terminal()) {
@@ -437,10 +434,6 @@ static void select_and_update(ED4_sequence_terminal *term1, ED4_sequence_termina
     last_pos1 = range_col1;
     last_pos2 = range_col2;
 }
-
-// static inline double fabs(double d) {
-// return d<0 ? -d : d;
-// }
 
 void ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term) {
     static ED4_sequence_terminal *fix_term = 0;
@@ -744,8 +737,6 @@ static char *complement_sequence(const char *seq, int len, int repeat, int *new_
     *error = GBT_determine_T_or_U(ED4_ROOT->alignment_type, &T_or_U, "complement");
     if (*error) return 0;
 
-    //     char T_or_U = ED4_ROOT->alignment_type==GB_AT_DNA ? 'T' : 'U';
-
     char *new_seq         = GBT_complementNucSequence(seq, len, T_or_U);
     if (new_len) *new_len = len;
     return new_seq;
@@ -759,7 +750,6 @@ static char *reverse_complement_sequence(const char *seq, int len, int repeat, i
     char T_or_U;
     *error = GBT_determine_T_or_U(ED4_ROOT->alignment_type, &T_or_U, "reverse-complement");
     if (*error) return 0;
-    // char  T_or_U = ED4_ROOT->alignment_type==GB_AT_DNA ? 'T' : 'U';
     char *new_seq1  = GBT_complementNucSequence(seq, len, T_or_U);
     char *new_seq2  = GBT_reverseNucSequence(new_seq1, len);
 

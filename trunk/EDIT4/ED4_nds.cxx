@@ -115,10 +115,8 @@ void ed4_nds_select_change(AW_window *aww,AW_CL selected){
 AW_window *ED4_create_nds_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    int description_x, aci_x, length_x;
-    int i, dummy, fieldselectx;
-    //int y[NDS_COUNT];
-    //int toggle_y, data_x;
+    int               description_x, aci_x, length_x;
+    int               i, dummy, fieldselectx;
 
     aws->init(root, "NDS_PROPS", "NDS");
     aws->load_xfig("edit4/nds.fig");

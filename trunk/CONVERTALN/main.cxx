@@ -21,15 +21,8 @@
  */
 int main(int argc, char *argv[])
 {
-    int intype, outtype;
-
-    /*  int Lenstr(), file_exist(); */
-    /*  void    error(), genbank_to_macke(), macke_to_genbank(); */
-    /*  void    Getstr(), change_file_suffix(); */
-    /*  char    *Dupstr(), *Reallocspace(); */
-    /*  char    error_msg[LINENUM]; */
+    int  intype, outtype;
     char temp[LINENUM];
-
     char choice[LINENUM];
 
     intype = outtype = UNKNOWN;
@@ -195,7 +188,6 @@ int main(int argc, char *argv[])
     }                           /* command line */
 
     if (argc == 4) {            /* default output file */
-        /*         argv            = (char**)Reallocspace(argv, sizeof(char*)*5); */
         const char **argv_new = (const char **)calloc(sizeof(char *), 5);
 
         memcpy(argv_new, argv, sizeof(char *) * 4);
@@ -229,19 +221,13 @@ int main(int argc, char *argv[])
  */
 int file_type(char *filename)
 {
-    /*  char    line[LINENUM]; */
-    char token[LINENUM], temp[LINENUM];
-
-    /*  int Cmpstr(); */
+    char  token[LINENUM], temp[LINENUM];
     FILE *fp;
-
-    /*  void    error(); */
 
     if ((fp = fopen(filename, "r")) == NULL) {
         sprintf(temp, "Cannot open file: %s. Exit.\n", filename);
         error(5, temp);
     }
-    /* rewind(fp); */
     fscanf(fp, "%s", token);
     if (Cmpstr(token, "LOCUS") == EQ)
         return (GENBANK);
@@ -279,8 +265,6 @@ int isnum(char *string)
  */
 int file_exist(char *file_name)
 {
-    /*  int Lenstr(); */
-    /*  void    error(); */
     char temp[TOKENNUM];
 
     if (Lenstr(file_name) <= 0) {
@@ -297,9 +281,6 @@ int file_exist(char *file_name)
 void change_file_suffix(char *old_file, char *file_name, int type)
 {
     int indi, indj;
-
-    /*  char    *Catstr(); */
-    /*  void    Cpystr(); */
 
     for (indi = Lenstr(old_file) - 1; indi >= 0 && old_file[indi] != '.'; indi--)
         if (indi == 0)

@@ -536,7 +536,7 @@ void PV_SaveData(AW_window *aww){
                                 ED4_AA_sequence_terminal *aaSeqTerminal = terminal->to_aa_sequence_terminal();
                                     ED4_base *base = (ED4_base*)aaSeqTerminal;
                                     if(!base->flag.hidden) {
-                                        PV_WriteTranslatedSequenceToDB(aaSeqTerminal, speciesName);//, ASKtoOverWriteData);
+                                        PV_WriteTranslatedSequenceToDB(aaSeqTerminal, speciesName);
                                     }
                             }
                         }
@@ -918,8 +918,6 @@ void PV_CreateAllTerminals(AW_root *root) {
 
     // Print missing DB entries
     PV_PrintMissingDBentryInformation();
-
-    //    ED4_ROOT->refresh_all_windows(0);
 }
 
 void PV_CallBackFunction(AW_root *root) {

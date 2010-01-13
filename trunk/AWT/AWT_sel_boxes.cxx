@@ -214,9 +214,8 @@ static char *readable_pt_servername(int index, int maxlength) {
     char *fullname = GBS_ptserver_id_to_choice(index, 0);
     if (!fullname) {
 #ifdef DEBUG
-      printf("awar given to awt_create_selection_list_on_pt_servers() does not contain a valid index\n");
+        printf("awar given to awt_create_selection_list_on_pt_servers() does not contain a valid index\n");
 #endif
-      //        awt_assert(0); // awar given to awt_create_selection_list_on_pt_servers() does not contain a valid index
         return strdup("-undefined-");
     }
 
@@ -639,10 +638,6 @@ void AWT_load_list(AW_window *aww, AW_CL sel_id, AW_CL ibase_name)
 
     AW_root     *aw_root    = aww->get_root();
     GB_ERROR    error;
-
-    //     char     bfile_name[GB_PATH_MAX];
-    //     sprintf(bfile_name,"%s/file_name",basename);
-    //     char *filename = aw_root->awar(bfile_name)->read_string();
 
     char *filename = awt_get_selected_fullname(aw_root, basename);
     error          = aww->load_selection_list(selid,filename);

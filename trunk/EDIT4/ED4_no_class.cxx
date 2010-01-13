@@ -157,7 +157,6 @@ void ED4_resize_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
     GB_push_transaction(GLOBAL_gb_main);
 
     ED4_ROOT->get_device()->reset();
-    //  ED4_ROOT->deselect_all();
 
     ED4_ROOT->get_ed4w()->update_scrolled_rectangle();
 
@@ -216,18 +215,6 @@ static ARB_ERROR call_edit( ED4_base *object, AW_CL cl_work_info) {
 
                 ED4_ROOT->edit_string->init_edit(  );
                 error = ED4_ROOT->edit_string->edit( &new_work_info );
-
-                //         if (ED4_ROOT->edit_string->old_seq)
-                //         {
-                //             temp_parent = species_manager->get_parent( ED4_L_MULTI_SPECIES )->to_manager();
-
-                //             ((ED4_terminal *)object)->actual_timestamp = GB_read_clock(gb_main);
-
-                //             char *seq = ED4_ROOT->edit_string->old_seq;
-                //             int seq_len = ED4_ROOT->edit_string->old_seq_len;
-
-                //             temp_parent->check_bases(seq, seq_len, species_manager);
-                //         }
 
                 if (!error && new_work_info.out_string) {
                     e4_assert(species_manager->flag.is_consensus);
@@ -301,7 +288,7 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
         work_info->is_sequence = 0;
 
         if (terminal->is_pure_text_terminal()) {
-            work_info->mode = awar_edit_mode;  // AD_INSERT; // why is AD_INSERT forced here ?
+            work_info->mode = awar_edit_mode; 
         }
         else if (terminal->is_columnStat_terminal()) {
             work_info->mode = AD_NOWRITE;
@@ -357,8 +344,9 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
     else {
         error = edit_string->edit( work_info );
 
+        ED4_ROOT->main_manager->Show(1, 0);         // @@@ temporary fix for worst-refresh problems
         // ED4_ROOT->main_manager->Show(); // original version
-        ED4_ROOT->main_manager->Show(1, 0); // temporary fix for worst-refresh problems
+
         cursor->jump_sequence_pos(aww, work_info->out_seq_position, work_info->cursor_jump);
     }
 
@@ -591,7 +579,8 @@ void ED4_scrollbar_change_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
     int old_hslider_pos = win->slider_pos_horizontal;
     int old_vslider_pos = win->slider_pos_vertical;
 
-    { // correct slider_pos if necessary
+    {
+        // correct slider_pos if necessary
         int max_slider_xpos = get_max_slider_xpos();
         int max_slider_ypos = get_max_slider_ypos();
 
@@ -618,7 +607,6 @@ void ED4_scrollbar_change_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
 
     GB_pop_transaction(GLOBAL_gb_main);
     win->update_window_coords();
-    //    paintMarksOfSelectedObjects();
 }
 
 void ED4_motion_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
@@ -858,14 +846,12 @@ void ED4_save_data( AW_window *aww, AW_CL cd1, AW_CL cd2 )
 void ED4_timer_refresh()
 {
     GB_begin_transaction(GLOBAL_gb_main);                  // for callbacks from database
-    //    ED4_ROOT->refresh_all_windows(0);
     GB_tell_server_dont_wait(GLOBAL_gb_main);
     GB_commit_transaction(GLOBAL_gb_main);
 }
 
 void ED4_timer(AW_root *, AW_CL cd1, AW_CL cd2 )
 {
-    //    last_used_timestamp = GB_read_clock(gb_main);
     ED4_timer_refresh();
     ED4_ROOT->aw_root->add_timed_callback(200,ED4_timer,cd1,cd2);
 }
@@ -884,7 +870,6 @@ void ED4_refresh_window( AW_window *aww, AW_CL cd_called_from_menu, AW_CL /*cd2*
             mainman->delete_requested_children();
         }
 
-        //    ED4_ROOT->deselect_all();
         mainman->update_info.set_clear_at_refresh(1);
         mainman->Show(1);
     }
@@ -1024,7 +1009,7 @@ void ED4_show_detailed_column_stats(AW_window *aww, AW_CL, AW_CL)
     ref_colStat_terminal->extension.size[WIDTH] = pixel_length;
 
     ED4_sequence_info_terminal *ref_colStat_info_terminal = ED4_ROOT->ref_terminals.get_ref_column_stat_info();
-    ED4_sequence_info_terminal *new_colStat_info_term = new ED4_sequence_info_terminal("CStat", /*0,*/ 0, 0, SEQUENCEINFOSIZE, columnStatHeight, new_seq_man);
+    ED4_sequence_info_terminal *new_colStat_info_term = new ED4_sequence_info_terminal("CStat", 0, 0, SEQUENCEINFOSIZE, columnStatHeight, new_seq_man);
     new_colStat_info_term->set_properties( (ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE) );
     new_colStat_info_term->set_links(ref_colStat_info_terminal, ref_colStat_terminal);
     new_seq_man->children->append_member(new_colStat_info_term);
@@ -1033,7 +1018,6 @@ void ED4_show_detailed_column_stats(AW_window *aww, AW_CL, AW_CL)
     ED4_columnStat_terminal *new_colStat_term = new ED4_columnStat_terminal(buffer, SEQUENCEINFOSIZE, 0, 0, columnStatHeight, new_seq_man);
     new_colStat_term->set_properties(ED4_P_CURSOR_ALLOWED);
     new_colStat_term->set_links(ref_colStat_terminal, ref_colStat_terminal);
-    //    new_colStat_term->extension.size[WIDTH] = pixel_length;
     new_seq_man->children->append_member(new_colStat_term);
 
     ED4_counter++;
@@ -1459,10 +1443,8 @@ void ED4_compression_changed_cb(AW_root *awr){
 
 void ED4_compression_toggle_changed_cb(AW_root *root, AW_CL cd1, AW_CL /*cd2*/)
 {
-    //    static int cst_change_denied;
-
-    int gaps = root->awar(ED4_AWAR_COMPRESS_SEQUENCE_GAPS)->read_int();
-    int hide = root->awar(ED4_AWAR_COMPRESS_SEQUENCE_HIDE)->read_int();
+    int            gaps = root->awar(ED4_AWAR_COMPRESS_SEQUENCE_GAPS)->read_int();
+    int            hide = root->awar(ED4_AWAR_COMPRESS_SEQUENCE_HIDE)->read_int();
     ED4_remap_mode mode = ED4_remap_mode(root->awar(ED4_AWAR_COMPRESS_SEQUENCE_TYPE)->read_int());
 
     switch(int(cd1)) {

@@ -98,11 +98,7 @@ void expose_callb(AW_window *aw,AW_CL cd1,AW_CL cd2)
         PH_display::ph_display->clear_window();
         PH_display::ph_display->display();
     }
-    else    // startup
-    {
-        //startup_sequence_cb(0,aw->get_root());
-    }
-} // expose_callb
+}
 
 
 void resize_callb(AW_window *aw,AW_CL cd1,AW_CL cd2)
@@ -114,8 +110,6 @@ void resize_callb(AW_window *aw,AW_CL cd1,AW_CL cd2)
         PH_display::ph_display->display();
     }
 }
-//                           total_cells_horiz=PHDATA::ROOT->get_seq_len();
-//                            { if(PHDATA::ROOT->markerline[x]>=0.0)
 
 static GB_ERROR PH_create_ml_multiline_SAI(GB_CSTR sai_name, int nr, GBDATA **gb_sai_ptr) {
     GBDATA   *gb_sai = GBT_find_or_create_SAI(GLOBAL_gb_main, sai_name);
@@ -590,12 +584,6 @@ main(int argc, char **argv)
 
     puw->phylo_main_window = create_phyl_main_window(aw_root, ph_root, 0);
     puw->windowList        = puw;
-
-    // exposing the main window is now done from inside startup_sequence_cb()
-    // (otherwise it crashes during resize because the resize callback gets
-    // called before startup_sequence_cb initialized the necessary data)
-    //
-    // puw->phylo_main_window->show();
 
     phd->ph_display = phd;
 

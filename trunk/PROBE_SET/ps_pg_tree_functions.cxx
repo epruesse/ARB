@@ -91,12 +91,6 @@ int PG_NumberSpecies(){
 
 
 
-// search or create "group_tree"-entry
-// static GBDATA *group_tree(GBDATA *pb_main) {
-//     return GB_search(pb_main, "group_tree", GB_CREATE_CONTAINER);
-// }
-
-
 GBDATA *PG_get_first_probe(GBDATA *pb_group) {
     return GB_entry(pb_group, "probe");
 }

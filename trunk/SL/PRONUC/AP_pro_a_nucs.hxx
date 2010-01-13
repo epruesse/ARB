@@ -25,10 +25,6 @@ enum AP_BASES {
     AP_MAX = 32
 };
 
-// typedef enum {
-//  AP_UNIVERSAL, AP_MITO, AP_VERTMITO, AP_FLYMITO, AP_YEASTMITO, AP_CILITATE
-// } AP_CODE_TYPE;
-
 struct arb_r2a_pro_2_nucs {
     struct arb_r2a_pro_2_nucs *next;
     char                       nucbits[3]; // bitsets of nucs
