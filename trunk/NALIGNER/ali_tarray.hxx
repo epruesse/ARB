@@ -1,12 +1,19 @@
+// =============================================================== //
+//                                                                 //
+//   File      : ali_tarray.hxx                                    //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
+#ifndef ALI_TARRAY_HXX
+#define ALI_TARRAY_HXX
 
-#ifndef _ALI_TARRAY_INC_
-#define _ALI_TARRAY_INC_
-
-// #include <malloc.h>
-
-#include "ali_misc.hxx"
+#ifndef ALI_TLIST_HXX
 #include "ali_tlist.hxx"
+#endif
 
 template<class T>
 class ALI_TARRAY {
@@ -17,7 +24,6 @@ public:
     ALI_TARRAY(unsigned long Size) {
         size_of_array = Size;
         array = (T **) calloc((unsigned int) Size, sizeof(T));
-        //array = (T (*) [1]) calloc((unsigned int) Size, sizeof(T));
         if (array == 0)
             ali_fatal_error("Out of memory");
     }
@@ -35,17 +41,6 @@ public:
                 ali_fatal_error("List inconsitent","ALI_TARRAY::ALI_TARRAY()");
         }
     }
-    /*
-      ALI_TARRAY(ALI_TARRAY<T> *ar) {
-      unsigned long l = 0;
-      size_of_array = ar->size_of_array;
-      array = (T (*) []) calloc((unsigned int) size_of_array,sizeof(T));
-      if (array == 0)
-      ali_fatal_error("Out of memory");
-      for (l = 0; l < size_of_array; l++)
-      (*array)[l] = (*ar->array)[l];
-      }
-    */
     ~ALI_TARRAY(void) {
         if (array)
             free((char *) array);
@@ -65,5 +60,6 @@ public:
     }
 };
 
-#endif
-
+#else
+#error ali_tarray.hxx included twice
+#endif // ALI_TARRAY_HXX

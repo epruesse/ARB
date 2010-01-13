@@ -1,11 +1,22 @@
+// =============================================================== //
+//                                                                 //
+//   File      : ali_sequence.hxx                                  //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#ifndef _ALI_SEQUENCE_INC_
-#define _ALI_SEQUENCE_INC_
+#ifndef ALI_SEQUENCE_HXX
+#define ALI_SEQUENCE_HXX
 
-#include <string.h>
-// #include <malloc.h>
-
+#ifndef _CPP_CSTRING
+#include <cstring>
+#endif
+#ifndef ALI_MISC_HXX
 #include "ali_misc.hxx"
+#endif
 
 
 class ALI_SEQUENCE {
@@ -89,4 +100,6 @@ public:
     }
 };
 
-#endif
+#else
+#error ali_sequence.hxx included twice
+#endif // ALI_SEQUENCE_HXX

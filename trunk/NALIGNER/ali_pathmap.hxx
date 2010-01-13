@@ -1,9 +1,19 @@
+// =============================================================== //
+//                                                                 //
+//   File      : ali_pathmap.hxx                                   //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
+#ifndef ALI_PATHMAP_HXX
+#define ALI_PATHMAP_HXX
 
-#ifndef _ALI_PATHMAP_INC_
-#define _ALI_PATHMAP_INC_
-
+#ifndef ALI_TARRAY_HXX
 #include "ali_tarray.hxx"
+#endif
 
 #define ALI_UNDEF 0x00
 #define ALI_LEFT        0x01
@@ -47,6 +57,6 @@ public:
     void print(void);
 };
 
-#endif
-
-
+#else
+#error ali_pathmap.hxx included twice
+#endif // ALI_PATHMAP_HXX

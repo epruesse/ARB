@@ -1,12 +1,14 @@
+// =============================================================== //
+//                                                                 //
+//   File      : ali_sequence.cxx                                  //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-
-#include <string.h>
-#include <stdlib.h>
-// #include <malloc.h>
-
-#include "ali_misc.hxx"
 #include "ali_sequence.hxx"
-
 
 
 /*****************************************************************************
@@ -69,10 +71,10 @@ ALI_NORM_SEQUENCE::ALI_NORM_SEQUENCE(char *Name, char *String)
             counter++;
     seq_len = counter;
 
-    seq = (unsigned char*) CALLOC((unsigned int) seq_len,sizeof(unsigned char));
-    dots = (unsigned char **) CALLOC((unsigned int) (seq_len/8)+1, sizeof(unsigned char));
-    //dots = (unsigned char (*) [1]) CALLOC((unsigned int) (seq_len/8)+1, sizeof(unsigned char));
+    seq      = (unsigned char*) CALLOC((unsigned int) seq_len,sizeof(unsigned char));
+    dots     = (unsigned char **) CALLOC((unsigned int) (seq_len/8)+1, sizeof(unsigned char));
     seq_name = strdup(Name);
+    
     if (seq == 0 || dots == 0 || seq_name == 0) {
         ali_fatal_error("Out of memory");
     }
@@ -107,10 +109,10 @@ ALI_NORM_SEQUENCE::ALI_NORM_SEQUENCE(ALI_SEQUENCE *SEQ)
             counter++;
     seq_len = counter;
 
-    seq = (unsigned char*) CALLOC((unsigned int) seq_len,sizeof(unsigned char));
-    dots = (unsigned char **) CALLOC((unsigned int) (seq_len/8)+1, sizeof(unsigned char));
-    //dots = (unsigned char (*) [1]) CALLOC((unsigned int) (seq_len/8)+1, sizeof(unsigned char));
+    seq      = (unsigned char*) CALLOC((unsigned int) seq_len,sizeof(unsigned char));
+    dots     = (unsigned char **) CALLOC((unsigned int) (seq_len/8)+1, sizeof(unsigned char));
     seq_name = strdup(SEQ->name());
+    
     if (seq == 0 || dots == 0 || seq_name == 0) {
         ali_fatal_error("Out of memory");
     }

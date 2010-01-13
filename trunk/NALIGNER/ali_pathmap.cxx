@@ -1,10 +1,14 @@
-
-// #include <malloc.h>
-#include <stdlib.h>
+// =============================================================== //
+//                                                                 //
+//   File      : ali_pathmap.cxx                                   //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include "ali_pathmap.hxx"
-#include "ali_misc.hxx"
-
 
 ALI_PATHMAP::ALI_PATHMAP(unsigned long w, unsigned long h)
 {
@@ -12,12 +16,9 @@ ALI_PATHMAP::ALI_PATHMAP(unsigned long w, unsigned long h)
     height = h;
     height_real = (h / 2) + 1;
 
-    pathmap = (unsigned char **) CALLOC((unsigned int) (height_real * w), sizeof(unsigned char));
-    //pathmap = (unsigned char (*)[1]) CALLOC((unsigned int) (height_real * w), sizeof(unsigned char));
+    pathmap     = (unsigned char **) CALLOC((unsigned int) (height_real * w), sizeof(unsigned char));
     up_pointers = (ALI_TARRAY < ali_pathmap_up_pointer > ****) CALLOC((unsigned int) w, sizeof(ALI_TARRAY < ali_pathmap_up_pointer > *));
-    //up_pointers = (ALI_TARRAY < ali_pathmap_up_pointer > **(*)[1]) CALLOC((unsigned int) w, sizeof(ALI_TARRAY < ali_pathmap_up_pointer > *));
-    optimized = (unsigned char **) CALLOC((unsigned int) ((w / 8) + 1), sizeof(unsigned char));
-    //optimized = (unsigned char (*)[1]) CALLOC((unsigned int) ((w / 8) + 1), sizeof(unsigned char));
+    optimized   = (unsigned char **) CALLOC((unsigned int) ((w / 8) + 1), sizeof(unsigned char));
     if (pathmap == 0 || up_pointers == 0 || optimized == 0)
         ali_fatal_error("Out of memory");
 }

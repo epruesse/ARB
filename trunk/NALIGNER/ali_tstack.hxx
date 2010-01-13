@@ -1,10 +1,15 @@
+// =============================================================== //
+//                                                                 //
+//   File      : ali_tstack.hxx                                    //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-
-#ifndef _ALI_TSTACK_INC_
-#define _ALI_TSTACK_INC_
-
-// #include <malloc.h>
-#include "ali_misc.hxx"
+#ifndef ALI_TSTACK_HXX
+#define ALI_TSTACK_HXX
 
 template<class T>
 class ALI_TSTACK {
@@ -17,7 +22,6 @@ public:
         size_of_array = size;
         next_elem = 0;
         array = (T **) calloc((unsigned int) size, sizeof(T));
-        //array = (T (*) [1]) calloc((unsigned int) size, sizeof(T));
     }
     ~ALI_TSTACK(void) {
         if (array)
@@ -59,5 +63,6 @@ public:
     }
 };
 
-#endif
-
+#else
+#error ali_tstack.hxx included twice
+#endif // ALI_TSTACK_HXX

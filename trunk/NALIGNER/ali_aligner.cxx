@@ -1,4 +1,12 @@
-#include <stdlib.h>
+// =============================================================== //
+//                                                                 //
+//   File      : ali_aligner.cxx                                   //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include "ali_aligner.hxx"
 

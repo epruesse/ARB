@@ -1,12 +1,28 @@
+// =============================================================== //
+//                                                                 //
+//   File      : ali_prealigner.hxx                                //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
+#ifndef ALI_PREALIGNER_HXX
+#define ALI_PREALIGNER_HXX
 
-#ifndef _ALI_PREALIGNER_INC_
-#define _ALI_PREALIGNER_INC_
-
+#ifndef ALI_PROFILE_HXX
 #include "ali_profile.hxx"
+#endif
+#ifndef ALI_PATHMAP_HXX
 #include "ali_pathmap.hxx"
+#endif
+#ifndef ALI_TSTACK_HXX
 #include "ali_tstack.hxx"
+#endif
+#ifndef ALI_SOLUTION_HXX
 #include "ali_solution.hxx"
+#endif
 
 #define ALI_PREALIGNER_INS        1
 #define ALI_PREALIGNER_SUB        2
@@ -41,13 +57,10 @@ struct ali_prealigner_cell {
  */
 struct ali_prealigner_column {
     unsigned long column_length;
-    //ali_prealigner_cell (*cells)[];
     ali_prealigner_cell **cells;
 
     ali_prealigner_column(unsigned long length) {
         column_length = length;
-        //cells = (ali_prealigner_cell (*) [0]) calloc((unsigned int) column_length, sizeof(ali_prealigner_cell));
-        //cells = (ali_prealigner_cell (*) [1]) calloc((unsigned int) column_length, sizeof(ali_prealigner_cell));
         cells = (ali_prealigner_cell **) calloc((unsigned int) column_length, sizeof(ali_prealigner_cell));
         if (cells == 0)
             ali_fatal_error("Out of memory");
@@ -297,6 +310,6 @@ public:
     }
 };
 
-
-#endif
-
+#else
+#error ali_prealigner.hxx included twice
+#endif // ALI_PREALIGNER_HXX

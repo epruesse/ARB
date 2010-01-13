@@ -1,11 +1,28 @@
-#ifndef _ALI_PROFILE_INC_
-#define _ALI_PROFILE_INC_
+// =============================================================== //
+//                                                                 //
+//   File      : ali_profile.hxx                                   //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include "ali_sequence.hxx"
+#ifndef ALI_PROFILE_HXX
+#define ALI_PROFILE_HXX
+
+#ifndef ALI_ARBDB_HXX
 #include "ali_arbdb.hxx"
+#endif
+#ifndef ALI_PT_HXX
 #include "ali_pt.hxx"
+#endif
+#ifndef ALI_TLIST_HXX
 #include "ali_tlist.hxx"
+#endif
+#ifndef ALI_MISC_HXX
 #include "ali_misc.hxx"
+#endif
 
 #define ALI_PROFILE_BORDER_LEFT '['
 #define ALI_PROFILE_BORDER_RIGHT ']'
@@ -333,5 +350,6 @@ public:
                     ALI_SEQUENCE *sequence);
 };
 
-
-#endif
+#else
+#error ali_profile.hxx included twice
+#endif // ALI_PROFILE_HXX

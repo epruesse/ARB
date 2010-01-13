@@ -126,7 +126,6 @@ ali_global.o: $(ARBHOME)/INCLUDE/server.h
 ali_global.o: $(ARBHOME)/INCLUDE/servercntrl.h
 ali_global.o: $(ARBHOME)/INCLUDE/smartptr.h
 
-ali_main.o: ali_aligner.hxx
 ali_main.o: ali_arbdb.hxx
 ali_main.o: ali_global.hxx
 ali_main.o: ali_misc.hxx
@@ -201,7 +200,6 @@ ali_profile.o: ali_other_stuff.hxx
 ali_profile.o: ali_profile.hxx
 ali_profile.o: ali_pt.hxx
 ali_profile.o: ali_sequence.hxx
-ali_profile.o: ali_solution.hxx
 ali_profile.o: ali_tlist.hxx
 ali_profile.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ali_profile.o: $(ARBHOME)/INCLUDE/ad_prot.h

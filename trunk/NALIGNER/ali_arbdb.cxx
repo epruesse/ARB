@@ -1,9 +1,14 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <memory.h>
+// =============================================================== //
+//                                                                 //
+//   File      : ali_arbdb.cxx                                     //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
+#include "ali_sequence.hxx"
 #include "ali_arbdb.hxx"
 
 

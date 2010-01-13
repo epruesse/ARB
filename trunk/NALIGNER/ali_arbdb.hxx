@@ -1,14 +1,24 @@
+// =============================================================== //
+//                                                                 //
+//   File      : ali_arbdb.hxx                                     //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-
-#ifndef _ALI_ARBDB_INC_
-#define _ALI_ARBDB_INC_
+#ifndef ALI_ARBDB_HXX
+#define ALI_ARBDB_HXX
 
 #include "ali_other_stuff.hxx"
-#include "ali_sequence.hxx"
+
+class ALI_SEQUENCE;
 
 /*
  * Class for accessing the database
  */
+
 class ALI_ARBDB {
 private:
     char *alignment;
@@ -40,6 +50,6 @@ public:
     int put_SAI(const char *name, char *sequence);
 };
 
-
-#endif
-
+#else
+#error ali_arbdb.hxx included twice
+#endif // ALI_ARBDB_HXX

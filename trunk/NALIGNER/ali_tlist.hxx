@@ -1,11 +1,20 @@
+// =============================================================== //
+//                                                                 //
+//   File      : ali_tlist.hxx                                     //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
+#ifndef ALI_TLIST_HXX
+#define ALI_TLIST_HXX
 
-#ifndef _ALI_TLIST_INC_
-#define _ALI_TLIST_INC_
-
+#ifndef ALI_MISC_HXX
 #include "ali_misc.hxx"
+#endif
 
-#include <stdio.h>
 
 template<class T>
 struct ALI_TLIST_ELEM {
@@ -199,6 +208,7 @@ void ALI_TLIST<T>::append_end(T &a)
         elem->prev_elem = last_elem;
         last_elem = elem;
     }
+
     else {
         last_elem = first_elem = current_elem = elem;
     }
@@ -401,6 +411,6 @@ void ALI_TLIST<T>::delete_element(void)
     }
 }
 
-
-#endif
-
+#else
+#error ali_tlist.hxx included twice
+#endif // ALI_TLIST_HXX
