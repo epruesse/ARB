@@ -392,12 +392,14 @@ void nt_extract_configuration(AW_window *aww, AW_CL cl_extractType){
     char           *cn               = aww->get_root()->awar(AWAR_CONFIGURATION)->read_string();
     GBDATA         *gb_configuration = GBT_find_configuration(GLOBAL_gb_main,cn);
     if (!gb_configuration){
-        aw_message(GBS_global_string("Configuration '%s' not found in the database",cn));
+        aw_message(GBS_global_string("Configuration '%s' not found in the database", cn));
     }
     else {
-        GBDATA *gb_middle_area = GB_search(gb_configuration,"middle_area",GB_STRING);
-        char *md = 0;
-        if (gb_middle_area){
+        GBDATA *gb_middle_area  = GB_search(gb_configuration,"middle_area",GB_STRING);
+        char   *md              = 0;
+        size_t  unknown_species = 0;
+
+        if (gb_middle_area) {
             extractType ext_type = extractType(cl_extractType);
 
             GB_HASH *was_marked = 0; // only used for CONF_COMBINE
@@ -448,11 +450,19 @@ void nt_extract_configuration(AW_window *aww, AW_CL cl_extractType){
                         }
                         GB_write_flag(gb_species,mark);
                     }
+                    else {
+                        unknown_species++;
+                    }
                 }
             }
 
             GBS_free_hash(was_marked);
         }
+
+        if (unknown_species>0) {
+            aw_message(GBS_global_string("configuration '%s' contains %zu unknown species", cn, unknown_species));
+        }
+
         free(md);
     }
     free(cn);
