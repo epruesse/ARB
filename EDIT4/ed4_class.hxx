@@ -1816,6 +1816,9 @@ void ED4_get_marked_from_menu        (AW_window *, AW_CL, AW_CL);
 void ED4_selected_species_changed_cb     (AW_root *aw_root);
 void ED4_selected_SAI_changed_cb     (AW_root *aw_root);
 
+void ED4_init_notFoundMessage();
+void ED4_finish_and_show_notFoundMessage();
+
 extern int  ED4_elements_in_species_container; // # of elements in species container
 void        ED4_undo_redo               (AW_window*, AW_CL undo_type);
 

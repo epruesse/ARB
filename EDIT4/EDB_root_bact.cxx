@@ -70,23 +70,26 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager  *multi_specie
         }
     }
 
-
     if (!gb_datamode) { // didn't find this species
         char dummy[150];
-        all_found++;
-        sprintf(dummy,"%ld. %s\n",all_found, str);
-        GBS_strcat(not_found_message,dummy);
+        not_found_counter++;
+        if (not_found_counter <= MAX_SHOWN_MISSING_SPECIES) {
+            sprintf(dummy,"%ld. %s\n", not_found_counter, str);
+            GBS_strcat(not_found_message,dummy);
+        }
         return ED4_R_BREAK;
     }
 
-    // check whether sequence has data in desired alignment
+        // check whether sequence has data in desired alignment
     bool has_alignment = 0 != GB_entry(gb_datamode,ED4_ROOT->alignment_name);
     if (!has_alignment) {
         if (datamode == ED4_D_SPECIES) { // only warn about species w/o data (SAIs are skipped silently)
             char dummy[150];
-            all_found++;
-            sprintf(dummy,"%ld. %s (no data in alignment)\n",all_found, str);
-            GBS_strcat(not_found_message,dummy);
+            not_found_counter++;
+            if (not_found_counter <= MAX_SHOWN_MISSING_SPECIES) {
+                sprintf(dummy,"%ld. %s (no data in alignment)\n", not_found_counter, str);
+                GBS_strcat(not_found_message,dummy);
+            }
         }
         return ED4_R_BREAK;
     }
@@ -133,7 +136,6 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager  *multi_specie
 
     local_count_position += max(name_coords, seq_coords);
     name_coords = seq_coords = 0;
-    species_read ++;
 
     if (!(multi_species_manager->flag.hidden)) {
         *length_of_terminals = local_count_position-actual_local_position;
@@ -576,7 +578,6 @@ ED4_returncode EDB_root_bact::create_group_header(ED4_multi_species_manager   *p
     sequence_manager->children->append_member( sequence_terminal );
     sequence_terminal->parent->resize_requested_by_child();
 
-    species_read ++;
     (*y) += height_terminal + height_spacer;
 
     return ED4_R_OK;
