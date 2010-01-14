@@ -591,6 +591,25 @@ ED4_multi_species_manager *ED4_new_species_multi_species_manager(void) { // retu
     return manager ? manager->to_multi_species_manager() : 0;
 }
 
+void ED4_init_notFoundMessage() {
+    not_found_counter = 0;
+    not_found_message = GBS_stropen(10000);
+    // GBS_strcat(not_found_message,"Species not found: ");
+}
+void ED4_finish_and_show_notFoundMessage() {
+    if (not_found_counter != 0) {
+        GBS_strcat(not_found_message, GBS_global_string("(skipped display of %i more species)\n", not_found_counter-MAX_SHOWN_MISSING_SPECIES));
+        char *out_message = GBS_strclose(not_found_message);
+        aw_message(out_message);
+        aw_message(GBS_global_string("Couldn't load %i species:", not_found_counter));
+        free(out_message);
+    }
+    else {
+        GBS_strforget(not_found_message);
+    }
+    not_found_message = 0;
+}
+
 void ED4_get_and_jump_to_species(GB_CSTR species_name)
 {
     e4_assert(species_name && species_name[0]);
@@ -607,9 +626,7 @@ void ED4_get_and_jump_to_species(GB_CSTR species_name)
         ED4_index                  y                   = 0;
         ED4_index                  lot                 = 0;
 
-        all_found         = 0;
-        not_found_message = GBS_stropen(1000);
-        GBS_strcat(not_found_message,"Species not found: ");
+        ED4_init_notFoundMessage();
 
         sprintf(string, "-L%s", species_name);
         ED4_ROOT->database->fill_species(insert_into_manager,
@@ -617,12 +634,7 @@ void ED4_get_and_jump_to_species(GB_CSTR species_name)
                                          string, &index, &y, 0, &lot, insert_into_manager->calc_group_depth(), NULL);
         loaded = 1;
 
-        {
-            char *out_message = GBS_strclose(not_found_message);
-            not_found_message = 0;
-            if (all_found != 0) aw_message(out_message);
-            free(out_message);
-        }
+        ED4_finish_and_show_notFoundMessage();
 
         {
             GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main, species_name);
@@ -697,9 +709,7 @@ void ED4_get_marked_from_menu(AW_window *, AW_CL, AW_CL) {
         aw_openstatus("ARB_EDIT4");
         aw_status("Loading species...");
 
-        all_found         = 0;
-        not_found_message = GBS_stropen(1000);
-        GBS_strcat(not_found_message,"Species not found: ");
+        ED4_init_notFoundMessage();
 
         while (gb_species) {
             count++;
@@ -753,13 +763,8 @@ void ED4_get_marked_from_menu(AW_window *, AW_CL, AW_CL) {
         aw_closestatus();
         aw_message(GBS_global_string("Loaded %i of %i marked species.", inserted, marked));
 
-        {
-            char *out_message = GBS_strclose(not_found_message);
-            not_found_message = 0;
-            if (all_found != 0) aw_message(out_message);
-            free(out_message);
-        }
-
+        ED4_finish_and_show_notFoundMessage();
+        
         if (inserted) {
             /* new AAseqTerminals should be created if it is in ProtView mode */
             if (ED4_ROOT->alignment_type == GB_AT_DNA) {

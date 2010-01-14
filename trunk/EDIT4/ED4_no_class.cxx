@@ -1279,11 +1279,9 @@ void ED4_load_new_config(char *string)
     ED4_ROOT->main_manager->clear_whole_background();
     ED4_calc_terminal_extentions();
 
-    all_found = 0;
-    species_read = 0;
     max_seq_terminal_length = 0;
-    not_found_message = GBS_stropen(1000);
-    GBS_strcat(not_found_message,"Some species not found:\n");
+    
+    ED4_init_notFoundMessage();
 
 
     if ( ED4_ROOT->selected_objects.no_of_entries() > 0 ) {

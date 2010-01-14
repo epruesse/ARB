@@ -659,10 +659,7 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
 
     aw_root->add_timed_callback(2000,ED4_timer,(AW_CL)0,(AW_CL)0);
 
-    char *out_message = GBS_strclose(not_found_message);
-    not_found_message = 0;
-    if (all_found != 0) aw_message(out_message);
-    free(out_message);
+    ED4_finish_and_show_notFoundMessage();
 
     return ( ED4_R_OK );
 }
@@ -1878,13 +1875,9 @@ AW_window *ED4_root::create_new_window( void )                      // only the 
     last_window_reached     = 1;
     DRAW                    = 1;
     move_cursor             = 0;
-    all_found               = 0;
-    species_read            = 0;
     max_seq_terminal_length = 0;
 
-    not_found_message = GBS_stropen(1000);
-
-    GBS_strcat(not_found_message,"Some species not found:\n");
+    ED4_init_notFoundMessage();
 
     return ( new_window->aww );
 }
