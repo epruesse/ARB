@@ -424,6 +424,10 @@ static void search_comment_for_promotion() {
 
         if (!eol) eol = strchr(behind_promo, 0);
 
+        if (eol) {
+            while (eol>behind_promo && eol[-1] == ' ') --eol; // trim spaces at eol
+        }
+
         assert(eol);
         if (!eol) {
             promotion_found = 0;
