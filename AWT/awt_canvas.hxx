@@ -194,8 +194,6 @@ public:
     }
 };
 
-void AWT_input_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2);
-void AWT_motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2);
 void AWT_expose_cb(AW_window *dummy,AWT_canvas *ntw, AW_CL cl2);
 void AWT_resize_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL cl2);
 
