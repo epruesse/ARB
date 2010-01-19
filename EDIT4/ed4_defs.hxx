@@ -43,8 +43,8 @@ extern long ED4_counter;
 
 // use ED4_init_notFoundMessage and ED4_finish_and_show_notFoundMessage to
 // modify the following elements
-#define MAX_SHOWN_MISSING_SPECIES 200               // limit no of missing species/data printed into not_found_message
-extern long           not_found_counter;            // nr of species which haven't been found
+#define MAX_SHOWN_MISSING_SPECIES 200U              // limit no of missing species/data printed into not_found_message
+extern size_t         not_found_counter;            // nr of species which haven't been found
 extern GBS_strstruct *not_found_message;            // error message containing (some) missing/unloadable species
 
 extern long         max_seq_terminal_length;        // global maximum of sequence terminal length

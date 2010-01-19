@@ -52,7 +52,7 @@ int MAXINFOWIDTH;                                                       // # of 
 
 long ED4_counter = 0;
 
-long           not_found_counter;                   // nr of species which haven't been found
+size_t         not_found_counter;                   // nr of species which haven't been found
 GBS_strstruct *not_found_message;
 
 long         max_seq_terminal_length;               // global maximum of sequence terminal length

@@ -74,7 +74,7 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager  *multi_specie
         char dummy[150];
         not_found_counter++;
         if (not_found_counter <= MAX_SHOWN_MISSING_SPECIES) {
-            sprintf(dummy,"%ld. %s\n", not_found_counter, str);
+            sprintf(dummy,"%zu. %s\n", not_found_counter, str);
             GBS_strcat(not_found_message,dummy);
         }
         return ED4_R_BREAK;
@@ -87,7 +87,7 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager  *multi_specie
             char dummy[150];
             not_found_counter++;
             if (not_found_counter <= MAX_SHOWN_MISSING_SPECIES) {
-                sprintf(dummy,"%ld. %s (no data in alignment)\n", not_found_counter, str);
+                sprintf(dummy,"%zu. %s (no data in alignment)\n", not_found_counter, str);
                 GBS_strcat(not_found_message,dummy);
             }
         }
