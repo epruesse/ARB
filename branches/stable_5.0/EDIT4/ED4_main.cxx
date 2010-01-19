@@ -51,15 +51,15 @@ int  MAXSPECIESWIDTH;
 int  MAXINFOWIDTH;              // # of pixels used to display sequence info ("CONS", "4data", etc.)
 
 long           ED4_counter = 0;
-long           all_found;       // nr of species which haven't been found
-long           species_read;    // nr of species read; important during loading
+size_t         not_found_counter;                   // nr of species which haven't been found
 GBS_strstruct *not_found_message;
-long           max_seq_terminal_length; // global maximum of sequence terminal length
-ED4_EDITMODI   awar_edit_modus;
-long           awar_edit_direction;
-bool           move_cursor;     // only needed for editing in consensus
-bool           DRAW;
-bool           last_window_reached; // needed for refreshing all windows (if TRUE refresh/...-flags will be cleared)
+
+long         max_seq_terminal_length;               // global maximum of sequence terminal length
+ED4_EDITMODI awar_edit_modus;
+long         awar_edit_direction;
+bool         move_cursor;                           // only needed for editing in consensus
+bool         DRAW;
+bool         last_window_reached;                   // needed for refreshing all windows (if TRUE refresh/...-flags will be cleared)
 
 size_t status_count_total;                          // used for consensus progress bar
 size_t status_count_curr;
@@ -68,7 +68,6 @@ bool loading;
 
 void ED4_config_change_cb(AW_root *)
 {
-
     // @@@ FIXME: ok to be empty ? check!
 }
 
