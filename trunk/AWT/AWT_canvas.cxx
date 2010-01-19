@@ -15,20 +15,6 @@
 using namespace std;
 using namespace AW;
 
-void AWT_motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2);
-void AWT_clip_expose(AW_window *aww,AWT_canvas *ntw,
-                     int left_border, int right_border,
-                     int top_border, int bottom_border,
-                     int hor_overlap, int ver_overlap);
-void AWT_expose_cb(AW_window *dummy,AWT_canvas *ntw, AW_CL cl2);
-void AWT_resize_cb(AW_window *dummy,AWT_canvas *ntw, AW_CL cl2);
-void AWT_focus_cb(AW_window *dummy,AWT_canvas *ntw);
-void AWT_input_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2);
-void AWT_motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2);
-void AWT_scroll_vert_cb( AW_window *aww, AWT_canvas* ntw, AW_CL cl1);
-void AWT_scroll_hor_cb( AW_window *aww, AWT_canvas* ntw, AW_CL cl1);
-
-
 void AWT_graphic_exports::clear(){
     zoom_reset       = 0;
     resize           = 0;
@@ -324,10 +310,10 @@ inline void nt_draw_zoom_box(AW_device *device, AWT_canvas *ntw) {
                      ntw->zoom_drag_ex, ntw->zoom_drag_ey);
 }
 
-void AWT_clip_expose(AW_window *aww,AWT_canvas *ntw,
-                     int left_border, int right_border,
-                     int top_border, int bottom_border,
-                     int hor_overlap, int ver_overlap)
+static void clip_expose(AW_window *aww,AWT_canvas *ntw,
+                        int left_border, int right_border,
+                        int top_border, int bottom_border,
+                        int hor_overlap, int ver_overlap)
 {
     AW_device *device = aww->get_device (AW_MIDDLE_AREA);
     device->set_filter(AW_SCREEN);
@@ -373,8 +359,8 @@ void AWT_canvas::refresh( void )
 {
     AW_device *device = this->aww->get_device (AW_MIDDLE_AREA);
     device->clear(-1);
-    AWT_clip_expose(this->aww, this, this->rect.l, this->rect.r,
-                    this->rect.t, this->rect.b,0,0);
+    clip_expose(this->aww, this, this->rect.l, this->rect.r,
+                this->rect.t, this->rect.b,0,0);
 }
 
 void AWT_resize_cb(AW_window *dummy,AWT_canvas *ntw, AW_CL)
@@ -386,7 +372,7 @@ void AWT_resize_cb(AW_window *dummy,AWT_canvas *ntw, AW_CL)
 
 
 
-void AWT_focus_cb(AW_window *dummy,AWT_canvas *ntw){
+static void focus_cb(AW_window *dummy,AWT_canvas *ntw){
     AWUSE(dummy);
     if (!ntw->gb_main) return;
     ntw->tree_disp->push_transaction(ntw->gb_main);
@@ -427,8 +413,7 @@ static bool handleZoomEvent(AW_window *aww, AWT_canvas *ntw, AW_device *device, 
     return handled;
 }
 
-void AWT_input_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2)
-{
+static void input_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2) {
     AWUSE(cd2);
     AW_event event;
     AW_device *device, *click_device;
@@ -576,7 +561,7 @@ void AWT_canvas::set_dragEndpoint(int dragx, int dragy) {
     }
 }
 
-void AWT_motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2) {
+static void motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2) {
     AWUSE(cd2);
     AW_event event;
     AW_device *device,*click_device;
@@ -710,26 +695,26 @@ void AWT_canvas::scroll( AW_window *dummy, int dx, int dy, bool dont_update_scro
 
         // x-stripe
         if((int)dx>0){
-            AWT_clip_expose(aww, this, screenwidth-dx, screenwidth,
-                            0, screenheight,
-                            -CLIP_OVERLAP , 0);
+            clip_expose(aww, this,
+                        screenwidth-dx, screenwidth, 0, screenheight,
+                        -CLIP_OVERLAP , 0);
         }
         if((int)dx<0){
-            AWT_clip_expose(aww, this,  0, -dx,
-                            0, screenheight,
-                            CLIP_OVERLAP,0);
+            clip_expose(aww, this,
+                        0, -dx, 0, screenheight,
+                        CLIP_OVERLAP,0);
         }
 
         // y-stripe
         if((int)dy>0){
-            AWT_clip_expose(aww, this, 0, screenwidth,
-                            screenheight-dy, screenheight,
-                            0,-CLIP_OVERLAP);
+            clip_expose(aww, this,
+                        0, screenwidth, screenheight-dy, screenheight,
+                        0,-CLIP_OVERLAP);
         }
         if((int)dy<0){
-            AWT_clip_expose(aww, this,  0, screenwidth,
-                            0,  -dy,
-                            0,  CLIP_OVERLAP);
+            clip_expose(aww, this,
+                        0, screenwidth, 0,  -dy,
+                        0,  CLIP_OVERLAP);
         }
     }
     else {          // redraw everything
@@ -741,9 +726,7 @@ void AWT_canvas::scroll( AW_window *dummy, int dx, int dy, bool dont_update_scro
     this->refresh();
 }
 
-void
-AWT_scroll_vert_cb( AW_window *aww, AWT_canvas* ntw, AW_CL cl1)
-{
+static void scroll_vert_cb( AW_window *aww, AWT_canvas* ntw, AW_CL cl1) {
     AWUSE(cl1);
     int delta_screen_y;
 
@@ -757,9 +740,7 @@ AWT_scroll_vert_cb( AW_window *aww, AWT_canvas* ntw, AW_CL cl1)
 
 }
 
-void
-AWT_scroll_hor_cb( AW_window *aww, AWT_canvas* ntw, AW_CL cl1)
-{
+static void scroll_hor_cb( AW_window *aww, AWT_canvas* ntw, AW_CL cl1) {
     AWUSE(cl1);
     int delta_screen_x;
 
@@ -792,14 +773,14 @@ AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, AWT_graphic *awd, AW_g
 
     AWT_resize_cb(aww, this, 0);
 
-    aww->set_expose_callback (AW_MIDDLE_AREA, (AW_CB)AWT_expose_cb, (AW_CL)this, 0);
-    aww->set_resize_callback (AW_MIDDLE_AREA,(AW_CB)AWT_resize_cb, (AW_CL)this, 0);
-    aww->set_input_callback (AW_MIDDLE_AREA,(AW_CB)AWT_input_event,(AW_CL)this, 0 );
-    aww->set_focus_callback ((AW_CB)AWT_focus_cb,(AW_CL)this, 0 );
+    aww->set_expose_callback(AW_MIDDLE_AREA, (AW_CB)AWT_expose_cb, (AW_CL)this, 0);
+    aww->set_resize_callback(AW_MIDDLE_AREA,(AW_CB)AWT_resize_cb, (AW_CL)this, 0);
+    aww->set_input_callback(AW_MIDDLE_AREA,(AW_CB)input_event,(AW_CL)this, 0 );
+    aww->set_focus_callback((AW_CB)focus_cb,(AW_CL)this, 0 );
 
-    aww->set_motion_callback (AW_MIDDLE_AREA,(AW_CB)AWT_motion_event,(AW_CL)this, 0 );
-    aww->set_horizontal_change_callback((AW_CB)AWT_scroll_hor_cb,(AW_CL)this, 0 );
-    aww->set_vertical_change_callback((AW_CB)AWT_scroll_vert_cb,(AW_CL)this, 0 );
+    aww->set_motion_callback(AW_MIDDLE_AREA,(AW_CB)motion_event,(AW_CL)this, 0 );
+    aww->set_horizontal_change_callback((AW_CB)scroll_hor_cb,(AW_CL)this, 0 );
+    aww->set_vertical_change_callback((AW_CB)scroll_vert_cb,(AW_CL)this, 0 );
 }
 
 // --------------------
