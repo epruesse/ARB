@@ -342,7 +342,7 @@ int main(int argc, char **argv)
             }
             delete align_sequence;
         }
-    } /* main loop */
+    }
 
     ali_message("Aligner terminated\n");
     return 0;

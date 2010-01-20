@@ -190,7 +190,7 @@ char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode)
             }
             for (; j > 0; j--)  *(bp++) = ' ';
         }
-    }           /* for */
+    }
     *bp = 0;
     return gen_nds_ms->buf;
 }

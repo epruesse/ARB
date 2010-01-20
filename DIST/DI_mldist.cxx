@@ -36,7 +36,7 @@ void di_mldist::givens(di_ml_matrix a,long i,long j,long n,double ctheta,double 
             a[k][i - 1] = d;
         }
     }
-}                               /* givens */
+}
 
 void di_mldist::coeffs(double x,double y,double *c,double *s,double accuracy)
 {
@@ -52,7 +52,7 @@ void di_mldist::coeffs(double x,double y,double *c,double *s,double accuracy)
         *c = x / root;
         *s = y / root;
     }
-}                               /* coeffs */
+}
 
 void di_mldist::tridiag(di_ml_matrix a,long n,double accuracy)
 {
@@ -68,7 +68,7 @@ void di_mldist::tridiag(di_ml_matrix a,long n,double accuracy)
             givens(eigvecs, i, j, n, c, s, true);
         }
     }
-}                               /* tridiag */
+}
 
 void di_mldist::shiftqr(di_ml_matrix a, long n, double accuracy)
 {
@@ -98,7 +98,7 @@ void di_mldist::shiftqr(di_ml_matrix a, long n, double accuracy)
                 a[j][j] += approx;
         } while (fabs(a[i - 1][i - 2]) > accuracy);
     }
-}                               /* shiftqr */
+}
 
 
 void di_mldist::qreigen(di_ml_matrix proba,long n)
@@ -122,7 +122,7 @@ void di_mldist::qreigen(di_ml_matrix proba,long n)
             proba[i][j] = sqrt(pi[j]) * eigvecs[i][j];
     }
     /* proba[i][j] is the value of U' times pi^(1/2) */
-}                               /* qreigen */
+}
 
 
 /* pameigen */
@@ -147,7 +147,7 @@ void di_mldist::predict(double /*tt*/, long nb1,long  nb2)
         dp += TEMP * q;
         d2p += TEMP * TEMP * q;
     }
-}                               /* predict */
+}
 
 void            di_mldist::build_predikt_table(int pos){
     int             b1, b2;
@@ -291,7 +291,7 @@ const char *di_mldist::makedists()
         matrix->set(i,j,fracchange * tt);
     }
     return 0;
-}                               /* makedists */
+}
 
 
 void di_mldist::clean_slopes(){

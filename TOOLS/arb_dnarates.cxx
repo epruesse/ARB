@@ -551,7 +551,7 @@ void getdata(tree *tr) {
                     anerror = true;
                     return;
                 }
-            }    /* if (firstpass) */
+            }
 
             j = basesread;
             while ((j < sites) && ((ch = getc(INFILE)) != EOF)
@@ -595,7 +595,7 @@ void getdata(tree *tr) {
             }
 
             while (ch != '\n' && ch != EOF) ch = getc(INFILE); /* flush line */
-        }                                                  /* next sequence */
+        }
         firstpass = false;
         basesread = basesnew;
         allread = (basesread >= sites);
@@ -1278,7 +1278,7 @@ void addElementLen(tree *tr, nodeptr p) {
         q = tr->nodep[n];
         if (tr->start->number > n)  tr->start = q;
         (tr->ntips)++;
-    }                                  /* End of tip processing */
+    }
 
     treeNeedCh(':', "in");             if (anerror)  return;
     branch = processLength();          if (anerror)  return;

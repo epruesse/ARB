@@ -134,7 +134,7 @@ consensus_result SQ_GroupData_RNA::SQ_calc_consensus(const char *sequence) const
             // unhandled character
             break;
 
-        } //end fill up current
+        }
 
         int *cs = consensus[i].i;
         double sum = (double) (cs[0] + cs[1] + cs[2] + cs[3] + cs[4] + cs[5]);
@@ -144,8 +144,8 @@ consensus_result SQ_GroupData_RNA::SQ_calc_consensus(const char *sequence) const
             if (currentj > 0) {
                 if (cs[j] > currentj) {
                     cr.conformity += (double) (cs[j] - currentj) / sum;
-                } else // == if ( cs[j] <= currentj )
-                {
+                }
+                else {
                     cr.deviation += current[j];
                 }
             }

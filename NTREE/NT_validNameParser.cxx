@@ -84,13 +84,13 @@ namespace validNames{
 
 
         for( TokL::iterator it = tokenLP->begin();it != tokenLP->end(); it ++, ssp++)
-        {//begin of token iteration
+        {
             if(isUpperCase(*it)) {
                 isGenus = true;
 #if defined(DUMP)
                 std::cout << "genus detected" << std::endl;
 #endif // DUMP
-            } // for genus descriptions
+            }
 
 
             else{ // begin operators
@@ -157,12 +157,12 @@ namespace validNames{
                         }
                     }
                 }
-            } // end operators
-        } // end of token iteration
+            }
+        }
 
 
 
-        if(isGenus) { // for genus descriptions
+        if(isGenus) {
 #if defined(DUMP)
             std::cout << " GENUS description found " << std::endl;
 #endif // DUMP
@@ -217,9 +217,8 @@ namespace validNames{
                     }
                 }
             }
-
-        } // end of genus part
-        else{ // begin of  species part
+        }
+        else{
 
             //       just fancy experimental , maybe not 100% correct but looks good
             if (!(((sspPos[0] == 0) || (sspPos[0] == 2)) && (((sspPos[1] > 4)&&(sspPos[1]< 9))||(sspPos[1]==0))))
@@ -295,10 +294,10 @@ namespace validNames{
                             actType = NOTYPE;
                         }
 
-                    }// end else isHomo
-                }// end else isHetero
-            }//end else is Valid
-        }// end of species part
+                    }
+                }
+            }
+        }
 
 
 #if defined(DUMP)
@@ -309,7 +308,7 @@ namespace validNames{
         Desco actDesc(actType, isCorr, descNames[0],descNames[1],descNames[2],descNames[3],descNames[4],descNames[5] );
         delete tokenLP;
         return actDesc;
-    }; // end determineType
+    }
 
 
     string Desco::getFirstName(){
@@ -323,7 +322,7 @@ namespace validNames{
 
 
         return tmp;
-    } // end Desco::getFirstName()
+    }
 
     string Desco::getSecondName(){
         string tmp = secondgen;
@@ -334,7 +333,7 @@ namespace validNames{
             }
         }
         return tmp;
-    } // Desco::getSecondName()
+    }
 
 
     bool isUpperCase(const string& input)
@@ -345,7 +344,4 @@ namespace validNames{
         }
         return true;
     }
-
-
-}  // end namespace
-// test
+}

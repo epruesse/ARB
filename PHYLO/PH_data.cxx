@@ -263,13 +263,13 @@ GB_ERROR PHDATA::calculate_matrix(const char */*cancel*/,double /*alpha*/,PH_TRA
                                 distance_table->get(reference_table[(unsigned char)sequence_bufferi[column]],
                                                     reference_table[(unsigned char)sequence_bufferj[column]]));
                     number_of_comparisons++;
-                } //if
-            } //for column
+                }
+            }
             if (number_of_comparisons) {
                 matrix->set(i, j, (matrix->get(i, j) / number_of_comparisons));
             }
-        } //for j
-    } //for i
+        }
+    }
     delete sequence_bufferi;
     delete          sequence_bufferj;
     aw_closestatus();

@@ -1350,7 +1350,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             AWMIMT("pt_server_admin",   "PT_SERVER Admin",           "A", "probeadmin.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_probe_admin_window, (AW_CL)is_genome_db);
         }
 
-    } // clone
+    }
 
     // -------------
     //      Tree
@@ -1533,7 +1533,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             SEP________________________SEP();
             AWMIMT("save_props",     "Save properties (in ~/.arb_prop/ntree.arb)",  "S","savedef.hlp",AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
         }
-    } // !clone
+    }
 
     awm->insert_help_topic("How to use help", "H", "help.hlp",      AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"help.hlp",      0);
     awm->insert_help_topic("ARB help",        "A", "arb.hlp",       AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb.hlp",       0);

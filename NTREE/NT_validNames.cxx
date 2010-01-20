@@ -92,7 +92,7 @@ void NT_importValidNames(AW_window*, AW_CL, AW_CL) {
             else {
                 tmpString += *inIter;
             }
-        } // closes file automatically
+        }
         if (!tmpString.empty()) fileContent.push_back(tmpString); // if last line doesn't end with \n
 
         StrL::iterator it;

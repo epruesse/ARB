@@ -339,7 +339,7 @@ void PS_find_probe_for_sets( const PS_NodePtr _ps_node, PS_CandidatePtr _candida
                     if (__VERBOSE) printf( "%8lup %8luc\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b", __PROBES_COUNTER, __CANDIDATES_COUNTER ); fflush( stdout );
                 }
                 fflush( stdout );
-            } // if status (of addChild)
+            }
         }
     }
 

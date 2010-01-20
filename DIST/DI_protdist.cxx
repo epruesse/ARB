@@ -204,7 +204,7 @@ void di_protdist::cats(di_cattype      wcat)
         if (cat[(long) b - (long) ala] == 3)
             cat[(long) b - (long) ala] = 2;
     }
-}                               /* cats */
+}
 
 
 void di_protdist::maketrans() {
@@ -285,7 +285,7 @@ void di_protdist::maketrans() {
             prob[i][j] /= sqrt(pi[i] * pi[j]);
     }
     /* computes pi^(1/2)*B*pi^(-1/2)  */
-}                               /* maketrans */
+}
 
 void di_protdist::code()
 {
@@ -373,7 +373,7 @@ void di_protdist::code()
         trans[1][0][2] = thr;
         trans[2][0][2] = met;
     }
-}                               /* code */
+}
 
 void di_protdist::transition()
 {
@@ -395,7 +395,7 @@ void di_protdist::transition()
         printf(" THESE BASE FREQUENCIES\n");
         exit(-1);
     }
-}                               /* transition */
+}
 
 void di_protdist::givens(di_aa_matrix a,long i,long j,long n,double ctheta,double stheta, bool left)
 {
@@ -415,7 +415,7 @@ void di_protdist::givens(di_aa_matrix a,long i,long j,long n,double ctheta,doubl
             a[k][i - 1] = d;
         }
     }
-}                               /* givens */
+}
 
 void di_protdist::coeffs(double x,double y,double *c,double *s,double accuracy)
 {
@@ -431,7 +431,7 @@ void di_protdist::coeffs(double x,double y,double *c,double *s,double accuracy)
         *c = x / root;
         *s = y / root;
     }
-}                               /* coeffs */
+}
 
 void di_protdist::tridiag(di_aa_matrix a,long n,double accuracy)
 {
@@ -447,7 +447,7 @@ void di_protdist::tridiag(di_aa_matrix a,long n,double accuracy)
             givens(eigvecs, i, j, n, c, s, true);
         }
     }
-}                               /* tridiag */
+}
 
 void di_protdist::shiftqr(di_aa_matrix a, long n, double accuracy)
 {
@@ -477,7 +477,7 @@ void di_protdist::shiftqr(di_aa_matrix a, long n, double accuracy)
                 a[j][j] += approx;
         } while (fabs(a[i - 1][i - 2]) > accuracy);
     }
-}                               /* shiftqr */
+}
 
 
 void di_protdist::qreigen(di_aa_matrix proba,long n)
@@ -501,7 +501,7 @@ void di_protdist::qreigen(di_aa_matrix proba,long n)
             proba[i][j] = sqrt(pi[j]) * eigvecs[i][j];
     }
     /* proba[i][j] is the value of U' times pi^(1/2) */
-}                               /* qreigen */
+}
 
 
 void di_protdist::pameigen()
@@ -510,7 +510,7 @@ void di_protdist::pameigen()
     memcpy(prob, pamprobs, sizeof(pamprobs));
     memcpy(eig, pameigs, sizeof(pameigs));
     fracchange = 0.01;
-}                               /* pameigen */
+}
 
 void di_protdist::build_exptteig(double tt){
     int m;
@@ -532,7 +532,7 @@ void di_protdist::predict(double /*tt*/, long nb1,long  nb2)
         dp += TEMP * q;
         d2p += TEMP * TEMP * q;
     }
-}                               /* predict */
+}
 
 void            di_protdist::build_predikt_table(int pos){
     int             b1, b2;
@@ -622,10 +622,9 @@ void            di_protdist::build_predikt_table(int pos){
                     akt_infs[0][b1][b2] = 1;
                     akt_infs[0][b2][b1] = 1;
                 }
-            }//if
-        }// b2
-
-    } //for b1
+            }
+        }
+    }
 }
 
 int di_protdist::tt_2_pos(double tt) {
@@ -786,7 +785,7 @@ const char *di_protdist::makedists()
         }
     }
     return 0;
-}                               /* makedists */
+}
 
 
 void di_protdist::clean_slopes(){
