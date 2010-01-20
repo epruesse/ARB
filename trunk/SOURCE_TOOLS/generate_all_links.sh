@@ -12,8 +12,31 @@ finderr() {
     false
 }
 
+may_create_link() {
+    # $1 is the link to create
+    if [ -h $1 ]; then
+        if [ -e $1 ]; then
+            # points to sth existing, assume link already present and valid
+            true
+        else
+            # points to nothing
+            finderr $1 "Note: Symlink '$1' pointed to nowhere -- removing wrong link"
+            ls -al $1
+            rm $1 # remove wrong link
+            true # allow regeneration
+        fi
+    else
+        if [ -e $1 ]; then
+            finderr $1 "$1 is in the way (and is not a link)"
+        else
+            true # link simply missing, allow creation
+        fi
+    fi
+}
+
 symlink_maybe_no_target() {
-    test -h $2 || ln -sf $1 $2 || finderr $2 "Failed to link '$1->$2'"
+    may_create_link $2 && 
+    ( test -h $2 || ln -sf $1 $2 || finderr $2 "Failed to link '$1->$2'" )
 }
 
 symlink_typed() {
@@ -37,9 +60,6 @@ symlink_typed() {
 
     (test -e $DIR/$1 || finderr $2 "Target '$DIR/$1 does not exists (anymore)" ) &&
     (test $3 $DIR/$1 || finderr $2 "Target '$DIR/$1 has wrong type (expected $3)" ) &&
-    (test -e $2 || (test -h $2 &&
-                    (finderr $2 "Note: Symlink '$2' pointed to nowhere -- removing wrong link";ls -al $2;rm $2;true)
-                    ) || true) &&
     symlink_maybe_no_target $1 $2
 }
 
@@ -80,13 +100,10 @@ makedir lib/help &&
 # Liblink
 
 symlink_maybe_no_target ../ARBDB/libARBDB.so LIBLINK/libARBDB.so &&
-symlink_maybe_no_target ../ARBDB/libARBDB.so.2.0 LIBLINK/libARBDB.so.2.0 &&
 symlink_maybe_no_target ../AWT/libAWT.a LIBLINK/libAWT.a &&
 symlink_maybe_no_target ../AWT/libAWT.so LIBLINK/libAWT.so &&
-symlink_maybe_no_target ../AWT/libAWT.so.2.0 LIBLINK/libAWT.so.2.0 &&
 symlink_maybe_no_target ../WINDOW/libAW.a LIBLINK/libAW.a &&
 symlink_maybe_no_target ../WINDOW/libAW.so LIBLINK/libAW.so &&
-symlink_maybe_no_target ../WINDOW/libAW.so.2.0 LIBLINK/libAW.so.2.0 &&
 
 # Motif stuff
 (test -z $MOTIF_LIBPATH || symlink_file $MOTIF_LIBPATH LIBLINK/libXm.so.3) &&
