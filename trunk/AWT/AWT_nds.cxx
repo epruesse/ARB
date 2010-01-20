@@ -769,7 +769,7 @@ char *make_node_text_list(GBDATA * gbd, FILE *fp)
             default:
                 sprintf(bp,"'default:' make_node_text_list!");
                                  break;
-        }/*switch*/
+        }
 
         /*** get fieldname ***/
         strcpy(fieldname, awt_nds_ms->dkeys[i]);

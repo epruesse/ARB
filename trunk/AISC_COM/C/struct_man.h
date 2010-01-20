@@ -27,7 +27,7 @@ extern "C" {
 
 /* struct_man.c */
 
-struct aisc_hash_node; 
+struct aisc_hash_node;
 
 struct aisc_hash_node **aisc_init_hash P_((int size));
 int aisc_hash P_((char *key, int size));

@@ -300,8 +300,7 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
                             }
                         }
 
-                    } // end if ('2')
-
+                    }
                     else if (ret[0]=='4') { // text
                         int align;
                         int fontnr   = -1;
@@ -393,7 +392,7 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
                             }
                         }
 
-                    } // end if ('4')
+                    }
 
                     if (!got_nextline) {
                         ret = fgets(buffer,MAX_XFIG_LENGTH,file);  ++lineNumber;

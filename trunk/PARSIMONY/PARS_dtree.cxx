@@ -422,7 +422,7 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
                     }
                 }
                 GB_begin_transaction(gb_main);
-            } /* if type */
+            }
             break;
         case AWT_MODE_KERNINGHAN:
             if(type==AW_Mouse_Press){
@@ -446,7 +446,7 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
                         break;
                 }
                 GB_begin_transaction(gb_main);
-            } /* if type */
+            }
             break;
         case AWT_MODE_OPTIMIZE:
             if(type==AW_Mouse_Press){
@@ -470,7 +470,7 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
                         break;
                 }
                 GB_begin_transaction(gb_main);
-            } /* if type */
+            }
             break;
 #endif // NNI_MODES
 

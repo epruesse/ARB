@@ -597,7 +597,7 @@ GB_ERROR ED4_Edit_String::command( AW_key_mod keymod, AW_key_code keycode, char 
                                 n = 0;
                             }
                         }
-                    } // end-while
+                    }
                     break;
                 }
                 
