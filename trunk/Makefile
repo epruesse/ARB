@@ -317,7 +317,6 @@ endif
 
 # other used tools
 
-CTAGS := etags
 ifdef DARWIN
 	XMKMF := /usr/X11/bin/xmkmf
 else
@@ -1191,19 +1190,17 @@ tags:
 	$(MAKE) tags_$(MACH)
 	mv $(TAGFILE_TMP) $(TAGFILE)
 
-tags_LINUX: tags2
-tags_SUN5: tags1
+tags_LINUX: tags_ctags
 
-tags1:
+tags_etags:
 # first search class definitions
-	$(CTAGS) -f $(TAGFILE_TMP)          --language=none "--regex=/^[ \t]*class[ \t]+\([^ \t]+\)/" `find . -name '*.[ch]xx' -type f`
-	$(CTAGS) -f $(TAGFILE_TMP) --append --language=none "--regex=/\([^ \t]+\)::/" `find . -name '*.[ch]xx' -type f`
+	etags -f $(TAGFILE_TMP)          --language=none "--regex=/^[ \t]*class[ \t]+\([^ \t]+\)/" `find . -name '*.[ch]xx' -type f`
+	etags -f $(TAGFILE_TMP) --append --language=none "--regex=/\([^ \t]+\)::/" `find . -name '*.[ch]xx' -type f`
 # then append normal tags (headers first)
-	$(CTAGS) -f $(TAGFILE_TMP) --append --members ARBDB/*.h `find . -name '*.[h]xx' -type f`
-	$(CTAGS) -f $(TAGFILE_TMP) --append ARBDB/*.c `find . -name '*.[c]xx' -type f`
+	etags -f $(TAGFILE_TMP) --append --members ARBDB/*.h `find . -name '*.[h]xx' -type f`
+	etags -f $(TAGFILE_TMP) --append ARBDB/*.c `find . -name '*.[c]xx' -type f`
 
-# if the above tag creation does not work -> try tags2:
-tags2:
+tags_ctags:
 	ctags -f $(TAGFILE_TMP)    -e --c-types=cdt --sort=no `find . \( -name '*.[ch]xx' -o -name "*.[ch]" \) -type f | grep -v -i perl5`
 	ctags -f $(TAGFILE_TMP) -a -e --c-types=f-tvx --sort=no `find . \( -name '*.[ch]xx' -o -name "*.[ch]" \) -type f | grep -v -i perl5`
 
