@@ -14,14 +14,17 @@ finderr() {
 
 may_create_link() {
     # $1 is the link to create
+    # $2 ==1 -> warn about links to nowhere
     if [ -h $1 ]; then
         if [ -e $1 ]; then
             # points to sth existing, assume link already present and valid
             true
         else
             # points to nothing
-            finderr $1 "Note: Symlink '$1' pointed to nowhere -- removing wrong link"
-            ls -al $1
+            if [ $2 = 1 ]; then
+                finderr $1 "Note: Symlink '$1' pointed to nowhere -- removing wrong link"
+                ls -al $1
+            fi
             rm $1 # remove wrong link
             true # allow regeneration
         fi
@@ -34,9 +37,14 @@ may_create_link() {
     fi
 }
 
+create_symlink() {
+    # $1 target
+    # $2 link
+    test -h $2 || ln -sf $1 $2 || finderr $2 "Failed to link '$1->$2'"
+}
+
 symlink_maybe_no_target() {
-    may_create_link $2 && 
-    ( test -h $2 || ln -sf $1 $2 || finderr $2 "Failed to link '$1->$2'" )
+    may_create_link $2 0 && create_symlink $1 $2
 }
 
 symlink_typed() {
@@ -60,7 +68,8 @@ symlink_typed() {
 
     (test -e $DIR/$1 || finderr $2 "Target '$DIR/$1 does not exists (anymore)" ) &&
     (test $3 $DIR/$1 || finderr $2 "Target '$DIR/$1 has wrong type (expected $3)" ) &&
-    symlink_maybe_no_target $1 $2
+    
+    may_create_link $2 1 && create_symlink $1 $2
 }
 
 symlink_dir() {
