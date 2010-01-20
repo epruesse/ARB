@@ -1209,11 +1209,18 @@ tags2:
 
 #********************************************************************************
 
-links: SOURCE_TOOLS/generate_all_links.stamp
+LINKSTAMP=SOURCE_TOOLS/generate_all_links.stamp
 
-SOURCE_TOOLS/generate_all_links.stamp: SOURCE_TOOLS/generate_all_links.sh
+links: $(LINKSTAMP)
+
+$(LINKSTAMP): SOURCE_TOOLS/generate_all_links.sh
 	SOURCE_TOOLS/generate_all_links.sh
-	touch SOURCE_TOOLS/generate_all_links.stamp
+	touch $(LINKSTAMP)
+
+redo_links:
+	find . -type l -exec rm {} \;
+	@-rm $(LINKSTAMP)
+	$(MAKE) links
 
 gde:		GDE/GDE.dummy
 GDE:		gde
@@ -1312,7 +1319,7 @@ clean2: $(ARCHS:.a=.clean) \
 	rm -f *.last_gcc
 
 # links are needed for cleanup
-clean: links
+clean: redo_links
 	$(MAKE) clean2
 
 # 'relocated' is about 50% faster than 'rebuild'
