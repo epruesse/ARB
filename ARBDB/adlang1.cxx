@@ -99,23 +99,23 @@ static int gbl_param_bit(const char *param_name, int def, const char *help_text,
 #define GBL_PARAM_TYPE(type, var, param_name, def, help_text) type  var = gbl_param_##type(param_name, def, help_text, &params, &var)
 #define GBL_STRUCT_PARAM_TYPE(type, strct, member, param_name, def, help_text) strct.member = gbl_param_##type(param_name, def, help_text, &params, &strct.member)
 
-#define GBL_PARAM_INT(var, param_name, def, help_text) GBL_PARAM_TYPE(int,       var, param_name, def, help_text)
-#define GBL_PARAM_CHAR(var, param_name, def, help_text) GBL_PARAM_TYPE(char,     var, param_name, def, help_text)
-#define GBL_PARAM_UINT(var, param_name, def, help_text) GBL_PARAM_TYPE(uint,     var, param_name, def, help_text)
-#define GBL_PARAM_STRING(var, param_name, def, help_text) GBL_PARAM_TYPE(String, var, param_name, def, help_text)
-#define GBL_PARAM_BIT(var, param_name, def, help_text) GBL_PARAM_TYPE(bit,       var, param_name, def, help_text)
+#define GBL_PARAM_INT(   var, param_name, def, help_text)GBL_PARAM_TYPE(int,    var, param_name, def, help_text)
+#define GBL_PARAM_CHAR(  var, param_name, def, help_text)GBL_PARAM_TYPE(char,   var, param_name, def, help_text)
+#define GBL_PARAM_UINT(  var, param_name, def, help_text)GBL_PARAM_TYPE(uint,   var, param_name, def, help_text)
+#define GBL_PARAM_STRING(var, param_name, def, help_text)GBL_PARAM_TYPE(String, var, param_name, def, help_text)
+#define GBL_PARAM_BIT(   var, param_name, def, help_text)GBL_PARAM_TYPE(bit,    var, param_name, def, help_text)
 
-#define GBL_STRUCT_PARAM_INT(strct, member, param_name, def, help_text) GBL_STRUCT_PARAM_TYPE(int,       strct, member, param_name, def, help_text)
-#define GBL_STRUCT_PARAM_CHAR(strct, member, param_name, def, help_text) GBL_STRUCT_PARAM_TYPE(char,     strct, member, param_name, def, help_text)
-#define GBL_STRUCT_PARAM_UINT(strct, member, param_name, def, help_text) GBL_STRUCT_PARAM_TYPE(uint,     strct, member, param_name, def, help_text)
+#define GBL_STRUCT_PARAM_INT(   strct, member, param_name, def, help_text) GBL_STRUCT_PARAM_TYPE(int,    strct, member, param_name, def, help_text)
+#define GBL_STRUCT_PARAM_CHAR(  strct, member, param_name, def, help_text) GBL_STRUCT_PARAM_TYPE(char,   strct, member, param_name, def, help_text)
+#define GBL_STRUCT_PARAM_UINT(  strct, member, param_name, def, help_text) GBL_STRUCT_PARAM_TYPE(uint,   strct, member, param_name, def, help_text)
 #define GBL_STRUCT_PARAM_STRING(strct, member, param_name, def, help_text) GBL_STRUCT_PARAM_TYPE(String, strct, member, param_name, def, help_text)
-#define GBL_STRUCT_PARAM_BIT(strct, member, param_name, def, help_text) GBL_STRUCT_PARAM_TYPE(bit,       strct, member, param_name, def, help_text)
+#define GBL_STRUCT_PARAM_BIT(   strct, member, param_name, def, help_text) GBL_STRUCT_PARAM_TYPE(bit,    strct, member, param_name, def, help_text)
 
-#define GBL_TRACE_PARAMS(argc, argv) { \
+#define GBL_TRACE_PARAMS(argc, argv) {                                  \
         GB_ERROR def_error = trace_params(argc, argv, params, args->command); \
         if (def_error) { GBL_END_PARAMS; return def_error; }; };
 
-#define GBL_END_PARAMS { struct gbl_param *_gblp; while (params) { \
+#define GBL_END_PARAMS { struct gbl_param *_gblp; while (params) {      \
                              _gblp = params; params = params->next;     \
                              free((char *)_gblp); } };
 

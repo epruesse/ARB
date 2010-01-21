@@ -367,10 +367,10 @@ public:
     AW_awar *map(AW_awar *dest); /* map to new address */
     AW_awar *unmap();           /* map to original address */
 
-    void get(char **p_string)   { freeset(*p_string, read_string()); } /* deletes existing targets !!! */
-    void get(long *p_int)       { *p_int =  (long)read_int(); }
-    void get(double *p_double) { *p_double =   read_float(); }
-    void get(float *p_float)    { *p_float = read_float(); }
+    void get(char **p_string)  { freeset(*p_string, read_string()); } /* deletes existing targets !!! */
+    void get(long *p_int)      { *p_int = (long)read_int(); }
+    void get(double *p_double) { *p_double = read_float(); }
+    void get(float *p_float)   { *p_float = read_float(); }
 
     AW_VARIABLE_TYPE get_type();
 
@@ -424,22 +424,23 @@ class Awar_Callback_Info {
     void init (AW_root *awr_, const char *awar_name_, Awar_CB2 callback_, AW_CL cd1_, AW_CL cd2_);
 
 public:
-    Awar_Callback_Info(AW_root *awr_, const char *awar_name_, Awar_CB2 callback_, AW_CL cd1_, AW_CL cd2_)   { init(awr_, awar_name_, callback_, cd1_, cd2_); }
-    Awar_Callback_Info(AW_root *awr_, const char *awar_name_, Awar_CB1 callback_, AW_CL cd1_)               { init(awr_, awar_name_, (Awar_CB2)callback_, cd1_, 0); }
-    Awar_Callback_Info(AW_root *awr_, const char *awar_name_, Awar_CB0 callback_)                           { init(awr_, awar_name_, (Awar_CB2)callback_, 0, 0); }
+    Awar_Callback_Info(AW_root *awr_, const char *awar_name_, Awar_CB2 callback_, AW_CL cd1_, AW_CL cd2_) { init(awr_, awar_name_, callback_, cd1_, cd2_); }
+    Awar_Callback_Info(AW_root *awr_, const char *awar_name_, Awar_CB1 callback_, AW_CL cd1_)             { init(awr_, awar_name_, (Awar_CB2)callback_, cd1_, 0); }
+    Awar_Callback_Info(AW_root *awr_, const char *awar_name_, Awar_CB0 callback_)                         { init(awr_, awar_name_, (Awar_CB2)callback_, 0, 0); }
 
     ~Awar_Callback_Info() {
         delete awar_name;
         delete org_awar_name;
     }
 
-    void add_callback() { awr->awar(awar_name)->add_callback(callback, cd1, cd2); }
+    void add_callback()    { awr->awar(awar_name)->add_callback(callback, cd1, cd2); }
     void remove_callback() { awr->awar(awar_name)->remove_callback(callback, cd1, cd2); }
 
     void remap(const char *new_awar);
 
-    const char *get_awar_name() const { return awar_name; }
+    const char *get_awar_name() const     { return awar_name; }
     const char *get_org_awar_name() const { return org_awar_name; }
+
     AW_root *get_root() { return awr; }
 };
 

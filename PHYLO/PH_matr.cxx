@@ -95,14 +95,14 @@ void ph_calculate_matrix_cb(AW_window *aww, AW_CL cb1, AW_CL cb2) {
     printf("\ntransformation: %s", transformation);
     printf("\ncancel: %s\n", cancel);
     
-    if      (!strcmp(transformation, PH_TRANSFORMATION_JUKES_CANTOR_STRING)) trans = PH_TRANSFORMATION_JUKES_CANTOR;
-    else if (!strcmp(transformation, PH_TRANSFORMATION_KIMURA_STRING)) trans = PH_TRANSFORMATION_KIMURA;
-    else if (!strcmp(transformation, PH_TRANSFORMATION_TAJIMA_NEI_STRING)) trans = PH_TRANSFORMATION_TAJIMA_NEI;
+    if      (!strcmp(transformation, PH_TRANSFORMATION_JUKES_CANTOR_STRING))        trans = PH_TRANSFORMATION_JUKES_CANTOR;
+    else if (!strcmp(transformation, PH_TRANSFORMATION_KIMURA_STRING))              trans = PH_TRANSFORMATION_KIMURA;
+    else if (!strcmp(transformation, PH_TRANSFORMATION_TAJIMA_NEI_STRING))          trans = PH_TRANSFORMATION_TAJIMA_NEI;
     else if (!strcmp(transformation, PH_TRANSFORMATION_TAJIMA_NEI_PAIRWISE_STRING)) trans = PH_TRANSFORMATION_TAJIMA_NEI_PAIRWISE;
-    else if (!strcmp(transformation, PH_TRANSFORMATION_BANDELT_STRING)) trans = PH_TRANSFORMATION_BANDELT;
-    else if (!strcmp(transformation, PH_TRANSFORMATION_BANDELT_JC_STRING)) trans = PH_TRANSFORMATION_BANDELT_JC;
-    else if (!strcmp(transformation, PH_TRANSFORMATION_BANDELT2_STRING)) trans = PH_TRANSFORMATION_BANDELT2;
-    else if (!strcmp(transformation, PH_TRANSFORMATION_BANDELT2_JC_STRING)) trans = PH_TRANSFORMATION_BANDELT2_JC;
+    else if (!strcmp(transformation, PH_TRANSFORMATION_BANDELT_STRING))             trans = PH_TRANSFORMATION_BANDELT;
+    else if (!strcmp(transformation, PH_TRANSFORMATION_BANDELT_JC_STRING))          trans = PH_TRANSFORMATION_BANDELT_JC;
+    else if (!strcmp(transformation, PH_TRANSFORMATION_BANDELT2_STRING))            trans = PH_TRANSFORMATION_BANDELT2;
+    else if (!strcmp(transformation, PH_TRANSFORMATION_BANDELT2_JC_STRING))         trans = PH_TRANSFORMATION_BANDELT2_JC;
 
     GB_ERROR error = PHDATA::ROOT->calculate_matrix(".-", alpha, trans);
 

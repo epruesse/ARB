@@ -10,8 +10,7 @@
 
 extern GBDATA *GLOBAL_gb_main;
 
-void fields_vars_callback(AW_root *aw_root)
-{
+void fields_vars_callback(AW_root *aw_root) {
     GB_push_transaction(gb_main);
     char    *use = aw_root->awar("tmp/fields/use")->read_string();
     GBDATA *ali_cont = GBT_get_fields(gb_main, use);
@@ -23,11 +22,11 @@ void fields_vars_callback(AW_root *aw_root)
         aw_root->awar("tmp/fields/security")->unmap();
     }
     else {
-        GBDATA *ali_name =  GB_search(ali_cont, "fields_name",  GB_STRING);
-        GBDATA *ali_father =    GB_search(ali_cont, "fields_father", GB_STRING);
-        GBDATA *ali_type =  GB_search(ali_cont, "fields_type",  GB_INT);
-        GBDATA *ali_security =  GB_search(ali_cont, "fields_write_security", GB_INT);
-        GBDATA *ali_rem =   GB_search(ali_cont, "fields_rem",   GB_STRING);
+        GBDATA *ali_name     = GB_search(ali_cont, "fields_name",           GB_STRING);
+        GBDATA *ali_father   = GB_search(ali_cont, "fields_father",         GB_STRING);
+        GBDATA *ali_type     = GB_search(ali_cont, "fields_type",           GB_INT);
+        GBDATA *ali_security = GB_search(ali_cont, "fields_write_security", GB_INT);
+        GBDATA *ali_rem      = GB_search(ali_cont, "fields_rem",            GB_STRING);
 
         aw_root->awar("tmp/fields/fields_name")->map((void*)ali_name);
         aw_root->awar("tmp/fields/fields_type")->map((void*)ali_type);
@@ -39,10 +38,8 @@ void fields_vars_callback(AW_root *aw_root)
     free(use);
 }
 
-void create_fields_vars(AW_root *aw_root)
-{
+void create_fields_vars(AW_root *aw_root) {
     GB_push_transaction(gb_main);
-
 
     aw_root->awar_string("tmp/fields/use",         "", aw_def);
     aw_root->awar_string("tmp/fields/fields_name", "", aw_def);
@@ -104,10 +101,8 @@ AW_window *create_fields_window(AW_root *root, AW_default aw_def)
 
     aws->at("aligned");
     aws->create_option_menu("tmp/fields/aligned");
-    aws->callback(ed_al_check_len_cb);
-    aws->insert_default_option("not formatted", "n", 0);
-    aws->callback(ed_al_align_cb);
-    aws->insert_option("formatted", "j", 1);
+    aws->callback(ed_al_check_len_cb); aws->insert_default_option("not formatted", "n", 0);
+    aws->callback(ed_al_align_cb);     aws->insert_option        ("formatted",     "j", 1);
     aws->update_option_menu();
 
     aws->at("len");
@@ -123,20 +118,13 @@ AW_window *create_fields_window(AW_root *root, AW_default aw_def)
 
     aws->at("security");
     aws->create_option_menu("tmp/fields/security");
-    aws->callback(ed_al_check_len_cb);
-    aws->insert_option("0", "0", 0);
-    aws->callback(ed_al_check_len_cb);
-    aws->insert_option("1", "1", 1);
-    aws->callback(ed_al_check_len_cb);
-    aws->insert_option("2", "2", 2);
-    aws->callback(ed_al_check_len_cb);
-    aws->insert_option("3", "3", 3);
-    aws->callback(ed_al_check_len_cb);
-    aws->insert_option("4", "4", 4);
-    aws->callback(ed_al_check_len_cb);
-    aws->insert_option("5", "5", 5);
-    aws->callback(ed_al_check_len_cb);
-    aws->insert_default_option("6", "6", 6);
+    aws->callback(ed_al_check_len_cb); aws->insert_option("0", "0", 0);
+    aws->callback(ed_al_check_len_cb); aws->insert_option("1", "1", 1);
+    aws->callback(ed_al_check_len_cb); aws->insert_option("2", "2", 2);
+    aws->callback(ed_al_check_len_cb); aws->insert_option("3", "3", 3);
+    aws->callback(ed_al_check_len_cb); aws->insert_option("4", "4", 4);
+    aws->callback(ed_al_check_len_cb); aws->insert_option("5", "5", 5);
+    aws->callback(ed_al_check_len_cb); aws->insert_default_option("6", "6", 6);
     aws->update_option_menu();
 
     aws->at("rem");

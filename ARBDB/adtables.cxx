@@ -86,8 +86,9 @@ GBDATA *GBT_open_table(GBDATA *gb_table_root, const char *table_name, bool read_
     GBDATA *gb_table_entries;
     GBDATA *gb_table_fields;
     GBDATA *gb_table_name_field;
+    
     GB_MAIN_TYPE *Main = GB_MAIN(gb_table_root);
-    gb_table = (GBDATA *)GBS_read_hash(Main->table_hash, table_name);
+    gb_table           = (GBDATA *)GBS_read_hash(Main->table_hash, table_name);
     if (gb_table) return gb_table;
 
     gb_table_data = GB_search(gb_table_root, "table_data", GB_CREATE_CONTAINER);
@@ -98,15 +99,25 @@ GBDATA *GBT_open_table(GBDATA *gb_table_root, const char *table_name, bool read_
     if (read_only) return NULL;
 
     // now lets create the table
-    gb_table = GB_create_container(gb_table_data, "table");     GB_add_callback(gb_table, GB_CB_DELETE, g_bt_table_deleted, 0);
+    gb_table = GB_create_container(gb_table_data, "table");
+    GB_add_callback(gb_table, GB_CB_DELETE, g_bt_table_deleted, 0);
+
     gb_table_name = GB_create(gb_table, "name", GB_STRING);
+    GB_write_string(gb_table_name, table_name);
+    GB_write_security_levels(gb_table_name, 0, 7, 7); // neither delete nor change the name
+    
     gb_table_description = GB_create(gb_table, "description", GB_STRING);
-    GB_write_string(gb_table_name, table_name);         GB_write_security_levels(gb_table_name, 0, 7, 7); // neither delete nor change the name
     GB_write_string(gb_table_description, "No description");
-    gb_table_entries = GB_create_container(gb_table, "entries"); GB_write_security_levels(gb_table_entries, 0, 0, 7); // never delete this
-    gb_table_fields = GB_create_container(gb_table, "fields");  GB_write_security_levels(gb_table_fields, 0, 0, 7); // not intended to be deleted
+
+    gb_table_entries = GB_create_container(gb_table, "entries");
+    GB_write_security_levels(gb_table_entries, 0, 0, 7); // never delete this
+
+    gb_table_fields = GB_create_container(gb_table, "fields");
+    GB_write_security_levels(gb_table_fields, 0, 0, 7); // not intended to be deleted
+
     gb_table_name_field = GBT_open_table_field(gb_table, "name", GB_STRING); // for the id
     GB_write_security_levels(gb_table_name_field, 0, 0, 7); // never delete name field
+
     return gb_table;
 }
 
@@ -213,16 +224,24 @@ GBDATA *GBT_open_table_field(GBDATA *gb_table, const char *fieldname, GB_TYPES t
     GBDATA *gb_table_field_type;
     GBDATA *gb_table_field_description;
     GBDATA *gb_fields;
+    
     if (gb_table_field) return gb_table_field;
 
-    gb_fields = GB_entry(gb_table, "fields");
-    gb_table_field = GB_create_container(gb_fields, "field");
+    gb_fields           = GB_entry(gb_table, "fields");
+    gb_table_field      = GB_create_container(gb_fields, "field");
     gb_table_field_name = GB_create(gb_table_field, "name", GB_STRING);
-    GB_write_string(gb_table_field_name, fieldname); GB_write_security_levels(gb_table_field_name, 0, 7, 7); // never change this
+
+    GB_write_string(gb_table_field_name, fieldname);
+    GB_write_security_levels(gb_table_field_name, 0, 7, 7); // never change this
+
     gb_table_field_type = GB_create(gb_table_field, "type", GB_INT);
-    GB_write_int(gb_table_field_type, type_of_field);   GB_write_security_levels(gb_table_field_type, 0, 7, 7);
+
+    GB_write_int(gb_table_field_type, type_of_field);
+    GB_write_security_levels(gb_table_field_type, 0, 7, 7);
+
     gb_table_field_description = GB_create(gb_table_field, "description", GB_STRING);
     GB_write_string(gb_table_field_description, "No description yet");
+    
     return gb_table_field;
 }
 
