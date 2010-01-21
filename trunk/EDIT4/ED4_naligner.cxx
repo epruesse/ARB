@@ -109,43 +109,39 @@ void aed_start_naligning(AW_window *aw) {
 }
 
 
-void create_naligner_variables(AW_root *root, AW_default db1)
-{
-    root->awar_int("naligner/what", 0,          db1);
+void create_naligner_variables(AW_root *root, AW_default db1) {
+    root->awar_int("naligner/what", 0, db1);
 
-    root->awar_int("naligner/against", 0,          db1);
-    root->awar_string("naligner/sagainst", "",       db1);
-    root->awar_int("naligner/pt_server", -1,          db1);
+    root->awar_int   ("naligner/against",   0,  db1);
+    root->awar_string("naligner/sagainst",  "", db1);
+    root->awar_int   ("naligner/pt_server", -1, db1);
 
-    root->awar_int("naligner/mark_profile", 1,             db1);
-    root->awar_int("naligner/unmark_sequence", 0,             db1);
+    root->awar_int("naligner/mark_profile",    1, db1);
+    root->awar_int("naligner/unmark_sequence", 0, db1);
 
+    root->awar_float("naligner/aa",           0.0, db1);
+    root->awar_float("naligner/ac",           3.0, db1);
+    root->awar_float("naligner/ag",           1.0, db1);
+    root->awar_float("naligner/at",           3.0, db1);
+    root->awar_float("naligner/cc",           0.0, db1);
+    root->awar_float("naligner/cg",           3.0, db1);
+    root->awar_float("naligner/ct",           1.0, db1);
+    root->awar_float("naligner/gg",           0.0, db1);
+    root->awar_float("naligner/gt",           3.0, db1);
+    root->awar_float("naligner/tt",           0.0, db1);
+    root->awar_float("naligner/gap_panelty",  5.0, db1);
+    root->awar_float("naligner/igap_panelty", 0.2, db1);
+    root->awar_int  ("naligner/minf",         3,   db1);
+    root->awar_int  ("naligner/maxf",         30,  db1);
 
-    root->awar_float("naligner/aa", 0.0,        db1);
-    root->awar_float("naligner/ac", 3.0,        db1);
-    root->awar_float("naligner/ag", 1.0,        db1);
-    root->awar_float("naligner/at", 3.0,        db1);
-    root->awar_float("naligner/cc", 0.0,        db1);
-    root->awar_float("naligner/cg", 3.0,        db1);
-    root->awar_float("naligner/ct", 1.0,        db1);
-    root->awar_float("naligner/gg", 0.0,        db1);
-    root->awar_float("naligner/gt", 3.0,        db1);
-    root->awar_float("naligner/tt", 0.0,        db1);
-    root->awar_float("naligner/gap_panelty", 5.0,             db1);
-    root->awar_float("naligner/igap_panelty", 0.2,        db1);
-    root->awar_int("naligner/minf", 3,          db1);
-    root->awar_int("naligner/maxf", 30,          db1);
+    root->awar_float("naligner/minw",  .7, db1);
+    root->awar_float("naligner/maxew", .2, db1);
 
-
-    root->awar_float("naligner/minw", .7,        db1);
-    root->awar_float("naligner/maxew", .2,        db1);
-
-    root->awar_float("naligner/det/cl", .25,        db1);
-    root->awar_float("naligner/det/cm", .5,        db1);
-    root->awar_float("naligner/det/ch", .8,        db1);
-    root->awar_int("naligner/det/ib", 5,          db1);
-    root->awar_int("naligner/det/ic", 5,          db1);
-
+    root->awar_float("naligner/det/cl", .25, db1);
+    root->awar_float("naligner/det/cm", .5,  db1);
+    root->awar_float("naligner/det/ch", .8,  db1);
+    root->awar_int  ("naligner/det/ib", 5,   db1);
+    root->awar_int  ("naligner/det/ic", 5,   db1);
 }
 
 void ed_nalign_save(AW_window *aww)
@@ -169,34 +165,22 @@ AW_window *create_expert_naligner_window(AW_root *root)
     aws->callback(ed_nalign_save);
     aws->create_button("SAVE", "SAVE", "S");
 
-    aws->at("minw");
-    aws->create_input_field("naligner/minw", mwidth);
+    aws->at("minw"); aws->create_input_field("naligner/minw", mwidth);
+    aws->at("maxew"); aws->create_input_field("naligner/maxew", mwidth);
 
-    aws->at("maxew");
-    aws->create_input_field("naligner/maxew", mwidth);
-
-    aws->at("ib");
-    aws->create_input_field("naligner/det/ib", mwidth);
-
-    aws->at("ic");
-    aws->create_input_field("naligner/det/ic", mwidth);
-
-    aws->at("cl");
-    aws->create_input_field("naligner/det/cl", mwidth);
-
-    aws->at("cm");
-    aws->create_input_field("naligner/det/cm", mwidth);
-
-    aws->at("ch");
-    aws->create_input_field("naligner/det/ch", mwidth);
+    aws->at("ib"); aws->create_input_field("naligner/det/ib", mwidth);
+    aws->at("ic"); aws->create_input_field("naligner/det/ic", mwidth);
+    aws->at("cl"); aws->create_input_field("naligner/det/cl", mwidth);
+    aws->at("cm"); aws->create_input_field("naligner/det/cm", mwidth);
+    aws->at("ch"); aws->create_input_field("naligner/det/ch", mwidth);
 
     return (AW_window *)aws;
 }
 
-AW_window *create_special_naligner_window(AW_root *root, AW_CL cd2)
-{
-    AW_window_simple *aws = new AW_window_simple;
-    const       int     mwidth = 3;
+AW_window *create_special_naligner_window(AW_root *root, AW_CL cd2) {
+    AW_window_simple *aws    = new AW_window_simple;
+    const       int   mwidth = 3;
+
     aws->init(root, "ALIGNER_V2_EXPERT", "ALIGNER V2.0 EXPERT");
     aws->load_xfig("ed_al_sp.fig");
 
@@ -204,56 +188,34 @@ AW_window *create_special_naligner_window(AW_root *root, AW_CL cd2)
     aws->label_length(22);
 
     aws->at("close");
-    aws->callback     ((AW_CB0)AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->at("minr");
-    aws->create_input_field("naligner/minf", 6);
+    aws->at("minr"); aws->create_input_field("naligner/minf", 6);
+    aws->at("maxr"); aws->create_input_field("naligner/maxf", 6);
 
-    aws->at("maxr");
-    aws->create_input_field("naligner/maxf", 6);
+    aws->at("aa"); aws->create_input_field("naligner/aa", mwidth);
+    aws->at("ac"); aws->create_input_field("naligner/ac", mwidth);
+    aws->at("ag"); aws->create_input_field("naligner/ag", mwidth);
+    aws->at("at"); aws->create_input_field("naligner/at", mwidth);
 
-    aws->at("aa");
-    aws->create_input_field("naligner/aa", mwidth);
-    aws->at("ac");
-    aws->create_input_field("naligner/ac", mwidth);
-    aws->at("ag");
-    aws->create_input_field("naligner/ag", mwidth);
-    aws->at("at");
-    aws->create_input_field("naligner/at", mwidth);
+    aws->at("ca"); aws->create_input_field("naligner/ac", mwidth);
+    aws->at("cc"); aws->create_input_field("naligner/cc", mwidth);
+    aws->at("cg"); aws->create_input_field("naligner/cg", mwidth);
+    aws->at("ct"); aws->create_input_field("naligner/ct", mwidth);
 
-    aws->at("ca");
-    aws->create_input_field("naligner/ac", mwidth);
-    aws->at("cc");
-    aws->create_input_field("naligner/cc", mwidth);
-    aws->at("cg");
-    aws->create_input_field("naligner/cg", mwidth);
-    aws->at("ct");
-    aws->create_input_field("naligner/ct", mwidth);
+    aws->at("ga"); aws->create_input_field("naligner/ag", mwidth);
+    aws->at("gc"); aws->create_input_field("naligner/cg", mwidth);
+    aws->at("gg"); aws->create_input_field("naligner/gg", mwidth);
+    aws->at("gt"); aws->create_input_field("naligner/gt", mwidth);
 
-    aws->at("ga");
-    aws->create_input_field("naligner/ag", mwidth);
-    aws->at("gc");
-    aws->create_input_field("naligner/cg", mwidth);
-    aws->at("gg");
-    aws->create_input_field("naligner/gg", mwidth);
-    aws->at("gt");
-    aws->create_input_field("naligner/gt", mwidth);
+    aws->at("ta"); aws->create_input_field("naligner/at", mwidth);
+    aws->at("tc"); aws->create_input_field("naligner/ct", mwidth);
+    aws->at("tg"); aws->create_input_field("naligner/gt", mwidth);
+    aws->at("tt"); aws->create_input_field("naligner/tt", mwidth);
 
-    aws->at("ta");
-    aws->create_input_field("naligner/at", mwidth);
-    aws->at("tc");
-    aws->create_input_field("naligner/ct", mwidth);
-    aws->at("tg");
-    aws->create_input_field("naligner/gt", mwidth);
-    aws->at("tt");
-    aws->create_input_field("naligner/tt", mwidth);
-
-    aws->at("gap");
-    aws->create_input_field("naligner/gap_panelty", 4);
-
-    aws->at("igap");
-    aws->create_input_field("naligner/igap_panelty", 4);
+    aws->at("gap") ; aws->create_input_field("naligner/gap_panelty",  4);
+    aws->at("igap"); aws->create_input_field("naligner/igap_panelty", 4);
 
     aws->at("expert");
     aws->callback((AW_CB1)AW_POPUP, (AW_CL)create_expert_naligner_window);

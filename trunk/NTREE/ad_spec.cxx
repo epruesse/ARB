@@ -1224,11 +1224,11 @@ AW_window *create_speciesOrganismWindow(AW_root *aw_root, bool organismWindow)
     if (organismWindow) aws->create_menu("ORGANISM",    "O", AWM_ALL);
     else                aws->create_menu("SPECIES",     "S", AWM_ALL);
 
-    aws->insert_menu_topic("species_delete",        "Delete",        "D", "spa_delete.hlp",  AWM_ALL,   ad_species_delete_cb, 0, 0);
-    aws->insert_menu_topic("species_rename",        "Rename",        "R", "spa_rename.hlp",  AWM_ALL,   ad_species_rename_cb, 0, 0);
-    aws->insert_menu_topic("species_copy",          "Copy",          "y", "spa_copy.hlp", AWM_ALL,  ad_species_copy_cb, 0, 0);
-    aws->insert_menu_topic("species_create",        "Create",        "C", "spa_create.hlp",  AWM_ALL,   AW_POPUP, (AW_CL)create_species_create_window, 0);
-    aws->insert_menu_topic("species_convert_2_sai", "Convert to SAI", "S", "sp_sp_2_ext.hlp", AWM_ALL, (AW_CB)move_species_to_extended, 0, 0);
+    aws->insert_menu_topic("species_delete",        "Delete",         "D", "spa_delete.hlp",  AWM_ALL, ad_species_delete_cb,            0,                                   0);
+    aws->insert_menu_topic("species_rename",        "Rename",         "R", "spa_rename.hlp",  AWM_ALL, ad_species_rename_cb,            0,                                   0);
+    aws->insert_menu_topic("species_copy",          "Copy",           "y", "spa_copy.hlp",    AWM_ALL, ad_species_copy_cb,              0,                                   0);
+    aws->insert_menu_topic("species_create",        "Create",         "C", "spa_create.hlp",  AWM_ALL, AW_POPUP,                        (AW_CL)create_species_create_window, 0);
+    aws->insert_menu_topic("species_convert_2_sai", "Convert to SAI", "S", "sp_sp_2_ext.hlp", AWM_ALL, (AW_CB)move_species_to_extended, 0,                                   0);
     aws->insert_separator();
 
     aws->create_menu("FIELDS", "F", AWM_ALL);
@@ -1313,10 +1313,10 @@ AW_window *ad_create_query_window(AW_root *aw_root)
     ad_query_global_cbs = cbs;
 
     aws->create_menu("More search",     "s");
-    aws->insert_menu_topic("spec_search_equal_fields_within_db", "Search For Equal Fields and Mark Duplicates",               "E", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, cbs, 0);
-    aws->insert_menu_topic("spec_search_equal_words_within_db", "Search For Equal Words Between Fields and Mark Duplicates",  "W", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, cbs, 1);
-    aws->insert_menu_topic("spec_search_next_relativ_of_sel",   "Search Next Relatives of SELECTED Species in PT_Server ...", "R", 0,                       AWM_ALL, (AW_CB)AW_POPUP, (AW_CL)ad_spec_next_neighbours_create, cbs);
-    aws->insert_menu_topic("spec_search_next_relativ_of_listed", "Search Next Relatives of LISTED Species in PT_Server ...",  "L", 0,                       AWM_ALL, (AW_CB)AW_POPUP, (AW_CL)ad_spec_next_neighbours_listed_create, cbs);
+    aws->insert_menu_topic("spec_search_equal_fields_within_db", "Search For Equal Fields and Mark Duplicates",                "E", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, cbs,                                          0);
+    aws->insert_menu_topic("spec_search_equal_words_within_db",  "Search For Equal Words Between Fields and Mark Duplicates",  "W", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, cbs,                                          1);
+    aws->insert_menu_topic("spec_search_next_relativ_of_sel",    "Search Next Relatives of SELECTED Species in PT_Server ...", "R", 0,                       AWM_ALL, (AW_CB)AW_POPUP,                 (AW_CL)ad_spec_next_neighbours_create,        cbs);
+    aws->insert_menu_topic("spec_search_next_relativ_of_listed", "Search Next Relatives of LISTED Species in PT_Server ...",   "L", 0,                       AWM_ALL, (AW_CB)AW_POPUP,                 (AW_CL)ad_spec_next_neighbours_listed_create, cbs);
 
     aws->button_length(7);
 

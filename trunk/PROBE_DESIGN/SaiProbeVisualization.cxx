@@ -741,10 +741,10 @@ AW_window *createSaiProbeMatchWindow(AW_root *awr) {
     awm->insert_menu_topic("close", "Close", "C", "quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
 
     awm->create_menu("Properties", "P", AWM_ALL);
-    awm->insert_menu_topic("selectDispField", "Select Display Field", "F", "displayField.hlp", AWM_ALL, AW_POPUP, (AW_CL)createDisplayField_window, (AW_CL)0);
-    awm->insert_menu_topic("selectSAI", "Select SAI", "S", "selectSai.hlp", AWM_ALL, AW_POPUP, (AW_CL)createSelectSAI_window, (AW_CL)0);
-    awm->insert_menu_topic("clrTransTable", "Define Color Translations", "D", "selectSai.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_colorTranslationTable_window, (AW_CL)0);
-    awm->insert_menu_topic("SetColors", "Set Colors and Fonts", "t", "setColors.hlp", AWM_ALL, AW_POPUP, (AW_CL)createSaiColorWindow, (AW_CL)aw_gc_manager);
+    awm->insert_menu_topic("selectDispField", "Select Display Field",      "F", "displayField.hlp", AWM_ALL, AW_POPUP, (AW_CL)createDisplayField_window,           (AW_CL)0);
+    awm->insert_menu_topic("selectSAI",       "Select SAI",                "S", "selectSai.hlp",    AWM_ALL, AW_POPUP, (AW_CL)createSelectSAI_window,              (AW_CL)0);
+    awm->insert_menu_topic("clrTransTable",   "Define Color Translations", "D", "selectSai.hlp",    AWM_ALL, AW_POPUP, (AW_CL)create_colorTranslationTable_window, (AW_CL)0);
+    awm->insert_menu_topic("SetColors",       "Set Colors and Fonts",      "t", "setColors.hlp",    AWM_ALL, AW_POPUP, (AW_CL)createSaiColorWindow,                (AW_CL)aw_gc_manager);
 
     addCallBacks(awr, ntw);
 

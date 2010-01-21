@@ -612,11 +612,11 @@ AW_window *create_save_box_for_selection_lists(AW_root *aw_root, AW_CL selid)
     aws->at("nlines");
     aws->create_option_menu(awar_line_anz, 0, "");
     aws->insert_default_option("all", "a", 0);
-    aws->insert_option("50", "a",       50);
-    aws->insert_option("100", "a",     100);
-    aws->insert_option("500", "a",     500);
-    aws->insert_option("1000", "a",   1000);
-    aws->insert_option("5000", "a",   5000);
+    aws->insert_option("50",    "a", 50);
+    aws->insert_option("100",   "a", 100);
+    aws->insert_option("500",   "a", 500);
+    aws->insert_option("1000",  "a", 1000);
+    aws->insert_option("5000",  "a", 5000);
     aws->insert_option("10000", "a", 10000);
     aws->update_option_menu();
 

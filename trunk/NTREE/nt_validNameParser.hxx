@@ -49,9 +49,14 @@ namespace validNames {
         Desco(DESCT       type_,  bool isCorrected_,
               std::string firstgen_, std::string firstspec_, std::string firstsub_,
               std::string secondgen_, std::string secondspec_, std::string secondsub_)
-            : type(type_),  isCorrected(isCorrected_)
-            , firstgen(firstgen_),  firstspec(firstspec_),  firstsub(firstsub_)
-            , secondgen(secondgen_),  secondspec(secondspec_),  secondsub(secondsub_)
+            : type(type_)
+            , isCorrected(isCorrected_)
+            , firstgen(firstgen_)
+            , firstspec(firstspec_)
+            , firstsub(firstsub_)
+            , secondgen(secondgen_)
+            , secondspec(secondspec_)
+            , secondsub(secondsub_)
         {}
 
         std::string getFirstName();

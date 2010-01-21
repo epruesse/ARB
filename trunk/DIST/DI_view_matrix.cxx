@@ -564,28 +564,28 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix, save_
     awm->set_motion_callback(AW_MIDDLE_AREA, (AW_CB) motion_cb,        (AW_CL)dmatrix, 0);
 
     AW_gc_manager preset_window =
-        AW_manage_GC (awm, dmatrix->device, DI_G_STANDARD, DI_G_LAST, AW_GCM_DATA_AREA,
-                      (AW_CB)resize_needed, (AW_CL)dmatrix, 0,
-                      false,
-                      "#D0D0D0",
-                      "#Standard$#000000",
-                      "#Names$#000000",
-                      "+-Ruler$#555", "-Display$#00AA55",
-                      "#BelowDist$#008732",
-                      "#AboveDist$#DB008D",
-                      NULL);
+        AW_manage_GC(awm, dmatrix->device, DI_G_STANDARD, DI_G_LAST, AW_GCM_DATA_AREA,
+                     (AW_CB)resize_needed, (AW_CL)dmatrix, 0,
+                     false,
+                     "#D0D0D0",
+                     "#Standard$#000000",
+                     "#Names$#000000",
+                     "+-Ruler$#555", "-Display$#00AA55",
+                     "#BelowDist$#008732",
+                     "#AboveDist$#DB008D",
+                     NULL);
 
     awm->create_menu("File", "F");
-    awm->insert_menu_topic("save_matrix",   "Save Matrix to File",  "S", "save_matrix.hlp", AWM_ALL, AW_POPUP, (AW_CL)DI_create_save_matrix_window, (AW_CL)sparam);
-    awm->insert_menu_topic("close",     "Close",    "C", 0, AWM_ALL,    (AW_CB)AW_POPDOWN, (AW_CL)0, 0);
+    awm->insert_menu_topic("save_matrix", "Save Matrix to File", "S", "save_matrix.hlp", AWM_ALL, AW_POPUP,(AW_CL)DI_create_save_matrix_window, (AW_CL)sparam);
+    awm->insert_menu_topic("close",       "Close",               "C", 0,                 AWM_ALL,          (AW_CB)AW_POPDOWN,                   (AW_CL)0, 0);
 
     awm->create_menu("Props", "P");
-    awm->insert_menu_topic("props_matrix",      "Matrix: Colors and Fonts ...", "C", "neprops_data.hlp",    AWM_ALL,    AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)preset_window);
-    awm->insert_menu_topic("show_dist_as_ascii",    "Show Dist in Ascii",           "A", 0,         AWM_ALL,    di_view_set_max_d, 0, (AW_CL)dmatrix);
-    awm->insert_menu_topic("show_dist_010",     "Show Dist [0,0.1]",            "1", 0,         AWM_ALL,    di_view_set_max_d, 10, (AW_CL)dmatrix);
-    awm->insert_menu_topic("show_dist_025",     "Show Dist [0,0.25]",           "3", 0,         AWM_ALL,    di_view_set_max_d, 25, (AW_CL)dmatrix);
-    awm->insert_menu_topic("show_dist_050",     "Show Dist [0,0.5]",            "5", 0,         AWM_ALL,    di_view_set_max_d, 50, (AW_CL)dmatrix);
-    awm->insert_menu_topic("show_dist_100",     "Show Dist [0,1.0]",            "0", 0,         AWM_ALL,    di_view_set_max_d, 100, (AW_CL)dmatrix);
+    awm->insert_menu_topic("props_matrix",       "Matrix: Colors and Fonts ...", "C", "neprops_data.hlp", AWM_ALL, AW_POPUP,          (AW_CL)AW_create_gc_window, (AW_CL)preset_window);
+    awm->insert_menu_topic("show_dist_as_ascii", "Show Dist in Ascii",           "A", 0,                  AWM_ALL, di_view_set_max_d, 0,                          (AW_CL)dmatrix);
+    awm->insert_menu_topic("show_dist_010",      "Show Dist [0,0.1]",            "1", 0,                  AWM_ALL, di_view_set_max_d, 10,                         (AW_CL)dmatrix);
+    awm->insert_menu_topic("show_dist_025",      "Show Dist [0,0.25]",           "3", 0,                  AWM_ALL, di_view_set_max_d, 25,                         (AW_CL)dmatrix);
+    awm->insert_menu_topic("show_dist_050",      "Show Dist [0,0.5]",            "5", 0,                  AWM_ALL, di_view_set_max_d, 50,                         (AW_CL)dmatrix);
+    awm->insert_menu_topic("show_dist_100",      "Show Dist [0,1.0]",            "0", 0,                  AWM_ALL, di_view_set_max_d, 100,                        (AW_CL)dmatrix);
 
     int x, y;
     awm->get_at_position(&x, &y);
