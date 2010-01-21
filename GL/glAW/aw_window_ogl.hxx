@@ -15,7 +15,7 @@
 #include <aw_window.hxx>
 #endif
 
-//--------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------
 // For Applications Using OpenGL Windows
 // Variable "AW_alpha_Size_Supported" says whether the hardware (Graphics Card)
 // supports alpha channel or not. Alpha channel is used for shading/ multi textures

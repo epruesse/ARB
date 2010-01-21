@@ -1,7 +1,7 @@
 #ifndef AW_COMMN_HXX
 #define AW_COMMN_HXX
 
-#define AW_INT(x) (  ((x)>=0) ? (int) ((x)+.5):(int )((x)-.5) )
+#define AW_INT(x) (((x)>=0) ? (int) ((x)+.5) : (int)((x)-.5))
 
 class AW_GC_Xm {
 public:
@@ -40,7 +40,7 @@ public:
 class AW_common {
 public:
     AW_common(AW_window *aww, AW_area area, Display *display_in,
-              XID window_id_in,unsigned long *fcolors,
+              XID window_id_in, unsigned long *fcolors,
               unsigned int **dcolors, long *data_colors_size);
 
     unsigned long  *frame_colors;
@@ -55,7 +55,7 @@ public:
     Display        *display;
     XID             window_id;
 
-    AW_pos x_alignment(AW_pos x_pos,AW_pos x_size,AW_pos alignment) { return x_pos- x_size*alignment; };
+    AW_pos x_alignment(AW_pos x_pos, AW_pos x_size, AW_pos alignment) { return x_pos- x_size*alignment; };
 };
 
 

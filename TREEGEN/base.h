@@ -24,7 +24,7 @@ typedef enum
 
 #define isDeleted(b)        (charIsDelete[(int)(b)])
 #define isHelical(b)        (charIsHelical[(int)(b)])
-#define isPairing(b1,b2)    (basesArePairing[(int)(b1)][(int)(b2)])
+#define isPairing(b1, b2)   (basesArePairing[(int)(b1)][(int)(b2)])
 
 extern char helixBaseChar[BASECHARS],
             loopBaseChar[BASECHARS];

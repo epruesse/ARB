@@ -90,7 +90,7 @@ public:
 };
 
 
-class GenebankImporter: public Importer {
+class GenebankImporter : public Importer {
     void         import_section();
     virtual bool readFeatureTableLine(string& line);
     void         parseSequence(const string& tag, const string& headerline);
@@ -102,7 +102,7 @@ public:
 };
 
 
-class EmblImporter: public Importer {
+class EmblImporter : public Importer {
     void         import_section();
     virtual bool readFeatureTableLine(string& line);
     void         parseSequence(const string& headerline);

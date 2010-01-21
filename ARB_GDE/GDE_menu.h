@@ -42,7 +42,7 @@ typedef struct GmenuItemArgtype
     char       *symbol;         /* internal symbol table mapping */
     char       *method;         /* commandline interpretation */
     GargChoice *choice;         /* choices */
-    /*ARB BEGIN*/
+    /* ARB BEGIN */
 } GmenuItemArg;
 
 typedef struct GfileFormattype
@@ -88,7 +88,7 @@ typedef struct Gmenutype
 typedef unsigned char uchar;
 
 extern struct choose_get_sequence_struct {
-    char *(*get_sequences)(void *THIS, GBDATA **&the_species, uchar **&the_names, uchar **&the_sequences, long &numberspecies,long &maxalignlen);
+    char *(*get_sequences)(void *THIS, GBDATA **&the_species, uchar **&the_names, uchar **&the_sequences, long &numberspecies, long &maxalignlen);
     gde_cgss_window_type wt;
     void *THIS;
 } gde_cgss;

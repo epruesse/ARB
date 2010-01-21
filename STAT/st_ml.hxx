@@ -137,7 +137,7 @@ class ST_ML {
     ST_sequence_ml *getOrCreate_seq(AP_tree *node);
 
     ST_sequence_ml *do_tree(AP_tree *node);
-    void            undo_tree(AP_tree *node);       //opposite of do_tree
+    void            undo_tree(AP_tree *node);       // opposite of do_tree
     void            insert_tree_into_hash_rek(AP_tree *node);
     void            create_matrices(double max_disti, int nmatrices);
     void            create_frequencies();

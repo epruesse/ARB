@@ -41,7 +41,7 @@ GB_ERROR PG_initSpeciesMaps(GBDATA *pb_main) {
       const char *semicolon = strchr(comma, ';');     if (!semicolon) break;
       string      name(mapping, comma-mapping);
       comma+=1;
-      string idnum(comma,semicolon-comma);
+      string idnum(comma, semicolon-comma);
       SpeciesID   id        = atoi(idnum.c_str());
 
       __NAME2ID_MAP[name] = id;
@@ -65,7 +65,7 @@ const string& PG_SpeciesID2SpeciesName(SpeciesID num) {
   return __ID2NAME_MAP[num];
 }
 
-int PG_NumberSpecies(){
+int PG_NumberSpecies() {
     return __ID2NAME_MAP.size();
 }
 

@@ -33,9 +33,9 @@ class ED4_Edit_String {
     long        get_next_visible_gap(long position, int direction);
     long        get_next_visible_pos(long position, int direction);
 
-    GB_ERROR insert(char *,long position, int direction, int removeAtNextGap);
-    GB_ERROR remove(int len,long position, int direction, int insertAtNextGap);
-    GB_ERROR replace(char *text,long position, int direction);
+    GB_ERROR insert(char *, long position, int direction, int removeAtNextGap);
+    GB_ERROR remove(int len, long position, int direction, int insertAtNextGap);
+    GB_ERROR replace(char *text, long position, int direction);
     GB_ERROR swap_gaps(long position, char ch);
 
     GB_ERROR command(AW_key_mod  keymod, AW_key_code keycode, char key, int direction, ED4_EDITMODI mode, bool is_consensus,

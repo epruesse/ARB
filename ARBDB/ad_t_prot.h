@@ -65,7 +65,7 @@ long GBT_get_SAI_count(GBDATA *gb_main);
 char *GBT_create_unique_item_identifier(GBDATA *gb_item_container, const char *id_field, const char *default_id);
 char *GBT_create_unique_species_name(GBDATA *gb_main, const char *default_name);
 void GBT_mark_all(GBDATA *gb_main, int flag);
-void GBT_mark_all_that(GBDATA *gb_main, int flag, int (*condition )(GBDATA *, void *), void *cd);
+void GBT_mark_all_that(GBDATA *gb_main, int flag, int (*condition)(GBDATA *, void *), void *cd);
 long GBT_count_marked_species(GBDATA *gb_main);
 char *GBT_store_marked_species(GBDATA *gb_main, int unmark_all);
 NOT4PERL GB_ERROR GBT_with_stored_species(GBDATA *gb_main, const char *stored, species_callback doit, int *clientdata);
@@ -78,7 +78,7 @@ GBDATA **GBT_gen_species_array(GBDATA *gb_main, long *pspeccnt);
 GB_ERROR GBT_begin_rename_session(GBDATA *gb_main, int all_flag);
 GB_ERROR GBT_rename_species(const char *oldname, const char *newname, bool ignore_protection);
 GB_ERROR GBT_abort_rename_session(void);
-GB_ERROR GBT_commit_rename_session(int (*show_status )(double gauge ), int (*show_status_text )(const char *));
+GB_ERROR GBT_commit_rename_session(int (*show_status)(double gauge), int (*show_status_text)(const char *));
 
 /* adseqcompr.cxx */
 GB_ERROR GBT_compress_sequence_tree2(GBDATA *gb_main, const char *tree_name, const char *ali_name) __ATTR__USERESULT;
@@ -135,7 +135,7 @@ GB_ERROR GBT_remote_action(GBDATA *gb_main, const char *application, const char 
 GB_ERROR GBT_remote_awar(GBDATA *gb_main, const char *application, const char *awar_name, const char *value);
 GB_ERROR GBT_remote_read_awar(GBDATA *gb_main, const char *application, const char *awar_name);
 const char *GBT_remote_touch_awar(GBDATA *gb_main, const char *application, const char *awar_name);
-char *GB_generate_notification(GBDATA *gb_main, void (*cb )(const char *message, void *client_data ), const char *message, void *client_data);
+char *GB_generate_notification(GBDATA *gb_main, void (*cb)(const char *message, void *client_data), const char *message, void *client_data);
 GB_ERROR GB_remove_last_notification(GBDATA *gb_main);
 GB_ERROR GB_notify(GBDATA *gb_main, int id, const char *message);
 

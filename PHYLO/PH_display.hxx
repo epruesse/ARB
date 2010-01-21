@@ -6,7 +6,7 @@
  
 extern char **filter_text;
 
-class PH_display{
+class PH_display {
     AW_device *device;                   // device to draw in
     AW_pos screen_width;                 // dimensions of main screen
     AW_pos screen_height;
@@ -25,7 +25,7 @@ class PH_display{
     long off_dx;                         // offset values for devic.shift_dx(y)
     long off_dy; 
           
-    void set_scrollbar_steps(AW_window *,long,long,long,long); 
+    void set_scrollbar_steps(AW_window *, long, long, long, long);
     void print(void);                    // print private parameters (debugging)
           
 
@@ -35,7 +35,7 @@ public:
     void initialize(display_type);
     void display(void);                  // display data (according to display type: matrix ...)
     display_type displayed(void) { return display_what; };
-    void clear_window(void) { if(device) device->clear(-1); };
+    void clear_window(void) { if (device) device->clear(-1); };
     void resized(void);                  // call after resize main window
     void monitor_vertical_scroll_cb(AW_window *);    // vertical and horizontal
     void monitor_horizontal_scroll_cb(AW_window *);  // scrollbar movements
@@ -58,13 +58,13 @@ public:
     
     void set_origin(void) { device->reset(); device->set_offset(AW::Vector(font_width, font_height)); }
     void newline(void) { x_pos = 0; y_pos+=(y_pos>=max_y) ? 0.0 : 1.0; }
-    AW_pos get_size(char c) { return((c=='x') ? max_x : max_y); }
-    void set_cursor(AW_pos x,AW_pos y) { x_pos = (x<=max_x) ? x : x_pos; y_pos=(y<=max_y) ? y : y_pos; }
+    AW_pos get_size(char c) { return ((c=='x') ? max_x : max_y); }
+    void set_cursor(AW_pos x, AW_pos y) { x_pos = (x<=max_x) ? x : x_pos; y_pos=(y<=max_y) ? y : y_pos; }
     void move_x(AW_pos d) { x_pos += (x_pos+d<=max_x) ? d : 0; }
     void move_y(AW_pos d) { y_pos+=(y_pos+d<=max_y) ? d : 0; }
     void set_cursor_x(AW_pos x) { x_pos = x; }
     void set_cursor_y(AW_pos y) { y_pos = y; }
-    AW_pos get_cursor_pos(char c) { return((c=='x') ? x_pos : y_pos); }
+    AW_pos get_cursor_pos(char c) { return ((c=='x') ? x_pos : y_pos); }
     void set_tab(void) { tab_pos = x_pos; }
     AW_pos get_tab(void) { return tab_pos; }
     

@@ -17,7 +17,7 @@
 #define AWAR_CONFIG_DATA "configuration_data"
 #define AWAR_CONFIG      "configuration"
 
-    GBDATA *GBT_find_configuration(GBDATA *gb_main,const char *name);
+    GBDATA *GBT_find_configuration(GBDATA *gb_main, const char *name);
     GBDATA *GBT_create_configuration(GBDATA *gb_main, const char *name);
 
     char **GBT_get_configuration_names(GBDATA *gb_main);

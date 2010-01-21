@@ -241,7 +241,7 @@ static void AWT_start_config_manager(AW_window *aww, AW_CL cl_config)
                 // fall-through
             }
             case CM_STORE: {
-                AUTOSTORE: 
+                AUTOSTORE :
                 remove_from_configs(cfgName, existing_configs); // remove existing config
 
                 if (existing_configs.length()) existing_configs = string(cfgName)+';'+existing_configs;
@@ -490,10 +490,10 @@ GB_ERROR AWT_config::write_to_awars(const AWT_config_mapping *cfgname_2_awar, AW
 //      AWT_config_definition
 
 AWT_config_definition::AWT_config_definition(AW_root *aw_root)
-    : root(aw_root) , config_mapping(new AWT_config_mapping) {}
+    : root(aw_root),  config_mapping(new AWT_config_mapping) {}
 
 AWT_config_definition::AWT_config_definition(AW_root *aw_root, AWT_config_mapping_def *mdef)
-    : root(aw_root) , config_mapping(new AWT_config_mapping)
+    : root(aw_root),  config_mapping(new AWT_config_mapping)
 {
     add(mdef);
 }

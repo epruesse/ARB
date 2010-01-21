@@ -10,7 +10,7 @@ extern double SUMUNMARKEDFACTOR;
 
 probe_combi_statistic::probe_combi_statistic(probe **pc, probe_tabs *ps, double exp, double fit, int life_cnt)
 {
-    memset( this, 0, sizeof( probe_combi_statistic ) );
+    memset(this, 0, sizeof(probe_combi_statistic));
 
     if (ps)
         probe_tab = ps;
@@ -42,7 +42,7 @@ BOOL probe_combi_statistic::ok_for_next_gen(int &len_roul_wheel)
 {
     double exp_child = get_expected_children();
 
-    if (exp_child >= 1.0 || get_random(1, 100) <= 100 * exp_child)      //Behandlung nach Goldberg S.115 bzw. S.121
+    if (exp_child >= 1.0 || get_random(1, 100) <= 100 * exp_child)      // Behandlung nach Goldberg S.115 bzw. S.121
     {
         if (!is_dead())
             return TRUE;
@@ -77,7 +77,7 @@ inline void probe_combi_statistic::swap(probe **a, probe **b)
     *b = help;
 }
 
-void probe_combi_statistic::quicksort(long left, long right)        //Randomized Quicksort !!! wegen effizienz
+void probe_combi_statistic::quicksort(long left, long right)        // Randomized Quicksort !!! wegen effizienz
 {                                   // Fuer den Fall, dass Feld sortiert !!!
     long   i = left,
         j = right;
@@ -92,7 +92,7 @@ void probe_combi_statistic::quicksort(long left, long right)        //Randomized
         // Randomisierung des Quicksort Anfang
         // Falls keine Randomisierung erwuenscht, einfach diesen Teil auskommentieren !!!
         help2 = get_random(left, right);
-        swap( & probe_combi[help2], & probe_combi[help]);
+        swap(& probe_combi[help2], & probe_combi[help]);
         // Randomisierung des Quicksort Ende
 
         x = probe_combi[help]->probe_index;         // Normale Auswahl des Pivotelements
@@ -104,12 +104,12 @@ void probe_combi_statistic::quicksort(long left, long right)        //Randomized
 
             if (i<=j)
             {
-                swap ( & probe_combi[i], & probe_combi[j] );
+                swap (& probe_combi[i], & probe_combi[j]);
 
                 i++;
                 j--;
             }
-        } while (i<=j);
+        } while (i<=j) ;
 
         quicksort(left, j);
         quicksort(i, right);
@@ -125,7 +125,7 @@ probe_combi_statistic *probe_combi_statistic::check_duplicates(GenerationDuplica
     if (get_dupl_pos() == -1)
         return this;
 
-    if (dup_tree)           //d.h. dass feld this nur einmal in der Generation vorkommen darf
+    if (dup_tree)           // d.h. dass feld this nur einmal in der Generation vorkommen darf
         if (dup_tree->insert(this, result, mp_gl_awars.no_of_probes))
             return this;
 
@@ -135,7 +135,7 @@ probe_combi_statistic *probe_combi_statistic::check_duplicates(GenerationDuplica
 
 void probe_combi_statistic::print(probe *p)
 {
-    printf("Idx:%d alMis:%d  ",p->probe_index, p->allowed_mismatches);
+    printf("Idx:%d alMis:%d  ", p->probe_index, p->allowed_mismatches);
 }
 
 void probe_combi_statistic::print()
@@ -143,7 +143,7 @@ void probe_combi_statistic::print()
     for (int i=0; i<mp_gl_awars.no_of_probes; i++)
         print(probe_combi[i]);
 
-    printf("Fit:%f Expchil: %f\n",fitness, expected_children);
+    printf("Fit:%f Expchil: %f\n", fitness, expected_children);
     probe_tab->print();
 }
 
@@ -177,7 +177,7 @@ probe_combi_statistic *probe_combi_statistic::duplicate()
     if (probe_tab)
         new_obje = probe_tab->duplicate();
 
-    return new probe_combi_statistic(probe_combi, new_obje,expected_children, fitness, life_counter);
+    return new probe_combi_statistic(probe_combi, new_obje, expected_children, fitness, life_counter);
 }
 
 void probe_combi_statistic::mutate_Probe()
@@ -188,7 +188,7 @@ void probe_combi_statistic::mutate_Probe()
     for (int i=0; i<mp_gl_awars.no_of_probes; i++)              // Jede Posititon der Sondenkombination wird mit einer Wahrscheinlichkeit
         // von 1/MUTATION_WS mutiert.
     {
-        if (get_random(1,MUTATION_WS) == 1)
+        if (get_random(1, MUTATION_WS) == 1)
         {
             init_stats();                               // Statistik hat sich geaendert.
             rand_pool_pos   = get_random(0, mp_main->get_p_eval()->get_pool_length() - 1);
@@ -210,7 +210,7 @@ int probe_combi_statistic::get_dupl_pos()
 {
     int length = mp_gl_awars.no_of_probes;
 
-    for (int i=0; i<length-1; i++)      //auf duplikate in der Sondenkombi. pruefen
+    for (int i=0; i<length-1; i++)      // auf duplikate in der Sondenkombi. pruefen
         if (probe_combi[i]->probe_index == probe_combi[i+1]->probe_index)
             return i;
 
@@ -238,41 +238,41 @@ void probe_combi_statistic::crossover_Probes(probe_combi_statistic *pcombi2)    
 
     rand_no_of_cross = random_intervall ? get_random(1, random_intervall) : 0;
 
-    for (int i = 0; i < rand_no_of_cross; i++)              //eigentliche Crossover Schleife
+    for (int i = 0; i < rand_no_of_cross; i++)              // eigentliche Crossover Schleife
     {
         rand_cross_pos1 = get_random(0, random_intervall);
         rand_cross_pos2 = get_random(0, random_intervall);
 
-        swap( & probe_combi[rand_cross_pos1], & pcombi2->probe_combi[rand_cross_pos2]);
+        swap(& probe_combi[rand_cross_pos1], & pcombi2->probe_combi[rand_cross_pos2]);
 
-        swap(  & probe_combi[rand_cross_pos1],  & probe_combi[random_intervall] );      //um keine Listen zu verwenden
-        swap(  & pcombi2->probe_combi[rand_cross_pos2],  & pcombi2->probe_combi[random_intervall] );        //wird im Array getauscht
+        swap(& probe_combi[rand_cross_pos1],    & probe_combi[random_intervall]);       // um keine Listen zu verwenden
+        swap(& pcombi2->probe_combi[rand_cross_pos2],    & pcombi2->probe_combi[random_intervall]);         // wird im Array getauscht
 
         random_intervall--;
     }
 
-    while (TRUE)        //Crossovernachbehandlung, um duplikate in Kombinationen zu vermeiden
+    while (TRUE)        // Crossovernachbehandlung, um duplikate in Kombinationen zu vermeiden
     {
         int change1, change2;
 
         f1 = check_duplicates();
         f2 = pcombi2->check_duplicates();
 
-        if (f1 && f2 )
+        if (f1 && f2)
             break;
 
-        if (f1)                         //in f1 kein Duplikat
-            change1 = get_random(0,mp_gl_awars.no_of_probes - 1);
+        if (f1)                         // in f1 kein Duplikat
+            change1 = get_random(0, mp_gl_awars.no_of_probes - 1);
         else
             change1 = get_dupl_pos();
 
-        if (f2)                         //in f2 kein Duplikat
-            change2 = get_random(0,mp_gl_awars.no_of_probes - 1);
+        if (f2)                         // in f2 kein Duplikat
+            change2 = get_random(0, mp_gl_awars.no_of_probes - 1);
         else
             change2 = pcombi2->get_dupl_pos();
 
-        swap( & probe_combi[change1],  & pcombi2->probe_combi[change2]);        //worst case = die Felder sehen genauso aus, wie vor
-        //dem Crossover
+        swap(& probe_combi[change1],   & pcombi2->probe_combi[change2]);        // worst case = die Felder sehen genauso aus, wie vor
+        // dem Crossover
     }
 
     init_stats();
@@ -292,7 +292,7 @@ int probe_combi_statistic::calc_index_system3(int *field)
     int i, result = 0;
 
     for (i=0; i<mp_gl_awars.no_of_probes; i++)
-        result += system3_tab[field[i]][i];     //Ergebnis von : (3^i) * field[i];
+        result += system3_tab[field[i]][i];     // Ergebnis von : (3^i) * field[i];
 
     return result;
 }
@@ -326,7 +326,7 @@ double  probe_combi_statistic::calc_fitness(int len_of_field)       // fitness-b
 
     for (i=0; i< probe_tab->get_len_group_tabs()-1; i++)
     {
-        memset(hammingarray, 0 , sizeof(long) * (mp_gl_awars.no_of_probes + 1));
+        memset(hammingarray, 0,  sizeof(long) * (mp_gl_awars.no_of_probes + 1));
         for (j=0; j<probe_tab->get_len_group_tabs(); j++)
         {
             mod_ham_dist = modificated_hamming_dist(i, j);
@@ -351,7 +351,7 @@ double  probe_combi_statistic::calc_fitness(int len_of_field)       // fitness-b
             else
                 ham_dist = (double)k - 1.0;
         }
-        else if(tolerated_non_group_hits > 0.0)
+        else if (tolerated_non_group_hits > 0.0)
             ham_dist = (double) mp_gl_awars.no_of_probes;
         else
             ham_dist = 0.0;

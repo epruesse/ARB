@@ -83,8 +83,8 @@ void GEN_graphic::show(AW_device *device) {
         gen_root->paint(device);
     }
     else {
-        device->line(GEN_GC_DEFAULT, -100,-100,100,100);
-        device->line(GEN_GC_DEFAULT, -100,100,100,-100);
+        device->line(GEN_GC_DEFAULT, -100, -100, 100, 100);
+        device->line(GEN_GC_DEFAULT, -100, 100, 100, -100);
     }
 }
 
@@ -104,7 +104,7 @@ void GEN_graphic::info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *c
     AWUSE(ct);
 }
 
-void GEN_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod /*key_modifier*/, AW_key_code /*key_code*/, char /*key_char*/, AW_event_type type,
+void GEN_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod /* key_modifier */, AW_key_code /* key_code */, char /* key_char */, AW_event_type type,
                           AW_pos screen_x, AW_pos screen_y, AW_clicked_line *cl, AW_clicked_text *ct) {
     AW_pos world_x;
     AW_pos world_y;
@@ -117,7 +117,7 @@ void GEN_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
             }
             case AWT_MODE_SELECT:
             case AWT_MODE_EDIT: {
-                if(button==AWT_M_LEFT) {
+                if (button==AWT_M_LEFT) {
                     GEN_gene *gene = 0;
                     if (ct) gene   = (GEN_gene*)ct->client_data1;
                     if (cl) gene   = (GEN_gene*)cl->client_data1;
@@ -155,7 +155,7 @@ inline void increase_selected_range(AW_world& selected_range, AW_pos x1, AW_pos 
     increase_selected_range(selected_range, x1, y1);
     increase_selected_range(selected_range, x2, y2);
 }
-inline int smart_text(AW_world& selected_range, AW_device *device, int gc, const char *str,AW_pos x,AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2,long opt_strlen) {
+inline int smart_text(AW_world& selected_range, AW_device *device, int gc, const char *str, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2, long opt_strlen) {
     int res = device->text(gc, str, x, y, alignment, filteri, cd1, cd2, opt_strlen);
     if (gc == GEN_GC_CURSOR) {
 #if defined(DEVEL_RALF)
@@ -165,7 +165,7 @@ inline int smart_text(AW_world& selected_range, AW_device *device, int gc, const
     }
     return res;
 }
-inline int smart_line(AW_world& selected_range, AW_device *device, int gc, AW_pos x0,AW_pos y0, AW_pos x1,AW_pos y1, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+inline int smart_line(AW_world& selected_range, AW_device *device, int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
     int res = device->line(gc, x0, y0, x1, y1, filteri, cd1, cd2);
     if (gc == GEN_GC_CURSOR) increase_selected_range(selected_range, x0, y0, x1, y1);
     return res;
@@ -316,7 +316,7 @@ void GEN_root::paint(AW_device *device) {
                     int draw_gc, text_gc;
                     if (getDrawGcs(curr, paint_what, gene_name, draw_gc, text_gc)) {
                         int line1 = curr->StartPos()/display_width;
-                        int line2 = curr->EndPos()  /display_width;
+                        int line2 = curr->EndPos()  / display_width;
                         int x1    = int((curr->StartPos()-line1*display_width)*width_factor+0.5);
                         int x2    = int((curr->EndPos()  -line2*display_width)*width_factor+0.5);
                         int y1    = line1*height_of_line;

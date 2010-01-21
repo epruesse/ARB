@@ -23,7 +23,7 @@ Bitvector::Bitvector(int bits)
     len =  (bits%8) ? (bits/8+1) : (bits/8);
     vector = new char[len];
 
-    for (i=0;i<len;i++)
+    for (i=0; i<len; i++)
         vector[i] = vector[i] & 0;
 }
 
@@ -38,7 +38,7 @@ int Bitvector::gen_id()
     // generiere eine int Nummer fuer die Farbe aus dem Bitvector
     long num=0;
     for (int i=0; i<num_of_bits; i++)
-        num += (int)(.5 + pow(2,i)*readbit(i));
+        num += (int)(.5 + pow(2, i)*readbit(i));
     return num;
 }
 Bitvector* Bitvector::merge(Bitvector* x)
@@ -51,8 +51,8 @@ Bitvector* Bitvector::merge(Bitvector* x)
     lback = (lthis>lx) ? lthis : lx;
     Bitvector* back = new Bitvector(lback);
 
-    for (i=0 ;i<lback; i++)
-        if ( this->readbit(i) || x->readbit(i) )
+    for (i=0; i<lback; i++)
+        if (this->readbit(i) || x->readbit(i))
             back->setbit (i);
 
     return back;
@@ -64,7 +64,7 @@ int Bitvector::subset(Bitvector* Obermenge)
 
     for (int i=0; i<len; i++)
     {
-        if ( (vector[i] & vector2[i]) != vector[i] )
+        if ((vector[i] & vector2[i]) != vector[i])
             return 0;
     }
     return 1;
@@ -78,9 +78,9 @@ void Bitvector::rshift()
     if (readbit(num_of_bits-1))
         gemerkt=1;
 
-    for (int i=len-1; i>-1 ; i--)
+    for (int i=len-1; i>-1;  i--)
     {
-        vector[i] = vector[i] <<1;
+        vector[i] = vector[i] << 1;
         if (readbit(8*i-1))
             setbit(8*i);
     }
@@ -92,31 +92,31 @@ void Bitvector::print()
 {
     int i;
     printf("Bitvektor:   (");
-    for (i=0;i<num_of_bits;i++)
-        printf("%d",readbit(i));
+    for (i=0; i<num_of_bits; i++)
+        printf("%d", readbit(i));
     printf(")\n");
 }
 
 int Bitvector::setbit(int pos)
 {
-    int byte,idx,bitcode;
+    int byte, idx, bitcode;
     if (pos > num_of_bits)
         return -1;
     byte = pos/8;
     idx = pos - byte*8;
-    bitcode = (int) pow(2,idx);
+    bitcode = (int) pow(2, idx);
     vector[byte] = vector[byte] | bitcode;
     return 0;
 }
 
 int Bitvector::delbit(int pos)
 {
-    int byte,idx,bitcode;
+    int byte, idx, bitcode;
     if (pos > num_of_bits)
         return -1;
     byte = pos/8;
     idx = pos - byte*8;
-    bitcode = (int) pow(2,idx);
+    bitcode = (int) pow(2, idx);
     if (readbit(pos))
         vector[byte] = vector[byte] ^ bitcode;
     return 0;
@@ -124,12 +124,12 @@ int Bitvector::delbit(int pos)
 
 int Bitvector::readbit(int pos)
 {
-    int byte,idx,bitcode;
+    int byte, idx, bitcode;
     if (pos > num_of_bits)
         return 0;
     byte = pos/8;
     idx = pos - byte*8;
-    bitcode = (int) pow(2,idx);
+    bitcode = (int) pow(2, idx);
     if (vector[byte] & bitcode)
         return 1;
     else
@@ -138,28 +138,28 @@ int Bitvector::readbit(int pos)
 
 
 
-void permutation(int k,int n)
+void permutation(int k, int n)
 {
-    int h,i,j;
+    int h, i, j;
     int c[1000];
 
     c[0] = -1;
-    for ( i=1; i<k+1; i++ )
+    for (i=1; i<k+1; i++)
         c[i] = i;
 
     j = 1;
 
     while (j != 0)
     {
-        for (h=1;h<k+1;h++)
-            printf("%d ",c[h]);
+        for (h=1; h<k+1; h++)
+            printf("%d ", c[h]);
         printf("\n");
 
         j = k;
         while (c[j] == n-k+j)
             j = j-1;
         c[j] = c[j]+1;
-        for (i=j+1; i< k+1;i++)
+        for (i=j+1; i< k+1; i++)
             c[i] = c[i-1] + 1;
     }
 }
@@ -167,10 +167,10 @@ void permutation(int k,int n)
 void permute (int k, int n)
 {
     int i;
-    for (i=1; i<k+1;i++)
+    for (i=1; i<k+1; i++)
     {
-        printf("\nPermutation k aus n, k = %d, n = %d\n",i,n);
-        permutation(i,n);
+        printf("\nPermutation k aus n, k = %d, n = %d\n", i, n);
+        permutation(i, n);
     }
 
 }

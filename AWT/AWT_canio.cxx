@@ -29,7 +29,7 @@ static void awt_print_tree_check_size(void *, AW_CL cl_ntw) {
 
     AW_device *size_device = ntw->aww->get_size_device(AW_MIDDLE_AREA);
 
-    if (what){
+    if (what) {
         size_device->reset();
         size_device->zoom(ntw->trans_to_fit);
         size_device->set_filter(AW_SCREEN);
@@ -158,9 +158,9 @@ static void create_print_awars(AW_root *awr, AWT_canvas *ntw) {
     
         {
             char *print_command;
-            if (getenv("PRINTER")){
+            if (getenv("PRINTER")) {
                 print_command = GBS_eval_env("lpr -h -P$(PRINTER)");
-            }else   print_command = strdup("lpr -h");
+            } else   print_command = strdup("lpr -h");
 
             awr->awar_string(AWAR_PRINT_TREE_PRINTER, print_command, def);
             free(print_command);
@@ -260,7 +260,7 @@ const char *AWT_print_tree_to_file(AW_window *aww, AWT_canvas * ntw) {
     return error;
 }
 
-void AWT_print_tree_to_file_xfig(AW_window *aww, AW_CL cl_ntw){
+void AWT_print_tree_to_file_xfig(AW_window *aww, AW_CL cl_ntw) {
     AWT_canvas * ntw = (AWT_canvas*)cl_ntw;
     AW_root *awr = aww->get_root();
     const char *error = AWT_print_tree_to_file(aww, ntw);
@@ -283,10 +283,10 @@ void AWT_popup_tree_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL)
         aws->init(awr, "EXPORT_TREE_AS_XFIG", "EXPORT TREE TO XFIG");
         aws->load_xfig("awt/export.fig");
 
-        aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
+        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->at("help");aws->callback(AW_POPUP_HELP, (AW_CL)"tree2file.hlp");
+        aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"tree2file.hlp");
         aws->create_button("HELP", "HELP", "H");
 
         aws->label_length(15);
@@ -312,16 +312,16 @@ void AWT_popup_tree_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL)
         aws->create_toggle(AWAR_PRINT_TREE_COLOR);
     
 
-        aws->at("xfig");aws->callback(AWT_print_tree_to_file_xfig, cl_canvas);
+        aws->at("xfig"); aws->callback(AWT_print_tree_to_file_xfig, cl_canvas);
         aws->create_button("START_XFIG", "GO XFIG", "X");
 
-        aws->at("cancel");aws->callback((AW_CB0)AW_POPDOWN);
+        aws->at("cancel"); aws->callback((AW_CB0)AW_POPDOWN);
         aws->create_button("CLOSE", "CANCEL", "C");
     }
 
     aws->activate();
 }
-/*------------------------------------- to export secondary structure to XFIG ---------------------------------------------*/
+/* ------------------------------------- to export secondary structure to XFIG --------------------------------------------- */
 
 void AWT_popup_sec_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) {
     static AW_window_simple *aws = 0;
@@ -335,7 +335,7 @@ void AWT_popup_sec_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) 
         aws->init(awr, "EXPORT_TREE_AS_XFIG", "EXPORT STRUCTURE TO XFIG");
         aws->load_xfig("awt/secExport.fig");
 
-        aws->at("help");aws->callback(AW_POPUP_HELP, (AW_CL)"tree2file.hlp");
+        aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"tree2file.hlp");
         aws->create_button("HELP", "HELP", "H");
 
         aws->label_length(15);
@@ -355,16 +355,16 @@ void AWT_popup_sec_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) 
         aws->at("xfig"); aws->callback(AWT_print_tree_to_file_xfig, cl_canvas);
         aws->create_button("START_XFIG", "EXPORT to XFIG", "X");
 
-        aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
+        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->at("cancel");aws->callback((AW_CB0)AW_POPDOWN);
+        aws->at("cancel"); aws->callback((AW_CB0)AW_POPDOWN);
         aws->create_button("CLOSE", "CANCEL", "C");
     }
     
     aws->activate();
 }
-/*------------------------------------------------------------------------------------------------------------------------------------------*/
+/* ------------------------------------------------------------------------------------------------------------------------------------------ */
 
 void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw) {
     AWT_canvas     *ntw       = (AWT_canvas*)cl_ntw;
@@ -393,7 +393,7 @@ void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw) {
     }
 
     if (!error) {
-        AW_device *device= ntw->aww->get_print_device(AW_MIDDLE_AREA);
+        AW_device *device = ntw->aww->get_print_device(AW_MIDDLE_AREA);
 
         char *xfig;
         {
@@ -477,7 +477,7 @@ void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw) {
             if (!error) {
                 aw_status("Printing");
 
-                switch(printdest) {
+                switch (printdest) {
                     case PDEST_PREVIEW: {
                         GB_CSTR gs      = GB_getenvARB_GS();
                         GB_CSTR command = GBS_global_string("(%s %s;rm -f %s) &", gs, dest, dest);
@@ -644,10 +644,10 @@ void AWT_popup_print_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) {
         aws->init(awr, "PRINT_CANVAS", "PRINT GRAPHIC");
         aws->load_xfig("awt/print.fig");
 
-        aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
+        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->at("help");aws->callback(AW_POPUP_HELP, (AW_CL)"tree2prt.hlp");
+        aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"tree2prt.hlp");
         aws->create_button("HELP", "HELP", "H");
 
 

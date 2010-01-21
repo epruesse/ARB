@@ -499,7 +499,7 @@ static void mutateRNS(int no_of_father, RNS rns, int steps, int depth)
         /* |  Alle Basen(-paare) durchlaufen  | */
         /* \----------------------------------/ */
 
-        for (b = 0; b<(rns->bases); )
+        for (b = 0; b<(rns->bases);)
         {
             char base = rns->base[b];
 

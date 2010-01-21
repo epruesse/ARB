@@ -109,13 +109,13 @@ void AP_sequence_parsimony::unset() {
 #error AP_parsimony_defaults.hxx not included
 #endif // AP_PARSIMONY_DEFAULTS_HXX
 
-AP_FLOAT AP_sequence_parsimony::combine( const AP_sequence *lefts, const AP_sequence *rights, char *mutation_per_site) {
+AP_FLOAT AP_sequence_parsimony::combine(const AP_sequence *lefts, const AP_sequence *rights, char *mutation_per_site) {
     const AP_sequence_parsimony *left = (const AP_sequence_parsimony *)lefts;
     const AP_sequence_parsimony *right = (const AP_sequence_parsimony *)rights;
 
     size_t sequence_len = get_filter()->get_filtered_length();
-    if (seq_pars == 0)  {
-        seq_pars = new char[sequence_len +1];
+    if (seq_pars == 0) {
+        seq_pars = new char[sequence_len + 1];
     }
 
     const char *p1       = left->get_sequence();

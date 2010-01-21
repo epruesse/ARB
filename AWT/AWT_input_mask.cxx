@@ -75,7 +75,7 @@ static bool in_item_changed_callback  = false;
 static bool in_field_changed_callback = false;
 static bool in_awar_changed_callback  = false;
 
-static void item_changed_cb(GBDATA */*gb_item*/, int *cl_awt_linked_to_item, GB_CB_TYPE type) {
+static void item_changed_cb(GBDATA * /* gb_item */, int *cl_awt_linked_to_item, GB_CB_TYPE type) {
     if (!in_item_changed_callback) { // avoid deadlock
         in_item_changed_callback      = true;
         awt_linked_to_item *item_link = (awt_linked_to_item*)cl_awt_linked_to_item;
@@ -95,7 +95,7 @@ static void item_changed_cb(GBDATA */*gb_item*/, int *cl_awt_linked_to_item, GB_
     }
 }
 
-static void field_changed_cb(GBDATA */*gb_item*/, int *cl_awt_input_handler, GB_CB_TYPE type) {
+static void field_changed_cb(GBDATA * /* gb_item */, int *cl_awt_input_handler, GB_CB_TYPE type) {
     if (!in_field_changed_callback) { // avoid deadlock
         in_field_changed_callback  = true;
         awt_input_handler *handler = (awt_input_handler*)cl_awt_input_handler;
@@ -110,7 +110,7 @@ static void field_changed_cb(GBDATA */*gb_item*/, int *cl_awt_input_handler, GB_
     }
 }
 
-static void awar_changed_cb(AW_root */*awr*/, AW_CL cl_awt_mask_awar_item) {
+static void awar_changed_cb(AW_root * /* awr */, AW_CL cl_awt_mask_awar_item) {
     if (!in_awar_changed_callback) { // avoid deadlock
         in_awar_changed_callback   = true;
         awt_mask_awar_item *item = (awt_mask_awar_item*)cl_awt_mask_awar_item;
@@ -262,7 +262,7 @@ string awt_script::get_value() const
     return result;
 }
 
-GB_ERROR awt_script::set_value(const string& /*new_value*/)
+GB_ERROR awt_script::set_value(const string& /* new_value */)
 {
     return GBS_global_string("You cannot assign a value to script '%s'", has_name() ? get_name().c_str() : "<unnamed>");
 }
@@ -620,14 +620,14 @@ inline size_t eat_para_separator(const string& line, size_t start, GB_ERROR& err
     }
     else {
         switch (line[para_sep]) {
-            case ')' :
+            case ')':
                 was_last_parameter = true;
                 break;
 
-            case ',' :
+            case ',':
                 break;
 
-            default :
+            default:
                 error = "',' or ')' expected after parameter";
                 break;
         }
@@ -814,7 +814,7 @@ static long scan_long_parameter(const string& line, size_t& scan_pos, GB_ERROR& 
         continue;
     }
 
-    if (start == string::npos || !isdigit(line[start]) ) {
+    if (start == string::npos || !isdigit(line[start])) {
         scan_pos = start;
         error    = "digits (or+-) expected";
     }
@@ -964,7 +964,7 @@ static awt_input_mask_descriptor *quick_scan_input_mask(const string& mask_name,
                 size_t at = line.find('@');
                 size_t eq = line.find('=', at);
 
-                if (at == string::npos || eq == string::npos)  {
+                if (at == string::npos || eq == string::npos) {
                     continue; // ignore all other lines
                 }
                 else {
@@ -1013,7 +1013,7 @@ typedef SmartPtr<awt_input_mask>        awt_input_mask_ptr;
 typedef map<string, awt_input_mask_ptr> InputMaskList; // contains all active masks
 static InputMaskList                    input_mask_list;
 
-static void awt_input_mask_awar_changed_cb(AW_root */*root*/, AW_CL cl_mask) {
+static void awt_input_mask_awar_changed_cb(AW_root * /* root */, AW_CL cl_mask) {
     awt_input_mask *mask = (awt_input_mask*)(cl_mask);
     mask->relink();
 }
@@ -1132,7 +1132,7 @@ public:
     virtual ~awt_assignment() {}
 };
 
-static void AWT_input_mask_perform_action(AW_window */*aww*/, AW_CL cl_awt_mask_action, AW_CL) {
+static void AWT_input_mask_perform_action(AW_window * /* aww */, AW_CL cl_awt_mask_action, AW_CL) {
     awt_mask_action *action = (awt_mask_action*)cl_awt_mask_action;
     action->perform_action();
 }
@@ -1161,7 +1161,7 @@ static void AWT_input_mask_browse_url(AW_window *aww, AW_CL cl_url_srt, AW_CL cl
 //      User Mask Commands
 // ---------------------------
 
-enum MaskCommand  {
+enum MaskCommand {
     CMD_TEXTFIELD,
     CMD_NUMFIELD,
     CMD_CHECKBOX,
@@ -1209,7 +1209,7 @@ static struct MaskCommandDefinition mask_command[MASK_COMMANDS+1] =
  { "ASSIGN", CMD_ASSIGN },
  { "SCRIPT", CMD_SCRIPT },
 
- { 0, CMD_UNKNOWN}
+ { 0, CMD_UNKNOWN }
 };
 
 inline MaskCommand findCommand(const string& cmd_name) {
@@ -1246,7 +1246,7 @@ static void parse_CMD_RADIO(string& line, size_t& scan_pos, GB_ERROR& error, con
         string val = "";
         if (!error) {
             int keyword_index;
-            const char *allowed_keywords[] = { "ALLOW_EDIT", 0};
+            const char *allowed_keywords[] = { "ALLOW_EDIT", 0 };
             scan_string_or_keyword_parameter(line, scan_pos, error, val, keyword_index, allowed_keywords);
 
             if (!error) {
@@ -1473,7 +1473,7 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
             if (line[0] == '#') continue; // ignore comments
 
             if (line == "@MASK_BEGIN") mask_began = true;
-            else  {
+            else {
                 size_t at = line.find('@');
                 size_t eq = line.find('=', at);
 
@@ -1535,11 +1535,11 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
             aws->at_newline();
 
             aws->callback((AW_CB0)AW_POPDOWN);                          aws->create_button(ID("CLOSE"), "CLOSE", "C");
-            aws->callback( AW_POPUP_HELP,(AW_CL)"input_mask.hlp");      aws->create_button(ID("HELP"),"HELP","H");
+            aws->callback(AW_POPUP_HELP, (AW_CL)"input_mask.hlp");      aws->create_button(ID("HELP"), "HELP", "H");
 
             if (edit_reload) {
-                aws->callback(AWT_edit_input_mask, (AW_CL)&mask->mask_global()->get_maskname(), (AW_CL)mask->mask_global()->is_local_mask());   aws->create_button(0, "EDIT","E");
-                aws->callback(AWT_reload_input_mask, (AW_CL)&mask->mask_global()->get_internal_maskname());                                     aws->create_button(0, "RELOAD","R");
+                aws->callback(AWT_edit_input_mask, (AW_CL)&mask->mask_global()->get_maskname(), (AW_CL)mask->mask_global()->is_local_mask());   aws->create_button(0, "EDIT", "E");
+                aws->callback(AWT_reload_input_mask, (AW_CL)&mask->mask_global()->get_internal_maskname());                                     aws->create_button(0, "RELOAD", "R");
             }
 
             if (edit_reload && edit_enable && show_marked) aws->at_newline();
@@ -1575,8 +1575,8 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                 if (line == "@MASK_END") {
                     mask_ended = true;
                 }
-                else  {
-                PARSE_REST_OF_LINE:
+                else {
+                PARSE_REST_OF_LINE :
                     was_last_parameter = false;
                     size_t start       = next_non_white(line, 0);
                     if (start != string::npos) { // line contains sth
@@ -1745,7 +1745,7 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                                             awt_assert(cl_arg1);
                                             awt_assert(cl_arg2);
 
-                                            aws->callback( cb, (AW_CL)cl_arg1, (AW_CL)cl_arg2);
+                                            aws->callback(cb, (AW_CL)cl_arg1, (AW_CL)cl_arg2);
                                             aws->button_length(label.length()+2);
                                             aws->create_button(key, label.c_str());
                                         }
@@ -2300,8 +2300,8 @@ static void create_new_input_mask(AW_window *aww, AW_CL cl_item_type, AW_CL) { /
         aws->button_length(10);
         aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", 0);
-        aws->callback(AW_POPUP_HELP,(AW_CL)"input_mask_new.hlp");
-        aws->create_button("HELP", "HELP","H");
+        aws->callback(AW_POPUP_HELP, (AW_CL)"input_mask_new.hlp");
+        aws->create_button("HELP", "HELP", "H");
 
         aws->at_newline();
 
@@ -2336,7 +2336,7 @@ static void create_new_input_mask(AW_window *aww, AW_CL cl_item_type, AW_CL) { /
         aws->at_newline();
 
         aws->callback(create_new_mask_cb);
-        aws->create_button("CREATE", "CREATE","C");
+        aws->create_button("CREATE", "CREATE", "C");
 
         aws->window_fit();
     }
@@ -2360,7 +2360,7 @@ void AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_ite
     for (int scope = 0; scope <= 1; ++scope) {
         bool entries_made = false;
 
-        for (int id = 0; ;++id) {
+        for (int id = 0; ; ++id) {
             const awt_input_mask_descriptor *descriptor = AWT_look_input_mask(id);
 
             if (!descriptor) break;

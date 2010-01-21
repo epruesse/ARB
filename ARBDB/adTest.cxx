@@ -21,17 +21,17 @@ void err_hook() {
     x=x;
 }
 
-#define err(gbd,quark,type,mess) \
+#define err(gbd, quark, type, mess) \
     do { \
-        fprintf(stderr, "(%s*)0x%p(=%s) %s (in (%s*)0x%p(=%s))\n",\
-            type,gbd,Main->keys[quark].key,mess,\
-            actType,actData,Main->keys[actQuark].key); \
+        fprintf(stderr, "(%s*)0x%p(=%s) %s (in (%s*)0x%p(=%s))\n", \
+            type, gbd, Main->keys[quark].key, mess, \
+            actType, actData, Main->keys[actQuark].key); \
         err=1; \
-        err_hook();\
+        err_hook(); \
     } while (0)
 
-#define errGBD(gbd,quark,mess) err(gbd,quark,"GBDATA",mess)
-#define errGBC(gbc,quark,mess) err(gbc,quark,"GBCONTAINER",mess)
+#define errGBD(gbd, quark, mess) err(gbd, quark, "GBDATA", mess)
+#define errGBC(gbc, quark, mess) err(gbc, quark, "GBCONTAINER", mess)
 
 void testData(GB_MAIN_TYPE *Main, GBDATA *gbd, long server_id, GBQUARK key_quark)
 {
@@ -44,7 +44,7 @@ void testData(GB_MAIN_TYPE *Main, GBDATA *gbd, long server_id, GBQUARK key_quark
     if (gbd->server_id != server_id) errGBD(gbd, key_quark, "illegal server id");
 }
 
-void testContainer(GB_MAIN_TYPE *Main,GBCONTAINER *gbc, long server_id, GBQUARK key_quark)
+void testContainer(GB_MAIN_TYPE *Main, GBCONTAINER *gbc, long server_id, GBQUARK key_quark)
 {
     struct gb_header_list_struct *header;
 
@@ -80,25 +80,25 @@ void testContainer(GB_MAIN_TYPE *Main,GBCONTAINER *gbc, long server_id, GBQUARK 
         }
 
 
-        if (!gbd) errGBC(gbc,key_quark,"NULL-GBDATA in header-list");
+        if (!gbd) errGBC(gbc, key_quark, "NULL-GBDATA in header-list");
 
         type = GB_TYPE(gbd);
 
-        if (type==GB_DB) testContainer(Main,(GBCONTAINER*)gbd, server_id, quark);
-        else         testData(Main,gbd,server_id,quark);
+        if (type==GB_DB) testContainer(Main, (GBCONTAINER*)gbd, server_id, quark);
+        else         testData(Main, gbd, server_id, quark);
 
         father = GB_FATHER(gbd);
         if (!father) {
             errGBD(gbd, quark, "has no father.");
         }
         else if (father!=gbc) {
-            errGBD(gbd, quark,"is not son of..");
+            errGBD(gbd, quark, "is not son of..");
         }
         else if (gbd->index!=item) {
-            errGBD(gbd, quark,"index mismatch..");
+            errGBD(gbd, quark, "index mismatch..");
         }
         else if (err) {
-            errGBD(gbd, quark,"is correct connected to..");
+            errGBD(gbd, quark, "is correct connected to..");
         }
     }
 
@@ -132,7 +132,7 @@ void gb_testDB(GBDATA *gbd)
 
     gbc = Main->data;
     if (!gbc) {
-        err(Main, actQuark, "GB_MAIN_TYPE","has no data");
+        err(Main, actQuark, "GB_MAIN_TYPE", "has no data");
     }
 
     server_id = gbc->server_id;
@@ -144,7 +144,7 @@ void gb_testDB(GBDATA *gbd)
         errGBC(Main->dummy_father, actQuark, "illegal server id");
     }
 
-    if (!err) testContainer(Main,gbc,server_id,0);
+    if (!err) testContainer(Main, gbc, server_id, 0);
 
     printf("testDB passed.\n");
 }

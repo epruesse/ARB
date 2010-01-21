@@ -16,7 +16,7 @@
 
 #define SPECIES_NAME_LEN 10    // only for displaying speciesnames
 
-typedef enum  {
+typedef enum {
     DI_G_STANDARD,
     DI_G_NAMES,
     DI_G_RULER,
@@ -49,7 +49,7 @@ class DI_dmatrix {
     double  min_view_dist;        // m[i][j]<min_view_dist -> ascii ; else small slider
     double  max_view_dist;        // m[i][j]>max_view_dist -> ascii ; else small slider
 
-    void set_scrollbar_steps(long width,long hight,long xinc,long yinc);
+    void set_scrollbar_steps(long width, long hight, long xinc, long yinc);
 
 public:
     AW_window *awm;

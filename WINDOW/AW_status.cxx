@@ -103,8 +103,8 @@ struct aw_stg_struct {
     long       last_estimation[AW_EST_BUFFER];
     long       last_used_est;
 } aw_stg = {
-    {0,0},                                          // fd_to
-    {0,0},                                          // fd_from
+    { 0, 0 },                                       // fd_to
+    { 0, 0 },                                       // fd_from
     AW_STATUS_OK,                                   // mode
     0,                                              // hide
     0,                                              // hide_delay
@@ -115,7 +115,7 @@ struct aw_stg_struct {
     0,                                              // aws
     0,                                              // awm
     false,                                          // status_initialized
-    { 0,0,0 },                                      // lines
+    { 0, 0, 0 },                                    // lines
     false,                                          // need_refresh
     0,                                              // last_refresh_time
     0,                                              // last_message_time
@@ -224,7 +224,7 @@ static ssize_t safe_write(int fd, const char *buf, int count) {
     return result;
 }
 
-static void aw_status_write( int fd, int cmd) {
+static void aw_status_write(int fd, int cmd) {
     char buf = cmd;
     safe_write(fd, &buf, 1);
 }
@@ -236,7 +236,7 @@ static int aw_status_read_byte(int fd, int poll_flag)
     int erg;
     unsigned char buffer[2];
 
-    if (poll_flag){
+    if (poll_flag) {
         fd_set         set;
         struct timeval timeout;
         timeout.tv_sec  = POLL_TIMEOUT/1000;
@@ -245,10 +245,10 @@ static int aw_status_read_byte(int fd, int poll_flag)
         FD_ZERO (&set);
         FD_SET (fd, &set);
 
-        erg = select(FD_SETSIZE,FD_SET_TYPE &set,NULL,NULL,&timeout);
-        if (erg ==0) return EOF;
+        erg = select(FD_SETSIZE, FD_SET_TYPE &set, NULL, NULL, &timeout);
+        if (erg == 0) return EOF;
     }
-    erg = read(fd,(char *)&(buffer[0]),1);
+    erg = read(fd, (char *)&(buffer[0]), 1);
     if (erg<=0) {
         //      process died
         fprintf(stderr, "father died, now i kill myself\n");
@@ -264,7 +264,7 @@ static int aw_status_read_int(int fd, int poll_flag) {
     int erg;
     unsigned char buffer[sizeof(int)+1];
 
-    if (poll_flag){
+    if (poll_flag) {
         fd_set set;
         struct timeval timeout;
         timeout.tv_sec  = POLL_TIMEOUT/1000;
@@ -273,10 +273,10 @@ static int aw_status_read_int(int fd, int poll_flag) {
         FD_ZERO (&set);
         FD_SET (fd, &set);
 
-        erg = select(FD_SETSIZE,FD_SET_TYPE &set,NULL,NULL,&timeout);
+        erg = select(FD_SETSIZE, FD_SET_TYPE &set, NULL, NULL, &timeout);
         if (erg == 0) return EOF;
     }
-    erg = read(fd,(char *)buffer,sizeof(int));
+    erg = read(fd, (char *)buffer, sizeof(int));
     if (erg<=0) {
         //      process died
         fprintf(stderr, "father died, now i kill myself\n");
@@ -288,17 +288,17 @@ static int aw_status_read_int(int fd, int poll_flag) {
 static int aw_status_read_command(int fd, int poll_flag, char*& str, int *gaugePtr = 0)
 {
     char buffer[1024];
-    int  cmd = aw_status_read_byte(fd,poll_flag);
+    int  cmd = aw_status_read_byte(fd, poll_flag);
 
-    if (    cmd == AW_STATUS_CMD_TEXT ||
+    if (cmd == AW_STATUS_CMD_TEXT ||
             cmd == AW_STATUS_CMD_OPEN ||
-            cmd == AW_STATUS_CMD_MESSAGE ) {
+            cmd == AW_STATUS_CMD_MESSAGE) {
         char *p = buffer;
         int c;
         for (
-             c = aw_status_read_byte(fd,0);
+             c = aw_status_read_byte(fd, 0);
              c;
-             c = aw_status_read_byte(fd,0)){
+             c = aw_status_read_byte(fd, 0)) {
             *(p++) = c;
         }
         *(p++) = c;
@@ -306,15 +306,15 @@ static int aw_status_read_command(int fd, int poll_flag, char*& str, int *gaugeP
         str = strdup(buffer);
     }
     else if (cmd == AW_STATUS_CMD_GAUGE) {
-        int gauge = aw_status_read_int(fd,0);
+        int gauge = aw_status_read_int(fd, 0);
         if (gaugePtr) *gaugePtr = gauge;
 
         char *p = buffer;
         int   i = 0;
 
         int rough_gauge = (gauge*AW_GAUGE_SIZE)/AW_GAUGE_GRANULARITY;
-        for (;i<rough_gauge && i<AW_GAUGE_SIZE;++i) *p++ = '*';
-        for (;i<AW_GAUGE_SIZE;++i) *p++ = '-';
+        for (; i<rough_gauge && i<AW_GAUGE_SIZE; ++i) *p++ = '*';
+        for (; i<AW_GAUGE_SIZE; ++i) *p++ = '-';
 
         if (rough_gauge<AW_GAUGE_SIZE) {
             int fine_gauge = (gauge*AW_GAUGE_SIZE*4)/AW_GAUGE_GRANULARITY;
@@ -332,7 +332,7 @@ static int aw_status_read_command(int fd, int poll_flag, char*& str, int *gaugeP
 
 static void aw_status_check_pipe()
 {
-    if (getppid() <= 1 ) {
+    if (getppid() <= 1) {
 #if defined(TRACE_STATUS)
         fprintf(stderr, "Terminating status process.\n");
 #endif // TRACE_STATUS
@@ -347,7 +347,7 @@ static void aw_status_wait_for_open(int fd)
     int erg;
 
     for (cmd = 0; cmd != AW_STATUS_CMD_INIT;) {
-        for (erg = 0; !erg; ) {
+        for (erg = 0; !erg;) {
             struct timeval timeout;
             timeout.tv_sec  = AW_STATUS_PIPE_CHECK_DELAY / 1000;
             timeout.tv_usec = AW_STATUS_PIPE_CHECK_DELAY % 1000;
@@ -360,11 +360,11 @@ static void aw_status_wait_for_open(int fd)
 #if defined(TRACE_STATUS)
             fprintf(stderr, "Waiting for status open command..\n"); fflush(stderr);
 #endif // TRACE_STATUS
-            erg = select(FD_SETSIZE,FD_SET_TYPE &set,NULL,NULL,&timeout);
+            erg = select(FD_SETSIZE, FD_SET_TYPE &set, NULL, NULL, &timeout);
             if (!erg) aw_status_check_pipe();   // time out
         }
         free(str);
-        cmd = aw_status_read_command(fd,0,str);
+        cmd = aw_status_read_command(fd, 0, str);
     }
     aw_stg.mode = AW_STATUS_OK;
     free(str);
@@ -444,8 +444,8 @@ static void aw_status_timer_event(AW_root *awr, AW_CL, AW_CL)
 
 static void aw_status_kill(AW_window *aws)
 {
-    if (aw_stg.mode == AW_STATUS_ABORT){
-        aw_status_timer_event( aws->get_root(), 0, 0);
+    if (aw_stg.mode == AW_STATUS_ABORT) {
+        aw_status_timer_event(aws->get_root(), 0, 0);
         if (aw_stg.mode == AW_STATUS_OK) { // continue
             return;
         }
@@ -470,10 +470,10 @@ static void aw_status_kill(AW_window *aws)
 static void aw_refresh_tmp_message_display(AW_root *awr) {
     GBS_strstruct *stru = GBS_stropen(AW_MESSAGE_LINES*60); // guessed size
 
-    for (int i = AW_MESSAGE_LINES-1; i>=0; i--){
+    for (int i = AW_MESSAGE_LINES-1; i>=0; i--) {
         if (aw_stg.lines[i]) {
-            GBS_strcat(stru,aw_stg.lines[i]);
-            GBS_chrcat(stru,'\n');
+            GBS_strcat(stru, aw_stg.lines[i]);
+            GBS_chrcat(stru, '\n');
         }
     };
 
@@ -487,7 +487,7 @@ static void aw_refresh_tmp_message_display(AW_root *awr) {
 
 static void aw_insert_message_in_tmp_message_delayed(const char *message) {
     free(aw_stg.lines[0]);
-    for (int i = 1; i< AW_MESSAGE_LINES; i++){
+    for (int i = 1; i< AW_MESSAGE_LINES; i++) {
         aw_stg.lines[i-1] = aw_stg.lines[i];
     };
 
@@ -532,7 +532,7 @@ static void aw_insert_message_in_tmp_message_delayed(const char *message) {
     aw_stg.need_refresh = true;
 }
 
-static void aw_insert_message_in_tmp_message(AW_root *awr,const char *message) {
+static void aw_insert_message_in_tmp_message(AW_root *awr, const char *message) {
     aw_insert_message_in_tmp_message_delayed(message);
     aw_refresh_tmp_message_display(awr);
 }
@@ -594,8 +594,8 @@ static void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
         aw_refresh_tmp_message_display(awr); // force refresh each second
     }
 
-    cmd = aw_status_read_command( aw_stg.fd_to[0], 1, str, &gaugeValue);
-    if (cmd == EOF){
+    cmd = aw_status_read_command(aw_stg.fd_to[0], 1, str, &gaugeValue);
+    if (cmd == EOF) {
         aw_status_check_pipe();
         delay = delay*3/2+1;      // wait a longer time
         if (aw_stg.need_refresh) aw_refresh_tmp_message_display(awr); // and do the refresh here
@@ -605,7 +605,7 @@ static void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
     }
     char *gauge = 0;
     while (cmd != EOF) {
-        switch(cmd) {
+        switch (cmd) {
             case AW_STATUS_CMD_OPEN:
 #if defined(TRACE_STATUS)
                 fprintf(stderr, "received AW_STATUS_CMD_OPEN\n"); fflush(stdout);
@@ -674,7 +674,7 @@ static void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
                         int  i;
                         
                         for (i = 0; i<AW_EST_BUFFER; ++i) {
-                            used_estimation +=aw_stg.last_estimation[i];
+                            used_estimation += aw_stg.last_estimation[i];
                         }
                         used_estimation /= AW_EST_BUFFER;
 
@@ -723,14 +723,14 @@ static void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
                 break;
         }
         free(str);
-        cmd = aw_status_read_command( aw_stg.fd_to[0],1,str, &gaugeValue);
+        cmd = aw_status_read_command(aw_stg.fd_to[0], 1, str, &gaugeValue);
     }
 
 #if defined(TRACE_STATUS_MORE)
     fprintf(stderr, "exited while loop\n"); fflush(stdout);
 #endif // TRACE_STATUS_MORE
 
-    if (gauge){
+    if (gauge) {
         awr->awar(AWAR_STATUS_GAUGE)->write_string(gauge);
         free(gauge);
     }
@@ -739,7 +739,7 @@ static void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
 #if defined(TRACE_STATUS_MORE)
     fprintf(stderr, "add aw_status_timer_listen_event with delay = %i\n", delay); fflush(stdout);
 #endif // TRACE_STATUS_MORE
-    awr->add_timed_callback_never_disabled(delay,aw_status_timer_listen_event, 0, 0);
+    awr->add_timed_callback_never_disabled(delay, aw_status_timer_listen_event, 0, 0);
 }
 
 void aw_clear_message_cb(AW_window *aww)
@@ -747,7 +747,7 @@ void aw_clear_message_cb(AW_window *aww)
     int i;
     AW_root *awr = aww->get_root();
     for (i = 0; i< AW_MESSAGE_LINES; i++) freenull(aw_stg.lines[i]);
-    awr->awar(AWAR_ERROR_MESSAGES)->write_string("" );
+    awr->awar(AWAR_ERROR_MESSAGES)->write_string("");
 }
 
 static void aw_clear_and_hide_message_cb(AW_window *aww) {
@@ -755,7 +755,7 @@ static void aw_clear_and_hide_message_cb(AW_window *aww) {
     AW_POPDOWN(aww);
 }
 
-void aw_initstatus( void )
+void aw_initstatus(void)
 {
     int error;
 
@@ -797,29 +797,29 @@ void aw_initstatus( void )
 
         AW_default aw_default = aw_root->open_default(".arb_prop/status.arb");
         aw_root->init_variables(aw_default);
-        aw_root->awar_string( AWAR_STATUS_TITLE,"------------------------------------",aw_default);
-        aw_root->awar_string( AWAR_STATUS_TEXT,"",aw_default);
-        aw_root->awar_string( AWAR_STATUS_GAUGE,"------------------------------------",aw_default);
-        aw_root->awar_string( AWAR_STATUS_ELAPSED,"",aw_default);
-        aw_root->awar_string( AWAR_ERROR_MESSAGES,"",aw_default);
+        aw_root->awar_string(AWAR_STATUS_TITLE, "------------------------------------", aw_default);
+        aw_root->awar_string(AWAR_STATUS_TEXT, "", aw_default);
+        aw_root->awar_string(AWAR_STATUS_GAUGE, "------------------------------------", aw_default);
+        aw_root->awar_string(AWAR_STATUS_ELAPSED, "", aw_default);
+        aw_root->awar_string(AWAR_ERROR_MESSAGES, "", aw_default);
         aw_root->init_root("ARB_STATUS", true);
 
         AW_window_simple *aws = new AW_window_simple;
-        aws->init( aw_root, "STATUS_BOX", "STATUS BOX");
+        aws->init(aw_root, "STATUS_BOX", "STATUS BOX");
         aws->load_xfig("status.fig");
 
         aws->button_length(AW_GAUGE_SIZE+4);
         aws->at("Titel");
-        aws->create_button(0,AWAR_STATUS_TITLE);
+        aws->create_button(0, AWAR_STATUS_TITLE);
 
         aws->at("Text");
-        aws->create_button(0,AWAR_STATUS_TEXT);
+        aws->create_button(0, AWAR_STATUS_TEXT);
 
         aws->at("Gauge");
-        aws->create_button(0,AWAR_STATUS_GAUGE);
+        aws->create_button(0, AWAR_STATUS_GAUGE);
 
         aws->at("elapsed");
-        aws->create_button(0,AWAR_STATUS_ELAPSED);
+        aws->create_button(0, AWAR_STATUS_ELAPSED);
 
         aws->at("Hide");
         aws->callback(aw_status_hide);
@@ -833,23 +833,23 @@ void aw_initstatus( void )
         aw_stg.aws = aws;
 
         AW_window_simple *awm = new AW_window_simple;
-        awm->init( aw_root, "MESSAGE_BOX", "MESSAGE BOX");
+        awm->init(aw_root, "MESSAGE_BOX", "MESSAGE BOX");
         awm->load_xfig("message.fig");
 
         awm->at("Message");
-        awm->create_text_field(AWAR_ERROR_MESSAGES,10,2);
+        awm->create_text_field(AWAR_ERROR_MESSAGES, 10, 2);
 
         awm->at("Hide");
         awm->callback(AW_POPDOWN);
-        awm->create_button("HIDE","Hide", "h");
+        awm->create_button("HIDE", "Hide", "h");
 
         awm->at("Clear");
         awm->callback(aw_clear_message_cb);
-        awm->create_button("CLEAR", "Clear","C");
+        awm->create_button("CLEAR", "Clear", "C");
 
         awm->at("HideNClear");
         awm->callback(aw_clear_and_hide_message_cb);
-        awm->create_button("HIDE_CLEAR", "Ok","O");
+        awm->create_button("HIDE_CLEAR", "Ok", "O");
 
         aw_stg.awm = awm;
 
@@ -870,18 +870,18 @@ void aw_initstatus( void )
 
 
 
-void aw_openstatus( const char *title )
+void aw_openstatus(const char *title)
 {
     aw_stg.mode = AW_STATUS_OK;
-    if ( !aw_stg.status_initialized) {
+    if (!aw_stg.status_initialized) {
         aw_stg.status_initialized = true;
         aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_INIT);
     }
     aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_OPEN);
-    safe_write(aw_stg.fd_to[1], title, strlen(title)+1 );
+    safe_write(aw_stg.fd_to[1], title, strlen(title)+1);
 }
 
-void aw_closestatus( void )
+void aw_closestatus(void)
 {
     aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_CLOSE);
 }
@@ -892,7 +892,7 @@ int aw_status(const char *text) {
     aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_TEXT);
     int len = strlen(text)+1;
 
-    safe_write(aw_stg.fd_to[1], text, len );
+    safe_write(aw_stg.fd_to[1], text, len);
 
     return aw_status();
 }
@@ -916,9 +916,9 @@ int aw_status() {
     char *str = 0;
     int cmd;
     if (aw_stg.mode == AW_STATUS_ABORT) return AW_STATUS_ABORT;
-    for (   cmd = 0;
+    for (cmd = 0;
             cmd != EOF;
-            cmd = aw_status_read_command(aw_stg.fd_from[0],1,str)){
+            cmd = aw_status_read_command(aw_stg.fd_from[0], 1, str)) {
         delete str;
         if (cmd == AW_STATUS_ABORT)     aw_stg.mode = AW_STATUS_ABORT;
     }
@@ -931,10 +931,10 @@ int aw_status() {
 /***********************************************************************/
 int aw_message_cb_result;
 
-void message_cb( AW_window *aw, AW_CL cd1 ) {
+void message_cb(AW_window *aw, AW_CL cd1) {
     AWUSE(aw);
     long result = (long)cd1;
-    if ( result == -1 ) { /* exit */
+    if (result == -1) { /* exit */
         exit(EXIT_FAILURE);
     }
     aw_message_cb_result = ((int)result);
@@ -956,7 +956,7 @@ static void aw_message_timer_listen_event(AW_root *awr, AW_CL cl1, AW_CL cl2)
     }
 }
 
-void aw_set_local_message(){
+void aw_set_local_message() {
     aw_stg.local_message = 1;
 }
 
@@ -1029,13 +1029,13 @@ int aw_question(const char *question, const char *buttons, bool fixedSizeButtons
         aw_msg = new AW_window_message;
         GBS_write_hash(hash_windows, hindex, (long)aw_msg);
 
-        aw_msg->init( root, "QUESTION BOX", false);
+        aw_msg->init(root, "QUESTION BOX", false);
         aw_msg->recalc_size_atShow(AW_RESIZE_DEFAULT); // force size recalc (ignores user size)
 
-        aw_msg->label_length( 10 );
+        aw_msg->label_length(10);
 
-        aw_msg->at( 10, 10 );
-        aw_msg->auto_space( 10, 10 );
+        aw_msg->at(10, 10);
+        aw_msg->auto_space(10, 10);
 
         aw_msg->button_length(question_length+1);
         aw_msg->button_height(question_lines);
@@ -1068,14 +1068,14 @@ int aw_question(const char *question, const char *buttons, bool fixedSizeButtons
         }
 
         // insert the buttons:
-        char *ret              = strtok( button_list, "," );
+        char *ret              = strtok(button_list, ",");
         bool  help_button_done = false;
         int   counter          = 0;
 
-        while( ret ) {
+        while (ret) {
             if (ret[0] == '^') {
                 if (helpfile && !help_button_done) {
-                    aw_msg->callback(AW_POPUP_HELP,(AW_CL)helpfile);
+                    aw_msg->callback(AW_POPUP_HELP, (AW_CL)helpfile);
                     aw_msg->create_button("HELP", "HELP", "H");
                     help_button_done = true;
                 }
@@ -1090,16 +1090,16 @@ int aw_question(const char *question, const char *buttons, bool fixedSizeButtons
             }
 
             if (fixedSizeButtons) {
-                aw_msg->create_button( 0,ret);
+                aw_msg->create_button(0, ret);
             }
             else {
-                aw_msg->create_autosize_button( 0,ret);
+                aw_msg->create_autosize_button(0, ret);
             }
-            ret = strtok( NULL, "," );
+            ret = strtok(NULL, ",");
         }
 
         if (helpfile && !help_button_done) { // if not done above
-            aw_msg->callback(AW_POPUP_HELP,(AW_CL)helpfile);
+            aw_msg->callback(AW_POPUP_HELP, (AW_CL)helpfile);
             aw_msg->create_button("HELP", "HELP", "H");
             help_button_done = true;
         }
@@ -1124,13 +1124,13 @@ int aw_question(const char *question, const char *buttons, bool fixedSizeButtons
     root->disable_callbacks = false;
     aw_msg->hide();
 
-    switch ( aw_message_cb_result ) {
+    switch (aw_message_cb_result) {
         case -1:                /* exit with core */
             fprintf(stderr, "Core dump requested\n");
             ARB_SIGSEGV(1);
             break;
         case -2:                /* exit without core */
-            exit( -1 );
+            exit(-1);
             break;
     }
     return aw_message_cb_result;
@@ -1141,7 +1141,7 @@ void aw_message(const char *msg) {
     printf("aw_message: '%s'\n", msg);
 #endif // DEBUG
     if (aw_stg.local_message) {
-        aw_insert_message_in_tmp_message(AW_root::THIS,msg);
+        aw_insert_message_in_tmp_message(AW_root::THIS, msg);
     }
     else {
         if (!aw_stg.status_initialized) {
@@ -1161,10 +1161,10 @@ char AW_ERROR_BUFFER[1024];
 
 void aw_message() { aw_message(AW_ERROR_BUFFER); }
 
-void aw_error(const char *text,const char *text2){
+void aw_error(const char *text, const char *text2) {
     char    buffer[1024];
-    sprintf(buffer,"An internal error occur:\n\n%s %s\n\nYou may:",text,text2);
-    aw_question(buffer,"Continue,EXIT");
+    sprintf(buffer, "An internal error occur:\n\n%s %s\n\nYou may:", text, text2);
+    aw_question(buffer, "Continue,EXIT");
 }
 
 /***********************************************************************/
@@ -1584,7 +1584,7 @@ char *aw_string_selection2awar(const char *title, const char *prompt, const char
 // --------------------------
 //      aw_file_selection
 
-char *aw_file_selection( const char *title, const char *dir, const char *def_name, const char *suffix ) {
+char *aw_file_selection(const char *title, const char *dir, const char *def_name, const char *suffix) {
     AW_root *root = AW_root::THIS;
 
     static AW_window_simple *aw_msg = 0;
@@ -1619,12 +1619,12 @@ char *aw_file_selection( const char *title, const char *dir, const char *def_nam
         aw_msg->button_length(7);
 
         aw_msg->at("ok");
-        aw_msg->callback     ( file_selection_cb, 0 );
-        aw_msg->create_button( "OK", "OK", "O" );
+        aw_msg->callback     (file_selection_cb, 0);
+        aw_msg->create_button("OK", "OK", "O");
 
         aw_msg->at("cancel");
-        aw_msg->callback     ( file_selection_cb, -1 );
-        aw_msg->create_button( "CANCEL", "CANCEL", "C" );
+        aw_msg->callback     (file_selection_cb, -1);
+        aw_msg->create_button("CANCEL", "CANCEL", "C");
 
         aw_msg->window_fit();
     }
@@ -1765,7 +1765,7 @@ static char *get_local_help_url(AW_root *awr) {
 static void aw_help_edit_help(AW_window *aww) {
     char *helpfile = get_full_qualified_help_file_name(aww->get_root(), true);
 
-    if (GB_size_of_file(helpfile)<=0){
+    if (GB_size_of_file(helpfile)<=0) {
 #if defined(DEBUG)
         const char *base = GB_path_in_ARBHOME("HELP_SOURCE/oldhelp", NULL);
 #else
@@ -1785,8 +1785,8 @@ static void aw_help_edit_help(AW_window *aww) {
 static char *aw_ref_to_title(char *ref) {
     if (!ref) return 0;
 
-    if (GBS_string_matches(ref,"*.ps",GB_IGNORE_CASE)) {    // Postscript file
-        return GBS_global_string_copy("Postscript: %s",ref);
+    if (GBS_string_matches(ref, "*.ps", GB_IGNORE_CASE)) {   // Postscript file
+        return GBS_global_string_copy("Postscript: %s", ref);
     }
 
     char *result = 0;
@@ -1798,7 +1798,7 @@ static char *aw_ref_to_title(char *ref) {
     }
 
     if (file) {
-        result = GBS_string_eval(file,"*\nTITLE*\n*=*2:\t=",0);
+        result = GBS_string_eval(file, "*\nTITLE*\n*=*2:\t=", 0);
         if (strcmp(file, result)==0) freenull(result);
         free(file);
     }
@@ -1891,22 +1891,22 @@ static void aw_help_helpfile_changed_cb(AW_root *awr) {
     if (!strlen(help_file)) {
         awr->awar(AWAR_HELPTEXT)->write_string("no help");
     }
-    else if (GBS_string_matches(help_file,"*.ps",GB_IGNORE_CASE) ){ // Postscript file
+    else if (GBS_string_matches(help_file, "*.ps", GB_IGNORE_CASE)) { // Postscript file
         GB_ERROR error = aw_help_show_external_format(help_file, GB_getenvARB_GS());
         if (error) aw_message(error);
         aw_help_select_newest_in_history(awr);
     }
-    else if (GBS_string_matches(help_file,"*.pdf",GB_IGNORE_CASE) ){ // PDF file
+    else if (GBS_string_matches(help_file, "*.pdf", GB_IGNORE_CASE)) { // PDF file
         GB_ERROR error = aw_help_show_external_format(help_file, GB_getenvARB_PDFVIEW());
         if (error) aw_message(error);
         aw_help_select_newest_in_history(awr);
     }
-    else{
-        if (aw_help_global.history){
-            if (strncmp(help_file,aw_help_global.history,strlen(help_file)) != 0) {
+    else {
+        if (aw_help_global.history) {
+            if (strncmp(help_file, aw_help_global.history, strlen(help_file)) != 0) {
                 // remove current help from history (if present) and prefix it to history
                 char *comm = GBS_global_string_copy("*#%s*=*1*2:*=%s#*1", help_file, help_file);
-                char *h    = GBS_string_eval(aw_help_global.history,comm,0);
+                char *h    = GBS_string_eval(aw_help_global.history, comm, 0);
 
                 aw_assert(h);
                 freeset(aw_help_global.history, h);
@@ -1920,46 +1920,46 @@ static void aw_help_helpfile_changed_cb(AW_root *awr) {
         char *helptext = GB_read_file(help_file);
         if (helptext) {
             char *ptr;
-            char *h,*h2,*tok;
+            char *h, *h2, *tok;
 
             ptr = strdup(helptext);
             aw_help_global.aww->clear_selection_list(aw_help_global.upid);
-            h2 = GBS_find_string(ptr,"\nUP",0);
-            while ( (h = h2) ){
-                h2 = GBS_find_string(h2+1,"\nUP",0);
-                tok = strtok(h+3," \n\t");  // now I got UP
+            h2 = GBS_find_string(ptr, "\nUP", 0);
+            while ((h = h2)) {
+                h2 = GBS_find_string(h2+1, "\nUP", 0);
+                tok = strtok(h+3, " \n\t");  // now I got UP
                 char *title = aw_ref_to_title(tok);
-                if (tok) aw_help_global.aww->insert_selection(aw_help_global.upid,title,tok);
+                if (tok) aw_help_global.aww->insert_selection(aw_help_global.upid, title, tok);
                 free(title);
             }
             free(ptr);
-            aw_help_global.aww->insert_default_selection(aw_help_global.upid,"   ","");
+            aw_help_global.aww->insert_default_selection(aw_help_global.upid, "   ", "");
             aw_help_global.aww->update_selection_list(aw_help_global.upid);
 
             ptr = strdup(helptext);
             aw_help_global.aww->clear_selection_list(aw_help_global.downid);
-            h2 = GBS_find_string(ptr,"\nSUB",0);
-            while ( (h = h2) ){
-                h2 = GBS_find_string(h2+1,"\nSUB",0);
-                tok = strtok(h+4," \n\t");  // now I got SUB
+            h2 = GBS_find_string(ptr, "\nSUB", 0);
+            while ((h = h2)) {
+                h2 = GBS_find_string(h2+1, "\nSUB", 0);
+                tok = strtok(h+4, " \n\t");  // now I got SUB
                 char *title = aw_ref_to_title(tok);
-                if (tok) aw_help_global.aww->insert_selection(aw_help_global.downid, title,tok);
+                if (tok) aw_help_global.aww->insert_selection(aw_help_global.downid, title, tok);
                 free(title);
             }
             free(ptr);
-            aw_help_global.aww->insert_default_selection(aw_help_global.downid,"   ","");
+            aw_help_global.aww->insert_default_selection(aw_help_global.downid, "   ", "");
             aw_help_global.aww->update_selection_list(aw_help_global.downid);
 
-            ptr = GBS_find_string(helptext,"TITLE",0);
+            ptr = GBS_find_string(helptext, "TITLE", 0);
             if (!ptr) ptr = helptext;
-            ptr = GBS_string_eval(ptr,"{*\\:*}=*2",0);
+            ptr = GBS_string_eval(ptr, "{*\\:*}=*2", 0);
 
             awr->awar(AWAR_HELPTEXT)->write_string(ptr);
             free(ptr);
             free(helptext);
         }
         else {
-            sprintf(AW_ERROR_BUFFER,"I cannot find the help file '%s'\n\n"
+            sprintf(AW_ERROR_BUFFER, "I cannot find the help file '%s'\n\n"
                     "Please help us to complete the ARB-Help by submitting\n"
                     "this missing helplink via ARB_NT/File/About/SubmitBug\n"
                     "Thank you.\n"
@@ -2049,7 +2049,7 @@ static void aw_help_search(AW_window *aww) {
                         rp = eol+1;
                     }
 
-                    fprintf(helpfp,"\nTITLE\t\tResult of search for '%s'\n\n", searchtext);
+                    fprintf(helpfp, "\nTITLE\t\tResult of search for '%s'\n\n", searchtext);
                     if (results>0)  fprintf(helpfp, "\t\t%i results are shown as subtopics\n",  results);
                     else            fprintf(helpfp, "\t\tThere are no results.\n");
 
@@ -2069,7 +2069,7 @@ static void aw_help_search(AW_window *aww) {
     free(searchtext);
 }
 
-void AW_POPUP_HELP(AW_window *aw,AW_CL /*char */ helpcd) {
+void AW_POPUP_HELP(AW_window *aw, AW_CL /* char */ helpcd) {
     static AW_window_simple *helpwindow = 0;
 
     AW_root *awr       = aw->get_root();
@@ -2082,34 +2082,34 @@ void AW_POPUP_HELP(AW_window *aw,AW_CL /*char */ helpcd) {
         awr->awar(AWAR_HELPFILE)->add_callback(aw_help_helpfile_changed_cb);
 
         helpwindow = new AW_window_simple;
-        helpwindow->init(awr,"HELP","HELP WINDOW");
+        helpwindow->init(awr, "HELP", "HELP WINDOW");
         helpwindow->load_xfig("help.fig");
 
         helpwindow->button_length(10);
 
         helpwindow->at("close");
         helpwindow->callback((AW_CB0)AW_POPDOWN);
-        helpwindow->create_button("CLOSE", "CLOSE","C");
+        helpwindow->create_button("CLOSE", "CLOSE", "C");
 
         helpwindow->at("back");
         helpwindow->callback(aw_help_back);
-        helpwindow->create_button("BACK", "BACK","B");
+        helpwindow->create_button("BACK", "BACK", "B");
 
 
         helpwindow->at("super");
-        aw_help_global.upid = helpwindow->create_selection_list(AWAR_HELPFILE,0,0,3,3);
-        helpwindow->insert_default_selection(aw_help_global.upid,"   ","");
+        aw_help_global.upid = helpwindow->create_selection_list(AWAR_HELPFILE, 0, 0, 3, 3);
+        helpwindow->insert_default_selection(aw_help_global.upid, "   ", "");
         helpwindow->update_selection_list(aw_help_global.upid);
 
         helpwindow->at("sub");
-        aw_help_global.downid = helpwindow->create_selection_list(AWAR_HELPFILE,0,0,3,3);
-        helpwindow->insert_default_selection(aw_help_global.downid,"   ","");
+        aw_help_global.downid = helpwindow->create_selection_list(AWAR_HELPFILE, 0, 0, 3, 3);
+        helpwindow->insert_default_selection(aw_help_global.downid, "   ", "");
         helpwindow->update_selection_list(aw_help_global.downid);
         aw_help_global.aww = helpwindow;
         aw_help_global.history = 0;
 
         helpwindow->at("text");
-        helpwindow->create_text_field(AWAR_HELPTEXT,3,3);
+        helpwindow->create_text_field(AWAR_HELPTEXT, 3, 3);
 
         helpwindow->at("browse");
         helpwindow->callback(aw_help_browse);
@@ -2124,7 +2124,7 @@ void AW_POPUP_HELP(AW_window *aw,AW_CL /*char */ helpcd) {
 
         helpwindow->at("edit");
         helpwindow->callback(aw_help_edit_help);
-        helpwindow->create_button("EDIT", "EDIT","E");
+        helpwindow->create_button("EDIT", "EDIT", "E");
 
     }
 
@@ -2132,8 +2132,8 @@ void AW_POPUP_HELP(AW_window *aw,AW_CL /*char */ helpcd) {
 
     awr->awar(AWAR_HELPFILE)->write_string(help_file);
     
-    if (!GBS_string_matches(help_file,"*.ps",GB_IGNORE_CASE) &&
-        !GBS_string_matches(help_file,"*.pdf",GB_IGNORE_CASE))
+    if (!GBS_string_matches(help_file, "*.ps", GB_IGNORE_CASE) &&
+        !GBS_string_matches(help_file, "*.pdf", GB_IGNORE_CASE))
     { // don't open help if postscript or pdf file
         helpwindow->activate();
     }
@@ -2144,17 +2144,17 @@ void AW_POPUP_HELP(AW_window *aw,AW_CL /*char */ helpcd) {
 #warning Check where AW_ERROR is used and maybe use one of the GB_error/terminate functions
 #endif // DEVEL_RALF
 
-void AW_ERROR( const char *templat, ...) {
+void AW_ERROR(const char *templat, ...) {
     char buffer[10000];
     va_list parg;
     char *p;
-    sprintf(buffer,"Internal ARB Error [AW]: ");
+    sprintf(buffer, "Internal ARB Error [AW]: ");
     p = buffer + strlen(buffer);
 
-    va_start(parg,templat);
+    va_start(parg, templat);
 
-    vsprintf(p,templat,parg);
-    fprintf(stderr,"%s\n",buffer);
+    vsprintf(p, templat, parg);
+    fprintf(stderr, "%s\n", buffer);
 
     aw_message(buffer);
     aw_assert(0);

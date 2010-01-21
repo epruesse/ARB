@@ -165,7 +165,7 @@ static ARB_ERROR reverseComplement(GBDATA *gb_species, GB_CSTR ali, int max_prot
     return error;
 }
 
-void AWTC_build_reverse_complement(AW_window *aw, AW_CL cd2)  {
+void AWTC_build_reverse_complement(AW_window *aw, AW_CL cd2) {
     GB_push_transaction(GLOBAL_gb_main);
 
     AW_root        *root              = aw->get_root();
@@ -355,7 +355,7 @@ static inline char alignQuality(char slave, char master)
     if (slave==master)              result = '-';   // equal
     else if (slave==GAP_CHAR)           result = '+';   // inserted gap
     else if (master==GAP_CHAR)          result = '+';   // no gap in master
-    else if (relatedBases(slave,master))    result = '~';   // mutation (related bases)
+    else if (relatedBases(slave, master))   result = '~';   // mutation (related bases)
     return result;                          // mutation (non-related bases)
 }
 
@@ -384,7 +384,7 @@ static char *lstr(const char *s, int len)
 
 static inline char compareChar(char base1, char base2)
 {
-    return base1==base2 ? '=' : (relatedBases(base1,base2) ? 'x' : 'X');
+    return base1==base2 ? '=' : (relatedBases(base1, base2) ? 'x' : 'X');
 }
 static void dump_n_compare_one(const char *seq1, const char *seq2, long len, long offset)
 {
@@ -392,12 +392,12 @@ static void dump_n_compare_one(const char *seq1, const char *seq2, long len, lon
     char compare[BUFLEN+1];
 
     for (long l=0; l<len; l++)
-        compare[l] = AWTC_is_gap(seq1[l]) || AWTC_is_gap(seq2[l]) ? ' ' : compareChar(seq1[l],seq2[l]);
+        compare[l] = AWTC_is_gap(seq1[l]) || AWTC_is_gap(seq2[l]) ? ' ' : compareChar(seq1[l], seq2[l]);
 
     compare[len] = 0;
 
-    printf(" %li '%s'\n", offset, lstr(seq1,len));
-    printf(" %li '%s'\n", offset, lstr(seq2,len));
+    printf(" %li '%s'\n", offset, lstr(seq1, len));
+    printf(" %li '%s'\n", offset, lstr(seq2, len));
     printf(" %li '%s'\n", offset, compare);
 }
 
@@ -473,7 +473,7 @@ static inline void dumpSeq(const char *seq, long len, long pos)
         dumpSeq(bestSlaveLeft.text(), bestLength, bestSlaveLeft.leftOf()); \
         printf("\n");                                                   \
     }                                                                   \
-    while(0)
+    while (0)
 
 #endif /*DEBUG*/
 
@@ -531,7 +531,7 @@ static inline void insertSlaveBases(AWTC_alignBuffer *alignBuffer,
                                     int length,
                                     AWTC_fast_align_report *report)
 {
-    alignBuffer->copy(slave.text(), alignQuality(*slave.text(),GAP_CHAR), length);
+    alignBuffer->copy(slave.text(), alignQuality(*slave.text(), GAP_CHAR), length);
     report->count_unaligned_base(length);
     slave += length;
 }
@@ -567,7 +567,7 @@ static ARB_ERROR insertClustalValigned(AWTC_alignBuffer *alignBuffer,
             if (insert>0) {
                 if (insert>alignBuffer->free()) return bufferTooSmall();
                 alignBuffer->set(GAP_CHAR, alignQuality(GAP_CHAR, GAP_CHAR), insert);
-                awtc_assert(insertsToNextBase(alignBuffer,master)==0);
+                awtc_assert(insertsToNextBase(alignBuffer, master)==0);
                 insert = 0;
             }
 
@@ -642,7 +642,7 @@ static ARB_ERROR insertAligned(AWTC_alignBuffer *alignBuffer,
                 }
                 insertBase(alignBuffer, master, slave, report);
                 partLength--;
-                insert = insertsToNextBase(alignBuffer,master);
+                insert = insertsToNextBase(alignBuffer, master);
             }
 
             awtc_assert(partLength>=0);
@@ -656,13 +656,13 @@ static ARB_ERROR insertAligned(AWTC_alignBuffer *alignBuffer,
         if (insert>0) { // insert gaps into slave
             if (insert>alignBuffer->free()) return bufferTooSmall();
             alignBuffer->set(GAP_CHAR, alignQuality(GAP_CHAR, GAP_CHAR), insert);
-            awtc_assert(insertsToNextBase(alignBuffer,master)==0);
+            awtc_assert(insertsToNextBase(alignBuffer, master)==0);
         }
 
         awtc_assert(partLength>=0);
 
         while (partLength--) {
-            insert = insertsToNextBase(alignBuffer,master);
+            insert = insertsToNextBase(alignBuffer, master);
 
             awtc_assert(insert>=0);
             if (insert>0) {
@@ -763,9 +763,9 @@ static ARB_ERROR cannot_fast_align(const AWTC_CompactedSubSequence& master, long
                     cmp[l] = gaps || maligned[l]==saligned[l] ? '=' : 'X';
                 }
 
-                printf(" master = '%s'\n", lstr(maligned,len));
-                printf(" slave  = '%s'\n", lstr(saligned,len));
-                printf("          '%s'\n", lstr(cmp,len));
+                printf(" master = '%s'\n", lstr(maligned, len));
+                printf(" slave  = '%s'\n", lstr(saligned, len));
+                printf("          '%s'\n", lstr(cmp, len));
 
                 delete [] cmp;
 #endif
@@ -864,7 +864,7 @@ ARB_ERROR AWTC_FastSearchSequence::fast_align(const AWTC_CompactedSubSequence& s
             AWTC_SequencePosition masterLeft(occurrence.sequence(), occurrence.offset());
             AWTC_SequencePosition masterRight(occurrence.sequence(), occurrence.offset()+3);
             AWTC_SequencePosition slaveLeft(slave);
-            AWTC_SequencePosition slaveRight(slave,3);
+            AWTC_SequencePosition slaveRight(slave, 3);
 
             while (score>0) {
                 if (CAN_SCORE_LEFT()) {
@@ -1179,7 +1179,7 @@ static ARB_ERROR alignCompactedTo(AWTC_CompactedSubSequence     *toAlignSequence
     if (!error) {
         alignBuffer.correctUnalignedPositions();
         if (alignBuffer.free()) {
-            alignBuffer.set('-', alignQuality(GAP_CHAR,GAP_CHAR), alignBuffer.free());  // rest of alignBuffer is set to '-'
+            alignBuffer.set('-', alignQuality(GAP_CHAR, GAP_CHAR), alignBuffer.free()); // rest of alignBuffer is set to '-'
         }
         alignBuffer.expandPoints(*toAlignSequence);
     }
@@ -1220,7 +1220,7 @@ static ARB_ERROR alignCompactedTo(AWTC_CompactedSubSequence     *toAlignSequence
                         if (!buffer) error = GB_await_error();
                         else {
                             int  lenToCopy     = ali_params.lastColumn-ali_params.firstColumn+1;
-                            long wholeChksum   = calcSequenceChecksum(buffer,len);
+                            long wholeChksum   = calcSequenceChecksum(buffer, len);
 
                             memcpy(buffer+ali_params.firstColumn, alignBuffer.text()+ali_params.firstColumn, lenToCopy);  // copy in the aligned part
 
@@ -1228,7 +1228,7 @@ static ARB_ERROR alignCompactedTo(AWTC_CompactedSubSequence     *toAlignSequence
                                 error = "Internal aligner error (sequence checksum changed) -- aborted";
                             }
                             else {
-                                GB_write_string(gbd,"");
+                                GB_write_string(gbd, "");
                                 error = GB_write_string(gbd, buffer);
                             }
                         }
@@ -1373,7 +1373,7 @@ static ARB_ERROR alignToGroupConsensus(GBDATA                  *gb_toAlign,
     for (size_t i = 0; i<cons_len; ++i) { // translate consensus to be accepted by aligner
         switch (consensus[i]) {
             case '=': consensus[i] = '-'; break;
-            default : break;
+            default: break;
         }
     }
 
@@ -2332,7 +2332,7 @@ void AWTC_start_faligning(AW_window *aw, AW_CL cd2) {
 
 
 
-void AWTC_create_faligner_variables(AW_root *root,AW_default db1)
+void AWTC_create_faligner_variables(AW_root *root, AW_default db1)
 {
     root->awar_string(FA_AWAR_REFERENCE_NAME, "<undef>", db1);
 
@@ -2352,7 +2352,7 @@ void AWTC_create_faligner_variables(AW_root *root,AW_default db1)
     root->awar_int(FA_AWAR_SHOW_GAPS_MESSAGES, 1,                   db1);
     root->awar_int(FA_AWAR_USE_SECONDARY,      0,                   db1);
     root->awar_int(AWAR_PT_SERVER,             0,                   db1);
-    root->awar_int(FA_AWAR_NEXT_RELATIVES,     1,                   db1)->set_minmax(1,100);
+    root->awar_int(FA_AWAR_NEXT_RELATIVES,     1,                   db1)->set_minmax(1, 100);
 
     root->awar_string(FA_AWAR_PT_SERVER_ALIGNMENT, root->awar(AWAR_DEFAULT_ALIGNMENT)->read_char_pntr(), db1);
 
@@ -2391,7 +2391,7 @@ void AWTC_awar_set_current_sequence(AW_root *root, AW_default db1)
 }
 
 // sets the aligner reference species to current species
-void AWTC_set_reference_species_name(AW_window */*aww*/, AW_CL cl_AW_root)
+void AWTC_set_reference_species_name(AW_window * /* aww */, AW_CL cl_AW_root)
 {
     AW_root *root     = (AW_root*)cl_AW_root;
     char    *specName = root->awar(AWAR_SPECIES_NAME)->read_string();
@@ -2400,28 +2400,28 @@ void AWTC_set_reference_species_name(AW_window */*aww*/, AW_CL cl_AW_root)
     free(specName);
 }
 
-AW_window *AWTC_create_island_hopping_window(AW_root *root, AW_CL ) {
+AW_window *AWTC_create_island_hopping_window(AW_root *root, AW_CL) {
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init( root, "ISLAND_HOPPING_PARA", "Parameters for Island Hopping");
+    aws->init(root, "ISLAND_HOPPING_PARA", "Parameters for Island Hopping");
     aws->load_xfig("awtc/islandhopping.fig");
 
-    aws->at( "close" );
-    aws->callback     ( (AW_CB0)AW_POPDOWN  );
-    aws->create_button( "CLOSE", "CLOSE", "O" );
+    aws->at("close");
+    aws->callback     ((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "O");
 
-    aws->at( "help" );
-    aws->callback     ( AW_POPUP_HELP, (AW_CL) "islandhopping.hlp"  );
-    aws->create_button( "HELP", "HELP" );
+    aws->at("help");
+    aws->callback     (AW_POPUP_HELP, (AW_CL) "islandhopping.hlp");
+    aws->create_button("HELP", "HELP");
 
     aws->at("use_secondary");
     aws->label("Use secondary structure (only for re-align)");
     aws->create_toggle(FA_AWAR_USE_SECONDARY);
 
     aws->at("freq");
-    aws->create_toggle_field(FA_AWAR_ESTIMATE_BASE_FREQ,"Base freq.","B");
-    aws->insert_default_toggle("Estimate","E",1);
-    aws->insert_toggle("Define here: ","D",0);
+    aws->create_toggle_field(FA_AWAR_ESTIMATE_BASE_FREQ, "Base freq.", "B");
+    aws->insert_default_toggle("Estimate", "E", 1);
+    aws->insert_toggle("Define here: ", "D", 0);
     aws->update_toggle_field();
 
     aws->at("freq_a"); aws->label("A:"); aws->create_input_field(FA_AWAR_BASE_FREQ_A, 4);
@@ -2434,15 +2434,15 @@ AW_window *AWTC_create_island_hopping_window(AW_root *root, AW_CL ) {
         aws->button_length(1);
 
         int dummy;
-        aws->at("h_a"); aws->get_at_position(&xpos[0], &dummy); aws->create_button("A","A");
-        aws->at("h_c"); aws->get_at_position(&xpos[1], &dummy); aws->create_button("C","C");
-        aws->at("h_g"); aws->get_at_position(&xpos[2], &dummy); aws->create_button("G","G");
-        aws->at("h_t"); aws->get_at_position(&xpos[3], &dummy); aws->create_button("T","T");
+        aws->at("h_a"); aws->get_at_position(&xpos[0], &dummy); aws->create_button("A", "A");
+        aws->at("h_c"); aws->get_at_position(&xpos[1], &dummy); aws->create_button("C", "C");
+        aws->at("h_g"); aws->get_at_position(&xpos[2], &dummy); aws->create_button("G", "G");
+        aws->at("h_t"); aws->get_at_position(&xpos[3], &dummy); aws->create_button("T", "T");
 
-        aws->at("v_a"); aws->get_at_position(&dummy, &ypos[0] ); aws->create_button("A","A");
-        aws->at("v_c"); aws->get_at_position(&dummy, &ypos[1] ); aws->create_button("C","C");
-        aws->at("v_g"); aws->get_at_position(&dummy, &ypos[2] ); aws->create_button("G","G");
-        aws->at("v_t"); aws->get_at_position(&dummy, &ypos[3] ); aws->create_button("T","T");
+        aws->at("v_a"); aws->get_at_position(&dummy, &ypos[0]); aws->create_button("A", "A");
+        aws->at("v_c"); aws->get_at_position(&dummy, &ypos[1]); aws->create_button("C", "C");
+        aws->at("v_g"); aws->get_at_position(&dummy, &ypos[2]); aws->create_button("G", "G");
+        aws->at("v_t"); aws->get_at_position(&dummy, &ypos[3]); aws->create_button("T", "T");
     }
 
     aws->at("subst"); aws->create_button("subst_para", "Substitution rate parameters:");
@@ -2500,13 +2500,13 @@ AW_window *AWTC_create_family_settings_window(AW_root *root) {
         aws->init(root, "FAMILY_PARAMS", "Family search paramaters");
         aws->load_xfig("awtc/family_settings.fig");
 
-        aws->at( "close" );
-        aws->callback     ( (AW_CB0)AW_POPDOWN  );
-        aws->create_button( "CLOSE", "CLOSE", "O" );
+        aws->at("close");
+        aws->callback     ((AW_CB0)AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "O");
 
-        aws->at( "help" );
-        aws->callback     ( AW_POPUP_HELP, (AW_CL) "next_neighbours_common.hlp"  );
-        aws->create_button( "HELP", "HELP" );
+        aws->at("help");
+        aws->callback     (AW_POPUP_HELP, (AW_CL) "next_neighbours_common.hlp");
+        aws->create_button("HELP", "HELP");
 
         AWTC_create_common_next_neighbour_fields(aws);
     }
@@ -2518,22 +2518,22 @@ AW_window *AWTC_create_faligner_window(AW_root *root, AW_CL cd2)
 {
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init( root, "INTEGRATED_ALIGNERS", INTEGRATED_ALIGNERS_TITLE);
+    aws->init(root, "INTEGRATED_ALIGNERS", INTEGRATED_ALIGNERS_TITLE);
     aws->load_xfig("awtc/faligner.fig");
 
-    aws->label_length( 10 );
-    aws->button_length( 10 );
+    aws->label_length(10);
+    aws->button_length(10);
 
-    aws->at( "close" );
-    aws->callback     ( (AW_CB0)AW_POPDOWN  );
-    aws->create_button( "CLOSE", "CLOSE", "O" );
+    aws->at("close");
+    aws->callback     ((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "O");
 
-    aws->at( "help" );
-    aws->callback     ( AW_POPUP_HELP, (AW_CL) "faligner.hlp"  );
-    aws->create_button( "HELP", "HELP" );
+    aws->at("help");
+    aws->callback     (AW_POPUP_HELP, (AW_CL) "faligner.hlp");
+    aws->create_button("HELP", "HELP");
 
     aws->at("aligner");
-    aws->create_toggle_field(FA_AWAR_USE_ISLAND_HOPPING,"Aligner","A");
+    aws->create_toggle_field(FA_AWAR_USE_ISLAND_HOPPING, "Aligner", "A");
     aws->insert_default_toggle("Fast aligner",   "F", 0);
     aws->sens_mask(AWM_EXP);
     aws->insert_toggle        ("Island Hopping", "I", 1);
@@ -2549,28 +2549,28 @@ AW_window *AWTC_create_faligner_window(AW_root *root, AW_CL cd2)
 
     aws->button_length(10);
 
-    aws->at( "rev_compl" );
+    aws->at("rev_compl");
     aws->callback(AWTC_build_reverse_complement, cd2);
-    aws->create_button( "reverse_complement", "Turn now!", "");
+    aws->create_button("reverse_complement", "Turn now!", "");
 
     aws->at("what");
-    aws->create_toggle_field(FA_AWAR_TO_ALIGN,"Align what?","A");
+    aws->create_toggle_field(FA_AWAR_TO_ALIGN, "Align what?", "A");
     aws->insert_toggle        ("Current Species:", "A", FA_CURRENT);
     aws->insert_default_toggle("Marked Species",   "M", FA_MARKED);
     aws->insert_toggle        ("Selected Species", "S", FA_SELECTED);
     aws->update_toggle_field();
 
-    aws->at( "swhat" );
-    aws->create_input_field( AWAR_SPECIES_NAME, 2);
+    aws->at("swhat");
+    aws->create_input_field(AWAR_SPECIES_NAME, 2);
 
     aws->at("against");
-    aws->create_toggle_field(FA_AWAR_REFERENCE,"Reference","");
+    aws->create_toggle_field(FA_AWAR_REFERENCE, "Reference", "");
     aws->insert_toggle        ("Species by name:",          "S", FA_REF_EXPLICIT);
     aws->insert_toggle        ("Group consensus",           "K", FA_REF_CONSENSUS);
     aws->insert_default_toggle("Auto search by pt_server:", "A", FA_REF_RELATIVES);
     aws->update_toggle_field();
 
-    aws->at( "sagainst" );
+    aws->at("sagainst");
     aws->create_input_field(FA_AWAR_REFERENCE_NAME, 2);
 
     aws->at("copy");
@@ -2578,7 +2578,7 @@ AW_window *AWTC_create_faligner_window(AW_root *root, AW_CL cd2)
     aws->create_button("Copy", "Copy", "");
 
     aws->label_length(0);
-    aws->at( "pt_server" );
+    aws->at("pt_server");
     awt_create_selection_list_on_pt_servers(aws, AWAR_PT_SERVER, true);
 
     aws->at("use_ali");
@@ -2594,7 +2594,7 @@ AW_window *AWTC_create_faligner_window(AW_root *root, AW_CL cd2)
     
     // Range
 
-    aws->label_length( 10 );
+    aws->label_length(10);
     aws->at("range");
     aws->create_toggle_field(FA_AWAR_RANGE, "Range", "");
     aws->insert_default_toggle("Whole sequence",            "", FA_WHOLE_SEQUENCE);
@@ -2639,10 +2639,10 @@ AW_window *AWTC_create_faligner_window(AW_root *root, AW_CL cd2)
     aws->at("gaps");
     aws->create_toggle(FA_AWAR_SHOW_GAPS_MESSAGES);
 
-    aws->at( "align" );
-    aws->callback     ( AWTC_start_faligning, cd2);
+    aws->at("align");
+    aws->callback     (AWTC_start_faligning, cd2);
     aws->highlight();
-    aws->create_button( "GO", "GO", "G");
+    aws->create_button("GO", "GO", "G");
 
     return (AW_window *)aws;
 }

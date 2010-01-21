@@ -12,11 +12,11 @@
 
 using namespace std;
 
-//*****************************************************************************************
+// *****************************************************************************************
   //                                    size_device
-  //*****************************************************************************************
+  // *****************************************************************************************
 
-  AW_device_size::AW_device_size(AW_common *commoni): AW_device(commoni) {
+  AW_device_size::AW_device_size(AW_common *commoni) : AW_device(commoni) {
       ;
   }
 
@@ -31,7 +31,7 @@ void AW_device_size::init() {
 
 AW_DEVICE_TYPE AW_device_size::type(void) { return AW_DEVICE_SIZE; }
 
-void AW_device_size::privat_reset(void){
+void AW_device_size::privat_reset(void) {
     this->init();
 }
 
@@ -61,12 +61,12 @@ inline void AW_device_size::dot(AW_pos x, AW_pos y) {
 
 bool AW_device_size::invisible(int gc, AW_pos x, AW_pos y, AW_bitset filteri, AW_CL clientdata1, AW_CL clientdata2) {
     if (filteri & filter) dot(x, y);
-    return AW_device::invisible(gc,x,y,filteri,clientdata1,clientdata2);
+    return AW_device::invisible(gc, x, y, filteri, clientdata1, clientdata2);
 }
 
 
 int AW_device_size::line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri, AW_CL clientdata1, AW_CL clientdata2) {
-    AWUSE(clientdata1);AWUSE(clientdata2);
+    AWUSE(clientdata1); AWUSE(clientdata2);
     AWUSE(gc);
 
     if (filteri & filter) {
@@ -78,18 +78,18 @@ int AW_device_size::line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_
 }
 
 int AW_device_size::text(int gc, const char *str, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL clientdata1, AW_CL clientdata2, long opt_strlen) {
-    AWUSE(clientdata1);AWUSE(clientdata2);
+    AWUSE(clientdata1); AWUSE(clientdata2);
 
-    if(filteri & filter) {
+    if (filteri & filter) {
         XFontStruct *xfs = &(common->gcs[gc]->curfont);
         
-        AW_pos X0,Y0;           // Transformed pos
-        this->transform(x,y,X0,Y0);
+        AW_pos X0, Y0;          // Transformed pos
+        this->transform(x, y, X0, Y0);
 
         AW_pos l_ascent  = xfs->max_bounds.ascent;
         AW_pos l_descent = xfs->max_bounds.descent;
         AW_pos l_width   = get_string_size(gc, str, opt_strlen);
-        X0               = common->x_alignment(X0,l_width,alignment);
+        X0               = common->x_alignment(X0, l_width, alignment);
 
         dot_transformed(X0, Y0-l_ascent);
         dot_transformed(X0+l_width, Y0+l_descent);

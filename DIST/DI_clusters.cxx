@@ -159,7 +159,7 @@ static void calculate_clusters(AW_window *aww) {
             char    *use     = aw_root->awar(AWAR_DIST_ALIGNMENT)->read_string();
             AliView *aliview = global_data->weighted_filter.create_aliview(use);
 
-            AP_sequence *seq = GBT_is_alignment_protein(gb_main,use)
+            AP_sequence *seq = GBT_is_alignment_protein(gb_main, use)
                 ? (AP_sequence*)new AP_sequence_simple_protein(aliview)
                 : new AP_sequence_parsimony(aliview);
 
@@ -295,7 +295,7 @@ static void select_cluster(ID id) {
 class GroupTree;
 typedef map<string, GroupTree*> Species2Tip;
 
-class GroupTree: public ARB_countedTree {
+class GroupTree : public ARB_countedTree {
     size_t leaf_count;                              // total number of leafs in subtree
     size_t tagged_count;                            // tagged leafs
 
@@ -306,7 +306,7 @@ public:
         : ARB_countedTree(root)
         , leaf_count(0)
         , tagged_count(0)
-    { }
+    {}
 
     // ARB_countedTree interface
     virtual GroupTree *dup() const { return new GroupTree(const_cast<ARB_tree_root*>(get_tree_root())); }
@@ -673,8 +673,8 @@ static void popup_group_clusters_window(AW_window *aw_clusterList) {
         aws->auto_space(10, 10);
 
         aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE","C");
-        aws->callback(AW_POPUP_HELP,(AW_CL)"cluster_group.hlp");
+        aws->create_button("CLOSE", "CLOSE", "C");
+        aws->callback(AW_POPUP_HELP, (AW_CL)"cluster_group.hlp");
         aws->create_button("HELP", "HELP");
 
         aws->at_newline();
@@ -861,17 +861,17 @@ AW_window *DI_create_cluster_detection_window(AW_root *aw_root, AW_CL cl_weighte
         // store/restore
 
         aws->at("store_all"); aws->callback(store_clusters,  ALL_CLUSTERS); aws->create_button("STOREALL", "Store all");
-        aws->at("store")    ; aws->callback(store_clusters,  SEL_CLUSTER);  aws->create_button("STORESEL", "Store selected");
-        aws->at("restore")  ; aws->callback(restore_clusters);              aws->create_button("RESTORE",  AWAR_CLUSTER_RESTORE_LABEL);
-        aws->at("swap")     ; aws->callback(swap_clusters);                 aws->create_button("Swap",     "Swap stored");
+        aws->at("store");     aws->callback(store_clusters,  SEL_CLUSTER);  aws->create_button("STORESEL", "Store selected");
+        aws->at("restore");   aws->callback(restore_clusters);              aws->create_button("RESTORE",  AWAR_CLUSTER_RESTORE_LABEL);
+        aws->at("swap");      aws->callback(swap_clusters);                 aws->create_button("Swap",     "Swap stored");
 
         // column 4
 
-        aws->at("clear")    ; aws->callback(delete_clusters, ALL_CLUSTERS); aws->create_button("CLEAR",    "Clear list");
-        aws->at("delete")   ; aws->callback(delete_clusters, SEL_CLUSTER) ; aws->create_button("DEL",      "Delete selected");
+        aws->at("clear");     aws->callback(delete_clusters, ALL_CLUSTERS); aws->create_button("CLEAR",    "Clear list");
+        aws->at("delete");    aws->callback(delete_clusters, SEL_CLUSTER);  aws->create_button("DEL",      "Delete selected");
         aws->sens_mask(AWM_DISABLED);
-        aws->at("save")   ; aws->callback(save_clusters)   ; aws->create_button("SAVE",    "Save list");
-        aws->at("load")   ; aws->callback(load_clusters)   ; aws->create_button("LOAD",    "Load list");
+        aws->at("save");    aws->callback(save_clusters);    aws->create_button("SAVE",    "Save list");
+        aws->at("load");    aws->callback(load_clusters);    aws->create_button("LOAD",    "Load list");
         aws->sens_mask(AWM_ALL);
 
 

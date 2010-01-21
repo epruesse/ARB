@@ -81,8 +81,8 @@ typedef struct {
   /* resources */
   int *                attribList;
   XVisualInfo *        visualInfo;
-  Boolean              myList;                /* TRUE if we malloced the attribList*/
-  Boolean              myVisual;        /* TRUE if we created the visualInfo*/
+  Boolean              myList;                /* TRUE if we malloced the attribList */
+  Boolean              myVisual;        /* TRUE if we created the visualInfo */
   Boolean              installColormap;
   Boolean              allocateBackground;
   Boolean              allocateOtherColors;

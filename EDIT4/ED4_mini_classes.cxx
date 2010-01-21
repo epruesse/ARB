@@ -20,7 +20,7 @@
 
 ED4_folding_line::ED4_folding_line()
 {
-    memset((char *)this,0,sizeof(*this));
+    memset((char *)this, 0, sizeof(*this));
 }
 ED4_folding_line::~ED4_folding_line()
 {
@@ -31,7 +31,7 @@ ED4_folding_line::~ED4_folding_line()
 // --------------------------------------------------------------------------------
 
 #ifdef DEBUG
-//# define COUNT_BASES_TABLE_SIZE
+// # define COUNT_BASES_TABLE_SIZE
 #endif
 
 #ifdef COUNT_BASES_TABLE_SIZE
@@ -157,7 +157,7 @@ void ED4_bases_table::sub_and_add(const ED4_bases_table& Sub, const ED4_bases_ta
     int i;
     if (table_entry_size==SHORT_TABLE_ELEM_SIZE) {
         if (Sub.table_entry_size==SHORT_TABLE_ELEM_SIZE) {
-            if (Add.table_entry_size==SHORT_TABLE_ELEM_SIZE)  {
+            if (Add.table_entry_size==SHORT_TABLE_ELEM_SIZE) {
                 for (i=start; i<=end; i++) {
                     set_elem_short(i, get_elem_short(i)-Sub.get_elem_short(i)+Add.get_elem_short(i));
                 }
@@ -309,7 +309,7 @@ int ED4_bases_table::lastDifference(const ED4_bases_table& other, int start, int
 
 ED4_bases_table::ED4_bases_table(int maxseqlength)
 {
-    memset((char*)this,0,sizeof(*this));
+    memset((char*)this, 0, sizeof(*this));
     table_entry_size = SHORT_TABLE_ELEM_SIZE;
     if (maxseqlength) init(maxseqlength);
 }
@@ -403,7 +403,7 @@ static int BK_considbound;
 static int BK_upper;
 static int BK_lower;
 
-void ED4_consensus_definition_changed(AW_root*, AW_CL,AW_CL) {
+void ED4_consensus_definition_changed(AW_root*, AW_CL, AW_CL) {
     ED4_terminal *terminal = ED4_ROOT->root_group_man->get_first_terminal();
 
     e4_assert(terminal);
@@ -474,7 +474,7 @@ char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *
     char *consensus_string = fill_id;
 
 #define PERCENT(part, all)      ((100*(part))/(all))
-#define MAX_BASES_TABLES 41     //25
+#define MAX_BASES_TABLES 41     // 25
 
     e4_assert(used_bases_tables<=MAX_BASES_TABLES);     // this is correct for DNA/RNA -> build_consensus_string() must be corrected for AMI/PRO
 
@@ -575,7 +575,7 @@ char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *
                 if (percent>=BK_upper) {
                     consensus_string[i] = kchar;
                 }
-                else if (percent>=BK_lower){
+                else if (percent>=BK_lower) {
                     consensus_string[i] = tolower(kchar);
                 }
                 else {
@@ -630,7 +630,7 @@ void ED4_char_table::expand_tables() {
 
 ED4_char_table::ED4_char_table(int maxseqlength)
 {
-    memset((char*)this,0,sizeof(*this));
+    memset((char*)this, 0, sizeof(*this));
 
     if (!initialized) {
         const char *groups = 0;

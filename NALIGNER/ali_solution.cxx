@@ -28,9 +28,9 @@ ALI_MAP::ALI_MAP(unsigned long first_seq, unsigned long last_seq,
     first_ref_base = first_ref;
     last_ref_base = last_ref;
 
-    mapping   = (long **)          CALLOC((unsigned int) (last_seq_base - first_seq_base + 1),sizeof(long));
-    inserted  = (unsigned char **) CALLOC((unsigned int) ((last_seq_base - first_seq_base)/8) + 1,sizeof(unsigned char));
-    undefined = (unsigned char **) CALLOC((unsigned int) ((last_seq_base - first_seq_base)/8) + 1,sizeof(unsigned char));
+    mapping   = (long **)          CALLOC((unsigned int) (last_seq_base - first_seq_base + 1), sizeof(long));
+    inserted  = (unsigned char **) CALLOC((unsigned int) ((last_seq_base - first_seq_base)/8) + 1, sizeof(unsigned char));
+    undefined = (unsigned char **) CALLOC((unsigned int) ((last_seq_base - first_seq_base)/8) + 1, sizeof(unsigned char));
     
     if (mapping == 0 || inserted == 0 || undefined == 0) {
         ali_fatal_error("Out of memory");
@@ -50,8 +50,8 @@ ALI_MAP::ALI_MAP(ALI_MAP *map)
     last_ref_base = map->last_ref_base;
 
     mapping   = (long **)          CALLOC((unsigned int) (last_seq_base - first_seq_base + 1), sizeof(long));
-    inserted  = (unsigned char **) CALLOC((unsigned int) ((last_seq_base - first_seq_base) / 8) + 1,sizeof(unsigned char));
-    undefined = (unsigned char **) CALLOC((unsigned int) ((last_seq_base - first_seq_base) / 8) + 1,sizeof(unsigned char));
+    inserted  = (unsigned char **) CALLOC((unsigned int) ((last_seq_base - first_seq_base) / 8) + 1, sizeof(unsigned char));
+    undefined = (unsigned char **) CALLOC((unsigned int) ((last_seq_base - first_seq_base) / 8) + 1, sizeof(unsigned char));
     
     if (mapping == 0 || inserted == 0 || undefined == 0) {
         ali_fatal_error("Out of memory");
@@ -99,7 +99,7 @@ ALI_SEQUENCE *ALI_MAP::sequence(ALI_NORM_SEQUENCE *ref_seq)
         if (!undefined_flag)
             begin_flag = ref_seq->is_begin(first_seq_base + map_pos);
         if (!(((*undefined)[map_pos/8]>>(7-(map_pos%8))) & 0x01)) {
-            for (;seq_pos < (unsigned long)((*mapping)[map_pos] + ins_counter); seq_pos++) {
+            for (; seq_pos < (unsigned long)((*mapping)[map_pos] + ins_counter); seq_pos++) {
                 if (begin_flag)
                     *seq++ = ALI_DOT_CODE;
                 else
@@ -117,14 +117,14 @@ ALI_SEQUENCE *ALI_MAP::sequence(ALI_NORM_SEQUENCE *ref_seq)
     }
 
     begin_flag = ref_seq->is_begin(first_seq_base + map_pos);
-    for (;seq_pos <= last_ref_base - first_ref_base + ins_counter;seq_pos++) {
+    for (; seq_pos <= last_ref_base - first_ref_base + ins_counter; seq_pos++) {
         if (begin_flag)
             *seq++ = ALI_DOT_CODE;
         else
             *seq++ = ALI_GAP_CODE;
     }
 
-    return new ALI_SEQUENCE(ref_seq->name(),seq_buffer,
+    return new ALI_SEQUENCE(ref_seq->name(), seq_buffer,
                             last_ref_base - first_ref_base + insert_counter + 1);
 }
 
@@ -147,7 +147,7 @@ ALI_SEQUENCE *ALI_MAP::sequence_without_inserts(ALI_NORM_SEQUENCE *ref_seq)
             begin_flag = ref_seq->is_begin(first_seq_base + map_pos);
         if (!((*undefined)[map_pos/8]>>(7-(map_pos%8)) & 0x01) &&
             !((*inserted)[map_pos/8]>>(7-(map_pos%8)) & 0x01)) {
-            for (;seq_pos < (unsigned long)((*mapping)[map_pos]); seq_pos++) {
+            for (; seq_pos < (unsigned long)((*mapping)[map_pos]); seq_pos++) {
                 if (begin_flag)
                     *seq++ = ALI_DOT_CODE;
                 else
@@ -162,14 +162,14 @@ ALI_SEQUENCE *ALI_MAP::sequence_without_inserts(ALI_NORM_SEQUENCE *ref_seq)
     }
 
     begin_flag = ref_seq->is_begin(first_seq_base + map_pos);
-    for (;seq_pos <= last_ref_base - first_ref_base; seq_pos++) {
+    for (; seq_pos <= last_ref_base - first_ref_base; seq_pos++) {
         if (begin_flag)
             *seq++ = ALI_DOT_CODE;
         else
             *seq++ = ALI_GAP_CODE;
     }
 
-    return new ALI_SEQUENCE(ref_seq->name(),seq_buffer,
+    return new ALI_SEQUENCE(ref_seq->name(), seq_buffer,
                             last_ref_base - first_ref_base + 1);
 }
 
@@ -198,7 +198,7 @@ char *ALI_MAP::insert_marker(void)
     unsigned long map_pos, seq_pos;
     char *seq, *seq_buffer;
 
-    seq_buffer = (char *) CALLOC( (last_ref_base - first_ref_base + insert_counter + 2),
+    seq_buffer = (char *) CALLOC((last_ref_base - first_ref_base + insert_counter + 2),
                                   sizeof(char));
 
     seq = seq_buffer;
@@ -206,7 +206,7 @@ char *ALI_MAP::insert_marker(void)
     ins_counter = 0;
     for (map_pos = 0; map_pos <= last_seq_base - first_seq_base; map_pos++) {
         if (!(((*undefined)[map_pos/8]>>(7-(map_pos%8))) & 0x01)) {
-            for (;seq_pos < (unsigned long)((*mapping)[map_pos] + ins_counter); seq_pos++) {
+            for (; seq_pos < (unsigned long)((*mapping)[map_pos] + ins_counter); seq_pos++) {
                 *seq++ = '.';
             }
             if ((*inserted)[map_pos/8]>>(7-(map_pos%8)) & 0x01)
@@ -219,7 +219,7 @@ char *ALI_MAP::insert_marker(void)
             ins_counter++;
     }
 
-    for (;seq_pos <= last_ref_base - first_ref_base + ins_counter;seq_pos++) {
+    for (; seq_pos <= last_ref_base - first_ref_base + ins_counter; seq_pos++) {
         *seq++ = '.';
     }
 
@@ -500,8 +500,8 @@ ALI_MAP *ALI_SUB_SOLUTION::make_one_map(void)
         last_reference_of_last = map->last_reference_base();
     }
 
-    new_map = new ALI_MAP(first_base_of_first,last_base_of_last,
-                          first_reference_of_first,last_reference_of_last);
+    new_map = new ALI_MAP(first_base_of_first, last_base_of_last,
+                          first_reference_of_first, last_reference_of_last);
 
     map = map_list.first();
     do {
@@ -516,11 +516,11 @@ ALI_MAP *ALI_SUB_SOLUTION::make_one_map(void)
             last_pos = map->position(i);
 
             if (map->is_inserted(i))
-                new_map->set(i,map->first_reference_base() +
-                             map->position(i) - first_reference_of_first,1);
+                new_map->set(i, map->first_reference_base() +
+                             map->position(i) - first_reference_of_first, 1);
             else
-                new_map->set(i,map->first_reference_base() +
-                             map->position(i) - first_reference_of_first,0);
+                new_map->set(i, map->first_reference_base() +
+                             map->position(i) - first_reference_of_first, 0);
         }
 
         if (map_list.is_next())

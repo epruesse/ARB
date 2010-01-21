@@ -78,14 +78,14 @@ struct AP_list_elem {
 class AP_LIST {
     unsigned int  list_len;
     unsigned int  akt;
-    AP_list_elem *first,*last,*pointer;
+    AP_list_elem *first, *last, *pointer;
     AP_list_elem *element(void * elem);
 public:
-    AP_LIST() ;
+    AP_LIST();
     virtual ~AP_LIST();
 
     int   len();
-    int   is_element(void * node );
+    int   is_element(void * node);
     int   eof();
     void  insert(void * new_one);
     void  append(void * new_one);
@@ -118,7 +118,7 @@ struct AP_tree_buffer {
     AP_STACK_MODE  mode;
     AP_sequence   *sequence;
     AP_FLOAT       mutation_rate;
-    double         leftlen,rightlen;
+    double         leftlen, rightlen;
     AP_tree       *father;
     AP_tree       *leftson;
     AP_tree       *rightson;
@@ -137,12 +137,12 @@ struct AP_tree_buffer {
 
 class AP_tree_stack : public AP_STACK {
 public:
-    AP_tree_stack() { }
+    AP_tree_stack() {}
     virtual ~AP_tree_stack() {}
     void  push(struct AP_tree_buffer *value) { AP_STACK::push((void *)value); }
-    AP_tree_buffer * pop() { return ( AP_tree_buffer *) AP_STACK::pop(); }
-    AP_tree_buffer * get() { return ( AP_tree_buffer *) AP_STACK::get(); }
-    AP_tree_buffer * get_first() { return ( AP_tree_buffer *) AP_STACK::get_first(); }
+    AP_tree_buffer * pop() { return (AP_tree_buffer *) AP_STACK::pop(); }
+    AP_tree_buffer * get() { return (AP_tree_buffer *) AP_STACK::get(); }
+    AP_tree_buffer * get_first() { return (AP_tree_buffer *) AP_STACK::get_first(); }
     void print();
 };
 
@@ -164,7 +164,7 @@ public:
 class AP_main_list : public AP_LIST {
 public:
     AP_main_stack * pop() { return  (AP_main_stack *)AP_LIST::pop(); }
-    void push(AP_main_stack * stack) { AP_LIST::push( (void *) stack); }
+    void push(AP_main_stack * stack) { AP_LIST::push((void *) stack); }
     void insert(AP_main_stack * stack) { AP_LIST::insert((void *)stack); }
     void append(AP_main_stack * stack) { AP_LIST::append((void *)stack); }
 };

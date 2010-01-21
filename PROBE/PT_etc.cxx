@@ -220,13 +220,13 @@ char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checks
     return result;
 }
 
-extern "C" bytestring *PT_unknown_names(struct_PT_pdc *pdc){
-    static bytestring un = {0,0};
+extern "C" bytestring *PT_unknown_names(struct_PT_pdc *pdc) {
+    static bytestring un = { 0, 0 };
     PT_local *locs = (PT_local*)pdc->mh.parent->parent;
     delete un.data;
 
     const char *error;
-    un.data = ptpd_read_names(locs,pdc->names.data,pdc->checksums.data, error);
+    un.data = ptpd_read_names(locs, pdc->names.data, pdc->checksums.data, error);
     if (un.data) {
         un.size = strlen(un.data) + 1;
         pt_assert(!error);
@@ -260,13 +260,13 @@ int get_clip_max_from_length(int length)
 }
 
 
-void PT_init_base_string_counter(char *str,char initval,int size)
+void PT_init_base_string_counter(char *str, char initval, int size)
 {
-    memset(str,initval,size+1);
+    memset(str, initval, size+1);
     str[size] = 0;
 }
 
-void PT_inc_base_string_count(char *str,char initval, char maxval, int size)
+void PT_inc_base_string_count(char *str, char initval, char maxval, int size)
 {
     int i;
     if (!size) {

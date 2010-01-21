@@ -208,7 +208,7 @@ AP_FLOAT AP_sequence_protein::combine(const AP_sequence *lefts, const AP_sequenc
 
     size_t sequence_len = get_sequence_length();
     if (!sequence) {
-        sequence = new AP_PROTEINS[sequence_len +1];
+        sequence = new AP_PROTEINS[sequence_len + 1];
     }
 
     const AP_PROTEINS *p1       = left->sequence;
@@ -409,7 +409,7 @@ AP_FLOAT AP_sequence_protein::count_weighted_bases() const {
     // in contrast to AP_seq_dna::count_weighted_bases which counts the bases weighted!
     ap_assert(0);
 
-    AP_FLOAT wcount;;
+    AP_FLOAT wcount; ;
     if (!sequence) wcount = -1.0;
     else {
         long   sum          = 0;

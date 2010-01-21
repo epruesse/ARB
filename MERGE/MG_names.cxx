@@ -169,19 +169,19 @@ static void override_toggle_cb(AW_window *aww) {
     }
 }
 
-AW_window *MG_merge_names_cb(AW_root *awr){
+AW_window *MG_merge_names_cb(AW_root *awr) {
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;
-        aws->init( awr, "MERGE_AUTORENAME_SPECIES", "SYNCHRONIZE NAMES");
+        aws->init(awr, "MERGE_AUTORENAME_SPECIES", "SYNCHRONIZE NAMES");
         aws->load_xfig("merge/names.fig");
 
-        aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE","CLOSE","C");
+        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help");
-        aws->callback(AW_POPUP_HELP,(AW_CL)"mg_names.hlp");
-        aws->create_button("HELP","HELP","H");
+        aws->callback(AW_POPUP_HELP, (AW_CL)"mg_names.hlp");
+        aws->create_button("HELP", "HELP", "H");
 
         aws->at("addid1");
         aws->create_input_field(AWAR_MERGE_ADDID, 10);
@@ -209,12 +209,12 @@ AW_window *MG_merge_names_cb(AW_root *awr){
 
         aws->at("rename");
         aws->callback(rename_both_databases);
-        aws->create_autosize_button("RENAME_DATABASES","Rename species");
+        aws->create_autosize_button("RENAME_DATABASES", "Rename species");
         
         aws->button_length(0);
         aws->shadow_width(1);
         aws->at("icon");
-        aws->callback(AW_POPUP_HELP,(AW_CL)"mg_names.hlp");
+        aws->callback(AW_POPUP_HELP, (AW_CL)"mg_names.hlp");
         aws->create_button("HELP_MERGE", "#merge/icon.bitmap");
     }
     return aws;

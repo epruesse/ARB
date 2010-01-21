@@ -77,7 +77,7 @@ public:
     void vput(const char *s, va_list argPtr) __ATTR__VFORMAT_MEMBER(1);
     void put(const char *s, ...) __ATTR__FORMAT_MEMBER(1);
 
-    void put()  {
+    void put() {
         goto_indentation();
         cr();
     }

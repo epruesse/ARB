@@ -17,7 +17,7 @@
 #endif
 #define nt_assert(bed) arb_assert(bed)
 
-void nt_seq_load_cb(AW_root *awr, AW_CL, AW_CL){
+void nt_seq_load_cb(AW_root *awr, AW_CL, AW_CL) {
     GLOBAL_gb_dest    = GLOBAL_gb_main;
     AW_window *aww    = ad_create_query_window(awr);
     ad_unquery_all();
@@ -32,7 +32,7 @@ void nt_seq_load_cb(AW_root *awr, AW_CL, AW_CL){
  * Opens the "Import Sequences" dialog from the
  * ARB main window (arb_ntree)
 */
-void NT_import_sequences(AW_window *aww,AW_CL,AW_CL){
+void NT_import_sequences(AW_window *aww, AW_CL, AW_CL) {
 
     if (GLOBAL_gb_merge) {
 #if defined(DEBUG)

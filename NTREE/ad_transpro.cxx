@@ -38,12 +38,12 @@ static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, in
 
     // check/create alignments
     {
-        GBDATA *gb_source = GBT_get_alignment(gb_main,ali_source);
+        GBDATA *gb_source = GBT_get_alignment(gb_main, ali_source);
         if (!gb_source) {
             error = "Please select a valid source alignment";
         }
         else {
-            GBDATA *gb_dest = GBT_get_alignment(gb_main,ali_dest);
+            GBDATA *gb_dest = GBT_get_alignment(gb_main, ali_dest);
             if (!gb_dest) {
                 const char *msg = GBS_global_string("You have not selected a destination alignment\n"
                                                     "Shall I create one ('%s_pro') for you?", ali_source);
@@ -51,15 +51,15 @@ static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, in
                     error = "Cancelled by user";
                 }
                 else {
-                    long slen = GBT_get_alignment_len(gb_main,ali_source);
-                    to_free   = GBS_global_string_copy("%s_pro",ali_source);
+                    long slen = GBT_get_alignment_len(gb_main, ali_source);
+                    to_free   = GBS_global_string_copy("%s_pro", ali_source);
                     ali_dest  = to_free;
                     gb_dest   = GBT_create_alignment(gb_main, ali_dest, slen/3+1, 0, 1, "ami");
 
                     if (!gb_dest) error = GB_await_error();
                     else {
-                        char *fname = GBS_global_string_copy("%s/data",ali_dest);
-                        error       = GBT_add_new_changekey(gb_main,fname,GB_STRING);
+                        char *fname = GBS_global_string_copy("%s/data", ali_dest);
+                        error       = GBT_add_new_changekey(gb_main, fname, GB_STRING);
                         free(fname);
                     }
                 }
@@ -86,7 +86,7 @@ static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, in
         if (use_entries) {
             for (GBDATA *gb_species = GBT_first_marked_species(gb_main);
                  gb_species && !error;
-                 gb_species = GBT_next_marked_species(gb_species) )
+                 gb_species = GBT_next_marked_species(gb_species))
             {
                 int arb_table, codon_start;
                 error = AWT_getTranslationInfo(gb_species, arb_table, codon_start);
@@ -137,10 +137,10 @@ static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, in
                     error = "Aborted by user";
                 }
                 else {
-                    GBDATA *gb_source = GB_entry(gb_species,ali_source);
+                    GBDATA *gb_source = GB_entry(gb_species, ali_source);
                     if (!gb_source) { ++no_data; continue; }
 
-                    GBDATA *gb_source_data = GB_entry(gb_source,"data");
+                    GBDATA *gb_source_data = GB_entry(gb_source, "data");
                     if (!gb_source_data) { ++no_data; continue; }
                     
                     char *data = GB_read_string(gb_source_data);
@@ -226,7 +226,7 @@ void transpro_event(AW_window *aww) {
         bool     translate_all = aw_root->awar(AWAR_TRANSPRO_XSTART)->read_int();
 
         error             = arb_r2a(GLOBAL_gb_main, strcmp(mode, "fields") == 0, save2fields, startpos, translate_all, ali_source, ali_dest);
-        if (!error) error = GBT_check_data(GLOBAL_gb_main,0);
+        if (!error) error = GBT_check_data(GLOBAL_gb_main, 0);
         
         free(mode);
         free(ali_dest);
@@ -237,7 +237,7 @@ void transpro_event(AW_window *aww) {
 
 void nt_trans_cursorpos_changed(AW_root *awr) {
     int pos = awr->awar(AWAR_CURSOR_POSITION)->read_int()-1;
-    pos = pos %3;
+    pos = pos % 3;
     awr->awar(AWAR_TRANSPRO_POS)->write_int(pos);
 }
 
@@ -246,23 +246,23 @@ AW_window *NT_create_dna_2_pro_window(AW_root *root) {
     GB_transaction dummy(GLOBAL_gb_main);
 
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "TRANSLATE_DNA_TO_PRO", "TRANSLATE DNA TO PRO");
+    aws->init(root, "TRANSLATE_DNA_TO_PRO", "TRANSLATE DNA TO PRO");
 
     aws->load_xfig("transpro.fig");
 
-    aws->callback( (AW_CB0)AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback( AW_POPUP_HELP,(AW_CL)"translate_dna_2_pro.hlp");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"translate_dna_2_pro.hlp");
     aws->at("help");
-    aws->create_button("HELP","HELP","H");
+    aws->create_button("HELP", "HELP", "H");
 
     aws->at("source");
-    awt_create_selection_list_on_ad(GLOBAL_gb_main,(AW_window *)aws, AWAR_TRANSPRO_SOURCE,"dna=:rna=");
+    awt_create_selection_list_on_ad(GLOBAL_gb_main, (AW_window *)aws, AWAR_TRANSPRO_SOURCE, "dna=:rna=");
 
     aws->at("dest");
-    awt_create_selection_list_on_ad(GLOBAL_gb_main,(AW_window *)aws, AWAR_TRANSPRO_DEST,"pro=:ami=");
+    awt_create_selection_list_on_ad(GLOBAL_gb_main, (AW_window *)aws, AWAR_TRANSPRO_DEST, "pro=:ami=");
 
     root->awar_int(AWAR_PROTEIN_TYPE, AWAR_PROTEIN_TYPE_bacterial_code_index, GLOBAL_gb_main);
     aws->at("table");
@@ -273,16 +273,16 @@ AW_window *NT_create_dna_2_pro_window(AW_root *root) {
     aws->update_option_menu();
 
     aws->at("mode");
-    aws->create_toggle_field(AWAR_TRANSPRO_MODE,0,"");
-    aws->insert_toggle( "from fields 'codon_start' and 'transl_table'", "", "fields" );
-    aws->insert_default_toggle( "use settings below (same for all species):", "", "settings" );
+    aws->create_toggle_field(AWAR_TRANSPRO_MODE, 0, "");
+    aws->insert_toggle("from fields 'codon_start' and 'transl_table'", "", "fields");
+    aws->insert_default_toggle("use settings below (same for all species):", "", "settings");
     aws->update_toggle_field();
 
     aws->at("pos");
-    aws->create_option_menu(AWAR_TRANSPRO_POS,0,"");
-    aws->insert_option( "1", "1", 0 );
-    aws->insert_option( "2", "2", 1 );
-    aws->insert_option( "3", "3", 2 );
+    aws->create_option_menu(AWAR_TRANSPRO_POS, 0, "");
+    aws->insert_option("1", "1", 0);
+    aws->insert_option("2", "2", 1);
+    aws->insert_option("3", "3", 2);
     aws->update_option_menu();
     aws->get_root()->awar_int(AWAR_CURSOR_POSITION)->add_callback(nt_trans_cursorpos_changed);
 
@@ -297,7 +297,7 @@ AW_window *NT_create_dna_2_pro_window(AW_root *root) {
     aws->at("translate");
     aws->callback(transpro_event);
     aws->highlight();
-    aws->create_button("TRANSLATE","TRANSLATE","T");
+    aws->create_button("TRANSLATE", "TRANSLATE", "T");
 
     aws->window_fit();
 
@@ -341,10 +341,10 @@ GB_ERROR arb_transdna(GBDATA *gb_main, char *ali_source, char *ali_dest, long *n
 {
     AP_initialize_codon_tables();
 
-    GBDATA *gb_source = GBT_get_alignment(gb_main,ali_source); if (!gb_source) return "Please select a valid source alignment";
-    GBDATA *gb_dest   = GBT_get_alignment(gb_main,ali_dest);   if (!gb_dest)   return "Please select a valid destination alignment";
+    GBDATA *gb_source = GBT_get_alignment(gb_main, ali_source); if (!gb_source) return "Please select a valid source alignment";
+    GBDATA *gb_dest   = GBT_get_alignment(gb_main, ali_dest);  if (!gb_dest)   return "Please select a valid destination alignment";
 
-    long     ali_len            = GBT_get_alignment_len(gb_main,ali_dest);
+    long     ali_len            = GBT_get_alignment_len(gb_main, ali_dest);
     long     max_wanted_ali_len = 0;
     GB_ERROR error              = 0;
 
@@ -361,9 +361,9 @@ GB_ERROR arb_transdna(GBDATA *gb_main, char *ali_source, char *ali_dest, long *n
         aw_status(GBS_global_string("Re-aligning #%i of %i ...", no_of_realigned_species+1, no_of_marked_species));
 
         gb_source              = GB_entry(gb_species, ali_source); if (!gb_source)      continue;
-        GBDATA *gb_source_data = GB_entry(gb_source,  "data")    ; if (!gb_source_data) continue;
-        gb_dest                = GB_entry(gb_species, ali_dest)  ; if (!gb_dest)        continue;
-        GBDATA *gb_dest_data   = GB_entry(gb_dest,    "data")    ; if (!gb_dest_data)   continue;
+        GBDATA *gb_source_data = GB_entry(gb_source,  "data");     if (!gb_source_data) continue;
+        gb_dest                = GB_entry(gb_species, ali_dest);   if (!gb_dest)        continue;
+        GBDATA *gb_dest_data   = GB_entry(gb_dest,    "data");     if (!gb_dest_data)   continue;
 
         char *source = GB_read_string(gb_source_data); if (!source) { GB_print_error(); continue; }
         char *dest   = GB_read_string(gb_dest_data);   if (!dest)   { GB_print_error(); continue; }
@@ -470,7 +470,7 @@ GB_ERROR arb_transdna(GBDATA *gb_main, char *ali_source, char *ali_dest, long *n
                             int off;
 
                             protein[0] = toupper(c);
-                            for (count=1,off=0; count<SYNC_LENGTH; off++) {
+                            for (count=1, off=0; count<SYNC_LENGTH; off++) {
                                 char c2 = s[off];
 
                                 if (c2!='.' && c2!='-') {
@@ -660,7 +660,7 @@ GB_ERROR arb_transdna(GBDATA *gb_main, char *ali_source, char *ali_dest, long *n
         return error;
     }
 
-    error = GBT_check_data(gb_main,ali_dest);
+    error = GBT_check_data(gb_main, ali_dest);
 
     return error;
 }
@@ -678,7 +678,7 @@ void transdna_event(AW_window *aww) {
 
     while (!error && neededLength) {
         error = GB_begin_transaction(GLOBAL_gb_main);
-        if (!error) error = arb_transdna(GLOBAL_gb_main,ali_source,ali_dest, &neededLength);
+        if (!error) error = arb_transdna(GLOBAL_gb_main, ali_source, ali_dest, &neededLength);
         error = GB_end_transaction(GLOBAL_gb_main, error);
 
         if (neededLength) {
@@ -707,27 +707,27 @@ void transdna_event(AW_window *aww) {
 
 AW_window *NT_create_realign_dna_window(AW_root *root) {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "REALIGN_DNA", "REALIGN DNA");
+    aws->init(root, "REALIGN_DNA", "REALIGN DNA");
 
     aws->load_xfig("transdna.fig");
 
-    aws->callback( (AW_CB0)AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback( AW_POPUP_HELP,(AW_CL)"realign_dna.hlp");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"realign_dna.hlp");
     aws->at("help");
-    aws->create_button("HELP","HELP","H");
+    aws->create_button("HELP", "HELP", "H");
 
     aws->at("source");
-    awt_create_selection_list_on_ad(GLOBAL_gb_main,(AW_window *)aws, AWAR_TRANSPRO_SOURCE,"dna=:rna=");
+    awt_create_selection_list_on_ad(GLOBAL_gb_main, (AW_window *)aws, AWAR_TRANSPRO_SOURCE, "dna=:rna=");
     aws->at("dest");
-    awt_create_selection_list_on_ad(GLOBAL_gb_main,(AW_window *)aws, AWAR_TRANSPRO_DEST,"pro=:ami=");
+    awt_create_selection_list_on_ad(GLOBAL_gb_main, (AW_window *)aws, AWAR_TRANSPRO_DEST, "pro=:ami=");
 
     aws->at("realign");
     aws->callback(transdna_event);
     aws->highlight();
-    aws->create_button("REALIGN","REALIGN","T");
+    aws->create_button("REALIGN", "REALIGN", "T");
 
     return (AW_window *)aws;
 }
@@ -738,7 +738,7 @@ void create_transpro_menus(AW_window *awmm) {
     awmm->insert_menu_topic("realign_dna", "Realign Nucleic Acid according to Aligned Protein ...", "r", "realign_dna.hlp",         AWM_ALL, AW_POPUP, (AW_CL)NT_create_realign_dna_window, 0);
 }
 
-void NT_create_transpro_variables(AW_root *root,AW_default db1)
+void NT_create_transpro_variables(AW_root *root, AW_default db1)
 {
     root->awar_string(AWAR_TRANSPRO_SOURCE, "",         db1);
     root->awar_string(AWAR_TRANSPRO_DEST,   "",         db1);

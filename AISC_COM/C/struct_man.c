@@ -31,12 +31,12 @@ aisc_init_hash(int size)
     return tab;
 }
 
-int aisc_hash(char *key,int size)
+int aisc_hash(char *key, int size)
 {
-    unsigned int i,len,x;
+    unsigned int i, len, x;
     len = strlen(key);
     x = 0;
-    for (i=0;i<len;i++) {
+    for (i=0; i<len; i++) {
         x = x<<2 ^ key[i];
     }
     x = x%size;
@@ -44,7 +44,7 @@ int aisc_hash(char *key,int size)
 }
 
 void
-aisc_free_key(struct aisc_hash_node **table,char *key)
+aisc_free_key(struct aisc_hash_node **table, char *key)
 {
     long                   i, size;
     struct aisc_hash_node *hn, *hhn;
@@ -72,12 +72,12 @@ aisc_free_key(struct aisc_hash_node **table,char *key)
 
 void aisc_free_hash(struct aisc_hash_node **table)
 {
-    long i,end;
-    struct aisc_hash_node *hn,*hnn;
+    long i, end;
+    struct aisc_hash_node *hn, *hnn;
 
     end = table[0]->data;
-    for (i=0;i<end;i++){
-        for (hn = table[i];hn;hn=hnn) {
+    for (i=0; i<end; i++) {
+        for (hn = table[i]; hn; hn=hnn) {
             hnn = hn->next;
             free(hn->key);
             free((char *)hn);
@@ -87,22 +87,22 @@ void aisc_free_hash(struct aisc_hash_node **table)
 }
 
 
-void aisc_insert_hash(struct aisc_hash_node **table,char *key,long data)
+void aisc_insert_hash(struct aisc_hash_node **table, char *key, long data)
 {
-    long i,size;
-    struct aisc_hash_node *hn,*hnl;
+    long i, size;
+    struct aisc_hash_node *hn, *hnl;
 
     size = table[0]->data;
-    i = aisc_hash(key,(int)size);
+    i = aisc_hash(key, (int)size);
     hnl = 0;
-    for (hn=table[i];hn;hn=hn->next) {
+    for (hn=table[i]; hn; hn=hn->next) {
         hnl = hn;
-        if (strcmp(key,hn->key) == 0) {
+        if (strcmp(key, hn->key) == 0) {
             hn->data = data;
             return;
         };
     };
-    hn = (struct aisc_hash_node *)calloc(sizeof(struct aisc_hash_node),1);
+    hn = (struct aisc_hash_node *)calloc(sizeof(struct aisc_hash_node), 1);
     hn->key = (char *)strdup(key);
     hn->data = data;
     if (hnl) {
@@ -113,16 +113,16 @@ void aisc_insert_hash(struct aisc_hash_node **table,char *key,long data)
     }
 }
 
-long aisc_read_hash(struct aisc_hash_node **table,char *key)
+long aisc_read_hash(struct aisc_hash_node **table, char *key)
 {
-    long i,size;
+    long i, size;
     struct aisc_hash_node *hn;
 
-    if( table && table[0]){
+    if (table && table[0]) {
         size = table[0]->data;
-        i = aisc_hash(key,(int)size);
-        for (hn=table[i];hn;hn=hn->next) {
-            if (strcmp(key,hn->key) == 0) return hn->data;
+        i = aisc_hash(key, (int)size);
+        for (hn=table[i]; hn; hn=hn->next) {
+            if (strcmp(key, hn->key) == 0) return hn->data;
         }
     }
     return 0;
@@ -240,7 +240,7 @@ struct trf_dest_struct {
     long                   *dest;
 };
 
-struct trf_struct       {
+struct trf_struct {
     struct trf_struct      *next;
     long                    new_item;
     long                    old;
@@ -259,11 +259,11 @@ long trf_create(long old, long new_item)
 {
     long i;
     struct trf_struct *ts;
-    struct trf_dest_struct *tds,*ntds;
+    struct trf_dest_struct *tds, *ntds;
     if (!trf_sp) return 0;
     i = trf_hash(old);
     for (ts = trf_sp[i]; ts; ts = ts->next) {
-        if (ts->old == old)     {
+        if (ts->old == old) {
             if (ts->new_item && (ts->new_item != new_item)) {
                 fprintf(stderr, "ERROR IN trf_commit:\n");
                 *(int *) NULL = 0;
@@ -279,7 +279,7 @@ long trf_create(long old, long new_item)
             return 0;
         }
     }
-    ts = (struct trf_struct *)calloc(sizeof(struct trf_struct),1);
+    ts = (struct trf_struct *)calloc(sizeof(struct trf_struct), 1);
     ts->next = trf_sp[i];
     trf_sp[i] = ts;
     ts->new_item = new_item;
@@ -290,22 +290,22 @@ long trf_create(long old, long new_item)
 void trf_link(long old, long *dest)
 {
     long i;
-    struct trf_struct *ts,*fts;
+    struct trf_struct *ts, *fts;
     struct trf_dest_struct *tds;
     if (!trf_sp) return;
     i = trf_hash(old);
     fts = 0;
     for (ts = trf_sp[i]; ts; ts = ts->next) {
-        if (ts->old == old)     { fts = ts; break;}
+        if (ts->old == old)     { fts = ts; break; }
     }
     if (!fts) {
-        ts = (struct trf_struct *)calloc(sizeof(struct trf_struct),1);
+        ts = (struct trf_struct *)calloc(sizeof(struct trf_struct), 1);
         ts->next = trf_sp[i];
         trf_sp[i] = ts;
         ts->old = old;
         fts = ts;
     }
-    tds = (struct trf_dest_struct *)calloc(sizeof(struct trf_dest_struct),1);
+    tds = (struct trf_dest_struct *)calloc(sizeof(struct trf_dest_struct), 1);
     tds->next = fts->dests;
     fts->dests = tds;
     tds->dest = dest;
@@ -313,8 +313,8 @@ void trf_link(long old, long *dest)
 
 int trf_begin(void)
 {
-    if (trf_level==0){
-        trf_sp = (struct trf_struct **)calloc(sizeof(struct trf_struct *),TRF_HASH_SIZE);
+    if (trf_level==0) {
+        trf_sp = (struct trf_struct **)calloc(sizeof(struct trf_struct *), TRF_HASH_SIZE);
     }
     trf_level ++;
     return 0;
@@ -323,8 +323,8 @@ int trf_begin(void)
 int trf_commit(int errors)      /* if errors == 1 then print errors and CORE */
 {
     int i;
-    struct trf_dest_struct *tds,*ntds;
-    struct trf_struct *ts,*nts;
+    struct trf_dest_struct *tds, *ntds;
+    struct trf_struct *ts, *nts;
     trf_level --;
     if (!trf_level) {
         for (i = 0; i < TRF_HASH_SIZE; i++) {
@@ -353,7 +353,7 @@ int trf_commit(int errors)      /* if errors == 1 then print errors and CORE */
 
 /***************************************** bytestring functions *************************************/
 
-int aisc_server_dllint_2_bytestring(dllpublic_ext * pb,bytestring *bs,int offset)
+int aisc_server_dllint_2_bytestring(dllpublic_ext * pb, bytestring *bs, int offset)
 {
     int *ptr;
     dllheader_ext * mh;
@@ -366,18 +366,18 @@ int aisc_server_dllint_2_bytestring(dllpublic_ext * pb,bytestring *bs,int offset
     ptr = (int *)malloc(bs->size);
     bs->data = (char *)ptr;
 
-    for (mh=pb->first;mh;mh=mh->next) {
+    for (mh=pb->first; mh; mh=mh->next) {
         *(ptr++) = *(int *) (((char *)mh)+offset);
     }
     return 0;
 }
 
-int aisc_server_dllstring_2_bytestring(dllpublic_ext * pb,bytestring *bs,int offset)
+int aisc_server_dllstring_2_bytestring(dllpublic_ext * pb, bytestring *bs, int offset)
 {
     int         size;
     int *ptr;
     dllheader_ext * mh;
-    char        *strptr,*str;
+    char        *strptr, *str;
     int stringlengths;
 
     if (bs->data) free(bs->data);
@@ -387,7 +387,7 @@ int aisc_server_dllstring_2_bytestring(dllpublic_ext * pb,bytestring *bs,int off
 
     size = sizeof(int) * (pb->cnt+1);
     stringlengths = 0;
-    for (mh=pb->first;mh;mh=mh->next) {
+    for (mh=pb->first; mh; mh=mh->next) {
         str = *(char **) (((char *)mh)+offset);
         if (str) {
             stringlengths += strlen(str)+1;
@@ -398,13 +398,13 @@ int aisc_server_dllstring_2_bytestring(dllpublic_ext * pb,bytestring *bs,int off
     bs->data = (char *)ptr;
     strptr = ((char *)ptr)+size;
 
-    for (mh=pb->first;mh;mh=mh->next) {
+    for (mh=pb->first; mh; mh=mh->next) {
         str = *(char **) (((char *)mh)+offset);
         if (str) {
             size = strlen(str);
-            memcpy(strptr,str,size+1);
+            memcpy(strptr, str, size+1);
             *(ptr++) = strptr - bs->data;
-            strptr += size +1;
+            strptr += size + 1;
         }
         else {
             *(ptr++) = 0;

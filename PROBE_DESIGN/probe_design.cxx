@@ -174,27 +174,27 @@ static void popup_probe_design_result_window(AW_window *aww)
 
         pd_gl.pd_design->at("auto");
         pd_gl.pd_design->label("Auto match");
-        pd_gl.pd_design->create_toggle(AWAR_PD_MATCH_AUTOMATCH );
+        pd_gl.pd_design->create_toggle(AWAR_PD_MATCH_AUTOMATCH);
 
         enable_auto_match_cb(root, pd_gl.pd_design, 0);
 
-        pd_gl.pd_design->at( "result" );
-        pd_gl.pd_design_id = pd_gl.pd_design->create_selection_list( AWAR_TARGET_STRING, NULL, "", 40, 5 );
+        pd_gl.pd_design->at("result");
+        pd_gl.pd_design_id = pd_gl.pd_design->create_selection_list(AWAR_TARGET_STRING, NULL, "", 40, 5);
         pd_gl.pd_design->set_selection_list_suffix(pd_gl.pd_design_id, "prb");
 
         pd_gl.pd_design->clear_selection_list(pd_gl.pd_design_id);
-        pd_gl.pd_design->insert_default_selection( pd_gl.pd_design_id, "No probes designed yet", "" );
+        pd_gl.pd_design->insert_default_selection(pd_gl.pd_design_id, "No probes designed yet", "");
 
         pd_gl.pd_design->at("save");
-        pd_gl.pd_design->callback( AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)pd_gl.pd_design_id );
+        pd_gl.pd_design->callback(AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)pd_gl.pd_design_id);
         pd_gl.pd_design->create_button("SAVE", "SAVE", "S");
 
         pd_gl.pd_design->at("print");
-        pd_gl.pd_design->callback( create_print_box_for_selection_lists, (AW_CL)pd_gl.pd_design_id );
+        pd_gl.pd_design->callback(create_print_box_for_selection_lists, (AW_CL)pd_gl.pd_design_id);
         pd_gl.pd_design->create_button("PRINT", "PRINT", "P");
 
         pd_gl.pd_design->at("match");
-        pd_gl.pd_design->callback( popup_match_window_cb);
+        pd_gl.pd_design->callback(popup_match_window_cb);
         pd_gl.pd_design->create_button("MATCH", "MATCH", "M");
     }
     pd_gl.pd_design->activate();
@@ -204,10 +204,10 @@ int init_local_com_struct()
 {
     const char *user = GB_getenvUSER();
 
-    if( aisc_create(pd_gl.link, PT_MAIN, pd_gl.com,
+    if (aisc_create(pd_gl.link, PT_MAIN, pd_gl.com,
                     MAIN_LOCS, PT_LOCS, &pd_gl.locs,
                     LOCS_USER, user,
-                    NULL)){
+                    NULL)) {
         return 1;
     }
     return 0;
@@ -278,7 +278,7 @@ GB_ERROR pd_get_the_names(bytestring &bs, bytestring &checksum) {
     return error;
 }
 
-GB_ERROR pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
+GB_ERROR pd_get_the_gene_names(bytestring &bs, bytestring &checksum) {
     GBS_strstruct *names     = GBS_stropen(1024);
     GBS_strstruct *checksums = GBS_stropen(1024);
     GB_ERROR       error     = 0;
@@ -353,12 +353,12 @@ int probe_design_send_data(AW_root *root, T_PT_PDC  pdc)
                  PDC_SPLIT, (double)root->awar(AWAR_PD_DESIGN_EXP_SPLIT)->read_float(),
                  PDC_CLIPRESULT,    root->awar(AWAR_PD_DESIGN_CLIPRESULT)->read_int(),
                  NULL)) return 1;
-    for (i=0;i<16;i++) {
-        sprintf(buffer,AWAR_PD_DESIGN_EXP_BONDS "%i",i);
-        if (aisc_put(pd_gl.link,PT_PDC, pdc,
+    for (i=0; i<16; i++) {
+        sprintf(buffer, AWAR_PD_DESIGN_EXP_BONDS "%i", i);
+        if (aisc_put(pd_gl.link, PT_PDC, pdc,
                      PT_INDEX,  i,
                      PDC_BONDVAL,   (double)root->awar(buffer)->read_float(),
-                     NULL) ) return 1;
+                     NULL)) return 1;
     }
     return 0;
 }
@@ -379,7 +379,7 @@ void probe_design_event(AW_window *aww)
     {
         const char *servername = PD_probe_pt_look_for_server(root, error);
         if (servername) {
-            pd_gl.link = (aisc_com *)aisc_open(servername, &pd_gl.com,AISC_MAGIC_NUMBER);
+            pd_gl.link = (aisc_com *)aisc_open(servername, &pd_gl.com, AISC_MAGIC_NUMBER);
             if (!pd_gl.link) error = "can't contact PT server";
         }
     }
@@ -394,16 +394,16 @@ void probe_design_event(AW_window *aww)
         if (!GEN_is_genome_db(GLOBAL_gb_main, -1)) design_gene_probes = false;
     }
 
-    if (!error){
+    if (!error) {
         if (design_gene_probes) { // design probes for genes
-            error = pd_get_the_gene_names(bs,check);
+            error = pd_get_the_gene_names(bs, check);
         }
         else {
-            error = pd_get_the_names(bs,check);
+            error = pd_get_the_names(bs, check);
         }
     }
 
-    if (error){
+    if (error) {
         aw_message (error);
         aw_closestatus();
         return;
@@ -411,7 +411,7 @@ void probe_design_event(AW_window *aww)
 
     aw_status("Start probe design (Cannot be stopped)");
 
-    aisc_create(pd_gl.link,PT_LOCS, pd_gl.locs,
+    aisc_create(pd_gl.link, PT_LOCS, pd_gl.locs,
                 LOCS_PROBE_DESIGN_CONFIG, PT_PDC,   &pdc,
                 PDC_PROBELENGTH,    root->awar(AWAR_PD_DESIGN_PROBELENGTH)->read_int(),
                 PDC_MINTEMP,    (double)root->awar(AWAR_PD_DESIGN_MIN_TEMP)->read_float(),
@@ -420,20 +420,20 @@ void probe_design_event(AW_window *aww)
                 PDC_MAXGC,          (double)root->awar(AWAR_PD_DESIGN_MAX_GC)->read_float()/100.0,
                 PDC_MAXBOND,    (double)root->awar(AWAR_PD_DESIGN_MAXBOND)->read_int(),
                 NULL);
-    aisc_put(pd_gl.link,PT_PDC, pdc,
+    aisc_put(pd_gl.link, PT_PDC, pdc,
              PDC_MINPOS,    root->awar(AWAR_PD_DESIGN_MIN_ECOLIPOS)->read_int(),
              PDC_MAXPOS,    root->awar(AWAR_PD_DESIGN_MAX_ECOLIPOS)->read_int(),
              PDC_MISHIT,    root->awar(AWAR_PD_DESIGN_MISHIT)->read_int(),
              PDC_MINTARGETS,    (double)root->awar(AWAR_PD_DESIGN_MINTARGETS)->read_float()/100.0,
              NULL);
 
-    if (probe_design_send_data(root,pdc)) {
+    if (probe_design_send_data(root, pdc)) {
         aw_message ("Connection to PT_SERVER lost (1)");
         aw_closestatus();
         return;
     }
 
-    aisc_put(pd_gl.link,PT_PDC, pdc,
+    aisc_put(pd_gl.link, PT_PDC, pdc,
              PDC_NAMES, &bs,
              PDC_CHECKSUMS, &check,
              NULL);
@@ -441,9 +441,9 @@ void probe_design_event(AW_window *aww)
 
     /* Get the unknown names */
     bytestring unknown_names;
-    if (aisc_get(pd_gl.link,PT_PDC, pdc,
+    if (aisc_get(pd_gl.link, PT_PDC, pdc,
                  PDC_UNKNOWN_NAMES, &unknown_names,
-                 NULL)){
+                 NULL)) {
         aw_message ("Connection to PT_SERVER lost (1)");
         aw_closestatus();
         return;
@@ -476,17 +476,17 @@ void probe_design_event(AW_window *aww)
             char *ali_name = GBT_get_default_alignment(GLOBAL_gb_main);
 
             for (; unames && !abort; unames = h) {
-                h = strchr(unames,'#');
+                h = strchr(unames, '#');
                 if (h) *(h++) = 0;
-                GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main,unames);
+                GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main, unames);
                 if (!gb_species) {
                     aw_message(GBS_global_string("Species '%s' not found", unames));
                     abort = true;
                 }
                 else {
-                    GBDATA *data = GBT_read_sequence(gb_species,ali_name);
+                    GBDATA *data = GBT_read_sequence(gb_species, ali_name);
                     if (!data) {
-                        aw_message( GB_export_errorf("Species '%s' has no sequence belonging to alignment '%s'", unames, ali_name));
+                        aw_message(GB_export_errorf("Species '%s' has no sequence belonging to alignment '%s'", unames, ali_name));
                         abort = true;
                     }
                     else {
@@ -506,14 +506,14 @@ void probe_design_event(AW_window *aww)
     }
 
     if (!abort) {
-        aisc_put(pd_gl.link,PT_PDC, pdc,
-                 PDC_GO,0,
+        aisc_put(pd_gl.link, PT_PDC, pdc,
+                 PDC_GO, 0,
                  NULL);
 
         aw_status("Read the results from the server");
         {
             char *locs_error = 0;
-            if (aisc_get( pd_gl.link, PT_LOCS, pd_gl.locs, LOCS_ERROR, &locs_error, NULL)) {
+            if (aisc_get(pd_gl.link, PT_LOCS, pd_gl.locs, LOCS_ERROR, &locs_error, NULL)) {
                 aw_message ("Connection to PT_SERVER lost (1)");
                 abort = true;
             }
@@ -528,7 +528,7 @@ void probe_design_event(AW_window *aww)
     }
 
     if (!abort) {
-        aisc_get( pd_gl.link, PT_PDC, pdc,
+        aisc_get(pd_gl.link, PT_PDC, pdc,
                   PDC_TPROBE, &tprobe,
                   NULL);
 
@@ -536,21 +536,21 @@ void probe_design_event(AW_window *aww)
         pd_gl.pd_design->clear_selection_list(pd_gl.pd_design_id);
 
         if (tprobe) {
-            aisc_get( pd_gl.link, PT_TPROBE, tprobe,
+            aisc_get(pd_gl.link, PT_TPROBE, tprobe,
                       TPROBE_INFO_HEADER,   &match_info,
                       NULL);
-            char *s = strtok(match_info,"\n");
+            char *s = strtok(match_info, "\n");
             while (s) {
-                pd_gl.pd_design->insert_selection( pd_gl.pd_design_id, s, "" );
-                s = strtok(0,"\n");
+                pd_gl.pd_design->insert_selection(pd_gl.pd_design_id, s, "");
+                s = strtok(0, "\n");
             }
             free(match_info);
         }
         else {
-            pd_gl.pd_design->insert_selection( pd_gl.pd_design_id, "There are no results", "" );
+            pd_gl.pd_design->insert_selection(pd_gl.pd_design_id, "There are no results", "");
         }
 
-        //#define TEST_PD
+        // #define TEST_PD
 #if defined(TEST_PD)
         int     my_TPROBE_KEY;
         char   *my_TPROBE_KEYSTRING;
@@ -570,9 +570,9 @@ void probe_design_event(AW_window *aww)
 
 #endif // TEST_PD
 
-        while ( tprobe ){
+        while (tprobe) {
             long tprobe_next;
-            if (aisc_get( pd_gl.link, PT_TPROBE, tprobe,
+            if (aisc_get(pd_gl.link, PT_TPROBE, tprobe,
                           TPROBE_NEXT,      &tprobe_next,
                           TPROBE_INFO,      &match_info,
 #if defined(TEST_PD)
@@ -589,7 +589,7 @@ void probe_design_event(AW_window *aww)
 
 
 #if defined(TEST_PD)
-            if (aisc_get( pd_gl.link, PT_TPROBE, tprobe,
+            if (aisc_get(pd_gl.link, PT_TPROBE, tprobe,
                           TPROBE_GROUPSIZE, &my_TPROBE_GROUPSIZE, // groesse der Gruppe,  die von Sonde getroffen wird?
                           TPROBE_HAIRPIN, &my_TPROBE_HAIRPIN,
                           TPROBE_WHAIRPIN, &my_TPROBE_WHAIRPIN,
@@ -602,21 +602,21 @@ void probe_design_event(AW_window *aww)
 #endif // TEST_PD
             tprobe = tprobe_next;
 
-            char *probe,*space;
-            probe = strpbrk(match_info,"acgtuACGTU");
-            if (probe) space = strchr(probe,' ');
+            char *probe, *space;
+            probe = strpbrk(match_info, "acgtuACGTU");
+            if (probe) space = strchr(probe, ' ');
             if (probe && space) {
-                *space = 0; probe = strdup(probe);*space=' ';
+                *space = 0; probe = strdup(probe); *space=' ';
             }
             else {
                 probe = strdup("");
             }
-            pd_gl.pd_design->insert_selection( pd_gl.pd_design_id, match_info, probe );
+            pd_gl.pd_design->insert_selection(pd_gl.pd_design_id, match_info, probe);
             free(probe);
             free(match_info);
         }
-        pd_gl.pd_design->insert_default_selection( pd_gl.pd_design_id, "default", "" );
-        pd_gl.pd_design->update_selection_list( pd_gl.pd_design_id );
+        pd_gl.pd_design->insert_default_selection(pd_gl.pd_design_id, "default", "");
+        pd_gl.pd_design->update_selection_list(pd_gl.pd_design_id);
     }
 
     aisc_close(pd_gl.link); pd_gl.link = 0;
@@ -659,18 +659,18 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
                     aw_status("Open Connection");
                 }
 
-                pd_gl.link = (aisc_com *)aisc_open(servername, &pd_gl.com,AISC_MAGIC_NUMBER);
+                pd_gl.link = (aisc_com *)aisc_open(servername, &pd_gl.com, AISC_MAGIC_NUMBER);
                 if (!pd_gl.link) error = "Cannot contact PT-server";
             }
         }
 
         if (!error) {
             if (show_status) aw_status("Initialize Server");
-            if (init_local_com_struct() ) error = "Cannot contact PT-server (2)";
+            if (init_local_com_struct()) error = "Cannot contact PT-server (2)";
 
             if (!error) {
-                aisc_create(pd_gl.link,PT_LOCS, pd_gl.locs, LOCS_PROBE_DESIGN_CONFIG, PT_PDC, &pdc, NULL);
-                if (probe_design_send_data(root,pdc)) error = "Connection to PT_SERVER lost (2)";
+                aisc_create(pd_gl.link, PT_LOCS, pd_gl.locs, LOCS_PROBE_DESIGN_CONFIG, PT_PDC, &pdc, NULL);
+                if (probe_design_send_data(root, pdc)) error = "Connection to PT_SERVER lost (2)";
             }
         }
 
@@ -679,7 +679,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
         if (!error) {
             if (show_status) aw_status("Start Probe Match");
 
-            if (aisc_nput(pd_gl.link,PT_LOCS, pd_gl.locs,
+            if (aisc_nput(pd_gl.link, PT_LOCS, pd_gl.locs,
                           LOCS_MATCH_REVERSED,       root->awar(AWAR_PD_MATCH_COMPLEMENT)->read_int(),
                           LOCS_MATCH_SORT_BY,        root->awar(AWAR_PD_MATCH_SORTBY)->read_int(),
                           LOCS_MATCH_COMPLEMENT,     0,
@@ -712,7 +712,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
             long            match_list_cnt    = 0;
             char           *locs_error        = 0;
 
-            if (aisc_get( pd_gl.link, PT_LOCS, pd_gl.locs,
+            if (aisc_get(pd_gl.link, PT_LOCS, pd_gl.locs,
                           LOCS_MATCH_LIST,        &match_list,
                           LOCS_MATCH_LIST_CNT,    &match_list_cnt,
                           LOCS_MATCH_STRING,      &bs,
@@ -747,7 +747,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
 
             char        toksep[2]  = { 1, 0 };
             char       *strtok_ptr = 0; // stores strtok position
-            const char *hinfo      = strtok_r(bs.data,toksep, &strtok_ptr);
+            const char *hinfo      = strtok_r(bs.data, toksep, &strtok_ptr);
 
             bool              gene_flag = false;
             ProbeMatchParser *parser    = 0;
@@ -766,8 +766,8 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
                 if (parser && !error) width = parser->get_probe_region_offset()+2+10; // 2 cause headline is shorter and 10 for match prefix region
 
                 const char *searched = GBS_global_string("%-*s%s", width, "Searched for ", probe);
-                aww->insert_selection( selection_id, searched, probe );
-                if (hinfo) aww->insert_selection( selection_id, hinfo, "" );
+                aww->insert_selection(selection_id, searched, probe);
+                if (hinfo) aww->insert_selection(selection_id, hinfo, "");
             }
 
 
@@ -778,14 +778,14 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
 
             GB_push_transaction(GLOBAL_gb_main);
 
-            GBDATA *gb_species_data = GB_search(GLOBAL_gb_main,"species_data",GB_CREATE_CONTAINER);
+            GBDATA *gb_species_data = GB_search(GLOBAL_gb_main, "species_data", GB_CREATE_CONTAINER);
             if (mark && !error) {
                 if (show_status) aw_status(gene_flag ? "Unmarking all species and genes" : "Unmarking all species");
                 for (GBDATA *gb_species = GBT_first_marked_species_rel_species_data(gb_species_data);
                      gb_species;
                      gb_species = GBT_next_marked_species(gb_species))
                 {
-                    GB_write_flag(gb_species,0);
+                    GB_write_flag(gb_species, 0);
                 }
 
                 if (gene_flag) {
@@ -800,7 +800,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
                                  gb_gene;
                                  gb_gene = GEN_next_marked_gene(gb_gene))
                             {
-                                GB_write_flag(gb_gene,0);
+                                GB_write_flag(gb_gene, 0);
                             }
                         }
                     }
@@ -810,9 +810,9 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
                 if (show_status) aw_status("Deleting old 'tmp' fields");
                 for (GBDATA *gb_species = GBT_first_species_rel_species_data(gb_species_data);
                      gb_species;
-                     gb_species = GBT_next_species(gb_species) )
+                     gb_species = GBT_next_species(gb_species))
                 {
-                    GBDATA *gb_tmp = GB_entry(gb_species,"tmp");
+                    GBDATA *gb_tmp = GB_entry(gb_species, "tmp");
                     if (gb_tmp) GB_delete(gb_tmp);
                     if (gene_flag) {
                         for (GBDATA *gb_gene = GEN_first_gene(gb_species);
@@ -842,8 +842,8 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
             }
 
             const char *match_name = 0;
-            while (hinfo && !error && (match_name = strtok_r(0,toksep, &strtok_ptr)) ) {
-                const char *match_info = strtok_r(0,toksep, &strtok_ptr);
+            while (hinfo && !error && (match_name = strtok_r(0, toksep, &strtok_ptr))) {
+                const char *match_info = strtok_r(0, toksep, &strtok_ptr);
                 if (!match_info) break;
 
                 pd_assert(parser);
@@ -860,8 +860,8 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
 
                     if (gb_species) {
                         GBDATA *gb_gene = 0;
-                        if (gene_flag && strncmp(gene_str,"intergene_", 10) != 0) { // real gene
-                            gb_gene = GEN_find_gene(gb_species,gene_str);
+                        if (gene_flag && strncmp(gene_str, "intergene_", 10) != 0) { // real gene
+                            gb_gene = GEN_find_gene(gb_species, gene_str);
                             if (!gb_gene) {
                                 aw_message(GBS_global_string("Gene '%s' not found in organism '%s'", gene_str, match_name));
                             }
@@ -918,12 +918,12 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
                     if (gene_flag) {
                         sprintf(result, "%s %s", flags, match_info+1); // both flags (skip 1 space from match info to keep alignment)
                         char *gene_match_name = new char[strlen(match_name) + strlen(gene_str)+2];
-                        sprintf(gene_match_name,"%s/%s",match_name,gene_str);
-                        if (selection_id) aww->insert_selection( selection_id, result, gene_match_name ); // @@@ wert fuer awar eintragen
+                        sprintf(gene_match_name, "%s/%s", match_name, gene_str);
+                        if (selection_id) aww->insert_selection(selection_id, result, gene_match_name);   // @@@ wert fuer awar eintragen
                     }
                     else {
                         sprintf(result, "%c %s", flags[0], match_info); // only first flag ( = species related)
-                        if (selection_id)  aww->insert_selection( selection_id, result, match_name ); // @@@ wert fuer awar eintragen
+                        if (selection_id)  aww->insert_selection(selection_id, result, match_name);   // @@@ wert fuer awar eintragen
 
                         if (selection_id) {  // storing probe data into linked lists
                             g_spd->probeSeq.push_back(strdup(match_info));
@@ -972,10 +972,10 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
             else if (matches_truncated) last_line = "****** List is truncated *******";
             else        last_line                 = "****** End of List *******";
 
-            aww->insert_default_selection( selection_id, last_line, "" );
+            aww->insert_default_selection(selection_id, last_line, "");
 
             if (show_status) aw_status("Formatting output");
-            aww->update_selection_list( selection_id );
+            aww->update_selection_list(selection_id);
         }
 
         if (show_status) aw_closestatus();
@@ -1047,9 +1047,9 @@ static void selected_match_changed_cb(AW_root *root) {
     char *selected_match = root->awar(AWAR_PD_SELECTED_MATCH)->read_string();
 
     if (strchr(selected_match, '/')) { // "organism/gene"
-        temp = strtok(selected_match,"/");
+        temp = strtok(selected_match, "/");
         root->awar(AWAR_SPECIES_NAME)->write_string(temp);
-        temp = strtok(NULL," /\n");
+        temp = strtok(NULL, " /\n");
         root->awar(AWAR_GENE_NAME)->write_string(temp);
     }
     else {
@@ -1066,9 +1066,9 @@ static void selected_match_changed_cb(AW_root *root) {
     free(selected_match);
 }
 
-void create_probe_design_variables(AW_root *root,AW_default db1, AW_default global)
+void create_probe_design_variables(AW_root *root, AW_default db1, AW_default global)
 {
-    char buffer[256]; memset(buffer,0,256);
+    char buffer[256]; memset(buffer, 0, 256);
     int  i;
     pd_gl.pd_design = 0;        /* design result window not created */
     root->awar_string(AWAR_SPECIES_NAME,         "", db1);
@@ -1084,47 +1084,47 @@ void create_probe_design_variables(AW_root *root,AW_default db1, AW_default glob
         1.1, 0.0, 0.9, 0.0
     };
 
-    for (i=0;i<16;i++) {
-        sprintf(buffer,AWAR_PD_DESIGN_EXP_BONDS "%i",i);
-        root->awar_float( buffer, default_bonds[i], db1);
-        root->awar(buffer)->set_minmax(0,3.0);
+    for (i=0; i<16; i++) {
+        sprintf(buffer, AWAR_PD_DESIGN_EXP_BONDS "%i", i);
+        root->awar_float(buffer, default_bonds[i], db1);
+        root->awar(buffer)->set_minmax(0, 3.0);
     }
     root->awar_float(AWAR_PD_DESIGN_EXP_SPLIT,  .5, db1);
     root->awar_float(AWAR_PD_DESIGN_EXP_DTEDGE, .5, db1);
     root->awar_float(AWAR_PD_DESIGN_EXP_DT,     .5, db1);
 
-    root->awar_int  (AWAR_PD_DESIGN_CLIPRESULT, 50,   db1)->set_minmax(0, 1000  );
+    root->awar_int  (AWAR_PD_DESIGN_CLIPRESULT, 50,   db1)->set_minmax(0, 1000);
     root->awar_int  (AWAR_PD_DESIGN_MISHIT,     0,    db1)->set_minmax(0, 100000);
-    root->awar_int  (AWAR_PD_DESIGN_MAXBOND,    4,    db1)->set_minmax(0, 20    );
-    root->awar_float(AWAR_PD_DESIGN_MINTARGETS, 50.0, db1)->set_minmax(0, 100   );
+    root->awar_int  (AWAR_PD_DESIGN_MAXBOND,    4,    db1)->set_minmax(0, 20);
+    root->awar_float(AWAR_PD_DESIGN_MINTARGETS, 50.0, db1)->set_minmax(0, 100);
 
-    root->awar_int  (AWAR_PD_DESIGN_PROBELENGTH,  18,     db1)->set_minmax(10, 100    );
-    root->awar_float(AWAR_PD_DESIGN_MIN_TEMP,     50.0,   db1)->set_minmax(0,  1000   );
-    root->awar_float(AWAR_PD_DESIGN_MAX_TEMP,     100.0,  db1)->set_minmax(0,  1000   );
-    root->awar_float(AWAR_PD_DESIGN_MIN_GC,       50.0,   db1)->set_minmax(0,  100    );
-    root->awar_float(AWAR_PD_DESIGN_MAX_GC,       100.0,  db1)->set_minmax(0,  100    );
+    root->awar_int  (AWAR_PD_DESIGN_PROBELENGTH,  18,     db1)->set_minmax(10, 100);
+    root->awar_float(AWAR_PD_DESIGN_MIN_TEMP,     50.0,   db1)->set_minmax(0,  1000);
+    root->awar_float(AWAR_PD_DESIGN_MAX_TEMP,     100.0,  db1)->set_minmax(0,  1000);
+    root->awar_float(AWAR_PD_DESIGN_MIN_GC,       50.0,   db1)->set_minmax(0,  100);
+    root->awar_float(AWAR_PD_DESIGN_MAX_GC,       100.0,  db1)->set_minmax(0,  100);
     root->awar_int  (AWAR_PD_DESIGN_MIN_ECOLIPOS, 0,      db1)->set_minmax(0,  1000000);
     root->awar_int  (AWAR_PD_DESIGN_MAX_ECOLIPOS, 100000, db1)->set_minmax(0,  1000000);
 
     root->awar_int(AWAR_PT_SERVER,      0, db1);
     root->awar_int(AWAR_PD_DESIGN_GENE, 0, db1);
 
-    root->awar_int   (AWAR_PD_MATCH_MARKHITS,   1,    db1   );
-    root->awar_int   (AWAR_PD_MATCH_SORTBY,     0,    db1   );
-    root->awar_int   (AWAR_PD_MATCH_WRITE2TMP,  0,    db1   );
-    root->awar_int   (AWAR_PD_MATCH_COMPLEMENT, 0,    db1   );
+    root->awar_int   (AWAR_PD_MATCH_MARKHITS,   1,    db1);
+    root->awar_int   (AWAR_PD_MATCH_SORTBY,     0,    db1);
+    root->awar_int   (AWAR_PD_MATCH_WRITE2TMP,  0,    db1);
+    root->awar_int   (AWAR_PD_MATCH_COMPLEMENT, 0,    db1);
     root->awar_int   (AWAR_MIN_MISMATCHES,      0,    global);
     root->awar_int   (AWAR_MAX_MISMATCHES,      0,    global);
-    root->awar_int   (AWAR_PD_MATCH_CLIPHITS,   1000, db1   );
+    root->awar_int   (AWAR_PD_MATCH_CLIPHITS,   1000, db1);
     root->awar_string(AWAR_TARGET_STRING,       "",   global);
-    root->awar_string(AWAR_PD_MATCH_NHITS,      0,    db1   );
-    root->awar_int   (AWAR_PD_MATCH_AUTOMATCH,  0,    db1   )->add_callback(auto_match_changed);
+    root->awar_string(AWAR_PD_MATCH_NHITS,      0,    db1);
+    root->awar_int   (AWAR_PD_MATCH_AUTOMATCH,  0,    db1)->add_callback(auto_match_changed);
 
     root->awar_string(AWAR_PD_MATCH_RESOLVE, "", db1)->add_callback(resolved_probe_chosen);
     root->awar_string(AWAR_ITARGET_STRING, "", global);
 
-    root->awar_int   (AWAR_PROBE_ADMIN_PT_SERVER,    0,  db1   );
-    root->awar_int   (AWAR_PROBE_CREATE_GENE_SERVER, 0,  db1   );
+    root->awar_int   (AWAR_PROBE_ADMIN_PT_SERVER,    0,  db1);
+    root->awar_int   (AWAR_PROBE_CREATE_GENE_SERVER, 0,  db1);
     
     root->awar_string(AWAR_SPV_SAI_2_PROBE,    "",     global); // name of SAI selected in list
     root->awar_string(AWAR_SPV_DB_FIELD_NAME,  "name", global); // name of displayed species field
@@ -1133,39 +1133,39 @@ void create_probe_design_variables(AW_root *root,AW_default db1, AW_default glob
     root->awar_string(AWAR_SPV_SELECTED_PROBE, "",     global); // For highlighting the selected PROBE
 }
 
-AW_window *create_probe_design_expert_window( AW_root *root)  {
+AW_window *create_probe_design_expert_window(AW_root *root) {
     int i;
     char buffer[256];
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "PD_EXPERT","PD-SPECIALS");
+    aws->init(root, "PD_EXPERT", "PD-SPECIALS");
 
     aws->load_xfig("pd_spec.fig");
     aws->label_length(30);
     aws->button_length(10);
 
-    aws->callback( (AW_CB0)AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback( AW_POPUP_HELP, (AW_CL)"pd_spec_param.hlp");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"pd_spec_param.hlp");
     aws->at("help");
-    aws->create_button("HELP","HELP","C");
+    aws->create_button("HELP", "HELP", "C");
 
     aws->at("dt");
-    aws->create_input_field(AWAR_PD_DESIGN_EXP_DT,6);
+    aws->create_input_field(AWAR_PD_DESIGN_EXP_DT, 6);
 
     aws->at("dt_edge");
-    aws->create_input_field(AWAR_PD_DESIGN_EXP_DTEDGE,6);
+    aws->create_input_field(AWAR_PD_DESIGN_EXP_DTEDGE, 6);
 
     aws->at("split");
-    aws->create_input_field(AWAR_PD_DESIGN_EXP_SPLIT,6);
+    aws->create_input_field(AWAR_PD_DESIGN_EXP_SPLIT, 6);
 
 
-    for (i=0;i<16;i++) {
-        sprintf(buffer,"%i",i);
+    for (i=0; i<16; i++) {
+        sprintf(buffer, "%i", i);
         aws->at(buffer);
-        sprintf(buffer,AWAR_PD_DESIGN_EXP_BONDS "%i",i);
-        aws->create_input_field(buffer,4);
+        sprintf(buffer, AWAR_PD_DESIGN_EXP_BONDS "%i", i);
+        aws->create_input_field(buffer, 4);
     }
 
     return aws;
@@ -1175,7 +1175,7 @@ static AWT_config_mapping_def probe_design_mapping_def[] = {
     { AWAR_PD_DESIGN_CLIPRESULT,   "clip" }, 
     { AWAR_PD_DESIGN_MISHIT,       "mishit" }, 
     { AWAR_PD_DESIGN_MAXBOND,      "maxbond" }, 
-    { AWAR_PD_DESIGN_MINTARGETS,   "mintarget"}, 
+    { AWAR_PD_DESIGN_MINTARGETS,   "mintarget" },
     { AWAR_PD_DESIGN_PROBELENGTH,  "probelen" }, 
     { AWAR_PD_DESIGN_MIN_TEMP,     "mintemp" }, 
     { AWAR_PD_DESIGN_MAX_TEMP,     "maxtemp" }, 
@@ -1208,58 +1208,58 @@ static void probe_design_restore_config(AW_window *aww, const char *stored_strin
     cdef.write(stored_string);
 }
 
-void probe_design_save_default(AW_window *aw,AW_default aw_def)
+void probe_design_save_default(AW_window *aw, AW_default aw_def)
 {
     AW_root *aw_root = aw->get_root();
-    aw_root->save_default(aw_def,0);
+    aw_root->save_default(aw_def, 0);
 }
 
 
-AW_window *create_probe_design_window( AW_root *root, AW_CL cl_genome_db)  {
+AW_window *create_probe_design_window(AW_root *root, AW_CL cl_genome_db) {
     AW_window_simple *aws         = new AW_window_simple;
     int               is_genom_db = (int)cl_genome_db;
 
-    aws->init( root, "PROBE_DESIGN","PROBE DESIGN");
+    aws->init(root, "PROBE_DESIGN", "PROBE DESIGN");
 
     aws->load_xfig("pd_main.fig");
 
-    aws->callback( (AW_CB0)AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP,(AW_CL)"probedesign.hlp");
-    aws->create_button("HELP","HELP","H");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"probedesign.hlp");
+    aws->create_button("HELP", "HELP", "H");
 
-    aws->callback( probe_design_event);
+    aws->callback(probe_design_event);
     aws->at("design");
     aws->highlight();
-    aws->create_button("GO","GO","G");
+    aws->create_button("GO", "GO", "G");
 
     aws->callback(popup_probe_design_result_window);
     aws->at("result");
-    aws->create_button("RESULT","RESULT","S");
+    aws->create_button("RESULT", "RESULT", "S");
 
-    aws->callback( (AW_CB1)AW_POPUP,(AW_CL)create_probe_design_expert_window);
+    aws->callback((AW_CB1)AW_POPUP, (AW_CL)create_probe_design_expert_window);
     aws->at("expert");
-    aws->create_button("EXPERT","EXPERT","S");
+    aws->create_button("EXPERT", "EXPERT", "S");
 
-    aws->at( "pt_server" );
+    aws->at("pt_server");
     aws->label("PT-Server:");
-    awt_create_selection_list_on_pt_servers(aws,AWAR_PT_SERVER,true);
+    awt_create_selection_list_on_pt_servers(aws, AWAR_PT_SERVER, true);
 
-    aws->at("lenout"  ); aws->create_input_field(AWAR_PD_DESIGN_CLIPRESULT, 6);
-    aws->at("mishit"  ); aws->create_input_field(AWAR_PD_DESIGN_MISHIT,     6);
+    aws->at("lenout"); aws->create_input_field(AWAR_PD_DESIGN_CLIPRESULT, 6);
+    aws->at("mishit"); aws->create_input_field(AWAR_PD_DESIGN_MISHIT,       6);
     aws->sens_mask(AWM_EXP);
     aws->at("maxbonds"); aws->create_input_field(AWAR_PD_DESIGN_MAXBOND,    6);
     aws->sens_mask(AWM_ALL);
-    aws->at("minhits" ); aws->create_input_field(AWAR_PD_DESIGN_MINTARGETS, 6);
+    aws->at("minhits"); aws->create_input_field(AWAR_PD_DESIGN_MINTARGETS, 6);
 
     aws->at("minlen"); aws->create_input_field(AWAR_PD_DESIGN_PROBELENGTH,  5);
-    aws->at("mint"  ); aws->create_input_field(AWAR_PD_DESIGN_MIN_TEMP,     5);
-    aws->at("maxt"  ); aws->create_input_field(AWAR_PD_DESIGN_MAX_TEMP,     5);
-    aws->at("mingc" ); aws->create_input_field(AWAR_PD_DESIGN_MIN_GC,       5);
-    aws->at("maxgc" ); aws->create_input_field(AWAR_PD_DESIGN_MAX_GC,       5);
+    aws->at("mint"); aws->create_input_field(AWAR_PD_DESIGN_MIN_TEMP,       5);
+    aws->at("maxt"); aws->create_input_field(AWAR_PD_DESIGN_MAX_TEMP,       5);
+    aws->at("mingc"); aws->create_input_field(AWAR_PD_DESIGN_MIN_GC,        5);
+    aws->at("maxgc"); aws->create_input_field(AWAR_PD_DESIGN_MAX_GC,        5);
     aws->at("minpos"); aws->create_input_field(AWAR_PD_DESIGN_MIN_ECOLIPOS, 5);
     aws->at("maxpos"); aws->create_input_field(AWAR_PD_DESIGN_MAX_ECOLIPOS, 5);
 
@@ -1275,9 +1275,9 @@ AW_window *create_probe_design_window( AW_root *root, AW_CL cl_genome_db)  {
     return aws;
 }
 
-void print_event( AW_window *aww, AW_CL selection_id, AW_CL name ) {
+void print_event(AW_window *aww, AW_CL selection_id, AW_CL name) {
     char *filename = (char *)name;
-    aww->save_selection_list( (AW_selection_list *)selection_id, filename );
+    aww->save_selection_list((AW_selection_list *)selection_id, filename);
 }
 
 // -------------------------------------------------------------------
@@ -1458,24 +1458,24 @@ static void modify_target_string(AW_window *aww, AW_CL cl_mod_mode) {
 
 AW_window *create_IUPAC_resolve_window(AW_root *root) {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "PROBE_MATCH_RESOLVE_IUPAC","Resolve IUPAC for Probe Match");
+    aws->init(root, "PROBE_MATCH_RESOLVE_IUPAC", "Resolve IUPAC for Probe Match");
     aws->load_xfig("pd_match_iupac.fig");
 
-    aws->callback( (AW_CB0)AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback( AW_POPUP_HELP, (AW_CL)"pd_match_iupac.hlp");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"pd_match_iupac.hlp");
     aws->at("help");
-    aws->create_button("HELP","HELP","C");
+    aws->create_button("HELP", "HELP", "C");
 
     AW_selection_list *iselection_id;
-    aws->at( "iresult" );
-    iselection_id = aws->create_selection_list( AWAR_PD_MATCH_RESOLVE, NULL, "", 32, 15 );
-    aws->insert_default_selection( iselection_id, "---empty---", "" );
+    aws->at("iresult");
+    iselection_id = aws->create_selection_list(AWAR_PD_MATCH_RESOLVE, NULL, "", 32, 15);
+    aws->insert_default_selection(iselection_id, "---empty---", "");
 
     aws->at("istring");
-    aws->create_input_field(AWAR_ITARGET_STRING,32);
+    aws->create_input_field(AWAR_ITARGET_STRING, 32);
 
     // automatically resolve AWAR_ITARGET_STRING:
     {
@@ -1495,99 +1495,99 @@ static void popupSaiProbeMatchWindow(AW_window *aw) {
     static AW_window *aw_saiProbeMatch = 0;
 
     if (!aw_saiProbeMatch) aw_saiProbeMatch = createSaiProbeMatchWindow(aw->get_root());
-    if(g_spd) transferProbeData(g_spd); //transferring probe data to saiProbeMatch function
+    if (g_spd) transferProbeData(g_spd); // transferring probe data to saiProbeMatch function
 
     aw_saiProbeMatch->activate();
 }
 
-AW_window *create_probe_match_window( AW_root *root,AW_default)  {
+AW_window *create_probe_match_window(AW_root *root, AW_default) {
     static AW_window_simple *aws = 0; // the one and only probe match window
     if (aws) return aws;
 
     aws = new AW_window_simple;
 
-    aws->init( root, "PROBE_MATCH", "PROBE MATCH");
+    aws->init(root, "PROBE_MATCH", "PROBE MATCH");
 
     aws->load_xfig("pd_match.fig");
 
-    aws->callback( (AW_CB0)AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback( AW_POPUP_HELP,(AW_CL)"probematch.hlp");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"probematch.hlp");
     aws->at("help");
-    aws->create_button("HELP","HELP","H");
+    aws->create_button("HELP", "HELP", "H");
 
     aws->at("string");
-    aws->create_input_field(AWAR_TARGET_STRING,32);
+    aws->create_input_field(AWAR_TARGET_STRING, 32);
 
     AW_selection_list *selection_id;
-    aws->at( "result" );
-    selection_id = aws->create_selection_list( AWAR_PD_SELECTED_MATCH, NULL, "", 110, 15 );
-    aws->insert_default_selection( selection_id, "****** No results yet *******", "" ); // if list is empty -> crashed if new species was selected in ARB_EDIT4
+    aws->at("result");
+    selection_id = aws->create_selection_list(AWAR_PD_SELECTED_MATCH, NULL, "", 110, 15);
+    aws->insert_default_selection(selection_id, "****** No results yet *******", "");  // if list is empty -> crashed if new species was selected in ARB_EDIT4
 
-    aws->callback( create_print_box_for_selection_lists, (AW_CL)selection_id );
+    aws->callback(create_print_box_for_selection_lists, (AW_CL)selection_id);
     aws->at("print");
-    aws->create_button("PRINT","PRINT","P");
+    aws->create_button("PRINT", "PRINT", "P");
 
     aws->at("matchSai");
     aws->callback(popupSaiProbeMatchWindow);
-    aws->create_button("MATCH_SAI","Match SAI","S");
+    aws->create_button("MATCH_SAI", "Match SAI", "S");
 
-    aws->callback( (AW_CB1)AW_POPUP,(AW_CL)create_probe_design_expert_window);
+    aws->callback((AW_CB1)AW_POPUP, (AW_CL)create_probe_design_expert_window);
     aws->at("expert");
-    aws->create_button("EXPERT","EXPERT","X");
+    aws->create_button("EXPERT", "EXPERT", "X");
 
-    aws->at( "pt_server" );
-    awt_create_selection_list_on_pt_servers(aws,AWAR_PT_SERVER,true);
+    aws->at("pt_server");
+    awt_create_selection_list_on_pt_servers(aws, AWAR_PT_SERVER, true);
 
-    aws->at( "complement" );
-    aws->create_toggle( AWAR_PD_MATCH_COMPLEMENT );
+    aws->at("complement");
+    aws->create_toggle(AWAR_PD_MATCH_COMPLEMENT);
 
-    aws->at( "mark" );
-    aws->create_toggle( AWAR_PD_MATCH_MARKHITS );
+    aws->at("mark");
+    aws->create_toggle(AWAR_PD_MATCH_MARKHITS);
 
-    aws->at( "weighted" );
-    aws->create_toggle( AWAR_PD_MATCH_SORTBY );
+    aws->at("weighted");
+    aws->create_toggle(AWAR_PD_MATCH_SORTBY);
 
-    aws->at( "mismatches" );
-    aws->create_option_menu(AWAR_MAX_MISMATCHES, NULL , "" );
-    aws->insert_default_option( "Search up to zero mismatches", "", 0 );
+    aws->at("mismatches");
+    aws->create_option_menu(AWAR_MAX_MISMATCHES, NULL,  "");
+    aws->insert_default_option("Search up to zero mismatches", "", 0);
     for (int mm = 1; mm <= 20; ++mm) {
         aws->insert_option(GBS_global_string("Search up to %i mismatches", mm), "", mm);
     }
     aws->update_option_menu();
 
     aws->at("tmp");
-    aws->create_toggle( AWAR_PD_MATCH_WRITE2TMP );
+    aws->create_toggle(AWAR_PD_MATCH_WRITE2TMP);
 
     aws->at("nhits");
-    aws->create_button(0,AWAR_PD_MATCH_NHITS);
+    aws->create_button(0, AWAR_PD_MATCH_NHITS);
 
-    aws->callback(probe_match_event,(AW_CL)selection_id, (AW_CL)0);
+    aws->callback(probe_match_event, (AW_CL)selection_id, (AW_CL)0);
     aws->at("match");
-    aws->create_button("MATCH","MATCH","D");
+    aws->create_button("MATCH", "MATCH", "D");
 
     aws->at("auto");
     aws->label("Auto");
-    aws->create_toggle( AWAR_PD_MATCH_AUTOMATCH );
+    aws->create_toggle(AWAR_PD_MATCH_AUTOMATCH);
     enable_auto_match_cb(root, aws, (AW_CL)selection_id);
 
     aws->callback(modify_target_string, (AW_CL)TS_MOD_CLEAR);
     aws->at("clear");
-    aws->create_button("CLEAR","Clear","0");
+    aws->create_button("CLEAR", "Clear", "0");
 
     aws->callback(modify_target_string, (AW_CL)TS_MOD_REV_COMPL);
     aws->at("revcompl");
-    aws->create_button("REVCOMPL","RevCompl","R");
+    aws->create_button("REVCOMPL", "RevCompl", "R");
 
     aws->callback(modify_target_string, (AW_CL)TS_MOD_COMPL);
     aws->at("compl");
-    aws->create_button("COMPL","Compl","C");
+    aws->create_button("COMPL", "Compl", "C");
 
-    aws->callback( (AW_CB1)AW_POPUP,(AW_CL)create_IUPAC_resolve_window);
+    aws->callback((AW_CB1)AW_POPUP, (AW_CL)create_IUPAC_resolve_window);
     aws->at("iupac");
-    aws->create_button("IUPAC","IUPAC","I");
+    aws->create_button("IUPAC", "IUPAC", "I");
 
     return aws;
 }
@@ -1596,11 +1596,11 @@ void pd_start_pt_server(AW_window *aww)
 {
     AW_root *awr = aww->get_root();
     char pt_server[256];
-    sprintf(pt_server,"ARB_PT_SERVER%li",awr->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int());
+    sprintf(pt_server, "ARB_PT_SERVER%li", awr->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int());
     GB_ERROR error;
     aw_openstatus("Start a server");
     aw_status("Look for server or start one");
-    error = arb_look_and_start_server(AISC_MAGIC_NUMBER,pt_server,GLOBAL_gb_main);
+    error = arb_look_and_start_server(AISC_MAGIC_NUMBER, pt_server, GLOBAL_gb_main);
     if (error) {
         aw_message(error);
     }
@@ -1625,16 +1625,16 @@ void pd_kill_pt_server(AW_window *aww, AW_CL kill_all)
 
         aw_openstatus("Stopping PT-servers..");
 
-        for (int i= min ; i <=max ; i++) {
+        for (int i = min; i <= max;  i++) {
             char *choice = GBS_ptserver_id_to_choice(i, 0);
             if (!choice) {
                 aw_message(GB_await_error());
                 break;
             }
 
-            aw_status(GBS_global_string("Trying to stop '%s'",choice));
+            aw_status(GBS_global_string("Trying to stop '%s'", choice));
 
-            const char *pt_server = GBS_global_string("ARB_PT_SERVER%i",i);
+            const char *pt_server = GBS_global_string("ARB_PT_SERVER%i", i);
             GB_ERROR    error     = arb_look_and_kill_server(AISC_MAGIC_NUMBER, pt_server);
 
             if (error) aw_message(GBS_global_string("Could not stop '%s' (Reason: %s)", choice, error));
@@ -1650,14 +1650,14 @@ void pd_query_pt_server(AW_window *aww)
 {
     AW_root *awr = aww->get_root();
     char     pt_server[256];
-    sprintf(pt_server,"ARB_PT_SERVER%li",awr->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int());
+    sprintf(pt_server, "ARB_PT_SERVER%li", awr->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int());
 
     GBS_strstruct *strstruct = GBS_stropen(1024);
     GBS_strcat(strstruct,   "echo Contents of directory ARBHOME/lib/pts:;echo;"
                "(cd $ARBHOME/lib/pts; ls -l);"
                "echo; echo Disk space for PT_server files:; echo;"
                "df $ARBHOME/lib/pts;");
-    GBS_strcat(strstruct,"echo;echo 'Running ARB programs:';");
+    GBS_strcat(strstruct, "echo;echo 'Running ARB programs:';");
 
     {
         const char *server  = GBS_read_arb_tcp(pt_server);
@@ -1667,7 +1667,7 @@ void pd_query_pt_server(AW_window *aww)
     }
 
     char *sys = GBS_strclose(strstruct);
-    GB_xcmd(sys,true, false);
+    GB_xcmd(sys, true, false);
     free(sys);
 }
 
@@ -1696,7 +1696,7 @@ static void pd_export_pt_server(AW_window *aww)
     }
 
     long serverid = awr->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
-    sprintf(pt_server,"ARB_PT_SERVER%li", serverid);
+    sprintf(pt_server, "ARB_PT_SERVER%li", serverid);
 
     if (!error &&
         aw_question("This function will send your currently loaded data as the new data to the pt_server !!!\n"
@@ -1709,7 +1709,7 @@ static void pd_export_pt_server(AW_window *aww)
     {
         aw_openstatus("Updating PT-server");
         aw_status("Stopping PT-server");
-        arb_look_and_kill_server(AISC_MAGIC_NUMBER,pt_server);
+        arb_look_and_kill_server(AISC_MAGIC_NUMBER, pt_server);
 
         const char *ipPort = GBS_read_arb_tcp(pt_server);
         const char *file   = GBS_scan_arb_tcp_param(ipPort, "-d");
@@ -1749,19 +1749,19 @@ static void pd_export_pt_server(AW_window *aww)
         }
 
         if (!error) { // set pt-server database file to same permissions as pts directory
-            char *dir = const_cast<char*>(strrchr(file,'/'));
+            char *dir = const_cast<char*>(strrchr(file, '/'));
             if (dir) {
                 *dir = 0;
                 long modi = GB_mode_of_file(file);
                 *dir = '/';
                 modi &= 0666;
-                error = GB_set_mode_of_file(file,modi);
+                error = GB_set_mode_of_file(file, modi);
             }
         }
 
-        if (!error ) {
+        if (!error) {
             aw_status("Start PT-server (builds in background)");
-            error = arb_start_server(pt_server,GLOBAL_gb_main, 1);
+            error = arb_start_server(pt_server, GLOBAL_gb_main, 1);
         }
         aw_closestatus();
 
@@ -1769,7 +1769,7 @@ static void pd_export_pt_server(AW_window *aww)
     if (error) aw_message(error);
 }
 
-static void arb_tcp_dat_changed_cb(const char */*path*/, bool fileChanged, bool /*editorTerminated*/) {
+static void arb_tcp_dat_changed_cb(const char * /* path */, bool fileChanged, bool /* editorTerminated */) {
 #if defined(DEBUG) && 0
     printf("File '%s': changed=%i editorTerminated=%i\n", path, int(fileChanged), int(editorTerminated));
 #endif // DEBUG
@@ -1783,54 +1783,54 @@ static void pd_edit_arb_tcp(AW_window *aww, AW_CL cl_gb_main) {
     AWT_edit("$(ARBHOME)/lib/arb_tcp.dat", arb_tcp_dat_changed_cb, aww, gb_main);
 }
 
-AW_window *create_probe_admin_window( AW_root *root, AW_CL cl_genome_db)  {
+AW_window *create_probe_admin_window(AW_root *root, AW_CL cl_genome_db) {
     AW_window_simple *aws         = new AW_window_simple;
     bool              is_genom_db = (bool)cl_genome_db;
 
-    aws->init( root, "PT_SERVER_ADMIN", "PT_SERVER ADMIN");
+    aws->init(root, "PT_SERVER_ADMIN", "PT_SERVER ADMIN");
 
     aws->load_xfig("pd_admin.fig");
 
 
-    aws->callback( AW_POPUP_HELP,(AW_CL)"probeadmin.hlp");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"probeadmin.hlp");
     aws->at("help");
-    aws->create_button("HELP","HELP","H");
+    aws->create_button("HELP", "HELP", "H");
 
-    aws->callback( (AW_CB0)AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->button_length(18);
 
-    aws->at( "pt_server" );
+    aws->at("pt_server");
     awt_create_selection_list_on_pt_servers(aws, AWAR_PROBE_ADMIN_PT_SERVER, false);
 
-    aws->at( "start" );
+    aws->at("start");
     aws->callback(pd_start_pt_server);
-    aws->create_button("START_SERVER","Start server");
+    aws->create_button("START_SERVER", "Start server");
 
-    aws->at( "kill" );
-    aws->callback(pd_kill_pt_server,0);
-    aws->create_button("KILL_SERVER","Stop server");
+    aws->at("kill");
+    aws->callback(pd_kill_pt_server, 0);
+    aws->create_button("KILL_SERVER", "Stop server");
 
-    aws->at( "query" );
+    aws->at("query");
     aws->callback(pd_query_pt_server);
-    aws->create_button("CHECK_SERVER","Check server");
+    aws->create_button("CHECK_SERVER", "Check server");
 
-    aws->at( "kill_all" );
-    aws->callback(pd_kill_pt_server,1);
-    aws->create_button("KILL_ALL_SERVERS","Stop all servers");
+    aws->at("kill_all");
+    aws->callback(pd_kill_pt_server, 1);
+    aws->create_button("KILL_ALL_SERVERS", "Stop all servers");
 
-    aws->at( "edit" );
+    aws->at("edit");
     aws->callback(pd_edit_arb_tcp, (AW_CL)GLOBAL_gb_main);
-    aws->create_button("CREATE_TEMPLATE","Configure");
+    aws->create_button("CREATE_TEMPLATE", "Configure");
 
-    aws->at( "export" );
+    aws->at("export");
     aws->callback(pd_export_pt_server);
-    aws->create_button("UPDATE_SERVER","Build server");
+    aws->create_button("UPDATE_SERVER", "Build server");
 
     if (is_genom_db) {
-        aws->at( "gene_server" );
+        aws->at("gene_server");
         aws->label("Gene server?");
         aws->create_toggle(AWAR_PROBE_CREATE_GENE_SERVER);
     }
@@ -1857,7 +1857,7 @@ static struct pg_global_struct {
 
 
 
-static void pg_result_selected(AW_window */*aww*/) {
+static void pg_result_selected(AW_window * /* aww */) {
 
     AW_root *aw_root = pg_global.aw_root;
     long position = aw_root->awar(AWAR_PG_SELECTED_RESULT)->read_int();
@@ -1875,10 +1875,10 @@ static void pg_result_selected(AW_window */*aww*/) {
         GBDATA *pg_group = GB_search(pg_global.pg_main, "probe_groups/group", GB_FIND);
         long count = 0;
         long marked = 0;
-        for (; pg_group; pg_group=GB_nextChild(pg_group),++i) {
+        for (; pg_group; pg_group=GB_nextChild(pg_group), ++i) {
             if (i==position) {
                 GBDATA *pg_species = GB_search(pg_group, "species/name", GB_FIND);
-                for (; pg_species; pg_species=GB_nextChild(pg_species),count++)  {
+                for (; pg_species; pg_species=GB_nextChild(pg_species), count++) {
                     const char *name           = GB_read_char_pntr(pg_species);
                     GBDATA     *gb_speciesname = GB_find_string(gb_species_data, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
                     if (gb_speciesname) {
@@ -1958,7 +1958,7 @@ static void create_probe_group_result_sel_box(AW_root *aw_root, AW_window *aws) 
         GB_transaction dummy(pg_global.pg_main);
         GBDATA *pg_group = GB_search(pg_global.pg_main, "probe_groups/group", GB_FIND);
         if (pg_group) {
-            for (; pg_group; pg_group=GB_nextChild(pg_group),++i) {
+            for (; pg_group; pg_group=GB_nextChild(pg_group), ++i) {
 
                 double fitness=-1, quality=-1, min_targets=-1;
                 int mishit=-1, probelength=-1, birth=-1;
@@ -2032,11 +2032,11 @@ static void create_probe_group_groups_window(AW_window *aww) {
 
         aws->at("close");
         aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE","C");
+        aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help");
-        aws->callback(AW_POPUP_HELP,(AW_CL)"");
-        aws->create_button("HELP","HELP");
+        aws->callback(AW_POPUP_HELP, (AW_CL)"");
+        aws->create_button("HELP", "HELP");
 
         create_probe_group_result_sel_box(aw_root, aws);
 
@@ -2052,7 +2052,7 @@ static void create_probe_group_groups_window(AW_window *aww) {
 // --------------------------------------------------------------------------------
 //     AW_window *create_probe_group_result_window(AW_root *awr, AW_default cl_AW_canvas_ntw)
 // --------------------------------------------------------------------------------
-AW_window *create_probe_group_result_window(AW_root *awr, AW_default cl_AW_canvas_ntw){
+AW_window *create_probe_group_result_window(AW_root *awr, AW_default cl_AW_canvas_ntw) {
     freenull(pg_global.awar_pg_result_filename);
     pg_global.ntw = (AWT_canvas*)cl_AW_canvas_ntw;
 

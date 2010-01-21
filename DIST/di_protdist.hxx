@@ -26,7 +26,7 @@ typedef enum {
     universal, ciliate, mito, vertmito, flymito, yeastmito
 } di_codetype;
 typedef enum {
-    none,similarity,kimura,pam,chemical, hall, george
+    none, similarity, kimura, pam, chemical, hall, george
 } di_cattype;
 
 
@@ -76,23 +76,23 @@ class di_protdist {
     void maketrans();
     void code();
     void transition();
-    void givens(di_aa_matrix a,long i,long j,long n,double ctheta,double stheta, bool left);
-    void coeffs(double x,double y,double *c,double *s,double accuracy);
-    void tridiag(di_aa_matrix a,long n,double accuracy);
+    void givens(di_aa_matrix a, long i, long j, long n, double ctheta, double stheta, bool left);
+    void coeffs(double x, double y, double *c, double *s, double accuracy);
+    void tridiag(di_aa_matrix a, long n, double accuracy);
     void shiftqr(di_aa_matrix a, long n, double accuracy);
-    void qreigen(di_aa_matrix prob,long n);
+    void qreigen(di_aa_matrix prob, long n);
     void pameigen();
 
-    void predict(double tt,long nb1,long  nb2);
+    void predict(double tt, long nb1, long  nb2);
     int tt_2_pos(double tt);        // double to cash index
     double pos_2_tt(int pos);       // cash index to pos
     void build_exptteig(double tt);
     void build_predikt_table(int pos);      // build akt_slopes akt_curves
     void build_akt_predikt(double tt);      // build akt_slopes akt_curves
 
-    double predict_slope(int b1,int b2) { return akt_slopes[0][b1][b2]; }
-    double predict_curve(int b1,int b2) { return akt_curves[0][b1][b2]; }
-    char predict_infinity(int b1,int b2) { return akt_infs[0][b1][b2]; }
+    double predict_slope(int b1, int b2) { return akt_slopes[0][b1][b2]; }
+    double predict_curve(int b1, int b2) { return akt_curves[0][b1][b2]; }
+    char predict_infinity(int b1, int b2) { return akt_infs[0][b1][b2]; }
 
     void clean_slopes();
 

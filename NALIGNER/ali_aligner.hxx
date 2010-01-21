@@ -44,7 +44,7 @@ struct ali_aligner_cell {
     }
 
     void print(void) {
-        printf("%4.2f %4.2f %4.2f %8p",d1,d2,d3,starts);
+        printf("%4.2f %4.2f %4.2f %8p", d1, d2, d3, starts);
     }
 };
 
@@ -67,7 +67,7 @@ struct ali_aligner_column {
     void print(void) {
         unsigned int i;
         for (i = 0; i < column_length; i++) {
-            printf("%2d: ",i);
+            printf("%2d: ", i);
             (*cells)[i].print();
             printf("\n");
         }
@@ -88,7 +88,7 @@ struct ali_aligner_dellist_elem {
     }
 
     void print(void) {
-        printf("(%3ld %4.2f %2d)",start,costs,operation);
+        printf("(%3ld %4.2f %2d)", start, costs, operation);
     }
 };
 
@@ -129,11 +129,11 @@ struct ali_aligner_dellist {
             elem = list_of_dels.first();
             while (list_of_dels.is_next()) {
                 elem->print();
-                printf("\t %f\n",profile->gap_percent(elem->start,position));
+                printf("\t %f\n", profile->gap_percent(elem->start, position));
                 elem = list_of_dels.next();
             }
             elem->print();
-            printf("\t %f\n",profile->gap_percent(elem->start,position));
+            printf("\t %f\n", profile->gap_percent(elem->start, position));
         }
     }
     unsigned long length(void) {
@@ -154,7 +154,7 @@ struct ali_aligner_dellist {
     void insert(unsigned long start, float costs, unsigned char operation) {
         ali_aligner_dellist_elem *new_elem;
 
-        new_elem = new ali_aligner_dellist_elem(start,costs,operation);
+        new_elem = new ali_aligner_dellist_elem(start, costs, operation);
         list_of_dels.append_end(new_elem);
     }
     float update(unsigned long position);
@@ -236,7 +236,7 @@ struct ali_aligner_last_cell {
         if (akt_cell->d2 == min)
             operation |= ALI_DIAG;
 
-        insert_up(akt_pos,operation,
+        insert_up(akt_pos, operation,
                   min + profile->w_del_multi_cheap(start_y + akt_pos, end_y));
     }
     void update_up(ali_aligner_column *akt_col,
@@ -253,14 +253,14 @@ struct ali_aligner_last_cell {
 
     void print(void) {
         ali_pathmap_up_pointer elem;
-        printf("d1 = %f, d2 = %f, d3 = %f\n",d1,d2,d3);
+        printf("d1 = %f, d2 = %f, d3 = %f\n", d1, d2, d3);
         printf("left starts = ");
         if (!left_starts.is_empty()) {
             elem = left_starts.first();
-            printf("<(%ld %d)",(long)elem.start,elem.operation);
+            printf("<(%ld %d)", (long)elem.start, elem.operation);
             while (left_starts.is_next()) {
                 elem = left_starts.next();
-                printf(", (%ld %d)",(long)elem.start,elem.operation);
+                printf(", (%ld %d)", (long)elem.start, elem.operation);
             }
             printf(">\n");
         }
@@ -270,10 +270,10 @@ struct ali_aligner_last_cell {
         printf("up starts = ");
         if (!up_starts.is_empty()) {
             elem = up_starts.first();
-            printf("<(%ld %d)",elem.start,elem.operation);
+            printf("<(%ld %d)", elem.start, elem.operation);
             while (up_starts.is_next()) {
                 elem = up_starts.next();
-                printf(", (%ld %d)",(long)elem.start,elem.operation);
+                printf(", (%ld %d)", (long)elem.start, elem.operation);
             }
             printf(">\n");
         }

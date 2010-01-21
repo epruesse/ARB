@@ -32,7 +32,7 @@ GBDATA *GBT_get_changekey(GBDATA *gb_main, const char *key, const char *change_k
 
 GB_TYPES GBT_get_type_of_changekey(GBDATA *gb_main, const char *field_name, const char *change_key_path) {
     GB_TYPES  type = GB_NONE;
-    GBDATA   *gbd  = GBT_get_changekey(gb_main,field_name, change_key_path);
+    GBDATA   *gbd  = GBT_get_changekey(gb_main, field_name, change_key_path);
 
     if (gbd) {
         long *typePtr     = GBT_read_int(gbd, CHANGEKEY_TYPE);
@@ -68,8 +68,8 @@ GB_ERROR GBT_add_new_changekey_to_keypath(GBDATA *gb_main, const char *name, int
 
         *GB_first_non_key_char(new_name) = 0;
 
-        if      (*c =='/') error = GBT_add_new_changekey(gb_main, new_name, GB_DB);
-        else if (*c =='-') error = GBT_add_new_changekey(gb_main, new_name, GB_LINK);
+        if      (*c == '/') error = GBT_add_new_changekey(gb_main, new_name, GB_DB);
+        else if (*c == '-') error = GBT_add_new_changekey(gb_main, new_name, GB_LINK);
         else               error = GBS_global_string("Cannot add '%s' to your key list (illegal character '%c')", name, *c);
 
         free(new_name);
@@ -188,7 +188,7 @@ GB_ERROR GBT_convert_changekey(GBDATA *gb_main, const char *name, GB_TYPES targe
         GBDATA *gbspec  = GBT_first_species(gb_main);
         size_t  rounded = 0;
 
-        for (;gbspec && !error; gbspec = GBT_next_species(gbspec)) {
+        for (; gbspec && !error; gbspec = GBT_next_species(gbspec)) {
             GBDATA *gbfield = GB_entry(gbspec, name);
 
             // If entry does not exist, no need to convert (sparse population is valid => 'NULL' value)

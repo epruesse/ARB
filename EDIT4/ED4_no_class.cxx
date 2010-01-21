@@ -29,9 +29,9 @@
 #include "ed4_tools.hxx"
 #include "ed4_nds.hxx"
 
-void ED4_calc_terminal_extentions(){
-    const AW_font_information *seq_font_info  = ED4_ROOT->get_device()->get_font_information( ED4_G_SEQUENCES, '=' );
-    const AW_font_information *info_font_info = ED4_ROOT->get_device()->get_font_information( ED4_G_STANDARD, '.' );
+void ED4_calc_terminal_extentions() {
+    const AW_font_information *seq_font_info  = ED4_ROOT->get_device()->get_font_information(ED4_G_SEQUENCES, '=');
+    const AW_font_information *info_font_info = ED4_ROOT->get_device()->get_font_information(ED4_G_STANDARD, '.');
 
     int info_char_width = info_font_info->max_letter.width;
     int seq_term_descent;
@@ -114,7 +114,7 @@ void ED4_expose_recalculations() {
     ED4_ROOT->get_ed4w()->update_scrolled_rectangle();
 }
 
-void ED4_expose_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
+void ED4_expose_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
 {
     static bool dummy = 0;
 
@@ -141,7 +141,7 @@ void ED4_expose_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
     GB_pop_transaction(GLOBAL_gb_main);
 }
 
-void ED4_resize_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
+void ED4_resize_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
 {
     AWUSE(aww);
     AWUSE(cd1);
@@ -155,13 +155,13 @@ void ED4_resize_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
 
     ED4_ROOT->get_ed4w()->update_scrolled_rectangle();
 
-    ED4_ROOT->get_ed4w()->slider_pos_horizontal= aww->slider_pos_horizontal;
+    ED4_ROOT->get_ed4w()->slider_pos_horizontal = aww->slider_pos_horizontal;
     ED4_ROOT->get_ed4w()->slider_pos_vertical  = aww->slider_pos_vertical;
 
     GB_pop_transaction(GLOBAL_gb_main);
 }
 
-static ARB_ERROR call_edit( ED4_base *object, AW_CL cl_work_info) {
+static ARB_ERROR call_edit(ED4_base *object, AW_CL cl_work_info) {
     // called after editing consensus to edit single sequences
     GB_ERROR error = NULL;
 
@@ -208,8 +208,8 @@ static ARB_ERROR call_edit( ED4_base *object, AW_CL cl_work_info) {
 
                 new_work_info.repeat_count = 1;
 
-                ED4_ROOT->edit_string->init_edit(  );
-                error = ED4_ROOT->edit_string->edit( &new_work_info );
+                ED4_ROOT->edit_string->init_edit();
+                error = ED4_ROOT->edit_string->edit(&new_work_info);
 
                 if (!error && new_work_info.out_string) {
                     e4_assert(species_manager->flag.is_consensus);
@@ -330,14 +330,14 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
                 ED4_ROOT->edit_string = new ED4_Edit_String();
             }
             error = group_manager->route_down_hierarchy(call_edit, (AW_CL)work_info);
-            group_manager->rebuild_consensi( group_manager, ED4_U_UP_DOWN);
+            group_manager->rebuild_consensi(group_manager, ED4_U_UP_DOWN);
         }
 
         delete terminal->id;
         terminal->id = 0;
     }
     else {
-        error = edit_string->edit( work_info );
+        error = edit_string->edit(work_info);
 
         ED4_ROOT->main_manager->Show(1, 0);         // @@@ temporary fix for worst-refresh problems
         // ED4_ROOT->main_manager->Show(); // original version
@@ -371,7 +371,7 @@ void ED4_remote_event(AW_event *faked_event) { // keystrokes forwarded from SECE
     executeKeystroke(ED4_ROOT->get_aww(), faked_event, 1);
 }
 
-void ED4_input_cb(AW_window *aww,AW_CL /*cd1*/, AW_CL /*cd2*/)
+void ED4_input_cb(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
 {
     AW_event event;
     static AW_event lastEvent;
@@ -385,7 +385,7 @@ void ED4_input_cb(AW_window *aww,AW_CL /*cd1*/, AW_CL /*cd2*/)
     printf("event.type=%i event.keycode=%i event.character='%c' event.keymodifier=%i\n", event.type, event.keycode, event.character, event.keymodifier);
 #endif
 
-    switch(event.type) {
+    switch (event.type) {
         case AW_Keyboard_Press: {
             if (repeatCount==0) { // first key event?
                 lastEvent = event;
@@ -451,7 +451,7 @@ void ED4_input_cb(AW_window *aww,AW_CL /*cd1*/, AW_CL /*cd2*/)
 
             AW_pos win_x = event.x;
             AW_pos win_y = event.y;
-            ED4_ROOT->win_to_world_coords( aww, &(win_x), &(win_y) );
+            ED4_ROOT->win_to_world_coords(aww, &(win_x), &(win_y));
             event.x = (int) win_x;
             event.y = (int) win_y;
 
@@ -462,7 +462,7 @@ void ED4_input_cb(AW_window *aww,AW_CL /*cd1*/, AW_CL /*cd2*/)
 #endif
 
             GB_transaction dummy(GLOBAL_gb_main);
-            ED4_ROOT->main_manager->event_sent_by_parent( &event, aww );
+            ED4_ROOT->main_manager->event_sent_by_parent(&event, aww);
             break;
         }
     }
@@ -498,7 +498,7 @@ static int get_max_slider_ypos() {
     return int(max_ypos+0.5);
 }
 
-void ED4_vertical_change_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
+void ED4_vertical_change_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
 {
     AWUSE(cd1);
     AWUSE(cd2);
@@ -529,7 +529,7 @@ void ED4_vertical_change_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
     win->update_window_coords();
 }
 
-void ED4_horizontal_change_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
+void ED4_horizontal_change_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
 {
     AWUSE(cd1);
     AWUSE(cd2);
@@ -595,7 +595,7 @@ void ED4_scrollbar_change_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
     coords->window_upper_clip_point += slider_vdiff;
     coords->window_lower_clip_point += slider_vdiff;
 
-    win->scroll_rectangle( -slider_hdiff, -slider_vdiff);
+    win->scroll_rectangle(-slider_hdiff, -slider_vdiff);
 
     win->slider_pos_vertical   = aww->slider_pos_vertical;
     win->slider_pos_horizontal = aww->slider_pos_horizontal;
@@ -604,7 +604,7 @@ void ED4_scrollbar_change_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
     win->update_window_coords();
 }
 
-void ED4_motion_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
+void ED4_motion_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
 {
     AWUSE(cd1);
     AWUSE(cd2);
@@ -641,13 +641,13 @@ void ED4_motion_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
 
             if (new_xpos!=aww->slider_pos_horizontal) {
                 aww->set_horizontal_scrollbar_position(new_xpos);
-                ED4_horizontal_change_cb(aww, cd1, cd2 );
+                ED4_horizontal_change_cb(aww, cd1, cd2);
                 ED4_ROOT->scroll_picture.old_x = event.x;
             }
 
             if (new_ypos!=aww->slider_pos_vertical) {
                 aww->set_vertical_scrollbar_position(new_ypos);
-                ED4_vertical_change_cb(aww, cd1, cd2 );
+                ED4_vertical_change_cb(aww, cd1, cd2);
                 ED4_ROOT->scroll_picture.old_y = event.y;
             }
         }
@@ -662,7 +662,7 @@ void ED4_motion_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
 
         AW_pos win_x = event.x;
         AW_pos win_y = event.y;
-        ED4_ROOT->win_to_world_coords( aww, &win_x, &win_y);
+        ED4_ROOT->win_to_world_coords(aww, &win_x, &win_y);
         event.x = (int) win_x;
         event.y = (int) win_y;
 
@@ -673,11 +673,11 @@ void ED4_motion_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
 #endif
 
         GB_transaction dummy(GLOBAL_gb_main);
-        ED4_ROOT->main_manager->event_sent_by_parent( &event, aww );
+        ED4_ROOT->main_manager->event_sent_by_parent(&event, aww);
     }
 }
 
-void ED4_remote_set_cursor_cb(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/)
+void ED4_remote_set_cursor_cb(AW_root *awr, AW_CL /* cd1 */, AW_CL /* cd2 */)
 {
     AW_awar *awar = awr->awar(AWAR_SET_CURSOR_POSITION);
     long     pos  = awar->read_int();
@@ -689,7 +689,7 @@ void ED4_remote_set_cursor_cb(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/)
     }
 }
 
-void ED4_jump_to_cursor_position(AW_window *aww, char *awar_name, bool /*callback_flag*/)           // callback function
+void ED4_jump_to_cursor_position(AW_window *aww, char *awar_name, bool /* callback_flag */)           // callback function
 {
     ED4_ROOT->use_window(aww);
 
@@ -701,7 +701,7 @@ void ED4_jump_to_cursor_position(AW_window *aww, char *awar_name, bool /*callbac
 
     ED4_remap *remap  = ED4_ROOT->root_group_man->remap();
     long       max    = remap->screen_to_sequence(remap->get_max_screen_pos());
-    if(pos > max) pos = max;
+    if (pos > max) pos = max;
 
     if (strcmp(awar_name, ED4_ROOT->get_ed4w()->awar_path_for_Ecoli)==0) { // callback from ecoli
         BI_ecoli_ref *ecoli = ED4_ROOT->ecoli_ref;
@@ -721,7 +721,7 @@ void ED4_jump_to_cursor_position(AW_window *aww, char *awar_name, bool /*callbac
     }
 }
 
-void ED4_set_helixnr(AW_window *aww, char *awar_name, bool /*callback_flag*/)
+void ED4_set_helixnr(AW_window *aww, char *awar_name, bool /* callback_flag */)
 {
     ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
 
@@ -746,7 +746,7 @@ void ED4_set_helixnr(AW_window *aww, char *awar_name, bool /*callback_flag*/)
     }
 }
 
-void ED4_set_iupac(AW_window */*aww*/, char *awar_name, bool /*callback_flag*/)
+void ED4_set_iupac(AW_window * /* aww */, char *awar_name, bool /* callback_flag */)
 {
     ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
 
@@ -775,12 +775,12 @@ void ED4_set_iupac(AW_window */*aww*/, char *awar_name, bool /*callback_flag*/)
     }
 }
 
-void ED4_gc_is_modified(AW_window *aww,AW_CL cd1, AW_CL cd2)                        // callback if gc is modified
+void ED4_gc_is_modified(AW_window *aww, AW_CL cd1, AW_CL cd2)                       // callback if gc is modified
 {
     ED4_ROOT->use_window(aww);
 
-    ED4_resize_cb(aww,cd1,cd2);
-    ED4_expose_cb(aww,cd1,cd2);
+    ED4_resize_cb(aww, cd1, cd2);
+    ED4_expose_cb(aww, cd1, cd2);
 }
 
 void ED4_exit() {
@@ -809,7 +809,7 @@ void ED4_exit() {
     ::exit(0);
 }
 
-void ED4_quit_editor(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
+void ED4_quit_editor(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */) {
     ED4_ROOT->use_window(aww);
 
     if (ED4_ROOT->first_window == ED4_ROOT->get_ed4w()) { // quit button has been pressed in first window
@@ -820,7 +820,7 @@ void ED4_quit_editor(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     ED4_ROOT->get_ed4w()->is_hidden = true;
 }
 
-void ED4_load_data( AW_window *aww, AW_CL cd1, AW_CL cd2 )
+void ED4_load_data(AW_window *aww, AW_CL cd1, AW_CL cd2)
 {
     ED4_ROOT->use_window(aww);
 
@@ -829,7 +829,7 @@ void ED4_load_data( AW_window *aww, AW_CL cd1, AW_CL cd2 )
     AWUSE(cd2);
 }
 
-void ED4_save_data( AW_window *aww, AW_CL cd1, AW_CL cd2 )
+void ED4_save_data(AW_window *aww, AW_CL cd1, AW_CL cd2)
 {
     ED4_ROOT->use_window(aww);
 
@@ -845,13 +845,13 @@ void ED4_timer_refresh()
     GB_commit_transaction(GLOBAL_gb_main);
 }
 
-void ED4_timer(AW_root *, AW_CL cd1, AW_CL cd2 )
+void ED4_timer(AW_root *, AW_CL cd1, AW_CL cd2)
 {
     ED4_timer_refresh();
-    ED4_ROOT->aw_root->add_timed_callback(200,ED4_timer,cd1,cd2);
+    ED4_ROOT->aw_root->add_timed_callback(200, ED4_timer, cd1, cd2);
 }
 
-void ED4_refresh_window( AW_window *aww, AW_CL cd_called_from_menu, AW_CL /*cd2*/ )
+void ED4_refresh_window(AW_window *aww, AW_CL cd_called_from_menu, AW_CL /* cd2 */)
 {
     GB_transaction dummy(GLOBAL_gb_main);
 
@@ -870,7 +870,7 @@ void ED4_refresh_window( AW_window *aww, AW_CL cd_called_from_menu, AW_CL /*cd2*
     }
 }
 
-void ED4_set_reference_species( AW_window *aww, AW_CL disable, AW_CL cd2 ){
+void ED4_set_reference_species(AW_window *aww, AW_CL disable, AW_CL cd2) {
     GB_transaction dummy(GLOBAL_gb_main);
 
     if (disable) {
@@ -890,7 +890,7 @@ void ED4_set_reference_species( AW_window *aww, AW_CL disable, AW_CL cd2 ){
                 ED4_ROOT->reference->init("CONSENSUS", consensus, table->size());
             }
             else if (manager->parent->flag.is_SAI) {
-                char *name = GBT_read_string(GLOBAL_gb_main,AWAR_SPECIES_NAME);
+                char *name = GBT_read_string(GLOBAL_gb_main, AWAR_SPECIES_NAME);
                 int   datalen;
                 char *data = terminal->resolve_pointer_to_string_copy(&datalen);
 
@@ -900,7 +900,7 @@ void ED4_set_reference_species( AW_window *aww, AW_CL disable, AW_CL cd2 ){
                 free(name);
             }
             else {
-                char *name = GBT_read_string(GLOBAL_gb_main,AWAR_SPECIES_NAME);
+                char *name = GBT_read_string(GLOBAL_gb_main, AWAR_SPECIES_NAME);
 
                 ED4_ROOT->reference->init(name, ED4_ROOT->alignment_name);
                 delete name;
@@ -911,7 +911,7 @@ void ED4_set_reference_species( AW_window *aww, AW_CL disable, AW_CL cd2 ){
         }
     }
 
-    ED4_refresh_window(aww,0,cd2);
+    ED4_refresh_window(aww, 0, cd2);
 }
 
 static void show_detailed_column_stats_activated(AW_window *aww) {
@@ -928,7 +928,7 @@ void ED4_columnStat_terminal::set_threshold(double aThreshold) {
     e4_assert(threshold_is_set());
 }
 
-void ED4_set_col_stat_threshold(AW_window */*aww*/, AW_CL cl_do_refresh, AW_CL) {
+void ED4_set_col_stat_threshold(AW_window * /* aww */, AW_CL cl_do_refresh, AW_CL) {
     double default_threshold = 90.0;
     if (ED4_columnStat_terminal::threshold_is_set()) {
         default_threshold = ED4_columnStat_terminal::get_threshold();
@@ -978,7 +978,7 @@ void ED4_show_detailed_column_stats(AW_window *aww, AW_CL, AW_CL)
             aw_message("Cannot display column statistics for this species (internal error?)");
             return;
         }
-        AW_window *aww_st = st_create_main_window(ED4_ROOT->aw_root,ED4_ROOT->st_ml,(AW_CB0)show_detailed_column_stats_activated,(AW_window *)aww);
+        AW_window *aww_st = st_create_main_window(ED4_ROOT->aw_root, ED4_ROOT->st_ml, (AW_CB0)show_detailed_column_stats_activated, (AW_window *)aww);
         aww_st->show();
         return;
     }
@@ -986,7 +986,7 @@ void ED4_show_detailed_column_stats(AW_window *aww, AW_CL, AW_CL)
     ED4_multi_sequence_manager *multi_seq_man = cursor_manager->to_multi_sequence_manager();
     char buffer[35];
     int count = 1;
-    sprintf( buffer, "Sequence_Manager.%ld.%d", ED4_counter, count++);
+    sprintf(buffer, "Sequence_Manager.%ld.%d", ED4_counter, count++);
 
     ED4_sequence_manager *new_seq_man = new ED4_sequence_manager(buffer, 0, 0, 0, 0, multi_seq_man);
     new_seq_man->set_properties(ED4_P_MOVABLE);
@@ -998,18 +998,18 @@ void ED4_show_detailed_column_stats(AW_window *aww, AW_CL, AW_CL)
 #endif
 
     AW_pos font_height = ED4_ROOT->font_group.get_height(ED4_G_SEQUENCES);
-    AW_pos columnStatHeight = ceil((COLUMN_STAT_ROWS+0.5/* reserve a bit more space*/)*COLUMN_STAT_ROW_HEIGHT(font_height));
+    AW_pos columnStatHeight = ceil((COLUMN_STAT_ROWS+0.5 /* reserve a bit more space */)*COLUMN_STAT_ROW_HEIGHT(font_height));
     ED4_columnStat_terminal *ref_colStat_terminal = ED4_ROOT->ref_terminals.get_ref_column_stat();
     ref_colStat_terminal->extension.size[HEIGHT] = columnStatHeight;
     ref_colStat_terminal->extension.size[WIDTH] = pixel_length;
 
     ED4_sequence_info_terminal *ref_colStat_info_terminal = ED4_ROOT->ref_terminals.get_ref_column_stat_info();
     ED4_sequence_info_terminal *new_colStat_info_term = new ED4_sequence_info_terminal("CStat", 0, 0, SEQUENCEINFOSIZE, columnStatHeight, new_seq_man);
-    new_colStat_info_term->set_properties( (ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE) );
+    new_colStat_info_term->set_properties((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
     new_colStat_info_term->set_links(ref_colStat_info_terminal, ref_colStat_terminal);
     new_seq_man->children->append_member(new_colStat_info_term);
 
-    sprintf( buffer, "Column_Statistic_Terminal.%ld.%d", ED4_counter, count++);
+    sprintf(buffer, "Column_Statistic_Terminal.%ld.%d", ED4_counter, count++);
     ED4_columnStat_terminal *new_colStat_term = new ED4_columnStat_terminal(buffer, SEQUENCEINFOSIZE, 0, 0, columnStatHeight, new_seq_man);
     new_colStat_term->set_properties(ED4_P_CURSOR_ALLOWED);
     new_colStat_term->set_links(ref_colStat_terminal, ref_colStat_terminal);
@@ -1022,8 +1022,8 @@ void ED4_show_detailed_column_stats(AW_window *aww, AW_CL, AW_CL)
 }
 
 ARB_ERROR update_terminal_extension(ED4_base *this_object) {
-    if (this_object->is_terminal()){
-        if (this_object->is_spacer_terminal()){
+    if (this_object->is_terminal()) {
+        if (this_object->is_spacer_terminal()) {
             if (this_object->parent->is_device_manager()) { // the rest is managed by reference links
                 ;
                 //      this_object->extension.size[HEIGHT] = TERMINALHEIGHT / 2;   // @@@ Zeilenabstand verringern hier?
@@ -1060,23 +1060,23 @@ static void createGroupFromSelected(GB_CSTR group_name, GB_CSTR field_name, GB_C
     ED4_group_manager *group_manager = NULL;
     ED4_ROOT->main_manager->create_group(&group_manager, group_name);
     ED4_manager *top_area = ED4_ROOT->main_manager->search_spec_child_rek(ED4_L_AREA)->to_manager();
-    ED4_multi_species_manager *multi_species_manager = top_area->search_spec_child_rek( ED4_L_MULTI_SPECIES )->to_multi_species_manager();
+    ED4_multi_species_manager *multi_species_manager = top_area->search_spec_child_rek(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
 
     group_manager->extension.position[Y_POS] = 2;
     ED4_base::touch_world_cache();
-    multi_species_manager->children->append_member( group_manager );
+    multi_species_manager->children->append_member(group_manager);
     group_manager->parent = (ED4_manager *) multi_species_manager;
 
-    multi_species_manager = group_manager->get_defined_level( ED4_L_MULTI_SPECIES )->to_multi_species_manager();
+    multi_species_manager = group_manager->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
 
     ED4_list_elem *list_elem = ED4_ROOT->selected_objects.first();
     while (list_elem) {
         ED4_base *object = ((ED4_selection_entry *) list_elem->elem())->object;
-        object = object->get_parent( ED4_L_SPECIES );
+        object = object->get_parent(ED4_L_SPECIES);
         int move_object = 1;
 
         if (object->flag.is_consensus) {
-            object = object->get_parent( ED4_L_GROUP );
+            object = object->get_parent(ED4_L_GROUP);
             if (field_name) move_object = 0; // don't move groups if moving by field_name
         }
         else {
@@ -1110,9 +1110,9 @@ static void createGroupFromSelected(GB_CSTR group_name, GB_CSTR field_name, GB_C
                 ED4_multi_species_manager *old_multi = base->to_multi_species_manager();
                 old_multi->invalidate_species_counters();
             }
-            multi_species_manager->children->append_member( object );
+            multi_species_manager->children->append_member(object);
 
-            object->parent = ( ED4_manager * )multi_species_manager;
+            object->parent = (ED4_manager *)multi_species_manager;
             object->set_width();
         }
 
@@ -1169,7 +1169,7 @@ static void group_species(int use_field, AW_window *use_as_main_window) {
             ED4_list_elem *list_elem = ED4_ROOT->selected_objects.first();
             while (list_elem && !error) {
                 ED4_base *object = ((ED4_selection_entry *) list_elem->elem())->object;
-                object = object->get_parent( ED4_L_SPECIES );
+                object = object->get_parent(ED4_L_SPECIES);
                 if (!object->flag.is_consensus) {
                     GBDATA *gb_species = object->get_species_pointer();
                     GBDATA *gb_field = GB_search(gb_species, field_name, GB_FIND);
@@ -1240,14 +1240,14 @@ static AW_window *create_group_species_by_field_window(AW_root *aw_root, AW_wind
     aws->button_length(20);
     aws->at("doit");
     aws->callback(group_species2_cb, (AW_CL)use_as_main_window, (AW_CL)aws);
-    aws->create_button("USE_FIELD","Use selected field","");
+    aws->create_button("USE_FIELD", "Use selected field", "");
 
     aws->button_length(10);
     aws->at("close");
-    aws->callback( (AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE","C");
+    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
 
-    awt_create_selection_list_on_scandb(GLOBAL_gb_main, (AW_window*)aws, AWAR_FIELD_CHOSEN, -1, "source",0, &AWT_species_selector, 20, 10);
+    awt_create_selection_list_on_scandb(GLOBAL_gb_main, (AW_window*)aws, AWAR_FIELD_CHOSEN, -1, "source", 0, &AWT_species_selector, 20, 10);
 
     return aws;
 }
@@ -1284,7 +1284,7 @@ void ED4_load_new_config(char *string)
     ED4_init_notFoundMessage();
 
 
-    if ( ED4_ROOT->selected_objects.no_of_entries() > 0 ) {
+    if (ED4_ROOT->selected_objects.no_of_entries() > 0) {
         ED4_ROOT->deselect_all();
     }
 
@@ -1296,8 +1296,8 @@ void ED4_load_new_config(char *string)
 
     for (window=ED4_ROOT->first_window; window; window=window->next) {
         window->cursor.init();
-        window->aww->set_horizontal_scrollbar_position ( 0 );
-        window->aww->set_vertical_scrollbar_position ( 0 );
+        window->aww->set_horizontal_scrollbar_position (0);
+        window->aww->set_vertical_scrollbar_position (0);
     }
 
     ED4_ROOT->scroll_links.link_for_hor_slider  = NULL;
@@ -1320,7 +1320,7 @@ void ED4_load_new_config(char *string)
 
     ED4_ROOT->first_window->reset_all_for_new_config();
 
-    ED4_ROOT->create_hierarchy( config_data_middle, config_data_top );
+    ED4_ROOT->create_hierarchy(config_data_middle, config_data_top);
     ED4_ROOT->refresh_all_windows(1);
 
     free(config_data_middle);
@@ -1335,13 +1335,13 @@ static long ED4_get_edit_mode(AW_root *root)
     return root->awar(AWAR_INSERT_MODE)->read_int() ? AD_INSERT : AD_REPLACE;
 }
 
-void ed4_changesecurity(AW_root *root, AW_CL /*cd1*/)
+void ed4_changesecurity(AW_root *root, AW_CL /* cd1 */)
 {
     long mode = ED4_get_edit_mode(root);
     long level;
     const char *awar_name = 0;
 
-    switch (mode){
+    switch (mode) {
         case AD_ALIGN:
             awar_name = AWAR_EDIT_SECURITY_LEVEL_ALIGN;
             break;
@@ -1365,7 +1365,7 @@ ARB_ERROR rebuild_consensus(ED4_base *object) {
         ED4_species_manager *spec_man = object->to_species_manager();
         spec_man->do_callbacks();
 
-        ED4_base *sequence_data_terminal = object->search_spec_child_rek( ED4_L_SEQUENCE_STRING );
+        ED4_base *sequence_data_terminal = object->search_spec_child_rek(ED4_L_SEQUENCE_STRING);
 
         sequence_data_terminal->set_refresh();
         sequence_data_terminal->parent->refresh_requested_by_child();
@@ -1373,22 +1373,22 @@ ARB_ERROR rebuild_consensus(ED4_base *object) {
     return NULL;
 }
 
-void ED4_new_editor_window( AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/ )
+void ED4_new_editor_window(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
 {
     ED4_ROOT->use_window(aww);
 
     AW_device  *device;
     ED4_window *new_window = 0;
     
-    if (ED4_ROOT->generate_window( &device, &new_window) == ED4_R_BREAK) // don't open more than five windows
+    if (ED4_ROOT->generate_window(&device, &new_window) == ED4_R_BREAK)  // don't open more than five windows
         return;
 
     ED4_ROOT->use_window(new_window);
 
-    new_window->set_scrolled_rectangle( 0, 0, 0, 0, ED4_ROOT->scroll_links.link_for_hor_slider,
+    new_window->set_scrolled_rectangle(0, 0, 0, 0, ED4_ROOT->scroll_links.link_for_hor_slider,
                                         ED4_ROOT->scroll_links.link_for_ver_slider,
                                         ED4_ROOT->scroll_links.link_for_hor_slider,
-                                        ED4_ROOT->scroll_links.link_for_ver_slider );
+                                        ED4_ROOT->scroll_links.link_for_ver_slider);
 
     new_window->aww->show();
     new_window->update_scrolled_rectangle();
@@ -1398,7 +1398,7 @@ void ED4_new_editor_window( AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/ )
 
 
 
-void ED4_start_editor_on_configuration(AW_window *aww){
+void ED4_start_editor_on_configuration(AW_window *aww) {
     aww->hide();
     char *cn = aww->get_root()->awar(AWAR_EDIT_CONFIGURATION)->read_string();
 
@@ -1406,7 +1406,7 @@ void ED4_start_editor_on_configuration(AW_window *aww){
     free(cn);
 }
 
-void ED4_compression_changed_cb(AW_root *awr){
+void ED4_compression_changed_cb(AW_root *awr) {
     ED4_remap_mode mode = (ED4_remap_mode)awr->awar(ED4_AWAR_COMPRESS_SEQUENCE_TYPE)->read_int();
     int percent = awr->awar(ED4_AWAR_COMPRESS_SEQUENCE_PERCENT)->read_int();
     GB_transaction transaction_var(GLOBAL_gb_main);
@@ -1434,13 +1434,13 @@ void ED4_compression_changed_cb(AW_root *awr){
     }
 }
 
-void ED4_compression_toggle_changed_cb(AW_root *root, AW_CL cd1, AW_CL /*cd2*/)
+void ED4_compression_toggle_changed_cb(AW_root *root, AW_CL cd1, AW_CL /* cd2 */)
 {
     int            gaps = root->awar(ED4_AWAR_COMPRESS_SEQUENCE_GAPS)->read_int();
     int            hide = root->awar(ED4_AWAR_COMPRESS_SEQUENCE_HIDE)->read_int();
     ED4_remap_mode mode = ED4_remap_mode(root->awar(ED4_AWAR_COMPRESS_SEQUENCE_TYPE)->read_int());
 
-    switch(int(cd1)) {
+    switch (int(cd1)) {
         case 0: { // ED4_AWAR_COMPRESS_SEQUENCE_GAPS changed
             if (gaps!=2 && hide!=0) {
                 root->awar(ED4_AWAR_COMPRESS_SEQUENCE_HIDE)->write_int(0);
@@ -1466,7 +1466,7 @@ void ED4_compression_toggle_changed_cb(AW_root *root, AW_CL cd1, AW_CL /*cd2*/)
         case 0: mode = ED4_RM_NONE; break;
         case 1: mode = ED4_RM_DYNAMIC_GAPS; break;
         case 2: {
-            switch(hide) {
+            switch (hide) {
                 case 0: mode = ED4_RM_MAX_ALIGN; break;
                 case 1: mode = ED4_RM_SHOW_ABOVE; break;
                 default: e4_assert(0); break;
@@ -1482,19 +1482,19 @@ void ED4_compression_toggle_changed_cb(AW_root *root, AW_CL cd1, AW_CL /*cd2*/)
 //  -------------------------------------------------------------------
 //      AW_window *ED4_create_level_1_options_window(AW_root *root)
 //  -------------------------------------------------------------------
-AW_window *ED4_create_level_1_options_window(AW_root *root){
+AW_window *ED4_create_level_1_options_window(AW_root *root) {
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init( root, "EDIT4_PROPS","EDIT4 Options");
+    aws->init(root, "EDIT4_PROPS", "EDIT4 Options");
     aws->load_xfig("edit4/options.fig");
 
-    aws->callback( (AW_CB0)AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE", "CLOSE","C");
+    aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback( AW_POPUP_HELP,(AW_CL)"e4_options.hlp");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"e4_options.hlp");
     aws->at("help");
-    aws->create_button("HELP","HELP","H");
+    aws->create_button("HELP", "HELP", "H");
 
     //  -----------------------------------
     //      Online Sequence Compression
@@ -1558,15 +1558,15 @@ AW_window *ED4_create_level_1_options_window(AW_root *root){
 }
 
 /* Open window to show IUPAC tables */
-static AW_window * CON_showgroupswin_cb( AW_root *aw_root)
+static AW_window * CON_showgroupswin_cb(AW_root *aw_root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "SHOW_IUPAC", "Show IUPAC");
+    aws->init(aw_root, "SHOW_IUPAC", "Show IUPAC");
     aws->load_xfig("consensus/groups.fig");
-    aws->button_length( 7 );
+    aws->button_length(7);
 
-    aws->at("ok");aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","O");
+    aws->at("ok"); aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "O");
 
     return aws;
 }
@@ -1583,20 +1583,20 @@ AW_window *ED4_create_consensus_definition_window(AW_root *root) {
 
         aws->callback((AW_CB0)AW_POPDOWN);
         aws->at("close");
-        aws->create_button("CLOSE", "CLOSE","C");
+        aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback( AW_POPUP_HELP,(AW_CL)"e4_consensus.hlp");
+        aws->callback(AW_POPUP_HELP, (AW_CL)"e4_consensus.hlp");
         aws->at("help");
-        aws->create_button("HELP","HELP","H");
+        aws->create_button("HELP", "HELP", "H");
 
         aws->button_length(10);
-        aws->at("showgroups");aws->callback(AW_POPUP,(AW_CL)CON_showgroupswin_cb,0);
-        aws->create_button("SHOW_IUPAC", "show\nIUPAC...","s");
+        aws->at("showgroups"); aws->callback(AW_POPUP, (AW_CL)CON_showgroupswin_cb, 0);
+        aws->create_button("SHOW_IUPAC", "show\nIUPAC...", "s");
 
         aws->at("countgaps");
         aws->create_toggle_field(ED4_AWAR_CONSENSUS_COUNTGAPS);
-        aws->insert_toggle("on","1", 1);
-        aws->insert_default_toggle("off","0", 0);
+        aws->insert_toggle("on", "1", 1);
+        aws->insert_default_toggle("off", "0", 0);
         aws->update_toggle_field();
 
         aws->at("gapbound");
@@ -1653,55 +1653,55 @@ AW_window *ED4_start_editor_on_old_configuration(AW_root *awr)
 
     if (aws) return (AW_window *)aws;
     aws = new AW_window_simple;
-    aws->init( awr, "LOAD_OLD_CONFIGURATION", "SELECT A CONFIGURATION");
-    aws->at(10,10);
-    aws->auto_space(0,0);
-    awt_create_selection_list_on_configurations(GLOBAL_gb_main,(AW_window *)aws,AWAR_EDIT_CONFIGURATION);
+    aws->init(awr, "LOAD_OLD_CONFIGURATION", "SELECT A CONFIGURATION");
+    aws->at(10, 10);
+    aws->auto_space(0, 0);
+    awt_create_selection_list_on_configurations(GLOBAL_gb_main, (AW_window *)aws, AWAR_EDIT_CONFIGURATION);
     aws->at_newline();
 
     aws->callback((AW_CB0)ED4_start_editor_on_configuration);
-    aws->create_button("LOAD","LOAD");
+    aws->create_button("LOAD", "LOAD");
 
     aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->window_fit();
     return (AW_window *)aws;
 }
 
-void ED4_save_configuration(AW_window *aww,AW_CL close_flag){
+void ED4_save_configuration(AW_window *aww, AW_CL close_flag) {
     char *cn = aww->get_root()->awar(AWAR_EDIT_CONFIGURATION)->read_string();
     if (close_flag) aww->hide();
 
-    ED4_ROOT->database->generate_config_string( cn );
+    ED4_ROOT->database->generate_config_string(cn);
 
     free(cn);
 }
 
-AW_window *ED4_save_configuration_as_open_window(AW_root *awr){
+AW_window *ED4_save_configuration_as_open_window(AW_root *awr) {
     static AW_window_simple *aws = 0;
     if (aws) return (AW_window *)aws;
     aws = new AW_window_simple;
-    aws->init( awr, "SAVE_CONFIGURATION", "SAVE A CONFIGURATION");
+    aws->init(awr, "SAVE_CONFIGURATION", "SAVE A CONFIGURATION");
     aws->load_xfig("edit4/save_config.fig");
 
     aws->at("close");
     aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE");
+    aws->create_button("CLOSE", "CLOSE");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP,(AW_CL)"configuration.hlp");
-    aws->create_button("HELP","HELP");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"configuration.hlp");
+    aws->create_button("HELP", "HELP");
 
     aws->at("save");
     aws->create_input_field(AWAR_EDIT_CONFIGURATION);
 
     aws->at("confs");
-    awt_create_selection_list_on_configurations(GLOBAL_gb_main,aws,AWAR_EDIT_CONFIGURATION);
+    awt_create_selection_list_on_configurations(GLOBAL_gb_main, aws, AWAR_EDIT_CONFIGURATION);
 
     aws->at("go");
     aws->callback(ED4_save_configuration, 1);
-    aws->create_button("SAVE","SAVE");
+    aws->create_button("SAVE", "SAVE");
 
     return aws;
 }
@@ -1813,7 +1813,7 @@ inline bool nameIsUnique(const char *short_name, GBDATA *gb_species_data) {
     return GBT_find_species_rel_species_data(gb_species_data, short_name)==0;
 }
 
-static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode) {
+static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
     // creation_mode == 0 -> create new species
     //                  1 -> create new species from group konsensus
     //                  2 -> copy current species
@@ -2182,13 +2182,13 @@ AW_window *ED4_create_new_seq_window(AW_root *root, AW_CL cl_creation_mode)
     int creation_mode = int(cl_creation_mode);
     switch (creation_mode) {
         case 0:
-            aws->init( root, "create_species","Create species");
+            aws->init(root, "create_species", "Create species");
             break;
         case 1:
-            aws->init( root, "create_species_from_consensus","Create species from consensus");
+            aws->init(root, "create_species_from_consensus", "Create species from consensus");
             break;
         case 2:
-            aws->init( root, "copy_species","Copy current species");
+            aws->init(root, "copy_species", "Copy current species");
             break;
         default:
             e4_assert(0);
@@ -2201,19 +2201,19 @@ AW_window *ED4_create_new_seq_window(AW_root *root, AW_CL cl_creation_mode)
         aws->load_xfig("edit4/create_seq.fig");
     }
 
-    aws->callback( (AW_CB0)AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE", "CLOSE","C");
+    aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("label");
-    aws->create_autosize_button(0,"Please enter the FULL_NAME\nof the new species");
+    aws->create_autosize_button(0, "Please enter the FULL_NAME\nof the new species");
 
     aws->at("input");
     aws->create_input_field(ED4_AWAR_SPECIES_TO_CREATE, 30);
 
     aws->at("ok");
     aws->callback(create_new_species, cl_creation_mode);
-    aws->create_button("GO","GO","g");
+    aws->create_button("GO", "GO", "g");
 
     if (creation_mode==1) { // create from consensus
         aws->at("replace_equal");

@@ -18,20 +18,20 @@
 
 #include <awt_canvas.hxx>
 
-void vertical_change_cb  (AW_window *aww,DI_dmatrix *dis) { dis->monitor_vertical_scroll_cb(aww); }
-void horizontal_change_cb(AW_window *aww,DI_dmatrix *dis) { dis->monitor_horizontal_scroll_cb(aww); }
+void vertical_change_cb  (AW_window *aww, DI_dmatrix *dis) { dis->monitor_vertical_scroll_cb(aww); }
+void horizontal_change_cb(AW_window *aww, DI_dmatrix *dis) { dis->monitor_horizontal_scroll_cb(aww); }
 
-void redisplay_needed(AW_window *,DI_dmatrix *dis) {
+void redisplay_needed(AW_window *, DI_dmatrix *dis) {
     dis->display(true);
 }
-void resize_needed(AW_window *,DI_dmatrix *dis) {
+void resize_needed(AW_window *, DI_dmatrix *dis) {
     dis->init();
     dis->resized();
     dis->display(false);
 }
 
 DI_dmatrix::DI_dmatrix() {
-    memset((char *) this,0,sizeof(DI_dmatrix));
+    memset((char *) this, 0, sizeof(DI_dmatrix));
 }
 
 void DI_dmatrix::init (DI_MATRIX *matrix) {
@@ -83,15 +83,15 @@ void DI_dmatrix::init (DI_MATRIX *matrix) {
     off_dx = cell_width + 2*cell_offset;
     off_dy = 3*cell_height;
 
-    if (m){
+    if (m) {
         total_cells_horiz=m->nentries;
         total_cells_vert=m->nentries;
     }
-    set_scrollbar_steps( cell_width,cell_height,50,50);
+    set_scrollbar_steps(cell_width, cell_height, 50, 50);
     resized();  // initialize window_size dependent parameters
 }
 
-DI_MATRIX *DI_dmatrix::get_matrix(){
+DI_MATRIX *DI_dmatrix::get_matrix() {
     if (di_matrix) return di_matrix;
     return DI_MATRIX::ROOT;
 }
@@ -100,8 +100,8 @@ void DI_dmatrix::resized(void)
 {
     AW_rectangle               squ;
     AW_rectangle               rect;
-    long                       horiz_paint_size,vert_paint_size;
-    const AW_font_information *aw_fi = device->get_font_information(DI_G_STANDARD,0);
+    long                       horiz_paint_size, vert_paint_size;
+    const AW_font_information *aw_fi = device->get_font_information(DI_G_STANDARD, 0);
     DI_MATRIX                  *m     = get_matrix();
     long                       n     = 0;
 
@@ -185,7 +185,7 @@ void DI_dmatrix::handle_move(AW_event& event) {
 
 static void motion_cb(AW_window *aww, AW_CL cl_dmatrix, AW_CL) {
     AW_event event;
-    aww->get_event( &event );
+    aww->get_event(&event);
 
     DI_dmatrix *dmatrix = reinterpret_cast<DI_dmatrix*>(cl_dmatrix);
     if (event.button == AWT_M_MIDDLE) {
@@ -195,7 +195,7 @@ static void motion_cb(AW_window *aww, AW_CL cl_dmatrix, AW_CL) {
 
 static void input_cb(AW_window *aww, AW_CL cl_dmatrix, AW_CL) {
     AW_event event;
-    aww->get_event( &event );
+    aww->get_event(&event);
 
     DI_dmatrix *dmatrix = reinterpret_cast<DI_dmatrix*>(cl_dmatrix);
     if (event.button == AWT_M_MIDDLE) {
@@ -283,7 +283,7 @@ void DI_dmatrix::display(bool clear)   // draw area
     if (awm) selSpecies = awm->get_root()->awar(AWAR_SPECIES_NAME)->read_string();
 
     int name_display_width; {
-        const AW_font_information *aw_fi = device->get_font_information(DI_G_NAMES,0);
+        const AW_font_information *aw_fi = device->get_font_information(DI_G_NAMES, 0);
         name_display_width = cell_width/aw_fi->max_letter.width;
     }
     di_assert(name_display_width<BUFLEN);
@@ -304,19 +304,19 @@ void DI_dmatrix::display(bool clear)   // draw area
 
             if (val2>=min_view_dist && val2<=max_view_dist && val2>0.0) { // display ruler
                 int maxw = (int)(cell_width * .75);
-                int h = cell_height /2 ;
+                int h = cell_height / 2;
                 int y2 = ypos * cell_height - cell_offset - 10;
                 int x2 = xpos * cell_width;
                 double len = ((val2-min_view_dist)/(max_view_dist-min_view_dist)) * maxw;
                 if (len >= 0) {
-                    device->box(DI_G_RULER_DISPLAY, true, x2, y2,len, h*.8,-1,AW_CL(CLICK_SET_MINMAX), cd_val);
+                    device->box(DI_G_RULER_DISPLAY, true, x2, y2, len, h*.8, -1, AW_CL(CLICK_SET_MINMAX), cd_val);
                 }
                 else {
                     device->text(DI_G_STANDARD, "????", xpos * cell_width, ypos * cell_height - cell_offset, 0.0, -1, AW_CL(CLICK_SET_MINMAX), cd_val);
                 }
                 double v;
                 for (v = x2; v < x2 + maxw; v += maxw * .1999) {
-                    device->line (DI_G_RULER, v, y2+h*.5, v, y2 + h, -1,AW_CL(CLICK_SET_MINMAX), cd_val);
+                    device->line (DI_G_RULER, v, y2+h*.5, v, y2 + h, -1, AW_CL(CLICK_SET_MINMAX), cd_val);
                 }
                 device->line(DI_G_RULER, x2, y2+h, x2+maxw-1, y2+h, -1, AW_CL(CLICK_SET_MINMAX), cd_val);
             }
@@ -335,7 +335,7 @@ void DI_dmatrix::display(bool clear)   // draw area
 
             ypos++;
         }
-        //display horizontal speciesnames:
+        // display horizontal speciesnames:
 
         strcpy(buf, m->entries[x]->name);
         if (selSpecies && strcmp(buf, selSpecies) == 0) sel_x_pos = xpos; // remember x-position for selected species
@@ -383,17 +383,17 @@ void DI_dmatrix::display(bool clear)   // draw area
 #undef BUFLEN
 }
 
-void DI_dmatrix::set_scrollbar_steps(long width_h,long width_v,long page_h,long page_v)
+void DI_dmatrix::set_scrollbar_steps(long width_h, long width_v, long page_h, long page_v)
 {
     char buffer[200];
 
-    sprintf(buffer,"window/%s/scroll_width_horizontal",awm->window_defaults_name);
+    sprintf(buffer, "window/%s/scroll_width_horizontal", awm->window_defaults_name);
     awm->get_root()->awar(buffer)->write_int(width_h);
-    sprintf(buffer,"window/%s/scroll_width_vertical",awm->window_defaults_name);
+    sprintf(buffer, "window/%s/scroll_width_vertical", awm->window_defaults_name);
     awm->get_root()->awar(buffer)->write_int(width_v);
-    sprintf( buffer,"window/%s/horizontal_page_increment",awm->window_defaults_name);
+    sprintf(buffer, "window/%s/horizontal_page_increment", awm->window_defaults_name);
     awm->get_root()->awar(buffer)->write_int(page_h);
-    sprintf(buffer,"window/%s/vertical_page_increment",awm->window_defaults_name);
+    sprintf(buffer, "window/%s/vertical_page_increment", awm->window_defaults_name);
     awm->get_root()->awar(buffer)->write_int(page_v);
 }
 
@@ -478,7 +478,7 @@ void DI_dmatrix::monitor_horizontal_scroll_cb(AW_window *aww) { // draw area
 
 static int update_display_on_dist_change = 1;
 
-void di_view_set_max_d(AW_window *aww, AW_CL cl_max_d, AW_CL /*clmatr*/){
+void di_view_set_max_d(AW_window *aww, AW_CL cl_max_d, AW_CL /* clmatr */) {
     AWUSE(aww);
     double   max_d   = cl_max_d*0.01;
     AW_root *aw_root = aww->get_root();
@@ -549,7 +549,7 @@ static void di_bind_dist_awars(AW_root *aw_root, DI_dmatrix *dmatrix) {
 AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix, save_matrix_params *sparam) {
     di_bind_dist_awars(awr, dmatrix);
     AW_window_menu *awm = new AW_window_menu();
-    awm->init(awr,"SHOW_MATRIX", "ARB_SHOW_MATRIX", 800,600);
+    awm->init(awr, "SHOW_MATRIX", "ARB_SHOW_MATRIX", 800, 600);
 
     dmatrix->device = awm->get_device(AW_MIDDLE_AREA);
     dmatrix->awm    = awm;
@@ -564,8 +564,8 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix, save_
     awm->set_motion_callback(AW_MIDDLE_AREA, (AW_CB) motion_cb,        (AW_CL)dmatrix, 0);
 
     AW_gc_manager preset_window =
-        AW_manage_GC (awm,dmatrix->device, DI_G_STANDARD, DI_G_LAST, AW_GCM_DATA_AREA,
-                      (AW_CB)resize_needed,(AW_CL)dmatrix,0,
+        AW_manage_GC (awm, dmatrix->device, DI_G_STANDARD, DI_G_LAST, AW_GCM_DATA_AREA,
+                      (AW_CB)resize_needed, (AW_CL)dmatrix, 0,
                       false,
                       "#D0D0D0",
                       "#Standard$#000000",
@@ -575,17 +575,17 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix, save_
                       "#AboveDist$#DB008D",
                       NULL);
 
-    awm->create_menu("File","F");
-    awm->insert_menu_topic("save_matrix",   "Save Matrix to File",  "S","save_matrix.hlp",  AWM_ALL, AW_POPUP, (AW_CL)DI_create_save_matrix_window, (AW_CL)sparam);
-    awm->insert_menu_topic("close",     "Close",    "C",0,  AWM_ALL,    (AW_CB)AW_POPDOWN, (AW_CL)0, 0 );
+    awm->create_menu("File", "F");
+    awm->insert_menu_topic("save_matrix",   "Save Matrix to File",  "S", "save_matrix.hlp", AWM_ALL, AW_POPUP, (AW_CL)DI_create_save_matrix_window, (AW_CL)sparam);
+    awm->insert_menu_topic("close",     "Close",    "C", 0, AWM_ALL,    (AW_CB)AW_POPDOWN, (AW_CL)0, 0);
 
-    awm->create_menu("Props","P");
-    awm->insert_menu_topic("props_matrix",      "Matrix: Colors and Fonts ...", "C","neprops_data.hlp"  ,   AWM_ALL,    AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)preset_window );
-    awm->insert_menu_topic("show_dist_as_ascii",    "Show Dist in Ascii",           "A",0       ,   AWM_ALL,    di_view_set_max_d, 0, (AW_CL)dmatrix );
-    awm->insert_menu_topic("show_dist_010",     "Show Dist [0,0.1]",            "1",0       ,   AWM_ALL,    di_view_set_max_d, 10, (AW_CL)dmatrix );
-    awm->insert_menu_topic("show_dist_025",     "Show Dist [0,0.25]",           "3",0       ,   AWM_ALL,    di_view_set_max_d, 25, (AW_CL)dmatrix );
-    awm->insert_menu_topic("show_dist_050",     "Show Dist [0,0.5]",            "5",0       ,   AWM_ALL,    di_view_set_max_d, 50, (AW_CL)dmatrix );
-    awm->insert_menu_topic("show_dist_100",     "Show Dist [0,1.0]",            "0",0       ,   AWM_ALL,    di_view_set_max_d, 100, (AW_CL)dmatrix );
+    awm->create_menu("Props", "P");
+    awm->insert_menu_topic("props_matrix",      "Matrix: Colors and Fonts ...", "C", "neprops_data.hlp",    AWM_ALL,    AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)preset_window);
+    awm->insert_menu_topic("show_dist_as_ascii",    "Show Dist in Ascii",           "A", 0,         AWM_ALL,    di_view_set_max_d, 0, (AW_CL)dmatrix);
+    awm->insert_menu_topic("show_dist_010",     "Show Dist [0,0.1]",            "1", 0,         AWM_ALL,    di_view_set_max_d, 10, (AW_CL)dmatrix);
+    awm->insert_menu_topic("show_dist_025",     "Show Dist [0,0.25]",           "3", 0,         AWM_ALL,    di_view_set_max_d, 25, (AW_CL)dmatrix);
+    awm->insert_menu_topic("show_dist_050",     "Show Dist [0,0.5]",            "5", 0,         AWM_ALL,    di_view_set_max_d, 50, (AW_CL)dmatrix);
+    awm->insert_menu_topic("show_dist_100",     "Show Dist [0,1.0]",            "0", 0,         AWM_ALL,    di_view_set_max_d, 100, (AW_CL)dmatrix);
 
     int x, y;
     awm->get_at_position(&x, &y);

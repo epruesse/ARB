@@ -19,7 +19,7 @@
 #include <iostream>
 
 // #include "nt_validManual.hxx"
-//#include "nt_validNameParser.hxx"
+// #include "nt_validNameParser.hxx"
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
@@ -31,7 +31,7 @@
 
 extern GBDATA *GLOBAL_gb_main;
 
-struct selectValidNameStruct{
+struct selectValidNameStruct {
     GBDATA            *gb_main;
     AW_window         *aws;
     AW_root           *awr;
@@ -39,10 +39,10 @@ struct selectValidNameStruct{
     const char        *initials;
 };
 
-/*--------------------------creating and initializing AWARS----------------------------------------*/
+/* --------------------------creating and initializing AWARS---------------------------------------- */
 void NT_createValidNamesAwars(AW_root *aw_root, AW_default aw_def) {
-    aw_root->awar_string( AWAR_SELECTED_VALNAME, "????" , aw_def);
-    aw_root->awar_string( AWAR_INPUT_INITIALS,   "" ,     aw_def);
+    aw_root->awar_string(AWAR_SELECTED_VALNAME, "????",   aw_def);
+    aw_root->awar_string(AWAR_INPUT_INITIALS,    "",      aw_def);
 }
 
 void fillSelNamList(struct selectValidNameStruct* svnp) {
@@ -53,7 +53,7 @@ void fillSelNamList(struct selectValidNameStruct* svnp) {
     GB_begin_transaction(GLOBAL_gb_main);
 
     GBDATA* GB_validNamesCont = GB_entry(GLOBAL_gb_main, "VALID_NAMES");
-    if (!GB_validNamesCont){std::cout << "validNames Container not found" << std:: cout; }
+    if (!GB_validNamesCont) { std::cout << "validNames Container not found" << std:: cout; }
 
     GB_ERROR err = 0;
 
@@ -66,7 +66,7 @@ void fillSelNamList(struct selectValidNameStruct* svnp) {
         // retrieve list of all species names
         GBDATA* actDesc = GB_entry(GB_validNamePair, "DESCTYPE");
         char* typeString = GB_read_string(actDesc);
-        if (strcmp(typeString, "NOTYPE") != 0){
+        if (strcmp(typeString, "NOTYPE") != 0) {
             GBDATA* newName = GB_entry(GB_validNamePair, "NEWNAME");
             char* validName = newName ? GB_read_string(newName) : 0;
 
@@ -77,8 +77,8 @@ void fillSelNamList(struct selectValidNameStruct* svnp) {
             // comparison with searchstr goes here
             // ptr to list, item to display, item value (here: equal)
 
-            if (strncmp (validName, searchstr, length) == 0){
-                svnp->aws->insert_selection(svnp->validNamesList,validName, validName);
+            if (strncmp (validName, searchstr, length) == 0) {
+                svnp->aws->insert_selection(svnp->validNamesList, validName, validName);
             }
 
             free(validName);
@@ -89,7 +89,7 @@ void fillSelNamList(struct selectValidNameStruct* svnp) {
     err = GB_end_transaction(GLOBAL_gb_main, err);
     if (err) aw_message(err);
     else {
-        svnp->aws->insert_default_selection(svnp->validNamesList , "????", "????" );
+        svnp->aws->insert_default_selection(svnp->validNamesList,  "????", "????");
         svnp->aws->sort_selection_list(svnp->validNamesList, 0, 1);
         svnp->aws->update_selection_list(svnp->validNamesList);
     }
@@ -100,7 +100,7 @@ void updateValNameList(AW_root *awr, AW_CL cl_svnp) {
     const char* selectedName = awr->awar(AWAR_INPUT_INITIALS)->read_string();
 
 #ifdef DUMP
-    aw_message(GBS_global_string("now selected: %s\n",selectedName));
+    aw_message(GBS_global_string("now selected: %s\n", selectedName));
 #endif
     svnp->initials = selectedName;
     fillSelNamList(svnp);
@@ -109,7 +109,7 @@ void updateValNameList(AW_root *awr, AW_CL cl_svnp) {
 #endif
 }
 
-struct selectValidNameStruct* createValNameList(GBDATA *gb_main,AW_window *aws, const char *awarName){
+struct selectValidNameStruct* createValNameList(GBDATA *gb_main, AW_window *aws, const char *awarName) {
 #if defined(DUMP)
     aw_message("ValidNameSelectionList was created");
 #endif // DUMP
@@ -118,7 +118,7 @@ struct selectValidNameStruct* createValNameList(GBDATA *gb_main,AW_window *aws, 
 
     svnp->aws            = aws;
     svnp->gb_main        = gb_main;
-    svnp->validNamesList = aws->create_selection_list(awarName,0,"",10,20);;
+    svnp->validNamesList = aws->create_selection_list(awarName, 0, "", 10, 20); ;
     svnp->initials       = "";
 
     fillSelNamList(svnp);
@@ -142,7 +142,7 @@ void selectValidNameFromList(AW_window* selManWindowRoot, AW_CL, AW_CL)
                 err = GBS_global_string("species '%s' not found in database", selectedSpeciesName);
             }
             else {
-                GBDATA *gb_name_cont = GB_search(gb_selected_species,"Valid_Name",GB_CREATE_CONTAINER);
+                GBDATA *gb_name_cont = GB_search(gb_selected_species, "Valid_Name", GB_CREATE_CONTAINER);
 
                 if (!gb_name_cont) err = "could not create Valid Name container in database";
                 else {
@@ -161,20 +161,20 @@ void selectValidNameFromList(AW_window* selManWindowRoot, AW_CL, AW_CL)
 }
 
 // create the manual selsection window
-AW_window *NT_searchManuallyNames(AW_root *aw_root /*, AW_CL*/ )
+AW_window *NT_searchManuallyNames(AW_root *aw_root /* , AW_CL */)
 {
 
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "SEARCH_VALID_NAMES_MANUALLY", "Search Names Manually");
+    aws->init(aw_root, "SEARCH_VALID_NAMES_MANUALLY", "Search Names Manually");
     aws->load_xfig("ad_selManNam.fig");
 
     aws->at("close");
     aws->callback(AW_POPDOWN); // arb specific close callback, like a constant
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP,(AW_CL)"vn_search.hlp");
-    aws->create_button("HELP","HELP","H");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"vn_search.hlp");
+    aws->create_button("HELP", "HELP", "H");
 
     aws->at("nameList");
     // creates the selection list and asign AWAR_SELECTED_VALNAME
@@ -182,11 +182,11 @@ AW_window *NT_searchManuallyNames(AW_root *aw_root /*, AW_CL*/ )
     struct selectValidNameStruct *vns = createValNameList(GLOBAL_gb_main, aws, AWAR_SELECTED_VALNAME);
 
     aws->at("select");
-    aws->callback( selectValidNameFromList,0,0); // (... 0,0)
-    aws->create_button("SELECT","SELECT");
+    aws->callback(selectValidNameFromList, 0, 0); // (... 0,0)
+    aws->create_button("SELECT", "SELECT");
 
     aws->at("enterInitial");
-    aws->create_input_field(AWAR_INPUT_INITIALS , 30 );
+    aws->create_input_field(AWAR_INPUT_INITIALS,  30);
 
     aw_root->awar(AWAR_INPUT_INITIALS)->add_callback(updateValNameList, (AW_CL)vns);
 

@@ -63,27 +63,27 @@ static void delete_matrix_cb(AW_root *dummy)
     AWUSE(dummy);
     delete DI_MATRIX::ROOT;
     DI_MATRIX::ROOT = 0;
-    if (di_dmatrix){
+    if (di_dmatrix) {
         di_dmatrix->resized();
         di_dmatrix->display(false);
     }
 }
 
-static AW_window *create_dna_matrix_window(AW_root *aw_root){
+static AW_window *create_dna_matrix_window(AW_root *aw_root) {
     AW_window_simple *aws = 0;
     aws = new AW_window_simple();
-    aws->init( aw_root, "SET_DNA_MATRIX","SET MATRIX");
-    aws->auto_increment(50,50);
+    aws->init(aw_root, "SET_DNA_MATRIX", "SET MATRIX");
+    aws->auto_increment(50, 50);
     aws->button_length(10);
     aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE");
 
-    aws->callback(AW_POPUP_HELP,(AW_CL)"user_matrix.hlp");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"user_matrix.hlp");
     aws->create_button("HELP", "HELP");
 
     aws->at_newline();
 
-    DI_dna_matrix.create_input_fields(aws,AWAR_DIST_MATRIX_DNA_BASE);
+    DI_dna_matrix.create_input_fields(aws, AWAR_DIST_MATRIX_DNA_BASE);
     aws->window_fit();
     return aws;
 }
@@ -91,7 +91,7 @@ static AW_window *create_dna_matrix_window(AW_root *aw_root){
 void DI_create_matrix_variables(AW_root *aw_root, AW_default def, AW_default db)
 {
     GB_transaction dummy(db);
-    DI_dna_matrix.set_description("","");
+    DI_dna_matrix.set_description("", "");
     DI_dna_matrix.x_description[AP_A] = strdup("A");
     DI_dna_matrix.x_description[AP_C] = strdup("C");
     DI_dna_matrix.x_description[AP_G] = strdup("G");
@@ -104,7 +104,7 @@ void DI_create_matrix_variables(AW_root *aw_root, AW_default def, AW_default db)
     DI_dna_matrix.y_description[AP_T] = strdup("TU");
     DI_dna_matrix.y_description[AP_S] = strdup("GAP");
 
-    DI_dna_matrix.create_awars(aw_root,AWAR_DIST_MATRIX_DNA_BASE);
+    DI_dna_matrix.create_awars(aw_root, AWAR_DIST_MATRIX_DNA_BASE);
 
     aw_root->awar_int(AWAR_DIST_MATRIX_DNA_ENABLED, 0)->add_callback(delete_matrix_cb); // user matrix disabled by default
     {
@@ -117,7 +117,7 @@ void DI_create_matrix_variables(AW_root *aw_root, AW_default def, AW_default db)
     aw_root->awar_string(AWAR_DIST_WHICH_SPECIES, "marked", def)->add_callback(delete_matrix_cb);
     {
         char *default_ali = GBT_get_default_alignment(db);
-        aw_root->awar_string( AWAR_DIST_ALIGNMENT,"",def)      ->add_callback(delete_matrix_cb)->write_string(default_ali);
+        aw_root->awar_string(AWAR_DIST_ALIGNMENT, "", def)     ->add_callback(delete_matrix_cb)->write_string(default_ali);
         free(default_ali);
     }
     aw_root->awar_string(AWAR_DIST_FILTER_ALIGNMENT, "none", def);
@@ -162,20 +162,20 @@ void DI_create_matrix_variables(AW_root *aw_root, AW_default def, AW_default db)
     {
         GB_push_transaction(db);
 
-        GBDATA *gb_species_data = GB_search(db,"species_data",GB_CREATE_CONTAINER);
-        GB_add_callback(gb_species_data,GB_CB_CHANGED,(GB_CB)delete_matrix_cb,0);
+        GBDATA *gb_species_data = GB_search(db, "species_data", GB_CREATE_CONTAINER);
+        GB_add_callback(gb_species_data, GB_CB_CHANGED, (GB_CB)delete_matrix_cb, 0);
 
         GB_pop_transaction(db);
     }
 }
 
 DI_ENTRY::DI_ENTRY(GBDATA *gbd, DI_MATRIX *phmatri) {
-    memset((char *)this,0,sizeof(DI_ENTRY));
+    memset((char *)this, 0, sizeof(DI_ENTRY));
     phmatrix = phmatri;
 
     GBDATA *gb_ali = GB_entry(gbd, phmatrix->get_aliname());
     if (gb_ali) {
-        GBDATA *gb_data = GB_entry(gb_ali,"data");
+        GBDATA *gb_data = GB_entry(gb_ali, "data");
         if (gb_data) {
             if (phmatrix->is_AA) {
                 sequence = sequence_protein = new AP_sequence_simple_protein(phmatrix->get_aliview());
@@ -194,7 +194,7 @@ DI_ENTRY::DI_ENTRY(GBDATA *gbd, DI_MATRIX *phmatri) {
 
 DI_ENTRY::DI_ENTRY(char *namei, DI_MATRIX *phmatri)
 {
-    memset((char *)this,0,sizeof(DI_ENTRY));
+    memset((char *)this, 0, sizeof(DI_ENTRY));
     phmatrix = phmatri;
     this->name = strdup(namei);
 }
@@ -243,12 +243,12 @@ char *DI_MATRIX::load(LoadWhat what, GB_CSTR sort_tree_name, bool show_warnings,
     
     GB_push_transaction(gb_main);
 
-    seq_len          = GBT_get_alignment_len(gb_main,use);
-    is_AA            = GBT_is_alignment_protein(gb_main,use);
-    gb_species_data  = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
+    seq_len          = GBT_get_alignment_len(gb_main, use);
+    is_AA            = GBT_is_alignment_protein(gb_main, use);
+    gb_species_data  = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
     entries_mem_size = 1000;
 
-    entries = (DI_ENTRY **)calloc(sizeof(DI_ENTRY*),(size_t)entries_mem_size);
+    entries = (DI_ENTRY **)calloc(sizeof(DI_ENTRY*), (size_t)entries_mem_size);
 
     nentries = 0;
     DI_ENTRY *phentry;
@@ -308,12 +308,12 @@ char *DI_MATRIX::load(LoadWhat what, GB_CSTR sort_tree_name, bool show_warnings,
                     (what == DI_LOAD_LIST && GBS_read_numhash(shallLoad, (long)gb_species)))
                 {
                     in_tree_species++;
-                    phentry = new DI_ENTRY(gb_species,this);
+                    phentry = new DI_ENTRY(gb_species, this);
                     if (phentry->sequence) {    // a species found
                         entries[nentries++] = phentry;
                         if (nentries == entries_mem_size) {
-                            entries_mem_size +=1000;
-                            entries = (DI_ENTRY **)realloc(entries,(size_t)(sizeof(DI_ENTRY*)*entries_mem_size));
+                            entries_mem_size += 1000;
+                            entries = (DI_ENTRY **)realloc(entries, (size_t)(sizeof(DI_ENTRY*)*entries_mem_size));
                         }
                     }
                     else {
@@ -370,11 +370,11 @@ char *DI_MATRIX::load(LoadWhat what, GB_CSTR sort_tree_name, bool show_warnings,
 
             if (load_species) {
                 count++;
-                phentry = new DI_ENTRY(gb_species,this);
+                phentry = new DI_ENTRY(gb_species, this);
                 if (phentry->sequence) {    // a species found
                     entries[nentries++] = phentry;
                     if (nentries == entries_mem_size) {
-                        entries_mem_size +=1000;
+                        entries_mem_size += 1000;
                         entries = (DI_ENTRY **)realloc(entries, sizeof(DI_ENTRY*)*entries_mem_size);
                     }
                 }
@@ -405,9 +405,9 @@ char *DI_MATRIX::load(LoadWhat what, GB_CSTR sort_tree_name, bool show_warnings,
 ******************************************************************************************/
 void DI_MATRIX::clear(DI_MUT_MATR &hits)
 {
-    int i,j;
-    for (i=0;i<AP_MAX;i++){
-        for (j=0;j<AP_MAX;j++){
+    int i, j;
+    for (i=0; i<AP_MAX; i++) {
+        for (j=0; j<AP_MAX; j++) {
             hits[i][j] = 0;
         }
     }
@@ -415,25 +415,25 @@ void DI_MATRIX::clear(DI_MUT_MATR &hits)
 
 void DI_MATRIX::make_sym(DI_MUT_MATR &hits)
 {
-    int i,j;
-    for (i=AP_A;i<AP_MAX;i*=2){
-        for (j=AP_A;j<=i;j*=2){
+    int i, j;
+    for (i=AP_A; i<AP_MAX; i*=2) {
+        for (j=AP_A; j<=i; j*=2) {
             hits[i][j] = hits[j][i] = hits[i][j] + hits[j][i];
         }
     }
 }
 
-void DI_MATRIX::rate_write(DI_MUT_MATR &hits,FILE *out){
-    int i,j;
-    for (i=AP_A;i<AP_MAX;i*=2){
-        for (j=AP_A;j<AP_MAX;j*=2){
-            fprintf(out,"%5li ",hits[i][j]);
+void DI_MATRIX::rate_write(DI_MUT_MATR &hits, FILE *out) {
+    int i, j;
+    for (i=AP_A; i<AP_MAX; i*=2) {
+        for (j=AP_A; j<AP_MAX; j*=2) {
+            fprintf(out, "%5li ", hits[i][j]);
         }
-        fprintf(out,"\n");
+        fprintf(out, "\n");
     }
 }
 
-long *DI_MATRIX::create_helix_filter(BI_helix *helix, const AP_filter *filter){
+long *DI_MATRIX::create_helix_filter(BI_helix *helix, const AP_filter *filter) {
     long   *result = (long *)calloc(sizeof(long), filter->get_filtered_length());
     long   *temp   = (long *)calloc(sizeof(long), filter->get_filtered_length());
     int     count  = 0;
@@ -442,7 +442,7 @@ long *DI_MATRIX::create_helix_filter(BI_helix *helix, const AP_filter *filter){
     for (i=0; i<filter->get_length(); i++) {
         if (filter->use_position(i)) {
             temp[i] = count;
-            if (helix->pairtype(i)== HELIX_PAIR) {
+            if (helix->pairtype(i) == HELIX_PAIR) {
                 result[count] = helix->opposite_position(i);
             }
             else {
@@ -451,7 +451,7 @@ long *DI_MATRIX::create_helix_filter(BI_helix *helix, const AP_filter *filter){
             count++;
         }
     }
-    while (--count >=0){
+    while (--count >= 0) {
         if (result[count] >= 0) {
             result[count] = temp[result[count]];
         }
@@ -460,26 +460,26 @@ long *DI_MATRIX::create_helix_filter(BI_helix *helix, const AP_filter *filter){
     return result;
 }
 
-GB_ERROR DI_MATRIX::calculate_rates(DI_MUT_MATR &hrates,DI_MUT_MATR &nrates,DI_MUT_MATR &pairs,long *filter){
+GB_ERROR DI_MATRIX::calculate_rates(DI_MUT_MATR &hrates, DI_MUT_MATR &nrates, DI_MUT_MATR &pairs, long *filter) {
 
     if (nentries<=1) {
         return "There are no species selected";
     }
-    long row,col,pos,s_len;
+    long row, col, pos, s_len;
     
-    const unsigned char *seq1,*seq2;
+    const unsigned char *seq1, *seq2;
     s_len = aliview->get_length();
     this->clear(hrates);
     this->clear(nrates);
     this->clear(pairs);
-    for (row = 0; row<nentries;row++){
+    for (row = 0; row<nentries; row++) {
         double gauge = (double)row/(double)nentries;
         if (aw_status(gauge*gauge)) return "Aborted";
         for (col=0; col<row; col++) {
             seq1 = entries[row]->sequence_parsimony->get_usequence();
             seq2 = entries[col]->sequence_parsimony->get_usequence();
-            for (pos = 0; pos < s_len; pos++){
-                if(filter[pos]>=0) {
+            for (pos = 0; pos < s_len; pos++) {
+                if (filter[pos]>=0) {
                     hrates[*seq1][*seq2]++;
                 }
                 else {
@@ -489,10 +489,10 @@ GB_ERROR DI_MATRIX::calculate_rates(DI_MUT_MATR &hrates,DI_MUT_MATR &nrates,DI_M
             }
         }
     }
-    for (row = 0; row<nentries;row++){
+    for (row = 0; row<nentries; row++) {
         seq1 = entries[row]->sequence_parsimony->get_usequence();
-        for (pos = 0; pos < s_len; pos++){
-            if(filter[pos]>=0) {
+        for (pos = 0; pos < s_len; pos++) {
+            if (filter[pos]>=0) {
                 pairs[seq1[pos]][seq1[filter[pos]]]++;
             }
         }
@@ -507,96 +507,96 @@ GB_ERROR DI_MATRIX::calculate_rates(DI_MUT_MATR &hrates,DI_MUT_MATR &nrates,DI_M
 
 GB_ERROR DI_MATRIX::haeschoe(const char *path)
 {
-    DI_MUT_MATR temp,temp2,pairs;
+    DI_MUT_MATR temp, temp2, pairs;
     static BI_helix *helix = 0;
     if (!helix) helix = new BI_helix();
     const char *error = helix->init(get_gb_main());
     if (error) return error;
 
-    FILE *out = fopen(path,"w");
+    FILE *out = fopen(path, "w");
     if (!out) return "Cannot open file";
 
     aw_openstatus("Calculating Distance Matrix");
     aw_status("Calculating global rate matrix");
 
-    fprintf(out,"Pairs in helical regions:\n");
+    fprintf(out, "Pairs in helical regions:\n");
     long *filter = create_helix_filter(helix, aliview->get_filter());
-    error = calculate_rates(temp,temp2,pairs,filter);
-    if (error){
+    error = calculate_rates(temp, temp2, pairs, filter);
+    if (error) {
         aw_closestatus();
         fclose(out);
         return error;
     }
-    rate_write(pairs,out);
-    make_sym(temp);make_sym(temp2);
-    fprintf(out,"\nRatematrix helical parts:\n");
-    rate_write(temp,out);
-    fprintf(out,"\nRatematrix non helical parts:\n");
-    rate_write(temp2,out);
+    rate_write(pairs, out);
+    make_sym(temp); make_sym(temp2);
+    fprintf(out, "\nRatematrix helical parts:\n");
+    rate_write(temp, out);
+    fprintf(out, "\nRatematrix non helical parts:\n");
+    rate_write(temp2, out);
 
-    long row,col,pos,s_len;
+    long row, col, pos, s_len;
 
     s_len = aliview->get_length();
-    fprintf(out,"\nDistance matrix (Helixdist Helixlen Nonhelixdist Nonhelixlen):");
-    fprintf(out,"\n%li",nentries);
+    fprintf(out, "\nDistance matrix (Helixdist Helixlen Nonhelixdist Nonhelixlen):");
+    fprintf(out, "\n%li", nentries);
 
     const int MAXDISTDEBUG = 1000;
     double    distdebug[MAXDISTDEBUG];
 
-    for (pos = 0;pos<MAXDISTDEBUG;pos++) distdebug[pos] = 0.0;
+    for (pos = 0; pos<MAXDISTDEBUG; pos++) distdebug[pos] = 0.0;
     
-    for (row = 0; row<nentries;row++){
-        if ( nentries > 100 || ((row&0xf) == 0)){
+    for (row = 0; row<nentries; row++) {
+        if (nentries > 100 || ((row&0xf) == 0)) {
             double gauge = (double)row/(double)nentries;
             if (aw_status(gauge*gauge)) {
                 aw_closestatus();
                 return "Aborted";
             }
         }
-        fprintf (out,"\n%s  ",entries[row]->name);
+        fprintf (out, "\n%s  ", entries[row]->name);
 
         for (col=0; col<row; col++) {
-            const unsigned char *seq1,*seq2;
+            const unsigned char *seq1, *seq2;
 
             seq1 = entries[row]->sequence_parsimony->get_usequence();
             seq2 = entries[col]->sequence_parsimony->get_usequence();
             this->clear(temp);
             this->clear(temp2);
             
-            for (pos = 0; pos < s_len; pos++){
+            for (pos = 0; pos < s_len; pos++) {
                 if (filter[pos]>=0) temp [*seq1][*seq2]++;
                 else                temp2[*seq1][*seq2]++;
                 seq1++; seq2++;
             }
-            long hdist= 0, hall2 = 0;
-            int i,j;
-            for (i=AP_A;i<AP_MAX;i*=2){
-                for (j=AP_A;j<AP_MAX;j*=2){
+            long hdist = 0, hall2 = 0;
+            int i, j;
+            for (i=AP_A; i<AP_MAX; i*=2) {
+                for (j=AP_A; j<AP_MAX; j*=2) {
                     hall2 += temp[i][j];
                     if (i!=j) hdist += temp[i][j];
                 }
             }
 
-            long dist= 0, all = 0;
-            for (i=AP_A;i<=AP_T;i*=2){
-                for (j=AP_A;j<=AP_T;j*=2){
+            long dist = 0, all = 0;
+            for (i=AP_A; i<=AP_T; i*=2) {
+                for (j=AP_A; j<=AP_T; j*=2) {
                     all += temp2[i][j];
                     if (i!=j) dist += temp2[i][j];
                 }
             }
-            fprintf(out,"(%4li:%4li %4li:%4li) ",hdist,hall2, dist,all);
-            if (all>100){
+            fprintf(out, "(%4li:%4li %4li:%4li) ", hdist, hall2, dist, all);
+            if (all>100) {
                 distdebug[dist*MAXDISTDEBUG/all] = (double)hdist/(double)hall2;
             }
         }
     }
 
-    fprintf (out,"\n");
-    fprintf (out,"\nhdist/dist:\n");
+    fprintf (out, "\n");
+    fprintf (out, "\nhdist/dist:\n");
 
-    for (pos = 1;pos<MAXDISTDEBUG;pos++) {
+    for (pos = 1; pos<MAXDISTDEBUG; pos++) {
         if (distdebug[pos]) {
-            fprintf(out,"%4f %5f\n",(double)pos/(double)MAXDISTDEBUG,distdebug[pos]/(double)pos*(double)MAXDISTDEBUG);
+            fprintf(out, "%4f %5f\n", (double)pos/(double)MAXDISTDEBUG, distdebug[pos]/(double)pos*(double)MAXDISTDEBUG);
         }
     }
     aw_closestatus();
@@ -609,7 +609,7 @@ char *DI_MATRIX::calculate_overall_freqs(double rel_frequencies[AP_MAX], char *c
 {
     long hits2[AP_MAX];
     long sum   = 0;
-    int  i,row;
+    int  i, row;
     int  pos;
     int  b;
     long s_len = aliview->get_length();
@@ -628,7 +628,7 @@ char *DI_MATRIX::calculate_overall_freqs(double rel_frequencies[AP_MAX], char *c
     return 0;
 }
 
-double DI_MATRIX::corr(double dist, double b, double & sigma){
+double DI_MATRIX::corr(double dist, double b, double & sigma) {
     const double eps = 0.01;
     double ar = 1.0 - dist/b;
     sigma = 1000.0;
@@ -637,7 +637,7 @@ double DI_MATRIX::corr(double dist, double b, double & sigma){
     return - b * log(1-dist/b);
 }
 
-GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, DI_TRANSFORMATION transformation)
+GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /* alpha */, DI_TRANSFORMATION transformation)
 {
 
     if (transformation == DI_TRANSFORMATION_HAESCH) {
@@ -646,8 +646,8 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, DI_T
         return "Your matrices have been written to 'outfile'\nSorry I can not make a tree";
     }
     int user_matrix_enabled = awr->awar(AWAR_DIST_MATRIX_DNA_ENABLED)->read_int();
-    if (user_matrix_enabled){   // set transformation Matrix
-        switch (transformation){
+    if (user_matrix_enabled) {  // set transformation Matrix
+        switch (transformation) {
             case DI_TRANSFORMATION_NONE:
             case DI_TRANSFORMATION_SIMILARITY:
             case DI_TRANSFORMATION_JUKES_CANTOR:
@@ -657,7 +657,7 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, DI_T
                                        "    This kind of distance correction does not support\n"
                                        "    a user defined matrix");
         }
-        DI_dna_matrix.read_awars(awr,AWAR_DIST_MATRIX_DNA_BASE);
+        DI_dna_matrix.read_awars(awr, AWAR_DIST_MATRIX_DNA_BASE);
         DI_dna_matrix.normize();
     }
 
@@ -674,9 +674,9 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, DI_T
     if (nentries<=1) {
         return "There are no species selected";
     }
-    memset(&cancel_columns[0],0,256);
+    memset(&cancel_columns[0], 0, 256);
 
-    for (i=0;i<strlen(cancel);i++){
+    for (i=0; i<strlen(cancel); i++) {
         int j = cancel[i];
         j = AP_sequence_parsimony::table[j];
         cancel_columns[j] = 1;
@@ -687,17 +687,17 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, DI_T
     double rel_frequencies[AP_MAX];
     double S_square=0;
 
-    switch(transformation){
+    switch (transformation) {
         case DI_TRANSFORMATION_FELSENSTEIN:
-            this->calculate_overall_freqs(rel_frequencies,cancel_columns);
+            this->calculate_overall_freqs(rel_frequencies, cancel_columns);
             S_square = 0.0;
-            for (i=0;i<AP_MAX; i++) S_square+= rel_frequencies[i]*rel_frequencies[i];
+            for (i=0; i<AP_MAX; i++) S_square += rel_frequencies[i]*rel_frequencies[i];
             break;
         default:    break;
     };
 
-    for (row = 0; row<nentries;row++){
-        if ( nentries > 100 || ((row&0xf) == 0)){
+    for (row = 0; row<nentries; row++) {
+        if (nentries > 100 || ((row&0xf) == 0)) {
             double gauge = (double)row/(double)nentries;
             if (aw_status(gauge*gauge)) {
                 aw_closestatus();
@@ -709,29 +709,29 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, DI_T
             const unsigned char *seq1 = entries[row]->sequence_parsimony->get_usequence();
             const unsigned char *seq2 = entries[col]->sequence_parsimony->get_usequence();
             b          = 0.0;
-            switch(transformation){
+            switch (transformation) {
                 case  DI_TRANSFORMATION_JUKES_CANTOR:
                     b = 0.75;
                 case  DI_TRANSFORMATION_NONE:
-                case  DI_TRANSFORMATION_SIMILARITY:{
+                case  DI_TRANSFORMATION_SIMILARITY: {
                     double  dist = 0.0;
-                    if (user_matrix_enabled){
-                        memset((char *)hits,0,sizeof(long) * AP_MAX * AP_MAX);
+                    if (user_matrix_enabled) {
+                        memset((char *)hits, 0, sizeof(long) * AP_MAX * AP_MAX);
                         int pos;
-                        for (pos = s_len; pos >=0; pos--){
+                        for (pos = s_len; pos >= 0; pos--) {
                             hits[*(seq1++)][*(seq2++)]++;
                         }
-                        int x,y;
+                        int x, y;
                         double diffsum = 0.0;
                         double all_sum = 0.001;
-                        for (x = AP_A; x < AP_MAX; x*=2){
-                            for (y = AP_A; y < AP_MAX; y*=2){
-                                if (x==y){
+                        for (x = AP_A; x < AP_MAX; x*=2) {
+                            for (y = AP_A; y < AP_MAX; y*=2) {
+                                if (x==y) {
                                     all_sum += hits[x][y];
                                 }
                                 else {
-                                    diffsum += hits[x][y] * DI_dna_matrix.get(x,y);
-                                    all_sum += hits[x][y] * DI_dna_matrix.get(x,y);
+                                    diffsum += hits[x][y] * DI_dna_matrix.get(x, y);
+                                    all_sum += hits[x][y] * DI_dna_matrix.get(x, y);
                                 }
                             }
                         }
@@ -739,42 +739,42 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, DI_T
                     }
                     else {
                         int pos;
-                        int b1,b2;
-                        for (pos = s_len; pos >=0; pos--){
-                            b1 =*(seq1++);
-                            b2 =*(seq2++);
+                        int b1, b2;
+                        for (pos = s_len; pos >= 0; pos--) {
+                            b1 = *(seq1++);
+                            b2 = *(seq2++);
                             if (cancel_columns[b1]) continue;
                             if (cancel_columns[b2]) continue;
                             columns++;
                             if (b1&b2) continue;
                             dist+=1.0;
                         }
-                        if (columns== 0) columns = 1;
+                        if (columns == 0) columns = 1;
                         dist /= columns;
                     }
-                    if (transformation==DI_TRANSFORMATION_SIMILARITY){
+                    if (transformation==DI_TRANSFORMATION_SIMILARITY) {
                         dist =  (1.0-dist);
                     }
                     else if (b) {
                         double sigma;
-                        dist = this->corr(dist,b,sigma);
+                        dist = this->corr(dist, b, sigma);
                     }
-                    matrix->set(row,col,dist);
+                    matrix->set(row, col, dist);
                     break;
                 }
                 case DI_TRANSFORMATION_KIMURA:
                 case DI_TRANSFORMATION_OLSEN:
-                case DI_TRANSFORMATION_FELSENSTEIN:{
+                case DI_TRANSFORMATION_FELSENSTEIN: {
                     int    pos;
                     double dist = 0.0;
-                    long   N,P,Q,M;
-                    double p,q;
+                    long   N, P, Q, M;
+                    double p, q;
                     
-                    memset((char *)hits,0,sizeof(long) * AP_MAX * AP_MAX);
-                    for (pos = s_len; pos >=0; pos--){
+                    memset((char *)hits, 0, sizeof(long) * AP_MAX * AP_MAX);
+                    for (pos = s_len; pos >= 0; pos--) {
                         hits[*(seq1++)][*(seq2++)]++;
                     }
-                    switch(transformation){
+                    switch (transformation) {
                         case DI_TRANSFORMATION_KIMURA:
                             P = hits[AP_A][AP_G] +
                                 hits[AP_G][AP_A] +
@@ -804,16 +804,16 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, DI_T
                         case DI_TRANSFORMATION_OLSEN:
                         case DI_TRANSFORMATION_FELSENSTEIN:
 
-                            memset((char *)frequencies,0,
+                            memset((char *)frequencies, 0,
                                    sizeof(long) * AP_MAX);
 
                             N = 0;
                             M = 0;
 
-                            for (i=0;i<AP_MAX;i++) {
+                            for (i=0; i<AP_MAX; i++) {
                                 if (cancel_columns[i]) continue;
                                 unsigned int j;
-                                for (j=0;j<i;j++) {
+                                for (j=0; j<i; j++) {
                                     if (cancel_columns[j]) continue;
                                     frequencies[i] +=
                                         hits[i][j]+
@@ -821,12 +821,12 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, DI_T
                                 }
                                 frequencies[i] += hits[i][i];
                                 N += frequencies[i];
-                                M += hits[i][i];;
+                                M += hits[i][i]; ;
                             }
                             if (N==0) N=1;
-                            if (transformation == DI_TRANSFORMATION_OLSEN){ // Calc sum square freq individually for each line
+                            if (transformation == DI_TRANSFORMATION_OLSEN) { // Calc sum square freq individually for each line
                                 S_square = 0.0;
-                                for (i=0;i<AP_MAX; i++) S_square+= frequencies[i]*frequencies[i];
+                                for (i=0; i<AP_MAX; i++) S_square += frequencies[i]*frequencies[i];
                                 b = 1.0 - S_square/((double)N*(double)N);
                             }
                             else {
@@ -835,12 +835,12 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, DI_T
 
                             dist = ((double)(N-M)) / (double) N;
                             double sigma;
-                            dist = this->corr(dist,b,sigma);
+                            dist = this->corr(dist, b, sigma);
                             break;
 
                         default: return "Sorry: Transformation not implemented";
                     }
-                    matrix->set(row,col,dist);
+                    matrix->set(row, col, dist);
                     break;
                 }
                 default:;
@@ -850,11 +850,11 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, DI_T
     return 0;
 }
 
-GB_ERROR DI_MATRIX::calculate_pro(DI_TRANSFORMATION transformation){
+GB_ERROR DI_MATRIX::calculate_pro(DI_TRANSFORMATION transformation) {
     di_cattype whichcat;
     di_codetype whichcode = universal;
 
-    switch (transformation){
+    switch (transformation) {
         case DI_TRANSFORMATION_NONE:
             whichcat = none;
             break;
@@ -888,20 +888,20 @@ GB_ERROR DI_MATRIX::calculate_pro(DI_TRANSFORMATION transformation){
 static GB_ERROR di_calculate_matrix(AW_window *aww, const WeightedFilter *weighted_filter, bool bootstrap_flag, bool show_warnings) {
     // returns "Aborted" if stopped by user
     GB_push_transaction(GLOBAL_gb_main);
-    if (DI_MATRIX::ROOT){
+    if (DI_MATRIX::ROOT) {
         GB_pop_transaction(GLOBAL_gb_main);
         return 0;
     }
     AW_root *aw_root = aww->get_root();
     char    *use = aw_root->awar(AWAR_DIST_ALIGNMENT)->read_string();
-    long ali_len = GBT_get_alignment_len(GLOBAL_gb_main,use);
+    long ali_len = GBT_get_alignment_len(GLOBAL_gb_main, use);
     if (ali_len<=0) {
         GB_pop_transaction(GLOBAL_gb_main);
         delete use;
         aw_message("Please select a valid alignment");
         return "Error";
     }
-    if (!bootstrap_flag){
+    if (!bootstrap_flag) {
         aw_openstatus("Calculating Matrix");
         aw_status("Read the database");
     }
@@ -914,7 +914,7 @@ static GB_ERROR di_calculate_matrix(AW_window *aww, const WeightedFilter *weight
     char *load_what      = aw_root->awar(AWAR_DIST_WHICH_SPECIES)->read_string();
     char *sort_tree_name = aw_root->awar(AWAR_DIST_TREE_SORT_NAME)->read_string();
 
-    LoadWhat all_flag = (strcmp(load_what,"all") == 0) ? DI_LOAD_ALL : DI_LOAD_MARKED;
+    LoadWhat all_flag = (strcmp(load_what, "all") == 0) ? DI_LOAD_ALL : DI_LOAD_MARKED;
     GB_ERROR error    = 0;
     {
         DI_MATRIX *phm   = new DI_MATRIX(*aliview, aw_root);
@@ -931,11 +931,11 @@ static GB_ERROR di_calculate_matrix(AW_window *aww, const WeightedFilter *weight
             DI_TRANSFORMATION trans = (DI_TRANSFORMATION)aw_root->awar(AWAR_DIST_CORR_TRANS)->read_int();
 
             if (phm->is_AA) error = phm->calculate_pro(trans);
-            else error            = phm->calculate(aw_root,cancel,0.0,trans);
+            else error            = phm->calculate(aw_root, cancel, 0.0, trans);
         }
         if (!bootstrap_flag) aw_closestatus();
         delete phm->ROOT;
-        if (error && strcmp(error,"Aborted")){
+        if (error && strcmp(error, "Aborted")) {
             aw_message(error);
             delete phm;
             phm->ROOT = 0;
@@ -1012,11 +1012,11 @@ static void di_mark_by_distance(AW_window *aww, AW_CL cl_weightedFilter) {
 
                         phm->load(DI_LOAD_LIST, NULL, false, species_pair);
 
-                        if (phm->is_AA){
+                        if (phm->is_AA) {
                             error = phm->calculate_pro(trans);
                         }
                         else {
-                            error = phm->calculate(aw_root,cancel,0.0,trans);
+                            error = phm->calculate(aw_root, cancel, 0.0, trans);
                         }
 
                         double dist_value = phm->matrix->get(0, 1);                         // distance or conformance
@@ -1057,10 +1057,10 @@ static void di_mark_by_distance(AW_window *aww, AW_CL cl_weightedFilter) {
     }
 }
 
-static void selected_species_changed_cb(AW_root* , AW_CL cl_viewer) {
+static void selected_species_changed_cb(AW_root*,  AW_CL cl_viewer) {
     if (di_dmatrix) {
         AW_window *viewer = reinterpret_cast<AW_window*>(cl_viewer);
-        void       redisplay_needed(AW_window *,DI_dmatrix *dis);
+        void       redisplay_needed(AW_window *, DI_dmatrix *dis);
         redisplay_needed(viewer, di_dmatrix);
     }
 }
@@ -1095,7 +1095,7 @@ static void di_save_matrix_cb(AW_window *aww, AW_CL cl_weightedFilter) {
         char              *filename = aww->get_root()->awar(AWAR_DIST_SAVE_MATRIX_FILENAME)->read_string();
         enum DI_SAVE_TYPE  type     = (enum DI_SAVE_TYPE)aww->get_root()->awar(AWAR_DIST_SAVE_MATRIX_TYPE)->read_int();
 
-        DI_MATRIX::ROOT->save(filename,type);
+        DI_MATRIX::ROOT->save(filename, type);
         free(filename);
     }
     awt_refresh_selection_box(aww->get_root(), AWAR_DIST_SAVE_MATRIX_BASE);
@@ -1106,32 +1106,32 @@ AW_window *DI_create_save_matrix_window(AW_root *aw_root, save_matrix_params *sa
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;
-        aws->init( aw_root, "SAVE_MATRIX", "Save Matrix");
+        aws->init(aw_root, "SAVE_MATRIX", "Save Matrix");
         aws->load_xfig("sel_box_user.fig");
 
-        aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CANCEL","C");
+        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+        aws->create_button("CLOSE", "CANCEL", "C");
 
 
-        aws->at("help");aws->callback(AW_POPUP_HELP,(AW_CL)"save_matrix.hlp");
-        aws->create_button("HELP", "HELP","H");
+        aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"save_matrix.hlp");
+        aws->create_button("HELP", "HELP", "H");
 
         aws->at("user");
         aws->create_option_menu(AWAR_DIST_SAVE_MATRIX_TYPE);
-        aws->insert_default_option("Phylip Format (Lower Triangular Matrix)","P",DI_SAVE_PHYLIP_COMP);
-        aws->insert_option("Readable (using NDS)","R",DI_SAVE_READABLE);
-        aws->insert_option("Tabbed (using NDS)","R",DI_SAVE_TABBED);
+        aws->insert_default_option("Phylip Format (Lower Triangular Matrix)", "P", DI_SAVE_PHYLIP_COMP);
+        aws->insert_option("Readable (using NDS)", "R", DI_SAVE_READABLE);
+        aws->insert_option("Tabbed (using NDS)", "R", DI_SAVE_TABBED);
         aws->update_option_menu();
 
         awt_create_selection_box((AW_window *)aws, save_params->awar_base);
 
         aws->at("save2");
         aws->callback(di_save_matrix_cb, (AW_CL)save_params->weighted_filter);
-        aws->create_button("SAVE", "SAVE","S");
+        aws->create_button("SAVE", "SAVE", "S");
 
-        aws->callback( (AW_CB0)AW_POPDOWN);
+        aws->callback((AW_CB0)AW_POPDOWN);
         aws->at("cancel2");
-        aws->create_button("CLOSE", "CANCEL","C");
+        aws->create_button("CLOSE", "CANCEL", "C");
     }
     return aws;
 }
@@ -1139,14 +1139,14 @@ AW_window *DI_create_save_matrix_window(AW_root *aw_root, save_matrix_params *sa
 static AW_window *awt_create_select_cancel_window(AW_root *aw_root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "SELECT_CHARS_TO_CANCEL_COLUMN", "CANCEL SELECT");
+    aws->init(aw_root, "SELECT_CHARS_TO_CANCEL_COLUMN", "CANCEL SELECT");
     aws->load_xfig("di_cancel.fig");
 
-    aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE","C");
+    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("cancel");
-    aws->create_input_field(AWAR_DIST_CANCEL_CHARS,12);
+    aws->create_input_field(AWAR_DIST_CANCEL_CHARS, 12);
 
     return (AW_window *)aws;
 }
@@ -1219,7 +1219,7 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
             close_stat = true;
         }
 
-        if (bootstrap_flag){
+        if (bootstrap_flag) {
             loop_count++;
             di_calculate_tree_show_status(loop_count, bootstrap_count);
 
@@ -1231,11 +1231,11 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
                 error = "unexpected error in di_calculate_matrix_cb (data missing)";
             }
             else {
-                all_names = (char **)calloc(sizeof(char *),(size_t)matr->nentries+2);
-                for (long i=0;i<matr->nentries;i++){
+                all_names = (char **)calloc(sizeof(char *), (size_t)matr->nentries+2);
+                for (long i=0; i<matr->nentries; i++) {
                     all_names[i] = strdup(matr->entries[i]->name);
                 }
-                ctree_init(matr->nentries,all_names);
+                ctree_init(matr->nentries, all_names);
             }
         }
     }
@@ -1271,7 +1271,7 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
         DI_MATRIX::ROOT = 0;
 
         error = di_calculate_matrix(aww, weighted_filter, bootstrap_flag, !bootstrap_flag);
-        if (error && strcmp(error,"Aborted") == 0) {
+        if (error && strcmp(error, "Aborted") == 0) {
             error = 0;          // clear error (otherwise no tree will be read below)
             break;              // end of bootstrap
         }
@@ -1282,14 +1282,14 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
         }
 
         DI_MATRIX  *matr  = DI_MATRIX::ROOT;
-        char     **names = (char **)calloc(sizeof(char *),(size_t)matr->nentries+2);
-        for (long i=0;i<matr->nentries;i++){
+        char     **names = (char **)calloc(sizeof(char *), (size_t)matr->nentries+2);
+        for (long i=0; i<matr->nentries; i++) {
             names[i] = matr->entries[i]->name;
         }
-        tree = neighbourjoining(names,matr->matrix->m,matr->nentries,sizeof(GBT_TREE));
+        tree = neighbourjoining(names, matr->matrix->m, matr->nentries, sizeof(GBT_TREE));
 
-        if (bootstrap_flag){
-            insert_ctree(tree,1);
+        if (bootstrap_flag) {
+            insert_ctree(tree, 1);
             GBT_delete_tree(tree); tree = 0;
         }
         free(names);
@@ -1301,14 +1301,14 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
 
         char *tree_name = aw_root->awar(AWAR_DIST_TREE_STD_NAME)->read_string();
         GB_begin_transaction(GLOBAL_gb_main);
-        error = GBT_write_tree(GLOBAL_gb_main,0,tree_name,tree);
+        error = GBT_write_tree(GLOBAL_gb_main, 0, tree_name, tree);
 
         if (!error) {
             char       *filter_name = AWT_get_combined_filter_name(aw_root, "dist");
             int         transr      = aw_root->awar(AWAR_DIST_CORR_TRANS)->read_int();
             const char *comment     = GBS_global_string("PRG=dnadist CORR=%s FILTER=%s PKG=ARB", enum_trans_to_string[transr], filter_name);
 
-            error = GBT_write_tree_rem(GLOBAL_gb_main,tree_name,comment);
+            error = GBT_write_tree_rem(GLOBAL_gb_main, tree_name, comment);
             free(filter_name);
         }
 
@@ -1339,13 +1339,13 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
 static void di_autodetect_callback(AW_window *aww)
 {
     GB_push_transaction(GLOBAL_gb_main);
-    if (DI_MATRIX::ROOT){
+    if (DI_MATRIX::ROOT) {
         delete DI_MATRIX::ROOT;
         DI_MATRIX::ROOT = 0;
     }
     AW_root *aw_root = aww->get_root();
     char    *use = aw_root->awar(AWAR_DIST_ALIGNMENT)->read_string();
-    long ali_len = GBT_get_alignment_len(GLOBAL_gb_main,use);
+    long ali_len = GBT_get_alignment_len(GLOBAL_gb_main, use);
     if (ali_len<=0) {
         GB_pop_transaction(GLOBAL_gb_main);
         delete use;
@@ -1364,7 +1364,7 @@ static void di_autodetect_callback(AW_window *aww)
         AP_filter *ap_filter = NULL;
         long       flen  = strlen(filter_str);
 
-        if (flen == ali_len){
+        if (flen == ali_len) {
             ap_filter = new AP_filter(filter_str, "0", ali_len);
         }
         else {
@@ -1383,12 +1383,12 @@ static void di_autodetect_callback(AW_window *aww)
         delete ap_filter;
     }
 
-    DI_MATRIX *phm = new DI_MATRIX(*aliview,aw_root);
+    DI_MATRIX *phm = new DI_MATRIX(*aliview, aw_root);
     
     char *load_what      = aw_root->awar(AWAR_DIST_WHICH_SPECIES)->read_string();
     char *sort_tree_name = aw_root->awar(AWAR_DIST_TREE_SORT_NAME)->read_string();
 
-    LoadWhat all_flag = (strcmp(load_what,"all") == 0) ? DI_LOAD_ALL : DI_LOAD_MARKED;
+    LoadWhat all_flag = (strcmp(load_what, "all") == 0) ? DI_LOAD_ALL : DI_LOAD_MARKED;
 
     delete phm->ROOT;
     phm->ROOT = 0;
@@ -1424,12 +1424,12 @@ ATTRIBUTED(__ATTR__NORETURN, static void di_exit(AW_window *aww)) {
     exit(0);
 }
 
-static void di_calculate_full_matrix_cb(AW_window *aww, AW_CL cl_weightedFilter){
+static void di_calculate_full_matrix_cb(AW_window *aww, AW_CL cl_weightedFilter) {
     if (DI_MATRIX::ROOT && DI_MATRIX::ROOT->matrix_type == DI_MATRIX_FULL) return;
     delete_matrix_cb(0);
     WeightedFilter *weighted_filter = (WeightedFilter*)cl_weightedFilter;
     di_calculate_matrix(aww, weighted_filter, 0, true);
-    if (di_dmatrix){
+    if (di_dmatrix) {
         di_dmatrix->resized();
         di_dmatrix->display(false);
     }
@@ -1439,10 +1439,10 @@ static void di_compress_tree_cb(AW_window *aww, AW_CL cl_weightedFilter) {
     GB_transaction dummy(GLOBAL_gb_main);
     char *treename = aww->get_root()->awar(AWAR_DIST_TREE_COMP_NAME)->read_string();
     GB_ERROR error = 0;
-    GBT_TREE *tree = GBT_read_tree(GLOBAL_gb_main,treename,sizeof(GBT_TREE));
+    GBT_TREE *tree = GBT_read_tree(GLOBAL_gb_main, treename, sizeof(GBT_TREE));
     if (!tree) error = "Please select a valid tree first";
 
-    if (DI_MATRIX::ROOT && DI_MATRIX::ROOT->matrix_type!=DI_MATRIX_COMPRESSED){
+    if (DI_MATRIX::ROOT && DI_MATRIX::ROOT->matrix_type!=DI_MATRIX_COMPRESSED) {
         delete_matrix_cb(0);        // delete wrong matrix !!!
     }
 
@@ -1460,7 +1460,7 @@ static void di_compress_tree_cb(AW_window *aww, AW_CL cl_weightedFilter) {
         aw_message(error);
     }
     else {
-        if (di_dmatrix){
+        if (di_dmatrix) {
             di_dmatrix->resized();
             di_dmatrix->display(false);
         }
@@ -1491,17 +1491,17 @@ static void di_define_save_tree_name_cb(AW_window *aww) {
 
 AW_window *DI_create_matrix_window(AW_root *aw_root) {
     AW_window_simple_menu *aws = new AW_window_simple_menu;
-    aws->init( aw_root, "NEIGHBOUR JOINING", "NEIGHBOUR JOINING [ARB_DIST]");
+    aws->init(aw_root, "NEIGHBOUR JOINING", "NEIGHBOUR JOINING [ARB_DIST]");
     aws->load_xfig("di_ge_ma.fig");
-    aws->button_length( 10 );
+    aws->button_length(10);
 
     aws->at("close");
     aws->callback(di_exit);
-    aws->create_button("CLOSE", "CLOSE","C");
+    aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP,(AW_CL)"dist.hlp");
-    aws->create_button("HELP", "HELP","H");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"dist.hlp");
+    aws->create_button("HELP", "HELP", "H");
 
 
     GB_push_transaction(GLOBAL_gb_main);
@@ -1511,26 +1511,26 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
 #endif // DEBUG
 
     aws->create_menu("FILE", "F", AWM_ALL);
-    aws->insert_menu_topic("macros", "Macros  ...", "M", "macro.hlp", AWM_ALL, (AW_CB)AW_POPUP, (AW_CL)awt_open_macro_window,(AW_CL)"NEIGHBOUR_JOINING");
-    aws->insert_menu_topic("quit",   "Quit",        "Q", "quit.hlp",  AWM_ALL, (AW_CB)di_exit,  0,  0                                                 );
+    aws->insert_menu_topic("macros", "Macros  ...", "M", "macro.hlp", AWM_ALL, (AW_CB)AW_POPUP, (AW_CL)awt_open_macro_window, (AW_CL)"NEIGHBOUR_JOINING");
+    aws->insert_menu_topic("quit",   "Quit",        "Q", "quit.hlp",  AWM_ALL, (AW_CB)di_exit,  0,  0);
 
     aws->create_menu("Properties", "P", AWM_ALL);
     aws->insert_menu_topic("frame_props", "Frame ...",                                 "F", "props_frame.hlp", AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window, 0);
-    aws->insert_menu_topic("save_props",  "Save Properties (in ~/.arb_prop/dist.arb)", "S", "savedef.hlp",     AWM_ALL, (AW_CB)AW_save_defaults, 0, 0       );
+    aws->insert_menu_topic("save_props",  "Save Properties (in ~/.arb_prop/dist.arb)", "S", "savedef.hlp",     AWM_ALL, (AW_CB)AW_save_defaults, 0, 0);
 
     aws->insert_help_topic("help ...", "h", "dist.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"dist.hlp", 0);
 
     // ------------------
     //      left side
 
-    aws->at( "which_species" );
-    aws->create_option_menu( AWAR_DIST_WHICH_SPECIES );
-    aws->insert_option( "all", "a", "all" );
-    aws->insert_default_option( "marked",  "m", "marked" );
+    aws->at("which_species");
+    aws->create_option_menu(AWAR_DIST_WHICH_SPECIES);
+    aws->insert_option("all", "a", "all");
+    aws->insert_default_option("marked",   "m", "marked");
     aws->update_option_menu();
 
     aws->at("which_alignment");
-    awt_create_selection_list_on_ad(GLOBAL_gb_main, (AW_window *)aws,AWAR_DIST_ALIGNMENT,"*=");
+    awt_create_selection_list_on_ad(GLOBAL_gb_main, (AW_window *)aws, AWAR_DIST_ALIGNMENT, "*=");
 
     // filter & weights
 
@@ -1543,38 +1543,38 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
 
     aws->at("weights_select");
     aws->sens_mask(AWM_EXP);
-    aws->callback(AW_POPUP,(AW_CL)create_csp_window, (AW_CL)weighted_filter->get_csp());
-    aws->create_button("SELECT_COL_STAT",AWAR_DIST_COLUMN_STAT_NAME);
+    aws->callback(AW_POPUP, (AW_CL)create_csp_window, (AW_CL)weighted_filter->get_csp());
+    aws->create_button("SELECT_COL_STAT", AWAR_DIST_COLUMN_STAT_NAME);
     aws->sens_mask(AWM_ALL);
 
     aws->at("which_cancel");
-    aws->create_input_field(AWAR_DIST_CANCEL_CHARS,12);
+    aws->create_input_field(AWAR_DIST_CANCEL_CHARS, 12);
 
     aws->at("cancel_select");
-    aws->callback((AW_CB1)AW_POPUP,(AW_CL)awt_create_select_cancel_window);
-    aws->create_button("SELECT_CANCEL_CHARS", "Info","C");
+    aws->callback((AW_CB1)AW_POPUP, (AW_CL)awt_create_select_cancel_window);
+    aws->create_button("SELECT_CANCEL_CHARS", "Info", "C");
 
     aws->at("change_matrix");
-    aws->callback(AW_POPUP,(AW_CL)create_dna_matrix_window,0);
+    aws->callback(AW_POPUP, (AW_CL)create_dna_matrix_window, 0);
     aws->create_button("EDIT_MATRIX", "Edit Matrix");
 
     aws->at("enable");
     aws->create_toggle(AWAR_DIST_MATRIX_DNA_ENABLED);
 
     aws->at("which_correction");
-    aws->create_option_menu(AWAR_DIST_CORR_TRANS, NULL ,"");
-    aws->insert_option("none",                    "n", (int)DI_TRANSFORMATION_NONE               );
-    aws->insert_option("similarity",              "n", (int)DI_TRANSFORMATION_SIMILARITY         );
-    aws->insert_option("jukes-cantor (dna)",      "c", (int)DI_TRANSFORMATION_JUKES_CANTOR       );
-    aws->insert_option("felsenstein (dna)",       "f", (int)DI_TRANSFORMATION_FELSENSTEIN        );
-    aws->insert_option("olsen (dna)",             "o", (int)DI_TRANSFORMATION_OLSEN              );
-    aws->insert_option("felsenstein/voigt (exp)", "1", (int)DI_TRANSFORMATION_FELSENSTEIN_VOIGT  );
-    aws->insert_option("olsen/voigt (exp)",       "2", (int)DI_TRANSFORMATION_OLSEN_VOIGT        );
-    aws->insert_option("haesch (exp)",            "f", (int)DI_TRANSFORMATION_HAESCH             );
-    aws->insert_option("kimura (pro)",            "k", (int)DI_TRANSFORMATION_KIMURA             );
-    aws->insert_option("PAM (protein)",           "c", (int)DI_TRANSFORMATION_PAM                );
-    aws->insert_option("Cat. Hall(exp)",          "c", (int)DI_TRANSFORMATION_CATEGORIES_HALL    );
-    aws->insert_option("Cat. Barker(exp)",        "c", (int)DI_TRANSFORMATION_CATEGORIES_BARKER  );
+    aws->create_option_menu(AWAR_DIST_CORR_TRANS, NULL, "");
+    aws->insert_option("none",                    "n", (int)DI_TRANSFORMATION_NONE);
+    aws->insert_option("similarity",              "n", (int)DI_TRANSFORMATION_SIMILARITY);
+    aws->insert_option("jukes-cantor (dna)",      "c", (int)DI_TRANSFORMATION_JUKES_CANTOR);
+    aws->insert_option("felsenstein (dna)",       "f", (int)DI_TRANSFORMATION_FELSENSTEIN);
+    aws->insert_option("olsen (dna)",             "o", (int)DI_TRANSFORMATION_OLSEN);
+    aws->insert_option("felsenstein/voigt (exp)", "1", (int)DI_TRANSFORMATION_FELSENSTEIN_VOIGT);
+    aws->insert_option("olsen/voigt (exp)",       "2", (int)DI_TRANSFORMATION_OLSEN_VOIGT);
+    aws->insert_option("haesch (exp)",            "f", (int)DI_TRANSFORMATION_HAESCH);
+    aws->insert_option("kimura (pro)",            "k", (int)DI_TRANSFORMATION_KIMURA);
+    aws->insert_option("PAM (protein)",           "c", (int)DI_TRANSFORMATION_PAM);
+    aws->insert_option("Cat. Hall(exp)",          "c", (int)DI_TRANSFORMATION_CATEGORIES_HALL);
+    aws->insert_option("Cat. Barker(exp)",        "c", (int)DI_TRANSFORMATION_CATEGORIES_BARKER);
     aws->insert_option("Cat.Chem (exp)",          "c", (int)DI_TRANSFORMATION_CATEGORIES_CHEMICAL);
     aws->insert_default_option("unknown", "u", (int)DI_TRANSFORMATION_NONE);
 
@@ -1583,7 +1583,7 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     aws->at("autodetect");   // auto
     aws->callback(di_autodetect_callback);
     aws->sens_mask(AWM_EXP);
-    aws->create_button("AUTODETECT_CORRECTION", "AUTODETECT","A");
+    aws->create_button("AUTODETECT_CORRECTION", "AUTODETECT", "A");
     aws->sens_mask(AWM_ALL);
 
     // -------------------
@@ -1605,21 +1605,21 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     // tree selection
 
     aws->at("tree_list");
-    awt_create_selection_list_on_trees(GLOBAL_gb_main,(AW_window *)aws,AWAR_DIST_TREE_CURR_NAME);
+    awt_create_selection_list_on_trees(GLOBAL_gb_main, (AW_window *)aws, AWAR_DIST_TREE_CURR_NAME);
 
     aws->at("detect_clusters");
     aws->callback(AW_POPUP, (AW_CL)DI_create_cluster_detection_window, (AW_CL)weighted_filter);
-    aws->create_autosize_button("DETECT_CLUSTERS", "Detect homogenous clusters in tree","D");
+    aws->create_autosize_button("DETECT_CLUSTERS", "Detect homogenous clusters in tree", "D");
 
     // matrix calculation
 
     aws->button_length(18);
     aws->at("calculate");
     aws->callback(di_calculate_full_matrix_cb, (AW_CL)weighted_filter);
-    aws->create_button("CALC_FULL_MATRIX", "Calculate\nFull Matrix","F");
+    aws->create_button("CALC_FULL_MATRIX", "Calculate\nFull Matrix", "F");
     aws->at("compress");
     aws->callback(di_compress_tree_cb, (AW_CL)weighted_filter);
-    aws->create_button("CALC_COMPRESSED_MATRIX", "Calculate\nCompressed Matrix","C");
+    aws->create_button("CALC_COMPRESSED_MATRIX", "Calculate\nCompressed Matrix", "C");
 
     aws->button_length(13);
 
@@ -1630,12 +1630,12 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
         sparams->weighted_filter = weighted_filter;
 
         aws->at("save_matrix");
-        aws->callback(AW_POPUP, (AW_CL)DI_create_save_matrix_window,(AW_CL)sparams);
-        aws->create_button("SAVE_MATRIX", "Save matrix","M");
+        aws->callback(AW_POPUP, (AW_CL)DI_create_save_matrix_window, (AW_CL)sparams);
+        aws->create_button("SAVE_MATRIX", "Save matrix", "M");
 
         aws->at("view_matrix");
         aws->callback(di_view_matrix_cb, (AW_CL)sparams);
-        aws->create_button("VIEW_MATRIX", "View matrix","V");
+        aws->create_button("VIEW_MATRIX", "View matrix", "V");
     }
 
     aws->button_length(22);
@@ -1647,16 +1647,16 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     aws->create_button("USE_SORT_TREE", "Use to sort", "");
 
     aws->at("compr_tree_name");
-    aws->create_input_field(AWAR_DIST_TREE_COMP_NAME,12);
+    aws->create_input_field(AWAR_DIST_TREE_COMP_NAME, 12);
     aws->at("sort_tree_name");
-    aws->create_input_field(AWAR_DIST_TREE_SORT_NAME,12);
+    aws->create_input_field(AWAR_DIST_TREE_SORT_NAME, 12);
 
     // tree calculation
 
     aws->button_length(18);
     aws->at("t_calculate");
     aws->callback(di_calculate_tree_cb, (AW_CL)weighted_filter, 0);
-    aws->create_button("CALC_TREE", "Calculate \ntree","C");
+    aws->create_button("CALC_TREE", "Calculate \ntree", "C");
     aws->at("bootstrap");
     aws->callback(di_calculate_tree_cb, (AW_CL)weighted_filter, 1);
     aws->create_button("CALC_BOOTSTRAP_TREE", "Calculate \nbootstrap tree");
@@ -1667,7 +1667,7 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     aws->create_button("USE_NAME", "Use as new tree name", "");
 
     aws->at("calc_tree_name");
-    aws->create_input_field(AWAR_DIST_TREE_STD_NAME,12);
+    aws->create_input_field(AWAR_DIST_TREE_STD_NAME, 12);
     
     aws->at("bcount");
     aws->create_input_field(AWAR_DIST_BOOTSTRAP_COUNT, 7);

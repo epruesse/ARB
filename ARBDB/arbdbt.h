@@ -15,8 +15,8 @@ typedef float GBT_LEN;
 #define GBT_TREE_ELEMENTS(type)                 \
     bool     is_leaf;                           \
     bool     tree_is_one_piece_of_memory;       \
-    type    *father,*leftson,*rightson;         \
-    GBT_LEN  leftlen,rightlen;                  \
+    type    *father, *leftson, *rightson;       \
+    GBT_LEN  leftlen, rightlen;                 \
     GBDATA  *gb_node;                           \
     char    *name;                              \
     char    *remark_branch

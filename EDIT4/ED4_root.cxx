@@ -43,7 +43,7 @@
 #include "ed4_RNA3D.hxx"
 #endif // ARB_OPENGL
 
-AW_window *AWTC_create_island_hopping_window(AW_root *root, AW_CL );
+AW_window *AWTC_create_island_hopping_window(AW_root *root, AW_CL);
 
 ED4_returncode ED4_root::refresh_window_simple(int redraw)
 {
@@ -56,7 +56,7 @@ ED4_returncode ED4_root::refresh_window_simple(int redraw)
         refresh_all = 1;
     }
     main_manager->Show(refresh_all, 0);
-    return ( ED4_R_OK );
+    return (ED4_R_OK);
 }
 
 ED4_returncode ED4_root::refresh_window(int redraw) // this function should only be used for window specific updates (i.e. cursor placement)
@@ -101,39 +101,39 @@ ED4_returncode ED4_root::refresh_all_windows(int redraw)
 
     use_window(old_window);
 
-    return ( ED4_R_OK );
+    return (ED4_R_OK);
 }
 
 
-ED4_returncode ED4_root::win_to_world_coords( AW_window *aww, AW_pos *x, AW_pos *y )            // calculates transformation from window to
+ED4_returncode ED4_root::win_to_world_coords(AW_window *aww, AW_pos *x, AW_pos *y)              // calculates transformation from window to
 {                                                   // world coordinates in a given window
     ED4_window        *current_window;
     ED4_folding_line  *current_fl;
     AW_pos             temp_x, temp_y;
 
-    current_window = first_window->get_matching_ed4w( aww );
+    current_window = first_window->get_matching_ed4w(aww);
 
-    if ( current_window == NULL )
-        return ( ED4_R_WARNING );
+    if (current_window == NULL)
+        return (ED4_R_WARNING);
 
     temp_x = *x;
     temp_y = *y;
 
     current_fl = current_window->vertical_fl;                           // calculate x-offset due to vertical folding lines
-    while ( (current_fl != NULL) && (*x >= current_fl->world_pos[X_POS]) )
+    while ((current_fl != NULL) && (*x >= current_fl->world_pos[X_POS]))
     {
-        if (    (current_fl->length == INFINITE) ||
-                ((*y >= current_fl->window_pos[Y_POS]) && (*y <= (current_fl->window_pos[Y_POS] + current_fl->length))) )
+        if ((current_fl->length == INFINITE) ||
+                ((*y >= current_fl->window_pos[Y_POS]) && (*y <= (current_fl->window_pos[Y_POS] + current_fl->length))))
             temp_x += current_fl->dimension;
 
         current_fl = current_fl->next;
     }
 
     current_fl = current_window->horizontal_fl;                         // calculate y-offset due to horizontal folding lines
-    while ( (current_fl != NULL) && (*y >= current_fl->world_pos[Y_POS]) )
+    while ((current_fl != NULL) && (*y >= current_fl->world_pos[Y_POS]))
     {
-        if (      (current_fl->length == INFINITE) ||
-                  ((*x >= current_fl->window_pos[X_POS]) && (*x <= (current_fl->window_pos[X_POS] + current_fl->length))) )
+        if ((current_fl->length == INFINITE) ||
+                  ((*x >= current_fl->window_pos[X_POS]) && (*x <= (current_fl->window_pos[X_POS] + current_fl->length))))
             temp_y += current_fl->dimension;
 
         current_fl = current_fl->next;
@@ -142,23 +142,23 @@ ED4_returncode ED4_root::win_to_world_coords( AW_window *aww, AW_pos *x, AW_pos 
     *x = temp_x;
     *y = temp_y;
 
-    return ( ED4_R_OK );
+    return (ED4_R_OK);
 }
 
 
-short ED4_root::is_primary_selection(ED4_terminal *object )
+short ED4_root::is_primary_selection(ED4_terminal *object)
 {
     ED4_list_elem        *tmp_elem;
     ED4_selection_entry  *tmp_entry;
 
-    tmp_elem = ( ED4_list_elem *) selected_objects.last();
+    tmp_elem = (ED4_list_elem *) selected_objects.last();
     if (!tmp_elem) return 0;
 
-    tmp_entry = ( ED4_selection_entry *) tmp_elem->elem();
+    tmp_entry = (ED4_selection_entry *) tmp_elem->elem();
     return (tmp_entry != NULL) && (tmp_entry->object == object);
 }
 
-ED4_returncode ED4_root::deselect_all( void )
+ED4_returncode ED4_root::deselect_all(void)
 {
     ED4_multi_species_manager *main_multi_man = middle_area_man->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
 
@@ -169,13 +169,13 @@ ED4_returncode ED4_root::deselect_all( void )
     return ED4_R_OK;
 }
 
-ED4_returncode  ED4_root::remove_from_selected( ED4_terminal *object )
+ED4_returncode  ED4_root::remove_from_selected(ED4_terminal *object)
 {
-    if ( object == NULL )
-        return ( ED4_R_IMPOSSIBLE );
+    if (object == NULL)
+        return (ED4_R_IMPOSSIBLE);
 
-    if ( (selected_objects.is_elem( (void *) object->selection_info )) ) {
-        selected_objects.delete_elem( (void *) object->selection_info );
+    if ((selected_objects.is_elem((void *) object->selection_info))) {
+        selected_objects.delete_elem((void *) object->selection_info);
 
         delete object->selection_info;
         object->selection_info = NULL;
@@ -212,7 +212,7 @@ ED4_returncode  ED4_root::remove_from_selected( ED4_terminal *object )
                 seq_term->parent->refresh_requested_by_child();
             }
 
-            //ProtView: Refresh corresponding AA_sequence terminals
+            // ProtView: Refresh corresponding AA_sequence terminals
             if (alignment_type == GB_AT_DNA) {
                 PV_CallBackFunction(this->aw_root); 
             }
@@ -226,7 +226,7 @@ ED4_returncode  ED4_root::remove_from_selected( ED4_terminal *object )
         }
     }
 
-    return ( ED4_R_OK );
+    return (ED4_R_OK);
 }
 
 void ED4_root::announce_deletion(ED4_base *object) {
@@ -240,7 +240,7 @@ void ED4_root::announce_deletion(ED4_base *object) {
 }
 
 
-ED4_returncode ED4_root::add_to_selected( ED4_terminal *object )
+ED4_returncode ED4_root::add_to_selected(ED4_terminal *object)
 {
     ED4_base            *tmp_object;
     ED4_level            mlevel;
@@ -248,33 +248,33 @@ ED4_returncode ED4_root::add_to_selected( ED4_terminal *object )
     ED4_selection_entry *sel_info;
 
 
-    if ( (object == NULL) || !(object->dynamic_prop & ED4_P_SELECTABLE) ) { // check if object exists and may be selected
-        return ( ED4_R_IMPOSSIBLE );
+    if ((object == NULL) || !(object->dynamic_prop & ED4_P_SELECTABLE)) {   // check if object exists and may be selected
+        return (ED4_R_IMPOSSIBLE);
     }
 
-    if ( selected_objects.no_of_entries() > 0 ) { // check if object is of the same type as previously selected objects
+    if (selected_objects.no_of_entries() > 0) {   // check if object is of the same type as previously selected objects
         sel_info = (ED4_selection_entry *) selected_objects.first()->elem();
         sel_object = sel_info->object;
-        if ( object->spec->level != sel_object->spec->level ) { // object levels are different
-            return ( ED4_R_IMPOSSIBLE );
+        if (object->spec->level != sel_object->spec->level) {   // object levels are different
+            return (ED4_R_IMPOSSIBLE);
         }
     }
 
 
-    if ( !(selected_objects.is_elem( (void *) object->selection_info )) ) { // object is really new to our list => calculate current extension and append it
+    if (!(selected_objects.is_elem((void *) object->selection_info))) {     // object is really new to our list => calculate current extension and append it
         object->selection_info = new ED4_selection_entry;
 
-        if ( object->dynamic_prop & ED4_P_IS_HANDLE )               // object is a handle for an object up in the hierarchy => search it
+        if (object->dynamic_prop & ED4_P_IS_HANDLE)                 // object is a handle for an object up in the hierarchy => search it
         {
             mlevel = object->spec->handled_level;
             tmp_object = object;
 
-            while ( (tmp_object != NULL) && !(tmp_object->spec->level & mlevel) ) {
+            while ((tmp_object != NULL) && !(tmp_object->spec->level & mlevel)) {
                 tmp_object = tmp_object->parent;
             }
 
-            if ( tmp_object == NULL ) {
-                return ( ED4_R_WARNING );               // no target level found
+            if (tmp_object == NULL) {
+                return (ED4_R_WARNING);                 // no target level found
             }
 
             object->selection_info->actual_width = tmp_object->extension.size[WIDTH];
@@ -292,7 +292,7 @@ ED4_returncode ED4_root::add_to_selected( ED4_terminal *object )
         object->selection_info->drag_off_y = 0;
         object->selection_info->old_event_y = 0;
         object->selection_info->object = object;
-        selected_objects.append_elem_backwards( (void *) object->selection_info );
+        selected_objects.append_elem_backwards((void *) object->selection_info);
         object->flag.selected = 1;
 
         if (object->is_species_name_terminal()) {
@@ -324,7 +324,7 @@ ED4_returncode ED4_root::add_to_selected( ED4_terminal *object )
                 seq_term->parent->refresh_requested_by_child();
             }
 
-            //ProtView: Refresh corresponding AA_sequence terminals
+            // ProtView: Refresh corresponding AA_sequence terminals
             if (alignment_type == GB_AT_DNA) {
                 PV_CallBackFunction(this->aw_root); 
             }
@@ -338,19 +338,19 @@ ED4_returncode ED4_root::add_to_selected( ED4_terminal *object )
             object->parent->refresh_requested_by_child();
         }
 
-        return ( ED4_R_OK );
+        return (ED4_R_OK);
     }
 
-    return ( ED4_R_IMPOSSIBLE );
+    return (ED4_R_IMPOSSIBLE);
 }
 
-ED4_returncode ED4_root::resize_all( void )
+ED4_returncode ED4_root::resize_all(void)
 {
-    while ( main_manager->update_info.resize ) {
+    while (main_manager->update_info.resize) {
         main_manager->resize_requested_by_parent();
     }
 
-    return ( ED4_R_OK );
+    return (ED4_R_OK);
 }
 
 static ARB_ERROR change_char_table_length(ED4_base *base, AW_CL new_length) {
@@ -361,7 +361,7 @@ static ARB_ERROR change_char_table_length(ED4_base *base, AW_CL new_length) {
     return NULL;
 }
 
-void ED4_alignment_length_changed(GBDATA *gb_alignment_len, int */*cl*/, GB_CB_TYPE IF_DEBUG(gbtype)) // callback from database
+void ED4_alignment_length_changed(GBDATA *gb_alignment_len, int * /* cl */, GB_CB_TYPE IF_DEBUG(gbtype)) // callback from database
 {
     e4_assert(gbtype==GB_CB_CHANGED);
     int new_length = GB_read_int(gb_alignment_len);
@@ -381,8 +381,8 @@ void ED4_alignment_length_changed(GBDATA *gb_alignment_len, int */*cl*/, GB_CB_T
         err = ED4_ROOT->ecoli_ref->init(GLOBAL_gb_main); // reload ecoli
         if (err) { aw_message(err); err = 0; }
         
-        if(ED4_ROOT->alignment_type == GB_AT_AA) {
-            //TODO: is this needed here?
+        if (ED4_ROOT->alignment_type == GB_AT_AA) {
+            // TODO: is this needed here?
             err = ED4_pfold_set_SAI(&ED4_ROOT->protstruct, GLOBAL_gb_main, ED4_ROOT->alignment_name, &ED4_ROOT->protstruct_len); // reload protstruct
             if (err) { aw_message(err); err = 0; }
         }
@@ -398,7 +398,7 @@ ED4_returncode ED4_root::init_alignment() {
     GB_transaction dummy(GLOBAL_gb_main);
 
     alignment_name = GBT_get_default_alignment(GLOBAL_gb_main);
-    alignment_type = GBT_get_alignment_type(GLOBAL_gb_main,alignment_name);
+    alignment_type = GBT_get_alignment_type(GLOBAL_gb_main, alignment_name);
     if (alignment_type==GB_AT_UNKNOWN) {
         aw_popup_exit("You have to select a valid alignment before you can start ARB_EDIT4");
     }
@@ -406,7 +406,7 @@ ED4_returncode ED4_root::init_alignment() {
     GBDATA *gb_alignment = GBT_get_alignment(GLOBAL_gb_main, alignment_name);
     if (!gb_alignment) aw_popup_exit("You can't edit without an existing alignment");
 
-    GBDATA *gb_alignment_len = GB_search(gb_alignment,"alignment_len",GB_FIND);
+    GBDATA *gb_alignment_len = GB_search(gb_alignment, "alignment_len", GB_FIND);
     int alignment_length = GB_read_int(gb_alignment_len);
     MAXSEQUENCECHARACTERLENGTH = alignment_length; 
 
@@ -434,7 +434,7 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
 
     /*****YKADI COMMENT****************/
     // this is the sequence reference region - it counts the species and related info (e.g. helix) displayed
-    //in the REFERENCE region -- TOP REGION
+    // in the REFERENCE region -- TOP REGION
     /*****YKADI COMMENT****************/
 
     database->calc_no_of_all(area_string_top, &group_count, &species_count);
@@ -451,28 +451,28 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
 
     aw_status_counter species_progress(total_no_of_species);
 
-    GB_push_transaction( GLOBAL_gb_main );
+    GB_push_transaction(GLOBAL_gb_main);
 
     ecoli_ref = new BI_ecoli_ref();
     ecoli_ref->init(GLOBAL_gb_main);
 
     // [former position of ali-init-code]
 
-    main_manager = new ED4_main_manager  ( "Main_Manager"  , 0, 0, 0, 0, NULL );            // build a test hierarchy
-    root_group_man = new ED4_root_group_manager ( "Root_Group_Manager" ,0 ,0 ,0 ,0 , main_manager);
-    main_manager->children->append_member ( root_group_man );
+    main_manager = new ED4_main_manager  ("Main_Manager",    0, 0, 0, 0, NULL);            // build a test hierarchy
+    root_group_man = new ED4_root_group_manager ("Root_Group_Manager", 0, 0, 0, 0,   main_manager);
+    main_manager->children->append_member (root_group_man);
 
-    ED4_device_manager *device_manager = new ED4_device_manager( "Device_Manager", 0, 0, 0, 0, root_group_man );
-    root_group_man->children->append_member( device_manager );
+    ED4_device_manager *device_manager = new ED4_device_manager("Device_Manager", 0, 0, 0, 0, root_group_man);
+    root_group_man->children->append_member(device_manager);
 
     ED4_calc_terminal_extentions();
 
     {
         int col_stat_term_height = 50; // @@@ Hoehe des ColumnStatistics Terminals ausrechnen
 
-        ref_terminals.init(new ED4_sequence_info_terminal("Reference_Sequence_Info_Terminal",/*NULL,*/ 250, 0, MAXINFOWIDTH, TERMINALHEIGHT, NULL),
+        ref_terminals.init(new ED4_sequence_info_terminal("Reference_Sequence_Info_Terminal", /* NULL, */ 250, 0, MAXINFOWIDTH, TERMINALHEIGHT, NULL),
                            new ED4_sequence_terminal("Reference_Sequence_Terminal", 300, 0, 300, TERMINALHEIGHT, NULL),
-                           new ED4_sequence_info_terminal("Reference_ColumnStatistics_Info_Terminal",/*NULL,*/ 250, 0, MAXINFOWIDTH, col_stat_term_height, NULL),
+                           new ED4_sequence_info_terminal("Reference_ColumnStatistics_Info_Terminal", /* NULL, */ 250, 0, MAXINFOWIDTH, col_stat_term_height, NULL),
                            new ED4_columnStat_terminal("Reference_ColumnStatistics_Terminal", 300, 0, 300, col_stat_term_height, NULL));
     }
     x = 100;
@@ -499,14 +499,14 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
             device_manager->children->append_member(top_area_manager);
             top_area_man = top_area_manager;
 
-            top_spacer_terminal = new ED4_spacer_terminal( "Top_Spacer" , 0, 0, 100, 10, top_area_manager);
-            top_area_manager->children->append_member( top_spacer_terminal );
+            top_spacer_terminal = new ED4_spacer_terminal("Top_Spacer",   0, 0, 100, 10, top_area_manager);
+            top_area_manager->children->append_member(top_spacer_terminal);
 
             top_multi_species_manager = new ED4_multi_species_manager("Top_MultiSpecies_Manager", x, 0, 0, 0, top_area_manager);
-            top_area_manager->children->append_member( top_multi_species_manager );
+            top_area_manager->children->append_member(top_multi_species_manager);
 
-            top_multi_spacer_terminal_beg = new ED4_spacer_terminal("Top_Multi_Spacer_Terminal_Beg",0,0,0,3, top_multi_species_manager);
-            top_multi_species_manager->children->append_member( top_multi_spacer_terminal_beg );
+            top_multi_spacer_terminal_beg = new ED4_spacer_terminal("Top_Multi_Spacer_Terminal_Beg", 0, 0, 0, 3, top_multi_species_manager);
+            top_multi_species_manager->children->append_member(top_multi_spacer_terminal_beg);
 
             y+=3;
 
@@ -517,19 +517,19 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
             reference = new AWT_reference(GLOBAL_gb_main);
             database->scan_string(top_multi_species_manager, ref_terminals.get_ref_sequence_info(), ref_terminals.get_ref_sequence(),
                                   area_string_top, &index, &y, species_progress);
-            GB_pop_transaction( GLOBAL_gb_main );
+            GB_pop_transaction(GLOBAL_gb_main);
 
             const int TOP_MID_LINE_HEIGHT   = 3;
             int       TOP_MID_SPACER_HEIGHT = font_group.get_max_height()-TOP_MID_LINE_HEIGHT;
 
-            top_mid_line_terminal = new ED4_line_terminal( "Top_Mid_Line_Terminal" ,0, y, 0, TOP_MID_LINE_HEIGHT, device_manager );   // width will be set below
-            device_manager->children->append_member( top_mid_line_terminal );
+            top_mid_line_terminal = new ED4_line_terminal("Top_Mid_Line_Terminal", 0, y, 0, TOP_MID_LINE_HEIGHT, device_manager);    // width will be set below
+            device_manager->children->append_member(top_mid_line_terminal);
 
             y += TOP_MID_LINE_HEIGHT;
 
 
-            top_mid_spacer_terminal = new ED4_spacer_terminal( "Top_Middle_Spacer", 0, y, 880, TOP_MID_SPACER_HEIGHT , device_manager);
-            device_manager->children->append_member( top_mid_spacer_terminal );
+            top_mid_spacer_terminal = new ED4_spacer_terminal("Top_Middle_Spacer", 0, y, 880, TOP_MID_SPACER_HEIGHT,   device_manager);
+            device_manager->children->append_member(top_mid_spacer_terminal);
 
             // needed to avoid text-clipping problems: 
             main_manager->set_top_middle_spacer_terminal(top_mid_spacer_terminal); 
@@ -550,14 +550,14 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
             device_manager->children->append_member(middle_area_manager);
             middle_area_man = middle_area_manager;
 
-            tree_terminal = new ED4_tree_terminal( "Tree", 0, 0, 2, change, middle_area_manager);
-            middle_area_manager->children->append_member( tree_terminal );
+            tree_terminal = new ED4_tree_terminal("Tree", 0, 0, 2, change, middle_area_manager);
+            middle_area_manager->children->append_member(tree_terminal);
 
             mid_multi_species_manager = new ED4_multi_species_manager("Middle_MultiSpecies_Manager", x, 0, 0, 0, middle_area_manager);
-            middle_area_manager->children->append_member( mid_multi_species_manager );
+            middle_area_manager->children->append_member(mid_multi_species_manager);
 
-            mid_multi_spacer_terminal_beg = new ED4_spacer_terminal("Mid_Multi_Spacer_Terminal_Beg",0,0,0,3, mid_multi_species_manager);
-            mid_multi_species_manager->children->append_member( mid_multi_spacer_terminal_beg );
+            mid_multi_spacer_terminal_beg = new ED4_spacer_terminal("Mid_Multi_Spacer_Terminal_Beg", 0, 0, 0, 3, mid_multi_species_manager);
+            mid_multi_species_manager->children->append_member(mid_multi_spacer_terminal_beg);
 
             y+=3;               // dummy height, to create a dummy layout ( to preserve order of objects )
 
@@ -574,8 +574,8 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
             aw_closestatus();
 
             {
-                ED4_spacer_terminal *mid_bot_spacer_terminal = new ED4_spacer_terminal( "Middle_Bot_Spacer_Terminal", 0, y, 880, 10, device_manager);
-                device_manager->children->append_member( mid_bot_spacer_terminal );
+                ED4_spacer_terminal *mid_bot_spacer_terminal = new ED4_spacer_terminal("Middle_Bot_Spacer_Terminal", 0, y, 880, 10, device_manager);
+                device_manager->children->append_member(mid_bot_spacer_terminal);
             }
 
             tree_terminal->extension.size[HEIGHT] = y - help;
@@ -583,8 +583,8 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
             mid_multi_species_manager->generate_id_for_groups();
             y += 10;                                                // add top-mid_spacer_terminal height 
 
-            mid_bot_line_terminal = new ED4_line_terminal( "Mid_Bot_Line_Terminal" ,0, y, 0, 3, device_manager );   // width will be set below
-            device_manager->children->append_member( mid_bot_line_terminal );
+            mid_bot_line_terminal = new ED4_line_terminal("Mid_Bot_Line_Terminal", 0, y, 0, 3, device_manager);    // width will be set below
+            device_manager->children->append_member(mid_bot_line_terminal);
             y += 3;
 
             total_bottom_spacer = new ED4_spacer_terminal("Total_Bottom_Spacer_terminal", 0, y, 0, 10000, device_manager);
@@ -606,9 +606,9 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
 
         }
 
-        tree_terminal->set_links( NULL, mid_multi_species_manager );                        // set links
-        top_spacer_terminal->set_links( tree_terminal, top_multi_species_manager );
-        top_mid_spacer_terminal->set_links( middle_area_manager, NULL );
+        tree_terminal->set_links(NULL, mid_multi_species_manager);                          // set links
+        top_spacer_terminal->set_links(tree_terminal, top_multi_species_manager);
+        top_mid_spacer_terminal->set_links(middle_area_manager, NULL);
         total_bottom_spacer->set_links(mid_bot_line_terminal, 0);
     }
 
@@ -650,18 +650,18 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
 
     while (new_window)
     {
-        new_window->set_scrolled_rectangle( 0, 0, 0, 0, x_link, y_link, width_link, height_link );
+        new_window->set_scrolled_rectangle(0, 0, 0, 0, x_link, y_link, width_link, height_link);
         new_window->aww->show();
         new_window->update_scrolled_rectangle();
         ED4_refresh_window(new_window->aww, 0, 0);
         new_window = new_window->next;
     }
 
-    aw_root->add_timed_callback(2000,ED4_timer,(AW_CL)0,(AW_CL)0);
+    aw_root->add_timed_callback(2000, ED4_timer, (AW_CL)0, (AW_CL)0);
 
     ED4_finish_and_show_notFoundMessage();
 
-    return ( ED4_R_OK );
+    return (ED4_R_OK);
 }
 
 ED4_returncode ED4_root::get_area_rectangle(AW_rectangle *rect, AW_pos x, AW_pos y) { // returns win-coordinates of area (defined by folding lines) which contains position x/y
@@ -723,7 +723,7 @@ ED4_returncode ED4_root::world_to_win_coords(AW_window *IF_DEBUG(aww), AW_pos *x
 
     if (! current_window) {
         e4_assert(0);
-        return ( ED4_R_WARNING ); // should never occur
+        return (ED4_R_WARNING);   // should never occur
     }
 
     temp_x = x = *xPtr;
@@ -755,10 +755,10 @@ ED4_returncode ED4_root::world_to_win_coords(AW_window *IF_DEBUG(aww), AW_pos *x
     *xPtr = temp_x;
     *yPtr = temp_y;
 
-    return ( ED4_R_OK );
+    return (ED4_R_OK);
 }
 
-void ED4_root::copy_window_struct( ED4_window *source , ED4_window *destination )
+void ED4_root::copy_window_struct(ED4_window *source,   ED4_window *destination)
 {
     destination->slider_pos_horizontal  = source->slider_pos_horizontal;
     destination->slider_pos_vertical    = source->slider_pos_vertical;
@@ -766,18 +766,18 @@ void ED4_root::copy_window_struct( ED4_window *source , ED4_window *destination 
 }
 
 
-void ED4_reload_helix_cb(AW_window *aww,AW_CL cd1, AW_CL cd2) {
+void ED4_reload_helix_cb(AW_window *aww, AW_CL cd1, AW_CL cd2) {
     const char *err = ED4_ROOT->helix->init(GLOBAL_gb_main);
     if (err) aw_message(err);
-    ED4_refresh_window(aww,cd1,cd2);
+    ED4_refresh_window(aww, cd1, cd2);
 }
 
 
-void ED4_reload_ecoli_cb(AW_window *aww,AW_CL cd1, AW_CL cd2)
+void ED4_reload_ecoli_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
 {
     const char *err = ED4_ROOT->ecoli_ref->init(GLOBAL_gb_main);
     if (err) aw_message(err);
-    ED4_refresh_window(aww,cd1,cd2);
+    ED4_refresh_window(aww, cd1, cd2);
 }
 
 // --------------------------------------------------------------------------------
@@ -828,7 +828,7 @@ static int has_species_name(ED4_base *base, AW_CL cl_species_name)
     if (gbd) {
         const char *name = GB_read_char_pntr(gbd);
         e4_assert(name);
-        int has_name = strcmp(name,(const char*)cl_species_name)==0;
+        int has_name = strcmp(name, (const char*)cl_species_name)==0;
         return has_name;
     }
 
@@ -937,7 +937,7 @@ void ED4_turnSpecies(AW_window *aw, AW_CL, AW_CL) {
             error = GBT_determine_T_or_U(ED4_ROOT->alignment_type, &T_or_U, "reverse-complement");
             if (!error) {
                 GBT_reverseComplementNucSequence(data, length, T_or_U);
-                error = GB_write_string(gbd,data);
+                error = GB_write_string(gbd, data);
             }
         }
 
@@ -977,7 +977,7 @@ void ED4_testSplitNMerge(AW_window *aw, AW_CL, AW_CL)
 
             if (newData)
             {
-                error = GB_write_string(gbd,newData);
+                error = GB_write_string(gbd, newData);
                 delete [] newData;
             }
         }
@@ -1003,9 +1003,9 @@ static void col_stat_activated(AW_window *)
     ED4_ROOT->refresh_all_windows(1);
 }
 
-void ED4_activate_col_stat(AW_window *aww,AW_CL, AW_CL){
+void ED4_activate_col_stat(AW_window *aww, AW_CL, AW_CL) {
     if (!ED4_ROOT->column_stat_initialized) {
-        AW_window *aww_st = st_create_main_window(ED4_ROOT->aw_root,ED4_ROOT->st_ml,(AW_CB0)col_stat_activated,(AW_window *)aww);
+        AW_window *aww_st = st_create_main_window(ED4_ROOT->aw_root, ED4_ROOT->st_ml, (AW_CB0)col_stat_activated, (AW_window *)aww);
         aww_st->show();
         return;
     }
@@ -1035,7 +1035,7 @@ static void title_mode_changed(AW_root *aw_root, AW_window *aww)
 
 void ED4_undo_redo(AW_window*, AW_CL undo_type)
 {
-    GB_ERROR error = GB_undo(GLOBAL_gb_main,(GB_UNDO_TYPE)undo_type);
+    GB_ERROR error = GB_undo(GLOBAL_gb_main, (GB_UNDO_TYPE)undo_type);
 
     if (error) {
         aw_message(error);
@@ -1121,7 +1121,7 @@ static void insert_search_fields(AW_window_menu_modes *awmm,
     awmm->create_toggle(show_awar_name);
 }
 
-void ED4_set_protection(AW_window */*aww*/, AW_CL cd1, AW_CL /*cd2*/) {
+void ED4_set_protection(AW_window * /* aww */, AW_CL cd1, AW_CL /* cd2 */) {
     ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
     GB_ERROR    error  = 0;
 
@@ -1160,14 +1160,14 @@ typedef enum {
 
 } MenuSelectType;
 
-static void ED4_menu_select(AW_window *aww, AW_CL type,AW_CL) {
+static void ED4_menu_select(AW_window *aww, AW_CL type, AW_CL) {
     GB_transaction dummy(GLOBAL_gb_main);
     MenuSelectType select = MenuSelectType(type);
     ED4_multi_species_manager *middle_multi_man = ED4_ROOT->middle_area_man->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
 
     e4_assert(middle_multi_man);
 
-    switch(select) {
+    switch (select) {
         case ED4_MS_NONE: {
             if (ED4_getBlocktype()!=ED4_BT_NOBLOCK) {
                 ED4_ROOT->deselect_all();
@@ -1303,7 +1303,7 @@ static AW_window *ED4_create_gc_window(AW_root *aw_root, AW_gc_manager id) {
     return gc_win;
 }
 
-ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new_window)
+ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new_window)
 {
     AW_window_menu_modes *awmm;
 
@@ -1331,11 +1331,11 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
         int   len = strlen(alignment_name)+35;
         char *buf = GB_give_buffer(len);
         snprintf(buf, len-1, "ARB_EDIT4 *%d* [%s]", ED4_window::no_of_windows+1, alignment_name);
-        awmm->init( aw_root, "ARB_EDIT4", buf, 800,450);
+        awmm->init(aw_root, "ARB_EDIT4", buf, 800, 450);
     }
 
     *device     = awmm->get_device(AW_MIDDLE_AREA); // points to Middle Area device
-    *new_window = ED4_window::insert_window( awmm ); // append to window list
+    *new_window = ED4_window::insert_window(awmm);   // append to window list
 
     e4_assert(ED4_window::no_of_windows >= 1);
     bool clone = ED4_window::no_of_windows>1;
@@ -1343,7 +1343,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
         AW_init_color_group_defaults("arb_edit4");
     }
     else { // additional edit windows
-        copy_window_struct( first_window, *new_window );
+        copy_window_struct(first_window, *new_window);
     }
 
     // each window has its own gc-manager
@@ -1397,18 +1397,18 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
 
     awmm->create_menu("File", "F", AWM_ALL);
 
-    awmm->insert_menu_topic("new_win",        "New Editor Window",     "W", 0, AWM_ALL, ED4_new_editor_window,         0,                                             0)   ;
-    awmm->insert_menu_topic("save_config",    "Save Configuration",    "S", 0, AWM_ALL, (AW_CB)ED4_save_configuration, (AW_CL) 0,                                     (int)0 );
-    awmm->insert_menu_topic("save_config_as", "Save Configuration As", "A", 0, AWM_ALL, AW_POPUP,                      (AW_CL) ED4_save_configuration_as_open_window, (int)0 );
+    awmm->insert_menu_topic("new_win",        "New Editor Window",     "W", 0, AWM_ALL, ED4_new_editor_window,         0,                                             0);
+    awmm->insert_menu_topic("save_config",    "Save Configuration",    "S", 0, AWM_ALL, (AW_CB)ED4_save_configuration, (AW_CL) 0,                                     (int)0);
+    awmm->insert_menu_topic("save_config_as", "Save Configuration As", "A", 0, AWM_ALL, AW_POPUP,                      (AW_CL) ED4_save_configuration_as_open_window, (int)0);
     SEP________________________SEP;
     awmm->insert_menu_topic("load_config",   "Load Configuration",   "L", 0, AWM_ALL, AW_POPUP,           (AW_CL)ED4_start_editor_on_old_configuration, 0);
     awmm->insert_menu_topic("reload_config", "Reload Configuration", "R", 0, AWM_ALL, ED4_restart_editor, 0,                                            0);
     SEP________________________SEP;
-    GDE_load_menu(awmm,AWM_ALL,"Print");
+    GDE_load_menu(awmm, AWM_ALL, "Print");
     SEP________________________SEP;
 
-    if (clone) awmm->insert_menu_topic( "close", "CLOSE", "C", 0, AWM_ALL, ED4_quit_editor, 0, 0);
-    else       awmm->insert_menu_topic( "quit",  "QUIT",  "Q", 0, AWM_ALL, ED4_quit_editor, 0, 0);
+    if (clone) awmm->insert_menu_topic("close", "CLOSE", "C", 0, AWM_ALL, ED4_quit_editor, 0, 0);
+    else       awmm->insert_menu_topic("quit",   "QUIT",  "Q", 0, AWM_ALL, ED4_quit_editor, 0, 0);
     
     // ------------------------------
     //  Create
@@ -1426,7 +1426,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     //  Edit
     // ------------------------------
 
-    awmm->create_menu( "Edit", "E", AWM_ALL);
+    awmm->create_menu("Edit", "E", AWM_ALL);
     awmm->insert_menu_topic("refresh",     "Refresh [Ctrl-L]",           "f",  0, AWM_ALL, ED4_refresh_window,                   1, 0);
     awmm->insert_menu_topic("load_actual", "Load current species [GET]", "G", 0, AWM_ALL, ED4_get_and_jump_to_actual_from_menu, 0, 0);
     awmm->insert_menu_topic("load_marked", "Load marked species",        "m", 0, AWM_ALL, ED4_get_marked_from_menu,             0, 0);
@@ -1518,10 +1518,10 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->insert_menu_topic("detail_col_stat",  "Detailed column statistics", "c", "st_ml.hlp", AWM_EXP, ED4_show_detailed_column_stats, 0, 0);
     awmm->insert_menu_topic("dcs_threshold",    "Set threshold for D.c.s.",   "f", "st_ml.hlp", AWM_EXP, ED4_set_col_stat_threshold,     1, 0);
     SEP________________________SEP;
-    awmm->insert_menu_topic( "visualize_SAI", "Visualize SAIs", "z", "visualizeSAI.hlp", AWM_ALL,AW_POPUP,(AW_CL)ED4_createVisualizeSAI_window, 0 );
+    awmm->insert_menu_topic("visualize_SAI", "Visualize SAIs", "z", "visualizeSAI.hlp", AWM_ALL, AW_POPUP, (AW_CL)ED4_createVisualizeSAI_window, 0);
     // Enable ProteinViewer only for DNA sequence type
     if (alignment_type == GB_AT_DNA) {
-        awmm->insert_menu_topic( "Protein_Viewer", "Protein Viewer", "w", "proteinViewer.hlp", AWM_ALL,AW_POPUP,(AW_CL)ED4_CreateProteinViewer_window, 0 );
+        awmm->insert_menu_topic("Protein_Viewer", "Protein Viewer", "w", "proteinViewer.hlp", AWM_ALL, AW_POPUP, (AW_CL)ED4_CreateProteinViewer_window, 0);
     }
 
     // ------------------------------
@@ -1530,32 +1530,32 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
 
     awmm->create_menu("Block", "B", AWM_ALL);
 
-    awmm->insert_menu_topic("select_marked",   "Select marked species",   "e", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_SELECT_MARKED)  , 0);
+    awmm->insert_menu_topic("select_marked",   "Select marked species",   "e", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_SELECT_MARKED),   0);
     awmm->insert_menu_topic("deselect_marked", "Deselect marked species", "k", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_DESELECT_MARKED), 0);
-    awmm->insert_menu_topic("select_all",      "Select all species",      "S", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_ALL)            , 0);
-    awmm->insert_menu_topic("deselect_all",    "Deselect all species",    "D", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_NONE)           , 0);
+    awmm->insert_menu_topic("select_all",      "Select all species",      "S", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_ALL),             0);
+    awmm->insert_menu_topic("deselect_all",    "Deselect all species",    "D", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_NONE),            0);
     SEP________________________SEP;
-    awmm->insert_menu_topic("mark_selected",   "Mark selected species",   "M", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_MARK_SELECTED)  , 0);
+    awmm->insert_menu_topic("mark_selected",   "Mark selected species",   "M", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_MARK_SELECTED),   0);
     awmm->insert_menu_topic("unmark_selected", "Unmark selected species", "n", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_UNMARK_SELECTED), 0);
-    awmm->insert_menu_topic("unmark_all",      "Unmark all species",      "U", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_UNMARK_ALL)     , 0);
+    awmm->insert_menu_topic("unmark_all",      "Unmark all species",      "U", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_UNMARK_ALL),      0);
     SEP________________________SEP;
-    awmm->insert_menu_topic("invert_all",   "Invert selected species", "I", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_INVERT)      , 0);
+    awmm->insert_menu_topic("invert_all",   "Invert selected species", "I", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_INVERT),       0);
     awmm->insert_menu_topic("invert_group", "Invert group",            "g", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_INVERT_GROUP), 0);
     SEP________________________SEP;
     awmm->insert_menu_topic("lowcase", "Change to lower case ", "w", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_LOWER_CASE), 0);
     awmm->insert_menu_topic("upcase",  "Change to upper case",  "p", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_UPPER_CASE), 0);
     SEP________________________SEP;
-    awmm->insert_menu_topic("reverse",            "Reverse selection ",    "v", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_REVERSE)           , 0);
-    awmm->insert_menu_topic("complement",         "Complement selection ", "o", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_COMPLEMENT)        , 0);
+    awmm->insert_menu_topic("reverse",            "Reverse selection ",    "v", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_REVERSE),            0);
+    awmm->insert_menu_topic("complement",         "Complement selection ", "o", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_COMPLEMENT),         0);
     awmm->insert_menu_topic("reverse_complement", "Reverse complement",    "t", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_REVERSE_COMPLEMENT), 0);
     SEP________________________SEP;
-    awmm->insert_menu_topic("unalignBlockLeft",  "Unalign block",       "a", "e4_block.hlp",   AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_UNALIGN)      ,                          0);
+    awmm->insert_menu_topic("unalignBlockLeft",  "Unalign block",       "a", "e4_block.hlp",   AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_UNALIGN),                                0);
     awmm->insert_menu_topic("unalignBlockRight", "Unalign block right", "b", "e4_block.hlp",   AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_UNALIGN_RIGHT),                          0);
     awmm->insert_menu_topic("replace",           "Search & Replace ",   "h", "e4_replace.hlp", AWM_ALL, AW_POPUP,                              (AW_CL)               ED4_create_replace_window, 0);
     SEP________________________SEP;
     awmm->insert_menu_topic("toggle_block_type", "Line block <-> Column block", "C", "e4_block.hlp", AWM_ALL, ED4_menu_select,                  AW_CL(ED4_MS_TOGGLE_BLOCKTYPE), 0);
-    awmm->insert_menu_topic("shift_left",        "Shift block left ",           "l", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_SHIFT_LEFT)      , 0);
-    awmm->insert_menu_topic("shift_right",       "Shift block right",           "r", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_SHIFT_RIGHT)     , 0);
+    awmm->insert_menu_topic("shift_left",        "Shift block left ",           "l", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_SHIFT_LEFT),       0);
+    awmm->insert_menu_topic("shift_right",       "Shift block right",           "r", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_SHIFT_RIGHT),      0);
 
     // ------------------------------
     //  Properties
@@ -1616,13 +1616,13 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
 #undef SEP________________________SEP
 
     aw_root->awar_int(AWAR_EDIT_TITLE_MODE)->add_callback((AW_RCB1)title_mode_changed, (AW_CL)awmm);
-    awmm->set_bottom_area_height( 0 ); //No bottom area
+    awmm->set_bottom_area_height(0);   // No bottom area
 
-    awmm->auto_space(5,-2);
+    awmm->auto_space(5, -2);
     awmm->shadow_width(3);
 
-    int db_pathx,db_pathy;
-    awmm->get_at_position( &db_pathx,&db_pathy );
+    int db_pathx, db_pathy;
+    awmm->get_at_position(&db_pathx, &db_pathy);
 
     awmm->shadow_width(1);
     awmm->load_xfig("edit4/editmenu.fig", false);
@@ -1637,13 +1637,13 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->callback(ED4_quit_editor, 0, 0);
     awmm->help_text("quit.hlp");
 
-    if (clone) awmm->create_button("CLOSE","#close.xpm");
-    else       awmm->create_button("QUIT","#quit.xpm");
+    if (clone) awmm->create_button("CLOSE", "#close.xpm");
+    else       awmm->create_button("QUIT", "#quit.xpm");
     
     awmm->at("help");
     awmm->callback(AW_help_entry_pressed);
     awmm->help_text("e4.hlp");
-    awmm->create_button("HELP","#help.xpm");
+    awmm->create_button("HELP", "#help.xpm");
 
     awmm->at("fold");
     awmm->help_text("e4.hlp");
@@ -1669,23 +1669,23 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
 
     awmm->at("pos");
     awmm->callback((AW_CB)ED4_jump_to_cursor_position, (AW_CL) get_ed4w()->awar_path_for_cursor, AW_CL(1));
-    awmm->create_input_field(get_ed4w()->awar_path_for_cursor,7);
+    awmm->create_input_field(get_ed4w()->awar_path_for_cursor, 7);
 
     awmm->at("ecoli");
-    awmm->callback((AW_CB)ED4_jump_to_cursor_position,(AW_CL) get_ed4w()->awar_path_for_Ecoli, AW_CL(0));
-    awmm->create_input_field(get_ed4w()->awar_path_for_Ecoli,6);
+    awmm->callback((AW_CB)ED4_jump_to_cursor_position, (AW_CL) get_ed4w()->awar_path_for_Ecoli, AW_CL(0));
+    awmm->create_input_field(get_ed4w()->awar_path_for_Ecoli, 6);
 
     awmm->at("base");
-    awmm->callback((AW_CB)ED4_jump_to_cursor_position,(AW_CL) get_ed4w()->awar_path_for_basePos, AW_CL(0));
-    awmm->create_input_field(get_ed4w()->awar_path_for_basePos,6);
+    awmm->callback((AW_CB)ED4_jump_to_cursor_position, (AW_CL) get_ed4w()->awar_path_for_basePos, AW_CL(0));
+    awmm->create_input_field(get_ed4w()->awar_path_for_basePos, 6);
 
     awmm->at("iupac");
-    awmm->callback((AW_CB)ED4_set_iupac,(AW_CL) get_ed4w()->awar_path_for_IUPAC, AW_CL(0));
-    awmm->create_input_field(get_ed4w()->awar_path_for_IUPAC,4);
+    awmm->callback((AW_CB)ED4_set_iupac, (AW_CL) get_ed4w()->awar_path_for_IUPAC, AW_CL(0));
+    awmm->create_input_field(get_ed4w()->awar_path_for_IUPAC, 4);
 
     awmm->at("helixnr");
-    awmm->callback((AW_CB)ED4_set_helixnr,(AW_CL) get_ed4w()->awar_path_for_helixNr, AW_CL(0));
-    awmm->create_input_field(get_ed4w()->awar_path_for_helixNr,5);
+    awmm->callback((AW_CB)ED4_set_helixnr, (AW_CL) get_ed4w()->awar_path_for_helixNr, AW_CL(0));
+    awmm->create_input_field(get_ed4w()->awar_path_for_helixNr, 5);
 
     // ---------------------------
     //      jump/get/undo/redo
@@ -1727,7 +1727,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->create_button("ALIGNER", "Aligner");
 
     awmm->at("saiviz");
-    awmm->callback(AW_POPUP,(AW_CL)ED4_createVisualizeSAI_window, 0 );
+    awmm->callback(AW_POPUP, (AW_CL)ED4_createVisualizeSAI_window, 0);
     awmm->help_text("visualizeSAI.hlp");
     awmm->create_button("SAIVIZ", "SAIviz");
 
@@ -1739,18 +1739,18 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     
     awmm->at("protect");
     awmm->create_option_menu(AWAR_EDIT_SECURITY_LEVEL);
-    awmm->insert_option("0",0,0);
-    awmm->insert_option("1",0,1);
-    awmm->insert_option("2",0,2);
-    awmm->insert_option("3",0,3);
-    awmm->insert_option("4",0,4);
-    awmm->insert_option("5",0,5);
-    awmm->insert_default_option("6",0,6);
+    awmm->insert_option("0", 0, 0);
+    awmm->insert_option("1", 0, 1);
+    awmm->insert_option("2", 0, 2);
+    awmm->insert_option("3", 0, 3);
+    awmm->insert_option("4", 0, 4);
+    awmm->insert_option("5", 0, 5);
+    awmm->insert_default_option("6", 0, 6);
     awmm->update_option_menu();
 
     // draw protection icon AFTER protection!!
     awmm->at("pico");
-    awmm->create_button("PROTECT","#protect.xpm");
+    awmm->create_button("PROTECT", "#protect.xpm");
 
     // draw align/edit-button AFTER protection!!
     awmm->at("edit");
@@ -1760,7 +1760,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->create_text_toggle(AWAR_INSERT_MODE, "Replace", "Insert", 7);
 
     awmm->at("direct");
-    awmm->create_toggle(AWAR_EDIT_DIRECTION,"#edit/3to5.bitmap","#edit/5to3.bitmap", 7);
+    awmm->create_toggle(AWAR_EDIT_DIRECTION, "#edit/3to5.bitmap", "#edit/5to3.bitmap", 7);
 
     // ------------------------
     //      secedit / rna3d
@@ -1860,15 +1860,15 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
 
     AWTC_create_faligner_variables(awmm->get_root(), db);
 
-    return ( ED4_R_OK );
+    return (ED4_R_OK);
 }
 
-AW_window *ED4_root::create_new_window( void )                      // only the first time, other cases: generate_window
+AW_window *ED4_root::create_new_window(void)                        // only the first time, other cases: generate_window
 {
     AW_device  *device     = NULL;
     ED4_window *new_window = NULL;
 
-    generate_window( &device, &new_window );
+    generate_window(&device, &new_window);
 
     ED4_calc_terminal_extentions();
 
@@ -1879,7 +1879,7 @@ AW_window *ED4_root::create_new_window( void )                      // only the 
 
     ED4_init_notFoundMessage();
 
-    return ( new_window->aww );
+    return (new_window->aww);
 }
 
 ED4_index ED4_root::pixel2pos(AW_pos click_x) {
@@ -1897,7 +1897,7 @@ ED4_index ED4_root::pixel2pos(AW_pos click_x) {
 
 ED4_root::ED4_root()
 {
-    memset((char *)this,0,sizeof(*this));
+    memset((char *)this, 0, sizeof(*this));
 
     aw_root      = new AW_root;
     first_window = NULL;

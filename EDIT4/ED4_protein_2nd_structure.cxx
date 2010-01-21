@@ -90,7 +90,7 @@ static int *char2AA = 0;
  *  E = beta-sheet, <BR>
  *  T = beta-turn.
  */
-static char structure_chars[3] = {'H', 'E', 'T'};
+static char structure_chars[3] = { 'H', 'E', 'T' };
 
 /// Amino acids that break a certain structure (#ALPHA_HELIX or #BETA_SHEET) as used in ED4_pfold_extend_nucleation_sites().
 static char *structure_breaker[2] = {
@@ -109,7 +109,7 @@ static name_value_pair pfold_match_method_awars[4] = {
     { "Secondary Structure <-> Secondary Structure",        SECSTRUCT_SECSTRUCT        },
     { "Secondary Structure <-> Sequence",                   SECSTRUCT_SEQUENCE         },
     { "Secondary Structure <-> Sequence (Full Prediction)", SECSTRUCT_SEQUENCE_PREDICT },
-    { 0,                                                    PFOLD_MATCH_METHOD_COUNT   }
+    { 0,                                                    PFOLD_MATCH_METHOD_COUNT }
 };
 
 static double max_former_value[3]  = { 1.42, 1.62, 156 }; ///< Maximum former value for alpha-helix, beta-sheet (in #cf_parameters) and beta-turn (in #cf_parameters_norm).
@@ -118,7 +118,7 @@ static double max_breaker_value[3] = { 1.21, 2.03, 0.0 }; ///< Maximum breaker v
 
 // --------------------------------------------------------------------------------
 
-//TODO: is there a way to prevent doxygen from stripping the comments from the table?
+// TODO: is there a way to prevent doxygen from stripping the comments from the table?
 // I simply added the parameter table as verbatim environment to show the comments in
 // the documentation.
 /** \brief Former and breaker values for alpha-helices and beta-sheets (= strands).
@@ -163,9 +163,9 @@ static double max_breaker_value[3] = { 1.21, 2.03, 0.0 }; ///< Maximum breaker v
  *  \sa Refer to the definition in the source code for commented table.
  */
 static double cf_parameters[20][4] = {
-    /*Helix Former   Strand Former   Helix Breaker   Strand Breaker   Amino
+    /* Helix Former   Strand Former   Helix Breaker   Strand Breaker   Amino
       Value          Value           Value           Value            Acid
-    -----------------------------------------------------------------------*/
+    ----------------------------------------------------------------------- */
     { 1.34,          0.00,           0.00,           0.00 },          // A
     { 0.00,          0.00,           0.00,           0.00 },          // R
     { 0.50,          0.00,           0.00,           1.39 },          // D
@@ -185,7 +185,7 @@ static double cf_parameters[20][4] = {
     { 0.00,          1.13,           0.00,           0.00 },          // T
     { 1.02,          1.30,           0.00,           0.00 },          // W
     { 0.00,          1.40,           1.00,           0.00 },          // Y
-    { 1.00,          1.62,           0.00,           0.00 }};         // V
+    { 1.00,          1.62,           0.00,           0.00 } };        // V
 
 /** \brief Normalized former values for alpha-helices, beta-sheets (= strands)
  *         and beta-turns as well as beta-turn probabilities.
@@ -228,8 +228,8 @@ static double cf_parameters[20][4] = {
  *  \sa Refer to the definition in the source code for commented table.
  */
 static double cf_parameters_norm[20][7] = {
-    /*P(a)  P(b)  P(turn)  f(i)    f(i+1)  f(i+2)  f(i+3)     Amino Acid
-    --------------------------------------------------------------------*/
+    /* P(a)  P(b)  P(turn)  f(i)    f(i+1)  f(i+2)  f(i+3)     Amino Acid
+    -------------------------------------------------------------------- */
     { 142,   83,   66,     0.060,  0.076,  0.035,  0.058 },   // A
     {  98,   93,   95,     0.070,  0.106,  0.099,  0.085 },   // R
     { 101,   54,  146,     0.147,  0.110,  0.179,  0.081 },   // D
@@ -249,7 +249,7 @@ static double cf_parameters_norm[20][7] = {
     {  83,  119,   96,     0.086,  0.108,  0.065,  0.079 },   // T
     { 108,  137,   96,     0.077,  0.013,  0.064,  0.167 },   // W
     {  69,  147,  114,     0.082,  0.065,  0.114,  0.125 },   // Y
-    { 106,  170,   50,     0.062,  0.048,  0.028,  0.053 }};  // V
+    { 106,  170,   50,     0.062,  0.048,  0.028,  0.053 } }; // V
 
 // --------------------------------------------------------------------------------
 
@@ -324,8 +324,8 @@ static void ED4_pfold_find_nucleation_sites(const unsigned char *sequence, char 
         pos = i;
         for (count = 0; count < windowSize; count++) {
             // skip gaps
-            while ( pos < ((length + 1) - windowSize) &&
-                    strchr(gap_chars, sequence[pos + count]) ) {
+            while (pos < ((length + 1) - windowSize) &&
+                    strchr(gap_chars, sequence[pos + count])) {
                 pos++;
             }
             aa = char2AA[sequence[pos + count]];
@@ -391,8 +391,8 @@ static void ED4_pfold_extend_nucleation_sites(const unsigned char *sequence, cha
         if (indStruct >= length) break;
         // get next amino acid that is not included in nucleation site
         start = indStruct - 1;
-        while ( indStruct < length &&
-                (structure[indStruct] != ' ' || strchr(gap_chars, sequence[indStruct])) ) {
+        while (indStruct < length &&
+                (structure[indStruct] != ' ' || strchr(gap_chars, sequence[indStruct]))) {
             indStruct++;
         }
         // get next amino acid that is not included in nucleation site
@@ -503,8 +503,8 @@ static void ED4_pfold_find_turns(const unsigned char *sequence, char *structure,
         pos = i;
         for (count = 0; count < windowSize; count++) {
             // skip gaps
-            while ( pos < ((length + 1) - windowSize) && 
-                    strchr(gap_chars, sequence[pos + count]) ) {
+            while (pos < ((length + 1) - windowSize) &&
+                    strchr(gap_chars, sequence[pos + count])) {
                 pos++;
             }
             aa = char2AA[sequence[pos + count]];
@@ -581,8 +581,8 @@ static void ED4_pfold_resolve_overlaps(const unsigned char *sequence, char *stru
             // search start and end of overlap (as long as no beta-turn is found)
             start = pos;
             end = pos;
-            while ( structures[ALPHA_HELIX][end] != ' ' && structures[BETA_SHEET][end] != ' ' && 
-                    structures[BETA_TURN][end] == ' ' ) {
+            while (structures[ALPHA_HELIX][end] != ' ' && structures[BETA_SHEET][end] != ' ' &&
+                    structures[BETA_TURN][end] == ' ') {
                 end++;
             }
 
@@ -682,9 +682,9 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
     e4_assert(char2AA);
 
     size_t length    = strlen((const char *)structure_sai);
-    int    match_end = min( min(end - start, length), (int) strlen((const char *)structure_cmp) );
+    int    match_end = min(min(end - start, length), (int) strlen((const char *)structure_cmp));
 
-    enum {BEND = 3, NOSTRUCT = 4};
+    enum { BEND = 3, NOSTRUCT = 4 };
     char *struct_chars[] = {
         strdup("HGI"),  // helical structures (enum ALPHA_HELIX)
         strdup("EB"),   // sheet-like structures (enum BETA_SHEET)
@@ -695,8 +695,8 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
     
     // init awars
     char *gap_chars = ED4_ROOT->aw_root->awar(ED4_AWAR_GAP_CHARS)->read_string();
-    char *pairs[PFOLD_MATCH_TYPE_COUNT] = {0};
-    char *pair_chars[PFOLD_MATCH_TYPE_COUNT] = {0};
+    char *pairs[PFOLD_MATCH_TYPE_COUNT] = { 0 };
+    char *pair_chars[PFOLD_MATCH_TYPE_COUNT] = { 0 };
     char *pair_chars_2 = ED4_ROOT->aw_root->awar(PFOLD_AWAR_SYMBOL_TEMPLATE_2)->read_string();
     char awar[256];
     for (int i = 0; pfold_match_type_awars[i].name; i++) {
@@ -713,7 +713,7 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
     int aa = -1;
     double prob = 0;
     
-    //TODO: move this check to callback for the corresponding field?
+    // TODO: move this check to callback for the corresponding field?
     if (strlen(pair_chars_2) != 10) {
         error = GB_export_error("You have to define 10 match symbols.");
     }
@@ -722,15 +722,15 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
         switch (match_method) {
         
         case SECSTRUCT_SECSTRUCT:
-            //TODO: one could try to find out, if structure_cmp is really a secondary structure and not a sequence (define awar for allowed symbols in secondary structure)
+            // TODO: one could try to find out, if structure_cmp is really a secondary structure and not a sequence (define awar for allowed symbols in secondary structure)
             for (count = 0; count < match_end; count++) {
                 result_buffer[count] = *pair_chars[STRUCT_UNKNOWN];
                 for (int n_pt = 0; n_pt < PFOLD_MATCH_TYPE_COUNT; n_pt++) {
                     int len = strlen(pairs[n_pt])-1;
                     char *p = pairs[n_pt];
                     for (int j = 0; j < len; j += 3) {
-                        if ( (p[j] == structure_sai[count + start] && p[j+1] == structure_cmp[count + start]) ||
-                             (p[j] == structure_cmp[count + start] && p[j+1] == structure_sai[count + start]) ) {
+                        if ((p[j] == structure_sai[count + start] && p[j+1] == structure_cmp[count + start]) ||
+                             (p[j] == structure_cmp[count + start] && p[j+1] == structure_sai[count + start])) {
                             result_buffer[count] = *pair_chars[n_pt];
                             n_pt = PFOLD_MATCH_TYPE_COUNT; // stop searching the pair types 
                             break; // stop searching the pairs array
@@ -751,9 +751,9 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
             for (int i = 0; i <= end - start; i++) result_buffer[i] = ' ';
                 
             // skip gaps
-            while ( structure_sai[struct_start] != '\0' && structure_cmp[struct_start] != '\0' &&
+            while (structure_sai[struct_start] != '\0' && structure_cmp[struct_start] != '\0' &&
                     strchr(gap_chars, structure_sai[struct_start]) && 
-                    strchr(gap_chars, structure_cmp[struct_start]) ) {
+                    strchr(gap_chars, structure_cmp[struct_start])) {
                 struct_start++;
             }
             if (structure_sai[struct_start] == '\0' || structure_cmp[struct_start] == '\0') break;
@@ -766,9 +766,9 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
                 struct_start--; // check structure left of start
                 while (struct_start >= 0) {
                     // skip gaps
-                    while ( struct_start > 0 &&
+                    while (struct_start > 0 &&
                             strchr(gap_chars, structure_sai[struct_start]) && 
-                            strchr(gap_chars, structure_cmp[struct_start]) ) {
+                            strchr(gap_chars, structure_cmp[struct_start])) {
                         struct_start--;
                     }
                     aa = char2AA[structure_cmp[struct_start]];
@@ -789,14 +789,14 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
             // parse structures
             struct_start = start;
             // skip gaps
-            while ( structure_sai[struct_start] != '\0' && structure_cmp[struct_start] != '\0' &&
+            while (structure_sai[struct_start] != '\0' && structure_cmp[struct_start] != '\0' &&
                     strchr(gap_chars, structure_sai[struct_start]) && 
-                    strchr(gap_chars, structure_cmp[struct_start]) ) {
+                    strchr(gap_chars, structure_cmp[struct_start])) {
                 struct_start++;
             }
             if (structure_sai[struct_start] == '\0' || structure_cmp[struct_start] == '\0') break;
             struct_end = struct_start;
-            while (struct_end < end ) {
+            while (struct_end < end) {
                 aa = char2AA[structure_cmp[struct_end]];
                 if (current_struct == NOSTRUCT) { // no structure found -> move on
                     struct_end++;
@@ -812,14 +812,14 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
                 else { // helix, sheet or beta-turn found -> while structure doesn't change: sum up probabilities
                     while (structure_sai[struct_end] != '\0') {
                         // skip gaps
-                        while ( strchr(gap_chars, structure_sai[struct_end]) && 
+                        while (strchr(gap_chars, structure_sai[struct_end]) &&
                                 strchr(gap_chars, structure_cmp[struct_end]) &&
-                                structure_sai[struct_end] != '\0' && structure_cmp[struct_end] != '\0' ) {
+                                structure_sai[struct_end] != '\0' && structure_cmp[struct_end] != '\0') {
                             struct_end++;
                         }
                         aa = char2AA[structure_cmp[struct_end]];
-                        if ( structure_sai[struct_end] != '\0' && structure_cmp[struct_end] != '\0' &&
-                             strchr(struct_chars[current_struct], structure_sai[struct_end]) && aa != -1 ) {
+                        if (structure_sai[struct_end] != '\0' && structure_cmp[struct_end] != '\0' &&
+                             strchr(struct_chars[current_struct], structure_sai[struct_end]) && aa != -1) {
                             prob += cf_former(aa, current_struct) - cf_breaker(aa, current_struct); // sum up probabilities
                             struct_end++;
                             count++;
@@ -836,7 +836,7 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
                         
                         // map to match characters and store in result_buffer
                         int prob_normalized = ED4_pfold_round_sym(prob * 9);
-                        //e4_assert(prob_normalized >= 0 && prob_normalized <= 9); // if this happens check if normalization is correct or some undefined characters mess everything up
+                        // e4_assert(prob_normalized >= 0 && prob_normalized <= 9); // if this happens check if normalization is correct or some undefined characters mess everything up
                         char prob_symbol = *pair_chars[STRUCT_UNKNOWN];
                         if (prob_normalized >= 0 && prob_normalized <= 9) {
                             prob_symbol = pair_chars_2[prob_normalized]; 
@@ -882,8 +882,8 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
                     result_buffer[count] = *pair_chars[STRUCT_UNKNOWN];
                     if (!strchr(gap_chars, structure_sai[count + start]) && strchr(gap_chars, structure_cmp[count + start])) {
                         result_buffer[count] = *pair_chars[STRUCT_NO_MATCH];
-                    } else if ( strchr(gap_chars, structure_sai[count + start]) || 
-                                (structures[ALPHA_HELIX][count + start] == ' ' && structures[BETA_SHEET][count + start] == ' ' && structures[BETA_TURN][count + start] == ' ') ) {
+                    } else if (strchr(gap_chars, structure_sai[count + start]) ||
+                                (structures[ALPHA_HELIX][count + start] == ' ' && structures[BETA_SHEET][count + start] == ' ' && structures[BETA_TURN][count + start] == ' ')) {
                         result_buffer[count] = *pair_chars[STRUCT_PERFECT_MATCH];
                     }
                     else {
@@ -895,8 +895,8 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
                             char *p = pairs[n_pt];
                             for (int n_struct = 0; n_struct < 3; n_struct++) {
                                 for (int j = 0; j < len; j += 3) {
-                                    if ( (p[j] == structures[n_struct][count + start] && p[j+1] == structure_sai[count + start]) ||
-                                         (p[j] == structure_sai[count + start] && p[j+1] == structures[n_struct][count + start]) ) {
+                                    if ((p[j] == structures[n_struct][count + start] && p[j+1] == structure_sai[count + start]) ||
+                                         (p[j] == structure_sai[count + start] && p[j+1] == structures[n_struct][count + start])) {
                                         result_buffer[count] = *pair_chars[n_pt];
                                         n_struct = 3; // stop searching the structures
                                         n_pt = PFOLD_MATCH_TYPE_COUNT; // stop searching the pair types
@@ -959,7 +959,7 @@ GB_ERROR ED4_pfold_set_SAI(char **protstruct, GBDATA *gb_main, const char *align
     else {
         if (protstruct_len) protstruct_len = 0;
         if (aw_root->awar(PFOLD_AWAR_ENABLE)->read_int()) {
-            error = GB_export_errorf( "SAI \"%s\" does not exist.\nDisabled protein structure display!", SAI_name );
+            error = GB_export_errorf("SAI \"%s\" does not exist.\nDisabled protein structure display!", SAI_name);
             aw_root->awar(PFOLD_AWAR_ENABLE)->write_int(0);
         }
     }
@@ -1019,7 +1019,7 @@ static void ED4_pfold_select_SAI_and_update_option_menu(AW_window *aww, AW_CL om
 
 AW_window *ED4_pfold_create_props_window(AW_root *awr, AW_cb_struct *awcbs) {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( awr, "PFOLD_PROPS", "PROTEIN_MATCH_SETTINGS");
+    aws->init(awr, "PFOLD_PROPS", "PROTEIN_MATCH_SETTINGS");
     
     // create close button
     aws->at(10, 10);
@@ -1069,7 +1069,7 @@ AW_window *ED4_pfold_create_props_window(AW_root *awr, AW_cb_struct *awcbs) {
     aws->at_newline();
     
     // create match symbols and/or match types input fields
-    //TODO: show only fields that are relevant for current match method -> bind to callback function?
+    // TODO: show only fields that are relevant for current match method -> bind to callback function?
     aws->label_length(40);
     aws->label("Match Symbols (Range 0-100% in steps of 10%)");
     aws->callback(awcbs);
@@ -1081,8 +1081,8 @@ AW_window *ED4_pfold_create_props_window(AW_root *awr, AW_cb_struct *awcbs) {
         aws->label(pfold_match_type_awars[i].name);
         aws->callback(awcbs);
         aws->create_input_field(awar, 30);
-        //TODO: is it possible to disable input field for STRUCT_UNKNOWN?
-        //if (pfold_match_type_awars[i].value == STRUCT_UNKNOWN)
+        // TODO: is it possible to disable input field for STRUCT_UNKNOWN?
+        // if (pfold_match_type_awars[i].value == STRUCT_UNKNOWN)
         if (!i) aws->get_at_position(&ex, &ey);
         sprintf(awar, PFOLD_AWAR_SYMBOL_TEMPLATE, pfold_match_type_awars[i].name);
         aws->callback(awcbs);

@@ -14,7 +14,7 @@
 #endif
 // i have not included this file in my version. I replaced glxew.h with glx.h when
 // you mentioned that it was not compiling on your machine and checked in to the repository. --yadhu
-//#include <GL/glx.h>
+// #include <GL/glx.h>
 #endif // OPEN_GL_WAY_TO_INCLUDE == 1
 // ------------------------------
 #if (OPEN_GL_WAY_TO_INCLUDE == 2)

@@ -25,7 +25,7 @@ void DI_MATRIX::analyse() {
             aw_message("A lot of sequences!\n   ==> fast Kimura selected! (instead of PAM)");
             aw_root->awar(AWAR_DIST_CORR_TRANS)->write_int(DI_TRANSFORMATION_KIMURA);
         }
-        else{
+        else {
             aw_message("Only limited number of sequences!\n"
                        "   ==> slow PAM selected! (instead of Kimura)");
             aw_root->awar(AWAR_DIST_CORR_TRANS)->write_int(DI_TRANSFORMATION_PAM);
@@ -33,7 +33,7 @@ void DI_MATRIX::analyse() {
     }
     else {
         // calculate meanvalue of sequencelength:
-        for(row=0; row<nentries; row++) {
+        for (row=0; row<nentries; row++) {
             act_gci = 0;
             act_len = 0;
         
@@ -42,16 +42,16 @@ void DI_MATRIX::analyse() {
             size_t flen = aliview->get_length();
             for (size_t pos=0; pos<flen; pos++) {
                 char ch = sequ[pos];
-                if(ch == AP_C || ch == AP_G) act_gci++;
-                if(ch == AP_A || ch == AP_C || ch == AP_G || ch == AP_T) act_len++;
+                if (ch == AP_C || ch == AP_G) act_gci++;
+                if (ch == AP_A || ch == AP_C || ch == AP_G || ch == AP_T) act_len++;
             }
             mean_gci += act_gci;
             act_gc = ((float) act_gci) / act_len;
-            if(act_gc < min_gc) min_gc = act_gc;
-            if(act_gc > max_gc) max_gc = act_gc;
+            if (act_gc < min_gc) min_gc = act_gc;
+            if (act_gc > max_gc) max_gc = act_gc;
             mean_len += act_len;
-            if(act_len < min_len) min_len = act_len;
-            if(act_len > max_len) max_len = act_len;
+            if (act_len < min_len) min_len = act_len;
+            if (act_len > max_len) max_len = act_len;
         }
 
         if (min_len * 1.3 < max_len) {
@@ -62,17 +62,17 @@ void DI_MATRIX::analyse() {
         mean_gc = ((float) mean_gci) / mean_len / nentries;
         mean_len /= nentries;
 
-        if(mean_len < 100) {
+        if (mean_len < 100) {
             aw_message("Too short sequences!\n   ==> No correction selected!");
             aw_root->awar(AWAR_DIST_CORR_TRANS)->write_int(DI_TRANSFORMATION_NONE);
         }
-        else if(mean_len < 300) {
+        else if (mean_len < 300) {
             aw_message("Meanlength shorter than 300\n   ==> Jukes Cantor selected!");
             aw_root->awar(AWAR_DIST_CORR_TRANS)->write_int(DI_TRANSFORMATION_JUKES_CANTOR);
         }
         else if ((mean_len < 1000) || ((max_gc / min_gc) < 1.2)) {
             const char *reason;
-            if(mean_len < 1000) reason = "Sequences are too short for Olsen!";
+            if (mean_len < 1000) reason = "Sequences are too short for Olsen!";
             else                reason = GBS_global_string("Maximal GC (%f) : Minimal GC (%f) < 1.2", max_gc, min_gc);
 
             reason = GBS_global_string("%s  ==> Felsenstein selected!", reason);

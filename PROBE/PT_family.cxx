@@ -20,14 +20,14 @@ inline void aisc_link(dll_public *dll, PT_family_list *family)   { aisc_link(rei
 /* Increment match_count for a matched chain */
 
 struct mark_all_matches_chain_handle {
-    int operator()(int name, int /*pos*/, int /*rpos*/) {
+    int operator()(int name, int /* pos */, int /* rpos */) {
         psg.data[name].stat.match_count++;
         return 0;
     }
 };
 
 /* Increment match_count for every match */
-static int mark_all_matches( PT_local *locs,
+static int mark_all_matches(PT_local *locs,
                              POS_TREE *pt,
                              char     *probe,
                              int       length,
@@ -47,9 +47,9 @@ static int mark_all_matches( PT_local *locs,
     if ((type_of_node = PT_read_type(pt)) != PT_NT_NODE) {
         // Found unique solution
         if (type_of_node == PT_NT_LEAF) {
-            ref2_pos = PT_read_rpos(psg.ptmain,pt);
+            ref2_pos = PT_read_rpos(psg.ptmain, pt);
             ref_pos = ref2_pos + height;
-            ref_name = PT_read_name(psg.ptmain,pt);
+            ref_name = PT_read_name(psg.ptmain, pt);
             // Check rest of probe
             while (mismatches <= max_mismatches && *probe) {
                 if (psg.data[ref_name].data[ref_pos++] != *probe) {
@@ -68,12 +68,12 @@ static int mark_all_matches( PT_local *locs,
             psg.height = height;
             psg.length = length;
             psg.probe = probe;
-            PT_read_chain(psg.ptmain,pt,mark_all_matches_chain_handle());
+            PT_read_chain(psg.ptmain, pt, mark_all_matches_chain_handle());
             return 0;
         }
     }
     for (base = PT_N; base < PT_B_MAX; base++) {
-        if ( (pt_son = PT_read_son(psg.ptmain, pt, (PT_BASES)base))) {
+        if ((pt_son = PT_read_son(psg.ptmain, pt, (PT_BASES)base))) {
             if (*probe) {
                 if (*probe != base) {
                     mark_all_matches(locs, pt_son, probe+1, length,
@@ -94,10 +94,10 @@ static int mark_all_matches( PT_local *locs,
 }
 
 /* Clear all information in psg.data[i].stat */
-static void clear_statistic(){
+static void clear_statistic() {
     int i;
     for (i = 0; i < psg.data_count; i++)
-        memset((char *) &psg.data[i].stat,0,sizeof(struct probe_statistic));
+        memset((char *) &psg.data[i].stat, 0, sizeof(struct probe_statistic));
 }
 
 
@@ -106,8 +106,8 @@ static void make_match_statistic(int probe_len, int sequence_length) {
     int i;
     // compute statistic for all species in family
     for (i = 0; i < psg.data_count; i++) {
-        int all_len = min(psg.data[i].size,sequence_length) - probe_len + 1;
-        if (all_len <= 0){
+        int all_len = min(psg.data[i].size, sequence_length) - probe_len + 1;
+        if (all_len <= 0) {
             psg.data[i].stat.rel_match_count = 0;
         }
         else {
@@ -132,7 +132,7 @@ struct cmp_probe_rel {
 /*  Make sorted list of family members */
 static int make_PT_family_list(PT_local *locs) {
     // Sort the data
-    struct probe_input_data **my_list = (struct probe_input_data**) calloc(sizeof(void *),psg.data_count);
+    struct probe_input_data **my_list = (struct probe_input_data**) calloc(sizeof(void *), psg.data_count);
     int i;
     for (i = 0; i < psg.data_count; i++) my_list[i] = &psg.data[i];
 
@@ -155,7 +155,7 @@ static int make_PT_family_list(PT_local *locs) {
     }
 
     // destroy old list
-    while(locs->ff_fl) destroy_PT_family_list(locs->ff_fl);
+    while (locs->ff_fl) destroy_PT_family_list(locs->ff_fl);
 
     // build new list
     int real_hits = 0;
@@ -243,7 +243,7 @@ extern "C" int ff_find_family(PT_local *locs, bytestring *species) {
                     char *last_probe = sequence+sequence_len-probe_len;
                     for (char *probe = sequence; probe < last_probe; ++probe) {
                         if (probe_is_ok(probe, probe_len, first_c, second_c)) {
-                            mark_all_matches(locs,psg.pt,probe,probe_len,0,0,mismatch_nr);
+                            mark_all_matches(locs, psg.pt, probe, probe_len, 0, 0, mismatch_nr);
                         }
                     }
                 }

@@ -42,22 +42,22 @@ ATTRIBUTED(__ATTR__NORETURN, static void abort_with_usage(GBDATA *gb_main, const
     exit(-1);
 }
 
-int main(int argc,char **argv)
+int main(int argc, char **argv)
 {
-    GBDATA *gb_main = GB_open(":","r");
-    if (!gb_main){
+    GBDATA *gb_main = GB_open(":", "r");
+    if (!gb_main) {
         printf("arb_read_tree: Error: you have to start an arbdb server first\n");
         return -1;
     }
 
-#define SHIFT_ARGS(off) do { argc -= off; argv += off; } while(0)
+#define SHIFT_ARGS(off) do { argc -= off; argv += off; } while (0)
 
     SHIFT_ARGS(1);              // position onto first argument
 
     bool   scale        = false;
     double scale_factor = 0.0;
 
-    if (argc>0 && strcmp("-scale",argv[0]) == 0) {
+    if (argc>0 && strcmp("-scale", argv[0]) == 0) {
         scale = true;
         if (argc<2) abort_with_usage(gb_main, "-scale expects a 2nd argument (scale factor)");
         scale_factor = atof(argv[1]);
@@ -67,7 +67,7 @@ int main(int argc,char **argv)
     bool consense         = false;
     int  calculated_trees = 0;
 
-    if (argc>0 && strcmp("-consense",argv[0]) == 0) {
+    if (argc>0 && strcmp("-consense", argv[0]) == 0) {
         consense = true;
         if (argc<2) abort_with_usage(gb_main, "-consense expects a 2nd argument (number of trees)");
 
@@ -154,7 +154,7 @@ int main(int argc,char **argv)
         error = GB_begin_transaction(gb_main);
         
         if (!error && tree->is_leaf) error = "Cannot load tree (need at least 2 leafs)";
-        if (!error) error                  = GBT_write_tree(gb_main,0,tree_name,tree);
+        if (!error) error                  = GBT_write_tree(gb_main, 0, tree_name, tree);
 
         if (!error) {
             // write tree comment:

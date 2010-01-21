@@ -86,14 +86,14 @@ public:
     SEC_region(int start, int end);
     virtual ~SEC_region();
 
-    //methods
+    // methods
     void save(std::ostream & out, int indent, const XString& x_string);
     GB_ERROR read(std::istream & in, SEC_root *root, int version);
 
     void update_base_count(SEC_root *root) { if (baseCount == -1) count_bases(root); }
     void invalidate_base_count();
 
-    //selector-methods
+    // selector-methods
     int get_sequence_start() const { return sequence_start; }
     int get_sequence_end() const { return sequence_end; }
     
@@ -289,7 +289,7 @@ public:
     SEC_root *get_root() const { return parent()->get_root(); }
 
     SEC_base_part *next() { return get_next(); } // iterates through whole structure
-    const SEC_base_part *next() const { return const_cast<SEC_base_part*>(this)->get_next();}
+    const SEC_base_part *next() const { return const_cast<SEC_base_part*>(this)->get_next(); }
 
     const SEC_region *get_region() const { return &region; }
     SEC_region *get_region() { return &region; }
@@ -373,7 +373,7 @@ class SEC_helix_strand : public SEC_base_part {
     SEC_helix        *helix_info; // used by both strands
     SEC_segment      *next_segment; // next segment in origin_loop
 
-    //redundant values
+    // redundant values
 
     Position fixpoint;
     Position rightAttach, leftAttach; // rightAttach was ap1, leftAttach was ap2
@@ -483,7 +483,7 @@ public:
     virtual ~SEC_segment();
 
     void save(std::ostream & out, int indent, const XString& x_string);
-    GB_ERROR read(SEC_loop *loop_,std::istream & in, int version);
+    GB_ERROR read(SEC_loop *loop_, std::istream & in, int version);
 
     void calculate_segment_size();
     void calculate_segment_coordinates(const Position& start, const Position& end);

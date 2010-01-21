@@ -25,7 +25,7 @@ NT_NODE *ntree_get(void)
 void print_ntree(NT_NODE *tree)
 {
     NSONS *nsonp;
-    if(tree == NULL) {
+    if (tree == NULL) {
         printf("tree is empty\n");
         return;
     }
@@ -35,7 +35,7 @@ void print_ntree(NT_NODE *tree)
     part_print(tree->part);
 
     /* and sons */
-    for(nsonp=tree->son_list; nsonp; nsonp=nsonp->next) {
+    for (nsonp=tree->son_list; nsonp; nsonp=nsonp->next) {
         print_ntree(nsonp->node);
     }
 
@@ -52,13 +52,13 @@ void print_ntindex(NT_NODE *tree)
 
     /* print father */
     printf("(");
-    for(nsonp=tree->son_list; nsonp; nsonp=nsonp->next) {
+    for (nsonp=tree->son_list; nsonp; nsonp=nsonp->next) {
         part_or(nsonp->node->part, p);
     }
-    printf("%d",tree->part->p[0]);   
+    printf("%d", tree->part->p[0]);
 
     /* and sons */
-    for(nsonp=tree->son_list; nsonp; nsonp=nsonp->next) {
+    for (nsonp=tree->son_list; nsonp; nsonp=nsonp->next) {
         print_ntindex(nsonp->node);
     }
 
@@ -83,9 +83,9 @@ void del_tree(NT_NODE *tree)
 {
     NSONS *nsonp, *nson_help;
 
-    if(!tree) return;
+    if (!tree) return;
 
-    for(nsonp=tree->son_list; nsonp;) {
+    for (nsonp=tree->son_list; nsonp;) {
         nson_help = nsonp->next;
         del_tree(nsonp->node);
         free((char *)nsonp);
@@ -119,7 +119,7 @@ void ntree_init(void)
 /* test if the tree is already complete (all necessary partitions are inserted) */
 int ntree_cont(int len)
 {
-    return(ntree_count<len);
+    return (ntree_count<len);
 }
 
 
@@ -130,17 +130,17 @@ void insert_son(NT_NODE *f_node, NT_NODE *s_node, NSONS *nson)
 {
 
     /* Move out of parent-sonlist */
-    if(nson == f_node->son_list)
+    if (nson == f_node->son_list)
         f_node->son_list = f_node->son_list->next;
-    if(nson->prev)
+    if (nson->prev)
         nson->prev->next = nson->next;
-    if(nson->next)
+    if (nson->next)
         nson->next->prev = nson->prev;
 
     /* Move in node-sonlist */
     nson->next = s_node->son_list;
     nson->prev = NULL;
-    if(s_node->son_list)
+    if (s_node->son_list)
         s_node->son_list->prev = nson;
     s_node->son_list = nson;
 }
@@ -160,24 +160,24 @@ int ins_ntree(NT_NODE *tree, PART *newpart)
     NT_NODE *newntnode;
 
     /* Tree is leaf */
-    if(!tree->son_list) {
+    if (!tree->son_list) {
         tree->son_list = (NSONS *) getmem(sizeof(NSONS));
         tree->son_list->node = new_ntnode(newpart);
         return 1;
     }
 
     /* test if part fit under one son of tree -> recursion */
-    for(nsonp=tree->son_list; nsonp; nsonp=nsonp->next) {
-        if(son(newpart, nsonp->node->part)) {
+    for (nsonp=tree->son_list; nsonp; nsonp=nsonp->next) {
+        if (son(newpart, nsonp->node->part)) {
             return ins_ntree(nsonp->node, newpart);
         }
     }
 
     /* If partition is not a son maybe it is a brother */
     /* If it is neither brother nor son -> don't fit here */
-    for(nsonp=tree->son_list; nsonp; nsonp=nsonp->next) {
-        if(!brothers(nsonp->node->part, newpart)) {
-            if(!son(nsonp->node->part, newpart)) {
+    for (nsonp=tree->son_list; nsonp; nsonp=nsonp->next) {
+        if (!brothers(nsonp->node->part, newpart)) {
+            if (!son(nsonp->node->part, newpart)) {
                 return 0;
             }
         }
@@ -188,10 +188,10 @@ int ins_ntree(NT_NODE *tree, PART *newpart)
 
     /* Move sons from parent-sonlist in nt_node-sonlist */
     nsonp = tree->son_list;
-    while(nsonp) {
+    while (nsonp) {
 
         nsonp_h = nsonp->next;
-        if(son(nsonp->node->part, newpart)) {
+        if (son(nsonp->node->part, newpart)) {
             insert_son(tree, newntnode, nsonp);
         }
         nsonp = nsonp_h;
@@ -202,7 +202,7 @@ int ins_ntree(NT_NODE *tree, PART *newpart)
     nsonp->node = newntnode;
     nsonp->prev = NULL;
     nsonp->next = tree->son_list;
-    if(tree->son_list)
+    if (tree->son_list)
         tree->son_list->prev = nsonp;
     tree->son_list = nsonp;
     return 1;
@@ -218,9 +218,9 @@ int ins_ntree(NT_NODE *tree, PART *newpart)
 void insert_ntree(PART *part)
 {
     ntree_count++;
-    if(!ins_ntree(ntree, part)) {
+    if (!ins_ntree(ntree, part)) {
         part_invert(part);
-        if(!ins_ntree(ntree, part)) {
+        if (!ins_ntree(ntree, part)) {
             ntree_count--;
             part_free(part);
         }

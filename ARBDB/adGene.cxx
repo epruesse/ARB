@@ -141,7 +141,7 @@ GBDATA *GEN_first_marked_gene(GBDATA *gb_species) {
     return GB_first_marked(GEN_expect_gene_data(gb_species), "gene");
 }
 GBDATA *GEN_next_marked_gene(GBDATA *gb_gene) {
-    return GB_next_marked(gb_gene,"gene");
+    return GB_next_marked(gb_gene, "gene");
 }
 
 // ----------------------

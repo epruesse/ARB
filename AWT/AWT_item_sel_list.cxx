@@ -38,11 +38,11 @@ static void populate_selection_list_on_scandb_cb(GBDATA *dummy, struct adawcbstr
         cbs->aws->insert_selection(cbs->id, PSEUDO_FIELD_ALL_FIELDS, PSEUDO_FIELD_ALL_FIELDS);
     }
 
-    for (GBDATA *gb_key = GB_entry(gb_key_data,CHANGEKEY); gb_key; gb_key = GB_nextEntry(gb_key)) {
-        GBDATA *gb_key_type = GB_entry(gb_key,CHANGEKEY_TYPE);
-        if ( !( ((long)cbs->def_filter) & (1<<GB_read_int(gb_key_type)))) continue; // type does not match filter
+    for (GBDATA *gb_key = GB_entry(gb_key_data, CHANGEKEY); gb_key; gb_key = GB_nextEntry(gb_key)) {
+        GBDATA *gb_key_type = GB_entry(gb_key, CHANGEKEY_TYPE);
+        if (!(((long)cbs->def_filter) & (1<<GB_read_int(gb_key_type)))) continue;   // type does not match filter
 
-        GBDATA *gb_key_name = GB_entry(gb_key,CHANGEKEY_NAME);
+        GBDATA *gb_key_name = GB_entry(gb_key, CHANGEKEY_NAME);
         if (!gb_key_name) continue;                 // key w/o name -> don't show
 
         const char *name = GB_read_char_pntr(gb_key_name);
@@ -60,7 +60,7 @@ static void populate_selection_list_on_scandb_cb(GBDATA *dummy, struct adawcbstr
                 GB_warningf("WARNING: can't create " CHANGEKEY_HIDDEN " (Reason: %s)\n", error);
             }
 
-            static long not_hidden = 0;;
+            static long not_hidden = 0; ;
             hiddenPtr              = &not_hidden;
         }
 
@@ -74,8 +74,8 @@ static void populate_selection_list_on_scandb_cb(GBDATA *dummy, struct adawcbstr
         if (display) cbs->aws->insert_selection(cbs->id, display, name);
     }
 
-    cbs->aws->insert_default_selection( cbs->id, "????", "----" );
-    cbs->aws->update_selection_list( cbs->id );
+    cbs->aws->insert_default_selection(cbs->id, "????", "----");
+    cbs->aws->update_selection_list(cbs->id);
 }
 
 
@@ -137,12 +137,12 @@ AW_CL awt_create_selection_list_on_scandb(GBDATA                 *gb_main,
 
         // and bind hidden window popup to button 
         aws->button_length(columns);
-        aws->callback((AW_CB2)AW_POPUP,(AW_CL)awt_existing_window, (AW_CL)win_for_sellist);
+        aws->callback((AW_CB2)AW_POPUP, (AW_CL)awt_existing_window, (AW_CL)win_for_sellist);
         aws->create_button(popup_button_id, varname);
 
     }
     else { // otherwise just insert the selection list at point
-        id = aws->create_selection_list(varname,0,"",columns,visible_rows); 
+        id = aws->create_selection_list(varname, 0, "", columns, visible_rows);
     }
 
     struct adawcbstruct *cbs = new adawcbstruct;
@@ -162,13 +162,13 @@ AW_CL awt_create_selection_list_on_scandb(GBDATA                 *gb_main,
         aws->get_at_position(&x, &y);
 
         aws->at(rescan_xfig_label);
-        aws->callback(selector->selection_list_rescan_cb, (AW_CL)cbs->gb_main,(AW_CL)-1);
-        aws->create_button(rescan_xfig_label, "RESCAN","R");
+        aws->callback(selector->selection_list_rescan_cb, (AW_CL)cbs->gb_main, (AW_CL)-1);
+        aws->create_button(rescan_xfig_label, "RESCAN", "R");
 
         if (popup_button_id) aws->at(x, y); // restore 'at' position if popup_list_in_window
     }
 
-    populate_selection_list_on_scandb_cb(0,cbs);
+    populate_selection_list_on_scandb_cb(0, cbs);
 
     gb_key_data = GB_search(gb_main, cbs->selector->change_key_path, GB_CREATE_CONTAINER);
     GB_add_callback(gb_key_data, GB_CB_CHANGED, (GB_CB)populate_selection_list_on_scandb_cb, (int *)cbs);

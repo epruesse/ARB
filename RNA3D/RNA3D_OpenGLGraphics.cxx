@@ -19,21 +19,21 @@ OpenGLGraphics::OpenGLGraphics(void)
 {
 }
 
-OpenGLGraphics::~OpenGLGraphics(void){
+OpenGLGraphics::~OpenGLGraphics(void) {
 }
 
 // Sets the Background Color for the OpenGL Window
 void OpenGLGraphics::SetOpenGLBackGroundColor() {
 
     unsigned long bgColor;
-    XtVaGetValues( RNA3D->glw, XmNbackground, &bgColor, NULL );
+    XtVaGetValues(RNA3D->glw, XmNbackground, &bgColor, NULL);
 
     Widget w = AW_get_AreaWidget(RNA3D->gl_Canvas->aww, AW_MIDDLE_AREA);
 
     XColor xcolor;
     xcolor.pixel = bgColor;
-    Colormap colormap = DefaultColormapOfScreen( XtScreen( w ) );
-    XQueryColor( XtDisplay( w ), colormap, &xcolor );
+    Colormap colormap = DefaultColormapOfScreen(XtScreen(w));
+    XQueryColor(XtDisplay(w), colormap, &xcolor);
 
     float r, g, b; r = g = b = 0.0;
     r = (float) xcolor.red / 65535.0;
@@ -48,27 +48,27 @@ void OpenGLGraphics::SetOpenGLBackGroundColor() {
 
 // Converts the GC into RGB values 
 ColorRGBf OpenGLGraphics::ConvertGCtoRGB(int gc) {
-    ColorRGBf clr = ColorRGBf(0,0,0);
+    ColorRGBf clr = ColorRGBf(0, 0, 0);
     float r, g, b; r = g = b = 0.0;
 
     Widget w   = AW_get_AreaWidget(RNA3D->gl_Canvas->aww, AW_MIDDLE_AREA);
     GC     xgc = AW_map_AreaGC(RNA3D->gl_Canvas->aww, AW_MIDDLE_AREA, gc);
 
     XGCValues     xGCValues;
-    XGetGCValues( XtDisplay( w ), xgc, GCForeground, &xGCValues );
+    XGetGCValues(XtDisplay(w), xgc, GCForeground, &xGCValues);
     unsigned long color = xGCValues.foreground;
 
     XColor xcolor;
     xcolor.pixel = color;
 
-    Colormap colormap = DefaultColormapOfScreen( XtScreen( w ) );
-    XQueryColor( XtDisplay( w ), colormap, &xcolor );
+    Colormap colormap = DefaultColormapOfScreen(XtScreen(w));
+    XQueryColor(XtDisplay(w), colormap, &xcolor);
         
     r = (float) xcolor.red / 65535.0;
     g = (float) xcolor.green / 65535.0;
     b = (float) xcolor.blue / 65535.0;
 
-    clr = ColorRGBf(r,g,b);
+    clr = ColorRGBf(r, g, b);
     return clr;
 }
 
@@ -85,24 +85,24 @@ ColorRGBf OpenGLGraphics::GetColor(int gc) {
 }
 
 void OpenGLGraphics::WinToScreenCoordinates(int x, int y, GLdouble *screenPos) {
-    //project window coords to gl coord
+    // project window coords to gl coord
     glLoadIdentity();
     GLdouble modelMatrix[16];
-    glGetDoublev(GL_MODELVIEW_MATRIX,modelMatrix);
+    glGetDoublev(GL_MODELVIEW_MATRIX, modelMatrix);
     GLdouble projMatrix[16];
-    glGetDoublev(GL_PROJECTION_MATRIX,projMatrix);
+    glGetDoublev(GL_PROJECTION_MATRIX, projMatrix);
     GLint viewport[4];
-    glGetIntegerv(GL_VIEWPORT,viewport);
+    glGetIntegerv(GL_VIEWPORT, viewport);
     gluUnProject(x, y, 0,
                  modelMatrix,
                  projMatrix,
                  viewport,
-                 //the next 3 parameters are the pointers to the final object coordinates.(double)
+                 // the next 3 parameters are the pointers to the final object coordinates.(double)
                  &screenPos[0], &screenPos[1], &screenPos[2] 
                  );
 }
 
-//=========== Functions related to rendering FONTS ========================//
+// =========== Functions related to rendering FONTS ========================//
 
 static GLuint font_base;
 
@@ -162,7 +162,7 @@ void OpenGLGraphics::InitMainFont(char* f)
     }
 }
 
-void OpenGLGraphics::PrintString(float x, float y, float z, char *s, void * /*font */) {
+void OpenGLGraphics::PrintString(float x, float y, float z, char *s, void * /* font */) {
     glRasterPos3f(x, y, z);
     print_string(font_base, s);
 }

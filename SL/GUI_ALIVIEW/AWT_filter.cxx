@@ -15,26 +15,26 @@ void awt_create_select_filter_window_aw_cb(void *dummy, struct adfiltercbstruct 
     char *target = aw_root->awar(cbs->def_subname)->read_string();
     char *to_free_target = target;
     char *use = aw_root->awar(cbs->def_alignment)->read_string();
-    char *name = strchr(target,1);
+    char *name = strchr(target, 1);
     GBDATA *gbd = 0;
-    if (name){
+    if (name) {
         *(name++) = 0;
         target++;
         GBDATA *gb_species;
-        if (target[-1] == '@'){
-            gb_species = GBT_find_species(cbs->gb_main,name);
+        if (target[-1] == '@') {
+            gb_species = GBT_find_species(cbs->gb_main, name);
         }
         else {
-            gb_species = GBT_find_SAI(cbs->gb_main,name);
+            gb_species = GBT_find_SAI(cbs->gb_main, name);
         }
-        if (gb_species){
-            GBDATA *gb_ali = GB_search(gb_species,use,GB_FIND);
+        if (gb_species) {
+            GBDATA *gb_ali = GB_search(gb_species, use, GB_FIND);
             if (gb_ali) {
-                gbd = GB_search(gb_ali,target,GB_FIND);
+                gbd = GB_search(gb_ali, target, GB_FIND);
             }
         }
     }
-    if (!gbd){      // nothing selected
+    if (!gbd) {     // nothing selected
         aw_root->awar(cbs->def_name)->write_string("none");
         aw_root->awar(cbs->def_source)->write_string("No Filter Sequence ->All Columns Selected");
         aw_root->awar(cbs->def_filter)->write_string("");
@@ -42,34 +42,34 @@ void awt_create_select_filter_window_aw_cb(void *dummy, struct adfiltercbstruct 
     }
     else {
         GBDATA *gb_name = GB_get_father(gbd);   // ali_xxxx
-        gb_name = GB_brother(gb_name,"name");
+        gb_name = GB_brother(gb_name, "name");
         char *name2 = GB_read_string(gb_name);
         aw_root->awar(cbs->def_name)->write_string(name2);
         free(name2);
         char *_2filter = aw_root->awar(cbs->def_2filter)->read_string();
         long _2filter_len = strlen(_2filter);
 
-        char *s,*str;
-        long len = GBT_get_alignment_len(cbs->gb_main,use);
+        char *s, *str;
+        long len = GBT_get_alignment_len(cbs->gb_main, use);
         GBS_strstruct *strstruct = GBS_stropen(5000);
-        long i; for (i=0;i<len;i++) {   // build position line
+        long i; for (i=0; i<len; i++) { // build position line
             if (i%10 == 0) {
-                GBS_chrcat(strstruct,'#');
+                GBS_chrcat(strstruct, '#');
             }
             else if (i%5==0) {
-                GBS_chrcat(strstruct,'|');
+                GBS_chrcat(strstruct, '|');
             }
             else {
-                GBS_chrcat(strstruct,'.');
+                GBS_chrcat(strstruct, '.');
             }
         }
-        GBS_chrcat(strstruct,'\n');
+        GBS_chrcat(strstruct, '\n');
         char *data = GBS_mempntr(strstruct);
 
-        for (i=0;i<len-10;i++) {    // place markers
+        for (i=0; i<len-10; i++) {  // place markers
             if (i%10 == 0) {
-                sprintf(buffer,"%li",i+1);
-                strncpy(data+i+1,buffer,strlen(buffer));
+                sprintf(buffer, "%li", i+1);
+                strncpy(data+i+1, buffer, strlen(buffer));
             }
         }
 
@@ -77,16 +77,16 @@ void awt_create_select_filter_window_aw_cb(void *dummy, struct adfiltercbstruct 
             str = GB_read_string(gbd);
         }
         else {
-            str = GB_read_bits(gbd,'-','+');
+            str = GB_read_bits(gbd, '-', '+');
         }
-        GBS_strcat(strstruct,str);
-        GBS_chrcat(strstruct,'\n');
+        GBS_strcat(strstruct, str);
+        GBS_chrcat(strstruct, '\n');
         char *canc = aw_root->awar(cbs->def_cancel)->read_string();
         long min = aw_root->awar(cbs->def_min)->read_int()-1;
         long max = aw_root->awar(cbs->def_max)->read_int()-1;
         long flen = 0;
-        for (i=0,s=str; *s; ++s,++i){       // transform the filter
-            if (strchr(canc,*s) || (i<min) || (max>0 && i > max) )
+        for (i=0, s=str; *s; ++s, ++i) {    // transform the filter
+            if (strchr(canc, *s) || (i<min) || (max>0 && i > max))
             {
                 *s = '0';
             }
@@ -100,8 +100,8 @@ void awt_create_select_filter_window_aw_cb(void *dummy, struct adfiltercbstruct 
                 }
             }
         }
-        GBS_strcat(strstruct,str);
-        GBS_chrcat(strstruct,'\n');
+        GBS_strcat(strstruct, str);
+        GBS_chrcat(strstruct, '\n');
         data = GBS_strclose(strstruct);
         aw_root->awar(cbs->def_len)   ->write_int(flen);    // export filter
         aw_root->awar(cbs->def_filter)->write_string(str);  // export filter
@@ -156,13 +156,13 @@ void awt_create_select_filter_window_gb_cb(void *, struct adfiltercbstruct *cbs)
         char *use = cbs->awr->awar(cbs->def_alignment)->read_string();
 
         cbs->aw_filt->clear_selection_list(cbs->id);
-        cbs->aw_filt->insert_default_selection( cbs->id, "none", "" );
+        cbs->aw_filt->insert_default_selection(cbs->id, "none", "");
         
         const char *name = GBT_readOrCreate_char_pntr(cbs->gb_main, AWAR_SPECIES_NAME, "");
-        if (name[0]){
-            GBDATA *gb_species = GBT_find_species(cbs->gb_main,name);
-            if (gb_species){
-                awt_add_sequences_to_list(cbs,use,gb_species,"SEL. SPECIES:",'@');
+        if (name[0]) {
+            GBDATA *gb_species = GBT_find_species(cbs->gb_main, name);
+            if (gb_species) {
+                awt_add_sequences_to_list(cbs, use, gb_species, "SEL. SPECIES:", '@');
             }
         }
         
@@ -170,13 +170,13 @@ void awt_create_select_filter_window_gb_cb(void *, struct adfiltercbstruct *cbs)
              gb_extended;
              gb_extended = GBT_next_SAI(gb_extended))
         {
-            awt_add_sequences_to_list(cbs,use,gb_extended,"",' ');
+            awt_add_sequences_to_list(cbs, use, gb_extended, "", ' ');
         }
 
-        cbs->aw_filt->update_selection_list( cbs->id );
+        cbs->aw_filt->update_selection_list(cbs->id);
         free(use);
     }
-    awt_create_select_filter_window_aw_cb(0,cbs);
+    awt_create_select_filter_window_aw_cb(0, cbs);
     GB_pop_transaction(cbs->gb_main);
 }
 
@@ -184,7 +184,7 @@ void awt_create_select_filter_window_gb_cb(void *, struct adfiltercbstruct *cbs)
 adfiltercbstruct *awt_create_select_filter(AW_root *aw_root, GBDATA *gb_main, const char *def_name) {
     // def_name = filter name awar (has to exist, name has to be "SOMETHING/name")
     // awars "SOMETHING/filter" (STRING) and "SOMETHING/alignment" (STRING) have to exist as well! 
-    struct adfiltercbstruct *acbs   = new adfiltercbstruct ;
+    struct adfiltercbstruct *acbs   = new adfiltercbstruct;
     acbs->gb_main                   = gb_main;
     GB_push_transaction(acbs->gb_main);
     AW_default               aw_def = aw_root->get_default(def_name);
@@ -198,38 +198,38 @@ adfiltercbstruct *awt_create_select_filter(AW_root *aw_root, GBDATA *gb_main, co
     }
 #endif                          // DEBUG
 
-    acbs->def_name      = GBS_string_eval(def_name,"/name=/name",0);
-    acbs->def_filter    = GBS_string_eval(def_name,"/name=/filter",0);
-    acbs->def_alignment = GBS_string_eval(def_name,"/name=/alignment",0);
+    acbs->def_name      = GBS_string_eval(def_name, "/name=/name", 0);
+    acbs->def_filter    = GBS_string_eval(def_name, "/name=/filter", 0);
+    acbs->def_alignment = GBS_string_eval(def_name, "/name=/alignment", 0);
 
-    acbs->def_min = GBS_string_eval(def_name,"*/name=tmp/*1/min:tmp/tmp=tmp",0);
-    acbs->def_max = GBS_string_eval(def_name,"*/name=tmp/*1/max:tmp/tmp=tmp",0);
-    aw_root->awar_int(acbs->def_min)->add_callback((AW_RCB1)awt_create_select_filter_window_aw_cb,(AW_CL)acbs);
-    aw_root->awar_int(acbs->def_max)->add_callback((AW_RCB1)awt_create_select_filter_window_aw_cb,(AW_CL)acbs);
+    acbs->def_min = GBS_string_eval(def_name, "*/name=tmp/*1/min:tmp/tmp=tmp", 0);
+    acbs->def_max = GBS_string_eval(def_name, "*/name=tmp/*1/max:tmp/tmp=tmp", 0);
+    aw_root->awar_int(acbs->def_min)->add_callback((AW_RCB1)awt_create_select_filter_window_aw_cb, (AW_CL)acbs);
+    aw_root->awar_int(acbs->def_max)->add_callback((AW_RCB1)awt_create_select_filter_window_aw_cb, (AW_CL)acbs);
 
-    acbs->def_len = GBS_string_eval(def_name,"*/name=tmp/*1/len:tmp/tmp=tmp",0);
+    acbs->def_len = GBS_string_eval(def_name, "*/name=tmp/*1/len:tmp/tmp=tmp", 0);
     aw_root->awar_int(acbs->def_len);
 
-    acbs->def_dest = GBS_string_eval(def_name,"*/name=tmp/*1/dest:tmp/tmp=tmp",0);
-    aw_root->awar_string(acbs->def_dest,"",aw_def);
+    acbs->def_dest = GBS_string_eval(def_name, "*/name=tmp/*1/dest:tmp/tmp=tmp", 0);
+    aw_root->awar_string(acbs->def_dest, "", aw_def);
 
-    acbs->def_cancel = GBS_string_eval(def_name,"*/name=*1/cancel",0);
-    aw_root->awar_string(acbs->def_cancel,".0-=",aw_def);
+    acbs->def_cancel = GBS_string_eval(def_name, "*/name=*1/cancel", 0);
+    aw_root->awar_string(acbs->def_cancel, ".0-=", aw_def);
 
-    acbs->def_simplify = GBS_string_eval(def_name,"*/name=*1/simplify",0);
-    aw_root->awar_int(acbs->def_simplify,0,aw_def);
+    acbs->def_simplify = GBS_string_eval(def_name, "*/name=*1/simplify", 0);
+    aw_root->awar_int(acbs->def_simplify, 0, aw_def);
 
-    acbs->def_subname = GBS_string_eval(def_name,"*/name=tmp/*1/subname:tmp/tmp=tmp",0);
+    acbs->def_subname = GBS_string_eval(def_name, "*/name=tmp/*1/subname:tmp/tmp=tmp", 0);
     aw_root->awar_string(acbs->def_subname);
 
-    acbs->def_source = GBS_string_eval(def_name,"*/name=tmp/*/source:tmp/tmp=tmp",0);
+    acbs->def_source = GBS_string_eval(def_name, "*/name=tmp/*/source:tmp/tmp=tmp", 0);
     aw_root->awar_string(acbs->def_source);
 
-    acbs->def_2name      = GBS_string_eval(def_name,"*/name=tmp/*/2filter/name:tmp/tmp=tmp",0);
-    acbs->def_2filter    = GBS_string_eval(def_name,"*/name=tmp/*/2filter/filter:tmp/tmp=tmp",0);
-    acbs->def_2alignment = GBS_string_eval(def_name,"*/name=tmp/*/2filter/alignment:tmp/tmp=tmp",0);
+    acbs->def_2name      = GBS_string_eval(def_name, "*/name=tmp/*/2filter/name:tmp/tmp=tmp", 0);
+    acbs->def_2filter    = GBS_string_eval(def_name, "*/name=tmp/*/2filter/filter:tmp/tmp=tmp", 0);
+    acbs->def_2alignment = GBS_string_eval(def_name, "*/name=tmp/*/2filter/alignment:tmp/tmp=tmp", 0);
 
-    aw_root->awar_string(acbs->def_2name)->write_string( "- none -" );
+    aw_root->awar_string(acbs->def_2name)->write_string("- none -");
     aw_root->awar_string(acbs->def_2filter);
     aw_root->awar_string(acbs->def_2alignment);
 
@@ -238,7 +238,7 @@ adfiltercbstruct *awt_create_select_filter(AW_root *aw_root, GBDATA *gb_main, co
     acbs->awr     = aw_root;
     {
         char *fname = aw_root->awar(acbs->def_name)->read_string();
-        const char *fsname = GBS_global_string(" data%c%s",1,fname);
+        const char *fsname = GBS_global_string(" data%c%s", 1, fname);
         free(fname);
         aw_root->awar(acbs->def_subname)->write_string(fsname);     // cause an callback
     }
@@ -255,20 +255,20 @@ adfiltercbstruct *awt_create_select_filter(AW_root *aw_root, GBDATA *gb_main, co
     aw_root->awar(acbs->def_2filter)  ->add_callback((AW_RCB1)awt_create_select_filter_window_aw_cb, (AW_CL)acbs);
     aw_root->awar(acbs->def_subname)  ->add_callback((AW_RCB1)awt_create_select_filter_window_aw_cb, (AW_CL)acbs);
 
-    awt_create_select_filter_window_gb_cb(0,acbs);
+    awt_create_select_filter_window_gb_cb(0, acbs);
 
     GB_pop_transaction(acbs->gb_main);
     return acbs;
 }
 
 
-void awt_set_awar_to_valid_filter_good_for_tree_methods(GBDATA *gb_main, AW_root *awr, const char *awar_name){
+void awt_set_awar_to_valid_filter_good_for_tree_methods(GBDATA *gb_main, AW_root *awr, const char *awar_name) {
     GB_transaction transaction_var(gb_main);
-    if (GBT_find_SAI(gb_main,"POS_VAR_BY_PARSIMONY")){
+    if (GBT_find_SAI(gb_main, "POS_VAR_BY_PARSIMONY")) {
         awr->awar(awar_name)->write_string("POS_VAR_BY_PARSIMONY");
         return;
     }
-    if (GBT_find_SAI(gb_main,"ECOLI")){
+    if (GBT_find_SAI(gb_main, "ECOLI")) {
         awr->awar(awar_name)->write_string("ECOLI");
         return;
     }
@@ -276,7 +276,7 @@ void awt_set_awar_to_valid_filter_good_for_tree_methods(GBDATA *gb_main, AW_root
 
 static AW_window *awt_create_2_filter_window(AW_root *aw_root, adfiltercbstruct *acbs) {
     GB_push_transaction(acbs->gb_main);
-    aw_root->awar(acbs->def_2alignment)->map( acbs->def_alignment);
+    aw_root->awar(acbs->def_2alignment)->map(acbs->def_alignment);
     adfiltercbstruct *s2filter = awt_create_select_filter(aw_root, acbs->gb_main, acbs->def_2name);
     GB_pop_transaction(acbs->gb_main);
     return awt_create_select_filter_win(aw_root, (AW_CL)s2filter);
@@ -324,53 +324,53 @@ AW_window *awt_create_select_filter_win(AW_root *aw_root, AW_CL res_of_create_se
             int   checksum  = GBS_checksum(acbs->def_name, true, NULL);
             char *window_id = GBS_global_string_copy("FILTER_SELECT_%i", checksum); // make window id awar specific
 
-            aws->init( aw_root, window_id, "Select Filter");
+            aws->init(aw_root, window_id, "Select Filter");
             free(window_id);
         }        
         aws->load_xfig("awt/filter.fig");
-        aws->button_length( 10 );
+        aws->button_length(10);
 
-        aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE","C");
+        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->at("help");aws->callback(AW_POPUP_HELP,(AW_CL)"sel_fil.hlp");
-        aws->create_button("HELP", "HELP","H");
+        aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"sel_fil.hlp");
+        aws->create_button("HELP", "HELP", "H");
 
         acbs->aw_filt = aws; // store the filter selection window in 'acbs'
         
         aws->at("filter");
-        acbs->id = aws->create_selection_list(acbs->def_subname,0,"",20,3);
+        acbs->id = aws->create_selection_list(acbs->def_subname, 0, "", 20, 3);
 
         aws->at("2filter");
-        aws->callback(AW_POPUP,(AW_CL)awt_create_2_filter_window,(AW_CL)acbs);
-        aws->create_button(acbs->def_2name,acbs->def_2name);
+        aws->callback(AW_POPUP, (AW_CL)awt_create_2_filter_window, (AW_CL)acbs);
+        aws->create_button(acbs->def_2name, acbs->def_2name);
 
         aws->at("zero");
-        aws->callback((AW_CB1)awt_create_select_filter_window_aw_cb,(AW_CL)acbs);
-        aws->create_input_field(acbs->def_cancel,10);
+        aws->callback((AW_CB1)awt_create_select_filter_window_aw_cb, (AW_CL)acbs);
+        aws->create_input_field(acbs->def_cancel, 10);
 
         aws->at("sequence");
-        aws->create_text_field(acbs->def_source,1,1);
+        aws->create_text_field(acbs->def_source, 1, 1);
 
         aws->at("min");
-        aws->create_input_field(acbs->def_min,4);
+        aws->create_input_field(acbs->def_min, 4);
 
         aws->at("max");
-        aws->create_input_field(acbs->def_max,4);
+        aws->create_input_field(acbs->def_max, 4);
 
         aws->at("simplify");
         aws->create_option_menu(acbs->def_simplify);
-        aws->insert_option("ORIGINAL DATA","O",0);
+        aws->insert_option("ORIGINAL DATA", "O", 0);
         aws->sens_mask(AWM_EXP);
-        aws->insert_option("TRANSVERSIONS ONLY","T",1);
-        aws->insert_option("SIMPLIFIED AA","A",2);
+        aws->insert_option("TRANSVERSIONS ONLY", "T", 1);
+        aws->insert_option("SIMPLIFIED AA", "A", 2);
         aws->sens_mask(AWM_ALL);
         aws->update_option_menu();
 
-        awt_create_select_filter_window_gb_cb(0,acbs);
+        awt_create_select_filter_window_gb_cb(0, acbs);
 
-        aws->button_length( 7 );
-        aws->at("len");    aws->create_button(0,acbs->def_len);
+        aws->button_length(7);
+        aws->at("len");    aws->create_button(0, acbs->def_len);
 
         GB_pop_transaction(acbs->gb_main);
     }
@@ -392,7 +392,7 @@ AP_filter *awt_get_filter(AW_root *aw_root, adfiltercbstruct *acbs) {
         {
             char *use = aw_root->awar(acbs->def_alignment)->read_string();
 
-            len = GBT_get_alignment_len(acbs->gb_main,use);
+            len = GBT_get_alignment_len(acbs->gb_main, use);
             free(use);
         }
 

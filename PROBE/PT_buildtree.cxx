@@ -14,19 +14,19 @@
 POS_TREE *build_pos_tree (POS_TREE *pt, int anfangs_pos, int apos, int RNS_nr, unsigned int end)
 {
     static POS_TREE       *pthelp, *pt_next;
-    unsigned int i,j;
+    unsigned int i, j;
     int          height = 0, anfangs_apos_ref, anfangs_rpos_ref, RNS_nr_ref;
     pthelp = pt;
     i = anfangs_pos;
     while (PT_read_type(pthelp) == PT_NT_NODE) {    /* now we got an inner node */
-        if ((pt_next = PT_read_son_stage_1(psg.ptmain,pthelp, (PT_BASES)psg.data[RNS_nr].data[i])) == NULL) {
+        if ((pt_next = PT_read_son_stage_1(psg.ptmain, pthelp, (PT_BASES)psg.data[RNS_nr].data[i])) == NULL) {
                             // there is no son of that type -> simply add the new son to that path //
             if (pthelp == pt) { // now we create a new root structure (size will change)
-                PT_create_leaf(psg.ptmain,&pthelp, (PT_BASES)psg.data[RNS_nr].data[i], anfangs_pos, apos, RNS_nr);
+                PT_create_leaf(psg.ptmain, &pthelp, (PT_BASES)psg.data[RNS_nr].data[i], anfangs_pos, apos, RNS_nr);
                 return pthelp;  // return the new root
             }
             else {
-                PT_create_leaf(psg.ptmain,&pthelp, (PT_BASES)psg.data[RNS_nr].data[i], anfangs_pos, apos, RNS_nr);
+                PT_create_leaf(psg.ptmain, &pthelp, (PT_BASES)psg.data[RNS_nr].data[i], anfangs_pos, apos, RNS_nr);
                 return pt;  // return the old root
             }
         }
@@ -38,7 +38,7 @@ POS_TREE *build_pos_tree (POS_TREE *pt, int anfangs_pos, int apos, int RNS_nr, u
                         // should never be reached, because of the terminal symbol
                         // of each sequence
                 if (PT_read_type(pthelp) == PT_NT_CHAIN)
-                    pthelp = PT_add_to_chain(psg.ptmain,pthelp, RNS_nr,apos,anfangs_pos);
+                    pthelp = PT_add_to_chain(psg.ptmain, pthelp, RNS_nr, apos, anfangs_pos);
                 // if type == node then forget it
                 return pt;
             }
@@ -46,41 +46,41 @@ POS_TREE *build_pos_tree (POS_TREE *pt, int anfangs_pos, int apos, int RNS_nr, u
     }
             // type == leaf or chain
     if (PT_read_type(pthelp) == PT_NT_CHAIN) {      // old chain reached
-        pthelp = PT_add_to_chain(psg.ptmain,pthelp, RNS_nr, apos, anfangs_pos);
+        pthelp = PT_add_to_chain(psg.ptmain, pthelp, RNS_nr, apos, anfangs_pos);
         return pt;
     }
-    anfangs_rpos_ref = PT_read_rpos(psg.ptmain,pthelp); // change leave to node and create two sons
-    anfangs_apos_ref = PT_read_apos(psg.ptmain,pthelp);
-    RNS_nr_ref = PT_read_name(psg.ptmain,pthelp);
+    anfangs_rpos_ref = PT_read_rpos(psg.ptmain, pthelp); // change leave to node and create two sons
+    anfangs_apos_ref = PT_read_apos(psg.ptmain, pthelp);
+    RNS_nr_ref = PT_read_name(psg.ptmain, pthelp);
     j = anfangs_rpos_ref + height;
 
     while (psg.data[RNS_nr].data[i] == psg.data[RNS_nr_ref].data[j]) {  /* creates nodes until sequences are different */
                                         // type != nt_node
         if (PT_read_type(pthelp) == PT_NT_CHAIN) {          /* break */
-            pthelp = PT_add_to_chain(psg.ptmain,pthelp, RNS_nr, apos, anfangs_pos);
+            pthelp = PT_add_to_chain(psg.ptmain, pthelp, RNS_nr, apos, anfangs_pos);
             return pt;
         }
         if (height >= PT_POS_TREE_HEIGHT) {
             if (PT_read_type(pthelp) == PT_NT_LEAF) {
-                pthelp = PT_leaf_to_chain(psg.ptmain,pthelp);
+                pthelp = PT_leaf_to_chain(psg.ptmain, pthelp);
             }
-            pthelp = PT_add_to_chain(psg.ptmain,pthelp, RNS_nr, apos, anfangs_pos);
+            pthelp = PT_add_to_chain(psg.ptmain, pthelp, RNS_nr, apos, anfangs_pos);
             return pt;
         }
-        if ( ((i + 1)>= end) && (j + 1 >= (unsigned)(psg.data[RNS_nr_ref].size))) { /* end of both sequences */
+        if (((i + 1) >= end) && (j + 1 >= (unsigned)(psg.data[RNS_nr_ref].size))) { /* end of both sequences */
             return pt;
         }
-        pthelp = PT_change_leaf_to_node(psg.ptmain,pthelp); /* change tip to node and append two new leafs */
+        pthelp = PT_change_leaf_to_node(psg.ptmain, pthelp); /* change tip to node and append two new leafs */
         if (i + 1 >= end) {                 /* end of source sequence reached   */
-            pthelp = PT_create_leaf(psg.ptmain,&pthelp, (PT_BASES)psg.data[RNS_nr_ref].data[j],
+            pthelp = PT_create_leaf(psg.ptmain, &pthelp, (PT_BASES)psg.data[RNS_nr_ref].data[j],
                     anfangs_rpos_ref, anfangs_apos_ref, RNS_nr_ref);
             return pt;
         }
         if (j + 1 >= (unsigned)(psg.data[RNS_nr_ref].size)) {       /* end of reference sequence */
-            pthelp = PT_create_leaf(psg.ptmain,&pthelp, (PT_BASES)psg.data[RNS_nr].data[i], anfangs_pos, apos, RNS_nr);
+            pthelp = PT_create_leaf(psg.ptmain, &pthelp, (PT_BASES)psg.data[RNS_nr].data[i], anfangs_pos, apos, RNS_nr);
             return pt;
         }
-        pthelp = PT_create_leaf(psg.ptmain,&pthelp, (PT_BASES)psg.data[RNS_nr].data[i], anfangs_rpos_ref, anfangs_apos_ref, RNS_nr_ref);
+        pthelp = PT_create_leaf(psg.ptmain, &pthelp, (PT_BASES)psg.data[RNS_nr].data[i], anfangs_rpos_ref, anfangs_apos_ref, RNS_nr_ref);
                     // dummy leaf just to create a new node; may become a chain
         i++;
         j++;
@@ -88,17 +88,17 @@ POS_TREE *build_pos_tree (POS_TREE *pt, int anfangs_pos, int apos, int RNS_nr, u
     }
     if (height >= PT_POS_TREE_HEIGHT) {
         if (PT_read_type(pthelp) == PT_NT_LEAF)
-            pthelp = PT_leaf_to_chain(psg.ptmain,pthelp);
-        pthelp = PT_add_to_chain(psg.ptmain,pthelp, RNS_nr, apos, anfangs_pos);
+            pthelp = PT_leaf_to_chain(psg.ptmain, pthelp);
+        pthelp = PT_add_to_chain(psg.ptmain, pthelp, RNS_nr, apos, anfangs_pos);
         return pt;
     }
     if (PT_read_type(pthelp) == PT_NT_CHAIN) {
-        pthelp = PT_add_to_chain(psg.ptmain,pthelp, RNS_nr, apos, anfangs_pos);
+        pthelp = PT_add_to_chain(psg.ptmain, pthelp, RNS_nr, apos, anfangs_pos);
     }
     else {
-        pthelp = PT_change_leaf_to_node(psg.ptmain,pthelp); /* Blatt loeschen */
-        PT_create_leaf(psg.ptmain,&pthelp, (PT_BASES)psg.data[RNS_nr].data[i], anfangs_pos, apos, RNS_nr);  /* zwei neue Blaetter */
-        PT_create_leaf(psg.ptmain,&pthelp, (PT_BASES)psg.data[RNS_nr_ref].data[j], anfangs_rpos_ref, anfangs_apos_ref, RNS_nr_ref);
+        pthelp = PT_change_leaf_to_node(psg.ptmain, pthelp); /* Blatt loeschen */
+        PT_create_leaf(psg.ptmain, &pthelp, (PT_BASES)psg.data[RNS_nr].data[i], anfangs_pos, apos, RNS_nr); /* zwei neue Blaetter */
+        PT_create_leaf(psg.ptmain, &pthelp, (PT_BASES)psg.data[RNS_nr_ref].data[j], anfangs_rpos_ref, anfangs_apos_ref, RNS_nr_ref);
     }
     return pt;
 }
@@ -107,16 +107,16 @@ POS_TREE *build_pos_tree (POS_TREE *pt, int anfangs_pos, int apos, int RNS_nr, u
 inline void get_abs_align_pos(char *seq, int &pos)
 {
     int q_exists = 0;
-    if(pos > 3) {
+    if (pos > 3) {
         pos-=3;
-        while(pos > 0) {
-            uint32_t c= *((uint32_t*)(seq+pos));
-            if(c == 0x2E2E2E2E) {
+        while (pos > 0) {
+            uint32_t c = *((uint32_t*)(seq+pos));
+            if (c == 0x2E2E2E2E) {
                 q_exists = 1;
                 pos-=4;
                 continue;
             }
-            if(c == 0x2D2D2D2D) {
+            if (c == 0x2D2D2D2D) {
                 pos-=4;
                 continue;
             }
@@ -124,14 +124,14 @@ inline void get_abs_align_pos(char *seq, int &pos)
         }
         pos+=3;
     }
-    while(pos) {
-        unsigned char c= seq[pos];
-        if(c == '.') {
+    while (pos) {
+        unsigned char c = seq[pos];
+        if (c == '.') {
             q_exists = 1;
             pos--;
             continue;
         }
-        if(c == '-') {
+        if (c == '-') {
             pos--;
             continue;
         }
@@ -140,24 +140,24 @@ inline void get_abs_align_pos(char *seq, int &pos)
     pos+=q_exists;
 }
 
-long PTD_save_partial_tree(FILE *out,PTM2 *ptmain,POS_TREE * node,char *partstring,int partsize,long pos, long *ppos)
+long PTD_save_partial_tree(FILE *out, PTM2 *ptmain, POS_TREE * node, char *partstring, int partsize, long pos, long *ppos)
 {
     if (partsize) {
-        POS_TREE *son = PT_read_son(ptmain,node,(enum PT_bases_enum)partstring[0]);
+        POS_TREE *son = PT_read_son(ptmain, node, (enum PT_bases_enum)partstring[0]);
         if (son) {
-            pos = PTD_save_partial_tree(out,ptmain,son,partstring+1,partsize-1,pos,ppos);
+            pos = PTD_save_partial_tree(out, ptmain, son, partstring+1, partsize-1, pos, ppos);
         }
     }
     else {
-        PTD_clear_fathers(ptmain,node);
+        PTD_clear_fathers(ptmain, node);
         long r_pos;
         int blocked;
         blocked = 1;
         while (blocked) {
             blocked = 0;
-            printf("*************** pass %li *************\n",pos);
+            printf("*************** pass %li *************\n", pos);
             fflush(stdout);
-            r_pos = PTD_write_leafs_to_disk(out,ptmain,node,pos,ppos,&blocked);
+            r_pos = PTD_write_leafs_to_disk(out, ptmain, node, pos, ppos, &blocked);
             if (r_pos > pos) pos = r_pos;
         }
     }
@@ -166,7 +166,7 @@ long PTD_save_partial_tree(FILE *out,PTM2 *ptmain,POS_TREE * node,char *partstri
 
 inline int ptd_string_shorter_than(const char *s, int len) {
     int i;
-    for (i=0;i<len;i++){
+    for (i=0; i<len; i++) {
         if (!s[i]) {
             return 1;
         }
@@ -174,8 +174,8 @@ inline int ptd_string_shorter_than(const char *s, int len) {
     return 0;
 }
 
-/*initialize tree and call the build pos tree procedure*/
-void enter_stage_1_build_tree(PT_main * main,char *tname) {
+/* initialize tree and call the build pos tree procedure */
+void enter_stage_1_build_tree(PT_main * main, char *tname) {
     main = main;
     POS_TREE       *pt = NULL;
     int             i, j, abs_align_pos;
@@ -188,23 +188,23 @@ void enter_stage_1_build_tree(PT_main * main,char *tname) {
     long    pos;
     long    last_obj;
 
-    if (unlink(tname) ) {
+    if (unlink(tname)) {
         if (GB_size_of_file(tname)>=0) {
-            fprintf(stderr,"Cannot remove %s\n",tname);
+            fprintf(stderr, "Cannot remove %s\n", tname);
             exit(EXIT_FAILURE);
         }
     }
 
-    t2name = (char *)calloc(sizeof(char),strlen(tname) + 2);
-    sprintf(t2name,"%s%%",tname);
-    out = fopen(t2name,"w");                /* open file for output */
+    t2name = (char *)calloc(sizeof(char), strlen(tname) + 2);
+    sprintf(t2name, "%s%%", tname);
+    out = fopen(t2name, "w");               /* open file for output */
     if (!out) {
-        fprintf(stderr,"Cannot open %s\n",t2name);
+        fprintf(stderr, "Cannot open %s\n", t2name);
         exit(EXIT_FAILURE);
     }
-    GB_set_mode_of_file(t2name,0666);
+    GB_set_mode_of_file(t2name, 0666);
 
-    putc(0,out);        /* disable zero father */
+    putc(0, out);       /* disable zero father */
     pos = 1;
 
     // now temp file exists -> trigger ptserver-selectionlist-update in all
@@ -214,8 +214,8 @@ void enter_stage_1_build_tree(PT_main * main,char *tname) {
     psg.ptmain = PT_init(PT_B_MAX);
     psg.ptmain->stage1 = 1;             /* enter stage 1 */
 
-    pt = PT_create_leaf(psg.ptmain,NULL,PT_N,0,0,0);       /* create main node */
-    pt = PT_change_leaf_to_node(psg.ptmain,pt);
+    pt = PT_create_leaf(psg.ptmain, NULL, PT_N, 0, 0, 0);  /* create main node */
+    pt = PT_change_leaf_to_node(psg.ptmain, pt);
     psg.stat.cut_offs = 0;                  /* statistic information */
     GB_begin_transaction(psg.gb_main);
 
@@ -234,7 +234,7 @@ void enter_stage_1_build_tree(PT_main * main,char *tname) {
             ULONG estimated_kb = (total_size/1024)*55;  // value by try and error (for gene server)
                                                         // TODO: estimated_kb depends on 32/64 bit...
 #else
-            ULONG estimated_kb = (total_size/1024)*35; /* value by try and error; 35 bytes per base*/
+            ULONG estimated_kb = (total_size/1024)*35; /* value by try and error; 35 bytes per base */
 #endif            
             printf("Estimated memory usage for %i passes: %lu k\n", passes, estimated_kb);
 
@@ -246,9 +246,9 @@ void enter_stage_1_build_tree(PT_main * main,char *tname) {
         }
     }
 
-    printf ("Tree Build: %li bases in %i passes\n",psg.char_count, passes);
+    printf ("Tree Build: %li bases in %i passes\n", psg.char_count, passes);
 
-    PT_init_base_string_counter(partstring,PT_N,partsize);
+    PT_init_base_string_counter(partstring, PT_N, partsize);
     while (!PT_base_string_counter_eof(partstring)) {
         ++pass0;
         printf("\n Starting pass %i(%i)\n", pass0, passes);
@@ -265,8 +265,8 @@ void enter_stage_1_build_tree(PT_main * main,char *tname) {
                 get_abs_align_pos(align_abs, abs_align_pos); // may result in neg. abs_align_pos (seems to happen if sequences are short < 214bp )
                 if (abs_align_pos < 0) break; // -> in this case abort
 
-                if ( partsize && (*partstring!= psg.data[i].data[j] || strncmp(partstring,psg.data[i].data+j,partsize)) ) continue;
-                if (ptd_string_shorter_than(psg.data[i].data+j,9)) continue;
+                if (partsize && (*partstring != psg.data[i].data[j] || strncmp(partstring, psg.data[i].data+j, partsize))) continue;
+                if (ptd_string_shorter_than(psg.data[i].data+j, 9)) continue;
 
                 pt = build_pos_tree(pt, j, abs_align_pos, i, psg.data[i].size);
             }
@@ -277,9 +277,9 @@ void enter_stage_1_build_tree(PT_main * main,char *tname) {
         PTM_debug_mem();
         PTD_debug_nodes();
 #endif
-        PT_inc_base_string_count(partstring,PT_N,PT_B_MAX,partsize);
+        PT_inc_base_string_count(partstring, PT_N, PT_B_MAX, partsize);
     }
-    if (partsize){
+    if (partsize) {
         pos = PTD_save_partial_tree(out, psg.ptmain, pt, NULL, 0, pos, &last_obj);
 #ifdef PTM_DEBUG
         PTM_debug_mem();
@@ -318,23 +318,23 @@ void enter_stage_1_build_tree(PT_main * main,char *tname) {
 #endif
     }
     else {
-        PTD_put_int(out,last_obj);                  // last_obj fits into an int -> store it as usual (compatible to old unversioned format)
+        PTD_put_int(out, last_obj);                 // last_obj fits into an int -> store it as usual (compatible to old unversioned format)
     }
 
     GB_commit_transaction(psg.gb_main);
     fclose(out);
-    if (GB_rename_file(t2name,tname) ) {
+    if (GB_rename_file(t2name, tname)) {
         GB_print_error();
     }
 
-    if (GB_set_mode_of_file(tname,00666)) {
+    if (GB_set_mode_of_file(tname, 00666)) {
         GB_print_error();
     }
     psg.pt = pt;
 }
 
 /* load tree from disk */
-void enter_stage_3_load_tree(PT_main * main,char *tname)
+void enter_stage_3_load_tree(PT_main * main, char *tname)
 {
     main = main;
     psg.ptmain = PT_init(PT_B_MAX);
@@ -343,17 +343,17 @@ void enter_stage_3_load_tree(PT_main * main,char *tname)
     FILE *in;
     long size = GB_size_of_file(tname);
     if (size<0) {
-        fprintf(stderr,"PT_SERVER: Error while opening file %s\n",tname);
+        fprintf(stderr, "PT_SERVER: Error while opening file %s\n", tname);
         exit(EXIT_FAILURE);
     }
 
-    printf ("PT_SERVER: Reading Tree %s of size %li from disk\n",tname,size);
-    in = fopen(tname,"r");
+    printf ("PT_SERVER: Reading Tree %s of size %li from disk\n", tname, size);
+    in = fopen(tname, "r");
     if (!in) {
-        fprintf(stderr,"PT_SERVER: Error while opening file %s\n",tname);
+        fprintf(stderr, "PT_SERVER: Error while opening file %s\n", tname);
         exit(EXIT_FAILURE);
     }
-    PTD_read_leafs_from_disk(tname,psg.ptmain,&psg.pt);
+    PTD_read_leafs_from_disk(tname, psg.ptmain, &psg.pt);
     fclose(in);
 }
 
@@ -380,7 +380,7 @@ struct PT_chain_debug {
     return 0;
 }
 };
-void PT_analyse_tree(POS_TREE *pt,int height)
+void PT_analyse_tree(POS_TREE *pt, int height)
     {
     PT_NODE_TYPE type;
     POS_TREE *pt_help;
@@ -392,10 +392,10 @@ void PT_analyse_tree(POS_TREE *pt,int height)
             ptds->nodes[height]++;
             basecnt = 0;
             for (i=PT_QU; i<PT_B_MAX; i++) {
-                if ((pt_help = PT_read_son(psg.ptmain,pt, (PT_BASES)i)))
+                if ((pt_help = PT_read_son(psg.ptmain, pt, (PT_BASES)i)))
                 {
                     basecnt++;
-                    PT_analyse_tree(pt_help,height+1);
+                    PT_analyse_tree(pt_help, height+1);
                 };
             }
             ptds->splits[height][basecnt]++;
@@ -406,14 +406,14 @@ void PT_analyse_tree(POS_TREE *pt,int height)
         default:
             ptds->chains[height]++;
             psg.height = 0;
-            PT_read_chain(psg.ptmain,pt, PT_chain_debug());
+            PT_read_chain(psg.ptmain, pt, PT_chain_debug());
             if (psg.height >= DEBUG_MAX_CHAIN_SIZE) psg.height = DEBUG_MAX_CHAIN_SIZE;
             ptds->chainsizes[psg.height][height]++;
             ptds->chainsizes2[psg.height]++;
             ptds->chaincount++;
             if (ptds->chaincount<20) {
                 printf("\n\n\n\n");
-                PT_read_chain(psg.ptmain,pt, PTD_chain_print());
+                PT_read_chain(psg.ptmain, pt, PTD_chain_print());
             }
             break;
     };
@@ -421,42 +421,42 @@ void PT_analyse_tree(POS_TREE *pt,int height)
 
 void PT_debug_tree(void)    // show various debug information about the tree
     {
-    ptds = (struct PT_debug_struct *)calloc(sizeof(struct PT_debug_struct),1);
-    PT_analyse_tree(psg.pt,0);
-    int i,j,k;
+    ptds = (struct PT_debug_struct *)calloc(sizeof(struct PT_debug_struct), 1);
+    PT_analyse_tree(psg.pt, 0);
+    int i, j, k;
     int sum = 0;            // sum of chains
-    for (i=0;i<DEBUG_TREE_DEEP;i++ ) {
+    for (i=0; i<DEBUG_TREE_DEEP; i++) {
         k = ptds->nodes[i];
-        if (k){
+        if (k) {
             sum += k;
-            printf("nodes at deep %i: %i        sum %i\t\t",i,k,sum);
-            for (j=0;j<PT_B_MAX; j++) {
+            printf("nodes at deep %i: %i        sum %i\t\t", i, k, sum);
+            for (j=0; j<PT_B_MAX; j++) {
                 k =     ptds->splits[i][j];
-                printf("%i:%i\t",j,k);
+                printf("%i:%i\t", j, k);
             }
             printf("\n");
         }
     }
     sum = 0;
-    for (i=0;i<DEBUG_TREE_DEEP;i++ ) {
+    for (i=0; i<DEBUG_TREE_DEEP; i++) {
         k = ptds->tips[i];
         sum += k;
-        if (k)  printf("tips at deep %i: %i     sum %i\n",i,k,sum);
+        if (k)  printf("tips at deep %i: %i     sum %i\n", i, k, sum);
     }
     sum = 0;
-    for (i=0;i<DEBUG_TREE_DEEP;i++ ) {
+    for (i=0; i<DEBUG_TREE_DEEP; i++) {
         k = ptds->chains[i];
-        if (k)  {
+        if (k) {
             sum += k;
-            printf("chains at deep %i: %i       sum %i\n",i,k,sum);
+            printf("chains at deep %i: %i       sum %i\n", i, k, sum);
         }
     }
     sum = 0;
     int sume = 0;           // sum of chain entries
-    for (i=0;i<DEBUG_MAX_CHAIN_SIZE;i++ ) {
+    for (i=0; i<DEBUG_MAX_CHAIN_SIZE; i++) {
             k =     ptds->chainsizes2[i];
             sum += k;
             sume += i*k;
-            if (k) printf("chain of size %i occur %i    sc %i   sce %i\n",i,k,sum,sume);
+            if (k) printf("chain of size %i occur %i    sc %i   sce %i\n", i, k, sum, sume);
     }
 }

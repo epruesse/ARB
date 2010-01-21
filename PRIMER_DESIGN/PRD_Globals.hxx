@@ -28,7 +28,7 @@ public:
 
     BaseInverter()
     {
-        for ( int i=0; i < 128; i++)
+        for (int i=0; i < 128; i++)
             BASE[i] = '\x00';
     
         BASE[(unsigned char)'A'] = 'T';
@@ -60,7 +60,7 @@ public:
 
     ChildLookupTable ()
     {
-        for ( int i=0; i < 128; i++ ) INDEX[i] = -1;
+        for (int i=0; i < 128; i++) INDEX[i] = -1;
 
         INDEX[(unsigned char)'C'] = 0;
         INDEX[(unsigned char)'G'] = 1;
@@ -84,7 +84,7 @@ public:
 
     BitField()
     {
-        for ( int i=0; i < 128; i++)
+        for (int i=0; i < 128; i++)
             FIELD[i] = 0;
 
         FIELD[(unsigned char)'A'] =  1;

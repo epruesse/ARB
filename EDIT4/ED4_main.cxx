@@ -163,7 +163,7 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
     ED4_terminal *terminal = area_man->get_first_terminal();
     ED4_terminal *last     = area_man->get_last_terminal();
 
-    for (;terminal;) {
+    for (; terminal;) {
         if (terminal->is_species_name_terminal()) {
             ED4_species_manager *species_manager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
             ED4_species_name_terminal *species_name = species_manager->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
@@ -268,7 +268,7 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
             }
             free(name);
         }
-    end_of_loop:
+    end_of_loop :
         if (terminal==last) break;
         terminal = terminal->get_next_terminal();
     }
@@ -317,7 +317,7 @@ static void ED4_gap_chars_changed(AW_root *root) {
     free(gap_chars);
 }
 
-static void ED4_edit_direction_changed(AW_root */*awr*/) {
+static void ED4_edit_direction_changed(AW_root * /* awr */) {
     ED4_ROOT->get_ed4w()->cursor.redraw();
 }
 
@@ -378,25 +378,25 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
 #ifdef DEBUG
     def_sec_level = 6; // don't nag developers
 #endif
-    root->awar_int( AWAR_EDIT_SECURITY_LEVEL, def_sec_level,AW_ROOT_DEFAULT);
+    root->awar_int(AWAR_EDIT_SECURITY_LEVEL, def_sec_level, AW_ROOT_DEFAULT);
 
-    root->awar_int( AWAR_EDIT_SECURITY_LEVEL_ALIGN, def_sec_level,AW_ROOT_DEFAULT)->add_callback(ed4_changesecurity,(AW_CL) def_sec_level);
-    root->awar_int( AWAR_EDIT_SECURITY_LEVEL_CHANGE, def_sec_level,AW_ROOT_DEFAULT)->add_callback(ed4_changesecurity,(AW_CL) def_sec_level);
+    root->awar_int(AWAR_EDIT_SECURITY_LEVEL_ALIGN, def_sec_level, AW_ROOT_DEFAULT)->add_callback(ed4_changesecurity, (AW_CL) def_sec_level);
+    root->awar_int(AWAR_EDIT_SECURITY_LEVEL_CHANGE, def_sec_level, AW_ROOT_DEFAULT)->add_callback(ed4_changesecurity, (AW_CL) def_sec_level);
 
-    root->awar_int( AWAR_EDIT_MODE,   0)->add_callback(ed4_change_edit_mode, (AW_CL)0);
-    root->awar_int( AWAR_INSERT_MODE, 1)->add_callback(ed4_change_edit_mode, (AW_CL)0);
+    root->awar_int(AWAR_EDIT_MODE,    0)->add_callback(ed4_change_edit_mode, (AW_CL)0);
+    root->awar_int(AWAR_INSERT_MODE, 1)->add_callback(ed4_change_edit_mode, (AW_CL)0);
 
-    root->awar_int( AWAR_EDIT_DIRECTION, 1)->add_target_var(&awar_edit_direction)->add_callback(ED4_edit_direction_changed);
-    root->awar_int( AWAR_EDIT_HELIX_SPACING, 0)->add_target_var(&ED4_ROOT->helix_add_spacing)->add_callback(ED4_do_expose);
-    root->awar_int( AWAR_EDIT_TERMINAL_SPACING, 0)->add_target_var(&ED4_ROOT->terminal_add_spacing)->add_callback(ED4_do_expose);
-    root->awar_int( AWAR_EDIT_TITLE_MODE, 0);
+    root->awar_int(AWAR_EDIT_DIRECTION, 1)->add_target_var(&awar_edit_direction)->add_callback(ED4_edit_direction_changed);
+    root->awar_int(AWAR_EDIT_HELIX_SPACING, 0)->add_target_var(&ED4_ROOT->helix_add_spacing)->add_callback(ED4_do_expose);
+    root->awar_int(AWAR_EDIT_TERMINAL_SPACING, 0)->add_target_var(&ED4_ROOT->terminal_add_spacing)->add_callback(ED4_do_expose);
+    root->awar_int(AWAR_EDIT_TITLE_MODE, 0);
 
-    ed4_changesecurity(root,0);
+    ed4_changesecurity(root, 0);
 
-    root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_GAPS,0)->add_callback(ED4_compression_toggle_changed_cb, AW_CL(0), 0);
-    root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_HIDE,0)->add_callback(ED4_compression_toggle_changed_cb, AW_CL(1), 0);
-    root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_TYPE,0)->add_callback(ED4_compression_changed_cb);
-    root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_PERCENT,1)->add_callback(ED4_compression_changed_cb)->set_minmax(1,99);
+    root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_GAPS, 0)->add_callback(ED4_compression_toggle_changed_cb, AW_CL(0), 0);
+    root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_HIDE, 0)->add_callback(ED4_compression_toggle_changed_cb, AW_CL(1), 0);
+    root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_TYPE, 0)->add_callback(ED4_compression_changed_cb);
+    root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_PERCENT, 1)->add_callback(ED4_compression_changed_cb)->set_minmax(1, 99);
 
     root->awar_int(ED4_AWAR_DIGITS_AS_REPEAT, 0);
     root->awar_int(ED4_AWAR_FAST_CURSOR_JUMP, 0);
@@ -426,22 +426,22 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
     root->awar_int(ED4_AWAR_CREATE_FROM_CONS_ALL_UPPER, 1);
     root->awar_int(ED4_AWAR_CREATE_FROM_CONS_DATA_SOURCE, 0);
 
-    ED4_createVisualizeSAI_Awars(root,AW_ROOT_DEFAULT);
-    ED4_create_dot_missing_bases_awars(root,AW_ROOT_DEFAULT);
+    ED4_createVisualizeSAI_Awars(root, AW_ROOT_DEFAULT);
+    ED4_create_dot_missing_bases_awars(root, AW_ROOT_DEFAULT);
 
     // Create Awars To Be Used In Protein Viewer
-    if(ED4_ROOT->alignment_type == GB_AT_DNA) {
-        PV_CreateAwars(root,AW_ROOT_DEFAULT);
+    if (ED4_ROOT->alignment_type == GB_AT_DNA) {
+        PV_CreateAwars(root, AW_ROOT_DEFAULT);
     }
     
     // create awars to be used for protein secondary structure match
-    if(ED4_ROOT->alignment_type == GB_AT_AA) {
+    if (ED4_ROOT->alignment_type == GB_AT_AA) {
         root->awar_int(PFOLD_AWAR_ENABLE, 1);
         root->awar_string(PFOLD_AWAR_SELECTED_SAI, "PFOLD");
         root->awar_int(PFOLD_AWAR_MATCH_METHOD, SECSTRUCT_SEQUENCE);
         int pt;
         char awar[256];
-        for (int i = 0; pfold_match_type_awars[i].name; i++){
+        for (int i = 0; pfold_match_type_awars[i].name; i++) {
             pt = pfold_match_type_awars[i].value;
             sprintf(awar, PFOLD_AWAR_PAIR_TEMPLATE, pfold_match_type_awars[i].name);
             root->awar_string(awar, pfold_pairs[pt])->add_target_var(&pfold_pairs[pt]);
@@ -497,7 +497,7 @@ static void openProperties() {
     }
 
     GB_informationf("Using properties from '%s'", ED4_ROOT->db_name);
-    ED4_ROOT->aw_root->init_variables( ED4_ROOT->db); // pass defaults
+    ED4_ROOT->aw_root->init_variables(ED4_ROOT->db);  // pass defaults
 }
 
 int main(int argc, char **argv)
@@ -506,7 +506,7 @@ int main(int argc, char **argv)
     const char *err = NULL;
     char *config_name = NULL;
 
-    if (argc > 1 && ((strcmp(argv[1],"-h") == 0) || (strcmp(argv[1],"--help") == 0))) {
+    if (argc > 1 && ((strcmp(argv[1], "-h") == 0) || (strcmp(argv[1], "--help") == 0))) {
         fprintf(stderr,
                 "\n"
                 "arb_edit4 commandline reference:\n"
@@ -522,9 +522,9 @@ int main(int argc, char **argv)
                 );
     }
 
-    if (argc > 1 && strcmp(argv[1],"-c") == 0) {
+    if (argc > 1 && strcmp(argv[1], "-c") == 0) {
         config_name = new char[strlen(argv[2])+1];
-        strcpy(config_name,argv[2]);
+        strcpy(config_name, argv[2]);
         argc -= 2; argv += 2;
     }
     else { // load 'default_configuration' if no command line is given
@@ -561,14 +561,14 @@ int main(int argc, char **argv)
     ed4_create_all_awars(ED4_ROOT->aw_root, config_name);
 
     ED4_ROOT->st_ml = new_ST_ML(GLOBAL_gb_main);
-    ED4_ROOT->sequence_colors = new AWT_seq_colors((GBDATA *)ED4_ROOT->aw_root->application_database,(int)ED4_G_SEQUENCES, ED4_refresh_window, 0,0);
+    ED4_ROOT->sequence_colors = new AWT_seq_colors((GBDATA *)ED4_ROOT->aw_root->application_database, (int)ED4_G_SEQUENCES, ED4_refresh_window, 0, 0);
 
     ED4_ROOT->edk = new ed_key;
     ED4_ROOT->edk->create_awars(ED4_ROOT->aw_root);
 
     ED4_ROOT->helix = new AW_helix(ED4_ROOT->aw_root);
 
-    if (err){
+    if (err) {
         aw_message(err);
         err = 0;
     }
@@ -583,7 +583,7 @@ int main(int argc, char **argv)
             err = ED4_pfold_set_SAI(&ED4_ROOT->protstruct, GLOBAL_gb_main, ED4_ROOT->alignment_name, &ED4_ROOT->protstruct_len);
             break;
 
-        default :
+        default:
             e4_assert(0);
             break;
     }
@@ -647,7 +647,7 @@ int main(int argc, char **argv)
     }
     
     // Create Additional sequence (aminoacid) terminals to be used in Protein Viewer
-    if(ED4_ROOT->alignment_type == GB_AT_DNA) {
+    if (ED4_ROOT->alignment_type == GB_AT_DNA) {
         PV_CallBackFunction(ED4_ROOT->aw_root);
     }
 
@@ -655,7 +655,7 @@ int main(int argc, char **argv)
     ED4_ROOT->aw_root->main_loop(); // enter main-loop
 }
 
-void AD_map_viewer(GBDATA *,AD_MAP_VIEWER_TYPE)
+void AD_map_viewer(GBDATA *, AD_MAP_VIEWER_TYPE)
 {
 }
 

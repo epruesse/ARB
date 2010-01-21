@@ -27,7 +27,7 @@ void RNA3D_init_global_data() {
     }
 }
 
-RNA3D_Global::RNA3D_Global(){
+RNA3D_Global::RNA3D_Global() {
     OpenGLEngineState = -1;
     iRotateMolecule   = 0;
     bPointSpritesSupported           = false;
@@ -105,7 +105,7 @@ static bool bHelixNrDispListCreated   = false;
 
 using namespace std;
 
-void ShowVendorInformation(){
+void ShowVendorInformation() {
     const GLubyte *vendor = NULL;
     vendor = glGetString(GL_VENDOR);   cout<<"Vendor  : "<<vendor<<endl;
     vendor = glGetString(GL_RENDERER); cout<<"Renderer: "<<vendor<<endl;
@@ -116,11 +116,11 @@ void initExtensions() {
     // check mandatory for extensions
     char missingExtensions[500]="";
     if (!GLEW_VERSION_1_2) {
-        strcat(missingExtensions,"\nOpenGL Version 1.2");
+        strcat(missingExtensions, "\nOpenGL Version 1.2");
     }
     if (strlen(missingExtensions) > 0) {
-        printf("ERROR: Some needed extensions are not present:%s\n",missingExtensions);
-        char dummy;     scanf( "%c",&dummy);        exit(-1);
+        printf("ERROR: Some needed extensions are not present:%s\n", missingExtensions);
+        char dummy;     scanf("%c", &dummy);        exit(-1);
     }
     else {
 #ifdef DEBUG
@@ -130,10 +130,10 @@ void initExtensions() {
 
     // the following code checks if point sprites could be used and activates them if possible
     missingExtensions[0] = 0;
-    if (!GLEW_EXT_point_parameters) strcat(missingExtensions,"\nGL_EXT_point_parameters");
-    if (!GLEW_ARB_point_sprite)     strcat(missingExtensions,"\nGL_ARB_point_sprite");
+    if (!GLEW_EXT_point_parameters) strcat(missingExtensions, "\nGL_EXT_point_parameters");
+    if (!GLEW_ARB_point_sprite)     strcat(missingExtensions, "\nGL_ARB_point_sprite");
     if (strlen(missingExtensions) > 0) {
-        printf("Some extra extensions are not present:%s\n",missingExtensions);
+        printf("Some extra extensions are not present:%s\n", missingExtensions);
         printf("Molecule Display: Quality of Rendering is LOW!!\n");
         RNA3D->bPointSpritesSupported = false;
     }
@@ -141,35 +141,35 @@ void initExtensions() {
 #ifdef DEBUG
         printf("DEBUG: All extra extensions seem to be ok as well.\n");
 #endif // DEBUG
-        RNA3D->bPointSpritesSupported = true ;
+        RNA3D->bPointSpritesSupported = true;
     }
 }
 
-void ReshapeOpenGLWindow( GLint width, GLint height ) {
+void ReshapeOpenGLWindow(GLint width, GLint height) {
     iScreenWidth  = width;
     iScreenHeight = height;
 
     fAspectRatio = (float) width / (float) height;
 
-    glViewport( 0, 0, width, height );
-    glMatrixMode( GL_PROJECTION );
+    glViewport(0, 0, width, height);
+    glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective( fViewAngle, fAspectRatio, fClipNear, fClipFar );
-    glMatrixMode( GL_MODELVIEW );
+    gluPerspective(fViewAngle, fAspectRatio, fClipNear, fClipFar);
+    glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 }
 
-void InitializeOpenGLEngine(GLint width, GLint height ) {
+void InitializeOpenGLEngine(GLint width, GLint height) {
     cout<<"RNA3D: Initializing OpenGLEngine : "<<width<<" x "<<height<<endl;
 
     RNA3D->saved_x = RNA3D->saved_y = 2.0f;
-    ComputeRotationXY(1,1);
+    ComputeRotationXY(1, 1);
 
-    //Get Information about Vendor & Version
+    // Get Information about Vendor & Version
     ShowVendorInformation();
 
     GLenum err = glewInit();
-    if (GLEW_OK != err){
+    if (GLEW_OK != err) {
         /* problem: glewInit failed, something is seriously wrong */
         fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
     }
@@ -189,7 +189,7 @@ void InitializeOpenGLEngine(GLint width, GLint height ) {
     RNA3D->cTexture->LoadGLTextures();  // Load The Texture(s)
 
     glShadeModel(GL_SMOOTH);
-    glClearColor(0,0,0,1);
+    glClearColor(0, 0, 0, 1);
     glClearDepth(1.0f);
 
     glEnable(GL_DEPTH_TEST);         // Enables Depth Testing
@@ -198,7 +198,7 @@ void InitializeOpenGLEngine(GLint width, GLint height ) {
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
     glEnable(GL_TEXTURE_2D);    // Enable Texture Mapping
 
-    ReshapeOpenGLWindow(width,height);
+    ReshapeOpenGLWindow(width, height);
 
     CalculateRotationMatrix();
 }
@@ -213,7 +213,7 @@ void ComputeRotationXY(int x, int y) {
     RNA3D->saved_y = y;
 }
 
-void CalculateRotationMatrix(){
+void CalculateRotationMatrix() {
     static int initialized = 0;
     GLfloat new_rotation_matrix[16];
 
@@ -238,7 +238,7 @@ void CalculateRotationMatrix(){
     glPopMatrix();
 }
 
-void MapDisplayParameters(AW_root *root){
+void MapDisplayParameters(AW_root *root) {
     GLRenderer  *cRenderer  = RNA3D->cRenderer;
     Structure3D *cStructure = RNA3D->cStructure;
 
@@ -262,7 +262,7 @@ void MapDisplayParameters(AW_root *root){
     cRenderer->iShapeUnpairHelix = root->awar(AWAR_3D_SHAPES_UNPAIRED_HELIX)->read_int();
     cRenderer->iShapeNonHelix    = root->awar(AWAR_3D_SHAPES_NON_HELIX)->read_int();
 
-    //Display Helices Section
+    // Display Helices Section
     cRenderer->iDisplayHelix  = root->awar(AWAR_3D_DISPLAY_HELIX)->read_int();
     cRenderer->iHelixMidPoint = root->awar(AWAR_3D_HELIX_MIDPOINT)->read_int();
     cRenderer->iHelixNrs      = root->awar(AWAR_3D_HELIX_NUMBER)->read_int();
@@ -287,25 +287,25 @@ void MapDisplayParameters(AW_root *root){
     { // Validation of Helix Numbers entered by the User
         int NoOfHelices = 0;
         int rnaType = cStructure->FindTypeOfRNA();
-        switch (rnaType){
+        switch (rnaType) {
             case LSU_23S: NoOfHelices = 101; break;
             case SSU_16S: NoOfHelices = 50;  break;
             case LSU_5S:  NoOfHelices = 5;   break;
         }
 
-        if (cRenderer->iStartHelix < 1 ||  cRenderer->iStartHelix > NoOfHelices ) {
+        if (cRenderer->iStartHelix < 1 ||  cRenderer->iStartHelix > NoOfHelices) {
             cout<<"Invalid Helix NUMBER !!"<<endl;
             root->awar(AWAR_3D_HELIX_FROM)->write_int(1);
         }
-        if (cRenderer->iEndHelix < 1 ||  cRenderer->iEndHelix > NoOfHelices ) {
+        if (cRenderer->iEndHelix < 1 ||  cRenderer->iEndHelix > NoOfHelices) {
             cout<<"Invalid Helix NUMBER !!"<<endl;
             root->awar(AWAR_3D_HELIX_TO)->write_int(NoOfHelices);
         }
 
-        if(cRenderer->iStartHelix > cRenderer->iEndHelix) {
+        if (cRenderer->iStartHelix > cRenderer->iEndHelix) {
             root->awar(AWAR_3D_HELIX_FROM)->write_int(cRenderer->iEndHelix - 1);
         }
-        else if(cRenderer->iEndHelix < cRenderer->iStartHelix) {
+        else if (cRenderer->iEndHelix < cRenderer->iStartHelix) {
             root->awar(AWAR_3D_HELIX_TO)->write_int(cRenderer->iStartHelix + 1);
         }
     }
@@ -319,7 +319,7 @@ void MapDisplayParameters(AW_root *root){
     }
 
     // Validation of Base Position display
-    if(cStructure->iInterval < 1) {
+    if (cStructure->iInterval < 1) {
         cout<<"WARNING: Invalid POSITION Interval!! Setting it to Default Value (25)."<<endl;
         root->awar(AWAR_3D_MOL_POS_INTERVAL)->write_int(25);
     }
@@ -336,7 +336,7 @@ void MapDisplayParameters(AW_root *root){
                 cStructure->MapSaiToEcoliTemplate(root);
             }
         }
-        if(!bMapSpDispListCreated) {
+        if (!bMapSpDispListCreated) {
             cStructure->MapCurrentSpeciesToEcoliTemplate(root);
             bMapSpDispListCreated = true;
         }
@@ -346,7 +346,7 @@ void MapDisplayParameters(AW_root *root){
 
 void DisplayPostionsIntervalChanged_CB(AW_root *awr) {
     MapDisplayParameters(awr);
-    glDeleteLists(STRUCTURE_POS,2);
+    glDeleteLists(STRUCTURE_POS, 2);
     RNA3D->cStructure->ComputeBasePositions();
     RefreshOpenGLDisplay();
 }
@@ -363,7 +363,7 @@ void MapSelectedSpeciesChanged_CB(AW_root *awr) {
         RNA3D->cRenderer->iMapSpecies &&
         bMapSpDispListCreated)
     {
-        glDeleteLists(MAP_SPECIES_BASE_DIFFERENCE,9);
+        glDeleteLists(MAP_SPECIES_BASE_DIFFERENCE, 9);
         RNA3D->cStructure->MapCurrentSpeciesToEcoliTemplate(awr);
     }
 
@@ -374,14 +374,14 @@ void MapSelectedSpeciesChanged_CB(AW_root *awr) {
 }
 
 void MapSaiToEcoliTemplateChanged_CB(AW_root *awr) {
-    //if SAI changed in EDIT4 then display lists should be recalculated
+    // if SAI changed in EDIT4 then display lists should be recalculated
 
     if (RNA3D->cStructure->iMapEnable  &&
         RNA3D->cStructure->iMapSAI     &&
-        RNA3D->bMapSaiDispListCreated )
+        RNA3D->bMapSaiDispListCreated)
     {
         RNA3D->bMapSaiDispListCreated = false;
-        glDeleteLists(MAP_SAI_TO_STRUCTURE,1);
+        glDeleteLists(MAP_SAI_TO_STRUCTURE, 1);
         RNA3D->cStructure->MapSaiToEcoliTemplate(awr);
     }
 
@@ -398,14 +398,14 @@ void MapSearchStringsToEcoliTemplateChanged_CB(AW_root *awr) {
         RNA3D->bMapSearchStringsDispListCreated)
     {
         RNA3D->bMapSearchStringsDispListCreated = false;
-        glDeleteLists(MAP_SEARCH_STRINGS_TO_STRUCTURE,2);
+        glDeleteLists(MAP_SEARCH_STRINGS_TO_STRUCTURE, 2);
         RNA3D->cStructure->MapSearchStringsToEcoliTemplate(awr);
     }
 }
 
 void CursorPositionChanged_CB(AW_root *awr) {
 
-    if(RNA3D->bEColiRefInitialized) {
+    if (RNA3D->bEColiRefInitialized) {
         long iCursorPos = awr->awar(AWAR_CURSOR_POSITION)->read_int();
         long EColiPos   = RNA3D->cStructure->EColiRef->abs_2_rel(iCursorPos);
 
@@ -414,7 +414,7 @@ void CursorPositionChanged_CB(AW_root *awr) {
             bMapSpDispListCreated = true;
         }
         else {
-            glDeleteLists(ECOLI_CURSOR_POSITION,1);
+            glDeleteLists(ECOLI_CURSOR_POSITION, 1);
             RNA3D->cStructure->GenerateCursorPositionDispList(EColiPos);
         }
         RefreshOpenGLDisplay();
@@ -437,7 +437,7 @@ void DisplayHelixNrsChanged_CB(AW_root *awr) {
     RefreshOpenGLDisplay();
 }
 
-void DrawStructure(){
+void DrawStructure() {
     GLRenderer *cRenderer = RNA3D->cRenderer;
 
     // Drawing Molecule Skeleton
@@ -452,7 +452,7 @@ void DrawStructure(){
     cRenderer->EndTexturizer();
 }
 
-void RenderOpenGLScene(Widget w){
+void RenderOpenGLScene(Widget w) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // setting the BackGround Color of the OpenGL Scene
@@ -464,7 +464,7 @@ void RenderOpenGLScene(Widget w){
               RNA3D->Center.x, RNA3D->Center.y, RNA3D->Center.z,
               RNA3D->Up.x,     RNA3D->Up.y,     RNA3D->Up.z);
 
-    {// Displaying Molecule Name
+    { // Displaying Molecule Name
         RNA3D->cRenderer->DisplayMoleculeName(iScreenWidth, iScreenHeight, RNA3D->cStructure);
     }
 
@@ -472,7 +472,7 @@ void RenderOpenGLScene(Widget w){
 
     RNA3D->cRenderer->DisplayMoleculeMask(iScreenWidth, iScreenHeight);
 
-    if(RNA3D->bRotateMolecule || RNA3D->bAutoRotate) {
+    if (RNA3D->bRotateMolecule || RNA3D->bAutoRotate) {
         CalculateRotationMatrix();
     }
 
@@ -485,10 +485,10 @@ void RenderOpenGLScene(Widget w){
 
     glFlush();
     glXWaitX();
-    glXSwapBuffers ( XtDisplay( w ), XtWindow( w ) );
+    glXSwapBuffers (XtDisplay(w), XtWindow(w));
 }
 
-void InitializeOpenGLWindow( Widget w ) {
+void InitializeOpenGLWindow(Widget w) {
 
     if (RNA3D->OpenGLEngineState == CREATED) return;
 
@@ -504,11 +504,11 @@ void InitializeOpenGLWindow( Widget w ) {
     }
     else {
         if (AW_alpha_Size_Supported) {
-            vi = glXChooseVisual(dpy, DefaultScreen( dpy ), DoubleBufferWithAlpha);
+            vi = glXChooseVisual(dpy, DefaultScreen(dpy), DoubleBufferWithAlpha);
             printf("RNA3D: Double Buffered Visual With Alpha Size Supported !\n");
         }
         else {
-            vi = glXChooseVisual(dpy, DefaultScreen( dpy ), DoubleBuffer);
+            vi = glXChooseVisual(dpy, DefaultScreen(dpy), DoubleBuffer);
             printf("RNA3D: Double Buffered Visual Supported !\n");
         }
 

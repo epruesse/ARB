@@ -192,7 +192,7 @@ inline SEC_segment *findSegmentContaining(SEC_root *root, int start, int end, GB
     if (start_segment) {
         SEC_segment *end_segment;
         if (end == start+1) {
-            end_segment = start_segment;;
+            end_segment = start_segment; ;
         }
         else {
             end_segment = findSegmentContaining(root, end-1, error);
@@ -311,7 +311,7 @@ GB_ERROR SEC_root::split_loop(int start1, int end1, int start2, int end2) {
                     // seg1 and seg2 are the old segments
 
                     // maybe swap seg1/seg2 (to ensure fixpoint-strand stays in old loop)
-                    for (SEC_segment *s = seg1; s != seg2; ) {
+                    for (SEC_segment *s = seg1; s != seg2;) {
                         SEC_helix_strand *hs = s->get_next_strand();
                         if (!hs->isRootsideFixpoint()) { // fixpoint-strand is between seg1 -> seg2
                             // swap seg1<->seg2
@@ -335,7 +335,7 @@ GB_ERROR SEC_root::split_loop(int start1, int end1, int start2, int end2) {
 
                     new_loop = new SEC_loop(this);
 
-                    for (SEC_segment *s = seg3; ; ) {
+                    for (SEC_segment *s = seg3; ;) {
                         s->set_loop(new_loop);
                         SEC_helix_strand *h = s->get_next_strand();
                         h->set_origin_loop(new_loop);

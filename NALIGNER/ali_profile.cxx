@@ -37,7 +37,7 @@ ALI_TLIST<ali_family_member *> *ALI_PROFILE::find_family(ALI_SEQUENCE *Sequence,
     family_list = new ALI_TLIST<ali_family_member *>;
 
     ali_message("Searching for the family");
-    pt.find_family(Sequence,context->find_family_mode);
+    pt.find_family(Sequence, context->find_family_mode);
     ali_message("Family found");
 
     pt_fam_list = pt.get_family_list();
@@ -53,11 +53,11 @@ ALI_TLIST<ali_family_member *> *ALI_PROFILE::find_family(ALI_SEQUENCE *Sequence,
     number = 0;
     while (!pt_fam_list->is_empty()) {
         pt_member = pt_fam_list->first();
-        seq = arbdb.get_sequence(pt_member->name,context->mark_family_flag);
+        seq = arbdb.get_sequence(pt_member->name, context->mark_family_flag);
         if (seq) {
             weight = 1 + d * number;
-            sprintf(message_buffer,"%s (weight = %f, matches = %d)",
-                    pt_member->name,weight,pt_member->matches);
+            sprintf(message_buffer, "%s (weight = %f, matches = %d)",
+                    pt_member->name, weight, pt_member->matches);
             ali_message(message_buffer);
             family_member = new ali_family_member(seq,
                                                   (float) pt_member->matches,
@@ -84,8 +84,8 @@ ALI_TLIST<ali_family_member *> *ALI_PROFILE::find_family(ALI_SEQUENCE *Sequence,
                                  context->mark_family_extension_flag);
         if (seq) {
             weight = context->ext_max_weight + d * number;
-            sprintf(message_buffer,"%s (weight = %f, matches = %d)",
-                    pt_member->name,weight,pt_member->matches);
+            sprintf(message_buffer, "%s (weight = %f, matches = %d)",
+                    pt_member->name, weight, pt_member->matches);
             ali_message(message_buffer);
             family_member = new ali_family_member(seq,
                                                   (float) pt_member->matches,
@@ -122,10 +122,10 @@ void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list, A
 
     // allocate temporary memory
     members = family_list->cardinality();
-    l = (unsigned long *) CALLOC((unsigned int) members,sizeof(long));
-    g = (float *) CALLOC((unsigned int) members,sizeof(float));
-    seq = (unsigned char ** ) CALLOC((unsigned int) members,sizeof(char *));
-    seq_len = (long *) CALLOC((unsigned int) members,sizeof(long));
+    l = (unsigned long *) CALLOC((unsigned int) members, sizeof(long));
+    g = (float *) CALLOC((unsigned int) members, sizeof(float));
+    seq = (unsigned char **) CALLOC((unsigned int) members, sizeof(char *));
+    seq_len = (long *) CALLOC((unsigned int) members, sizeof(long));
     if (l == 0 || g == 0 || seq == 0 || seq_len == 0)
         ali_fatal_error("Out of memory");
 
@@ -312,7 +312,7 @@ void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list, A
         }
 
         // Update the l-array
-        for (i = 0; i < members; i++){
+        for (i = 0; i < members; i++) {
             if (!ali_is_gap(seq[i][p]))
                 l[i] = p;
         }
@@ -349,7 +349,7 @@ int ALI_PROFILE::find_next_helix(char h[], unsigned long h_len,
     if (i >= h_len) return -1;
 
     *start = i;
-    sscanf(&h[i],"%ld",helix_nr);
+    sscanf(&h[i], "%ld", helix_nr);
     for (; i < h_len && isdigit(h[i]); i++) ;
     for (; i < h_len && !isdigit(h[i]); i++) ;
     *end = i - 1;
@@ -369,7 +369,7 @@ int ALI_PROFILE::find_comp_helix(char h[], unsigned long h_len,
         for (; i < h_len && !isdigit(h[i]); i++) ;
         if (i >= h_len) return -1;
         *start = i;
-        sscanf(&h[i],"%ld",&nr);
+        sscanf(&h[i], "%ld", &nr);
         for (; i < h_len && isdigit(h[i]); i++) ;
     } while (helix_nr != nr);
 
@@ -428,23 +428,23 @@ ALI_PROFILE::ALI_PROFILE(ALI_SEQUENCE *seq, ALI_PROFILE_CONTEXT *context)
 
     initialize_helix(context);
 
-    family_list = find_family(seq,context);
+    family_list = find_family(seq, context);
     if (family_list->is_empty()) {
         ali_error("Family not found (maybe incompatible PT and DB Servers)");
     }
 
-    calculate_costs(family_list,context);
+    calculate_costs(family_list, context);
 
     insert_cost = sub_costs_maximum * context->insert_factor;
     multi_insert_cost = insert_cost * context->multi_insert_factor;
 
-    sprintf(message_buffer,"Multi gap factor = %f",multi_gap_factor);
+    sprintf(message_buffer, "Multi gap factor = %f", multi_gap_factor);
     ali_message(message_buffer);
-    sprintf(message_buffer,"Maximal substitution costs = %f",sub_costs_maximum);
+    sprintf(message_buffer, "Maximal substitution costs = %f", sub_costs_maximum);
     ali_message(message_buffer);
-    sprintf(message_buffer,"Normal insert costs = %f",insert_cost);
+    sprintf(message_buffer, "Normal insert costs = %f", insert_cost);
     ali_message(message_buffer);
-    sprintf(message_buffer,"Multiple insert costs = %f",multi_insert_cost);
+    sprintf(message_buffer, "Multiple insert costs = %f", multi_insert_cost);
     ali_message(message_buffer);
 
     // Delete the family list
@@ -529,7 +529,7 @@ int ALI_PROFILE::is_in_helix(unsigned long pos, unsigned long *first, unsigned l
                             switch ((*helix_borders)[i]) {
                                 case ALI_PROFILE_BORDER_LEFT:
                                     ali_warning("Helix borders inconsistent (3)");
-                                    printf("pos = %ld\n",pos);
+                                    printf("pos = %ld\n", pos);
                                     return 0;
                                 case ALI_PROFILE_BORDER_RIGHT:
                                     *last = (unsigned long) i;

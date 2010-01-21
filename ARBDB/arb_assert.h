@@ -74,7 +74,7 @@
         if (backtrace) GBK_dump_backtrace(NULL, "ARB_SIGSEGV"); \
         GBK_install_SIGSEGV_handler(false);                     \
         *(int *)0 = 0;                                          \
-    } while(0)
+    } while (0)
 
 // ------------------------------------------------------------
 
@@ -87,7 +87,7 @@
 
 #ifndef ASSERT_NONE
 # define arb_assert(cond)                                               \
-    do  {                                                               \
+    do {                                                                \
         if (!(cond)) {                                                  \
                 fprintf(stderr, "Assertion '%s' failed in '%s' #%i\n",  \
                         #cond, __FILE__, __LINE__);                     \
@@ -153,7 +153,7 @@
         if (!(cond)) {                                                  \
             GBK_terminate(GBK_assert_msg(#cond, __FILE__, __LINE__));   \
         }                                                               \
-    } while(0)
+    } while (0)
 #endif // SIMPLE_ARB_ASSERT
 
 // ------------------------------------------------------------
@@ -174,7 +174,7 @@
         Type value = (Expr);                            \
         arb_assert(value == (Expected));                \
         value             = value;                      \
-    } while(0)
+    } while (0)
 
 #define ASSERT_NULL_RESULT(ptrExpr) ASSERT_RESULT(const void*, NULL, ptrExpr)
 #define ASSERT_NO_ERROR(error)      ASSERT_RESULT(GB_ERROR, NULL, error)

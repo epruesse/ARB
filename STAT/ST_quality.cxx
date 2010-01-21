@@ -89,7 +89,7 @@ st_cq_info::~st_cq_info() {
     ;
 }
 
-void st_ml_add_sequence_part_to_stat(ST_ML * st_ml, AWT_csp * /*awt_csp */,
+void st_ml_add_sequence_part_to_stat(ST_ML * st_ml, AWT_csp * /* awt_csp */,
                                      const char *species_name, int seq_len, int bucket_size,
                                      GB_HASH * species_to_info_hash, int start, int end)
 {

@@ -2,7 +2,7 @@
 /*                                                                      */
 /* Description: Ascii to PostScript printer program.                    */
 /* File: bounty:/archive/src/a2ps/Last/a2ps.c                           */
-/* Created: Fri Nov 5 8:20 1993 by miguel@bountyimag.fr (Miguel Santana)*/
+/* Created: Fri Nov 5 8:20 1993 by miguel@bountyimag.fr (Miguel Santana) */
 /* Version: 4.3                                                         */
 /*                                                                      */
 /* Edit history:                                                        */
@@ -10,7 +10,7 @@
 /*    Written in C for improve speed execution and portability. Many    */
 /*    improvements have been added.                                     */
 /* Fixes by Oscar Nierstrasz @ cui.uucp:                                */
-/* 2) Fixed incorrect handling of stdin (removed error if no file names)*/
+/* 2) Fixed incorrect handling of stdin (removed error if no file names) */
 /* 3) Added start_page variable to eliminate blank pages printed for    */
 /*      files that are exactly multiples of 132 lines (e.g., man pages) */
 /* Modified by santana@imag.fr:                                         */
@@ -380,53 +380,53 @@ void
 usage(failure)
      int failure;               /* Must we exit with a failure code? */
 {
-    fprintf(stderr,"A2ps v%s usage: %s [pos. or global options] [ f1 [ [pos. options] f2 ...] ]\n", VERSION, command);
-    fprintf(stderr,"pos.   =  -#num\t\tnumber of copies to print\n");
-    fprintf(stderr,"          -1\t\tone page per sheet\n");
-    fprintf(stderr,"          -2\t\tTWIN PAGES per sheet\n");
-    fprintf(stderr,"          -d\t-nd\tprint (DON'T PRINT) current date at the bottom\n");
-    fprintf(stderr,"          -Fnum\t\tfont size, num is a float number\n");
-    fprintf(stderr,"          -Hstr\t\tuse str like header title for subsequent files\n");
+    fprintf(stderr, "A2ps v%s usage: %s [pos. or global options] [ f1 [ [pos. options] f2 ...] ]\n", VERSION, command);
+    fprintf(stderr, "pos.   =  -#num\t\tnumber of copies to print\n");
+    fprintf(stderr, "          -1\t\tone page per sheet\n");
+    fprintf(stderr, "          -2\t\tTWIN PAGES per sheet\n");
+    fprintf(stderr, "          -d\t-nd\tprint (DON'T PRINT) current date at the bottom\n");
+    fprintf(stderr, "          -Fnum\t\tfont size, num is a float number\n");
+    fprintf(stderr, "          -Hstr\t\tuse str like header title for subsequent files\n");
 #if defined(SYSV) || defined(BSD)
-    fprintf(stderr,"          \t-nL\tdon't print login ID on top of page\n");
+    fprintf(stderr, "          \t-nL\tdon't print login ID on top of page\n");
 #endif
-    fprintf(stderr,"          -l\t\tprint in LANDSCAPE mode\n");
-    fprintf(stderr,"          -lnum\t\tuse num lines per page\n");
-    fprintf(stderr,"          -m\t\tprocess the file as a man\n");
-    fprintf(stderr,"          -n\t-nn\tNUMBER (don't number) line files\n");
-    fprintf(stderr,"          -p\t\tprint in portrait mode\n");
-    fprintf(stderr,"          -q\t\tprint in quiet mode (no summary)\n");
-    fprintf(stderr,"          -s\t-ns\tPRINT (don't print) surrounding borders\n");
+    fprintf(stderr, "          -l\t\tprint in LANDSCAPE mode\n");
+    fprintf(stderr, "          -lnum\t\tuse num lines per page\n");
+    fprintf(stderr, "          -m\t\tprocess the file as a man\n");
+    fprintf(stderr, "          -n\t-nn\tNUMBER (don't number) line files\n");
+    fprintf(stderr, "          -p\t\tprint in portrait mode\n");
+    fprintf(stderr, "          -q\t\tprint in quiet mode (no summary)\n");
+    fprintf(stderr, "          -s\t-ns\tPRINT (don't print) surrounding borders\n");
     fprintf(stderr, "\n");
-    fprintf(stderr,"global =  -?\t\tprint this information\n");
-    fprintf(stderr,"          -B\t-nB\tprint (DON'T PRINT) in bold font\n");
-    fprintf(stderr,"          -b\t-nb\tforce (DON'T FORCE) binary printing\n");
-    fprintf(stderr,"          -c\t-nc\tallow (DON'T ALLOW) two files on the same sheet\n");
-    fprintf(stderr,"          -f\t-nf\tFOLD (don't fold) lines\n");
-    fprintf(stderr,"          \t-nH\tdon't print any header\n");
-    fprintf(stderr,"          -h\t\tprint this information\n");
-    fprintf(stderr,"          -Ifile\tinclude this file as a2ps prologue\n");
-    fprintf(stderr,"          -i\t-ni\tINTERPRET (don't interpret) tab, bs and ff chars\n");
+    fprintf(stderr, "global =  -?\t\tprint this information\n");
+    fprintf(stderr, "          -B\t-nB\tprint (DON'T PRINT) in bold font\n");
+    fprintf(stderr, "          -b\t-nb\tforce (DON'T FORCE) binary printing\n");
+    fprintf(stderr, "          -c\t-nc\tallow (DON'T ALLOW) two files on the same sheet\n");
+    fprintf(stderr, "          -f\t-nf\tFOLD (don't fold) lines\n");
+    fprintf(stderr, "          \t-nH\tdon't print any header\n");
+    fprintf(stderr, "          -h\t\tprint this information\n");
+    fprintf(stderr, "          -Ifile\tinclude this file as a2ps prologue\n");
+    fprintf(stderr, "          -i\t-ni\tINTERPRET (don't interpret) tab, bs and ff chars\n");
 #if LPR_PRINT
-    fprintf(stderr,"          -Pprinter -nP\tSEND (don't send) directly to the printer");
+    fprintf(stderr, "          -Pprinter -nP\tSEND (don't send) directly to the printer");
 #ifdef LPR_OPT
     if (LPR_OPT != NULL && sizeof(LPR_OPT) > 0)
-        fprintf(stderr,"\n\t\t\t(with options '%s' and -Pprinter)", LPR_OPT);
+        fprintf(stderr, "\n\t\t\t(with options '%s' and -Pprinter)", LPR_OPT);
 #endif
     fprintf(stderr, "\n");
 #endif
-    fprintf(stderr,"          -r\t-nr\tRESTART (don't restart) page number after each file\n");
+    fprintf(stderr, "          -r\t-nr\tRESTART (don't restart) page number after each file\n");
 #ifdef RECTO_VERSO_PRINTING
 #ifdef TWOSIDED_DFLT
-    fprintf(stderr,"          -s1\t-s2\tone-sided (TWO-SIDED) printing\n");
+    fprintf(stderr, "          -s1\t-s2\tone-sided (TWO-SIDED) printing\n");
 #else
-    fprintf(stderr,"          -s1\t-s2\tONE-SIDED (two-sided) printing\n");
+    fprintf(stderr, "          -s1\t-s2\tONE-SIDED (two-sided) printing\n");
 #endif
 #endif
-    fprintf(stderr,"          -tnum\t\tset tab size to n\n");
-    fprintf(stderr,"          \t-nu\tdon't print a filename footer\n");
-    fprintf(stderr,"          -v\t-nv\tVISIBLE (blank) display of unprintable chars\n");
-    fprintf(stderr,"          -8\t-n8\tdisplay (DON'T DISPLAY) 8-bit chars\n");
+    fprintf(stderr, "          -tnum\t\tset tab size to n\n");
+    fprintf(stderr, "          \t-nu\tdon't print a filename footer\n");
+    fprintf(stderr, "          -v\t-nv\tVISIBLE (blank) display of unprintable chars\n");
+    fprintf(stderr, "          -8\t-n8\tdisplay (DON'T DISPLAY) 8-bit chars\n");
     exit(failure);
 }
 
@@ -815,7 +815,7 @@ cut_filename(old_name, new_name)
 /*
  * Print a char in a form accepted by postscript printers.
  */
-int printchar(unsigned char c){
+int printchar(unsigned char c) {
 
     if (c >= ' ' && c < 0177) {
         if (c == '(' || c == ')' || c == '\\')
@@ -903,7 +903,7 @@ cut_line()
     int c;
     int status;
 
-    while ((c = mygetc(&status)) != EOF && c != '\n' && c != '\f');
+    while ((c = mygetc(&status)) != EOF && c != '\n' && c != '\f') ;
     return c;
 }
 
@@ -1282,7 +1282,7 @@ print_file(name, header)
             if (start_page) {
                 /* only if there is something to print! */
                 skip_page();
-                start_page = FALSE ;
+                start_page = FALSE;
             }
             if (numbering)
                 printf("(%4d|", ++line_number);
@@ -1320,7 +1320,7 @@ print_file(name, header)
                 printf(") s\n");
                 if (++line >= linesperpage) {
                     endpage();
-                    start_page = TRUE ;
+                    start_page = TRUE;
                     if (first_page && is_binaryfile(name))
                         return;
                     line = 0;
@@ -1348,7 +1348,7 @@ print_file(name, header)
                     break;
                 }
             default:
-            print:
+            print :
                 if (only_printable) {
                     nchars = 1;
                 }
@@ -1789,7 +1789,7 @@ main(argc, argv)
             fprintf(stderr, "Error starting lpr process \n");
             exit(EXIT_FAILURE);
         }
-        dup2(fd[1],1);
+        dup2(fd[1], 1);
         close(fd[0]);
         close(fd[1]);
     }

@@ -10,14 +10,14 @@
 
 #include "gb_storage.h"
 
-void gb_init_cache(GB_MAIN_TYPE *Main){
+void gb_init_cache(GB_MAIN_TYPE *Main) {
     int i;
     if (Main->cache.entries) return;
     Main->cache.entries = (struct gb_cache_entry_struct *)GB_calloc(sizeof(struct gb_cache_entry_struct),
                                                                     GB_MAX_CACHED_ENTRIES);
     Main->cache.max_data_size = GB_TOTAL_CACHE_SIZE;
     Main->cache.max_entries = GB_MAX_CACHED_ENTRIES;
-    for (i=0;i<GB_MAX_CACHED_ENTRIES-1;i++) {
+    for (i=0; i<GB_MAX_CACHED_ENTRIES-1; i++) {
         Main->cache.entries[i].next = i+1;
     }
     Main->cache.firstfree_entry = 1;
@@ -27,7 +27,7 @@ char *gb_read_cache(GBDATA *gbd) {
     GB_MAIN_TYPE *Main;
     struct gb_cache_struct *cs;
     long i;
-    long n,p;
+    long n, p;
     if (!(i=gbd->cache_index)) return 0;
     Main = GB_MAIN(gbd);
     cs = &Main->cache;
@@ -63,7 +63,7 @@ char *gb_read_cache(GBDATA *gbd) {
 void *gb_free_cache(GB_MAIN_TYPE *Main, GBDATA *gbd) {
     struct gb_cache_struct *cs;
     long i;
-    long n,p;
+    long n, p;
     if (!(i=gbd->cache_index)) return 0;
     cs = &Main->cache;
     n = cs->entries[i].next; p = cs->entries[i].prev;
@@ -88,11 +88,11 @@ void *gb_free_cache(GB_MAIN_TYPE *Main, GBDATA *gbd) {
 char *delete_old_cache_entries(struct gb_cache_struct *cs, long needed_size, long max_data_size)
 {
     // call with max_data_size==0 to flush cache
-    long n,p;
+    long n, p;
     long i;
     char *data = 0;
 
-    while ( ( (!cs->firstfree_entry) || ( needed_size + cs->sum_data_size >= max_data_size))
+    while (((!cs->firstfree_entry) || (needed_size + cs->sum_data_size >= max_data_size))
             && cs->oldest_entry) {
         i = cs->oldest_entry;
         n = cs->entries[i].next; p = cs->entries[i].prev;
@@ -107,7 +107,7 @@ char *delete_old_cache_entries(struct gb_cache_struct *cs, long needed_size, lon
         cs->entries[i].next = cs->firstfree_entry;
         cs->firstfree_entry = i;
         // delete all unused memory
-        if (data || ( needed_size != cs->entries[i].sizeof_data)  ) {
+        if (data || (needed_size != cs->entries[i].sizeof_data)) {
             free(cs->entries[i].data);
         }
         else {
@@ -128,7 +128,7 @@ char *gb_flush_cache(GBDATA *gbd)
     return 0;
 }
 
-char *gb_alloc_cache_index(GBDATA *gbd,long size) {
+char *gb_alloc_cache_index(GBDATA *gbd, long size) {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     struct gb_cache_struct *cs = &Main->cache;
     long i;
@@ -162,7 +162,7 @@ char *gb_alloc_cache_index(GBDATA *gbd,long size) {
     return data;
 }
 
-char *GB_set_cache_size(GBDATA *gbd, long size){
+char *GB_set_cache_size(GBDATA *gbd, long size) {
     GB_MAIN(gbd)->cache.max_data_size = size;
     return 0;
 }

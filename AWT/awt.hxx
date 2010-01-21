@@ -141,9 +141,9 @@ void awt_refresh_selection_box(AW_root *awr, const char *awar_prefix);
 
 // -------------------------------
 
-AW_window *create_save_box_for_selection_lists(AW_root *aw_root,AW_CL selid);
-AW_window *create_load_box_for_selection_lists(AW_root *aw_root,AW_CL selid);
-void create_print_box_for_selection_lists(AW_window *aw_window,AW_CL selid);
+AW_window *create_save_box_for_selection_lists(AW_root *aw_root, AW_CL selid);
+AW_window *create_load_box_for_selection_lists(AW_root *aw_root, AW_CL selid);
+void create_print_box_for_selection_lists(AW_window *aw_window, AW_CL selid);
 /* Create a file selection box to save a selection list */
 
 /**************************************************************************
@@ -151,7 +151,7 @@ void create_print_box_for_selection_lists(AW_window *aw_window,AW_CL selid);
  ***************************************************************************/
 
 
-#define IS_QUERIED(gb_species,cbs)    (cbs->select_bit & GB_read_usr_private(gb_species))
+#define IS_QUERIED(gb_species, cbs)   (cbs->select_bit & GB_read_usr_private(gb_species))
 class awt_query_struct {
 public:
     awt_query_struct(void);
@@ -218,8 +218,8 @@ void awt_set_string(AW_window *aws, AW_CL varname, AW_CL value);    // set an aw
 typedef void (*awt_fileChanged_cb)(const char *path, bool fileWasChanged, bool editorTerminated);
 void AWT_edit(const char *path, awt_fileChanged_cb callback = 0, AW_window *aww = 0, GBDATA *gb_main = 0);
 
-void AWT_create_ascii_print_window(AW_root *awr, const char *text_to_print,const char *title=0);
-void AWT_write_file(const char *filename,const char *file);
+void AWT_create_ascii_print_window(AW_root *awr, const char *text_to_print, const char *title=0);
+void AWT_write_file(const char *filename, const char *file);
 void AWT_show_file(AW_root *awr, const char *filename);
 
 enum AD_MAP_VIEWER_TYPE {
@@ -227,7 +227,7 @@ enum AD_MAP_VIEWER_TYPE {
     ADMVT_WWW,
     ADMVT_SELECT
 };
-void AD_map_viewer(GBDATA *gbd,AD_MAP_VIEWER_TYPE type = ADMVT_INFO);
+void AD_map_viewer(GBDATA *gbd, AD_MAP_VIEWER_TYPE type = ADMVT_INFO);
 
 // open database viewer using input-mask-file
 class awt_item_type_selector;

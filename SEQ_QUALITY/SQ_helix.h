@@ -113,7 +113,7 @@ void SQ_helix::SQ_calc_helix_layout(const char *seq, GBDATA * gb_main,
     }
     else {
         // calculate the number of strong, weak and no helixes
-        std::map<int,int>::iterator it;
+        std::map<int, int>::iterator it;
 
         for (int filter_pos = 0; filter_pos < filterLen; filter_pos++) {
             int seq_pos = filterpos_2_seqpos[filter_pos];

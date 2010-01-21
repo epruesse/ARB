@@ -51,15 +51,15 @@ public:
         unsigned long b;
 
         if (base < first_seq_base || base > last_seq_base)
-            ali_fatal_error("Base number out of range","ALI_MAP::set()");
+            ali_fatal_error("Base number out of range", "ALI_MAP::set()");
 
         if (pos > last_ref_base - first_ref_base)
-            ali_fatal_error("Position out of range","ALI_MAP::set()");
+            ali_fatal_error("Position out of range", "ALI_MAP::set()");
 
         b = base - first_seq_base;
         (*mapping)[b] = pos;
         (*undefined)[b/8] &= (unsigned char) ~(0x01<<(7-(b%8)));
-        switch(insert) {
+        switch (insert) {
             case 0:
                 if ((*inserted)[b/8]>>(7-(b%8)) & 0x01) {
                     if (insert_counter > 0)
@@ -79,7 +79,7 @@ public:
     }
     long position(unsigned long base) {
         if (base < first_seq_base || base > last_seq_base)
-            ali_fatal_error("Out of range","ALI_MAP::position()");
+            ali_fatal_error("Out of range", "ALI_MAP::position()");
         return (*mapping)[base - first_seq_base];
     }
     unsigned long insertations(void) {
@@ -88,7 +88,7 @@ public:
     int is_inserted(unsigned long base) {
         unsigned long b;
         if (base < first_seq_base && base > last_seq_base)
-            ali_fatal_error("Out of range","ALI_MAP::inserted");
+            ali_fatal_error("Out of range", "ALI_MAP::inserted");
         b = base - first_seq_base;
         if (((*inserted)[b/8]>>(7-(b%8))) & 0x01)
             return 1;
@@ -98,21 +98,21 @@ public:
     void undefine(unsigned long base) {
         unsigned long b;
         if (base < first_seq_base && base > last_seq_base)
-            ali_fatal_error("Out of range","ALI_MAP::undefine()");
+            ali_fatal_error("Out of range", "ALI_MAP::undefine()");
         b = base - first_seq_base;
         (*undefined)[b/8] |= (unsigned char) (0x01<<(7-(b%8)));
     }
     void unundefine(unsigned long base) {
         unsigned long b;
         if (base < first_seq_base && base > last_seq_base)
-            ali_fatal_error("Out of range","ALI_MAP::unundefine()");
+            ali_fatal_error("Out of range", "ALI_MAP::unundefine()");
         b = base - first_seq_base;
         (*undefined)[b/8] &= (unsigned char) ~(0x01<<(7-(b%8)));
     }
     int is_undefined(unsigned long base) {
         unsigned long b;
         if (base < first_seq_base && base > last_seq_base)
-            ali_fatal_error("Out of range","ALI_MAP::undefined()");
+            ali_fatal_error("Out of range", "ALI_MAP::undefined()");
         b = base - first_seq_base;
         if (((*undefined)[b/8]>>(7-(b%8))) & 0x01)
             return 1;
@@ -150,11 +150,11 @@ public:
     void print(void) {
         unsigned long i;
         printf("Map: Bases %ld to %ld, Positions %ld to %ld\n",
-               first_seq_base,last_seq_base,first_ref_base,last_ref_base);
+               first_seq_base, last_seq_base, first_ref_base, last_ref_base);
         printf("Undefined : ");
         for (i = first_seq_base; i <= last_seq_base; i++)
             if (is_undefined(i))
-                printf("%ld ",i);
+                printf("%ld ", i);
         printf("\n");
         /*
           for (i = 0; i <= (last_seq_base - first_seq_base); i++)

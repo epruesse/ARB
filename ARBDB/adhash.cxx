@@ -255,7 +255,7 @@ GB_HASH *GBS_create_hash(long user_size, GB_CASE case_sens) {
     GB_HASH *hs;
     long     size = gbs_get_a_prime(user_size);     // use next prime number for hash size
 
-    hs            = (GB_HASH*)GB_calloc(sizeof(*hs),1);
+    hs            = (GB_HASH*)GB_calloc(sizeof(*hs), 1);
     hs->size      = size;
     hs->nelem     = 0;
     hs->case_sens = case_sens;
@@ -329,7 +329,7 @@ static long gbs_hash_to_strstruct(const char *key, long val, void *cd_out) {
     int                   c;
     struct GBS_strstruct *out = (struct GBS_strstruct*)cd_out;
     
-    for (p = key; (c=*p) ; p++) {
+    for (p = key; (c=*p);  p++) {
         GBS_chrcat(out, c);
         if (c==':') GBS_chrcat(out, c);
     }
@@ -347,8 +347,8 @@ char *GBS_hashtab_2_string(GB_HASH *hash) {
 }
 
 
-char *GBS_string_2_hashtab(GB_HASH *hash, char *data){  // destroys data
-    char *p,*d,*dp;
+char *GBS_string_2_hashtab(GB_HASH *hash, char *data) { // destroys data
+    char *p, *d, *dp;
     int c;
     char *nextp;
     char *error = 0;
@@ -356,9 +356,9 @@ char *GBS_string_2_hashtab(GB_HASH *hash, char *data){  // destroys data
     int strlen;
     long val;
 
-    for ( p = data; p ; p = nextp ){
+    for (p = data; p;   p = nextp) {
         strlen = 0;
-        for (dp = p; (c = *dp); dp++){
+        for (dp = p; (c = *dp); dp++) {
             if (c==':') {
                 if (dp[1] == ':') dp++;
                 else break;
@@ -366,13 +366,13 @@ char *GBS_string_2_hashtab(GB_HASH *hash, char *data){  // destroys data
             strlen++;
         }
         if (*dp) {
-            nextp = strchr(dp,' ');
+            nextp = strchr(dp, ' ');
             if (nextp) nextp++;
         }
         else break;
 
-        str = (char *)GB_calloc(sizeof(char),strlen+1);
-        for (dp = p, d = str; (c = *dp) ; dp++) {
+        str = (char *)GB_calloc(sizeof(char), strlen+1);
+        for (dp = p, d = str; (c = *dp);  dp++) {
             if (c==':') {
                 if (dp[1] == ':') {
                     *(d++) = c;
@@ -385,7 +385,7 @@ char *GBS_string_2_hashtab(GB_HASH *hash, char *data){  // destroys data
             }
         }
         val = atoi(dp+1);
-        GBS_write_hash_no_strdup(hash,str,val);
+        GBS_write_hash_no_strdup(hash, str, val);
     }
 
     return error;
@@ -394,21 +394,21 @@ char *GBS_string_2_hashtab(GB_HASH *hash, char *data){  // destroys data
 static struct gbs_hash_entry *find_hash_entry(const GB_HASH *hs, const char *key, size_t *index) {
     struct gbs_hash_entry *e;
     if (hs->case_sens == GB_IGNORE_CASE) {
-        GB_CALC_HASH_INDEX_CASE_IGNORED(key,*index,hs->size);
-        for(e=hs->entries[*index];e;e=e->next){
-            if (!strcasecmp(e->key,key)) return e;
+        GB_CALC_HASH_INDEX_CASE_IGNORED(key, *index, hs->size);
+        for (e=hs->entries[*index]; e; e=e->next) {
+            if (!strcasecmp(e->key, key)) return e;
         }
     }
     else {
-        GB_CALC_HASH_INDEX_CASE_SENSITIVE(key,*index,hs->size);
-        for(e=hs->entries[*index];e;e=e->next){
-            if (!strcmp(e->key,key)) return e;
+        GB_CALC_HASH_INDEX_CASE_SENSITIVE(key, *index, hs->size);
+        for (e=hs->entries[*index]; e; e=e->next) {
+            if (!strcmp(e->key, key)) return e;
         }
     }
     return 0;
 }
 
-long GBS_read_hash(const GB_HASH *hs,const char *key) {
+long GBS_read_hash(const GB_HASH *hs, const char *key) {
     size_t                 i;
     struct gbs_hash_entry *e = find_hash_entry(hs, key, &i);
 
@@ -433,7 +433,7 @@ static void delete_from_list(GB_HASH *hs, size_t i, struct gbs_hash_entry *e) {
     }
     free(e->key);
     if (hs->freefun) hs->freefun(e->val);
-    gbm_free_mem((char *)e,sizeof(struct gbs_hash_entry),GBM_HASH_INDEX);
+    gbm_free_mem((char *)e, sizeof(struct gbs_hash_entry), GBM_HASH_INDEX);
 }
 
 static long write_hash(GB_HASH *hs, char *key, bool copyKey, long val) {
@@ -456,7 +456,7 @@ static long write_hash(GB_HASH *hs, char *key, bool copyKey, long val) {
     }
     else if (val != 0) {        // don't store 0
         // create new hash entry
-        e       = (struct gbs_hash_entry *)gbm_get_mem(sizeof(struct gbs_hash_entry),GBM_HASH_INDEX);
+        e       = (struct gbs_hash_entry *)gbm_get_mem(sizeof(struct gbs_hash_entry), GBM_HASH_INDEX);
         e->next = hs->entries[i];
         e->key  = copyKey ? strdup(key) : key;
         e->val  = val;
@@ -483,7 +483,7 @@ long GBS_write_hash_no_strdup(GB_HASH *hs, char *key, long val) {
     return write_hash(hs, key, false, val);
 }
 
-long GBS_incr_hash(GB_HASH *hs,const char *key) {
+long GBS_incr_hash(GB_HASH *hs, const char *key) {
     // returns new value
     size_t                 i;
     struct gbs_hash_entry *e = find_hash_entry(hs, key, &i);
@@ -494,7 +494,7 @@ long GBS_incr_hash(GB_HASH *hs,const char *key) {
         if (!result) delete_from_list(hs, i, e);
     }
     else {
-        e       = (struct gbs_hash_entry *)gbm_get_mem(sizeof(struct gbs_hash_entry),GBM_HASH_INDEX);
+        e       = (struct gbs_hash_entry *)gbm_get_mem(sizeof(struct gbs_hash_entry), GBM_HASH_INDEX);
         e->next = hs->entries[i];
         e->key  = strdup(key);
         e->val  = result = 1;
@@ -571,7 +571,7 @@ void GBS_free_hash_entries(GB_HASH *hs)
             free(e->key);
             if (hs->freefun) hs->freefun(e->val);
             ee              = e->next;
-            gbm_free_mem((char *)e,sizeof(struct gbs_hash_entry),GBM_HASH_INDEX);
+            gbm_free_mem((char *)e, sizeof(struct gbs_hash_entry), GBM_HASH_INDEX);
         }
         hs->entries[i] = 0;
     }
@@ -689,10 +689,10 @@ void GBS_calc_hash_statistic(GB_HASH *hs, const char *id, int print) {
 
 void GBS_hash_do_loop(GB_HASH *hs, gb_hash_loop_type func, void *client_data)
 {
-    long i,e2;
+    long i, e2;
     struct gbs_hash_entry *e, *next;
     e2 = hs->size;
-    for (i=0;i<e2;i++) {
+    for (i=0; i<e2; i++) {
         for (e = hs->entries[i]; e; e = next) {
             next = e->next;
             if (e->val) {
@@ -745,7 +745,7 @@ const char *GBS_hash_next_element_that(GB_HASH *hs, const char *last_key, bool (
      * Returns NULL if no (more) elements match the 'condition'.
      */
 
-    size_t                 size = hs->size;;
+    size_t                 size = hs->size; ;
     size_t                 i    = 0;
     struct gbs_hash_entry *e    = 0;
 
@@ -810,36 +810,36 @@ int GBS_HCF_sortedByKey(const char *k0, long v0, const char *k1, long v1) {
 inline long gbs_numhash_index(long key, long size) {
     long x;
     x = (key * (long long)97)%size;     // make one multiplier a (long long) to avoid
-    if (x<0) x+= size;                  // int overflow and abort if compiled with -ftrapv
+    if (x<0) x += size;                 // int overflow and abort if compiled with -ftrapv
     return x;
 }
 
 
 GB_NUMHASH *GBS_create_numhash(long user_size) {
     long        size = gbs_get_a_prime(user_size);  // use next prime number for hash size
-    GB_NUMHASH *hs   = (GB_NUMHASH *)GB_calloc(sizeof(*hs),1);
+    GB_NUMHASH *hs   = (GB_NUMHASH *)GB_calloc(sizeof(*hs), 1);
 
     hs->size    = size;
-    hs->entries = (numhash_entry **)GB_calloc(sizeof(*(hs->entries)),(size_t)size);
+    hs->entries = (numhash_entry **)GB_calloc(sizeof(*(hs->entries)), (size_t)size);
 
     return hs;
 }
 
 
-long GBS_read_numhash(GB_NUMHASH *hs,long key) {
+long GBS_read_numhash(GB_NUMHASH *hs, long key) {
     numhash_entry *e;
-    long           i = gbs_numhash_index(key,hs->size);
+    long           i = gbs_numhash_index(key, hs->size);
 
-    for(e = hs->entries[i]; e; e = e->next) {
+    for (e = hs->entries[i]; e; e = e->next) {
         if (e->key==key) return e->val;
     }
     return 0;
 }
 
-long GBS_write_numhash(GB_NUMHASH *hs,long key,long val) {
+long GBS_write_numhash(GB_NUMHASH *hs, long key, long val) {
     numhash_entry *e;
     long           i2;
-    long           i = gbs_numhash_index(key,hs->size);
+    long           i = gbs_numhash_index(key, hs->size);
 
     if (!val) {
         numhash_entry *oe;
@@ -857,10 +857,10 @@ long GBS_write_numhash(GB_NUMHASH *hs,long key,long val) {
             }
             oe = e;
         }
-        printf("free %lx not found\n",(long)e);
+        printf("free %lx not found\n", (long)e);
         return 0;
     }
-    for(e=hs->entries[i];e;e=e->next)
+    for (e=hs->entries[i]; e; e=e->next)
     {
         if (e->key==key) {
             i2 = e->val;
@@ -879,11 +879,11 @@ long GBS_write_numhash(GB_NUMHASH *hs,long key,long val) {
 void GBS_free_numhash(GB_NUMHASH *hs) {
     long e2 = hs->size;
 
-    for (long i=0;i<e2;i++) {
+    for (long i=0; i<e2; i++) {
         numhash_entry *ee;
         for (numhash_entry *e = hs->entries[i]; e; e=ee) {
             ee = e->next;
-            gbm_free_mem((char *)e,sizeof(*e),GBM_HASH_INDEX);
+            gbm_free_mem((char *)e, sizeof(*e), GBM_HASH_INDEX);
         }
     }
 

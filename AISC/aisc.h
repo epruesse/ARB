@@ -282,7 +282,7 @@ extern char                  string_buf[256];
 #define END_STR1 '~'
 #define END_STR2 ')'
 
-inline bool is_SPACE(char c) { return c == ' '|| c == '\t'; }
+inline bool is_SPACE(char c) { return c == ' ' || c == '\t'; }
 inline bool is_SEP(char c) { return c == ',' || c == ';'; }
 inline bool is_LF(char c) { return c == '\n'; }
 inline bool is_EOS(char c) { return c == EOSTR; }

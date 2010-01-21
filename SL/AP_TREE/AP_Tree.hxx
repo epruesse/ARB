@@ -157,11 +157,11 @@ public:
     // elements from struct a_tree_node
 
     // struct arb_flags
-    unsigned int grouped:1;     // indicates a folded group
-    unsigned int hidden:1;      // not shown because a father is a folded group
-    unsigned int has_marked_children:1; // at least one child is marked
-    unsigned int callback_exists:1;
-    unsigned int gc:6;          // color
+    unsigned int grouped : 1;   // indicates a folded group
+    unsigned int hidden : 1;    // not shown because a father is a folded group
+    unsigned int has_marked_children : 1; // at least one child is marked
+    unsigned int callback_exists : 1;
+    unsigned int gc : 6;        // color
 
     char    left_linewidth;
     char    right_linewidth;
@@ -196,7 +196,7 @@ public:
 
 struct AP_branch_members {
 public:
-    unsigned int touched:1;         // nni and kl
+    unsigned int touched : 1;       // nni and kl
 
     void clear() {
         touched = 0;
@@ -233,7 +233,7 @@ public:
     void calc_hidden_flag(int father_is_hidden);
     virtual int calc_color();                       // start a transaction first
 
-    virtual int calc_color_probes(GB_HASH *hashptr); //new function for coloring the tree; ak
+    virtual int calc_color_probes(GB_HASH *hashptr); // new function for coloring the tree; ak
 
     GBT_LEN arb_tree_min_deep();
     GBT_LEN arb_tree_deep();
@@ -244,7 +244,7 @@ public:
     void         swap_sons();                       // exchange sons
 
     GB_ERROR     cantMoveTo(AP_tree *new_brother);  // use this to detect impossible moves
-    virtual void moveTo(AP_tree *new_brother,AP_FLOAT rel_pos); // move to new brother
+    virtual void moveTo(AP_tree *new_brother, AP_FLOAT rel_pos); // move to new brother
 
     virtual void set_root();
 
@@ -289,8 +289,8 @@ public:
 
     void mark_duplicates(GBDATA *gb_main);
     void mark_long_branches(GBDATA *gb_main, double min_rel_diff, double min_abs_diff);
-    void mark_deep_branches(GBDATA *gb_main,int rel_depth);
-    void mark_degenerated_branches(GBDATA *gb_main,double degeneration_factor);
+    void mark_deep_branches(GBDATA *gb_main, int rel_depth);
+    void mark_degenerated_branches(GBDATA *gb_main, double degeneration_factor);
 
     void justify_branch_lenghs(GBDATA *gb_main);
     void relink_tree(GBDATA *gb_main, void (*relinker)(GBDATA *&ref_gb_node, char *&ref_name, GB_HASH *organism_hash), GB_HASH *organism_hash);

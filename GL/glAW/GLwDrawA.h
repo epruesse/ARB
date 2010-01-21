@@ -175,7 +175,7 @@ typedef struct
 {
     int       reason;
     XEvent   *event;
-    Dimension width,height;
+    Dimension width, height;
 } GLwDrawingAreaCallbackStruct;
 
 #if defined(__cplusplus) || defined(c_plusplus)
@@ -183,14 +183,14 @@ extern "C" {
 #endif
 
     /* front ends to glXMakeCurrent and glXSwapBuffers */
-    extern void GLwDrawingAreaMakeCurrent(Widget w,GLXContext ctx);
+    extern void GLwDrawingAreaMakeCurrent(Widget w, GLXContext ctx);
     extern void GLwDrawingAreaSwapBuffers(Widget w);
 
 #ifdef __GLX_MOTIF
 #ifdef _NO_PROTO
     extern Widget GLwCreateMDrawingArea();
 #else
-    extern Widget GLwCreateMDrawingArea(Widget parent,char *name,ArgList arglist,Cardinal argcount);
+    extern Widget GLwCreateMDrawingArea(Widget parent, char *name, ArgList arglist, Cardinal argcount);
 #endif
 #endif
 

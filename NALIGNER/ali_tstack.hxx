@@ -35,26 +35,26 @@ public:
     }
     void push(T value, unsigned long count = 1) {
         if (next_elem + count - 1 >= size_of_array)
-            ali_fatal_error("Access out of array","ALI_TSTACK::push()");
+            ali_fatal_error("Access out of array", "ALI_TSTACK::push()");
         for (; count > 0; count--)
             (*array)[next_elem++] = value;
     }
     T pop(unsigned long count = 1) {
         if (count == 0)
-            ali_fatal_error("Nothing poped","ALI_TSTACK::pop()");
+            ali_fatal_error("Nothing poped", "ALI_TSTACK::pop()");
         if (next_elem - count + 1 <= 0)
-            ali_fatal_error("Access out of array","ALI_TSTACK::pop()");
+            ali_fatal_error("Access out of array", "ALI_TSTACK::pop()");
         next_elem -= count;
         return (*array)[next_elem];
     }
     T top(void) {
         if (next_elem <= 0)
-            ali_fatal_error("Access out of array","ALI_TSTACK::top()");
+            ali_fatal_error("Access out of array", "ALI_TSTACK::top()");
         return (*array)[next_elem - 1];
     }
     T get(unsigned long position) {
         if (position >= next_elem) {
-            ali_fatal_error("Access out of array","ALI_TSTACK::get()");
+            ali_fatal_error("Access out of array", "ALI_TSTACK::get()");
         }
         return (*array)[position];
     }

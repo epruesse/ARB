@@ -28,18 +28,18 @@ private:
     bool              expand_IUPAC_Codes; // enable/disable expansion of IUPAC codes
     PRD_Sequence_Pos  min_distance_to_next_match; // if a match is found out of that distance its ignored (not deleted)
 
-    void init( Node *root_, PRD_Sequence_Pos min_distance_to_next_match_, bool expand_IUPAC_Codes_ );
-    void erase      ( SearchParameter *param_ ); // erase the position from the list (tries not to invalidate current)
-    void push_front ( Node *child_of_current_ ); // append new position in front of the list
+    void init(Node *root_, PRD_Sequence_Pos min_distance_to_next_match_, bool expand_IUPAC_Codes_);
+    void erase      (SearchParameter *param_);   // erase the position from the list (tries not to invalidate current)
+    void push_front (Node *child_of_current_);   // append new position in front of the list
 
 public:
 
-    SearchFIFO ( Node *root_, PRD_Sequence_Pos min_distance_to_next_match_, bool expand_IUPAC_Codes_ );
+    SearchFIFO (Node *root_, PRD_Sequence_Pos min_distance_to_next_match_, bool expand_IUPAC_Codes_);
     SearchFIFO ();
     ~SearchFIFO ();
 
-    void push        ( unsigned char base_ ); // append new position (node=root) to the end of the list
-    void iterateWith ( PRD_Sequence_Pos pos_, unsigned char base_ ); // tries to iterate all positions in the list with the given base
+    void push        (unsigned char base_);   // append new position (node=root) to the end of the list
+    void iterateWith (PRD_Sequence_Pos pos_, unsigned char base_);   // tries to iterate all positions in the list with the given base
     void flush       ();        // erase all positions of the list
     void print       ();        // print all positions in the list
 };

@@ -12,7 +12,7 @@
 #define AWT_PRESET_HXX
 
 
-AW_window *AWT_preset_window( AW_root *root ) ;
+AW_window *AWT_preset_window(AW_root *root);
 
 #else
 #error awt_preset.hxx included twice

@@ -8,7 +8,7 @@
 
 using namespace std;
 
-GLRenderer::GLRenderer(void){
+GLRenderer::GLRenderer(void) {
     fSkeletonSize = 0.5;
     iBackBone = iColorise = 0;
     ObjectSize = 8.0;
@@ -29,13 +29,13 @@ GLRenderer::GLRenderer(void){
     G                  = new OpenGLGraphics();
 }
 
-GLRenderer::~GLRenderer(void){
+GLRenderer::~GLRenderer(void) {
 }
 
-void GLRenderer::DisplayHelices(void){
+void GLRenderer::DisplayHelices(void) {
     G->SetColor(RNA3D_GC_HELIX);
     glLineWidth(fHelixSize);
-    for(int i = iStartHelix; i <= iEndHelix; i++) {
+    for (int i = iStartHelix; i <= iEndHelix; i++) {
         glBegin(GL_LINES);
         glListBase(RNA3D->cStructure->HelixBase);
         glCallList(RNA3D->cStructure->HelixBase+i);
@@ -43,7 +43,7 @@ void GLRenderer::DisplayHelices(void){
     }
 }
 
-void GLRenderer::DisplayHelixBackBone(void){
+void GLRenderer::DisplayHelixBackBone(void) {
     G->SetColor(RNA3D_GC_HELIX_SKELETON);
     glLineWidth(0.5);
 
@@ -54,21 +54,21 @@ void GLRenderer::DisplayHelixBackBone(void){
 
     switch (rnaType) {
         case LSU_23S:
-            for(int i = 1; i <= 101; i++) {
+            for (int i = 1; i <= 101; i++) {
                 glBegin(GL_LINES);
                 glCallList(RNA3D->cStructure->HelixBase+i);
                 glEnd();
             }
             break;
         case LSU_5S:
-            for(int i = 1; i <= 5; i++) {
+            for (int i = 1; i <= 5; i++) {
                 glBegin(GL_LINES);
                 glCallList(RNA3D->cStructure->HelixBase+i);
                 glEnd();
             }
             break;
         case SSU_16S:
-            for(int i = 1; i <= 50; i++) {
+            for (int i = 1; i <= 50; i++) {
                 glBegin(GL_LINES);
                 glCallList(RNA3D->cStructure->HelixBase+i);
                 glEnd();
@@ -79,7 +79,7 @@ void GLRenderer::DisplayHelixBackBone(void){
     glPopAttrib();
 }
 
-void GLRenderer::DisplayBasePositions(void){
+void GLRenderer::DisplayBasePositions(void) {
 
     G->SetColor(RNA3D_GC_MOL_BACKBONE);
     glCallList(STRUCTURE_POS_ANCHOR);
@@ -89,7 +89,7 @@ void GLRenderer::DisplayBasePositions(void){
 
 }
 
-void GLRenderer::DisplayMappedSpInsertions(void){
+void GLRenderer::DisplayMappedSpInsertions(void) {
 
     G->SetColor(RNA3D_GC_INSERTION);
     glCallList(MAP_SPECIES_INSERTION_BASES_ANCHOR);
@@ -98,7 +98,7 @@ void GLRenderer::DisplayMappedSpInsertions(void){
     glCallList(MAP_SPECIES_INSERTION_BASES);
 }
 
-void GLRenderer::DisplayMappedSpBasePositions(void){
+void GLRenderer::DisplayMappedSpBasePositions(void) {
 
     G->SetColor(RNA3D_GC_MOL_BACKBONE);
     glCallList(MAP_SPECIES_BASE_DIFFERENCE_POS_ANCHOR);
@@ -107,14 +107,14 @@ void GLRenderer::DisplayMappedSpBasePositions(void){
     glCallList(MAP_SPECIES_BASE_DIFFERENCE_POS);
 }
 
-void GLRenderer::DisplayHelixMidPoints(Texture2D *cImages){
+void GLRenderer::DisplayHelixMidPoints(Texture2D *cImages) {
     glPointSize(fHelixSize + 5); // size will be proportional to the Helix Thickness specified !!
     glBindTexture(GL_TEXTURE_2D, cImages->texture[CIRCLE]);
     G->SetColor(RNA3D_GC_HELIX_MIDPOINT);
     glCallList(HELIX_NUMBERS_POINTS);
 }
 
-void GLRenderer::DisplayHelixNumbers(void){
+void GLRenderer::DisplayHelixNumbers(void) {
     G->SetColor(RNA3D_GC_FOREGROUND);
     glCallList(HELIX_NUMBERS);
 }
@@ -130,7 +130,7 @@ void GLRenderer::DoHelixMapping(void) {
         DisplayHelices();
     }
     // Displaying Tertiary Interactions of E.coli 16S ribosomal RNA
-    if(iDispTerInt) {
+    if (iDispTerInt) {
         glLineWidth(fHelixSize + 1); // Thicker than the normal Helix Strands
         G->SetColor(RNA3D_GC_PSEUDOKNOT);
         glCallList(ECOLI_TERTIARY_INTRACTION_PSEUDOKNOTS);
@@ -139,17 +139,17 @@ void GLRenderer::DoHelixMapping(void) {
     }
 }
 
-void GLRenderer::DisplayMoleculeName(int /*w*/, int /*h*/, Structure3D *cStr){
+void GLRenderer::DisplayMoleculeName(int /* w */, int /* h */, Structure3D *cStr) {
     char *pSpeciesName;
 
-    if(cStr->iMapEnable && iMapSpecies) {
+    if (cStr->iMapEnable && iMapSpecies) {
         pSpeciesName = RNA3D->root->awar(AWAR_3D_SELECTED_SPECIES)->read_string();
     }
     else {
         pSpeciesName = (char *) "Eschericia Coli : Master Template";
     }
 
-    float x, y,z;     x=1.1; y=z=1.0;
+    float x, y, z;    x=1.1; y=z=1.0;
     float line = 0.05;
 
     glPushMatrix();
@@ -157,7 +157,7 @@ void GLRenderer::DisplayMoleculeName(int /*w*/, int /*h*/, Structure3D *cStr){
     G->PrintString(x, y, z, pSpeciesName, GLUT_BITMAP_8_BY_13);
 
     char buf[25];
-    if (cStr->iMapEnable && iMapSpecies){
+    if (cStr->iMapEnable && iMapSpecies) {
         G->SetColor(RNA3D_GC_MAPPED_SPECIES);
         sprintf(buf, "Mutations  = %d", cStr->iTotalSubs);
         G->PrintString(x, (y-(1*line)), z, buf, GLUT_BITMAP_8_BY_13);
@@ -170,14 +170,14 @@ void GLRenderer::DisplayMoleculeName(int /*w*/, int /*h*/, Structure3D *cStr){
     glPopMatrix();
 }
 
-void GLRenderer::DisplayMoleculeMask(int w, int h){
+void GLRenderer::DisplayMoleculeMask(int w, int h) {
     // displays a rectangular mask cutting thru the centre of the molecule
     glPushMatrix();
     glScalef(0.5, 0.5, 0.5);
 
     if (RNA3D->bDisplayMask) {
         G->SetColor(RNA3D_GC_MASK);
-        G->DrawBox(0,0,w,h);
+        G->DrawBox(0, 0, w, h);
     }
     glPopMatrix();
 }
@@ -189,7 +189,7 @@ void GLRenderer::DisplayMolecule(Structure3D *cStr) {
     static ColorRGBf UnpairedHelixOldColor = G->GetColor(RNA3D_GC_BASES_UNPAIRED_HELIX);
     static ColorRGBf NonHelixOldColor      = G->GetColor(RNA3D_GC_BASES_NON_HELIX);
 
-    if(iColorise){
+    if (iColorise) {
         ColorRGBf HelixNewColor         = G->GetColor(RNA3D_GC_BASES_HELIX);
         ColorRGBf UnpairedHelixNewColor = G->GetColor(RNA3D_GC_BASES_UNPAIRED_HELIX);
         ColorRGBf NonHelixNewColor      = G->GetColor(RNA3D_GC_BASES_NON_HELIX);
@@ -205,7 +205,7 @@ void GLRenderer::DisplayMolecule(Structure3D *cStr) {
             UnpairedHelixOldColor = UnpairedHelixNewColor;
             NonHelixOldColor      = NonHelixNewColor;
 
-            glDeleteLists(STRUCTURE_BACKBONE_CLR,1);
+            glDeleteLists(STRUCTURE_BACKBONE_CLR, 1);
             cStr->GenerateMoleculeSkeleton();
             glCallList(STRUCTURE_BACKBONE_CLR);
         }
@@ -215,27 +215,27 @@ void GLRenderer::DisplayMolecule(Structure3D *cStr) {
         glCallList(STRUCTURE_BACKBONE);
     }
 
-    if(iDispPos) {
+    if (iDispPos) {
         DisplayBasePositions();
     }
 
-    if(cStr->iMapEnable) {
+    if (cStr->iMapEnable) {
         if (cStr->iMapSearch) {
             glLineWidth(ObjectSize/3);
             glCallList(MAP_SEARCH_STRINGS_BACKBONE);
         }
-        if(iMapSpecies) {
+        if (iMapSpecies) {
             if (iMapSpeciesIns && iMapSpeciesInsInfo) {
                 DisplayMappedSpInsertions();
             }
-            if(iMapSpeciesPos) {
+            if (iMapSpeciesPos) {
                 DisplayMappedSpBasePositions();
             }
         }
     }
 }
 
-void GLRenderer::BeginTexturizer(){
+void GLRenderer::BeginTexturizer() {
     glDisable(GL_CULL_FACE);
     glDisable(GL_LIGHTING);
     glDisable(GL_POINT_SMOOTH);
@@ -249,26 +249,26 @@ void GLRenderer::BeginTexturizer(){
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         float quadratic[] =  { 0.0f, 0.0f, 1.0f };
-        glPointParameterfvEXT( GL_DISTANCE_ATTENUATION_EXT, quadratic );
+        glPointParameterfvEXT(GL_DISTANCE_ATTENUATION_EXT, quadratic);
 
         // Query for the max point size supported by the hardware
         float maxSize = 0.0f;
-        glGetFloatv( GL_POINT_SIZE_MAX_EXT, &maxSize );
-        glPointSize(MIN(ObjectSize,maxSize) );
+        glGetFloatv(GL_POINT_SIZE_MAX_EXT, &maxSize);
+        glPointSize(MIN(ObjectSize, maxSize));
 
-        glPointParameterfEXT( GL_POINT_SIZE_MIN_EXT, 1.0f );
-        glPointParameterfEXT( GL_POINT_SIZE_MAX_EXT, MIN(65,maxSize));
+        glPointParameterfEXT(GL_POINT_SIZE_MIN_EXT, 1.0f);
+        glPointParameterfEXT(GL_POINT_SIZE_MAX_EXT, MIN(65, maxSize));
 
         glTexEnvf(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_TRUE);
         glEnable(GL_POINT_SPRITE_ARB);
     }
 }
 
-void GLRenderer::EndTexturizer(){
+void GLRenderer::EndTexturizer() {
     //    glDisable(GL_TEXTURE_2D);
     if (RNA3D->bPointSpritesSupported) {
         float defaultAttenuation[3] = { 1.0f, 0.0f, 0.0f };
-        glPointParameterfvEXT( GL_DISTANCE_ATTENUATION_EXT, defaultAttenuation );
+        glPointParameterfvEXT(GL_DISTANCE_ATTENUATION_EXT, defaultAttenuation);
 
         glDisable(GL_POINT_SPRITE_ARB);
         glDisable(GL_BLEND);
@@ -276,12 +276,12 @@ void GLRenderer::EndTexturizer(){
     }
 }
 
-#define POLOFFON  glEnable(GL_POLYGON_OFFSET_FILL); glPolygonOffset(1,1); glDepthFunc(GL_LESS);
-#define POLOFFOFF glDepthFunc(GL_LEQUAL); glPolygonOffset(0,0); glDisable(GL_POLYGON_OFFSET_FILL);
+#define POLOFFON  glEnable(GL_POLYGON_OFFSET_FILL); glPolygonOffset(1, 1); glDepthFunc(GL_LESS);
+#define POLOFFOFF glDepthFunc(GL_LEQUAL); glPolygonOffset(0, 0); glDisable(GL_POLYGON_OFFSET_FILL);
 
 void GLRenderer::TexturizeStructure(Texture2D *cImages, Structure3D *cStructure) {
 
-    if (cStructure->iMapEnable ) {
+    if (cStructure->iMapEnable) {
         glPointSize(ObjectSize*2);
         if (cStructure->iMapSAI) {
             glBindTexture(GL_TEXTURE_2D, cImages->texture[HEXAGON]);
@@ -294,7 +294,7 @@ void GLRenderer::TexturizeStructure(Texture2D *cImages, Structure3D *cStructure)
         }
     }
 
-    if(iDispCursorPos) {
+    if (iDispCursorPos) {
         glPointSize(ObjectSize+8);
         G->SetColor(RNA3D_GC_CURSOR_POSITION);
         glBindTexture(GL_TEXTURE_2D, cImages->texture[DIAMOND]);
@@ -304,7 +304,7 @@ void GLRenderer::TexturizeStructure(Texture2D *cImages, Structure3D *cStructure)
     glPointSize(ObjectSize);
     if (iDisplayBases)
     {
-        switch(iBaseMode) {
+        switch (iBaseMode) {
             case CHARACTERS: {
 
                 POLOFFON
@@ -313,21 +313,21 @@ void GLRenderer::TexturizeStructure(Texture2D *cImages, Structure3D *cStructure)
                     glColor4f(ApplicationBGColor.red, ApplicationBGColor.green, ApplicationBGColor.blue, 1);
                     glBindTexture(GL_TEXTURE_2D, cImages->texture[CIRCLE]);
 
-                    if(iBaseHelix) {
+                    if (iBaseHelix) {
                         glCallList(HELIX_A);
                         glCallList(HELIX_G);
                         glCallList(HELIX_C);
                         glCallList(HELIX_U);
                     }
 
-                    if(iBaseUnpairHelix) {
+                    if (iBaseUnpairHelix) {
                         glCallList(UNPAIRED_HELIX_A);
                         glCallList(UNPAIRED_HELIX_G);
                         glCallList(UNPAIRED_HELIX_C);
                         glCallList(UNPAIRED_HELIX_U);
                     }
 
-                    if(iBaseNonHelix) {
+                    if (iBaseNonHelix) {
                         glCallList(NON_HELIX_A);
                         glCallList(NON_HELIX_G);
                         glCallList(NON_HELIX_C);
@@ -339,15 +339,15 @@ void GLRenderer::TexturizeStructure(Texture2D *cImages, Structure3D *cStructure)
                 {  // Print textures representing the actual bases
                     glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_A]);
                     {
-                        if(iBaseHelix) {
+                        if (iBaseHelix) {
                             G->SetColor(RNA3D_GC_BASES_HELIX);
                             glCallList(HELIX_A);
                         }
-                        if(iBaseUnpairHelix) {
+                        if (iBaseUnpairHelix) {
                             G->SetColor(RNA3D_GC_BASES_UNPAIRED_HELIX);
                             glCallList(UNPAIRED_HELIX_A);
                         }
-                        if(iBaseNonHelix) {
+                        if (iBaseNonHelix) {
                             G->SetColor(RNA3D_GC_BASES_NON_HELIX);
                             glCallList(NON_HELIX_A);
                         }
@@ -355,15 +355,15 @@ void GLRenderer::TexturizeStructure(Texture2D *cImages, Structure3D *cStructure)
 
                     glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_G]);
                     {
-                        if(iBaseHelix) {
+                        if (iBaseHelix) {
                             G->SetColor(RNA3D_GC_BASES_HELIX);
                             glCallList(HELIX_G);
                         }
-                        if(iBaseUnpairHelix) {
+                        if (iBaseUnpairHelix) {
                             G->SetColor(RNA3D_GC_BASES_UNPAIRED_HELIX);
                             glCallList(UNPAIRED_HELIX_G);
                         }
-                        if(iBaseNonHelix) {
+                        if (iBaseNonHelix) {
                             G->SetColor(RNA3D_GC_BASES_NON_HELIX);
                             glCallList(NON_HELIX_G);
                         }
@@ -371,15 +371,15 @@ void GLRenderer::TexturizeStructure(Texture2D *cImages, Structure3D *cStructure)
 
                     glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_C]);
                     {
-                        if(iBaseHelix) {
+                        if (iBaseHelix) {
                             G->SetColor(RNA3D_GC_BASES_HELIX);
                             glCallList(HELIX_C);
                         }
-                        if(iBaseUnpairHelix) {
+                        if (iBaseUnpairHelix) {
                             G->SetColor(RNA3D_GC_BASES_UNPAIRED_HELIX);
                             glCallList(UNPAIRED_HELIX_C);
                         }
-                        if(iBaseNonHelix) {
+                        if (iBaseNonHelix) {
                             G->SetColor(RNA3D_GC_BASES_NON_HELIX);
                             glCallList(NON_HELIX_C);
                         }
@@ -387,15 +387,15 @@ void GLRenderer::TexturizeStructure(Texture2D *cImages, Structure3D *cStructure)
 
                     glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_U]);
                     {
-                        if(iBaseHelix) {
+                        if (iBaseHelix) {
                             G->SetColor(RNA3D_GC_BASES_HELIX);
                             glCallList(HELIX_U);
                         }
-                        if(iBaseUnpairHelix) {
+                        if (iBaseUnpairHelix) {
                             G->SetColor(RNA3D_GC_BASES_UNPAIRED_HELIX);
                             glCallList(UNPAIRED_HELIX_U);
                         }
-                        if(iBaseNonHelix) {
+                        if (iBaseNonHelix) {
                             G->SetColor(RNA3D_GC_BASES_NON_HELIX);
                             glCallList(NON_HELIX_U);
                         }
@@ -404,17 +404,17 @@ void GLRenderer::TexturizeStructure(Texture2D *cImages, Structure3D *cStructure)
                 break;
             }
             case SHAPES:
-                if(iBaseHelix) {
+                if (iBaseHelix) {
                     glBindTexture(GL_TEXTURE_2D, cImages->texture[iShapeHelix]);
                     G->SetColor(RNA3D_GC_BASES_HELIX);
                     glCallList(HELIX_A); glCallList(HELIX_G); glCallList(HELIX_C); glCallList(HELIX_U);
                 }
-                if(iBaseUnpairHelix) {
+                if (iBaseUnpairHelix) {
                     glBindTexture(GL_TEXTURE_2D, cImages->texture[iShapeUnpairHelix]);
                     G->SetColor(RNA3D_GC_BASES_UNPAIRED_HELIX);
                     glCallList(UNPAIRED_HELIX_A); glCallList(UNPAIRED_HELIX_G); glCallList(UNPAIRED_HELIX_C); glCallList(UNPAIRED_HELIX_U);
                 }
-                if(iBaseNonHelix) {
+                if (iBaseNonHelix) {
                     glBindTexture(GL_TEXTURE_2D, cImages->texture[iShapeNonHelix]);
                     G->SetColor(RNA3D_GC_BASES_NON_HELIX);
                     glCallList(NON_HELIX_A); glCallList(NON_HELIX_G); glCallList(NON_HELIX_C); glCallList(NON_HELIX_U);
@@ -428,7 +428,7 @@ void GLRenderer::TexturizeStructure(Texture2D *cImages, Structure3D *cStructure)
     }
 
     if (cStructure->iMapEnable && iMapSpecies) {
-        if(iMapSpeciesBase) {
+        if (iMapSpeciesBase) {
             glBindTexture(GL_TEXTURE_2D, cImages->texture[CIRCLE]);
 
             glPointSize(ObjectSize+4);
@@ -449,7 +449,7 @@ void GLRenderer::TexturizeStructure(Texture2D *cImages, Structure3D *cStructure)
             glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_U]);  glCallList(MAP_SPECIES_BASE_U);
         }
 
-        if(iMapSpeciesMiss) {
+        if (iMapSpeciesMiss) {
             glPointSize(ObjectSize);
             G->SetColor(RNA3D_GC_MAPPED_SPECIES);
             glBindTexture(GL_TEXTURE_2D, cImages->texture[CIRCLE]);
@@ -460,7 +460,7 @@ void GLRenderer::TexturizeStructure(Texture2D *cImages, Structure3D *cStructure)
             glCallList(MAP_SPECIES_MISSING);
         }
 
-        if(iMapSpeciesDels) {
+        if (iMapSpeciesDels) {
             glPointSize(ObjectSize);
             G->SetColor(RNA3D_GC_DELETION);
             glBindTexture(GL_TEXTURE_2D, cImages->texture[CIRCLE]);
@@ -471,7 +471,7 @@ void GLRenderer::TexturizeStructure(Texture2D *cImages, Structure3D *cStructure)
             glCallList(MAP_SPECIES_DELETION);
         }
 
-        if(iMapSpeciesIns) {
+        if (iMapSpeciesIns) {
             glPointSize(ObjectSize*3);
             G->SetColor(RNA3D_GC_INSERTION);
             glBindTexture(GL_TEXTURE_2D, cImages->texture[CONE_DOWN]);

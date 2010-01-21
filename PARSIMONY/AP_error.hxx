@@ -9,9 +9,9 @@ class AP_ERR
 
 public:
     AP_ERR(const char *errorstring);                // sets error
-    AP_ERR(const char *,const int core);
-    AP_ERR(const char *,const char *,const int core);
-    AP_ERR(const char *,const char *);
+    AP_ERR(const char *, const int core);
+    AP_ERR(const char *, const char *, const int core);
+    AP_ERR(const char *, const char *);
     ~AP_ERR();
     
     const char *show();                             // shows error messages

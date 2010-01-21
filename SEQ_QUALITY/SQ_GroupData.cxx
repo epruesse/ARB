@@ -38,7 +38,7 @@ consensus_result SQ_GroupData_RNA::SQ_calc_consensus(const char *sequence) const
     for (int i = 0; i < size; i++) {
         int current[6] = { 0, 0, 0, 0, 0, 0 };
 
-        //fill up current with decoded iupac values
+        // fill up current with decoded iupac values
         switch (sequence[i]) {
         case 'a':
         case 'A':
@@ -152,8 +152,8 @@ consensus_result SQ_GroupData_RNA::SQ_calc_consensus(const char *sequence) const
         }
     }
 
-    cr.conformity = cr.conformity / size; //set conformity in relation to sequencelength
-    cr.deviation = cr.deviation / size; //set deviation in relation to sequencelength
+    cr.conformity = cr.conformity / size; // set conformity in relation to sequencelength
+    cr.deviation = cr.deviation / size; // set deviation in relation to sequencelength
     return cr;
 }
 

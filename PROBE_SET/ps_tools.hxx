@@ -16,7 +16,7 @@
 
 struct tms;
 
-void PS_print_time_diff( const struct tms *_since, const char *_before = 0, const char *_after = 0 );
+void PS_print_time_diff(const struct tms *_since, const char *_before = 0, const char *_after = 0);
 
 #else
 #error ps_tools.hxx included twice

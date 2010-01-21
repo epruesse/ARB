@@ -123,7 +123,7 @@ struct list_entry {
                 
                 break;
             }
-            default :
+            default:
                 awt_assert(0);  // illegal 'sort_order'
                 break;
         }
@@ -247,7 +247,7 @@ public:
         : gb_main(gb_main_)
         , description(description_)
         , current_path("/")
-    { }
+    {}
 
     const GBDATA *get_db() const { return gb_main; }
     const string& get_description() const { return description; }
@@ -431,8 +431,8 @@ static GB_ERROR browse_cmd_goto_valid_node(AW_window *aww) {
 }
 
 static BrowserCommand browser_command_table[] = {
-    { BROWSE_CMD_GOTO_VALID_NODE, browse_cmd_goto_valid_node},
-    { BROWSE_CMD_GO_UP, browse_cmd_go_up},
+    { BROWSE_CMD_GOTO_VALID_NODE, browse_cmd_goto_valid_node },
+    { BROWSE_CMD_GO_UP, browse_cmd_go_up },
     { 0, 0 }
 };
 
@@ -856,12 +856,12 @@ AW_window *DB_browser::get_window(AW_root *aw_root) {
         aws->init(aw_root, "DB_BROWSER", "ARB database browser");
         aws->load_xfig("dbbrowser.fig");
 
-        aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE","CLOSE","C");
+        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback( AW_POPUP_HELP, (AW_CL)"db_browser.hlp");
+        aws->callback(AW_POPUP_HELP, (AW_CL)"db_browser.hlp");
         aws->at("help");
-        aws->create_button("HELP","HELP","H");
+        aws->create_button("HELP", "HELP", "H");
 
         aws->at("db");
         update_DB_selector();

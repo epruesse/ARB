@@ -61,7 +61,7 @@ AW_gc_manager SEC_graphic::init_devices(AW_window *aww, AW_device *device, AWT_c
 
                      // colors used to paint the skeleton of the structure
                      "+-SKELETON HELIX${HELIX}", "+-SKELETON LOOP${LOOP}", "-SKELETON NONHELIX${NONPAIRING HELIX}",
-                     NULL );
+                     NULL);
 
     return preset_window;
 }
@@ -374,7 +374,7 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
                         elem->orientationChanged();
                     }
                 }
-                break ;
+                break;
             }
 
             case AWT_MODE_SETROOT:  // set-root-mode / reset angles
@@ -393,7 +393,7 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
                         exports.save = 1;
                     }
                 }
-                break ;
+                break;
 
             case AWT_MODE_MOVE: { // fold/unfold helix
                 if (event == AW_Mouse_Press) {
@@ -431,7 +431,7 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
                         }
                     }
                 }
-                break ;
+                break;
             }
             case AWT_MODE_LINE:
             case AWT_MODE_PROINFO:
@@ -489,7 +489,7 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd,
     if (cmd != AWT_MODE_EDIT && cmd != AWT_MODE_STRETCH) sec_root->set_show_constraints(SEC_NO_TYPE);
 
     GB_ERROR error = 0;
-    if (event== AW_Keyboard_Press || event == AW_Keyboard_Release) {
+    if (event == AW_Keyboard_Press || event == AW_Keyboard_Release) {
         error = handleKey(event, key_modifier, key_code, key_char);
     }
     else {
@@ -568,9 +568,9 @@ GB_ERROR SEC_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
 
     /************************** Reset structure ***********************************/
     if (gb_struct) {
-        GB_remove_callback( gb_struct,  GB_CB_ALL, (GB_CB)SEC_structure_changed_cb, (int *)this);
+        GB_remove_callback(gb_struct,   GB_CB_ALL, (GB_CB)SEC_structure_changed_cb, (int *)this);
         gb_struct = NULL;
-        GB_remove_callback( gb_struct_ref,  GB_CB_ALL, (GB_CB)SEC_structure_changed_cb, (int *)this);
+        GB_remove_callback(gb_struct_ref,   GB_CB_ALL, (GB_CB)SEC_structure_changed_cb, (int *)this);
         gb_struct_ref = NULL;
     }
 
@@ -594,19 +594,19 @@ GB_ERROR SEC_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
 
         GBDATA *gb_species = GBT_find_SAI(gb_main, name);
         if (!gb_species) {
-            err = GB_export_errorf("Cannot find helix template SAI '%s'",name);
+            err = GB_export_errorf("Cannot find helix template SAI '%s'", name);
         }
         else {
             char *ali_name = GBT_get_default_alignment(gb_main);
 
-            ali_len = GBT_get_alignment_len(gb_main,ali_name);
+            ali_len = GBT_get_alignment_len(gb_main, ali_name);
             if (ali_len < 10) {
-                err = GB_export_errorf("alignment '%s' to short to generate helix",ali_name);
+                err = GB_export_errorf("alignment '%s' to short to generate helix", ali_name);
             }
             else {
                 gb_ali = GB_search(gb_species, ali_name, GB_FIND);
                 if (!gb_ali) {
-                    err = GB_export_errorf("Your helix structure template '%s' has no valid sequence for alignment '%s'", name,ali_name); // no sequence for name in the database !!!
+                    err = GB_export_errorf("Your helix structure template '%s' has no valid sequence for alignment '%s'", name, ali_name); // no sequence for name in the database !!!
                 }
             }
             free(ali_name);
@@ -621,14 +621,14 @@ GB_ERROR SEC_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
     // -----------------------
 
     if (!err) {
-        gb_struct = GB_search(gb_ali,NAME_OF_STRUCT_SEQ, GB_FIND);
+        gb_struct = GB_search(gb_ali, NAME_OF_STRUCT_SEQ, GB_FIND);
 
         if (gb_struct) {
-            gb_struct_ref = GB_search(gb_ali , NAME_OF_REF_SEQ , GB_STRING);
+            gb_struct_ref = GB_search(gb_ali,  NAME_OF_REF_SEQ,  GB_STRING);
 
             char *strct = GB_read_string(gb_struct);
             char *ref = GB_read_string(gb_struct_ref);
-            err = sec_root->read_data(strct,ref);
+            err = sec_root->read_data(strct, ref);
             if (err) {
                 err = GBS_global_string("Defect structure in DB (read-error: '%s')", err);
             }
@@ -684,26 +684,26 @@ GB_ERROR SEC_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
     }
 
     /************************* Listen to the database ***************************/
-    GB_add_callback(gb_struct,GB_CB_ALL,(GB_CB)SEC_structure_changed_cb, (int *)this);
-    GB_add_callback(gb_struct_ref,GB_CB_ALL,(GB_CB)SEC_structure_changed_cb, (int *)this);
+    GB_add_callback(gb_struct, GB_CB_ALL, (GB_CB)SEC_structure_changed_cb, (int *)this);
+    GB_add_callback(gb_struct_ref, GB_CB_ALL, (GB_CB)SEC_structure_changed_cb, (int *)this);
 
     return err;
 }
 
 /** Save secondary structure to database */
-GB_ERROR SEC_graphic::save(GBDATA *, const char *,AW_CL,AW_CL)
+GB_ERROR SEC_graphic::save(GBDATA *, const char *, AW_CL, AW_CL)
 {
     if (!gb_struct) return 0;   // not loaded, so don't save
     if (!sec_root) return 0;
     
     char           *data  = sec_root->buildStructureString();
     GB_transaction  ta(gb_main);
-    GB_ERROR        error = GB_write_string(gb_struct,data);
+    GB_ERROR        error = GB_write_string(gb_struct, data);
     if (!error) {
         const XString&  xstr     = sec_root->get_xString();
         const char     *x_string = xstr.get_x_string();
 
-        error = GB_write_string(gb_struct_ref,x_string);
+        error = GB_write_string(gb_struct_ref, x_string);
 
         if (!error && xstr.alignment_too_short()) {
             aw_message("Your helix needs one gap at end. Please format your alignment!");
@@ -795,7 +795,7 @@ void SEC_graphic::show(AW_device *device) {
     sec_root->clear_last_drawed_cursor_position();
 
     if (sec_root->canDisplay()) {
-        if (sec_root->get_root_loop())  {
+        if (sec_root->get_root_loop()) {
             GB_ERROR paint_error = sec_root->paint(device);
             if (paint_error) textToDisplay = GBS_global_string("Error: %s", paint_error);
         }

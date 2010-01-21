@@ -49,7 +49,7 @@ struct adfiltercbstruct {
 
 /***********************    FILTERS     ************************/
 
-adfiltercbstruct *awt_create_select_filter(AW_root *aw_root,GBDATA *gb_main, const char *def_name);
+adfiltercbstruct *awt_create_select_filter(AW_root *aw_root, GBDATA *gb_main, const char *def_name);
 /* Create a data structure for filters (needed for awt_create_select_filter_win */
 /* Create a filter selection box, this box needs 3 AWARS:
    1. "$def_name"
@@ -57,7 +57,7 @@ adfiltercbstruct *awt_create_select_filter(AW_root *aw_root,GBDATA *gb_main, con
    3. "$def_name:/name=/alignment"
    and some internal awars
 */
-void awt_set_awar_to_valid_filter_good_for_tree_methods(GBDATA *gb_main,AW_root *awr, const char *awar_name);
+void awt_set_awar_to_valid_filter_good_for_tree_methods(GBDATA *gb_main, AW_root *awr, const char *awar_name);
 
 AW_window *awt_create_select_filter_win(AW_root *aw_root, AW_CL cd_adfiltercbstruct);
 /* not just the box, but the whole window */

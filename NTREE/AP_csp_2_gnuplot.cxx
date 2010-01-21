@@ -288,7 +288,7 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
     if (mode != 2) {
         char *filterstring     = aww->get_root()->awar(AP_AWAR_FILTER_FILTER)->read_string();
         char *alignment_name   = aww->get_root()->awar(AP_AWAR_FILTER_ALIGNMENT)->read_string();
-        long  alignment_length = GBT_get_alignment_len(GLOBAL_gb_main,alignment_name);
+        long  alignment_length = GBT_get_alignment_len(GLOBAL_gb_main, alignment_name);
 
         AP_filter filter(filterstring, "0", alignment_length);
 
@@ -323,8 +323,8 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
         else {
             FILE *out = 0;
             if (!error) {
-                out = fopen(fname,"w");
-                if (!out) error = GB_export_errorf("Cannot write to file '%s'",fname);
+                out = fopen(fname, "w");
+                if (!out) error = GB_export_errorf("Cannot write to file '%s'", fname);
             }
 
             nt_assert(out || error);
@@ -379,7 +379,7 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
                         data.floatVals = csp->get_ttratio();
                         break;
 
-                    case PT_HELIX:  {
+                    case PT_HELIX: {
                         stat_type = STAT_SIMPLE_BOOL;
                         data.boolVals  = csp->get_is_helix();
                         break;
@@ -387,7 +387,7 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
                     case PT_MOST_FREQUENT_BASE:
                     case PT_SECOND_FREQUENT_BASE:
                     case PT_THIRD_FREQUENT_BASE:
-                    case PT_LEAST_FREQUENT_BASE:  {
+                    case PT_LEAST_FREQUENT_BASE: {
                         stat_type   = STAT_SORT;
                         data.sorted = new SortedFreq(csp);
                         break;
@@ -403,11 +403,11 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
                 if (!error) {
                     for (size_t j=0; j<csplen; ++j) {
                         if (!weights[j]) continue;
-                        fprintf(out,"%zu ",j); // print X coordinate
+                        fprintf(out, "%zu ", j); // print X coordinate
 
                         double val;
                         switch (stat_type) {
-                            case STAT_AMOUNT:  {
+                            case STAT_AMOUNT: {
                                 float A  = data.amount.A[j];
                                 float C  = data.amount.C[j];
                                 float G  = data.amount.G[j];
@@ -435,7 +435,7 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
                         }
 
                         double smoothed = val/smooth + smoothed *(smooth-1)/(smooth);
-                        fprintf(out,"%f\n",smoothed); // print Y coordinate
+                        fprintf(out, "%f\n", smoothed); // print Y coordinate
                     }
                 }
 
@@ -500,12 +500,12 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
     if (error) aw_message(error);
 }
 
-AW_window *AP_open_csp_2_gnuplot_window( AW_root *root ){
+AW_window *AP_open_csp_2_gnuplot_window(AW_root *root) {
 
     GB_transaction dummy(GLOBAL_gb_main);
-    AWT_csp *csp = new AWT_csp(GLOBAL_gb_main,root,AP_AWAR_CSP_NAME);
+    AWT_csp *csp = new AWT_csp(GLOBAL_gb_main, root, AP_AWAR_CSP_NAME);
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "EXPORT_CSP_TO_GNUPLOT", "Export Column statistic to GnuPlot");
+    aws->init(root, "EXPORT_CSP_TO_GNUPLOT", "Export Column statistic to GnuPlot");
     aws->load_xfig("cpro/csp_2_gnuplot.fig");
 
     root->awar_string(AWAR_DEFAULT_ALIGNMENT, "", GLOBAL_gb_main);
@@ -526,16 +526,16 @@ AW_window *AP_open_csp_2_gnuplot_window( AW_root *root ){
 
     aw_create_selection_box_awars(root, AP_AWAR_CSP, "", ".gc_gnu", "noname.gc_gnu");
 
-    aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->at("help");aws->callback(AW_POPUP_HELP,(AW_CL)"csp_2_gnuplot.hlp");
-    aws->create_button("HELP","HELP","H");
+    aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"csp_2_gnuplot.hlp");
+    aws->create_button("HELP", "HELP", "H");
 
-    awt_create_selection_box(aws,AP_AWAR_CSP);
+    awt_create_selection_box(aws, AP_AWAR_CSP);
 
     aws->at("csp");
-    create_selection_list_on_csp(aws,csp);
+    create_selection_list_on_csp(aws, csp);
 
     aws->at("what");
     AW_selection_list* selid = aws->create_selection_list(AP_AWAR_CSP_SUFFIX);
@@ -552,32 +552,32 @@ AW_window *AP_open_csp_2_gnuplot_window( AW_root *root ){
 
     aws->at("smooth");
     aws->create_option_menu(AP_AWAR_CSP_SMOOTH);
-    aws->insert_option("Don't smooth","D",0);
-    aws->insert_option("Smooth 1","1",1);
-    aws->insert_option("Smooth 2","2",2);
-    aws->insert_option("Smooth 3","3",3);
-    aws->insert_option("Smooth 5","5",5);
-    aws->insert_option("Smooth 10","0",10);
+    aws->insert_option("Don't smooth", "D", 0);
+    aws->insert_option("Smooth 1", "1", 1);
+    aws->insert_option("Smooth 2", "2", 2);
+    aws->insert_option("Smooth 3", "3", 3);
+    aws->insert_option("Smooth 5", "5", 5);
+    aws->insert_option("Smooth 10", "0", 10);
     aws->update_option_menu();
 
     aws->at("smooth2");
     aws->create_toggle_field(AP_AWAR_CSP_SMOOTH_GNUPLOT, 1);
-    aws->insert_default_toggle("None","N", "");
-    aws->insert_toggle("Unique","U", "smooth unique");
-    aws->insert_toggle("CSpline","S", "smooth cspline");
-    aws->insert_toggle("Bezier","B", "smooth bezier");
+    aws->insert_default_toggle("None", "N", "");
+    aws->insert_toggle("Unique", "U", "smooth unique");
+    aws->insert_toggle("CSpline", "S", "smooth cspline");
+    aws->insert_toggle("Bezier", "B", "smooth bezier");
     aws->update_toggle_field();
 
     aws->auto_space(10, 10);
     aws->button_length(13);
 
     aws->at("save");
-    aws->callback(AP_csp_2_gnuplot_cb,(AW_CL)csp, (AW_CL)0);
-    aws->create_button("SAVE","Save");
+    aws->callback(AP_csp_2_gnuplot_cb, (AW_CL)csp, (AW_CL)0);
+    aws->create_button("SAVE", "Save");
 
     aws->highlight();
-    aws->callback(AP_csp_2_gnuplot_cb,(AW_CL)csp, (AW_CL)1);
-    aws->create_button("SAVE_AND_VIEW","Save & View");
+    aws->callback(AP_csp_2_gnuplot_cb, (AW_CL)csp, (AW_CL)1);
+    aws->create_button("SAVE_AND_VIEW", "Save & View");
 
     aws->at("overlay1");
     aws->label("Overlay statistics with same prefix?");

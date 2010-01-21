@@ -140,24 +140,24 @@ public:
         }
                         
 
-        printf("\nProfile from %d to %d\n",start,end);
+        printf("\nProfile from %d to %d\n", start, end);
         printf("Substitutions kosten:\n");
         for (i = start; i <= end; i++) {
-            printf("%2d: ",i);
+            printf("%2d: ", i);
             for (j = 0; j < 6; j++)
-                printf("%4.2f ",(*sub_costs)[i][j]);
+                printf("%4.2f ", (*sub_costs)[i][j]);
             printf("\n");
         }
 
         printf("\nGap Bereiche:\n");
         for (i = start; i <= end; i++) {
-            printf("%2d: %3ld %3ld\n",i,lmin[i],lmax[i]);
+            printf("%2d: %3ld %3ld\n", i, lmin[i], lmax[i]);
             printf("  : ");
             for (j = 0; j <= lmax[i] - lmin[i] + 1; j++)
-                printf("%4.2f ",(*gap_percents)[i][j]);
+                printf("%4.2f ", (*gap_percents)[i][j]);
             printf("\n  : ");
             for (j = 0; j <= lmax[i] - lmin[i] + 1; j++)
-                printf("%4.2f ",(*gap_costs)[i][j]);
+                printf("%4.2f ", (*gap_costs)[i][j]);
             printf("\n");
         }
 
@@ -186,7 +186,7 @@ public:
                     return 0;
             }
         for (l = (long) pos + 1; l < (long) prof_len; l++)
-            switch((*helix_borders)[l]) {
+            switch ((*helix_borders)[l]) {
                 case ALI_PROFILE_BORDER_LEFT:
                     return 0;
                 case ALI_PROFILE_BORDER_RIGHT:
@@ -229,7 +229,7 @@ public:
 
     float base_weight(unsigned long pos, unsigned char c) {
         if (c > 3)
-            ali_fatal_error("Out of range","ALI_PROFILE::base_weight()");
+            ali_fatal_error("Out of range", "ALI_PROFILE::base_weight()");
         return (*base_weights)[pos][c];
     }
 
@@ -271,7 +271,7 @@ public:
         float costs = 0.0;
         unsigned long i;
         for (i = start; i <= end; i++)
-            costs += w_del(start,i);
+            costs += w_del(start, i);
         return costs;
     }
     float w_del_multi_cheap(unsigned long start, unsigned long end) {
@@ -285,14 +285,14 @@ public:
         float costs = 0.0;
         unsigned long i;
         for (i = start; i <= end; i++)
-            costs += w_del(i,i);
+            costs += w_del(i, i);
         return costs;
     }
 
-    float w_ins(unsigned long /*positionx*/, unsigned long /*positiony*/) {
+    float w_ins(unsigned long /* positionx */, unsigned long /* positiony */) {
         return insert_cost;
     }
-    float w_ins_cheap(unsigned long /*positionx*/, unsigned long /*positiony*/) {
+    float w_ins_cheap(unsigned long /* positionx */, unsigned long /* positiony */) {
         return multi_insert_cost;
     }
     float w_ins_multi_unweighted(unsigned long startx, unsigned long endx) {

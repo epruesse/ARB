@@ -36,8 +36,8 @@ char *read_aisc_file(char *path)
         fprintf(stderr, " file %s not found\n", path);
     }
     else {
-        if (fseek(input,0,2)==-1){
-            fprintf(stderr, "file %s not seekable\n",path);
+        if (fseek(input, 0, 2)==-1) {
+            fprintf(stderr, "file %s not seekable\n", path);
         }
         else {
             data_size = (int)ftell(input);
@@ -49,7 +49,7 @@ char *read_aisc_file(char *path)
                 data_size++;
                 rewind(input);
                 buffer =  (char *)malloc(data_size+1);
-                data_size = fread(buffer,1,data_size,input);
+                data_size = fread(buffer, 1, data_size, input);
                 buffer[data_size] = 0;
             }
         }
@@ -59,9 +59,9 @@ char *read_aisc_file(char *path)
 }
 
 static void aisc_init() {
-    gl = (struct global_struct *)calloc(sizeof(struct global_struct),1);
+    gl = (struct global_struct *)calloc(sizeof(struct global_struct), 1);
 
-    gl->linebuf         = (char *)calloc(sizeof(char),linebufsize+2);
+    gl->linebuf         = (char *)calloc(sizeof(char), linebufsize+2);
     gl->line_cnt        = 1;
     gl->last_line_start = NULL;
     gl->error_flag      = 0;
@@ -173,7 +173,7 @@ static void p_err_exp_string_but_saw(const char *io, const char *saw) { p_err_ex
 static void p_err_exp_but_saw_EOF(const char *io, const char *expect) { p_err_exp_but_saw(io, expect, "end of file"); }
 
 static void p_err_empty_braces(const char *io) { p_err(io, "{} found, missing contents"); }
-static void p_err_exp_line_terminator(const char *io){ p_err(io, "missing ',' or ';' or 'newline'"); }
+static void p_err_exp_line_terminator(const char *io) { p_err(io, "missing ',' or ';' or 'newline'"); }
 static void p_err_ill_atWord(const char *io) { p_err(io, "only header definitions may start with '@'"); }
 static void p_err_exp_atWord(const char *io) { p_err(io, "all words in header-definitions have to start with '@'"); }
 
@@ -224,14 +224,14 @@ inline void copyTillQuotesTo(const char*& in, char*& out) {
     // closing quotes are END_STR1 plus END_STR2
     bool quotes_closed = false;
     while (!quotes_closed) {
-        while ( (gl->lastchar != EOSTR) && (gl->lastchar != END_STR1)) {
+        while ((gl->lastchar != EOSTR) && (gl->lastchar != END_STR1)) {
             *(out++) = gl->lastchar;
             get_byte(in);
         }
 
         if (gl->lastchar == END_STR1) {
             get_byte(in);
-            if (gl->lastchar == END_STR2 ) {
+            if (gl->lastchar == END_STR2) {
                 get_byte(in);
                 quotes_closed = true;
             }
@@ -615,7 +615,7 @@ static CL *read_prog(const char *in, const char *file) {
 
 
 
-int main(int argc,char ** argv) {
+int main(int argc, char ** argv) {
     int exitcode = EXIT_FAILURE;
 
     if (argc < 2) {
@@ -627,12 +627,12 @@ int main(int argc,char ** argv) {
         aisc_init();
         {
             char abuf[20];
-            for (int i=0;i<argc;i++) {
-                sprintf(abuf,"argv[%i]",i);
-                write_hash(gl->st->hs,abuf,argv[i]);
+            for (int i=0; i<argc; i++) {
+                sprintf(abuf, "argv[%i]", i);
+                write_hash(gl->st->hs, abuf, argv[i]);
             }
-            sprintf(abuf,"%i",argc);
-            write_hash(gl->st->hs,"argc",abuf);
+            sprintf(abuf, "%i", argc);
+            write_hash(gl->st->hs, "argc", abuf);
         }
 
         char *buf = read_aisc_file(argv[1]);
@@ -640,7 +640,7 @@ int main(int argc,char ** argv) {
             gl->prg = read_prog(buf, argv[1]);
             if (gl->prg) {
                 aisc_calc_special_commands();
-                CL *co = aisc_calc_blocks(gl->prg,0,0,0);
+                CL *co = aisc_calc_blocks(gl->prg, 0, 0, 0);
                 if (co) {
                     print_error("unexpected end of file");
                 }

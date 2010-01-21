@@ -1,7 +1,7 @@
 #define CHARACTERS 0
 #define SHAPES     1
 
-#define MIN(a,b) ((a)<(b)?(a):(b))
+#define MIN(a, b) ((a)<(b) ? (a) : (b))
 
 class Texture2D;
 class Structure3D;

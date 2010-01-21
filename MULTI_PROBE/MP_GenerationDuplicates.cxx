@@ -1,7 +1,7 @@
 #include <MultiProbe.hxx>
 #include <string.h>
 
-BOOL GenerationDuplicates::insert(probe_combi_statistic *sondenkombi, BOOL &result, int depth)          //initial muss result TRUE sein
+BOOL GenerationDuplicates::insert(probe_combi_statistic *sondenkombi, BOOL &result, int depth)          // initial muss result TRUE sein
 {
     int max_depth = mp_gl_awars.no_of_probes;
 
@@ -11,7 +11,7 @@ BOOL GenerationDuplicates::insert(probe_combi_statistic *sondenkombi, BOOL &resu
         return FALSE;
     }
 
-    if (! next[sondenkombi->get_probe_combi(depth)->probe_index])               //sonde muss auf alle Faelle bis zuletzt eingetragen werden
+    if (! next[sondenkombi->get_probe_combi(depth)->probe_index])               // sonde muss auf alle Faelle bis zuletzt eingetragen werden
     {
         if (depth == max_depth-1)
         {
@@ -28,11 +28,11 @@ BOOL GenerationDuplicates::insert(probe_combi_statistic *sondenkombi, BOOL &resu
     }
 
     result = result && next_mism[sondenkombi->get_probe_combi(depth)->allowed_mismatches];
-    next[sondenkombi->get_probe_combi(depth)->probe_index]->insert(sondenkombi, result, depth+1);       //man kann erst ganz unten entscheiden, ob doppelt oder nicht
+    next[sondenkombi->get_probe_combi(depth)->probe_index]->insert(sondenkombi, result, depth+1);       // man kann erst ganz unten entscheiden, ob doppelt oder nicht
     return result;
 }
 
-GenerationDuplicates::GenerationDuplicates(int size)            //size muss die Groesse des Sondenarrays in ProbeValuation enthalten
+GenerationDuplicates::GenerationDuplicates(int size)            // size muss die Groesse des Sondenarrays in ProbeValuation enthalten
 {
     intern_size = size;
     next = new GenerationDuplicates*[size];

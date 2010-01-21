@@ -24,7 +24,7 @@ struct ALI_TLIST_ELEM {
     ALI_TLIST_ELEM<T>(T &a) : info(a)
     { prev_elem = next_elem = 0; }
     void print(void) {
-        printf("<%8p (%8p) %8p> = %lx", prev_elem,this,next_elem,info);
+        printf("<%8p (%8p) %8p> = %lx", prev_elem, this, next_elem, info);
     }
 };
 
@@ -107,7 +107,7 @@ public:
                first_elem, last_elem, current_elem, marked_elem);
         for (akt = first_elem, l = 0; akt != 0 && akt != last_elem; 
              l++, akt = akt->next_elem) {
-            printf("%2ld ",l);
+            printf("%2ld ", l);
             akt->print();
             printf("\n");
         }
@@ -152,7 +152,7 @@ public:
     }
     void marked(void) {
         if (marked_elem == 0)
-            ali_fatal_error("No marked element in list","ALI_TLIST<T>::marked()");
+            ali_fatal_error("No marked element in list", "ALI_TLIST<T>::marked()");
         current_elem = marked_elem;
         marked_elem = 0;
     }

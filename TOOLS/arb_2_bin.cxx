@@ -23,7 +23,7 @@ int main(int argc, char **argv)
                 );
         
         if (strcmp(argv[1], "--help") != 0) { error = "Missing arguments"; }
-        return(-1);
+        return (-1);
     }
     else {
         char    rtype[256];
@@ -37,18 +37,18 @@ int main(int argc, char **argv)
             char *rtypep = rtype;
             char *wtypep = wtype;
             
-            memset(rtype,0,10);
-            memset(wtype,0,10);
+            memset(rtype, 0, 10);
+            memset(wtype, 0, 10);
             *(wtypep++) = 'b';
             *(rtypep++) = 'r';
             *(rtypep++) = 'w';
 
-            while (argv[ci][0] == '-' && argv[ci][1] != 0){
-                if (!strcmp(argv[ci],"-m")) { ci++; *(wtypep++) = 'm'; }
-                if (!strcmp(argv[ci],"-r")) { ci++; *(rtypep++) = 'R'; }
-                if (!strncmp(argv[ci],"-c",2)) { opt_tree = argv[ci]+2; ci++; }
-                if (!strncmp(argv[ci],"-i",2)) { nidx = atoi(argv[ci]+2); ci++; }
-                if (!strncmp(argv[ci],"-t",2)) { test = 1; ci++; }
+            while (argv[ci][0] == '-' && argv[ci][1] != 0) {
+                if (!strcmp(argv[ci], "-m")) { ci++; *(wtypep++) = 'm'; }
+                if (!strcmp(argv[ci], "-r")) { ci++; *(rtypep++) = 'R'; }
+                if (!strncmp(argv[ci], "-c", 2)) { opt_tree = argv[ci]+2; ci++; }
+                if (!strncmp(argv[ci], "-i", 2)) { nidx = atoi(argv[ci]+2); ci++; }
+                if (!strncmp(argv[ci], "-t", 2)) { test = 1; ci++; }
             }
         }
 
@@ -57,11 +57,11 @@ int main(int argc, char **argv)
 
         printf("Reading database...\n");
         GBDATA *gb_main = GBT_open(in, rtype, 0);
-        if (!gb_main){
+        if (!gb_main) {
             error = GB_await_error();
         }
         else {
-            if (opt_tree){
+            if (opt_tree) {
                 char *ali_name;
                 {
                     GB_transaction dummy(gb_main);
@@ -70,7 +70,7 @@ int main(int argc, char **argv)
                 if (!strlen(opt_tree)) opt_tree = 0;
 
                 printf("Optimizing database...\n");
-                error = GBT_compress_sequence_tree2(gb_main,opt_tree,ali_name);
+                error = GBT_compress_sequence_tree2(gb_main, opt_tree, ali_name);
                 if (error) error = GBS_global_string("Error during optimize: %s", error);
                 free(ali_name);
             }
@@ -78,13 +78,13 @@ int main(int argc, char **argv)
             if (!error) {
                 GB_set_next_main_idx(nidx);
                 printf("Saving database...\n");
-                error = GB_save(gb_main,out,wtype);
+                error = GB_save(gb_main, out, wtype);
             }
             GB_close(gb_main);
         }
     }
     
-    if (error){
+    if (error) {
         fprintf(stderr, "arb_2_bin: Error: %s\n", error);
         return EXIT_FAILURE;
     }

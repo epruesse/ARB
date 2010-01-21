@@ -69,7 +69,7 @@ struct Vector3 {
     // subtracting 2 vectors
     Vector3 operator-(Vector3 v) { return Vector3(x - v.x, y - v.y, z - v.z); }
 
-    //multiply by scalars
+    // multiply by scalars
     Vector3 operator*(float num) { return Vector3(x * num, y * num, z * num); }
 
     // divide by scalars

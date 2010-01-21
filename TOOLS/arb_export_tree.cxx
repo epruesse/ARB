@@ -8,7 +8,7 @@
  *      */
 
 
-int main(int argc, char **argv){
+int main(int argc, char **argv) {
     int exitcode = EXIT_SUCCESS;
 
     if (argc < 2) {
@@ -23,9 +23,9 @@ int main(int argc, char **argv){
     }
     else {
         GB_ERROR  error   = 0;
-        GBDATA   *gb_main = GBT_open(":","r",0);
+        GBDATA   *gb_main = GBT_open(":", "r", 0);
         
-        if (!gb_main){
+        if (!gb_main) {
             error    = GB_await_error();
             exitcode = EXIT_FAILURE;
         }
@@ -45,7 +45,7 @@ int main(int argc, char **argv){
             if (!tree_name) error = "Missing argument TREE_NAME";
             else {
                 GB_transaction dummy(gb_main);
-                GBT_TREE *tree = GBT_read_tree(gb_main,tree_name, - sizeof(GBT_TREE));
+                GBT_TREE *tree = GBT_read_tree(gb_main, tree_name, - sizeof(GBT_TREE));
                 if (tree) {
                     error = TREE_export_tree(gb_main, stdout, tree, trifurcated, branchlens, doublequotes);
                 }

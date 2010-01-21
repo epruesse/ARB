@@ -33,7 +33,7 @@ AW_window *create_mg_check_fields(AW_root *aw_root);
 void MG_create_config_awar(AW_root *aw_root, AW_default aw_def);
 void MG_create_trees_awar(AW_root *aw_root, AW_default aw_def);
 void MG_create_extendeds_awars(AW_root *aw_root, AW_default aw_def);
-void MG_create_alignment_awars(AW_root *aw_root,AW_default aw_def);
+void MG_create_alignment_awars(AW_root *aw_root, AW_default aw_def);
 void MG_create_species_awars(AW_root *aw_root, AW_default aw_def);
 void MG_create_rename_awars(AW_root *aw_root, AW_default aw_def);
 
@@ -80,7 +80,7 @@ public:
     int n_remaps;
     char **alignment_names;
     MG_remap **remaps;
-    MG_remaps(GBDATA *gb_left,GBDATA *gb_right,AW_root *awr);
+    MG_remaps(GBDATA *gb_left, GBDATA *gb_right, AW_root *awr);
     ~MG_remaps();
 };
 

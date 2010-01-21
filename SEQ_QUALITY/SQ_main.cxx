@@ -216,7 +216,7 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
     if (tree) GBT_delete_tree(tree);
 }
 
-static void sq_remove_quality_entries_cb(AW_window * /*aww*/) {
+static void sq_remove_quality_entries_cb(AW_window * /* aww */) {
     SQ_remove_quality_entries(GLOBAL_gb_main);
 }
 

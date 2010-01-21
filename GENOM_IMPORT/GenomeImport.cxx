@@ -41,7 +41,7 @@ GB_ERROR GI_importGenomeFile(ImportSession& session, const char *file_name, cons
             if (!flatfile.getLine(line)) throw flatfile.lineError("File is empty");
 
             if      (beginsWith(line, "LOCUS")) importer = new GenebankImporter(flatfile, db_writer);
-            else if (beginsWith(line, "ID")   ) importer = new EmblImporter    (flatfile, db_writer);
+            else if (beginsWith(line, "ID")) importer = new EmblImporter       (flatfile, db_writer);
             else throw flatfile.lineError("Wrong format. Expected 'LOCUS' or 'ID'");
 
             flatfile.backLine(line);

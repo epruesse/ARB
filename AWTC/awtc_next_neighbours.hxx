@@ -64,7 +64,7 @@ public:
     AWTC_FIND_FAMILY(GBDATA *gb_maini);
     ~AWTC_FIND_FAMILY();
 
-    GB_ERROR findFamily(int server_id,char *sequence, int oligo_len, int mismatches, bool fast_flag, bool rel_matches, FF_complement compl_mode, int max_results);
+    GB_ERROR findFamily(int server_id, char *sequence, int oligo_len, int mismatches, bool fast_flag, bool rel_matches, FF_complement compl_mode, int max_results);
 
     const AWTC_FIND_FAMILY_MEMBER *getFamilyList() const { return family_list; }
     bool hits_were_truncated() const { return hits_truncated; }

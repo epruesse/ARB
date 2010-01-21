@@ -379,7 +379,7 @@ SearchTree::SearchTree(const SearchSettings *s)
         }
     }
 
-#define INSERT_ROOT_PATTERN(tok,com)                        \
+#define INSERT_ROOT_PATTERN(tok, com)                       \
     do {                                                    \
         if (root) {                                         \
             root = root->insert_unified_pattern(tok, com);  \
@@ -387,7 +387,7 @@ SearchTree::SearchTree(const SearchSettings *s)
         else {                                              \
             root = new SearchTreeNode(tok, com);            \
         }                                                   \
-    } while(0)
+    } while (0)
 
 
     {
@@ -527,13 +527,13 @@ char *SearchTree::unify_str(const char *data, int len, ED4_SEARCH_GAPS gaps, int
         int *u2r = *uni2real;
 
         if (gaps==ED4_SG_CONSIDER_GAPS) {
-            while(realPos<len) {
+            while (realPos<len) {
                 *pp++ = unified[(unsigned char)data[realPos]];
                 u2r[nlen++] = realPos++;
             }
         }
         else {
-            while(realPos<len) {
+            while (realPos<len) {
                 unsigned char c = data[realPos];
 
                 if (c!='-' && c!='.') {
@@ -546,13 +546,13 @@ char *SearchTree::unify_str(const char *data, int len, ED4_SEARCH_GAPS gaps, int
     }
     else {
         if (gaps==ED4_SG_CONSIDER_GAPS) {
-            while(realPos<len) {
+            while (realPos<len) {
                 *pp++ = unified[(unsigned char)data[realPos++]];
                 nlen++;
             }
         }
         else {
-            while(realPos<len) {
+            while (realPos<len) {
                 unsigned char c = data[realPos++];
 
                 if (c!='-' && c!='.') {
@@ -602,7 +602,7 @@ void SearchTree::findMatches(const char *seq, int len, reportMatch report)
             SearchTreeNode::set_report(report, uni2real);
             SearchTreeNode::set_mismatches(sett->get_min_mismatches(), sett->get_max_mismatches());
 
-            for (off=0; off<new_len && !ignore_more_results; off++,useq++) {
+            for (off=0; off<new_len && !ignore_more_results; off++, useq++) {
                 SearchTreeNode::set_start_offset(off);
                 root->findMatches(off, useq, new_len-off, 0, mismatch_list);
             }
@@ -619,22 +619,22 @@ void SearchTree::findMatches(const char *seq, int len, reportMatch report)
 
 // --------------------------------------------------------------------------------
 
-#define AWAR_NAME(t,s)  ED4_AWAR_##t##_SEARCH_##s
+#define AWAR_NAME(t, s) ED4_AWAR_##t##_SEARCH_##s
 
 #define AWAR_LIST(t)                            \
-    AWAR_NAME(t,PATTERN),                       \
-    AWAR_NAME(t,MIN_MISMATCHES),                \
-    AWAR_NAME(t,MAX_MISMATCHES),                \
-    AWAR_NAME(t,CASE),                          \
-    AWAR_NAME(t,TU),                            \
-    AWAR_NAME(t,PAT_GAPS),                      \
-    AWAR_NAME(t,SEQ_GAPS),                      \
-    AWAR_NAME(t,REVERSE),                       \
-    AWAR_NAME(t,COMPLEMENT),                    \
-    AWAR_NAME(t,EXACT),                         \
-    AWAR_NAME(t,SHOW),                          \
-    AWAR_NAME(t,OPEN_FOLDED),                   \
-    AWAR_NAME(t,AUTO_JUMP)
+    AWAR_NAME(t, PATTERN),                      \
+    AWAR_NAME(t, MIN_MISMATCHES),               \
+    AWAR_NAME(t, MAX_MISMATCHES),               \
+    AWAR_NAME(t, CASE),                         \
+    AWAR_NAME(t, TU),                           \
+    AWAR_NAME(t, PAT_GAPS),                     \
+    AWAR_NAME(t, SEQ_GAPS),                     \
+    AWAR_NAME(t, REVERSE),                      \
+    AWAR_NAME(t, COMPLEMENT),                   \
+    AWAR_NAME(t, EXACT),                        \
+    AWAR_NAME(t, SHOW),                         \
+    AWAR_NAME(t, OPEN_FOLDED),                  \
+    AWAR_NAME(t, AUTO_JUMP)
 
 static struct S_SearchAwarList awar_list[SEARCH_PATTERNS] = {
     { AWAR_LIST(USER1) },
@@ -694,7 +694,7 @@ static void searchParamsChanged(AW_root *root, AW_CL cl_type, AW_CL cl_action)
 
     // init new search
 
- recalc:
+ recalc :
     ED4_SearchResults::setNewSearch(type);
     if (!settings[type]) return;
     settings[type]->update(&awar_list[type]);
@@ -1184,7 +1184,7 @@ char *ED4_SearchResults::buildColorString(const ED4_sequence_terminal *seq_termi
     int i;
     int st_shown = 0;
 
-    e4_assert(start<=end);                  //confirming the condition
+    e4_assert(start<=end);                  // confirming the condition
     for (i=0; i<SEARCH_PATTERNS; i++) {
         if (shown[i]) {
             st_shown = 1;
@@ -1346,7 +1346,7 @@ GB_ERROR ED4_repeat_last_search(void) {
     return 0;
 }
 
-void ED4_search(AW_window */*aww*/, AW_CL searchDescriptor)
+void ED4_search(AW_window * /* aww */, AW_CL searchDescriptor)
 {
     int direction;
     ED4_SearchPositionType pattern;
@@ -1441,7 +1441,7 @@ void ED4_search(AW_window */*aww*/, AW_CL searchDescriptor)
     }
 }
 
-void ED4_mark_matching_species(AW_window */*aww*/, AW_CL cl_pattern) {
+void ED4_mark_matching_species(AW_window * /* aww */, AW_CL cl_pattern) {
     ED4_SearchPositionType  pattern  = ED4_SearchPositionType(cl_pattern);
     ED4_terminal           *terminal = ED4_ROOT->root_group_man->get_first_terminal();
     GB_transaction          ta(GLOBAL_gb_main);
@@ -1455,7 +1455,7 @@ void ED4_mark_matching_species(AW_window */*aww*/, AW_CL cl_pattern) {
             ED4_SearchPosition *found = results.get_first_starting_after(pattern, INT_MIN, false);
 
             if (found) {
-                ED4_species_manager *species_man = seq_terminal->get_parent(ED4_L_SPECIES)->to_species_manager();;
+                ED4_species_manager *species_man = seq_terminal->get_parent(ED4_L_SPECIES)->to_species_manager(); ;
                 if (!species_man->flag.is_consensus) {
                     GBDATA *gbd = species_man->get_species_pointer();
                     e4_assert(gbd);
@@ -1602,7 +1602,7 @@ static void load_search_paras_from_file(AW_window *aw, AW_CL cl_type) {
 #define BUFFERSIZE 10000
 
     SearchAwarList al = &awar_list[type];
-    while(1) {
+    while (1) {
         char buffer[BUFFERSIZE];
 
         buffer[0] = 0;
@@ -1659,27 +1659,27 @@ static AW_window *loadsave_search_parameters(AW_root *root, ED4_SearchPositionTy
 
     aws->load_xfig("edit4/save_search.fig");
 
-    aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback( AW_POPUP_HELP, (AW_CL)"search_parameters.hlp");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"search_parameters.hlp");
     aws->at("help");
-    aws->create_button("HELP","HELP","H");
+    aws->create_button("HELP", "HELP", "H");
 
     awt_create_selection_box((AW_window *)aws, ED4_SEARCH_SAVE_BASE);
 
-    aws->callback( (AW_CB0)AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("cancel");
-    aws->create_button("CANCEL","CANCEL","C");
+    aws->create_button("CANCEL", "CANCEL", "C");
 
     aws->at("save");
     if (load) {
         aws->callback(load_search_paras_from_file, (AW_CL)type);
-        aws->create_button("LOAD","LOAD","L");
+        aws->create_button("LOAD", "LOAD", "L");
     }
     else {
         aws->callback(save_search_paras_to_file, (AW_CL)type);
-        aws->create_button("SAVE","SAVE","S");
+        aws->create_button("SAVE", "SAVE", "S");
     }
 
     return aws;
@@ -1715,7 +1715,7 @@ static void search_init_config(AWT_config_definition& cdef, int search_type) {
 //  -------------------------------------------------------------------------
 //      static char *search_store_config(AW_window *aww, AW_CL , AW_CL )
 //  -------------------------------------------------------------------------
-static char *search_store_config(AW_window *aww, AW_CL cl_search_type, AW_CL ) {
+static char *search_store_config(AW_window *aww, AW_CL cl_search_type, AW_CL) {
     AWT_config_definition cdef(aww->get_root());
     search_init_config(cdef, int(cl_search_type));
     return cdef.read();
@@ -1723,7 +1723,7 @@ static char *search_store_config(AW_window *aww, AW_CL cl_search_type, AW_CL ) {
 //  -----------------------------------------------------------------------------------------------------
 //      static void search_restore_config(AW_window *aww, const char *stored_string, AW_CL , AW_CL )
 //  -----------------------------------------------------------------------------------------------------
-static void search_restore_config(AW_window *aww, const char *stored_string, AW_CL cl_search_type, AW_CL ) {
+static void search_restore_config(AW_window *aww, const char *stored_string, AW_CL cl_search_type, AW_CL) {
     AWT_config_definition cdef(aww->get_root());
     search_init_config(cdef, int(cl_search_type));
     cdef.write(stored_string);
@@ -1739,12 +1739,12 @@ AW_window *ED4_create_search_window(AW_root *root, AW_CL cl) {
     aws->load_xfig("edit4/search.fig");
 
     aws->at("close");
-    aws->callback( (AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE","C");
+    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback( AW_POPUP_HELP,(AW_CL)"e4_search.hlp");
-    aws->create_button("HELP", "HELP","H");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"e4_search.hlp");
+    aws->create_button("HELP", "HELP", "H");
 
     aws->at("load");
     aws->callback(AW_POPUP, (AW_CL)load_search_parameters, (AW_CL)type);

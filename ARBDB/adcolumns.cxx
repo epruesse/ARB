@@ -206,7 +206,7 @@ static GB_ERROR gbt_insert_character_gbd(GBDATA *gb_data, enum insDelTarget targ
                                     GB_CSTR delete_chars = params->delete_chars;
 
                                     if (after>size) after = size;
-                                    for (p = pos; p<after; p++){
+                                    for (p = pos; p<after; p++) {
                                         if (delete_chars[((const unsigned char *)source)[p]]) {
                                             error = GBS_global_string("You tried to delete '%c' at position %li  -> Operation aborted", source[p], p);
                                         }
@@ -221,7 +221,7 @@ static GB_ERROR gbt_insert_character_gbd(GBDATA *gb_data, enum insDelTarget targ
                         case GB_INTS:   source = (GB_CSTR)GB_read_ints_pntr(gb_data);   mod = sizeof(GB_UINT4); break;
                         case GB_FLOATS: source = (GB_CSTR)GB_read_floats_pntr(gb_data); mod = sizeof(float); break;
 
-                        default :
+                        default:
                             error = GBS_global_string("Unhandled type '%i'", type);
                             GB_internal_error(error);
                             break;
@@ -319,22 +319,22 @@ static GB_ERROR gbt_insert_character_secstructs(GBDATA *gb_secstructs, const str
 
 static GB_ERROR GBT_check_lengths(GBDATA *Main, const char *alignment_name) {
     GB_ERROR  error            = 0;
-    GBDATA   *gb_presets       = GBT_find_or_create(Main,"presets",7);
-    GBDATA   *gb_species_data  = GBT_find_or_create(Main,"species_data",7);
-    GBDATA   *gb_extended_data = GBT_find_or_create(Main,"extended_data",7);
-    GBDATA   *gb_secstructs    = GB_search(Main,"secedit/structs", GB_CREATE_CONTAINER);
+    GBDATA   *gb_presets       = GBT_find_or_create(Main, "presets", 7);
+    GBDATA   *gb_species_data  = GBT_find_or_create(Main, "species_data", 7);
+    GBDATA   *gb_extended_data = GBT_find_or_create(Main, "extended_data", 7);
+    GBDATA   *gb_secstructs    = GB_search(Main, "secedit/structs", GB_CREATE_CONTAINER);
     GBDATA   *gb_ali;
 
     struct insDel_params params = { 0, 0, 0, 0, 0 };
 
-    for (gb_ali = GB_entry(gb_presets,"alignment");
+    for (gb_ali = GB_entry(gb_presets, "alignment");
          gb_ali && !error;
          gb_ali = GB_nextEntry(gb_ali))
     {
         GBDATA *gb_name = GB_find_string(gb_ali, "alignment_name", alignment_name, GB_IGNORE_CASE, SEARCH_CHILD);
 
         if (gb_name) {
-            GBDATA *gb_len = GB_entry(gb_ali,"alignment_len");
+            GBDATA *gb_len = GB_entry(gb_ali, "alignment_len");
 
             params.ali_name = GB_read_string(gb_name);
             params.ali_len  = GB_read_int(gb_len);
@@ -385,20 +385,20 @@ GB_ERROR GBT_insert_character(GBDATA *Main, const char *alignment_name, long pos
     }
     else {
         GBDATA *gb_ali;
-        GBDATA *gb_presets       = GBT_find_or_create(Main,"presets",7);
-        GBDATA *gb_species_data  = GBT_find_or_create(Main,"species_data",7);
-        GBDATA *gb_extended_data = GBT_find_or_create(Main,"extended_data",7);
-        GBDATA *gb_secstructs    = GB_search(Main,"secedit/structs", GB_CREATE_CONTAINER);
+        GBDATA *gb_presets       = GBT_find_or_create(Main, "presets", 7);
+        GBDATA *gb_species_data  = GBT_find_or_create(Main, "species_data", 7);
+        GBDATA *gb_extended_data = GBT_find_or_create(Main, "extended_data", 7);
+        GBDATA *gb_secstructs    = GB_search(Main, "secedit/structs", GB_CREATE_CONTAINER);
         char    char_delete_list[256];
 
-        if (strchr(char_delete,'%') ) {
-            memset(char_delete_list,0,256);
+        if (strchr(char_delete, '%')) {
+            memset(char_delete_list, 0, 256);
         }
         else {
             int ch;
-            for (ch = 0;ch<256; ch++) {
+            for (ch = 0; ch<256; ch++) {
                 if (char_delete) {
-                    if (strchr(char_delete,ch)) char_delete_list[ch] = 0;
+                    if (strchr(char_delete, ch)) char_delete_list[ch] = 0;
                     else                        char_delete_list[ch] = 1;
                 }
                 else {
@@ -439,7 +439,7 @@ GB_ERROR GBT_insert_character(GBDATA *Main, const char *alignment_name, long pos
 
         free_insDelBuffer();
 
-        if (!error) GB_disable_quicksave(Main,"a lot of sequences changed");
+        if (!error) GB_disable_quicksave(Main, "a lot of sequences changed");
     }
     return error;
 }

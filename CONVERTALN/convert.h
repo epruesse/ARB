@@ -34,7 +34,7 @@
 
 #define SEQLINE 60
 /* GenBank data structure */
-typedef struct  {
+typedef struct {
     char *ref;
     char *author;
     char *title;
@@ -42,7 +42,7 @@ typedef struct  {
     char *standard;
 } Reference;
 
-typedef struct  {
+typedef struct {
     int   exist;
     char *source;
     char *cc;
@@ -52,7 +52,7 @@ typedef struct  {
     char *hostorg;
 } Oinf;
 
-typedef struct  {
+typedef struct {
     int   exist;
     char *RDPid;
     char *gbkentry;
@@ -61,13 +61,13 @@ typedef struct  {
     char  comp3;                /* yes or no, y/n */
 } Sinf;
 
-typedef struct  {
+typedef struct {
     Oinf  orginf;
     Sinf  seqinf;
     char *others;
 } Comment;
 
-typedef struct  {
+typedef struct {
     char      *locus;
     char      *definition;
     char      *accession;
@@ -80,7 +80,7 @@ typedef struct  {
 } GenBank;
 
 /* Macke data structure */
-typedef struct  {
+typedef struct {
     char  *seqabbr;             /* seq. abbrev. */
     char  *name;                /* seq. full name */
     int    rna_or_dna;          /* rna or dna */
@@ -100,7 +100,7 @@ typedef struct  {
 } Macke;
 
 /* Paup data structure */
-typedef struct  {
+typedef struct {
     int         ntax;           /* number of sequences */
     int         nchar;          /* max number of chars per seq. */
     int         labelpos;       /* Label start from left or right */
@@ -114,14 +114,14 @@ typedef struct  {
     /* otherwise, read in one by one. */
 } Paup;
 
-typedef struct  {
+typedef struct {
     char *author;
     char *title;
     char *journal;
     char *processing;
 } Emblref;
 
-typedef struct  {
+typedef struct {
     char    *id;                /* entry name */
     char    *dateu;             /* date of last updated */
     char    *datec;             /* date of created */
@@ -135,7 +135,7 @@ typedef struct  {
     Comment  comments;          /* comments */
 } Embl;
 
-typedef struct  {
+typedef struct {
     char *id;
     char *filename;
     int   format;               /* could be NBRF, UWGCG, RMBL, STADEN */
@@ -144,7 +144,7 @@ typedef struct  {
     char *sequence;             /* sequence data after mergin with gaps */
 } Alma;
 
-typedef struct  {
+typedef struct {
     char *id;                   /* locus */
     char *description;
 } Nbrf;

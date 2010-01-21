@@ -46,36 +46,36 @@
 
 #define nt_assert(bed) arb_assert(bed)
 
-void create_probe_design_variables(AW_root *aw_root,AW_default def,AW_default global);
+void create_probe_design_variables(AW_root *aw_root, AW_default def, AW_default global);
 void create_cprofile_var(AW_root *aw_root, AW_default aw_def);
 
-void create_insertchar_variables(AW_root *root,AW_default db1);
-AW_window *create_insertchar_window( AW_root *root, AW_default def);
+void create_insertchar_variables(AW_root *root, AW_default db1);
+AW_window *create_insertchar_window(AW_root *root, AW_default def);
 
-AW_window *AP_open_cprofile_window( AW_root *root );
+AW_window *AP_open_cprofile_window(AW_root *root);
 
 extern AW_window    *MP_main(AW_root *root, AW_default def);
 
-AW_window *create_tree_window(AW_root *aw_root,AWT_graphic *awd);
+AW_window *create_tree_window(AW_root *aw_root, AWT_graphic *awd);
 
-void nt_test_ascii_print(AW_window *aww){
-    AWT_create_ascii_print_window(aww->get_root(),"hello world","Just a test");
+void nt_test_ascii_print(AW_window *aww) {
+    AWT_create_ascii_print_window(aww->get_root(), "hello world", "Just a test");
 }
 
 void nt_changesecurity(AW_root *aw_root) {
     long level = aw_root->awar(AWAR_SECURITY_LEVEL)->read_int();
     GB_push_transaction(GLOBAL_gb_main);
-    GB_change_my_security(GLOBAL_gb_main,(int)level,"");
+    GB_change_my_security(GLOBAL_gb_main, (int)level, "");
     GB_pop_transaction(GLOBAL_gb_main);
 }
 
-void export_nds_cb(AW_window *aww,AW_CL print_flag) {
+void export_nds_cb(AW_window *aww, AW_CL print_flag) {
     GB_transaction  dummy(GLOBAL_gb_main);
     GBDATA         *gb_species;
     const char     *buf;
     AW_root        *aw_root = aww->get_root();
     char           *name    = aw_root->awar(AWAR_EXPORT_NDS"/file_name")->read_string();
-    FILE           *out     = fopen(name,"w");
+    FILE           *out     = fopen(name, "w");
 
     if (!out) {
         delete name;
@@ -90,8 +90,8 @@ void export_nds_cb(AW_window *aww,AW_CL print_flag) {
          gb_species;
          gb_species = GBT_next_marked_species(gb_species))
     {
-        buf = make_node_text_nds(GLOBAL_gb_main, gb_species,(tabbed ? 2 : 1),0, tree_name);
-        fprintf(out,"%s\n",buf);
+        buf = make_node_text_nds(GLOBAL_gb_main, gb_species, (tabbed ? 2 : 1), 0, tree_name);
+        fprintf(out, "%s\n", buf);
     }
     awt_refresh_selection_box(aw_root, AWAR_EXPORT_NDS);
     fclose(out);
@@ -103,36 +103,36 @@ void export_nds_cb(AW_window *aww,AW_CL print_flag) {
     free(name);
 }
 
-AW_window *create_nds_export_window(AW_root *root){
+AW_window *create_nds_export_window(AW_root *root) {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "EXPORT_NDS_OF_MARKED", "EXPORT NDS OF MARKED SPECIES");
+    aws->init(root, "EXPORT_NDS_OF_MARKED", "EXPORT NDS OF MARKED SPECIES");
     aws->load_xfig("sel_box_nds.fig");
 
-    aws->callback( (AW_CB0)AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback( AW_POPUP_HELP, (AW_CL)"arb_export_nds.hlp");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"arb_export_nds.hlp");
     aws->at("help");
-    aws->create_button("HELP","HELP","H");
+    aws->create_button("HELP", "HELP", "H");
 
-    aws->callback( (AW_CB0)AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("cancel");
-    aws->create_button("CLOSE","CANCEL","C");
+    aws->create_button("CLOSE", "CANCEL", "C");
 
     aws->at("save");
-    aws->callback(export_nds_cb,0);
-    aws->create_button("SAVE","SAVE","S");
+    aws->callback(export_nds_cb, 0);
+    aws->create_button("SAVE", "SAVE", "S");
 
     aws->at("print");
-    aws->callback(export_nds_cb,1);
-    aws->create_button("PRINT","PRINT","P");
+    aws->callback(export_nds_cb, 1);
+    aws->create_button("PRINT", "PRINT", "P");
 
     aws->at("toggle1");
     aws->label("Use TABs for columns");
     aws->create_toggle(AWAR_EXPORT_NDS"/tabbed");
 
-    awt_create_selection_box((AW_window *)aws,AWAR_EXPORT_NDS);
+    awt_create_selection_box((AW_window *)aws, AWAR_EXPORT_NDS);
 
     return (AW_window *)aws;
 }
@@ -140,7 +140,7 @@ AW_window *create_nds_export_window(AW_root *root){
 void create_export_nds_awars(AW_root *awr, AW_default def)
 {
     aw_create_selection_box_awars(awr, AWAR_EXPORT_NDS, "", ".nds", "export.nds", def);
-    awr->awar_int( AWAR_EXPORT_NDS"/tabbed", 0, def);
+    awr->awar_int(AWAR_EXPORT_NDS"/tabbed", 0, def);
 }
 
 static void AWAR_INFO_BUTTON_TEXT_change_cb(AW_root *awr) {
@@ -161,23 +161,23 @@ static void NT_toggle_expert_mode(AW_window *aww, AW_CL, AW_CL) {
 void nt_create_all_awars(AW_root *awr, AW_default def) {
     // creates awars for all modules reachable from ARB_NT main window
 
-    awr->awar_string( AWAR_FOOTER, "", def);
-    if (GB_read_clients(GLOBAL_gb_main)>=0){
-        awr->awar_string( AWAR_TREE, "tree_main", GLOBAL_gb_main);
+    awr->awar_string(AWAR_FOOTER, "", def);
+    if (GB_read_clients(GLOBAL_gb_main)>=0) {
+        awr->awar_string(AWAR_TREE, "tree_main", GLOBAL_gb_main);
     }
     else {
-        awr->awar_string( AWAR_TREE, "tree_main", def);
+        awr->awar_string(AWAR_TREE, "tree_main", def);
     }
 
-    awr->awar_string( AWAR_SPECIES_NAME, "" ,   GLOBAL_gb_main);
-    awr->awar_string( AWAR_SAI_NAME, "" ,   GLOBAL_gb_main);
-    awr->awar_string( AWAR_SAI_GLOBAL, "" ,   GLOBAL_gb_main);
-    awr->awar_string( AWAR_MARKED_SPECIES_COUNTER, "unknown" ,  GLOBAL_gb_main);
-    awr->awar_string( AWAR_INFO_BUTTON_TEXT, "Species Info" ,  GLOBAL_gb_main);
+    awr->awar_string(AWAR_SPECIES_NAME, "",     GLOBAL_gb_main);
+    awr->awar_string(AWAR_SAI_NAME, "",     GLOBAL_gb_main);
+    awr->awar_string(AWAR_SAI_GLOBAL, "",     GLOBAL_gb_main);
+    awr->awar_string(AWAR_MARKED_SPECIES_COUNTER, "unknown",    GLOBAL_gb_main);
+    awr->awar_string(AWAR_INFO_BUTTON_TEXT, "Species Info",    GLOBAL_gb_main);
     awr->awar(AWAR_SPECIES_NAME)->add_callback(AWAR_INFO_BUTTON_TEXT_change_cb);
-    awr->awar_int( AWAR_NTREE_TITLE_MODE, 1);
+    awr->awar_int(AWAR_NTREE_TITLE_MODE, 1);
 
-    awr->awar_string(AWAR_SAI_COLOR_STR, "", GLOBAL_gb_main); //sai visualization in probe match
+    awr->awar_string(AWAR_SAI_COLOR_STR, "", GLOBAL_gb_main); // sai visualization in probe match
 
     GEN_create_awars(awr, def);
     EXP_create_awars(awr, def);
@@ -187,36 +187,36 @@ void nt_create_all_awars(AW_root *awr, AW_default def) {
 
     AW_create_namesadmin_awars(awr, GLOBAL_gb_main);
 
-    awr->awar_int( AWAR_SECURITY_LEVEL, 0, def);
+    awr->awar_int(AWAR_SECURITY_LEVEL, 0, def);
     awr->awar(AWAR_SECURITY_LEVEL)->add_callback(nt_changesecurity);
 #if defined(DEBUG) && 0
     awr->awar(AWAR_SECURITY_LEVEL)->write_int(6); // no security for debugging..
 #endif // DEBUG
 
-    create_insertchar_variables(awr,def);
-    create_probe_design_variables(awr,def,GLOBAL_gb_main);
-    create_primer_design_variables(awr,def, GLOBAL_gb_main);
-    create_trees_var(awr,def);
-    create_species_var(awr,def);
-    create_consensus_var(awr,def);
-    create_gde_var(awr,def);
-    create_cprofile_var(awr,def);
-    NT_create_transpro_variables(awr,def);
-    NT_build_resort_awars(awr,def);
+    create_insertchar_variables(awr, def);
+    create_probe_design_variables(awr, def, GLOBAL_gb_main);
+    create_primer_design_variables(awr, def, GLOBAL_gb_main);
+    create_trees_var(awr, def);
+    create_species_var(awr, def);
+    create_consensus_var(awr, def);
+    create_gde_var(awr, def);
+    create_cprofile_var(awr, def);
+    NT_create_transpro_variables(awr, def);
+    NT_build_resort_awars(awr, def);
     NT_create_trackAliChanges_Awars(awr, GLOBAL_gb_main);
 
-    NT_create_alignment_vars(awr,def);
-    create_nds_vars(awr,def,GLOBAL_gb_main);
-    create_export_nds_awars(awr,def);
-    AWTC_create_rename_awars(awr,def);
-    awt_create_dtree_awars(awr,GLOBAL_gb_main);
+    NT_create_alignment_vars(awr, def);
+    create_nds_vars(awr, def, GLOBAL_gb_main);
+    create_export_nds_awars(awr, def);
+    AWTC_create_rename_awars(awr, def);
+    awt_create_dtree_awars(awr, GLOBAL_gb_main);
 
-    awr->awar_string( AWAR_ERROR_MESSAGES, "", GLOBAL_gb_main);
-    awr->awar_string( AWAR_DB_COMMENT, "<no description>", GLOBAL_gb_main);
+    awr->awar_string(AWAR_ERROR_MESSAGES, "", GLOBAL_gb_main);
+    awr->awar_string(AWAR_DB_COMMENT, "<no description>", GLOBAL_gb_main);
 
     AWTC_create_submission_variables(awr, GLOBAL_gb_main);
-    NT_createConcatenationAwars(awr,def);
-    NT_createValidNamesAwars(awr,def); // lothar
+    NT_createConcatenationAwars(awr, def);
+    NT_createValidNamesAwars(awr, def); // lothar
     SQ_create_awars(awr, def);
 
     GB_ERROR error = ARB_init_global_awars(awr, def, GLOBAL_gb_main);
@@ -225,7 +225,7 @@ void nt_create_all_awars(AW_root *awr, AW_default def) {
         awar_expert->add_callback(expert_mode_changed_cb);
         awar_expert->touch();
         
-        awt_create_aww_vars(awr,def);
+        awt_create_aww_vars(awr, def);
     }
 
     if (error) aw_message(error);
@@ -235,7 +235,7 @@ void nt_create_all_awars(AW_root *awr, AW_default def) {
 void nt_exit(AW_window *aws) {
     if (GLOBAL_gb_main) {
         if (GB_read_clients(GLOBAL_gb_main)>=0) {
-            if (GB_read_clock(GLOBAL_gb_main) > GB_last_saved_clock(GLOBAL_gb_main)){
+            if (GB_read_clock(GLOBAL_gb_main) > GB_last_saved_clock(GLOBAL_gb_main)) {
                 long secs;
                 secs = GB_last_saved_time(GLOBAL_gb_main);
 
@@ -245,8 +245,8 @@ void nt_exit(AW_window *aws) {
 
                 if (secs) {
                     secs = GB_time_of_day() - secs;
-                    if (secs>10){
-                        sprintf(AW_ERROR_BUFFER,"You last saved your data %li:%li minutes ago\nSure to quit ?",secs/60,secs%60);
+                    if (secs>10) {
+                        sprintf(AW_ERROR_BUFFER, "You last saved your data %li:%li minutes ago\nSure to quit ?", secs/60, secs%60);
                         if (aw_question(AW_ERROR_BUFFER, "QUIT ARB,DO NOT QUIT")) return;
                     }
                 }
@@ -286,7 +286,7 @@ void NT_save_cb(AW_window *aww) {
 
 void NT_save_quick_cb(AW_window *aww) {
     char *filename = aww->get_root()->awar(AWAR_DB_PATH)->read_string();
-    GB_ERROR error = GB_save_quick(GLOBAL_gb_main,filename);
+    GB_ERROR error = GB_save_quick(GLOBAL_gb_main, filename);
     free(filename);
     if (error) aw_message(error);
     else awt_refresh_selection_box(aww->get_root(), "tmp/nt/arbdb");
@@ -309,23 +309,23 @@ AW_window *NT_create_save_quick_as(AW_root *aw_root, char *base_name)
     if (aws) return (AW_window *)aws;
 
     aws = new AW_window_simple;
-    aws->init( aw_root, "SAVE_CHANGES_TO", "SAVE CHANGES TO");
+    aws->init(aw_root, "SAVE_CHANGES_TO", "SAVE CHANGES TO");
     aws->load_xfig("save_as.fig");
 
-    aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback( AW_POPUP_HELP, (AW_CL)"save.hlp");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"save.hlp");
     aws->at("help");
-    aws->create_button("HELP","HELP","H");
+    aws->create_button("HELP", "HELP", "H");
 
-    awt_create_selection_box((AW_window *)aws,base_name);
+    awt_create_selection_box((AW_window *)aws, base_name);
 
     aws->at("comment");
     aws->create_text_field(AWAR_DB_COMMENT);
 
-    aws->at("save");aws->callback(NT_save_quick_as_cb);
-    aws->create_button("SAVE","SAVE","S");
+    aws->at("save"); aws->callback(NT_save_quick_as_cb);
+    aws->create_button("SAVE", "SAVE", "S");
 
     return (AW_window *)aws;
 }
@@ -342,14 +342,14 @@ void NT_database_optimization(AW_window *aww) {
             char **ali_names = GBT_get_alignment_names(GLOBAL_gb_main);
 
             aw_status("Checking Sequence Lengths");
-            error = GBT_check_data(GLOBAL_gb_main,0);
+            error = GBT_check_data(GLOBAL_gb_main, 0);
             error = GB_end_transaction(GLOBAL_gb_main, error);
 
             if (!error) {
                 char *tree_name = aww->get_root()->awar("tmp/nt/arbdb/optimize_tree_name")->read_string();
                 for (char **ali_name = ali_names; !error && *ali_name; ali_name++) {
                     aw_status(*ali_name);
-                    error = GBT_compress_sequence_tree2(GLOBAL_gb_main,tree_name,*ali_name);
+                    error = GBT_compress_sequence_tree2(GLOBAL_gb_main, tree_name, *ali_name);
                 }
                 free(tree_name);
             }
@@ -368,32 +368,32 @@ void NT_database_optimization(AW_window *aww) {
     aww->hide_or_notify(error);
 }
 
-AW_window *NT_create_database_optimization_window(AW_root *aw_root){
+AW_window *NT_create_database_optimization_window(AW_root *aw_root) {
     static AW_window_simple *aws = 0;
     if (aws) return (AW_window *)aws;
     GB_transaction dummy(GLOBAL_gb_main);
 
     char *largest_tree = GBT_find_largest_tree(GLOBAL_gb_main);
-    aw_root->awar_string("tmp/nt/arbdb/optimize_tree_name",largest_tree);
+    aw_root->awar_string("tmp/nt/arbdb/optimize_tree_name", largest_tree);
     free(largest_tree);
 
     aws = new AW_window_simple;
-    aws->init( aw_root, "OPTIMIZE_DATABASE", "OPTIMIZE DATABASE");
+    aws->init(aw_root, "OPTIMIZE_DATABASE", "OPTIMIZE DATABASE");
     aws->load_xfig("optimize.fig");
 
     aws->at("trees");
-    awt_create_selection_list_on_trees(GLOBAL_gb_main,(AW_window *)aws,"tmp/nt/arbdb/optimize_tree_name");
+    awt_create_selection_list_on_trees(GLOBAL_gb_main, (AW_window *)aws, "tmp/nt/arbdb/optimize_tree_name");
 
-    aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback( AW_POPUP_HELP, (AW_CL)"optimize.hlp");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"optimize.hlp");
     aws->at("help");
-    aws->create_button("HELP","HELP","H");
+    aws->create_button("HELP", "HELP", "H");
 
     aws->at("go");
     aws->callback(NT_database_optimization);
-    aws->create_button("GO","GO");
+    aws->create_button("GO", "GO");
     return aws;
 }
 
@@ -411,39 +411,39 @@ void NT_save_as_cb(AW_window *aww) {
 }
 
 
-AW_window *NT_create_save_as(AW_root *aw_root,const char *base_name)
+AW_window *NT_create_save_as(AW_root *aw_root, const char *base_name)
 {
     static AW_window_simple *aws = 0;
     if (aws) return (AW_window *)aws;
 
     aws = new AW_window_simple;
-    aws->init( aw_root, "SAVE_DB", "SAVE ARB DB" );
+    aws->init(aw_root, "SAVE_DB", "SAVE ARB DB");
     aws->load_xfig("save_as.fig");
 
-    aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback( AW_POPUP_HELP, (AW_CL)"save.hlp");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"save.hlp");
     aws->at("help");
-    aws->create_button("HELP","HELP","H");
+    aws->create_button("HELP", "HELP", "H");
 
-    awt_create_selection_box((AW_window *)aws,base_name);
+    awt_create_selection_box((AW_window *)aws, base_name);
 
     aws->at("type");
     aws->label("Type ");
     aws->create_option_menu(AWAR_DB"type");
-    aws->insert_option("Binary","B","b");
-    aws->insert_option("Bin (with FastLoad File)","f","bm");
-    aws->insert_default_option("Ascii","A","a");
+    aws->insert_option("Binary", "B", "b");
+    aws->insert_option("Bin (with FastLoad File)", "f", "bm");
+    aws->insert_default_option("Ascii", "A", "a");
     aws->update_option_menu();
 
     aws->at("optimize");
-    aws->callback(AW_POPUP,(AW_CL)NT_create_database_optimization_window,0);
+    aws->callback(AW_POPUP, (AW_CL)NT_create_database_optimization_window, 0);
     aws->help_text("optimize.hlp");
-    aws->create_button("OPTIMIZE","OPTIMIZE");
+    aws->create_button("OPTIMIZE", "OPTIMIZE");
 
-    aws->at("save");aws->callback(NT_save_as_cb);
-    aws->create_button("SAVE","SAVE","S");
+    aws->at("save"); aws->callback(NT_save_as_cb);
+    aws->create_button("SAVE", "SAVE", "S");
 
     aws->at("comment");
     aws->create_text_field(AWAR_DB_COMMENT);
@@ -451,18 +451,18 @@ AW_window *NT_create_save_as(AW_root *aw_root,const char *base_name)
     return (AW_window *)aws;
 }
 
-void NT_undo_cb(AW_window *, AW_CL undo_type, AW_CL ntw){
-    GB_ERROR error = GB_undo(GLOBAL_gb_main,(GB_UNDO_TYPE)undo_type);
+void NT_undo_cb(AW_window *, AW_CL undo_type, AW_CL ntw) {
+    GB_ERROR error = GB_undo(GLOBAL_gb_main, (GB_UNDO_TYPE)undo_type);
     if (error) aw_message(error);
-    else{
+    else {
         GB_transaction dummy(GLOBAL_gb_main);
         ((AWT_canvas *)ntw)->refresh();
     }
 }
 
-void NT_undo_info_cb(AW_window *,AW_CL undo_type){
-    char *undo_info = GB_undo_info(GLOBAL_gb_main,(GB_UNDO_TYPE)undo_type);
-    if (undo_info){
+void NT_undo_info_cb(AW_window *, AW_CL undo_type) {
+    char *undo_info = GB_undo_info(GLOBAL_gb_main, (GB_UNDO_TYPE)undo_type);
+    if (undo_info) {
         aw_message(undo_info);
     }
     delete undo_info;
@@ -480,11 +480,11 @@ static AWT_config_mapping_def tree_setting_config_mapping[] = {
     { 0, 0 }
 };
 
-static char *tree_setting_store_config(AW_window *aww, AW_CL , AW_CL ) {
+static char *tree_setting_store_config(AW_window *aww, AW_CL,  AW_CL) {
     AWT_config_definition cdef(aww->get_root(), tree_setting_config_mapping);
     return cdef.read();
 }
-static void tree_setting_restore_config(AW_window *aww, const char *stored_string, AW_CL , AW_CL ) {
+static void tree_setting_restore_config(AW_window *aww, const char *stored_string, AW_CL,  AW_CL) {
     AWT_config_definition cdef(aww->get_root(), tree_setting_config_mapping);
     cdef.write(stored_string);
 }
@@ -495,27 +495,27 @@ AW_window *NT_create_tree_setting(AW_root *aw_root)
     if (aws) return (AW_window *)aws;
 
     aws = new AW_window_simple;
-    aws->init( aw_root, "TREE_PROPS", "TREE SETTINGS");
+    aws->init(aw_root, "TREE_PROPS", "TREE SETTINGS");
     aws->load_xfig("awt/tree_settings.fig");
 
     aws->at("close");
     aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP,(AW_CL)"nt_tree_settings.hlp");
-    aws->create_button("HELP","HELP","H");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"nt_tree_settings.hlp");
+    aws->create_button("HELP", "HELP", "H");
 
     aws->at("button");
-    aws->auto_space(10,10);
+    aws->auto_space(10, 10);
     aws->label_length(30);
 
     aws->label("Base line width");
-    aws->create_input_field(AWAR_DTREE_BASELINEWIDTH,4);
+    aws->create_input_field(AWAR_DTREE_BASELINEWIDTH, 4);
     aws->at_newline();
 
     aws->label("Relative vertical distance");
-    aws->create_input_field(AWAR_DTREE_VERICAL_DIST,4);
+    aws->create_input_field(AWAR_DTREE_VERICAL_DIST, 4);
     aws->at_newline();
 
     aws->label("Auto Jump");
@@ -539,7 +539,7 @@ AW_window *NT_create_tree_setting(AW_root *aw_root)
     aws->at_newline();
 
     aws->label("Grey Level of Groups%");
-    aws->create_input_field(AWAR_DTREE_GREY_LEVEL,4);
+    aws->create_input_field(AWAR_DTREE_GREY_LEVEL, 4);
     aws->at_newline();
 
     aws->at("config");
@@ -679,26 +679,26 @@ void NT_submit_mail(AW_window *aww, AW_CL cl_awar_base) {
 }
 
 
-AW_window *NT_submit_bug(AW_root *aw_root, int bug_report){
+AW_window *NT_submit_bug(AW_root *aw_root, int bug_report) {
     static AW_window_simple *awss[2] = { 0, 0 };
     if (awss[bug_report]) return (AW_window *)awss[bug_report];
 
     AW_window_simple *aws = new AW_window_simple;
     if (bug_report) {
-        aws->init( aw_root, "SUBMIT_BUG", "Submit a bug");
+        aws->init(aw_root, "SUBMIT_BUG", "Submit a bug");
     }
     else {
-        aws->init( aw_root, "SUBMIT_REG", "Submit registration");
+        aws->init(aw_root, "SUBMIT_REG", "Submit registration");
     }
     aws->load_xfig("bug_report.fig");
 
     aws->at("close");
     aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP,(AW_CL)"registration.hlp");
-    aws->create_button("HELP","HELP","H");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"registration.hlp");
+    aws->create_button("HELP", "HELP", "H");
 
     aws->at("what");
     aws->create_autosize_button("WHAT", (bug_report ? "Bug report" : "ARB Registration"));
@@ -717,7 +717,7 @@ AW_window *NT_submit_bug(AW_root *aw_root, int bug_report){
         char *system_info = get_system_info(bug_report);
         char *custom_text = 0;
 
-        if (bug_report){
+        if (bug_report) {
             custom_text = strdup("Bug occurred in:\n"
                                  "    [which part of ARB?]\n"
                                  "\n"
@@ -759,7 +759,7 @@ AW_window *NT_submit_bug(AW_root *aw_root, int bug_report){
 
     aws->at("go");
     aws->callback(NT_submit_mail, (AW_CL)awar_name_start); // do not free awar_name_start
-    aws->create_button("SEND","SEND");
+    aws->create_button("SEND", "SEND");
 
     awss[bug_report] = aws; // store for further use
 
@@ -777,11 +777,11 @@ void NT_focus_cb(AW_window *aww)
 }
 
 
-void NT_modify_cb(AW_window *aww,AW_CL cd1,AW_CL cd2)
+void NT_modify_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
 {
     AW_window *aws = NT_create_species_window(aww->get_root());
     aws->activate();
-    nt_mode_event(aww,(AWT_canvas*)cd1,(AWT_COMMAND_MODE)cd2);
+    nt_mode_event(aww, (AWT_canvas*)cd1, (AWT_COMMAND_MODE)cd2);
 }
 
 void NT_primer_cb(void) {
@@ -795,9 +795,9 @@ void NT_mark_degenerated_branches(AW_window *aww, AW_CL ntwcl) {
         AWT_canvas     *ntw = (AWT_canvas *)ntwcl;
         GB_transaction  dummy(ntw->gb_main);
 
-        NT_mark_all_cb(aww,(AW_CL)ntw, (AW_CL)0);
+        NT_mark_all_cb(aww, (AW_CL)ntw, (AW_CL)0);
         AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
-        tree_root->mark_degenerated_branches(ntw->gb_main,atof(val));
+        tree_root->mark_degenerated_branches(ntw->gb_main, atof(val));
         tree_root->compute_tree(ntw->gb_main);
         free(val);
         ntw->refresh();
@@ -810,16 +810,16 @@ void NT_mark_deep_branches(AW_window *aww, AW_CL ntwcl) {
         AWT_canvas     *ntw = (AWT_canvas *)ntwcl;
         GB_transaction  dummy(ntw->gb_main);
         
-        NT_mark_all_cb(aww,(AW_CL)ntw, (AW_CL)0);
+        NT_mark_all_cb(aww, (AW_CL)ntw, (AW_CL)0);
         AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
-        tree_root->mark_deep_branches(ntw->gb_main,atoi(val));
+        tree_root->mark_deep_branches(ntw->gb_main, atoi(val));
         tree_root->compute_tree(ntw->gb_main);
         free(val);
         ntw->refresh();
     }
 }
 
-void NT_mark_long_branches(AW_window *aww, AW_CL ntwcl){
+void NT_mark_long_branches(AW_window *aww, AW_CL ntwcl) {
     char *val = aw_input("Enter min.rel.diff.(%),min.abs.diff");
     if (val) {
         GB_ERROR  error = 0;
@@ -833,7 +833,7 @@ void NT_mark_long_branches(AW_window *aww, AW_CL ntwcl){
             AWT_canvas     *ntw = (AWT_canvas *)ntwcl;
             GB_transaction  dummy(ntw->gb_main);
 
-            NT_mark_all_cb(aww,(AW_CL)ntw, (AW_CL)0);
+            NT_mark_all_cb(aww, (AW_CL)ntw, (AW_CL)0);
             AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
             tree_root->mark_long_branches(ntw->gb_main, min_rel_diff, min_abs_diff);
             tree_root->compute_tree(ntw->gb_main);
@@ -844,25 +844,25 @@ void NT_mark_long_branches(AW_window *aww, AW_CL ntwcl){
     }
 }
 
-void NT_mark_duplicates(AW_window *aww, AW_CL ntwcl){
+void NT_mark_duplicates(AW_window *aww, AW_CL ntwcl) {
     AWT_canvas *ntw = (AWT_canvas *)ntwcl;
     GB_transaction dummy(ntw->gb_main);
-    NT_mark_all_cb(aww,(AW_CL)ntw, (AW_CL)0);
+    NT_mark_all_cb(aww, (AW_CL)ntw, (AW_CL)0);
     AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
     tree_root->mark_duplicates(ntw->gb_main);
     tree_root->compute_tree(ntw->gb_main);
     ntw->refresh();
 }
 
-void NT_justify_branch_lenghs(AW_window *, AW_CL cl_ntw, AW_CL){
+void NT_justify_branch_lenghs(AW_window *, AW_CL cl_ntw, AW_CL) {
     AWT_canvas     *ntw       = (AWT_canvas *)cl_ntw;
     GB_transaction  dummy(ntw->gb_main);
     AP_tree        *tree_root = AWT_TREE(ntw)->get_root_node();
     
-    if (tree_root){
+    if (tree_root) {
         tree_root->justify_branch_lenghs(ntw->gb_main);
         tree_root->compute_tree(ntw->gb_main);
-        GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
+        GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main, 0, 0, 0);
         if (error) aw_message(error);
         ntw->refresh();
     }
@@ -891,16 +891,16 @@ static void relink_pseudo_species_to_organisms(GBDATA *&ref_gb_node, char *&ref_
     }
 }
 
-void NT_pseudo_species_to_organism(AW_window *, AW_CL ntwcl){
+void NT_pseudo_species_to_organism(AW_window *, AW_CL ntwcl) {
     AWT_canvas     *ntw       = (AWT_canvas *)ntwcl;
     GB_transaction  dummy(ntw->gb_main);
     AP_tree        *tree_root = AWT_TREE(ntw)->get_root_node();
 
-    if (tree_root){
+    if (tree_root) {
         GB_HASH *organism_hash = GBT_create_organism_hash(ntw->gb_main);
         tree_root->relink_tree(ntw->gb_main, relink_pseudo_species_to_organisms, organism_hash);
         tree_root->compute_tree(ntw->gb_main);
-        GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
+        GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main, 0, 0, 0);
         if (error) aw_message(error);
         ntw->refresh();
         GBS_free_hash(organism_hash);
@@ -939,7 +939,7 @@ public:
 
         if (species_name[0]) {
             GB_transaction dummy(GLOBAL_gb_main);
-            gb_species = GBT_find_species(GLOBAL_gb_main,species_name);
+            gb_species = GBT_find_species(GLOBAL_gb_main, species_name);
         }
 
         free(species_name);
@@ -976,7 +976,7 @@ static void nt_count_marked(AW_window *aww) {
     NT_update_marked_counter(aww, count);
 }
 
-static void nt_auto_count_marked_species(GBDATA*, int* cl_aww, GB_CB_TYPE ) {
+static void nt_auto_count_marked_species(GBDATA*, int* cl_aww, GB_CB_TYPE) {
     nt_count_marked((AW_window*)cl_aww);
 }
 
@@ -985,7 +985,7 @@ void NT_popup_species_window(AW_window *aww, AW_CL, AW_CL) {
     NT_create_species_window(aww->get_root())->activate();
 }
 
-//--------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------
 
 void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main) {
     GBDATA               *gb_main = (GBDATA*)cl_gb_main;
@@ -1052,7 +1052,7 @@ GBT_TREE *nt_get_current_tree_root() {
     return NULL;
 }
 
-//--------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------
 
 // ##########################################
 // ##########################################
@@ -1065,23 +1065,23 @@ GBT_TREE *nt_get_current_tree_root() {
 #define AWMIMT awm->insert_menu_topic
 #define SEP________________________SEP() awm->insert_separator()
 
-AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
+AW_window * create_nt_main_window(AW_root *awr, AW_CL clone) {
     GB_push_transaction(GLOBAL_gb_main);
     AW_gc_manager  aw_gc_manager;
     char          *awar_tree;
     char           window_title[256];
-    awar_tree = (char *)GB_calloc(sizeof(char),strlen(AWAR_TREE) + 10); // do not free this
+    awar_tree = (char *)GB_calloc(sizeof(char), strlen(AWAR_TREE) + 10); // do not free this
 
-    if (clone){
-        sprintf(awar_tree,AWAR_TREE "_%li", clone);
-        sprintf(window_title,"ARB_NT_%li",clone);
+    if (clone) {
+        sprintf(awar_tree, AWAR_TREE "_%li", clone);
+        sprintf(window_title, "ARB_NT_%li", clone);
     }
     else {
-        sprintf(awar_tree,AWAR_TREE);
-        sprintf(window_title,"ARB_NT");
+        sprintf(awar_tree, AWAR_TREE);
+        sprintf(window_title, "ARB_NT");
     }
     AW_window_menu_modes *awm = new AW_window_menu_modes();
-    awm->init(awr,window_title, window_title, 0,0);
+    awm->init(awr, window_title, window_title, 0, 0);
 
     awm->button_length(5);
 
@@ -1101,7 +1101,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
     {
         char *tree_name          = awr->awar_string(awar_tree)->read_string();
-        char *existing_tree_name = GBT_existing_tree(GLOBAL_gb_main,tree_name);
+        char *existing_tree_name = GBT_existing_tree(GLOBAL_gb_main, tree_name);
 
         if (existing_tree_name) {
             awr->awar(awar_tree)->write_string(existing_tree_name);
@@ -1112,24 +1112,24 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             GLOBAL_NT.tree->set_tree_type(AP_LIST_NDS); // no tree -> show NDS list 
         }
 
-        awr->awar( awar_tree)->add_callback( (AW_RCB)NT_reload_tree_event, (AW_CL)ntw, 0);
+        awr->awar(awar_tree)->add_callback((AW_RCB)NT_reload_tree_event, (AW_CL)ntw, 0);
 
         free(existing_tree_name);
         free(tree_name);
     }
 
-    awr->awar( AWAR_SPECIES_NAME)->add_callback( (AW_RCB)NT_jump_cb_auto, (AW_CL)ntw,0);
-    awr->awar( AWAR_DTREE_VERICAL_DIST)->add_callback( (AW_RCB)AWT_resize_cb, (AW_CL)ntw,0);
-    awr->awar( AWAR_DTREE_BASELINEWIDTH)->add_callback( (AW_RCB)AWT_expose_cb, (AW_CL)ntw,0);
-    awr->awar( AWAR_DTREE_SHOW_CIRCLE)->add_callback( (AW_RCB)AWT_expose_cb, (AW_CL)ntw,0);
-    awr->awar( AWAR_DTREE_CIRCLE_ZOOM)->add_callback( (AW_RCB)AWT_expose_cb, (AW_CL)ntw,0);
-    awr->awar( AWAR_DTREE_CIRCLE_MAX_SIZE)->add_callback( (AW_RCB)AWT_expose_cb, (AW_CL)ntw,0);
-    awr->awar( AWAR_DTREE_USE_ELLIPSE)->add_callback( (AW_RCB)AWT_expose_cb, (AW_CL)ntw,0);
-    awr->awar( AWAR_DTREE_REFRESH)->add_callback( (AW_RCB)AWT_expose_cb, (AW_CL)ntw,0);
-    awr->awar( AWAR_COLOR_GROUPS_USE)->add_callback( (AW_RCB)NT_recompute_cb, (AW_CL)ntw,0);
+    awr->awar(AWAR_SPECIES_NAME)->add_callback((AW_RCB)NT_jump_cb_auto, (AW_CL)ntw, 0);
+    awr->awar(AWAR_DTREE_VERICAL_DIST)->add_callback((AW_RCB)AWT_resize_cb, (AW_CL)ntw, 0);
+    awr->awar(AWAR_DTREE_BASELINEWIDTH)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
+    awr->awar(AWAR_DTREE_SHOW_CIRCLE)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
+    awr->awar(AWAR_DTREE_CIRCLE_ZOOM)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
+    awr->awar(AWAR_DTREE_CIRCLE_MAX_SIZE)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
+    awr->awar(AWAR_DTREE_USE_ELLIPSE)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
+    awr->awar(AWAR_DTREE_REFRESH)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
+    awr->awar(AWAR_COLOR_GROUPS_USE)->add_callback((AW_RCB)NT_recompute_cb, (AW_CL)ntw, 0);
 
-    GBDATA *gb_arb_presets =    GB_search(GLOBAL_gb_main,"arb_presets",GB_CREATE_CONTAINER);
-    GB_add_callback(gb_arb_presets,GB_CB_CHANGED,(GB_CB)AWT_expose_cb, (int *)ntw);
+    GBDATA *gb_arb_presets =    GB_search(GLOBAL_gb_main, "arb_presets", GB_CREATE_CONTAINER);
+    GB_add_callback(gb_arb_presets, GB_CB_CHANGED, (GB_CB)AWT_expose_cb, (int *)ntw);
 
     bool is_genome_db = GEN_is_genome_db(GLOBAL_gb_main, 0); //  is this a genome database ? (default = 0 = not a genom db)
 
@@ -1140,7 +1140,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     AWT_create_debug_menu(awm);
 #endif // DEBUG
 
-    if (clone){
+    if (clone) {
         awm->create_menu("File", "F", AWM_ALL);
         AWMIMT("close", "Close", "C", 0, AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
     }
@@ -1152,39 +1152,39 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         AWMIMT("debug_arbdb", "Print debug information", "d", 0, AWM_ALL, (AW_CB)GB_print_debug_information, (AW_CL)                  GLOBAL_gb_main, 0);
         AWMIMT("test_compr",  "Test compression",        "T", 0, AWM_ALL, (AW_CB)GBT_compression_test,       (AW_CL)                  GLOBAL_gb_main, 0);
         SEP________________________SEP();
-        AWMIMT("table_admin",       "Table Admin (unfinished/unknown purpose)",  "A","tableadm.hlp",     AWM_ALL, AW_POPUP,(AW_CL)AWT_create_tables_admin_window, (AW_CL)GLOBAL_gb_main);
+        AWMIMT("table_admin",       "Table Admin (unfinished/unknown purpose)",  "A", "tableadm.hlp",    AWM_ALL, AW_POPUP, (AW_CL)AWT_create_tables_admin_window, (AW_CL)GLOBAL_gb_main);
 #endif // DEBUG
 
         awm->create_menu("File", "F", AWM_ALL);
         {
             AWMIMT("save_changes", "Quicksave changes",          "s", "save.hlp",      AWM_ALL, (AW_CB)NT_save_quick_cb, 0, 0);
-            AWMIMT("save_all_as",  "Save whole database as ...", "w", "save.hlp",      AWM_ALL, AW_POPUP,(AW_CL)NT_create_save_as, (AW_CL)"tmp/nt/arbdb");
+            AWMIMT("save_all_as",  "Save whole database as ...", "w", "save.hlp",      AWM_ALL, AW_POPUP, (AW_CL)NT_create_save_as, (AW_CL)"tmp/nt/arbdb");
             SEP________________________SEP();
-            AWMIMT("new_window",   "New window",                 "N", "newwindow.hlp", AWM_ALL, AW_POPUP,(AW_CL)create_nt_main_window, clone+1);
+            AWMIMT("new_window",   "New window",                 "N", "newwindow.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_nt_main_window, clone+1);
             SEP________________________SEP();
-            AWMIMT("optimize_db",  "Optimize database",          "O", "optimize.hlp",  AWM_ALL, AW_POPUP,(AW_CL)NT_create_database_optimization_window, 0);
+            AWMIMT("optimize_db",  "Optimize database",          "O", "optimize.hlp",  AWM_ALL, AW_POPUP, (AW_CL)NT_create_database_optimization_window, 0);
             SEP________________________SEP();
 
             awm->insert_sub_menu("Import",      "I");
             {
-                AWMIMT("import_seq", "Import sequences and fields","I","arb_import.hlp",AWM_ALL, NT_import_sequences,0,0);
-                GDE_load_menu(awm,AWM_EXP,"Import");
+                AWMIMT("import_seq", "Import sequences and fields", "I", "arb_import.hlp", AWM_ALL, NT_import_sequences, 0, 0);
+                GDE_load_menu(awm, AWM_EXP, "Import");
             }
             awm->close_sub_menu();
 
             awm->insert_sub_menu("Export",      "E");
             {
-                AWMIMT("export_to_ARB", "Export seq/tree/SAI's to new ARB database", "A", "arb_ntree.hlp",      AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"arb_ntree -export &",0);
+                AWMIMT("export_to_ARB", "Export seq/tree/SAI's to new ARB database", "A", "arb_ntree.hlp",      AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"arb_ntree -export &", 0);
                 AWMIMT("export_seqs",   "Export sequences to foreign format",        "f", "arb_export.hlp",     AWM_ALL, AW_POPUP,            (AW_CL)open_AWTC_export_window, (AW_CL)GLOBAL_gb_main);
-                GDE_load_menu(awm,AWM_ALL,"Export");
+                GDE_load_menu(awm, AWM_ALL, "Export");
                 AWMIMT("export_nds",    "Export fields using NDS",                   "N", "arb_export_nds.hlp", AWM_ALL, AW_POPUP,            (AW_CL)create_nds_export_window, 0);
             }
             awm->close_sub_menu();
             SEP________________________SEP();
 
-            AWMIMT("macros",    "Macros ",              "M", "macro.hlp",   AWM_ALL,        (AW_CB)AW_POPUP,    (AW_CL)awt_open_macro_window,(AW_CL)"ARB_NT");
+            AWMIMT("macros",    "Macros ",              "M", "macro.hlp",   AWM_ALL,        (AW_CB)AW_POPUP,    (AW_CL)awt_open_macro_window, (AW_CL)"ARB_NT");
 
-            awm->insert_sub_menu("Registration/Bug report/Version info",       "R" );
+            awm->insert_sub_menu("Registration/Bug report/Version info",       "R");
             {
                 AWMIMT("registration", "Registration",                   "R", "registration.hlp", AWM_ALL, (AW_CB)AW_POPUP,      (AW_CL)NT_submit_bug, 0);
                 AWMIMT("bug_report",   "Bug report",                     "B", "registration.hlp", AWM_ALL, (AW_CB)AW_POPUP,      (AW_CL)NT_submit_bug, 1);
@@ -1195,13 +1195,13 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             SEP________________________SEP();
             AWMIMT("undo",      "Undo",      "U", "undo.hlp", AWM_ALL, (AW_CB)NT_undo_cb,      (AW_CL)GB_UNDO_UNDO, (AW_CL)ntw);
             AWMIMT("redo",      "Redo",      "d", "undo.hlp", AWM_ALL, (AW_CB)NT_undo_cb,      (AW_CL)GB_UNDO_REDO, (AW_CL)ntw);
-            AWMIMT("undo_info", "Undo info", "f", "undo.hlp", AWM_ALL, (AW_CB)NT_undo_info_cb, (AW_CL)GB_UNDO_UNDO, (AW_CL)0  );
-            AWMIMT("redo_info", "Redo info", "o", "undo.hlp", AWM_ALL, (AW_CB)NT_undo_info_cb, (AW_CL)GB_UNDO_REDO, (AW_CL)0  );
+            AWMIMT("undo_info", "Undo info", "f", "undo.hlp", AWM_ALL, (AW_CB)NT_undo_info_cb, (AW_CL)GB_UNDO_UNDO, (AW_CL)0);
+            AWMIMT("redo_info", "Redo info", "o", "undo.hlp", AWM_ALL, (AW_CB)NT_undo_info_cb, (AW_CL)GB_UNDO_REDO, (AW_CL)0);
 
             SEP________________________SEP();
 #endif
-            if (!GLOBAL_NT.extern_quit_button){
-                AWMIMT( "quit",     "Quit",             "Q","quit.hlp",     AWM_ALL, (AW_CB)nt_exit,    0, 0 );
+            if (!GLOBAL_NT.extern_quit_button) {
+                AWMIMT("quit",      "Quit",             "Q", "quit.hlp",    AWM_ALL, (AW_CB)nt_exit,    0, 0);
             }
 
         }
@@ -1221,14 +1221,14 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
             SEP________________________SEP();
 
-            awm->insert_sub_menu("Database fields admin","f");
+            awm->insert_sub_menu("Database fields admin", "f");
             ad_spec_create_field_items(awm);
             awm->close_sub_menu();
             NT_create_mask_submenu(awm);
 
             SEP________________________SEP();
 
-            AWMIMT("del_marked",    "Delete Marked Species",    "D","sp_del_mrkd.hlp",  AWM_ALL, (AW_CB)NT_delete_mark_all_cb,      (AW_CL)ntw, 0 );
+            AWMIMT("del_marked",    "Delete Marked Species",    "D", "sp_del_mrkd.hlp", AWM_ALL, (AW_CB)NT_delete_mark_all_cb,      (AW_CL)ntw, 0);
 
             awm->insert_sub_menu("Sort Species",         "r");
             {
@@ -1246,18 +1246,18 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
             SEP________________________SEP();
 
-            AWMIMT( "species_submission", "Submit Species", "b",  "submission.hlp",   AWM_EXP, AW_POPUP,   (AW_CL)AWTC_create_submission_window,   0 );
+            AWMIMT("species_submission", "Submit Species", "b",   "submission.hlp",   AWM_EXP, AW_POPUP,   (AW_CL)AWTC_create_submission_window,   0);
 
             SEP________________________SEP();
 
-            AWMIMT( "new_names",    "Generate New Names",   "e", "sp_rename.hlp",   AWM_ALL, AW_POPUP,   (AW_CL)AWTC_create_rename_window,      (AW_CL)GLOBAL_gb_main );
+            AWMIMT("new_names",     "Generate New Names",   "e", "sp_rename.hlp",   AWM_ALL, AW_POPUP,   (AW_CL)AWTC_create_rename_window,      (AW_CL)GLOBAL_gb_main);
 
             awm->insert_sub_menu("Valid Names ...", "V", AWM_EXP);
             {
                 AWMIMT("imp_names",    "Import names from file", "I", "vn_import.hlp",  AWM_EXP, NT_importValidNames,  0, 0);
                 AWMIMT("del_names",    "Delete names from DB",   "D", "vn_delete.hlp",  AWM_EXP, NT_deleteValidNames,  0, 0);
                 AWMIMT("sug_names",    "Suggest valid names",    "v", "vn_suggest.hlp", AWM_EXP, NT_suggestValidNames, 0, 0);
-                AWMIMT("search_names", "Search manually",        "m", "vn_search.hlp",  AWM_EXP, AW_POPUP,             (AW_CL)NT_searchManuallyNames , 0);
+                AWMIMT("search_names", "Search manually",        "m", "vn_search.hlp",  AWM_EXP, AW_POPUP,             (AW_CL)NT_searchManuallyNames,  0);
            }
             awm->close_sub_menu();
         }
@@ -1276,7 +1276,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             AWMIMT("ins_del_col", "Insert/Delete Column",     "I", "insdelchar.hlp", AWM_ALL,  AW_POPUP, (AW_CL)create_insertchar_window,   0);
             SEP________________________SEP();
 
-            awm->insert_sub_menu("Edit Sequences","E");
+            awm->insert_sub_menu("Edit Sequences", "E");
             {
                 AWMIMT("new_arb_edit4",  "Using marked species and tree", "m", "arb_edit4.hlp", AWM_ALL, NT_start_editor_on_tree, 0, 0);
                 AWMIMT("new2_arb_edit4", "... plus relatives",            "r", "arb_edit4.hlp", AWM_ALL, NT_start_editor_on_tree, -1, 0);
@@ -1290,7 +1290,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             {
                 AWMIMT("arb_align",   "Align sequence into an existing alignment",         "A", "align.hlp",       AWM_EXP, (AW_CB) AW_POPUP_HELP, (AW_CL)"align.hlp",                  0);
                 AWMIMT("realign_dna", "Realign nucleic acid according to aligned protein", "R", "realign_dna.hlp", AWM_ALL, AW_POPUP,              (AW_CL)NT_create_realign_dna_window, 0);
-                GDE_load_menu(awm,AWM_ALL,"Align");
+                GDE_load_menu(awm, AWM_ALL, "Align");
             }
             awm->close_sub_menu();
             AWMIMT("seq_concat",    "Concatenate Sequences/Alignments", "C", "concatenate_align.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_createConcatenationWindow,     0);
@@ -1306,14 +1306,14 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
             SEP________________________SEP();
 
-            GDE_load_menu(awm,AWM_ALL,"Print");
+            GDE_load_menu(awm, AWM_ALL, "Print");
         }
         // ------------
         //      SAI
         // ------------
         awm->create_menu("SAI", "A", AWM_ALL);
         {
-            AWMIMT("sai_admin", "Manage SAIs",                "S","ad_extended.hlp",  AWM_ALL,    AW_POPUP, (AW_CL)NT_create_extendeds_window,   0 );
+            AWMIMT("sai_admin", "Manage SAIs",                "S", "ad_extended.hlp", AWM_ALL,    AW_POPUP, (AW_CL)NT_create_extendeds_window,   0);
             awm->insert_sub_menu("Create SAI using ...", "C");
             {
                 AWMIMT("sai_max_freq",  "Max. Frequency",                                               "M", "max_freq.hlp",     AWM_EXP, AW_POPUP,                     (AW_CL)AP_open_max_freq_window,     0);
@@ -1322,7 +1322,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
                 AWMIMT("arb_phyl",      "Filter by base frequency",                                     "F", "phylo.hlp",        AWM_ALL, (AW_CB)NT_system_cb,          (AW_CL)"arb_phylo &",               0);
                 AWMIMT("sai_pfold",     "Protein secondary structure (field \"sec_struct\")",           "P", "pfold.hlp",        AWM_EXP, (AW_CB)create_sai_from_pfold, (AW_CL)ntw,                         0);
 
-                GDE_load_menu(awm,AWM_EXP,"SAI");
+                GDE_load_menu(awm, AWM_EXP, "SAI");
             }
             awm->close_sub_menu();
 
@@ -1340,12 +1340,12 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         // ---------------
         awm->create_menu("Probes", "P", AWM_ALL);
         {
-            AWMIMT("probe_design",      "Design Probes",             "D", "probedesign.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_probe_design_window, (AW_CL)is_genome_db );
-            AWMIMT("probe_multi",       "Calculate Multi-Probes",    "u", "multiprobe.hlp",  AWM_ALL, AW_POPUP, (AW_CL)MP_main, (AW_CL)ntw           );
-            AWMIMT("probe_match",       "Match Probes",              "M", "probematch.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_probe_match_window, 0  );
+            AWMIMT("probe_design",      "Design Probes",             "D", "probedesign.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_probe_design_window, (AW_CL)is_genome_db);
+            AWMIMT("probe_multi",       "Calculate Multi-Probes",    "u", "multiprobe.hlp",  AWM_ALL, AW_POPUP, (AW_CL)MP_main, (AW_CL)ntw);
+            AWMIMT("probe_match",       "Match Probes",              "M", "probematch.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_probe_match_window, 0);
             SEP________________________SEP();
             AWMIMT("primer_design_new", "Design Primers",            "P", "primer_new.hlp",  AWM_EXP, AW_POPUP, (AW_CL)create_primer_design_window, 0);
-            AWMIMT("primer_design",     "Design Sequencing Primers", "S", "primer.hlp",      AWM_EXP, (AW_CB)NT_primer_cb, 0, 0                      );
+            AWMIMT("primer_design",     "Design Sequencing Primers", "S", "primer.hlp",      AWM_EXP, (AW_CB)NT_primer_cb, 0, 0);
             SEP________________________SEP();
             AWMIMT("pt_server_admin",   "PT_SERVER Admin",           "A", "probeadmin.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_probe_admin_window, (AW_CL)is_genome_db);
         }
@@ -1360,8 +1360,8 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         if (!clone) {
             awm->insert_sub_menu("Add Species to Existing Tree", "A");
             {
-                AWMIMT( "arb_pars_quick",  "ARB Parsimony (Quick add marked)", "Q", "pars.hlp",    AWM_ALL,   (AW_CB)NT_system_cb,    (AW_CL)"arb_pars -add_marked -quit &",0 );
-                AWMIMT( "arb_pars",        "ARB Parsimony interactive",        "i", "pars.hlp",    AWM_ALL,   (AW_CB)NT_system_cb,    (AW_CL)"arb_pars &",    0 );
+                AWMIMT("arb_pars_quick",   "ARB Parsimony (Quick add marked)", "Q", "pars.hlp",    AWM_ALL,   (AW_CB)NT_system_cb,    (AW_CL)"arb_pars -add_marked -quit &", 0);
+                AWMIMT("arb_pars",         "ARB Parsimony interactive",        "i", "pars.hlp",    AWM_ALL,   (AW_CB)NT_system_cb,    (AW_CL)"arb_pars &",    0);
                 GDE_load_menu(awm, AWM_EXP, "Incremental phylogeny");
             }
             awm->close_sub_menu();
@@ -1369,8 +1369,8 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
         awm->insert_sub_menu("Remove Species from Tree",     "R");
         {
-            AWMIMT(awm->local_id("tree_remove_deleted"), "Remove zombies", "z", "trm_del.hlp",    AWM_ALL, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_REMOVE_DELETED );
-            AWMIMT(awm->local_id("tree_remove_marked"),  "Remove marked",  "m", "trm_mrkd.hlp",   AWM_ALL, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_REMOVE_MARKED );
+            AWMIMT(awm->local_id("tree_remove_deleted"), "Remove zombies", "z", "trm_del.hlp",    AWM_ALL, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_REMOVE_DELETED);
+            AWMIMT(awm->local_id("tree_remove_marked"),  "Remove marked",  "m", "trm_mrkd.hlp",   AWM_ALL, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_REMOVE_MARKED);
             AWMIMT(awm->local_id("tree_keep_marked"),    "Keep marked",    "K", "tkeep_mrkd.hlp", AWM_ALL, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_REMOVE_NOT_MARKED|AWT_REMOVE_DELETED);
 #if defined(DEVEL_RALF)
 #warning add "remove duplicates from tree"
@@ -1385,21 +1385,21 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             awm->insert_sub_menu("Build tree from sequence data",    "B");
             {
                 awm->insert_sub_menu("Distance matrix methods", "D");
-                AWMIMT( "arb_dist",     "ARB Neighbour Joining",     "J", "dist.hlp",    AWM_ALL,   (AW_CB)NT_system_cb,    (AW_CL)"arb_dist &",    0 );
-                GDE_load_menu(awm,AWM_ALL,"Phylogeny Distance Matrix");
+                AWMIMT("arb_dist",      "ARB Neighbour Joining",     "J", "dist.hlp",    AWM_ALL,   (AW_CB)NT_system_cb,    (AW_CL)"arb_dist &",    0);
+                GDE_load_menu(awm, AWM_ALL, "Phylogeny Distance Matrix");
                 awm->close_sub_menu();
 
                 awm->insert_sub_menu("Maximum Parsimony methods", "P");
-                GDE_load_menu(awm,AWM_ALL,"Phylogeny max. parsimony");
+                GDE_load_menu(awm, AWM_ALL, "Phylogeny max. parsimony");
                 awm->close_sub_menu();
 
                 awm->insert_sub_menu("Maximum Likelihood methods", "L");
-                GDE_load_menu(awm,AWM_EXP,"Phylogeny max. Likelyhood EXP");
-                GDE_load_menu(awm,AWM_ALL,"Phylogeny max. Likelyhood");
+                GDE_load_menu(awm, AWM_EXP, "Phylogeny max. Likelyhood EXP");
+                GDE_load_menu(awm, AWM_ALL, "Phylogeny max. Likelyhood");
                 awm->close_sub_menu();
 
                 awm->insert_sub_menu("Other methods", "O", AWM_EXP);
-                GDE_load_menu(awm,AWM_EXP,"Phylogeny (Other)");
+                GDE_load_menu(awm, AWM_EXP, "Phylogeny (Other)");
                 awm->close_sub_menu();
             }
             awm->close_sub_menu();
@@ -1443,19 +1443,19 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
         }
         awm->close_sub_menu();
-        AWMIMT(awm->local_id("mark_long_branches") , "Mark long branches",        "k", "mark_long_branches.hlp",  AWM_ALL, (AW_CB)NT_mark_long_branches,        (AW_CL)ntw, 0);
-        AWMIMT(awm->local_id("mark_deep_branches") , "Mark deep branches",        "d", "mark_deep_branches.hlp",  AWM_EXP, (AW_CB)NT_mark_deep_branches,        (AW_CL)ntw, 0);
+        AWMIMT(awm->local_id("mark_long_branches"),  "Mark long branches",        "k", "mark_long_branches.hlp",  AWM_ALL, (AW_CB)NT_mark_long_branches,        (AW_CL)ntw, 0);
+        AWMIMT(awm->local_id("mark_deep_branches"),  "Mark deep branches",        "d", "mark_deep_branches.hlp",  AWM_EXP, (AW_CB)NT_mark_deep_branches,        (AW_CL)ntw, 0);
         AWMIMT(awm->local_id("mark_degen_branches"), "Mark degenerated branches", "g", "mark_degen_branches.hlp", AWM_EXP, (AW_CB)NT_mark_degenerated_branches, (AW_CL)ntw, 0);
-        AWMIMT(awm->local_id("mark_duplicates")    , "Mark duplicates",           "u", "mark_duplicates.hlp",     AWM_ALL, (AW_CB)NT_mark_duplicates,           (AW_CL)ntw, 0);
+        AWMIMT(awm->local_id("mark_duplicates"),     "Mark duplicates",           "u", "mark_duplicates.hlp",     AWM_ALL, (AW_CB)NT_mark_duplicates,           (AW_CL)ntw, 0);
 
         SEP________________________SEP();
 
-        AWMIMT(awm->local_id("tree_select"),        "Select Tree",      "T", 0, AWM_ALL, AW_POPUP,(AW_CL)NT_open_select_tree_window, (AW_CL)awar_tree);
+        AWMIMT(awm->local_id("tree_select"),        "Select Tree",      "T", 0, AWM_ALL, AW_POPUP, (AW_CL)NT_open_select_tree_window, (AW_CL)awar_tree);
         AWMIMT(awm->local_id("tree_select_latest"), "Select Last Tree", "L", 0, AWM_ALL,          (AW_CB)NT_select_last_tree,        (AW_CL)awar_tree, 0);
 
         SEP________________________SEP();
 
-        if (!clone){
+        if (!clone) {
             AWMIMT("tree_admin", "Tree admin",               "i", "treeadm.hlp",   AWM_ALL, AW_POPUP, (AW_CL)create_trees_window,   0);
             AWMIMT("nds",        "NDS (Node display setup)", "N", "props_nds.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_create_nds_window, (AW_CL)GLOBAL_gb_main);
         }
@@ -1465,7 +1465,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
         SEP________________________SEP();
 
-        if (!clone){
+        if (!clone) {
             AWMIMT("print_tree",  "Print tree",          "P", "tree2prt.hlp",  AWM_ALL, AWT_popup_print_window,       (AW_CL)ntw, 0);
             AWMIMT("tree_2_xfig", "Export tree to XFIG", "X", "tree2file.hlp", AWM_ALL, AWT_popup_tree_export_window, (AW_CL)ntw, 0);
             SEP________________________SEP();
@@ -1486,7 +1486,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         // --------------
         awm->create_menu("Tools", "o", AWM_ALL);
         {
-            AWMIMT("names_admin",      "Name server admin",    "s","namesadmin.hlp",   AWM_ALL, AW_POPUP, (AW_CL)AW_create_namesadmin_window, (AW_CL)GLOBAL_gb_main );
+            AWMIMT("names_admin",      "Name server admin",    "s", "namesadmin.hlp",  AWM_ALL, AW_POPUP, (AW_CL)AW_create_namesadmin_window, (AW_CL)GLOBAL_gb_main);
             awm->insert_sub_menu("DB admin", "D", AWM_EXP);
             {
                 AWMIMT("db_admin", "Re-repair DB", "R", "rerepair.hlp", AWM_EXP, NT_rerepair_DB, (AW_CL)GLOBAL_gb_main, 0);
@@ -1494,44 +1494,44 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             awm->close_sub_menu();
             awm->insert_sub_menu("Network", "N", AWM_EXP);
             {
-                GDE_load_menu(awm,AWM_EXP,"User");
+                GDE_load_menu(awm, AWM_EXP, "User");
             }
             awm->close_sub_menu();
             SEP________________________SEP();
 
-            awm->insert_sub_menu("GDE specials","G", AWM_EXP);
+            awm->insert_sub_menu("GDE specials", "G", AWM_EXP);
             {
-                GDE_load_menu(awm,AWM_EXP,0,0);
+                GDE_load_menu(awm, AWM_EXP, 0, 0);
             }
             awm->close_sub_menu();
 
-            awm->insert_sub_menu("WL specials","W", AWM_EXP);
+            awm->insert_sub_menu("WL specials", "W", AWM_EXP);
             {
                 AWMIMT(awm->local_id("view_probe_group_result"), "View probe group result", "V", "",             AWM_EXP, AW_POPUP, (AW_CL)create_probe_group_result_window, (AW_CL)ntw);
             }
             awm->close_sub_menu();
 
             SEP________________________SEP();
-            AWMIMT("xterm",         "Start XTERM",             "X",0   ,       AWM_ALL, (AW_CB)GB_xterm, 0, 0);
+            AWMIMT("xterm",         "Start XTERM",             "X", 0,         AWM_ALL, (AW_CB)GB_xterm, 0, 0);
         }
         // -------------------
         //      Properties
         // -------------------
         awm->create_menu("Properties", "r", AWM_ALL);
         {
-            AWMIMT("props_menu",    "Frame settings", "F","props_frame.hlp",      AWM_ALL, AW_POPUP, (AW_CL)AWT_preset_window, 0 );
+            AWMIMT("props_menu",    "Frame settings", "F", "props_frame.hlp",     AWM_ALL, AW_POPUP, (AW_CL)AWT_preset_window, 0);
             awm->insert_sub_menu("Tree settings",  "T");
             {
                 AWMIMT(awm->local_id("props_tree2"), "Tree options",        "o", "nt_tree_settings.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_create_tree_setting, (AW_CL)ntw);
                 AWMIMT("props_tree",                 "Tree colors & fonts", "c", "nt_props_data.hlp",    AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window,    (AW_CL)aw_gc_manager);
             }
             awm->close_sub_menu();
-            AWMIMT("props_www",      "Search world wide web (WWW)",                 "W","props_www.hlp",        AWM_ALL, AW_POPUP, (AW_CL)AWT_open_www_window,  (AW_CL)GLOBAL_gb_main );
+            AWMIMT("props_www",      "Search world wide web (WWW)",                 "W", "props_www.hlp",       AWM_ALL, AW_POPUP, (AW_CL)AWT_open_www_window,  (AW_CL)GLOBAL_gb_main);
             SEP________________________SEP();
-            AWMIMT("enable_advices", "Reactivate advices",                          "R","advice.hlp", AWM_ALL, (AW_CB) AWT_reactivate_all_advices, 0, 0 );
-            AWMIMT("!toggle_expert", "Toggle expert mode",                          "x",0,            AWM_ALL, NT_toggle_expert_mode, 0, 0 );
+            AWMIMT("enable_advices", "Reactivate advices",                          "R", "advice.hlp", AWM_ALL, (AW_CB) AWT_reactivate_all_advices, 0, 0);
+            AWMIMT("!toggle_expert", "Toggle expert mode",                          "x", 0,           AWM_ALL, NT_toggle_expert_mode, 0, 0);
             SEP________________________SEP();
-            AWMIMT("save_props",     "Save properties (in ~/.arb_prop/ntree.arb)",  "S","savedef.hlp",AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
+            AWMIMT("save_props",     "Save properties (in ~/.arb_prop/ntree.arb)",  "S", "savedef.hlp", AWM_ALL, (AW_CB) AW_save_defaults, 0, 0);
         }
     }
 
@@ -1556,9 +1556,9 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->create_mode("setroot.bitmap", "mode_set_root.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SETROOT);
     awm->create_mode("reset.bitmap",   "mode_reset.hlp",    AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_RESET);
 
-    awm->set_info_area_height( 250 );
-    awm->at(5,2);
-    awm->auto_space(-2,-2);
+    awm->set_info_area_height(250);
+    awm->at(5, 2);
+    awm->auto_space(-2, -2);
     awm->shadow_width(1);
 
     // -------------------------
@@ -1567,7 +1567,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
     int first_liney;
     int leftx;
-    awm->get_at_position( &leftx, &first_liney);
+    awm->get_at_position(&leftx, &first_liney);
 
     // ---------------------
     //      quit + help
@@ -1591,9 +1591,9 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->at_newline();
     int second_liney = awm->get_at_yposition();
 
-    awm->callback( AW_help_entry_pressed );
+    awm->callback(AW_help_entry_pressed);
     awm->help_text("arb_ntree.hlp");
-    awm->create_button("?","#help.xpm");
+    awm->create_button("?", "#help.xpm");
 
     // -------------------------
     //      save + undo/redo
@@ -1603,16 +1603,16 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->help_text("save.hlp");
     awm->create_button("SAVE", "#save.xpm");
 
-    awm->callback( AW_POPUP, (AW_CL)NT_create_save_as, (AW_CL)"tmp/nt/arbdb");
+    awm->callback(AW_POPUP, (AW_CL)NT_create_save_as, (AW_CL)"tmp/nt/arbdb");
     awm->help_text("saveas.hlp");
     awm->create_button("SAVE_AS", "#saveAs.xpm");
 
     // undo/redo:
-    awm->callback(NT_undo_cb,(AW_CL)GB_UNDO_UNDO,(AW_CL)ntw);
+    awm->callback(NT_undo_cb, (AW_CL)GB_UNDO_UNDO, (AW_CL)ntw);
     awm->help_text("undo.hlp");
     awm->create_button("UNDO", "#undo.bitmap");
 
-    awm->callback(NT_undo_cb,(AW_CL)GB_UNDO_REDO,(AW_CL)ntw);
+    awm->callback(NT_undo_cb, (AW_CL)GB_UNDO_REDO, (AW_CL)ntw);
     awm->help_text("undo.hlp");
     awm->create_button("REDO", "#redo.bitmap");
 
@@ -1625,9 +1625,9 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->at(db_pathx, first_liney);
     // size of DB-name button is determined by buttons below:
     awm->at_set_to(false, false, db_pathx2-db_pathx-1, second_liney-first_liney+1);
-    awm->callback( AW_POPUP, (AW_CL)NT_create_save_quick_as, (AW_CL)"tmp/nt/arbdb"); // do sth else
+    awm->callback(AW_POPUP, (AW_CL)NT_create_save_quick_as, (AW_CL)"tmp/nt/arbdb"); // do sth else
     awm->help_text("saveas.hlp");
-    awm->create_button("QUICK_SAVE_AS",AWAR_DB_NAME);
+    awm->create_button("QUICK_SAVE_AS", AWAR_DB_NAME);
 
     // ----------------------------
     //      tree + tree display
@@ -1641,15 +1641,15 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->at(db_treex, second_uppery);
     awm->button_length(0);
 
-    awm->callback((AW_CB)NT_set_tree_style,(AW_CL)ntw,(AW_CL)AP_TREE_RADIAL);
+    awm->callback((AW_CB)NT_set_tree_style, (AW_CL)ntw, (AW_CL)AP_TREE_RADIAL);
     awm->help_text("tr_type_radial.hlp");
     awm->create_button("RADIAL_TREE_TYPE", "#radial.xpm");
 
-    awm->callback((AW_CB)NT_set_tree_style,(AW_CL)ntw,(AW_CL)AP_TREE_NORMAL);
+    awm->callback((AW_CB)NT_set_tree_style, (AW_CL)ntw, (AW_CL)AP_TREE_NORMAL);
     awm->help_text("tr_type_list.hlp");
     awm->create_button("LIST_TREE_TYPE", "#dendro.xpm");
 
-    awm->callback((AW_CB)NT_set_tree_style,(AW_CL)ntw,(AW_CL)AP_TREE_IRS);
+    awm->callback((AW_CB)NT_set_tree_style, (AW_CL)ntw, (AW_CL)AP_TREE_IRS);
     awm->help_text("tr_type_irs.hlp");
     awm->create_button("FOLDED_LIST_TREE_TYPE", "#dendroIrs.xpm");
     
@@ -1662,7 +1662,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->at(db_treex, first_liney);
     // size of tree-name button is determined by buttons below:
     awm->at_set_to(false, false, db_treex2-db_treex-1, second_uppery-first_liney+1);
-    awm->callback((AW_CB2)AW_POPUP,(AW_CL)NT_open_select_tree_window,(AW_CL)awar_tree);
+    awm->callback((AW_CB2)AW_POPUP, (AW_CL)NT_open_select_tree_window, (AW_CL)awar_tree);
     awm->help_text("nt_tree_select.hlp");
     awm->create_button("SELECT_A_TREE", awar_tree);
 
@@ -1681,17 +1681,17 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
     awm->at(protectx+2, first_liney+1);
     awm->button_length(0);
-    awm->create_button("PROTECT","#protect.xpm");
+    awm->create_button("PROTECT", "#protect.xpm");
 
     awm->at(protectx, second_liney+2);
     awm->create_option_menu(AWAR_SECURITY_LEVEL);
-    awm->insert_option("0",0,0);
-    awm->insert_option("1",0,1);
-    awm->insert_option("2",0,2);
-    awm->insert_option("3",0,3);
-    awm->insert_option("4",0,4);
-    awm->insert_option("5",0,5);
-    awm->insert_default_option("6",0,6);
+    awm->insert_option("0", 0, 0);
+    awm->insert_option("1", 0, 1);
+    awm->insert_option("2", 0, 2);
+    awm->insert_option("3", 0, 3);
+    awm->insert_option("4", 0, 4);
+    awm->insert_option("5", 0, 5);
+    awm->insert_default_option("6", 0, 6);
     awm->update_option_menu();
 
     int db_searchx = awm->get_at_xposition() - 7;
@@ -1715,7 +1715,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     
     awm->at(db_alignx, first_liney);
     awm->at_set_to(false, false, db_alignx2-db_alignx-1, second_liney-first_liney+1);
-    awm->callback(AW_POPUP,   (AW_CL)NT_open_select_alignment_window, 0 );
+    awm->callback(AW_POPUP,   (AW_CL)NT_open_select_alignment_window, 0);
     awm->help_text("nt_align_select.hlp");
     awm->create_button("SELECT_AN_ALIGNMENT", AWAR_DEFAULT_ALIGNMENT);
 
@@ -1725,7 +1725,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     
     awm->at(leftx, third_liney);
     awm->button_length(AWAR_FOOTER_MAX_LEN);
-    awm->create_button(0,AWAR_FOOTER);
+    awm->create_button(0, AWAR_FOOTER);
 
     awm->at_newline();
     int bottomy = awm->get_at_yposition();
@@ -1737,12 +1737,12 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->button_length(7);
     
     awm->at(db_searchx, first_liney);
-    awm->callback(AW_POPUP, (AW_CL)ad_create_query_window, 0 );
+    awm->callback(AW_POPUP, (AW_CL)ad_create_query_window, 0);
     awm->help_text("sp_search.hlp");
     awm->create_button("SEARCH",  "Search");
 
     awm->at(db_searchx, second_uppery);
-    awm->callback((AW_CB)NT_jump_cb,(AW_CL)ntw,1);
+    awm->callback((AW_CB)NT_jump_cb, (AW_CL)ntw, 1);
     awm->help_text("tr_jump.hlp");
     awm->create_button("JUMP", "Jump");
     
@@ -1760,15 +1760,15 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->callback(NT_popup_configuration_admin, 0, 0);
     awm->create_button(0, AWAR_MARKED_SPECIES_COUNTER);
     {
-        GBDATA *gb_species_data = GB_search(GLOBAL_gb_main,"species_data",GB_CREATE_CONTAINER);
+        GBDATA *gb_species_data = GB_search(GLOBAL_gb_main, "species_data", GB_CREATE_CONTAINER);
         GB_add_callback(gb_species_data, GB_CB_CHANGED, nt_auto_count_marked_species, (int*)awm);
         nt_count_marked(awm);
     }
 
     // set height of top area:
     awm->set_info_area_height(bottomy+2); 
-    awm->set_bottom_area_height( 0 );
-    awr->set_focus_callback((AW_RCB)NT_focus_cb,(AW_CL)GLOBAL_gb_main,0);
+    awm->set_bottom_area_height(0);
+    awr->set_focus_callback((AW_RCB)NT_focus_cb, (AW_CL)GLOBAL_gb_main, 0);
 
     //  -----------------------------------
     //  Autostarts for development

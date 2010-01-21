@@ -107,7 +107,7 @@ int AWT_pro_a_nucs_convert(int arb_code_nr, char *data, size_t size, size_t pos,
 
     arb_assert(pos <= 2);
 
-    for (char *p = data; *p ; p++) {
+    for (char *p = data; *p;  p++) {
         char c = *p;
         if ((c>='a') && (c<='z')) c = c+'A'-'a';
         if (c=='U') c = 'T';
@@ -139,9 +139,9 @@ int AWT_pro_a_nucs_convert(int arb_code_nr, char *data, size_t size, size_t pos,
         startCodon = AWT_is_start_codon(buffer, arb_code_nr);
     }
 
-    for (char *p = data+pos; i+2<size; p+=3,i+=3) {
+    for (char *p = data+pos; i+2<size; p+=3, i+=3) {
         memcpy3(buffer, p);
-        int spro = (int)GBS_read_hash(t2i_hash,buffer);
+        int spro = (int)GBS_read_hash(t2i_hash, buffer);
         int C;
         if (!spro) {
             C = 'X';

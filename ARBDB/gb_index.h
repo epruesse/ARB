@@ -27,14 +27,14 @@ struct gb_if_entries {
 };
 
 inline gb_if_entries *GB_IF_ENTRIES_NEXT(gb_if_entries *ie) {
-    return GB_RESOLVE(struct gb_if_entries *,ie,rel_ie_next);
+    return GB_RESOLVE(struct gb_if_entries *, ie, rel_ie_next);
 }
 inline void SET_GB_IF_ENTRIES_NEXT(gb_if_entries *ie, gb_if_entries *next) {
     GB_SETREL(ie, rel_ie_next, next);
 }
 
 inline GBDATA *GB_IF_ENTRIES_GBD(gb_if_entries *ie) {
-    return GB_RESOLVE(GBDATA*,ie,rel_ie_gbd);
+    return GB_RESOLVE(GBDATA*, ie, rel_ie_gbd);
 }
 inline void SET_GB_IF_ENTRIES_GBD(struct gb_if_entries *ie, GBDATA *gbd) {
     GB_SETREL(ie, rel_ie_gbd, gbd);
@@ -56,43 +56,43 @@ struct gb_index_files_struct {
 
 #if (MEMORY_TEST==1)
 
-#define GB_ENTRIES_ENTRY(entries,idx)        (entries)[idx]
-#define SET_GB_ENTRIES_ENTRY(entries,idx,ie) (entries)[idx] = (ie);
+#define GB_ENTRIES_ENTRY(entries, idx)       (entries)[idx]
+#define SET_GB_ENTRIES_ENTRY(entries, idx, ie) (entries)[idx] = (ie);
 
 #else
 
-#define GB_ENTRIES_ENTRY(entries,idx)                                   \
+#define GB_ENTRIES_ENTRY(entries, idx)                                  \
     ((gb_if_entries *) ((entries)[idx] ? ((char*)(entries))+((entries)[idx]) : NULL))
 
-#define SET_GB_ENTRIES_ENTRY(entries,idx,ie)                    \
+#define SET_GB_ENTRIES_ENTRY(entries, idx, ie)                  \
     do {                                                        \
-        if (ie)  {                                              \
+        if (ie) {                                               \
             (entries)[idx] = (char*)(ie)-(char*)(entries);      \
         }                                                       \
         else {                                                  \
             (entries)[idx] = 0;                                 \
         }                                                       \
-    } while(0)
+    } while (0)
 
 #endif // MEMORY_TEST
 
 
 inline GB_REL_IFES *GB_INDEX_FILES_ENTRIES(gb_index_files_struct *ifs) {
-    return GB_RESOLVE(GB_REL_IFES *,ifs,rel_entries);
+    return GB_RESOLVE(GB_REL_IFES *, ifs, rel_entries);
 }
 inline void SET_GB_INDEX_FILES_ENTRIES(gb_index_files_struct *ixf, gb_if_entries **entries) {
     GB_SETREL(ixf, rel_entries, entries);
 }
 
 inline gb_index_files_struct *GB_INDEX_FILES_NEXT(gb_index_files_struct *ixf) {
-    return GB_RESOLVE(struct gb_index_files_struct *,ixf,rel_if_next);
+    return GB_RESOLVE(struct gb_index_files_struct *, ixf, rel_if_next);
 }
 inline void SET_GB_INDEX_FILES_NEXT(gb_index_files_struct *ixf, gb_index_files_struct *next) {
     GB_SETREL(ixf, rel_if_next, next);
 }
 
 inline gb_index_files_struct *GBCONTAINER_IFS(GBCONTAINER *gbc) {
-    return GB_RESOLVE(struct gb_index_files_struct *,gbc,rel_ifs);
+    return GB_RESOLVE(struct gb_index_files_struct *, gbc, rel_ifs);
 }
 inline void SET_GBCONTAINER_IFS(GBCONTAINER *gbc, gb_index_files_struct *ifs) {
     GB_SETREL(gbc, rel_ifs, ifs);

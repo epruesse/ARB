@@ -594,7 +594,7 @@ static int strncmpWithJoker(GB_CSTR s1, GB_CSTR s2, int len) { // s2 contains '?
 static char *oldString, *newString;
 static int oldStringContainsJoker;
 
-static char* replace_in_sequence(const char *sequence, int len, int /*repeat*/, int *new_len, GB_ERROR*) {
+static char* replace_in_sequence(const char *sequence, int len, int /* repeat */, int *new_len, GB_ERROR*) {
     int maxlen;
     int olen = strlen(oldString);
     int nlen = strlen(newString);
@@ -602,7 +602,7 @@ static char* replace_in_sequence(const char *sequence, int len, int /*repeat*/, 
     if (nlen<=olen) {
         maxlen = len;
     }
-    else  {
+    else {
         maxlen = (len/olen+1)*nlen;
     }
 
@@ -671,12 +671,12 @@ AW_window *ED4_create_replace_window(AW_root *root) {
     aws->load_xfig("edit4/replace.fig");
 
     aws->at("close");
-    aws->callback( (AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE", "Close","C");
+    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE", "Close", "C");
 
     aws->at("help");
-    aws->callback( AW_POPUP_HELP,(AW_CL)"e4_replace.hlp");
-    aws->create_button("HELP", "Help","H");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"e4_replace.hlp");
+    aws->create_button("HELP", "Help", "H");
 
     aws->at("spattern");
     aws->create_input_field(ED4_AWAR_REP_SEARCH_PATTERN, 30);
@@ -695,7 +695,7 @@ AW_window *ED4_create_replace_window(AW_root *root) {
 //      Other block operations
 // --------------------------------------------------------------------------------
 
-static char *sequence_to_upper_case(const char *seq, int len, int /*repeat*/, int *new_len, GB_ERROR*) {
+static char *sequence_to_upper_case(const char *seq, int len, int /* repeat */, int *new_len, GB_ERROR*) {
     char *new_seq = (char*)GB_calloc(len+1, sizeof(*new_seq));
     int l;
 
@@ -706,7 +706,7 @@ static char *sequence_to_upper_case(const char *seq, int len, int /*repeat*/, in
     if (new_len) *new_len = len;
     return new_seq;
 }
-static char *sequence_to_lower_case(const char *seq, int len, int /*repeat*/, int *new_len, GB_ERROR*) {
+static char *sequence_to_lower_case(const char *seq, int len, int /* repeat */, int *new_len, GB_ERROR*) {
     char *new_seq = (char*)GB_calloc(len+1, sizeof(*new_seq));
     int l;
 
@@ -793,11 +793,11 @@ static char *unalign_sequence_internal(const char *seq, int len, int *new_len, b
     return new_seq;
 }
 
-static char *unalign_left_sequence(const char *seq, int len, int /*repeat*/, int *new_len, GB_ERROR *) {
+static char *unalign_left_sequence(const char *seq, int len, int /* repeat */, int *new_len, GB_ERROR *) {
     return unalign_sequence_internal(seq, len, new_len, false);
 }
 
-static char *unalign_right_sequence(const char *seq, int len, int /*repeat*/, int *new_len, GB_ERROR *) {
+static char *unalign_right_sequence(const char *seq, int len, int /* repeat */, int *new_len, GB_ERROR *) {
     return unalign_sequence_internal(seq, len, new_len, true);
 }
 

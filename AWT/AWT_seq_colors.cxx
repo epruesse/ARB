@@ -19,7 +19,7 @@ static int default_NUC_set = 0;     // number of default nucleotide set
 static int default_AMI_set = 3;     // number of default amino acid set
 
 static const char *default_sets[AWT_SEQ_COLORS_MAX_SET] = {
-    //A B C D E F G H I J K L M N O P Q R S T U V W X Y Z * -
+    // A B C D E F G H I J K L M N O P Q R S T U V W X Y Z * -
     "=2=0=3=0=0=0=4=0=0=0=0=0=0=6=0=0=0=0=0=5=5=0=0=0=0=0=0=6", // A, C, G, TU and N in 5 colors
     "R2=0Y3=0=0=0R2=0=0=0=0=0=0=0=0=0=0=2=0Y3Y3=0=0=0=3=0=0=6", // AG and CTU in 2 colors
     "=0=5=0=5=7=7=0=5=7=7=3=7=3=9=7=7=7=3=3=0=0=5=3=7=3=7=0=6", // ambiguity
@@ -60,7 +60,7 @@ static const char *default_color(int set, int elem) {
     return result;
 }
 
-static void awt_awar_changed_cb(GBDATA *, int *cl, GB_CB_TYPE){
+static void awt_awar_changed_cb(GBDATA *, int *cl, GB_CB_TYPE) {
     AWT_seq_colors *sc = (AWT_seq_colors *)cl;
     sc->reload();
 }
@@ -84,7 +84,7 @@ static void create_seq_color_awars(AW_root *awr, AWT_seq_colors *asc) {
     seq_color_awars_created = true;
 }
 
-AW_window *create_seq_colors_window(AW_root *awr, AWT_seq_colors *asc){
+AW_window *create_seq_colors_window(AW_root *awr, AWT_seq_colors *asc) {
     char                     buf[256];
     static AW_window_simple *aws = 0;
     if (aws) return aws;
@@ -92,13 +92,13 @@ AW_window *create_seq_colors_window(AW_root *awr, AWT_seq_colors *asc){
     if (!seq_color_awars_created) create_seq_color_awars(awr, asc);
 
     aws = new AW_window_simple;
-    aws->init( awr, "SEQUENCE_COLOR_MAPPING", "SEQUENCE COLORS");
+    aws->init(awr, "SEQUENCE_COLOR_MAPPING", "SEQUENCE COLORS");
 
-    aws->at           ( 10,10 );
-    aws->auto_space(0,3);
+    aws->at           (10, 10);
+    aws->auto_space(0, 3);
 
-    aws->callback     ( AW_POPDOWN );aws->create_button( "CLOSE", "CLOSE", "C" );
-    aws->callback     ( AW_POPUP_HELP,(AW_CL)"sequence_colors.hlp" );aws->create_button( "HELP", "HELP" );
+    aws->callback     (AW_POPDOWN); aws->create_button("CLOSE", "CLOSE", "C");
+    aws->callback     (AW_POPUP_HELP, (AW_CL)"sequence_colors.hlp"); aws->create_button("HELP", "HELP");
     aws->at_newline();
 
     int set;
@@ -106,48 +106,48 @@ AW_window *create_seq_colors_window(AW_root *awr, AWT_seq_colors *asc){
     for (int seqType=0; seqType<2; seqType++) {
         if (seqType==0) {
             aws->label("Select Colors For Nucleotides (NA) :");
-            aws->create_toggle_field(AWAR_SEQ_NAME_SELECTOR_NA,1);
+            aws->create_toggle_field(AWAR_SEQ_NAME_SELECTOR_NA, 1);
         }
         else {
             aws->label("Select Colors For Amino Acids (AA) :");
-            aws->create_toggle_field(AWAR_SEQ_NAME_SELECTOR_AA,1);
+            aws->create_toggle_field(AWAR_SEQ_NAME_SELECTOR_AA, 1);
         }
         
-        for (set = 0; set < AWT_SEQ_COLORS_MAX_SET;set++){
-            sprintf(buf,"S_%i",set);
-            aws->insert_toggle( buf," ",set );
+        for (set = 0; set < AWT_SEQ_COLORS_MAX_SET; set++) {
+            sprintf(buf, "S_%i", set);
+            aws->insert_toggle(buf, " ", set);
         }
         aws->update_toggle_field();
         aws->at_newline();
     }
 
-    aws->label_length( 6 ); 
-    aws->button_length( 6 );
+    aws->label_length(6);
+    aws->button_length(6);
  
     for (int big_columns = 0; big_columns <= 1; ++big_columns) {
-        aws->create_button(0,"Char");
-        for (set = 0; set < AWT_SEQ_COLORS_MAX_SET;set++){
-            sprintf(buf,"S %i",set);
-            aws->create_button(0,buf);
+        aws->create_button(0, "Char");
+        for (set = 0; set < AWT_SEQ_COLORS_MAX_SET; set++) {
+            sprintf(buf, "S %i", set);
+            aws->create_button(0, buf);
         }
 
-        buf[0] = 0; aws->create_button(0,buf); // empty
+        buf[0] = 0; aws->create_button(0, buf); // empty
     }
     aws->at_newline();
-    aws->auto_space(2,2);
+    aws->auto_space(2, 2);
 
-    for (int elem = 0; elem < (AWT_SEQ_COLORS_MAX_ELEMS/2); elem++){
+    for (int elem = 0; elem < (AWT_SEQ_COLORS_MAX_ELEMS/2); elem++) {
         for (int big_columns = 0; big_columns <= 1; ++big_columns) {
             int my_elem = elem+big_columns*AWT_SEQ_COLORS_MAX_ELEMS/2;
 
-            sprintf(buf,AWAR_SEQ_NAME_STRINGS_TEMPLATE,my_elem);
-            aws->create_input_field(buf,4);
-            for (set = 0; set < AWT_SEQ_COLORS_MAX_SET;set++){
-                sprintf(buf,AWAR_SEQ_NAME_TEMPLATE,set,my_elem);
-                aws->create_input_field(buf,4);
+            sprintf(buf, AWAR_SEQ_NAME_STRINGS_TEMPLATE, my_elem);
+            aws->create_input_field(buf, 4);
+            for (set = 0; set < AWT_SEQ_COLORS_MAX_SET; set++) {
+                sprintf(buf, AWAR_SEQ_NAME_TEMPLATE, set, my_elem);
+                aws->create_input_field(buf, 4);
             }
-            if (big_columns == 0)  {
-                buf[0] = 0; aws->create_button(0,buf); // empty
+            if (big_columns == 0) {
+                buf[0] = 0; aws->create_button(0, buf); // empty
             }
         }
         aws->at_newline();
@@ -157,16 +157,16 @@ AW_window *create_seq_colors_window(AW_root *awr, AWT_seq_colors *asc){
     return (AW_window *)aws;
 }
 
-void AWT_seq_colors::run_cb(){
-    if (callback && aww) callback(aww,cd1,cd2);
+void AWT_seq_colors::run_cb() {
+    if (callback && aww) callback(aww, cd1, cd2);
 }
 
-void AWT_seq_colors::reload(){
+void AWT_seq_colors::reload() {
     char           buf[256];
     GB_transaction dummy(gb_def);
     int  i;
 
-    for (i=0;i<256;i++) {
+    for (i=0; i<256; i++) {
         char_2_gc[i]   = char_2_gc_aa[i]   = base_gc;
         char_2_char[i] = char_2_char_aa[i] = i;
     }
@@ -181,36 +181,36 @@ void AWT_seq_colors::reload(){
             set = def_set;
         }
 
-        for (int elem = 0; elem < AWT_SEQ_COLORS_MAX_ELEMS; elem++){
-            sprintf(buf,AWAR_SEQ_NAME_STRINGS_TEMPLATE,elem);
+        for (int elem = 0; elem < AWT_SEQ_COLORS_MAX_ELEMS; elem++) {
+            sprintf(buf, AWAR_SEQ_NAME_STRINGS_TEMPLATE, elem);
             unsigned char *sc = (unsigned char *)GBT_readOrCreate_string(gb_def, buf, default_characters(elem));
             if (!cbexists) {
-                GBDATA *gb_ne = GB_search(gb_def,buf,GB_STRING);
-                GB_ensure_callback(gb_ne,GB_CB_CHANGED,awt_awar_changed_cb,(int *)this);
-                for (int s2=0; s2<AWT_SEQ_COLORS_MAX_SET; s2++){
-                    sprintf(buf,AWAR_SEQ_NAME_TEMPLATE,s2,elem);
+                GBDATA *gb_ne = GB_search(gb_def, buf, GB_STRING);
+                GB_ensure_callback(gb_ne, GB_CB_CHANGED, awt_awar_changed_cb, (int *)this);
+                for (int s2=0; s2<AWT_SEQ_COLORS_MAX_SET; s2++) {
+                    sprintf(buf, AWAR_SEQ_NAME_TEMPLATE, s2, elem);
                     GBT_readOrCreate_char_pntr(gb_def, buf, default_color(s2, elem)); // add default if missing
-                    gb_ne = GB_search(gb_def,buf,GB_STRING);
-                    GB_ensure_callback(gb_ne,GB_CB_CHANGED,awt_awar_changed_cb,(int *)this);
+                    gb_ne = GB_search(gb_def, buf, GB_STRING);
+                    GB_ensure_callback(gb_ne, GB_CB_CHANGED, awt_awar_changed_cb, (int *)this);
                 }
             }
-            sprintf(buf,AWAR_SEQ_NAME_TEMPLATE,(int)set,elem);
-            char *val = GBT_read_string(gb_def,buf);
-            if (strlen(val) != 2 || val[1] >'9' || val[1] < '0'){
-                aw_message(GB_export_errorf("Error in Color Lookup Table: '%s' is not of type X#",val));
+            sprintf(buf, AWAR_SEQ_NAME_TEMPLATE, (int)set, elem);
+            char *val = GBT_read_string(gb_def, buf);
+            if (strlen(val) != 2 || val[1] >'9' || val[1] < '0') {
+                aw_message(GB_export_errorf("Error in Color Lookup Table: '%s' is not of type X#", val));
                 delete val;
                 delete sc;
                 continue;
             }
 
             if (selector == 0) { // Nucleotide colors
-                for (i=0;sc[i];i++) {
+                for (i=0; sc[i]; i++) {
                     char_2_gc[sc[i]] = val[1]-'0' + base_gc;
                     if (val[0] != '=') char_2_char[sc[i]] = val[0];
                 }
             }
             else {
-                for (i=0;sc[i];i++) {
+                for (i=0; sc[i]; i++) {
                     char_2_gc_aa[sc[i]] = val[1]-'0' + base_gc;
                     if (val[0] != '=') char_2_char_aa[sc[i]] = val[0];
                 }                    
@@ -226,7 +226,7 @@ void AWT_seq_colors::reload(){
 }
 
 AWT_seq_colors::AWT_seq_colors(GBDATA *gb_default, int _base_gc,
-                               AW_CB _cb,AW_CL _cd1,AW_CL _cd2){
+                               AW_CB _cb, AW_CL _cd1, AW_CL _cd2) {
     aww = 0;
     cd1 = _cd1;
     cd2 = _cd2;
@@ -240,7 +240,7 @@ AWT_seq_colors::AWT_seq_colors(GBDATA *gb_default, int _base_gc,
 
 
 
-AWT_reference::AWT_reference(GBDATA *_gb_main){
+AWT_reference::AWT_reference(GBDATA *_gb_main) {
     reference = 0;
     ref_len = 0;
     gb_main = _gb_main;
@@ -255,12 +255,12 @@ void AWT_reference::init() {
     init_species_name = 0;
 }
 
-void AWT_reference::expand_to_length(int len){
-    if (len > ref_len){
-        char *ref2 = (char *)GB_calloc(sizeof(char),len+1);
+void AWT_reference::expand_to_length(int len) {
+    if (len > ref_len) {
+        char *ref2 = (char *)GB_calloc(sizeof(char), len+1);
         
         if (reference) {
-            strcpy(ref2,reference);
+            strcpy(ref2, reference);
             free(reference);
         }
         reference = ref2;
@@ -274,12 +274,12 @@ void AWT_reference::init(const char *species_name, const char *alignment_name) {
     awt_assert(alignment_name);
 
     GB_transaction dummy(gb_main);
-    GBDATA *gb_species = GBT_find_species(gb_main,species_name);
+    GBDATA *gb_species = GBT_find_species(gb_main, species_name);
 
     init();
-    if (gb_species){
-        GBDATA *gb_data = GBT_read_sequence(gb_species,alignment_name);
-        if (gb_data){
+    if (gb_species) {
+        GBDATA *gb_data = GBT_read_sequence(gb_species, alignment_name);
+        if (gb_data) {
             reference = GB_read_as_string(gb_data);
             if (reference) {
                 ref_len = strlen(reference);
@@ -304,6 +304,6 @@ void AWT_reference::init(const char *name, const char *sequence_data, int len) {
     init_species_name = strdup(name);
 }
 
-AWT_reference::~AWT_reference(){
+AWT_reference::~AWT_reference() {
     delete reference;
 }

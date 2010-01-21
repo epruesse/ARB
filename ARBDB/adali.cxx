@@ -35,12 +35,12 @@ GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name) {
      * otherwise -> check only one alignment
      */
     GB_ERROR  error             = 0;
-    GBDATA   *gb_sd             = GBT_find_or_create(Main,"species_data",7);
-    GBDATA   *gb_presets        = GBT_find_or_create(Main,"presets",7);
+    GBDATA   *gb_sd             = GBT_find_or_create(Main, "species_data", 7);
+    GBDATA   *gb_presets        = GBT_find_or_create(Main, "presets", 7);
     GB_HASH  *species_name_hash = 0;
 
-    GBT_find_or_create(Main,"extended_data",7);
-    GBT_find_or_create(Main,"tree_data",7);
+    GBT_find_or_create(Main, "extended_data", 7);
+    GBT_find_or_create(Main, "tree_data", 7);
 
     if (alignment_name) {
         GBDATA *gb_ali_name = GB_find_string(gb_presets, "alignment_name", alignment_name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
@@ -93,7 +93,7 @@ GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name) {
     if (!error) {
         GBDATA *gb_ali;
 
-        for (gb_ali = GB_entry(gb_presets,"alignment");
+        for (gb_ali = GB_entry(gb_presets, "alignment");
              gb_ali && !error;
              gb_ali = GB_nextEntry(gb_ali))
         {
@@ -129,15 +129,15 @@ char **GBT_get_alignment_names(GBDATA *gbd) {
     long size;
 
     char **erg;
-    presets = GB_search(gbd,"presets",GB_CREATE_CONTAINER);
+    presets = GB_search(gbd, "presets", GB_CREATE_CONTAINER);
     size = 0;
-    for (ali = GB_entry(presets,"alignment"); ali; ali = GB_nextEntry(ali)) {
+    for (ali = GB_entry(presets, "alignment"); ali; ali = GB_nextEntry(ali)) {
         size ++;
     }
-    erg = (char **)GB_calloc(sizeof(char *),(size_t)size+1);
+    erg = (char **)GB_calloc(sizeof(char *), (size_t)size+1);
     size = 0;
-    for (ali = GB_entry(presets,"alignment"); ali; ali = GB_nextEntry(ali)) {
-        name = GB_entry(ali,"alignment_name");
+    for (ali = GB_entry(presets, "alignment"); ali; ali = GB_nextEntry(ali)) {
+        name = GB_entry(ali, "alignment_name");
         if (!name) {
             erg[size] = strdup("alignment_name ???");
         }
@@ -164,8 +164,8 @@ static char *gbt_nonexisting_alignment(GBDATA *gbMain) {
 GB_ERROR GBT_check_alignment_name(const char *alignment_name)
 {
     GB_ERROR error;
-    if ( (error = GB_check_key(alignment_name)) ) return error;
-    if (strncmp(alignment_name,"ali_",4)){
+    if ((error = GB_check_key(alignment_name))) return error;
+    if (strncmp(alignment_name, "ali_", 4)) {
         return GB_export_errorf("your alignment_name '%s' must start with 'ali_'",
                                 alignment_name);
     }
@@ -281,8 +281,8 @@ NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment,
      * - afterwards it will contain value  == 2 for each species where an alignment has been found.
      */
     
-    GBDATA *gb_species_data  = GBT_find_or_create(gb_main,"species_data",7);
-    GBDATA *gb_extended_data = GBT_find_or_create(gb_main,"extended_data",7);
+    GBDATA *gb_species_data  = GBT_find_or_create(gb_main, "species_data", 7);
+    GBDATA *gb_extended_data = GBT_find_or_create(gb_main, "extended_data", 7);
 
     GB_ERROR  error      = 0;
     char     *ali_name   = GBT_read_string(preset_alignment, "alignment_name");
@@ -296,7 +296,7 @@ NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment,
         GBDATA *gb_ali_len     = 0;
 
         {
-            GBDATA *gb_ali_wsec = GB_entry(preset_alignment,"alignment_write_security");
+            GBDATA *gb_ali_wsec = GB_entry(preset_alignment, "alignment_write_security");
             if (!gb_ali_wsec) {
                 error = "has no 'alignment_write_security' entry";
             }
@@ -307,7 +307,7 @@ NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment,
 
 
         if (!error) {
-            gb_ali_len = GB_entry(preset_alignment,"alignment_len");
+            gb_ali_len = GB_entry(preset_alignment, "alignment_len");
             if (!gb_ali_len) {
                 error = "has no 'alignment_len' entry";
             }
@@ -322,7 +322,7 @@ NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment,
                  gb_species && !error;
                  gb_species = GBT_next_species(gb_species))
             {
-                GBDATA     *gb_name        = GB_entry(gb_species,"name");
+                GBDATA     *gb_name        = GB_entry(gb_species, "name");
                 const char *name           = 0;
                 int         alignment_seen = 0;
                 GBDATA     *gb_ali         = 0;
@@ -353,8 +353,8 @@ NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment,
                 if (!error) {
                     GB_push_my_security(gb_name);
 
-                    error             = GB_write_security_delete(gb_name,7);
-                    if (!error) error = GB_write_security_write(gb_name,6);
+                    error             = GB_write_security_delete(gb_name, 7);
+                    if (!error) error = GB_write_security_write(gb_name, 6);
 
                     if (!error) {
                         gb_ali = GB_entry(gb_species, ali_name);
@@ -365,7 +365,7 @@ NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment,
                                 GB_warningf("No '%s/data' entry for species '%s' (has been filled with dummy data)", ali_name, name);
                             }
                             else {
-                                if (GB_read_type(gb_data) != GB_STRING){
+                                if (GB_read_type(gb_data) != GB_STRING) {
                                     GB_delete(gb_data);
                                     error = GBS_global_string("'%s/data' of species '%s' had wrong DB-type (%s) and has been deleted!",
                                                               ali_name, name, GB_read_key_pntr(gb_data));
@@ -377,7 +377,7 @@ NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment,
                                         if (found_ali_len<data_len) found_ali_len = data_len;
                                     }
 
-                                    error = GB_write_security_delete(gb_data,7);
+                                    error = GB_write_security_delete(gb_data, 7);
 
                                     if (!alignment_seen && species_name_hash) { // mark as seen
                                         GBS_write_hash(species_name_hash, name, 2); // 2 means "species has data in at least 1 alignment"
@@ -387,7 +387,7 @@ NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment,
                         }
                     }
 
-                    if (!error) error = GB_write_security_delete(gb_species,security_write);
+                    if (!error) error = GB_write_security_delete(gb_species, security_write);
 
                     GB_pop_my_security(gb_name);
                 }
@@ -398,19 +398,19 @@ NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment,
             GBDATA *gb_sai;
             for (gb_sai = GBT_first_SAI_rel_SAI_data(gb_extended_data);
                  gb_sai && !error;
-                 gb_sai = GBT_next_SAI(gb_sai) )
+                 gb_sai = GBT_next_SAI(gb_sai))
             {
                 GBDATA *gb_sai_name = GB_entry(gb_sai, "name");
                 GBDATA *gb_ali;
 
                 if (!gb_sai_name) continue;
 
-                GB_write_security_delete(gb_sai_name,7);
+                GB_write_security_delete(gb_sai_name, 7);
 
                 gb_ali = GB_entry(gb_sai, ali_name);
                 if (gb_ali) {
                     GBDATA *gb_sai_data;
-                    for (gb_sai_data = GB_child(gb_ali) ;
+                    for (gb_sai_data = GB_child(gb_ali);
                          gb_sai_data;
                          gb_sai_data = GB_nextChild(gb_sai_data))
                     {
@@ -435,7 +435,7 @@ NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment,
         if (!error) error = GBT_write_int(preset_alignment, "aligned", aligned);
 
         if (error) {
-            error = GBS_global_string("Error checking alignment '%s':\n%s\n" , ali_name, error);
+            error = GBS_global_string("Error checking alignment '%s':\n%s\n",  ali_name, error);
         }
     }
 
@@ -463,9 +463,9 @@ static GB_ERROR gbt_rename_alignment_of_item(GBDATA *gb_item_container, const ch
                 error = GBS_global_string("Entry '%s' already exists", dest);
             }
             else {
-                gb_new             = GB_create_container(gb_item,dest);
+                gb_new             = GB_create_container(gb_item, dest);
                 if (!gb_new) error = GB_await_error();
-                else error         = GB_copy(gb_new,gb_ali);
+                else error         = GB_copy(gb_new, gb_ali);
             }
         }
         if (dele) error = GB_delete(gb_ali);
@@ -512,7 +512,7 @@ GB_ERROR GBT_rename_alignment(GBDATA *gbMain, const char *source, const char *de
                 else {
                     error = GBT_check_alignment_name(dest);
                     if (!error) {
-                        GBDATA *gb_new_alignment = GB_create_container(gb_presets,"alignment");
+                        GBDATA *gb_new_alignment = GB_create_container(gb_presets, "alignment");
                         error                    = GB_copy(gb_new_alignment, gb_old_alignment);
                         if (!error) error        = GBT_write_string(gb_new_alignment, "alignment_name", dest);
                     }
@@ -559,7 +559,7 @@ GB_ERROR GBT_rename_alignment(GBDATA *gbMain, const char *source, const char *de
 // -----------------------------------------
 //      alignment related item functions
 
-NOT4PERL GBDATA *GBT_add_data(GBDATA *species,const char *ali_name, const char *key, GB_TYPES type) {
+NOT4PERL GBDATA *GBT_add_data(GBDATA *species, const char *ali_name, const char *key, GB_TYPES type) {
     // goes to header: __ATTR__DEPRECATED
 
     /* replace this function by GBT_create_sequence_data
@@ -574,23 +574,23 @@ NOT4PERL GBDATA *GBT_add_data(GBDATA *species,const char *ali_name, const char *
     if (GB_check_hkey(key)) {
         return NULL;
     }
-    gb_gb = GB_entry(species,ali_name);
-    if (!gb_gb) gb_gb = GB_create_container(species,ali_name);
+    gb_gb = GB_entry(species, ali_name);
+    if (!gb_gb) gb_gb = GB_create_container(species, ali_name);
 
     if (type == GB_STRING) {
         gb_data = GB_search(gb_gb, key, GB_FIND);
-        if (!gb_data){
+        if (!gb_data) {
             gb_data = GB_search(gb_gb, key, GB_STRING);
-            GB_write_string(gb_data,"...");
+            GB_write_string(gb_data, "...");
         }
     }
-    else{
+    else {
         gb_data = GB_search(gb_gb, key, type);
     }
     return gb_data;
 }
 
-NOT4PERL GBDATA *GBT_create_sequence_data(GBDATA *species,const char *ali_name, const char *key, GB_TYPES type, int security_write) {
+NOT4PERL GBDATA *GBT_create_sequence_data(GBDATA *species, const char *ali_name, const char *key, GB_TYPES type, int security_write) {
     GBDATA *gb_data = GBT_add_data(species, ali_name, key, type);
     if (gb_data) {
         GB_ERROR error = GB_write_security_write(gb_data, security_write);
@@ -612,36 +612,36 @@ GB_ERROR GBT_write_sequence(GBDATA *gb_data, const char *ali_name, long ali_len,
     GB_ERROR error = 0;
     if (slen > ali_len) {
         int i;
-        for (i= slen -1; i>=ali_len; i--) {
-            if (!strchr("-.nN",sequence[i])) break;     // real base after end of alignment
+        for (i = slen -1; i>=ali_len; i--) {
+            if (!strchr("-.nN", sequence[i])) break;    // real base after end of alignment
         }
         i++;                            // points to first 0 after alignment
-        if (i > ali_len){
+        if (i > ali_len) {
             GBDATA *gb_main = GB_get_root(gb_data);
-            ali_len = GBT_get_alignment_len(gb_main,ali_name);
-            if (slen > ali_len){                // check for modified alignment len
-                GBT_set_alignment_len(gb_main,ali_name,i);
+            ali_len = GBT_get_alignment_len(gb_main, ali_name);
+            if (slen > ali_len) {               // check for modified alignment len
+                GBT_set_alignment_len(gb_main, ali_name, i);
                 ali_len = i;
             }
         }
-        if (slen > ali_len){
+        if (slen > ali_len) {
             old_char = sequence[ali_len];
             ((char*)sequence)[ali_len] = 0;
         }
     }
-    error = GB_write_string(gb_data,sequence);
+    error = GB_write_string(gb_data, sequence);
     if (slen> ali_len) ((char*)sequence)[ali_len] = old_char;
     return error;
 }
 
 
-GBDATA *GBT_gen_accession_number(GBDATA *gb_species,const char *ali_name) {
-    GBDATA *gb_acc = GB_entry(gb_species,"acc");
+GBDATA *GBT_gen_accession_number(GBDATA *gb_species, const char *ali_name) {
+    GBDATA *gb_acc = GB_entry(gb_species, "acc");
     if (!gb_acc) {
-        GBDATA *gb_data = GBT_read_sequence(gb_species,ali_name);
+        GBDATA *gb_data = GBT_read_sequence(gb_species, ali_name);
         if (gb_data) {                                     // found a valid alignment
             GB_CSTR     sequence = GB_read_char_pntr(gb_data);
-            long        id       = GBS_checksum(sequence,1,".-");
+            long        id       = GBS_checksum(sequence, 1, ".-");
             const char *acc      = GBS_global_string("ARB_%lX", id);
             GB_ERROR    error    = GBT_write_string(gb_species, "acc", acc);
 
@@ -700,7 +700,7 @@ char *GBT_get_default_alignment(GBDATA *gb_main) {
     return GBT_read_string(gb_main, "presets/use");
 }
 
-GB_ERROR GBT_set_default_alignment(GBDATA *gb_main,const char *alignment_name) {
+GB_ERROR GBT_set_default_alignment(GBDATA *gb_main, const char *alignment_name) {
     return GBT_write_string(gb_main, "presets/use", alignment_name);
 }
 
@@ -757,7 +757,7 @@ GB_alignment_type GBT_get_alignment_type(GBDATA *gb_main, const char *aliname) {
     GB_alignment_type  at       = GB_AT_UNKNOWN;
 
     if (ali_type) {
-        switch(ali_type[0]) {
+        switch (ali_type[0]) {
             case 'r': if (strcmp(ali_type, "rna")==0) at = GB_AT_RNA; break;
             case 'd': if (strcmp(ali_type, "dna")==0) at = GB_AT_DNA; break;
             case 'a': if (strcmp(ali_type, "ami")==0) at = GB_AT_AA; break;
@@ -769,8 +769,8 @@ GB_alignment_type GBT_get_alignment_type(GBDATA *gb_main, const char *aliname) {
     return at;
 }
 
-bool GBT_is_alignment_protein(GBDATA *gb_main,const char *alignment_name) {
-    return GBT_get_alignment_type(gb_main,alignment_name) == GB_AT_AA;
+bool GBT_is_alignment_protein(GBDATA *gb_main, const char *alignment_name) {
+    return GBT_get_alignment_type(gb_main, alignment_name) == GB_AT_AA;
 }
 
 // -----------------------

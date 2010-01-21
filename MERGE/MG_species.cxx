@@ -40,7 +40,7 @@ static AW_CL ad_global_scannerid2 = 0;
 const char *MG_left_AWAR_SPECIES_NAME() { return AWAR_SPECIES1; }
 const char *MG_right_AWAR_SPECIES_NAME() { return AWAR_SPECIES2; }
 
-MG_remap::MG_remap(){
+MG_remap::MG_remap() {
     in_length = 0;
     out_length = 0;
     remap_tab = 0;
@@ -48,35 +48,35 @@ MG_remap::MG_remap(){
     compiled = 0;
 }
 
-MG_remap::~MG_remap(){
+MG_remap::~MG_remap() {
     delete [] remap_tab;
     delete [] soft_remap_tab;
 }
 
-GB_ERROR MG_remap::set(const char *in_reference, const char *out_reference){
-    if (compiled){
+GB_ERROR MG_remap::set(const char *in_reference, const char *out_reference) {
+    if (compiled) {
         GB_internal_error("Cannot set remap structure after being compiled");
         return 0;
     }
 
-    if (!remap_tab){
+    if (!remap_tab) {
         in_length = strlen(in_reference);
         out_length = strlen(out_reference);
         remap_tab = new int[in_length];
         int i;
-        for (i=0;i<in_length;i++){
+        for (i=0; i<in_length; i++) {
             remap_tab[i] = -1;
         }
     }
     else {
         int inl = strlen (in_reference);
-        if (inl > in_length){
+        if (inl > in_length) {
             int *new_remap = new int[inl];
             int i;
-            for (i=0;i<in_length;i++){
+            for (i=0; i<in_length; i++) {
                 new_remap[i] = remap_tab[i];
             }
-            for (;i<inl;i++){
+            for (; i<inl; i++) {
                 new_remap[i] = -1;
             }
         }
@@ -84,13 +84,13 @@ GB_ERROR MG_remap::set(const char *in_reference, const char *out_reference){
     }
     {
         int nol = strlen(out_reference);
-        if (nol> out_length){
+        if (nol> out_length) {
             out_length = nol;
         }
     }
     int *nremap_tab = new int[in_length];
     {
-        for (int i = 0;i< in_length;i++){
+        for (int i = 0; i< in_length; i++) {
             nremap_tab[i] = -1;
         }
     }
@@ -98,12 +98,12 @@ GB_ERROR MG_remap::set(const char *in_reference, const char *out_reference){
         const char *spacers = "-. n";
         int ipos = 0;
         int opos = 0;
-        while (ipos < in_length && opos < out_length){
-            while (strchr(spacers,in_reference[ipos])){
+        while (ipos < in_length && opos < out_length) {
+            while (strchr(spacers, in_reference[ipos])) {
                 ipos++; // search next in base
-                if (ipos >= in_length ) goto end_of_new_map;
+                if (ipos >= in_length) goto end_of_new_map;
             }
-            while (strchr(spacers,out_reference[opos])){
+            while (strchr(spacers, out_reference[opos])) {
                 opos++; // search next in base
                 if (opos >= out_length) goto end_of_new_map;
             }
@@ -111,16 +111,16 @@ GB_ERROR MG_remap::set(const char *in_reference, const char *out_reference){
             ipos++;
             opos++; // jump to next base
         }
-    end_of_new_map:;
+    end_of_new_map :;
     }
     {               // check forward consistency of new map
         int ipos = 0;
         int opos = 0;
-        for (ipos=0;ipos < in_length;ipos++){
-            if (remap_tab[ipos] > opos){
+        for (ipos=0; ipos < in_length; ipos++) {
+            if (remap_tab[ipos] > opos) {
                 opos = remap_tab[ipos];
             }
-            if (nremap_tab[ipos] >=0 && nremap_tab[ipos] < opos){ // consistency error
+            if (nremap_tab[ipos] >= 0 && nremap_tab[ipos] < opos) { // consistency error
                 nremap_tab[ipos] = -1; // sorry, not useable
             }
         }
@@ -128,19 +128,19 @@ GB_ERROR MG_remap::set(const char *in_reference, const char *out_reference){
     {               // check backward consistency of new map
         int ipos;
         int opos = out_length-1;
-        for (ipos = in_length-1;ipos>=0;ipos--){
-            if (remap_tab[ipos] >=0 && remap_tab[ipos] < opos){
+        for (ipos = in_length-1; ipos>=0; ipos--) {
+            if (remap_tab[ipos] >= 0 && remap_tab[ipos] < opos) {
                 opos = remap_tab[ipos];
             }
-            if (nremap_tab[ipos] > opos){
+            if (nremap_tab[ipos] > opos) {
                 nremap_tab[ipos] = -1;
             }
         }
     }
     {               // merge maps
-        for (int pos=0;pos<in_length;pos++){
-            if (remap_tab[pos] == -1){
-                if (nremap_tab[pos] >=0){
+        for (int pos=0; pos<in_length; pos++) {
+            if (remap_tab[pos] == -1) {
+                if (nremap_tab[pos] >= 0) {
                     remap_tab[pos] = nremap_tab[pos];
                 }
             }
@@ -150,8 +150,8 @@ GB_ERROR MG_remap::set(const char *in_reference, const char *out_reference){
     return NULL;
 }
 
-GB_ERROR MG_remap::compile(){
-    if (compiled){
+GB_ERROR MG_remap::compile() {
+    if (compiled) {
         return 0;
     }
     compiled = 1;
@@ -160,14 +160,14 @@ GB_ERROR MG_remap::compile(){
 
     int last_mapped_position_source = 0;
     int last_mapped_position_dest = 0;
-    for (in_pos=0;in_pos<in_length;in_pos++){
+    for (in_pos=0; in_pos<in_length; in_pos++) {
         soft_remap_tab[in_pos] = -1;
     }
 
-    for (in_pos=0;in_pos<in_length;in_pos++){
+    for (in_pos=0; in_pos<in_length; in_pos++) {
         int new_dest;
 
-        if ((new_dest = remap_tab[in_pos]) <0){
+        if ((new_dest = remap_tab[in_pos]) <0) {
             continue;
         }
         {   // fill areas between
@@ -179,13 +179,13 @@ GB_ERROR MG_remap::compile(){
             for (source = last_mapped_position_source, dest = last_mapped_position_dest;
                  source <= last_mapped_position_source + (dsource>1) &&
                      dest <= last_mapped_position_dest + (ddest>1);
-                 source++,dest++){
+                 source++, dest++) {
                 soft_remap_tab[source] = dest;
             }
             for (source = in_pos, dest = new_dest;
                  source > last_mapped_position_source + (dsource>1) &&
                      dest > last_mapped_position_dest + (ddest>1);
-                 source--,dest--){
+                 source--, dest--) {
                 soft_remap_tab[source] = dest;
             }
         }
@@ -195,7 +195,7 @@ GB_ERROR MG_remap::compile(){
     return 0;
 }
 
-char *MG_remap::remap(const char *sequence){
+char *MG_remap::remap(const char *sequence) {
     const char *gap_chars = "- .";
     int slen = strlen(sequence);
     int len = slen;
@@ -211,32 +211,32 @@ char *MG_remap::remap(const char *sequence){
 
     bool within_sequence = false;
     int i;
-    for (i=0;i<len;i++){
+    for (i=0; i<len; i++) {
         int c = sequence[i];
-        if (c == '.' || c == '-'){ // don't write gaps, maybe we have to compress the alignment
+        if (c == '.' || c == '-') { // don't write gaps, maybe we have to compress the alignment
             skippedchar = c;
             skippedgaps ++;
             continue;
         }
         lastposread = i;
         int new_pos = this->remap_tab[i];
-        if (new_pos<0){     // no remap, try soft remap
+        if (new_pos<0) {    // no remap, try soft remap
             new_pos = soft_remap_tab[i];
         }
-        if (new_pos >=0){   // if found a map then force map
-            while (lastposset < new_pos){ // insert gaps
-                if (within_sequence){
-                    GBS_chrcat(outs,'-');
+        if (new_pos >= 0) { // if found a map then force map
+            while (lastposset < new_pos) { // insert gaps
+                if (within_sequence) {
+                    GBS_chrcat(outs, '-');
                 }
                 else {
-                    GBS_chrcat(outs,'.');
+                    GBS_chrcat(outs, '.');
                 }
                 lastposset ++;
             }
         }
         else {          // insert not written gaps
-            while(skippedgaps>0){
-                GBS_chrcat(outs,skippedchar);
+            while (skippedgaps>0) {
+                GBS_chrcat(outs, skippedchar);
                 lastposset ++;
                 skippedgaps--;
             }
@@ -248,25 +248,25 @@ char *MG_remap::remap(const char *sequence){
         else {
             within_sequence = false;
         }
-        GBS_chrcat(outs,c);
+        GBS_chrcat(outs, c);
         lastposset++;
     }
-    for (i = lastposread+1;i < slen;i++){   // fill overlength rest of sequence
+    for (i = lastposread+1; i < slen; i++) { // fill overlength rest of sequence
         int c = sequence[i];
-        if (strchr(gap_chars,c)) continue; // don't fill with gaps
-        GBS_chrcat(outs,c);
+        if (strchr(gap_chars, c)) continue; // don't fill with gaps
+        GBS_chrcat(outs, c);
     }
     return GBS_strclose(outs);
 }
 
 void MG_create_species_awars(AW_root *aw_root, AW_default aw_def)
 {
-    aw_root->awar_string( AWAR_SPECIES1, "" ,   aw_def);
-    aw_root->awar_string( AWAR_SPECIES2, "" ,   aw_def);
-    aw_root->awar_string( AWAR_SPECIES1_DEST, "" ,  aw_def);
-    aw_root->awar_string( AWAR_SPECIES2_DEST, "" ,  aw_def);
-    aw_root->awar_string( AWAR_FIELD1, "" , aw_def);
-    aw_root->awar_int( AWAR_APPEND );
+    aw_root->awar_string(AWAR_SPECIES1, "",     aw_def);
+    aw_root->awar_string(AWAR_SPECIES2, "",     aw_def);
+    aw_root->awar_string(AWAR_SPECIES1_DEST, "",    aw_def);
+    aw_root->awar_string(AWAR_SPECIES2_DEST, "",    aw_def);
+    aw_root->awar_string(AWAR_FIELD1, "",   aw_def);
+    aw_root->awar_int(AWAR_APPEND);
 }
 
 
@@ -274,9 +274,9 @@ void AD_map_species1(AW_root *aw_root)
 {
     GB_push_transaction(GLOBAL_gb_merge);
     char   *source     = aw_root->awar(AWAR_SPECIES1)->read_string();
-    GBDATA *gb_species = GBT_find_species(GLOBAL_gb_merge,source);
+    GBDATA *gb_species = GBT_find_species(GLOBAL_gb_merge, source);
 
-    if (gb_species) awt_map_arbdb_scanner(ad_global_scannerid1,gb_species,0, CHANGE_KEY_PATH);
+    if (gb_species) awt_map_arbdb_scanner(ad_global_scannerid1, gb_species, 0, CHANGE_KEY_PATH);
     GB_pop_transaction(GLOBAL_gb_merge);
     delete source;
 }
@@ -285,9 +285,9 @@ void AD_map_species2(AW_root *aw_root)
 {
     char *source = aw_root->awar(AWAR_SPECIES2)->read_string();
     GB_push_transaction(GLOBAL_gb_dest);
-    GBDATA *gb_species = GBT_find_species(GLOBAL_gb_dest,source);
+    GBDATA *gb_species = GBT_find_species(GLOBAL_gb_dest, source);
     if (gb_species) {
-        awt_map_arbdb_scanner(ad_global_scannerid2,gb_species,0, CHANGE_KEY_PATH);
+        awt_map_arbdb_scanner(ad_global_scannerid2, gb_species, 0, CHANGE_KEY_PATH);
     }
     GB_pop_transaction(GLOBAL_gb_dest);
     delete source;
@@ -301,7 +301,7 @@ static GB_ERROR MG_transfer_fields_info(char *fieldname = NULL) {
     else {
         if (!GB_search(GLOBAL_gb_dest, CHANGE_KEY_PATH, GB_CREATE_CONTAINER)) error = GB_await_error();
         else {
-            for (GBDATA *gb_key = GB_entry(gb_key_data,CHANGEKEY);
+            for (GBDATA *gb_key = GB_entry(gb_key_data, CHANGEKEY);
                  gb_key && !error;
                  gb_key = GB_nextEntry(gb_key))
             {
@@ -311,8 +311,8 @@ static GB_ERROR MG_transfer_fields_info(char *fieldname = NULL) {
                     if (gb_key_type) {
                         char *name = GB_read_string(gb_key_name);
 
-                        if (!fieldname || strcmp(fieldname,name) == 0) {
-                            error = GBT_add_new_changekey(GLOBAL_gb_dest,name,(int)GB_read_int(gb_key_type));
+                        if (!fieldname || strcmp(fieldname, name) == 0) {
+                            error = GBT_add_new_changekey(GLOBAL_gb_dest, name, (int)GB_read_int(gb_key_type));
                         }
                         free(name);
                     }
@@ -323,11 +323,11 @@ static GB_ERROR MG_transfer_fields_info(char *fieldname = NULL) {
     return error;
 }
 
-MG_remap *MG_create_remap(GBDATA *gb_left, GBDATA *gb_right, const char *reference_species_names, const char *alignment_name){
+MG_remap *MG_create_remap(GBDATA *gb_left, GBDATA *gb_right, const char *reference_species_names, const char *alignment_name) {
     char *tok;
     MG_remap *rem = new MG_remap();
     char *ref_list = strdup(reference_species_names);
-    for (tok = strtok(ref_list," \n,;");tok;tok = strtok(NULL," \n,;")){
+    for (tok = strtok(ref_list, " \n,;"); tok; tok = strtok(NULL, " \n,;")) {
         bool    is_SAI           = strncmp(tok, "SAI:", 4) == 0;
         GBDATA *gb_species_left  = 0;
         GBDATA *gb_species_right = 0;
@@ -337,8 +337,8 @@ MG_remap *MG_create_remap(GBDATA *gb_left, GBDATA *gb_right, const char *referen
             gb_species_right = GBT_find_SAI(gb_right, tok+4);
         }
         else {
-            gb_species_left  = GBT_find_species(gb_left,tok);
-            gb_species_right = GBT_find_species(gb_right,tok);
+            gb_species_left  = GBT_find_species(gb_left, tok);
+            gb_species_right = GBT_find_species(gb_right, tok);
         }
 
         if (!gb_species_left || !gb_species_right) {
@@ -350,9 +350,9 @@ MG_remap *MG_create_remap(GBDATA *gb_left, GBDATA *gb_right, const char *referen
         }
 
         // look for sequence/SAI "data"
-        GBDATA *gb_seq_left  = GBT_read_sequence(gb_species_left,alignment_name);
+        GBDATA *gb_seq_left  = GBT_read_sequence(gb_species_left, alignment_name);
         if (!gb_seq_left) continue;
-        GBDATA *gb_seq_right = GBT_read_sequence(gb_species_right,alignment_name);
+        GBDATA *gb_seq_right = GBT_read_sequence(gb_species_right, alignment_name);
         if (!gb_seq_right) continue;
 
         GB_TYPES type_left  = GB_read_type(gb_seq_left);
@@ -369,7 +369,7 @@ MG_remap *MG_create_remap(GBDATA *gb_left, GBDATA *gb_right, const char *referen
         else {
             char *sleft  = GB_read_as_string(gb_seq_left);
             char *sright = GB_read_as_string(gb_seq_right);
-            rem->set(sleft,sright);
+            rem->set(sleft, sright);
             free(sleft);
             free(sright);
         }
@@ -379,25 +379,25 @@ MG_remap *MG_create_remap(GBDATA *gb_left, GBDATA *gb_right, const char *referen
     return rem;
 }
 
-MG_remaps::MG_remaps(GBDATA *gb_left,GBDATA *gb_right,AW_root *awr){
-    memset((char *)this,0,sizeof(*this));
+MG_remaps::MG_remaps(GBDATA *gb_left, GBDATA *gb_right, AW_root *awr) {
+    memset((char *)this, 0, sizeof(*this));
     int ref_enable = awr->awar(AWAR_REMAP_ENABLE)->read_int();
     if (!ref_enable) return;
 
     char *reference_species_names = awr->awar(AWAR_REMAP_SPECIES_LIST)->read_string();
     this->alignment_names = GBT_get_alignment_names(gb_left);
-    for (n_remaps = 0;alignment_names[n_remaps];n_remaps++) ;
-    this->remaps = (MG_remap **)GB_calloc(sizeof(MG_remap *),n_remaps);
+    for (n_remaps = 0; alignment_names[n_remaps]; n_remaps++) ;
+    this->remaps = (MG_remap **)GB_calloc(sizeof(MG_remap *), n_remaps);
     int i;
-    for (i=0;i<n_remaps;i++){
-        this->remaps[i] = MG_create_remap(gb_left,gb_right,reference_species_names,alignment_names[i]);
+    for (i=0; i<n_remaps; i++) {
+        this->remaps[i] = MG_create_remap(gb_left, gb_right, reference_species_names, alignment_names[i]);
     }
     delete reference_species_names;
 }
 
-MG_remaps::~MG_remaps(){
+MG_remaps::~MG_remaps() {
     int i;
-    for (i=0;i<n_remaps;i++){
+    for (i=0; i<n_remaps; i++) {
         delete remaps[i];
         delete alignment_names[i];
     }
@@ -405,7 +405,7 @@ MG_remaps::~MG_remaps(){
     delete remaps;
 }
 
-GB_ERROR MG_transfer_sequence(MG_remap *remap, GBDATA *source_species, GBDATA *destination_species,const char *alignment_name) {
+GB_ERROR MG_transfer_sequence(MG_remap *remap, GBDATA *source_species, GBDATA *destination_species, const char *alignment_name) {
     // align sequence after copy
     GB_ERROR error = 0;
 
@@ -437,12 +437,12 @@ GB_ERROR MG_transfer_sequence(MG_remap *remap, GBDATA *source_species, GBDATA *d
     return error;
 }
 
-GB_ERROR MG_transfer_sequence(MG_remaps *remaps, GBDATA *source_species, GBDATA *destination_species){
+GB_ERROR MG_transfer_sequence(MG_remaps *remaps, GBDATA *source_species, GBDATA *destination_species) {
     int i;
     GB_ERROR error = 0;
     if (!remaps->remaps) return NULL; // not remapped
-    for (i=0;i<remaps->n_remaps;i++){
-        error = MG_transfer_sequence(remaps->remaps[i],source_species,destination_species,remaps->alignment_names[i]);
+    for (i=0; i<remaps->n_remaps; i++) {
+        error = MG_transfer_sequence(remaps->remaps[i], source_species, destination_species, remaps->alignment_names[i]);
         if (error) break;
     }
     return error;
@@ -533,7 +533,7 @@ static GB_ERROR MG_transfer_one_species(AW_root *aw_root, MG_remaps& remap,
 
 
 void MG_transfer_selected_species(AW_window *aww) {
-    if (MG_check_alignment(aww,1)) return;
+    if (MG_check_alignment(aww, 1)) return;
 
     AW_root  *aw_root = aww->get_root();
     char     *source  = aw_root->awar(AWAR_SPECIES1)->read_string();
@@ -549,10 +549,10 @@ void MG_transfer_selected_species(AW_window *aww) {
         if (!error) error = GB_begin_transaction(GLOBAL_gb_dest);
 
         if (!error) {
-            MG_remaps rm(GLOBAL_gb_merge,GLOBAL_gb_dest,aw_root);
+            MG_remaps rm(GLOBAL_gb_merge, GLOBAL_gb_dest, aw_root);
 
-            GBDATA *gb_species_data1 = GB_search(GLOBAL_gb_merge,"species_data",GB_CREATE_CONTAINER);
-            GBDATA *gb_species_data2 = GB_search(GLOBAL_gb_dest,"species_data",GB_CREATE_CONTAINER);
+            GBDATA *gb_species_data1 = GB_search(GLOBAL_gb_merge, "species_data", GB_CREATE_CONTAINER);
+            GBDATA *gb_species_data2 = GB_search(GLOBAL_gb_dest, "species_data", GB_CREATE_CONTAINER);
 
             bool is_genome_db1 = GEN_is_genome_db(GLOBAL_gb_merge, -1);
             bool is_genome_db2 = GEN_is_genome_db(GLOBAL_gb_dest, -1);
@@ -580,7 +580,7 @@ void MG_transfer_selected_species(AW_window *aww) {
 #define IS_QUERIED(gb_species) (1 & GB_read_usr_private(gb_species))
 
 void MG_transfer_species_list(AW_window *aww) {
-    if (MG_check_alignment(aww,1)) return;
+    if (MG_check_alignment(aww, 1)) return;
 
     GB_ERROR error = NULL;
     aw_openstatus("Transferring species");
@@ -594,7 +594,7 @@ void MG_transfer_species_list(AW_window *aww) {
     GB_HASH *dest_species_hash    = GBT_create_species_hash(GLOBAL_gb_dest);
     GB_HASH *source_organism_hash = is_genome_db1 ? GBT_create_organism_hash(GLOBAL_gb_merge) : 0;
 
-    MG_remaps rm(GLOBAL_gb_merge,GLOBAL_gb_dest,aww->get_root());
+    MG_remaps rm(GLOBAL_gb_merge, GLOBAL_gb_dest, aww->get_root());
 
     GBDATA *gb_species1;
     int     queried = 0;
@@ -606,7 +606,7 @@ void MG_transfer_species_list(AW_window *aww) {
 
     for (gb_species1 = GBT_first_species(GLOBAL_gb_merge); gb_species1; gb_species1 = GBT_next_species(gb_species1)) {
         if (IS_QUERIED(gb_species1)) {
-            GBDATA *gb_species_data2 = GB_search(GLOBAL_gb_dest,"species_data",GB_CREATE_CONTAINER);
+            GBDATA *gb_species_data2 = GB_search(GLOBAL_gb_dest, "species_data", GB_CREATE_CONTAINER);
 
             error = MG_transfer_one_species(aww->get_root(), rm,
                                             NULL, gb_species_data2,
@@ -630,8 +630,8 @@ void MG_transfer_species_list(AW_window *aww) {
     aw_closestatus();
 }
 
-void MG_transfer_fields_cb(AW_window *aww){
-    if (MG_check_alignment(aww,1)) {
+void MG_transfer_fields_cb(AW_window *aww) {
+    if (MG_check_alignment(aww, 1)) {
         return;
     }
     
@@ -642,7 +642,7 @@ void MG_transfer_fields_cb(AW_window *aww){
     if (field[0] == 0) {
         error = "Please select a field you want to transfer";
     }
-    else if (strcmp(field,"name") == 0) {
+    else if (strcmp(field, "name") == 0) {
         error = "Transferring the 'name' field is forbidden";
     }
     else {
@@ -650,9 +650,9 @@ void MG_transfer_fields_cb(AW_window *aww){
         GB_begin_transaction(GLOBAL_gb_merge);
         GB_begin_transaction(GLOBAL_gb_dest);
 
-        GBDATA    *gb_dest_species_data  = GB_search(GLOBAL_gb_dest,"species_data",GB_CREATE_CONTAINER);
-        bool       transfer_of_alignment = GBS_string_matches(field,"ali_*/data",GB_MIND_CASE);
-        MG_remaps  rm(GLOBAL_gb_merge,GLOBAL_gb_dest,aww->get_root());
+        GBDATA    *gb_dest_species_data  = GB_search(GLOBAL_gb_dest, "species_data", GB_CREATE_CONTAINER);
+        bool       transfer_of_alignment = GBS_string_matches(field, "ali_*/data", GB_MIND_CASE);
+        MG_remaps  rm(GLOBAL_gb_merge, GLOBAL_gb_dest, aww->get_root());
 
         for (GBDATA *gb_species1 = GBT_first_species(GLOBAL_gb_merge);
              gb_species1 && !error;
@@ -660,10 +660,10 @@ void MG_transfer_fields_cb(AW_window *aww){
         {
             if (IS_QUERIED(gb_species1)) {
                 const char *name1       = GBT_read_name(gb_species1);
-                GBDATA     *gb_species2 = GB_find_string(gb_dest_species_data,"name", name1, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
+                GBDATA     *gb_species2 = GB_find_string(gb_dest_species_data, "name", name1, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
 
                 if (!gb_species2) {
-                    gb_species2             = GB_create_container(gb_dest_species_data,"species");
+                    gb_species2             = GB_create_container(gb_dest_species_data, "species");
                     if (!gb_species2) error = GB_await_error();
                     else error              = GBT_write_string(gb_species2, "name", name1);
                 }
@@ -672,13 +672,13 @@ void MG_transfer_fields_cb(AW_window *aww){
                 }
 
                 if (!error) {
-                    GBDATA   *gb_field1 = GB_search(gb_species1,field,GB_FIND);
-                    GBDATA   *gb_field2 = GB_search(gb_species2,field,GB_FIND);
+                    GBDATA   *gb_field1 = GB_search(gb_species1, field, GB_FIND);
+                    GBDATA   *gb_field2 = GB_search(gb_species2, field, GB_FIND);
                     GB_TYPES  type1;
                     GB_TYPES  type2;
                     bool      use_copy  = true;
 
-                    if (gb_field2 && gb_field1){
+                    if (gb_field2 && gb_field1) {
                         type1 = GB_read_type(gb_field1);
                         type2 = GB_read_type(gb_field2);
                         if ((type1==type2) && (GB_DB != type1)) {
@@ -688,9 +688,9 @@ void MG_transfer_fields_cb(AW_window *aww){
 
                                 if (!s1 || !s2) error = GB_await_error();
                                 else {
-                                    if (!GBS_find_string(s2,s1,0)) {
+                                    if (!GBS_find_string(s2, s1, 0)) {
                                         error = GB_write_string(gb_field2, GBS_global_string("%s %s", s2, s1));
-                                        if (!error) GB_write_flag(gb_species2,1);
+                                        if (!error) GB_write_flag(gb_species2, 1);
                                     }
                                 }
 
@@ -698,10 +698,10 @@ void MG_transfer_fields_cb(AW_window *aww){
                                 free(s2);
                             }
                             else { // not GB_STRING
-                                error = GB_copy(gb_field2,gb_field1);
+                                error = GB_copy(gb_field2, gb_field1);
                                 if (!error) GB_write_flag(gb_species2, 1);
-                                if (transfer_of_alignment && !error){
-                                    error = MG_transfer_sequence(&rm,gb_species1,gb_species2);
+                                if (transfer_of_alignment && !error) {
+                                    error = MG_transfer_sequence(&rm, gb_species1, gb_species2);
                                 }
                             }
                             use_copy = false;
@@ -716,7 +716,7 @@ void MG_transfer_fields_cb(AW_window *aww){
                             type1                 = GB_read_type(gb_field1);
                             gb_field2             = GB_search(gb_species2, field, type1);
                             if (!gb_field2) error = GB_await_error();
-                            else error            = GB_copy(gb_field2,gb_field1);
+                            else error            = GB_copy(gb_field2, gb_field1);
                         }
                     }
                 }
@@ -739,35 +739,35 @@ AW_window *MG_transfer_fields(AW_root *aw_root)
     GB_transaction    dummy(GLOBAL_gb_merge);
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init( aw_root, "MERGE_TRANSFER_FIELD", "TRANSFER FIELD");
+    aws->init(aw_root, "MERGE_TRANSFER_FIELD", "TRANSFER FIELD");
     aws->load_xfig("merge/mg_transfield.fig");
     aws->button_length(13);
 
-    aws->callback( AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("go");
     aws->callback(MG_transfer_fields_cb);
-    aws->create_button("GO","GO");
+    aws->create_button("GO", "GO");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP,(AW_CL)"mg_spec_sel_field.hlp");
-    aws->create_button("HELP","HELP");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"mg_spec_sel_field.hlp");
+    aws->create_button("HELP", "HELP");
 
     aws->at("append");
     aws->create_toggle(AWAR_APPEND);
 
     awt_create_selection_list_on_scandb(GLOBAL_gb_merge,
-                                        (AW_window*)aws,AWAR_FIELD1,
+                                        (AW_window*)aws, AWAR_FIELD1,
                                         AWT_NDS_FILTER,
-                                        "scandb","rescandb", &AWT_species_selector, 20, 10);
+                                        "scandb", "rescandb", &AWT_species_selector, 20, 10);
 
     return (AW_window*)aws;
 }
 
-void MG_move_field_cb(AW_window *aww){
-    if (MG_check_alignment(aww,1)) {
+void MG_move_field_cb(AW_window *aww) {
+    if (MG_check_alignment(aww, 1)) {
         return;
     }
 
@@ -778,7 +778,7 @@ void MG_move_field_cb(AW_window *aww){
     if (field[0] == 0) {
         error = "Please select a field to transfer";
     }
-    else if (strcmp(field,"name") == 0) {
+    else if (strcmp(field, "name") == 0) {
         error = "You are not allowed to transfer the 'name' field";
     }
     else {
@@ -805,7 +805,7 @@ void MG_move_field_cb(AW_window *aww){
 
             if (!error) {
                 GBDATA *gb_field1 = GB_search(gb_species1, field, GB_FIND);
-                if (!gb_field1) error = GBS_global_string("Species 1 has no field '%s'",field);
+                if (!gb_field1) error = GBS_global_string("Species 1 has no field '%s'", field);
 
                 if (!error) {
                     GB_TYPES  type1     = GB_read_type(gb_field1);
@@ -815,7 +815,7 @@ void MG_move_field_cb(AW_window *aww){
                         int type2 = GB_read_type(gb_field2);
 
                         if ((type1==type2) && (GB_DB != type1)) {
-                            error = GB_copy(gb_field2,gb_field1);
+                            error = GB_copy(gb_field2, gb_field1);
                         }
                         else { // remove dest. if type mismatch or container
                             error     = GB_delete(gb_field2);
@@ -826,10 +826,10 @@ void MG_move_field_cb(AW_window *aww){
                     if (!error && !gb_field2) { // destination missing or removed 
                         gb_field2             = GB_search(gb_species2, field, type1);
                         if (!gb_field2) error = GB_await_error();
-                        else error            = GB_copy(gb_field2,gb_field1);
+                        else error            = GB_copy(gb_field2, gb_field1);
                     }
                 }
-                if (!error) GB_write_flag(gb_species2,1);
+                if (!error) GB_write_flag(gb_species2, 1);
             }
         }
         if (!error) error = MG_transfer_fields_info(field);
@@ -850,27 +850,27 @@ AW_window *create_mg_move_fields(AW_root *aw_root)
     GB_transaction dummy(GLOBAL_gb_merge);
 
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "MERGE_CROSS_MOVE_FIELD", "CROSS MOVE FIELD");
+    aws->init(aw_root, "MERGE_CROSS_MOVE_FIELD", "CROSS MOVE FIELD");
     aws->load_xfig("merge/mg_movefield.fig");
     aws->button_length(13);
 
-    aws->callback( AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("go");
     aws->callback(MG_move_field_cb);
-    aws->create_button("GO","GO");
+    aws->create_button("GO", "GO");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP,(AW_CL)"movefield.hlp");
-    aws->create_button("HELP","HELP");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"movefield.hlp");
+    aws->create_button("HELP", "HELP");
 
 
     awt_create_selection_list_on_scandb(GLOBAL_gb_merge,
-                                        (AW_window*)aws,AWAR_FIELD1,
+                                        (AW_window*)aws, AWAR_FIELD1,
                                         AWT_NDS_FILTER,
-                                        "scandb","rescandb", &AWT_species_selector, 20, 10);
+                                        "scandb", "rescandb", &AWT_species_selector, 20, 10);
 
     return (AW_window*)aws;
 }
@@ -935,38 +935,38 @@ AW_window *create_mg_merge_tagged_fields(AW_root *aw_root)
 
     GB_transaction dummy(GLOBAL_gb_merge);
 
-    aw_root->awar_string( AWAR_FIELD1,"full_name");
-    aw_root->awar_string( AWAR_FIELD2,"full_name");
+    aw_root->awar_string(AWAR_FIELD1, "full_name");
+    aw_root->awar_string(AWAR_FIELD2, "full_name");
 
-    aw_root->awar_string( AWAR_TAG1,"S");
-    aw_root->awar_string( AWAR_TAG2,"D");
+    aw_root->awar_string(AWAR_TAG1, "S");
+    aw_root->awar_string(AWAR_TAG2, "D");
 
-    aw_root->awar_string( AWAR_TAG_DEL1,"S*");
+    aw_root->awar_string(AWAR_TAG_DEL1, "S*");
 
     aws = new AW_window_simple;
-    aws->init( aw_root, "MERGE_TAGGED_FIELDS", "MERGE TAGGED FIELDS");
+    aws->init(aw_root, "MERGE_TAGGED_FIELDS", "MERGE TAGGED FIELDS");
     aws->load_xfig("merge/mg_mergetaggedfield.fig");
     aws->button_length(13);
 
-    aws->callback( AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("go");
     aws->callback(MG_merge_tagged_field_cb);
-    aws->create_button("GO","GO");
+    aws->create_button("GO", "GO");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP,(AW_CL)"mergetaggedfield.hlp");
-    aws->create_button("HELP","HELP");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"mergetaggedfield.hlp");
+    aws->create_button("HELP", "HELP");
 
-    aws->at("tag1");    aws->create_input_field(AWAR_TAG1,5);
-    aws->at("tag2");    aws->create_input_field(AWAR_TAG2,5);
+    aws->at("tag1");    aws->create_input_field(AWAR_TAG1, 5);
+    aws->at("tag2");    aws->create_input_field(AWAR_TAG2, 5);
 
-    aws->at("del1");    aws->create_input_field(AWAR_TAG_DEL1,5);
+    aws->at("del1");    aws->create_input_field(AWAR_TAG_DEL1, 5);
 
-    awt_create_selection_list_on_scandb(GLOBAL_gb_merge, (AW_window*)aws,AWAR_FIELD1,AWT_NDS_FILTER,"fields1",0, &AWT_species_selector, 20, 10);
-    awt_create_selection_list_on_scandb(GLOBAL_gb_dest, (AW_window*)aws,AWAR_FIELD2,AWT_NDS_FILTER,"fields2",0, &AWT_species_selector, 20, 10);
+    awt_create_selection_list_on_scandb(GLOBAL_gb_merge, (AW_window*)aws, AWAR_FIELD1, AWT_NDS_FILTER, "fields1", 0, &AWT_species_selector, 20, 10);
+    awt_create_selection_list_on_scandb(GLOBAL_gb_dest, (AW_window*)aws, AWAR_FIELD2, AWT_NDS_FILTER, "fields2", 0, &AWT_species_selector, 20, 10);
 
     return (AW_window*)aws;
 }
@@ -982,12 +982,12 @@ GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
         error =  GB_export_error("No source sequences found");
     }
     else {
-        char *type = GBT_get_alignment_type_string(GLOBAL_gb_merge,M_alignment_names[0]);
+        char *type = GBT_get_alignment_type_string(GLOBAL_gb_merge, M_alignment_names[0]);
         int   s;
         int   d;
 
-        for (s=0,d=0;D_alignment_names[s];s++){
-            char *type2 = GBT_get_alignment_type_string(GLOBAL_gb_dest,D_alignment_names[s]);
+        for (s=0, d=0; D_alignment_names[s]; s++) {
+            char *type2 = GBT_get_alignment_type_string(GLOBAL_gb_dest, D_alignment_names[s]);
             if (strcmp(type, type2) == 0) {
                 D_alignment_names[d] = D_alignment_names[s];
                 if (d != s) D_alignment_names[s] = 0;
@@ -1005,7 +1005,7 @@ GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
             case 0:
                 error = GB_export_errorf("Cannot find a target alignment with a type of '%s'\n"
                                          "You should create one first or select a different alignment type\n"
-                                         "during sequence import",type);
+                                         "during sequence import", type);
                 break;
             case 1:
                 dest = D_alignment_names[0];
@@ -1026,15 +1026,15 @@ GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
                 if (!dest) {
                     str = GBS_stropen(100);
 
-                    for (i=0;i<d;i++){
-                        GBS_strcat(str,D_alignment_names[i]);
-                        GBS_chrcat(str,',');
+                    for (i=0; i<d; i++) {
+                        GBS_strcat(str, D_alignment_names[i]);
+                        GBS_chrcat(str, ',');
                     }
-                    GBS_strcat(str,"ABORT");
+                    GBS_strcat(str, "ABORT");
 
                     b = GBS_strclose(str);
                     aliid = aw_question("There are more than one possible alignment targets\n"
-                                        "Choose one destination alignment or ABORT",b);
+                                        "Choose one destination alignment or ABORT", b);
                     free(b);
                     if (aliid >= d) {
                         error = "Operation Aborted";
@@ -1045,13 +1045,13 @@ GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
                 break;
         }
         if (!error && dest && strcmp(M_alignment_names[0], dest) != 0) {
-            error = GBT_rename_alignment(GLOBAL_gb_merge,M_alignment_names[0], dest, 1, 1);
+            error = GBT_rename_alignment(GLOBAL_gb_merge, M_alignment_names[0], dest, 1, 1);
             if (error) {
                 error = GBS_global_string("Failed to rename alignment '%s' to '%s' (Reason: %s)",
                                           M_alignment_names[0], dest, error);
             }
             else {
-                GBT_add_new_changekey(GLOBAL_gb_merge, GBS_global_string("%s/data",dest),GB_STRING);
+                GBT_add_new_changekey(GLOBAL_gb_merge, GBS_global_string("%s/data", dest), GB_STRING);
             }
         }
         free(type);
@@ -1080,8 +1080,8 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
     error = MG_equal_alignments(true);
     if (error) goto end;
 
-    M_species_data = GB_search(GLOBAL_gb_merge,"species_data",GB_CREATE_CONTAINER);
-    D_species_data = GB_search(GLOBAL_gb_dest,"species_data",GB_CREATE_CONTAINER);
+    M_species_data = GB_search(GLOBAL_gb_merge, "species_data", GB_CREATE_CONTAINER);
+    D_species_data = GB_search(GLOBAL_gb_dest, "species_data", GB_CREATE_CONTAINER);
 
     GBDATA *M_species;
     GBDATA *D_species;
@@ -1096,18 +1096,18 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
         D_species_hash = GBT_create_species_hash_sized(GLOBAL_gb_dest, M_species_count+D_species_count);
     }
 
-    for (M_species = GB_entry(M_species_data,"species"); M_species; M_species = GB_nextEntry(M_species)) {
-        GBDATA *M_name       = GB_search(M_species,"name",GB_STRING);
+    for (M_species = GB_entry(M_species_data, "species"); M_species; M_species = GB_nextEntry(M_species)) {
+        GBDATA *M_name       = GB_search(M_species, "name", GB_STRING);
         free(m_name); m_name = GB_read_string(M_name);
 
         int count = 1;
 
-    new_try:
+    new_try :
 
         count++;
         
         D_species = (GBDATA*)GBS_read_hash(D_species_hash, m_name);
-        if (D_species){
+        if (D_species) {
             if (overwriteall) {
                 error = GB_delete(D_species);
             }
@@ -1127,7 +1127,7 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
                                                       "  - Rename imported species\n"
                                                       "  - Automatically rename species (append .NUM)\n"
                                                       "  - Abort everything", m_name),
-                                    "overwrite, overwrite all, don't import, rename, auto-rename, abort")){
+                                    "overwrite, overwrite all, don't import, rename, auto-rename, abort")) {
                     case 1:
                         overwriteall = 1;
                     case 0:
@@ -1158,12 +1158,12 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
         }
 
         if (!error) {
-            D_species             = GB_create_container(D_species_data,"species");
+            D_species             = GB_create_container(D_species_data, "species");
             if (!D_species) error = GB_await_error();
             else {
                 error             = GB_copy_with_protection(D_species, M_species, true);
-                if (!error) GB_write_flag(D_species,1); // mark species
-                if (!error) error = GB_write_usr_private(D_species,255); // put in hitlist
+                if (!error) GB_write_flag(D_species, 1); // mark species
+                if (!error) error = GB_write_usr_private(D_species, 255); // put in hitlist
                 if (!error) error = GBT_write_string(D_species, "name", m_name);
             }
 
@@ -1173,7 +1173,7 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
         if (error) break;
     }
 
- end:
+ end :
 
     if (D_species_hash) GBS_free_hash(D_species_hash);
 
@@ -1193,10 +1193,10 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
 //      MG_species_selector
 //  ---------------------------
 
-static void mg_select_species1(GBDATA* , AW_root *aw_root, const char *item_name) {
+static void mg_select_species1(GBDATA*,  AW_root *aw_root, const char *item_name) {
     aw_root->awar(AWAR_SPECIES1)->write_string(item_name);
 }
-static void mg_select_species2(GBDATA* , AW_root *aw_root, const char *item_name) {
+static void mg_select_species2(GBDATA*,  AW_root *aw_root, const char *item_name) {
     aw_root->awar(AWAR_SPECIES2)->write_string(item_name);
 }
 
@@ -1207,7 +1207,7 @@ static GBDATA *mg_get_first_species_data2(GBDATA *, AW_root *, AWT_QUERY_RANGE) 
     return GBT_get_species_data(GLOBAL_gb_dest);
 }
 
-static GBDATA *mg_get_selected_species1(GBDATA */*gb_main*/, AW_root *aw_root) {
+static GBDATA *mg_get_selected_species1(GBDATA * /* gb_main */, AW_root *aw_root) {
     GB_transaction dummy(GLOBAL_gb_merge);
     char   *species_name            = aw_root->awar(AWAR_SPECIES1)->read_string();
     GBDATA *gb_species              = 0;
@@ -1215,7 +1215,7 @@ static GBDATA *mg_get_selected_species1(GBDATA */*gb_main*/, AW_root *aw_root) {
     free(species_name);
     return gb_species;
 }
-static GBDATA *mg_get_selected_species2(GBDATA */*gb_main*/, AW_root *aw_root) {
+static GBDATA *mg_get_selected_species2(GBDATA * /* gb_main */, AW_root *aw_root) {
     GB_transaction dummy(GLOBAL_gb_dest);
     char   *species_name            = aw_root->awar(AWAR_SPECIES2)->read_string();
     GBDATA *gb_species              = 0;
@@ -1244,26 +1244,26 @@ static void mg_initialize_species_selectors() {
     }
 }
 
-AW_window *MG_merge_species_cb(AW_root *awr){
+AW_window *MG_merge_species_cb(AW_root *awr) {
     static AW_window_simple_menu *aws = 0;
     if (aws) return (AW_window *)aws;
 
-    awr->awar_string(AWAR_REMAP_SPECIES_LIST, "ecoli",GLOBAL_gb_dest);
+    awr->awar_string(AWAR_REMAP_SPECIES_LIST, "ecoli", GLOBAL_gb_dest);
     awr->awar_int(AWAR_REMAP_ENABLE, 0, GLOBAL_gb_dest);
 
     aws = new AW_window_simple_menu;
-    aws->init( awr, "MERGE_TRANSFER_SPECIES", "TRANSFER SPECIES");
+    aws->init(awr, "MERGE_TRANSFER_SPECIES", "TRANSFER SPECIES");
     aws->load_xfig("merge/species.fig");
 
-    aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP,(AW_CL)"mg_species.hlp");
-    aws->create_button("HELP","HELP","H");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"mg_species.hlp");
+    aws->create_button("HELP", "HELP", "H");
 
     awt_query_struct awtqs;
-    aws->create_menu("DB_I_Expert","D");
+    aws->create_menu("DB_I_Expert", "D");
 
     awtqs.gb_main                = GLOBAL_gb_merge;
     awtqs.gb_ref                 = GLOBAL_gb_dest;
@@ -1294,11 +1294,11 @@ AW_window *MG_merge_species_cb(AW_root *awr){
 
     awt_create_query_box(aws, &awtqs, "db1");
 
-    AW_CL scannerid      = awt_create_arbdb_scanner(GLOBAL_gb_merge, aws, "box1",0,0,0,AWT_SCANNER,0,0,AWT_NDS_FILTER, awtqs.selector);
+    AW_CL scannerid      = awt_create_arbdb_scanner(GLOBAL_gb_merge, aws, "box1", 0, 0, 0, AWT_SCANNER, 0, 0, AWT_NDS_FILTER, awtqs.selector);
     ad_global_scannerid1 = scannerid;
     aws->get_root()->awar(AWAR_SPECIES1)->add_callback(AD_map_species1);
 
-    aws->create_menu("DB_II_Expert","B");
+    aws->create_menu("DB_II_Expert", "B");
 
     awtqs.gb_main                = GLOBAL_gb_dest;
     awtqs.gb_ref                 = GLOBAL_gb_merge;
@@ -1326,7 +1326,7 @@ AW_window *MG_merge_species_cb(AW_root *awr){
 
     awt_create_query_box(aws, &awtqs, "db2");
 
-    scannerid            = awt_create_arbdb_scanner(GLOBAL_gb_dest, aws, "box2",0,0,0,AWT_SCANNER,0,0,AWT_NDS_FILTER, awtqs.selector);
+    scannerid            = awt_create_arbdb_scanner(GLOBAL_gb_dest, aws, "box2", 0, 0, 0, AWT_SCANNER, 0, 0, AWT_NDS_FILTER, awtqs.selector);
     ad_global_scannerid2 = scannerid;
     aws->get_root()->awar(AWAR_SPECIES2)->add_callback(AD_map_species2);
 
@@ -1338,17 +1338,17 @@ AW_window *MG_merge_species_cb(AW_root *awr){
         aws->at("transsspec");
         aws->callback(MG_transfer_selected_species);
         aws->create_button("TRANSFER_SELECTED_DELETE_DUPLICATED",
-                           "TRANSFER\nSELECTED\nSPECIES\n\nDELETE\nDUPLICATE\nIN DB II","T");
+                           "TRANSFER\nSELECTED\nSPECIES\n\nDELETE\nDUPLICATE\nIN DB II", "T");
 
         aws->at("translspec");
         aws->callback(MG_transfer_species_list);
         aws->create_button("TRANSFER_LISTED_DELETE_DUPLI",
-                           "TRANSFER\nLISTED\nSPECIES\n\nDELETE\nDUPLICATES\nIN DB II","T");
+                           "TRANSFER\nLISTED\nSPECIES\n\nDELETE\nDUPLICATES\nIN DB II", "T");
 
         aws->at("transfield");
-        aws->callback(AW_POPUP,(AW_CL)MG_transfer_fields,0);
+        aws->callback(AW_POPUP, (AW_CL)MG_transfer_fields, 0);
         aws->create_button("TRANSFER_FIELD_OF_LISTED_DELETE_DUPLI",
-                           "TRANSFER\nFIELD\nOF LISTED\nSPECIES\n\nDELETE\nDUPLICATES\nIN DB II","T");
+                           "TRANSFER\nFIELD\nOF LISTED\nSPECIES\n\nDELETE\nDUPLICATES\nIN DB II", "T");
 
         aws->shadow_width(1);
     }
@@ -1362,21 +1362,21 @@ AW_window *MG_merge_species_cb(AW_root *awr){
     aws->create_text_field(AWAR_REMAP_SPECIES_LIST);
 
     aws->at("pres_sel");
-    aws->callback((AW_CB1)AW_POPUP,(AW_CL)MG_select_preserves_cb);
+    aws->callback((AW_CB1)AW_POPUP, (AW_CL)MG_select_preserves_cb);
     aws->create_button("SELECT", "SELECT", "S");
 
     // top icon
     aws->button_length(0);
     aws->at("icon");
-    aws->callback(AW_POPUP_HELP,(AW_CL)"mg_species.hlp");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"mg_species.hlp");
     aws->create_button("HELP_MERGE", "#merge/icon.bitmap");
 
-    aws->create_menu("DB1->DB2","-");
-    aws->insert_menu_topic( "compare_field_of_listed",  "Compare a field of listed species ...","C","checkfield.hlp",   AWM_ALL, AW_POPUP,(AW_CL)create_mg_check_fields,0);
-    aws->insert_menu_topic( "move_field_of_selected",   "Move one field of selected left species to same field of selected right species","M",
-                            "movefield.hlp", AWM_ALL, AW_POPUP,(AW_CL)create_mg_move_fields,0);
-    aws->insert_menu_topic( "merge_field_of_listed_to_new_field", "Merge field of listed species of DB1 with different fields of same species of DB2 ","D",
-                            "mergetaggedfield.hlp", AWM_ALL, AW_POPUP,(AW_CL)create_mg_merge_tagged_fields,0);
+    aws->create_menu("DB1->DB2", "-");
+    aws->insert_menu_topic("compare_field_of_listed",   "Compare a field of listed species ...", "C", "checkfield.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_mg_check_fields, 0);
+    aws->insert_menu_topic("move_field_of_selected",    "Move one field of selected left species to same field of selected right species", "M",
+                            "movefield.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_mg_move_fields, 0);
+    aws->insert_menu_topic("merge_field_of_listed_to_new_field", "Merge field of listed species of DB1 with different fields of same species of DB2 ", "D",
+                            "mergetaggedfield.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_mg_merge_tagged_fields, 0);
 
     aws->insert_separator();
     aws->insert_menu_topic("def_gene_species_field_xfer", "Define field transfer for gene-species", "g", "gene_species_field_transfer.hlp",

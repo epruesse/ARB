@@ -29,7 +29,7 @@ static const char *internal_export_commands[] = {
     NULL
 };
 
-AWTI_EXPORT_CMD check_internal(const char *command)  {
+AWTI_EXPORT_CMD check_internal(const char *command) {
     AWTI_EXPORT_CMD cmd = AWTI_EXPORT_INVALID;
     for (int i = 0; internal_export_commands[i]; ++i) {
         if (strcmp(command, internal_export_commands[i]) == 0) {
@@ -54,8 +54,8 @@ struct export_format {
     ~export_format();
 };
 
-export_format::export_format(void){
-    memset((char *)this,0,sizeof(export_format));
+export_format::export_format(void) {
+    memset((char *)this, 0, sizeof(export_format));
 }
 
 export_format::~export_format(void) {
@@ -65,15 +65,15 @@ export_format::~export_format(void) {
     free(form);
 }
 
-static GB_ERROR awtc_read_export_format(export_format *efo, const char *file, bool load_complete_form){
+static GB_ERROR awtc_read_export_format(export_format *efo, const char *file, bool load_complete_form) {
     GB_ERROR error = 0;
 
     if (!file || !file[0]) {
         error = "No export format selected";
     }
     else {
-        char *fullfile = AWT_unfold_path(file,"ARBHOME");
-        FILE *in       = fopen(fullfile,"r");
+        char *fullfile = AWT_unfold_path(file, "ARBHOME");
+        FILE *in       = fopen(fullfile, "r");
 
         if (!in) error = GB_export_IO_error("reading export form", fullfile);
         else {
@@ -86,7 +86,7 @@ static GB_ERROR awtc_read_export_format(export_format *efo, const char *file, bo
                 if      (!strcmp(s1, "SYSTEM"))     { reassign(efo->system,     s2); }
                 else if (!strcmp(s1, "PRE_FORMAT")) { reassign(efo->new_format, s2); }
                 else if (!strcmp(s1, "SUFFIX"))     { reassign(efo->suffix,     s2); }
-                else if (!strcmp(s1, "INTERNAL"))   {
+                else if (!strcmp(s1, "INTERNAL")) {
                     efo->export_mode = check_internal(s2);
                     if (efo->export_mode == AWTI_EXPORT_INVALID) {
                         error = GBS_global_string("Unknown INTERNAL command '%s'", s2);
@@ -495,11 +495,11 @@ static GB_ERROR export_species_using_form(FILE *out, GBDATA *gb_species, const c
     else {
         char *p;
         char *o = pars;
-        while ( (p = GBS_find_string(o,"$$DELETE_LINE$$",0)) ) {
-            char *l,*r;
+        while ((p = GBS_find_string(o, "$$DELETE_LINE$$", 0))) {
+            char *l, *r;
             for (l = p; l>o; l--) if (*l=='\n') break;
-            r = strchr(p,'\n'); if (!r) r = p +strlen(p);
-            fwrite(o,1,l-o,out);
+            r = strchr(p, '\n'); if (!r) r = p + strlen(p);
+            fwrite(o, 1, l-o, out);
             o = r;
         }
         fputs(o, out);
@@ -734,7 +734,7 @@ void AWTC_create_export_awars(AW_root *awr, AW_default def) {
     aw_create_selection_box_awars(awr, AWAR_EXPORT_FORM, GB_path_in_ARBLIB("export", NULL), ".eft", "*", AW_ROOT_DEFAULT, true);
     aw_create_selection_box_awars(awr, AWAR_EXPORT_FILE, "", "", "noname");
 
-    awr->awar_string(AWAR_EXPORT_ALI,"16s",def);
+    awr->awar_string(AWAR_EXPORT_ALI, "16s", def);
     awr->awar_int(AWAR_EXPORT_MULTIPLE_FILES, 0, def);
 
     awr->awar_int(AWAR_EXPORT_MARKED, 1, def); // marked only
@@ -815,7 +815,7 @@ static void export_form_changed_cb(AW_root *aw_root) {
     if (error) aw_message(error);
 }
 
-AW_window *open_AWTC_export_window(AW_root *awr,GBDATA *gb_main)
+AW_window *open_AWTC_export_window(AW_root *awr, GBDATA *gb_main)
 {
     static AW_window_simple *aws = 0;
     if (aws) return aws;
@@ -824,20 +824,20 @@ AW_window *open_AWTC_export_window(AW_root *awr,GBDATA *gb_main)
 
     aws = new AW_window_simple;
 
-    aws->init( awr, "ARB_EXPORT", "ARB EXPORT");
+    aws->init(awr, "ARB_EXPORT", "ARB EXPORT");
     aws->load_xfig("awt/export_db.fig");
 
     aws->at("close");
     aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE","C");
+    aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP,(AW_CL)"arb_export.hlp");
-    aws->create_button("HELP", "HELP","H");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"arb_export.hlp");
+    aws->create_button("HELP", "HELP", "H");
 
-    awt_create_selection_box(aws,AWAR_EXPORT_FILE,"f" );
+    awt_create_selection_box(aws, AWAR_EXPORT_FILE, "f");
 
-    awt_create_selection_box(aws,AWAR_EXPORT_FORM,"","ARBHOME", false );
+    awt_create_selection_box(aws, AWAR_EXPORT_FORM, "", "ARBHOME", false);
 
     aws->get_root()->awar(AWAR_EXPORT_FORM"/file_name")->add_callback(export_form_changed_cb);
 
@@ -867,8 +867,8 @@ AW_window *open_AWTC_export_window(AW_root *awr,GBDATA *gb_main)
 
     aws->at("go");
     aws->highlight();
-    aws->callback(AWTC_export_go_cb,(AW_CL)gb_main, (AW_CL)filtercd);
-    aws->create_button("GO", "GO","G");
+    aws->callback(AWTC_export_go_cb, (AW_CL)gb_main, (AW_CL)filtercd);
+    aws->create_button("GO", "GO", "G");
 
     return aws;
 }

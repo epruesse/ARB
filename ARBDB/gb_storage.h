@@ -32,7 +32,7 @@ inline bool GB_CHECKINTERN(int size, int memsize) { return size<256 && memsize<S
 inline void GB_SETINTERN(GBDATA *gbd) { gbd->flags2.extern_data = 0; }
 inline void GB_SETEXTERN(GBDATA *gbd) { gbd->flags2.extern_data = 1; }
 
-inline char *GB_EXTERN_DATA_DATA(struct gb_extern_data& ex) { return GB_RESOLVE(char*,(&(ex)),rel_data); }
+inline char *GB_EXTERN_DATA_DATA(struct gb_extern_data& ex) { return GB_RESOLVE(char*, (&(ex)), rel_data); }
 inline void SET_GB_EXTERN_DATA_DATA(gb_extern_data& ex, char *data) { GB_SETREL(&ex, rel_data, data); }
 
 inline void GB_CREATE_EXT(GBDATA *gbd) { if (!gbd->ext) gb_create_extended(gbd); }
@@ -60,7 +60,7 @@ inline void GB_FREEDATA(GBDATA *gbd) {
     GB_INDEX_CHECK_OUT(gbd);
     if (gbd->flags2.extern_data && GB_EXTERN_DATA_DATA(gbd->info.ex)) {
         gbm_free_mem(GB_EXTERN_DATA_DATA(gbd->info.ex), (size_t)(gbd->info.ex.memsize), GB_GBM_INDEX(gbd));
-        SET_GB_EXTERN_DATA_DATA(gbd->info.ex,0);
+        SET_GB_EXTERN_DATA_DATA(gbd->info.ex, 0);
     }
 }
 
@@ -77,7 +77,7 @@ inline void GB_SETSMD(GBDATA *gbd, long siz, long memsiz, char *dat) {
     if (gbd->flags2.extern_data) {
         gbd->info.ex.size = siz;
         gbd->info.ex.memsize = memsiz;
-        SET_GB_EXTERN_DATA_DATA(gbd->info.ex,dat);
+        SET_GB_EXTERN_DATA_DATA(gbd->info.ex, dat);
     }
     else {
         gbd->info.istr.size = (unsigned char)siz;
@@ -89,7 +89,7 @@ inline void GB_SETSMD(GBDATA *gbd, long siz, long memsiz, char *dat) {
 inline void GB_SETSMDMALLOC(GBDATA *gbd, long siz, long memsiz, const char *dat) {
     gb_assert(dat);
     
-    if (GB_CHECKINTERN(siz,memsiz)) {
+    if (GB_CHECKINTERN(siz, memsiz)) {
         GB_SETINTERN(gbd);
         gbd->info.istr.size = (unsigned char)siz;
         gbd->info.istr.memsize = (unsigned char)memsiz;
@@ -100,15 +100,15 @@ inline void GB_SETSMDMALLOC(GBDATA *gbd, long siz, long memsiz, const char *dat)
         GB_SETEXTERN(gbd);
         gbd->info.ex.size = siz;
         gbd->info.ex.memsize = memsiz;
-        exData = gbm_get_mem((size_t)memsiz,GB_GBM_INDEX(gbd));
-        SET_GB_EXTERN_DATA_DATA(gbd->info.ex,exData);
+        exData = gbm_get_mem((size_t)memsiz, GB_GBM_INDEX(gbd));
+        SET_GB_EXTERN_DATA_DATA(gbd->info.ex, exData);
         if (dat) memcpy(exData, (char *)dat, (size_t)(memsiz));
     }
     GB_INDEX_CHECK_IN(gbd);
 }
 
 inline void GB_SETSMDMALLOC_UNINITIALIZED(GBDATA *gbd, long siz, long memsiz) {
-    if (GB_CHECKINTERN(siz,memsiz)) {
+    if (GB_CHECKINTERN(siz, memsiz)) {
         GB_SETINTERN(gbd);
         gbd->info.istr.size = (unsigned char)siz;
         gbd->info.istr.memsize = (unsigned char)memsiz;
@@ -118,8 +118,8 @@ inline void GB_SETSMDMALLOC_UNINITIALIZED(GBDATA *gbd, long siz, long memsiz) {
         GB_SETEXTERN(gbd);
         gbd->info.ex.size = siz;
         gbd->info.ex.memsize = memsiz;
-        exData = gbm_get_mem((size_t)memsiz,GB_GBM_INDEX(gbd));
-        SET_GB_EXTERN_DATA_DATA(gbd->info.ex,exData);
+        exData = gbm_get_mem((size_t)memsiz, GB_GBM_INDEX(gbd));
+        SET_GB_EXTERN_DATA_DATA(gbd->info.ex, exData);
     }
     GB_INDEX_CHECK_IN(gbd);
 }

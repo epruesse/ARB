@@ -5,12 +5,12 @@
 
 #include <cctype>
 
-char *AP_create_dna_to_ap_bases(){
+char *AP_create_dna_to_ap_bases() {
     int       i;
     AP_BASES  val;
     char     *table = new char[256];
     
-    for (i=0;i<256;i++) {
+    for (i=0; i<256; i++) {
         switch ((char)i) {
             case 'a': case 'A': val = AP_A; break;
             case 'g': case 'G': val = AP_G; break;
@@ -40,10 +40,10 @@ char *AP_create_dna_to_ap_bases(){
 long *AWT_translator::create_pro_to_bits() const {
     int i;
     int j;
-    long *table = (long *)GB_calloc(sizeof(long),256);
-    for ( i = 0 ; i < max_aa; i++) {
+    long *table = (long *)GB_calloc(sizeof(long), 256);
+    for (i = 0;   i < max_aa; i++) {
         j = index_2_spro[i];
-        if (j== '.')  {
+        if (j == '.') {
             table[i] = -1;
             continue;
         }
@@ -81,12 +81,12 @@ void AWT_translator::build_table(unsigned char pbase, const char *tri_pro, const
     for (nucs = str->nucs; nucs; nucs = nucs->next) {
         if ((!(nucs->nucbits[0] & ~n0)) &&      // search superset
             (!(nucs->nucbits[1] & ~n1)) &&
-            (!(nucs->nucbits[2] & ~n2)) ) break;
+            (!(nucs->nucbits[2] & ~n2))) break;
         
         int c = 0;
-        if ( nucs->nucbits[0] != n0 ) c++;
-        if ( nucs->nucbits[1] != n1 ) c++;
-        if ( nucs->nucbits[2] != n2 ) c++;
+        if (nucs->nucbits[0] != n0) c++;
+        if (nucs->nucbits[1] != n1) c++;
+        if (nucs->nucbits[2] != n2) c++;
         if (c <= 1) break;
     }
     if (!nucs) {
@@ -221,8 +221,8 @@ AWT_translator::~AWT_translator() {
 
     delete [] nuc_2_bitset;
     GBS_free_hash(t2i_hash);
-    for (int i=0;i<256;i++){
-        if (i!= tolower(i)) continue; // do not delete duplicated entries (a-z == A-Z!)
+    for (int i=0; i<256; i++) {
+        if (i != tolower(i)) continue; // do not delete duplicated entries (a-z == A-Z!)
         delete s2str[i];
     }
 
@@ -242,19 +242,19 @@ const AWT_distance_meter *AWT_translator::getDistanceMeter() const {
 static int nuc_dist(const AWT_translator *translator, unsigned char p1, unsigned char p2) {
     // calculate minimum necessary nucleotide-mutations for a given amino-acid-mutation
     
-    const struct arb_r2a_pro_2_nuc *s1,*s2;
+    const struct arb_r2a_pro_2_nuc *s1, *s2;
     s1                                      = translator->S2str(p1);
     s2                                      = translator->S2str(p2);
-    if ( (!s1) || (!s2) ) return -1;
-    struct arb_r2a_pro_2_nucs      *n1,*n2;
+    if ((!s1) || (!s2)) return -1;
+    struct arb_r2a_pro_2_nucs      *n1, *n2;
     long                            mindist = 3;
     // Check all combinations, if any combination is valid -> zero distance
-    for (   n1 = s1->nucs; n1; n1=n1->next){
-        for (   n2 = s2->nucs; n2; n2=n2->next){
+    for (n1 = s1->nucs; n1; n1=n1->next) {
+        for (n2 = s2->nucs; n2; n2=n2->next) {
             int dist = 0;
             int i;
-            for (i=0;i<3;i++) {
-                if ( n1->nucbits[i] & n2->nucbits[i] ) continue;
+            for (i=0; i<3; i++) {
+                if (n1->nucbits[i] & n2->nucbits[i]) continue;
                 dist++;
             }
             if (dist< mindist) mindist = dist;
@@ -268,7 +268,7 @@ static void awt_pro_a_nucs_debug(const AWT_translator *translator, const AWT_dis
     int max_aa     = translator->MaxAA();
     int realmax_aa = translator->RealmaxAA();
 
-    for (int s = 0; s< max_aa; s++){
+    for (int s = 0; s< max_aa; s++) {
         const AWT_PDP *dist = distmeter->getDistance(s);
 
         // check bits should not be present in distpad
@@ -279,12 +279,12 @@ static void awt_pro_a_nucs_debug(const AWT_translator *translator, const AWT_dis
             }
         }
         printf("Base %c[%i]: Dist to ", translator->Index2Spro(s), s);
-        for (int d = 0; d< max_aa; d++){
+        for (int d = 0; d< max_aa; d++) {
             int i;
             for (i=0; i<3; i++) {
                 if (dist->patd[i] & (1<<d)) break;
             }
-            printf ("%c%i ",translator->Index2Spro(d),i);
+            printf ("%c%i ", translator->Index2Spro(d), i);
         }
         printf ("\n");
     }
@@ -310,14 +310,14 @@ AWT_distance_meter::AWT_distance_meter(const AWT_translator *translator) {
         dist_[s] = (AWT_PDP *)calloc(sizeof(AWT_PDP), max_aa);
 
         const arb_r2a_pro_2_nuc *s2str = translator->S2str(translator->Index2Spro(s));
-        for (i=0;i<3;i++) {
+        for (i=0; i<3; i++) {
             dist_[s]->nucbits[i] = s2str->nucs->nucbits[i];
         }
     }
 
-    for (s = 0; s< max_aa; s++){
-        for (int d = 0; d< realmax_aa; d++){
-            int dist = nuc_dist(translator, translator->Index2Spro(s), translator->Index2Spro(d) );
+    for (s = 0; s< max_aa; s++) {
+        for (int d = 0; d< realmax_aa; d++) {
+            int dist = nuc_dist(translator, translator->Index2Spro(s), translator->Index2Spro(d));
 
             if (dist==0) dist_[s]->patd[0] |= 1<<d; // distance == 0
             if (dist<=1) dist_[s]->patd[1] |= 1<<d; // distance <= 1
@@ -329,7 +329,7 @@ AWT_distance_meter::AWT_distance_meter(const AWT_translator *translator) {
     for (s = 0; s< max_aa; s++) {
         long sum = 0;
         for (int d = 0; d< realmax_aa; d++) {
-            if ( (1 << d) & dist_[s]->patd[1] ) { // if distance(s, d) <= 1
+            if ((1 << d) & dist_[s]->patd[1]) {   // if distance(s, d) <= 1
                 sum |= dist_[d]->patd[1]; // collect all proteins which have 'distance <= 1' to 'd'
             }
         }
@@ -338,7 +338,7 @@ AWT_distance_meter::AWT_distance_meter(const AWT_translator *translator) {
 
     for (i=0; i<256; i++) {
         for (s = 0; s<8; s++) {
-            if (i & (1<<s) ) {
+            if (i & (1<<s)) {
                 transform07[i]   |= dist_[s]->patd[1];
                 transform815[i]  |= dist_[s+8]->patd[1];
                 transform1623[i] |= dist_[s+16]->patd[1];
@@ -351,7 +351,7 @@ AWT_distance_meter::AWT_distance_meter(const AWT_translator *translator) {
 }
 
 AWT_distance_meter::~AWT_distance_meter() {
-    for (int i=0;i<64; i++){
+    for (int i=0; i<64; i++) {
         delete dist_[i];
     }
     

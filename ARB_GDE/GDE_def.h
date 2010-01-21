@@ -109,8 +109,8 @@
 #define COLOR_LOOKUP    0x41    /* Use a simple value->color lookup */
 #define COLOR_ALN_MASK  0x42    /* The alignment has a column by column color
                                    mask associated with it */
-#define COLOR_SEQ_MASK  0x43    /* Each sequence has a color mask*/
-#define COLOR_STRAND    0x44    /* Color based on original strandedness*/
+#define COLOR_SEQ_MASK  0x43    /* Each sequence has a color mask */
+#define COLOR_STRAND    0x44    /* Color based on original strandedness */
 
 
 
@@ -129,7 +129,7 @@ typedef struct {
         int hr;
         int mn;
         int sc;
-    } origin,modify;
+    } origin, modify;
 } TimeStamp;
 
 typedef unsigned char NA_Base;
@@ -145,13 +145,13 @@ typedef struct {
 
 typedef struct NA_SeqStruct
 {
-    char  id[80];               /* sequence id (ACCESSION)*/
+    char  id[80];               /* sequence id (ACCESSION) */
     char  seq_name[80];         /* Sequence name (ORGANISM) */
     char  short_name[32];       /* Name (LOCUS) */
     char  barcode[80];
     char  contig[80];
     char  membrane[80];
-    char  description[80];      /* Description (DEFINITION)*/
+    char  description[80];      /* Description (DEFINITION) */
     char  authority[80];        /* Author (or creator) */
     char *comments;             /* Stuff we can't parse */
     int   comments_len, comments_maxlen;
@@ -174,11 +174,11 @@ typedef struct NA_SeqStruct
     int   selected;             /* Selection flag */
     int   subselected;          /* Sub selection flag */
     int   format;               /* default file format */
-    int   elementtype;          /* what type of data are being aligned*/
-    char *baggage;              /* unformatted comments*/
+    int   elementtype;          /* what type of data are being aligned */
+    char *baggage;              /* unformatted comments */
     int   baggage_len, baggage_maxlen;
     int  *tmatrix;              /* translation matrix (code->char) */
-    int  *rmatrix;              /* reverse translation matrix (char->code)*/
+    int  *rmatrix;              /* reverse translation matrix (char->code) */
 
     GBDATA  *gb_species;
 } NA_Sequence;
@@ -186,8 +186,8 @@ typedef struct NA_SeqStruct
 typedef struct
 {
     char         *id;           /* Alignment ID */
-    char         *description;  /* Description of the alignment*/
-    char         *authority;    /* Who generated the alignment*/
+    char         *description;  /* Description of the alignment */
+    char         *authority;    /* Who generated the alignment */
     int          *cmask;        /* color mask */
     int           cmask_offset; /* color mask offset */
     int           cmask_len;    /* color mask length */
@@ -216,7 +216,7 @@ typedef struct
 
 extern NA_Alignment *DataSet;
 
-#define getcmask(a,b) (b < ((a)->offset))?0:((a)->cmask[(b-(a)->offset)])
+#define getcmask(a, b) (b < ((a)->offset)) ? 0 : ((a)->cmask[(b-(a)->offset)])
 
 #else
 #error GDE_def.h included twice

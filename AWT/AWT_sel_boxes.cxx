@@ -45,7 +45,7 @@ static void awt_create_selection_list_on_ad_cb(GBDATA *, struct adawcbstruct *cb
 }
 
 
-void awt_create_selection_list_on_ad(GBDATA *gb_main,AW_window *aws, const char *varname,const char *comm)
+void awt_create_selection_list_on_ad(GBDATA *gb_main, AW_window *aws, const char *varname, const char *comm)
 // if comm is set then only those alignments are taken
 // which can be parsed by comm
 {
@@ -54,7 +54,7 @@ void awt_create_selection_list_on_ad(GBDATA *gb_main,AW_window *aws, const char 
 
     GB_push_transaction(gb_main);
 
-    id  = aws->create_selection_list(varname,0,"",20,3);
+    id  = aws->create_selection_list(varname, 0, "", 20, 3);
     struct adawcbstruct *cbs = new adawcbstruct;
     memset(cbs, 0, sizeof(*cbs));
 
@@ -64,10 +64,10 @@ void awt_create_selection_list_on_ad(GBDATA *gb_main,AW_window *aws, const char 
     cbs->id      = id;
     cbs->comm    = 0; if (comm) cbs->comm = strdup(comm);
 
-    awt_create_selection_list_on_ad_cb(0,cbs);
+    awt_create_selection_list_on_ad_cb(0, cbs);
 
-    gb_presets = GB_search(gb_main,"presets",GB_CREATE_CONTAINER);
-    GB_add_callback(gb_presets,GB_CB_CHANGED, (GB_CB)awt_create_selection_list_on_ad_cb, (int *)cbs);
+    gb_presets = GB_search(gb_main, "presets", GB_CREATE_CONTAINER);
+    GB_add_callback(gb_presets, GB_CB_CHANGED, (GB_CB)awt_create_selection_list_on_ad_cb, (int *)cbs);
 
     GB_pop_transaction(gb_main);
 }
@@ -82,32 +82,32 @@ void awt_create_selection_list_on_trees_cb(GBDATA *dummy, struct adawcbstruct *c
     char **tree_names = GBT_get_tree_names(cbs->gb_main);
     if (tree_names) {
         int maxTreeNameLen = 0;
-        for (char **tree= tree_names ; *tree; tree++){
+        for (char **tree = tree_names; *tree; tree++) {
             int len = strlen(*tree);
             if (len>maxTreeNameLen) maxTreeNameLen = len;
         }
-        for (char **tree= tree_names ; *tree; tree++){
+        for (char **tree = tree_names; *tree; tree++) {
             const char *info = GBT_tree_info_string(cbs->gb_main, *tree, maxTreeNameLen);
             if (info) {
-                cbs->aws->insert_selection( cbs->id, info, *tree );
+                cbs->aws->insert_selection(cbs->id, info, *tree);
             }
             else {
-                cbs->aws->insert_selection( cbs->id, *tree, *tree );
+                cbs->aws->insert_selection(cbs->id, *tree, *tree);
             }
         }
         GBT_free_names(tree_names);
     }
-    cbs->aws->insert_default_selection( cbs->id, "????", "????" );
-    cbs->aws->update_selection_list( cbs->id );
+    cbs->aws->insert_default_selection(cbs->id, "????", "????");
+    cbs->aws->update_selection_list(cbs->id);
 }
 
-void awt_create_selection_list_on_trees(GBDATA *gb_main,AW_window *aws,const char *varname) {
+void awt_create_selection_list_on_trees(GBDATA *gb_main, AW_window *aws, const char *varname) {
     AW_selection_list *id;
     GBDATA            *gb_tree_data;
     
     GB_push_transaction(gb_main);
 
-    id = aws->create_selection_list(varname,0,"",40,4);
+    id = aws->create_selection_list(varname, 0, "", 40, 4);
     struct adawcbstruct *cbs = new adawcbstruct;
     memset(cbs, 0, sizeof(*cbs));
 
@@ -116,10 +116,10 @@ void awt_create_selection_list_on_trees(GBDATA *gb_main,AW_window *aws,const cha
     cbs->gb_main = gb_main;
     cbs->id      = id;
 
-    awt_create_selection_list_on_trees_cb(0,cbs);
+    awt_create_selection_list_on_trees_cb(0, cbs);
 
-    gb_tree_data = GB_search(gb_main,"tree_data",GB_CREATE_CONTAINER);
-    GB_add_callback(gb_tree_data,GB_CB_CHANGED, (GB_CB)awt_create_selection_list_on_trees_cb, (int *)cbs);
+    gb_tree_data = GB_search(gb_main, "tree_data", GB_CREATE_CONTAINER);
+    GB_add_callback(gb_tree_data, GB_CB_CHANGED, (GB_CB)awt_create_selection_list_on_trees_cb, (int *)cbs);
 
     GB_pop_transaction(gb_main);
 }
@@ -152,7 +152,7 @@ static void fill_pt_server_selection_list(AW_window *aws, AW_selection_list *id)
             aw_message(GB_await_error());
             break;
         }
-        aws->insert_selection(id,choice,(long)i);
+        aws->insert_selection(id, choice, (long)i);
         free(choice);
     }
 
@@ -306,91 +306,91 @@ void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname
 
 // ******************** selection boxes on tables ********************
 
-void awt_create_selection_list_on_tables_cb(GBDATA *dummy, struct awt_sel_list_for_tables *cbs){
+void awt_create_selection_list_on_tables_cb(GBDATA *dummy, struct awt_sel_list_for_tables *cbs) {
     AWUSE(dummy);
     cbs->aws->clear_selection_list(cbs->id);
     GBDATA *gb_table;
     for (gb_table = GBT_first_table(cbs->gb_main);
          gb_table;
-         gb_table = GBT_next_table(gb_table)){
+         gb_table = GBT_next_table(gb_table)) {
 
-        GBDATA *gb_name = GB_entry(gb_table,"name");
-        GBDATA *gb_description = GB_search(gb_table,"description",GB_STRING);
+        GBDATA *gb_name = GB_entry(gb_table, "name");
+        GBDATA *gb_description = GB_search(gb_table, "description", GB_STRING);
         if (!gb_name) continue;
         char *table_name = GB_read_string(gb_name);
         char *description = GB_read_string(gb_description);
-        const char *info_text = GBS_global_string("%s: %s",table_name,description);
-        cbs->aws->insert_selection(cbs->id,info_text,table_name);
+        const char *info_text = GBS_global_string("%s: %s", table_name, description);
+        cbs->aws->insert_selection(cbs->id, info_text, table_name);
         free(table_name);
         free(description);
     }
-    cbs->aws->insert_default_selection( cbs->id, "", "" );
-    cbs->aws->update_selection_list( cbs->id );
+    cbs->aws->insert_default_selection(cbs->id, "", "");
+    cbs->aws->update_selection_list(cbs->id);
 }
 
-void awt_create_selection_list_on_tables(GBDATA *gb_main,AW_window *aws,const char *varname)
+void awt_create_selection_list_on_tables(GBDATA *gb_main, AW_window *aws, const char *varname)
 {
     AW_selection_list *id;
     GBDATA  *gb_table_data;
     struct awt_sel_list_for_tables *cbs;
     GB_push_transaction(gb_main);
 
-    id = aws->create_selection_list(varname,0,"",40,8);
+    id = aws->create_selection_list(varname, 0, "", 40, 8);
     cbs = new awt_sel_list_for_tables;
     cbs->aws = aws;
     cbs->gb_main = gb_main;
     cbs->id = id;
 
-    awt_create_selection_list_on_tables_cb(0,cbs);
+    awt_create_selection_list_on_tables_cb(0, cbs);
 
-    gb_table_data = GB_search(gb_main,"table_data",GB_CREATE_CONTAINER);
-    GB_add_callback(gb_table_data,GB_CB_CHANGED,(GB_CB)awt_create_selection_list_on_tables_cb, (int *)cbs);
+    gb_table_data = GB_search(gb_main, "table_data", GB_CREATE_CONTAINER);
+    GB_add_callback(gb_table_data, GB_CB_CHANGED, (GB_CB)awt_create_selection_list_on_tables_cb, (int *)cbs);
 
     GB_pop_transaction(gb_main);
 }
 // ******************** selection boxes on tables ********************
 
-void awt_create_selection_list_on_table_fields_cb(GBDATA *dummy, struct awt_sel_list_for_tables *cbs){
+void awt_create_selection_list_on_table_fields_cb(GBDATA *dummy, struct awt_sel_list_for_tables *cbs) {
     AWUSE(dummy);
     cbs->aws->clear_selection_list(cbs->id);
-    GBDATA  *gb_table = GBT_open_table(cbs->gb_main,cbs->table_name, true); // read only
+    GBDATA  *gb_table = GBT_open_table(cbs->gb_main, cbs->table_name, true); // read only
     GBDATA *gb_table_field;
     for (gb_table_field = GBT_first_table_field(gb_table);
          gb_table_field;
          gb_table_field = GBT_next_table_field(gb_table_field))
     {
-        GBDATA *gb_name = GB_entry(gb_table_field,"name");
-        GBDATA *gb_description = GB_search(gb_table_field,"description",GB_STRING);
+        GBDATA *gb_name = GB_entry(gb_table_field, "name");
+        GBDATA *gb_description = GB_search(gb_table_field, "description", GB_STRING);
         if (!gb_name) continue;
         char *table_name = GB_read_string(gb_name);
         char *description = GB_read_string(gb_description);
-        const char *info_text = GBS_global_string("%s: %s",table_name,description);
-        cbs->aws->insert_selection(cbs->id,info_text,table_name);
+        const char *info_text = GBS_global_string("%s: %s", table_name, description);
+        cbs->aws->insert_selection(cbs->id, info_text, table_name);
         free(table_name);
         free(description);
     }
-    cbs->aws->insert_default_selection( cbs->id, "", "" );
-    cbs->aws->update_selection_list( cbs->id );
+    cbs->aws->insert_default_selection(cbs->id, "", "");
+    cbs->aws->update_selection_list(cbs->id);
 }
 
-void awt_create_selection_list_on_table_fields(GBDATA *gb_main,AW_window *aws,const char *table_name, const char *varname)
+void awt_create_selection_list_on_table_fields(GBDATA *gb_main, AW_window *aws, const char *table_name, const char *varname)
 {
     AW_selection_list *id;
     struct awt_sel_list_for_tables *cbs;
     GB_push_transaction(gb_main);
 
-    id = aws->create_selection_list(varname,0,"",40,8);
+    id = aws->create_selection_list(varname, 0, "", 40, 8);
     cbs = new awt_sel_list_for_tables;
     cbs->aws = aws;
     cbs->gb_main = gb_main;
     cbs->id = id;
     cbs->table_name = strdup(table_name);
 
-    awt_create_selection_list_on_table_fields_cb(0,cbs);
+    awt_create_selection_list_on_table_fields_cb(0, cbs);
 
-    GBDATA  *gb_table = GBT_open_table(gb_main,table_name, true); // read only
-    if (gb_table){
-        GB_add_callback(gb_table,GB_CB_CHANGED,(GB_CB)awt_create_selection_list_on_table_fields_cb, (int *)cbs);
+    GBDATA  *gb_table = GBT_open_table(gb_main, table_name, true); // read only
+    if (gb_table) {
+        GB_add_callback(gb_table, GB_CB_CHANGED, (GB_CB)awt_create_selection_list_on_table_fields_cb, (int *)cbs);
     }
     GB_pop_transaction(gb_main);
 }
@@ -414,13 +414,13 @@ void awt_create_selection_list_on_configurations_cb(GBDATA*, struct adawcbstruct
     cbs->aws->update_selection_list(cbs->id);
 }
 
-void awt_create_selection_list_on_configurations(GBDATA *gb_main,AW_window *aws,const char *varname)
+void awt_create_selection_list_on_configurations(GBDATA *gb_main, AW_window *aws, const char *varname)
 {
     AW_selection_list *id;
     GBDATA  *gb_configuration_data;
     GB_push_transaction(gb_main);
 
-    id = aws->create_selection_list(varname,0,"",40,15);
+    id = aws->create_selection_list(varname, 0, "", 40, 15);
     
     struct adawcbstruct *cbs = new adawcbstruct;
     memset(cbs, 0, sizeof(*cbs));
@@ -430,10 +430,10 @@ void awt_create_selection_list_on_configurations(GBDATA *gb_main,AW_window *aws,
     cbs->gb_main = gb_main;
     cbs->id      = id;
 
-    awt_create_selection_list_on_configurations_cb(0,cbs);
+    awt_create_selection_list_on_configurations_cb(0, cbs);
 
-    gb_configuration_data = GB_search(gb_main,AWAR_CONFIG_DATA,GB_CREATE_CONTAINER);
-    GB_add_callback(gb_configuration_data,GB_CB_CHANGED,
+    gb_configuration_data = GB_search(gb_main, AWAR_CONFIG_DATA, GB_CREATE_CONTAINER);
+    GB_add_callback(gb_configuration_data, GB_CB_CHANGED,
                     (GB_CB)awt_create_selection_list_on_configurations_cb, (int *)cbs);
 
     GB_pop_transaction(gb_main);
@@ -482,9 +482,9 @@ void awt_create_selection_list_on_extendeds_update(GBDATA *dummy, void *cbsid)
          gb_extended = GBT_next_SAI(gb_extended))
     {
         if (cbs->filter_poc) {
-            char *res = cbs->filter_poc(gb_extended,cbs->filter_cd);
+            char *res = cbs->filter_poc(gb_extended, cbs->filter_cd);
             if (res) {
-                cbs->aws->insert_selection( cbs->id, res, GBT_read_name(gb_extended));
+                cbs->aws->insert_selection(cbs->id, res, GBT_read_name(gb_extended));
                 free(res);
             }
         }
@@ -500,34 +500,34 @@ void awt_create_selection_list_on_extendeds_update(GBDATA *dummy, void *cbsid)
                 free(group_and_name);
             }
             else {
-                cbs->aws->insert_selection( cbs->id, name, name );
+                cbs->aws->insert_selection(cbs->id, name, name);
             }
         }
     }
     cbs->aws->sort_selection_list(cbs->id, 0, 0);
 
     if (cbs->add_selected_species) {
-        GBDATA *gb_sel = GB_search(cbs->gb_main,AWAR_SPECIES_NAME,GB_STRING);
+        GBDATA *gb_sel = GB_search(cbs->gb_main, AWAR_SPECIES_NAME, GB_STRING);
         char   *name   = GB_read_string(gb_sel);
-        if (strlen(name)){
+        if (strlen(name)) {
             char *sname = (char *)calloc(1, strlen(name)+2);
-            sprintf(sname+1,"%s",name);
+            sprintf(sname+1, "%s", name);
             sname[0] = 1;
-            char *text = (char *)GBS_global_string("Selected Species: '%s'",name);
-            cbs->aws->insert_selection( cbs->id, text, sname );
+            char *text = (char *)GBS_global_string("Selected Species: '%s'", name);
+            cbs->aws->insert_selection(cbs->id, text, sname);
             delete name;
         }
         delete name;
     }
-    cbs->aws->insert_default_selection( cbs->id, "- none -", "none" );
-    cbs->aws->update_selection_list( cbs->id );
+    cbs->aws->insert_default_selection(cbs->id, "- none -", "none");
+    cbs->aws->update_selection_list(cbs->id);
     
 #if defined(DEVEL_RALF)
     printf("done  awt_create_selection_list_on_extendeds_update\n"); // @@@
 #endif // DEVEL_RALF
 }
 
-void *awt_create_selection_list_on_extendeds(GBDATA *gb_main,AW_window *aws, const char *varname,
+void *awt_create_selection_list_on_extendeds(GBDATA *gb_main, AW_window *aws, const char *varname,
                                              char *(*filter_poc)(GBDATA *gb_ext, AW_CL), AW_CL filter_cd,
                                              bool add_sel_species)
 {
@@ -536,7 +536,7 @@ void *awt_create_selection_list_on_extendeds(GBDATA *gb_main,AW_window *aws, con
 
     GB_push_transaction(gb_main);
 
-    id  = aws->create_selection_list(varname,0,"",40,4);
+    id  = aws->create_selection_list(varname, 0, "", 40, 4);
     cbs = new awt_sel_list_for_sai;
 
     cbs->aws                  = aws;
@@ -546,14 +546,14 @@ void *awt_create_selection_list_on_extendeds(GBDATA *gb_main,AW_window *aws, con
     cbs->filter_cd            = filter_cd;
     cbs->add_selected_species = add_sel_species;
 
-    awt_create_selection_list_on_extendeds_update(0,(void *)cbs);
+    awt_create_selection_list_on_extendeds_update(0, (void *)cbs);
 
     GBDATA *gb_sai_data = GBT_get_SAI_data(gb_main);
-    GB_add_callback(gb_sai_data,GB_CB_CHANGED, (GB_CB)awt_create_selection_list_on_extendeds_update, (int *)cbs);
+    GB_add_callback(gb_sai_data, GB_CB_CHANGED, (GB_CB)awt_create_selection_list_on_extendeds_update, (int *)cbs);
 
-    if (add_sel_species){       // update box if another species is selected
-        GBDATA *gb_sel = GB_search(gb_main,AWAR_SPECIES_NAME,GB_STRING);
-        GB_add_callback(gb_sel,GB_CB_CHANGED, (GB_CB)awt_create_selection_list_on_extendeds_update, (int *)cbs);
+    if (add_sel_species) {      // update box if another species is selected
+        GBDATA *gb_sel = GB_search(gb_main, AWAR_SPECIES_NAME, GB_STRING);
+        GB_add_callback(gb_sel, GB_CB_CHANGED, (GB_CB)awt_create_selection_list_on_extendeds_update, (int *)cbs);
     }
     GB_pop_transaction(gb_main);
 
@@ -565,17 +565,17 @@ void *awt_create_selection_list_on_extendeds(GBDATA *gb_main,AW_window *aws, con
 
 // ******************** selection boxes on saving selection lists ********************
 
-void create_save_box_for_selection_lists_save(AW_window *aws,AW_CL selidcd,AW_CL basenamecd)
+void create_save_box_for_selection_lists_save(AW_window *aws, AW_CL selidcd, AW_CL basenamecd)
 {
     AW_selection_list *selid       = (AW_selection_list *)selidcd;
     char              *awar_prefix = (char *)basenamecd;
 
-    char    *bline_anz = GBS_global_string_copy("%s/line_anz",awar_prefix);
+    char    *bline_anz = GBS_global_string_copy("%s/line_anz", awar_prefix);
     AW_root *aw_root   = aws->get_root();
     long     lineanz   = aw_root->awar(bline_anz)->read_int();
     char    *filename  = awt_get_selected_fullname(aw_root, awar_prefix);
 
-    GB_ERROR error = aws->save_selection_list(selid,filename,lineanz);
+    GB_ERROR error = aws->save_selection_list(selid, filename, lineanz);
 
     if (!error) awt_refresh_selection_box(aw_root, awar_prefix);
     aws->hide_or_notify(error);
@@ -583,7 +583,7 @@ void create_save_box_for_selection_lists_save(AW_window *aws,AW_CL selidcd,AW_CL
     free(bline_anz);
 }
 
-AW_window *create_save_box_for_selection_lists(AW_root *aw_root,AW_CL selid)
+AW_window *create_save_box_for_selection_lists(AW_root *aw_root, AW_CL selid)
 {
     AW_selection_list *selection_list = (AW_selection_list*)selid;
 
@@ -601,26 +601,26 @@ AW_window *create_save_box_for_selection_lists(AW_root *aw_root,AW_CL selid)
     aws->init(aw_root, window_id, "SAVE BOX");
     aws->load_xfig("sl_s_box.fig");
 
-    aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE","C");
+    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("save");
     aws->highlight();
-    aws->callback(create_save_box_for_selection_lists_save,selid,(AW_CL)awar_base_name); // loose ownership of awar_base_name!
-    aws->create_button("SAVE", "SAVE","S");
+    aws->callback(create_save_box_for_selection_lists_save, selid, (AW_CL)awar_base_name); // loose ownership of awar_base_name!
+    aws->create_button("SAVE", "SAVE", "S");
 
     aws->at("nlines");
     aws->create_option_menu(awar_line_anz, 0, "");
-    aws->insert_default_option("all","a",0);
-    aws->insert_option(   "50", "a",    50);
-    aws->insert_option(  "100", "a",   100);
-    aws->insert_option(  "500", "a",   500);
-    aws->insert_option( "1000", "a",  1000);
-    aws->insert_option( "5000", "a",  5000);
+    aws->insert_default_option("all", "a", 0);
+    aws->insert_option("50", "a",       50);
+    aws->insert_option("100", "a",     100);
+    aws->insert_option("500", "a",     500);
+    aws->insert_option("1000", "a",   1000);
+    aws->insert_option("5000", "a",   5000);
     aws->insert_option("10000", "a", 10000);
     aws->update_option_menu();
 
-    awt_create_selection_box(aws,awar_base_name);
+    awt_create_selection_box(aws, awar_base_name);
 
     free(window_id);
     free(awar_line_anz);
@@ -640,7 +640,7 @@ void AWT_load_list(AW_window *aww, AW_CL sel_id, AW_CL ibase_name)
     GB_ERROR    error;
 
     char *filename = awt_get_selected_fullname(aw_root, basename);
-    error          = aww->load_selection_list(selid,filename);
+    error          = aww->load_selection_list(selid, filename);
 
     if (error) aw_message(error);
 
@@ -652,24 +652,24 @@ void AWT_load_list(AW_window *aww, AW_CL sel_id, AW_CL ibase_name)
 AW_window *create_load_box_for_selection_lists(AW_root *aw_root, AW_CL selid)
 {
     char base_name[100];
-    sprintf(base_name,"tmp/load_box_sel_%li",(long)selid);
+    sprintf(base_name, "tmp/load_box_sel_%li", (long)selid);
 
     aw_create_selection_box_awars(aw_root, base_name, ".", "list", "");
 
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "LOAD_SELECTION_BOX", "Load box");
+    aws->init(aw_root, "LOAD_SELECTION_BOX", "Load box");
     aws->load_xfig("sl_l_box.fig");
 
     aws->at("close");
     aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE","C");
+    aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("load");
     aws->highlight();
-    aws->callback(AWT_load_list,selid,(AW_CL)strdup(base_name));
-    aws->create_button("LOAD", "LOAD","L");
+    aws->callback(AWT_load_list, selid, (AW_CL)strdup(base_name));
+    aws->create_button("LOAD", "LOAD", "L");
 
-    awt_create_selection_box((AW_window *)aws,base_name);
+    awt_create_selection_box((AW_window *)aws, base_name);
     
     aws->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
 
@@ -677,10 +677,10 @@ AW_window *create_load_box_for_selection_lists(AW_root *aw_root, AW_CL selid)
 }
 
 
-void create_print_box_for_selection_lists(AW_window *aw_window,AW_CL selid){
+void create_print_box_for_selection_lists(AW_window *aw_window, AW_CL selid) {
     AW_root *aw_root = aw_window->get_root();
     char *data = aw_window->get_selection_list_contents((AW_selection_list *)selid);
-    AWT_create_ascii_print_window(aw_root,data,"no title");
+    AWT_create_ascii_print_window(aw_root, data, "no title");
     delete data;
 }
 
@@ -697,7 +697,7 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const ch
 
 
 {
-    char *base_name = GBS_global_string_copy("tmp/load_box_%s",load_what);
+    char *base_name = GBS_global_string_copy("tmp/load_box_%s", load_what);
 
     aw_create_selection_box_awars(aw_root, base_name, ".", file_extension, "");
 
@@ -709,17 +709,17 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const ch
     {
         char title[100];
         sprintf(title, "Load %s", load_what);
-        aws->init( aw_root, title, title);
+        aws->init(aw_root, title, title);
         aws->load_xfig("load_box.fig");
     }
 
     aws->at("close");
     aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE","C");
+    aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP,(AW_CL)"");
-    aws->create_button("HELP","HELP");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"");
+    aws->create_button("HELP", "HELP");
 
     aws->at("go");
     aws->highlight();
@@ -728,14 +728,14 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const ch
         awt_assert(!create_popup);
         aws->callback((AW_CB0)callback);
     }
-    else  {
+    else {
         awt_assert(create_popup);
         aws->callback((AW_CB1)AW_POPUP, (AW_CL)create_popup);
     }
 
-    aws->create_button("LOAD", "LOAD","L");
+    aws->create_button("LOAD", "LOAD", "L");
 
-    awt_create_selection_box(aws,base_name);
+    awt_create_selection_box(aws, base_name);
     free(base_name);
     aws->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
     
@@ -751,7 +751,7 @@ void awt_set_long(AW_window *aws, AW_CL varname, AW_CL value)   // set an awar
     aws->get_root()->awar((char *)varname)->write_int((long) value);
 }
 
-void awt_write_string( AW_window *aws, AW_CL varname, AW_CL value)  // set an awar
+void awt_write_string(AW_window *aws, AW_CL varname, AW_CL value)   // set an awar
 {
     aws->get_root()->awar((char *)varname)->write_string((char *)value);
 }
@@ -885,19 +885,19 @@ void AWT_popup_select_species_field_window(AW_window *aww, AW_CL cl_awar_name, A
     if (!aws) {
         aws = new AW_window_simple;
         
-        aws->init( aw_root, "SELECT_SPECIES_FIELD", "Select species field");
+        aws->init(aw_root, "SELECT_SPECIES_FIELD", "Select species field");
         aws->load_xfig("awt/nds_sel.fig");
         aws->button_length(13);
 
-        aws->callback( AW_POPDOWN);
+        aws->callback(AW_POPDOWN);
         aws->at("close");
-        aws->create_button("CLOSE", "CLOSE","C");
+        aws->create_button("CLOSE", "CLOSE", "C");
 
         awt_create_selection_list_on_scandb((GBDATA *)cl_gb_main,
                                             aws,
                                             "tmp/viewkeys/key_text_select",
                                             AWT_NDS_FILTER,
-                                            "scandb","rescandb", &AWT_species_selector, 20, 10);
+                                            "scandb", "rescandb", &AWT_species_selector, 20, 10);
         aws->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
     }
     aws->activate();

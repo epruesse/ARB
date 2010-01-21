@@ -70,34 +70,34 @@ struct gb_db_extended {
 // --------------------------------------------------------------------------------
 
 struct gb_flag_types {                                                  // public flags
-    unsigned int type:4;
-    unsigned int security_delete:3;
-    unsigned int security_write:3;
-    unsigned int security_read:3;
-    unsigned int compressed_data:1;
-    unsigned int unused:1;                                              // last bit saved!
-    unsigned int user_flags:8;
-    unsigned int temporary:1;                                           // ==1 -> don't save entry
-    unsigned int saved_flags:8;
+    unsigned int type : 4;
+    unsigned int security_delete : 3;
+    unsigned int security_write : 3;
+    unsigned int security_read : 3;
+    unsigned int compressed_data : 1;
+    unsigned int unused : 1;                                            // last bit saved!
+    unsigned int user_flags : 8;
+    unsigned int temporary : 1;                                         // ==1 -> don't save entry
+    unsigned int saved_flags : 8;
 };
 
 struct gb_flag_types2 {                                                 // private flags, abortable
     // uncritical section, undoable
-    unsigned int last_updated:8;
-    unsigned int usr_ref:7;                                             // for user access
+    unsigned int last_updated : 8;
+    unsigned int usr_ref : 7;                                           // for user access
     // critic section, do not update any below
-    unsigned int folded_container:1;
-    unsigned int update_in_server:1;                                    // already informed
-    unsigned int extern_data:1;                                         // data ref. by pntr
-    unsigned int header_changed:1;                                      // used by container
-    unsigned int gbm_index:8;                                           // memory section
-    unsigned int tisa_index:1;                                          // this should be indexed
-    unsigned int is_indexed:1;                                          // this db. field is indexed
+    unsigned int folded_container : 1;
+    unsigned int update_in_server : 1;                                  // already informed
+    unsigned int extern_data : 1;                                       // data ref. by pntr
+    unsigned int header_changed : 1;                                    // used by container
+    unsigned int gbm_index : 8;                                         // memory section
+    unsigned int tisa_index : 1;                                        // this should be indexed
+    unsigned int is_indexed : 1;                                        // this db. field is indexed
 };
 
 struct gb_flag_types3 {                                                 // user and project flags (public); not abortable !!!
-    unsigned int project:8;
-    unsigned int unused:24;
+    unsigned int project : 8;
+    unsigned int unused : 24;
 };
 
 // --------------------------------------------------------------------------------
@@ -164,8 +164,8 @@ inline GB_TYPES GB_TYPE(GBCONTAINER *gbd) { return GB_TYPES(gbd->flags.type); }
 // ----------------------
 //      parent access
 
-inline GBCONTAINER* GB_FATHER(GBDATA *gbd)                       { return GB_RESOLVE(GBCONTAINER*,gbd,rel_father); }
-inline GBCONTAINER* GB_FATHER(GBCONTAINER *gbc)                  { return GB_RESOLVE(GBCONTAINER*,gbc,rel_father); }
+inline GBCONTAINER* GB_FATHER(GBDATA *gbd)                       { return GB_RESOLVE(GBCONTAINER*, gbd, rel_father); }
+inline GBCONTAINER* GB_FATHER(GBCONTAINER *gbc)                  { return GB_RESOLVE(GBCONTAINER*, gbc, rel_father); }
 inline void SET_GB_FATHER(GBDATA *gbd, GBCONTAINER *father)      { GB_SETREL(gbd, rel_father, father); }
 inline void SET_GB_FATHER(GBCONTAINER *gbc, GBCONTAINER *father) { GB_SETREL(gbc, rel_father, father); }
 inline GBCONTAINER* GB_GRANDPA(GBDATA *gbd)                      { return GB_FATHER(GB_FATHER(gbd)); }
@@ -186,9 +186,9 @@ inline GB_MAIN_TYPE *GB_MAIN(GBCONTAINER *gbc)          { return GBCONTAINER_MAI
 #define GB_GET_SECURITY_WRITE(gb)  ((gb)->flags.security_write)
 #define GB_GET_SECURITY_DELETE(gb) ((gb)->flags.security_delete)
 
-#define GB_PUT_SECURITY_READ(gb,i)   ((gb)->flags.security_read   = (i))
-#define GB_PUT_SECURITY_WRITE(gb,i)  ((gb)->flags.security_write  = (i))
-#define GB_PUT_SECURITY_DELETE(gb,i) ((gb)->flags.security_delete = (i))
+#define GB_PUT_SECURITY_READ(gb, i)  ((gb)->flags.security_read   = (i))
+#define GB_PUT_SECURITY_WRITE(gb, i) ((gb)->flags.security_write  = (i))
+#define GB_PUT_SECURITY_DELETE(gb, i) ((gb)->flags.security_delete = (i))
 
 // --------------------------------------------------------------------------------
 

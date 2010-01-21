@@ -106,13 +106,13 @@ char *AP_filter::to_string() const {
 void AP_filter::enable_simplify(AWT_FILTER_SIMPLIFY type) {
     if (type != simplify_type) {
         int i;
-        for (i=0;i<32;i++) {
+        for (i=0; i<32; i++) {
             simplify[i] = '.';
         }
-        for (;i<256;i++){
+        for (; i<256; i++) {
             simplify[i] = i;
         }
-        switch (type){
+        switch (type) {
             case AWT_FILTER_SIMPLIFY_DNA:
                 simplify[(unsigned char)'g'] = 'a';
                 simplify[(unsigned char)'G'] = 'A';
@@ -126,7 +126,7 @@ void AP_filter::enable_simplify(AWT_FILTER_SIMPLIFY type) {
                 break;
             case AWT_FILTER_SIMPLIFY_NONE:
                 break;
-            default :
+            default:
                 af_assert(0);
                 break;
         }
@@ -135,7 +135,7 @@ void AP_filter::enable_simplify(AWT_FILTER_SIMPLIFY type) {
     }
 }
 
-void AP_filter::calc_filterpos_2_seqpos(){
+void AP_filter::calc_filterpos_2_seqpos() {
     delete filterpos_2_seqpos;
     filterpos_2_seqpos = new size_t[real_len];
     size_t i, j;
@@ -146,7 +146,7 @@ void AP_filter::calc_filterpos_2_seqpos(){
     }
 }
 
-void AP_filter::enable_bootstrap(){
+void AP_filter::enable_bootstrap() {
     delete [] bootstrap;
     bootstrap = new size_t[real_len];
 
@@ -176,7 +176,7 @@ AP_weights::AP_weights(const GB_UINT4 *w, size_t wlen, const AP_filter *fil)
 {
     af_assert(wlen == fil->get_length());
     
-    size_t i,j;
+    size_t i, j;
     for (j=i=0; i<wlen; ++j) {
         if (fil->use_position(j)) {
             weights[i++] = w[j];

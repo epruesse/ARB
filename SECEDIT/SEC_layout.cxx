@@ -149,7 +149,7 @@ void SEC_loop::calculate_loop_coordinates() {
     Angle current(center, loop_fixpoint);
 
     double dbs                   = get_root()->display_params().distance_between_strands;
-    double angle_between_strands = ( dbs / Circumference) * (2*M_PI); //angle between two strands
+    double angle_between_strands = (dbs / Circumference) * (2*M_PI);  // angle between two strands
 
     SEC_segment      *seg     = strand_away->get_next_segment();
     SEC_helix_strand *pstrand = strand_away;

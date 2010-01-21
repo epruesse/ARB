@@ -96,7 +96,7 @@ static void bugex_printString(const char *str, size_t len) {
             switch (c) {
                 case '\n': fputs("\\n", stderr); break;
                 case '\t': fputs("\\t", stderr); break;
-                default : fprintf(stderr, "\\%i", (int)c); break;
+                default: fprintf(stderr, "\\%i", (int)c); break;
             }
         }
     }
@@ -195,7 +195,7 @@ static void bugex_dump_value(void *valuePtr, const char *valueName, size_t size,
             fprintf(stderr, "(long)  %s = %li = %lu (&=%p)", valueName, (signed long)l, (unsigned long)l, valuePtr);
             break;
         }
-        default :  {
+        default: {
             fprintf(stderr, "value '%s' has unknown size (use cast operator!)", valueName);
             break;
         }

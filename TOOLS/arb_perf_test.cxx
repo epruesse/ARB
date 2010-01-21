@@ -18,7 +18,7 @@ static GBDATA *gb_main         = 0;
 // Test functions
 
 static void iterate(GBDATA *gbd) {
-    for (GBDATA *gb_child = GB_child(gbd); gb_child; gb_child = GB_nextChild(gb_child))  {
+    for (GBDATA *gb_child = GB_child(gbd); gb_child; gb_child = GB_nextChild(gb_child)) {
         iterate(gb_child);
     }
 }
@@ -27,11 +27,11 @@ static void test_GB_iterate_DB() { // iterate through all DB elements
     iterate(gb_main);
 }
 static void test_GB_find_string() {
-    GB_find_string(gb_species_data,"full_name","asdfasdf", GB_IGNORE_CASE, SEARCH_GRANDCHILD);
+    GB_find_string(gb_species_data, "full_name", "asdfasdf", GB_IGNORE_CASE, SEARCH_GRANDCHILD);
 }
 static void test_GB_find_string_indexed() {
     // field 'name' is indexed by GBT_open!
-    GB_find_string(gb_species_data,"name","asdfasdf", GB_IGNORE_CASE, SEARCH_GRANDCHILD);
+    GB_find_string(gb_species_data, "name", "asdfasdf", GB_IGNORE_CASE, SEARCH_GRANDCHILD);
 }
 
 // --------------------------------------------------------------------------------
@@ -46,7 +46,7 @@ struct Test {
     test_fun     fun;
 };
 
-#define TEST(fun ) { #fun, test_##fun }
+#define TEST(fun) { #fun, test_##fun }
 
 static Test Test[] = {
     TEST(GB_iterate_DB),
@@ -68,11 +68,11 @@ static long run_test(test_fun fun, long loops, double *perCall) {
     struct timeval t1;
     struct timeval t2;
 
-    gettimeofday(&t1,0);
+    gettimeofday(&t1, 0);
     for (int i = 0; i<loops; ++i) {
         fun();
     }
-    gettimeofday(&t2,0);
+    gettimeofday(&t2, 0);
 
     long usecs  = t2.tv_sec - t1.tv_sec;
     usecs      *= SECOND;
@@ -123,7 +123,7 @@ static long estimate_loops(test_fun fun) {
 
 static long count_elements(GBDATA *gbd) {
     long count = 0;
-    for (GBDATA *gb_child = GB_child(gbd); gb_child; gb_child = GB_nextChild(gb_child))  {
+    for (GBDATA *gb_child = GB_child(gbd); gb_child; gb_child = GB_nextChild(gb_child)) {
         count += count_elements(gb_child);
     }
     return count+1; // self
@@ -134,16 +134,16 @@ int main(int argc, char **argv)
     GB_ERROR error = 0;
 
     if (argc == 0) {
-        fprintf(stderr,"arb_perf_test source.arb\n");
-        fprintf(stderr,"Test performance of some commands - see source code\n");
+        fprintf(stderr, "arb_perf_test source.arb\n");
+        fprintf(stderr, "Test performance of some commands - see source code\n");
 
         error = "Missing arguments";
     }
     else {
         char *in = argv[1];
-        gb_main  = GBT_open(in,"rw",0);
+        gb_main  = GBT_open(in, "rw", 0);
 
-        if (!gb_main){
+        if (!gb_main) {
             error = GB_await_error();
         }
         else {

@@ -152,7 +152,7 @@ public:
 
     virtual void add_son(XML_Node *son_, bool son_is_tag) __ATTR__NORETURN;
     virtual void remove_son(XML_Node *son_) __ATTR__NORETURN;
-    virtual void open(FILE *) ;
+    virtual void open(FILE *);
     virtual void close(FILE *out);
 };
 

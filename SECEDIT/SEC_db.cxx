@@ -57,13 +57,13 @@ SEC_seq_data::SEC_seq_data(GBDATA *gb_item, const char *aliname, const SEC_dbcb 
     len       = GB_read_string_count(gb_data);
     Data      = GB_read_string(gb_data);
 
-    if (gb_name) GB_add_callback(gb_name,(GB_CB_TYPE)(GB_CB_DELETE | GB_CB_CHANGED), db_callback, (int *)change_cb);
-    if (gb_data) GB_add_callback(gb_data,(GB_CB_TYPE)(GB_CB_DELETE | GB_CB_CHANGED), db_callback, (int *)change_cb);
+    if (gb_name) GB_add_callback(gb_name, (GB_CB_TYPE)(GB_CB_DELETE | GB_CB_CHANGED), db_callback, (int *)change_cb);
+    if (gb_data) GB_add_callback(gb_data, (GB_CB_TYPE)(GB_CB_DELETE | GB_CB_CHANGED), db_callback, (int *)change_cb);
 }
 
 SEC_seq_data::~SEC_seq_data() {
-    if (gb_name) GB_remove_callback(gb_name,(GB_CB_TYPE)(GB_CB_DELETE | GB_CB_CHANGED), db_callback, (int *)change_cb);
-    if (gb_data) GB_remove_callback(gb_data,(GB_CB_TYPE)(GB_CB_DELETE | GB_CB_CHANGED), db_callback, (int *)change_cb);
+    if (gb_name) GB_remove_callback(gb_name, (GB_CB_TYPE)(GB_CB_DELETE | GB_CB_CHANGED), db_callback, (int *)change_cb);
+    if (gb_data) GB_remove_callback(gb_data, (GB_CB_TYPE)(GB_CB_DELETE | GB_CB_CHANGED), db_callback, (int *)change_cb);
     free(Data);
 }
 
@@ -85,9 +85,9 @@ struct PairDefinition {
 static PairDefinition pairdef[PAIR_TYPES] = {
     { AWAR_PAIRS(STRONG), AWAR_PCHAR(STRONG), "GC AU AT",                   "-" },
     { AWAR_PAIRS(NORMAL), AWAR_PCHAR(NORMAL), "GU GT",                      "." },
-    { AWAR_PAIRS(WEAK)  , AWAR_PCHAR(WEAK)  , "GA",                         "o" },
-    { AWAR_PAIRS(NO)    , AWAR_PCHAR(NO)    , "AA AC CC CU CT GG UU TT TU", ""  },
-    { AWAR_PAIRS(USER)  , AWAR_PCHAR(USER)  , "",                           ""  },
+    { AWAR_PAIRS(WEAK),   AWAR_PCHAR(WEAK),   "GA",                         "o" },
+    { AWAR_PAIRS(NO),     AWAR_PCHAR(NO),     "AA AC CC CU CT GG UU TT TU", ""  },
+    { AWAR_PAIRS(USER),   AWAR_PCHAR(USER),   "",                           ""  },
 };
 
 GB_ERROR SEC_bond_def::update(AW_root *aw_root, const char *changed_awar_name)
@@ -224,7 +224,7 @@ void SEC_db_interface::reload_ecoli(const SEC_dbcb *cb) {
     delete ecoli_seq;
     delete Ecoli;
     
-    GBDATA *gb_ecoli = GBT_find_SAI(gb_main,"ECOLI");
+    GBDATA *gb_ecoli = GBT_find_SAI(gb_main, "ECOLI");
     if (gb_ecoli) {
         ecoli_seq = new SEC_seq_data(gb_ecoli, aliname, cb);
         Ecoli = new BI_ecoli_ref;
@@ -373,8 +373,8 @@ void SEC_db_interface::bind_awars(const char **awars, SEC_dbcb *cb) {
 
 // --------------------------------------------------------------------------------
 
-static void create_awars(AW_root *aw_root,AW_default def) {
-    aw_root->awar_int(AWAR_SECEDIT_BASELINEWIDTH,0,def)->set_minmax(0,10);
+static void create_awars(AW_root *aw_root, AW_default def) {
+    aw_root->awar_int(AWAR_SECEDIT_BASELINEWIDTH, 0, def)->set_minmax(0, 10);
     aw_root->awar_string(AWAR_FOOTER);
 
     {
@@ -447,8 +447,8 @@ SEC_db_interface::SEC_db_interface(SEC_graphic *Gfx, AWT_canvas *Ntw)
     cursorpos_cb      = new SEC_dbcb(this, &SEC_db_interface::cursor_changed);
     alilen_changed_cb = new SEC_dbcb(this, &SEC_db_interface::alilen_changed);
 
-    aw_root->awar_string(AWAR_SPECIES_NAME,"",gb_main)->add_callback(awar_cb, (AW_CL)sequence_cb, 0);
-    aw_root->awar_string(AWAR_CURSOR_POSITION,"",gb_main)->add_callback(awar_cb, (AW_CL)cursorpos_cb, 0);
+    aw_root->awar_string(AWAR_SPECIES_NAME, "", gb_main)->add_callback(awar_cb, (AW_CL)sequence_cb, 0);
+    aw_root->awar_string(AWAR_CURSOR_POSITION, "", gb_main)->add_callback(awar_cb, (AW_CL)cursorpos_cb, 0);
 
     bind_awars(update_pos_awars, updatepos_cb);
     bind_awars(relayout_awars, relayout_cb);
@@ -457,8 +457,8 @@ SEC_db_interface::SEC_db_interface(SEC_graphic *Gfx, AWT_canvas *Ntw)
     bind_bonddef_awars(this);
 
     {
-        GBDATA *gb_alignment     = GBT_get_alignment(gb_main,aliname);
-        GBDATA *gb_alignment_len = GB_search(gb_alignment,"alignment_len",GB_FIND);
+        GBDATA *gb_alignment     = GBT_get_alignment(gb_main, aliname);
+        GBDATA *gb_alignment_len = GB_search(gb_alignment, "alignment_len", GB_FIND);
         sec_assert(gb_alignment_len);
         GB_add_callback(gb_alignment_len, GB_CB_CHANGED, db_callback, (int*)alilen_changed_cb);
     }

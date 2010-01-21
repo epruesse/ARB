@@ -57,7 +57,7 @@ GBDATA *GBT_find_or_create_species(GBDATA *gb_main, const char *name) {
     return GBT_find_or_create_species_rel_species_data(GBT_get_species_data(gb_main), name);
 }
 
-GBDATA *GBT_find_or_create_SAI(GBDATA *gb_main,const char *name) {
+GBDATA *GBT_find_or_create_SAI(GBDATA *gb_main, const char *name) {
     // Search for an SAI, when SAI does not exist, create it
     return GBT_find_or_create_item_rel_item_data(GBT_get_SAI_data(gb_main), "extended", "name", name, true);
 }
@@ -95,11 +95,11 @@ GBDATA *GBT_expect_item_rel_item_data(GBDATA *gb_item_data, const char *id_field
 // --------------------------------------------------------------------------------
 
 GBDATA *GBT_get_species_data(GBDATA *gb_main) {
-    return GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
+    return GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
 }
 
 GBDATA *GBT_first_marked_species_rel_species_data(GBDATA *gb_species_data) {
-    return GB_first_marked(gb_species_data,"species");
+    return GB_first_marked(gb_species_data, "species");
 }
 
 GBDATA *GBT_first_marked_species(GBDATA *gb_main) {
@@ -107,14 +107,14 @@ GBDATA *GBT_first_marked_species(GBDATA *gb_main) {
 }
 GBDATA *GBT_next_marked_species(GBDATA *gb_species) {
     gb_assert(GB_has_key(gb_species, "species"));
-    return GB_next_marked(gb_species,"species");
+    return GB_next_marked(gb_species, "species");
 }
 
 GBDATA *GBT_first_species_rel_species_data(GBDATA *gb_species_data) {
-    return GB_entry(gb_species_data,"species");
+    return GB_entry(gb_species_data, "species");
 }
 GBDATA *GBT_first_species(GBDATA *gb_main) {
-    return GB_entry(GBT_get_species_data(gb_main),"species");
+    return GB_entry(GBT_get_species_data(gb_main), "species");
 }
 
 GBDATA *GBT_next_species(GBDATA *gb_species) {
@@ -122,7 +122,7 @@ GBDATA *GBT_next_species(GBDATA *gb_species) {
     return GB_nextEntry(gb_species);
 }
 
-GBDATA *GBT_find_species_rel_species_data(GBDATA *gb_species_data,const char *name) {
+GBDATA *GBT_find_species_rel_species_data(GBDATA *gb_species_data, const char *name) {
     return GBT_find_item_rel_item_data(gb_species_data, "name", name);
 }
 GBDATA *GBT_find_species(GBDATA *gb_main, const char *name) {
@@ -159,7 +159,7 @@ GBDATA *GBT_first_SAI_rel_SAI_data(GBDATA *gb_sai_data) {
     return GB_entry(gb_sai_data, "extended");
 }
 GBDATA *GBT_first_SAI(GBDATA *gb_main) {
-    return GB_entry(GBT_get_SAI_data(gb_main),"extended");
+    return GB_entry(GBT_get_SAI_data(gb_main), "extended");
 }
 
 GBDATA *GBT_next_SAI(GBDATA *gb_sai) {
@@ -230,7 +230,7 @@ char *GBT_create_unique_item_identifier(GBDATA *gb_item_container, const char *i
         char   *generated_id  = (char*)malloc(strlen(default_id)+20);
         size_t  min_num = 1;
 
-#define GENERATE_ID(num) sprintf(generated_id,"%s%zi", default_id, num);
+#define GENERATE_ID(num) sprintf(generated_id, "%s%zi", default_id, num);
         
         GENERATE_ID(min_num);
         gb_item = GBT_find_item_rel_item_data(gb_item_container, id_field, generated_id);
@@ -300,9 +300,9 @@ void GBT_mark_all(GBDATA *gb_main, int flag) {
     if (flag == 2) {
         for (gb_species = GBT_first_species(gb_main);
              gb_species;
-             gb_species = GBT_next_species(gb_species) )
+             gb_species = GBT_next_species(gb_species))
         {
-            GB_write_flag(gb_species,!GB_read_flag(gb_species));
+            GB_write_flag(gb_species, !GB_read_flag(gb_species));
         }
     }
     else {
@@ -310,9 +310,9 @@ void GBT_mark_all(GBDATA *gb_main, int flag) {
 
         for (gb_species = GBT_first_species(gb_main);
              gb_species;
-             gb_species = GBT_next_species(gb_species) )
+             gb_species = GBT_next_species(gb_species))
         {
-            GB_write_flag(gb_species,flag);
+            GB_write_flag(gb_species, flag);
         }
     }
     GB_pop_transaction(gb_main);
@@ -325,10 +325,10 @@ void GBT_mark_all_that(GBDATA *gb_main, int flag, int (*condition)(GBDATA*, void
     if (flag == 2) {
         for (gb_species = GBT_first_species(gb_main);
              gb_species;
-             gb_species = GBT_next_species(gb_species) )
+             gb_species = GBT_next_species(gb_species))
         {
             if (condition(gb_species, cd)) {
-                GB_write_flag(gb_species,!GB_read_flag(gb_species));
+                GB_write_flag(gb_species, !GB_read_flag(gb_species));
             }
         }
     }
@@ -337,11 +337,11 @@ void GBT_mark_all_that(GBDATA *gb_main, int flag, int (*condition)(GBDATA*, void
 
         for (gb_species = GBT_first_species(gb_main);
              gb_species;
-             gb_species = GBT_next_species(gb_species) )
+             gb_species = GBT_next_species(gb_species))
         {
             int curr_flag = GB_read_flag(gb_species);
             if (curr_flag != flag && condition(gb_species, cd)) {
-                GB_write_flag(gb_species,flag);
+                GB_write_flag(gb_species, flag);
             }
         }
     }
@@ -354,7 +354,7 @@ long GBT_count_marked_species(GBDATA *gb_main)
     GBDATA *gb_species_data;
 
     GB_push_transaction(gb_main);
-    gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
+    gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
     GB_pop_transaction(gb_main);
 
     cnt = GB_number_of_marked_subentries(gb_species_data);
@@ -449,19 +449,19 @@ const char *GBT_get_name(GBDATA *gb_item) {
 GBDATA **GBT_gen_species_array(GBDATA *gb_main, long *pspeccnt)
 {
     GBDATA *gb_species;
-    GBDATA *gb_species_data = GBT_find_or_create(gb_main,"species_data",7);
+    GBDATA *gb_species_data = GBT_find_or_create(gb_main, "species_data", 7);
     GBDATA **result;
     *pspeccnt = 0;
     for (gb_species = GBT_first_species_rel_species_data(gb_species_data);
          gb_species;
-         gb_species = GBT_next_species(gb_species)){
+         gb_species = GBT_next_species(gb_species)) {
         (*pspeccnt) ++;
     }
     result = (GBDATA **)malloc((size_t)(sizeof(GBDATA *)* (*pspeccnt)));
     *pspeccnt = 0;
     for (gb_species = GBT_first_species_rel_species_data(gb_species_data);
          gb_species;
-         gb_species = GBT_next_species(gb_species)){
+         gb_species = GBT_next_species(gb_species)) {
         result[(*pspeccnt)++]=gb_species;
     }
     return result;

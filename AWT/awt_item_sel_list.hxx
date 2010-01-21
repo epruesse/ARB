@@ -47,26 +47,26 @@ enum awt_rescan_mode {
     AWT_RS_SHOW_ALL             = 4, // unhide all hidden fields
 
     AWT_RS_UPDATE_FIELDS  = AWT_RS_SCAN_UNKNOWN_FIELDS|AWT_RS_DELETE_UNUSED_FIELDS
-} ;
+};
 
 void awt_selection_list_rescan(GBDATA *gb_main, long bitfilter, awt_rescan_mode mode); /* rescan it */
 void awt_gene_field_selection_list_rescan(GBDATA *gb_main, long bitfilter, awt_rescan_mode mode);
 void awt_experiment_field_selection_list_rescan(GBDATA *gb_main, long bitfilter, awt_rescan_mode mode);
 
-void awt_selection_list_scan_unknown_cb(AW_window *aww,GBDATA *gb_main, long bitfilter);
-void awt_selection_list_delete_unused_cb(AW_window *aww,GBDATA *gb_main, long bitfilter);
-void awt_selection_list_unhide_all_cb(AW_window *aww,GBDATA *gb_main, long bitfilter);
-void awt_selection_list_update_cb(AW_window *aww,GBDATA *gb_main, long bitfilter);
+void awt_selection_list_scan_unknown_cb(AW_window *aww, GBDATA *gb_main, long bitfilter);
+void awt_selection_list_delete_unused_cb(AW_window *aww, GBDATA *gb_main, long bitfilter);
+void awt_selection_list_unhide_all_cb(AW_window *aww, GBDATA *gb_main, long bitfilter);
+void awt_selection_list_update_cb(AW_window *aww, GBDATA *gb_main, long bitfilter);
 
-void awt_gene_field_selection_list_scan_unknown_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter);
-void awt_gene_field_selection_list_delete_unused_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter);
-void awt_gene_field_selection_list_unhide_all_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter);
-void awt_gene_field_selection_list_update_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter);
+void awt_gene_field_selection_list_scan_unknown_cb(AW_window *dummy, GBDATA *gb_main, long bitfilter);
+void awt_gene_field_selection_list_delete_unused_cb(AW_window *dummy, GBDATA *gb_main, long bitfilter);
+void awt_gene_field_selection_list_unhide_all_cb(AW_window *dummy, GBDATA *gb_main, long bitfilter);
+void awt_gene_field_selection_list_update_cb(AW_window *dummy, GBDATA *gb_main, long bitfilter);
 
-void awt_experiment_field_selection_list_scan_unknown_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter);
-void awt_experiment_field_selection_list_delete_unused_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter);
-void awt_experiment_field_selection_list_unhide_all_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter);
-void awt_experiment_field_selection_list_update_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter);
+void awt_experiment_field_selection_list_scan_unknown_cb(AW_window *dummy, GBDATA *gb_main, long bitfilter);
+void awt_experiment_field_selection_list_delete_unused_cb(AW_window *dummy, GBDATA *gb_main, long bitfilter);
+void awt_experiment_field_selection_list_unhide_all_cb(AW_window *dummy, GBDATA *gb_main, long bitfilter);
+void awt_experiment_field_selection_list_update_cb(AW_window *dummy, GBDATA *gb_main, long bitfilter);
 
 #else
 #error AWT_item_sel_list.hxx included twice

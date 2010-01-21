@@ -43,7 +43,7 @@ char *rb_remark(const char *info, int perc, char *txt)
 
     txt2 = (char *) getmem(RMSTRLEN);
     sprintf(txt2, "%s%i%%", info, perc/100);
-    if(txt) {
+    if (txt) {
         strcat(txt, txt2);
         free(txt2);
     }
@@ -55,7 +55,7 @@ char *rb_remark(const char *info, int perc, char *txt)
 }
 
 
-/* doing all the work for rb_gettree() :-)*/
+/* doing all the work for rb_gettree() :-) */
 /* convert a Ntree into a GBT-Tree */
 RB_INFO *rbtree(NT_NODE *tree, GBT_TREE *father)
 {
@@ -74,7 +74,7 @@ RB_INFO *rbtree(NT_NODE *tree, GBT_TREE *father)
     info->percent = tree->part->percent;
     info->len = tree->part->len;
     nsonp = tree->son_list;
-    if(!nsonp) {                                         /* if node is leaf */
+    if (!nsonp) {                                        /* if node is leaf */
         idx = calc_index(tree->part);
         gbtnode->name = strdup((name_tbl[idx]));     
         gbtnode->is_leaf = true;
@@ -93,7 +93,7 @@ RB_INFO *rbtree(NT_NODE *tree, GBT_TREE *father)
     free((char *)info_res);
 
     nsonp = nsonp->next;
-    if(!nsonp) return info;
+    if (!nsonp) return info;
 
     /* rightson */
     info_res = rbtree(nsonp->node, gbtnode);

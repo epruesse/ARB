@@ -30,7 +30,7 @@ public:
     ALI_TARRAY(ALI_TLIST<T>* list) {
         unsigned long l = 0;
         size_of_array = list->cardinality();
-        array = (T (*) []) calloc((unsigned int) size_of_array,sizeof(T));
+        array = (T (*) []) calloc((unsigned int) size_of_array, sizeof(T));
         if (array == 0)
             ali_fatal_error("Out of memory");
         if (!list->is_empty()) {
@@ -38,7 +38,7 @@ public:
             while (list->is_next() && l < size_of_array)
                 (*array)[l++] = list->next();
             if (list->is_next())
-                ali_fatal_error("List inconsitent","ALI_TARRAY::ALI_TARRAY()");
+                ali_fatal_error("List inconsitent", "ALI_TARRAY::ALI_TARRAY()");
         }
     }
     ~ALI_TARRAY(void) {
@@ -50,12 +50,12 @@ public:
     }
     void set(unsigned long position, T value) {
         if (position >= size_of_array)
-            ali_fatal_error("Access out of array","ALI_TARRAY::set()");
+            ali_fatal_error("Access out of array", "ALI_TARRAY::set()");
         (*array)[position] = value;
     }
     T get(unsigned long position) {
         if (position >= size_of_array)
-            ali_fatal_error("Access out of array","ALI_TARRAY::get()");
+            ali_fatal_error("Access out of array", "ALI_TARRAY::get()");
         return (*array)[position];
     }
 };

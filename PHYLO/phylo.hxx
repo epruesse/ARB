@@ -94,7 +94,7 @@ AW_window *PH_create_filter_window(AW_root *aw_root);
 
 
 
-enum display_type {NONE,species_dpy,filter_dpy,matrix_dpy,tree_dpy};
+enum display_type { NONE, species_dpy, filter_dpy, matrix_dpy, tree_dpy };
 
 
 typedef double AP_FLOAT;
@@ -108,7 +108,7 @@ typedef enum {
     PH_TRANSFORMATION_BANDELT,
     PH_TRANSFORMATION_BANDELT_JC,
     PH_TRANSFORMATION_BANDELT2,
-    PH_TRANSFORMATION_BANDELT2_JC} PH_TRANSFORMATION;
+    PH_TRANSFORMATION_BANDELT2_JC } PH_TRANSFORMATION;
 
 
 // --------------------------

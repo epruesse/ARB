@@ -45,7 +45,7 @@ public:
         failed = false;
     }
 
-    bool eat_int(int& what)  {
+    bool eat_int(int& what) {
         nextToken();
         if (failed) return false;
         what = atoi(p);
@@ -76,7 +76,7 @@ void AW_xfig::calc_scaling(int font_width, int font_height) {
 
 AW_xfig::AW_xfig(int font_width, int font_height) {
     // creates the same as loading an empty xfig
-    memset(this,0,sizeof(AW_xfig));
+    memset(this, 0, sizeof(AW_xfig));
     calc_scaling(font_width, font_height);
 }
 
@@ -92,13 +92,13 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
      */
     if (!filename || !strlen(filename)) return;
     
-    memset(this,0,sizeof(AW_xfig));
+    memset(this, 0, sizeof(AW_xfig));
 
     // ----------------
 
     GB_ERROR  error  = 0;
     char     *ret;
-    char     *buffer = (char *)calloc(sizeof(char),MAX_XFIG_LENGTH);
+    char     *buffer = (char *)calloc(sizeof(char), MAX_XFIG_LENGTH);
     FILE     *file   = 0;
 
     enum {
@@ -112,8 +112,8 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
     calc_scaling(font_width, font_height);
 
     if (filename[0]=='/') { // absolute file ?
-        strcpy(buffer,filename);
-        file = fopen(buffer,"r");
+        strcpy(buffer, filename);
+        file = fopen(buffer, "r");
     }
     else {
         const char *fileInLib = GB_path_in_ARBLIB("pictures", filename);
@@ -133,8 +133,8 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
         int   subVersion        = 0;
         int   lineNumber        = 0;
 
-        ret = fgets(buffer,MAX_XFIG_LENGTH,file); ++lineNumber;
-        if (!ret || strncmp("#FIG",ret,4) ) {
+        ret = fgets(buffer, MAX_XFIG_LENGTH, file); ++lineNumber;
+        if (!ret || strncmp("#FIG", ret, 4)) {
             error = "Expected XFIG format";
         }
         else {
@@ -169,7 +169,7 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
                 }
             }
             if (!error) {
-                ret             = fgets(buffer,MAX_XFIG_LENGTH,file); ++lineNumber;
+                ret             = fgets(buffer, MAX_XFIG_LENGTH, file); ++lineNumber;
                 if (!ret) error = "Unexpected end of file";
             }
 
@@ -198,7 +198,7 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
                     int count;
                     for (count = 0;
                          ret && count<=6;
-                         ret=fgets(buffer,MAX_XFIG_LENGTH,file), count++,  ++lineNumber)
+                         ret=fgets(buffer, MAX_XFIG_LENGTH, file), count++, ++lineNumber)
                     {
                         const char *awaited = 0;
                         switch (count) {
@@ -227,7 +227,7 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
                     char *p = strtok(ret, "\t");
                     if (p) dpi = atoi(p);
 
-                    ret = fgets(buffer,MAX_XFIG_LENGTH,file); ++lineNumber;
+                    ret = fgets(buffer, MAX_XFIG_LENGTH, file); ++lineNumber;
 
                     if (dpi!=default_dpi) dpi_scale = font_scale * (double(default_dpi)/double(dpi));
                 }
@@ -237,10 +237,10 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
                     char *p;
                     int   width        = 0;
                     int   color        = 0;
-                    int   x,y;
+                    int   x, y;
 
-                    if (ret[0]=='2')  { // lines
-                        int oldx =0,oldy =0;
+                    if (ret[0]=='2') {  // lines
+                        int oldx = 0, oldy = 0;
 
                         {
                             Xfig_Eater args(ret, " \t");
@@ -254,7 +254,7 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
                         }
 
                         while (1) {
-                            ret = fgets(buffer,MAX_XFIG_LENGTH,file);  ++lineNumber;
+                            ret = fgets(buffer, MAX_XFIG_LENGTH, file); ++lineNumber;
                             if (!ret) break;
                             if (ret[0]!='\t') {
                                 got_nextline = true;
@@ -287,7 +287,7 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
                                 }
 
                                 struct AW_xfig_line *xline = new AW_xfig_line;
-                                if (width>= MAX_LINE_WIDTH) width = MAX_LINE_WIDTH - 1;
+                                if (width >= MAX_LINE_WIDTH) width = MAX_LINE_WIDTH - 1;
                                 xline->next = line[width];
                                 line[width] = xline;
                                 xline->x0 = oldx;
@@ -361,7 +361,7 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
 
                             if (*p=='$') {      // text starts with a '$'
                                 // place a button
-                                if (!strcmp(p,"$$")) {
+                                if (!strcmp(p, "$$")) {
                                     this->centerx = x;
                                     this->centery = y;
                                 }
@@ -369,7 +369,7 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
                                     struct AW_xfig_pos *xpos = new AW_xfig_pos;
                                     xpos->center = align;
                                     xpos->x = x; xpos->y = y;
-                                    GBS_write_hash(hash,p+1,(long)xpos);
+                                    GBS_write_hash(hash, p+1, (long)xpos);
                                 }
                             }
                             else {
@@ -395,7 +395,7 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
                     }
 
                     if (!got_nextline) {
-                        ret = fgets(buffer,MAX_XFIG_LENGTH,file);  ++lineNumber;
+                        ret = fgets(buffer, MAX_XFIG_LENGTH, file); ++lineNumber;
                     }
                 }
 
@@ -430,8 +430,8 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
     }
 }
 
-static long aw_xfig_hash_free_loop(const char *,long val, void *) {
-    if (val) free( (char *)val);
+static long aw_xfig_hash_free_loop(const char *, long val, void *) {
+    if (val) free((char *)val);
     return 0;
 }
 
@@ -444,7 +444,7 @@ AW_xfig::~AW_xfig(void)
         GBS_free_hash(hash);
     }
     struct AW_xfig_text *xtext;
-    while(text) {
+    while (text) {
         xtext = text;
         text = text->next;
         delete xtext->text;
@@ -452,8 +452,8 @@ AW_xfig::~AW_xfig(void)
     }
 
     struct AW_xfig_line *xline;
-    for (i=0;i<MAX_LINE_WIDTH; i++){
-        while(line[i]){
+    for (i=0; i<MAX_LINE_WIDTH; i++) {
+        while (line[i]) {
             xline = line[i];
             line[i] = xline->next;
             delete xline;
@@ -468,7 +468,7 @@ void AW_xfig::print(AW_device *device)
     device->get_area_size(&ws);
     device->clear(-1);
     struct AW_xfig_text *xtext;
-    for (xtext = text; xtext; xtext=xtext->next){
+    for (xtext = text; xtext; xtext=xtext->next) {
         char *str = xtext->text;
 
         if (str[0]) {
@@ -493,17 +493,17 @@ void AW_xfig::print(AW_device *device)
                 }
             }
 
-            device->text(xtext->gc,str,(AW_pos)x,(AW_pos)y,(AW_pos)xtext->center*.5,-1,0,0);
+            device->text(xtext->gc, str, (AW_pos)x, (AW_pos)y, (AW_pos)xtext->center*.5, -1, 0, 0);
         }
     }
 
     struct AW_xfig_line *xline;
-    for (i=0;i<MAX_LINE_WIDTH; i++){
-        device->set_line_attributes(0,(AW_pos)scaleAndRound(i, font_scale),AW_SOLID);
-        for (xline = line[i]; xline; xline=xline->next){
-            device->line(0, (AW_pos)xline->x0,(AW_pos)xline->y0,
-                         (AW_pos)xline->x1,(AW_pos)xline->y1,
-                         -1,0,0); 
+    for (i=0; i<MAX_LINE_WIDTH; i++) {
+        device->set_line_attributes(0, (AW_pos)scaleAndRound(i, font_scale), AW_SOLID);
+        for (xline = line[i]; xline; xline=xline->next) {
+            device->line(0, (AW_pos)xline->x0, (AW_pos)xline->y0,
+                         (AW_pos)xline->x1, (AW_pos)xline->y1,
+                         -1, 0, 0);
         }
     }
 }
@@ -517,21 +517,21 @@ void AW_xfig::create_gcs(AW_device *device, int depth)
 
     struct AW_xfig_text *xtext;
     gc = 0;
-    device->new_gc( gc ); // create at least one gc ( 0 ) for the lines
-    device->set_foreground_color( gc, AW_WINDOW_FG );
-    if (depth<=1) device->set_function( gc,AW_XOR);
-    device->set_line_attributes( gc, 0.3, AW_SOLID );
+    device->new_gc(gc);   // create at least one gc ( 0 ) for the lines
+    device->set_foreground_color(gc, AW_WINDOW_FG);
+    if (depth<=1) device->set_function(gc, AW_XOR);
+    device->set_line_attributes(gc, 0.3, AW_SOLID);
     gc = 1;         // create gc for texts
-    for (xtext = text; xtext; xtext=xtext->next){
-        sprintf(fontstring,"%i-%i",xtext->font,scaleAndRound(xtext->fontsize, font_scale));
-        if ( !(xtext->gc = (int)GBS_read_hash(gchash,fontstring)) ) {
-            device->new_gc( gc );
-            device->set_line_attributes( gc, 0.3, AW_SOLID );
-            device->set_font( gc, xtext->font, scaleAndRound(xtext->fontsize, font_scale), 0);
-            device->set_foreground_color( gc, AW_WINDOW_FG );
-            if (depth<=1) device->set_function( gc,AW_XOR);
+    for (xtext = text; xtext; xtext=xtext->next) {
+        sprintf(fontstring, "%i-%i", xtext->font, scaleAndRound(xtext->fontsize, font_scale));
+        if (!(xtext->gc = (int)GBS_read_hash(gchash, fontstring))) {
+            device->new_gc(gc);
+            device->set_line_attributes(gc, 0.3, AW_SOLID);
+            device->set_font(gc, xtext->font, scaleAndRound(xtext->fontsize, font_scale), 0);
+            device->set_foreground_color(gc, AW_WINDOW_FG);
+            if (depth<=1) device->set_function(gc, AW_XOR);
             xtext->gc = gc;
-            GBS_write_hash(gchash,fontstring,gc);
+            GBS_write_hash(gchash, fontstring, gc);
             gc++;
         }
     }
@@ -558,7 +558,7 @@ void AW_xfig::add_line(int x1, int y1, int x2, int y2, int width) { // add a lin
 
     xline->color = 1;
 
-    if (width>= MAX_LINE_WIDTH) width = MAX_LINE_WIDTH - 1;
+    if (width >= MAX_LINE_WIDTH) width = MAX_LINE_WIDTH - 1;
 
     xline->next = line[width];
     line[width] = xline;

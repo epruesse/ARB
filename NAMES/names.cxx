@@ -38,7 +38,7 @@ inline void aisc_link(dll_public *dll, AN_revers *revers)   { aisc_link(reinterp
 // #define DUMP_NAME_CREATION
 #endif // DEBUG
 
-#define UPPERCASE(c) do{ (c) = toupper(c); }while(0)
+#define UPPERCASE(c) do { (c) = toupper(c); } while (0)
 
 // --------------------------------------------------------------------------------
 
@@ -157,9 +157,9 @@ static void an_add_short(AN_local *locs, const char *new_name,
     char      *full_name;
     locs = locs;
 
-    if (strlen(parsed_sym)){
+    if (strlen(parsed_sym)) {
         full_name = (char *)calloc(sizeof(char), strlen(parsed_name) + strlen(" sym")+1);
-        sprintf(full_name,"%s sym",parsed_name);
+        sprintf(full_name, "%s sym", parsed_name);
     }
     else {
         full_name = strdup(parsed_name);
@@ -225,12 +225,12 @@ static char *nas_string_2_name(const char *str) {
     char buf[FULLNAME_LEN_MAX+1];
     int  i;
     int  c;
-    for (i=0;i<FULLNAME_LEN_MAX;) {
+    for (i=0; i<FULLNAME_LEN_MAX;) {
         c                        = *(str++);
         if (!c) break;
         if (isalpha(c)) buf[i++] = c;
     }
-    for (;i<NAME_LEN_MIN;i++) buf[i] = '0';
+    for (; i<NAME_LEN_MIN; i++) buf[i] = '0';
     buf[i] = 0;
 #if defined(DUMP_NAME_CREATION)
     printf("nas_string_2_name('%s') = '%s'\n", org_str, buf);
@@ -246,7 +246,7 @@ static char *nas_remove_small_vocals(const char *str) {
     int i;
     int c;
 
-    for (i=0; i<FULLNAME_LEN_MAX; ) {
+    for (i=0; i<FULLNAME_LEN_MAX;) {
         c = *str++;
         if (!c) break;
         if (strchr("aeiouy", c)==0) {
@@ -319,7 +319,7 @@ static void an_autocaps(char *str) {
     }
 }
 
-static char *an_get_short(AN_shorts *IF_DEBUG(shorts), dll_public *parent, const char *full){
+static char *an_get_short(AN_shorts *IF_DEBUG(shorts), dll_public *parent, const char *full) {
     AN_shorts *look;
 
     na_assert(full);
@@ -349,7 +349,7 @@ static char *an_get_short(AN_shorts *IF_DEBUG(shorts), dll_public *parent, const
 
     // try first three letters:
 
-    strncpy(shrt,full2,3);
+    strncpy(shrt, full2, 3);
     UPPERCASE(shrt[0]);
     shrt[3] = 0;
 
@@ -461,7 +461,7 @@ static char *an_get_short(AN_shorts *IF_DEBUG(shorts), dll_public *parent, const
                 look = an_find_shrt_prefix(shrt);
                 if (!look) {
                     an_complete_shrt(shrt, full2);
-                found_short:
+                found_short :
                     result = shrt;
                     goto done;
                 }
@@ -469,7 +469,7 @@ static char *an_get_short(AN_shorts *IF_DEBUG(shorts), dll_public *parent, const
         }
     }
 
- done: 
+ done :
     
     if (result) {
 #if defined(DUMP_NAME_CREATION)
@@ -481,7 +481,7 @@ static char *an_get_short(AN_shorts *IF_DEBUG(shorts), dll_public *parent, const
         look           = create_AN_shorts();
         look->mh.ident = strdup(full2);
         look->shrt     = strdup(result);
-        aisc_link((struct_dllpublic_ext*)parent,(struct_dllheader_ext*)look);
+        aisc_link((struct_dllpublic_ext*)parent, (struct_dllheader_ext*)look);
         
         aisc_main->touched = 1;
     }
@@ -581,17 +581,17 @@ NameInformation::NameInformation(AN_local *locs) {
                                   ".= :" // replace dots by spaces
                                   "  = :" // multiple spaces -> 1 space
                                   "* * *=*1 *2" // skip all beyond 2nd word
-                                  ,0);
+                                  , 0);
     an_autocaps(parsed_name);
 
-    parsed_sym = GBS_string_eval(full_name, "\t= :* * *sym*=S",0);
+    parsed_sym = GBS_string_eval(full_name, "\t= :* * *sym*=S", 0);
     if (strlen(parsed_sym)>1) freedup(parsed_sym, "");
 
     const char *add_id = locs->add_id[0] ? locs->add_id : aisc_main->add_field_default;
 
     parsed_acc    = make_alnum(locs->acc);
     parsed_add_id = make_alnum(add_id);
-    first_name    = GBS_string_eval(parsed_name,"* *=*1",0);
+    first_name    = GBS_string_eval(parsed_name, "* *=*1", 0);
     rest_of_name  = make_alnum(parsed_name+strlen(first_name));
 
     freeset(first_name, make_alnum(first_name));
@@ -671,7 +671,7 @@ extern "C" aisc_string get_short(AN_local *locs)
         }
     }
     if (!shrt) { /* now there is no short name (or an illegal one) */
-        char *first_advice=0,*second_advice=0;
+        char *first_advice=0, *second_advice=0;
 
         if (locs->advice[0] && !stralnum(locs->advice)) { // bad advice 
             locs->advice[0] = 0; // delete it
@@ -734,7 +734,7 @@ extern "C" aisc_string get_short(AN_local *locs)
 
         if (first_len>3) {
             first_short[3] = 0;
-            first_len      = 3;;
+            first_len      = 3; ;
         }
 
         int both_len = first_len+second_len;
@@ -751,7 +751,7 @@ extern "C" aisc_string get_short(AN_local *locs)
         }
 
         char test_short[9];
-        sprintf(test_short,"%s%s", first_short, second_short);
+        sprintf(test_short, "%s%s", first_short, second_short);
         
         na_assert(size_t(both_len) == strlen(test_short));
         na_assert(second_len>=5 && second_len <= 8);
@@ -850,14 +850,14 @@ extern "C" int server_save(AN_main *main, int dummy)
         }
         else {
             sec_name = (char *)calloc(sizeof(char), strlen(main->server_file)+2);
-            sprintf(sec_name,"%s%%", main->server_file);
+            sprintf(sec_name, "%s%%", main->server_file);
             printf("Saving '%s'..\n", main->server_file);
-            file     = fopen(sec_name,"w");
+            file     = fopen(sec_name, "w");
             if (!file) {
-                fprintf(stderr,"ERROR cannot save file '%s'\n",sec_name);
+                fprintf(stderr, "ERROR cannot save file '%s'\n", sec_name);
             }
             else { 
-                error = save_AN_main(main,file);
+                error = save_AN_main(main, file);
                 fclose(file);
                 if (!error) {
                     if (GB_rename_file(sec_name, main->server_file)) {
@@ -902,7 +902,7 @@ static void check_for_case_error(AN_main *main) {
     bool case_error_occurred = false;
     int  idents_changed      = 0;
     // first check name parts
-    for (AN_shorts *shrt = main->shorts1; shrt; ) {
+    for (AN_shorts *shrt = main->shorts1; shrt;) {
         AN_shorts *next  = shrt->next;
         AN_shorts *found = an_find_shrt_prefix(shrt->shrt);
         if (found != shrt) {
@@ -915,7 +915,7 @@ static void check_for_case_error(AN_main *main) {
     }
 
     // then check full short-names
-    for (AN_shorts *shrt = main->names; shrt; ) {
+    for (AN_shorts *shrt = main->names; shrt;) {
         AN_shorts *next  = shrt->next;
         AN_revers *found = lookup_an_revers(main, shrt->shrt);
 
@@ -963,7 +963,7 @@ static void check_for_case_error(AN_main *main) {
         {
             list<string> idents_to_recreate;
 
-            for (AN_shorts *shrt =  main->shorts1; shrt; ) {
+            for (AN_shorts *shrt =  main->shorts1; shrt;) {
                 char      *cap_name = strdup(shrt->shrt);
                 an_autocaps(cap_name);
 
@@ -986,7 +986,7 @@ static void check_for_case_error(AN_main *main) {
         }
 
         // now capitalize all short names
-        for (AN_shorts *shrt =  main->names; shrt; ) {
+        for (AN_shorts *shrt =  main->names; shrt;) {
             AN_shorts *next     = shrt->next;
             char      *cap_name = strdup(shrt->shrt);
             an_autocaps(cap_name);
@@ -1011,7 +1011,7 @@ static void check_for_illegal_chars(AN_main *main) {
     int illegal_names = 0;
 
     // first check name parts
-    for (AN_shorts *shrt = main->shorts1; shrt; ) {
+    for (AN_shorts *shrt = main->shorts1; shrt;) {
         AN_shorts *next = shrt->next;
         if (!stralnum(shrt->shrt)) {
             fprintf(stderr, "- Fixing illegal chars in '%s'\n", shrt->shrt);
@@ -1021,7 +1021,7 @@ static void check_for_illegal_chars(AN_main *main) {
         shrt = next;
     }
     // then check full short-names
-    for (AN_shorts *shrt = main->names; shrt; ) {
+    for (AN_shorts *shrt = main->names; shrt;) {
         AN_shorts *next  = shrt->next;
         if (!stralnum(shrt->shrt)) {
             fprintf(stderr, "- Fixing illegal chars in '%s'\n", shrt->shrt);
@@ -1045,7 +1045,7 @@ static void set_empty_addids(AN_main *main) {
         // (empty default was old behavior)
 
         long count = 0;
-        for (AN_shorts *shrt = main->names; shrt; ) {
+        for (AN_shorts *shrt = main->names; shrt;) {
             AN_shorts *next  = shrt->next;
             if (!shrt->add_id[0]) {
                 aisc_unlink((struct_dllheader_ext*)shrt);
@@ -1076,13 +1076,13 @@ static GB_ERROR server_load(AN_main *main)
 
     fprintf(stderr, "Starting ARB_name_server..\n");
 
-    file = fopen(main->server_file,"r");
+    file = fopen(main->server_file, "r");
     if (!file) {
         error = GBS_global_string("No such file '%s'", main->server_file);
     }
     else {
         fprintf(stderr, "* Loading %s\n", main->server_file);
-        int err_code = load_AN_main(main,file);
+        int err_code = load_AN_main(main, file);
         if (err_code) {
             error = GBS_global_string("Error #%i while loading '%s'", err_code, main->server_file);
         }
@@ -1142,9 +1142,9 @@ int names_server_save(void) {
     return 0;
 }
 
-extern "C" int server_shutdown(AN_main *pm, aisc_string passwd){
+extern "C" int server_shutdown(AN_main *pm, aisc_string passwd) {
     /** passwdcheck **/
-    if( strcmp(passwd, "ldfiojkherjkh") ) return 1;
+    if (strcmp(passwd, "ldfiojkherjkh")) return 1;
     printf("\narb_name_server: I got the shutdown message.\n");
 
     /** shoot clients **/
@@ -1171,14 +1171,14 @@ static void usage(const char *exeName, const char *err) {
     exit(-1);
 }
 
-int main(int argc,char **argv)
+int main(int argc, char **argv)
 {
     char              *name;
     int                i;
     struct Hs_struct  *so;
     struct arb_params *params;
 
-    params                 = arb_trace_argv(&argc,argv);
+    params                 = arb_trace_argv(&argc, argv);
     const char *executable = argv[0];
 
     if (!params->default_file) usage(executable, "Missing default file");
@@ -1206,12 +1206,12 @@ int main(int argc,char **argv)
         name = strdup(cname);
     }
 
-    AN_global.cl_link = (aisc_com *)aisc_open(name, (long *)&AN_global.cl_main,AISC_MAGIC_NUMBER);
+    AN_global.cl_link = (aisc_com *)aisc_open(name, (long *)&AN_global.cl_main, AISC_MAGIC_NUMBER);
 
     if (AN_global.cl_link) {
-        if( !strcmp(argv[1],"-look")) {
+        if (!strcmp(argv[1], "-look")) {
             printf("ARB_name_server: No client - terminating.\n");
-            aisc_close(AN_global.cl_link);AN_global.cl_link = 0;
+            aisc_close(AN_global.cl_link); AN_global.cl_link = 0;
             exit(0);
         }
 
@@ -1219,16 +1219,16 @@ int main(int argc,char **argv)
         aisc_nput(AN_global.cl_link, AN_MAIN, AN_global.cl_main,
                   MAIN_SHUTDOWN, "ldfiojkherjkh",
                   NULL);
-        aisc_close(AN_global.cl_link);AN_global.cl_link=0;
+        aisc_close(AN_global.cl_link); AN_global.cl_link=0;
         sleep(1);
     }
-    if( ((strcmp(argv[1],"-kill")==0)) ||
-        ((argc==3) && (strcmp(argv[2],"-kill")==0))){
+    if (((strcmp(argv[1], "-kill")==0)) ||
+        ((argc==3) && (strcmp(argv[2], "-kill")==0))) {
         printf("ARB_name_server: Now I kill myself!\n");
         exit(0);
     }
-    for (i=0, so=0; (i<MAX_TRY) && (!so); i++){
-        so = open_aisc_server(name, NAME_SERVER_SLEEP*1000L ,0);
+    for (i=0, so=0; (i<MAX_TRY) && (!so); i++) {
+        so = open_aisc_server(name, NAME_SERVER_SLEEP*1000L, 0);
         if (!so) sleep(RETRY_SLEEP);
     }
     if (!so) {
@@ -1307,7 +1307,7 @@ int main(int argc,char **argv)
     while (!error && accept_calls>0) {
         aisc_accept_calls(so);
 
-        if (aisc_main->ploc_st.cnt <=0) { // timeout passed and no clients
+        if (aisc_main->ploc_st.cnt <= 0) { // timeout passed and no clients
             accept_calls--;
 
             long server_date = GB_time_of_file(aisc_main->server_file);
@@ -1322,7 +1322,7 @@ int main(int argc,char **argv)
                 isTimeout    = false;
             }
             else if (aisc_main->touched) {
-                server_save(aisc_main,0);
+                server_save(aisc_main, 0);
                 accept_calls = accept_calls_init;
             }
         }

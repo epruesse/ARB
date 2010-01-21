@@ -898,7 +898,7 @@ void SEC_segment::paint(AW_device *device, SEC_helix_strand *previous_strand_poi
             if (nextAbs<0) { // helix doesn't start with pair
                 nextAbs = next_helix_strand->getNextAbspos();
             }
-            nextGc = root->getBondtype(nextAbs) == HELIX_NONE ? SEC_GC_NHELIX : SEC_GC_HELIX;;
+            nextGc = root->getBondtype(nextAbs) == HELIX_NONE ? SEC_GC_NHELIX : SEC_GC_HELIX; ;
         }
         else {
             nextAbs = get_region()->getBasePos(i+1);
@@ -923,7 +923,7 @@ void SEC_segment::paint(AW_device *device, SEC_helix_strand *previous_strand_poi
                 // (which is currently calculated wrong!)
                 if (disp.show_debug) device->line(SEC_GC_LOOP, pos, base_pos, -1, self(), abs);
 #endif // DEBUG
-                device->text(SEC_GC_LOOP, baseBuf, base_pos, 0, -1, self(), abs, 0 );
+                device->text(SEC_GC_LOOP, baseBuf, base_pos, 0, -1, self(), abs, 0);
             }
             root->announce_base_position(abs, pos);
         }
@@ -987,7 +987,7 @@ GB_ERROR SEC_root::paint(AW_device *device) {
         for (int gc = SEC_GC_FIRST_DATA; gc <= SEC_GC_LAST_DATA; ++gc) {
             int maxSize = max(font_group.get_width(gc), font_group.get_ascent(gc));
 
-            maxSize +=2; // add 2 extra pixels
+            maxSize += 2; // add 2 extra pixels
 
             bg_linewidth[gc] = maxSize;
             char_radius[gc]    = device->rtransform_size(maxSize) * 0.5; // was 0.75

@@ -70,7 +70,7 @@ Structure3D::~Structure3D(void) {
 }
 
 
-void Structure3D::StoreCoordinates(float x, float y, float z, char base, unsigned int pos){
+void Structure3D::StoreCoordinates(float x, float y, float z, char base, unsigned int pos) {
     Struct3Dinfo *data, *temp;
     data = new Struct3Dinfo;
     data->x    = x;
@@ -92,13 +92,13 @@ void Structure3D::StoreCoordinates(float x, float y, float z, char base, unsigne
     }
 }
 
-//------------------Selecting rRNA type--------------------------//
+// ------------------Selecting rRNA type--------------------------//
 
-int Structure3D::FindTypeOfRNA(){
+int Structure3D::FindTypeOfRNA() {
     int rnaType = 0;       
-    GB_push_transaction(gb_main);  //opening a transaction 
+    GB_push_transaction(gb_main);  // opening a transaction
 
-    GBDATA *gbTemplate = GBT_find_SAI(gb_main,"ECOLI");
+    GBDATA *gbTemplate = GBT_find_SAI(gb_main, "ECOLI");
     if (!gbTemplate) {
         aw_message("SAI:ECOLI not found");
     }
@@ -114,8 +114,8 @@ int Structure3D::FindTypeOfRNA(){
             const char *pTemplateSeqData  = GB_read_char_pntr(gbTemplateSeqData);
             int iSeqLen = strlen(pTemplateSeqData); 
             int iBaseCount = 0;  
-            for(int i = 0; i<iSeqLen; i++) {
-                if((pTemplateSeqData[i] != '.') && (pTemplateSeqData[i] != '-')){
+            for (int i = 0; i<iSeqLen; i++) {
+                if ((pTemplateSeqData[i] != '.') && (pTemplateSeqData[i] != '-')) {
                     iBaseCount++;
                 }
             }
@@ -130,14 +130,14 @@ int Structure3D::FindTypeOfRNA(){
     return rnaType;
 }
 
-//----------Delete old molecule data-------------------------------// 
+// ----------Delete old molecule data-------------------------------//
 // Struct2Dinfo, Struct2Dplus3D, Struct3Dinfo, HelixNrInfo, Insertions
 
-void Structure3D::DeleteOldMoleculeData(){
+void Structure3D::DeleteOldMoleculeData() {
     // Struct2Dinfo -> start2D
     {   
         Struct2Dinfo *tmp, *data;
-        for(data = start2D; data != NULL; data = tmp) {
+        for (data = start2D; data != NULL; data = tmp) {
             tmp = data->next;
             delete data;
         }
@@ -147,7 +147,7 @@ void Structure3D::DeleteOldMoleculeData(){
     // Struct2Dplus3D ->start2D3D
     {
         Struct2Dplus3D *tmp, *data;
-        for(data = start2D3D; data != NULL; data = tmp) {
+        for (data = start2D3D; data != NULL; data = tmp) {
             tmp = data->next;
             delete data;
         }
@@ -157,7 +157,7 @@ void Structure3D::DeleteOldMoleculeData(){
     // Struct3Dinfo ->start3D
     {
         Struct3Dinfo *tmp, *data;
-        for(data = start3D; data != NULL; data = tmp) {
+        for (data = start3D; data != NULL; data = tmp) {
             tmp = data->next;
             delete data;
         }
@@ -167,7 +167,7 @@ void Structure3D::DeleteOldMoleculeData(){
     // HelixNrInfo -> start
     {
         HelixNrInfo *tmp, *data;
-        for(data = start; data != NULL; data = tmp) {
+        for (data = start; data != NULL; data = tmp) {
             tmp = data->next;
             delete data;
         }
@@ -181,7 +181,7 @@ void Structure3D::DeleteOldMoleculeData(){
     DeleteOldSpeciesData ();
 }
 
-//=========== Reading 3D Coordinates from PDB file ====================//
+// =========== Reading 3D Coordinates from PDB file ====================//
 
 void Structure3D::ReadCoOrdinateFile() {
     static char *DataFile = 0;  
@@ -191,24 +191,24 @@ void Structure3D::ReadCoOrdinateFile() {
 
     switch (rnaType) {
     case LSU_23S:
-        switch(LSU_molID){
+        switch (LSU_molID) {
         case _1PNU: 
             DataFile = find_data_file("Ecoli_1PNU_23S_rRNA.pdb");
             sprintf(globalComment, "The 3D molecule rendered from PDB entry : 1PNU at 8.7 Angstrom."); 
             break;
         case _1VOR: 
             DataFile = find_data_file("Ecoli_1VOR_23S_rRNA.pdb");
-            sprintf(globalComment,"The 3D molecule is rendered from PDB entry [1VOR] with 11.5 Angstrom resolution."); 
+            sprintf(globalComment, "The 3D molecule is rendered from PDB entry [1VOR] with 11.5 Angstrom resolution.");
             break;
         case _1C2W: 
             DataFile = find_data_file("Ecoli_1C2W_23S_rRNA.pdb");
-            sprintf(globalComment,"The 3D molecule is rendered from PDB entry [1C2W] with 7.5 Angstrom resolution."); 
+            sprintf(globalComment, "The 3D molecule is rendered from PDB entry [1C2W] with 7.5 Angstrom resolution.");
             break;
         }
         break;
     case LSU_5S: 
         DataFile = find_data_file("Ecoli_1C2X_5S_rRNA.pdb");
-        sprintf(globalComment,"The 3D molecule is rendered from PDB entry [1C2X] with 7.5 Angstrom resolution."); 
+        sprintf(globalComment, "The 3D molecule is rendered from PDB entry [1C2X] with 7.5 Angstrom resolution.");
         break;
     case SSU_16S:
         DataFile = find_data_file("Ecoli_1M5G_16S_rRNA.pdb");
@@ -234,29 +234,29 @@ void Structure3D::ReadCoOrdinateFile() {
     static bool bEColiStartPosStored = false;
 
     while (!readData.eof()) {
-        readData.getline(buf,100);  
+        readData.getline(buf, 100);
         string tmp, atom, line = string(buf);
 
-        if ((line.find("ATOM") != string::npos ) || (line.find("HETATM") != string::npos )) {
-            atom = (line.substr(77,2)).c_str();
+        if ((line.find("ATOM") != string::npos) || (line.find("HETATM") != string::npos)) {
+            atom = (line.substr(77, 2)).c_str();
             if (atom.find("P") != string::npos) {
-                tmp = (line.substr(18,3)).c_str();
+                tmp = (line.substr(18, 3)).c_str();
                 Base = tmp[1];
-                pos  = atoi((line.substr(22,4)).c_str());
-                X    = atof((line.substr(31,8)).c_str());
-                Y    = atof((line.substr(39,8)).c_str());
-                Z    = atof((line.substr(47,8)).c_str());
+                pos  = atoi((line.substr(22, 4)).c_str());
+                X    = atof((line.substr(31, 8)).c_str());
+                Y    = atof((line.substr(39, 8)).c_str());
+                Z    = atof((line.substr(47, 8)).c_str());
        
                 // special filter for 23S rRNA structure (IVOR/IPNU)
                 // IVOR/IPNU contains artifacts and are not mentioned in any of the 
                 // remarks of PDB file 
                 if (last3Dpos != pos && !(pos >= 3093)) {       
-                    StoreCoordinates(X,Y,Z,Base,pos);
+                    StoreCoordinates(X, Y, Z, Base, pos);
                     last3Dpos = pos;
                     strCen->x += X; strCen->y += Y; strCen->z += Z;
                     cntr++;
                 }
-                if(!bEColiStartPosStored) { 
+                if (!bEColiStartPosStored) {
                     iEColiStartPos = pos;
                     bEColiStartPosStored = true;
                 }
@@ -280,7 +280,7 @@ void Structure3D::ReadCoOrdinateFile() {
 }
 
 
-void Structure3D::Store2Dinfo(char *info, int pos, int helixNr){
+void Structure3D::Store2Dinfo(char *info, int pos, int helixNr) {
     Struct2Dinfo *data, *temp;
     data = new Struct2Dinfo;
     data->base    = info[0];
@@ -303,7 +303,7 @@ void Structure3D::Store2Dinfo(char *info, int pos, int helixNr){
     }
 }
 
-//=========== Reading Secondary Structure Data from Ecoli Secondary Structure Mask file ====================//
+// =========== Reading Secondary Structure Data from Ecoli Secondary Structure Mask file ====================//
 
 void Structure3D::GetSecondaryStructureInfo(void) {
     static char *DataFile = 0;  
@@ -336,17 +336,17 @@ void Structure3D::GetSecondaryStructureInfo(void) {
     }
 
     while (!readData.eof()) {
-        readData.getline(buf,100);  
+        readData.getline(buf, 100);
         char *tmp;
         tmp = strtok(buf, " ");
         for (int i = 0; tmp != NULL; tmp = strtok(NULL, " "), i++) 
             {
                 switch (i) {
-                case 0 : pos = atoi(tmp);     break;
-                case 1 : info[0] = tmp[0];    break;
-                case 2 : info[1] = tmp[0];    break;
-                case 3 : info[2] = tmp[0];    break;
-                case 4 : helixNr = atoi(tmp); break;
+                case 0: pos = atoi(tmp);      break;
+                case 1: info[0] = tmp[0];     break;
+                case 2: info[1] = tmp[0];     break;
+                case 3: info[2] = tmp[0];     break;
+                case 4: helixNr = atoi(tmp); break;
                 }
             }
         if (((info[2] == 'S') || (info[2] == 'E')) && (helixNr > 0))  lastHelixNr = helixNr;
@@ -375,8 +375,8 @@ void Structure3D::Store2D3Dinfo(Struct2Dinfo *s2D, Struct3Dinfo *s3D) {
     data->base    = s2D->base;
     data->mask    = s2D->mask;
     data->code    = s2D->code;
-    data->pos     = s2D->pos;;
-    data->helixNr = s2D->helixNr;;
+    data->pos     = s2D->pos; ;
+    data->helixNr = s2D->helixNr; ;
     data->x       = s3D->x;
     data->y       = s3D->y;
     data->z       = s3D->z;
@@ -393,7 +393,7 @@ void Structure3D::Store2D3Dinfo(Struct2Dinfo *s2D, Struct3Dinfo *s3D) {
     }
 }
 
-//=========== Combining Secondary Structure Data with 3D Coordinates =======================//
+// =========== Combining Secondary Structure Data with 3D Coordinates =======================//
 
 void Structure3D::Combine2Dand3DstructureInfo(void) {
     Struct3Dinfo *temp3D;
@@ -426,8 +426,8 @@ void Structure3D::Combine2Dand3DstructureInfo(void) {
     {
         RNA3D->bDisplayComments = true;
         char buf[256];
-        sprintf(buf, "Total No. of bases missing = %d. See the console messages for the actual missing base positions.",cntr);
-        strcat(globalComment,buf);
+        sprintf(buf, "Total No. of bases missing = %d. See the console messages for the actual missing base positions.", cntr);
+        strcat(globalComment, buf);
     }
 }
 
@@ -439,46 +439,46 @@ void Structure3D::PointsToQuads(float x, float y, float z) {
     else {
         glBegin(GL_QUADS);
         // Front Face
-        glTexCoord2f(0,0); glVertex3f(x - 1, y + 1, z + 1);
-        glTexCoord2f(1,0); glVertex3f(x + 1, y + 1, z + 1);
-        glTexCoord2f(1,1); glVertex3f(x + 1, y - 1, z + 1);
-        glTexCoord2f(0,1); glVertex3f(x - 1, y - 1, z + 1);
+        glTexCoord2f(0, 0); glVertex3f(x - 1, y + 1, z + 1);
+        glTexCoord2f(1, 0); glVertex3f(x + 1, y + 1, z + 1);
+        glTexCoord2f(1, 1); glVertex3f(x + 1, y - 1, z + 1);
+        glTexCoord2f(0, 1); glVertex3f(x - 1, y - 1, z + 1);
 
         // Back Face
-        glTexCoord2f(0,0); glVertex3f(x + 1, y + 1, z - 1);
-        glTexCoord2f(1,0); glVertex3f(x - 1, y + 1, z - 1);
-        glTexCoord2f(1,1); glVertex3f(x - 1, y - 1, z - 1);
-        glTexCoord2f(0,1); glVertex3f(x + 1, y - 1, z - 1);
+        glTexCoord2f(0, 0); glVertex3f(x + 1, y + 1, z - 1);
+        glTexCoord2f(1, 0); glVertex3f(x - 1, y + 1, z - 1);
+        glTexCoord2f(1, 1); glVertex3f(x - 1, y - 1, z - 1);
+        glTexCoord2f(0, 1); glVertex3f(x + 1, y - 1, z - 1);
 
         // Top Face
-        glTexCoord2f(0,0); glVertex3f(x + 1, y + 1, z + 1);
-        glTexCoord2f(1,0); glVertex3f(x - 1, y + 1, z + 1);
-        glTexCoord2f(1,1); glVertex3f(x - 1, y + 1, z - 1);
-        glTexCoord2f(0,1); glVertex3f(x + 1, y + 1, z - 1);
+        glTexCoord2f(0, 0); glVertex3f(x + 1, y + 1, z + 1);
+        glTexCoord2f(1, 0); glVertex3f(x - 1, y + 1, z + 1);
+        glTexCoord2f(1, 1); glVertex3f(x - 1, y + 1, z - 1);
+        glTexCoord2f(0, 1); glVertex3f(x + 1, y + 1, z - 1);
 
         // Bottom Face
-        glTexCoord2f(0,0); glVertex3f(x + 1, y - 1, z - 1);
-        glTexCoord2f(1,0); glVertex3f(x - 1, y - 1, z - 1);
-        glTexCoord2f(1,1); glVertex3f(x - 1, y - 1, z + 1);
-        glTexCoord2f(0,1); glVertex3f(x + 1, y - 1, z + 1);
+        glTexCoord2f(0, 0); glVertex3f(x + 1, y - 1, z - 1);
+        glTexCoord2f(1, 0); glVertex3f(x - 1, y - 1, z - 1);
+        glTexCoord2f(1, 1); glVertex3f(x - 1, y - 1, z + 1);
+        glTexCoord2f(0, 1); glVertex3f(x + 1, y - 1, z + 1);
 
         // Left Face
-        glTexCoord2f(0,0); glVertex3f(x + 1, y + 1, z + 1);
-        glTexCoord2f(1,0); glVertex3f(x + 1, y + 1, z - 1);
-        glTexCoord2f(1,1); glVertex3f(x + 1, y - 1, z - 1);
-        glTexCoord2f(0,1); glVertex3f(x + 1, y - 1, z + 1);
+        glTexCoord2f(0, 0); glVertex3f(x + 1, y + 1, z + 1);
+        glTexCoord2f(1, 0); glVertex3f(x + 1, y + 1, z - 1);
+        glTexCoord2f(1, 1); glVertex3f(x + 1, y - 1, z - 1);
+        glTexCoord2f(0, 1); glVertex3f(x + 1, y - 1, z + 1);
 
         // Right Face
-        glTexCoord2f(0,0); glVertex3f(x - 1, y + 1, z - 1);
-        glTexCoord2f(1,0); glVertex3f(x - 1, y + 1, z + 1);
-        glTexCoord2f(1,1); glVertex3f(x - 1, y - 1, z + 1);
-        glTexCoord2f(0,1); glVertex3f(x - 1, y - 1, z - 1);
+        glTexCoord2f(0, 0); glVertex3f(x - 1, y + 1, z - 1);
+        glTexCoord2f(1, 0); glVertex3f(x - 1, y + 1, z + 1);
+        glTexCoord2f(1, 1); glVertex3f(x - 1, y - 1, z + 1);
+        glTexCoord2f(0, 1); glVertex3f(x - 1, y - 1, z - 1);
 
         glEnd();
     }
 }
 
-void Structure3D::PositionsToCoordinatesDispList(int listID, int *pos, int len){
+void Structure3D::PositionsToCoordinatesDispList(int listID, int *pos, int len) {
     Struct2Dplus3D *t;
     int tmpPos = 0;
 
@@ -487,7 +487,7 @@ void Structure3D::PositionsToCoordinatesDispList(int listID, int *pos, int len){
         if (RNA3D->bPointSpritesSupported) {
             glBegin(GL_POINTS);
         }
-        for(int i = 0; i < len; i++) 
+        for (int i = 0; i < len; i++)
             {
                 tmpPos = pos[i];
                 t = start2D3D;
@@ -499,7 +499,7 @@ void Structure3D::PositionsToCoordinatesDispList(int listID, int *pos, int len){
                     t = t->next;
                 }
             }
-        if (RNA3D->bPointSpritesSupported){
+        if (RNA3D->bPointSpritesSupported) {
             glEnd();
         }
     }
@@ -510,7 +510,7 @@ void Structure3D::GenerateSecStructureNonHelixRegions(void) {
     Struct2Dplus3D *t;
     const int MAX_BASE = 1000;
     int baseA[MAX_BASE], baseG[MAX_BASE], baseC[MAX_BASE], baseU[MAX_BASE];
-    int a,g,c,u; a=g=c=u=0;
+    int a, g, c, u; a=g=c=u=0;
 
     {
         t = start2D3D;
@@ -518,10 +518,10 @@ void Structure3D::GenerateSecStructureNonHelixRegions(void) {
             if (t->helixNr == 0) {
                 switch (t->base) 
                     {
-                    case 'A' : baseA[a++] = t->pos; break;
-                    case 'G' : baseG[g++] = t->pos; break;
-                    case 'C' : baseC[c++] = t->pos; break;
-                    case 'U' : baseU[u++] = t->pos; break;
+                    case 'A': baseA[a++] = t->pos; break;
+                    case 'G': baseG[g++] = t->pos; break;
+                    case 'C': baseC[c++] = t->pos; break;
+                    case 'U': baseU[u++] = t->pos; break;
                     }
             }
             t = t->next;
@@ -538,21 +538,21 @@ void Structure3D::GenerateSecStructureHelixRegions(void) {
     Struct2Dplus3D *t;
     const int MAX_BASE = 1000;
     int baseA[MAX_BASE], baseG[MAX_BASE], baseC[MAX_BASE], baseU[MAX_BASE];
-    int a,g,c,u; a=g=c=u=0;
+    int a, g, c, u; a=g=c=u=0;
 
     {
         t = start2D3D;
         while (t != NULL) {
             if (t->helixNr > 0) {
                 if ((t->mask == '[') || (t->mask == ']') || 
-                    (t->mask == '<') || (t->mask == '>') ) 
+                    (t->mask == '<') || (t->mask == '>'))
                     {
                         switch (t->base) 
                             {
-                            case 'A' : baseA[a++] = t->pos; break;
-                            case 'G' : baseG[g++] = t->pos; break;
-                            case 'C' : baseC[c++] = t->pos; break;
-                            case 'U' : baseU[u++] = t->pos; break;
+                            case 'A': baseA[a++] = t->pos; break;
+                            case 'G': baseG[g++] = t->pos; break;
+                            case 'C': baseC[c++] = t->pos; break;
+                            case 'U': baseU[u++] = t->pos; break;
                             }
                     }
             }
@@ -570,7 +570,7 @@ void Structure3D::GenerateSecStructureUnpairedHelixRegions(void) {
     Struct2Dplus3D *t;
     const int MAX_BASE = 500;
     int baseA[MAX_BASE], baseG[MAX_BASE], baseC[MAX_BASE], baseU[MAX_BASE];
-    int a,g,c,u; a=g=c=u=0;
+    int a, g, c, u; a=g=c=u=0;
 
     {
         t = start2D3D;
@@ -580,10 +580,10 @@ void Structure3D::GenerateSecStructureUnpairedHelixRegions(void) {
                     {
                         switch (t->base) 
                             {
-                            case 'A' : baseA[a++] = t->pos; break;
-                            case 'G' : baseG[g++] = t->pos; break;
-                            case 'C' : baseC[c++] = t->pos; break;
-                            case 'U' : baseU[u++] = t->pos; break;
+                            case 'A': baseA[a++] = t->pos; break;
+                            case 'G': baseG[g++] = t->pos; break;
+                            case 'C': baseC[c++] = t->pos; break;
+                            case 'U': baseU[u++] = t->pos; break;
                             }
                     }
             }
@@ -597,15 +597,15 @@ void Structure3D::GenerateSecStructureUnpairedHelixRegions(void) {
     PositionsToCoordinatesDispList(UNPAIRED_HELIX_U, baseU, u);
 }
 
-//==============================================================================
+// ==============================================================================
 // Tertiary Interactions of 16S ribosomal RNA model of E.coli. 
 // Reference : http://www.rna.icmb.utexas.edu/
 // Year of Last Update : 2001.
 // Pseudoknots and Triple Base pairs are extracted and displayed in 
 // the 3D model.
-//==============================================================================
+// ==============================================================================
 
-void Structure3D::GenerateTertiaryInteractionsDispLists(){
+void Structure3D::GenerateTertiaryInteractionsDispLists() {
     Struct2Dplus3D *t;
     static char *DataFile = 0;  
     int rnaType    = FindTypeOfRNA();
@@ -638,23 +638,23 @@ void Structure3D::GenerateTertiaryInteractionsDispLists(){
     int k, r; k = r = 0;
 
     while (!readData.eof()) {
-        readData.getline(buf,100);  
+        readData.getline(buf, 100);
         char *tmp;
         tmp = strtok(buf, " ");
         if (tmp != NULL) 
             {
                 if (strcmp(tmp, "KNOT") == 0) {
-                    tmp = strtok(NULL, ":" );
+                    tmp = strtok(NULL, ":");
                     while (tmp != NULL) {
                         K[k++] = atoi(tmp); 
-                        tmp = strtok(NULL, ":" );
+                        tmp = strtok(NULL, ":");
                     }
                 }
-                else if (strcmp(tmp,"TRIPLE") == 0) {
-                    tmp = strtok(NULL, ":" );
+                else if (strcmp(tmp, "TRIPLE") == 0) {
+                    tmp = strtok(NULL, ":");
                     while (tmp != NULL) {
                         R[r++] = atoi(tmp);
-                        tmp = strtok(NULL, ":" );
+                        tmp = strtok(NULL, ":");
                     }
                 }
             }
@@ -663,9 +663,9 @@ void Structure3D::GenerateTertiaryInteractionsDispLists(){
 
     glNewList(ECOLI_TERTIARY_INTRACTION_PSEUDOKNOTS, GL_COMPILE);
     {   
-        for(int i = 0; i < k; ) {
+        for (int i = 0; i < k;) {
             glBegin(GL_LINES);
-            for(int j = 0; j < 2; j++) 
+            for (int j = 0; j < 2; j++)
                 {
                     t = start2D3D;
                     while (t != NULL) {
@@ -684,9 +684,9 @@ void Structure3D::GenerateTertiaryInteractionsDispLists(){
 
     glNewList(ECOLI_TERTIARY_INTRACTION_TRIPLE_BASES, GL_COMPILE);
     {   
-        for(int i = 0; i < r; ) {
+        for (int i = 0; i < r;) {
             glBegin(GL_LINE_STRIP);
-            for(int j = 0; j < 3; j++) 
+            for (int j = 0; j < 3; j++)
                 {
                     t = start2D3D;
                     while (t != NULL) {
@@ -705,12 +705,12 @@ void Structure3D::GenerateTertiaryInteractionsDispLists(){
     free(DataFile);
 }
 
-//==============================================================================
+// ==============================================================================
 
 void Structure3D::StoreHelixNrInfo(float x, float y, float z, int helixNr) {
     HelixNrInfo *data, *temp;
     data = new HelixNrInfo;
-    data->helixNr = helixNr;;
+    data->helixNr = helixNr; ;
     data->x       = x;
     data->y       = y;
     data->z       = z;
@@ -749,7 +749,7 @@ void Structure3D::GenerateHelixDispLists(int HELIX_NR_ID, int HELIX_NR) {
     }
 
     int tempPos = 0;
-    float x1,x2,y1,y2,z1,z2; x1=x2=y1=y2=z1=z2=0.0;
+    float x1, x2, y1, y2, z1, z2; x1=x2=y1=y2=z1=z2=0.0;
 
     bool bThisStrand, bOtherStrand;
     bThisStrand = bOtherStrand = false;
@@ -784,14 +784,14 @@ void Structure3D::GenerateHelixDispLists(int HELIX_NR_ID, int HELIX_NR) {
                         temp2D3D = temp2D3D->next;
                     }
                 }
-                //if bases present in both the strands then draw a bond
-                //and store the helix number information
-                if (bThisStrand && bOtherStrand){
+                // if bases present in both the strands then draw a bond
+                // and store the helix number information
+                if (bThisStrand && bOtherStrand) {
                     glVertex3f(x1, y1, z1);
                     glVertex3f(x2, y2, z2);
                     
                     x1 = (x1+x2)/2; y1 = (y1+y2)/2; z1 = (z1+z2)/2;
-                    StoreHelixNrInfo(x1,y1,z1,HELIX_NR);
+                    StoreHelixNrInfo(x1, y1, z1, HELIX_NR);
 
                     bThisStrand = bOtherStrand = false;
                 }
@@ -811,7 +811,7 @@ void Structure3D::GenerateHelixNrDispList(int startHx, int endHx) {
     glNewList(HELIX_NUMBERS, GL_COMPILE);
     {
         char POS[50];
-        for(int i = startHx; i <= endHx; i++) {
+        for (int i = startHx; i <= endHx; i++) {
             t = start;    
             while (t != NULL) {
                 if (t->helixNr == i) {
@@ -829,7 +829,7 @@ void Structure3D::GenerateHelixNrDispList(int startHx, int endHx) {
         if (RNA3D->bPointSpritesSupported) {
             glBegin(GL_POINTS);
         }
-        for(int i = startHx; i <= endHx; i++) {
+        for (int i = startHx; i <= endHx; i++) {
             t = start;    
             while (t != NULL) {
                 if (t->helixNr == i) {
@@ -845,7 +845,7 @@ void Structure3D::GenerateHelixNrDispList(int startHx, int endHx) {
     glEndList();
 }
 
-void Structure3D::GenerateDisplayLists(void){
+void Structure3D::GenerateDisplayLists(void) {
 
     GenerateMoleculeSkeleton();
     ComputeBasePositions();
@@ -855,7 +855,7 @@ void Structure3D::GenerateDisplayLists(void){
     case SSU_16S:
         if (glIsList(HelixBase) != GL_TRUE) 
             {
-                for (int i = 1; i <= 50;i++) {
+                for (int i = 1; i <= 50; i++) {
                     GenerateHelixDispLists(HelixBase+i, i);
                 }
             }
@@ -865,7 +865,7 @@ void Structure3D::GenerateDisplayLists(void){
             <<"Missing base pairs (bracket number indicates helix number) "<<endl;
         if (glIsList(HelixBase) != GL_TRUE) 
             {
-                for (int i = 1; i <= 101;i++) {
+                for (int i = 1; i <= 101; i++) {
                     GenerateHelixDispLists(HelixBase+i, i);
                 }
             }
@@ -874,7 +874,7 @@ void Structure3D::GenerateDisplayLists(void){
     case LSU_5S:
         if (glIsList(HelixBase) != GL_TRUE) 
             {
-                for (int i = 1; i <= 5;i++) {
+                for (int i = 1; i <= 5; i++) {
                     GenerateHelixDispLists(HelixBase+i, i);
                 }
             }
@@ -888,7 +888,7 @@ void Structure3D::GenerateDisplayLists(void){
     GenerateTertiaryInteractionsDispLists();
 }
 
-void Structure3D::GenerateMoleculeSkeleton(void){
+void Structure3D::GenerateMoleculeSkeleton(void) {
     Struct2Dplus3D *t;
 
     glNewList(STRUCTURE_BACKBONE, GL_COMPILE);
@@ -911,7 +911,7 @@ void Structure3D::GenerateMoleculeSkeleton(void){
             {
                 if (t->helixNr > 0) {
                     if ((t->mask == '[') || (t->mask == ']') || 
-                        (t->mask == '<') || (t->mask == '>') ) 
+                        (t->mask == '<') || (t->mask == '>'))
                         {
                             GRAPHICS->SetColor(RNA3D_GC_BASES_HELIX);
                             glVertex3f(t->x, t->y, t->z);
@@ -932,7 +932,7 @@ void Structure3D::GenerateMoleculeSkeleton(void){
     glEndList();
 }
 
-void Structure3D::GenerateCursorPositionDispList(long pos){
+void Structure3D::GenerateCursorPositionDispList(long pos) {
     Struct3Dinfo *temp;
 
     glNewList(ECOLI_CURSOR_POSITION, GL_COMPILE); 
@@ -940,7 +940,7 @@ void Structure3D::GenerateCursorPositionDispList(long pos){
         glBegin(GL_POINTS);
         temp = start3D;    
         while (temp != NULL) {
-            if(temp->pos == pos) {
+            if (temp->pos == pos) {
 #ifdef DEBUG
                 cout<<"Cursor Position : "<<pos<<endl;
 #endif
@@ -954,7 +954,7 @@ void Structure3D::GenerateCursorPositionDispList(long pos){
     glEndList();
 }
 
-void Structure3D::ComputeBasePositions(){
+void Structure3D::ComputeBasePositions() {
     Struct3Dinfo *temp;
 
     char POS[50];
@@ -966,7 +966,7 @@ void Structure3D::ComputeBasePositions(){
     {
         temp = start3D;    
         while (temp != NULL) {
-            if(temp->pos%posSkip == 0) {
+            if (temp->pos%posSkip == 0) {
                 sprintf(POS, "%d", temp->pos);
                 GRAPHICS->PrintString(temp->x-spacer, temp->y, temp->z-spacer, POS, GLUT_BITMAP_HELVETICA_10);
             }
@@ -981,7 +981,7 @@ void Structure3D::ComputeBasePositions(){
         glBegin(GL_LINES);
         temp = start3D;    
         while (temp != NULL) {
-            if(temp->pos%posSkip == 0) {
+            if (temp->pos%posSkip == 0) {
                 glVertex3f(temp->x, temp->y, temp->z);
                 glVertex3f(temp->x-spacer, temp->y, temp->z-spacer);
             }
@@ -1019,13 +1019,13 @@ void Structure3D::PrepareSecondaryStructureData(void) {
 
     ofstream out;
     out.open(outFile, ios::out);
-    if(!out.is_open())   cerr<<ErrorMsg<<outFile<<endl;
+    if (!out.is_open())  cerr<<ErrorMsg<<outFile<<endl;
 
     ifstream inFile;
     {
         {
             inFile.open(EcoliFile, ios::binary);
-            if(!inFile.is_open())   cerr<<ErrorMsg<<HelixGapFile<<endl;
+            if (!inFile.is_open())  cerr<<ErrorMsg<<HelixGapFile<<endl;
     
             inFile.seekg (0, ios::end);  // get length of file
             fileLen = inFile.tellg();
@@ -1033,13 +1033,13 @@ void Structure3D::PrepareSecondaryStructureData(void) {
     
             ecoliBuf = new char[fileLen];    // allocate memory:
 
-            inFile.read (ecoliBuf,fileLen);     // read data as a block:
+            inFile.read (ecoliBuf, fileLen);    // read data as a block:
             inFile.close();
         }
 
         {
             inFile.open(HelixNrFile, ios::binary);
-            if(!inFile.is_open())   cerr<<ErrorMsg<<HelixGapFile<<endl;
+            if (!inFile.is_open())  cerr<<ErrorMsg<<HelixGapFile<<endl;
     
             inFile.seekg (0, ios::end);  // get length of file
             fileLen = inFile.tellg();
@@ -1047,13 +1047,13 @@ void Structure3D::PrepareSecondaryStructureData(void) {
     
             helixNrBuf = new char[fileLen];    // allocate memory:
 
-            inFile.read (helixNrBuf,fileLen);     // read data as a block:
+            inFile.read (helixNrBuf, fileLen);    // read data as a block:
             inFile.close();
         }
 
         {
             inFile.open(HelixGapFile, ios::binary);
-            if(!inFile.is_open())   cerr<<ErrorMsg<<HelixNrFile<<endl;
+            if (!inFile.is_open())  cerr<<ErrorMsg<<HelixNrFile<<endl;
     
             inFile.seekg (0, ios::end);  // get length of file
             fileLen = inFile.tellg();
@@ -1061,7 +1061,7 @@ void Structure3D::PrepareSecondaryStructureData(void) {
     
             helixGapBuf = new char[fileLen];    // allocate memory:
 
-            inFile.read (helixGapBuf,fileLen);     // read data as a block:
+            inFile.read (helixGapBuf, fileLen);    // read data as a block:
             inFile.close();
         }
 
@@ -1069,7 +1069,7 @@ void Structure3D::PrepareSecondaryStructureData(void) {
         int pos, skip, gaps, k;
         pos = skip = gaps = k = 0;
 
-        for(unsigned int i = 0; i < strlen(ecoliBuf); i++) 
+        for (unsigned int i = 0; i < strlen(ecoliBuf); i++)
             {
                 if (ecoliBuf[i] == '\n')    skip++;
                 else {
@@ -1080,18 +1080,18 @@ void Structure3D::PrepareSecondaryStructureData(void) {
                             out<<pos<<"  "<<ecoliBuf[i]<<"  "<<helixGapBuf[i]<<"  ";
                             switch (helixGapBuf[i]) 
                                 {
-                                case '.' : out<<"N  "; break;
-                                case '[' : out<<"S  "; break;
-                                case ']' : out<<"E  "; break;
-                                case '<' : out<<"H  "; break;
-                                case '>' : out<<"H  "; break;
+                                case '.': out<<"N  "; break;
+                                case '[': out<<"S  "; break;
+                                case ']': out<<"E  "; break;
+                                case '<': out<<"H  "; break;
+                                case '>': out<<"H  "; break;
                                 }
-                            for(unsigned int j = i; helixNrBuf[j] != '.'; j++) {
+                            for (unsigned int j = i; helixNrBuf[j] != '.'; j++) {
                                 helixNr[k++] = helixNrBuf[j];
                             }
-                            for(int l = k; l < 4; l++)   helixNr[l] = '\0';
+                            for (int l = k; l < 4; l++)  helixNr[l] = '\0';
                             k = 0;
-                            if ((helixGapBuf[i] == '[') || (helixGapBuf[i] == ']')){
+                            if ((helixGapBuf[i] == '[') || (helixGapBuf[i] == ']')) {
                                 out<<helixNr;
                             }
                             out<<endl;
@@ -1105,11 +1105,11 @@ void Structure3D::PrepareSecondaryStructureData(void) {
     }
 }
 
-void Structure3D::StoreCurrSpeciesDifference(char base, int pos){
+void Structure3D::StoreCurrSpeciesDifference(char base, int pos) {
     Struct2Dplus3D *st;
     st = start2D3D;
     while (st != NULL) {
-        if(st->pos == pos) {
+        if (st->pos == pos) {
             CurrSpecies *data, *temp;
             data = new CurrSpecies;
             data->base = base; 
@@ -1119,7 +1119,7 @@ void Structure3D::StoreCurrSpeciesDifference(char base, int pos){
             data->z = st->z;
             data->next = NULL;
 
-            if (startSp == NULL){
+            if (startSp == NULL) {
                 startSp = data;
                 bOldSpeciesDataExists = true;
             }
@@ -1136,10 +1136,10 @@ void Structure3D::StoreCurrSpeciesDifference(char base, int pos){
     }
 }
 
-void Structure3D::DeleteOldSpeciesData(){
+void Structure3D::DeleteOldSpeciesData() {
     CurrSpecies *tmp, *data;
 
-    for(data = startSp; data != NULL; data = tmp) {
+    for (data = startSp; data != NULL; data = tmp) {
         tmp = data->next;
         delete data;
     }
@@ -1148,7 +1148,7 @@ void Structure3D::DeleteOldSpeciesData(){
     bOldSpeciesDataExists = false;
 }
 
-void Structure3D::GenerateBaseDifferencePositionDisplayList(){
+void Structure3D::GenerateBaseDifferencePositionDisplayList() {
     CurrSpecies *t;
     Struct3Dinfo *temp;
 
@@ -1157,11 +1157,11 @@ void Structure3D::GenerateBaseDifferencePositionDisplayList(){
     
     glNewList(MAP_SPECIES_BASE_DIFFERENCE_POS, GL_COMPILE);
     {
-        for(t = startSp; t != NULL; t = t->next) 
+        for (t = startSp; t != NULL; t = t->next)
             {
-                for(temp = start3D; temp != NULL; temp = temp->next) 
+                for (temp = start3D; temp != NULL; temp = temp->next)
                     {
-                        if(temp->pos == t->pos) {
+                        if (temp->pos == t->pos) {
                             sprintf(POS, "%d", temp->pos);
                             GRAPHICS->PrintString(temp->x-spacer, temp->y, temp->z-spacer, POS, GLUT_BITMAP_8_BY_13);
                         }
@@ -1175,11 +1175,11 @@ void Structure3D::GenerateBaseDifferencePositionDisplayList(){
         glLineWidth(1.0);
         glBegin(GL_LINES);
 
-        for(t = startSp; t != NULL; t = t->next) 
+        for (t = startSp; t != NULL; t = t->next)
             {
-                for(temp = start3D; temp != NULL; temp = temp->next) 
+                for (temp = start3D; temp != NULL; temp = temp->next)
                     {
-                        if(temp->pos == t->pos) {
+                        if (temp->pos == t->pos) {
                             glVertex3f(temp->x, temp->y, temp->z);
                             glVertex3f(temp->x-spacer, temp->y, temp->z-spacer);
                         }
@@ -1190,7 +1190,7 @@ void Structure3D::GenerateBaseDifferencePositionDisplayList(){
     glEndList();
 }
 
-void Structure3D::BuildDisplayList(int listID, int *pos, int len){
+void Structure3D::BuildDisplayList(int listID, int *pos, int len) {
     CurrSpecies *t;
     int tmpPos = 0;
 
@@ -1199,7 +1199,7 @@ void Structure3D::BuildDisplayList(int listID, int *pos, int len){
         if (RNA3D->bPointSpritesSupported) {
             glBegin(GL_POINTS);
         }
-        for(int i = 0; i < len; i++) 
+        for (int i = 0; i < len; i++)
             {
                 tmpPos = pos[i];
                 t = startSp;
@@ -1211,14 +1211,14 @@ void Structure3D::BuildDisplayList(int listID, int *pos, int len){
                     t = t->next;
                 }
             }
-        if (RNA3D->bPointSpritesSupported){
+        if (RNA3D->bPointSpritesSupported) {
             glEnd();
         }
     }
     glEndList();
 }
 
-void Structure3D::GenerateBaseDifferenceDisplayList(){
+void Structure3D::GenerateBaseDifferenceDisplayList() {
     CurrSpecies *t;
 
     glNewList(MAP_SPECIES_BASE_DIFFERENCE, GL_COMPILE);
@@ -1231,7 +1231,7 @@ void Structure3D::GenerateBaseDifferenceDisplayList(){
             PointsToQuads(t->x, t->y, t->z);
             t = t->next;
         }
-        if (RNA3D->bPointSpritesSupported){
+        if (RNA3D->bPointSpritesSupported) {
             glEnd();
         }
     }
@@ -1240,19 +1240,19 @@ void Structure3D::GenerateBaseDifferenceDisplayList(){
     const int MAX_BASE = 400;
     int baseA[MAX_BASE], baseG[MAX_BASE], baseC[MAX_BASE], 
         baseU[MAX_BASE], deletion[MAX_BASE], miss[MAX_BASE];
-    int a,g,c,u,d,m; a=g=c=u=d=m=0;
+    int a, g, c, u, d, m; a=g=c=u=d=m=0;
 
     {
         t = startSp;
         while (t != NULL) {
             switch (t->base) 
                 {
-                case 'A' : baseA[a++]    = t->pos; break;
-                case 'G' : baseG[g++]    = t->pos; break;
-                case 'C' : baseC[c++]    = t->pos; break;
-                case 'U' : baseU[u++]    = t->pos; break;
-                case '-' : deletion[d++] = t->pos; break;
-                case '.' : miss[m++] = t->pos; break;
+                case 'A': baseA[a++]     = t->pos; break;
+                case 'G': baseG[g++]     = t->pos; break;
+                case 'C': baseC[c++]     = t->pos; break;
+                case 'U': baseU[u++]     = t->pos; break;
+                case '-': deletion[d++] = t->pos; break;
+                case '.': miss[m++] = t->pos; break;
                 }
             t = t->next;
         }
@@ -1273,14 +1273,14 @@ void Structure3D::GenerateBaseDifferenceDisplayList(){
     }
 }
 
-void Structure3D::StoreInsertions(char base, int pos){
+void Structure3D::StoreInsertions(char base, int pos) {
     Insertions *data, *temp;
     data = new Insertions;
     data->base = base; 
     data->pos  = pos;
     data->next = NULL;
     
-    if (startIns == NULL){
+    if (startIns == NULL) {
         startIns = data;
         bOldInsertionDataExists = true;
     }
@@ -1293,10 +1293,10 @@ void Structure3D::StoreInsertions(char base, int pos){
     }
 }
 
-void Structure3D::DeleteOldInsertionData(){
+void Structure3D::DeleteOldInsertionData() {
     Insertions *tmp, *data;
 
-    for(data = startIns; data != NULL; data = tmp) {
+    for (data = startIns; data != NULL; data = tmp) {
         tmp = data->next;
         delete data;
     }
@@ -1305,7 +1305,7 @@ void Structure3D::DeleteOldInsertionData(){
     bOldInsertionDataExists = false;
 }
 
-void Structure3D::GenerateInsertionDisplayList(){
+void Structure3D::GenerateInsertionDisplayList() {
     Insertions   *ins;
     Struct3Dinfo *str;
     char inserts[500];
@@ -1315,17 +1315,17 @@ void Structure3D::GenerateInsertionDisplayList(){
 
     glNewList(MAP_SPECIES_INSERTION_BASES, GL_COMPILE);
     {   
-        for(str = start3D; str != NULL; str = str->next) 
+        for (str = start3D; str != NULL; str = str->next)
         {
             i = cntr = 0;
-            for(ins = startIns; ins != NULL; ins = ins->next) 
+            for (ins = startIns; ins != NULL; ins = ins->next)
                 {
-                    if(str->pos == ins->pos) {
+                    if (str->pos == ins->pos) {
                         inserts[i++] = ins->base;
                         cntr++; 
                     }
                 }
-            if(cntr>0) {
+            if (cntr>0) {
                 inserts[i] = '\0';
                 char buffer[strlen(inserts) + 10];
                 sprintf(buffer, "%d:%s", cntr, inserts);
@@ -1347,11 +1347,11 @@ void Structure3D::GenerateInsertionDisplayList(){
         glLineWidth(1.0);
         glBegin(GL_LINES);
 
-        for(str = start3D; str != NULL; str = str->next) 
+        for (str = start3D; str != NULL; str = str->next)
         {
-            for(ins = startIns; ins != NULL; ins = ins->next) 
+            for (ins = startIns; ins != NULL; ins = ins->next)
                 {
-                    if(str->pos == ins->pos) {
+                    if (str->pos == ins->pos) {
                         glVertex3f(str->x, str->y, str->z);          
                         glVertex3f(str->x, str->y+spacer, str->z);          
                     }
@@ -1366,28 +1366,28 @@ void Structure3D::GenerateInsertionDisplayList(){
         if (RNA3D->bPointSpritesSupported) {
             glBegin(GL_POINTS);
         }
-        for(str = start3D; str != NULL; str = str->next) 
+        for (str = start3D; str != NULL; str = str->next)
         {
-            for(ins = startIns; ins != NULL; ins = ins->next) 
+            for (ins = startIns; ins != NULL; ins = ins->next)
                 {
-                    if(str->pos == ins->pos) {
+                    if (str->pos == ins->pos) {
                         PointsToQuads(str->x, str->y, str->z);
                         break;
                     }
                 }
         }
-        if (RNA3D->bPointSpritesSupported){
+        if (RNA3D->bPointSpritesSupported) {
             glEnd();
         }
     }
     glEndList();
 }
 
-void Structure3D::MapCurrentSpeciesToEcoliTemplate(AW_root *awr){
+void Structure3D::MapCurrentSpeciesToEcoliTemplate(AW_root *awr) {
 
     GB_push_transaction(gb_main);
 
-    GBDATA *gbTemplate = GBT_find_SAI(gb_main,"ECOLI");
+    GBDATA *gbTemplate = GBT_find_SAI(gb_main, "ECOLI");
 
     if (!gbTemplate) {
         aw_message("SAI:ECOLI not found");
@@ -1397,7 +1397,7 @@ void Structure3D::MapCurrentSpeciesToEcoliTemplate(AW_root *awr){
         if (pSpeciesName) {
             ED4_SeqTerminal   = ED4_find_seq_terminal(pSpeciesName); // initializing the seqTerminal to get the current terminal
             GBDATA *gbSpecies = GBT_find_species(gb_main, pSpeciesName);
-            if(gbSpecies) {
+            if (gbSpecies) {
                 char   *ali_name          = GBT_get_default_alignment(gb_main);
                 GBDATA *gbAlignment       = GB_entry(gbTemplate, ali_name);
                 GBDATA *gbTemplateSeqData = gbAlignment ? GB_entry(gbAlignment, "data") : 0;
@@ -1408,7 +1408,7 @@ void Structure3D::MapCurrentSpeciesToEcoliTemplate(AW_root *awr){
                 else {
                     const char *pTemplateSeqData  = GB_read_char_pntr(gbTemplateSeqData);
 
-                    if(!RNA3D->bEColiRefInitialized) {
+                    if (!RNA3D->bEColiRefInitialized) {
                         EColiRef = new BI_ecoli_ref();
                         EColiRef->init(gb_main);
                         RNA3D->bEColiRefInitialized = true;
@@ -1425,26 +1425,26 @@ void Structure3D::MapCurrentSpeciesToEcoliTemplate(AW_root *awr){
                     if (pSeqData && pTemplateSeqData) {
                         int iSeqLen = strlen(pTemplateSeqData); 
 
-                        if(bOldSpeciesDataExists) {
+                        if (bOldSpeciesDataExists) {
                             DeleteOldSpeciesData();
                         }
 
-                        for(int i = 0, iSeqCount = 0; i<iSeqLen; i++) {
-                            if((pTemplateSeqData[i] != '.') && (pTemplateSeqData[i] != '-'))
+                        for (int i = 0, iSeqCount = 0; i<iSeqLen; i++) {
+                            if ((pTemplateSeqData[i] != '.') && (pTemplateSeqData[i] != '-'))
                             { 
                                 if (!bStartPosStored) {
                                     iStartPos = i; 
                                     bStartPosStored = true;
                                 }
-                                if(pTemplateSeqData[i] != pSeqData[i]) {
-                                    StoreCurrSpeciesDifference(pSeqData[i],iSeqCount);
+                                if (pTemplateSeqData[i] != pSeqData[i]) {
+                                    StoreCurrSpeciesDifference(pSeqData[i], iSeqCount);
                                 }
                                 iSeqCount++;
                             }
                         }
 
-                        for(int i = iSeqLen; i>0; i--) {
-                            if((pTemplateSeqData[i] != '.') && (pTemplateSeqData[i] != '-')){ 
+                        for (int i = iSeqLen; i>0; i--) {
+                            if ((pTemplateSeqData[i] != '.') && (pTemplateSeqData[i] != '-')) {
                                 if (!bEndPosStored) {
                                     iEndPos = i; 
                                     bEndPosStored = true;
@@ -1453,22 +1453,22 @@ void Structure3D::MapCurrentSpeciesToEcoliTemplate(AW_root *awr){
                             }
                         }
 
-                        if(bOldInsertionDataExists) {
+                        if (bOldInsertionDataExists) {
                             DeleteOldInsertionData();
                         }
 
-                        for(int i = iStartPos, iSeqCount = 0; i < iEndPos; i++) {
-                            if((pTemplateSeqData[i] != '.') && 
+                        for (int i = iStartPos, iSeqCount = 0; i < iEndPos; i++) {
+                            if ((pTemplateSeqData[i] != '.') &&
                                (pTemplateSeqData[i] != '-'))
                                 { // Store EColi base positions : Insertion point !
                                     iSeqCount++;                                    
                                 }
 
-                            if((pTemplateSeqData[i] == '-') &&
+                            if ((pTemplateSeqData[i] == '-') &&
                                (pSeqData[i]         != '-') &&
                                (pSeqData[i]         != '.'))
                                 { 
-                                    StoreInsertions(pSeqData[i],iSeqCount);
+                                    StoreInsertions(pSeqData[i], iSeqCount);
                                 }
                         }
                     }
@@ -1494,7 +1494,7 @@ static bool ValidSearchColor(int iColor, int mode) {
     return isValid;
 }
 
-void Structure3D::MapSearchStringsToEcoliTemplate(AW_root * /*awr*/){
+void Structure3D::MapSearchStringsToEcoliTemplate(AW_root * /* awr */) {
     if (ED4_SeqTerminal) { 
         const char *pSearchColResults = 0;
 
@@ -1503,7 +1503,7 @@ void Structure3D::MapSearchStringsToEcoliTemplate(AW_root * /*awr*/){
             pSearchColResults = ED4_buildColorString(ED4_SeqTerminal, iStartPos, iEndPos); 
         }
         
-        if(pSearchColResults) {
+        if (pSearchColResults) {
             int iColor = 0;
 
             glNewList(MAP_SEARCH_STRINGS_TO_STRUCTURE, GL_COMPILE);
@@ -1512,17 +1512,17 @@ void Structure3D::MapSearchStringsToEcoliTemplate(AW_root * /*awr*/){
                     glBegin(GL_POINTS);
                 }
                 for (int i = iStartPos; i < iEndPos; i++) {
-                    if(RNA3D->bEColiRefInitialized) {
+                    if (RNA3D->bEColiRefInitialized) {
                         long absPos   = (long) i;
                         long EColiPos = EColiRef->abs_2_rel(absPos);
 
-                        for(Struct3Dinfo *t = start3D; t != NULL; t = t->next)
+                        for (Struct3Dinfo *t = start3D; t != NULL; t = t->next)
                         {
                             if ((t->pos == EColiPos) && (pSearchColResults[i] >= 0))
                                     {
                                         iColor = pSearchColResults[i] - COLORLINK;
 
-                                        if(ValidSearchColor(iColor, SEARCH)) {
+                                        if (ValidSearchColor(iColor, SEARCH)) {
                                             RNA3D->cGraphics->SetColor(iColor);
                                             PointsToQuads(t->x, t->y, t->z);
                                         }
@@ -1542,17 +1542,17 @@ void Structure3D::MapSearchStringsToEcoliTemplate(AW_root * /*awr*/){
                 int iLastClr = 0; int iLastPos = 0; Vector3 vLastPt;
                 glBegin(GL_LINES);
                 for (int i = iStartPos; i < iEndPos; i++) {
-                    if(RNA3D->bEColiRefInitialized) {
+                    if (RNA3D->bEColiRefInitialized) {
                         long absPos   = (long) i;
                         long EColiPos = EColiRef->abs_2_rel(absPos);
 
-                        for(Struct3Dinfo *t = start3D; t != NULL; t = t->next)
+                        for (Struct3Dinfo *t = start3D; t != NULL; t = t->next)
                         {
                             if ((t->pos == EColiPos) && (pSearchColResults[i] >= 0))
                                     {
                                         iColor = pSearchColResults[i] - COLORLINK;
 
-                                        if(ValidSearchColor(iColor, SEARCH)) {
+                                        if (ValidSearchColor(iColor, SEARCH)) {
                                             if ((iLastClr == iColor) && (iLastPos == EColiPos-1)) {
                                                 RNA3D->cGraphics->SetColor(iColor);
                                                 glVertex3f(vLastPt.x, vLastPt.y, vLastPt.z);
@@ -1578,7 +1578,7 @@ void Structure3D::MapSearchStringsToEcoliTemplate(AW_root * /*awr*/){
     else cout<<"Problem with initialization : SAI cannot be Visualized!"<<endl;  
 }
 
-void Structure3D::MapSaiToEcoliTemplate(AW_root *awr){
+void Structure3D::MapSaiToEcoliTemplate(AW_root *awr) {
     if (ED4_SeqTerminal) { 
         const char *pSearchColResults = 0;
 
@@ -1586,7 +1586,7 @@ void Structure3D::MapSaiToEcoliTemplate(AW_root *awr){
             pSearchColResults = ED4_getSaiColorString(awr, iStartPos, iEndPos); // returns 0 if sth went wrong
         }
 
-        if(pSearchColResults) {
+        if (pSearchColResults) {
             int iColor = 0;
 
             glNewList(MAP_SAI_TO_STRUCTURE, GL_COMPILE);
@@ -1595,17 +1595,17 @@ void Structure3D::MapSaiToEcoliTemplate(AW_root *awr){
                     glBegin(GL_POINTS);
                 }
                 for (int i = iStartPos; i < iEndPos; i++) {
-                    if(RNA3D->bEColiRefInitialized) {
+                    if (RNA3D->bEColiRefInitialized) {
                         long absPos   = (long) i;
                         long EColiPos = EColiRef->abs_2_rel(absPos);
 
-                        for(Struct3Dinfo *t = start3D; t != NULL; t = t->next)
+                        for (Struct3Dinfo *t = start3D; t != NULL; t = t->next)
                         {
                             if ((t->pos == EColiPos) && (pSearchColResults[i] >= 0))
                                     {
                                         iColor = pSearchColResults[i-1] - SAICOLORS;
 
-                                        if(ValidSearchColor(iColor, SAI)) {
+                                        if (ValidSearchColor(iColor, SAI)) {
                                             RNA3D->cGraphics->SetColor(iColor);
                                             PointsToQuads(t->x, t->y, t->z);
                                         }

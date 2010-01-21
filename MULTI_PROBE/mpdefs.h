@@ -1,7 +1,7 @@
 #ifndef MPDEFS
 #define MPDEFS
 
-//#include <mpdefs2.h>
+// #include <mpdefs2.h>
 
 #ifndef _STDIO_H
 #include <stdio.h>
@@ -59,7 +59,7 @@ struct apd_sequence {
     char         *sequence;
 };
 
-extern struct Params{
+extern struct Params {
     int   DESIGNCPLIPOUTPUT;
     int   SERVERID;
     char *DESINGNAMES;
@@ -84,7 +84,7 @@ extern struct Params{
 } P;
 
 
-extern struct mp_gl_struct{
+extern struct mp_gl_struct {
     aisc_com  *link;
     T_PT_LOCS  locs;
     T_PT_MAIN  com;

@@ -9,17 +9,17 @@ const int SequenceIterator::BACKWARD;
 //
 // Constructor
 //
-SequenceIterator::SequenceIterator ( const char *sequence_, PRD_Sequence_Pos start_pos_, PRD_Sequence_Pos stop_pos_, int max_length_, int direction_ )
+SequenceIterator::SequenceIterator (const char *sequence_, PRD_Sequence_Pos start_pos_, PRD_Sequence_Pos stop_pos_, int max_length_, int direction_)
 {
     sequence      = sequence_;
     max_length    = max_length_;
     stop_position = stop_pos_;
-    direction     = ( direction_ < 0 ) ? BACKWARD : FORWARD;
+    direction     = (direction_ < 0) ? BACKWARD : FORWARD;
     pos           = start_pos_ - direction; // -direction because nextBase() starts with pos+direction
     delivered     = 0;
 }
 
-SequenceIterator::SequenceIterator ( const char *sequence_ )
+SequenceIterator::SequenceIterator (const char *sequence_)
 {
     sequence      = sequence_;
     max_length    = IGNORE;
@@ -33,11 +33,11 @@ SequenceIterator::SequenceIterator ( const char *sequence_ )
 //
 // restart at new position
 //
-void SequenceIterator::restart ( PRD_Sequence_Pos start_pos_, PRD_Sequence_Pos stop_pos_, int max_length_, int direction_ )
+void SequenceIterator::restart (PRD_Sequence_Pos start_pos_, PRD_Sequence_Pos stop_pos_, int max_length_, int direction_)
 {
     max_length    = max_length_;
     stop_position = stop_pos_;
-    direction     = ( direction_ < 0 ) ? BACKWARD : FORWARD;
+    direction     = (direction_ < 0) ? BACKWARD : FORWARD;
     pos           = start_pos_ - direction; // -direction because nextBase() starts with pos+direction
     delivered     = 0;
 }
@@ -54,7 +54,7 @@ unsigned char SequenceIterator::nextBase ()
     char cur_char;
 
     pos += direction;                                                 // <=> pos++ if direction=FORWARD else pos--
-    if ( pos < 0 ) return EOS;                                        // reached front end ?
+    if (pos < 0) return EOS;                                          // reached front end ?
     cur_char = sequence[pos];
     if (cur_char > 'Z') cur_char = cur_char - ('a' - 'A');            // convert to upper case
 
@@ -77,12 +77,12 @@ unsigned char SequenceIterator::nextBase ()
            (cur_char != EOS))
     {
         pos += direction;                                               // <=> pos++ if direction=FORWARD else pos--
-        if ( pos < 0 ) return EOS;                                      // reached front end ?
+        if (pos < 0) return EOS;                                        // reached front end ?
         cur_char = sequence[pos];
         if (cur_char > 'Z') cur_char = cur_char - ('a' - 'A');          // convert to upper case
     };
 
-    if ( cur_char != EOS ) delivered++;
+    if (cur_char != EOS) delivered++;
 
     return cur_char;
 }

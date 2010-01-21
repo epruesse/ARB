@@ -22,10 +22,10 @@ public:
     PRD_Sequence_Pos pos;       // current index in sequence .. position of last returned base
     int              delivered; // current count of returned bases
 
-    SequenceIterator ( const char *sequence_, PRD_Sequence_Pos start_pos_, PRD_Sequence_Pos stop_pos_, int max_length_, int direction_ );
-    SequenceIterator ( const char *sequence );
+    SequenceIterator (const char *sequence_, PRD_Sequence_Pos start_pos_, PRD_Sequence_Pos stop_pos_, int max_length_, int direction_);
+    SequenceIterator (const char *sequence);
 
-    void restart ( PRD_Sequence_Pos start_pos_, PRD_Sequence_Pos stop_pos_, int max_length_, int direction_ );
+    void restart (PRD_Sequence_Pos start_pos_, PRD_Sequence_Pos stop_pos_, int max_length_, int direction_);
     unsigned char nextBase();
 };
 

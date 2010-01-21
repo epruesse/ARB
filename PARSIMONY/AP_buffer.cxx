@@ -27,14 +27,14 @@ AP_STACK::AP_STACK() {
 
 AP_STACK::~AP_STACK() {
     if (stacksize > 0) {
-        new AP_ERR("~AP_STACK()","Stack is not empty !",0);
+        new AP_ERR("~AP_STACK()", "Stack is not empty !", 0);
     }
 }
 
 void AP_STACK::push(void * element) {
-    AP_STACK_ELEM * stackelem = new AP_STACK_ELEM ;
+    AP_STACK_ELEM * stackelem = new AP_STACK_ELEM;
     if (stacksize > max_stacksize) {
-        new AP_ERR("AP_STACK:push()","Stack owerflow!",0);
+        new AP_ERR("AP_STACK:push()", "Stack owerflow!", 0);
     }
     stackelem->node = element;
     stackelem->next = first;
@@ -78,12 +78,12 @@ void  * AP_STACK::get_first() {
 }
 
 void  * AP_STACK::get() {
-    if (0 == pointer ) {
+    if (0 == pointer) {
         pointer = first;
     }
     else {
-        if ( pointer->next == 0) {
-            new AP_ERR("AP_STACK: get()"," more get() than elements in stack");
+        if (pointer->next == 0) {
+            new AP_ERR("AP_STACK: get()", " more get() than elements in stack");
             pointer = 0;
             return 0;
         }
@@ -131,8 +131,8 @@ int AP_LIST::len() {
     return list_len;
 }
 
-int AP_LIST::is_element(void * node ) {
-    if (element(node) == 0) return 0 ;
+int AP_LIST::is_element(void * node) {
+    if (element(node) == 0) return 0;
     return 1;
 }
 
@@ -203,7 +203,7 @@ void AP_LIST::remove(void * object) {
         list_len --;
         return;
     }
-    new AP_ERR("AP_LIST::remove(void * object)","no buffer element !\n");
+    new AP_ERR("AP_LIST::remove(void * object)", "no buffer element !\n");
     return;
 }
 
@@ -266,7 +266,7 @@ print Funktionen fuer spezial Stacks
 *******************/
 
 void AP_tree_buffer::print() {
-    cout  << "AP_tree_buffer                      " << this ;
+    cout  << "AP_tree_buffer                      " << this;
     cout  << "\nfather " << father;
     cout  << "\nlefts  " << leftson;
     cout  << "\nrights " << rightson << "\n sequence " << sequence << "\n";
@@ -279,7 +279,7 @@ void AP_main_stack::print() {
     get_init();
     for (; i > 0; i--) {
         elem = (AP_tree *)get();
-        cout << i << " - AP_tree *: " << elem <<" \n";
+        cout << i << " - AP_tree *: " << elem << " \n";
     }
     return;
 }

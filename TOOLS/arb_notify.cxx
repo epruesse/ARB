@@ -4,9 +4,9 @@
 #include <arbdb.h>
 #include <arbdbt.h>
 
-int main(int argc,char **argv)
+int main(int argc, char **argv)
 {
-    if (argc == 1)  {
+    if (argc == 1) {
         fprintf(stderr, "Usage: arb_notify ID \"message\"\n");
         fprintf(stderr, "Used by ARB itself to report termination of external jobs - see GB_notify()\n");
         return -1;
@@ -15,8 +15,8 @@ int main(int argc,char **argv)
     const char *progname = argv[0];
     if (!progname || progname[0] == 0) progname = "arb_notify";
 
-    GBDATA *gb_main = GB_open(":","r");
-    if (!gb_main){
+    GBDATA *gb_main = GB_open(":", "r");
+    if (!gb_main) {
         fprintf(stderr, "%s: Can't notify (connect to ARB failed)\n", progname);
     }
     else {

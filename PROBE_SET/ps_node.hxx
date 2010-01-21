@@ -21,12 +21,12 @@ typedef struct {
 
 typedef SmartPtr<PS_Probe> PS_ProbePtr;
 
-inline void PS_printProbe( const PS_Probe *p ) {
-    printf("%+i_%u_%u",p->quality,p->length,p->GC_content);
+inline void PS_printProbe(const PS_Probe *p) {
+    printf("%+i_%u_%u", p->quality, p->length, p->GC_content);
 }
 
-inline void PS_printProbe( const PS_ProbePtr p ) {
-    printf("%+i_%u_%u",p->quality,p->length,p->GC_content);
+inline void PS_printProbe(const PS_ProbePtr p) {
+    printf("%+i_%u_%u", p->quality, p->length, p->GC_content);
 }
 
 struct lt_probe
@@ -48,13 +48,13 @@ struct lt_probe
 };
 
 
-typedef set<PS_ProbePtr,lt_probe>   PS_ProbeSet;
+typedef set<PS_ProbePtr, lt_probe>   PS_ProbeSet;
 typedef PS_ProbeSet*                PS_ProbeSetPtr;
 typedef PS_ProbeSet::iterator       PS_ProbeSetIter;
 typedef PS_ProbeSet::const_iterator PS_ProbeSetCIter;
 class PS_Node;
 typedef SmartPtr<PS_Node>         PS_NodePtr;
-typedef map<SpeciesID,PS_NodePtr> PS_NodeMap;
+typedef map<SpeciesID, PS_NodePtr> PS_NodeMap;
 typedef PS_NodeMap::iterator         PS_NodeMapIterator;
 typedef PS_NodeMap::reverse_iterator PS_NodeMapRIterator;
 typedef PS_NodeMap::const_iterator         PS_NodeMapConstIterator;
@@ -72,26 +72,26 @@ public:
     //
     // *** num ***
     //
-    void      setNum( SpeciesID id ) { num = id;   }
+    void      setNum(SpeciesID id) { num = id; }
     SpeciesID getNum() const         { return num; }
 
     //
     // *** children ***
     //
-    bool addChild( PS_NodePtr& _child ) {
+    bool addChild(PS_NodePtr& _child) {
         PS_NodeMapIterator it = children.find(_child->getNum());
         if (it == children.end()) {
             children[_child->getNum()] = _child;
             return true;
         }
         else {
-            printf( "child[#%u] already exists\n",_child->getNum() );
+            printf("child[#%u] already exists\n", _child->getNum());
             return false;
         }
     }
 
-    PS_NodePtr assertChild( SpeciesID _id ) {
-        PS_NodeMapIterator it = children.find( _id );
+    PS_NodePtr assertChild(SpeciesID _id) {
+        PS_NodeMapIterator it = children.find(_id);
         if (it == children.end()) {
             PS_NodePtr new_child(new PS_Node(_id));
             children[_id] = new_child;
@@ -102,14 +102,14 @@ public:
         }
     }
 
-    pair<bool,PS_NodePtr> getChild( SpeciesID id ) {
+    pair<bool, PS_NodePtr> getChild(SpeciesID id) {
         PS_NodeMapIterator it = children.find(id);
-        return pair<bool,PS_NodePtr>(it!=children.end(),it->second);
+        return pair<bool, PS_NodePtr>(it!=children.end(), it->second);
     }
 
-    pair<bool,const PS_NodePtr> getChild( SpeciesID id ) const {
+    pair<bool, const PS_NodePtr> getChild(SpeciesID id) const {
         PS_NodeMapConstIterator it = children.find(id);
-        return pair<bool,const PS_NodePtr>(it!=children.end(),it->second);
+        return pair<bool, const PS_NodePtr>(it!=children.end(), it->second);
     }
 
     size_t countChildren() const { return children.size(); }
@@ -127,27 +127,27 @@ public:
     //
     // *** probes ***
     //
-    bool addProbe( const PS_ProbePtr& probe ) {
+    bool addProbe(const PS_ProbePtr& probe) {
         if (!probes) {
             probes = new PS_ProbeSet;
             probes->insert(probe);
             return true;
         }
         else {
-            pair<PS_ProbeSetCIter,bool> p = probes->insert(probe);
+            pair<PS_ProbeSetCIter, bool> p = probes->insert(probe);
             return p.second;
         }
     }
 
-    void addProbes( PS_ProbeSetCIter _begin, PS_ProbeSetCIter _end ) {
+    void addProbes(PS_ProbeSetCIter _begin, PS_ProbeSetCIter _end) {
         if (_begin == _end) return;
         if (!probes) probes = new PS_ProbeSet;
         for (PS_ProbeSetCIter probe = _begin; probe != _end; ++probe) {
-            probes->insert( *probe );
+            probes->insert(*probe);
         }
     }
 
-    void addProbesInverted( PS_ProbeSetCIter _begin, PS_ProbeSetCIter _end ) {
+    void addProbesInverted(PS_ProbeSetCIter _begin, PS_ProbeSetCIter _end) {
         if (_begin == _end) return;
         if (!probes) probes = new PS_ProbeSet;
         for (PS_ProbeSetCIter probe = _begin; probe != _end; ++probe) {
@@ -155,7 +155,7 @@ public:
             new_probe->length     = (*probe)->length;
             new_probe->quality    = -((*probe)->quality);
             new_probe->GC_content = (*probe)->GC_content;
-            probes->insert( new_probe );
+            probes->insert(new_probe);
         }
     }
 
@@ -186,9 +186,9 @@ public:
         return probes->end();
     }
 
-    void   removeProbe( PS_ProbeSetCIter it ) {
+    void   removeProbe(PS_ProbeSetCIter it) {
         ps_assert(probes);
-        probes->erase( it );
+        probes->erase(it);
     }
     void   removeProbes() {
         if (probes) delete probes;
@@ -199,44 +199,44 @@ public:
     // *** output **
     //
     void print() {
-        printf( "\nN[%d] P[ ", num );
+        printf("\nN[%d] P[ ", num);
         if (probes) {
             for (PS_ProbeSetCIter i=probes->begin(); i!=probes->end(); ++i) {
                 PS_printProbe(*i);
                 printf(" ");
             }
         }
-        printf( "] C[" );
+        printf("] C[");
         for (PS_NodeMapIterator i=children.begin(); i!=children.end(); ++i) {
             i->second->print();
         }
-        printf( "]" );
+        printf("]");
     }
 
     void printOnlyMe() const {
-        printf( "N[%d] P[ ", num );
+        printf("N[%d] P[ ", num);
         if (probes) {
             for (PS_ProbeSetCIter i=probes->begin(); i!=probes->end(); ++i) {
                 PS_printProbe(*i);
                 printf(" ");
             }
         }
-        printf( "] C[ %zu ]", children.size() );
+        printf("] C[ %zu ]", children.size());
     }
 
     //
     // *** disk i/o ***
     //
-    bool save(      PS_FileBuffer *_fb );
-    bool saveASCII( PS_FileBuffer *_fb, char *buffer );
-    bool load(      PS_FileBuffer *_fb );
-    bool append(    PS_FileBuffer *_fb ); // load from file and append to node
-    bool read(      PS_FileBuffer *_fb, PS_Callback *_call_destination ); // parse file and callback after probes read
+    bool save(PS_FileBuffer *_fb);
+    bool saveASCII(PS_FileBuffer *_fb, char *buffer);
+    bool load(PS_FileBuffer *_fb);
+    bool append(PS_FileBuffer *_fb);      // load from file and append to node
+    bool read(PS_FileBuffer *_fb, PS_Callback *_call_destination);        // parse file and callback after probes read
 
     //
     // *** constructors ***
     //
-    PS_Node( SpeciesID id ) { num = id; probes = 0; }
+    PS_Node(SpeciesID id) { num = id; probes = 0; }
 
     //
     // *** destructor ***

@@ -124,7 +124,7 @@ struct awt_table {
     char   *awar_field_new_type;
     char   *awar_field_rem;
     char   *awar_selected_field;
-    awt_table(GBDATA *gb_main,AW_root *awr,const char *table_name);
+    awt_table(GBDATA *gb_main, AW_root *awr, const char *table_name);
     ~awt_table();
 };
 

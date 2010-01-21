@@ -167,7 +167,7 @@ char *get_var_string(char *var) {
     doppelpunkt = strchr(var, ':'); if (doppelpunkt) *(doppelpunkt++) = 0;
     bar         = strchr(var, '|'); if (bar) *(bar++) = 0;
 
-    in = read_hash_local(var,0);
+    in = read_hash_local(var, 0);
 
     if (in) {
         in = strdup(in);

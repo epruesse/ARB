@@ -71,14 +71,14 @@ static double screenGamma = 2.2 / 1.45;
 static double screenGamma = 2.2 / 1.0;
 #endif
 
-static char gammaExplicit = 0;  /*if  */
+static char gammaExplicit = 0;  /* if  */
 
 static void checkForGammaEnv()
 {
     double viewingGamma;
     char *gammaEnv = getenv("VIEWING_GAMMA");
 
-    if(gammaEnv && !gammaExplicit)
+    if (gammaEnv && !gammaExplicit)
     {
         sscanf(gammaEnv, "%lf", &viewingGamma);
         screenGamma = 2.2/viewingGamma;
@@ -300,7 +300,7 @@ int APIENTRY pngLoadRawF(FILE *fp, pngRawInfo *pinfo) {
     pinfo->Height = height;
     pinfo->Depth  = depth;
 
-    /*--GAMMA--*/
+    /* --GAMMA-- */
     checkForGammaEnv();
     if (png_get_gAMA(png, info, &fileGamma))
         png_set_gamma(png, screenGamma, fileGamma);
@@ -440,7 +440,7 @@ int APIENTRY pngLoadF(FILE *fp, int mipmap, int trans, pngInfo *pinfo) {
         if (color == PNG_COLOR_TYPE_PALETTE)
             png_set_expand(png);
 
-    /*--GAMMA--*/
+    /* --GAMMA-- */
     checkForGammaEnv();
     if (png_get_gAMA(png, info, &fileGamma))
         png_set_gamma(png, screenGamma, fileGamma);
@@ -552,9 +552,9 @@ int APIENTRY pngLoadF(FILE *fp, int mipmap, int trans, pngInfo *pinfo) {
 
 #define FORSTART                                \
                 do {                            \
-                    r = *p++; /*red  */         \
-                    g = *p++; /*green*/         \
-                    b = *p++; /*blue */         \
+                    r = *p++; /* red  */        \
+                    g = *p++; /* green */       \
+                    b = *p++; /* blue */        \
                     *q++ = r;                   \
                     *q++ = g;                   \
                     *q++ = b;
@@ -699,7 +699,7 @@ void APIENTRY pngSetAlphaCallback(unsigned char (*callback)(unsigned char red, u
 }
 
 void APIENTRY pngSetViewingGamma(double viewingGamma) {
-    if(viewingGamma > 0) {
+    if (viewingGamma > 0) {
         gammaExplicit = 1;
         screenGamma = 2.2/viewingGamma;
     }

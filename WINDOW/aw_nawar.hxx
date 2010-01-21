@@ -3,9 +3,9 @@
 
 /*************************************************************************/
 struct AW_var_callback {
-    AW_var_callback( void (*vc_cb)(AW_root*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2 , AW_var_callback *next);
+    AW_var_callback(void (*vc_cb)(AW_root*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2, AW_var_callback *next);
 
-    void            (*value_changed_cb)(AW_root*,AW_CL,AW_CL);
+    void            (*value_changed_cb)(AW_root*, AW_CL, AW_CL);
     AW_CL            value_changed_cb_cd1;
     AW_CL            value_changed_cb_cd2;
     AW_var_callback *next;
@@ -16,7 +16,7 @@ struct AW_var_callback {
 
 /*************************************************************************/
 struct AW_var_target {
-    AW_var_target( void *pntr, AW_var_target *next);
+    AW_var_target(void *pntr, AW_var_target *next);
     void          *pointer;
     AW_var_target *next;
     // runs the whole list in reverse order !!!!

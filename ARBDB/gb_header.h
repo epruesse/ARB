@@ -17,11 +17,11 @@
 
 
 struct gb_header_flags {
-    unsigned int flags:GB_MAX_USERS;                // public
-    unsigned int key_quark:24;                      // == 0 -> invalid
-    unsigned int changed:3;
-    unsigned int ever_changed:1;                    // is this element ever changed
-} ;
+    unsigned int flags : GB_MAX_USERS;              // public
+    unsigned int key_quark : 24;                    // == 0 -> invalid
+    unsigned int changed : 3;
+    unsigned int ever_changed : 1;                  // is this element ever changed
+};
 
 struct gb_header_list_struct {                      // public fast flags
     struct gb_header_flags flags;
@@ -33,7 +33,7 @@ struct gb_header_list_struct {                      // public fast flags
 };
 
 inline GBDATA *GB_HEADER_LIST_GBD(struct gb_header_list_struct& hl) {
-    return GB_RESOLVE(GBDATA*,(&(hl)),rel_hl_gbd);
+    return GB_RESOLVE(GBDATA*, (&(hl)), rel_hl_gbd);
 }
 inline void SET_GB_HEADER_LIST_GBD(struct gb_header_list_struct& hl, GBDATA *gbd) {
     GB_SETREL(&hl, rel_hl_gbd, gbd);
@@ -49,10 +49,10 @@ inline gb_header_flags& GB_ARRAY_FLAGS(GBCONTAINER *gbc) {
 // ---------------------------------
 //      container element access
 
-inline GBDATA *EXISTING_GBCONTAINER_ELEM(GBCONTAINER *gbc,int idx) {
+inline GBDATA *EXISTING_GBCONTAINER_ELEM(GBCONTAINER *gbc, int idx) {
     return GB_HEADER_LIST_GBD(GB_DATA_LIST_HEADER((gbc)->d)[idx]);
 }
-inline GBDATA *GBCONTAINER_ELEM(GBCONTAINER *gbc,int idx) {
+inline GBDATA *GBCONTAINER_ELEM(GBCONTAINER *gbc, int idx) {
     return (idx<gbc->d.nheader) ? EXISTING_GBCONTAINER_ELEM(gbc, idx) : (GBDATA*)NULL;
 }
 inline void SET_GBCONTAINER_ELEM(GBCONTAINER *gbc, int idx, GBDATA *gbd) {

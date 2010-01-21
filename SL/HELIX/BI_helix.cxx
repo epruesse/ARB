@@ -25,8 +25,8 @@ struct helix_stack {
 void BI_helix::_init(void)
 {
     int i;
-    for (i=0;i<HELIX_MAX; i++) pairs[i] = 0;
-    for (i=0;i<HELIX_MAX; i++) char_bind[i] = 0;
+    for (i=0; i<HELIX_MAX; i++) pairs[i] = 0;
+    for (i=0; i<HELIX_MAX; i++) char_bind[i] = 0;
 
     entries = 0;
     Size = 0;
@@ -61,7 +61,7 @@ void BI_helix::_init(void)
     pairs[HELIX_DEFAULT]=strdup("");
     char_bind[HELIX_DEFAULT] = strdup("?");
 
-    for (i=HELIX_NON_STANDARD0;i<=HELIX_NON_STANDARD9;i++){
+    for (i=HELIX_NON_STANDARD0; i<=HELIX_NON_STANDARD9; i++) {
         pairs[i] = strdup("");
         char_bind[i] = strdup("");
     }
@@ -74,10 +74,10 @@ BI_helix::BI_helix(void) {
     _init();
 }
 
-BI_helix::~BI_helix(void){
+BI_helix::~BI_helix(void) {
     unsigned i;
-    for (i=0;i<HELIX_MAX; i++)  free(pairs[i]);
-    for (i=0;i<HELIX_MAX; i++)  free(char_bind[i]);
+    for (i=0; i<HELIX_MAX; i++) free(pairs[i]);
+    for (i=0; i<HELIX_MAX; i++) free(char_bind[i]);
 
     if (entries) {
         for (i = 0; i<Size; ++i) {
@@ -101,7 +101,7 @@ long BI_helix_check_error(const char *key, long val, void *) {
 long BI_helix_free_hash(const char *, long val, void *) {
     struct helix_stack *stack = (struct helix_stack *)val;
     struct helix_stack *next;
-    for ( ; stack; stack = next) {
+    for (; stack; stack = next) {
         next = stack->next;
         delete stack;
     }
@@ -121,7 +121,7 @@ const char *BI_helix::initFromData(const char *helix_nr_in, const char *helix_in
     char c;
     char ident[256];
     char *sident;
-    struct helix_stack *laststack = 0,*stack;
+    struct helix_stack *laststack = 0, *stack;
 
     Size = sizei;
 
@@ -133,7 +133,7 @@ const char *BI_helix::initFromData(const char *helix_nr_in, const char *helix_in
         char *h = (char *)malloc(Size+1);
         h[Size] = 0;
         
-        if (len<Size) memset(h+len,'.', Size-len);
+        if (len<Size) memset(h+len, '.', Size-len);
         memcpy(h, helix_in, len);
         helix = h;
     }
@@ -146,18 +146,18 @@ const char *BI_helix::initFromData(const char *helix_nr_in, const char *helix_in
         char *h = (char *)malloc((int)Size+1);
         h[Size] = 0;
 
-        if (len<Size) memset(h+len,'.',(int)(Size-len));
+        if (len<Size) memset(h+len, '.', (int)(Size-len));
         memcpy(h, helix_nr_in, len);
         helix_nr = h;
     }
 
-    strcpy(ident,"0");
+    strcpy(ident, "0");
     long pos_scanned_till = -1;
 
-    entries = (struct BI_helix_entry *)GB_calloc(sizeof(struct BI_helix_entry),(size_t)Size);
+    entries = (struct BI_helix_entry *)GB_calloc(sizeof(struct BI_helix_entry), (size_t)Size);
     sident  = 0;
     
-    for (pos = 0; pos < Size; pos ++ ) {
+    for (pos = 0; pos < Size; pos ++) {
         if (helix_nr) {
             if (long(pos)>pos_scanned_till && isalnum(helix_nr[pos])) {
                 for (int j=0; (pos+j)<Size; j++) {
@@ -174,22 +174,22 @@ const char *BI_helix::initFromData(const char *helix_nr_in, const char *helix_in
             }
         }
         c = helix[pos];
-        if (strchr(LEFT_HELIX,c) || strchr(LEFT_NONS,c)  ){ // push
-            laststack = (struct helix_stack *)GBS_read_hash(hash,ident);
+        if (strchr(LEFT_HELIX, c) || strchr(LEFT_NONS, c)) { // push
+            laststack = (struct helix_stack *)GBS_read_hash(hash, ident);
             stack = new helix_stack;
             stack->next = laststack;
             stack->pos = pos;
             stack->c = c;
-            GBS_write_hash(hash,ident,(long)stack);
+            GBS_write_hash(hash, ident, (long)stack);
         }
-        else if (strchr(RIGHT_HELIX,c) || strchr(RIGHT_NONS,c) ){   // pop
-            stack = (struct helix_stack *)GBS_read_hash(hash,ident);
+        else if (strchr(RIGHT_HELIX, c) || strchr(RIGHT_NONS, c)) { // pop
+            stack = (struct helix_stack *)GBS_read_hash(hash, ident);
             if (!stack) {
                 bi_assert(!helix_error); // already have an error
                 helix_error = GBS_global_string_copy("Too many '%c' in Helix '%s' pos %zu", c, ident, pos);
                 goto helix_end;
             }
-            if (strchr(RIGHT_HELIX,c)) {
+            if (strchr(RIGHT_HELIX, c)) {
                 entries[pos].pair_type = HELIX_PAIR;
                 entries[stack->pos].pair_type = HELIX_PAIR;
             }
@@ -212,11 +212,11 @@ const char *BI_helix::initFromData(const char *helix_nr_in, const char *helix_in
             }
             entries[pos].pair_pos = stack->pos;
             entries[stack->pos].pair_pos = pos;
-            GBS_write_hash(hash,ident,(long)stack->next);
+            GBS_write_hash(hash, ident, (long)stack->next);
 
-            if (sident == 0 || strcmp(sident+1,ident) != 0) {
+            if (sident == 0 || strcmp(sident+1, ident) != 0) {
                 sident = (char*)malloc(strlen(ident)+2);
-                sprintf(sident,"-%s",ident);
+                sprintf(sident, "-%s", ident);
                 
                 entries[stack->pos].allocated = true;
             }
@@ -230,7 +230,7 @@ const char *BI_helix::initFromData(const char *helix_nr_in, const char *helix_in
 
     GBS_hash_do_loop(hash, BI_helix_check_error, NULL);
 
- helix_end:
+ helix_end :
     GBS_hash_do_loop(hash, BI_helix_free_hash, NULL);
     GBS_free_hash(hash);
 
@@ -260,7 +260,7 @@ const char *BI_helix::init(GBDATA *gb_main, const char *alignment_name, const ch
     clear_error();
 
     GBDATA *gb_sai_data = GBT_get_SAI_data(gb_main);
-    long    size2       = GBT_get_alignment_len(gb_main,alignment_name);
+    long    size2       = GBT_get_alignment_len(gb_main, alignment_name);
 
     if (size2<=0) set_error(GB_await_error());
     else {
@@ -269,8 +269,8 @@ const char *BI_helix::init(GBDATA *gb_main, const char *alignment_name, const ch
         GBDATA *gb_helix        = 0;
         GBDATA *gb_helix_nr     = 0;
 
-        if (gb_helix_nr_con)    gb_helix_nr = GBT_read_sequence(gb_helix_nr_con,alignment_name);
-        if (gb_helix_con)       gb_helix = GBT_read_sequence(gb_helix_con,alignment_name);
+        if (gb_helix_nr_con)    gb_helix_nr = GBT_read_sequence(gb_helix_nr_con, alignment_name);
+        if (gb_helix_con)       gb_helix = GBT_read_sequence(gb_helix_con, alignment_name);
 
         init(gb_helix_nr, gb_helix, size2);
     }
@@ -307,7 +307,7 @@ bool BI_helix::is_pairtype(char left, char right, BI_PAIR_TYPE pair_type) {
     int   len = strlen(pairs[pair_type])-1;
     char *pai = pairs[pair_type];
 
-    for (int i=0; i<len;i+=3){
+    for (int i=0; i<len; i+=3) {
         if ((pai[i] == left && pai[i+1] == right) ||
             (pai[i] == right && pai[i+1] == left)) return true;
     }
@@ -323,20 +323,20 @@ int BI_helix::check_pair(char left, char right, BI_PAIR_TYPE pair_type) {
 
     left  = toupper(left);
     right = toupper(right);
-    switch(pair_type) {
+    switch (pair_type) {
         case HELIX_PAIR:
-            if (is_pairtype(left,right,HELIX_STRONG_PAIR) ||
-                is_pairtype(left,right,HELIX_PAIR)) return 2;
-            if (is_pairtype(left,right,HELIX_WEAK_PAIR) ) return 1;
+            if (is_pairtype(left, right, HELIX_STRONG_PAIR) ||
+                is_pairtype(left, right, HELIX_PAIR)) return 2;
+            if (is_pairtype(left, right, HELIX_WEAK_PAIR)) return 1;
             return 0;
 
         case HELIX_NO_PAIR:
-            if (is_pairtype(left,right,HELIX_STRONG_PAIR) ||
-                is_pairtype(left,right,HELIX_PAIR) ) return 0;
+            if (is_pairtype(left, right, HELIX_STRONG_PAIR) ||
+                is_pairtype(left, right, HELIX_PAIR)) return 0;
             return 1;
             
         default:
-            return is_pairtype(left,right,pair_type) ? 1 : 0;
+            return is_pairtype(left, right, pair_type) ? 1 : 0;
     }
 }
 
@@ -357,7 +357,7 @@ long BI_helix::next_pair_position(size_t pos) const {
             }
         }
 
-        size_t q = p<Size ? p-2: Size-1;
+        size_t q = p<Size ? p-2 : Size-1;
 
         for (p = pos; p <= q; ++p) {
             bi_assert(entries[p].next_pair_pos == 0);
@@ -393,7 +393,7 @@ long BI_helix::last_position(const char *helix_Nr) const {
 /***************************************************************************************
 *******         Reference to abs pos                    ********
 ****************************************************************************************/
-void BI_ecoli_ref::bi_exit(void){
+void BI_ecoli_ref::bi_exit(void) {
     delete [] abs2rel;
     delete [] rel2abs;
     abs2rel = 0;
@@ -401,10 +401,10 @@ void BI_ecoli_ref::bi_exit(void){
 }
 
 BI_ecoli_ref::BI_ecoli_ref(void) {
-    memset((char *)this,0,sizeof(BI_ecoli_ref));
+    memset((char *)this, 0, sizeof(BI_ecoli_ref));
 }
 
-BI_ecoli_ref::~BI_ecoli_ref(void){
+BI_ecoli_ref::~BI_ecoli_ref(void) {
     bi_exit();
 }
 
@@ -415,7 +415,7 @@ const char *BI_ecoli_ref::init(const char *seq, size_t size) {
 
     abs2rel = new size_t[size];
     rel2abs = new size_t[size];
-    memset((char *)rel2abs,0,(size_t)(sizeof(*rel2abs)*size));
+    memset((char *)rel2abs, 0, (size_t)(sizeof(*rel2abs)*size));
 
     relLen = 0;
     absLen = size;
@@ -429,18 +429,18 @@ const char *BI_ecoli_ref::init(const char *seq, size_t size) {
     return 0;
 }
 
-const char *BI_ecoli_ref::init(GBDATA *gb_main,char *alignment_name, char *ref_name) {
+const char *BI_ecoli_ref::init(GBDATA *gb_main, char *alignment_name, char *ref_name) {
     GB_transaction ta(gb_main);
 
     GB_ERROR err  = 0;
-    long     size = GBT_get_alignment_len(gb_main,alignment_name);
+    long     size = GBT_get_alignment_len(gb_main, alignment_name);
     
     if (size<=0) err = GB_await_error();
     else {
         GBDATA *gb_ref_con   = GBT_find_SAI(gb_main, ref_name);
-        if (!gb_ref_con) err = GBS_global_string("I cannot find the SAI '%s'",ref_name);
+        if (!gb_ref_con) err = GBS_global_string("I cannot find the SAI '%s'", ref_name);
         else {
-            GBDATA *gb_ref   = GBT_read_sequence(gb_ref_con,alignment_name);
+            GBDATA *gb_ref   = GBT_read_sequence(gb_ref_con, alignment_name);
             if (!gb_ref) err = GBS_global_string("Your SAI '%s' has no sequence '%s/data'", ref_name, alignment_name);
             else {
                 err = init(GB_read_char_pntr(gb_ref), size);
@@ -455,7 +455,7 @@ const char *BI_ecoli_ref::init(GBDATA *gb_main) {
 
     char     *ref = GBT_get_default_ref(gb_main);
     char     *use = GBT_get_default_alignment(gb_main);
-    GB_ERROR  err = init(gb_main,use,ref);
+    GB_ERROR  err = init(gb_main, use, ref);
 
     free(ref);
     free(use);

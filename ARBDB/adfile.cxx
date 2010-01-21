@@ -33,7 +33,7 @@ GB_ERROR gb_scan_directory(char *basename, gb_scandir *sd) { // goes to header: 
     // look for quick saves (basename = yyy/xxx no arb ending !!!!)
     char        *path        = strdup(basename);
     const char  *fulldir     = ".";
-    char        *file        = strrchr(path,'/');
+    char        *file        = strrchr(path, '/');
     DIR         *dirp;
     int          curindex;
     char        *suffix;
@@ -52,25 +52,25 @@ GB_ERROR gb_scan_directory(char *basename, gb_scandir *sd) { // goes to header: 
         file = path;
     }
 
-    memset((char*)sd,0,sizeof(*sd));
+    memset((char*)sd, 0, sizeof(*sd));
     sd->type = GB_SCAN_NO_QUICK;
     sd->highest_quick_index = -1;
     sd->newest_quick_index = -1;
     sd->date_of_quick_file = 0;
 
     dirp = opendir(fulldir);
-    if (!dirp){
-        GB_ERROR error = GB_export_errorf("Directory %s of file %s.arb not readable",fulldir,file);
+    if (!dirp) {
+        GB_ERROR error = GB_export_errorf("Directory %s of file %s.arb not readable", fulldir, file);
         free(path);
         return error;
     }
     filelen = strlen(file);
-    for (dp = readdir(dirp); dp != NULL; dp = readdir(dirp)){
-        if (strncmp(dp->d_name,file,filelen)) continue;
+    for (dp = readdir(dirp); dp != NULL; dp = readdir(dirp)) {
+        if (strncmp(dp->d_name, file, filelen)) continue;
         suffix = dp->d_name + filelen;
         if (suffix[0] != '.') continue;
-        if (!strncmp(suffix,oldstyle,oldstylelen)){
-            if (sd->type == GB_SCAN_NEW_QUICK){
+        if (!strncmp(suffix, oldstyle, oldstylelen)) {
+            if (sd->type == GB_SCAN_NEW_QUICK) {
                 printf("Warning: Found new and old changes files, using new\n");
                 continue;
             }
@@ -82,8 +82,8 @@ GB_ERROR gb_scan_directory(char *basename, gb_scandir *sd) { // goes to header: 
             suffix[0] == '.' &&
             suffix[1] == 'a' &&
             isdigit(suffix[2]) &&
-            isdigit(suffix[3])){
-            if (sd->type == GB_SCAN_OLD_QUICK){
+            isdigit(suffix[3])) {
+            if (sd->type == GB_SCAN_OLD_QUICK) {
                 printf("Warning: Found new and old changes files, using new\n");
             }
             sd->type = GB_SCAN_NEW_QUICK;
@@ -91,11 +91,11 @@ GB_ERROR gb_scan_directory(char *basename, gb_scandir *sd) { // goes to header: 
             goto check_time_and_date;
         }
         continue;
-    check_time_and_date:
+    check_time_and_date :
         if (curindex > sd->highest_quick_index) sd->highest_quick_index = curindex;
-        sprintf(buffer,"%s/%s",fulldir,dp->d_name);
-        stat(buffer,&st);
-        if ((unsigned long)st.st_mtime > sd->date_of_quick_file){
+        sprintf(buffer, "%s/%s", fulldir, dp->d_name);
+        stat(buffer, &st);
+        if ((unsigned long)st.st_mtime > sd->date_of_quick_file) {
             sd->date_of_quick_file = st.st_mtime;
             sd->newest_quick_index = curindex;
         }
@@ -107,7 +107,7 @@ GB_ERROR gb_scan_directory(char *basename, gb_scandir *sd) { // goes to header: 
 }
 
 
-char *GB_find_all_files(const char *dir,const char *mask, bool filename_only) {
+char *GB_find_all_files(const char *dir, const char *mask, bool filename_only) {
     /* Returns a string containing the filenames of all files matching mask.
        The single filenames are separated by '*'.
        if 'filename_only' is true -> string contains only filenames w/o path
@@ -131,8 +131,8 @@ char *GB_find_all_files(const char *dir,const char *mask, bool filename_only) {
         if (matcher) {
             for (dp = readdir(dirp); dp != NULL; dp = readdir(dirp)) {
                 if (GBS_string_matches_regexp(dp->d_name, matcher)) {
-                    sprintf(buffer,"%s/%s",dir,dp->d_name);
-                    if (stat(buffer,&st) == 0  && S_ISREG(st.st_mode)) { // regular file ?
+                    sprintf(buffer, "%s/%s", dir, dp->d_name);
+                    if (stat(buffer, &st) == 0  && S_ISREG(st.st_mode)) { // regular file ?
                         if (filename_only) strcpy(buffer, dp->d_name);
                         if (result) {
                             freeset(result, GBS_global_string_copy("%s*%s", result, buffer));
@@ -172,8 +172,8 @@ char *GB_find_latest_file(const char *dir, const char *mask) {
         if (matcher) {
             for (dp = readdir(dirp); dp != NULL; dp = readdir(dirp)) {
                 if (GBS_string_matches_regexp(dp->d_name, matcher)) {
-                    sprintf(buffer,"%s/%s",dir,dp->d_name);
-                    if (stat(buffer,&st) == 0) {
+                    sprintf(buffer, "%s/%s", dir, dp->d_name);
+                    if (stat(buffer, &st) == 0) {
                         if ((GB_ULONG)st.st_mtime > newest) {
                             newest = st.st_mtime;
                             freedup(result, dp->d_name);

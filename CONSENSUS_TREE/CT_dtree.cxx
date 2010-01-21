@@ -26,7 +26,7 @@ PART *dtree(GBT_TREE *tree, int weight, GBT_LEN len)
     PART *p1, *p2, *ph;
     int idx;
 
-    if(tree->is_leaf) {
+    if (tree->is_leaf) {
         ph = part_new();
         idx = GBS_read_hash(Name_hash, tree->name);
         part_setbit(ph, idx);
