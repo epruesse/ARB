@@ -10,25 +10,28 @@ GENERATED_HEADERS= \
 
 AISC_MKPT_FLAGS=-CPE -G
 
-proto: $(GENERATED_HEADERS)
+MKPT_DEP=../../MAKEBIN/aisc_mkpt Makefile
+
+proto:
+	$(MAKE) $(GENERATED_HEADERS)
 
 clean:
 	rm $(GENERATED_HEADERS)
 
-aisc_extern_privat.h: aisc_extern.c  
-	$(ARBHOME)/MAKEBIN/aisc_mkpt $(AISC_MKPT_FLAGS) -w $@ $? >$@.tmp
+aisc_extern_privat.h: aisc_extern.c $(MKPT_DEP)  
+	$(ARBHOME)/MAKEBIN/aisc_mkpt $(AISC_MKPT_FLAGS) -w $@ $< >$@.tmp
 	$(ARBHOME)/SOURCE_TOOLS/mv_if_diff $@.tmp $@
 
-client.h: client.c 
-	$(ARBHOME)/MAKEBIN/aisc_mkpt $(AISC_MKPT_FLAGS) -w $@ $? >$@.tmp
+client.h: client.c $(MKPT_DEP)
+	$(ARBHOME)/MAKEBIN/aisc_mkpt $(AISC_MKPT_FLAGS) -w $@ $< >$@.tmp
 	$(ARBHOME)/SOURCE_TOOLS/mv_if_diff $@.tmp $@
 
-struct_man.h: struct_man.c 
-	$(ARBHOME)/MAKEBIN/aisc_mkpt $(AISC_MKPT_FLAGS) -w $@ $? >$@.tmp
+struct_man.h: struct_man.c $(MKPT_DEP)
+	$(ARBHOME)/MAKEBIN/aisc_mkpt $(AISC_MKPT_FLAGS) -w $@ $< >$@.tmp
 	$(ARBHOME)/SOURCE_TOOLS/mv_if_diff $@.tmp $@
 
-server.h: server.c 
-	$(ARBHOME)/MAKEBIN/aisc_mkpt $(AISC_MKPT_FLAGS) -w $@ $? >$@.tmp
+server.h: server.c $(MKPT_DEP)
+	$(ARBHOME)/MAKEBIN/aisc_mkpt $(AISC_MKPT_FLAGS) -w $@ $< >$@.tmp
 	$(ARBHOME)/SOURCE_TOOLS/mv_if_diff $@.tmp $@
 
 

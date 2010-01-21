@@ -31,13 +31,15 @@ static void Version(void);
 #define check_heap_sanity() do { char *x = malloc(10); free(x); } while (0)
 
 #if defined(DEBUG)
-/* #define DEBUG_PRINTS */
+// #define DEBUG_PRINTS
 #endif /* DEBUG */
 
-#ifdef DEBUG_PRINTS 
-#define DEBUG_PRINT(s) fputs((s), stderr)
+#ifdef DEBUG_PRINTS
+#define DEBUG_PRINT(s)                  fputs((s), stderr)
+#define DEBUG_PRINT_STRING(name, str)   fprintf(stderr, "%s'%s'\n", name, str)
 #else
 #define DEBUG_PRINT(s)
+#define DEBUG_PRINT_STRING(name, str)
 #endif
 
 #define PRINT(s) fputs((s), stdout)
@@ -954,7 +956,6 @@ static void emit(Word *wlist, Word *plist, long startline) {
 
     Word *w;
     int   count     = 0;
-    int   needspace = 0;
     int   isstatic  = 0;
     int   ismain    = 0;
     int   refs      = 0;
@@ -1061,40 +1062,51 @@ static void emit(Word *wlist, Word *plist, long startline) {
         printf("extern ");
     }
 
+    int spaceBeforeNext = 0;
     if (count < 2) {
         printf("int");
-        needspace = 1;
+        spaceBeforeNext = 1;
     }
 
     for (w = wlist; w; w = w->next) {
-        if (needspace)
+        if (spaceBeforeNext) {
+            DEBUG_PRINT("emit[1] ' '\n");
             putchar(' ');
+        }
         printf("%s", w->string);
-        needspace = ISCSYM(w->string[0]);
+        DEBUG_PRINT_STRING("emit[2] ", w->string);
+        spaceBeforeNext = ISCSYM(w->string[0]);
     }
 
     if (use_macro) printf(" %s((", macro_name);
     else putchar('(');
+    DEBUG_PRINT("emit[3] '('\n");
 
-    needspace = 0;
+    spaceBeforeNext = 0;
     for (w = plist; w; w = w->next) {
-        if (no_parm_names && IS_PARM_NAME(w))
-            continue;
-        if (w->string[0] == ',')
-            needspace = 1;
-        else if (w->string[0] == '[')
-            needspace = 0;
-        else
-        {
-            if (needspace)
+        if (no_parm_names && IS_PARM_NAME(w)) continue;
+
+        const char *token    = w->string;
+        char        tokStart = token[0];
+
+        if (!tokStart) continue; // empty token
+
+        if (tokStart == ',')                       spaceBeforeNext = 1;
+        else if (strchr("[])", tokStart) != NULL)  spaceBeforeNext = 0;
+        else {
+            if (spaceBeforeNext) {
                 putchar(' ');
-            needspace = ISCSYM(w->string[0]);
+                DEBUG_PRINT("emit[4] ' '\n");
+            }
+            spaceBeforeNext = ISCSYM(tokStart);
         }
-        printf("%s", w->string);
+        fputs(token, stdout);
+        DEBUG_PRINT_STRING("emit[5] ", token);
     }
 
     if (use_macro)  PRINT("))");
     else            PRINT(")");
+    DEBUG_PRINT("emit[6] ')'\n");
 
     if (found__attribute__) { PRINT(" "); PRINT(found__attribute__); }
     if (found__ATTR__) { PRINT(" "); PRINT(found__ATTR__); }
