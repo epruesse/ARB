@@ -1748,7 +1748,7 @@ void openArb() {
     gb_main = GB_open(":", "rw");
     if (!gb_main) {
         GB_warning("Cannot find ARB server");
-        exit(-1); ;
+        exit(-1);
     }
 }
 

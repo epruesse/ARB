@@ -834,7 +834,7 @@ void PTD_read_leafs_from_disk(char *fname, PTM2 *ptmain, POS_TREE **pnode) {
         char *main = &(buffer[size-4]);
 
         long i;
-        bool big_db = false; ;
+        bool big_db = false;
         PT_READ_INT(main, i);
 #ifdef ARB_64
         if (i == 0xffffffff) {                      // 0xffffffff signalizes that "last_obj" is stored

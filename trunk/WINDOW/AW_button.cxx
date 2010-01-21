@@ -887,7 +887,7 @@ void AW_window::update_toggle(int *wgt, const char *var, AW_CL cd_toggle_data)
         XtVaSetValues((Widget)wgt, RES_CONVERT(XmNlabelString, text), NULL);
     }
     else {
-        char *path = pixmapPath(text+1); ;
+        char *path = pixmapPath(text+1);
         XtVaSetValues((Widget)wgt, RES_CONVERT(XmNlabelPixmap, path), NULL);
         free(path);
     }

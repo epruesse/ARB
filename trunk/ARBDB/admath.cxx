@@ -43,7 +43,7 @@ double GB_frandom() {
     // produces a random number in range [0.0 .. 1.0]
     if (!randomSeeded) {
         srand(time(0));
-        randomSeeded = 1; ;
+        randomSeeded = 1;
     }
     return ((double)rand())/RAND_MAX;
 }

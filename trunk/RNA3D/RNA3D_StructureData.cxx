@@ -375,8 +375,8 @@ void Structure3D::Store2D3Dinfo(Struct2Dinfo *s2D, Struct3Dinfo *s3D) {
     data->base    = s2D->base;
     data->mask    = s2D->mask;
     data->code    = s2D->code;
-    data->pos     = s2D->pos; ;
-    data->helixNr = s2D->helixNr; ;
+    data->pos     = s2D->pos;
+    data->helixNr = s2D->helixNr;
     data->x       = s3D->x;
     data->y       = s3D->y;
     data->z       = s3D->z;
@@ -710,7 +710,7 @@ void Structure3D::GenerateTertiaryInteractionsDispLists() {
 void Structure3D::StoreHelixNrInfo(float x, float y, float z, int helixNr) {
     HelixNrInfo *data, *temp;
     data = new HelixNrInfo;
-    data->helixNr = helixNr; ;
+    data->helixNr = helixNr;
     data->x       = x;
     data->y       = y;
     data->z       = z;

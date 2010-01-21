@@ -734,7 +734,7 @@ extern "C" aisc_string get_short(AN_local *locs)
 
         if (first_len>3) {
             first_short[3] = 0;
-            first_len      = 3; ;
+            first_len      = 3;
         }
 
         int both_len = first_len+second_len;
