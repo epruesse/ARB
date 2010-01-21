@@ -192,7 +192,7 @@ inline SEC_segment *findSegmentContaining(SEC_root *root, int start, int end, GB
     if (start_segment) {
         SEC_segment *end_segment;
         if (end == start+1) {
-            end_segment = start_segment; ;
+            end_segment = start_segment;
         }
         else {
             end_segment = findSegmentContaining(root, end-1, error);

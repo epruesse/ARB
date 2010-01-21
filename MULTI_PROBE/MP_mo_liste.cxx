@@ -10,10 +10,10 @@
 
 MO_Liste::MO_Liste()
 {
-    laenge = 0; ;
+    laenge   = 0;
     mo_liste = NULL;
-    current = 0;
-    hashptr = NULL;
+    current  = 0;
+    hashptr  = NULL;
     // Nach dem new muss die MO_Liste erst mit fill_all_bakts bzw fill_marked_bakts gefuellt werden
 }
 

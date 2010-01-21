@@ -243,7 +243,7 @@ AW_select_table_struct::AW_select_table_struct(const char *displayedi, const cha
 AW_select_table_struct::AW_select_table_struct(const char *displayedi, long valuei) {
     memset((char *)this, 0, sizeof(AW_select_table_struct));
     displayed = copy_string(displayedi);
-    int_value = valuei; ;
+    int_value = valuei;
 }
 AW_select_table_struct::AW_select_table_struct(const char *displayedi, float valuei) {
     memset((char *)this, 0, sizeof(AW_select_table_struct));

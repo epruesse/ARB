@@ -56,7 +56,7 @@ GBS_string_matcher *GBS_compile_matcher(const char *search_expr, GB_CASE case_fl
                 else {
                     matcher->regexpr = GBS_compile_regexpr(unwrapped_expr, case_flag, &error);
                     if (matcher->regexpr) {
-                        matcher->type = SM_REGEXPR; ;
+                        matcher->type = SM_REGEXPR;
                     }
                 }
             }

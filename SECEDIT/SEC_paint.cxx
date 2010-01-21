@@ -898,7 +898,7 @@ void SEC_segment::paint(AW_device *device, SEC_helix_strand *previous_strand_poi
             if (nextAbs<0) { // helix doesn't start with pair
                 nextAbs = next_helix_strand->getNextAbspos();
             }
-            nextGc = root->getBondtype(nextAbs) == HELIX_NONE ? SEC_GC_NHELIX : SEC_GC_HELIX; ;
+            nextGc = root->getBondtype(nextAbs) == HELIX_NONE ? SEC_GC_NHELIX : SEC_GC_HELIX;
         }
         else {
             nextAbs = get_region()->getBasePos(i+1);

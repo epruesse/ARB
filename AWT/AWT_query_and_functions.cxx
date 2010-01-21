@@ -295,7 +295,7 @@ static int awt_sort_query_hits(const void *cl_item1, const void *cl_item2, void 
             case AWT_QUERY_SORT_REVERSE: {
                 GBDATA *tmp = gb_item1; // swap items for following compares (this is a prefix revert!)
                 gb_item1    = gb_item2;
-                gb_item2    = tmp; ;
+                gb_item2    = tmp;
                 break;
             }
         }
@@ -696,7 +696,7 @@ void awt_query::initFields(struct adaqbsstruct *cbs, int idx, awt_query_operator
     tree    = cbs->tree_name;
 
     rek         = false;
-    match_field = AQFT_EXPLICIT; ;
+    match_field = AQFT_EXPLICIT;
     keyquark    = -1;    
     if (GB_first_non_key_char(key)) {
         if (strcmp(key, PSEUDO_FIELD_ANY_FIELD) == 0) match_field = AQFT_ANY_FIELD;
@@ -1358,7 +1358,7 @@ void awt_search_equal_entries(AW_window *, struct adaqbsstruct *cbs, bool tokeni
         AW_root         *aw_root         = cbs->aws->get_root();
         long             hashsize;
         AWT_QUERY_RANGE  range           = AWT_QUERY_ALL_SPECIES;
-        AWT_QUERY_TYPES  type            = (AWT_QUERY_TYPES)aw_root->awar(cbs->awar_by)->read_int(); ;
+        AWT_QUERY_TYPES  type            = (AWT_QUERY_TYPES)aw_root->awar(cbs->awar_by)->read_int();
 
         switch (cbs->selector->type) {
             case AWT_QUERY_ITEM_SPECIES: {

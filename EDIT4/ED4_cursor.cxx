@@ -471,7 +471,7 @@ static void select_named_sequence_terminal(const char *name) {
             if (cursor) {
                 ED4_sequence_terminal *cursor_seq_term = 0;
 
-                ED4_terminal *cursor_term = cursor->owner_of_cursor->to_text_terminal(); ;
+                ED4_terminal *cursor_term = cursor->owner_of_cursor->to_text_terminal();
                 if (cursor_term->is_sequence_terminal()) {
                     cursor_seq_term = cursor_term->to_sequence_terminal();
                 }

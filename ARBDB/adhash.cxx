@@ -745,7 +745,7 @@ const char *GBS_hash_next_element_that(GB_HASH *hs, const char *last_key, bool (
      * Returns NULL if no (more) elements match the 'condition'.
      */
 
-    size_t                 size = hs->size; ;
+    size_t                 size = hs->size;
     size_t                 i    = 0;
     struct gbs_hash_entry *e    = 0;
 

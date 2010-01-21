@@ -118,7 +118,7 @@ struct selectValidNameStruct* createValNameList(GBDATA *gb_main, AW_window *aws,
 
     svnp->aws            = aws;
     svnp->gb_main        = gb_main;
-    svnp->validNamesList = aws->create_selection_list(awarName, 0, "", 10, 20); ;
+    svnp->validNamesList = aws->create_selection_list(awarName, 0, "", 10, 20);
     svnp->initials       = "";
 
     fillSelNamList(svnp);

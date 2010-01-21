@@ -821,7 +821,7 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /* alpha */, DI
                                 }
                                 frequencies[i] += hits[i][i];
                                 N += frequencies[i];
-                                M += hits[i][i]; ;
+                                M += hits[i][i];
                             }
                             if (N==0) N=1;
                             if (transformation == DI_TRANSFORMATION_OLSEN) { // Calc sum square freq individually for each line

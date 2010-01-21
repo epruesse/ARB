@@ -60,7 +60,7 @@ static void populate_selection_list_on_scandb_cb(GBDATA *dummy, struct adawcbstr
                 GB_warningf("WARNING: can't create " CHANGEKEY_HIDDEN " (Reason: %s)\n", error);
             }
 
-            static long not_hidden = 0; ;
+            static long not_hidden = 0;
             hiddenPtr              = &not_hidden;
         }
 

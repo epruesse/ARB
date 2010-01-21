@@ -160,7 +160,7 @@ GBT_config_parser *GBT_start_config_parser(const char *config_string) {
 }
 
 GBT_config_item *GBT_create_config_item() {
-    GBT_config_item *item = (GBT_config_item*)GB_calloc(1, sizeof(*item)); ;
+    GBT_config_item *item = (GBT_config_item*)GB_calloc(1, sizeof(*item));
     item->type            = CI_UNKNOWN;
     item->name            = 0;
     return item;
