@@ -115,7 +115,7 @@ static long count_bases(GBDATA *gb_data) {
         case GB_STRING:
             count = count_bases(GB_read_char_pntr(gb_data), GB_read_count(gb_data));
             break;
-        case GB_BITS:  {
+        case GB_BITS: {
             char *bitstring = GB_read_as_string(gb_data);
             long  len       = strlen(bitstring);
             count           = count_bases(bitstring, len);
@@ -188,7 +188,7 @@ public:
     bool operator < (const Candidate& other) const { // sort highest score first
         int ali_diff = found_alignments-other.found_alignments;
 
-        if (ali_diff)  {
+        if (ali_diff) {
             return ali_diff>0;
         }
 
@@ -389,12 +389,12 @@ AW_window *MG_select_preserves_cb(AW_root *aw_root) {
     aws->init(aw_root, "SELECT_PRESERVES", "Select adaption candidates");
     aws->load_xfig("merge/preserves.fig");
 
-    aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP,(AW_CL)"mg_preserve.hlp");
-    aws->create_button("HELP","HELP","H");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"mg_preserve.hlp");
+    aws->create_button("HELP", "HELP", "H");
 
     aws->at("adapt");
     aws->label("Adapt alignments");

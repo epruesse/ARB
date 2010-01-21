@@ -189,7 +189,7 @@ void CheckedConsistencies::perform_item_checks(GB_ERROR& error) {
 
 // --------------------------------------------------------------------------------
 
-static GB_ERROR NT_fix_gene_data(GBDATA *gb_main, size_t species_count, size_t /*sai_count*/) {
+static GB_ERROR NT_fix_gene_data(GBDATA *gb_main, size_t species_count, size_t /* sai_count */) {
     GB_transaction ta(gb_main);
     size_t         deleted_gene_datas   = 0;
     size_t         generated_gene_datas = 0;
@@ -257,7 +257,7 @@ static GBDATA *disexpectField(GBDATA *gb_gene, const char *field, GB_ERROR& data
     return gb_field;
 }
 
-static GB_ERROR NT_convert_gene_locations(GBDATA *gb_main, size_t species_count, size_t /*sai_count*/) {
+static GB_ERROR NT_convert_gene_locations(GBDATA *gb_main, size_t species_count, size_t /* sai_count */) {
     GB_transaction ta(gb_main);
     GB_ERROR       error         = 0;
     long           fixed_genes   = 0;
@@ -572,7 +572,7 @@ static bool testDictionaryCompression(GBDATA *gbd, GBQUARK key_quark, bool testU
                 }
                 break;
                 
-            default :
+            default:
                 break;
         }
     }
@@ -671,7 +671,7 @@ bool contains(const CONT& container, const KEY& key) {
 
 static GB_ERROR findAffectedKeys(GBDATA *gb_key_data, KeyCounter& kcount, Keys& keys, Dicts& dicts) {
     GB_ERROR  error   = 0;
-    GBDATA   *gb_main = GB_get_root(gb_key_data) ;
+    GBDATA   *gb_main = GB_get_root(gb_key_data);
 
     for (int pass = 1; pass <= 2; ++pass) {
         for (GBDATA *gb_key = GB_entry(gb_key_data, "@key"); !error && gb_key; gb_key = GB_nextEntry(gb_key)) {
@@ -733,7 +733,7 @@ static GB_ERROR deleteDataOfKey(GBDATA *gbd, GBQUARK key_quark, StringSet& delet
                     }
                 }
                 break;
-            default :
+            default:
                 break;
         }
     }
@@ -756,7 +756,7 @@ static char *readFirstCompressedDataOf(GBDATA *gbd, GBQUARK key_quark) {
                     }
                 }
                 break;
-            default :
+            default:
                 break;
         }
     }

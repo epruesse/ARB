@@ -20,29 +20,29 @@ dll_public *create_dll_public()
     return 0;
 }
 
-int move_dll_header(dll_header *sobj,dll_header *dobj){
+int move_dll_header(dll_header *sobj, dll_header *dobj) {
     dobj->ident = (char *)strdup(sobj->ident);
     return 0;
 }
 
-int get_COMMON_CNT(dll_header *THIS){
+int get_COMMON_CNT(dll_header *THIS) {
     int key = (int)(THIS->key) >> 16;
     if (aisc_d_flags[key] == 0) return -1;
-    if(!((THIS->parent))){return 0; }
+    if (!((THIS->parent))) { return 0; }
     return THIS->parent->cnt;
 }
 
-dllheader_ext *get_COMMON_PARENT(dll_header *THIS){
+dllheader_ext *get_COMMON_PARENT(dll_header *THIS) {
     int key = (int)(THIS->key) >> 16;
     if (aisc_d_flags[key] == 0) return 0;
-    if(!((THIS->parent))){return 0; }
+    if (!((THIS->parent))) { return 0; }
     return (dllheader_ext *)THIS->parent->parent;
 }
 
-dllheader_ext *get_COMMON_LAST(dll_header *THIS){
+dllheader_ext *get_COMMON_LAST(dll_header *THIS) {
     int key = (int)(THIS->key) >> 16;
     if (aisc_d_flags[key] == 0) return 0;
-    if(!((THIS->parent))){return 0; }
+    if (!((THIS->parent))) { return 0; }
     return (dllheader_ext *)THIS->parent->last;
 }
 

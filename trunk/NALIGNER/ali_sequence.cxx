@@ -37,7 +37,7 @@ char *ALI_SEQUENCE::string(void)
     unsigned char *seq_buf;
     unsigned long i;
 
-    str = (char *) CALLOC((unsigned int) seq_len + 1,sizeof(char));
+    str = (char *) CALLOC((unsigned int) seq_len + 1, sizeof(char));
 
     str_buf = str;
     seq_buf = seq;
@@ -45,7 +45,7 @@ char *ALI_SEQUENCE::string(void)
         *(str_buf++) = *(seq_buf++);
     }
     *str_buf = '\0';
-    ali_sequence_to_string((unsigned char*) str,seq_len);
+    ali_sequence_to_string((unsigned char*) str, seq_len);
 
     return str;
 }
@@ -69,7 +69,7 @@ ALI_NORM_SEQUENCE::ALI_NORM_SEQUENCE(char *Name, char *String)
             counter++;
     seq_len = counter;
 
-    seq      = (unsigned char*) CALLOC((unsigned int) seq_len,sizeof(unsigned char));
+    seq      = (unsigned char*) CALLOC((unsigned int) seq_len, sizeof(unsigned char));
     dots     = (unsigned char **) CALLOC((unsigned int) (seq_len/8)+1, sizeof(unsigned char));
     seq_name = strdup(Name);
     
@@ -107,7 +107,7 @@ ALI_NORM_SEQUENCE::ALI_NORM_SEQUENCE(ALI_SEQUENCE *SEQ)
             counter++;
     seq_len = counter;
 
-    seq      = (unsigned char*) CALLOC((unsigned int) seq_len,sizeof(unsigned char));
+    seq      = (unsigned char*) CALLOC((unsigned int) seq_len, sizeof(unsigned char));
     dots     = (unsigned char **) CALLOC((unsigned int) (seq_len/8)+1, sizeof(unsigned char));
     seq_name = strdup(SEQ->name());
     
@@ -139,7 +139,7 @@ char *ALI_NORM_SEQUENCE::string()
     unsigned char *seq_buf;
     unsigned long i;
 
-    str = (char *) CALLOC((unsigned int) seq_len + 1,sizeof(char));
+    str = (char *) CALLOC((unsigned int) seq_len + 1, sizeof(char));
     if (str == 0)
         ali_fatal_error("Out of memory");
 
@@ -147,7 +147,7 @@ char *ALI_NORM_SEQUENCE::string()
         *str_buf++ = *seq_buf++;
     *str_buf = '\0';
 
-    ali_sequence_to_string((unsigned char*) str,seq_len);
+    ali_sequence_to_string((unsigned char*) str, seq_len);
 
     return str;
 }

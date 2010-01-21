@@ -26,7 +26,7 @@
 #define AP_AWAR_FILTER_ALIGNMENT AP_AWAR_CSP "/ap_filter/alignment"
 #define AP_AWAR_FILTER_FILTER    AP_AWAR_CSP "/ap_filter/filter"
 
-AW_window *AP_open_csp_2_gnuplot_window( AW_root *root );
+AW_window *AP_open_csp_2_gnuplot_window(AW_root *root);
 
 #else
 #error ap_csp_2_gnuplot.hxx included twice

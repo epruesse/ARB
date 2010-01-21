@@ -33,39 +33,39 @@ long *arbdb_stat;
 #endif // DEVEL_RALF
 
 
-#define GB_TEST_READ(gbd,ty,error)                                      \
+#define GB_TEST_READ(gbd, ty, error)                                    \
     do {                                                                \
         GB_TEST_TRANSACTION(gbd);                                       \
         if (GB_ARRAY_FLAGS(gbd).changed == GB_DELETED) {                \
-            GB_internal_errorf("%s: %s",error,"Entry is deleted !!");   \
-            return 0;}                                                  \
+            GB_internal_errorf("%s: %s", error, "Entry is deleted !!"); \
+            return 0; }                                                 \
         if (GB_TYPE(gbd) != ty && (ty != GB_STRING || GB_TYPE(gbd) == GB_LINK)) { \
-            GB_internal_errorf("%s: %s",error,"wrong type");            \
-            return 0;}                                                  \
-    } while(0)
+            GB_internal_errorf("%s: %s", error, "wrong type");          \
+            return 0; }                                                 \
+    } while (0)
 
-#define GB_TEST_WRITE(gbd,ty,gerror)                                    \
+#define GB_TEST_WRITE(gbd, ty, gerror)                                  \
     do {                                                                \
         GB_TEST_TRANSACTION(gbd);                                       \
         if (GB_ARRAY_FLAGS(gbd).changed == GB_DELETED) {                \
-            GB_internal_errorf("%s: %s",gerror,"Entry is deleted !!");  \
-            return 0;}                                                  \
+            GB_internal_errorf("%s: %s", gerror, "Entry is deleted !!"); \
+            return 0; }                                                 \
         if (GB_TYPE(gbd) != ty && (ty != GB_STRING || GB_TYPE(gbd) != GB_LINK)) { \
-            GB_internal_errorf("%s: %s",gerror,"type conflict !!");     \
-            return 0;}                                                  \
+            GB_internal_errorf("%s: %s", gerror, "type conflict !!");   \
+            return 0; }                                                 \
         if (GB_GET_SECURITY_WRITE(gbd)>GB_MAIN(gbd)->security_level)    \
             return gb_security_error(gbd);                              \
-    } while(0)
+    } while (0)
 
-#define GB_TEST_NON_BUFFER(x,gerror)                                    \
+#define GB_TEST_NON_BUFFER(x, gerror)                                   \
     do {                                                                \
         if (GB_is_in_buffer(x)) {                                       \
             GBK_terminatef("%s: you are not allowed to write any data, which you get by pntr", gerror); \
         }                                                               \
-    } while(0)
+    } while (0)
 
 
-char *GB_rel(void *struct_address,long rel_address)
+char *GB_rel(void *struct_address, long rel_address)
 {
     if (!rel_address) return NULL;
     return (char*)struct_address+rel_address;
@@ -188,7 +188,7 @@ static void alloc_buffer(struct gb_buffer *buf, size_t size) {
 #if (MEMORY_TEST==1)
     buf->mem  = (char *)malloc(buf->size);
 #else
-    buf->mem  = (char *)GB_calloc(buf->size,1);
+    buf->mem  = (char *)GB_calloc(buf->size, 1);
 #endif
 }
 
@@ -228,7 +228,7 @@ GB_BUFFER GB_increase_buffer(size_t size) {
     return gb_local->buf1.mem;
 }
 
-NOT4PERL int GB_give_buffer_size(){
+NOT4PERL int GB_give_buffer_size() {
     return gb_local->buf1.size;
 }
 
@@ -301,7 +301,7 @@ unsigned char GB_BIT_compress_data[] = {
 
 void GB_init_gb(void) {
     if (!gb_local) {
-        gb_local = (struct gb_local_data *)gbm_get_mem(sizeof(struct gb_local_data),0);
+        gb_local = (struct gb_local_data *)gbm_get_mem(sizeof(struct gb_local_data), 0);
 
         init_buffer(&gb_local->buf1, 4000);
         init_buffer(&gb_local->buf2, 4000);
@@ -311,11 +311,11 @@ void GB_init_gb(void) {
         gb_local->write_ptr     = gb_local->write_buffer;
         gb_local->write_free    = gb_local->write_bufsize;
         
-        gb_local->bituncompress = gb_build_uncompress_tree(GB_BIT_compress_data,1,0);
-        gb_local->bitcompress   = gb_build_compress_list(GB_BIT_compress_data,1,&(gb_local->bc_size));
+        gb_local->bituncompress = gb_build_uncompress_tree(GB_BIT_compress_data, 1, 0);
+        gb_local->bitcompress   = gb_build_compress_list(GB_BIT_compress_data, 1, &(gb_local->bc_size));
 
 #ifdef ARBDB_SIZEDEBUG
-        arbdb_stat = (long *)GB_calloc(sizeof(long),1000);
+        arbdb_stat = (long *)GB_calloc(sizeof(long), 1000);
 #endif
     }
 }
@@ -338,7 +338,7 @@ GB_ERROR gb_unfold(GBCONTAINER *gbd, long deep, int index_pos)
     struct gb_header_list_struct *header = GB_DATA_LIST_HEADER(gbd->d);
 
     if (!gbd->flags2.folded_container) return 0;
-    if (index_pos> gbd->d.nheader) gb_create_header_array(gbd,index_pos + 1);
+    if (index_pos> gbd->d.nheader) gb_create_header_array(gbd, index_pos + 1);
     if (index_pos >= 0  && GB_HEADER_LIST_GBD(header[index_pos])) return 0;
 
     if (GBCONTAINER_MAIN(gbd)->local_mode) {
@@ -347,7 +347,7 @@ GB_ERROR gb_unfold(GBCONTAINER *gbd, long deep, int index_pos)
     }
 
     do {
-        if (index_pos<0 ) break;
+        if (index_pos<0) break;
         if (index_pos >= gbd->d.nheader) break;
         if (header[index_pos].flags.changed >= GB_DELETED) {
             GB_internal_error("Tried to unfold a deleted item");
@@ -356,18 +356,18 @@ GB_ERROR gb_unfold(GBCONTAINER *gbd, long deep, int index_pos)
         if (GB_HEADER_LIST_GBD(header[index_pos])) return 0;            // already unfolded
     } while (0);
 
-    error= gbcm_unfold_client(gbd,deep,index_pos);
+    error = gbcm_unfold_client(gbd, deep, index_pos);
     if (error) {
         GB_print_error();
         return error;
     }
 
-    if ( index_pos<0 ) {
+    if (index_pos<0) {
         gb_untouch_children(gbd);
         gbd->flags2.folded_container = 0;
     }
     else {
-        if ( (gb2 = GBCONTAINER_ELEM(gbd,index_pos)) ) {
+        if ((gb2 = GBCONTAINER_ELEM(gbd, index_pos))) {
             if (GB_TYPE(gb2) == GB_DB) gb_untouch_children((GBCONTAINER *)gb2);
             gb_untouch_me(gb2);
         }
@@ -427,7 +427,7 @@ void GB_close(GBDATA *gbd) {
 
     gb_assert(Main->transaction == 0); // you can't close DB if there is still an open transaction!
 
-    if (!Main->local_mode){
+    if (!Main->local_mode) {
         long result = gbcmc_close(Main->c_link);
         if (result != 0) error = GBS_global_string("gbcmc_close returns %li", result);
     }
@@ -465,18 +465,18 @@ void GB_close(GBDATA *gbd) {
 
 long GB_read_int(GBDATA *gbd)
 {
-    GB_TEST_READ(gbd,GB_INT,"GB_read_int");
+    GB_TEST_READ(gbd, GB_INT, "GB_read_int");
     return gbd->info.i;
 }
 
 int GB_read_byte(GBDATA *gbd)
 {
-    GB_TEST_READ(gbd,GB_BYTE,"GB_read_byte");
+    GB_TEST_READ(gbd, GB_BYTE, "GB_read_byte");
     return gbd->info.i;
 }
 
 void *GB_read_pointer(GBDATA *gbd) {
-    GB_TEST_READ(gbd,GB_POINTER,"GB_read_pointer");
+    GB_TEST_READ(gbd, GB_POINTER, "GB_read_pointer");
     return gbd->info.ptr;
 }
 
@@ -484,9 +484,9 @@ double GB_read_float(GBDATA *gbd)
 {
     XDR xdrs;
     static float f;
-    GB_TEST_READ(gbd,GB_FLOAT,"GB_read_float");
-    xdrmem_create(&xdrs, &gbd->info.in.data[0],SIZOFINTERN,XDR_DECODE);
-    xdr_float(&xdrs,&f);
+    GB_TEST_READ(gbd, GB_FLOAT, "GB_read_float");
+    xdrmem_create(&xdrs, &gbd->info.in.data[0], SIZOFINTERN, XDR_DECODE);
+    xdr_float(&xdrs, &f);
     xdr_destroy(&xdrs);
     return (double)f;
 }
@@ -509,11 +509,11 @@ GB_CSTR GB_read_pntr(GBDATA *gbd) {
 
             if (!ca) {
                 long        size = GB_UNCOMPRESSED_SIZE(gbd, type);
-                const char *da   = gb_uncompress_data(gbd,data,size);
+                const char *da   = gb_uncompress_data(gbd, data, size);
                 
                 if (da) {
-                    ca = gb_alloc_cache_index(gbd,size);
-                    memcpy(ca,da,size);
+                    ca = gb_alloc_cache_index(gbd, size);
+                    memcpy(ca, da, size);
                 }
             }
             data = ca;
@@ -522,64 +522,64 @@ GB_CSTR GB_read_pntr(GBDATA *gbd) {
     return data;
 }
 
-int gb_read_nr(GBDATA *gbd){
+int gb_read_nr(GBDATA *gbd) {
     return gbd->index;
 }
 
 GB_CSTR GB_read_char_pntr(GBDATA *gbd)
 {
-    GB_TEST_READ(gbd,GB_STRING,"GB_read_char_pntr");
+    GB_TEST_READ(gbd, GB_STRING, "GB_read_char_pntr");
     return GB_read_pntr(gbd);
 }
 
 char *GB_read_string(GBDATA *gbd)
 {
     const char *d;
-    GB_TEST_READ(gbd,GB_STRING,"GB_read_string");
+    GB_TEST_READ(gbd, GB_STRING, "GB_read_string");
     d = GB_read_pntr(gbd);
     if (!d) return NULL;
-    return GB_memdup(d,GB_GETSIZE(gbd)+1);
+    return GB_memdup(d, GB_GETSIZE(gbd)+1);
 }
 
 long GB_read_string_count(GBDATA *gbd)
 {
-    GB_TEST_READ(gbd,GB_STRING,"GB_read_string_count");
+    GB_TEST_READ(gbd, GB_STRING, "GB_read_string_count");
     return GB_GETSIZE(gbd);
 }
 
 GB_CSTR GB_read_link_pntr(GBDATA *gbd)
 {
-    GB_TEST_READ(gbd,GB_LINK,"GB_read_link_pntr");
+    GB_TEST_READ(gbd, GB_LINK, "GB_read_link_pntr");
     return GB_read_pntr(gbd);
 }
 
 char *GB_read_link(GBDATA *gbd)
 {
     const char *d;
-    GB_TEST_READ(gbd,GB_LINK,"GB_read_link_pntr");
+    GB_TEST_READ(gbd, GB_LINK, "GB_read_link_pntr");
     d = GB_read_pntr(gbd);
     if (!d) return NULL;
-    return GB_memdup(d,GB_GETSIZE(gbd)+1);
+    return GB_memdup(d, GB_GETSIZE(gbd)+1);
 }
 
 long GB_read_link_count(GBDATA *gbd)
 {
-    GB_TEST_READ(gbd,GB_LINK,"GB_read_link_pntr");
+    GB_TEST_READ(gbd, GB_LINK, "GB_read_link_pntr");
     return GB_GETSIZE(gbd);
 }
 
 
 long GB_read_bits_count(GBDATA *gbd)
 {
-    GB_TEST_READ(gbd,GB_BITS,"GB_read_bits_count");
+    GB_TEST_READ(gbd, GB_BITS, "GB_read_bits_count");
     return GB_GETSIZE(gbd);
 }
 
-GB_CSTR GB_read_bits_pntr(GBDATA *gbd,char c_0, char c_1)
+GB_CSTR GB_read_bits_pntr(GBDATA *gbd, char c_0, char c_1)
 {
     char *data;
     long size;
-    GB_TEST_READ(gbd,GB_BITS,"GB_read_bits_pntr");
+    GB_TEST_READ(gbd, GB_BITS, "GB_read_bits_pntr");
     data = GB_GETDATA(gbd);
     size = GB_GETSIZE(gbd);
     if (!size) return 0;
@@ -587,10 +587,10 @@ GB_CSTR GB_read_bits_pntr(GBDATA *gbd,char c_0, char c_1)
         char *ca = gb_read_cache(gbd);
         char *da;
         if (ca) return ca;
-        ca = gb_alloc_cache_index(gbd,size+1);
-        da = gb_uncompress_bits(data,size,c_0,c_1);
+        ca = gb_alloc_cache_index(gbd, size+1);
+        da = gb_uncompress_bits(data, size, c_0, c_1);
         if (ca) {
-            memcpy(ca,da,size+1);
+            memcpy(ca, da, size+1);
             return ca;
         }
         else {
@@ -600,32 +600,32 @@ GB_CSTR GB_read_bits_pntr(GBDATA *gbd,char c_0, char c_1)
 }
 
 char *GB_read_bits(GBDATA *gbd, char c_0, char c_1) {
-    GB_CSTR d = GB_read_bits_pntr(gbd,c_0,c_1);
-    return d ? GB_memdup(d,GB_GETSIZE(gbd)+1) : 0;
+    GB_CSTR d = GB_read_bits_pntr(gbd, c_0, c_1);
+    return d ? GB_memdup(d, GB_GETSIZE(gbd)+1) : 0;
 }
 
 
 GB_CSTR GB_read_bytes_pntr(GBDATA *gbd)
 {
-    GB_TEST_READ(gbd,GB_BYTES,"GB_read_bytes_pntr");
+    GB_TEST_READ(gbd, GB_BYTES, "GB_read_bytes_pntr");
     return GB_read_pntr(gbd);
 }
 
 long GB_read_bytes_count(GBDATA *gbd)
 {
-    GB_TEST_READ(gbd,GB_BYTES,"GB_read_bytes_count");
+    GB_TEST_READ(gbd, GB_BYTES, "GB_read_bytes_count");
     return GB_GETSIZE(gbd);
 }
 
 char *GB_read_bytes(GBDATA *gbd) {
     GB_CSTR d = GB_read_bytes_pntr(gbd);
-    return d ? GB_memdup(d,GB_GETSIZE(gbd)) : 0;
+    return d ? GB_memdup(d, GB_GETSIZE(gbd)) : 0;
 }
 
 GB_CUINT4 *GB_read_ints_pntr(GBDATA *gbd)
 {
     GB_UINT4 *res;
-    GB_TEST_READ(gbd,GB_INTS,"GB_read_ints_pntr");
+    GB_TEST_READ(gbd, GB_INTS, "GB_read_ints_pntr");
 
     if (gbd->flags.compressed_data) {
         res = (GB_UINT4 *)GB_read_pntr(gbd);
@@ -635,17 +635,17 @@ GB_CUINT4 *GB_read_ints_pntr(GBDATA *gbd)
     }
     if (!res) return NULL;
 
-    if ( 0x01020304 == htonl((u_long)0x01020304) ) {
+    if (0x01020304 == htonl((u_long)0x01020304)) {
         return res;
     }
     else {
         long      i;
         int       size = GB_GETSIZE(gbd);
-        char     *buf2 = GB_give_other_buffer((char *)res,size<<2);
+        char     *buf2 = GB_give_other_buffer((char *)res, size<<2);
         GB_UINT4 *s    = (GB_UINT4 *)res;
         GB_UINT4 *d    = (GB_UINT4 *)buf2;
 
-        for (i=size;i;i--) {
+        for (i=size; i; i--) {
             *(d++) = htonl(*(s++));
         }
         return (GB_UINT4 *)buf2;
@@ -654,7 +654,7 @@ GB_CUINT4 *GB_read_ints_pntr(GBDATA *gbd)
 
 long GB_read_ints_count(GBDATA *gbd)
 {
-    GB_TEST_READ(gbd,GB_INTS,"GB_read_ints_count");
+    GB_TEST_READ(gbd, GB_INTS, "GB_read_ints_count");
     return GB_GETSIZE(gbd);
 }
 
@@ -662,7 +662,7 @@ GB_UINT4 *GB_read_ints(GBDATA *gbd)
 {
     GB_CUINT4 *i = GB_read_ints_pntr(gbd);
     if (!i) return NULL;
-    return  (GB_UINT4 *)GB_memdup((char *)i,GB_GETSIZE(gbd)*sizeof(GB_UINT4));
+    return  (GB_UINT4 *)GB_memdup((char *)i, GB_GETSIZE(gbd)*sizeof(GB_UINT4));
 }
 
 GB_CFLOAT *GB_read_floats_pntr(GBDATA *gbd)
@@ -670,7 +670,7 @@ GB_CFLOAT *GB_read_floats_pntr(GBDATA *gbd)
     char *buf2;
     char *res;
 
-    GB_TEST_READ(gbd,GB_FLOATS,"GB_read_floats_pntr");
+    GB_TEST_READ(gbd, GB_FLOATS, "GB_read_floats_pntr");
     if (gbd->flags.compressed_data) {
         res = (char *)GB_read_pntr(gbd);
     }
@@ -685,11 +685,11 @@ GB_CFLOAT *GB_read_floats_pntr(GBDATA *gbd)
         long   size      = GB_GETSIZE(gbd);
         long   full_size = size*sizeof(float);
 
-        xdrmem_create(&xdrs, res,(int)(full_size),XDR_DECODE);
-        buf2 = GB_give_other_buffer(res,full_size);
+        xdrmem_create(&xdrs, res, (int)(full_size), XDR_DECODE);
+        buf2 = GB_give_other_buffer(res, full_size);
         d = (float *)buf2;
-        for (i=size;i;i--) {
-            xdr_float(&xdrs,d);
+        for (i=size; i; i--) {
+            xdr_float(&xdrs, d);
             d++;
         }
         xdr_destroy(&xdrs);
@@ -699,7 +699,7 @@ GB_CFLOAT *GB_read_floats_pntr(GBDATA *gbd)
 
 long GB_read_floats_count(GBDATA *gbd)
 {
-    GB_TEST_READ(gbd,GB_FLOATS,"GB_read_floats_count");
+    GB_TEST_READ(gbd, GB_FLOATS, "GB_read_floats_count");
     return GB_GETSIZE(gbd);
 }
 
@@ -708,7 +708,7 @@ float *GB_read_floats(GBDATA *gbd)
     GB_CFLOAT *f;
     f = GB_read_floats_pntr(gbd);
     if (!f) return NULL;
-    return  (float *)GB_memdup((char *)f,GB_GETSIZE(gbd)*sizeof(float));
+    return  (float *)GB_memdup((char *)f, GB_GETSIZE(gbd)*sizeof(float));
 }
 
 char *GB_read_as_string(GBDATA *gbd)
@@ -716,10 +716,10 @@ char *GB_read_as_string(GBDATA *gbd)
     switch (GB_TYPE(gbd)) {
         case GB_STRING: return GB_read_string(gbd);
         case GB_LINK:   return GB_read_link(gbd);
-        case GB_BYTE:   return GBS_global_string_copy("%i",GB_read_byte(gbd));
-        case GB_INT:    return GBS_global_string_copy("%li",GB_read_int(gbd));
-        case GB_FLOAT:  return GBS_global_string_copy("%g",GB_read_float(gbd));
-        case GB_BITS:   return GB_read_bits(gbd,'0','1');
+        case GB_BYTE:   return GBS_global_string_copy("%i", GB_read_byte(gbd));
+        case GB_INT:    return GBS_global_string_copy("%li", GB_read_int(gbd));
+        case GB_FLOAT:  return GBS_global_string_copy("%g", GB_read_float(gbd));
+        case GB_BITS:   return GB_read_bits(gbd, '0', '1');
             /* Be careful : When adding new types here, you have to make sure that
              * GB_write_as_string is able to write them back and that this makes sense.
              */
@@ -771,27 +771,27 @@ double GB_read_from_floats(GBDATA *gbd, long index) {
 static void gb_do_callbacks(GBDATA *gbd) {
     gb_assert(GB_MAIN(gbd)->transaction<0); // only use in "no transaction mode"!
 
-    GBDATA *gbdn,*gbdc;
-    for (gbdc= gbd; gbdc; gbdc=gbdn) {
-        struct gb_callback *cb,*cbn;
+    GBDATA *gbdn, *gbdc;
+    for (gbdc = gbd; gbdc; gbdc=gbdn) {
+        struct gb_callback *cb, *cbn;
         gbdn = GB_get_father(gbdc);
         for (cb = GB_GET_EXT_CALLBACKS(gbdc); cb; cb = cbn) {
             cbn = cb->next;
             if (cb->type & GB_CB_CHANGED) {
                 ++cb->running;
-                cb->func(gbdc,cb->clientdata,GB_CB_CHANGED);
+                cb->func(gbdc, cb->clientdata, GB_CB_CHANGED);
                 --cb->running;
             }
         }
     }
 }
 
-#define GB_DO_CALLBACKS(gbd) do{ if (GB_MAIN(gbd)->transaction<0) gb_do_callbacks(gbd); }while(0)
+#define GB_DO_CALLBACKS(gbd) do { if (GB_MAIN(gbd)->transaction<0) gb_do_callbacks(gbd); } while (0)
 
-GB_ERROR GB_write_byte(GBDATA *gbd,int i)
+GB_ERROR GB_write_byte(GBDATA *gbd, int i)
 {
-    GB_TEST_WRITE(gbd,GB_BYTE,"GB_write_byte");
-    if (gbd->info.i != i){
+    GB_TEST_WRITE(gbd, GB_BYTE, "GB_write_byte");
+    if (gbd->info.i != i) {
         gb_save_extern_data_in_ts(gbd);
         gbd->info.i = i & 0xff;
         gb_touch_entry(gbd, GB_NORMAL_CHANGE);
@@ -800,20 +800,20 @@ GB_ERROR GB_write_byte(GBDATA *gbd,int i)
     return 0;
 }
 
-GB_ERROR GB_write_int(GBDATA *gbd,long i) {
+GB_ERROR GB_write_int(GBDATA *gbd, long i) {
 #if defined(ARB64)
 #if defined(DEVEL_RALF)
 #warning GB_write_int should be GB_ERROR GB_write_int(GBDATA *gbd,int32_t i) 
 #endif // DEVEL_RALF
 #endif // ARB64
 
-    GB_TEST_WRITE(gbd,GB_INT,"GB_write_int");
+    GB_TEST_WRITE(gbd, GB_INT, "GB_write_int");
     if ((long)((int32_t)i) != i) {
         gb_assert(0);
         GB_warningf("Warning: 64bit incompatibility detected\nNo data written to '%s'\n", GB_get_db_path(gbd));
         return "GB_INT out of range (signed, 32bit)";
     }
-    if (gbd->info.i != (int32_t)i){
+    if (gbd->info.i != (int32_t)i) {
         gb_save_extern_data_in_ts(gbd);
         gbd->info.i = i;
         gb_touch_entry(gbd, GB_NORMAL_CHANGE);
@@ -823,7 +823,7 @@ GB_ERROR GB_write_int(GBDATA *gbd,long i) {
 }
 
 GB_ERROR GB_write_pointer(GBDATA *gbd, void *pointer) {
-    GB_TEST_WRITE(gbd,GB_POINTER,"GB_write_pointer");
+    GB_TEST_WRITE(gbd, GB_POINTER, "GB_write_pointer");
     if (gbd->info.ptr != pointer) {
         gb_save_extern_data_in_ts(gbd);
         gbd->info.ptr = pointer;
@@ -833,24 +833,24 @@ GB_ERROR GB_write_pointer(GBDATA *gbd, void *pointer) {
     return 0;
 }
 
-GB_ERROR GB_write_float(GBDATA *gbd,double f)
+GB_ERROR GB_write_float(GBDATA *gbd, double f)
 {
     XDR xdrs;
     static float f2;
 
-    GB_TEST_WRITE(gbd,GB_FLOAT,"GB_write_float");
+    GB_TEST_WRITE(gbd, GB_FLOAT, "GB_write_float");
 
-    GB_TEST_READ(gbd,GB_FLOAT,"GB_read_float");
+    GB_TEST_READ(gbd, GB_FLOAT, "GB_read_float");
 
-    xdrmem_create(&xdrs, &gbd->info.in.data[0],SIZOFINTERN,XDR_DECODE);
-    xdr_float(&xdrs,&f2);
+    xdrmem_create(&xdrs, &gbd->info.in.data[0], SIZOFINTERN, XDR_DECODE);
+    xdr_float(&xdrs, &f2);
     xdr_destroy(&xdrs);
 
     if (f2 != f) {
         f2 = f;
         gb_save_extern_data_in_ts(gbd);
-        xdrmem_create(&xdrs, &gbd->info.in.data[0],SIZOFINTERN,XDR_ENCODE);
-        xdr_float(&xdrs,&f2);
+        xdrmem_create(&xdrs, &gbd->info.in.data[0], SIZOFINTERN, XDR_ENCODE);
+        xdr_float(&xdrs, &f2);
         xdr_destroy(&xdrs);
         gb_touch_entry(gbd, GB_NORMAL_CHANGE);
         GB_DO_CALLBACKS(gbd);
@@ -859,12 +859,12 @@ GB_ERROR GB_write_float(GBDATA *gbd,double f)
     return 0;
 }
 
-GB_ERROR gb_write_compressed_pntr(GBDATA *gbd,const char *s, long memsize , long stored_size){
+GB_ERROR gb_write_compressed_pntr(GBDATA *gbd, const char *s, long memsize, long stored_size) {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    gb_free_cache(Main,gbd);
+    gb_free_cache(Main, gbd);
     gb_save_extern_data_in_ts(gbd);
     gbd->flags.compressed_data = 1;
-    GB_SETSMDMALLOC(gbd,stored_size,(size_t)memsize,(char *)s);
+    GB_SETSMDMALLOC(gbd, stored_size, (size_t)memsize, (char *)s);
     gb_touch_entry(gbd, GB_NORMAL_CHANGE);
     return 0;
 }
@@ -885,7 +885,7 @@ int gb_get_compression_mask(GB_MAIN_TYPE *Main, GBQUARK key, int gb_type)
     return compression_mask;
 }
 
-GB_ERROR GB_write_pntr(GBDATA *gbd,const char *s, long bytes_size, long stored_size)
+GB_ERROR GB_write_pntr(GBDATA *gbd, const char *s, long bytes_size, long stored_size)
 {
     // 'bytes_size' is the size of what 's' points to.
     // 'stored_size' is the size-information written into the DB
@@ -903,12 +903,12 @@ GB_ERROR GB_write_pntr(GBDATA *gbd,const char *s, long bytes_size, long stored_s
 
     gb_assert(type != GB_STRING || (stored_size == bytes_size-1)); // size constraint for strings not fulfilled!
 
-    gb_free_cache(Main,gbd);
+    gb_free_cache(Main, gbd);
     gb_save_extern_data_in_ts(gbd);
 
     compression_mask = gb_get_compression_mask(Main, key, type);
 
-    if (compression_mask){
+    if (compression_mask) {
         d = gb_compress_data(gbd, key, s, bytes_size, &memsize, compression_mask, false);
     }
     else {
@@ -930,11 +930,11 @@ GB_ERROR GB_write_pntr(GBDATA *gbd,const char *s, long bytes_size, long stored_s
     return 0;
 }
 
-GB_ERROR GB_write_string(GBDATA *gbd,const char *s)
+GB_ERROR GB_write_string(GBDATA *gbd, const char *s)
 {
     long size;
-    GB_TEST_WRITE(gbd,GB_STRING,"GB_write_string");
-    GB_TEST_NON_BUFFER(s,"GB_write_string");        // compress would destroy the other buffer
+    GB_TEST_WRITE(gbd, GB_STRING, "GB_write_string");
+    GB_TEST_NON_BUFFER(s, "GB_write_string");        // compress would destroy the other buffer
     
     if (!s) s = "";
     size      = strlen(s);
@@ -942,13 +942,13 @@ GB_ERROR GB_write_string(GBDATA *gbd,const char *s)
     // no zero len strings allowed
     if ((GB_GETMEMSIZE(gbd))  && (size == GB_GETSIZE(gbd)))
     {
-        if (!strcmp(s,GB_read_pntr(gbd)))
+        if (!strcmp(s, GB_read_pntr(gbd)))
             return 0;
     }
 #if defined(DEBUG) && 0
     // check for error (in compression)
     {
-        GB_ERROR error = GB_write_pntr(gbd,s,size+1,size);
+        GB_ERROR error = GB_write_pntr(gbd, s, size+1, size);
         if (!error) {
             char *check = GB_read_string(gbd);
 
@@ -960,15 +960,15 @@ GB_ERROR GB_write_string(GBDATA *gbd,const char *s)
         return error;
     }
 #else
-    return GB_write_pntr(gbd,s,size+1,size);
+    return GB_write_pntr(gbd, s, size+1, size);
 #endif // DEBUG
 }
 
-GB_ERROR GB_write_link(GBDATA *gbd,const char *s)
+GB_ERROR GB_write_link(GBDATA *gbd, const char *s)
 {
     long size;
-    GB_TEST_WRITE(gbd,GB_STRING,"GB_write_link");
-    GB_TEST_NON_BUFFER(s,"GB_write_link");          // compress would destroy the other buffer
+    GB_TEST_WRITE(gbd, GB_STRING, "GB_write_link");
+    GB_TEST_NON_BUFFER(s, "GB_write_link");          // compress would destroy the other buffer
     
     if (!s) s = "";
     size      = strlen(s);
@@ -976,89 +976,89 @@ GB_ERROR GB_write_link(GBDATA *gbd,const char *s)
     // no zero len strings allowed
     if ((GB_GETMEMSIZE(gbd))  && (size == GB_GETSIZE(gbd)))
     {
-        if (!strcmp(s,GB_read_pntr(gbd)))
+        if (!strcmp(s, GB_read_pntr(gbd)))
             return 0;
     }
-    return GB_write_pntr(gbd,s,size+1,size);
+    return GB_write_pntr(gbd, s, size+1, size);
 }
 
 
-GB_ERROR GB_write_bits(GBDATA *gbd,const char *bits,long size, const char *c_0)
+GB_ERROR GB_write_bits(GBDATA *gbd, const char *bits, long size, const char *c_0)
 {
     char *d;
     long memsize[2];
 
-    GB_TEST_WRITE(gbd,GB_BITS,"GB_write_bits");
-    GB_TEST_NON_BUFFER(bits,"GB_write_bits");       // compress would destroy the other buffer
+    GB_TEST_WRITE(gbd, GB_BITS, "GB_write_bits");
+    GB_TEST_NON_BUFFER(bits, "GB_write_bits");       // compress would destroy the other buffer
     gb_save_extern_data_in_ts(gbd);
 
-    d = gb_compress_bits(bits,size,(const unsigned char *)c_0,memsize);
+    d = gb_compress_bits(bits, size, (const unsigned char *)c_0, memsize);
     gbd->flags.compressed_data = 1;
-    GB_SETSMDMALLOC(gbd,size,memsize[0],d);
+    GB_SETSMDMALLOC(gbd, size, memsize[0], d);
     gb_touch_entry(gbd, GB_NORMAL_CHANGE);
     GB_DO_CALLBACKS(gbd);
     return 0;
 }
 
-GB_ERROR GB_write_bytes(GBDATA *gbd,const char *s,long size)
+GB_ERROR GB_write_bytes(GBDATA *gbd, const char *s, long size)
 {
-    GB_TEST_WRITE(gbd,GB_BYTES,"GB_write_bytes");
-    return GB_write_pntr(gbd,s,size,size);
+    GB_TEST_WRITE(gbd, GB_BYTES, "GB_write_bytes");
+    return GB_write_pntr(gbd, s, size, size);
 }
 
-GB_ERROR GB_write_ints(GBDATA *gbd,const GB_UINT4 *i,long size)
+GB_ERROR GB_write_ints(GBDATA *gbd, const GB_UINT4 *i, long size)
 {
 
-    GB_TEST_WRITE(gbd,GB_INTS,"GB_write_ints");
-    GB_TEST_NON_BUFFER((char *)i,"GB_write_ints");  // compress would destroy the other buffer
+    GB_TEST_WRITE(gbd, GB_INTS, "GB_write_ints");
+    GB_TEST_NON_BUFFER((char *)i, "GB_write_ints");  // compress would destroy the other buffer
 
-    if ( 0x01020304 != htonl((GB_UINT4)0x01020304) ) {
+    if (0x01020304 != htonl((GB_UINT4)0x01020304)) {
         long      j;
-        char     *buf2 = GB_give_other_buffer((char *)i,size<<2);
+        char     *buf2 = GB_give_other_buffer((char *)i, size<<2);
         GB_UINT4 *s    = (GB_UINT4 *)i;
         GB_UINT4 *d    = (GB_UINT4 *)buf2;
         
-        for (j=size;j;j--) {
+        for (j=size; j; j--) {
             *(d++) = htonl(*(s++));
         }
         i = (GB_UINT4 *)buf2;
     }
-    return GB_write_pntr(gbd,(char *)i,size* 4 /*sizeof(long4)*/,size);
+    return GB_write_pntr(gbd, (char *)i, size* 4 /* sizeof(long4) */, size);
 }
 
-GB_ERROR GB_write_floats(GBDATA *gbd,const float *f,long size)
+GB_ERROR GB_write_floats(GBDATA *gbd, const float *f, long size)
 {
     long fullsize = size * sizeof(float);
-    GB_TEST_WRITE(gbd,GB_FLOATS,"GB_write_floats");
-    GB_TEST_NON_BUFFER((char *)f,"GB_write_floats"); // compress would destroy the other buffer
+    GB_TEST_WRITE(gbd, GB_FLOATS, "GB_write_floats");
+    GB_TEST_NON_BUFFER((char *)f, "GB_write_floats"); // compress would destroy the other buffer
 
     {
         XDR    xdrs;
         long   i;
-        char  *buf2 = GB_give_other_buffer((char *)f,fullsize);
+        char  *buf2 = GB_give_other_buffer((char *)f, fullsize);
         float *s    = (float *)f;
 
-        xdrmem_create(&xdrs, buf2 ,(int)fullsize ,XDR_ENCODE);
-        for (i=size;i;i--) {
-            xdr_float(&xdrs,s);
+        xdrmem_create(&xdrs, buf2, (int)fullsize, XDR_ENCODE);
+        for (i=size; i; i--) {
+            xdr_float(&xdrs, s);
             s++;
         }
         xdr_destroy (&xdrs);
         f = (float *)buf2;
     }
-    return GB_write_pntr(gbd,(char *)f,size*sizeof(float),size);
+    return GB_write_pntr(gbd, (char *)f, size*sizeof(float), size);
 }
 
-GB_ERROR GB_write_as_string(GBDATA *gbd,const char *val)
+GB_ERROR GB_write_as_string(GBDATA *gbd, const char *val)
 {
     switch (GB_TYPE(gbd)) {
-        case GB_STRING: return GB_write_string(gbd,val);
-        case GB_LINK:   return GB_write_link(gbd,val);
-        case GB_BYTE:   return GB_write_byte(gbd,atoi(val));
-        case GB_INT:    return GB_write_int(gbd,atoi(val));
-        case GB_FLOAT:  return GB_write_float(gbd,GB_atof(val));
-        case GB_BITS:   return GB_write_bits(gbd,val,strlen(val),"0");
-        default:    return GB_export_errorf("Error: You cannot use GB_write_as_string on this type of entry (%s)",GB_read_key_pntr(gbd));
+        case GB_STRING: return GB_write_string(gbd, val);
+        case GB_LINK:   return GB_write_link(gbd, val);
+        case GB_BYTE:   return GB_write_byte(gbd, atoi(val));
+        case GB_INT:    return GB_write_int(gbd, atoi(val));
+        case GB_FLOAT:  return GB_write_float(gbd, GB_atof(val));
+        case GB_BITS:   return GB_write_bits(gbd, val, strlen(val), "0");
+        default:    return GB_export_errorf("Error: You cannot use GB_write_as_string on this type of entry (%s)", GB_read_key_pntr(gbd));
     }
 }
 
@@ -1096,7 +1096,7 @@ GB_ERROR gb_security_error(GBDATA *gbd) { // goes to header: __ATTR__USERESULT
     return error;
 }
 
-GB_ERROR GB_write_security_write(GBDATA *gbd,unsigned long level)
+GB_ERROR GB_write_security_write(GBDATA *gbd, unsigned long level)
 {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     GB_TEST_TRANSACTION(gbd);
@@ -1104,58 +1104,58 @@ GB_ERROR GB_write_security_write(GBDATA *gbd,unsigned long level)
     if (GB_GET_SECURITY_WRITE(gbd)>Main->security_level)
         return gb_security_error(gbd);
     if (GB_GET_SECURITY_WRITE(gbd) == level) return 0;
-    GB_PUT_SECURITY_WRITE(gbd,level);
+    GB_PUT_SECURITY_WRITE(gbd, level);
     gb_touch_entry(gbd, GB_NORMAL_CHANGE);
     GB_DO_CALLBACKS(gbd);
     return 0;
 }
-GB_ERROR GB_write_security_read(GBDATA *gbd,unsigned long level)
+GB_ERROR GB_write_security_read(GBDATA *gbd, unsigned long level)
 {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     GB_TEST_TRANSACTION(gbd);
     if (GB_GET_SECURITY_WRITE(gbd)>Main->security_level)
         return gb_security_error(gbd);
     if (GB_GET_SECURITY_READ(gbd) == level) return 0;
-    GB_PUT_SECURITY_READ(gbd,level);
+    GB_PUT_SECURITY_READ(gbd, level);
     gb_touch_entry(gbd, GB_NORMAL_CHANGE);
     GB_DO_CALLBACKS(gbd);
     return 0;
 }
 
-GB_ERROR GB_write_security_delete(GBDATA *gbd,unsigned long level)
+GB_ERROR GB_write_security_delete(GBDATA *gbd, unsigned long level)
 {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     GB_TEST_TRANSACTION(gbd);
     if (GB_GET_SECURITY_WRITE(gbd)>Main->security_level)
         return gb_security_error(gbd);
     if (GB_GET_SECURITY_DELETE(gbd) == level) return 0;
-    GB_PUT_SECURITY_DELETE(gbd,level);
+    GB_PUT_SECURITY_DELETE(gbd, level);
     gb_touch_entry(gbd, GB_NORMAL_CHANGE);
     GB_DO_CALLBACKS(gbd);
     return 0;
 }
-GB_ERROR GB_write_security_levels(GBDATA *gbd,unsigned long readlevel,unsigned long writelevel,unsigned long deletelevel)
+GB_ERROR GB_write_security_levels(GBDATA *gbd, unsigned long readlevel, unsigned long writelevel, unsigned long deletelevel)
 {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     GB_TEST_TRANSACTION(gbd);
     if (GB_GET_SECURITY_WRITE(gbd)>Main->security_level)
         return gb_security_error(gbd);
-    GB_PUT_SECURITY_WRITE(gbd,writelevel);
-    GB_PUT_SECURITY_READ(gbd,readlevel);
-    GB_PUT_SECURITY_DELETE(gbd,deletelevel);
+    GB_PUT_SECURITY_WRITE(gbd, writelevel);
+    GB_PUT_SECURITY_READ(gbd, readlevel);
+    GB_PUT_SECURITY_DELETE(gbd, deletelevel);
     gb_touch_entry(gbd, GB_NORMAL_CHANGE);
     GB_DO_CALLBACKS(gbd);
     return 0;
 }
 
-GB_ERROR GB_change_my_security(GBDATA *gbd,int level,const char *passwd)
+GB_ERROR GB_change_my_security(GBDATA *gbd, int level, const char *passwd)
 {
     int i;
     i = level;
     if (i<0) i=0;
     if (i>=8) i = 7;
     GB_MAIN(gbd)->security_level = i;
-    passwd = passwd;    //dummy for compiler
+    passwd = passwd;    // dummy for compiler
     return 0;
 }
 
@@ -1195,7 +1195,7 @@ GB_CSTR GB_read_key_pntr(GBDATA *gbd) {
     return k;
 }
 
-GB_CSTR gb_read_key_pntr(GBDATA *gbd){
+GB_CSTR gb_read_key_pntr(GBDATA *gbd) {
     return GB_KEY(gbd);
 }
 
@@ -1205,9 +1205,9 @@ GBQUARK GB_key_2_quark(GBDATA *gbd, const char *s) {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
 
     if (!s) return -1;
-    index = GBS_read_hash(Main->key_2_index_hash,s);
+    index = GBS_read_hash(Main->key_2_index_hash, s);
     if (!index) {   // create new index
-        index = gb_create_key(Main,s,true);
+        index = gb_create_key(Main, s, true);
     }
     return (GBQUARK)index;
 }
@@ -1224,9 +1224,9 @@ bool GB_has_key(GBDATA *gbd, const char *key) {
 GBQUARK gb_key_2_quark(GB_MAIN_TYPE *Main, const char *s) {
     long index;
     if (!s) return 0;
-    index = GBS_read_hash(Main->key_2_index_hash,s);
+    index = GBS_read_hash(Main->key_2_index_hash, s);
     if (!index) {   // create new index
-        index = gb_create_key(Main,s,true);
+        index = gb_create_key(Main, s, true);
     }
     return (GBQUARK)index;
 }
@@ -1290,16 +1290,16 @@ bool GB_check_father(GBDATA *gbd, GBDATA *gb_maybefather) {
     return false;
 }
 
-GBDATA *gb_create(GBDATA *father,const char *key, GB_TYPES type){
-    GBDATA *gbd = gb_make_entry((GBCONTAINER *)father, key, -1,0,type);
+GBDATA *gb_create(GBDATA *father, const char *key, GB_TYPES type) {
+    GBDATA *gbd = gb_make_entry((GBCONTAINER *)father, key, -1, 0, type);
     gb_touch_header(GB_FATHER(gbd));
     gb_touch_entry(gbd, GB_CREATED);
     return (GBDATA *)gbd;
 }
 
 // Create a container, do not check anything
-GBDATA *gb_create_container(GBDATA *father, const char *key){
-    GBCONTAINER *gbd = gb_make_container((GBCONTAINER *)father,key, -1, 0);
+GBDATA *gb_create_container(GBDATA *father, const char *key) {
+    GBCONTAINER *gbd = gb_make_container((GBCONTAINER *)father, key, -1, 0);
     gb_touch_header(GB_FATHER(gbd));
     gb_touch_entry((GBDATA *)gbd, GB_CREATED);
     return (GBDATA *)gbd;
@@ -1342,7 +1342,7 @@ int GB_rename(GBDATA *gbc, const char *new_key) {
 }
 
 // User accessible create, check everything
-GBDATA *GB_create(GBDATA *father,const char *key, GB_TYPES type)
+GBDATA *GB_create(GBDATA *father, const char *key, GB_TYPES type)
 {
     GBDATA *gbd;
 
@@ -1357,14 +1357,14 @@ GBDATA *GB_create(GBDATA *father,const char *key, GB_TYPES type)
         return NULL;
     }
 
-    if ( !father ) {
-        GB_internal_errorf("GB_create error in GB_create:\nno father (key = '%s')",key);
+    if (!father) {
+        GB_internal_errorf("GB_create error in GB_create:\nno father (key = '%s')", key);
         return NULL;
     }
     GB_TEST_TRANSACTION(father);
-    if ( GB_TYPE(father)!=GB_DB) {
+    if (GB_TYPE(father)!=GB_DB) {
         GB_export_errorf("GB_create: father (%s) is not of GB_DB type (%i) (creating '%s')",
-                         GB_read_key_pntr(father),GB_TYPE(father),key);
+                         GB_read_key_pntr(father), GB_TYPE(father), key);
         return NULL;
     };
 
@@ -1375,7 +1375,7 @@ GBDATA *GB_create(GBDATA *father,const char *key, GB_TYPES type)
         }
     }
 
-    gbd = gb_make_entry((GBCONTAINER *)father, key, -1,0,type);
+    gbd = gb_make_entry((GBCONTAINER *)father, key, -1, 0, type);
     gb_touch_header(GB_FATHER(gbd));
     gb_touch_entry(gbd, GB_CREATED);
     
@@ -1384,7 +1384,7 @@ GBDATA *GB_create(GBDATA *father,const char *key, GB_TYPES type)
     return gbd;
 }
 
-GBDATA *GB_create_container(GBDATA *father,const char *key)
+GBDATA *GB_create_container(GBDATA *father, const char *key)
 {
     // create a new container
     
@@ -1394,21 +1394,21 @@ GBDATA *GB_create_container(GBDATA *father,const char *key)
         return NULL;
     }
 
-    if ( (*key == '\0')) {
+    if ((*key == '\0')) {
         GB_export_error("GB_create error: empty key");
         return NULL;
     }
-    if ( !father ) {
-        GB_internal_errorf("GB_create error in GB_create:\nno father (key = '%s')",key);
+    if (!father) {
+        GB_internal_errorf("GB_create error in GB_create:\nno father (key = '%s')", key);
         return NULL;
     }
     GB_TEST_TRANSACTION(father);
-    if ( GB_TYPE(father)!=GB_DB) {
+    if (GB_TYPE(father)!=GB_DB) {
         GB_export_errorf("GB_create: father (%s) is not of GB_DB type (%i) (creating '%s')",
-                         GB_read_key_pntr(father),GB_TYPE(father),key);
+                         GB_read_key_pntr(father), GB_TYPE(father), key);
         return NULL;
     };
-    gbd = gb_make_container((GBCONTAINER *)father,key, -1, 0);
+    gbd = gb_make_container((GBCONTAINER *)father, key, -1, 0);
     gb_touch_header(GB_FATHER(gbd));
     gb_touch_entry((GBDATA *)gbd, GB_CREATED);
     return (GBDATA *)gbd;
@@ -1423,7 +1423,7 @@ GB_ERROR GB_delete(GBDATA *source) {
 
     GB_TEST_TRANSACTION(source);
     if (GB_GET_SECURITY_DELETE(source)>GB_MAIN(source)->security_level) {
-        return GB_export_errorf("Security error in GB_delete: %s",GB_read_key_pntr(source));
+        return GB_export_errorf("Security error in GB_delete: %s", GB_read_key_pntr(source));
     }
 
     gb_main = GB_get_root(source);
@@ -1436,12 +1436,12 @@ GB_ERROR GB_delete(GBDATA *source) {
 
     {
         GB_MAIN_TYPE *Main = GB_MAIN(source);
-        if (Main->transaction<0){
+        if (Main->transaction<0) {
             gb_delete_entry(&source);
             gb_do_callback_list(Main);
         }
         else {
-            gb_touch_entry(source,GB_DELETED);
+            gb_touch_entry(source, GB_DELETED);
         }
     }
     return 0;
@@ -1449,7 +1449,7 @@ GB_ERROR GB_delete(GBDATA *source) {
 
 GB_ERROR gb_delete_force(GBDATA *source)    // delete always
 {
-    gb_touch_entry(source,GB_DELETED);
+    gb_touch_entry(source, GB_DELETED);
     return 0;
 }
 
@@ -1471,7 +1471,7 @@ GB_ERROR GB_copy_with_protection(GBDATA *dest, GBDATA *source, bool copy_all_pro
     GB_ERROR error = 0;
     GBDATA *gb_p;
     GBDATA *gb_d;
-    GBCONTAINER *destc,*sourcec;
+    GBCONTAINER *destc, *sourcec;
     const char *key;
 
     GB_TEST_TRANSACTION(source);
@@ -1485,19 +1485,19 @@ GB_ERROR GB_copy_with_protection(GBDATA *dest, GBDATA *source, bool copy_all_pro
     switch (type)
     {
         case GB_INT:
-            error = GB_write_int(dest,GB_read_int(source));
+            error = GB_write_int(dest, GB_read_int(source));
             break;
         case GB_FLOAT:
-            error = GB_write_float(dest,GB_read_float(source));
+            error = GB_write_float(dest, GB_read_float(source));
             break;
         case GB_BYTE:
-            error = GB_write_byte(dest,GB_read_byte(source));
+            error = GB_write_byte(dest, GB_read_byte(source));
             break;
         case GB_STRING:     // No local compression
-            error = GB_write_string(dest,GB_read_char_pntr(source));
+            error = GB_write_string(dest, GB_read_char_pntr(source));
             break;
         case GB_LINK:       // No local compression
-            error = GB_write_link(dest,GB_read_link_pntr(source));
+            error = GB_write_link(dest, GB_read_link_pntr(source));
             break;
         case GB_BITS:       // only local compressions for the following types
         case GB_BYTES:
@@ -1523,8 +1523,8 @@ GB_ERROR GB_copy_with_protection(GBDATA *dest, GBDATA *source, bool copy_all_pro
                 return err;
             }
 
-            if (source->flags2.folded_container)    gb_unfold((GBCONTAINER *)source,-1,-1);
-            if (dest->flags2.folded_container)  gb_unfold((GBCONTAINER *)dest,0,-1);
+            if (source->flags2.folded_container)    gb_unfold((GBCONTAINER *)source, -1, -1);
+            if (dest->flags2.folded_container)  gb_unfold((GBCONTAINER *)dest, 0, -1);
 
             for (gb_p = GB_child(source); gb_p; gb_p = GB_nextChild(gb_p)) {
                 GB_TYPES type2 = (GB_TYPES)GB_TYPE(gb_p);
@@ -1532,12 +1532,12 @@ GB_ERROR GB_copy_with_protection(GBDATA *dest, GBDATA *source, bool copy_all_pro
                 key = GB_read_key_pntr(gb_p);
                 if (type2 == GB_DB)
                 {
-                    gb_d = GB_create_container(dest,key);
+                    gb_d = GB_create_container(dest, key);
                     gb_create_header_array((GBCONTAINER *)gb_d, ((GBCONTAINER *)gb_p)->d.size);
                 }
                 else
                 {
-                    gb_d = GB_create(dest,key,type2);
+                    gb_d = GB_create(dest, key, type2);
                 }
 
                 if (!gb_d) error = GB_await_error();
@@ -1650,8 +1650,8 @@ GB_ERROR gb_set_compression(GBDATA *source)
     switch (type) {
         case GB_STRING:
             string = GB_read_string(source);
-            GB_write_string(source,"");
-            GB_write_string(source,string);
+            GB_write_string(source, "");
+            GB_write_string(source, string);
             free(string);
             break;
         case GB_BITS:
@@ -1689,7 +1689,7 @@ GB_ERROR GB_set_temporary(GBDATA *gbd) {
 
     GB_TEST_TRANSACTION(gbd);
     if (GB_GET_SECURITY_DELETE(gbd)>GB_MAIN(gbd)->security_level)
-        return GB_export_errorf("Security error in GB_set_temporary: %s",GB_read_key_pntr(gbd));
+        return GB_export_errorf("Security error in GB_set_temporary: %s", GB_read_key_pntr(gbd));
     gbd->flags.temporary = 1;
     gb_touch_entry(gbd, GB_NORMAL_CHANGE);
     return 0;
@@ -1741,7 +1741,7 @@ GB_ERROR GB_pop_local_transaction(GBDATA *gbd) {
     // Stops a read only transaction.
     // Be sure that all data is cached!
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    if (Main->transaction>0){
+    if (Main->transaction>0) {
         return GB_pop_transaction(gbd);
     }
     Main->transaction ++;
@@ -1768,7 +1768,7 @@ GB_ERROR GB_pop_local_transaction(GBDATA *gbd) {
  * }
  */
 
-GB_ERROR GB_push_transaction(GBDATA *gbd){
+GB_ERROR GB_push_transaction(GBDATA *gbd) {
     // start a transaction if no transaction is running
 
     GB_MAIN_TYPE *Main  = GB_MAIN(gbd);
@@ -1790,7 +1790,7 @@ GB_ERROR GB_pop_transaction(GBDATA *gbd) {
         return  error;
     }
     if (Main->transaction<0) return 0;  // no transaction mode
-    if (Main->transaction==1){
+    if (Main->transaction==1) {
         return GB_commit_transaction(gbd);
     }
     else {
@@ -1814,10 +1814,10 @@ GB_ERROR GB_begin_transaction(GBDATA *gbd) {
     if (Main->transaction<0) return 0;
     Main->transaction = 1;
     Main->aborted_transaction = 0;
-    if (!Main->local_mode){
+    if (!Main->local_mode) {
         error = gbcmc_begin_transaction(gbd);
         if (error) return error;
-        error = gb_commit_transaction_local_rek(gbd,0,0);   // init structures
+        error = gb_commit_transaction_local_rek(gbd, 0, 0); // init structures
         gb_untouch_children((GBCONTAINER *)gbd);
         gb_untouch_me(gbd);
         if (error) return error;
@@ -1872,8 +1872,8 @@ GB_ERROR GB_abort_transaction(GBDATA *gbd)
         return GB_pop_transaction(gbd);
     }
 
-    gb_abort_transaction_local_rek(gbd,0);
-    if (!Main->local_mode){
+    gb_abort_transaction_local_rek(gbd, 0);
+    if (!Main->local_mode) {
         error = gbcmc_abort_transaction(gbd);
         if (error) return error;
     }
@@ -1896,7 +1896,7 @@ GB_ERROR GB_commit_transaction(GBDATA *gbd) {
         GB_internal_error(error);
         return error;
     }
-    if (Main->transaction>1){
+    if (Main->transaction>1) {
         GB_internal_error("Running GB_commit_transaction not at root transaction level");
         return GB_pop_transaction(gbd);
     }
@@ -1906,29 +1906,29 @@ GB_ERROR GB_commit_transaction(GBDATA *gbd) {
     }
     if (Main->local_mode) {
         char *error1 = gb_set_undo_sync(gbd);
-        while(1){
+        while (1) {
             flag = (GB_CHANGE)GB_ARRAY_FLAGS(gbd).changed;
             if (!flag) break;           // nothing to do
-            error = gb_commit_transaction_local_rek(gbd,0,0);
+            error = gb_commit_transaction_local_rek(gbd, 0, 0);
             gb_untouch_children((GBCONTAINER *)gbd);
             gb_untouch_me(gbd);
             if (error) break;
             gb_do_callback_list(Main);       // do all callbacks
         }
         gb_disable_undo(gbd);
-        if(error1){
+        if (error1) {
             Main->transaction = 0;
             return error;
         }
     }
     else {
         gb_disable_undo(gbd);
-        while(1){
+        while (1) {
             flag = (GB_CHANGE)GB_ARRAY_FLAGS(gbd).changed;
             if (!flag) break;           // nothing to do
 
             error = gbcmc_begin_sendupdate(gbd);        if (error) break;
-            error = gb_commit_transaction_local_rek(gbd,1,0);   if (error) break;
+            error = gb_commit_transaction_local_rek(gbd, 1, 0); if (error) break;
             error = gbcmc_end_sendupdate(gbd);      if (error) break;
 
             gb_untouch_children((GBCONTAINER *)gbd);
@@ -1973,17 +1973,17 @@ GB_ERROR GB_update_server(GBDATA *gbd)
         GB_internal_error(error);
         return error;
     }
-    if (Main->local_mode){
+    if (Main->local_mode) {
         return GB_export_error("You cannot update the server as you are the server yourself");
     }
 
     error = gbcmc_begin_sendupdate(gb_main);
     if (error) return error;
-    error = gb_commit_transaction_local_rek(gbd,2,0);
+    error = gb_commit_transaction_local_rek(gbd, 2, 0);
     if (error) return error;
     error = gbcmc_end_sendupdate(gb_main);
     if (error) return error;
-    if (cbl_old != Main->cbl_last){
+    if (cbl_old != Main->cbl_last) {
         GB_internal_error("GB_update_server produced a callback, this is not allowed");
     }
     // gb_do_callback_list(gbd);         do all callbacks
@@ -1993,12 +1993,12 @@ GB_ERROR GB_update_server(GBDATA *gbd)
                     CALLBACKS
 ********************************************************************************************/
 
-GB_ERROR gb_add_changed_callback_list(GBDATA *gbd,struct gb_transaction_save *old, GB_CB_TYPE gbtype, GB_CB func, int *clientdata)
+GB_ERROR gb_add_changed_callback_list(GBDATA *gbd, struct gb_transaction_save *old, GB_CB_TYPE gbtype, GB_CB func, int *clientdata)
 {
     struct gb_callback_list *cbl;
     GB_MAIN_TYPE    *Main = GB_MAIN(gbd);
-    cbl = (struct gb_callback_list *)gbm_get_mem(sizeof(struct gb_callback_list),GBM_CB_INDEX);
-    if (Main->cbl){
+    cbl = (struct gb_callback_list *)gbm_get_mem(sizeof(struct gb_callback_list), GBM_CB_INDEX);
+    if (Main->cbl) {
         Main->cbl_last->next = cbl;
     }
     else {
@@ -2015,12 +2015,12 @@ GB_ERROR gb_add_changed_callback_list(GBDATA *gbd,struct gb_transaction_save *ol
     return 0;
 }
 
-GB_ERROR gb_add_delete_callback_list(GBDATA *gbd,struct gb_transaction_save *old, GB_CB func, int *clientdata)
+GB_ERROR gb_add_delete_callback_list(GBDATA *gbd, struct gb_transaction_save *old, GB_CB func, int *clientdata)
 {
     struct gb_callback_list *cbl;
     GB_MAIN_TYPE    *Main = GB_MAIN(gbd);
-    cbl = (struct gb_callback_list *)gbm_get_mem(sizeof(struct gb_callback_list),GBM_CB_INDEX);
-    if (Main->cbld){
+    cbl = (struct gb_callback_list *)gbm_get_mem(sizeof(struct gb_callback_list), GBM_CB_INDEX);
+    if (Main->cbld) {
         Main->cbld_last->next = cbl;
     }
     else {
@@ -2040,30 +2040,30 @@ static struct gb_callback_list *g_b_old_callback_list = NULL; // points to callb
 static GB_MAIN_TYPE            *g_b_old_main          = NULL; // points to DB root during callback (NULL otherwise)
 
 GB_ERROR gb_do_callback_list(GB_MAIN_TYPE *Main) {
-    struct gb_callback_list *cbl,*cbl_next;
+    struct gb_callback_list *cbl, *cbl_next;
     g_b_old_main = Main;
 
     // first all delete callbacks:
-    for (cbl = Main->cbld; cbl ; cbl = cbl_next){
+    for (cbl = Main->cbld; cbl;  cbl = cbl_next) {
         g_b_old_callback_list = cbl;
-        cbl->func(cbl->gbd,cbl->clientdata, GB_CB_DELETE);
+        cbl->func(cbl->gbd, cbl->clientdata, GB_CB_DELETE);
         cbl_next = cbl->next;
         g_b_old_callback_list = NULL;
         gb_del_ref_gb_transaction_save(cbl->old);
-        gbm_free_mem((char *)cbl,sizeof(struct gb_callback_list),GBM_CB_INDEX);
+        gbm_free_mem((char *)cbl, sizeof(struct gb_callback_list), GBM_CB_INDEX);
     }
     
     Main->cbld_last = NULL;
     Main->cbld      = NULL;
 
     // then all update callbacks:
-    for (cbl = Main->cbl; cbl ; cbl = cbl_next){
+    for (cbl = Main->cbl; cbl;  cbl = cbl_next) {
         g_b_old_callback_list = cbl;
-        cbl->func(cbl->gbd,cbl->clientdata, cbl->type);
+        cbl->func(cbl->gbd, cbl->clientdata, cbl->type);
         cbl_next = cbl->next;
         g_b_old_callback_list = NULL;
         gb_del_ref_gb_transaction_save(cbl->old);
-        gbm_free_mem((char *)cbl,sizeof(struct gb_callback_list),GBM_CB_INDEX);
+        gbm_free_mem((char *)cbl, sizeof(struct gb_callback_list), GBM_CB_INDEX);
     }
 
     g_b_old_main   = NULL;
@@ -2121,20 +2121,20 @@ GBDATA *GB_get_gb_main_during_cb() {
 
 
 
-GB_CSTR gb_read_pntr_ts(GBDATA *gbd, struct gb_transaction_save *ts){
+GB_CSTR gb_read_pntr_ts(GBDATA *gbd, struct gb_transaction_save *ts) {
     int         type = GB_TYPE_TS(ts);
     const char *data = GB_GETDATA_TS(ts);
     if (data) {
         if (ts->flags.compressed_data) {    // uncompressed data return pntr to database entry
             long size = GB_GETSIZE_TS(ts) * gb_convert_type_2_sizeof[type] + gb_convert_type_2_appendix_size[type];
-            data = gb_uncompress_data(gbd,data,size);
+            data = gb_uncompress_data(gbd, data, size);
         }
     }
     return data;
 }
 
 // get last array value in callbacks
-NOT4PERL const void *GB_read_old_value(){
+NOT4PERL const void *GB_read_old_value() {
     char *data;
 
     if (!g_b_old_callback_list) {
@@ -2151,7 +2151,7 @@ NOT4PERL const void *GB_read_old_value(){
     return gb_read_pntr_ts(g_b_old_callback_list->gbd, g_b_old_callback_list->old);
 }
 // same for size
-long GB_read_old_size(){
+long GB_read_old_size() {
     if (!g_b_old_callback_list) {
         GB_export_error("You cannot call GB_read_old_size outside a ARBDB callback");
         return -1;
@@ -2219,7 +2219,7 @@ GB_ERROR GB_add_priority_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int 
 
     GB_TEST_TRANSACTION(gbd); // may return error
     GB_CREATE_EXT(gbd);
-    cb = (struct gb_callback *)gbm_get_mem(sizeof(struct gb_callback),GB_GBM_INDEX(gbd));
+    cb = (struct gb_callback *)gbm_get_mem(sizeof(struct gb_callback), GB_GBM_INDEX(gbd));
 
     if (gbd->ext->callback) {
         struct gb_callback *prev = 0;
@@ -2233,7 +2233,7 @@ GB_ERROR GB_add_priority_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int 
 
 #if defined(DEVEL_RALF)
             // test if callback already was added (every callback shall only exist once). see below.
-            gb_assert((curr->func != func) || (curr->clientdata != clientdata) || (curr->type != type ));
+            gb_assert((curr->func != func) || (curr->clientdata != clientdata) || (curr->type != type));
 #endif // DEVEL_RALF
 
             prev = curr;
@@ -2261,7 +2261,7 @@ GB_ERROR GB_add_priority_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int 
     // maybe you like to use GB_ensure_callback instead of GB_add_callback
     while (cb->next) {
         cb = cb->next;
-        gb_assert((cb->func != func) || (cb->clientdata != clientdata) || (cb->type != type ));
+        gb_assert((cb->func != func) || (cb->clientdata != clientdata) || (cb->type != type));
     }
 #endif // DEBUG
 #endif // DEVEL_RALF
@@ -2295,7 +2295,7 @@ static void gb_remove_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *cl
             short this_running = cb->running;
 
             if ((cb->func == func)  &&
-                (cb->type == type ) &&
+                (cb->type == type) &&
                 (cb->clientdata == clientdata || !cd_should_match))
             {
                 if (prev_running || cb->running) {
@@ -2305,7 +2305,7 @@ static void gb_remove_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *cl
                 }
 
                 *cb_ptr = cb->next;
-                gbm_free_mem((char *)cb,sizeof(struct gb_callback),GB_GBM_INDEX(gbd));
+                gbm_free_mem((char *)cb, sizeof(struct gb_callback), GB_GBM_INDEX(gbd));
                 removed = true;
                 if (exactly_one) break;
             }
@@ -2330,18 +2330,18 @@ void GB_remove_all_callbacks_to(GBDATA *gbd, GB_CB_TYPE type, GB_CB func) {
 GB_ERROR GB_ensure_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata) {
     struct gb_callback *cb;
     for (cb = GB_GET_EXT_CALLBACKS(gbd); cb; cb = cb->next) {
-        if ((cb->func == func) && (cb->clientdata == clientdata) && (cb->type == type )) {
+        if ((cb->func == func) && (cb->clientdata == clientdata) && (cb->type == type)) {
             return NULL;        // already in cb list
         }
     }
-    return GB_add_callback(gbd,type,func,clientdata);
+    return GB_add_callback(gbd, type, func, clientdata);
 }
 
 /********************************************************************************************
                     RELEASE
     free cached data in a client, no pointers in the freed region are allowed
 ********************************************************************************************/
-GB_ERROR GB_release(GBDATA *gbd){
+GB_ERROR GB_release(GBDATA *gbd) {
     GBCONTAINER  *gbc;
     GBDATA       *gb;
     int           index;
@@ -2349,7 +2349,7 @@ GB_ERROR GB_release(GBDATA *gbd){
 
     GB_TEST_TRANSACTION(gbd);
     if (Main->local_mode) return 0;
-    if (GB_ARRAY_FLAGS(gbd).changed &&!gbd->flags2.update_in_server) {
+    if (GB_ARRAY_FLAGS(gbd).changed && !gbd->flags2.update_in_server) {
         GB_update_server(gbd);
     }
     if (GB_TYPE(gbd) != GB_DB) {
@@ -2362,7 +2362,7 @@ GB_ERROR GB_release(GBDATA *gbd){
     gbc = (GBCONTAINER *)gbd;
 
     for (index = 0; index < gbc->d.nheader; index++) {
-        if ( (gb = GBCONTAINER_ELEM(gbc,index)) ) {
+        if ((gb = GBCONTAINER_ELEM(gbc, index))) {
             gb_delete_entry(&gb);
         }
     }
@@ -2397,7 +2397,7 @@ int GB_nsons(GBDATA *gbd) {
     return ((GBCONTAINER *)gbd)->d.size;
 }
 
-void GB_disable_quicksave(GBDATA *gbd,const char *reason) {
+void GB_disable_quicksave(GBDATA *gbd, const char *reason) {
     freedup(GB_MAIN(gbd)->qs.quick_save_disabled, reason);
 }
 /********************************************************************************************
@@ -2418,13 +2418,13 @@ GB_ERROR GB_resort_data_base(GBDATA *gb_main, GBDATA **new_order_list, long list
                                 "please close clients and rerun operation",
                                 GB_read_clients(gb_main));
 
-    if (listsize <=0) return 0;
+    if (listsize <= 0) return 0;
 
     father = GB_FATHER(new_order_list[0]);
-    GB_disable_quicksave(gb_main,"some entries in the database got a new order");
+    GB_disable_quicksave(gb_main, "some entries in the database got a new order");
     hl = GB_DATA_LIST_HEADER(father->d);
 
-    for (new_index= 0 ; new_index< listsize; new_index++ )
+    for (new_index = 0; new_index< listsize; new_index++)
     {
         long old_index = new_order_list[new_index]->index;
 
@@ -2442,11 +2442,11 @@ GB_ERROR GB_resort_data_base(GBDATA *gb_main, GBDATA **new_order_list, long list
             hl[new_index] = hl[old_index];
             hl[old_index] = h;              // Warning: Relative Pointers are incorrect !!!
 
-            SET_GB_HEADER_LIST_GBD(hl[old_index], ngb );
-            SET_GB_HEADER_LIST_GBD(hl[new_index], ogb );
+            SET_GB_HEADER_LIST_GBD(hl[old_index], ngb);
+            SET_GB_HEADER_LIST_GBD(hl[new_index], ogb);
 
-            if ( ngb )  ngb->index = old_index;
-            if ( ogb )  ogb->index = new_index;
+            if (ngb)    ngb->index = old_index;
+            if (ogb)    ogb->index = new_index;
         }
     }
 
@@ -2454,27 +2454,27 @@ GB_ERROR GB_resort_data_base(GBDATA *gb_main, GBDATA **new_order_list, long list
     return 0;
 }
 
-GB_ERROR GB_resort_system_folder_to_top(GBDATA *gb_main){
-    GBDATA *gb_system = GB_entry(gb_main,GB_SYSTEM_FOLDER);
+GB_ERROR GB_resort_system_folder_to_top(GBDATA *gb_main) {
+    GBDATA *gb_system = GB_entry(gb_main, GB_SYSTEM_FOLDER);
     GBDATA *gb_first = GB_child(gb_main);
     GBDATA **new_order_list;
     GB_ERROR error = 0;
-    int i,len;
+    int i, len;
     if (GB_read_clients(gb_main)<0) return 0; // we are not server
-    if (!gb_system){
+    if (!gb_system) {
         return GB_export_error("System databaseentry does not exist");
     }
     if (gb_first == gb_system) return 0;
     len = GB_number_of_subentries(gb_main);
-    new_order_list = (GBDATA **)GB_calloc(sizeof(GBDATA *),len);
+    new_order_list = (GBDATA **)GB_calloc(sizeof(GBDATA *), len);
     new_order_list[0] = gb_system;
-    for (i=1;i<len;i++){
+    for (i=1; i<len; i++) {
         new_order_list[i] = gb_first;
         do {
             gb_first = GB_nextChild(gb_first);
-        } while(gb_first == gb_system);
+        } while (gb_first == gb_system);
     }
-    error = GB_resort_data_base(gb_main,new_order_list,len);
+    error = GB_resort_data_base(gb_main, new_order_list, len);
     free(new_order_list);
     return error;
 }
@@ -2505,17 +2505,17 @@ long GB_read_usr_public(GBDATA *gbd)
 long GB_read_usr_private(GBDATA *gbd) {
     GBCONTAINER *gbc = (GBCONTAINER *)gbd;
     if (GB_TYPE(gbc) != GB_DB) {
-        GB_ERROR error = GB_export_errorf("GB_write_usr_private: not a container (%s)",GB_read_key_pntr(gbd));
+        GB_ERROR error = GB_export_errorf("GB_write_usr_private: not a container (%s)", GB_read_key_pntr(gbd));
         GB_internal_error(error);
         return 0;
     }
     return gbc->flags2.usr_ref;
 }
 
-GB_ERROR GB_write_usr_private(GBDATA *gbd,long ref) {
+GB_ERROR GB_write_usr_private(GBDATA *gbd, long ref) {
     GBCONTAINER *gbc = (GBCONTAINER *)gbd;
     if (GB_TYPE(gbc) != GB_DB) {
-        GB_ERROR error = GB_export_errorf("GB_write_usr_private: not a container (%s)",GB_read_key_pntr(gbd));
+        GB_ERROR error = GB_export_errorf("GB_write_usr_private: not a container (%s)", GB_read_key_pntr(gbd));
         GB_internal_error(error);
         return 0;
     }
@@ -2527,7 +2527,7 @@ GB_ERROR GB_write_usr_private(GBDATA *gbd,long ref) {
             flag access
 ********************************************************************************************/
 
-void GB_write_flag(GBDATA *gbd,long flag)
+void GB_write_flag(GBDATA *gbd, long flag)
 {
     GBCONTAINER *gbc  = (GBCONTAINER *)gbd;
     int          prev;
@@ -2538,7 +2538,7 @@ void GB_write_flag(GBDATA *gbd,long flag)
     prev = GB_ARRAY_FLAGS(gbc).flags;
     gbd->flags.saved_flags = prev;
 
-    if (flag){
+    if (flag) {
         GB_ARRAY_FLAGS(gbc).flags |= ubit;
     }
     else {
@@ -2597,12 +2597,12 @@ void dump(const char *data, int size)
     printf("\n");
 }
 
-GB_ERROR GB_print_debug_information(void *dummy, GBDATA *gb_main){
+GB_ERROR GB_print_debug_information(void *dummy, GBDATA *gb_main) {
     int i;
-    GB_MAIN_TYPE *Main = GB_MAIN( gb_main );
+    GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
     GB_push_transaction(gb_main);
     dummy = dummy;
-    for (i=0;i<Main->keycnt;i++) {
+    for (i=0; i<Main->keycnt; i++) {
         if (Main->keys[i].key) {
             printf("%3i %20s    nref %i\n", i, Main->keys[i].key, (int)Main->keys[i].nref);
         }
@@ -2618,11 +2618,11 @@ GB_ERROR GB_print_debug_information(void *dummy, GBDATA *gb_main){
 int GB_info_deep = 15;
 
 
-int gb_info(GBDATA *gbd, int deep){
+int gb_info(GBDATA *gbd, int deep) {
     GBCONTAINER *gbc;
     GB_TYPES type;
     char    *data;
-    int     size ;
+    int     size;
     GB_MAIN_TYPE *Main;
 
     if (gbd==NULL) { printf("NULL\n"); return -1; }
@@ -2633,39 +2633,39 @@ int gb_info(GBDATA *gbd, int deep){
         printf("    ");
     }
 
-    printf("(GBDATA*)0x%lx (GBCONTAINER*)0x%lx ",(long)gbd,(long)gbd);
+    printf("(GBDATA*)0x%lx (GBCONTAINER*)0x%lx ", (long)gbd, (long)gbd);
 
     if (gbd->rel_father==0) { printf("father=NULL\n"); return -1; }
 
-    if (type==GB_DB)    {gbc = (GBCONTAINER*) gbd; Main = GBCONTAINER_MAIN(gbc);}
-    else        {gbc = NULL; Main = GB_MAIN(gbd);}
+    if (type==GB_DB)    { gbc = (GBCONTAINER*) gbd; Main = GBCONTAINER_MAIN(gbc); }
+    else        { gbc = NULL; Main = GB_MAIN(gbd); }
 
-    if (!Main)                  { printf("Oops - I have no main entry!!!\n"); return -1;}
+    if (!Main)                  { printf("Oops - I have no main entry!!!\n"); return -1; }
     if (gbd==(GBDATA*)(Main->dummy_father))     { printf("dummy_father!\n"); return -1; }
 
     printf("%10s Type '%c'  ", GB_read_key_pntr(gbd), GB_type_2_char(type));
 
-    switch(type)
+    switch (type)
     {
         case GB_DB:
             gbc = (GBCONTAINER *)gbd;
             size = gbc->d.size;
             printf("Size %i nheader %i hmemsize %i", gbc->d.size, gbc->d.nheader, gbc->d.headermemsize);
             printf(" father=(GBDATA*)0x%lx\n", (long)GB_FATHER(gbd));
-            if (size < GB_info_deep){
+            if (size < GB_info_deep) {
                 int index;
                 struct gb_header_list_struct *header;
 
                 header = GB_DATA_LIST_HEADER(gbc->d);
                 for (index = 0; index < gbc->d.nheader; index++) {
                     GBDATA *gb_sub = GB_HEADER_LIST_GBD(header[index]);
-                    printf("\t\t%10s (GBDATA*)0x%lx (GBCONTAINER*)0x%lx\n",Main->keys[header[index].flags.key_quark].key,(long)gb_sub,(long)gb_sub);
+                    printf("\t\t%10s (GBDATA*)0x%lx (GBCONTAINER*)0x%lx\n", Main->keys[header[index].flags.key_quark].key, (long)gb_sub, (long)gb_sub);
                 }
             }
             break;
         default:
             data = GB_read_as_string(gbd);
-            if (data) {printf("%s",data); free(data);}
+            if (data) { printf("%s", data); free(data); }
             printf(" father=(GBDATA*)0x%lx\n", (long)GB_FATHER(gbd));
     }
 
@@ -2678,7 +2678,7 @@ int gb_info(GBDATA *gbd, int deep){
 
 int GB_info(GBDATA *gbd)
 {
-    return gb_info(gbd,0);
+    return gb_info(gbd, 0);
 }
 
 long GB_number_of_subentries(GBDATA *gbd)

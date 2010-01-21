@@ -58,16 +58,16 @@ void ED4_window::reset_all_for_new_config()
 
 void ED4_window::update_window_coords()
 {
-    AW_pos       x,y;
+    AW_pos       x, y;
     AW_rectangle area_size;
 
-    ED4_ROOT->top_area_man->calc_world_coords( &x, &y );
+    ED4_ROOT->top_area_man->calc_world_coords(&x, &y);
 
     coords.top_area_x      = (long) x;
     coords.top_area_y      = (long) y;
     coords.top_area_height = (long) ED4_ROOT->top_area_man->extension.size[HEIGHT];
 
-    ED4_ROOT->middle_area_man->calc_world_coords( &x, &y );
+    ED4_ROOT->middle_area_man->calc_world_coords(&x, &y);
 
     coords.middle_area_x = (long) x;
     coords.middle_area_y = (long) y;
@@ -78,11 +78,11 @@ void ED4_window::update_window_coords()
     coords.window_height = area_size.b;
     
     // world coordinates
-    coords.window_upper_clip_point = coords.middle_area_y + aww->slider_pos_vertical; //coordinate of upper clipping point of middle area
+    coords.window_upper_clip_point = coords.middle_area_y + aww->slider_pos_vertical; // coordinate of upper clipping point of middle area
     coords.window_lower_clip_point = coords.window_upper_clip_point + coords.window_height - coords.middle_area_y;
 
     if (ED4_ROOT->scroll_links.link_for_hor_slider) {
-        ED4_ROOT->scroll_links.link_for_hor_slider->calc_world_coords( &x, &y );
+        ED4_ROOT->scroll_links.link_for_hor_slider->calc_world_coords(&x, &y);
         coords.window_left_clip_point = (long) x + aww->slider_pos_horizontal;
         coords.window_right_clip_point = coords.window_left_clip_point + coords.window_width - (long) x;
     }
@@ -102,12 +102,12 @@ void ED4_window::update_window_coords()
 
 
 
-ED4_folding_line* ED4_window::insert_folding_line( AW_pos world_x,
+ED4_folding_line* ED4_window::insert_folding_line(AW_pos world_x,
                                                    AW_pos world_y,
                                                    AW_pos length,
                                                    AW_pos dimension,
                                                    ED4_base *link,
-                                                   ED4_properties prop )
+                                                   ED4_properties prop)
 {
     ED4_folding_line  *fl, *current_fl, *previous_fl = NULL;
     AW_pos             x, y;
@@ -116,13 +116,13 @@ ED4_folding_line* ED4_window::insert_folding_line( AW_pos world_x,
     fl = new ED4_folding_line;
     fl->link = link;
 
-    if ( link != NULL ) {
+    if (link != NULL) {
         link->update_info.linked_to_folding_line = 1;
-        link->calc_world_coords( &x, &y );
+        link->calc_world_coords(&x, &y);
         fl->world_pos[X_POS] = x;
         fl->world_pos[Y_POS] = y;
 
-        if ( prop == ED4_P_VERTICAL ) {
+        if (prop == ED4_P_VERTICAL) {
             fl->length = link->extension.size[HEIGHT];
         }
         else {
@@ -138,45 +138,45 @@ ED4_folding_line* ED4_window::insert_folding_line( AW_pos world_x,
 
     fl->dimension = dimension;
 
-    if ( prop == ED4_P_VERTICAL ) {
+    if (prop == ED4_P_VERTICAL) {
         fl->window_pos[X_POS] = fl->world_pos[X_POS] - dimension;
         fl->window_pos[Y_POS] = fl->world_pos[Y_POS];
 
-        if ( (current_fl = vertical_fl) == NULL ) {
+        if ((current_fl = vertical_fl) == NULL) {
             vertical_fl = fl;
-            return ( fl );
+            return (fl);
         }
 
         rel_pos = X_POS;
     }
     else {
-        if ( prop == ED4_P_HORIZONTAL ) {
+        if (prop == ED4_P_HORIZONTAL) {
             fl->window_pos[Y_POS] = fl->world_pos[Y_POS] - dimension;
             fl->window_pos[X_POS] = fl->world_pos[X_POS];
 
-            if ( (current_fl = horizontal_fl) == NULL ) {
+            if ((current_fl = horizontal_fl) == NULL) {
                 horizontal_fl = fl;
-                return ( fl );
+                return (fl);
             }
 
             rel_pos = Y_POS;
         }
         else {
-            return ( NULL );
+            return (NULL);
         }
     }
 
-    while (  (current_fl != NULL) && (current_fl->world_pos[rel_pos] <= fl->world_pos[rel_pos]) ) {
+    while ((current_fl != NULL) && (current_fl->world_pos[rel_pos] <= fl->world_pos[rel_pos])) {
         previous_fl = current_fl;
         current_fl  = current_fl->next;
     }
 
-    if (previous_fl){
+    if (previous_fl) {
         previous_fl->next = fl;
     }
     fl->next = current_fl;
 
-    return ( fl );
+    return (fl);
 }
 
 ED4_window *ED4_window::get_matching_ed4w(AW_window *aw) {
@@ -191,13 +191,13 @@ ED4_returncode ED4_window::delete_folding_line(ED4_folding_line *fl, ED4_propert
     AWUSE(fl);
     AWUSE(prop);
 
-    return ( ED4_R_OK );
+    return (ED4_R_OK);
 }
 
-ED4_returncode ED4_window::update_scrolled_rectangle( void )
+ED4_returncode ED4_window::update_scrolled_rectangle(void)
 {
     if ((scrolled_rect.scroll_top == NULL) || (scrolled_rect.scroll_bottom == NULL) ||
-        (scrolled_rect.scroll_left == NULL) || (scrolled_rect.scroll_right == NULL) )
+        (scrolled_rect.scroll_left == NULL) || (scrolled_rect.scroll_right == NULL))
         return ED4_R_IMPOSSIBLE;
 
     AW_pos world_x = scrolled_rect.world_x;
@@ -209,12 +209,12 @@ ED4_returncode ED4_window::update_scrolled_rectangle( void )
     // calculate possibly new world coordinates and extensions of existing links
     {
         AW_pos dummy;
-        if ( scrolled_rect.x_link != NULL ) scrolled_rect.x_link->calc_world_coords( &world_x, &dummy );
-        if ( scrolled_rect.y_link != NULL ) scrolled_rect.y_link->calc_world_coords( &dummy, &world_y );
+        if (scrolled_rect.x_link != NULL) scrolled_rect.x_link->calc_world_coords(&world_x, &dummy);
+        if (scrolled_rect.y_link != NULL) scrolled_rect.y_link->calc_world_coords(&dummy, &world_y);
     }
 
-    if ( scrolled_rect.width_link  != NULL ) width  = scrolled_rect.width_link->extension.size[WIDTH];
-    if ( scrolled_rect.height_link != NULL ) height = scrolled_rect.height_link->extension.size[HEIGHT];
+    if (scrolled_rect.width_link  != NULL) width  = scrolled_rect.width_link->extension.size[WIDTH];
+    if (scrolled_rect.height_link != NULL) height = scrolled_rect.height_link->extension.size[HEIGHT];
 
     // set new world and window coordinates
     scrolled_rect.scroll_top->world_pos[X_POS]  = world_x; 
@@ -222,24 +222,24 @@ ED4_returncode ED4_window::update_scrolled_rectangle( void )
     scrolled_rect.scroll_top->window_pos[X_POS] = world_x;
     scrolled_rect.scroll_top->window_pos[Y_POS] = world_y;
 
-    if ( scrolled_rect.scroll_top->length != INFINITE ) scrolled_rect.scroll_top->length = width;
+    if (scrolled_rect.scroll_top->length != INFINITE) scrolled_rect.scroll_top->length = width;
 
     scrolled_rect.scroll_bottom->world_pos[X_POS] = world_x;
     scrolled_rect.scroll_bottom->world_pos[Y_POS] = world_y + height - 1;
 
-    if ( scrolled_rect.scroll_bottom->length != INFINITE ) scrolled_rect.scroll_bottom->length = width;
+    if (scrolled_rect.scroll_bottom->length != INFINITE) scrolled_rect.scroll_bottom->length = width;
 
     scrolled_rect.scroll_left->world_pos[X_POS]  = world_x;
     scrolled_rect.scroll_left->world_pos[Y_POS]  = world_y;
     scrolled_rect.scroll_left->window_pos[X_POS] = world_x;
     scrolled_rect.scroll_left->window_pos[Y_POS] = world_y;
 
-    if ( scrolled_rect.scroll_left->length != INFINITE ) scrolled_rect.scroll_left->length = height;
+    if (scrolled_rect.scroll_left->length != INFINITE) scrolled_rect.scroll_left->length = height;
 
     scrolled_rect.scroll_right->world_pos[X_POS] = world_x + width - 1;
     scrolled_rect.scroll_right->world_pos[Y_POS] = world_y;
 
-    if ( scrolled_rect.scroll_right->length != INFINITE ) scrolled_rect.scroll_right->length = height;
+    if (scrolled_rect.scroll_right->length != INFINITE) scrolled_rect.scroll_right->length = height;
 
     scrolled_rect.world_x = world_x;
     scrolled_rect.world_y = world_y;
@@ -258,11 +258,11 @@ ED4_returncode ED4_window::update_scrolled_rectangle( void )
         scrolled_rect.scroll_left->dimension += delta;                  // the borders of scrolled rectangle
         delta = aww->slider_pos_vertical - slider_pos_vertical;
         scrolled_rect.scroll_top->dimension += delta;
-        ED4_ROOT->get_device()->get_area_size( &area_size );
+        ED4_ROOT->get_device()->get_area_size(&area_size);
     }
 
-    if ( scrolled_rect.height_link != NULL ) slider_pos_vertical   = aww->slider_pos_vertical;
-    if ( scrolled_rect.width_link  != NULL ) slider_pos_horizontal = aww->slider_pos_horizontal;
+    if (scrolled_rect.height_link != NULL) slider_pos_vertical   = aww->slider_pos_vertical;
+    if (scrolled_rect.width_link  != NULL) slider_pos_horizontal = aww->slider_pos_horizontal;
 
 
     AW_pos dim;
@@ -299,8 +299,8 @@ ED4_returncode ED4_window::update_scrolled_rectangle( void )
     return ED4_R_OK;
 }
 
-ED4_returncode ED4_window::set_scrolled_rectangle( AW_pos world_x, AW_pos world_y, AW_pos width, AW_pos height,
-                                                   ED4_base *x_link, ED4_base *y_link, ED4_base *width_link, ED4_base *height_link )
+ED4_returncode ED4_window::set_scrolled_rectangle(AW_pos world_x, AW_pos world_y, AW_pos width, AW_pos height,
+                                                   ED4_base *x_link, ED4_base *y_link, ED4_base *width_link, ED4_base *height_link)
 {
     AW_pos         x, y, dim;
     AW_rectangle   area_size;
@@ -311,46 +311,46 @@ ED4_returncode ED4_window::set_scrolled_rectangle( AW_pos world_x, AW_pos world_
     if (scrolled_rect.scroll_left   != NULL) delete_folding_line(scrolled_rect.scroll_left,   ED4_P_VERTICAL);
     if (scrolled_rect.scroll_right  != NULL) delete_folding_line(scrolled_rect.scroll_right,  ED4_P_VERTICAL);
 
-    if ( x_link != NULL ) {
+    if (x_link != NULL) {
         x_link->update_info.linked_to_scrolled_rectangle = 1;
-        x_link->calc_world_coords( &x, &y );
+        x_link->calc_world_coords(&x, &y);
         world_x = x;
     }
 
-    if ( y_link != NULL ) {
+    if (y_link != NULL) {
         y_link->update_info.linked_to_scrolled_rectangle = 1;
-        y_link->calc_world_coords( &x, &y );
+        y_link->calc_world_coords(&x, &y);
         world_y = y;
     }
 
-    if ( width_link != NULL ) {
+    if (width_link != NULL) {
         width_link->update_info.linked_to_scrolled_rectangle = 1;
         width = width_link->extension.size[WIDTH];
     }
 
-    if ( height_link != NULL ) {
+    if (height_link != NULL) {
         height_link->update_info.linked_to_scrolled_rectangle = 1;
         height = height_link->extension.size[HEIGHT];
     }
 
-    ED4_ROOT->get_device()->get_area_size( &area_size );
+    ED4_ROOT->get_device()->get_area_size(&area_size);
 
     if ((area_size.r <= world_x) || (area_size.b <= world_y)) {
         return ED4_R_IMPOSSIBLE;
     }
 
-    scrolled_rect.scroll_top  = insert_folding_line( world_x, world_y, INFINITE, 0, NULL, ED4_P_HORIZONTAL );
-    scrolled_rect.scroll_left = insert_folding_line( world_x, world_y, INFINITE, 0, NULL, ED4_P_VERTICAL );
+    scrolled_rect.scroll_top  = insert_folding_line(world_x, world_y, INFINITE, 0, NULL, ED4_P_HORIZONTAL);
+    scrolled_rect.scroll_left = insert_folding_line(world_x, world_y, INFINITE, 0, NULL, ED4_P_VERTICAL);
 
     dim = 0;
     if ((world_y + height - 1) > area_size.b) dim = (world_y + height - 1) - area_size.b;
 
-    scrolled_rect.scroll_bottom = insert_folding_line( world_x, (world_y + height - 1), INFINITE, dim, NULL, ED4_P_HORIZONTAL );
+    scrolled_rect.scroll_bottom = insert_folding_line(world_x, (world_y + height - 1), INFINITE, dim, NULL, ED4_P_HORIZONTAL);
 
     dim = 0;
     if ((world_x + width - 1) > area_size.r) dim = (world_x + width - 1) - area_size.r;
 
-    scrolled_rect.scroll_right = insert_folding_line( (world_x + width - 1), world_y, INFINITE, dim, NULL, ED4_P_VERTICAL );
+    scrolled_rect.scroll_right = insert_folding_line((world_x + width - 1), world_y, INFINITE, dim, NULL, ED4_P_VERTICAL);
     scrolled_rect.x_link       = x_link;
     scrolled_rect.y_link       = y_link;
     scrolled_rect.width_link   = width_link;
@@ -383,7 +383,7 @@ static inline void clear_and_update_rectangle(AW_pos x1, AW_pos y1, AW_pos x2, A
     ED4_ROOT->get_device()->clear_part(x1, y1, x2-x1+1, y2-y1+1, (AW_bitset)-1);
 #endif
 
-    ED4_ROOT->main_manager->to_manager()->Show(1,1);
+    ED4_ROOT->main_manager->to_manager()->Show(1, 1);
 }
 
 static inline void move_and_update_rectangle(AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2, int dx, int dy)
@@ -447,7 +447,7 @@ static inline void update_rectangle(AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2) 
 }
 
 
-ED4_returncode ED4_window::scroll_rectangle( int dx, int dy )
+ED4_returncode ED4_window::scroll_rectangle(int dx, int dy)
 {
     int skip_move;
 
@@ -492,33 +492,33 @@ ED4_returncode ED4_window::scroll_rectangle( int dx, int dy )
 
     ED4_ROOT->get_device()->pop_clip_scale();
 
-    return ( ED4_R_OK );
+    return (ED4_R_OK);
 }
 
-ED4_returncode ED4_window::set_scrollbar_indents( void ) {
+ED4_returncode ED4_window::set_scrollbar_indents(void) {
     int indent_y, indent_x;
 
     if ((scrolled_rect.scroll_top    == NULL) ||
         (scrolled_rect.scroll_bottom == NULL) ||
         (scrolled_rect.scroll_left   == NULL) ||
-        (scrolled_rect.scroll_right  == NULL) )
-        return ( ED4_R_IMPOSSIBLE );
+        (scrolled_rect.scroll_right  == NULL))
+        return (ED4_R_IMPOSSIBLE);
 
     indent_y = (int) scrolled_rect.world_y + SLIDER_OFFSET;
-    aww->set_vertical_scrollbar_top_indent( indent_y );
+    aww->set_vertical_scrollbar_top_indent(indent_y);
     indent_x = (int) scrolled_rect.world_x + SLIDER_OFFSET;
-    aww->set_horizontal_scrollbar_left_indent( indent_x );
+    aww->set_horizontal_scrollbar_left_indent(indent_x);
 
-    return ( ED4_R_OK );
+    return (ED4_R_OK);
 }
 
 
-void ED4_window::delete_window( ED4_window *window) //delete from window list
+void ED4_window::delete_window(ED4_window *window)  // delete from window list
 {
     ED4_window *temp, *temp2;
 
     if (window == ED4_ROOT->first_window) {
-        temp = ED4_ROOT->first_window;                  //delete temp afterwards
+        temp = ED4_ROOT->first_window;                  // delete temp afterwards
         ED4_ROOT->first_window = ED4_ROOT->first_window->next;
 
         if (no_of_windows > 1) {
@@ -547,23 +547,23 @@ void ED4_window::delete_window( ED4_window *window) //delete from window list
 }
 
 
-ED4_window *ED4_window::insert_window( AW_window *new_aww )
+ED4_window *ED4_window::insert_window(AW_window *new_aww)
 {
-    ED4_window *last,*temp;
+    ED4_window *last, *temp;
 
-    temp = ED4_ROOT->first_window;          //append at end of window list
+    temp = ED4_ROOT->first_window;          // append at end of window list
     last = temp;
     while (temp) {
         last = temp;
         temp = temp->next;
     }
 
-    temp = new ED4_window ( new_aww );
+    temp = new ED4_window (new_aww);
 
-    if (!ED4_ROOT->first_window) {       //this is the first window
+    if (!ED4_ROOT->first_window) {       // this is the first window
         ED4_ROOT->first_window = temp;
     }
-    else if ( last != NULL) {
+    else if (last != NULL) {
         last->next = temp;
     }
 
@@ -582,7 +582,7 @@ ED4_window *ED4_window::insert_window( AW_window *new_aww )
     return temp;
 }
 
-ED4_window::ED4_window( AW_window *window )
+ED4_window::ED4_window(AW_window *window)
 {
     aww                   = window;
     next                  = 0;
@@ -597,16 +597,16 @@ ED4_window::ED4_window( AW_window *window )
     is_hidden = false;
 
     sprintf(awar_path_for_cursor, AWAR_EDIT_SEQ_POSITION, id);
-    ED4_ROOT->aw_root->awar_int(awar_path_for_cursor,0,AW_ROOT_DEFAULT)->set_minmax(0,MAX_POSSIBLE_SEQ_LENGTH);
+    ED4_ROOT->aw_root->awar_int(awar_path_for_cursor, 0, AW_ROOT_DEFAULT)->set_minmax(0, MAX_POSSIBLE_SEQ_LENGTH);
 
     sprintf(awar_path_for_Ecoli, AWAR_EDIT_ECOLI_POSITION, id);
-    ED4_ROOT->aw_root->awar_int(awar_path_for_Ecoli,0,AW_ROOT_DEFAULT)->set_minmax(0,MAX_POSSIBLE_SEQ_LENGTH);
+    ED4_ROOT->aw_root->awar_int(awar_path_for_Ecoli, 0, AW_ROOT_DEFAULT)->set_minmax(0, MAX_POSSIBLE_SEQ_LENGTH);
 
     sprintf(awar_path_for_basePos, AWAR_EDIT_BASE_POSITION, id);
-    ED4_ROOT->aw_root->awar_int(awar_path_for_basePos,0,AW_ROOT_DEFAULT)->set_minmax(0,MAX_POSSIBLE_SEQ_LENGTH);
+    ED4_ROOT->aw_root->awar_int(awar_path_for_basePos, 0, AW_ROOT_DEFAULT)->set_minmax(0, MAX_POSSIBLE_SEQ_LENGTH);
 
     sprintf(awar_path_for_IUPAC, AWAR_EDIT_IUPAC, id);
-    ED4_ROOT->aw_root->awar_string(awar_path_for_IUPAC,ED4_IUPAC_EMPTY,AW_ROOT_DEFAULT);
+    ED4_ROOT->aw_root->awar_string(awar_path_for_IUPAC, ED4_IUPAC_EMPTY, AW_ROOT_DEFAULT);
 
     sprintf(awar_path_for_helixNr, AWAR_EDIT_HELIXNR, id);
     ED4_ROOT->aw_root->awar_string(awar_path_for_helixNr, "", AW_ROOT_DEFAULT); 

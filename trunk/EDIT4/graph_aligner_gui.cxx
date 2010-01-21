@@ -133,11 +133,11 @@ static void sina_start(AW_window *window, AW_CL cd2) {
         aw_message("Unable to find definition for chosen PT-server");
         return;
     }
-    const char *pt_db = pt_server + strlen(pt_server) +1;
+    const char *pt_db = pt_server + strlen(pt_server) + 1;
     pt_db += strlen(pt_db)+3;
 
     // start pt server if necessary
-    gb_error = arb_look_and_start_server(AISC_MAGIC_NUMBER,ptnam.str().c_str(),
+    gb_error = arb_look_and_start_server(AISC_MAGIC_NUMBER, ptnam.str().c_str(),
                                          GLOBAL_gb_main);
     if (gb_error) {
         std::stringstream tmp;
@@ -154,8 +154,8 @@ static void sina_start(AW_window *window, AW_CL cd2) {
     char* tmpfile;
     FILE* tmpfile_F;
     {
-        char* tmpfile_tpl = GB_unique_filename("sina_select","tmp");
-        tmpfile_F         = GB_fopen_tempfile(tmpfile_tpl,"w", &tmpfile);
+        char* tmpfile_tpl = GB_unique_filename("sina_select", "tmp");
+        tmpfile_F         = GB_fopen_tempfile(tmpfile_tpl, "w", &tmpfile);
         free(tmpfile_tpl);
     }
 
@@ -168,8 +168,8 @@ static void sina_start(AW_window *window, AW_CL cd2) {
     GB_remove_on_exit(tmpfile);
 
     std::vector<std::string> spec_names;
-    switch(root->awar(GA_AWAR_TGT)->read_int()) {
-    case 0: //current
+    switch (root->awar(GA_AWAR_TGT)->read_int()) {
+    case 0: // current
     {
         char *spec_name = root->awar(AWAR_SPECIES_NAME)->read_string();
         if (spec_name) {
@@ -182,7 +182,7 @@ static void sina_start(AW_window *window, AW_CL cd2) {
         }
     }
     break;
-    case 1: //selected
+    case 1: // selected
     {
         struct AWTC_faligner_cd *cd = (struct AWTC_faligner_cd *)cd2;
         GB_begin_transaction(GLOBAL_gb_main);
@@ -199,7 +199,7 @@ static void sina_start(AW_window *window, AW_CL cd2) {
         GB_commit_transaction(GLOBAL_gb_main);
     }
     break;
-    case 2: //marked
+    case 2: // marked
     {
         GB_begin_transaction(GLOBAL_gb_main);
         for (GBDATA *gb_spec = GBT_first_marked_species(GLOBAL_gb_main);
@@ -226,9 +226,9 @@ static void sina_start(AW_window *window, AW_CL cd2) {
         GBS_strcat(cl, " --queue-size ");  GBS_intcat(cl,   root->awar(GA_AWAR_QSIZE)->read_int());
         GBS_strcat(cl, " --ncpu ");        GBS_intcat(cl,   root->awar(GA_AWAR_THREADS)->read_int());
         GBS_strcat(cl, " --verbosity ");   GBS_strcat(cl,   root->awar(GA_AWAR_LOGLEVEL)->read_char_pntr());
-        GBS_strcat(cl, " --ptdb ");        GBS_strcat(cl,   root->awar(GA_AWAR_PTLOAD)->read_int()?pt_db:":");
+        GBS_strcat(cl, " --ptdb ");        GBS_strcat(cl,   root->awar(GA_AWAR_PTLOAD)->read_int() ? pt_db : ":");
         GBS_strcat(cl, " --ptport ");      GBS_strcat(cl,   pt_server);
-        GBS_strcat(cl, " --turn ");        GBS_strcat(cl,   root->awar(GA_AWAR_TURN_CHECK)->read_int()?"all":"none");
+        GBS_strcat(cl, " --turn ");        GBS_strcat(cl,   root->awar(GA_AWAR_TURN_CHECK)->read_int() ? "all" : "none");
         GBS_strcat(cl, " --overhang ");    GBS_strcat(cl,   root->awar(GA_AWAR_OVERHANG)->read_char_pntr());
         GBS_strcat(cl, " --filter ");      GBS_strcat(cl,   root->awar(GA_AWAR_SAI)->read_char_pntr());
         GBS_strcat(cl, " --fs-min ");      GBS_intcat(cl,   root->awar(GA_AWAR_FS_MIN)->read_int());
@@ -255,7 +255,7 @@ static void sina_start(AW_window *window, AW_CL cd2) {
 
 
 
-static char* filter_sai(GBDATA *gb_extended, AW_CL /*cd*/) {
+static char* filter_sai(GBDATA *gb_extended, AW_CL /* cd */) {
     char   *result = 0;
     GBDATA *gbd    = GB_search(gb_extended, "ali_16s/_TYPE", GB_FIND);
     if (gbd) {
@@ -300,21 +300,21 @@ new_sina_simple(AW_root *root, AW_CL cd2, bool adv) {
     aws->init(root, "SINA", "SINA (SILVA Incremental Aligner)");
 
     aws->button_length(12);
-    aws->at(10,10);
-    aws->auto_space(5,5);
+    aws->at(10, 10);
+    aws->auto_space(5, 5);
 
     aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "O");
     aws->get_at_position(&closex, &closey);
 
-    aws->at_shift(10,0);
+    aws->at_shift(10, 0);
     aws->callback(show_sina_window, cd2, 0);
     aws->label_length(0);
     aws->label("Show advanced options");
     aws->create_toggle(GA_AWAR_ADVANCED);
 
     aws->at_newline();
-    aws->at_shift(0,hgap);
+    aws->at_shift(0, hgap);
     aws->label_length(15);
     aws->create_toggle_field(GA_AWAR_TGT, "Align what?", "A");
     aws->insert_toggle("Current Species:", "C", 0);
@@ -322,11 +322,11 @@ new_sina_simple(AW_root *root, AW_CL cd2, bool adv) {
     aws->insert_default_toggle("Marked Species", "M", 2);
     aws->update_toggle_field();
 
-    aws->at_shift(0,3);
+    aws->at_shift(0, 3);
     aws->create_input_field(AWAR_SPECIES_NAME, 20);
 
     aws->at_newline();
-    aws->at_shift(0,hgap);
+    aws->at_shift(0, hgap);
     aws->button_length(24);
     aws->label("PT Server:");
     awt_create_selection_list_on_pt_servers(aws, AWAR_PT_SERVER, true);
@@ -348,7 +348,7 @@ new_sina_simple(AW_root *root, AW_CL cd2, bool adv) {
 
     if (adv) {
         aws->at_newline();
-        aws->at_shift(0,hgap);
+        aws->at_shift(0, hgap);
 
         aws->label("Turn check");
         aws->create_toggle(GA_AWAR_TURN_CHECK);
@@ -366,7 +366,7 @@ new_sina_simple(AW_root *root, AW_CL cd2, bool adv) {
         aws->create_toggle(GA_AWAR_COPYMARKREF);
 
         aws->at_newline();
-        aws->at_shift(0,hgap);
+        aws->at_shift(0, hgap);
         aws->label_length(0);
 
         aws->label("Gap insertion/extension penalties");
@@ -388,19 +388,19 @@ new_sina_simple(AW_root *root, AW_CL cd2, bool adv) {
 
         aws->at_newline();
         aws->label("Max threads");
-        aws->create_input_field(GA_AWAR_THREADS,3);
+        aws->create_input_field(GA_AWAR_THREADS, 3);
         aws->label("Queue size");
-        aws->create_input_field(GA_AWAR_QSIZE,3);
+        aws->create_input_field(GA_AWAR_QSIZE, 3);
 
         aws->at_newline();
         aws->label("SINA command");
-        aws->create_input_field(GA_AWAR_CMD,20);
+        aws->create_input_field(GA_AWAR_CMD, 20);
 
-        aws->at_shift(0,hgap);
+        aws->at_shift(0, hgap);
     }
 
     aws->at_newline();
-    aws->at_shift(0,hgap);
+    aws->at_shift(0, hgap);
 
     aws->label_length(17);
     aws->create_option_menu(GA_AWAR_PROTECTION, "Protection Level", "P");
@@ -426,7 +426,7 @@ new_sina_simple(AW_root *root, AW_CL cd2, bool adv) {
     aws->get_window_size(winx, winy);
     aws->get_at_position(&startx, &starty);
 
-    aws->at(winx-closex+5,closey);
+    aws->at(winx-closex+5, closey);
     aws->callback(AW_POPUP_HELP, (AW_CL) "sina_main.hlp");
     aws->create_button("HELP", "HELP");
 

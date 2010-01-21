@@ -74,7 +74,7 @@ typedef enum type_types_type {
     t_float  = 2
 } type_types;
 
-typedef enum PT_bases_enum  {
+typedef enum PT_bases_enum {
     PT_QU = 0,
     PT_N  = 1,
     PT_A,
@@ -171,7 +171,7 @@ struct probe_statistic_struct {
 
 class BI_ecoli_ref;
 
-extern struct probe_struct_global   {
+extern struct probe_struct_global {
     GBDATA  *gb_main;           /* ARBDB interface */
     GBDATA  *gb_species_data;
     GBDATA  *gb_sai_data;

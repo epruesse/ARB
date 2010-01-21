@@ -16,7 +16,7 @@
 
 using namespace std;
 
-//--------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------
 
 static bool is_escaped(const string& str, size_t pos) {
     // returns true, if position 'pos' in string 'str' is escaped by '\\'
@@ -116,13 +116,13 @@ bool FeatureLine::reinterpret_as_continued_line() {
     return ok;
 }
 
-//--------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------
 
 Importer::Importer(FileBuffer& Flatfile, DBwriter& DB_writer, const MetaTag *meta_description)
     : db_writer(DB_writer)
     , flatfile(Flatfile)
     , tagTranslator(meta_description)
-{ }
+{}
 
 void Importer::warning(const char *msg) {
     warnings.push_back(msg);
@@ -255,7 +255,7 @@ void Importer::import() {
     catch (const char *err) { throw flatfile.lineError(err); }
 }
 
-//--------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------
 // Meta information definitions
 // 
 // 
@@ -330,12 +330,12 @@ static MetaTag embl_meta_description[] = {
     { "", "", MT_IGNORE }, // End of array
 };
 
-//--------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------
 
 
 GenebankImporter::GenebankImporter(FileBuffer& Flatfile, DBwriter& DB_writer)
     : Importer(Flatfile, DB_writer, genebank_meta_description)
-{ }
+{}
 
 bool GenebankImporter::readFeatureTableLine(string& line) {
     if (flatfile.getLine(line)) {
@@ -481,12 +481,12 @@ void GenebankImporter::import_section() {
     show_warnings(meta.getAccessionNumber());
 }
 
-//--------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------
 
 
 EmblImporter::EmblImporter(FileBuffer& Flatfile, DBwriter& DB_writer)
     : Importer(Flatfile, DB_writer, embl_meta_description)
-{ }
+{}
 
 static bool splitEmblTag(const string& line, string& tag, string& content) {
     // split a line into 2-character tag and content

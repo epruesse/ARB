@@ -25,7 +25,7 @@ static const char * sec_read_line(istream & in) {
     static char string_buffer[BUFFER_SIZE];
     in.getline(string_buffer, BUFFER_SIZE);
 
-    //clean input-stream of whitespaces
+    // clean input-stream of whitespaces
     int j=0;
     for (int i=0; i<(BUFFER_SIZE-1); i++) {
         if (!(isspace(string_buffer[i]))) {
@@ -129,7 +129,7 @@ static GB_ERROR sec_expect_closing_bracket(istream& in) {
  * READ-Functions
  ***********************************************************************/
 
-GB_ERROR SEC_region::read(istream & in, SEC_root *root, int /*version*/) {
+GB_ERROR SEC_region::read(istream & in, SEC_root *root, int /* version */) {
     int         seq_start, seq_end;
     const char *string_buffer = sec_read_line(in);
     GB_ERROR    error         = sec_expect_keyword_and_ints(string_buffer, "SEQ", 3, &seq_start, &seq_end);

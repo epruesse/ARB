@@ -9,4 +9,4 @@
 #define AP_AWAR_CONSPRO_GNUPLOT_MAX_Y    AP_AWAR_CONSPRO "/gnuplot_yRange_max"
 #define AP_AWAR_BASE_FREQ_FILTER_NAME    AP_AWAR_CONSPRO "/ap_filter/name"
 
-AW_window *AP_openConservationPorfileWindow( AW_root *root );
+AW_window *AP_openConservationPorfileWindow(AW_root *root);

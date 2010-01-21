@@ -19,7 +19,7 @@
 
 char *GDE_makeawarname(GmenuItem *gmenuitem, long i);
 void GDE_load_menu(AW_window *awm, AW_active mask, const char *menulabel, const char *menuitemlabel);
-void create_gde_var(AW_root *aw_root, AW_default aw_def, char *(*get_sequences )(void *THIS, GBDATA **&the_species, uchar **&the_names, uchar **&the_sequences, long &numberspecies, long &maxalignlen ), gde_cgss_window_type wt, void *THIS);
+void create_gde_var(AW_root *aw_root, AW_default aw_def, char *(*get_sequences)(void *THIS, GBDATA **&the_species, uchar **&the_names, uchar **&the_sequences, long &numberspecies, long &maxalignlen), gde_cgss_window_type wt, void *THIS);
 
 /* GDE_FileIO.cxx */
 int MAX(int a, int b);
@@ -31,7 +31,7 @@ char *Realloc(char *block, int size);
 void Cfree(char *block);
 void LoadData(char *filen);
 void AppendNA(NA_Base *buffer, int len, NA_Sequence *seq);
-void Ascii2NA(char *buffer, int len, int matrix[16 ]);
+void Ascii2NA(char *buffer, int len, int matrix[16]);
 int WriteNA_Flat(NA_Alignment *aln, char *filename, int method, int maskable);
 void Warning(const char *s);
 void InitNASeq(NA_Sequence *seq, int type);

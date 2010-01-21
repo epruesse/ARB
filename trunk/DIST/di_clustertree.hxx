@@ -99,7 +99,7 @@ public:
     LeafRelation(const TwoLeafs& pair_, AP_FLOAT value_)
         : pair(&pair_)
         , value(value_)
-    { }
+    {}
 
     bool operator<(const LeafRelation& other) const {
         if (value == other.value) return *pair < *other.pair;

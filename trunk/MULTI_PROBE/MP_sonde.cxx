@@ -9,8 +9,8 @@ extern int MP_probe_design_send_data(T_PT_PDC  pdc);
 
 
 
-//###########################################################################
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Methoden Sonde ~~~~~~~~~~~~~~~~~~~~~~
+// ###########################################################################
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Methoden Sonde ~~~~~~~~~~~~~~~~~~~~~~
 
 Sonde::Sonde(char* bezeichner, int allowed_mis, double outside_mis)
 {
@@ -43,7 +43,7 @@ Sonde::~Sonde()
 
     free(kennung);
 
-    for (i=0; i<length_hitliste ; i++) {
+    for (i=0; i<length_hitliste;  i++) {
         delete hitliste[i];             // Hits loeschen
     }
     delete [] hitliste;
@@ -57,8 +57,8 @@ void Sonde::print()
 {
     printf("\nSonde %s\n------------------------------------------------\n", kennung);
     bitkennung->print();
-    printf("Laenge hitliste %ld mit minelem %ld und maxelem %ld\n",length_hitliste,minelem, maxelem);
-    printf("Far %ld, Mor %ld, AllMM %ld, OutMM %f\n\n",kombi_far, kombi_mor, *Allowed_Mismatch, *Outside_Mismatch);
+    printf("Laenge hitliste %ld mit minelem %ld und maxelem %ld\n", length_hitliste, minelem, maxelem);
+    printf("Far %ld, Mor %ld, AllMM %ld, OutMM %f\n\n", kombi_far, kombi_mor, *Allowed_Mismatch, *Outside_Mismatch);
 }
 
 
@@ -78,39 +78,39 @@ MO_Mismatch** Sonde::get_matching_species(BOOL match_kompl, int match_weight, in
         bytestring      bs;
         int             i        = 0;
 
-        mp_pd_gl.link = (aisc_com *)aisc_open(servername, &mp_pd_gl.com,AISC_MAGIC_NUMBER);
+        mp_pd_gl.link = (aisc_com *)aisc_open(servername, &mp_pd_gl.com, AISC_MAGIC_NUMBER);
 
         if (!mp_pd_gl.link) {
             aw_message("Cannot contact Probe bank server ");
             return NULL;
         }
-        if (MP_init_local_com_struct() ) {
+        if (MP_init_local_com_struct()) {
             aw_message ("Cannot contact Probe bank server (2)");
             return NULL;
         }
 
-        aisc_create(mp_pd_gl.link,PT_LOCS, mp_pd_gl.locs,LOCS_PROBE_DESIGN_CONFIG, PT_PDC,  &pdc,   NULL);
+        aisc_create(mp_pd_gl.link, PT_LOCS, mp_pd_gl.locs, LOCS_PROBE_DESIGN_CONFIG, PT_PDC, &pdc,  NULL);
 
         if (MP_probe_design_send_data(pdc)) {
             aw_message ("Connection to PT_SERVER lost (3)");
             return NULL;
         }
 
-        if (aisc_put(mp_pd_gl.link,PT_LOCS, mp_pd_gl.locs,
+        if (aisc_put(mp_pd_gl.link, PT_LOCS, mp_pd_gl.locs,
                      LOCS_MATCH_REVERSED,       match_kompl, // Komplement
                      LOCS_MATCH_SORT_BY,        match_weight, // Weighted
                      LOCS_MATCH_COMPLEMENT,     0,  // ???
                      LOCS_MATCH_MAX_MISMATCHES, match_mis, // Mismatches
                      LOCS_MATCH_MAX_SPECIES,    100000, // ???
                      LOCS_SEARCHMATCH,          match_seq, // Sequence
-                     NULL)){
+                     NULL)) {
             free(probe);
             aw_message ("Connection to PT_SERVER lost (4)");
             return NULL;
         }
 
         bs.data = 0;
-        aisc_get( mp_pd_gl.link, PT_LOCS, mp_pd_gl.locs,
+        aisc_get(mp_pd_gl.link, PT_LOCS, mp_pd_gl.locs,
                   LOCS_MATCH_LIST,  &match_list,
                   LOCS_MATCH_LIST_CNT,  &match_list_cnt,
                   LOCS_MP_MATCH_STRING, &bs,
@@ -161,13 +161,13 @@ MO_Mismatch** Sonde::get_matching_species(BOOL match_kompl, int match_weight, in
 }
 
 
-double Sonde::check_for_min(long k, MO_Mismatch** probebacts,long laenge)
+double Sonde::check_for_min(long k, MO_Mismatch** probebacts, long laenge)
 {
     long    i = k+1;
     double  min;
 
     min = probebacts[k]->mismatch;                  // min ist gleich mismatch des ersten MOs
-    while ( (i<laenge) && (probebacts[k]->nummer == probebacts[i]->nummer))
+    while ((i<laenge) && (probebacts[k]->nummer == probebacts[i]->nummer))
     {
         if (min > probebacts[i]->mismatch)              // wenn min groesser ist als mismatch des naechsten MOs
             min = probebacts[i]->mismatch;              // setze min uf groesse des naechsten
@@ -183,7 +183,7 @@ int Sonde::gen_Hitliste(MO_Liste *Bakterienliste)
     // der Name der Sonde uebergeben wird
 {
     MO_Mismatch**   probebacts;
-    long        i,k;            // Zaehlervariable
+    long        i, k;           // Zaehlervariable
     long        laenge = 0;
     double      mm_to_search = 0;
     int         mm_int_to_search = 0;
@@ -217,22 +217,22 @@ int Sonde::gen_Hitliste(MO_Liste *Bakterienliste)
         return 1;
     }
 
-    //Ptrliste ist Nullterminiert
-    //Sortieren des Baktnummernfeldes:
+    // Ptrliste ist Nullterminiert
+    // Sortieren des Baktnummernfeldes:
 
-    heapsort(laenge,probebacts);
+    heapsort(laenge, probebacts);
 
-    double min_mm;          //Minimaler Mismatch
+    double min_mm;          // Minimaler Mismatch
     // laenge ist die Anzahl der Eintraege in probebact
     // Korrekturschleife, um Mehrfachtreffer auf das gleiche Bakterium abzufangen
 
-    for (k=0 ; k < laenge-1 ; k++ )
+    for (k=0;  k < laenge-1;  k++)
     {
         if (probebacts[k]->nummer == probebacts[k+1]->nummer)
         {
-            min_mm = check_for_min(k,probebacts,laenge);
+            min_mm = check_for_min(k, probebacts, laenge);
             probebacts[k]->mismatch = min_mm;
-            while ( (k<laenge-1) && (probebacts[k]->nummer == probebacts[k+1]->nummer))
+            while ((k<laenge-1) && (probebacts[k]->nummer == probebacts[k+1]->nummer))
             {
                 probebacts[k+1]->mismatch = min_mm;
                 k++;
@@ -251,7 +251,7 @@ int Sonde::gen_Hitliste(MO_Liste *Bakterienliste)
 
     for (i=0; i<laenge; i++)
     {
-        hitliste[i] = new Hit( probebacts[i]->nummer);
+        hitliste[i] = new Hit(probebacts[i]->nummer);
         hitliste[i]->set_mismatch_at_pos(0, probebacts[i]->mismatch);
     }
     length_hitliste = laenge;
@@ -260,13 +260,13 @@ int Sonde::gen_Hitliste(MO_Liste *Bakterienliste)
     long bl_index = 0;
     Bakt_Info** baktliste = Bakterienliste->get_mo_liste();
     Bakt_Info** bl_elem = baktliste+1;
-    while ( bl_elem[bl_index] )
+    while (bl_elem[bl_index])
     {
         bl_elem[bl_index]->kill_flag();
         bl_index++;
     }
     // Loeschen der Temps
-    for (i=0;i<laenge;i++)
+    for (i=0; i<laenge; i++)
     {
         delete probebacts[i];
     }
@@ -291,25 +291,25 @@ Hit* Sonde::get_hitdata_by_number(long index)
 void Sonde::heapsort(long feldlaenge, MO_Mismatch** Nr_Mm_Feld)
     // Heapsortfunktion, benutzt sink(), sortiert Feld von longs
 {
-    long        m=0,i=0;
+    long        m=0, i=0;
     MO_Mismatch*    tmpmm;
 
-    for (i=(feldlaenge-1)/2;i>-1;i--)
-        sink(i,feldlaenge-1,Nr_Mm_Feld);
-    for (m=feldlaenge-1;m>0;m--)
+    for (i=(feldlaenge-1)/2; i>-1; i--)
+        sink(i, feldlaenge-1, Nr_Mm_Feld);
+    for (m=feldlaenge-1; m>0; m--)
     {
         tmpmm =  Nr_Mm_Feld[0];
         Nr_Mm_Feld[0] =  Nr_Mm_Feld[m];
         Nr_Mm_Feld[m] = tmpmm;
 
-        sink(0,m-1,Nr_Mm_Feld);
+        sink(0, m-1, Nr_Mm_Feld);
     }
 }
 
-void Sonde::sink(long i,long t,MO_Mismatch** A)
+void Sonde::sink(long i, long t, MO_Mismatch** A)
     // Algorithmus fuer den Heapsort
 {
-    long        j,k;
+    long        j, k;
     MO_Mismatch*    tmpmm;
 
     j = 2*i;
@@ -324,7 +324,7 @@ void Sonde::sink(long i,long t,MO_Mismatch** A)
         if (i != j)
         {
             tmpmm = A[i]; A[i] = A[j]; A[j] = tmpmm;
-            sink(j,t,A);
+            sink(j, t, A);
         }
     }
 }
@@ -336,14 +336,14 @@ void Sonde::set_bitkennung(Bitvector* bv)
 
 
 
-//########################################################################################################
+// ########################################################################################################
 /* Bakt_Info haengt in der MO_Liste drinnen. Hier werden u.a. die Hitflags gespeichert
  */
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Methoden Bakt_Info~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Methoden Bakt_Info~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Bakt_Info::Bakt_Info(const char* n)
 {
-    name = strdup(n);                       //MEL  (match_name in mo_liste)
+    name = strdup(n);                       // MEL  (match_name in mo_liste)
     hit_flag = 0;
 }
 
@@ -354,9 +354,9 @@ Bakt_Info::~Bakt_Info()
 }
 
 
-//##########################################################################################################
+// ##########################################################################################################
 // Hit speichert die  Trefferinformation
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Methoden Hit
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Methoden Hit
 
 Hit::Hit(long baktnummer)
 {
@@ -374,4 +374,4 @@ Hit::~Hit()
     delete [] mismatch;
 }
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

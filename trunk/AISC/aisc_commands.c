@@ -78,15 +78,15 @@ static void memcopy(char *dest, const char *source, int len)
     }
 }
 
-static char *find_string(const char *str,const char *key)
+static char *find_string(const char *str, const char *key)
 {
-    const char *p1,*p2;
-    for (p1=str,p2=key;*p1;) {
+    const char *p1, *p2;
+    for (p1=str, p2=key; *p1;) {
         if (!*p2) {
             return (char*)(str);
         }
         else {
-            if (*p2==*p1){
+            if (*p2==*p1) {
                 p1 ++; p2++;
             }
             else {
@@ -99,7 +99,7 @@ static char *find_string(const char *str,const char *key)
     return 0;
 }
 
-static char *calc_rest_line(/*const*/ char *str, int size, int presize)
+static char *calc_rest_line( /* const */ char *str, int size, int presize)
 {
     /* wertet einen Puffer str aus , str[-1] muss existieren !!! */
     char *ld;
@@ -114,7 +114,7 @@ static char *calc_rest_line(/*const*/ char *str, int size, int presize)
     ld = find_string(&str[2], "$(");
     fi = 0;
     if (ld) {
-        lastbr = calc_rest_line(ld, size - (ld - str),presize+2);
+        lastbr = calc_rest_line(ld, size - (ld - str), presize+2);
         if (!lastbr)
             return 0;
     }
@@ -129,7 +129,7 @@ static char *calc_rest_line(/*const*/ char *str, int size, int presize)
     }
     br = strchr(p, ')');
     if (!br) {
-        fprintf(stderr, "%s#%s\n",str,lastbr);
+        fprintf(stderr, "%s#%s\n", str, lastbr);
         print_error("unbalanced brackets; missing ')'");
         return 0;
     }
@@ -217,7 +217,7 @@ static char *calc_rest_line(/*const*/ char *str, int size, int presize)
         free(fi);
         ld = find_string(str, "$(");
         if (ld) {
-            lastbr = calc_rest_line(ld, size - (ld - str),presize+(ld-str));
+            lastbr = calc_rest_line(ld, size - (ld - str), presize+(ld-str));
             if (!lastbr)
                 return 0;
         }
@@ -243,7 +243,7 @@ static int calc_line(char *str, char *buf)
     if (!ld)
         return 0;
     contains_tabs = 0;
-    lb = calc_rest_line(ld, gl->bufsize - (ld - buf),ld-buf);
+    lb = calc_rest_line(ld, gl->bufsize - (ld - buf), ld-buf);
     if (!lb) return 1;
     return 0;
 }
@@ -260,14 +260,14 @@ static int calc_line2(char *str, char *buf)
     ld = buf;
     SKIP_SPACE_LF(ld);
     ld = find_string(buf, "$(");
-    if (strncmp(ld,"$(",2)) {
+    if (strncmp(ld, "$(", 2)) {
         print_error("No Identifier specified");
         return 1;
     }
     ld = find_string(ld + 2, "$(");
     contains_tabs = 0;
     if (ld) {
-        lb = calc_rest_line(ld, gl->bufsize - (ld - buf),2);
+        lb = calc_rest_line(ld, gl->bufsize - (ld - buf), 2);
         if (!lb) return 1;
     }
     return 0;
@@ -357,7 +357,7 @@ static int do_com_write(FILE * out, char *str)
     int   lt, rt;
 
     p = str;
-    while ( (c = *(p++)) ) {
+    while ((c = *(p++))) {
         if (c == '$') {
             c = *(p++);
             if (!c)
@@ -611,7 +611,7 @@ static int do_com_moveto(char *str)
     else {
         fo = aisc_find_var_hier(gl->cursor, st, LOOKUP_BLOCK);
     }
-    if (!fo){
+    if (!fo) {
     }
     else {
         gl->cursor = fo;
@@ -638,7 +638,7 @@ static int do_com_set(char *str)
         return 1;
     };
     *(co++) = 0;
-    def = read_hash_local(st,&hs);
+    def = read_hash_local(st, &hs);
     if (!def) {
         printf_error("undefined Ident '%s' in SET (use CREATE first)", st);
         return 1;
@@ -669,7 +669,7 @@ static int do_com_create(char *str)
         return 1;
     };
     *(co++) = 0;
-    def = read_hash( gl->st->hs,st);
+    def = read_hash(gl->st->hs, st);
     if (def) {
         printf_error("Ident '%s' in CREATE already defined", st);
         return 1;
@@ -691,9 +691,9 @@ static int do_com_if(char *str)
     char           *kom2;
 
     int op = 0;                                     /* 0=   1~ 2< 3> !+8 */
-    for (equ = str;*equ;equ++) {
-        if (*equ =='=') { op = 0; break;}
-        if (*equ =='~') { op = 1; break;}
+    for (equ = str; *equ; equ++) {
+        if (*equ == '=') { op = 0; break; }
+        if (*equ == '~') { op = 1; break; }
     }
     la = equ;
     if (!*la) { // no operator found -> assume condition true, even if empty or undefined
@@ -718,10 +718,10 @@ static int do_com_if(char *str)
         }
         switch (op) {
             case 0:     if (!strcmp(str, equ)) return 0; break;
-            case 8:     if ( strcmp(str, equ)) return 0; break;
-            case 1:     if ( find_string(str, equ)) return 0; break;
+            case 8:     if (strcmp(str, equ)) return 0; break;
+            case 1:     if (find_string(str, equ)) return 0; break;
             case 9:     if (!find_string(str, equ)) return 0; break;
-            default :
+            default:
                 printf_error("Unhandled operator (op=%i)", op);
                 return 1;
         }
@@ -736,7 +736,7 @@ static int do_com_if(char *str)
 static int do_com_for_add(CL *co)
 {
     struct for_data_struct *fd;
-    fd = (struct for_data_struct *)calloc(sizeof(struct for_data_struct),1);
+    fd = (struct for_data_struct *)calloc(sizeof(struct for_data_struct), 1);
     fd->next = co->fd;
     co->fd = fd;
     return 0;
@@ -756,7 +756,7 @@ static int do_com_for_sub(CL *co)
 int do_com_push(const char *str)
 {
     struct stack_struct *st;
-    st = (struct stack_struct *)calloc(sizeof(struct stack_struct),1);
+    st = (struct stack_struct *)calloc(sizeof(struct stack_struct), 1);
     st->cursor = gl->cursor;
     st->pc = gl->pc;
     if (gl->sp++ >= STACKSIZE) {
@@ -801,7 +801,7 @@ static int do_com_gosub(char *str)
 {
     char *fn;
     char *s;
-    char *params,*para,*fpara,*npara=0,*nfpara=0;
+    char *params, *para, *fpara, *npara=0, *nfpara=0;
     CL *fun;
     int err;
     if (do_com_push("")) return 1;
@@ -815,7 +815,7 @@ static int do_com_gosub(char *str)
     else {
         params = strdup("");
     }
-    fn = read_hash(gl->fns,str);
+    fn = read_hash(gl->fns, str);
     if (!fn) {
         printf_error("Function '%s' not found", str);
         return 1;
@@ -826,18 +826,18 @@ static int do_com_gosub(char *str)
     if (err)    return err;
     fpara = gl->linebuf;
     SKIP_SPACE_LF(fpara);
-    for (para = params; *para;para=npara,fpara=nfpara){
+    for (para = params; *para; para=npara, fpara=nfpara) {
         if (!*fpara) {
-            printf_error("Too many Parameters %s",para);
+            printf_error("Too many Parameters %s", para);
             return 1;
         }
         for (s = para; !is_SEP_LF_EOS(*s); s++) ;
-        if (*s) {npara = s+1;SKIP_SPACE_LF(npara);} else npara = s;
+        if (*s) { npara = s+1; SKIP_SPACE_LF(npara); } else npara = s;
         *s = 0;
         for (s = fpara; !is_SEP_LF_EOS(*s); s++) ;
-        if (*s) {nfpara = s+1;SKIP_SPACE_LF(nfpara);} else nfpara = s;
+        if (*s) { nfpara = s+1; SKIP_SPACE_LF(nfpara); } else nfpara = s;
         *s = 0;
-        s = read_hash( gl->st->hs,para);
+        s = read_hash(gl->st->hs, para);
         if (s) {
             printf_error("duplicated formal parameter %s", para);
             return 1;
@@ -856,12 +856,12 @@ static int do_com_gosub(char *str)
 static int do_com_goto(char *str)
 {
     char *fn;
-    fn = read_hash(gl->fns,str);
+    fn = read_hash(gl->fns, str);
     if (!fn) {
         printf_error("Function '%s' not found", str);
         return 1;
     }
-    gl->nextpc = ( (CL *)atol(fn) ) ->next;
+    gl->nextpc = ((CL *)atol(fn)) ->next;
     return 0;
 }
 
@@ -977,7 +977,7 @@ static int do_com_next(const char *str)
         }
         else {
             gl->nextpc = gl->pc->FOR->next;
-            p = read_hash_local(gl->pc->FOR->fd->forstr,&hs);
+            p = read_hash_local(gl->pc->FOR->fd->forstr, &hs);
             sprintf(string_buf, "%li", gl->pc->FOR->fd->forval);
             write_hash(hs, gl->pc->FOR->fd->forstr, string_buf);
         }
@@ -987,31 +987,31 @@ static int do_com_next(const char *str)
     return 0;
 }
 
-#define COMMAND(str,string,len,func)                            \
-    if ( string[0] == str[0] && !strncmp(string,str,len)) {     \
+#define COMMAND(str, string, len, func)                         \
+    if (string[0] == str[0] && !strncmp(string, str, len)) {    \
         char *s=str+len;                                        \
         SKIP_SPACE_LF(s);                                       \
         if (func(s)) break;                                     \
         continue;                                               \
     }
 
-#define COMMAND_NOFAIL(str,string,len,func)                     \
-    if ( string[0] == str[0] && !strncmp(string,str,len)) {     \
+#define COMMAND_NOFAIL(str, string, len, func)                  \
+    if (string[0] == str[0] && !strncmp(string, str, len)) {    \
         char *s=str+len;                                        \
         SKIP_SPACE_LF(s);                                       \
         if (func(s)) return -1;                                 \
         continue;                                               \
     }
 
-#define COMMAND2(str,string,len,func)                           \
-    if ( string[0] == str[0] && !strncmp(string,str,len)) {     \
+#define COMMAND2(str, string, len, func)                        \
+    if (string[0] == str[0] && !strncmp(string, str, len)) {    \
         char *s=str+len;                                        \
         if (func(s)) break;                                     \
         continue;                                               \
     }
 
-#define COMMAND2_NOFAIL(str,string,len,func)                    \
-    if (string[0] == str[0] && !strncmp(string,str,len)) {      \
+#define COMMAND2_NOFAIL(str, string, len, func)                 \
+    if (string[0] == str[0] && !strncmp(string, str, len)) {    \
         char *s=str+len;                                        \
         if (func(s)) return -1;                                 \
         continue;                                               \
@@ -1077,28 +1077,28 @@ int run_prg(void) {
         err = calc_line(gl->pc->str, gl->linebuf);
         if (err) return err;
 
-        COMMAND2(gl->linebuf,"PRINT",5,do_com_print);
-        COMMAND2(gl->linebuf,"P ",2,do_com_print);
-        COMMAND2(gl->linebuf,"P\t",2,do_com_print);
-        COMMAND(gl->linebuf,"GOSUB",5,do_com_gosub);
-        COMMAND(gl->linebuf,"CALL",4,do_com_gosub);
-        COMMAND(gl->linebuf,"GOTO",4,do_com_goto);
-        COMMAND(gl->linebuf,"RETURN",6,do_com_return);
-        COMMAND(gl->linebuf,"PUSH",4,do_com_push);
-        COMMAND(gl->linebuf,"POP",3,do_com_pop);
-        COMMAND(gl->linebuf,"CONTINUE",8,do_com_next);
+        COMMAND2(gl->linebuf, "PRINT", 5, do_com_print);
+        COMMAND2(gl->linebuf, "P ", 2, do_com_print);
+        COMMAND2(gl->linebuf, "P\t", 2, do_com_print);
+        COMMAND(gl->linebuf, "GOSUB", 5, do_com_gosub);
+        COMMAND(gl->linebuf, "CALL", 4, do_com_gosub);
+        COMMAND(gl->linebuf, "GOTO", 4, do_com_goto);
+        COMMAND(gl->linebuf, "RETURN", 6, do_com_return);
+        COMMAND(gl->linebuf, "PUSH", 4, do_com_push);
+        COMMAND(gl->linebuf, "POP", 3, do_com_pop);
+        COMMAND(gl->linebuf, "CONTINUE", 8, do_com_next);
 
 
-        COMMAND(gl->linebuf,"OPEN",4,do_com_open);
-        COMMAND(gl->linebuf,"CLOSE",5,do_com_close);
-        COMMAND(gl->linebuf,"OUT",3,do_com_out);
-        COMMAND2_NOFAIL(gl->linebuf,"ERROR",5,do_com_error);
-        COMMAND(gl->linebuf,"TABSTOP",7,do_com_tabstop);
-        COMMAND(gl->linebuf,"TAB",3,do_com_tab);
-        COMMAND(gl->linebuf,"PP",2,do_com_print2);
-        COMMAND(gl->linebuf,"EXIT",4,do_com_exit);
-        COMMAND_NOFAIL(gl->linebuf,"DATA",4,do_com_data);
-        COMMAND_NOFAIL(gl->linebuf,"DUMPDATA",8,do_com_dumpdata);
+        COMMAND(gl->linebuf, "OPEN", 4, do_com_open);
+        COMMAND(gl->linebuf, "CLOSE", 5, do_com_close);
+        COMMAND(gl->linebuf, "OUT", 3, do_com_out);
+        COMMAND2_NOFAIL(gl->linebuf, "ERROR", 5, do_com_error);
+        COMMAND(gl->linebuf, "TABSTOP", 7, do_com_tabstop);
+        COMMAND(gl->linebuf, "TAB", 3, do_com_tab);
+        COMMAND(gl->linebuf, "PP", 2, do_com_print2);
+        COMMAND(gl->linebuf, "EXIT", 4, do_com_exit);
+        COMMAND_NOFAIL(gl->linebuf, "DATA", 4, do_com_data);
+        COMMAND_NOFAIL(gl->linebuf, "DUMPDATA", 8, do_com_dumpdata);
 
         printf_error("Unknown command '%s'", gl->pc->str);
         return -1;

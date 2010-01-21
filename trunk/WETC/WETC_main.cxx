@@ -10,8 +10,8 @@
 AW_HEADER_MAIN
 
 
-int main(int argc,char **argv){
-    if (argc <1){
+int main(int argc, char **argv) {
+    if (argc <1) {
         GB_export_error("Syntax: arb_wetc [-fileedit]");
         GB_print_error();
         exit(-1);
@@ -25,7 +25,7 @@ int main(int argc,char **argv){
     aw_root->init_variables(aw_default);
     aw_root->init_root("ARB_WETC", false);
 
-    if (!strcmp(com,"-fileedit")){
+    if (!strcmp(com, "-fileedit")) {
         AWT_show_file(aw_root, argv[2]);
     }
     else {
@@ -39,7 +39,7 @@ int main(int argc,char **argv){
     return 0;
 }
 
-void AD_map_viewer(GBDATA *,AD_MAP_VIEWER_TYPE)
+void AD_map_viewer(GBDATA *, AD_MAP_VIEWER_TYPE)
 {
     ;
 }

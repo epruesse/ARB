@@ -11,11 +11,11 @@
 //      ED4_list
 // -----------------
 
-ED4_returncode ED4_list::append_elem_backwards( void *elem )
+ED4_returncode ED4_list::append_elem_backwards(void *elem)
 {
     ED4_list_elem *new_list_elem;
 
-    if ( elem == NULL ) return ( ED4_R_IMPOSSIBLE );
+    if (elem == NULL) return (ED4_R_IMPOSSIBLE);
 
     new_list_elem = new ED4_list_elem(elem);
 
@@ -30,20 +30,20 @@ ED4_returncode ED4_list::append_elem_backwards( void *elem )
 
     my_no_of_entries++;
 
-    return ( ED4_R_OK );
+    return (ED4_R_OK);
 }
 
 
-ED4_returncode ED4_list::append_elem( void *elem )
+ED4_returncode ED4_list::append_elem(void *elem)
 {
     ED4_list_elem       *new_list_elem;
 
-    if ( elem == NULL )
-        return ( ED4_R_IMPOSSIBLE );
+    if (elem == NULL)
+        return (ED4_R_IMPOSSIBLE);
 
     new_list_elem = new ED4_list_elem(elem);
 
-    if ( my_first == NULL) {
+    if (my_first == NULL) {
         my_first = new_list_elem;
         my_last = new_list_elem;
     }
@@ -53,12 +53,12 @@ ED4_returncode ED4_list::append_elem( void *elem )
     }
 
     my_no_of_entries++;
-    return ( ED4_R_OK );
+    return (ED4_R_OK);
 }
 
 
 
-ED4_returncode ED4_list::delete_elem( void *elem )
+ED4_returncode ED4_list::delete_elem(void *elem)
 {
     ED4_list_elem    *current_list_elem,
         *previous_list_elem;
@@ -71,12 +71,12 @@ ED4_returncode ED4_list::delete_elem( void *elem )
         current_list_elem  = current_list_elem->next();
     }
 
-    if ( current_list_elem == NULL ) {
-        return ( ED4_R_IMPOSSIBLE );
+    if (current_list_elem == NULL) {
+        return (ED4_R_IMPOSSIBLE);
     }
 
-    if ( current_list_elem == first() ) {
-        if ( current_list_elem == last() ) {
+    if (current_list_elem == first()) {
+        if (current_list_elem == last()) {
             my_last = NULL;
         }
         my_first = current_list_elem->next();
@@ -85,21 +85,21 @@ ED4_returncode ED4_list::delete_elem( void *elem )
     {
         previous_list_elem->set_next(current_list_elem->next());
 
-        if ( current_list_elem == last() ) {
+        if (current_list_elem == last()) {
             my_last = previous_list_elem;
         }
     }
 
     my_no_of_entries--;
     delete current_list_elem;
-    return ( ED4_R_OK );
+    return (ED4_R_OK);
 }
 
-short ED4_list::is_elem( void *elem )
+short ED4_list::is_elem(void *elem)
 {
     ED4_list_elem       *current_list_elem = first();
 
-    if ( elem == NULL ) return ( 0 );
+    if (elem == NULL) return (0);
 
     while (current_list_elem && current_list_elem->elem()!=elem) {
         current_list_elem = current_list_elem->next();

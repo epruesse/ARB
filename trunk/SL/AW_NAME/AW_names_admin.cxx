@@ -19,22 +19,22 @@ static char *namesFilename(AW_CL cl_gb_main) {
 static void awtc_delete_names_file(AW_window *aws, AW_CL cl_gb_main) {
     AWUSE(aws);
     char     *path    = namesFilename(cl_gb_main);
-    char     *newpath = GBS_string_eval(path,"*=*%",0);
-    GB_ERROR  error   = GB_rename_file(path,newpath);
+    char     *newpath = GBS_string_eval(path, "*=*%", 0);
+    GB_ERROR  error   = GB_rename_file(path, newpath);
     if (error) aw_message(error);
     free(newpath);
     free(path);
 }
 
-static void awtc_edit_names_file(AW_window */*aws*/, AW_CL cl_gb_main){
+static void awtc_edit_names_file(AW_window * /* aws */, AW_CL cl_gb_main) {
     char *path = namesFilename(cl_gb_main);
     AWT_edit(path);
     free(path);
 }
 
-static void awtc_remove_arb_acc(AW_window */*aws*/, AW_CL cl_gb_main){
+static void awtc_remove_arb_acc(AW_window * /* aws */, AW_CL cl_gb_main) {
     char *path    = namesFilename(cl_gb_main);
-    char *newpath = GBS_string_eval(path,"*=*%",0);
+    char *newpath = GBS_string_eval(path, "*=*%", 0);
     char *command = GBS_global_string_copy("cp %s %s;"
                                            "arb_replace -l '"
                                            "*ACC {}*=:" // remove entries w/o acc
@@ -61,19 +61,19 @@ void AW_create_namesadmin_awars(AW_root *awr, GBDATA *gb_main) {
     awr->awar_string(AWAR_NAMESERVER_ADDID, "", gb_main);
 }
 
-AW_window *AW_create_namesadmin_window(AW_root *root, AW_CL cl_gb_main)  {
+AW_window *AW_create_namesadmin_window(AW_root *root, AW_CL cl_gb_main) {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "NAME_SERVER_ADMIN", "NAME_SERVER ADMIN");
+    aws->init(root, "NAME_SERVER_ADMIN", "NAME_SERVER ADMIN");
 
     aws->load_xfig("awtc/names_admin.fig");
 
-    aws->callback( AW_POPUP_HELP,(AW_CL)"namesadmin.hlp");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"namesadmin.hlp");
     aws->at("help");
-    aws->create_button("HELP", "HELP","H");
+    aws->create_button("HELP", "HELP", "H");
 
-    aws->callback( (AW_CB0)AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE", "CLOSE","C");
+    aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->button_length(30);
 

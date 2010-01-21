@@ -34,7 +34,7 @@
 #include "aw_window.hxx"
 #endif
 
-//#define SHOW_PROGRESS ///< Print information about progress to screen (for finding and extending structures and resolving overlaps).
+// #define SHOW_PROGRESS ///< Print information about progress to screen (for finding and extending structures and resolving overlaps).
 
 #define PFOLD_AWAR_ENABLE            "Pfold/enable"       ///< Enable structure match.
 #define PFOLD_AWAR_SELECTED_SAI      "Pfold/selected_SAI" ///< Selected reference protein secondary structure SAI (i.e. the SAI that is used for structure comparison).
@@ -44,7 +44,7 @@
 #define PFOLD_AWAR_MATCH_METHOD      "Pfold/match_method" ///< Selected method for computing the match quality (see #PFOLD_MATCH_METHOD).
 #define PFOLD_AWAR_SAI_FILTER        "Pfold/SAI_filter"   ///< Filter SAIs for given criteria (string); used in option menu for SAI selection.
 
-//TODO: move static variables to .cpp file?
+// TODO: move static variables to .cpp file?
 
 /** \brief Protein secondary structure types.
  *
@@ -112,7 +112,7 @@ typedef enum {
  *  depending on the found structure type at its position. It addresses #cf_parameters
  *  for #ALPHA_HELIX and #BETA_SHEET and #cf_parameters_norm for #BETA_TURN.
  */
-#define cf_former(aa,strct)  ( (strct!=2) ? cf_parameters[aa][strct] : cf_parameters_norm[aa][strct] )
+#define cf_former(aa, strct) ((strct!=2) ? cf_parameters[aa][strct] : cf_parameters_norm[aa][strct])
 
 /** \brief Returns the breaker value of an amino acid depending on the given structure type.
  *
@@ -122,7 +122,7 @@ typedef enum {
  *  for #ALPHA_HELIX and #BETA_SHEET and returns 0 for #BETA_SHEET, because it has no
  *  breaker values. 
  */
-#define cf_breaker(aa,strct) ( (strct!=2) ? cf_parameters[aa][strct+2] : 0 )
+#define cf_breaker(aa, strct) ((strct!=2) ? cf_parameters[aa][strct+2] : 0)
 
 
 // General ED4 functions //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -220,6 +220,6 @@ GB_ERROR ED4_pfold_set_SAI(char **protstruct, GBDATA *gb_main, const char *align
  *  the SAI filter to update the selected SAI in the editor or the selection in the
  *  SAI option menu.
  */
-AW_window *ED4_pfold_create_props_window(AW_root *awr, AW_cb_struct * /*owner*/awcbs);
+AW_window *ED4_pfold_create_props_window(AW_root *awr, AW_cb_struct * /* owner */ awcbs);
 
 #endif

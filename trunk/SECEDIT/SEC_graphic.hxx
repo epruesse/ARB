@@ -44,7 +44,7 @@ enum SEC_update_request {
 
 class SEC_base;
 
-class SEC_graphic: public AWT_graphic {
+class SEC_graphic : public AWT_graphic {
     SEC_update_request  update_requested;
     char               *load_error; // error occurred during load()
 
@@ -75,7 +75,7 @@ public:
     SEC_graphic(AW_root *aw_root, GBDATA *gb_main);
     virtual ~SEC_graphic(void);
 
-    virtual AW_gc_manager init_devices(AW_window *,AW_device *,AWT_canvas *ntw,AW_CL);
+    virtual AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *ntw, AW_CL);
 
     virtual void show(AW_device *device);
     virtual void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct);

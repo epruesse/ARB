@@ -44,8 +44,8 @@ public:
 class ProgramError : public Error {
     string error;
 public:
-    ProgramError(string message) : error(message) { }
-    ProgramError(const char *message) : error(message) { }
+    ProgramError(string message) : error(message) {}
+    ProgramError(const char *message) : error(message) {}
     virtual ~ProgramError() {}
 
     void print() const {
@@ -103,7 +103,7 @@ public:
         , open_comment(openComment)
         , close_comment(closeComment)
         , eol_comment(eolComment)
-    { }
+    {}
 
     bool getLine(string& line) {
         if (FileBuffer::getLine(line)) {
@@ -211,7 +211,7 @@ inline bool find_open_close_paren(const char *code, size_t& opening_paren_pos, s
     const char *open_paren  = strchr(code, '(');
     const char *close_paren = next_closing_paren(open_paren+1);
 
-    if (open_paren && close_paren)  {
+    if (open_paren && close_paren) {
         opening_paren_pos = open_paren-code;
         closing_paren_pos = close_paren-code;
         return true;
@@ -258,7 +258,7 @@ enum TypeClass {
 };
 
 #if defined(TRACE)
-#define TypeClass2CSTR(type) case type : return #type
+#define TypeClass2CSTR(type) case type: return #type
 const char *get_TypeClass_name(TypeClass type_class) {
     switch (type_class) {
         TypeClass2CSTR(INVALID_TYPE);
@@ -310,7 +310,7 @@ class Type { // return- or parameter-type
             switch (c) {
                 case ' ': curr = SPACE; break;
                 case '*': curr = STAR; break;
-                default : curr = is_ID_char(c) ? ID : UNKNOWN; break;
+                default: curr = is_ID_char(c) ? ID : UNKNOWN; break;
             }
 
             if (last != SPACE && curr != last) type_decl += ' ';
@@ -363,7 +363,7 @@ class Type { // return- or parameter-type
 public:
     static TypeMap globalTypemap;
 
-    Type() : type_class(INVALID_TYPE) { }
+    Type() : type_class(INVALID_TYPE) {}
     Type(const char *code) {
         c_type = unify_type_decl(code);
 
@@ -668,7 +668,7 @@ public:
     xsubGenerator()
         : arb("ARB", "P2A")
         , bio("BIO", "P2AT")
-    { }
+    {}
 
     void mark_handcoded_functions(FileBuffer& handcoded) {
         string line;
@@ -833,7 +833,7 @@ void xsubGenerator::generate_all_xsubs(FileBuffer& prototype_reader) {
                 }
 #endif // TRACE
             }
-            catch(string err)     {
+            catch(string err) {
                 print_prototype_parse_error(prototype_reader, err.c_str(), prototype);
                 error_occurred = true;
             }

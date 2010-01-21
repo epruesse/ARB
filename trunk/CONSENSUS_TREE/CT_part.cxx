@@ -27,14 +27,14 @@ void part_init(int len)
 
     /* cutmask is necessary to cut unused bits */
     j = 8 * sizeof(PELEM);
-    j = len %j;
-    if(!j) j += 8 * sizeof(PELEM);
+    j = len % j;
+    if (!j) j += 8 * sizeof(PELEM);
     cutmask = 0;
-    for(i=0; i<j; i++) {
+    for (i=0; i<j; i++) {
         cutmask <<= 1;
         cutmask |= 1;
     }
-    longs = (((len +7) / 8)+sizeof(PELEM)-1) / sizeof(PELEM);
+    longs = (((len + 7) / 8)+sizeof(PELEM)-1) / sizeof(PELEM);
     plen = len;
 }
 
@@ -46,10 +46,10 @@ void part_print(PART *p)
     int i, j, k=0;
     PELEM l;
 
-    for(i=0; i<longs; i++) {
+    for (i=0; i<longs; i++) {
         l = 1;
-        for(j=0; k<plen && size_t(j)<sizeof(PELEM)*8; j++, k++) {
-            if(p->p[i] & l)
+        for (j=0; k<plen && size_t(j)<sizeof(PELEM)*8; j++, k++) {
+            if (p->p[i] & l)
                 printf("1");
             else
                 printf("0");
@@ -89,7 +89,7 @@ PART *part_root(void)
     int i;
     PART *p;
     p = part_new();
-    for(i=0; i<longs; i++) {
+    for (i=0; i<longs; i++) {
         p->p[i] = ~p->p[i];
     }
     p->p[longs-1] &= cutmask;
@@ -115,8 +115,8 @@ int son(PART *son, PART *father)
 {
     int i;
 
-    for(i=0; i<longs; i++) {
-        if((son->p[i] & father->p[i]) != son->p[i]) return 0;
+    for (i=0; i<longs; i++) {
+        if ((son->p[i] & father->p[i]) != son->p[i]) return 0;
     }
     return 1;
 }
@@ -130,8 +130,8 @@ int brothers(PART *p1, PART *p2)
 {
     int i;
 
-    for(i=0; i<longs; i++) {
-        if(p1->p[i] & p2->p[i]) return 0;
+    for (i=0; i<longs; i++) {
+        if (p1->p[i] & p2->p[i]) return 0;
     }
     return 1;
 }
@@ -143,7 +143,7 @@ void part_invert(PART *p)
 {
     int i;
 
-    for(i=0; i<longs; i++)
+    for (i=0; i<longs; i++)
         p->p[i] = ~p->p[i];
     p->p[longs-1] &= cutmask;
 }
@@ -151,12 +151,12 @@ void part_invert(PART *p)
 
 /** d  = s or d
     @PARMETER   s   source
-    d   destination*/
+    d   destination */
 void part_or(PART *s, PART *d)
 {
     int i;
 
-    for(i=0; i<longs; i++) {
+    for (i=0; i<longs; i++) {
         d->p[i] |= s->p[i];
     }
 }
@@ -169,8 +169,8 @@ int part_cmp(PART *p1, PART *p2)
 {
     int i;
 
-    for(i=0; i<longs; i++) {
-        if(p1->p[i] != p2->p[i]) return 0;
+    for (i=0; i<longs; i++) {
+        if (p1->p[i] != p2->p[i]) return 0;
     }
 
     return 1;
@@ -183,11 +183,11 @@ int part_key(PART *p)
     int i;
     PELEM ph=0;
 
-    for(i=0; i<longs; i++) {
+    for (i=0; i<longs; i++) {
         ph ^= p->p[i];
     }
     i = (int) ph;
-    if(i<0) i *=-1;
+    if (i<0) i *= -1;
 
     return i;
 }
@@ -221,7 +221,7 @@ void part_copy(PART *s, PART *d)
 {
     int i;
 
-    for(i=0; i<longs; i++)
+    for (i=0; i<longs; i++)
         d->p[i] = s->p[i];
     d->len = s->len;
     d->percent = s->percent;
@@ -235,9 +235,9 @@ void part_standard(PART *p)
 {
     int i;
 
-    if(p->p[0] & 1) return;
+    if (p->p[0] & 1) return;
 
-    for(i=0; i<longs; i++)
+    for (i=0; i<longs; i++)
         p->p[i] = ~ p->p[i];
     p->p[longs-1] &= cutmask;
 }
@@ -251,11 +251,11 @@ int calc_index(PART *p)
     int i, pos=0;
     PELEM p_temp;
 
-    for(i=0; i<longs; i++) {
+    for (i=0; i<longs; i++) {
         p_temp = p->p[i];
         pos = i * sizeof(PELEM) * 8;
-        if(p_temp) {
-            for(; p_temp; p_temp >>= 1, pos++) {
+        if (p_temp) {
+            for (; p_temp; p_temp >>= 1, pos++) {
                 ;
             }
             break;

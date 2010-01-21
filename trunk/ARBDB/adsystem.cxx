@@ -31,7 +31,7 @@ static GB_CSTR gb_read_dict_data(GBDATA *gb_dict, long *size) {
     return data;
 }
 
-GB_ERROR gb_load_dictionary_data(GBDATA *gb_main,const char *key, char **dict_data, long *size) {
+GB_ERROR gb_load_dictionary_data(GBDATA *gb_main, const char *key, char **dict_data, long *size) {
     /* returns dictionary data (like saved in DB)
      * in a block allocated by gbm_get_mem(.., GBM_DICT_INDEX)
      */
@@ -50,11 +50,11 @@ GB_ERROR gb_load_dictionary_data(GBDATA *gb_main,const char *key, char **dict_da
         GBDATA *gb_name;
 
         GB_push_my_security(gb_main);
-        gb_name = GB_find_string(gb_key_data,"@name", key, GB_MIND_CASE, SEARCH_GRANDCHILD);
+        gb_name = GB_find_string(gb_key_data, "@name", key, GB_MIND_CASE, SEARCH_GRANDCHILD);
 
-        if (gb_name){
+        if (gb_name) {
             GBDATA *gb_key  = GB_get_father(gb_name);
-            GBDATA *gb_dict = GB_entry(gb_key,"@dictionary");
+            GBDATA *gb_dict = GB_entry(gb_key, "@dictionary");
             if (gb_dict) {
                 const char *data = gb_read_dict_data(gb_dict, size);
                 char       *copy = gbm_get_mem(*size, GBM_DICT_INDEX);
@@ -67,14 +67,14 @@ GB_ERROR gb_load_dictionary_data(GBDATA *gb_main,const char *key, char **dict_da
     return error;
 }
 
-GB_DICTIONARY *gb_create_dict(GBDATA *gb_dict){
-    GB_DICTIONARY *dict = (GB_DICTIONARY *)GB_calloc(sizeof(GB_DICTIONARY),1);
+GB_DICTIONARY *gb_create_dict(GBDATA *gb_dict) {
+    GB_DICTIONARY *dict = (GB_DICTIONARY *)GB_calloc(sizeof(GB_DICTIONARY), 1);
     const char    *data;
     GB_NINT       *idata;
     long           size;
 
     data = gb_read_dict_data(gb_dict, &size);
-    GB_write_security_write(gb_dict,7);
+    GB_write_security_write(gb_dict, 7);
 
     idata = (GB_NINT *)data;
     dict->words = ntohl(*idata++);
@@ -87,14 +87,14 @@ GB_DICTIONARY *gb_create_dict(GBDATA *gb_dict){
     return dict;
 }
 
-void delete_gb_dictionary(GB_DICTIONARY *dict){
+void delete_gb_dictionary(GB_DICTIONARY *dict) {
     free(dict);
 }
 
-void gb_system_key_changed_cb(GBDATA *gbd,int *cl, GB_CB_TYPE type){
+void gb_system_key_changed_cb(GBDATA *gbd, int *cl, GB_CB_TYPE type) {
     GBQUARK q = (GBQUARK)(long) cl;
 
-    if (type == GB_CB_DELETE){
+    if (type == GB_CB_DELETE) {
         GB_MAIN_TYPE *Main = gb_get_main_during_cb();
 
         delete_gb_dictionary(Main->keys[q].dictionary);
@@ -102,18 +102,18 @@ void gb_system_key_changed_cb(GBDATA *gbd,int *cl, GB_CB_TYPE type){
         Main->keys[q].gb_key     = 0;
     }
     else {
-        gb_load_single_key_data(gbd,q);
+        gb_load_single_key_data(gbd, q);
     }
 }
 
-void gb_system_master_changed_cb(GBDATA *gbd,int *cl, GB_CB_TYPE type){
+void gb_system_master_changed_cb(GBDATA *gbd, int *cl, GB_CB_TYPE type) {
     GBQUARK q = (GBQUARK)(long) cl;
-    if (type == GB_CB_DELETE){
+    if (type == GB_CB_DELETE) {
         GB_MAIN_TYPE *Main = gb_get_main_during_cb();
         Main->keys[q].gb_master_ali = 0;
     }
     else {
-        gb_load_single_key_data(gbd,q);
+        gb_load_single_key_data(gbd, q);
     }
 }
 
@@ -122,13 +122,13 @@ void gb_load_single_key_data(GBDATA *gb_main, GBQUARK q) {
     struct gb_key_struct *ks   = &Main->keys[q];
     const char           *key  = ks->key;
 
-    if (!Main->gb_key_data){
+    if (!Main->gb_key_data) {
         ks->compression_mask = -1;
         return;
     }
 
     gb_main = (GBDATA *)Main->data;
-    if (key[0] == '@'){
+    if (key[0] == '@') {
         ks->compression_mask = 0;
         ks->dictionary       = 0;
         ks->gb_key_disabled  = 1;
@@ -136,45 +136,45 @@ void gb_load_single_key_data(GBDATA *gb_main, GBQUARK q) {
     }
     else {
         GBDATA *gb_key_data = Main->gb_key_data;
-        GBDATA *gb_key,*gb_name,*gb_dict;
+        GBDATA *gb_key, *gb_name, *gb_dict;
         GB_push_my_security(gb_main);
         gb_name = GB_find_string(gb_key_data, "@name", key, GB_MIND_CASE, SEARCH_GRANDCHILD);
-        if (gb_name){
-            gb_key= GB_get_father(gb_name);
+        if (gb_name) {
+            gb_key = GB_get_father(gb_name);
         }
         else {
-            gb_key = gb_create_container(gb_key_data,"@key");
-            gb_name = gb_create(gb_key,"@name",GB_STRING);
-            GB_write_string(gb_name,key);
+            gb_key = gb_create_container(gb_key_data, "@key");
+            gb_name = gb_create(gb_key, "@name", GB_STRING);
+            GB_write_string(gb_name, key);
         }
 
-        GB_ensure_callback(gb_key,(GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE),gb_system_key_changed_cb,(int *)q);
+        GB_ensure_callback(gb_key, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), gb_system_key_changed_cb, (int *)q);
 
         if (ks->dictionary) {
             delete_gb_dictionary(ks->dictionary);
             ks->dictionary = 0;
         }
 
-        ks->compression_mask = *GBT_readOrCreate_int(gb_key,"compression_mask",-1);
-        gb_dict              = GB_entry(gb_key,"@dictionary");
+        ks->compression_mask = *GBT_readOrCreate_int(gb_key, "compression_mask", -1);
+        gb_dict              = GB_entry(gb_key, "@dictionary");
         ks->dictionary       = gb_dict ? gb_create_dict(gb_dict) : 0;
         ks->gb_key           = gb_key;
 
         {
             char buffer[256];
-            memset(buffer,0,256);
-            sprintf(buffer,"%s/@master_data/@%s",GB_SYSTEM_FOLDER,key);
-            ks->gb_master_ali = GB_search(gb_main,buffer,GB_FIND);
-            if (ks->gb_master_ali){
-                GB_remove_callback(ks->gb_master_ali,(GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE),gb_system_master_changed_cb,(int *)q);
-                GB_add_callback   (ks->gb_master_ali,(GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE),gb_system_master_changed_cb,(int *)q);
+            memset(buffer, 0, 256);
+            sprintf(buffer, "%s/@master_data/@%s", GB_SYSTEM_FOLDER, key);
+            ks->gb_master_ali = GB_search(gb_main, buffer, GB_FIND);
+            if (ks->gb_master_ali) {
+                GB_remove_callback(ks->gb_master_ali, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), gb_system_master_changed_cb, (int *)q);
+                GB_add_callback   (ks->gb_master_ali, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), gb_system_master_changed_cb, (int *)q);
             }
         }
         GB_pop_my_security(gb_main);
     }
 }
 
-GB_ERROR gb_save_dictionary_data(GBDATA *gb_main,const char *key,const char *dict, int size) {
+GB_ERROR gb_save_dictionary_data(GBDATA *gb_main, const char *key, const char *dict, int size) {
     // if 'dict' is NULL, an existing directory gets deleted
     GB_MAIN_TYPE *Main  = GB_MAIN(gb_main);
     GB_ERROR      error = 0;
@@ -184,20 +184,20 @@ GB_ERROR gb_save_dictionary_data(GBDATA *gb_main,const char *key,const char *dic
     }
     else {
         GBDATA *gb_key_data = Main->gb_key_data;
-        GBDATA *gb_key,*gb_name,*gb_dict;
+        GBDATA *gb_key, *gb_name, *gb_dict;
         GB_push_my_security(gb_main);
         gb_name = GB_find_string(gb_key_data, "@name", key, GB_MIND_CASE, SEARCH_GRANDCHILD);
-        if (gb_name){
-            gb_key= GB_get_father(gb_name);
+        if (gb_name) {
+            gb_key = GB_get_father(gb_name);
         }
         else {
-            gb_key = gb_create_container(gb_key_data,"@key");
-            gb_name = gb_create(gb_key,"@name",GB_STRING);
-            GB_write_string(gb_name,key);
+            gb_key = gb_create_container(gb_key_data, "@key");
+            gb_name = gb_create(gb_key, "@name", GB_STRING);
+            GB_write_string(gb_name, key);
         }
         if (dict) {
-            gb_dict = gb_search(gb_key,"@dictionary",GB_BYTES,1);
-            error   = GB_write_bytes(gb_dict,dict,size);
+            gb_dict = gb_search(gb_key, "@dictionary", GB_BYTES, 1);
+            error   = GB_write_bytes(gb_dict, dict, size);
         }
         else {
             gb_dict = GB_entry(gb_key, "@dictionary");
@@ -207,17 +207,17 @@ GB_ERROR gb_save_dictionary_data(GBDATA *gb_main,const char *key,const char *dic
         }
         GB_pop_my_security(gb_main);
     }
-    if (!error){
-        GBQUARK q = gb_key_2_quark(Main,key);
-        gb_load_single_key_data(gb_main,q);
+    if (!error) {
+        GBQUARK q = gb_key_2_quark(Main, key);
+        gb_load_single_key_data(gb_main, q);
     }
     return error;
 }
 
-GB_ERROR gb_load_key_data_and_dictionaries(GBDATA *gb_main){
+GB_ERROR gb_load_key_data_and_dictionaries(GBDATA *gb_main) {
     GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
-    GBDATA *gb_key_data = gb_search(gb_main,GB_SYSTEM_FOLDER "/" GB_SYSTEM_KEY_DATA, GB_CREATE_CONTAINER,1);
-    GBDATA *gb_key,*gb_next_key=0;
+    GBDATA *gb_key_data = gb_search(gb_main, GB_SYSTEM_FOLDER "/" GB_SYSTEM_KEY_DATA, GB_CREATE_CONTAINER, 1);
+    GBDATA *gb_key, *gb_next_key=0;
     int key;
 
     Main->gb_key_data = gb_key_data;
@@ -226,31 +226,31 @@ GB_ERROR gb_load_key_data_and_dictionaries(GBDATA *gb_main){
     GB_push_my_security(gb_main);
 
     // First step: search unused keys and delete them
-    for (gb_key = GB_entry(gb_key_data,"@key");
+    for (gb_key = GB_entry(gb_key_data, "@key");
          gb_key;
          gb_key = gb_next_key)
     {
-        GBDATA     *gb_name = GB_entry(gb_key,"@name");
+        GBDATA     *gb_name = GB_entry(gb_key, "@name");
         const char *name    = GB_read_char_pntr(gb_name);
-        GBQUARK     quark   = gb_key_2_quark(Main,name);
+        GBQUARK     quark   = gb_key_2_quark(Main, name);
 
         gb_next_key = GB_nextEntry(gb_key);
 
-        if (quark<=0 || quark >= Main->sizeofkeys || !Main->keys[quark].key){
+        if (quark<=0 || quark >= Main->sizeofkeys || !Main->keys[quark].key) {
             GB_delete(gb_key);  // delete unused key
         }
     }
     GB_create_index(gb_key_data, "@name", GB_MIND_CASE, Main->sizeofkeys*2);
 
-    gb_key_2_quark(Main,"@name");
-    gb_key_2_quark(Main,"@key");
-    gb_key_2_quark(Main,"@dictionary");
-    gb_key_2_quark(Main,"compression_mask");
+    gb_key_2_quark(Main, "@name");
+    gb_key_2_quark(Main, "@key");
+    gb_key_2_quark(Main, "@dictionary");
+    gb_key_2_quark(Main, "compression_mask");
 
-    for (key=1;key<Main->sizeofkeys;key++){
+    for (key=1; key<Main->sizeofkeys; key++) {
         char *k = Main->keys[key].key;
         if (!k) continue;
-        gb_load_single_key_data(gb_main,key);
+        gb_load_single_key_data(gb_main, key);
     }
 
 

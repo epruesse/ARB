@@ -48,7 +48,7 @@ void ALI_ARBDB::close(void)
     freenull(alignment);
 }
 
-char *ALI_ARBDB::get_sequence_string(char *name,int and_mark)
+char *ALI_ARBDB::get_sequence_string(char *name, int and_mark)
 {
     char *sequence = 0;
     GBDATA *gb_species_data;
@@ -58,7 +58,7 @@ char *ALI_ARBDB::get_sequence_string(char *name,int and_mark)
 
     gb_seq = GB_find_string(gb_species_data, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
     if (gb_seq) {
-        if (and_mark) GB_write_flag(GB_get_father(gb_seq),1);
+        if (and_mark) GB_write_flag(GB_get_father(gb_seq), 1);
         gb_seq = GB_brother(gb_seq, alignment);
         if (gb_seq) {
             gb_seq = GB_entry(gb_seq, "data");
@@ -73,7 +73,7 @@ char *ALI_ARBDB::get_sequence_string(char *name,int and_mark)
     return sequence;
 }
 
-ALI_SEQUENCE *ALI_ARBDB::get_sequence(char *name,int and_mark)
+ALI_SEQUENCE *ALI_ARBDB::get_sequence(char *name, int and_mark)
 {
     ALI_SEQUENCE *ali_seq;
     char *sequence = 0;
@@ -84,7 +84,7 @@ ALI_SEQUENCE *ALI_ARBDB::get_sequence(char *name,int and_mark)
 
     gb_seq = GB_find_string(gb_species_data, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
     if (gb_seq) {
-        if (and_mark) GB_write_flag(GB_get_father(gb_seq),1);
+        if (and_mark) GB_write_flag(GB_get_father(gb_seq), 1);
         gb_seq = GB_brother(gb_seq, alignment);
         if (gb_seq) {
             gb_seq = GB_entry(gb_seq, "data");
@@ -96,7 +96,7 @@ ALI_SEQUENCE *ALI_ARBDB::get_sequence(char *name,int and_mark)
     if (sequence == 0)
         return 0;
 
-    ali_seq = new ALI_SEQUENCE(name,sequence);
+    ali_seq = new ALI_SEQUENCE(name, sequence);
 
     return ali_seq;
 }
@@ -120,7 +120,7 @@ char *ALI_ARBDB::get_SAI(char *name) {
 
 
 int ALI_ARBDB::put_sequence_string(char *name, char *sequence) {
-    GB_change_my_security(gb_main,6,"passwd");
+    GB_change_my_security(gb_main, 6, "passwd");
     GBDATA *gb_species_data = GB_search(gb_main, "species_data", GB_FIND);
 
     GBDATA *gb_seq = GB_find_string(gb_species_data, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
@@ -128,7 +128,7 @@ int ALI_ARBDB::put_sequence_string(char *name, char *sequence) {
         GBDATA *gb_ali = GB_brother(gb_seq, alignment);
         if (gb_ali) {
             GBDATA *gb_data = GB_search(gb_ali, "data", GB_STRING);
-            GB_write_string(gb_data,sequence);
+            GB_write_string(gb_data, sequence);
             free(sequence);
         }
     }
@@ -137,7 +137,7 @@ int ALI_ARBDB::put_sequence_string(char *name, char *sequence) {
 }
 
 int ALI_ARBDB::put_sequence(char *name, ALI_SEQUENCE *sequence) {
-    GB_change_my_security(gb_main,6,"passwd");
+    GB_change_my_security(gb_main, 6, "passwd");
     GBDATA *gb_species_data = GB_search(gb_main, "species_data", GB_FIND);
 
     GBDATA *gb_seq = GB_find_string(gb_species_data, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
@@ -146,7 +146,7 @@ int ALI_ARBDB::put_sequence(char *name, ALI_SEQUENCE *sequence) {
         if (gb_ali) {
             GBDATA *gb_data = GB_search(gb_ali, "data", GB_STRING);
             char *String = sequence->string();
-            GB_write_string(gb_data,String);
+            GB_write_string(gb_data, String);
             free(String);
         }
     }
@@ -156,11 +156,11 @@ int ALI_ARBDB::put_sequence(char *name, ALI_SEQUENCE *sequence) {
 
 
 int ALI_ARBDB::put_SAI(const char *name, char *sequence) {
-    GB_change_my_security(gb_main,6,"passwd");
+    GB_change_my_security(gb_main, 6, "passwd");
 
-    GBDATA *gb_extended = GBT_find_or_create_SAI(gb_main,name);
-    GBDATA *gb_data     = GBT_add_data(gb_extended,alignment,"data",GB_STRING);
-    GB_write_string(gb_data,sequence);
+    GBDATA *gb_extended = GBT_find_or_create_SAI(gb_main, name);
+    GBDATA *gb_data     = GBT_add_data(gb_extended, alignment, "data", GB_STRING);
+    GB_write_string(gb_data, sequence);
     
     return 0;
 }

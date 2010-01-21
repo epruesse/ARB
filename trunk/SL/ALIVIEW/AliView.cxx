@@ -31,21 +31,21 @@ void AliView::create_real_view(const AP_filter *filter_, const AP_weights *weigh
 
 AliView::AliView(GBDATA *gb_main_)
     : gb_main(gb_main_)
-    , filter(NULL) , weights(NULL) , aliname(NULL)
+    , filter(NULL),  weights(NULL),  aliname(NULL)
 {
     // this creates a fake-AliView (used for AP_tree w/o sequence)
 }
 
 AliView::AliView(GBDATA *gb_main_, const AP_filter& filter_, const AP_weights& weights_, const char *aliname_)
     : gb_main(gb_main_)
-    , filter(NULL) , weights(NULL) , aliname(NULL)
+    , filter(NULL),  weights(NULL),  aliname(NULL)
 {
     create_real_view(&filter_, &weights_, aliname_);
 }
 
 AliView::AliView(const AliView& other)
     : gb_main(other.gb_main)
-    , filter(NULL) , weights(NULL) , aliname(NULL)
+    , filter(NULL),  weights(NULL),  aliname(NULL)
 {
     create_real_view(other.filter, other.weights, other.aliname);
 }

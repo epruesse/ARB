@@ -140,7 +140,7 @@ public:
 
 
 #if defined(DEBUG)
-    void dump() const  {
+    void dump() const {
         printf("ARB_ERROR='%s'\n", look());
     }
 #endif // DEBUG

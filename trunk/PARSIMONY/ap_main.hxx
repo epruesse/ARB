@@ -25,7 +25,7 @@
 
 #define NNI_MODES // uncomment to hide NNI/K.L. mode buttons
 
-//#define AWAR_TREE AWAR_TREE
+// #define AWAR_TREE AWAR_TREE
 
 #define AWAR_PARS_TYPE      "pars/pars_type"
 
@@ -77,7 +77,7 @@ public:
     void user_pop();
     void push();
     void pop();
-    void push_node(AP_tree_nlen *node,AP_STACK_MODE);
+    void push_node(AP_tree_nlen *node, AP_STACK_MODE);
     void clear();               // clears all buffers
 };
 

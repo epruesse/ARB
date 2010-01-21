@@ -18,7 +18,7 @@
 
 using namespace std;
 
-const char* awt_hotkeys::artificial_hotkey()  {
+const char* awt_hotkeys::artificial_hotkey() {
     if (artificial <= '9') {
         current[0] = artificial++;
     }
@@ -43,7 +43,7 @@ const char* awt_hotkeys::artificial_hotkey()  {
     return current;
 }
 
-const char* awt_hotkeys::hotkey(const string& label)  {
+const char* awt_hotkeys::hotkey(const string& label) {
     if (label.length()) {
         for (string::const_iterator ch = label.begin(); ch != label.end(); ++ch) {
             if (islower(*ch)) {

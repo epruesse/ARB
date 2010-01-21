@@ -32,7 +32,7 @@ extern "C" {
 
 int names_init_socket(AN_local *THIS)
 {
-    aisc_add_destroy_callback((aisc_callback_func)names_destroy_locs,(long)THIS);
+    aisc_add_destroy_callback((aisc_callback_func)names_destroy_locs, (long)THIS);
     return 0;
 }
 void names_destroy_socket(AN_local *)

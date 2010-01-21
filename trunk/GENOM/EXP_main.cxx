@@ -32,7 +32,7 @@ using namespace std;
 //  -------------------------------------------------------
 //      void EXP_species_name_changed_cb(AW_root *awr)
 //  -------------------------------------------------------
-void EXP_species_name_changed_cb(AW_root */*awr*/) {
+void EXP_species_name_changed_cb(AW_root * /* awr */) {
 }
 
 //  --------------------------------------------------
@@ -50,15 +50,15 @@ void EXP_update_combined_cb(AW_root *awr) {
 //  -------------------------------------------------------------------
 //      void EXP_create_awars(AW_root *aw_root, AW_default aw_def)
 //  -------------------------------------------------------------------
-void EXP_create_awars(AW_root *aw_root, AW_default /*aw_def*/) {
-    aw_root->awar_string(AWAR_EXPERIMENT_NAME, "" , GLOBAL_gb_main)->add_callback((AW_RCB0)EXP_update_combined_cb);
-    aw_root->awar_string(AWAR_PROTEOM_NAME, "" , GLOBAL_gb_main);
-    aw_root->awar_string(AWAR_PROTEIN_NAME, "" , GLOBAL_gb_main);
-    aw_root->awar_string(AWAR_ORGANISM_NAME, "" ,   GLOBAL_gb_main)->add_callback((AW_RCB0)EXP_update_combined_cb);
-    aw_root->awar_string(AWAR_COMBINED_EXPERIMENT_NAME, "" , GLOBAL_gb_main);
+void EXP_create_awars(AW_root *aw_root, AW_default /* aw_def */) {
+    aw_root->awar_string(AWAR_EXPERIMENT_NAME, "",  GLOBAL_gb_main)->add_callback((AW_RCB0)EXP_update_combined_cb);
+    aw_root->awar_string(AWAR_PROTEOM_NAME, "",  GLOBAL_gb_main);
+    aw_root->awar_string(AWAR_PROTEIN_NAME, "",  GLOBAL_gb_main);
+    aw_root->awar_string(AWAR_ORGANISM_NAME, "",    GLOBAL_gb_main)->add_callback((AW_RCB0)EXP_update_combined_cb);
+    aw_root->awar_string(AWAR_COMBINED_EXPERIMENT_NAME, "",  GLOBAL_gb_main);
 
-    aw_root->awar_string(AWAR_SPECIES_NAME,"",GLOBAL_gb_main)->add_callback((AW_RCB0)EXP_species_name_changed_cb);
-    aw_root->awar_string(AWAR_EXPERIMENT_DEST, "" , GLOBAL_gb_main);
+    aw_root->awar_string(AWAR_SPECIES_NAME, "", GLOBAL_gb_main)->add_callback((AW_RCB0)EXP_species_name_changed_cb);
+    aw_root->awar_string(AWAR_EXPERIMENT_DEST, "",  GLOBAL_gb_main);
 }
 
 //  -----------------------------------------------------------------------------
@@ -88,7 +88,7 @@ public:
 
         if (species_name[0] && experiment_name[0]) {
             GB_transaction dummy(GLOBAL_gb_main);
-            GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main,species_name);
+            GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main, species_name);
             if (gb_species) {
                 gb_experiment = EXP_find_experiment(gb_species, experiment_name);
             }
@@ -139,13 +139,13 @@ void EXP_create_experiments_submenu(AW_window_menu_modes *awm, bool submenu) {
     else awm->create_menu(title, hotkey, AWM_ALL);
 
     {
-        AWMIMT( "experiment_info",   "Experiment information", "i", "experiment_info.hlp", AWM_ALL,EXP_popup_experiment_window, 0, 0);
-        AWMIMT( "experiment_search", "Search and query",       "q", "experiment_search.hlp", AWM_ALL,AW_POPUP,   (AW_CL)EXP_create_experiment_query_window, 0 );
+        AWMIMT("experiment_info",    "Experiment information", "i", "experiment_info.hlp", AWM_ALL, EXP_popup_experiment_window, 0, 0);
+        AWMIMT("experiment_search", "Search and query",        "q", "experiment_search.hlp", AWM_ALL, AW_POPUP,  (AW_CL)EXP_create_experiment_query_window, 0);
 
         EXP_create_mask_submenu(awm);
 
         awm->insert_separator();
-        AWMIMT( "experiment_colors",    "Colors ...",           "C",    "mark_colors.hlp", AWM_ALL,AW_POPUP,   (AW_CL)EXP_create_experiment_colorize_window, 0);
+        AWMIMT("experiment_colors",     "Colors ...",           "C",    "mark_colors.hlp", AWM_ALL, AW_POPUP,  (AW_CL)EXP_create_experiment_colorize_window, 0);
 
 #if defined(DEBUG)
         awm->insert_separator();

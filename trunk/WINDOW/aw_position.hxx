@@ -297,7 +297,7 @@ namespace AW {
         explicit Angle(const Vector& v) : Normal(v) { Normal.normalize(); recalcRadian(); ISVALID(*this); }
         Angle(const Vector& n, double r) : Normal(n), Radian(r) { aw_assert(n.is_normalized()); ISVALID(*this); }
         Angle(const Position& p1, const Position& p2) : Normal(p1, p2) { Normal.normalize(); recalcRadian(); ISVALID(*this); }
-        Angle() : Radian(NAN) { } // default is not an angle
+        Angle() : Radian(NAN) {}  // default is not an angle
 
         Angle& operator = (const Angle& other) { Normal = other.Normal; Radian = other.Radian; return *this; }
         Angle& operator = (const Vector& vec) { Normal = vec; Normal.normalize(); recalcRadian(); return *this; }

@@ -287,7 +287,7 @@ public:
     virtual ~awt_script() {}
 
     virtual std::string get_value() const; // reads the current value of the item
-    virtual GB_ERROR set_value(const std::string& /*new_value*/); // assigns a new value to the item
+    virtual GB_ERROR set_value(const std::string& /* new_value */); // assigns a new value to the item
 };
 
 //  ---------------------------------
@@ -434,7 +434,7 @@ public:
     awt_input_field(awt_input_mask_global *global_, const std::string& child_path_, const std::string& label_, int field_width_, const std::string& default_value_, GB_TYPES default_type)
         : awt_string_handler(global_, child_path_, default_value_, default_type, label_)
         , field_width(field_width_)
-    { }
+    {}
     virtual ~awt_input_field() {}
 
     virtual void build_widget(AW_window *aws);
@@ -454,7 +454,7 @@ public:
     {}
     virtual ~awt_text_viewport() {}
 
-    virtual void awar_changed()  {
+    virtual void awar_changed() {
 #if defined(DEBUG)
         printf("awt_text_viewport awar changed!\n");
 #endif // DEBUG

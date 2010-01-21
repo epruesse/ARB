@@ -34,12 +34,12 @@ void AP_conservProfile2Gnuplot_callback(AW_window *aww) {
         int   minY    = aww->get_root()->awar(AP_AWAR_CONSPRO_GNUPLOT_MIN_Y)->read_int();
         int   maxY    = aww->get_root()->awar(AP_AWAR_CONSPRO_GNUPLOT_MAX_Y)->read_int();
 
-        if (minX>0 || maxX>0)   fprintf(cmdFile, "set xrange [%i:%i]\n",minX,maxX);
-        if (minY>0 || maxY>0)   fprintf(cmdFile, "set yrange [%i:%i]\n",minY,maxY);
+        if (minX>0 || maxX>0)   fprintf(cmdFile, "set xrange [%i:%i]\n", minX, maxX);
+        if (minY>0 || maxY>0)   fprintf(cmdFile, "set yrange [%i:%i]\n", minY, maxY);
 
         fprintf(cmdFile, "plot \"%s\" %s title \"%s\"\n", fname, smooth, legend);
 
-        if(dispPos)  fprintf(cmdFile, "replot \"%s\" title \"Base Positions\"\n", fname);
+        if (dispPos) fprintf(cmdFile, "replot \"%s\" title \"Base Positions\"\n", fname);
 
         fprintf(cmdFile, "pause -1 \"Press RETURN to close gnuplot\"\n");
 
@@ -61,11 +61,11 @@ void AP_conservProfile2Gnuplot_callback(AW_window *aww) {
 }
 
 
-AW_window *AP_openConservationPorfileWindow( AW_root *root ){
+AW_window *AP_openConservationPorfileWindow(AW_root *root) {
 
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init( root, "DISP_CONSERV_PROFILE_GNUPLOT", "Conservation Profile Using Base Frequency Filter");
+    aws->init(root, "DISP_CONSERV_PROFILE_GNUPLOT", "Conservation Profile Using Base Frequency Filter");
     aws->load_xfig("conservProfile2Gnuplot.fig");
 
     root->awar_string(AP_AWAR_CONSPRO_SMOOTH_GNUPLOT);
@@ -80,13 +80,13 @@ AW_window *AP_openConservationPorfileWindow( AW_root *root ){
     root->awar_int(AP_AWAR_CONSPRO_GNUPLOT_MIN_Y);
     root->awar_int(AP_AWAR_CONSPRO_GNUPLOT_MAX_Y);
 
-    aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->at("help");aws->callback(AW_POPUP_HELP,(AW_CL)"conservProfile2Gnuplot.hlp");
-    aws->create_button("HELP","HELP","H");
+    aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"conservProfile2Gnuplot.hlp");
+    aws->create_button("HELP", "HELP", "H");
 
-    awt_create_selection_box(aws,AP_AWAR_CONSPRO);
+    awt_create_selection_box(aws, AP_AWAR_CONSPRO);
 
     aws->at("baseFreqFlt");
     aws->create_button("SELECT_FILTER", AP_AWAR_BASE_FREQ_FILTER_NAME);
@@ -108,9 +108,9 @@ AW_window *AP_openConservationPorfileWindow( AW_root *root ){
 
     aws->at("smooth");
     aws->create_toggle_field(AP_AWAR_CONSPRO_SMOOTH_GNUPLOT, 1);
-    aws->insert_default_toggle("None","N", "");
-    aws->insert_toggle("Unique","U", "smooth unique");
-    aws->insert_toggle("Bezier","B", "smooth bezier");
+    aws->insert_default_toggle("None", "N", "");
+    aws->insert_toggle("Unique", "U", "smooth unique");
+    aws->insert_toggle("Bezier", "B", "smooth bezier");
     aws->update_toggle_field();
 
     aws->at("dispPos");
@@ -118,7 +118,7 @@ AW_window *AP_openConservationPorfileWindow( AW_root *root ){
 
     aws->at("dispProfile");
     aws->callback(AP_conservProfile2Gnuplot_callback);
-    aws->create_button("DISPLAY_PROFILE","SAVE & DISPLAY CONSERVATION PROFILE");
+    aws->create_button("DISPLAY_PROFILE", "SAVE & DISPLAY CONSERVATION PROFILE");
 
     return aws;
 }

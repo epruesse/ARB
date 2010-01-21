@@ -29,7 +29,7 @@ void AP_sequence_simple_protein::set(const char *isequence) {
 
     size_t sequence_len = get_sequence_length();
     sequence     = new ap_pro[sequence_len+1];
-    memset(sequence,s2str['.']->index,(size_t)(sizeof(ap_pro) * sequence_len));
+    memset(sequence, s2str['.']->index, (size_t)(sizeof(ap_pro) * sequence_len));
     
     const char    *s = isequence;
     ap_pro        *d = sequence;
@@ -40,14 +40,14 @@ void AP_sequence_simple_protein::set(const char *isequence) {
     const size_t    *bootstrap = filt->get_bootstrap();
 
     unsigned char  c;
-    if (bootstrap){
+    if (bootstrap) {
         int iseqlen = strlen(isequence);
         int i;
         for (i = filt->get_filtered_length()-1; i>=0; i--) {
             int pos = bootstrap[i];
             if (pos >= iseqlen) continue;
             c = s[pos];
-            if (! (s2str[c] ) ) {   // unknown character
+            if (! (s2str[c])) {     // unknown character
                 continue;
             }
             int ind = s2str[simplify[c]]->index;
@@ -86,7 +86,7 @@ AP_FLOAT AP_sequence_simple_protein::combine(const AP_sequence *, const AP_seque
     return -1.0;
 }
 
-void AP_sequence_simple_protein::partial_match(const AP_sequence* /*part*/, long */*overlap*/, long */*penalty*/) const {
+void AP_sequence_simple_protein::partial_match(const AP_sequence* /* part */, long * /* overlap */, long * /* penalty */) const {
     ap_assert(0); // should be unused
 }
 

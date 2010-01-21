@@ -34,12 +34,12 @@ long AP_tree_edge::timeStamp = 0;
 AP_tree_edge::AP_tree_edge(AP_tree_nlen *node1, AP_tree_nlen *node2)
 {
     // not really necessary, but why not clear all:
-    memset((char *)this,0,sizeof(AP_tree_edge));
+    memset((char *)this, 0, sizeof(AP_tree_edge));
     age  = timeStamp++;
 
     // link the nodes:
 
-    relink(node1,node2);
+    relink(node1, node2);
 }
 
 AP_tree_edge::~AP_tree_edge()
@@ -76,7 +76,7 @@ void AP_tree_edge::initialize(AP_tree_nlen *tree) {
     // to ensure the nodes contain the correct distance to the border
     // we MUST build all son edges before creating the root edge
 
-    new AP_tree_edge(tree->get_leftson(),tree->get_rightson()); // link brothers
+    new AP_tree_edge(tree->get_leftson(), tree->get_rightson()); // link brothers
 }
 
 void AP_tree_edge::tailDistance(AP_tree_nlen *n)
@@ -184,8 +184,8 @@ void AP_tree_edge::tailDistance(AP_tree_nlen *n)
             " d(n2)=" << n2->distance <<
             " D(e1)=" << e1->Distance() <<
             " D(e2)=" << e2->Distance() <<
-            " dtb(e1)=" << e1->distanceToBorder(INT_MAX,n) <<
-            " dtb(e2)=" << e2->distanceToBorder(INT_MAX,n) << endl;
+            " dtb(e1)=" << e1->distanceToBorder(INT_MAX, n) <<
+            " dtb(e2)=" << e2->distanceToBorder(INT_MAX, n) << endl;
     }
     else
     {
@@ -201,7 +201,7 @@ void AP_tree_edge::tailDistance(AP_tree_nlen *n)
             cout << "d(n)=" << n->distance <<
                 " d(n1)=" << n1->distance <<
                 " D(e1)=" << e1->Distance() <<
-                " dtb(e1)=" << e1->distanceToBorder(INT_MAX,n) << endl;
+                " dtb(e1)=" << e1->distanceToBorder(INT_MAX, n) << endl;
         }
         else if (e2)
         {
@@ -217,7 +217,7 @@ void AP_tree_edge::tailDistance(AP_tree_nlen *n)
             cout << "d(n)=" << n->distance <<
                 " d(n2)=" << n2->distance <<
                 " D(e2)=" << e2->Distance() <<
-                " dtb(e2)=" << e2->distanceToBorder(INT_MAX,n) << endl;
+                " dtb(e2)=" << e2->distanceToBorder(INT_MAX, n) << endl;
         }
         else
         {
@@ -297,7 +297,7 @@ void AP_tree_edge::calcDistance()
     ap_assert(distanceOK());   // invariant of AP_tree_edge (if fully constructed)
 }
 
-void AP_tree_edge::relink(AP_tree_nlen *node1,AP_tree_nlen *node2) {
+void AP_tree_edge::relink(AP_tree_nlen *node1, AP_tree_nlen *node2) {
     node[0] = node1;
     node[1] = node2;
 
@@ -388,18 +388,18 @@ AP_tree_edge* AP_tree_edge::buildChain(int deep, bool skip_hidden,
     data.distance = distanceToInsert++;
     if (comesFrom) comesFrom->next = this;
     this->next = NULL;
-    if (skip_hidden){
+    if (skip_hidden) {
         if (node[0]->gr.hidden) return last;
         if (node[1]->gr.hidden) return last;
-        if ( (!node[0]->gr.has_marked_children) && (!node[1]->gr.has_marked_children)) return last;
+        if ((!node[0]->gr.has_marked_children) && (!node[1]->gr.has_marked_children)) return last;
     }
 
     if (deep--)
         for (int n=0; n<2; n++)
-            if (node[n]!=skip && !node[n]->is_leaf){
-                for (int e=0; e<3; e++){
-                    if (node[n]->edge[e]!=this){
-                        last = node[n]->edge[e]->buildChain(deep,skip_hidden,distanceToInsert,node[n],last);
+            if (node[n]!=skip && !node[n]->is_leaf) {
+                for (int e=0; e<3; e++) {
+                    if (node[n]->edge[e]!=this) {
+                        last = node[n]->edge[e]->buildChain(deep, skip_hidden, distanceToInsert, node[n], last);
                     }
                 }
             }
@@ -407,14 +407,14 @@ AP_tree_edge* AP_tree_edge::buildChain(int deep, bool skip_hidden,
     return last;
 }
 
-long AP_tree_edge::sizeofChain(){
+long AP_tree_edge::sizeofChain() {
     AP_tree_edge *f;
-    long c= 0;
-    for (f=this; f ; f = f->next) c++;
+    long c = 0;
+    for (f=this; f;  f = f->next) c++;
     return c;
 }
 
-int AP_tree_edge::distanceToBorder(int maxsearch,AP_tree_nlen *skipNode) const
+int AP_tree_edge::distanceToBorder(int maxsearch, AP_tree_nlen *skipNode) const
     // return the minimal distance to the border of the tree
     // a return value of 0 means: one of the nodes is a leaf
 {
@@ -443,7 +443,7 @@ int AP_tree_edge::distanceToBorder(int maxsearch,AP_tree_nlen *skipNode) const
     return maxsearch;
 }
 
-void AP_tree_edge::countSpecies(int deep,const AP_tree_nlen *skip)
+void AP_tree_edge::countSpecies(int deep, const AP_tree_nlen *skip)
 {
     if (!skip)
     {
@@ -468,7 +468,7 @@ void AP_tree_edge::countSpecies(int deep,const AP_tree_nlen *skip)
                 {
                     if (node[n]->edge[e]!=this)
                     {
-                        node[n]->edge[e]->countSpecies(deep,node[n]);
+                        node[n]->edge[e]->countSpecies(deep, node[n]);
                     }
                 }
             }
@@ -488,7 +488,7 @@ public:
     MutationsPerSite(size_t len)
         : Data((char*)GB_calloc(sizeof(char), len*3))
         , length(len)
-    { }
+    {}
     ~MutationsPerSite() {
         free(Data);
     }
@@ -502,15 +502,15 @@ public:
     }
 };
 
-double ap_calc_bootstrap_remark_sub(int seq_len, const char *old, const char *ne){
+double ap_calc_bootstrap_remark_sub(int seq_len, const char *old, const char *ne) {
     int i;
     int sum[3];
     sum[0] = 0;
     sum[1] = 0;
     sum[2] = 0;
-    for (i=0;i<seq_len;i++){
+    for (i=0; i<seq_len; i++) {
         int diff = ne[i] - old[i];
-        if (diff > 1 || diff < -1){
+        if (diff > 1 || diff < -1) {
 #if defined(DEBUG)
             fprintf(stderr, "diff by nni at one position not in [-1,1]: %i:%i - %i", diff, old[i], ne[i]);
 #endif // DEBUG
@@ -520,7 +520,7 @@ double ap_calc_bootstrap_remark_sub(int seq_len, const char *old, const char *ne
     }
     {
         int msum = 0;
-        for (i=0;i<seq_len;i++){
+        for (i=0; i<seq_len; i++) {
             msum += old[i];
             msum += ne[i];
         }
@@ -529,12 +529,12 @@ double ap_calc_bootstrap_remark_sub(int seq_len, const char *old, const char *ne
     double prob = 0;
     {
         int asum = 0;
-        for (i=0;i<3;i++) asum += sum[i];
+        for (i=0; i<3; i++) asum += sum[i];
         double freq[3];
         double log_freq[3];
-        for (i=0;i<3;i++){
+        for (i=0; i<3; i++) {
             freq[i] = sum[i] / double(asum); // relative frequencies of -1, 0, 1
-            if (sum[i] >0){
+            if (sum[i] >0) {
                 log_freq[i] = log(freq[i]);
             }
             else {
@@ -547,18 +547,18 @@ double ap_calc_bootstrap_remark_sub(int seq_len, const char *old, const char *ne
         double log_eps = log(1e-11);
 
         // loop over all delta_mutations, begin in the middle
-        for ( int tsum_add = 1; tsum_add >= -1; tsum_add -= 2){
+        for (int tsum_add = 1; tsum_add >= -1; tsum_add -= 2) {
             int tsum = sum[2]-sum[0];
-            if (tsum <=0) tsum = 1;
-            for (; tsum < max && tsum > 0; tsum += tsum_add){       // sum of mutations in bootstrap sample, loop over all possibilities
+            if (tsum <= 0) tsum = 1;
+            for (; tsum < max && tsum > 0; tsum += tsum_add) {      // sum of mutations in bootstrap sample, loop over all possibilities
                 if (tsum_add < 0 && tsum == sum[2]-sum[0]) continue; // don't double count tsum
 
 
 
                 int max_minus = max;        // we need tsum + n_minus ones, we cannot have more than max_minux minus, reduce also
-                for (int minus_add = 1; minus_add>=-1;minus_add-=2){
+                for (int minus_add = 1; minus_add>=-1; minus_add-=2) {
                     int first_minus = 1;
-                    for (int n_minus = sum[0]; n_minus<max_minus && n_minus>=0; first_minus = 0, n_minus+=minus_add){
+                    for (int n_minus = sum[0]; n_minus<max_minus && n_minus>=0; first_minus = 0, n_minus+=minus_add) {
                         if (minus_add < 0 && first_minus) continue; // don't double count center
                         int n_zeros = seq_len - n_minus * 2 - tsum; // number of minus
                         int n_plus = tsum + n_minus; // number of plus ones  (n_ones + n_minus + n_zeros = seq_len)
@@ -569,7 +569,7 @@ double ap_calc_bootstrap_remark_sub(int seq_len, const char *old, const char *ne
                             n_plus  * log_freq[2] +
                             log_fak_seq_len - GB_log_fak(n_minus) - GB_log_fak(n_zeros) - GB_log_fak(n_plus);
 
-                        if (log_a < log_eps){
+                        if (log_a < log_eps) {
                             if (first_minus && minus_add>0) goto end;
                             break; // cannot go with so many minus, try next
                         }
@@ -578,27 +578,27 @@ double ap_calc_bootstrap_remark_sub(int seq_len, const char *old, const char *ne
                     }
                 }
             }
-        end:;
+        end :;
         }
     }
     return prob;
 }
 
 static void ap_calc_bootstrap_remark(AP_tree_nlen *son_node, AP_BL_MODE mode, const MutationsPerSite& mps) {
-    if (!son_node->is_leaf){
+    if (!son_node->is_leaf) {
         size_t seq_len = son_node->get_seq()->get_sequence_length();
         float  one     = ap_calc_bootstrap_remark_sub(seq_len, mps.data(0), mps.data(1));
         float  two     = ap_calc_bootstrap_remark_sub(seq_len, mps.data(0), mps.data(2));
         
-        if ((mode & AP_BL_BOOTSTRAP_ESTIMATE) == AP_BL_BOOTSTRAP_ESTIMATE){
+        if ((mode & AP_BL_BOOTSTRAP_ESTIMATE) == AP_BL_BOOTSTRAP_ESTIMATE) {
             one = one * two;    // assume independent bootstrap values for both nnis
         }
         else {
             if (two<one) one = two; // dependent bootstrap values, take minimum (safe)
         }
         const char *text = 0;
-        if (one < 1.0){ // was: < 0.99
-            text = GBS_global_string("%i%%",int(100.0 * one + 0.5));
+        if (one < 1.0) { // was: < 0.99
+            text = GBS_global_string("%i%%", int(100.0 * one + 0.5));
         }
         else {
             text = "100%";
@@ -609,9 +609,9 @@ static void ap_calc_bootstrap_remark(AP_tree_nlen *son_node, AP_BL_MODE mode, co
 }
 
 
-void ap_calc_leaf_branch_length(AP_tree_nlen *leaf){
+void ap_calc_leaf_branch_length(AP_tree_nlen *leaf) {
     AP_FLOAT Seq_len = leaf->get_seq()->weighted_base_count();
-    if (Seq_len <=1.0) Seq_len = 1.0;
+    if (Seq_len <= 1.0) Seq_len = 1.0;
 
     AP_FLOAT parsbest = rootNode()->costs();
     ap_main->push();
@@ -620,12 +620,12 @@ void ap_calc_leaf_branch_length(AP_tree_nlen *leaf){
     ap_main->pop();
     double   blen     = Blen/Seq_len;
 
-    if (!leaf->father->father){ // at root
+    if (!leaf->father->father) { // at root
         leaf->father->leftlen = blen*.5;
         leaf->father->rightlen = blen*.5;
     }
     else {
-        if (leaf->father->leftson == leaf){
+        if (leaf->father->leftson == leaf) {
             leaf->father->leftlen = blen;
         }
         else {
@@ -637,23 +637,23 @@ void ap_calc_leaf_branch_length(AP_tree_nlen *leaf){
 
 
 
-void ap_calc_branch_lengths(AP_tree_nlen */*root*/, AP_tree_nlen *son, double /*parsbest*/, double blen){
+void ap_calc_branch_lengths(AP_tree_nlen * /* root */, AP_tree_nlen *son, double /* parsbest */, double blen) {
     static double s_new = 0.0;
     static double s_old = 0.0;
 
     AP_FLOAT seq_len = son->get_seq()->weighted_base_count();
-    if (seq_len <=1.0) seq_len = 1.0;
+    if (seq_len <= 1.0) seq_len = 1.0;
     blen *= 0.5 / seq_len * 2.0;        // doubled counted sum * corr
 
     AP_tree_nlen *fathr = son->get_father();
     double old_len = 0.0;
-    if (!fathr->father){    // at root
+    if (!fathr->father) {   // at root
         old_len = fathr->leftlen + fathr->rightlen;
         fathr->leftlen = blen *.5;
         fathr->rightlen = blen *.5;
     }
     else {
-        if (fathr->leftson == son){
+        if (fathr->leftson == son) {
             old_len = fathr->leftlen;
             fathr->leftlen = blen;
         }
@@ -666,30 +666,30 @@ void ap_calc_branch_lengths(AP_tree_nlen */*root*/, AP_tree_nlen *son, double /*
     s_new += blen;
     s_old += old_len;
 
-    if (son->leftson->is_leaf){
+    if (son->leftson->is_leaf) {
         ap_calc_leaf_branch_length((AP_tree_nlen*)son->leftson);
     }
 
-    if (son->rightson->is_leaf){
+    if (son->rightson->is_leaf) {
         ap_calc_leaf_branch_length((AP_tree_nlen*)son->rightson);
     }
 }
 const double ap_undef_bl = 10.5;
 
-void ap_check_leaf_bl(AP_tree_nlen *node){
-    if (node->is_leaf){
-        if (!node->father->father){
-            if (node->father->leftlen + node->father->rightlen == ap_undef_bl){
+void ap_check_leaf_bl(AP_tree_nlen *node) {
+    if (node->is_leaf) {
+        if (!node->father->father) {
+            if (node->father->leftlen + node->father->rightlen == ap_undef_bl) {
                 ap_calc_leaf_branch_length(node);
             }
         }
         else if (node->father->leftson == node) {
-            if (node->father->leftlen == ap_undef_bl){
+            if (node->father->leftlen == ap_undef_bl) {
                 ap_calc_leaf_branch_length(node);
             }
         }
         else {
-            if (node->father->rightlen == ap_undef_bl){
+            if (node->father->rightlen == ap_undef_bl) {
                 ap_calc_leaf_branch_length(node);
             }
         }
@@ -697,7 +697,7 @@ void ap_check_leaf_bl(AP_tree_nlen *node){
     }
     else {
         if (node->leftlen == ap_undef_bl)   ap_calc_leaf_branch_length((AP_tree_nlen *)node->leftson);
-        if (node->rightlen== ap_undef_bl)   ap_calc_leaf_branch_length((AP_tree_nlen *)node->rightson);
+        if (node->rightlen == ap_undef_bl)  ap_calc_leaf_branch_length((AP_tree_nlen *)node->rightson);
     }
 }
 
@@ -718,12 +718,12 @@ AP_FLOAT AP_tree_edge::nni_rek(bool useStatus, int &Abort, int deep, bool skip_h
     AP_FLOAT old_parsimony = rootNode()->costs();
     AP_FLOAT new_parsimony = old_parsimony;
 
-    buildChain(deep,skip_hidden,0,skipNode);
+    buildChain(deep, skip_hidden, 0, skipNode);
     long cs = sizeofChain();
     AP_tree_edge *follow;
     long count = 0;
     { // set all branch lengths to undef
-        for (follow = this;follow; follow = follow->next){
+        for (follow = this; follow; follow = follow->next) {
             follow->node[0]->leftlen          = ap_undef_bl;
             follow->node[0]->rightlen         = ap_undef_bl;
             follow->node[1]->leftlen          = ap_undef_bl;
@@ -737,19 +737,19 @@ AP_FLOAT AP_tree_edge::nni_rek(bool useStatus, int &Abort, int deep, bool skip_h
 
     if (useStatus) aw_status(0.0);
 
-    for (follow = this; follow && Abort == 0; follow = follow->next){
+    for (follow = this; follow && Abort == 0; follow = follow->next) {
         AP_tree_nlen *son = follow->sonNode();
         AP_tree_nlen *fath = son;
 
         if (follow->otherNode(fath)==fath->get_father()) fath = fath->get_father();
-        if (fath->father){
-            if (fath->father->father){
+        if (fath->father) {
+            if (fath->father->father) {
                 fath->set_root();
                 new_parsimony = rootNode()->costs();
             }
         }
         if (mode & AP_BL_BOOTSTRAP_LIMIT) {
-            if (fath->father){
+            if (fath->father) {
                 son->set_root();
                 new_parsimony = rootNode()->costs();
             }
@@ -771,7 +771,7 @@ AP_FLOAT AP_tree_edge::nni_rek(bool useStatus, int &Abort, int deep, bool skip_h
         count = 0;
     }
 
-    for (follow = this; follow && Abort == 0; follow = follow->next){
+    for (follow = this; follow && Abort == 0; follow = follow->next) {
         ap_check_leaf_bl(follow->node[0]);
         ap_check_leaf_bl(follow->node[1]);
         if (useStatus ? aw_status(++count/(double)cs) : aw_status()) { Abort = 1; break; }
@@ -796,10 +796,10 @@ AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, Mutati
     if (node[0]->is_leaf || node[1]->is_leaf) { // a son at root
 #if 0
         // calculate branch lengths at root
-        if (mode&AP_BL_BL_ONLY){
-            AP_tree_nlen *tip,*brother;
+        if (mode&AP_BL_BL_ONLY) {
+            AP_tree_nlen *tip, *brother;
 
-            if (node[0]->is_leaf){
+            if (node[0]->is_leaf) {
                 tip = node[0]; brother = node[1];
             }
             else {
@@ -843,7 +843,7 @@ AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, Mutati
         son->swap_assymetric(AP_LEFT);
         pars_two = root->costs(mps ? mps->data(1) : NULL);
 
-        if (pars_two <= parsbest){
+        if (pars_two <= parsbest) {
             if ((mode & AP_BL_NNI_ONLY) == 0) ap_main->pop();
             else                              ap_main->clear();
             
@@ -859,7 +859,7 @@ AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, Mutati
         son->swap_assymetric(AP_RIGHT);
         pars_three = root->costs(mps ? mps->data(2) : NULL);
 
-        if (pars_three <= parsbest){
+        if (pars_three <= parsbest) {
             if ((mode & AP_BL_NNI_ONLY) == 0) ap_main->pop();
             else                              ap_main->clear();
             
@@ -871,10 +871,10 @@ AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, Mutati
         }
     }
 
-    if (mode & AP_BL_BL_ONLY){  // ************* calculate branch lengths **************
-        AP_FLOAT blen = (pars_one + pars_two + pars_three) - (3.0 * parsbest) ;
+    if (mode & AP_BL_BL_ONLY) { // ************* calculate branch lengths **************
+        AP_FLOAT blen = (pars_one + pars_two + pars_three) - (3.0 * parsbest);
         if (blen <0) blen = 0;
-        ap_calc_branch_lengths(root,son,parsbest, blen);
+        ap_calc_branch_lengths(root, son, parsbest, blen);
     }
 
     // zu Auswertungszwecken doch unsortiert uebernehmen:
@@ -888,20 +888,20 @@ AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, Mutati
     {
         if (dumpNNI==2)
         {
-            fprintf(stderr,"Fatal! NNI called between optimize and statistics!\n");
+            fprintf(stderr, "Fatal! NNI called between optimize and statistics!\n");
             exit(1);
         }
         AP_tree_nlen *node0 = this->node[0];
         AP_tree_nlen *node1 = this->node[1];
-        if (node0->gr.leave_sum > node1->gr.leave_sum){ //node0 is final son
+        if (node0->gr.leave_sum > node1->gr.leave_sum) { // node0 is final son
             node0 = node1;
         }
         static int num = 0;
         delete node0->remark_branch;
-        node0->remark_branch = (char *)calloc(sizeof(char),100);
-        sprintf(node0->remark_branch, "%i %4.0f:%4.0f:%4.0f     %4.0f:%4.0f:%4.0f\n",num++,
-                oldData.parsValue[0],oldData.parsValue[1],oldData.parsValue[2],
-                data.parsValue[0],data.parsValue[1],data.parsValue[2]);
+        node0->remark_branch = (char *)calloc(sizeof(char), 100);
+        sprintf(node0->remark_branch, "%i %4.0f:%4.0f:%4.0f     %4.0f:%4.0f:%4.0f\n", num++,
+                oldData.parsValue[0], oldData.parsValue[1], oldData.parsValue[2],
+                data.parsValue[0], data.parsValue[1], data.parsValue[2]);
 
 
         cout

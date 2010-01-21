@@ -5,7 +5,7 @@ using namespace std;
 //
 // Constructors
 //
-void Node::init ( Node* parent_, char base_, PRD_Sequence_Pos last_index_, PRD_Sequence_Pos offset_ )
+void Node::init (Node* parent_, char base_, PRD_Sequence_Pos last_index_, PRD_Sequence_Pos offset_)
 {
   parent          = parent_;
   child[0]        = NULL;
@@ -18,24 +18,24 @@ void Node::init ( Node* parent_, char base_, PRD_Sequence_Pos last_index_, PRD_S
   offset          = offset_;
 }
 
-Node::Node ( Node* parent_, char base_, PRD_Sequence_Pos last_index_, PRD_Sequence_Pos offset_ )
+Node::Node (Node* parent_, char base_, PRD_Sequence_Pos last_index_, PRD_Sequence_Pos offset_)
 {
-  init ( parent_,base_,last_index_, offset_ );
+  init (parent_, base_, last_index_, offset_);
 }
 
-Node::Node ( Node* parent_, char base_, PRD_Sequence_Pos last_index_ )
+Node::Node (Node* parent_, char base_, PRD_Sequence_Pos last_index_)
 {
-  init ( parent_,base_,last_index_, 0 );
+  init (parent_, base_, last_index_, 0);
 }
 
-Node::Node ( Node* parent_, char base_ )
+Node::Node (Node* parent_, char base_)
 {
-  init ( parent_,base_,0,0 );
+  init (parent_, base_, 0, 0);
 }
 
 Node::Node ()
 {
-  init ( NULL,' ',0,0 );
+  init (NULL, ' ', 0, 0);
 }
 
 
@@ -44,10 +44,10 @@ Node::Node ()
 //
 Node::~Node ()
 {
-  if ( child[0] ) delete child[0];
-  if ( child[1] ) delete child[1];
-  if ( child[2] ) delete child[2];
-  if ( child[3] ) delete child[3];
+  if (child[0]) delete child[0];
+  if (child[1]) delete child[1];
+  if (child[2]) delete child[2];
+  if (child[3]) delete child[3];
 }
 
 
@@ -57,10 +57,10 @@ Node::~Node ()
 // recursively print Node and its children
 //
 void Node::print () {
-  printf ( "[%c,%li,%li,%i (",base,last_base_index,offset,child_bits );
-  if ( child[0] ) { child[0]->print(); printf(","); }
-  if ( child[1] ) { child[1]->print(); printf(","); }
-  if ( child[2] ) { child[2]->print(); printf(","); }
-  if ( child[3] ) { child[4]->print(); }
+  printf ("[%c,%li,%li,%i (", base, last_base_index, offset, child_bits);
+  if (child[0]) { child[0]->print(); printf(","); }
+  if (child[1]) { child[1]->print(); printf(","); }
+  if (child[2]) { child[2]->print(); printf(","); }
+  if (child[3]) { child[4]->print(); }
   printf(")]");
 }

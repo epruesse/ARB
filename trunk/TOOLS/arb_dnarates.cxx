@@ -91,9 +91,9 @@ FILE *debug;
 #endif
 
 
-/*=======================================================================*/
+/* ======================================================================= */
 /*                              PROGRAM                                  */
-/*=======================================================================*/
+/* ======================================================================= */
 
 void getnums() {
     /* input number of species, number of sites */
@@ -131,7 +131,7 @@ void getnums() {
 }
 
 
-bool digit(int ch) {return (ch >= '0' && ch <= '9'); }
+bool digit(int ch) { return (ch >= '0' && ch <= '9'); }
 
 
 bool white(int ch) { return (ch == ' ' || ch == '\n' || ch == '\t'); }
@@ -220,19 +220,19 @@ void getoptions() {
     while ((ch = getc(INFILE)) != '\n' && ch != EOF) {
         uppercase (& ch);
         switch (ch) {
-            case '1' : printdata    = ! printdata; break;
-            case 'C' : categs       = -1; extranum++; break;
-            case 'F' : freqsfrom    = true; break;
-            case 'I' : interleaved  = ! interleaved; break;
-            case 'L' : break;
-            case 'M' : mininfo      = 0; extranum++; break;
-            case 'T' : ttratio      = -1.0; extranum++; break;
-            case 'U' : break;
-            case 'W' : userweights  = true; weightsum = 0; extranum++; break;
-            case 'Y' : writefile    = ! writefile; break;
-            case ' ' : break;
+            case '1': printdata    = ! printdata; break;
+            case 'C': categs       = -1; extranum++; break;
+            case 'F': freqsfrom    = true; break;
+            case 'I': interleaved  = ! interleaved; break;
+            case 'L': break;
+            case 'M': mininfo      = 0; extranum++; break;
+            case 'T': ttratio      = -1.0; extranum++; break;
+            case 'U': break;
+            case 'W': userweights  = true; weightsum = 0; extranum++; break;
+            case 'Y': writefile    = ! writefile; break;
+            case ' ': break;
             case '\t': break;
-            default  :
+            default:
                 printf("ERROR: Bad option character: '%c'\n", ch);
                 anerror = true;
                 return;
@@ -257,7 +257,7 @@ void getoptions() {
                     printf("ERROR: Unexpected Categories data\n");
                     anerror = true;
                 }
-                else if (fscanf(INFILE,"%d",&categs) != 1 || findch('\n')==EOF) {
+                else if (fscanf(INFILE, "%d", &categs) != 1 || findch('\n')==EOF) {
                     printf("ERROR: Problem reading number of rate categories\n");
                     anerror = true;
                 }
@@ -272,7 +272,7 @@ void getoptions() {
                     printf("ERROR: Unexpected Min informative residues data\n");
                     anerror = true;
                 }
-                else if (fscanf(INFILE,"%d",&mininfo)!=1 || findch('\n')==EOF) {
+                else if (fscanf(INFILE, "%d", &mininfo)!=1 || findch('\n')==EOF) {
                     printf("ERROR: Problem reading min informative residues\n");
                     anerror = true;
                 }
@@ -288,7 +288,7 @@ void getoptions() {
                     printf("ERROR: Unexpected Transition/transversion data\n");
                     anerror = true;
                 }
-                else if (fscanf(INFILE,"%lf",&ttratio)!=1 || findch('\n')==EOF) {
+                else if (fscanf(INFILE, "%lf", &ttratio)!=1 || findch('\n')==EOF) {
                     printf("ERROR: Problem reading transition/transversion data\n");
                     anerror = true;
                 }
@@ -607,8 +607,8 @@ void getdata(tree *tr) {
         j = nmlngth - 5 + ((sites + ((sites-1)/10))/2);
         if (j < nmlngth - 1) j = nmlngth - 1;
         if (j > 37) j = 37;
-        printf("Name"); for (i=1;i<=j;i++) putchar(' '); printf("Sequences\n");
-        printf("----"); for (i=1;i<=j;i++) putchar(' '); printf("---------\n");
+        printf("Name"); for (i=1; i<=j; i++) putchar(' '); printf("Sequences\n");
+        printf("----"); for (i=1; i<=j; i++) putchar(' '); printf("---------\n");
         putchar('\n');
 
         for (i = 1; i <= sites; i += 60) {
@@ -770,7 +770,7 @@ void empiricalfreqs(tree *tr) {
             yptr = tr->nodep[i]->tip;
             for (j = 0; j < endsite; j++) {
                 code = *yptr++;
-                fa = freqa * ( code       & 1);
+                fa = freqa * (code       & 1);
                 fc = freqc * ((code >> 1) & 1);
                 fg = freqg * ((code >> 2) & 1);
                 ft = freqt * ((code >> 3) & 1);
@@ -1071,9 +1071,9 @@ void initrav(nodeptr p) {
     }
 }
 
-/*=======================================================================*/
+/* ======================================================================= */
 /*                         Read a tree from a file                       */
-/*=======================================================================*/
+/* ======================================================================= */
 
 int treeFinishCom() {
     int  ch;
@@ -1182,7 +1182,7 @@ int findTipName(tree *tr, int ch) {
         if (! (q->back)) {          /*  Only consider unused tips */
             i = 0;
             nameptr = q->name;
-            do {found = str[i] == *nameptr++;}  while (found && (++i < nmlngth));
+            do { found = str[i] == *nameptr++; } while (found && (++i < nmlngth));
         }
         else
             found = false;
@@ -1190,7 +1190,7 @@ int findTipName(tree *tr, int ch) {
 
     if (! found) {
         i = nmlngth;
-        do {str[i] = '\0';} while (i-- && (str[i] <= ' '));
+        do { str[i] = '\0'; } while (i-- && (str[i] <= ' '));
         printf("ERROR: Cannot find data for tree species: %s\n", str);
     }
 
@@ -1274,7 +1274,7 @@ void addElementLen(tree *tr, nodeptr p) {
 
     else {                               /*  A new tip */
         n = findTipName(tr, ch);
-        if (n <= 0) {anerror = true; return; }
+        if (n <= 0) { anerror = true; return; }
         q = tr->nodep[n];
         if (tr->start->number > n)  tr->start = q;
         (tr->ntips)++;
@@ -1353,7 +1353,7 @@ void treeReadLen(tree *tr) {
         }
     }
     treeNeedCh(')', "in");
-    if (anerror)  {
+    if (anerror) {
         printf("(This error also happens if the last species in the tree is unmarked)\n");
         return;
     }
@@ -1370,9 +1370,9 @@ void treeReadLen(tree *tr) {
     initrav(tr->start->back);
 }
 
-/*=======================================================================*/
+/* ======================================================================= */
 /*                           End of Tree Reading                         */
-/*=======================================================================*/
+/* ======================================================================= */
 
 
 double evaluate(tree *tr, nodeptr p) {
@@ -1659,10 +1659,10 @@ char   *arb_filter;
 char   *alignment_name;
 GBDATA *gb_main;
 
-void getArbFilter(){
+void getArbFilter() {
     /** Get the calling filter, needed to expand weights afterwards */
     GB_begin_transaction(gb_main);
-    arb_filter = GBT_read_string(gb_main,AWAR_GDE_EXPORT_FILTER);
+    arb_filter = GBT_read_string(gb_main, AWAR_GDE_EXPORT_FILTER);
     alignment_name = GBT_get_default_alignment(gb_main);
     GB_commit_transaction(gb_main);
 }
@@ -1673,7 +1673,7 @@ void writeToArb() {
     char    category_string[1024];
     char   *p;
     long    ali_len;
-    int     i,k;
+    int     i, k;
     int     ali_pos;
     float  *rates;              /* rates to export */
     char   *cats;               /* categories */
@@ -1684,22 +1684,22 @@ void writeToArb() {
     GB_begin_transaction(gb_main);
 
     /* First create new SAI */
-    sprintf(sai_name, "POS_VAR_BY_ML_%i",getpid());
+    sprintf(sai_name, "POS_VAR_BY_ML_%i", getpid());
     printf("Writing '%s'\n", sai_name);
-    ali_len = GBT_get_alignment_len(gb_main,alignment_name);
-    cats    = (char *)GB_calloc(ali_len,sizeof(char));
-    rates   = (float *)GB_calloc(ali_len,sizeof(float));
+    ali_len = GBT_get_alignment_len(gb_main, alignment_name);
+    cats    = (char *)GB_calloc(ali_len, sizeof(char));
+    rates   = (float *)GB_calloc(ali_len, sizeof(float));
 
     /* fill in rates and categories */
     {
         double  categrate[maxcategories]; /* rate of a given category */
         int     sitecateg[maxsites+1];    /* category of a given site */
 
-        categorize(sites, categs, weight, pattern, patrate,categrate, sitecateg);
+        categorize(sites, categs, weight, pattern, patrate, categrate, sitecateg);
 
         i = 1;                  /* thanks to pascal */
-        for ( ali_pos = 0; ali_pos < ali_len; ali_pos++){
-            if (arb_filter[ali_pos] == '0'){
+        for (ali_pos = 0; ali_pos < ali_len; ali_pos++) {
+            if (arb_filter[ali_pos] == '0') {
                 cats[ali_pos] = '.';
                 rates[ali_pos] = KI_MAX;
                 continue; /* filter says not written */
@@ -1719,24 +1719,24 @@ void writeToArb() {
         p    = category_string;
         p[0] = 0; /* if no categs */
         for (k = 1; k <= categs; k ++) {
-            sprintf(p," %G", categrate[categs-k]);
+            sprintf(p, " %G", categrate[categs-k]);
             p += strlen(p);
         }
     }
 
 
     sprintf(type_info, "PVML: Positional Variability by ML (Olsen)");
-    gb_sai = GBT_find_or_create_SAI(gb_main,sai_name);
-    if (!gb_sai){
+    gb_sai = GBT_find_or_create_SAI(gb_main, sai_name);
+    if (!gb_sai) {
         fprintf(stderr, "Error: %s\n", GB_await_error());
     }
     else {
         gb_data = GBT_add_data(gb_sai, alignment_name, "rates", GB_FLOATS);
-        GB_write_floats(gb_data, rates,ali_len);
+        GB_write_floats(gb_data, rates, ali_len);
         gb_data = GBT_add_data(gb_sai, alignment_name, "data", GB_STRING);
         GB_write_string(gb_data, cats);
         gb_data = GBT_add_data(gb_sai, alignment_name, "_CATEGORIES", GB_STRING);
-        GB_write_string(gb_data,category_string);
+        GB_write_string(gb_data, category_string);
         gb_data = GBT_add_data(gb_sai, alignment_name, "_TYPE", GB_STRING);
         GB_write_string(gb_data, type_info);
     }
@@ -1745,10 +1745,10 @@ void writeToArb() {
 }
 
 void openArb() {
-    gb_main = GB_open(":","rw");
-    if (!gb_main){
+    gb_main = GB_open(":", "rw");
+    if (!gb_main) {
         GB_warning("Cannot find ARB server");
-        exit(-1);;
+        exit(-1); ;
     }
 }
 
@@ -1827,7 +1827,7 @@ void summarize(int treenum) {
         double  categrate[maxcategories]; /* rate of a given category */
         int     sitecateg[maxsites+1];    /* category of a given site */
 
-        categorize(sites, categs, weight, pattern, patrate,categrate, sitecateg);
+        categorize(sites, categs, weight, pattern, patrate, categrate, sitecateg);
 
         wrfile(stdout, sites, categs, weight, categrate, sitecateg);
         putchar('\n');
@@ -1887,7 +1887,7 @@ int main() {
     tree   curtree, *tr;
 
 #   if DebugData
-    debug = fopen("ml_rates.debug","w");
+    debug = fopen("ml_rates.debug", "w");
 #   endif
 
 #   if ! UseStdin

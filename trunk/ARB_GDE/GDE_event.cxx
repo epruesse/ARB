@@ -29,7 +29,7 @@ extern adfiltercbstruct *agde_filtercd;
 */
 
 
-static char *ReplaceArgs(AW_root *awr,char *Action,GmenuItem *gmenuitem,int number)
+static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int number)
 {
     /*
      *  The basic idea is to replace all of the symbols in the method
@@ -72,18 +72,18 @@ static char *ReplaceArgs(AW_root *awr,char *Action,GmenuItem *gmenuitem,int numb
     char *method=0;
     char *textvalue=0;
     char *temp;
-    int i,newlen,type;
+    int i, newlen, type;
     symbol = gmenuitem->arg[number].symbol;
     type = gmenuitem->arg[number].type;
-    if( (type == SLIDER) )
+    if ((type == SLIDER))
     {
-        char *awarname = GDE_makeawarname(gmenuitem,number);
+        char *awarname = GDE_makeawarname(gmenuitem, number);
         textvalue      = (char*)malloc(GBUFSIZ);
         char *awalue   = awr->awar(awarname)->read_as_string();
-        sprintf(textvalue,"%s",awalue);
+        sprintf(textvalue, "%s", awalue);
         free(awalue);
     }
-    else if((type == CHOOSER) ||
+    else if ((type == CHOOSER) ||
             (type == CHOICE_TREE) ||
             (type == CHOICE_SAI) ||
             (type == CHOICE_MENU) ||
@@ -91,33 +91,33 @@ static char *ReplaceArgs(AW_root *awr,char *Action,GmenuItem *gmenuitem,int numb
             (type == CHOICE_WEIGHTS) ||
             (type == TEXTFIELD))
     {
-        char *awarname=GDE_makeawarname(gmenuitem,number);
+        char *awarname=GDE_makeawarname(gmenuitem, number);
         method=awr->awar(awarname)->read_string();
         textvalue=awr->awar(awarname)->read_string();
     }
 
-    if(textvalue == NULL)   textvalue=(char *)calloc(1,sizeof(char));
-    if(method == NULL)      method=(char *)calloc(1,sizeof(char));
-    if(symbol == NULL)      symbol="";
+    if (textvalue == NULL)  textvalue=(char *)calloc(1, sizeof(char));
+    if (method == NULL)     method=(char *)calloc(1, sizeof(char));
+    if (symbol == NULL)     symbol="";
 
     set<string>warned_about;
     int conversion_warning        = 0;
     int j                         = 0;
 
-    for(; (i=Find2(Action+j,symbol)) != -1;)
+    for (; (i=Find2(Action+j, symbol)) != -1;)
     {
         i += j;
         ++j;
-        if(i>0 && Action[i-1] == '$' )
+        if (i>0 && Action[i-1] == '$')
         {
             newlen = strlen(Action)-strlen(symbol)
                 +strlen(textvalue);
-            temp = (char *)calloc(newlen,1);
+            temp = (char *)calloc(newlen, 1);
             if (temp == NULL)
                 Error("ReplaceArgs():Error in calloc");
-            strncat(temp,Action,i-1);
-            strncat(temp,textvalue,strlen(textvalue));
-            strcat( temp,&(Action[i+strlen(symbol)]) );
+            strncat(temp, Action, i-1);
+            strncat(temp, textvalue, strlen(textvalue));
+            strcat(temp, &(Action[i+strlen(symbol)]));
             freeset(Action, temp);
         }
         else {
@@ -139,14 +139,14 @@ static char *ReplaceArgs(AW_root *awr,char *Action,GmenuItem *gmenuitem,int numb
 
     free(textvalue);
     free(method);
-    return(Action);
+    return (Action);
 }
 
 
 
-static long LMAX(long a,long b)
+static long LMAX(long a, long b)
 {
-    if(a>b) return a;
+    if (a>b) return a;
     return b;
 }
 
@@ -154,49 +154,49 @@ static void GDE_free(void **p) {
     freenull(*p);
 }
 
-static char *ReplaceFile(char *Action,GfileFormat file)
+static char *ReplaceFile(char *Action, GfileFormat file)
 {
-    char *symbol,*method,*temp;
-    int i,newlen;
+    char *symbol, *method, *temp;
+    int i, newlen;
     symbol = file.symbol;
     method = file.name;
 
-    for(; (i=Find2(Action,symbol)) != -1;)
+    for (; (i=Find2(Action, symbol)) != -1;)
     {
         newlen = strlen(Action)-strlen(symbol) + strlen(method)+1;
-        temp = (char *)calloc(newlen,1);
+        temp = (char *)calloc(newlen, 1);
         if (temp == NULL)
             Error("ReplaceFile():Error in calloc");
-        strncat(temp,Action,i);
-        strncat(temp,method,strlen(method));
-        strcat( temp,&(Action[i+strlen(symbol)]) );
+        strncat(temp, Action, i);
+        strncat(temp, method, strlen(method));
+        strcat(temp, &(Action[i+strlen(symbol)]));
         freeset(Action, temp);
     }
-    return(Action);
+    return (Action);
 }
 
-static char *ReplaceString(char *Action,const char *old,const char *news)
+static char *ReplaceString(char *Action, const char *old, const char *news)
 {
     const char *symbol;
     const char *method;
     char *temp;
-    int i,newlen;
+    int i, newlen;
 
     symbol = old;
     method = news;
 
-    for(; (i=Find2(Action,symbol)) != -1;)
+    for (; (i=Find2(Action, symbol)) != -1;)
     {
         newlen = strlen(Action)-strlen(symbol) + strlen(method)+1;
-        temp = (char *)calloc(newlen,1);
+        temp = (char *)calloc(newlen, 1);
         if (temp == NULL)
             Error("ReplaceFile():Error in calloc");
-        strncat(temp,Action,i);
-        strncat(temp,method,strlen(method));
-        strcat( temp,&(Action[i+strlen(symbol)]) );
+        strncat(temp, Action, i);
+        strncat(temp, method, strlen(method));
+        strcat(temp, &(Action[i+strlen(symbol)]));
         freeset(Action, temp);
     }
-    return(Action);
+    return (Action);
 }
 
 
@@ -218,7 +218,7 @@ static void GDE_freeali(NA_Alignment *dataset) {
         GDE_free((void**)&dataset->selection_mask);
         GDE_free((void**)&dataset->alignment_name);
 
-        for (unsigned long i=0;i<dataset->numelements;i++) {
+        for (unsigned long i=0; i<dataset->numelements; i++) {
             GDE_freesequ(dataset->element+i);
         }
     }
@@ -426,14 +426,14 @@ static char *preCreateTempfile(const char *name) {
     return fullname;
 }
 
-void GDE_startaction_cb(AW_window *aw,GmenuItem *gmenuitem,AW_CL cd)
+void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL cd)
 {
     long oldnumelements=0;
     AWUSE(cd);
     AW_root *aw_root=aw->get_root();
 
     GapCompression  compress          = static_cast<GapCompression>(aw_root->awar(AWAR_GDE_COMPRESSION)->read_int());
-    AP_filter      *filter2           = awt_get_filter(aw_root,agde_filtercd);
+    AP_filter      *filter2           = awt_get_filter(aw_root, agde_filtercd);
     char           *filter_name       = 0; /* aw_root->awar(AWAR_GDE_FILTER_NAME)->read_string() */
     char           *alignment_name    = strdup("ali_unknown");
     bool            marked            = (aw_root->awar(AWAR_GDE_SPECIES)->read_int() != 0);
@@ -447,7 +447,7 @@ void GDE_startaction_cb(AW_window *aw,GmenuItem *gmenuitem,AW_CL cd)
 
     int   j;
     bool  flag;
-    char *Action,buffer[GBUFSIZ];
+    char *Action, buffer[GBUFSIZ];
 
     static int fileindx    = 0;
     int        select_mode = 0;
@@ -476,59 +476,59 @@ void GDE_startaction_cb(AW_window *aw,GmenuItem *gmenuitem,AW_CL cd)
 
     if (!stop) {
         flag = false;
-        for(j=0;j<current_item->numinputs;j++) {
-            if(current_item->input[j].format != STATUS_FILE) {
+        for (j=0; j<current_item->numinputs; j++) {
+            if (current_item->input[j].format != STATUS_FILE) {
                 flag = true;
             }
         }
-        if(flag && DataSet) select_mode = ALL; 
+        if (flag && DataSet) select_mode = ALL;
 
         int pid = getpid();
 
-        for(j=0;j<current_item->numinputs;j++) {
+        for (j=0; j<current_item->numinputs; j++) {
             GfileFormat& gfile = current_item->input[j];
 
-            sprintf(buffer,"gde%d_%d", pid, fileindx++);
+            sprintf(buffer, "gde%d_%d", pid, fileindx++);
             gfile.name = preCreateTempfile(buffer);
 
-            switch(gfile.format) {
+            switch (gfile.format) {
                 case COLORMASK:   WriteCMask  (DataSet, gfile.name, select_mode, gfile.maskable); break;
                 case GENBANK:     WriteGen    (DataSet, gfile.name, select_mode, gfile.maskable); break;
                 case NA_FLAT:     WriteNA_Flat(DataSet, gfile.name, select_mode, gfile.maskable); break;
-                case STATUS_FILE: WriteStatus (DataSet, gfile.name, select_mode)                ; break;
+                case STATUS_FILE: WriteStatus (DataSet, gfile.name, select_mode);                 break;
                 case GDE:         WriteGDE    (DataSet, gfile.name, select_mode, gfile.maskable); break;
                 default: break;
             }
         }
 
-        for(j=0;j<current_item->numoutputs;j++) {
-            sprintf(buffer,"gde%d_%d", pid, fileindx++);
+        for (j=0; j<current_item->numoutputs; j++) {
+            sprintf(buffer, "gde%d_%d", pid, fileindx++);
             current_item->output[j].name = preCreateTempfile(buffer);
         }
 
         // Create the command line for external the function call
         Action = (char*)strdup(current_item->method);
-        if(Action == NULL) Error("DO(): Error in duplicating method string");
+        if (Action == NULL) Error("DO(): Error in duplicating method string");
 
         while (1) {
             char *oldAction = strdup(Action);
 
-            for(j=0;j<current_item->numargs;j++) Action = ReplaceArgs(aw_root,Action,gmenuitem,j);
+            for (j=0; j<current_item->numargs; j++) Action = ReplaceArgs(aw_root, Action, gmenuitem, j);
             bool changed = strcmp(oldAction, Action) != 0;
             free(oldAction);
 
             if (!changed) break;
         }
 
-        for(j=0;j<current_item->numinputs;j++) Action = ReplaceFile(Action,current_item->input[j]);
-        for(j=0;j<current_item->numoutputs;j++) Action = ReplaceFile(Action,current_item->output[j]);
+        for (j=0; j<current_item->numinputs; j++) Action = ReplaceFile(Action, current_item->input[j]);
+        for (j=0; j<current_item->numoutputs; j++) Action = ReplaceFile(Action, current_item->output[j]);
 
         filter_name = AWT_get_combined_filter_name(aw_root, "gde");
-        Action = ReplaceString(Action,"$FILTER",filter_name);
+        Action = ReplaceString(Action, "$FILTER", filter_name);
 
         // call and go...
         aw_status("calling external program");
-        printf("Action: %s\n",Action);
+        printf("Action: %s\n", Action);
         system(Action);
         free(Action);
 
@@ -536,16 +536,16 @@ void GDE_startaction_cb(AW_window *aw,GmenuItem *gmenuitem,AW_CL cd)
 
         BlockInput = false;
 
-        for(j=0;j<current_item->numoutputs;j++)
+        for (j=0; j<current_item->numoutputs; j++)
         {
-            if(current_item->output[j].overwrite)
+            if (current_item->output[j].overwrite)
             {
-                if(current_item->output[j].format == GDE)
+                if (current_item->output[j].format == GDE)
                     OVERWRITE = true;
                 else
                     Warning("Overwrite mode only available for GDE format");
             }
-            switch(current_item->output[j].format)
+            switch (current_item->output[j].format)
             {
                 /* The LoadData routine must be reworked so that
                  * OpenFileName uses it, and so I can remove the
@@ -564,24 +564,24 @@ void GDE_startaction_cb(AW_window *aw,GmenuItem *gmenuitem,AW_CL cd)
             }
             OVERWRITE = false;
         }
-        for(j=0;j<current_item->numoutputs;j++)
+        for (j=0; j<current_item->numoutputs; j++)
         {
-            if(!current_item->output[j].save)
+            if (!current_item->output[j].save)
             {
                 unlink(current_item->output[j].name);
             }
         }
 
-        for(j=0;j<current_item->numinputs;j++)
+        for (j=0; j<current_item->numinputs; j++)
         {
-            if(!current_item->input[j].save)
+            if (!current_item->input[j].save)
             {
                 unlink(current_item->input[j].name);
             }
         }
 
         aw_closestatus();
-        GDE_export(DataSet,alignment_name,oldnumelements);
+        GDE_export(DataSet, alignment_name, oldnumelements);
     }
     else {
         aw_closestatus();
@@ -592,7 +592,7 @@ void GDE_startaction_cb(AW_window *aw,GmenuItem *gmenuitem,AW_CL cd)
     free(filter_name);
 
     GDE_freeali(DataSet);
-    freeset(DataSet, (NA_Alignment *)Calloc(1,sizeof(NA_Alignment)));
+    freeset(DataSet, (NA_Alignment *)Calloc(1, sizeof(NA_Alignment)));
     DataSet->rel_offset = 0;
 }
 

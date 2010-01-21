@@ -11,7 +11,7 @@
 #include "ali_prealigner.hxx"
 #include "ali_aligner.hxx"
 
-unsigned long   random_stat[6] = {0, 0, 0, 0, 0, 0};
+unsigned long   random_stat[6] = { 0, 0, 0, 0, 0, 0 };
 
 void ali_prealigner_mask::insert(ALI_MAP * in_map, float costs) {
     // Insert a new map
@@ -521,15 +521,15 @@ void ALI_PREALIGNER::generate_result_mask(ALI_TSTACK < unsigned char >*stack) {
             case ALI_PREALIGNER_DEL:
                 dest_pos++;
                 break;
-            case ALI_PREALIGNER_INS | ALI_PREALIGNER_MULTI_FLAG:
+            case ALI_PREALIGNER_INS | ALI_PREALIGNER_MULTI_FLAG :
                 map->set(seq_pos, dest_pos, 1);
                 map->undefine(seq_pos++);
                 break;
-            case ALI_PREALIGNER_SUB | ALI_PREALIGNER_MULTI_FLAG:
+            case ALI_PREALIGNER_SUB | ALI_PREALIGNER_MULTI_FLAG :
                 map->set(seq_pos, dest_pos++, 0);
                 map->undefine(seq_pos++);
                 break;
-            case ALI_PREALIGNER_DEL | ALI_PREALIGNER_MULTI_FLAG:
+            case ALI_PREALIGNER_DEL | ALI_PREALIGNER_MULTI_FLAG :
                 dest_pos++;
                 break;
             default:
@@ -997,7 +997,7 @@ void ALI_PREALIGNER::make_approximation(ALI_PREALIGNER_CONTEXT * context) {
 unsigned long ALI_PREALIGNER::number_of_solutions() {
     // approximate the number of solutions in the pathmap
 #define INFINIT 1000000
-#define ADD(a,b)  if (a>=INFINIT || b>=INFINIT) {a = INFINIT;} else {a += b;}
+#define ADD(a, b) if (a>=INFINIT || b>=INFINIT) { a = INFINIT; } else { a += b; }
 
     unsigned long   pos_x, pos_y, col_length;
     unsigned long   number;

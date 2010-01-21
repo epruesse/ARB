@@ -20,21 +20,21 @@ int compress_data(char *probestring)
         *dest;
     dest = src = probestring;
 
-    while((c=*(src++)))
+    while ((c=*(src++)))
     {
         switch (c) {
             case 'A':
-            case 'a': *(dest++) = PT_A;break;
+            case 'a': *(dest++) = PT_A; break;
             case 'C':
-            case 'c': *(dest++) = PT_C;break;
+            case 'c': *(dest++) = PT_C; break;
             case 'G':
-            case 'g': *(dest++) = PT_G;break;
+            case 'g': *(dest++) = PT_G; break;
             case 'U':
             case 'u':
             case 'T':
-            case 't': *(dest++) = PT_T;break;
+            case 't': *(dest++) = PT_T; break;
             case 'N':
-            case 'n': *(dest++) = PT_N;break;
+            case 'n': *(dest++) = PT_N; break;
             default: break;
         }
 
@@ -52,16 +52,16 @@ void PT_base_2_string(char *id_string, long len)
     if (!len) len = strlen(id_string);
     dest = src = id_string;
 
-    while((len--)>0){
+    while ((len--)>0) {
         c=*(src++);
         switch (c) {
-            case PT_A: *(dest++)  = 'A';break;
-            case PT_C: *(dest++)  = 'C';break;
-            case PT_G: *(dest++)  = 'G';break;
-            case PT_T: *(dest++)  = 'U';break;
-            case PT_N: *(dest++)  = 'N';break;
+            case PT_A: *(dest++)  = 'A'; break;
+            case PT_C: *(dest++)  = 'C'; break;
+            case PT_G: *(dest++)  = 'G'; break;
+            case PT_T: *(dest++)  = 'U'; break;
+            case PT_N: *(dest++)  = 'N'; break;
             case 0: *(dest++)     = '0'; break;
-            default: *(dest++)    = c;break;
+            default: *(dest++)    = c; break;
         }
 
     }
@@ -77,15 +77,15 @@ void probe_read_data_base(char *name)
 #if defined(DEVEL_RALF)
 #warning gb_main should be closed    
 #endif // DEVEL_RALF
-    gb_main = GB_open(name,"r");
+    gb_main = GB_open(name, "r");
     if (!gb_main) {
-        printf("Error reading file %s\n",name);
+        printf("Error reading file %s\n", name);
         exit(EXIT_FAILURE);
     }
     GB_begin_transaction(gb_main);
-    gb_species_data = GB_entry(gb_main,"species_data");
-    if (!gb_species_data){
-        printf("Database %s is empty\n",name);
+    gb_species_data = GB_entry(gb_main, "species_data");
+    if (!gb_species_data) {
+        printf("Database %s is empty\n", name);
         exit(EXIT_FAILURE);
     }
     psg.gb_main         = gb_main;
@@ -133,7 +133,7 @@ int probe_compress_sequence(char *seq, int seqsize)
     static uchar *tab = 0;
     if (!tab) {
         tab = (uchar *)malloc(256);
-        memset(tab,PT_N,256);
+        memset(tab, PT_N, 256);
         
         tab['A'] = tab['a'] = PT_A;
         tab['C'] = tab['c'] = PT_C;
@@ -231,7 +231,7 @@ void probe_read_alignments() {
 
     for (GBDATA *gb_species = GBT_first_species_rel_species_data(psg.gb_species_data);
          gb_species;
-         gb_species = GBT_next_species(gb_species) )
+         gb_species = GBT_next_species(gb_species))
     {
         probe_input_data& pid = psg.data[count];
 
@@ -245,9 +245,9 @@ void probe_read_alignments() {
         
         GBDATA *gb_ali = GB_entry(gb_species, psg.alignment_name);
         if (gb_ali) {
-            GBDATA *gb_data = GB_entry(gb_ali,"data");
+            GBDATA *gb_data = GB_entry(gb_ali, "data");
             if (!gb_data) {
-                fprintf(stderr,"Species '%s' has no data in '%s'\n", pid.name, psg.alignment_name);
+                fprintf(stderr, "Species '%s' has no data in '%s'\n", pid.name, psg.alignment_name);
                 data_missing++;
             }
             else {
@@ -285,23 +285,23 @@ void probe_read_alignments() {
     fflush(stdout);
 }
 
-void PT_build_species_hash(void){
+void PT_build_species_hash(void) {
     long i;
     psg.namehash = GBS_create_hash(PT_NAME_HASH_SIZE, GB_MIND_CASE);
-    for (i=0;i<psg.data_count;i++){
-        GBS_write_hash(psg.namehash, psg.data[i].name,i+1);
+    for (i=0; i<psg.data_count; i++) {
+        GBS_write_hash(psg.namehash, psg.data[i].name, i+1);
     }
     unsigned int    max_size;
     max_size = 0;
-    for (i = 0; i < psg.data_count; i++){   /* get max sequence len */
+    for (i = 0; i < psg.data_count; i++) {  /* get max sequence len */
         max_size = max(max_size, (unsigned)(psg.data[i].size));
         psg.char_count += psg.data[i].size;
     }
     psg.max_size = max_size;
 
-    if ( psg.ecoli){
+    if (psg.ecoli) {
         BI_ecoli_ref *ref = new BI_ecoli_ref;
-        const char *error = ref->init(psg.ecoli,strlen(psg.ecoli));
+        const char *error = ref->init(psg.ecoli, strlen(psg.ecoli));
         if (error) {
             delete psg.ecoli;
             psg.ecoli = 0;

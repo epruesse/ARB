@@ -15,7 +15,7 @@ void tree_init(AP_tree *tree0);
 GA_genetic * GAgenetic;
 void parsimony_func(AP_tree *);
 
-void  buildRandomTreeRek(AP_tree *tree,AP_tree **list,int *num) {
+void  buildRandomTreeRek(AP_tree *tree, AP_tree **list, int *num) {
     // builds a list of all species
     if (tree->is_leaf) {
         AP_tree_nlen *pntr = new AP_tree_nlen;
@@ -25,8 +25,8 @@ void  buildRandomTreeRek(AP_tree *tree,AP_tree **list,int *num) {
         (*num)++;
         return;
     }
-    buildRandomTreeRek(tree->leftson,list,num);
-    buildRandomTreeRek(tree->rightson,list,num);
+    buildRandomTreeRek(tree->leftson, list, num);
+    buildRandomTreeRek(tree->rightson, list, num);
     return;
 }
 
@@ -39,15 +39,15 @@ AP_tree * buildRandomTree(AP_tree *root) {
     if (root->sequence_proto == 0) tree_init(root);
 
     AP_tree_nlen *ntree;
-    AP_tree *tree1,*tree0;
+    AP_tree *tree1, *tree0;
     int num;
     int count = 0;
 
     root->arb_tree_leafsum();
 
-    list = (AP_tree **)calloc(root->gr.leave_sum +1,sizeof(AP_tree *));
+    list = (AP_tree **)calloc(root->gr.leave_sum + 1, sizeof(AP_tree *));
 
-    buildRandomTreeRek(root,list,&count);
+    buildRandomTreeRek(root, list, &count);
     count--;
     while (count >1) {
         // choose two random numbers
@@ -75,23 +75,23 @@ AP_tree * buildRandomTree(AP_tree *root) {
 }
 
 void kernighan_lin(AP_tree_nlen *tree) {
-    if (tree ==0) new AP_ERR("kernighan_lin","No tree !");
+    if (tree == 0) new AP_ERR("kernighan_lin", "No tree !");
     // ruft kernighan auf
 }
 
-AP_tree_nlen *crossover(AP_tree_nlen *tree0,AP_tree_nlen *tree1) {
-    int size1,size0;
-    AP_CO_LIST *list0,*list1;
+AP_tree_nlen *crossover(AP_tree_nlen *tree0, AP_tree_nlen *tree1) {
+    int size1, size0;
+    AP_CO_LIST *list0, *list1;
 
-    if (tree0 ==0 || tree1 == 0) {
-        new AP_ERR("crossover","Needs two tress as argument");
+    if (tree0 == 0 || tree1 == 0) {
+        new AP_ERR("crossover", "Needs two tress as argument");
         return 0;
     }
     list0 = tree0->createList(&size0);
     list1 = tree1->createList(&size1);
 
-    fprintf(GAgenetic->fout,"\ncrossover tree %d %d size %d %d",
-            tree0,tree1,size0,size1);
+    fprintf(GAgenetic->fout, "\ncrossover tree %d %d size %d %d",
+            tree0, tree1, size0, size1);
 
     // ruft crossover auf
     return tree0;
@@ -104,13 +104,13 @@ int randomCluster() {
     cout << cluster << "clust\n";
     return cluster;
 }
-AP_ERR * make_start_population(GBDATA *gbmain,AP_tree *tree) {
+AP_ERR * make_start_population(GBDATA *gbmain, AP_tree *tree) {
     // makes random start population
     // (at least two trees in each cluster)
     static int msp = 0;
     msp ++;
-    if (msp > 1) return new AP_ERR("make_start_population","Only call it once !");
-    int name=0,i =0,maxcluster;
+    if (msp > 1) return new AP_ERR("make_start_population", "Only call it once !");
+    int name=0, i = 0, maxcluster;
 
     AP_tree_nlen* rtree;
 
@@ -123,14 +123,14 @@ AP_ERR * make_start_population(GBDATA *gbmain,AP_tree *tree) {
     while (i<maxcluster) {
         rtree = (AP_tree_nlen *)buildRandomTree(tree);
         rtree->parsimony_rek();
-        GAgenetic->put_start_tree((AP_tree *)rtree,name,i);
+        GAgenetic->put_start_tree((AP_tree *)rtree, name, i);
         name ++;
-        fprintf(GAgenetic->fout,"\ncluster %d put Starttree %d",i,name-1);
+        fprintf(GAgenetic->fout, "\ncluster %d put Starttree %d", i, name-1);
         rtree = (AP_tree_nlen *)buildRandomTree(tree);
         rtree->parsimony_rek();
-        GAgenetic->put_start_tree((AP_tree *)rtree,name,i);
+        GAgenetic->put_start_tree((AP_tree *)rtree, name, i);
         name ++;
-        fprintf(GAgenetic->fout,"\nCluster %d put Starttree %d",i,name-1);
+        fprintf(GAgenetic->fout, "\nCluster %d put Starttree %d", i, name-1);
         i ++;
     }
     return 0;
@@ -154,8 +154,8 @@ void start_genetic(GBDATA *gbmain) {
         GAgenetic = new GA_genetic;
         GAgenetic->init(gbmain);
     }
-    fprintf(GAgenetic->fout,"\n**** Genetic ALGORITHM *****\n");
-    make_start_population(gbmain,ap_main->tree_root);
+    fprintf(GAgenetic->fout, "\n**** Genetic ALGORITHM *****\n");
+    make_start_population(gbmain, ap_main->tree_root);
 
     //
     // get starttree and optimize it
@@ -165,17 +165,17 @@ void start_genetic(GBDATA *gbmain) {
 
     while (i<GAgenetic->getMaxCluster()) {
         cluster = i;
-        while ((starttree = GAgenetic->get_start_tree(cluster)) != 0){
+        while ((starttree = GAgenetic->get_start_tree(cluster)) != 0) {
             if (starttree != 0) {
                 kernighan_lin(starttree->tree);
-                GAgenetic->put_optimized(starttree,cluster);
-                fprintf(GAgenetic->fout,"\nStarttree %d optimized in cluster %d",
+                GAgenetic->put_optimized(starttree, cluster);
+                fprintf(GAgenetic->fout, "\nStarttree %d optimized in cluster %d",
                         starttree->id,
                         cluster);
                 delete starttree;
             }
             else {
-                fprintf(GAgenetic->fout,"\nNo starttree found in cluster %d",cluster);
+                fprintf(GAgenetic->fout, "\nNo starttree found in cluster %d", cluster);
             }
         }
         i ++;
@@ -184,26 +184,26 @@ void start_genetic(GBDATA *gbmain) {
     //
     // get job and do it
     //
-    i =0;
+    i = 0;
     while (i++ <20) {
         cluster = randomCluster();
         job = GAgenetic->get_job(cluster);
         if (job != 0) {
-            switch(job->mode) {
+            switch (job->mode) {
                 case GA_CROSSOVER: {
                     GA_tree * gaTree = new GA_tree;
-                    gaTree->tree = crossover(job->tree0->tree,job->tree1->tree);
+                    gaTree->tree = crossover(job->tree0->tree, job->tree1->tree);
 
                     GB_push_transaction(gb_main);
-                    char *use =GBT_get_default_alignment(gb_main);
-                    gaTree->tree->load_sequences_rek(0,use);
+                    char *use = GBT_get_default_alignment(gb_main);
+                    gaTree->tree->load_sequences_rek(0, use);
                     GB_pop_transaction(gb_main);
 
                     parsimony_func(gaTree->tree);
 
                     gaTree->criteria = gaTree->tree->mutation_rate;
                     gaTree->id = -1;
-                    GAgenetic->put_optimized(gaTree,job->cluster0);
+                    GAgenetic->put_optimized(gaTree, job->cluster0);
                     delete gaTree;
                     delete use;
                     break; }
@@ -218,12 +218,12 @@ void start_genetic(GBDATA *gbmain) {
                 default:
                     break;
             }
-            fprintf(GAgenetic->fout,"\njob %d in cluster %d : %d executed, mode %d"
-                    ,job,job->cluster0,job->cluster1,job->mode);
-            GAgenetic->put_optimized(job->tree0,cluster);
+            fprintf(GAgenetic->fout, "\njob %d in cluster %d : %d executed, mode %d"
+                    , job, job->cluster0, job->cluster1, job->mode);
+            GAgenetic->put_optimized(job->tree0, cluster);
         }
         else {
-            fprintf(GAgenetic->fout,"\nno job found");
+            fprintf(GAgenetic->fout, "\nno job found");
         }
     }
 }

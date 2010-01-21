@@ -53,7 +53,7 @@ static string encodeEntities(const string& str, bool quotedText = false) {
             case '\'':  { entity = "apostr"; break; }
             case char(0xb4):  { entity = "acute"; break; } // acute (forward)
             case 'é': { entity = "eacute"; break; }
-            default :  { replace = *s; }
+            default:   { replace = *s; }
             }
 
         if (replace) {
@@ -170,7 +170,7 @@ void XML_Tag::add_attribute(const string& name_, int value) {
 void XML_Tag::add_son(XML_Node *son_, bool son_is_tag) {
     if (son) throw string("Tried to add a second son! Destroy previous son first.");
     son                           = son_;
-    int wanted_state              = son_is_tag?2:1;
+    int wanted_state              = son_is_tag ? 2 : 1;
     if (state<wanted_state) state = wanted_state;
 }
 //  -------------------------------------------------
@@ -198,7 +198,7 @@ void XML_Tag::open(FILE *out) {
 //  ----------------------------------------
 //      void XML_Tag::close(FILE *out)
 //  ----------------------------------------
-void XML_Tag::close(FILE *out)  {
+void XML_Tag::close(FILE *out) {
     if (!opened) {
         if (!the_XML_Document->skip_empty_tags || attribute || !father) {
             if (father && !father->Opened()) father->open(out);
@@ -237,7 +237,7 @@ void XML_Text::add_son(XML_Node *, bool) {
 //  ------------------------------------------------------
 //      void XML_Text::remove_son(XML_Node */*son_*/)
 //  ------------------------------------------------------
-void XML_Text::remove_son(XML_Node */*son_*/) {
+void XML_Text::remove_son(XML_Node * /* son_ */) {
     throw string("Can't remove son from XML_Text-Node");
 }
 
@@ -272,7 +272,7 @@ XML_Comment::~XML_Comment()
 // -----------------------------------------------------
 //      void XML_Comment::add_son(XML_Node *, bool )
 // -----------------------------------------------------
-void XML_Comment::add_son(XML_Node *, bool )
+void XML_Comment::add_son(XML_Node *, bool)
 {
     throw string("Can't add son to XML_Comment-Node");
 }

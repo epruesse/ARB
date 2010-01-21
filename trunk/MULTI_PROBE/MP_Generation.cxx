@@ -13,13 +13,13 @@ probe_combi_statistic *Generation::single_in_generation(probe_combi_statistic *f
     if (!dup_tree)
         return NULL;
 
-    dup_tree->insert(field, result);        //dup_tree muss fuer jede Generation neu erstellt werden !!!!
-    //dieser Aufruf wird nur zur Vermeidung von doppelten
-    //Sondenkombis benoetigt
-    if (result)                 //wenn result, dann in generation einmalig
+    dup_tree->insert(field, result);        // dup_tree muss fuer jede Generation neu erstellt werden !!!!
+    // dieser Aufruf wird nur zur Vermeidung von doppelten
+    // Sondenkombis benoetigt
+    if (result)                 // wenn result, dann in generation einmalig
         return field;
 
-    return NULL;                //field ist ein Duplikat
+    return NULL;                // field ist ein Duplikat
 }
 
 void Generation::print()
@@ -37,7 +37,7 @@ void Generation::check_for_results()
     }
 }
 
-void Generation::calc_fitness(int flag, double old_avg_fit)     //reoulette_wheel wird DANACH initialisiert
+void Generation::calc_fitness(int flag, double old_avg_fit)     // reoulette_wheel wird DANACH initialisiert
 {
     double  fitness = 0;
     double  dummy = 0;
@@ -58,7 +58,7 @@ void Generation::calc_fitness(int flag, double old_avg_fit)     //reoulette_whee
         else if (dummy > max_fit)
             max_fit = dummy;
 
-        if (!check_status(generation_counter, old_avg_fit, min_fit, max_fit))       //Berechnungen abbrechen
+        if (!check_status(generation_counter, old_avg_fit, min_fit, max_fit))       // Berechnungen abbrechen
         {
             Stop_evaluation = TRUE;
             probe_combi_array_length = i-1;
@@ -66,8 +66,8 @@ void Generation::calc_fitness(int flag, double old_avg_fit)     //reoulette_whee
         }
     }
 
-    if (flag == NO_GENETIC_ALG)             //wenn kein gen. ALgorithmus verwendet wird, dann
-        return;                     //muss der Rest nicht berechnet werden.
+    if (flag == NO_GENETIC_ALG)             // wenn kein gen. ALgorithmus verwendet wird, dann
+        return;                     // muss der Rest nicht berechnet werden.
 
     average_fitness = fitness / (double)probe_combi_array_length;
 
@@ -88,19 +88,19 @@ void Generation::calc_fitness(int flag, double old_avg_fit)     //reoulette_whee
     deviation = (1.0 / (double)((double)i - 1.0)) * deviation;
     deviation = sqrt(deviation);
 
-    for (i=0; i<probe_combi_array_length; i++)          //sigma_truncation nur auf schlechte Kombis anwenden ???
+    for (i=0; i<probe_combi_array_length; i++)          // sigma_truncation nur auf schlechte Kombis anwenden ???
         probe_combi_stat_array[i]->sigma_truncation(average_fitness, deviation);
 #endif
-    //lineare Skalierung auf fitness anwenden !!!
-    //Skalierung erfolgt nach der Formel     fitness'= a*fitness + b
+    // lineare Skalierung auf fitness anwenden !!!
+    // Skalierung erfolgt nach der Formel     fitness'= a*fitness + b
 
-    prescale(&a, &b);       //Koeffizienten a und b berechnen
+    prescale(&a, &b);       // Koeffizienten a und b berechnen
 #endif
 
     for (i=0; i<probe_combi_array_length; i++)
     {
 #ifdef USE_LINEARSCALING
-        probe_combi_stat_array[i]->scale(a,b);
+        probe_combi_stat_array[i]->scale(a, b);
 #endif
         probe_combi_stat_array[i]->calc_expected_children(average_fitness);
     }
@@ -108,17 +108,17 @@ void Generation::calc_fitness(int flag, double old_avg_fit)     //reoulette_whee
     init_roulette_wheel();
 }
 
-void Generation::prescale(double *a, double *b) //berechnet Koeffizienten fuer lineare Skalierung
+void Generation::prescale(double *a, double *b) // berechnet Koeffizienten fuer lineare Skalierung
 {
     double delta = 0;
 
-    if ((min_fit > C_MULT * average_fitness - max_fit) / (C_MULT - 1.0))    //nach Goldberg S.79
+    if ((min_fit > C_MULT * average_fitness - max_fit) / (C_MULT - 1.0))    // nach Goldberg S.79
     {
         delta = max_fit - average_fitness;              // Normale Skalierung
         *a = (C_MULT - 1.0) * average_fitness / delta;
         *b = average_fitness * (max_fit - C_MULT * average_fitness) / delta;
     }
-    else                                //Skalieren soweit moeglich
+    else                                // Skalieren soweit moeglich
     {
         delta = average_fitness - min_fit;
         *a = average_fitness / delta;
@@ -132,15 +132,15 @@ void Generation::init_roulette_wheel()
 
     len_roulette_wheel = 0;
     while (i<probe_combi_array_length)
-        len_roulette_wheel += (int)(MULTROULETTEFACTOR * (probe_combi_stat_array[i++]->get_expected_children()));   //um aus z.B. 4,2 42 zu machen
+        len_roulette_wheel += (int)(MULTROULETTEFACTOR * (probe_combi_stat_array[i++]->get_expected_children()));   // um aus z.B. 4,2 42 zu machen
 }
 
 probe_combi_statistic *Generation::choose_combi_for_next_generation()
 {
-    int random_help = get_random(0,len_roulette_wheel-1),
+    int random_help = get_random(0, len_roulette_wheel-1),
         i;
 
-    for (i=0; i<probe_combi_array_length; i++)              //in einer Schleife bis zu den betreffenden Elementen
+    for (i=0; i<probe_combi_array_length; i++)              // in einer Schleife bis zu den betreffenden Elementen
     {                                   // vordringen (Rouletterad !!!)
         random_help -= (int) (MULTROULETTEFACTOR * probe_combi_stat_array[i]->get_expected_children());
 
@@ -150,7 +150,7 @@ probe_combi_statistic *Generation::choose_combi_for_next_generation()
                 return probe_combi_stat_array[i];
             else
             {
-                random_help = get_random(0,len_roulette_wheel-1);
+                random_help = get_random(0, len_roulette_wheel-1);
                 i = -1;
             }
         }
@@ -193,18 +193,18 @@ Generation *Generation::create_next_generation()
         if (orig2)
             second_child_pcs = orig2->duplicate();
 
-        if (orig2 && get_random(1,100) <= CROSSOVER_WS)     //Crossover durchfueheren
+        if (orig2 && get_random(1, 100) <= CROSSOVER_WS)    // Crossover durchfueheren
         {
             first_child_pcs->crossover_Probes(second_child_pcs);
-            first_child_pcs->init_life_counter();       //wenn  Crossover durchgefuehrt wird, dann Lebensdauer wieder initialisieren, da
-            second_child_pcs->init_life_counter();      //sich die Gene veraendert haben
-            len_roulette_wheel -= orig1->sub_expected_children(0.5);    //Verfahren nach Goldberg S.115
+            first_child_pcs->init_life_counter();       // wenn  Crossover durchgefuehrt wird, dann Lebensdauer wieder initialisieren, da
+            second_child_pcs->init_life_counter();      // sich die Gene veraendert haben
+            len_roulette_wheel -= orig1->sub_expected_children(0.5);    // Verfahren nach Goldberg S.115
             len_roulette_wheel -= orig2->sub_expected_children(0.5);
         }
         else
         {
-            first_child_pcs->sub_life_counter();                //Gene gleich geblieben => Lebensdauer verkuerzen
-            len_roulette_wheel -= orig1->sub_expected_children(1.0);    //nur tatsaechlich subtrahierte Zahl abziehen !!!
+            first_child_pcs->sub_life_counter();                // Gene gleich geblieben => Lebensdauer verkuerzen
+            len_roulette_wheel -= orig1->sub_expected_children(1.0);    // nur tatsaechlich subtrahierte Zahl abziehen !!!
 
             if (orig2)
             {
@@ -213,8 +213,8 @@ Generation *Generation::create_next_generation()
             }
         }
 
-        first_child_pcs->mutate_Probe();    //fuer jede Position wird mit 1/MUTATION_WS eine Mutation durchgefuehrt.
-        if (orig2)                  //Mutationen durchfuehren
+        first_child_pcs->mutate_Probe();    // fuer jede Position wird mit 1/MUTATION_WS eine Mutation durchgefuehrt.
+        if (orig2)                  // Mutationen durchfuehren
             second_child_pcs->mutate_Probe();
 
 #ifdef USE_DUP_TREE
@@ -222,7 +222,7 @@ Generation *Generation::create_next_generation()
         res = TRUE;
         if (child_generation->get_dup_tree()->insert(first_child_pcs, res, 0))
         {
-            if (!child_generation->insert(first_child_pcs))     //Population schon auf MAXPOPULATION
+            if (!child_generation->insert(first_child_pcs))     // Population schon auf MAXPOPULATION
                 break;
         }
 
@@ -235,7 +235,7 @@ Generation *Generation::create_next_generation()
         }
 
 #else
-        if (!child_generation->insert(first_child_pcs))     //Population schon auf MAXPOPULATION
+        if (!child_generation->insert(first_child_pcs))     // Population schon auf MAXPOPULATION
             break;
 
         if (orig2)
@@ -249,7 +249,7 @@ Generation *Generation::create_next_generation()
     delete second_child_pcs;
 
     if (len_roulette_wheel <= 1)
-        child_generation->set_length();             //probe_combi_array_length muss andere laenge bekommen
+        child_generation->set_length();             // probe_combi_array_length muss andere laenge bekommen
 
     return child_generation;
 }
@@ -283,12 +283,12 @@ void Generation::gen_determ_combis(int beg,
             bastel_probe_combi->
             get_probe_combi(mp_gl_awars.no_of_probes - len - 1)->probe_index)
         {
-            bastel_probe_combi->set_probe_combi(    mp_gl_awars.no_of_probes - len,
+            bastel_probe_combi->set_probe_combi(mp_gl_awars.no_of_probes - len,
                                                     (mp_main->get_p_eval()->get_probe_pool())[i]);
             gen_determ_combis(i+1, len-1, pos_counter, bastel_probe_combi);
         }
 
-        if (len !=1)
+        if (len != 1)
             delete bastel_probe_combi;
     }
 }
@@ -315,17 +315,17 @@ void Generation::init_valuation()
 
     if (probe_combi_array_length < MAXINITPOPULATION)
     {
-        gen_determ_combis(0,mp_gl_awars.no_of_probes, pos, NULL);   //probe_combi_stat_array ist danach gefuellt !!!
+        gen_determ_combis(0, mp_gl_awars.no_of_probes, pos, NULL);  // probe_combi_stat_array ist danach gefuellt !!!
 
         probe_combi_array_length = pos;
 
-        return;         //aufruf der funktion fuer die letzte Generation
+        return;         // aufruf der funktion fuer die letzte Generation
     }
 
     counter = 0;
     pcs = new probe_combi_statistic();
 
-    while (counter < probe_combi_array_length)      //Hier erfolgt die Generierung des probe_combi_stat_array
+    while (counter < probe_combi_array_length)      // Hier erfolgt die Generierung des probe_combi_stat_array
     {
         for (i=0; i<mp_gl_awars.no_of_probes; i++)
         {
@@ -334,7 +334,7 @@ void Generation::init_valuation()
             pcs->set_probe_combi(i, random_probe);
         }
 
-        if (pcs->check_duplicates(dup_tree))            //2 gleiche Sonden in der Kombination => nicht verwendbar
+        if (pcs->check_duplicates(dup_tree))            // 2 gleiche Sonden in der Kombination => nicht verwendbar
         {
             probe_combi_stat_array[counter++] = pcs;
             if (counter < probe_combi_array_length)
@@ -345,16 +345,16 @@ void Generation::init_valuation()
 
 Generation::Generation(int len, int gen_nr)
 {
-    memset( (char *)this, 0, sizeof(Generation) );
+    memset((char *)this, 0, sizeof(Generation));
 
     probe_combi_array_length  = len;
-    probe_combi_stat_array = new probe_combi_statistic*[probe_combi_array_length];  //probe_combi_array_length entspricht
+    probe_combi_stat_array = new probe_combi_statistic*[probe_combi_array_length];  // probe_combi_array_length entspricht
     // der Groesse der Ausgangspopulation
     memset(probe_combi_stat_array, 0, probe_combi_array_length * sizeof(probe_combi_statistic*));   // Struktur mit 0 initialisieren.
     generation_counter = gen_nr;
 
 #ifdef USE_DUP_TREE
-    dup_tree = new GenerationDuplicates(mp_main->get_p_eval()->get_size_sondenarray());     //nur wenn sondenkombis nur einmal
+    dup_tree = new GenerationDuplicates(mp_main->get_p_eval()->get_size_sondenarray());     // nur wenn sondenkombis nur einmal
     // in der Generation vorkommen duerfen
 #endif
 

@@ -34,8 +34,8 @@ struct column {
     const char *title;          // column title (pointer into ProbeMatch_impl::headline)
     int         start_column, end_column;
 
-    column() : title(0), start_column(-1), end_column(-1) { }
-    column(const char *t, int sc, int ec) : title(t), start_column(sc), end_column(ec) { }
+    column() : title(0), start_column(-1), end_column(-1) {}
+    column(const char *t, int sc, int ec) : title(t), start_column(sc), end_column(ec) {}
 };
 
 // ------------------------

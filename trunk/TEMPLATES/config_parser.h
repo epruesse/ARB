@@ -199,7 +199,7 @@ namespace {
                 char *lhs, *rhs;
 
                 error             = ConfigParser::splitText(range, ',', lhs, rhs);
-                if (!error)  {
+                if (!error) {
                     low  = atoi(lhs);
                     high = atoi(rhs);
                     if (low>high) {

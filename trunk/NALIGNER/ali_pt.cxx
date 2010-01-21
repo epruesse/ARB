@@ -15,13 +15,13 @@ int ALI_PT::init_communication(void) {
     const char *user = GB_getenvUSER();
 
     /*** create and init local com structure ***/
-    if( aisc_create(link, PT_MAIN, com, MAIN_LOCS, PT_LOCS, &locs, LOCS_USER, user, NULL)){
+    if (aisc_create(link, PT_MAIN, com, MAIN_LOCS, PT_LOCS, &locs, LOCS_USER, user, NULL)) {
         return 1;
     }
     return 0;
 }
 
-char *ALI_PT::get_family_member(char *specifiedfamily,unsigned long number)
+char *ALI_PT::get_family_member(char *specifiedfamily, unsigned long number)
 {
     char *ptr = specifiedfamily;
     char *end;
@@ -78,7 +78,7 @@ char *ALI_PT::get_extension_member(char *specifiedfamily,    unsigned long numbe
         while (*end != '\0' && *end != ',')
             end++;
 
-        buffer = dest = (char *) CALLOC((unsigned int) (end - ptr) + 1,sizeof(char));
+        buffer = dest = (char *) CALLOC((unsigned int) (end - ptr) + 1, sizeof(char));
         if (buffer == 0)
             ali_fatal_error("Out of memory");
 
@@ -93,9 +93,9 @@ char *ALI_PT::get_extension_member(char *specifiedfamily,    unsigned long numbe
 }
 
 
-int ALI_PT::open(char *servername,GBDATA *gb_main)
+int ALI_PT::open(char *servername, GBDATA *gb_main)
 {
-    if (arb_look_and_start_server(AISC_MAGIC_NUMBER,servername,gb_main)){
+    if (arb_look_and_start_server(AISC_MAGIC_NUMBER, servername, gb_main)) {
         ali_message ("Cannot contact Probe bank server");
         return -1;
     }
@@ -107,7 +107,7 @@ int ALI_PT::open(char *servername,GBDATA *gb_main)
         return -1;
     }
 
-    link = (aisc_com *)aisc_open(socketid,&com,AISC_MAGIC_NUMBER);
+    link = (aisc_com *)aisc_open(socketid, &com, AISC_MAGIC_NUMBER);
 
     if (!link) {
         ali_message ("Cannot contact Probe bank server ");
@@ -155,7 +155,7 @@ ALI_PT::ALI_PT(ALI_PT_CONTEXT *context)
         specified_family = 0;
 
         ali_message("Connecting to PT server");
-        if (open(context->servername,context->gb_main) != 0) {
+        if (open(context->servername, context->gb_main) != 0) {
             ali_fatal_error("Can't connect to PT server");
         }
         ali_message("Connection established");
@@ -221,17 +221,17 @@ int ALI_PT::find_family(ALI_SEQUENCE *sequence, int find_type)
             ali_error("Family not found in PT Server");
 
         aisc_get(link, PT_FAMILYLIST, f_list,
-                 FAMILYLIST_NAME,&seq_name,
-                 FAMILYLIST_MATCHES,&matches,
+                 FAMILYLIST_NAME, &seq_name,
+                 FAMILYLIST_MATCHES, &matches,
                  FAMILYLIST_NEXT, &f_list, NULL);
 
-        while (strcmp(seq_name,sequence->name()) == 0) {
+        while (strcmp(seq_name, sequence->name()) == 0) {
             free(seq_name);
             if (f_list == 0)
                 ali_error("Family too small in PT Server");
             aisc_get(link, PT_FAMILYLIST, f_list,
-                     FAMILYLIST_NAME,&seq_name,
-                     FAMILYLIST_MATCHES,&matches,
+                     FAMILYLIST_NAME, &seq_name,
+                     FAMILYLIST_MATCHES, &matches,
                      FAMILYLIST_NEXT, &f_list, NULL);
         }
         /* found the first element */
@@ -240,44 +240,44 @@ int ALI_PT::find_family(ALI_SEQUENCE *sequence, int find_type)
         max_matches = matches;
         number = 0;
         do {
-            pt_member = new ali_pt_member(seq_name,matches);
+            pt_member = new ali_pt_member(seq_name, matches);
             family_list->append_end(pt_member);
             number++;
             do {
                 if (f_list == 0)
                     ali_error("Family too small in PT Server");
                 aisc_get(link, PT_FAMILYLIST, f_list,
-                         FAMILYLIST_NAME,&seq_name,
-                         FAMILYLIST_MATCHES,&matches,
+                         FAMILYLIST_NAME, &seq_name,
+                         FAMILYLIST_MATCHES, &matches,
                          FAMILYLIST_NEXT, &f_list, NULL);
-                if (strcmp(seq_name,sequence->name()) == 0)
+                if (strcmp(seq_name, sequence->name()) == 0)
                     free(seq_name);
-            } while (strcmp(seq_name,sequence->name()) == 0);
+            } while (strcmp(seq_name, sequence->name()) == 0);
         } while (number < fam_list_max &&
                  (float) matches / (float) max_matches > percent_min);
                 
         /* make the extension list */
         number = 0;
         while (number < ext_list_max) {
-            pt_member = new ali_pt_member(seq_name,matches);
+            pt_member = new ali_pt_member(seq_name, matches);
             extension_list->append_end(pt_member);
             number++;
             do {
                 if (f_list == 0)
                     ali_error("Family too small in PT Server");
                 aisc_get(link, PT_FAMILYLIST, f_list,
-                         FAMILYLIST_NAME,&seq_name,
-                         FAMILYLIST_MATCHES,&matches,
+                         FAMILYLIST_NAME, &seq_name,
+                         FAMILYLIST_MATCHES, &matches,
                          FAMILYLIST_NEXT, &f_list, NULL);
-                if (strcmp(seq_name,sequence->name()) == 0)
+                if (strcmp(seq_name, sequence->name()) == 0)
                     free(seq_name);
-            } while (strcmp(seq_name,sequence->name()) == 0);
+            } while (strcmp(seq_name, sequence->name()) == 0);
         }
     }
     else {
         number = 0;
         while ((species = get_family_member(specified_family, number)) != 0) {
-            pt_member = new ali_pt_member(species,matches_min);
+            pt_member = new ali_pt_member(species, matches_min);
             if (pt_member == 0)
                 ali_fatal_error("Out of memory");
             family_list->append_end(pt_member);

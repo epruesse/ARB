@@ -91,14 +91,14 @@ public:
             else if (ypos[p]>ymax) { ymax = ypos[p]; }
         }
 
-        xmin += x; xmax +=x;
-        ymin += y; ymax +=y;
+        xmin += x; xmax += x;
+        ymin += y; ymax += y;
     }
 
 
 };
 
-ED4_CursorShape::ED4_CursorShape(ED4_CursorType typ, /*int x, int y, */int term_height, int character_width, bool reverse_cursor)
+ED4_CursorShape::ED4_CursorShape(ED4_CursorType typ, /* int x, int y, */ int term_height, int character_width, bool reverse_cursor)
 {
     lines      = 0;
     points     = 0;
@@ -187,8 +187,8 @@ ED4_CursorShape::ED4_CursorShape(ED4_CursorType typ, /*int x, int y, */int term_
             int pu = point(x, y+UPPER_OFFSET+3-small_version);
             int pl = point(x, y+LOWER_OFFSET-3+small_version);
 
-            if (draw_upper) line(pu,pu);    // C/C
-            line(pl,pl);    // D/D
+            if (draw_upper) line(pu, pu);   // C/C
+            line(pl, pl);   // D/D
 
             if (typ == ED4_TRADITIONAL_CURSOR_CONNECTED) {
                 int pu2 = point(x, y+UPPER_OFFSET+5-small_version);
@@ -292,8 +292,8 @@ ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_termi
     AW_pos x, y;
     ED4_base *temp_parent;
 
-    target_terminal->calc_world_coords( &x, &y );
-    temp_parent = target_terminal->get_parent( ED4_L_SPECIES );
+    target_terminal->calc_world_coords(&x, &y);
+    temp_parent = target_terminal->get_parent(ED4_L_SPECIES);
     if (!temp_parent || temp_parent->flag.hidden || !is_partly_visible()) {
         return ED4_R_BREAK;
     }
@@ -332,7 +332,7 @@ ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_termi
         }
 
         term = target_terminal->to_terminal();
-        while(1) {
+        while (1) {
             term = term->get_next_terminal();
             if (!term) {
                 break;
@@ -372,7 +372,7 @@ ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_termi
     }
     dev->pop_clip_scale();
 
-    return ( ED4_R_OK );
+    return (ED4_R_OK);
 }
 
 
@@ -471,7 +471,7 @@ static void select_named_sequence_terminal(const char *name) {
             if (cursor) {
                 ED4_sequence_terminal *cursor_seq_term = 0;
 
-                ED4_terminal *cursor_term = cursor->owner_of_cursor->to_text_terminal();;
+                ED4_terminal *cursor_term = cursor->owner_of_cursor->to_text_terminal(); ;
                 if (cursor_term->is_sequence_terminal()) {
                     cursor_seq_term = cursor_term->to_sequence_terminal();
                 }
@@ -502,12 +502,12 @@ static void select_named_sequence_terminal(const char *name) {
     }
 }
 
-void ED4_selected_SAI_changed_cb(AW_root */*aw_root*/)
+void ED4_selected_SAI_changed_cb(AW_root * /* aw_root */)
 {
     ED4_update_global_cursor_awars_allowed = false;
 
     if (!ignore_selected_SAI_changes_cb) {
-        char *name = GBT_read_string(GLOBAL_gb_main,AWAR_SAI_NAME);
+        char *name = GBT_read_string(GLOBAL_gb_main, AWAR_SAI_NAME);
 
         if (name && name[0]) {
 #if defined(DEBUG)
@@ -522,12 +522,12 @@ void ED4_selected_SAI_changed_cb(AW_root */*aw_root*/)
     ED4_update_global_cursor_awars_allowed = true;
 }
 
-void ED4_selected_species_changed_cb(AW_root */*aw_root*/)
+void ED4_selected_species_changed_cb(AW_root * /* aw_root */)
 {
     ED4_update_global_cursor_awars_allowed = false;
 
     if (!ignore_selected_species_changes_cb) {
-        char *name = GBT_read_string(GLOBAL_gb_main,AWAR_SPECIES_NAME);
+        char *name = GBT_read_string(GLOBAL_gb_main, AWAR_SPECIES_NAME);
         if (name && name[0]) {
 #if defined(DEBUG) && 1
             printf("Selected species is '%s'\n", name);
@@ -545,7 +545,7 @@ void ED4_selected_species_changed_cb(AW_root */*aw_root*/)
     ED4_update_global_cursor_awars_allowed = true;
 }
 
-void ED4_jump_to_current_species(AW_window */*aw*/, AW_CL)
+void ED4_jump_to_current_species(AW_window * /* aw */, AW_CL)
 {
     char *name = GBT_read_string(GLOBAL_gb_main, AWAR_SPECIES_NAME);
     if (name && name[0]) {
@@ -650,7 +650,7 @@ void ED4_get_and_jump_to_species(GB_CSTR species_name)
         name_term = ED4_find_species_name_terminal(species_name);
         if (name_term) {
             /* new AAseqTerminals should be created if it is in ProtView mode */
-            if(ED4_ROOT->alignment_type == GB_AT_DNA) {
+            if (ED4_ROOT->alignment_type == GB_AT_DNA) {
                 PV_AddCorrespondingAAseqTerminals(name_term);
             }
             ED4_ROOT->main_manager->update_info.set_resize(1);
@@ -1140,7 +1140,7 @@ ED4_returncode ED4_cursor::move_cursor(AW_event *event) {
 
                 if (!endHome) { // not End or Home
                     target_terminal = get_upper_lower_cursor_pos(start_at_manager, dir, y_world, false, has_base ? has_gap_at : has_base_at, seq_pos);
-                    if (target_terminal && !has_base && ED4_ROOT->aw_root->awar(ED4_AWAR_FAST_CURSOR_JUMP)->read_int())  { // if jump_over group
+                    if (target_terminal && !has_base && ED4_ROOT->aw_root->awar(ED4_AWAR_FAST_CURSOR_JUMP)->read_int()) {  // if jump_over group
                         target_terminal->calc_world_coords(&x_dummy, &y_world);
                         target_terminal = get_upper_lower_cursor_pos(start_at_manager, dir, y_world, false, has_gap_at, seq_pos);
                     }
@@ -1177,7 +1177,7 @@ ED4_returncode ED4_cursor::move_cursor(AW_event *event) {
 void ED4_cursor::set_abs_x()
 {
     AW_pos x, y;
-    owner_of_cursor->calc_world_coords( &x, &y );
+    owner_of_cursor->calc_world_coords(&x, &y);
     cursor_abs_x = int(get_sequence_pos()*ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES) + CHARACTEROFFSET + x);
 }
 
@@ -1186,7 +1186,7 @@ ED4_returncode ED4_cursor::ShowCursor(ED4_index offset_x, ED4_cursor_move move, 
 {
     AW_pos x=0, y=0, x_help = 0, y_help;
 
-    owner_of_cursor->calc_world_coords( &x, &y );
+    owner_of_cursor->calc_world_coords(&x, &y);
 
     switch (move)
     {
@@ -1217,7 +1217,7 @@ ED4_returncode ED4_cursor::ShowCursor(ED4_index offset_x, ED4_cursor_move move, 
 
     cursor_abs_x += offset_x;
 
-    return ( ED4_R_OK );
+    return (ED4_R_OK);
 }
 
 
@@ -1225,8 +1225,8 @@ bool ED4_cursor::is_partly_visible() const {
     e4_assert(owner_of_cursor);
     e4_assert(cursor_shape); // cursor is not drawn, cannot test visibility
 
-    AW_pos x,y;
-    owner_of_cursor->calc_world_coords( &x, &y );
+    AW_pos x, y;
+    owner_of_cursor->calc_world_coords(&x, &y);
 
     int x1, y1, x2, y2;
     cursor_shape->get_bounding_box(cursor_abs_x, int(y), x1, y1, x2, y2);
@@ -1348,7 +1348,7 @@ ED4_returncode ED4_cursor::show_cursor_at(ED4_terminal *target_terminal, ED4_ind
     target_terminal->scroll_into_view(ED4_ROOT->get_aww());
 
     AW_pos termw_x, termw_y;
-    target_terminal->calc_world_coords( &termw_x, &termw_y );
+    target_terminal->calc_world_coords(&termw_x, &termw_y);
 
     screen_position = scr_pos;
 
@@ -1375,7 +1375,7 @@ ED4_returncode ED4_cursor::show_cursor_at(ED4_terminal *target_terminal, ED4_ind
 ED4_returncode ED4_cursor::show_clicked_cursor(AW_pos click_xpos, ED4_terminal *target_terminal)
 {
     AW_pos termw_x, termw_y;
-    target_terminal->calc_world_coords( &termw_x, &termw_y );
+    target_terminal->calc_world_coords(&termw_x, &termw_y);
 
     ED4_index scr_pos = ED4_ROOT->pixel2pos(click_xpos - termw_x);
     return show_cursor_at(target_terminal, scr_pos);
@@ -1393,7 +1393,7 @@ ED4_terminal *ED4_cursor::get_upper_lower_cursor_pos(ED4_manager *starting_point
         ED4_base *member = starting_point->children->member(i);
 
         AW_pos x, y;
-        member->calc_world_coords( &x, &y );
+        member->calc_world_coords(&x, &y);
 
         switch (cursor_move) {
             case ED4_C_UP:
@@ -1638,7 +1638,7 @@ public:
 
 CursorPos *CursorPos::head = 0;
 
-void ED4_store_curpos(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/)
+void ED4_store_curpos(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
 {
     GB_transaction dummy(GLOBAL_gb_main);
     ED4_ROOT->use_window(aww);
@@ -1651,7 +1651,7 @@ void ED4_store_curpos(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/)
     new CursorPos(cursor->owner_of_cursor->to_terminal(), cursor->get_sequence_pos());
 }
 
-void ED4_restore_curpos(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/)
+void ED4_restore_curpos(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
 {
     GB_transaction dummy(GLOBAL_gb_main);
     ED4_ROOT->use_window(aww);
@@ -1667,7 +1667,7 @@ void ED4_restore_curpos(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/)
     pos->moveToEnd();
 }
 
-void ED4_clear_stored_curpos(AW_window */*aww*/, AW_CL /*cd1*/, AW_CL /*cd2*/)
+void ED4_clear_stored_curpos(AW_window * /* aww */, AW_CL /* cd1 */, AW_CL /* cd2 */)
 {
     CursorPos::clear();
 }
@@ -1676,7 +1676,7 @@ void ED4_clear_stored_curpos(AW_window */*aww*/, AW_CL /*cd1*/, AW_CL /*cd2*/)
    Other stuff
    -------------------------------------------------------------------------------- */
 
-void ED4_helix_jump_opposite(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/)
+void ED4_helix_jump_opposite(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
 {
     GB_transaction  dummy(GLOBAL_gb_main);
     ED4_ROOT->use_window(aww);
@@ -1700,7 +1700,7 @@ void ED4_helix_jump_opposite(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/)
     }
 }
 
-void ED4_change_cursor(AW_window */*aww*/, AW_CL /*cd1*/, AW_CL /*cd2*/) {
+void ED4_change_cursor(AW_window * /* aww */, AW_CL /* cd1 */, AW_CL /* cd2 */) {
     ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
     ED4_CursorType typ = cursor->getType();
 

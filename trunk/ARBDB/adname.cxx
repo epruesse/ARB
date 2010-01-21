@@ -37,7 +37,7 @@ GB_ERROR GBT_begin_rename_session(GBDATA *gb_main, int all_flag) {
     GB_ERROR error = GB_push_transaction(gb_main);
     if (!error) {
         gbtrst.gb_main         = gb_main;
-        gbtrst.gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
+        gbtrst.gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
 
         if (!all_flag) { // this is meant to be used for single or few species
             int hash_size = 256;
@@ -73,7 +73,7 @@ GB_ERROR GBT_rename_species(const char *oldname, const  char *newname, bool igno
 
     if (gbtrst.all_flag) {
         gb_assert(gbtrst.old_species_hash);
-        gb_species = (GBDATA *)GBS_read_hash(gbtrst.old_species_hash,oldname);
+        gb_species = (GBDATA *)GBS_read_hash(gbtrst.old_species_hash, oldname);
     }
     else {
         GBDATA *gb_found_species;
@@ -83,27 +83,27 @@ GB_ERROR GBT_rename_species(const char *oldname, const  char *newname, bool igno
         gb_species       = GBT_find_species_rel_species_data(gbtrst.gb_species_data, oldname);
 
         if (gb_found_species && gb_species != gb_found_species) {
-            return GB_export_errorf("A species named '%s' already exists.",newname);
+            return GB_export_errorf("A species named '%s' already exists.", newname);
         }
     }
 
     if (!gb_species) {
-        return GB_export_errorf("Expected that a species named '%s' exists (maybe there are duplicate species, database might be corrupt)",oldname);
+        return GB_export_errorf("Expected that a species named '%s' exists (maybe there are duplicate species, database might be corrupt)", oldname);
     }
 
-    gb_name = GB_entry(gb_species,"name");
+    gb_name = GB_entry(gb_species, "name");
     if (ignore_protection) GB_push_my_security(gbtrst.gb_main);
-    error   = GB_write_string(gb_name,newname);
+    error   = GB_write_string(gb_name, newname);
     if (ignore_protection) GB_pop_my_security(gbtrst.gb_main);
 
-    if (!error){
+    if (!error) {
         struct gbt_renamed_struct *rns;
         if (gbtrst.old_species_hash) {
             GBS_write_hash(gbtrst.old_species_hash, oldname, 0);
         }
-        rns = (struct gbt_renamed_struct *)GB_calloc(strlen(newname) + sizeof (struct gbt_renamed_struct),sizeof(char));
-        strcpy(&rns->data[0],newname);
-        GBS_write_hash(gbtrst.renamed_hash,oldname,(long)rns);
+        rns = (struct gbt_renamed_struct *)GB_calloc(strlen(newname) + sizeof (struct gbt_renamed_struct), sizeof(char));
+        strcpy(&rns->data[0], newname);
+        GBS_write_hash(gbtrst.renamed_hash, oldname, (long)rns);
     }
     return error;
 }
@@ -126,17 +126,17 @@ GB_ERROR GBT_abort_rename_session(void) {
 
 static const char *currentTreeName = 0;
 
-GB_ERROR gbt_rename_tree_rek(GBT_TREE *tree,int tree_index){
+GB_ERROR gbt_rename_tree_rek(GBT_TREE *tree, int tree_index) {
     char buffer[256];
     static int counter = 0;
     if (!tree) return 0;
-    if (tree->is_leaf){
-        if (tree->name){
-            struct gbt_renamed_struct *rns = (struct gbt_renamed_struct *)GBS_read_hash(gbtrst.renamed_hash,tree->name);
-            if (rns){
+    if (tree->is_leaf) {
+        if (tree->name) {
+            struct gbt_renamed_struct *rns = (struct gbt_renamed_struct *)GBS_read_hash(gbtrst.renamed_hash, tree->name);
+            if (rns) {
                 char *newname;
-                if (rns->used_by == tree_index){ // species more than once in the tree
-                    sprintf(buffer,"%s_%i", rns->data, counter++);
+                if (rns->used_by == tree_index) { // species more than once in the tree
+                    sprintf(buffer, "%s_%i", rns->data, counter++);
                     GB_warningf("Species '%s' more than once in '%s', creating zombie '%s'",
                                 tree->name, currentTreeName, buffer);
                     newname = buffer;
@@ -150,8 +150,8 @@ GB_ERROR gbt_rename_tree_rek(GBT_TREE *tree,int tree_index){
         }
     }
     else {
-        gbt_rename_tree_rek(tree->leftson,tree_index);
-        gbt_rename_tree_rek(tree->rightson,tree_index);
+        gbt_rename_tree_rek(tree->leftson, tree_index);
+        gbt_rename_tree_rek(tree->rightson, tree_index);
     }
     return 0;
 }
@@ -173,7 +173,7 @@ GB_ERROR GBT_commit_rename_session(int (*show_status)(double gauge), int (*show_
 
             for (count = 0; count<tree_count; ++count) {
                 char     *tname = tree_names[count];
-                GBT_TREE *tree  = GBT_read_tree(gbtrst.gb_main,tname,-sizeof(GBT_TREE));
+                GBT_TREE *tree  = GBT_read_tree(gbtrst.gb_main, tname, -sizeof(GBT_TREE));
 
                 if (tree) {
                     currentTreeName = tname; // provide tree name (used for error message)

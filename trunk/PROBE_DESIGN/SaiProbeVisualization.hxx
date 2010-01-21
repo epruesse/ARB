@@ -5,7 +5,7 @@
 #include <vector>
 #endif
 
-#define MAX(x,y)  (((x)>(y)) ?  (x) : (y))
+#define MAX(x, y) (((x)>(y)) ?  (x) : (y))
 #define sai_assert(cond) arb_assert(cond)
 
 #define AWAR_SPV_SAI_2_PROBE "sai_visualize/sai_2_probe"
@@ -67,8 +67,8 @@ public:
         sai_assert(target);
         free(probeTarget);
         unsigned int len = strlen(target);
-        char temp[len];temp[len] = '\0';
-        for( unsigned int i = 0; i < len; i++) {
+        char temp[len]; temp[len] = '\0';
+        for (unsigned int i = 0; i < len; i++) {
             temp[i] = toupper(target[i]);  // converting the Bases to Upper case
         }
         probeTarget    = strdup(temp);
@@ -80,7 +80,7 @@ public:
     }
 };
 
-class SAI_graphic: public AWT_nonDB_graphic {
+class SAI_graphic : public AWT_nonDB_graphic {
 public:
     GBDATA     *gb_main;
     AW_root    *aw_root;
@@ -88,7 +88,7 @@ public:
     SAI_graphic(AW_root *aw_root, GBDATA *gb_main);
     ~SAI_graphic(void);
 
-    AW_gc_manager init_devices(AW_window *,AW_device *,AWT_canvas *ntw,AW_CL);
+    AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *ntw, AW_CL);
 
     void show(AW_device *device);
     void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct);

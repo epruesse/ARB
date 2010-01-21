@@ -67,7 +67,7 @@
 #endif
 
 #ifdef DUMP_SMART_PTRS
-#define DUMP_SMART_PTRS_DO(cmd) do { (cmd); } while(0)
+#define DUMP_SMART_PTRS_DO(cmd) do { (cmd); } while (0)
 #else
 #define DUMP_SMART_PTRS_DO(cmd)
 #endif

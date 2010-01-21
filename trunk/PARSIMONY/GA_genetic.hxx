@@ -6,10 +6,10 @@
 
 typedef enum {
     INIT_NONE = 0,
-    INIT_MAIN =1,
-    INIT_START= 2,
-    INIT_OPT  =4,
-    INIT_JOB  =8,
+    INIT_MAIN = 1,
+    INIT_START = 2,
+    INIT_OPT  = 4,
+    INIT_JOB  = 8,
     INIT_ALL = 15
 } AP_init_status;
 
@@ -45,20 +45,20 @@ public:
             " tr " << id0 <<
             " *  CLu1 " << cluster1 << " tr " << id1 <<
             " * mode " << mode << " crit " << criteria
-             << "\n";cout.flush(); };
-    void calcCrit(AP_FLOAT crit0,AP_FLOAT crit1) {
+             << "\n"; cout.flush(); };
+    void calcCrit(AP_FLOAT crit0, AP_FLOAT crit1) {
         criteria = crit0 + crit1; };
 };
 
 
-class GA_genetic  {
+class GA_genetic {
     AP_init_status init_status;
     AP_tree *tree_prototype;
     // presets
     int min_job; // min jobs per cluster before removing jobs
-    int max_cluster;// max cluster
-    int max_jobs;// max jobs
-    int maxTree;// max trees per clustergbp
+    int max_cluster; // max cluster
+    int max_jobs; // max jobs
+    int maxTree; // max trees per clustergbp
     int jobCount;
     AP_FLOAT bestTree;
 
@@ -87,14 +87,14 @@ class GA_genetic  {
     GBDATA *gb_maxTree;
     // writes and reads compressd tree from database
     double AP_atof(char *str);
-    char * write_tree_rek( AP_tree *node,
+    char * write_tree_rek(AP_tree *node,
                            char *dest, long mode);
     AP_tree  *read_tree_rek(char **data);
-    AP_ERR  *write_tree(GBDATA *gb_tree,GA_tree *tree);
-    GA_tree *read_tree(GBDATA *gb_tree,long tree_id);
+    AP_ERR  *write_tree(GBDATA *gb_tree, GA_tree *tree);
+    GA_tree *read_tree(GBDATA *gb_tree, long tree_id);
     AP_ERR *create_job_container(GA_job *job);
-    GBDATA *get_cluster(GBDATA * container,int cluster);
-    GBDATA *get_tree(GBDATA *container,long tree_id);
+    GBDATA *get_cluster(GBDATA * container, int cluster);
+    GBDATA *get_tree(GBDATA *container, long tree_id);
     long get_treeid(GBDATA *gbtree);
 
     AP_ERR * read_presets();
@@ -107,17 +107,17 @@ public:
     // for errorfile
     FILE *fout;
 
-    AP_ERR  *put_start_tree(AP_tree *tree,const long name, int  cluster);
+    AP_ERR  *put_start_tree(AP_tree *tree, const long name, int  cluster);
     AP_ERR *remove_job(GBDATA *gb_cluster);
     AP_ERR *delete_job(GBDATA *gb_job);
-    AP_ERR *delete_tree(GBDATA *gb_cluster,GBDATA *gb_tree);
-    AP_ERR *create_jobs(GA_tree *tree,int cluster);
+    AP_ERR *delete_tree(GBDATA *gb_cluster, GBDATA *gb_tree);
+    AP_ERR *create_jobs(GA_tree *tree, int cluster);
     GA_tree *get_start_tree(int cluster);
-    AP_ERR  *put_opt_tree(char *tree,int cluster);
+    AP_ERR  *put_opt_tree(char *tree, int cluster);
     GA_job  *get_job(int cluster);
-    AP_ERR *put_job(int cluster,GA_job *job);
-    AP_ERR * put_optimized(GA_tree *tree,int cluster);
+    AP_ERR *put_job(int cluster, GA_job *job);
+    AP_ERR * put_optimized(GA_tree *tree, int cluster);
 
-    int     getMaxCluster() {return max_cluster;};
-    int     getMaxJob()     {return max_jobs;};
+    int     getMaxCluster() { return max_cluster; };
+    int     getMaxJob()     { return max_jobs; };
 };

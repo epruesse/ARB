@@ -125,7 +125,7 @@ struct awtcig_struct {
     struct input_format_struct  *ifo; // main input format
     struct input_format_struct  *ifo2; // symlink to input format
     GBDATA                      *gb_main; // import database
-    AW_CL                        cd1,cd2;
+    AW_CL                        cd1, cd2;
     AWTC_RCB(func);
     char                       **filenames;
     char                       **current_file;

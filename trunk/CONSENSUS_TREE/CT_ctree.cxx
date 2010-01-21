@@ -23,7 +23,7 @@ void ctree_init(int node_count, char **names)
 
     Name_hash = GBS_create_hash((long) node_count, GB_MIND_CASE);
 
-    for(i=0; i< node_count; i++) {
+    for (i=0; i< node_count; i++) {
         GBS_write_hash(Name_hash, names[i], (long) i);
     }
 
@@ -60,12 +60,12 @@ GBT_TREE *get_ctree(void)
     ntree_init();
     build_sorted_list();
     p = hash_getpart();
-    while(p != NULL) {
+    while (p != NULL) {
         insert_ntree(p);
         p = hash_getpart();
     }
     n = ntree_get();
-    if(n->son_list->next == NULL) { /* if father has only one son */
+    if (n->son_list->next == NULL) { /* if father has only one son */
         p  = part_new();
         n->son_list->node->part->len /= 2;
         part_copy(n->son_list->node->part, p);

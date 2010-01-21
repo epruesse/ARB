@@ -51,9 +51,9 @@
 
 #include "aw_global.hxx"
 
-AW_root *AW_root::THIS= NULL;
+AW_root *AW_root::THIS = NULL;
 
-AW_cb_struct::AW_cb_struct(AW_window *awi, void (*g)(AW_window*,AW_CL,AW_CL), AW_CL cd1i, AW_CL cd2i,
+AW_cb_struct::AW_cb_struct(AW_window *awi, void (*g)(AW_window*, AW_CL, AW_CL), AW_CL cd1i, AW_CL cd2i,
         const char *help_texti, class AW_cb_struct *nexti) {
     aw = awi;
     f = g;
@@ -64,7 +64,7 @@ AW_cb_struct::AW_cb_struct(AW_window *awi, void (*g)(AW_window*,AW_CL,AW_CL), AW
     this->next = nexti;
 }
 
-AW_timer_cb_struct::AW_timer_cb_struct(AW_root *ari, void (*g)(AW_root*,AW_CL,AW_CL), AW_CL cd1i, AW_CL cd2i) {
+AW_timer_cb_struct::AW_timer_cb_struct(AW_root *ari, void (*g)(AW_root*, AW_CL, AW_CL), AW_CL cd1i, AW_CL cd2i) {
     ar = ari;
     f = g;
     cd1 = cd1i;
@@ -243,7 +243,7 @@ AW_select_table_struct::AW_select_table_struct(const char *displayedi, const cha
 AW_select_table_struct::AW_select_table_struct(const char *displayedi, long valuei) {
     memset((char *)this, 0, sizeof(AW_select_table_struct));
     displayed = copy_string(displayedi);
-    int_value = valuei;;
+    int_value = valuei; ;
 }
 AW_select_table_struct::AW_select_table_struct(const char *displayedi, float valuei) {
     memset((char *)this, 0, sizeof(AW_select_table_struct));
@@ -388,7 +388,7 @@ static void value_changed_scroll_bar_horizontal(Widget wgt,
     AWUSE(wgt);
     XmScrollBarCallbackStruct *sbcbs = (XmScrollBarCallbackStruct *)call_data;
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
-    (cbs->aw)->slider_pos_horizontal = sbcbs->value; //setzt Scrollwerte im AW_window
+    (cbs->aw)->slider_pos_horizontal = sbcbs->value; // setzt Scrollwerte im AW_window
     cbs->run_callback();
 }
 static void drag_scroll_bar_horizontal(Widget wgt, XtPointer aw_cb_struct,
@@ -396,16 +396,16 @@ static void drag_scroll_bar_horizontal(Widget wgt, XtPointer aw_cb_struct,
     AWUSE(wgt);
     XmScrollBarCallbackStruct *sbcbs = (XmScrollBarCallbackStruct *)call_data;
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
-    (cbs->aw)->slider_pos_horizontal = sbcbs->value; //setzt Scrollwerte im AW_window
+    (cbs->aw)->slider_pos_horizontal = sbcbs->value; // setzt Scrollwerte im AW_window
     cbs->run_callback();
 }
-void AW_window::set_horizontal_change_callback(void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_window::set_horizontal_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     XtAddCallback(p_w->scroll_bar_horizontal, XmNvalueChangedCallback,
             (XtCallbackProc) value_changed_scroll_bar_horizontal,
-            (XtPointer) new AW_cb_struct(this, f, cd1, cd2, "") );
+            (XtPointer) new AW_cb_struct(this, f, cd1, cd2, ""));
     XtAddCallback(p_w->scroll_bar_horizontal, XmNdragCallback,
             (XtCallbackProc) drag_scroll_bar_horizontal,
-            (XtPointer) new AW_cb_struct(this, f, cd1, cd2, "") );
+            (XtPointer) new AW_cb_struct(this, f, cd1, cd2, ""));
 }
 
 static void value_changed_scroll_bar_vertical(Widget wgt,
@@ -413,7 +413,7 @@ static void value_changed_scroll_bar_vertical(Widget wgt,
     AWUSE(wgt);
     XmScrollBarCallbackStruct *sbcbs = (XmScrollBarCallbackStruct *)call_data;
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
-    cbs->aw->slider_pos_vertical = sbcbs->value; //setzt Scrollwerte im AW_window
+    cbs->aw->slider_pos_vertical = sbcbs->value; // setzt Scrollwerte im AW_window
     cbs->run_callback();
 }
 static void drag_scroll_bar_vertical(Widget wgt, XtPointer aw_cb_struct,
@@ -421,24 +421,24 @@ static void drag_scroll_bar_vertical(Widget wgt, XtPointer aw_cb_struct,
     AWUSE(wgt);
     XmScrollBarCallbackStruct *sbcbs = (XmScrollBarCallbackStruct *)call_data;
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
-    cbs->aw->slider_pos_vertical = sbcbs->value; //setzt Scrollwerte im AW_window
+    cbs->aw->slider_pos_vertical = sbcbs->value; // setzt Scrollwerte im AW_window
     cbs->run_callback();
 }
 
-void AW_window::set_vertical_change_callback(void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_window::set_vertical_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     XtAddCallback(p_w->scroll_bar_vertical, XmNvalueChangedCallback,
             (XtCallbackProc) value_changed_scroll_bar_vertical,
-            (XtPointer) new AW_cb_struct(this, f, cd1, cd2, "") );
+            (XtPointer) new AW_cb_struct(this, f, cd1, cd2, ""));
     XtAddCallback(p_w->scroll_bar_vertical, XmNdragCallback,
             (XtCallbackProc) drag_scroll_bar_vertical,
-            (XtPointer) new AW_cb_struct(this, f, cd1, cd2, "") );
+            (XtPointer) new AW_cb_struct(this, f, cd1, cd2, ""));
 
     XtAddCallback(p_w->scroll_bar_vertical, XmNpageIncrementCallback,
             (XtCallbackProc) drag_scroll_bar_vertical,
-            (XtPointer) new AW_cb_struct(this, f, cd1, cd2, "") );
+            (XtPointer) new AW_cb_struct(this, f, cd1, cd2, ""));
     XtAddCallback(p_w->scroll_bar_vertical, XmNpageDecrementCallback,
             (XtCallbackProc) drag_scroll_bar_vertical,
-            (XtPointer) new AW_cb_struct(this, f, cd1, cd2, "") );
+            (XtPointer) new AW_cb_struct(this, f, cd1, cd2, ""));
 }
 
 void AW_window::tell_scrolled_picture_size(AW_rectangle rectangle) {
@@ -488,7 +488,7 @@ void AW_window::calculate_scrollbars(void) {
         XtVaSetValues(p_w->scroll_bar_horizontal, XmNsliderSize, 1, NULL);
     }
 
-    slider_size_horizontal = (int)( (screen.r
+    slider_size_horizontal = (int)((screen.r
             -left_indent_of_horizontal_scrollbar));
     if (slider_size_horizontal < 1)
         slider_size_horizontal = 1; // ist der slider zu klein (<1) ?
@@ -501,22 +501,22 @@ void AW_window::calculate_scrollbars(void) {
     // check wether XmNValue is to big
     XtVaGetValues(p_w->scroll_bar_horizontal, XmNvalue, &position_of_slider,
             NULL);
-    if (position_of_slider > (slider_max-slider_size_horizontal)) {//steht der slider fuer slidergroesse zu rechts ?
-        position_of_slider = slider_max-slider_size_horizontal; //-1 ? vielleicht !
+    if (position_of_slider > (slider_max-slider_size_horizontal)) { // steht der slider fuer slidergroesse zu rechts ?
+        position_of_slider = slider_max-slider_size_horizontal; // -1 ? vielleicht !
         if (position_of_slider < 0)
             position_of_slider = 0;
         XtVaSetValues(p_w->scroll_bar_horizontal, XmNvalue, position_of_slider,
                 NULL);
     }
     // Anpassung fuer resize, wenn unbeschriebener Bereich vergroessert wird
-    if ( -slider_pos_horizontal + get_scrolled_picture_width() < screen.r
+    if (-slider_pos_horizontal + get_scrolled_picture_width() < screen.r
             -left_indent_of_horizontal_scrollbar) {
         if (horizontal) {
             slider_pos_horizontal = (int)(get_scrolled_picture_width()
-                    - (screen.r-left_indent_of_horizontal_scrollbar) );
+                    - (screen.r-left_indent_of_horizontal_scrollbar));
         }
         else {
-            slider_pos_horizontal = 0; //slider nach ganz oben, da alles sichtbar
+            slider_pos_horizontal = 0; // slider nach ganz oben, da alles sichtbar
         }
     }
     XtVaSetValues(p_w->scroll_bar_horizontal, XmNsliderSize, 1, NULL);
@@ -526,14 +526,14 @@ void AW_window::calculate_scrollbars(void) {
     char buffer[200];
     sprintf(buffer, "window/%s/horizontal_page_increment", window_defaults_name);
     XtVaSetValues(p_w->scroll_bar_horizontal, XmNpageIncrement, (int)((screen.r
-            -left_indent_of_horizontal_scrollbar)*(get_root()->awar( buffer )->read_int()*0.01)), 
+            -left_indent_of_horizontal_scrollbar)*(get_root()->awar(buffer)->read_int()*0.01)),
     NULL);
 
     sprintf(buffer, "window/%s/scroll_width_horizontal", window_defaults_name);
-    XtVaSetValues(p_w->scroll_bar_horizontal, XmNincrement, (int)(get_root()->awar( buffer )->read_int()), NULL);
+    XtVaSetValues(p_w->scroll_bar_horizontal, XmNincrement, (int)(get_root()->awar(buffer)->read_int()), NULL);
 
     sprintf(buffer, "window/%s/scroll_delay_horizontal", window_defaults_name);
-    XtVaSetValues(p_w->scroll_bar_horizontal, XmNrepeatDelay, (int)(get_root()->awar( buffer )->read_int()), NULL);
+    XtVaSetValues(p_w->scroll_bar_horizontal, XmNrepeatDelay, (int)(get_root()->awar(buffer)->read_int()), NULL);
 
     // VERTICAL
     slider_max = (int)get_scrolled_picture_height();
@@ -542,7 +542,7 @@ void AW_window::calculate_scrollbars(void) {
         XtVaSetValues(p_w->scroll_bar_vertical, XmNsliderSize, 1, NULL);
     }
 
-    slider_size_vertical = (int)( (screen.b-top_indent_of_vertical_scrollbar
+    slider_size_vertical = (int)((screen.b-top_indent_of_vertical_scrollbar
             -bottom_indent_of_vertical_scrollbar));
     if (slider_size_vertical < 1)
         slider_size_vertical = 1;
@@ -555,14 +555,14 @@ void AW_window::calculate_scrollbars(void) {
     // check wether XmNValue is to big
     XtVaGetValues(p_w->scroll_bar_vertical, XmNvalue, &position_of_slider, NULL);
     if (position_of_slider > (slider_max-slider_size_vertical)) {
-        position_of_slider = slider_max-slider_size_vertical; //-1 ? vielleicht !
+        position_of_slider = slider_max-slider_size_vertical; // -1 ? vielleicht !
         if (position_of_slider < 0)
             position_of_slider = 0;
         XtVaSetValues(p_w->scroll_bar_vertical, XmNvalue, position_of_slider,
                 NULL);
     }
     // Anpassung fuer resize, wenn unbeschriebener Bereich vergroessert wird
-    if ( -slider_pos_vertical + get_scrolled_picture_height() < screen.b
+    if (-slider_pos_vertical + get_scrolled_picture_height() < screen.b
             -top_indent_of_vertical_scrollbar
             -bottom_indent_of_vertical_scrollbar) {
         if (vertical) {
@@ -571,7 +571,7 @@ void AW_window::calculate_scrollbars(void) {
                             -bottom_indent_of_vertical_scrollbar));
         }
         else {
-            slider_pos_vertical = 0; //slider nach ganz oben, da alles sichtbar
+            slider_pos_vertical = 0; // slider nach ganz oben, da alles sichtbar
         }
     }
     XtVaSetValues(p_w->scroll_bar_vertical, XmNsliderSize, 1, NULL);
@@ -581,14 +581,14 @@ void AW_window::calculate_scrollbars(void) {
     sprintf(buffer, "window/%s/vertical_page_increment", window_defaults_name);
     XtVaSetValues(p_w->scroll_bar_vertical, XmNpageIncrement, (int)((screen.b
             -top_indent_of_vertical_scrollbar
-            -bottom_indent_of_vertical_scrollbar)*(get_root()->awar( buffer )->read_int()*0.01)), 
+            -bottom_indent_of_vertical_scrollbar)*(get_root()->awar(buffer)->read_int()*0.01)),
     NULL);
 
     sprintf(buffer, "window/%s/scroll_width_vertical", window_defaults_name);
-    XtVaSetValues(p_w->scroll_bar_vertical, XmNincrement, (int)(get_root()->awar( buffer )->read_int()), NULL);
+    XtVaSetValues(p_w->scroll_bar_vertical, XmNincrement, (int)(get_root()->awar(buffer)->read_int()), NULL);
 
     sprintf(buffer, "window/%s/scroll_delay_vertical", window_defaults_name);
-    XtVaSetValues(p_w->scroll_bar_vertical, XmNrepeatDelay, (int)(get_root()->awar( buffer )->read_int()), NULL);
+    XtVaSetValues(p_w->scroll_bar_vertical, XmNrepeatDelay, (int)(get_root()->awar(buffer)->read_int()), NULL);
 }
 
 void AW_window::set_vertical_scrollbar_position(int position) {
@@ -633,18 +633,18 @@ static void AW_timer_callback_never_disabled(XtPointer aw_timer_cb_struct,
     delete tcbs; // timer only once
 }
 
-void AW_root::add_timed_callback(int ms, void (*f)(AW_root*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_root::add_timed_callback(int ms, void (*f)(AW_root*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     XtAppAddTimeOut(p_r->context,
     (unsigned long)ms,
     (XtTimerCallbackProc)AW_timer_callback,
-    (XtPointer) new AW_timer_cb_struct( this, f, cd1, cd2));
+    (XtPointer) new AW_timer_cb_struct(this, f, cd1, cd2));
 }
 
-void AW_root::add_timed_callback_never_disabled(int ms, void (*f)(AW_root*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_root::add_timed_callback_never_disabled(int ms, void (*f)(AW_root*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     XtAppAddTimeOut(p_r->context,
     (unsigned long)ms,
     (XtTimerCallbackProc)AW_timer_callback_never_disabled,
-    (XtPointer) new AW_timer_cb_struct( this, f, cd1, cd2));
+    (XtPointer) new AW_timer_cb_struct(this, f, cd1, cd2));
 }
 
 /***********************************************************************/
@@ -682,7 +682,7 @@ static void aw_calculate_WM_offsets(AW_window *aww) {
         // get current window position
         short            posy, posx;
         AW_window_Motif *motif = p_aww(aww);
-        XtVaGetValues(motif->shell , XmNx, &posx, XmNy, &posy, NULL);
+        XtVaGetValues(motif->shell,  XmNx, &posx, XmNy, &posy, NULL);
 
         // calculate offset
         motif->WM_top_offset  = posy-oposy;
@@ -697,7 +697,7 @@ static void aw_calculate_WM_offsets(AW_window *aww) {
     {
         short posx, posy;
         AW_window_Motif *motif = p_aww(aww);
-        XtVaGetValues(motif->shell , XmNx, &posx, XmNy, &posy, NULL);
+        XtVaGetValues(motif->shell,  XmNx, &posx, XmNy, &posy, NULL);
         printf("[expose] Position reported by motif: %i/%i\n", posx, posy);
     }
 #endif // DEBUG
@@ -827,7 +827,7 @@ void AW_cb_struct::run_callback(void) {
     if (guard_after) guard_after();
 }
 
-bool AW_cb_struct::contains(void (*g)(AW_window*,AW_CL ,AW_CL)) {
+bool AW_cb_struct::contains(void (*g)(AW_window*, AW_CL, AW_CL)) {
     return (f == g) || (next && next->contains(g));
 }
 
@@ -931,8 +931,8 @@ static void AW_root_focusCB(Widget wgt, XtPointer awrp, XEvent*, Boolean*) {
     }
 }
 
-void AW_root::set_focus_callback(void (*f)(class AW_root*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2) {
-    focus_callback_list = new AW_var_callback(f,cd1,cd2,focus_callback_list);
+void AW_root::set_focus_callback(void (*f)(class AW_root*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+    focus_callback_list = new AW_var_callback(f, cd1, cd2, focus_callback_list);
 }
 
 static void AW_focusCB(Widget wgt, XtPointer aw_cb_struct, XEvent*, Boolean*) {
@@ -941,11 +941,11 @@ static void AW_focusCB(Widget wgt, XtPointer aw_cb_struct, XEvent*, Boolean*) {
     cbs->run_callback();
 }
 
-void AW_window::set_popup_callback(void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_window::set_popup_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     p_w->popup_cb = new AW_cb_struct(this, f, cd1, cd2, 0, p_w->popup_cb);
 }
 
-void AW_window::set_focus_callback(void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_window::set_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     XtAddEventHandler(MIDDLE_WIDGET, EnterWindowMask, FALSE,
     AW_focusCB, (XtPointer) new AW_cb_struct(this, f, cd1, cd2, 0));
 }
@@ -962,25 +962,25 @@ static void AW_exposeCB(Widget wgt, XtPointer aw_cb_struct, XmDrawingAreaCallbac
     }
 }
 
-void AW_area_management::set_expose_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_area_management::set_expose_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     // insert expose callback for draw_area
     if (!expose_cb) {
         XtAddCallback(area, XmNexposeCallback, (XtCallbackProc) AW_exposeCB,
-                (XtPointer) this );
+                (XtPointer) this);
     }
     expose_cb = new AW_cb_struct(aww, f, cd1, cd2, 0, expose_cb);
 }
 
-void AW_window::set_expose_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2) {
-    AW_area_management *aram= MAP_ARAM(area);
+void AW_window::set_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+    AW_area_management *aram = MAP_ARAM(area);
     if (aram) aram->set_expose_callback(this, f, cd1, cd2);
 }
 
-bool AW_area_management::is_expose_callback(AW_window */*aww*/, void (*f)(AW_window*,AW_CL,AW_CL)) {
+bool AW_area_management::is_expose_callback(AW_window * /* aww */, void (*f)(AW_window*, AW_CL, AW_CL)) {
     return expose_cb && expose_cb->contains(f);
 }
 
-bool AW_window::is_expose_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL)) {
+bool AW_window::is_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL)) {
     AW_area_management *aram = MAP_ARAM(area);
     return aram && aram->is_expose_callback(this, f);
 }
@@ -995,11 +995,11 @@ void AW_window::force_expose() {
     XtCallCallbacks(p_w->shell, XmNexposeCallback, (XtPointer) &da_struct);
 }
 
-bool AW_area_management::is_resize_callback(AW_window */*aww*/, void (*f)(AW_window*,AW_CL,AW_CL)) {
+bool AW_area_management::is_resize_callback(AW_window * /* aww */, void (*f)(AW_window*, AW_CL, AW_CL)) {
     return resize_cb && resize_cb->contains(f);
 }
 
-bool AW_window::is_resize_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL)) {
+bool AW_window::is_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL)) {
     AW_area_management *aram = MAP_ARAM(area);
     return aram && aram->is_resize_callback(this, f);
 }
@@ -1095,17 +1095,17 @@ static void AW_resizeCB_draw_area(Widget wgt, XtPointer aw_cb_struct,
         aram->resize_cb->run_callback();
 }
 
-void AW_area_management::set_resize_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_area_management::set_resize_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     // insert resize callback for draw_area
     if (!resize_cb) {
         XtAddCallback(area, XmNresizeCallback,
-                (XtCallbackProc) AW_resizeCB_draw_area, (XtPointer) this );
+                (XtCallbackProc) AW_resizeCB_draw_area, (XtPointer) this);
     }
     resize_cb = new AW_cb_struct(aww, f, cd1, cd2, 0, resize_cb);
 }
 
-void AW_window::set_resize_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2) {
-    AW_area_management *aram= MAP_ARAM(area);
+void AW_window::set_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+    AW_area_management *aram = MAP_ARAM(area);
     if (!aram)
         return;
     aram->set_resize_callback(this, f, cd1, cd2);
@@ -1140,7 +1140,7 @@ static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAr
         aww->event.character = '\0';
 
         if (area && area->double_click_cb) {
-            if ( (ev->xbutton.time - area->click_time ) < 200) {
+            if ((ev->xbutton.time - area->click_time) < 200) {
                 run_double_click_callback = true;
             }
             else {
@@ -1216,26 +1216,26 @@ static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAr
     }
 }
 
-void AW_area_management::set_input_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_area_management::set_input_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     XtAddCallback(area, XmNinputCallback,
             (XtCallbackProc) AW_inputCB_draw_area,
-            (XtPointer) new AW_cb_struct(aww, f, cd1, cd2, (char*)0) );
+            (XtPointer) new AW_cb_struct(aww, f, cd1, cd2, (char*)0));
 }
 
-void AW_window::set_input_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2) {
-    AW_area_management *aram= MAP_ARAM(area);
+void AW_window::set_input_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+    AW_area_management *aram = MAP_ARAM(area);
     if (!aram)
         return;
     aram->set_input_callback(this, f, cd1, cd2);
 }
 
 /***********************************************************************/
-void AW_area_management::set_double_click_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_area_management::set_double_click_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     double_click_cb = new AW_cb_struct(aww, f, cd1, cd2, (char*)0, double_click_cb);
 }
 
-void AW_window::set_double_click_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2) {
-    AW_area_management *aram= MAP_ARAM(area);
+void AW_window::set_double_click_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+    AW_area_management *aram = MAP_ARAM(area);
     if (!aram)
         return;
     aram->set_double_click_callback(this, f, cd1, cd2);
@@ -1258,12 +1258,12 @@ static void AW_motionCB(Widget w, XtPointer aw_cb_struct, XEvent *ev, Boolean*) 
 
     cbs->run_callback();
 }
-void AW_area_management::set_motion_callback(AW_window *aww, void (*f)(AW_window *,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_area_management::set_motion_callback(AW_window *aww, void (*f)(AW_window *, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     XtAddEventHandler(area, ButtonMotionMask, False,
-                      AW_motionCB, (XtPointer) new AW_cb_struct(aww, f, cd1, cd2, "") );
+                      AW_motionCB, (XtPointer) new AW_cb_struct(aww, f, cd1, cd2, ""));
 }
-void AW_window::set_motion_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2) {
-    AW_area_management *aram= MAP_ARAM(area);
+void AW_window::set_motion_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+    AW_area_management *aram = MAP_ARAM(area);
     if (!aram)
         return;
     aram->set_motion_callback(this, f, cd1, cd2);
@@ -1281,10 +1281,10 @@ static struct fallbacks aw_fb[] = {
         { "FontList", "window/font", "8x13bold" }, { "background",
                 "window/background", "grey" }, { "foreground",
                 "window/foreground", "Black", }
-, {0, "window/color_1", "red",}
-, {0, "window/color_2", "green",}
-, {0, "window/color_3", "blue",}
-, {0, 0, 0}
+, { 0, "window/color_1", "red", }
+, { 0, "window/color_2", "green", }
+, { 0, "window/color_3", "blue", }
+, { 0, 0, 0 }
 };
 
 static const char *aw_awar_2_color[] = { "window/background",
@@ -1305,7 +1305,7 @@ void AW_root::init_variables(AW_default database) {
         awar_string(aw_fb[i].awar, aw_fb[i].init, application_database);
     }
     // PJ temporary site for vectorfont stuff
-    vectorfont_lines =NULL; // font data not yet loaded
+    vectorfont_lines = NULL; // font data not yet loaded
 
     awar_float("vectorfont/userscale", 1.0, application_database); // ratio font point size to pixels
     awar_string("vectorfont/name", "lib/pictures/fontgfx.vfont", application_database); // name for default font in lib/pictures
@@ -1316,7 +1316,7 @@ void AW_root::init_variables(AW_default database) {
     aw_create_selection_box_awars(this, "vectorfont",
                                   GB_path_in_ARBLIB("pictures", NULL), 
                                   ".vfont", vectorfont_name, application_database, true);
-    awar("vectorfont/file_name")->add_callback( (AW_RCB0) aw_xfig_font_changefont_cb);
+    awar("vectorfont/file_name")->add_callback((AW_RCB0) aw_xfig_font_changefont_cb);
 }
 
 void *AW_root::get_aw_var_struct(char *awar_name) {
@@ -1337,11 +1337,11 @@ static void aw_root_create_color_map(AW_root *root) {
     int i;
     XColor xcolor_returned, xcolor_exakt;
     GBDATA *gbd = (GBDATA*)root->application_database;
-    p_global->color_table = (unsigned long *)GB_calloc(sizeof(unsigned long),AW_COLOR_MAX);
+    p_global->color_table = (unsigned long *)GB_calloc(sizeof(unsigned long), AW_COLOR_MAX);
 
-    if (p_global->screen_depth == 1) { //Black and White Monitor
-        unsigned long white= WhitePixelOfScreen( XtScreen(p_global->toplevel_widget) );
-        unsigned long black= BlackPixelOfScreen( XtScreen(p_global->toplevel_widget) );
+    if (p_global->screen_depth == 1) { // Black and White Monitor
+        unsigned long white = WhitePixelOfScreen(XtScreen(p_global->toplevel_widget));
+        unsigned long black = BlackPixelOfScreen(XtScreen(p_global->toplevel_widget));
         p_global->foreground = black;
         p_global->background = white;
         for (i=0; i< AW_COLOR_MAX; i++) {
@@ -1360,15 +1360,15 @@ static void aw_root_create_color_map(AW_root *root) {
              awar_2_color++, color++)
         {
             const char *name_of_color = GB_read_char_pntr(GB_search(gbd, *awar_2_color, GB_FIND));
-            if (XAllocNamedColor(p_global->display,p_global->colormap,name_of_color, &xcolor_returned,&xcolor_exakt) == 0) {
-                fprintf(stderr,"XAllocColor failed: %s\n",name_of_color);
+            if (XAllocNamedColor(p_global->display, p_global->colormap, name_of_color, &xcolor_returned, &xcolor_exakt) == 0) {
+                fprintf(stderr, "XAllocColor failed: %s\n", name_of_color);
             }
             else {
                 p_global->color_table[color] = xcolor_returned.pixel;
             }
         }
-        p_global->foreground= BlackPixelOfScreen( XtScreen(p_global->toplevel_widget) );
-        XtVaGetValues(p_global->toplevel_widget,XmNbackground,
+        p_global->foreground = BlackPixelOfScreen(XtScreen(p_global->toplevel_widget));
+        XtVaGetValues(p_global->toplevel_widget, XmNbackground,
         &p_global->background, NULL);
     }
     // AW_WINDOW_DRAG see init_devices
@@ -1420,8 +1420,8 @@ void AW_root::init_root(const char *programname, bool no_exit) {
     // @@@ FIXME: the next line hangs if program runs inside debugger
     p_r->toplevel_widget = XtOpenApplication(&(p_r->context), programname, 
             NULL, 0, // XrmOptionDescRec+numOpts
-            &a, /*&argc*/
-            NULL, /*argv*/
+            &a, /* &argc */
+            NULL, /* argv */
             fallback_resources, 
             applicationShellWidgetClass, // widget class
             NULL, 0);
@@ -1439,10 +1439,10 @@ void AW_root::init_root(const char *programname, bool no_exit) {
     {
         GBDATA *gbd = (GBDATA*)application_database;
         const char *font = GB_read_char_pntr(GB_search(gbd, "window/font", GB_FIND));
-        if ( !(fontstruct = XLoadQueryFont( p_r->display, font))) {
-            if ( !(fontstruct = XLoadQueryFont( p_r->display, "fixed"))) {
+        if (!(fontstruct = XLoadQueryFont(p_r->display, font))) {
+            if (!(fontstruct = XLoadQueryFont(p_r->display, "fixed"))) {
                 printf("can not load font\n");
-                exit( -1);
+                exit(-1);
             }
         }
     }
@@ -1459,11 +1459,11 @@ void AW_root::init_root(const char *programname, bool no_exit) {
             + fontstruct->max_bounds.descent;
     font_ascent = fontstruct->max_bounds.ascent;
 
-    p_r->fontlist = XmFontListCreate(fontstruct,XmSTRING_DEFAULT_CHARSET);
+    p_r->fontlist = XmFontListCreate(fontstruct, XmSTRING_DEFAULT_CHARSET);
 
     p_r->button_list = 0;
 
-    p_r->config_list = new AW_config_struct( "", AWM_ALL, NULL, "Programmer Name", "SH", NULL );
+    p_r->config_list = new AW_config_struct("", AWM_ALL, NULL, "Programmer Name", "SH", NULL);
     p_r->last_config = p_r->config_list;
 
     p_r->last_option_menu = p_r->current_option_menu = p_r->option_menu_list = NULL;
@@ -1474,16 +1474,16 @@ void AW_root::init_root(const char *programname, bool no_exit) {
     y_correction_for_input_labels = 5;
     global_mask = AWM_ALL;
 
-    p_r->screen_depth = PlanesOfScreen( XtScreen(p_r->toplevel_widget) );
+    p_r->screen_depth = PlanesOfScreen(XtScreen(p_r->toplevel_widget));
     if (p_r->screen_depth == 1) {
         color_mode = AW_MONO_COLOR;
     }
     else {
         color_mode = AW_RGB_COLOR;
     }
-    p_r->colormap = DefaultColormapOfScreen( XtScreen(p_r->toplevel_widget) );
-    p_r->clock_cursor = XCreateFontCursor(XtDisplay(p_r->toplevel_widget),XC_watch);
-    p_r->question_cursor = XCreateFontCursor(XtDisplay(p_r->toplevel_widget),XC_question_arrow);
+    p_r->colormap = DefaultColormapOfScreen(XtScreen(p_r->toplevel_widget));
+    p_r->clock_cursor = XCreateFontCursor(XtDisplay(p_r->toplevel_widget), XC_watch);
+    p_r->question_cursor = XCreateFontCursor(XtDisplay(p_r->toplevel_widget), XC_question_arrow);
 
     aw_root_create_color_map(this);
     aw_root_init_font(XtDisplay(p_r->toplevel_widget));
@@ -1493,7 +1493,7 @@ void AW_root::init_root(const char *programname, bool no_exit) {
 
 /***********************************************************************/
 void AW_window::_get_area_size(AW_area area, AW_rectangle *square) {
-    AW_area_management *aram= MAP_ARAM(area);
+    AW_area_management *aram = MAP_ARAM(area);
     *square = aram->common->screen;
 }
 
@@ -1513,15 +1513,15 @@ static void horizontal_scrollbar_redefinition_cb(class AW_root *aw_root,
     sprintf(buffer, "window/%s/horizontal_page_increment",
             aw->window_defaults_name);
     XtVaSetValues(w, XmNpageIncrement, (int)((screen.r
-            -aw->left_indent_of_horizontal_scrollbar)*(aw->get_root()->awar( buffer )->read_int()*0.01)), NULL);
+            -aw->left_indent_of_horizontal_scrollbar)*(aw->get_root()->awar(buffer)->read_int()*0.01)), NULL);
 
     sprintf(buffer, "window/%s/scroll_width_horizontal",
             aw->window_defaults_name);
-    XtVaSetValues(w, XmNincrement, (int)(aw->get_root()->awar( buffer )->read_int()), NULL);
+    XtVaSetValues(w, XmNincrement, (int)(aw->get_root()->awar(buffer)->read_int()), NULL);
 
     sprintf(buffer, "window/%s/scroll_delay_horizontal",
             aw->window_defaults_name);
-    XtVaSetValues(w, XmNrepeatDelay, (int)(aw->get_root()->awar( buffer )->read_int()), NULL);
+    XtVaSetValues(w, XmNrepeatDelay, (int)(aw->get_root()->awar(buffer)->read_int()), NULL);
 
 }
 
@@ -1540,13 +1540,13 @@ static void vertical_scrollbar_redefinition_cb(class AW_root *aw_root,
             aw->window_defaults_name);
     XtVaSetValues(w, XmNpageIncrement, (int)((screen.b
             -aw->top_indent_of_vertical_scrollbar
-            -aw->bottom_indent_of_vertical_scrollbar)*(aw->get_root()->awar( buffer )->read_int()*0.01)), NULL);
+            -aw->bottom_indent_of_vertical_scrollbar)*(aw->get_root()->awar(buffer)->read_int()*0.01)), NULL);
 
     sprintf(buffer, "window/%s/scroll_width_vertical", aw->window_defaults_name);
-    XtVaSetValues(w, XmNincrement, (int)(aw->get_root()->awar( buffer )->read_int()), NULL);
+    XtVaSetValues(w, XmNincrement, (int)(aw->get_root()->awar(buffer)->read_int()), NULL);
 
     sprintf(buffer, "window/%s/scroll_delay_vertical", aw->window_defaults_name);
-    XtVaSetValues(w, XmNrepeatDelay, (int)(aw->get_root()->awar( buffer )->read_int()), NULL);
+    XtVaSetValues(w, XmNrepeatDelay, (int)(aw->get_root()->awar(buffer)->read_int()), NULL);
 }
 
 void AW_window::create_window_variables(void) {
@@ -1555,50 +1555,50 @@ void AW_window::create_window_variables(void) {
     memset(buffer, 0, 200);
     sprintf(buffer, "window/%s/horizontal_page_increment", window_defaults_name);
     get_root()->awar_int(buffer, 50, get_root()->application_database);
-    get_root()->awar( buffer)->add_callback(
+    get_root()->awar(buffer)->add_callback(
             (AW_RCB)horizontal_scrollbar_redefinition_cb, (AW_CL)this,
-            (AW_CL)p_w->scroll_bar_horizontal );
+            (AW_CL)p_w->scroll_bar_horizontal);
 
     sprintf(buffer, "window/%s/vertical_page_increment", window_defaults_name);
     get_root()->awar_int(buffer, 50, get_root()->application_database);
-    get_root()->awar( buffer)->add_callback( (AW_RCB)vertical_scrollbar_redefinition_cb,
-            (AW_CL)this, (AW_CL)p_w->scroll_bar_vertical );
+    get_root()->awar(buffer)->add_callback((AW_RCB)vertical_scrollbar_redefinition_cb,
+            (AW_CL)this, (AW_CL)p_w->scroll_bar_vertical);
 
     sprintf(buffer, "window/%s/scroll_delay_vertical", window_defaults_name);
     get_root()->awar_int(buffer, 20, get_root()->application_database);
-    get_root()->awar( buffer)->add_callback( (AW_RCB)vertical_scrollbar_redefinition_cb,
-            (AW_CL)this, (AW_CL)p_w->scroll_bar_vertical );
+    get_root()->awar(buffer)->add_callback((AW_RCB)vertical_scrollbar_redefinition_cb,
+            (AW_CL)this, (AW_CL)p_w->scroll_bar_vertical);
 
     sprintf(buffer, "window/%s/scroll_delay_horizontal", window_defaults_name);
     get_root()->awar_int(buffer, 20, get_root()->application_database);
-    get_root()->awar( buffer)->add_callback(
+    get_root()->awar(buffer)->add_callback(
             (AW_RCB)horizontal_scrollbar_redefinition_cb, (AW_CL)this,
-            (AW_CL)p_w->scroll_bar_horizontal );
+            (AW_CL)p_w->scroll_bar_horizontal);
 
     sprintf(buffer, "window/%s/scroll_width_horizontal", window_defaults_name);
     get_root()->awar_int(buffer, 9, get_root()->application_database);
-    get_root()->awar( buffer)->add_callback(
+    get_root()->awar(buffer)->add_callback(
             (AW_RCB)horizontal_scrollbar_redefinition_cb, (AW_CL)this,
-            (AW_CL)p_w->scroll_bar_horizontal );
+            (AW_CL)p_w->scroll_bar_horizontal);
 
     sprintf(buffer, "window/%s/scroll_width_vertical", window_defaults_name);
     get_root()->awar_int(buffer, 20, get_root()->application_database);
-    get_root()->awar( buffer)->add_callback( (AW_RCB)vertical_scrollbar_redefinition_cb,
-            (AW_CL)this, (AW_CL)p_w->scroll_bar_vertical );
+    get_root()->awar(buffer)->add_callback((AW_RCB)vertical_scrollbar_redefinition_cb,
+            (AW_CL)this, (AW_CL)p_w->scroll_bar_vertical);
 
 }
 
 /***********************************************************************/
 void AW_area_management::create_devices(AW_window *aww, AW_area ar) {
-    AW_root *root =aww->get_root();
-    common = new AW_common(aww,ar,XtDisplay(area),XtWindow(area),p_global->color_table,
-            (unsigned int **)&aww->color_table, &aww->color_table_size );
+    AW_root *root = aww->get_root();
+    common = new AW_common(aww, ar, XtDisplay(area), XtWindow(area), p_global->color_table,
+            (unsigned int **)&aww->color_table, &aww->color_table_size);
 }
 
 const char *AW_window::GC_to_RGB(AW_device *device, int gc, int& red,
         int& green, int& blue) {
     AW_common *common = device->common;
-    AW_GC_Xm *gcm= AW_MAP_GC(gc);
+    AW_GC_Xm *gcm = AW_MAP_GC(gc);
     aw_assert(gcm);
     unsigned pixel = (unsigned short)(gcm->color);
     GB_ERROR error = 0;
@@ -1622,7 +1622,7 @@ const char *AW_window::GC_to_RGB(AW_device *device, int gc, int& red,
 const char *AW_window::GC_to_RGB_float(AW_device *device, int gc, float& red,
         float& green, float& blue) {
     AW_common *common = device->common;
-    AW_GC_Xm *gcm= AW_MAP_GC(gc);
+    AW_GC_Xm *gcm = AW_MAP_GC(gc);
     aw_assert(gcm);
     unsigned pixel = (unsigned short)(gcm->color);
     GB_ERROR error = 0;
@@ -1655,35 +1655,35 @@ AW_color AW_window::alloc_named_data_color(int colnum, char *colorname) {
         if (colnum>=color_table_size) {
             color_table = (unsigned long *)realloc((char *)color_table, (8
                     + colnum)*sizeof(long)); // valgrinders : never freed because AW_window never is freed
-            memset( (char *)(color_table+color_table_size), -1, (int)(8
+            memset((char *)(color_table+color_table_size), -1, (int)(8
                     + colnum - color_table_size) * sizeof(long));
             color_table_size = 8+colnum;
         }
     }
     XColor xcolor_returned, xcolor_exakt;
 
-    if (p_global->screen_depth == 1) { //Black and White Monitor
+    if (p_global->screen_depth == 1) { // Black and White Monitor
         static int col = 1;
         if (colnum == AW_DATA_BG) {
-            col =1;
+            col = 1;
             if (strcmp(colorname, "white"))
-                col *=-1;
+                col *= -1;
         }
         if (col==1) {
-            color_table[colnum] = WhitePixelOfScreen( XtScreen(p_global->toplevel_widget) );
+            color_table[colnum] = WhitePixelOfScreen(XtScreen(p_global->toplevel_widget));
         }
         else {
-            color_table[colnum] = BlackPixelOfScreen( XtScreen(p_global->toplevel_widget) );
+            color_table[colnum] = BlackPixelOfScreen(XtScreen(p_global->toplevel_widget));
         }
         if (colnum == AW_DATA_BG)
-            col *=-1;
+            col *= -1;
     }
     else { // Color monitor
-        if (color_table[colnum] !=(unsigned long)-1 ) {
-            XFreeColors(p_global->display, p_global->colormap, &color_table[colnum],1,0);
+        if (color_table[colnum] != (unsigned long)-1) {
+            XFreeColors(p_global->display, p_global->colormap, &color_table[colnum], 1, 0);
         }
-        if (XAllocNamedColor(p_global->display,p_global->colormap,colorname,
-        &xcolor_returned,&xcolor_exakt) == 0) {
+        if (XAllocNamedColor(p_global->display, p_global->colormap, colorname,
+        &xcolor_returned, &xcolor_exakt) == 0) {
             sprintf(AW_ERROR_BUFFER, "XAllocColor failed: %s\n", colorname);
             aw_message();
             color_table[colnum] = (unsigned long)-1;
@@ -1795,16 +1795,16 @@ static void aw_window_avoid_destroy_cb(Widget, AW_window *, XmAnyCallbackStruct 
     aw_message("If YOU do not know what to answer, how should ARB know?\nPlease think again and answer the prompt!");
 }
 
-static void aw_window_noexit_destroy_cb(Widget , AW_window *aww, XmAnyCallbackStruct *) {
+static void aw_window_noexit_destroy_cb(Widget,  AW_window *aww, XmAnyCallbackStruct *) {
     aww->hide();
     // don't exit, when using destroy callback
 }
 
-static void aw_window_destroy_cb(Widget , AW_window *aww, XmAnyCallbackStruct *) {
+static void aw_window_destroy_cb(Widget,  AW_window *aww, XmAnyCallbackStruct *) {
     AW_root *root = aww->get_root();
-    if ( (p_global->main_aww == aww) || !p_global->main_aww->is_shown()) {
+    if ((p_global->main_aww == aww) || !p_global->main_aww->is_shown()) {
 #ifdef NDEBUG
-        if (aw_question("Are you sure to quit?","YES,NO") ) return;
+        if (aw_question("Are you sure to quit?", "YES,NO")) return;
 #endif
         exit(0);
     }
@@ -1826,7 +1826,7 @@ static long aw_loop_get_window_geometry(const char *, long val, void *) {
                   XmNy, &posy,
                   NULL);
 
-    if ( p_aww(aww)->WM_top_offset != AW_FIX_POS_ON_EXPOSE) {
+    if (p_aww(aww)->WM_top_offset != AW_FIX_POS_ON_EXPOSE) {
         posy -= p_aww(aww)->WM_top_offset;
     }
     posx -= p_aww(aww)->WM_left_offset;
@@ -1887,15 +1887,15 @@ void aw_set_delete_window_cb(AW_window *aww, Widget shell, bool allow_close) {
     XmRemoveWMProtocolCallback(shell, WM_DELETE_WINDOW, (XtCallbackProc)aw_window_destroy_cb,        (caddr_t)aww);
 
     if (!allow_close) {
-        XmAddWMProtocolCallback(shell, WM_DELETE_WINDOW, (XtCallbackProc)aw_window_avoid_destroy_cb,(caddr_t)aww);
+        XmAddWMProtocolCallback(shell, WM_DELETE_WINDOW, (XtCallbackProc)aw_window_avoid_destroy_cb, (caddr_t)aww);
     }
     else {
         AW_root *root = aww->get_root();
         if (p_global->no_exit) {
-            XmAddWMProtocolCallback(shell, WM_DELETE_WINDOW, (XtCallbackProc)aw_window_noexit_destroy_cb,(caddr_t)aww);
+            XmAddWMProtocolCallback(shell, WM_DELETE_WINDOW, (XtCallbackProc)aw_window_noexit_destroy_cb, (caddr_t)aww);
         }
         else {
-            XmAddWMProtocolCallback(shell, WM_DELETE_WINDOW, (XtCallbackProc)aw_window_destroy_cb,(caddr_t)aww);
+            XmAddWMProtocolCallback(shell, WM_DELETE_WINDOW, (XtCallbackProc)aw_window_destroy_cb, (caddr_t)aww);
         }
     }
 }
@@ -1912,11 +1912,11 @@ Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int 
     if (width >aww->_at->max_x_size) aww->_at->max_x_size = width;
     if (height>aww->_at->max_y_size) aww->_at->max_y_size = height;
 
-    if ( !GBS_read_hash(root->hash_for_windows, aww->get_window_id())) {
+    if (!GBS_read_hash(root->hash_for_windows, aww->get_window_id())) {
         GBS_write_hash(root->hash_for_windows, aww->get_window_id(), (long)aww);
         bool has_user_geometry = false;
 
-        const char *temp= aw_awar_name_width(aww);
+        const char *temp = aw_awar_name_width(aww);
         root->awar_int(temp, width);
         if (allow_resize) {
             int found_width = (int)root->awar(temp)->read_int();
@@ -1937,7 +1937,7 @@ Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int 
         }
 
         temp = aw_awar_name_posx(aww);
-        root->awar_int(temp,posx)->set_minmax(0, 4000);
+        root->awar_int(temp, posx)->set_minmax(0, 4000);
         // @@@ FIXME:  maximum should be set to current screen size minus some offset
         // to ensure that windows do not appear outside screen
         // same for posy below!
@@ -1949,7 +1949,7 @@ Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int 
         }
 
         temp = aw_awar_name_posy(aww);
-        root->awar_int(temp,posy)->set_minmax(0, 3000);
+        root->awar_int(temp, posy)->set_minmax(0, 3000);
         int found_posy = (int)root->awar(temp)->read_int();
         if (posy != found_posy) {
             has_user_geometry = true;
@@ -2028,7 +2028,7 @@ Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int 
         p_global->main_aww    = aww;
     }
     else {
-        if ( !p_global->main_aww->is_shown()) { // now i am the root window
+        if (!p_global->main_aww->is_shown()) {  // now i am the root window
             p_global->main_widget = shell;
             p_global->main_aww    = aww;
         }
@@ -2069,16 +2069,16 @@ Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int 
 
 
 void aw_realize_widget(AW_window *aww) {
-    if ( p_aww(aww)->areas[AW_INFO_AREA] && p_aww(aww)->areas[AW_INFO_AREA]->form) {
+    if (p_aww(aww)->areas[AW_INFO_AREA] && p_aww(aww)->areas[AW_INFO_AREA]->form) {
         XtManageChild(p_aww(aww)->areas[AW_INFO_AREA]->form);
     }
-    if ( p_aww(aww)->areas[AW_MIDDLE_AREA] && p_aww(aww)->areas[AW_MIDDLE_AREA]->form) {
+    if (p_aww(aww)->areas[AW_MIDDLE_AREA] && p_aww(aww)->areas[AW_MIDDLE_AREA]->form) {
         XtManageChild(p_aww(aww)->areas[AW_MIDDLE_AREA]->form);
     }
-    if ( p_aww(aww)->areas[AW_BOTTOM_AREA] && p_aww(aww)->areas[AW_BOTTOM_AREA]->form) {
+    if (p_aww(aww)->areas[AW_BOTTOM_AREA] && p_aww(aww)->areas[AW_BOTTOM_AREA]->form) {
         XtManageChild(p_aww(aww)->areas[AW_BOTTOM_AREA]->form);
     }
-    XtRealizeWidget( p_aww(aww)->shell);
+    XtRealizeWidget(p_aww(aww)->shell);
     p_aww(aww)->WM_top_offset = AW_FIX_POS_ON_EXPOSE;
 }
 
@@ -2102,7 +2102,7 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     int posx = 50;
     int posy = 50;
 
-    p_w->shell= aw_create_shell(this, true, true, width, height, posx, posy);
+    p_w->shell = aw_create_shell(this, true, true, width, height, posx, posy);
 
     main_window = XtVaCreateManagedWidget("mainWindow1",
             xmMainWindowWidgetClass, p_w->shell, 
@@ -2122,7 +2122,7 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
             XmNoverrideRedirect, true, 
             NULL);
 
-    //create row column in Pull-Down shell
+    // create row column in Pull-Down shell
     p_w->help_pull_down = XtVaCreateWidget("menu_row_column",
             xmRowColumnWidgetClass, help_popup, 
             XmNrowColumnType, XmMENU_PULLDOWN, 
@@ -2131,13 +2131,13 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     // create HELP-label in menu bar
     help_label = XtVaCreateManagedWidget("menu1_top_b1",
             xmCascadeButtonWidgetClass, p_w->menu_bar[0], 
-            RES_CONVERT( XmNlabelString, help_button ),
-                                          RES_CONVERT( XmNmnemonic, help_mnemonic ), 
-                                          XmNsubMenuId, p_w->help_pull_down, NULL );
+            RES_CONVERT(XmNlabelString, help_button),
+                                          RES_CONVERT(XmNmnemonic, help_mnemonic),
+                                          XmNsubMenuId, p_w->help_pull_down, NULL);
     XtVaSetValues(p_w->menu_bar[0], XmNmenuHelpWidget, help_label, NULL);
     root->make_sensitive(help_label, AWM_ALL);
     
-    form1 = XtVaCreateManagedWidget( "form1",
+    form1 = XtVaCreateManagedWidget("form1",
     xmFormWidgetClass,
     main_window,
     // XmNwidth, width,
@@ -2147,7 +2147,7 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     // XmNy, 0,
     NULL);
 
-    p_w->mode_area = XtVaCreateManagedWidget( "mode area",
+    p_w->mode_area = XtVaCreateManagedWidget("mode area",
     xmDrawingAreaWidgetClass,
     form1,
     XmNresizePolicy, XmRESIZE_NONE,
@@ -2164,7 +2164,7 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     XmNmarginWidth, 1,
     NULL);
 
-    separator = XtVaCreateManagedWidget( "separator",
+    separator = XtVaCreateManagedWidget("separator",
     xmSeparatorWidgetClass,
     form1,
     XmNx, 37,
@@ -2179,7 +2179,7 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     XmNleftPosition, 0,
     NULL);
 
-    form2 = XtVaCreateManagedWidget( "form2",
+    form2 = XtVaCreateManagedWidget("form2",
     xmFormWidgetClass,
     form1,
     XmNwidth, width,
@@ -2198,7 +2198,7 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     XmNy, 0,
     NULL);
     p_w->areas[AW_INFO_AREA] =
-    new AW_area_management(root, form2, XtVaCreateManagedWidget( "info_area",
+    new AW_area_management(root, form2, XtVaCreateManagedWidget("info_area",
             xmDrawingAreaWidgetClass,
             form2,
             XmNheight, 0,
@@ -2211,7 +2211,7 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
             NULL));
 
     p_w->areas[AW_BOTTOM_AREA] =
-    new AW_area_management(root, form2, XtVaCreateManagedWidget( "bottom_area",
+    new AW_area_management(root, form2, XtVaCreateManagedWidget("bottom_area",
             xmDrawingAreaWidgetClass,
             form2,
             XmNheight, 0,
@@ -2221,7 +2221,7 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
             XmNrightAttachment, XmATTACH_FORM,
             NULL));
 
-    p_w->scroll_bar_horizontal = XtVaCreateManagedWidget( "scroll_bar_horizontal",
+    p_w->scroll_bar_horizontal = XtVaCreateManagedWidget("scroll_bar_horizontal",
     xmScrollBarWidgetClass,
     form2,
     XmNheight, 15,
@@ -2236,9 +2236,9 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     XmNtopAttachment, XmATTACH_NONE,
     XmNorientation, XmHORIZONTAL,
     XmNrightOffset, 18,
-    NULL );
+    NULL);
 
-    p_w->scroll_bar_vertical = XtVaCreateManagedWidget( "scroll_bar_vertical",
+    p_w->scroll_bar_vertical = XtVaCreateManagedWidget("scroll_bar_vertical",
     xmScrollBarWidgetClass,
     form2,
     XmNwidth, 15,
@@ -2255,9 +2255,9 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     XmNleftAttachment, XmATTACH_NONE,
     XmNtopAttachment, XmATTACH_WIDGET,
     XmNtopWidget, INFO_WIDGET,
-    NULL );
+    NULL);
 
-    p_w->frame = XtVaCreateManagedWidget( "draw_area",
+    p_w->frame = XtVaCreateManagedWidget("draw_area",
     xmFrameWidgetClass,
     form2,
     XmNshadowType, XmSHADOW_IN,
@@ -2276,14 +2276,14 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     NULL);
 
     p_w->areas[AW_MIDDLE_AREA] =
-    new AW_area_management(root,p_w->frame, XtVaCreateManagedWidget( "draw area",
+    new AW_area_management(root, p_w->frame, XtVaCreateManagedWidget("draw area",
             xmDrawingAreaWidgetClass,
             p_w->frame,
             XmNmarginHeight, 0,
             XmNmarginWidth, 0,
             NULL));
 
-    XmMainWindowSetAreas( main_window, p_w->menu_bar[0], (Widget) NULL, (Widget) NULL, (Widget) NULL, form1 );
+    XmMainWindowSetAreas(main_window, p_w->menu_bar[0], (Widget) NULL, (Widget) NULL, (Widget) NULL, form1);
 
     aw_realize_widget(this);
 
@@ -2312,7 +2312,7 @@ void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windown
     int posx = 50;
     int posy = 50;
 
-    p_w->shell= aw_create_shell(this, true, true, width, height, posx, posy);
+    p_w->shell = aw_create_shell(this, true, true, width, height, posx, posy);
 
     main_window = XtVaCreateManagedWidget("mainWindow1",
             xmMainWindowWidgetClass, p_w->shell, 
@@ -2332,7 +2332,7 @@ void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windown
             XmNoverrideRedirect, true, 
             NULL);
 
-    //create row column in Pull-Down shell
+    // create row column in Pull-Down shell
     p_w->help_pull_down = XtVaCreateWidget("menu_row_column",
             xmRowColumnWidgetClass, help_popup, 
             XmNrowColumnType, XmMENU_PULLDOWN, 
@@ -2341,13 +2341,13 @@ void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windown
     // create HELP-label in menu bar
     help_label = XtVaCreateManagedWidget("menu1_top_b1",
             xmCascadeButtonWidgetClass, p_w->menu_bar[0], 
-            RES_CONVERT( XmNlabelString, help_button ),
-                                          RES_CONVERT( XmNmnemonic, help_mnemonic ), 
-                                          XmNsubMenuId, p_w->help_pull_down, NULL );
+            RES_CONVERT(XmNlabelString, help_button),
+                                          RES_CONVERT(XmNmnemonic, help_mnemonic),
+                                          XmNsubMenuId, p_w->help_pull_down, NULL);
     XtVaSetValues(p_w->menu_bar[0], XmNmenuHelpWidget, help_label, NULL);
     root->make_sensitive(help_label, AWM_ALL);
     
-    form1 = XtVaCreateManagedWidget( "form1",
+    form1 = XtVaCreateManagedWidget("form1",
     xmFormWidgetClass,
     main_window,
     // XmNwidth, width,
@@ -2357,7 +2357,7 @@ void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windown
     // XmNy, 0,
     NULL);
 
-    p_w->mode_area = XtVaCreateManagedWidget( "mode area",
+    p_w->mode_area = XtVaCreateManagedWidget("mode area",
     xmDrawingAreaWidgetClass,
     form1,
     XmNresizePolicy, XmRESIZE_NONE,
@@ -2376,7 +2376,7 @@ void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windown
 
     separator = p_w->mode_area;
 
-    form2 = XtVaCreateManagedWidget( "form2",
+    form2 = XtVaCreateManagedWidget("form2",
     xmFormWidgetClass,
     form1,
     XmNwidth, width,
@@ -2395,7 +2395,7 @@ void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windown
     XmNy, 0,
     NULL);
     p_w->areas[AW_INFO_AREA] =
-    new AW_area_management(root,form2, XtVaCreateManagedWidget( "info_area",
+    new AW_area_management(root, form2, XtVaCreateManagedWidget("info_area",
             xmDrawingAreaWidgetClass,
             form2,
             XmNheight, 0,
@@ -2408,7 +2408,7 @@ void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windown
             NULL));
 
     p_w->areas[AW_BOTTOM_AREA] =
-    new AW_area_management(root,form2, XtVaCreateManagedWidget( "bottom_area",
+    new AW_area_management(root, form2, XtVaCreateManagedWidget("bottom_area",
             xmDrawingAreaWidgetClass,
             form2,
             XmNheight, 0,
@@ -2418,7 +2418,7 @@ void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windown
             XmNrightAttachment, XmATTACH_FORM,
             NULL));
 
-    p_w->scroll_bar_horizontal = XtVaCreateManagedWidget( "scroll_bar_horizontal",
+    p_w->scroll_bar_horizontal = XtVaCreateManagedWidget("scroll_bar_horizontal",
     xmScrollBarWidgetClass,
     form2,
     XmNheight, 15,
@@ -2433,9 +2433,9 @@ void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windown
     XmNtopAttachment, XmATTACH_NONE,
     XmNorientation, XmHORIZONTAL,
     XmNrightOffset, 18,
-    NULL );
+    NULL);
 
-    p_w->scroll_bar_vertical = XtVaCreateManagedWidget( "scroll_bar_vertical",
+    p_w->scroll_bar_vertical = XtVaCreateManagedWidget("scroll_bar_vertical",
     xmScrollBarWidgetClass,
     form2,
     XmNwidth, 15,
@@ -2452,9 +2452,9 @@ void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windown
     XmNleftAttachment, XmATTACH_NONE,
     XmNtopAttachment, XmATTACH_WIDGET,
     XmNtopWidget, INFO_WIDGET,
-    NULL );
+    NULL);
 
-    p_w->frame = XtVaCreateManagedWidget( "draw_area",
+    p_w->frame = XtVaCreateManagedWidget("draw_area",
     xmFrameWidgetClass,
     form2,
     XmNshadowType, XmSHADOW_IN,
@@ -2473,15 +2473,15 @@ void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windown
     NULL);
 
     p_w->areas[AW_MIDDLE_AREA] =
-    new AW_area_management(root,p_w->frame, XtVaCreateManagedWidget( "draw area",
+    new AW_area_management(root, p_w->frame, XtVaCreateManagedWidget("draw area",
             xmDrawingAreaWidgetClass,
             p_w->frame,
             XmNmarginHeight, 0,
             XmNmarginWidth, 0,
             NULL));
 
-    XmMainWindowSetAreas( main_window, p_w->menu_bar[0], (Widget) NULL,
-    (Widget) NULL, (Widget) NULL, form1 );
+    XmMainWindowSetAreas(main_window, p_w->menu_bar[0], (Widget) NULL,
+    (Widget) NULL, (Widget) NULL, form1);
 
     aw_realize_widget(this);
 
@@ -2501,7 +2501,7 @@ void AW_window_simple::init(AW_root *root_in, const char *wid, const char *windo
     window_name = strdup(windowname);
     window_defaults_name = GBS_string_2_key(wid);
 
-    p_w->shell= aw_create_shell(this, true, true, width, height, posx, posy);
+    p_w->shell = aw_create_shell(this, true, true, width, height, posx, posy);
 
     // add this to disable resize or maximize in simple dialogs (avoids broken layouts)
     // XtVaSetValues(p_w->shell, XmNmwmFunctions, MWM_FUNC_MOVE | MWM_FUNC_CLOSE, NULL);
@@ -2510,7 +2510,7 @@ void AW_window_simple::init(AW_root *root_in, const char *wid, const char *windo
             p_w->shell, 
             NULL);
 
-    p_w->areas[AW_INFO_AREA] = new AW_area_management(root,form1, XtVaCreateManagedWidget( "info_area",
+    p_w->areas[AW_INFO_AREA] = new AW_area_management(root, form1, XtVaCreateManagedWidget("info_area",
                     xmDrawingAreaWidgetClass,
                     form1,
                     XmNbottomAttachment, XmATTACH_FORM,
@@ -2538,7 +2538,7 @@ void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *
     int posx = 50;
     int posy = 50;
 
-    p_w->shell= aw_create_shell(this, true, true, width, height, posx, posy);
+    p_w->shell = aw_create_shell(this, true, true, width, height, posx, posy);
 
     Widget main_window;
     Widget help_popup;
@@ -2563,7 +2563,7 @@ void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *
             XmNoverrideRedirect, true, 
             NULL);
 
-    //create row column in Pull-Down shell
+    // create row column in Pull-Down shell
     p_w->help_pull_down = XtVaCreateWidget("menu_row_column",
             xmRowColumnWidgetClass, help_popup, 
             XmNrowColumnType, XmMENU_PULLDOWN, 
@@ -2572,13 +2572,13 @@ void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *
     // create HELP-label in menu bar
     help_label = XtVaCreateManagedWidget("menu1_top_b1",
             xmCascadeButtonWidgetClass, p_w->menu_bar[0], 
-            RES_CONVERT( XmNlabelString, help_button ),
-                                          RES_CONVERT( XmNmnemonic, help_mnemonic ), 
-                                          XmNsubMenuId, p_w->help_pull_down, NULL );
+            RES_CONVERT(XmNlabelString, help_button),
+                                          RES_CONVERT(XmNmnemonic, help_mnemonic),
+                                          XmNsubMenuId, p_w->help_pull_down, NULL);
     XtVaSetValues(p_w->menu_bar[0], XmNmenuHelpWidget, help_label, NULL);
     root->make_sensitive(help_label, AWM_ALL);
     
-    form1 = XtVaCreateManagedWidget( "form1",
+    form1 = XtVaCreateManagedWidget("form1",
     xmFormWidgetClass,
     main_window,
     XmNtopOffset, 10,
@@ -2586,7 +2586,7 @@ void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *
     NULL);
 
     p_w->areas[AW_INFO_AREA] =
-    new AW_area_management(root, form1, XtVaCreateManagedWidget( "info_area",
+    new AW_area_management(root, form1, XtVaCreateManagedWidget("info_area",
             xmDrawingAreaWidgetClass,
             form1,
             XmNbottomAttachment, XmATTACH_FORM,
@@ -2597,7 +2597,7 @@ void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *
             XmNmarginWidth, 2,
             NULL));
 
-    aw_realize_widget(this );
+    aw_realize_widget(this);
 
     aw_create_help_entry(this);
     create_devices();
@@ -2615,13 +2615,13 @@ void AW_window_message::init(AW_root *root_in, const char *windowname, bool allo
     window_defaults_name = GBS_string_2_key(window_name);
 
     // create shell for message box
-    p_w->shell= aw_create_shell(this, true, allow_close, width, height, posx, posy);
+    p_w->shell = aw_create_shell(this, true, allow_close, width, height, posx, posy);
 
     // disable resize or maximize in simple dialogs (avoids broken layouts)
     XtVaSetValues(p_w->shell, XmNmwmFunctions, MWM_FUNC_MOVE | MWM_FUNC_CLOSE,
             NULL);
 
-    p_w->areas[AW_INFO_AREA] = new AW_area_management(root,p_w->shell, XtVaCreateManagedWidget( "info_area",
+    p_w->areas[AW_INFO_AREA] = new AW_area_management(root, p_w->shell, XtVaCreateManagedWidget("info_area",
                     xmDrawingAreaWidgetClass,
                     p_w->shell,
                     XmNheight, 0,
@@ -2703,8 +2703,8 @@ int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active M
                                      XmNshadowThickness, 1,
                                      XmNbackground,      _at->background_color,
                                      NULL);
-    XtVaSetValues(button, RES_CONVERT( XmNlabelPixmap, path ),NULL );
-    XtVaGetValues(button,XmNforeground, &p_global->foreground, NULL);
+    XtVaSetValues(button, RES_CONVERT(XmNlabelPixmap, path), NULL);
+    XtVaGetValues(button, XmNforeground, &p_global->foreground, NULL);
 
     AW_cb_struct *cbs = new AW_cb_struct(this, f, cd1, cd2, 0);
     AW_cb_struct *cb2 = new AW_cb_struct(this, (AW_CB)aw_mode_callback, (AW_CL)p_w->number_of_modes, (AW_CL)cbs, helpText, cbs);
@@ -2713,10 +2713,10 @@ int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active M
     (XtPointer) cb2);
 
     if (!p_w->modes_f_callbacks) {
-        p_w->modes_f_callbacks = (AW_cb_struct **)GB_calloc(sizeof(AW_cb_struct*),AW_NUMBER_OF_F_KEYS); // valgrinders : never freed because AW_window never is freed
+        p_w->modes_f_callbacks = (AW_cb_struct **)GB_calloc(sizeof(AW_cb_struct*), AW_NUMBER_OF_F_KEYS); // valgrinders : never freed because AW_window never is freed
     }
     if (!p_w->modes_widgets) {
-        p_w->modes_widgets = (Widget *)GB_calloc(sizeof(Widget),AW_NUMBER_OF_F_KEYS);
+        p_w->modes_widgets = (Widget *)GB_calloc(sizeof(Widget), AW_NUMBER_OF_F_KEYS);
     }
     if (p_w->number_of_modes<AW_NUMBER_OF_F_KEYS) {
         p_w->modes_f_callbacks[p_w->number_of_modes] = cb2;
@@ -2983,7 +2983,7 @@ void AW_window::insert_sub_menu(AW_label name, const char *mnemonic, AW_active M
             XmNoverrideRedirect, true, 
             NULL);
 
-    //create row column in Pull-Down shell
+    // create row column in Pull-Down shell
 
     p_w->menu_bar[p_w->menu_deep+1] = XtVaCreateWidget("menu_row_column",
             xmRowColumnWidgetClass, shell, 
@@ -2996,16 +2996,16 @@ void AW_window::insert_sub_menu(AW_label name, const char *mnemonic, AW_active M
         // if mnemonic is "" -> Cannot convert string "" to type KeySym
         Label = XtVaCreateManagedWidget("menu1_top_b1",
                 xmCascadeButtonWidgetClass, p_w->menu_bar[p_w->menu_deep], 
-                RES_CONVERT( XmNlabelString, name ),
-                                         RES_CONVERT( XmNmnemonic, mnemonic ), 
+                RES_CONVERT(XmNlabelString, name),
+                                         RES_CONVERT(XmNmnemonic, mnemonic),
                                          XmNsubMenuId, p_w->menu_bar[p_w->menu_deep+1], 
-                                         XmNbackground, _at->background_color, NULL );
+                                         XmNbackground, _at->background_color, NULL);
     }
     else {
-        Label = XtVaCreateManagedWidget( "menu1_top_b1",
+        Label = XtVaCreateManagedWidget("menu1_top_b1",
         xmCascadeButtonWidgetClass,
         p_w->menu_bar[p_w->menu_deep],
-        RES_CONVERT( XmNlabelString, name ),
+        RES_CONVERT(XmNlabelString, name),
         XmNsubMenuId, p_w->menu_bar[p_w->menu_deep+1],
         XmNbackground, _at->background_color,
         NULL);
@@ -3029,7 +3029,7 @@ void AW_window::close_sub_menu(void) {
 
 void AW_window::insert_menu_topic(const char *topic_id, AW_label name,
                                   const char *mnemonic, const char *helpText, AW_active Mask,
-                                  void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2)
+                                  void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2)
 {
     aw_assert(legal_mask(Mask));
     Widget button;
@@ -3048,20 +3048,20 @@ void AW_window::insert_menu_topic(const char *topic_id, AW_label name,
         // create one sub-menu-point
         button = XtVaCreateManagedWidget("", xmPushButtonWidgetClass,
                 p_w->menu_bar[p_w->menu_deep], 
-                RES_LABEL_CONVERT( name ),
-                                          RES_CONVERT( XmNmnemonic, mnemonic ), 
-                                          XmNbackground, _at->background_color, NULL );
+                RES_LABEL_CONVERT(name),
+                                          RES_CONVERT(XmNmnemonic, mnemonic),
+                                          XmNbackground, _at->background_color, NULL);
     }
     else {
-        button = XtVaCreateManagedWidget( "",
+        button = XtVaCreateManagedWidget("",
         xmPushButtonWidgetClass,
         p_w->menu_bar[p_w->menu_deep],
-        RES_LABEL_CONVERT( name ),
+        RES_LABEL_CONVERT(name),
         XmNbackground, _at->background_color,
         NULL);
     }
 
-    AW_label_in_awar_list(this,button,name);
+    AW_label_in_awar_list(this, button, name);
     AW_cb_struct *cbs = new AW_cb_struct(this, f, cd1, cd2, helpText);
     XtAddCallback(button, XmNactivateCallback,
                   (XtCallbackProc) AW_server_callback,
@@ -3073,7 +3073,7 @@ void AW_window::insert_menu_topic(const char *topic_id, AW_label name,
 }
 
 void AW_window::insert_help_topic(AW_label name, const char *mnemonic, const char *helpText, AW_active Mask,
-                                  void (*f)(AW_window*, AW_CL , AW_CL ), AW_CL cd1, AW_CL cd2)
+                                  void (*f)(AW_window*, AW_CL,  AW_CL), AW_CL cd1, AW_CL cd2)
 {
     aw_assert(legal_mask(Mask));
     Widget button;
@@ -3081,8 +3081,8 @@ void AW_window::insert_help_topic(AW_label name, const char *mnemonic, const cha
     // create one help-sub-menu-point
     button = XtVaCreateManagedWidget("", xmPushButtonWidgetClass,
             p_w->help_pull_down, 
-            RES_CONVERT( XmNlabelString, name ),
-                                      RES_CONVERT( XmNmnemonic, mnemonic ), NULL );
+            RES_CONVERT(XmNlabelString, name),
+                                      RES_CONVERT(XmNmnemonic, mnemonic), NULL);
     XtAddCallback(button, XmNactivateCallback,
     (XtCallbackProc) AW_server_callback,
     (XtPointer) new AW_cb_struct(this, f, cd1, cd2, helpText));
@@ -3116,7 +3116,7 @@ AW_area_management::AW_area_management(AW_root *awr, Widget formi, Widget widget
 }
 
 AW_device *AW_window::get_device(AW_area area) {
-    AW_area_management *aram= MAP_ARAM(area);
+    AW_area_management *aram = MAP_ARAM(area);
     if (!aram)
         return 0;
     if (!aram->device)
@@ -3126,7 +3126,7 @@ AW_device *AW_window::get_device(AW_area area) {
 }
 
 AW_device *AW_window::get_size_device(AW_area area) {
-    AW_area_management *aram= MAP_ARAM(area);
+    AW_area_management *aram = MAP_ARAM(area);
     if (!aram)
         return 0;
     if (!aram->size_device)
@@ -3137,7 +3137,7 @@ AW_device *AW_window::get_size_device(AW_area area) {
 }
 
 AW_device *AW_window::get_print_device(AW_area area) {
-    AW_area_management *aram= MAP_ARAM(area);
+    AW_area_management *aram = MAP_ARAM(area);
     if (!aram)
         return 0;
     if (!aram->print_device)
@@ -3148,7 +3148,7 @@ AW_device *AW_window::get_print_device(AW_area area) {
 
 AW_device *AW_window::get_click_device(AW_area area, int mousex, int mousey,
         AW_pos max_distance_linei, AW_pos max_distance_texti, AW_pos radi) {
-    AW_area_management *aram= MAP_ARAM(area);
+    AW_area_management *aram = MAP_ARAM(area);
     if (!aram)
         return 0;
     if (!aram->click_device)
@@ -3161,13 +3161,13 @@ AW_device *AW_window::get_click_device(AW_area area, int mousex, int mousey,
 void AW_window::wm_activate() {
     {
         Boolean iconic = False;
-        XtVaGetValues(p_w->shell, XmNiconic, &iconic, NULL) ;
+        XtVaGetValues(p_w->shell, XmNiconic, &iconic, NULL);
 
         if (iconic == True) {
-            XtVaSetValues(p_w->shell, XmNiconic, False, NULL) ;
+            XtVaSetValues(p_w->shell, XmNiconic, False, NULL);
 
-            XtMapWidget(p_w->shell) ;
-            XRaiseWindow(XtDisplay(p_w->shell), XtWindow(p_w->shell)) ;
+            XtMapWidget(p_w->shell);
+            XRaiseWindow(XtDisplay(p_w->shell), XtWindow(p_w->shell));
         }
     }
 
@@ -3265,7 +3265,7 @@ void AW_window::show_internal(void *cl_grab) {
                 break;
             }
             case AW_REPOS_TO_CENTER: {
-            FALLBACK_CENTER: 
+            FALLBACK_CENTER :
                 int width, height; get_window_size(width, height);
                 int swidth, sheight; get_screen_size(swidth, sheight);
                 
@@ -3339,7 +3339,7 @@ void AW_root::main_loop(void) {
 }
 
 void AW_root::process_events(void) {
-    XtAppProcessEvent(p_r->context,XtIMAll);
+    XtAppProcessEvent(p_r->context, XtIMAll);
 }
 void AW_root::process_pending_events(void) {
     XtInputMask pending = XtAppPending(p_r->context);
@@ -3351,12 +3351,12 @@ void AW_root::process_pending_events(void) {
 
 /** Returns type if key event follows, else 0 */
 
-AW_ProcessEventType AW_root::peek_key_event(AW_window */*aww*/) {
+AW_ProcessEventType AW_root::peek_key_event(AW_window * /* aww */) {
     XEvent xevent;
-    Boolean result = XtAppPeekEvent(p_r->context,&xevent);
+    Boolean result = XtAppPeekEvent(p_r->context, &xevent);
 
     if (!result) return NO_EVENT;
-    if ( (xevent.type != KeyPress) && (xevent.type != KeyRelease)) return NO_EVENT;
+    if ((xevent.type != KeyPress) && (xevent.type != KeyRelease)) return NO_EVENT;
     return (AW_ProcessEventType)xevent.type;
 }
 
@@ -3366,14 +3366,14 @@ static void timed_window_title_cb(class AW_root* aw_root, AW_CL cd1, AW_CL cd2) 
     AW_window *aw = (AW_window *)cd2;
 
     aw->number_of_timed_title_changes--;
-    if ( !aw->number_of_timed_title_changes) {
+    if (!aw->number_of_timed_title_changes) {
         aw->set_window_title_intern(title);
     }
 
     delete title;
 }
 void AW_window::message(char *title, int ms) {
-    char *old_title= NULL;
+    char *old_title = NULL;
 
     number_of_timed_title_changes++;
 
@@ -3382,7 +3382,7 @@ void AW_window::message(char *title, int ms) {
     XtVaSetValues(p_w->shell, XmNtitle, title, NULL);
 
     get_root()->add_timed_callback(ms, timed_window_title_cb, (AW_CL)old_title,
-            (AW_CL)this );
+            (AW_CL)this);
 
 }
 
@@ -3477,7 +3477,7 @@ void AW_window::_set_activate_callback(void *widget) {
         }
 
         XtAddCallback((Widget) widget, XmNactivateCallback,
-                (XtCallbackProc) AW_server_callback, (XtPointer) _callback );
+                (XtCallbackProc) AW_server_callback, (XtPointer) _callback);
     }
     _callback = NULL;
 }
@@ -3501,7 +3501,7 @@ static void macro_message_cb(AW_window *aw, AW_CL) {
     }
 
     if (root->prvt->executing_macro_file) {
-        //root->enable_execute_macro(); @@@@
+        // root->enable_execute_macro(); @@@@
     }
 
     return;
@@ -3519,7 +3519,7 @@ void aw_macro_message(const char *templat, ...)
     char buffer[10000];
     {
         va_list parg;
-        va_start(parg,templat);
+        va_start(parg, templat);
         vsprintf(buffer, templat, parg);
     }
     static AW_window_message *aw_msg = 0;
@@ -3729,7 +3729,7 @@ void AW_window::set_background(const char *colorname, Widget parentWidget) {
 
         if (XAllocNamedColor(p_global->display, p_global->colormap, colorname, &color, &unused)
                 == 0) {
-            fprintf(stderr,"XAllocColor failed: %s\n", colorname);
+            fprintf(stderr, "XAllocColor failed: %s\n", colorname);
         }
         else {
             _at->background_color = color.pixel;

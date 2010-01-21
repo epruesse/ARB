@@ -21,7 +21,7 @@
 extern GBDATA *GLOBAL_gb_main;
 
 static void init_config_awars(AW_root *root) {
-    root->awar_string(AWAR_CONFIGURATION,"default_configuration",GLOBAL_gb_main);
+    root->awar_string(AWAR_CONFIGURATION, "default_configuration", GLOBAL_gb_main);
 }
 
 //  ---------------------------
@@ -142,7 +142,7 @@ int nt_build_conf_string_rek(GB_HASH *used, GBT_TREE *tree, GBS_strstruct *memfi
                              int *marked_at_right) // # of species which are marked (when returning from recursion)
 {
     if (!tree) return 0;
-    if (tree->is_leaf){
+    if (tree->is_leaf) {
         if (!tree->gb_node) {
             *marked_at_right = marked_at_left;
             return 0;   // Zombie
@@ -182,10 +182,10 @@ int nt_build_conf_string_rek(GB_HASH *used, GBT_TREE *tree, GBS_strstruct *memfi
                 }
 
                 while (marked_back) {
-                    GBS_chrcat(memfile,1);              // Separated by 1
-                    GBS_strcat(memfile,"L");
-                    GBS_strcat(memfile,marked_back->getNode()->name);
-                    GBS_write_hash(used,marked_back->getNode()->name,1);        // Mark species
+                    GBS_chrcat(memfile, 1);             // Separated by 1
+                    GBS_strcat(memfile, "L");
+                    GBS_strcat(memfile, marked_back->getNode()->name);
+                    GBS_write_hash(used, marked_back->getNode()->name, 1);      // Mark species
 
                     Store_species *rest = marked_back->remove();
                     delete marked_back;
@@ -198,41 +198,41 @@ int nt_build_conf_string_rek(GB_HASH *used, GBT_TREE *tree, GBS_strstruct *memfi
             *auto_mark = use_species_aside;
         }
 
-        GBS_chrcat(memfile,1);              // Separated by 1
-        GBS_strcat(memfile,"L");
-        GBS_strcat(memfile,tree->name);
-        GBS_write_hash(used,tree->name,1);      // Mark species
+        GBS_chrcat(memfile, 1);             // Separated by 1
+        GBS_strcat(memfile, "L");
+        GBS_strcat(memfile, tree->name);
+        GBS_write_hash(used, tree->name, 1);    // Mark species
 
         *marked_at_right = marked_at_left+1;
         return 1;
     }
 
     long oldpos = GBS_memoffset(memfile);
-    if (tree->gb_node && tree->name){       // but we are a group
-        GBDATA *gb_grouped = GB_entry(tree->gb_node,"grouped");
-        GBS_chrcat(memfile,1);              // Separated by 1
+    if (tree->gb_node && tree->name) {      // but we are a group
+        GBDATA *gb_grouped = GB_entry(tree->gb_node, "grouped");
+        GBS_chrcat(memfile, 1);             // Separated by 1
         if (gb_grouped && GB_read_byte(gb_grouped)) {
-            GBS_strcat(memfile,"F");
+            GBS_strcat(memfile, "F");
         }
         else {
-            GBS_strcat(memfile,"G");
+            GBS_strcat(memfile, "G");
         }
 
-        GBS_strcat(memfile,tree->name);
+        GBS_strcat(memfile, tree->name);
     }
 
     int right_of_leftson;
     long nspecies = nt_build_conf_string_rek(used, tree->leftson, memfile, extra_marked_species, use_species_aside, auto_mark, marked_at_left, &right_of_leftson);
     nspecies += nt_build_conf_string_rek(used, tree->rightson, memfile, extra_marked_species, use_species_aside, auto_mark, right_of_leftson, marked_at_right);
 
-    if (tree->gb_node && tree->name){       // but we are a group
-        GBS_chrcat(memfile,1);          // Separated by 1
-        GBS_chrcat(memfile,'E');        // Group end indicated by 'E'
+    if (tree->gb_node && tree->name) {      // but we are a group
+        GBS_chrcat(memfile, 1);         // Separated by 1
+        GBS_chrcat(memfile, 'E');        // Group end indicated by 'E'
     }
 
     if (!nspecies) {
         long newpos = GBS_memoffset(memfile);
-        GBS_str_cut_tail(memfile,newpos-oldpos);    // delete group info
+        GBS_str_cut_tail(memfile, newpos-oldpos);   // delete group info
     }
     return nspecies;
 }
@@ -245,31 +245,31 @@ struct SAI_string_builder {
 static long nt_build_sai_string_by_hash(const char *key, long val, void *cd_sai_builder) {
     struct SAI_string_builder *sai_builder = (struct SAI_string_builder*)cd_sai_builder;
 
-    const char *sep = strchr(key,1);
+    const char *sep = strchr(key, 1);
     if (!sep) return val;                           // what's wrong
 
     struct GBS_strstruct *sai_middle      = sai_builder->sai_middle;
     const char           *last_group_name = sai_builder->last_group_name;
 
     if (!last_group_name || strncmp(key, last_group_name, sep-key)) { // new group
-        if (last_group_name){
-            GBS_chrcat(sai_middle,1);               // Separated by 1
-            GBS_chrcat(sai_middle,'E');             // End of old group
+        if (last_group_name) {
+            GBS_chrcat(sai_middle, 1);              // Separated by 1
+            GBS_chrcat(sai_middle, 'E');             // End of old group
         }
-        GBS_chrcat(sai_middle,1);                   // Separated by 1
-        GBS_strcat(sai_middle,"FSAI:");
-        GBS_strncat(sai_middle,key,sep-key);
+        GBS_chrcat(sai_middle, 1);                  // Separated by 1
+        GBS_strcat(sai_middle, "FSAI:");
+        GBS_strncat(sai_middle, key, sep-key);
         sai_builder->last_group_name = key;
     }
-    GBS_chrcat(sai_middle,1);                       // Separated by 1
-    GBS_strcat(sai_middle,"S");
-    GBS_strcat(sai_middle,sep+1);
+    GBS_chrcat(sai_middle, 1);                      // Separated by 1
+    GBS_strcat(sai_middle, "S");
+    GBS_strcat(sai_middle, sep+1);
     return val;
 }
 
 
 /** collect all Sais, place some SAI in top area, rest in middle */
-void nt_build_sai_string(GBS_strstruct *topfile, GBS_strstruct *middlefile){
+void nt_build_sai_string(GBS_strstruct *topfile, GBS_strstruct *middlefile) {
     GBDATA *gb_sai_data = GBT_get_SAI_data(GLOBAL_gb_main);
     if (!gb_sai_data) return;
 
@@ -277,26 +277,26 @@ void nt_build_sai_string(GBS_strstruct *topfile, GBS_strstruct *middlefile){
     GBDATA  *gb_sai;
 
     for (gb_sai = GBT_first_SAI_rel_SAI_data(gb_sai_data); gb_sai; gb_sai = GBT_next_SAI(gb_sai)) {
-        GBDATA *gb_name = GB_search(gb_sai,"name",GB_FIND);
+        GBDATA *gb_name = GB_search(gb_sai, "name", GB_FIND);
         if (!gb_name) continue;
 
         char *name = GB_read_string(gb_name);
 
         if (strcmp(name,  "HELIX") == 0  || strcmp(name,  "HELIX_NR") == 0 || strcmp(name,  "ECOLI") == 0) {
-            GBS_chrcat(topfile,1);              // Separated by 1
-            GBS_strcat(topfile,"S");
-            GBS_strcat(topfile,name);
+            GBS_chrcat(topfile, 1);             // Separated by 1
+            GBS_strcat(topfile, "S");
+            GBS_strcat(topfile, name);
         }
         else {
-            GBDATA *gb_gn = GB_search(gb_sai,"sai_group",GB_FIND);
+            GBDATA *gb_gn = GB_search(gb_sai, "sai_group", GB_FIND);
             char   *gn;
 
             if (gb_gn)  gn = GB_read_string(gb_gn);
             else        gn = strdup("SAI's");
 
             char *cn = new char[strlen(gn) + strlen(name) + 2];
-            sprintf(cn,"%s%c%s",gn,1,name);
-            GBS_write_hash(hash,cn,1);
+            sprintf(cn, "%s%c%s", gn, 1, name);
+            GBS_write_hash(hash, cn, 1);
             delete [] cn;
             free(gn);
         }
@@ -307,68 +307,68 @@ void nt_build_sai_string(GBS_strstruct *topfile, GBS_strstruct *middlefile){
     GBS_chrcat(middlefile, 1);
     GBS_strcat(middlefile, "GSAI-Maingroup");
 
-    struct SAI_string_builder sai_builder = { middlefile, 0};
+    struct SAI_string_builder sai_builder = { middlefile, 0 };
     GBS_hash_do_sorted_loop(hash, nt_build_sai_string_by_hash, GBS_HCF_sortedByKey, &sai_builder);
     if (sai_builder.last_group_name) {
-        GBS_chrcat(middlefile,1);               // Separated by 1
-        GBS_chrcat(middlefile,'E');             // End of old group
+        GBS_chrcat(middlefile, 1);              // Separated by 1
+        GBS_chrcat(middlefile, 'E');             // End of old group
     }
 
     // close surrounding SAI-group:
-    GBS_chrcat(middlefile,1);
-    GBS_chrcat(middlefile,'E');
+    GBS_chrcat(middlefile, 1);
+    GBS_chrcat(middlefile, 'E');
 
     GBS_free_hash(hash);
 }
 
-void nt_build_conf_marked(GB_HASH *used, GBS_strstruct *file){
-    GBS_chrcat(file,1);             // Separated by 1
-    GBS_strcat(file,"FMore Sequences");
+void nt_build_conf_marked(GB_HASH *used, GBS_strstruct *file) {
+    GBS_chrcat(file, 1);            // Separated by 1
+    GBS_strcat(file, "FMore Sequences");
     GBDATA *gb_species;
     for (gb_species = GBT_first_marked_species(GLOBAL_gb_main);
          gb_species;
-         gb_species = GBT_next_marked_species(gb_species)){
-        char *name = GBT_read_string(gb_species,"name");
-        if (GBS_read_hash(used,name)){
+         gb_species = GBT_next_marked_species(gb_species)) {
+        char *name = GBT_read_string(gb_species, "name");
+        if (GBS_read_hash(used, name)) {
             free(name);
             continue;
         }
-        GBS_chrcat(file,1);
-        GBS_strcat(file,"L");
-        GBS_strcat(file,name);
+        GBS_chrcat(file, 1);
+        GBS_strcat(file, "L");
+        GBS_strcat(file, name);
         free(name);
     }
 
-    GBS_chrcat(file,1); // Separated by 1
-    GBS_chrcat(file,'E');   // Group end indicated by 'E'
+    GBS_chrcat(file, 1); // Separated by 1
+    GBS_chrcat(file, 'E');   // Group end indicated by 'E'
 }
 
 #define CONFNAME "default_configuration"
 
-void nt_start_editor_on_configuration(AW_window *aww){
+void nt_start_editor_on_configuration(AW_window *aww) {
     aww->hide();
     char *cn = aww->get_root()->awar(AWAR_CONFIGURATION)->read_string();
-    char *com = (char *)GBS_global_string("arb_edit4 -c '%s' &",cn);
+    char *com = (char *)GBS_global_string("arb_edit4 -c '%s' &", cn);
     GBCMC_system(GLOBAL_gb_main, com);
     delete cn;
 }
 
-AW_window *NT_start_editor_on_old_configuration(AW_root *awr){
+AW_window *NT_start_editor_on_old_configuration(AW_root *awr) {
     static AW_window_simple *aws = 0;
     if (aws) return (AW_window *)aws;
-    awr->awar_string(AWAR_CONFIGURATION,"default_configuration",GLOBAL_gb_main);
+    awr->awar_string(AWAR_CONFIGURATION, "default_configuration", GLOBAL_gb_main);
     aws = new AW_window_simple;
-    aws->init( awr, "SELECT_CONFIGURATION", "SELECT A CONFIGURATION");
-    aws->at(10,10);
-    aws->auto_space(0,0);
-    awt_create_selection_list_on_configurations(GLOBAL_gb_main,(AW_window *)aws,AWAR_CONFIGURATION);
+    aws->init(awr, "SELECT_CONFIGURATION", "SELECT A CONFIGURATION");
+    aws->at(10, 10);
+    aws->auto_space(0, 0);
+    awt_create_selection_list_on_configurations(GLOBAL_gb_main, (AW_window *)aws, AWAR_CONFIGURATION);
     aws->at_newline();
 
     aws->callback((AW_CB0)nt_start_editor_on_configuration);
-    aws->create_button("START","START");
+    aws->create_button("START", "START");
 
     aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->window_fit();
     return (AW_window *)aws;
@@ -387,15 +387,15 @@ enum extractType {
     CONF_COMBINE // logical AND
 };
 
-void nt_extract_configuration(AW_window *aww, AW_CL cl_extractType){
+void nt_extract_configuration(AW_window *aww, AW_CL cl_extractType) {
     GB_transaction  dummy2(GLOBAL_gb_main); // open close transaction
     char           *cn               = aww->get_root()->awar(AWAR_CONFIGURATION)->read_string();
-    GBDATA         *gb_configuration = GBT_find_configuration(GLOBAL_gb_main,cn);
-    if (!gb_configuration){
+    GBDATA         *gb_configuration = GBT_find_configuration(GLOBAL_gb_main, cn);
+    if (!gb_configuration) {
         aw_message(GBS_global_string("Configuration '%s' not found in the database", cn));
     }
     else {
-        GBDATA *gb_middle_area  = GB_search(gb_configuration,"middle_area",GB_STRING);
+        GBDATA *gb_middle_area  = GB_search(gb_configuration, "middle_area", GB_STRING);
         char   *md              = 0;
         size_t  unknown_species = 0;
 
@@ -406,7 +406,7 @@ void nt_extract_configuration(AW_window *aww, AW_CL cl_extractType){
 
             switch (ext_type) {
                 case CONF_EXTRACT:
-                    GBT_mark_all(GLOBAL_gb_main,0); // unmark all for extract
+                    GBT_mark_all(GLOBAL_gb_main, 0); // unmark all for extract
                     break;
                 case CONF_COMBINE: {
                     // store all marked species in hash and unmark them
@@ -421,34 +421,34 @@ void nt_extract_configuration(AW_window *aww, AW_CL cl_extractType){
 
                     break;
                 }
-                default :
+                default:
                     break;
             }
 
             md = GB_read_string(gb_middle_area);
-            if (md){
+            if (md) {
                 char *p;
                 char tokens[2];
                 tokens[0] = 1;
                 tokens[1] = 0;
-                for ( p = strtok(md,tokens); p; p = strtok(NULL,tokens)){
+                for (p = strtok(md, tokens); p; p = strtok(NULL, tokens)) {
                     if (p[0] != 'L') continue;
-                    GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main,p+1);
-                    if (gb_species){
+                    GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main, p+1);
+                    if (gb_species) {
                         int mark = GB_read_flag(gb_species);
                         switch (ext_type) {
                             case CONF_EXTRACT:
                             case CONF_MARK:     mark = 1; break;
                             case CONF_UNMARK:   mark = 0; break;
                             case CONF_INVERT:   mark = 1-mark; break;
-                            case CONF_COMBINE:  {
+                            case CONF_COMBINE: {
                                 nt_assert(mark == 0); // should have been unmarked above
                                 mark = GBS_read_hash(was_marked, p+1); // mark if was_marked
                                 break;
                             }
                             default: nt_assert(0); break;
                         }
-                        GB_write_flag(gb_species,mark);
+                        GB_write_flag(gb_species, mark);
                     }
                     else {
                         unknown_species++;
@@ -468,11 +468,11 @@ void nt_extract_configuration(AW_window *aww, AW_CL cl_extractType){
     free(cn);
 }
 
-void nt_delete_configuration(AW_window *aww){
+void nt_delete_configuration(AW_window *aww) {
     GB_transaction transaction_var(GLOBAL_gb_main);
     char *cn = aww->get_root()->awar(AWAR_CONFIGURATION)->read_string();
-    GBDATA *gb_configuration = GBT_find_configuration(GLOBAL_gb_main,cn);
-    if (gb_configuration){
+    GBDATA *gb_configuration = GBT_find_configuration(GLOBAL_gb_main, cn);
+    if (gb_configuration) {
         GB_ERROR error = GB_delete(gb_configuration);
         if (error) aw_message(error);
     }
@@ -510,7 +510,7 @@ GB_ERROR NT_create_configuration(AW_window *, GBT_TREE *tree, const char *conf_n
     GBS_strstruct  *topmid  = GBS_stropen(10000);
     {
         GBS_strstruct *middlefile = GBS_stropen(10000);
-        nt_build_sai_string(topfile,topmid);
+        nt_build_sai_string(topfile, topmid);
 
         if (use_species_aside) {
             Store_species *extra_marked_species = 0;
@@ -526,16 +526,16 @@ GB_ERROR NT_create_configuration(AW_window *, GBT_TREE *tree, const char *conf_n
             int dummy_1=0, dummy_2;
             nt_build_conf_string_rek(used, tree, middlefile, 0, 0, &dummy_1, 0, &dummy_2);
         }
-        nt_build_conf_marked(used,topmid);
+        nt_build_conf_marked(used, topmid);
         char *mid = GBS_strclose(middlefile);
-        GBS_strcat(topmid,mid);
+        GBS_strcat(topmid, mid);
         free(mid);
     }
 
     char *middle = GBS_strclose(topmid);
     char *top    = GBS_strclose(topfile);
 
-    GBDATA   *gb_configuration = GBT_create_configuration(GLOBAL_gb_main,conf_name);
+    GBDATA   *gb_configuration = GBT_create_configuration(GLOBAL_gb_main, conf_name);
     GB_ERROR  error            = 0;
 
     if (!gb_configuration) error = GB_await_error();
@@ -598,47 +598,47 @@ static AW_window *create_configuration_admin_window(AW_root *root) {
         aws->load_xfig("nt_selection.fig");
 
         aws->at("close");
-        aws->callback( (AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE","CLOSE","C");
+        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help");
-        aws->callback(AW_POPUP_HELP,(AW_CL)"configuration.hlp");
-        aws->create_button("HELP","HELP","H");
+        aws->callback(AW_POPUP_HELP, (AW_CL)"configuration.hlp");
+        aws->create_button("HELP", "HELP", "H");
 
         aws->at("list");
         awt_create_selection_list_on_configurations(GLOBAL_gb_main, aws, AWAR_CONFIGURATION);
 
         aws->at("store");
         aws->callback(nt_store_configuration);
-        aws->create_button("STORE","STORE","S");
+        aws->create_button("STORE", "STORE", "S");
 
         aws->at("extract");
         aws->callback(nt_extract_configuration, CONF_EXTRACT);
-        aws->create_button("EXTRACT","EXTRACT","E");
+        aws->create_button("EXTRACT", "EXTRACT", "E");
 
         aws->at("mark");
         aws->callback(nt_extract_configuration, CONF_MARK);
-        aws->create_button("MARK","MARK","M");
+        aws->create_button("MARK", "MARK", "M");
 
         aws->at("unmark");
         aws->callback(nt_extract_configuration, CONF_UNMARK);
-        aws->create_button("UNMARK","UNMARK","U");
+        aws->create_button("UNMARK", "UNMARK", "U");
 
         aws->at("invert");
         aws->callback(nt_extract_configuration, CONF_INVERT);
-        aws->create_button("INVERT","INVERT","I");
+        aws->create_button("INVERT", "INVERT", "I");
 
         aws->at("combine");
         aws->callback(nt_extract_configuration, CONF_COMBINE);
-        aws->create_button("COMBINE","COMBINE","C");
+        aws->create_button("COMBINE", "COMBINE", "C");
 
         aws->at("delete");
         aws->callback(nt_delete_configuration);
-        aws->create_button("DELETE","DELETE","D");
+        aws->create_button("DELETE", "DELETE", "D");
 
         aws->at("rename");
         aws->callback(nt_rename_configuration);
-        aws->create_button("RENAME","RENAME","R");
+        aws->create_button("RENAME", "RENAME", "R");
     }
     return aws;
 }

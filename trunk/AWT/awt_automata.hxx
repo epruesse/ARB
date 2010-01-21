@@ -25,7 +25,7 @@ public:
     ~AWT_auto_states();
 };
 
-class AWT_automata: protected  AWT_auto_states {
+class AWT_automata : protected  AWT_auto_states {
     char gaps[256];
     int  value_is_malloced;
 

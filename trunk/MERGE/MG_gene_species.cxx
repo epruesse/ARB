@@ -47,7 +47,7 @@ using namespace std;
 #define AWAR_MERGE_GENE_SPECIES_CREATE_FIELDS AWAR_MERGE_GENE_SPECIES_BASE "activated"
 #define AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS   AWAR_MERGE_GENE_SPECIES_BASE "field_defs"
 
-enum CreationMethod  {
+enum CreationMethod {
     MG_CREATE_COPY_ORGANISM,
     MG_CREATE_COPY_GENE,
     MG_CREATE_USING_ACI_ONLY
@@ -516,7 +516,7 @@ static void init_gene_species_xfer_fields_config(AWT_config_definition& cdef) {
     cdef.add(AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS, "fields");
     cdef.add(AWAR_MERGE_GENE_SPECIES_FIELDS_SAVE, "defs");
 }
-static char *store_gene_species_xfer_fields(AW_window *aww, AW_CL , AW_CL ) {
+static char *store_gene_species_xfer_fields(AW_window *aww, AW_CL,  AW_CL) {
     AW_root *aw_root = aww->get_root();
     {
         char                  *existing_definitions = aw_root->awar(AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS)->read_string();
@@ -536,7 +536,7 @@ static char *store_gene_species_xfer_fields(AW_window *aww, AW_CL , AW_CL ) {
     init_gene_species_xfer_fields_config(sub_cdef);
     return sub_cdef.read();
 }
-static void load_gene_species_xfer_fields(AW_window *aww, const char *stored_string, AW_CL cl_sel_id, AW_CL ) {
+static void load_gene_species_xfer_fields(AW_window *aww, const char *stored_string, AW_CL cl_sel_id, AW_CL) {
     AW_root *aw_root = aww->get_root();
 
     aw_root->awar(AWAR_MERGE_GENE_SPECIES_CURRENT_FIELD)->write_string(""); // de-select
@@ -578,11 +578,11 @@ AW_window *MG_gene_species_create_field_transfer_def_window(AW_root *aw_root) {
 
     aws->at("close");
     aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP,(AW_CL)"gene_species_field_transfer.hlp");
-    aws->create_button("HELP","HELP");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"gene_species_field_transfer.hlp");
+    aws->create_button("HELP", "HELP");
 
     aws->at("active");
     aws->create_toggle(AWAR_MERGE_GENE_SPECIES_CREATE_FIELDS);

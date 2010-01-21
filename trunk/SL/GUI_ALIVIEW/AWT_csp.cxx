@@ -29,15 +29,15 @@ AWT_csp::AWT_csp(GBDATA *gb_maini, AW_root *awri, const char *awar_template) {
      *                      ".../enable_helix"
      */
 
-    memset((char *)this,0,sizeof(AWT_csp));
+    memset((char *)this, 0, sizeof(AWT_csp));
 
     gb_main = gb_maini;
     awr     = awri;
 
-    awar_name         = GBS_string_eval(awar_template,AWT_CSP_AWAR_CSP_NAME,0);
-    awar_alignment    = GBS_string_eval(awar_template,AWT_CSP_AWAR_CSP_ALIGNMENT,0);
-    awar_smooth       = GBS_string_eval(awar_template,AWT_CSP_AWAR_CSP_SMOOTH,0);
-    awar_enable_helix = GBS_string_eval(awar_template,AWT_CSP_AWAR_CSP_ENABLE_HELIX,0);
+    awar_name         = GBS_string_eval(awar_template, AWT_CSP_AWAR_CSP_NAME, 0);
+    awar_alignment    = GBS_string_eval(awar_template, AWT_CSP_AWAR_CSP_ALIGNMENT, 0);
+    awar_smooth       = GBS_string_eval(awar_template, AWT_CSP_AWAR_CSP_SMOOTH, 0);
+    awar_enable_helix = GBS_string_eval(awar_template, AWT_CSP_AWAR_CSP_ENABLE_HELIX, 0);
 
     awr->awar_string(awar_name, "NONE");
     awr->awar_string(awar_alignment);
@@ -48,7 +48,7 @@ AWT_csp::AWT_csp(GBDATA *gb_maini, AW_root *awri, const char *awar_template) {
     refresh_sai_selection();                        // same as awt_csp_rescan_sais(this)
 }
 
-void AWT_csp::exit(){
+void AWT_csp::exit() {
     delete [] weights;  weights  = NULL;
     delete [] rates;    rates    = NULL;
     delete [] ttratio;  ttratio  = NULL;
@@ -64,7 +64,7 @@ void AWT_csp::exit(){
     seq_len = 0; // mark invalid
 }
 
-AWT_csp::~AWT_csp(void){
+AWT_csp::~AWT_csp(void) {
     this->exit();
     delete awar_name;
     delete awar_alignment;
@@ -72,7 +72,7 @@ AWT_csp::~AWT_csp(void){
     delete awar_enable_helix;
 }
 
-GB_ERROR AWT_csp::go(AP_filter *filter){
+GB_ERROR AWT_csp::go(AP_filter *filter) {
     exit(); // delete previously calculated stats
 
     GB_transaction dummy(gb_main);
@@ -106,7 +106,7 @@ GB_ERROR AWT_csp::go(AP_filter *filter){
             if (!gb_ali) error = GBS_global_string("SAI '%s' does not exist in alignment '%s'", sai_name, alignment_name);
         }
         if (!error) {
-            gb_freqs = GB_entry(gb_ali,"FREQUENCIES");
+            gb_freqs = GB_entry(gb_ali, "FREQUENCIES");
             if (!gb_ali) error = GBS_global_string("Column statistic '%s' is invalid\n(has no FREQUENCIES)", sai_name);
         }
 
@@ -116,39 +116,39 @@ GB_ERROR AWT_csp::go(AP_filter *filter){
             delete [] weights; weights  = new GB_UINT4[seq_len];
             delete [] rates;   rates    = new float[seq_len];
             delete [] ttratio; ttratio  = new float[seq_len];
-            delete [] is_helix;is_helix = new bool[seq_len];
+            delete [] is_helix; is_helix = new bool[seq_len];
             delete [] mut_sum; mut_sum  = new GB_UINT4[seq_len];
-            delete [] freq_sum;freq_sum = new GB_UINT4[seq_len];
+            delete [] freq_sum; freq_sum = new GB_UINT4[seq_len];
 
             delete desc; desc = 0;
 
             size_t i;
             size_t j;
-            for (i=0;i<256;i++) { delete frequency[i];frequency[i]=0;}
+            for (i=0; i<256; i++) { delete frequency[i]; frequency[i]=0; }
 
             long use_helix = awr->awar(awar_enable_helix)->read_int();
 
-            for (j=i=0;i<seq_len;i++) {
+            for (j=i=0; i<seq_len; i++) {
                 is_helix[i] = false;
                 weights[i]  = 1;
             }
 
             if (!error && use_helix) {            // calculate weights and helix filter
                 BI_helix helix;
-                error = helix.init(this->gb_main,alignment_name);
-                if (error){
+                error = helix.init(this->gb_main, alignment_name);
+                if (error) {
                     aw_message(error);
                     error = 0;
                     goto no_helix;
                 }
                 error = 0;
-                for (j=i=0;i<alignment_length;i++) {
+                for (j=i=0; i<alignment_length; i++) {
                     if (!filter || filter->use_position(i)) {
                         if (helix.pairtype(i) == HELIX_PAIR) {
                             is_helix[j] = true;
                             weights[j]  = 1;
                         }
-                        else{
+                        else {
                             is_helix[j] = false;
                             weights[j]  = 2;
                         }
@@ -156,13 +156,13 @@ GB_ERROR AWT_csp::go(AP_filter *filter){
                     }
                 }
             }
-        no_helix:
+        no_helix :
 
-            for (i=0;i<seq_len;i++) freq_sum[i] = 0;
+            for (i=0; i<seq_len; i++) freq_sum[i] = 0;
 
             GBDATA *gb_freq;
             GB_UINT4 *freqi[256];
-            for (i=0;i<256; i++) freqi[i] = 0;
+            for (i=0; i<256; i++) freqi[i] = 0;
             int wf;                 // ********* read the frequency statistic
             for (gb_freq = GB_child(gb_freqs); gb_freq; gb_freq = GB_nextChild(gb_freq)) {
                 char *key = GB_read_key(gb_freq);
@@ -174,31 +174,31 @@ GB_ERROR AWT_csp::go(AP_filter *filter){
             }
 
             GB_UINT4 *minmut = 0;
-            GBDATA *gb_minmut = GB_entry(gb_freqs,"TRANSITIONS");
+            GBDATA *gb_minmut = GB_entry(gb_freqs, "TRANSITIONS");
             if (gb_minmut) minmut = GB_read_ints(gb_minmut);
 
             GB_UINT4 *transver = 0;
-            GBDATA *gb_transver = GB_entry(gb_freqs,"TRANSVERSIONS");
+            GBDATA *gb_transver = GB_entry(gb_freqs, "TRANSVERSIONS");
             if (gb_transver) transver = GB_read_ints(gb_transver);
             unsigned long max_freq_sum = 0;
-            for (wf = 0; wf<256;wf++) {     // ********* calculate sum of mutations
+            for (wf = 0; wf<256; wf++) {    // ********* calculate sum of mutations
                 if (!freqi[wf]) continue;   // ********* calculate nbases for each col.
-                for (j=i=0;i<alignment_length;i++) {
+                for (j=i=0; i<alignment_length; i++) {
                     if (filter && !filter->use_position(i)) continue;
                     freq_sum[j] += freqi[wf][i];
                     mut_sum[j] = minmut[i];
                     j++;
                 }
             }
-            for (i=0;i<seq_len;i++)
+            for (i=0; i<seq_len; i++)
                 if (freq_sum[i] > max_freq_sum)
                     max_freq_sum = freq_sum[i];
             unsigned long min_freq_sum = DIST_MIN_SEQ(max_freq_sum);
 
-            for (wf = 0; wf<256;wf++) {
+            for (wf = 0; wf<256; wf++) {
                 if (!freqi[wf]) continue;
                 frequency[wf] = new float[seq_len];
-                for (j=i=0;i<alignment_length;i++) {
+                for (j=i=0; i<alignment_length; i++) {
                     if (filter && !filter->use_position(i)) continue;
                     if (freq_sum[j] > min_freq_sum) {
                         frequency[wf][j] = freqi[wf][i]/(float)freq_sum[j];
@@ -211,7 +211,7 @@ GB_ERROR AWT_csp::go(AP_filter *filter){
                 }
             }
 
-            for (j=i=0;i<alignment_length;i++) { // ******* calculate rates
+            for (j=i=0; i<alignment_length; i++) { // ******* calculate rates
                 if (filter && !filter->use_position(i)) continue;
                 if (!weights[j]) {
                     rates[j] = 1.0;
@@ -234,13 +234,13 @@ GB_ERROR AWT_csp::go(AP_filter *filter){
             // ****** normalize rates
 
             double sum_rates                   = 0;
-            for (i=0;i<seq_len;i++) sum_rates += rates[i];
+            for (i=0; i<seq_len; i++) sum_rates += rates[i];
             sum_rates                         /= seq_len;
-            for (i=0;i<seq_len;i++) rates[i]  /= sum_rates;
+            for (i=0; i<seq_len; i++) rates[i] /= sum_rates;
 
             free(transver);
             free(minmut);
-            for (i=0;i<256;i++) free(freqi[i]);
+            for (i=0; i<256; i++) free(freqi[i]);
         }
         free(sai_name);
     }
@@ -266,19 +266,19 @@ void AWT_csp::print(void) {
     sum_rates[0] = sum_rates[1] = sum_tt[0] = sum_tt[1] = 0;
     count[0] = count[1] = 0;
     if (!seq_len) return;
-    for (j=0;j<seq_len;j++){
+    for (j=0; j<seq_len; j++) {
         if (!weights[j]) continue;
         fputc(".#"[is_helix[j]], stdout);
-        printf( "%i:    minmut %5i  freqs %5i   rates  %5f  tt %5f  ",
+        printf("%i:    minmut %5i  freqs %5i   rates  %5f  tt %5f  ",
                 j, mut_sum[j], freq_sum[j], rates[j], ttratio[j]);
-        for (wf = 0;wf<256;wf++) {
+        for (wf = 0; wf<256; wf++) {
             if (!frequency[wf]) continue;
-            printf("%c:%5f ",wf,frequency[wf][j]);
+            printf("%c:%5f ", wf, frequency[wf][j]);
         }
         sum_rates[is_helix[j]] += rates[j];
         sum_tt[is_helix[j]] += ttratio[j];
         count[is_helix[j]]++;
-        printf("w: %i\n",weights[j]);
+        printf("w: %i\n", weights[j]);
     }
     printf("Helical Rates %5f   Non Hel. Rates  %5f\n",
            sum_rates[1]/count[1], sum_rates[0]/count[0]);
@@ -313,30 +313,30 @@ void AWT_csp::create_sai_selection(AW_window *aww) {
     sai_sel_box_id = awt_create_selection_list_on_extendeds(gb_main, aww, awar_name, awt_csp_sai_filter, (AW_CL)this);
 }
 
-void create_selection_list_on_csp(AW_window *aws, AWT_csp *csp){
+void create_selection_list_on_csp(AW_window *aws, AWT_csp *csp) {
     csp->create_sai_selection(aws);
 }
 
-AW_window *create_csp_window(AW_root *aw_root, AWT_csp *csp){
+AW_window *create_csp_window(AW_root *aw_root, AWT_csp *csp) {
     GB_transaction dummy(csp->get_gb_main());
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "SELECT_CSP", "Select Column Statistic");
+    aws->init(aw_root, "SELECT_CSP", "Select Column Statistic");
     aws->load_xfig("awt/col_statistic.fig");
 
-    aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE","C");
+    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->at("help");aws->callback(AW_POPUP_HELP,(AW_CL)"awt_csp.hlp");
-    aws->create_button("HELP", "HELP","H");
+    aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"awt_csp.hlp");
+    aws->create_button("HELP", "HELP", "H");
 
     aws->at("box");
-    create_selection_list_on_csp(aws,csp);
+    create_selection_list_on_csp(aws, csp);
 
     aws->at("smooth");
     aws->create_toggle_field(csp->get_awar_smooth());
-    aws->insert_toggle("Calculate each column (nearly) independently","D",0);
-    aws->insert_toggle("Smooth parameter estimates a little","M",1);
-    aws->insert_toggle("Smooth parameter estimates across columns","S",2);
+    aws->insert_toggle("Calculate each column (nearly) independently", "D", 0);
+    aws->insert_toggle("Smooth parameter estimates a little", "M", 1);
+    aws->insert_toggle("Smooth parameter estimates across columns", "S", 2);
     aws->update_toggle_field();
 
     aws->at("helix");

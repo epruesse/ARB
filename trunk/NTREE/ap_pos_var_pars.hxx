@@ -21,7 +21,7 @@ class AW_root;
 #define AWAR_PVP_SAI  "tmp/pos_var_pars/sai"
 #define AWAR_PVP_TREE "tmp/pos_var_pars/tree"
 
-AW_window *AP_open_pos_var_pars_window( AW_root *root );
+AW_window *AP_open_pos_var_pars_window(AW_root *root);
 
 class AP_pos_var {
     GBDATA        *gb_main;
@@ -44,7 +44,7 @@ class AP_pos_var {
 
 public:
 
-    AP_pos_var(GBDATA *gb_main,char *ali_name, long ali_len, int isdna, char *tree_name);
+    AP_pos_var(GBDATA *gb_main, char *ali_name, long ali_len, int isdna, char *tree_name);
     ~AP_pos_var();
 
     GB_ERROR retrieve(GBT_TREE *tree);

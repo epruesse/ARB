@@ -85,7 +85,7 @@ public:
 
     const char *init(GBDATA *gb_main);
     const char *init(GBDATA *gb_main, const char *alignment_name);
-    const char *init(GBDATA *gb_helix_nr,GBDATA *gb_helix,size_t size);
+    const char *init(GBDATA *gb_helix_nr, GBDATA *gb_helix, size_t size);
     const char *initFromData(const char *helix_nr, const char *helix, size_t size);
 
     int check_pair(char left, char right, BI_PAIR_TYPE pair_type); // return 1 if bases form a pair
@@ -131,7 +131,7 @@ public:
     ~BI_ecoli_ref();
 
     const char *init(GBDATA *gb_main);
-    const char *init(GBDATA *gb_main,char *alignment_name, char *ref_name);
+    const char *init(GBDATA *gb_main, char *alignment_name, char *ref_name);
     const char *init(const char *seq, size_t size);
 
     bool gotData() const { return abs2rel != 0; }

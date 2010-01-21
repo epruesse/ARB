@@ -67,7 +67,7 @@ void ST_base_vector::print() {
     }
 }
 
-void ST_rate_matrix::set(double dist, double /*TT_ratio */) {
+void ST_rate_matrix::set(double dist, double /* TT_ratio */) {
     int i, j;
     double k = 1.0 / ST_MAX_BASE;
     for (i = 0; i < ST_MAX_BASE; i++) {

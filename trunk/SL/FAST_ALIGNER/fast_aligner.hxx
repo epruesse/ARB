@@ -35,9 +35,9 @@ struct AWTC_faligner_cd
 // --------------------------------------------------------------------------------
 
 AW_window *AWTC_create_faligner_window(AW_root *awr, AW_CL cd2);
-void       AWTC_create_faligner_variables(AW_root *root,AW_default db1);
+void       AWTC_create_faligner_variables(AW_root *root, AW_default db1);
 void       AWTC_awar_set_current_sequence(AW_root *root, AW_default db1);
-void       AWTC_set_reference_species_name(AW_window */*aww*/, AW_CL cl_AW_root);
+void       AWTC_set_reference_species_name(AW_window * /* aww */, AW_CL cl_AW_root);
 
 void      AWTC_start_faligning(AW_window *aw, AW_CL cd2);
 ARB_ERROR AWTC_delete_temp_entries(GBDATA *gb_main, GB_CSTR alignment);

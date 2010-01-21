@@ -2,7 +2,7 @@
 #define AW_PRINT_HXX
 
 
-class AW_device_print: public AW_device {
+class AW_device_print : public AW_device {
     FILE       *out;
 public:
     // ********* real public
@@ -18,15 +18,15 @@ public:
 
     AW_DEVICE_TYPE type(void);
 
-    int line(int gc, AW_pos x0,AW_pos y0, AW_pos x1,AW_pos y1, AW_bitset filter, AW_CL cd1, AW_CL cd2);
-    int text(int gc, const char *string,AW_pos x,AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2,long opt_strlen);
-    int box(int gc, bool filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filter, AW_CL cd1, AW_CL cd2);
-    int circle(int gc, bool filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filter, AW_CL cd1, AW_CL cd2);
+    int line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filter, AW_CL cd1, AW_CL cd2);
+    int text(int gc, const char *string, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2, long opt_strlen);
+    int box(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, AW_bitset filter, AW_CL cd1, AW_CL cd2);
+    int circle(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, AW_bitset filter, AW_CL cd1, AW_CL cd2);
     int filled_area(int gc, int npoints, AW_pos *points, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
     int find_color_idx(unsigned long color);
     void set_color_mode(bool mode);
 
-    int arc(int gc, bool filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, int start_degrees, int arc_degrees, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+    int arc(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, int start_degrees, int arc_degrees, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
         return generic_arc(gc, filled, x0, y0, width, heigth, start_degrees, arc_degrees, filteri, cd1, cd2);
     }
 };

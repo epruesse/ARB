@@ -81,12 +81,12 @@ SAI_graphic::SAI_graphic(AW_root *aw_rooti, GBDATA *gb_maini) {
     this->gb_main = gb_maini;
 }
 
-void SAI_graphic::command(AW_device */*device*/, AWT_COMMAND_MODE /*cmd*/, int button, AW_key_mod /*key_modifier*/, AW_key_code /*key_code*/, char /*key_char*/,
-                          AW_event_type type, AW_pos /*x*/, AW_pos /*y*/, AW_clicked_line *cl, AW_clicked_text *ct)
+void SAI_graphic::command(AW_device * /* device */, AWT_COMMAND_MODE /* cmd */, int button, AW_key_mod /* key_modifier */, AW_key_code /* key_code */, char /* key_char */,
+                          AW_event_type type, AW_pos /* x */, AW_pos /* y */, AW_clicked_line *cl, AW_clicked_text *ct)
 {
-    if (type == AW_Mouse_Press && (cl->exists || ct->exists) && button != AWT_M_MIDDLE ) {
+    if (type == AW_Mouse_Press && (cl->exists || ct->exists) && button != AWT_M_MIDDLE) {
         int clicked_idx = 0;
-        if(ct->exists) {
+        if (ct->exists) {
             clicked_idx = (int)ct->client_data1;
             const char *species_name = g_pbdata->probeSpecies[clicked_idx];
             aw_root->awar(AWAR_SPECIES_NAME)->write_string(species_name);
@@ -97,7 +97,7 @@ void SAI_graphic::command(AW_device */*device*/, AWT_COMMAND_MODE /*cmd*/, int b
 
 SAI_graphic::~SAI_graphic(void) {}
 
-void SAI_graphic::show(AW_device *device){
+void SAI_graphic::show(AW_device *device) {
     paint(device);
 }
 
@@ -114,11 +114,11 @@ void SAI_graphic::info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *c
 static void colorDefChanged_callback(AW_root *awr, AW_CL cl_awarNo) {
     if (!in_colorDefChanged_callback) {
         in_colorDefChanged_callback = true;
-        unsigned char charUsed[256]; memset(charUsed,255,256);
+        unsigned char charUsed[256]; memset(charUsed, 255, 256);
         {
-            for (int i=0; i<10 ; i++){
+            for (int i=0; i<10;  i++) {
                 char *awarString_next = awr->awar_string(getAwarName(i))->read_string();
-                for(int c=0; awarString_next[c]; ++c){
+                for (int c=0; awarString_next[c]; ++c) {
                     charUsed[(unsigned char)awarString_next[c]] = i;
                 }
                 free(awarString_next);
@@ -133,12 +133,12 @@ static void colorDefChanged_callback(AW_root *awr, AW_CL cl_awarNo) {
 
             typedef unsigned char mystr[256];
             mystr s[10];
-            for (int i=0; i<10; i++)  s[i][0]=0; //initializing the strings
+            for (int i=0; i<10; i++)  s[i][0]=0; // initializing the strings
 
             for (int i=0; i<256; i++) {
                 int table = charUsed[i];
                 if (table != 255) {
-                    char *eos = strchr((char *)s[table],0); // get pointer to end of string
+                    char *eos = strchr((char *)s[table], 0); // get pointer to end of string
                     eos[0] = char(i);
                     eos[1] = 0;
                 }
@@ -164,8 +164,8 @@ static void createSaiProbeAwars(AW_root *aw_root) {
     // creating awars specific for the painting routine
     aw_root->awar_int(AWAR_SPV_DISP_SAI, 0, AW_ROOT_DEFAULT); // to display SAI values
 
-    for (int i = 0; i < 10; i++){   // initializing 10 color definition string AWARS
-       AW_awar *def_awar = aw_root->awar_string(getAwarName(i),"", AW_ROOT_DEFAULT);
+    for (int i = 0; i < 10; i++) {  // initializing 10 color definition string AWARS
+       AW_awar *def_awar = aw_root->awar_string(getAwarName(i), "", AW_ROOT_DEFAULT);
        def_awar->add_callback(colorDefChanged_callback, (AW_CL)i);
     }
 }
@@ -189,7 +189,7 @@ static const char *translateSAItoColors(AW_root *awr, int start, int end, int sp
 
     int seqSize = (end - start) + 1;
 
-    if(seqSize > seqBufferSize){
+    if (seqSize > seqBufferSize) {
         free(saiColors);
         seqBufferSize = seqSize;
         saiColors = (char*)malloc(seqBufferSize);
@@ -228,7 +228,7 @@ static const char *translateSAItoColors(AW_root *awr, int start, int end, int sp
 
                 const char *species_name = g_pbdata->probeSpecies[speciesNo];
                 GBDATA *gb_species       = GBT_find_species(GLOBAL_gb_main, species_name);
-                GBDATA *gb_seq_data      = GBT_read_sequence(gb_species,alignment_name);
+                GBDATA *gb_seq_data      = GBT_read_sequence(gb_species, alignment_name);
                 if (gb_seq_data) seqData = GB_read_char_pntr(gb_seq_data);
             }
 
@@ -253,7 +253,7 @@ static const char *translateSAItoColors(AW_root *awr, int start, int end, int sp
 
                 // translate SAI to colors
                 int i, j;
-                for ( i = start, j = 0 ; i <= end; ++i) {
+                for (i = start, j = 0;   i <= end; ++i) {
                     if ((seqData[i] != '.') && (seqData[i] != '-')) {
                         saiColors[j] = trans_table[(unsigned char)saiData[i]];
                         saiValues[j] = saiData[i];
@@ -293,26 +293,26 @@ static int calculateEndPosition(int startPos, int speciesNo, int mode, int probe
     const char *species_name   = g_pbdata->probeSpecies[speciesNo];
     GBDATA     *gb_species     = GBT_find_species(GLOBAL_gb_main, species_name);
     if (gb_species) {
-        GBDATA *gb_seq_data      = GBT_read_sequence(gb_species,alignment_name);
+        GBDATA *gb_seq_data      = GBT_read_sequence(gb_species, alignment_name);
         if (gb_seq_data) {
             const char *seqData = GB_read_char_pntr(gb_seq_data);
 
             if (seqData) {
                 switch (mode) {
                     case PROBE:
-                        for ( i = startPos; baseCntr < probeLen; ++i) {
+                        for (i = startPos; baseCntr < probeLen; ++i) {
                             if ((seqData[i] != '-') && (seqData[i] != '.'))
                                 baseCntr++;
                         }
                         break;
                     case PROBE_PREFIX:
-                        for ( i = startPos; baseCntr < PROBE_PREFIX_LENGTH && i >= 0; --i) {
+                        for (i = startPos; baseCntr < PROBE_PREFIX_LENGTH && i >= 0; --i) {
                             if ((seqData[i] != '-') && (seqData[i] != '.'))
                                 baseCntr++;
                         }
                         break;
                     case PROBE_SUFFIX:
-                        for ( i = startPos; baseCntr < PROBE_SUFFIX_LENGTH && seqData[i]; ++i) {
+                        for (i = startPos; baseCntr < PROBE_SUFFIX_LENGTH && seqData[i]; ++i) {
                             if ((seqData[i] != '-') && (seqData[i] != '.'))
                                 baseCntr++;
                         }
@@ -347,7 +347,7 @@ static void paintBackgroundAndSAI (AW_device *device, size_t probeRegionLen, AW_
     // and also printing the values based on the options set by user
     for (size_t j = 0; j<probeRegionLen; j++) {
         if (saiCols[j] >= '0') {
-            device->box(saiCols[j]-'0'+SAI_GC_0, true, pbRgX1+j*pbMaxWidth, pbY-pbMaxHeight+1, pbMaxWidth, pbMaxHeight, -1, 0,0);
+            device->box(saiCols[j]-'0'+SAI_GC_0, true, pbRgX1+j*pbMaxWidth, pbY-pbMaxHeight+1, pbMaxWidth, pbMaxHeight, -1, 0, 0);
         }
         if (dispSai && saiValues[j]) {
             char saiVal[2];
@@ -440,7 +440,7 @@ void SAI_graphic::paint(AW_device *device) {
         maxDescent = all_font_limits.descent;
     }
 
-    AW_pos fgX,fgY,pbRgX1,pbRgX2,pbY,pbX,lineXpos;
+    AW_pos fgX, fgY, pbRgX1, pbRgX2, pbY, pbX, lineXpos;
     fgX = 0; fgY = yStep + 10;
     pbX = 0; pbY = yStep + 10;
     pbRgX1 = pbRgX2 = lineXpos = 0;
@@ -454,24 +454,24 @@ void SAI_graphic::paint(AW_device *device) {
     const char *saiCols = 0;
 
     char buf[1024];
-    if (strcmp(saiSelected,"")==0)  sprintf(buf,"Selected SAI = Not Selected!");
-    else sprintf(buf,"Selected SAI = %s",saiSelected);
+    if (strcmp(saiSelected, "")==0) sprintf(buf, "Selected SAI = Not Selected!");
+    else sprintf(buf, "Selected SAI = %s", saiSelected);
     device->text(SAI_GC_PROBE, buf, 100, -30, 0, 1, 0, 0);
 
     double yLineStep = dispSai ? yStep*2 : yStep;
 
     if (g_pbdata) {
-        device->text(SAI_GC_PROBE,  "Species INFO",0,8, 0, 1, 0, 0, 0);
+        device->text(SAI_GC_PROBE,  "Species INFO", 0, 8, 0, 1, 0, 0, 0);
         if (!g_pbdata->probeSpecies.empty()) {
             char *default_tree  = aw_root->awar(AWAR_TREE)->read_string();
             char *selectedProbe = aw_root->awar(AWAR_SPV_SELECTED_PROBE)->read_string();
 
-            for ( size_t j = 0; j < g_pbdata->probeSpecies.size(); ++j ) {
+            for (size_t j = 0; j < g_pbdata->probeSpecies.size(); ++j) {
                 const char *name        = g_pbdata->probeSpecies[j];
                 char       *displayInfo = GetDisplayInfo(aw_root, name, displayWidth, default_tree);
 
-                if (strcmp(selectedProbe,name) == 0) {
-                    device->box(SAI_GC_FOREGROUND, true, fgX, (fgY - (yStep * 0.9)), (displayWidth * xStep_info), yStep, -1, 0,0);
+                if (strcmp(selectedProbe, name) == 0) {
+                    device->box(SAI_GC_FOREGROUND, true, fgX, (fgY - (yStep * 0.9)), (displayWidth * xStep_info), yStep, -1, 0, 0);
                     device->text(SAI_GC_HIGHLIGHT, displayInfo, fgX, fgY-1, 0, AW_SCREEN|AW_CLICK, (AW_CL)j, 0, 0);
                 }
                 else {
@@ -494,9 +494,9 @@ void SAI_graphic::paint(AW_device *device) {
 
         int  probeLen = g_pbdata->getProbeTargetLen();
 
-        device->box(SAI_GC_FOREGROUND, true, pbX, 10-yStep, (probeLen * xStep_target), yStep, -1, 0,0);
+        device->box(SAI_GC_FOREGROUND, true, pbX, 10-yStep, (probeLen * xStep_target), yStep, -1, 0, 0);
         paintProbeInfo(device, g_pbdata->getProbeTarget(), pbX, 10, xStep_target, yStep, maxDescent, (AW_CL)0, SAI_GC_HIGHLIGHT);
-        device->set_line_attributes(SAI_GC_FOREGROUND,2, AW_SOLID);
+        device->set_line_attributes(SAI_GC_FOREGROUND, 2, AW_SOLID);
 
 
         ProbeMatchParser parser(g_pbdata->getProbeTarget(), g_pbdata->getHeadline());
@@ -546,7 +546,7 @@ void SAI_graphic::paint(AW_device *device) {
                                 sai_assert(endPos >= -1); // note: -1 gets fixed in the next line
                                 endPos++; // calculateEndPosition returns 'one position in front of start'
                                 saiCols = translateSAItoColors(aw_root, endPos, startPos-1, i);
-                                if (saiCols)  {
+                                if (saiCols) {
                                     int positions = strlen(saiCols);
                                     int skipLeft  = PROBE_PREFIX_LENGTH-positions;
                                     sai_assert(skipLeft >= 0);
@@ -564,7 +564,7 @@ void SAI_graphic::paint(AW_device *device) {
                                 paintBackgroundAndSAI(device, strlen(tok_infix), pbX, pbY, xStep_target, yStep, saiCols, dispSai);
                                 paintProbeInfo(device, tok_infix, pbX, pbY, xStep_target, yStep, maxDescent, (AW_CL)i, SAI_GC_PROBE);
 
-                                //post-probe region - 9 bases
+                                // post-probe region - 9 bases
                                 size_t post_start_pos = endPos;
 
                                 endPos = calculateEndPosition(post_start_pos, i, PROBE_SUFFIX, probeLen, &endErr);
@@ -588,10 +588,10 @@ void SAI_graphic::paint(AW_device *device) {
             }
         }
         lineXpos = pbRgX2 + (9 * xStep_border);
-        device->set_line_attributes(SAI_GC_FOREGROUND,1, AW_SOLID);
+        device->set_line_attributes(SAI_GC_FOREGROUND, 1, AW_SOLID);
 
-        device->line(SAI_GC_FOREGROUND,0,-20,lineXpos,-20);
-        device->line(SAI_GC_FOREGROUND,0,pbY,lineXpos,pbY);
+        device->line(SAI_GC_FOREGROUND, 0, -20, lineXpos, -20);
+        device->line(SAI_GC_FOREGROUND, 0, pbY, lineXpos, pbY);
 
         {
             double vert_x1 = pbX-spacer/2;
@@ -613,11 +613,11 @@ void transferProbeData(struct saiProbeData *spd) {
 static void saiColorDefs_init_config(AWT_config_definition& cdef) {
     for (int i = 0; i < 10; i++) {
         const char *awarDef = getAwarName(i);
-        cdef.add(awarDef, "" , i);
+        cdef.add(awarDef, "",  i);
     }
 }
 
-static char *saiColorDefs_store_config(AW_window *aww, AW_CL, AW_CL ) {
+static char *saiColorDefs_store_config(AW_window *aww, AW_CL, AW_CL) {
     AWT_config_definition cdef(aww->get_root());
     saiColorDefs_init_config(cdef);
     return cdef.read();
@@ -629,13 +629,13 @@ static void saiColorDefs_restore_config(AW_window *aww, const char *stored_strin
     cdef.write(stored_string);
 }
 
-static AW_window *create_colorTranslationTable_window(AW_root *aw_root){  // creates color translation table window
-    //window to define color translations of selected SAI
+static AW_window *create_colorTranslationTable_window(AW_root *aw_root) { // creates color translation table window
+    // window to define color translations of selected SAI
     static AW_window_simple *aws = 0;
-    if(aws) return (AW_window *)aws;
+    if (aws) return (AW_window *)aws;
 
     aws = new AW_window_simple;
-    aws->init( aw_root, "SAI_CTT", "Color Translation Table");
+    aws->init(aw_root, "SAI_CTT", "Color Translation Table");
     aws->load_xfig("probeSaiColors.fig");
 
     char at_name[] = "rangex";
@@ -655,39 +655,39 @@ static AW_window *create_colorTranslationTable_window(AW_root *aw_root){  // cre
 
     aws->at("close");
     aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->create_button("CLOSE", "CLOSE", "C");
 
     return (AW_window *)aws;
 }
 
-static AW_window *createSelectSAI_window(AW_root *aw_root){
+static AW_window *createSelectSAI_window(AW_root *aw_root) {
     // window to select SAI from the existing SAIs in the database
     static AW_window_simple *aws = 0;
-    if(aws) return (AW_window *)aws;
+    if (aws) return (AW_window *)aws;
 
     aws = new AW_window_simple;
-    aws->init( aw_root, "SELECT_SAI", "SELECT SAI");
+    aws->init(aw_root, "SELECT_SAI", "SELECT SAI");
     aws->load_xfig("selectSAI.fig");
 
     aws->at("selection");
     aws->callback((AW_CB0)AW_POPDOWN);
-    awt_create_selection_list_on_extendeds(GLOBAL_gb_main,(AW_window *)aws,AWAR_SPV_SAI_2_PROBE);
+    awt_create_selection_list_on_extendeds(GLOBAL_gb_main, (AW_window *)aws, AWAR_SPV_SAI_2_PROBE);
 
     aws->at("close");
     aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->window_fit();
     return (AW_window *)aws;
 }
 
-static AW_window *createDisplayField_window(AW_root *aw_root){
+static AW_window *createDisplayField_window(AW_root *aw_root) {
     // window to select SAI from the existing SAIs in the database
     static AW_window_simple *aws = 0;
-    if(aws) return (AW_window *)aws;
+    if (aws) return (AW_window *)aws;
 
     aws = new AW_window_simple;
-    aws->init( aw_root, "SELECT_DISPLAY_FIELD", "SELECT DISPLAY FIELD");
+    aws->init(aw_root, "SELECT_DISPLAY_FIELD", "SELECT DISPLAY FIELD");
     aws->load_xfig("displayField.fig");
 
     aws->at("dbField");
@@ -702,16 +702,16 @@ static AW_window *createDisplayField_window(AW_root *aw_root){
 
     aws->at("aciCmd");
     aws->button_length(20);
-    aws->create_input_field(AWAR_SPV_ACI_COMMAND,40);
+    aws->create_input_field(AWAR_SPV_ACI_COMMAND, 40);
 
     aws->at("width");
     aws->button_length(5);
-    aws->create_input_field(AWAR_SPV_DB_FIELD_WIDTH,4);
+    aws->create_input_field(AWAR_SPV_DB_FIELD_WIDTH, 4);
     
     aws->at("close");
     aws->button_length(10);
     aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->window_fit();
     return (AW_window *)aws;
@@ -721,30 +721,30 @@ static AW_window *createSaiColorWindow(AW_root *aw_root, AW_CL cl_gc_manager) {
     return AW_create_gc_window_named(aw_root, (AW_gc_manager*)cl_gc_manager, "GC_PROPS_SAI", "Probe/SAI Colors and Fonts");
 }
 
-AW_window *createSaiProbeMatchWindow(AW_root *awr){
+AW_window *createSaiProbeMatchWindow(AW_root *awr) {
     // Main Window - Canvas on which the actual painting is done
     GB_transaction dummy(GLOBAL_gb_main);
 
     createSaiProbeAwars(awr); // creating awars for colors ( 0 to 9)
 
     AW_window_menu *awm = new AW_window_menu();
-    awm->init(awr,"MATCH_SAI", "PROBE AND SAI",200,300);
+    awm->init(awr, "MATCH_SAI", "PROBE AND SAI", 200, 300);
     AW_gc_manager aw_gc_manager;
-    SAI_graphic *saiProbeGraphic = new SAI_graphic(awr,GLOBAL_gb_main);
+    SAI_graphic *saiProbeGraphic = new SAI_graphic(awr, GLOBAL_gb_main);
 
-    AWT_canvas *ntw = new AWT_canvas(GLOBAL_gb_main,awm, saiProbeGraphic, aw_gc_manager,AWAR_TARGET_STRING);
+    AWT_canvas *ntw = new AWT_canvas(GLOBAL_gb_main, awm, saiProbeGraphic, aw_gc_manager, AWAR_TARGET_STRING);
     ntw->recalc_size();
 
     awm->insert_help_topic("How to Visualize SAI`s ?", "H", "saiProbeHelp.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"saiProbeHelp.hlp", 0);
 
     awm->create_menu("File", "F", AWM_ALL);
-    awm->insert_menu_topic( "close", "Close", "C","quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
+    awm->insert_menu_topic("close", "Close", "C", "quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
 
     awm->create_menu("Properties", "P", AWM_ALL);
-    awm->insert_menu_topic( "selectDispField", "Select Display Field", "F","displayField.hlp", AWM_ALL,AW_POPUP, (AW_CL)createDisplayField_window, (AW_CL)0);
-    awm->insert_menu_topic( "selectSAI", "Select SAI", "S","selectSai.hlp", AWM_ALL,AW_POPUP, (AW_CL)createSelectSAI_window, (AW_CL)0);
-    awm->insert_menu_topic( "clrTransTable", "Define Color Translations", "D","selectSai.hlp", AWM_ALL,AW_POPUP, (AW_CL)create_colorTranslationTable_window, (AW_CL)0);
-    awm->insert_menu_topic( "SetColors", "Set Colors and Fonts", "t","setColors.hlp", AWM_ALL, AW_POPUP, (AW_CL)createSaiColorWindow, (AW_CL)aw_gc_manager);
+    awm->insert_menu_topic("selectDispField", "Select Display Field", "F", "displayField.hlp", AWM_ALL, AW_POPUP, (AW_CL)createDisplayField_window, (AW_CL)0);
+    awm->insert_menu_topic("selectSAI", "Select SAI", "S", "selectSai.hlp", AWM_ALL, AW_POPUP, (AW_CL)createSelectSAI_window, (AW_CL)0);
+    awm->insert_menu_topic("clrTransTable", "Define Color Translations", "D", "selectSai.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_colorTranslationTable_window, (AW_CL)0);
+    awm->insert_menu_topic("SetColors", "Set Colors and Fonts", "t", "setColors.hlp", AWM_ALL, AW_POPUP, (AW_CL)createSaiColorWindow, (AW_CL)aw_gc_manager);
 
     addCallBacks(awr, ntw);
 

@@ -1,4 +1,4 @@
-class PH_sequence_pa:  public AP_sequence {
+class PH_sequence_pa : public AP_sequence {
 private:
     void    build_table(void);
 
@@ -10,7 +10,7 @@ public:
     ~PH_sequence_pa(void);
 
     AP_sequence *dup(void);                         // used to get the real new element
-    void         set(       char *sequence);
+    void         set(char *sequence);
     bool         is_set();
 
     AP_FLOAT combine(const AP_sequence* lefts, const AP_sequence *rights);

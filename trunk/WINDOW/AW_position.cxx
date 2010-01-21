@@ -90,7 +90,7 @@ namespace AW {
         const Vector& s = l1.line_vector();
         const Vector& t = l2.line_vector();
 
-        factor_l1 = ( t.x()*(p1.ypos()-p2.ypos()) + t.y()*(p2.xpos()-p1.xpos()) )
+        factor_l1 = (t.x()*(p1.ypos()-p2.ypos()) + t.y()*(p2.xpos()-p1.xpos()))
             / (s.x()*t.y() - s.y()*t.x());
 
         factor_l2 = (p1.ypos()-p2.ypos()+s.y()*factor_l1) / t.y();

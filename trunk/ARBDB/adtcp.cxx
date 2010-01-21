@@ -196,7 +196,7 @@ static GB_ERROR read_arb_tcp_dat(const char *filename, int *versionFound) {
 static GB_ERROR load_arb_tcp_dat() {
     // read arb_tcp.dat (once or if changed on disk)
     GB_ERROR  error    = 0;
-    char     *filename = GBS_find_lib_file("arb_tcp.dat","", 1);
+    char     *filename = GBS_find_lib_file("arb_tcp.dat", "", 1);
 
     if (!filename) {
         error = GBS_global_string("File $ARBHOME/lib/arb_tcp.dat not found");
@@ -309,7 +309,7 @@ const char *GBS_read_arb_tcp(const char *env) {
     const char *result = 0;
     GB_ERROR    error  = 0;
 
-    if (strchr(env,':')){
+    if (strchr(env, ':')) {
         static char *resBuf = 0;
         freedup(resBuf, env);
         result = resBuf;
@@ -458,7 +458,7 @@ char *GBS_ptserver_id_to_choice(int i, int showBuild) {
                         char       atime[256];
                         struct tm *tms  = localtime(&st.st_mtime);
 
-                        strftime(atime, 255,"%Y/%m/%d %k:%M", tms);
+                        strftime(atime, 255, "%Y/%m/%d %k:%M", tms);
                         newResult = GBS_global_string_copy("%s [%s]", result, atime);
                     }
                 }

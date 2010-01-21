@@ -13,7 +13,7 @@
 
 #define GB_MAIN_ARRAY_SIZE 4096
 
-#define A_TO_I(c) if(c>'9') c-='A'-10; else c-='0'; // @@@ design+name are crap 
+#define A_TO_I(c) if (c>'9') c-='A'-10; else c-='0'; // @@@ design+name are crap
 
 enum gb_scan_quicks_types {
     GB_SCAN_NO_QUICK,

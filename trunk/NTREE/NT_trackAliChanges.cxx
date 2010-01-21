@@ -69,7 +69,7 @@ static void trackAlignmentChanges(AW_window *aww) {
         time_t     t        = time(0);
         struct tm *tms      = localtime(&t);
 
-        strftime(atime, 255,"%Y/%m/%d %k:%M", tms);
+        strftime(atime, 255, "%Y/%m/%d %k:%M", tms);
         stamp = GBS_global_string_copy("%s %s", atime, initials);
         free(initials);
     }
@@ -163,8 +163,8 @@ AW_window *NT_create_trackAliChanges_window(AW_root *root) {
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback( AW_POPUP_HELP,(AW_CL)"track_ali_changes.hlp");
-    aws->create_button("HELP","HELP","H");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"track_ali_changes.hlp");
+    aws->create_button("HELP", "HELP", "H");
 
     aws->at("initials");
     aws->create_input_field(AWAR_TRACK_INITIALS);

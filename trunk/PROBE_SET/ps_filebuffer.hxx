@@ -41,14 +41,14 @@ public:
     //
 
     // raw
-    void put ( const void *_data, int _length );
-    void get (       void *_data, int _length );
-    void peek(       void *_data, int _length ); // read but don't advance position
+    void put (const void *_data, int _length);
+    void get (void *_data, int _length);
+    void peek(void *_data, int _length);         // read but don't advance position
 
     // char
-    void put_char( unsigned char  _c ) {
+    void put_char(unsigned char  _c) {
         if (is_readonly) {
-            fprintf( stderr, "sorry, i can't write to files opened readonly\n" );
+            fprintf(stderr, "sorry, i can't write to files opened readonly\n");
             *(int *)0 = 0;
         }
         if (size+1 < BUFFER_SIZE) {
@@ -61,7 +61,7 @@ public:
             size      = 1;
         }
     }
-    void get_char( unsigned char &_c ) {
+    void get_char(unsigned char &_c) {
         if (position < size) {
             _c = buffer[position];
             ++position;
@@ -84,9 +84,9 @@ public:
     }
 
     // long
-    void put_ulong( unsigned long int  _ul );
-    void get_ulong( unsigned long int &_ul );
-    void put_long( long int  _l ) {
+    void put_ulong(unsigned long int  _ul);
+    void get_ulong(unsigned long int &_ul);
+    void put_long(long int  _l) {
         unsigned long int ul;
         if (_l < 0) {
             ul = (-_l << 1) | 1;
@@ -94,11 +94,11 @@ public:
         else {
             ul = _l << 1;
         }
-        put_ulong( ul );
+        put_ulong(ul);
     }
-    void get_long( long int &_l ) {
+    void get_long(long int &_l) {
         unsigned long int ul;
-        get_ulong( ul );
+        get_ulong(ul);
         if (ul & 1) {
             _l = -(long)(ul >> 1);
         }
@@ -108,20 +108,20 @@ public:
     }
 
     // int
-    void put_uint( unsigned int  _ui ) { 
-        put_ulong( _ui ); 
+    void put_uint(unsigned int  _ui) {
+        put_ulong(_ui);
     }
-    void get_uint( unsigned int &_ui ) { 
+    void get_uint(unsigned int &_ui) {
         unsigned long int ul; 
-        get_ulong( ul ); 
+        get_ulong(ul);
         _ui=(unsigned int)ul; 
     }
-    void put_int( int  _i ) { 
-        put_long( _i ); 
+    void put_int(int  _i) {
+        put_long(_i);
     }
-    void get_int( int &_i ) { 
+    void get_int(int &_i) {
         long int l; 
-        get_long( l ); 
+        get_long(l);
         _i=(int)l; 
     }
 
@@ -131,14 +131,14 @@ public:
     //
     bool store_pos() {
         if (!is_readonly) return false; // cannot jump in a writeable file
-        file_pos = lseek( file_handle, 0, SEEK_CUR );
+        file_pos = lseek(file_handle, 0, SEEK_CUR);
         return (file_pos >= 0);
     }
 
     bool restore_pos() {
         if (!is_readonly) return false; // cannot jump in a writeable file
         if (file_pos < 0) return false;
-        if (lseek( file_handle, file_pos, SEEK_SET ) < 0) return false;
+        if (lseek(file_handle, file_pos, SEEK_SET) < 0) return false;
         size     = 0;
         position = 0;
         refill();
@@ -164,9 +164,9 @@ public:
     //
     // initialization-functions
     //
-    void reinit( const char *name, bool _readonly ); // reinit. with new file
+    void reinit(const char *name, bool _readonly);   // reinit. with new file
 
-    PS_FileBuffer( const char *_name, bool _readonly );
+    PS_FileBuffer(const char *_name, bool _readonly);
 
     ~PS_FileBuffer() {
         // finish file

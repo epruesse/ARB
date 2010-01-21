@@ -34,13 +34,13 @@ public:
     long    size;
     AP_matrix(long si);
     ~AP_matrix(void);
-    void create_awars(AW_root *awr,const char *awar_prefix);
-    void read_awars(AW_root *awr,const char *awar_prefix);
+    void create_awars(AW_root *awr, const char *awar_prefix);
+    void read_awars(AW_root *awr, const char *awar_prefix);
     void normize();     // set average non diag element to 1.0 (only for described elements)
-    void create_input_fields(AW_window *aww,const char *awar_prefix);
-    void set_description(const char *xstring,const char *ystring);
-    void    set(int i, int j, AP_FLOAT val) { m[i][j] = val;};
-    AP_FLOAT get(int i, int j) { return m[i][j];};
+    void create_input_fields(AW_window *aww, const char *awar_prefix);
+    void set_description(const char *xstring, const char *ystring);
+    void    set(int i, int j, AP_FLOAT val) { m[i][j] = val; };
+    AP_FLOAT get(int i, int j) { return m[i][j]; };
 };
 
 #else

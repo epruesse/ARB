@@ -4,9 +4,9 @@
 #include <arbdb.h>
 #include <arbdbt.h>
 
-int main(int argc,char **argv)
+int main(int argc, char **argv)
 {
-    if (argc == 1)  {
+    if (argc == 1) {
         fprintf(stderr, "Usage: arb_message \"the message\"\n");
         return -1;
     }
@@ -23,8 +23,8 @@ int main(int argc,char **argv)
         strcpy(unencoded_lf+1, unencoded_lf+2);
     }
 
-    GBDATA *gb_main = GB_open(":","r");
-    if (!gb_main){
+    GBDATA *gb_main = GB_open(":", "r");
+    if (!gb_main) {
         fprintf(stderr, "%s: %s\n", progname, the_message);
     }
     else {

@@ -26,7 +26,7 @@ void MP_group_all_except_marked(AW_window *aww);
 void MP_normal_colors_in_tree(AW_window *aww);
 void MP_selected_chosen(AW_window *aww);
 
-char       *MP_get_comment(int which, char *str); //faengt bei 1 an
+char       *MP_get_comment(int which, char *str); // faengt bei 1 an
 char       *MP_remove_comment(char *);
 char       *MP_get_probes(char *str);
 int         MP_init_local_com_struct();

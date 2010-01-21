@@ -5,12 +5,12 @@
 #include <aw_root.hxx>
 
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Methoden MO_Liste
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Methoden MO_Liste
 
 
 MO_Liste::MO_Liste()
 {
-    laenge = 0;;
+    laenge = 0; ;
     mo_liste = NULL;
     current = 0;
     hashptr = NULL;
@@ -40,24 +40,24 @@ void MO_Liste::get_all_species()
     int         i          = 0;
     long        j          = 0, nr_of_species;
 
-    if( !(servername=MP_probe_pt_look_for_server()) ){
+    if (!(servername=MP_probe_pt_look_for_server())) {
         return;
     }
 
-    mp_pd_gl.link = (aisc_com *)aisc_open(servername, &mp_pd_gl.com,AISC_MAGIC_NUMBER);
+    mp_pd_gl.link = (aisc_com *)aisc_open(servername, &mp_pd_gl.com, AISC_MAGIC_NUMBER);
     servername = 0;
 
     if (!mp_pd_gl.link) {
         aw_message ("Cannot contact Probe bank server ");
         return;
     }
-    if (MP_init_local_com_struct() ) {
+    if (MP_init_local_com_struct()) {
         aw_message ("Cannot contact Probe bank server (2)");
         return;
     }
 
 
-    if (aisc_put(mp_pd_gl.link,PT_LOCS, mp_pd_gl.locs, NULL))
+    if (aisc_put(mp_pd_gl.link, PT_LOCS, mp_pd_gl.locs, NULL))
     {
         free(probe);
         aw_message ("Connection to PT_SERVER lost (4)");
@@ -66,7 +66,7 @@ void MO_Liste::get_all_species()
 
 
     bs.data = 0;
-    aisc_get( mp_pd_gl.link, PT_LOCS, mp_pd_gl.locs,
+    aisc_get(mp_pd_gl.link, PT_LOCS, mp_pd_gl.locs,
               LOCS_MP_ALL_SPECIES_STRING,       &bs,
               LOCS_MP_COUNT_ALL_SPECIES,    &nr_of_species,
               LOCS_ERROR,               &locs_error,
@@ -151,7 +151,7 @@ positiontype MO_Liste::fill_marked_bakts()
     hashptr = GBS_create_hash(laenge, GB_IGNORE_CASE);
 
 
-    for ( gb_species = GBT_first_marked_species(GLOBAL_gb_main);
+    for (gb_species = GBT_first_marked_species(GLOBAL_gb_main);
           gb_species;
           gb_species = GBT_next_marked_species(gb_species))
     {
@@ -188,7 +188,7 @@ long MO_Liste::put_entry(const char* name)
     }
     else
     {
-        mo_liste[current] = new Bakt_Info(name);                    //MEL  koennte mit match_name zusammenhaengen
+        mo_liste[current] = new Bakt_Info(name);                    // MEL  koennte mit match_name zusammenhaengen
         hashreturnval = GBS_write_hash(hashptr, name, current);
         current++;
     }
@@ -197,7 +197,7 @@ long MO_Liste::put_entry(const char* name)
 
 char* MO_Liste::get_entry_by_index(long index)
 {
-    if ( ( 0<index ) && (index < current) )
+    if ((0<index) && (index < current))
         return mo_liste[index]->get_name();
     else
         return NULL;
@@ -213,7 +213,7 @@ long MO_Liste::get_index_by_entry(const char* key)
 
 Bakt_Info* MO_Liste::get_bakt_info_by_index(long index)
 {
-    if ( ( 0<index ) && (index < current) )
+    if ((0<index) && (index < current))
         return mo_liste[index];
     else
         return NULL;

@@ -22,13 +22,13 @@ typedef double AP_FLOAT;
 class PH_NEIGHBOUR_DIST {
 public:
     PH_NEIGHBOUR_DIST(void);
-    long    i,j;
+    long    i, j;
     AP_FLOAT val;
     PH_NEIGHBOUR_DIST *next, *previous;
     void remove(void) {
         ph_assert(previous); // already removed
-        if (next) {next->previous = previous;}
-        previous->next = next;previous = 0;
+        if (next) { next->previous = previous; }
+        previous->next = next; previous = 0;
     };
 
     void add(PH_NEIGHBOUR_DIST *root) {
@@ -61,7 +61,7 @@ public:
     PH_NEIGHBOURJOINING(AP_FLOAT **m, long size);
     ~PH_NEIGHBOURJOINING(void);
 
-    void     join_nodes(long i,long j,AP_FLOAT &leftl,AP_FLOAT& rightlen);
+    void     join_nodes(long i, long j, AP_FLOAT &leftl, AP_FLOAT& rightlen);
     void     get_min_ij(long& i, long& j);
     void     get_last_ij(long& i, long& j);
     AP_FLOAT get_dist(long i, long j);

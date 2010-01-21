@@ -45,7 +45,7 @@ void TREE_scale(GBT_TREE *tree, double length_scale, double bootstrap_scale) {
 static char *dated_info(const char *info) {
     char *dated_info = 0;
     time_t      date;
-    if (time(&date) != -1)  {
+    if (time(&date) != -1) {
         char *dstr = ctime(&date);
         char *nl   = strchr(dstr, '\n');
         

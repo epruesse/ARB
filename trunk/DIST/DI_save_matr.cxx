@@ -11,25 +11,25 @@
 #include "di_matr.hxx"
 #include <awt_nds.hxx>
 
-const char *DI_MATRIX::save(char *filename,enum DI_SAVE_TYPE type)
+const char *DI_MATRIX::save(char *filename, enum DI_SAVE_TYPE type)
 {
     FILE     *out;
     GB_ERROR  error = 0;
 
-    out = fopen(filename,"w");
+    out = fopen(filename, "w");
     if (!out) return "Cannot save your File";
 
-    size_t row,col;
-    switch (type){
+    size_t row, col;
+    switch (type) {
         case DI_SAVE_PHYLIP_COMP:
             {
-                fprintf(out,"    %li\n",nentries);
-                for (row = 0; row<size_t(nentries);row++){
-                    fprintf(out,"%-10s ",entries[row]->name);
+                fprintf(out, "    %li\n", nentries);
+                for (row = 0; row<size_t(nentries); row++) {
+                    fprintf(out, "%-10s ", entries[row]->name);
                     for (col=0; col<row; col++) {
-                        fprintf(out,"%6f ",matrix->get(row,col));
+                        fprintf(out, "%6f ", matrix->get(row, col));
                     }
-                    fprintf(out,"\n");
+                    fprintf(out, "\n");
                 }
             }
             break;
@@ -41,7 +41,7 @@ const char *DI_MATRIX::save(char *filename,enum DI_SAVE_TYPE type)
                 size_t          app_size = 200;     // maximum width for NDS output (and max. height for vertical one)
                 size_t          maxnds   = 0;
                 bool            tabbed   = (type == DI_SAVE_TABBED);
-                double          min      = matrix->get(1,0) * 100.0;
+                double          min      = matrix->get(1, 0) * 100.0;
                 double          max      = min;
                 double          sum      = 0.0;
 
@@ -51,9 +51,9 @@ const char *DI_MATRIX::save(char *filename,enum DI_SAVE_TYPE type)
                 char **nds_results = new char*[nentries];
                 for (col=0; col<size_t(nentries); col++) {
                     const char *buf        = entries[col]->name;
-                    GBDATA     *gb_species = GBT_find_species_rel_species_data(gb_species_data,buf);
+                    GBDATA     *gb_species = GBT_find_species_rel_species_data(gb_species_data, buf);
                     if (gb_species) {
-                        buf = make_node_text_nds(gb_main,gb_species,0,0,0);
+                        buf = make_node_text_nds(gb_main, gb_species, 0, 0, 0);
                         while (buf[0] == ' ') ++buf;
                     }
 
@@ -71,7 +71,7 @@ const char *DI_MATRIX::save(char *filename,enum DI_SAVE_TYPE type)
                 // print column headers :
                 if (tabbed) {
                     for (col=0; col<size_t(nentries); col++) {
-                        if ( !tabbed && (col%4) == 0) fputc('\t', out);
+                        if (!tabbed && (col%4) == 0) fputc('\t', out);
                         fprintf(out, "\t%s", nds_results[col]);
                     }
                     fputc('\n', out);
@@ -84,10 +84,10 @@ const char *DI_MATRIX::save(char *filename,enum DI_SAVE_TYPE type)
                         for (col = 0; col<(maxnds+2); ++col) fputc(' ', out);
 
                         for (col = 0; col<size_t(nentries); ++col) {
-                            if ( !tabbed && (col%4) == 0) fprintf(out, "  ");
+                            if (!tabbed && (col%4) == 0) fprintf(out, "  ");
                             if (!eos_reached[col]) {
                                 char c = nds_results[col][row];
-                                if (c) fprintf(out,"  %c  ", c);
+                                if (c) fprintf(out, "  %c  ", c);
                                 else eos_reached[col] = true;
                             }
                         }
@@ -98,8 +98,8 @@ const char *DI_MATRIX::save(char *filename,enum DI_SAVE_TYPE type)
                 }
 
                 // print data lines :
-                for (row = 0; row<size_t(nentries);row++){
-                    if (!tabbed && (row%4) == 0) fprintf(out,"\n"); // empty line after 4 lines of data
+                for (row = 0; row<size_t(nentries); row++) {
+                    if (!tabbed && (row%4) == 0) fprintf(out, "\n"); // empty line after 4 lines of data
 
                     if (tabbed) {
                         fprintf(out, "%s", nds_results[row]);
@@ -108,7 +108,7 @@ const char *DI_MATRIX::save(char *filename,enum DI_SAVE_TYPE type)
                         char *nds   = nds_results[row];
                         char  c     = nds[maxnds];
                         nds[maxnds] = 0;
-                        fprintf(out,"%-*s ", int(maxnds), nds);
+                        fprintf(out, "%-*s ", int(maxnds), nds);
                         nds[maxnds] = c;
                     }
 
@@ -118,14 +118,14 @@ const char *DI_MATRIX::save(char *filename,enum DI_SAVE_TYPE type)
                             fputc('\t', out);
                         }
                         else if ((col%4) == 0) { // empty column after 4 columns
-                            fprintf(out,"  ");
+                            fprintf(out, "  ");
                         }
 
-                        double val2 = matrix->get(row,col) * 100.0;
+                        double val2 = matrix->get(row, col) * 100.0;
                         {
                             char buf[20];
-                            if (val2 > 99.9 || row == col)  sprintf(buf,"%4.0f",val2);
-                            else sprintf(buf,"%4.1f",val2);
+                            if (val2 > 99.9 || row == col)  sprintf(buf, "%4.0f", val2);
+                            else sprintf(buf, "%4.1f", val2);
 
                             if (tabbed) { // convert '.' -> ','
                                 char *dot     = strchr(buf, '.');
@@ -141,14 +141,14 @@ const char *DI_MATRIX::save(char *filename,enum DI_SAVE_TYPE type)
                         
                         sum += val2; // ralf: before this added 'val' (which was included somehow)
                     }
-                    fprintf(out,"\n");
+                    fprintf(out, "\n");
                 }
 
                 fputc('\n', out);
 
-                fprintf(out,"Minimum:\t%f\n",min);
-                fprintf(out,"Maximum:\t%f\n",max);
-                fprintf(out,"Average:\t%f\n",sum/(nentries*nentries) );
+                fprintf(out, "Minimum:\t%f\n", min);
+                fprintf(out, "Maximum:\t%f\n", max);
+                fprintf(out, "Average:\t%f\n", sum/(nentries*nentries));
             }
             break;
         default:

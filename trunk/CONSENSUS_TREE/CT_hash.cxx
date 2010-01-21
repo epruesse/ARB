@@ -35,9 +35,9 @@ void hash_free(void)
     int i;
     HNODE *hnp, *hnp_help;
 
-    for(i=0; i< HASH_MAX; i++) {
+    for (i=0; i< HASH_MAX; i++) {
         hnp = Hashlist[i];
-        while(hnp) {
+        while (hnp) {
             hnp_help = hnp->next;
             part_free(hnp->part);
             free((char *)hnp);
@@ -47,7 +47,7 @@ void hash_free(void)
     }
 
     hnp = Sortedlist;
-    while(hnp) {
+    while (hnp) {
         hnp_help = hnp->next;
         part_free(hnp->part);
         free((char *)hnp);
@@ -66,7 +66,7 @@ PART *hash_getpart(void)
     HNODE *hnp;
     PART *p;
 
-    if(!Sortedlist) return NULL;
+    if (!Sortedlist) return NULL;
 
     hnp = Sortedlist;
     Sortedlist = hnp->next;
@@ -93,14 +93,14 @@ void hash_insert(PART *part, int weight)
     key = part_key(part);
     key %= HASH_MAX;
 
-    if(Hashlist[key]) {
-        for(hp=Hashlist[key]; hp; hp=hp->next) {
-            if(part_cmp(hp->part, part)) { /* if in list */
+    if (Hashlist[key]) {
+        for (hp=Hashlist[key]; hp; hp=hp->next) {
+            if (part_cmp(hp->part, part)) { /* if in list */
                 /* tree-add tree-id */
                 hp->part->percent += weight;
                 hp->part->len += ((float) weight) * part->len;
                 part_free(part);
-                if(hp->part->percent > Hash_max_count)
+                if (hp->part->percent > Hash_max_count)
                     Hash_max_count = hp->part->percent;
                 return;
             }
@@ -112,10 +112,10 @@ void hash_insert(PART *part, int weight)
     part->percent = weight;
     part->len *= ((float) weight);
     hp->part = part;
-    if(weight > Hash_max_count)
+    if (weight > Hash_max_count)
         Hash_max_count = weight;
 
-    if(!Hashlist[key]) {
+    if (!Hashlist[key]) {
         Hashlist[key] = hp;
         return;
     }
@@ -141,12 +141,12 @@ void build_sorted_list(void)
 
     /* build one list for each countvalue */
 
-    for(i=0; i< HASH_MAX; i++) {
+    for (i=0; i< HASH_MAX; i++) {
         hnp = Hashlist[i];
-        while(hnp) {
+        while (hnp) {
             hnp_help = hnp->next;
             idx = hnp->part->percent-1;
-            if(heads[idx]) {
+            if (heads[idx]) {
                 hnp->next = heads[idx];
                 heads[idx] = hnp;
             }
@@ -163,9 +163,9 @@ void build_sorted_list(void)
     head = NULL;
     tail = NULL;
     /* concatenate lists */
-    for(i=Hash_max_count-1; i>=0; i--) {
-        if(heads[i]) {
-            if(!head) {
+    for (i=Hash_max_count-1; i>=0; i--) {
+        if (heads[i]) {
+            if (!head) {
                 head = heads[i];
                 tail = tails[i];
             }
@@ -191,10 +191,10 @@ void hash_print(void)
 
     printf("\n HASHtable \n");
 
-    for(i=0; i< HASH_MAX; i++) {
+    for (i=0; i< HASH_MAX; i++) {
         printf("Key: %d \n", i);
         hnp = Hashlist[i];
-        while(hnp) {
+        while (hnp) {
             printf("node: count %d node ", hnp->part->percent);
             part_print(hnp->part); printf(" (%d)\n", hnp->part->p[0]);
             hnp = hnp->next;
@@ -211,7 +211,7 @@ void sorted_print(void)
     printf("\n sorted HASHlist \n");
 
     hnp = Sortedlist;
-    while(hnp) {
+    while (hnp) {
         printf("node: count %d node ", hnp->part->percent);
         part_print(hnp->part); printf("\n");
         hnp = hnp->next;

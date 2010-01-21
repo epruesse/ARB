@@ -13,23 +13,23 @@
  * call 'make proto' to update
  */
 
-/* AISC_MKPT_PROMOTE:struct arb_params {*/
-/* AISC_MKPT_PROMOTE:    char *species_name;*/
-/* AISC_MKPT_PROMOTE:    char *extended_name;*/
-/* AISC_MKPT_PROMOTE:    char *alignment;*/
-/* AISC_MKPT_PROMOTE:    char *default_file;*/
-/* AISC_MKPT_PROMOTE:    char *field;*/
-/* AISC_MKPT_PROMOTE:    const char *field_default;*/
-/* AISC_MKPT_PROMOTE:*/
-/* AISC_MKPT_PROMOTE:    int  read_only;*/
-/* AISC_MKPT_PROMOTE:*/
-/* AISC_MKPT_PROMOTE:    char *job_server;*/
-/* AISC_MKPT_PROMOTE:    char *db_server;*/
-/* AISC_MKPT_PROMOTE:    char *mgr_server;*/
-/* AISC_MKPT_PROMOTE:    char *pt_server;*/
-/* AISC_MKPT_PROMOTE:*/
-/* AISC_MKPT_PROMOTE:    char *tcp;*/
-/* AISC_MKPT_PROMOTE:};*/
+/* AISC_MKPT_PROMOTE:struct arb_params { */
+/* AISC_MKPT_PROMOTE:    char *species_name; */
+/* AISC_MKPT_PROMOTE:    char *extended_name; */
+/* AISC_MKPT_PROMOTE:    char *alignment; */
+/* AISC_MKPT_PROMOTE:    char *default_file; */
+/* AISC_MKPT_PROMOTE:    char *field; */
+/* AISC_MKPT_PROMOTE:    const char *field_default; */
+/* AISC_MKPT_PROMOTE: */
+/* AISC_MKPT_PROMOTE:    int  read_only; */
+/* AISC_MKPT_PROMOTE: */
+/* AISC_MKPT_PROMOTE:    char *job_server; */
+/* AISC_MKPT_PROMOTE:    char *db_server; */
+/* AISC_MKPT_PROMOTE:    char *mgr_server; */
+/* AISC_MKPT_PROMOTE:    char *pt_server; */
+/* AISC_MKPT_PROMOTE: */
+/* AISC_MKPT_PROMOTE:    char *tcp; */
+/* AISC_MKPT_PROMOTE:}; */
 
 #define TRIES 1
 
@@ -120,7 +120,7 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, GBDATA *gbmain, int do_sleep)
             int   delay   = 5;
 
             if (*tcp_id == ':') { /* local mode */
-                command = GBS_global_string_copy("%s %s -T%s &",server, serverparams, tcp_id);
+                command = GBS_global_string_copy("%s %s -T%s &", server, serverparams, tcp_id);
             }
             else {
                 const char *port = strchr(tcp_id, ':');
@@ -140,7 +140,7 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, GBDATA *gbmain, int do_sleep)
 #if defined(DEBUG)
                 printf("Starting server (cmd='%s')\n", command);
 #endif /* DEBUG */
-                if (!gbmain || GBCMC_system(gbmain,command)) system(command);
+                if (!gbmain || GBCMC_system(gbmain, command)) system(command);
                 if (do_sleep) sleep(delay);
             }
             free(command);
@@ -260,7 +260,7 @@ GB_ERROR arb_look_and_kill_server(int magic_number, const char *arb_tcp_env) {
     GB_ERROR    error = 0;
 
     if (!(tcp_id = GBS_read_arb_tcp(arb_tcp_env))) {
-        error = GB_export_errorf("Missing line '%s' in $(ARBHOME)/lib/arb_tcp.dat:",arb_tcp_env);
+        error = GB_export_errorf("Missing line '%s' in $(ARBHOME)/lib/arb_tcp.dat:", arb_tcp_env);
     }
     else {
         const char *server = strchr(tcp_id, 0)+1;
@@ -301,9 +301,9 @@ void arb_print_server_params() {
 struct arb_params *arb_trace_argv(int *argc, char **argv)
 {
     struct arb_params *erg;
-    int s,d;
+    int s, d;
 
-    erg             = (struct arb_params *)calloc(sizeof(struct arb_params),1);
+    erg             = (struct arb_params *)calloc(sizeof(struct arb_params), 1);
     erg->db_server  = strdup(":");
     erg->job_server = strdup("ARB_JOB_SERVER");
     erg->mgr_server = strdup("ARB_MGR_SERVER");
@@ -312,10 +312,10 @@ struct arb_params *arb_trace_argv(int *argc, char **argv)
     for (s=d=0; s<*argc; s++) {
         if (argv[s][0] == '-') {
             switch (argv[s][1]) {
-                case 's': erg->species_name  = strdup(argv[s]+2);break;
-                case 'e': erg->extended_name = strdup(argv[s]+2);break;
-                case 'a': erg->alignment     = strdup(argv[s]+2);break;
-                case 'd': erg->default_file  = strdup(argv[s]+2);break;
+                case 's': erg->species_name  = strdup(argv[s]+2); break;
+                case 'e': erg->extended_name = strdup(argv[s]+2); break;
+                case 'a': erg->alignment     = strdup(argv[s]+2); break;
+                case 'd': erg->default_file  = strdup(argv[s]+2); break;
                 case 'f': {
                     char *eq;
                     erg->field = strdup(argv[s]+2);
@@ -330,11 +330,11 @@ struct arb_params *arb_trace_argv(int *argc, char **argv)
                     }
                     break;
                 }
-                case 'r': erg->read_only     = 1;break;
-                case 'J': erg->job_server    = strdup(argv[s]+2);break;
-                case 'D': erg->db_server     = strdup(argv[s]+2);break;
-                case 'M': erg->mgr_server    = strdup(argv[s]+2);break;
-                case 'P': erg->pt_server     = strdup(argv[s]+2);break;
+                case 'r': erg->read_only     = 1; break;
+                case 'J': erg->job_server    = strdup(argv[s]+2); break;
+                case 'D': erg->db_server     = strdup(argv[s]+2); break;
+                case 'M': erg->mgr_server    = strdup(argv[s]+2); break;
+                case 'P': erg->pt_server     = strdup(argv[s]+2); break;
                 case 'T': {
                     char *ipport = argv[s]+2;
                     if (ipport[0] == ':' &&

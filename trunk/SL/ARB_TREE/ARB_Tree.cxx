@@ -296,8 +296,8 @@ void ARB_tree::assert_valid() const {
 #endif // CHECK_TREE_STRUCTURE
 
 void ARB_tree::mark_subtree() {
-    if (is_leaf){
-        if (gb_node) GB_write_flag(gb_node,1);
+    if (is_leaf) {
+        if (gb_node) GB_write_flag(gb_node, 1);
     }
     else {
         leftson->mark_subtree();

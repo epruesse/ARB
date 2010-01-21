@@ -204,8 +204,8 @@ void AWTC_alignBuffer::correctUnalignedPositions(void)
         long a_off = from+cnt;                                  // positions after unaligned positions
 
         long before, after;
-        for (before=0; b_off>=0 && isGlobalGap(b_off); before++,b_off--) ;              // count free positions before unaligned positions
-        for (after=0; a_off<used && isGlobalGap(a_off); after++,a_off++) ;              // count free positions after unaligned positions
+        for (before=0; b_off>=0 && isGlobalGap(b_off); before++, b_off--) ;             // count free positions before unaligned positions
+        for (after=0; a_off<used && isGlobalGap(a_off); after++, a_off++) ;             // count free positions after unaligned positions
 
         if (b_off<=0) before = LONG_MAX;
         if (a_off>=used) after = LONG_MAX;
@@ -215,7 +215,7 @@ void AWTC_alignBuffer::correctUnalignedPositions(void)
             if (before)
             {
                 long to = from-before;
-                while (cnt--) moveUnaligned(from++,to++);
+                while (cnt--) moveUnaligned(from++, to++);
             }
         }
         else if (after!=LONG_MAX)       // move to the right
@@ -225,7 +225,7 @@ void AWTC_alignBuffer::correctUnalignedPositions(void)
                 from += cnt-1;          // copy from right to left!
                 long to = from+after;
 
-                while (cnt--) moveUnaligned(from--,to--);
+                while (cnt--) moveUnaligned(from--, to--);
             }
         }
 

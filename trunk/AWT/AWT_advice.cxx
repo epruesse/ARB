@@ -156,9 +156,9 @@ void AWT_advice(const char *message, int type, const char *title, const char *co
         bool help_pops_up = false;
 
         if (has_help) {
-            aws->callback( AW_POPUP_HELP,(AW_CL)corresponding_help);
+            aws->callback(AW_POPUP_HELP, (AW_CL)corresponding_help);
             aws->at("help");
-            aws->create_button(0, "HELP","H");
+            aws->create_button(0, "HELP", "H");
 
             if (type & AWT_ADVICE_HELP_POPUP) help_pops_up = true;
         }

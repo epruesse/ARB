@@ -34,7 +34,7 @@ public:
     const unsigned char *get_usequence() const { return (const unsigned char*)get_sequence(); }
 
     AP_sequence *dup() const;                         // used to get the real new element
-    AP_FLOAT combine(const AP_sequence *lefts, const AP_sequence *rights, char *mutation_per_site) ;
+    AP_FLOAT combine(const AP_sequence *lefts, const AP_sequence *rights, char *mutation_per_site);
     void partial_match(const AP_sequence* part, long *overlap, long *penalty) const;
 };
 

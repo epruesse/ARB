@@ -94,7 +94,7 @@ static GB_ERROR dump_key_data(GBDATA *gb_main) {
                     else {
                         GBDATA *gb_cm = GB_entry(gb_key, "compression_mask");
                         
-                        if (!gb_cm)  {
+                        if (!gb_cm) {
                             error = "@key w/o compression_mask";
                         }
                         else {

@@ -2,11 +2,11 @@
 
 #include <MultiProbe.hxx>
 
-void MP_list::append_elem_backwards( void *elem )
+void MP_list::append_elem_backwards(void *elem)
 {
     MP_list_elem       *new_list_elem;
 
-    if ( elem == NULL )
+    if (elem == NULL)
         return;
 
     new_list_elem = new MP_list_elem;
@@ -14,7 +14,7 @@ void MP_list::append_elem_backwards( void *elem )
     new_list_elem->elem = elem;
     new_list_elem->next = NULL;
 
-    if ( this->first == NULL)
+    if (this->first == NULL)
     {
         this->first = new_list_elem;
         this->last = new_list_elem;
@@ -31,11 +31,11 @@ void MP_list::append_elem_backwards( void *elem )
 }
 
 
-void MP_list::append_elem( void *elem )
+void MP_list::append_elem(void *elem)
 {
     MP_list_elem       *new_list_elem;
 
-    if ( elem == NULL )
+    if (elem == NULL)
         return;
 
     new_list_elem = new MP_list_elem;
@@ -43,7 +43,7 @@ void MP_list::append_elem( void *elem )
     new_list_elem->elem = elem;
     new_list_elem->next = NULL;
 
-    if ( this->first == NULL)
+    if (this->first == NULL)
     {
         this->first = new_list_elem;
         this->last = new_list_elem;
@@ -61,7 +61,7 @@ void MP_list::append_elem( void *elem )
 
 
 
-void MP_list::delete_elem( void *elem )
+void MP_list::delete_elem(void *elem)
 {
     MP_list_elem     *current_list_elem,
         *previous_list_elem;
@@ -69,18 +69,18 @@ void MP_list::delete_elem( void *elem )
     current_list_elem = this->first;
     previous_list_elem = NULL;
 
-    while ( (current_list_elem!= NULL)  && (current_list_elem->elem != elem) )
+    while ((current_list_elem != NULL)  && (current_list_elem->elem != elem))
     {
         previous_list_elem = current_list_elem;
         current_list_elem  = current_list_elem->next;
     }
 
-    if ( current_list_elem == NULL )
+    if (current_list_elem == NULL)
         return;
 
-    if ( current_list_elem == this->first )
+    if (current_list_elem == this->first)
     {
-        if ( current_list_elem == this->last )
+        if (current_list_elem == this->last)
             this->last = NULL;
 
         this->first = current_list_elem->next;
@@ -89,7 +89,7 @@ void MP_list::delete_elem( void *elem )
     {
         previous_list_elem->next = current_list_elem->next;
 
-        if ( current_list_elem == this->last )
+        if (current_list_elem == this->last)
             this->last = previous_list_elem;
     }
 
@@ -100,12 +100,12 @@ void MP_list::delete_elem( void *elem )
 
 
 
-short MP_list::is_elem( void *elem )
+short MP_list::is_elem(void *elem)
 {
     MP_list_elem    *current_list_elem = this->first;
 
-    if ( elem == NULL )
-        return ( FALSE );
+    if (elem == NULL)
+        return (FALSE);
 
     while (current_list_elem && current_list_elem->elem != elem)
         current_list_elem = current_list_elem->next;

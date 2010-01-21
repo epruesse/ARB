@@ -23,10 +23,10 @@
 #define CATSCALE 0.71           // downscale factor for rates
 #define MIO      1000000        // factor to scale rate-values to integers (for RAxML)
 
-int main(int argc, char **argv){
-    argc--;argv++;
+int main(int argc, char **argv) {
+    argc--; argv++;
     
-    if (argc<1 || strcmp(argv[0],"--help") == 0) {
+    if (argc<1 || strcmp(argv[0], "--help") == 0) {
         fprintf(stderr,
                 "\n"
                 "arb_export_rates: Add a line to phylip format which can be used by fastdnaml for rates\n"
@@ -47,18 +47,18 @@ int main(int argc, char **argv){
     if (argc >= 2) {
         if (strcmp(argv[0], "-r") == 0) {
             RAxML_mode = true;
-            argc--;argv++;
+            argc--; argv++;
         }
     }
 
-    GBDATA *gb_main = GBT_open(":","r",0);
-    if (!gb_main){
+    GBDATA *gb_main = GBT_open(":", "r", 0);
+    if (!gb_main) {
         GB_print_error();
         return EXIT_FAILURE;
     }
 
     char *SAI_name  = argv[0];
-    argc--;argv++;
+    argc--; argv++;
 
     {
         char *seq        = 0;
@@ -74,13 +74,13 @@ int main(int argc, char **argv){
             char *ali_name = GBT_get_default_alignment(gb_main);
             ali_len        = GBT_get_alignment_len(gb_main, ali_name);
 
-            filter     = GBT_read_string(gb_main,AWAR_GDE_EXPORT_FILTER);
+            filter     = GBT_read_string(gb_main, AWAR_GDE_EXPORT_FILTER);
             filter_len = strlen(filter);
 
             if (SAI_name[0] != 0 || strcmp(SAI_name, "--none") != 0) {
-                gb_sai = GBT_find_SAI(gb_main,SAI_name);
-                if (gb_sai)  {
-                    gb_data = GBT_read_sequence(gb_sai,ali_name);
+                gb_sai = GBT_find_SAI(gb_main, SAI_name);
+                if (gb_sai) {
+                    gb_data = GBT_read_sequence(gb_sai, ali_name);
 
                     if (gb_data) {
                         seq     = GB_read_string(gb_data);
@@ -129,8 +129,8 @@ int main(int argc, char **argv){
                 printf("\nC 35 ");
                 double rate = 1.0;
                 int    i;
-                for (i=0;i<35;i++){
-                    printf("%f ",rate);
+                for (i=0; i<35; i++) {
+                    printf("%f ", rate);
                     rate *= CATSCALE;
                 }
                 printf("\nCategories ");
@@ -141,7 +141,7 @@ int main(int argc, char **argv){
                         
                         arb_assert(c != '0'); // only 35 cats (1-9 and A-Z)
                         
-                        if ( (c < '0' || c>'9' ) &&  (c < 'A' || c>'Z')) c = '1';
+                        if ((c < '0' || c>'9') &&    (c < 'A' || c>'Z')) c = '1';
                         putchar(c);
                     }
                 }
@@ -183,7 +183,7 @@ int main(int argc, char **argv){
             for (i=0; i<seq_len; i++) {
                 if (i>filter_len || filter[i] != '0') {
                     int c = seq[i];
-                    if ( (c < '0' || c>'9' ) &&  (c < 'A' || c>'Z')) c = '1';
+                    if ((c < '0' || c>'9') &&    (c < 'A' || c>'Z')) c = '1';
                     fputs(weight[c], stdout);
                     if (++cnt>30) {
                         fputc('\n', stdout);

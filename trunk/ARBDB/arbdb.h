@@ -109,14 +109,14 @@ enum GB_alignment_type {
 // -----------------------
 //      callback types
 
-typedef void (*GB_CB)(GBDATA *,int *clientdata, GB_CB_TYPE gbtype);
+typedef void (*GB_CB)(GBDATA *, int *clientdata, GB_CB_TYPE gbtype);
 
 typedef long (*gb_hash_loop_type)(const char *key, long val, void *client_data);
 typedef int (*gbs_hash_compare_function) (const char *key0, long val0, const char *key1, long val1);
 
 typedef const char* (*gb_export_sequence_cb)(GBDATA *gb_species, size_t *seq_len, GB_ERROR *error);
 
-typedef GBDATA* (*GB_Link_Follower)(GBDATA *GB_root,GBDATA *GB_elem,const char *link);
+typedef GBDATA* (*GB_Link_Follower)(GBDATA *GB_root, GBDATA *GB_elem, const char *link);
 
 typedef int (*gb_compare_function)(const void *p0, const void *p1, void *client_data);
 

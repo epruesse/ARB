@@ -36,7 +36,7 @@ AW_gc_manager RNA3D_Graphics::init_devices(AW_window *aww, AW_device *device, AW
                       "+-RANGE 0$#FFFFFF",    "+-RANGE 1$#E0E0E0",    "-RANGE 2$#C0C0C0",
                       "+-RANGE 3$#A0A0A0",    "+-RANGE 4$#909090",    "-RANGE 5$#808080",
                       "+-RANGE 6$#808080",    "+-RANGE 7$#505050",    "-RANGE 8$#404040",
-                      "+-RANGE 9$#303030",    "+-Pseudoknots$#FFAAFF","-Triple Bases$#55FF00",
+                      "+-RANGE 9$#303030",    "+-Pseudoknots$#FFAAFF", "-Triple Bases$#55FF00",
 
                       "+-Cursor$#FFFFFF",    "+-Comments$#808080",    "-MoleculeMask$#00FF00",
                       NULL);
@@ -60,16 +60,16 @@ RNA3D_Graphics::RNA3D_Graphics(AW_root *aw_root_, GBDATA *gb_main_) {
 
 RNA3D_Graphics::~RNA3D_Graphics(void) {}
 
-void RNA3D_Graphics::show(AW_device *device){
+void RNA3D_Graphics::show(AW_device *device) {
     paint(device);
 }
 
-void RNA3D_Graphics::info(AW_device */*device*/, AW_pos /*x*/, AW_pos /*y*/, AW_clicked_line */*cl*/, AW_clicked_text */*ct*/)
+void RNA3D_Graphics::info(AW_device * /* device */, AW_pos /* x */, AW_pos /* y */, AW_clicked_line * /* cl */, AW_clicked_text * /* ct */)
 {
     aw_message("INFO MESSAGE");
 }
 
-void RNA3D_Graphics::paint(AW_device */*device*/) {
+void RNA3D_Graphics::paint(AW_device * /* device */) {
     MapDisplayParameters(aw_root);
     RefreshOpenGLDisplay();
 }

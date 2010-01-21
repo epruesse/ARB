@@ -8,7 +8,7 @@
 #define IS_AMINO()        (ED4_ROOT->alignment_type==GB_AT_AA)
 
 extern int ED4_iupac_group[26];
-char ED4_encode_iupac(const char bases[/*4*/], GB_alignment_type ali);
+char ED4_encode_iupac(const char bases[ /* 4 */ ], GB_alignment_type ali);
 const char* ED4_decode_iupac(char iupac, GB_alignment_type ali);
 
 void ED4_set_clipping_rectangle(AW_rectangle *rect);

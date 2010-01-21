@@ -83,7 +83,7 @@ void SEC_helix::save(ostream & out, int indent, const XString& x_string) {
     strandToOutside()->get_region()->save(out, indent, x_string);
     
     do_indent(out, indent); out << "REL=" << get_rel_angle().radian() << "\n";
-    do_indent(out, indent); out << "LENGTH=" << minSize() << ":" << maxSize() << "\n";;
+    do_indent(out, indent); out << "LENGTH=" << minSize() << ":" << maxSize() << "\n"; ;
 
     outsideLoop()->save(out, indent, x_string);
     strandToRoot()->get_region()->save(out, indent, x_string);

@@ -45,7 +45,7 @@ public:
              ALI_TARRAY<ali_pathmap_up_pointer> **up_pointer);
     unsigned char get_value(unsigned long x, unsigned long y) {
         if (x >= width || y >= height)
-            ali_fatal_error("Out of range","ALI_PATHMAP::get_value()");
+            ali_fatal_error("Out of range", "ALI_PATHMAP::get_value()");
         if (y & 0x01)
             return (*pathmap)[x*height_real + y/2] & 0x0f;
         else

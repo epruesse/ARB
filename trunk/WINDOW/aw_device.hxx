@@ -109,7 +109,7 @@ public:
 
 class AW_clicked_line : public AW_clicked_element {
 public:
-    AW_pos  x0,y0,x1,y1;
+    AW_pos  x0, y0, x1, y1;
     AW_pos  height;
     AW_pos  length;
 
@@ -135,7 +135,7 @@ class AW_matrix {
     AW_pos     unscale;         // = 1.0/scale
 
 public:
-    AW_matrix(void) { this->reset();};
+    AW_matrix(void) { this->reset(); };
     virtual ~AW_matrix() {}
 
     void zoom(AW_pos scale);
@@ -172,20 +172,20 @@ public:
     AW::LineVector rtransform(const AW::LineVector& lvec) const { return AW::LineVector(rtransform(lvec.start()), rtransform(lvec.line_vector())); }
 
     // old style functions, not preferred:
-    void transform(int x,int y,int& xout,int& yout) const {
+    void transform(int x, int y, int& xout, int& yout) const {
         xout = int((x+offset.x())*scale);
         yout = int((y+offset.y())*scale);
     }
-    void transform(AW_pos x,AW_pos y,AW_pos& xout,AW_pos& yout) const {
+    void transform(AW_pos x, AW_pos y, AW_pos& xout, AW_pos& yout) const {
         xout = (x+offset.x())*scale;
         yout = (y+offset.y())*scale;
     }
 
-    void rtransform(int x,int y,int& xout,int& yout) const {
+    void rtransform(int x, int y, int& xout, int& yout) const {
         xout = int(x*unscale - offset.x());
         yout = int(y*unscale - offset.y());
     }
-    void rtransform(AW_pos x,AW_pos y,AW_pos& xout,AW_pos& yout) const {
+    void rtransform(AW_pos x, AW_pos y, AW_pos& xout, AW_pos& yout) const {
         xout = x*unscale - offset.x();
         yout = y*unscale - offset.y();
     }
@@ -204,13 +204,13 @@ protected:
         else if (yy - clip_rect.t < 0)  code = 8;
         if (clip_rect.r - xx < 0)       code |= 2;
         else if (xx - clip_rect.l < 0)  code |= 1;
-        return(code);
+        return (code);
     };
 public:
     class AW_common *common;
 
     // ****** read only section
-    AW_rectangle clip_rect;     //holds the clipping rectangle coordinates
+    AW_rectangle clip_rect;     // holds the clipping rectangle coordinates
     int top_font_overlap;
     int bottom_font_overlap;
     int left_font_overlap;
@@ -259,9 +259,9 @@ struct AW_font_limits {
 
     void reset() { ascent = descent = height = width = 0; }
 
-    void notify_ascent (int a_ascent ){ if(a_ascent >ascent ) ascent  = a_ascent;  }
-    void notify_descent(int a_descent){ if(a_descent>descent) descent = a_descent; }
-    void notify_width  (int a_width  ){ if(a_width  >width  ) width   = a_width;   }
+    void notify_ascent (int a_ascent) { if (a_ascent >ascent) ascent  = a_ascent; }
+    void notify_descent(int a_descent) { if (a_descent>descent) descent = a_descent; }
+    void notify_width  (int a_width) { if (a_width  >width) width   = a_width; }
 
     void notify_all(int a_ascent, int a_descent, int a_width) {
         notify_ascent (a_ascent);
@@ -312,17 +312,17 @@ typedef enum {
     AW_XOR
 } AW_function;
 
-class AW_gc: public AW_clip {
+class AW_gc : public AW_clip {
 public:
     void new_gc(int gc);
     int  new_gc(void);
-    void set_fill(int gc,AW_grey_level grey_level); // <0 don't fill  0.0 white 1.0 black
-    void set_font(int gc,AW_font fontnr, int size, int *found_size); 
-    void set_line_attributes(int gc,AW_pos width,AW_linestyle style);
-    void set_function(int gc,AW_function function);
-    void set_foreground_color(int gc,AW_color color); // lines ....
-    void set_background_color(int gc,AW_color color); // for box
-    int  get_string_size(int gc,const  char *string,long textlen); // get the size of the string
+    void set_fill(int gc, AW_grey_level grey_level); // <0 don't fill  0.0 white 1.0 black
+    void set_font(int gc, AW_font fontnr, int size, int *found_size);
+    void set_line_attributes(int gc, AW_pos width, AW_linestyle style);
+    void set_function(int gc, AW_function function);
+    void set_foreground_color(int gc, AW_color color); // lines ....
+    void set_background_color(int gc, AW_color color); // for box
+    int  get_string_size(int gc, const  char *string, long textlen); // get the size of the string
 
     const AW_font_information *get_font_information(int gc, unsigned char c);
     
@@ -338,7 +338,7 @@ public:
 
 class AW_clip_scale_stack;
 
-class AW_device: public AW_matrix, public AW_gc
+class AW_device : public AW_matrix, public AW_gc
 {
     AW_device(const AW_device& other);
     AW_device& operator=(const AW_device& other);
@@ -357,26 +357,26 @@ public:
 
     void reset(void);
 
-    void          get_area_size(AW_rectangle *rect); //read the frame size
-    void          get_area_size(AW_world *rect); //read the frame size
+    void          get_area_size(AW_rectangle *rect); // read the frame size
+    void          get_area_size(AW_world *rect); // read the frame size
     AW::Rectangle get_area_size();
 
-    void set_filter( AW_bitset filteri ); //set the main filter mask
+    void set_filter(AW_bitset filteri);   // set the main filter mask
 
     void push_clip_scale(void); // push clipping area and scale
     void pop_clip_scale(void); // pop them
 
-    virtual AW_DEVICE_TYPE type(void) =0;
+    virtual AW_DEVICE_TYPE type(void) = 0;
 
     // * functions below return 1 if any pixel is drawn, 0 otherwise
     // * primary functions (always virtual)
 
     virtual bool ready_to_draw(int gc);
 
-    virtual int line(int gc, AW_pos x0,AW_pos y0, AW_pos x1,AW_pos y1,
+    virtual int line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1,
                      AW_bitset filteri = (AW_bitset)-1, AW_CL cd1 = 0, AW_CL cd2 = 0) = 0; // used by click device
 
-    virtual int text(int gc, const char *string,AW_pos x,AW_pos y,
+    virtual int text(int gc, const char *string, AW_pos x, AW_pos y,
                      AW_pos alignment  = 0.0, // 0.0 alignment left 0.5 centered 1.0 right justified
                      AW_bitset filteri    = (AW_bitset)-1, AW_CL cd1 = 0, AW_CL cd2 = 0, // used by click device
                      long opt_strlen = 0) = 0;
@@ -384,22 +384,22 @@ public:
     // * second level functions (maybe non virtual)
 
     virtual bool invisible(int gc, AW_pos x, AW_pos y, AW_bitset filteri, AW_CL cd1, AW_CL cd2); // returns true if x/y is outside viewport (or if it would now be drawn undrawn)
-    virtual int cursor(int gc, AW_pos x0,AW_pos y0, AW_cursor_type type, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
+    virtual int cursor(int gc, AW_pos x0, AW_pos y0, AW_cursor_type type, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
 
-    virtual int zoomtext(int gc, const char *string, AW_pos x,AW_pos y, AW_pos height, AW_pos alignment,AW_pos rotation,AW_bitset filteri,AW_CL cd1,AW_CL cd2);
-    virtual int zoomtext1(int gc, const char *string, AW_pos x,AW_pos y, AW_pos scale, AW_pos alignment,AW_pos rotation, AW_bitset filteri,AW_CL cd1,AW_CL cd2);
-    virtual int zoomtext4line(int gc, const char *string, AW_pos height, AW_pos lx0, AW_pos ly0, AW_pos lx1, AW_pos ly1, AW_pos alignmentx, AW_pos alignmenty, AW_bitset filteri,AW_CL cd1,AW_CL cd2);
+    virtual int zoomtext(int gc, const char *string, AW_pos x, AW_pos y, AW_pos height, AW_pos alignment, AW_pos rotation, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
+    virtual int zoomtext1(int gc, const char *string, AW_pos x, AW_pos y, AW_pos scale, AW_pos alignment, AW_pos rotation, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
+    virtual int zoomtext4line(int gc, const char *string, AW_pos height, AW_pos lx0, AW_pos ly0, AW_pos lx1, AW_pos ly1, AW_pos alignmentx, AW_pos alignmenty, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
 
 protected:
-    int generic_box(int gc, bool filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
-    int generic_circle(int gc, bool filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
-    int generic_arc(int gc, bool filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, int start_degrees, int arc_degrees, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
+    int generic_box(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
+    int generic_circle(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
+    int generic_arc(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, int start_degrees, int arc_degrees, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
     int generic_filled_area(int gc, int npoints, AW_pos *points, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
 
 public:
-    virtual int box(int gc, bool filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filteri, AW_CL cd1, AW_CL cd2)                                     = 0;
-    virtual int circle(int gc, bool filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filteri, AW_CL cd1, AW_CL cd2)                                  = 0;
-    virtual int arc(int gc, bool filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, int start_degrees, int arc_degrees, AW_bitset filteri, AW_CL cd1, AW_CL cd2) = 0;
+    virtual int box(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, AW_bitset filteri, AW_CL cd1, AW_CL cd2)                                  = 0;
+    virtual int circle(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, AW_bitset filteri, AW_CL cd1, AW_CL cd2)                               = 0;
+    virtual int arc(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, int start_degrees, int arc_degrees, AW_bitset filteri, AW_CL cd1, AW_CL cd2) = 0;
     virtual int filled_area(int gc, int npoints, AW_pos *points, AW_bitset filteri, AW_CL cd1, AW_CL cd2)                                                                = 0;
 
     // * third level functions (never virtual)
@@ -441,11 +441,11 @@ public:
     }
 
     // reduces any string (or virtual string) to its actual drawn size and calls the function f with the result
-    int     text_overlay( int gc, const char *opt_string, long opt_strlen,  // either string or strlen != 0
-                          AW_pos x,AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cduser, AW_CL cd1, AW_CL cd2,
-                          AW_pos opt_ascent,AW_pos opt_descent,   // optional height (if == 0 take font height)
+    int     text_overlay(int gc, const char *opt_string, long opt_strlen,   // either string or strlen != 0
+                          AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cduser, AW_CL cd1, AW_CL cd2,
+                          AW_pos opt_ascent, AW_pos opt_descent,  // optional height (if == 0 take font height)
                           int (*f)(AW_device *device, int gc, const char *opt_string, size_t opt_string_len, size_t start, size_t size,
-                                   AW_pos x,AW_pos y, AW_pos opt_ascent,AW_pos opt_descent,
+                                   AW_pos x, AW_pos y, AW_pos opt_ascent, AW_pos opt_descent,
                                    AW_CL cduser, AW_CL cd1, AW_CL cd2));
 
 
@@ -456,7 +456,7 @@ public:
     void clear_part(const AW::Rectangle&rect, AW_bitset filteri) { clear_part(rect.xpos(), rect.ypos(), rect.width(), rect.height(), filteri); }
 
     virtual void    clear_text(int gc, const char *string, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
-    virtual void    move_region( AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height, AW_pos dest_x, AW_pos dest_y );
+    virtual void    move_region(AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height, AW_pos dest_x, AW_pos dest_y);
     virtual void    fast(void);                                     // e.g. zoom linewidth off
     virtual void    slow(void);
     virtual void    flush(void);                                    // empty X11 buffers

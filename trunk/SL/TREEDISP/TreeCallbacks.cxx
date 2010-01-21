@@ -16,17 +16,17 @@
 
 #include "TreeCallbacks.hxx"
 
-/*AISC_MKPT_PROMOTE:#ifndef TREEDISPLAY_HXX*/
-/*AISC_MKPT_PROMOTE:#include <TreeDisplay.hxx>*/
-/*AISC_MKPT_PROMOTE:#endif*/
+/* AISC_MKPT_PROMOTE:#ifndef TREEDISPLAY_HXX */
+/* AISC_MKPT_PROMOTE:#include <TreeDisplay.hxx> */
+/* AISC_MKPT_PROMOTE:#endif */
 
 void
-nt_mode_event( AW_window *aws, AWT_canvas *ntw, AWT_COMMAND_MODE mode)
+nt_mode_event(AW_window *aws, AWT_canvas *ntw, AWT_COMMAND_MODE mode)
 {
     AWUSE(aws);
     const char *text;
 
-    switch(mode){
+    switch (mode) {
         case AWT_MODE_SELECT:
             text = "SELECT MODE    LEFT: select species and open/close group";
             break;
@@ -89,7 +89,7 @@ nt_mode_event( AW_window *aws, AWT_canvas *ntw, AWT_COMMAND_MODE mode)
 
     awt_assert(strlen(text) < AWAR_FOOTER_MAX_LEN); // text too long!
 
-    ntw->awr->awar(AWAR_FOOTER)->write_string( text);
+    ntw->awr->awar(AWAR_FOOTER)->write_string(text);
     ntw->set_mode(mode);
 }
 
@@ -103,7 +103,7 @@ void NT_count_mark_all_cb(void *dummy, AW_CL cl_ntw)
     AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
     GB_push_transaction(ntw->gb_main);
 
-    GBDATA *gb_species_data = GB_search(ntw->gb_main,"species_data",GB_CREATE_CONTAINER);
+    GBDATA *gb_species_data = GB_search(ntw->gb_main, "species_data", GB_CREATE_CONTAINER);
     long    count           = GB_number_of_marked_subentries(gb_species_data);
 
     GB_pop_transaction(ntw->gb_main);
@@ -154,13 +154,13 @@ void NT_mark_all_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode)
 
     switch (mark_mode&MARK_MODE_UPPER_BITS) {
         case 0:                 // all sequences
-            GBT_mark_all(ntw->gb_main,mark_mode&MARK_MODE_LOWER_BITS);
+            GBT_mark_all(ntw->gb_main, mark_mode&MARK_MODE_LOWER_BITS);
             break;
         case 4:                 // full sequences only
-            GBT_mark_all_that(ntw->gb_main,mark_mode&MARK_MODE_LOWER_BITS, nt_sequence_is_partial, (void*)0);
+            GBT_mark_all_that(ntw->gb_main, mark_mode&MARK_MODE_LOWER_BITS, nt_sequence_is_partial, (void*)0);
             break;
         case 8:                 // partial sequences only
-            GBT_mark_all_that(ntw->gb_main,mark_mode&MARK_MODE_LOWER_BITS, nt_sequence_is_partial, (void*)1);
+            GBT_mark_all_that(ntw->gb_main, mark_mode&MARK_MODE_LOWER_BITS, nt_sequence_is_partial, (void*)1);
             break;
         case 16: {               // species with data in alignment only
             char *ali = GBT_get_default_alignment(ntw->gb_main);
@@ -168,7 +168,7 @@ void NT_mark_all_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode)
             free(ali);
             break;
         }
-        default :
+        default:
             awt_assert(0); // illegal mode
             break;
     }
@@ -202,7 +202,7 @@ void NT_mark_tree_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode)
             free(ali);
             break;
         }
-        default :
+        default:
             awt_assert(0); // illegal mode
             break;
     }
@@ -234,7 +234,7 @@ static int mark_nontree_cb(GBDATA *gb_species, void *cb_data) {
             case 16:            // species with data in alignment only
                 mark_me = nt_species_has_alignment(gb_species, data->ali);
                 break;
-            default :
+            default:
                 awt_assert(0); // illegal mode
                 break;
         }
@@ -290,7 +290,7 @@ void NT_mark_color_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode)
                 case 0: GB_write_flag(gb_species, 0); break;
                 case 1: GB_write_flag(gb_species, 1); break;
                 case 2: GB_write_flag(gb_species, !GB_read_flag(gb_species)); break;
-                default : awt_assert(0); break;
+                default: awt_assert(0); break;
             }
         }
     }
@@ -314,7 +314,7 @@ void NT_insert_color_mark_submenu(AW_window_menu_modes *awm, AWT_canvas *ntree_c
         case 0: label_base = "all_unmark_color"; break;
         case 1: label_base = "all_mark_color"; break;
         case 2: label_base = "all_invert_mark_color"; break;
-        default : awt_assert(0); break;
+        default: awt_assert(0); break;
     }
 
     for (int all_but = 0; all_but <= 1; ++all_but) {
@@ -433,7 +433,7 @@ void NT_insert_mark_submenus(AW_window_menu_modes *awm, AWT_canvas *ntw, int ins
     }
 
     {
-        awm->insert_menu_topic("count_marked",  "Count Marked Species",     "C","sp_count_mrk.hlp", AWM_ALL, (AW_CB)NT_count_mark_all_cb,       (AW_CL)ntw, 0 );
+        awm->insert_menu_topic("count_marked",  "Count Marked Species",     "C", "sp_count_mrk.hlp", AWM_ALL, (AW_CB)NT_count_mark_all_cb,      (AW_CL)ntw, 0);
         awm->insert_separator();
         nt_insert_mark_topics(awm, AWM_ALL, ntw, 0, 0);
         awm->insert_separator();
@@ -457,7 +457,7 @@ void NT_insert_mark_submenus(AW_window_menu_modes *awm, AWT_canvas *ntw, int ins
 }
 
 static void nt_save_changed_tree(AWT_canvas *ntw) {
-    GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
+    GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main, 0, 0, 0);
     if (error) aw_message(error);
     ntw->zoom_reset();
     ntw->refresh();
@@ -475,10 +475,10 @@ static void nt_group_tree(AWT_canvas *ntw, int mode, int color_group) {
     nt_save_changed_tree(ntw);
 }
 
-void NT_group_tree_cb      (void *, AWT_canvas *ntw){ nt_group_tree(ntw, 0, 0); }
-void NT_group_not_marked_cb(void *, AWT_canvas *ntw){ nt_group_tree(ntw, 1, 0); }
-void NT_group_terminal_cb  (void *, AWT_canvas *ntw){ nt_group_tree(ntw, 2, 0); }
-void NT_ungroup_all_cb     (void *, AWT_canvas *ntw){ nt_group_tree(ntw, 4, 0); }
+void NT_group_tree_cb      (void *, AWT_canvas *ntw) { nt_group_tree(ntw, 0, 0); }
+void NT_group_not_marked_cb(void *, AWT_canvas *ntw) { nt_group_tree(ntw, 1, 0); }
+void NT_group_terminal_cb  (void *, AWT_canvas *ntw) { nt_group_tree(ntw, 2, 0); }
+void NT_ungroup_all_cb     (void *, AWT_canvas *ntw) { nt_group_tree(ntw, 4, 0); }
 
 void NT_group_not_color_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_colornum) {
     AWT_canvas     *ntw      = (AWT_canvas*)cl_ntw;
@@ -531,16 +531,16 @@ void NT_insert_color_collapse_submenu(AW_window_menu_modes *awm, AWT_canvas *ntr
 //      tree sorting :
 // ------------------------
 
-void NT_resort_tree_cb(void *dummy, AWT_canvas *ntw,int type)
+void NT_resort_tree_cb(void *dummy, AWT_canvas *ntw, int type)
 {
     AWUSE(dummy);
     GB_transaction gb_dummy(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
     int stype;
-    switch(type){
+    switch (type) {
         case 0: stype = 0; break;
         case 1: stype = 2; break;
-        default:stype = 1; break;
+        default: stype = 1; break;
     }
     AWT_TREE(ntw)->resort_tree(stype);
     nt_save_changed_tree(ntw);
@@ -614,7 +614,7 @@ void NT_reset_branchlengths(AW_window*, AW_CL cl_ntw, AW_CL) // set all branchle
     AWT_TREE(ntw)->check_update(ntw->gb_main);
 
     AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
-    if (tree_root){
+    if (tree_root) {
         tree_root->reset_branchlengths();
         tree_root->compute_tree(ntw->gb_main);
         nt_save_changed_tree(ntw);
@@ -653,7 +653,7 @@ void NT_scale_tree(AW_window*, AW_CL cl_ntw, AW_CL) // scale branchlengths
         GB_transaction ta(ntw->gb_main);
 
         AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
-        if (tree_root){
+        if (tree_root) {
             tree_root->scale_branchlengths(factor);
             tree_root->compute_tree(ntw->gb_main);
             nt_save_changed_tree(ntw);
@@ -670,9 +670,9 @@ void NT_jump_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL auto_expand_groups)
     GB_transaction gb_dummy(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
     char *name = aww->get_root()->awar(AWAR_SPECIES_NAME)->read_string();
-    if (name[0]){
-        AP_tree * found = AWT_TREE(ntw)->search(AWT_TREE(ntw)->tree_root_display,name);
-        if (!found && AWT_TREE(ntw)->tree_root_display != AWT_TREE(ntw)->get_root_node()){
+    if (name[0]) {
+        AP_tree * found = AWT_TREE(ntw)->search(AWT_TREE(ntw)->tree_root_display, name);
+        if (!found && AWT_TREE(ntw)->tree_root_display != AWT_TREE(ntw)->get_root_node()) {
             found = AWT_TREE(ntw)->search(AWT_TREE(ntw)->get_root_node(), name);
             if (found) {
                 // now i found a species outside logical zoomed tree
@@ -683,7 +683,7 @@ void NT_jump_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL auto_expand_groups)
         }
         switch (AWT_TREE(ntw)->tree_sort) {
             case AP_TREE_IRS:
-            case AP_TREE_NORMAL:{
+            case AP_TREE_NORMAL: {
                 if (auto_expand_groups) {
                     bool changed = false;
                     while (found) {
@@ -720,7 +720,7 @@ void NT_jump_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL auto_expand_groups)
                     }
                 }
                 else {
-                    if (auto_expand_groups){
+                    if (auto_expand_groups) {
                         aw_message(GBS_global_string("Sorry, I didn't find the species '%s' in this tree", name));
                     }
                 }
@@ -749,14 +749,14 @@ void NT_jump_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL auto_expand_groups)
                         }
                     }
                     else {
-                        if (auto_expand_groups){
+                        if (auto_expand_groups) {
                             aw_message(GBS_global_string("Sorry, your species '%s' is not marked and therefore not in this list", name));
                         }
                     }
                     ntw->refresh();
                     break;
                 }
-            case AP_TREE_RADIAL:{
+            case AP_TREE_RADIAL: {
                 AWT_TREE(ntw)->tree_root_display = 0;
                 AWT_TREE(ntw)->jump(AWT_TREE(ntw)->get_root_node(), name);
                 if (!AWT_TREE(ntw)->tree_root_display) {
@@ -767,16 +767,16 @@ void NT_jump_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL auto_expand_groups)
                 ntw->refresh();
                 break;
             }
-            default : awt_assert(0); break;
+            default: awt_assert(0); break;
         }
     }
     free(name);
 }
 
-void NT_jump_cb_auto(AW_window *dummy, AWT_canvas *ntw){    // jump only if auto jump is set
+void NT_jump_cb_auto(AW_window *dummy, AWT_canvas *ntw) {   // jump only if auto jump is set
     if (AWT_TREE(ntw)->tree_sort == AP_TREE_NORMAL || AWT_TREE(ntw)->tree_sort == AP_LIST_NDS) {
         if (ntw->aww->get_root()->awar(AWAR_DTREE_AUTO_JUMP)->read_int()) {
-            NT_jump_cb(dummy,ntw,0);
+            NT_jump_cb(dummy, ntw, 0);
             return;
         }
     }
@@ -813,26 +813,26 @@ void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw) {
     }
     free(tree_name);
     ntw->zoom_reset();
-    AWT_expose_cb(0,ntw,0);
+    AWT_expose_cb(0, ntw, 0);
     GB_pop_transaction(ntw->gb_main);
 }
 
-void NT_recompute_cb(AW_window *,AWT_canvas *ntw, AW_CL cl2) {
+void NT_recompute_cb(AW_window *, AWT_canvas *ntw, AW_CL cl2) {
     AWT_graphic_tree *gt = dynamic_cast<AWT_graphic_tree*>(ntw->tree_disp);
     awt_assert(gt);
 
     gt->get_root_node()->compute_tree(ntw->gb_main);
-    AWT_expose_cb (ntw->aww, ntw, cl2 );
+    AWT_expose_cb (ntw->aww, ntw, cl2);
 }
 
-void NT_remove_species_in_tree_from_hash(AP_tree *tree,GB_HASH *hash) {
+void NT_remove_species_in_tree_from_hash(AP_tree *tree, GB_HASH *hash) {
     if (!tree) return;
     if (tree->is_leaf && tree->name) {
-        GBS_write_hash(hash,tree->name,0);  // delete species in hash table
+        GBS_write_hash(hash, tree->name, 0); // delete species in hash table
     }
     else {
-        NT_remove_species_in_tree_from_hash(tree->get_leftson(),hash);
-        NT_remove_species_in_tree_from_hash(tree->get_rightson(),hash);
+        NT_remove_species_in_tree_from_hash(tree->get_leftson(), hash);
+        NT_remove_species_in_tree_from_hash(tree->get_rightson(), hash);
     }
 }
 

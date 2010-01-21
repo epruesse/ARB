@@ -101,10 +101,10 @@ NOT4PERL void *GB_calloc(unsigned int nelem, unsigned int elsize)
     void *mem = malloc(size);
 
     if (mem) {
-        memset(mem,0,size);
+        memset(mem, 0, size);
     }
     else {
-        fprintf(stderr,"Panic Error: insufficient memory: tried to get %i*%i bytes\n",nelem,elsize);
+        fprintf(stderr, "Panic Error: insufficient memory: tried to get %i*%i bytes\n", nelem, elsize);
     }
     return mem;
 }
@@ -178,7 +178,7 @@ NOT4PERL void *GB_recalloc(void *ptr, unsigned int oelem, unsigned int nelem, un
         }
     }
     else {
-        fprintf(stderr,"Panic Error: insufficient memory: tried to get %i*%i bytes\n",nelem,elsize);
+        fprintf(stderr, "Panic Error: insufficient memory: tried to get %i*%i bytes\n", nelem, elsize);
     }
 
     return mem;
@@ -193,9 +193,9 @@ void gbm_init_mem(void)
     if (flag) return;
 
     flag = 1;
-    for (i=0;i<GBM_MAX_INDEX;i++)
+    for (i=0; i<GBM_MAX_INDEX; i++)
     {
-        memset((char *)&gbm_global[i],0,sizeof(struct gbm_struct));
+        memset((char *)&gbm_global[i], 0, sizeof(struct gbm_struct));
         gbm_global[i].tables[0] = 0;        // CORE zero get mem
     }
     gbm_global2.old_sbrk = (char *)sbrk(0);
@@ -233,9 +233,9 @@ void gbm_init_mem(void)
 
         for (i=200; i<3000; i+=1)
         {
-            char *someMem = (char*)calloc(1,(size_t)i);
+            char *someMem = (char*)calloc(1, (size_t)i);
 
-            if (someMem) gbm_put_memblk(someMem,i);
+            if (someMem) gbm_put_memblk(someMem, i);
         }
     }
 #endif
@@ -248,7 +248,7 @@ void GB_memerr(void)
 
 #ifdef TEST_MEMBLKS
 
-#define TEST() testMemblocks(__FILE__,__LINE__)
+#define TEST() testMemblocks(__FILE__, __LINE__)
 
 void testMemblocks(const char *file, int line)
 {
@@ -263,7 +263,7 @@ void testMemblocks(const char *file, int line)
         {
             if (blk->size<cl->size)
             {
-                fprintf(stderr, "Illegal block (size=%li) in cluster %i (size=%li) (%s,%i)\n", blk->size,idx,cl->size,file,line);
+                fprintf(stderr, "Illegal block (size=%li) in cluster %i (size=%li) (%s,%i)\n", blk->size, idx, cl->size, file, line);
                 gb_assert(0);
             }
             blk = blk->content.next;
@@ -288,7 +288,7 @@ static int getClusterIndex(size_t size) /* searches the index of the
                                            lowest cluster for that:
                                            size <= cluster->size */
 {
-    int l,m,h;
+    int l, m, h;
 
     if (size<GBB_MINSIZE) return 0;
 
@@ -319,7 +319,7 @@ void gbm_put_memblk_impl(char *memblk, size_t size)
     TEST();
 
 #ifdef DUMP_MEMBLKS
-    printf("put %p (%li bytes)\n",memblk,size);
+    printf("put %p (%li bytes)\n", memblk, size);
 #endif
 
     if (size<(GBB_HEADER_SIZE+GBB_MINSIZE))
@@ -366,7 +366,7 @@ static char *gbm_get_memblk_impl(size_t size)
     {
         int allocationSize;
 
-    allocFromSys:
+    allocFromSys :
 
         allocationSize = (idx==GBB_CLUSTERS
                           ? (size_t)size
@@ -399,12 +399,12 @@ static char *gbm_get_memblk_impl(size_t size)
 
         if (block->content.magic!=GBB_MAGIC) { imemerr("bad magic number if free block"); return NULL; }
         *blockPtr = block->content.next;
-        memset((char*)&(block->content),0,size);    // act like calloc()
+        memset((char*)&(block->content), 0, size);  // act like calloc()
 
 #ifdef DUMP_MEMBLKS
         printf("using unused block "
                "(add=%p,size=%li, block->size=%li,cluster->size=%li)\n",
-               block, size, block->size,gbb_cluster[idx].size);
+               block, size, block->size, gbb_cluster[idx].size);
 #endif
 
         gb_assert(block->size>=size);
@@ -446,13 +446,13 @@ char *gbm_get_mem_impl(size_t size, long index)
     }
 
     pos = nsize >> GBM_LD_ALIGNED;
-    if ( (gds = ggi->tables[pos]) )
+    if ((gds = ggi->tables[pos]))
     {
         ggi->tablecnt[pos]--;
         erg = (char *)gds;
         if (gds->magic != GBM_MAGIC)
         {
-            printf("%lX!= %lX\n",gds->magic,(long)GBM_MAGIC);
+            printf("%lX!= %lX\n", gds->magic, (long)GBM_MAGIC);
             GB_internal_error("Dangerous internal error: Inconsistent database: "
                               "Do not overwrite old files with this database");
         }
@@ -466,7 +466,7 @@ char *gbm_get_mem_impl(size_t size, long index)
 
             if (!gts) { GB_memerr(); return NULL; }
 
-            memset((char *)gts,0,GBM_TABLE_SIZE);
+            memset((char *)gts, 0, GBM_TABLE_SIZE);
             ggi->gds = &gts->data[0];
             gts->next = ggi->first; // link tables
             ggi->first = gts;
@@ -479,7 +479,7 @@ char *gbm_get_mem_impl(size_t size, long index)
     }
 
     ggi->useditems[pos]++;
-    memset(erg,0,nsize);
+    memset(erg, 0, nsize);
 
     return erg;
 }
@@ -527,14 +527,14 @@ void gbm_free_mem_impl(char *data, size_t size, long index)
             {
                 /* printf("put unused block (size=%li block->size=%li)\n",
                    size,block->size); */
-                gbm_put_memblk((char*)block,block->size + GBB_HEADER_SIZE);
+                gbm_put_memblk((char*)block, block->size + GBB_HEADER_SIZE);
             }
         }
     }
     else
     {
         if (gb_isMappedMemory(data)) return;    //   @@@ reason: size may be shorter
-        if ( ((struct gbm_data_struct *)data)->magic == GBM_MAGIC)
+        if (((struct gbm_data_struct *)data)->magic == GBM_MAGIC)
             // double free
         {
             imemerr("double free");
@@ -574,8 +574,8 @@ void gbm_debug_mem(GB_MAIN_TYPE *Main)
             {
                 {
                     int j;
-                    for (j = index; j < Main->keycnt; j+=GBM_MAX_INDEX ) {
-                        if (Main->keys[j].key){
+                    for (j = index; j < Main->keycnt; j+=GBM_MAX_INDEX) {
+                        if (Main->keys[j].key) {
                             printf("%15s", Main->keys[j].key);
                         }
                         else {
@@ -593,7 +593,7 @@ void gbm_debug_mem(GB_MAIN_TYPE *Main)
                        (int) ggi->tablecnt[i]);
             }
         }
-        if ( ggi->extern_data_size)
+        if (ggi->extern_data_size)
         {
             index_total += ggi->extern_data_size;
             total += ggi->extern_data_size;

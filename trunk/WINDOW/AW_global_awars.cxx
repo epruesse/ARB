@@ -28,7 +28,7 @@ inline const char *get_db_path(const AW_awar *awar) {
 
 static bool in_global_awar_cb = false;
 
-static void awar_updated_cb(AW_root */*aw_root*/, AW_CL cl_awar) {
+static void awar_updated_cb(AW_root * /* aw_root */, AW_CL cl_awar) {
     if (!in_global_awar_cb) {
         AW_awar        *awar    = (AW_awar*)cl_awar;
         char           *content = awar->read_as_string();
@@ -46,7 +46,7 @@ static void awar_updated_cb(AW_root */*aw_root*/, AW_CL cl_awar) {
     }
 }
 
-static void db_updated_cb(GBDATA *gbd, int *cl_awar, GB_CB_TYPE /*cbtype*/) {
+static void db_updated_cb(GBDATA *gbd, int *cl_awar, GB_CB_TYPE /* cbtype */) {
     if (!in_global_awar_cb) {
         AW_awar        *awar = (AW_awar*)cl_awar;
         GB_transaction  dummy(gb_main4awar);

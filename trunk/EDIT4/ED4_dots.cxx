@@ -243,7 +243,7 @@ void ED4_popup_dot_missing_bases_window(AW_window *editor_window, AW_CL, AW_CL) 
         
         aws->at("help");
         aws->callback(AW_POPUP_HELP, (AW_CL)"missbase.hlp");
-        aws->create_button("HELP", "HELP","H");
+        aws->create_button("HELP", "HELP", "H");
 
         aws->at("marked");
         aws->label("Marked species only");

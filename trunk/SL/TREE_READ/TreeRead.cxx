@@ -161,7 +161,7 @@ static char *getTreeComment(TreeReader *reader) {
 
 static void gbt_eat_white(TreeReader *reader) {
     int c = reader->last_character;
-    while ((c == ' ') || (c == '\n') || (c == '\r') || (c == '\t')){
+    while ((c == ' ') || (c == '\n') || (c == '\r') || (c == '\t')) {
         c = gbt_get_char(reader);
     }
 }
@@ -184,7 +184,7 @@ static double gbt_read_number(TreeReader *reader) {
     return fl;
 }
 
-static char *gbt_read_quoted_string(TreeReader *reader){
+static char *gbt_read_quoted_string(TreeReader *reader) {
     /* Read in a quoted or unquoted string.
      * in quoted strings double quotes ('') are replaced by (')
      */
@@ -195,8 +195,8 @@ static char *gbt_read_quoted_string(TreeReader *reader){
 
     if (c == '\'') {
         c = gbt_get_char(reader);
-        while ( (c!= EOF) && (c!='\'') ) {
-        gbt_lt_double_quot:
+        while ((c != EOF) && (c!='\'')) {
+        gbt_lt_double_quot :
             *(s++) = c;
             if ((s-buffer) > 1000) {
                 *s = 0;
@@ -211,10 +211,10 @@ static char *gbt_read_quoted_string(TreeReader *reader){
         }
     }
     else {
-        while ( c== '_') c = gbt_read_char(reader);
-        while ( c== ' ') c = gbt_read_char(reader);
-        while ( (c != ':') && (c!= EOF) && (c!=',') &&
-                (c!=';') && (c!= ')') )
+        while (c == '_') c = gbt_read_char(reader);
+        while (c == ' ') c = gbt_read_char(reader);
+        while ((c != ':') && (c != EOF) && (c!=',') &&
+                (c!=';') && (c != ')'))
         {
             *(s++) = c;
             if ((s-buffer) > 1000) {
@@ -416,7 +416,7 @@ GBT_TREE *TREE_load(const char *path, int structuresize, char **commentPtr, int 
         else        name_only = path;
 
         TreeReader *reader      = newTreeReader(input, name_only);
-        GBT_LEN     rootNodeLen = TREE_DEFLEN_MARKER; /* root node has no length. only used as input to gbt_load_tree_rek*/
+        GBT_LEN     rootNodeLen = TREE_DEFLEN_MARKER; /* root node has no length. only used as input to gbt_load_tree_rek */
         tree                    = gbt_load_tree_rek(reader, structuresize, &rootNodeLen);
         fclose(input);
 

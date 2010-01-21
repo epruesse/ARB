@@ -66,10 +66,10 @@ typedef long GB_REL_PIFES;
 
 #else
 
-#define GB_RESOLVE(typ,struct_add,member_name)                         \
+#define GB_RESOLVE(typ, struct_add, member_name)                       \
     ((typ)(((struct_add)->member_name)                                 \
            ? (typ) (((char*)(struct_add))+((struct_add)->member_name)) \
-           : NULL ))
+           : NULL))
 
 #define GB_SETREL(struct_add, member_name, address)                     \
     do {                                                                \
@@ -80,7 +80,7 @@ typedef long GB_REL_PIFES;
         else {                                                          \
             (struct_add)->member_name = 0;                              \
         }                                                               \
-    } while(0)
+    } while (0)
 
 
 #endif
@@ -99,17 +99,17 @@ enum ARB_MEMORY_INDEX {
 
 #if (MEMORY_TEST==1)
 
-#define gbm_put_memblk(block,size)
-#define gbm_get_memblk(size)            (char*)(GB_calloc(1,size))
-#define gbm_get_mem(size,index)         (char*)(GB_calloc(1,size))
-#define gbm_free_mem(block,size,index)  free(block) 
+#define gbm_put_memblk(block, size)
+#define gbm_get_memblk(size)            (char*)(GB_calloc(1, size))
+#define gbm_get_mem(size, index)        (char*)(GB_calloc(1, size))
+#define gbm_free_mem(block, size, index) free(block)
 
 #else
 
-#define gbm_put_memblk(block,size)     gbm_put_memblk_impl(block, size)
+#define gbm_put_memblk(block, size)    gbm_put_memblk_impl(block, size)
 #define gbm_get_memblk(size)           gbm_get_memblk_impl(size)
-#define gbm_get_mem(size,index)        gbm_get_mem_impl(size,index)
-#define gbm_free_mem(block,size,index) gbm_free_mem_impl(block,size,index)
+#define gbm_get_mem(size, index)       gbm_get_mem_impl(size, index)
+#define gbm_free_mem(block, size, index) gbm_free_mem_impl(block, size, index)
 
 #endif
 

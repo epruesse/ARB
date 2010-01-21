@@ -21,7 +21,7 @@
 #include "gb_load.h"
 
 static int gb_verbose_mode = 0;
-void GB_set_verbose(){
+void GB_set_verbose() {
     gb_verbose_mode = 1;
 }
 
@@ -389,7 +389,7 @@ static GB_ERROR gb_parse_ascii_rek(Reader *r, GBCONTAINER *gb_parent, const char
         char *line = getLine(r);
         if (!line) break;
 
-    rest:
+    rest :
         line += strspn(line, " \t"); // goto first non-whitespace
 
         if (line[0]) {          // not empty
@@ -502,7 +502,7 @@ static GB_ERROR gb_parse_ascii_rek(Reader *r, GBCONTAINER *gb_parent, const char
                                             case 'N': if (gb_ascii_2_bin(line, gb_new)) error = "syntax error in int-array"; break;
                                             case 'F': if (gb_ascii_2_bin(line, gb_new)) error = "syntax error in float-array"; break;
 
-                                            default : gb_assert(0); // forgot a case ?
+                                            default: gb_assert(0);  // forgot a case ?
                                         }
 
                                         if (!error) error = set_protection_level(Main, gb_new, protection);
@@ -568,7 +568,7 @@ GB_ERROR gb_read_ascii(const char *path, GBCONTAINER *gbd) {
         Reader   *r        = openReader(in);
         GB_ERROR  cl_error = 0;
 
-        GB_search((GBDATA *)gbd,GB_SYSTEM_FOLDER,GB_CREATE_CONTAINER); // Switch to Version 3
+        GB_search((GBDATA *)gbd, GB_SYSTEM_FOLDER, GB_CREATE_CONTAINER); // Switch to Version 3
 
         error = gb_parse_ascii(r, gbd);
 
@@ -583,10 +583,10 @@ GB_ERROR gb_read_ascii(const char *path, GBCONTAINER *gbd) {
 // --------------------------
 //      Read binary files
 
-long gb_read_bin_rek(FILE *in,GBCONTAINER *gbd,long nitems,long version,long reversed)
+long gb_read_bin_rek(FILE *in, GBCONTAINER *gbd, long nitems, long version, long reversed)
 {
     long          item;
-    long          type,type2;
+    long          type, type2;
     GBQUARK       key;
     char         *p;
     long          i;
@@ -599,29 +599,29 @@ long gb_read_bin_rek(FILE *in,GBCONTAINER *gbd,long nitems,long version,long rev
     char         *buff;
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
 
-    gb_create_header_array(gbd,(int)nitems);
+    gb_create_header_array(gbd, (int)nitems);
 
-    for (item = 0;item<nitems;item++) {
+    for (item = 0; item<nitems; item++) {
         type = getc(in);
         security = getc(in);
         type2 = (type>>4)&0xf;
         key = getc(in);
         if (!key) {
             p = buff = GB_give_buffer(256);
-            for (i=0;i<256;i++) {
+            for (i=0; i<256; i++) {
                 c = getc(in);
                 *(p++) = c;
                 if (!c) break;
                 if (c==EOF) {
-                    gb_read_bin_error(in,(GBDATA *)gbd,"Unexpected EOF found");
+                    gb_read_bin_error(in, (GBDATA *)gbd, "Unexpected EOF found");
                     return -1;
                 }
             }
             if (i>GB_KEY_LEN_MAX*2) {
-                gb_read_bin_error(in,(GBDATA *)gbd,"Key to long");
+                gb_read_bin_error(in, (GBDATA *)gbd, "Key to long");
                 return -1;
             }
-            if (type2 == (long)GB_DB){
+            if (type2 == (long)GB_DB) {
                 gbc = gb_make_container(gbd, buff, -1, 0);
                 gb2 = (GBDATA *)gbc;
             }
@@ -630,20 +630,20 @@ long gb_read_bin_rek(FILE *in,GBCONTAINER *gbd,long nitems,long version,long rev
             }
         }
         else {
-            if (type2 == (long)GB_DB){
-                gbc = gb_make_container(gbd,NULL,-1,key);
+            if (type2 == (long)GB_DB) {
+                gbc = gb_make_container(gbd, NULL, -1, key);
                 gb2 = (GBDATA *)gbc;
             }
             else {
-                gb2 = gb_make_entry(gbd,NULL,-1,(GBQUARK)key,(GB_TYPES)type2);
+                gb2 = gb_make_entry(gbd, NULL, -1, (GBQUARK)key, (GB_TYPES)type2);
             }
             if (!Main->keys[key].key) {
                 GB_internal_error("Some database fields have no field identifier -> setting to 'main'");
-                gb_write_index_key(GB_FATHER(gbd),gbd->index,0);
+                gb_write_index_key(GB_FATHER(gbd), gbd->index, 0);
             }
         }
         gb2->flags.security_delete  = type >> 1;
-        gb2->flags.security_write   = ((type&1) << 2 ) + (security >>6);
+        gb2->flags.security_write   = ((type&1) << 2) + (security >> 6);
         gb2->flags.security_read    = security >> 3;
         gb2->flags.compressed_data  = security >> 2;
         GB_ARRAY_FLAGS(((GBCONTAINER*)gb2)).flags = (int)((security >> 1) & 1);
@@ -654,7 +654,7 @@ long gb_read_bin_rek(FILE *in,GBCONTAINER *gbd,long nitems,long version,long rev
             case GB_INT:
                 {
                     GB_UINT4 buffer;
-                    if (!fread((char*)&buffer,sizeof(GB_UINT4),1,in) ) {
+                    if (!fread((char*)&buffer, sizeof(GB_UINT4), 1, in)) {
                         GB_export_error("File too short, seems truncated");
                         return -1;
                     }
@@ -663,17 +663,17 @@ long gb_read_bin_rek(FILE *in,GBCONTAINER *gbd,long nitems,long version,long rev
                 }
             case GB_FLOAT:
                 gb2->info.i = 0;
-                if (!fread((char*)&gb2->info.i,sizeof(float),1,in) ) {
+                if (!fread((char*)&gb2->info.i, sizeof(float), 1, in)) {
                     return -1;
                 }
                 break;
             case GB_STRING_SHRT:
                 p = buff = GB_give_buffer(GBTUM_SHORT_STRING_SIZE+2);
-                for (size=0;size<=GBTUM_SHORT_STRING_SIZE;size++) {
-                    if (!(*(p++) = getc(in) )) break;
+                for (size=0; size<=GBTUM_SHORT_STRING_SIZE; size++) {
+                    if (!(*(p++) = getc(in))) break;
                 }
                 *p=0;
-                GB_SETSMDMALLOC(gb2,size,size+1,buff);
+                GB_SETSMDMALLOC(gb2, size, size+1, buff);
                 break;
             case GB_STRING:
             case GB_LINK:
@@ -683,7 +683,7 @@ long gb_read_bin_rek(FILE *in,GBCONTAINER *gbd,long nitems,long version,long rev
             case GB_FLOATS:
                 size = gb_read_in_long(in, reversed);
                 memsize =  gb_read_in_long(in, reversed);
-                if (GB_CHECKINTERN(size,memsize) ){
+                if (GB_CHECKINTERN(size, memsize)) {
                     GB_SETINTERN(gb2);
                     p = &(gb2->info.istr.data[0]);
                 }
@@ -691,24 +691,24 @@ long gb_read_bin_rek(FILE *in,GBCONTAINER *gbd,long nitems,long version,long rev
                     GB_SETEXTERN(gb2);
                     p = GB_give_buffer(memsize);
                 }
-                i = fread(p,1,(size_t)memsize,in);
+                i = fread(p, 1, (size_t)memsize, in);
                 if (i!=memsize) {
-                    gb_read_bin_error(in,gb2,"Unexpected EOF found");
+                    gb_read_bin_error(in, gb2, "Unexpected EOF found");
                     return -1;
                 }
-                GB_SETSMDMALLOC(gb2,size,memsize,p);
+                GB_SETSMDMALLOC(gb2, size, memsize, p);
                 break;
             case GB_DB:
                 size = gb_read_in_long(in, reversed);
                 // gbc->d.size  is automatically incremented
                 memsize = gb_read_in_long(in, reversed);
-                if (gb_read_bin_rek(in,gbc,size,version,reversed)) return -1;
+                if (gb_read_bin_rek(in, gbc, size, version, reversed)) return -1;
                 break;
             case GB_BYTE:
                 gb2->info.i = getc(in);
                 break;
             default:
-                gb_read_bin_error(in,gb2,"Unknown type");
+                gb_read_bin_error(in, gb2, "Unknown type");
                 return -1;
         }
     }
@@ -716,7 +716,7 @@ long gb_read_bin_rek(FILE *in,GBCONTAINER *gbd,long nitems,long version,long rev
 }
 
 
-long gb_recover_corrupt_file(GBCONTAINER *gbd,FILE *in, GB_ERROR recovery_reason){
+long gb_recover_corrupt_file(GBCONTAINER *gbd, FILE *in, GB_ERROR recovery_reason) {
     // search pattern dx xx xx xx string 0
     static FILE *old_in = 0;
     static unsigned char *file = 0;
@@ -733,21 +733,21 @@ long gb_recover_corrupt_file(GBCONTAINER *gbd,FILE *in, GB_ERROR recovery_reason
     }
     pos = ftell(in);
     if (old_in != in) {
-        file = (unsigned char *)GB_map_FILE(in,0);
+        file = (unsigned char *)GB_map_FILE(in, 0);
         old_in = in;
         size = GB_size_of_FILE(in);
     }
-    for (;pos<size-10;pos ++){
-        if ( ( file[pos] & 0xf0) == (GB_STRING_SHRT<<4)) {
+    for (; pos<size-10; pos ++) {
+        if ((file[pos] & 0xf0) == (GB_STRING_SHRT<<4)) {
             long s;
             int c;
-            for ( s= pos +4; s<size && file[s]; s++ ){
+            for (s = pos + 4; s<size && file[s]; s++) {
                 c = file[s];
-                if (! (isalnum(c) || isspace(c) || strchr("._;:,",c) ) ) break;
+                if (! (isalnum(c) || isspace(c) || strchr("._;:,", c))) break;
             }
-            if ( s< size && s > pos+11 && !file[s]) {   // we found something
+            if (s< size && s > pos+11 && !file[s]) {    // we found something
                 gb_local->search_system_folder = 1;
-                return fseek(in,pos,0);
+                return fseek(in, pos, 0);
             }
         }
     }
@@ -768,10 +768,10 @@ static void DEBUG_DUMP_INDENTED(long deep, const char *s) {
 #endif // DEBUG_READ
 
 
-long gb_read_bin_rek_V2(FILE *in,GBCONTAINER *gbd,long nitems,long version,long reversed,long deep)
+long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbd, long nitems, long version, long reversed, long deep)
 {
     long          item;
-    long          type,type2;
+    long          type, type2;
     GBQUARK       key;
     char         *p;
     long          i;
@@ -788,33 +788,33 @@ long gb_read_bin_rek_V2(FILE *in,GBCONTAINER *gbd,long nitems,long version,long 
 
     DEBUG_DUMP_INDENTED(deep, GBS_global_string("Reading container with %li items", nitems));
 
-    gb_create_header_array(gbd,(int)nitems);
+    gb_create_header_array(gbd, (int)nitems);
     header = GB_DATA_LIST_HEADER(gbd->d);
     if (deep == 0 && GBCONTAINER_MAIN(gbd)->allow_corrupt_file_recovery) {
         GB_warning("Read to end of file in recovery mode");
         nitems = 10000000; // read forever at highest level
     }
 
-    for (item = 0;item<nitems;item++)
+    for (item = 0; item<nitems; item++)
     {
         type = getc(in);
         DEBUG_DUMP_INDENTED(deep, GBS_global_string("Item #%li/%li type=%02lx (filepos=%08lx)", item+1, nitems, type, ftell(in)-1));
-        if (type == EOF){
+        if (type == EOF) {
             GB_export_error("Unexpected end of file seen");
             return -1;
         }
         if (!type) {
             int func;
             if (version == 1) { // master file
-                if (gb_recover_corrupt_file(gbd,in, "Unknown DB type 0 (DB version=1)")) return -1;
+                if (gb_recover_corrupt_file(gbd, in, "Unknown DB type 0 (DB version=1)")) return -1;
                 continue;
             }
             func = getc(in);
             switch (func) {
                 case 1:     //  delete entry
                     index = (int)gb_read_number(in);
-                    if (index >= gbd->d.nheader ){
-                        gb_create_header_array(gbd,index+1);
+                    if (index >= gbd->d.nheader) {
+                        gb_create_header_array(gbd, index+1);
                         header = GB_DATA_LIST_HEADER(gbd->d);
                     }
                     if ((gb2 = GB_HEADER_LIST_GBD(header[index]))!=NULL) {
@@ -827,7 +827,7 @@ long gb_read_bin_rek_V2(FILE *in,GBCONTAINER *gbd,long nitems,long version,long 
 
                     break;
                 default:
-                    if (gb_recover_corrupt_file(gbd,in, GBS_global_string("Unknown func=%i", func))) return -1;
+                    if (gb_recover_corrupt_file(gbd, in, GBS_global_string("Unknown func=%i", func))) return -1;
                     continue;
             }
             continue;
@@ -837,7 +837,7 @@ long gb_read_bin_rek_V2(FILE *in,GBCONTAINER *gbd,long nitems,long version,long 
         type2 = (type>>4)&0xf;
         key = (GBQUARK)gb_read_number(in);
 
-        if (key >= Main->keycnt || !Main->keys[key].key ){
+        if (key >= Main->keycnt || !Main->keys[key].key) {
             GB_export_error("Inconsistent Database: Changing field identifier to 'main'");
             key = 0;
         }
@@ -848,16 +848,16 @@ long gb_read_bin_rek_V2(FILE *in,GBCONTAINER *gbd,long nitems,long version,long 
         gbc = NULL;
         if (version == 2) {
             index = (int)gb_read_number(in);
-            if (index >= gbd->d.nheader ) {
-                gb_create_header_array(gbd,index+1);
+            if (index >= gbd->d.nheader) {
+                gb_create_header_array(gbd, index+1);
                 header = GB_DATA_LIST_HEADER(gbd->d);
             }
 
             if (index >= 0 && (gb2 = GB_HEADER_LIST_GBD(header[index]))!=NULL) {
-                if ( (GB_TYPE(gb2) == GB_DB ) != (type2 == GB_DB)) {
+                if ((GB_TYPE(gb2) == GB_DB) != (type2 == GB_DB)) {
                     GB_internal_error("Type changed, you may loose data");
                     gb_delete_entry(&gb2);
-                    SET_GB_HEADER_LIST_GBD(header[index],NULL);
+                    SET_GB_HEADER_LIST_GBD(header[index], NULL);
                 }
                 else {
                     if (type2 == GB_DB) gbc = (GBCONTAINER *)gb2;
@@ -868,12 +868,12 @@ long gb_read_bin_rek_V2(FILE *in,GBCONTAINER *gbd,long nitems,long version,long 
         else index = -1;
 
         if (!gb2) {
-            if (type2 == (long)GB_DB){
-                gbc = gb_make_container(gbd,NULL,index, key);
+            if (type2 == (long)GB_DB) {
+                gbc = gb_make_container(gbd, NULL, index, key);
                 gb2 = (GBDATA *)gbc;
             }
             else {
-                gb2 = gb_make_entry(gbd,NULL,index, key, (GB_TYPES)type2);
+                gb2 = gb_make_entry(gbd, NULL, index, key, (GB_TYPES)type2);
                 GB_INDEX_CHECK_OUT(gb2);
             }
         }
@@ -888,7 +888,7 @@ long gb_read_bin_rek_V2(FILE *in,GBCONTAINER *gbd,long nitems,long version,long 
         }
 
         gb2->flags.security_delete  = type >> 1;
-        gb2->flags.security_write   = ((type&1) << 2 ) + (security >>6);
+        gb2->flags.security_write   = ((type&1) << 2) + (security >> 6);
         gb2->flags.security_read    = security >> 3;
         gb2->flags.compressed_data  = security >> 2;
         header[gb2->index].flags.flags  = (int)((security >> 1) & 1);
@@ -899,7 +899,7 @@ long gb_read_bin_rek_V2(FILE *in,GBCONTAINER *gbd,long nitems,long version,long 
             case GB_INT:
                 {
                     GB_UINT4 buffer;
-                    if (!fread((char*)&buffer,sizeof(GB_UINT4),1,in) ) {
+                    if (!fread((char*)&buffer, sizeof(GB_UINT4), 1, in)) {
                         GB_export_error("File too short, seems truncated");
                         return -1;
                     }
@@ -908,7 +908,7 @@ long gb_read_bin_rek_V2(FILE *in,GBCONTAINER *gbd,long nitems,long version,long 
                 }
 
             case GB_FLOAT:
-                if (!fread((char*)&gb2->info.i,sizeof(float),1,in) ) {
+                if (!fread((char*)&gb2->info.i, sizeof(float), 1, in)) {
                     GB_export_error("File too short, seems truncated");
                     return -1;
                 }
@@ -917,16 +917,16 @@ long gb_read_bin_rek_V2(FILE *in,GBCONTAINER *gbd,long nitems,long version,long 
                 i = GB_give_buffer_size();
                 p = buff = GB_give_buffer(GBTUM_SHORT_STRING_SIZE+2);
                 size = 0;
-                while(1){
-                    for (;size<i;size++) {
-                        if (!(*(p++) = getc(in) )) goto shrtstring_fully_loaded;
+                while (1) {
+                    for (; size<i; size++) {
+                        if (!(*(p++) = getc(in))) goto shrtstring_fully_loaded;
                     }
                     i = i*3/2;
                     buff = GB_increase_buffer(i);
                     p = buff + size;
                 }
-        shrtstring_fully_loaded:
-                GB_SETSMDMALLOC(gb2,size,size+1,buff);
+        shrtstring_fully_loaded :
+                GB_SETSMDMALLOC(gb2, size, size+1, buff);
                 break;
             case GB_STRING:
             case GB_LINK:
@@ -937,25 +937,25 @@ long gb_read_bin_rek_V2(FILE *in,GBCONTAINER *gbd,long nitems,long version,long 
                 size = gb_read_number(in);
                 memsize =  gb_read_number(in);
                 DEBUG_DUMP_INDENTED(deep, GBS_global_string("size=%li memsize=%li", size, memsize));
-                if (GB_CHECKINTERN(size,memsize) ){
+                if (GB_CHECKINTERN(size, memsize)) {
                     GB_SETINTERN(gb2);
                     p = &(gb2->info.istr.data[0]);
                 }
                 else {
                     GB_SETEXTERN(gb2);
-                    p = gbm_get_mem((size_t)memsize+1,GB_GBM_INDEX(gb2)); // ralf: added +1 because decompress ran out of this block
+                    p = gbm_get_mem((size_t)memsize+1, GB_GBM_INDEX(gb2)); // ralf: added +1 because decompress ran out of this block
                 }
-                i = fread(p,1,(size_t)memsize,in);
+                i = fread(p, 1, (size_t)memsize, in);
                 if (i!=memsize) {
-                    gb_read_bin_error(in,gb2,"Unexpected EOF found");
+                    gb_read_bin_error(in, gb2, "Unexpected EOF found");
                     return -1;
                 }
-                GB_SETSMD(gb2,size,memsize,p);
+                GB_SETSMD(gb2, size, memsize, p);
                 break;
             case GB_DB:
                 size = gb_read_number(in);
                 // gbc->d.size  is automatically incremented
-                if (gb_read_bin_rek_V2(in,gbc,size,version,reversed,deep+1)){
+                if (gb_read_bin_rek_V2(in, gbc, size, version, reversed, deep+1)) {
                     if (!GBCONTAINER_MAIN(gbd)->allow_corrupt_file_recovery) {
                         return -1;
                     }
@@ -965,8 +965,8 @@ long gb_read_bin_rek_V2(FILE *in,GBCONTAINER *gbd,long nitems,long version,long 
                 gb2->info.i = getc(in);
                 break;
             default:
-                gb_read_bin_error(in,gb2,"Unknown type");
-                if (gb_recover_corrupt_file(gbd,in, NULL)) {
+                gb_read_bin_error(in, gb2, "Unknown type");
+                if (gb_recover_corrupt_file(gbd, in, NULL)) {
                     return GBCONTAINER_MAIN(gbd)->allow_corrupt_file_recovery
                         ? 0                         // loading stopped
                         : -1;
@@ -984,7 +984,7 @@ GBDATA *gb_search_system_folder_rek(GBDATA *gbd) {
     for (gb2 = GB_child(gbd); gb2; gb2 = GB_nextChild(gb2)) {
         int type = GB_read_type(gb2);
         if (type != GB_DB) continue;
-        if (!strcmp(GB_SYSTEM_FOLDER, GB_read_key_pntr(gb2))){
+        if (!strcmp(GB_SYSTEM_FOLDER, GB_read_key_pntr(gb2))) {
             gb_result = gb2;
             break;
         }
@@ -993,56 +993,56 @@ GBDATA *gb_search_system_folder_rek(GBDATA *gbd) {
 }
 
 
-void gb_search_system_folder(GBDATA *gb_main){
+void gb_search_system_folder(GBDATA *gb_main) {
     /* Search a system folder within the database tree
      * and copy it to main level
      */
     GBDATA   *gb_oldsystem;
     GB_ERROR  error;
-    GBDATA   *gb_system = GB_entry(gb_main,GB_SYSTEM_FOLDER);
+    GBDATA   *gb_system = GB_entry(gb_main, GB_SYSTEM_FOLDER);
     if (gb_system) return;
 
     GB_warning("Searching system information");
     gb_oldsystem = gb_search_system_folder_rek(gb_main);
-    if (!gb_oldsystem){
+    if (!gb_oldsystem) {
         GB_warning("!!!!! not found (bad)");
         return;
     }
-    gb_system = GB_search(gb_main,GB_SYSTEM_FOLDER,GB_CREATE_CONTAINER);
-    error = GB_copy(gb_system,gb_oldsystem);
+    gb_system = GB_search(gb_main, GB_SYSTEM_FOLDER, GB_CREATE_CONTAINER);
+    error = GB_copy(gb_system, gb_oldsystem);
     if (!error) error = GB_delete(gb_oldsystem);
     if (error) GB_warning(error);
     GB_warning("***** found (good)");
 }
 
-long gb_read_bin(FILE *in,GBCONTAINER *gbd, int diff_file_allowed)
+long gb_read_bin(FILE *in, GBCONTAINER *gbd, int diff_file_allowed)
 {
     int   c = 1;
     long  i;
     long  error;
-    long  j,k;
+    long  j, k;
     long  version;
     long  reversed;
     long  nodecnt;
     long  first_free_key;
-    char *buffer,*p;
+    char *buffer, *p;
     
     GB_MAIN_TYPE *Main = GBCONTAINER_MAIN(gbd);
 
-    while ( c && c!= EOF ) {
+    while (c && c != EOF) {
         c = getc(in);
     }
-    if (c==EOF){
-        gb_read_bin_error(in,(GBDATA *)gbd,"First zero not found");
+    if (c==EOF) {
+        gb_read_bin_error(in, (GBDATA *)gbd, "First zero not found");
         return 1;
     }
 
-    i = gb_read_in_long(in,0);
-    if ( strncmp((char *)&i,"vers",4) ) {
-        gb_read_bin_error(in,(GBDATA *)gbd,"keyword 'vers' not found");
+    i = gb_read_in_long(in, 0);
+    if (strncmp((char *)&i, "vers", 4)) {
+        gb_read_bin_error(in, (GBDATA *)gbd, "keyword 'vers' not found");
         return 1;
     }
-    i = gb_read_in_long(in,0);
+    i = gb_read_in_long(in, 0);
     switch (i) {
         case 0x01020304:
             reversed = 0;
@@ -1051,12 +1051,12 @@ long gb_read_bin(FILE *in,GBCONTAINER *gbd, int diff_file_allowed)
             reversed = 1;
             break;
         default:
-            gb_read_bin_error(in,(GBDATA *)gbd,"keyword '^A^B^C^D' not found");
+            gb_read_bin_error(in, (GBDATA *)gbd, "keyword '^A^B^C^D' not found");
             return 1;
     }
-    version = gb_read_in_long(in,reversed);
-    if (version >2 ) {
-        gb_read_bin_error(in,(GBDATA *)gbd,"ARB Database version > '2'");
+    version = gb_read_in_long(in, reversed);
+    if (version >2) {
+        gb_read_bin_error(in, (GBDATA *)gbd, "ARB Database version > '2'");
         return 1;
     }
 
@@ -1067,9 +1067,9 @@ long gb_read_bin(FILE *in,GBCONTAINER *gbd, int diff_file_allowed)
     }
 
     buffer = GB_give_buffer(256);
-    i = gb_read_in_long(in,0);
-    if ( strncmp((char *)&i,"keys",4) ) {
-        gb_read_bin_error(in,(GBDATA *)gbd,"keyword 'keys' not found");
+    i = gb_read_in_long(in, 0);
+    if (strncmp((char *)&i, "keys", 4)) {
+        gb_read_bin_error(in, (GBDATA *)gbd, "keyword 'keys' not found");
         return 1;
     }
 
@@ -1078,17 +1078,17 @@ long gb_read_bin(FILE *in,GBCONTAINER *gbd, int diff_file_allowed)
     first_free_key = 0;
     gb_free_all_keys(Main);
 
-    while(1) {          // read keys
+    while (1) {         // read keys
         long nrefs = 0;
         if (version) {
             nrefs = gb_read_number(in);
         }
         p = buffer;
-        for (k=0;;k++) {
+        for (k=0; ; k++) {
             c = getc(in);
             if (!c) break;
             if (c==EOF) {
-                gb_read_bin_error(in,(GBDATA *)gbd,"unexpected EOF while reading keys");
+                gb_read_bin_error(in, (GBDATA *)gbd, "unexpected EOF while reading keys");
                 return 1;
             }
             *(p++) = c;
@@ -1120,18 +1120,18 @@ long gb_read_bin(FILE *in,GBCONTAINER *gbd, int diff_file_allowed)
 
     Main->first_free_key = first_free_key;
 
-    i = gb_read_in_long(in,0);
-    if ( strncmp((char *)&i,"time",4) ) {
-        gb_read_bin_error(in,(GBDATA *)gbd,"keyword 'time' not found");
+    i = gb_read_in_long(in, 0);
+    if (strncmp((char *)&i, "time", 4)) {
+        gb_read_bin_error(in, (GBDATA *)gbd, "keyword 'time' not found");
         return 1;
     }
-    for (j=0;j<255;j++) {           // read times
+    for (j=0; j<255; j++) {         // read times
         p = buffer;
-        for (k=0;k<256;k++) {
+        for (k=0; k<256; k++) {
             c = getc(in);
             if (!c) break;
             if (c==EOF) {
-                gb_read_bin_error(in,(GBDATA *)gbd,"unexpected EOF while reading times");
+                gb_read_bin_error(in, (GBDATA *)gbd, "unexpected EOF while reading times");
                 return 1;
             }
             *(p++) = c;
@@ -1141,17 +1141,17 @@ long gb_read_bin(FILE *in,GBCONTAINER *gbd, int diff_file_allowed)
         freedup(Main->dates[j], buffer);
     }
     if (j>=255) {
-        gb_read_bin_error(in,(GBDATA *)gbd,"more than 255 dates are not allowed");
+        gb_read_bin_error(in, (GBDATA *)gbd, "more than 255 dates are not allowed");
         return 1;
     }
     Main->last_updated = (unsigned int)j;
 
-    i = gb_read_in_long(in,0);
-    if ( strncmp((char *)&i,"data",4) ) {
-        gb_read_bin_error(in,(GBDATA *)gbd,"keyword 'data' not found");
+    i = gb_read_in_long(in, 0);
+    if (strncmp((char *)&i, "data", 4)) {
+        gb_read_bin_error(in, (GBDATA *)gbd, "keyword 'data' not found");
         return 0;
     }
-    nodecnt = gb_read_in_long(in,reversed);
+    nodecnt = gb_read_in_long(in, reversed);
     GB_give_buffer(256);
 
     if (version==1)         // teste auf map file falls version == 1
@@ -1162,7 +1162,7 @@ long gb_read_bin(FILE *in,GBCONTAINER *gbd, int diff_file_allowed)
         long    mode;
         int ok=0;
         mode = GB_mode_of_link(Main->path); // old master
-        if (S_ISLNK(mode)){
+        if (S_ISLNK(mode)) {
             char *path2 = GB_follow_unix_link(Main->path);
             map_path = gb_mapfile_name(path2);
             free(path2);
@@ -1170,7 +1170,7 @@ long gb_read_bin(FILE *in,GBCONTAINER *gbd, int diff_file_allowed)
         else {
             map_path = gb_mapfile_name(Main->path);
         }
-        merror = gb_is_valid_mapfile(map_path,&mheader, 0);
+        merror = gb_is_valid_mapfile(map_path, &mheader, 0);
         if (merror>0)
         {
             if (gb_main_array[mheader.main_idx]==NULL)
@@ -1193,7 +1193,7 @@ long gb_read_bin(FILE *in,GBCONTAINER *gbd, int diff_file_allowed)
                     father->main_idx = new_idx;
 
                     gbd = newGbd;
-                    SET_GB_FATHER(gbd,father);
+                    SET_GB_FATHER(gbd, father);
 
                     gb_main_array[old_idx]    = NULL;
 
@@ -1210,18 +1210,18 @@ long gb_read_bin(FILE *in,GBCONTAINER *gbd, int diff_file_allowed)
                 GB_warning(GB_await_error());
             }
             else {
-                GB_informationf("ARB: no FastLoad File '%s' found: loading entire database",map_path);
+                GB_informationf("ARB: no FastLoad File '%s' found: loading entire database", map_path);
             }
         }
         if (ok) return 0;
     }
 
-    switch(version) {
+    switch (version) {
         case 0:
-            error = gb_read_bin_rek(in,gbd,nodecnt,version,reversed);
+            error = gb_read_bin_rek(in, gbd, nodecnt, version, reversed);
             break;
         case 2:
-            for (i=1; i < Main->keycnt;i++) {
+            for (i=1; i < Main->keycnt; i++) {
                 if (Main->keys[i].key) {
                     Main->keys[i].nref_last_saved = Main->keys[i].nref;
                 }
@@ -1229,21 +1229,21 @@ long gb_read_bin(FILE *in,GBCONTAINER *gbd, int diff_file_allowed)
 
             if (Main->clock<=0) Main->clock++;
         case 1:
-            error = gb_read_bin_rek_V2(in,gbd,nodecnt,version,reversed,0);
+            error = gb_read_bin_rek_V2(in, gbd, nodecnt, version, reversed, 0);
             break;
         default:
-            GB_internal_errorf("Sorry: This ARB Version does not support database format V%li",version);
+            GB_internal_errorf("Sorry: This ARB Version does not support database format V%li", version);
             error = 1;
     }
 
-    if (gb_local->search_system_folder){
+    if (gb_local->search_system_folder) {
         gb_search_system_folder((GBDATA *)gbd);
     }
 
-    switch(version) {
+    switch (version) {
         case 2:
         case 1:
-            for (i=1; i < Main->keycnt;i++) {
+            for (i=1; i < Main->keycnt; i++) {
                 if (Main->keys[i].key) {
                     Main->keys[i].nref = Main->keys[i].nref_last_saved;
                 }
@@ -1261,7 +1261,7 @@ long gb_read_bin(FILE *in,GBCONTAINER *gbd, int diff_file_allowed)
 
 long gb_next_main_idx_for_mapfile;
 
-void GB_set_next_main_idx(long idx){
+void GB_set_next_main_idx(long idx) {
     gb_next_main_idx_for_mapfile = idx;
 }
 
@@ -1276,7 +1276,7 @@ GB_MAIN_IDX gb_make_main_idx(GB_MAIN_TYPE *Main)
             gb_main_array[idx] = NULL;
         initialized = 1;
     }
-    if (gb_next_main_idx_for_mapfile<=0){
+    if (gb_next_main_idx_for_mapfile<=0) {
         while (1)   // search for unused array index
         {
             idx = (short)(time(NULL) % GB_MAIN_ARRAY_SIZE);
@@ -1314,11 +1314,11 @@ GB_ERROR gb_login_remote(GB_MAIN_TYPE *Main, const char *path, const char *opent
         if (!error) {
             gbd->flags2.folded_container = 1;
 
-            if (    strchr(opent, 't')  ) error = gb_unfold(gbd, 0,-2); // tiny
-            else if (strchr(opent, 'm') ) error = gb_unfold(gbd, 1,-2); // medium (no sequence)
-            else if (strchr(opent, 'b') ) error = gb_unfold(gbd, 2,-2); // big (no tree)
-            else if (strchr(opent, 'h') ) error = gb_unfold(gbd,-1,-2); // huge (all)
-            else error                          = gb_unfold(gbd, 0,-2); // tiny
+            if (strchr(opent, 't')) error = gb_unfold(gbd, 0, -2);  // tiny
+            else if (strchr(opent, 'm')) error = gb_unfold(gbd, 1, -2); // medium (no sequence)
+            else if (strchr(opent, 'b')) error = gb_unfold(gbd, 2, -2); // big (no tree)
+            else if (strchr(opent, 'h')) error = gb_unfold(gbd, -1, -2); // huge (all)
+            else error                          = gb_unfold(gbd, 0, -2); // tiny
         }
     }
     return error;
@@ -1361,10 +1361,10 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
     else if (strchr(opent, 's')) opentype = gb_open_read_only_all;
     else opentype = gb_open_read_only_all;
 
-    if (strchr(path,':')) {
+    if (strchr(path, ':')) {
         ; // remote access
     }
-    else if (GBS_string_matches(path,"*.quick?",GB_MIND_CASE)){
+    else if (GBS_string_matches(path, "*.quick?", GB_MIND_CASE)) {
         char *ext = gb_findExtension(path);
         gb_assert(ext!=0);
         if (isdigit(ext[6]))
@@ -1372,19 +1372,19 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
             loadedQuickIndex = atoi(ext+6);
             strcpy(ext, ".arb");
             quickFile = gb_oldQuicksaveName(path, loadedQuickIndex);
-            if (strchr(opent,'R'))      ignoreMissingMaster = 1;
+            if (strchr(opent, 'R'))     ignoreMissingMaster = 1;
         }
     }
-    else if (GBS_string_matches(path,"*.a??",GB_MIND_CASE)){
+    else if (GBS_string_matches(path, "*.a??", GB_MIND_CASE)) {
 
         char *extension = gb_findExtension(path);
 
         if (isdigit(extension[2]) && isdigit(extension[3]))
         {
             loadedQuickIndex = atoi(extension+2);
-            strcpy(extension,".arb");
+            strcpy(extension, ".arb");
             quickFile = gb_quicksaveName(path, loadedQuickIndex);
-            if (strchr(opent,'R'))      ignoreMissingMaster = 1;
+            if (strchr(opent, 'R'))     ignoreMissingMaster = 1;
         }
         else {
             char *base = strdup(path);
@@ -1392,7 +1392,7 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
             {
                 struct gb_scandir dir;
                 ext[0] = 0;
-                gb_scan_directory(base,&dir);
+                gb_scan_directory(base, &dir);
 
                 loadedQuickIndex = dir.highest_quick_index;
 
@@ -1405,15 +1405,15 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
                                "this may be a serious bug and you may loose your data.");
                 }
 
-                switch(dir.type)
+                switch (dir.type)
                 {
                     case GB_SCAN_NO_QUICK:
                         break;
                     case GB_SCAN_NEW_QUICK:
-                        quickFile = gb_quicksaveName(path,dir.highest_quick_index);
+                        quickFile = gb_quicksaveName(path, dir.highest_quick_index);
                         break;
                     case GB_SCAN_OLD_QUICK:
-                        quickFile = gb_oldQuicksaveName(path,dir.newest_quick_index);
+                        quickFile = gb_oldQuicksaveName(path, dir.newest_quick_index);
 
                         break;
                 }
@@ -1423,8 +1423,8 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
         }
     }
 
-    if (gb_verbose_mode){
-        GB_informationf("ARB: Loading '%s'%s%s", path, quickFile ? " + Changes-File ":"", quickFile ? quickFile :"");
+    if (gb_verbose_mode) {
+        GB_informationf("ARB: Loading '%s'%s%s", path, quickFile ? " + Changes-File " : "", quickFile ? quickFile : "");
     }
 
     gbm_init_mem();
@@ -1435,23 +1435,23 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
     Main = gb_make_gb_main_type(path);
     Main->local_mode = true;
 
-    if (strchr(opent,'R')) Main->allow_corrupt_file_recovery = 1;
+    if (strchr(opent, 'R')) Main->allow_corrupt_file_recovery = 1;
 
     gb_create_key(Main, "main", false);
 
-    Main->dummy_father            = gb_make_container(NULL, 0, -1,0); // create "main"
+    Main->dummy_father            = gb_make_container(NULL, 0, -1, 0); // create "main"
     Main->dummy_father->main_idx  = gb_make_main_idx(Main);
     Main->dummy_father->server_id = GBTUM_MAGIC_NUMBER;
-    gbd                           = gb_make_container(Main->dummy_father, 0, -1,0 ); // create "main"
+    gbd                           = gb_make_container(Main->dummy_father, 0, -1, 0); // create "main"
 
     Main->data = gbd;
-    gbcm_login(gbd,user);
+    gbcm_login(gbd, user);
     Main->opentype = opentype;
     Main->security_level = 7;
 
-    if (path && (strchr(opent, 'r')) ){
-        if (strchr(path, ':')){
-            error = gb_login_remote(Main,path,opent);
+    if (path && (strchr(opent, 'r'))) {
+        if (strchr(path, ':')) {
+            error = gb_login_remote(Main, path, opent);
         }
         else {
             int read_from_stdin = strcmp(path, "-") == 0;
@@ -1469,9 +1469,9 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
                 goto load_quick_save_file_only;
             }
 
-            if (!input ) {
-                if (strchr(opent, 'c') ) {
-                    GB_disable_quicksave((GBDATA *)gbd,"Database Created");
+            if (!input) {
+                if (strchr(opent, 'c')) {
+                    GB_disable_quicksave((GBDATA *)gbd, "Database Created");
 
                     if (strchr(opent, 'd')||strchr(opent, 'D')) {
                         // use default settings
@@ -1484,9 +1484,9 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
                         if (strchr(opent, 'd')) pre = "";
                         else                    pre = "arb_default/";
 
-                        found_path = GBS_find_lib_file(path,pre, 0);
+                        found_path = GBS_find_lib_file(path, pre, 0);
                         if (!found_path) {
-                            fprintf(stderr,"file %s not found\n", path);
+                            fprintf(stderr, "file %s not found\n", path);
                             dbCreated = true;
                         }
                         else {
@@ -1504,7 +1504,7 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
                     if (dbCreated) printf(" database %s created\n", path);
                 }
                 else {
-                    error = GBS_global_string("Database '%s' not found",path);
+                    error = GBS_global_string("Database '%s' not found", path);
                     gbd   = 0;
                 }
             }
@@ -1514,8 +1514,8 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
                 if (input != stdin) i = gb_read_in_long(input, 0);
                 else i                = 0;
 
-                if ((i== 0x56430176) || (i == GBTUM_MAGIC_NUMBER) || (i == GBTUM_MAGIC_REVERSED))    {
-                    i = gb_read_bin(input, gbd,0);      // read or map whole db
+                if ((i == 0x56430176) || (i == GBTUM_MAGIC_NUMBER) || (i == GBTUM_MAGIC_REVERSED)) {
+                    i = gb_read_bin(input, gbd, 0);     // read or map whole db
                     gbd = Main->data;
                     fclose(input);
 
@@ -1532,15 +1532,15 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
                     if (gbd && quickFile) {
                         long     err;
                         GB_ERROR err_msg;
-                    load_quick_save_file_only:
+                    load_quick_save_file_only :
                         err     = 0;
                         err_msg = 0;
 
-                        input = fopen(quickFile,"rb");
+                        input = fopen(quickFile, "rb");
 
-                        if (input){
+                        if (input) {
                             time_of_quick_file = GB_time_of_file(quickFile);
-                            if (time_of_main_file && time_of_quick_file < time_of_main_file){
+                            if (time_of_main_file && time_of_quick_file < time_of_main_file) {
                                 const char *warning = GBS_global_string("Your main database file '%s' is newer than\n"
                                                                         "   the changes file '%s'\n"
                                                                         "   That is very strange and happens only if files where\n"
@@ -1551,7 +1551,7 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
                                 GB_warning(warning);
                             }
                             i = gb_read_in_long(input, 0);
-                            if ((i== 0x56430176) || (i == GBTUM_MAGIC_NUMBER) || (i == GBTUM_MAGIC_REVERSED))
+                            if ((i == 0x56430176) || (i == GBTUM_MAGIC_NUMBER) || (i == GBTUM_MAGIC_REVERSED))
                             {
                                 err = gb_read_bin(input, gbd, 1);
                                 fclose (input);
@@ -1567,12 +1567,12 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
                                 err     = 1;
                             }
                         }
-                        else  {
+                        else {
                             err_msg = "Can't open file";
                             err     = 1;
                         }
 
-                        if (err){
+                        if (err) {
                             error = GBS_global_string("I cannot load your quick file '%s'\n"
                                                       "Reason: %s\n"
                                                       "\n"
@@ -1598,14 +1598,14 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
                     if (input != stdin) fclose(input);
                     error = gb_read_ascii(path, gbd);
                     if (error) GB_warning(error);
-                    GB_disable_quicksave((GBDATA *)gbd,"Sorry, I cannot save differences to ascii files\n"
+                    GB_disable_quicksave((GBDATA *)gbd, "Sorry, I cannot save differences to ascii files\n"
                                          "  Save whole database in binary mode first");
                 }
             }
         }
     }
     else {
-        GB_disable_quicksave((GBDATA *)gbd,"Database not part of this process");
+        GB_disable_quicksave((GBDATA *)gbd, "Database not part of this process");
         Main->local_mode = true;
         GB_begin_transaction((GBDATA *)gbd);
     }
@@ -1620,7 +1620,7 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
         GB_commit_transaction((GBDATA *)gbd);
         {
             GB_begin_transaction((GBDATA *)gbd); // New Transaction, should be quicksaveable
-            if (!strchr(opent,'N')){                // new format
+            if (!strchr(opent, 'N')) {               // new format
                 gb_convert_V2_to_V3((GBDATA *)gbd); // Compression conversion
             }
             error = gb_load_key_data_and_dictionaries((GBDATA *)Main->data);
@@ -1643,5 +1643,5 @@ GBDATA *GB_open(const char *path, const char *opent)
 {
     const char *user;
     user = GB_getenvUSER();
-    return GB_login(path,opent,user);
+    return GB_login(path, opent, user);
 }

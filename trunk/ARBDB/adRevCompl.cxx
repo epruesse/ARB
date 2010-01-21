@@ -79,7 +79,7 @@ char *GBT_reverseNucSequence(const char *s, int len) {
     }
 
     len--;
-    for (p=0; len>=0; p++,len--) {
+    for (p=0; len>=0; p++, len--) {
         n[p] = s[len];
     }
     n[p] = 0;
@@ -112,8 +112,8 @@ NOT4PERL GB_ERROR GBT_determine_T_or_U(GB_alignment_type alignment_type, char *T
 }
 
 NOT4PERL void GBT_reverseComplementNucSequence(char *seq, long length, char T_or_U) {
-    long     i,l;
-    for (i=0,l=length-1; i <= l; i++,l--) {
+    long     i, l;
+    for (i=0, l=length-1; i <= l; i++, l--) {
         char c = seq[i];
 
         seq[i] = GBT_complementNucleotide(seq[l], T_or_U);

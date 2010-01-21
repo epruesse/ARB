@@ -28,8 +28,8 @@ char *aw_get_font_from_xfig(int fontnr);
 struct AW_xfig_line {
     struct AW_xfig_line *next;
     
-    short x0,y0;
-    short x1,y1;
+    short x0, y0;
+    short x1, y1;
     short color;
     int   gc;
 };
@@ -37,7 +37,7 @@ struct AW_xfig_line {
 struct AW_xfig_text {
     struct AW_xfig_text *next;
 
-    short    x,y;
+    short    x, y;
     short    pix_len;
     char    *text;
     AW_font  font;
@@ -48,7 +48,7 @@ struct AW_xfig_text {
 };
 
 struct AW_xfig_pos {
-    short x,y;
+    short x, y;
     int   center;
 };
 
@@ -61,10 +61,10 @@ public:
 
     GB_HASH *hash;                  // hash table for buttons
 
-    int minx,miny;
-    int maxx,maxy;
-    int size_x,size_y;
-    int centerx,centery;
+    int minx, miny;
+    int maxx, maxy;
+    int size_x, size_y;
+    int centerx, centery;
 
     double font_scale;
     double dpi_scale;

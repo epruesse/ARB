@@ -21,7 +21,7 @@
 #define TEST_INITIALIZED(expr) do {             \
         if (expr) printf("0");                  \
         else printf("1");                       \
-    } while(0)
+    } while (0)
 
 #else
 

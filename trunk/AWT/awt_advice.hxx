@@ -29,7 +29,7 @@ enum AWT_Advice_Type {
     AWT_ADVICE_HELP       = 2,  // advice has corresponding help file
     AWT_ADVICE_HELP_POPUP = 4, // this helpfile should popup immediately
 
-} ;
+};
 
 /// has to be called one time (before calling AWT_advice)
 void init_Advisor(AW_root *awr, AW_default def);

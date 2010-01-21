@@ -11,5 +11,5 @@ public:
 
 };
 
-void display_status(AW_window *dummy,AW_CL awroot,AW_CL cd2);
-void expose_callb(AW_window *aw,AW_CL cd1,AW_CL cd2) ;
+void display_status(AW_window *dummy, AW_CL awroot, AW_CL cd2);
+void expose_callb(AW_window *aw, AW_CL cd1, AW_CL cd2);

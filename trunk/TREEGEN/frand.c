@@ -17,7 +17,7 @@ static double randval(void)
     val -= 0.5;
 
     assert(val>=-0.5);
-    assert(val<= 0.5);
+    assert(val <= 0.5);
 
     return val;
 }

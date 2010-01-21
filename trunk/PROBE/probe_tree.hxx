@@ -156,12 +156,12 @@ only few functions can be used, when the tree is reloaded (stage 3):
 #define PT_EMPTY_CHAIN_SIZE      (1+sizeof(PT_PNTR)+2+sizeof(PT_PNTR)) // tag father apos first_elem
 #define PT_EMPTY_NODE_SIZE       (1+sizeof(PT_PNTR)) // tag father
 #define PT_NODE_COUNT_SONS(leaf) PT_count_bits[3][leaf->flags];
-#define PT_NODE_SIZE(node,size)  size = PT_EMPTY_NODE_SIZE + sizeof(PT_PNTR)*PT_count_bits[PT_B_MAX][node->flags]
+#define PT_NODE_SIZE(node, size) size = PT_EMPTY_NODE_SIZE + sizeof(PT_PNTR)*PT_count_bits[PT_B_MAX][node->flags]
 
 /********************* Read and write type ***********************/
 
 #define PT_GET_TYPE(pt)     (PTM.flag_2_type[pt->flags])
-#define PT_SET_TYPE(pt,i,j) (pt->flags = (i<<6)+j)
+#define PT_SET_TYPE(pt, i, j) (pt->flags = (i<<6)+j)
 
 /********************* bswap for OSX  ***********************/
 #if defined(DARWIN)
@@ -195,86 +195,86 @@ static inline unsigned long long bswap_64(unsigned long long x) {
 
 /********************* Read and write to memory ***********************/
 
-#define PT_READ_INT(ptr,my_int_i)                                       \
+#define PT_READ_INT(ptr, my_int_i)                                      \
     do {                                                                \
         (my_int_i)=(unsigned int)bswap_32(*(unsigned int*)(ptr));       \
-    } while(0)
+    } while (0)
 
-#define PT_WRITE_INT(ptr,my_int_i)                                      \
+#define PT_WRITE_INT(ptr, my_int_i)                                     \
     do {                                                                \
         *(unsigned int*)(ptr) = bswap_32((unsigned int)(my_int_i));     \
-    } while(0)
+    } while (0)
 
-#define PT_READ_SHORT(ptr,my_int_i)                     \
+#define PT_READ_SHORT(ptr, my_int_i)                    \
     do {                                                \
         (my_int_i) = bswap_16(*(unsigned short*)(ptr)); \
-    } while(0)
+    } while (0)
 
-#define PT_WRITE_SHORT(ptr,my_int_i)                                    \
+#define PT_WRITE_SHORT(ptr, my_int_i)                                   \
     do {                                                                \
         *(unsigned short*)(ptr) = bswap_16((unsigned short)(my_int_i)); \
-    } while(0)
+    } while (0)
 
-#define PT_WRITE_CHAR(ptr,my_int_i) do { *(unsigned char *)(ptr) = my_int_i; } while(0)
+#define PT_WRITE_CHAR(ptr, my_int_i) do { *(unsigned char *)(ptr) = my_int_i; } while (0)
 
-#define PT_READ_CHAR(ptr,my_int_i)  do { my_int_i = *(unsigned char *)(ptr); } while(0)
+#define PT_READ_CHAR(ptr, my_int_i) do { my_int_i = *(unsigned char *)(ptr); } while (0)
 
 
 
 #ifdef ARB_64
 
-# define PT_READ_PNTR(ptr,my_int_i)                                     \
+# define PT_READ_PNTR(ptr, my_int_i)                                    \
     do {                                                                \
         pt_assert(sizeof(my_int_i)==8);                                 \
         (my_int_i) = (unsigned long)bswap_64(*(unsigned long*)(ptr));   \
-    } while(0)
+    } while (0)
 
-# define PT_WRITE_PNTR(ptr,my_int_i)                                    \
+# define PT_WRITE_PNTR(ptr, my_int_i)                                   \
     do {                                                                \
         *(unsigned long*)(ptr)=bswap_64((unsigned long)(my_int_i));     \
-    } while(0)
+    } while (0)
 
 
 #else
 /* not ARB_64 */
 
-# define PT_READ_PNTR(ptr,my_int_i)  PT_READ_INT(ptr, my_int_i)
-# define PT_WRITE_PNTR(ptr,my_int_i) PT_WRITE_INT(ptr, my_int_i)
+# define PT_READ_PNTR(ptr, my_int_i) PT_READ_INT(ptr, my_int_i)
+# define PT_WRITE_PNTR(ptr, my_int_i) PT_WRITE_INT(ptr, my_int_i)
 
 #endif
 
 
 
-#define PT_WRITE_NAT(ptr,i)                     \
+#define PT_WRITE_NAT(ptr, i)                    \
     do {                                        \
         pt_assert(i >= 0);                      \
-        if (i>= 0x7FFE)                         \
+        if (i >= 0x7FFE)                        \
         {                                       \
-            PT_WRITE_INT(ptr,i|0x80000000);     \
+            PT_WRITE_INT(ptr, i|0x80000000);    \
             ptr += sizeof(int);                 \
         }                                       \
         else                                    \
         {                                       \
-            PT_WRITE_SHORT(ptr,i);              \
+            PT_WRITE_SHORT(ptr, i);             \
             ptr += sizeof(short);               \
         }                                       \
     } while (0)
 
-#define PT_READ_NAT(ptr,i)                                              \
+#define PT_READ_NAT(ptr, i)                                             \
     do {                                                                \
         if (*ptr & 0x80) {                                              \
-            PT_READ_INT(ptr,i); ptr+= sizeof(int); i &= 0x7fffffff;     \
+            PT_READ_INT(ptr, i); ptr += sizeof(int); i &= 0x7fffffff;   \
         }                                                               \
         else {                                                          \
-            PT_READ_SHORT(ptr,i); ptr+= sizeof(short);                  \
+            PT_READ_SHORT(ptr, i); ptr += sizeof(short);                \
         }                                                               \
-    } while(0)
+    } while (0)
 
 
 /********************* PT_READ_CHAIN_ENTRY ***********************/
 
 
-inline const char *PT_READ_CHAIN_ENTRY(const char* ptr,int mainapos,int *name,int *apos,int *rpos) {
+inline const char *PT_READ_CHAIN_ENTRY(const char* ptr, int mainapos, int *name, int *apos, int *rpos) {
     unsigned int rcei;
     unsigned char *rcep = (unsigned char*)ptr;
     int isapos;
@@ -290,33 +290,33 @@ inline const char *PT_READ_CHAIN_ENTRY(const char* ptr,int mainapos,int *name,in
     else {
         if (rcei&0x80) {
             if (rcei&0x40) {
-                PT_READ_INT(rcep,rcei); rcep+=4; rcei &= 0x3fffffff;
+                PT_READ_INT(rcep, rcei); rcep+=4; rcei &= 0x3fffffff;
             }
             else {
-                PT_READ_SHORT(rcep,rcei); rcep+=2; rcei &= 0x3fff;
+                PT_READ_SHORT(rcep, rcei); rcep+=2; rcei &= 0x3fff;
             }
         }
         else {
-            rcei&= 0x7f;rcep++;
+            rcei &= 0x7f; rcep++;
         }
         *name += rcei;
         rcei = (*rcep);
         if (rcei&0x80) isapos = 1;
         else isapos = 0;
         if (rcei&0x40) {
-            PT_READ_INT(rcep,rcei); rcep+=4; rcei &= 0x3fffffff;
+            PT_READ_INT(rcep, rcei); rcep+=4; rcei &= 0x3fffffff;
         }
         else {
-            PT_READ_SHORT(rcep,rcei); rcep+=2; rcei &= 0x3fff;
+            PT_READ_SHORT(rcep, rcei); rcep+=2; rcei &= 0x3fff;
         }
         *rpos = (int)rcei;
         if (isapos) {
             rcei = (*rcep);
             if (rcei&0x80) {
-                PT_READ_INT(rcep,rcei); rcep+=4; rcei &= 0x7fffffff;
+                PT_READ_INT(rcep, rcei); rcep+=4; rcei &= 0x7fffffff;
             }
             else {
-                PT_READ_SHORT(rcep,rcei); rcep+=2; rcei &= 0x7fff;
+                PT_READ_SHORT(rcep, rcei); rcep+=2; rcei &= 0x7fff;
             }
             *apos = (int)rcei;
         }
@@ -331,7 +331,7 @@ inline const char *PT_READ_CHAIN_ENTRY(const char* ptr,int mainapos,int *name,in
 
 
 /* stage 1 */
-inline char *PT_WRITE_CHAIN_ENTRY(const char * const ptr,const int mainapos,int name,const int apos,const int rpos)
+inline char *PT_WRITE_CHAIN_ENTRY(const char * const ptr, const int mainapos, int name, const int apos, const int rpos)
 {
     unsigned char *wcep = (unsigned char *)ptr;
     int  isapos;
@@ -340,35 +340,35 @@ inline char *PT_WRITE_CHAIN_ENTRY(const char * const ptr,const int mainapos,int 
     }
     else if (name <0x3fff) {
         name |= 0x8000;
-        PT_WRITE_SHORT(wcep,name);
+        PT_WRITE_SHORT(wcep, name);
         wcep += 2;
     }
     else {
         name |= 0xc0000000;
-        PT_WRITE_INT(wcep,name);
+        PT_WRITE_INT(wcep, name);
         wcep += 4;
     }
 
     if (apos == mainapos) isapos = 0; else isapos = 0x80;
 
     if (rpos < 0x3fff) {        /* write the rpos */
-           /*0x7fff, mit der rpos vorher verglichen wurde war zu groß*/
-        PT_WRITE_SHORT(wcep,rpos);
+           /* 0x7fff, mit der rpos vorher verglichen wurde war zu groß */
+        PT_WRITE_SHORT(wcep, rpos);
         *wcep |= isapos;
         wcep += 2;
     }
     else {
-        PT_WRITE_INT(wcep,rpos);
+        PT_WRITE_INT(wcep, rpos);
         *wcep |= 0x40+isapos;
         wcep += 4;
     }
-    if (isapos){            /* write the apos */
+    if (isapos) {           /* write the apos */
         if (apos < 0x7fff) {
-            PT_WRITE_SHORT(wcep,apos);
+            PT_WRITE_SHORT(wcep, apos);
             wcep += 2;
         }
         else {
-            PT_WRITE_INT(wcep,apos);
+            PT_WRITE_INT(wcep, apos);
             *wcep |= 0x80;
             wcep += 4;
         }
@@ -383,17 +383,17 @@ inline POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
     UINT sec;
     UINT offset;
     if (ptmain->stage3) {       // stage 3  no father
-        if (node->flags & IS_SINGLE_BRANCH_NODE){
+        if (node->flags & IS_SINGLE_BRANCH_NODE) {
             if (base != (node->flags & 0x7)) return NULL;  // no son
             i = (node->flags >> 3)&0x7;         // this son
             if (!i) i = 1; else i+=2;           // offset mapping
             pt_assert(i >= 0);
             return (POS_TREE *)(((char *)node)-i);
         }
-        if (!( (1<<base) & node->flags)) return NULL;  /* bit not set */
+        if (!((1<<base) & node->flags)) return NULL;   /* bit not set */
         sec = (uchar)node->data;    // read second byte for charshort/shortlong info
         i = PT_count_bits[base][node->flags];
-        i+= PT_count_bits[base][sec];
+        i += PT_count_bits[base][sec];
 #ifdef ARB_64
         if (sec & LONG_SONS) {
             if (sec & INT_SONS) {                                   // undefined -> error
@@ -405,12 +405,12 @@ inline POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
                 printf("Warning: A search tree of this size is not tested.\n"); 
                 printf("         (sec & LONG_SON) == true\n"); 
                 offset = 4 * i;
-                if ( (1<<base) & sec) {                             // long
+                if ((1<<base) & sec) {                              // long
                     pt_assert(sizeof(PT_PNTR) == 8);               // 64-bit necessary
-                    PT_READ_PNTR((&node->data+1)+offset,i);
+                    PT_READ_PNTR((&node->data+1)+offset, i);
                 }
                 else {                                              // int
-                    PT_READ_INT((&node->data+1)+offset,i);
+                    PT_READ_INT((&node->data+1)+offset, i);
                 }
             }
 
@@ -418,40 +418,40 @@ inline POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
         else {
             if (sec & INT_SONS) {                                   // int/short
                 offset = i+i;
-                if ( (1<<base) & sec) {                             // int
-                    PT_READ_INT((&node->data+1)+offset,i);
+                if ((1<<base) & sec) {                              // int
+                    PT_READ_INT((&node->data+1)+offset, i);
                 }
                 else {                                              // short
-                    PT_READ_SHORT((&node->data+1)+offset,i);
+                    PT_READ_SHORT((&node->data+1)+offset, i);
                 }
             }
             else {                                                  // short/char
                 offset = i;
-                if ( (1<<base) & sec) {                             // short
-                    PT_READ_SHORT((&node->data+1)+offset,i);
+                if ((1<<base) & sec) {                              // short
+                    PT_READ_SHORT((&node->data+1)+offset, i);
                 }
                 else {                                              // char
-                    PT_READ_CHAR((&node->data+1)+offset,i);
+                    PT_READ_CHAR((&node->data+1)+offset, i);
                 }
             }
         }
 #else
         if (sec & LONG_SONS) {
             offset = i+i;
-            if ( (1<<base) & sec) {
-                PT_READ_INT((&node->data+1)+offset,i);
+            if ((1<<base) & sec) {
+                PT_READ_INT((&node->data+1)+offset, i);
             }
             else {
-                PT_READ_SHORT((&node->data+1)+offset,i);
+                PT_READ_SHORT((&node->data+1)+offset, i);
             }
         }
         else {
             offset = i;
-            if ( (1<<base) & sec) {
-                PT_READ_SHORT((&node->data+1)+offset,i);
+            if ((1<<base) & sec) {
+                PT_READ_SHORT((&node->data+1)+offset, i);
             }
             else {
-                PT_READ_CHAR((&node->data+1)+offset,i);
+                PT_READ_CHAR((&node->data+1)+offset, i);
             }
         }
 #endif
@@ -460,9 +460,9 @@ inline POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
 
     }
     else {          // stage 1 or 2 ->father
-        if (!( (1<<base) & node->flags)) return NULL;  /* bit not set */
+        if (!((1<<base) & node->flags)) return NULL;   /* bit not set */
         base = (PT_BASES)PT_count_bits[base][node->flags];
-        PT_READ_PNTR((&node->data)+sizeof(PT_PNTR)*base+ptmain->mode,i);
+        PT_READ_PNTR((&node->data)+sizeof(PT_PNTR)*base+ptmain->mode, i);
         return (POS_TREE *)(i+ptmain->data_start); // ptmain->data_start == 0x00 in stage 1
     }
 }
@@ -470,9 +470,9 @@ inline POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
 inline POS_TREE *PT_read_son_stage_1(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
 {
     long i;
-    if (!( (1<<base) & node->flags)) return NULL;  /* bit not set */
+    if (!((1<<base) & node->flags)) return NULL;   /* bit not set */
     base = (PT_BASES)PT_count_bits[base][node->flags];
-    PT_READ_PNTR((&node->data)+sizeof(PT_PNTR)*base+ptmain->mode,i);
+    PT_READ_PNTR((&node->data)+sizeof(PT_PNTR)*base+ptmain->mode, i);
     return (POS_TREE *)(i+ptmain->data_start); // ptmain->data_start == 0x00 in stage 1
 }
 
@@ -481,52 +481,52 @@ inline PT_NODE_TYPE PT_read_type(POS_TREE *node)
     return (PT_NODE_TYPE)PT_GET_TYPE(node);
 }
 
-inline int PT_read_name(PTM2 *ptmain,POS_TREE *node)
+inline int PT_read_name(PTM2 *ptmain, POS_TREE *node)
 {
     int i;
-    if (node->flags&1){
-        PT_READ_INT((&node->data)+ptmain->mode,i);
+    if (node->flags&1) {
+        PT_READ_INT((&node->data)+ptmain->mode, i);
     }
     else {
-        PT_READ_SHORT((&node->data)+ptmain->mode,i);
+        PT_READ_SHORT((&node->data)+ptmain->mode, i);
     }
     pt_assert(i >= 0);
     return i;
 }
 
-inline int PT_read_rpos(PTM2 *ptmain,POS_TREE *node)
+inline int PT_read_rpos(PTM2 *ptmain, POS_TREE *node)
 {
     int i;
     char *data = (&node->data)+2+ptmain->mode;
     if (node->flags&1) data+=2;
-    if (node->flags&2){
-        PT_READ_INT(data,i);
+    if (node->flags&2) {
+        PT_READ_INT(data, i);
     }
     else {
-        PT_READ_SHORT(data,i);
+        PT_READ_SHORT(data, i);
     }
     pt_assert(i >= 0);
     return i;
 }
 
-inline int PT_read_apos(PTM2 *ptmain,POS_TREE *node)
+inline int PT_read_apos(PTM2 *ptmain, POS_TREE *node)
 {
     int i;
     char *data = (&node->data)+ptmain->mode+4;  /* father 4 name 2 rpos 2 */
     if (node->flags&1) data+=2;
     if (node->flags&2) data+=2;
-    if (node->flags&4){
-        PT_READ_INT(data,i);
+    if (node->flags&4) {
+        PT_READ_INT(data, i);
     }
     else {
-        PT_READ_SHORT(data,i);
+        PT_READ_SHORT(data, i);
     }
     pt_assert(i >= 0);
     return i;
 }
 
 template<typename T>
-int PT_read_chain(PTM2 *ptmain,POS_TREE *node, T func)
+int PT_read_chain(PTM2 *ptmain, POS_TREE *node, T func)
 {
     int pos, apos, rpos;
     int cname;
@@ -534,20 +534,20 @@ int PT_read_chain(PTM2 *ptmain,POS_TREE *node, T func)
     const char *data;
 
     data = (&node->data) + ptmain->mode;
-    if (node->flags&1){
-        PT_READ_INT(data,pos);
+    if (node->flags&1) {
+        PT_READ_INT(data, pos);
         data += 4;
     }
     else {
-        PT_READ_SHORT(data,pos);
+        PT_READ_SHORT(data, pos);
         data += 2;
     }
     error = 0;
     cname = 0;
-    while (cname>=0){
-        data = PT_READ_CHAIN_ENTRY(data,pos,&cname,&apos,&rpos);
-        if (cname>=0){
-            error = func(cname,apos,rpos);
+    while (cname>=0) {
+        data = PT_READ_CHAIN_ENTRY(data, pos, &cname, &apos, &rpos);
+        if (cname>=0) {
+            error = func(cname, apos, rpos);
             if (error) return error;
         }
     }
@@ -557,7 +557,7 @@ int PT_read_chain(PTM2 *ptmain,POS_TREE *node, T func)
 struct PTD_chain_print {
     int operator()(int name, int apos, int rpos)
     {
-        printf("          name %6i apos %6i  rpos %i\n",name,apos,rpos);
+        printf("          name %6i apos %6i  rpos %i\n", name, apos, rpos);
         return 0;
     }
 };

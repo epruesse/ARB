@@ -56,7 +56,7 @@ GBS_string_matcher *GBS_compile_matcher(const char *search_expr, GB_CASE case_fl
                 else {
                     matcher->regexpr = GBS_compile_regexpr(unwrapped_expr, case_flag, &error);
                     if (matcher->regexpr) {
-                        matcher->type = SM_REGEXPR;;
+                        matcher->type = SM_REGEXPR; ;
                     }
                 }
             }
@@ -394,7 +394,7 @@ GB_CSTR GBS_find_string(GB_CSTR str, GB_CSTR substr, int match_mode) {
                     return (char *)str;
                 }
                 else {
-                    if (toupper(*p1) == toupper(b) || (b=='?') ) {
+                    if (toupper(*p1) == toupper(b) || (b=='?')) {
                         p1++;
                         p2++;
                     }
@@ -420,8 +420,8 @@ bool GBS_string_matches(const char *str, const char *search, GB_CASE case_sens)
  * returns true if strings are equal, false otherwise
  */
 {
-    const char *p1,*p2;
-    char        a,b,*d;
+    const char *p1, *p2;
+    char        a, b, *d;
     long        i;
     char        fsbuf[256];
 
@@ -430,24 +430,24 @@ bool GBS_string_matches(const char *str, const char *search, GB_CASE case_sens)
     while (1) {
         a = *p1;
         b = *p2;
-        if (b == '*')   {
+        if (b == '*') {
             if (!p2[1]) break; // '*' also matches nothing
             i = 0;
             d = fsbuf;
-            for (p2++; (b=*p2)&&(b!='*'); ) {
+            for (p2++; (b=*p2)&&(b!='*');) {
                 *(d++) = b;
                 p2++;
                 i++;
                 if (i > 250) break;
             }
-            if (*p2 != '*' ) {
+            if (*p2 != '*') {
                 p1 += strlen(p1)-i;     // check the end of the string
                 if (p1 < str) return false;
                 p2 -= i;
             }
             else {
                 *d  = 0;
-                p1  = GBS_find_string(p1,fsbuf,2+(case_sens == GB_IGNORE_CASE)); // match with '?' wildcard
+                p1  = GBS_find_string(p1, fsbuf, 2+(case_sens == GB_IGNORE_CASE)); // match with '?' wildcard
                 if (!p1) return false;
                 p1 += i;
             }
@@ -516,10 +516,10 @@ int GBS_reference_not_found;
 
 ATTRIBUTED(__ATTR__USERESULT,
            static GB_ERROR gbs_build_replace_string(GBS_strstruct *strstruct,
-                                                    char *bar,char *wildcards, long max_wildcard,
+                                                    char *bar, char *wildcards, long max_wildcard,
                                                     char **mwildcards, long max_mwildcard, GBDATA *gb_container))
 {
-    char *p,c,d;
+    char *p, c, d;
     int   wildcardcnt  = 0;
     int   mwildcardcnt = 0;
     int   wildcard_num;
@@ -531,8 +531,8 @@ ATTRIBUTED(__ATTR__USERESULT,
     mwildcardcnt = 0;
 
     p = bar;
-    while ( (c=*(p++)) ) {
-        switch (c){
+    while ((c=*(p++))) {
+        switch (c) {
             case GBS_MWILD: case GBS_WILD:
                 d = *(p++);
                 if (gb_container && (d=='(')) { // if a gbcont then replace till ')'
@@ -543,13 +543,13 @@ ATTRIBUTED(__ATTR__USERESULT,
                     if (klz) {          // reference found: $(gbd)
                         int separator = 0;
                         *klz = 0;
-                        psym = strpbrk(p,"#|:");
+                        psym = strpbrk(p, "#|:");
                         if (psym) {
                             separator = *psym;
-                            *psym =0;
+                            *psym = 0;
                         }
-                        if (*p){
-                            gb_entry = GB_search(gb_container,p,GB_FIND);
+                        if (*p) {
+                            gb_entry = GB_search(gb_container, p, GB_FIND);
                         }
                         else {
                             gb_entry = gb_container;
@@ -565,31 +565,31 @@ ATTRIBUTED(__ATTR__USERESULT,
                         }
                         if (entry) {
                             char *h;
-                            switch(separator) {
+                            switch (separator) {
                                 case ':':
-                                    h = GBS_string_eval(entry,psym+1,gb_container);
+                                    h = GBS_string_eval(entry, psym+1, gb_container);
                                     if (!h) return GB_await_error();
 
-                                    GBS_strcat(strstruct,h);
+                                    GBS_strcat(strstruct, h);
                                     free(h);
                                     break;
                                     
                                 case '|':
-                                    h = GB_command_interpreter(GB_get_root(gb_container), entry,psym+1,gb_container, 0);
+                                    h = GB_command_interpreter(GB_get_root(gb_container), entry, psym+1, gb_container, 0);
                                     if (!h) return GB_await_error();
 
-                                    GBS_strcat(strstruct,h);
+                                    GBS_strcat(strstruct, h);
                                     free(h);
                                     break;
                                     
                                 case '#':
-                                    if (!gb_entry){
-                                        GBS_strcat(strstruct,psym+1);
+                                    if (!gb_entry) {
+                                        GBS_strcat(strstruct, psym+1);
                                         break;
                                     }
                                     // fall-through
                                 default:
-                                    GBS_strcat(strstruct,entry);
+                                    GBS_strcat(strstruct, entry);
                                     break;
                             }
                             free(entry);
@@ -599,41 +599,41 @@ ATTRIBUTED(__ATTR__USERESULT,
                         break;
                     }
                     c = '*';
-                    GBS_chrcat(strstruct,c);
-                    GBS_chrcat(strstruct,d);
+                    GBS_chrcat(strstruct, c);
+                    GBS_chrcat(strstruct, d);
                 }
                 else {
                     wildcard_num = d - '1';
                     if (c == GBS_WILD) {
                         c = '?';
-                        if ( (wildcard_num<0)||(wildcard_num>9) ) {
+                        if ((wildcard_num<0)||(wildcard_num>9)) {
                             p--;            // use this character
                             wildcard_num = wildcardcnt++;
                         }
                         if (wildcard_num>=max_wildcard) {
-                            GBS_chrcat(strstruct,c);
+                            GBS_chrcat(strstruct, c);
                         }
                         else {
-                            GBS_chrcat(strstruct,wildcards[wildcard_num]);
+                            GBS_chrcat(strstruct, wildcards[wildcard_num]);
                         }
                     }
                     else {
                         c = '*';
-                        if ( (wildcard_num<0)||(wildcard_num>9) ) {
+                        if ((wildcard_num<0)||(wildcard_num>9)) {
                             p--;            // use this character
                             wildcard_num = mwildcardcnt++;
                         }
                         if (wildcard_num>=max_mwildcard) {
-                            GBS_chrcat(strstruct,c);
+                            GBS_chrcat(strstruct, c);
                         }
                         else {
-                            GBS_strcat(strstruct,mwildcards[wildcard_num]);
+                            GBS_strcat(strstruct, mwildcards[wildcard_num]);
                         }
                     }
                 }
                 break;
             default:
-                GBS_chrcat(strstruct,c);
+                GBS_chrcat(strstruct, c);
                 break;
         } 
     }
@@ -650,14 +650,14 @@ static char *gbs_compress_command(const char *com) {
      *   '*' by GBS_MWILD  or '('
      * \ is the escape character
      */
-    char *result,*s,*d;
+    char *result, *s, *d;
     int   ch;
 
     s = d = result = strdup(com);
-    while ( (ch = *(s++)) ){
+    while ((ch = *(s++))) {
         switch (ch) {
-            case '=':   *(d++) = GBS_SET;break;
-            case ':':   *(d++) = GBS_SEP;break;
+            case '=':   *(d++) = GBS_SET; break;
+            case ':':   *(d++) = GBS_SEP; break;
             case '?':
                 ch = *s;
                 *(d++) = GBS_WILD;
@@ -669,10 +669,10 @@ static char *gbs_compress_command(const char *com) {
             case '\\':
                 ch = *(s++); if (!ch) { s--; break; };
                 switch (ch) {
-                    case 'n':   *(d++) = '\n';break;
-                    case 't':   *(d++) = '\t';break;
-                    case '0':   *(d++) = '\0';break;
-                    default:    *(d++) = ch;break;
+                    case 'n':   *(d++) = '\n'; break;
+                    case 't':   *(d++) = '\t'; break;
+                    case '0':   *(d++) = '\0'; break;
+                    default:    *(d++) = ch; break;
                 }
                 break;
             default:
@@ -752,7 +752,7 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
         max_wildcard = 0;
         max_mwildcard = 0;
         nextdp = strchr(doppelpunkt, GBS_SEP);
-        if (nextdp){
+        if (nextdp) {
             *(nextdp++) = 0;
         }
         if (!doppelpunkt[0]) {                      // empty command -> search next
@@ -773,34 +773,34 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
         already_transferred = in;
         strstruct = GBS_stropen(1000);          // create output stream
 
-        if ( (!*in) && doppelpunkt[0] == GBS_MWILD && doppelpunkt[1] == 0) {    // empty string -> pars myself
+        if ((!*in) && doppelpunkt[0] == GBS_MWILD && doppelpunkt[1] == 0) {     // empty string -> pars myself
             // * matches empty string !!!!
             mwildcard[max_mwildcard++] = strdup("");
-            gbs_build_replace_string(strstruct,bar,wildcard, max_wildcard, mwildcard, max_mwildcard,gb_container);
+            gbs_build_replace_string(strstruct, bar, wildcard, max_wildcard, mwildcard, max_mwildcard, gb_container);
             goto gbs_pars_unsuccessfull;    // successfull search
         }
 
-        for (source = in;*source; ) {               // loop over string
+        for (source = in; *source;) {               // loop over string
             search = doppelpunkt;
 
             start_match = 0;                // match string for '*'
-            while ( (c = *(search++))  ) {          // search matching command
+            while ((c = *(search++))) {             // search matching command
                 switch (c) {
                     case GBS_MWILD:
                         if (!start_match) start_match = source;
 
                         start_of_wildcard = search;
-                        if ( !(c = *(search++) ) ) {    // last character is a wildcard -> that was it
+                        if (!(c = *(search++))) {       // last character is a wildcard -> that was it
                             mwildcard[max_mwildcard++] = strdup(source);
                             source += strlen(source);
                             goto gbs_pars_successfull;      // successfull search and end wildcard
                         }
-                        while ( (c=*(search++)) && c!=GBS_MWILD && c!=GBS_WILD ) ;   // search the next wildcardstring
+                        while ((c=*(search++)) && c!=GBS_MWILD && c!=GBS_WILD) ;     // search the next wildcardstring
                         search--;                   // back one character
                         *search = 0;
                         what_wild_card = c;
-                        p = GBS_find_string(source,start_of_wildcard,0);
-                        if (!p){                    // string not found -> unsuccessful search
+                        p = GBS_find_string(source, start_of_wildcard, 0);
+                        if (!p) {                   // string not found -> unsuccessful search
                             goto gbs_pars_unsuccessfull;
                         }
                         c = *p;                     // set wildcard
@@ -810,7 +810,7 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
                         break;
 
                     case GBS_WILD:
-                        if ( !source[0] ) {
+                        if (!source[0]) {
                             goto gbs_pars_unsuccessfull;
                         }
                         if (!start_match) start_match = source;
@@ -826,12 +826,12 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
                         else {
                             char *buf1;
                             buf1 = search-1;
-                            while ( (c=*(search++)) && c!=GBS_MWILD && c!=GBS_WILD ) ;   // search the next wildcardstring
+                            while ((c=*(search++)) && c!=GBS_MWILD && c!=GBS_WILD) ;     // search the next wildcardstring
                             search--;                   // back one character
                             *search = 0;
                             what_wild_card = c;
-                            p = GBS_find_string(source,buf1,0);
-                            if (!p){                    // string not found -> unsuccessful search
+                            p = GBS_find_string(source, buf1, 0);
+                            if (!p) {                   // string not found -> unsuccessful search
                                 goto gbs_pars_unsuccessfull;
                             }
                             start_match = p;
@@ -842,7 +842,7 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
                 }
             }
 
-        gbs_pars_successfull:
+        gbs_pars_successfull :
             /* now we got
              * source:                  pointer to end of match
              * start_match:             pointer to start of match
@@ -852,9 +852,9 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
              */
             
             // now look for the replace string
-            GBS_strncat(strstruct,already_transferred,start_match-already_transferred); // cat old data
-            error               = gbs_build_replace_string(strstruct,bar,wildcard, max_wildcard, // do the command
-                                             mwildcard, max_mwildcard,gb_container);
+            GBS_strncat(strstruct, already_transferred, start_match-already_transferred); // cat old data
+            error               = gbs_build_replace_string(strstruct, bar, wildcard, max_wildcard, // do the command
+                                             mwildcard, max_mwildcard, gb_container);
             already_transferred = source;
 
             for (i = 0; i < max_mwildcard; i++) {
@@ -871,10 +871,10 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
                 return 0;
             }
         } 
-    gbs_pars_unsuccessfull:
-        GBS_strcat(strstruct,already_transferred);  // cat the rest data
+    gbs_pars_unsuccessfull :
+        GBS_strcat(strstruct, already_transferred); // cat the rest data
 
-        for (i = 0; i < max_mwildcard; i++){
+        for (i = 0; i < max_mwildcard; i++) {
             freenull(mwildcard[i]);
         }
         max_wildcard  = 0;

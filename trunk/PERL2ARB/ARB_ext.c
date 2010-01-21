@@ -20,10 +20,10 @@ void GBP_croak(const char *message) {
     Perl_croak(aTHX_ "ARBDB croaks %s", message);
 }
 
-void GBP_callback(GBDATA *gbd, int *cl, GB_CB_TYPE cb_type){
+void GBP_callback(GBDATA *gbd, int *cl, GB_CB_TYPE cb_type) {
     char *perl_func;
     char *perl_cl;
-    dSP ;
+    dSP;
     I32 i;
     SV *sv;
     perl_func = (char *)cl;
@@ -42,27 +42,27 @@ void GBP_callback(GBDATA *gbd, int *cl, GB_CB_TYPE cb_type){
     }
 
     PUTBACK;
-    i = perl_call_pv(perl_func,G_DISCARD);
+    i = perl_call_pv(perl_func, G_DISCARD);
     if (i) {
-	croak("Your perl function '%s' should not return any values",perl_func);
+	croak("Your perl function '%s' should not return any values", perl_func);
     }
     return; 
 }
 
 
-GB_ERROR GBP_add_callback(GBDATA *gbd, char *perl_func, char *perl_cl){
+GB_ERROR GBP_add_callback(GBDATA *gbd, char *perl_func, char *perl_cl) {
     char     *data  = 0;
     char     *arg   = 0;
     GB_ERROR  error = 0;
 
-    if (gbp_cp_hash_table ==0) gbp_cp_hash_table = GBS_create_hash(4096, GB_MIND_CASE);
+    if (gbp_cp_hash_table == 0) gbp_cp_hash_table = GBS_create_hash(4096, GB_MIND_CASE);
     
-    data = (char *)calloc(1,strlen(perl_func) + strlen(perl_cl) + 100);
-    arg  = (char *)calloc(1,strlen(perl_func) + strlen(perl_cl) + 2);
-    sprintf(arg,"%s%c%s",perl_func,'\0',perl_cl);
-    sprintf(data,"%p:%s%c%s",gbd,perl_func,'\1',perl_cl);
-    if (!GBS_read_hash(gbp_cp_hash_table,data)){
-	GBS_write_hash(gbp_cp_hash_table,data,(long)data);
+    data = (char *)calloc(1, strlen(perl_func) + strlen(perl_cl) + 100);
+    arg  = (char *)calloc(1, strlen(perl_func) + strlen(perl_cl) + 2);
+    sprintf(arg, "%s%c%s", perl_func, '\0', perl_cl);
+    sprintf(data, "%p:%s%c%s", gbd, perl_func, '\1', perl_cl);
+    if (!GBS_read_hash(gbp_cp_hash_table, data)) {
+	GBS_write_hash(gbp_cp_hash_table, data, (long)data);
 	error = GB_add_callback(gbd, GB_CB_TYPE(GB_CB_DELETE|GB_CB_CHANGED), GBP_callback, (int *)arg);
     }
     else {
@@ -72,19 +72,19 @@ GB_ERROR GBP_add_callback(GBDATA *gbd, char *perl_func, char *perl_cl){
     return error;
 }
 
-GB_ERROR GBP_remove_callback(GBDATA *gbd, char *perl_func, char *perl_cl){
+GB_ERROR GBP_remove_callback(GBDATA *gbd, char *perl_func, char *perl_cl) {
     char *data = 0;
     char *arg = 0;
-    if (gbp_cp_hash_table ==0) gbp_cp_hash_table = GBS_create_hash(4096, GB_MIND_CASE);
-    data = (char *)calloc(1,strlen(perl_func) + strlen(perl_cl) + 100);
-    sprintf(data,"%p:%s%c%s",gbd,perl_func,'\1',perl_cl);
-    arg =(char *)GBS_read_hash(gbp_cp_hash_table,data);
-    if (!arg){
+    if (gbp_cp_hash_table == 0) gbp_cp_hash_table = GBS_create_hash(4096, GB_MIND_CASE);
+    data = (char *)calloc(1, strlen(perl_func) + strlen(perl_cl) + 100);
+    sprintf(data, "%p:%s%c%s", gbd, perl_func, '\1', perl_cl);
+    arg = (char *)GBS_read_hash(gbp_cp_hash_table, data);
+    if (!arg) {
 	free(data);
-	return GB_export_errorf("Sorry: You never installed a callback '%s:%s'",perl_func,perl_cl);
+	return GB_export_errorf("Sorry: You never installed a callback '%s:%s'", perl_func, perl_cl);
     }
     else {
-	GBS_write_hash(gbp_cp_hash_table,data,0);
+	GBS_write_hash(gbp_cp_hash_table, data, 0);
 	free(data);
 	free(arg);
 	GB_remove_callback(gbd, GB_CB_TYPE(GB_CB_DELETE|GB_CB_CHANGED), GBP_callback, (int *)data);

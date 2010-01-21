@@ -20,13 +20,13 @@ public:
 
     Item *next;
 
-    Item ( PRD_Sequence_Pos pos_, PRD_Sequence_Pos offset_, int length_, int ratio_, int temperature_, Item *next_ );
+    Item (PRD_Sequence_Pos pos_, PRD_Sequence_Pos offset_, int length_, int ratio_, int temperature_, Item *next_);
     Item ();
     ~Item () {};
 
-    void  print             ( const char *prefix_, const char *suffix_ ); // print Items's values
-    int   sprint            ( char *buf, const char *prefix_, const char *suffix_ , int max_primer_length, int max_position_length, int max_length_length );
-    char* getPrimerSequence ( const char *sequence_ );            // return the string the Item describes
+    void  print             (const char *prefix_, const char *suffix_);   // print Items's values
+    int   sprint            (char *buf, const char *prefix_, const char *suffix_,   int max_primer_length, int max_position_length, int max_length_length);
+    char* getPrimerSequence (const char *sequence_);              // return the string the Item describes
 };
 
 #else

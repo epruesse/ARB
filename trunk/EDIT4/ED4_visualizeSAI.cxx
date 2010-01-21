@@ -1,4 +1,4 @@
-/*=======================================================================================*/
+/* ======================================================================================= */
 /*                                                                                       */
 /*    File       : ED4_visualizeSAI.cxx                                                  */
 /*    Purpose    : To Visualize the Sequence Associated Information (SAI) in the Editor  */
@@ -7,7 +7,7 @@
 /*                                                                                       */
 /*        Copyright Department of Microbiology (Technical University Munich)             */
 /*                                                                                       */
-/*=======================================================================================*/
+/* ======================================================================================= */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -77,7 +77,7 @@ static const char *getClrDefAwar(const char *awarName) {
 #ifdef DEBUG
     int size =
 #endif
-    sprintf(buf,AWAR_SAI_CLR_DEF "%s", awarName);
+    sprintf(buf, AWAR_SAI_CLR_DEF "%s", awarName);
     e4_assert(size<BUFSIZE);
     return buf;
 }
@@ -87,12 +87,12 @@ static const char *getClrDefAwar(const char *awarName) {
 
 static void setVisualizeSAI_cb(AW_root *awr) {
     ED4_ROOT->visualizeSAI = awr->awar(AWAR_SAI_ENABLE)->read_int();
-    ED4_ROOT->refresh_all_windows(1); //refresh editor
+    ED4_ROOT->refresh_all_windows(1); // refresh editor
 }
 
 static void setVisualizeSAI_options_cb(AW_root *awr) {
     ED4_ROOT->visualizeSAI_allSpecies = awr->awar(AWAR_SAI_ALL_SPECIES)->read_int();
-    ED4_ROOT->refresh_all_windows(1); //refresh editor
+    ED4_ROOT->refresh_all_windows(1); // refresh editor
 }
 
 static bool colorTransTable_exists(AW_root *awr, const char *name) {
@@ -133,12 +133,12 @@ static void colorDefChanged_callback(AW_root *awr, AW_CL cl_awarNo) {
 
         char *clrTabName = awr->awar(AWAR_SAI_CLR_TRANS_TABLE)->read_string();
         if (clrTabName[0]) {
-            unsigned char charUsed[256]; memset(charUsed,255,256);
+            unsigned char charUsed[256]; memset(charUsed, 255, 256);
 
             {
-                for (int i=0; i<10 ; i++){
+                for (int i=0; i<10;  i++) {
                     char *awarString_next = awr->awar_string(getAwarName(i))->read_string();
-                    for(int c=0; awarString_next[c]; ++c){
+                    for (int c=0; awarString_next[c]; ++c) {
                         charUsed[(unsigned char)awarString_next[c]] = i;
                     }
                     free(awarString_next);
@@ -146,7 +146,7 @@ static void colorDefChanged_callback(AW_root *awr, AW_CL cl_awarNo) {
 
                 int   awarNo     = (int)cl_awarNo;
                 char *awarString = awr->awar_string(getAwarName(awarNo))->read_string();
-                for(int c=0; awarString[c]; ++c){
+                for (int c=0; awarString[c]; ++c) {
                     charUsed[(unsigned char)awarString[c]] = awarNo;
                 }
                 free(awarString);
@@ -154,12 +154,12 @@ static void colorDefChanged_callback(AW_root *awr, AW_CL cl_awarNo) {
 
             typedef unsigned char mystr[256];
             mystr s[10];
-            for (int i=0; i<10; i++)  s[i][0]=0; //initializing the strings
+            for (int i=0; i<10; i++)  s[i][0]=0; // initializing the strings
 
             for (int i=0; i<256; i++) {
                 int table = charUsed[i];
                 if (table != 255) {
-                    char *eos = strchr((char *)s[table],0); // get pointer to end of string
+                    char *eos = strchr((char *)s[table], 0); // get pointer to end of string
                     eos[0] = char(i);
                     eos[1] = 0;
                 }
@@ -167,7 +167,7 @@ static void colorDefChanged_callback(AW_root *awr, AW_CL cl_awarNo) {
 
             {
                 GBS_strstruct *clrDefStr = GBS_stropen(500);            /* create output stream */
-                for(int i=0; i<10; i++){
+                for (int i=0; i<10; i++) {
                     awr->awar_string(getAwarName(i))->write_string((char *)s[i]);
 
                     char *escaped = GBS_escape_string((char*)s[i], ";", '&');
@@ -191,7 +191,7 @@ static void colorDefChanged_callback(AW_root *awr, AW_CL cl_awarNo) {
         inCallback = old_inCallback;
 
         if (!inCallback) {
-            ED4_ROOT->refresh_all_windows(1); //refresh editor
+            ED4_ROOT->refresh_all_windows(1); // refresh editor
         }
 
         in_colorDefChanged_callback = false;
@@ -207,7 +207,7 @@ static void colorDefTabNameChanged_callback(AW_root *awr) {
         in_colorDefChanged_callback          = true; // avoid correction
 
         // clear current translation table definition
-        for(int i=0; i<10 ; i++) {
+        for (int i=0; i<10; i++) {
             AW_awar *transDef_awar = awr->awar_string(getAwarName(i), "", AW_ROOT_DEFAULT);
             transDef_awar->write_string("");
         }
@@ -267,7 +267,7 @@ static void colorDefTabNameChanged_callback(AW_root *awr) {
     free(clrTabName);
 
     if (!inCallback && clrDefinitionsChanged) {
-        ED4_ROOT->refresh_all_windows(1); //refresh editor
+        ED4_ROOT->refresh_all_windows(1); // refresh editor
     }
 }
 
@@ -276,7 +276,7 @@ static void refresh_display_cb(GBDATA *, int *, GB_CB_TYPE cb_type) {
         ED4_ROOT->aw_root->awar(AWAR_SAI_ENABLE)->read_int())
     {
         clrDefinitionsChanged = 1;
-        ED4_ROOT->refresh_all_windows(1); //refresh editor when current SAI is changed
+        ED4_ROOT->refresh_all_windows(1); // refresh editor when current SAI is changed
     }
 }
 
@@ -318,7 +318,7 @@ static void saiChanged_callback(AW_root *awr) {
     inCallback = old_inCallback;
 
     if (!inCallback && clrDefinitionsChanged) {
-        ED4_ROOT->refresh_all_windows(1); //refresh editor
+        ED4_ROOT->refresh_all_windows(1); // refresh editor
         // SAI changed notify Global SAI Awar AWAR_SAI_GLOBAL
         awr->awar(AWAR_SAI_GLOBAL)->write_string(saiName); 
     }
@@ -332,8 +332,8 @@ static void update_ClrTransTabNamesList_cb(AW_root *awr, AW_CL cl_aws, AW_CL cl_
 
     aws->clear_selection_list(id);
 
-    for (char *tok = strtok(clrTransTabNames,"\n"); tok; tok = strtok(0,"\n")) {
-        aws->insert_selection(id,tok,tok);
+    for (char *tok = strtok(clrTransTabNames, "\n"); tok; tok = strtok(0, "\n")) {
+        aws->insert_selection(id, tok, tok);
     }
     aws->insert_default_selection(id, "????", "");
     aws->update_selection_list(id);
@@ -366,7 +366,7 @@ static void set_autoselect_cb(AW_root *aw_root) {
 }
 
 static void addNewTransTable(AW_root *aw_root, const char *newClrTransTabName, const char *defaultDefinition, bool autoselect) {
-    AW_awar *table_def_awar = aw_root->awar_string(getClrDefAwar(newClrTransTabName), defaultDefinition , AW_ROOT_DEFAULT);
+    AW_awar *table_def_awar = aw_root->awar_string(getClrDefAwar(newClrTransTabName), defaultDefinition,  AW_ROOT_DEFAULT);
     table_def_awar->write_string(defaultDefinition);
 
     e4_assert(!colorTransTable_exists(aw_root, newClrTransTabName));
@@ -398,8 +398,8 @@ void ED4_createVisualizeSAI_Awars(AW_root *aw_root, AW_default aw_def) {  // ---
     aw_root->awar_string(AWAR_SAI_CLR_TRANS_TAB_NEW_NAME, "", aw_def);
     aw_root->awar_string(AWAR_SAI_CLR_TRANS_TAB_NAMES,    "", aw_def);
 
-    for (int i=0;i<10;i++){   // initializing 10 color definition string AWARS
-       AW_awar *def_awar = aw_root->awar_string(getAwarName(i),"",aw_def);
+    for (int i=0; i<10; i++) { // initializing 10 color definition string AWARS
+       AW_awar *def_awar = aw_root->awar_string(getAwarName(i), "", aw_def);
        def_awar->add_callback(colorDefChanged_callback, (AW_CL)i);
     }
     aw_root->awar(AWAR_SAI_ENABLE)->add_callback(setVisualizeSAI_cb);
@@ -441,7 +441,7 @@ static void createCopyClrTransTable(AW_window *aws, AW_CL cl_mode) {
     char    *newClrTransTabName = 0;
     char    *clrTabSourceName   = 0;
 
-    switch(mode){
+    switch (mode) {
     case ED4_VIS_CREATE:
         newClrTransTabName = GBS_string_2_key(aw_root->awar(AWAR_SAI_CLR_TRANS_TAB_NEW_NAME)->read_string());
 
@@ -491,7 +491,7 @@ static void deleteColorTranslationTable(AW_window *aws) {
             char          *clrTransTabNames = awar_tabNames->read_string();
             GBS_strstruct *newTransTabName  = GBS_stropen(strlen(clrTransTabNames));
 
-            for (const char *tok = strtok(clrTransTabNames,"\n"); tok; tok = strtok(0,"\n")) {
+            for (const char *tok = strtok(clrTransTabNames, "\n"); tok; tok = strtok(0, "\n")) {
                 if (strcmp(clrTabName, tok) != 0) { // merge all not to delete
                     GBS_strcat(newTransTabName, tok);
                     GBS_strcat(newTransTabName, "\n");
@@ -530,20 +530,20 @@ const char *ED4_getSaiColorString(AW_root *awr, int start, int end) {
 
     e4_assert(start<=end);
 
-    if(lastStart==start && lastEnd==end  && !clrDefinitionsChanged && lastVisualize) {
-        return saiColors-start;    //if start and end positions are same as the previous positions and no settings
-    }                              //were changed return the last calculated saiColors string
+    if (lastStart==start && lastEnd==end  && !clrDefinitionsChanged && lastVisualize) {
+        return saiColors-start;    // if start and end positions are same as the previous positions and no settings
+    }                              // were changed return the last calculated saiColors string
 
     lastStart = start; lastEnd = end; clrDefinitionsChanged = false; // storing start and end positions
 
     int seqSize = end-start+1;
 
-    if(seqSize>seqBufferSize){
+    if (seqSize>seqBufferSize) {
         free(saiColors);
         seqBufferSize = seqSize;
         saiColors =  (char*)GB_calloc(seqBufferSize, sizeof(char));
     }
-    else memset(saiColors,0,sizeof(char)*seqSize);
+    else memset(saiColors, 0, sizeof(char)*seqSize);
 
     char *saiSelected = awr->awar(AWAR_SAI_SELECT)->read_string();
 
@@ -617,46 +617,46 @@ const char *ED4_getSaiColorString(AW_root *awr, int start, int end) {
 
 /* -------------------- Creating Windows and Display dialogs -------------------- */
 
-static AW_window *create_copyColorTranslationTable_window(AW_root *aw_root){  // creates copy color translation table window
+static AW_window *create_copyColorTranslationTable_window(AW_root *aw_root) { // creates copy color translation table window
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "COPY_CLR_TR_TABLE", "Copy Color Translation Table");
+    aws->init(aw_root, "COPY_CLR_TR_TABLE", "Copy Color Translation Table");
     aws->load_xfig("ad_al_si.fig");
 
     aws->at("close");
-    aws->callback( (AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("label");
-    aws->create_autosize_button(0,"Please enter the new name\nfor the Color Translation Table");
+    aws->create_autosize_button(0, "Please enter the new name\nfor the Color Translation Table");
 
     aws->at("input");
-    aws->create_input_field(AWAR_SAI_CLR_TRANS_TAB_NEW_NAME,15);
+    aws->create_input_field(AWAR_SAI_CLR_TRANS_TAB_NEW_NAME, 15);
 
     aws->at("ok");
     aws->callback(createCopyClrTransTable, (AW_CL)ED4_VIS_COPY);
-    aws->create_button("GO","GO","G");
+    aws->create_button("GO", "GO", "G");
 
     return (AW_window *)aws;
 }
 
-static AW_window *create_createColorTranslationTable_window(AW_root *aw_root){ // creates create color translation table window
+static AW_window *create_createColorTranslationTable_window(AW_root *aw_root) { // creates create color translation table window
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "CREATE_CLR_TR_TABLE", "Create Color Translation Table");
+    aws->init(aw_root, "CREATE_CLR_TR_TABLE", "Create Color Translation Table");
     aws->load_xfig("ad_al_si.fig");
 
     aws->at("close");
-    aws->callback( (AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("label");
-    aws->create_autosize_button(0,"Please enter the name\nfor the Color Translation Table");
+    aws->create_autosize_button(0, "Please enter the name\nfor the Color Translation Table");
 
     aws->at("input");
-    aws->create_input_field(AWAR_SAI_CLR_TRANS_TAB_NEW_NAME,15);
+    aws->create_input_field(AWAR_SAI_CLR_TRANS_TAB_NEW_NAME, 15);
 
     aws->at("ok");
     aws->callback(createCopyClrTransTable, (AW_CL)ED4_VIS_CREATE);
-    aws->create_button("GO","GO","G");
+    aws->create_button("GO", "GO", "G");
 
     return (AW_window *)aws;
 }
@@ -682,12 +682,12 @@ static void reverseColorTranslationTable(AW_window *aww) {
     }
 }
 
-static AW_window *create_editColorTranslationTable_window(AW_root *aw_root){  // creates edit color translation table window
+static AW_window *create_editColorTranslationTable_window(AW_root *aw_root) { // creates edit color translation table window
     static AW_window_simple *aws = 0;
-    if(aws) return (AW_window *)aws;
+    if (aws) return (AW_window *)aws;
 
     aws = new AW_window_simple;
-    aws->init( aw_root, "EDIT_CTT", "Color Translation Table");
+    aws->init(aw_root, "EDIT_CTT", "Color Translation Table");
     aws->load_xfig("saiColorRange.fig");
 
     char at_name[] = "rangex";
@@ -701,21 +701,21 @@ static AW_window *create_editColorTranslationTable_window(AW_root *aw_root){  //
 
     aws->at("close");
     aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("reverse");
     aws->callback(reverseColorTranslationTable);
     aws->create_button("REVERSE", "Reverse", "R");
 
     aws->at("colors");
-    aws->callback(AW_POPUP,(AW_CL)AW_create_gc_window, (AW_CL)ED4_ROOT->aw_gc_manager);
+    aws->callback(AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)ED4_ROOT->aw_gc_manager);
     aws->button_length(0);
-    aws->create_button("COLORS","#colors.xpm");
+    aws->create_button("COLORS", "#colors.xpm");
 
     return (AW_window *)aws;
 }
 
-static AW_window *openSelectSAI_window(AW_root *aw_root, AW_CL cl_awar_name){
+static AW_window *openSelectSAI_window(AW_root *aw_root, AW_CL cl_awar_name) {
     const char *awar_name = reinterpret_cast<const char *>(cl_awar_name);
 
     static GB_HASH *SAI_window_hash = 0;
@@ -725,7 +725,7 @@ static AW_window *openSelectSAI_window(AW_root *aw_root, AW_CL cl_awar_name){
 
     if (!aws) {
         aws = new AW_window_simple;
-        aws->init( aw_root, "SELECT_SAI", "SELECT SAI");
+        aws->init(aw_root, "SELECT_SAI", "SELECT SAI");
         aws->load_xfig("selectSAI.fig");
 
         aws->at("selection");
@@ -734,7 +734,7 @@ static AW_window *openSelectSAI_window(AW_root *aw_root, AW_CL cl_awar_name){
 
         aws->at("close");
         aws->callback(AW_POPDOWN);
-        aws->create_button("CLOSE","CLOSE","C");
+        aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->window_fit();
 
@@ -762,16 +762,16 @@ AW_window *ED4_createVisualizeSAI_window(AW_root *aw_root) {
 
         aws = new AW_window_simple;
 
-        aws->init( aw_root, "VISUALIZE_SAI", "Visualize SAIs");
+        aws->init(aw_root, "VISUALIZE_SAI", "Visualize SAIs");
         aws->load_xfig("visualizeSAI.fig");
 
-        aws->callback( AW_POPUP_HELP,(AW_CL)"visualizeSAI.hlp");
+        aws->callback(AW_POPUP_HELP, (AW_CL)"visualizeSAI.hlp");
         aws->at("help");
-        aws->create_button("HELP","HELP","H");
+        aws->create_button("HELP", "HELP", "H");
 
         aws->at("close");
         aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE","CLOSE","C");
+        aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("enable");
         aws->create_toggle(AWAR_SAI_ENABLE);
@@ -787,23 +787,23 @@ AW_window *ED4_createVisualizeSAI_window(AW_root *aw_root) {
 
         aws->at("edit");
         aws->button_length(10);
-        aws->callback(AW_POPUP,(AW_CL)create_editColorTranslationTable_window,0);
-        aws->create_button("EDIT","EDIT");
+        aws->callback(AW_POPUP, (AW_CL)create_editColorTranslationTable_window, 0);
+        aws->create_button("EDIT", "EDIT");
 
         aws->at("create");
-        aws->callback(AW_POPUP,(AW_CL)create_createColorTranslationTable_window,0);
-        aws->create_button("CREATE","CREATE");
+        aws->callback(AW_POPUP, (AW_CL)create_createColorTranslationTable_window, 0);
+        aws->create_button("CREATE", "CREATE");
 
         aws->at("copy");
-        aws->callback(AW_POPUP,(AW_CL)create_copyColorTranslationTable_window,0);
-        aws->create_button("COPY","COPY");
+        aws->callback(AW_POPUP, (AW_CL)create_copyColorTranslationTable_window, 0);
+        aws->create_button("COPY", "COPY");
 
         aws->at("delete");
-        aws->callback((AW_CB1)deleteColorTranslationTable,0);
-        aws->create_button("DELETE","DELETE");
+        aws->callback((AW_CB1)deleteColorTranslationTable, 0);
+        aws->create_button("DELETE", "DELETE");
 
         aws->at("marked");
-        aws->create_toggle_field(AWAR_SAI_ALL_SPECIES,1);
+        aws->create_toggle_field(AWAR_SAI_ALL_SPECIES, 1);
         aws->insert_toggle("MARKED SPECIES", "M", 0);
         aws->insert_toggle("ALL SPECIES", "A", 1);
         aws->update_toggle_field();

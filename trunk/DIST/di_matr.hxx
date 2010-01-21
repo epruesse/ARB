@@ -62,8 +62,8 @@ class AP_sequence_simple_protein;
 
 class DI_ENTRY {
 public:
-    DI_ENTRY(GBDATA *gbd,class DI_MATRIX *phmatri);
-    DI_ENTRY(char *namei,class DI_MATRIX *phmatri);
+    DI_ENTRY(GBDATA *gbd, class DI_MATRIX *phmatri);
+    DI_ENTRY(char *namei, class DI_MATRIX *phmatri);
     ~DI_ENTRY();
 
     DI_MATRIX                  *phmatrix;
@@ -116,22 +116,22 @@ public:
 
     char *load(LoadWhat what, GB_CSTR sort_tree_name, bool show_warnings, GBDATA **species_list);
     char *unload(void);
-    const char *save(char *filename,enum DI_SAVE_TYPE type);
+    const char *save(char *filename, enum DI_SAVE_TYPE type);
 
     void    clear(DI_MUT_MATR &hits);
     void    make_sym(DI_MUT_MATR &hits);
-    void    rate_write(DI_MUT_MATR &hits,FILE *out);
+    void    rate_write(DI_MUT_MATR &hits, FILE *out);
     long    *create_helix_filter(BI_helix *helix, const AP_filter *filter);
     // 0 non helix 1 helix; compressed filter
-    GB_ERROR calculate_rates(DI_MUT_MATR &hrates,DI_MUT_MATR &nrates,DI_MUT_MATR &pairs,long *filter);
+    GB_ERROR calculate_rates(DI_MUT_MATR &hrates, DI_MUT_MATR &nrates, DI_MUT_MATR &pairs, long *filter);
     GB_ERROR haeschoe(const char *path);
     double  corr(double dist, double b, double & sigma);
     GB_ERROR calculate(AW_root *awr, char *cancel, double alpha, DI_TRANSFORMATION transformation);
-    char *calculate_overall_freqs(double rel_frequencies[AP_MAX],char *cancel_columns);
+    char *calculate_overall_freqs(double rel_frequencies[AP_MAX], char *cancel_columns);
     GB_ERROR calculate_pro(DI_TRANSFORMATION transformation);
     void analyse();
 
-    int search_group(GBT_TREE *node,GB_HASH *hash, long *groupcnt,char *groupname, DI_ENTRY **groups);       // @@ OLIVER
+    int search_group(GBT_TREE *node, GB_HASH *hash, long *groupcnt, char *groupname, DI_ENTRY **groups);     // @@ OLIVER
     char *compress(GBT_TREE *tree);
 };
 

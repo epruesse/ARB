@@ -84,8 +84,8 @@ class AP_tree_nlen : public AP_tree {
 
 
 
-    void createListRekUp(AP_CO_LIST *list,int *cn);
-    void createListRekSide(AP_CO_LIST *list,int *cn);
+    void createListRekUp(AP_CO_LIST *list, int *cn);
+    void createListRekSide(AP_CO_LIST *list, int *cn);
 
 public:
     AP_tree_nlen(AP_tree_root *tree_root);
@@ -97,11 +97,11 @@ public:
     // ARB_tree interface (end)
 
     void     unhash_sequence();
-    AP_FLOAT costs(char *mutPerSite = NULL);        /* cost of a tree (number of changes ..)*/
+    AP_FLOAT costs(char *mutPerSite = NULL);        /* cost of a tree (number of changes ..) */
 
     bool push(AP_STACK_MODE, unsigned long); /* push state of costs */
     void pop(unsigned long);    /* pop old tree costs */
-    bool clear(unsigned long stack_update,unsigned long user_push_counter);
+    bool clear(unsigned long stack_update, unsigned long user_push_counter);
 
     virtual AP_UPDATE_FLAGS check_update(); // disable  load !!!!
 
@@ -128,13 +128,13 @@ public:
                                 AP_BL_MODE  mode,
                                 bool        skip_hidden);
 
-    AP_FLOAT nn_interchange(AP_FLOAT parsimony,AP_BL_MODE mode);
+    AP_FLOAT nn_interchange(AP_FLOAT parsimony, AP_BL_MODE mode);
 
     void kernighan_rek(int         rek_deep,
                        int        *rek_breite,
                        int         rek_breite_anz,
                        const int   rek_deep_max,
-                       double    (*function)(double,double *,int),
+                       double    (*function)(double, double *, int),
                        double     *param_liste,
                        int         param_anz,
                        AP_FLOAT    pars_best,
@@ -151,14 +151,14 @@ public:
 
     // misc stuff:
 
-    void setBranchlen(double leftLen,double rightLen) { leftlen = leftLen; rightlen = rightLen; }
+    void setBranchlen(double leftLen, double rightLen) { leftlen = leftLen; rightlen = rightLen; }
 
     const char* fullname() const;
     const char* sortByName();
 
     // AP_tree_edge access functions:
 
-    int indexOf(const AP_tree_edge *e) const { int i; for (i=0; i<3; i++) if (edge[i]==e) return i;return -1; }
+    int indexOf(const AP_tree_edge *e) const { int i; for (i=0; i<3; i++) if (edge[i]==e) return i; return -1; }
 
     AP_tree_edge* edgeTo(const AP_tree_nlen *brother) const;
     AP_tree_edge* nextEdge(const AP_tree_edge *thisEdge=NULL) const;
@@ -178,7 +178,7 @@ public:
 
     
     friend      class AP_tree_edge;
-    friend      std::ostream& operator<<(std::ostream&,const AP_tree_nlen&);
+    friend      std::ostream& operator<<(std::ostream&, const AP_tree_nlen&);
 };
 
 
@@ -223,7 +223,7 @@ class AP_tree_edge
     // my friends:
 
     friend class AP_tree_nlen;
-    friend std::ostream& operator<<(std::ostream&,const AP_tree_edge&);
+    friend std::ostream& operator<<(std::ostream&, const AP_tree_edge&);
 
 protected:
 
@@ -273,14 +273,14 @@ public:
     void testChain(int deep);
 
     int Distance() const { ap_assert(distanceOK()); return (node[0]->distance+node[1]->distance) >> 1; }
-    int distanceToBorder(int maxsearch=INT_MAX,AP_tree_nlen *skip=NULL) const; // obsolete
+    int distanceToBorder(int maxsearch=INT_MAX, AP_tree_nlen *skip=NULL) const; // obsolete
 
     static int dumpNNI;             // should NNI dump its values?
     static int distInsertBorder; // distance from insert pos to tree border
     static int basesChanged;    // no of bases which were changed
     // in fathers sequence because of insertion
 
-    void countSpecies(int deep=-1,const AP_tree_nlen* skip=NULL);
+    void countSpecies(int deep=-1, const AP_tree_nlen* skip=NULL);
 
     static int speciesInTree;                       // no of species (leafs) in tree (updated by countSpecies)
     static int nodesInTree;                         // no of nodes in tree - including leafs, but w/o rootnode (updated by countSpecies)

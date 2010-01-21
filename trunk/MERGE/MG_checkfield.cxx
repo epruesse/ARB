@@ -23,15 +23,15 @@
 #define AWAR_ETAG         "/tmp/merge1/chk/tag"
 
 
-int gbs_cmp_strings(char *str1,char *str2, int *tab){   /* returns 0 if strings are equal */
-    char *s1,*s2;
-    int c1,c2;
+int gbs_cmp_strings(char *str1, char *str2, int *tab) { /* returns 0 if strings are equal */
+    char *s1, *s2;
+    int c1, c2;
     s1 = str1;
     s2 = str2;
     int count = 10;
     do {
-        do { c1= *(s1++); } while (tab[c1] < 0);
-        do { c2= *(s2++); } while (tab[c2] < 0);
+        do { c1 = *(s1++); } while (tab[c1] < 0);
+        do { c2 = *(s2++); } while (tab[c2] < 0);
         if (tab[c1] != tab[c2]) {   /* difference found */
             return 1;
         }
@@ -41,15 +41,15 @@ int gbs_cmp_strings(char *str1,char *str2, int *tab){   /* returns 0 if strings 
 }
 
 
-char *GBS_diff_strings(char *str1,char * &str2, char *exclude , long ToUpper, long correct,
-                       char **res1, char **res2, long *corrrected){
+char *GBS_diff_strings(char *str1, char * &str2, char *exclude, long ToUpper, long correct,
+                       char **res1, char **res2, long *corrrected) {
 
     char  buffer1[256];
     char  buffer2[256];
     char *dest1 = buffer1;
     char *dest2 = buffer2;
-    char *s1,*s2;
-    int   c1,c2;
+    char *s1, *s2;
+    int   c1, c2;
     int   count = 3;
     int   tab[256];
     int   i;
@@ -63,20 +63,20 @@ char *GBS_diff_strings(char *str1,char * &str2, char *exclude , long ToUpper, lo
     if (strlen(exclude)) gapchar = exclude[0];
     else    exclude = 0;
 
-    for (i=1;i<256;i++) {
+    for (i=1; i<256; i++) {
         tab[i] = i;
-        if (exclude && strchr(exclude,i)) {
+        if (exclude && strchr(exclude, i)) {
             tab[i] = -1;
             continue;
         }
-        if (ToUpper && i>= 'a' && i<= 'z' ){
+        if (ToUpper && i >= 'a' && i <= 'z') {
             tab[i] = i-'a'+'A';
         }
     }
 
     do {
-        do { c1= *(s1++); } while (tab[c1] < 0);
-        do { c2= *(s2++); } while (tab[c2] < 0);
+        do { c1 = *(s1++); } while (tab[c1] < 0);
+        do { c2 = *(s2++); } while (tab[c2] < 0);
         if (tab[c1] != tab[c2]) {   /* difference found */
             if (correct) {
                 /* check substitution */
@@ -84,7 +84,7 @@ char *GBS_diff_strings(char *str1,char * &str2, char *exclude , long ToUpper, lo
                     int c = s2[-1];
                     s2[-1] = s1[-1];
                     if (toupper(c1) == toupper(c2) ||
-                        !gbs_cmp_strings(s1,s2,&tab[0]) ){
+                        !gbs_cmp_strings(s1, s2, &tab[0])) {
                         *corrrected = 1;
                         continue;
                     }
@@ -92,23 +92,23 @@ char *GBS_diff_strings(char *str1,char * &str2, char *exclude , long ToUpper, lo
                 }
 
                 /* check insertion in s2 */
-                if (!gbs_cmp_strings(s1-1,s2,&tab[0]) ){
+                if (!gbs_cmp_strings(s1-1, s2, &tab[0])) {
                     s2[-1] = gapchar;
-                    do { c2= *(s2++); } while (tab[c2] < 0); /* eat s2 */
+                    do { c2 = *(s2++); } while (tab[c2] < 0); /* eat s2 */
                     *corrrected = 1;
                     continue;
                 }
                 /* check deletion in s2 */
-                if ( !gbs_cmp_strings(s1,s2-1,&tab[0]) ){
+                if (!gbs_cmp_strings(s1, s2-1, &tab[0])) {
                     int toins = c1;
                     char *toinspos = s2-1;
                     if (toinspos > str2) toinspos--;
                     if (tab[(unsigned char)toinspos[0]]> 0) { /* real insertion */
                         GBS_strstruct *str = GBS_stropen(strlen(str2+10));
                         int pos = s2-str2-1;
-                        GBS_strncat(str,str2,pos);
-                        GBS_chrcat(str,toins);
-                        GBS_strcat(str,str2+pos);
+                        GBS_strncat(str, str2, pos);
+                        GBS_chrcat(str, toins);
+                        GBS_strcat(str, str2+pos);
                         delete str2;
                         str2 = GBS_strclose(str);
                         s2 = str2+pos+1;
@@ -116,20 +116,20 @@ char *GBS_diff_strings(char *str1,char * &str2, char *exclude , long ToUpper, lo
                         continue;
                     }
                     int side=1; /* 0 = left   1= right */
-                    if ( tab[(unsigned char)s1[0]]<0 ) side = 0;
-                    if ( ! side ) {
-                        while ( toinspos > str2 &&
-                                tab[(unsigned char)toinspos[-1]] < 0 ) toinspos--;
+                    if (tab[(unsigned char)s1[0]]<0) side = 0;
+                    if (! side) {
+                        while (toinspos > str2 &&
+                                tab[(unsigned char)toinspos[-1]] < 0) toinspos--;
                     }
                     toinspos[0] = toins;
                     *corrrected = 1;
-                    do { c1= *(s1++); } while (tab[c1] < 0); /* eat s1 */
+                    do { c1 = *(s1++); } while (tab[c1] < 0); /* eat s1 */
                     continue;
                 }
             }
-            if (count >=0){
-                sprintf(dest1,"%ti ",s1-str1-1);
-                sprintf(dest2,"%ti ",s2-str2-1);
+            if (count >= 0) {
+                sprintf(dest1, "%ti ", s1-str1-1);
+                sprintf(dest2, "%ti ", s2-str2-1);
                 dest1 += strlen(dest1);
                 dest2 += strlen(dest2);
             }
@@ -138,18 +138,18 @@ char *GBS_diff_strings(char *str1,char * &str2, char *exclude , long ToUpper, lo
     } while (c1 && c2);
 
     if (c1 || c2) {
-        sprintf(dest1,"... %ti ",s1-str1-1);
-        sprintf(dest2,"... %ti ",s2-str2-1);
+        sprintf(dest1, "... %ti ", s1-str1-1);
+        sprintf(dest2, "... %ti ", s2-str2-1);
         dest1 += strlen(dest1);
         dest2 += strlen(dest2);
     }
-    if (count<0){
-        sprintf(dest1,"and %i more",1-count);
-        sprintf(dest2,"and %i more",1-count);
+    if (count<0) {
+        sprintf(dest1, "and %i more", 1-count);
+        sprintf(dest2, "and %i more", 1-count);
         dest1 += strlen(dest1);
         dest2 += strlen(dest2);
     }
-    if (strlen(buffer1) ) {
+    if (strlen(buffer1)) {
         *res1 = strdup(buffer1);
         *res2 = strdup(buffer2);
     }
@@ -163,7 +163,7 @@ char *GBS_diff_strings(char *str1,char * &str2, char *exclude , long ToUpper, lo
 #undef IS_QUERIED
 #define IS_QUERIED(gb_species) (1 & GB_read_usr_private(gb_species))
 
-void mg_check_field_cb(AW_window *aww){
+void mg_check_field_cb(AW_window *aww) {
     AW_root  *root    = aww->get_root();
     GB_ERROR  error   = 0;
     char     *source  = root->awar(AWAR_SOURCE_FIELD)->read_string();
@@ -208,7 +208,7 @@ void mg_check_field_cb(AW_window *aww){
                  gb_species2 && !error;
                  gb_species2 = GBT_next_species(gb_species2))
             {
-                GBDATA *gbd    = GB_search(gb_species2,dest,GB_FIND);
+                GBDATA *gbd    = GB_search(gb_species2, dest, GB_FIND);
                 if (gbd) error = GB_delete(gbd);
             }
 
@@ -217,14 +217,14 @@ void mg_check_field_cb(AW_window *aww){
                  gb_species1 = GBT_next_species(gb_species1))
             {
                 {
-                    GBDATA *gbd    = GB_search(gb_species1,dest,GB_FIND);
+                    GBDATA *gbd    = GB_search(gb_species1, dest, GB_FIND);
                     if (gbd) error = GB_delete(gbd);
                 }
 
                 if (!error) {
                     if (IS_QUERIED(gb_species1)) {
                         species_count++;
-                        if ((species_count & 0xf) == 0) aw_status(species_count/ (double)sum_species);
+                        if ((species_count & 0xf) == 0) aw_status(species_count / (double)sum_species);
 
                         const char *name1 = GBT_read_name(gb_species1);
                         gb_species2       = GB_find_string(gb_species_data2, "name", name1, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
@@ -234,8 +234,8 @@ void mg_check_field_cb(AW_window *aww){
                         else {
                             gb_species2 = GB_get_father(gb_species2);
 
-                            GBDATA *gb_field1 = GB_search(gb_species1,source,GB_FIND);
-                            GBDATA *gb_field2 = GB_search(gb_species2,source,GB_FIND);
+                            GBDATA *gb_field1 = GB_search(gb_species1, source, GB_FIND);
+                            GBDATA *gb_field2 = GB_search(gb_species2, source, GB_FIND);
                             char   *s1        = gb_field1 ? GB_read_as_tagged_string(gb_field1, tag) : 0;
                             char   *s2        = gb_field2 ? GB_read_as_tagged_string(gb_field2, tag) : 0;
 
@@ -245,10 +245,10 @@ void mg_check_field_cb(AW_window *aww){
                                 
                                 if (s1 && s2) {
                                     long corrected = 0;
-                                    GBS_diff_strings(s1,s2,exclude,ToUpper,correct,&positions1,&positions2,&corrected);
+                                    GBS_diff_strings(s1, s2, exclude, ToUpper, correct, &positions1, &positions2, &corrected);
                                     if (corrected) {
-                                        error = GB_write_as_string(gb_field2,s2);
-                                        if (!error) GB_write_flag(gb_species2,1);
+                                        error = GB_write_as_string(gb_field2, s2);
+                                        if (!error) GB_write_flag(gb_species2, 1);
                                     }
                                 }
                                 else {
@@ -286,26 +286,26 @@ void mg_check_field_cb(AW_window *aww){
 }
 
 
-AW_window *create_mg_check_fields(AW_root *aw_root){
+AW_window *create_mg_check_fields(AW_root *aw_root) {
     AW_window_simple *aws = 0;
 
     aw_root->awar_string(AWAR_SOURCE_FIELD);
-    aw_root->awar_string(AWAR_DEST_FIELD,"tmp",AW_ROOT_DEFAULT);
-    aw_root->awar_string(AWAR_EXCLUDE,".-",AW_ROOT_DEFAULT);
-    aw_root->awar_string(AWAR_ETAG,"");
+    aw_root->awar_string(AWAR_DEST_FIELD, "tmp", AW_ROOT_DEFAULT);
+    aw_root->awar_string(AWAR_EXCLUDE, ".-", AW_ROOT_DEFAULT);
+    aw_root->awar_string(AWAR_ETAG, "");
     aw_root->awar_int(AWAR_TOUPPER);
     aw_root->awar_int(AWAR_CORRECT);
 
     aws = new AW_window_simple;
-    aws->init( aw_root, "MERGE_COMPARE_FIELDS","COMPARE DATABASE FIELDS");
+    aws->init(aw_root, "MERGE_COMPARE_FIELDS", "COMPARE DATABASE FIELDS");
     aws->load_xfig("merge/seqcheck.fig");
 
-    aws->callback( (AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP,(AW_CL)"checkfield.hlp");
-    aws->create_button("HELP","HELP","H");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"checkfield.hlp");
+    aws->create_button("HELP", "HELP", "H");
 
 
     aws->at("exclude");
@@ -318,13 +318,13 @@ AW_window *create_mg_check_fields(AW_root *aw_root){
     aws->create_toggle(AWAR_CORRECT);
 
     aws->at("tag");
-    aws->create_input_field(AWAR_ETAG,6);
+    aws->create_input_field(AWAR_ETAG, 6);
 
-    awt_create_selection_list_on_scandb(GLOBAL_gb_dest,aws,AWAR_SOURCE_FIELD,
-                                        AWT_STRING_FILTER, "source",0, &AWT_species_selector, 20, 10);
+    awt_create_selection_list_on_scandb(GLOBAL_gb_dest, aws, AWAR_SOURCE_FIELD,
+                                        AWT_STRING_FILTER, "source", 0, &AWT_species_selector, 20, 10);
 
-    awt_create_selection_list_on_scandb(GLOBAL_gb_dest,aws,AWAR_DEST_FIELD,
-                                        (1<<GB_STRING)|(1<<GB_INT), "dest",0, &AWT_species_selector, 20, 10);
+    awt_create_selection_list_on_scandb(GLOBAL_gb_dest, aws, AWAR_DEST_FIELD,
+                                        (1<<GB_STRING)|(1<<GB_INT), "dest", 0, &AWT_species_selector, 20, 10);
 
 #if defined(DEVEL_RALF)
 #warning check code above. Maybe one call has to get GLOBAL_gb_merge ? 
@@ -334,7 +334,7 @@ AW_window *create_mg_check_fields(AW_root *aw_root){
     aws->at("go");
     aws->highlight();
     aws->callback(mg_check_field_cb);
-    aws->create_button("GO","GO");
+    aws->create_button("GO", "GO");
 
     return (AW_window *)aws;
 }

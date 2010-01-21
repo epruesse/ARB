@@ -11,15 +11,15 @@
 #define MAXLETTER ('Z'-'A'+1)
 #define RESULTNAME "COUNTED_CHARS"
 
-int main(int argc, char **argv){
+int main(int argc, char **argv) {
     const char *db_name = ":";      // default name -> link to server
     if (argc >1) db_name = argv[1];     // get the name of the database
     int is_amino = 0;
 
     printf("Counting the number of different chars of all marked sequences\n");
 
-    GBDATA *gb_main = GB_open(":","rw");    // open database
-    if (!gb_main){
+    GBDATA *gb_main = GB_open(":", "rw");    // open database
+    if (!gb_main) {
         GB_print_error();
         return -1;
     }
@@ -27,11 +27,11 @@ int main(int argc, char **argv){
     GB_begin_transaction(gb_main); // open transaction
 
     char *alignment_name = GBT_get_default_alignment(gb_main);  // info about sequences
-    int alignment_len = GBT_get_alignment_len(gb_main,alignment_name);
-    is_amino = GBT_is_alignment_protein(gb_main,alignment_name);
+    int alignment_len = GBT_get_alignment_len(gb_main, alignment_name);
+    is_amino = GBT_is_alignment_protein(gb_main, alignment_name);
     char filter[256];
-    if (is_amino){
-        memset(filter,1,256);
+    if (is_amino) {
+        memset(filter, 1, 256);
         filter[(unsigned char)'B'] = 0;
         filter[(unsigned char)'J'] = 0;
         filter[(unsigned char)'O'] = 0;
@@ -39,7 +39,7 @@ int main(int argc, char **argv){
         filter[(unsigned char)'Z'] = 0;
     }
     else {
-        memset(filter,0,256);
+        memset(filter, 0, 256);
         filter[(unsigned char)'A'] = 1;
         filter[(unsigned char)'C'] = 1;
         filter[(unsigned char)'G'] = 1;
@@ -50,8 +50,8 @@ int main(int argc, char **argv){
     // malloc and clear arrays for counting characters (only letters)
     int *counters[MAXLETTER];
     int i;
-    for (i=0;i<MAXLETTER;i++){
-        counters[i] = (int *)calloc(sizeof(int),alignment_len);
+    for (i=0; i<MAXLETTER; i++) {
+        counters[i] = (int *)calloc(sizeof(int), alignment_len);
     }
 
 
@@ -61,23 +61,23 @@ int main(int argc, char **argv){
 
     for (GBDATA *gb_species = GBT_first_marked_species(gb_main);
          gb_species;
-         gb_species = GBT_next_marked_species(gb_species)){
-        if ((slider++)%10 == 0) printf("%i:%i\n",slider,all_marked);
+         gb_species = GBT_next_marked_species(gb_species)) {
+        if ((slider++)%10 == 0) printf("%i:%i\n", slider, all_marked);
 
         GBDATA *gb_ali = GB_entry(gb_species, alignment_name); // search the sequence database entry ( ali_xxx/data )
         if (!gb_ali) continue;
         GBDATA *gb_data = GB_entry(gb_ali, "data");
-        if(!gb_data) continue;
+        if (!gb_data) continue;
 
         const char *seq = GB_read_char_pntr(gb_data);
         if (!seq) continue;
 
         unsigned char c;
-        for ( i=0; (i< alignment_len) && (c = *(seq)); i++, seq++){
+        for (i=0; (i< alignment_len) && (c = *(seq)); i++, seq++) {
             if (!isalpha(c)) continue;
             c = toupper(c);
-            if (filter[c]){
-                counters[ c - 'A' ][i] ++;
+            if (filter[c]) {
+                counters[c - 'A'][i] ++;
             }
         }
     }
@@ -85,14 +85,14 @@ int main(int argc, char **argv){
     char *result = (char *)calloc(sizeof(char), alignment_len + 1);
     for (i=0; i<alignment_len; i++) { 
         int sum = 0;
-        for (int l = 0; l < MAXLETTER; l++){
+        for (int l = 0; l < MAXLETTER; l++) {
             if (counters[l][i]>0) sum++;
         }
         result[i] = sum<10 ? '0'+sum : 'A'-10+sum;
     }
     // save result as SAI COUNTED_CHARS
     {
-        GBDATA *gb_sai = GBT_find_or_create_SAI(gb_main,RESULTNAME);
+        GBDATA *gb_sai = GBT_find_or_create_SAI(gb_main, RESULTNAME);
         if (!gb_sai) {
             GB_print_error();
             return -1;

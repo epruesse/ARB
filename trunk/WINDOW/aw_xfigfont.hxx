@@ -15,7 +15,7 @@ const int XFIG_FONT_ELEMS          = 256;
 const int XFIG_FONT_VISIBLE_HEIGHT = 6;
 
 struct AW_xfig_vectorfont {
-    short gridsizex,gridsizey;
+    short gridsizex, gridsizey;
     // address of the default symbol: NOTE: undefined characters point to this one, too!
     AW_xfig_line *default_symbol;
     AW_xfig_line **lines;

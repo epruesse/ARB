@@ -14,7 +14,7 @@
 /* \-----------/ */
 
 #define outOfMemory()   def_outOfMemory(__FILE__, __LINE__)
-#define assert(c)       do { static int assCnt; assCnt++; if (!(c)) def_assert(#c, __FILE__, __LINE__, assCnt); } while(0)
+#define assert(c)       do { static int assCnt; assCnt++; if (!(c)) def_assert(#c, __FILE__, __LINE__, assCnt); } while (0)
 
 /* /---------\ */
 /* |  Typen  | */

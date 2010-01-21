@@ -27,14 +27,14 @@ struct adfiltercbstruct;
  *********************   Various Database Selection Boxes    ***********
  ***************************************************************************/
 /***********************    Alignments  ************************/
-void awt_create_selection_list_on_ad(GBDATA *gb_main,AW_window *aws,const char *varname,const char *comm);
+void awt_create_selection_list_on_ad(GBDATA *gb_main, AW_window *aws, const char *varname, const char *comm);
 /* Create selection lists on alignments, if comm is set, then
    pars the alignment type, show only those that are parsed */
 
 
 /***********************    Trees       ************************/
 /* Selection list for trees */
-void awt_create_selection_list_on_trees(GBDATA *gb_main,AW_window *aws, const char *varname);
+void awt_create_selection_list_on_trees(GBDATA *gb_main, AW_window *aws, const char *varname);
 
 /*********************** Pt-Servers ******************************/
 /* Selection list for pt-servers */
@@ -44,17 +44,17 @@ void awt_refresh_all_pt_server_selection_lists();
 
 /***********************    Tables Fields       ************************/
 
-void awt_create_selection_list_on_tables(GBDATA *gb_main, AW_window *aws,const char *varname);
+void awt_create_selection_list_on_tables(GBDATA *gb_main, AW_window *aws, const char *varname);
 
-void awt_create_selection_list_on_table_fields(GBDATA *gb_main, AW_window *aws,const char *tablename, const char *varname);
+void awt_create_selection_list_on_table_fields(GBDATA *gb_main, AW_window *aws, const char *tablename, const char *varname);
 // if tablename == 0 take fields from species table !!!!
 
-AW_window *AWT_create_tables_admin_window(AW_root *aw_root,GBDATA *gb_main);
+AW_window *AWT_create_tables_admin_window(AW_root *aw_root, GBDATA *gb_main);
 
 /***********************    SAIS        ************************/
-void *awt_create_selection_list_on_extendeds(GBDATA *gb_main,AW_window *aws, const char *varname,
+void *awt_create_selection_list_on_extendeds(GBDATA *gb_main, AW_window *aws, const char *varname,
                                              char *(*filter_poc)(GBDATA *gb_ext, AW_CL) = 0, AW_CL filter_cd = 0,
-                                             bool add_sel_species= false);
+                                             bool add_sel_species = false);
 /* Selection list for all extendeds !!!!!!!!! */
 /* if filter_proc is set then show only those items on which
    filter_proc returns a strdup(string) */
@@ -62,11 +62,11 @@ void *awt_create_selection_list_on_extendeds(GBDATA *gb_main,AW_window *aws, con
 void awt_create_selection_list_on_extendeds_update(GBDATA *dummy, void *cbsid);
 /* update the selection box defined by awt_create_selection_list_on_extendeds
    usefull only when filterproc is defined (changes to the SAI entries automatically
-   calls awt_create_selection_list_on_extendeds_update*/
+   calls awt_create_selection_list_on_extendeds_update */
 
 /***********************    CONFIGURATIONS      ************************/
 
-void  awt_create_selection_list_on_configurations(GBDATA *gb_main,AW_window *aws, const char *varname);
+void  awt_create_selection_list_on_configurations(GBDATA *gb_main, AW_window *aws, const char *varname);
 char *awt_create_string_on_configurations(GBDATA *gb_main);
 
 /***********************    FILES IN GENERAL        ************************/

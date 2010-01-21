@@ -41,7 +41,7 @@ static AliView *pars_generate_aliview(WeightedFilter *pars_weighted_filter) {
     char *ali_name;
     {
         GB_transaction ta(gb_main);
-        ali_name = GBT_read_string(gb_main,AWAR_ALIGNMENT);
+        ali_name = GBT_read_string(gb_main, AWAR_ALIGNMENT);
     }
     AliView *aliview = pars_weighted_filter->create_aliview(ali_name);
     if (!aliview) aw_popup_exit(GB_await_error());
@@ -67,7 +67,7 @@ void PARS_tree_init(AWT_graphic_tree *agt) {
     
     const char *use     = ap_main->get_aliname();
     long        ali_len = GBT_get_alignment_len(GLOBAL_gb_main, use);
-    if (ali_len <=1) {
+    if (ali_len <= 1) {
         aw_popup_exit("No valid alignment selected! Try again");
     }
 
@@ -76,7 +76,7 @@ void PARS_tree_init(AWT_graphic_tree *agt) {
 
 static int ap_global_abort_flag;
 
-double funktion_quadratisch(double x,double *param_list,int param_anz) {
+double funktion_quadratisch(double x, double *param_list, int param_anz) {
     AP_FLOAT ergebnis;
     double wert = (double)x;
     if (param_anz != 3) {
@@ -96,19 +96,19 @@ void PARS_kernighan_cb(AP_tree *tree) {
     AP_FLOAT pars_start, pars_prev;
     pars_prev  = pars_start = GLOBAL_PARS->get_root_node()->costs();
 
-    int rek_deep_max = *GBT_read_int(GLOBAL_gb_main,"genetic/kh/maxdepth");
+    int rek_deep_max = *GBT_read_int(GLOBAL_gb_main, "genetic/kh/maxdepth");
 
-    AP_KL_FLAG funktype = (AP_KL_FLAG)*GBT_read_int(GLOBAL_gb_main,"genetic/kh/function_type");
+    AP_KL_FLAG funktype = (AP_KL_FLAG)*GBT_read_int(GLOBAL_gb_main, "genetic/kh/function_type");
 
     int param_anz;
     double param_list[3];
-    double f_startx,f_maxy,f_maxx,f_max_deep;
+    double f_startx, f_maxy, f_maxx, f_max_deep;
     f_max_deep = (double)rek_deep_max;                   //             x2
-    f_startx = (double)*GBT_read_int(GLOBAL_gb_main,"genetic/kh/dynamic/start");
-    f_maxy = (double)*GBT_read_int(GLOBAL_gb_main,"genetic/kh/dynamic/maxy");
-    f_maxx = (double)*GBT_read_int(GLOBAL_gb_main,"genetic/kh/dynamic/maxx");
+    f_startx = (double)*GBT_read_int(GLOBAL_gb_main, "genetic/kh/dynamic/start");
+    f_maxy = (double)*GBT_read_int(GLOBAL_gb_main, "genetic/kh/dynamic/maxy");
+    f_maxx = (double)*GBT_read_int(GLOBAL_gb_main, "genetic/kh/dynamic/maxx");
 
-    double (*funktion)(double wert,double *param_list,int param_anz);
+    double (*funktion)(double wert, double *param_list, int param_anz);
     switch (funktype) {
         default:
         case AP_QUADRAT_START:
@@ -121,7 +121,7 @@ void PARS_kernighan_cb(AP_tree *tree) {
         case AP_QUADRAT_MAX:    // parameter liste fuer quadratische gleichung (y =ax^2 +bx +c)
             funktion = funktion_quadratisch;
             param_anz = 3;
-            param_list[0] =  - f_maxy / (( f_max_deep -  f_maxx) * ( f_max_deep - f_maxx));
+            param_list[0] =  - f_maxy / ((f_max_deep -  f_maxx) * (f_max_deep - f_maxx));
             param_list[1] =  -2.0 * param_list[0] * f_maxx;
             param_list[2] =  f_maxy  + param_list[0] * f_maxx * f_maxx;
             break;
@@ -129,64 +129,64 @@ void PARS_kernighan_cb(AP_tree *tree) {
 
 
     AP_KL_FLAG searchflag=(AP_KL_FLAG)0;
-    if (*GBT_read_int(GLOBAL_gb_main,"genetic/kh/dynamic/enable")){
+    if (*GBT_read_int(GLOBAL_gb_main, "genetic/kh/dynamic/enable")) {
         searchflag = AP_DYNAMIK;
     }
-    if (*GBT_read_int(GLOBAL_gb_main,"genetic/kh/static/enable")){
+    if (*GBT_read_int(GLOBAL_gb_main, "genetic/kh/static/enable")) {
         searchflag = (AP_KL_FLAG)(searchflag|AP_STATIC);
     }
 
     int rek_breite[8];
-    rek_breite[0] = *GBT_read_int(GLOBAL_gb_main,"genetic/kh/static/depth0");
-    rek_breite[1] = *GBT_read_int(GLOBAL_gb_main,"genetic/kh/static/depth1");
-    rek_breite[2] = *GBT_read_int(GLOBAL_gb_main,"genetic/kh/static/depth2");
-    rek_breite[3] = *GBT_read_int(GLOBAL_gb_main,"genetic/kh/static/depth3");
-    rek_breite[4] = *GBT_read_int(GLOBAL_gb_main,"genetic/kh/static/depth4");
+    rek_breite[0] = *GBT_read_int(GLOBAL_gb_main, "genetic/kh/static/depth0");
+    rek_breite[1] = *GBT_read_int(GLOBAL_gb_main, "genetic/kh/static/depth1");
+    rek_breite[2] = *GBT_read_int(GLOBAL_gb_main, "genetic/kh/static/depth2");
+    rek_breite[3] = *GBT_read_int(GLOBAL_gb_main, "genetic/kh/static/depth3");
+    rek_breite[4] = *GBT_read_int(GLOBAL_gb_main, "genetic/kh/static/depth4");
     int rek_breite_anz = 5;
 
-    int anzahl = (int)(*GBT_read_float(GLOBAL_gb_main,"genetic/kh/nodes")*tree->arb_tree_leafsum2());
+    int anzahl = (int)(*GBT_read_float(GLOBAL_gb_main, "genetic/kh/nodes")*tree->arb_tree_leafsum2());
     AP_tree **list;
     list = tree->getRandomNodes(anzahl);
-    int i =0;
+    int i = 0;
 
 
     i = 0;
     aw_openstatus("KL Optimizer");
     {
         char buffer[100];
-        sprintf(buffer,"Old Parsimony: %f",pars_start);
+        sprintf(buffer, "Old Parsimony: %f", pars_start);
         aw_status(buffer);
     }
     int abort_flag = false;
 
     GB_pop_transaction(GLOBAL_gb_main);
 
-    for (i=0;i<anzahl && ! abort_flag; i++) {
+    for (i=0; i<anzahl && ! abort_flag; i++) {
         abort_flag |= aw_status(i/(double)anzahl);
         if (abort_flag) break;
 
         AP_tree_nlen *tree_elem = (AP_tree_nlen *)list[i];
 
         if (tree_elem->gr.hidden ||
-            (tree_elem->father && tree_elem->get_father()->gr.hidden)){
+            (tree_elem->father && tree_elem->get_father()->gr.hidden)) {
             continue;   // within a folded group
         }
         {
             bool better_tree_found = false;
             ap_main->push();
-            display_clear(funktion,param_list,param_anz,(int)pars_start,(int)rek_deep_max);
+            display_clear(funktion, param_list, param_anz, (int)pars_start, (int)rek_deep_max);
 
             tree_elem->kernighan_rek(0,
-                                     rek_breite,rek_breite_anz,rek_deep_max,
-                                     funktion, param_list,param_anz,
+                                     rek_breite, rek_breite_anz, rek_deep_max,
+                                     funktion, param_list, param_anz,
                                      pars_start,  pars_start, pars_prev,
-                                     searchflag,&better_tree_found);
+                                     searchflag, &better_tree_found);
 
             if (better_tree_found) {
                 ap_main->clear();
                 pars_start =  GLOBAL_PARS->get_root_node()->costs();
                 char buffer[100];
-                sprintf(buffer,"New Parsimony: %f",pars_start);
+                sprintf(buffer, "New Parsimony: %f", pars_start);
                 abort_flag |= aw_status(buffer);
             }
             else {
@@ -205,7 +205,7 @@ void PARS_optimizer_cb(AP_tree *tree) {
     AP_tree          *oldrootleft  = agt->get_root_node()->get_leftson();
     AP_tree          *oldrootright = agt->get_root_node()->get_rightson();
 
-    for (ap_global_abort_flag = 0;!ap_global_abort_flag;){
+    for (ap_global_abort_flag = 0; !ap_global_abort_flag;) {
         AP_FLOAT old_pars = DOWNCAST(AP_tree_nlen*, agt->get_root_node())->costs();
 
         AP_FLOAT this_pars = ((AP_tree_nlen *)tree)->nn_interchange_rek(true, ap_global_abort_flag, -1, AP_BL_NNI_ONLY, false);
@@ -227,7 +227,7 @@ void PARS_optimizer_cb(AP_tree *tree) {
 }
 
 AWT_graphic_parsimony::AWT_graphic_parsimony(AW_root *root, GBDATA *gb_maini)
-    : AWT_graphic_tree(root,gb_maini)
+    : AWT_graphic_tree(root, gb_maini)
 {}
 
 AWT_graphic_tree *PARS_generate_tree(AW_root *root, WeightedFilter *pars_weighted_filter) {
@@ -257,7 +257,7 @@ AWT_graphic_parsimony::init_devices(AW_window *aww, AW_device *device, AWT_canva
     AW_init_color_group_defaults("arb_pars");
 
     AW_gc_manager preset_window =
-        AW_manage_GC(aww,device,AWT_GC_CURSOR, AWT_GC_MAX, /*AWT_GC_CURSOR+7,*/ AW_GCM_DATA_AREA,
+        AW_manage_GC(aww, device, AWT_GC_CURSOR, AWT_GC_MAX, /* AWT_GC_CURSOR+7, */ AW_GCM_DATA_AREA,
                      (AW_CB)AWT_resize_cb, (AW_CL)ntw, cd2,
                      true,      // uses color groups
                      "#AAAA55",
@@ -294,7 +294,7 @@ void AWT_graphic_parsimony::show(AW_device *device)
     GLOBAL_PARS->awr->awar(AWAR_PARSIMONY)->write_int(parsval);
     long best = GLOBAL_PARS->awr->awar(AWAR_BEST_PARSIMONY)->read_int();
     if (parsval < best || 0==best) {
-        GLOBAL_PARS->awr->awar(AWAR_BEST_PARSIMONY)->write_int( parsval);
+        GLOBAL_PARS->awr->awar(AWAR_BEST_PARSIMONY)->write_int(parsval);
     }
     this->AWT_graphic_tree::show(device);
 }
@@ -313,20 +313,20 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
     bool recalc_branch_lengths = false;
     bool beautify_tree = false;
 
-    switch(cmd){
+    switch (cmd) {
         case AWT_MODE_MOVE:                             // two point commands !!!!!
-            if(button==AWT_M_MIDDLE){
+            if (button==AWT_M_MIDDLE) {
                 break;
             }
-            switch(type){
+            switch (type) {
                 case AW_Mouse_Press:
-                    if( !(cl && cl->exists) ){
+                    if (!(cl && cl->exists)) {
                         break;
                     }
 
                     /*** check security level @@@ ***/
                     at = (AP_tree *)cl->client_data1;
-                    if(at && at->father){
+                    if (at && at->father) {
                         bl_drag_flag = 1;
                         this->rot_at = at;
                         this->rot_cl = *cl;
@@ -335,7 +335,7 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
                     break;
 
                 case AW_Mouse_Drag:
-                    if( bl_drag_flag && this->rot_at && this->rot_at->father){
+                    if (bl_drag_flag && this->rot_at && this->rot_at->father) {
                         this->rot_show_line(device);
                         if (cl->exists) {
                             this->rot_cl = *cl;
@@ -347,9 +347,9 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
                     }
                     break;
                 case AW_Mouse_Release:
-                    if( bl_drag_flag && this->rot_at && this->rot_at->father){
+                    if (bl_drag_flag && this->rot_at && this->rot_at->father) {
                         this->rot_show_line(device);
-                        AP_tree *dest= 0;
+                        AP_tree *dest = 0;
                         if (cl->exists) dest = (AP_tree *)cl->client_data1;
                         AP_tree *source = rot_at;
                         if (!(source && dest)) {
@@ -362,11 +362,11 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
                         }
                         const char *error = 0;
 
-                        switch(button){
+                        switch (button) {
                             case AWT_M_LEFT:
                                 error = source->cantMoveTo(dest);
                                 if (!error) {
-                                    source->moveTo(dest,cl->length);
+                                    source->moveTo(dest, cl->length);
                                     recalc_branch_lengths = true;
                                 }
                                 break;
@@ -390,15 +390,15 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
 
 #ifdef NNI_MODES
         case AWT_MODE_NNI:
-            if(type==AW_Mouse_Press){
+            if (type==AW_Mouse_Press) {
                 GB_pop_transaction(gb_main);
-                switch(button){
+                switch (button) {
                     case AWT_M_LEFT: {
                         if (cl->exists) {
                             at                   = (AP_tree *)cl->client_data1;
                             ap_global_abort_flag = false;
                             AP_tree_nlen *atn = DOWNCAST(AP_tree_nlen*, at);
-                            atn->nn_interchange_rek(true,ap_global_abort_flag,-1, AP_BL_NNI_ONLY, false);
+                            atn->nn_interchange_rek(true, ap_global_abort_flag, -1, AP_BL_NNI_ONLY, false);
                             exports.refresh = 1;
                             exports.save    = 1;
                             ASSERT_VALID_TREE(get_root_node());
@@ -411,7 +411,7 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
                         ap_global_abort_flag           = false;
                         AP_tree_nlen *atn              = DOWNCAST(AP_tree_nlen*, get_root_node());
 
-                        atn->nn_interchange_rek(true,ap_global_abort_flag,-1, AP_BL_NNI_ONLY, false);
+                        atn->nn_interchange_rek(true, ap_global_abort_flag, -1, AP_BL_NNI_ONLY, false);
                         printf("Combines: %li\n", AP_sequence::combine_count()-prevCombineCount);
 
                         exports.refresh       = 1;
@@ -425,9 +425,9 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
             }
             break;
         case AWT_MODE_KERNINGHAN:
-            if(type==AW_Mouse_Press){
+            if (type==AW_Mouse_Press) {
                 GB_pop_transaction(gb_main);
-                switch(button){
+                switch (button) {
                     case AWT_M_LEFT:
                         if (!cl->exists) break;
                         at = (AP_tree *)cl->client_data1;
@@ -449,9 +449,9 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
             }
             break;
         case AWT_MODE_OPTIMIZE:
-            if(type==AW_Mouse_Press){
+            if (type==AW_Mouse_Press) {
                 GB_pop_transaction(gb_main);
-                switch(button){
+                switch (button) {
                     case AWT_M_LEFT:
                         if (!cl->exists) break;
                         at = (AP_tree *)cl->client_data1;
@@ -475,13 +475,13 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
 #endif // NNI_MODES
 
         default:
-            AWT_graphic_tree::command(device,cmd,button, key_modifier, key_code, key_char, type, x, y, cl, ct);
+            AWT_graphic_tree::command(device, cmd, button, key_modifier, key_code, key_char, type, x, y, cl, ct);
             break;
     }
 
     if (recalc_branch_lengths) {
         int abort_flag = false;
-        rootEdge()->nni_rek(false,abort_flag,-1, false, AP_BL_BL_ONLY);
+        rootEdge()->nni_rek(false, abort_flag, -1, false, AP_BL_BL_ONLY);
 
         beautify_tree = true; // beautify after recalc_branch_lengths
     }

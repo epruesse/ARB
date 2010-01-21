@@ -4,11 +4,11 @@
 #define NOT_CREATED 0
 
 void ShowVendorInformation();
-void ReshapeOpenGLWindow( GLint width, GLint height );
-void InitializeOpenGLEngine(GLint width, GLint height );
+void ReshapeOpenGLWindow(GLint width, GLint height);
+void InitializeOpenGLEngine(GLint width, GLint height);
 void DrawStructure();
 void RenderOpenGLScene(Widget w);
-void InitializeOpenGLWindow( Widget w );
+void InitializeOpenGLWindow(Widget w);
 void ComputeRotationXY(int x, int y);
 void CalculateRotationMatrix();
 void MapDisplayParameters(AW_root *aw_root);
@@ -18,4 +18,4 @@ void CursorPositionChanged_CB(AW_root *awr);
 void DisplayHelixNrsChanged_CB(AW_root *awr);
 void MapSaiToEcoliTemplateChanged_CB(AW_root *awr);
 void MapSearchStringsToEcoliTemplateChanged_CB(AW_root *awr);
-void WinToScreenCoordinates(int x, int y, GLdouble *screenPos) ;
+void WinToScreenCoordinates(int x, int y, GLdouble *screenPos);

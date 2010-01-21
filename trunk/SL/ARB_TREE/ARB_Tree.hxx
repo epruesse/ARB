@@ -103,8 +103,8 @@ struct ARB_tree_info {
     ARB_tree_info();
 
     size_t nodes()    const { return innerNodes+leafs; }
-    size_t linked()   const { return leafs-unlinked;   }
-    size_t unmarked() const { return linked()-marked;  }
+    size_t linked()   const { return leafs-unlinked; }
+    size_t unmarked() const { return linked()-marked; }
 };
 
 

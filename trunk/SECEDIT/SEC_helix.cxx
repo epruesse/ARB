@@ -154,7 +154,7 @@ char *old_decode_xstring_rel_helix(GB_CSTR rel_helix, size_t xlength, const BI_h
             }
             else { // new helix nr
                 if (start_helix_nr) { // not first helix -> write last to xstring
-                insert_helix:
+                insert_helix :
                     helix_nr = helix->helixNr(pos); // re-init (needed in case of goto insert_helix)
                     char flag = rel_helix[rel_pos++];
 

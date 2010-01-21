@@ -12,13 +12,13 @@
 
 using namespace std;
 
-Texture2D::Texture2D(void){
+Texture2D::Texture2D(void) {
 }
 
-Texture2D::~Texture2D(void){
+Texture2D::~Texture2D(void) {
 }
 
-static char* GetImageFile(int ImageId){
+static char* GetImageFile(int ImageId) {
     const char *imageName = 0;
 
     switch (ImageId) {
@@ -68,14 +68,14 @@ void Texture2D::LoadGLTextures(void) {
         }
 
         if (!RNA3D->bPointSpritesSupported) {
-            glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_DECAL);
+            glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
         }
         else {
-            glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+            glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
         }
 
 #ifdef DEBUG
-        cout<<ImageFile<<" : Size = "<<info.Width<<" x "<<info.Height <<", Depth = "
+        cout<<ImageFile<<" : Size = "<<info.Width<<" x "<<info.Height << ", Depth = "
             <<info.Depth<<", Alpha = "<<info.Alpha<<endl;
 #endif
 

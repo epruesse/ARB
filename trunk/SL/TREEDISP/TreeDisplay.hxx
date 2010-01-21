@@ -35,7 +35,7 @@
 
 #define AWAR_DTREE_REFRESH       AWAR_TREE_REFRESH // touch this awar to refresh the tree display
 
-void awt_create_dtree_awars(AW_root *aw_root,AW_default def);
+void awt_create_dtree_awars(AW_root *aw_root, AW_default def);
 
 #define NT_BOX_WIDTH       3.5  /* pixel/2 ! */
 #define NT_ROOT_WIDTH      4.5  /* pixel/2 ! */
@@ -110,12 +110,12 @@ class AWT_graphic_tree : public AWT_graphic {
 
     AW_device *disp_device; // device for recursive functions
 
-    AW_bitset line_filter,vert_line_filter, text_filter,mark_filter;
+    AW_bitset line_filter, vert_line_filter, text_filter, mark_filter;
     AW_bitset ruler_filter, root_filter;
     int       treemode;
     bool      nds_show_all;
 
-    void scale_text_koordinaten(AW_device *device, int gc, double& x,double& y,double orientation,int flag );
+    void scale_text_koordinaten(AW_device *device, int gc, double& x, double& y, double orientation, int flag);
 
     // functions to compute displayinformation
 
@@ -131,14 +131,14 @@ class AWT_graphic_tree : public AWT_graphic {
                           int      linewidth);
 
     void show_nds_list(GBDATA * gb_main, bool use_nds);
-    void show_irs_tree(AP_tree *at,AW_device *device, int height);
+    void show_irs_tree(AP_tree *at, AW_device *device, int height);
 
     void NT_scalebox(int gc, double x, double y, double width);
     void NT_emptybox(int gc, double x, double y, double width);
     void NT_rotbox(int gc, double x, double y, double width);
     
     const char *show_ruler(AW_device *device, int gc);
-    void        rot_show_triangle( AW_device *device);
+    void        rot_show_triangle(AW_device *device);
 
 protected:
 
@@ -146,7 +146,7 @@ protected:
     AW_clicked_line  rot_cl;
     AP_tree         *rot_at;
 
-    void rot_show_line( AW_device *device );
+    void rot_show_line(AW_device *device);
 
 public:
 
@@ -168,7 +168,7 @@ public:
     AP_tree *get_root_node() { return tree_static ? tree_static->get_root_node() : NULL; }
 
     void init(const AP_tree& tree_prototype, AliView *aliview, AP_sequence *seq_prototype, bool link_to_database_, bool insert_delete_cbs);
-    virtual AW_gc_manager init_devices(AW_window *,AW_device *,AWT_canvas *ntw,AW_CL);
+    virtual AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *ntw, AW_CL);
 
     virtual void show(AW_device *device);
 
@@ -195,12 +195,12 @@ public:
 
     int      group_tree(struct AP_tree *at, int mode, int color_group);
     void     group_rest_tree(AP_tree *at, int mode, int color_group);
-    int      resort_tree(int mode, struct AP_tree *at = 0 );
+    int      resort_tree(int mode, struct AP_tree *at = 0);
     GB_ERROR create_group(AP_tree * at) __ATTR__USERESULT;
     void     toggle_group(AP_tree * at);
     void     jump(AP_tree *at, const char *name);
     AP_tree *search(AP_tree *root, const char *name);
-    GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL , AW_CL ) __ATTR__USERESULT;
+    GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL,  AW_CL) __ATTR__USERESULT;
     GB_ERROR save(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) __ATTR__USERESULT;
     int      check_update(GBDATA *gb_main);         // reload tree if needed
     void     update(GBDATA *gb_main);

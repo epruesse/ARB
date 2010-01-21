@@ -44,15 +44,15 @@ typedef enum {
 
 class AWT_graphic_exports {
 public:
-    unsigned int zoom_reset:1;
-    unsigned int resize:1;
-    unsigned int refresh:1;
-    unsigned int save:1;
-    unsigned int structure_change:1; // maybe useless
-    unsigned int dont_fit_x:1;
-    unsigned int dont_fit_y:1;
-    unsigned int dont_fit_larger:1; // if xsize>ysize -> dont_fit_x (otherwise dont_fit_y)
-    unsigned int dont_scroll:1;
+    unsigned int zoom_reset : 1;
+    unsigned int resize : 1;
+    unsigned int refresh : 1;
+    unsigned int save : 1;
+    unsigned int structure_change : 1; // maybe useless
+    unsigned int dont_fit_x : 1;
+    unsigned int dont_fit_y : 1;
+    unsigned int dont_fit_larger : 1; // if xsize>ysize -> dont_fit_x (otherwise dont_fit_y)
+    unsigned int dont_scroll : 1;
 
     void init(void); // like clear, but resets fit/scroll state
     void clear(void);
@@ -118,11 +118,11 @@ public:
 };
 
 
-#define EPS               0.0001 /*div zero check*/
+#define EPS               0.0001 /* div zero check */
 #define AWT_F_ALL         ((AW_active)-1)
 #define CLIP_OVERLAP      15
-#define AWT_CATCH_LINE    50    /*pixel*/
-#define AWT_CATCH_TEXT    5     /*pixel*/
+#define AWT_CATCH_LINE    50    /* pixel */
+#define AWT_CATCH_TEXT    5     /* pixel */
 #define AWT_ZOOM_OUT_STEP 40    /* (pixel) rand um screen */
 #define AWT_MIN_WIDTH     100   /* Minimum center screen (= screen-offset) */
 enum {
@@ -194,7 +194,7 @@ public:
     }
 };
 
-void AWT_expose_cb(AW_window *dummy,AWT_canvas *ntw, AW_CL cl2);
+void AWT_expose_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL cl2);
 void AWT_resize_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL cl2);
 
 #define AWAR_PRINT_TREE                "NT/print/"

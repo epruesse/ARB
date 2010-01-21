@@ -176,7 +176,7 @@ private:
     }
 
 public:
-    Reader(istream& in_) : in(in_) , readAgain(true) , eof(false), lineNo(0) { getline(); }
+    Reader(istream& in_) : in(in_),  readAgain(true),  eof(false), lineNo(0) { getline(); }
     virtual ~Reader() {}
 
     const char *getNext() {
@@ -413,7 +413,7 @@ inline string cutoff_hlp_extension(const string& s) {
     
     throw string("Expected extension .hlp, .ps or .pdf");
 }
-inline void check_duplicates(const string& link, const char */*where*/, const Links& existing, bool add_warnings) {
+inline void check_duplicates(const string& link, const char * /* where */, const Links& existing, bool add_warnings) {
     for (Links::const_iterator ex = existing.begin(); ex != existing.end(); ++ex) {
         if (ex->Target() == link) {
             if (add_warnings) add_warning(strf("First Link to '%s' was found here.", ex->Target().c_str()), ex->SourceLineno());
@@ -934,7 +934,7 @@ ParagraphTree* ParagraphTree::format_enums() {
             ParagraphTree *lookin = enum_this;
             int            lookfor;
 
-            for ( lookfor = 2; ; ++lookfor) {
+            for (lookfor = 2; ; ++lookfor) {
                 ParagraphTree *next_enum = lookin->extractEmbeddedEnum(lookfor);
                 if (!next_enum) break;
 
@@ -954,7 +954,7 @@ ParagraphTree* ParagraphTree::format_enums() {
 
 ParagraphTree* ParagraphTree::format_indentations() {
     if (brother) {
-        if (is_enumerated)  {
+        if (is_enumerated) {
             if (brother) brother = brother->format_indentations();
             if (son) son = son->format_indentations();
         }
@@ -963,7 +963,7 @@ ParagraphTree* ParagraphTree::format_indentations() {
             if (same_indent) {
                 if (same_indent == brother) {
                     brother     = brother->format_indentations();
-                    if(son) son = son->format_indentations();
+                    if (son) son = son->format_indentations();
                 }
                 else {
                     ParagraphTree *children = brother->removeTill(same_indent);
@@ -1133,7 +1133,7 @@ void ParagraphTree::xml_write(bool ignore_enumerated, bool write_as_entry) {
                 textblock.add_attribute("reflow", reflow ? "1" : "0");
                 {
                     string usedText;
-                    if (reflow)  {
+                    if (reflow) {
                         usedText = correctIndentation(text, (textblock.Indent()+1) * the_XML_Document->indentation_per_level);
                     }
                     else {

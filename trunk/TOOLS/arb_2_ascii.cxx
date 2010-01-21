@@ -47,12 +47,12 @@ int main(int argc, char **argv) {
             }
         }
 
-        GBDATA   *gb_main = GB_open(in,readflags);
+        GBDATA   *gb_main = GB_open(in, readflags);
         if (!gb_main) {
             error = GB_await_error();
         }
         else {
-            error = GB_save(gb_main,out, saveflags);
+            error = GB_save(gb_main, out, saveflags);
         }
 
         GB_close(gb_main);

@@ -81,7 +81,7 @@ struct ali_prealigner_mask {
     }
 
     void insert(ALI_MAP *in_map, float costs);
-    void delete_expensive(ALI_PREALIGNER_CONTEXT *context,ALI_PROFILE *profile);
+    void delete_expensive(ALI_PREALIGNER_CONTEXT *context, ALI_PROFILE *profile);
     void clear(void) {
         last_new = last_joins = 0;
         delete map;
@@ -107,9 +107,9 @@ struct ali_prealigner_approx_element {
         */
     }
     void print(void) {
-        printf("map = %p, ins_marker = %p\n",map,ins_marker);
+        printf("map = %p, ins_marker = %p\n", map, ins_marker);
         map->print();
-        printf("<%20s>\n",ins_marker);
+        printf("<%20s>\n", ins_marker);
     }
 };
 
@@ -177,7 +177,7 @@ struct ali_prealigner_approximation {
     void print(void) {
         ali_prealigner_approx_element *approx_elem;
         printf("\nList of Approximations\n");
-        printf("cost_of_binding = %f\n",cost_of_binding);
+        printf("cost_of_binding = %f\n", cost_of_binding);
         if (approx_list) {
             if (!approx_list->is_empty()) {
                 approx_elem = approx_list->first();

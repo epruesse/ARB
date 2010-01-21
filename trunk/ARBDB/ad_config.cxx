@@ -39,7 +39,7 @@ char **GBT_get_configuration_names_and_count(GBDATA *gb_main, int *countPtr) {
         }
 
         if (count) {
-            configNames       = (char **)GB_calloc(sizeof(char *),(size_t)count+1);
+            configNames       = (char **)GB_calloc(sizeof(char *), (size_t)count+1);
             count             = 0;
             int unnamed_count = 0;
 
@@ -76,18 +76,18 @@ char **GBT_get_configuration_names(GBDATA *gb_main) {
     return GBT_get_configuration_names_and_count(gb_main, &dummy);
 }
 
-GBDATA *GBT_find_configuration(GBDATA *gb_main,const char *name){
-    GBDATA *gb_configuration_data = GB_search(gb_main,AWAR_CONFIG_DATA,GB_DB);
+GBDATA *GBT_find_configuration(GBDATA *gb_main, const char *name) {
+    GBDATA *gb_configuration_data = GB_search(gb_main, AWAR_CONFIG_DATA, GB_DB);
     GBDATA *gb_configuration_name = GB_find_string(gb_configuration_data, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
     return gb_configuration_name ? GB_get_father(gb_configuration_name) : 0;
 }
 
-GBDATA *GBT_create_configuration(GBDATA *gb_main, const char *name){
-    GBDATA *gb_configuration = GBT_find_configuration(gb_main,name);
+GBDATA *GBT_create_configuration(GBDATA *gb_main, const char *name) {
+    GBDATA *gb_configuration = GBT_find_configuration(gb_main, name);
     if (!gb_configuration) {
-        GBDATA *gb_configuration_data = GB_search(gb_main,AWAR_CONFIG_DATA,GB_DB);
+        GBDATA *gb_configuration_data = GB_search(gb_main, AWAR_CONFIG_DATA, GB_DB);
 
-        gb_configuration = GB_create_container(gb_configuration_data,AWAR_CONFIG); // create new container
+        gb_configuration = GB_create_container(gb_configuration_data, AWAR_CONFIG); // create new container
         if (gb_configuration) {
             GB_ERROR error = GBT_write_string(gb_configuration, "name", name);
             if (error) GB_export_error(error);
@@ -160,7 +160,7 @@ GBT_config_parser *GBT_start_config_parser(const char *config_string) {
 }
 
 GBT_config_item *GBT_create_config_item() {
-    GBT_config_item *item = (GBT_config_item*)GB_calloc(1, sizeof(*item));;
+    GBT_config_item *item = (GBT_config_item*)GB_calloc(1, sizeof(*item)); ;
     item->type            = CI_UNKNOWN;
     item->name            = 0;
     return item;
@@ -191,7 +191,7 @@ GB_ERROR GBT_parse_next_config_item(GBT_config_parser *parser, GBT_config_item *
             case 'F': item->type = CI_FOLDED_GROUP; break;
             case 'G': item->type = CI_GROUP; break;
             case 'E': item->type = CI_CLOSE_GROUP; break;
-            default : item->type = CI_UNKNOWN; break;
+            default: item->type = CI_UNKNOWN; break;
         }
 
         switch (item->type) {
@@ -203,7 +203,7 @@ GB_ERROR GBT_parse_next_config_item(GBT_config_parser *parser, GBT_config_item *
                 error = GBS_global_string_copy("Unknown flag '%c'", label);
                 break;
 
-            default : {
+            default: {
                 const char *start_of_name = str+pos+2;
                 const char *behind_name   = strchr(start_of_name, '\1');
 
@@ -246,7 +246,7 @@ void GBT_append_to_config_string(const GBT_config_item *item, GBS_strstruct *str
             case CI_GROUP:        label = 'G'; break;
             case CI_FOLDED_GROUP: label = 'F'; break;
 
-            default : gb_assert(0); break;
+            default: gb_assert(0); break;
         }
         prefix[1] = label;
         GBS_strcat(strstruct, prefix);

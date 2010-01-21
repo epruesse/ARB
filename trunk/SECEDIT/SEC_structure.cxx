@@ -107,7 +107,7 @@ SEC_segment::~SEC_segment() {
 
 
 SEC_helix_strand::~SEC_helix_strand() {
-    if(next_segment != NULL) {
+    if (next_segment != NULL) {
         next_segment->delete_pointer_2(this);
     }
 
@@ -442,7 +442,7 @@ SEC_segment *SEC_helix_strand::get_previous_segment(void) {
     SEC_helix_strand *strand_pointer = next_segment->get_next_strand();
 
     if (strand_pointer == this) {
-        segment_before = next_segment;   //we are in a loop with only one segment
+        segment_before = next_segment;   // we are in a loop with only one segment
     }
     else {
         while (strand_pointer != this) {

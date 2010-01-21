@@ -346,7 +346,7 @@ void AWT_dump_codons() {
                             if (allowed_code_left.is_allowed(code)) {
                                 if (!first) printf(",");
                                 first=0;
-                                printf("%i",code);
+                                printf("%i", code);
                             }
                         }
                         printf(") ");

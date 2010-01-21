@@ -15,23 +15,23 @@
 #include <climits>
 
 
-AWTC_FIND_FAMILY_MEMBER::AWTC_FIND_FAMILY_MEMBER(){
+AWTC_FIND_FAMILY_MEMBER::AWTC_FIND_FAMILY_MEMBER() {
     matches = 0;
     name = 0;
     next = 0;
 }
 
-AWTC_FIND_FAMILY_MEMBER::~AWTC_FIND_FAMILY_MEMBER(){
+AWTC_FIND_FAMILY_MEMBER::~AWTC_FIND_FAMILY_MEMBER() {
     free(name);
 }
 
-void awtc_ff_message(const char *msg){
+void awtc_ff_message(const char *msg) {
     GB_warning(msg);
 }
 
-void AWTC_FIND_FAMILY::delete_family_list(){
-    AWTC_FIND_FAMILY_MEMBER *fl,*fln;
-    for (fl = family_list; fl ; fl = fln){
+void AWTC_FIND_FAMILY::delete_family_list() {
+    AWTC_FIND_FAMILY_MEMBER *fl, *fln;
+    for (fl = family_list; fl;  fl = fln) {
          fln = fl->next;
          delete fl;
     }
@@ -43,10 +43,10 @@ GB_ERROR AWTC_FIND_FAMILY::init_communication(void)
     const char *user = "Find Family";
 
 /*** create and init local com structure ***/
-    if( aisc_create(link, PT_MAIN, com,
+    if (aisc_create(link, PT_MAIN, com,
                     MAIN_LOCS, PT_LOCS, &locs,
                     LOCS_USER, user,
-                    NULL)){
+                    NULL)) {
         return GB_export_error("Cannot initialize communication");
     }
     return 0;
@@ -55,7 +55,7 @@ GB_ERROR AWTC_FIND_FAMILY::init_communication(void)
 
 GB_ERROR AWTC_FIND_FAMILY::open(char *servername) {
     GB_ERROR error = 0;
-    if (arb_look_and_start_server(AISC_MAGIC_NUMBER,servername,gb_main)){
+    if (arb_look_and_start_server(AISC_MAGIC_NUMBER, servername, gb_main)) {
         error = "Cannot contact PT  server";
     }
     else {
@@ -78,7 +78,7 @@ void AWTC_FIND_FAMILY::close(void)
 
 AWTC_FIND_FAMILY::AWTC_FIND_FAMILY(GBDATA *gb_maini)
 {
-    memset((char *)this,0,sizeof(*this));
+    memset((char *)this, 0, sizeof(*this));
     this->gb_main = gb_maini;
 }
 
@@ -126,7 +126,7 @@ GB_ERROR AWTC_FIND_FAMILY::retrieve_family(char *sequence, int oligo_len, int mi
     if (max_results<1) max_results = INT_MAX; 
 
     AWTC_FIND_FAMILY_MEMBER *tail = NULL;
-    while (f_list){
+    while (f_list) {
         if (max_results == 0) {
             hits_truncated = true;
             break;
@@ -151,10 +151,10 @@ GB_ERROR AWTC_FIND_FAMILY::retrieve_family(char *sequence, int oligo_len, int mi
     return 0;
 }
 
-void AWTC_FIND_FAMILY::print(){
+void AWTC_FIND_FAMILY::print() {
     AWTC_FIND_FAMILY_MEMBER *fl;
-    for (fl = family_list; fl ; fl = fl->next){
-        printf("%s %li\n",fl->name,fl->matches);
+    for (fl = family_list; fl;  fl = fl->next) {
+        printf("%s %li\n", fl->name, fl->matches);
     }
 }
 

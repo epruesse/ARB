@@ -28,7 +28,7 @@
 static void Version(void);
 
 
-#define check_heap_sanity() do{ char *x = malloc(10); free(x); }while(0)
+#define check_heap_sanity() do { char *x = malloc(10); free(x); } while (0)
 
 #if defined(DEBUG)
 /* #define DEBUG_PRINTS */
@@ -43,7 +43,7 @@ static void Version(void);
 #define PRINT(s) fputs((s), stdout)
 
 #define ISCSYM(x) ((x) > 0 && (isalnum(x) || (x) == '_'))
-#define ABORTED ( (Word *) -1 )
+#define ABORTED ((Word *) -1)
 #define MAXPARAM 20         /* max. number of parameters to a function */
 #define NEWBUFSIZ (20480*sizeof(char)) /* new buffer size */
 
@@ -201,7 +201,7 @@ static int List_len(Word *w)
 
 /* Append two lists, and return the result */
 
-static Word *word_append(Word *w1, Word *w2){
+static Word *word_append(Word *w1, Word *w2) {
     Word *r, *w;
 
     r = w = word_alloc("");
@@ -222,7 +222,7 @@ static Word *word_append(Word *w1, Word *w2){
 
 /* see if the last entry in w2 is in w1 */
 
-static int foundin(Word *w1, Word *w2){
+static int foundin(Word *w1, Word *w2) {
     while (w2->next)
         w2 = w2->next;
 
@@ -236,7 +236,7 @@ static int foundin(Word *w1, Word *w2){
 
 /* add the string s to the given list of words */
 
-static void addword(Word *w, const char *s){
+static void addword(Word *w, const char *s) {
     while (w->next) w = w->next;
     w->next = word_alloc(s);
 
@@ -249,7 +249,7 @@ static void addword(Word *w, const char *s){
    "short", or "unsigned short" to "int".
 */
 
-static void typefixhack(Word *w){
+static void typefixhack(Word *w) {
     Word *oldw = 0;
 
     if (dont_promote)
@@ -257,7 +257,7 @@ static void typefixhack(Word *w){
 
     while (w) {
         if (*w->string) {
-            if ((strcmp(w->string, "char")==0 || strcmp(w->string, "short")==0) && (List_len(w->next) < 2) ) {
+            if ((strcmp(w->string, "char")==0 || strcmp(w->string, "short")==0) && (List_len(w->next) < 2)) {
                 /* delete any "unsigned" specifier present -- yes, it's supposed to do this */
                 if (oldw && strcmp(oldw->string, "unsigned")==0) {
                     oldw->next = w->next;
@@ -266,7 +266,7 @@ static void typefixhack(Word *w){
                 }
                 strcpy(w->string, "int");
             }
-            else if (strcmp(w->string, "float")==0 && List_len(w->next) < 2 ) {
+            else if (strcmp(w->string, "float")==0 && List_len(w->next) < 2) {
                 strcpy(w->string, "double");
             }
         }
@@ -276,7 +276,7 @@ static void typefixhack(Word *w){
 
 /* read a character: if it's a newline, increment the line count */
 
-static int ngetc(FILE *f){
+static int ngetc(FILE *f) {
     int c;
 
     c = getc(f);
@@ -294,7 +294,7 @@ static char *found__ATTR__      = 0;
 
 static void clear_found_attribute() {
     free(found__attribute__); found__attribute__ = 0;
-    free(found__ATTR__     ); found__ATTR__      = 0;
+    free(found__ATTR__); found__ATTR__      = 0;
 }
 
 static void search_comment_for_attribute() {
@@ -310,7 +310,7 @@ static void search_comment_for_attribute() {
         int   parens = 1;
 
         while (*a && *a != '(') ++a; // search '('
-        if (*a++ == '(')  {   // if '(' found
+        if (*a++ == '(') {    // if '(' found
             while (parens && *a) {
                 switch (*a++) {
                     case '(': parens++; break;
@@ -459,7 +459,7 @@ static void search_comment_for_promotion() {
  */
 
 
-static int fnextch(FILE *f){
+static int fnextch(FILE *f) {
     int c, lastc, incomment;
 
     c = ngetc(f);
@@ -531,7 +531,7 @@ static int fnextch(FILE *f){
  * are converted to "0". Also, if a line starts with "#" it is skipped.
  */
 
-static int nextch(FILE *f){
+static int nextch(FILE *f) {
     int c, n;
     char *p, numbuf[10];
 
@@ -544,7 +544,7 @@ static int nextch(FILE *f){
         /* skip blanks */
         do {
             c = fnextch(f);
-        } while ( c >= 0 && (c == '\t' || c == ' ') );
+        } while (c >= 0 && (c == '\t' || c == ' '));
         /* check for #line */
         if (c == 'l') {
             c = fnextch(f);
@@ -569,7 +569,7 @@ static int nextch(FILE *f){
         }
 
         /* skip the rest of the line */
-    skip_rest_of_line:
+    skip_rest_of_line :
         while (c >= 0 && c != '\n')
             c = fnextch(f);
         if (c < 0)
@@ -584,7 +584,7 @@ static int nextch(FILE *f){
 
         DEBUG_PRINT("nextch: in a quote\n");
         inquote = c;
-        while ( (c = fnextch(f)) >= 0 ) {
+        while ((c = fnextch(f)) >= 0) {
             if (c == inquote) {
                 buffer[index] = 0;
                 DEBUG_PRINT("quoted content='");
@@ -600,12 +600,12 @@ static int nextch(FILE *f){
 
                 if (inquote=='\"' && strcmp(buffer, "C")==0) {
                     inquote = 0;
-                    return '$'; /* found "C" (needed for 'extern "C"')*/
+                    return '$'; /* found "C" (needed for 'extern "C"') */
                 }
                 inquote = 0;
                 return '0';
             }
-            else  {
+            else {
                 if (index<10) buffer[index++] = c;
             }
         }
@@ -616,7 +616,7 @@ static int nextch(FILE *f){
     return c;
 }
 
-static int getsym(char *buf, FILE *f){
+static int getsym(char *buf, FILE *f) {
     /* Get the next symbol from the file, skipping blanks.
      * Return 0 if OK, -1 for EOF.
      * Also collapses everything between { and }
@@ -693,7 +693,7 @@ static int getsym(char *buf, FILE *f){
     return 0;
 }
 
-static int skipit(char *buf, FILE *f){
+static int skipit(char *buf, FILE *f) {
     // skip until a ";" or the end of a function declaration is seen
     
     int i;
@@ -712,7 +712,7 @@ static int skipit(char *buf, FILE *f){
     return 0;
 }
 
-static int is_type_word(char *s){
+static int is_type_word(char *s) {
     /* find most common type specifiers for purpose of ruling them out as
      * parm names
      */
@@ -744,7 +744,7 @@ static int is_type_word(char *s){
      *(w)->next->string == '['))
 
 
-static Word *typelist(Word *p){
+static Word *typelist(Word *p) {
     /* given a list representing a type and a variable name, extract just
      * the base type, e.g. "struct word *x" would yield "struct word"
      */
@@ -766,7 +766,7 @@ static Word *typelist(Word *p){
     return r;
 }
 
-static Word *getparamlist(FILE *f){
+static Word *getparamlist(FILE *f) {
     /* Get a parameter list; when this is called the next symbol in line
      * should be the first thing in the list.
      */
@@ -824,7 +824,7 @@ static Word *getparamlist(FILE *f){
     plist = word_alloc("");
     tlistdone = 0;
     sawsomething = 0;
-    for(;;) {
+    for (;;) {
         if (getsym(buf, f) < 0) return NULL;
 
         /* handle a list like "int x,y,z" */
@@ -957,7 +957,7 @@ static void emit(Word *wlist, Word *plist, long startline) {
     int   needspace = 0;
     int   isstatic  = 0;
     int   ismain    = 0;
-    int   refs      = 0 ;
+    int   refs      = 0;
 
     if (promote_lines) print_promotions();
 
@@ -965,7 +965,7 @@ static void emit(Word *wlist, Word *plist, long startline) {
         if (w->string[0]) {
             count ++;
             if      (strcmp(w->string, "static") == 0) isstatic = 1;
-            else if (strcmp(w->string, "main"  ) == 0) ismain = 1;
+            else if (strcmp(w->string, "main") == 0) ismain = 1;
         }
     }
 
@@ -986,7 +986,7 @@ static void emit(Word *wlist, Word *plist, long startline) {
                 }
             }
         }
-        for (;w; w = w->next) {
+        for (; w; w = w->next) {
             if (w->string[0] == '*') {
                 refs++;
                 continue;
@@ -1097,7 +1097,7 @@ static void emit(Word *wlist, Word *plist, long startline) {
     else            PRINT(")");
 
     if (found__attribute__) { PRINT(" "); PRINT(found__attribute__); }
-    if (found__ATTR__     ) { PRINT(" "); PRINT(found__ATTR__     ); }
+    if (found__ATTR__) { PRINT(" "); PRINT(found__ATTR__); }
     
     PRINT(";\n");
 }
@@ -1114,7 +1114,7 @@ static void getdecl(FILE *f, const char *header) {
 
     current_file = strdup(header);
 
- again:
+ again :
     DEBUG_PRINT("again\n");
     word_free(wlist);
     wlist         = word_alloc("");
@@ -1122,9 +1122,9 @@ static void getdecl(FILE *f, const char *header) {
     oktoprint     = 1;
     extern_c_seen = 0;
 
-    for(;;) {
+    for (;;) {
         DEBUG_PRINT("main getdecl loop\n");
-        if (getsym(buf,f) < 0) {
+        if (getsym(buf, f) < 0) {
             DEBUG_PRINT("EOF in getdecl loop\n");
             return;
         }
@@ -1196,7 +1196,7 @@ static void getdecl(FILE *f, const char *header) {
             if (oktoprint) { /* check function-name */
                 Word *w;
 
-                for (w=wlist; w->next && oktoprint; w=w->next)  {
+                for (w=wlist; w->next && oktoprint; w=w->next) {
                     if (w->string[0]==':' && w->string[1]==0) oktoprint = 0; /* do not emit prototypes for member functions */
                 }
 
@@ -1224,7 +1224,7 @@ static void getdecl(FILE *f, const char *header) {
     }
 }
 
-static void Usage(void){
+static void Usage(void) {
     fprintf(stderr, "Usage: %s [flags] [files ...]", ourname);
     fputs("\nSupported flags:"
           "\n   -a               make a function list for aisc_includes (default: generate C prototypes)"
@@ -1264,7 +1264,7 @@ static void Usage(void){
     exit(EXIT_FAILURE);
 }
 
-int main(int argc, char **argv){
+int main(int argc, char **argv) {
     FILE *f;
     char *t, *iobuf;
     int exit_if_noargs = 0;
@@ -1421,7 +1421,7 @@ int main(int argc, char **argv){
         }
     }
     
-    current_dir = strdup(getcwd(0,255));
+    current_dir = strdup(getcwd(0, 255));
     if (argc == 0) {
         getdecl(stdin, "<from stdin>");
     }

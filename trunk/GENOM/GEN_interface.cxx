@@ -18,7 +18,7 @@ using namespace std;
 
 // --------------------------------------------------------------------------------
 
-void GEN_select_gene(GBDATA* /*gb_main*/, AW_root *aw_root, const char *item_name) {
+void GEN_select_gene(GBDATA* /* gb_main */, AW_root *aw_root, const char *item_name) {
     char *organism  = strdup(item_name);
     char *gene = strchr(organism, '/');
 
@@ -37,7 +37,7 @@ void GEN_select_gene(GBDATA* /*gb_main*/, AW_root *aw_root, const char *item_nam
     free(organism);
 }
 
-static char *gen_get_gene_id(GBDATA */*gb_main*/, GBDATA *gb_gene) {
+static char *gen_get_gene_id(GBDATA * /* gb_main */, GBDATA *gb_gene) {
     GBDATA *gb_species = GB_get_grandfather(gb_gene);
     return GBS_global_string_copy("%s/%s", GBT_read_name(gb_species), GBT_read_name(gb_gene));
 }
@@ -280,25 +280,25 @@ void GEN_update_combined_cb(AW_root *awr) {
 }
 
 void GEN_create_awars(AW_root *aw_root, AW_default aw_def) {
-    aw_root->awar_string(AWAR_COMBINED_GENE_NAME,"",GLOBAL_gb_main);
-    aw_root->awar_string(AWAR_GENE_CONTENT,"",GLOBAL_gb_main);
+    aw_root->awar_string(AWAR_COMBINED_GENE_NAME, "", GLOBAL_gb_main);
+    aw_root->awar_string(AWAR_GENE_CONTENT, "", GLOBAL_gb_main);
 
-    aw_root->awar_string(AWAR_GENE_NAME, "" ,   GLOBAL_gb_main)->add_callback((AW_RCB0)GEN_update_combined_cb);
-    aw_root->awar_string(AWAR_ORGANISM_NAME, "" ,   GLOBAL_gb_main)->add_callback((AW_RCB0)GEN_update_combined_cb);
+    aw_root->awar_string(AWAR_GENE_NAME, "",    GLOBAL_gb_main)->add_callback((AW_RCB0)GEN_update_combined_cb);
+    aw_root->awar_string(AWAR_ORGANISM_NAME, "",    GLOBAL_gb_main)->add_callback((AW_RCB0)GEN_update_combined_cb);
 
-    aw_root->awar_string(AWAR_SPECIES_NAME,"",GLOBAL_gb_main)->add_callback((AW_RCB0)GEN_species_name_changed_cb);
+    aw_root->awar_string(AWAR_SPECIES_NAME, "", GLOBAL_gb_main)->add_callback((AW_RCB0)GEN_species_name_changed_cb);
 
-    aw_root->awar_string(AWAR_GENE_DEST, "" ,   aw_def);
-    aw_root->awar_string(AWAR_GENE_POS1, "" ,   aw_def);
-    aw_root->awar_string(AWAR_GENE_POS2, "" ,   aw_def);
+    aw_root->awar_string(AWAR_GENE_DEST, "",    aw_def);
+    aw_root->awar_string(AWAR_GENE_POS1, "",    aw_def);
+    aw_root->awar_string(AWAR_GENE_POS2, "",    aw_def);
     aw_root->awar_int(AWAR_GENE_COMPLEMENT, 0,   aw_def);
 
-    aw_root->awar_string(AWAR_GENE_EXTRACT_ALI, "ali_gene_" ,   aw_def);
+    aw_root->awar_string(AWAR_GENE_EXTRACT_ALI, "ali_gene_",    aw_def);
 }
 
 GBDATA *GEN_get_current_organism(GBDATA *gb_main, AW_root *aw_root) {
     char   *species_name = aw_root->awar(AWAR_ORGANISM_NAME)->read_string();
-    GBDATA *gb_species   = GBT_find_species(gb_main,species_name);
+    GBDATA *gb_species   = GBT_find_species(gb_main, species_name);
     free(species_name);
     return gb_species;
 }
@@ -318,7 +318,7 @@ GBDATA *GEN_get_current_gene(GBDATA *gb_main, AW_root *aw_root) {
 
     if (gb_species) {
         char *gene_name = aw_root->awar(AWAR_GENE_NAME)->read_string();
-        gb_gene         = GEN_find_gene(gb_species,gene_name);
+        gb_gene         = GEN_find_gene(gb_species, gene_name);
         free(gene_name);
     }
 
@@ -371,26 +371,26 @@ void gene_rename_cb(AW_window *aww) {
 AW_window *create_gene_rename_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "RENAME_GENE", "GENE RENAME");
+    aws->init(root, "RENAME_GENE", "GENE RENAME");
     aws->load_xfig("ad_al_si.fig");
 
-    aws->callback( (AW_CB0)AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("label");
-    aws->create_autosize_button(0,"Please enter the new name\nof the gene");
+    aws->create_autosize_button(0, "Please enter the new name\nof the gene");
 
     aws->at("input");
-    aws->create_input_field(AWAR_GENE_DEST,15);
+    aws->create_input_field(AWAR_GENE_DEST, 15);
     aws->at("ok");
     aws->callback(gene_rename_cb);
-    aws->create_button("GO","GO","G");
+    aws->create_button("GO", "GO", "G");
 
     return (AW_window *)aws;
 }
 
-void gene_copy_cb(AW_window *aww){
+void gene_copy_cb(AW_window *aww) {
     char     *source = aww->get_root()->awar(AWAR_GENE_NAME)->read_string();
     char     *dest   = aww->get_root()->awar(AWAR_GENE_DEST)->read_string();
     GB_ERROR  error  = GB_begin_transaction(GLOBAL_gb_main);
@@ -407,7 +407,7 @@ void gene_copy_cb(AW_window *aww){
             if (!gb_source) error   = "Please select a gene";
             else if (gb_dest) error = GB_export_errorf("Gene '%s' already exists", dest);
             else {
-                gb_dest             = GB_create_container(gb_gene_data,"gene");
+                gb_dest             = GB_create_container(gb_gene_data, "gene");
                 if (!gb_dest) error = GB_await_error();
                 else error          = GB_copy(gb_dest, gb_source);
 
@@ -427,27 +427,27 @@ void gene_copy_cb(AW_window *aww){
 AW_window *create_gene_copy_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "COPY_GENE", "GENE COPY");
+    aws->init(root, "COPY_GENE", "GENE COPY");
     aws->load_xfig("ad_al_si.fig");
 
-    aws->callback( (AW_CB0)AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("label");
-    aws->create_autosize_button(0,"Please enter the name\nof the new gene");
+    aws->create_autosize_button(0, "Please enter the name\nof the new gene");
 
     aws->at("input");
-    aws->create_input_field(AWAR_GENE_DEST,15);
+    aws->create_input_field(AWAR_GENE_DEST, 15);
 
     aws->at("ok");
     aws->callback(gene_copy_cb);
-    aws->create_button("GO","GO","G");
+    aws->create_button("GO", "GO", "G");
 
     return (AW_window *)aws;
 }
 
-void gene_create_cb(AW_window *aww){
+void gene_create_cb(AW_window *aww) {
     GB_begin_transaction(GLOBAL_gb_main);
 
     GB_ERROR  error        = 0;
@@ -498,21 +498,21 @@ void gene_create_cb(AW_window *aww){
 AW_window *create_gene_create_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "CREATE_GENE","GENE CREATE");
+    aws->init(root, "CREATE_GENE", "GENE CREATE");
     aws->load_xfig("ad_al_si3.fig");
 
-    aws->callback( (AW_CB0)AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->at("label"); aws->create_autosize_button(0,"Please enter the name\nof the new gene");
-    aws->at("input"); aws->create_input_field(AWAR_GENE_DEST,15);
+    aws->at("label"); aws->create_autosize_button(0, "Please enter the name\nof the new gene");
+    aws->at("input"); aws->create_input_field(AWAR_GENE_DEST, 15);
 
-    aws->at("label1"); aws->create_autosize_button(0,"Start position");
-    aws->at("input1"); aws->create_input_field(AWAR_GENE_POS1,12);
+    aws->at("label1"); aws->create_autosize_button(0, "Start position");
+    aws->at("input1"); aws->create_input_field(AWAR_GENE_POS1, 12);
 
-    aws->at("label2"); aws->create_autosize_button(0,"End position");
-    aws->at("input2"); aws->create_input_field(AWAR_GENE_POS2,12);
+    aws->at("label2"); aws->create_autosize_button(0, "End position");
+    aws->at("input2"); aws->create_input_field(AWAR_GENE_POS2, 12);
 
     aws->at("toggle");
     aws->label("Complementary strand");
@@ -520,12 +520,12 @@ AW_window *create_gene_create_window(AW_root *root)
 
     aws->at("ok");
     aws->callback(gene_create_cb);
-    aws->create_button("GO","GO","G");
+    aws->create_button("GO", "GO", "G");
 
     return (AW_window *)aws;
 }
 
-void gene_delete_cb(AW_window *aww){
+void gene_delete_cb(AW_window *aww) {
     if (aw_ask_sure("Are you sure to delete the gene?")) {
         GB_transaction  ta(GLOBAL_gb_main);
         GB_ERROR        error   = 0;
@@ -564,33 +564,33 @@ AW_window *GEN_create_gene_window(AW_root *aw_root) {
     if (!aws) {
 
         aws = new AW_window_simple_menu;
-        aws->init( aw_root, "GENE_INFORMATION", "GENE INFORMATION");
+        aws->init(aw_root, "GENE_INFORMATION", "GENE INFORMATION");
         aws->load_xfig("ad_spec.fig");
 
         aws->button_length(8);
 
         aws->at("close");
-        aws->callback( (AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE","CLOSE","C");
+        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("search");
         aws->callback(AW_POPUP, (AW_CL)GEN_create_gene_query_window, 0);
-        aws->create_button("SEARCH","SEARCH","S");
+        aws->create_button("SEARCH", "SEARCH", "S");
 
         aws->at("help");
         aws->callback(AW_POPUP_HELP, (AW_CL)"gene_info.hlp");
-        aws->create_button("HELP","HELP","H");
+        aws->create_button("HELP", "HELP", "H");
 
 
-        AW_CL scannerid       = awt_create_arbdb_scanner(GLOBAL_gb_main, aws, "box",0,"field","enable",AWT_VIEWER,0,"mark",AWT_NDS_FILTER, &GEN_item_selector);
+        AW_CL scannerid       = awt_create_arbdb_scanner(GLOBAL_gb_main, aws, "box", 0, "field", "enable", AWT_VIEWER, 0, "mark", AWT_NDS_FILTER, &GEN_item_selector);
         ad_global_scannerid   = scannerid;
         ad_global_scannerroot = aws->get_root();
 
         aws->create_menu("GENE", "G", AD_F_ALL);
-        aws->insert_menu_topic("gene_delete",   "Delete",       "D","spa_delete.hlp",       AD_F_ALL,   (AW_CB)gene_delete_cb, 0, 0);
-        aws->insert_menu_topic("gene_rename",   "Rename ...",   "R","spa_rename.hlp",   AD_F_ALL,   AW_POPUP, (AW_CL)create_gene_rename_window, 0);
-        aws->insert_menu_topic("gene_copy",     "Copy ...",     "y","spa_copy.hlp",         AD_F_ALL,   AW_POPUP, (AW_CL)create_gene_copy_window, 0);
-        aws->insert_menu_topic("gene_create",   "Create ...",   "C","spa_create.hlp",   AD_F_ALL,   AW_POPUP, (AW_CL)create_gene_create_window, 0);
+        aws->insert_menu_topic("gene_delete",   "Delete",       "D", "spa_delete.hlp",      AD_F_ALL,   (AW_CB)gene_delete_cb, 0, 0);
+        aws->insert_menu_topic("gene_rename",   "Rename ...",   "R", "spa_rename.hlp",  AD_F_ALL,   AW_POPUP, (AW_CL)create_gene_rename_window, 0);
+        aws->insert_menu_topic("gene_copy",     "Copy ...",     "y", "spa_copy.hlp",        AD_F_ALL,   AW_POPUP, (AW_CL)create_gene_copy_window, 0);
+        aws->insert_menu_topic("gene_create",   "Create ...",   "C", "spa_create.hlp",  AD_F_ALL,   AW_POPUP, (AW_CL)create_gene_create_window, 0);
         aws->insert_separator();
 
         aws->create_menu("FIELDS", "F", AD_F_ALL);
@@ -609,7 +609,7 @@ AW_window *GEN_create_gene_window(AW_root *aw_root) {
             detach_info->set_detach_button(aws->get_last_widget());
         }
 
-        GEN_map_gene(aws->get_root(),scannerid);
+        GEN_map_gene(aws->get_root(), scannerid);
         aws->show();
     }
     else {
@@ -627,12 +627,12 @@ void GEN_popup_gene_window(AW_window *aww, AW_CL, AW_CL) { // w/o this DETACH do
 AW_window *GEN_create_gene_query_window(AW_root *aw_root) {
 
     static AW_window_simple_menu *aws = 0;
-    if (aws){
+    if (aws) {
         return (AW_window *)aws;
     }
     aws = new AW_window_simple_menu;
-    aws->init( aw_root, "GEN_QUERY", "Gene SEARCH and QUERY");
-    aws->create_menu("More functions","f");
+    aws->init(aw_root, "GEN_QUERY", "Gene SEARCH and QUERY");
+    aws->create_menu("More functions", "f");
     aws->load_xfig("ad_query.fig");
 
     awt_query_struct awtqs;
@@ -665,18 +665,18 @@ AW_window *GEN_create_gene_query_window(AW_root *aw_root) {
     AW_CL cbs             = (AW_CL)awt_create_query_box(aws, &awtqs, "gen");
     gene_query_global_cbs = cbs;
 
-    aws->create_menu("More search",     "s" );
+    aws->create_menu("More search",     "s");
     aws->insert_menu_topic("gen_search_equal_fields_within_db", "Search For Equal Fields and Mark Duplicates",               "E", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, cbs, 0);
     aws->insert_menu_topic("gen_search_equal_words_within_db",  "Search For Equal Words Between Fields and Mark Duplicates", "W", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, cbs, 1);
 
     aws->button_length(7);
 
     aws->at("close");
-    aws->callback( (AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");
+    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
     aws->at("help");
-    aws->callback( AW_POPUP_HELP,(AW_CL)"gene_search.hlp");
-    aws->create_button("HELP","HELP","H");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"gene_search.hlp");
+    aws->create_button("HELP", "HELP", "H");
 
     return (AW_window *)aws;
 

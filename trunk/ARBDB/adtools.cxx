@@ -13,13 +13,13 @@
 #include "gb_data.h"
 #include "gb_main.h"
 
-GBDATA *GBT_find_or_create(GBDATA *Main,const char *key,long delete_level)
+GBDATA *GBT_find_or_create(GBDATA *Main, const char *key, long delete_level)
 {
     GBDATA *gbd;
-    gbd = GB_entry(Main,key);
+    gbd = GB_entry(Main, key);
     if (gbd) return gbd;
-    gbd = GB_create_container(Main,key);
-    GB_write_security_delete(gbd,delete_level);
+    gbd = GB_create_container(Main, key);
+    GB_write_security_delete(gbd, delete_level);
     return gbd;
 }
 
@@ -61,23 +61,23 @@ GB_ERROR GBT_check_arb_file(const char *name)
     FILE *in;
     long i;
     char buffer[100];
-    if (strchr(name,':')) return 0;
-    in = fopen(name,"r");
-    if (!in) return GB_export_errorf("Cannot find file '%s'",name);
+    if (strchr(name, ':')) return 0;
+    in = fopen(name, "r");
+    if (!in) return GB_export_errorf("Cannot find file '%s'", name);
     i = gb_read_in_long(in, 0);
-    if ( (i== 0x56430176) || (i == GBTUM_MAGIC_NUMBER) || (i == GBTUM_MAGIC_REVERSED)) {
+    if ((i == 0x56430176) || (i == GBTUM_MAGIC_NUMBER) || (i == GBTUM_MAGIC_REVERSED)) {
         fclose(in);
         return 0;
     }
     rewind(in);
-    fgets(buffer,50,in);
+    fgets(buffer, 50, in);
     fclose(in);
-    if (!strncmp(buffer,"/*ARBDB AS",10)) {
+    if (!strncmp(buffer, "/*ARBDB AS", 10)) {
         return 0;
     };
 
 
-    return GB_export_errorf("'%s' is not an arb file",name);
+    return GB_export_errorf("'%s' is not an arb file", name);
 }
 
 /********************************************************************************************
@@ -94,7 +94,7 @@ struct DbScanner {
     char      *buffer;
 };
 
-static void gbt_scan_db_rek(GBDATA *gbd,char *prefix, int deep, struct DbScanner *scanner) {
+static void gbt_scan_db_rek(GBDATA *gbd, char *prefix, int deep, struct DbScanner *scanner) {
     GB_TYPES type = GB_read_type(gbd);
     GBDATA *gb2;
     const char *key;
@@ -102,9 +102,9 @@ static void gbt_scan_db_rek(GBDATA *gbd,char *prefix, int deep, struct DbScanner
     if (type == GB_DB) {
         len_of_prefix = strlen(prefix);
         for (gb2 = GB_child(gbd); gb2; gb2 = GB_nextChild(gb2)) {  // find everything
-            if (deep){
+            if (deep) {
                 key = GB_read_key_pntr(gb2);
-                sprintf(&prefix[len_of_prefix],"/%s",key);
+                sprintf(&prefix[len_of_prefix], "/%s", key);
                 gbt_scan_db_rek(gb2, prefix, 1, scanner);
             }
             else {
@@ -161,7 +161,7 @@ static long gbs_scan_db_insert(const char *key, long val, void *cd_insert_data) 
     return val;
 }
 
-static int gbs_scan_db_compare(const void *left, const void *right, void *unused){
+static int gbs_scan_db_compare(const void *left, const void *right, void *unused) {
     // GBUSE(unused);
     return strcmp((GB_CSTR)left+1, (GB_CSTR)right+1);
 }
@@ -183,14 +183,14 @@ char **GBT_scan_db(GBDATA *gbd, const char *datapath) {
 
     scanner.hash_table = GBS_create_hash(1024, GB_MIND_CASE);
     scanner.buffer     = (char *)malloc(GBT_SUM_LEN);
-    strcpy(scanner.buffer,"");
+    strcpy(scanner.buffer, "");
     
     gbt_scan_db_rek(gbd, scanner.buffer, 0, &scanner);
 
     scanner.count = 0;
     GBS_hash_do_loop(scanner.hash_table, gbs_scan_db_count, &scanner);
 
-    scanner.result = (char **)GB_calloc(sizeof(char *),scanner.count+1);
+    scanner.result = (char **)GB_calloc(sizeof(char *), scanner.count+1);
     // null terminated result
 
     scanner.count = 0;
@@ -346,7 +346,7 @@ char *GBT_join_names(const char *const *names, char separator) {
 
 void GBT_free_names(char **names) {
     char **pn;
-    for (pn = names; *pn;pn++) free(*pn);
+    for (pn = names; *pn; pn++) free(*pn);
     free((char *)names);
 }
 
@@ -359,34 +359,34 @@ void GBT_free_names(char **names) {
  * other functions return a pointer to a temporary variable (invalidated by next call)
  */
 
-char *GBT_read_string(GBDATA *gb_container, const char *fieldpath){
+char *GBT_read_string(GBDATA *gb_container, const char *fieldpath) {
     GBDATA *gbd;
     char   *result = NULL;
     
     GB_push_transaction(gb_container);
-    gbd = GB_search(gb_container,fieldpath,GB_FIND);
+    gbd = GB_search(gb_container, fieldpath, GB_FIND);
     if (gbd) result = GB_read_string(gbd);
     GB_pop_transaction(gb_container);
     return result;
 }
 
-char *GBT_read_as_string(GBDATA *gb_container, const char *fieldpath){
+char *GBT_read_as_string(GBDATA *gb_container, const char *fieldpath) {
     GBDATA *gbd;
     char   *result = NULL;
     
     GB_push_transaction(gb_container);
-    gbd = GB_search(gb_container,fieldpath,GB_FIND);
+    gbd = GB_search(gb_container, fieldpath, GB_FIND);
     if (gbd) result = GB_read_as_string(gbd);
     GB_pop_transaction(gb_container);
     return result;
 }
 
-const char *GBT_read_char_pntr(GBDATA *gb_container, const char *fieldpath){
+const char *GBT_read_char_pntr(GBDATA *gb_container, const char *fieldpath) {
     GBDATA     *gbd;
     const char *result = NULL;
 
     GB_push_transaction(gb_container);
-    gbd = GB_search(gb_container,fieldpath,GB_FIND);
+    gbd = GB_search(gb_container, fieldpath, GB_FIND);
     if (gbd) result = GB_read_char_pntr(gbd);
     GB_pop_transaction(gb_container);
     return result;
@@ -397,7 +397,7 @@ NOT4PERL long *GBT_read_int(GBDATA *gb_container, const char *fieldpath) {
     long   *result = NULL;
     
     GB_push_transaction(gb_container);
-    gbd = GB_search(gb_container,fieldpath,GB_FIND);
+    gbd = GB_search(gb_container, fieldpath, GB_FIND);
     if (gbd) {
         static long result_var;
         result_var = GB_read_int(gbd);
@@ -412,7 +412,7 @@ NOT4PERL double *GBT_read_float(GBDATA *gb_container, const char *fieldpath) {
     double *result = NULL;
     
     GB_push_transaction(gb_container);
-    gbd = GB_search(gb_container,fieldpath,GB_FIND);
+    gbd = GB_search(gb_container, fieldpath, GB_FIND);
     if (gbd) {
         static double result_var;
         result_var = GB_read_float(gbd);
@@ -522,17 +522,17 @@ GB_ERROR GBT_write_float(GBDATA *gb_container, const char *fieldpath, double con
     GBDATA   *gbd   = GB_search(gb_container, fieldpath, GB_FLOAT);
     if (!gbd) error = GB_await_error();
     else {
-        error = GB_write_float(gbd,content);
+        error = GB_write_float(gbd, content);
         gb_assert(GB_nextEntry(gbd) == 0); // only one entry should exist (sure you want to use this function?)
     }
     return GB_end_transaction(gb_container, error);
 }
 
 
-GBDATA *GB_test_link_follower(GBDATA *gb_main,GBDATA *gb_link,const char *link){
-    GBDATA *linktarget = GB_search(gb_main,"tmp/link/string",GB_STRING);
+GBDATA *GB_test_link_follower(GBDATA *gb_main, GBDATA *gb_link, const char *link) {
+    GBDATA *linktarget = GB_search(gb_main, "tmp/link/string", GB_STRING);
     // GBUSE(gb_link);
-    GB_write_string(linktarget,GBS_global_string("Link is '%s'",link));
+    GB_write_string(linktarget, GBS_global_string("Link is '%s'", link));
     return GB_get_father(linktarget);
 }
 
@@ -543,9 +543,9 @@ GBDATA *GB_test_link_follower(GBDATA *gb_main,GBDATA *gb_link,const char *link){
 /** Open a database, create an index for species and extended names,
     disable saving the database in the PT_SERVER directory */
 
-GBDATA *GBT_open(const char *path,const char *opent,const char *disabled_path)
+GBDATA *GBT_open(const char *path, const char *opent, const char *disabled_path)
 {
-    GBDATA *gbd = GB_open(path,opent);
+    GBDATA *gbd = GB_open(path, opent);
     GBDATA *species_data;
     GBDATA *extended_data;
     GBDATA *gb_tmp;
@@ -553,28 +553,28 @@ GBDATA *GBT_open(const char *path,const char *opent,const char *disabled_path)
 
     if (!gbd) return gbd;
     if (!disabled_path) disabled_path = "$(ARBHOME)/lib/pts/*";
-    GB_disable_path(gbd,disabled_path);
+    GB_disable_path(gbd, disabled_path);
     GB_begin_transaction(gbd);
 
-    if (!strchr(path,':')){
+    if (!strchr(path, ':')) {
         species_data = GB_search(gbd, "species_data", GB_FIND);
-        if (species_data){
+        if (species_data) {
             hash_size = GB_number_of_subentries(species_data);
             if (hash_size < GBT_SPECIES_INDEX_SIZE) hash_size = GBT_SPECIES_INDEX_SIZE;
-            GB_create_index(species_data,"name",GB_IGNORE_CASE,hash_size);
+            GB_create_index(species_data, "name", GB_IGNORE_CASE, hash_size);
 
             extended_data = GBT_get_SAI_data(gbd);
             hash_size = GB_number_of_subentries(extended_data);
             if (hash_size < GBT_SAI_INDEX_SIZE) hash_size = GBT_SAI_INDEX_SIZE;
-            GB_create_index(extended_data,"name",GB_IGNORE_CASE,hash_size);
+            GB_create_index(extended_data, "name", GB_IGNORE_CASE, hash_size);
         }
     }
-    gb_tmp = GB_search(gbd,"tmp",GB_CREATE_CONTAINER);
+    gb_tmp = GB_search(gbd, "tmp", GB_CREATE_CONTAINER);
     GB_set_temporary(gb_tmp);
     {               // install link followers
         GB_MAIN_TYPE *Main = GB_MAIN(gbd);
         Main->table_hash = GBS_create_hash(256, GB_MIND_CASE);
-        GB_install_link_follower(gbd,"REF",GB_test_link_follower);
+        GB_install_link_follower(gbd, "REF", GB_test_link_follower);
     }
     GBT_install_table_link_follower(gbd);
     GB_commit_transaction(gbd);
@@ -658,7 +658,7 @@ static GB_ERROR gbt_wait_for_remote_action(GBDATA *gb_main, GBDATA *gb_action, c
     return error; // may be error or result
 }
 
-GB_ERROR GBT_remote_action(GBDATA *gb_main, const char *application, const char *action_name){
+GB_ERROR GBT_remote_action(GBDATA *gb_main, const char *application, const char *action_name) {
     struct gbt_remote_awars  awars;
     GBDATA                  *gb_action;
     GB_ERROR                 error = NULL;
