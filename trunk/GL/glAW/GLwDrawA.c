@@ -88,11 +88,11 @@ static char defaultTranslations[] =
 #ifdef __GLX_MOTIF
      "<Key>osfHelp:PrimitiveHelp() \n"
 #endif
-    "<KeyDown>:   glwInput() \n\
-     <KeyUp>:     glwInput() \n\
-     <BtnDown>:   glwInput() \n\
-     <BtnUp>:     glwInput() \n\
-     <BtnMotion>: glwInput() ";
+    "<KeyDown>:   glwInput() \n"
+    "<KeyUp>:     glwInput() \n"
+    "<BtnDown>:   glwInput() \n"
+    "<BtnUp>:     glwInput() \n"
+    "<BtnMotion>: glwInput() ";
 
 
 static XtActionsRec actions[] = {
