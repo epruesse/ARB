@@ -214,7 +214,7 @@ AW_window *create_special_naligner_window(AW_root *root, AW_CL cd2) {
     aws->at("tg"); aws->create_input_field("naligner/gt", mwidth);
     aws->at("tt"); aws->create_input_field("naligner/tt", mwidth);
 
-    aws->at("gap") ; aws->create_input_field("naligner/gap_panelty",  4);
+    aws->at("gap");  aws->create_input_field("naligner/gap_panelty",  4);
     aws->at("igap"); aws->create_input_field("naligner/igap_panelty", 4);
 
     aws->at("expert");
