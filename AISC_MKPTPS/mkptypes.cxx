@@ -1,16 +1,18 @@
-/* Program to extract function declarations from C source code
+/* Program to extract function declarations from C/C++ source code
+ * 
  * Written by Eric R. Smith and placed in the public domain
+ * 
  * Thanks to:
+ * 
  * Jwahar R. Bammi, for catching several bugs and providing the Unix makefiles
  * Byron T. Jenings Jr. for cleaning up the space code, providing a Unix
  *   manual page, and some ANSI and C++ improvements.
  * Skip Gilbrech for code to skip parameter names in prototypes.
  * ... and many others for helpful comments and suggestions.
- */
-
-/* many extension were made for use in ARB build process
+ * 
+ * Many extension were made for use in ARB build process
  * by Ralf Westram <ralf@arb-home.de>
-*/
+ */
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -32,7 +34,7 @@ static void Version(void);
 
 #if defined(DEBUG)
 // #define DEBUG_PRINTS
-#endif /* DEBUG */
+#endif // DEBUG
 
 #ifdef DEBUG_PRINTS
 #define DEBUG_PRINT(s)                  fputs((s), stderr)
@@ -45,43 +47,43 @@ static void Version(void);
 #define PRINT(s) fputs((s), stdout)
 
 #define ISCSYM(x) ((x) > 0 && (isalnum(x) || (x) == '_'))
-#define ABORTED ((Word *) -1)
-#define MAXPARAM 20         /* max. number of parameters to a function */
-#define NEWBUFSIZ (20480*sizeof(char)) /* new buffer size */
+#define ABORTED   ((Word *) -1)
+#define MAXPARAM  20                                // max. number of parameters to a function
+#define NEWBUFSIZ (20480*sizeof(char))              // new buffer size
 
 
-static int dostatic            = 0;                 /* include static functions? */
-static int doinline            = 0;                 /* include inline functions? */
-static int donum               = 0;                 /* print line numbers? */
-static int define_macro        = 1;                 /* define macro for prototypes? */
-static int use_macro           = 1;                 /* use a macro for prototypes? */
-static int use_main            = 0;                 /* add prototype for main? */
-static int no_parm_names       = 0;                 /* no parm names - only types */
-static int print_extern        = 0;                 /* use "extern" before function declarations */
-static int dont_promote        = 0;                 /* don't promote prototypes */
-static int promote_lines       = 0;                 /* promote 'AISC_MKPT_PROMOTE'-lines */
-static int aisc                = 0;                 /* aisc compatible output */
-static int cansibycplus        = 0;                 /* produce extern "C" */
-static int promote_extern_c    = 0;                 /* produce extern "C" into prototype */
-static int extern_c_seen       = 0;                 /* true if extern "C" was parsed */
-static int search__attribute__ = 0;                 /* search for gnu-extension __attribute__(()) ? */
-static int search__ATTR__      = 0;                 /* search for ARB-__attribute__-macros (__ATTR__) ? */
+static int dostatic            = 0;                 // include static functions?
+static int doinline            = 0;                 // include inline functions?
+static int donum               = 0;                 // print line numbers?
+static int define_macro        = 1;                 // define macro for prototypes?
+static int use_macro           = 1;                 // use a macro for prototypes?
+static int use_main            = 0;                 // add prototype for main?
+static int no_parm_names       = 0;                 // no parm names - only types
+static int print_extern        = 0;                 // use "extern" before function declarations
+static int dont_promote        = 0;                 // don't promote prototypes
+static int promote_lines       = 0;                 // promote 'AISC_MKPT_PROMOTE'-lines
+static int aisc                = 0;                 // aisc compatible output
+static int cansibycplus        = 0;                 // produce extern "C"
+static int promote_extern_c    = 0;                 // produce extern "C" into prototype
+static int extern_c_seen       = 0;                 // true if extern "C" was parsed
+static int search__attribute__ = 0;                 // search for gnu-extension __attribute__(()) ?
+static int search__ATTR__      = 0;                 // search for ARB-__attribute__-macros (__ATTR__) ?
 
-static const char *include_wrapper = NULL;          /* add include wrapper (contains name of header or NULL) */
+static const char *include_wrapper = NULL;          // add include wrapper (contains name of header or NULL)
 
-static int inquote      = 0;                        /* in a quote?? */
-static int newline_seen = 1;                        /* are we at the start of a line */
-static int glastc       = ' ';                      /* last char. seen by getsym() */
+static int inquote      = 0;                        // in a quote??
+static int newline_seen = 1;                        // are we at the start of a line
+static int glastc       = ' ';                      // last char. seen by getsym()
 
-static char *current_file   = 0;  /* name of current file */
-static char *current_dir    = 0;  /* name of current directory */
-static char *header_comment = 0;  /* comment written into header */
-static long  linenum        = 1L; /* line number in current file */
+static char *current_file   = 0;                    // name of current file
+static char *current_dir    = 0;                    // name of current directory
+static char *header_comment = 0;                    // comment written into header
+static long  linenum        = 1L;                   // line number in current file
 
-static char const *macro_name = "P_";  /*   macro to use for prototypes */
-static char const *ourname;            /* our name, from argv[] array */
+static char const *macro_name = "P_";               //   macro to use for prototypes
+static char const *ourname;                         // our name, from argv[] array
 
-/* ------------------------------------------------------------ */
+// ------------------------------------------------------------
 
 static void errorAt(long line, const char *msg) {
     printf("\n"
@@ -105,7 +107,7 @@ struct SymPart {
     SymPart *next;
 };
 
-static SymPart *symParts = 0; /* create only prototypes for parts in this list */
+static SymPart *symParts = 0;                       // create only prototypes for parts in this list
 
 static void addSymParts(const char *parts) {
     char *p = strdup(parts);
@@ -188,8 +190,7 @@ static void word_free(Word *w)
     }
 }
 
-static int List_len(Word *w)
-{
+static int List_len(Word *w) {
     // return the length of a list
     // empty words are not counted 
     int count = 0;
@@ -201,9 +202,9 @@ static int List_len(Word *w)
     return count;
 }
 
-/* Append two lists, and return the result */
-
 static Word *word_append(Word *w1, Word *w2) {
+    // Append two lists, and return the result
+
     Word *r, *w;
 
     r = w = word_alloc("");
@@ -222,9 +223,9 @@ static Word *word_append(Word *w1, Word *w2) {
     return r;
 }
 
-/* see if the last entry in w2 is in w1 */
-
 static int foundin(Word *w1, Word *w2) {
+    // see if the last entry in w2 is in w1
+
     while (w2->next)
         w2 = w2->next;
 
@@ -236,9 +237,9 @@ static int foundin(Word *w1, Word *w2) {
     return 0;
 }
 
-/* add the string s to the given list of words */
-
 static void addword(Word *w, const char *s) {
+    // add the string s to the given list of words
+
     while (w->next) w = w->next;
     w->next = word_alloc(s);
 
@@ -247,11 +248,10 @@ static void addword(Word *w, const char *s) {
     DEBUG_PRINT("'\n");
 }
 
-/* typefixhack: promote formal parameters of type "char", "unsigned char",
-   "short", or "unsigned short" to "int".
-*/
-
 static void typefixhack(Word *w) {
+    // typefixhack: promote formal parameters of type "char", "unsigned char",
+    // "short", or "unsigned short" to "int".
+
     Word *oldw = 0;
 
     if (dont_promote)
@@ -260,7 +260,7 @@ static void typefixhack(Word *w) {
     while (w) {
         if (*w->string) {
             if ((strcmp(w->string, "char")==0 || strcmp(w->string, "short")==0) && (List_len(w->next) < 2)) {
-                /* delete any "unsigned" specifier present -- yes, it's supposed to do this */
+                // delete any "unsigned" specifier present -- yes, it's supposed to do this
                 if (oldw && strcmp(oldw->string, "unsigned")==0) {
                     oldw->next = w->next;
                     free((char *)w);
@@ -276,9 +276,9 @@ static void typefixhack(Word *w) {
     }
 }
 
-/* read a character: if it's a newline, increment the line count */
-
 static int ngetc(FILE *f) {
+    // read a character: if it's a newline, increment the line count
+    
     int c;
 
     c = getc(f);
@@ -467,7 +467,7 @@ static int fnextch(FILE *f) {
     c = ngetc(f);
     while (c == '\\') {
         DEBUG_PRINT("fnextch: in backslash loop\n");
-        c = ngetc(f);   /* skip a character */
+        c = ngetc(f);                               // skip a character
         c = ngetc(f);
     }
     if (c == '/' && !inquote) {
@@ -497,7 +497,7 @@ static int fnextch(FILE *f) {
             if (promote_lines) search_comment_for_promotion();
             return fnextch(f);
         }
-        else if (c == '/') {    /* C++ style comment */
+        else if (c == '/') {                        // C++ style comment
             incomment = 1;
             c         = ' ';
             DEBUG_PRINT("fnextch: C++ comment seen\n");
@@ -519,7 +519,7 @@ static int fnextch(FILE *f) {
             return fnextch(f);
         }
         else {
-            /* if we pre-fetched a linefeed, remember to adjust the line number */
+            // if we pre-fetched a linefeed, remember to adjust the line number
             if (c == '\n') linenum--;
             ungetc(c, f);
             return '/';
@@ -529,35 +529,35 @@ static int fnextch(FILE *f) {
 }
 
 
-/* Get the next "interesting" character. Comments are skipped, and strings
- * are converted to "0". Also, if a line starts with "#" it is skipped.
- */
-
 static int nextch(FILE *f) {
+    // Get the next "interesting" character. Comments are skipped, and strings
+    // are converted to "0". Also, if a line starts with "#" it is skipped.
+
     int c, n;
     char *p, numbuf[10];
 
     c = fnextch(f);
 
-    /* skip preprocessor directives */
-    /* EXCEPTION: #line nnn or #nnn lines are interpreted */
+    // skip preprocessor directives
+    // EXCEPTION: #line nnn or #nnn lines are interpreted
 
     if (newline_seen && c == '#') {
-        /* skip blanks */
+        // skip blanks
         do {
             c = fnextch(f);
         } while (c >= 0 && (c == '\t' || c == ' '));
-        /* check for #line */
+        
+        // check for #line
         if (c == 'l') {
             c = fnextch(f);
-            if (c != 'i')   /* not a #line directive */
+            if (c != 'i')   // not a #line directive
                 goto skip_rest_of_line;
             do {
                 c = fnextch(f);
             } while (c >= 0 && c != '\n' && !isdigit(c));
         }
 
-        /* if we have a digit it's a line number, from the preprocessor */
+        // if we have a digit it's a line number, from the preprocessor
         if (c >= 0 && isdigit(c)) {
             p = numbuf;
             for (n = 8; n >= 0; --n) {
@@ -570,7 +570,7 @@ static int nextch(FILE *f) {
             linenum = atol(numbuf) - 1;
         }
 
-        /* skip the rest of the line */
+        // skip the rest of the line
     skip_rest_of_line :
         while (c >= 0 && c != '\n')
             c = fnextch(f);
@@ -602,7 +602,7 @@ static int nextch(FILE *f) {
 
                 if (inquote=='\"' && strcmp(buffer, "C")==0) {
                     inquote = 0;
-                    return '$'; /* found "C" (needed for 'extern "C"') */
+                    return '$';                     // found "C" (needed for 'extern "C"')
                 }
                 inquote = 0;
                 return '0';
@@ -629,7 +629,7 @@ static int getsym(char *buf, FILE *f) {
     
 #if defined(DEBUG_PRINTS)
     char *bufStart = buf;
-#endif /* DEBUG_PRINTS */
+#endif // DEBUG_PRINTS
 
     c = glastc;
     while ((c > 0) && isspace(c)) {
@@ -659,13 +659,13 @@ static int getsym(char *buf, FILE *f) {
                 inbrack++;
 #if defined(DEBUG_PRINTS)
                 fprintf(stderr, "inbrack=%i (line=%li)\n", inbrack, linenum);
-#endif /* DEBUG_PRINTS */
+#endif // DEBUG_PRINTS
             }
             else if (c == '}') {
                 inbrack--;
 #if defined(DEBUG_PRINTS)
                 fprintf(stderr, "inbrack=%i (line=%li)\n", inbrack, linenum);
-#endif /* DEBUG_PRINTS */
+#endif // DEBUG_PRINTS
             }
         }
         strcpy(buf, "{}");
@@ -715,9 +715,7 @@ static int skipit(char *buf, FILE *f) {
 }
 
 static int is_type_word(char *s) {
-    /* find most common type specifiers for purpose of ruling them out as
-     * parm names
-     */
+    // find most common type specifiers for purpose of ruling them out as parm names
 
     static const char *typewords[] = {
         "char",     "const",    "double",   "enum",
@@ -747,18 +745,17 @@ static int is_type_word(char *s) {
 
 
 static Word *typelist(Word *p) {
-    /* given a list representing a type and a variable name, extract just
-     * the base type, e.g. "struct word *x" would yield "struct word"
-     */
+    // given a list representing a type and a variable name, extract just
+    // the base type, e.g. "struct word *x" would yield "struct word"
 
     Word *w, *r;
 
     r = w = word_alloc("");
     while (p && p->next) {
-        /* handle int *x --> int */
+        // handle int *x --> int
         if (p->string[0] && !ISCSYM(p->string[0]))
             break;
-        /* handle int x[] --> int */
+        // handle int x[] --> int
         if (p->next->string[0] == '[')
             break;
         w->next = word_alloc(p->string);
@@ -769,20 +766,19 @@ static Word *typelist(Word *p) {
 }
 
 static Word *getparamlist(FILE *f) {
-    /* Get a parameter list; when this is called the next symbol in line
-     * should be the first thing in the list.
-     */
+    // Get a parameter list; when this is called the next symbol in line
+    // should be the first thing in the list.
 
-    static Word *pname[MAXPARAM]; /* parameter names */
-    Word    *tlist,       /* type name */
-        *plist;       /* temporary */
-    int     np = 0;       /* number of parameters */
-    int     typed[MAXPARAM];  /* parameter has been given a type */
-    int tlistdone;    /* finished finding the type name */
-    int sawsomething;
-    int     i;
-    int inparen = 0;
-    char buf[80];
+    static Word *pname[MAXPARAM];                   // parameter names
+    Word        *tlist;                             // type name
+    Word        *plist;                             // temporary
+    int          np      = 0;                       // number of parameters
+    int          typed[MAXPARAM];                   // parameter has been given a type
+    int          tlistdone;                         // finished finding the type name
+    int          sawsomething;
+    int          i;
+    int          inparen = 0;
+    char         buf[80];
 
     DEBUG_PRINT("in getparamlist\n");
     for (i = 0; i < MAXPARAM; i++)
@@ -790,23 +786,23 @@ static Word *getparamlist(FILE *f) {
 
     plist = word_alloc("");
 
-    /* first, get the stuff inside brackets (if anything) */
+    // first, get the stuff inside brackets (if anything)
 
-    sawsomething = 0;   /* gets set nonzero when we see an arg */
+    sawsomething = 0;                               // gets set nonzero when we see an arg
     for (;;) {
         if (getsym(buf, f) < 0) return NULL;
         if (*buf == ')' && (--inparen < 0)) {
-            if (sawsomething) { /* if we've seen an arg */
+            if (sawsomething) {                     // if we've seen an arg
                 pname[np] = plist;
                 plist = word_alloc("");
                 np++;
             }
             break;
         }
-        if (*buf == ';') {  /* something weird */
+        if (*buf == ';') {                          // something weird
             return ABORTED;
         }
-        sawsomething = 1;   /* there's something in the arg. list */
+        sawsomething = 1;                           // there's something in the arg. list
         if (*buf == ',' && inparen == 0) {
             pname[np] = plist;
             plist = word_alloc("");
@@ -818,7 +814,7 @@ static Word *getparamlist(FILE *f) {
         }
     }
 
-    /* next, get the declarations after the function header */
+    // next, get the declarations after the function header
 
     inparen = 0;
 
@@ -829,8 +825,7 @@ static Word *getparamlist(FILE *f) {
     for (;;) {
         if (getsym(buf, f) < 0) return NULL;
 
-        /* handle a list like "int x,y,z" */
-        if (*buf == ',' && !inparen) {
+        if (*buf == ',' && !inparen) {              // handle a list like "int x,y,z"
             if (!sawsomething)
                 return NULL;
             for (i = 0; i < np; i++) {
@@ -838,7 +833,7 @@ static Word *getparamlist(FILE *f) {
                     typed[i] = 1;
                     word_free(pname[i]);
                     pname[i] = word_append(tlist, plist);
-                    /* promote types */
+                    // promote types
                     typefixhack(pname[i]);
                     break;
                 }
@@ -850,8 +845,7 @@ static Word *getparamlist(FILE *f) {
             word_free(plist);
             plist = word_alloc("");
         }
-        /* handle the end of a list */
-        else if (*buf == ';') {
+        else if (*buf == ';') {                     // handle the end of a list
             if (!sawsomething)
                 return ABORTED;
             for (i = 0; i < np; i++) {
@@ -868,10 +862,8 @@ static Word *getparamlist(FILE *f) {
             tlist = word_alloc("");
             plist = word_alloc("");
         }
-        /* handle the  beginning of the function */
-        else if (strcmp(buf, "{}")==0) break;
-        /* otherwise, throw the word into the list (except for "register") */
-        else if (strcmp(buf, "register")) {
+        else if (strcmp(buf, "{}") == 0) break;     // handle the  beginning of the function
+        else if (strcmp(buf, "register")) {         // otherwise, throw the word into the list (except for "register")
             addword(plist, buf);
             if (*buf == '(') inparen++;
             else if (*buf == ')') inparen--;
@@ -879,9 +871,9 @@ static Word *getparamlist(FILE *f) {
         }
     }
 
-    /* Now take the info we have and build a prototype list */
+    // Now take the info we have and build a prototype list
 
-    /* empty parameter list means "void" */
+    // empty parameter list means "void"
     if (np == 0) return word_alloc("void");
 
     plist = tlist = word_alloc("");
@@ -893,7 +885,7 @@ static Word *getparamlist(FILE *f) {
      * int  -> int dummyXX    (otherwise)
      */
 
-    /* #define AUTO_INT */
+    // #define AUTO_INT
 
     {
 #if !defined(AUTO_INT)
@@ -911,20 +903,20 @@ static Word *getparamlist(FILE *f) {
                 int cnt = 0;
                 int is_void = 0;
 
-                while (pn_list) { /* count words */
+                while (pn_list) {                   // count words
                     if (pn_list->string[0]) {
                         ++cnt;
                         if (strcmp(pn_list->string, "void")==0) is_void = 1;
                     }
                     pn_list = pn_list->next;
                 }
-                if (cnt==1 && !is_void) { /* only name, but not void */
-                    /* no type or no parameter name */
+                if (cnt==1 && !is_void) {           // only name, but not void
+                    // no type or no parameter name
 #ifdef AUTO_INT
-                    /* If no type provided, make it an "int" */
-                    addword(tlist, "int"); /* add int to tlist before adding pname[i] */
+                    // If no type provided, make it an "int"
+                    addword(tlist, "int"); // add int to tlist before adding pname[i]
 #else
-                    add_dummy_name = 1; /* add a dummy name after adding pname[i] */
+                    add_dummy_name = 1; // add a dummy name after adding pname[i]
 #endif
                 }
             }
@@ -950,9 +942,8 @@ static Word *getparamlist(FILE *f) {
 }
 
 static void emit(Word *wlist, Word *plist, long startline) {
-    /* emit a function declaration. The attributes and name of the function
-     * are in wlist; the parameters are in plist.
-     */
+    // emit a function declaration. The attributes and name of the function
+    // are in wlist; the parameters are in plist.
 
     Word *w;
     int   count     = 0;
@@ -1007,7 +998,7 @@ static void emit(Word *wlist, Word *plist, long startline) {
 
         refs = 0;
 
-        if (strcmp(plist->string, "void") != 0) {    /* if parameter is not 'void' */
+        if (strcmp(plist->string, "void") != 0) {   // if parameter is not 'void'
             printf(",\t{\n");
             printf("\t@TYPE,\t@IDENT,\t@REF;\n");
 
@@ -1036,8 +1027,7 @@ static void emit(Word *wlist, Word *plist, long startline) {
                 }
             }
             if (refs) {
-                if (!name_seen) {
-                    /* automatically insert missing parameter names */ 
+                if (!name_seen) {                   // automatically insert missing parameter names
                     printf("\tunnamed%i,", unnamed_counter++);
                 }
                 printf("\tlink%i;\n", refs);
@@ -1056,7 +1046,7 @@ static void emit(Word *wlist, Word *plist, long startline) {
         printf("/*%8ld */ ", startline);
 
 
-    /* if the -e flag was given, and it's not a static function, print "extern" */
+    // if the -e flag was given, and it's not a static function, print "extern"
 
     if (print_extern && !isstatic) {
         printf("extern ");
@@ -1089,7 +1079,7 @@ static void emit(Word *wlist, Word *plist, long startline) {
         const char *token    = w->string;
         char        tokStart = token[0];
 
-        if (!tokStart) continue; // empty token
+        if (!tokStart) continue;                    // empty token
 
         if (tokStart == ',')                       spaceBeforeNext = 1;
         else if (strchr("[])", tokStart) != NULL)  spaceBeforeNext = 0;
@@ -1120,7 +1110,7 @@ static void getdecl(FILE *f, const char *header) {
     Word *plist, *wlist  = NULL;
     char  buf[80];
     int   sawsomething;
-    long  startline;            /* line where declaration started */
+    long  startline;                                // line where declaration started
     int   oktoprint;
     int   header_printed = 0;
 
@@ -1145,7 +1135,7 @@ static void getdecl(FILE *f, const char *header) {
         DEBUG_PRINT(buf);
         DEBUG_PRINT("'\n");
 
-        /* try to guess when a declaration is not an external function definition */
+        // try to guess when a declaration is not an external function definition
         if (strcmp(buf, ",")==0 ||
             strcmp(buf, "=")==0 ||
             strcmp(buf, "typedef")==0 ||
@@ -1170,7 +1160,7 @@ static void getdecl(FILE *f, const char *header) {
             DEBUG_PRINT(buf);
             DEBUG_PRINT("'\n");
 
-            if (strcmp(buf, "$")==0) { /* symbol used if "C" was found */
+            if (strcmp(buf, "$") == 0) {            // symbol used if "C" was found
                 extern_c_seen = 1;
                 if (promote_extern_c) {
                     addword(wlist, "extern");
@@ -1193,7 +1183,7 @@ static void getdecl(FILE *f, const char *header) {
 
         if (strcmp(buf, ";")      == 0) goto again;
 
-        /* A left parenthesis *might* indicate a function definition */
+        // A left parenthesis *might* indicate a function definition
         if (strcmp(buf, "(")==0) {
             startline = linenum;
             if (!sawsomething || !(plist = getparamlist(f))) {
@@ -1203,17 +1193,17 @@ static void getdecl(FILE *f, const char *header) {
             if (plist == ABORTED)
                 goto again;
 
-            /* It seems to have been what we wanted */
+            // It seems to have been what we wanted
 
-            if (oktoprint) { /* check function-name */
+            if (oktoprint) {                        // check function-name
                 Word *w;
 
                 for (w=wlist; w->next && oktoprint; w=w->next) {
-                    if (w->string[0]==':' && w->string[1]==0) oktoprint = 0; /* do not emit prototypes for member functions */
+                    if (w->string[0]==':' && w->string[1]==0) oktoprint = 0; // do not emit prototypes for member functions
                 }
 
-                if (oktoprint && symParts && !matchesSymPart(w->string)) { /* name does not contain sym_part */
-                    oktoprint = 0; /* => do not emit prototype */
+                if (oktoprint && symParts && !matchesSymPart(w->string)) { // name does not contain sym_part
+                    oktoprint = 0;                  // => do not emit prototype
                 }
             }
 
@@ -1297,21 +1287,21 @@ int main(int argc, char **argv) {
     while (*argv && **argv == '-') {
         t = *argv++; --argc; t++;
         while (*t) {
-            if (*t == 'e')              print_extern        = 1;
-            else if (*t == 'A')         use_macro           = 0;
-            else if (*t == 'C')         cansibycplus        = 1;
-            else if (*t == 'E')         promote_extern_c    = 1;
-            else if (*t == 'W')         dont_promote        = 1;
-            else if (*t == 'a')         aisc                = 1;
-            else if (*t == 'g')         search__attribute__ = 1;
-            else if (*t == 'G')         search__ATTR__      = 1;
-            else if (*t == 'n')         donum               = 1;
-            else if (*t == 's')         dostatic            = 1;
-            else if (*t == 'i')         doinline            = 1;
-            else if (*t == 'x')         no_parm_names       = 1; /* no parm names, only types (sg) */
-            else if (*t == 'z')         define_macro        = 0;
-            else if (*t == 'P')         promote_lines       = 1;
-            else if (*t == 'm')         use_main            = 1;
+            if (*t == 'e')      print_extern        = 1;
+            else if (*t == 'A') use_macro           = 0;
+            else if (*t == 'C') cansibycplus        = 1;
+            else if (*t == 'E') promote_extern_c    = 1;
+            else if (*t == 'W') dont_promote        = 1;
+            else if (*t == 'a') aisc                = 1;
+            else if (*t == 'g') search__attribute__ = 1;
+            else if (*t == 'G') search__ATTR__      = 1;
+            else if (*t == 'n') donum               = 1;
+            else if (*t == 's') dostatic            = 1;
+            else if (*t == 'i') doinline            = 1;
+            else if (*t == 'x') no_parm_names       = 1; // no parm names, only types (sg)
+            else if (*t == 'z') define_macro        = 0;
+            else if (*t == 'P') promote_lines       = 1;
+            else if (*t == 'm') use_main            = 1;
             else if (*t == 'p') {
                 t = *argv++; --argc;
                 if (!t) Usage();
@@ -1470,7 +1460,7 @@ int main(int argc, char **argv) {
                   "#endif\n", stdout);
         }
         if (use_macro && define_macro) {
-            printf("\n#undef %s\n", macro_name);    /* clean up namespace */
+            printf("\n#undef %s\n", macro_name);    // clean up namespace
         }
 
         if (include_wrapper) {
