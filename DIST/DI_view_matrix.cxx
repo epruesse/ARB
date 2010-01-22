@@ -576,8 +576,8 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix, save_
                      NULL);
 
     awm->create_menu("File", "F");
-    awm->insert_menu_topic("save_matrix", "Save Matrix to File", "S", "save_matrix.hlp", AWM_ALL, AW_POPUP,(AW_CL)DI_create_save_matrix_window, (AW_CL)sparam);
-    awm->insert_menu_topic("close",       "Close",               "C", 0,                 AWM_ALL,          (AW_CB)AW_POPDOWN,                   (AW_CL)0, 0);
+    awm->insert_menu_topic("save_matrix", "Save Matrix to File", "S", "save_matrix.hlp", AWM_ALL, AW_POPUP,          (AW_CL)DI_create_save_matrix_window, (AW_CL)sparam);
+    awm->insert_menu_topic("close",       "Close",               "C", 0,                 AWM_ALL, (AW_CB)AW_POPDOWN, (AW_CL)0, 0);
 
     awm->create_menu("Props", "P");
     awm->insert_menu_topic("props_matrix",       "Matrix: Colors and Fonts ...", "C", "neprops_data.hlp", AWM_ALL, AW_POPUP,          (AW_CL)AW_create_gc_window, (AW_CL)preset_window);

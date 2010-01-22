@@ -307,7 +307,7 @@ static int getPenalty(char c1, char c2) /* c1,c2 = A=0,C=1,... s.o. */
 
 static char *result[3];         // result buffers
 
-static char pam250mt[]= {
+static char pam250mt[] = {
     12,
      0, 2,
     -2, 1, 3,
