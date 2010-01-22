@@ -14,7 +14,7 @@
 
 // new way to store folded helices
 
-char *SEC_xstring_to_foldedHelixList(const char *x_string, size_t xlength, const BI_helix *helix);
+char *SEC_xstring_to_foldedHelixList(const char *x_string, size_t xlength, const BI_helix *helix, GB_ERROR& error);
 char *SEC_foldedHelixList_to_xstring(const char *foldedHelices, size_t xlength, const BI_helix *helix, GB_ERROR& error);
 
 // support for old way to store folded helices

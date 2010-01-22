@@ -48,11 +48,14 @@ const size_t *SEC_root::getHelixPositions(const char *helixNr) const {
 // strand start-positions are saved as 'num'
 // segment start-positions are saved as '!num'
 
-char *SEC_xstring_to_foldedHelixList(const char *x_string, size_t xlength, const BI_helix *helix) {
+char *SEC_xstring_to_foldedHelixList(const char *x_string, size_t xlength, const BI_helix *helix, GB_ERROR& error) {
     GBS_strstruct *out           = GBS_stropen(1000);
     bool           next_is_start = true;
 
-    for (size_t pos = 0; pos<xlength; ++pos) {
+    sec_assert(!error);
+    error = NULL;
+
+    for (size_t pos = 0; pos<xlength && !error; ++pos) {
         if (x_string[pos] == 'x') {
             BI_PAIR_TYPE  pairType = helix->pairtype(pos);
             const char   *helixNr  = helix->helixNr(pos);
@@ -63,14 +66,19 @@ char *SEC_xstring_to_foldedHelixList(const char *x_string, size_t xlength, const
             }
             else {
                 bool is_end_and_start = pairType != HELIX_NONE;
-                
-                sec_assert(helix->pairtype(pos-1) != HELIX_NONE);
-                GBS_strnprintf(out, 20, "!%s", helix->helixNr(pos-1));
 
-                if (is_end_and_start) {
-                    GBS_chrcat(out, ';');
-                    GBS_strcat(out, helixNr);
-                    next_is_start = !next_is_start;
+                if (helix->pairtype(pos-1) == HELIX_NONE) {
+                    // hackaround: xstring got out of sync (e.g. by insert/delete columns)
+                    error = GBS_global_string("xstring out of sync at position %zu (approximately)\nRefold helices around position!", pos);
+                }
+                else {
+                    GBS_strnprintf(out, 20, "!%s", helix->helixNr(pos-1));
+
+                    if (is_end_and_start) {
+                        GBS_chrcat(out, ';');
+                        GBS_strcat(out, helixNr);
+                        next_is_start = !next_is_start;
+                    }
                 }
             }
             next_is_start = !next_is_start;
@@ -78,7 +86,7 @@ char *SEC_xstring_to_foldedHelixList(const char *x_string, size_t xlength, const
         }
     }
 
-    return GBS_strclose(out);
+    return error ? (GBS_strforget(out), (char*)NULL) : GBS_strclose(out);
 }
 
 char *SEC_foldedHelixList_to_xstring(const char *foldedHelices, size_t xlength, const BI_helix *helix, GB_ERROR& error) {

@@ -295,17 +295,22 @@ static void export_structure_to_file(AW_window *, AW_CL cl_db)
 
         sec_assert(xstr.get_x_string_length() == strlen(x_string));
 
-        char *foldInfo = SEC_xstring_to_foldedHelixList(x_string, xstr.get_x_string_length(), sec_root->get_helixDef());
-        fprintf(out, "foldedHelices=%s\n", foldInfo);
-        free(foldInfo);
+        char *foldInfo = SEC_xstring_to_foldedHelixList(x_string, xstr.get_x_string_length(), sec_root->get_helixDef(), error);
+        if (foldInfo) {
+            fprintf(out, "foldedHelices=%s\n", foldInfo);
+            free(foldInfo);
+        }
 
         fputs(ASS_EOF, out); fputc('\n', out);
         fclose(out);
+
+        if (error) GB_unlink_or_warn(filename, &error);
     }
     else {
         error = GB_export_errorf("Can't write secondary structure to '%s'", filename);
     }
 
+    free(filename);
     if (error) aw_popup_ok(error);
 }
 
