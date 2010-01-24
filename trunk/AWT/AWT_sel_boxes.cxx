@@ -20,7 +20,8 @@
 #include "awt_sel_boxes.hxx"
 #include "awt_item_sel_list.hxx"
 
-// ******************** selection boxes on alignments ********************
+// --------------------------------------
+//      selection boxes on alignments
 
 static void awt_create_selection_list_on_ad_cb(GBDATA *, struct adawcbstruct *cbs) {
     cbs->aws->clear_selection_list(cbs->id);
@@ -45,10 +46,12 @@ static void awt_create_selection_list_on_ad_cb(GBDATA *, struct adawcbstruct *cb
 }
 
 
-void awt_create_selection_list_on_ad(GBDATA *gb_main, AW_window *aws, const char *varname, const char *comm)
-// if comm is set then only those alignments are taken
-// which can be parsed by comm
-{
+void awt_create_selection_list_on_ad(GBDATA *gb_main, AW_window *aws, const char *varname, const char *comm) {
+    // Create selection lists on alignments
+    // 
+    // if comm is set, then only insert alignments,
+    // where 'comm' GBS_string_eval's the alignment type
+
     AW_selection_list *id;
     GBDATA            *gb_presets;
 
@@ -62,7 +65,7 @@ void awt_create_selection_list_on_ad(GBDATA *gb_main, AW_window *aws, const char
     cbs->awr     = aws->get_root();
     cbs->gb_main = gb_main;
     cbs->id      = id;
-    cbs->comm    = 0; if (comm) cbs->comm = strdup(comm);
+    cbs->comm    = nulldup(comm);
 
     awt_create_selection_list_on_ad_cb(0, cbs);
 
@@ -102,9 +105,11 @@ void awt_create_selection_list_on_trees_cb(GBDATA *dummy, struct adawcbstruct *c
 }
 
 void awt_create_selection_list_on_trees(GBDATA *gb_main, AW_window *aws, const char *varname) {
+    /* Create selection list for trees */
+
     AW_selection_list *id;
     GBDATA            *gb_tree_data;
-    
+
     GB_push_transaction(gb_main);
 
     id = aws->create_selection_list(varname, 0, "", 40, 4);
@@ -266,8 +271,9 @@ AW_window *awt_popup_selection_list_on_pt_servers(AW_root *aw_root, const char *
     return aw_popup;
 }
 
-void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname, bool popup)
-{
+void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname, bool popup) {
+    /* Create selection list for pt-servers */
+    
     if (popup) {
         AW_root *aw_root              = aws->get_root();
         char    *awar_buttontext_name = GBS_global_string_copy("/tmp/%s_BUTTON", varname);
@@ -373,9 +379,10 @@ void awt_create_selection_list_on_table_fields_cb(GBDATA *dummy, struct awt_sel_
     cbs->aws->update_selection_list(cbs->id);
 }
 
-void awt_create_selection_list_on_table_fields(GBDATA *gb_main, AW_window *aws, const char *table_name, const char *varname)
-{
-    AW_selection_list *id;
+void awt_create_selection_list_on_table_fields(GBDATA *gb_main, AW_window *aws, const char *table_name, const char *varname) {
+    // if tablename == 0 -> take fields from species table
+    
+    AW_selection_list              *id;
     struct awt_sel_list_for_tables *cbs;
     GB_push_transaction(gb_main);
 
@@ -463,10 +470,13 @@ char *awt_create_string_on_configurations(GBDATA *gb_main) {
     return result;
 }
 
-// ******************** selection boxes on SAIs ********************
+void awt_create_selection_list_on_extendeds_update(GBDATA *dummy, void *cbsid) {
+    /* update the selection box defined by awt_create_selection_list_on_extendeds
+     * 
+     * useful only when filterproc is defined
+     * (changes to SAIs will automatically callback this function)
+     */
 
-void awt_create_selection_list_on_extendeds_update(GBDATA *dummy, void *cbsid)
-{
 #if defined(DEVEL_RALF)
     printf("start awt_create_selection_list_on_extendeds_update\n"); // @@@
 #endif // DEVEL_RALF
@@ -531,6 +541,12 @@ void *awt_create_selection_list_on_extendeds(GBDATA *gb_main, AW_window *aws, co
                                              char *(*filter_poc)(GBDATA *gb_ext, AW_CL), AW_CL filter_cd,
                                              bool add_sel_species)
 {
+    /* Selection list for all extendeds (SAIs)
+     * 
+     * if filter_proc is set then show only those items on which
+     * filter_proc returns a string (string must be a heap copy)
+     */
+    
     AW_selection_list           *id;
     struct awt_sel_list_for_sai *cbs;
 
@@ -686,17 +702,17 @@ void create_print_box_for_selection_lists(AW_window *aw_window, AW_CL selid) {
 
 
 
-/* ************************************************** */
 AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const char *file_extension, char **set_file_name_awar,
                                void (*callback)(AW_window*),
                                AW_window* (*create_popup)(AW_root *, AW_default))
-
-    /*      You can either provide a normal callback or a create_popup-callback
-     *      (the not-used callback has to be 0)
+{
+    /* general purpose file selection box
+     * 
+     * You can either provide a normal 'callback' or a 'create_popup'-callback
+     * (the not-used callback has to be NULL)
      */
 
 
-{
     char *base_name = GBS_global_string_copy("tmp/load_box_%s", load_what);
 
     aw_create_selection_box_awars(aw_root, base_name, ".", file_extension, "");
@@ -741,10 +757,6 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const ch
     
     return aws;
 }
-
-/* ************************************************** */
-
-
 
 void awt_set_long(AW_window *aws, AW_CL varname, AW_CL value)   // set an awar
 {

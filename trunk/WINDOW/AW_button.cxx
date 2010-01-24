@@ -33,9 +33,6 @@
 // #define DUMP_BUTTON_CREATION
 #endif // DEBUG
 
-/*********************************************************************************************************************/
-/*********************************************************************************************************************/
-/*********************************************************************************************************************/
 static void aw_cp_awar_2_widget_cb(AW_root *root, AW_widget_list_for_variable *widgetlist) {
     if (widgetlist->widget == (int *)root->changer_of_variable) {
         root->changer_of_variable = 0;
@@ -89,9 +86,8 @@ AW_widget_list_for_variable::AW_widget_list_for_variable(AW_awar *vs, AW_CL cd1,
     awar->add_callback((AW_RCB1)aw_cp_awar_2_widget_cb, (AW_CL)this);
 }
 
-/********************************* Used for single items in lists ****************************************/
+struct AW_variable_update_struct { // used to refresh single items on change
 
-struct AW_variable_update_struct {
     AW_variable_update_struct(Widget widgeti, AW_widget_type widget_typei, AW_awar *awari, const char *var_s_i, int var_i_i, float var_f_i, AW_cb_struct *cbsi);
     AW_awar        *awar;
     Widget          widget;
@@ -275,12 +271,7 @@ void AW_value_changed_callback(Widget wgt, XtPointer rooti, XtPointer call_data)
     root->value_changed = true;
 }
 
-
-
-/****************************************************************************************************************************/
-/****************************************************************************************************************************/
-
-void     aw_attach_widget(Widget scrolledWindowText, AW_at *_at, int default_width = -1) {
+void aw_attach_widget(Widget scrolledWindowText, AW_at *_at, int default_width = -1) {
     short height = 0;
     short width = 0;
     if (!_at->to_position_exists) {
@@ -371,7 +362,6 @@ void     aw_attach_widget(Widget scrolledWindowText, AW_at *_at, int default_wid
                       NULL);
     }
 }
-/****************************************************************************************************************************/
 
 static char *pixmapPath(const char *pixmapName) {
     return nulldup(GB_path_in_ARBLIB("pixmaps", pixmapName));
@@ -474,9 +464,6 @@ inline void calculate_textsize(const char *str, int *width, int *height) {
     *height = textheight;
 }
 
-
-/****************************************************************************************************************************/
-
 static void calculate_label_size(AW_window *aww, int *width, int *height, bool in_pixel, const char *non_at_label) {
     // in_pixel == true -> calculate size in pixels
     // in_pixel == false -> calculate size in characters
@@ -497,9 +484,6 @@ static void calculate_label_size(AW_window *aww, int *width, int *height, bool i
         *height = 0;
     }
 }
-
-
-/****************************************************************************************************************************/
 
 Widget AW_window::get_last_widget() const {
     return p_global->get_last_widget();
@@ -868,9 +852,8 @@ void AW_window::update_label(int *widget, const char *var_value) {
     }
 }
 
-/******************************************************************************************/
-/***********************    0/1 toggle          ***************************/
-/******************************************************************************************/
+// ----------------------
+//      on/off toggle
 
 struct aw_toggle_data {
     bool  isTextToggle;
@@ -975,11 +958,8 @@ void AW_window::create_inverse_toggle(const char *var_name) {
     create_toggle(var_name, "#yes.bitmap", "#no.bitmap");
 }
 
-/************************************************************************************************/
-/************************************************************************************************/
-/************************************************************************************************/
-
-
+// ---------------------
+//      input fields
 
 void AW_window::create_input_field(const char *var_name,   int columns) {
     Widget                     textField              = 0;
@@ -1252,10 +1232,8 @@ void AW_window::update_text_field(int *widget, const char *var_value) {
     XtVaSetValues(w, XmNvalue, var_value, NULL);
 }
 
-
-/****************************************************************************************************************************/
-/****************************************************************************************************************************/
-/****************************************************************************************************************************/
+// -----------------------
+//      selection list
 
 
 AW_selection_list* AW_window::create_selection_list(const char *var_name, const char *tmp_label, const char *mnemonic, int columns, int rows) {
@@ -1454,9 +1432,8 @@ void AW_window::conc_list(AW_selection_list *from_list, AW_selection_list *to_li
     insert_default_selection(from_list, "", "");
 }
 
-// --------------------------------------------------
-// iterator through selection list:
-// --------------------------------------------------
+// -----------------------------------------
+//      iterator through selection list:
 
 static AW_select_table_struct *current_list_table = 0;
 
@@ -2471,10 +2448,8 @@ void AW_window::update_option_menu(AW_option_menu_struct *oms) {
     }
 }
 
-
-/*********************************************************************************************************************************/
-/*********************************************************************************************************************************/
-/*********************************************************************************************************************************/
+// -------------------------------------------------------
+//      toggle field (actually this are radio buttons)
 
 void AW_window::create_toggle_field(const char *var_name, AW_label labeli, const char *mnemonic) {
     AWUSE(mnemonic);

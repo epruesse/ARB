@@ -1,10 +1,13 @@
-/*********************************************************************************
- *  Coded by Ralf Westram (coder@reallysoft.de) in 2001                          *
- *  Institute of Microbiology (Technical University Munich)                      *
- *  http://www.mikro.biologie.tu-muenchen.de/                                    *
- *********************************************************************************/
-
-
+// =============================================================== //
+//                                                                 //
+//   File      : GEN_nds.cxx                                       //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Ralf Westram (coder@reallysoft.de) in 2001           //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -406,6 +409,4 @@ AW_window *GEN_open_nds_window(AW_root *aw_root, AW_CL cgb_main)
     }
     return aws;
 }
-
-
 

@@ -242,9 +242,8 @@ long gbs_get_a_prime(long above_or_equal_this) {
     return above_or_equal_this;
 }
 
-/********************************************************************************************
-                    Some Hash Procedures for [string,long]
-********************************************************************************************/
+// -----------------------------------------------
+//      Some Hash Procedures for [string,long]
 
 GB_HASH *GBS_create_hash(long user_size, GB_CASE case_sens) {
     /* Create a hash of size size, this hash is using linked list to avoid collisions,
@@ -803,9 +802,8 @@ int GBS_HCF_sortedByKey(const char *k0, long v0, const char *k1, long v1) {
     return strcmp(k0, k1);
 }
 
-/********************************************************************************************
-                    Some Hash Procedures for [long,long]
-********************************************************************************************/
+// ---------------------------------------------
+//      Some Hash Procedures for [long,long]
 
 inline long gbs_numhash_index(long key, long size) {
     long x;

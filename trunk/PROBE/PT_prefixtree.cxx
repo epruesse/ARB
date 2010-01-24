@@ -13,8 +13,6 @@
 struct PTM_struct PTM;
 char PT_count_bits[PT_B_MAX+1][256]; // returns how many bits are set
 
-/********************* build conversion table ***********************/
-
 void PT_init_count_bits(void) {
     unsigned int base;
     unsigned int count;
@@ -33,10 +31,9 @@ void PT_init_count_bits(void) {
     }
 }
 
-/********************* Self build malloc free procedures ***********************/
+char *PTM_get_mem(int size) {
+    //! allocate 'size' bytes
 
-char *PTM_get_mem(int size)
-{
     int   nsize, pos;
     long  i;
     char *erg;
@@ -76,9 +73,8 @@ char *PTM_get_mem(int size)
     return erg;
 }
 
-/********************* malloc all small free blocks ***********************/
-int
-PTM_destroy_mem(void) { /* destroys all left memory sources */
+int PTM_destroy_mem(void) {
+    /* destroys all left memory sources */
     int  pos;
     long i;
     int  sum;
@@ -94,8 +90,10 @@ PTM_destroy_mem(void) { /* destroys all left memory sources */
     pt_assert(sum >= 0);
     return sum;
 }
-void PTM_free_mem(char *data, int size)
-{
+
+void PTM_free_mem(char *data, int size) {
+    //! free memory allocated by PTM_get_mem()
+
     pt_assert(size > 0);
     int  nsize, pos;
     long i;
@@ -157,13 +155,8 @@ PTM2 *PT_init(int base_count)
     return ptmain;
 }
 
-/******************************** functions for all stages !!!!! *********************************/
-
-
-/******************************** Debug Functions all stages *********************************/
-
-int PTD(POS_TREE * node)
-{
+int PTD(POS_TREE * node) {
+    // Debug function for all stages
     long             i;
     PTM2        *ptmain = psg.ptmain;
     if (!node) printf("Zero node\n");
@@ -193,8 +186,8 @@ int PTD(POS_TREE * node)
     return 0;
 }
 
-
-/******************************** functions for stage 1 *********************************/
+// ------------------------------
+//      functions for stage 1
 
 void PT_change_father(POS_TREE *father, POS_TREE *source, POS_TREE *dest) { /* stage 1 */
     long i, j;
@@ -379,7 +372,8 @@ PT_create_leaf(PTM2 *ptmain, POS_TREE ** pfather, PT_BASES base, int rpos, int a
 }
 
 
-/******************************** functions for stage 1: save *********************************/
+// ------------------------------------
+//      functions for stage 1: save
 
 void PTD_clear_fathers(PTM2 *ptmain, POS_TREE * node)       /* stage 1 */
 {
@@ -820,7 +814,9 @@ long PTD_write_leafs_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos
     return pos;
 }
 
-/******************************** functions for stage 2-3: load *********************************/
+// --------------------------------------
+//      functions for stage 2-3: load
+
 
 void PTD_read_leafs_from_disk(char *fname, PTM2 *ptmain, POS_TREE **pnode) {
     GB_ERROR  error  = NULL;

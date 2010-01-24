@@ -84,28 +84,6 @@ static void mark_species(GBT_TREE *node, Store_species **extra_marked_species) {
 
 
 
-/** Builds a configuration string from a tree. Returns the number of marked species */
-/* Syntax:
-
-   TAG  1 byte  'GFELS'
-
-   G    group
-   F    folded group
-   E    end of group
-   L    species
-   S    SAI
-
-   String
-   Separator (char)1
-
-   X::  Y '\0'
-   Y::  eps
-   Y::  '\AL' 'Name' Y
-   Y::  '\AS' 'Name' Y
-   Y::  '\AG' 'Gruppenname' '\A' Y '\AE'
-   Y::  '\AF' 'Gruppenname' '\A' Y '\AE'
-*/
-
 GBT_TREE *rightmost_leaf(GBT_TREE *node) {
     nt_assert(node);
     while (!node->is_leaf) {
@@ -135,12 +113,37 @@ GBT_TREE *left_neighbour_leaf(GBT_TREE *node) {
 }
 
 int nt_build_conf_string_rek(GB_HASH *used, GBT_TREE *tree, GBS_strstruct *memfile,
-                             Store_species **extra_marked_species, // all extra marked species are inserted here
-                             int use_species_aside, // # of species to mark left and right of marked species
-                             int *auto_mark, // # species to extra-mark (if not already marked)
-                             int marked_at_left, // # of species which were marked (looking to left)
-                             int *marked_at_right) // # of species which are marked (when returning from recursion)
+                             Store_species **extra_marked_species, int use_species_aside,
+                             int *auto_mark, int marked_at_left, int *marked_at_right)
 {
+    /*! Builds a configuration string from a tree.
+     *
+     * @param extra_marked_species      all extra marked species are inserted here
+     * @param use_species_aside         number of species to mark left and right of marked species
+     * @param auto_mark                 number species to extra-mark (if not already marked)
+     * @param marked_at_left            number of species which were marked (looking to left)
+     * @param marked_at_right           number of species which are marked (when returning from recursion)
+     * 
+     * @return the number of marked species
+     *
+     * --------------------------------------------------
+     * Format of configuration string : [Part]+ \0
+     *
+     * Part : '\A' ( Group | Species | Sai )
+     * 
+     * Group : ( OpenedGroup | ClosedGroup )
+     * OpenedGroup : 'G' GroupDef
+     * ClosedGroup : 'F' GroupDef
+     * GroupDef : 'groupname' [PART]* EndGroup
+     * EndGroup : '\AE' 
+     * 
+     * SPECIES : 'L' 'speciesname'
+     * SAI : 'S' 'sainame'
+     *
+     * \0 : ASCII 0 (eos)
+     * \A : ASCII 1
+     */
+
     if (!tree) return 0;
     if (tree->is_leaf) {
         if (!tree->gb_node) {
@@ -268,8 +271,9 @@ static long nt_build_sai_string_by_hash(const char *key, long val, void *cd_sai_
 }
 
 
-/** collect all Sais, place some SAI in top area, rest in middle */
 void nt_build_sai_string(GBS_strstruct *topfile, GBS_strstruct *middlefile) {
+    /*! collect all Sais, place some SAI in top area, rest in middle */
+
     GBDATA *gb_sai_data = GBT_get_SAI_data(GLOBAL_gb_main);
     if (!gb_sai_data) return;
 

@@ -1,4 +1,4 @@
-/////////////////////////////////////////////////////////////////////////////
+// --------------------------------------------------------------------------------
 //
 // Copyright (C) 2000
 // Ralf Westram
@@ -14,7 +14,7 @@
 // This code is part of my library.
 // You may find a more recent version at http://www.reallysoft.de/
 //
-/////////////////////////////////////////////////////////////////////////////
+// --------------------------------------------------------------------------------
 
 #include "xml.hxx"
 
@@ -30,14 +30,9 @@ static const char *entities =
 "  <!ENTITY semi \"&#59;\">\n"
 ;
 
-// ********************************************************************************
-
-//  ---------------------------------------------------------------------------------
-//      static string encodeEntities(const string& str, bool quotedText = false)
-//  ---------------------------------------------------------------------------------
-// if quotedText is true the string is encoded for usage in quotes
-// currently it makes no difference, but this might change
 static string encodeEntities(const string& str, bool quotedText = false) {
+    // if quotedText is true the string is encoded for usage in quotes
+    // currently it makes no difference, but this might change
     string neu;
     neu.reserve(str.length()*4);
 
@@ -70,40 +65,31 @@ static string encodeEntities(const string& str, bool quotedText = false) {
     return neu;
 }
 
-//  ----------------------------------------------------------------------------------
-//      XML_Attribute::XML_Attribute(const string& name_, const string& content_)
-//  ----------------------------------------------------------------------------------
+// ----------------------
+//      XML_Attribute
+
 XML_Attribute::XML_Attribute(const string& name_, const string& content_)
-    : name(name_), content(content_), next(0)
+    : name(name_)
+    , content(content_)
+    , next(0)
 {}
 
-//  ----------------------------------------
-//      XML_Attribute::~XML_Attribute()
-//  ----------------------------------------
 XML_Attribute::~XML_Attribute() {
     delete next;
 }
-//  ----------------------------------------------------------------------
-//      XML_Attribute *XML_Attribute::append_to(XML_Attribute *queue)
-//  ----------------------------------------------------------------------
 XML_Attribute *XML_Attribute::append_to(XML_Attribute *queue) {
     if (!queue) return this;
     queue->next = append_to(queue->next);
     return queue;
 }
-//  ---------------------------------------------------
-//      void XML_Attribute::print(FILE *out) const
-//  ---------------------------------------------------
 void XML_Attribute::print(FILE *out) const {
     fprintf(out, " %s=\"%s\"", name.c_str(), encodeEntities(content, true).c_str());
     if (next) next->print(out);
 }
 
-// ********************************************************************************
+// -----------------
+//      XML_Node
 
-//  ----------------------------------------
-//      XML_Node::XML_Node(bool is_tag)
-//  ----------------------------------------
 XML_Node::XML_Node(bool is_tag) {
     xml_assert(the_XML_Document);
 
@@ -119,28 +105,24 @@ XML_Node::XML_Node(bool is_tag) {
     opened = false;
 }
 
-//  ------------------------------
-//      XML_Node::~XML_Node()
-//  ------------------------------
 XML_Node::~XML_Node() {
     if (father) father->remove_son(this);
     the_XML_Document->set_LatestSon(father);
 }
 
-// ********************************************************************************
 
-inline void to_indent(FILE *out, int indent) { int i = indent*the_XML_Document->indentation_per_level; while (i--) fputc(' ', out); }
+// ----------------
+//      XML_Tag
 
-//  ---------------------------------------------
-//      XML_Tag::XML_Tag(const string &name_)
-//  ---------------------------------------------
 XML_Tag::XML_Tag(const string &name_)
-    : XML_Node(true), name(name_), son(0), attribute(0), state(0), onExtraLine(true)
-{
-}
-//  ----------------------------
-//      XML_Tag::~XML_Tag()
-//  ----------------------------
+    : XML_Node(true)
+    , name(name_)
+    , son(0)
+    , attribute(0)
+    , state(0)
+    , onExtraLine(true)
+{}
+
 XML_Tag::~XML_Tag() {
     FILE *out = the_XML_Document->Out();
     if (son) throw string("XML_Tag has son in destructor");
@@ -149,41 +131,31 @@ XML_Tag::~XML_Tag() {
     delete attribute;
 }
 
-//  ---------------------------------------------------------------------------------
-//      void XML_Tag::add_attribute(const string& name_, const string& content_)
-//  ---------------------------------------------------------------------------------
 void XML_Tag::add_attribute(const string& name_, const string& content_) {
     XML_Attribute *newAttr = new XML_Attribute(name_, content_);
     attribute = newAttr->append_to(attribute);
 }
-// ---------------------------------------------------------------------
-//      void XML_Tag::add_attribute(const string& name_, int value)
-// ---------------------------------------------------------------------
+
 void XML_Tag::add_attribute(const string& name_, int value) {
     char buf[30];
     sprintf(buf, "%i", value);
     add_attribute(name_, buf);
 }
-//  ---------------------------------------------------------------
-//      void XML_Tag::add_son(XML_Node *son_, bool son_is_tag)
-//  ---------------------------------------------------------------
+
 void XML_Tag::add_son(XML_Node *son_, bool son_is_tag) {
     if (son) throw string("Tried to add a second son! Destroy previous son first.");
     son                           = son_;
     int wanted_state              = son_is_tag ? 2 : 1;
     if (state<wanted_state) state = wanted_state;
 }
-//  -------------------------------------------------
-//      void XML_Tag::remove_son(XML_Node *son_)
-//  -------------------------------------------------
+
 void XML_Tag::remove_son(XML_Node *son_) {
     if (son != son_) throw string("Tried to remove wrong son!");
     son = 0;
 }
 
-//  --------------------------------------
-//      void XML_Tag::open(FILE *out)
-//  --------------------------------------
+inline void to_indent(FILE *out, int indent) { int i = indent*the_XML_Document->indentation_per_level; while (i--) fputc(' ', out); }
+
 void XML_Tag::open(FILE *out) {
     if (father && !father->Opened()) father->open(out);
     if (onExtraLine) {
@@ -195,9 +167,7 @@ void XML_Tag::open(FILE *out) {
     fputc('>', out);
     opened = true;
 }
-//  ----------------------------------------
-//      void XML_Tag::close(FILE *out)
-//  ----------------------------------------
+
 void XML_Tag::close(FILE *out) {
     if (!opened) {
         if (!the_XML_Document->skip_empty_tags || attribute || !father) {
@@ -217,104 +187,63 @@ void XML_Tag::close(FILE *out) {
     }
 }
 
-// ********************************************************************************
+// -----------------
+//      XML_Text
 
-// start of implementation of class XML_Text:
-
-//  ------------------------------
-//      XML_Text::~XML_Text()
-//  ------------------------------
 XML_Text::~XML_Text() {
     FILE *out = the_XML_Document->Out();
     close(out);
 }
-//  -------------------------------------------------
-//      void XML_Text::add_son(XML_Node *, bool)
-//  -------------------------------------------------
+
 void XML_Text::add_son(XML_Node *, bool) {
     throw string("Can't add son to XML_Text-Node");
 }
-//  ------------------------------------------------------
-//      void XML_Text::remove_son(XML_Node */*son_*/)
-//  ------------------------------------------------------
+
 void XML_Text::remove_son(XML_Node * /* son_ */) {
     throw string("Can't remove son from XML_Text-Node");
 }
 
-// ------------------------------------
-//      void XML_Text::open(FILE *)
-// ------------------------------------
-void XML_Text::open(FILE *)
-{
-}
+void XML_Text::open(FILE *) {}
 
-//  ----------------------------------------
-//      void XML_Text::close(FILE *out)
-//  ----------------------------------------
 void XML_Text::close(FILE *out) {
     if (father && !father->Opened()) father->open(out);
     fputs(encodeEntities(content).c_str(), out);
 }
 
-// -end- of implementation of class XML_Text.
+// --------------------
+//      XML_Comment
 
-// start of implementation of class XML_Comment:
-
-// ------------------------------------
-//      XML_Comment::~XML_Comment()
-// ------------------------------------
-XML_Comment::~XML_Comment()
-{
+XML_Comment::~XML_Comment() {
     FILE *out = the_XML_Document->Out();
     close(out);
 }
 
-// -----------------------------------------------------
-//      void XML_Comment::add_son(XML_Node *, bool )
-// -----------------------------------------------------
-void XML_Comment::add_son(XML_Node *, bool)
-{
+void XML_Comment::add_son(XML_Node *, bool) {
     throw string("Can't add son to XML_Comment-Node");
 }
 
-// -------------------------------------------------
-//      void XML_Comment::remove_son(XML_Node *)
-// -------------------------------------------------
-void XML_Comment::remove_son(XML_Node *)
-{
+void XML_Comment::remove_son(XML_Node *) {
     throw string("Can't remove son from XML_Comment-Node");
 }
 
-// ---------------------------------------
-//      void XML_Comment::open(FILE *)
-// ---------------------------------------
-void XML_Comment::open(FILE *)
-{
-}
+void XML_Comment::open(FILE *) {}
 
-// -------------------------------------------
-//      void XML_Comment::close(FILE *out)
-// -------------------------------------------
-void XML_Comment::close(FILE *out)
-{
+void XML_Comment::close(FILE *out) {
     fputc('\n', out); to_indent(out, Indent());
     fputs("<!--", out);
     fputs(encodeEntities(content).c_str(), out);
     fputs("-->", out);
 }
 
+// ---------------------
+//      XML_Document
 
-
-// -end- of implementation of class XML_Comment.
-
-
-// ********************************************************************************
-
-//  ---------------------------------------------------------------------------------------
-//      XML_Document::XML_Document(const string& name_, const string& dtd_, FILE *out_)
-//  ---------------------------------------------------------------------------------------
 XML_Document::XML_Document(const string& name_, const string& dtd_, FILE *out_)
-    : dtd(dtd_), root(0), out(out_), skip_empty_tags(false), indentation_per_level(1)
+    : dtd(dtd_)
+    , root(0)
+    , out(out_)
+    , skip_empty_tags(false)
+    , indentation_per_level(1)
 {
     xml_assert(out);
     if (the_XML_Document) string Error("You can only have one XML_Document at a time.");
@@ -327,9 +256,6 @@ XML_Document::XML_Document(const string& name_, const string& dtd_, FILE *out_)
     fprintf(out, "<!DOCTYPE %s SYSTEM '%s' [\n%s]>\n", name_.c_str(), dtd.c_str(), entities);
 }
 
-//  --------------------------------------
-//      XML_Document::~XML_Document()
-//  --------------------------------------
 XML_Document::~XML_Document() {
     delete root;
     xml_assert(the_XML_Document == this);

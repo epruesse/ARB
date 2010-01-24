@@ -331,7 +331,7 @@ void concatenateAlignments(AW_window *aws) {
     char *new_ali_name = aw_root->awar(AWAR_CON_NEW_ALIGNMENT_NAME)->read_string();
     GB_ERROR error     = GBT_check_alignment_name(new_ali_name);
 
-    if (!error) { /// handle error
+    if (!error) {
         GBDATA *gb_presets          = GB_search(GLOBAL_gb_main, "presets", GB_CREATE_CONTAINER);
         GBDATA *gb_alignment_exists = GB_find_string(gb_presets, "alignment_name", new_ali_name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
         GBDATA *gb_new_alignment    = 0;

@@ -58,30 +58,32 @@ GBDATA *GBT_find_or_create_species(GBDATA *gb_main, const char *name) {
 }
 
 GBDATA *GBT_find_or_create_SAI(GBDATA *gb_main, const char *name) {
-    // Search for an SAI, when SAI does not exist, create it
+    //! Search for an SAI, when SAI does not exist, create it
     return GBT_find_or_create_item_rel_item_data(GBT_get_SAI_data(gb_main), "extended", "name", name, true);
 }
 
 
-/********************************************************************************************
-                    some simple find procedures
-********************************************************************************************/
+// ------------------------------------
+//      some simple find procedures
 
 GBDATA *GBT_find_item_rel_item_data(GBDATA *gb_item_data, const char *id_field, const char *id_value) {
-    // 'gb_item_data' is a container containing items
-    // 'id_field' is a field containing a unique identifier for each item (e.g. 'name' for species)
-    //
-    // returns a pointer to an item with 'id_field' containing 'id_value'
-    // or NULL (in this case an error MAY be exported)
-    // 
-    // Note: If you expect the item to exist, use GBT_expect_item_rel_item_data!
+    /*! search for items starting at item container
+     * 
+     * @param 'gb_item_data' is a container containing items
+     * @param 'id_field' is a field containing a unique identifier for each item (e.g. 'name' for species)
+     * 
+     * @return a pointer to an item with 'id_field' containing 'id_value'
+     * or NULL (in this case an error MAY be exported)
+     * 
+     * Note: If you expect the item to exist, use GBT_expect_item_rel_item_data()
+     */
 
     GBDATA *gb_item_id = GB_find_string(gb_item_data, id_field, id_value, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
     return gb_item_id ? GB_get_father(gb_item_id) : 0;
 }
 
 GBDATA *GBT_expect_item_rel_item_data(GBDATA *gb_item_data, const char *id_field, const char *id_value) {
-    // like GBT_find_item_rel_item_data, but also exports an error if the item is not present
+    //! like GBT_find_item_rel_item_data(), but also exports an error if the item is not present
 
     GBDATA *gb_found = GBT_find_item_rel_item_data(gb_item_data, id_field, id_value);
     if (!gb_found && !GB_have_error()) { // item simply not exists
@@ -286,9 +288,9 @@ char *GBT_create_unique_species_name(GBDATA *gb_main, const char *default_name) 
 }
 
 
-/********************************************************************************************
-                    mark and unmark species
-********************************************************************************************/
+// --------------------------------
+//      mark and unmark species
+
 void GBT_mark_all(GBDATA *gb_main, int flag) {
     // flag == 0 -> unmark
     // flag == 1 -> mark

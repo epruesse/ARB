@@ -98,13 +98,8 @@ unsigned long AP_STACK::size() {
     return stacksize;
 }
 
-
-
-/******************************************
-
-AP_LIST
-
-****************************************/
+// ----------------
+//      AP_LIST
 
 AP_LIST::AP_LIST() {
     list_len = 0;
@@ -258,12 +253,6 @@ void AP_LIST::clear() {
     akt = 0;
     list_len = 0;
 }
-
-
-/******************
-print Funktionen fuer spezial Stacks
-
-*******************/
 
 void AP_tree_buffer::print() {
     cout  << "AP_tree_buffer                      " << this;

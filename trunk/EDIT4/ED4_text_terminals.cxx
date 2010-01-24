@@ -156,16 +156,17 @@ static int ED4_show_helix_on_device(AW_device *device, int gc, const char *opt_s
     return device->text(gc, buffer, x, y, 0.0, (AW_bitset)-1, 0, cd2);
 }
 
-/** \brief Calls ED4_pfold_calculate_secstruct_match() for the visible area in the
- *         editor to compute the protein secondary structure match and outputs the
- *         result to the device.
- *  \param[in] protstruct        The protein structure (primary or secondary) that should be compared to \a global_protstruct
- *  \param[in] global_protstruct The reference protein secondary structure SAI
- */
 static int ED4_show_protein_match_on_device(AW_device *device, int gc, const char *protstruct, size_t /* protstruct_len */, size_t start, size_t size,
                                             AW_pos x, AW_pos y, AW_pos /* opt_ascent */, AW_pos /* opt_descent */,
                                             AW_CL cl_protstruct, AW_CL /* real_sequence_length */, AW_CL cd2)
 {
+    /*! \brief Calls ED4_pfold_calculate_secstruct_match() for the visible area in the
+     *         editor to compute the protein secondary structure match and outputs the
+     *         result to the device.
+     *  \param[in] protstruct        The protein structure (primary or secondary) that should be compared to \a global_protstruct
+     *  \param[in] global_protstruct The reference protein secondary structure SAI
+     */
+
     GB_ERROR error = 0;
     // TODO: proper use of ED4_remap?
     const ED4_remap *rm = ED4_ROOT->root_group_man->remap();

@@ -60,9 +60,9 @@ enum PT_MATCH_TYPE {
 
 
 
-#define MATCHANSWER 50  /* private msg type: match result answer */
-#define CREATEANSWER 51 /* private msg type: create result answer */
-#define FINDANSWER 52   /* private msg type: find result answer */
+#define MATCHANSWER  50                             // private msg type: match result answer
+#define CREATEANSWER 51                             // private msg type: create result answer
+#define FINDANSWER   52                             // private msg type: find result answer
 
 extern ULONG physical_memory;
 struct Hs_struct;
@@ -85,13 +85,15 @@ typedef enum PT_bases_enum {
     PT_B_UNDEF, 
 } PT_BASES;
 
-/*  POS TREE */
+// -----------------
+//      POS TREE
+
 typedef enum enum_PT_NODE_TYPE {
     PT_NT_LEAF        = 0,
     PT_NT_CHAIN       = 1,
     PT_NT_NODE        = 2,
-    PT_NT_SINGLE_NODE = 3,      /* stage 3 */
-    PT_NT_SAVED       = 3,      /* stage 1+2 */
+    PT_NT_SINGLE_NODE = 3,                          // stage 3
+    PT_NT_SAVED       = 3,                          // stage 1+2
     PT_NT_UNDEF       = 4
 } PT_NODE_TYPE;
 
@@ -101,7 +103,7 @@ typedef struct POS_TREE_struct {
 } POS_TREE;
 
 typedef struct PTMM_struct {
-    char *data_start; // points to start of data
+    char *data_start;                               // points to start of data
     int   stage1;
     int   stage2;
     int   stage3;
@@ -110,61 +112,57 @@ typedef struct PTMM_struct {
 
 
 
-/* Probe search */
-
+// ---------------------
+//      Probe search
 
 struct probe_statistic {
-    int match_count;        /* Counter for matches */
-    double  rel_match_count;    /* match_count / (seq_len - probe_len + 1) */
+    int    match_count;                             // Counter for matches
+    double rel_match_count;                         // match_count / (seq_len - probe_len + 1)
 };
 
-struct probe_input_data {    /* every taxa's own data */
-    /******* name and sequence *********/
-    char   *data;
+struct probe_input_data {                           // every taxa's own data
+    char   *data;                                   // sequence
     long    checksum;
     int     size;
     char   *name;
     char   *fullname;
     GBDATA *gbd;
 
-    /********* probe design ************/
-    int is_group;   /* -1:  nevermind
-                        0:  no group
-                        1:  group */
+    // probe design
+    int is_group;                                   // -1: nevermind, 0: no group, 1: group
 
-    /* probe design (match) */
-    PT_probematch *match;       /* best hit for PT_new_design */
+    // probe design (match)
+    PT_probematch *match;                           // best hit for PT_new_design
 
-    /********* find family  ************/
+    // find family
     struct probe_statistic stat;
 
-    /********* free pointer  ************/
     int next;
 };
 
 struct probe_statistic_struct {
 #ifdef ARB_64
-    int cut_offs;       /* statistic of chains */
-    int single_node;
-    int short_node;
-    int int_node;
-    int long_node;
-    int longs;
-    int ints;
-    int ints2;
-    int shorts;
-    int shorts2;
-    int chars;
+    int  cut_offs;                                  // statistic of chains
+    int  single_node;
+    int  short_node;
+    int  int_node;
+    int  long_node;
+    int  longs;
+    int  ints;
+    int  ints2;
+    int  shorts;
+    int  shorts2;
+    int  chars;
     long maxdiff;
 #else
-    int cut_offs;       /* statistic of chains */
-    int single_node;
-    int short_node;
-    int long_node;
-    int longs;
-    int shorts;
-    int shorts2;
-    int chars;
+    int  cut_offs;                                  // statistic of chains
+    int  single_node;
+    int  short_node;
+    int  long_node;
+    int  longs;
+    int  shorts;
+    int  shorts2;
+    int  chars;
 #endif
 
 };
@@ -172,45 +170,45 @@ struct probe_statistic_struct {
 class BI_ecoli_ref;
 
 extern struct probe_struct_global {
-    GBDATA  *gb_main;           /* ARBDB interface */
+    GBDATA  *gb_main;                               // ARBDB interface
     GBDATA  *gb_species_data;
     GBDATA  *gb_sai_data;
     char    *alignment_name;
-    GB_HASH *namehash;          /* name to int */
+    GB_HASH *namehash;                              // name to int
 
-    struct probe_input_data *data; /* the internal database */
+    struct probe_input_data *data;                  // the internal database
 
-    char         *ecoli;        /* the ecoli sequenz */
+    char         *ecoli;                            // the ecoli sequenz
     BI_ecoli_ref *bi_ecoli;
 
     int  data_count;
-    int  max_size;              /* maximum sequence len */
-    long char_count;            /* number of all 'acgtuACGTU' */
+    int  max_size;                                  // maximum sequence len
+    long char_count;                                // number of all 'acgtuACGTU'
 
-    int    mismatches;          /* chain handle in match */
+    int    mismatches;                              // chain handle in match
     double wmismatches;
     int    N_mismatches;
     int    w_N_mismatches[PT_POS_TREE_HEIGHT+PT_POS_SECURITY+1];
 
-    int reversed;       /* tell the matcher whether probe is reversed */
+    int reversed;                                   // tell the matcher whether probe is reversed
 
-    double *pos_to_weight;      /* position to weight */
-    char    complement[256];    /* complement */
+    double *pos_to_weight;                          // position to weight
+    char    complement[256];                        // complement
 
-    int deep;                   /* for probe matching */
+    int deep;                                       // for probe matching
     int height;
     int length;
     int apos;
 
     int sort_by;
 
-    char *probe;                /* probe design + chains */
+    char *probe;                                    // probe design + chains
     char *main_probe;
 
-    char             *server_name; /* name of this server */
+    char             *server_name;                  // name of this server
     aisc_com         *link;
     T_PT_MAIN         main;
-    struct Hs_struct *com_so;   /* the communication socket */
+    struct Hs_struct *com_so;                       // the communication socket
     POS_TREE         *pt;
     PTM2             *ptmain;
 

@@ -754,7 +754,8 @@ char *make_node_text_list(GBDATA * gbd, FILE *fp)
             gbe = GB_entry(gbd, awt_nds_ms->dkeys[i]);
         }
         if (!gbe) continue;
-        /*** get field info ***/
+        
+        // get field info
         switch (GB_read_type(gbe)) {
             case GB_INT:
                 sprintf(bp, "%li", GB_read_int(gbe));
@@ -771,10 +772,9 @@ char *make_node_text_list(GBDATA * gbd, FILE *fp)
                                  break;
         }
 
-        /*** get fieldname ***/
-        strcpy(fieldname, awt_nds_ms->dkeys[i]);
+        strcpy(fieldname, awt_nds_ms->dkeys[i]); // get fieldname
 
-        /*** print fieldname+begin of line ***/
+        // print fieldname + start of line
         cp = strlen (bp);
         if (cp>=60) {
             c = bp[60];

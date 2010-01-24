@@ -25,19 +25,12 @@ using std::string;
 static AW_window_simple  *pdrw    = 0;
 static AW_selection_list *pdrw_id = 0;
 
-//  ---------------------------------------------
-//      static double get_estimated_memory()
-//  ---------------------------------------------
 static double get_estimated_memory(AW_root *root) {
     int    bases  = root->awar(AWAR_PRIMER_DESIGN_LEFT_LENGTH)->read_int() + root->awar(AWAR_PRIMER_DESIGN_RIGHT_LENGTH)->read_int();
     int    length = root->awar(AWAR_PRIMER_DESIGN_LENGTH_MAX)->read_int();
     double mem    = bases*length*0.9*(sizeof(Node)+16);
     return mem;
 }
-
-/////////////////////////////////////////////////////////////////////////////////////////////// primer_design_event_update_memory
-//
-//
 
 void primer_design_event_update_memory(AW_window *aww) {
     AW_root *root = aww->get_root();
@@ -60,9 +53,6 @@ void primer_design_event_update_memory(AW_window *aww) {
     }
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////// create_primer_design_variables
-//
-//
 void create_primer_design_variables(AW_root *aw_root, AW_default aw_def, AW_default global)
 {
     aw_root->awar_int(AWAR_PRIMER_DESIGN_LEFT_POS,                  0, aw_def);
@@ -93,9 +83,6 @@ inline int prd_aw_status(const char *s) { return aw_status(s); }
 inline int prd_aw_status(double d) { return aw_status(d); }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////// primer_design_event_go
-//
-//
 void primer_design_event_go(AW_window *aww) {
     AW_root  *root     = aww->get_root();
     GB_ERROR  error    = 0;
@@ -214,9 +201,6 @@ void primer_design_event_go(AW_window *aww) {
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////// primer_design_event_check_temp_factor
-//
-//
 void primer_design_event_check_temp_factor(AW_window *aww) {
     AW_root *root = aww->get_root();
 
@@ -227,9 +211,6 @@ void primer_design_event_check_temp_factor(AW_window *aww) {
     root->awar(AWAR_PRIMER_DESIGN_GC_FACTOR)->write_int(100-temp);
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////// primer_design_event_check_gc_factor
-//
-//
 void primer_design_event_check_gc_factor(AW_window *aww) {
     AW_root *root = aww->get_root();
 
@@ -239,9 +220,7 @@ void primer_design_event_check_gc_factor(AW_window *aww) {
     root->awar(AWAR_PRIMER_DESIGN_GC_FACTOR)->write_int(gc);
     root->awar(AWAR_PRIMER_DESIGN_TEMP_FACTOR)->write_int(100-gc);
 }
-//  -----------------------------------------------------------------------
-//      void primer_design_event_check_primer_length( AW_window *aww )
-//  -----------------------------------------------------------------------
+
 void primer_design_event_check_primer_length(AW_window *aww, AW_CL cl_max_changed) {
     AW_root *root        = aww->get_root();
     int      max_changed = int(cl_max_changed);
@@ -263,9 +242,7 @@ void primer_design_event_check_primer_length(AW_window *aww, AW_CL cl_max_change
 
     primer_design_event_update_memory(aww);
 }
-/////////////////////////////////////////////////////////////////////////////////////////////// primer_design_event_init
-//
-//
+
 void primer_design_event_init(AW_window *aww, AW_CL cl_from_gene) {
     bool      from_gene = bool(cl_from_gene);
     AW_root  *root      = aww->get_root();
@@ -419,10 +396,6 @@ void primer_design_event_init(AW_window *aww, AW_CL cl_from_gene) {
     free(selected_species);
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////// create_primer_design_result_window
-//
-//
-
 void create_primer_design_result_window(AW_window *aww)
 {
     if (!pdrw) {
@@ -475,26 +448,17 @@ static AWT_config_mapping_def primer_design_config_mapping[] = {
     { 0, 0 }
 };
 
-//  --------------------------------------------------------------------------------
-//      static char *primer_design_store_config(AW_window *aww, AW_CL , AW_CL )
-//  --------------------------------------------------------------------------------
 static char *primer_design_store_config(AW_window *aww, AW_CL,  AW_CL) {
     AWT_config_definition cdef(aww->get_root(), primer_design_config_mapping);
     return cdef.read();
 }
-//  ------------------------------------------------------------------------------------------------------------
-//      static void primer_design_restore_config(AW_window *aww, const char *stored_string, AW_CL , AW_CL )
-//  ------------------------------------------------------------------------------------------------------------
+
 static void primer_design_restore_config(AW_window *aww, const char *stored_string, AW_CL,  AW_CL) {
     AWT_config_definition cdef(aww->get_root(), primer_design_config_mapping);
     cdef.write(stored_string);
     primer_design_event_update_memory(aww);
 }
 
-
-/////////////////////////////////////////////////////////////////////////////////////////////// create_primer_design_window
-//
-//
 AW_window *create_primer_design_window(AW_root *root, AW_default def)
 {
     GB_ERROR error       = 0;

@@ -1660,7 +1660,7 @@ char   *alignment_name;
 GBDATA *gb_main;
 
 void getArbFilter() {
-    /** Get the calling filter, needed to expand weights afterwards */
+    /*! Get the calling filter, needed to expand weights afterwards */
     GB_begin_transaction(gb_main);
     arb_filter = GBT_read_string(gb_main, AWAR_GDE_EXPORT_FILTER);
     alignment_name = GBT_get_default_alignment(gb_main);

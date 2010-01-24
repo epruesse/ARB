@@ -189,9 +189,9 @@ void ST_sequence_ml::set(const char *) {
 void ST_sequence_ml::unset() {
 }
 
-/** Transform the sequence from character to vector, from st_ml->base to 'to' */
-
 void ST_sequence_ml::set_sequence() {
+    /*! Transform the sequence from character to vector, from st_ml->base to 'to' */
+
     int         i                   = st_ml->base;
     const char *source_sequence     = 0;
     int         source_sequence_len = 0;
@@ -227,10 +227,8 @@ AP_FLOAT ST_sequence_ml::combine(const AP_sequence *, const AP_sequence *, char 
     return -1.0;
 }
 
-// void ST_sequence_ml::partial_match(const AP_sequence *part, long *overlap, long *penalty) const
 void ST_sequence_ml::partial_match(const AP_sequence *, long *, long *) const {
-    st_assert(0);
-    // should be unused
+    st_assert(0); // function is expected to be unused
 }
 
 inline void ST_base_vector::check_overflow()
@@ -303,8 +301,8 @@ void ST_sequence_ml::go(const ST_sequence_ml * lefts, double leftl, const ST_seq
 
 ST_base_vector *ST_sequence_ml::tmp_out = 0;
 
-/** result will be in tmp_out */
 void ST_sequence_ml::calc_out(ST_sequence_ml * next_branch, double dist) {
+    // result will be in tmp_out
 
     int             pos;
     ST_base_vector *out   = tmp_out + st_ml->base;
@@ -366,7 +364,7 @@ void ST_ML::print() {
 }
 
 void ST_ML::create_frequencies() {
-    // Translate characters to base frequencies
+    //! Translate characters to base frequencies
 
     base_frequencies     = new ST_base_vector[alignment_len];
     inv_base_frequencies = new ST_base_vector[alignment_len];
@@ -482,11 +480,12 @@ inline GB_ERROR tree_size_ok(AP_tree_root *tree_root) {
     return error;
 }
 
-/** this is the real constructor, call only once */
 GB_ERROR ST_ML::init(const char *tree_name, const char *alignment_namei,
                      const char *species_names, int marked_only,
                      AWT_csp *awt_cspi, bool show_status)
 {
+    /*! this is the real constructor, call only once */
+
     GB_ERROR error = 0;
 
     if (is_inited) {
@@ -619,8 +618,9 @@ ST_sequence_ml *ST_ML::getOrCreate_seq(AP_tree *node) {
     return seq;
 }
 
-/** go through the tree and calculate the ST_base_vector from bottom to top */
 ST_sequence_ml *ST_ML::do_tree(AP_tree * node) {
+    /*! go through the tree and calculate the ST_base_vector from bottom to top
+     */
     ST_sequence_ml *seq = getOrCreate_seq(node);
     if (!seq->last_updated) {
         if (node->is_leaf) {
@@ -653,12 +653,15 @@ void ST_ML::undo_tree(AP_tree * node) {
     }
 }
 
-/* result will be in tmp_out */
-/* assert end_ali_pos - start_ali_pos < ST_MAX_SEQ_PART */
-// @@@ CAUTION!!! get_ml_vectors has a bug: it does not calculate the last value, if (end_ali_pos-start_ali_pos+1)==ST_MAX_SEQ_PART
+ST_sequence_ml *ST_ML::get_ml_vectors(char *species_name, AP_tree * node, int start_ali_pos, int end_ali_pos) {
+    /* result will be in tmp_out
+     *
+     * assert end_ali_pos - start_ali_pos < ST_MAX_SEQ_PART
+     * 
+     * @@@ CAUTION!!! get_ml_vectors has a bug:
+     * it does not calculate the last value, if (end_ali_pos-start_ali_pos+1)==ST_MAX_SEQ_PART
+     */
 
-ST_sequence_ml *ST_ML::get_ml_vectors(char *species_name, AP_tree * node,
-                                      int start_ali_pos, int end_ali_pos) {
     if (!node) {
         if (!hash_2_ap_tree)
             return 0;

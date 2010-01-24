@@ -67,12 +67,13 @@ inline void GB_FREEDATA(GBDATA *gbd) {
 // wtf means SMD ??? 
 
 inline void GB_SETSMD(GBDATA *gbd, long siz, long memsiz, char *dat) {
-    /** insert external data into any db. field
-        Warning: this function has a lot of side effects:
-        1. extern_data must be set by the user before calling this
-        2. if !extern_data the data is not set
-        -> better use GB_SETSMDMALLOC
-    */
+    /* insert external data into any db. field
+     * Warning: this function has a lot of side effects:
+     * 1. extern_data must be set by the user before calling this
+     * 2. if !extern_data the data is not set
+     * 
+     * -> better use GB_SETSMDMALLOC
+     */
 
     if (gbd->flags2.extern_data) {
         gbd->info.ex.size = siz;

@@ -1143,15 +1143,15 @@ int names_server_save(void) {
 }
 
 extern "C" int server_shutdown(AN_main *pm, aisc_string passwd) {
-    /** passwdcheck **/
+    // password check 
     if (strcmp(passwd, "ldfiojkherjkh")) return 1;
     printf("\narb_name_server: I got the shutdown message.\n");
 
-    /** shoot clients **/
+    // shutdown clients
     aisc_broadcast(AN_global.server_communication, 0,
                    "SERVER SHUTDOWN BY ADMINISTRATOR!\n");
 
-    /** shutdown **/
+    // shutdown server
     printf("ARB_name_server: server shutdown by administrator\n");
     names_server_shutdown(0);   // never returns!
     pm = pm;
@@ -1192,7 +1192,8 @@ int main(int argc, char **argv)
     if (argc!=2) usage(executable, "Too many parameters");
 
     aisc_main = create_AN_main();
-    /***** try to open com with any other pb server ******/
+    
+    // try to open com with running name server
     if (params->tcp) {
         name = params->tcp;
     }

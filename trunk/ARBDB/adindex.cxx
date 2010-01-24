@@ -294,27 +294,20 @@ GBDATA *gb_index_find(GBCONTAINER *gbf, struct gb_index_files_struct *ifs, GBQUA
 }
 
 
-/*****************************************************************************************
-        UNDO    functions
-******************************************************************************************/
-/* How they work:
-   There are three undo stacks:
-   GB_UNDO_NONE    no undo
-   GB_UNDO_UNDO    normal undo stack
-   GB_UNDO_REDO    redo stack
-*/
-
-/*****************************************************************************************
-        UNDO    internal functions
-******************************************************************************************/
+/* UNDO functions
+ *
+ * There are three undo stacks:
+ * 
+ * GB_UNDO_NONE    no undo
+ * GB_UNDO_UNDO    normal undo stack
+ * GB_UNDO_REDO    redo stack
+ */
 
 char *gb_set_undo_type(GBDATA *gb_main, GB_UNDO_TYPE type) {
     GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
     Main->undo_type = type;
     return 0;
 }
-
-// mallocs the main structures to control undo/redo
 
 void g_b_add_size_to_undo_entry(struct g_b_undo_entry_struct *ue, long size) {
     ue->sizeof_this                 += size;        // undo entry
@@ -323,12 +316,14 @@ void g_b_add_size_to_undo_entry(struct g_b_undo_entry_struct *ue, long size) {
 }
 
 struct g_b_undo_entry_struct *new_g_b_undo_entry_struct(struct g_b_undo_struct *u) {
-    struct g_b_undo_entry_struct *ue = (struct g_b_undo_entry_struct *)gbm_get_mem(
-                                                                                   sizeof(struct g_b_undo_entry_struct), GBM_UNDO);
-    ue->next = u->entries;
+    struct g_b_undo_entry_struct *ue = (struct g_b_undo_entry_struct *)gbm_get_mem(sizeof(struct g_b_undo_entry_struct), GBM_UNDO);
+
+    ue->next   = u->entries;
     ue->father = u;
     u->entries = ue;
+
     g_b_add_size_to_undo_entry(ue, sizeof(struct g_b_undo_entry_struct));
+
     return ue;
 }
 
@@ -415,9 +410,8 @@ void gb_free_undo_stack(GB_MAIN_TYPE *Main) {
     free((char *)Main->undo);
 }
 
-/*****************************************************************************************
-        real undo (redo)
-******************************************************************************************/
+// -------------------------
+//      real undo (redo)
 
 GB_ERROR g_b_undo_entry(GB_MAIN_TYPE *Main, struct g_b_undo_entry_struct *ue) {
     GB_ERROR error = 0;
@@ -720,12 +714,11 @@ void gb_check_in_undo_delete(GB_MAIN_TYPE *Main, GBDATA *gbd, int deep) {
     }
 }
 
-/*****************************************************************************************
-        UNDO    exported  functions (to USER)
-******************************************************************************************/
+// ----------------------------------------
+//      UNDO functions exported to USER
 
 GB_ERROR GB_request_undo_type(GBDATA *gb_main, GB_UNDO_TYPE type) { // goes to header: __ATTR__USERESULT
-    /* Define how to undo DB changes.
+    /*! Define how to undo DB changes.
      * 
      * This function should be called just before opening a transaction,
      * otherwise its effect will be delayed.

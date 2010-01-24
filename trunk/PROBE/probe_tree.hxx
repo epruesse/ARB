@@ -149,7 +149,9 @@ only few functions can be used, when the tree is reloaded (stage 3):
 #else
 # define LONG_SONS             0x80
 #endif
-/********************* Get the size of entries (stage 1) only***********************/
+    
+// -----------------------------------------------
+//      Get the size of entries (stage 1) only
 
 #define PT_EMPTY_LEAF_SIZE       (1+sizeof(PT_PNTR)+6) /* tag father name rel apos */
 #define PT_LEAF_SIZE(leaf)       (1+sizeof(PT_PNTR)+6+2*PT_count_bits[3][leaf->flags])
@@ -158,12 +160,15 @@ only few functions can be used, when the tree is reloaded (stage 3):
 #define PT_NODE_COUNT_SONS(leaf) PT_count_bits[3][leaf->flags];
 #define PT_NODE_SIZE(node, size) size = PT_EMPTY_NODE_SIZE + sizeof(PT_PNTR)*PT_count_bits[PT_B_MAX][node->flags]
 
-/********************* Read and write type ***********************/
+// ----------------------------
+//      Read and write type
 
 #define PT_GET_TYPE(pt)     (PTM.flag_2_type[pt->flags])
 #define PT_SET_TYPE(pt, i, j) (pt->flags = (i<<6)+j)
 
-/********************* bswap for OSX  ***********************/
+// ----------------------
+//      bswap for OSX
+
 #if defined(DARWIN)
 
 static inline unsigned short bswap_16(unsigned short x) {
@@ -182,18 +187,16 @@ static inline unsigned long long bswap_64(unsigned long long x) {
 #include <byteswap.h>
 #endif // DARWIN
 
-// ********************************************************************************
-// ********************************************************************************
-//
+// ------------------------------------------------------------
 // Note about bswap as used here:
 //
 // * MSB has to be at start of written byte-chain, cause the most significant bit is used to separate
 //   between INT and SHORT
 //
 // * To use PT-server on a big-endian system it has to be skipped
-// 
 
-/********************* Read and write to memory ***********************/
+// ---------------------------------
+//      Read and write to memory
 
 #define PT_READ_INT(ptr, my_int_i)                                      \
     do {                                                                \
@@ -269,9 +272,6 @@ static inline unsigned long long bswap_64(unsigned long long x) {
             PT_READ_SHORT(ptr, i); ptr += sizeof(short);                \
         }                                                               \
     } while (0)
-
-
-/********************* PT_READ_CHAIN_ENTRY ***********************/
 
 
 inline const char *PT_READ_CHAIN_ENTRY(const char* ptr, int mainapos, int *name, int *apos, int *rpos) {

@@ -10,12 +10,8 @@
 
 #include "ali_aligner.hxx"
 
-/*****************************************************************************
- *
- * STRUCT: ali_aligner_dellist
- *
- *****************************************************************************/
-
+// ----------------------------
+//      ali_aligner_dellist
 
 float ali_aligner_dellist::update(unsigned long position) {
     // increase all multi gaps and update the apropriate costs
@@ -139,14 +135,8 @@ void ali_aligner_dellist::optimize(unsigned long position) {
     }
 }
 
-
-/*****************************************************************************
- *
- * CLASS: ALI_ALIGNER
- *
- * PRIVAT PART
- *
- *****************************************************************************/
+// --------------------
+//      ALI_ALIGNER
 
 inline float ALI_ALIGNER::minimum2(float v1, float v2)
 {
@@ -1004,23 +994,27 @@ void ALI_ALIGNER::make_map(void) {
 
     stack = new ALI_TSTACK<unsigned char>(end_x - start_x + end_y - start_y + 5);
 
-    /********** ACHTUNG ACHTUNG
-                number_of_solutions() noch nicht zuverlaessig!!
-                => es wird IMMER nur EINE Loesung herausgenommen!!
-
-                number_of_sol = number_of_solutions();
-
-                if (result_counter <= number_of_sol) {
-                ali_message("Starting systematic mapping");
-                make_map_systematic(stack);
-                }
-                else {
-                ali_message("Starting random mapping");
-                do {
-                make_map_random(stack);
-                } while (result_counter > 0);
-                }
-    ***********/
+    /* ACHTUNG ACHTUNG
+     * 
+     * number_of_solutions() noch nicht zuverlaessig!!
+     * => es wird IMMER nur EINE Loesung herausgenommen!!
+     *
+     */
+#if 0    
+    unsigned long number_of_sol = number_of_solutions();
+      
+    if (result_counter <= number_of_sol) {
+        ali_message("Starting systematic mapping");
+        make_map_systematic(stack);
+    }
+    else {
+        ali_message("Starting random mapping");
+        do {
+            make_map_random(stack);
+        }
+        while (result_counter > 0);
+    }
+#endif    
 
     make_map_random(stack);
 
@@ -1290,17 +1284,6 @@ unsigned long ALI_ALIGNER::number_of_solutions() {
 
     return number;
 }
-
-
-
-
-/*****************************************************************************
- *
- * CLASS: ALI_ALIGNER
- *
- * PUBLIC PART
- *
- *****************************************************************************/
 
 ALI_ALIGNER::ALI_ALIGNER(ALI_ALIGNER_CONTEXT *context, ALI_PROFILE *prof,
                          unsigned long sx, unsigned long ex,

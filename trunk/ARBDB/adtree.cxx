@@ -148,11 +148,8 @@ void GBT_delete_tree(GBT_TREE *tree)
     }
 }
 
-
-/********************************************************************************************
-                    some tree write functions
-********************************************************************************************/
-
+// -----------------------------
+//      tree write functions
 
 GB_ERROR GBT_write_group_name(GBDATA *gb_group_name, const char *new_group_name) {
     GB_ERROR error = 0;
@@ -265,17 +262,17 @@ static char *gbt_write_tree_rek_new(GBT_TREE *node, char *dest, long mode) {
 }
 
 static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tree_name, GBT_TREE *tree, int plain_only) {
-    /* writes a tree to the database.
+    /*! writes a tree to the database.
+     *
+     * If tree is loaded by function GBT_read_tree(..) then 'tree_name' should be NULL
+     * else 'gb_tree' should be set to NULL
+     *
+     * To copy a tree call GB_copy((GBDATA *)dest,(GBDATA *)source);
+     * or set recursively all tree->gb_node variables to zero (that unlinks the tree),
+     *
+     * if 'plain_only' == 1 only the plain tree string is written
+     */
 
-    If tree is loaded by function GBT_read_tree(..) then 'tree_name' should be zero !!!!!!
-    else 'gb_tree' should be set to zero.
-
-    to copy a tree call GB_copy((GBDATA *)dest,(GBDATA *)source);
-    or set recursively all tree->gb_node variables to zero (that unlinks the tree),
-
-    if 'plain_only' == 1 only the plain tree string is written
-
-    */
     GB_ERROR error = 0;
 
     gb_assert(!plain_only || (tree_name == 0)); // if plain_only == 1 -> set tree_name to 0
@@ -359,9 +356,8 @@ GB_ERROR GBT_write_tree_rem(GBDATA *gb_main, const char *tree_name, const char *
     return GBT_write_string(GBT_get_tree(gb_main, tree_name), "remark", remark);
 }
 
-/********************************************************************************************
-                    some tree read functions
-********************************************************************************************/
+// ----------------------------
+//      tree read functions
 
 GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_nodes, long structure_size, int size_of_tree, GB_ERROR *error)
 {
@@ -450,20 +446,6 @@ GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_nodes, 
 }
 
 
-/** Loads a tree from the database into any user defined structure.
-    make sure that the first eight members members of your
-    structure looks exactly like GBT_TREE, You should send the size
-    of your structure ( minimum sizeof GBT_TREE) to this
-    function.
-
-    If size < 0 then the tree is allocated as just one big piece of memory,
-    which can be freed by free((char *)root_of_tree) + deleting names or
-    by GBT_delete_tree.
-
-    tree_name is the name of the tree in the db
-    return NULL if any error occur
-*/
-
 static GBT_TREE *read_tree_and_size_internal(GBDATA *gb_tree, GBDATA *gb_ctree, int structure_size, int size, GB_ERROR *error) {
     GBDATA   **gb_tree_nodes;
     GBT_TREE  *node = 0;
@@ -503,9 +485,25 @@ static GBT_TREE *read_tree_and_size_internal(GBDATA *gb_tree, GBDATA *gb_ctree, 
 }
 
 GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, long structure_size, int *tree_size) {
-    /* Read a tree from DB.
-     * In case of failure, return NULL (and export error) 
+    /*! Loads a tree from DB into any user defined structure.
+     *
+     * Make sure that the first members of your structure look exactly like GBT_TREE!
+     *
+     * @param structure_size sizeof(yourStructure)
+     *
+     * If structure_size < 0 then the tree is allocated as just one big piece of memory,
+     * which can be freed by free((char *)root_of_tree) + deleting names or
+     * by GBT_delete_tree().
+     *
+     * @param tree_name is the name of the tree in the db
+     *
+     * @param tree_size if != NULL -> gets set to "size of tree" 
+     *
+     * @return
+     * - NULL if any error occurs (which is exported then)
+     * - root of loaded tree
      */
+
     GB_ERROR error = 0;
 
     if (!tree_name) {
@@ -556,6 +554,7 @@ GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, long st
 }
 
 GBT_TREE *GBT_read_tree(GBDATA *gb_main, const char *tree_name, long structure_size) {
+    //! @see GBT_read_tree_and_size()
     return GBT_read_tree_and_size(gb_main, tree_name, structure_size, 0);
 }
 
@@ -571,15 +570,19 @@ GBT_TREE *GBT_read_plain_tree(GBDATA *gb_main, GBDATA *gb_ctree, long structure_
     return t;
 }
 
-/********************************************************************************************
-                    link the tree tips to the database
-********************************************************************************************/
+#if defined(DEVEL_RALF)
+#warning wrong name -> GBT_count_leafs
+#endif // DEVEL_RALF
+
 long GBT_count_nodes(GBT_TREE *tree) {
     if (tree->is_leaf) {
         return 1;
     }
     return GBT_count_nodes(tree->leftson) + GBT_count_nodes(tree->rightson);
 }
+
+// -------------------------------------------
+//      link the tree tips to the database
 
 struct link_tree_data {
     GB_HASH *species_hash;
@@ -650,10 +653,17 @@ GB_ERROR GBT_link_tree_using_species_hash(GBT_TREE *tree, bool show_status, GB_H
 }
 
 GB_ERROR GBT_link_tree(GBT_TREE *tree, GBDATA *gb_main, bool show_status, int *zombies, int *duplicates) {
-    /* Link a given tree to the database. That means that for all tips the member
-     * gb_node is set to the database container holding the species data.
-     * returns the number of zombies and duplicates in 'zombies' and 'duplicates'
+    /*! Link a given tree to the database. That means that for all tips the member
+     * 'gb_node' is set to the database container holding the species data.
+     *
+     * @param zombies if != NULL -> set to number of zombies (aka non-existing species) in tree  
+     * @param duplicates if != NULL -> set to number of duplicated species in tree  
+     *
+     * @return error on failure
+     *
+     * @see GBT_unlink_tree()
      */
+    
     GB_HASH  *species_hash = GBT_create_species_hash(gb_main);
     GB_ERROR  error        = GBT_link_tree_using_species_hash(tree, show_status, species_hash, zombies, duplicates);
 
@@ -663,8 +673,9 @@ GB_ERROR GBT_link_tree(GBT_TREE *tree, GBDATA *gb_main, bool show_status, int *z
 }
 
 void GBT_unlink_tree(GBT_TREE *tree) {
-    // Unlink a given tree from the database.
-
+    /*! Unlink tree from the database.
+     * @see GBT_link_tree()
+     */
     tree->gb_node = 0;
     if (!tree->is_leaf) {
         GBT_unlink_tree(tree->leftson);
@@ -674,7 +685,10 @@ void GBT_unlink_tree(GBT_TREE *tree) {
 
 
 GBDATA *GBT_get_tree(GBDATA *gb_main, const char *tree_name) {
-    // returns the datapntr to the database structure, which is the container for the tree
+    /*! @return
+     * - DB tree container associated with tree_name
+     * - NULL if no such tree exists
+     */
     GBDATA *gb_treedata = GB_search(gb_main, "tree_data", GB_CREATE_CONTAINER);
     return GB_entry(gb_treedata, tree_name);
 }

@@ -1,4 +1,4 @@
-/** \file   ed4_protein_2nd_structure.hxx
+/*! \file   ed4_protein_2nd_structure.hxx
  *  \brief  Adds support for protein structure prediction, comparison of two
  *          protein secondary structures and of amino acid sequences with protein
  *          secondary structures as well as visualization of the match quality in EDIT4.
@@ -36,59 +36,59 @@
 
 // #define SHOW_PROGRESS ///< Print information about progress to screen (for finding and extending structures and resolving overlaps).
 
-#define PFOLD_AWAR_ENABLE            "Pfold/enable"       ///< Enable structure match.
-#define PFOLD_AWAR_SELECTED_SAI      "Pfold/selected_SAI" ///< Selected reference protein secondary structure SAI (i.e. the SAI that is used for structure comparison).
-#define PFOLD_AWAR_PAIR_TEMPLATE     "Pfold/pairs/%s"     ///< Structure pairs that define the match quality (see #pfold_pairs) as used for match methods #SECSTRUCT_SECSTRUCT and #SECSTRUCT_SEQUENCE_PREDICT.
-#define PFOLD_AWAR_SYMBOL_TEMPLATE   "Pfold/symbols/%s"   ///< Symbols for the match quality as used for match methods #SECSTRUCT_SECSTRUCT and #SECSTRUCT_SEQUENCE_PREDICT.
-#define PFOLD_AWAR_SYMBOL_TEMPLATE_2 "Pfold/symbols2"     ///< Symbols for the match quality as used for match method #SECSTRUCT_SEQUENCE.
-#define PFOLD_AWAR_MATCH_METHOD      "Pfold/match_method" ///< Selected method for computing the match quality (see #PFOLD_MATCH_METHOD).
-#define PFOLD_AWAR_SAI_FILTER        "Pfold/SAI_filter"   ///< Filter SAIs for given criteria (string); used in option menu for SAI selection.
+#define PFOLD_AWAR_ENABLE            "Pfold/enable"       //!< Enable structure match.
+#define PFOLD_AWAR_SELECTED_SAI      "Pfold/selected_SAI" //!< Selected reference protein secondary structure SAI (i.e. the SAI that is used for structure comparison).
+#define PFOLD_AWAR_PAIR_TEMPLATE     "Pfold/pairs/%s"     //!< Structure pairs that define the match quality (see #pfold_pairs) as used for match methods #SECSTRUCT_SECSTRUCT and #SECSTRUCT_SEQUENCE_PREDICT.
+#define PFOLD_AWAR_SYMBOL_TEMPLATE   "Pfold/symbols/%s"   //!< Symbols for the match quality as used for match methods #SECSTRUCT_SECSTRUCT and #SECSTRUCT_SEQUENCE_PREDICT.
+#define PFOLD_AWAR_SYMBOL_TEMPLATE_2 "Pfold/symbols2"     //!< Symbols for the match quality as used for match method #SECSTRUCT_SEQUENCE.
+#define PFOLD_AWAR_MATCH_METHOD      "Pfold/match_method" //!< Selected method for computing the match quality (see #PFOLD_MATCH_METHOD).
+#define PFOLD_AWAR_SAI_FILTER        "Pfold/SAI_filter"   //!< Filter SAIs for given criteria (string); used in option menu for SAI selection.
 
 // TODO: move static variables to .cpp file?
 
-/** \brief Protein secondary structure types.
+/*! \brief Protein secondary structure types.
  *
  *  Defines the various types of protein secondary structure. The order
  *  (or at least the individual values) are important, because they are 
  *  used to access various arrays.
  */
 enum PFOLD_STRUCTURE {
-    ALPHA_HELIX       = 0, ///< Alpha-helix
-    BETA_SHEET        = 1, ///< Beta-sheet
-    BETA_TURN         = 2, ///< Beta-turn
-    STRUCTURE_SUMMARY = 3, ///< Structure summary
+    ALPHA_HELIX       = 0, //!< Alpha-helix
+    BETA_SHEET        = 1, //!< Beta-sheet
+    BETA_TURN         = 2, //!< Beta-turn
+    STRUCTURE_SUMMARY = 3, //!< Structure summary
 //  THREE_TURN        = 4, ///< Three turn 
 //  FOUR_TURN         = 5, ///< Four turn
 //  FIVE_TURN         = 6  ///< Five turn
 };
 
-/// Defines a name-value pair (e.g. for awars, menu entries, etc.).
+//! Defines a name-value pair (e.g. for awars, menu entries, etc.).
 struct name_value_pair {
-    const char *name; ///< Name or description
-    int        value; ///< Value attached to \a name
+    const char *name; //!< Name or description
+    int        value; //!< Value attached to \a name
 };
 
-/// Match quality for secondary structure match.
+//! Match quality for secondary structure match.
 typedef enum {
-    STRUCT_PERFECT_MATCH,  ///< Perfect match
-    STRUCT_GOOD_MATCH,     ///< Good match
-    STRUCT_MEDIUM_MATCH,   ///< Medium match
-    STRUCT_BAD_MATCH,      ///< Bad match
-    STRUCT_NO_MATCH,       ///< No match
-    STRUCT_UNKNOWN,        ///< Unknown structure
-    PFOLD_MATCH_TYPE_COUNT ///< Number of match types
+    STRUCT_PERFECT_MATCH,  //!< Perfect match
+    STRUCT_GOOD_MATCH,     //!< Good match
+    STRUCT_MEDIUM_MATCH,   //!< Medium match
+    STRUCT_BAD_MATCH,      //!< Bad match
+    STRUCT_NO_MATCH,       //!< No match
+    STRUCT_UNKNOWN,        //!< Unknown structure
+    PFOLD_MATCH_TYPE_COUNT //!< Number of match types
 } PFOLD_MATCH_TYPE;
 
-/// Awars for the match type; binds the #PFOLD_MATCH_TYPE to the corresponding awar name.
+//! Awars for the match type; binds the #PFOLD_MATCH_TYPE to the corresponding awar name.
 extern name_value_pair pfold_match_type_awars[];
 
-/// Match pair definition (see #PFOLD_MATCH_TYPE) as used for match methods #SECSTRUCT_SECSTRUCT and #SECSTRUCT_SEQUENCE_PREDICT in ED4_pfold_calculate_secstruct_match().
+//! Match pair definition (see #PFOLD_MATCH_TYPE) as used for match methods #SECSTRUCT_SECSTRUCT and #SECSTRUCT_SEQUENCE_PREDICT in ED4_pfold_calculate_secstruct_match().
 extern char *pfold_pairs[6];
 
-/// Symbols for the match quality (defined by #PFOLD_MATCH_TYPE) as used for match methods #SECSTRUCT_SECSTRUCT and #SECSTRUCT_SEQUENCE_PREDICT in ED4_pfold_calculate_secstruct_match().
+//! Symbols for the match quality (defined by #PFOLD_MATCH_TYPE) as used for match methods #SECSTRUCT_SECSTRUCT and #SECSTRUCT_SEQUENCE_PREDICT in ED4_pfold_calculate_secstruct_match().
 extern char *pfold_pair_chars[6];
 
-/** \brief Symbols for the match quality as used for match method 
+/*! \brief Symbols for the match quality as used for match method
  *         #SECSTRUCT_SEQUENCE in ED4_pfold_calculate_secstruct_match().
  *
  *  The ten symbols represent the match quality ranging from 0 - 100% in
@@ -97,15 +97,15 @@ extern char *pfold_pair_chars[6];
 
 #define PFOLD_PAIR_CHARS_2 "##++~~--  "
 
-/// Defines the methods for match computation. For details refer to ED4_pfold_calculate_secstruct_match().
+//! Defines the methods for match computation. For details refer to ED4_pfold_calculate_secstruct_match().
 typedef enum {
-    SECSTRUCT_SECSTRUCT,        ///< Compare two protein secondary structures
-    SECSTRUCT_SEQUENCE,         ///< Compare an amino acid sequence with a reference protein secondary structure
-    SECSTRUCT_SEQUENCE_PREDICT, ///< Compare a full prediction of the protein secondary structure from its amino acid sequence with a reference protein secondary structure
-    PFOLD_MATCH_METHOD_COUNT    ///< Number of match methods
+    SECSTRUCT_SECSTRUCT,        //!< Compare two protein secondary structures
+    SECSTRUCT_SEQUENCE,         //!< Compare an amino acid sequence with a reference protein secondary structure
+    SECSTRUCT_SEQUENCE_PREDICT, //!< Compare a full prediction of the protein secondary structure from its amino acid sequence with a reference protein secondary structure
+    PFOLD_MATCH_METHOD_COUNT    //!< Number of match methods
 } PFOLD_MATCH_METHOD;
 
-/** \brief Returns the former value of an amino acid depending on the given structure type.
+/*! \brief Returns the former value of an amino acid depending on the given structure type.
  *
  *  The definition is used for method #SECSTRUCT_SEQUENCE in
  *  ED4_pfold_calculate_secstruct_match() to get the former value of an amino acid
@@ -114,7 +114,7 @@ typedef enum {
  */
 #define cf_former(aa, strct) ((strct!=2) ? cf_parameters[aa][strct] : cf_parameters_norm[aa][strct])
 
-/** \brief Returns the breaker value of an amino acid depending on the given structure type.
+/*! \brief Returns the breaker value of an amino acid depending on the given structure type.
  *
  *  The definition is used for method #SECSTRUCT_SEQUENCE in
  *  ED4_pfold_calculate_secstruct_match() to get the breaker value of an amino acid
@@ -129,7 +129,7 @@ typedef enum {
 
 
 
-/** \brief Compares a protein secondary structure with a primary structure or another
+/*! \brief Compares a protein secondary structure with a primary structure or another
  *         secondary structure.
  *
  *  \param[in]  structure_sai Reference protein structure SAI (secondary structure)
@@ -177,7 +177,7 @@ typedef enum {
  */
 GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai, const unsigned char *structure_cmp, int start, int end, char *result_buffer, PFOLD_MATCH_METHOD match_method = SECSTRUCT_SEQUENCE);
 
-/** \brief Sets the reference protein secondary structure SAI.
+/*! \brief Sets the reference protein secondary structure SAI.
  *
  *  \param[out] protstruct     Pointer to reference protein secondary structure SAI
  *  \param[in]  gb_main        Main database
@@ -198,7 +198,7 @@ GB_ERROR ED4_pfold_set_SAI(char **protstruct, GBDATA *gb_main, const char *align
 
 // AW related functions ///////////////////////////////////////////////////////////////////////////////////////////////
 
-/** \brief Creates the "Protein Match Settings" window.
+/*! \brief Creates the "Protein Match Settings" window.
  *
  *  \param[in] awr   Root window
  *  \param[in] awcbs Callback struct

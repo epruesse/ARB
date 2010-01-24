@@ -13,9 +13,8 @@
 
 using namespace AW;
 
-// *****************************************************************************************
-//          device_click
-// *****************************************************************************************
+// ------------------------
+//      AW_device_click
 
 AW_device_click::AW_device_click(AW_common *commoni) : AW_device(commoni) {
 }
@@ -38,10 +37,6 @@ AW_DEVICE_TYPE AW_device_click::type(void) {
     return AW_DEVICE_CLICK;
 }
 
-
-/***********************************************************************************************************************/
-/* line  text  zoomtext  box *******************************************************************************************/
-/***********************************************************************************************************************/
 
 int AW_device_click::line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri, AW_CL clientdata1, AW_CL clientdata2) {
     AW_pos X0, Y0, X1, Y1;                          // Transformed pos
@@ -137,7 +132,7 @@ int AW_device_click::text(int gc, const char *str, AW_pos x, AW_pos y, AW_pos al
         AW_pos Y1 = Y0+(AW_pos)(xfs->max_bounds.descent);
         Y0        = Y0-(AW_pos)(xfs->max_bounds.ascent);
 
-        /***************** Fast check text against top bottom clip ***************************/
+        // Fast check text against top bottom clip
 
         if (this->clip_rect.t == 0) {
             if (Y1 < this->clip_rect.t) return 0;
@@ -153,8 +148,7 @@ int AW_device_click::text(int gc, const char *str, AW_pos x, AW_pos y, AW_pos al
             if (Y1 > this->clip_rect.b) return 0;
         }
 
-        /***************** vertical check mouse against textsurrounding  ***************************/
-
+        // vertical check mouse against textsurrounding
         bool   exact     = true;
         double best_dist = 0;
         
@@ -169,14 +163,14 @@ int AW_device_click::text(int gc, const char *str, AW_pos x, AW_pos y, AW_pos al
             best_dist = Y0 - mouse_y;
         }
 
-        /***************** align text  ***************************/
+        // align text
         int len        = opt_strlen ? opt_strlen : strlen(str);
         int text_width = (int)get_string_size(gc, str, len);
 
         X0        = common->x_alignment(X0, text_width, alignment);
         AW_pos X1 = X0+text_width;
 
-        /**************** check against left right clipping areas *********/
+        // check against left right clipping areas
         if (X1 < this->clip_rect.l) return 0;
         if (X0 > this->clip_rect.r) return 0;
 

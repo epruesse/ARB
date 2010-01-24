@@ -42,11 +42,8 @@
 #include <GL/glx.h>
 #include <GL/gl.h>
 
-/****************************************************************
- *
- * GLwDrawingArea widgets
- *
- ****************************************************************/
+// -------------------------------
+//      GLwDrawingArea widgets
 
 /* Resources:
 
@@ -137,14 +134,12 @@ accumAlphaSize      AccumAlphaSize     int             0
 typedef struct _GLwMDrawingAreaClassRec *GLwMDrawingAreaWidgetClass;
 typedef struct _GLwMDrawingAreaRec      *GLwMDrawingAreaWidget;
 
-/** BUG. Extended by Daniel Koitzsch and Christian Becker */
+// BUG. Extended by Daniel Koitzsch and Christian Becker 
 // #define glwMDrawingAreaWidgetClass glwM1DrawingAreaWidgetClass
 // defining glwMDrawingAreaWidgetClass twice doesn't work
 #define glwMDrawingAreaWidgetClass glwM2DrawingAreaWidgetClass
-/** END OF EXT */
 
 extern WidgetClass glwMDrawingAreaWidgetClass;
-
 
 #else
 

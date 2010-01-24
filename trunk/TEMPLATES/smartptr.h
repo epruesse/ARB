@@ -1,5 +1,4 @@
-/////////////////////////////////////////////////////////////////////////////
-//
+// --------------------------------------------------------------------------------
 // Copyright (C) 2000-2003
 // Ralf Westram
 // (Coded@ReallySoft.de)
@@ -14,8 +13,7 @@
 //
 // This code is part of my library.
 // You may find a more recent version at http://www.reallysoft.de/
-//
-/////////////////////////////////////////////////////////////////////////////
+// --------------------------------------------------------------------------------
 
 #ifndef SMARTPTR_H
 #define SMARTPTR_H
@@ -183,11 +181,8 @@ public:
 };
 
 
-// --------------------------------------------------------------------------------
-//     class SmartPtr
-// --------------------------------------------------------------------------------
-/** @memo Smart pointer class
-     */
+/*! @memo Smart pointer class
+ */
 
 template <class T, class C = Counted<T, auto_delete_ptr<T> > >
 class SmartPtr {
@@ -202,10 +197,10 @@ private:
         object = 0;
     }
 public:
-    /** build Smart-NULL-Ptr */
+    /*! build Smart-NULL-Ptr */
     SmartPtr() : object(0) {}
 
-    /** build normal SmartPtr
+    /*! build normal SmartPtr
 
         by passing an object to a SmartPtr you loose the responsibility over the object
         to the SmartPtr.
@@ -218,7 +213,7 @@ public:
         object->new_reference();
     }
 
-    /** destroy SmartPtr
+    /*! destroy SmartPtr
 
         object will not be destroyed as long as any other SmartPtr points to it
     */
@@ -241,32 +236,35 @@ public:
     const T& operator*() const { tpl_assert(object); return *(object->getPointer()); }
     T& operator*() { tpl_assert(object); return *(object->getPointer()); }
 
-    /** test if SmartPtr is 0 */
+    /*! test if SmartPtr is NULL */
     bool isNull() const { return object == 0; }
     
-    /** test if SmartPtr is NOT 0 */
+    /*! test if SmartPtr is not NULL */
     bool isSet() const { return !isNull(); }
 
-    /** set SmartPtr to 0 */
+    /*! set SmartPtr to NULL */
     void SetNull() { Unbind(); }
 
-    /** create a deep copy of the object pointed to by the smart pointer.
+    SmartPtr<T, C> deep_copy() const {
+        /*! create a deep copy of the object pointed to by the smart pointer.
+         *
+         * Afterwards there exist two equal copies of the object.
+         *
+         * @return SmartPtr to the new copy.
+         */
+        return SmartPtr<T, C>(new T(**this));
+    }
 
-        Afterwards there exist two equal copies of the object.
-
-        @return SmartPtr to the new copy.
-    */
-    SmartPtr<T, C> deep_copy() const { return SmartPtr<T, C>(new T(**this)); }
-
-    /** test if two SmartPtrs point to the same object
-        (this is used for operators == and !=).
-
-        if you like to compare the objects themselves use
-        (*smart_ptr1 == *smart_ptr2)
-
-        @return true if the SmartPtrs point to the same object
-    */
     bool sameObject(const SmartPtr<T, C>& other) const {
+        /*! test if two SmartPtrs point to the same object
+         *
+         * (this is used for operators == and !=).
+         *
+         * if you like to compare the objects themselves use
+         * (*smart_ptr1 == *smart_ptr2)
+         *
+         * @return true if the SmartPtrs point to the same object
+         */
         tpl_assert(object);
         tpl_assert(other.object);
         return object==other.object;

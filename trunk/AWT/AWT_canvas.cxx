@@ -429,8 +429,6 @@ static void input_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2) {
 
     ntw->tree_disp->check_update(ntw->gb_main);
 
-    /*** here appear all modes which must be handled right here ***/
-
     bool event_handled = false;
 
     if (ntw->mode == AWT_MODE_ZOOM) { // zoom mode is identical for all applications, so handle it here

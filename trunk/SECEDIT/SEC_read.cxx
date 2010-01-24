@@ -17,10 +17,6 @@
 
 using namespace std;
 
-/***********************************************************************
- * Supplementary Functions
- ***********************************************************************/
-
 static const char * sec_read_line(istream & in) {
     static char string_buffer[BUFFER_SIZE];
     in.getline(string_buffer, BUFFER_SIZE);
@@ -124,10 +120,6 @@ static GB_ERROR sec_expect_closing_bracket(istream& in) {
     if (strcmp(string_buffer, "}") == 0) return 0;
     return GBS_global_string("Expected '}' instead of '%s'", string_buffer);
 }
-
-/***********************************************************************
- * READ-Functions
- ***********************************************************************/
 
 GB_ERROR SEC_region::read(istream & in, SEC_root *root, int /* version */) {
     int         seq_start, seq_end;

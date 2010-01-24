@@ -269,15 +269,13 @@ GBDATA *GA_genetic::get_tree(GBDATA *container, long treeid) {
 
 
 
-/**********************************************************************
-
- read and write a tree in the database
- creating a string in which the tree is coded
-
-**************************************************/
-
-char *GA_genetic::write_tree_rek(AP_tree *node, char *dest, long mode)
-{
+char *GA_genetic::write_tree_rek(AP_tree *node, char *dest, long mode) {
+    /*! convert tree into string (representing tree).
+     *
+     * @param mode
+     * - if AP_PUT_DATA -> create tree representation in 'dest' buffer
+     * - else -> only calculate needed buffer size 
+     */
     char buffer[40];                /* just real numbers */
     char    *c1;
     if (node->is_leaf) {
@@ -310,10 +308,6 @@ char *GA_genetic::write_tree_rek(AP_tree *node, char *dest, long mode)
     }
 }
 
-
-/********************************************************************************************
-                                        some tree read functions
-********************************************************************************************/
 AP_tree *GA_genetic::read_tree_rek(char **data)
 {
     AP_tree *node;
@@ -470,14 +464,8 @@ GA_tree *GA_genetic::read_tree(GBDATA *gb_cluster, long tree_id)
     return tree;
 }
 
-
-
-/********************************************************************************
- *********************************************************************
-                Funktionen fuer die genetischen Algorithmen
-
-                **********************************************************************
-                ******************************************************/
+// ---------------------------
+//      genetic algorithms
 
 AP_ERR * GA_genetic::put_start_tree(AP_tree *tree, const long tree_id, int  cluster) {
     char * error = 0;
@@ -619,9 +607,8 @@ AP_ERR *GA_genetic::delete_tree(GBDATA *gb_cluster, GBDATA *gb_tree) {
     return 0;
 }
 
-/**************************************************
-Alles was mit jobs zu tuen hat
-**************************************************/
+// -----------------------
+//      job management
 
 GA_job * GA_genetic::get_job(int cluster) {
     int count;

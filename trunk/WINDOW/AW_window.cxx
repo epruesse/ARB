@@ -143,7 +143,6 @@ AW_config_struct::AW_config_struct(const char *idi, AW_active maski, Widget w,
     next           = nexti;
 }
 
-/*************************************************************************************************************/
 
 AW_option_struct::AW_option_struct(const char *variable_valuei,
         Widget choice_widgeti) :
@@ -351,38 +350,27 @@ static void dumpCloseAllSubMenus() {
 }
 
 #endif // DUMP_MENU_LIST
-AW_window_menu_modes::AW_window_menu_modes(void) {
-}
-AW_window_menu_modes::~AW_window_menu_modes(void) {
-}
 
-AW_window_menu::AW_window_menu(void) {
-}
-AW_window_menu::~AW_window_menu(void) {
-}
+AW_window_menu_modes::AW_window_menu_modes() {}
+AW_window_menu_modes::~AW_window_menu_modes() {}
 
-AW_window_simple::AW_window_simple(void) {
-}
-AW_window_simple::~AW_window_simple(void) {
-}
+AW_window_menu::AW_window_menu() {}
+AW_window_menu::~AW_window_menu() {}
 
-AW_window_simple_menu::AW_window_simple_menu(void) {
-}
-AW_window_simple_menu::~AW_window_simple_menu(void) {
-}
+AW_window_simple::AW_window_simple() {}
+AW_window_simple::~AW_window_simple() {}
 
-AW_window_message::AW_window_message(void) {
-}
-AW_window_message::~AW_window_message(void) {
-}
+AW_window_simple_menu::AW_window_simple_menu() {}
+AW_window_simple_menu::~AW_window_simple_menu() {}
 
-/***********************************************************************/
+AW_window_message::AW_window_message() {}
+AW_window_message::~AW_window_message() {}
+
 void AW_window::set_horizontal_scrollbar_left_indent(int indent) {
     XtVaSetValues(p_w->scroll_bar_horizontal, XmNleftOffset, (int)indent, NULL);
     left_indent_of_horizontal_scrollbar = indent;
 }
 
-/***********************************************************************/
 static void value_changed_scroll_bar_horizontal(Widget wgt,
         XtPointer aw_cb_struct, XtPointer call_data) {
     AWUSE(wgt);
@@ -601,7 +589,6 @@ void AW_window::set_horizontal_scrollbar_position(int position) {
     XtVaSetValues(p_w->scroll_bar_horizontal, XmNvalue, position, NULL);
 }
 
-/***********************************************************************/
 static void AW_timer_callback(XtPointer aw_timer_cb_struct, XtIntervalId *id) {
     AWUSE(id);
     AW_timer_cb_struct *tcbs = (AW_timer_cb_struct *) aw_timer_cb_struct;
@@ -647,7 +634,6 @@ void AW_root::add_timed_callback_never_disabled(int ms, void (*f)(AW_root*, AW_C
     (XtPointer) new AW_timer_cb_struct(this, f, cd1, cd2));
 }
 
-/***********************************************************************/
 void AW_POPDOWN(AW_window *aww) {
     aww->hide();
 }
@@ -702,8 +688,6 @@ static void aw_calculate_WM_offsets(AW_window *aww) {
     }
 #endif // DEBUG
 }
-
-/************** standard callback server *********************/
 
 static void macro_message_cb(AW_window *aw, AW_CL);
 
@@ -922,7 +906,10 @@ void AW_normal_cursor(AW_root *root) {
     p_global->set_cursor(0, 0, 0);
 }
 
-/***********************************************************************/
+// --------------
+//      focus
+
+
 static void AW_root_focusCB(Widget wgt, XtPointer awrp, XEvent*, Boolean*) {
     AWUSE(wgt);
     AW_root *aw_root = (AW_root *)awrp;
@@ -950,7 +937,8 @@ void AW_window::set_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd
     AW_focusCB, (XtPointer) new AW_cb_struct(this, f, cd1, cd2, 0));
 }
 
-/*******************************    expose  ****************************************/
+// ---------------
+//      expose
 
 static void AW_exposeCB(Widget wgt, XtPointer aw_cb_struct, XmDrawingAreaCallbackStruct *call_data) {
     XEvent *ev = call_data->event;
@@ -994,6 +982,10 @@ void AW_window::force_expose() {
 
     XtCallCallbacks(p_w->shell, XmNexposeCallback, (XtPointer) &da_struct);
 }
+
+// ---------------
+//      resize
+
 
 bool AW_area_management::is_resize_callback(AW_window * /* aww */, void (*f)(AW_window*, AW_CL, AW_CL)) {
     return resize_cb && resize_cb->contains(f);
@@ -1058,10 +1050,8 @@ bool AW_window::get_mouse_pos(int& x, int& y) {
     return ok;
 }
 
-/*******************************    resize  ****************************************/
-
-// Predicate function: checks, if the given event is a ResizeEvent
 int is_resize_event(Display *display, XEvent *event, XPointer) {
+    // Predicate function: checks, if the given event is a ResizeEvent
     if (event && (event->type == ResizeRequest || event->type
             == ConfigureNotify) && event->xany.display == display) {
         return 1;
@@ -1069,8 +1059,8 @@ int is_resize_event(Display *display, XEvent *event, XPointer) {
     return 0;
 }
 
-// Removes redundant resize events from the x-event queue
 void cleanupResizeEvents(Display *display) {
+    // Removes redundant resize events from the x-event queue
     if (display) {
         XLockDisplay(display);
         XEvent event;
@@ -1085,8 +1075,7 @@ void cleanupResizeEvents(Display *display) {
     }
 }
 
-static void AW_resizeCB_draw_area(Widget wgt, XtPointer aw_cb_struct,
-        XtPointer call_data) {
+static void AW_resizeCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data) {
     AWUSE(wgt);
     AWUSE(call_data);
     AW_area_management *aram = (AW_area_management *) aw_cb_struct;
@@ -1111,7 +1100,10 @@ void AW_window::set_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, A
     aram->set_resize_callback(this, f, cd1, cd2);
 }
 
-/***********************************************************************/
+// -------------------
+//      user input
+
+
 static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAreaCallbackStruct *call_data) {
     AWUSE(wgt);
     XEvent             *ev                        = call_data->event;
@@ -1229,7 +1221,6 @@ void AW_window::set_input_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW
     aram->set_input_callback(this, f, cd1, cd2);
 }
 
-/***********************************************************************/
 void AW_area_management::set_double_click_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     double_click_cb = new AW_cb_struct(aww, f, cd1, cd2, (char*)0, double_click_cb);
 }
@@ -1245,7 +1236,8 @@ void AW_window::get_event(AW_event *eventi) {
     *eventi = event;
 }
 
-/***********************************************************************/
+// ---------------
+//      motion
 
 static void AW_motionCB(Widget w, XtPointer aw_cb_struct, XEvent *ev, Boolean*) {
     AWUSE(w);
@@ -1491,13 +1483,10 @@ void AW_root::init_root(const char *programname, bool no_exit) {
 
 }
 
-/***********************************************************************/
 void AW_window::_get_area_size(AW_area area, AW_rectangle *square) {
     AW_area_management *aram = MAP_ARAM(area);
     *square = aram->common->screen;
 }
-
-/***********************************************************************/
 
 static void horizontal_scrollbar_redefinition_cb(class AW_root *aw_root,
         AW_CL cd1, AW_CL cd2) {
@@ -1588,7 +1577,6 @@ void AW_window::create_window_variables(void) {
 
 }
 
-/***********************************************************************/
 void AW_area_management::create_devices(AW_window *aww, AW_area ar) {
     AW_root *root = aww->get_root();
     common = new AW_common(aww, ar, XtDisplay(area), XtWindow(area), p_global->color_table,
@@ -1726,10 +1714,6 @@ void aw_create_help_entry(AW_window *aww) {
                            AWM_ALL, (AW_CB)AW_help_entry_pressed, 0, 0);
 }
 
-/****************************************************************************************************************************/
-/****************************************************************************************************************************/
-/****************************************************************************************************************************/
-
 const char *aw_str_2_label(const char *str, AW_window *aww) {
     aw_assert(str);
     
@@ -1787,9 +1771,6 @@ void AW_label_in_awar_list(AW_window *aww, Widget widget, const char *str) {
         AW_INSERT_BUTTON_IN_AWAR_LIST(is_awar, 0, widget, AW_WIDGET_LABEL_FIELD, aww);
     }
 }
-/*********************************************************************************************/
-/*********************************************************************************************/
-/*********************************************************************************************/
 
 static void aw_window_avoid_destroy_cb(Widget, AW_window *, XmAnyCallbackStruct *) {
     aw_message("If YOU do not know what to answer, how should ARB know?\nPlease think again and answer the prompt!");
@@ -3349,9 +3330,9 @@ void AW_root::process_pending_events(void) {
     }
 }
 
-/** Returns type if key event follows, else 0 */
-
 AW_ProcessEventType AW_root::peek_key_event(AW_window * /* aww */) {
+    /*! Returns type if key event follows, else 0 */
+    
     XEvent xevent;
     Boolean result = XtAppPeekEvent(p_r->context, &xevent);
 
@@ -3409,9 +3390,6 @@ const char *AW_window::local_id(const char *id) const {
     return last_local_id;
 }
 
-/***************************************************************************************************************************/
-/***************************************************************************************************************************/
-/***************************************************************************************************************************/
 static void AW_xfigCB_info_area(AW_window *aww, AW_xfig *xfig) {
 
     AW_device *device = aww->get_device(AW_INFO_AREA);
@@ -3482,9 +3460,6 @@ void AW_window::_set_activate_callback(void *widget) {
     _callback = NULL;
 }
 
-/***********************************************************************/
-/*****************      AW_MACRO_MESSAGE     *******************/
-/***********************************************************************/
 
 #define AW_MESSAGE_AWAR "tmp/message/macro"
 

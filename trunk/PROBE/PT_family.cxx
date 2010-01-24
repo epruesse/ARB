@@ -14,27 +14,24 @@
 // overloaded functions to avoid problems with type-punning:
 inline void aisc_link(dll_public *dll, PT_family_list *family)   { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(family)); }
 
-/*****************************************************************************/
-/*****************************************************************************/
-/*****************************************************************************/
-/* Increment match_count for a matched chain */
-
 struct mark_all_matches_chain_handle {
     int operator()(int name, int /* pos */, int /* rpos */) {
+        /*! Increment match_count for a matched chain */
         psg.data[name].stat.match_count++;
         return 0;
     }
 };
 
-/* Increment match_count for every match */
 static int mark_all_matches(PT_local *locs,
-                             POS_TREE *pt,
-                             char     *probe,
-                             int       length,
-                             int       mismatches,
-                             int       height,
-                             int       max_mismatches)
+                            POS_TREE *pt,
+                            char     *probe,
+                            int       length,
+                            int       mismatches,
+                            int       height,
+                            int       max_mismatches)
 {
+    /*! Increment match_count for every match */
+
     int       ref_pos, ref2_pos, ref_name;
     int       base;
     int       type_of_node;

@@ -28,11 +28,9 @@ void nt_seq_load_cb(AW_root *awr, AW_CL, AW_CL) {
 }
 
 
-/**
- * Opens the "Import Sequences" dialog from the
- * ARB main window (arb_ntree)
-*/
 void NT_import_sequences(AW_window *aww, AW_CL, AW_CL) {
+    /*! Opens the "Import Sequences" dialog from the ARB main window (ARB_NTREE)
+     */
 
     if (GLOBAL_gb_merge) {
 #if defined(DEBUG)

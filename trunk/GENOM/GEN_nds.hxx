@@ -1,8 +1,13 @@
-/*********************************************************************************
- *  Coded by Ralf Westram (coder@reallysoft.de) in 2001                          *
- *  Institute of Microbiology (Technical University Munich)                      *
- *  http://www.mikro.biologie.tu-muenchen.de/                                    *
- *********************************************************************************/
+// =============================================================== //
+//                                                                 //
+//   File      : GEN_nds.hxx                                       //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Ralf Westram (coder@reallysoft.de) in 2001           //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #ifndef GEN_NDS_HXX
 #define GEN_NDS_HXX

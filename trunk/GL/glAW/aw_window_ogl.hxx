@@ -24,7 +24,7 @@
 extern bool AW_alpha_Size_Supported;
 
 
-/// Extended by Daniel Koitzsch & Christian Becker 19-05-04
+// Extended by Daniel Koitzsch & Christian Becker 19-05-04
 class AW_window_menu_modes_opengl : public AW_window_menu_modes {
 private:
     void *AW_window_menu_modes_private; // Do not use !!!

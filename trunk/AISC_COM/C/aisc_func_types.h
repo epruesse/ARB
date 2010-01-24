@@ -1,8 +1,13 @@
-/*********************************************************************************
- *  Coded by Ralf Westram (coder@reallysoft.de) in 2000                          *
- *  Institute of Microbiology (Technical University Munich)                      *
- *  http://www.mikro.biologie.tu-muenchen.de/                                    *
- *********************************************************************************/
+// =============================================================== //
+//                                                                 //
+//   File      : aisc_func_types.h                                 //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Ralf Westram (coder@reallysoft.de) in 2000           //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #ifndef AISC_FUNC_TYPES_H
 #define AISC_FUNC_TYPES_H

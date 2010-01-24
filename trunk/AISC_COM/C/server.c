@@ -41,7 +41,8 @@
 
 #define AISC_MAGIC_NUMBER_FILTER 0xffffff00
 
-/******************************************* some structures *******************************************/
+/* ------------------------- */
+/*      some structures      */
 
 #ifdef __cplusplus
 extern "C" {
@@ -213,7 +214,9 @@ static int aisc_s_write(int socket, char *ptr, int size)
 }
 
 
-/******************************** object+attr_names for error messages ********************************/
+/* ---------------------------------------------- */
+/*      object+attr_names for error messages      */
+
 
 const char *aisc_get_object_names(long i)
 {
@@ -234,7 +237,6 @@ static const char *aisc_get_object_attribute(long i, long j)
     return aisc_attribute_names_list[i][j];
 }
 
-/************************************* find the mach name and id *************************************/
 
 static char *aisc_get_hostname(void) {
     static char *hn = 0;
@@ -319,7 +321,7 @@ static const char *aisc_open_socket(const char *path, int delay, int do_connect,
             sprintf(buffer, "Unknown host: %s", mach_name);
             return (char *)strdup(buffer);
         }
-        /** simply take first address **/
+        /* simply take first address */
         addr.s_addr = *(int *) (he->h_addr);
         so_ad.sin_addr = addr;
         so_ad.sin_family = AF_INET;
@@ -387,8 +389,6 @@ static const char *aisc_open_socket(const char *path, int delay, int do_connect,
     }
 }
 
-/******************************************* open the server *******************************************/
-
 struct Hs_struct *open_aisc_server(const char *path, int timeout, int fork) {
     struct Hs_struct *hs;
     static int      so;
@@ -412,7 +412,7 @@ struct Hs_struct *open_aisc_server(const char *path, int timeout, int fork) {
     
     aisc_server_bytes_first = 0;
     aisc_server_bytes_last  = 0;
-    /** simply take first address **/
+    /* simply take first address */
     if (listen(so, MAX_QUEUE_LEN) < 0) {
         printf("AISC_SERVER_ERROR could not listen (server) %i\n", errno);
         return NULL;
@@ -1139,8 +1139,6 @@ static long aisc_talking_debug_info(long *in_buf, int size, long *out_buf, int m
     }
 }
 
-/********************* broadcast message *************************/
-
 int aisc_broadcast(struct Hs_struct *hs, int message_type, const char *message)
 {
     struct Socinf *si;
@@ -1333,7 +1331,7 @@ struct Hs_struct *aisc_accept_calls(struct Hs_struct *hs)
         if (!anz) { /* timed out */
             return hs;
         }
-        /*** an event has occurred! ***/
+        /* an event has occurred */
         if ((timeout.tv_usec>=0)&&(timeout.tv_usec<100000)) timeout.tv_usec = 100000;
 
         if (FD_ISSET(hs->hso, &set)) {
@@ -1401,8 +1399,6 @@ struct Hs_struct *aisc_accept_calls(struct Hs_struct *hs)
     return hs;
 }
 
-/************************** aisc_server_shutdown_and_exit *********************/
-
 void aisc_server_shutdown_and_exit(struct Hs_struct *hs, int exitcode) {
     /* goes to header: __ATTR__NORETURN  */
     struct Socinf *si;
@@ -1421,7 +1417,8 @@ void aisc_server_shutdown_and_exit(struct Hs_struct *hs, int exitcode) {
 }
 
 
-/************************** special functions *********************/
+/* --------------------------- */
+/*      special functions      */
 
 
 static int aisc_get_key(int *obj) {

@@ -49,16 +49,6 @@ static AliView *pars_generate_aliview(WeightedFilter *pars_weighted_filter) {
     return aliview;
 }
 
-/**************************
-tree_init()
-
-        Filter & weights setup
-        loads sequences at the leafs and
-        initialize filters & weights for the tree
-        ( AP_tree_nlen expected )
-
-**************************/
-
 void PARS_tree_init(AWT_graphic_tree *agt) {
     ap_assert(agt->get_root_node());
     ap_assert(agt == ap_main->get_tree_root());
@@ -324,7 +314,7 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
                         break;
                     }
 
-                    /*** check security level @@@ ***/
+                    // @@@ check security level
                     at = (AP_tree *)cl->client_data1;
                     if (at && at->father) {
                         bl_drag_flag = 1;

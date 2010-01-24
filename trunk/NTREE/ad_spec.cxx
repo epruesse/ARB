@@ -1,13 +1,12 @@
 // =============================================================== //
 //                                                                 //
 //   File      : ad_spec.cxx                                       //
-//   Purpose   :                                                   //
+//   Purpose   : Create and modify species and SAI.                //
 //                                                                 //
 //   Institute of Microbiology (Technical University Munich)       //
 //   http://www.arb-home.de/                                       //
 //                                                                 //
 // =============================================================== //
-
 
 #include "ad_spec.hxx"
 #include "nt_internal.h"
@@ -85,35 +84,33 @@ static void move_species_to_extended(AW_window *aww) {
     free(source);
 }
 
-/** \file   ad_spec.cxx
- *  \brief Functions for creating and modifying species and SAIs.
-*/
-/** \brief Creates an SAI from protein secondary structure of a selected species.
- *
- *  \param[in] aww AW_window
- *  \param[in] ntw AWT_canvas
- *
- *  The function takes the currently selected species and searches for the field
- *  "sec_struct". A new SAI is created using the data in this field. A simple input
- *  window allows the user to change the default name ([species name]_pfold) for
- *  the new SAI.
- * 
- *  \note The import filter "dssp_all.ift" allows for importing the amino acid sequence
- *        as well as the protein secondary structure from a dssp file and the structure
- *        is stored in the field "sec_struct". That way, secondary structure can be
- *        aligned along with the sequence manually and can later be extracted to create
- *        an SAI.  
- * 
- *  \attention The import filter "dssp_2nd_struct.ift" extracts only the protein
- *             secondary structure which is stored as alignment data. SAIs can simply
- *             be created from these species via move_species_to_extended().
- */
 void create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL) {
-    GB_ERROR error = 0;
+    /*! \brief Creates an SAI from protein secondary structure of a selected species.
+     *
+     *  \param[in] aww AW_window
+     *  \param[in] ntw AWT_canvas
+     *
+     *  The function takes the currently selected species and searches for the field
+     *  "sec_struct". A new SAI is created using the data in this field. A simple input
+     *  window allows the user to change the default name ([species name]_pfold) for
+     *  the new SAI.
+     *
+     *  \note The import filter "dssp_all.ift" allows for importing the amino acid sequence
+     *        as well as the protein secondary structure from a dssp file and the structure
+     *        is stored in the field "sec_struct". That way, secondary structure can be
+     *        aligned along with the sequence manually and can later be extracted to create
+     *        an SAI.
+     *
+     *  \attention The import filter "dssp_2nd_struct.ift" extracts only the protein
+     *             secondary structure which is stored as alignment data. SAIs can simply
+     *             be created from these species via move_species_to_extended().
+     */
+
+    GB_ERROR  error      = 0;
     GB_begin_transaction(GLOBAL_gb_main);
-    char *sai_name = 0;
-    char *sec_struct = 0;
-    bool canceled = false;
+    char     *sai_name   = 0;
+    char     *sec_struct = 0;
+    bool      canceled   = false;
 
     // get the selected species
     char *species_name = aww->get_root()->awar(AWAR_SPECIES_NAME)->read_string();

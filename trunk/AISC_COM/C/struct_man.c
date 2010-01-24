@@ -8,7 +8,10 @@
 
 /* AISC_MKPT_PROMOTE:struct aisc_hash_node; */
 
-/********************************* HASH TABLES ****************************/
+/* --------------------- */
+/*      hash tables      */
+
+
 #define CORE
 #define HASH_SIZE 103123
 #define TRF_HASH_SIZE 103123
@@ -127,7 +130,10 @@ long aisc_read_hash(struct aisc_hash_node **table, char *key)
     }
     return 0;
 }
-/*************************************** LINK CONTROL ***********************/
+
+/* ---------------------- */
+/*      link control      */
+
 const char *aisc_link(dllpublic_ext * parent, dllheader_ext * mh) {
     if (!mh) {
         CORE;
@@ -234,7 +240,7 @@ long aisc_find_lib(dllpublic_ext *parent, char *ident)
     return aisc_read_hash((struct aisc_hash_node **)parent->hash, ident);
 }
 
-/*************************************** AISC P_MOVE *********************************/
+
 struct trf_dest_struct {
     struct trf_dest_struct *next;
     long                   *dest;
@@ -351,7 +357,8 @@ int trf_commit(int errors)      /* if errors == 1 then print errors and CORE */
     return 0;
 }
 
-/***************************************** bytestring functions *************************************/
+/* ------------------------------ */
+/*      bytestring functions      */
 
 int aisc_server_dllint_2_bytestring(dllpublic_ext * pb, bytestring *bs, int offset)
 {

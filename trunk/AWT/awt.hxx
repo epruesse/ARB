@@ -106,9 +106,8 @@ GBDATA *AWT_get_item_with_id(GBDATA *gb_main, const ad_item_selector *sel, const
 extern ad_item_selector AWT_species_selector;
 extern ad_item_selector AWT_organism_selector;
 
-/**************************************************************************
- *********************       File Selection Boxes    *******************
- ***************************************************************************/
+// -----------------------------
+//      file selection boxes
 
 void awt_create_selection_box(AW_window *aws, const char *awar_prefix, const char *at_prefix = "", const char *pwd = "PWD", bool show_dir = true, bool allow_wildcards = false);
 /* Create a file selection box, this box needs 3 AWARS:
@@ -146,10 +145,9 @@ AW_window *create_load_box_for_selection_lists(AW_root *aw_root, AW_CL selid);
 void create_print_box_for_selection_lists(AW_window *aw_window, AW_CL selid);
 /* Create a file selection box to save a selection list */
 
-/**************************************************************************
- *********************   Query Box           *******************
- ***************************************************************************/
 
+// ------------------
+//      query box
 
 #define IS_QUERIED(gb_species, cbs)   (cbs->select_bit & GB_read_usr_private(gb_species))
 class awt_query_struct {
@@ -197,26 +195,19 @@ public:
 struct adaqbsstruct;
 void awt_copy_selection_list_2_queried_species(struct adaqbsstruct *cbs, AW_selection_list *id, const char *hit_description);
 struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtqs, const char *query_id); // create the query box
-/* Create the query box */
 void awt_search_equal_entries(AW_window *dummy, struct adaqbsstruct *cbs, bool tokenize);
 long awt_count_queried_items(struct adaqbsstruct *cbs, AWT_QUERY_RANGE range);
 void awt_unquery_all(void *dummy, struct adaqbsstruct *cbs);
 
-AW_window *awt_create_item_colorizer(AW_root *aw_root, GBDATA *gb_main, const ad_item_selector *sel);
+// ------------------------------------------------------------
 
-/**************************************************************************
- *********************   Simple Awar Controll Procs  *******************
- ***************************************************************************/
+AW_window *awt_create_item_colorizer(AW_root *aw_root, GBDATA *gb_main, const ad_item_selector *sel);
 
 void awt_set_long(AW_window *aws, AW_CL varname, AW_CL value);      // set an awar
 void awt_set_string(AW_window *aws, AW_CL varname, AW_CL value);    // set an awar
 
-/**************************************************************************
- *********************   Call External Editor        *******************
- ***************************************************************************/
-
 typedef void (*awt_fileChanged_cb)(const char *path, bool fileWasChanged, bool editorTerminated);
-void AWT_edit(const char *path, awt_fileChanged_cb callback = 0, AW_window *aww = 0, GBDATA *gb_main = 0);
+void AWT_edit(const char *path, awt_fileChanged_cb callback = 0, AW_window *aww = 0, GBDATA *gb_main = 0); // call external editor
 
 void AWT_create_ascii_print_window(AW_root *awr, const char *text_to_print, const char *title=0);
 void AWT_write_file(const char *filename, const char *file);
@@ -233,9 +224,7 @@ void AD_map_viewer(GBDATA *gbd, AD_MAP_VIEWER_TYPE type = ADMVT_INFO);
 class awt_item_type_selector;
 GB_ERROR AWT_initialize_input_mask(AW_root *root, GBDATA *gb_main, const awt_item_type_selector *sel, const char* mask_name, bool localMask);
 
-//  ----------------------------------------
-//      class awt_input_mask_descriptor
-//  ----------------------------------------
+
 class awt_input_mask_descriptor {
 private:
     char *title;                // title of the input mask

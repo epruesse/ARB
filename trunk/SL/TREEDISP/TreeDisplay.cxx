@@ -20,7 +20,7 @@
 #include "awt_attributes.hxx"
 #include "TreeDisplay.hxx"
 
-/***************************
+/*!*************************
       class AP_tree
 ****************************/
 
@@ -1156,7 +1156,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         break;
                     }
 
-                    /*** check security level @@@ ***/
+                    /*!* check security level @@@ ***/
                     at = (AP_tree *)cl->client_data1;
                     if (at && at->father) {
                         bl_drag_flag = 1;
@@ -1385,7 +1385,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
             if (type==AW_Mouse_Press) {
                 switch (button) {
                     case AWT_M_LEFT:
-                        /** reset rotation **/
+                        /*! reset rotation **/
                         if (cl->exists) {
                             at = (AP_tree *)cl->client_data1;
                             if (at) {
@@ -1396,7 +1396,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         }
                         break;
                     case AWT_M_MIDDLE:
-                        /** reset spread **/
+                        /*! reset spread **/
                         if (cl->exists) {
                             at = (AP_tree *)cl->client_data1;
                             if (at) {
@@ -1407,7 +1407,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         }
                         break;
                     case AWT_M_RIGHT:
-                        /** reset linewidth **/
+                        /*! reset linewidth **/
                         if (cl->exists) {
                             at = (AP_tree *)cl->client_data1;
                             if (at) {
@@ -2184,7 +2184,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
         if (at_leftson->gr.gc > at_rightson->gr.gc) {
             // bring selected gc to front
 
-            /*** left branch ***/
+            /*!* left branch ***/
             w = r*0.5*tree_spread + tree_orientation + at->gr.left_angle;
             z = at->leftlen;
             show_radial_tree(at_leftson,
@@ -2194,7 +2194,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
                              w,
                              x_center, y_center, at->gr.left_linewidth);
 
-            /*** right branch ***/
+            /*!* right branch ***/
             w = tree_orientation - l*0.5*tree_spread + at->gr.right_angle;
             z = at->rightlen;
             show_radial_tree(at_rightson,
@@ -2205,7 +2205,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
                              x_center, y_center, at->gr.right_linewidth);
         }
         else {
-            /*** right branch ***/
+            /*!* right branch ***/
             w = tree_orientation - l*0.5*tree_spread + at->gr.right_angle;
             z = at->rightlen;
             show_radial_tree(at_rightson,
@@ -2215,7 +2215,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
                              w,
                              x_center, y_center, at->gr.right_linewidth);
 
-            /*** left branch ***/
+            /*!* left branch ***/
             w = r*0.5*tree_spread + tree_orientation + at->gr.left_angle;
             z = at->leftlen;
             show_radial_tree(at_leftson,
@@ -2227,14 +2227,14 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
         }
     }
     if (show_circle) {
-        /*** left branch ***/
+        /*!* left branch ***/
         if (at->leftson->remark_branch) {
             w = r*0.5*tree_spread + tree_orientation + at->gr.left_angle;
             z = at->leftlen * .5;
             AWT_show_bootstrap_circle(disp_device, at->leftson->remark_branch, circle_zoom_factor, circle_max_size, at->leftlen, x_center + z * cos(w), y_center + z * sin(w), false, 0, text_filter, (AW_CL)at, 0);
         }
         if (at->rightson->remark_branch) {
-            /*** right branch ***/
+            /*!* right branch ***/
             w = tree_orientation - l*0.5*tree_spread + at->gr.right_angle;
             z = at->rightlen * .5;
             AWT_show_bootstrap_circle(disp_device, at->rightson->remark_branch, circle_zoom_factor, circle_max_size, at->rightlen, x_center + z * cos(w), y_center + z * sin(w), false, 0, text_filter, (AW_CL)at, 0);

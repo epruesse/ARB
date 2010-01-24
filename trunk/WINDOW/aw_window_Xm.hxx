@@ -30,30 +30,29 @@ bool AW_remove_button_from_sens_list(AW_root *aw_root, Widget w);
 
 #define AW_MOTIF_LABEL
 
-#define RES_LABEL_CONVERT(str) \
-    XmNlabelType, (str[0]=='#') ? XmPIXMAP : XmSTRING, \
+#define RES_LABEL_CONVERT(str)                                     \
+    XmNlabelType, (str[0]=='#') ? XmPIXMAP : XmSTRING,             \
     XtVaTypedArg, (str[0]=='#') ? XmNlabelPixmap : XmNlabelString, \
-    XmRString, \
-    aw_str_2_label(str, this), \
+    XmRString,                                                     \
+    aw_str_2_label(str, this),                                     \
     strlen(aw_str_2_label(str, this))+1
 
-#define RES_LABEL_CONVERT2(str, aww) \
-    XmNlabelType, (str[0]=='#') ? XmPIXMAP : XmSTRING, \
+#define RES_LABEL_CONVERT2(str, aww)                               \
+    XmNlabelType, (str[0]=='#') ? XmPIXMAP : XmSTRING,             \
     XtVaTypedArg, (str[0]=='#') ? XmNlabelPixmap : XmNlabelString, \
-    XmRString, \
-    aw_str_2_label(str, aww), \
+    XmRString,                                                     \
+    aw_str_2_label(str, aww),                                      \
     strlen(aw_str_2_label(str, aww))+1
 
 
-#define AW_JUSTIFY_LABEL(widget, corr) \
-    switch (corr) { \
+#define AW_JUSTIFY_LABEL(widget, corr)                                                \
+    switch (corr) {                                                                   \
         case 1: XtVaSetValues(widget, XmNalignment, XmALIGNMENT_CENTER, NULL); break; \
-        case 2: XtVaSetValues(widget, XmNalignment, XmALIGNMENT_END, NULL); break; \
-        default: break; \
+        case 2: XtVaSetValues(widget, XmNalignment, XmALIGNMENT_END, NULL); break;    \
+        default: break;                                                               \
     }
 
 
-/*************************************************************************/
 struct AW_timer_cb_struct {
     AW_timer_cb_struct(AW_root *ari, void (*g)(AW_root*, AW_CL, AW_CL), AW_CL cd1i, AW_CL cd2i);
     ~AW_timer_cb_struct(void);
@@ -63,9 +62,6 @@ struct AW_timer_cb_struct {
     AW_CL cd2;
 };
 
-
-
-/************************************************************************/
 struct AW_buttons_struct {
     AW_buttons_struct(AW_active maski, Widget w, AW_buttons_struct *next);
     ~AW_buttons_struct();
@@ -75,8 +71,6 @@ struct AW_buttons_struct {
     AW_buttons_struct *next;
 };
 
-
-/************************************************************************/
 struct AW_config_struct {
     AW_config_struct(const char *idi, AW_active maski, Widget w, const char *variable_namei, const char *variable_valuei, AW_config_struct *nexti);
 
@@ -180,11 +174,8 @@ struct AW_select_table_struct {
     AW_select_table_struct *next;
 };
 
-
-
-/*****************************************************************************************************
-        area management:    devices callbacks
-*****************************************************************************************************/
+// -------------------------------------------
+//      area management: devices callbacks
 
 class AW_common;
 class AW_device_Xm;
@@ -232,7 +223,7 @@ public:
 
     AW_area_management(AW_root *awr, Widget form, Widget widget);
 };
-/************************************************************************/
+
 
 class AW_selection_list;
 
@@ -294,9 +285,7 @@ public:
     void normal_cursor(void);
 };
 
-/**********************************************************************/
 const int AW_NUMBER_OF_F_KEYS = 20;
-
 #define AW_FIX_POS_ON_EXPOSE -12345
 
 class AW_window_Motif {

@@ -181,8 +181,8 @@ public:
     friend      std::ostream& operator<<(std::ostream&, const AP_tree_nlen&);
 };
 
-
-/************ AP_tree_edge  ************/
+// ---------------------
+//      AP_tree_edge
 
 class MutationsPerSite;
 
@@ -290,7 +290,6 @@ public:
 
 std::ostream& operator<<(std::ostream&, const AP_tree_edge&);
 
-/******** two easy-access-functions for the root *********/
 
 inline AP_tree_nlen *rootNode() {
     return ap_main->get_root_node();
@@ -299,8 +298,6 @@ inline AP_tree_nlen *rootNode() {
 inline AP_tree_edge *rootEdge() {
     return rootNode()->get_leftson()->edgeTo(rootNode()->get_rightson());
 }
-
-/**************************************************/
 
 #else
 #error ap_tree_nlen.hxx included twice

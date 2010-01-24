@@ -1129,9 +1129,8 @@ static void PA_focus_cb(AW_window *, GBDATA *gb_main_par)
     GB_transaction dummy(gb_main_par);
 }
 
-/******************************************************
-    Test-Funktionen
-******************************************************/
+// -----------------------
+//      test functions
 
 #if defined(TEST_FUNCTIONS)
 static void refreshTree(AWT_canvas *ntw) {
@@ -1273,11 +1272,6 @@ static void pars_reset_optimal_parsimony(AW_window *aww, AW_CL *cl_ntw) {
     AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
     ntw->refresh();
 }
-
-/******************************************************
-
-******************************************************/
-
 
 
 static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL cl_cmds) {

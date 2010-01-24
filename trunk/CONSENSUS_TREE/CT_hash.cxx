@@ -14,24 +14,21 @@ int Hash_max_count=0;
 HNODE *Hashlist[HASH_MAX];
 HNODE *Sortedlist = NULL;
 
-/** initialize Hashtable and free old data */
-void hash_init(void)
-{
+void hash_init(void) {
+    /*! initialize Hashtable and free old data */
     Hash_max_count = 0;
     hash_free();
 }
 
 
-/** set number of trees */
-void hash_settreecount(int tree_count)
-{
+void hash_settreecount(int tree_count) {
+    /*! set number of trees */
     Tree_count = tree_count;
 }
 
 
-/** free Hashtable and Sortedlist */
-void hash_free(void)
-{
+void hash_free(void) {
+    /*! free Hashtable and Sortedlist */
     int i;
     HNODE *hnp, *hnp_help;
 
@@ -57,12 +54,12 @@ void hash_free(void)
 }
 
 
-/** return the first element (with the highest hitnumber) from the linear sorted
-    list and calculate percentaged appearance of this partition in all trees and
-    calculate the average pathlength.
-    The element is removed from the list afterwards */
-PART *hash_getpart(void)
-{
+PART *hash_getpart(void) {
+    /*! return the first element (with the highest hitnumber) from the linear sorted
+     * list and calculate percentaged appearance of this partition in all trees and
+     * calculate the average pathlength.
+     * The element is removed from the list afterwards
+     */
     HNODE *hnp;
     PART *p;
 
@@ -80,11 +77,11 @@ PART *hash_getpart(void)
 }
 
 
-/** insert part in hashtable with weight
-    @PARAMETER   part    the one to insert, is destructed afterwards
-    weight  the weight of the part                       */
-void hash_insert(PART *part, int weight)
-{
+void hash_insert(PART *part, int weight) {
+    /*! insert part in hashtable with weight
+     * @param part the one to insert, is destructed afterwards
+     * @param weight  the weight of the part
+     */
     int key;
     HNODE *hp;
 
@@ -125,13 +122,12 @@ void hash_insert(PART *part, int weight)
 }
 
 
-/** sort the current hash list in a linear sorted list, the current hash
-    is empty afterwards. I use a simple trick speed up the function:
-    build for every hitnumber one list and put all elements with that hitnumber
-    in it. After that i connect the list together, what results in a sorted list
-*/
-void build_sorted_list(void)
-{
+void build_sorted_list(void) {
+    /*! sort the current hash list in a linear sorted list, the current hash
+     * is empty afterwards. I use a simple trick speed up the function:
+     * build for every hitnumber one list and put all elements with that hitnumber
+     * in it. After that i connect the list together, what results in a sorted list
+     */
     HNODE *hnp, *hnp_help;
     HNODE **heads, **tails, *head, *tail;
     int i, idx;
@@ -183,9 +179,8 @@ void build_sorted_list(void)
 }
 
 
-/** testfunction to print the hashtable */
-void hash_print(void)
-{
+void hash_print(void) {
+    /*! testfunction to print the hashtable */
     int i;
     HNODE *hnp;
 
@@ -203,9 +198,8 @@ void hash_print(void)
 }
 
 
-/** testfunction to print the sorted linear list */
-void sorted_print(void)
-{
+void sorted_print(void) {
+    /*! testfunction to print the sorted linear list */
     HNODE *hnp;
 
     printf("\n sorted HASHlist \n");

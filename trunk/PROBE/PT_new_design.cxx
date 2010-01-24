@@ -156,11 +156,10 @@ static void ptnd_calc_quality(PT_pdc *pdc) {
         tprobe->quality = ((double)tprobe->groupsize * i) + 1000.0/(1000.0 + tprobe->perc[i]);
     }
 }
-/***********************************************************************
-                        check the bond val for a probe
-***********************************************************************/
+
 static double ptnd_check_max_bond(PT_pdc *pdc, char base)
 {
+    // check the bond val for a probe
     int complement = PT_complement(base);
     return pdc->bond[(complement-(int)PT_A)*4 + base-(int)PT_A].val;
 }
@@ -178,13 +177,12 @@ double ptnd_check_split(PT_pdc *pdc, char *probe, int pos, char ref) {
 }
 
 
-/***********************************************************************
-                        primary search for probes
-***********************************************************************/
-/* count all mishits for a probe */
+// ----------------------------------
+//      primary search for probes
 
 struct ptnd_chain_count_mishits {
     int operator()(int name, int apos, int rpos) {
+        /* count all mishits for a probe */
         char *probe = psg.probe;
         if (apos>psg.apos) psg.apos = apos;
         if (psg.data[name].is_group) return 0;              /* don't count group or neverminds */
@@ -201,9 +199,8 @@ struct ptnd_chain_count_mishits {
     }
 };
 
-/* go down the tree to chains and leafs; count the species that are in the non member group */
-static int ptnd_count_mishits2(POS_TREE *pt)
-{
+static int ptnd_count_mishits2(POS_TREE *pt) {
+    /* go down the tree to chains and leafs; count the species that are in the non member group */
     int base;
     int name;
     int mishits = 0;
@@ -408,12 +405,11 @@ static void ptnd_first_check(PT_pdc *pdc)       /* checks the direkt mishits */
         }
     }
 }
-/***********************************************************************
-                        Check the probes Position
-***********************************************************************/
 
-static void ptnd_check_position(PT_pdc *pdc)    /* checks the direkt mishits */
-{
+static void ptnd_check_position(PT_pdc *pdc) {
+    /* Check the probes Position.
+     * Checks the direkt mishits
+     */
     PT_tprobes  *tprobe, *tprobe_next;
     if (pdc->minpos == pdc->maxpos) return;
 
@@ -427,11 +423,12 @@ static void ptnd_check_position(PT_pdc *pdc)    /* checks the direkt mishits */
         }
     }
 }
-/***********************************************************************
-                        check the average bond size
-***********************************************************************/
-static void ptnd_check_bonds(PT_pdc *pdc, int match)    /* checks probe hairpin bonds */
+
+static void ptnd_check_bonds(PT_pdc *pdc, int match)   
 {
+    /* check the average bond size.
+     * checks probe hairpin bonds
+     */
     PT_tprobes  *tprobe, *tprobe_next;
     int i;
     double      sbond;
@@ -448,11 +445,10 @@ static void ptnd_check_bonds(PT_pdc *pdc, int match)    /* checks probe hairpin 
     }
     match = match;
 }
-/***********************************************************************
-                        split the probes in probeparts
-***********************************************************************/
+
 static void ptnd_cp_tprobe_2_probepart(PT_pdc *pdc)
 {
+    /* split the probes in probeparts */
     PT_tprobes    *tprobe;
     PT_probeparts *parts;
     int            pos;
@@ -521,9 +517,6 @@ static void ptnd_duplicate_probepart(PT_pdc *pdc)
         aisc_link(&pdc->pparts, parts);
     }
 }
-/***********************************************************************
-                sort the parts and check for duplicated parts
-***********************************************************************/
 
 static int ptnd_compare_parts(const void *PT_probeparts_ptr1, const void *PT_probeparts_ptr2, void*) {
     const PT_probeparts *tprobe1 = (const PT_probeparts*)PT_probeparts_ptr1;
@@ -532,8 +525,9 @@ static int ptnd_compare_parts(const void *PT_probeparts_ptr1, const void *PT_pro
     return strcmp(tprobe1->sequence, tprobe2->sequence);
 }
 
-static void ptnd_sort_parts(PT_pdc *pdc)
-{
+static void ptnd_sort_parts(PT_pdc *pdc) {
+    // sort the parts and check for duplicated parts
+
     PT_probeparts **my_list;
     int             list_len;
     PT_probeparts  *tprobe;
@@ -576,13 +570,12 @@ static void ptnd_remove_duplicated_probepart(PT_pdc *pdc)
         }
     }
 }
-/***********************************************************************
-        test the probe parts, search the longest non mismatch string
-***********************************************************************/
+
 static void ptnd_check_part_inc_dt(PT_pdc *pdc, PT_probeparts *parts,
                                    int name, int apos, int rpos,
                                    double dt, double sum_bonds)
 {
+    // test the probe parts, search the longest non mismatch string
     PT_tprobes *tprobe = parts->source;
     double      ndt;
     int         pos;
@@ -682,9 +675,9 @@ struct ptnd_chain_check_part {
 }
 };
 
-/* go down the tree to chains and leafs; check all  */
 static void ptnd_check_part_all(POS_TREE *pt, double dt, double sum_bonds)
 {
+    /* go down the tree to chains and leafs; check all  */
     int base;
     int name, apos, rpos;
 
@@ -710,9 +703,9 @@ static void ptnd_check_part_all(POS_TREE *pt, double dt, double sum_bonds)
         }
     }
 }
-/* search down the tree to find matching species for the given probe */
 static void ptnd_check_part(char *probe, POS_TREE *pt, int  height, double dt, double sum_bonds, int split)
 {
+    /* search down the tree to find matching species for the given probe */
     int       name;
     int       i;
     POS_TREE *pthelp;
@@ -805,9 +798,6 @@ static void ptnd_check_probepart(PT_pdc *pdc)
         ptnd_check_part(parts->sequence, psg.pt, 0, parts->dt, parts->sum_bonds, 0);
     }
 }
-/***********************************************************************
-                        search for possible probes
-***********************************************************************/
 inline int ptnd_check_tprobe(PT_pdc *pdc, const char *probe, int len)
 {
     int occ[PT_B_MAX] = { 0, 0, 0, 0, 0, 0 };
@@ -887,6 +877,8 @@ static long avoid_hash_warning(const char *, long,  void*) { return 0; }
 #endif // DEVEL_RALF
 
 static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
+    // search for possible probes
+
     int           *group_idx    = new int[group_count];
     unsigned long  datasize     = 0;                    // of marked species/genes
     unsigned long  maxseqlength = 0;                    // of marked species/genes

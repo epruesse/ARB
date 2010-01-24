@@ -399,10 +399,6 @@ char *DI_MATRIX::load(LoadWhat what, GB_CSTR sort_tree_name, bool show_warnings,
     return 0;
 }
 
-
-/******************************************************************************************
-            Calculate the global rate_matrix
-******************************************************************************************/
 void DI_MATRIX::clear(DI_MUT_MATR &hits)
 {
     int i, j;
@@ -500,10 +496,8 @@ GB_ERROR DI_MATRIX::calculate_rates(DI_MUT_MATR &hrates, DI_MUT_MATR &nrates, DI
     return 0;
 }
 
-/******************************************************************************************
-    Some test functions to check correlated base correction
-******************************************************************************************/
-
+// ----------------------------------------------------------------
+//      Some test functions to check correlated base correction
 
 GB_ERROR DI_MATRIX::haeschoe(const char *path)
 {

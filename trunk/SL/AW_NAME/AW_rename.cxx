@@ -133,7 +133,7 @@ private:
     //  ----------------------------------
     int init_local_com_names()
     {
-        if (!link) return 1;    /*** create and init local com structure ***/
+        if (!link) return 1;    /*!* create and init local com structure ***/
         if (aisc_create(link, AN_MAIN, com,
                         MAIN_LOCAL, AN_LOCAL, &locs,
                         LOCAL_WHOAMI, "i bin der arb_tree",

@@ -682,7 +682,7 @@ static int diff(int v1, int v2, int v3, int v4, int st, int en)
             if (st>en)
                 st=en;
 
-            /***************if(!v4)*********BUG********************************/
+            /*!*************if(!v4)*********BUG********************************/
 
             ctrc = slave_gapAtWithOpenPenalty(v2, v4, st);
             ctrj = 0;

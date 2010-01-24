@@ -1,8 +1,13 @@
-/*********************************************************************************
- *  Coded by Ralf Westram (coder@reallysoft.de) in 2001                          *
- *  Institute of Microbiology (Technical University Munich)                      *
- *  http://www.mikro.biologie.tu-muenchen.de/                                    *
- *********************************************************************************/
+// =============================================================== //
+//                                                                 //
+//   File      : GEN_local.hxx                                     //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Ralf Westram (coder@reallysoft.de) in 2001           //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #ifndef GEN_LOCAL_HXX
 #define GEN_LOCAL_HXX
@@ -70,6 +75,7 @@ const char *GEN_window_local_awar_name(const char *awar_name, int window_nr);
 AW_window  *GEN_map(AW_root *aw_root, int window_number);
 
 // --------------------------------------------------------------------------------
+
 #else
 #error GEN_local.hxx included twice
 #endif // GEN_LOCAL_HXX

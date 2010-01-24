@@ -28,9 +28,8 @@ gb_information_func_type gb_information_func;
 gb_status_func_type      gb_status_func;
 gb_status_func2_type     gb_status_func2;
 
-/********************************************************************************************
-                    error handling
-********************************************************************************************/
+// -----------------------
+//      error handling
 
 void GB_raise_critical_error(const char *msg) {
     fprintf(stderr, "------------------------------------------------------------\n");
@@ -578,21 +577,25 @@ char *GBS_remove_escape(char *com)  // \ is the escape character
     return result;
 }
 
-/********************************************************************************************
-                    escape/unescape characters in strings
-********************************************************************************************/
+// ----------------------------------------------
+//      escape/unescape characters in strings
 
 char *GBS_escape_string(const char *str, const char *chars_to_escape, char escape_char) {
-    // uses a special escape-method, which eliminates all 'chars_to_escape' completely
-    // from str (this makes further processing of the string more easy)
-    //
-    // escape_char is the character used for escaping. For performance reasons it
-    // should be a character rarely used in 'str'.
-    //
-    // 'chars_to_escape' may not contain 'A'-'Z' (these are used for escaping)
-    // and it may not be longer than 26
-    //
-    // RETURN VALUE : heap copy of escaped string
+    /*! escape characters in 'str'
+     *
+     * uses a special escape-method, which eliminates all 'chars_to_escape' completely
+     * from str (this makes further processing of the string more easy)
+     * 
+     * @param escape_char is the character used for escaping. For performance reasons it
+     * should be a character rarely used in 'str'.
+     * 
+     * @param chars_to_escape may not contain 'A'-'Z' (these are used for escaping)
+     * and it may not be longer than 26 bytes
+     * 
+     * @return heap copy of escaped string
+     *
+     * Inverse of GBS_unescape_string() 
+     */
 
     int   len    = strlen(str);
     char *buffer = (char*)malloc(2*len+1);
@@ -627,7 +630,8 @@ char *GBS_escape_string(const char *str, const char *chars_to_escape, char escap
 }
 
 char *GBS_unescape_string(const char *str, const char *escaped_chars, char escape_char) {
-    // undoes GB_escape_string
+    //! inverse of GB_escape_string() - for params see there
+
     int   len    = strlen(str);
     char *buffer = (char*)malloc(len+1);
     int   j      = 0;
@@ -662,11 +666,8 @@ char *GBS_unescape_string(const char *str, const char *escaped_chars, char escap
     return buffer;
 }
 
-
-
-/********************************************************************************************
-                    String streams
-********************************************************************************************/
+// -----------------------
+//      String streams
 
 #if defined(DEBUG)
 // # define DUMP_STRSTRUCT_MEMUSE

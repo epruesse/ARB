@@ -124,17 +124,15 @@ AW_clip::AW_clip() {
     memset((char *)this, 0, sizeof(*this));
 }
 
-/**********************************************************************/
-
 inline AW_pos clip_in_range(AW_pos low, AW_pos val, AW_pos high) {
     if (val <= low) return low;
     if (val >= high) return high;
     return val;
 }
 
-int AW_clip::box_clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out)
-// clip coordinates of a box
-{
+int AW_clip::box_clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out) {
+    // clip coordinates of a box
+
     if (x1<clip_rect.l || x0>clip_rect.r) return 0;
     if (y1<clip_rect.t || y0>clip_rect.b) return 0;
 
@@ -148,11 +146,10 @@ int AW_clip::box_clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out,
 
     return 1;
 }
-/**********************************************************************/
 
-int AW_clip::clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out)
-// clip coordinates of a line
-{
+int AW_clip::clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out) {
+    // clip coordinates of a line
+    
     int    outcodeout;
     AW_pos x = 0;
     AW_pos y = 0;
@@ -219,9 +216,9 @@ void AW_matrix::reset(void) {
     offset  = AW::Vector(0, 0);
 }
 
-/**********************************************************************************************
-                                                GC_XM
-**********************************************************************************************/
+// -----------------
+//      AW_GC_Xm
+
 AW_GC_Xm::AW_GC_Xm(AW_common *commoni) {
     common     = commoni;
     line_width = 1;
@@ -313,10 +310,8 @@ const AW_font_information *AW_gc::get_font_information(int gc, unsigned char c) 
     return ptr;
 }
 
-
-/**********************************************************************************************
-                                                GC
-**********************************************************************************************/
+// --------------
+//      AW_gc
 
 int AW_gc::get_string_size(int gc, const char *str, long textlen) {
     // get the size of the string
@@ -404,11 +399,6 @@ void AW_gc::set_background_color(int gc, AW_color color) {
     common->gcs[gc]->set_background_color(col);
 }
 
-
-
-/**********************************************************************************************
-                                                COMMON
-**********************************************************************************************/
 void AW_get_common_extends_cb(AW_window *aww, AW_common *common) {
     AWUSE(aww);
     Window       root;
@@ -449,14 +439,6 @@ AW_common::AW_common(AW_window *aww, AW_area area, Display *display_in,
     aww->set_resize_callback(area, (AW_CB2)AW_get_common_extends_cb, (AW_CL)this, 0);
     AW_get_common_extends_cb(aww, this);
 }
-
-/**********************************************************************************************
-                                                DEVICE and GCS
-**********************************************************************************************/
-
-// ----------------------------
-//      AW_clip_scale_stack
-// ----------------------------
 
 #if defined(DEBUG)
 // #define SHOW_CLIP_STACK_CHANGES
@@ -580,10 +562,6 @@ AW_device::AW_device(class AW_common *commoni) : AW_gc() {
 }
 
 AW_gc::AW_gc() : AW_clip() {}
-
-/**********************************************************************************************
-                                                DEVICE and OUTPUT
-**********************************************************************************************/
 
 bool AW_device::invisible(int gc, AW_pos x, AW_pos y, AW_bitset filteri, AW_CL clientdata1, AW_CL clientdata2) {
     AWUSE(clientdata1); AWUSE(clientdata2);
@@ -854,9 +832,5 @@ int AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eithe
 
     return f(this, gc, opt_str, opt_len, start, (size_t)textlen, x, y, opt_ascent, opt_descent, cduser, cd1, cd2);
 }
-
-/**********************************************************************************************
-                                                DEVICE and ETC
-**********************************************************************************************/
 
 void AW_device::set_filter(AW_bitset filteri) { filter = filteri; }

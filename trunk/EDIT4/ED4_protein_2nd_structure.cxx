@@ -1,4 +1,4 @@
-/** \file   ED4_protein_2nd_structure.cxx
+/*! \file   ED4_protein_2nd_structure.cxx
  *  \brief  Implements the functions defined in ed4_protein_2nd_structure.hxx.
  *  \author Markus Urban
  *  \date   2008-02-08
@@ -28,7 +28,7 @@ using namespace std;
 // --------------------------------------------------------------------------------
 // exported data
 
-/// Awars for the match type; binds the #PFOLD_MATCH_TYPE to the corresponding awar name.
+//! Awars for the match type; binds the #PFOLD_MATCH_TYPE to the corresponding awar name.
 name_value_pair pfold_match_type_awars[] = {
     { "Perfect_match", STRUCT_PERFECT_MATCH   },
     { "Good_match",    STRUCT_GOOD_MATCH      },
@@ -39,7 +39,7 @@ name_value_pair pfold_match_type_awars[] = {
     { 0,               PFOLD_MATCH_TYPE_COUNT }
 };
 
-/// Symbols for the match quality (defined by #PFOLD_MATCH_TYPE) as used for match methods #SECSTRUCT_SECSTRUCT and #SECSTRUCT_SEQUENCE_PREDICT in ED4_pfold_calculate_secstruct_match().
+//! Symbols for the match quality (defined by #PFOLD_MATCH_TYPE) as used for match methods #SECSTRUCT_SECSTRUCT and #SECSTRUCT_SEQUENCE_PREDICT in ED4_pfold_calculate_secstruct_match().
 char *pfold_pair_chars[6] = {
     strdup(" "), // STRUCT_PERFECT_MATCH
     strdup("-"), // STRUCT_GOOD_MATCH
@@ -49,7 +49,7 @@ char *pfold_pair_chars[6] = {
     strdup("?")  // STRUCT_UNKNOWN
 };
 
-/// Match pair definition (see #PFOLD_MATCH_TYPE) as used for match methods #SECSTRUCT_SECSTRUCT and #SECSTRUCT_SEQUENCE_PREDICT in ED4_pfold_calculate_secstruct_match().
+//! Match pair definition (see #PFOLD_MATCH_TYPE) as used for match methods #SECSTRUCT_SECSTRUCT and #SECSTRUCT_SEQUENCE_PREDICT in ED4_pfold_calculate_secstruct_match().
 char *pfold_pairs[6] = {
     strdup("HH GG II TT EE BB SS -- -. .."),          // STRUCT_PERFECT_MATCH
     strdup("HG HI HS EB ES TS H- G- I- T- E- B- S-"), // STRUCT_GOOD_MATCH
@@ -61,7 +61,7 @@ char *pfold_pairs[6] = {
 
 // --------------------------------------------------------------------------------
 
-/** \brief Specifies the characters used for amino acid one letter code.
+/*! \brief Specifies the characters used for amino acid one letter code.
  *
  *  These are the characters that represent amino acids in one letter code.
  *  The order is important as the array initializes #char2AA which is used to
@@ -69,7 +69,7 @@ char *pfold_pairs[6] = {
  */
 static const char *amino_acids = "ARDNCEQGHILKMFPSTWYV";
 
-/** \brief Maps character to amino acid one letter code.
+/*! \brief Maps character to amino acid one letter code.
  *
  *  This array maps a character to an integer value. It is initialized with the 
  *  function ED4_pfold_init_statics() which creates an array of the size 256
@@ -81,7 +81,7 @@ static const char *amino_acids = "ARDNCEQGHILKMFPSTWYV";
  */
 static int *char2AA = 0;
 
-/** \brief Characters representing protein secondary structure.
+/*! \brief Characters representing protein secondary structure.
  *
  *  Defines the characters representing secondary structure as output by the 
  *  function ED4_pfold_predict_structure(). According to common standards, 
@@ -92,19 +92,19 @@ static int *char2AA = 0;
  */
 static char structure_chars[3] = { 'H', 'E', 'T' };
 
-/// Amino acids that break a certain structure (#ALPHA_HELIX or #BETA_SHEET) as used in ED4_pfold_extend_nucleation_sites().
+//! Amino acids that break a certain structure (#ALPHA_HELIX or #BETA_SHEET) as used in ED4_pfold_extend_nucleation_sites().
 static char *structure_breaker[2] = {
         strdup("NYPG"),
         strdup("PDESGK")
 };
 
-/// Amino acids that are indifferent for a certain structure (#ALPHA_HELIX or #BETA_SHEET) as used in ED4_pfold_extend_nucleation_sites().
+//! Amino acids that are indifferent for a certain structure (#ALPHA_HELIX or #BETA_SHEET) as used in ED4_pfold_extend_nucleation_sites().
 static char *structure_indifferent[2] = {
         strdup("RTSC"),
         strdup("RNHA")
 };
 
-/// Awars for the match method; binds the #PFOLD_MATCH_METHOD to the corresponding name that is used to create the menu in ED4_pfold_create_props_window().
+//! Awars for the match method; binds the #PFOLD_MATCH_METHOD to the corresponding name that is used to create the menu in ED4_pfold_create_props_window().
 static name_value_pair pfold_match_method_awars[4] = {
     { "Secondary Structure <-> Secondary Structure",        SECSTRUCT_SECSTRUCT        },
     { "Secondary Structure <-> Sequence",                   SECSTRUCT_SEQUENCE         },
@@ -112,16 +112,16 @@ static name_value_pair pfold_match_method_awars[4] = {
     { 0,                                                    PFOLD_MATCH_METHOD_COUNT }
 };
 
-static double max_former_value[3]  = { 1.42, 1.62, 156 }; ///< Maximum former value for alpha-helix, beta-sheet (in #cf_parameters) and beta-turn (in #cf_parameters_norm).
-static double min_former_value[3]  = { 0.0,  0.0,  47  }; ///< Minimum former value for alpha-helix, beta-sheet (in #cf_parameters) and beta-turn (in #cf_parameters_norm).
-static double max_breaker_value[3] = { 1.21, 2.03, 0.0 }; ///< Maximum breaker value for alpha-helix, beta-sheet (in #cf_parameters) and beta-turn (no breaker values => 0).
+static double max_former_value[3]  = { 1.42, 1.62, 156 }; //!< Maximum former value for alpha-helix, beta-sheet (in #cf_parameters) and beta-turn (in #cf_parameters_norm).
+static double min_former_value[3]  = { 0.0,  0.0,  47  }; //!< Minimum former value for alpha-helix, beta-sheet (in #cf_parameters) and beta-turn (in #cf_parameters_norm).
+static double max_breaker_value[3] = { 1.21, 2.03, 0.0 }; //!< Maximum breaker value for alpha-helix, beta-sheet (in #cf_parameters) and beta-turn (no breaker values => 0).
 
 // --------------------------------------------------------------------------------
 
 // TODO: is there a way to prevent doxygen from stripping the comments from the table?
 // I simply added the parameter table as verbatim environment to show the comments in
 // the documentation.
-/** \brief Former and breaker values for alpha-helices and beta-sheets (= strands).
+/*! \brief Former and breaker values for alpha-helices and beta-sheets (= strands).
  *
  *  \hideinitializer
  *  \par Initial value:
@@ -187,7 +187,7 @@ static double cf_parameters[20][4] = {
     { 0.00,          1.40,           1.00,           0.00 },          // Y
     { 1.00,          1.62,           0.00,           0.00 } };        // V
 
-/** \brief Normalized former values for alpha-helices, beta-sheets (= strands)
+/*! \brief Normalized former values for alpha-helices, beta-sheets (= strands)
  *         and beta-turns as well as beta-turn probabilities.
  *
  *  \hideinitializer
@@ -253,7 +253,7 @@ static double cf_parameters_norm[20][7] = {
 
 // --------------------------------------------------------------------------------
 
-/** \brief Symmetric arithmetic rounding of a double value to an integer value.
+/*! \brief Symmetric arithmetic rounding of a double value to an integer value.
  *
  *  \param[in] d Value to be rounded
  *  \return    Rounded value
@@ -267,7 +267,7 @@ inline int ED4_pfold_round_sym(double d) {
 }
 
 
-/** \brief Initializes static variables.
+/*! \brief Initializes static variables.
  *
  *  So far, this function only concerns #char2AA which gets initialized here.
  *  See #char2AA for details on the values. It is called by 
@@ -290,7 +290,7 @@ static void ED4_pfold_init_statics() {
 }
 
 
-/** \brief Finds nucleation sites that initiate the specified structure.
+/*! \brief Finds nucleation sites that initiate the specified structure.
  *
  *  \param[in]  sequence  Amino acid sequence
  *  \param[out] structure Predicted secondary structure
@@ -353,7 +353,7 @@ static void ED4_pfold_find_nucleation_sites(const unsigned char *sequence, char 
 }
 
 
-/** \brief Extends the found nucleation sites in both directions.
+/*! \brief Extends the found nucleation sites in both directions.
  *
  *  \param[in]  sequence  Amino acid sequence
  *  \param[out] structure Predicted secondary structure
@@ -471,7 +471,7 @@ static void ED4_pfold_extend_nucleation_sites(const unsigned char *sequence, cha
 }
 
 
-/** \brief Predicts beta-turns from the given amino acid sequence
+/*! \brief Predicts beta-turns from the given amino acid sequence
  * 
  *  \param[in]  sequence  Amino acid sequence
  *  \param[out] structure Predicted secondary structure
@@ -537,7 +537,7 @@ static void ED4_pfold_find_turns(const unsigned char *sequence, char *structure,
 }
 
 
-/** \brief Resolves overlaps of predicted secondary structures and creates structure summary.
+/*! \brief Resolves overlaps of predicted secondary structures and creates structure summary.
  * 
  *  \param[in]     sequence   Amino acid sequence
  *  \param[in,out] structures Predicted secondary structures (#ALPHA_HELIX, #BETA_SHEET, 
@@ -631,7 +631,7 @@ static void ED4_pfold_resolve_overlaps(const unsigned char *sequence, char *stru
 }
 
 
-/** \brief Predicts protein secondary structures from the amino acid sequence.
+/*! \brief Predicts protein secondary structures from the amino acid sequence.
  *
  *  \param[in]  sequence   Amino acid sequence
  *  \param[out] structures Predicted secondary structures (#ALPHA_HELIX, #BETA_SHEET, 
@@ -968,7 +968,7 @@ GB_ERROR ED4_pfold_set_SAI(char **protstruct, GBDATA *gb_main, const char *align
     return error;
 }
 
-/** \brief Callback function to select the reference protein structure SAI and to
+/*! \brief Callback function to select the reference protein structure SAI and to
  *         update the SAI option menu.
  *
  *  \param[in]     aww     The calling window

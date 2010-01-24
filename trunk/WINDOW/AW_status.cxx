@@ -458,12 +458,11 @@ static void aw_status_kill(AW_window *aws)
     }
     aw_status_write(aw_stg.fd_from[1], aw_stg.mode);
 
-    /** install timer event **/
     if (aw_stg.mode == AW_STATUS_ABORT) {
 #if defined(TRACE_STATUS_MORE)
         fprintf(stderr, "add aw_status_timer_event with delay = %i\n", AW_STATUS_KILL_DELAY); fflush(stdout);
 #endif // TRACE_STATUS_MORE
-        aws->get_root()->add_timed_callback(AW_STATUS_KILL_DELAY, aw_status_timer_event, 0, 0);
+        aws->get_root()->add_timed_callback(AW_STATUS_KILL_DELAY, aw_status_timer_event, 0, 0); // install timer event
     }
 }
 
@@ -926,9 +925,9 @@ int aw_status() {
     return aw_stg.mode;
 }
 
-/***********************************************************************/
-/*****************      AW_MESSAGE       *******************/
-/***********************************************************************/
+// -------------------
+//      aw_message
+
 int aw_message_cb_result;
 
 void message_cb(AW_window *aw, AW_CL cd1) {
@@ -1167,9 +1166,8 @@ void aw_error(const char *text, const char *text2) {
     aw_question(buffer, "Continue,EXIT");
 }
 
-/***********************************************************************/
-/*****************      AW_INPUT         *******************/
-/***********************************************************************/
+// -----------------
+//      aw_input
 
 char       *aw_input_cb_result        = 0;
 static int  aw_string_selected_button = -2;
@@ -1645,9 +1643,8 @@ char *aw_file_selection(const char *title, const char *dir, const char *def_name
     return aw_input_cb_result;
 }
 
-/***********************************************************************/
-/**********************     HELP WINDOW ************************/
-/***********************************************************************/
+// --------------------
+//      help window
 
 struct aw_help_global_struct {
     AW_window *aww;
@@ -1656,9 +1653,6 @@ struct aw_help_global_struct {
     char    *history;
 }   aw_help_global;
 
-//  ---------------------------------------------------------------------------------------------------------
-//      static char *get_full_qualified_help_file_name(const char *helpfile, bool path_for_edit = false)
-//  ---------------------------------------------------------------------------------------------------------
 static char *get_full_qualified_help_file_name(const char *helpfile, bool path_for_edit = false) {
     GB_CSTR   result             = 0;
     char     *user_doc_path      = strdup(GB_getenvDOCPATH());
