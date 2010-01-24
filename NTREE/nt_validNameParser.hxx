@@ -1,14 +1,16 @@
-/**
- * Declaration of all objects belonging to this version of
- * the valid names text file
- *
- * 29. November 2002
- * 
- * copyright by Lothar Richter
- */
+// =============================================================== //
+//                                                                 //
+//   File      : nt_validNameParser.hxx                            //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Lothar Richter in November 2002                      //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#ifndef NT_VALID_NAMEPARSER
-#define NT_VALID_NAMEPARSER
+#ifndef NT_VALIDNAMEPARSER_HXX
+#define NT_VALIDNAMEPARSER_HXX
 
 #ifndef __LIST__
 #include <list>
@@ -76,5 +78,6 @@ namespace validNames {
     bool isUpperCase(const std::string& input);
 }; /* end namespace */
 
-#endif
-
+#else
+#error nt_validNameParser.hxx included twice
+#endif // NT_VALIDNAMEPARSER_HXX

@@ -18,17 +18,6 @@
 
 using namespace std;
 
-// #define ap_assert(x) arb_assert(x)
-
-/**************************
-
-    Constructor
-    Destructor
-    initialize
-    relink
-    unlink
-
-**************************/
 long AP_tree_edge::timeStamp = 0;
 
 AP_tree_edge::AP_tree_edge(AP_tree_nlen *node1, AP_tree_nlen *node2)
@@ -47,28 +36,28 @@ AP_tree_edge::~AP_tree_edge()
     unlink();
 }
 
-static void buildSonEdges(AP_tree_nlen *tree)
-    // Builds edges between a node and his two sons.
-    // We assume there is already an edge to node's father and there are
-    // no edges to his sons.
-{
-    if (!tree->is_leaf)
-    {
-        buildSonEdges(tree->get_leftson());
-        buildSonEdges(tree->get_rightson());
+static void buildSonEdges(AP_tree_nlen *node) {
+    /*! Builds edges between a node and his two sons.
+     * We assume there is already an edge to node's father and there are
+     * no edges to his sons.
+     */
+
+    if (!node->is_leaf) {
+        buildSonEdges(node->get_leftson());
+        buildSonEdges(node->get_rightson());
 
         // to ensure the nodes contain the correct distance to the border
         // we MUST build all son edges before creating the father edge
 
-        new AP_tree_edge(tree, tree->get_leftson());
-        new AP_tree_edge(tree, tree->get_rightson());
+        new AP_tree_edge(node, node->get_leftson());
+        new AP_tree_edge(node, node->get_rightson());
     }
 }
 
 void AP_tree_edge::initialize(AP_tree_nlen *tree) {
-    // Builds all edges in the hole tree
-    // The root node is skipped - instead his two sons are connected with an edge
-
+    /*! Builds all edges in the whole tree.
+     * The root node is skipped - instead his two sons are connected with an edge
+     */
     while (tree->get_father()) tree = tree->get_father(); // go up to root
     buildSonEdges(tree->get_leftson());             // link left subtree
     buildSonEdges(tree->get_rightson());            // link right subtree
@@ -308,10 +297,6 @@ void AP_tree_edge::relink(AP_tree_nlen *node1, AP_tree_nlen *node2) {
     node2->index[index[1]] = 1;
 }
 
-/**************************
-    test
-**************************/
-
 int AP_tree_edge::test() const
 {
     int ok = 1;     // result is used by
@@ -356,14 +341,6 @@ int AP_tree_edge::test() const
 
     return ok;
 }
-
-/**************************
-
-Recursive methods:
-
-    clearValues
-
-**************************/
 
 void AP_tree_edge::testChain(int deep)
 {
@@ -414,10 +391,14 @@ long AP_tree_edge::sizeofChain() {
     return c;
 }
 
-int AP_tree_edge::distanceToBorder(int maxsearch, AP_tree_nlen *skipNode) const
-    // return the minimal distance to the border of the tree
-    // a return value of 0 means: one of the nodes is a leaf
-{
+int AP_tree_edge::distanceToBorder(int maxsearch, AP_tree_nlen *skipNode) const {
+    /*! @return the minimal distance to the borders of the tree (aka leafs).
+     * a return value of 0 means: one of the nodes is a leaf
+     *
+     * @param maxsearch         max search depth
+     * @param skipNode          do not descent into that part of the tree
+     */
+    
     if ((node[0] && node[0]->is_leaf) || (node[1] && node[1]->is_leaf))
     {
         return 0;
@@ -475,10 +456,6 @@ void AP_tree_edge::countSpecies(int deep, const AP_tree_nlen *skip)
         }
     }
 }
-
-/**************************
-    tree optimization
-**************************/
 
 class MutationsPerSite {
     char   *Data;
@@ -921,10 +898,6 @@ AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, Mutati
 
     return parsbest;
 }
-
-/**************************
-    operator <<
-**************************/
 
 ostream& operator<<(ostream& out, const AP_tree_edge& e)
 {

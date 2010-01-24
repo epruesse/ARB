@@ -775,8 +775,7 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr) {
 
     RNA3D->OpenGLEngineState = NOT_CREATED;
 
-    /** Add event handlers */
-
+    // Add event handlers:
     Widget middle_area_widget = AW_get_AreaWidget(RNA3D->gl_Canvas->aww, AW_MIDDLE_AREA);
 
     XtAddEventHandler(middle_area_widget, StructureNotifyMask, 0, ResizeOpenGLWindow,        (XtPointer)0);

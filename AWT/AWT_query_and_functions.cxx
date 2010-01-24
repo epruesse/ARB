@@ -32,8 +32,6 @@ using namespace std;
 #define AWT_MAX_QUERY_LIST_LEN  100000
 #define AWT_MAX_SHOWN_DATA_SIZE 500
 
-/***************** Create the database query box and functions *************************/
-
 #define AWAR_COLORIZE "tmp/dbquery_all/colorize"
 
 inline void SET_QUERIED(GBDATA *gb_species, adaqbsstruct *cbs, const char *hitInfo, size_t hitInfoLen = 0) {
@@ -1492,8 +1490,6 @@ void awt_search_equal_entries(AW_window *, struct adaqbsstruct *cbs, bool tokeni
     awt_query_update_list(0, cbs);
 }
 
-/***************** Pars fields *************************/
-
 void awt_do_pars_list(void *dummy, struct adaqbsstruct *cbs)
 {
     AWUSE(dummy);
@@ -2276,10 +2272,8 @@ AW_window *create_awt_open_parser(AW_root *aw_root, struct adaqbsstruct *cbs)
     return (AW_window *)aws;
 }
 
-
-/***************** Multi set fields *************************/
-
 void awt_do_set_list(void *, struct adaqbsstruct *cbs, long append) {
+    // set fields of listed items
     GB_ERROR  error = 0;
     char     *key   = cbs->aws->get_root()->awar(cbs->awar_setkey)->read_string();
     if (strcmp(key, "name") == 0) {
@@ -2388,9 +2382,8 @@ AW_window *create_awt_do_set_list(AW_root *aw_root, struct adaqbsstruct *cbs)
 
 }
 
-/***************** Multi set fields *************************/
-
 void awt_do_set_protection(void *, struct adaqbsstruct *cbs) {
+    // set protection of listed items 
     GB_ERROR  error = 0;
     char     *key   = cbs->aws->get_root()->awar(cbs->awar_setkey)->read_string();
 
@@ -2584,8 +2577,6 @@ static void query_box_popup_view_window(AW_window *aww, AW_CL cl_create_window, 
     aw_viewer->show();
 }
 
-/***************** Create the database query box and functions *************************/
-
 static void query_rel_menu_entry(AW_window *aws, const char *id, const char *query_id, AW_label label, const char *mnemonic, const char *helpText, AW_active Mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     char *rel_id = GBS_global_string_copy("%s_%s", query_id, id);
     aws->insert_menu_topic(rel_id, label, mnemonic, helpText, Mask, f, cd1, cd2);
@@ -2610,8 +2601,8 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
     cbs->hit_description        = GBS_create_hash(2*awt_count_items(cbs, AWT_QUERY_ALL_SPECIES), GB_IGNORE_CASE);
 
     GB_push_transaction(gb_main);
-    /*************** Create local AWARS *******************/
 
+    // Create query box AWARS
     awt_query_create_global_awars(aw_root, AW_ROOT_DEFAULT);
 
     {

@@ -87,8 +87,7 @@ class GA_genetic {
     GBDATA *gb_maxTree;
     // writes and reads compressd tree from database
     double AP_atof(char *str);
-    char * write_tree_rek(AP_tree *node,
-                           char *dest, long mode);
+    char * write_tree_rek(AP_tree *node, char *dest, long mode);
     AP_tree  *read_tree_rek(char **data);
     AP_ERR  *write_tree(GBDATA *gb_tree, GA_tree *tree);
     GA_tree *read_tree(GBDATA *gb_tree, long tree_id);

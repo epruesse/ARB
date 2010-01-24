@@ -275,12 +275,10 @@ const char *GBS_scan_arb_tcp_param(const char *ipPort, const char *wantedParam) 
     return result;
 }
 
-/********************************************************************************************
-            Find an entry in the $ARBHOME/lib/arb_tcp.dat file
-********************************************************************************************/
-
 const char *GBS_read_arb_tcp(const char *env) {
-    /* Be aware: GBS_read_arb_tcp returns a quite unusual string containing several string delimiters (0-characters).
+    /*! Find an entry in the $ARBHOME/lib/arb_tcp.dat file
+     * 
+     * Be aware: GBS_read_arb_tcp returns a quite unusual string containing several string delimiters (0-characters).
      * It contains all words (separated by space or tab in arb_tcp.dat) of the corresponding line in arb_tcp.dat.
      * These words get concatenated (separated by 0 characters).
      *
@@ -346,7 +344,7 @@ const char *GBS_read_arb_tcp(const char *env) {
 }
 
 const char * const *GBS_get_arb_tcp_entries(const char *matching) {
-    /* returns a list of all matching non-user-specific entries found in arb_tcp.dat
+    /*! returns a list of all matching non-user-specific entries found in arb_tcp.dat
      * match is performed by GBS_string_matches (e.g. use "ARB_PT_SERVER*")
      */
     static const char **matchingEntries     = 0;

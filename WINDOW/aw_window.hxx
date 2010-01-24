@@ -101,7 +101,6 @@ void AW_help_entry_pressed(AW_window *);
 void AW_clock_cursor(AW_root *);
 void AW_normal_cursor(AW_root *);
 
-/*************************************************************************/
 
 typedef void (*AW_cb_struct_guard)();
 
@@ -114,14 +113,14 @@ class AW_cb_struct {
     static AW_cb_struct_guard guard_after;
 
 public:
-    // ************ This is not the public section *************
+    // private (read-only):
     AW_window  *pop_up_window;
     AW_CB       f;
     AW_window  *aw;
     const char *help_text;
     char       *id;
 
-    // ************ The real public section *************
+    // real public section:
     AW_cb_struct(AW_window    *awi,
                  AW_CB         g,
                  AW_CL         cd1i       = 0,

@@ -51,13 +51,11 @@ char *GBT_get_default_ref(GBDATA *gb_main) {
 }
 
 
-/********************************************************************************************
-                    check routines
-********************************************************************************************/
-GB_ERROR GBT_check_arb_file(const char *name)
-     // Checks whether the name of a file seemed to be an arb file
-     // if == 0 it was an arb file
-{
+GB_ERROR GBT_check_arb_file(const char *name) {
+    /*! Checks whether a file is an arb file (or ':')
+     * 
+     * @result NULL if it is an arb file
+     */
     FILE *in;
     long i;
     char buffer[100];
@@ -80,9 +78,8 @@ GB_ERROR GBT_check_arb_file(const char *name)
     return GB_export_errorf("'%s' is not an arb file", name);
 }
 
-/********************************************************************************************
-                    analyse the database
-********************************************************************************************/
+// ----------------
+//      scan DB
 
 #define GBT_SUM_LEN 4096                            // maximum length of path
 
@@ -168,16 +165,23 @@ static int gbs_scan_db_compare(const void *left, const void *right, void *unused
 
 
 char **GBT_scan_db(GBDATA *gbd, const char *datapath) {
-    /* returns a NULL terminated array of 'strings':
-     * - each string is the path to a node beyond gbd;
+    /*! scan CONTAINER for existing sub-keys
+     *
+     * recurses completely downwards the DB tree
+     *
+     * @param gbd node where search starts
+     * @param datapath if != NULL, only keys with prefix datapath are scanned and
+     * the prefix is removed from the resulting key_names.
+     * 
+     * @return a NULL terminated array of 'char*':
+     * - each string is the path to a node beyond gbd
      * - every string exists only once
      * - the first character of a string is the type of the entry
-     * - the strings are sorted alphabetically !!!
+     * - the strings are sorted alphabetically
      *
-     * if datapath != 0, only keys with prefix datapath are scanned and
-     * the prefix is removed from the resulting key_names.
+     * caller has to free the result (e.g. using GBT_free_names()) 
      *
-     * @@@ this function is incredibly slow when called from clients
+     * Note: this function is incredibly slow when called from clients
      */
     struct DbScanner scanner;
 
@@ -205,9 +209,8 @@ char **GBT_scan_db(GBDATA *gbd, const char *datapath) {
     return scanner.result;
 }
 
-/********************************************************************************************
-                send a message to the db server to AWAR_ERROR_MESSAGES
-********************************************************************************************/
+// --------------------------
+//      message injection
 
 static void new_gbt_message_created_cb(GBDATA *gb_pending_messages, int *cd, GB_CB_TYPE cbt) {
     static int avoid_deadlock = 0;
@@ -253,13 +256,14 @@ void GBT_install_message_handler(GBDATA *gb_main) {
 
 
 void GBT_message(GBDATA *gb_main, const char *msg) {
-    // When called in client(or server) this causes the DB server to show the message.
-    // Message is showed via GB_warning (which uses aw_message in GUIs)
-    //
-    // Note: The message is not shown before the transaction ends.
-    // If the transaction is aborted, the message is never shown!
-    // 
-    // see also : GB_warning
+    /*! When called in client(or server) this causes the DB server to show the message.
+     * Message is showed via GB_warning (which uses aw_message in GUIs)
+     * 
+     * Note: The message is not shown before the transaction ends.
+     * If the transaction is aborted, the message is never shown!
+     * 
+     * see also : GB_warning()
+     */
 
     GB_ERROR error = GB_push_transaction(gb_main);
 
@@ -294,9 +298,15 @@ void GBT_message(GBDATA *gb_main, const char *msg) {
 #endif // DEVEL_RALF
 
 char **GBT_split_string(const char *namelist, char separator, int *countPtr) {
-    // Split 'namelist' into an array of names at 'separator'.
-    // Use GBT_free_names() to free it.
-    // Sets 'countPtr' to the number of names found
+    /*! Split 'namelist' into an array of substrings at 'separator'.
+     *
+     * @result NULL-terminated array of heap-copies
+     * Use GBT_free_names() to free it.
+     *
+     * @param countPtr if != NULL it is set to the number of substrings found
+     *
+     * Note: inverse of GBT_join_names()
+     */
 
     int         sepCount = 0;
     const char *sep      = namelist;
@@ -328,6 +338,14 @@ char **GBT_split_string(const char *namelist, char separator, int *countPtr) {
 }
 
 char *GBT_join_names(const char *const *names, char separator) {
+    /*! Joins a NULL-terminated array of 'char*' into one string
+     *
+     * @param separator is put between the concatenated strings
+     *
+     * @return heap-copy of joined strings
+     *
+     * Note: inverse of GBT_split_string()
+     */
     struct GBS_strstruct *out = GBS_stropen(1000);
 
     if (names[0]) {
@@ -350,16 +368,20 @@ void GBT_free_names(char **names) {
     free((char *)names);
 }
 
-// ----------------------------------------
-/* read value from database field
- * returns 0 in case of error (use GB_await_error())
- * or when field does not exist
- *
- * otherwise GBT_read_string returns a heap copy
- * other functions return a pointer to a temporary variable (invalidated by next call)
- */
 
 char *GBT_read_string(GBDATA *gb_container, const char *fieldpath) {
+    /*! Read value from database field (of type GB_STRING)
+     *
+     * @param gb_container where to start search for field
+     * @param fieldpath relative path from gb_container
+     * 
+     * @return
+     * NULL in case of error (use GB_await_error()) or when field does not exist.
+     * otherwise returns a heap copy.
+     * 
+     * other functions return a pointer to a temporary variable (invalidated by next call)
+     */
+
     GBDATA *gbd;
     char   *result = NULL;
     
@@ -371,9 +393,15 @@ char *GBT_read_string(GBDATA *gb_container, const char *fieldpath) {
 }
 
 char *GBT_read_as_string(GBDATA *gb_container, const char *fieldpath) {
+    /*! like GBT_read_string()
+     *
+     * but
+     * - field may be of any type (result gets converted to reasonable char*)
+     */
+    
     GBDATA *gbd;
     char   *result = NULL;
-    
+
     GB_push_transaction(gb_container);
     gbd = GB_search(gb_container, fieldpath, GB_FIND);
     if (gbd) result = GB_read_as_string(gbd);
@@ -382,6 +410,15 @@ char *GBT_read_as_string(GBDATA *gb_container, const char *fieldpath) {
 }
 
 const char *GBT_read_char_pntr(GBDATA *gb_container, const char *fieldpath) {
+    /*! like GBT_read_string()
+     *
+     * but
+     * - result is not a heap-copy and may be invalidated by further DB access
+     *   (especially by overwriting that fields)
+     *
+     * Note: Under no circumstances you may modify the result!
+     */
+    
     GBDATA     *gbd;
     const char *result = NULL;
 
@@ -393,9 +430,16 @@ const char *GBT_read_char_pntr(GBDATA *gb_container, const char *fieldpath) {
 }
 
 NOT4PERL long *GBT_read_int(GBDATA *gb_container, const char *fieldpath) {
+    /*! similar to GBT_read_string()
+     *
+     * but
+     * - for fields of type GB_INT
+     * - result gets invalidated by next call
+     */
+
     GBDATA *gbd;
     long   *result = NULL;
-    
+
     GB_push_transaction(gb_container);
     gbd = GB_search(gb_container, fieldpath, GB_FIND);
     if (gbd) {
@@ -408,9 +452,16 @@ NOT4PERL long *GBT_read_int(GBDATA *gb_container, const char *fieldpath) {
 }
 
 NOT4PERL double *GBT_read_float(GBDATA *gb_container, const char *fieldpath) {
+    /*! similar to GBT_read_string()
+     *
+     * but
+     * - for fields of type GB_FLOAT
+     * - result gets invalidated by next call
+     */
+
     GBDATA *gbd;
     double *result = NULL;
-    
+
     GB_push_transaction(gb_container);
     gbd = GB_search(gb_container, fieldpath, GB_FIND);
     if (gbd) {
@@ -422,12 +473,11 @@ NOT4PERL double *GBT_read_float(GBDATA *gb_container, const char *fieldpath) {
     return result;
 }
 
-// --------------------------------------------------------------------------------------
-/* read value from database field or create field with default_value if missing
- * (same usage as GBT_read_XXX above)
- */
-
 char *GBT_readOrCreate_string(GBDATA *gb_container, const char *fieldpath, const char *default_value) {
+    /*! like GBT_read_string(),
+     * 
+     * but if field does not exist, it will be created and initialized with 'default_value'
+     */
     GBDATA *gb_string;
     char   *result = NULL;
 
@@ -439,6 +489,11 @@ char *GBT_readOrCreate_string(GBDATA *gb_container, const char *fieldpath, const
 }
 
 const char *GBT_readOrCreate_char_pntr(GBDATA *gb_container, const char *fieldpath, const char *default_value) {
+    /*! like GBT_read_char_pntr(),
+     * 
+     * but if field does not exist, it will be created and initialized with 'default_value'
+     */
+
     GBDATA     *gb_string;
     const char *result = NULL;
 
@@ -450,6 +505,11 @@ const char *GBT_readOrCreate_char_pntr(GBDATA *gb_container, const char *fieldpa
 }
 
 NOT4PERL long *GBT_readOrCreate_int(GBDATA *gb_container, const char *fieldpath, long default_value) {
+    /*! like GBT_read_int(),
+     * 
+     * but if field does not exist, it will be created and initialized with 'default_value'
+     */
+
     GBDATA *gb_int;
     long   *result = NULL;
 
@@ -465,6 +525,11 @@ NOT4PERL long *GBT_readOrCreate_int(GBDATA *gb_container, const char *fieldpath,
 }
 
 NOT4PERL double *GBT_readOrCreate_float(GBDATA *gb_container, const char *fieldpath, double default_value) {
+    /*! like GBT_read_float(),
+     *
+     * but if field does not exist, it will be created and initialized with 'default_value'
+     */
+    
     GBDATA *gb_float;
     double *result = NULL;
 
@@ -484,6 +549,15 @@ NOT4PERL double *GBT_readOrCreate_float(GBDATA *gb_container, const char *fieldp
 //      (field must not exist twice or more - it has to be unique!!)
 
 GB_ERROR GBT_write_string(GBDATA *gb_container, const char *fieldpath, const char *content) {
+    /*! Write content to database field of type GB_STRING
+     *
+     * if field exists, it will be overwritten.
+     * if field does not exist, it will be created.
+     *
+     * The field should be unique, i.e. it should not exist twice or more in it's parent container
+     *
+     * @return GB_ERROR on failure
+     */
     GB_ERROR  error = GB_push_transaction(gb_container);
     GBDATA   *gbd   = GB_search(gb_container, fieldpath, GB_STRING);
     if (!gbd) error = GB_await_error();
@@ -495,6 +569,10 @@ GB_ERROR GBT_write_string(GBDATA *gb_container, const char *fieldpath, const cha
 }
 
 GB_ERROR GBT_write_int(GBDATA *gb_container, const char *fieldpath, long content) {
+    /*! like GBT_write_string(),
+     *
+     * but for fields of type GB_INT
+     */
     GB_ERROR  error = GB_push_transaction(gb_container);
     GBDATA   *gbd   = GB_search(gb_container, fieldpath, GB_INT);
     if (!gbd) error = GB_await_error();
@@ -506,6 +584,10 @@ GB_ERROR GBT_write_int(GBDATA *gb_container, const char *fieldpath, long content
 }
 
 GB_ERROR GBT_write_byte(GBDATA *gb_container, const char *fieldpath, unsigned char content) {
+    /*! like GBT_write_string(),
+     *
+     * but for fields of type GB_BYTE
+     */
     GB_ERROR  error = GB_push_transaction(gb_container);
     GBDATA   *gbd   = GB_search(gb_container, fieldpath, GB_BYTE);
     if (!gbd) error = GB_await_error();
@@ -518,6 +600,10 @@ GB_ERROR GBT_write_byte(GBDATA *gb_container, const char *fieldpath, unsigned ch
 
 
 GB_ERROR GBT_write_float(GBDATA *gb_container, const char *fieldpath, double content) {
+    /*! like GBT_write_string(),
+     *
+     * but for fields of type GB_FLOAT
+     */
     GB_ERROR  error = GB_push_transaction(gb_container);
     GBDATA   *gbd   = GB_search(gb_container, fieldpath, GB_FLOAT);
     if (!gbd) error = GB_await_error();
@@ -536,15 +622,19 @@ GBDATA *GB_test_link_follower(GBDATA *gb_main, GBDATA *gb_link, const char *link
     return GB_get_father(linktarget);
 }
 
-/********************************************************************************************
-                    SAVE & LOAD
-********************************************************************************************/
+// --------------------
+//      save & load
 
-/** Open a database, create an index for species and extended names,
-    disable saving the database in the PT_SERVER directory */
+GBDATA *GBT_open(const char *path, const char *opent, const char *disabled_path) {
+    /*! Open a database and create an index for species and extended names.
+     *
+     * @param path filename of the DB
+     * @param opent see GB_login()
+     * @param disabled_path disable saving in this path.
+     * if disabled_path is NULL, disable saving in the PT_SERVER directory.
+     * @see GB_open()
+     */
 
-GBDATA *GBT_open(const char *path, const char *opent, const char *disabled_path)
-{
     GBDATA *gbd = GB_open(path, opent);
     GBDATA *species_data;
     GBDATA *extended_data;
@@ -571,7 +661,7 @@ GBDATA *GBT_open(const char *path, const char *opent, const char *disabled_path)
     }
     gb_tmp = GB_search(gbd, "tmp", GB_CREATE_CONTAINER);
     GB_set_temporary(gb_tmp);
-    {               // install link followers
+    {
         GB_MAIN_TYPE *Main = GB_MAIN(gbd);
         Main->table_hash = GBS_create_hash(256, GB_MIND_CASE);
         GB_install_link_follower(gbd, "REF", GB_test_link_follower);

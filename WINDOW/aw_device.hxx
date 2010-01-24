@@ -292,15 +292,14 @@ struct AW_font_limits {
 class AW_font_information {
 public:
     // maximas of ..
-    AW_font_limits this_letter; // letter specified in call to get_font_information()
-    AW_font_limits max_letter;  // max of all ASCII characters (AW_FONTINFO_CHAR_ASCII_MIN..AW_FONTINFO_CHAR_ASCII_MAX)
-    AW_font_limits max_all_letter; // max of all characters (AW_FONTINFO_CHAR_MIN..AW_FONTINFO_CHAR_MAX)
+    AW_font_limits this_letter;                     // letter specified in call to get_font_information()
+    AW_font_limits max_letter;                      // max of all ASCII characters (AW_FONTINFO_CHAR_ASCII_MIN..AW_FONTINFO_CHAR_ASCII_MAX)
+    AW_font_limits max_all_letter;                  // max of all characters (AW_FONTINFO_CHAR_MIN..AW_FONTINFO_CHAR_MAX)
 };
 
+// -----------------------------------------------
+//      Graphic context (linestyle, width ...)
 
-/***************************************************************************************************
- ***********                     Graphic Context (Linestyle, width ...                   ************
- ***************************************************************************************************/
 typedef enum {
     AW_SOLID,
     AW_DOTTED
@@ -332,10 +331,6 @@ public:
     virtual ~AW_gc() {};
 };
 
-/***************************************************************************************************
- ***********                     The abstract class AW_device ...                        ************
- ***************************************************************************************************/
-
 class AW_clip_scale_stack;
 
 class AW_device : public AW_matrix, public AW_gc
@@ -351,9 +346,7 @@ public:
     AW_device(AW_common *common); 
     virtual ~AW_device() {}
  
-    /***************** The Read Only  Section ******************/
-    AW_bitset filter;
-    /***************** The real Public Section ******************/
+    AW_bitset filter; // read-only (@@@ should go private!)
 
     void reset(void);
 

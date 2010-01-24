@@ -22,7 +22,7 @@ class AW_root;
 #endif
 
 
-/// define type of @ref AWT_advice by or-ing values
+//! define type of @ref AWT_advice by or-ing values
 enum AWT_Advice_Type {
     AWT_ADVICE_SIMPLE     = 0,  // nothing of the following
     AWT_ADVICE_TOGGLE     = 1,  // visible toggle to switch off advice (otherwise advice appears only once)
@@ -31,10 +31,10 @@ enum AWT_Advice_Type {
 
 };
 
-/// has to be called one time (before calling AWT_advice)
+//! has to be called one time (before calling AWT_advice)
 void init_Advisor(AW_root *awr, AW_default def);
 
-/** @brief Show a message box with an advice for the user
+/*! @brief Show a message box with an advice for the user
     @param message the text shown to the user
     @param title window title
     @param type type of advice
@@ -46,7 +46,7 @@ void AWT_advice(const char *message,
                 const char *title = 0,
                 const char *corresponding_help = 0);
 
-/// reactivates all advices which were disabled by the user
+//! reactivates all advices which were disabled by the user
 void AWT_reactivate_all_advices();
 
 

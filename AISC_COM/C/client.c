@@ -44,7 +44,6 @@ static char errbuf[300];
 
 #define PRTERR(msg) if (aisc_print_error_to_stderr) fprintf(stderr, "%s: %s\n", msg, link->error);
 
-/******************************************* new read command *******************************************/
 
 int aisc_c_read(int socket, char *ptr, long size)
 {
@@ -73,7 +72,10 @@ int aisc_c_write(int socket, char *ptr, int size)
     }
     return size;
 }
-/******************************************* bytestring handling *******************************************/
+
+/* ----------------------------- */
+/*      bytestring handling      */
+
 
 static void aisc_c_add_to_bytes_queue(aisc_com *link, char *data, int size)
 {
@@ -109,7 +111,8 @@ int aisc_c_send_bytes_queue(aisc_com    *link)
     return 0;
 }
 
-/******************************************* message handling *******************************************/
+/* -------------------------- */
+/*      message handling      */
 
 struct aisc_client_message_queue {
     struct aisc_client_message_queue *next;
@@ -201,7 +204,6 @@ int aisc_check_error(aisc_com * link)
     return 0;
 }
 
-/************************************* find the mach name and id *************************************/
 char *aisc_client_get_hostname(void) {
     static char *hn = 0;
     if (!hn) {
@@ -288,7 +290,7 @@ static const char *aisc_client_open_socket(const char *path, int delay, int do_c
             free(mach_name);
             return (char *)strdup(buffer);
         }
-        /** simply take first address **/
+        /* simply take first address  */
         free(mach_name); mach_name = 0;
         addr.s_addr = *(int *) (he->h_addr);
         so_ad.sin_addr = addr;
@@ -353,7 +355,6 @@ static const char *aisc_client_open_socket(const char *path, int delay, int do_c
         return 0;
     }
 }
-/******************************************* aisc_init_client *******************************************/
 
 void *aisc_init_client(aisc_com *link)
 {

@@ -1,5 +1,4 @@
-
-/**
+/*
  * Definition of all objects belonging to this version of
  * the valid names text file
  *

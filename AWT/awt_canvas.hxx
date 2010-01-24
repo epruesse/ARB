@@ -137,13 +137,15 @@ enum {
 
 class AWT_canvas {
 public:
-    /** too many callbacks -> public **/
-    /** in fact: private         **/
-    char *user_awar;
-    void init_device(AW_device *device);
-    AW_pos trans_to_fit;
-    AW_pos shift_x_to_fit;
-    AW_pos shift_y_to_fit;
+    // too many callbacks -> public
+    // in fact: private
+    // (in real fact: needs rewrite)
+
+    char   *user_awar;
+    void    init_device(AW_device *device);
+    AW_pos  trans_to_fit;
+    AW_pos  shift_x_to_fit;
+    AW_pos  shift_y_to_fit;
 
     int old_hor_scroll_pos;
     int old_vert_scroll_pos;
@@ -165,7 +167,8 @@ public:
     void set_vertical_scrollbar_position(AW_window *aww, int pos);
 
 
-    /*************  Read only public section : ************/
+    // public (read only)
+
     GBDATA      *gb_main;
     AW_window   *aww;
     AW_root     *awr;
@@ -176,10 +179,9 @@ public:
     
     AWT_COMMAND_MODE mode;
 
-    /** the real public section **/
+    // real public
 
     AWT_canvas(GBDATA *gb_main, AW_window *aww, AWT_graphic *awd, AW_gc_manager &gc_manager, const char *user_awar);
-    // gc_manager is the preset window
 
     void refresh();
     void recalc_size();         // Calculate the size of the sb

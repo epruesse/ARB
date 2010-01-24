@@ -1,8 +1,13 @@
-/*********************************************************************************
- *  Coded by Ralf Westram (coder@reallysoft.de) in 2001                          *
- *  Institute of Microbiology (Technical University Munich)                      *
- *  http://www.mikro.biologie.tu-muenchen.de/                                    *
- *********************************************************************************/
+// =============================================================== //
+//                                                                 //
+//   File      : GEN_gene.hxx                                      //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Ralf Westram (coder@reallysoft.de) in 2001           //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #ifndef GEN_GENE_HXX
 #define GEN_GENE_HXX
@@ -98,8 +103,6 @@ public:
 
     const AW_world& get_selected_range() const { return selected_range; }
 };
-
-
 
 #else
 #error GEN_gene.hxx included twice

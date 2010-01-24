@@ -1,5 +1,4 @@
-/////////////////////////////////////////////////////////////////////////////
-//
+// --------------------------------------------------------------------------------
 // Copyright (C) 2000
 // Ralf Westram
 //
@@ -10,8 +9,7 @@
 // in supporting documentation.  Ralf Westram makes no
 // representations about the suitability of this software for any
 // purpose.  It is provided "as is" without express or implied warranty.
-//
-/////////////////////////////////////////////////////////////////////////////
+// --------------------------------------------------------------------------------
 
 
 #ifndef FILEBUFFER_H

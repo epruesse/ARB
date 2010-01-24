@@ -11,11 +11,8 @@
 #include "ali_solution.hxx"
 
 
-/*****************************************************************************
- *
- * ALI_MAP
- *
- *****************************************************************************/
+// ----------------
+//      ALI_MAP
 
 ALI_MAP::ALI_MAP(unsigned long first_seq, unsigned long last_seq,
                  unsigned long first_ref, unsigned long last_ref)
@@ -228,12 +225,8 @@ char *ALI_MAP::insert_marker(void)
     return seq_buffer;
 }
 
-
-/*****************************************************************************
- *
- * ALI_SUB_SOLUTION
- *
- *****************************************************************************/
+// -------------------------
+//      ALI_SUB_SOLUTION
 
 ALI_SUB_SOLUTION::ALI_SUB_SOLUTION(ALI_SUB_SOLUTION *solution)
 {

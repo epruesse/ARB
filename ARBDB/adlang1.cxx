@@ -41,16 +41,15 @@ int GB_get_ACISRT_trace() { return trace; }
 #define COPY_2_OUT(args, s)  PASS_2_OUT(args, strdup(s));
 #define IN_2_OUT(args, i)    COPY_2_OUT(args, args->vinput[i].str);
 
-/********************************************************************************************
-                                        Parameter Functions
-********************************************************************************************/
+// ----------------------------
+//      Parameter functions
 
 struct gbl_param {
     struct gbl_param *next;
-    GB_TYPES          type;     // type of variable
-    void             *varaddr;  // address of variable where value gets stored
-    const char       *param_name; // parameter name (e.g. 'include=')
-    const char       *help_text; // help text for parameter
+    GB_TYPES          type;                         // type of variable
+    void             *varaddr;                      // address of variable where value gets stored
+    const char       *param_name;                   // parameter name (e.g. 'include=')
+    const char       *help_text;                    // help text for parameter
 };
 
 #define GBL_BEGIN_PARAMS struct gbl_param *params = 0
@@ -229,9 +228,8 @@ static GB_ERROR trace_params(int argc, const GBL *argv, struct gbl_param *ppara,
 }
 
 
-/********************************************************************************************
-          String Functions
-********************************************************************************************/
+// -------------------------
+//      String functions
 
 static char *unEscapeString(const char *escapedString) {
     // replaces all \x by x
@@ -470,9 +468,8 @@ static GB_ERROR gbl_apply_binary_operator(GBL_command_arguments *args, gbl_binar
     return error;
 }
 
-/********************************************************************************************
-          the commands themselves:
-********************************************************************************************/
+// ---------------------------------
+//      the commands themselves:
 
 static GB_ERROR gbl_command(GBL_command_arguments *args) {
     GB_ERROR error = NULL;
@@ -1279,9 +1276,8 @@ static GB_ERROR gbl_split(GBL_command_arguments *args) {
     return 0;
 }
 
-/********************************************************************************************
-                                        Extended String Functions
-********************************************************************************************/
+// ----------------------------------
+//      Extended string functions
 
 static GB_ERROR gbl_extract_words(GBL_command_arguments *args)
 {
@@ -1358,9 +1354,8 @@ static GB_ERROR gbl_gcgcheck(GBL_command_arguments *args)
     return 0;
 }
 
-/********************************************************************************************
-                                        SRT
-********************************************************************************************/
+// ------------
+//      SRT
 
 static GB_ERROR gbl_srt(GBL_command_arguments *args) {
     GB_ERROR error = NULL;
@@ -1394,9 +1389,9 @@ static GB_ERROR gbl_srt(GBL_command_arguments *args) {
     return error;
 }
 
-/********************************************************************************************
-                                        Calculator Functions
-********************************************************************************************/
+// -----------------------------
+//      Calculator Functions
+
 
 // numeric binary operators
 
@@ -1426,10 +1421,6 @@ static GB_ERROR gbl_rest    (GBL_command_arguments *args) { return gbl_apply_bin
 static GB_ERROR gbl_per_cent(GBL_command_arguments *args) { return gbl_apply_binary_operator(args, apply_numeric_binop, (void*)binop_per_cent); }
 
 
-/********************************************************************************************
-                                        Logical Functions
-********************************************************************************************/
-
 static GB_ERROR gbl_select(GBL_command_arguments *args) {
     int       i;
     GB_ERROR  error   = 0;
@@ -1451,9 +1442,6 @@ static GB_ERROR gbl_select(GBL_command_arguments *args) {
     return error;
 }
 
-/********************************************************************************************
-                                        Database Functions
-********************************************************************************************/
 static GB_ERROR gbl_readdb(GBL_command_arguments *args) {
     GBS_strstruct *strstr = GBS_stropen(1024);
 
@@ -1468,10 +1456,6 @@ static GB_ERROR gbl_readdb(GBL_command_arguments *args) {
     return 0;
 }
 
-
-/********************************************************************************************
-                                        Sequence Functions
-********************************************************************************************/
 
 enum GBT_ITEM_TYPE {
     GBT_ITEM_UNKNOWN,
@@ -2204,10 +2188,6 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args)
     return error;
 }
 
-/********************************************************************************************
-                                        Filter Functions
-********************************************************************************************/
-
 static char *gbl_read_seq_sai_or_species(const char *species, const char *sai, const char *ali, size_t *seqLen) {
     /* Reads the alignment 'ali'  of 'species' or 'sai'.
      * If 'ali' is NULL, use default alignment.
@@ -2548,10 +2528,6 @@ static GB_ERROR gbl_change_gc(GBL_command_arguments *args) {
 
     return error;
 }
-
-/********************************************************************************************
-                                        Exec Functions
-********************************************************************************************/
 
 static GB_ERROR gbl_exec(GBL_command_arguments *args)
 {

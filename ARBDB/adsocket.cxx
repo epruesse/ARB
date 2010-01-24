@@ -44,9 +44,9 @@ void gbcms_sigpipe(int) {
     gbcm_pipe_violation_flag = 1;
 }
 
-/**************************************************************************************
-                private read and write socket functions
-***************************************************************************************/
+// ------------------------------------------------
+//      private read and write socket functions
+
 void gbcm_read_flush(int socket) {
     gb_local->write_ptr  = gb_local->write_buffer;
     gb_local->write_free = gb_local->write_bufsize;
@@ -317,10 +317,6 @@ struct gbcmc_comm *gbcmc_open(const char *path)
     return link;
 }
 
-/**************************************************************************************
-                write and read triples
-***************************************************************************************/
-
 long gbcm_write_two(int socket, long a, long c)
 {
     long    ia[3];
@@ -332,12 +328,13 @@ long gbcm_write_two(int socket, long a, long c)
 }
 
 
-/** read two values:    length and any user long
- *  if data are send be gbcm_write_two then b should be zero
- *  and is not used !!! */
+long gbcm_read_two(int socket, long a, long *b, long *c) {
+    /*! read two values: length and any user long
+     *  
+     *  if data is send by gbcm_write_two() then @param b should be zero
+     *  and is not used!
+     */
 
-long gbcm_read_two(int socket, long a, long *b, long *c)
-{
     long    ia[3];
     long    size;
     size = gbcm_read(socket, (char *)&(ia[0]), sizeof(long)*3);
@@ -589,12 +586,12 @@ GB_ERROR GB_rename_file(const char *oldpath, const char *newpath) {
     return 0;
 }
 
-/********************************************************************************************
-                    read a file to memory
-********************************************************************************************/
 char *GB_read_fp(FILE *in) {
-    // like GB_read_file, but works on already open file (useful together with GB_fopen_tempfile)
-    // Note: File should be opened in text-mode (e.g. "rt")  
+    /*! like GB_read_file(), but works on already open file
+     * (useful together with GB_fopen_tempfile())
+     * 
+     * Note: File should be opened in text-mode (e.g. "rt")
+     */
 
     struct GBS_strstruct *buf = GBS_stropen(4096);
     int            c;
@@ -606,11 +603,12 @@ char *GB_read_fp(FILE *in) {
 }
 
 char *GB_read_file(const char *path) {
-    // read content of file 'path' into string (heap-copy)
-    // 
-    // if path is '-', read from STDIN
-    // return NULL in case of error (which is exported then)
-    
+    /*! read content of file 'path' into string (heap-copy)
+     * 
+     * if path is '-', read from STDIN
+     * 
+     * @return NULL in case of error (which is exported then)
+     */
     char *result = 0;
 
     if (strcmp(path, "-") == 0) {

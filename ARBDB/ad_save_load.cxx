@@ -833,10 +833,8 @@ int gb_write_bin(FILE *out, GBDATA *gbd, long version) {
     return gb_write_bin_sub_containers(out, gbc, version, diff_save, 1);
 }
 
-/********************************************************************************************
-                    SAVE DATABASE
-********************************************************************************************/
-
+// ----------------------
+//      save database
 
 GB_ERROR GB_save(GBDATA *gb, const char *path, const char *savetype)
      /* savetype 'a'    ascii

@@ -19,9 +19,7 @@ typedef enum {
     AW_WIDGET_TOGGLE
 } AW_widget_type;
 
-/*************************************************************************/
 struct AW_widget_list_for_variable {
-
     AW_widget_list_for_variable(AW_awar *vs, AW_CL cd1, int *widgeti, AW_widget_type type, AW_window *awi);
 
     AW_CL                        cd;
@@ -32,9 +30,6 @@ struct AW_widget_list_for_variable {
     AW_widget_list_for_variable *next;
 };
 
-
-
-/*************************************************************************/
 struct AW_var_callback {
     AW_var_callback(void (*vc_cb)(AW_root*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
     AW_var_callback(void (*vc_cb)(AW_root*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2, AW_var_callback *nexti);

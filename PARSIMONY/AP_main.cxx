@@ -18,9 +18,8 @@
 
 using namespace std;
 
-/*********************************************
-AP_ERR
-*************************/
+// ---------------
+//      AP_ERR
 
 int AP_ERR::mode = 0;
 
@@ -76,11 +75,8 @@ void AP_ERR::set_mode(int i) {
     mode = i;
 }
 
-/**************
-
-AP_main
-
-***************/
+// ----------------
+//      AP_main
 
 AP_main::AP_main() {
     memset((char *)this, 0, sizeof(AP_main));

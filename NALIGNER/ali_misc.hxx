@@ -37,11 +37,8 @@
 #define ALI_DOT_CODE   6
 #define ALI_UNDEF_CODE 200
 
-/*****************************************************************************
- *
- * Some error functions
- *
- *****************************************************************************/
+// -----------------------------
+//      Some error functions
 
 inline void ali_message(const char *message, const char *func = "")
 {
@@ -65,12 +62,8 @@ inline void *CALLOC(long i, long j) {
     return v;
 }
 
-
-/*****************************************************************************
- *
- * Some Converters
- *
- *****************************************************************************/
+// -------------------
+//      Converters
 
 inline int ali_is_base(char c)
 {

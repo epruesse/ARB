@@ -432,19 +432,12 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
     ED4_window *new_window;
     long total_no_of_species, total_no_of_groups, group_count, species_count;
 
-    /*****YKADI COMMENT****************/
-    // this is the sequence reference region - it counts the species and related info (e.g. helix) displayed
-    // in the REFERENCE region -- TOP REGION
-    /*****YKADI COMMENT****************/
-
+    // count species and related info (e.g. helix) displayed in the top region
     database->calc_no_of_all(area_string_top, &group_count, &species_count);
     total_no_of_groups = group_count;
     total_no_of_species = species_count;
 
-    /*****YKADI COMMENT****************/
-    //  MIDDLE  REGION -- counts no of species and sais including groups
-    /*****YKADI COMMENT****************/
-
+    // count no of species and sais including groups in middle region
     database->calc_no_of_all(area_string_middle, &group_count, &species_count);
     total_no_of_groups += group_count;
     total_no_of_species += species_count;

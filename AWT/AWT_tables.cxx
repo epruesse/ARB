@@ -310,12 +310,8 @@ void create_ad_table_field_admin(AW_window *aww, GBDATA *gb_main, const char *tn
     free(table_name);
 }
 
-
-
-
-/***************************************************** TABLE ADMIN
- ***********************************************/
-
+// --------------------
+//      table admin
 
 
 // #define AWAR_TABLE_IMPORT "tmp/ad_table/import_table"

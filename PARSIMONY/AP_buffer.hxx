@@ -19,22 +19,19 @@
 #endif
 
 
-/*******************
-
-AP_STACK        dynamischer Stack fuer void *
-AP_LIST         allgemeine doppelt verketteten Liste
-
--- Pufferstrukturen
-
-AP_tree_buffer  Struktur die im AP_tree gepuffert wird
-
--- spezielle stacks ( um casts zu vermeiden )
-
-AP_tree_stack   Stack fuer AP_tree_buffer *
-AP_main_stack   Stack fuer AP_tree *
-AP_main_list    Liste fuer AP_main_buffer
-
-********************/
+/* AP_STACK        dynamischer Stack fuer void *
+ * AP_LIST         allgemeine doppelt verketteten Liste
+ * 
+ * -- Pufferstrukturen
+ * 
+ * AP_tree_buffer  Struktur die im AP_tree gepuffert wird
+ * 
+ * -- spezielle stacks ( um casts zu vermeiden )
+ * 
+ * AP_tree_stack   Stack fuer AP_tree_buffer *
+ * AP_main_stack   Stack fuer AP_tree *
+ * AP_main_list    Liste fuer AP_main_buffer
+ */
 
 
 struct AP_STACK_ELEM {
@@ -61,13 +58,8 @@ public:
     unsigned long  size();
 };
 
-/*********************************
-
-AP_LIST
-
-Listenklasse
-
-********************************/
+// ----------------
+//      AP_LIST
 
 struct AP_list_elem {
     AP_list_elem * next;
@@ -95,20 +87,16 @@ public:
     void  clear();
 };
 
+// ----------------------------------------------------------------
+//      special buffer-structures for AP_tree and AP_tree_edge
 
-/************************************
-
-        Spezielle Puffer Strukturen
-        fuer AP_NTREE
-
-************************************/
-class  AP_tree_edge;                // defined in ap_tree_nlen.hxx
+class  AP_tree_edge;                                // defined in ap_tree_nlen.hxx
 struct AP_tree_buffer;
 
 struct AP_tree_edge_data
 {
-    AP_FLOAT parsValue[3];          // the last three parsimony values (0=lowest 2=highest)
-    int      distance;              // the distance of the last insertion
+    AP_FLOAT parsValue[3];                          // the last three parsimony values (0=lowest 2=highest)
+    int      distance;                              // the distance of the last insertion
 };
 
 
@@ -125,9 +113,9 @@ struct AP_tree_buffer {
     AP_tree_root  *root;
     GBDATA        *gb_node;
 
-    int distance;   // distance to border (pushed with STRUCTURE!)
-    // stuff from edges:
-
+    int distance;                                   // distance to border (pushed with STRUCTURE!)
+    
+    // data from edges:
     AP_tree_edge      *edge[3];
     int                edgeIndex[3];
     AP_tree_edge_data  edgeData[3];

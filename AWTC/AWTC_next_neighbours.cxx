@@ -42,7 +42,7 @@ GB_ERROR AWTC_FIND_FAMILY::init_communication(void)
 {
     const char *user = "Find Family";
 
-/*** create and init local com structure ***/
+    // connect PT server
     if (aisc_create(link, PT_MAIN, com,
                     MAIN_LOCS, PT_LOCS, &locs,
                     LOCS_USER, user,

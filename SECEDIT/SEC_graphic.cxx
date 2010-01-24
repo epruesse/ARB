@@ -555,18 +555,19 @@ void SEC_structure_changed_cb(GBDATA *gb_seq, SEC_graphic *gfx, GB_CB_TYPE type)
     }
 }
 
-/** read awar AWAR_HELIX_NAME to get the name */
 GB_ERROR SEC_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
+    /*! (Re-)Load secondary structure from database */
+
     sec_assert(sec_root->get_db()->canDisplay()); // need a sequence loaded (to fix bugs in versions < 3)
     sec_root->nail_cursor();
-    
+
     GB_transaction ta(gb_main);
     // first check timestamp, do not load structure that we have saved !!!!
     if (gb_struct) {
         if (GB_read_clock(gb_struct) <= last_saved) return NULL;
     }
 
-    /************************** Reset structure ***********************************/
+    // Reset structure:
     if (gb_struct) {
         GB_remove_callback(gb_struct,   GB_CB_ALL, (GB_CB)SEC_structure_changed_cb, (int *)this);
         gb_struct = NULL;
@@ -583,8 +584,7 @@ GB_ERROR SEC_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
 
     GB_ERROR err = 0;
 
-    /************************** Setup new structure *******************************/
-
+    // Setup new structure:
     long    ali_len = -1;
     GBDATA *gb_ali  = 0;
     {
@@ -683,16 +683,16 @@ GB_ERROR SEC_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
         request_update(SEC_UPDATE_ZOOM_RESET);
     }
 
-    /************************* Listen to the database ***************************/
+    // set structure-change-callbacks: 
     GB_add_callback(gb_struct, GB_CB_ALL, (GB_CB)SEC_structure_changed_cb, (int *)this);
     GB_add_callback(gb_struct_ref, GB_CB_ALL, (GB_CB)SEC_structure_changed_cb, (int *)this);
 
     return err;
 }
 
-/** Save secondary structure to database */
-GB_ERROR SEC_graphic::save(GBDATA *, const char *, AW_CL, AW_CL)
-{
+GB_ERROR SEC_graphic::save(GBDATA *, const char *, AW_CL, AW_CL) {
+    /*! Save secondary structure to database */
+    
     if (!gb_struct) return 0;   // not loaded, so don't save
     if (!sec_root) return 0;
     

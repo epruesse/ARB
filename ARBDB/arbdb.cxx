@@ -70,9 +70,6 @@ char *GB_rel(void *struct_address, long rel_address)
     if (!rel_address) return NULL;
     return (char*)struct_address+rel_address;
 }
-/********************************************************************************************
-                    GB local data
-********************************************************************************************/
 
 NOT4PERL GB_ERROR GB_safe_atof(const char *str, double *res) {
     GB_ERROR  error = NULL;
@@ -98,10 +95,9 @@ double GB_atof(const char *str) {
     return res;
 }
 
+// ---------------------------
+//      compression tables
 
-/********************************************************************************************
-                    compression tables
-********************************************************************************************/
 const int gb_convert_type_2_compression_flags[] = {
     GB_COMPRESSION_NONE,                                                                 // GB_NONE  0
     GB_COMPRESSION_NONE,                                                                 // GB_BIT   1
@@ -267,10 +263,6 @@ GB_BUFFER GB_give_other_buffer(GB_CBUFFER buffer, long size) {
         : GB_give_buffer(size);
 }
 
-/********************************************************************************************
-                    GB local data
-********************************************************************************************/
-
 unsigned char GB_BIT_compress_data[] = {
     0x1d, GB_CS_OK,  0, 0,
     0x04, GB_CS_OK,  0, 1,
@@ -320,16 +312,15 @@ void GB_init_gb(void) {
     }
 }
 
-/********************************************************************************************
-            unfold -> load data from disk or server
-********************************************************************************************/
-
-GB_ERROR gb_unfold(GBCONTAINER *gbd, long deep, int index_pos)
-{
-    /* get data from server.
-     * if deep, then get subitems too.
-     * If index_pos >= 0, get indexed item from server
-     *               <0, get all items
+GB_ERROR gb_unfold(GBCONTAINER *gbd, long deep, int index_pos) {
+    /*! get data from server.
+     *
+     * @param deep if != 0, then get subitems too.
+     * @param index_pos
+     * - >= 0, get indexed item from server
+     * - <0, get all items
+     *
+     * @return error on failure
      */
 
     GB_ERROR  error;
@@ -375,9 +366,8 @@ GB_ERROR gb_unfold(GBCONTAINER *gbd, long deep, int index_pos)
     return 0;
 }
 
-/********************************************************************************************
-                    CLOSE DATABASE
-********************************************************************************************/
+// -----------------------
+//      close database
 
 typedef void (*gb_close_callback)(GBDATA *gb_main, void *client_data);
 
@@ -395,12 +385,13 @@ static bool atclose_cb_exists(struct gb_close_callback_struct *gccs, gb_close_ca
 #endif // DEBUG
 
 void GB_atclose(GBDATA *gbd, void (*fun)(GBDATA *gb_main, void *client_data), void *client_data) {
-    // Add a callback, which gets called directly before GB_close destroys all data.
-    // This is the recommended way to remove all callbacks from DB elements.
+    /*! Add a callback, which gets called directly before GB_close destroys all data.
+     * This is the recommended way to remove all callbacks from DB elements.
+     */
 
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
 
-    gb_assert(!atclose_cb_exists(Main->close_callbacks, fun)); // each close callback should only exist once 
+    gb_assert(!atclose_cb_exists(Main->close_callbacks, fun)); // each close callback should only exist once
 
     struct gb_close_callback_struct *gccs = (struct gb_close_callback_struct *)malloc(sizeof(*gccs));
 
@@ -458,10 +449,8 @@ void GB_close(GBDATA *gbd) {
 }
 
 
-/********************************************************************************************
-                    READ DATA
-********************************************************************************************/
-
+// ------------------
+//      read data
 
 long GB_read_int(GBDATA *gbd)
 {
@@ -727,7 +716,8 @@ char *GB_read_as_string(GBDATA *gbd)
     }
 }
 
-// array type access functions (intended for perl use)
+// ------------------------------------------------------------
+//      array type access functions (intended for perl use)
 
 long GB_read_from_ints(GBDATA *gbd, long index) {
     static GBDATA    *last_gbd = 0;
@@ -763,10 +753,8 @@ double GB_read_from_floats(GBDATA *gbd, long index) {
     return -1;
 }
 
-
-/********************************************************************************************
-                    WRITE DATA
-********************************************************************************************/
+// -------------------
+//      write data
 
 static void gb_do_callbacks(GBDATA *gbd) {
     gb_assert(GB_MAIN(gbd)->transaction<0); // only use in "no transaction mode"!
@@ -1062,10 +1050,8 @@ GB_ERROR GB_write_as_string(GBDATA *gbd, const char *val)
     }
 }
 
-
-/********************************************************************************************
-                    Key Information
-********************************************************************************************/
+// ---------------------------
+//      security functions
 
 int GB_read_security_write(GBDATA *gbd) {
     GB_TEST_TRANSACTION(gbd);
@@ -1178,6 +1164,10 @@ void GB_pop_my_security(GBDATA *gbd) {
     }
 }
 
+
+// ------------------------
+//      Key information
+
 GB_TYPES GB_read_type(GBDATA *gbd) {
     GB_TEST_TRANSACTION(gbd);
     return (GB_TYPES)GB_TYPE(gbd);
@@ -1245,9 +1235,8 @@ long    GB_read_transaction(GBDATA *gbd)
     return GB_MAIN(gbd)->transaction;
 }
 
-/********************************************************************************************
-                    Get and check the database hierarchy
-********************************************************************************************/
+// ---------------------------------------------
+//      Get and check the database hierarchy
 
 GBDATA *GB_get_father(GBDATA *gbd) {
     // Get the father of an entry
@@ -1290,6 +1279,9 @@ bool GB_check_father(GBDATA *gbd, GBDATA *gb_maybefather) {
     return false;
 }
 
+// --------------------------
+//      create and rename
+
 GBDATA *gb_create(GBDATA *father, const char *key, GB_TYPES type) {
     GBDATA *gbd = gb_make_entry((GBCONTAINER *)father, key, -1, 0, type);
     gb_touch_header(GB_FATHER(gbd));
@@ -1297,8 +1289,8 @@ GBDATA *gb_create(GBDATA *father, const char *key, GB_TYPES type) {
     return (GBDATA *)gbd;
 }
 
-// Create a container, do not check anything
 GBDATA *gb_create_container(GBDATA *father, const char *key) {
+    // Create a container, do not check anything
     GBCONTAINER *gbd = gb_make_container((GBCONTAINER *)father, key, -1, 0);
     gb_touch_header(GB_FATHER(gbd));
     gb_touch_entry((GBDATA *)gbd, GB_CREATED);
@@ -1309,10 +1301,10 @@ void gb_rename(GBCONTAINER *gbc, const char *new_key) {
     gb_rename_entry(gbc, new_key);
 }
 
-/* User accessible rename, check everything
- * returns 0 if successful!
- */
 int GB_rename(GBDATA *gbc, const char *new_key) {
+    /*! User accessible rename, check everything
+     * returns 0 if successful!
+     */
     GBCONTAINER *old_father, *new_father;
     if (GB_check_key(new_key)) {
         GB_print_error();
@@ -1341,9 +1333,19 @@ int GB_rename(GBDATA *gbc, const char *new_key) {
     return 0;
 }
 
-// User accessible create, check everything
-GBDATA *GB_create(GBDATA *father, const char *key, GB_TYPES type)
-{
+GBDATA *GB_create(GBDATA *father, const char *key, GB_TYPES type) {
+    /*! Create a DB entry
+     *
+     * @param father container to create DB field in
+     * @param key name of field
+     * @param type field type
+     *
+     * @return
+     * - created DB entry
+     * - NULL on failure (error is exported then)
+     * 
+     * @see GB_create_container()
+     */
     GBDATA *gbd;
 
     if (GB_check_key(key)) {
@@ -1384,9 +1386,18 @@ GBDATA *GB_create(GBDATA *father, const char *key, GB_TYPES type)
     return gbd;
 }
 
-GBDATA *GB_create_container(GBDATA *father, const char *key)
-{
-    // create a new container
+GBDATA *GB_create_container(GBDATA *father, const char *key) {
+    /*! Create a new DB container
+     *
+     * @param father parent container
+     * @param key name of created container
+     *
+     * @return
+     * - created container
+     * - NULL on failure (error is exported then)
+     *
+     * @see GB_create()
+     */
     
     GBCONTAINER *gbd;
     if (GB_check_key(key)) {
@@ -1454,9 +1465,8 @@ GB_ERROR gb_delete_force(GBDATA *source)    // delete always
 }
 
 
-/********************************************************************************************
-                    Copy Data
-********************************************************************************************/
+// ------------------
+//      Copy data
 
 #if defined(DEVEL_RALF)
 #warning replace GB_copy with GB_copy_with_protection after release 
@@ -1565,9 +1575,6 @@ GB_ERROR GB_copy_with_protection(GBDATA *dest, GBDATA *source, bool copy_all_pro
     return 0;
 }
 
-/********************************************************************************************
-                                        Get all subfield names
-********************************************************************************************/
 
 static char *gb_stpcpy(char *dest, const char *source)
 {
@@ -1575,8 +1582,12 @@ static char *gb_stpcpy(char *dest, const char *source)
     return dest-1; // return pointer to last copied character (which is \0)
 }
 
-char* GB_get_subfields(GBDATA *gbd)
-{
+char* GB_get_subfields(GBDATA *gbd) {
+    /*! Get all subfield names 
+     *
+     * @return all subfields of 'gbd' as ';'-separated heap-copy
+     * (first and last char of result is a ';')
+     */
     long type;
     char *result = 0;
 
@@ -1629,9 +1640,8 @@ char* GB_get_subfields(GBDATA *gbd)
     return result;
 }
 
-/********************************************************************************************
-                    Copy Data
-********************************************************************************************/
+// ----------------------
+//      recompression
 
 #if defined(DEVEL_RALF)
 #warning rename gb_set_compression into gb_recompress (misleading name)
@@ -1677,15 +1687,13 @@ void gb_set_compression_mask(GBDATA *gb_main, GB_COMPRESSION_MASK disable_compre
     Main->compression_mask = disable_compression;
 }
 
-
-
-/********************************************************************************************
-                    TEMPORARY
-********************************************************************************************/
-
+// --------------------------
+//      temporary entries
 
 GB_ERROR GB_set_temporary(GBDATA *gbd) {
-    // if the temporary flag is set, then that entry (including all subentries) will not be saved
+    /*! if the temporary flag is set, then that entry (including all subentries) will not be saved
+     * @see GB_clear_temporary() and GB_is_temporary()
+     */
 
     GB_TEST_TRANSACTION(gbd);
     if (GB_GET_SECURITY_DELETE(gbd)>GB_MAIN(gbd)->security_level)
@@ -1696,7 +1704,7 @@ GB_ERROR GB_set_temporary(GBDATA *gbd) {
 }
 
 GB_ERROR GB_clear_temporary(GBDATA *gbd) {
-    // undo effect of GB_set_temporary()
+    //! undo effect of GB_set_temporary()
 
     GB_TEST_TRANSACTION(gbd);
     gbd->flags.temporary = 0;
@@ -1705,12 +1713,15 @@ GB_ERROR GB_clear_temporary(GBDATA *gbd) {
 }
 
 bool GB_is_temporary(GBDATA *gbd) {
+    //! @see GB_set_temporary() and GB_in_temporary_branch()
     GB_TEST_TRANSACTION(gbd);
     return (long)gbd->flags.temporary;
 }
 
 bool GB_in_temporary_branch(GBDATA *gbd) {
-    // returns true, if 'gbd' is member of a temporary subtree
+    /*! @return true, if 'gbd' is member of a temporary subtree,
+     * i.e. if GB_is_temporary(itself or any parent)  
+     */
 
     if (GB_is_temporary(gbd)) return true;
 
@@ -1720,15 +1731,14 @@ bool GB_in_temporary_branch(GBDATA *gbd) {
     return GB_in_temporary_branch(gb_parent);
 }
 
+// ---------------------
+//      transactions
 
-/********************************************************************************************
-                    TRANSACTIONS
-********************************************************************************************/
 
 GB_ERROR GB_push_local_transaction(GBDATA *gbd) {
-    // Starts a read only transaction.
-    // Be sure that all data is cached. Be extremely careful!
-    
+    /*! Starts a read only transaction.
+     * Be sure that all data is cached. Be extremely careful!
+     */
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     if (Main->transaction>0) {
         return GB_push_transaction(gbd);
@@ -1738,8 +1748,10 @@ GB_ERROR GB_push_local_transaction(GBDATA *gbd) {
 }
 
 GB_ERROR GB_pop_local_transaction(GBDATA *gbd) {
-    // Stops a read only transaction.
-    // Be sure that all data is cached!
+    /*! Stops a read only transaction.
+     * Be sure that all data is cached!
+     */
+     
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     if (Main->transaction>0) {
         return GB_pop_transaction(gbd);
@@ -1748,28 +1760,32 @@ GB_ERROR GB_pop_local_transaction(GBDATA *gbd) {
     return 0;
 }
 
-/* recommended transaction usage:
- * ------------------------------
- * 
- * GB_ERROR myFunc() {
- *     GB_ERROR error = GB_push_transaction(gbd);
- *     if (!error) {
- *         error = ...;
- *     }
- *     return GB_end_transaction(gbd, error);
- * }
- *       
- * void myFunc() {
- *     GB_ERROR error = GB_push_transaction(gbd);
- *     if (!error) {
- *         error = ...;
- *     }
- *     GB_end_transaction_show_error(gbd, error, aw_message);
- * }
- */
-
 GB_ERROR GB_push_transaction(GBDATA *gbd) {
-    // start a transaction if no transaction is running
+    /*! start a transaction if no transaction is running.
+     * (otherwise only trace nested transactions)
+     *
+     * recommended transaction usage:
+     *
+     * \code
+     * GB_ERROR myFunc() {
+     *     GB_ERROR error = GB_push_transaction(gbd);
+     *     if (!error) {
+     *         error = ...;
+     *     }
+     *     return GB_end_transaction(gbd, error);
+     * }
+     *       
+     * void myFunc() {
+     *     GB_ERROR error = GB_push_transaction(gbd);
+     *     if (!error) {
+     *         error = ...;
+     *     }
+     *     GB_end_transaction_show_error(gbd, error, aw_message);
+     * }
+     * \endcode
+     *
+     * @see GB_pop_transaction(), GB_end_transaction(), GB_begin_transaction()
+     */
 
     GB_MAIN_TYPE *Main  = GB_MAIN(gbd);
     GB_ERROR      error = 0;
@@ -1782,7 +1798,9 @@ GB_ERROR GB_push_transaction(GBDATA *gbd) {
 }
 
 GB_ERROR GB_pop_transaction(GBDATA *gbd) {
-    GB_ERROR error;
+    //! commit a transaction started with GB_push_transaction()
+
+    GB_ERROR      error;
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     if (Main->transaction==0) {
         error = GB_export_error("Pop without push");
@@ -1800,7 +1818,10 @@ GB_ERROR GB_pop_transaction(GBDATA *gbd) {
 }
 
 GB_ERROR GB_begin_transaction(GBDATA *gbd) {
-    // better use GB_push_transaction()
+    /*! like GB_push_transaction(),
+     * but fails if there is already an transaction running.
+     * @see GB_commit_transaction() and GB_abort_transaction()
+     */
     
     GB_ERROR      error;
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
@@ -1860,6 +1881,15 @@ GB_ERROR GB_no_transaction(GBDATA *gbd)
 
 GB_ERROR GB_abort_transaction(GBDATA *gbd)
 {
+    /*! abort a running transaction,
+     * i.e. forget all changes made to DB inside the current transaction.
+     *
+     * May be called instead of GB_pop_transaction() or GB_commit_transaction()
+     *
+     * If a nested transactions got aborted,
+     * committing a surrounding transaction will silently abort it as well.
+     */
+    
     GB_ERROR error;
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     gbd = (GBDATA *)Main->data;
@@ -1886,6 +1916,13 @@ GB_ERROR GB_abort_transaction(GBDATA *gbd)
 }
 
 GB_ERROR GB_commit_transaction(GBDATA *gbd) {
+    /*! commit a transaction started with GB_begin_transaction()
+     *
+     * commit changes made to DB.
+     *
+     * in case of nested transactions, this is equal to GB_pop_transaction()
+     */
+    
     GB_ERROR      error = 0;
     GB_MAIN_TYPE *Main  = GB_MAIN(gbd);
     GB_CHANGE     flag;
@@ -1944,26 +1981,42 @@ GB_ERROR GB_commit_transaction(GBDATA *gbd) {
 }
 
 GB_ERROR GB_end_transaction(GBDATA *gbd, GB_ERROR error) {
+    /*! abort or commit transaction 
+     *
+     * @ param error
+     * - if NULL commit transaction
+     * - else abort transaction
+     *
+     * @return error or transaction error
+     * @see GB_push_transaction() for example
+     */
     if (error) GB_abort_transaction(gbd);
     else error = GB_pop_transaction(gbd);
     return error;
 }
 
 void GB_end_transaction_show_error(GBDATA *gbd, GB_ERROR error, void (*error_handler)(GB_ERROR)) {
+    //! like GB_end_transaction(), but show error using 'error_handler'
     error = GB_end_transaction(gbd, error);
     if (error) error_handler(error);
 }
 
 int GB_get_transaction_level(GBDATA *gbd) {
+    /*! @return transaction level
+     * - 0 -> not in transaction
+     * - 1 -> one single transaction
+     * - 2, ... -> nested transactions
+     */
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     return Main->transaction;
 }
 
-/********************************************************************************************
-            Send updated data to server (for GB_release)
-********************************************************************************************/
-GB_ERROR GB_update_server(GBDATA *gbd)
-{
+#if defined(DEVEL_RALF)
+#warning GB_update_server should be ARBDB-local!
+#endif // DEVEL_RALF
+
+GB_ERROR GB_update_server(GBDATA *gbd) {
+    //! Send updated data to server
     GB_ERROR error;
     GB_MAIN_TYPE    *Main = GB_MAIN(gbd);
     GBDATA *gb_main = (GBDATA *)Main->data;
@@ -1989,9 +2042,9 @@ GB_ERROR GB_update_server(GBDATA *gbd)
     // gb_do_callback_list(gbd);         do all callbacks
     return 0;
 }
-/********************************************************************************************
-                    CALLBACKS
-********************************************************************************************/
+
+// ------------------
+//      callbacks
 
 GB_ERROR gb_add_changed_callback_list(GBDATA *gbd, struct gb_transaction_save *old, GB_CB_TYPE gbtype, GB_CB func, int *clientdata)
 {
@@ -2163,10 +2216,6 @@ long GB_read_old_size() {
     return GB_GETSIZE_TS(g_b_old_callback_list->old);
 }
 
-/********************************************************************************************
-                    CALLBACKS
-********************************************************************************************/
-
 char *GB_get_callback_info(GBDATA *gbd) {
     // returns human-readable information about callbacks of 'gbd' or 0
     char *result = 0;
@@ -2337,11 +2386,11 @@ GB_ERROR GB_ensure_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clien
     return GB_add_callback(gbd, type, func, clientdata);
 }
 
-/********************************************************************************************
-                    RELEASE
-    free cached data in a client, no pointers in the freed region are allowed
-********************************************************************************************/
 GB_ERROR GB_release(GBDATA *gbd) {
+    /*! free cached data in client.
+     *
+     * Warning: pointers into the freed region(s) will get invalid!
+     */
     GBCONTAINER  *gbc;
     GBDATA       *gb;
     int           index;
@@ -2371,41 +2420,37 @@ GB_ERROR GB_release(GBDATA *gbd) {
     gb_do_callback_list(Main);       // do all callbacks
     return 0;
 }
-/********************************************************************************************
-                    test local
-    test whether data is available in local data
-    !!! important for callbacks, because only testlocal tested data is available
-********************************************************************************************/
 
-int GB_testlocal(GBDATA *gbd)
-{
-    if (GB_TYPE(gbd) != GB_DB) {
-        return 1;           // all non containers are available
-    }
-    if (GB_MAIN(gbd)->local_mode) return 1;
-    if (gbd->flags2.folded_container) return 0;
+int GB_testlocal(GBDATA *gbd) {
+    /*! test whether data is available as local data
+     *
+     * @return 1 if data is available
+     *
+     * important for callbacks, because only testlocal tested data is available
+     */
+    if (GB_TYPE(gbd) != GB_DB) return 1;            // all non-containers are available
+    if (GB_MAIN(gbd)->local_mode) return 1;         // everything is available in server
+    if (gbd->flags2.folded_container) return 0; 
     return 1;
 }
-/********************************************************************************************
-                    some information about sons
-********************************************************************************************/
 
 int GB_nsons(GBDATA *gbd) {
-    if (GB_TYPE(gbd) != GB_DB) {
-        return 0;           // all non containers are available
-    }
+    /*! return number of child entries
+     *
+     * @@@ does this work in clients ? 
+     */
+    if (GB_TYPE(gbd) != GB_DB) return 0;
     return ((GBCONTAINER *)gbd)->d.size;
 }
 
 void GB_disable_quicksave(GBDATA *gbd, const char *reason) {
+    /*! Disable quicksaving database
+     * @param reason why quicksaving is not allowed
+     */
     freedup(GB_MAIN(gbd)->qs.quick_save_disabled, reason);
 }
-/********************************************************************************************
-                    Resort data base
-********************************************************************************************/
 
-GB_ERROR GB_resort_data_base(GBDATA *gb_main, GBDATA **new_order_list, long listsize)
-{
+GB_ERROR GB_resort_data_base(GBDATA *gb_main, GBDATA **new_order_list, long listsize) {
     long new_index;
     GBCONTAINER *father;
     struct gb_header_list_struct *hl, h;
@@ -2479,11 +2524,10 @@ GB_ERROR GB_resort_system_folder_to_top(GBDATA *gb_main) {
     return error;
 }
 
-/********************************************************************************************
-                    USER FLAGS
-********************************************************************************************/
-GB_ERROR GB_write_usr_public(GBDATA *gbd, long flags)
-{
+// -------------------
+//      user flags
+
+GB_ERROR GB_write_usr_public(GBDATA *gbd, long flags) {
     GB_TEST_TRANSACTION(gbd);
     if (GB_GET_SECURITY_WRITE(gbd) > GB_MAIN(gbd)->security_level)
         return gb_security_error(gbd);
@@ -2498,9 +2542,8 @@ long GB_read_usr_public(GBDATA *gbd)
     return (long)gbd->flags.user_flags;
 }
 
-/********************************************************************************************
-    private user access
-********************************************************************************************/
+// ------------------------------
+//      private(?) user flags
 
 long GB_read_usr_private(GBDATA *gbd) {
     GBCONTAINER *gbc = (GBCONTAINER *)gbd;
@@ -2523,12 +2566,10 @@ GB_ERROR GB_write_usr_private(GBDATA *gbd, long ref) {
     return 0;
 }
 
-/********************************************************************************************
-            flag access
-********************************************************************************************/
+// ------------------------
+//      mark DB entries
 
-void GB_write_flag(GBDATA *gbd, long flag)
-{
+void GB_write_flag(GBDATA *gbd, long flag) {
     GBCONTAINER *gbc  = (GBCONTAINER *)gbd;
     int          prev;
     int          ubit = GB_MAIN(gbd)->users[0]->userbit;
@@ -2551,8 +2592,7 @@ void GB_write_flag(GBDATA *gbd, long flag)
     }
 }
 
-int GB_read_flag(GBDATA *gbd)
-{
+int GB_read_flag(GBDATA *gbd) {
     GB_TEST_TRANSACTION(gbd);
     if (GB_ARRAY_FLAGS(gbd).flags & GB_MAIN(gbd)->users[0]->userbit) return 1;
     else return 0;
@@ -2570,12 +2610,7 @@ char GB_type_2_char(GB_TYPES type) {
     return type2char[type];
 }
 
-/********************************************************************************************
-            debug data
-********************************************************************************************/
-
-void dump(const char *data, int size)
-{
+static void dump(const char *data, int size) {
     int x = 0;
 
     printf("\nDump %p (%i Byte):\n", data, size);

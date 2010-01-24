@@ -53,9 +53,8 @@ const char *GB_get_GBDATA_path(GBDATA *gbd) {
     return orgbuffer;
 }
 
-/********************************************************************************************
-                    QUERIES
-********************************************************************************************/
+// ----------------
+//      QUERIES
 
 static bool gb_find_value_equal(GBDATA *gb, GB_TYPES type, const char *val, GB_CASE case_sens) {
     bool equal = false;
@@ -350,10 +349,10 @@ GBDATA *GB_brother(GBDATA *entry, const char *key) {
     return GB_find(entry, key, SEARCH_BROTHER);
 }
 
-/* get a subentry by its internal number:
-   Warning: This subentry must exists, otherwise internal error */
-
 GBDATA *gb_find_by_nr(GBDATA *father, int index) {
+    /* get a subentry by its internal number:
+       Warning: This subentry must exists, otherwise internal error */
+
     GBCONTAINER *gbf = (GBCONTAINER*)father;
     struct gb_header_list_struct *header;
     GBDATA *gb;
@@ -383,9 +382,6 @@ GBDATA *gb_find_by_nr(GBDATA *father, int index) {
     return gb;
 }
 
-/********************************************************************************************
-                    Another Query Procedure
-********************************************************************************************/
 char  gb_ctype_table[256];
 void gb_init_ctype_table() {
     int i;
@@ -628,12 +624,6 @@ GBDATA *GB_searchOrCreate_float(GBDATA *gb_container, const char *fieldpath, dou
     return gb_float;
 }
 
-
-
-/********************************************************************************************
-                                                 Search for select syb entries
-********************************************************************************************/
-
 GBDATA *gb_search_marked(GBCONTAINER *gbc, GBQUARK key_quark, int firstindex)
 {
     int userbit = GBCONTAINER_MAIN(gbc)->users[0]->userbit;
@@ -723,13 +713,8 @@ GBDATA *GB_next_marked(GBDATA *gbd, const char *keystring)
     return gb_search_marked(gbc, key_quark, (int)gbd->index+1);
 }
 
-
-
-
-
-/********************************************************************************************
-                    Command Interpreter
-********************************************************************************************/
+// ----------------------------
+//      Command interpreter
 
 void gb_install_command_table(GBDATA *gb_main, struct GBL_command_table *table)
 {
@@ -740,8 +725,6 @@ void gb_install_command_table(GBDATA *gb_main, struct GBL_command_table *table)
         GBS_write_hash(Main->command_hash, table->command_identifier, (long)table->function);
     }
 }
-
-// ************** Run commands ************************
 
 char *gbs_search_second_x(const char *str)
 {

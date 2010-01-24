@@ -121,18 +121,6 @@ ostream& operator<<(ostream& out, const AP_tree_nlen& node)
     return out << ' ';
 }
 
-/********************************************
-
-Section Edge operations:
-
-    unusedEdgeIndex
-    edgeTo
-    nextEdge
-    unlinkAllEdges
-    destroyAllEdges
-
-********************************************/
-
 int AP_tree_nlen::unusedEdgeIndex() const {
     for (int e=0; e<3; e++) if (edge[e]==NULL) return e;
     return -1;
@@ -147,13 +135,14 @@ AP_tree_edge* AP_tree_nlen::edgeTo(const AP_tree_nlen *neighbour) const {
     return NULL;
 }
 
-AP_tree_edge* AP_tree_nlen::nextEdge(const AP_tree_edge *thisEdge) const
-    // returns the next edge adjacent to the actual node
-    //
-    // if thisEdge == NULL then we return the "first" edge (edge[0])
-    // otherwise we return the next edge following 'thisEdge' in the array edge[]
-{
-    return edge[thisEdge ? ((indexOf(thisEdge)+1) % 3) : 0];
+AP_tree_edge* AP_tree_nlen::nextEdge(const AP_tree_edge *afterThatEdge) const {
+    /*! @return one edge of 'this'
+     * 
+     * @param afterThatEdge
+     * - if == NULL -> returns the "first" edge (edge[0])
+     * - otherwise -> returns the next edge following 'afterThatEdge' in the array edge[]
+     */
+    return edge[afterThatEdge ? ((indexOf(afterThatEdge)+1) % 3) : 0];
 }
 
 void AP_tree_nlen::unlinkAllEdges(AP_tree_edge **edgePtr1, AP_tree_edge **edgePtr2, AP_tree_edge **edgePtr3)
@@ -671,19 +660,11 @@ void AP_tree_nlen::moveTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
     ASSERT_VALID_TREE(rootNode());
 }
 
-/*******************************************
-
-Section Buffer Operations:
-
-    unhash_sequence()   // only deletes an existing parsimony sequence
-    push()
-    pop()
-    clear()
-
-********************************************/
-
 void AP_tree_nlen::unhash_sequence() {
-    // removes the sequence from inner node (not for leafs!)
+    /*! removes the parsimony sequence from an inner node
+     * (has no effect for leafs)
+     */
+
     AP_sequence *sequence = get_seq();
     if (sequence && !is_leaf) sequence->forget_sequence();
 }
@@ -726,7 +707,7 @@ bool AP_tree_nlen::clear(unsigned long datum, unsigned long user_buffer_count) {
 
 bool AP_tree_nlen::push(AP_STACK_MODE mode, unsigned long datum) {
     // according to mode
-    // tree_structure / sequence is buffered in the node
+    // tree_structure or sequence is buffered in the node
 
     AP_tree_buffer *new_buff;
     bool            ret;
@@ -833,10 +814,6 @@ void AP_tree_nlen::pop(unsigned long datum) { /* pop old tree costs */
     delete buff;
 }
 
-/********************************************************
-Section Parsimony:
-********************************************************/
-
 void AP_tree_nlen::parsimony_rek(char *mutPerSite) {
     AP_sequence *sequence = get_seq();
 
@@ -880,10 +857,6 @@ AP_FLOAT AP_tree_nlen::costs(char *mutPerSite) {
     return mutation_rate;
 }
 
-/********************************************************
-Section NNI
-********************************************************/
-
 #if defined(DEVEL_RALF)
 #warning fix interfaces of AP_tree_nlen::nn_interchange_rek and AP_tree_edge::nni_rek (use a struct as param)
 #endif // DEVEL_RALF
@@ -904,11 +877,6 @@ AP_FLOAT AP_tree_nlen::nn_interchange_rek(bool openclosestatus, int &Abort, int 
     return edgeTo(get_father())->nni_rek(openclosestatus, Abort, deep, skip_hidden, mode, get_father());
 }
 
-
-
-/********************************************************
-Section Kernighan-Lin
-********************************************************/
 
 void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width_max, const int rek_deep_max,
                                  double(*function) (double, double *, int), double *param_liste, int param_anz,
@@ -1015,7 +983,7 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
     }
     // Bubblesort, in pars[0] steht kleinstes element
     //
-    //!!CAUTION ! !The original parsimonies will be exchanged
+    // CAUTION! The original parsimonies will be exchanged
 
 
     for (i=7, t=0; t<i; t++) {
@@ -1124,16 +1092,11 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
     return;
 }
 
-/*************************************************************************
-Section Crossover List (Funktionen die die crossover liste aufbauen):
-
-    createListRekUp
-    createListRekSide
-    createList
-
-**************************************************************************/
 
 #if 0
+
+// ------------------------------------------
+//      functions to build crossover list
 
 void addToList(AP_CO_LIST *list, int *number, AP_tree_nlen *pntr, CO_LISTEL& wert0, CO_LISTEL& wert1) {
     if (wert0.isLeaf) {
@@ -1196,8 +1159,8 @@ void AP_tree_nlen::createListRekUp(AP_CO_LIST *list, int *cn) {
 }
 
 void AP_tree_nlen::createListRekSide(AP_CO_LIST *list, int *cn) {
-    //
     // has to be called after createListRekUp !!
+
     if (!refRight.init) {
         refRight.init    = true;
         refRight.isLeaf  = false;
@@ -1231,10 +1194,9 @@ void AP_tree_nlen::createListRekSide(AP_CO_LIST *list, int *cn) {
 }
 
 
-AP_CO_LIST * AP_tree_nlen::createList(int *size)
-{
-    // returns an list with all
-    // tree combinations
+AP_CO_LIST * AP_tree_nlen::createList(int *size) {
+    // returns an list with all tree combinations
+
     AP_CO_LIST *list;
     int number = 0;
     if (father != 0) {
@@ -1251,15 +1213,6 @@ AP_CO_LIST * AP_tree_nlen::createList(int *size)
 }
 
 #endif
-
-/*************************************************************************
-Section Misc stuff:
-
-    sortByName
-    test
-    fullname
-
-**************************************************************************/
 
 const char* AP_tree_nlen::sortByName()
 {

@@ -972,7 +972,7 @@ AW_window *create_mg_merge_tagged_fields(AW_root *aw_root)
 }
 
 GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
-    /** First big job:  Make the alignment names equal */
+    /*! Make the alignment names equal */
     char **   M_alignment_names = GBT_get_alignment_names(GLOBAL_gb_merge);
     char **   D_alignment_names = GBT_get_alignment_names(GLOBAL_gb_dest);
     GB_ERROR  error             = 0;
@@ -1062,8 +1062,9 @@ GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
     return error;
 }
 
-/** Merge the sequences of two databases */
 GB_ERROR MG_simple_merge(AW_root *awr) {
+    /*! Merge the sequences of two databases */
+
     static char *m_name         = 0;
     GB_ERROR     error          = 0;
     GBDATA      *M_species_data = 0;

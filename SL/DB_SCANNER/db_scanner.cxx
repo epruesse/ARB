@@ -23,7 +23,7 @@
 
 
 
-/**************************************************************************
+/*!************************************************************************
     create a database scanner
         the scanned database is displayed in a selection list
         the gbdata pointer can be read
@@ -231,7 +231,7 @@ static void awt_arbdb_scanner_value_change(void *, struct adawcbstruct *cbs)
     free(value);
 }
 
-/***************** change the flag in cbs->gb_user *****************************/
+/*!*************** change the flag in cbs->gb_user *****************************/
 
 static void awt_mark_changed_cb(AW_window *aws, struct adawcbstruct *cbs, char *awar_name)
 {
@@ -302,7 +302,7 @@ AW_CL awt_create_arbdb_scanner(GBDATA                 *gb_main, AW_window *aws,
     AW_root             *aw_root    = aws->get_root();
 
     GB_push_transaction(gb_main);
-    /*************** Create local AWARS *******************/
+    /*!************* Create local AWARS *******************/
     sprintf(buffer, "tmp/arbdb_scanner_%i/list", scanner_id);
     cbs->def_gbd = strdup(buffer);
     aw_root->awar_pointer(cbs->def_gbd, 0, AW_ROOT_DEFAULT);
@@ -330,14 +330,14 @@ AW_CL awt_create_arbdb_scanner(GBDATA                 *gb_main, AW_window *aws,
     cbs->scannermode = (char) scannermode;
     cbs->selector    = selector;
 
-    /*************** Create the delete button ****************/
+    /*!************* Create the delete button ****************/
     if (delete_pos_fig) {
         aws->at(delete_pos_fig);
         aws->callback((AW_CB)awt_arbdb_scanner_delete, (AW_CL)cbs, 0);
         aws->create_button("DELETE_DB_FIELD", "DELETE", "D");
     }
 
-    /*************** Create the enable edit selector ****************/
+    /*!************* Create the enable edit selector ****************/
     if (edit_enable_pos_fig) {
         aws->at(edit_enable_pos_fig);
         aws->callback((AW_CB1)awt_map_arbdb_edit_box, (AW_CL)cbs);
@@ -365,7 +365,7 @@ AW_CL awt_create_arbdb_scanner(GBDATA                 *gb_main, AW_window *aws,
         aws->create_text_field(cbs->def_dest, 20, 10);
     }
 
-    /*************** Create the rescan button ****************/
+    /*!************* Create the rescan button ****************/
     if (rescan_pos_fig) {
         aws->at(rescan_pos_fig);
         aws->callback(cbs->selector->selection_list_rescan_cb, (AW_CL)cbs->gb_main, (AW_CL)type_filter);
@@ -551,7 +551,7 @@ static void awt_scanner_changed_cb(GBDATA *dummy, struct adawcbstruct *cbs, GB_C
         aws->get_root()->awar(cbs->def_dir)->write_int(flag);
     }
 }
-/************ Unmap edit field if 'key_data' has been changed (maybe entries deleted)
+/*!********** Unmap edit field if 'key_data' has been changed (maybe entries deleted)
  *********/
 static void awt_scanner_changed_cb2(GBDATA *dummy, struct adawcbstruct *cbs, GB_CB_TYPE gbtype)
 {

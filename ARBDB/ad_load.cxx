@@ -1325,22 +1325,26 @@ GB_ERROR gb_login_remote(GB_MAIN_TYPE *Main, const char *path, const char *opent
 }
 
 GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
-    /* opent char :
-     * 'r' read
-     * 'w' write (w/o 'r' it overwrites existing database)
-     * 'c' create (if not found)
-     * 's'     read only ???
-     * 'd' look for default (if create) in $ARBHOME/lib (any leading '.' is removed )
-     * 'D' look for default (if create) in $ARBHOME/lib/arb_default (any leading '.' is removed )
+    /*! open an ARB database
      *
-     * 't' small memory usage
-     * 'm' medium
-     * 'b' big
-     * 'h' huge
+     * @param opent contains one or more of the following characters:
+     * - 'r' read
+     * - 'w' write (w/o 'r' it overwrites existing database)
+     * - 'c' create (if not found)
+     * - 's'     read only ???
+     * - 'd' look for default (if create) in $ARBHOME/lib (any leading '.' is removed )
+     * - 'D' look for default (if create) in $ARBHOME/lib/arb_default (any leading '.' is removed )
+     * - memory usage: 
+     *   - 't' small memory usage
+     *   - 'm' medium
+     *   - 'b' big
+     *   - 'h' huge
+     * - 'R' allow corrupt file recovery + opening quicks with no master
+     * - 'N' assume new database format (does not check whether to convert old->new compression)
      *
-     * 'R' allow corrupt file recovery + opening quicks with no master
+     * @return root node
      *
-     * 'N' assume new database format (does not check whether to convert old->new compression)
+     * @see GB_open() and GBT_open()
      */
     GBCONTAINER   *gbd;
     FILE          *input;

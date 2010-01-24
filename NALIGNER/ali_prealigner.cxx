@@ -216,12 +216,8 @@ void ali_prealigner_mask::delete_expensive(ALI_PREALIGNER_CONTEXT * context, ALI
     }
 }
 
-
-/*****************************************************************************
- *
- * class ALI_PREALIGNER  (privat)
- *
- *****************************************************************************/
+// -----------------------
+//      ALI_PREALIGNER
 
 inline float ALI_PREALIGNER::minimum2(float a, float b) {
     return ((a < b) ? a : b);
@@ -235,20 +231,14 @@ inline float ALI_PREALIGNER::minimum3(float a, float b, float c) {
 inline void ALI_PREALIGNER::calculate_first_column_first_cell(ali_prealigner_cell * akt_cell) {
     float v1, v2, v3;
 
-    /***
-        v1 = profile->w_ins(start_x,start_y) + profile->w_del(start_y,start_y);
-    ***/
-    v1 = profile->w_ins_multi_cheap(start_x, start_y) +
-        profile->w_sub_multi_gap_cheap(start_y, start_y);
+    v1 = profile->w_ins_multi_cheap(start_x, start_y) + profile->w_sub_multi_gap_cheap(start_y, start_y);
     v2 = profile->w_sub(start_y, start_x);
     v3 = v1;
 
     akt_cell->d = minimum2(v1, v2);
 
-    if (akt_cell->d == v1)
-        path_map->set(0, 0, ALI_UP | ALI_LEFT);
-    if (akt_cell->d == v2)
-        path_map->set(0, 0, ALI_DIAG);
+    if (akt_cell->d == v1) path_map->set(0, 0, ALI_UP | ALI_LEFT);
+    if (akt_cell->d == v2) path_map->set(0, 0, ALI_DIAG);
 }
 
 inline void ALI_PREALIGNER::calculate_first_column_cell(ali_prealigner_cell * up_cell,
@@ -292,26 +282,15 @@ inline void ALI_PREALIGNER::calculate_first_cell(ali_prealigner_cell * left_cell
 
     positionx = start_x + pos_x;
 
-    /***
-        v1 = profile->w_ins_multi_unweighted(start_x, positionx) +
-        profile->w_del(start_y,start_y);
-        v2 = profile->w_ins_multi_unweighted(start_x, positionx - 1) +
-        profile->w_sub(start_y, positionx);
-    ***/
-    v1 = profile->w_ins_multi_cheap(start_x, positionx) +
-        profile->w_sub_gap(start_y);
-    v2 = profile->w_ins_multi_cheap(start_x, positionx - 1) +
-        profile->w_sub(start_y, positionx);
+    v1 = profile->w_ins_multi_cheap(start_x, positionx) + profile->w_sub_gap(start_y);
+    v2 = profile->w_ins_multi_cheap(start_x, positionx - 1) + profile->w_sub(start_y, positionx);
     v3 = left_cell->d + profile->w_ins(positionx, start_y);
 
     akt_cell->d = minimum3(v1, v2, v3);
 
-    if (v1 == akt_cell->d)
-        path_map->set(pos_x, 0, ALI_UP);
-    if (v2 == akt_cell->d)
-        path_map->set(pos_x, 0, ALI_DIAG);
-    if (v3 == akt_cell->d)
-        path_map->set(pos_x, 0, ALI_LEFT);
+    if (v1 == akt_cell->d) path_map->set(pos_x, 0, ALI_UP);
+    if (v2 == akt_cell->d) path_map->set(pos_x, 0, ALI_DIAG);
+    if (v3 == akt_cell->d) path_map->set(pos_x, 0, ALI_LEFT);
 }
 
 inline void ALI_PREALIGNER::calculate_cell(ali_prealigner_cell * diag_cell, ali_prealigner_cell * left_cell,
@@ -324,21 +303,15 @@ inline void ALI_PREALIGNER::calculate_cell(ali_prealigner_cell * diag_cell, ali_
     positionx = start_x + pos_x;
     positiony = start_y + pos_y;
 
-    /***
-        v1 = up_cell->d + profile->w_del(positiony,positiony);
-    ***/
     v1 = up_cell->d + profile->w_sub_gap(positiony);
     v2 = diag_cell->d + profile->w_sub(positiony, positionx);
     v3 = left_cell->d + profile->w_ins(positionx, positiony);
 
     akt_cell->d = minimum3(v1, v2, v3);
 
-    if (v1 == akt_cell->d)
-        path_map->set(pos_x, pos_y, ALI_UP);
-    if (v2 == akt_cell->d)
-        path_map->set(pos_x, pos_y, ALI_DIAG);
-    if (v3 == akt_cell->d)
-        path_map->set(pos_x, pos_y, ALI_LEFT);
+    if (v1 == akt_cell->d) path_map->set(pos_x, pos_y, ALI_UP);
+    if (v2 == akt_cell->d) path_map->set(pos_x, pos_y, ALI_DIAG);
+    if (v3 == akt_cell->d) path_map->set(pos_x, pos_y, ALI_LEFT);
 }
 
 void ALI_PREALIGNER::calculate_column(ali_prealigner_column * prev_col,
@@ -364,26 +337,15 @@ inline void ALI_PREALIGNER::calculate_last_column_first_cell(ali_prealigner_cell
 
     positionx = start_x + pos_x;
 
-    /***
-        v1 = profile->w_ins_multi_unweighted(start_x, positionx) +
-        profile->w_del(start_y,start_y);
-        v2 = profile->w_ins_multi_unweighted(start_x, positionx - 1) +
-        profile->w_sub(start_y, positionx);
-    ***/
-    v1 = profile->w_ins_multi_cheap(start_x, positionx) +
-        profile->w_sub_gap_cheap(start_y);
-    v2 = profile->w_ins_multi_cheap(start_x, positionx - 1) +
-        profile->w_sub(start_y, positionx);
+    v1 = profile->w_ins_multi_cheap(start_x, positionx) + profile->w_sub_gap_cheap(start_y);
+    v2 = profile->w_ins_multi_cheap(start_x, positionx - 1) + profile->w_sub(start_y, positionx);
     v3 = left_cell->d + profile->w_ins(positionx, start_y);
 
     akt_cell->d = minimum3(v1, v2, v3);
 
-    if (v1 == akt_cell->d)
-        path_map->set(pos_x, 0, ALI_UP);
-    if (v2 == akt_cell->d)
-        path_map->set(pos_x, 0, ALI_DIAG);
-    if (v3 == akt_cell->d)
-        path_map->set(pos_x, 0, ALI_LEFT);
+    if (v1 == akt_cell->d) path_map->set(pos_x, 0, ALI_UP);
+    if (v2 == akt_cell->d) path_map->set(pos_x, 0, ALI_DIAG);
+    if (v3 == akt_cell->d) path_map->set(pos_x, 0, ALI_LEFT);
 }
 
 inline void ALI_PREALIGNER::calculate_last_column_cell(ali_prealigner_cell * diag_cell, ali_prealigner_cell * left_cell,
@@ -396,21 +358,15 @@ inline void ALI_PREALIGNER::calculate_last_column_cell(ali_prealigner_cell * dia
     positionx = start_x + pos_x;
     positiony = start_y + pos_y;
 
-    /***
-        v1 = up_cell->d + profile->w_del(positiony,positiony);
-    ***/
     v1 = up_cell->d + profile->w_sub_gap_cheap(positiony);
     v2 = diag_cell->d + profile->w_sub(positiony, positionx);
     v3 = left_cell->d + profile->w_ins(positionx, positiony);
 
     akt_cell->d = minimum3(v1, v2, v3);
 
-    if (v1 == akt_cell->d)
-        path_map->set(pos_x, pos_y, ALI_UP);
-    if (v2 == akt_cell->d)
-        path_map->set(pos_x, pos_y, ALI_DIAG);
-    if (v3 == akt_cell->d)
-        path_map->set(pos_x, pos_y, ALI_LEFT);
+    if (v1 == akt_cell->d) path_map->set(pos_x, pos_y, ALI_UP);
+    if (v2 == akt_cell->d) path_map->set(pos_x, pos_y, ALI_DIAG);
+    if (v3 == akt_cell->d) path_map->set(pos_x, pos_y, ALI_LEFT);
 }
 
 void ALI_PREALIGNER::calculate_last_column(ali_prealigner_column * prev_col,
@@ -1088,12 +1044,6 @@ unsigned long ALI_PREALIGNER::number_of_solutions() {
     return number;
 }
 
-
-/*****************************************************************************
- *
- * class ALI_PREALIGNER (public)
- *
- *****************************************************************************/
 
 ALI_PREALIGNER::ALI_PREALIGNER(ALI_PREALIGNER_CONTEXT * context,
                                ALI_PROFILE * prof,

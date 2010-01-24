@@ -13,8 +13,6 @@
 int ALI_PT::init_communication(void) {
     // Initialize the communication with the pt server
     const char *user = GB_getenvUSER();
-
-    /*** create and init local com structure ***/
     if (aisc_create(link, PT_MAIN, com, MAIN_LOCS, PT_LOCS, &locs, LOCS_USER, user, NULL)) {
         return 1;
     }
@@ -127,12 +125,6 @@ void ALI_PT::close(void)
     if (link) aisc_close(link);
     link = 0;
 }
-
-/*****************************************************************************
- *
- * Public functions
- *
- *****************************************************************************/
 
 ALI_PT::ALI_PT(ALI_PT_CONTEXT *context)
 {

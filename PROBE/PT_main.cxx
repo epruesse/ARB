@@ -26,9 +26,9 @@ gene_struct_list           all_gene_structs;        // stores all gene_structs
 gene_struct_index_arb      gene_struct_arb2internal; // sorted by arb species+gene name
 gene_struct_index_internal gene_struct_internal2arb; // sorted by internal name
 
-/*****************************************************************************
-        Communication
-*******************************************************************************/
+// ----------------------
+//      Communication
+
 char *pt_init_main_struct(PT_main *main, char *filename)
 {
     main               = main;
@@ -41,17 +41,19 @@ char *pt_init_main_struct(PT_main *main, char *filename)
     PT_build_species_hash();
     return 0;
 }
+
 PT_main *aisc_main; /* muss so heissen */
 
 extern "C" int server_shutdown(PT_main *pm, aisc_string passwd) {
-    /** passwdcheck **/
+    // password check
     pm = pm;
     if (strcmp(passwd, "47@#34543df43%&3667gh")) return 1;
     printf("\nI got the shutdown message.\n");
-    /** shoot clients **/
+
+    // shutdown clients
     aisc_broadcast(psg.com_so, 0,
                    "SERVER UPDATE BY ADMINISTRATOR!\nYou'll get the latest version. Your screen information will be lost, sorry!");
-    /** shutdown **/
+    // shutdown server
     aisc_server_shutdown_and_exit(psg.com_so, EXIT_SUCCESS); // never returns
     return 0;
 }
@@ -220,7 +222,7 @@ int main(int argc, char **argv)
     printf("physical_memory=%lu k (%lu Mb)\n", physical_memory, physical_memory/1024UL);
 #endif // DEBUG
 
-    /***** try to open com with any other pb server ******/
+    // try to connect to a already running PT server
     if ((argc>2)                         ||
         ((argc<2) && !params->db_server) ||
         (argc >= 2 && strcmp(argv[1], "--help") == 0))
@@ -311,10 +313,7 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
     psg.com_so = so;
-    /**** init server main struct ****/
-    printf("Init internal structs...\n");
 
-    /****** all ok: main'loop' ********/
     if (stat(aname, &s_source)) {
         printf("PT_SERVER error while stat source %s\n", aname);
         aisc_server_shutdown_and_exit(so, EXIT_FAILURE); // never returns
@@ -339,6 +338,8 @@ int main(int argc, char **argv)
         }
     }
 
+    // init server main struct
+    printf("Init internal structs...\n");
     {
         void *reserved_for_mmap = NULL;
         long  size_of_file      = GB_size_of_file(tname);
@@ -361,6 +362,7 @@ int main(int argc, char **argv)
 
     PT_init_map();
 
+    // all ok -> main "loop"
     printf("ok, server is running.\n");
     aisc_accept_calls(so);
     aisc_server_shutdown_and_exit(so, EXIT_SUCCESS); // never returns

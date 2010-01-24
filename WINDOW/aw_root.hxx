@@ -210,7 +210,7 @@ public:
     void window_show();         // a window is set to screen
     void window_hide();
 
-    /********************* the read only  public section ***********************/
+    // the read only public section:
     AW_default  application_database;
     short       font_width;
     short       font_height;
@@ -218,14 +218,13 @@ public:
     GB_HASH    *hash_for_windows;
 
     /* PJ - vectorfont stuff */
-    float  vectorfont_userscale; // user scaling
-    char  *vectorfont_name;     // name of font
-    int    vectorfont_zoomtext; // zoomtext calls: 0 = Xfont, 1 = vectorfont
-    
+    float  vectorfont_userscale;                    // user scaling
+    char  *vectorfont_name;                         // name of font
+    int    vectorfont_zoomtext;                     // zoomtext calls: 0 = Xfont, 1 = vectorfont
+
     AW_xfig_vectorfont *vectorfont_lines; // graphic data of the font
 
-    /************************* the real public section *************************/
-
+    // the real public section:
     AW_root();
     ~AW_root();
     enum { AW_MONO_COLOR, AW_RGB_COLOR }    color_mode;
@@ -267,7 +266,7 @@ public:
     AW_default  get_default(const char *varname);
     AW_default  get_gbdata(const char *varname);
 
-    // ************** Set and clear sensitivity of buttons and menus  *********
+    // Control sensitivity of buttons etc.:
     void apply_sensitivity(AW_active mask);
     void make_sensitive(Widget w, AW_active mask);
 
@@ -280,13 +279,11 @@ public:
     void define_remote_command(struct AW_cb_struct *cbs);
     GB_ERROR check_for_remote_command(AW_default gb_main, const char *rm_base);
 
-    /*************************************************************************
-                                          Fonts
-    *************************************************************************/
-    const char  *font_2_ascii(AW_font font_nr); // converts fontnr to string
-    // returns 0 if font is not available
-    int font_2_xfig(AW_font font_nr);   // converts fontnr to xfigid
-    // negative values indicate monospaced f.
+    // --------------
+    //      Fonts
+    
+    const char *font_2_ascii(AW_font font_nr);
+    int         font_2_xfig(AW_font font_nr);
 
 #if defined(DEBUG)
     size_t callallcallbacks(int mode);
@@ -294,9 +291,9 @@ public:
 };
 
 
-/*************************************************************************
-                AWARS
-*************************************************************************/
+// --------------
+//      AWARS
+
 struct AW_var_callback;
 struct AW_var_target;
 

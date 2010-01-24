@@ -5,7 +5,7 @@
 #include <aw_awars.hxx>
 #include <AP_filter.hxx>
 
-/** recalc filter */
+/*! recalc filter */
 void awt_create_select_filter_window_aw_cb(void *dummy, struct adfiltercbstruct *cbs)
 {       // update the variables
     AW_root *aw_root = cbs->awr;
@@ -182,8 +182,14 @@ void awt_create_select_filter_window_gb_cb(void *, struct adfiltercbstruct *cbs)
 
 
 adfiltercbstruct *awt_create_select_filter(AW_root *aw_root, GBDATA *gb_main, const char *def_name) {
-    // def_name = filter name awar (has to exist, name has to be "SOMETHING/name")
-    // awars "SOMETHING/filter" (STRING) and "SOMETHING/alignment" (STRING) have to exist as well! 
+    /*! Create a data structure for filters (needed for awt_create_select_filter_win)
+     * 
+     * @param def_name filter name awar (has to exist, name has to be "SOMETHING/name")
+     * awars "SOMETHING/filter" (STRING) and
+     * "SOMETHING/alignment" (STRING) have to exist as well!
+     * 
+     */
+
     struct adfiltercbstruct *acbs   = new adfiltercbstruct;
     acbs->gb_main                   = gb_main;
     GB_push_transaction(acbs->gb_main);
@@ -314,6 +320,8 @@ char *AWT_get_combined_filter_name(AW_root *aw_root, GB_CSTR prefix) {
 }
 
 AW_window *awt_create_select_filter_win(AW_root *aw_root, AW_CL res_of_create_select_filter) {
+    /*! Create a filter selection window */
+
     struct adfiltercbstruct *acbs = (struct adfiltercbstruct *)res_of_create_select_filter;
 
     if (!acbs->aw_filt) {

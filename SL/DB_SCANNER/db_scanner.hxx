@@ -13,21 +13,30 @@
 #ifndef DB_SCANNER_HXX
 #define DB_SCANNER_HXX
 
-/**************************************************************************
- *********************   Various Database SCANNER Boxes  *******************
- ***************************************************************************/
-/*  A scanner show all (rekursiv) information of a database entry:
-    This information can be organized in two different ways:
-    1. AWT_SCANNER: Show exact all (filtered) information stored in the DB
-    2. AWT_VIEWER:  Create a list of all database fields (see FIELD INFORMATION)
-    and if any information is stored under a field append it.
-    example: fields:    name, full_name, acc, author
-    DB entries:    name:e.coli full_name:esc.coli flag:test
-    ->  name:       e.coli
-    full_name:  esc.coli
-    acc:
-    author:
-*/
+/* Database scanner boxes
+ *
+ * A scanner show all (recursive) information of a database entry.
+ * 
+ * This information can be organized in two different ways:
+ * 1. AWT_SCANNER: Show exact all (filtered) information stored in the DB
+ * 2. AWT_VIEWER:  Create a list of all database fields (see FIELD INFORMATION)
+ *                 and if any information is stored under a field append it.
+ *
+ *    example:
+ *      fields:
+ *              name, full_name, acc, author
+ *      
+ *      DB entries:
+ *              name:e.coli
+ *              full_name:esc.coli
+ *              flag:test
+ *         
+ *     ->
+ *              name:       e.coli
+ *              full_name:  esc.coli
+ *              acc:
+ *              author:
+ */
 
 typedef enum {
     AWT_SCANNER,

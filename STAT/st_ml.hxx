@@ -75,9 +75,9 @@ public:
 class ST_ML;
 class AWT_csp;
 
-/** Note: Because we have only limited memory we split the
-    sequence into ST_MAX_SEQ_PART long parts */
-
+/* Note: Because we have only limited memory we split the
+ * sequence into ST_MAX_SEQ_PART long parts
+ */
 
 class ST_sequence_ml : public AP_sequence {
     friend class ST_ML;

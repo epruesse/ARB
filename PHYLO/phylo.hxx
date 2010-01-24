@@ -130,24 +130,12 @@ public:
 
 long AP_timer(void);
 
-/////////////////////////////////////////////////////////////////
-//                                                             //
-// class_name : PHDATA                                         //
-//                                                             //
-// description: connection to database:                        //
-//              pointers to all elements and importand values  //
-//              of the database                                //
-//                                                             //
-// note:                                                       //
-//                                                             //
-// dependencies:                                               //
-//                                                             //
-/////////////////////////////////////////////////////////////////
-
 struct elem;
 
 class PHDATA {
-private:
+    // connection to database
+    // pointers to all elements and important values of the database
+    
     struct PHENTRY
     {
         unsigned int    key;

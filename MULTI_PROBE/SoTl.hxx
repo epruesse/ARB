@@ -187,9 +187,8 @@ public:
     ~List();
 };
 
-/**************************
-Beginn list_elem
-***************************/
+// ------------------
+//      list_elem
 
 template <class Type> inline list_elem<Type>::list_elem()
 {
@@ -237,13 +236,8 @@ template <class Type> inline  BOOL list_elem<Type>::isolate_list_elem()
     return TRUE;
 }
 
-/**************************
-Ende list_elem
-**************************/
-
-/**************************
-Beginn List
-***************************/
+// -------------
+//      List
 
 template <class Type> inline List<Type>::List(BOOL so)
 {
@@ -1084,10 +1078,6 @@ template <class Type> inline BOOL List<Type>::remove_pos_from_list(positiontype 
 
     return result;
 }
-
-/**************************
-Ende List
-**************************/
 
 #else
 #error SoTl.hxx included twice

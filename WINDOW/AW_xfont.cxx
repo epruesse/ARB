@@ -582,8 +582,11 @@ static char *caps(char *sentence) {
 }
 
 
-const char *AW_root::font_2_ascii(AW_font font_nr)
-{
+const char *AW_root::font_2_ascii(AW_font font_nr) {
+    //! converts fontnr to string
+    //
+    // @return 0 if font is not available
+
     aw_assert(font_nr >= 0);
     if (font_nr<0 || font_nr>=AW_NUM_FONTS) return 0;
 
@@ -627,8 +630,11 @@ const char *AW_root::font_2_ascii(AW_font font_nr)
     return readable_fontname;
 }
 
-int AW_root::font_2_xfig(AW_font font_nr)
-{
+int AW_root::font_2_xfig(AW_font font_nr) {
+    //! converts fontnr to xfigid
+    //
+    // negative values indicate monospaced f.
+
     if (font_nr<0 || font_nr>=AW_NUM_FONTS) return 0;
     return (ps_fontinfo[font_nr+1].xfontnum);
 }
