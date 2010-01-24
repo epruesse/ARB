@@ -8,9 +8,7 @@ CPP_OBJECTS =   \
 	GEN_graphic.o \
 	GEN_gene.o \
 	GEN_nds.o \
-	GEN_color_groups.o \
 	GEN_translations.o \
-    \
 	EXP_interface.o \
 	EXP_main.o \
 
@@ -101,8 +99,6 @@ EXP_main.o: $(ARBHOME)/INCLUDE/awt_input_mask.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 EXP_main.o: $(ARBHOME)/INCLUDE/ntree.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/smartptr.h
-
-GEN_color_groups.o: GEN_color_groups.hxx
 
 GEN_gene.o: GEN.hxx
 GEN_gene.o: GEN_gene.hxx
