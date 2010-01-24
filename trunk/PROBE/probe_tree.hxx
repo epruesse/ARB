@@ -153,7 +153,7 @@ only few functions can be used, when the tree is reloaded (stage 3):
 // -----------------------------------------------
 //      Get the size of entries (stage 1) only
 
-#define PT_EMPTY_LEAF_SIZE       (1+sizeof(PT_PNTR)+6) /* tag father name rel apos */
+#define PT_EMPTY_LEAF_SIZE       (1+sizeof(PT_PNTR)+6) // tag father name rel apos
 #define PT_LEAF_SIZE(leaf)       (1+sizeof(PT_PNTR)+6+2*PT_count_bits[3][leaf->flags])
 #define PT_EMPTY_CHAIN_SIZE      (1+sizeof(PT_PNTR)+2+sizeof(PT_PNTR)) // tag father apos first_elem
 #define PT_EMPTY_NODE_SIZE       (1+sizeof(PT_PNTR)) // tag father
@@ -239,7 +239,7 @@ static inline unsigned long long bswap_64(unsigned long long x) {
 
 
 #else
-/* not ARB_64 */
+// not ARB_64
 
 # define PT_READ_PNTR(ptr, my_int_i) PT_READ_INT(ptr, my_int_i)
 # define PT_WRITE_PNTR(ptr, my_int_i) PT_WRITE_INT(ptr, my_int_i)
@@ -330,12 +330,10 @@ inline const char *PT_READ_CHAIN_ENTRY(const char* ptr, int mainapos, int *name,
 }
 
 
-/* stage 1 */
-inline char *PT_WRITE_CHAIN_ENTRY(const char * const ptr, const int mainapos, int name, const int apos, const int rpos)
-{
+inline char *PT_WRITE_CHAIN_ENTRY(const char * const ptr, const int mainapos, int name, const int apos, const int rpos) { // stage 1
     unsigned char *wcep = (unsigned char *)ptr;
     int  isapos;
-    if (name < 0x7f) {      /* write the name */
+    if (name < 0x7f) {      // write the name
         *(wcep++) = name;
     }
     else if (name <0x3fff) {
@@ -351,8 +349,8 @@ inline char *PT_WRITE_CHAIN_ENTRY(const char * const ptr, const int mainapos, in
 
     if (apos == mainapos) isapos = 0; else isapos = 0x80;
 
-    if (rpos < 0x3fff) {        /* write the rpos */
-           /* 0x7fff, mit der rpos vorher verglichen wurde war zu groß */
+    if (rpos < 0x3fff) {        // write the rpos
+           // 0x7fff, mit der rpos vorher verglichen wurde war zu groß
         PT_WRITE_SHORT(wcep, rpos);
         *wcep |= isapos;
         wcep += 2;
@@ -362,7 +360,7 @@ inline char *PT_WRITE_CHAIN_ENTRY(const char * const ptr, const int mainapos, in
         *wcep |= 0x40+isapos;
         wcep += 4;
     }
-    if (isapos) {           /* write the apos */
+    if (isapos) {           // write the apos
         if (apos < 0x7fff) {
             PT_WRITE_SHORT(wcep, apos);
             wcep += 2;
@@ -390,7 +388,7 @@ inline POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
             pt_assert(i >= 0);
             return (POS_TREE *)(((char *)node)-i);
         }
-        if (!((1<<base) & node->flags)) return NULL;   /* bit not set */
+        if (!((1<<base) & node->flags)) return NULL;   // bit not set
         sec = (uchar)node->data;    // read second byte for charshort/shortlong info
         i = PT_count_bits[base][node->flags];
         i += PT_count_bits[base][sec];
@@ -460,7 +458,7 @@ inline POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
 
     }
     else {          // stage 1 or 2 ->father
-        if (!((1<<base) & node->flags)) return NULL;   /* bit not set */
+        if (!((1<<base) & node->flags)) return NULL;   // bit not set
         base = (PT_BASES)PT_count_bits[base][node->flags];
         PT_READ_PNTR((&node->data)+sizeof(PT_PNTR)*base+ptmain->mode, i);
         return (POS_TREE *)(i+ptmain->data_start); // ptmain->data_start == 0x00 in stage 1
@@ -470,7 +468,7 @@ inline POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
 inline POS_TREE *PT_read_son_stage_1(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
 {
     long i;
-    if (!((1<<base) & node->flags)) return NULL;   /* bit not set */
+    if (!((1<<base) & node->flags)) return NULL;   // bit not set
     base = (PT_BASES)PT_count_bits[base][node->flags];
     PT_READ_PNTR((&node->data)+sizeof(PT_PNTR)*base+ptmain->mode, i);
     return (POS_TREE *)(i+ptmain->data_start); // ptmain->data_start == 0x00 in stage 1
@@ -512,7 +510,7 @@ inline int PT_read_rpos(PTM2 *ptmain, POS_TREE *node)
 inline int PT_read_apos(PTM2 *ptmain, POS_TREE *node)
 {
     int i;
-    char *data = (&node->data)+ptmain->mode+4;  /* father 4 name 2 rpos 2 */
+    char *data = (&node->data)+ptmain->mode+4;  // father 4 name 2 rpos 2
     if (node->flags&1) data+=2;
     if (node->flags&2) data+=2;
     if (node->flags&4) {
