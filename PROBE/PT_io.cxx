@@ -12,9 +12,8 @@
 
 #include <inline.h>
 
-/* change a sequence with normal bases the PT_? format and delete all other signs */
-int compress_data(char *probestring)
-{
+int compress_data(char *probestring) {
+    /*! change a sequence with normal bases the PT_? format and delete all other signs */ 
     char    c;
     char    *src,
         *dest;
@@ -43,9 +42,8 @@ int compress_data(char *probestring)
     return 0;
 }
 
-/* get a string with readable bases from a string with PT_? */
-void PT_base_2_string(char *id_string, long len)
-{
+void PT_base_2_string(char *id_string, long len) {
+    /*! get a string with readable bases from a string with PT_? */
     char    c;
     char    *src,
         *dest;
@@ -293,7 +291,7 @@ void PT_build_species_hash(void) {
     }
     unsigned int    max_size;
     max_size = 0;
-    for (i = 0; i < psg.data_count; i++) {  /* get max sequence len */
+    for (i = 0; i < psg.data_count; i++) {  // get max sequence len 
         max_size = max(max_size, (unsigned)(psg.data[i].size));
         psg.char_count += psg.data[i].size;
     }

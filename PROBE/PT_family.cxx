@@ -60,7 +60,7 @@ static int mark_all_matches(PT_local *locs,
                 psg.data[ref_name].stat.match_count++;
             return 0;
         }
-        else {        /* type_of_node == CHAIN !! */
+        else {        // type_of_node == CHAIN !! 
             psg.mismatches = mismatches;
             psg.height = height;
             psg.length = length;
@@ -90,16 +90,18 @@ static int mark_all_matches(PT_local *locs,
     return 0;
 }
 
-/* Clear all information in psg.data[i].stat */
 static void clear_statistic() {
+    /*! Clear all information in psg.data[i].stat */
+
     int i;
     for (i = 0; i < psg.data_count; i++)
         memset((char *) &psg.data[i].stat, 0, sizeof(struct probe_statistic));
 }
 
 
-/* Calculate the statistic information for the family */
 static void make_match_statistic(int probe_len, int sequence_length) {
+    /*! Calculate the statistic information for the family */
+
     int i;
     // compute statistic for all species in family
     for (i = 0; i < psg.data_count; i++) {
@@ -126,8 +128,9 @@ struct cmp_probe_rel {
     }
 };
 
-/*  Make sorted list of family members */
 static int make_PT_family_list(PT_local *locs) {
+    /*!  Make sorted list of family members */
+    
     // Sort the data
     struct probe_input_data **my_list = (struct probe_input_data**) calloc(sizeof(void *), psg.data_count);
     int i;
@@ -176,9 +179,9 @@ static int make_PT_family_list(PT_local *locs) {
     return 0;
 }
 
-/* Check the probe for inconsistencies */
 inline int probe_is_ok(char *probe, int probe_len, char first_c, char second_c)
 {
+    /*! Check the probe for inconsistencies */
     int i;
     if (probe_len < 2 || probe[0] != first_c || probe[1] != second_c)
         return 0;
@@ -206,7 +209,7 @@ inline void complement_sequence(char *seq, int len) {
 }
 
 extern "C" int ff_find_family(PT_local *locs, bytestring *species) {
-    // make sorted list of family members of species
+    /*! make sorted list of family members of species */
  
     int probe_len   = locs->ff_pr_len;
     int mismatch_nr = locs->ff_mis_nr;
