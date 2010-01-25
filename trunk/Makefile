@@ -218,7 +218,7 @@ endif
 ifeq ($(OPENGL),1) 
 	cflags += -DARB_OPENGL # activate OPENGL code
 	GL     := gl # this is the name of the OPENGL base target
-	GL_LIB := -lGL -L$(ARBHOME)/GL/glAW -lglAW
+	GL_LIB := -lGL -L$(ARBHOME)/GL/glAW -lglAW -lGLU
 
  ifdef DEBIAN
 	GL_LIB += -lpthread
