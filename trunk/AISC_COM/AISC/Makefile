@@ -90,6 +90,7 @@ clean:
 	rm -f */*.[ao]
 	rm -f GENH/*
 	rm -f GENC/*
+	rm .depends
 
 .depends:
 	$(MAKEDEPEND) C/*.c GENC/*.c -I GENH -I C -f- -w1 | grep -v ' /usr' | sed -e 's/^C/O/ig' > .depends_new
