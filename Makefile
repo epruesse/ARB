@@ -1215,7 +1215,7 @@ $(LINKSTAMP): SOURCE_TOOLS/generate_all_links.sh
 	touch $(LINKSTAMP)
 
 redo_links:
-	find . -type l -exec rm {} \;
+	find . -path './lib' -prune -o -type l -exec rm {} \;
 	@-rm $(LINKSTAMP)
 	$(MAKE) links
 
