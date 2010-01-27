@@ -1,7 +1,4 @@
-#include <aw_root.hxx>
 #include <aw_window.hxx>
-#include <math.h>
-
 #include "MultiProbe.hxx"
 #include "mp_proto.hxx"
 

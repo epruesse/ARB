@@ -1,13 +1,16 @@
-#include <stdio.h>
+// =============================================================== //
+//                                                                 //
+//   File      : ED4_RNA3D.cxx                                     //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-
-#include <awt_canvas.hxx>
-
-#include "../RNA3D/RNA3D_Main.hxx"
 #include "ed4_RNA3D.hxx"
+#include "../RNA3D/RNA3D_Main.hxx"
+#include <awt_canvas.hxx>
 
 void ED4_RNA3D_Start(AW_window *aw, AW_CL, AW_CL)
 {

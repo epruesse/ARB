@@ -1,6 +1,19 @@
+// =============================================================== //
+//                                                                 //
+//   File      : aw_size.hxx                                       //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #ifndef AW_SIZE_HXX
 #define AW_SIZE_HXX
 
+#ifndef AW_DEVICE_HXX
+#include "aw_device.hxx"
+#endif
 
 class AW_device_size : public AW_device {
     bool     drawn;
@@ -38,4 +51,4 @@ public:
 
 #else
 #error aw_size.hxx included twice
-#endif
+#endif // AW_SIZE_HXX

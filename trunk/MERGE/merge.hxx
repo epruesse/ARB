@@ -13,9 +13,10 @@
 #ifndef MERGE_HXX
 #define MERGE_HXX
 
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
+#ifndef AW_WINDOW_HXX
+#include <aw_window.hxx>
 #endif
+
 #define mg_assert(bed) arb_assert(bed)
 
 #define AWAR_MERGE_DB "tmp/merge1/db"

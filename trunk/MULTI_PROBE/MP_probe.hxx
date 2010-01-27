@@ -1,9 +1,6 @@
 #ifndef MP_PROBE_HXX
 #define MP_PROBE_HXX
 
-#ifndef MULTIPROBE_HXX
-#include "MultiProbe.hxx"
-#endif
 #ifndef SOTL_HXX
 #include "SoTl.hxx"
 #endif

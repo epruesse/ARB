@@ -1,8 +1,13 @@
-#include <stdio.h>
-#include <stdlib.h>
+// =============================================================== //
+//                                                                 //
+//   File      : arb_swap_rnastr.cxx                               //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <string.h>
-#include <arbdb.h>
 #include <arbdbt.h>
 
 #define ASRS_BUFFERSIZE 256

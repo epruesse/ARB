@@ -12,9 +12,6 @@
 #ifndef ARB_TREE_HXX
 #define ARB_TREE_HXX
 
-#ifndef ARBDBT_H
-#include <arbdbt.h>
-#endif
 #ifndef ALIVIEW_HXX
 #include <AliView.hxx>
 #endif

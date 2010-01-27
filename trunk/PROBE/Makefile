@@ -1,7 +1,16 @@
 .SUFFIXES: .o .cxx .depend
 
-CPP_OBJECTS =	PT_new_design.o PT_family.o PT_prefixtree.o PT_main.o PT_io.o \
-		PT_etc.o PT_secundaer.o PT_buildtree.o PT_match.o PT_findEx.o
+CPP_OBJECTS = \
+	PT_buildtree.o \
+	PT_etc.o \
+	PT_family.o \
+	PT_findEx.o \
+	PT_io.o \
+	PT_main.o \
+	PT_match.o \
+	PT_new_design.o \
+	PT_prefixtree.o \
+
 C_OBJECTS = # BI_helix.o
 OBJECTS = $(CPP_OBJECTS) $(C_OBJECTS)
 
@@ -205,19 +214,3 @@ PT_prefixtree.o: $(ARBHOME)/INCLUDE/dupstr.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/PT_com.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/PT_server.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/smartptr.h
-
-PT_secundaer.o: probe.h
-PT_secundaer.o: pt_prototypes.h
-PT_secundaer.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
-PT_secundaer.o: $(ARBHOME)/INCLUDE/ad_prot.h
-PT_secundaer.o: $(ARBHOME)/INCLUDE/arb_assert.h
-PT_secundaer.o: $(ARBHOME)/INCLUDE/arb_error.h
-PT_secundaer.o: $(ARBHOME)/INCLUDE/arbdb.h
-PT_secundaer.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-PT_secundaer.o: $(ARBHOME)/INCLUDE/arbtools.h
-PT_secundaer.o: $(ARBHOME)/INCLUDE/attributes.h
-PT_secundaer.o: $(ARBHOME)/INCLUDE/dupstr.h
-PT_secundaer.o: $(ARBHOME)/INCLUDE/PT_com.h
-PT_secundaer.o: $(ARBHOME)/INCLUDE/PT_server.h
-PT_secundaer.o: $(ARBHOME)/INCLUDE/PT_server_prototypes.h
-PT_secundaer.o: $(ARBHOME)/INCLUDE/smartptr.h

@@ -1,8 +1,13 @@
-#include <stdio.h>
-#include <stdlib.h>
-// #include <malloc.h>
-#include <string.h>
-#include <arbdb.h>
+// =============================================================== //
+//                                                                 //
+//   File      : arb_primer.cxx                                    //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #include <arbdbt.h>
 
 #define ADD_LEN        10

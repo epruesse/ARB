@@ -12,11 +12,8 @@
 // ==================================================================== //
 
 #include "AW_helix.hxx"
-
-#include <cctype>
-#include <cstring>
-#include <aw_device.hxx>
 #include <aw_window.hxx>
+#include <cctype>
 
 #define HELIX_AWAR_ENABLE          "Helix/enable"
 #define HELIX_AWAR_SYMBOL_TEMPLATE "Helix/symbols/%s"

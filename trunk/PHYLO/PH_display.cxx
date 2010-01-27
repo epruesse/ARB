@@ -1,7 +1,16 @@
+// =============================================================== //
+//                                                                 //
+//   File      : PH_display.cxx                                    //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #include "phylo.hxx"
 #include "phwin.hxx"
 #include "PH_display.hxx"
-#include <cstring>
 
 extern void display_status(AW_window *, AW_CL, AW_CL);
 GB_ERROR    ph_check_initialized();

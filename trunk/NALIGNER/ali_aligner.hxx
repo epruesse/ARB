@@ -17,9 +17,6 @@
 #ifndef ALI_TSTACK_HXX
 #include "ali_tstack.hxx"
 #endif
-#ifndef ALI_TARRAY_HXX
-#include "ali_tarray.hxx"
-#endif
 #ifndef ALI_PATHMAP_HXX
 #include "ali_pathmap.hxx"
 #endif

@@ -1,10 +1,15 @@
-#include <stdio.h>
-#include <stdlib.h>
-// #include <malloc.h>
-#include <string.h>
-#include <ctype.h>
-#include <arbdb.h>
+// =============================================================== //
+//                                                                 //
+//   File      : arb_count_chars.cxx                               //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #include <arbdbt.h>
+#include <cctype>
 
 /*  count different kind of nucleotides for each alignment position */
 

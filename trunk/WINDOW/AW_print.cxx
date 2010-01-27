@@ -1,17 +1,16 @@
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <X11/X.h>
-#include <X11/Xlib.h>
+// =============================================================== //
+//                                                                 //
+//   File      : AW_print.cxx                                      //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include "aw_root.hxx"
-#include "aw_device.hxx"
-#include "aw_commn.hxx"
 #include "aw_print.hxx"
+#include "aw_commn.hxx"
 
-// ------------------------
-//      AW_device_print
-// ------------------------
 AW_device_print::AW_device_print(AW_common *commoni) : AW_device(commoni) {
     out = 0;
 }
@@ -19,10 +18,6 @@ AW_device_print::AW_device_print(AW_common *commoni) : AW_device(commoni) {
 void AW_device_print::init() {}
 
 AW_DEVICE_TYPE AW_device_print::type(void) { return AW_DEVICE_PRINTER; }
-
-// ----------------------------------
-//      line  text  zoomtext  box
-// ----------------------------------
 
 int AW_device_print::line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
     class AW_GC_Xm *gcm      = AW_MAP_GC(gc);

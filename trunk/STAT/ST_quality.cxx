@@ -1,21 +1,24 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <ctype.h>
-#include <assert.h>
+// =============================================================== //
+//                                                                 //
+//   File      : ST_quality.cxx                                    //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <arbdb.h>
-#include <arbdbt.h>
+#include "st_quality.hxx"
+#include "st_ml.hxx"
+#include "st_window.hxx"
+
 #include <aw_awars.hxx>
 #include <BI_helix.hxx>
 #include <AP_filter.hxx>
 
-#include <aw_root.hxx>
 #include <awt_csp.hxx>
-#include "st_ml.hxx"
-#include "st_window.hxx"
-#include "st_quality.hxx"
+
+#include <cctype>
 
 st_cq_stat::st_cq_stat(int isize) {
     size = isize;
@@ -37,7 +40,7 @@ st_cq_stat::~st_cq_stat() {
 }
 
 void st_cq_stat::add(int pos, double lik) {
-    assert(pos >= 0 && pos < size);
+    st_assert(pos >= 0 && pos < size);
     likelihoods[pos] += lik;
     square_liks[pos] += lik * lik;
     n_elems[pos]++;

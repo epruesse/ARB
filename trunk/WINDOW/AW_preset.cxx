@@ -10,26 +10,17 @@
 #endif
 #endif
 
-#include <stdio.h>
-#include <string.h>
-#include <memory.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
 #include <aw_color_groups.hxx>
-// PJ vectorfont stuff:
-// #include <aw_xfig.hxx>
-// #include <aw_xfigfont.hxx>
+#include <aw_def.hxx>
+#include <aw_preset.hxx>
 
-#include "awt.hxx"
-#include "awt_advice.hxx"
-
-#include <stdarg.h>
-#include <stdlib.h>
+#include <awt.hxx>
+#include <awt_advice.hxx>
 #include <awt_canvas.hxx>
-#include "aw_preset.hxx"
-#include "aw_def.hxx" 
+
+#include <arbdbt.h>
+
+#include <cstdarg>
 
 #ifdef IN_ARB_WINDOW
 

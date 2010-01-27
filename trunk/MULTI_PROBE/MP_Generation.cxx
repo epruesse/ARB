@@ -1,7 +1,6 @@
 #include <MultiProbe.hxx>
 
-#include <string.h>
-#include <math.h>
+#include <cmath>
 
 extern BOOL check_status(int gen_cnt, double avg_fit, double min_fit, double max_fit);
 BOOL    Stop_evaluation = FALSE;

@@ -1,19 +1,12 @@
-#include <cstdio>
-#include <cstdlib>
-#include <cmath>
-
-#include <iostream>
-#include <sstream>
-
-#include <arbdb.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <awt_canvas.hxx>
-#include <awt_iupac.hxx>
-#include <BI_helix.hxx>
-
-#include <ed4_extern.hxx>
+// =============================================================== //
+//                                                                 //
+//   File      : SEC_paint.cxx                                     //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include "SEC_root.hxx"
 #include "SEC_graphic.hxx"
@@ -21,6 +14,13 @@
 #include "SEC_drawn_pos.hxx"
 #include "SEC_bonddef.hxx"
 #include "SEC_toggle.hxx"
+
+#include <awt_iupac.hxx>
+
+#include <ed4_extern.hxx>
+
+#include <iostream>
+#include <sstream>
 
 using namespace std;
 

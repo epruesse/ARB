@@ -12,7 +12,6 @@
 #include "di_matr.hxx"
 #include "dist.hxx"
 
-#include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <aw_preset.hxx>
 

@@ -1,5 +1,15 @@
+// =============================================================== //
+//                                                                 //
+//   File      : ps_node.cxx                                       //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Wolfram Foerster in October 2002                     //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #include "ps_node.hxx"
-#include <unistd.h>
 
 using namespace std;
 

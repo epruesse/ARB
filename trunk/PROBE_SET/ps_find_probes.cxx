@@ -1,15 +1,21 @@
-#include <cmath>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <iostream>
-
-#include <sys/times.h>
+// =============================================================== //
+//                                                                 //
+//   File      : ps_find_probes.cxx                                //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Wolfram Foerster in October 2002                     //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include "ps_tools.hxx"
 #include "ps_database.hxx"
-#include "ps_bitmap.hxx"
 #include "ps_candidate.hxx"
+
+#include <cmath>
+#include <iostream>
+#include <sys/times.h>
 
 using namespace std;
 

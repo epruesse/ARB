@@ -12,7 +12,6 @@
 #include "NT_dbrepair.hxx"
 
 #include <arbdbt.h>
-#include <adGene.h>
 
 #include <awt.hxx>                                  // for ad_item_selector only
 #include <GEN.hxx> 
@@ -26,8 +25,6 @@
 #include <string>
 #include <vector>
 
-#include <cstdlib>
-#include <cstring>
 
 #define nt_assert(bed) arb_assert(bed)
 

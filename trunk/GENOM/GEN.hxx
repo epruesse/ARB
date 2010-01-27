@@ -1,9 +1,17 @@
+// =============================================================== //
+//                                                                 //
+//   File      : GEN.hxx                                           //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Ralf Westram (coder@reallysoft.de) in January 2001   //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #ifndef GEN_HXX
 #define GEN_HXX
 
-#ifndef ARBDB_H
-#include <arbdb.h>
-#endif
 #ifndef AW_WINDOW_HXX
 #include <aw_window.hxx>
 #endif
@@ -53,4 +61,6 @@ GB_ERROR GEN_testAndRemoveTranslations(GBDATA *gb_gene_data, void (*warn)(AW_CL 
 struct ad_item_selector;
 ad_item_selector *GEN_get_selector(); // return GEN_item_selector
 
+#else
+#error GEN.hxx included twice
 #endif // GEN_HXX

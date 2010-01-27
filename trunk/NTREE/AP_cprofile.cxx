@@ -38,24 +38,13 @@
  *
  * -----------------------------------------------------------------
  */
-#include <cstdlib>
-#include <cstdio>
-#include <cstring>
-#include <cmath>
 
-#include <memory.h>
-
-#include <iostream>
-
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <aw_global.hxx>
 #include <awt.hxx>
 #include <awt_sel_boxes.hxx>
+
+#include <iostream>
 
 #define ap_assert(cond) arb_assert(cond)
 

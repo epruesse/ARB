@@ -12,6 +12,10 @@
 #ifndef ED4_SECEDIT_HXX
 #define ED4_SECEDIT_HXX
 
+#ifndef AW_WINDOW_HXX
+#include <aw_window.hxx>
+#endif
+
 void ED4_SECEDIT_start(AW_window *aw, AW_CL cl_gbmain, AW_CL);
 
 #else

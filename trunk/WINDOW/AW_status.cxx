@@ -1,28 +1,34 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <time.h>
-#include <sys/wait.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <arbdbt.h>
-#include <stdarg.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
+// =============================================================== //
+//                                                                 //
+//   File      : AW_status.cxx                                     //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Ralf Westram (coder@reallysoft.de) in January 2010   //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+#include "aw_global.hxx"
 #include <aw_awars.hxx>
+
 #include <awt_www.hxx>
 #include <awt.hxx>
-#include "aw_global.hxx"
-
+#include <arbdbt.h>
 #include <SigHandler.h>
 
-#include <string>
-#include <deque>
 #include <algorithm>
+#include <cctype>
+#include <cerrno>
+#include <cstdarg>
+#include <ctime>
+#include <deque>
+#include <fcntl.h>
+#include <string>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 using namespace std;
 
@@ -125,8 +131,6 @@ struct aw_stg_struct {
     { 0 },                                          // last_estimation
     -1,                                             // last_used_est
 };
-
-#include <errno.h>
 
 // timeouts :
 

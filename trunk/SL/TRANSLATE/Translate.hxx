@@ -12,6 +12,11 @@
 #ifndef TRANSLATE_HXX
 #define TRANSLATE_HXX
 
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
+#endif
+
+
 GB_ERROR AWT_getTranslationInfo(GBDATA *gb_species, int& arb_transl_table, int &codon_start);
 GB_ERROR AWT_saveTranslationInfo(GBDATA *gb_species, int arb_transl_table, int codon_start);
 

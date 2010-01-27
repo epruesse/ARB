@@ -1,3 +1,13 @@
+// =============================================================== //
+//                                                                 //
+//   File      : AW_xfigfont.cxx                                   //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 /* -----------------------------------------------------------------
  * Global Variables changed:      root object: vectorfont information
  *                                vectorfont/ * awars
@@ -33,28 +43,16 @@
  * -----------------------------------------------------------------
  */
 
-/* includes */
+#include "aw_commn.hxx"
+#include "aw_xfig.hxx"
+#include "aw_xfigfont.hxx"
+#include "awt.hxx"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <memory.h>
-#include <math.h>
-#include <string.h>
+#include <inline.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include <X11/X.h>
-#include <X11/Xlib.h>
-#include "aw_root.hxx"
-#include "aw_device.hxx"
-#include "aw_commn.hxx"
-#include "aw_xfig.hxx"
-#include "aw_xfigfont.hxx"
-#include "aw_window.hxx"
-#include "awt.hxx"
-
-#include <inline.h>
 
 /* -----------------------------------------------------------------
  * Function:                     aw_read_xfigfont

@@ -1,15 +1,23 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <algorithm>
-// #include <malloc.h>
-#include <PT_server.h>
+// =============================================================== //
+//                                                                 //
+//   File      : PT_family.cxx                                     //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+#include "probe.h"
 #include <struct_man.h>
 #include <PT_server_prototypes.h>
-#include "probe.h"
 #include "probe_tree.hxx"
 #include "pt_prototypes.h"
+
 #include <arbdbt.h>
+
+#include <algorithm>
+
 
 // overloaded functions to avoid problems with type-punning:
 inline void aisc_link(dll_public *dll, PT_family_list *family)   { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(family)); }
@@ -99,13 +107,14 @@ static void clear_statistic() {
 }
 
 
+
 static void make_match_statistic(int probe_len, int sequence_length) {
     /*! Calculate the statistic information for the family */
 
     int i;
     // compute statistic for all species in family
     for (i = 0; i < psg.data_count; i++) {
-        int all_len = min(psg.data[i].size, sequence_length) - probe_len + 1;
+        int all_len = std::min(psg.data[i].size, sequence_length) - probe_len + 1;
         if (all_len <= 0) {
             psg.data[i].stat.rel_match_count = 0;
         }

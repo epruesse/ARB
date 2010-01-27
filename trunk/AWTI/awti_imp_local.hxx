@@ -25,9 +25,6 @@
 #ifndef AWTI_IMPORT_HXX
 #include <awti_import.hxx>
 #endif
-#ifndef SMARTPTR_H
-#include <smartptr.h>
-#endif
 
 #define awti_assert(cond) arb_assert(cond)
 

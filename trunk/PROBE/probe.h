@@ -18,10 +18,6 @@
 #include <PT_server.h>
 #endif
 
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
-#endif
-
 #define PT_SERVER_MAGIC   0x32108765                // pt server identifier
 #define PT_SERVER_VERSION 2                         // version of pt server database (no versioning till 2009/05/13)
 
@@ -34,9 +30,6 @@
 typedef unsigned long ULONG;
 typedef unsigned int  UINT;
 typedef unsigned char uchar;
-
-#define  min(a, b) ((a) < (b)) ? (a) : (b)
-#define  max(a, b) ((a) > (b)) ? (a) : (b)
 
 #define PT_CORE *(int *)0 = 0;
 

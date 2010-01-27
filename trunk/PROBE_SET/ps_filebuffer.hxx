@@ -1,9 +1,20 @@
+// =============================================================== //
+//                                                                 //
+//   File      : ps_filebuffer.hxx                                 //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Wolfram Foerster in October 2002                     //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #ifndef PS_FILEBUFFER_HXX
 #define PS_FILEBUFFER_HXX
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -181,4 +192,4 @@ public:
 
 #else
 #error ps_filebuffer.hxx included twice
-#endif
+#endif // PS_FILEBUFFER_HXX

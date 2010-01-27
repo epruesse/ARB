@@ -1,21 +1,24 @@
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_awars.hxx>
-#include <awt.hxx>
-#include <GEN.hxx>
-#include <awt_config_manager.hxx>
+// =============================================================== //
+//                                                                 //
+//   File      : primer_design.cxx                                 //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Wolfram Foerster in February 2001                    //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include "primer_design.hxx"
 #include "PRD_Design.hxx"
 #include "PRD_SequenceIterator.hxx"
 
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <cmath>
+#include <arbdbt.h>
+#include <aw_awars.hxx>
+#include <awt.hxx>
+#include <GEN.hxx>
+#include <awt_config_manager.hxx>
+
 #include <string>
 
 extern GBDATA *GLOBAL_gb_main;

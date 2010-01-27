@@ -1,6 +1,15 @@
-#include <cstdio>
-#include "PRD_Design.hxx"
+// =============================================================== //
+//                                                                 //
+//   File      : PRD_main.cxx                                      //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Wolfram Foerster in February 2001                    //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
+#include "PRD_Design.hxx"
 
 using namespace std;
 
@@ -26,5 +35,4 @@ int main() {
 
     delete PD;
 }
-
 

@@ -1,8 +1,18 @@
+// =============================================================== //
+//                                                                 //
+//   File      : PRD_Pair.hxx                                      //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Wolfram Foerster in February 2001                    //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #ifndef PRD_PAIR_HXX
 #define PRD_PAIR_HXX
 
-#include <cstdio>
-#ifndef   PRD_ITEM_HXX
+#ifndef PRD_ITEM_HXX
 #include "PRD_Item.hxx"
 #endif
 
@@ -25,4 +35,4 @@ public:
 
 #else
 #error PRD_Pair.hxx included twice
-#endif // PRD_Pair_HXX
+#endif // PRD_PAIR_HXX

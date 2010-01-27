@@ -11,12 +11,6 @@
 #ifndef PHYLO_HXX
 #define PHYLO_HXX
 
-#ifndef _CPP_CSTDIO
-#include <cstdio>
-#endif
-#ifndef ARBDB_H
-#include <arbdb.h>
-#endif
 #ifndef ARBDBT_H
 #include <arbdbt.h>
 #endif
@@ -25,9 +19,6 @@
 #endif
 #ifndef AP_MATRIX_HXX
 #include <AP_matrix.hxx>
-#endif
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
 #endif
 #ifndef PH_FILTER_HXX
 #include "PH_filter.hxx"

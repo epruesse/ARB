@@ -9,8 +9,6 @@
 //                                                                 //
 // =============================================================== //
 
-#include <cstring>
-
 #include "SEC_root.hxx"
 #include "SEC_helix.hxx"
 

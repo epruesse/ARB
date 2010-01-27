@@ -1,14 +1,13 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <memory.h>
-// #include <malloc.h>
-#include <math.h>
-#include <X11/X.h>
-#include <X11/Xlib.h>
+// =============================================================== //
+//                                                                 //
+//   File      : AW_Xm.cxx                                         //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <aw_root.hxx>
-#include "aw_device.hxx"
 #include "aw_commn.hxx"
 #include <aw_Xm.hxx>
 

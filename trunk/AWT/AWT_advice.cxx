@@ -12,8 +12,8 @@
 //                                                                       //
 //  ==================================================================== //
 
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstring>
 
 #include "awt_advice.hxx"
 #include "awt.hxx"

@@ -71,8 +71,8 @@
 
 #if defined(BUGEX_DUMPS)
 
-#ifndef _CTYPE_H
-#include <ctype.h>
+#ifndef _CPP_CCTYPE
+#include <cctype>
 #endif
 
 // Do NOT use the following macros!!!

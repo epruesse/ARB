@@ -1,12 +1,17 @@
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <climits>
+// =============================================================== //
+//                                                                 //
+//   File      : PT_new_design.cxx                                 //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <PT_server.h>
+
+#include "probe.h"
 #include <PT_server_prototypes.h>
 #include <struct_man.h>
-#include "probe.h"
 #include "probe_tree.hxx"
 #include <arbdbt.h>
 #include <inline.h>
@@ -16,6 +21,8 @@
 #endif
 
 #include "pt_prototypes.h"
+
+#include <climits>
 
 // overloaded functions to avoid problems with type-punning:
 inline void aisc_link(dll_public *dll, PT_tprobes *tprobe)   { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(tprobe)); }

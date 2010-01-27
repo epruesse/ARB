@@ -1,15 +1,18 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/times.h>
+// =============================================================== //
+//                                                                 //
+//   File      : ps_get_probes.cxx                                 //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Wolfram Foerster in October 2002                     //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#ifndef PS_PG_TREE_FUNCTIONS
 #include "ps_pg_tree_functions.cxx"
-#endif
-
-#ifndef PS_FILEBUFFER_HXX
 #include "ps_filebuffer.hxx"
-#endif
+
+#include <sys/times.h>
 
 //  GLOBALS
 

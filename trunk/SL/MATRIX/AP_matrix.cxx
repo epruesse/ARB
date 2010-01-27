@@ -1,8 +1,16 @@
+// =============================================================== //
+//                                                                 //
+//   File      : AP_matrix.cxx                                     //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include "AP_matrix.hxx"
 
 #include <arbdbt.h>
-#include <aw_root.hxx>
 #include <aw_window.hxx>
 
 #define ap_assert(cond) arb_assert(cond)

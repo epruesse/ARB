@@ -1,5 +1,19 @@
+// =============================================================== //
+//                                                                 //
+//   File      : aw_nawar.hxx                                      //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #ifndef AW_NAWAR_HXX
 #define AW_NAWAR_HXX
+
+#ifndef AW_ROOT_HXX
+#include "aw_root.hxx"
+#endif
 
 struct AW_var_callback {
     AW_var_callback(void (*vc_cb)(AW_root*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2, AW_var_callback *next);
@@ -25,4 +39,4 @@ void aw_update_awar_window_geometry(AW_root *awr);
 
 #else
 #error aw_nawar.hxx included twice
-#endif
+#endif // AW_NAWAR_HXX

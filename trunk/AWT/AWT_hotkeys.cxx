@@ -13,7 +13,7 @@
 //  ==================================================================== //
 
 #include "awt_hotkeys.hxx"
-#include <ctype.h>
+#include <cctype>
 
 
 using namespace std;

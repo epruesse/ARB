@@ -1,12 +1,20 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <PT_server.h>
+// =============================================================== //
+//                                                                 //
+//   File      : PT_match.cxx                                      //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+#include "probe.h"
 #include <PT_server_prototypes.h>
 #include <struct_man.h>
-#include "probe.h"
+
 #include "probe_tree.hxx"
 #include "pt_prototypes.h"
+
 #include <arbdbt.h>
 
 // overloaded functions to avoid problems with type-punning:
@@ -731,7 +739,8 @@ static void gene_rel_2_abs(PT_probematch *ml) {
 extern "C" bytestring *match_string(PT_local *locs) {
     /*! Create list of species where probe matches.
      * 
-     * header\001name\001info\001name\001info....\000
+     * header^1name^1info^1name^1info....^0
+     *         (where ^0 and ^1 are ASCII 0 and 1)
      *
      * Implements server function 'MATCH_STRING' 
      */
@@ -772,7 +781,8 @@ extern "C" bytestring *match_string(PT_local *locs) {
 extern "C" bytestring *MP_match_string(PT_local *locs) {
     /*! Create list of species where probe matches and #mismatches (for multiprobe)
      * 
-     * Format: header\001name\001#mismatch\001name\001#mismatch....\000
+     * Format: header^1name^1#mismatch^1name^1#mismatch....^0
+     *         (where ^0 and ^1 are ASCII 0 and 1)
      * 
      * Implements server function 'MP_MATCH_STRING'
      */
@@ -807,7 +817,8 @@ extern "C" bytestring *MP_match_string(PT_local *locs) {
 extern "C" bytestring *MP_all_species_string(PT_local *) {
     /*! Create list of all species known to PT server
      * 
-     * Format: 001name\001name\....\000
+     * Format: ^1name^1name....^0
+     *         (where ^0 and ^1 are ASCII 0 and 1)
      * 
      * Implements server function 'MP_ALL_SPECIES_STRING'
      */

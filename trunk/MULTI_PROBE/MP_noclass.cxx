@@ -1,16 +1,16 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <math.h>
+// =============================================================== //
+//                                                                 //
+//   File      : MP_noclass.cxx                                    //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_window.hxx>
+#include <ctime>
+
 #include <awt.hxx>
-#include <awt_canvas.hxx>
-#include <AP_Tree.hxx>
 #include <TreeCallbacks.hxx>
 
 #include "MultiProbe.hxx"
@@ -994,4 +994,3 @@ int MP_probe_design_send_data(T_PT_PDC  pdc)
                  NULL)) return 1;
     return 0;
 }
-

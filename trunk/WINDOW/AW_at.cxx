@@ -1,13 +1,18 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <memory.h>
-#include <arbdb.h>
-#include "aw_root.hxx"
-#include "aw_device.hxx"
+// =============================================================== //
+//                                                                 //
+//   File      : AW_at.cxx                                         //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #include "aw_at.hxx"
 #include "aw_window.hxx"
 #include "aw_xfig.hxx"
+
+#include <arbdb.h>
 
 AW_at::AW_at(void) {
     memset((char*)this, 0, sizeof(AW_at));
@@ -418,6 +423,3 @@ void AW_at_maxsize::restore(AW_at *at) const {
     at->max_x_size = maxx;
     at->max_y_size = maxy;
 }
-
-
-

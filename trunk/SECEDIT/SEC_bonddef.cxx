@@ -9,14 +9,12 @@
 //                                                                   //
 // ================================================================= //
 
-#include <cstring>
-#include <cctype>
-#include <cstdlib>
+#include "SEC_bonddef.hxx"
+#include "SEC_defs.hxx"
 
 #include <arbdbt.h>
 
-#include "SEC_bonddef.hxx"
-#include "SEC_defs.hxx"
+#include <cctype>
 
 void SEC_bond_def::clear()
 {

@@ -9,7 +9,6 @@
 // ============================================================ //
 
 #include "TreeRead.h"
-#include <stdio.h>
 
 #define tree_assert(cond) arb_assert(cond)
 

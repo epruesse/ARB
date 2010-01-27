@@ -7,6 +7,9 @@
 #ifndef AW_KEYSYM_HXX
 #include <aw_keysym.hxx>
 #endif
+#ifndef _Xm_h
+#include <Xm/Xm.h>
+#endif
 
 // macro definitions
 #define  p_r        prvt

@@ -18,13 +18,6 @@
 #ifndef AW_ROOT_HXX
 #include <aw_root.hxx>
 #endif
-#ifndef _STDLIB_H
-#include <stdlib.h>
-#endif
-#ifndef ARBTOOLS_H
-#include <arbtools.h>
-#endif
-
 
 // for simple questions use :  int aw_message(const char *msg, const char *buttons)
 //

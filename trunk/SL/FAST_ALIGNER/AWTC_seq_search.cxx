@@ -1,17 +1,19 @@
-#include <memory.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <limits.h>
-#include <ctype.h>
-#include <string.h>
+// =============================================================== //
+//                                                                 //
+//   File      : AWTC_seq_search.cxx                               //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Ralf Westram (coder@reallysoft.de)                   //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <aw_root.hxx>
-
-#ifndef LINKED_STATIC
-#include <arbdb.h>
 #include <awtc_seq_search.hxx>
-#endif
+
+#include <cstdarg>
+#include <climits>
+#include <cctype>
 
 #define AWTC_MESSAGE_BUFFERSIZE 300
 

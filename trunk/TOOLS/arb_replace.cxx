@@ -1,12 +1,16 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+// =============================================================== //
+//                                                                 //
+//   File      : arb_replace.cxx                                   //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #include <arbdb.h>
 
-
-int main(int argc, char **argv)
-{
-
+int main(int argc, char **argv) {
     char       *data;
     char       *ndata;
     FILE       *out;

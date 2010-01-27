@@ -1,17 +1,17 @@
-#include <stdio.h>
+// =============================================================== //
+//                                                                 //
+//   File      : irstree_display.cxx                               //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <math.h>
-#include <string.h>
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
+#include "TreeDisplay.hxx"
 
-#include <awt_canvas.hxx>
 #include <awt_nds.hxx>
 #include <aw_awars.hxx>
-#include "TreeDisplay.hxx"
 
 enum AWT_IRS_TREE_TYPES {
     AWT_IRS_HIDDEN_TREE,

@@ -11,17 +11,14 @@
 #ifndef AWT_HXX
 #define AWT_HXX
 
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
-#endif
-#define awt_assert(bed) arb_assert(bed)
-
 #ifndef AW_WINDOW_HXX
 #include <aw_window.hxx>
 #endif
 #ifndef ARBDB_H
 #include <arbdb.h>
 #endif
+
+#define awt_assert(bed) arb_assert(bed)
 
 // ------------------------------------------------------------
 // filename related functions:

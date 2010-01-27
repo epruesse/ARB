@@ -1,16 +1,19 @@
-#include <ctype.h>
-#include <stdlib.h>
-#include <memory.h>
-// #include <malloc.h>
-#include <string.h>
-#include <stdio.h>
-#include <limits.h>
-
-#include <arbdb.h>
-#include <aw_root.hxx>
+// =============================================================== //
+//                                                                 //
+//   File      : ClustalV.cxx                                      //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded based on ClustalV by Ralf Westram (coder@reallysoft.de) //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include "ClustalV.hxx"
 #include "awtc_seq_search.hxx"
+
+#include <cctype>
+#include <climits>
 
 
 /* ---------------------------------------------------------------- */

@@ -8,23 +8,18 @@
 //                                                                 //
 // =============================================================== //
 
-
-#include <cstdio>
-
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_window.hxx>
-#include <aw_awars.hxx>
-#include <aw_preset.hxx>
-#include <awt.hxx>
-#include <ed4_extern.hxx>
-#include <FileBuffer.h>
-
 #include "SEC_root.hxx"
 #include "SEC_graphic.hxx"
 #include "SEC_helix.hxx"
 #include "SEC_drawn_pos.hxx"
 #include "SEC_toggle.hxx"
+
+#include <arbdbt.h>
+#include <aw_awars.hxx>
+#include <aw_preset.hxx>
+#include <awt.hxx>
+#include <ed4_extern.hxx>
+#include <FileBuffer.h>
 
 #ifndef sec_assert // happens in NDEBUG mode
 #define sec_assert(cond) arb_assert(cond)

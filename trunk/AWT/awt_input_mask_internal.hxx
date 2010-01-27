@@ -19,9 +19,6 @@
 #ifndef _CPP_MAP
 #include <map>
 #endif
-#ifndef _CPP_STRING
-#include <string>
-#endif
 #ifndef _CPP_LIST
 #include <list>
 #endif
@@ -29,9 +26,6 @@
 #include <vector>
 #endif
 
-#ifndef SMARTPTR_H
-#include <smartptr.h>
-#endif
 #ifndef AWT_HOTKEYS_HXX
 #include <awt_hotkeys.hxx>
 #endif

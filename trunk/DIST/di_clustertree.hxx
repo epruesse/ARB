@@ -19,11 +19,6 @@
 #include <AP_sequence.hxx>
 #endif
 
-#ifndef DOWNCAST_H
-#include <downcast.h>
-#endif
-
-
 #ifndef _CPP_CLIMITS
 #include <climits>
 #endif

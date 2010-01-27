@@ -15,10 +15,9 @@
 #ifndef OUTPUT_H
 #define OUTPUT_H
 
-#ifndef _STDARG_H
-#include <stdarg.h>
+#ifndef _CPP_CSTDARG
+#include <cstdarg>
 #endif
-
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
 #endif

@@ -642,6 +642,11 @@ NT_validManual.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_validManual.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 NT_validNameParser.o: nt_validNameParser.hxx
+NT_validNameParser.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+NT_validNameParser.o: $(ARBHOME)/INCLUDE/arb_assert.h
+NT_validNameParser.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+NT_validNameParser.o: $(ARBHOME)/INCLUDE/attributes.h
+NT_validNameParser.o: $(ARBHOME)/INCLUDE/dupstr.h
 
 NT_validNames.o: nt_validNameParser.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/ad_k_prot.h

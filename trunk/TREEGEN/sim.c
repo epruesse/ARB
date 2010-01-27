@@ -1,17 +1,11 @@
 #ifndef __RNS_H
 #include "rns.h"
 #endif
-#ifndef __SIMCFG_H
-#include "simcfg.h"
-#endif
 #ifndef __TIME_H
 #include <time.h>
 #endif
 #ifndef __STDLIB_H
 #include <stdlib.h>
-#endif
-#ifndef __BASE_H
-#include "base.h"
 #endif
 
 /* --------------------------------------------------------------------------- */

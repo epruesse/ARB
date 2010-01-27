@@ -12,12 +12,20 @@
 #ifndef GEN_GENE_HXX
 #define GEN_GENE_HXX
 
-#ifndef __SET__
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
+#endif
+#ifndef AW_ROOT_HXX
+#include <aw_root.hxx>
+#endif
+
+#ifndef _CPP_SET
 #include <set>
 #endif
-#ifndef __STRING__
+#ifndef _CPP_STRING
 #include <string>
 #endif
+
 
 // ------------------------------------------
 //      display classes for ARB_GENE_MAP:
@@ -25,7 +33,6 @@
 class  GEN_root;
 class  GEN_graphic;
 struct GEN_position;
-
 
 class GEN_gene {
 private:
@@ -68,6 +75,7 @@ public:
 typedef std::multiset<GEN_gene> GEN_gene_set;
 typedef GEN_gene_set::iterator GEN_iterator;
 
+class AW_device;
 
 class GEN_root {
 private:

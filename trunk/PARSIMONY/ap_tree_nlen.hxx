@@ -18,24 +18,8 @@
 #ifndef _CPP_CLIMITS
 #include <climits>
 #endif
-#ifndef ARBDBT_H
-#include <arbdbt.h>
-#endif
-#ifndef AP_TREE_HXX
-#include <AP_Tree.hxx>
-#endif
-#ifndef AP_BUFFER_HXX
-#include "AP_buffer.hxx"
-#endif
 #ifndef AP_MAIN_HXX
 #include <ap_main.hxx>
-#endif
-
-// ---------------------------------------------
-//      downcasts for AP_tree_nlen
-
-#ifndef DOWNCAST_H
-#include <downcast.h>
 #endif
 
 class AP_tree_nlen;

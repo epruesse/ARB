@@ -1,12 +1,19 @@
+// =============================================================== //
+//                                                                 //
+//   File      : ps_detect_weak_differences.cxx                    //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Wolfram Foerster in October 2002                     //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #include "ps_database.hxx"
 #include "ps_bitmap.hxx"
 #include "ps_tools.hxx"
 
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
 #include <climits>
-
 #include <sys/times.h>
 
 // common globals

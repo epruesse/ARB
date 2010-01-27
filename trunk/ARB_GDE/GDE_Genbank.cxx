@@ -1,5 +1,5 @@
 #include "GDE_extglob.h"
-#include <time.h>
+#include <ctime>
 
 /*
   Copyright (c) 1989-1990, University of Illinois board of trustees.  All

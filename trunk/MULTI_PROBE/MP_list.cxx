@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 #include <MultiProbe.hxx>
 
 void MP_list::append_elem_backwards(void *elem)

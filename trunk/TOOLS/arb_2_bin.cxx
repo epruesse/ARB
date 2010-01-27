@@ -1,8 +1,16 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <arbdb.h>
+// =============================================================== //
+//                                                                 //
+//   File      : arb_2_bin.cxx                                     //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+
 #include <arbdbt.h>
-#include <string.h>
+
 int main(int argc, char **argv)
 {
     GB_ERROR error = 0;

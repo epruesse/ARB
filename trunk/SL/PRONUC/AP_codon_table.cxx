@@ -1,10 +1,18 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
+// =============================================================== //
+//                                                                 //
+//   File      : AP_codon_table.cxx                                //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Ralf Westram (coder@reallysoft.de) in January 2010   //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include "awt_iupac.hxx"
 #include "AP_codon_table.hxx"
+
+#include <cctype>
 
 #define EMBL_BACTERIAL_TABLE_INDEX 11
 

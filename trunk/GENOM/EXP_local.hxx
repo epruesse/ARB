@@ -18,12 +18,7 @@
 #ifndef EXP_HXX
 #include <EXP.hxx>
 #endif
-#ifndef AW_ROOT_HXX
-#include <aw_root.hxx>
-#endif
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
-#endif
+
 #define exp_assert(bed) arb_assert(bed)
 
 // contains the path to the experiment:  "organism_name;experiment_name"

@@ -1,14 +1,13 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <memory.h>
-// #include <malloc.h>
-#include <string.h>
+// =============================================================== //
+//                                                                 //
+//   File      : ad_ali.cxx                                        //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-
-#include <arbdbt.h>
 #include <awt.hxx>
 #include <awt_sel_boxes.hxx>
 

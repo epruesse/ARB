@@ -1,16 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <memory.h>
-// #include <malloc.h>
-
-#include <arbdb.h>
-#include <arbdbt.h>
 #include <ad_config.h>
 
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
 #include <aw_preset.hxx>
 #include <aw_awars.hxx>
 #include <awt_seq_colors.hxx>

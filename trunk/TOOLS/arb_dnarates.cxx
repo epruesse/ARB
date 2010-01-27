@@ -1,6 +1,12 @@
-#define programName     "DNAml_rates"
-#define programVersion  "1.0.0"
-#define programDate     "April 11, 1992"
+// =============================================================== //
+//                                                                 //
+//   File      : arb_dnarates.cxx                                  //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 /*  Maximum likelihood site rate calculation, Gary Olsen, 1991, 1992.
  *
@@ -16,23 +22,19 @@
 
 /* Conversion to C by Gary Olsen, 1991 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-/* #include <malloc.h> */
-#include <string.h>
-#include <math.h>
+#define programName     "DNAml_rates"
+#define programVersion  "1.0.0"
+#define programDate     "April 11, 1992"
+
 #include "DNAml_rates_1_0.h"
 
 #include <aw_awars.hxx>
-#include <arbdb.h>
 #include <arbdbt.h>
 
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
-#endif
-#define assert(bed) arb_assert(bed)
+#include <unistd.h>
+#include <cmath>
 
+#define assert(bed) arb_assert(bed)
 
 /*  Global variables */
 

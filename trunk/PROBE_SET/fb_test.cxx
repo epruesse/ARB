@@ -1,11 +1,20 @@
-#include <cstdlib>
+// =============================================================== //
+//                                                                 //
+//   File      : fb_test.cxx                                       //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Wolfram Foerster in October 2002                     //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+#include "ps_bitmap.hxx"
+#include "ps_node.hxx"
+
 #include <iostream>
 
 #include <sys/times.h>
-
-#include "ps_bitmap.hxx"
-#include "ps_defs.hxx"
-#include "ps_node.hxx"
 
 void PS_print_times() {
     struct tms time;

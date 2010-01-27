@@ -1,27 +1,24 @@
-/*!*******************************************************************************
- *  Coded by Ralf Westram (coder@reallysoft.de) in 1998                          *
- *  Institute of Microbiology (Technical University Munich)                      *
- *  http://www.mikro.biologie.tu-muenchen.de/                                    *
- *********************************************************************************/
+// =============================================================== //
+//                                                                 //
+//   File      : AWTC_constructSequence.cxx                        //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Ralf Westram (coder@reallysoft.de) in 1998           //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #warning unused 
  
-#include <stdio.h>
-#include <stdlib.h>
-#include <memory.h>
-#include <ctype.h>
-#include <string.h>
-// #include <sys/time.h>
-#include <time.h> // SuSE 7.3
-
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_window.hxx>
-
-// #include "awtc_fast_aligner.hxx"
 #include "awtc_seq_search.hxx"
 #include "awtc_constructSequence.hxx"
+
+#include <arbdbt.h>
+#include <aw_window.hxx>
+
+#include <cctype>
+#include <ctime>
 
 #define SAME_SEQUENCE (-1), (-1)
 

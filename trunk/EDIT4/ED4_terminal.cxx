@@ -1,30 +1,24 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <memory.h>
-// #include <malloc.h>
-#include <assert.h>
-
-#include <arbdb.h>
-#include <arbdbt.h>
-
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_keysym.hxx>
-#include <aw_window.hxx>
-#include <aw_preset.hxx>
-
-#include <awt_seq_colors.hxx>
-#include <st_window.hxx>
+// =============================================================== //
+//                                                                 //
+//   File      : ED4_terminal.cxx                                  //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include <ed4_extern.hxx>
-
 #include "ed4_class.hxx"
 #include "ed4_awars.hxx"
 #include "ed4_edit_string.hxx"
 #include "ed4_block.hxx"
 #include "ed4_nds.hxx"
 #include "ed4_ProteinViewer.hxx"
+
+#include <aw_preset.hxx>
+#include <awt_seq_colors.hxx>
+#include <st_window.hxx>
 
 // -----------------------------------
 //      static terminal properties
@@ -712,7 +706,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
             break;
         }
         default:
-            assert(0);
+            e4_assert(0);
             break;
     }
     return (ED4_R_OK);

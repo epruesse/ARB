@@ -1,15 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <memory.h>
-
-#include <arbdb.h>
 #include <arbdbt.h>
-
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_keysym.hxx>
-#include <aw_window.hxx>
 #include <aw_preset.hxx>
 
 #include <ed4_extern.hxx>

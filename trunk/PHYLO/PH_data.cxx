@@ -1,8 +1,8 @@
 #include "phylo.hxx"
 #include "phwin.hxx"
 
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstring>
 
 PHDATA::PHDATA(AW_root *awr) {
     memset((char *)this, 0, sizeof(PHDATA));

@@ -1,8 +1,6 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <memory.h>
-// #include <malloc.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 #include <aw_root.hxx>
 #include <aw_device.hxx>

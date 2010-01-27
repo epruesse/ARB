@@ -1,9 +1,6 @@
 #ifndef __RNS_H
 #define __RNS_H
 
-#ifndef __DEFINES_H
-#include "defines.h"
-#endif
 #ifndef __BASE_H
 #include "base.h"
 #endif

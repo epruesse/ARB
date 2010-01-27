@@ -8,23 +8,18 @@
 //                                                                 //
 // =============================================================== //
 
-
-#include <cstdio>
-#include <cstdlib>
-#include <vector>
-
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_awars.hxx>
-#include <aw_global.hxx>
-#include <aw_window.hxx>
-#include <aw_preset.hxx>
-#include <ed4_extern.hxx>
-
 #include "SEC_graphic.hxx"
 #include "SEC_root.hxx"
 #include "SEC_iter.hxx"
 #include "SEC_toggle.hxx"
+
+#include <arbdbt.h>
+#include <aw_awars.hxx>
+#include <aw_global.hxx>
+#include <aw_preset.hxx>
+#include <ed4_extern.hxx>
+
+#include <vector>
 
 using namespace std;
 

@@ -1,9 +1,17 @@
-#include <stdio.h>
+// =============================================================== //
+//                                                                 //
+//   File      : TreeWrite.cxx                                     //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <xml.hxx>
 
-#include <TreeRead.h>
 #include <TreeWrite.h>
+#include <xml.hxx>
+#include <TreeRead.h>
 
 using namespace std;
 

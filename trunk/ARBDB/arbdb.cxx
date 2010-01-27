@@ -9,7 +9,7 @@
 // =============================================================== //
 
 #if defined(DARWIN)
-#include <stdio.h>
+#include <cstdio>
 #endif // DARWIN
 
 #include <rpc/xdr.h>

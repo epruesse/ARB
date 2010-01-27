@@ -1,16 +1,23 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <math.h>
+// =============================================================== //
+//                                                                 //
+//   File      : ED4_no_class.cxx                                  //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <arbdb.h>
-#include <arbdbt.h>
+#include <ed4_extern.hxx>
+
+#include "ed4_awars.hxx"
+#include "ed4_class.hxx"
+#include "ed4_edit_string.hxx"
+#include "ed4_tools.hxx"
+#include "ed4_nds.hxx"
+
 #include <ad_config.h>
 
-#include <aw_root.hxx>
-#include <aw_keysym.hxx>
-#include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <AW_helix.hxx>
 #include <awt.hxx>
@@ -21,13 +28,8 @@
 
 #include <st_window.hxx>
 
-#include <ed4_extern.hxx>
+#include <cctype>
 
-#include "ed4_awars.hxx"
-#include "ed4_class.hxx"
-#include "ed4_edit_string.hxx"
-#include "ed4_tools.hxx"
-#include "ed4_nds.hxx"
 
 void ED4_calc_terminal_extentions() {
     const AW_font_information *seq_font_info  = ED4_ROOT->get_device()->get_font_information(ED4_G_SEQUENCES, '=');

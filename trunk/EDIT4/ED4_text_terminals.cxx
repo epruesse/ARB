@@ -1,25 +1,12 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <memory.h>
-#include <iostream>
-// #include <malloc.h>
-
-#include <arbdb.h>
-#include <arbdbt.h>
-
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_keysym.hxx>
-#include <aw_window.hxx>
-#include <aw_preset.hxx>
-#include <aw_awars.hxx>
-
-#include <AW_helix.hxx>
-
-#include <awt_seq_colors.hxx>
-#include <awt_attributes.hxx>
-#include <st_window.hxx>
+// =============================================================== //
+//                                                                 //
+//   File      : ED4_text_terminals.cxx                            //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include <ed4_extern.hxx>
 
@@ -31,6 +18,17 @@
 #include "ed4_visualizeSAI.hxx"
 #include "ed4_ProteinViewer.hxx"
 #include "ed4_protein_2nd_structure.hxx"
+
+#include <aw_preset.hxx>
+#include <aw_awars.hxx>
+
+#include <AW_helix.hxx>
+
+#include <awt_seq_colors.hxx>
+#include <awt_attributes.hxx>
+#include <st_window.hxx>
+
+#include <iostream>
 
 int ED4_consensus_sequence_terminal::get_length() const {
     return get_char_table().size();
@@ -739,6 +737,4 @@ ED4_text_terminal::ED4_text_terminal(GB_CSTR temp_id, AW_pos x, AW_pos y, AW_pos
 ED4_text_terminal::~ED4_text_terminal()
 {
 }
-
-
 

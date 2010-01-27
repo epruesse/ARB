@@ -8,7 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
-#include <stdio.h>
+#include <cstdio>
 #include "gb_local.h"
 #include "arbdbt.h"
 

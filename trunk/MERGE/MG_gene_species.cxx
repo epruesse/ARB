@@ -13,20 +13,15 @@
 //                                                                       //
 //  ==================================================================== //
 
-#include <string.h>
-#include <stdlib.h>
+#include "merge.hxx"
 
-#include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <awt.hxx>
 #include <awt_config_manager.hxx>
 
-#include <arbdbt.h>
-
 #include <adGene.h>
+#include <arbdbt.h>
 #include <inline.h>
-
-#include "merge.hxx"
 
 using namespace std;
 

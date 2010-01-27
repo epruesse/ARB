@@ -1,9 +1,13 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_window.hxx>
+// =============================================================== //
+//                                                                 //
+//   File      : NT_import.cxx                                     //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #include <awti_import.hxx>
 #include <awt_canvas.hxx>
 #include <mg_merge.hxx>
@@ -12,9 +16,6 @@
 #include "ad_spec.hxx"
 #include "GEN.hxx"
 
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
-#endif
 #define nt_assert(bed) arb_assert(bed)
 
 void nt_seq_load_cb(AW_root *awr, AW_CL, AW_CL) {

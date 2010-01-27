@@ -1,13 +1,14 @@
-#include <cstdio>
-#include <cstring>
-#include <cstdlib>
-
-#include <arbdb.h>
-#include <aw_root.hxx>
-#include <aw_window.hxx>
+// =============================================================== //
+//                                                                 //
+//   File      : ED4_window.cxx                                    //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include <ed4_extern.hxx>
-
 #include "ed4_class.hxx"
 #include "ed4_tools.hxx"
 

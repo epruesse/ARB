@@ -11,9 +11,6 @@
 #ifndef ALI_PREALIGNER_HXX
 #define ALI_PREALIGNER_HXX
 
-#ifndef ALI_PROFILE_HXX
-#include "ali_profile.hxx"
-#endif
 #ifndef ALI_PATHMAP_HXX
 #include "ali_pathmap.hxx"
 #endif

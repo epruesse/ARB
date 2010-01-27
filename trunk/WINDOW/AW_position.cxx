@@ -9,9 +9,6 @@
 //                                                                 //
 // =============================================================== //
 
-#include <arb_assert.h>
-#define aw_assert(cond) arb_assert(cond)
-
 #include "aw_position.hxx"
 
 using namespace std;

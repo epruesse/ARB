@@ -1,15 +1,18 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_awars.hxx>
-#include <aw_window.hxx>
+// =============================================================== //
+//                                                                 //
+//   File      : ED4_nds.cxx                                       //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include "ed4_class.hxx"
 #include "ed4_awars.hxx"
+
+#include <arbdbt.h>
+#include <aw_awars.hxx>
 
 #define NDS_COUNT 10
 

@@ -1,11 +1,15 @@
-#ifndef MPDEFS
-#define MPDEFS
+// =============================================================== //
+//                                                                 //
+//   File      : mpdefs.h                                          //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-// #include <mpdefs2.h>
-
-#ifndef _STDIO_H
-#include <stdio.h>
-#endif
+#ifndef MPDEFS_H
+#define MPDEFS_H
 
 #ifndef ARBDB_H
 #include <arbdb.h>
@@ -91,7 +95,6 @@ extern struct mp_gl_struct {
     int        pd_design_id;
 } mp_pd_gl;
 
-
-
-
-#endif
+#else
+#error mpdefs.h included twice
+#endif // MPDEFS_H

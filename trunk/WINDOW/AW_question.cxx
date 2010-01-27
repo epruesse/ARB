@@ -12,13 +12,10 @@
 //                                                                       //
 //  ==================================================================== //
 
-#include <stdio.h>
-#include <string.h>
 #include <arbdb.h>
 #include <aw_question.hxx>
 
 using namespace std;
-
 
 // start of implementation of class AW_repeated_question:
 

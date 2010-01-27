@@ -8,6 +8,7 @@
 //   http://www.arb-home.de/                                        //
 //                                                                  //
 // ================================================================ //
+
 #ifndef DBWRITER_H
 #define DBWRITER_H
 
@@ -25,11 +26,6 @@
 #endif
 #ifndef GENOMEIMPORT_H
 #include "GenomeImport.h"
-#endif
-
-
-#ifndef ARBDB_H
-#include <arbdb.h>
 #endif
 
 class UniqueNameDetector;

@@ -1,12 +1,12 @@
-#include <stdio.h>
+#include <cstdio>
 #include <iostream.h>
 #include <memory.h>
-#include <string.h>
+#include <cstring>
 #include <arbdb.h>
 #include <arbdbt.h>
-#include <math.h>
+#include <cmath>
 #include <servercntrl.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include <aw_root.hxx>
 #include <aw_device.hxx>
 #include <aw_window.hxx>

@@ -1,13 +1,18 @@
+// =============================================================== //
+//                                                                 //
+//   File      : PH_matr.cxx                                       //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #include "phylo.hxx"
 #include <aw_global.hxx>
-#include <aw_window.hxx>
 #include <awt.hxx>
 
 #include <AP_pro_a_nucs.hxx>
-
-#include <cstring>
-#include <cstdlib>
-
 
 #warning module completely unused
 

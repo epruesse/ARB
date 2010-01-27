@@ -1,24 +1,19 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <memory.h>
-// #include <malloc.h>
-#include <string.h>
+// =============================================================== //
+//                                                                 //
+//   File      : ad_ext.cxx                                        //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
 #include <awt.hxx>
 #include <awt_sel_boxes.hxx>
 #include <aw_awars.hxx>
 #include <db_scanner.hxx>
 
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
-#endif
 #define nt_assert(bed) arb_assert(bed)
-
 
 extern GBDATA *GLOBAL_gb_main;
 

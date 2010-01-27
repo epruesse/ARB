@@ -1,13 +1,18 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/stat.h>
-// #include <fcntl.h>
+// =============================================================== //
+//                                                                 //
+//   File      : AW_nawar.cxx                                      //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <arbdb.h>
-#include "aw_root.hxx"
 #include "aw_nawar.hxx"
 #include "awt.hxx"
+
+#include <sys/stat.h>
+
 #define AWAR_EPS 0.00000001
 
 #if defined(DEBUG)

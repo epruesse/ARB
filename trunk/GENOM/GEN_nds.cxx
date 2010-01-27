@@ -9,22 +9,12 @@
 //                                                                 //
 // =============================================================== //
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "GEN_interface.hxx"
 
-#include <arbdb.h>
-#include <arbdbt.h>
-
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
 #include <awt.hxx>
 #include <awt_nds.hxx>
 #include <awt_item_sel_list.hxx>
 #include <awt_sel_boxes.hxx>
-
-#include "GEN_interface.hxx"
 
 #define gen_assert(bed) arb_assert(bed)
 

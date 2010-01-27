@@ -12,21 +12,15 @@
 //                                                                       //
 //  ==================================================================== //
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <arbdb.h>
+#include "merge.hxx"
+
 #include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <awt.hxx>
-#include "merge.hxx"
 
 #include <set>
 #include <string>
-#include <cassert>
+// #include <cassert>
 
 using namespace std;
 
@@ -148,7 +142,7 @@ public:
         base_count_diff  = 0;
         bool valid       = true;
 
-        assert(!GB_have_error());
+        mg_assert(!GB_have_error());
 
         for (int i = 0; valid && ali_names[i]; ++i) {
             if (GBDATA *gb_src_data = GBT_read_sequence(gb_src, ali_names[i])) {

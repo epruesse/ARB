@@ -11,9 +11,6 @@
 #ifndef GB_KEY_H
 #define GB_KEY_H
 
-#ifndef GB_DATA_H
-#include "gb_data.h"
-#endif
 #ifndef GB_HEADER_H
 #include "gb_header.h"
 #endif

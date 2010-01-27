@@ -11,9 +11,6 @@
 #ifndef AP_BUFFER_HXX
 #define AP_BUFFER_HXX
 
-#ifndef AP_SEQUENCE_HXX
-#include <AP_sequence.hxx>
-#endif
 #ifndef AP_TREE_HXX
 #include <AP_Tree.hxx>
 #endif

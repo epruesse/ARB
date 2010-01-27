@@ -9,35 +9,22 @@
 //                                                                 //
 // =============================================================== //
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include <map>
-
-#include <arbdb.h>
-#include <arbdbt.h>
-
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_preset.hxx>
-#include <aw_awars.hxx>
-#include <aw_question.hxx>
-#include <awt_canvas.hxx>
-#include <awt.hxx>
-#include <AW_rename.hxx>
-#include <awt_input_mask.hxx>
-
 #include "GEN_local.hxx"
 #include "GEN_gene.hxx"
 #include "GEN_graphic.hxx"
 #include "GEN_nds.hxx"
 #include "GEN_interface.hxx"
-#include "EXP.hxx"
 #include "EXP_interface.hxx"
 #include "EXP_local.hxx"
 #include "../NTREE/ad_spec.hxx" // needed for species query window
+
+#include <aw_preset.hxx>
+#include <aw_awars.hxx>
+#include <aw_question.hxx>
+#include <AW_rename.hxx>
+#include <awt_input_mask.hxx>
+
+#include <map>
 
 using namespace std;
 

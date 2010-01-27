@@ -9,9 +9,7 @@
 //                                                                  //
 // ================================================================ //
 
-#include "Importer.h"
 #include "tools.h"
-#include "Feature.h"
 #include "DBwriter.h"
 
 using namespace std;

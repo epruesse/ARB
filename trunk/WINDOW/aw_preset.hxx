@@ -1,9 +1,20 @@
+// =============================================================== //
+//                                                                 //
+//   File      : aw_preset.hxx                                     //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #ifndef AW_PRESET_HXX
 #define AW_PRESET_HXX
 
-#ifndef ATTRIBUTES_H
-#include <attributes.h>
+#ifndef AW_WINDOW_HXX
+#include "aw_window.hxx"
 #endif
+
 
 #define AWP_COLORNAME_TEMPLATE "GCS/%s/MANAGE_GCS/%s/colorname"
 #define AWP_FONTNAME_TEMPLATE "GCS/%s/MANAGE_GCS/%s/font"
@@ -57,4 +68,4 @@ void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_w
 
 #else
 #error aw_preset.hxx included twice
-#endif
+#endif // AW_PRESET_HXX

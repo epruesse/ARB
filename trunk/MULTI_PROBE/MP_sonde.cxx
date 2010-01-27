@@ -1,9 +1,7 @@
 #include <MultiProbe.hxx>
-#include <stdlib.h>
-#include <string.h>
 #include <arbdbt.h>
 #include <aw_root.hxx>
-#include <math.h>
+#include <cmath>
 
 extern int MP_probe_design_send_data(T_PT_PDC  pdc);
 

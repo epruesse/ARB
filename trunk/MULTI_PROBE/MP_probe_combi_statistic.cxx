@@ -1,7 +1,6 @@
 #include <MultiProbe.hxx>
 
-#include <string.h>
-#include <math.h>
+#include <cmath>
 
 extern double MAXMARKEDFACTOR;
 extern double MINUNMARKEDFACTOR;

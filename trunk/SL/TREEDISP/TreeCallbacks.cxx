@@ -1,20 +1,20 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
+// =============================================================== //
+//                                                                 //
+//   File      : TreeCallbacks.cxx                                 //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <arbdb.h>
-#include <arbdbt.h>
+#include "TreeCallbacks.hxx"
 
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
 #include <aw_awars.hxx>
-#include <awt_canvas.hxx>
 #include <awt_advice.hxx>
 #include <awt.hxx>
 
-#include "TreeCallbacks.hxx"
+#include <cctype>
 
 /* AISC_MKPT_PROMOTE:#ifndef TREEDISPLAY_HXX */
 /* AISC_MKPT_PROMOTE:#include <TreeDisplay.hxx> */

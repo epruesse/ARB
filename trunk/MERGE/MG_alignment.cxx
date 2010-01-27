@@ -1,15 +1,19 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
+// =============================================================== //
+//                                                                 //
+//   File      : MG_alignment.cxx                                  //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+#include "merge.hxx"
+
 #include <awt.hxx>
 #include <awt_sel_boxes.hxx>
-#include "merge.hxx"
+
+#include <unistd.h>
 
 #define AWAR1 "tmp/merge1/"
 #define AWAR2 "tmp/merge2/"

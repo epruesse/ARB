@@ -1,27 +1,24 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <time.h>
-#include <string.h>
-// #include <malloc.h>
-#include <memory.h>
-
-#include <inline.h>
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_awars.hxx>
-#include <AW_rename.hxx>
-
-#include <awt.hxx>
-#include <awtlocal.hxx>
+// =============================================================== //
+//                                                                 //
+//   File      : db_scanner.cxx                                    //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include <db_scanner.hxx>
 
+#include <inline.h>
+#include <arbdbt.h>
+#include <aw_awars.hxx>
+#include <AW_rename.hxx>
 
+#include <awtlocal.hxx>
 
+#include <unistd.h>
+#include <ctime>
 
 /*!************************************************************************
     create a database scanner

@@ -9,16 +9,14 @@
 //                                                                  //
 // ================================================================ //
 
+#include <arbdb.h>
+#include <FileBuffer.h>
+
 #include <string>
 #include <vector>
 #include <set>
 
-#include <cstdio>
-#include <cstdlib>
 #include <cctype>
-
-#include <arbdb.h>
-#include <FileBuffer.h>
 
 #if defined(DEBUG)
 #if defined(DEVEL_RALF)

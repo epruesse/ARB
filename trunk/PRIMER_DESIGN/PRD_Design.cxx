@@ -1,6 +1,13 @@
-#ifndef   PRD_GLOBALS_HXX
-#include "PRD_Globals.hxx"
-#endif
+// =============================================================== //
+//                                                                 //
+//   File      : PRD_Design.cxx                                    //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Wolfram Foerster in February 2001                    //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include "PRD_Design.hxx"
 #include "PRD_SequenceIterator.hxx"
@@ -8,8 +15,6 @@
 
 #include <iostream>
 
-#include <cstdio>
-#include <cstdlib>
 #include <cmath>
 
 using std::printf;

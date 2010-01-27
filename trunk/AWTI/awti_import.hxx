@@ -11,6 +11,9 @@
 #ifndef AWTI_IMPORT_HXX
 #define AWTI_IMPORT_HXX
 
+#ifndef AW_ROOT_HXX
+#include <aw_root.hxx>
+#endif
 
 #define AWAR_READ_GENOM_DB "tmp/import/genom_db"
 

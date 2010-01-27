@@ -1,22 +1,25 @@
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
+// =============================================================== //
+//                                                                 //
+//   File      : ED4_mini_classes.cxx                              //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <arbdb.h>
-#include <aw_root.hxx>
-#include <aw_window.hxx>
-
-#include <awt_iupac.hxx>
 
 #include "ed4_class.hxx"
 #include "ed4_edit_string.hxx"
 #include "ed4_awars.hxx"
 #include "ed4_tools.hxx"
 
+#include <awt_iupac.hxx>
 
-// --------------------------------------------------------------------------------
-//              ED4_folding_line::
-// --------------------------------------------------------------------------------
+#include <cctype>
+
+// -------------------------
+//      ED4_folding_line
 
 ED4_folding_line::ED4_folding_line()
 {
@@ -26,9 +29,8 @@ ED4_folding_line::~ED4_folding_line()
 {
 }
 
-// --------------------------------------------------------------------------------
-//              ED4_bases_table::
-// --------------------------------------------------------------------------------
+// ------------------------
+//      ED4_bases_table
 
 #ifdef DEBUG
 // # define COUNT_BASES_TABLE_SIZE
@@ -389,9 +391,8 @@ int ED4_bases_table::empty() const
 }
 #endif // ASSERTION_USED
 
-/* --------------------------------------------------------------------------------
-   Build consensus
-   -------------------------------------------------------------------------------- */
+// ------------------------
+//      Build consensus
 
 // we make static copies of the awars to avoid performance breakdown (BK_up_to_date is changed by callback ED4_consensus_definition_changed)
 
@@ -596,9 +597,8 @@ char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *
     return consensus_string;
 }
 
-// --------------------------------------------------------------------------------
-//              ED4_char_table::
-// --------------------------------------------------------------------------------
+// -----------------------
+//      ED4_char_table
 
 bool           ED4_char_table::initialized       = false;
 unsigned char  ED4_char_table::char_to_index_tab[MAXCHARTABLE];
@@ -1071,7 +1071,6 @@ void ED4_char_table::change_table_length(int new_length) {
 
 //  --------------
 //      tests:
-//  --------------
 
 #if defined(TEST_CHAR_TABLE_INTEGRITY) || defined(ASSERTION_USED)
 
@@ -1130,9 +1129,6 @@ bool ED4_char_table::ok() const
 
 #if defined(TEST_CHAR_TABLE_INTEGRITY)
 
-//  ------------------------------------------
-//      void ED4_char_table::test() const
-//  ------------------------------------------
 void ED4_char_table::test() const {
     
     if (!ok()) {

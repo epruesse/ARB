@@ -1,9 +1,16 @@
 #ifndef SAIPROBEVISUALIZATION_HXX
 #define SAIPROBEVISUALIZATION_HXX
 
-#ifndef __VECTOR__
+#ifndef _CPP_CCTYPE
+#include <cctype>
+#endif
+#ifndef _CPP_VECTOR
 #include <vector>
 #endif
+#ifndef AWT_CANVAS_HXX
+#include <awt_canvas.hxx>
+#endif
+
 
 #define MAX(x, y) (((x)>(y)) ?  (x) : (y))
 #define sai_assert(cond) arb_assert(cond)

@@ -11,9 +11,6 @@
 #ifndef AP_SEQUENCE_HXX
 #define AP_SEQUENCE_HXX
 
-#ifndef ARBDBT_H
-#include <arbdbt.h>
-#endif
 #ifndef ALIVIEW_HXX
 #include <AliView.hxx>
 #endif

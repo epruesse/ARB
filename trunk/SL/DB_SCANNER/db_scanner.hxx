@@ -13,6 +13,10 @@
 #ifndef DB_SCANNER_HXX
 #define DB_SCANNER_HXX
 
+#ifndef AWT_HXX
+#include <awt.hxx>
+#endif
+
 /* Database scanner boxes
  *
  * A scanner show all (recursive) information of a database entry.

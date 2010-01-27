@@ -1,18 +1,21 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
+// =============================================================== //
+//                                                                 //
+//   File      : MG_species.cxx                                    //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+#include "merge.hxx"
+
 #include <aw_awars.hxx>
 #include <AW_rename.hxx>
 #include <awt.hxx>
 #include <awt_item_sel_list.hxx>
 #include <awt_sel_boxes.hxx>
 #include <db_scanner.hxx>
-#include "merge.hxx"
 #include <inline.h>
 #include <GEN.hxx>
 

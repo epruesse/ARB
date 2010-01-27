@@ -12,16 +12,6 @@
 #ifndef SEC_DB_HXX
 #define SEC_DB_HXX
 
-#ifndef _CPP_CSTDIO
-#include <cstdio>
-#endif
-
-#ifndef ARBDB_H
-#include <arbdb.h>
-#endif
-#ifndef ARBTOOLS_H
-#include <arbtools.h>
-#endif
 #ifndef BI_HELIX_HXX
 #include <BI_helix.hxx>
 #endif

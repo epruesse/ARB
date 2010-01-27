@@ -1,3 +1,14 @@
+// =============================================================== //
+//                                                                 //
+//   File      : ps_candidate.hxx                                  //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Wolfram Foerster in October 2002                     //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #ifndef PS_CANDIDATE_HXX
 #define PS_CANDIDATE_HXX
 
@@ -6,9 +17,6 @@
 #endif
 #ifndef PS_BITMAP_HXX
 #include "ps_bitmap.hxx"
-#endif
-#ifndef PS_FILEBUFFER_HXX
-#include "ps_filebuffer.hxx"
 #endif
 
 #ifndef _CPP_CLIMITS
@@ -480,4 +488,4 @@ public:
 
 #else
 #error ps_candidate.hxx included twice
-#endif
+#endif // PS_CANDIDATE_HXX

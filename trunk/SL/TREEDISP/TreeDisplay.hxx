@@ -14,14 +14,8 @@
 #ifndef AP_TREE_HXX
 #include <AP_Tree.hxx>
 #endif
-#ifndef AW_DEVICE_HXX
-#include <aw_device.hxx>
-#endif
 #ifndef AWT_CANVAS_HXX
 #include <awt_canvas.hxx>
-#endif
-#ifndef DOWNCAST_H
-#include <downcast.h>
 #endif
 
 #define AWAR_DTREE_BASELINEWIDTH   "awt/dtree/baselinewidth"
