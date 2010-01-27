@@ -96,10 +96,10 @@ void ph_calculate_matrix_cb(AW_window *aww, AW_CL cb1, AW_CL cb2) {
 
     double alpha = 1.0;
     cancel = aw_root->awar("phyl/cancel/chars")->read_string();
-    
+
     printf("\ntransformation: %s", transformation);
     printf("\ncancel: %s\n", cancel);
-    
+
     if      (!strcmp(transformation, PH_TRANSFORMATION_JUKES_CANTOR_STRING))        trans = PH_TRANSFORMATION_JUKES_CANTOR;
     else if (!strcmp(transformation, PH_TRANSFORMATION_KIMURA_STRING))              trans = PH_TRANSFORMATION_KIMURA;
     else if (!strcmp(transformation, PH_TRANSFORMATION_TAJIMA_NEI_STRING))          trans = PH_TRANSFORMATION_TAJIMA_NEI;

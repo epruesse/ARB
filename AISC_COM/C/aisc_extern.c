@@ -8,9 +8,9 @@ extern int aisc_d_flags[];
 #ifdef __cplusplus
 extern "C" {
 #endif
-    
+
     const char *aisc_get_object_names(int i);
-    
+
 #ifdef __cplusplus
 }
 #endif

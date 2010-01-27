@@ -94,7 +94,7 @@ static GBDATA *GEN_get_first_gene_data(GBDATA *gb_main, AW_root *aw_root, AWT_QU
     GB_ERROR  error      = 0;
 
     gen_restore_old_species_marks();
-    
+
     switch (range) {
         case AWT_QUERY_CURRENT_SPECIES: {
             char *species_name = aw_root->awar(AWAR_ORGANISM_NAME)->read_string();
@@ -201,7 +201,7 @@ void GEN_species_name_changed_cb(AW_root *awr) {
 static void auto_select_pseudo_species(AW_root *awr, GBDATA *gb_main, const char *organism, const char *gene) {
     GB_transaction  ta(gb_main);
     GBDATA         *gb_pseudo = GEN_find_pseudo_species(gb_main, organism, gene, 0); // search for pseudo species..
-    
+
     awr->awar(AWAR_SPECIES_NAME)->write_string(gb_pseudo
                                                ? GBT_read_name(gb_pseudo) // .. if found select
                                                : organism);               // otherwise select organism
@@ -548,15 +548,15 @@ void GEN_map_gene(AW_root *aw_root, AW_CL scannerid)
 }
 
 void GEN_create_field_items(AW_window *aws) {
-    aws->insert_menu_topic("gen_reorder_fields", "Reorder fields ...",    "R", "spaf_reorder.hlp", AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_list_reorder, (AW_CL)&GEN_item_selector); 
-    aws->insert_menu_topic("gen_delete_field",   "Delete/Hide field ...", "D", "spaf_delete.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_field_delete, (AW_CL)&GEN_item_selector); 
-    aws->insert_menu_topic("gen_create_field",   "Create fields ...",     "C", "spaf_create.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_field_create, (AW_CL)&GEN_item_selector); 
+    aws->insert_menu_topic("gen_reorder_fields", "Reorder fields ...",    "R", "spaf_reorder.hlp", AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_list_reorder, (AW_CL)&GEN_item_selector);
+    aws->insert_menu_topic("gen_delete_field",   "Delete/Hide field ...", "D", "spaf_delete.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_field_delete, (AW_CL)&GEN_item_selector);
+    aws->insert_menu_topic("gen_create_field",   "Create fields ...",     "C", "spaf_create.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_field_create, (AW_CL)&GEN_item_selector);
     aws->insert_separator();
-    aws->insert_menu_topic("gen_unhide_fields", "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, (AW_CB)awt_gene_field_selection_list_unhide_all_cb, (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER); 
+    aws->insert_menu_topic("gen_unhide_fields", "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, (AW_CB)awt_gene_field_selection_list_unhide_all_cb, (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER);
     aws->insert_separator();
-    aws->insert_menu_topic("gen_scan_unknown_fields", "Scan unknown fields",   "u", "scandb.hlp", AD_F_ALL, (AW_CB)awt_gene_field_selection_list_scan_unknown_cb,  (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER); 
-    aws->insert_menu_topic("gen_del_unused_fields",   "Remove unused fields",  "e", "scandb.hlp", AD_F_ALL, (AW_CB)awt_gene_field_selection_list_delete_unused_cb, (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER); 
-    aws->insert_menu_topic("gen_refresh_fields",      "Refresh fields (both)", "f", "scandb.hlp", AD_F_ALL, (AW_CB)awt_gene_field_selection_list_update_cb,        (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER); 
+    aws->insert_menu_topic("gen_scan_unknown_fields", "Scan unknown fields",   "u", "scandb.hlp", AD_F_ALL, (AW_CB)awt_gene_field_selection_list_scan_unknown_cb,  (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER);
+    aws->insert_menu_topic("gen_del_unused_fields",   "Remove unused fields",  "e", "scandb.hlp", AD_F_ALL, (AW_CB)awt_gene_field_selection_list_delete_unused_cb, (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER);
+    aws->insert_menu_topic("gen_refresh_fields",      "Refresh fields (both)", "f", "scandb.hlp", AD_F_ALL, (AW_CB)awt_gene_field_selection_list_update_cb,        (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER);
 }
 
 AW_window *GEN_create_gene_window(AW_root *aw_root) {
@@ -615,7 +615,7 @@ AW_window *GEN_create_gene_window(AW_root *aw_root) {
     else {
         aws->show();
     }
-    
+
     return aws;
 }
 

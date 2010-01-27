@@ -20,7 +20,7 @@
  *        If SAI + Sequence is found: rates in fastdnaml-format (can be piped into arb_convert_aln)
  *        Otherwise : just forward args
  *
- *        If flag '-r' is used, weights are always printed. If no SAI given, every alignment-column  
+ *        If flag '-r' is used, weights are always printed. If no SAI given, every alignment-column
  *        is given the same weight (1).
  */
 
@@ -29,7 +29,7 @@
 
 int main(int argc, char **argv) {
     argc--; argv++;
-    
+
     if (argc<1 || strcmp(argv[0], "--help") == 0) {
         fprintf(stderr,
                 "\n"
@@ -142,9 +142,9 @@ int main(int argc, char **argv) {
                 for (i=0; i<seq_len; i++) {
                     if (i>filter_len || filter[i] != '0') {
                         int c = seq[i];
-                        
+
                         arb_assert(c != '0'); // only 35 cats (1-9 and A-Z)
-                        
+
                         if ((c < '0' || c>'9') &&    (c < 'A' || c>'Z')) c = '1';
                         putchar(c);
                     }
@@ -205,9 +205,9 @@ int main(int argc, char **argv) {
                     }
                 }
             }
-                
+
             for (i = 0; i <= 'Z'; i++) free(weight[i]);
-            
+
             fputc('\n', stdout);
         }
 

@@ -102,7 +102,7 @@ public:
     // overload virtual methods from AP_tree:
     void insert(AP_tree *new_brother) { insert(DOWNCAST(AP_tree_nlen*, new_brother)); }
     void moveTo(AP_tree *node, AP_FLOAT rel_pos) { moveTo(DOWNCAST(AP_tree_nlen*, node), rel_pos); }
-    
+
     // tree optimization methods:
     void parsimony_rek(char *mutPerSite = NULL);
 
@@ -160,7 +160,7 @@ public:
     void assert_valid() const;
 #endif // CHECK_TREE_STRUCTURE
 
-    
+
     friend      class AP_tree_edge;
     friend      std::ostream& operator<<(std::ostream&, const AP_tree_nlen&);
 };
@@ -201,7 +201,7 @@ class AP_tree_edge
     long sizeofChain();
     void calcDistance();
     void tailDistance(AP_tree_nlen*);
-    
+
     int distanceOK() const { int diff = node[0]->distance-node[1]->distance; return diff>=-1 && diff<=1; }
 
     // my friends:

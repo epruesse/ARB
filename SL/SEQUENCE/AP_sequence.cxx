@@ -23,7 +23,7 @@ AP_sequence::AP_sequence(const AliView *aliview)
 
 GB_ERROR AP_sequence::bind_to_species(GBDATA *gb_species) {
     GB_ERROR error = NULL;
-    
+
     ap_assert(!gb_sequence); // already bound to species!
     if (!gb_sequence) {
         GB_transaction ta(ali->get_gb_main());

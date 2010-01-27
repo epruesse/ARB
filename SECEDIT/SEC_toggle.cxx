@@ -145,7 +145,7 @@ SEC_structure_toggler::SEC_structure_toggler(GBDATA *gb_main, const char *ali_na
 GB_ERROR SEC_structure_toggler::next() {
     GB_ERROR       error = 0;
     GB_transaction ta(gb_structures);
-    
+
     if (Count<2) {
         error = "No other structure in DB";
     }
@@ -175,7 +175,7 @@ GB_ERROR SEC_structure_toggler::copyTo(const char *structure_name) {
     GB_transaction ta(gb_structures);
 
     sec_assert(find(current()) == gb_current);
-    
+
     error = store(gb_current);
 
     if (!error) {
@@ -200,7 +200,7 @@ GB_ERROR SEC_structure_toggler::remove() {
 
     GBDATA *gb_del = gb_current;
     int     del    = current();
-        
+
     error = next();
 
     if (!error) {

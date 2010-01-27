@@ -68,16 +68,16 @@ namespace AW {
         // crosspoint == l1.start()+factor_l1*l1.line_vector();
         // crosspoint == l2.start()+factor_l2*l2.line_vector();
 
-        // Herleitung: 
+        // Herleitung:
         // x1+g*sx = x2+h*tx
         // y1+g*sy = y2+h*ty
         //
-        // h = -(x2-sx*g-x1)/tx                                       
+        // h = -(x2-sx*g-x1)/tx
         // h = (y1-y2+sy*g)/ty                                        (h is factor_l2)
-        // 
+        //
         // -(x2-sx*g-x1)/tx = (y1-y2+sy*g)/ty
-        // 
-        // g = (tx*y1+ty*x2-tx*y2-ty*x1)/(sx*ty-sy*tx)                
+        //
+        // g = (tx*y1+ty*x2-tx*y2-ty*x1)/(sx*ty-sy*tx)
         //
         // g = (tx*(y1-y2)+ty*(x2-x1))/(sx*ty-sy*tx)                  (g is factor_l1)
 
@@ -115,7 +115,7 @@ namespace AW {
             aw_assert(f1>1);
             dist = Distance(pos, line.head());
         }
-    
+
         return dist;
     }
 

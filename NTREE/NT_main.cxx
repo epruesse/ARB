@@ -209,7 +209,7 @@ int main_load_and_startup_main_window(AW_root *aw_root) // returns 0 when succes
 
     aw_root->awar(AWAR_DB_PATH)->write_string(db_server);
 
-#define MAXNAMELEN 35    
+#define MAXNAMELEN 35
     int len = strlen(db_server);
     if (len>MAXNAMELEN) {
         char *nameOnly = strrchr(db_server, '/');
@@ -416,7 +416,7 @@ int main(int argc, char **argv)
 
     init_Advisor(aw_root, aw_default);
     AWT_install_cb_guards();
-    
+
     if (argc==3) {                                  // looks like merge
         if (argv[1][0] != '-') { // not if first argument is a switch
             MG_create_all_awars(aw_root, aw_default, argv[1], argv[2]);

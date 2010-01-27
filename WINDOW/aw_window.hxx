@@ -145,7 +145,7 @@ enum {
     AWM_DISABLED = 0,           // disabled items (used for dynamically dis-/enabled items)
     AWM_BASIC    = 1,
     AWM_EXP      = 2,
-    AWM_ALL      = AWM_BASIC|AWM_EXP 
+    AWM_ALL      = AWM_BASIC|AWM_EXP
 };
 
 enum {
@@ -403,10 +403,10 @@ public:
     void get_window_pos(int& xpos, int& ypos);
 
     // *****************
-    
+
     void get_screen_size(int& width, int& height);
     bool get_mouse_pos(int& x, int& y);
-    
+
     // ************** ********************************************************************  *********
     // ************** Create buttons: First set modify flags and finally create the button  *********
     // ************** ********************************************************************  *********
@@ -496,7 +496,7 @@ private:
     void insert_option_internal(AW_label choice_label, const char *mnemonic, const char *var_value,  const char *name_of_color, bool default_option);
     void insert_option_internal(AW_label choice_label, const char *mnemonic, int var_value,          const char *name_of_color, bool default_option);
     void insert_option_internal(AW_label choice_label, const char *mnemonic, float var_value,        const char *name_of_color, bool default_option);
-    
+
     void insert_toggle_internal(AW_label toggle_label, const char *mnemonic, const char *var_value, bool default_toggle);
     void insert_toggle_internal(AW_label toggle_label, const char *mnemonic, int var_value,          bool default_toggle);
     void insert_toggle_internal(AW_label toggle_label, const char *mnemonic, float var_value,        bool default_toggle);

@@ -190,14 +190,14 @@ void GenePositionMap::dump() const
 static GB_ERROR create_data_entry(GBDATA *gb_species2, const char *sequence, int seqlen) {
     GB_ERROR  error         = 0;
     char     *gene_sequence = new char[seqlen+1];
-    
+
     memcpy(gene_sequence, sequence, seqlen);        // @@@ FIXME: avoid this copy!
     gene_sequence[seqlen] = 0;
 
     GBDATA *gb_ali     = GB_create_container(gb_species2, "ali_ptgene");
     if (!gb_ali) error = GB_await_error();
     else    error      = GBT_write_string(gb_ali, "data", gene_sequence);
-    
+
     delete [] gene_sequence;
     return error;
 }
@@ -235,7 +235,7 @@ static GBDATA *create_gene_species(GBDATA *gb_species_data2, const char *interna
 
     if (!error) {
         GBDATA *gb_name = GB_create(gb_species2, "name", GB_STRING);
-        
+
         if (!gb_name) error = GB_await_error();
         else {
             error = GB_write_string(gb_name, internal_name);
@@ -380,7 +380,7 @@ static GB_ERROR insert_genes_of_organism(GBDATA *gb_organism, GBDATA *gb_species
 
     GBDATA *gb_ali_genom = GBT_read_sequence(gb_organism, GENOM_ALIGNMENT);
     gp_assert(gb_ali_genom);                                                       // existence has to be checked by caller!
-    
+
     const char *ali_genom       = GB_read_char_pntr(gb_ali_genom);
     if (!ali_genom) error       = GB_await_error();
     PositionPair::genome_length = GB_read_count(gb_ali_genom);     // this affects checks in PositionPair
@@ -390,7 +390,7 @@ static GB_ERROR insert_genes_of_organism(GBDATA *gb_organism, GBDATA *gb_species
          gb_gene = GEN_next_gene(gb_gene))
     {
         const char *gene_name = GBT_read_name(gb_gene);
-        
+
         PositionPairList part_list;
         error = scan_gene_positions(gb_gene, part_list);
 

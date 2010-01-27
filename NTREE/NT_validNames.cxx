@@ -211,7 +211,7 @@ void NT_suggestValidNames(AW_window*, AW_CL, AW_CL) {
                     }
                 }
             }
-                
+
             free(validName);
             free(depName);
             free(typeString);

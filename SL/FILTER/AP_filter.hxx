@@ -20,7 +20,7 @@
 typedef unsigned char uchar;
 
 enum AWT_FILTER_SIMPLIFY {
-    AWT_FILTER_SIMPLIFY_NOT_INITIALIZED = -1, 
+    AWT_FILTER_SIMPLIFY_NOT_INITIALIZED = -1,
     AWT_FILTER_SIMPLIFY_NONE            = 0,
     AWT_FILTER_SIMPLIFY_DNA,
     AWT_FILTER_SIMPLIFY_PROTEIN,
@@ -61,7 +61,7 @@ public:
         return filter_mask[pos];
     }
 
-    const size_t *get_filterpos_2_seqpos() const { 
+    const size_t *get_filterpos_2_seqpos() const {
         if (!filterpos_2_seqpos) {
             // this is no modification, it's lazy initialization:
             const_cast<AP_filter*>(this)->calc_filterpos_2_seqpos();
@@ -72,7 +72,7 @@ public:
     void enable_simplify(AWT_FILTER_SIMPLIFY type); // default is AWT_FILTER_SIMPLIFY_NONE
     const uchar *get_simplify_table() const {
         if (simplify_type == AWT_FILTER_SIMPLIFY_NOT_INITIALIZED) {
-            // this is no modification, it's lazy initialization: 
+            // this is no modification, it's lazy initialization:
             const_cast<AP_filter*>(this)->enable_simplify(AWT_FILTER_SIMPLIFY_NONE);
         }
         return simplify;

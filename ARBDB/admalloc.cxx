@@ -76,7 +76,7 @@ struct gbb_data;
 struct gbb_freedata // part of gbb_data if it`s a free block
 {
     long        magic;
-    struct gbb_data *next;  // next unused memblock 
+    struct gbb_data *next;  // next unused memblock
 };
 
 struct gbb_data {
@@ -116,7 +116,7 @@ char *GB_strduplen(const char *p, unsigned len) {
 
         gb_assert(strlen(p) == len);
         // Note: Common reason for failure: a zero-char was manually printed by a GBS_global_string...-function
-        
+
         neu = (char*)malloc(len+1);
         memcpy(neu, p, len+1);
         return neu;

@@ -1,7 +1,7 @@
 // =============================================================== //
 //                                                                 //
 //   File      : NT_trackAliChanges.cxx                            //
-//   Purpose   : Track alignment and sequences changes             // 
+//   Purpose   : Track alignment and sequences changes             //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in June 2007      //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -168,7 +168,7 @@ AW_window *NT_create_trackAliChanges_window(AW_root *root) {
 
     aws->at("initials");
     aws->create_input_field(AWAR_TRACK_INITIALS);
-    
+
     aws->at("ali_sel");
     awt_create_selection_list_on_ad(GLOBAL_gb_main, aws, AWAR_TRACK_ALI, "*=");
 

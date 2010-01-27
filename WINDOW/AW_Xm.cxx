@@ -56,7 +56,7 @@ int AW_device_Xm::line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bi
 
             XDrawLine(common->display, common->window_id,
                       gcm->gc, AW_INT(CX0), AW_INT(CY0), AW_INT(CX1), AW_INT(CY1));
-            
+
             AUTO_FLUSH(this);
         }
     }
@@ -181,9 +181,9 @@ void AW_device_Xm::clear(AW_bitset filteri) {
 void AW_device_Xm::clear_part(AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri)
 {
     if (filteri & filter) {
-        AW_pos x1 = x0+width; 
-        AW_pos y1 = y0+height; 
-        
+        AW_pos x1 = x0+width;
+        AW_pos y1 = y0+height;
+
         AW_pos X0, Y0, X1, Y1;  // Transformed pos
         this->transform(x0, y0, X0, Y0);
         this->transform(x1, y1, X1, Y1);
@@ -210,7 +210,7 @@ void AW_device_Xm::clear_text(int gc, const char *string, AW_pos x, AW_pos y, AW
     AW_pos          X, Y;       // Transformed pos
     AW_pos          width, height;
     long            textlen = strlen(string);
-    
+
     this->transform(x, y, X, Y);
     width  = get_string_size(gc, string, textlen);
     height = xfs->max_bounds.ascent + xfs->max_bounds.descent;

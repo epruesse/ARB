@@ -18,7 +18,7 @@
 /* ------------------------------------------------------------
  * Define SIMPLE_ARB_ASSERT before including this header
  * to avoid ARBDB dependency!
- * 
+ *
  * ASSERT_CRASH                 if assert fails debugger stops at assert macro
  * ASSERT_BACKTRACE_AND_CRASH   like ASSERT_CRASH - with backtrace
  * ASSERT_ERROR                 assert prints an error and ARB exits
@@ -67,7 +67,7 @@
 /* -------------------------------------------------------------------------------
  * Provoke a SIGSEGV (which will stop the debugger or terminated the application)
  * Do backtrace manually here and uninstall SIGSEGV-handler
- * (done because automatic backtrace on SIGSEGV lacks name of current function) 
+ * (done because automatic backtrace on SIGSEGV lacks name of current function)
  */
 
 #define ARB_SIGSEGV(backtrace) do {                             \

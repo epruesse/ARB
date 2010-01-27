@@ -75,7 +75,7 @@ typedef enum PT_bases_enum {
     PT_G,
     PT_T,
     PT_B_MAX,
-    PT_B_UNDEF, 
+    PT_B_UNDEF,
 } PT_BASES;
 
 // -----------------

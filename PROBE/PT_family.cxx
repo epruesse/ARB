@@ -44,7 +44,7 @@ static int mark_all_matches(PT_local *locs,
     int       base;
     int       type_of_node;
     POS_TREE *pt_son;
-    
+
     if (pt == NULL || mismatches > max_mismatches) {
         return 0;
     }
@@ -68,7 +68,7 @@ static int mark_all_matches(PT_local *locs,
                 psg.data[ref_name].stat.match_count++;
             return 0;
         }
-        else {        // type_of_node == CHAIN !! 
+        else {        // type_of_node == CHAIN !!
             psg.mismatches = mismatches;
             psg.height = height;
             psg.length = length;
@@ -139,7 +139,7 @@ struct cmp_probe_rel {
 
 static int make_PT_family_list(PT_local *locs) {
     /*!  Make sorted list of family members */
-    
+
     // Sort the data
     struct probe_input_data **my_list = (struct probe_input_data**) calloc(sizeof(void *), psg.data_count);
     int i;
@@ -219,10 +219,10 @@ inline void complement_sequence(char *seq, int len) {
 
 extern "C" int ff_find_family(PT_local *locs, bytestring *species) {
     /*! make sorted list of family members of species */
- 
+
     int probe_len   = locs->ff_pr_len;
     int mismatch_nr = locs->ff_mis_nr;
-    int complement  = locs->ff_compl; // any combination of: 1 = forward, 2 = reverse, 4 = reverse-complement, 8 = complement 
+    int complement  = locs->ff_compl; // any combination of: 1 = forward, 2 = reverse, 4 = reverse-complement, 8 = complement
 
     char *sequence     = species->data;
     int   sequence_len = probe_compress_sequence(sequence, species->size);
@@ -233,7 +233,7 @@ extern "C" int ff_find_family(PT_local *locs, bytestring *species) {
     char last_first_c = locs->ff_find_type ? PT_A : PT_T;
 
     // Note: code depends on order of ../AWTC/awtc_next_neighbours.hxx@FF_complement_dep
-    for (int cmode = 1; cmode <= 8; cmode *= 2) { 
+    for (int cmode = 1; cmode <= 8; cmode *= 2) {
         switch (cmode) {
             case 1:             // forward
                 break;
@@ -262,7 +262,7 @@ extern "C" int ff_find_family(PT_local *locs, bytestring *species) {
 
     make_match_statistic(locs->ff_pr_len, sequence_len);
     make_PT_family_list(locs);
-    
+
     free(species->data);
     return 0;
 }

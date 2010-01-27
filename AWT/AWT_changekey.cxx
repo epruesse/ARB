@@ -149,7 +149,7 @@ void awt_gene_field_selection_list_rescan(GBDATA *gb_main, long bitfilter, awt_r
         GBT_add_new_gene_changekey(gb_main, "pos_start", GB_STRING);
         GBT_add_new_gene_changekey(gb_main, "pos_stop", GB_STRING);
         GBT_add_new_gene_changekey(gb_main, "pos_complement", GB_STRING);
-        
+
         GBT_add_new_gene_changekey(gb_main, "pos_joined", GB_INT);
         GBT_add_new_gene_changekey(gb_main, "pos_certain", GB_STRING);
 

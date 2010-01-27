@@ -35,7 +35,7 @@ GB_ERROR PG_initSpeciesMaps(GBDATA *pb_main) {
     // retrieve mapping from string
     const char *mapping = GB_read_char_pntr(pb_mapping);
     if (!mapping) return GB_export_error("Can't read mapping");
-    
+
     while (mapping[0]) {
       const char *comma     = strchr(mapping, ',');   if (!comma) break;
       const char *semicolon = strchr(comma, ';');     if (!semicolon) break;
@@ -85,7 +85,7 @@ int PG_NumberSpecies() {
 //                  | "num" (contains species-number (created by PG_SpeciesName2SpeciesID))
 //                  |
 //                  "node" <more nodes...>
-//  
+//
 //  Notes:  - the "node"s contained in the path from "group_tree" to any "group"
 //            describes the members of the group
 

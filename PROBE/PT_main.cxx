@@ -51,7 +51,7 @@ char *pt_init_main_struct(PT_main *main, char *filename)
     return 0;
 }
 
-PT_main *aisc_main; // muss so heissen 
+PT_main *aisc_main; // muss so heissen
 
 extern "C" int server_shutdown(PT_main *pm, aisc_string passwd) {
     // password check
@@ -224,7 +224,7 @@ int main(int argc, char **argv)
 
     params             = arb_trace_argv(&argc, argv);
     PT_init_psg();
-    GB_install_pid(0);          // not arb_clean able 
+    GB_install_pid(0);          // not arb_clean able
     aisc_core_on_error = 0;
     physical_memory    = GB_get_physical_memory();
 #if defined(DEBUG)
@@ -255,11 +255,11 @@ int main(int argc, char **argv)
     }
 
     aisc_main = create_PT_main();
-    
+
     aname = params->db_server;
     tname = GBS_global_string_copy("%s.pt", aname);
 
-    if (!strcmp(command_flag, "-build")) {  // build command 
+    if (!strcmp(command_flag, "-build")) {  // build command
         if ((error = pt_init_main_struct(aisc_main, params->db_server)))
         {
             printf("PT_SERVER: Gave up:\nERROR: %s\n", error);
@@ -289,7 +289,7 @@ int main(int argc, char **argv)
             printf("PT_SERVER: Gave up:\nERROR: %s\n", error);
             exit(EXIT_FAILURE);
         }
-        enter_stage_3_load_tree(aisc_main, tname); // now stage 3 
+        enter_stage_3_load_tree(aisc_main, tname); // now stage 3
         printf("Tree loaded - performing checks..\n");
         PT_debug_tree();
         printf("Checks done");
@@ -298,7 +298,7 @@ int main(int argc, char **argv)
     psg.link = (aisc_com *) aisc_open(name, &psg.main, AISC_MAGIC_NUMBER);
     if (psg.link) {
         if (strcmp(command_flag, "-look") == 0) {
-            exit(EXIT_SUCCESS); // already another server 
+            exit(EXIT_SUCCESS); // already another server
         }
         printf("There is another activ server. I try to kill him...\n");
         aisc_nput(psg.link, PT_MAIN, psg.main,
@@ -359,7 +359,7 @@ int main(int argc, char **argv)
                 exit(EXIT_FAILURE);
             }
         }
-    
+
         if ((error = pt_init_main_struct(aisc_main, params->db_server)))
         {
             printf("PT_SERVER: Gave up:\nERROR: %s\n", error);

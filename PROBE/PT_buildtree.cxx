@@ -239,7 +239,7 @@ void enter_stage_1_build_tree(PT_main * main, char *tname) {
                                                         // TODO: estimated_kb depends on 32/64 bit...
 #else
             ULONG estimated_kb = (total_size/1024)*35; // value by try and error; 35 bytes per base
-#endif            
+#endif
             printf("Estimated memory usage for %i passes: %lu k\n", passes, estimated_kb);
 
             if (estimated_kb <= physical_memory) break;

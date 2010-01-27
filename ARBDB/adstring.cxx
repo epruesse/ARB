@@ -47,7 +47,7 @@ void GB_raise_critical_error(const char *msg) {
 /* To clearly distinguish between the two ways of error handling
  * (which are: return GB_ERROR
  *  and:       export the error)
- * 
+ *
  * GB_export_error() shall only export, not return the error message.
  * if only used for formatting GBS_global_string shall be used
  * (most cases where GB_export_errorf is used are candidates for this.
@@ -163,7 +163,7 @@ GB_ERROR GB_await_error() {
         return err;
     }
     gb_assert(0);               // please correct error handling
-    
+
     return "Program logic error: Something went wrong, but reason is unknown";
 }
 
@@ -189,7 +189,7 @@ GB_ERROR GB_failedTo_error(const char *do_something, const char *special, GB_ERR
 GB_ERROR GB_append_exportedError(GB_ERROR error) {
     // If an error has been exported, it gets appended as reason to given 'error'.
     // If error is NULL, the exported error is returned (if any)
-    // 
+    //
     // This is e.g. useful if you search for SOMETHING in the DB w/o success (i.e. get NULL as result).
     // In that case you can't be sure, whether SOMETHING just does not exist or whether it was not
     // found because some other error occurred.
@@ -401,7 +401,7 @@ void gbs_uppercase(char *str)
 }
 
 #if defined(DEVEL_RALF)
-#warning replace/implement gbs_memcopy by memmove 
+#warning replace/implement gbs_memcopy by memmove
 #endif // DEVEL_RALF
 void gbs_memcopy(char *dest, const char *source, long len)
 {
@@ -585,16 +585,16 @@ char *GBS_escape_string(const char *str, const char *chars_to_escape, char escap
      *
      * uses a special escape-method, which eliminates all 'chars_to_escape' completely
      * from str (this makes further processing of the string more easy)
-     * 
+     *
      * @param escape_char is the character used for escaping. For performance reasons it
      * should be a character rarely used in 'str'.
-     * 
+     *
      * @param chars_to_escape may not contain 'A'-'Z' (these are used for escaping)
      * and it may not be longer than 26 bytes
-     * 
+     *
      * @return heap copy of escaped string
      *
-     * Inverse of GBS_unescape_string() 
+     * Inverse of GBS_unescape_string()
      */
 
     int   len    = strlen(str);
@@ -706,7 +706,7 @@ struct GBS_strstruct *GBS_stropen(long init_size) {   // opens a memory file
 
 char *GBS_strclose(struct GBS_strstruct *strstr) {
     // returns a char* copy of the memory file
-    
+
     long  length = strstr->GBS_strcat_pos;
     char *str    = (char*)malloc(length+1);
 
@@ -800,7 +800,7 @@ void GBS_strnprintf(struct GBS_strstruct *strstr, long len, const char *templat,
     char    *buffer;
     int      psize;
     va_list  parg;
-    
+
     va_start(parg, templat);
     gbs_strensure_mem(strstr, len+2);
 
@@ -948,7 +948,7 @@ uint32_t GB_checksum(const char *seq, long length, int ignore_case,  const char 
     /* CRC32checksum: modified from CRC-32 algorithm found in ZIP compression source
      * if ignore_case == true -> treat all characters as uppercase-chars (applies to exclude too)
      */
-    
+
     unsigned long c = 0xffffffffL;
     long          n = length;
     int           i;
@@ -1184,7 +1184,7 @@ GB_ERROR gbcm_test_address(long *address, long key) {
 void GB_internal_error(const char *message) {
     /* Use GB_internal_error, when something goes badly wrong
      * but you want to give the user a chance to save his database
-     * 
+     *
      * Note: it's NOT recommended to use this function!
      */
 
@@ -1220,7 +1220,7 @@ void GBK_terminate(const char *error) {
     /* GBK_terminate is the emergency exit!
      * only used if no other way to recover
      */
-    
+
     fprintf(stderr, "Error: '%s'\n", error);
     fputs("Can't continue - terminating..\n", stderr);
     GBK_dump_backtrace(stderr, "GBK_terminate");
@@ -1295,7 +1295,7 @@ void GB_information(const char *message) {
         fputc('\n', stdout);
     }
 }
-void GB_informationf(const char *templat, ...) {    
+void GB_informationf(const char *templat, ...) {
     // goes to header: __ATTR__FORMAT(1)
 
     /* this message is always printed to stdout (regardless whether program uses GUI or not)
@@ -1351,7 +1351,7 @@ NOT4PERL void GB_install_status(gb_status_func_type func) {
 
 int GB_status2(const char *templat, ...) {
     // goes to header: __ATTR__FORMAT(1)
-    
+
     // return value : 0 = ok, 1 = userAbort
 
     va_list parg;
@@ -1368,7 +1368,7 @@ int GB_status2(const char *templat, ...) {
     va_start(parg, templat);
     vfprintf(stdout, templat, parg);
     fprintf(stdout, "\n");
-    
+
     return 0;
 }
 
@@ -1464,7 +1464,7 @@ static long g_bs_read_tagged_hash(const char *value, long subhash, void *cd_g_bs
     char                 *str;
     static int            counter    = 0;
     struct GBS_strstruct *sub_result = GBS_stropen(100);
-        
+
     GBS_hash_do_sorted_loop((GB_HASH *)subhash, g_bs_merge_tags, GBS_HCF_sortedByKey, sub_result);
     GBS_intcat(sub_result, counter++); // create a unique number
 
@@ -1479,7 +1479,7 @@ static long g_bs_read_tagged_hash(const char *value, long subhash, void *cd_g_bs
 
 static long g_bs_read_final_hash(const char *tag, long value, void *cd_merge_result) {
     struct GBS_strstruct *merge_result = (struct GBS_strstruct*)cd_merge_result;
-        
+
     char *lk = const_cast<char*>(strrchr(tag, ','));
     if (lk) {           // remove number at end
         *lk = 0;
@@ -1517,7 +1517,7 @@ static void g_bs_free_hash_of_hashes(GB_HASH *hash) {
 char *GBS_merge_tagged_strings(const char *s1, const char *tag1, const char *replace1, const char *s2, const char *tag2, const char *replace2) {
     /* Create a tagged string from two tagged strings:
      * a tagged string is something like '[tag,tag,tag] string [tag] string [tag,tag] string'
-     * 
+     *
      * if 's2' is not empty, then delete tag 'replace1' in 's1'
      * if 's1' is not empty, then delete tag 'replace2' in 's2'
      *
@@ -1561,10 +1561,10 @@ char *GBS_merge_tagged_strings(const char *s1, const char *tag1, const char *rep
 char *GBS_string_eval_tagged_string(GBDATA *gb_main, const char *s, const char *dt, const char *tag, const char *srt, const char *aci, GBDATA *gbd) {
     /* if 's' is untagged, tag it with default tag 'dt'.
      * if 'tag' is != NULL -> apply 'srt' or 'aci' to that part of the  content of 's', which is tagged with 'tag'
-     * 
+     *
      * if result is NULL, an error has been exported.
      */
-    
+
     char     *str         = strdup(s);
     char     *default_tag = GBS_string_2_key(dt);
     GB_HASH  *hash        = GBS_create_hash(16, GB_MIND_CASE);
@@ -1581,7 +1581,7 @@ char *GBS_string_eval_tagged_string(GBDATA *gb_main, const char *s, const char *
     g_bs_free_hash_of_hashes(hash);
     free(default_tag);
     free(str);
-    
+
     return result;
 }
 
@@ -1649,7 +1649,7 @@ char *GB_read_as_tagged_string(GBDATA *gbd, const char *tagi) {
 void GBS_fwrite_string(const char *strngi, FILE *out) {
     unsigned char *strng = (unsigned char *)strngi;
     int            c;
-    
+
     putc('"', out);
 
     while ((c = *strng++)) {
@@ -1778,7 +1778,7 @@ char *GBS_replace_tabs_by_spaces(const char *text) {
     GBS_strstruct *mfile  = GBS_stropen(tlen * 3/2);
     int            tabpos = 0;
     int            c;
-    
+
     while ((c=*(text++))) {
         if (c == '\t') {
             int ntab = (tabpos + 8) & 0xfffff8;

@@ -38,11 +38,11 @@ char *gb_findExtension(char *path) {
  */
 
 inline void STATIC_BUFFER(char*& strvar, int minlen) {
-    gb_assert(minlen > 0); 
+    gb_assert(minlen > 0);
     if (strvar && (strlen(strvar) < (size_t)(minlen-1))) freenull(strvar);
     if (!strvar) strvar=(char*)GB_calloc(minlen, 1);
 }
- 
+
 GB_CSTR gb_oldQuicksaveName(GB_CSTR path, int nr)
 {
     static char *qname = 0;
@@ -138,7 +138,7 @@ GB_ERROR gb_create_reference(const char *master) {
     const char *fullref    = gb_reffile_name(fullmaster);
     GB_ERROR    error      = 0;
     FILE       *out        = fopen(fullref, "w");
-    
+
     if (out) {
         fprintf(out, "***** The following files may be a link to %s ********\n", fullmaster);
         fclose(out);
@@ -177,7 +177,7 @@ GB_ERROR gb_add_reference(const char *master, const char *changes) {
 
     free(fullchanges);
     free(fullmaster);
-    
+
     return error;
 }
 
@@ -273,7 +273,7 @@ static GB_ERROR deleteSuperfluousQuicksaves(GB_MAIN_TYPE *Main) {
 
 long gb_ascii_2_bin(const char *source, GBDATA *gbd) {
     const char *s = source;
-    
+
     long len = 0;
     char c   = *(s++);
 
@@ -426,7 +426,7 @@ static long gb_write_rek(FILE *out, GBCONTAINER *gbc, long deep, long big_hunk) 
     GBDATA  *gb;
     GB_CSTR  strng;
     char    *key;
-    
+
     for (gb = GB_child((GBDATA *)gbc); gb; gb = GB_nextChild(gb)) {
         if (gb->flags.temporary) continue;
         key = GB_KEY(gb);
@@ -630,10 +630,10 @@ long gb_write_out_long(long data, FILE *out) {
 int gb_is_writeable(struct gb_header_list_struct *header, GBDATA *gbd, long version, long diff_save)
 {
     /* Test whether to write any data to disc.
-     * 
+     *
      * version 1       write only latest data
      * version 2       write deleted entries two (which are not already stored to master file !!!
-     * 
+     *
      * try to avoid to access gbd (to keep it swapped out)
      */
     if (version == 2 && header->flags.changed==GB_DELETED) return 1;    // save delete flag
@@ -880,7 +880,7 @@ GB_ERROR GB_save_in_home(GBDATA *gb, const char *path, const char *savetype) {
      *      'bm'   binary + mapfile
      *      0=ascii
      *
-     * automatically creates subdirectories 
+     * automatically creates subdirectories
      */
     GB_ERROR    error = 0;
     char       *buffer;
@@ -1242,7 +1242,7 @@ GB_ERROR GB_save_quick(GBDATA *gb, const char *refpath) {
 
 char *gb_full_path(const char *path) {
     char *res = 0;
-    
+
     if (path[0] == '/') res = strdup(path);
     else {
         const char *cwd = GB_getcwd();

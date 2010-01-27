@@ -54,7 +54,7 @@ char *PHDATA::load(char *usei) {
                 PHENTRY *new_entry = new PHENTRY;
 
                 new_entry->gb_species_data_ptr = gb_data;
-                
+
                 new_entry->key       = last_key_number++;
                 new_entry->name      = strdup(GBT_read_name(gb_species));
                 new_entry->full_name = GBT_read_string(gb_species, "full_name");

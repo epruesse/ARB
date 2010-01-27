@@ -160,7 +160,7 @@ SEC_loop::~SEC_loop() {
             }
         }
         // delete all segments connected to loop
-        for (j=0; j<i; j++) delete segment[j];        
+        for (j=0; j<i; j++) delete segment[j];
     }
 }
 
@@ -227,7 +227,7 @@ void SEC_helix_strand::check_integrity(SEC_CHECK_TYPE what) const {
 
 void SEC_helix::check_integrity(SEC_CHECK_TYPE what) const {
     sec_assert(strand_to_root);
-    
+
     SEC_helix_strand *other_strand = strand_to_root->get_other_strand();
     sec_assert(other_strand);
 
@@ -242,7 +242,7 @@ void SEC_helix::check_integrity(SEC_CHECK_TYPE what) const {
         sec_assert(base_length >= 1);
         sec_assert(drawnSize() >= 0);
     }
-    
+
     strand_to_root->check_integrity(what);
     other_strand->check_integrity(what);
 }
@@ -261,7 +261,7 @@ void SEC_loop::check_integrity(SEC_CHECK_TYPE what) const {
         if (what&CHECK_STRUCTURE) {
             sec_assert(this == strand->get_origin_loop());
         }
-        
+
         const SEC_helix *helix = strand->get_helix();
         if (this == helix->rootsideLoop()) { // test outgoing helixes
             helix->check_integrity(what);
@@ -269,7 +269,7 @@ void SEC_loop::check_integrity(SEC_CHECK_TYPE what) const {
         else {
             rootStrands++;
         }
-        
+
         const SEC_segment *seg = strand->get_next_segment();
 
         if (what&CHECK_STRUCTURE) {
@@ -314,7 +314,7 @@ void SEC_loop::check_integrity(SEC_CHECK_TYPE what) const {
 void SEC_root::check_integrity(SEC_CHECK_TYPE what) const {
     if (root_loop) {
         sec_assert(!under_construction()); // cannot check integrity, when structure is under construction
-    
+
         root_loop->check_integrity(what);
 
         // check whether structure is a ring and whether regions are correct
@@ -347,8 +347,8 @@ void SEC_root::check_integrity(SEC_CHECK_TYPE what) const {
 
 void SEC_helix_strand::unlink(bool fromOtherStrandAsWell) {
     // if called with fromOtherStrandAsWell == false,
-    // the strand-pair remains deletable 
-    
+    // the strand-pair remains deletable
+
     next_segment = NULL;
     origin_loop  = NULL;
 
@@ -409,7 +409,7 @@ void SEC_loop::reset_angles() {
             strand->get_helix()->set_abs_angle(abs);
         }
     }
-    set_rel_angle(0); 
+    set_rel_angle(0);
 }
 
 void SEC_helix::reset_angles() {
@@ -473,7 +473,7 @@ static void findLongestHelix(const BI_helix *helix, size_t& start1, size_t& end1
             lastHelixLen++;
         }
     }
-    
+
     if (lastHelixLen>longestLength) {
         longestLength  = lastHelixLen;
         longestHelixNr = lastHelixNr;
@@ -490,7 +490,7 @@ void SEC_root::create_default_bone() {
     // create default structure
 
     set_under_construction(true);
-    
+
     SEC_loop *loop1 = new SEC_loop(this);
     SEC_loop *loop2 = new SEC_loop(this);
 
@@ -524,9 +524,9 @@ void SEC_root::create_default_bone() {
 
     strand1->set_sequence_portion(start1, end1+1); segment2->set_sequence_portion(end1+1, start2);
     strand2->set_sequence_portion(start2, end2+1); segment1->set_sequence_portion(end2+1, start1);
-    
+
     root_loop = helix->rootsideLoop();
-    
+
     loop1->set_rel_angle(0);
     loop2->set_rel_angle(0);
     helix->set_rel_angle(0);

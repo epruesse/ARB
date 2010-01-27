@@ -73,7 +73,7 @@ void SEC_segment::save(ostream & out, int indent, const XString& x_string) {
 void SEC_region::save(ostream & out, int indent, const XString& x_string) {
     int x_count_start = x_string.getXleftOf(sequence_start);
     int x_count_end   = x_string.getXleftOf(sequence_end);
-    
+
     do_indent(out, indent); out << "SEQ=" << x_count_start << ":" << x_count_end << "\n";
 }
 
@@ -81,7 +81,7 @@ void SEC_helix::save(ostream & out, int indent, const XString& x_string) {
     Block b("STRAND", out, indent);
 
     strandToOutside()->get_region()->save(out, indent, x_string);
-    
+
     do_indent(out, indent); out << "REL=" << get_rel_angle().radian() << "\n";
     do_indent(out, indent); out << "LENGTH=" << minSize() << ":" << maxSize() << "\n";
 
@@ -97,7 +97,7 @@ void SEC_loop::save(ostream & out, int indent, const XString& x_string) {
 
     SEC_helix *primary   = get_fixpoint_helix();
     bool       root_loop = is_root_loop();
-    
+
     for (SEC_strand_iterator strand(this); strand; ++strand) {
         SEC_helix *helix = strand->get_helix();
         if (helix != primary || root_loop) helix->save(out, indent, x_string);
@@ -111,7 +111,7 @@ char *SEC_root::buildStructureString() {
     if (db->canDisplay()) generate_x_string();
 
     ostringstream out;
-    
+
     out << "VERSION=" << DATA_VERSION << "\n";
 
     get_root_loop()->save(out, 0, *xString);

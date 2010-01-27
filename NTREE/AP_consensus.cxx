@@ -412,7 +412,7 @@ GB_ERROR CON_export(char *savename, char *align, int **statistic, char *result, 
 
     const char *countgapsstring   = off;
     if (countgaps) countgapsstring = on;
-    
+
     const char *simplifystring      = off;
     if (groupallowed) simplifystring = on;
 
@@ -434,12 +434,12 @@ GB_ERROR CON_export(char *savename, char *align, int **statistic, char *result, 
 
         if (onlymarked) gb_species = GBT_first_marked_species(GLOBAL_gb_main);
         else gb_species            = GBT_first_species(GLOBAL_gb_main);
-        
+
         while (gb_species) {
             if (GBT_read_sequence(gb_species, align)) {
                 GBDATA     *gb_speciesname = GB_search(gb_species, "name", GB_FIND);
                 const char *name           = GB_read_char_pntr(gb_speciesname);
-                
+
                 GBS_strcat(strstruct, name);
                 GBS_chrcat(strstruct, ' ');
             }

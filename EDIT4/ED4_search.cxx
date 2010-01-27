@@ -153,12 +153,12 @@ public:
 
     static void set_start_offset(int off)               { start_offset = off; }
     static void set_report(reportMatch r, int *u2r)     { report = r; uni2real = u2r; }
-    static void set_mismatches(int minMis, int maxMis)  
-    { 
+    static void set_mismatches(int minMis, int maxMis)
+    {
         e4_assert(maxMis <= MAX_MISMATCHES);
         e4_assert(minMis <= maxMis);
-        min_mismatches = minMis; 
-        max_mismatches = maxMis; 
+        min_mismatches = minMis;
+        max_mismatches = maxMis;
     }
 };
 
@@ -453,7 +453,7 @@ SearchTree::SearchTree(const SearchSettings *s)
 
                     free(reverse);
                 }
-                
+
                 if (s_complement) {
                     GB_transaction dummy(GLOBAL_gb_main);
 
@@ -1182,7 +1182,7 @@ void ED4_SearchResults::searchAgain()
     }
 }
 
-char *ED4_SearchResults::buildColorString(const ED4_sequence_terminal *seq_terminal, int start, int end) 
+char *ED4_SearchResults::buildColorString(const ED4_sequence_terminal *seq_terminal, int start, int end)
     // builds a char buffer (access is only valid from result[start] till result[end])
 {
     int i;
@@ -1464,7 +1464,7 @@ void ED4_mark_matching_species(AW_window * /* aww */, AW_CL cl_pattern) {
                     GBDATA *gbd = species_man->get_species_pointer();
                     e4_assert(gbd);
                     GB_write_flag(gbd, 1);
-                }            
+                }
             }
         }
 

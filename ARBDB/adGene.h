@@ -47,7 +47,7 @@ struct GEN_position {
     // '<' = position MIGHT be lower
     // '=' = position is certain
     // '>' = position MIGHT be higher
-    // '+' = position is directly BEHIND (but before next base position, i.e. specifies a location between to base positions) 
+    // '+' = position is directly BEHIND (but before next base position, i.e. specifies a location between to base positions)
     // '-' = position is BEFORE
 
     unsigned char *start_uncertain;

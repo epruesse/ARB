@@ -111,9 +111,9 @@ char *GB_find_all_files(const char *dir, const char *mask, bool filename_only) {
     /* Returns a string containing the filenames of all files matching mask.
        The single filenames are separated by '*'.
        if 'filename_only' is true -> string contains only filenames w/o path
-       
+
        returns 0 if no files found (or directory not found).
-       in this case an error may be exported  
+       in this case an error may be exported
 
        'mask' may contain wildcards (*?) or
        it may be a regular expression ('/regexp/')
@@ -158,7 +158,7 @@ char *GB_find_latest_file(const char *dir, const char *mask) {
      * 'mask' may contain wildcards (*?) or
      * it may be a regular expression ('/regexp/')
      */
-    
+
     DIR           *dirp;
     struct dirent *dp;
     char           buffer[FILE_PATH_MAX];
@@ -222,7 +222,7 @@ char *GBS_find_lib_file(const char *filename, const char *libprefix, int warn_wh
                     GB_warningf("Don't know where to find '%s'\n"
                                 "  searched in '.'\n"
                                 "  searched in $(HOME) (for '%s')\n"
-                                "  searched in $(ARBHOME)/lib/%s (for '%s')\n", 
+                                "  searched in $(ARBHOME)/lib/%s (for '%s')\n",
                                 filename, fileInHome, libprefix, fileInLib);
                 }
             }
@@ -318,6 +318,6 @@ char **GBS_read_dir(const char *dir, const char *mask) {
 
     free(fulldir);
 
-    return names;  
+    return names;
 }
 

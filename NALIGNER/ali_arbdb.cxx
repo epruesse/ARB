@@ -62,7 +62,7 @@ char *ALI_ARBDB::get_sequence_string(char *name, int and_mark)
         gb_seq = GB_brother(gb_seq, alignment);
         if (gb_seq) {
             gb_seq = GB_entry(gb_seq, "data");
-            if (gb_seq) 
+            if (gb_seq)
                 sequence = GB_read_string(gb_seq);
         }
     }
@@ -88,7 +88,7 @@ ALI_SEQUENCE *ALI_ARBDB::get_sequence(char *name, int and_mark)
         gb_seq = GB_brother(gb_seq, alignment);
         if (gb_seq) {
             gb_seq = GB_entry(gb_seq, "data");
-            if (gb_seq) 
+            if (gb_seq)
                 sequence = GB_read_string(gb_seq);
         }
     }
@@ -161,6 +161,6 @@ int ALI_ARBDB::put_SAI(const char *name, char *sequence) {
     GBDATA *gb_extended = GBT_find_or_create_SAI(gb_main, name);
     GBDATA *gb_data     = GBT_add_data(gb_extended, alignment, "data", GB_STRING);
     GB_write_string(gb_data, sequence);
-    
+
     return 0;
 }

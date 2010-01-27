@@ -90,7 +90,7 @@ void SAI_graphic::command(AW_device * /* device */, AWT_COMMAND_MODE /* cmd */, 
             clicked_idx = (int)ct->client_data1;
             const char *species_name = g_pbdata->probeSpecies[clicked_idx];
             aw_root->awar(AWAR_SPECIES_NAME)->write_string(species_name);
-            aw_root->awar(AWAR_SPV_SELECTED_PROBE)->write_string(species_name); 
+            aw_root->awar(AWAR_SPV_SELECTED_PROBE)->write_string(species_name);
         }
     }
 }
@@ -509,7 +509,7 @@ void SAI_graphic::paint(AW_device *device) {
 
                 ParsedProbeMatch parsed(g_pbdata->probeSeq[i], parser);
 
-                if ((error = parsed.get_error())) {   
+                if ((error = parsed.get_error())) {
                     device->text(SAI_GC_PROBE, GBS_global_string("Error: %s", error), pbRgX2, pbY, 0, AW_SCREEN, (AW_CL)i, 0, 0);
                 }
                 else {
@@ -707,7 +707,7 @@ static AW_window *createDisplayField_window(AW_root *aw_root) {
     aws->at("width");
     aws->button_length(5);
     aws->create_input_field(AWAR_SPV_DB_FIELD_WIDTH, 4);
-    
+
     aws->at("close");
     aws->button_length(10);
     aws->callback(AW_POPDOWN);

@@ -74,7 +74,7 @@ static GBDATA *EXP_find_experiment_by_id(GBDATA *gb_main, const char *id) {
     }
 
     free(organism);
-    return result;    
+    return result;
 }
 
 static char *old_species_marks = 0; // configuration storing marked species
@@ -166,13 +166,13 @@ struct ad_item_selector EXP_item_selector = {
     CHANGE_KEY_PATH_EXPERIMENTS,
     "experiment",
     "experiments",
-    "name", 
+    "name",
     EXP_get_first_experiment_data,
     EXP_get_next_experiment_data,
     EXP_first_experiment_rel_exp_data,
     EXP_next_experiment,
     EXP_get_current_experiment,
-    &AWT_organism_selector, GB_get_grandfather, 
+    &AWT_organism_selector, GB_get_grandfather,
 };
 
 ad_item_selector *EXP_get_selector() { return &EXP_item_selector; }
@@ -290,7 +290,7 @@ void experiment_create_cb(AW_window *aww) {
             }
         }
     }
-    
+
     GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
     free(dest);
 }
@@ -363,7 +363,7 @@ void experiment_copy_cb(AW_window *aww) {
 
     error = GB_end_transaction(GLOBAL_gb_main, error);
     aww->hide_or_notify(error);
-    
+
     free(source);
     free(dest);
 }
@@ -442,15 +442,15 @@ void EXP_map_experiment(AW_root *aw_root, AW_CL scannerid)
 }
 
 void EXP_create_field_items(AW_window *aws) {
-    aws->insert_menu_topic("exp_reorder_fields", "Reorder fields ...",    "R", "spaf_reorder.hlp", AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_list_reorder, (AW_CL)&EXP_item_selector); 
-    aws->insert_menu_topic("exp_delete_field",   "Delete/Hide Field ...", "D", "spaf_delete.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_field_delete, (AW_CL)&EXP_item_selector); 
-    aws->insert_menu_topic("exp_create_field",   "Create fields ...",     "C", "spaf_create.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_field_create, (AW_CL)&EXP_item_selector); 
+    aws->insert_menu_topic("exp_reorder_fields", "Reorder fields ...",    "R", "spaf_reorder.hlp", AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_list_reorder, (AW_CL)&EXP_item_selector);
+    aws->insert_menu_topic("exp_delete_field",   "Delete/Hide Field ...", "D", "spaf_delete.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_field_delete, (AW_CL)&EXP_item_selector);
+    aws->insert_menu_topic("exp_create_field",   "Create fields ...",     "C", "spaf_create.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_field_create, (AW_CL)&EXP_item_selector);
     aws->insert_separator();
-    aws->insert_menu_topic("exp_unhide_fields", "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, (AW_CB)awt_experiment_field_selection_list_unhide_all_cb, (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER); 
+    aws->insert_menu_topic("exp_unhide_fields", "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, (AW_CB)awt_experiment_field_selection_list_unhide_all_cb, (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER);
     aws->insert_separator();
-    aws->insert_menu_topic("exp_scan_unknown_fields", "Scan unknown fields",   "u", "scandb.hlp", AD_F_ALL, (AW_CB)awt_experiment_field_selection_list_scan_unknown_cb,  (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER); 
-    aws->insert_menu_topic("exp_del_unused_fields",   "Remove unused fields",  "e", "scandb.hlp", AD_F_ALL, (AW_CB)awt_experiment_field_selection_list_delete_unused_cb, (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER); 
-    aws->insert_menu_topic("exp_refresh_fields",      "Refresh fields (both)", "f", "scandb.hlp", AD_F_ALL, (AW_CB)awt_experiment_field_selection_list_update_cb,        (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER); 
+    aws->insert_menu_topic("exp_scan_unknown_fields", "Scan unknown fields",   "u", "scandb.hlp", AD_F_ALL, (AW_CB)awt_experiment_field_selection_list_scan_unknown_cb,  (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER);
+    aws->insert_menu_topic("exp_del_unused_fields",   "Remove unused fields",  "e", "scandb.hlp", AD_F_ALL, (AW_CB)awt_experiment_field_selection_list_delete_unused_cb, (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER);
+    aws->insert_menu_topic("exp_refresh_fields",      "Refresh fields (both)", "f", "scandb.hlp", AD_F_ALL, (AW_CB)awt_experiment_field_selection_list_update_cb,        (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER);
 }
 
 AW_window *EXP_create_experiment_window(AW_root *aw_root) {

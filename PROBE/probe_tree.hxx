@@ -149,7 +149,7 @@ only few functions can be used, when the tree is reloaded (stage 3):
 #else
 # define LONG_SONS             0x80
 #endif
-    
+
 // -----------------------------------------------
 //      Get the size of entries (stage 1) only
 
@@ -400,8 +400,8 @@ inline POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
                               "       this combination of both flags is not implemented\n");
             }
             else {                                                // long/int
-                printf("Warning: A search tree of this size is not tested.\n"); 
-                printf("         (sec & LONG_SON) == true\n"); 
+                printf("Warning: A search tree of this size is not tested.\n");
+                printf("         (sec & LONG_SON) == true\n");
                 offset = 4 * i;
                 if ((1<<base) & sec) {                              // long
                     pt_assert(sizeof(PT_PNTR) == 8);               // 64-bit necessary

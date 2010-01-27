@@ -215,7 +215,7 @@ ED4_returncode  ED4_root::remove_from_selected(ED4_terminal *object)
 
             // ProtView: Refresh corresponding AA_sequence terminals
             if (alignment_type == GB_AT_DNA) {
-                PV_CallBackFunction(this->aw_root); 
+                PV_CallBackFunction(this->aw_root);
             }
 
             ED4_multi_species_manager *multi_man = object->get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
@@ -327,7 +327,7 @@ ED4_returncode ED4_root::add_to_selected(ED4_terminal *object)
 
             // ProtView: Refresh corresponding AA_sequence terminals
             if (alignment_type == GB_AT_DNA) {
-                PV_CallBackFunction(this->aw_root); 
+                PV_CallBackFunction(this->aw_root);
             }
 
             ED4_multi_species_manager *multi_man = object->get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
@@ -381,7 +381,7 @@ void ED4_alignment_length_changed(GBDATA *gb_alignment_len, int * /* cl */, GB_C
 
         err = ED4_ROOT->ecoli_ref->init(GLOBAL_gb_main); // reload ecoli
         if (err) { aw_message(err); err = 0; }
-        
+
         if (ED4_ROOT->alignment_type == GB_AT_AA) {
             // TODO: is this needed here?
             err = ED4_pfold_set_SAI(&ED4_ROOT->protstruct, GLOBAL_gb_main, ED4_ROOT->alignment_name, &ED4_ROOT->protstruct_len); // reload protstruct
@@ -409,7 +409,7 @@ ED4_returncode ED4_root::init_alignment() {
 
     GBDATA *gb_alignment_len = GB_search(gb_alignment, "alignment_len", GB_FIND);
     int alignment_length = GB_read_int(gb_alignment_len);
-    MAXSEQUENCECHARACTERLENGTH = alignment_length; 
+    MAXSEQUENCECHARACTERLENGTH = alignment_length;
 
     GB_add_callback(gb_alignment_len, (GB_CB_TYPE)GB_CB_CHANGED, (GB_CB)ED4_alignment_length_changed, 0);
 
@@ -525,9 +525,9 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
             top_mid_spacer_terminal = new ED4_spacer_terminal("Top_Middle_Spacer", 0, y, 880, TOP_MID_SPACER_HEIGHT,   device_manager);
             device_manager->children->append_member(top_mid_spacer_terminal);
 
-            // needed to avoid text-clipping problems: 
-            main_manager->set_top_middle_spacer_terminal(top_mid_spacer_terminal); 
-            main_manager->set_top_middle_line_terminal(top_mid_line_terminal); 
+            // needed to avoid text-clipping problems:
+            main_manager->set_top_middle_spacer_terminal(top_mid_spacer_terminal);
+            main_manager->set_top_middle_line_terminal(top_mid_line_terminal);
 
             y += TOP_MID_SPACER_HEIGHT; // add top-mid_spacer_terminal height
 
@@ -575,7 +575,7 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
             tree_terminal->extension.size[HEIGHT] = y - help;
 
             mid_multi_species_manager->generate_id_for_groups();
-            y += 10;                                                // add top-mid_spacer_terminal height 
+            y += 10;                                                // add top-mid_spacer_terminal height
 
             mid_bot_line_terminal = new ED4_line_terminal("Mid_Bot_Line_Terminal", 0, y, 0, 3, device_manager);    // width will be set below
             device_manager->children->append_member(mid_bot_line_terminal);
@@ -787,7 +787,7 @@ ARB_ERROR do_sth_with_species(ED4_base *base, AW_CL cl_spec_cb, AW_CL cd) {
         ED4_Species_Callback       cb                    = (ED4_Species_Callback)cl_spec_cb;
         ED4_species_manager       *species_manager       = base->to_species_manager();
         ED4_species_name_terminal *species_name_terminal = species_manager->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
-        
+
         if (species_name_terminal->get_species_pointer()) {
             char *species_name = GB_read_as_string(species_name_terminal->get_species_pointer());
 
@@ -1403,7 +1403,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
 
     if (clone) awmm->insert_menu_topic("close", "CLOSE", "C", 0, AWM_ALL, ED4_quit_editor, 0, 0);
     else       awmm->insert_menu_topic("quit",   "QUIT",  "Q", 0, AWM_ALL, ED4_quit_editor, 0, 0);
-    
+
     // ------------------------------
     //  Create
     // ------------------------------
@@ -1556,7 +1556,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
     // ------------------------------
 
     awmm->create_menu("Properties", "P", AWM_ALL);
-    
+
     awmm->insert_menu_topic("props_frame",     "Frame Settings ",       "F", 0,                  AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window,                       0);
     awmm->insert_menu_topic("props_options",   "Editor Options ",       "O", "e4_options.hlp",   AWM_ALL, AW_POPUP, (AW_CL)ED4_create_level_1_options_window,      0);
     awmm->insert_menu_topic("props_consensus", "Consensus Definition ", "u", "e4_consensus.hlp", AWM_ALL, AW_POPUP, (AW_CL)ED4_create_consensus_definition_window, 0);
@@ -1633,7 +1633,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
 
     if (clone) awmm->create_button("CLOSE", "#close.xpm");
     else       awmm->create_button("QUIT", "#quit.xpm");
-    
+
     awmm->at("help");
     awmm->callback(AW_help_entry_pressed);
     awmm->help_text("e4.hlp");
@@ -1646,17 +1646,17 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
     // ------------------
     //      positions
     // ------------------
-    
+
     awmm->button_length(0);
-    
+
     awmm->at("posTxt");     awmm->create_button(0, "Position");
 
     awmm->button_length(6+1);
-    
+
     awmm->at("ecoliTxt");   awmm->create_button(0, ED4_AWAR_NDS_ECOLI_NAME, 0, "+");
 
     awmm->button_length(0);
-    
+
     awmm->at("baseTxt");    awmm->create_button(0, "Base");
     awmm->at("iupacTxt");   awmm->create_button(0, "IUPAC");
     awmm->at("helixnrTxt"); awmm->create_button(0, "Helix#");
@@ -1686,7 +1686,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
     // ---------------------------
 
     awmm->button_length(4);
-    
+
     awmm->at("jump");
     awmm->callback(ED4_jump_to_current_species, 0);
     awmm->help_text("e4.hlp");
@@ -1698,7 +1698,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
     awmm->create_button("GET", "Get");
 
     awmm->button_length(0);
-    
+
     awmm->at("undo");
     awmm->callback(ED4_undo_redo, GB_UNDO_UNDO);
     awmm->help_text("undo.hlp");
@@ -1712,9 +1712,9 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
     // -------------------------
     //      aligner / SAIviz
     // -------------------------
-    
+
     awmm->button_length(7);
-    
+
     awmm->at("aligner");
     awmm->callback(AW_POPUP, (AW_CL)ED4_create_faligner_window, (AW_CL)&faligner_client_data);
     awmm->help_text("faligner.hlp");
@@ -1730,7 +1730,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
     // ------------------------------------------
 
     awmm->button_length(0);
-    
+
     awmm->at("protect");
     awmm->create_option_menu(AWAR_EDIT_SECURITY_LEVEL);
     awmm->insert_option("0", 0, 0);
@@ -1765,12 +1765,12 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
     // Enable RNA3D and SECEDIT programs if the database contains valid alignment of rRNA sequences.
     if (alignment_type == GB_AT_RNA) {
         awmm->button_length(0);
-        
+
         awmm->at("secedit");
         awmm->callback(ED4_SECEDIT_start, (AW_CL)GLOBAL_gb_main, 0);
         awmm->help_text("arb_secedit.hlp");
         awmm->create_button("SECEDIT", "#edit/secedit.xpm");
-        
+
 #if defined(ARB_OPENGL)
         awmm->at("rna3d");
         awmm->callback(ED4_RNA3D_Start, 0, 0);
@@ -1820,7 +1820,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
     awmm->create_toggle("key_mapping/enable", "#edit/nokeymap.bitmap", "#edit/keymap.bitmap");
 
     // search
-    
+
     awmm->button_length(0);
 #define INSERT_SEARCH_FIELDS(Short, label_prefix, prefix) insert_search_fields(awmm, #label_prefix, #prefix, ED4_AWAR_##prefix##_SEARCH_PATTERN, ED4_##prefix##_PATTERN, ED4_AWAR_##prefix##_SEARCH_SHOW, Short)
 
@@ -1906,7 +1906,7 @@ ED4_root::ED4_root()
     scroll_links.link_for_ver_slider = NULL;
 
     folding_action = 0;
-    
+
     species_mode            = ED4_SM_MOVE;
     scroll_picture.scroll   = 0;
     scroll_picture.old_x    = 0;

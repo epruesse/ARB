@@ -57,7 +57,7 @@ ED4_returncode ED4_consensus_sequence_terminal::draw(int /* only_text */)
         ED4_ROOT->get_device()->box(ED4_G_FIRST_COLOR_GROUP+paint_back-1, x, y, extension.size[WIDTH], extension.size[HEIGHT], -1, 0, 0);
     }
 #endif // DEBUG
-    
+
     const ED4_remap *rm = ED4_ROOT->root_group_man->remap();
     rm->clip_screen_range(&left_index, &right_index);
 
@@ -117,9 +117,9 @@ ED4_returncode ED4_consensus_sequence_terminal::draw(int /* only_text */)
     if (buffer_size) {
         ED4_ROOT->get_device()->top_font_overlap    = 1;
         ED4_ROOT->get_device()->bottom_font_overlap = 1;
-    
+
         ED4_ROOT->get_device()->text(ED4_G_SEQUENCES, buffer, text_x, text_y, 0, 1, 0, 0, (long) right_index+1);
-        
+
         ED4_ROOT->get_device()->top_font_overlap    = 0;
         ED4_ROOT->get_device()->bottom_font_overlap = 0;
     }
@@ -174,7 +174,7 @@ static int ED4_show_protein_match_on_device(AW_device *device, int gc, const cha
     }
     else {
         error = ED4_pfold_calculate_secstruct_match((const unsigned char *)cl_protstruct,
-                                                    (const unsigned char *)protstruct, 
+                                                    (const unsigned char *)protstruct,
                                                     rm->screen_to_sequence(start),
                                                     rm->screen_to_sequence(start + size),
                                                     buffer,
@@ -253,7 +253,7 @@ ED4_returncode ED4_AA_sequence_terminal::draw(int /* only_text */)
         {     // transform strings, compress if needed
             AWT_reference *ref = ED4_ROOT->reference;
             ref->expand_to_length(seq_end);
-            
+
             char *char_2_char = ED4_ROOT->sequence_colors->char_2_char_aa;
             char *char_2_gc   = ED4_ROOT->sequence_colors->char_2_gc_aa;
             int   scr_pos;
@@ -611,7 +611,7 @@ ED4_returncode ED4_sequence_info_terminal::draw(int /* only_text */)
 
     ED4_ROOT->get_device()->top_font_overlap    = 1;
     ED4_ROOT->get_device()->bottom_font_overlap = 1;
-    
+
     ED4_ROOT->get_device()->text(ED4_G_STANDARD, buffer, text_x, text_y, 0, 1, 0, 0, 0);
 
     ED4_ROOT->get_device()->top_font_overlap    = 0;
@@ -696,7 +696,7 @@ ED4_returncode ED4_text_terminal::draw(int /* only_text */)
             int xsize = (width_of_char*6)/10;
             int ysize = (height_of_char*6)/10;
             int xoff  = xsize>>1;
-            int yoff  = 0; 
+            int yoff  = 0;
             int bx    = int(text_x+xoff);
             int by    = int(text_y-(yoff+ysize));
 

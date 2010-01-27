@@ -663,7 +663,7 @@ GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species, speci
     // now generate new name
     if (!error) {
         char *new_species_name = 0;
-        
+
         const char *add_field = AW_get_nameserver_addid(GLOBAL_gb_main);
         GBDATA     *gb_addid  = add_field[0] ? GB_entry(gb_new_species, add_field) : 0;
         if (gb_addid) addid   = GB_read_string(gb_addid);
@@ -931,14 +931,14 @@ static AW_window *createMergeSimilarSpeciesWindow(AW_root *aw_root, int option) 
 
 AW_window *NT_createMergeSimilarSpeciesWindow(AW_root *aw_root) {
     static AW_window *aw = 0;
-    
+
     if (!aw) aw = createMergeSimilarSpeciesWindow(aw_root, 0);
     return aw;
 }
 
 AW_window *NT_createMergeSimilarSpeciesAndConcatenateWindow(AW_root *aw_root) {
     static AW_window *aw = 0;
-    
+
     if (!aw) aw = createMergeSimilarSpeciesWindow(aw_root, MERGE_SIMILAR_CONCATENATE_ALIGNMENTS);
     return aw;
 }

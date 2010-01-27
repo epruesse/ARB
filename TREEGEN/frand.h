@@ -20,7 +20,7 @@ typedef struct S_Frand
 
 #ifdef __cplusplus
 extern "C" {
-#endif    
+#endif
 
     Frand  initFrand (double medium, double low, double high);
     void   freeFrand (Frand f);
@@ -33,6 +33,6 @@ extern "C" {
 
 #ifdef __cplusplus
 }
-#endif    
+#endif
 
 #endif

@@ -113,7 +113,7 @@ GB_ERROR ARB_init_global_awars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_m
 
     if (!error) {
         AW_awar *awar_awm_mask = aw_root->awar_int(AWAR_AWM_MASK, AWM_MASK_UNKNOWN, aw_def);
-        
+
         awar_awm_mask->add_callback(AWAR_AWM_MASK_changed_cb);
         error = awar_awm_mask->make_global();
     }

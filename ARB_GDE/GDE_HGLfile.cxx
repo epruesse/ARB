@@ -470,13 +470,13 @@ void ReadGDE(char *filename, NA_Alignment *dataset, int type)
             if (this_elem->short_name[0] == '\0')
                 strncpy(this_elem->short_name, this_elem->id, 79);
             if (this_elem->seqlen == 0)
-                this_elem->protect = 
+                this_elem->protect =
                     PROT_BASE_CHANGES+
                     PROT_GREY_SPACE+
                     PROT_WHITE_SPACE+
                     PROT_TRANSLATION;
             genclen                = 0;
-            
+
             // Make a new sequence entry...
             success     = -1;
             if (OVERWRITE)
@@ -541,7 +541,7 @@ int WriteGDE(NA_Alignment *aln, char *filename, int method, int maskable)
     NA_Sequence *this_elem;
 
     if (aln == NULL) return (1);
-    
+
     file = fopen(filename, "w");
     if (file == NULL)
     {

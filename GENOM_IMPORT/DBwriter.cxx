@@ -210,7 +210,7 @@ void DBwriter::writeFeature(const Feature& feature)
     {
         const stringMap& qualifiers = feature.getQualifiers();
         stringMapCIter   e          = qualifiers.end();
-        
+
         for (stringMapCIter i = qualifiers.begin(); i != e; ++i) {
             const string& unreserved = getUnreservedQualifier(i->first);
             DB_create_string_field(gb_gene, unreserved.c_str(), i->second.c_str());

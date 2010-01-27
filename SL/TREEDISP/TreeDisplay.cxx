@@ -27,7 +27,7 @@ using namespace AW;
 
 AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw, AW_CL cd2)
 {
-    AW_gc_manager preset_window = 
+    AW_gc_manager preset_window =
         AW_manage_GC(aww, device, AWT_GC_CURSOR, AWT_GC_MAX, AW_GCM_DATA_AREA,
                      (AW_CB)AWT_resize_cb, (AW_CL)ntw, cd2,
                      true,      // define color groups
@@ -607,7 +607,7 @@ void AWT_graphic_tree_node_deleted(void *cd, AP_tree *del) {
 }
 void AWT_graphic_tree::toggle_group(AP_tree * at) {
     GB_ERROR error = NULL;
-    
+
     if (at->gb_node) {                                            // existing group
         char *gname = GBT_read_string(at->gb_node, "group_name");
         if (gname) {
@@ -965,7 +965,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
     if (!this->tree_static) return;     // no tree -> no commands
 
     GBDATA *gb_tree = tree_static->get_gb_tree();
-                        
+
     if ((rot_ct.exists && (rot_ct.distance == 0) && (!rot_ct.client_data1) &&
           rot_ct.client_data2 && !strcmp((char *) rot_ct.client_data2, "ruler")) ||
          (ct && ct->exists && (!ct->client_data1) &&
@@ -1198,7 +1198,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                                 error = source->cantMoveTo(dest);
                                 if (!error) source->moveTo(dest, cl->length);
                                 break;
-                                
+
                             case AWT_M_RIGHT:
                                 error = source->move_group_info(dest);
                                 break;
@@ -1331,7 +1331,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
 
                         double new_a     = atan2(y - rot_cl.y0, x - rot_cl.x0) - rot_orientation;
                         rot_orientation += new_a;
-                        
+
                         AP_tree *rot_father = rot_at->get_father();
                         if (rot_at == rot_father->leftson) {
                             rot_father->gr.left_angle += new_a;
@@ -1410,7 +1410,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         if (cl->exists) {
                             at = (AP_tree *)cl->client_data1;
                             if (at) {
-                                at->reset_line_width();   
+                                at->reset_line_width();
                                 AP_tree *at_fath = at->get_father();
                                 if (at_fath) { // reset clicked branch
                                     if (at_fath->leftson == at) at_fath->gr.left_linewidth = 0;
@@ -1443,7 +1443,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                                     exports.save    = 1;
                                     exports.refresh = 1;
                                     break;
-                                    
+
                                 case AWT_M_RIGHT:
                                     linewidth += 1;
                                     exports.save    = 1;
@@ -1533,7 +1533,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         if (cl->exists) {
                             at = (AP_tree *)cl->client_data1;
                             if (!at) break;
-                            
+
                             at->set_root();
                             exports.save       = 1;
                             exports.zoom_reset = 1;
@@ -1741,7 +1741,7 @@ GB_ERROR AWT_graphic_tree::load(GBDATA *, const char *name, AW_CL /* cl_link_to_
             error = tree_static->loadFromDB(name_dup);
             free(name_dup);
         }
-        
+
         if (!error && link_to_database) {
             error = tree_static->linkToDB(&zombies, &duplicates);
         }
@@ -2074,7 +2074,7 @@ double AWT_graphic_tree::show_dendrogram(AP_tree *at, double x_father, double x_
 
     int          lw = at->gr.left_linewidth+baselinewidth;
     unsigned int gc = at->get_leftson()->gr.gc;
-    
+
     disp_device->set_line_attributes(gc, lw, AW_SOLID);
     disp_device->line(gc, x_son, ny0, nx0,   ny0, line_filter,      (AW_CL)at->leftson, 0);
     disp_device->line(gc, x_son, ny0, x_son, ry,  vert_line_filter, (AW_CL)at,          0);
@@ -2095,7 +2095,7 @@ void AWT_graphic_tree::scale_text_koordinaten(AW_device *device, int gc, double&
     const AW_font_information *fontinfo    = device->get_font_information(gc, 'A');
     double                     text_height = fontinfo->max_letter.height / disp_device->get_scale();
     double                     dist        = fontinfo->max_letter.height / disp_device->get_scale();
-    
+
     if (flag==1) {
         dist += 1;
     }
@@ -2248,7 +2248,7 @@ const char *AWT_graphic_tree::show_ruler(AW_device *device, int gc) {
     GBDATA *gb_tree = tree_static->get_gb_tree();
 
     if (!gb_tree) return 0;                         // no tree -> no ruler
-    
+
     GB_transaction dummy(gb_tree);
 
     sprintf(awar, "ruler/size");
@@ -2457,7 +2457,7 @@ void AWT_graphic_tree::show(AW_device *device) {
         }
         double y_end = y_cursor;
 
-        x_cursor -= scaled_branch_distance; 
+        x_cursor -= scaled_branch_distance;
         device->line(AWT_GC_CURSOR, x_cursor, y_start, x_cursor, y_end);
     }
     else {
@@ -2484,7 +2484,7 @@ void AWT_graphic_tree::show(AW_device *device) {
 
             case AP_LIST_SIMPLE:    // simple list of names (used at startup only)
                 show_nds_list(gb_main, false);
-                break;            
+                break;
         }
         if (x_cursor != 0.0 || y_cursor != 0.0) {
             NT_emptybox(AWT_GC_CURSOR, x_cursor, y_cursor, NT_SELECTED_WIDTH);

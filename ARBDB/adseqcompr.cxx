@@ -52,7 +52,7 @@ struct MasterSequence {
 Consensus *g_b_new_Consensus(long len) {
     Consensus     *gcon = (Consensus *)GB_calloc(sizeof(*gcon), 1);
     unsigned char *data = (unsigned char *)GB_calloc(sizeof(char)*256, len);
-    
+
     gcon->len = len;
 
     for (int i=0; i<256; i++) {
@@ -723,7 +723,7 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, c
     }
 
     if (warning) GB_information(warning);
-    
+
     return error;
 }
 
@@ -764,7 +764,7 @@ GB_ERROR GBT_compress_sequence_tree2(GBDATA *gb_main, const char *tree_name, con
 
                 GB_pop_my_security(gb_main);
                 error = GB_end_transaction(gb_main, error);
-                
+
                 if (to_free) free(to_free);
             }
             ASSERT_NO_ERROR(GB_request_undo_type(gb_main, prev_undo_type));

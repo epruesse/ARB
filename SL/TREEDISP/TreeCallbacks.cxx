@@ -185,7 +185,7 @@ void NT_mark_tree_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode)
 
     gtree->check_update(ntw->gb_main);
     AP_tree *tree_root = gtree->get_root_node();
-    
+
     switch (mark_mode&MARK_MODE_UPPER_BITS) {
         case 0:                 // all sequences
             gtree->mark_species_in_tree(tree_root, mark_mode&MARK_MODE_LOWER_BITS);
@@ -409,7 +409,7 @@ static void nt_insert_mark_topics(AW_window_menu_modes *awm, AW_active mask, AWT
     awm->insert_separator();
 
     char *label = create_mark_menu_entry(attrib, "%sSpecies%s in Tree");
-    
+
     awm->insert_sub_menu(label, "T");
     nt_insert_mark_topic(awm, mask, attrib, "mark_tree",           "Mark %sSpecies%s in Tree",                "M", "sp_mrk_tree.hlp",   (AW_CB)NT_mark_tree_cb,    (AW_CL)ntw, (AW_CL)(1+affect));
     nt_insert_mark_topic(awm, mask, attrib, "unmark_tree",         "Unmark %sSpecies%s in Tree",              "U", "sp_umrk_tree.hlp",  (AW_CB)NT_mark_tree_cb,    (AW_CL)ntw, (AW_CL)(0+affect));
@@ -423,7 +423,7 @@ static void nt_insert_mark_topics(AW_window_menu_modes *awm, AW_active mask, AWT
     nt_insert_mark_topic(awm, mask, attrib, "unmark_nontree",      "Unmark %sSpecies%s NOT in Tree",          "U", "sp_umrk_tree.hlp",  (AW_CB)NT_mark_nontree_cb, (AW_CL)ntw, (AW_CL)(0+affect));
     nt_insert_mark_topic(awm, mask, attrib, "swap_marked_nontree", "Invert marks of %sSpecies%s NOT in Tree", "I", "sp_invert_mrk.hlp", (AW_CB)NT_mark_nontree_cb, (AW_CL)ntw, (AW_CL)(2+affect));
     awm->close_sub_menu();
-    
+
     free(label);
 }
 
@@ -596,7 +596,7 @@ void NT_remove_bootstrap(AW_window*, AW_CL cl_ntw, AW_CL) // delete all bootstra
 {
     AWT_canvas     *ntw = (AWT_canvas*)cl_ntw;
     GB_transaction  gb_dummy(ntw->gb_main);
-    
+
     AWT_TREE(ntw)->check_update(ntw->gb_main);
 
     AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();

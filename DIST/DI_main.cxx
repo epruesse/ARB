@@ -87,7 +87,7 @@ int main(int argc, char **argv)
     aww->show();
 
     AWT_install_cb_guards();
-    
+
     aw_root->add_timed_callback(2000, DI_timer, AW_CL(GLOBAL_gb_main), 0);
     aw_root->main_loop();
 }

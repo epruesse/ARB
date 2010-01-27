@@ -87,7 +87,7 @@ struct ad_item_selector {
 
     GBDATA *(*get_first_item_container)(GBDATA *, AW_root *, AWT_QUERY_RANGE); // AW_root may be NULL for AWT_QUERY_ALL_SPECIES and AWT_QUERY_MARKED_SPECIES
     GBDATA *(*get_next_item_container)(GBDATA *, AWT_QUERY_RANGE); // use same AWT_QUERY_RANGE as in get_first_item_container()
-    
+
     GBDATA *(*get_first_item)(GBDATA *);
     GBDATA *(*get_next_item)(GBDATA *);
 

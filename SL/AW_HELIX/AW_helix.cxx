@@ -65,7 +65,7 @@ AW_helix::AW_helix(AW_root * aw_root)
 char AW_helix::get_symbol(char left, char right, BI_PAIR_TYPE pair_type) {
     left  = toupper(left);
     right = toupper(right);
-    
+
     int erg;
     if (pair_type < HELIX_NON_STANDARD0) {
         erg = *char_bind[HELIX_DEFAULT];
@@ -237,7 +237,7 @@ AW_window *create_helix_props_window(AW_root *awr, AW_cb_struct *awcbs) {
                 aws->label(helix_awars[j].awar);
                 aws->callback(helix_pairs_changed_cb, j, (AW_CL)awcbs);
                 aws->create_input_field(helix_pair_awar(j), 20);
-                
+
                 if (j == 0) ex = aws->get_at_xposition();
             }
             else {

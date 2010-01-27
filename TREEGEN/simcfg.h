@@ -7,12 +7,12 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif    
+#endif
 
     void readSimCfg (cstr fname);
 
 #ifdef __cplusplus
 }
-#endif    
+#endif
 
 #endif

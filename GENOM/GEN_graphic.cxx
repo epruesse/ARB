@@ -271,7 +271,7 @@ void GEN_root::paint(AW_device *device) {
 
                 GEN_iterator curr = gene_set.begin();
                 GEN_iterator end  = gene_set.end();
-                
+
                 while (curr != end) {
                     int draw_gc, text_gc;
                     if (getDrawGcs(curr, paint_what, gene_name, draw_gc, text_gc)) {
@@ -305,7 +305,7 @@ void GEN_root::paint(AW_device *device) {
 
                 GEN_iterator curr = gene_set.begin();
                 GEN_iterator end  = gene_set.end();
-                
+
                 while (curr != end) {
                     int draw_gc, text_gc;
                     if (getDrawGcs(curr, paint_what, gene_name, draw_gc, text_gc)) {

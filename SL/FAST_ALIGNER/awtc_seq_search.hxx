@@ -353,7 +353,7 @@ class AWTC_fast_align_insertion
 {
     long insert_at_offset;
     long inserted_gaps;
-    
+
     AWTC_fast_align_insertion *myNext;
 
 public:

@@ -37,7 +37,7 @@ class TokenMatcher {
             key = strdup(search_expr);
             value = NULL;
         }
-        else { 
+        else {
             const char *end = strchr(dot+1, 0);
 
             key   = copy_expression_part(search_expr, dot-1);
@@ -109,7 +109,7 @@ const Token *aisc_find_var(const Token *cursor, char *str, LookupScope scope) {
             line = 0;
         }
     }
-    
+
     return found;
 }
 
@@ -163,7 +163,7 @@ char *get_var_string(char *var) {
         var++;
         SKIP_SPACE_LF(var);
     }
-    
+
     doppelpunkt = strchr(var, ':'); if (doppelpunkt) *(doppelpunkt++) = 0;
     bar         = strchr(var, '|'); if (bar) *(bar++) = 0;
 

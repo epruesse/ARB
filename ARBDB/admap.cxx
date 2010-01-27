@@ -713,7 +713,7 @@ int gb_is_valid_mapfile(const char *path, struct gb_map_header *mheader, int ver
 
 /* The module admalloc.c must be able to determine whether a memory block
  * is inside the mapped file. So we store the location of the mapped file in
- * the following variables: 
+ * the following variables:
  */
 static char *fileMappedTo[GB_MAX_MAPPED_FILES];
 static long  fileLen[GB_MAX_MAPPED_FILES];

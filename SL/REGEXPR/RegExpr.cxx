@@ -34,7 +34,7 @@ RegExpr::~RegExpr() {
 void RegExpr::compile() const {
     if (!comreg) {
         delete [] matches; matches = NULL;
-        
+
         GB_ERROR error = 0;
         comreg = GBS_compile_regexpr(expression.c_str(), ignore_case ? GB_IGNORE_CASE : GB_MIND_CASE, &error);
         if (error) throw string(error);
@@ -43,11 +43,11 @@ void RegExpr::compile() const {
 }
 
 void RegExpr::perform_match(const char *str, size_t offset) const {
-    /* Searches for first match (and submatches) in 'str' 
+    /* Searches for first match (and submatches) in 'str'
      *
      * sets member 'matches' to array of match + subexpression matches (heap-copy)
      * or to NULL if nothing matched
-     * 
+     *
      * If 'offset' > 0, then str is searched from position 'offset'.
      * In this case it is assumed, that we are not at line start!
      */
@@ -89,7 +89,7 @@ size_t RegExpr::subexpr_count() const {
 const RegMatch *RegExpr::subexpr_match(size_t subnr) const {
     // get subexpression match from last 'match()'
     // (or NULL if subexpression 'subnr' did not match)
-    // 
+    //
     // 'subnr' is in range [1..subexpr_count()]
 
     const RegMatch *result = 0;

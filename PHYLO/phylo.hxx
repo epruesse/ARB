@@ -126,7 +126,7 @@ struct elem;
 class PHDATA {
     // connection to database
     // pointers to all elements and important values of the database
-    
+
     struct PHENTRY
     {
         unsigned int    key;
@@ -164,7 +164,7 @@ public:
     void      print();
     GB_ERROR  calculate_matrix(const char *cancel, double alpha, PH_TRANSFORMATION transformation);
     long get_seq_len() { return seq_len; };
-    
+
 };
 
 #else

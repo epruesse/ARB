@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : arb_test.cxx                                      //
 //   Purpose   : small test program (not part of ARB)              //
-//               If you need to test sth, you may completely       // 
+//               If you need to test sth, you may completely       //
 //               overwrite and checkin this.                       //
 //                                                                 //
 //                                                                 //
@@ -17,7 +17,7 @@
 static GB_ERROR create_n_write(GBDATA *gb_father, const char *field, const char *content) {
     GB_ERROR  error = 0;
     GBDATA   *gbd   = GB_create(gb_father, field, GB_STRING);
-    
+
     if (!gbd) {
         error = GB_await_error();
     }
@@ -52,7 +52,7 @@ static GB_ERROR find_n_print(GBDATA *gb_father, const char *field) {
 static GB_ERROR dump_fields(GBDATA *gb_main) {
     GB_transaction ta(gb_main);
     GB_ERROR       error;
-    
+
     error             = find_n_print(gb_main, "case");
     if (!error) error = find_n_print(gb_main, "CASE");
     if (!error) error = find_n_print(gb_main, "Case");
@@ -89,7 +89,7 @@ static GB_ERROR dump_key_data(GBDATA *gb_main) {
                     }
                     else {
                         GBDATA *gb_cm = GB_entry(gb_key, "compression_mask");
-                        
+
                         if (!gb_cm) {
                             error = "@key w/o compression_mask";
                         }
@@ -131,7 +131,7 @@ static GB_ERROR create_db(const char *filename) {
     if (!error) error = dump_fields(gb_main);
     if (!error) error = dump_key_data(gb_main);
     if (!error) error = GB_save(gb_main, filename, "b");
-    
+
     GB_close(gb_main);
 
     return error;
@@ -144,7 +144,7 @@ static GB_ERROR test_db(const char *filename) {
     if (!gb_main) error = GB_await_error();
     if (!error) error   = dump_fields(gb_main);
     if (!error) error   = dump_key_data(gb_main);
-    
+
     GB_close(gb_main);
 
     return error;
@@ -163,7 +163,7 @@ int main(int argc, char **argv)
 
     printf("Creating DB '%s'..\n", filename);
     error = create_db(filename);
-    
+
     if (!error) {
         printf("Testing DB '%s'..\n", filename);
         error = test_db(filename);

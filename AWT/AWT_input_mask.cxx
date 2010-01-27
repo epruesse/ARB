@@ -1002,7 +1002,7 @@ static awt_input_mask_descriptor *quick_scan_input_mask(const string& mask_name,
 static void AWT_edit_input_mask(AW_window *, AW_CL cl_mask_name, AW_CL cl_local) {
     const string *mask_name = (const string *)cl_mask_name;
     string        fullmask  = inputMaskFullname(*mask_name, (bool)cl_local);
-    
+
     AWT_edit(fullmask.c_str()); // @@@ add callback and automatically reload input mask
 }
 
@@ -2396,7 +2396,7 @@ void AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_ite
 
         free(new_item_mask_label);
         free(new_item_mask_id);
-    }    
+    }
     awm->close_sub_menu();
 }
 

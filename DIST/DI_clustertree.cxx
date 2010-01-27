@@ -139,7 +139,7 @@ void ClusterTree::init_tree() {
     else {
         ClusterTree *lson = get_leftson();
         ClusterTree *rson = get_rightson();
-        
+
         lson->init_tree();
         rson->init_tree();
 
@@ -176,7 +176,7 @@ void ClusterTree::detect_clusters(aw_status_counter& progress) {
             state = CS_IS_CLUSTER;                  // assume this is a cluster
 
             // Get set of branches (sorted by branch distance)
-            
+
             get_branch_dists();                     // calculates branchDists
             SortedPairValues pairsByBranchDistance; // biggest branch distances at end
             {
@@ -205,7 +205,7 @@ void ClusterTree::detect_clusters(aw_status_counter& progress) {
 
                 if (realDist>worstDistanceSeen) {
                     worstDistanceSeen = realDist;
-                    
+
                     delete worstKnownDistance;
                     worstKnownDistance = new TwoLeafs(pair->get_pair());
 
@@ -393,7 +393,7 @@ const ClusterTree *ClusterTree::commonFatherWith(const ClusterTree *other) const
         }
     }
     else { // both at same depth
-        if (this == other) { // common father reached ? 
+        if (this == other) { // common father reached ?
             return this;
         }
         else { // otherwise check fathers

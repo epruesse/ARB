@@ -404,7 +404,7 @@ char *SQ_fetch_filtered_sequence(GBDATA * read_sequence, AP_filter * filter) {
         const char   *rawSequence        = GB_read_char_pntr(read_sequence);
         int           filteredLength     = filter->get_filtered_length();
         const size_t *filterpos_2_seqpos = filter->get_filterpos_2_seqpos();
-        
+
         filteredSequence = (char*)malloc(filteredLength * sizeof(char));
         if (filteredSequence) {
             for (int i = 0; i < filteredLength; ++i) {

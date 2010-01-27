@@ -137,7 +137,7 @@ class SEC_db_interface : Noncopyable {
     void alilen_changed(const SEC_dbcb *cb);
 
     void bind_awars(const char **awars, SEC_dbcb *cb);
-    
+
 public:
     SEC_db_interface(SEC_graphic *Gfx, AWT_canvas *Ntw);
     ~SEC_db_interface();

@@ -104,7 +104,7 @@ GB_ERROR AWTC_FIND_FAMILY::retrieve_family(char *sequence, int oligo_len, int mi
                  LOCS_FF_MISMATCH_NUMBER,       mismatches,       // number of mismatches (0 hardcoded till July 2008)
                  LOCS_FF_FIND_TYPE,             int(fast_flag),   // 0: complete search, 1: quick search (only search oligos starting with 'A')
                  LOCS_FF_SORT_TYPE,             int(rel_matches), // 0: matches, 1: relative matches (0 hardcoded till July 2008)
-                 LOCS_FF_SORT_MAX,              max_results,      // speed up family sorting (only sort retrieved results) 
+                 LOCS_FF_SORT_MAX,              max_results,      // speed up family sorting (only sort retrieved results)
                  LOCS_FF_COMPLEMENT,            compl_mode,       // any combination of: 1 = forward, 2 = reverse, 4 = reverse-complement, 8 = complement (1 hardcoded in PT-Server till July 2008)
                  LOCS_FF_FIND_FAMILY,           &bs,
                  NULL))
@@ -119,7 +119,7 @@ GB_ERROR AWTC_FIND_FAMILY::retrieve_family(char *sequence, int oligo_len, int mi
              NULL);
 
     hits_truncated = false;
-    if (max_results<1) max_results = INT_MAX; 
+    if (max_results<1) max_results = INT_MAX;
 
     AWTC_FIND_FAMILY_MEMBER *tail = NULL;
     while (f_list) {
@@ -156,10 +156,10 @@ void AWTC_FIND_FAMILY::print() {
 
 GB_ERROR AWTC_FIND_FAMILY::findFamily(int server_id, char *sequence, int oligo_len, int mismatches, bool fast_flag, bool rel_matches, FF_complement compl_mode, int max_results) {
     // searches the PT-server for related species.
-    // 
+    //
     // relation-score is calculated by fragmenting the sequence into oligos of length 'oligo_len' and
     // then summarizing the number of hits.
-    // 
+    //
     // 'mismatches'  = the number of allowed mismatches
     // 'fast_flag'   = 0 -> do complete search, 1 -> search only oligos starting with 'A'
     // 'rel_matches' = 0 -> score is number of oligo-hits, 1 -> score is relative to longer sequence (target or source) * 10
@@ -194,11 +194,11 @@ void AWTC_create_common_next_neighbour_vars(AW_root *aw_root) {
 }
 
 void AWTC_create_common_next_neighbour_fields(AW_window *aws) {
-    // used in several figs: ad_spec_nn.fig ad_spec_nnm.fig awtc/family_settings.fig 
-    
+    // used in several figs: ad_spec_nn.fig ad_spec_nnm.fig awtc/family_settings.fig
+
     aws->at("oligo_len");
     aws->create_input_field(AWAR_NN_OLIGO_LEN, 3);
-    
+
     aws->at("mismatches");
     aws->create_input_field(AWAR_NN_MISMATCHES, 3);
 

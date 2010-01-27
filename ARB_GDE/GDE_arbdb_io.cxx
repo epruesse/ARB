@@ -161,7 +161,7 @@ static int InsertDatainGDE(NA_Alignment *dataset, GBDATA **the_species, unsigned
         for (i=0; i<numberspecies; i++) {
             int  c;
             long newcount = 0;
-            
+
             sequfilt[i]      = (uchar*)malloc((unsigned int)len+1);
             sequfilt[i][len] = 0;
             memset(sequfilt[i], '.', len); // Generate empty sequences
@@ -279,7 +279,7 @@ static int InsertDatainGDE(NA_Alignment *dataset, GBDATA **the_species, unsigned
                                      "You might want to use 'Generate new names' and read the associated help.",
                                      bad_names));
     }
-    
+
     {
         unsigned long i;
         for (i=0; i<dataset->numelements; i++) {
@@ -303,7 +303,7 @@ void ReadArbdb_plain(char *filename, NA_Alignment *dataset, int type) {
 
 int ReadArbdb2(NA_Alignment *dataset, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon) {
     dataset->gb_main = GLOBAL_gb_main;
-    
+
     GBDATA **the_species;
     long     maxalignlen;
     long     numberspecies = 0;
@@ -368,7 +368,7 @@ int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, GapCompress
 
     the_species   = (GBDATA**)calloc((unsigned int)numberspecies+1, sizeof(GBDATA*));
     numberspecies = 0;
-    
+
     if (marked) gb_species = GBT_first_marked_species_rel_species_data(gb_species_data);
     else gb_species        = GBT_first_species_rel_species_data(gb_species_data);
 
@@ -408,7 +408,7 @@ int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, GapCompress
 
 int getelem(NA_Sequence *a, int b) {
     if (a->seqlen == 0) return -1;
-    
+
     if (b<a->offset || (b>a->offset+a->seqlen)) {
         switch (a->elementtype) {
             case DNA:
@@ -455,7 +455,7 @@ void putelem(NA_Sequence *a, int b, NA_Base c) {
 
         for (j=0; j<a->seqmaxlen; j++) temp[j+a->offset-b] = a->sequence[j];
         Cfree((char*)a->sequence);
-        
+
         a->sequence     = temp;
         a->seqlen      += (a->offset - b);
         a->seqmaxlen   += (a->offset - b);

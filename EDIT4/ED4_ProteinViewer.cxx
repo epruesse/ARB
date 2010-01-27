@@ -1,13 +1,13 @@
 /* ======================================================================================= */
 //
-//    File       : ED4_ProteinViewer.cxx                               
+//    File       : ED4_ProteinViewer.cxx
 //    Purpose    : Protein Viewer: Dynamical translation and display of
 //                 aminoacid sequences in the dna alignment.
 //    Author     : Yadhu Kumar (yadhu@arb-home.de)
-//    web site   : http://www.arb-home.de/                                              
-//                                                                                      
-//    Copyright Department of Microbiology (Technical University Munich)            
-//                                                                                      
+//    web site   : http://www.arb-home.de/
+//
+//    Copyright Department of Microbiology (Technical University Munich)
+//
 /* ======================================================================================= */
 
 #include "ed4_ProteinViewer.hxx"
@@ -100,8 +100,8 @@ bool PV_LookForNewTerminals(AW_root *root) {
     int cur_c2 = root->awar(AWAR_PV_CURSOR_CS_2)->read_int();
     int cur_c3 = root->awar(AWAR_PV_CURSOR_CS_3)->read_int();
 
-    // Test whether any of the options are selected or not? 
-    if ((all && (all_f1 || all_f2 || all_f3 || all_c1 || all_c2 || all_c3 || all_db)) || 
+    // Test whether any of the options are selected or not?
+    if ((all && (all_f1 || all_f2 || all_f3 || all_c1 || all_c2 || all_c3 || all_db)) ||
         (sel && (sel_db || sel_f1 || sel_f2 || sel_f3 || sel_c1 || sel_c2 || sel_c3)) ||
         (mrk && (mrk_db || mrk_f1 || mrk_f2 || mrk_f3 || mrk_c1 || mrk_c2 || mrk_c3)) ||
         (cur && (cur_db || cur_f1 || cur_f2 || cur_f3 || cur_c1 || cur_c2 || cur_c3)))
@@ -110,7 +110,7 @@ bool PV_LookForNewTerminals(AW_root *root) {
             if (gTerminalsCreated) {
                 // if yes, then set the flag to true
                 bTerminalsFound = true;
-            } 
+            }
             else {
                 // if not, then new terminals has to be created
                 bTerminalsFound = false;
@@ -132,17 +132,17 @@ void PV_UnHideTerminal(ED4_AA_sequence_terminal *aaSeqTerminal) {
 void PV_HideAllTerminals() {
     ED4_terminal *terminal = 0;
     for (terminal = ED4_ROOT->root_group_man->get_first_terminal();
-         terminal;  
+         terminal;
          terminal = terminal->get_next_terminal())
         {
             if (terminal->is_sequence_terminal()) {
                 ED4_species_manager *speciesManager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
                 if (speciesManager && !speciesManager->flag.is_consensus && !speciesManager->flag.is_SAI) {
-                    // hide all AA_Sequence terminals 
+                    // hide all AA_Sequence terminals
                     for (int i=0; i<PV_AA_Terminals4Species; i++) {
                         // get the corresponding AA_sequence_terminal skipping sequence_info terminal
                         // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
-                        terminal = terminal->get_next_terminal()->get_next_terminal(); 
+                        terminal = terminal->get_next_terminal()->get_next_terminal();
                         // Make sure it is AA sequence terminal
                         if (terminal->is_aa_sequence_terminal()) {
                             ED4_AA_sequence_terminal *aaSeqTerminal = terminal->to_aa_sequence_terminal();
@@ -196,15 +196,15 @@ void PV_ManageTerminalDisplay(AW_root *root, ED4_AA_sequence_terminal *aaSeqTerm
     cc_1 = root->awar(AWAR_PV_CURSOR_CS_1)->read_int();
     cc_2 = root->awar(AWAR_PV_CURSOR_CS_2)->read_int();
     cc_3 = root->awar(AWAR_PV_CURSOR_CS_3)->read_int();
-    
-    // Get the AA sequence flag - says which strand we are in 
-    int aaStrandType = int(aaSeqTerminal->GET_aaStrandType()); 
+
+    // Get the AA sequence flag - says which strand we are in
+    int aaStrandType = int(aaSeqTerminal->GET_aaStrandType());
     // Check the display options and make visible or hide the AA seq terminal
-    switch (aaStrandType) 
+    switch (aaStrandType)
         {
         case FORWARD_STRAND:
             {
-                int aaStartPos = int(aaSeqTerminal->GET_aaStartPos()); 
+                int aaStartPos = int(aaSeqTerminal->GET_aaStartPos());
                 switch (aaStartPos) {
                 case 1:
                     switch (DispMode) {
@@ -233,9 +233,9 @@ void PV_ManageTerminalDisplay(AW_root *root, ED4_AA_sequence_terminal *aaSeqTerm
                 }
             }
             break;
-        case COMPLEMENTARY_STRAND: 
+        case COMPLEMENTARY_STRAND:
             {
-                int aaStartPos = int(aaSeqTerminal->GET_aaStartPos()); 
+                int aaStartPos = int(aaSeqTerminal->GET_aaStartPos());
                 switch (aaStartPos) {
                 case 1:
                     switch (DispMode) {
@@ -264,7 +264,7 @@ void PV_ManageTerminalDisplay(AW_root *root, ED4_AA_sequence_terminal *aaSeqTerm
                 }
             }
             break;
-        case DB_FIELD_STRAND: 
+        case DB_FIELD_STRAND:
             switch (DispMode) {
             case PV_ALL:      (all && adb) ? PV_UnHideTerminal(aaSeqTerminal) : PV_HideTerminal(aaSeqTerminal); break;
             case PV_MARKED:   (mrk && mdb) ? PV_UnHideTerminal(aaSeqTerminal) : PV_HideTerminal(aaSeqTerminal); break;
@@ -285,19 +285,19 @@ void PV_ManageTerminals(AW_root *root) {
     {
         ED4_terminal *terminal = 0;
         for (terminal = ED4_ROOT->root_group_man->get_first_terminal();
-             terminal;  
+             terminal;
              terminal = terminal->get_next_terminal())
             {
                 if (terminal->is_sequence_terminal()) {
                     ED4_species_manager *speciesManager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
                     if (speciesManager && !speciesManager->flag.is_consensus && !speciesManager->flag.is_SAI) {
                         // we are in the sequence terminal section of a species
-                        // walk through all the corresponding AA sequence terminals for the species and 
+                        // walk through all the corresponding AA sequence terminals for the species and
                         // hide or unhide the terminals based on the display options set by the user
                         for (int i=0; i<PV_AA_Terminals4Species; i++) {
                             // get the corresponding AA_sequence_terminal skipping sequence_info terminal
                             // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
-                            terminal = terminal->get_next_terminal()->get_next_terminal(); 
+                            terminal = terminal->get_next_terminal()->get_next_terminal();
                             // Make sure it is AA sequence terminal
                             if (terminal->is_aa_sequence_terminal()) {
                                 ED4_AA_sequence_terminal *aaSeqTerminal = terminal->to_aa_sequence_terminal();
@@ -321,13 +321,13 @@ void PV_ManageTerminals(AW_root *root) {
                      gbSpecies = GBT_next_marked_species(gbSpecies))
                 {
                         ED4_species_name_terminal *spNameTerm = ED4_find_species_name_terminal(GBT_read_name(gbSpecies));
-                        if (spNameTerm && spNameTerm->is_species_name_terminal()) 
+                        if (spNameTerm && spNameTerm->is_species_name_terminal())
                             {
                                 ED4_terminal *terminal = spNameTerm->corresponding_sequence_terminal();
                                 for (int i=0; i<PV_AA_Terminals4Species; i++) {
                                     // get the corresponding AA_sequence_terminal skipping sequence_info terminal
                                     // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
-                                    terminal = terminal->get_next_terminal()->get_next_terminal(); 
+                                    terminal = terminal->get_next_terminal()->get_next_terminal();
                                     // Make sure it is AA sequence terminal
                                     if (terminal->is_aa_sequence_terminal()) {
                                         ED4_AA_sequence_terminal *aaSeqTerminal = terminal->to_aa_sequence_terminal();
@@ -344,21 +344,21 @@ void PV_ManageTerminals(AW_root *root) {
         {
             ED4_terminal *terminal = 0;
             for (terminal = ED4_ROOT->root_group_man->get_first_terminal();
-                 terminal;  
+                 terminal;
                  terminal = terminal->get_next_terminal())
                 {
                     if (terminal->is_sequence_terminal()) {
                         ED4_species_manager *speciesManager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
                         if (speciesManager && !speciesManager->flag.is_consensus && !speciesManager->flag.is_SAI) {
                             // we are in the sequence terminal section of a species
-                            // walk through all the corresponding AA sequence terminals for the species and 
+                            // walk through all the corresponding AA sequence terminals for the species and
                             // hide or unhide the terminals based on the display options set by the user
                             ED4_species_name_terminal *speciesNameTerm = speciesManager->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
                             if (speciesNameTerm->flag.selected) {
                                 for (int i=0; i<PV_AA_Terminals4Species; i++) {
                                     // get the corresponding AA_sequence_terminal skipping sequence_info terminal
                                     // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
-                                    terminal = terminal->get_next_terminal()->get_next_terminal(); 
+                                    terminal = terminal->get_next_terminal()->get_next_terminal();
                                     // Make sure it is AA sequence terminal
                                     if (terminal->is_aa_sequence_terminal()) {
                                         ED4_AA_sequence_terminal *aaSeqTerminal = terminal->to_aa_sequence_terminal();
@@ -383,7 +383,7 @@ void PV_ManageTerminals(AW_root *root) {
                     for (int i=0; i<PV_AA_Terminals4Species; i++) {
                         // get the corresponding AA_sequence_terminal skipping sequence_info terminal
                         // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
-                        cursorTerminal = cursorTerminal->get_next_terminal()->get_next_terminal(); 
+                        cursorTerminal = cursorTerminal->get_next_terminal()->get_next_terminal();
                         // Make sure it is AA sequence terminal
                         if (cursorTerminal->is_aa_sequence_terminal()) {
                             ED4_AA_sequence_terminal *aaSeqTerminal = cursorTerminal->to_aa_sequence_terminal();
@@ -439,7 +439,7 @@ static void PV_WriteTranslatedSequenceToDB(ED4_AA_sequence_terminal *aaSeqTerm, 
     if (!error) {
         GBDATA *gb_ProSeqData = 0;
         char newAlignmentName[100];
-        int aaStrandType = int(aaSeqTerm->GET_aaStrandType()); 
+        int aaStrandType = int(aaSeqTerm->GET_aaStrandType());
         { // If strandType is complementary strand then Get complementary sequence
             if (aaStrandType == COMPLEMENTARY_STRAND) {
                 PV_ERROR pvError =  PV_ComplementarySequence(str_SeqData);
@@ -450,7 +450,7 @@ static void PV_WriteTranslatedSequenceToDB(ED4_AA_sequence_terminal *aaSeqTerm, 
         }
 
         if (!error) {
-            int   aaStartPos = int(aaSeqTerm->GET_aaStartPos()); 
+            int   aaStartPos = int(aaSeqTerm->GET_aaStartPos());
             switch (aaStrandType) {
             case FORWARD_STRAND:
                 sprintf(newAlignmentName, "ali_pro_ProtView_forward_start_pos_%ld", (long int) aaStartPos); break;
@@ -521,7 +521,7 @@ void PV_SaveData(AW_window *aww) {
 
         ED4_terminal *terminal = 0;
         for (terminal = ED4_ROOT->root_group_man->get_first_terminal();
-             terminal;  
+             terminal;
              terminal = terminal->get_next_terminal())
             {
                 if (terminal->is_sequence_terminal()) {
@@ -530,7 +530,7 @@ void PV_SaveData(AW_window *aww) {
                     if (speciesManager && !speciesManager->flag.is_consensus && !speciesManager->flag.is_SAI) {
                         for (int i=0; i<PV_AA_Terminals4Species; i++) {
                             // get the corresponding AA_sequence_terminal skipping sequence_info terminal
-                            terminal = terminal->get_next_terminal()->get_next_terminal(); 
+                            terminal = terminal->get_next_terminal()->get_next_terminal();
                             // Make sure it is AA sequence terminal
                             if (terminal->is_aa_sequence_terminal()) {
                                 ED4_AA_sequence_terminal *aaSeqTerminal = terminal->to_aa_sequence_terminal();
@@ -575,7 +575,7 @@ static void TranslateGeneToAminoAcidSequence(AW_root * /* root */, ED4_AA_sequen
 
     GB_ERROR error = 0;
     PV_ERROR pvError;
-    
+
     int translationTable = AWT_default_protein_type(GLOBAL_gb_main);
 
     switch (translationMode) {
@@ -608,14 +608,14 @@ static void TranslateGeneToAminoAcidSequence(AW_root * /* root */, ED4_AA_sequen
                 }
             }
             else {
-                gMissingCodonStart++;                
+                gMissingCodonStart++;
                 startPos4Translation = 0;
             }
             break;
     }
 
     if (!error) {
-        // do the translation: 
+        // do the translation:
         AWT_pro_a_nucs_convert(translationTable, str_SeqData, len, startPos4Translation, false, true, false, 0);
 
         char *s = new char[len+1];
@@ -623,7 +623,7 @@ static void TranslateGeneToAminoAcidSequence(AW_root * /* root */, ED4_AA_sequen
         char spChar = ' ';
         {
             int iDisplayMode = ED4_ROOT->aw_root->awar(AWAR_PROTVIEW_DISPLAY_OPTIONS)->read_int();
-            if (iDisplayMode == PV_AA_NAME) 
+            if (iDisplayMode == PV_AA_NAME)
             {
                 for (i=0, j=0; i<len && j<len;) {
                     // start from the start pos of aa sequence
@@ -647,7 +647,7 @@ static void TranslateGeneToAminoAcidSequence(AW_root * /* root */, ED4_AA_sequen
                     }
                 }
             }
-            else 
+            else
             {
                 int k = startPos4Translation+1;
                 for (i=0, j=0; i<len; i++) {
@@ -655,15 +655,15 @@ static void TranslateGeneToAminoAcidSequence(AW_root * /* root */, ED4_AA_sequen
                         s[i]=str_SeqData[j++];
                         k+=3;
                     }
-                    else 
+                    else
                         s[i] = spChar;
                 }
             }
             s[i]='\0'; // close the string
         }
-    
+
         seqTerm->SET_aaSequence_pointer(strdup(s));
-    
+
         delete s;
     }
     free(str_SeqData);
@@ -691,29 +691,29 @@ void PV_DisplayAminoAcidNames(AW_root *root) {
 
     ED4_terminal *terminal = 0;
     for (terminal = ED4_ROOT->root_group_man->get_first_terminal();
-         terminal;  
+         terminal;
          terminal = terminal->get_next_terminal())
         {
             if (terminal->is_sequence_terminal()) {
                 ED4_sequence_terminal *seqTerminal = terminal->to_sequence_terminal();
-                char                          *speciesName = seqTerminal->species_name; 
+                char                          *speciesName = seqTerminal->species_name;
 
                 ED4_species_manager *speciesManager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
-                if (speciesManager && !speciesManager->flag.is_consensus && !speciesManager->flag.is_SAI) 
+                if (speciesManager && !speciesManager->flag.is_consensus && !speciesManager->flag.is_SAI)
                     {
                         // we are in the sequence terminal section of a species
-                        // walk through all the corresponding AA sequence terminals for the species and 
+                        // walk through all the corresponding AA sequence terminals for the species and
                         // hide or unhide the terminals based on the display options set by the user
                         for (int i=0; i<PV_AA_Terminals4Species; i++)
                             {
                                 // get the corresponding AA_sequence_terminal skipping sequence_info terminal
-                                terminal = terminal->get_next_terminal()->get_next_terminal(); 
+                                terminal = terminal->get_next_terminal()->get_next_terminal();
                                 // Make sure it is AA sequence terminal
                                 if (terminal->is_aa_sequence_terminal()) {
                                     ED4_AA_sequence_terminal *aaSeqTerminal = terminal->to_aa_sequence_terminal();
                                     // we are in AA sequence terminal
-                                    int   aaStartPos = int(aaSeqTerminal->GET_aaStartPos()); 
-                                    int aaStrandType = int(aaSeqTerminal->GET_aaStrandType()); 
+                                    int   aaStartPos = int(aaSeqTerminal->GET_aaStartPos());
+                                    int aaStrandType = int(aaSeqTerminal->GET_aaStrandType());
                                     // retranslate the genesequence and store it to the AA_sequence_terminal
                                     TranslateGeneToAminoAcidSequence(root, aaSeqTerminal, speciesName, aaStartPos-1, aaStrandType);
                                 }
@@ -738,33 +738,33 @@ void PV_RefreshProtViewDisplay(AW_window *aww) {
 
 void PV_AA_SequenceUpdate_CB(GB_CB_TYPE gbtype)
 {
-    if (gbtype==GB_CB_CHANGED && 
-        gTerminalsCreated && 
-        (ED4_ROOT->alignment_type == GB_AT_DNA) && 
-        !gbWritingData) 
+    if (gbtype==GB_CB_CHANGED &&
+        gTerminalsCreated &&
+        (ED4_ROOT->alignment_type == GB_AT_DNA) &&
+        !gbWritingData)
         {
             GB_transaction dummy(GLOBAL_gb_main);
-        
+
             ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
             if (cursor->owner_of_cursor) {
                 ED4_terminal *cursorTerminal = cursor->owner_of_cursor->to_terminal();
-            
-                if (!cursorTerminal->parent->parent->flag.is_consensus) 
+
+                if (!cursorTerminal->parent->parent->flag.is_consensus)
                     {
                         ED4_sequence_terminal *seqTerminal = cursorTerminal->to_sequence_terminal();
-                        char                  *speciesName = seqTerminal->species_name; 
+                        char                  *speciesName = seqTerminal->species_name;
 
                         for (int i=0; i<PV_AA_Terminals4Species; i++)
                             {
                                 // get the corresponding AA_sequence_terminal skipping sequence_info terminal
                                 // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
-                                cursorTerminal = cursorTerminal->get_next_terminal()->get_next_terminal(); 
+                                cursorTerminal = cursorTerminal->get_next_terminal()->get_next_terminal();
                                 // Make sure it is AA sequence terminal
                                 if (cursorTerminal->is_aa_sequence_terminal()) {
                                     ED4_AA_sequence_terminal *aaSeqTerminal = cursorTerminal->to_aa_sequence_terminal();
-                                        // Get the AA sequence flag - says which strand we are in 
-                                        int   aaStartPos = int(aaSeqTerminal->GET_aaStartPos()); 
-                                        int aaStrandType = int(aaSeqTerminal->GET_aaStrandType()); 
+                                        // Get the AA sequence flag - says which strand we are in
+                                        int   aaStartPos = int(aaSeqTerminal->GET_aaStartPos());
+                                        int aaStrandType = int(aaSeqTerminal->GET_aaStrandType());
                                         // retranslate the genesequence and store it to the AA_sequence_terminal
                                         TranslateGeneToAminoAcidSequence(ED4_ROOT->aw_root, aaSeqTerminal, speciesName, aaStartPos-1, aaStrandType);
                                 }
@@ -792,9 +792,9 @@ void PV_AddNewAAseqTerminals(ED4_sequence_terminal *seqTerminal, ED4_species_man
             multiSeqManager->children->append_member(new_SeqManager);
 
             ED4_sequence_info_terminal *new_SeqInfoTerminal = 0;
-            if (i<FORWARD_STRANDS) 
+            if (i<FORWARD_STRANDS)
                 sprintf(namebuffer, "F%d ProteinInfo_Term%ld.%d", i+1, ED4_counter, count++);
-            else if ((i-FORWARD_STRANDS)<COMPLEMENTARY_STRANDS)  
+            else if ((i-FORWARD_STRANDS)<COMPLEMENTARY_STRANDS)
                 sprintf(namebuffer, "C%dProteinInfo_Term%ld.%d", (i-FORWARD_STRANDS)+1, ED4_counter, count++);
             else
                 sprintf(namebuffer, "DBProteinInfo_Term%ld.%d", ED4_counter, count++);
@@ -809,7 +809,7 @@ void PV_AddNewAAseqTerminals(ED4_sequence_terminal *seqTerminal, ED4_species_man
             AA_SeqTerminal = new ED4_AA_sequence_terminal(namebuffer, SEQUENCEINFOSIZE, 0, 0, TERMINALHEIGHT, new_SeqManager);
             AA_SeqTerminal->set_links(seqTerminal, seqTerminal);
 
-            char       *speciesName    = seqTerminal->species_name; 
+            char       *speciesName    = seqTerminal->species_name;
             if (i<FORWARD_STRANDS) {
                 startPos = i;
                 translationMode = FORWARD_STRAND;
@@ -825,7 +825,7 @@ void PV_AddNewAAseqTerminals(ED4_sequence_terminal *seqTerminal, ED4_species_man
             TranslateGeneToAminoAcidSequence(ED4_ROOT->aw_root, AA_SeqTerminal, speciesName, startPos, translationMode);
             AA_SeqTerminal->SET_aaSeqFlags(startPos+1, translationMode);
             new_SeqManager->children->append_member(AA_SeqTerminal);
-                     
+
             ED4_counter++;
 
             new_SeqManager->resize_requested_by_child();
@@ -834,7 +834,7 @@ void PV_AddNewAAseqTerminals(ED4_sequence_terminal *seqTerminal, ED4_species_man
 
 void PV_AddCorrespondingAAseqTerminals(ED4_species_name_terminal *spNameTerm) {
     if (gTerminalsCreated) {
-        if (spNameTerm && spNameTerm->is_species_name_terminal()) 
+        if (spNameTerm && spNameTerm->is_species_name_terminal())
             {
                 ED4_sequence_terminal *seqTerminal    = spNameTerm->corresponding_sequence_terminal()->to_sequence_terminal();
                 ED4_species_manager *speciesManager = spNameTerm->get_parent(ED4_L_SPECIES)->to_species_manager();
@@ -857,12 +857,12 @@ void PV_AddAAseqTerminalsToLoadedSpecies() {
                         const char *spName = GBT_read_name(gbSpecies);
                         cout<<marked--<<". "<<spName<<endl;
                         ED4_species_name_terminal *spNameTerm = ED4_find_species_name_terminal(spName);
-                        if (spNameTerm && spNameTerm->is_species_name_terminal()) 
+                        if (spNameTerm && spNameTerm->is_species_name_terminal())
                             {
                                 ED4_terminal *terminal = spNameTerm->corresponding_sequence_terminal();
                                 // $$$ If next terminal is species_name terminal => corresponding AA seq terminal doesn't exist ==> create one $$$
                                 terminal = terminal->get_next_terminal();
-                                if (terminal->is_species_name_terminal() || terminal->is_spacer_terminal()) 
+                                if (terminal->is_species_name_terminal() || terminal->is_spacer_terminal())
                                     {
                                     ED4_sequence_terminal *seqTerminal    = spNameTerm->corresponding_sequence_terminal()->to_sequence_terminal();
                                     ED4_species_manager *speciesManager = spNameTerm->get_parent(ED4_L_SPECIES)->to_species_manager();
@@ -893,10 +893,10 @@ void PV_CreateAllTerminals(AW_root *root) {
     // totally 7 strands has to be created
     int aaTerminalsToBeCreated = FORWARD_STRANDS + COMPLEMENTARY_STRANDS + DB_FIELD_STRANDS;
     PV_AA_Terminals4Species = aaTerminalsToBeCreated;
-                                        
+
     ED4_terminal *terminal = 0;
     for (terminal = ED4_ROOT->root_group_man->get_first_terminal();
-         terminal;  
+         terminal;
          terminal = terminal->get_next_terminal())
         {
             if (terminal->is_sequence_terminal()) {
@@ -904,7 +904,7 @@ void PV_CreateAllTerminals(AW_root *root) {
                 if (seqTerminal->species_name)
                     {
                         ED4_species_manager *speciesManager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
-                        if (speciesManager && !speciesManager->flag.is_consensus && !speciesManager->flag.is_SAI) 
+                        if (speciesManager && !speciesManager->flag.is_consensus && !speciesManager->flag.is_SAI)
                             {
                                 PV_AddNewAAseqTerminals(seqTerminal, speciesManager);
                             }
@@ -921,7 +921,7 @@ void PV_CreateAllTerminals(AW_root *root) {
 }
 
 void PV_CallBackFunction(AW_root *root) {
-    // Create New Terminals If Aminoacid Sequence Terminals Are Not Created 
+    // Create New Terminals If Aminoacid Sequence Terminals Are Not Created
     if (!gTerminalsCreated) {
         // AWAR_PROTEIN_TYPE is not initialized (if called from ED4_main before creating proteinViewer window)
         // so, initialize it here
@@ -982,45 +982,45 @@ void PV_AddCallBacks(AW_root *awr) {
 // --------------------------------------------------------------------------------
 void PV_CreateAwars(AW_root *root, AW_default aw_def) {
 
-    root->awar_int(AWAR_PV_DISPLAY_ALL, 0, aw_def); 
+    root->awar_int(AWAR_PV_DISPLAY_ALL, 0, aw_def);
 
-    root->awar_int(AWAR_PROTVIEW_FORWARD_STRAND_1, 0, aw_def); 
-    root->awar_int(AWAR_PROTVIEW_FORWARD_STRAND_2, 0, aw_def); 
-    root->awar_int(AWAR_PROTVIEW_FORWARD_STRAND_3, 0, aw_def); 
+    root->awar_int(AWAR_PROTVIEW_FORWARD_STRAND_1, 0, aw_def);
+    root->awar_int(AWAR_PROTVIEW_FORWARD_STRAND_2, 0, aw_def);
+    root->awar_int(AWAR_PROTVIEW_FORWARD_STRAND_3, 0, aw_def);
 
-    root->awar_int(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_1, 0, aw_def); 
-    root->awar_int(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_2, 0, aw_def); 
-    root->awar_int(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_3, 0, aw_def); 
+    root->awar_int(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_1, 0, aw_def);
+    root->awar_int(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_2, 0, aw_def);
+    root->awar_int(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_3, 0, aw_def);
 
-    root->awar_int(AWAR_PROTVIEW_DEFINED_FIELDS, 0, aw_def); 
-    root->awar_int(AWAR_PROTVIEW_DISPLAY_OPTIONS, 0, aw_def); 
+    root->awar_int(AWAR_PROTVIEW_DEFINED_FIELDS, 0, aw_def);
+    root->awar_int(AWAR_PROTVIEW_DISPLAY_OPTIONS, 0, aw_def);
 
-    root->awar_int(AWAR_PV_SELECTED, 0, aw_def); 
-    root->awar_int(AWAR_PV_SELECTED_DB, 0, aw_def); 
-    root->awar_int(AWAR_PV_SELECTED_FS_1, 0, aw_def); 
-    root->awar_int(AWAR_PV_SELECTED_FS_2, 0, aw_def); 
-    root->awar_int(AWAR_PV_SELECTED_FS_3, 0, aw_def); 
-    root->awar_int(AWAR_PV_SELECTED_CS_1, 0, aw_def); 
-    root->awar_int(AWAR_PV_SELECTED_CS_2, 0, aw_def); 
-    root->awar_int(AWAR_PV_SELECTED_CS_3, 0, aw_def); 
+    root->awar_int(AWAR_PV_SELECTED, 0, aw_def);
+    root->awar_int(AWAR_PV_SELECTED_DB, 0, aw_def);
+    root->awar_int(AWAR_PV_SELECTED_FS_1, 0, aw_def);
+    root->awar_int(AWAR_PV_SELECTED_FS_2, 0, aw_def);
+    root->awar_int(AWAR_PV_SELECTED_FS_3, 0, aw_def);
+    root->awar_int(AWAR_PV_SELECTED_CS_1, 0, aw_def);
+    root->awar_int(AWAR_PV_SELECTED_CS_2, 0, aw_def);
+    root->awar_int(AWAR_PV_SELECTED_CS_3, 0, aw_def);
 
-    root->awar_int(AWAR_PV_MARKED, 0, aw_def); 
-    root->awar_int(AWAR_PV_MARKED_DB, 0, aw_def); 
-    root->awar_int(AWAR_PV_MARKED_FS_1, 0, aw_def); 
-    root->awar_int(AWAR_PV_MARKED_FS_2, 0, aw_def); 
-    root->awar_int(AWAR_PV_MARKED_FS_3, 0, aw_def); 
-    root->awar_int(AWAR_PV_MARKED_CS_1, 0, aw_def); 
-    root->awar_int(AWAR_PV_MARKED_CS_2, 0, aw_def); 
-    root->awar_int(AWAR_PV_MARKED_CS_3, 0, aw_def); 
+    root->awar_int(AWAR_PV_MARKED, 0, aw_def);
+    root->awar_int(AWAR_PV_MARKED_DB, 0, aw_def);
+    root->awar_int(AWAR_PV_MARKED_FS_1, 0, aw_def);
+    root->awar_int(AWAR_PV_MARKED_FS_2, 0, aw_def);
+    root->awar_int(AWAR_PV_MARKED_FS_3, 0, aw_def);
+    root->awar_int(AWAR_PV_MARKED_CS_1, 0, aw_def);
+    root->awar_int(AWAR_PV_MARKED_CS_2, 0, aw_def);
+    root->awar_int(AWAR_PV_MARKED_CS_3, 0, aw_def);
 
-    root->awar_int(AWAR_PV_CURSOR, 0, aw_def); 
-    root->awar_int(AWAR_PV_CURSOR_DB, 0, aw_def); 
-    root->awar_int(AWAR_PV_CURSOR_FS_1, 0, aw_def); 
-    root->awar_int(AWAR_PV_CURSOR_FS_2, 0, aw_def); 
-    root->awar_int(AWAR_PV_CURSOR_FS_3, 0, aw_def); 
-    root->awar_int(AWAR_PV_CURSOR_CS_1, 0, aw_def); 
-    root->awar_int(AWAR_PV_CURSOR_CS_2, 0, aw_def); 
-    root->awar_int(AWAR_PV_CURSOR_CS_3, 0, aw_def); 
+    root->awar_int(AWAR_PV_CURSOR, 0, aw_def);
+    root->awar_int(AWAR_PV_CURSOR_DB, 0, aw_def);
+    root->awar_int(AWAR_PV_CURSOR_FS_1, 0, aw_def);
+    root->awar_int(AWAR_PV_CURSOR_FS_2, 0, aw_def);
+    root->awar_int(AWAR_PV_CURSOR_FS_3, 0, aw_def);
+    root->awar_int(AWAR_PV_CURSOR_CS_1, 0, aw_def);
+    root->awar_int(AWAR_PV_CURSOR_CS_2, 0, aw_def);
+    root->awar_int(AWAR_PV_CURSOR_CS_3, 0, aw_def);
 }
 
 AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
@@ -1137,7 +1137,7 @@ AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
     // binding callback function to the AWARS
     PV_AddCallBacks(aw_root);
 
-    // Create All Terminals 
+    // Create All Terminals
     PV_CreateAllTerminals(aw_root);
 
     aws->show();

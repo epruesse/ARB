@@ -176,7 +176,7 @@ void PS_FileBuffer::reinit(const char *_name, bool _readonly) {
             fprintf(stderr, "failed to create file '%s' for writing\nmaybe it already exists ?\n", file_name);
         }
         *(int *)0 = 0;
-    }    
+    }
 
     // init. buffer
     clear();

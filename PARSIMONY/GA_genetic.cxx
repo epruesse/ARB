@@ -109,7 +109,7 @@ void GA_genetic::init_first(GBDATA *gbmain) {
     // makes protodb
     gb_main       = gbmain;
     this->gb_main = gbmain;
-    
+
     GB_push_transaction(gb_main);
     gb_genetic    = GB_create_container(gb_main, 0, "genetic");
     gb_presets    = GB_create_container(gb_genetic, 0, "presets");
@@ -274,7 +274,7 @@ char *GA_genetic::write_tree_rek(AP_tree *node, char *dest, long mode) {
      *
      * @param mode
      * - if AP_PUT_DATA -> create tree representation in 'dest' buffer
-     * - else -> only calculate needed buffer size 
+     * - else -> only calculate needed buffer size
      */
     char buffer[40];                /* just real numbers */
     char    *c1;
@@ -677,7 +677,7 @@ GA_job * GA_genetic::get_job(int cluster) {
     // erhoehe refpointer
     job           = new GA_job;
     job->criteria = crit_best;
-    
+
     // decrement refcounter & delete trees;
     GBDATA *gbd = GB_entry(gb_best_job, "cluster0"); if (gbd) job->cluster0 = (int)GB_read_int(gbd);
     gbd         = GB_entry(gb_best_job, "cluster1"); if (gbd) job->cluster1 = (int)GB_read_int(gbd);
@@ -810,7 +810,7 @@ AP_ERR * GA_genetic::delete_job(GBDATA *gb_job) {
 
     gbp = GB_entry(gb_job, "cluster0"); if (gbp) job->cluster0 = (int)GB_read_int(gbp);
     gbp = GB_entry(gb_job, "cluster1"); if (gbp) job->cluster1 = (int)GB_read_int(gbp);
-    
+
     gbp = GB_entry(gb_job, "id0"); if (gbp) job->id0 = GB_read_int(gbp);
     gbp = GB_entry(gb_job, "id1"); if (gbp) job->id1 = GB_read_int(gbp);
 

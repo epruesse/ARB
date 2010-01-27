@@ -322,7 +322,7 @@ void AP_sequence_protein::partial_match(const AP_sequence* part_, long *overlapP
     // algorithm is similar to AP_sequence_protein::combine()
 
     const AP_sequence_protein *part = (const AP_sequence_protein *)part_;
-    
+
     const AP_PROTEINS *pf      = sequence;
     const AP_PROTEINS *pp      = part->sequence;
     const AP_weights  *weights = get_weights();

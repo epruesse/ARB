@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
     }
 
     char *result = (char *)calloc(sizeof(char), alignment_len + 1);
-    for (i=0; i<alignment_len; i++) { 
+    for (i=0; i<alignment_len; i++) {
         int sum = 0;
         for (int l = 0; l < MAXLETTER; l++) {
             if (counters[l][i]>0) sum++;

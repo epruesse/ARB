@@ -34,7 +34,7 @@ public:
     ~AliView();
 
     const char *get_aliname() const { return aliname; }
-    
+
     const AP_filter *get_filter() const { return filter; }
     AP_filter *get_filter() { return filter; }
 

@@ -83,7 +83,7 @@ int PTM_destroy_mem() {
     int  pos;
     long i;
     int  sum;
-    
+
     sum = 0;
     for (pos=0; pos<=PTM_MAX_TABLES; pos++) {
         while (PTM.tables[pos]) {
@@ -107,7 +107,7 @@ void PTM_free_mem(char *data, int size) {
         free(data);
     }
     else {
-        // if (data[4] == PTM_magic) PT_CORE 
+        // if (data[4] == PTM_magic) PT_CORE
         pos = nsize >> PTM_LD_ALIGNED;
 
 #ifdef PTM_DEBUG
@@ -194,7 +194,7 @@ int PTD(POS_TREE * node) {
 // ------------------------------
 //      functions for stage 1
 
-void PT_change_father(POS_TREE *father, POS_TREE *source, POS_TREE *dest) { // stage 1 
+void PT_change_father(POS_TREE *father, POS_TREE *source, POS_TREE *dest) { // stage 1
     long i, j;
     i = PT_count_bits[PT_B_MAX][father->flags];
     for (; i>0; i--) {
@@ -207,7 +207,7 @@ void PT_change_father(POS_TREE *father, POS_TREE *source, POS_TREE *dest) { // s
     PT_CORE;
 }
 
-POS_TREE *PT_add_to_chain(PTM2 *ptmain, POS_TREE *node, int name, int apos, int rpos)   // stage1 
+POS_TREE *PT_add_to_chain(PTM2 *ptmain, POS_TREE *node, int name, int apos, int rpos)   // stage1
 {                                           // insert at the beginning of list
     static char buffer[100];
     unsigned long old_first;
@@ -239,7 +239,7 @@ POS_TREE *PT_add_to_chain(PTM2 *ptmain, POS_TREE *node, int name, int apos, int 
 }
 
 
-POS_TREE *PT_change_leaf_to_node(PTM2 * /* ptmain */, POS_TREE *node) // stage 1 
+POS_TREE *PT_change_leaf_to_node(PTM2 * /* ptmain */, POS_TREE *node) // stage 1
 {
     long i;
     POS_TREE *father, *new_elem;
@@ -254,7 +254,7 @@ POS_TREE *PT_change_leaf_to_node(PTM2 * /* ptmain */, POS_TREE *node) // stage 1
     return new_elem;
 }
 
-POS_TREE *PT_leaf_to_chain(PTM2 *ptmain, POS_TREE *node)        // stage 1 
+POS_TREE *PT_leaf_to_chain(PTM2 *ptmain, POS_TREE *node)        // stage 1
 {
     long i;
     int apos, rpos, name;
@@ -290,7 +290,7 @@ POS_TREE *PT_leaf_to_chain(PTM2 *ptmain, POS_TREE *node)        // stage 1
 }
 
 POS_TREE       *
-PT_create_leaf(PTM2 *ptmain, POS_TREE ** pfather, PT_BASES base, int rpos, int apos, int name)  // stage 1 
+PT_create_leaf(PTM2 *ptmain, POS_TREE ** pfather, PT_BASES base, int rpos, int apos, int name)  // stage 1
 {
     POS_TREE       *father, *node, *new_elemfather;
     int             base2;
@@ -380,7 +380,7 @@ PT_create_leaf(PTM2 *ptmain, POS_TREE ** pfather, PT_BASES base, int rpos, int a
 // ------------------------------------
 //      functions for stage 1: save
 
-void PTD_clear_fathers(PTM2 *ptmain, POS_TREE * node)       // stage 1 
+void PTD_clear_fathers(PTM2 *ptmain, POS_TREE * node)       // stage 1
 {
     POS_TREE       *sons;
     int i;
@@ -452,21 +452,21 @@ long PTD_write_tip_to_disk(FILE * out, PTM2 * /* ptmain */, POS_TREE * node, lon
 {
     int size, i, cnt;
     char *data;
-    putc(node->flags, out);         // save type 
+    putc(node->flags, out);         // save type
     size = PT_LEAF_SIZE(node);
     // write 4 bytes when not in stage 2 save mode
 
-    cnt = size-sizeof(PT_PNTR)-1;               // no father; type already saved 
+    cnt = size-sizeof(PT_PNTR)-1;               // no father; type already saved
 #ifdef ARB_64
     fwrite(&node->data + sizeof(PT_PNTR), 0x01, cnt, out);   // write name rpos apos
 #else
-    for (data = (&node->data)+sizeof(PT_PNTR); cnt; cnt--) { // write apos rpos name 
+    for (data = (&node->data)+sizeof(PT_PNTR); cnt; cnt--) { // write apos rpos name
         i = (int)(*(data++));
         putc(i, out);
     }
 #endif
     PTD_set_object_to_saved_status(node, pos, size);
-    pos += size-sizeof(PT_PNTR);                // no father 
+    pos += size-sizeof(PT_PNTR);                // no father
     pt_assert(pos >= 0);
     return pos;
 }
@@ -530,7 +530,7 @@ void ptd_write_chain_entries(FILE * out, long *ppos, PTM2 * /* ptmain */, char *
 long PTD_write_chain_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos) {
     char *data;
     long oldpos = pos;
-    putc(node->flags, out);         // save type 
+    putc(node->flags, out);         // save type
     pos++;
     int mainapos;
     data = (&node->data) + ptmain->mode;
@@ -602,7 +602,7 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long *r_p
     size = PT_EMPTY_NODE_SIZE;
     mysize = PT_EMPTY_NODE_SIZE;
 
-    for (i = PT_QU; i < PT_B_MAX; i++) {    // free all sons 
+    for (i = PT_QU; i < PT_B_MAX; i++) {    // free all sons
         sons = PT_read_son(ptmain, node, (enum PT_bases_enum)i);
         if (sons) {
             int memsize;
@@ -643,7 +643,7 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long *r_p
         int level;
 #ifdef ARB_64
         if (max_diff > 0xffffffff) {        // long node
-            printf("Warning: max_diff > 0xffffffff is not tested.\n"); 
+            printf("Warning: max_diff > 0xffffffff is not tested.\n");
             flags2 |= 0x40;
             level = 0xffffffff;
             psg.stat.long_node++;
@@ -669,7 +669,7 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long *r_p
             psg.stat.short_node++;
         }
 #endif
-        for (i = PT_QU; i < PT_B_MAX; i++) {    // set the flag2 
+        for (i = PT_QU; i < PT_B_MAX; i++) {    // set the flag2
             if (r_poss[i]) {
                 /* u */ long  diff = pos - r_poss[i];
                 pt_assert(diff >= 0);
@@ -678,13 +678,13 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long *r_p
         }
         putc(flags2, out);
         size++;
-        for (i = PT_QU; i < PT_B_MAX; i++) {    // write the data 
+        for (i = PT_QU; i < PT_B_MAX; i++) {    // write the data
             if (r_poss[i]) {
                 /* u */ long  diff = pos - r_poss[i];
                 pt_assert(diff >= 0);
 #ifdef ARB_64
                 if (max_diff > 0xffffffff) {        // long long / int  (bit[6] in flags2 is set; bit[7] is unset)
-                    printf("Warning: max_diff > 0xffffffff is not tested.\n"); 
+                    printf("Warning: max_diff > 0xffffffff is not tested.\n");
                     if (diff>level) {               // long long (64 bit)  (bit[i] in flags2 is set)
                         PTD_put_longlong(out, diff);
                         size += 8;
@@ -751,7 +751,7 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long *r_p
     }
 
     PTD_set_object_to_saved_status(node, pos, mysize);
-    pos += size-sizeof(PT_PNTR);                // no father 
+    pos += size-sizeof(PT_PNTR);                // no father
     pt_assert(pos >= 0);
     return pos;
 }
@@ -785,7 +785,7 @@ long PTD_write_leafs_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos
     else if (type == PT_NT_NODE) {
         block[0] = 0;
         o_pos = pos;
-        for (i = PT_QU; i < PT_B_MAX; i++) {    // save all sons 
+        for (i = PT_QU; i < PT_B_MAX; i++) {    // save all sons
             sons = PT_read_son(ptmain, node, (enum PT_bases_enum)i);
             r_poss[i] = 0;
             if (sons) {
@@ -803,14 +803,14 @@ long PTD_write_leafs_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos
                 son_size[i] = 0;
             }
         }
-        if (block[0]) {     // son wrote a block 
+        if (block[0]) {     // son wrote a block
             *pblock = 1;
         }
         else if (pos-o_pos > PT_BLOCK_SIZE) {
-            // a block is written 
+            // a block is written
             *pblock = 1;
         }
-        else {          // now i can write my data 
+        else {          // now i can write my data
             *pnodepos = pos;
             pos = PTD_write_node_to_disk(out, ptmain, node, r_poss, pos);
         }
@@ -853,7 +853,7 @@ void PTD_read_leafs_from_disk(char *fname, PTM2 *ptmain, POS_TREE **pnode) {
         pt_assert(i <= INT_MAX);
 #endif
 
-        // try to find info_area 
+        // try to find info_area
         main -= 2;
         short info_size;
         PT_READ_SHORT(main, info_size);
@@ -901,6 +901,6 @@ void PTD_read_leafs_from_disk(char *fname, PTM2 *ptmain, POS_TREE **pnode) {
         fprintf(stderr, "PT_SERVER-Error: %s\n", error);
         exit(EXIT_FAILURE);
     }
-    
+
 }
 

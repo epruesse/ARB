@@ -108,7 +108,7 @@ void st_ml_add_sequence_part_to_stat(ST_ML * st_ml, AWT_csp * /* awt_csp */,
                 info = new st_cq_info(seq_len, bucket_size);
                 GBS_write_hash(species_to_info_hash, species_name, long (info));
             }
-    
+
             int         pos;
             const char *source_sequence     = 0;
             int         source_sequence_len = 0;
@@ -127,7 +127,7 @@ void st_ml_add_sequence_part_to_stat(ST_ML * st_ml, AWT_csp * /* awt_csp */,
                 double max = 0;
                 double v;
                 int    b;
-        
+
                 for (b = ST_A; b < ST_MAX_BASE; b++) {
                     v = vec->b[b];
                     if (v > max)
@@ -156,7 +156,7 @@ void st_ml_add_quality_string_to_species(GBDATA * gb_main,
 
     st_cq_info *info = (st_cq_info *) GBS_read_hash(species_to_info_hash, species_name);
     if (!info) return;
-    
+
     GBDATA   *gb_dest   = GB_search(gb_species, dest_field, GB_STRING);
     GB_ERROR  error     = 0;
     if (!gb_dest) error = GB_await_error();

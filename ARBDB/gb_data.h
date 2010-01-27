@@ -24,7 +24,7 @@
 #define SIZOFINTERN 10
 
 struct gb_extern_data {
-    GB_REL_STRING rel_data; 
+    GB_REL_STRING rel_data;
     long          memsize;
     long          size;
 };
@@ -139,7 +139,7 @@ struct GBCONTAINER {
     gb_flag_types     flags;
     gb_flag_types2    flags2;
     // member above are same as in GBDATA
-    
+
     gb_flag_types3 flags3;
     gb_data_list   d;
 
@@ -150,8 +150,8 @@ struct GBCONTAINER {
                                      * >0   index */
     long header_update_date;
 
-    GB_MAIN_IDX main_idx; 
-    GB_REL_IFS  rel_ifs; 
+    GB_MAIN_IDX main_idx;
+    GB_REL_IFS  rel_ifs;
 
 };
 

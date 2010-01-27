@@ -15,7 +15,7 @@
 // -----------------------------------------------------------------
 //      Manager static properties (used by manager-constructors)
 // -----------------------------------------------------------------
-  
+
 // Each manager should either be ED4_P_HORIZONTAL or ED4_P_VERTICAL - never both !!!
 
 ED4_object_specification main_manager_spec = {
@@ -272,7 +272,7 @@ ED4_returncode ED4_manager::check_bases(const ED4_base *old_base, const ED4_base
         ED4_species_manager *new_species_manager   = new_base->to_species_manager();
         ED4_terminal        *old_sequence_terminal = old_species_manager->get_consensus_relevant_terminal();
         ED4_terminal        *new_sequence_terminal = new_species_manager->get_consensus_relevant_terminal();
-        
+
         int   old_len;
         int   new_len;
         char *old_seq = old_sequence_terminal->resolve_pointer_to_string_copy(&old_len);
@@ -616,7 +616,7 @@ ED4_returncode  ED4_manager::handle_move(ED4_move_info *mi) {
         parent_man->to_multi_species_manager()->invalidate_species_counters();
 
         object->extension.position[X_POS] = rel_x + x_off;
-        object->extension.position[Y_POS] = rel_y; 
+        object->extension.position[Y_POS] = rel_y;
         ED4_base::touch_world_cache();
 
         object->parent = this;
@@ -1814,7 +1814,7 @@ void ED4_multi_species_manager::mark_selected_species(int mark) {
 
 ED4_species_manager *ED4_multi_species_manager::get_consensus_manager() const {
     ED4_species_manager *consensus_manager = 0;
-    
+
     for (int i=0; i<children->members(); i++) {
         ED4_base *member = children->member(i);
         if (member->flag.is_consensus) {

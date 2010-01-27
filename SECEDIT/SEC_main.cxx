@@ -67,7 +67,7 @@ void SEC_root::add_autoscroll(const Vector& scroll) {
 bool SEC_root::perform_autoscroll() {
     bool        scrolled = false;
     AWT_canvas *canvas   = db->canvas();
-    
+
     if (canvas && (nailedAbsPos != -1 || autoscroll)) {
         AW_device *device = canvas->aww->get_device(AW_MIDDLE_AREA);
 
@@ -132,7 +132,7 @@ void SEC_root::position_cursor(bool toCenter, bool evenIfVisible) {
 
     AWT_canvas *ntw    = db->canvas();
     AW_device  *device = ntw->aww->get_device(AW_MIDDLE_AREA);
-    
+
     Rectangle cursor(device->transform(cursorLine));
     Rectangle screen = device->get_area_size();
 
@@ -246,7 +246,7 @@ static void sec_mode_event(AW_window *aws, AW_CL cl_secroot, AW_CL cl_mode)
 void SEC_undo_cb(AW_window *, AW_CL cl_db, AW_CL cl_undo_type) {
     SEC_db_interface *db        = (SEC_db_interface*)cl_db;
     GB_UNDO_TYPE      undo_type = (GB_UNDO_TYPE)cl_undo_type;
-    
+
     GBDATA   *gb_main = db->gbmain();
     GB_ERROR  error   = GB_undo(gb_main, undo_type);
     if (error) {
@@ -369,14 +369,14 @@ static void import_structure_from_file(AW_window *, AW_CL cl_db) {
         else {
             FileBuffer file(filename, in);
             error = expectContent(file, ASS_START);
-        
+
             string structure;
             while (!error) {
                 string line;
                 if (!file.getLine(line)) error = expectedError(ASS_EOS);
                 else {
                     if (line == ASS_EOS) break;
-                    structure += line + "\n"; 
+                    structure += line + "\n";
                 }
             }
 
@@ -599,7 +599,7 @@ static AW_window *SEC_create_bonddef_window(AW_root *awr) {
     INSERT_PAIR_FIELDS("User pairs", USER);
 
 #undef INSERT_PAIR_FIELDS
-    
+
     return aws;
 }
 
@@ -616,7 +616,7 @@ static AW_window *SEC_create_display_window(AW_root *awr) {
     aws->callback(AW_POPUP_HELP, (AW_CL)"sec_display.hlp");
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
-    
+
     // ----------------------------------------
 
     aws->at("bases");
@@ -644,7 +644,7 @@ static AW_window *SEC_create_display_window(AW_root *awr) {
     aws->create_input_field(AWAR_SECEDIT_BOND_THICKNESS);
 
     // ----------------------------------------
-    
+
     aws->at("cursor");
     aws->label("Annotate cursor            :");
     aws->create_option_menu(AWAR_SECEDIT_SHOW_CURPOS);
@@ -653,7 +653,7 @@ static AW_window *SEC_create_display_window(AW_root *awr) {
     aws->insert_option("Ecoli",    "e", SHOW_ECOLI_CURPOS);
     aws->insert_option("Base",     "b", SHOW_BASE_CURPOS);
     aws->update_option_menu();
-    
+
     aws->at("helixNrs");
     aws->label("Annotate helices           :");
     aws->create_toggle(AWAR_SECEDIT_SHOW_HELIX_NRS);
@@ -669,17 +669,17 @@ static AW_window *SEC_create_display_window(AW_root *awr) {
     aws->at("sai");
     aws->label("Visualize SAI              :");
     aws->create_toggle(AWAR_SECEDIT_DISPLAY_SAI);
-    
+
     // ----------------------------------------
 
     aws->at("binding");
     aws->label("Binding helix positions    :");
     aws->create_toggle(AWAR_SECEDIT_DISPPOS_BINDING);
-    
+
     aws->at("ecoli2");
     aws->label("Ecoli base positions       :");
     aws->create_toggle(AWAR_SECEDIT_DISPPOS_ECOLI);
-    
+
     // ----------------------------------------
 
     aws->at("strSkeleton");
@@ -722,7 +722,7 @@ AW_window *SEC_create_main_window(AW_root *awr, GBDATA *gb_main) {
     const SEC_db_interface *db = root->get_db();
 
     GB_atclose(gb_main, SEC_exit, root);
-    
+
     awm->create_menu("File", "F", AWM_ALL);
 
     awm->insert_menu_topic("secedit_new", "New structure", "N", 0, AWM_ALL, SEC_new_structure, (AW_CL)db, 0);

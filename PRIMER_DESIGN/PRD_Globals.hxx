@@ -30,7 +30,7 @@ public:
     {
         for (int i=0; i < 128; i++)
             BASE[i] = '\x00';
-    
+
         BASE[(unsigned char)'A'] = 'T';
         BASE[(unsigned char)'T'] = 'A';
         BASE[(unsigned char)'U'] = 'A';

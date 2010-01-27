@@ -314,7 +314,7 @@ static void saiChanged_callback(AW_root *awr) {
     if (!inCallback && clrDefinitionsChanged) {
         ED4_ROOT->refresh_all_windows(1); // refresh editor
         // SAI changed notify Global SAI Awar AWAR_SAI_GLOBAL
-        awr->awar(AWAR_SAI_GLOBAL)->write_string(saiName); 
+        awr->awar(AWAR_SAI_GLOBAL)->write_string(saiName);
     }
     free(saiName);
 }
@@ -734,7 +734,7 @@ static AW_window *openSelectSAI_window(AW_root *aw_root, AW_CL cl_awar_name) {
 
         GBS_write_hash(SAI_window_hash, awar_name, reinterpret_cast<long>(aws));
     }
-    
+
     return aws;
 }
 
@@ -746,7 +746,7 @@ void ED4_create_SAI_selection_button(AW_window *aws, const char *cawar_name) {
 
     aws->callback(AW_POPUP, (AW_CL)openSelectSAI_window, (AW_CL)awar_name);
     aws->create_button("SELECT_SAI", awar_name);
-    
+
     aws->button_length(old_button_length);
 }
 

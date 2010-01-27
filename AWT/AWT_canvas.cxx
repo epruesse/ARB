@@ -223,7 +223,7 @@ void AWT_canvas::zoom(AW_device *device, bool zoomIn, const Rectangle& wanted_pa
 
         Position clickPos     = device->rtransform(wanted_part.centroid());
         Position screenCenter = current.centroid();
-        
+
         Vector center2click(screenCenter, clickPos);
         Vector center2click_zoomed = center2click / 0.9;
 
@@ -553,7 +553,7 @@ void AWT_canvas::set_dragEndpoint(int dragx, int dragy) {
             zoom_drag_ex = zoom_drag_sx+width;
         }
         else if (correct_y) {
-            int height = int(scr_sy*factor) * ((drag_sx*drag_sy) < 0 ? -1 : 1);            
+            int height = int(scr_sy*factor) * ((drag_sx*drag_sy) < 0 ? -1 : 1);
             zoom_drag_ey = zoom_drag_sy+height;
         }
     }
@@ -611,7 +611,7 @@ static void motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2) {
                     click_device->get_clicked_text(&ntw->clicked_text);
                     run_command  = false;
                     break;
-                    
+
                 default:
                     break;
             }
@@ -628,7 +628,7 @@ static void motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2) {
             }
         }
     }
-    
+
     if (ntw->tree_disp->exports.zoom_reset) {
         ntw->zoom_reset();
         ntw->refresh();

@@ -414,7 +414,7 @@ void getyspace() {
 }
 
 
-void setuptree(tree *tr, int numSp) { 
+void setuptree(tree *tr, int numSp) {
     int     i, j;
     nodeptr p = 0, q;
 
@@ -1505,7 +1505,7 @@ void spanSubtree(nodeptr p) {
         spanSubtree(p->next->back);
         spanSubtree(p->next->next->back);
     }
-} 
+}
 
 
 void findSiteRates(tree *tr, double ki_min, double ki_max, double d_ki, double max_error) {

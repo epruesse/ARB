@@ -255,8 +255,8 @@ void Importer::import() {
 
 // --------------------------------------------------------------------------------
 // Meta information definitions
-// 
-// 
+//
+//
 // [ please keep the list of common entries in
 //      ../HELP_SOURCE/oldhelp/sp_info.hlp
 //   up to date! ]
@@ -272,7 +272,7 @@ static MetaTag genebank_meta_description[] = {
     { "   PUBMED", "pubmed_id",   MT_REF },
     { "  MEDLINE", "medline_id",  MT_REF },
     { "  REMARK",  "refremark",   MT_REF },
-    
+
     { "DEFINITION", "definition", MT_BASIC },
     { "ACCESSION",  "acc",        MT_BASIC },
     { "VERSION",    "version",    MT_BASIC },
@@ -283,7 +283,7 @@ static MetaTag genebank_meta_description[] = {
     { "PROJECT",     "projref",   MT_BASIC },
 
     { "FEATURES", "", MT_FEATURE_START },
-    { "CONTIG",   "", MT_CONTIG }, 
+    { "CONTIG",   "", MT_CONTIG },
     { "BASE",     "", MT_SEQUENCE_START }, // BASE COUNT (sometimes missing)
     { "ORIGIN",   "", MT_SEQUENCE_START }, // only used if BASE COUNT is missing
     { "//",       "", MT_END },
@@ -302,7 +302,7 @@ static MetaTag embl_meta_description[] = {
     { "RP", "nuc_rp",          MT_REF },
     { "RT", "title",           MT_REF },
     { "RX", "",                MT_REF_DBID }, // @@@ extract field 'pubmed_id' ?
-    
+
     { "AC", "acc",             MT_BASIC },
     { "AH", "assembly_header", MT_BASIC },
     { "AS", "assembly_info",   MT_BASIC },
@@ -324,7 +324,7 @@ static MetaTag embl_meta_description[] = {
     { "//", "", MT_END },
 
     { "XX", "", MT_IGNORE }, // spacer
-    
+
     { "", "", MT_IGNORE }, // End of array
 };
 
@@ -442,7 +442,7 @@ void GenebankImporter::import_section() {
                     prevTag     = knownTag;
                     prevContent = content;
                     break;
-                    
+
                 case MT_REF_START:
                     refs.start(); // start a new reference
                     break;
@@ -535,7 +535,7 @@ static long scanSeqlenFromID(const string& idContent) {
     }
 
     if (bp == -1) throw "Could not parse bp from header";
-    
+
     return bp;
 }
 
@@ -572,7 +572,7 @@ void EmblImporter::import_section() {
                     case MT_REF_DBID:   refs.add_dbid(prevContent); prevAppendNL = false; break;
                     case MT_BASIC:      meta.add(prevTag, prevContent, true); break;
                     case MT_HEADER:
-                        meta.add(prevTag, prevContent, true); 
+                        meta.add(prevTag, prevContent, true);
                         expectedSeqLength = scanSeqlenFromID(prevContent);
                         break;
                     default: gi_assert(0); break;
@@ -636,7 +636,7 @@ inline bool parseCounter(bool expect, BaseCounter& headerCount, StringParser& pa
 
     bool        found = false;
     stringCIter start = parser.getPosition();
-    
+
     parser.expectSpaces(0);
 
     bool seen_number;
@@ -724,7 +724,7 @@ void GenebankImporter::parseSequence(const string& tag, const string& headerline
                     data.append(start, end);
                     blocks++;
                 }
-                
+
                 if (blocks>6) throw "Found more than 6 parts of sequence data";
                 seqData.addLine(data);
             }

@@ -550,7 +550,7 @@ void MP_mark_probes_in_tree(AW_window *aww)
     {
         char *sel = mp_main->get_aw_root()->awar(MP_AWAR_RESULTPROBES)->read_string();
         a_probe   = MP_get_probes(sel);             // haelt jetzt Sondenstring
-        
+
         if (! a_probe || ! a_probe[0]) {
             free(a_probe);
             free(sel);
@@ -975,7 +975,7 @@ const char *MP_probe_pt_look_for_server()
     char choice[256];
     sprintf(choice, "ARB_PT_SERVER%ld", mp_gl_awars.ptserver);
 #if defined(DEVEL_RALF)
-#warning use GBS_ptserver_id_to_choice here ? 
+#warning use GBS_ptserver_id_to_choice here ?
 #endif // DEVEL_RALF
     GB_ERROR error;
     error = arb_look_and_start_server(AISC_MAGIC_NUMBER, choice, 0);

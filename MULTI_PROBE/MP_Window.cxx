@@ -119,7 +119,7 @@ AW_window_simple *MP_Window::create_result_window(AW_root *aw_root)
 
 static const char *parse_word(const char *& line, int& wordlen) {
     mp_assert(line);
-    
+
     while (line[0] == ' ') ++line; // eat whitespace
     if (line[0] == 0) return 0; // at EOL
 
@@ -192,7 +192,7 @@ void mp_load_list(AW_window *aww, AW_selection_list *selection_list, char *base_
         const char *awar_file = GBS_global_string("%s/file_name", base_name);
         char       *filename  = aww->get_root()->awar(awar_file)->read_string();
         data                  = GB_read_file(filename);
-        
+
         free(filename);
         if (!data) {
             aw_message(GB_await_error());

@@ -138,7 +138,7 @@ const char *DI_MATRIX::save(char *filename, enum DI_SAVE_TYPE type)
 
                         if (val2 > max) max = val2;
                         if (val2 < min) min = val2;
-                        
+
                         sum += val2; // ralf: before this added 'val' (which was included somehow)
                     }
                     fprintf(out, "\n");

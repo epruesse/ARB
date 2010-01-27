@@ -22,8 +22,8 @@
 //      gb_if_entries
 
 struct gb_if_entries {
-    GB_REL_IFES   rel_ie_next; 
-    GB_REL_GBDATA rel_ie_gbd; 
+    GB_REL_IFES   rel_ie_next;
+    GB_REL_GBDATA rel_ie_gbd;
 };
 
 inline gb_if_entries *GB_IF_ENTRIES_NEXT(gb_if_entries *ie) {
@@ -50,7 +50,7 @@ struct gb_index_files_struct {
     long         hash_table_size;
     long         nr_of_elements;
     GB_CASE      case_sens;
-    GB_REL_PIFES rel_entries; 
+    GB_REL_PIFES rel_entries;
 };
 
 

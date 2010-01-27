@@ -58,7 +58,7 @@ void MG_tree_rename_cb(AW_window *aww, GBDATA *gbd, int tree_nr) {
         }
         error = GB_end_transaction(gbd, error);
     }
-    
+
     aww->hide_or_notify(error);
 
     free(source);
@@ -153,7 +153,7 @@ void MG_transfer_tree(AW_window *aww) {
             }
         }
     }
-    
+
     error = GB_end_transaction(GLOBAL_gb_dest, error);
     GB_end_transaction_show_error(GLOBAL_gb_merge, error, aw_message);
 

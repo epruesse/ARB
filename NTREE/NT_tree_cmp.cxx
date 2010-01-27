@@ -218,7 +218,7 @@ GB_ERROR AWT_species_set_root::copy_node_information(FILE *log, bool delete_old_
 #if defined(DEBUG)
             printf("delete node '%s'\n", cset->node->name);
 #endif // DEBUG
-            
+
             error = GB_delete(cset->node->gb_node);
             if (error) break;
 
@@ -267,7 +267,7 @@ void AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tree_de
                 "\n"
                 "     Source tree '%s'\n"
                 "Destination tree '%s'\n"
-                "\n", 
+                "\n",
                 delete_old_nodes ? "Moving" : "Adding",
                 tree_source, tree_dest);
     }
@@ -309,7 +309,7 @@ void AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tree_de
                     aw_status("Copy Node Information");
                     ssr->copy_node_information(log, delete_old_nodes, nodes_with_marked_only);
                 }
-                
+
                 long             dummy         = 0;
                 AWT_species_set *new_root_setl = ssr->search(root_setl, &dummy);
                 AWT_species_set *new_root_setr = ssr->search(root_setr, &dummy);

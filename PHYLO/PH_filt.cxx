@@ -189,11 +189,11 @@ float *PH_filter::calculate_column_homology() {
             strcat(delete_when_max, ".");
             strcat(get_maximum_from, ".");
             break;
-            
-        case SKIP_COLUMN_IF_OCCUR: 
+
+        case SKIP_COLUMN_IF_OCCUR:
             reference_table[(unsigned char)'.']=num_all_chars;    // map to invalid position
             break;
-            
+
         case COUNT_DONT_USE_MAX: // use like another valid base/acid while not maximal
             // do nothing: don't get maximum of this charcater
             // but use character ( true in mask )
@@ -211,11 +211,11 @@ float *PH_filter::calculate_column_homology() {
             strcat(delete_when_max, "-");
             strcat(get_maximum_from, "-");
             break;
-            
-        case SKIP_COLUMN_IF_OCCUR: 
+
+        case SKIP_COLUMN_IF_OCCUR:
             reference_table[(unsigned char)'-']=num_all_chars;
             break;
-            
+
         case COUNT_DONT_USE_MAX: // use like another valid base/acid while not maximal
             // do nothing: don't get maximum of this charcater
             // but use character ( true in mask )
@@ -263,18 +263,18 @@ float *PH_filter::calculate_column_homology() {
     }
 
     switch (options_vector[OPT_FILTER_LOWER]) { // 'acgtu' in column
-        case DONT_COUNT: 
+        case DONT_COUNT:
             for (i=0; low_chars[i]; i++) mask[(unsigned char)low_chars[i]] = false;
             break;
 
-        case SKIP_COLUMN_IF_MAX: 
+        case SKIP_COLUMN_IF_MAX:
             // count all low_chars to 'a'
             for (i=0; low_chars[i]; i++) reference_table[(unsigned char)low_chars[i]] = reference_table[(unsigned char)'a'];
             strcat(delete_when_max, "a");
             strcat(get_maximum_from, "a");
             break;
 
-        case SKIP_COLUMN_IF_OCCUR: 
+        case SKIP_COLUMN_IF_OCCUR:
             for (i=0; low_chars[i]; i++) reference_table[(unsigned char)low_chars[i]] = num_all_chars;
             break;
 
@@ -334,9 +334,9 @@ float *PH_filter::calculate_column_homology() {
                                      ((float) PHDATA::ROOT->nentries -
                                       (float) chars_counted[i][num_all_chars+1]))*100.0;
                 // (maximum in column / number of counted positions) * 100
-            } 
-        } 
-    } 
+            }
+        }
+    }
 
     for (i=0; i<len; i++) {
         free(chars_counted[i]);

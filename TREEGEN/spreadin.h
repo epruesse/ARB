@@ -25,7 +25,7 @@ typedef struct S_Spreading
 
 #ifdef __cplusplus
 extern "C" {
-#endif    
+#endif
 
     Spreading   newSpreading    (double *value, int values);
     void        freeSpreading   (Spreading s);
@@ -34,6 +34,6 @@ extern "C" {
 
 #ifdef __cplusplus
 }
-#endif    
+#endif
 
 #endif

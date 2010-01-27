@@ -64,9 +64,9 @@ enum Group_Action {
 };
 
 enum Group_NotFound {
-    NOTFOUND_ABORT, 
-    NOTFOUND_WARN, 
-    NOTFOUND_IGNORE, 
+    NOTFOUND_ABORT,
+    NOTFOUND_WARN,
+    NOTFOUND_IGNORE,
 };
 
 enum Group_Existing {
@@ -85,7 +85,7 @@ void DI_create_cluster_awars(AW_root *aw_root, AW_default def, AW_default db) {
     aw_root->awar_int(AWAR_CLUSTER_SELECTREP, 1, def);
     aw_root->awar_int(AWAR_CLUSTER_SELECTED, 0, def);
     aw_root->awar_string(AWAR_CLUSTER_RESTORE_LABEL, "None stored", def);
-    
+
     aw_root->awar_int(AWAR_CLUSTER_GROUP_WHAT, GROUP_LISTED, def);
     aw_root->awar_int(AWAR_CLUSTER_GROUP_EXISTING, EXISTING_GROUP_ABORT, def);
     aw_root->awar_int(AWAR_CLUSTER_GROUP_NOTFOUND, NOTFOUND_ABORT, def);
@@ -243,7 +243,7 @@ void Cluster::mark_all_members(bool mark_representative) const {
 
 enum {
     MARK_REPRES   = 1,
-    SELECT_REPRES = 2, 
+    SELECT_REPRES = 2,
 };
 
 static void mark_cluster(ClusterPtr cluster, AW_CL cl_mask) {
@@ -321,7 +321,7 @@ public:
 
     size_t get_leaf_count() const { return leaf_count; }
     size_t update_leaf_counters();
-    
+
     void tag_leaf() {
         di_assert(is_leaf);
         tagged_count = 1;
@@ -580,7 +580,7 @@ void GroupBuilder::update_group(ClusterPtr cluster) {
             }
 
             if (error) bad_cluster = cluster;
-            DOWNCAST(GroupTree*, tree_root->get_root_node())->clear_tags(); 
+            DOWNCAST(GroupTree*, tree_root->get_root_node())->clear_tags();
         }
     }
 }
@@ -656,7 +656,7 @@ static void group_clusters(AW_window *, AW_CL cl_Group_Action, AW_CL cl_aw_clust
     bool accept = !error;
     aw_message_if(error);
     // careful! the following code will invalidate error, so don't use below
-    
+
     with_affected_clusters_do(aw_root, affected, false, (AW_CL)accept, accept_proposed_names);
     global_data->update_selection_list((AW_window*)cl_aw_clusterList);
 }
@@ -690,7 +690,7 @@ static void popup_group_clusters_window(AW_window *aw_clusterList) {
         aws->create_input_field(AWAR_CLUSTER_GROUP_IDENTITY, 4);
 
         aws->at_newline();
-        
+
         aws->create_option_menu(AWAR_CLUSTER_GROUP_NOTFOUND, "-> if no matching subtree found", "n");
         aws->insert_default_option("abort",          "a", NOTFOUND_ABORT);
         aws->insert_option        ("warn",           "w", NOTFOUND_WARN);
@@ -715,7 +715,7 @@ static void popup_group_clusters_window(AW_window *aw_clusterList) {
         aws->create_autosize_button("DELETE_GROUPS", "delete groups!");
 
         aws->create_text_toggle(AWAR_CLUSTER_GROUP_PREFIX_MATCH, "(all)", "(where prefix matches)", 30);
-        
+
         aws->at_newline();
 
         aws->label("Name prefix:");
@@ -758,7 +758,7 @@ static void delete_clusters(AW_window *aww, AW_CL cl_affected) {
 static void store_selected_cluster(ClusterPtr cluster, AW_CL) {
     int pos    = global_data->get_pos(cluster, SHOWN_CLUSTERS);
     int nextId = global_data->idAtPos(pos+1, SHOWN_CLUSTERS);
-    
+
     select_cluster(nextId);
     global_data->store(cluster->get_ID());
 }
@@ -820,7 +820,7 @@ AW_window *DI_create_cluster_detection_window(AW_root *aw_root, AW_CL cl_weighte
         aws->at("close");
         aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE");
-        
+
         aws->at("help");
         aws->callback(AW_POPUP_HELP, (AW_CL)"di_clusters.hlp");
         aws->create_button("HELP", "HELP");
@@ -845,19 +845,19 @@ AW_window *DI_create_cluster_detection_window(AW_root *aw_root, AW_CL cl_weighte
         aws->button_length(18);
 
         // column 1
-        
+
         aws->at("mark_all"); aws->callback(mark_clusters, ALL_CLUSTERS, true); aws->create_button("MARKALL", "Mark all");
-        
+
         aws->at("auto_mark");  aws->create_toggle(AWAR_CLUSTER_AUTOMARK);
         aws->at("mark_rep");   aws->create_toggle(AWAR_CLUSTER_MARKREP);
         aws->at("select_rep"); aws->create_toggle(AWAR_CLUSTER_SELECTREP);
-        
+
         aws->at("mark"); aws->callback(mark_clusters, SEL_CLUSTER, true); aws->create_button("MARK", "Mark cluster");
 
         // column 2
 
         aws->at("group"); aws->callback(popup_group_clusters_window); aws->create_button("GROUP", "Cluster groups..");
-        
+
         // store/restore
 
         aws->at("store_all"); aws->callback(store_clusters,  ALL_CLUSTERS); aws->create_button("STOREALL", "Store all");

@@ -21,7 +21,7 @@ public:
     SEC_base_part_iterator(SEC_root *root)
         : start(root->get_root_loop()->get_fixpoint_strand()), curr(start)
     {}
-    
+
     SEC_base_part& operator*() { return *curr; }
     SEC_base_part* operator->() { return curr; }
 
@@ -71,13 +71,13 @@ public:
         }
         return *this;
     }
-    
+
     operator bool() const { return part; }
 };
 
 
 // iterates over all strands in one loop (starting with fixpoint strand)
-class SEC_strand_iterator { 
+class SEC_strand_iterator {
     SEC_helix_strand *start;
     SEC_helix_strand *curr;
 public:
@@ -120,7 +120,7 @@ public:
     }
 
     operator bool() const { return strand_iter(); }
-    
+
     SEC_helix_strand *get_previous_strand() { return &*strand_iter(); }
 };
 

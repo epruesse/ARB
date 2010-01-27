@@ -247,7 +247,7 @@ int ALI_PT::find_family(ALI_SEQUENCE *sequence, int find_type)
             } while (strcmp(seq_name, sequence->name()) == 0);
         } while (number < fam_list_max &&
                  (float) matches / (float) max_matches > percent_min);
-                
+
         /* make the extension list */
         number = 0;
         while (number < ext_list_max) {

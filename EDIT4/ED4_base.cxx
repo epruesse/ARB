@@ -881,7 +881,7 @@ void ED4_sequence_terminal_basic::calc_intervall_displayed_in_rectangle(AW_recta
     int rel_left_x =  (int)(rect->l-x);
     int rel_right_x = (int)(rect->r-x);
 
-    *left_index  = (int)((rel_left_x-CHARACTEROFFSET)/length_of_char); 
+    *left_index  = (int)((rel_left_x-CHARACTEROFFSET)/length_of_char);
     *right_index = (int)((rel_right_x-CHARACTEROFFSET)/length_of_char) + 1;
 
     if (*right_index > MAXSEQUENCECHARACTERLENGTH) *right_index = MAXSEQUENCECHARACTERLENGTH;
@@ -902,7 +902,7 @@ void ED4_sequence_terminal_basic::calc_update_intervall(long *left_index, long *
 
     int rel_right_x = (int)((dev->clip_rect.r-x) + (coords->window_left_clip_point-x));
 
-    *left_index  = (int)((rel_left_x-CHARACTEROFFSET)/length_of_char); 
+    *left_index  = (int)((rel_left_x-CHARACTEROFFSET)/length_of_char);
     *right_index = (int)((rel_right_x-CHARACTEROFFSET)/length_of_char) + 1;
 
     if (*right_index >= MAXSEQUENCECHARACTERLENGTH) *right_index = MAXSEQUENCECHARACTERLENGTH-1;
@@ -912,7 +912,7 @@ void ED4_sequence_terminal_basic::calc_update_intervall(long *left_index, long *
 void ED4_manager::create_consensus(ED4_group_manager *upper_group_manager, aw_status_counter *progress) {
     // creates consensus
     // is called by group manager
-    
+
     ED4_group_manager *group_manager_for_child = upper_group_manager;
 
     if (is_group_manager()) {

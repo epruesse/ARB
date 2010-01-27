@@ -1,15 +1,15 @@
-//  ==================================================================== // 
-//                                                                       // 
-//    File      : probe_match_parser.hxx                                 // 
-//    Purpose   : parse the results of a probe match                     // 
-//                                                                       // 
-//                                                                       // 
-//  Coded by Ralf Westram (coder@reallysoft.de) in June 2004             // 
-//  Copyright Department of Microbiology (Technical University Munich)   // 
-//                                                                       // 
-//  Visit our web site at: http://www.arb-home.de/                       // 
-//                                                                       // 
-//  ==================================================================== // 
+//  ==================================================================== //
+//                                                                       //
+//    File      : probe_match_parser.hxx                                 //
+//    Purpose   : parse the results of a probe match                     //
+//                                                                       //
+//                                                                       //
+//  Coded by Ralf Westram (coder@reallysoft.de) in June 2004             //
+//  Copyright Department of Microbiology (Technical University Munich)   //
+//                                                                       //
+//  Visit our web site at: http://www.arb-home.de/                       //
+//                                                                       //
+//  ==================================================================== //
 
 #ifndef PROBE_MATCH_PARSER_HXX
 #define PROBE_MATCH_PARSER_HXX

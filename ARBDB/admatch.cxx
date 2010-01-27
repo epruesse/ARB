@@ -11,7 +11,7 @@
 // =============================================================== //
 
 #include "gb_local.h"
- 
+
 #include <cctype>
 #include <regex.h>
 
@@ -107,7 +107,7 @@ GBS_regex *GBS_compile_regexpr(const char *regexpr, GB_CASE case_flag, GB_ERROR 
 
         regerror(errcode, &comreg->compiled, buf, size);
         *error = buf;
-        
+
         free(comreg);
         comreg = NULL;
     }
@@ -229,7 +229,7 @@ char *GBS_regreplace(const char *str, const char *regReplExpr, GB_ERROR *error) 
      * - NULL if something went wrong (in this case 'error' contains the reason)
      *
      * 'replace' may contain several special substrings:
-     * 
+     *
      *     "\n" gets replaced by '\n'
      *     "\t" -------''------- '\t'
      *     "\\" -------''------- '\\'
@@ -253,7 +253,7 @@ char *GBS_regreplace(const char *str, const char *regReplExpr, GB_ERROR *error) 
         }
 
         if (!sep) {
-            // Warning: GB_command_interpreter() tests for this error message - don't change 
+            // Warning: GB_command_interpreter() tests for this error message - don't change
             *error = "Missing '/' between search and replace string";
         }
         else {
@@ -276,13 +276,13 @@ char *GBS_regreplace(const char *str, const char *regReplExpr, GB_ERROR *error) 
                     else {      // found match
                         size_t p;
                         char   c;
-                        
+
                         GBS_strncat(out, str, match[0].rm_so);
 
                         for (p = 0; (c = replexpr[p]); ++p) {
                             if (c == '\\') {
                                 c = replexpr[++p];
-                                if (!c) break; 
+                                if (!c) break;
                                 if (c >= '0' && c <= '9') {
                                     regoff_t start = match[c-'0'].rm_so;
                                     GBS_strncat(out, str+start, match[c-'0'].rm_eo-start);
@@ -323,13 +323,13 @@ char *GBS_regreplace(const char *str, const char *regReplExpr, GB_ERROR *error) 
 GB_CSTR GBS_find_string(GB_CSTR str, GB_CSTR substr, int match_mode) {
     /* search a substring in another string
      * match_mode == 0     -> exact match
-     * match_mode == 1     -> a==A 
+     * match_mode == 1     -> a==A
      * match_mode == 2     -> a==a && a==?
      * match_mode == else  -> a==A && a==?
      */
     const char *p1, *p2;
     char        b;
-    
+
     switch (match_mode) {
 
         case 0: // exact match
@@ -416,7 +416,7 @@ bool GBS_string_matches(const char *str, const char *search, GB_CASE case_sens)
  *      *   several characters
  *
  * if 'case_sens' == GB_IGNORE_CASE -> change all letters to uppercase
- * 
+ *
  * returns true if strings are equal, false otherwise
  */
 {
@@ -573,7 +573,7 @@ ATTRIBUTED(__ATTR__USERESULT,
                                     GBS_strcat(strstruct, h);
                                     free(h);
                                     break;
-                                    
+
                                 case '|':
                                     h = GB_command_interpreter(GB_get_root(gb_container), entry, psym+1, gb_container, 0);
                                     if (!h) return GB_await_error();
@@ -581,7 +581,7 @@ ATTRIBUTED(__ATTR__USERESULT,
                                     GBS_strcat(strstruct, h);
                                     free(h);
                                     break;
-                                    
+
                                 case '#':
                                     if (!gb_entry) {
                                         GBS_strcat(strstruct, psym+1);
@@ -635,14 +635,14 @@ ATTRIBUTED(__ATTR__USERESULT,
             default:
                 GBS_chrcat(strstruct, c);
                 break;
-        } 
+        }
     }
     return 0;
 }
 
 static char *gbs_compress_command(const char *com) {
     /* Prepare SRT.
-     * 
+     *
      * Replaces all
      *   '=' by GBS_SET
      *   ':' by GBS_SEP
@@ -687,31 +687,31 @@ static char *gbs_compress_command(const char *com) {
 char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_container)
      /* GBS_string_eval replaces substrings in source
       * Syntax: command = "oliver=olli:peter=peti"
-      * 
+      *
       * Returns a heapcopy of result of replacement.
-      * 
+      *
       *         * is a wildcard for any number of character
       *         ? is a wildcard for exactly one character
-      * 
+      *
       * To reference to the wildcards on the left side of the '='
       * use ? and *, to reference in a different order use:
       *         *0 to reference to the first occurrence of *
       *         *1          second
       *         ...
       *         *9
-      * 
+      *
       * if the last and first characters of the search string are no '*' wildcards then
       * the replace is repeated as many times as possible
       * '\' is the escape character: e.g. \n is newline; '\\' is '\'; '\=' is '='; ....
-      * 
+      *
       * eg:
       * print first three characters of first word and the whole second word:
-      * 
+      *
       *         *(arb_key)          is the value of the a database entry arb key
       *         *(arb_key#string)   value of the database entry or 'string' if the entry does not exist
       *         *(arb_key\:SRT)     runs SRT recursively on the value of the database entry
       *         *([arb_key]|ACI)    runs the ACI command interpreter on the value of the database entry (or on an empty string)
-      * 
+      *
       * If an error occurs it returns NULL - in this case the error was exported.
       */
 {
@@ -850,7 +850,7 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
              * already_transferred:     pointer to the start of the unparsed string
              * bar:                     the replace string
              */
-            
+
             // now look for the replace string
             GBS_strncat(strstruct, already_transferred, start_match-already_transferred); // cat old data
             error               = gbs_build_replace_string(strstruct, bar, wildcard, max_wildcard, // do the command
@@ -870,7 +870,7 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
                 GB_export_error(error);
                 return 0;
             }
-        } 
+        }
     gbs_pars_unsuccessfull :
         GBS_strcat(strstruct, already_transferred); // cat the rest data
 

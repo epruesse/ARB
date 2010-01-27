@@ -73,26 +73,26 @@ void AW_window_menu_modes_opengl::init(AW_root *root_in, const char *wid,
     p_w->shell = aw_create_shell(this, true, true, width, height, posx, posy);
 
     main_window = XtVaCreateManagedWidget("mainWindow1",
-                                          xmMainWindowWidgetClass, p_w->shell, 
+                                          xmMainWindowWidgetClass, p_w->shell,
                                           NULL);
 
     p_w->menu_bar[0] = XtVaCreateManagedWidget("menu1", xmRowColumnWidgetClass,
-                                               main_window, 
-                                               XmNrowColumnType, XmMENU_BAR, 
+                                               main_window,
+                                               XmNrowColumnType, XmMENU_BAR,
                                                NULL);
 
     // create shell for help-cascade
     help_popup = XtVaCreatePopupShell("menu_shell", xmMenuShellWidgetClass,
-                                      p_w->menu_bar[0], 
-                                      XmNwidth, 1, 
-                                      XmNheight, 1, 
-                                      XmNallowShellResize, true, 
-                                      XmNoverrideRedirect, true, 
+                                      p_w->menu_bar[0],
+                                      XmNwidth, 1,
+                                      XmNheight, 1,
+                                      XmNallowShellResize, true,
+                                      XmNoverrideRedirect, true,
                                       NULL);
 
     // create row column in Pull-Down shell
     p_w->help_pull_down = XtVaCreateWidget("menu_row_column",
-                                           xmRowColumnWidgetClass, help_popup, 
+                                           xmRowColumnWidgetClass, help_popup,
                                            XmNrowColumnType, XmMENU_PULLDOWN,
                                            NULL);
 

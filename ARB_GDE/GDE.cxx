@@ -37,7 +37,7 @@ char *GDE_makeawarname(GmenuItem *gmenuitem, long i) {
     char *gmenu_label     = GBS_string_2_key(gmenuitem->parent_menu->label);
     char *gmenuitem_label = GBS_string_2_key(gmenuitem->label);
     char *arg             = GBS_string_2_key(gmenuitem->arg[i].symbol);
-    
+
     char *name = GBS_global_string_copy("gde/%s/%s/%s", gmenu_label, gmenuitem_label, arg);
 
     free(gmenu_label);
@@ -117,10 +117,10 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
 #define BUFSIZE 200
     char bf[BUFSIZE+1];
 #if defined(ASSERTION_USED)
-    int printed = 
+    int printed =
 #endif // ASSERTION_USED
         sprintf(bf, "GDE / %s / %s", gmenuitem->parent_menu->label, gmenuitem->label);
-    
+
     gde_assert(printed<=BUFSIZE);
     char seqtype = gmenuitem->seqtype;
 
@@ -218,7 +218,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
 
                 aws->button_length(12);
                 aws->at("filtername");
-                if (!agde_filtercd) { // create only one filter - used for all GDE calls 
+                if (!agde_filtercd) { // create only one filter - used for all GDE calls
                     agde_filtercd = awt_create_select_filter(aws->get_root(), GLOBAL_gb_main, AWAR_GDE_FILTER_NAME);
                 }
                 aws->callback((AW_CB2)AW_POPUP, (AW_CL)awt_create_select_filter_win, (AW_CL)agde_filtercd);
@@ -381,7 +381,7 @@ void GDE_load_menu(AW_window *awm, AW_active mask, const char *menulabel, const 
     //
     // If 'menulabel' == NULL -> load all menus
     // Else                   -> load specified menu
-    // 
+    //
     // If 'menuitemlabel' == NULL -> load complete menu(s)
     // Else                       -> load only specific menu topic
 
@@ -483,14 +483,14 @@ void create_gde_var(AW_root  *aw_root, AW_default aw_def,
     }
 
     aw_root->awar_string("presets/use",             "", GLOBAL_gb_main);
-    
+
     aw_root->awar_string(AWAR_GDE_FILTER_NAME,      "", aw_def);
     aw_root->awar_string(AWAR_GDE_FILTER_FILTER,    "", aw_def);
     aw_root->awar_string(AWAR_GDE_FILTER_ALIGNMENT, "", aw_def);
 
     aw_root->awar_int(AWAR_GDE_CUTOFF_STOPCODON, 0, aw_def);
     aw_root->awar_int(AWAR_GDE_SPECIES,          1, aw_def);
-    
+
     aw_root->awar_int(AWAR_GDE_COMPRESSION, COMPRESS_NONINFO_COLUMNS, aw_def);
 
     aw_root->awar(AWAR_GDE_ALIGNMENT)->map("presets/use");

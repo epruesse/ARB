@@ -87,7 +87,7 @@ bool PS_get_probe_for_path(IDSet& _path, unsigned int _GC_content, unsigned int 
         printf("  ERROR : failed to find probe with GC-content (%u)\n", _GC_content);
         return false;
     }
-    
+
     return true;
 }
 

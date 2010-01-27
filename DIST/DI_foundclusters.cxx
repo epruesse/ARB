@@ -112,7 +112,7 @@ static string *get_downgroups(const ARB_countedTree *ct, size_t& group_members) 
                 if (!leftgroups)       { result = rightgroups; rightgroups = NULL; }
                 else if (!rightgroups) { result = leftgroups; leftgroups = NULL; }
                 else                     result = new string(*leftgroups+"+"+*rightgroups);
-                
+
                 delete leftgroups;
                 delete rightgroups;
             }
@@ -199,8 +199,8 @@ string Cluster::build_group_name(const ARB_countedTree *ct) {
 const char *Cluster::description() const {
     return GBS_global_string("%3zu  dist: %5.3f [%5.3f - %5.3f]  %s",
                              get_member_count(),
-                             mean_dist*100.0, 
-                             min_dist*100.0, 
+                             mean_dist*100.0,
+                             min_dist*100.0,
                              max_dist*100.0,
                              name.c_str());
 }

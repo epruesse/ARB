@@ -220,7 +220,7 @@ public:
 
 class ED4_list {
     // class which implements a general purpose linked list of void*
-    
+
     ED4_list_elem *my_first;
     ED4_list_elem *my_last;
     ED4_index      my_no_of_entries;
@@ -1035,7 +1035,7 @@ public:
 class ED4_root {
     int ED4_ROOT;
     ED4_root(const ED4_root&);                      // copy-constructor not allowed
-    
+
 public:
     AW_root                 *aw_root;               // Points to 'AW-Window-Controller'
     AW_default               db;                    // Default Properties database
@@ -1143,7 +1143,7 @@ public:
 
 // ------------------------
 //      manager classes
-//      
+//
 // All manager classes only differ in their static properties.
 // This kind of construction was chosen for using a minimum of RAM
 
@@ -1424,7 +1424,7 @@ class ED4_multi_name_manager : public ED4_manager
 {
     // contains info concerning the species
     // it's linked into speciesmanager
-    
+
     ED4_multi_name_manager(const ED4_multi_name_manager&); // copy-constructor not allowed
 public:
     ED4_multi_name_manager  (const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0);
@@ -1436,7 +1436,7 @@ public:
 };
 
 
-class ED4_name_manager : public ED4_manager 
+class ED4_name_manager : public ED4_manager
 {
     // contains speciesname and other info concerning the species
     // it's linked into speciesmanager
@@ -1507,7 +1507,7 @@ public:
 class ED4_sequence_terminal_basic : public ED4_text_terminal
 {
 public:
-    
+
     char *species_name;
 
     ED4_sequence_terminal_basic(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
@@ -1521,7 +1521,7 @@ public:
     }
     void calc_intervall_displayed_in_rectangle(AW_rectangle *area_rect, long *left_index, long *right_index);
     void calc_update_intervall(long *left_index, long *right_index);
-    
+
 };
 
 class ED4_AA_sequence_terminal : public ED4_sequence_terminal_basic {
@@ -1529,7 +1529,7 @@ class ED4_AA_sequence_terminal : public ED4_sequence_terminal_basic {
     //       for the corresponding gene (DNA) sequence. It is used in ProteinViewer Module and should not be
     //       used for drawing aminoacid sequence alone as in protein alignment. Aminoacid sequences are
     //       handled by the standard "ED4_sequence_terminal" class.
-    
+
     virtual ED4_returncode  draw(int only_text = 0);
     ED4_AA_sequence_terminal(const ED4_AA_sequence_terminal&);
 public:
@@ -1567,7 +1567,7 @@ public:
     virtual int get_length() const { return ED4_sequence_terminal_basic::get_length(); }
 
     ED4_SearchResults& results() const { return searchResults; }
-    
+
     ED4_columnStat_terminal *corresponding_columnStat_terminal() const {
         ED4_base *col_term = get_parent(ED4_L_MULTI_SEQUENCE)->search_spec_child_rek(ED4_L_COL_STAT);
         return col_term ? col_term->to_columnStat_terminal() : 0;

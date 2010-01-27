@@ -22,25 +22,25 @@
 // pos_start             = start-position(s) of gene(-parts); range is 1...genomeLength
 // pos_stop              = end-position(s)   of gene(-parts); range is 1...genomeLength
 // pos_certain           = contains pairs of chars (1. for start-pos, 2. for end-pos)
-// 
+//
 //                         '=' means 'pos is exact'
 //                         '<' means 'pos may be lower'
 //                         '>' means 'pos may be higher'
 //                         '+' means 'pos is directly behind'
 //                         '-' means 'pos is directly before'
-//                         
+//
 //                         if pos_certain is missing -> like '=='
-//                         
+//
 // pos_complement        = 1 -> CDS is on opposite strand
 
 // fields for splitted genes:
 // --------------------------
 // pos_joined         = xxx -> gene consists of abs(xxx) parts (if missing xxx == 1 is assumed)
-// 
+//
 // if abs(xxx)>1, the gene consists of several parts.
 // In that case the fields 'pos_start', 'pos_stop',  'pos_certain' and 'pos_complement'
 // contain multiple comma-separated values - one for each joined part.
-// 
+//
 // if xxx is < -1, then joining the parts does not make sense (or nothing is known about it)
 //
 // Note: Please do not access these fields manually - use GEN_read_position!
@@ -50,7 +50,7 @@
 //
 // During import ARB tries to reproduce existing translations.
 // If it succeeds, it removes the translation.
-// 
+//
 // ARB_translation      = written if ARB translation differs from original translation
 //                        (original translation is not deleted in this case)
 // ARB_translation_note = additional info about failed translation
@@ -60,7 +60,7 @@
 // identical location exists as well, ARB sets ARB_display_hidden to 1 for
 // the 'gene'. For the other gene with diff. type ARB sets a reference to the
 // hidden 'gene':
-// 
+//
 // ARB_is_gene          = shortname of related hidden gene
 
 
@@ -122,11 +122,11 @@ void GEN_gene::init(GBDATA *gb_gene_, GEN_root *root_) {
 void GEN_gene::load_location(int part, const GEN_position *location) {
     gen_assert(part >= 1);
     gen_assert(part <= location->parts);
-  
+
     pos1       = location->start_pos[part-1];
     pos2       = location->stop_pos[part-1];
     complement = location->complement[part-1];
-  
+
     gen_assert(pos1 <= pos2);
 }
 
@@ -139,17 +139,17 @@ GEN_gene::GEN_gene(GBDATA *gb_gene_, GEN_root *root_, const GEN_position *locati
 GEN_gene::GEN_gene(GBDATA *gb_gene_, GEN_root *root_, const GEN_position *location, int partNumber) {
     //  partNumber 1..n which part of a splitted gene
     //  maxParts   1..n of how many parts consists this gene?
- 
+
     init(gb_gene_, root_);
     load_location(partNumber, location);
- 
+
     {
         char buffer[30];
         sprintf(buffer, " (%i/%i)", partNumber, location->parts);
         nodeInfo = name+buffer;
     }
 }
- 
+
 void GEN_gene::reinit_NDS() const {
     nodeInfo = GEN_make_node_text_nds(root->GbMain(), gb_gene, 0);
 }

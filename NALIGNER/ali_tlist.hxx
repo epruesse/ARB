@@ -82,12 +82,12 @@ public:
     }
 
     ALI_TLIST() {
-        first_elem = last_elem = current_elem = marked_elem = 0; 
+        first_elem = last_elem = current_elem = marked_elem = 0;
         cardinal = 0;
     }
-    ALI_TLIST(T &a) { 
+    ALI_TLIST(T &a) {
         marked_elem = 0;
-        first_elem = last_elem = current_elem = new ALI_TLIST_ELEM<T>(a); 
+        first_elem = last_elem = current_elem = new ALI_TLIST_ELEM<T>(a);
         cardinal = 1;
     }
     ~ALI_TLIST() {
@@ -105,7 +105,7 @@ public:
         printf("List (%ld):\n", cardinal);
         printf("first = %p  last = %p  current = %p  marked = %p\n",
                first_elem, last_elem, current_elem, marked_elem);
-        for (akt = first_elem, l = 0; akt != 0 && akt != last_elem; 
+        for (akt = first_elem, l = 0; akt != 0 && akt != last_elem;
              l++, akt = akt->next_elem) {
             printf("%2ld ", l);
             akt->print();
@@ -166,35 +166,35 @@ public:
     int cardinality() {
         return cardinal;
     }
-    int is_empty() { 
-        return (current_elem == 0); 
+    int is_empty() {
+        return (current_elem == 0);
     }
-    int is_next() { 
-        return (current_elem != 0 && current_elem->next_elem != 0); 
+    int is_next() {
+        return (current_elem != 0 && current_elem->next_elem != 0);
     }
-    int is_prev() { 
-        return (current_elem != 0 && current_elem->prev_elem != 0); 
+    int is_prev() {
+        return (current_elem != 0 && current_elem->prev_elem != 0);
     }
-    T current() { 
-        return current_elem->info; 
+    T current() {
+        return current_elem->info;
     }
-    T first() { 
-        current_elem = first_elem; 
-        return current_elem->info; 
+    T first() {
+        current_elem = first_elem;
+        return current_elem->info;
     }
-    T last() { 
-        current_elem = last_elem; 
-        return current_elem->info; 
+    T last() {
+        current_elem = last_elem;
+        return current_elem->info;
     }
-    T next() { 
+    T next() {
         if (current_elem->next_elem != 0)
             current_elem = current_elem->next_elem;
-        return current_elem->info; 
+        return current_elem->info;
     }
-    T prev() { 
+    T prev() {
         if (current_elem->prev_elem != 0)
             current_elem = current_elem->prev_elem;
-        return current_elem->info; 
+        return current_elem->info;
     }
 };
 
@@ -220,7 +220,7 @@ void ALI_TLIST<T>::append_end(ALI_TLIST<T> &a)
 {
     ALI_TLIST_ELEM<T> *elem, *akt_elem;
 
-    for (akt_elem = a.first_elem; akt_elem != 0; 
+    for (akt_elem = a.first_elem; akt_elem != 0;
          akt_elem = akt_elem->next_elem) {
         elem = new ALI_TLIST_ELEM<T>(akt_elem->info);
         if (last_elem != 0) {
@@ -256,7 +256,7 @@ void ALI_TLIST<T>::append_front(ALI_TLIST<T> &a)
 {
     ALI_TLIST_ELEM<T> *elem, *akt_elem;
 
-    for (akt_elem = a.last_elem; akt_elem != 0; 
+    for (akt_elem = a.last_elem; akt_elem != 0;
          akt_elem = akt_elem->prev_elem) {
         elem = new ALI_TLIST_ELEM<T>(akt_elem->info);
         if (first_elem != 0) {
@@ -297,7 +297,7 @@ void ALI_TLIST<T>::insert_after(ALI_TLIST<T> &a)
 {
     ALI_TLIST_ELEM<T> *elem, *akt_elem;
 
-    for (akt_elem = a.first_elem; akt_elem != 0; 
+    for (akt_elem = a.first_elem; akt_elem != 0;
          akt_elem = akt_elem->next_elem) {
         elem = new ALI_TLIST_ELEM<T>(akt_elem->info);
         if (current_elem != 0) {
@@ -343,7 +343,7 @@ void ALI_TLIST<T>::insert_bevor(ALI_TLIST<T> &a)
 {
     ALI_TLIST_ELEM<T> *elem, *akt_elem;
 
-    for (akt_elem = a.last_elem; akt_elem != 0; 
+    for (akt_elem = a.last_elem; akt_elem != 0;
          akt_elem = akt_elem->prev_elem) {
         elem = new ALI_TLIST_ELEM<T>(akt_elem->info);
         if (current_elem != 0) {

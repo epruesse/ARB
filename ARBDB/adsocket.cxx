@@ -50,7 +50,7 @@ void gbcms_sigpipe(int) {
 void gbcm_read_flush(int socket) {
     gb_local->write_ptr  = gb_local->write_buffer;
     gb_local->write_free = gb_local->write_bufsize;
-    socket               = socket; // @@@ wtf? 
+    socket               = socket; // @@@ wtf?
 }
 
 static long gbcm_read_buffered(int socket, char *ptr, long size) {
@@ -330,7 +330,7 @@ long gbcm_write_two(int socket, long a, long c)
 
 long gbcm_read_two(int socket, long a, long *b, long *c) {
     /*! read two values: length and any user long
-     *  
+     *
      *  if data is send by gbcm_write_two() then @param b should be zero
      *  and is not used!
      */
@@ -589,7 +589,7 @@ GB_ERROR GB_rename_file(const char *oldpath, const char *newpath) {
 char *GB_read_fp(FILE *in) {
     /*! like GB_read_file(), but works on already open file
      * (useful together with GB_fopen_tempfile())
-     * 
+     *
      * Note: File should be opened in text-mode (e.g. "rt")
      */
 
@@ -604,9 +604,9 @@ char *GB_read_fp(FILE *in) {
 
 char *GB_read_file(const char *path) {
     /*! read content of file 'path' into string (heap-copy)
-     * 
+     *
      * if path is '-', read from STDIN
-     * 
+     *
      * @return NULL in case of error (which is exported then)
      */
     char *result = 0;
@@ -733,7 +733,7 @@ GB_ERROR GB_xterm() {
 
 GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) {
     // goes to header: __ATTR__USERESULT
-    
+
     // runs a command in an xterm
     // if 'background' is true -> run asynchronous
     // if 'wait_only_if_error' is true -> asynchronous does wait for keypress only if cmd fails
@@ -943,7 +943,7 @@ GB_CSTR GB_getenvARBMACRO() {
 static GB_CSTR getenv_autodirectory(const char *envvar, const char *defaultDirectory) {
     static const char *dir = 0;
     if (!dir) {
-        dir = getenv_existing_directory(envvar); 
+        dir = getenv_existing_directory(envvar);
         if (!dir) {
             dir = GBS_eval_env(defaultDirectory);
             if (!GB_is_directory(dir)) {
@@ -1071,10 +1071,10 @@ int GB_host_is_local(const char *hostname) {
 GB_ULONG GB_get_physical_memory() {
     // Returns the physical available memory size in k available for one process
     GB_ULONG memsize; // real existing memory in k
-    
-#if defined(LINUX) 
+
+#if defined(LINUX)
     {
-        long pagesize = sysconf(_SC_PAGESIZE); 
+        long pagesize = sysconf(_SC_PAGESIZE);
         long pages    = sysconf(_SC_PHYS_PAGES);
 
         memsize = (pagesize/1024) * pages;
@@ -1147,7 +1147,7 @@ static char path_buf[2][PATH_MAX];
 GB_CSTR GB_append_suffix(const char *name, const char *suffix) {
     // if suffix != NULL -> append .suffix
     // (automatically removes duplicated '.'s)
-    
+
     GB_CSTR result = name;
     if (suffix) {
         while (suffix[0] == '.') suffix++;
@@ -1247,7 +1247,7 @@ GB_CSTR GB_path_in_ARBLIB(const char *relative_path_left, const char *anypath_ri
 
 FILE *GB_fopen_tempfile(const char *filename, const char *fmode, char **res_fullname) {
     // fopens a tempfile
-    // 
+    //
     // Returns
     // - NULL in case of error (which is exported then)
     // - otherwise returns open filehandle
@@ -1264,7 +1264,7 @@ FILE *GB_fopen_tempfile(const char *filename, const char *fmode, char **res_full
     fp = fopen(file, fmode);
     if (fp) {
         // make file private
-        if (fchmod(fileno(fp), S_IRUSR|S_IWUSR) != 0) { 
+        if (fchmod(fileno(fp), S_IRUSR|S_IWUSR) != 0) {
             error = GB_export_IO_error("changing permissions of", file);
         }
     }
@@ -1301,7 +1301,7 @@ char *GB_unique_filename(const char *name_prefix, const char *suffix) {
     // generates a unique (enough) filename
     //
     // scheme: name_prefix_USER_PID_COUNT.suffix
-    
+
     static int counter = 0;
     return GBS_global_string_copy("%s_%s_%i_%i.%s",
                                   name_prefix,
@@ -1338,7 +1338,7 @@ void GB_split_full_path(const char *fullpath, char **res_dir, char **res_fullnam
     // If result pointers (res_*) are non-NULL, they are assigned heap-copies of the splitted parts.
     // If parts are not valid (e.g. cause 'fullpath' doesn't have a .suffix) the corresponding result pointer
     // is set to NULL.
-    // 
+    //
     // The '/' and '.' characters are not included in the results (except the '.' in 'res_fullname')
 
     if (fullpath && fullpath[0]) {

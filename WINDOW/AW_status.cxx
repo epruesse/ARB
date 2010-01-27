@@ -413,7 +413,7 @@ static void aw_status_timer_event(AW_root *awr, AW_CL, AW_CL)
         int action = aw_question("Couldn't quit properly in time.\n"
                                  "Either wait again for the abortion,\n"
                                  "kill the calculating process or\n"
-                                 "continue the calculation.", 
+                                 "continue the calculation.",
                                  "Wait again,Kill,Continue");
 
         switch (action) {
@@ -437,7 +437,7 @@ static void aw_status_timer_event(AW_root *awr, AW_CL, AW_CL)
                                              "Subtitle: %s\n",
                                              title, subtitle));
                 aw_stg.mode = AW_STATUS_OK;
-                
+
                 free(subtitle);
                 free(title);
                 break;
@@ -675,7 +675,7 @@ static void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
                     if (aw_stg.last_est_count == AW_EST_BUFFER) { // now we can estimate!
                         long used_estimation = 0;
                         int  i;
-                        
+
                         for (i = 0; i<AW_EST_BUFFER; ++i) {
                             used_estimation += aw_stg.last_estimation[i];
                         }
@@ -696,7 +696,7 @@ static void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
                     }
 
                     awr->awar(AWAR_STATUS_ELAPSED)->write_string(buffer);
-                    
+
 #if defined(TRACE_STATUS)
                     fprintf(stderr, "gauge=%i\n", gaugeValue); fflush(stdout);
 #endif // TRACE_STATUS
@@ -994,7 +994,7 @@ int aw_question(const char *question, const char *buttons, bool fixedSizeButtons
     AW_root *root = AW_root::THIS;
 
     AW_window_message *aw_msg;
-    char              *button_list  = strdup(buttons ? buttons : "OK"); 
+    char              *button_list  = strdup(buttons ? buttons : "OK");
 
     if (button_list[0] == 0) {
         freedup(button_list, "Maybe ok,EXIT");
@@ -1303,9 +1303,9 @@ void file_selection_cb(AW_window *aw, AW_CL cd1) {
 
 static AW_window_message *new_input_window(AW_root *root, const char *title, const char *buttons) {
     // helper for aw_input and aw_string_selection
-    // 
-    // 'buttons' comma separated list of button names (buttons starting with \n force a newline)   
-    
+    //
+    // 'buttons' comma separated list of button names (buttons starting with \n force a newline)
+
     AW_window_message *aw_msg = new AW_window_message;
 
     aw_msg->init(root, title, false);
@@ -1381,7 +1381,7 @@ char *aw_input(const char *title, const char *prompt, const char *default_input)
     // title         = title of window
     // prompt        = question
     // default_input = default for answer (NULL -> "")
-    // 
+    //
     // result is NULL, if cancel was pressed
     // otherwise result contains the user input (maybe an empty string)
 
@@ -1437,7 +1437,7 @@ char *aw_input2awar(const char *title, const char *prompt, const char *awar_name
 
     awar->write_string(result);
     free(default_value);
-    
+
     return result;
 }
 
@@ -1571,7 +1571,7 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
 char *aw_string_selection2awar(const char *title, const char *prompt, const char *awar_name, const char *value_list, const char *buttons, char *(*check_fun)(const char*)) {
     // params see aw_string_selection
     // default_value is taken from and result is written back to awar 'awar_name'
-    
+
     AW_root *aw_root       = AW_root::THIS;
     AW_awar *awar          = aw_root->awar(awar_name);
     char    *default_value = awar->read_string();
@@ -1610,7 +1610,7 @@ char *aw_file_selection(const char *title, const char *dir, const char *def_name
 
         aw_msg->init(root, "AW_FILE_SELECTION", "File selection");
         aw_msg->allow_delete_window(false); // disable closing the window
-        
+
         aw_msg->load_xfig("fileselect.fig");
 
         aw_msg->at("title");
@@ -1702,7 +1702,7 @@ static char *get_full_qualified_help_file_name(const char *helpfile, bool path_f
                 free(gen_source);
                 free(devel_source);
                 free(gen_doc_path);
-#else            
+#else
                 result = GBS_global_string("%s/%s", GB_getenvDOCPATH(), rel_path); // use real help file in RELEASE
 #endif // DEBUG
             }
@@ -1825,7 +1825,7 @@ static void aw_help_back(AW_root *aw_root) {
         const char *sep = strchr(history, '#');
         if (sep) {
             char *first = GB_strpartdup(history, sep-1);
-            
+
             freeset(aw_help_global.history, GBS_global_string_copy("%s#%s", sep+1, first)); // wrap first to end
             free(first);
             aw_help_select_newest_in_history(aw_root);
@@ -1837,7 +1837,7 @@ static void aw_help_back(AW_window *aww) { aw_help_back(aww->get_root()); }
 static GB_ERROR aw_help_show_external_format(const char *help_file, const char *viewer) {
     // Called to show *.ps or *.pdf in external viewer.
     // Can as well show *.suffix.gz (decompresses to temporary *.suffix)
-    
+
     struct stat st;
     GB_ERROR    error = NULL;
     char        sys[1024];
@@ -1859,7 +1859,7 @@ static GB_ERROR aw_help_show_external_format(const char *help_file, const char *
 
             char *tempname     = GB_unique_filename(name, suffix);
             char *uncompressed = GB_create_tempfile(tempname);
-                
+
             GBS_global_string_to_buffer(sys, sizeof(sys),
                                         "(gunzip <%s >%s ; %s %s ; rm %s) &",
                                         compressed, uncompressed,
@@ -1989,7 +1989,7 @@ static void aw_help_search(AW_window *aww) {
     if (searchtext[0]==0) error = "Empty searchstring";
     else {
         char        *helpfilename = 0;
-        static char *last_help; // tempfile containing last search result 
+        static char *last_help; // tempfile containing last search result
 
         // replace all spaces in 'searchtext' by '.*'
         freeset(searchtext, GBS_string_eval(searchtext, " =.*", 0));
@@ -2063,7 +2063,7 @@ static void aw_help_search(AW_window *aww) {
     }
 
     if (error) aw_message(error);
-    
+
     free(searchtext);
 }
 
@@ -2129,7 +2129,7 @@ void AW_POPUP_HELP(AW_window *aw, AW_CL /* char */ helpcd) {
     aw_assert(help_file);
 
     awr->awar(AWAR_HELPFILE)->write_string(help_file);
-    
+
     if (!GBS_string_matches(help_file, "*.ps", GB_IGNORE_CASE) &&
         !GBS_string_matches(help_file, "*.pdf", GB_IGNORE_CASE))
     { // don't open help if postscript or pdf file

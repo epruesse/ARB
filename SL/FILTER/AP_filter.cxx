@@ -62,7 +62,7 @@ AP_filter::AP_filter(const char *ifilter, const char *zerobases, size_t size) {
     }
     else {
         init(size);
-        
+
         bool   char2mask[256];
         size_t i;
 
@@ -98,7 +98,7 @@ char *AP_filter::to_string() const {
         data[i] = "01"[filter_mask[i]];
     }
     data[filter_len] = 0;
-    
+
     return data;
 }
 
@@ -175,7 +175,7 @@ AP_weights::AP_weights(const GB_UINT4 *w, size_t wlen, const AP_filter *fil)
     , weights(new GB_UINT4[len])
 {
     af_assert(wlen == fil->get_length());
-    
+
     size_t i, j;
     for (j=i=0; i<wlen; ++j) {
         if (fil->use_position(j)) {

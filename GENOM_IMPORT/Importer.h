@@ -33,7 +33,7 @@ enum FeatureLineType {
     FL_QUALIFIER_QUOTE_OPENED = 16, // start of qualifier with quoted data (e.g. '/product="phosphate')
     FL_CONTINUED_QUOTE_CLOSED = 32, // something terminated by a quote ('"')
     FL_CONTINUED              = 64, // other
-    
+
     // meta types:
     FL_META_QUALIFIER = (FL_QUALIFIER|FL_QUALIFIER_NODATA|FL_QUALIFIER_QUOTED|FL_QUALIFIER_QUOTE_OPENED),
     FL_META_CONTINUED = (FL_CONTINUED_QUOTE_CLOSED|FL_CONTINUED),
@@ -41,7 +41,7 @@ enum FeatureLineType {
 
 class FeatureLine {
     void interpret_as_continued_line();
-public: 
+public:
     string          name;       // feature or qualifier name (only valid for FL_START, FL_QUALIFIER...)
     string          rest;       // rest of line (behind '=' for FL_QUALIFIER..., not for FL_QUALIFIER_NODATA)
     string          orgLine;
@@ -94,7 +94,7 @@ class GenebankImporter : public Importer {
     void         import_section();
     virtual bool readFeatureTableLine(string& line);
     void         parseSequence(const string& tag, const string& headerline);
-    
+
 public:
     GenebankImporter(FileBuffer& Flatfile, DBwriter& DB_writer);
     virtual ~GenebankImporter() {}
@@ -106,7 +106,7 @@ class EmblImporter : public Importer {
     void         import_section();
     virtual bool readFeatureTableLine(string& line);
     void         parseSequence(const string& headerline);
-    
+
 public:
     EmblImporter(FileBuffer& Flatfile, DBwriter& DB_writer);
     virtual ~EmblImporter() {}

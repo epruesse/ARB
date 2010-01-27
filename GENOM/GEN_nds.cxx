@@ -137,7 +137,7 @@ char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode)
                         char *p2 = GB_read_string(gbe);
                         pars     = GB_command_interpreter(gb_main, p2, gen_nds_ms->parsing[i], gbd, 0);
                         free(p2);
-                        
+
                         if (!pars) {
                             pars = strdup("<error>");
                             if (!gen_nds_ms->errorclip++) {
@@ -285,7 +285,7 @@ void GEN_create_select_nds_window(AW_window *aww, char *key_text, AW_CL cgb_main
 #if defined(DEVEL_RALF)
 #warning make this function more general like AWT_popup_select_species_field_window
 #endif // DEVEL_RALF
-    
+
     static AW_window *win = 0;
     AW_root *aw_root = aww->get_root();
     aw_root->awar("tmp/gene_viewkey/key_text")->map(key_text);
@@ -316,7 +316,7 @@ AW_window *GEN_open_nds_window(AW_root *aw_root, AW_CL cgb_main)
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;
-    
+
         aws->init(aw_root, "GENE_NDS_PROPS", "Gene NDS");
         aws->load_xfig("awt/nds.fig");
         aws->auto_space(10, 5);

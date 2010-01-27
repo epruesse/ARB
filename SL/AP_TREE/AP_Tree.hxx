@@ -116,7 +116,7 @@ class AP_tree_root : public ARB_tree_root {
     void             *node_deleted_cd;
 
     GBDATA *gb_species_data;                        // @@@ needed ?
-    
+
 public:
     GBDATA   *gb_tree_gone;                         // if all leaves have been removed by tree operations, remember 'ARB_tree_root::gb_tree' here (see change_root)
     GBDATA   *gb_table_data;
@@ -147,7 +147,7 @@ public:
     void set_root_changed_callback(AP_rootChangedCb cb, void *cd);
     void set_node_deleted_callback(AP_nodeDelCb cb, void *cd);
 
-    void remove_leafs(int awt_remove_type); 
+    void remove_leafs(int awt_remove_type);
     ARB_edge find_innermost_edge();
 };
 
@@ -254,10 +254,10 @@ public:
     void bootstrap2branchlen();                     // copy bootstraps to branchlengths
     void branchlen2bootstrap();                     // copy branchlengths to bootstraps
 
-    virtual void move_gbt_info(GBT_TREE *tree);  
+    virtual void move_gbt_info(GBT_TREE *tree);
 
     GB_ERROR tree_write_tree_rek(GBDATA *gb_tree);
-    GB_ERROR relink() __ATTR__USERESULT; // @@@ used ? if yes -> move to AP_tree_root or ARB_tree_root  
+    GB_ERROR relink() __ATTR__USERESULT; // @@@ used ? if yes -> move to AP_tree_root or ARB_tree_root
 
     virtual AP_UPDATE_FLAGS check_update();
 
@@ -298,7 +298,7 @@ public:
     void reset_spread();
     void reset_rotation();
     void reset_line_width();
-    
+
 };
 
 #else

@@ -75,7 +75,7 @@ public:
     virtual LocationJoinType getJoinType() const { return joinType; }
     virtual int count() const {
         int Count = 0;
-        
+
         LocationVectorCIter e = locations.end();
         for (LocationVectorCIter i = locations.begin(); i != e; ++i) {
             Count += (*i)->count();
@@ -252,7 +252,7 @@ GEN_position *Location::create_GEN_position() const {
 #if defined(DEBUG)
     int org_parts = pos->parts;
 #endif // DEBUG
-    
+
     pos->parts = 0;             // misuse 'parts' as index for filling 'pos'
     save(pos, false);
 

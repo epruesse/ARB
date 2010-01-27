@@ -118,7 +118,7 @@ void st_check_cb(AW_window * aww, GBDATA * gb_main, AWT_csp * awt_csp) {
     char *tree_name      = r->awar(AWAR_TREE)->read_string();
     char *dest_field     = r->awar(ST_ML_AWAR_CQ_DEST_FIELD)->read_string();
     int   marked_only    = r->awar(ST_ML_AWAR_CQ_MARKED_ONLY)->read_int();
-    
+
     st_report_enum report = (st_report_enum) r->awar(ST_ML_AWAR_CQ_REPORT)->read_int();
     GB_ERROR       error  = st_ml_check_sequence_quality(gb_main, tree_name, alignment_name,
                                                          awt_csp, bucket_size, marked_only,

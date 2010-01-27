@@ -226,7 +226,7 @@ static void GDE_freeali(NA_Alignment *dataset) {
 
 static void GDE_export(NA_Alignment *dataset, char *align, long oldnumelements) {
     GB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
-    
+
     long maxalignlen    = GBT_get_alignment_len(GLOBAL_gb_main, align);
     long isdefaultalign = 0;
 

@@ -152,7 +152,7 @@ GB_ERROR AP_pos_var::retrieve(GBT_TREE *tree) {
         long            base;
         AWT_translator *translator       = AWT_get_user_translator(gb_main);
         const long     *char_2_bitstring = translator->Pro2Bitset();
- 
+
         for (i=0; i<256; i++) {
             char_2_transversion[i] = 0;
             base = char_2_transition[i] = char_2_bitstring[i];
@@ -199,17 +199,17 @@ GB_ERROR AP_pos_var::save_sai(const char *sai_name) {
         GBDATA *gb_ali     = GB_search(gb_extended, ali_name, GB_DB);
         if (!gb_ali) error = GB_await_error();
         else {
-            const char *description = 
+            const char *description =
                 GBS_global_string("PVP: Positional Variability by Parsimony: tree '%s' ntaxa %li",
                                   tree_name, treesize/2);
-            
+
             error = GBT_write_string(gb_ali, "_TYPE", description);
         }
 
         if (!error) {
             char *data = (char*)calloc(1, (int)ali_len+1);
             int  *sum  = (int*)calloc(sizeof(int), (int)ali_len);
-            
+
             for (int j=0; j<256 && !error; j++) {                   // get sum of frequencies
                 if (frequencies[j]) {
                     for (int i=0; i<ali_len; i++) {

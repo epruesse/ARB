@@ -16,7 +16,7 @@
 enum PrintDest {
     PDEST_PRINTER    = 0,
     PDEST_POSTSCRIPT = 1,
-    PDEST_PREVIEW    = 2, 
+    PDEST_PREVIEW    = 2,
 };
 
 // --------------------------------------------------------------------------------
@@ -102,7 +102,7 @@ static bool print_awars_created = false;
 static void create_export_awars(AW_root *awr) {
     if (!export_awars_created) {
         AW_default def = AW_ROOT_DEFAULT;
-    
+
         awr->awar_int(AWAR_PRINT_TREE_CLIP, 0, def);
         awr->awar_int(AWAR_PRINT_TREE_HANDLES, 1, def);
         awr->awar_int(AWAR_PRINT_TREE_COLOR, 1, def);
@@ -114,10 +114,10 @@ static void create_export_awars(AW_root *awr) {
         awr->awar_int(AWAR_PRINT_TREE_LANDSCAPE, 0, def);
         awr->awar_int(AWAR_PRINT_TREE_MAGNIFICATION, 100, def);
 
-        // constraints: 
-        
+        // constraints:
+
         awr->awar(AWAR_PRINT_TREE_MAGNIFICATION)->set_minmax(1, 10000);
-        
+
         export_awars_created = true;
     }
 }
@@ -145,7 +145,7 @@ static void create_print_awars(AW_root *awr, AWT_canvas *ntw) {
 
         awr->awar_float(AWAR_PRINT_TREE_GSIZEX);
         awr->awar_float(AWAR_PRINT_TREE_GSIZEY);
-        
+
         // default paper size (A4 =  8.27*11.69)
         // using 'preview' determined the following values (fitting 1 page!):
         awr->awar_float(AWAR_PRINT_TREE_PSIZEX, 7.5);
@@ -155,7 +155,7 @@ static void create_print_awars(AW_root *awr, AWT_canvas *ntw) {
         awr->awar_float(AWAR_PRINT_TREE_SIZEY);
 
         awr->awar_int(AWAR_PRINT_TREE_DEST);
-    
+
         {
             char *print_command;
             if (getenv("PRINTER")) {
@@ -166,13 +166,13 @@ static void create_print_awars(AW_root *awr, AWT_canvas *ntw) {
             free(print_command);
         }
 
-        // constraints and automatics: 
-    
+        // constraints and automatics:
+
         awr->awar(AWAR_PRINT_TREE_PSIZEX)->set_minmax(0.1, 100);
         awr->awar(AWAR_PRINT_TREE_PSIZEY)->set_minmax(0.1, 100);
 
         awt_print_tree_check_size(0, (AW_CL)ntw);
-    
+
         awr->awar(AWAR_PRINT_TREE_CLIP)->add_callback((AW_RCB1)awt_print_tree_check_size, (AW_CL)ntw);
 
         { // add callbacks for page recalculation
@@ -189,7 +189,7 @@ static void create_print_awars(AW_root *awr, AWT_canvas *ntw) {
         }
 
         awt_page_size_check_cb(awr);
-        
+
         print_awars_created = true;
     }
 }
@@ -211,7 +211,7 @@ const char *AWT_print_tree_to_file(AW_window *aww, AWT_canvas * ntw) {
         long what      = awr->awar(AWAR_PRINT_TREE_CLIP)->read_int();
         long handles   = awr->awar(AWAR_PRINT_TREE_HANDLES)->read_int();
         int  use_color = awr->awar(AWAR_PRINT_TREE_COLOR)->read_int();
-        
+
         AW_device *device      = ntw->aww->get_print_device(AW_MIDDLE_AREA);
         AW_device *size_device = ntw->aww->get_size_device(AW_MIDDLE_AREA);
 
@@ -239,7 +239,7 @@ const char *AWT_print_tree_to_file(AW_window *aww, AWT_canvas * ntw) {
         else {
             ntw->init_device(device);   // draw screen
         }
-        
+
         if (!error) {
             if (handles) {
                 device->set_filter(AW_PRINTER | AW_PRINTER_EXT);
@@ -256,7 +256,7 @@ const char *AWT_print_tree_to_file(AW_window *aww, AWT_canvas * ntw) {
     if (error) aw_message(error);
 
     free(dest);
-    
+
     return error;
 }
 
@@ -310,7 +310,7 @@ void AWT_popup_tree_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL)
         aws->at("color");
         aws->label("Export colors");
         aws->create_toggle(AWAR_PRINT_TREE_COLOR);
-    
+
 
         aws->at("xfig"); aws->callback(AWT_print_tree_to_file_xfig, cl_canvas);
         aws->create_button("START_XFIG", "GO XFIG", "X");
@@ -361,7 +361,7 @@ void AWT_popup_sec_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) 
         aws->at("cancel"); aws->callback((AW_CB0)AW_POPDOWN);
         aws->create_button("CLOSE", "CANCEL", "C");
     }
-    
+
     aws->activate();
 }
 /* ------------------------------------------------------------------------------------------------------------------------------------------ */
@@ -459,7 +459,7 @@ void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw) {
                 bool   landscape     = awr->awar(AWAR_PRINT_TREE_LANDSCAPE)->read_int();
                 bool   useOverlap    = awr->awar(AWAR_PRINT_TREE_OVERLAP)->read_int();
                 double magnification = awr->awar(AWAR_PRINT_TREE_MAGNIFICATION)->read_int() * 0.01;
-        
+
                 char *cmd_fig2ps = GBS_global_string_copy("fig2dev -L ps -M %s -m %f %s %s %s",
                                                           (useOverlap ? "-O" : ""),
                                                           magnification,
@@ -471,7 +471,7 @@ void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw) {
                 free(cmd_fig2ps);
             }
 
-            // if user saves to .ps -> no special file permissions are required 
+            // if user saves to .ps -> no special file permissions are required
             awt_assert(printdest == PDEST_POSTSCRIPT || GB_is_privatefile(dest, false));
 
             if (!error) {
@@ -503,7 +503,7 @@ void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw) {
     }
 
     free(dest);
-    
+
     if (error) aw_message(error);
 }
 
@@ -682,7 +682,7 @@ void AWT_popup_print_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) {
         aws->button_length(6);
         aws->at("gsizex"); aws->create_button(0, AWAR_PRINT_TREE_GSIZEX);
         aws->at("gsizey"); aws->create_button(0, AWAR_PRINT_TREE_GSIZEY);
-    
+
         aws->button_length(8);
         aws->at("psizex"); aws->create_input_field(AWAR_PRINT_TREE_PSIZEX, 4);
         aws->at("psizey"); aws->create_input_field(AWAR_PRINT_TREE_PSIZEY, 4);

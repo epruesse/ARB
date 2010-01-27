@@ -100,7 +100,7 @@ public:
         if (value == other.value) return *pair < *other.pair;
         return value < other.value;
     }
-    
+
     const TwoLeafs& get_pair() const  { return *pair; }
     AP_FLOAT get_value() const { return value; }
 };

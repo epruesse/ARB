@@ -115,7 +115,7 @@ GBT_config *GBT_load_configuration_data(GBDATA *gb_main, const char *name, GB_ER
         if (!config->top_area || !config->middle_area) {
             GBT_free_configuration_data(config);
             config = 0;
-            *error = GBS_global_string("Configuration '%s' is corrupted (Reason: %s)", 
+            *error = GBS_global_string("Configuration '%s' is corrupted (Reason: %s)",
                                        name, GB_await_error());
         }
     }
@@ -129,7 +129,7 @@ GB_ERROR GBT_save_configuration_data(GBT_config *config, GBDATA *gb_main, const 
     GBDATA   *gb_configuration;
 
     GB_push_transaction(gb_main);
-    
+
     gb_configuration = GBT_create_configuration(gb_main, name);
     if (!gb_configuration) {
         error = GBS_global_string("Can't create configuration '%s' (Reason: %s)", name, GB_await_error());
@@ -137,7 +137,7 @@ GB_ERROR GBT_save_configuration_data(GBT_config *config, GBDATA *gb_main, const 
     else {
         error             = GBT_write_string(gb_configuration, "top_area", config->top_area);
         if (!error) error = GBT_write_string(gb_configuration, "middle_area", config->middle_area);
-        
+
         if (error) error = GBS_global_string("%s (in configuration '%s')", error, name);
     }
 
@@ -260,7 +260,7 @@ void GBT_free_config_parser(GBT_config_parser *parser) {
     free(parser);
 }
 
-#if defined(DEBUG) && 0 
+#if defined(DEBUG) && 0
 void GBT_test_config_parser(GBDATA *gb_main) {
     char **config_names = GBT_get_configuration_names(gb_main);
     if (config_names) {
@@ -296,7 +296,7 @@ void GBT_test_config_parser(GBDATA *gb_main) {
                     while (1) {
                         error = GBT_parse_next_config_item(parser, item);
                         if (error || item->type == CI_END_OF_CONFIG) break;
-                        
+
                         printf("  - %i %s\n", item->type, item->name ? item->name : "[close group]");
                         GBT_append_to_config_string(item, new_config);
                     }

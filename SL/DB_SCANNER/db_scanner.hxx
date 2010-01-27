@@ -20,7 +20,7 @@
 /* Database scanner boxes
  *
  * A scanner show all (recursive) information of a database entry.
- * 
+ *
  * This information can be organized in two different ways:
  * 1. AWT_SCANNER: Show exact all (filtered) information stored in the DB
  * 2. AWT_VIEWER:  Create a list of all database fields (see FIELD INFORMATION)
@@ -29,12 +29,12 @@
  *    example:
  *      fields:
  *              name, full_name, acc, author
- *      
+ *
  *      DB entries:
  *              name:e.coli
  *              full_name:esc.coli
  *              flag:test
- *         
+ *
  *     ->
  *              name:       e.coli
  *              full_name:  esc.coli

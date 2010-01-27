@@ -108,7 +108,7 @@ void PS_extract_probe_data(GBDATA *_ARB_node,                // position in ARB 
     //      and are appended to the _inverse_path list
     //    - SpeciesIDs greater than the current ID are implicit in the
     //      'inverse path' list and therefore not stored
-    
+
     //
     // get SpeciesID
     //

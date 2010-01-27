@@ -67,7 +67,7 @@ inline void *CALLOC(long i, long j) {
 
 inline int ali_is_base(char c)
 {
-    return (c == 'a' || c == 'A' || c == 'c' || c == 'C' || 
+    return (c == 'a' || c == 'A' || c == 'c' || c == 'C' ||
             c == 'g' || c == 'G' || c == 'u' || c == 'U' ||
             c == 't' || c == 'T' || c == 'n' || c == 'N');
 }
@@ -79,7 +79,7 @@ inline int ali_is_base(unsigned char c)
 
 inline int ali_is_real_base(char c)
 {
-    return (c == 'a' || c == 'A' || c == 'c' || c == 'C' || 
+    return (c == 'a' || c == 'A' || c == 'c' || c == 'C' ||
             c == 'g' || c == 'G' || c == 'u' || c == 'U' ||
             c == 't' || c == 'T');
 }
@@ -91,7 +91,7 @@ inline int ali_is_real_base(unsigned char c)
 
 inline int ali_is_real_base_or_gap(char c)
 {
-    return (c == 'a' || c == 'A' || c == 'c' || c == 'C' || 
+    return (c == 'a' || c == 'A' || c == 'c' || c == 'C' ||
             c == 'g' || c == 'G' || c == 'u' || c == 'U' ||
             c == 't' || c == 'T' || c == '-');
 }

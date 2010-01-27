@@ -91,7 +91,7 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
      *              is also used to load line-data of vectorfont
      */
     if (!filename || !strlen(filename)) return;
-    
+
     memset(this, 0, sizeof(AW_xfig));
 
     // ----------------
@@ -120,10 +120,10 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
 
         strcpy(buffer, fileInLib);
         file = fopen(fileInLib, "r");
-        
+
         // Note: before 12/2008 file was also searched in $ARBHOME and current dir
     }
-    
+
     if (!file) {
         error = GBS_global_string("Can't locate '%s'", filename);
     }
@@ -218,7 +218,7 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
                     }
                 }
             }
-            
+
             if (!error) {
                 // read resolution
                 int dpi = 80;
@@ -424,7 +424,7 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
             fprintf(stderr, "Cannot continue - terminating.\n");
             exit(-1); // FATAL -> exit
         }
-        
+
         // special case (used by aw_read_xfigfont())
         aw_message(error);
     }

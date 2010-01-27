@@ -452,9 +452,9 @@ GB_ERROR MG_transfer_sequence(MG_remaps *remaps, GBDATA *source_species, GBDATA 
 }
 
 
-static GB_ERROR MG_transfer_one_species(AW_root *aw_root, MG_remaps& remap, 
+static GB_ERROR MG_transfer_one_species(AW_root *aw_root, MG_remaps& remap,
                                         GBDATA *gb_species_data1, GBDATA *gb_species_data2,
-                                        bool is_genome_db1, bool is_genome_db2, 
+                                        bool is_genome_db1, bool is_genome_db2,
                                         GBDATA  *gb_species1, const char *name1,
                                         GB_HASH *source_organism_hash, GB_HASH *dest_species_hash,
                                         GB_HASH *error_suppressor)
@@ -514,7 +514,7 @@ static GB_ERROR MG_transfer_one_species(AW_root *aw_root, MG_remaps& remap,
         gb_species2 = dest_species_hash
             ? (GBDATA*)GBS_read_hash(dest_species_hash, name1)
             : GBT_find_species_rel_species_data(gb_species_data2, name1);
-        
+
         if (gb_species2) error = GB_delete(gb_species2);
     }
     if (!error) {
@@ -637,7 +637,7 @@ void MG_transfer_fields_cb(AW_window *aww) {
     if (MG_check_alignment(aww, 1)) {
         return;
     }
-    
+
     char     *field  = aww->get_root()->awar(AWAR_FIELD1)->read_string();
     long      append = aww->get_root()->awar(AWAR_APPEND)->read_int();
     GB_ERROR  error  = 0;
@@ -826,7 +826,7 @@ void MG_move_field_cb(AW_window *aww) {
                         }
                     }
 
-                    if (!error && !gb_field2) { // destination missing or removed 
+                    if (!error && !gb_field2) { // destination missing or removed
                         gb_field2             = GB_search(gb_species2, field, type1);
                         if (!gb_field2) error = GB_await_error();
                         else error            = GB_copy(gb_field2, gb_field1);
@@ -844,7 +844,7 @@ void MG_move_field_cb(AW_window *aww) {
     }
 
     if (error) aw_message(error);
-    
+
     free(field);
 }
 
@@ -1096,7 +1096,7 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
         long D_species_count = GB_number_of_subentries(D_species_data);
 
         // create hash containing all species from gb_dest,
-        // but sized to hold all species from both DBs: 
+        // but sized to hold all species from both DBs:
         D_species_hash = GBT_create_species_hash_sized(GLOBAL_gb_dest, M_species_count+D_species_count);
     }
 
@@ -1109,7 +1109,7 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
     new_try :
 
         count++;
-        
+
         D_species = (GBDATA*)GBS_read_hash(D_species_hash, m_name);
         if (D_species) {
             if (overwriteall) {
@@ -1137,7 +1137,7 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
                     case 0:
                         GB_delete(D_species);
                         break;
-                        
+
                     case 2:
                         continue;
 
@@ -1153,7 +1153,7 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
                     case 4:
                         autorenameall = 1;
                         goto new_try;
-                        
+
                     case 5:
                         error = "Operation aborted";
                         goto end;
@@ -1183,13 +1183,13 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
 
     if (!error) error = MG_transfer_fields_info();
     if (!error) awr->awar(AWAR_SPECIES_NAME)->write_string(m_name);
-    
+
     error = GB_end_transaction(GLOBAL_gb_merge, error);
     GB_end_transaction_show_error(GLOBAL_gb_dest, error, aw_message);
 
     GB_pop_my_security(GLOBAL_gb_merge);
     GB_pop_my_security(GLOBAL_gb_dest);
-    
+
     return error;
 }
 

@@ -56,7 +56,7 @@ void tree_vars_callback(AW_root *aw_root) // Map tree vars to display objects
             GBDATA *tree_prot = GB_search(ali_cont, "security", GB_FIND);
             if (!tree_prot) GBT_readOrCreate_int(ali_cont, "security", GB_read_security_write(ali_cont));
             tree_prot         = GB_search(ali_cont, "security", GB_INT);
-        
+
             GBDATA *tree_rem = GB_search(ali_cont, "remark",   GB_STRING);
             aw_root->awar(AWAR_TREE_SECURITY)->map(tree_prot);
             aw_root->awar(AWAR_TREE_REM)     ->map(tree_rem);
@@ -207,7 +207,7 @@ void tree_rename_cb(AW_window *aww) {
                 }
             }
         }
-        
+
         if (!error) awar_tree->write_string(dest);
         error = GB_end_transaction(GLOBAL_gb_main, error);
     }
@@ -233,7 +233,7 @@ static GB_ERROR tree_append_remark(GBDATA *gb_tree, const char *add_to_remark) {
             GBS_strcat(new_remark, add_to_remark);
 
             error = GB_write_string(gb_remark, GBS_mempntr(new_remark));
-            
+
             GBS_strforget(new_remark);
         }
         free(old_remark);
@@ -279,9 +279,9 @@ void tree_copy_cb(AW_window *aww) {
 static void tree_save_cb(AW_window *aww) {
     AW_root  *aw_root   = aww->get_root();
     char     *tree_name = aw_root->awar(AWAR_TREE_NAME)->read_string();
-    
+
     GB_ERROR error = 0;
-    
+
     if (!tree_name || !strlen(tree_name)) {
         error = "Please select a tree first";
     }
@@ -312,7 +312,7 @@ static void tree_save_cb(AW_window *aww) {
                                           aw_root->awar(AWAR_TREE_EXPORT_INCLUDE_BOOTSTRAPS)->read_int(),
                                           aw_root->awar(AWAR_TREE_EXPORT_INCLUDE_GROUPNAMES)->read_int(),
                                           exportType == AD_TREE_EXPORT_FORMAT_NEWICK_PRETTY,
-                                          quoteMode, 
+                                          quoteMode,
                                           fname);
                 break;
         }
@@ -374,7 +374,7 @@ AW_window *create_tree_export_window(AW_root *root)
     aws->update_option_menu();
 
     aws->at_newline(); aws->label("Replace problem chars"); aws->create_toggle(AWAR_TREE_EXPORT_REPLACE);
-    
+
     aws->at_newline();
     aws->callback(tree_save_cb);
     aws->create_button("SAVE", "SAVE", "o");
@@ -411,7 +411,7 @@ char *readXmlTree(char *fname) {
 
         // linking arb_tree.dtd file to the Path from where xml file is loaded
 #if defined(DEVEL_RALF)
-#warning fix hack        
+#warning fix hack
 #endif // DEVEL_RALF
         char *command = GBS_global_string_copy("ln -s %s/lib/dtd/arb_tree.dtd %s/.", GB_getenvARBHOME(), path);
         GB_xcmd(command, false, true);
@@ -578,7 +578,7 @@ void ad_move_tree_info(AW_window *aww, AW_CL mode) {
 
     if (!compare_node_info) {
         // move or add node-info writes a log file (containing errors)
-        // compare_node_info only sets remark branches        
+        // compare_node_info only sets remark branches
         char *log_name       = GB_unique_filename("arb_node", "log");
         log_file             = GB_create_tempfile(log_name);
         if (!log_file) error = GB_await_error();
@@ -598,7 +598,7 @@ void ad_move_tree_info(AW_window *aww, AW_CL mode) {
         free(t2);
         free(t1);
     }
-     
+
     if (error) aw_message(error);
     else aww->hide();
 

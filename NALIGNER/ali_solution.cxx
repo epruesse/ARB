@@ -28,7 +28,7 @@ ALI_MAP::ALI_MAP(unsigned long first_seq, unsigned long last_seq,
     mapping   = (long **)          CALLOC((unsigned int) (last_seq_base - first_seq_base + 1), sizeof(long));
     inserted  = (unsigned char **) CALLOC((unsigned int) ((last_seq_base - first_seq_base)/8) + 1, sizeof(unsigned char));
     undefined = (unsigned char **) CALLOC((unsigned int) ((last_seq_base - first_seq_base)/8) + 1, sizeof(unsigned char));
-    
+
     if (mapping == 0 || inserted == 0 || undefined == 0) {
         ali_fatal_error("Out of memory");
     }
@@ -49,7 +49,7 @@ ALI_MAP::ALI_MAP(ALI_MAP *map)
     mapping   = (long **)          CALLOC((unsigned int) (last_seq_base - first_seq_base + 1), sizeof(long));
     inserted  = (unsigned char **) CALLOC((unsigned int) ((last_seq_base - first_seq_base) / 8) + 1, sizeof(unsigned char));
     undefined = (unsigned char **) CALLOC((unsigned int) ((last_seq_base - first_seq_base) / 8) + 1, sizeof(unsigned char));
-    
+
     if (mapping == 0 || inserted == 0 || undefined == 0) {
         ali_fatal_error("Out of memory");
     }

@@ -26,7 +26,7 @@ struct adfiltercbstruct {
     AW_window *aw_filt;
     AW_root   *awr;
     GBDATA    *gb_main;
-    
+
     AW_selection_list *id;
 
     char *def_name;

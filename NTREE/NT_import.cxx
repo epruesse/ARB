@@ -60,7 +60,7 @@ void NT_import_sequences(AW_window *aww, AW_CL, AW_CL) {
     nt_assert(gb_main_is_genom_db == gb_merge_is_genom_db);
 
     awr->awar(AWAR_READ_GENOM_DB)->write_int(gb_main_is_genom_db ? IMP_GENOME_FLATFILE : IMP_PLAIN_SEQUENCE);
-    
+
     {
         GB_transaction dummy(GLOBAL_gb_main);
         char *ali_name = GBT_get_default_alignment(GLOBAL_gb_main);

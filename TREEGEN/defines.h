@@ -29,10 +29,10 @@ typedef const char    *cstr;
 
 #ifdef __cplusplus
 extern "C" {
-#endif    
+#endif
 
     void error           (cstr message);
-    void errorf          (cstr format, ...) __ATTR__FORMAT(1); 
+    void errorf          (cstr format, ...) __ATTR__FORMAT(1);
 
     void warning         (cstr message);
     void warningf        (cstr format, ...) __ATTR__FORMAT(1);
@@ -42,7 +42,7 @@ extern "C" {
 
 #ifdef __cplusplus
 }
-#endif    
+#endif
 
 
 #endif

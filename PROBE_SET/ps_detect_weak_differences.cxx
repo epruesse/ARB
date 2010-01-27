@@ -263,7 +263,7 @@ void PS_find_probes_for_pairs(const PS_NodePtr _ps_node, ID2IDSet &_pairs) {
             }
         }
     }
-        
+
     //
     // step down the children unless all paths are found
     // if either ID is lower than highest ID in the set of ID-pairs
@@ -474,7 +474,7 @@ int main(int argc,   char *argv[]) {
             bitmap_filename = argv[3];
         }
     }
-    
+
     struct tms before;
     times(&before);
     printf("Opening probe-set-database '%s'..\n", input_DB_name);
@@ -511,7 +511,7 @@ int main(int argc,   char *argv[]) {
     PS_print_and_evaluate_map(db->getRootNode(), result_filename);
     PS_print_time_diff(&before, "(enter to continue)  ");
     delete __MAP;
-    
+
     printf("removing database from memory\n");
     delete db;
     printf("(enter to continue)\n");

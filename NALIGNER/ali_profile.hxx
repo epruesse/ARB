@@ -27,7 +27,7 @@ typedef void ALI_MAP_; /* make module independent */
 typedef struct {
     ALI_ARBDB *arbdb;
     ALI_PT *pt;
-        
+
     int find_family_mode;
 
     int exclusive_flag;
@@ -57,7 +57,7 @@ public:
     ALI_SEQUENCE *sequence;
     float matches;
     float weight;
- 
+
     ali_family_member(ALI_SEQUENCE *seq, float m, float w = 0.0) {
         sequence = seq;
         matches = m;
@@ -73,7 +73,7 @@ class ALI_PROFILE {
 
     long **helix;                    /* base to base connection */
     char **helix_borders;            /* borders of the helix '[' and ']' */
-    unsigned long helix_len;        
+    unsigned long helix_len;
 
     float (**base_weights)[4];         /* relative weight of base i */
     float (**sub_costs)[6];            /* costs to substitute with base i */
@@ -87,13 +87,13 @@ class ALI_PROFILE {
     float (*binding_costs)[5][5];       /* Matrix for binding costs a c g u - */
     float w_bind_maximum;
 
-    unsigned long *lmin, *lmax; 
+    unsigned long *lmin, *lmax;
     float ***gap_costs;
     float ***gap_percents;
 
     int is_binding_marker(char c);
 
-    ALI_TLIST<ali_family_member *> *find_family(ALI_SEQUENCE *sequence, 
+    ALI_TLIST<ali_family_member *> *find_family(ALI_SEQUENCE *sequence,
                                                 ALI_PROFILE_CONTEXT *context);
     void calculate_costs(ALI_TLIST<ali_family_member *> *family_list,
                          ALI_PROFILE_CONTEXT *context);
@@ -132,7 +132,7 @@ public:
             start = end;
             end = i;
         }
-                        
+
 
         printf("\nProfile from %d to %d\n", start, end);
         printf("Substitutions kosten:\n");
@@ -157,9 +157,9 @@ public:
 
     }
 
-    int is_in_helix(unsigned long pos, 
+    int is_in_helix(unsigned long pos,
                     unsigned long *first, unsigned long *last);
-    int is_outside_helix(unsigned long pos, 
+    int is_outside_helix(unsigned long pos,
                          unsigned long *first, unsigned long *last);
     int complement_position(unsigned long pos) {
         if (pos >= helix_len)
@@ -192,7 +192,7 @@ public:
     int is_internal_last(unsigned long pos) {
         return norm_sequence->is_begin(pos + 1);
     }
-                          
+
     char *cheapest_sequence();
     char *borders_sequence() {
         unsigned long i;
@@ -311,7 +311,7 @@ public:
         }
     }
 
-    float w_bind(unsigned long pos_1, unsigned char base_1, 
+    float w_bind(unsigned long pos_1, unsigned char base_1,
                  unsigned long pos_2, unsigned char base_2) {
         int i, j;
         float cost_in, cost = 0;
@@ -335,7 +335,7 @@ public:
         }
         return cost;
     }
-                
+
     float w_binding(unsigned long first_position_of_sequence,
                     ALI_SEQUENCE *sequence);
 };

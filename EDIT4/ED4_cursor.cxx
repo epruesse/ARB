@@ -757,7 +757,7 @@ void ED4_get_marked_from_menu(AW_window *, AW_CL, AW_CL) {
         aw_message(GBS_global_string("Loaded %i of %i marked species.", inserted, marked));
 
         ED4_finish_and_show_notFoundMessage();
-        
+
         if (inserted) {
             /* new AAseqTerminals should be created if it is in ProtView mode */
             if (ED4_ROOT->alignment_type == GB_AT_DNA) {

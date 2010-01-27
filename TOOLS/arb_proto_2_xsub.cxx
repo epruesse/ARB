@@ -732,7 +732,7 @@ void xsubGenerator::generate_xsub(const Prototype& prototype) {
             {
                 string argument_names_list = prototype.argument_names_list();
                 string function_header     = return_type.isVoid() ? "void" : return_type.perl_decl();
-                
+
                 function_header += '\n';
                 function_header += perl_function_name+'('+argument_names_list+")\n";
 
@@ -760,9 +760,9 @@ void xsubGenerator::generate_xsub(const Prototype& prototype) {
 
                 switch (return_type.get_TypeClass()) {
                     case CONST_CHAR:
-                    case CONVERSION_FUNCTION: 
-                    case SIMPLE_TYPE: 
-                    case TYPEMAPPED: 
+                    case CONVERSION_FUNCTION:
+                    case SIMPLE_TYPE:
+                    case TYPEMAPPED:
                         assign_RETVAL = string("    RETVAL = ") + return_type.convert_result_for_PERL(call_c_function);
                         break;
 
@@ -787,7 +787,7 @@ void xsubGenerator::generate_xsub(const Prototype& prototype) {
                     "\n" +
                     "  OUTPUT:\n" +
                     "    RETVAL";
-                
+
                 package->append_code(body);
             }
             package->append_linefeed(3);

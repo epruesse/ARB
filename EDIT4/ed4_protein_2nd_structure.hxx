@@ -9,21 +9,21 @@
  *  its primary structure (i.e. the amino acid sequence) and for visualizing
  *  how good a sequence matches a given secondary structure. Two secondary
  *  structures can be compared, too. The initial values for the match symbols
- *  and other settings are defined here, as well as functions that create a 
+ *  and other settings are defined here, as well as functions that create a
  *  "Protein Match Settings" window allowing the user to change the default
  *  properties for match computation.
- * 
+ *
  *  \sa The functions for protein structure prediction are based on a statistical
  *      method known as Chou-Fasman algorithm. For details refer to "Chou, P. and
  *      Fasman, G. (1978). Prediction of the secondary structure of proteins from
  *      their amino acid sequence. Advanced Enzymology, 47, 45-148.".
- * 
+ *
  *  \attention The used method for secondary structure prediction is fast which
  *             was the main reason for choosing it. Performance is important
  *             for a large number of sequences loaded in the editor. However, it
  *             is not very accurate and should only be used as rough estimation.
- *             For our purpose, the algorithm as well as own adaptions to it are 
- *             used to get an approximate overview if a given amino acid sequence 
+ *             For our purpose, the algorithm as well as own adaptions to it are
+ *             used to get an approximate overview if a given amino acid sequence
  *             does not match a certain secondary structure.
 */
 
@@ -49,7 +49,7 @@
 /*! \brief Protein secondary structure types.
  *
  *  Defines the various types of protein secondary structure. The order
- *  (or at least the individual values) are important, because they are 
+ *  (or at least the individual values) are important, because they are
  *  used to access various arrays.
  */
 enum PFOLD_STRUCTURE {
@@ -57,7 +57,7 @@ enum PFOLD_STRUCTURE {
     BETA_SHEET        = 1, //!< Beta-sheet
     BETA_TURN         = 2, //!< Beta-turn
     STRUCTURE_SUMMARY = 3, //!< Structure summary
-//  THREE_TURN        = 4, ///< Three turn 
+//  THREE_TURN        = 4, ///< Three turn
 //  FOUR_TURN         = 5, ///< Four turn
 //  FIVE_TURN         = 6  ///< Five turn
 };
@@ -120,7 +120,7 @@ typedef enum {
  *  ED4_pfold_calculate_secstruct_match() to get the breaker value of an amino acid
  *  depending on the found structure type at its position. It addresses #cf_parameters
  *  for #ALPHA_HELIX and #BETA_SHEET and returns 0 for #BETA_SHEET, because it has no
- *  breaker values. 
+ *  breaker values.
  */
 #define cf_breaker(aa, strct) ((strct!=2) ? cf_parameters[aa][strct+2] : 0)
 
@@ -142,11 +142,11 @@ typedef enum {
  *
  *  This function compares a protein secondary structure with a primary structure
  *  (= amino acid sequence) or another secondary structure depending on \a match_method.
- * 
+ *
  *  \par Match method SECSTRUCT_SECSTRUCT:
- *       Two secondary structures are compared one by one using the criteria defined 
+ *       Two secondary structures are compared one by one using the criteria defined
  *       by #pfold_pairs. The match symbols are taken from #pfold_pair_chars.
- * 
+ *
  *  \par Match method SECSTRUCT_SEQUENCE:
  *       An amino acid sequence is compared with a secondary structure by taking
  *       cohesive parts of the structure - gaps in the alignment are skipped - and
@@ -155,9 +155,9 @@ typedef enum {
  *       match quality is generated. By dividing this value into steps of 10%
  *       it is mapped to the match symbols defined by #PFOLD_PAIR_CHARS_2. Note
  *       that bends ('S') are assumed to fit everywhere (=> best match symbol), and
- *       if a structure is encountered but no corresponding amino acid the worst match 
+ *       if a structure is encountered but no corresponding amino acid the worst match
  *       symbol is chosen.
- * 
+ *
  *  \par Match method SECSTRUCT_SEQUENCE_PREDICT:
  *       An amino acid sequence is compared with a secondary structure using a full
  *       prediction of the secondary structure from its sequence via
@@ -169,7 +169,7 @@ typedef enum {
  *       the corresponding match symbol (as defined by #pfold_pair_chars) is chosen.
  *       Note that if a structure is encountered but no corresponding amino acid the
  *       worst match symbol is chosen.
- * 
+ *
  *  The match criteria (for #SECSTRUCT_SECSTRUCT and #SECSTRUCT_SEQUENCE_PREDICT) as
  *  well as the match symbols (for all methods) can be adjusted by the user in the
  *  "Protein Match Settings" dialog. The result of the match computation (i.e. the
@@ -191,7 +191,7 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
  *  of the new reference SAI is stored. The function is used in the editor to
  *  initialize the reference protein secondary structure SAI and to update it if the
  *  selected SAI is changed in the "Protein Match Settings" dialog. For this purpose
- *  it should be called with &ED4_ROOT->protstruct and &ED4_ROOT->protstruct_len. 
+ *  it should be called with &ED4_ROOT->protstruct and &ED4_ROOT->protstruct_len.
  */
 GB_ERROR ED4_pfold_set_SAI(char **protstruct, GBDATA *gb_main, const char *alignment_name, long *protstruct_len = 0);
 
@@ -205,7 +205,7 @@ GB_ERROR ED4_pfold_set_SAI(char **protstruct, GBDATA *gb_main, const char *align
  *  \return    Window
  *
  *  The "Protein Match Settings" window allows the user to configure the properties
- *  for protein match computation. These settings include turning the match 
+ *  for protein match computation. These settings include turning the match
  *  computation on and off (bound to awar #PFOLD_AWAR_ENABLE), selecting the reference
  *  protein secondary structure SAI (bound to awar #PFOLD_AWAR_SELECTED_SAI), choosing
  *  the match method (bound to awar #PFOLD_AWAR_MATCH_METHOD, see #PFOLD_MATCH_METHOD)

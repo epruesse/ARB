@@ -23,7 +23,7 @@
 // * not "using" an error (regardless whether an error occurred or not)
 // * "using" an error several times (regardless whether an error occurred or not)
 // * overwriting an error (if error is not NULL)
-// * declaring errors as global variables 
+// * declaring errors as global variables
 //
 // Code changes needed:
 // * replace GB_ERROR by ARB_ERROR
@@ -116,7 +116,7 @@ public:
 #endif // CHECK_ERROR_DROP
 
     // common for both ARB_ERROR flavors:
-private: 
+private:
     bool occurred() const { return look() != NULL; }
 
 public:

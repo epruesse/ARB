@@ -33,8 +33,8 @@
 
 #if defined(DEBUG)
 #define ISVALID(a) aw_assert((a).valid())
-#else    
-#define ISVALID(a) 
+#else
+#define ISVALID(a)
 #endif // DEBUG
 
 namespace AW {
@@ -50,19 +50,19 @@ namespace AW {
     //      class Position represents 2-dimensional positions
     // -------------------------------------------------------
 
-    // Note: orientation of drawn canvases is like shown in this figure: 
-    // 
+    // Note: orientation of drawn canvases is like shown in this figure:
+    //
     //        __________________\ +x
     //       |                  /                       .
-    //       | 
-    //       | 
-    //       | 
-    //       | 
-    //       | 
-    //       | 
-    //      \|/ 
+    //       |
+    //       |
+    //       |
+    //       |
+    //       |
+    //       |
+    //      \|/
     //    +y
-    // 
+    //
     // i.e. rotating an angle by 90 degrees, means rotating it 3 hours in clockwise direction
 
     class Vector;
@@ -96,14 +96,14 @@ namespace AW {
 
         void move(const Vector& movement) { *this += movement; }
         void moveTo(const Position& pos) { *this = pos; }
-        
+
         inline bool is_between(const Position& p1, const Position& p2) const {
             return is_between(p1.x, x, p2.x) && is_between(p1.y, y, p2.y);
         }
     };
 
     extern const Position Origin;
-    
+
     // -------------------------------
     //      a 2D vector
     // -------------------------------
@@ -151,7 +151,7 @@ namespace AW {
 
         Vector& set_length(double new_length) {
             double factor  = new_length/length();
-            return *this  *= factor; 
+            return *this  *= factor;
         }
 
         // length-constant members:
@@ -216,13 +216,13 @@ namespace AW {
     class LineVector {
         Position Start;         // start point
         Vector   ToEnd;         // vector to end point
-        
+
     protected:
         void standardize();
 
     public:
         bool valid() const { return Start.valid() && ToEnd.valid(); }
-        
+
         LineVector(const Position& startpos, const Position& end) : Start(startpos), ToEnd(startpos, end) { ISVALID(*this); }
         LineVector(const Position& startpos, const Vector& to_end) : Start(startpos), ToEnd(to_end) { ISVALID(*this); }
         LineVector(double X1, double Y1, double X2, double Y2) : Start(X1, Y1), ToEnd(X2-X1, Y2-Y1) { ISVALID(*this); }
@@ -270,7 +270,7 @@ namespace AW {
         double height() const { return diagonal().y(); }
 
         void standardize() { LineVector::standardize(); }
-        
+
         bool contains(const Position& pos) const { return pos.is_between(upper_left_corner(), lower_right_corner()); }
         bool contains(const LineVector& lvec) const { return contains(lvec.start()) && contains(lvec.head()); }
     };
@@ -316,7 +316,7 @@ namespace AW {
 
         Angle& operator += (const Angle& o) {
             Radian += o.Radian;
-            
+
             double norm = normal().length()*o.normal().length();
             if (nearlyEqual(norm, 1)) {  // fast method
                 Vector newNormal(cos()*o.cos() - sin()*o.sin(),
@@ -331,7 +331,7 @@ namespace AW {
         }
         Angle& operator -= (const Angle& o) {
             Radian -= o.Radian;
-            
+
             double norm = normal().length()*o.normal().length();
             if (nearlyEqual(norm, 1)) { // fast method
                 Vector newNormal(cos()*o.cos() + sin()*o.sin(),
@@ -356,7 +356,7 @@ namespace AW {
         Angle& rotate90deg()   { Normal.rotate90deg();  Radian += 0.5*M_PI; return *this; }
         Angle& rotate180deg()  { Normal.rotate180deg(); Radian +=     M_PI; return *this; }
         Angle& rotate270deg()  { Normal.rotate270deg(); Radian += 1.5*M_PI; return *this; }
-        
+
         Angle operator-() const { return Angle(Vector(Normal).negy(), 2*M_PI-Radian); } // unary minus
     };
 
@@ -380,7 +380,7 @@ namespace AW {
 
 #if defined(DEBUG)
     // don't use these in release code - they are only approximations!
-    
+
     // test whether two doubles are "equal" (slow - use for assertions only!)
     inline bool are_equal(const double& d1, const double& d2) {
         double diff = std::abs(d1-d2);
@@ -396,7 +396,7 @@ namespace AW {
         return p.xpos() == 0 && p.ypos() == 0;
     }
 
-    
+
 };
 
 #else

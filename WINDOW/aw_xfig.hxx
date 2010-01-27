@@ -27,7 +27,7 @@ char *aw_get_font_from_xfig(int fontnr);
 
 struct AW_xfig_line {
     struct AW_xfig_line *next;
-    
+
     short x0, y0;
     short x1, y1;
     short color;

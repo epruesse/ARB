@@ -155,7 +155,7 @@ bool PS_Database::merge(const char *_other_db_name) {
                     other_name2id_map.erase(other_i2->second);
                 }
             }
-        } 
+        }
         // if name in other mapping with different ID
         else if (other_i->second != i->second) {
             // store file->DB ID mapping

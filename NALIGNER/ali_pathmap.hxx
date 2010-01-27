@@ -39,9 +39,9 @@ public:
     ALI_PATHMAP(unsigned long width, unsigned long height);
     ~ALI_PATHMAP();
 
-    void set(unsigned long x, unsigned long y, unsigned char val, 
+    void set(unsigned long x, unsigned long y, unsigned char val,
              ALI_TARRAY<ali_pathmap_up_pointer> *up_pointer = 0);
-    void get(unsigned long x, unsigned long y, unsigned char *val, 
+    void get(unsigned long x, unsigned long y, unsigned char *val,
              ALI_TARRAY<ali_pathmap_up_pointer> **up_pointer);
     unsigned char get_value(unsigned long x, unsigned long y) {
         if (x >= width || y >= height)

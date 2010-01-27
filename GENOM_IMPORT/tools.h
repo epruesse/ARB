@@ -45,7 +45,7 @@ bool parseInfix(const string &str, const string& prefix, const string& postfix, 
 
 // --------------------------------------------------------------------------------
 
-#define CURRENT_REST string(pos, end).c_str() 
+#define CURRENT_REST string(pos, end).c_str()
 
 struct StringParser {
     stringCIter pos, end;
@@ -125,7 +125,7 @@ struct StringParser {
     long eatNumber(bool &eaten) {
         long lnum = 0;
         char c;
-        
+
         eaten = false;
         for (; isdigit(c = *pos); ++pos) {
             lnum  = lnum*10+(c-'0');
@@ -138,7 +138,7 @@ struct StringParser {
     long extractNumber() {
         bool seen_digits;
         long lnum = eatNumber(seen_digits);
-        
+
         if (!seen_digits) throw GBS_global_string("Expected number, found '%s'", CURRENT_REST);
         return lnum;
     }

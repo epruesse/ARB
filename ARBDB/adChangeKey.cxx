@@ -234,7 +234,7 @@ GB_ERROR GBT_convert_changekey(GBDATA *gb_main, const char *name, GB_TYPES targe
             const char *spname = GBT_read_name(gbspec);
             error              = GBS_global_string("%s for species '%s'", error, spname);
         }
-        
+
         if (!error) error = gbt_set_type_of_changekey(gb_main, name, target_type, CHANGE_KEY_PATH);
         if (!error && rounded>0) {
             GB_warningf("%zi values were rounded (loss of precision)", rounded);

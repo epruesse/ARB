@@ -46,7 +46,7 @@ void awt_inserchar_event(AW_window *aws, AW_CL awcl_mode)
         }
         free(alignment);
     }
-    
+
     GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
     free(deletes);
 }

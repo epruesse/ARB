@@ -15,7 +15,7 @@
 #include "aisc.h"
 
 const int linebufsize = 200000;
-char      string_buf[256]; 
+char      string_buf[256];
 
 struct global_struct *gl;
 
@@ -127,12 +127,12 @@ static const char *getCurrentLocation(const char *io) {
     else {
         printed = sprintf(loc, "%s:%i", gl->line_path, gl->line_cnt);
     }
-    
+
     if (printed>LOCBUFFERSIZE) {
         fprintf(stderr, "AISC: Internal buffer overflow detected -- terminating [loc]\n");
         gl->error_flag = 1;
     }
-    
+
     return loc;
 }
 
@@ -203,7 +203,7 @@ inline void skip_over_spaces(const char *& in) {
 inline void skip_over_spaces_and_comments(const char *& in) {
     skip_over_spaces(in);
     if (gl->lastchar == '#') { // comment -> skip rest of line
-        while (!is_LF_EOS(gl->lastchar)) get_byte(in); 
+        while (!is_LF_EOS(gl->lastchar)) get_byte(in);
     }
 }
 inline void skip_over_spaces_and_comments_multiple_lines(const char *& in) {
@@ -414,7 +414,7 @@ static TokenList *parse_aisc_TokenList(const char *& in, HeaderList& headerList)
     while (!gl->error_flag && !reached_end_of_list) {
         TOKEN  foundTokenType;
         char  *str = parse_token(in, foundTokenType);
-        
+
         if (!gl->error_flag) {
             switch (foundTokenType) {
                 case TOK_SEMI:
@@ -508,7 +508,7 @@ static TokenList *parse_aisc_TokenList(const char *& in, HeaderList& headerList)
 
                             case TOK_AT_WORD:     p_err_exp_string_but_saw(in, "'@'"); break;
                             case TOK_BRACE_CLOSE: p_err_exp_string_but_saw(in, "'}'"); break;
-                                
+
                             case TOK_INVALID: aisc_assert(0); break;
                         }
                         free(str2);

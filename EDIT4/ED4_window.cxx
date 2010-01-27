@@ -41,7 +41,7 @@ void ED4_window::reset_all_for_new_config()
 
     coords.window_width  = 0;
     coords.window_height = 0;
-    
+
     coords.window_upper_clip_point = 0;
     coords.window_lower_clip_point = 0;
     coords.window_left_clip_point  = 0;
@@ -77,7 +77,7 @@ void ED4_window::update_window_coords()
 
     coords.window_width  = area_size.r;
     coords.window_height = area_size.b;
-    
+
     // world coordinates
     coords.window_upper_clip_point = coords.middle_area_y + aww->slider_pos_vertical; // coordinate of upper clipping point of middle area
     coords.window_lower_clip_point = coords.window_upper_clip_point + coords.window_height - coords.middle_area_y;
@@ -203,7 +203,7 @@ ED4_returncode ED4_window::update_scrolled_rectangle()
 
     AW_pos world_x = scrolled_rect.world_x;
     AW_pos world_y = scrolled_rect.world_y;
-    
+
     AW_pos width  = scrolled_rect.scroll_right->world_pos[X_POS] - scrolled_rect.scroll_left->world_pos[X_POS] + 1;
     AW_pos height = scrolled_rect.scroll_bottom->world_pos[Y_POS] - scrolled_rect.scroll_top->world_pos[Y_POS] + 1;
 
@@ -218,7 +218,7 @@ ED4_returncode ED4_window::update_scrolled_rectangle()
     if (scrolled_rect.height_link != NULL) height = scrolled_rect.height_link->extension.size[HEIGHT];
 
     // set new world and window coordinates
-    scrolled_rect.scroll_top->world_pos[X_POS]  = world_x; 
+    scrolled_rect.scroll_top->world_pos[X_POS]  = world_x;
     scrolled_rect.scroll_top->world_pos[Y_POS]  = world_y;
     scrolled_rect.scroll_top->window_pos[X_POS] = world_x;
     scrolled_rect.scroll_top->window_pos[Y_POS] = world_y;
@@ -573,7 +573,7 @@ ED4_window *ED4_window::insert_window(AW_window *new_aww)
     new_aww->set_resize_callback(AW_MIDDLE_AREA, ED4_resize_cb, 0, 0);
     new_aww->set_input_callback (AW_MIDDLE_AREA, ED4_input_cb,  0, 0);
     new_aww->set_motion_callback(AW_MIDDLE_AREA, ED4_motion_cb, 0, 0);
-    
+
     new_aww->set_horizontal_change_callback(ED4_horizontal_change_cb, 0, 0);
     new_aww->set_vertical_change_callback  (ED4_vertical_change_cb,   0, 0);
 
@@ -591,7 +591,7 @@ ED4_window::ED4_window(AW_window *window)
     slider_pos_vertical   = 0;
     horizontal_fl         = 0;
     vertical_fl           = 0;
-    
+
     scrolled_rect.clear();
     id        = ++no_of_windows;
     coords.clear();
@@ -610,7 +610,7 @@ ED4_window::ED4_window(AW_window *window)
     ED4_ROOT->aw_root->awar_string(awar_path_for_IUPAC, ED4_IUPAC_EMPTY, AW_ROOT_DEFAULT);
 
     sprintf(awar_path_for_helixNr, AWAR_EDIT_HELIXNR, id);
-    ED4_ROOT->aw_root->awar_string(awar_path_for_helixNr, "", AW_ROOT_DEFAULT); 
+    ED4_ROOT->aw_root->awar_string(awar_path_for_helixNr, "", AW_ROOT_DEFAULT);
 }
 
 

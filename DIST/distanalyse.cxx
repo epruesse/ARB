@@ -36,7 +36,7 @@ void DI_MATRIX::analyse() {
         for (row=0; row<nentries; row++) {
             act_gci = 0;
             act_len = 0;
-        
+
             const char *sequ = entries[row]->sequence_parsimony->get_sequence();
 
             size_t flen = aliview->get_length();

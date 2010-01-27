@@ -152,7 +152,7 @@ protected:
         AP_sequence *result = seq;
 
         seq = NULL;
-        
+
         return result;
     }
     void replace_seq(AP_sequence *sequence);
@@ -257,7 +257,7 @@ public:
 //      ARB_countedTree
 //      tree who knows its size
 
-struct ARB_countedTree : public ARB_tree { 
+struct ARB_countedTree : public ARB_tree {
     ARB_countedTree(ARB_tree_root *tree_root_)
         : ARB_tree(tree_root_)
     {}

@@ -92,7 +92,7 @@ public:
     size_t get_sequence_length() const { return ali->get_length(); }
     const AP_filter *get_filter() const { return ali->get_filter(); }
     const AP_weights *get_weights() const { return ali->get_weights(); }
-    
+
     const AliView *get_aliview() const { return ali; }
 };
 

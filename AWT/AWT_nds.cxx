@@ -159,7 +159,7 @@ static void map_viewkeys(AW_root *aw_root, AW_CL cl_awdef, AW_CL cl_gb_main) {
 
         GBDATA *gb_arb_presets = GB_search(gb_main, "arb_presets", GB_CREATE_CONTAINER);
         GBDATA *gb_viewkey     = 0;
-        
+
         int i1 = page*NDS_PER_PAGE;
         int i2 = i1+NDS_PER_PAGE-1;
 
@@ -208,7 +208,7 @@ void create_nds_vars(AW_root *aw_root, AW_default awdef, GBDATA *gb_main) {
                 was_group_name = true; // means: change group/leaf + add 'taxonomy(1)' to ACI
             }
 
-            GB_searchOrCreate_int(gb_viewkey, "len1", default_len); 
+            GB_searchOrCreate_int(gb_viewkey, "len1", default_len);
             GBDATA *gb_pars = GB_searchOrCreate_string(gb_viewkey, "pars", "");
 
             if (was_group_name) {
@@ -278,7 +278,7 @@ void AWT_create_select_srtaci_window(AW_window *aww, AW_CL awar_acisrt, AW_CL aw
         aw_root->awar_string(AWAR_SELECT_ACISRT);
         aw_root->awar_string(AWAR_SELECT_ACISRT_PRE);
         aw_root->awar(AWAR_SELECT_ACISRT)->map((char *)awar_acisrt);
-        
+
         AW_window_simple *aws = new AW_window_simple;
         aws->init(aw_root, "SRT_ACI_SELECT", "SRT_ACI_SELECT");
         aws->load_xfig("awt/srt_select.fig");
@@ -681,11 +681,11 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode, GBT_TREE
                 case MNTN_SPACED:
                     awt_nds_ms->append(' '); // print at least one space if not using tabs
                     break;
-                    
+
                 case MNTN_TABBED:
                     if (i != 0) awt_nds_ms->append('\t'); // tabbed output for star-calc/excel/...
                     break;
-                    
+
                 default:
                     awt_assert(0);
                     break;
@@ -752,7 +752,7 @@ char *make_node_text_list(GBDATA * gbd, FILE *fp)
             gbe = GB_entry(gbd, awt_nds_ms->dkeys[i]);
         }
         if (!gbe) continue;
-        
+
         // get field info
         switch (GB_read_type(gbe)) {
             case GB_INT:

@@ -77,7 +77,7 @@ struct AWT_Codon_Code_Definition AWT_codon_def[AWT_CODON_TABLES+1] =
         },
         //   0000000001111111111222222222233333333334444444444555555555566666
         //   1234567890123456789012345678901234567890123456789012345678901234
-        
+
         //  "TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG",  base1
         //  "TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG",  base2
         //  "TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG"   base3
@@ -145,7 +145,7 @@ int AWT_embl_transl_table_2_arb_code_nr(int embl_code_nr) {
     // returns -1 if embl_code_nr is not known by ARB
 
     static bool initialized = false;
-    static int  arb_code_nr_table[MAX_EMBL_TRANSL_TABLE_VALUE+1];                 // key: embl_code_nr, value: arb_code_nr or -1 
+    static int  arb_code_nr_table[MAX_EMBL_TRANSL_TABLE_VALUE+1];                 // key: embl_code_nr, value: arb_code_nr or -1
 
     if (!initialized) {
         for (int embl = 0; embl <= MAX_EMBL_TRANSL_TABLE_VALUE; ++embl) {
@@ -396,7 +396,7 @@ bool AWT_is_codon(char protein, const char *dna, const AWT_allowedCode& allowed_
     // return TRUE if 'dna' contains a codon of 'protein' ('dna' must not contain any gaps)
     // allowed_code contains 1 for each allowed code and 0 otherwise
     // allowed_code_left contains a copy of allowed_codes with all impossible codes set to zero
-    
+
     awt_assert(codon_tables_initialized);
 
     const char *fail_reason = 0;

@@ -14,9 +14,9 @@
 #include <arbdbt.h>
 
 #include <awt.hxx>                                  // for ad_item_selector only
-#include <GEN.hxx> 
-#include <EXP.hxx> 
-#include <aw_color_groups.hxx> 
+#include <GEN.hxx>
+#include <EXP.hxx>
+#include <aw_color_groups.hxx>
 
 #include <inline.h>
 
@@ -39,7 +39,7 @@ using namespace std;
 // --------------------------------------------------------------------------------
 // CheckedConsistencies provides an easy way to automatically correct flues in the database
 // by calling a check routine exactly once.
-// 
+//
 // For an example see nt_check_database_consistency()
 //
 // Note: this makes problems if DB is loaded with older ARB version and some already
@@ -85,7 +85,7 @@ public:
         }
         else {
             GB_transaction ta(gb_main);
-            
+
             GBDATA *gb_checks = GB_search(gb_main, "checks", GB_CREATE_CONTAINER);
             GBDATA *gb_check  = GB_create(gb_checks, "check", GB_STRING);
 
@@ -140,7 +140,7 @@ public:
 GB_ERROR CheckedConsistencies::perform_selected_item_checks(ad_item_selector *sel) {
     GB_ERROR        error = NULL;
     item_check_iter end   = item_checks.end();
-    
+
     for (GBDATA *gb_cont = sel->get_first_item_container(gb_main, NULL, AWT_QUERY_ALL_SPECIES);
          gb_cont && !error;
          gb_cont = sel->get_next_item_container(gb_cont, AWT_QUERY_ALL_SPECIES))
@@ -218,7 +218,7 @@ static GB_ERROR NT_fix_gene_data(GBDATA *gb_main, size_t species_count, size_t /
                                           GBT_read_name(gb_species));
             }
         }
-        
+
         aw_status(double(++count)/species_count);
     }
 
@@ -270,7 +270,7 @@ static GB_ERROR NT_convert_gene_locations(GBDATA *gb_main, size_t species_count,
          gb_organism = GEN_next_organism(gb_organism))
     {
 
-        
+
         GBDATA *gb_gene_data = GEN_find_gene_data(gb_organism);
         nt_assert(gb_gene_data);
         if (gb_gene_data) {
@@ -296,13 +296,13 @@ static GB_ERROR NT_convert_gene_locations(GBDATA *gb_main, size_t species_count,
 
                 if (!gb_pos_start && !error) { // assume old format
                     // parts<-1 would be valid in new format, but here we have old format
-                    if (parts<1) error = GBS_global_string("Illegal value in 'pos_joined' (%i)", parts); 
-                    
+                    if (parts<1) error = GBS_global_string("Illegal value in 'pos_joined' (%i)", parts);
+
                     GB_ERROR      data_error = 0;   // error in this gene -> don't convert
                     GEN_position *pos        = GEN_new_position(parts, false); // all were joinable (no information about it was stored)
 
                     // parse old gene information into 'pos'
-                    // 
+                    //
                     // old-format was:
                     // Start-Positions:  pos_begin, pos_begin2, pos_begin3, ...
                     // End-Positions:    pos_end, pos_end2, pos_end3, ...
@@ -328,7 +328,7 @@ static GB_ERROR NT_convert_gene_locations(GBDATA *gb_main, size_t species_count,
                         if (p == 1) {
                             gb_pos_begin = expectField(gb_gene, "pos_begin", data_error);
                             gb_pos_end   = expectField(gb_gene, "pos_end", data_error);
-                        
+
                             pos_uncertain_field = "pos_uncertain";
                         }
                         else {
@@ -459,7 +459,7 @@ static GB_ERROR NT_convert_gene_locations(GBDATA *gb_main, size_t species_count,
             if (already_fixed_genes>0) aw_message(GBS_global_string("Location entries of %li genes already were in new format.", already_fixed_genes));
         }
     }
-    
+
     return error;
 }
 
@@ -549,7 +549,7 @@ static bool testDictionaryCompression(GBDATA *gbd, GBQUARK key_quark, bool testU
     // returns true, if
     // testUse == true  and ANY entries below 'gbd' with quark 'key_quark' uses dictionary compression
     // testUse == false and ALL entries below 'gbd' with quark 'key_quark' can be decompressed w/o errors
-    
+
     nt_assert(GB_read_type(gbd) == GB_DB);
 
     for (GBDATA *gb_sub = GB_child(gbd); gb_sub; gb_sub = GB_nextChild(gb_sub)) {
@@ -558,7 +558,7 @@ static bool testDictionaryCompression(GBDATA *gbd, GBQUARK key_quark, bool testU
                 // return false if any compression failed or return true if any uses dict-compression
                 if (testDictionaryCompression(gb_sub, key_quark, testUse) == testUse) return testUse;
                 break;
-                
+
             case GB_STRING:
             case GB_LINK:
                 if (GB_get_quark(gb_sub) == key_quark && GB_is_dictionary_compressed(gb_sub)) {
@@ -568,7 +568,7 @@ static bool testDictionaryCompression(GBDATA *gbd, GBQUARK key_quark, bool testU
                     if (!decompressed) return false;
                 }
                 break;
-                
+
             default:
                 break;
         }
@@ -626,7 +626,7 @@ public:
 
     const string& getGroup() const { return group; }
     const string& getOriginalKey() const { return orgkey; }
-    
+
     bool mayBeUsedWith(const string& key) const { return strcasecmp(group.c_str(), key.c_str()) == 0; }
 
     GB_ERROR assignToKey(const string& key) const { return GB_set_dictionary(gb_main, key.c_str(), data); }
@@ -864,7 +864,7 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
                 StringSet deletedData;
                 long      deleted    = 0;
                 long      notDeleted = 0;
-                
+
                 for (StringSet::iterator ki = notDecompressible.begin(); !error && ki != notDecompressible.end(); ++ki) {
                     const string& keyname    = *ki;
 
@@ -921,7 +921,7 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
                                                                     "and example data was dumped to the console.\n"
                                                                     "Please examine output and decide which is the correct possibility!",
                                                                     possible, keyname.c_str());
-                    
+
                             const char *buttons = "Abort";
                             for (int p = 1; p <= possible; ++p) buttons = GBS_global_string("%s,%i", buttons, p);
                             selected = aw_question(question, buttons, false, NULL);
@@ -997,7 +997,7 @@ static GB_ERROR remove_dup_colors(GBDATA *gb_item, const ad_item_selector *sel) 
         while (!error) {
             GBDATA *gb_next_color = GB_nextEntry(gb_color);
             if (!gb_next_color) break;
-            
+
             error = GB_delete(gb_next_color);
 #if defined(DEBUG)
             if (!error) del_count++;
@@ -1012,7 +1012,7 @@ static GB_ERROR remove_dup_colors(GBDATA *gb_item, const ad_item_selector *sel) 
                            del_count,
                            sel->item_name,
                            sel->generate_item_id(GB_get_root(gb_item), gb_item));
-#else    
+#else
     sel = sel;                                      // no warning
 #endif // DEBUG
 
@@ -1042,7 +1042,7 @@ GB_ERROR NT_repair_DB(GBDATA *gb_main) {
 
     check.register_item_check("duplicated_item_colors", remove_dup_colors);
     check.perform_item_checks(err);
-    
+
     return err;
 }
 

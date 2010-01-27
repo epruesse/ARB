@@ -11,7 +11,7 @@ enum {
     OPT_FILTER_AMBIG = 6,
     OPT_FILTER_LOWER = 7,
 
-    OPT_COUNT = 8, 
+    OPT_COUNT = 8,
 };
 
 class PH_filter {

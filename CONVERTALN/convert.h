@@ -167,7 +167,7 @@ struct global_data {
     Embl      embl;
     Alma      alma;
     Nbrf      nbrf;
-}; 
+};
 
-extern struct global_data data; 
+extern struct global_data data;
 

@@ -115,7 +115,7 @@ string FileBuffer::lineError(const string& msg) const {
             sprintf(buffer, "while reading line #%zu:\n%s", lineNumber, msg.c_str());
         fb_assert((size_t)printed < allocated);
     }
-    
+
     return buffer;
 }
 
@@ -123,7 +123,7 @@ void FileBuffer::rewind() {
     errno = 0;
     std::rewind(fp);
     fb_assert(errno == 0); // not handled yet
-    
+
     read = BUFFERSIZE;
     fillBuffer();
 

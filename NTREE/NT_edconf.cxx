@@ -123,20 +123,20 @@ int nt_build_conf_string_rek(GB_HASH *used, GBT_TREE *tree, GBS_strstruct *memfi
      * @param auto_mark                 number species to extra-mark (if not already marked)
      * @param marked_at_left            number of species which were marked (looking to left)
      * @param marked_at_right           number of species which are marked (when returning from recursion)
-     * 
+     *
      * @return the number of marked species
      *
      * --------------------------------------------------
      * Format of configuration string : [Part]+ \0
      *
      * Part : '\A' ( Group | Species | Sai )
-     * 
+     *
      * Group : ( OpenedGroup | ClosedGroup )
      * OpenedGroup : 'G' GroupDef
      * ClosedGroup : 'F' GroupDef
      * GroupDef : 'groupname' [PART]* EndGroup
-     * EndGroup : '\AE' 
-     * 
+     * EndGroup : '\AE'
+     *
      * SPECIES : 'L' 'speciesname'
      * SAI : 'S' 'sainame'
      *

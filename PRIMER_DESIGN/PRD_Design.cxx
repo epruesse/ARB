@@ -455,7 +455,7 @@ void PrimerDesign::findNextPrimer(Node *start_at_, int depth_, int *counter_, in
               (start_at_->child[0] != NULL) ? 'C' : ' ',
               (start_at_->child[3] != NULL) ? 'T' : ' ',
               (start_at_->child[2] != NULL) ? 'X' : ' ');
-    
+
     if (primer_length.includes(depth_) && start_at_->isValidPrimer())
         depth_++;
     for (int i=0; i < 4; i++)

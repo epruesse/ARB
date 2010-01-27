@@ -29,15 +29,15 @@ GB_ERROR AWT_saveTranslationInfo(GBDATA *gb_species, int arb_transl_table, int c
 GB_ERROR AWT_getTranslationInfo(GBDATA *gb_item, int& arb_transl_table, int& codon_start) {
     // looks for sub-entries 'transl_table' and 'codon_start' of species (works for genes as well)
     // if found -> test for validity and translate 'transl_table' from EMBL to ARB table number
-    // 
+    //
     // returns: an error in case of problems
-    // 
+    //
     // 'arb_transl_table' is set to -1 if not found, otherwise it contains the arb table number
     // 'codon_start'      is set to -1 if not found, otherwise it contains the codon_start (0..2)
 
     arb_transl_table = -1;          // not found yet
     codon_start      = -1;          // not found yet
-    
+
     GB_ERROR  error           = 0;
     GBDATA   *gb_transl_table = GB_entry(gb_item, "transl_table");
 
@@ -89,12 +89,12 @@ inline void memcpy3(char *dest, const char *source) {
 int AWT_pro_a_nucs_convert(int arb_code_nr, char *data, size_t size, size_t pos, bool translate_all, bool create_start_codon, bool append_stop_codon, int *translatedSize) {
     // if translate_all == true -> 'pos' > 1 produces a leading 'X' in protein data
     //                             (otherwise nucleotides in front of the starting pos are simply ignored)
-    // 
+    //
     // if 'create_start_codon' is true and the first generated codon is a start codon of the used
     //                                 code, a 'M' is inserted instead of the codon
     // if 'append_stop_codon' is true, the stop codon is appended as '*'. This is only done, if the last
     //                                 character not already is a stop codon. (Note: provide data with correct size)
-    // 
+    //
     // returns:
     // - the translated protein sequence in 'data'
     // - the length of the translated protein sequence in 'translatedSize' (if != 0)
@@ -161,7 +161,7 @@ int AWT_pro_a_nucs_convert(int arb_code_nr, char *data, size_t size, size_t pos,
     dest[0] = 0;
 
     if (translatedSize) *translatedSize = tsize;
-    
+
     return stops;
 }
 

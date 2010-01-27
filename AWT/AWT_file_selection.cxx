@@ -577,7 +577,7 @@ static void awt_selbox_install_autorefresh(adawcbstruct *acbs) {
 
     install->acbs    = acbs;
     install->modtime = get_dir_modtime(acbs);
-    
+
     install->next    = autorefresh_info;
     autorefresh_info = install;
 }
@@ -633,7 +633,7 @@ void awt_create_selection_box(AW_window *aws, const char *awar_prefix, const cha
     sprintf(buffer, "%sbox", at_prefix);
     aws->at(buffer);
     acbs->id = aws->create_selection_list(acbs->def_name, 0, "", 2, 2);
-    
+
     awt_create_selection_box_cb(0, acbs);
     awt_selection_box_changed_filename(0, acbs);    // this fixes the path name
 
@@ -665,12 +665,12 @@ char *awt_get_selected_fullname(AW_root *awr, const char *awar_prefix) {
 
         free(dir);
         free(file);
-        
+
         file = full;
 
         free(awar_dir_name);
     }
-    
+
     return file;
 }
 

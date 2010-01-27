@@ -108,7 +108,7 @@ GB_ERROR AWT_configuration::Load(const char* filename, const string& awar_name) 
     GB_ERROR error = 0;
 
     printf("Loading config from '%s'..\n", filename);
-    
+
     char *content = GB_read_file(filename);
     if (!content) {
         error = GB_await_error();
@@ -197,7 +197,7 @@ static void AWT_start_config_manager(AW_window *aww, AW_CL cl_config)
     Answer  button = (Answer)aw_string_selection_button();
 
     GB_ERROR error = NULL;
-    if (button >= CM_RESTORE && button <= CM_SAVE) { 
+    if (button >= CM_RESTORE && button <= CM_SAVE) {
         if (!cfgName || !cfgName[0]) {                // did user specify a config-name ?
             error = "Please enter or select a config";
         }
@@ -292,7 +292,7 @@ void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const c
     AWT_configuration *config = new AWT_configuration(aww, default_file_, id, store_cb, load_cb, cl1, cl2);
     // config will not be freed!!!
 
-    aww->button_length(0); // -> autodetect size by size of graphic 
+    aww->button_length(0); // -> autodetect size by size of graphic
     aww->callback(AWT_start_config_manager, (AW_CL)config);
     aww->create_button(macro_id ? macro_id : "SAVELOAD_CONFIG", "#conf_save.xpm");
 }
@@ -412,7 +412,7 @@ AWT_config::AWT_config(const AWT_config_mapping *cfgname_2_awar, AW_root *root)
     for (config_map::const_iterator c = awarmap.begin(); c != awarmap.end(); ++c) {
         const string& key(c->first);
         const string& awar_name(c->second);
-        
+
         char *awar_value = root->awar(awar_name.c_str())->read_as_string();
         valuemap[key]    = awar_value;
         free(awar_value);
@@ -517,7 +517,7 @@ void AWT_config_definition::add(AWT_config_mapping_def *mdef) {
 
 char *AWT_config_definition::read() const {
     // creates a string from awar values
-    
+
     AWT_config current_state(config_mapping, root);
     return current_state.config_string();
 }

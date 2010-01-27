@@ -142,7 +142,7 @@ static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, in
 
                     GBDATA *gb_source_data = GB_entry(gb_source, "data");
                     if (!gb_source_data) { ++no_data; continue; }
-                    
+
                     char *data = GB_read_string(gb_source_data);
                     if (!data) {
                         GB_print_error(); // cannot read data (ignore species)
@@ -170,7 +170,7 @@ static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, in
 
         aw_closestatus();
     }
-    
+
     if (!error) {
         if (use_entries) { // use 'transl_table' and 'codon_start' fields ?
             if (spec_no_transl_info) {
@@ -227,7 +227,7 @@ void transpro_event(AW_window *aww) {
 
         error             = arb_r2a(GLOBAL_gb_main, strcmp(mode, "fields") == 0, save2fields, startpos, translate_all, ali_source, ali_dest);
         if (!error) error = GBT_check_data(GLOBAL_gb_main, 0);
-        
+
         free(mode);
         free(ali_dest);
         free(ali_source);
@@ -349,7 +349,7 @@ GB_ERROR arb_transdna(GBDATA *gb_main, char *ali_source, char *ali_dest, long *n
     GB_ERROR error              = 0;
 
     aw_openstatus("Re-aligner");
-    
+
     int no_of_marked_species    = GBT_count_marked_species(gb_main);
     int no_of_realigned_species = 0;
     int ignore_fail_pos         = 0;

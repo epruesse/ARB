@@ -75,7 +75,7 @@ static bool gb_find_value_equal(GBDATA *gb, GB_TYPES type, const char *val, GB_C
         case GB_LINK:
             equal = GBS_string_matches(GB_read_char_pntr(gb), val, case_sens);
             break;
-            
+
         case GB_INT: {
             int i                      = GB_read_int(gb);
             if (i == *(int*)val) equal = true;
@@ -101,7 +101,7 @@ static GBDATA *find_sub_by_quark(GBDATA *father, GBQUARK key_quark, GB_TYPES typ
        after position 'after'
 
        if (val != NULL) search for entry with value 'val':
-       
+
        GB_STRING/GB_LINK: compares string (case_sensitive or not)
        GB_INT: compares values
        GB_FLOAT: ditto (val MUST be a 'double*')
@@ -301,7 +301,7 @@ GBDATA *GB_find(GBDATA *gbd, const char *key, GB_SEARCH_TYPE gbs) {
 }
 
 GBDATA *GB_find_string(GBDATA *gbd, const char *key, const char *str, GB_CASE case_sens, GB_SEARCH_TYPE gbs) {
-    // search for a subentry of 'gbd' that has 
+    // search for a subentry of 'gbd' that has
     // - fieldname 'key'
     // - type GB_STRING and
     // - content matching 'str'
@@ -333,13 +333,13 @@ GBDATA *GB_nextChild(GBDATA *child) {
 //      iterate over all subentries of a container that have a specified key
 
 GBDATA *GB_entry(GBDATA *father, const char *key) { // GB_entry
-    // return first child of 'father' that has fieldname 'key' 
+    // return first child of 'father' that has fieldname 'key'
     // (or NULL if none found)
     return GB_find(father, key, SEARCH_CHILD);
 }
 GBDATA *GB_nextEntry(GBDATA *entry) { // GB_nextEntry
     // return next child after 'entry', that has the same fieldname
-    // (or NULL if 'entry' is last one)    
+    // (or NULL if 'entry' is last one)
     return GB_find_sub_by_quark((GBDATA*)GB_FATHER(entry), GB_get_quark(entry), entry);
 }
 
@@ -569,7 +569,7 @@ GBDATA *GB_searchOrCreate_string(GBDATA *gb_container, const char *fieldpath, co
     if (!gb_str) {
         gb_str = GB_search(gb_container, fieldpath, GB_STRING);
         GB_ERROR error;
-        
+
         if (!gb_str) error = GB_await_error();
         else error         = GB_write_string(gb_str, default_value);
 
@@ -592,7 +592,7 @@ GBDATA *GB_searchOrCreate_int(GBDATA *gb_container, const char *fieldpath, long 
 
         if (!gb_int) error = GB_await_error();
         else error         = GB_write_int(gb_int, default_value);
-        
+
         if (error) {
             gb_int = 0;
             GB_export_error(error);
@@ -612,7 +612,7 @@ GBDATA *GB_searchOrCreate_float(GBDATA *gb_container, const char *fieldpath, dou
 
         if (!gb_float) error = GB_await_error();
         else error           = GB_write_float(gb_float, default_value);
-        
+
         if (error) {
             gb_float = 0;
             GB_export_error(error);
@@ -884,7 +884,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
         printf("GB_command_interpreter: str='%s'\n"
                "                        command='%s'\n", str, commands);
     }
-    
+
     if (!commands || !commands[0]) { // empty command -> do not modify string
         if (!strmalloc) return strdup(str);
         return (char *)str;
@@ -893,7 +893,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
     if (commands[0] == ':') { // ':' -> string parser
         return GBS_string_eval(str, commands+1, gbd);
     }
-    
+
     if (commands[0] == '/') { // regular expression
         GB_ERROR  err    = 0;
         char     *result = GBS_regreplace(str, commands, &err);
@@ -964,7 +964,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
     else {
         orig[0].str = strdup(str);
     }
-    
+
     argcinput = 1;
     argcout   = 0;
     error     = 0;

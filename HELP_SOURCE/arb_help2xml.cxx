@@ -405,7 +405,7 @@ inline string cutoff_hlp_extension(const string& s) {
     if ((pos+4) == s.length()) {
         return s; // accept .pdf
     }
-    
+
     throw string("Expected extension .hlp, .ps or .pdf");
 }
 inline void check_duplicates(const string& link, const char * /* where */, const Links& existing, bool add_warnings) {
@@ -441,7 +441,7 @@ void Helpfile::readHelp(istream& in, const string& filename) {
 #if defined(WARN_TODO)
             check_TODO(line, read);
 #endif // WARN_TODO
-            
+
             string      keyword;
             const char *rest = extractKeyword(line, keyword);
 
@@ -492,13 +492,13 @@ void Helpfile::readHelp(istream& in, const string& filename) {
                         if (keyword == "SECTION") {
                             string  section_name = eatWhite(rest);
                             Section sec(read.getLineNo());
-                            
+
                             parseSection(sec, "", 0, read);
                             sections.push_back(NamedSection(section_name, sec));
                         }
                         else {
                             Section sec(read.getLineNo());
-                            
+
                             rest = eatWhite(rest);
                             parseSection(sec, rest, rest-line, read);
                             sections.push_back(NamedSection(keyword, sec));
@@ -999,10 +999,10 @@ const char *link_id[] = {
     "www",
     "www",
     "www",
-    "email", 
-    "hlp", 
-    "ps", 
-    "pdf", 
+    "email",
+    "hlp",
+    "ps",
+    "pdf",
 };
 
 static string LinkType2id(LinkType type) {
@@ -1029,10 +1029,10 @@ static LinkType detectLinkType(const string& link_target) {
     if      (ext && strcasecmp(ext, "hlp") == 0)            type = LT_HLP;
     else if (link_target.find("http://")   == 0)            type = LT_HTTP;
     else if (link_target.find("ftp://")    == 0)            type = LT_FTP;
-    else if (link_target.find("file://")   == 0)            type = LT_FILE; 
-    else if (link_target.find('@')         != string::npos) type = LT_EMAIL; 
-    else if (ext && strcasecmp(ext, "ps")  == 0)            type = LT_PS; 
-    else if (ext && strcasecmp(ext, "pdf") == 0)            type = LT_PDF; 
+    else if (link_target.find("file://")   == 0)            type = LT_FILE;
+    else if (link_target.find('@')         != string::npos) type = LT_EMAIL;
+    else if (ext && strcasecmp(ext, "ps")  == 0)            type = LT_PS;
+    else if (ext && strcasecmp(ext, "pdf") == 0)            type = LT_PDF;
 
     return type;
 }
@@ -1083,7 +1083,7 @@ static void add_link_attributes(XML_Tag& link, LinkType type, const string& dest
         if (fullhelp.empty()) {
             link.add_attribute("missing", "1");
             string warning = strf("Dead link to '%s'", dest.c_str());
-            h2x_assert(source_line<1000); // illegal line number ? 
+            h2x_assert(source_line<1000); // illegal line number ?
             add_warning(warning, source_line);
         }
     }
@@ -1170,7 +1170,7 @@ void Helpfile::writeXML(FILE *out, const string& page_name) {
     XML_Document xml("PAGE", "arb_help.dtd", out);
     xml.skip_empty_tags       = true;
     xml.indentation_per_level = 2;
-    
+
     xml.getRoot().add_attribute("name", page_name);
 #if defined(DEBUG)
     xml.getRoot().add_attribute("edit_warning", "devel"); // inserts a edit warning into development version
@@ -1228,7 +1228,7 @@ void Helpfile::extractInternalLinks() {
         const Section& sec = named_sec->getSection();
         try {
             const Strings& s   = sec.Content();
-            
+
             for (Strings::const_iterator li = s.begin(); li != s.end(); ++li) {
                 const string& line = *li;
                 size_t        start = 0;

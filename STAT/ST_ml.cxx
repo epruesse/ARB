@@ -353,7 +353,7 @@ ST_ML::~ST_ML() {
     delete[]base_frequencies;
     delete[]inv_base_frequencies;
     delete[]rate_matrices;
-    if (!awt_csp) { // rates and ttratio have been allocated (see ST_ML::init) 
+    if (!awt_csp) { // rates and ttratio have been allocated (see ST_ML::init)
         delete rates;
         delete ttratio;
     }
@@ -464,7 +464,7 @@ long ST_ML::delete_species(const char *key, long val, void *cd_st_ml) {
         AP_tree *father = leaf->get_father();
         leaf->remove();
         delete father;                              // deletes me also
-        
+
         return 0;
     }
 }
@@ -521,7 +521,7 @@ GB_ERROR ST_ML::init(const char *tree_name, const char *alignment_namei,
 
             if (show_status) aw_status("load tree");
             tree_root->loadFromDB(tree_name);       // tree is not linked!
-            
+
             if (show_status) aw_status("link tree");
             hash_2_ap_tree = GBS_create_hash(1000, GB_MIND_CASE); // send species into hash table
 
@@ -550,7 +550,7 @@ GB_ERROR ST_ML::init(const char *tree_name, const char *alignment_namei,
             else { // keep marked
                 GBT_link_tree(tree_root->get_root_node()->get_gbt_tree(), gb_main, show_status, 0, 0);
                 tree_root->remove_leafs((marked_only ? AWT_REMOVE_NOT_MARKED : 0)|AWT_REMOVE_DELETED);
-        
+
                 error = tree_size_ok(tree_root);
                 if (!error) insert_tree_into_hash_rek(tree_root->get_root_node());
             }
@@ -573,7 +573,7 @@ GB_ERROR ST_ML::init(const char *tree_name, const char *alignment_namei,
                     }
                     rates   = alloc_rates;
                     ttratio = alloc_ttratio;
-                    
+
                     awt_csp = 0;                    // mark rates and ttratio as "allocated"
                 }
                 create_frequencies();
@@ -608,7 +608,7 @@ ST_sequence_ml *ST_ML::getOrCreate_seq(AP_tree *node) {
     ST_sequence_ml *seq = DOWNCAST(ST_sequence_ml*, node->get_seq());
     if (!seq) {
         seq = new ST_sequence_ml(tree_root->get_aliview(), this); // @@@ why not use dup() ?
-        
+
         node->set_seq(seq);
         if (node->is_leaf) {
             st_assert(node->gb_node);
@@ -657,7 +657,7 @@ ST_sequence_ml *ST_ML::get_ml_vectors(char *species_name, AP_tree * node, int st
     /* result will be in tmp_out
      *
      * assert end_ali_pos - start_ali_pos < ST_MAX_SEQ_PART
-     * 
+     *
      * @@@ CAUTION!!! get_ml_vectors has a bug:
      * it does not calculate the last value, if (end_ali_pos-start_ali_pos+1)==ST_MAX_SEQ_PART
      */
@@ -775,7 +775,7 @@ ST_ML_Color *ST_ML::get_color_string(char *species_name, AP_tree * node,
     // align start_ali_pos/end_ali_pos to previous/next pos divisible by ST_BUCKET_SIZE:
     start_ali_pos &= ~(ST_BUCKET_SIZE - 1);
     end_ali_pos    = (end_ali_pos & ~(ST_BUCKET_SIZE - 1)) + ST_BUCKET_SIZE - 1;
-    
+
     if (end_ali_pos > alignment_len) end_ali_pos = alignment_len;
 
     double          val;

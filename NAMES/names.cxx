@@ -82,7 +82,7 @@ inline int an_stricmp(const char *s1, const char *s2) {
 static AN_revers *lookup_an_revers(AN_main *main, const char *shortname) {
     char      *key        = an_strlwr(strdup(shortname));
     AN_revers *an_reverse = (AN_revers*)aisc_find_lib(&main->prevers, key);
-    
+
     free(key);
 
     return an_reverse;
@@ -119,7 +119,7 @@ static GB_HASH *an_get_prefix_hash() {
         AN_shorts *sin       = aisc_main->shorts1;
         size_t     elems     = an_shorts_elems(sin);
         if (elems<100) elems = 100;
-        
+
         GB_HASH *hash = GBS_create_hash(2*elems, GB_IGNORE_CASE);
 
         while (sin) {
@@ -138,7 +138,7 @@ static const char *an_make_prefix(const char *str) {
     buf[0] = str[0];
     buf[1] = str[1];
     buf[2] = str[2];
-    
+
     return buf;
 }
 
@@ -195,7 +195,7 @@ static void an_remove_short(AN_shorts *an_shorts) {
        normally removing names does make problems - so use it very rarely */
 
     GBS_write_hash(an_get_prefix_hash(), an_make_prefix(an_shorts->shrt), 0); // delete an_shorts from hash
-    
+
     AN_revers *an_revers = lookup_an_revers(aisc_main, an_shorts->shrt);
 
     if (an_revers) {
@@ -217,11 +217,11 @@ static void an_remove_short(AN_shorts *an_shorts) {
 }
 
 static char *nas_string_2_name(const char *str) {
-    // converts a string to a valid name 
+    // converts a string to a valid name
 #if defined(DUMP_NAME_CREATION)
     const char *org_str = str;
 #endif // DUMP_NAME_CREATION
-    
+
     char buf[FULLNAME_LEN_MAX+1];
     int  i;
     int  c;
@@ -470,7 +470,7 @@ static char *an_get_short(AN_shorts *IF_DEBUG(shorts), dll_public *parent, const
     }
 
  done :
-    
+
     if (result) {
 #if defined(DUMP_NAME_CREATION)
         if (isdigit(result[0]) || isdigit(result[1])) {
@@ -482,7 +482,7 @@ static char *an_get_short(AN_shorts *IF_DEBUG(shorts), dll_public *parent, const
         look->mh.ident = strdup(full2);
         look->shrt     = strdup(result);
         aisc_link((struct_dllpublic_ext*)parent, (struct_dllheader_ext*)look);
-        
+
         aisc_main->touched = 1;
     }
     else {
@@ -577,7 +577,7 @@ NameInformation::NameInformation(AN_local *locs) {
 
     parsed_name = GBS_string_eval(full_name,
                                   "\t= :\"= :'= :" // replace TABs and quotes by space
-                                  "sp.=species:spec.=species:SP.=SPECIES:SPEC.=SPECIES:" // replace common abbreviations of 'species' 
+                                  "sp.=species:spec.=species:SP.=SPECIES:SPEC.=SPECIES:" // replace common abbreviations of 'species'
                                   ".= :" // replace dots by spaces
                                   "  = :" // multiple spaces -> 1 space
                                   "* * *=*1 *2" // skip all beyond 2nd word
@@ -611,7 +611,7 @@ NameInformation::NameInformation(AN_local *locs) {
 
 NameInformation::~NameInformation() {
     free(id);
-    
+
     free(rest_of_name);
     free(first_name);
 
@@ -673,7 +673,7 @@ extern "C" aisc_string get_short(AN_local *locs)
     if (!shrt) { /* now there is no short name (or an illegal one) */
         char *first_advice=0, *second_advice=0;
 
-        if (locs->advice[0] && !stralnum(locs->advice)) { // bad advice 
+        if (locs->advice[0] && !stralnum(locs->advice)) { // bad advice
             locs->advice[0] = 0; // delete it
         }
 
@@ -752,7 +752,7 @@ extern "C" aisc_string get_short(AN_local *locs)
 
         char test_short[9];
         sprintf(test_short, "%s%s", first_short, second_short);
-        
+
         na_assert(size_t(both_len) == strlen(test_short));
         na_assert(second_len>=5 && second_len <= 8);
 
@@ -774,7 +774,7 @@ extern "C" aisc_string get_short(AN_local *locs)
                     int limit     = digLimit[digits];
 
                     if (printOffset>maxOffset) printOffset = maxOffset;
-                
+
                     char *printAt = test_short+printOffset;
 
                     for (; !foundUnused && count <= limit; ++count) {
@@ -856,7 +856,7 @@ extern "C" int server_save(AN_main *main, int dummy)
             if (!file) {
                 fprintf(stderr, "ERROR cannot save file '%s'\n", sec_name);
             }
-            else { 
+            else {
                 error = save_AN_main(main, file);
                 fclose(file);
                 if (!error) {
@@ -870,7 +870,7 @@ extern "C" int server_save(AN_main *main, int dummy)
             }
             free(sec_name);
             main->server_filedate = GB_time_of_file(main->server_file);
-        }        
+        }
     }
     else {
         printf("No changes to ARB_name_server data.\n");
@@ -971,7 +971,7 @@ static void check_for_case_error(AN_main *main) {
                     idents_to_recreate.push_back(shrt->mh.ident);
                 }
                 free(cap_name);
-                
+
                 AN_shorts *next = shrt->next;
                 an_remove_short(shrt);
                 shrt = next;
@@ -1030,7 +1030,7 @@ static void check_for_illegal_chars(AN_main *main) {
         }
         shrt = next;
     }
-    
+
     if (illegal_names>0) {
         fprintf(stderr, "* Removed %i names containing illegal characters.\n"
                 "=> This leads to name changes when generating new names (which is recommended now).\n", illegal_names);
@@ -1053,7 +1053,7 @@ static void set_empty_addids(AN_main *main) {
                 freedup(shrt->add_id, main->add_field_default);
                 na_assert(strchr(shrt->mh.ident, 0)[-1] == '*');
                 freeset(shrt->mh.ident, GBS_global_string_copy("%s%s", shrt->mh.ident, main->add_field_default));
-            
+
                 aisc_link(&main->pnames, shrt);
 
                 count++;
@@ -1143,7 +1143,7 @@ int names_server_save() {
 }
 
 extern "C" int server_shutdown(AN_main *pm, aisc_string passwd) {
-    // password check 
+    // password check
     if (strcmp(passwd, "ldfiojkherjkh")) return 1;
     printf("\narb_name_server: I got the shutdown message.\n");
 
@@ -1192,7 +1192,7 @@ int main(int argc, char **argv)
     if (argc!=2) usage(executable, "Too many parameters");
 
     aisc_main = create_AN_main();
-    
+
     // try to open com with running name server
     if (params->tcp) {
         name = params->tcp;

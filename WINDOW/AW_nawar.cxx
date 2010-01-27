@@ -313,10 +313,10 @@ long AW_unlink_awar_from_DB(const char *key, long cl_awar, void *cl_gb_main) {
 
 void AW_root::unlink_awars_from_DB(AW_default database) {
     GBDATA *gb_main = (GBDATA*)database;
-    
+
     aw_assert(GB_get_root(gb_main) == gb_main);
 
-    GB_transaction ta(gb_main); // needed in awar-callbacks during unlink 
+    GB_transaction ta(gb_main); // needed in awar-callbacks during unlink
     GBS_hash_do_loop(hash_table_for_variables, AW_unlink_awar_from_DB, gb_main);
 }
 
@@ -574,14 +574,14 @@ AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, const char *va
 #endif // DUMP_AWAR_CHANGES
                 GB_write_string(gb_def, (char *)var_value);
                 break;
-                
+
             case AW_INT:
 #if defined(DUMP_AWAR_CHANGES)
                 fprintf(stderr, "creating awar_int '%s' with default value '%li'\n", var_name, (long)var_value);
 #endif // DUMP_AWAR_CHANGES
                 GB_write_int(gb_def, (long)var_value);
                 break;
-                
+
             case AW_FLOAT:
 #if defined(DUMP_AWAR_CHANGES)
                 fprintf(stderr, "creating awar_float '%s' with default value '%f'\n", var_name, (double)var_double_value);
@@ -589,13 +589,13 @@ AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, const char *va
                 GB_write_float(gb_def, (double)var_double_value);
                 break;
 
-            case AW_POINTER: 
+            case AW_POINTER:
 #if defined(DUMP_AWAR_CHANGES)
                 fprintf(stderr, "creating awar_pointer '%s' with default value '%p'\n", var_name, (void*)var_value);
 #endif // DUMP_AWAR_CHANGES
                 GB_write_pointer(gb_def, (void*)var_value);
                 break;
-                
+
             default:
                 GB_warningf("AWAR '%s' cannot be created because of disallowed type", var_name);
                 break;

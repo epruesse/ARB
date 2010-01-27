@@ -72,7 +72,7 @@ static const char *AP_probe_pt_look_for_server()
 {
     char choice[256];
     sprintf(choice, "ARB_PT_SERVER%i", P.SERVERID);
-    
+
     GB_ERROR error = arb_look_and_start_server(AISC_MAGIC_NUMBER, choice, 0);
     if (error) {
         aw_message(error);
@@ -97,7 +97,7 @@ void AP_probe_design_event() {
 
     {
         const char *servername = AP_probe_pt_look_for_server();
-        
+
         if (!servername) return;
         pd_gl.link = (aisc_com *)aisc_open(servername, &pd_gl.com, AISC_MAGIC_NUMBER);
     }
@@ -199,7 +199,7 @@ void AP_probe_match_event()
 
     {
         const char *servername = AP_probe_pt_look_for_server();
-        
+
         if (!servername) return;
         pd_gl.link = (aisc_com *)aisc_open(servername, &pd_gl.com, AISC_MAGIC_NUMBER);
     }

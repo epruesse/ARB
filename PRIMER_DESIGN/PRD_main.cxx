@@ -14,7 +14,7 @@
 using namespace std;
 
 const char *test_seq1 = "...AUU---CUGG--U-UGAU-C-C-U-G........................";
- 
+
 const char *test_seq2 = "";
 const char *test_seq3 = "";
 const char *test_seq4 = "";

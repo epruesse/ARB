@@ -377,7 +377,7 @@ static void CPRO_entryinstatistic(char **speciesdata, long elemx, long elemy, un
     STATTYPE *equalentry     = CPRO.result[which_statistic].statistic[3*column];
     STATTYPE *samegroupentry = CPRO.result[which_statistic].statistic[3*column+1];
     STATTYPE *differententry = CPRO.result[which_statistic].statistic[3*column+2];
-    
+
     firstseq  = speciesdata[elemx];
     secondseq = speciesdata[elemy];
 
@@ -1121,11 +1121,11 @@ void CPRO_savestatistic_cb(AW_window *aw, AW_CL which_statistic)
                 error = GB_end_transaction(newbase, error);
                 if (!error) error = GB_save(newbase, (char*)0, "b");
             }
-            
+
             GB_close(newbase);
         }
     }
-    
+
     free(filename);
     aw->hide_or_notify(error);
 }
@@ -1185,7 +1185,7 @@ void CPRO_loadstatistic_cb(AW_window *aw, AW_CL which_statistic)
                         }
                         gb_colrescontainer = GB_nextEntry(gb_colrescontainer);
                     }
-                    
+
                     CPRO.result[which_statistic].statisticexists = 1;
                     CPRO_memrequirement_cb(awr);
                 }
@@ -1208,7 +1208,7 @@ static AW_window *CPRO_savestatisticwindow_cb(AW_root *aw_root, AW_CL cl_which_s
     if (!aw[which_statistic]) {
         AW_window_simple *aws       = new AW_window_simple;
         char             *window_id = GBS_global_string_copy("SAVE_CPRO_STATISTIC_%i", which_statistic);
-        
+
         aws->init(aw_root, window_id, "SAVE STATISTIC");
         aws->load_xfig("sel_box.fig");
 
@@ -1240,7 +1240,7 @@ static AW_window *CPRO_loadstatisticwindow_cb(AW_root *aw_root, AW_CL cl_which_s
     if (!aw[which_statistic]) {
         AW_window_simple *aws       = new AW_window_simple;
         char             *window_id = GBS_global_string_copy("LOAD_CPRO_STATISTIC_%i", which_statistic);
-        
+
         aws->init(aw_root, window_id, "LOAD STATISTIC");
         aws->load_xfig("sel_box.fig");
 
@@ -1253,7 +1253,7 @@ static AW_window *CPRO_loadstatisticwindow_cb(AW_root *aw_root, AW_CL cl_which_s
         awt_create_selection_box(aws, "cpro/load");
 
         free(window_id);
-        
+
         aw[which_statistic] = aws;
     }
 

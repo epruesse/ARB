@@ -56,7 +56,7 @@ struct gb_cache_entry_struct {
 
 struct gb_cache_struct {
     gb_cache_entry_struct *entries;
-    
+
     long firstfree_entry;
     long newest_entry;
     long oldest_entry;
