@@ -72,6 +72,13 @@ my %ignored_subdirs = map { $_ => 1; } (
                                         'bin',
                                        );
 
+my %ignored_relpath = map { $_ => 1; } (
+                                        'NAMES_COM/names_client.h',
+                                        'NAMES_COM/names_server.h',
+                                        'PROBE_COM/PT_com.h',
+                                        'PROBE_COM/PT_server.h',
+                                       );
+
 my $tab_count        = 0;
 my $files_newer_than = 0;
 
@@ -105,8 +112,9 @@ sub recurse_dirs($$) {
   my ($dir,$basedir) = @_;
 
   my @subdirs = ();
+  my $subdir  = '';
   if ($dir ne $basedir) {
-    my $subdir = substr($dir,length($basedir)+1);
+    $subdir = substr($dir,length($basedir)+1);
     if (defined $ignored_subdirs{$subdir}) {
       # print "Ignoring '$subdir' (dir='$dir')\n";
       return;
@@ -117,6 +125,7 @@ sub recurse_dirs($$) {
   foreach (readdir(DIR)) {
     if ($_ ne '.' and $_ ne '..') {
       my $full = $dir.'/'.$_;
+      my $rel  = $subdir.'/'.$_;
       if (-l $full) {
         # print "$full:0: link -- skipped\n";
       }
@@ -144,6 +153,10 @@ sub recurse_dirs($$) {
             print "Old log file: $full -- removing\n";
             unlink($full) || print "$full:0: can't unlink (Reason: $!)\n";
           }
+        }
+        elsif (defined $ignored_relpath{$rel}) {
+          # print "$full:0: excluded by relpath '$rel'\n";
+          $scan = 0;
         }
         else {
           if (/\.([^.]+)$/) {   # file with extension
