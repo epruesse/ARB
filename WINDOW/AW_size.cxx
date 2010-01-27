@@ -32,9 +32,9 @@ void AW_device_size::init() {
     size_information.r = 0;
 }
 
-AW_DEVICE_TYPE AW_device_size::type(void) { return AW_DEVICE_SIZE; }
+AW_DEVICE_TYPE AW_device_size::type() { return AW_DEVICE_SIZE; }
 
-void AW_device_size::privat_reset(void) {
+void AW_device_size::privat_reset() {
     this->init();
 }
 

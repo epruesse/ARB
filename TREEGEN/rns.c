@@ -59,7 +59,7 @@ static int minDepth = INT_MAX, /* minimale Tiefe (Astanzahl) der Blattspitzen */
 /* -------------------------------------------------------------------------- */
 /*      void dumpDepths(void) */
 /* ------------------------------------------------------ 24.05.95 22.27 ---- */
-void dumpDepths(void)
+void dumpDepths()
 {
     printf("Minimale Baumtiefe = %i\n", minDepth);
     printf("Maximale Baumtiefe = %i\n", maxDepth);
@@ -188,7 +188,7 @@ static RNS allocRNS(int len)
 /* */
 /*  Erzeugt eine Ur-RNS */
 /* */
-RNS createOriginRNS(void)
+RNS createOriginRNS()
 {
     RNS rns      = allocRNS(orgLen);
     int helixLen = orgLen*orgHelixPart,

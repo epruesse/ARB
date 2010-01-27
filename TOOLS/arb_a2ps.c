@@ -251,21 +251,21 @@ int mygetc(int *statusp);
 int is_binaryfile(char *name);
 void cut_filename(char *old_name, char *new_name);
 int printchar(unsigned char c);
-void skip_page(void);
+void skip_page();
 int fold_line(char *name);
-int cut_line(void);
-void printpage(void);
-void startpage(void);
-void cleanup(void);
-void endpage(void);
+int cut_line();
+void printpage();
+void startpage();
+void cleanup();
+void endpage();
 void print_page_prologue(int side);
 void init_file_printing(char *name, char *title);
 void print_file(char *name, char *header);
-void print_prologue(void);
+void print_prologue();
 void print_standard_prologue(char *datestring);
 int main(int argc, char *argv[]);
 #if defined(SYSV) || defined(BSD)
-char *getlogin(void);
+char *getlogin();
 #endif
 #if defined(BSD)
 int   gethostname(char *name, int namelen);

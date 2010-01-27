@@ -48,7 +48,7 @@ public:
         name = speciesname;
         matches = number_of_matches;
     }
-    ~ali_pt_member(void) {
+    ~ali_pt_member() {
         if (name)
             free((char *) name);
     }
@@ -74,15 +74,15 @@ private:
     ALI_TLIST<ali_pt_member *> *extension_list;
 
 
-    int init_communication(void);
+    int init_communication();
     char *get_family_member(char *specified_family, unsigned long number);
     char *get_extension_member(char *specified_family, unsigned long number);
     int open(char *servername, GBDATA *gb_main);
-    void close(void);
+    void close();
 
 public:
     ALI_PT(ALI_PT_CONTEXT *context);
-    ~ALI_PT(void);
+    ~ALI_PT();
 
     int find_family(ALI_SEQUENCE *sequence, int find_type = 1);
 

@@ -13,7 +13,7 @@
 
 #define CHECK_NAN(x) if ((!(x>=0.0)) && (!(x<0.0))) *(int *)0 = 0;
 
-PH_NEIGHBOUR_DIST::PH_NEIGHBOUR_DIST(void)
+PH_NEIGHBOUR_DIST::PH_NEIGHBOUR_DIST()
 {
     memset((char *)this, 0, sizeof(PH_NEIGHBOUR_DIST));
 }
@@ -77,7 +77,7 @@ void PH_NEIGHBOURJOINING::add_taxa_to_dist_list(long i) // O(n/2)
     net_divergence[i] = my_nd;
 }
 
-AP_FLOAT PH_NEIGHBOURJOINING::get_max_net_divergence(void)  // O(n/2)
+AP_FLOAT PH_NEIGHBOURJOINING::get_max_net_divergence()      // O(n/2)
 {
     long a, i;
     AP_FLOAT max = 0.0;
@@ -136,7 +136,7 @@ PH_NEIGHBOURJOINING::PH_NEIGHBOURJOINING(AP_FLOAT **m, long isize)
     swap_size = size;
 }
 
-PH_NEIGHBOURJOINING::~PH_NEIGHBOURJOINING(void)
+PH_NEIGHBOURJOINING::~PH_NEIGHBOURJOINING()
 {
     delete [] dist_matrix;
     delete [] dist_list;

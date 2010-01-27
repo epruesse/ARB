@@ -54,11 +54,11 @@ struct export_format {
     ~export_format();
 };
 
-export_format::export_format(void) {
+export_format::export_format() {
     memset((char *)this, 0, sizeof(export_format));
 }
 
-export_format::~export_format(void) {
+export_format::~export_format() {
     free(system);
     free(new_format);
     free(suffix);

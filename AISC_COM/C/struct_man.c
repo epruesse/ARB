@@ -317,7 +317,7 @@ void trf_link(long old, long *dest)
     tds->dest = dest;
 }
 
-int trf_begin(void)
+int trf_begin()
 {
     if (trf_level==0) {
         trf_sp = (struct trf_struct **)calloc(sizeof(struct trf_struct *), TRF_HASH_SIZE);

@@ -148,7 +148,7 @@ CL *aisc_calc_blocks(CL * co, CL * afor, CL * aif, int up) {
     return 0;
 }
 
-int aisc_calc_special_commands(void)
+int aisc_calc_special_commands()
 {
     CL *co;
     char *buf1, *buf2;

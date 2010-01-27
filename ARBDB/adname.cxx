@@ -108,7 +108,7 @@ GB_ERROR GBT_rename_species(const char *oldname, const  char *newname, bool igno
     return error;
 }
 
-static void gbt_free_rename_session_data(void) {
+static void gbt_free_rename_session_data() {
     if (gbtrst.renamed_hash) {
         GBS_free_hash(gbtrst.renamed_hash);
         gbtrst.renamed_hash = 0;
@@ -119,7 +119,7 @@ static void gbt_free_rename_session_data(void) {
     }
 }
 
-GB_ERROR GBT_abort_rename_session(void) {
+GB_ERROR GBT_abort_rename_session() {
     gbt_free_rename_session_data();
     return GB_abort_transaction(gbtrst.gb_main);
 }

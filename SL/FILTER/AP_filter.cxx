@@ -50,7 +50,7 @@ AP_filter::AP_filter(const AP_filter& other)
     }
 }
 
-AP_filter::~AP_filter(void) {
+AP_filter::~AP_filter() {
     delete [] bootstrap;
     delete [] filter_mask;
     delete [] filterpos_2_seqpos;
@@ -197,7 +197,7 @@ AP_weights::~AP_weights() {
     delete [] weights;
 }
 
-long AP_timer(void) {
+long AP_timer() {
     static long time = 0;
     return ++time;
 }

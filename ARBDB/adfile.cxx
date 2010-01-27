@@ -20,7 +20,7 @@
 
 #define FILE_PATH_MAX PATH_MAX
 
-GB_CSTR GB_getcwd(void) {
+GB_CSTR GB_getcwd() {
     // get the current working directory
     // (directory from which application has been started)
 

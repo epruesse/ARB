@@ -35,12 +35,12 @@ struct ali_aligner_cell {
     float d1, d2, d3;
     ALI_TARRAY<ali_pathmap_up_pointer> *starts;
 
-    ali_aligner_cell(void) {
+    ali_aligner_cell() {
         d1 = d2 = d3 = 0.0;
         starts = 0;
     }
 
-    void print(void) {
+    void print() {
         printf("%4.2f %4.2f %4.2f %8p", d1, d2, d3, starts);
     }
 };
@@ -56,12 +56,12 @@ struct ali_aligner_column {
         if (cells == 0)
             ali_fatal_error("Out of memory");
     }
-    ~ali_aligner_column(void) {
+    ~ali_aligner_column() {
         if (cells)
             free((char  *) cells);
     }
 
-    void print(void) {
+    void print() {
         unsigned int i;
         for (i = 0; i < column_length; i++) {
             printf("%2d: ", i);
@@ -84,7 +84,7 @@ struct ali_aligner_dellist_elem {
         operation = op;
     }
 
-    void print(void) {
+    void print() {
         printf("(%3ld %4.2f %2d)", start, costs, operation);
     }
 };
@@ -97,7 +97,7 @@ struct ali_aligner_dellist {
     ali_aligner_dellist(ALI_PROFILE *p) {
         profile = p;
     }
-    ~ali_aligner_dellist(void) {
+    ~ali_aligner_dellist() {
         ali_aligner_dellist_elem * elem;
         if (!list_of_dels.is_empty()) {
             elem = list_of_dels.first();
@@ -109,7 +109,7 @@ struct ali_aligner_dellist {
         }
     }
 
-    void print(void) {
+    void print() {
         printf("DEL_LIST: ");
         if (!list_of_dels.is_empty()) {
             list_of_dels.first()->print();
@@ -133,10 +133,10 @@ struct ali_aligner_dellist {
             printf("\t %f\n", profile->gap_percent(elem->start, position));
         }
     }
-    unsigned long length(void) {
+    unsigned long length() {
         return list_of_dels.cardinality();
     }
-    void make_empty(void) {
+    void make_empty() {
         ali_aligner_dellist_elem *elem;
         if (!list_of_dels.is_empty()) {
             elem = list_of_dels.first();
@@ -248,7 +248,7 @@ struct ali_aligner_last_cell {
         d2 = (*akt_col->cells)[akt_col->column_length - 1].d2;
     }
 
-    void print(void) {
+    void print() {
         ali_pathmap_up_pointer elem;
         printf("d1 = %f, d2 = %f, d3 = %f\n", d1, d2, d3);
         printf("left starts = ");
@@ -285,10 +285,10 @@ struct ali_aligner_last_cell {
 struct ali_aligner_result {
     ALI_TLIST<ALI_MAP *> *map_list;
 
-    ali_aligner_result(void) {
+    ali_aligner_result() {
         map_list = new ALI_TLIST<ALI_MAP *>;
     }
-    ~ali_aligner_result(void) {
+    ~ali_aligner_result() {
         if (map_list) {
             clear();
             delete map_list;
@@ -298,7 +298,7 @@ struct ali_aligner_result {
     void insert(ALI_MAP *in_map) {
         map_list->append_end(in_map);
     }
-    void clear(void) {
+    void clear() {
         if (!map_list->is_empty()) {
             delete map_list->first();
             while (map_list->is_next())
@@ -363,7 +363,7 @@ class ALI_ALIGNER {
                           unsigned long pos_x,
                           ali_aligner_dellist *del_list);
 
-    void calculate_matrix(void);
+    void calculate_matrix();
 
     void generate_result(ALI_TSTACK<unsigned char> *stack);
     void mapper_pre(ALI_TSTACK<unsigned char> *stack,
@@ -384,7 +384,7 @@ class ALI_ALIGNER {
                 unsigned long pos_x, unsigned long pos_y);
     void make_map_random(ALI_TSTACK<unsigned char> *stack);
     void make_map_systematic(ALI_TSTACK<unsigned char> *stack);
-    void make_map(void);
+    void make_map();
 
     unsigned long number_of_solutions();
 
@@ -392,7 +392,7 @@ public:
     ALI_ALIGNER(ALI_ALIGNER_CONTEXT *context, ALI_PROFILE *profile,
                 unsigned long start_x, unsigned long end_x,
                 unsigned long start_y, unsigned long end_y);
-    ALI_TLIST<ALI_MAP *> *solutions(void) {
+    ALI_TLIST<ALI_MAP *> *solutions() {
         ALI_TLIST<ALI_MAP *> *ret = result.map_list;
         result.map_list = 0;
         return ret;

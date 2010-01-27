@@ -368,14 +368,14 @@ inline int ALPHA_DICT_OFFSET(int idx, GB_DICTIONARY *dict) {
 static long uncompressedBlocks[64];
 static long compressedBlocks[MAX_LONGLEN];
 
-static void clearChunkCounters(void) {
+static void clearChunkCounters() {
     int i;
 
     for (i=0; i<64; i++) uncompressedBlocks[i] = 0;
     for (i=0; i<MAX_LONGLEN; i++) compressedBlocks[i] = 0;
 }
 
-static void dumpChunkCounters(void) {
+static void dumpChunkCounters() {
     int i;
 
     printf("------------------------------\n" "Uncompressed blocks used:\n");

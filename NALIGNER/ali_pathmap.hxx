@@ -37,7 +37,7 @@ class ALI_PATHMAP {
 public:
 
     ALI_PATHMAP(unsigned long width, unsigned long height);
-    ~ALI_PATHMAP(void);
+    ~ALI_PATHMAP();
 
     void set(unsigned long x, unsigned long y, unsigned char val, 
              ALI_TARRAY<ali_pathmap_up_pointer> *up_pointer = 0);
@@ -52,7 +52,7 @@ public:
             return (*pathmap)[x*height_real + y/2] >> 4;
     }
     void optimize(unsigned long x);
-    void print(void);
+    void print();
 };
 
 #else

@@ -231,7 +231,7 @@ int is_genbank_date(char *string) {
  *   Function today_date().
  *       Get today's date.
  */
-char *today_date(void) {
+char *today_date() {
     struct timeval  tp;
     struct timezone tzp;
     char            line[SIZE], *return_value;

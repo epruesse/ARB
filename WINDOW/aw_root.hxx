@@ -122,9 +122,9 @@ void AW_ERROR(const char *templat, ...) __ATTR__FORMAT(1);
 // ---------------------
 //      progress bar
 
-void aw_initstatus(void);       // call this function only once as early as possible
+void aw_initstatus();           // call this function only once as early as possible
 void aw_openstatus(const char *title);   // show status
-void aw_closestatus(void);      // hide status
+void aw_closestatus();          // hide status
 
 int aw_status(const char *text);                    // return 1 if exit button is pressed + set statustext
 int aw_status(double gauge);                        // return 1 if exit button is pressed + set progress bar
@@ -222,9 +222,9 @@ public:
 
     void init_variables(AW_default database);
     void init_root(const char *programname, bool no_exit);
-    void main_loop(void);
-    void process_events(void); // might block
-    void process_pending_events(void); // non-blocking
+    void main_loop();
+    void process_events();     // might block
+    void process_pending_events();     // non-blocking
     AW_ProcessEventType peek_key_event(AW_window *);
 
     void add_timed_callback               (int ms, AW_RCB2 f, AW_CL cd1, AW_CL cd2);
@@ -387,7 +387,7 @@ public:
     GB_ERROR rewrite_as(char *aw_value) { return rewrite_as_string(aw_value); };
 
     GB_ERROR toggle_toggle();   /* switches between 1/0 */
-    void     touch(void);
+    void     touch();
 
     GB_ERROR make_global() __ATTR__USERESULT;       // should be used by ARB_init_global_awars only
 };

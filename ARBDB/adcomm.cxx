@@ -2020,7 +2020,7 @@ long gbcmc_close(struct gbcmc_comm * link)
     return 0;
 }
 
-GB_CSTR GB_get_hostname(void) {
+GB_CSTR GB_get_hostname() {
     static char *hn = 0;
     if (!hn) {
         char buffer[4096];
@@ -2082,7 +2082,7 @@ GB_ERROR GB_install_pid(int mode) {
     return error;
 }
 
-const char *GB_date_string(void) {
+const char *GB_date_string() {
     struct timeval date;
     struct tm *p;
 

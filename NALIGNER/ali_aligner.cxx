@@ -988,7 +988,7 @@ void ALI_ALIGNER::make_map_systematic(ALI_TSTACK<unsigned char> *stack) {
 }
 
 
-void ALI_ALIGNER::make_map(void) {
+void ALI_ALIGNER::make_map() {
     // make the list of result maps
     ALI_TSTACK<unsigned char> *stack;
 

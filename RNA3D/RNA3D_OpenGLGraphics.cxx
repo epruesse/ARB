@@ -10,13 +10,13 @@
 
 using namespace std;
 
-OpenGLGraphics::OpenGLGraphics(void)
+OpenGLGraphics::OpenGLGraphics()
     : displayGrid(false)
     , ApplicationBGColor(0, 0, 0)
 {
 }
 
-OpenGLGraphics::~OpenGLGraphics(void) {
+OpenGLGraphics::~OpenGLGraphics() {
 }
 
 // Sets the Background Color for the OpenGL Window

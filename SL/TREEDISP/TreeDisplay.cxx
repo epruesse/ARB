@@ -253,7 +253,7 @@ struct AWT_graphic_tree_group_state {
         return 4; // expand all
     }
 
-    void dump(void) {
+    void dump() {
         printf("closed=%i               opened=%i\n", closed, opened);
         printf("closed_terminal=%i      opened_terminal=%i\n", closed_terminal, opened_terminal);
         printf("closed_with_marked=%i   opened_with_marked=%i\n", closed_with_marked, opened_with_marked);

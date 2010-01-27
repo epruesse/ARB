@@ -8,7 +8,7 @@
 
 using namespace std;
 
-GLRenderer::GLRenderer(void) {
+GLRenderer::GLRenderer() {
     fSkeletonSize = 0.5;
     iBackBone = iColorise = 0;
     ObjectSize = 8.0;
@@ -29,10 +29,10 @@ GLRenderer::GLRenderer(void) {
     G                  = new OpenGLGraphics();
 }
 
-GLRenderer::~GLRenderer(void) {
+GLRenderer::~GLRenderer() {
 }
 
-void GLRenderer::DisplayHelices(void) {
+void GLRenderer::DisplayHelices() {
     G->SetColor(RNA3D_GC_HELIX);
     glLineWidth(fHelixSize);
     for (int i = iStartHelix; i <= iEndHelix; i++) {
@@ -43,7 +43,7 @@ void GLRenderer::DisplayHelices(void) {
     }
 }
 
-void GLRenderer::DisplayHelixBackBone(void) {
+void GLRenderer::DisplayHelixBackBone() {
     G->SetColor(RNA3D_GC_HELIX_SKELETON);
     glLineWidth(0.5);
 
@@ -79,7 +79,7 @@ void GLRenderer::DisplayHelixBackBone(void) {
     glPopAttrib();
 }
 
-void GLRenderer::DisplayBasePositions(void) {
+void GLRenderer::DisplayBasePositions() {
 
     G->SetColor(RNA3D_GC_MOL_BACKBONE);
     glCallList(STRUCTURE_POS_ANCHOR);
@@ -89,7 +89,7 @@ void GLRenderer::DisplayBasePositions(void) {
 
 }
 
-void GLRenderer::DisplayMappedSpInsertions(void) {
+void GLRenderer::DisplayMappedSpInsertions() {
 
     G->SetColor(RNA3D_GC_INSERTION);
     glCallList(MAP_SPECIES_INSERTION_BASES_ANCHOR);
@@ -98,7 +98,7 @@ void GLRenderer::DisplayMappedSpInsertions(void) {
     glCallList(MAP_SPECIES_INSERTION_BASES);
 }
 
-void GLRenderer::DisplayMappedSpBasePositions(void) {
+void GLRenderer::DisplayMappedSpBasePositions() {
 
     G->SetColor(RNA3D_GC_MOL_BACKBONE);
     glCallList(MAP_SPECIES_BASE_DIFFERENCE_POS_ANCHOR);
@@ -114,12 +114,12 @@ void GLRenderer::DisplayHelixMidPoints(Texture2D *cImages) {
     glCallList(HELIX_NUMBERS_POINTS);
 }
 
-void GLRenderer::DisplayHelixNumbers(void) {
+void GLRenderer::DisplayHelixNumbers() {
     G->SetColor(RNA3D_GC_FOREGROUND);
     glCallList(HELIX_NUMBERS);
 }
 
-void GLRenderer::DoHelixMapping(void) {
+void GLRenderer::DoHelixMapping() {
     if (iDisplayHelix) {
         if (iHelixNrs) {
             DisplayHelixNumbers();

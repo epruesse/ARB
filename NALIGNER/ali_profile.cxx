@@ -459,7 +459,7 @@ ALI_PROFILE::ALI_PROFILE(ALI_SEQUENCE *seq, ALI_PROFILE_CONTEXT *context)
     delete family_list;
 }
 
-ALI_PROFILE::~ALI_PROFILE(void)
+ALI_PROFILE::~ALI_PROFILE()
 {
     size_t i;
 
@@ -584,7 +584,7 @@ int ALI_PROFILE::is_outside_helix(unsigned long pos, unsigned long *first, unsig
 }
 
 
-char *ALI_PROFILE::cheapest_sequence(void) {
+char *ALI_PROFILE::cheapest_sequence() {
     // generate a 'consensus sequence'
 
     char *seq;

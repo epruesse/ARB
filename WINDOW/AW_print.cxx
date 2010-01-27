@@ -17,7 +17,7 @@ AW_device_print::AW_device_print(AW_common *commoni) : AW_device(commoni) {
 
 void AW_device_print::init() {}
 
-AW_DEVICE_TYPE AW_device_print::type(void) { return AW_DEVICE_PRINTER; }
+AW_DEVICE_TYPE AW_device_print::type() { return AW_DEVICE_PRINTER; }
 
 int AW_device_print::line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
     class AW_GC_Xm *gcm      = AW_MAP_GC(gc);
@@ -133,7 +133,7 @@ void AW_device_print::set_color_mode(bool mode) {
     color_mode=mode;
 }
 
-void AW_device_print::close(void) {
+void AW_device_print::close() {
     if (out) fclose(out);
     out = 0;
 }

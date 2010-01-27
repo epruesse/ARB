@@ -195,7 +195,7 @@ ED4_returncode ED4_window::delete_folding_line(ED4_folding_line *fl, ED4_propert
     return (ED4_R_OK);
 }
 
-ED4_returncode ED4_window::update_scrolled_rectangle(void)
+ED4_returncode ED4_window::update_scrolled_rectangle()
 {
     if ((scrolled_rect.scroll_top == NULL) || (scrolled_rect.scroll_bottom == NULL) ||
         (scrolled_rect.scroll_left == NULL) || (scrolled_rect.scroll_right == NULL))
@@ -496,7 +496,7 @@ ED4_returncode ED4_window::scroll_rectangle(int dx, int dy)
     return (ED4_R_OK);
 }
 
-ED4_returncode ED4_window::set_scrollbar_indents(void) {
+ED4_returncode ED4_window::set_scrollbar_indents() {
     int indent_y, indent_x;
 
     if ((scrolled_rect.scroll_top    == NULL) ||

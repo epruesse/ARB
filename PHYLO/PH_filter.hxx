@@ -25,9 +25,9 @@ public:
     char *init(char *filter, char *zerobases, long size);
     char *init(long size);
 
-    PH_filter(void);
-    ~PH_filter(void);
-    float *calculate_column_homology(void);
+    PH_filter();
+    ~PH_filter();
+    float *calculate_column_homology();
 };
 
 #else

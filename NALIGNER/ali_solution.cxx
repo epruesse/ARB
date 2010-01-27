@@ -63,7 +63,7 @@ ALI_MAP::ALI_MAP(ALI_MAP *map)
     }
 }
 
-int ALI_MAP::is_konsistent(void)
+int ALI_MAP::is_konsistent()
 {
     unsigned long i;
 
@@ -170,7 +170,7 @@ ALI_SEQUENCE *ALI_MAP::sequence_without_inserts(ALI_NORM_SEQUENCE *ref_seq)
                             last_ref_base - first_ref_base + 1);
 }
 
-ALI_MAP *ALI_MAP::inverse_without_inserts(void)
+ALI_MAP *ALI_MAP::inverse_without_inserts()
 {
     unsigned long map_pos;
     ALI_MAP *inv_map;
@@ -189,7 +189,7 @@ ALI_MAP *ALI_MAP::inverse_without_inserts(void)
     return inv_map;
 }
 
-char *ALI_MAP::insert_marker(void)
+char *ALI_MAP::insert_marker()
 {
     int ins_counter;
     unsigned long map_pos, seq_pos;
@@ -246,7 +246,7 @@ ALI_SUB_SOLUTION::ALI_SUB_SOLUTION(ALI_SUB_SOLUTION *solution)
     }
 }
 
-ALI_SUB_SOLUTION::~ALI_SUB_SOLUTION(void)
+ALI_SUB_SOLUTION::~ALI_SUB_SOLUTION()
 {
     ALI_MAP *map;
 
@@ -323,7 +323,7 @@ int ALI_SUB_SOLUTION::free_area(
     return 0;
 }
 
-unsigned long ALI_SUB_SOLUTION::number_of_free_areas(void)
+unsigned long ALI_SUB_SOLUTION::number_of_free_areas()
 {
     ALI_MAP *map;
     unsigned long last_of_prev;
@@ -465,7 +465,7 @@ int ALI_SUB_SOLUTION::delete_map(ALI_MAP *del_map)
     return 0;
 }
 
-ALI_MAP *ALI_SUB_SOLUTION::make_one_map(void)
+ALI_MAP *ALI_SUB_SOLUTION::make_one_map()
 {
     ALI_MAP *map, *new_map;
     unsigned long i;
@@ -525,7 +525,7 @@ ALI_MAP *ALI_SUB_SOLUTION::make_one_map(void)
     return new_map;
 }
 
-void ALI_SUB_SOLUTION::print(void)
+void ALI_SUB_SOLUTION::print()
 {
     ALI_MAP *map;
 

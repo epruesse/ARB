@@ -125,37 +125,37 @@ public:
 
     OpenGLGraphics *GRAPHICS; // not really a good place - it better should be passed from callers
 
-    Structure3D(void);
-    virtual  ~Structure3D(void);
+    Structure3D();
+    virtual  ~Structure3D();
 
     void ReadCoOrdinateFile();
     void StoreCoordinates(float x, float y, float z, char base, unsigned int pos);
 
-    void GetSecondaryStructureInfo(void);
+    void GetSecondaryStructureInfo();
     void Store2Dinfo(char *info, int pos, int helixNr);
-    void PrepareSecondaryStructureData(void);
+    void PrepareSecondaryStructureData();
 
-    void Combine2Dand3DstructureInfo(void);
+    void Combine2Dand3DstructureInfo();
     void Store2D3Dinfo(Struct2Dinfo *s2D, Struct3Dinfo *s3D);
 
     static int FindTypeOfRNA();
     void DeleteOldMoleculeData();
 
-    void GenerateMoleculeSkeleton(void);
+    void GenerateMoleculeSkeleton();
     void ComputeBasePositions();
 
     void PositionsToCoordinatesDispList(int listID, int *pos, int len);
     void PointsToQuads(float x, float y, float z);
     void StoreHelixNrInfo(float x, float y, float z, int helixNr);
     
-    void GenerateDisplayLists(void);
+    void GenerateDisplayLists();
     void GenerateHelixDispLists(int HELIX_NR_ID, int HELIX_NR);
     void GenerateHelixNrDispList(int startHx, int endHx);
-    void GenerateSecStructureHelixRegions(void);
-    void GenerateSecStructureNonHelixRegions(void);
-    void GenerateSecStructureUnpairedHelixRegions(void);
+    void GenerateSecStructureHelixRegions();
+    void GenerateSecStructureNonHelixRegions();
+    void GenerateSecStructureUnpairedHelixRegions();
 
-    void GenerateTertiaryInteractionsDispLists(void);
+    void GenerateTertiaryInteractionsDispLists();
 
     void MapCurrentSpeciesToEcoliTemplate(AW_root *awr);
     void StoreCurrSpeciesDifference(char base, int pos);

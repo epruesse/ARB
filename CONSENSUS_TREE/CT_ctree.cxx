@@ -51,7 +51,7 @@ void insert_ctree(GBT_TREE *tree, int weight)
    that represent the same partition son1 == ~son2 to do this we must split
    the fist son-partition in two parts through logical calculation there
    could only be one son! */
-GBT_TREE *get_ctree(void)
+GBT_TREE *get_ctree()
 {
     PART *p;
     NT_NODE *n;

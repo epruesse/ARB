@@ -9,7 +9,7 @@
  *   Function init_phylip().
  *       Initialize genbank entry.
  */
-void init_phylip(void)
+void init_phylip()
 {
 
 }

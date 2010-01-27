@@ -96,7 +96,7 @@ public:
     ST_sequence_ml(const AliView *aliview, ST_ML *st_ml_);
     virtual ~ST_sequence_ml();
     
-    AP_sequence *dup(void) const;
+    AP_sequence *dup() const;
     AP_FLOAT     combine(const AP_sequence* lefts, const AP_sequence *rights, char *mutation_per_site = 0);
     void partial_match(const AP_sequence* part, long *overlap, long *penalty) const;
 

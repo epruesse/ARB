@@ -65,11 +65,11 @@ typedef struct S_RNS
 extern "C" {
 #endif    
 
-    RNS  createOriginRNS (void);
+    RNS  createOriginRNS ();
     void freeRNS         (RNS rns);
     void splitRNS        (int no_of_father, RNS origin, double age, int steps, int depth);
 
-    void dumpDepths      (void);
+    void dumpDepths      ();
 
 #ifdef __cplusplus
 }

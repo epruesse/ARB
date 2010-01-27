@@ -169,7 +169,7 @@ void convert(char *inf, char *outf, int intype, int outype)
  *      Initialize data structure at the very beginning of running
  *              any program.
  */
-void init(void)
+void init()
 {
 
     /* initialize macke format */
@@ -268,7 +268,7 @@ void init(void)
  *      Function init_seq_data().
  *              Init. seq. data.
  */
-void init_seq_data(void)
+void init_seq_data()
 {
     data.numofseq = 0;
     data.seq_length = 0;

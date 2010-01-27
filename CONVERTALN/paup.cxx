@@ -6,7 +6,7 @@
  *   Function init_paup().
  *       Init. paup data.
  */
-void init_paup(void)
+void init_paup()
 {
     free_sequence_data(data.paup.ntax);
     data.paup.ntax = 0;

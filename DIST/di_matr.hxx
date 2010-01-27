@@ -115,7 +115,7 @@ public:
     const AliView *get_aliview() const { return aliview; }
 
     char *load(LoadWhat what, GB_CSTR sort_tree_name, bool show_warnings, GBDATA **species_list);
-    char *unload(void);
+    char *unload();
     const char *save(char *filename, enum DI_SAVE_TYPE type);
 
     void    clear(DI_MUT_MATR &hits);

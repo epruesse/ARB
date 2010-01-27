@@ -204,7 +204,7 @@ int aisc_check_error(aisc_com * link)
     return 0;
 }
 
-char *aisc_client_get_hostname(void) {
+char *aisc_client_get_hostname() {
     static char *hn = 0;
     if (!hn) {
         char buffer[4096];

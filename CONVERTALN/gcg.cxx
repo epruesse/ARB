@@ -215,7 +215,7 @@ void gcg_output_filename(char *prefix, char *name)
  *   Function gcg_seq_length().
  *       Calculate sequence length without gap.
  */
-int gcg_seq_length(void)
+int gcg_seq_length()
 {
 
     int indi, len;

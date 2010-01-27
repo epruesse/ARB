@@ -18,7 +18,7 @@
 struct PTM_struct PTM;
 char PT_count_bits[PT_B_MAX+1][256]; // returns how many bits are set
 
-void PT_init_count_bits(void) {
+void PT_init_count_bits() {
     unsigned int base;
     unsigned int count;
     unsigned int i, h, j;
@@ -78,7 +78,7 @@ char *PTM_get_mem(int size) {
     return erg;
 }
 
-int PTM_destroy_mem(void) {
+int PTM_destroy_mem() {
     /*! destroys all leftover memory sources */
     int  pos;
     long i;
@@ -120,7 +120,7 @@ void PTM_free_mem(char *data, int size) {
     }
 }
 
-void PTM_debug_mem(void)
+void PTM_debug_mem()
 {
 #ifdef PTM_DEBUG
     int i;
@@ -563,7 +563,7 @@ long PTD_write_chain_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos
     return pos;
 }
 
-void PTD_debug_nodes(void)
+void PTD_debug_nodes()
 {
 #ifdef ARB_64
     printf ("Inner Node Statistic:\n");

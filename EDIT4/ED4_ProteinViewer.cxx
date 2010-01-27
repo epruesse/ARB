@@ -671,7 +671,7 @@ static void TranslateGeneToAminoAcidSequence(AW_root * /* root */, ED4_AA_sequen
     if (error) aw_message(GBS_global_string("Error: %s", error));
 }
 
-void PV_PrintMissingDBentryInformation(void) {
+void PV_PrintMissingDBentryInformation() {
     if (gMissingCodonStart>0) {
         aw_message(GBS_global_string("WARNING:  'codon start' entry not found in %d of %d species! Using 1st base as codon start...",
                                      gMissingCodonStart,

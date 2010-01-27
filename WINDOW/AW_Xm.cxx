@@ -36,7 +36,7 @@ void AW_device_Xm::init() {
 }
 
 
-AW_DEVICE_TYPE AW_device_Xm::type(void) { return AW_DEVICE_SCREEN; }
+AW_DEVICE_TYPE AW_device_Xm::type() { return AW_DEVICE_SCREEN; }
 
 
 int AW_device_Xm::line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
@@ -248,7 +248,7 @@ void AW_device_Xm::slow() {
 
 
 
-void AW_device_Xm::flush(void) {
+void AW_device_Xm::flush() {
     XFlush(common->display);
 }
 

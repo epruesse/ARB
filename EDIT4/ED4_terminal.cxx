@@ -375,7 +375,7 @@ ED4_base *ED4_terminal::get_competent_child(AW_pos /* x */, AW_pos /* y */, ED4_
     return NULL;
 }
 
-ED4_returncode ED4_terminal::resize_requested_by_child(void)
+ED4_returncode ED4_terminal::resize_requested_by_child()
 {
     e4_assert(0);
     return ED4_R_IMPOSSIBLE;
@@ -713,12 +713,12 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
 }
 
 
-ED4_returncode  ED4_terminal::calc_size_requested_by_parent(void)
+ED4_returncode  ED4_terminal::calc_size_requested_by_parent()
 {
     return ED4_R_OK;
 }
 
-short ED4_terminal::calc_bounding_box(void)
+short ED4_terminal::calc_bounding_box()
 {
     short            bb_changed = 0;
     ED4_list_elem   *current_list_elem;
@@ -774,7 +774,7 @@ ED4_returncode ED4_terminal::draw(int /* only_text */)
 }
 
 
-ED4_returncode ED4_terminal::resize_requested_by_parent(void)
+ED4_returncode ED4_terminal::resize_requested_by_parent()
 {
     if (update_info.resize) { // likes to resize?
         if (calc_bounding_box()) { // size changed?
@@ -801,7 +801,7 @@ ED4_base* ED4_terminal::search_ID(const char *temp_id)
 }
 
 
-int ED4_terminal::adjust_clipping_rectangle(void)                    // set scrolling area in AW_MIDDLE_AREA
+int ED4_terminal::adjust_clipping_rectangle()                        // set scrolling area in AW_MIDDLE_AREA
 {
     AW_pos              x, y;
     AW_rectangle        area_size;

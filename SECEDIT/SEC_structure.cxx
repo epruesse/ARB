@@ -355,7 +355,7 @@ void SEC_helix_strand::unlink(bool fromOtherStrandAsWell) {
     if (fromOtherStrandAsWell) other_strand = NULL;
 }
 
-void SEC_segment::unlink(void) {
+void SEC_segment::unlink() {
     next_helix_strand = NULL;
 }
 
@@ -437,7 +437,7 @@ size_t SEC_base_part::getNextAbspos() const {
 }
 
 
-SEC_segment *SEC_helix_strand::get_previous_segment(void) {
+SEC_segment *SEC_helix_strand::get_previous_segment() {
     SEC_segment *segment_before;
     SEC_helix_strand *strand_pointer = next_segment->get_next_strand();
 

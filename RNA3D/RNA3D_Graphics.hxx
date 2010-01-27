@@ -58,7 +58,7 @@ public:
     AW_root    *aw_root;
 
     RNA3D_Graphics(AW_root *aw_root, GBDATA *gb_main);
-    virtual ~RNA3D_Graphics(void);
+    virtual ~RNA3D_Graphics();
 
     AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *ntw, AW_CL);
 

@@ -9,7 +9,7 @@ extern int warning_out;
  *      Function init_pm_data().
  *              Init macke and embl data.
  */
-void init_em_data(void)
+void init_em_data()
 {
     init_macke();
     init_embl();
@@ -19,7 +19,7 @@ void init_em_data(void)
  *      Function init_embl().
  *              Initialize embl entry.
  */
-void init_embl(void) {
+void init_embl() {
     int indi;
 
     /* initialize embl format */
@@ -965,7 +965,7 @@ void embl_to_macke(char *inf, char *outf, int format)
  *      Function etom().
  *              Convert from embl format to Macke format.
  */
-int etom(void) {
+int etom() {
     init_genbank();
     if (etog()) return gtom();
     return 0;
@@ -1070,7 +1070,7 @@ void embl_to_genbank(char *inf, char *outf)
  *      Function etog()
  *              Convert from embl to genbank format.
  */
-int etog(void) {
+int etog() {
     int  indi;
     char key[TOKENNUM], temp[LONGTEXT];
     char t1[TOKENNUM], t2[TOKENNUM], t3[TOKENNUM];
@@ -1140,7 +1140,7 @@ int etog(void) {
  *      Function etog_reference().
  *              Convert reference from EMBL to GenBank format.
  */
-void etog_reference(void) {
+void etog_reference() {
     int indi, len, start, end;
     char temp[LONGTEXT];
 
@@ -1285,7 +1285,7 @@ char *etog_journal(char *string) {
  *      Function etog_comments().
  *              Convert comment part from EMBL to GenBank.
  */
-void etog_comments(void) {
+void etog_comments() {
     /* RDP defined Organism Information comments */
     data.gbk.comments.orginf.exist = data.embl.comments.orginf.exist;
 
@@ -1372,7 +1372,7 @@ void genbank_to_embl(char *inf, char *outf)
  *      Function gtoe().
  *              Genbank to EMBL.
  */
-int gtoe(void) {
+int gtoe() {
     char token[TOKENNUM], temp[LONGTEXT], rdpid[TOKENNUM];
     int  indi;
 
@@ -1448,7 +1448,7 @@ int gtoe(void) {
  *      Function gtoe_reference().
  *              Convert references from GenBank to EMBL.
  */
-void gtoe_reference(void) {
+void gtoe_reference() {
     int  indi, start, end, refnum;
     char token[TOKENNUM];
     char t1[TOKENNUM], t2[TOKENNUM], t3[TOKENNUM];
@@ -1570,7 +1570,7 @@ char *gtoe_journal(char *string) {
  *      Function gtoe_comments().
  *              Convert comment part from GenBank to EMBL.
  */
-void gtoe_comments(void) {
+void gtoe_comments() {
     /* RDP defined Organism Information comments */
     data.embl.comments.orginf.exist = data.gbk.comments.orginf.exist;
 
@@ -1685,7 +1685,7 @@ void macke_to_embl(char *inf, char *outf)
  *              Handle subspecies information when converting from
  *                      Macke to EMBL.
  */
-int partial_mtoe(void) {
+int partial_mtoe() {
     int indj, indk;
 
     if (Lenstr(data.macke.strain) > 1) {

@@ -86,7 +86,7 @@ void AWT_canvas::init_device(AW_device *device) {
     device->zoom(this->trans_to_fit);
 }
 
-void AWT_canvas::zoom_reset(void)
+void AWT_canvas::zoom_reset()
 {
     GB_transaction dummy(this->gb_main);
 
@@ -154,7 +154,7 @@ void AWT_canvas::zoom_reset(void)
 }
 
 void
-AWT_canvas::recalc_size(void) {
+AWT_canvas::recalc_size() {
     GB_transaction dummy(this->gb_main);
     AW_device *device = aww->get_size_device (AW_MIDDLE_AREA);
     device->set_filter(AW_SIZE);
@@ -355,7 +355,7 @@ void AWT_expose_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL) {
     ntw->refresh();
 }
 
-void AWT_canvas::refresh(void)
+void AWT_canvas::refresh()
 {
     AW_device *device = this->aww->get_device (AW_MIDDLE_AREA);
     device->clear(-1);
@@ -785,10 +785,10 @@ AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, AWT_graphic *awd, AW_g
 //      AWT_graphic
 // --------------------
 
-AWT_graphic::AWT_graphic(void) {
+AWT_graphic::AWT_graphic() {
     exports.init();
 }
-AWT_graphic::~AWT_graphic(void) {
+AWT_graphic::~AWT_graphic() {
 }
 
 void AWT_graphic::pop_transaction(GBDATA *gb_main) {

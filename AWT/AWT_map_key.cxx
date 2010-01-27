@@ -6,7 +6,7 @@
 #include <aw_window.hxx>
 #include "awt_map_key.hxx"
 
-ed_key::ed_key(void)
+ed_key::ed_key()
 {
     int i;
     for (i=0; i<256; i++) map[i] = i;

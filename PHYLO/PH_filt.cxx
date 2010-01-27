@@ -16,7 +16,7 @@
 
 extern char **filter_text;
 
-PH_filter::PH_filter(void)
+PH_filter::PH_filter()
 {
     memset ((char *)this, 0, sizeof(PH_filter));
 }
@@ -66,7 +66,7 @@ char *PH_filter::init(long size)
     return 0;
 }
 
-PH_filter::~PH_filter(void)
+PH_filter::~PH_filter()
 {
     delete filter;
 }
@@ -77,7 +77,7 @@ inline void strlwr(char *s) {
     }
 }
 
-float *PH_filter::calculate_column_homology(void) {
+float *PH_filter::calculate_column_homology() {
     long           i, j, max, num_all_chars;
     bool           mask[256];
     char           delete_when_max[100], get_maximum_from[100], all_chars[100], max_char;

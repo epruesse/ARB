@@ -29,8 +29,8 @@ class AW_window_menu_modes_opengl : public AW_window_menu_modes {
 private:
     void *AW_window_menu_modes_private; // Do not use !!!
 public:
-    AW_window_menu_modes_opengl(void);
-    ~AW_window_menu_modes_opengl(void);
+    AW_window_menu_modes_opengl();
+    ~AW_window_menu_modes_opengl();
     virtual void init(AW_root *root, const char *wid, const char *windowname, int width, int height);
 };
 

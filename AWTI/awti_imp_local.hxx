@@ -114,8 +114,8 @@ struct input_format_struct {
 
     input_format_per_line *pl;
 
-    input_format_struct(void);
-    ~input_format_struct(void);
+    input_format_struct();
+    ~input_format_struct();
 };
 
 struct awtcig_struct {

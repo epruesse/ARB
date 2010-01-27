@@ -10,7 +10,7 @@
 
 #include "ali_pt.hxx"
 
-int ALI_PT::init_communication(void) {
+int ALI_PT::init_communication() {
     // Initialize the communication with the pt server
     const char *user = GB_getenvUSER();
     if (aisc_create(link, PT_MAIN, com, MAIN_LOCS, PT_LOCS, &locs, LOCS_USER, user, NULL)) {
@@ -120,7 +120,7 @@ int ALI_PT::open(char *servername, GBDATA *gb_main)
     return 0;
 }
 
-void ALI_PT::close(void)
+void ALI_PT::close()
 {
     if (link) aisc_close(link);
     link = 0;
@@ -154,7 +154,7 @@ ALI_PT::ALI_PT(ALI_PT_CONTEXT *context)
     }
 }
 
-ALI_PT::~ALI_PT(void)
+ALI_PT::~ALI_PT()
 {
     close();
 
@@ -295,7 +295,7 @@ int ALI_PT::find_family(ALI_SEQUENCE *sequence, int find_type)
 }
 
 
-ALI_TLIST<ali_pt_member *> *ALI_PT::get_family_list(void)
+ALI_TLIST<ali_pt_member *> *ALI_PT::get_family_list()
 {
     ALI_TLIST<ali_pt_member *> *ret;
 
@@ -306,7 +306,7 @@ ALI_TLIST<ali_pt_member *> *ALI_PT::get_family_list(void)
 }
 
 
-ALI_TLIST<ali_pt_member *> *ALI_PT::get_extension_list(void)
+ALI_TLIST<ali_pt_member *> *ALI_PT::get_extension_list()
 {
     ALI_TLIST<ali_pt_member *> *ret;
 

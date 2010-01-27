@@ -23,19 +23,19 @@ private:
 public:
     GBDATA *gb_main;
 
-    ALI_ARBDB(void) {
+    ALI_ARBDB() {
         alignment = 0;
         gb_main = 0;
     }
-    ~ALI_ARBDB(void);
+    ~ALI_ARBDB();
 
     int open(char *name, char *use_alignment = 0);
-    void close(void);
+    void close();
 
-    void begin_transaction(void) {
+    void begin_transaction() {
         GB_begin_transaction(gb_main);
     }
-    void commit_transaction(void) {
+    void commit_transaction() {
         GB_commit_transaction(gb_main);
     }
 

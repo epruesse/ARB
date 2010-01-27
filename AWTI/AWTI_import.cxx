@@ -423,7 +423,7 @@ void awtc_check_input_format(AW_window *aww) {
     GBT_free_names(files);
 }
 
-static int awtc_next_file(void) {
+static int awtc_next_file() {
     if (awtcig.in) fclose(awtcig.in);
     if (!awtcig.current_file) awtcig.current_file = awtcig.filenames;
 

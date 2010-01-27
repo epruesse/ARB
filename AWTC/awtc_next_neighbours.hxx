@@ -48,7 +48,7 @@ class AWTC_FIND_FAMILY {
     long             locs;
     
     void     delete_family_list();
-    GB_ERROR init_communication(void);
+    GB_ERROR init_communication();
     GB_ERROR open(char *servername);
     GB_ERROR retrieve_family(char *sequence, int oligo_len, int mismatches, bool fast_flag, bool rel_matches, FF_complement compl_mode, int max_results);
     void     close();

@@ -23,7 +23,7 @@ int baseCharType[MAXBASECHAR+1],
 /* -------------------------------------------------------------------------- */
 /*      void initBaseLookups(void) */
 /* ------------------------------------------------------ 25.05.95 02.07 ---- */
-void initBaseLookups(void)
+void initBaseLookups()
 {
     int b;
 

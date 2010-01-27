@@ -758,7 +758,7 @@ static void aw_clear_and_hide_message_cb(AW_window *aww) {
     AW_POPDOWN(aww);
 }
 
-void aw_initstatus(void)
+void aw_initstatus()
 {
     int error;
 
@@ -884,7 +884,7 @@ void aw_openstatus(const char *title)
     safe_write(aw_stg.fd_to[1], title, strlen(title)+1);
 }
 
-void aw_closestatus(void)
+void aw_closestatus()
 {
     aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_CLOSE);
 }

@@ -2384,7 +2384,7 @@ void AW_window::insert_option        (AW_label on, const char *mn, float vv,    
 void AW_window::insert_default_option(AW_label on, const char *mn, float vv,       const char *noc) { insert_option_internal(on, mn, vv, noc, true); }
 // (see insert_option_internal for longer parameter names)
 
-void AW_window::update_option_menu(void) {
+void AW_window::update_option_menu() {
     this->update_option_menu(p_global->current_option_menu);
 }
 
@@ -2643,7 +2643,7 @@ void AW_window::insert_default_toggle(AW_label toggle_label, const char *mnemoni
 void AW_window::insert_toggle        (AW_label toggle_label, const char *mnemonic, float var_value)         { insert_toggle_internal(toggle_label, mnemonic, var_value, false); }
 void AW_window::insert_default_toggle(AW_label toggle_label, const char *mnemonic, float var_value)         { insert_toggle_internal(toggle_label, mnemonic, var_value, true); }
 
-void AW_window::update_toggle_field(void) {
+void AW_window::update_toggle_field() {
     this->update_toggle_field(get_root()->number_of_toggle_fields);
 }
 

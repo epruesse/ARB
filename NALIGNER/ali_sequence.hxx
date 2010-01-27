@@ -36,24 +36,24 @@ public:
         seq_len = str_len;
         seq_name = strdup(Name);
     }
-    ~ALI_SEQUENCE(void) {
+    ~ALI_SEQUENCE() {
         if (seq)
             free((char *) seq);
         if (seq_name)
             free((char *) seq_name);
     }
-    unsigned char *sequence(void) {
+    unsigned char *sequence() {
         return seq;
     }
     unsigned char base(unsigned long position) {
         return seq[position];
     }
-    int check(void);
-    char *string(void);
-    char *name(void) {
+    int check();
+    char *string();
+    char *name() {
         return seq_name;
     }
-    unsigned long length(void) {
+    unsigned long length() {
         return seq_len;
     }
 };
@@ -67,7 +67,7 @@ class ALI_NORM_SEQUENCE {
 public:
     ALI_NORM_SEQUENCE(char *name, char *str);
     ALI_NORM_SEQUENCE(ALI_SEQUENCE *sequence);
-    ~ALI_NORM_SEQUENCE(void) {
+    ~ALI_NORM_SEQUENCE() {
         if (seq)
             free((char *) seq);
         if (seq_name)
@@ -75,17 +75,17 @@ public:
         if (dots)
             free((char *) dots);
     }
-    unsigned char *sequence(void) {
+    unsigned char *sequence() {
         return seq;
     }
     unsigned char base(unsigned long position) {
         return seq[position];
     }
-    char *string(void);
-    char *name(void) {
+    char *string();
+    char *name() {
         return seq_name;
     }
-    unsigned long length(void) {
+    unsigned long length() {
         return seq_len;
     }
     int is_begin(unsigned long pos) {

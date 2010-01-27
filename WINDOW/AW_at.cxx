@@ -14,7 +14,7 @@
 
 #include <arbdb.h>
 
-AW_at::AW_at(void) {
+AW_at::AW_at() {
     memset((char*)this, 0, sizeof(AW_at));
 
     length_of_buttons = 10;
@@ -33,7 +33,7 @@ void AW_window::button_height(int height) { _at->height_of_buttons = height>1 ? 
 int  AW_window::get_button_length() const { return _at->length_of_buttons; }
 int  AW_window::get_button_height() const { return _at->height_of_buttons; }
 
-void AW_window::highlight(void) { _at->highlight = true; }
+void AW_window::highlight() { _at->highlight = true; }
 
 void AW_window::auto_increment(int x, int y) {
     _at->auto_increment_x          = x;
@@ -55,7 +55,7 @@ void AW_window::auto_space(int x, int y) {
 }
 
 
-void AW_window::auto_off(void) {
+void AW_window::auto_off() {
     _at->do_auto_space     = false;
     _at->do_auto_increment = false;
 }
@@ -146,7 +146,7 @@ void AW_window::at_shift(int x, int y) {
     at(x+_at->x_for_next_button, y+_at->y_for_next_button);
 }
 
-void AW_window::at_newline(void) {
+void AW_window::at_newline() {
 
     if (_at->do_auto_increment) {
         at_y(_at->auto_increment_y + _at->y_for_next_button);
@@ -292,7 +292,7 @@ void AW_window::restore_at_size_and_attach(const AW_at_size *at_size) {
     at_size->restore(_at);
 }
 
-void AW_window::unset_at_commands(void) {
+void AW_window::unset_at_commands() {
     _callback   = NULL;
     _d_callback = NULL;
 

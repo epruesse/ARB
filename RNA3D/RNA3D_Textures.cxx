@@ -12,10 +12,10 @@
 
 using namespace std;
 
-Texture2D::Texture2D(void) {
+Texture2D::Texture2D() {
 }
 
-Texture2D::~Texture2D(void) {
+Texture2D::~Texture2D() {
 }
 
 static char* GetImageFile(int ImageId) {
@@ -53,7 +53,7 @@ static char* GetImageFile(int ImageId) {
 }
 
 // Load Bitmaps And Convert To Textures
-void Texture2D::LoadGLTextures(void) {
+void Texture2D::LoadGLTextures() {
 
     for (int i = 0; i < SHAPE_MAX; i++)
     {

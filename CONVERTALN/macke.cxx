@@ -10,7 +10,7 @@
  *   Function init_mache().
  *   Initialize macke entry.
  */
-void init_macke(void)
+void init_macke()
 {
     int indi;
 

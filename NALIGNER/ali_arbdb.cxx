@@ -16,7 +16,7 @@
 #define HELIX_LINE      "helix_line"
 
 
-ALI_ARBDB::~ALI_ARBDB(void)
+ALI_ARBDB::~ALI_ARBDB()
 {
     if (gb_main) GB_close(gb_main);
     freenull(alignment);
@@ -42,7 +42,7 @@ int ALI_ARBDB::open(char *name, char *use_alignment)
     return 0;
 }
 
-void ALI_ARBDB::close(void)
+void ALI_ARBDB::close()
 {
     GB_close(gb_main);
     freenull(alignment);

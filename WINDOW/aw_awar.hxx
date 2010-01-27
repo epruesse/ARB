@@ -71,13 +71,13 @@ struct AW_variable_struct {
     void  get(long *p_int);
     void  get(double *p_double);
     void  get(float *p_float);
-    char *get_as(void);
+    char *get_as();
     char *set(char *aw_string);
     char *set(long aw_int);
     char *set(double aw_double);
     char *set_as(char *aw_value);
     char *toggle_toggle();
-    void  touch(void);
+    void  touch();
 };
 
 void aw_update_awar_window_geometry(AW_root *awr);

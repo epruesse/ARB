@@ -62,7 +62,7 @@ void SEC_segment::calculate_segment_size() {
     alpha = ((get_region()->get_base_count()+1) / loop->get_circumference()) * (2*M_PI);
 }
 
-void SEC_loop::compute_circumference(void) {  // Calculates the circumference of the loop by counting the bases of the loop
+void SEC_loop::compute_circumference() {      // Calculates the circumference of the loop by counting the bases of the loop
     SEC_root *sroot = get_root();
     double    dbs   = sroot->display_params().distance_between_strands;
 
@@ -74,7 +74,7 @@ void SEC_loop::compute_circumference(void) {  // Calculates the circumference of
     }
 }
 
-void SEC_loop::compute_radius(void) {
+void SEC_loop::compute_radius() {
     compute_circumference();
     setStandardSize(Circumference / (2 * M_PI));
 }

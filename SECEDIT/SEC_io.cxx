@@ -20,7 +20,7 @@ void SEC_region::generate_x_string(XString& x_string) {
     x_string.addXpair(get_sequence_start(), get_sequence_end());
 }
 
-void SEC_root::generate_x_string(void) {
+void SEC_root::generate_x_string() {
     sec_assert(!xString);
     xString = new XString(db->length());
 
@@ -30,7 +30,7 @@ void SEC_root::generate_x_string(void) {
     xString->initialize();
 }
 
-SEC_helix_strand * SEC_segment::get_previous_strand(void) {
+SEC_helix_strand * SEC_segment::get_previous_strand() {
     SEC_helix_strand *strand_pointer = next_helix_strand;
     SEC_segment *segment_pointer = strand_pointer->get_next_segment();
 
@@ -105,7 +105,7 @@ void SEC_loop::save(ostream & out, int indent, const XString& x_string) {
     }
 }
 
-char *SEC_root::buildStructureString(void) {
+char *SEC_root::buildStructureString() {
     delete xString;
     xString = 0;
     if (db->canDisplay()) generate_x_string();

@@ -530,7 +530,7 @@ AW_window *create_select_alignment_window(AW_root *aw_root, AW_CL cl_aww)
 
 
 
-PH_used_windows::PH_used_windows(void)
+PH_used_windows::PH_used_windows()
 {
     memset((char *) this, 0, sizeof(PH_used_windows));
 }

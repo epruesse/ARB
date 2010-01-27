@@ -33,7 +33,7 @@ void AW_device_click::init(AW_pos mousex, AW_pos mousey, AW_pos max_distance_lin
 }
 
 
-AW_DEVICE_TYPE AW_device_click::type(void) {
+AW_DEVICE_TYPE AW_device_click::type() {
     return AW_DEVICE_CLICK;
 }
 

@@ -48,7 +48,7 @@ class BI_helix {
     BI_helix_entry *entries;
     size_t          Size;
 
-    void _init(void);
+    void _init();
 
     static char *helix_error;                       // error occurring during init is stored here
 
@@ -67,8 +67,8 @@ public:
     static void clear_error() { freenull(helix_error); }
     static void set_error(const char *err) { freedup(helix_error, err); }
 
-    BI_helix(void);
-    ~BI_helix(void);
+    BI_helix();
+    ~BI_helix();
 
     const char *init(GBDATA *gb_main);
     const char *init(GBDATA *gb_main, const char *alignment_name);

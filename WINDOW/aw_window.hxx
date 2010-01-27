@@ -23,7 +23,7 @@ typedef AW_window *(*AW_Window_Creator)(AW_root*, AW_CL);
 // AW_POPDOWN is defined later in this section
 
 #define AW_MESSAGE_TIME 2000
-#define AW_HEADER_MAIN  extern "C" { int XtAppInitialize(); } void aw_never_called_main(void) { XtAppInitialize(); }
+#define AW_HEADER_MAIN  extern "C" { int XtAppInitialize(); } void aw_never_called_main() { XtAppInitialize(); }
 
 // ======= Used in Tune background function =================================
 #define TUNE_BUTTON    8
@@ -125,7 +125,7 @@ public:
                  const char   *help_texti = 0,
                  AW_cb_struct *next       = 0);
 
-    void run_callback(void);                        // runs the whole list
+    void run_callback();                            // runs the whole list
     bool contains(AW_CB g);                         // test if contained in list
     bool is_equal(const AW_cb_struct& other) const;
 
@@ -214,7 +214,7 @@ class AW_window {
 protected:
     AW_root *root;
 
-    void create_devices(void);
+    void create_devices();
     void set_background(const char *colorname, Widget w);
 
     void wm_activate();                                // un-minimize window and give it the focus (use show_and_activate())
@@ -273,7 +273,7 @@ public:
     void  update_toggle_field(int toggle_field_number);
     void  update_selection_list_intern(AW_selection_list *selection_list);
     void  _set_activate_callback(void *widget);
-    void  unset_at_commands(void);
+    void  unset_at_commands();
     void  increment_at_commands(int width, int height);
 
 
@@ -306,7 +306,7 @@ public:
     //      The real public section
     // --------------------------------
 
-    AW_root *get_root(void) { return root; }
+    AW_root *get_root() { return root; }
 
     // ******************* Global layout functions **********************
 
@@ -325,7 +325,7 @@ public:
     void    message(char *title, int ms);   // Set for ms milliseconds the title of the window
     void    set_window_title(const char *title);   // Set the window title forever
 
-    const char *get_window_title(void);   // Get the window's title
+    const char *get_window_title();       // Get the window's title
     const char *get_window_id() const { return window_defaults_name; } // Get the window's internal name
 
     const char *local_id(const char *id) const;
@@ -365,11 +365,11 @@ public:
     void create_menu(AW_label name, const char *mnemonic, AW_active mask = AWM_ALL);
     void insert_sub_menu(AW_label name, const char *mnemonic, AW_active mask = AWM_ALL);
     void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text, AW_active mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
-    void close_sub_menu(void);
+    void close_sub_menu();
 
-    void insert_separator(void);
+    void insert_separator();
     void insert_help_topic(AW_label name, const char *mnemonic, const char *help_text, AW_active mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
-    void insert_separator_help(void);
+    void insert_separator_help();
     // ************** Create modes on the left side ******************
     int create_mode(const char *pixmap, const char *help_text, AW_active mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
     void select_mode(int mode);
@@ -382,7 +382,7 @@ public:
     AW_pos get_scrolled_picture_height();
     void reset_scrolled_picture_size();
 
-    void calculate_scrollbars(void);
+    void calculate_scrollbars();
     void set_vertical_scrollbar_position(int position);
     void set_horizontal_scrollbar_position(int position);
     void set_vertical_change_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
@@ -395,7 +395,7 @@ public:
     // ************** Control window size  *********
     void set_window_size(int width, int height);
     void get_window_size(int& width, int& height);
-    void window_fit(void);                          // Recalculate the size of a window with buttons
+    void window_fit();                              // Recalculate the size of a window with buttons
 
 
     // ************** Control window position  *********
@@ -420,14 +420,14 @@ public:
     void button_height(int height);   // Sets the height of all following buttons (in lines)
     int  get_button_length() const; // returns the current width of buttons
     int  get_button_height() const; // returns the current height of buttons
-    void highlight(void);       // Creates a frame around the button
+    void highlight();           // Creates a frame around the button
     void auto_increment(int dx, int dy);   // enable automatic placement of buttons
     // dx is the horizontal distance between the left
     // borders of two buttons
     void auto_space(int xspace, int yspace);   // enable automatic placement of buttons
     // xspace is the horizontal space between 2 buttons
 
-    void auto_off(void);        // disable auto_xxxxx
+    void auto_off();            // disable auto_xxxxx
     void shadow_width (int shadow_thickness); // set the shadow_thickness of buttons
 
     void TuneBackground(Widget w, int modStrength);
@@ -438,7 +438,7 @@ public:
     void at_x(int x);           // abs x pos
     void at_y(int y);           // abs y pos
     void at_shift(int x, int y);   // rel pos of a button
-    void at_newline(void);      // in auto_space mode only: newline
+    void at_newline();          // in auto_space mode only: newline
 
     void at(const char *id);                        /* place the button at the position set in the .fig
                                                      * file (loaded with load_xfig) by the string $id */
@@ -512,7 +512,7 @@ public:
     void insert_option         (AW_label choice_label, const char *mnemonic, float var_value,        const char *name_of_color = 0);  // for float
     void insert_default_option (AW_label choice_label, const char *mnemonic, float var_value,        const char *name_of_color = 0);
 
-    void update_option_menu(void);
+    void update_option_menu();
     void update_option_menu(AW_option_menu_struct *);  // don't use this
 
 
@@ -528,7 +528,7 @@ public:
     // for float
     void insert_toggle(AW_label toggle_label, const char *mnemonic, float var_value);
     void insert_default_toggle(AW_label toggle_label, const char *mnemonic, float var_value);
-    void update_toggle_field(void);
+    void update_toggle_field();
 
     // ***** selection list is a redefinable scrolled list of items
 
@@ -589,24 +589,24 @@ class AW_window_menu_modes : public AW_window {
 private:
     void    *AW_window_menu_modes_private;    // Do not use !!!
 public:
-    AW_window_menu_modes(void);
-    ~AW_window_menu_modes(void);
+    AW_window_menu_modes();
+    ~AW_window_menu_modes();
     void init(AW_root *root, const char *wid, const char *windowname, int width, int height);
 };
 
 class AW_window_menu : public AW_window {
 private:
 public:
-    AW_window_menu(void);
-    ~AW_window_menu(void);
+    AW_window_menu();
+    ~AW_window_menu();
     void init(AW_root *root, const char *wid, const char *windowname, int width, int height);
 };
 
 class AW_window_simple_menu : public AW_window {
 private:
 public:
-    AW_window_simple_menu(void);
-    ~AW_window_simple_menu(void);
+    AW_window_simple_menu();
+    ~AW_window_simple_menu();
     void init(AW_root *root, const char *wid, const char *windowname);
 };
 
@@ -614,8 +614,8 @@ public:
 class AW_window_simple : public AW_window {
 private:
 public:
-    AW_window_simple(void);
-    ~AW_window_simple(void);
+    AW_window_simple();
+    ~AW_window_simple();
     void init(AW_root *root, const char *wid, const char *windowname);
 };
 
@@ -623,8 +623,8 @@ public:
 class AW_window_message : public AW_window {
 private:
 public:
-    AW_window_message(void);
-    ~AW_window_message(void);
+    AW_window_message();
+    ~AW_window_message();
     void init(AW_root *root, const char *windowname, bool allow_close);
 };
 

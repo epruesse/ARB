@@ -34,7 +34,7 @@ void AWTC_FIND_FAMILY::delete_family_list() {
     family_list = 0;
 }
 
-GB_ERROR AWTC_FIND_FAMILY::init_communication(void)
+GB_ERROR AWTC_FIND_FAMILY::init_communication()
 {
     const char *user = "Find Family";
 
@@ -66,7 +66,7 @@ GB_ERROR AWTC_FIND_FAMILY::open(char *servername) {
     return error;
 }
 
-void AWTC_FIND_FAMILY::close(void)
+void AWTC_FIND_FAMILY::close()
 {
    if (link) aisc_close(link);
    link = 0;
@@ -78,7 +78,7 @@ AWTC_FIND_FAMILY::AWTC_FIND_FAMILY(GBDATA *gb_maini)
     this->gb_main = gb_maini;
 }
 
-AWTC_FIND_FAMILY::~AWTC_FIND_FAMILY(void)
+AWTC_FIND_FAMILY::~AWTC_FIND_FAMILY()
 {
     delete_family_list();
     close();

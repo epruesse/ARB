@@ -60,7 +60,7 @@ GB_ERROR AW_MSG_UNMAPPED_AWAR = "Error (unmapped AWAR):\n"
     "You cannot write to this field because it is either deleted or\n"
     "unmapped. Try to select a different item, reselect this and retry.";
 
-char *AW_awar::read_as_string(void) {
+char *AW_awar::read_as_string() {
     if (!gb_var) return strdup("");
     GB_transaction ta(gb_var);
     return GB_read_as_string(gb_var);
@@ -135,7 +135,7 @@ WRITE_SKELETON(write_string, const char*, "%s", GB_write_string) // defines rewr
 #undef AWAR_CHANGE_DUMP
 
 
-    void AW_awar::touch(void) {
+    void AW_awar::touch() {
     if (!gb_var) {
         return;
     }
@@ -442,7 +442,7 @@ AW_VARIABLE_TYPE AW_awar::get_type() {
     return this->variable_type;
 }
 
-void AW_awar::update(void)
+void AW_awar::update()
 {
     bool out_of_range = false;
     if (gb_var && ((pp.f.min != pp.f.max) || pp.srt)) {
@@ -529,7 +529,7 @@ void AW_awar::update_target(AW_var_target *pntr) {
 }
 
 // send data to all variables
-void AW_awar::update_targets(void) {
+void AW_awar::update_targets() {
     AW_var_target*pntr;
     for (pntr = target_list; pntr; pntr = pntr->next) {
         update_target(pntr);

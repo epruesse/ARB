@@ -27,7 +27,7 @@
 #define EXIT_FAILURE  1
 #endif
 
-static void Version(void);
+static void Version();
 
 
 #define check_heap_sanity() do { char *x = malloc(10); free(x); } while (0)
@@ -1226,7 +1226,7 @@ static void getdecl(FILE *f, const char *header) {
     }
 }
 
-static void Usage(void) {
+static void Usage() {
     fprintf(stderr, "Usage: %s [flags] [files ...]", ourname);
     fputs("\nSupported flags:"
           "\n   -a               make a function list for aisc_includes (default: generate C prototypes)"
@@ -1481,6 +1481,6 @@ int main(int argc, char **argv) {
     return EXIT_SUCCESS;
 }
 
-static void Version(void) {
+static void Version() {
     fprintf(stderr, "%s 1.1 ARB\n", ourname);
 }

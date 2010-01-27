@@ -72,7 +72,7 @@ public:
     AW_xfig(const char *filename, int font_width, int font_height);
     AW_xfig(int font_width, int font_height);      // creates an empty drawing area
 
-    ~AW_xfig(void);
+    ~AW_xfig();
     void print(AW_device *device); // you can scale it
     void create_gcs(AW_device *device, int screen_depth); // create the gcs
 

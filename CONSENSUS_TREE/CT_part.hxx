@@ -9,8 +9,8 @@ typedef struct {
 
 void  part_init(int len);
 void  part_print(PART *p);
-PART *part_new(void);
-PART *part_root(void);
+PART *part_new();
+PART *part_root();
 void  part_setbit(PART *p, int pos);
 int   son(PART *son, PART *father);
 int   brothers(PART *p1, PART *p2); void part_invert(PART *p);

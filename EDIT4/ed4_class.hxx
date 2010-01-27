@@ -378,8 +378,8 @@ public:
     ED4_window *get_matching_ed4w(AW_window *aww);
 
     // functions concerned the scrolled area
-    ED4_returncode      update_scrolled_rectangle(void);
-    ED4_returncode      set_scrollbar_indents(void);
+    ED4_returncode      update_scrolled_rectangle();
+    ED4_returncode      set_scrollbar_indents();
     ED4_returncode      scroll_rectangle(int dx, int dy);
     ED4_returncode      set_scrolled_rectangle(AW_pos    world_x, AW_pos world_y, AW_pos width, AW_pos height,
                                                 ED4_base *x_link, ED4_base *y_link, ED4_base *width_link, ED4_base *height_link);
@@ -694,13 +694,13 @@ public:
     virtual bool remove_deleted_children();
 
     // functions concerned with graphic output
-    virtual int adjust_clipping_rectangle(void); // sets scrolling area in AW_MIDDLE_AREA
+    virtual int adjust_clipping_rectangle();     // sets scrolling area in AW_MIDDLE_AREA
     virtual ED4_returncode  Show(int refresh_all=0, int is_cleared=0) = 0;
     virtual ED4_returncode  Resize()                                  = 0;
     virtual ED4_returncode  clear_background(int color=0);
-    virtual short calc_bounding_box(void)                             = 0;
+    virtual short calc_bounding_box()                                 = 0;
 
-    ED4_returncode clear_whole_background(void);   // clear AW_MIDDLE_AREA
+    ED4_returncode clear_whole_background();       // clear AW_MIDDLE_AREA
     bool is_visible(AW_pos x, AW_pos y, ED4_direction direction);
     bool is_visible(AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2, ED4_direction direction);
 
@@ -731,14 +731,14 @@ public:
 
     // functions which refer to the object as a child, i.e. travelling down the hierarchy
     virtual ED4_returncode  set_refresh (int clear=1)=0;
-    virtual ED4_returncode  resize_requested_by_child(void)=0;
-    virtual ED4_returncode  resize_requested_by_parent(void)=0;
+    virtual ED4_returncode  resize_requested_by_child()=0;
+    virtual ED4_returncode  resize_requested_by_parent()=0;
 
-    virtual ED4_returncode  delete_requested_by_parent(void)=0;
-    virtual ED4_returncode  delete_requested_by_child(void);
-    virtual ED4_returncode  delete_requested_children(void)=0;
+    virtual ED4_returncode  delete_requested_by_parent()=0;
+    virtual ED4_returncode  delete_requested_by_child();
+    virtual ED4_returncode  delete_requested_children()=0;
 
-    virtual ED4_returncode  calc_size_requested_by_parent(void)=0;
+    virtual ED4_returncode  calc_size_requested_by_parent()=0;
     virtual ED4_returncode  move_requested_by_parent(ED4_move_info *mi)=0;
     virtual ED4_returncode  event_sent_by_parent(AW_event *event, AW_window *aww);
     virtual ED4_returncode  move_requested_by_child(ED4_move_info *moveinfo)=0;
@@ -868,19 +868,19 @@ public:
     // functions concerned with graphics
     virtual ED4_returncode  Show(int refresh_all=0, int is_cleared=0);
     virtual ED4_returncode  Resize();
-    virtual short       calc_bounding_box(void);
+    virtual short       calc_bounding_box();
     virtual ED4_returncode  distribute_children();
 
     // top-down functions, means travelling down the hierarchy
     virtual ED4_returncode  event_sent_by_parent(AW_event *event, AW_window *aww);
     virtual ED4_returncode  set_refresh(int clear=1);
-    ED4_returncode      clear_refresh(void);
-    virtual ED4_returncode      resize_requested_by_parent(void);
+    ED4_returncode      clear_refresh();
+    virtual ED4_returncode      resize_requested_by_parent();
 
-    virtual ED4_returncode  delete_requested_by_parent(void);
-    virtual ED4_returncode  delete_requested_children(void);
+    virtual ED4_returncode  delete_requested_by_parent();
+    virtual ED4_returncode  delete_requested_children();
 
-    virtual ED4_returncode  calc_size_requested_by_parent(void);
+    virtual ED4_returncode  calc_size_requested_by_parent();
     virtual ED4_returncode  move_requested_by_parent(ED4_move_info *mi);
 
     void create_consensus(ED4_group_manager *upper_group_manager, aw_status_counter *progress);
@@ -894,8 +894,8 @@ public:
 
     // bottom-up functions
     virtual ED4_returncode  move_requested_by_child(ED4_move_info *moveinfo);
-    virtual ED4_returncode  resize_requested_by_child(void);
-    virtual ED4_returncode  refresh_requested_by_child(void);
+    virtual ED4_returncode  resize_requested_by_child();
+    virtual ED4_returncode  refresh_requested_by_child();
     ED4_base            *get_defined_level(ED4_level lev) const;
 
     // functions referring the consensus
@@ -932,8 +932,8 @@ public:
     // general folding functions
     virtual ED4_returncode  unfold_group(char *bracketID_to_unfold);
     virtual ED4_returncode  fold_group(char *bracketID_to_fold);
-    virtual ED4_returncode      make_children_visible(void);
-    virtual ED4_returncode  hide_children(void);
+    virtual ED4_returncode      make_children_visible();
+    virtual ED4_returncode  hide_children();
 
     ED4_manager(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0);
     virtual ~ED4_manager();
@@ -958,8 +958,8 @@ public:
 
     // callbacks
 
-    virtual void changed_by_database(void);
-    virtual void deleted_from_database(void);
+    virtual void changed_by_database();
+    virtual void deleted_from_database();
 
     virtual bool  remove_deleted_children();
 
@@ -968,19 +968,19 @@ public:
     virtual ED4_returncode Resize();
     virtual ED4_returncode draw(int only_text = 0)                   = 0;
 
-    virtual int   adjust_clipping_rectangle(void);
-    virtual short calc_bounding_box(void);
-    virtual ED4_returncode  calc_size_requested_by_parent(void);
+    virtual int   adjust_clipping_rectangle();
+    virtual short calc_bounding_box();
+    virtual ED4_returncode  calc_size_requested_by_parent();
 
     virtual ED4_returncode      draw_drag_box(AW_pos x, AW_pos y, GB_CSTR text = NULL, int cursor_y=-1);
 
     // functions which concern the object as a child
     virtual ED4_returncode  set_refresh(int clear=1);
-    virtual ED4_returncode  resize_requested_by_child(void);
-    virtual ED4_returncode      resize_requested_by_parent(void);
+    virtual ED4_returncode  resize_requested_by_child();
+    virtual ED4_returncode      resize_requested_by_parent();
 
-    virtual ED4_returncode  delete_requested_by_parent(void);
-    virtual ED4_returncode  delete_requested_children(void);
+    virtual ED4_returncode  delete_requested_by_parent();
+    virtual ED4_returncode  delete_requested_children();
 
     virtual ED4_returncode  move_requested_by_parent(ED4_move_info *mi);
     virtual ED4_returncode  event_sent_by_parent(AW_event *event, AW_window *aww);
@@ -1109,12 +1109,12 @@ public:
     ED4_returncode  init_alignment();
     void recalc_font_group();
 
-    AW_window       *create_new_window(void);
+    AW_window       *create_new_window();
     ED4_returncode  generate_window(AW_device **device, ED4_window **new_window);
     void        copy_window_struct(ED4_window *source,   ED4_window *destination);
 
     // functions concerned with global refresh and resize
-    ED4_returncode      resize_all(void);
+    ED4_returncode      resize_all();
 
 private:
     ED4_returncode      refresh_window_simple(int redraw);
@@ -1128,7 +1128,7 @@ public:
     ED4_returncode  add_to_selected(ED4_terminal *object);
     ED4_returncode  remove_from_selected(ED4_terminal *object);
     short               is_primary_selection(ED4_terminal *object);
-    ED4_returncode      deselect_all(void);
+    ED4_returncode      deselect_all();
 
     // functions concerning coordinate transformation
     ED4_returncode world_to_win_coords(AW_window *aww, AW_pos *x, AW_pos *y);
@@ -1169,7 +1169,7 @@ public:
     virtual void dump(size_t indent) const;
 #endif // IMPLEMENT_DUMP
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
-    virtual ED4_returncode resize_requested_by_parent(void);
+    virtual ED4_returncode resize_requested_by_parent();
 };
 
 class ED4_device_manager : public ED4_manager
@@ -1355,7 +1355,7 @@ public:
     ED4_remap *remap() { return &my_remap; }
 
     virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
-    virtual ED4_returncode resize_requested_by_parent(void);
+    virtual ED4_returncode resize_requested_by_parent();
 };
 
 typedef void (*ED4_species_manager_cb)(ED4_species_manager*, AW_CL);
@@ -1748,7 +1748,7 @@ void        ED4_vertical_change_cb      (AW_window *aww, AW_CL cd1, AW_CL cd2);
 void        ED4_horizontal_change_cb    (AW_window *aww, AW_CL cd1, AW_CL cd2);
 void        ED4_scrollbar_change_cb     (AW_window *aww, AW_CL cd1, AW_CL cd2);
 
-void        ED4_no_dangerous_modes      (void);
+void        ED4_no_dangerous_modes      ();
 void        group_species_cb        (AW_window *aww, AW_CL cd1, AW_CL cd2);
 AW_window   *ED4_create_group_species_by_field_window(AW_root *aw_root);
 
@@ -1817,7 +1817,7 @@ extern int  ED4_elements_in_species_container; // # of elements in species conta
 void        ED4_undo_redo               (AW_window*, AW_CL undo_type);
 
 ED4_species_name_terminal *ED4_find_species_name_terminal(const char *species_name);
-ED4_multi_species_manager *ED4_new_species_multi_species_manager(void); // returns manager into which new species should be inserted
+ED4_multi_species_manager *ED4_new_species_multi_species_manager();     // returns manager into which new species should be inserted
 
 void ED4_activate_col_stat(AW_window *aww, AW_CL, AW_CL);
 

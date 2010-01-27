@@ -21,7 +21,7 @@ public:
     AP_FLOAT **m;       // m[i][j]  i<= j !!!!
     long    size;
     AP_smatrix(long si);
-    ~AP_smatrix(void);
+    ~AP_smatrix();
     void    set(long i, long j, AP_FLOAT val) { if (i>j) m[i][j] = val; else m[j][i] = val; };
     AP_FLOAT get(long i, long j) { if (i>j) return m[i][j]; else return m[j][i]; };
 };
@@ -33,7 +33,7 @@ public:
     char    **y_description;
     long    size;
     AP_matrix(long si);
-    ~AP_matrix(void);
+    ~AP_matrix();
     void create_awars(AW_root *awr, const char *awar_prefix);
     void read_awars(AW_root *awr, const char *awar_prefix);
     void normize();     // set average non diag element to 1.0 (only for described elements)

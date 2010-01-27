@@ -1017,7 +1017,7 @@ static int do_com_next(const char *str)
         continue;                                               \
     }
 
-int run_prg(void) {
+int run_prg() {
     int err;
     
     for (gl->pc = gl->prg; gl->pc; gl->pc = gl->nextpc) {
