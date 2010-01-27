@@ -213,7 +213,7 @@ void AW_matrix::zoom(AW_pos val) {
     unscale  = 1.0/scale;
 }
 
-void AW_matrix::reset(void) {
+void AW_matrix::reset() {
     unscale = scale   = 1.0;
     offset  = AW::Vector(0, 0);
 }
@@ -237,7 +237,7 @@ AW_GC_Xm::AW_GC_Xm(AW_common *commoni) {
 }
 
 
-AW_GC_Xm::~AW_GC_Xm(void) {
+AW_GC_Xm::~AW_GC_Xm() {
     if (gc) XFreeGC(common->display, gc);
 }
 
@@ -477,7 +477,7 @@ static const char *clipstatestr(AW_device *device) {
 
 
 
-void AW_device::push_clip_scale(void)
+void AW_device::push_clip_scale()
 {
     AW_clip_scale_stack *stack = new AW_clip_scale_stack;
 
@@ -498,7 +498,7 @@ void AW_device::push_clip_scale(void)
     printf("push_clip_scale: %s\n", clipstatestr(this));
 #endif // SHOW_CLIP_STACK_CHANGES
 }
-void AW_device::pop_clip_scale(void) {
+void AW_device::pop_clip_scale() {
     if (!clip_scale_stack) {
         AW_ERROR("Too many pop_clip_scale on that device");
         return;
@@ -642,14 +642,14 @@ void AW_device::clear(AW_bitset /* filteri */) {}
 void AW_device::clear_part(AW_pos /* x */, AW_pos /* y */, AW_pos /* width */, AW_pos /* height */, AW_bitset /* filteri */) {}
 void AW_device::clear_text(int /* gc */, const char * /* string */, AW_pos /* x */, AW_pos /* y */, AW_pos /* alignment */, AW_bitset /* filteri */, AW_CL /* cd1 */, AW_CL /* cd2 */) {}
 void AW_device::move_region(AW_pos /* src_x */, AW_pos /* src_y */, AW_pos /* width */, AW_pos /* height */, AW_pos /* dest_x */, AW_pos /* dest_y */) {}
-void AW_device::fast(void) {}
-void AW_device::slow(void) {}
-void AW_device::flush(void) {}
+void AW_device::fast() {}
+void AW_device::slow() {}
+void AW_device::flush() {}
 
 // forbidden operations:
 static void forbidden(const char *toUse) { AW_ERROR("It's not allowed to use '%s' with this device", toUse); }
 const char *AW_device::open(const char * /* path */) { forbidden("open"); return 0; }
-void AW_device::close(void) { forbidden("close"); }
+void AW_device::close() { forbidden("close"); }
 void AW_device::set_color_mode(bool /* mode */) { forbidden("set_color_mode"); }
 void AW_device::get_clicked_line(AW_clicked_line * /* ptr */) { forbidden("get_clicked_line"); }
 void AW_device::get_clicked_text(AW_clicked_text * /* ptr */) { forbidden("get_clicked_text"); }

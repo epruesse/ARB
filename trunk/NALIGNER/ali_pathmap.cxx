@@ -23,7 +23,7 @@ ALI_PATHMAP::ALI_PATHMAP(unsigned long w, unsigned long h)
         ali_fatal_error("Out of memory");
 }
 
-ALI_PATHMAP::~ALI_PATHMAP(void)
+ALI_PATHMAP::~ALI_PATHMAP()
 {
     unsigned long   l;
 
@@ -130,7 +130,7 @@ void ALI_PATHMAP::optimize(unsigned long x) {
 }
 
 
-void ALI_PATHMAP::print(void)
+void ALI_PATHMAP::print()
 {
     ali_pathmap_up_pointer up;
     unsigned long   x, y, i;

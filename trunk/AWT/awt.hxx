@@ -149,7 +149,7 @@ void create_print_box_for_selection_lists(AW_window *aw_window, AW_CL selid);
 #define IS_QUERIED(gb_species, cbs)   (cbs->select_bit & GB_read_usr_private(gb_species))
 class awt_query_struct {
 public:
-    awt_query_struct(void);
+    awt_query_struct();
 
     GBDATA *gb_main;                                // the main database (in merge tool: source db in left query; dest db in right query)
     GBDATA *gb_ref;                                 // second reference database (only used by merge tool; dest db in left query; source db in right query)

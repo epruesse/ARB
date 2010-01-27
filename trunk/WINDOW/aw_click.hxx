@@ -27,7 +27,7 @@ public:
     
     AW_device_click(AW_common *commoni);
     
-    AW_DEVICE_TYPE type(void);
+    AW_DEVICE_TYPE type();
     
     void init(AW_pos mousex, AW_pos mousey, AW_pos max_distance_liniei, AW_pos max_distance_texti, AW_pos radi, AW_bitset filteri);
 

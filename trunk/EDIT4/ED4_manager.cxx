@@ -743,7 +743,7 @@ ED4_returncode  ED4_manager::event_sent_by_parent(AW_event *event, AW_window *aw
     return (returncode);
 }
 
-ED4_returncode  ED4_manager::calc_size_requested_by_parent(void) {
+ED4_returncode  ED4_manager::calc_size_requested_by_parent() {
     if (calc_bounding_box()) {
         if (parent) {
             parent->resize_requested_by_child();
@@ -753,7 +753,7 @@ ED4_returncode  ED4_manager::calc_size_requested_by_parent(void) {
     return (ED4_R_OK);
 }
 
-ED4_returncode  ED4_manager::refresh_requested_by_child(void) {
+ED4_returncode  ED4_manager::refresh_requested_by_child() {
     // handles a refresh-request from a child
     if (!update_info.refresh) { // determine if there were more refresh requests already => no need to tell parent about it
         update_info.set_refresh(1); // this is the first refresh request
@@ -787,7 +787,7 @@ int ED4_manager::refresh_flag_ok() {
     return 1;
 }
 
-short ED4_manager::calc_bounding_box(void) {
+short ED4_manager::calc_bounding_box() {
     // calculates the smallest rectangle containing the object and
     // gives information if something has changed
     AW_pos         sum_width  = 0;
@@ -858,7 +858,7 @@ short ED4_manager::calc_bounding_box(void) {
     return (bb_changed);
 }
 
-ED4_returncode ED4_manager::distribute_children(void) {
+ED4_returncode ED4_manager::distribute_children() {
     // distributes all children of current object according to current object's properties and
     // justification value; a recalculation of current object's extension will take place if necessary
 
@@ -907,7 +907,7 @@ ED4_returncode ED4_manager::distribute_children(void) {
     return (ED4_R_OK);
 }
 
-ED4_returncode ED4_manager::resize_requested_by_parent(void) {
+ED4_returncode ED4_manager::resize_requested_by_parent() {
     if (update_info.resize) { // object wants to resize
         update_info.set_resize(0); // first clear the resize flag (remember it could be set again from somewhere below the hierarchy)
 
@@ -929,7 +929,7 @@ ED4_returncode ED4_manager::resize_requested_by_parent(void) {
 
     return ED4_R_OK;
 }
-ED4_returncode ED4_root_group_manager::resize_requested_by_parent(void) {
+ED4_returncode ED4_root_group_manager::resize_requested_by_parent() {
     ED4_returncode result = ED4_R_OK;
 
     if (update_info.resize) {
@@ -1268,7 +1268,7 @@ ED4_returncode ED4_manager::clear_refresh() {
     return ED4_R_OK;
 }
 
-ED4_returncode ED4_manager::resize_requested_by_child(void) {
+ED4_returncode ED4_manager::resize_requested_by_child() {
     // handles a resize-request from a child
     if (!update_info.resize) {  // this is the first resize request
         if (parent) {           // if we have a parent, tell him about our resize

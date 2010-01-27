@@ -435,7 +435,7 @@ static long aw_xfig_hash_free_loop(const char *, long val, void *) {
     return 0;
 }
 
-AW_xfig::~AW_xfig(void)
+AW_xfig::~AW_xfig()
 {
     int i;
 

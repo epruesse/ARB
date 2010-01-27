@@ -579,7 +579,7 @@ static int multi_species_man_consensus_id_starts_with(ED4_base *base, AW_CL cl_s
     return 0;
 }
 
-ED4_multi_species_manager *ED4_new_species_multi_species_manager(void) { // returns manager into which new species should be inserted
+ED4_multi_species_manager *ED4_new_species_multi_species_manager() {     // returns manager into which new species should be inserted
     ED4_base *manager = ED4_ROOT->root_group_man->find_first_that(ED4_L_MULTI_SPECIES, multi_species_man_consensus_id_starts_with, (AW_CL)"More Sequences");
     return manager ? manager->to_multi_species_manager() : 0;
 }

@@ -814,7 +814,7 @@ void ALI_PREALIGNER::mapper(ALI_TSTACK < unsigned char >*stack, unsigned long po
 }
 
 
-void ALI_PREALIGNER::make_map(void) {
+void ALI_PREALIGNER::make_map() {
     // make the result map from the path matrix
     unsigned long   number_of_sol;
     ALI_TSTACK < unsigned char >*stack;

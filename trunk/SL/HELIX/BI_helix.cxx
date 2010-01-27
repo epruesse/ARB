@@ -28,7 +28,7 @@ struct helix_stack {
     char    c;
 };
 
-void BI_helix::_init(void)
+void BI_helix::_init()
 {
     int i;
     for (i=0; i<HELIX_MAX; i++) pairs[i] = 0;
@@ -76,11 +76,11 @@ void BI_helix::_init(void)
     char_bind[HELIX_NO_MATCH] = strdup("|");
 }
 
-BI_helix::BI_helix(void) {
+BI_helix::BI_helix() {
     _init();
 }
 
-BI_helix::~BI_helix(void) {
+BI_helix::~BI_helix() {
     unsigned i;
     for (i=0; i<HELIX_MAX; i++) free(pairs[i]);
     for (i=0; i<HELIX_MAX; i++) free(char_bind[i]);
@@ -399,18 +399,18 @@ long BI_helix::last_position(const char *helix_Nr) const {
 /*!*************************************************************************************
 *******         Reference to abs pos                    ********
 ****************************************************************************************/
-void BI_ecoli_ref::bi_exit(void) {
+void BI_ecoli_ref::bi_exit() {
     delete [] abs2rel;
     delete [] rel2abs;
     abs2rel = 0;
     rel2abs = 0;
 }
 
-BI_ecoli_ref::BI_ecoli_ref(void) {
+BI_ecoli_ref::BI_ecoli_ref() {
     memset((char *)this, 0, sizeof(BI_ecoli_ref));
 }
 
-BI_ecoli_ref::~BI_ecoli_ref(void) {
+BI_ecoli_ref::~BI_ecoli_ref() {
     bi_exit();
 }
 

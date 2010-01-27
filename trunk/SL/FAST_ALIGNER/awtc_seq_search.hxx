@@ -49,8 +49,8 @@ public:
     }
 
     void append(AWTC_Points *neu);
-    long beforeBase(void) const         { return BeforeBase; }
-    const AWTC_Points *next(void) const { return Next; }
+    long beforeBase() const             { return BeforeBase; }
+    const AWTC_Points *next() const { return Next; }
 };
 
 class AWTC_CompactedSequence    // compacts a string (gaps removed, all chars upper)
@@ -116,7 +116,7 @@ class AWTC_CompactedSequence    // compacts a string (gaps removed, all chars up
 
 public:
 
-    const AWTC_Points *getPointlist(void) const { return points; }
+    const AWTC_Points *getPointlist() const { return points; }
 };
 
 class AWTC_CompactedSubSequence // smart pointer and substring class for AWTC_CompactedSequence
@@ -157,7 +157,7 @@ public:
     int expdLength() const                      { return expdPosition(length()-1); }
     const int *gapsBefore(int offset=0) const   { return mySequence->gapsBeforePosition + myPos + offset; }
 
-    int thisPointPosition(void) {
+    int thisPointPosition() {
         int pos = points->beforeBase()-myPos;
 
         if (pos>(myLength+1)) {
@@ -168,7 +168,7 @@ public:
         return pos;
     }
 
-    int firstPointPosition(void) // HP Compiler needs res
+    int firstPointPosition()     // HP Compiler needs res
     {
         points = mySequence->getPointlist();
         int res = -1;
@@ -183,7 +183,7 @@ public:
         return res;
     }
 
-    int nextPointPosition(void) // HP Compiler !!!
+    int nextPointPosition()     // HP Compiler !!!
     {
         int res = -1;
         if (points) {
@@ -342,7 +342,7 @@ public:
         set_used(newOffset);
     }
 
-    void correctUnalignedPositions(void);
+    void correctUnalignedPositions();
 
     void expandPoints(AWTC_CompactedSubSequence& slaveSequence);
     void point_ends_of();

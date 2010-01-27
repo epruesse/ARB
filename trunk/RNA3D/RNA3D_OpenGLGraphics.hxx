@@ -31,8 +31,8 @@ struct OpenGLGraphics {
     bool      displayGrid;
     ColorRGBf ApplicationBGColor;
 
-    OpenGLGraphics(void);
-    virtual  ~OpenGLGraphics(void);
+    OpenGLGraphics();
+    virtual  ~OpenGLGraphics();
 
     void WinToScreenCoordinates(int x, int y, GLdouble  *screenPos);
     void ScreenToWinCoordinates(int x, int y, GLdouble *winPos);

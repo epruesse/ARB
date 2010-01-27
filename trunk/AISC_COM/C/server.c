@@ -238,7 +238,7 @@ static const char *aisc_get_object_attribute(long i, long j)
 }
 
 
-static char *aisc_get_hostname(void) {
+static char *aisc_get_hostname() {
     static char *hn = 0;
     if (!hn) {
         char buffer[4096];

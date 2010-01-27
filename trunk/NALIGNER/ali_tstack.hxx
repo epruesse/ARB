@@ -23,14 +23,14 @@ public:
         next_elem = 0;
         array = (T **) calloc((unsigned int) size, sizeof(T));
     }
-    ~ALI_TSTACK(void) {
+    ~ALI_TSTACK() {
         if (array)
             free((char *) array);
     }
-    unsigned long max_size(void) {
+    unsigned long max_size() {
         return size_of_array;
     }
-    unsigned long akt_size(void) {
+    unsigned long akt_size() {
         return next_elem;
     }
     void push(T value, unsigned long count = 1) {
@@ -47,7 +47,7 @@ public:
         next_elem -= count;
         return (*array)[next_elem];
     }
-    T top(void) {
+    T top() {
         if (next_elem <= 0)
             ali_fatal_error("Access out of array", "ALI_TSTACK::top()");
         return (*array)[next_elem - 1];
@@ -58,7 +58,7 @@ public:
         }
         return (*array)[position];
     }
-    void clear(void) {
+    void clear() {
         next_elem = 0;
     }
 };

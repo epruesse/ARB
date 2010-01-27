@@ -41,11 +41,11 @@ public:
                 ali_fatal_error("List inconsitent", "ALI_TARRAY::ALI_TARRAY()");
         }
     }
-    ~ALI_TARRAY(void) {
+    ~ALI_TARRAY() {
         if (array)
             free((char *) array);
     }
-    unsigned long size(void) {
+    unsigned long size() {
         return size_of_array;
     }
     void set(unsigned long position, T value) {

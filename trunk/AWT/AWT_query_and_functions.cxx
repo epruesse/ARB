@@ -85,7 +85,7 @@ enum AWT_EXT_QUERY_TYPES {
     AWT_EXT_QUERY_COMPARE_WORDS
 };
 
-awt_query_struct::awt_query_struct(void) {
+awt_query_struct::awt_query_struct() {
     memset((char *)this, 0, sizeof(awt_query_struct));
     select_bit = 1;
 }

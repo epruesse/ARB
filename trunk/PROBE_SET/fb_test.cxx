@@ -23,7 +23,7 @@ void PS_print_times() {
 }
 
 
-int main(void) {
+int main() {
     PS_BitSet_Fast *x = new PS_BitSet_Fast(false, 20);
     x->setTrue(0);
     x->setTrue(3);

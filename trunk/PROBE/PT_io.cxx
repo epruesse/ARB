@@ -286,7 +286,7 @@ void probe_read_alignments() {
     fflush(stdout);
 }
 
-void PT_build_species_hash(void) {
+void PT_build_species_hash() {
     long i;
     psg.namehash = GBS_create_hash(PT_NAME_HASH_SIZE, GB_MIND_CASE);
     for (i=0; i<psg.data_count; i++) {

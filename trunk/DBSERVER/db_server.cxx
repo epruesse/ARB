@@ -75,6 +75,6 @@ int main(int argc, char **argv)
 }
 
 extern "C" {
-    int aisc_open(void) { return 0; }
-    int aisc_close(void) { return 0; }
+    int aisc_open() { return 0; }
+    int aisc_close() { return 0; }
 }

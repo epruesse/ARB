@@ -1137,7 +1137,7 @@ void names_server_shutdown(int exitcode) {
     aisc_server_shutdown_and_exit(AN_global.server_communication, exitcode); // never returns
 }
 
-int names_server_save(void) {
+int names_server_save() {
     server_save(aisc_main, 0);
     return 0;
 }

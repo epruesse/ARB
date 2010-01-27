@@ -15,7 +15,7 @@ extern int warning_out;
  *  Function init_genbank().
  *  Initialize genbank entry.
  */
-void init_genbank(void) {
+void init_genbank() {
     int indi;
 
     /* initialize genbank format */
@@ -580,7 +580,7 @@ char
  *   Function genbank_verify_accession().
  *       Verify accession information.
  */
-void genbank_verify_accession(void)
+void genbank_verify_accession()
 {
     int  indi, len, count, remainder;
     char temp[LONGTEXT];
@@ -640,7 +640,7 @@ void genbank_verify_accession(void)
  *   Function genbank_verify_keywords().
  *       Verify keywords.
  */
-void genbank_verify_keywords(void)
+void genbank_verify_keywords()
 {
     int indi, count, len;
 

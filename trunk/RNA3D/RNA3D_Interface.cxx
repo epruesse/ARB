@@ -47,7 +47,7 @@ Boolean SpinMolecule(XtPointer /* clientData */) {
 // in RenderOpenGLScene() ==> defined in RNA3D_OpenGLEngine.cxx.
 // ===============================================================================//
 
-static void RotateMoleculeStateChanged(void) {
+static void RotateMoleculeStateChanged() {
 
     if (Spinning) {
         XtRemoveWorkProc(workId);

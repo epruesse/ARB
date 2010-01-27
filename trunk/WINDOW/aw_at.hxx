@@ -52,7 +52,7 @@ public:
     bool attach_ly;
     bool attach_any;
 
-    AW_at(void);
+    AW_at();
 };
 
 

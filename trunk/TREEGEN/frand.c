@@ -8,7 +8,7 @@
 /* */
 /*  Liefert einen Zufallswert zwischen -0.5 und +0.5 */
 /* */
-static double randval(void)
+static double randval()
 {
     double val = rand();
 
@@ -74,7 +74,7 @@ void freeFrand(Frand f)
 /* */
 /*  Liefert einen Zufallswert zwischen 0.0 und 1.0 */
 /* */
-double randProb(void)
+double randProb()
 {
     double val = rand();
 

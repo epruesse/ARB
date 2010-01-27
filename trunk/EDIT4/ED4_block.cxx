@@ -261,7 +261,7 @@ void ED4_setBlocktype(ED4_blocktype bt) {
     }
 }
 
-void ED4_toggle_block_type(void) {
+void ED4_toggle_block_type() {
     switch (blocktype) {
         case ED4_BT_NOBLOCK: {
             aw_message("No block selected.");

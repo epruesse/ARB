@@ -199,7 +199,7 @@ DI_ENTRY::DI_ENTRY(char *namei, DI_MATRIX *phmatri)
     this->name = strdup(namei);
 }
 
-DI_ENTRY::~DI_ENTRY(void)
+DI_ENTRY::~DI_ENTRY()
 {
     delete sequence_protein;
     delete sequence_parsimony;

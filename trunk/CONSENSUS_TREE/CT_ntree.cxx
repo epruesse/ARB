@@ -15,7 +15,7 @@ int ntree_count=0;
 
 
 /* returns the referenz of the actual NTree */
-NT_NODE *ntree_get(void)
+NT_NODE *ntree_get()
 {
     return ntree;
 }
@@ -101,7 +101,7 @@ void del_tree(NT_NODE *tree)
 
 
 /* Initialization of the tree */
-void ntree_init(void)
+void ntree_init()
 {
     PART *r;
 

@@ -29,7 +29,7 @@ AP_smatrix::AP_smatrix(long si)
     size = si;
 }
 
-AP_smatrix::~AP_smatrix(void)
+AP_smatrix::~AP_smatrix()
 {
     long i;
     for (i=0; i<size; i++) free((char *)m[i]);
@@ -152,7 +152,7 @@ AP_matrix::AP_matrix(long si)
     size = si;
 }
 
-AP_matrix::~AP_matrix(void)
+AP_matrix::~AP_matrix()
 {
     long i;
     for (i=0; i<size; i++) {

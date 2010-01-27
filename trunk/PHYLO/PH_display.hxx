@@ -26,17 +26,17 @@ class PH_display {
     long off_dy; 
           
     void set_scrollbar_steps(AW_window *, long, long, long, long);
-    void print(void);                    // print private parameters (debugging)
+    void print();                        // print private parameters (debugging)
           
 
 public:
-    PH_display(void);               // constructor
+    PH_display();                   // constructor
     static PH_display *ph_display;
     void initialize(display_type);
-    void display(void);                  // display data (according to display type: matrix ...)
-    display_type displayed(void) { return display_what; };
-    void clear_window(void) { if (device) device->clear(-1); };
-    void resized(void);                  // call after resize main window
+    void display();                      // display data (according to display type: matrix ...)
+    display_type displayed() { return display_what; };
+    void clear_window() { if (device) device->clear(-1); };
+    void resized();                      // call after resize main window
     void monitor_vertical_scroll_cb(AW_window *);    // vertical and horizontal
     void monitor_horizontal_scroll_cb(AW_window *);  // scrollbar movements
 };
@@ -56,8 +56,8 @@ class PH_display_status
 public:
     PH_display_status(AW_device *);
     
-    void set_origin(void) { device->reset(); device->set_offset(AW::Vector(font_width, font_height)); }
-    void newline(void) { x_pos = 0; y_pos+=(y_pos>=max_y) ? 0.0 : 1.0; }
+    void set_origin() { device->reset(); device->set_offset(AW::Vector(font_width, font_height)); }
+    void newline() { x_pos = 0; y_pos+=(y_pos>=max_y) ? 0.0 : 1.0; }
     AW_pos get_size(char c) { return ((c=='x') ? max_x : max_y); }
     void set_cursor(AW_pos x, AW_pos y) { x_pos = (x<=max_x) ? x : x_pos; y_pos=(y<=max_y) ? y : y_pos; }
     void move_x(AW_pos d) { x_pos += (x_pos+d<=max_x) ? d : 0; }
@@ -65,14 +65,14 @@ public:
     void set_cursor_x(AW_pos x) { x_pos = x; }
     void set_cursor_y(AW_pos y) { y_pos = y; }
     AW_pos get_cursor_pos(char c) { return ((c=='x') ? x_pos : y_pos); }
-    void set_tab(void) { tab_pos = x_pos; }
-    AW_pos get_tab(void) { return tab_pos; }
+    void set_tab() { tab_pos = x_pos; }
+    AW_pos get_tab() { return tab_pos; }
     
     void write(const char *);   // text to write
     void writePadded(const char *, size_t len);   // write text padded
     void write(long);           // converts long
     void write(double);         // float to text
-    void clear(void);
+    void clear();
 };
 
 

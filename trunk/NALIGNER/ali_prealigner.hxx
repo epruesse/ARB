@@ -42,7 +42,7 @@ struct ALI_PREALIGNER_CONTEXT {
 struct ali_prealigner_cell {
     float d;
 
-    ali_prealigner_cell(void) {
+    ali_prealigner_cell() {
         d = 0.0;
     }
 };
@@ -58,7 +58,7 @@ struct ali_prealigner_column {
         if (cells == 0)
             ali_fatal_error("Out of memory");
     }
-    ~ali_prealigner_column(void) {
+    ~ali_prealigner_column() {
         if (cells)
             free((char *) cells);
     }
@@ -71,7 +71,7 @@ struct ali_prealigner_mask {
 
     unsigned long calls, joins, last_new, last_joins;
 
-    ali_prealigner_mask(void) {
+    ali_prealigner_mask() {
         last_new = last_joins = 0;
         map = 0;
         calls = joins = 0;
@@ -79,7 +79,7 @@ struct ali_prealigner_mask {
 
     void insert(ALI_MAP *in_map, float costs);
     void delete_expensive(ALI_PREALIGNER_CONTEXT *context, ALI_PROFILE *profile);
-    void clear(void) {
+    void clear() {
         last_new = last_joins = 0;
         delete map;
         calls = joins = 0;
@@ -95,7 +95,7 @@ struct ali_prealigner_approx_element {
         map = m;
         ins_marker = im;
     }
-    ~ali_prealigner_approx_element(void) {
+    ~ali_prealigner_approx_element() {
         /*
           if (map)
           delete map;
@@ -103,7 +103,7 @@ struct ali_prealigner_approx_element {
           free((char *) ins_marker);
         */
     }
-    void print(void) {
+    void print() {
         printf("map = %p, ins_marker = %p\n", map, ins_marker);
         map->print();
         printf("<%20s>\n", ins_marker);
@@ -115,11 +115,11 @@ struct ali_prealigner_approximation {
     ALI_TLIST<ali_prealigner_approx_element *> *approx_list;
     float cost_of_binding;
 
-    ali_prealigner_approximation(void) {
+    ali_prealigner_approximation() {
         cost_of_binding = 0.0;
         approx_list = new ALI_TLIST<ali_prealigner_approx_element *>;
     }
-    ~ali_prealigner_approximation(void) {
+    ~ali_prealigner_approximation() {
         if (approx_list) {
             clear();
             delete approx_list;
@@ -155,13 +155,13 @@ struct ali_prealigner_approximation {
             delete in_insert_marker;
         }
     }
-    ALI_TLIST<ali_prealigner_approx_element *> *list(void) {
+    ALI_TLIST<ali_prealigner_approx_element *> *list() {
         ALI_TLIST<ali_prealigner_approx_element *> *ret_list;
         ret_list = approx_list;
         approx_list = 0;
         return ret_list;
     }
-    void clear(void) {
+    void clear() {
         if (approx_list) {
             if (!approx_list->is_empty()) {
                 delete approx_list->first();
@@ -171,7 +171,7 @@ struct ali_prealigner_approximation {
             }
         }
     }
-    void print(void) {
+    void print() {
         ali_prealigner_approx_element *approx_elem;
         printf("\nList of Approximations\n");
         printf("cost_of_binding = %f\n", cost_of_binding);
@@ -238,7 +238,7 @@ class ALI_PREALIGNER {
                                ali_prealigner_column *akt_col,
                                unsigned long pos_x);
 
-    void calculate_matrix(void);
+    void calculate_matrix();
 
     void generate_solution(ALI_MAP *map);
     void generate_result_mask(ALI_TSTACK<unsigned char> *stack);
@@ -252,7 +252,7 @@ class ALI_PREALIGNER {
                        unsigned long pos_x, unsigned long pos_y);
     void mapper(ALI_TSTACK<unsigned char> *stack,
                 unsigned long pos_x, unsigned long pos_y);
-    void make_map(void);
+    void make_map();
 
     void generate_approximation(ALI_SUB_SOLUTION *work_sol);
     void mapper_approximation(unsigned long area_number,
@@ -260,30 +260,30 @@ class ALI_PREALIGNER {
                               ALI_SUB_SOLUTION *work_sol);
     void make_approximation(ALI_PREALIGNER_CONTEXT *context);
 
-    unsigned long number_of_solutions(void);
+    unsigned long number_of_solutions();
 
 public:
 
     ALI_PREALIGNER(ALI_PREALIGNER_CONTEXT *context, ALI_PROFILE *profile,
                    unsigned long start_x, unsigned long end_x,
                    unsigned long start_y, unsigned long end_y);
-    ~ALI_PREALIGNER(void) {
+    ~ALI_PREALIGNER() {
         if (sub_solution)
             delete sub_solution;
     }
 
-    ALI_SEQUENCE *sequence(void) {
+    ALI_SEQUENCE *sequence() {
         return result_mask.map->sequence(profile->sequence());
     }
-    ALI_SEQUENCE *sequence_without_inserts(void) {
+    ALI_SEQUENCE *sequence_without_inserts() {
         return result_mask.map->sequence_without_inserts(profile->sequence());
     }
-    ALI_SUB_SOLUTION *solution(void) {
+    ALI_SUB_SOLUTION *solution() {
         ALI_SUB_SOLUTION *ret_sol = sub_solution;
         sub_solution = 0;
         return ret_sol;
     }
-    ALI_TLIST<ali_prealigner_approx_element *> *approximation(void) {
+    ALI_TLIST<ali_prealigner_approx_element *> *approximation() {
         return result_approx.list();
     }
 };

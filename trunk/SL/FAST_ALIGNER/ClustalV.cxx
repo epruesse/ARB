@@ -441,7 +441,7 @@ static void fill_pam()
     }
 }
 
-static void exit_myers(void) {
+static void exit_myers() {
     for (int i=0; i<MAX_BASETYPES; i++) {
         free(naas[i]);
         free(naa2[i]);
@@ -471,7 +471,7 @@ static ARB_ERROR init_show_pair(long max_seq_length) {
     return error;
 }
 
-void exit_show_pair(void)
+void exit_show_pair()
 {
     freenull(zzd);
     freenull(zzc);
@@ -1156,7 +1156,7 @@ ARB_ERROR AWTC_ClustalV_align(int          is_dna,
     return error;
 }
 
-void AWTC_ClustalV_align_exit(void)
+void AWTC_ClustalV_align_exit()
 {
     if (module_initialized) {
         module_initialized = false;

@@ -69,7 +69,7 @@ AW_timer_cb_struct::AW_timer_cb_struct(AW_root *ari, void (*g)(AW_root*, AW_CL, 
     cd1 = cd1i;
     cd2 = cd2i;
 }
-AW_timer_cb_struct::~AW_timer_cb_struct(void) {
+AW_timer_cb_struct::~AW_timer_cb_struct() {
 }
 
 void AW_root::make_sensitive(Widget w, AW_active mask) {
@@ -253,7 +253,7 @@ AW_select_table_struct::AW_select_table_struct(const char *displayedi, void *poi
     displayed = copy_string(displayedi);
     pointer_value = pointer;
 }
-AW_select_table_struct::~AW_select_table_struct(void) {
+AW_select_table_struct::~AW_select_table_struct() {
     free(displayed);
     free(char_value);
 }
@@ -269,13 +269,13 @@ AW_selection_list::AW_selection_list(const char *variable_namei, int variable_ty
     value_equal_display = false;
 }
 
-AW_root::AW_root(void) {
+AW_root::AW_root() {
     memset((char *)this, 0, sizeof(AW_root));
     this->THIS = this;
     this->prvt = (AW_root_Motif *)GB_calloc(sizeof(AW_root_Motif), 1);
 }
 
-AW_root::~AW_root(void) {
+AW_root::~AW_root() {
     delete prvt;
 }
 
@@ -283,7 +283,7 @@ AW_window_Motif::AW_window_Motif() {
     memset((char*)this, 0, sizeof(AW_window_Motif));
 }
 
-AW_window::AW_window(void) {
+AW_window::AW_window() {
     memset((char *)this, 0, sizeof(AW_window));
     p_w = new AW_window_Motif;
     _at = new AW_at; // Note to valgrinders : the whole AW_window memory management suffers because Windows are NEVER deleted
@@ -294,7 +294,7 @@ AW_window::AW_window(void) {
 
 }
 
-AW_window::~AW_window(void) {
+AW_window::~AW_window() {
     delete p_w;
     delete picture;
 }
@@ -455,7 +455,7 @@ AW_pos AW_window::get_scrolled_picture_height() {
     return (picture->b - picture->t);
 }
 
-void AW_window::calculate_scrollbars(void) {
+void AW_window::calculate_scrollbars() {
     AW_rectangle screen;
     
     int  slider_size_horizontal;
@@ -724,7 +724,7 @@ bool AW_cb_struct::is_equal(const AW_cb_struct& other) const {
 AW_cb_struct_guard AW_cb_struct::guard_before = NULL;
 AW_cb_struct_guard AW_cb_struct::guard_after  = NULL;
 
-void AW_cb_struct::run_callback(void) {
+void AW_cb_struct::run_callback() {
     if (next) next->run_callback();                 // callback the whole list
     if (!f) return;                                 // run no callback
 
@@ -832,7 +832,7 @@ void AW_root_Motif::set_cursor(Display *d, Window w, Cursor c) {
     XFlush(XtDisplay(main_widget));
 }
 
-void AW_root_Motif::normal_cursor(void) {
+void AW_root_Motif::normal_cursor() {
     set_cursor(old_cursor_display, old_cursor_window, 0);
 }
 
@@ -1015,7 +1015,7 @@ void AW_window::get_window_pos(int& xpos, int& ypos) {
     ypos = y;
 }
 
-void AW_window::window_fit(void) {
+void AW_window::window_fit() {
     int width, height;
     get_window_size(width, height);
     set_window_size(width, height);
@@ -1537,7 +1537,7 @@ static void vertical_scrollbar_redefinition_cb(class AW_root *aw_root,
     XtVaSetValues(w, XmNrepeatDelay, (int)(aw->get_root()->awar(buffer)->read_int()), NULL);
 }
 
-void AW_window::create_window_variables(void) {
+void AW_window::create_window_variables() {
 
     char buffer[200];
     memset(buffer, 0, 200);
@@ -1686,7 +1686,7 @@ AW_color AW_window::alloc_named_data_color(int colnum, char *colorname) {
     return (AW_color)colnum;
 }
 
-void AW_window::create_devices(void) {
+void AW_window::create_devices() {
     unsigned long background_color;
     if (p_w->areas[AW_INFO_AREA]) {
         p_w->areas[AW_INFO_AREA]->create_devices(this, AW_INFO_AREA);
@@ -2996,7 +2996,7 @@ void AW_window::insert_sub_menu(AW_label name, const char *mnemonic, AW_active M
     root->make_sensitive(Label, Mask);
 }
 
-void AW_window::close_sub_menu(void) {
+void AW_window::close_sub_menu() {
 #ifdef DEBUG
     close_test_duplicate_mnemonics(p_w->menu_deep);
 #endif
@@ -3070,7 +3070,7 @@ void AW_window::insert_help_topic(AW_label name, const char *mnemonic, const cha
     root->make_sensitive(button, Mask);
 }
 
-void AW_window::insert_separator(void) {
+void AW_window::insert_separator() {
     Widget separator;
 
     // create one help-sub-menu-point
@@ -3079,7 +3079,7 @@ void AW_window::insert_separator(void) {
             NULL);
 }
 
-void AW_window::insert_separator_help(void) {
+void AW_window::insert_separator_help() {
     Widget separator;
 
     // create one help-sub-menu-point
@@ -3278,17 +3278,17 @@ void AW_window::show_internal(void *cl_grab) {
     }
 }
 
-void AW_window::show(void) {
+void AW_window::show() {
     XtGrabKind grab = XtGrabNone;
     show_internal(&grab);
 }
 
-void AW_window::show_grabbed(void) {
+void AW_window::show_grabbed() {
     XtGrabKind grab = XtGrabExclusive;
     show_internal(&grab);
 }
 
-void AW_window::hide(void) {
+void AW_window::hide() {
     if (window_is_shown) {
         if (hide_cb) hide_cb(this);
         get_root()->window_hide();
@@ -3297,7 +3297,7 @@ void AW_window::hide(void) {
     XtPopdown(p_w->shell);
 }
 
-bool AW_window::is_shown(void) {
+bool AW_window::is_shown() {
     // return true if window is shown ( = not invisible and already created)
     // Note: does return TRUE!, if window is only minimized by WM
     return window_is_shown;
@@ -3314,14 +3314,14 @@ void AW_root::window_hide() {
     }
 }
 
-void AW_root::main_loop(void) {
+void AW_root::main_loop() {
     XtAppMainLoop(p_r->context);
 }
 
-void AW_root::process_events(void) {
+void AW_root::process_events() {
     XtAppProcessEvent(p_r->context, XtIMAll);
 }
-void AW_root::process_pending_events(void) {
+void AW_root::process_pending_events() {
     XtInputMask pending = XtAppPending(p_r->context);
     while (pending) {
         XtAppProcessEvent(p_r->context, pending);
@@ -3375,7 +3375,7 @@ void AW_window::set_window_title(const char *title) {
     freedup(window_name, title);
 }
 
-const char *AW_window::get_window_title(void) {
+const char *AW_window::get_window_title() {
     char *title;
 
     XtVaGetValues(p_w->shell, XmNtitle, &title, NULL);

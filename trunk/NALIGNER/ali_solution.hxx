@@ -26,7 +26,7 @@ public:
     ALI_MAP(unsigned long first_seq_base, unsigned long last_seq_base,
             unsigned long first_ref_base, unsigned long last_ref_base);
     ALI_MAP(ALI_MAP *map);
-    ~ALI_MAP(void) {
+    ~ALI_MAP() {
         if (mapping)
             free((char *) mapping);
         if (inserted)
@@ -34,16 +34,16 @@ public:
         if (undefined)
             free((char *) undefined);
     }
-    unsigned long first_base(void) {
+    unsigned long first_base() {
         return first_seq_base;
     }
-    unsigned long last_base(void) {
+    unsigned long last_base() {
         return last_seq_base;
     }
-    unsigned long first_reference_base(void) {
+    unsigned long first_reference_base() {
         return first_ref_base;
     }
-    unsigned long last_reference_base(void) {
+    unsigned long last_reference_base() {
         return last_ref_base;
     }
     // Set position of base to position (relative to first_ref_base)
@@ -82,7 +82,7 @@ public:
             ali_fatal_error("Out of range", "ALI_MAP::position()");
         return (*mapping)[base - first_seq_base];
     }
-    unsigned long insertations(void) {
+    unsigned long insertations() {
         return insert_counter;
     }
     int is_inserted(unsigned long base) {
@@ -119,7 +119,7 @@ public:
         else
             return 0;
     }
-    int have_undefined(void) {
+    int have_undefined() {
         unsigned long b;
         for (b = first_seq_base; b <= last_seq_base; b++)
             if (is_undefined(b))
@@ -127,7 +127,7 @@ public:
         return 0;
     }
 
-    int is_konsistent(void);
+    int is_konsistent();
     int is_equal(ALI_MAP *map) {
         unsigned long i;
         if (first_seq_base != map->first_seq_base ||
@@ -145,9 +145,9 @@ public:
     }
     ALI_SEQUENCE *sequence(ALI_NORM_SEQUENCE *ref_seq);
     ALI_SEQUENCE *sequence_without_inserts(ALI_NORM_SEQUENCE *ref_seq);
-    ALI_MAP *inverse_without_inserts(void);
-    char *insert_marker(void);
-    void print(void) {
+    ALI_MAP *inverse_without_inserts();
+    char *insert_marker();
+    void print() {
         unsigned long i;
         printf("Map: Bases %ld to %ld, Positions %ld to %ld\n",
                first_seq_base, last_seq_base, first_ref_base, last_ref_base);
@@ -177,16 +177,16 @@ public:
         profile = prof;
     }
     ALI_SUB_SOLUTION(ALI_SUB_SOLUTION *solution);
-    ~ALI_SUB_SOLUTION(void);
+    ~ALI_SUB_SOLUTION();
     int free_area(unsigned long *start, unsigned long *end,
                   unsigned long *start_ref, unsigned long *end_ref,
                   unsigned long area_number = 0);
-    unsigned long number_of_free_areas(void);
+    unsigned long number_of_free_areas();
     int is_konsistent(ALI_MAP *map);
     int insert(ALI_MAP *map);
     int delete_map(ALI_MAP *map);
-    ALI_MAP *make_one_map(void);
-    void print(void);
+    ALI_MAP *make_one_map();
+    void print();
 };
 
 #else

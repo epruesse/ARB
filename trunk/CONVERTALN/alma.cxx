@@ -10,7 +10,7 @@ extern int warning_out;
  *   Function init_alma().
  *       Init. ALMA data.
  */
-void init_alma(void)
+void init_alma()
 {
     Freespace(&(data.alma.id));
     Freespace(&(data.alma.filename));
@@ -351,7 +351,7 @@ char *alma_in_gaps(FILE_BUFFER fp) {
  *   Function alma_in_sequence().
  *       Read in sequence data.
  */
-void alma_in_sequence(void)
+void alma_in_sequence()
 {
 
     char temp[LINENUM];
@@ -483,7 +483,7 @@ void staden_in(FILE_BUFFER fp)
  *   Function atom().
  *       Convert one ALMA entry to Macke entry.
  */
-int atom(void) {
+int atom() {
     if (data.alma.format == NBRF) {
         data.macke.numofrem = 1;
         data.macke.remarks = (char **)Reallocspace((char *)data.macke.remarks, (unsigned)(sizeof(char *)));
@@ -674,7 +674,7 @@ void macke_to_alma(char *inf, char *outf)
  *   Function etoa().
  *       Convert from EMBL to ALMA format.
  */
-int etoa(void)
+int etoa()
 {
     char temp[TOKENNUM], t1[TOKENNUM], t2[TOKENNUM], t3[TOKENNUM];
 

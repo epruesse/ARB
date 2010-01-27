@@ -18,7 +18,7 @@ class ed_key {
     char map[256];
 
 public:
-    ed_key(void);
+    ed_key();
 
     char        map_key(char);
     void        create_awars(AW_root *root);

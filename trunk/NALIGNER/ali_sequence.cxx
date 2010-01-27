@@ -13,7 +13,7 @@
 // ---------------------
 //      ALI_SEQUENCE
 
-int ALI_SEQUENCE::check(void)
+int ALI_SEQUENCE::check()
 {
     unsigned char *seq_buf;
     unsigned long i;
@@ -26,7 +26,7 @@ int ALI_SEQUENCE::check(void)
     return 1;
 }
 
-char *ALI_SEQUENCE::string(void)
+char *ALI_SEQUENCE::string()
 {
     char *str, *str_buf;
     unsigned char *seq_buf;

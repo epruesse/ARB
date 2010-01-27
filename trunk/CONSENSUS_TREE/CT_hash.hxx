@@ -25,13 +25,13 @@ extern GB_HASH *Name_hash;
 
 #define HASH_MAX 123
 
-void  hash_print(void);
-void  hash_init(void);
+void  hash_print();
+void  hash_init();
 void  hash_settreecount(int tree_count);
-void  hash_free(void);
-PART *hash_getpart(void);
+void  hash_free();
+PART *hash_getpart();
 void  hash_insert(PART *part, int weight);
-void  build_sorted_list(void);
+void  build_sorted_list();
 
 #else
 #error CT_hash.hxx included twice

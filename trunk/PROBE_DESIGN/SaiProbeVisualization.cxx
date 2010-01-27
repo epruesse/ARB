@@ -95,7 +95,7 @@ void SAI_graphic::command(AW_device * /* device */, AWT_COMMAND_MODE /* cmd */, 
     }
 }
 
-SAI_graphic::~SAI_graphic(void) {}
+SAI_graphic::~SAI_graphic() {}
 
 void SAI_graphic::show(AW_device *device) {
     paint(device);

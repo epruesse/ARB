@@ -132,7 +132,7 @@ class AW_matrix {
     AW_pos     unscale;         // = 1.0/scale
 
 public:
-    AW_matrix(void) { this->reset(); };
+    AW_matrix() { this->reset(); };
     virtual ~AW_matrix() {}
 
     void zoom(AW_pos scale);
@@ -147,7 +147,7 @@ public:
     void set_offset(const AW::Vector& off) { offset = off*scale; }
     void shift(const AW::Vector& doff) { offset += doff*scale; }
 
-    void reset(void);
+    void reset();
 
     double transform_size(const double& size) const { return size*scale; }
     double rtransform_size(const double& size) const { return size*unscale; }
@@ -311,7 +311,7 @@ typedef enum {
 class AW_gc : public AW_clip {
 public:
     void new_gc(int gc);
-    int  new_gc(void);
+    int  new_gc();
     void set_fill(int gc, AW_grey_level grey_level); // <0 don't fill  0.0 white 1.0 black
     void set_font(int gc, AW_font fontnr, int size, int *found_size);
     void set_line_attributes(int gc, AW_pos width, AW_linestyle style);
@@ -337,7 +337,7 @@ class AW_device : public AW_matrix, public AW_gc
     
 protected:
     AW_clip_scale_stack *clip_scale_stack;
-    virtual         void  privat_reset(void);
+    virtual         void  privat_reset();
 
 public:
     AW_device(AW_common *common); 
@@ -345,7 +345,7 @@ public:
  
     AW_bitset filter; // read-only (@@@ should go private!)
 
-    void reset(void);
+    void reset();
 
     void          get_area_size(AW_rectangle *rect); // read the frame size
     void          get_area_size(AW_world *rect); // read the frame size
@@ -353,10 +353,10 @@ public:
 
     void set_filter(AW_bitset filteri);   // set the main filter mask
 
-    void push_clip_scale(void); // push clipping area and scale
-    void pop_clip_scale(void); // pop them
+    void push_clip_scale();     // push clipping area and scale
+    void pop_clip_scale();     // pop them
 
-    virtual AW_DEVICE_TYPE type(void) = 0;
+    virtual AW_DEVICE_TYPE type() = 0;
 
     // * functions below return 1 if any pixel is drawn, 0 otherwise
     // * primary functions (always virtual)
@@ -447,9 +447,9 @@ public:
 
     virtual void    clear_text(int gc, const char *string, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
     virtual void    move_region(AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height, AW_pos dest_x, AW_pos dest_y);
-    virtual void    fast(void);                                     // e.g. zoom linewidth off
-    virtual void    slow(void);
-    virtual void    flush(void);                                    // empty X11 buffers
+    virtual void    fast();                                         // e.g. zoom linewidth off
+    virtual void    slow();
+    virtual void    flush();                                        // empty X11 buffers
     // ********* click device only ********
     virtual void    get_clicked_line(AW_clicked_line *ptr);
     virtual void    get_clicked_text(AW_clicked_text *ptr);
@@ -457,7 +457,7 @@ public:
     virtual void    get_size_information(AW_world *ptr);
     // ********* print device only (xfig compatible) ********
     virtual const char *open(const char *path);
-    virtual void    close(void);
+    virtual void    close();
     virtual void    set_color_mode(bool mode);
 };
 

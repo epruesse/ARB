@@ -87,14 +87,14 @@ bool ED4_manager::remove_deleted_children()
     return false;
 }
 
-void ED4_base::changed_by_database(void)
+void ED4_base::changed_by_database()
 {
     e4_assert(0);
     // this happens if you add a new species_pointer to a ED4_base-derived type
     // without defining changed_by_database for this type
 }
 
-void ED4_manager::changed_by_database(void) {
+void ED4_manager::changed_by_database() {
     remove_deleted_children();
     set_refresh(1);
     if (parent) {
@@ -108,7 +108,7 @@ void ED4_manager::changed_by_database(void) {
     ED4_ROOT->main_manager->Show();
 }
 
-void ED4_terminal::changed_by_database(void)
+void ED4_terminal::changed_by_database()
 {
     if (GB_read_clock(GLOBAL_gb_main) > actual_timestamp) { // only if timer_cb occurred after last change by EDIT4
 
@@ -1357,7 +1357,7 @@ void ED4_base::check_all()
     printf("***********************************************\n\n");
 }
 
-int ED4_base::adjust_clipping_rectangle(void)
+int ED4_base::adjust_clipping_rectangle()
 // return 0 if clipping rectangle disappeared (nothing left to draw)
 {
     AW_pos x, y;
@@ -1446,7 +1446,7 @@ ED4_returncode ED4_base::clear_background(int color)
     return (ED4_R_OK);
 }
 
-ED4_returncode ED4_base::clear_whole_background(void)   // clear AW_MIDDLE_AREA
+ED4_returncode ED4_base::clear_whole_background()       // clear AW_MIDDLE_AREA
 {
     if (ED4_ROOT->get_device())
     {

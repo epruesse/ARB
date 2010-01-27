@@ -127,7 +127,7 @@ void PH_display::initialize (display_type dpyt)
 }
 
 
-void PH_display::resized(void)
+void PH_display::resized()
 {
     AW_rectangle squ;
     AW_rectangle rect =  { 0, 0, 0, 0 };
@@ -198,7 +198,7 @@ void PH_display::resized(void)
 
 
 
-void PH_display::display(void)   // draw area
+void PH_display::display()       // draw area
 {
     char buf[50], cbuf[2];
     long x, y, xpos, ypos;
@@ -338,7 +338,7 @@ void PH_display::display(void)   // draw area
 }
 
 
-void PH_display::print(void)
+void PH_display::print()
 {
     printf("\nContents of class PH_display:\n");
     printf("display_what: %d\n", display_what);
@@ -475,7 +475,7 @@ void PH_display_status::write(AW_pos numA)
     write(buf);
 }
 
-void PH_display_status::clear(void) {
+void PH_display_status::clear() {
     device->clear(-1);
 }
 

@@ -26,20 +26,20 @@ public:
 
     OpenGLGraphics *G;
 
-    GLRenderer(void);
-    virtual ~GLRenderer(void);
+    GLRenderer();
+    virtual ~GLRenderer();
 
     void DisplayMolecule(Structure3D *cStr);
     void DisplayMoleculeName(int w, int h, Structure3D *cStr);
     void DisplayMoleculeMask(int w, int h);
 
-    void DoHelixMapping(void);
+    void DoHelixMapping();
     void DisplayHelices();
-    void DisplayHelixBackBone(void);
-    void DisplayHelixNumbers(void);
-    void DisplayBasePositions(void);
-    void DisplayMappedSpBasePositions(void);
-    void DisplayMappedSpInsertions(void);
+    void DisplayHelixBackBone();
+    void DisplayHelixNumbers();
+    void DisplayBasePositions();
+    void DisplayMappedSpBasePositions();
+    void DisplayMappedSpInsertions();
     void DisplayHelixMidPoints(Texture2D *cImages);
 
     void BeginTexturizer();

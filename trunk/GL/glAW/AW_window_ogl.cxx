@@ -42,10 +42,10 @@
 bool AW_alpha_Size_Supported = false;
 
 
-AW_window_menu_modes_opengl::AW_window_menu_modes_opengl(void) {
+AW_window_menu_modes_opengl::AW_window_menu_modes_opengl() {
 }
 
-AW_window_menu_modes_opengl::~AW_window_menu_modes_opengl(void) {
+AW_window_menu_modes_opengl::~AW_window_menu_modes_opengl() {
 }
 
 void AW_window_menu_modes_opengl::init(AW_root *root_in, const char *wid,

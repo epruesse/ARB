@@ -58,7 +58,7 @@ RNA3D_Graphics::RNA3D_Graphics(AW_root *aw_root_, GBDATA *gb_main_) {
     this->gb_main = gb_main_;
 }
 
-RNA3D_Graphics::~RNA3D_Graphics(void) {}
+RNA3D_Graphics::~RNA3D_Graphics() {}
 
 void RNA3D_Graphics::show(AW_device *device) {
     paint(device);

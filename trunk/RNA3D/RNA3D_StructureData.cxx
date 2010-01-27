@@ -45,7 +45,7 @@ static void throw_IO_error(const char *filename) {
 
 GBDATA *Structure3D::gb_main = 0;
 
-Structure3D::Structure3D(void) {
+Structure3D::Structure3D() {
     strCen          = new Vector3(0.0, 0.0, 0.0);
     GRAPHICS        = new OpenGLGraphics();
     ED4_SeqTerminal = 0;
@@ -64,7 +64,7 @@ Structure3D::Structure3D(void) {
     HelixBase       = 500;
 }
 
-Structure3D::~Structure3D(void) {
+Structure3D::~Structure3D() {
     delete GRAPHICS;
     delete strCen;
 }
@@ -305,7 +305,7 @@ void Structure3D::Store2Dinfo(char *info, int pos, int helixNr) {
 
 // =========== Reading Secondary Structure Data from Ecoli Secondary Structure Mask file ====================//
 
-void Structure3D::GetSecondaryStructureInfo(void) {
+void Structure3D::GetSecondaryStructureInfo() {
     static char *DataFile = 0;  
     int rnaType    = FindTypeOfRNA();
 
@@ -395,7 +395,7 @@ void Structure3D::Store2D3Dinfo(Struct2Dinfo *s2D, Struct3Dinfo *s3D) {
 
 // =========== Combining Secondary Structure Data with 3D Coordinates =======================//
 
-void Structure3D::Combine2Dand3DstructureInfo(void) {
+void Structure3D::Combine2Dand3DstructureInfo() {
     Struct3Dinfo *temp3D;
     Struct2Dinfo *temp2D;
     int cntr = 0;
@@ -506,7 +506,7 @@ void Structure3D::PositionsToCoordinatesDispList(int listID, int *pos, int len) 
     glEndList();
 }
 
-void Structure3D::GenerateSecStructureNonHelixRegions(void) {
+void Structure3D::GenerateSecStructureNonHelixRegions() {
     Struct2Dplus3D *t;
     const int MAX_BASE = 1000;
     int baseA[MAX_BASE], baseG[MAX_BASE], baseC[MAX_BASE], baseU[MAX_BASE];
@@ -534,7 +534,7 @@ void Structure3D::GenerateSecStructureNonHelixRegions(void) {
     PositionsToCoordinatesDispList(NON_HELIX_U, baseU, u);
 }
 
-void Structure3D::GenerateSecStructureHelixRegions(void) {
+void Structure3D::GenerateSecStructureHelixRegions() {
     Struct2Dplus3D *t;
     const int MAX_BASE = 1000;
     int baseA[MAX_BASE], baseG[MAX_BASE], baseC[MAX_BASE], baseU[MAX_BASE];
@@ -566,7 +566,7 @@ void Structure3D::GenerateSecStructureHelixRegions(void) {
     PositionsToCoordinatesDispList(HELIX_U, baseU, u);
 }
 
-void Structure3D::GenerateSecStructureUnpairedHelixRegions(void) {
+void Structure3D::GenerateSecStructureUnpairedHelixRegions() {
     Struct2Dplus3D *t;
     const int MAX_BASE = 500;
     int baseA[MAX_BASE], baseG[MAX_BASE], baseC[MAX_BASE], baseU[MAX_BASE];
@@ -845,7 +845,7 @@ void Structure3D::GenerateHelixNrDispList(int startHx, int endHx) {
     glEndList();
 }
 
-void Structure3D::GenerateDisplayLists(void) {
+void Structure3D::GenerateDisplayLists() {
 
     GenerateMoleculeSkeleton();
     ComputeBasePositions();
@@ -888,7 +888,7 @@ void Structure3D::GenerateDisplayLists(void) {
     GenerateTertiaryInteractionsDispLists();
 }
 
-void Structure3D::GenerateMoleculeSkeleton(void) {
+void Structure3D::GenerateMoleculeSkeleton() {
     Struct2Dplus3D *t;
 
     glNewList(STRUCTURE_BACKBONE, GL_COMPILE);
@@ -992,7 +992,7 @@ void Structure3D::ComputeBasePositions() {
     glEndList();
 }
 
-void Structure3D::PrepareSecondaryStructureData(void) {
+void Structure3D::PrepareSecondaryStructureData() {
 //     const char 
 //         outFile[]      = "/nfshome/yadhu/DataBase/Struct3D/model16SrRNA/test.data",
 //         EcoliFile[]    = "/nfshome/yadhu/DataBase/Struct3D/model16SrRNA/ECOLI_GAPS",

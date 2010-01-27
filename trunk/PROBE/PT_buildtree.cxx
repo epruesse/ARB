@@ -422,7 +422,7 @@ void PT_analyse_tree(POS_TREE *pt, int height)
     };
 }
 
-void PT_debug_tree(void)    // show various debug information about the tree
+void PT_debug_tree()        // show various debug information about the tree
     {
     ptds = (struct PT_debug_struct *)calloc(sizeof(struct PT_debug_struct), 1);
     PT_analyse_tree(psg.pt, 0);

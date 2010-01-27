@@ -683,7 +683,7 @@ long GB_size_of_FILE(FILE *in) {
 }
 
 
-GB_ULONG GB_time_of_day(void) {
+GB_ULONG GB_time_of_day() {
     struct timeval tp;
     if (gettimeofday(&tp, 0)) return 0;
     return tp.tv_sec;
@@ -722,7 +722,7 @@ GB_ERROR GB_system(const char *system_command) {
     return error;
 }
 
-GB_ERROR GB_xterm(void) {
+GB_ERROR GB_xterm() {
     // goes to header: __ATTR__USERESULT
     const char *xt = GB_getenv("ARB_XTERM"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_XTERM
     if (!xt) xt = "xterm -sl 1000 -sb -geometry 120x40";
@@ -886,7 +886,7 @@ static char *getenv_existing_directory(GB_CSTR envvar) {
     return result;
 }
 
-GB_CSTR GB_getenvUSER(void) {
+GB_CSTR GB_getenvUSER() {
     static const char *user = 0;
     if (!user) {
         user = getenv_ignore_empty("USER");
@@ -904,7 +904,7 @@ GB_CSTR GB_getenvUSER(void) {
 }
 
 
-GB_CSTR GB_getenvHOME(void) {
+GB_CSTR GB_getenvHOME() {
     static const char *home = 0;
     if (!home) {
         home = getenv_existing_directory("HOME");
@@ -918,7 +918,7 @@ GB_CSTR GB_getenvHOME(void) {
     return home;
 }
 
-GB_CSTR GB_getenvARBHOME(void) {
+GB_CSTR GB_getenvARBHOME() {
     static char *arbhome = 0;
     if (!arbhome) {
         arbhome = getenv_existing_directory("ARBHOME"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBHOME
@@ -931,7 +931,7 @@ GB_CSTR GB_getenvARBHOME(void) {
     return arbhome;
 }
 
-GB_CSTR GB_getenvARBMACRO(void) {
+GB_CSTR GB_getenvARBMACRO() {
     static const char *am = 0;
     if (!am) {
         am          = getenv_existing_directory("ARBMACRO"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBMACRO
@@ -955,13 +955,13 @@ static GB_CSTR getenv_autodirectory(const char *envvar, const char *defaultDirec
     return dir;
 }
 
-GB_CSTR GB_getenvARBMACROHOME(void) {
+GB_CSTR GB_getenvARBMACROHOME() {
     static const char *amh = 0;
     if (!amh) amh = getenv_autodirectory("ARBMACROHOME", "$(HOME)/.arb_prop/macros");  // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBMACROHOME
     return amh;
 }
 
-GB_CSTR GB_getenvARBCONFIG(void) {
+GB_CSTR GB_getenvARBCONFIG() {
     static const char *ac = 0;
     if (!ac) ac = getenv_autodirectory("ARBCONFIG", "$(HOME)/.arb_prop/cfgSave"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBCONFIG
     return ac;
@@ -986,7 +986,7 @@ GB_CSTR GB_getenvPATH() {
     return path;
 }
 
-GB_CSTR GB_getenvARB_GS(void) {
+GB_CSTR GB_getenvARB_GS() {
     static const char *gs = 0;
     if (!gs) {
         gs = getenv_executable("ARB_GS"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_GS
@@ -995,7 +995,7 @@ GB_CSTR GB_getenvARB_GS(void) {
     return gs;
 }
 
-GB_CSTR GB_getenvARB_PDFVIEW(void) {
+GB_CSTR GB_getenvARB_PDFVIEW() {
     static const char *pdfview = 0;
     if (!pdfview) {
         pdfview = getenv_executable("ARB_PDFVIEW"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_PDFVIEW
@@ -1004,7 +1004,7 @@ GB_CSTR GB_getenvARB_PDFVIEW(void) {
     return pdfview;
 }
 
-GB_CSTR GB_getenvARB_TEXTEDIT(void) {
+GB_CSTR GB_getenvARB_TEXTEDIT() {
     static const char *editor = 0;
     if (!editor) {
         editor = getenv_executable("ARB_TEXTEDIT"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_TEXTEDIT
@@ -1013,7 +1013,7 @@ GB_CSTR GB_getenvARB_TEXTEDIT(void) {
     return editor;
 }
 
-GB_CSTR GB_getenvDOCPATH(void) {
+GB_CSTR GB_getenvDOCPATH() {
     static const char *dp = 0;
     if (!dp) {
         char *res = getenv_existing_directory("ARB_DOC"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_DOC
@@ -1023,7 +1023,7 @@ GB_CSTR GB_getenvDOCPATH(void) {
     return dp;
 }
 
-GB_CSTR GB_getenvHTMLDOCPATH(void) {
+GB_CSTR GB_getenvHTMLDOCPATH() {
     static const char *dp = 0;
     if (!dp) {
         char *res = getenv_existing_directory("ARB_HTMLDOC"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_HTMLDOC
@@ -1068,7 +1068,7 @@ int GB_host_is_local(const char *hostname) {
 
 #define MIN(a, b) (((a)<(b)) ? (a) : (b))
 
-GB_ULONG GB_get_physical_memory(void) {
+GB_ULONG GB_get_physical_memory() {
     // Returns the physical available memory size in k available for one process
     GB_ULONG memsize; // real existing memory in k
     

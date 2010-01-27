@@ -11,7 +11,7 @@ extern int warning_out;
  *   Function init_gm_data().
  *   Initialize data structure of genbank and Macke formats.
  */
-void init_gm_data(void)
+void init_gm_data()
 {
     init_macke();
     init_genbank();
@@ -102,7 +102,7 @@ void genbank_to_macke(char *inf, char *outf)
  *   Function gtom().
  *       Convert from Genbank format to Macke format.
  */
-int gtom(void)
+int gtom()
 {
     char temp[LONGTEXT], buffer[TOKENNUM];
     char genus[TOKENNUM], species[TOKENNUM];
@@ -183,7 +183,7 @@ int gtom(void)
  *   Function gtom_remarks().
  *       Create Macke remarks.
  */
-void gtom_remarks(void)
+void gtom_remarks()
 {
     int  remnum, len;
     int  indi, indj;
@@ -290,7 +290,7 @@ void gtom_copy_remark(char *string, const char *key, int *remnum)
  *       Get strain from DEFINITION, COMMENT or SOURCE line in
  *       Genbank data file.
  */
-char *genbank_get_strain(void)
+char *genbank_get_strain()
 {
     int  indj, indk;
     char strain[LONGTEXT], temp[LONGTEXT], buffer[LONGTEXT];
@@ -356,7 +356,7 @@ char *genbank_get_strain(void)
  *       Get subspecies information from SOURCE, DEFINITION, or
  *       COMMENT line of Genbank data file.
  */
-char *genbank_get_subspecies(void) {
+char *genbank_get_subspecies() {
     int  indj, indk;
     char subspecies[LONGTEXT], temp[LONGTEXT], buffer[LONGTEXT];
 
@@ -443,7 +443,7 @@ void correct_subspecies(char *subspecies)
  *   Function genbank_get_atcc().
  *       Get atcc from SOURCE line in Genbank data file.
  */
-char *genbank_get_atcc(void) {
+char *genbank_get_atcc() {
     char  temp[LONGTEXT];
     char *atcc;
 
@@ -532,7 +532,7 @@ int paren_string(char *string, char *pstring, int index)
  *   Function num_of_remark().
  *       Count num of remarks needed in order to alloc spaces.
  */
-int num_of_remark(void)
+int num_of_remark()
 {
     int remnum, indj, length;
 
@@ -647,7 +647,7 @@ void macke_to_genbank(char *inf, char *outf)
  *   Function mtog().
  *       Convert Macke format to Genbank format.
  */
-int mtog(void)
+int mtog()
 {
     int  indi;
     char temp[LONGTEXT];
@@ -713,7 +713,7 @@ int mtog(void)
  *   Function mtog_decode_remarks().
  *       Decode remarks of Macke to GenBank format.
  */
-void mtog_decode_ref_and_remarks(void)
+void mtog_decode_ref_and_remarks()
 {
 
     int indi, indj;
@@ -930,7 +930,7 @@ char *macke_copyrem(char **strings, int *index, int maxline, int pointer)
  *       Define GenBank DEFINITION and SOURCE lines the way RDP
  *           group likes.
  */
-void mtog_genbank_def_and_source(void)
+void mtog_genbank_def_and_source()
 {
     if (Lenstr(data.macke.name) > 1)
         replace_entry(&(data.gbk.definition), data.macke.name);

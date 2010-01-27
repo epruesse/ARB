@@ -533,7 +533,7 @@ SEC_graphic::SEC_graphic(AW_root *aw_rooti, GBDATA *gb_maini)
     rot_cl.exists = false;
 }
 
-SEC_graphic::~SEC_graphic(void) {
+SEC_graphic::~SEC_graphic() {
     delete sec_root;
     delete load_error;
 }

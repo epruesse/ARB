@@ -784,7 +784,7 @@ void NT_modify_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
     nt_mode_event(aww, (AWT_canvas*)cd1, (AWT_COMMAND_MODE)cd2);
 }
 
-void NT_primer_cb(void) {
+void NT_primer_cb() {
     GB_ERROR error = GB_xcmd("arb_primer", true, false);
     if (error) aw_message(error);
 }

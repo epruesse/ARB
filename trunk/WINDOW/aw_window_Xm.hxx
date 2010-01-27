@@ -58,7 +58,7 @@ bool AW_remove_button_from_sens_list(AW_root *aw_root, Widget w);
 
 struct AW_timer_cb_struct {
     AW_timer_cb_struct(AW_root *ari, void (*g)(AW_root*, AW_CL, AW_CL), AW_CL cd1i, AW_CL cd2i);
-    ~AW_timer_cb_struct(void);
+    ~AW_timer_cb_struct();
     AW_root *ar;
     void (*f)(AW_root*, AW_CL, AW_CL);
     AW_CL cd1;
@@ -158,7 +158,7 @@ struct AW_select_table_struct {
     AW_select_table_struct(const char *displayedi, float value);
     AW_select_table_struct(const char *displayedi, void *pointer);
 
-    ~AW_select_table_struct(void);
+    ~AW_select_table_struct();
 
     static char *copy_string(const char *str);
 
@@ -285,7 +285,7 @@ public:
     void set_last_widget(Widget w) { last_widget = w; }
 
     void set_cursor(Display *d, Window w, Cursor c);
-    void normal_cursor(void);
+    void normal_cursor();
 };
 
 const int AW_NUMBER_OF_F_KEYS = 20;

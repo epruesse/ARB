@@ -185,7 +185,7 @@ NOT4PERL void *GB_recalloc(void *ptr, unsigned int oelem, unsigned int nelem, un
 }
 
 
-void gbm_init_mem(void)
+void gbm_init_mem()
 {
     int i;
     static int flag = 0;
@@ -241,7 +241,7 @@ void gbm_init_mem(void)
 #endif
 }
 
-void GB_memerr(void)
+void GB_memerr()
 {
     GB_internal_error("memory allocation error - maybe you're out of swap space?");
 }

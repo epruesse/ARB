@@ -29,7 +29,7 @@ extern "C" {
 
     /* Zufallszahl (0.0 bis 1.0): */
 
-    double randProb  (void);
+    double randProb  ();
 
 #ifdef __cplusplus
 }

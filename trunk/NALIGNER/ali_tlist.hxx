@@ -23,7 +23,7 @@ struct ALI_TLIST_ELEM {
 
     ALI_TLIST_ELEM<T>(T &a) : info(a)
     { prev_elem = next_elem = 0; }
-    void print(void) {
+    void print() {
         printf("<%8p (%8p) %8p> = %lx", prev_elem, this, next_elem, info);
     }
 };
@@ -36,7 +36,7 @@ class ALI_TLIST {
     unsigned long cardinal;
 
 public:
-    int is_consistent(void) {
+    int is_consistent() {
         int current_inside_flag = 0;
         int marked_inside_flag = 0;
         ALI_TLIST_ELEM<T> *akt, *pre;
@@ -81,7 +81,7 @@ public:
         return 1;
     }
 
-    ALI_TLIST(void) { 
+    ALI_TLIST() {
         first_elem = last_elem = current_elem = marked_elem = 0; 
         cardinal = 0;
     }
@@ -90,7 +90,7 @@ public:
         first_elem = last_elem = current_elem = new ALI_TLIST_ELEM<T>(a); 
         cardinal = 1;
     }
-    ~ALI_TLIST(void) {
+    ~ALI_TLIST() {
         while (first_elem != 0) {
             current_elem = first_elem;
             first_elem = current_elem->next_elem;
@@ -98,7 +98,7 @@ public:
         }
     }
 
-    void print(void) {
+    void print() {
         unsigned long l;
         ALI_TLIST_ELEM<T> *akt;
 
@@ -117,7 +117,7 @@ public:
     }
     /* clear the list */
 
-    void make_empty(void) {
+    void make_empty() {
         while (first_elem != 0) {
             current_elem = first_elem;
             first_elem = current_elem->next_elem;
@@ -143,14 +143,14 @@ public:
 
     /* delete _current_ element and goto _next_ element */
 
-    void delete_element(void);
+    void delete_element();
 
     /* Mark a unique element */
 
-    void mark_element(void) {
+    void mark_element() {
         marked_elem = current_elem;
     }
-    void marked(void) {
+    void marked() {
         if (marked_elem == 0)
             ali_fatal_error("No marked element in list", "ALI_TLIST<T>::marked()");
         current_elem = marked_elem;
@@ -364,7 +364,7 @@ void ALI_TLIST<T>::insert_bevor(ALI_TLIST<T> &a)
 }
 
 template<class T>
-void ALI_TLIST<T>::delete_element(void)
+void ALI_TLIST<T>::delete_element()
 {
     ALI_TLIST_ELEM<T> *elem;
 

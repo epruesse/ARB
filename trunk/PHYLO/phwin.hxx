@@ -5,7 +5,7 @@
 
 class PH_used_windows {
 public:
-        PH_used_windows(void);                  // constructor
+        PH_used_windows();                      // constructor
         static PH_used_windows  *windowList;    // List of all global needed windows and items
         AW_window *phylo_main_window;           // control window
 

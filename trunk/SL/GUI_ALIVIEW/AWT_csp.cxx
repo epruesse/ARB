@@ -64,7 +64,7 @@ void AWT_csp::exit() {
     seq_len = 0; // mark invalid
 }
 
-AWT_csp::~AWT_csp(void) {
+AWT_csp::~AWT_csp() {
     this->exit();
     delete awar_name;
     delete awar_alignment;
@@ -258,7 +258,7 @@ void AWT_csp::weight_by_inverseRates() const {
 
 
 
-void AWT_csp::print(void) {
+void AWT_csp::print() {
     unsigned int j;
     int wf;
     double sum_rates[2], sum_tt[2];

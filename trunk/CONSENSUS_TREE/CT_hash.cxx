@@ -14,7 +14,7 @@ int Hash_max_count=0;
 HNODE *Hashlist[HASH_MAX];
 HNODE *Sortedlist = NULL;
 
-void hash_init(void) {
+void hash_init() {
     /*! initialize Hashtable and free old data */
     Hash_max_count = 0;
     hash_free();
@@ -27,7 +27,7 @@ void hash_settreecount(int tree_count) {
 }
 
 
-void hash_free(void) {
+void hash_free() {
     /*! free Hashtable and Sortedlist */
     int i;
     HNODE *hnp, *hnp_help;
@@ -54,7 +54,7 @@ void hash_free(void) {
 }
 
 
-PART *hash_getpart(void) {
+PART *hash_getpart() {
     /*! return the first element (with the highest hitnumber) from the linear sorted
      * list and calculate percentaged appearance of this partition in all trees and
      * calculate the average pathlength.
@@ -122,7 +122,7 @@ void hash_insert(PART *part, int weight) {
 }
 
 
-void build_sorted_list(void) {
+void build_sorted_list() {
     /*! sort the current hash list in a linear sorted list, the current hash
      * is empty afterwards. I use a simple trick speed up the function:
      * build for every hitnumber one list and put all elements with that hitnumber
@@ -179,7 +179,7 @@ void build_sorted_list(void) {
 }
 
 
-void hash_print(void) {
+void hash_print() {
     /*! testfunction to print the hashtable */
     int i;
     HNODE *hnp;
@@ -198,7 +198,7 @@ void hash_print(void) {
 }
 
 
-void sorted_print(void) {
+void sorted_print() {
     /*! testfunction to print the sorted linear list */
     HNODE *hnp;
 

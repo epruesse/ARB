@@ -28,7 +28,7 @@ typedef enum {
 } ED4_SEARCH_GAPS;
 
 void       ED4_search(AW_window *aww, AW_CL searchDescriptor);
-GB_ERROR   ED4_repeat_last_search(void);
+GB_ERROR   ED4_repeat_last_search();
 AW_window *ED4_create_search_window(AW_root *root, AW_CL type);
 void       ED4_create_search_awars(AW_root *root);
 

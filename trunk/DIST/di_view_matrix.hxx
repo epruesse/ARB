@@ -61,7 +61,7 @@ public:
     void monitor_vertical_scroll_cb(AW_window *);   // vertical and horizontal
     void monitor_horizontal_scroll_cb(AW_window *); // scrollbar movements
     void display(bool clear);                       // display data
-    void resized(void);                             // call after resize main window
+    void resized();                                 // call after resize main window
 
     // ******************** real public section *******************
     void set_slider_min(double d) { min_view_dist = d; };

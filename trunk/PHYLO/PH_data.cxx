@@ -9,7 +9,7 @@ PHDATA::PHDATA(AW_root *awr) {
     aw_root = awr;
 }
 
-char *PHDATA::unload(void) {
+char *PHDATA::unload() {
     struct PHENTRY *phentry;
 
     freenull(use);
@@ -23,7 +23,7 @@ char *PHDATA::unload(void) {
     return 0;
 }
 
-PHDATA::~PHDATA(void) {
+PHDATA::~PHDATA() {
     unload();
     delete matrix;
 }

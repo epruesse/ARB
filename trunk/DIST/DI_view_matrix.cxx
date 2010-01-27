@@ -95,7 +95,7 @@ DI_MATRIX *DI_dmatrix::get_matrix() {
     return DI_MATRIX::ROOT;
 }
 
-void DI_dmatrix::resized(void)
+void DI_dmatrix::resized()
 {
     AW_rectangle               squ;
     AW_rectangle               rect;

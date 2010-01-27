@@ -159,7 +159,7 @@ short ED4_root::is_primary_selection(ED4_terminal *object)
     return (tmp_entry != NULL) && (tmp_entry->object == object);
 }
 
-ED4_returncode ED4_root::deselect_all(void)
+ED4_returncode ED4_root::deselect_all()
 {
     ED4_multi_species_manager *main_multi_man = middle_area_man->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
 
@@ -345,7 +345,7 @@ ED4_returncode ED4_root::add_to_selected(ED4_terminal *object)
     return (ED4_R_IMPOSSIBLE);
 }
 
-ED4_returncode ED4_root::resize_all(void)
+ED4_returncode ED4_root::resize_all()
 {
     while (main_manager->update_info.resize) {
         main_manager->resize_requested_by_parent();
@@ -865,7 +865,7 @@ static int get_selected_range(int *firstColumn, int *lastColumn)
 }
 
 static ED4_list_elem *actual_aligner_elem = 0;
-static GBDATA *get_next_selected_species(void)
+static GBDATA *get_next_selected_species()
 {
     if (!actual_aligner_elem) return 0;
 
@@ -1241,7 +1241,7 @@ static void modes_cb(AW_window*, AW_CL cd1, AW_CL)
 {
     ED4_ROOT->species_mode = ED4_species_mode(cd1);
 }
-void ED4_no_dangerous_modes(void)
+void ED4_no_dangerous_modes()
 {
     switch (ED4_ROOT->species_mode) {
         case ED4_SM_KILL: {
@@ -1857,7 +1857,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
     return (ED4_R_OK);
 }
 
-AW_window *ED4_root::create_new_window(void)                        // only the first time, other cases: generate_window
+AW_window *ED4_root::create_new_window()                            // only the first time, other cases: generate_window
 {
     AW_device  *device     = NULL;
     ED4_window *new_window = NULL;

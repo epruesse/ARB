@@ -24,9 +24,9 @@ class Texture2D {
 public:
     GLuint texture[SHAPE_MAX];  
 
-    Texture2D(void);
-    virtual ~Texture2D(void);
+    Texture2D();
+    virtual ~Texture2D();
 
-    void LoadGLTextures(void);
+    void LoadGLTextures();
 };
 

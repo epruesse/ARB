@@ -114,7 +114,7 @@ class ALI_PROFILE {
 public:
 
     ALI_PROFILE(ALI_SEQUENCE *sequence, ALI_PROFILE_CONTEXT *context);
-    ~ALI_PROFILE(void);
+    ~ALI_PROFILE();
 
     void print(int start = -1, int end = -1)
     {
@@ -193,8 +193,8 @@ public:
         return norm_sequence->is_begin(pos + 1);
     }
                           
-    char *cheapest_sequence(void);      
-    char *borders_sequence(void) {
+    char *cheapest_sequence();
+    char *borders_sequence() {
         unsigned long i;
         char *str, *str_buffer;
 
@@ -211,13 +211,13 @@ public:
         return str_buffer;
     }
 
-    unsigned long length(void) {
+    unsigned long length() {
         return prof_len;
     }
-    ALI_NORM_SEQUENCE *sequence(void) {
+    ALI_NORM_SEQUENCE *sequence() {
         return norm_sequence;
     }
-    unsigned long sequence_length(void) {
+    unsigned long sequence_length() {
         return norm_sequence->length();
     }
 
@@ -244,7 +244,7 @@ public:
         return costs * multi_gap_factor;
     }
 
-    float w_sub_maximum(void) {
+    float w_sub_maximum() {
         return sub_costs_maximum;
     }
 

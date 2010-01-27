@@ -119,7 +119,7 @@ public:
 
 
 
-long AP_timer(void);
+long AP_timer();
 
 struct elem;
 
@@ -156,14 +156,14 @@ public:
     float           *markerline;
 
     PHDATA(AW_root *awr);
-    ~PHDATA(void);
+    ~PHDATA();
 
     char     *load(char *use);  // open database and get pointers to it
-    char     *unload(void);
+    char     *unload();
     GB_ERROR  save(char *filename);
-    void      print(void);
+    void      print();
     GB_ERROR  calculate_matrix(const char *cancel, double alpha, PH_TRANSFORMATION transformation);
-    long get_seq_len(void) { return seq_len; };
+    long get_seq_len() { return seq_len; };
     
 };
 

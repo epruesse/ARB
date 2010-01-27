@@ -189,7 +189,7 @@ AWTC_FastSearchSequence::AWTC_FastSearchSequence(const AWTC_CompactedSubSequence
     }
 }
 
-void AWTC_alignBuffer::correctUnalignedPositions(void)
+void AWTC_alignBuffer::correctUnalignedPositions()
 {
     long off = 0;
     long rest = used;

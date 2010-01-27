@@ -58,7 +58,7 @@ void part_print(PART *p) {
     printf(":%.2f,%d%%: ", p->len, p->percent);
 }
 
-PART *part_new(void) {
+PART *part_new() {
     //! construct new part
     PART *p;
 
@@ -75,7 +75,7 @@ void part_free(PART *p) {
 }
 
 
-PART *part_root(void) {
+PART *part_root() {
     /*! build a partion that totally consists of 111111...1111 that is needed to
      * build the root of a specific ntree
      */
