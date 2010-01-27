@@ -118,7 +118,7 @@ void awt_create_select_filter_window_aw_cb(void *dummy, struct adfiltercbstruct 
 
 static void awt_add_sequences_to_list(struct adfiltercbstruct *cbs, const char *use, GBDATA *gb_extended, const char *pre, char tpre) {
     GBDATA *gb_ali = GB_entry(gb_extended, use);
-    
+
     if (gb_ali) {
         int         count   = 0;
         GBDATA     *gb_type = GB_entry(gb_ali, "_TYPE");
@@ -157,7 +157,7 @@ void awt_create_select_filter_window_gb_cb(void *, struct adfiltercbstruct *cbs)
 
         cbs->aw_filt->clear_selection_list(cbs->id);
         cbs->aw_filt->insert_default_selection(cbs->id, "none", "");
-        
+
         const char *name = GBT_readOrCreate_char_pntr(cbs->gb_main, AWAR_SPECIES_NAME, "");
         if (name[0]) {
             GBDATA *gb_species = GBT_find_species(cbs->gb_main, name);
@@ -165,7 +165,7 @@ void awt_create_select_filter_window_gb_cb(void *, struct adfiltercbstruct *cbs)
                 awt_add_sequences_to_list(cbs, use, gb_species, "SEL. SPECIES:", '@');
             }
         }
-        
+
         for (gb_extended = GBT_first_SAI(cbs->gb_main);
              gb_extended;
              gb_extended = GBT_next_SAI(gb_extended))
@@ -183,11 +183,11 @@ void awt_create_select_filter_window_gb_cb(void *, struct adfiltercbstruct *cbs)
 
 adfiltercbstruct *awt_create_select_filter(AW_root *aw_root, GBDATA *gb_main, const char *def_name) {
     /*! Create a data structure for filters (needed for awt_create_select_filter_win)
-     * 
+     *
      * @param def_name filter name awar (has to exist, name has to be "SOMETHING/name")
      * awars "SOMETHING/filter" (STRING) and
      * "SOMETHING/alignment" (STRING) have to exist as well!
-     * 
+     *
      */
 
     struct adfiltercbstruct *acbs   = new adfiltercbstruct;
@@ -334,7 +334,7 @@ AW_window *awt_create_select_filter_win(AW_root *aw_root, AW_CL res_of_create_se
 
             aws->init(aw_root, window_id, "Select Filter");
             free(window_id);
-        }        
+        }
         aws->load_xfig("awt/filter.fig");
         aws->button_length(10);
 
@@ -345,7 +345,7 @@ AW_window *awt_create_select_filter_win(AW_root *aw_root, AW_CL res_of_create_se
         aws->create_button("HELP", "HELP", "H");
 
         acbs->aw_filt = aws; // store the filter selection window in 'acbs'
-        
+
         aws->at("filter");
         acbs->id = aws->create_selection_list(acbs->def_subname, 0, "", 20, 3);
 

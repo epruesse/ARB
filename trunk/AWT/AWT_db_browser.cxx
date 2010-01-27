@@ -1,15 +1,15 @@
-//  ==================================================================== // 
-//                                                                       // 
-//    File      : AWT_db_browser.cxx                                     // 
-//    Purpose   : Simple database viewer                                 // 
-//                                                                       // 
-//                                                                       // 
-//  Coded by Ralf Westram (coder@reallysoft.de) in May 2004              // 
-//  Copyright Department of Microbiology (Technical University Munich)   // 
-//                                                                       // 
-//  Visit our web site at: http://www.arb-home.de/                       // 
-//                                                                       // 
-//  ==================================================================== // 
+//  ==================================================================== //
+//                                                                       //
+//    File      : AWT_db_browser.cxx                                     //
+//    Purpose   : Simple database viewer                                 //
+//                                                                       //
+//                                                                       //
+//  Coded by Ralf Westram (coder@reallysoft.de) in May 2004              //
+//  Copyright Department of Microbiology (Technical University Munich)   //
+//                                                                       //
+//  Visit our web site at: http://www.arb-home.de/                       //
+//                                                                       //
+//  ==================================================================== //
 
 #include "awt.hxx"
 
@@ -29,7 +29,7 @@
 
 using namespace std;
 
-// used AWARs : 
+// used AWARs :
 
 #define AWAR_DBB_BASE     "/dbbrowser"
 #define AWAR_DBB_TMP_BASE "/tmp" AWAR_DBB_BASE
@@ -61,7 +61,7 @@ const char *sort_order_name[SORT_COUNT] = {
     "Name",
     "Name (DB)",
     "Type",
-    "Content", 
+    "Content",
 };
 
 
@@ -103,7 +103,7 @@ struct list_entry {
                 is_less = less_than_by_name(other);
                 break;
 
-            case SORT_NAME_DB: 
+            case SORT_NAME_DB:
                 is_less = less_than_by_name_container(other);
                 break;
 
@@ -112,15 +112,15 @@ struct list_entry {
 
                 if (cmp != 0) is_less = cmp<0;
                 else is_less          = less_than_by_name_container(other);
-                
+
                 break;
             }
             case SORT_TYPE: {
                 int cmp = type-other.type;
-                
+
                 if (cmp == 0) is_less = less_than_by_name(other);
                 else is_less          = cmp<0;
-                
+
                 break;
             }
             default:
@@ -259,7 +259,7 @@ public:
 
 class hasDB {
     GBDATA *db;
-public: 
+public:
     hasDB(GBDATA *gbm) : db(gbm) {}
     bool operator()(const KnownDB& kdb) { return kdb.get_db() == db; }
 };
@@ -285,7 +285,7 @@ class DB_browser {
     friend DB_browser *get_the_browser(bool autocreate);
 
     void update_DB_selector();
-    
+
     DB_browser(const DB_browser& other);            // copying not allowed
     DB_browser& operator = (const DB_browser& other); // assignment not allowed
 public:
@@ -932,7 +932,7 @@ void AWT_create_debug_menu(AW_window *awmm) {
 
     awmm->insert_menu_topic("-db_browser", "Browse loaded database(s)", "B", "db_browser.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_db_browser, 0);
     awmm->insert_menu_topic("-dump_gcs",   "Dump GCs",                  "G", "",               AWM_ALL, dump_gcs, 0,                        0);
-    
+
     awmm->insert_separator();
     {
         awmm->insert_sub_menu("Callbacks (dangerous! use at your own risk)", "C", AWM_ALL);
@@ -948,7 +948,7 @@ void AWT_create_debug_menu(AW_window *awmm) {
         awmm->close_sub_menu();
     }
     awmm->insert_separator();
-    
+
 }
 
 #endif // DEBUG

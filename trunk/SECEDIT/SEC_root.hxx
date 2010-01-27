@@ -50,7 +50,7 @@ enum SEC_CHECK_TYPE {
     CHECK_STRUCTURE = 1,
     CHECK_SIZE      = 2,
     CHECK_POSITIONS = 4,
-    CHECK_ALL       = CHECK_STRUCTURE|CHECK_SIZE|CHECK_POSITIONS, 
+    CHECK_ALL       = CHECK_STRUCTURE|CHECK_SIZE|CHECK_POSITIONS,
 };
 #endif
 
@@ -81,7 +81,7 @@ private:
     }
 
     void count_bases(SEC_root *root); // updates abspos_array
-    
+
 public:
     SEC_region(int start, int end);
     virtual ~SEC_region();
@@ -96,7 +96,7 @@ public:
     // selector-methods
     int get_sequence_start() const { return sequence_start; }
     int get_sequence_end() const { return sequence_end; }
-    
+
     int get_base_count() const { sec_assert(baseCount != -1); return baseCount; }
 
     bool contains_seq_position(int pos) const {
@@ -128,7 +128,7 @@ public:
         else { // special case for empty strands
             sec_assert(get_base_count() == 0);
             sec_assert(basenr <= 0); // 0 or -1
-            
+
             pos = (basenr == 0) ? get_sequence_start() : get_sequence_end();
         }
         return pos;
@@ -196,7 +196,7 @@ class SEC_base;
 
 class SEC_oriented {
     Angle rel_angle;
-    
+
     mutable Angle abs_angle;
     mutable bool  abs_angle_valid;
 
@@ -244,7 +244,7 @@ public:
 // ----------------------
 
 enum SEC_BASE_TYPE {
-    SEC_NO_TYPE  = 0, 
+    SEC_NO_TYPE  = 0,
     SEC_LOOP     = 1,
     SEC_HELIX    = 2,
     SEC_ANY_TYPE = SEC_LOOP|SEC_HELIX,
@@ -256,7 +256,7 @@ enum SEC_BASE_TYPE {
 
 class SEC_base : public SEC_constrainted, public SEC_oriented, Noncopyable { // loop or helix
     SEC_root *root;
-    
+
     virtual SEC_base *get_parent() = 0;
 public:
     SEC_base(SEC_root *Root) : root(Root) {}
@@ -284,7 +284,7 @@ public:
 
     SEC_base *parent() { return get_parent(); }
     const SEC_base *parent() const { return const_cast<SEC_base_part*>(this)->get_parent(); }
-    
+
     AW_CL self() const { return parent()->self(); }
     SEC_root *get_root() const { return parent()->get_root(); }
 
@@ -307,7 +307,7 @@ class SEC_helix_strand;
 class SEC_loop;
 
 class SEC_helix : public SEC_base {
-    
+
     SEC_helix_strand *strand_to_root;
     size_t base_length; // max. # of bases in any strand
 
@@ -325,9 +325,9 @@ public:
 
     size_t get_base_length()            { return base_length; }
 
-    SEC_helix_strand *strandToRoot() const { return strand_to_root; } // strand pointing to root 
+    SEC_helix_strand *strandToRoot() const { return strand_to_root; } // strand pointing to root
     SEC_helix_strand *strandToOutside() const; // strand pointing away from root
-    
+
     SEC_helix_strand *strandAwayFrom(const SEC_loop *loop) const; // strand pointing away from loop
     SEC_helix_strand *strandTowards(const SEC_loop *loop) const; // strand pointing to loop
 
@@ -354,7 +354,7 @@ public:
     SEC_BASE_TYPE getType() const { return SEC_HELIX; }
     void reset_angles();
     const Position& get_fixpoint() const;
-    
+
     void orientationChanged(); // recalc coordinates
     void sizeChanged(); // recalc size and coordinates
 };
@@ -367,7 +367,7 @@ class SEC_segment;
 
 class SEC_helix_strand : public SEC_base_part {
     friend class SEC_helix;
-    
+
     SEC_loop         *origin_loop;     // Pointer to loop where strand comes from
     SEC_helix_strand *other_strand;
     SEC_helix        *helix_info; // used by both strands
@@ -384,7 +384,7 @@ class SEC_helix_strand : public SEC_base_part {
     // SEC_base_part interface
     SEC_base *get_parent() { return helix_info; }
     SEC_base_part *get_next();
-    
+
 public:
 
     SEC_helix_strand();
@@ -394,16 +394,16 @@ public:
 
     void paint(AW_device *device);
     void unlink(bool fromOtherStrandAsWell);
-    
+
     void paint_strands(AW_device *device, const Vector& strand_dir, const double& strand_length);
     void paint_constraints(AW_device *device);
-    
+
     const SEC_root *get_root() const { return helix_info->get_root(); }
     SEC_root *get_root() { return helix_info->get_root(); }
 
     const SEC_helix *get_helix() const { return helix_info; }
     SEC_helix *get_helix() { return helix_info; }
-    
+
     const SEC_helix_strand *get_other_strand() const { return other_strand; }
     SEC_helix_strand *get_other_strand() { return other_strand; }
 
@@ -414,20 +414,20 @@ public:
 
     bool pointsToRoot() const { return !isRootsideFixpoint(); }
     bool pointsToOutside() const { return isRootsideFixpoint(); }
-    
+
     bool is3end() const { return get_region()->get_sequence_start() > other_strand->get_region()->get_sequence_start(); }
 
     // Attach point (left/right when looking towards the strand from its origin loop)
     const Position& rightAttachPoint() const { return rightAttach; }
     const Position& leftAttachPoint() const { return leftAttach; }
-    
+
     const Position& startAttachPoint() const { return leftAttach; }
     const Position& endAttachPoint() const { return other_strand->rightAttach; }
 
     int rightAttachAbspos() const {
         const SEC_region *reg   = get_other_strand()->get_region();
         int               count = reg->get_base_count();
-        
+
         return reg->getBasePos(count ? count-1 : 0);
     }
     int leftAttachAbspos() const { return get_region()->getBasePos(0); }
@@ -447,7 +447,7 @@ public:
     const SEC_loop *get_origin_loop() const { return origin_loop; }
     SEC_loop *get_origin_loop() { return origin_loop; }
     SEC_loop *get_destination_loop() { return get_other_strand()->get_origin_loop(); }
-    
+
     SEC_loop *get_rootside_loop() { return isRootsideFixpoint() ? get_origin_loop() : get_destination_loop(); }
 
     void set_origin_loop(SEC_loop *loop_)                       { origin_loop = loop_; }
@@ -472,11 +472,11 @@ private:
 
     SEC_helix_strand *next_helix_strand; // next helix strand after segment (pointing away from segments loop)
     SEC_loop *loop; // the loop containing 'this'
-    
+
     // SEC_base_part interface
     SEC_base *get_parent();
     SEC_base_part *get_next() { return get_next_strand(); }
-    
+
 public:
 
     SEC_segment();
@@ -490,18 +490,18 @@ public:
 
     void paint(AW_device *device, SEC_helix_strand *previous_strand_pointer);
     void unlink();
-    
+
     void prepare_paint(SEC_helix_strand *previous_strand_pointer, double &gamma, double &eta, double &radius, int &base_count, double &angle_step);
 
     void mergeWith(SEC_segment *other, SEC_loop *target_loop);
     SEC_helix_strand *split(size_t start, size_t end, SEC_segment **new_segment);
-    
+
 
     int is_endings_segment() {
         int seq_start = get_region()->get_sequence_start();
         int seq_end = get_region()->get_sequence_end();
 
-        return seq_start>seq_end; 
+        return seq_start>seq_end;
     }
 
     void delete_pointer_2(SEC_helix_strand *strand) {
@@ -511,7 +511,7 @@ public:
 
             if (!next_strand) break;
             if (next_strand == strand) { segment->next_helix_strand = NULL; break; }
-            
+
             segment = next_strand->get_next_segment();
             if (!segment || segment==this) {
 #if defined(DEBUG)
@@ -526,7 +526,7 @@ public:
 
     const SEC_helix_strand *get_next_strand() const { return next_helix_strand; }
     SEC_helix_strand *get_next_strand() { return next_helix_strand; }
-    
+
     const SEC_loop *get_loop() const { return loop; }
     SEC_loop *get_loop() { return loop; }
 
@@ -534,7 +534,7 @@ public:
 
     void set_next_strand(SEC_helix_strand *strand) { next_helix_strand = strand; }
     void set_loop(SEC_loop *loop_) { loop = loop_; }
-    
+
 #if defined(CHECK_INTEGRITY)
     void check_integrity(SEC_CHECK_TYPE what) const;
 #endif // CHECK_INTEGRITY
@@ -550,7 +550,7 @@ class SEC_loop : public SEC_base {
     SEC_helix_strand *primary_strand; // primary strand of loop
     // loop orientation points towards that strand
     // for non-root-loops, this strand points towards root
-    
+
     void compute_circumference();
     void compute_radius();
 
@@ -560,10 +560,10 @@ public:
 
     SEC_loop(SEC_root *root_);
     virtual ~SEC_loop();
-    
+
     void save(std::ostream & out, int indent, const XString& x_string);
     GB_ERROR read(SEC_helix_strand *rootside_strand, std::istream & in, int version, double loop_angle);
-    
+
     void calculate_loop_size();
     void calculate_loop_coordinates();
 
@@ -571,7 +571,7 @@ public:
     void paint_constraints(AW_device *device);
 
     const Position& get_center() const { return center; }
-    const double& get_circumference() const { return Circumference; } 
+    const double& get_circumference() const { return Circumference; }
 
     bool is_root_loop() const;
 
@@ -592,13 +592,13 @@ public:
     void check_integrity(SEC_CHECK_TYPE what) const;
 #endif // CHECK_INTEGRITY
 
-    // SEC_oriented interface: 
+    // SEC_oriented interface:
     void invalidate_sub_angles();
 
     // SEC_base interface :
     SEC_BASE_TYPE getType() const { return SEC_LOOP; }
     void reset_angles();
-    
+
     const Position& get_fixpoint() const {
         // Note: does not return center for root-loop.
         SEC_helix *helix = get_fixpoint_helix();
@@ -616,7 +616,7 @@ public:
 enum ShowBonds {
     SHOW_NO_BONDS     = 0,
     SHOW_HELIX_BONDS  = 1,
-    SHOW_NHELIX_BONDS = 2, 
+    SHOW_NHELIX_BONDS = 2,
 };
 
 enum ShowCursorPos {
@@ -637,19 +637,19 @@ struct SEC_displayParams {
 
     ShowCursorPos show_curpos;  // which position to show at cursor
     bool          show_ecoli_pos; // show ecoli positions?
-    
+
     bool display_search;        // show search results
     bool display_sai;           // visualize SAIs
 
     bool show_strSkeleton;      // display the skeleton?
     int  skeleton_thickness;
-    
+
     bool edit_direction;        // true = 5'->3', false = 5'<-3'
 
 #if defined(DEBUG)
     bool show_debug;            // show debug info in structure display
 #endif // DEBUG
-    
+
     void reread(AW_root *aw_root);
 };
 
@@ -664,7 +664,7 @@ class SEC_db_interface;
 class SEC_graphic;
 
 enum SEC_bgpaint_mode {
-    BG_PAINT_NONE   = 0, 
+    BG_PAINT_NONE   = 0,
     BG_PAINT_FIRST  = 1,
     BG_PAINT_SECOND = 2,
     BG_PAINT_BOTH   = BG_PAINT_FIRST | BG_PAINT_SECOND,
@@ -683,7 +683,7 @@ class SEC_root {
     // -----------------------------
     //      updated before paint
     // -----------------------------
-    
+
     AW_font_group font_group;
 
     double char_radius[SEC_GC_DATA_COUNT]; // radius and..
@@ -703,16 +703,16 @@ class SEC_root {
     SEC_drawn_positions *drawnPositions; // after paint this contains draw positions for every absolute position
     LineVector           cursor_line; // main line of the cursor
 
-    SEC_BASE_TYPE show_constraints; 
+    SEC_BASE_TYPE show_constraints;
 
-    
+
     void paintHelixNumbers(AW_device *device);
     void paintEcoliPositions(AW_device *device);
 #if defined(PAINT_ABSOLUTE_POSITION)
     void showSomeAbsolutePositions(AW_device *device);
 #endif
     void fixStructureBugs(int version);
-    
+
     void cacheBackgroundColor();
 
     static bool hasBase(int pos, const char *seq, int len) {
@@ -775,7 +775,7 @@ public:
 
     bool perform_autoscroll();
 
-private: 
+private:
     void calculate_size();
     void calculate_coordinates();
 public:
@@ -808,7 +808,7 @@ public:
 
     void update_shown_positions();
     bool shallDisplayPosition(int abspos) const { return db->shallDisplayPosition(abspos); }
-    void invalidate_base_positions(); // force base counts of all regions to be refreshed 
+    void invalidate_base_positions(); // force base counts of all regions to be refreshed
 
     int getBackgroundColor(int abspos) { return bg_color ? bg_color[abspos] : 0; }
     const Vector& get_center_char_vector(int gc) {
@@ -821,7 +821,7 @@ public:
         sec_assert(len); // zero len -> no index exists
         return len-1;
     }
-    
+
     int get_cursor() const { return cursorAbsPos; }
 
     SEC_loop *get_root_loop() const { return root_loop; }
@@ -835,7 +835,7 @@ public:
     void clear_last_drawed_cursor_position() { set_last_drawed_cursor_position(LineVector()); } // invalidate cursor_line
 
     SEC_base_part *find(int pos); // find part containing position pos
-    
+
     void announce_base_position(int base_pos, const Position& draw_pos);
     void clear_announced_positions();
 
@@ -849,8 +849,8 @@ public:
                          bool lineToAnnotated, bool linesToLeftRight, bool boxText,
                          AW_CL cd1, AW_CL cd2);
 
-    // draw a annotation next to a base (only works after paint()) 
-    void paintPosAnnotation(AW_device *device, int gc, size_t absPos, const char *text, bool lineToBase, bool boxText); 
+    // draw a annotation next to a base (only works after paint())
+    void paintPosAnnotation(AW_device *device, int gc, size_t absPos, const char *text, bool lineToBase, bool boxText);
 };
 
 
@@ -944,7 +944,7 @@ inline void SEC_loop::orientationChanged() { // recalc coordinates
     }
     else {
         // loop center is calculated by helix, that is why we recalc the helix here
-        
+
         SEC_helix *helix = get_fixpoint_helix();
 #if defined(CHECK_INTEGRITY)
         helix->check_integrity(CHECK_STRUCTURE);
@@ -994,5 +994,5 @@ inline bool are_adjacent_regions(const SEC_region *reg1, const SEC_region *reg2)
 
 #else
 #error SEC_root.hxx included twice
-#endif 
+#endif
 

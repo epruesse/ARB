@@ -214,7 +214,7 @@ void gb_link_entry(GBCONTAINER* father, GBDATA * gbd, long index_pos)
 
     /* the following code skips just-deleted index position, while searching for an unused
        index position. I'm unsure whether this works w/o problems (ralf 2004-Oct-08) */
-    
+
     while (GB_DATA_LIST_HEADER(father->d)[index_pos].flags.changed >= GB_DELETED) {
 #if defined(DEBUG)
         fprintf(stderr, "Warning: index_pos %li of father(%p) contains just-deleted entry -> using next index_pos..\n", index_pos, father);
@@ -462,7 +462,7 @@ void gb_delete_entry(GBDATA **gbd_ptr) {
         int          index;
         GBDATA      *gbd2;
         GBCONTAINER *gbc = ((GBCONTAINER *) gbd);
-        
+
         for (index = 0; index < gbc->d.nheader; index++) {
             if ((gbd2 = GBCONTAINER_ELEM(gbc, index))!=NULL) {
                 gb_delete_entry(&gbd2);
@@ -673,7 +673,7 @@ void gb_write_key(GBDATA *gbd, const char *s) {
     if (s) {
         GB_MAIN_TYPE *Main = GB_MAIN(gbd);
         new_index          = (int)GBS_read_hash(Main->key_2_index_hash, s);
-        
+
         if (!new_index) {                           // create new index
             new_index = (int)gb_create_key(Main, s, true);
         }
@@ -755,7 +755,7 @@ void gb_free_all_keys(GB_MAIN_TYPE *Main) {
 #endif // DEVEL_RALF
 char *gb_abort_entry(GBDATA *gbd) {
     int type = GB_TYPE(gbd);
-    
+
     GB_ARRAY_FLAGS(gbd).flags = gbd->flags.saved_flags;
 
     if (type != GB_DB) {
@@ -898,7 +898,7 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA * gbd, long mode, int *pson_crea
                 _GB_CHECK_IN_UNDO_MODIFY(Main, gbd);
             }
             // fall-through
-            
+
         default:                                    // means GB_SON_CHANGED + GB_NORMAL_CHANGE
 
             if (type == GB_DB)

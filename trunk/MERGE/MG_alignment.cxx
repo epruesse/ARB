@@ -175,7 +175,7 @@ void MG_copy_delete_rename(AW_window * aww, AW_CL db_nr, AW_CL dele)
 
     if (!error) error = GBT_rename_alignment(gbd, source, dest, (int)1, (int)dele);
     if (!error) error = GBT_add_new_changekey(gbd, GBS_global_string("%s/data", dest), GB_STRING);
-    
+
     error = GB_end_transaction(gbd, error);
     aww->hide_or_notify(error);
 
@@ -244,7 +244,7 @@ void MG_aa_create_alignment(AW_window *aww, AW_CL db_nr)
     char       *name         = aww->get_root()->awar(name_field)->read_string();
     GB_ERROR    error        = GB_begin_transaction(gbd);
     GBDATA     *gb_alignment = GBT_create_alignment(gbd, name, 0, 0, 0, "dna");
-    
+
     if (!gb_alignment) error = GB_await_error();
     GB_end_transaction_show_error(gbd, error, aw_message);
     free(name);
@@ -285,7 +285,7 @@ AW_window *MG_create_alignment_window(AW_root *root, AW_CL db_nr)
     GBDATA           *gbd = (db_nr == 1) ? GLOBAL_gb_merge : GLOBAL_gb_dest;
     AW_window_simple *aws = new AW_window_simple;
     char              header[80];
-    
+
     sprintf(header, "ALIGNMENT CONTROL %li", db_nr);
     aws->init(root, header, header);
     aws->load_xfig("merge/ad_align.fig");

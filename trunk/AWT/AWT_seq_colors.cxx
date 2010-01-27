@@ -34,7 +34,7 @@ static bool seq_color_awars_created = false;
 static const char *default_characters(int elem) {
     static char result[3] = "xX";
 
-    if (elem<26) { //  first 26 elements (0-25) are characters 
+    if (elem<26) { //  first 26 elements (0-25) are characters
         result[0] = 'a'+elem;
         result[1] = 'A'+elem;
     }
@@ -70,7 +70,7 @@ static void create_seq_color_awars(AW_root *awr, AWT_seq_colors *asc) {
 
     awr->awar_int(AWAR_SEQ_NAME_SELECTOR_NA, default_NUC_set, AW_ROOT_DEFAULT)->add_callback((AW_RCB)awt_awar_changed_cb, (AW_CL)asc, 0);
     awr->awar_int(AWAR_SEQ_NAME_SELECTOR_AA, default_AMI_set, AW_ROOT_DEFAULT)->add_callback((AW_RCB)awt_awar_changed_cb, (AW_CL)asc, 0);
-    
+
     for (int elem = 0; elem<AWT_SEQ_COLORS_MAX_ELEMS; ++elem) {
         const char *awar_name = GBS_global_string(AWAR_SEQ_NAME_STRINGS_TEMPLATE, elem);
         awr->awar_string(awar_name, default_characters(elem));
@@ -112,7 +112,7 @@ AW_window *create_seq_colors_window(AW_root *awr, AWT_seq_colors *asc) {
             aws->label("Select Colors For Amino Acids (AA) :");
             aws->create_toggle_field(AWAR_SEQ_NAME_SELECTOR_AA, 1);
         }
-        
+
         for (set = 0; set < AWT_SEQ_COLORS_MAX_SET; set++) {
             sprintf(buf, "S_%i", set);
             aws->insert_toggle(buf, " ", set);
@@ -123,7 +123,7 @@ AW_window *create_seq_colors_window(AW_root *awr, AWT_seq_colors *asc) {
 
     aws->label_length(6);
     aws->button_length(6);
- 
+
     for (int big_columns = 0; big_columns <= 1; ++big_columns) {
         aws->create_button(0, "Char");
         for (set = 0; set < AWT_SEQ_COLORS_MAX_SET; set++) {
@@ -213,7 +213,7 @@ void AWT_seq_colors::reload() {
                 for (i=0; sc[i]; i++) {
                     char_2_gc_aa[sc[i]] = val[1]-'0' + base_gc;
                     if (val[0] != '=') char_2_char_aa[sc[i]] = val[0];
-                }                    
+                }
             }
 
             free(val);
@@ -258,7 +258,7 @@ void AWT_reference::init() {
 void AWT_reference::expand_to_length(int len) {
     if (len > ref_len) {
         char *ref2 = (char *)GB_calloc(sizeof(char), len+1);
-        
+
         if (reference) {
             strcpy(ref2, reference);
             free(reference);

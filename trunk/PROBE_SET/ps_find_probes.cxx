@@ -207,9 +207,9 @@ unsigned long           __MAX_DEPTH;
 
 IDSet __PATH;
 
-// 
+//
 // globals for PS_descend
-// 
+//
 char *__PATH_IN_CANDIDATES;
 
 
@@ -217,7 +217,7 @@ unsigned long int PS_test_candidate_on_bitmap(float             *_filling_level 
                                                PS_BitMap_Counted *_map = 0) {
     //  returns number of locations in __MAP that would be switched
     //  from false to true by __PATH
-    
+
     // iterate over all IDs except path
     IDSetCIter        path_iter    = __PATH.begin();
     SpeciesID         next_path_ID = *path_iter;
@@ -369,7 +369,7 @@ void PS_find_probe_for_sets(const PS_NodePtr _ps_node, PS_CandidatePtr _candidat
 
 void PS_find_probes(const PS_NodePtr _root_node, const int _round, PS_CandidatePtr _candidate_parent, const float _filling_level) {
     //  scan PS_Node-tree for candidates to raise filling level of __MAP
-    
+
     __PROBES_COUNTER             = 0;
     __CANDIDATES_COUNTER         = 0;
     __SOURCE_MIN_MATCH_COUNT     = (__SOURCE_ID_SET.size() * (__MIN_PERCENTAGE_SET_MATCH - (_round * 5))) / 100.0;
@@ -406,11 +406,11 @@ void PS_find_probes(const PS_NodePtr _root_node, const int _round, PS_CandidateP
 
 void PS_calc_next_speciesid_sets() {
     //  scan __MAP to find sets of IDs that need differentiation most
-    
-    // 
+
+    //
     // 1. __SOURCE_ID_SET
     //    scan bitmap for species that need more matches
-    // 
+    //
     SpeciesID highest_count;
     SpeciesID lowest_count;
     float     threshold;
@@ -484,7 +484,7 @@ void PS_calc_next_speciesid_sets() {
 
 void PS_apply_path_to_bitmap(IDSet &_path, const bool _silent = false, PS_BitMap_Counted *_map = 0) {
     //  set true in __MAP for all combinations of IDs (in _path , not in _path)
-    
+
     // iterate over all IDs except path
     IDSetCIter        path_iter    = _path.begin();
     SpeciesID         next_path_ID = *path_iter;
@@ -541,7 +541,7 @@ void PS_apply_path_to_bitmap(IDSet &_path, const bool _silent = false, PS_BitMap
 
 float PS_filling_level(PS_CandidatePtr _candidate = 0) {
     //  returns filling level of __MAP
-    
+
     unsigned long trues      = __MAP->getCountOfTrues();
     float         percentage = ((float)trues / __BITS_IN_MAP)*100.0;
     if (_candidate) {
@@ -556,7 +556,7 @@ float PS_filling_level(PS_CandidatePtr _candidate = 0) {
 
 void PS_GNUPlot(const char *_out_prefix, const long _iteration, const IDSet &_path, const ID2IDSet &_noMatches) {
     //  generate data- and commandfiles for GNUPlot to display __MAP and its count_trues_per_id
-    
+
     char *buffer = (char *)malloc(4096);
     // open data file
     sprintf(buffer, "%s.%06li", _out_prefix, _iteration);
@@ -612,14 +612,14 @@ void PS_GNUPlot(const char *_out_prefix, const long _iteration, const IDSet &_pa
 PS_CandidatePtr PS_ascend(PS_CandidatePtr _last_candidate) {
     //  'remove' _last_candidate from __MAP by applying its parent's
     //  paths to a fresh __MAP
-    
-    // 
+
+    //
     // make fresh __MAP
-    // 
+    //
     __MAP->copy(__PRESET_MAP);
-    // 
+    //
     // apply paths of parent-candidates to __MAP
-    // 
+    //
     PS_CandidatePtr parent = _last_candidate->parent;
     while ((parent != 0) && (parent->path.size() > 0)) {
         PS_apply_path_to_bitmap(parent->path, true);
@@ -710,7 +710,7 @@ void PS_descend(PS_CandidatePtr _candidate_parent, const PS_NodePtr _root_node, 
 
 void PS_make_map_for_candidate(PS_CandidatePtr _candidate) {
     //  make __MAP for _candidate
-    
+
     if (_candidate->map) return; // if candidate already has its map return
     _candidate->map = new PS_BitMap_Counted(false, __MAX_ID+1);
     _candidate->map->copy(__PRESET_MAP);
@@ -741,7 +741,7 @@ void PS_get_leaf_candidates(PS_CandidatePtr  _candidate_parent,
 
 void PS_get_next_candidates_descend(PS_NodePtr _ps_node, PS_CandidateSet &_leaf_candidates) {
     //  scan PS_node-tree for next candidates for each of _leaf_candidates
-    
+
     SpeciesID id         = _ps_node->getNum();
     bool      has_probes = _ps_node->hasProbes();
 

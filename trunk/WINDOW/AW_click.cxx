@@ -151,7 +151,7 @@ int AW_device_click::text(int gc, const char *str, AW_pos x, AW_pos y, AW_pos al
         // vertical check mouse against textsurrounding
         bool   exact     = true;
         double best_dist = 0;
-        
+
         if (mouse_y > Y1) {     // outside text
             if (mouse_y > Y1+max_distance_text) return 0; // too far above
             exact = false;

@@ -18,7 +18,7 @@
 
 class AWTC_FIND_FAMILY_MEMBER {
     // list is sorted either by 'matches' or 'rel_matches' (descending)
-    // depending on 'rel_matches' paramater to findFamily() 
+    // depending on 'rel_matches' paramater to findFamily()
 public:
     AWTC_FIND_FAMILY_MEMBER *next;
 
@@ -37,7 +37,7 @@ enum FF_complement {
     FF_REVERSE            = 2,
     FF_REVERSE_COMPLEMENT = 4,
     FF_COMPLEMENT         = 8,
-    
+
     // do NOT change the order here w/o fixing ../PROBE/PT_family.cxx@FF_complement_dep
 };
 
@@ -46,7 +46,7 @@ class AWTC_FIND_FAMILY {
     GBDATA          *gb_main;
     long             com;
     long             locs;
-    
+
     void     delete_family_list();
     GB_ERROR init_communication();
     GB_ERROR open(char *servername);

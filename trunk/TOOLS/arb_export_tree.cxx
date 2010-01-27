@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
     else {
         GB_ERROR  error   = 0;
         GBDATA   *gb_main = GBT_open(":", "r", 0);
-        
+
         if (!gb_main) {
             error    = GB_await_error();
             exitcode = EXIT_FAILURE;

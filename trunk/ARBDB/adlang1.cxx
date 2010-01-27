@@ -56,7 +56,7 @@ struct gbl_param {
 
 static void gbl_new_param(struct gbl_param **pp, GB_TYPES type, void *vaddr, const char *param_name, const char *help_text) {
     struct gbl_param *gblp = (struct gbl_param *)GB_calloc(1, sizeof(struct gbl_param));
-    
+
     gblp->next = *pp;
     *pp         = gblp;
 
@@ -141,7 +141,7 @@ static GB_ERROR trace_params(int argc, const GBL *argv, struct gbl_param *ppara,
         for (para = ppara; para && !error; para = para->next) {
             int len = strlen(para->param_name);
 
-            if (strncmp(argument, para->param_name, len) == 0) { 
+            if (strncmp(argument, para->param_name, len) == 0) {
                 const char *value = argument+len; // set to start of value
 
                 if (para->type == GB_BIT) {
@@ -159,7 +159,7 @@ static GB_ERROR trace_params(int argc, const GBL *argv, struct gbl_param *ppara,
                     case GB_STRING:
                         *(const char **)para->varaddr  = value;
                         break;
-                        
+
                     case GB_INT:
                         gb_assert(sizeof(int) == sizeof(uint)); // assumed by GBL_PARAM_UINT
                         *(int *)para->varaddr = atoi(value);
@@ -571,7 +571,7 @@ static GB_ERROR gbl_do(GBL_command_arguments *args) {
     else {
         const char *name = args->vparam[0].str;
         const char *cmd  = 0;
-        
+
         if (definedCommands) cmd = (const char*)GBS_read_hash(definedCommands, name);
         if (!cmd) {
             error = GBS_global_string("Can't do undefined command '%s' - use define(%s, ...) first", name, name);
@@ -623,7 +623,7 @@ static GB_ERROR gbl_origin(GBL_command_arguments *args) {
         }
 
         if (!error && !gb_origin) error = GB_await_error();
-        
+
         if (!error) {
             char   *command = unEscapeString(args->vparam[0].str);
             int     i;
@@ -868,7 +868,7 @@ static GB_ERROR gbl_string_convert(GBL_command_arguments *args)
     else return GB_export_errorf("Unknown command '%s'", args->command);
 
     if (args->cparam!=0) return GBS_global_string("syntax: %s (no parameters)", args->command);
-    
+
     GBL_CHECK_FREE_PARAM(*args->coutput, args->cinput);
     for (i=0; i<args->cinput; i++) { // go through all in streams
         char *p              = strdup(args->vinput[i].str);
@@ -980,7 +980,7 @@ static GB_ERROR gbl_pretab(GBL_command_arguments *args)
             p = (char *)GB_calloc(sizeof(char), tab+1);
             for (j = 0; j<spaces; ++j) p[j] = ' ';
             strcpy(p+j, args->vinput[i].str);
-            
+
             PASS_2_OUT(args, p);
         }
     }
@@ -1690,7 +1690,7 @@ static struct cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *
                     GBDATA *gb_group_node;
 
                     if (gb_tree_entry) {
-                        GB_remove_all_callbacks_to(gb_tree_entry, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), flush_taxonomy_cb); 
+                        GB_remove_all_callbacks_to(gb_tree_entry, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), flush_taxonomy_cb);
                         GB_add_callback(gb_tree_entry, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), flush_taxonomy_cb, (int*)ct);
                     }
 
@@ -1784,7 +1784,7 @@ static const char *get_taxonomy(GBDATA *gb_species_or_group, const char *tree_na
                     }
                     else {
                         static char *parent = 0;
-                        
+
                         freeset(parent, get_taxonomy_string(tax_hash, parent_group, depth, error));
                         result = parent;
                     }
@@ -1897,7 +1897,7 @@ static GB_ERROR gbl_sequence(GBL_command_arguments *args) {
             }
             case GBT_ITEM_SPECIES: {
                 char *use = GBT_get_default_alignment(GB_get_root(args->gb_ref));
-                
+
                 if (!use) error = GB_await_error();
                 else {
                     GBDATA *gb_seq = GBT_read_sequence(args->gb_ref, use);
@@ -1948,7 +1948,7 @@ static GB_ERROR gbl_export_sequence(GBL_command_arguments *args) {
                     const char *seq = get_export_sequence(args->gb_ref, &len, &error);
 
                     gb_assert(error || seq);
-                    
+
                     if (seq) PASS_2_OUT(args, GB_strduplen(seq, len));
                 }
                 break;
@@ -2035,7 +2035,7 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args)
                     /* format string w/o gaps or numleft
                      * does word-wrapping at chars in nl
                      */
-                
+
                     // build wrap table
                     unsigned char isWrapChar[256];
                     memset(isWrapChar, 0, sizeof(isWrapChar));
@@ -2113,7 +2113,7 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args)
 
                     if (numleft) {
                         /* Warning: Be very careful, when you change format strings here!
-                         * currently all format strings result in '%u' or '%-##u' (where # are digits) 
+                         * currently all format strings result in '%u' or '%-##u' (where # are digits)
                          */
                         if (firsttab>0) {
                             char *firstFormat = GBS_global_string_copy("%%-%iu ", firsttab-1);
@@ -2206,7 +2206,7 @@ static char *gbl_read_seq_sai_or_species(const char *species, const char *sai, c
         GBDATA     *gb_item = 0;
         const char *what    = 0;
         const char *name    = 0;
-        
+
         if (species) {
             gb_item = GBT_find_species(gb_main, species);
             what    = "species";
@@ -2248,7 +2248,7 @@ static char *gbl_read_seq_sai_or_species(const char *species, const char *sai, c
                     }
                 }
 
-                if (!seq) error = GBS_global_string("%s '%s' has no (usable) data in alignment '%s'", what, name, ali);            
+                if (!seq) error = GBS_global_string("%s '%s' has no (usable) data in alignment '%s'", what, name, ali);
             }
             free(freeMe);
         }
@@ -2287,7 +2287,7 @@ typedef char* (*filter_fun)(const char *seq, const char *filter, size_t flen, vo
 
 static GB_ERROR apply_filters(GBL_command_arguments *args, struct common_filter_params *common, filter_fun filter_one, void *param) {
     GB_ERROR error = 0;
-    
+
     if (args->cinput==0) error = "No input stream";
     else {
         int methodCount = !!common->sai + !!common->species + !!common->pairwise + !!common->first;
@@ -2313,7 +2313,7 @@ static GB_ERROR apply_filters(GBL_command_arguments *args, struct common_filter_
                     else {
                         const char *in = args->vinput[i++].str;
                         gb_assert(in);
-                        
+
                         flen   = strlen(in);
                         filter = GB_strduplen(in, flen);
                     }
@@ -2383,7 +2383,7 @@ static GB_ERROR gbl_diff(GBL_command_arguments *args) {
     struct diff_params param;
     GBL_STRUCT_PARAM_CHAR(param, equalC,   "equal=",    '.', "symbol for equal characters");
     GBL_STRUCT_PARAM_CHAR(param, diffC,    "differ=",   0,   "symbol for diff characters (default: use char from input stream)");
-    
+
     GBL_TRACE_PARAMS(args->cparam, args->vparam);
     GBL_END_PARAMS;
 
@@ -2403,7 +2403,7 @@ struct filter_params { // used by gbl_filter and gbl_change_gc
     const char *include;
     const char *exclude;
 
-    // FP_MODIFY only: 
+    // FP_MODIFY only:
     int         change_pc;
     const char *change_to;
 };
@@ -2487,7 +2487,7 @@ static GB_ERROR gbl_filter(GBL_command_arguments *args) {
     GBL_STRUCT_PARAM_STRING(param, exclude, "exclude=", 0, "Exclude colums");
     GBL_STRUCT_PARAM_STRING(param, include, "include=", 0, "Include colums");
     param.function = FP_FILTER;
-    
+
     GBL_TRACE_PARAMS(args->cparam, args->vparam);
     GBL_END_PARAMS;
 
@@ -2512,7 +2512,7 @@ static GB_ERROR gbl_change_gc(GBL_command_arguments *args) {
     GBL_STRUCT_PARAM_INT   (param, change_pc, "change=",  0,    "percentage of changed columns (default: silently change nothing)");
     GBL_STRUCT_PARAM_STRING(param, change_to, "to=",      "GC", "change to one of this");
     param.function = FP_MODIFY;
-    
+
     GBL_TRACE_PARAMS(args->cparam, args->vparam);
     GBL_END_PARAMS;
 
@@ -2559,7 +2559,7 @@ static GB_ERROR gbl_exec(GBL_command_arguments *args)
             char *sys;
             {
                 struct GBS_strstruct *str = GBS_stropen(1000);
-                
+
                 GBS_strcat(str, args->vparam[0].str);
                 for (i=1; i<args->cparam; i++) {   // go through all in params
                     GBS_strcat(str, " \'");
@@ -2568,7 +2568,7 @@ static GB_ERROR gbl_exec(GBL_command_arguments *args)
                 }
                 GBS_strcat(str, " <");
                 GBS_strcat(str, inputname);
-                
+
                 sys = GBS_strclose(str);
             }
 

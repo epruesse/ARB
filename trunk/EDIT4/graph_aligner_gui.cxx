@@ -66,7 +66,7 @@ void create_sina_variables(AW_root *root, AW_default db1) {
     root->awar_int(AWAR_PT_SERVER, 0, db1);
     root->awar_string(GA_AWAR_SAI, "none", db1);
     root->awar_int(GA_AWAR_PROTECTION, 0, db1);
-    root->awar_string(GA_AWAR_LOGLEVEL, "3", db1); // @@@ change to int? 
+    root->awar_string(GA_AWAR_LOGLEVEL, "3", db1); // @@@ change to int?
     root->awar_int(GA_AWAR_TURN_CHECK, 1, db1);
     root->awar_int(GA_AWAR_REALIGN, 1, db1);
     root->awar_int(GA_AWAR_PTLOAD, 0, db1);
@@ -96,7 +96,7 @@ AW_active sina_mask(AW_root *root) {
         switch (exitstatus) {
         case EXIT_SUCCESS:
             break;
-            
+
         case EXIT_FAILURE:
             fail_reason = "Incompatible SINA and ARB versions";
             break;
@@ -225,7 +225,7 @@ static void sina_start(AW_window *window, AW_CL cd2) {
     // build command line
     {
         GBS_strstruct *cl = GBS_stropen(2000);
-    
+
         GBS_strcat(cl, root->awar(GA_AWAR_CMD)->read_char_pntr());
         GBS_strcat(cl, " -i :");
         GBS_strcat(cl, " --queue-size ");  GBS_intcat(cl,   root->awar(GA_AWAR_QSIZE)->read_int());

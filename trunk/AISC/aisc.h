@@ -97,7 +97,7 @@ public:
 
     void append(Token *tok) { next = tok; }
     void set_parent(TokenList *list) { aisc_assert(!parent); parent = list; }
-    
+
     const char *get_key() const { return key; }
 
     bool is_block() const { return isBlock; }

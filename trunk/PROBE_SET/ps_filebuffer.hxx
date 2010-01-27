@@ -123,17 +123,17 @@ public:
         put_ulong(_ui);
     }
     void get_uint(unsigned int &_ui) {
-        unsigned long int ul; 
+        unsigned long int ul;
         get_ulong(ul);
-        _ui=(unsigned int)ul; 
+        _ui=(unsigned int)ul;
     }
     void put_int(int  _i) {
         put_long(_i);
     }
     void get_int(int &_i) {
-        long int l; 
+        long int l;
         get_long(l);
-        _i=(int)l; 
+        _i=(int)l;
     }
 
 

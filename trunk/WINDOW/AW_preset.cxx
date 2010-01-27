@@ -861,7 +861,7 @@ static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, aw_gc_manager
                 gcmgr->set_font_size_handle(oms);
 
                 AW_MGC_awar_cb_struct *acs = gcmgr->get_font_change_parameter();
-                acs->gc_def_window         = aws; 
+                acs->gc_def_window         = aws;
 
                 aw_init_font_sizes(aw_root, acs, true); // does update_option_menu
             }
@@ -991,7 +991,7 @@ void AW_create_gc_color_groups_window(AW_window * /* aww */, AW_CL cl_aw_root, A
 
 AW_window *AW_create_gc_window_named(AW_root * aw_root, AW_gc_manager id_par, const char *wid, const char *windowname) {
     AW_window_simple * aws = new AW_window_simple;
-    
+
     aws->init(aw_root, wid, windowname);
 
     aw_gc_manager *gcmgr = (aw_gc_manager *)id_par;
@@ -1017,7 +1017,7 @@ AW_window *AW_create_gc_window_named(AW_root * aw_root, AW_gc_manager id_par, co
 
     aws->window_fit();
     return (AW_window *) aws;
-    
+
 }
 AW_window *AW_create_gc_window(AW_root * aw_root, AW_gc_manager id_par)
 {
@@ -1056,12 +1056,12 @@ void awt_xfig_font_create_filerequest(AW_window *aw) {
 
 AW_window *AWT_preset_window(AW_root *root)
 
-#else // IN_ARB_WINDOW : 
+#else // IN_ARB_WINDOW :
 
     AW_window *AW_preset_window(AW_root *root)
-    
+
 #endif
-    
+
 {
     AW_window_simple *aws = new AW_window_simple;
     const int   tabstop = 400;

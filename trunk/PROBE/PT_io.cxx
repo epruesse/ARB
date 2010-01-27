@@ -16,7 +16,7 @@
 #include <inline.h>
 
 int compress_data(char *probestring) {
-    /*! change a sequence with normal bases the PT_? format and delete all other signs */ 
+    /*! change a sequence with normal bases the PT_? format and delete all other signs */
     char    c;
     char    *src,
         *dest;
@@ -76,7 +76,7 @@ void probe_read_data_base(char *name)
 
     GB_set_verbose();
 #if defined(DEVEL_RALF)
-#warning gb_main should be closed    
+#warning gb_main should be closed
 #endif // DEVEL_RALF
     gb_main = GB_open(name, "r");
     if (!gb_main) {
@@ -135,7 +135,7 @@ int probe_compress_sequence(char *seq, int seqsize)
     if (!tab) {
         tab = (uchar *)malloc(256);
         memset(tab, PT_N, 256);
-        
+
         tab['A'] = tab['a'] = PT_A;
         tab['C'] = tab['c'] = PT_C;
         tab['G'] = tab['g'] = PT_G;
@@ -167,7 +167,7 @@ int probe_compress_sequence(char *seq, int seqsize)
 
 #ifdef ARB_64
     pt_assert(!((dest - seq) & 0xffffffff00000000));    // must fit into 32 bit
-#endif    
+#endif
 
     return dest-seq;
 }
@@ -190,7 +190,7 @@ static char *probe_read_string_append_point(GBDATA *gb_data, int *psize) {
 char *probe_read_alignment(int j, int *psize) {
     char   *buffer = 0;
     GBDATA *gb_ali = GB_entry(psg.data[j].gbd, psg.alignment_name);
-    
+
     if (gb_ali) {
         GBDATA *gb_data = GB_entry(gb_ali, "data");
         if (gb_data) buffer = probe_read_string_append_point(gb_data, psize);
@@ -222,7 +222,7 @@ void probe_read_alignments() {
 
     psg.data       = (probe_input_data *)calloc(sizeof(probe_input_data), count);
     psg.data_count = 0;
-    
+
     printf("Database contains %i species.\nPreparing sequence data:\n", count);
 
     int data_missing  = 0;
@@ -243,7 +243,7 @@ void probe_read_alignments() {
 
         pid.is_group = 1;
         pid.gbd      = gb_species;
-        
+
         GBDATA *gb_ali = GB_entry(gb_species, psg.alignment_name);
         if (gb_ali) {
             GBDATA *gb_data = GB_entry(gb_ali, "data");
@@ -260,7 +260,7 @@ void probe_read_alignments() {
 
                     pid.data = GB_memdup(data, size);
                     pid.size = size;
-                    
+
                     free(data);
                 }
 
@@ -276,7 +276,7 @@ void probe_read_alignments() {
 
     psg.data_count = count;
     GB_commit_transaction(psg.gb_main);
-    
+
     if (data_missing) {
         printf("\n%i species were ignored because of missing data.\n", data_missing);
     }
@@ -294,7 +294,7 @@ void PT_build_species_hash() {
     }
     unsigned int    max_size;
     max_size = 0;
-    for (i = 0; i < psg.data_count; i++) {  // get max sequence len 
+    for (i = 0; i < psg.data_count; i++) {  // get max sequence len
         max_size = std::max(max_size, (unsigned)(psg.data[i].size));
         psg.char_count += psg.data[i].size;
     }

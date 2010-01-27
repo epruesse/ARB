@@ -37,13 +37,13 @@ void OpenGLGraphics::SetOpenGLBackGroundColor() {
     g = (float) xcolor.green / 65535.0;
     b = (float) xcolor.blue / 65535.0;
 
-    // set OpenGL background color to the widget's background     
+    // set OpenGL background color to the widget's background
     glClearColor(r, g, b, 1);
 
     ApplicationBGColor = ColorRGBf(r, g, b);
 }
 
-// Converts the GC into RGB values 
+// Converts the GC into RGB values
 ColorRGBf OpenGLGraphics::ConvertGCtoRGB(int gc) {
     ColorRGBf clr = ColorRGBf(0, 0, 0);
     float r, g, b; r = g = b = 0.0;
@@ -60,7 +60,7 @@ ColorRGBf OpenGLGraphics::ConvertGCtoRGB(int gc) {
 
     Colormap colormap = DefaultColormapOfScreen(XtScreen(w));
     XQueryColor(XtDisplay(w), colormap, &xcolor);
-        
+
     r = (float) xcolor.red / 65535.0;
     g = (float) xcolor.green / 65535.0;
     b = (float) xcolor.blue / 65535.0;
@@ -75,7 +75,7 @@ void OpenGLGraphics::SetColor(int gc) {
     glColor4f(color.red, color.green, color.blue, 1);
 }
 
-// Converts the GC into RGB values and returns them 
+// Converts the GC into RGB values and returns them
 ColorRGBf OpenGLGraphics::GetColor(int gc) {
     ColorRGBf color = ConvertGCtoRGB(gc);
     return color;
@@ -95,7 +95,7 @@ void OpenGLGraphics::WinToScreenCoordinates(int x, int y, GLdouble *screenPos) {
                  projMatrix,
                  viewport,
                  // the next 3 parameters are the pointers to the final object coordinates.(double)
-                 &screenPos[0], &screenPos[1], &screenPos[2] 
+                 &screenPos[0], &screenPos[1], &screenPos[2]
                  );
 }
 
@@ -115,7 +115,7 @@ void OpenGLGraphics::init_font(GLuint base, char* f)
     if (display == 0) {
         fprintf(stderr, "XOpenDisplay() failed.  Exiting.\n");
         exit(-1);
-    } 
+    }
     else {
         /* Load the font. */
         font_info = XLoadQueryFont(display, f);
@@ -166,7 +166,7 @@ void OpenGLGraphics::PrintString(float x, float y, float z, char *s, void * /* f
 
 void  OpenGLGraphics::DrawBox(float x, float y,  float w, float h)
 {
-    glBegin(GL_QUADS);              
+    glBegin(GL_QUADS);
     glVertex2f(x-w/2, y-h/2);
     glVertex2f(x+w/2, y-h/2);
     glVertex2f(x+w/2, y+h/2);

@@ -3,7 +3,7 @@
 #endif
 
 #define SPECIES_NAME_LEN 10    // only for displaying speciesnames
- 
+
 extern char **filter_text;
 
 class PH_display {
@@ -13,21 +13,21 @@ class PH_display {
     long cell_width;                     // width and height of one cell
     long cell_height;
     long cell_offset;                    // don't write on base line of cell
-    long horiz_page_start;               // number of first element in this page 
-    long vert_page_start;          
+    long horiz_page_start;               // number of first element in this page
+    long vert_page_start;
     long vert_last_view_start;           // last value of scrollbars
     long horiz_last_view_start;
     long total_cells_horiz;
     long total_cells_vert;
-    display_type display_what;         
+    display_type display_what;
     long horiz_page_size;                // page size in cells (how many cells per page,
     long vert_page_size;                 // vertical and horizontal)
     long off_dx;                         // offset values for devic.shift_dx(y)
-    long off_dy; 
-          
+    long off_dy;
+
     void set_scrollbar_steps(AW_window *, long, long, long, long);
     void print();                        // print private parameters (debugging)
-          
+
 
 public:
     PH_display();                   // constructor
@@ -45,7 +45,7 @@ public:
 class PH_display_status
 {
     AW_device *device;
-    short font_width; 
+    short font_width;
     short font_height;
     AW_pos max_x;                           // screensize
     AW_pos max_y;
@@ -55,7 +55,7 @@ class PH_display_status
 
 public:
     PH_display_status(AW_device *);
-    
+
     void set_origin() { device->reset(); device->set_offset(AW::Vector(font_width, font_height)); }
     void newline() { x_pos = 0; y_pos+=(y_pos>=max_y) ? 0.0 : 1.0; }
     AW_pos get_size(char c) { return ((c=='x') ? max_x : max_y); }
@@ -67,7 +67,7 @@ public:
     AW_pos get_cursor_pos(char c) { return ((c=='x') ? x_pos : y_pos); }
     void set_tab() { tab_pos = x_pos; }
     AW_pos get_tab() { return tab_pos; }
-    
+
     void write(const char *);   // text to write
     void writePadded(const char *, size_t len);   // write text padded
     void write(long);           // converts long

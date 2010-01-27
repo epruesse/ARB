@@ -55,8 +55,8 @@ static void aisc_dump_voidPtr2(const char *where, const char *varname, void *var
 #define AISC_DUMP_SEP() fprintf(stderr, "-----------------------------\n")
 
 #else
-#define AISC_DUMP(where, type, var) 
-#define AISC_DUMP_SEP() 
+#define AISC_DUMP(where, type, var)
+#define AISC_DUMP_SEP()
 #endif /* DUMP_COMMUNICATION */
 
 /* -------------------------------------------------------------------------------- */

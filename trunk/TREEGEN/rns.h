@@ -63,7 +63,7 @@ typedef struct S_RNS
 
 #ifdef __cplusplus
 extern "C" {
-#endif    
+#endif
 
     RNS  createOriginRNS ();
     void freeRNS         (RNS rns);
@@ -73,6 +73,6 @@ extern "C" {
 
 #ifdef __cplusplus
 }
-#endif    
+#endif
 
 #endif

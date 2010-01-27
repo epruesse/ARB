@@ -60,7 +60,7 @@ typedef enum {
     AW_BYTE    = 2,
     AW_INT     = 3,
     AW_FLOAT   = 4,
-    AW_POINTER = 5, 
+    AW_POINTER = 5,
     AW_BITS    = 6,
     // 7 is unused
     AW_BYTES   = 8,
@@ -144,7 +144,7 @@ class aw_status_counter : Noncopyable {             // progress object
         autoUpdateEvery = overallCount <= 250 ? 1 : int(overallCount/250.0+0.5);
         nextAutoUpdate  = counter+autoUpdateEvery;
     }
-    
+
 public:
     aw_status_counter(int overallCount) : aborted(false) {
         init(overallCount);
@@ -272,7 +272,7 @@ public:
 
     // --------------
     //      Fonts
-    
+
     const char *font_2_ascii(AW_font font_nr);
     int         font_2_xfig(AW_font font_nr);
 
@@ -331,7 +331,7 @@ public:
     void run_callbacks();
     void update_target(AW_var_target*pntr);
     void update_targets();
-    
+
     AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, const char *var_value, double var_double_value, AW_default default_file, AW_root *root);
 
     AW_awar *add_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2);
@@ -383,7 +383,7 @@ public:
     GB_ERROR rewrite_int(long aw_int);
     GB_ERROR rewrite_float(double aw_double);
     GB_ERROR rewrite_pointer(void *aw_pointer);
-    
+
     GB_ERROR rewrite_as(char *aw_value) { return rewrite_as_string(aw_value); };
 
     GB_ERROR toggle_toggle();   /* switches between 1/0 */

@@ -268,7 +268,7 @@ public:
 
 //  ------------------------
 //      class awt_script
-//      
+//
 class awt_script : public awt_mask_item {
 private:
     std::string script;

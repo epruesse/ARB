@@ -21,7 +21,7 @@ void PS_print_paths(GBDATA *_pb_node) {
     GBDATA     *data   = GB_entry(_pb_node, "num");
     const char *buffer = GB_read_char_pntr(data);
     SpeciesID   id     = atoi(buffer);
-  
+
     // probe(s)
     GBDATA *pb_group = GB_entry(_pb_node, "group");
     if (!pb_group) {
@@ -69,7 +69,7 @@ int main(int argc,
 
     if (!error) {
         const char *input_DB_name = argv[1];
-    
+
         printf("Opening probe-group-database '%s'..", input_DB_name);
         pb_main = GB_open(input_DB_name, "rwcN");
         if (!pb_main) error = GB_await_error();

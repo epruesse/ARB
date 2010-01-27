@@ -46,7 +46,7 @@ static void awt_create_selection_list_on_ad_cb(GBDATA *, struct adawcbstruct *cb
 
 void awt_create_selection_list_on_ad(GBDATA *gb_main, AW_window *aws, const char *varname, const char *comm) {
     // Create selection lists on alignments
-    // 
+    //
     // if comm is set, then only insert alignments,
     // where 'comm' GBS_string_eval's the alignment type
 
@@ -271,7 +271,7 @@ AW_window *awt_popup_selection_list_on_pt_servers(AW_root *aw_root, const char *
 
 void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname, bool popup) {
     /* Create selection list for pt-servers */
-    
+
     if (popup) {
         AW_root *aw_root              = aws->get_root();
         char    *awar_buttontext_name = GBS_global_string_copy("/tmp/%s_BUTTON", varname);
@@ -379,7 +379,7 @@ void awt_create_selection_list_on_table_fields_cb(GBDATA *dummy, struct awt_sel_
 
 void awt_create_selection_list_on_table_fields(GBDATA *gb_main, AW_window *aws, const char *table_name, const char *varname) {
     // if tablename == 0 -> take fields from species table
-    
+
     AW_selection_list              *id;
     struct awt_sel_list_for_tables *cbs;
     GB_push_transaction(gb_main);
@@ -426,7 +426,7 @@ void awt_create_selection_list_on_configurations(GBDATA *gb_main, AW_window *aws
     GB_push_transaction(gb_main);
 
     id = aws->create_selection_list(varname, 0, "", 40, 15);
-    
+
     struct adawcbstruct *cbs = new adawcbstruct;
     memset(cbs, 0, sizeof(*cbs));
 
@@ -447,7 +447,7 @@ void awt_create_selection_list_on_configurations(GBDATA *gb_main, AW_window *aws
 char *awt_create_string_on_configurations(GBDATA *gb_main) {
     // returns semicolon-separated string containing configuration names
     // (or NULL if no configs exist)
-    
+
     GB_push_transaction(gb_main);
 
     int    config_count;
@@ -470,7 +470,7 @@ char *awt_create_string_on_configurations(GBDATA *gb_main) {
 
 void awt_create_selection_list_on_extendeds_update(GBDATA *dummy, void *cbsid) {
     /* update the selection box defined by awt_create_selection_list_on_extendeds
-     * 
+     *
      * useful only when filterproc is defined
      * (changes to SAIs will automatically callback this function)
      */
@@ -503,7 +503,7 @@ void awt_create_selection_list_on_extendeds_update(GBDATA *dummy, void *cbsid) {
             if (gb_group) {
                 const char *group          = GB_read_char_pntr(gb_group);
                 char       *group_and_name = GBS_global_string_copy("[%s] %s", group, name);
-                
+
                 cbs->aws->insert_selection(cbs->id, group_and_name, name);
                 free(group_and_name);
             }
@@ -529,7 +529,7 @@ void awt_create_selection_list_on_extendeds_update(GBDATA *dummy, void *cbsid) {
     }
     cbs->aws->insert_default_selection(cbs->id, "- none -", "none");
     cbs->aws->update_selection_list(cbs->id);
-    
+
 #if defined(DEVEL_RALF)
     printf("done  awt_create_selection_list_on_extendeds_update\n"); // @@@
 #endif // DEVEL_RALF
@@ -540,11 +540,11 @@ void *awt_create_selection_list_on_extendeds(GBDATA *gb_main, AW_window *aws, co
                                              bool add_sel_species)
 {
     /* Selection list for all extendeds (SAIs)
-     * 
+     *
      * if filter_proc is set then show only those items on which
      * filter_proc returns a string (string must be a heap copy)
      */
-    
+
     AW_selection_list           *id;
     struct awt_sel_list_for_sai *cbs;
 
@@ -641,7 +641,7 @@ AW_window *create_save_box_for_selection_lists(AW_root *aw_root, AW_CL selid)
     free(var_id);
 
     aws->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
-    
+
     return aws;
 }
 
@@ -684,7 +684,7 @@ AW_window *create_load_box_for_selection_lists(AW_root *aw_root, AW_CL selid)
     aws->create_button("LOAD", "LOAD", "L");
 
     awt_create_selection_box((AW_window *)aws, base_name);
-    
+
     aws->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
 
     return aws;
@@ -705,7 +705,7 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const ch
                                AW_window* (*create_popup)(AW_root *, AW_default))
 {
     /* general purpose file selection box
-     * 
+     *
      * You can either provide a normal 'callback' or a 'create_popup'-callback
      * (the not-used callback has to be NULL)
      */
@@ -752,7 +752,7 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const ch
     awt_create_selection_box(aws, base_name);
     free(base_name);
     aws->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
-    
+
     return aws;
 }
 
@@ -870,7 +870,7 @@ void AWT_edit(const char *path, awt_fileChanged_cb callback, AW_window *aww, GBD
                 // add timed callback tracking file change
                 AW_root *aw_root = aww->get_root();
                 aw_root->add_timed_callback(AWT_CHECK_FILE_TIMER, check_file_changed_cb, (AW_CL)cb_data);
-                cb_data          = 0; // now belongs to check_file_changed_cb 
+                cb_data          = 0; // now belongs to check_file_changed_cb
             }
         }
     }
@@ -894,7 +894,7 @@ void AWT_popup_select_species_field_window(AW_window *aww, AW_CL cl_awar_name, A
 
     if (!aws) {
         aws = new AW_window_simple;
-        
+
         aws->init(aw_root, "SELECT_SPECIES_FIELD", "Select species field");
         aws->load_xfig("awt/nds_sel.fig");
         aws->button_length(13);

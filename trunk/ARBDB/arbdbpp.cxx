@@ -44,7 +44,7 @@ GB_ERROR GB_transaction::close(GB_ERROR error) {
 #if defined(DEVEL_RALF)
 #warning check for exported error here (when GB_export_error gets redesigned)
 #endif // DEVEL_RALF
-    
+
     if (ta_open) {
         ta_err  = GB_end_transaction(ta_main, ta_err);
         ta_open = false;

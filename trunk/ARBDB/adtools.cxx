@@ -53,7 +53,7 @@ char *GBT_get_default_ref(GBDATA *gb_main) {
 
 GB_ERROR GBT_check_arb_file(const char *name) {
     /*! Checks whether a file is an arb file (or ':')
-     * 
+     *
      * @result NULL if it is an arb file
      */
     FILE *in;
@@ -172,14 +172,14 @@ char **GBT_scan_db(GBDATA *gbd, const char *datapath) {
      * @param gbd node where search starts
      * @param datapath if != NULL, only keys with prefix datapath are scanned and
      * the prefix is removed from the resulting key_names.
-     * 
+     *
      * @return a NULL terminated array of 'char*':
      * - each string is the path to a node beyond gbd
      * - every string exists only once
      * - the first character of a string is the type of the entry
      * - the strings are sorted alphabetically
      *
-     * caller has to free the result (e.g. using GBT_free_names()) 
+     * caller has to free the result (e.g. using GBT_free_names())
      *
      * Note: this function is incredibly slow when called from clients
      */
@@ -188,7 +188,7 @@ char **GBT_scan_db(GBDATA *gbd, const char *datapath) {
     scanner.hash_table = GBS_create_hash(1024, GB_MIND_CASE);
     scanner.buffer     = (char *)malloc(GBT_SUM_LEN);
     strcpy(scanner.buffer, "");
-    
+
     gbt_scan_db_rek(gbd, scanner.buffer, 0, &scanner);
 
     scanner.count = 0;
@@ -258,10 +258,10 @@ void GBT_install_message_handler(GBDATA *gb_main) {
 void GBT_message(GBDATA *gb_main, const char *msg) {
     /*! When called in client(or server) this causes the DB server to show the message.
      * Message is showed via GB_warning (which uses aw_message in GUIs)
-     * 
+     *
      * Note: The message is not shown before the transaction ends.
      * If the transaction is aborted, the message is never shown!
-     * 
+     *
      * see also : GB_warning()
      */
 
@@ -284,7 +284,7 @@ void GBT_message(GBDATA *gb_main, const char *msg) {
     }
 }
 
-/* ---------------------------------------- 
+/* ----------------------------------------
  * conversion between
  *
  * - char ** (heap-allocated array of heap-allocated char*'s)
@@ -324,7 +324,7 @@ char **GBT_split_string(const char *namelist, char separator, int *countPtr) {
     for (; count < sepCount; ++count) {
         sep = strchr(namelist, separator);
         gb_assert(sep);
-        
+
         result[count] = GB_strpartdup(namelist, sep-1);
         namelist      = sep+1;
     }
@@ -374,17 +374,17 @@ char *GBT_read_string(GBDATA *gb_container, const char *fieldpath) {
      *
      * @param gb_container where to start search for field
      * @param fieldpath relative path from gb_container
-     * 
+     *
      * @return
      * NULL in case of error (use GB_await_error()) or when field does not exist.
      * otherwise returns a heap copy.
-     * 
+     *
      * other functions return a pointer to a temporary variable (invalidated by next call)
      */
 
     GBDATA *gbd;
     char   *result = NULL;
-    
+
     GB_push_transaction(gb_container);
     gbd = GB_search(gb_container, fieldpath, GB_FIND);
     if (gbd) result = GB_read_string(gbd);
@@ -398,7 +398,7 @@ char *GBT_read_as_string(GBDATA *gb_container, const char *fieldpath) {
      * but
      * - field may be of any type (result gets converted to reasonable char*)
      */
-    
+
     GBDATA *gbd;
     char   *result = NULL;
 
@@ -418,7 +418,7 @@ const char *GBT_read_char_pntr(GBDATA *gb_container, const char *fieldpath) {
      *
      * Note: Under no circumstances you may modify the result!
      */
-    
+
     GBDATA     *gbd;
     const char *result = NULL;
 
@@ -475,7 +475,7 @@ NOT4PERL double *GBT_read_float(GBDATA *gb_container, const char *fieldpath) {
 
 char *GBT_readOrCreate_string(GBDATA *gb_container, const char *fieldpath, const char *default_value) {
     /*! like GBT_read_string(),
-     * 
+     *
      * but if field does not exist, it will be created and initialized with 'default_value'
      */
     GBDATA *gb_string;
@@ -490,7 +490,7 @@ char *GBT_readOrCreate_string(GBDATA *gb_container, const char *fieldpath, const
 
 const char *GBT_readOrCreate_char_pntr(GBDATA *gb_container, const char *fieldpath, const char *default_value) {
     /*! like GBT_read_char_pntr(),
-     * 
+     *
      * but if field does not exist, it will be created and initialized with 'default_value'
      */
 
@@ -506,7 +506,7 @@ const char *GBT_readOrCreate_char_pntr(GBDATA *gb_container, const char *fieldpa
 
 NOT4PERL long *GBT_readOrCreate_int(GBDATA *gb_container, const char *fieldpath, long default_value) {
     /*! like GBT_read_int(),
-     * 
+     *
      * but if field does not exist, it will be created and initialized with 'default_value'
      */
 
@@ -529,7 +529,7 @@ NOT4PERL double *GBT_readOrCreate_float(GBDATA *gb_container, const char *fieldp
      *
      * but if field does not exist, it will be created and initialized with 'default_value'
      */
-    
+
     GBDATA *gb_float;
     double *result = NULL;
 
@@ -778,7 +778,7 @@ GB_ERROR GBT_remote_awar(GBDATA *gb_main, const char *application, const char *a
     error = GB_end_transaction(gb_main, error);
 
     if (!error) error = gbt_wait_for_remote_action(gb_main, gb_awar, awars.awar_result);
-    
+
     return error;
 }
 
@@ -824,7 +824,7 @@ const char *GBT_remote_touch_awar(GBDATA *gb_main, const char *application, cons
 
 #define ARB_NOTIFICATIONS "tmp/notify"
 
-/* DB structure for notifications : 
+/* DB structure for notifications :
  *
  * ARB_NOTIFICATIONS/counter        GB_INT      counts used ids
  * ARB_NOTIFICATIONS/notify/id      GB_INT      id of notification
@@ -870,13 +870,13 @@ static int allocateNotificationID(GBDATA *gb_main, int *cb_info) {
     /* returns a unique notification ID
      * or 0 (use GB_get_error() in this case)
      */
-    
+
     int      id    = 0;
     GB_ERROR error = GB_push_transaction(gb_main);
 
     if (!error) {
         GBDATA *gb_notify = GB_search(gb_main, ARB_NOTIFICATIONS, GB_CREATE_CONTAINER);
-        
+
         if (gb_notify) {
             GBDATA *gb_counter = GB_searchOrCreate_int(gb_notify, "counter", 0);
 
@@ -891,12 +891,12 @@ static int allocateNotificationID(GBDATA *gb_main, int *cb_info) {
 
                     if (!error) {
                         GBDATA *gb_notification = GB_create_container(gb_notify, "notify");
-                        
+
                         if (gb_notification) {
                             error = GBT_write_int(gb_notification, "id", newid);
                             if (!error) {
                                 GBDATA *gb_message = GB_searchOrCreate_string(gb_notification, "message", "");
-                                
+
                                 if (gb_message) {
                                     error = GB_add_callback(gb_message, GB_CB_TYPE(GB_CB_CHANGED|GB_CB_DELETE), notify_cb, cb_info);
                                     if (!error) {

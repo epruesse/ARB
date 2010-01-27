@@ -314,7 +314,7 @@ static int FindType(char *name, int *dtype, int *ftype)
 void LoadData(char *filen) {
     /* LoadData():
      * Load a data set from the command line argument.
-     * 
+     *
      * Copyright (c) 1989, University of Illinois board of trustees.  All rights
      * reserved.  Written by Steven Smith at the Center for Prokaryote Genome
      * Analysis.  Design and implementation guidance by Dr. Gary Olsen and Dr.
@@ -326,7 +326,7 @@ void LoadData(char *filen) {
     FILE         *file;
     NA_Alignment *DataNaAln;
     char          temp[1024];
-    
+
     // Get file name, determine the file type, and away we go..
     if (Find2(filen, "gde") != 0)
         strcpy(FileName, filen);
@@ -656,7 +656,7 @@ void ReadCMask(const char *filename)
     char temp[GBUFSIZ];
     bool IGNORE_DASH = false;
     int  offset;
-    
+
     NA_Alignment *aln;
 
     size_t  j;
@@ -964,7 +964,7 @@ int WriteCMask(NA_Alignment *aln, char *filename, int method, int maskable)
                         if (getelem(&(seqs[mask]), kk+offset) == '1')
                             buf[k++] = (getcmask(&(seqs[j]), kk+offset));
                     // @@@ Looks like k might be one behind?
-                }                    
+                }
                 fprintf(file, "name:%s\noffset:%d\nlength:%d\nstart:\n",
                         seqs[j].short_name, seqs[j].offset, k);
 

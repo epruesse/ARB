@@ -152,7 +152,7 @@ int main(int argc, char **argv)
 
     if (!error) {
         error = GB_begin_transaction(gb_main);
-        
+
         if (!error && tree->is_leaf) error = "Cannot load tree (need at least 2 leafs)";
         if (!error) error                  = GBT_write_tree(gb_main, 0, tree_name, tree);
 
@@ -199,7 +199,7 @@ int main(int argc, char **argv)
 
     if (error) GBT_message(gb_main, error);
     else GBT_message(gb_main, GBS_global_string("Tree %s read into the database", tree_name));
-    
+
     GB_close(gb_main);
 
     free(comment_from_file);

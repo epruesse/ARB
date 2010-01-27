@@ -44,7 +44,7 @@ static char *awtc_fgets(char *s, int size, FILE *stream) {
 bool awtc_read_string_pair(FILE *in, char *&s1, char *&s2, size_t& lineNr) {
     // helper function to read import/export filters.
     // returns true if successfully read
-    // 
+    //
     // 's1' is set to a heap-copy of the first token on line
     // 's2' is set to a heap-copy of the rest of the line (or NULL if only one token is present)
     // 'lineNr' is incremented with each line read
@@ -88,7 +88,7 @@ bool awtc_read_string_pair(FILE *in, char *&s1, char *&s2, size_t& lineNr) {
                         }
                         s2 = strdup(e);
                     }
-                    else { 
+                    else {
                         s1 = strdup(p);
                     }
                 }
@@ -232,7 +232,7 @@ static GB_ERROR read_import_format(const char *fullfile, input_format_struct *if
 
         if (error) {
             error = GBS_global_string("%sin line %zi of %s '%s':\n%s",
-                                      include_error ? "included " : "", 
+                                      include_error ? "included " : "",
                                       lineNumber,
                                       included ? "file" : "import format",
                                       name_only(fullfile),
@@ -296,7 +296,7 @@ input_format_per_line::~input_format_per_line() {
     free(write);
     free(setvar);
     free(defined_at);
-    
+
     delete next;
 }
 
@@ -475,7 +475,7 @@ static int awtc_next_file() {
 
                 if (!dest_file_name) error = GB_await_error();
             }
-            
+
             if (!error) {
                 char *srt = GBS_global_string_copy("$<=%s:$>=%s", origin_file_name, dest_file_name);
                 char *sys = GBS_string_eval(awtcig.ifo->system, srt, 0);
@@ -722,7 +722,7 @@ static string expandSetVariables(const SetVariables& variables, const string& so
                     else {
                         error = GBS_global_string_copy("Variable '$%c' not set (missing SETVAR or SETGLOBAL?)", *p);
                     }
-                    
+
                     dest.append(GBS_global_string("<%s>", error));
                     GB_export_error(error);
                     free(error);
@@ -895,7 +895,7 @@ GB_ERROR awtc_read_data(char *ali_name, int security_write)
             char          *sequence;
             GBS_strstruct *strstruct = GBS_stropen(5000);
             int            linecnt;
-            
+
             for (linecnt = 0; ; linecnt++) {
                 if (linecnt || !ifo->read_this_sequence_line_too) {
                     p = awtc_read_line(0, ifo->sequencestart, ifo->sequenceend);
@@ -967,7 +967,7 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
     GB_ERROR error = 0;
 
     GB_change_my_security(GB_MAIN, 6, "");
-    
+
     GB_begin_transaction(GB_MAIN); // first transaction start
     char *ali_name;
     {
@@ -1069,7 +1069,7 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
             // import to non-genome ARB-db :
 
             {
-                // load import filter: 
+                // load import filter:
                 char *file = awr->awar(AWAR_FORM"/file_name")->read_string();
 
                 if (!strlen(file)) {
@@ -1112,7 +1112,7 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
             if (!error) {
                 aw_openstatus("Reading input files");
                 status_open = true;
-                
+
                 error = awtc_read_data(ali_name, ali_protection);
 
                 if (error) {
@@ -1135,7 +1135,7 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
                 fclose(awtcig.in);
                 awtcig.in = 0;
             }
-            
+
             GBT_free_names(awtcig.filenames);
             awtcig.filenames    = 0;
             awtcig.current_file = 0;
@@ -1145,7 +1145,7 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
     }
     free(ali_name);
 
-    bool call_func = true; // shall awtcig.func be called ? 
+    bool call_func = true; // shall awtcig.func be called ?
     if (error) {
         GB_abort_transaction(GB_MAIN);
 
@@ -1193,7 +1193,7 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
     }
 
     if (error) aw_message(error);
-    
+
     GB_change_my_security(GB_MAIN, 0, "");
 
     if (call_func) awtcig.func(awr, awtcig.cd1, awtcig.cd2);
@@ -1204,7 +1204,7 @@ class AliNameAndType {
 public:
     AliNameAndType(const char *ali_name, const char *ali_type) : name_(ali_name), type_(ali_type) {}
     AliNameAndType(const AliNameAndType& other) : name_(other.name_), type_(other.type_) {}
-    
+
     const char *name() const { return name_.c_str(); }
     const char *type() const { return type_.c_str(); }
 };

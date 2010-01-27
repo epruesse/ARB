@@ -169,7 +169,7 @@ void ali_prealigner_mask::delete_expensive(ALI_PREALIGNER_CONTEXT * context, ALI
             for (map_pos++;
                  map_pos <= map->last_base() && (!map->is_undefined(map_pos));
                  map_pos++) ;
-            
+
             end_seq    = map_pos - 1;
             end_mapped = map->position(end_seq);
 
@@ -428,7 +428,7 @@ void ALI_PREALIGNER::generate_solution(ALI_MAP * map) {
             for (end_seg  = start_seg;
                  end_seg <= map->last_base() && (!map->is_undefined(end_seg));
                  end_seg++) ;
-            
+
             end_seg--;
 
             seg_map = new ALI_MAP(start_seg,

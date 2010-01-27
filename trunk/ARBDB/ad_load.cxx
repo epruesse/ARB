@@ -321,9 +321,9 @@ char *getLine(Reader *r) {
 
 /* ----------------------------------------
  * ASCII format
- *  
+ *
  * Versions:
- * 
+ *
  * V0  - 20.6.95
  * V1  Full save
  * V2  Differential save
@@ -783,7 +783,7 @@ long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbd, long nitems, long version, l
     long          security;
     char         *buff;
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    
+
     struct gb_header_list_struct *header;
 
     DEBUG_DUMP_INDENTED(deep, GBS_global_string("Reading container with %li items", nitems));
@@ -1026,7 +1026,7 @@ long gb_read_bin(FILE *in, GBCONTAINER *gbd, int diff_file_allowed)
     long  nodecnt;
     long  first_free_key;
     char *buffer, *p;
-    
+
     GB_MAIN_TYPE *Main = GBCONTAINER_MAIN(gbd);
 
     while (c && c != EOF) {
@@ -1097,7 +1097,7 @@ long gb_read_bin(FILE *in, GBCONTAINER *gbd, int diff_file_allowed)
 
         if (k > GB_KEY_LEN_MAX) {
             printf("Warning: Key '%s' exceeds maximum keylength (%i)\n"
-                   "         Please do NOT create such long keys!\n", 
+                   "         Please do NOT create such long keys!\n",
                    buffer, GB_KEY_LEN_MAX);
         }
         if (p == buffer) break;
@@ -1108,12 +1108,12 @@ long gb_read_bin(FILE *in, GBCONTAINER *gbd, int diff_file_allowed)
             Main->keys[index].key           = 0;
             Main->keys[index].nref          = 0;
             Main->keys[index].next_free_key = first_free_key;
-            
+
             first_free_key = index;
         }
         else {
             long index = gb_create_key(Main, buffer, false);
-            
+
             Main->keys[index].nref = nrefs;
         }
     }
@@ -1290,7 +1290,7 @@ GB_MAIN_IDX gb_make_main_idx(GB_MAIN_TYPE *Main)
     }
 
     gb_assert((idx%GB_MAIN_ARRAY_SIZE) == idx);
-    
+
     gb_main_array[idx] = Main;
 
     return idx;
@@ -1334,7 +1334,7 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
      * - 's'     read only ???
      * - 'd' look for default (if create) in $ARBHOME/lib (any leading '.' is removed )
      * - 'D' look for default (if create) in $ARBHOME/lib/arb_default (any leading '.' is removed )
-     * - memory usage: 
+     * - memory usage:
      *   - 't' small memory usage
      *   - 'm' medium
      *   - 'b' big
@@ -1615,7 +1615,7 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
     }
 
     gb_assert(error || gbd);
-    
+
     if (error) {
         GB_export_error(error);
         gbd = 0;

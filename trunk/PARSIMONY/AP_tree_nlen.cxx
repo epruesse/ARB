@@ -72,7 +72,7 @@ void AP_tree_nlen::copy(AP_tree_nlen *tree)
         set_seq(tree->get_seq());
         // dangerous - no copy, just moves pointer
         // will result in undefined behavior
-        
+
         ap_assert(0); //  this will not work, but is only used in GA_genetic.
                       //  Use some kind of SmartPtr there!
     }
@@ -137,7 +137,7 @@ AP_tree_edge* AP_tree_nlen::edgeTo(const AP_tree_nlen *neighbour) const {
 
 AP_tree_edge* AP_tree_nlen::nextEdge(const AP_tree_edge *afterThatEdge) const {
     /*! @return one edge of 'this'
-     * 
+     *
      * @param afterThatEdge
      * - if == NULL -> returns the "first" edge (edge[0])
      * - otherwise -> returns the next edge following 'afterThatEdge' in the array edge[]
@@ -246,7 +246,7 @@ void AP_tree_nlen::insert(AP_tree_nlen *new_brother) {
 
     ASSERT_VALID_TREE(this);
     ASSERT_VALID_TREE(new_brother);
-    
+
     AP_tree_nlen *newBrother = dynamic_cast<AP_tree_nlen*>(new_brother);
     ap_assert(new_brother);
 
@@ -272,7 +272,7 @@ void AP_tree_nlen::insert(AP_tree_nlen *new_brother) {
 
         new AP_tree_edge(this, get_father());
         new AP_tree_edge(get_father(), newBrother);
-        
+
         ASSERT_VALID_TREE(get_father()->get_father());
     }
     else {                                          // insert at root
@@ -295,7 +295,7 @@ void AP_tree_nlen::insert(AP_tree_nlen *new_brother) {
             new AP_tree_edge(newBrother, rson);
             new AP_tree_edge(newBrother, lson);
         }
-        
+
         ASSERT_VALID_TREE(get_father());
     }
 }
@@ -322,7 +322,7 @@ void AP_tree_nlen::remove() {
 
     ASSERT_VALID_TREE(this);
 
-    ap_assert(father); // can't remove complete tree, 
+    ap_assert(father); // can't remove complete tree,
 
     ap_main->push_node(this, STRUCTURE);
     ap_main->push_node(oldBrother, STRUCTURE);
@@ -359,7 +359,7 @@ void AP_tree_nlen::remove() {
         ASSERT_VALID_TREE(oldRoot);
 
         if (oldBrother->is_leaf) {
-            //           root                                                                    
+            //           root
             //            oo
             //           o  o
             //          o    o
@@ -378,15 +378,15 @@ void AP_tree_nlen::remove() {
         else {
             //
             //           root
-            //            oo                                                              . 
+            //            oo                                                              .
             //           o  o                                     root (=oldBrother)
             //          o    o                                     oo                      .
             // oldBrother --- this          ----->                o  o                     .
             //       /\                                          o    o                    .
-            //      /  \                                     lson ----- rson                              
+            //      /  \                                     lson ----- rson
             //     /    \                                                                .
             //    lson  rson
-            // 
+            //
             AP_tree_nlen *lson = oldBrother->get_leftson();
             AP_tree_nlen *rson = oldBrother->get_rightson();
 
@@ -398,7 +398,7 @@ void AP_tree_nlen::remove() {
 
             edgeTo(oldBrother)->unlink();           // LOST_EDGE
             oldBrother->edgeTo(lson)->unlink();     // LOST_EDGE
-            
+
             oldEdge = oldBrother->edgeTo(rson)->unlink();
             AP_tree::remove();
             oldEdge->relink(lson, rson);
@@ -655,7 +655,7 @@ void AP_tree_nlen::moveTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
     else { // edgesChange==0
         AP_tree::moveTo(newBrother, rel_pos);
     }
-    
+
     ASSERT_VALID_TREE(this);
     ASSERT_VALID_TREE(rootNode());
 }
@@ -851,7 +851,7 @@ void AP_tree_nlen::parsimony_rek(char *mutPerSite) {
 
 AP_FLOAT AP_tree_nlen::costs(char *mutPerSite) {
     // returns costs of a tree ( = number of mutations)
-    
+
     ap_assert(get_tree_root()->get_seqTemplate());  // forgot to set_seqTemplate() ?  (previously returned 0.0 in this case)
     parsimony_rek(mutPerSite);
     return mutation_rate;

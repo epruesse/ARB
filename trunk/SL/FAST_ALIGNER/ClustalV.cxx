@@ -63,14 +63,14 @@ static Boolean is_weight;
 static int xover;
 static int little_pam;
 static int big_pam;
-static int pamo[(MAX_BASETYPES-1)*MAX_BASETYPES/2]; 
+static int pamo[(MAX_BASETYPES-1)*MAX_BASETYPES/2];
 static int pam[MAX_BASETYPES][MAX_BASETYPES];
 
 static int             pos1;
 static int             pos2;
 static int           **naa1;                 // naa1[basetype][position]     counts bases for each position of all sequences in group1
 static int           **naa2;                 // naa2[basetype][position]     same for group2
-static int           **naas;                 // 
+static int           **naas;                 //
 static int             seqlen_array[MAXN+1]; // length of all sequences
 static unsigned char  *seq_array[MAXN+1];    // the sequences
 static int             group[MAXN+1];        // group of sequence
@@ -97,7 +97,7 @@ static const int *gapsBeforePosition;
 
 #if defined(DEBUG)
 // #define MATRIX_DUMP
-// #define DISPLAY_DIFF 
+// #define DISPLAY_DIFF
 #endif // DEBUG
 
 #ifdef MATRIX_DUMP
@@ -382,7 +382,7 @@ static ARB_ERROR init_myers(long max_seq_length) {
         naa2[i] = (int *)ckalloc((max_seq_length+1)*sizeof(int), error);
         naas[i] = (int *)ckalloc((max_seq_length+1)*sizeof(int), error);
     }
-    return error; 
+    return error;
 }
 
 static void make_pamo(int nv)
@@ -642,7 +642,7 @@ static int diff(int v1, int v2, int v3, int v4, int st, int en)
         char *d;
 
         d = lstr(seq_array[1]+v1, v3);
-        
+
         (dnaflag ? n_decode : p_decode)(d-1, d-1, v3);
 
         for (int cnt=0; cnt<deep; cnt++) putchar(' ');

@@ -20,7 +20,7 @@ using namespace std;
 void AliView::create_real_view(const AP_filter *filter_, const AP_weights *weights_, const char *aliname_) {
     av_assert(!filter && !weights && !aliname);
     av_assert(filter_ && weights_ && aliname_);
-    
+
     filter  = new AP_filter(*filter_);
     weights = new AP_weights(*weights_);
     aliname = strdup(aliname_);

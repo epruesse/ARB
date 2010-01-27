@@ -33,7 +33,7 @@ typedef struct S_cfgLine
 
 #ifdef __cplusplus
 extern "C" {
-#endif    
+#endif
 
     /* Das 'keyword' des letzten Elements des Arrays 'line' muá NULL sein! */
 
@@ -46,6 +46,6 @@ extern "C" {
 
 #ifdef __cplusplus
 }
-#endif    
+#endif
 
 #endif

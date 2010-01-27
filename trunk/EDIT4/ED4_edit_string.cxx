@@ -391,7 +391,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                         seq_pos = new_seq_pos==seq_pos ? seq_len : new_seq_pos;
                     }
                     else {
-                        seq_pos = seq_len; 
+                        seq_pos = seq_len;
                     }
                     break;
                 }
@@ -590,7 +590,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                     }
                     break;
                 }
-                
+
             case AW_KEY_BACKSPACE:
                 h = seq_pos;
 

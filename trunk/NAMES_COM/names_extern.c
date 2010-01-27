@@ -16,7 +16,7 @@ int names_server_save();
 #ifdef __cplusplus
 extern "C" {
 #endif
-    
+
     int names_destroy_locs(AN_local *THIS) {
         /* called when client closes connection */
         destroy_AN_local(THIS);

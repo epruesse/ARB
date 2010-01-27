@@ -101,7 +101,7 @@ AW_window *MP_main(AW_root *root, AW_default def) {
 
     AW_window *aw = mp_main->get_mp_window()->get_window();
     aw->show();
-    
+
     return aw;
 }
 

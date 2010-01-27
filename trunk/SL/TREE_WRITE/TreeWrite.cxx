@@ -44,7 +44,7 @@ static void export_tree_label(const char *label, FILE *out, TREE_node_quoting qm
             if (c == used_quote || // replace used quote by an '_' if it appears inside label
                 (force_replace && strchr(problem_chars, c))) // replace all problematic characters if requested
             {
-                c = '_'; 
+                c = '_';
             }
             fputc(c, out);
         }
@@ -78,7 +78,7 @@ static const char *export_tree_node_print(GBDATA *gb_main, FILE *out, GBT_TREE *
     const char *buf;
 
     if (pretty) indentTo(indent, out);
-    
+
     if (tree->is_leaf) {
         if (node_gen) buf = node_gen->gen(gb_main, tree->gb_node, 0, tree, tree_name);
         else          buf = tree->name;
@@ -111,7 +111,7 @@ static const char *export_tree_node_print(GBDATA *gb_main, FILE *out, GBT_TREE *
                 char   *end = 0;
                 double  val = strtod(boot, &end);
                 tree_assert(end[0] == '%');        // otherwise sth strange is contained in remark_branch
-                
+
                 boot = GBS_global_string("%i", int(val+0.5));
             }
             bootstrap = strdup(boot);
@@ -165,7 +165,7 @@ static const char *export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tree, d
             if (boot[0] && boot[strlen(boot)-1] == '%') { // does remark_branch contain a bootstrap value ?
                 char   *end = 0;
                 double  val = strtod(boot, &end);
-                
+
                 tree_assert(end[0] == '%');          // otherwise sth strange is contained in remark_branch
                 bootstrap = GBS_global_string_copy("%i", int(val+0.5));
             }

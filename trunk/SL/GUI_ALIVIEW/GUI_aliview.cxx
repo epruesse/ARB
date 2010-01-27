@@ -45,7 +45,7 @@ AP_weights *WeightedFilter::create_weights(const AP_filter *filter) const {
         weights = new AP_weights(filter);
     }
     if (csp) csp->exit();
-    
+
     return weights;
 }
 

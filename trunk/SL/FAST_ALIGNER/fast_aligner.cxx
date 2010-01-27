@@ -58,7 +58,7 @@ enum FA_alignTarget {
 
 struct AlignParams {
     FA_report report;
-    bool      showGapsMessages;  // display messages about missing gaps in master? 
+    bool      showGapsMessages;  // display messages about missing gaps in master?
     int       firstColumn;       // first column of range to be aligned (0..len-1)
     int       lastColumn;        // last column of range to be aligned (0..len-1, -1 = (len-1))
 };
@@ -120,7 +120,7 @@ extern GBDATA *GLOBAL_gb_main;
 static IslandHopping *island_hopper = 0;
 static GB_alignment_type global_alignmentType = GB_AT_UNKNOWN; // type of actually aligned sequence
 
-static int currentSequenceNumber;    // used for counter 
+static int currentSequenceNumber;    // used for counter
 static int overallSequenceNumber;
 
 // --------------------------------------------------------------------------------
@@ -306,7 +306,7 @@ inline int UnalignedBasesList::add_and_recalc_positions(UnalignedBasesList *ubl,
             int cs = oldSequence->compPosition(toCorrect->start);   // compressed positions in oldSequence = compressed positions in newSequence
             int ce = oldSequence->compPosition(toCorrect->end);
 
-            bases += ce-cs+1; 
+            bases += ce-cs+1;
 
 #ifdef DEBUG
             printf("add_and_recalc_positions %i/%i -> ", toCorrect->start, toCorrect->end);
@@ -1108,7 +1108,7 @@ static ARB_ERROR writeStringToAlignment(GBDATA *gb_species, GB_CSTR alignment, G
 
 // --------------------------------------------------------------------------------
 
- 
+
 static ARB_ERROR alignCompactedTo(AWTC_CompactedSubSequence     *toAlignSequence,
                                   const AWTC_FastSearchSequence *alignTo,
                                   int                            max_seq_length,
@@ -1237,7 +1237,7 @@ static ARB_ERROR alignCompactedTo(AWTC_CompactedSubSequence     *toAlignSequence
                 }
             }
             GB_pop_my_security(gb_toAlign);
-        
+
             if (!error && ali_params.report != FA_NO_REPORT) {
                 // create temp-entry for slave containing alignment quality:
 
@@ -1586,7 +1586,7 @@ static ARB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
         }
         else {
             // assuming relatives are sorted! (nearest to farthest)
-            
+
             // get data pointers
             typedef GBDATA *GBDATAP;
             GBDATAP *gb_reference = new GBDATAP[relSearch.maxRelatives];
@@ -1722,7 +1722,7 @@ static ARB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
                                     delete toAlignPart;
                                 }
 
-                                awtc_assert(unaligned_positions_for_next <= unaligned_positions); // means: number of unaligned positions has increased by use of relative 
+                                awtc_assert(unaligned_positions_for_next <= unaligned_positions); // means: number of unaligned positions has increased by use of relative
                                 if (unaligned_positions_for_next<unaligned_positions) {
                                     appendNameAndUsedBasePositions(&used_relatives, gb_reference[i], unaligned_positions-unaligned_positions_for_next);
                                     unaligned_positions = unaligned_positions_for_next;
@@ -2224,7 +2224,7 @@ void AWTC_start_faligning(AW_window *aw, AW_CL cd2) {
                 break;
         }
     }
-    
+
     int firstColumn = 0;
     int lastColumn = -1;
 
@@ -2254,7 +2254,7 @@ void AWTC_start_faligning(AW_window *aw, AW_CL cd2) {
             default: { awtc_assert(0); break; }
         }
     }
-    
+
     if (!error) {
         char *editor_alignment = 0;
         {
@@ -2298,13 +2298,13 @@ void AWTC_start_faligning(AW_window *aw, AW_CL cd2) {
                                  toalign,
                                  get_first_selected_species,
                                  get_next_selected_species,
-                             
+
                                  reference,
                                  get_consensus ? cd->get_group_consensus : NULL,
-                                 relSearch, 
-                             
+                                 relSearch,
+
                                  static_cast<FA_turn>(root->awar(FA_AWAR_MIRROR)->read_int()),
-                                 ali_params, 
+                                 ali_params,
                                  root->awar(FA_AWAR_PROTECTION)->read_int()
                                  );
             aw_closestatus();
@@ -2334,13 +2334,13 @@ void AWTC_create_faligner_variables(AW_root *root, AW_default db1)
     root->awar_int(FA_AWAR_TO_ALIGN,  FA_CURRENT,        db1);
     root->awar_int(FA_AWAR_REFERENCE, FA_REF_CONSENSUS,  db1);
     root->awar_int(FA_AWAR_RANGE,     FA_WHOLE_SEQUENCE, db1);
-    
+
 #if defined(DEVEL_RALF)
     root->awar_int(FA_AWAR_PROTECTION, 0, db1)->write_int(6);
 #else
     root->awar_int(FA_AWAR_PROTECTION, 0, db1)->write_int(0);
 #endif
-    
+
     root->awar_int(FA_AWAR_AROUND,             25,                  db1);
     root->awar_int(FA_AWAR_MIRROR,             FA_TURN_INTERACTIVE, db1);
     root->awar_int(FA_AWAR_REPORT,             FA_NO_REPORT,        db1);
@@ -2491,7 +2491,7 @@ AW_window *AWTC_create_family_settings_window(AW_root *root) {
 
     if (!aws) {
         aws = new AW_window_simple;
-        
+
         aws->init(root, "FAMILY_PARAMS", "Family search paramaters");
         aws->load_xfig("awtc/family_settings.fig");
 
@@ -2586,7 +2586,7 @@ AW_window *AWTC_create_faligner_window(AW_root *root, AW_CL cd2)
     aws->at("relSett");
     aws->callback(AW_POPUP, (AW_CL)AWTC_create_family_settings_window, (AW_CL)root);
     aws->create_button("Settings", "Settings", "");
-    
+
     // Range
 
     aws->label_length(10);

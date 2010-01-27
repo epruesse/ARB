@@ -88,7 +88,7 @@ class AWT_graphic_tree : public AWT_graphic {
     // variables - tree compatibility
 
     AP_tree * tree_proto;
-    bool link_to_database; // link on load ? 
+    bool link_to_database; // link on load ?
 
     double y_pos;
     double list_tree_ruler_y;
@@ -130,7 +130,7 @@ class AWT_graphic_tree : public AWT_graphic {
     void NT_scalebox(int gc, double x, double y, double width);
     void NT_emptybox(int gc, double x, double y, double width);
     void NT_rotbox(int gc, double x, double y, double width);
-    
+
     const char *show_ruler(AW_device *device, int gc);
     void        rot_show_triangle(AW_device *device);
 

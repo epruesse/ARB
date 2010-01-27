@@ -423,7 +423,7 @@ int WriteGen(NA_Alignment *aln, char *filename, int method, int maskable)
 void SetTime(void *b)
 {
     ARB_TIME *a=(ARB_TIME*)b;
-    struct tm *tim; 
+    struct tm *tim;
     time_t clock;
 
     clock = time(0);

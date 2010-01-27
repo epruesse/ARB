@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
     else {
         char *in  = argv[1];
         char *out = NULL;
-    
+
         const char *readflags = "rw";
         const char *saveflags = "a";
 
@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
 
         GB_close(gb_main);
     }
-    
+
     if (error) {
         fprintf(stderr, "arb_2_ascii: Error: %s\n", error);
         return EXIT_FAILURE;

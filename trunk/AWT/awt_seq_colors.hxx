@@ -49,7 +49,7 @@ class AWT_reference {
     int     ref_len;
     char   *reference;
     char   *init_species_name;
-    
+
 public:
     AWT_reference(GBDATA *gb_main);
     ~AWT_reference();

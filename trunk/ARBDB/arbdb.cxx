@@ -86,7 +86,7 @@ double GB_atof(const char *str) {
 
     double res     = 0;
 #if defined(DEBUG)
-    GB_ERROR error = 
+    GB_ERROR error =
 #endif // DEBUG
         GB_safe_atof(str, &res);
 
@@ -302,7 +302,7 @@ void GB_init_gb() {
         gb_local->write_buffer  = (char *)malloc((size_t)gb_local->write_bufsize);
         gb_local->write_ptr     = gb_local->write_buffer;
         gb_local->write_free    = gb_local->write_bufsize;
-        
+
         gb_local->bituncompress = gb_build_uncompress_tree(GB_BIT_compress_data, 1, 0);
         gb_local->bitcompress   = gb_build_compress_list(GB_BIT_compress_data, 1, &(gb_local->bc_size));
 
@@ -325,7 +325,7 @@ GB_ERROR gb_unfold(GBCONTAINER *gbd, long deep, int index_pos) {
 
     GB_ERROR  error;
     GBDATA   *gb2;
-    
+
     struct gb_header_list_struct *header = GB_DATA_LIST_HEADER(gbd->d);
 
     if (!gbd->flags2.folded_container) return 0;
@@ -433,7 +433,7 @@ void GB_close(GBDATA *gbd) {
 
         /* ARBDB applications using awars easily crash in gb_do_callback_list(),
          * if AWARs are still bound to elements in the closed database.
-         * 
+         *
          * To unlink awars call AW_root::unlink_awars_from_DB().
          * If that doesn't help, test Main->data (often aka as GLOBAL_gb_main)
          */
@@ -491,7 +491,7 @@ long GB_read_memuse(GBDATA *gbd) {
 GB_CSTR GB_read_pntr(GBDATA *gbd) {
     int   type = GB_TYPE(gbd);
     char *data = GB_GETDATA(gbd);
-    
+
     if (data) {
         if (gbd->flags.compressed_data) {   // uncompressed data return pntr to database entry
             char *ca = gb_read_cache(gbd);
@@ -499,7 +499,7 @@ GB_CSTR GB_read_pntr(GBDATA *gbd) {
             if (!ca) {
                 long        size = GB_UNCOMPRESSED_SIZE(gbd, type);
                 const char *da   = gb_uncompress_data(gbd, data, size);
-                
+
                 if (da) {
                     ca = gb_alloc_cache_index(gbd, size);
                     memcpy(ca, da, size);
@@ -791,7 +791,7 @@ GB_ERROR GB_write_byte(GBDATA *gbd, int i)
 GB_ERROR GB_write_int(GBDATA *gbd, long i) {
 #if defined(ARB64)
 #if defined(DEVEL_RALF)
-#warning GB_write_int should be GB_ERROR GB_write_int(GBDATA *gbd,int32_t i) 
+#warning GB_write_int should be GB_ERROR GB_write_int(GBDATA *gbd,int32_t i)
 #endif // DEVEL_RALF
 #endif // ARB64
 
@@ -877,7 +877,7 @@ GB_ERROR GB_write_pntr(GBDATA *gbd, const char *s, long bytes_size, long stored_
 {
     // 'bytes_size' is the size of what 's' points to.
     // 'stored_size' is the size-information written into the DB
-    // 
+    //
     // e.g. for strings : stored_size = bytes_size-1, cause stored_size is string len,
     //                    but bytes_size includes zero byte.
 
@@ -923,7 +923,7 @@ GB_ERROR GB_write_string(GBDATA *gbd, const char *s)
     long size;
     GB_TEST_WRITE(gbd, GB_STRING, "GB_write_string");
     GB_TEST_NON_BUFFER(s, "GB_write_string");        // compress would destroy the other buffer
-    
+
     if (!s) s = "";
     size      = strlen(s);
 
@@ -957,7 +957,7 @@ GB_ERROR GB_write_link(GBDATA *gbd, const char *s)
     long size;
     GB_TEST_WRITE(gbd, GB_STRING, "GB_write_link");
     GB_TEST_NON_BUFFER(s, "GB_write_link");          // compress would destroy the other buffer
-    
+
     if (!s) s = "";
     size      = strlen(s);
 
@@ -1005,7 +1005,7 @@ GB_ERROR GB_write_ints(GBDATA *gbd, const GB_UINT4 *i, long size)
         char     *buf2 = GB_give_other_buffer((char *)i, size<<2);
         GB_UINT4 *s    = (GB_UINT4 *)i;
         GB_UINT4 *d    = (GB_UINT4 *)buf2;
-        
+
         for (j=size; j; j--) {
             *(d++) = htonl(*(s++));
         }
@@ -1343,7 +1343,7 @@ GBDATA *GB_create(GBDATA *father, const char *key, GB_TYPES type) {
      * @return
      * - created DB entry
      * - NULL on failure (error is exported then)
-     * 
+     *
      * @see GB_create_container()
      */
     GBDATA *gbd;
@@ -1380,9 +1380,9 @@ GBDATA *GB_create(GBDATA *father, const char *key, GB_TYPES type) {
     gbd = gb_make_entry((GBCONTAINER *)father, key, -1, 0, type);
     gb_touch_header(GB_FATHER(gbd));
     gb_touch_entry(gbd, GB_CREATED);
-    
+
     gb_assert(GB_ARRAY_FLAGS(gbd).changed < GB_DELETED); // happens sometimes -> needs debugging
-    
+
     return gbd;
 }
 
@@ -1398,7 +1398,7 @@ GBDATA *GB_create_container(GBDATA *father, const char *key) {
      *
      * @see GB_create()
      */
-    
+
     GBCONTAINER *gbd;
     if (GB_check_key(key)) {
         GB_print_error();
@@ -1469,7 +1469,7 @@ GB_ERROR gb_delete_force(GBDATA *source)    // delete always
 //      Copy data
 
 #if defined(DEVEL_RALF)
-#warning replace GB_copy with GB_copy_with_protection after release 
+#warning replace GB_copy with GB_copy_with_protection after release
 #endif // DEVEL_RALF
 
 GB_ERROR GB_copy(GBDATA *dest, GBDATA *source) {
@@ -1552,7 +1552,7 @@ GB_ERROR GB_copy_with_protection(GBDATA *dest, GBDATA *source, bool copy_all_pro
 
                 if (!gb_d) error = GB_await_error();
                 else error       = GB_copy_with_protection(gb_d, gb_p, copy_all_protections);
-                
+
                 if (error) break;
             }
 
@@ -1583,7 +1583,7 @@ static char *gb_stpcpy(char *dest, const char *source)
 }
 
 char* GB_get_subfields(GBDATA *gbd) {
-    /*! Get all subfield names 
+    /*! Get all subfield names
      *
      * @return all subfields of 'gbd' as ';'-separated heap-copy
      * (first and last char of result is a ';')
@@ -1720,7 +1720,7 @@ bool GB_is_temporary(GBDATA *gbd) {
 
 bool GB_in_temporary_branch(GBDATA *gbd) {
     /*! @return true, if 'gbd' is member of a temporary subtree,
-     * i.e. if GB_is_temporary(itself or any parent)  
+     * i.e. if GB_is_temporary(itself or any parent)
      */
 
     if (GB_is_temporary(gbd)) return true;
@@ -1751,7 +1751,7 @@ GB_ERROR GB_pop_local_transaction(GBDATA *gbd) {
     /*! Stops a read only transaction.
      * Be sure that all data is cached!
      */
-     
+
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     if (Main->transaction>0) {
         return GB_pop_transaction(gbd);
@@ -1774,7 +1774,7 @@ GB_ERROR GB_push_transaction(GBDATA *gbd) {
      *     }
      *     return GB_end_transaction(gbd, error);
      * }
-     *       
+     *
      * void myFunc() {
      *     GB_ERROR error = GB_push_transaction(gbd);
      *     if (!error) {
@@ -1822,7 +1822,7 @@ GB_ERROR GB_begin_transaction(GBDATA *gbd) {
      * but fails if there is already an transaction running.
      * @see GB_commit_transaction() and GB_abort_transaction()
      */
-    
+
     GB_ERROR      error;
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     gbd                = (GBDATA *)Main->data;
@@ -1848,7 +1848,7 @@ GB_ERROR GB_begin_transaction(GBDATA *gbd) {
      * cb that change the db are no problem, because it's the beginning of a ta
      */
     gb_do_callback_list(Main);
-    
+
     Main->clock ++;
     return 0;
 }
@@ -1859,7 +1859,7 @@ GB_ERROR gb_init_transaction(GBCONTAINER *gbd)      // the first transaction eve
     GB_ERROR      error;
 
     Main->transaction = 1;
-    
+
     error = gbcmc_init_transaction(Main->data);
     if (!error) Main->clock ++;
 
@@ -1889,7 +1889,7 @@ GB_ERROR GB_abort_transaction(GBDATA *gbd)
      * If a nested transactions got aborted,
      * committing a surrounding transaction will silently abort it as well.
      */
-    
+
     GB_ERROR error;
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     gbd = (GBDATA *)Main->data;
@@ -1922,7 +1922,7 @@ GB_ERROR GB_commit_transaction(GBDATA *gbd) {
      *
      * in case of nested transactions, this is equal to GB_pop_transaction()
      */
-    
+
     GB_ERROR      error = 0;
     GB_MAIN_TYPE *Main  = GB_MAIN(gbd);
     GB_CHANGE     flag;
@@ -1981,7 +1981,7 @@ GB_ERROR GB_commit_transaction(GBDATA *gbd) {
 }
 
 GB_ERROR GB_end_transaction(GBDATA *gbd, GB_ERROR error) {
-    /*! abort or commit transaction 
+    /*! abort or commit transaction
      *
      * @ param error
      * - if NULL commit transaction
@@ -2105,7 +2105,7 @@ GB_ERROR gb_do_callback_list(GB_MAIN_TYPE *Main) {
         gb_del_ref_gb_transaction_save(cbl->old);
         gbm_free_mem((char *)cbl, sizeof(struct gb_callback_list), GBM_CB_INDEX);
     }
-    
+
     Main->cbld_last = NULL;
     Main->cbld      = NULL;
 
@@ -2122,7 +2122,7 @@ GB_ERROR gb_do_callback_list(GB_MAIN_TYPE *Main) {
     g_b_old_main   = NULL;
     Main->cbl_last = NULL;
     Main->cbl      = NULL;
-    
+
     return 0;
 }
 
@@ -2242,11 +2242,11 @@ char *GB_get_callback_info(GBDATA *gbd) {
 
 GB_ERROR GB_add_priority_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata, int priority) {
     /* Adds a callback to a DB entry.
-     * 
+     *
      * Callbacks with smaller priority values get executed before bigger priority values.
      *
      * Be careful when writing GB_CB_DELETE callbacks, there is a severe restriction:
-     * 
+     *
      * - the DB element may already be freed. The pointer is still pointing to the original
      *   location, so you can use it to identify the DB element, but you cannot dereference
      *   it under all circumstances.
@@ -2430,14 +2430,14 @@ int GB_testlocal(GBDATA *gbd) {
      */
     if (GB_TYPE(gbd) != GB_DB) return 1;            // all non-containers are available
     if (GB_MAIN(gbd)->local_mode) return 1;         // everything is available in server
-    if (gbd->flags2.folded_container) return 0; 
+    if (gbd->flags2.folded_container) return 0;
     return 1;
 }
 
 int GB_nsons(GBDATA *gbd) {
     /*! return number of child entries
      *
-     * @@@ does this work in clients ? 
+     * @@@ does this work in clients ?
      */
     if (GB_TYPE(gbd) != GB_DB) return 0;
     return ((GBCONTAINER *)gbd)->d.size;
@@ -2718,7 +2718,7 @@ int GB_info(GBDATA *gbd)
 
 long GB_number_of_subentries(GBDATA *gbd)
 {
-    long subentries = -1; 
+    long subentries = -1;
 
     if (GB_TYPE(gbd) == GB_DB) {
         GBCONTAINER *gbc = (GBCONTAINER*)gbd;

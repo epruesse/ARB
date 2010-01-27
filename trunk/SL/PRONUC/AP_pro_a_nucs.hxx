@@ -60,7 +60,7 @@ class AWT_translator;
 
 class AWT_distance_meter {
     AWT_PDP *dist_[64];         // sets of proteins with special distance [64 > max_aa
-    
+
     long transform07[256];       // like dist.patd[1] but for bits 0-7
     long transform815[256];
     long transform1623[256];
@@ -81,10 +81,10 @@ private:
     int                code_nr;
     GB_HASH           *t2i_hash;         // hash table trin >> singlepro
     arb_r2a_pro_2_nuc *s2str[256];       // singlecode protein >> dna ...
-    long              *pro_2_bitset;     // 
+    long              *pro_2_bitset;     //
     char              *nuc_2_bitset;     // dna to
     unsigned char      index_2_spro[64]; // 64 > max_aa
-    
+
     int realmax_aa;             // number of real AA + stop codon
     int max_aa;                 // plus ambiguous codes
 
@@ -121,7 +121,7 @@ int AWT_default_protein_type(GBDATA *gb_main = 0); // returns protein code selec
 
 AWT_translator *AWT_get_translator(int code_nr);              // use explicit protein code
 AWT_translator *AWT_get_user_translator(GBDATA *gb_main = 0); // uses user setting for protein code from AWAR_PROTEIN_TYPE
-// AWAR_PROTEIN_TYPE has to exist; the first call of AWT_get_user_translator needs 'gb_main'!=0 
+// AWAR_PROTEIN_TYPE has to exist; the first call of AWT_get_user_translator needs 'gb_main'!=0
 
 #else
 #error AP_pro_a_nucs.hxx included twice

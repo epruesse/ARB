@@ -20,7 +20,7 @@ CL *aisc_calc_blocks(CL * co, CL * afor, CL * aif, int up) {
     CL *ofor;
     CL *aelse;
     CL *anext;
-    
+
     while (co) {
         while (co && (!co->command)) {
             gl->pc = co;

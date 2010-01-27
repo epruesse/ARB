@@ -106,7 +106,7 @@ static void gb_dump_huffmann_list(struct gb_compress_list *bc, const char *prefi
         gb_dump_huffmann_list(bc->son[0], my_prefix);
         my_prefix[len]   = '1';
         gb_dump_huffmann_list(bc->son[1], my_prefix);
-        free(my_prefix);        
+        free(my_prefix);
     }
     else {
         printf("%s  value=%i (='%c') count=%li\n", prefix, bc->value, (char)bc->value, bc->count);
@@ -121,7 +121,7 @@ struct gb_compress_tree *gb_build_uncompress_tree(const unsigned char *data, lon
     long                     bits, mask, i;
     const unsigned  char    *p;
     GB_ERROR                 error;
-    
+
     Main = (struct gb_compress_tree *)gbm_get_mem(sizeof(struct gb_compress_tree), GBM_CB_INDEX);
     for (p=data; *p; p+=3+short_flag) {
         bits = p[0];
@@ -195,7 +195,7 @@ struct gb_compress_list *gb_build_compress_list(const unsigned char *data, long 
     int                      i, maxi, bitc;
     int                      val, bits, mask, value;
     const unsigned  char    *p;
-    
+
     enum gb_compress_list_commands command = (enum gb_compress_list_commands)0;
 
     maxi = 0;
@@ -328,7 +328,7 @@ GB_BUFFER gb_uncompress_bits(const char *source, long size, char c_0, char c_1)
 
 
 /* Runlength encoding produces..
- * 
+ *
  * from source: string
  * dest:   [command]+
  *
@@ -549,7 +549,7 @@ GB_BUFFER gb_compress_huffmann(GB_CBUFFER source, long size, long *msize, int la
         long restcount;
 
         long vali[2] = { 0, 0 };
-        
+
         struct gb_compress_list *element1 = 0;
         struct gb_compress_list *element2 = 0;
         struct gb_compress_list *bc       = 0;
@@ -726,7 +726,7 @@ static GB_BUFFER gb_uncompress_equal_bytes(GB_CBUFFER s, long size, long *new_si
 
 static GB_BUFFER gb_uncompress_huffmann(GB_CBUFFER source, long maxsize, long *new_size) {
     struct gb_compress_tree *un_tree, *t;
-    
+
     char *data[1];
     char *p, *buffer;
     long  bitp;
@@ -786,7 +786,7 @@ GB_BUFFER gb_uncompress_longs_old(GB_CBUFFER source, long size, long *new_size)
 
         gb_assert(*new_size == size);
         res = p = GB_give_other_buffer(data, size);
-        
+
         gb_assert(sizeof(GB_UINT4) == 4);
 
         mi = (GB_UINT4)(size / 4);
@@ -794,7 +794,7 @@ GB_BUFFER gb_uncompress_longs_old(GB_CBUFFER source, long size, long *new_size)
         s1 = data + 1 * mi;
         s2 = data + 2 * mi;
         s3 = data + 3 * mi;
-        
+
         for (i = 0; i < mi; i++) {
             *(p++) = *(s0++);
             *(p++) = *(s1++);
@@ -822,7 +822,7 @@ static GB_BUFFER gb_uncompress_longs(GB_CBUFFER data, long size, long *new_size)
     s1 = data + 1 * mi;
     s2 = data + 2 * mi;
     s3 = data + 3 * mi;
-    
+
     for (i = 0; i < mi; i++) {
         *(p++) = *(s0++);
         *(p++) = *(s1++);
@@ -893,7 +893,7 @@ bool GB_is_dictionary_compressed(GBDATA *gbd) {
                 if (c == GB_COMPRESSION_DICTIONARY) {
                     return true;
                 }
-                
+
                 if (c == GB_COMPRESSION_HUFFMANN) {
                     data = gb_uncompress_huffmann(data, size + GB_COMPRESSION_TAGS_SIZE_MAX, &new_size);
                 }
@@ -926,11 +926,11 @@ bool GB_is_dictionary_compressed(GBDATA *gbd) {
 
 GB_BUFFER gb_compress_data(GBDATA *gbd, int key, GB_CBUFFER source, long size, long *msize, GB_COMPRESSION_MASK max_compr, bool pre_compressed) {
     // Compress a data string.
-    // 
+    //
     // Returns:
     // - NULL if no compression makes sense
     // - otherwise returns compressed data and stores its size in 'msize'
-    
+
     char *data;
     int   last_flag = GB_COMPRESSION_LAST;
 

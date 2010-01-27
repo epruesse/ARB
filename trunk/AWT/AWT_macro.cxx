@@ -85,7 +85,7 @@ static void awt_edit_macro_cb(AW_window *aww) {
 
 AW_window *awt_open_macro_window(AW_root *aw_root, const char *application_id) {
     static AW_window_simple *aws = 0;
-    
+
     if (!aws) {
         aws = new AW_window_simple;
         aws->init(aw_root, "MACROS", "MACROS");

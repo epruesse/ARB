@@ -17,13 +17,13 @@ void TREE_scale(GBT_TREE *tree, double length_scale, double bootstrap_scale) {
     if (tree->leftson) {
         if (tree->leftlen <= TREE_DEFLEN_MARKER) tree->leftlen  = TREE_DEFLEN;
         else                                     tree->leftlen *= length_scale;
-        
+
         TREE_scale(tree->leftson, length_scale, bootstrap_scale);
     }
     if (tree->rightson) {
-        if (tree->rightlen <= TREE_DEFLEN_MARKER) tree->rightlen  = TREE_DEFLEN; 
+        if (tree->rightlen <= TREE_DEFLEN_MARKER) tree->rightlen  = TREE_DEFLEN;
         else                                      tree->rightlen *= length_scale;
-        
+
         TREE_scale(tree->rightson, length_scale, bootstrap_scale);
     }
 
@@ -48,7 +48,7 @@ static char *dated_info(const char *info) {
     if (time(&date) != -1) {
         char *dstr = ctime(&date);
         char *nl   = strchr(dstr, '\n');
-        
+
         if (nl) nl[0] = 0; // cut off LF
 
         dated_info = GBS_global_string_copy("%s: %s", dstr, info);

@@ -36,7 +36,7 @@ class XString : Noncopyable {
     bool initialized;           // true if initialize called
 
     void set_length(size_t len); // dealloc internal array if length grows
-    
+
     void addX(size_t abs_pos) { // add an X at pos
         initialized   = false;
         sec_assert(abs_pos<x_string_len);
@@ -55,7 +55,7 @@ public:
         return x_count;
     }
     size_t getLength() const { return x_string_len; }
-    
+
     size_t getAbsPos(int x) const; // gets absolute position of a 'x'
     int getXleftOf(size_t abspos) const; // gets the number of 'x's left of sequence pos
 

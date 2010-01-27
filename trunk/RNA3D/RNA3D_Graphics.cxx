@@ -20,11 +20,11 @@ AW_gc_manager RNA3D_Graphics::init_devices(AW_window *aww, AW_device *device, AW
                       (AW_CL)ntw,
                       cd2,
                       false,
-                      "#000000", 
-                      "+-Foreground$#FFFFFF",     "+-MOLECULE Skeleton$#606060", "-Mapped Species$#FF0000", 
-                      "+-BASE: Deletion$#FF0000", "+-BASE: Insertion$#00FF00",   "-BASE: Positions$#FFAA00",  
-                      "+-BASE: Helix$#55AAFF",    "+-BASE: Unpaired$#AAFF00",    "-BASE: Non-Helix$#FFAA55",  
-                      "+-HELIX$#FF0000",          "+-HELIX Skeleton$#606060",    "-HELIX MidPoint$#FFFFFF",   
+                      "#000000",
+                      "+-Foreground$#FFFFFF",     "+-MOLECULE Skeleton$#606060", "-Mapped Species$#FF0000",
+                      "+-BASE: Deletion$#FF0000", "+-BASE: Insertion$#00FF00",   "-BASE: Positions$#FFAA00",
+                      "+-BASE: Helix$#55AAFF",    "+-BASE: Unpaired$#AAFF00",    "-BASE: Non-Helix$#FFAA55",
+                      "+-HELIX$#FF0000",          "+-HELIX Skeleton$#606060",    "-HELIX MidPoint$#FFFFFF",
 
                       // colors used to Paint search patterns
                       // (do not change the names of these gcs)

@@ -259,7 +259,7 @@ GB_HASH *GBS_create_hash(long user_size, GB_CASE case_sens) {
     hs->nelem     = 0;
     hs->case_sens = case_sens;
     hs->entries   = (struct gbs_hash_entry **)GB_calloc(sizeof(struct gbs_hash_entry *), size);
-    hs->freefun   = NULL; 
+    hs->freefun   = NULL;
 
     return hs;
 }
@@ -327,7 +327,7 @@ static long gbs_hash_to_strstruct(const char *key, long val, void *cd_out) {
     const char           *p;
     int                   c;
     struct GBS_strstruct *out = (struct GBS_strstruct*)cd_out;
-    
+
     for (p = key; (c=*p);  p++) {
         GBS_chrcat(out, c);
         if (c==':') GBS_chrcat(out, c);
@@ -447,7 +447,7 @@ static long write_hash(GB_HASH *hs, char *key, bool copyKey, long val) {
 
     if (e) {
         oldval = e->val;
-        
+
         if (!val) delete_from_list(hs, i, e); // (val == 0 is not stored, cause 0 is the default value)
         else      e->val = val;
 
@@ -512,7 +512,7 @@ long GBS_incr_hash(GB_HASH *hs, const char *key) {
 double GBS_hash_mean_access_costs(GB_HASH *hs) {
     /* returns the mean access costs of the hash [1.0 .. inf[
      * 1.0 is optimal
-     * 2.0 means: hash speed is 50% (1/2.0)  
+     * 2.0 means: hash speed is 50% (1/2.0)
     */
     double mean_access = 1.0;
 
@@ -538,7 +538,7 @@ double GBS_hash_mean_access_costs(GB_HASH *hs) {
 void GBS_free_hash_entries(GB_HASH *hs)
 {
     long i;
-    long e2;    
+    long e2;
     struct gbs_hash_entry *e, *ee;
 
     e2 = hs->size;
@@ -751,7 +751,7 @@ const char *GBS_hash_next_element_that(GB_HASH *hs, const char *last_key, bool (
     if (last_key) {
         e = find_hash_entry(hs, last_key, &i);
         if (!e) return NULL;
-        
+
         e = e->next;       // use next entry after 'last_key'
         if (!e) i++;
     }

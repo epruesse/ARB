@@ -22,7 +22,7 @@
 
 class AW_font_group {
     AW_font_limits max_letter_limits[AW_FONT_GROUP_MAX_GC+1];
-    
+
     int max_width; // maximas of all registered fonts
     int max_ascent;
     int max_descent;
@@ -39,7 +39,7 @@ public:
     int get_descent(int gc) const { return max_letter_limits[gc].descent; }
     int get_height (int gc) const { return max_letter_limits[gc].height; }
 
-    // maximas of all registered fonts: 
+    // maximas of all registered fonts:
     int get_max_width  () const { return max_width; }
     int get_max_ascent () const { return max_ascent; }
     int get_max_descent() const { return max_descent; }

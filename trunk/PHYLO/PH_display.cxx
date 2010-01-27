@@ -91,7 +91,7 @@ void PH_display::initialize (display_type dpyt)
     {
         case NONE:
             return;
-            
+
         case species_dpy:
         case filter_dpy:
             cell_width  = aw_fi->max_letter.width;
@@ -100,7 +100,7 @@ void PH_display::initialize (display_type dpyt)
 
             off_dx = SPECIES_NAME_LEN*aw_fi->max_letter.width+20;
             off_dy = cell_height*3;
-            
+
             total_cells_horiz = PHDATA::ROOT->get_seq_len();
             total_cells_vert  = PHDATA::ROOT->nentries;
             set_scrollbar_steps(PH_used_windows::windowList->phylo_main_window, cell_width, cell_height, 50, 50);
@@ -113,7 +113,7 @@ void PH_display::initialize (display_type dpyt)
 
             off_dx = SPECIES_NAME_LEN*aw_fi->max_letter.width+20;
             off_dy = 3*cell_height;
-            
+
             total_cells_horiz = PHDATA::ROOT->nentries;
             total_cells_vert  = PHDATA::ROOT->nentries;
             set_scrollbar_steps(PH_used_windows::windowList->phylo_main_window, cell_width, cell_height, 50, 50);
@@ -229,7 +229,7 @@ void PH_display::display()       // draw area
                 GBDATA     *gb_seq_data = PHDATA::ROOT->hash_elements[y]->gb_species_data_ptr;
                 const char *seq_data    = GB_read_char_pntr(gb_seq_data);
                 long        seq_len     = GB_read_count(gb_seq_data);
-                
+
                 device->text(0,
                              (horiz_page_start >= seq_len) ? "" : (seq_data+horiz_page_start),
                              0, ypos*cell_height-cell_offset,
@@ -490,7 +490,7 @@ void display_status(AW_window *dummy, AW_CL cl_awroot, AW_CL cd2)  // bottom are
     {
         static PH_display_status phds(PH_used_windows::windowList->phylo_main_window->get_device (AW_BOTTOM_AREA));
         phds.clear();
-        
+
         const int LABEL_LEN = 21;
 
         switch (PH_display::ph_display->displayed())
@@ -501,7 +501,7 @@ void display_status(AW_window *dummy, AW_CL cl_awroot, AW_CL cd2)  // bottom are
                 phds.set_cursor((phds.get_size('x')/2)-10, 0);
                 phds.write("STATUS REPORT FILTER");
                 phds.newline();
-                
+
                 phds.writePadded("Start at column:", LABEL_LEN);
                 phds.write((long)aw_root->awar("phyl/filter/startcol")->read_int());
                 phds.move_x(15);
@@ -538,7 +538,7 @@ void display_status(AW_window *dummy, AW_CL cl_awroot, AW_CL cd2)  // bottom are
                 phds.set_cursor((phds.get_size('x')/2)-10, 0);
                 phds.write("STATUS REPORT MATRIX");
                 break;
-                
+
             default: printf("\nstatus: unknown display type (maybe not implemented yet)\n");
         }
     }

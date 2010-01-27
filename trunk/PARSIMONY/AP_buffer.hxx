@@ -18,13 +18,13 @@
 
 /* AP_STACK        dynamischer Stack fuer void *
  * AP_LIST         allgemeine doppelt verketteten Liste
- * 
+ *
  * -- Pufferstrukturen
- * 
+ *
  * AP_tree_buffer  Struktur die im AP_tree gepuffert wird
- * 
+ *
  * -- spezielle stacks ( um casts zu vermeiden )
- * 
+ *
  * AP_tree_stack   Stack fuer AP_tree_buffer *
  * AP_main_stack   Stack fuer AP_tree *
  * AP_main_list    Liste fuer AP_main_buffer
@@ -111,7 +111,7 @@ struct AP_tree_buffer {
     GBDATA        *gb_node;
 
     int distance;                                   // distance to border (pushed with STRUCTURE!)
-    
+
     // data from edges:
     AP_tree_edge      *edge[3];
     int                edgeIndex[3];

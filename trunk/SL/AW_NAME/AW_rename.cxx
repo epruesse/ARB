@@ -46,7 +46,7 @@ const char *AW_get_nameserver_addid(GBDATA *gb_main) {
 GB_ERROR AW_select_nameserver(GBDATA *gb_main, GBDATA *gb_other_main) {
     // if entry AWAR_NAMESERVER_ADDID isn't defined yet, try to detect a reasonable value
     // from arb_tcp.dat. Ask user if multiple servers are defined.
-    // 
+    //
     // if gb_other_main is defined try to use value from there.
 
     const char *addid   = get_addid(gb_main);
@@ -109,7 +109,7 @@ GB_ERROR AW_select_nameserver(GBDATA *gb_main, GBDATA *gb_other_main) {
 
                     free(buttons);
                 }
-                
+
                 for (int c = 0; c<serverCount; c++) free(fieldNames[c]);
                 free(fieldNames);
             }
@@ -272,7 +272,7 @@ public:
             link = 0;
         }
     }
-    
+
     void persistence(bool persist) {
         if (persist) {
             ++persistent;
@@ -327,7 +327,7 @@ GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const ch
         aw_status("Connecting to name server");
         aw_status((double)0);
     }
-    
+
     GB_ERROR err = name_server.connect(gb_main);
     if (err) return err;
 
@@ -392,7 +392,7 @@ GB_ERROR AWTC_recreate_name(GBDATA *gb_species, bool update_status) {
         char *full_name = gb_full_name ? GB_read_string  (gb_full_name) : strdup("");
         char *acc       = gb_acc ?      GB_read_string   (gb_acc)      : strdup("");
         char *addid     = gb_addfield ? GB_read_as_string(gb_addfield) : strdup("");
-        
+
         int   deleted = 0;
         char *shrt    = 0;
 
@@ -474,7 +474,7 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status, bool *isWarningPtr)
 {
     GB_ERROR err       = name_server.connect(gb_main);
     bool     isWarning = false;
-    
+
     if (!err) {
         err = GBT_begin_rename_session(gb_main, 1);
         if (!err) {
@@ -505,7 +505,7 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status, bool *isWarningPtr)
                 char *name      = gb_name      ? GB_read_string   (gb_name)     : strdup("");
                 char *full_name = gb_full_name ? GB_read_string   (gb_full_name) : strdup("");
                 char *acc       = gb_acc       ? GB_read_string   (gb_acc)      : strdup("");
-                char *addid     = gb_addfield  ? GB_read_as_string(gb_addfield) : strdup(""); // empty value will be set to default by nameserver 
+                char *addid     = gb_addfield  ? GB_read_as_string(gb_addfield) : strdup(""); // empty value will be set to default by nameserver
 
                 char *shrt = 0;
 
@@ -624,7 +624,7 @@ UniqueNameDetector::~UniqueNameDetector() { GBS_free_hash(hash); }
 
 static char *makeUniqueShortName(const char *prefix, UniqueNameDetector& existing) {
     // generates a non-existing short-name (name starts with prefix)
-    // 
+    //
     // returns NULL if it fails
 
     char *result     = 0;
@@ -661,7 +661,7 @@ static char *makeUniqueShortName(const char *prefix, UniqueNameDetector& existin
 char *AWTC_makeUniqueShortName(const char *prefix, UniqueNameDetector& existingNames) {
     // generates a unique species name from prefix
     // (prefix will be fillup with zero digits and then shortened down to first char)
-    // 
+    //
     // returns NULL if failed (and exports error)
 
     int  len = strlen(prefix);

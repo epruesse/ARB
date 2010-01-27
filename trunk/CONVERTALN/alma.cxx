@@ -88,7 +88,7 @@ void alma_to_macke(char *inf, char *outf)
             /* no warning messages for next loop */
             warning_out = 0;
         }
-    } 
+    }
     warning_out = 1;            /* resume warning messages */
 
 #ifdef log
@@ -133,7 +133,7 @@ void alma_to_genbank(char *inf, char *outf)
             init_macke();
             init_genbank();
         }
-    } 
+    }
 
 #ifdef log
     fprintf(stderr, "Total %d sequences have been processed\n", data.numofseq);

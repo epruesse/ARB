@@ -93,7 +93,7 @@ char *SEC_foldedHelixList_to_xstring(const char *foldedHelices, size_t xlength, 
     memset(xstring, '.', xlength);
     xstring[xlength] = 0;
 
-    sec_assert(error == 0); 
+    sec_assert(error == 0);
     error = 0;
 
     while (!error) {
@@ -177,7 +177,7 @@ char *old_decode_xstring_rel_helix(GB_CSTR rel_helix, size_t xlength, const BI_h
                         if (flag==0) break; // eos
 
                         sec_assert(0); // illegal character
-                        
+
                         break;
                     }
                     if (pos==lastpos) {

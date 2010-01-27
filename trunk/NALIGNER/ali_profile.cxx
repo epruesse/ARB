@@ -160,7 +160,7 @@ void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list, A
         l[i] = prof_len + 1;
 
     // allocate memory for costs
-    
+
     base_weights  = (float (**) [4])   CALLOC((unsigned int) prof_len, sizeof(float [4]));
     sub_costs     = (float (**) [6])   CALLOC((unsigned int) prof_len, sizeof(float [6]));
     binding_costs = (float (*) [5][5]) CALLOC((unsigned int) 5,        sizeof(float [5]));
@@ -168,7 +168,7 @@ void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list, A
     lmax          = (unsigned long *)  CALLOC((unsigned int) prof_len, sizeof(unsigned long));
     gap_costs     = (float ***)        CALLOC((unsigned int) prof_len, sizeof(float *));
     gap_percents  = (float***)         CALLOC((unsigned int) prof_len, sizeof(float *));
-    
+
     if (binding_costs == 0 || sub_costs == 0 || lmin == 0 || lmax == 0 ||
         gap_costs == 0 || gap_percents == 0 || base_weights == 0) {
         ali_fatal_error("Out of memory");

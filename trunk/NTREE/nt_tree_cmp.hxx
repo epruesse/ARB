@@ -23,7 +23,7 @@ class AWT_species_set_root {
     long              nsets;
     AWT_species_set **sets;
     int               diff_bits[256];
-    
+
 public:
     long     mstatus;
     long     status;            // temporary variables for status
@@ -34,7 +34,7 @@ public:
     // REAL PUBLIC
     AWT_species_set_root(GBDATA *gb_main, long nspecies);
     ~AWT_species_set_root();
-    
+
     void             add(const char *species_name);                                                // max nspecies
     void             add(AWT_species_set *set);                                                    // max 2 * nspecies !!!
     AWT_species_set *search(AWT_species_set *set, long *best_cost);

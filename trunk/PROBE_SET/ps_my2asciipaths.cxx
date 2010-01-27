@@ -67,7 +67,7 @@ int main(int argc,   char *argv[]) {
     }
 
     printf("(enter to continue)\n");
-    
+
     delete fb;
     root.SetNull();
     printf("root should be destroyed now\n");

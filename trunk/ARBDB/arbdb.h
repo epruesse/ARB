@@ -99,8 +99,8 @@ enum GB_UNDO_TYPE {
 
 enum GB_alignment_type {
     GB_AT_UNKNOWN,
-    GB_AT_RNA,      // Nucleotide sequence (U) 
-    GB_AT_DNA,      // Nucleotide sequence (T) 
+    GB_AT_RNA,      // Nucleotide sequence (U)
+    GB_AT_DNA,      // Nucleotide sequence (T)
     GB_AT_AA,       // AminoAcid
 };
 

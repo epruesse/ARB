@@ -172,7 +172,7 @@ public:
     PT_dump_leaf(const char *Prefix) : prefix(Prefix) {}
     int operator()(int name, int apos, int rpos) {
         struct probe_input_data& data = psg.data[name];
-        
+
         PT_BASES b = (PT_BASES)data.data[rpos];
 
         printf("%s[%c] %s apos=%i rpos=%i\n", prefix, PT_BASES_2_char(b), data.name, apos, rpos);
@@ -272,7 +272,7 @@ int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int mismatch
         if (PT_read_type(pt) == PT_NT_LEAF) {
             pos = PT_read_rpos(psg.ptmain, pt) + height;
             name = PT_read_name(psg.ptmain, pt);
-            if (pos + (int)(strlen(probe+height)) >= psg.data[name].size)       // end of sequence 
+            if (pos + (int)(strlen(probe+height)) >= psg.data[name].size)       // end of sequence
                 return 0;
 
             while ((base = probe[height])) {
@@ -293,7 +293,7 @@ int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int mismatch
                 height++;
             }
         }
-        else {                // chain 
+        else {                // chain
             psg.probe = probe;
             psg.height = height;
             PT_read_chain(psg.ptmain, pt, PT_chain_print(locs));
@@ -738,11 +738,11 @@ static void gene_rel_2_abs(PT_probematch *ml) {
 
 extern "C" bytestring *match_string(PT_local *locs) {
     /*! Create list of species where probe matches.
-     * 
+     *
      * header^1name^1info^1name^1info....^0
      *         (where ^0 and ^1 are ASCII 0 and 1)
      *
-     * Implements server function 'MATCH_STRING' 
+     * Implements server function 'MATCH_STRING'
      */
     static bytestring bs = { 0, 0 };
     GBS_strstruct *memfile;
@@ -780,10 +780,10 @@ extern "C" bytestring *match_string(PT_local *locs) {
 
 extern "C" bytestring *MP_match_string(PT_local *locs) {
     /*! Create list of species where probe matches and #mismatches (for multiprobe)
-     * 
+     *
      * Format: header^1name^1#mismatch^1name^1#mismatch....^0
      *         (where ^0 and ^1 are ASCII 0 and 1)
-     * 
+     *
      * Implements server function 'MP_MATCH_STRING'
      */
     static bytestring bs = { 0, 0 };
@@ -816,10 +816,10 @@ extern "C" bytestring *MP_match_string(PT_local *locs) {
 
 extern "C" bytestring *MP_all_species_string(PT_local *) {
     /*! Create list of all species known to PT server
-     * 
+     *
      * Format: ^1name^1name....^0
      *         (where ^0 and ^1 are ASCII 0 and 1)
-     * 
+     *
      * Implements server function 'MP_ALL_SPECIES_STRING'
      */
     static bytestring bs = { 0, 0 };

@@ -74,7 +74,7 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
 
         if (treename && strcmp(treename, "tree_????") != 0) {
             error = GB_push_transaction(GLOBAL_gb_main);
-            
+
             if (!error) {
                 tree = GBT_read_tree(GLOBAL_gb_main, treename, sizeof(*tree));
                 if (!tree) error = GB_await_error();

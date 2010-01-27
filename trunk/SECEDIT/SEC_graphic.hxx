@@ -61,7 +61,7 @@ public:
 
     GBDATA *gb_struct;          // used to save the structure
     GBDATA *gb_struct_ref;      // used to save reference numbers
-    
+
     mutable long last_saved;    // the transaction serial id when we last saved everything
 
     // *********** public section

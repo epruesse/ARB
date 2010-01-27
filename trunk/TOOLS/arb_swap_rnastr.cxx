@@ -97,13 +97,13 @@ int main(int argc, char ** /* argv */) {
                 GBDATA *gb_use = GB_search(asrs.gb_main, "presets/use", GB_FIND);
                 char   *use    = GB_read_string(gb_use);
                 GBDATA *gb_ali = GB_entry(gb_species, use);
-                
+
                 if (!gb_ali) {
                     error = GBS_global_string("Species '%s' has no data in alignment '%s'", asrs.sp_name, use);
                 }
                 else {
                     GBDATA *gb_data = GB_entry(gb_ali, "data");
-                    
+
                     asrs.sequence = GB_read_string(gb_data);
                 }
             }

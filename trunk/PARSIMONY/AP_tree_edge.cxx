@@ -219,7 +219,7 @@ void AP_tree_edge::tailDistance(AP_tree_nlen *n)
 AP_tree_edge* AP_tree_edge::unlink()
 {
     ap_assert(this!=0);
-    
+
     node[0]->edge[index[0]] = NULL;
     node[1]->edge[index[1]] = NULL;
 
@@ -398,7 +398,7 @@ int AP_tree_edge::distanceToBorder(int maxsearch, AP_tree_nlen *skipNode) const 
      * @param maxsearch         max search depth
      * @param skipNode          do not descent into that part of the tree
      */
-    
+
     if ((node[0] && node[0]->is_leaf) || (node[1] && node[1]->is_leaf))
     {
         return 0;
@@ -566,7 +566,7 @@ static void ap_calc_bootstrap_remark(AP_tree_nlen *son_node, AP_BL_MODE mode, co
         size_t seq_len = son_node->get_seq()->get_sequence_length();
         float  one     = ap_calc_bootstrap_remark_sub(seq_len, mps.data(0), mps.data(1));
         float  two     = ap_calc_bootstrap_remark_sub(seq_len, mps.data(0), mps.data(2));
-        
+
         if ((mode & AP_BL_BOOTSTRAP_ESTIMATE) == AP_BL_BOOTSTRAP_ESTIMATE) {
             one = one * two;    // assume independent bootstrap values for both nnis
         }
@@ -738,7 +738,7 @@ AP_FLOAT AP_tree_edge::nni_rek(bool useStatus, int &Abort, int deep, bool skip_h
         else {
             new_parsimony = follow->nni(new_parsimony, mode);
         }
-        
+
         if (useStatus ? aw_status(++count/(double)cs) : aw_status()) { Abort = 1; break; }
     }
 
@@ -823,7 +823,7 @@ AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, Mutati
         if (pars_two <= parsbest) {
             if ((mode & AP_BL_NNI_ONLY) == 0) ap_main->pop();
             else                              ap_main->clear();
-            
+
             parsbest         = pars_two;
             betterValueFound = (int)(pars_one-pars_two);
         }
@@ -839,7 +839,7 @@ AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, Mutati
         if (pars_three <= parsbest) {
             if ((mode & AP_BL_NNI_ONLY) == 0) ap_main->pop();
             else                              ap_main->clear();
-            
+
             parsbest         = pars_three;
             betterValueFound = (int)(pars_one-pars_three);
         }

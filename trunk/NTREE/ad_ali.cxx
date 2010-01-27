@@ -227,7 +227,7 @@ AW_window *create_alignment_create_window(AW_root *root)
 AW_window *NT_create_alignment_window(AW_root *root, AW_CL popmedown)
 {
     // if popmedown points to a window, that window is popped down
-    
+
     static AW_window_simple *aws = 0;
 
     AW_window *aw_popmedown = (AW_window*)popmedown;

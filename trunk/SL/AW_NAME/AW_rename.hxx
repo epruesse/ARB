@@ -73,7 +73,7 @@ struct PersistentNameServerConnection {
     ~PersistentNameServerConnection();
 };
 
-int AWTC_name_quality(const char *short_name); 
+int AWTC_name_quality(const char *short_name);
 
 #else
 #error AW_rename.hxx included twice

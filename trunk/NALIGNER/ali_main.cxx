@@ -23,7 +23,7 @@ ALI_GLOBAL aligs;
 void message(char *errortext);
 
 
-const char *ali_version = 
+const char *ali_version =
     "\nALIGNER   V2.0  (Boris Reichel 5/95)\n";
 
 const char *ali_man_line[] = {
@@ -77,7 +77,7 @@ void print_man() {
     // Print a short parameter description
     int i;
 
-    for (i = 0; ali_man_line[i] != 0; i++) 
+    for (i = 0; ali_man_line[i] != 0; i++)
         fprintf(stderr, "%s\n", ali_man_line[i]);
 }
 
@@ -195,7 +195,7 @@ int convert_for_back_write(char *seq_new, char *seq_orig) {
                 case 'n':
                     *seq_new = *seq_orig;
                     break;
-                default: 
+                default:
                     ali_fatal_error("Unexpected character in generated sequence");
             }
         }
@@ -212,7 +212,7 @@ int convert_for_back_write(char *seq_new, char *seq_orig) {
 
     return 0;
 }
-        
+
 
 
 int main(int argc, char **argv)
@@ -226,7 +226,7 @@ int main(int argc, char **argv)
 
 
     ali_message(ali_version);
-        
+
     aligs.init(&argc, argv);
 
     if (!aligs.species_name || argc > 1) {
@@ -237,7 +237,7 @@ int main(int argc, char **argv)
         print_man();
         exit (-1);
     }
-        
+
     // Main loop
     species_number = 0;
     while (get_species(aligs.species_name, species_number, species_name)) {

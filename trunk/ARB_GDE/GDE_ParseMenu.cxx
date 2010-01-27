@@ -258,7 +258,7 @@ void ParseMenu()
             thisarg->label = GBS_string_eval(temp, "\\\\n=\\n", 0);
         }
         /* Argument choice values use the following notation:
-         * 
+         *
          * argchoice:Displayed value:Method
          *
          * Where "Displayed value" is the label displayed in the dialog box
@@ -477,7 +477,7 @@ void Error(const char *msg) {
 void crop(char *input, char *head, char *tail)
 {
     // @@@ Crop needs to be fixed so that whitespace is compressed off the end of tail
-    
+
     int offset, end, i, j, length;
 
     length=strlen(input);

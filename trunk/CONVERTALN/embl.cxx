@@ -952,7 +952,7 @@ void embl_to_macke(char *inf, char *outf, int format)
             /* no warning messages for next loop */
             warning_out = 0;
         }
-    } 
+    }
 
     warning_out = 1;
 

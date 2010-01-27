@@ -128,7 +128,7 @@ struct awtcig_struct {
     char                       **current_file;
     FILE                        *in;
     bool                         doExit; // whether import window 'close' does exit
-    GBDATA                      *gb_other_main; // main DB 
+    GBDATA                      *gb_other_main; // main DB
 };
 
 

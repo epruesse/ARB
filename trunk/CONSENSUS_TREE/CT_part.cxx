@@ -20,7 +20,7 @@ int   plen  = 0;                                    // number of bits per part
 void part_init(int len) {
     /*! Function to initialize the variables above
      * @param len number of bits the part should content
-     * 
+     *
      * result: calculate cutmask, longs, plen
      */
     int i, j;
@@ -40,7 +40,7 @@ void part_init(int len) {
 
 
 void part_print(PART *p) {
-    // ! Testfunction to print a part 
+    // ! Testfunction to print a part
     int i, j, k=0;
     PELEM l;
 
@@ -100,7 +100,7 @@ void part_setbit(PART *p, int pos) {
 
 int son(PART *son, PART *father) {
     /*! test if the part 'son' is possibly a son of the part 'father'.
-     * 
+     *
      * A father defined in this context as a part covers every bit of his son. needed in CT_ntree
      */
     int i;
@@ -128,7 +128,7 @@ int brothers(PART *p1, PART *p2) {
 
 
 void part_invert(PART *p) {
-    //! invert a part 
+    //! invert a part
     int i;
 
     for (i=0; i<longs; i++)
@@ -192,9 +192,9 @@ void part_addperc(PART *p, int perc) {
 }
 
 void part_copy(PART *source, PART *destination) {
-    //! copy source into destination 
+    //! copy source into destination
     for (int i=0; i<longs; i++) destination->p[i] = source->p[i];
-    
+
     destination->len     = source->len;
     destination->percent = source->percent;
 }
@@ -202,7 +202,7 @@ void part_copy(PART *source, PART *destination) {
 
 void part_standard(PART *p) {
     /*! standardize the partitions
-     * 
+     *
      * two parts are equal if one is just the inverted version of the other.
      * so the standard is defined that the version is the representant, whose first bit is equal 1
      */
@@ -221,7 +221,7 @@ int calc_index(PART *p) {
      *
      * this is only useful if only one bit is set,
      * this is used toidentify leafs in a ntree
-     * 
+     *
      * ATTENTION: p must be != NULL
      */
     int i, pos=0;

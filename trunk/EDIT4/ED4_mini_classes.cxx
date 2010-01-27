@@ -1130,7 +1130,7 @@ bool ED4_char_table::ok() const
 #if defined(TEST_CHAR_TABLE_INTEGRITY)
 
 void ED4_char_table::test() const {
-    
+
     if (!ok()) {
         GBK_terminate("ED4_char_table::test() failed");
     }

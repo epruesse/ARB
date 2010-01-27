@@ -56,7 +56,7 @@ void AWT_csp::exit() {
     delete [] mut_sum;  mut_sum  = NULL;
     delete [] freq_sum; freq_sum = NULL;
     delete desc;        desc     = NULL;
-    
+
     for (int i=0; i<256; i++) {
         delete [] frequency[i];
         frequency[i] = NULL;

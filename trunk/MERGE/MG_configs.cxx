@@ -107,7 +107,7 @@ AW_window *MG_create_config_rename_window2(AW_root *root) {
 }
 
 void MG_config_delete_cb(AW_window *aww, GBDATA *gbd, long config_nr) {
-    
+
     const char *config_name_awar = config_nr == 1 ? AWAR_CONFIG_NAME1 : AWAR_CONFIG_NAME2;
     char       *config_name      = aww->get_root()->awar(config_name_awar)->read_string();
 
@@ -127,7 +127,7 @@ void MG_config_delete_cb(AW_window *aww, GBDATA *gbd, long config_nr) {
     }
 
     GB_end_transaction_show_error(gbd, error, aw_message);
-    
+
     free(config_name);
 }
 
@@ -158,7 +158,7 @@ void MG_transfer_config(AW_window *aww) {
             }
         }
     }
-    error = GB_end_transaction(GLOBAL_gb_merge, error);        
+    error = GB_end_transaction(GLOBAL_gb_merge, error);
     error = GB_end_transaction(GLOBAL_gb_dest, error);
 
     if (error) aw_message(error);

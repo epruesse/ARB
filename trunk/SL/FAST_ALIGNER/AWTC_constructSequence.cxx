@@ -9,8 +9,8 @@
 //                                                                 //
 // =============================================================== //
 
-#warning unused 
- 
+#warning unused
+
 #include "awtc_seq_search.hxx"
 #include "awtc_constructSequence.hxx"
 

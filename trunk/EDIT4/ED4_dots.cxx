@@ -72,7 +72,7 @@ static ARB_ERROR dot_sequence_by_consensus(ED4_base *base, AW_CL cl_insert_stat)
                                     case '.':
                                         stat.already_there++;
                                         break;
-                                    
+
                                     default:
                                         break;
                                 }
@@ -240,7 +240,7 @@ void ED4_popup_dot_missing_bases_window(AW_window *editor_window, AW_CL, AW_CL) 
         aws->at("close");
         aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
-        
+
         aws->at("help");
         aws->callback(AW_POPUP_HELP, (AW_CL)"missbase.hlp");
         aws->create_button("HELP", "HELP", "H");
@@ -267,7 +267,7 @@ void ED4_popup_dot_missing_bases_window(AW_window *editor_window, AW_CL, AW_CL) 
     }
 
     e4_assert(aws);
-    
+
     aws->activate();
 }
 

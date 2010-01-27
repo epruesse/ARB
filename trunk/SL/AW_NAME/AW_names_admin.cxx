@@ -97,7 +97,7 @@ AW_window *AW_create_namesadmin_window(AW_root *root, AW_CL cl_gb_main) {
 
     AW_awar *awar_addid = root->awar(AWAR_NAMESERVER_ADDID);
     awar_addid->add_callback(addid_changed_cb, cl_gb_main);
-    
+
     aws->at("add_field");
     aws->create_input_field(AWAR_NAMESERVER_ADDID, 20);
 

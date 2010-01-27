@@ -30,7 +30,7 @@ void AP_sequence_simple_protein::set(const char *isequence) {
     size_t sequence_len = get_sequence_length();
     sequence     = new ap_pro[sequence_len+1];
     memset(sequence, s2str['.']->index, (size_t)(sizeof(ap_pro) * sequence_len));
-    
+
     const char    *s = isequence;
     ap_pro        *d = sequence;
 
@@ -55,7 +55,7 @@ void AP_sequence_simple_protein::set(const char *isequence) {
             d[i] = ind;
         }
     }
-    else { 
+    else {
         size_t i, j;
         size_t flen = filt->get_length();
         for (i = j = 0; i < flen; ++i) {

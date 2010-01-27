@@ -67,7 +67,7 @@ static Test Test[] = {
 static long callDelay(long loops);
 
 #define SECOND      1000000
-#define WANTED_TIME 5*SECOND // time reserved for each test 
+#define WANTED_TIME 5*SECOND // time reserved for each test
 
 static long run_test(test_fun fun, long loops, double *perCall) {
     /* returns time for test 'fun' in microseconds */
@@ -174,7 +174,7 @@ int main(int argc, char **argv)
                 printf("Test #%i: %-25s %10li loops = %10li us (%10.2f us/call, %10.2f calls/sec)\n",
                        test+1,
                        Test[test].name,
-                       esti_loops, 
+                       esti_loops,
                        usecs,
                        perCall,
                        SECOND/perCall);

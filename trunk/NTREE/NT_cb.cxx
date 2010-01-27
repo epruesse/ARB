@@ -45,7 +45,7 @@ void NT_delete_mark_all_cb(void *, AWT_canvas *ntw) {
                 gb_next = GBT_next_marked_species(gb_species);
                 error   = GB_delete(gb_species);
             }
-        
+
             if (error) {
                 error = ta.close(error);
                 aw_message(error);

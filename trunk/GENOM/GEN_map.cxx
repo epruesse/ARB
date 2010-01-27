@@ -591,16 +591,16 @@ typedef enum {
     GEN_PERFORM_ALL_ORGANISMS,
     GEN_PERFORM_CURRENT_ORGANISM,
     GEN_PERFORM_ALL_BUT_CURRENT_ORGANISM,
-    GEN_PERFORM_MARKED_ORGANISMS, 
+    GEN_PERFORM_MARKED_ORGANISMS,
 
     GEN_PERFORM_MODES, // counter
 } GEN_PERFORM_MODE;
 
 const char *GEN_PERFORM_MODE_id[GEN_PERFORM_MODES] = {
-    "org_all", 
-    "org_current", 
-    "org_butcur", 
-    "org_marked", 
+    "org_all",
+    "org_current",
+    "org_butcur",
+    "org_marked",
 };
 
 inline string performmode_relative_id(const char *id, GEN_PERFORM_MODE pmode) {
@@ -669,7 +669,7 @@ struct EG2PS_data {
     // used for status:
     int count;
     int marked_genes;
-    
+
     GBDATA             *gb_species_data;
     char               *ali;
     UniqueNameDetector  existing;
@@ -1072,7 +1072,7 @@ void gene_extract_cb(AW_window *aww, AW_CL cl_pmode) {
             {
                 gen_count_marked_genes = 0;
                 GEN_perform_command(aww, (GEN_PERFORM_MODE)cl_pmode, do_mark_command_for_one_species, GEN_COUNT_MARKED, 0);
-                
+
                 GB_transaction  ta(GLOBAL_gb_main);
                 GBDATA         *gb_species_data = GB_search(GLOBAL_gb_main, "species_data",  GB_CREATE_CONTAINER);
                 eg2ps                           = new EG2PS_data(ali, gb_species_data, gen_count_marked_genes);
@@ -1156,7 +1156,7 @@ static void mark_gene_species_of_marked_genes(AW_window * /* aww */, AW_CL cl_ca
     GB_transaction dummy(GLOBAL_gb_main);
 
     GB_HASH *organism_hash = GBT_create_organism_hash(GLOBAL_gb_main);
-    
+
     for (GBDATA *gb_pseudo = GEN_first_pseudo_species(GLOBAL_gb_main);
          gb_pseudo;
          gb_pseudo = GEN_next_pseudo_species(gb_pseudo))
@@ -1166,7 +1166,7 @@ static void mark_gene_species_of_marked_genes(AW_window * /* aww */, AW_CL cl_ca
             GB_write_flag(gb_pseudo, 1); // mark pseudo
         }
     }
-    
+
     GBS_free_hash(organism_hash);
     AWT_canvas *canvas = (AWT_canvas*)cl_canvas;
     if (canvas) canvas->refresh();

@@ -115,7 +115,7 @@ void DI_dmatrix::resized()
         vert_paint_size  = (squ.b-off_dy)/cell_height;
         horiz_page_size  = (n > horiz_paint_size) ?  horiz_paint_size : n;
         vert_page_size   = (n > vert_paint_size) ? vert_paint_size : n;
-        
+
         rect.l = 0;
         rect.t = 0;
         rect.r = (int)((n-horiz_page_size)*cell_width+squ.r);
@@ -265,7 +265,7 @@ void DI_dmatrix::display(bool clear)   // draw area
     char           buf[BUFLEN];
     long           x, y, xpos, ypos;
     GB_transaction dummy(GLOBAL_gb_main);
-    
+
     if (!device) return;
 
     DI_MATRIX *m = get_matrix();
@@ -412,7 +412,7 @@ void DI_dmatrix::monitor_vertical_scroll_cb(AW_window *aww) { // draw area
 
         if (diff>0 && diff<vert_page_size) { // scroll some positions up
             int keep_cells = vert_page_size-diff;
-            
+
             device->move_region(0, top_y+diff*cell_height, screen_width, keep_cells*cell_height, 0, top_y);
             device->clear_part(0, top_y+keep_cells*cell_height, screen_width, diff*cell_height, -1);
             device->push_clip_scale();
@@ -420,7 +420,7 @@ void DI_dmatrix::monitor_vertical_scroll_cb(AW_window *aww) { // draw area
         }
         else if (diff>-vert_page_size && diff<0) { // scroll some positions down
             int keep_cells = vert_page_size+diff;
-            
+
             device->move_region(0, top_y, screen_width, keep_cells*cell_height, 0, top_y+(-diff*cell_height));
             device->clear_part(0, top_y, screen_width, cell_height*-diff, -1);
             device->push_clip_scale();
@@ -436,11 +436,11 @@ void DI_dmatrix::monitor_vertical_scroll_cb(AW_window *aww) { // draw area
     }
 }
 
-void DI_dmatrix::monitor_horizontal_scroll_cb(AW_window *aww) { // draw area 
+void DI_dmatrix::monitor_horizontal_scroll_cb(AW_window *aww) { // draw area
     if (!device) return;
 
     long old_horiz_page_start = horiz_page_start;
-    
+
     horiz_last_view_start = aww->slider_pos_horizontal;
     horiz_page_start      = aww->slider_pos_horizontal/cell_width;
 
@@ -448,7 +448,7 @@ void DI_dmatrix::monitor_horizontal_scroll_cb(AW_window *aww) { // draw area
 
     if (diff) {
         bool clear = false;
-        
+
         if (diff>0 && diff<horiz_page_size) {      // scroll some positions left
             int keep_cells = horiz_page_size-diff;
 
@@ -459,7 +459,7 @@ void DI_dmatrix::monitor_horizontal_scroll_cb(AW_window *aww) { // draw area
         }
         else if (diff>-horiz_page_size && diff<0) { // scroll some positions right
             int keep_cells = horiz_page_size+diff;
-            
+
             device->move_region(off_dx, 0, keep_cells*cell_width, screen_height, off_dx+cell_width*-diff, 0);
             device->clear_part(off_dx, 0, cell_width*-diff, screen_height, -1);
             device->push_clip_scale();
@@ -556,7 +556,7 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix, save_
     awm->set_vertical_change_callback  ((AW_CB2)vertical_change_cb,   (AW_CL)dmatrix, 0);
     awm->set_horizontal_change_callback((AW_CB2)horizontal_change_cb, (AW_CL)dmatrix, 0);
     awm->set_focus_callback            ((AW_CB) redisplay_needed,     (AW_CL)dmatrix, 0);
-    
+
     awm->set_resize_callback(AW_MIDDLE_AREA, (AW_CB2)resize_needed,    (AW_CL)dmatrix, 0);
     awm->set_expose_callback(AW_MIDDLE_AREA, (AW_CB2)redisplay_needed, (AW_CL)dmatrix, 0);
     awm->set_input_callback (AW_MIDDLE_AREA, (AW_CB) input_cb,         (AW_CL)dmatrix, 0);

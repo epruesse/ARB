@@ -36,7 +36,7 @@ static const char * sec_read_line(istream & in) {
 static GB_ERROR sec_scan_ints(const char * string_buffer, int *number_1, int *number_2) {
     GB_ERROR  error = 0;
     char     *scanend;          // this is a 'const char *'
-    
+
     sec_assert(number_1);
     *number_1 = (int)strtol(string_buffer, &scanend, 10);
     if (number_2) {
@@ -56,7 +56,7 @@ static GB_ERROR sec_scan_ints(const char * string_buffer, int *number_1, int *nu
 static GB_ERROR sec_scan_doubles(const char * string_buffer, double *number_1, double *number_2) {
     GB_ERROR  error = 0;
     char     *scanend;          // this is a 'const char *'
-    
+
     sec_assert(number_1);
     *number_1 = strtod(string_buffer, &scanend);
     if (number_2) {
@@ -78,7 +78,7 @@ static GB_ERROR sec_expect_keyword_and_ints(const char *string_buffer, const cha
     // 1 or 2 numbers are returned via number_1 and number_2
 
     sec_assert(strlen(keyword) == keywordlen);
-    
+
     GB_ERROR error = 0;
     if (strncmp(string_buffer, keyword, keywordlen) != 0 || string_buffer[keywordlen] != '=') {
         error = GBS_global_string("Expected '%s='", keyword);
@@ -95,7 +95,7 @@ static GB_ERROR sec_expect_keyword_and_doubles(const char *string_buffer, const 
     // 1 or 2 numbers are returned via number_1 and number_2
 
     sec_assert(strlen(keyword) == keywordlen);
-    
+
     GB_ERROR error = 0;
     if (strncmp(string_buffer, keyword, keywordlen) != 0 || string_buffer[keywordlen] != '=') {
         error = GBS_global_string("Expected '%s='", keyword);
@@ -160,7 +160,7 @@ GB_ERROR SEC_helix::read(istream & in, int version, double& old_angle_in) {
         double angle;
 
         error = sec_expect_keyword_and_doubles(string_buffer, "REL", 3, &angle, 0);
-        
+
         if (!error) {
             string_buffer = sec_read_line(in);
             set_rel_angle(angle);
@@ -168,7 +168,7 @@ GB_ERROR SEC_helix::read(istream & in, int version, double& old_angle_in) {
     }
     else { // version 2 or lower
         double angle;
-        
+
         error = sec_expect_keyword_and_doubles(string_buffer, "DELTA", 5, &angle, 0);
         if (!error) {
             string_buffer = sec_read_line(in);
@@ -199,11 +199,11 @@ GB_ERROR SEC_helix_strand::read(SEC_loop *loop_, istream & in, int version) {
 
     SEC_helix_strand *strand2 = new SEC_helix_strand;
 
-    origin_loop = 0; 
+    origin_loop = 0;
 
     SEC_root *root  = loop_->get_root();
     GB_ERROR  error = get_region()->read(in, root, version);
-    
+
     double next_loop_angle = NAN;
 
     if (!error) {
@@ -234,7 +234,7 @@ GB_ERROR SEC_helix_strand::read(SEC_loop *loop_, istream & in, int version) {
                 error = strand2->get_region()->read(in, root, version); // Loop is complete, now trailing SEQ information must be read
                 string_buffer = sec_read_line(in);    // remove closing } from input-stream
             }
-            
+
             if (error) {
                 strand2->origin_loop = 0;
                 delete new_loop;
@@ -245,7 +245,7 @@ GB_ERROR SEC_helix_strand::read(SEC_loop *loop_, istream & in, int version) {
     // Note: don't delete strand2 in case of error -- it's done by caller via deleting 'this'
 
     sec_assert(origin_loop == 0);
-    if (!error) origin_loop = loop_; 
+    if (!error) origin_loop = loop_;
 
     return error;
 }
@@ -254,7 +254,7 @@ GB_ERROR SEC_helix_strand::read(SEC_loop *loop_, istream & in, int version) {
 
 GB_ERROR SEC_loop::read(SEC_helix_strand *rootside_strand, istream & in, int version, double loop_angle) {
     // loop_angle is only used by old versions<3
-    
+
     const char *string_buffer = sec_read_line(in);
     GB_ERROR    error         = sec_expect_constraints(string_buffer, "RADIUS", 6, this);
 
@@ -300,7 +300,7 @@ GB_ERROR SEC_loop::read(SEC_helix_strand *rootside_strand, istream & in, int ver
                         last_segment        = new_seg;
 
                         if (!first_new_segment) first_new_segment = new_seg;
-                        
+
                         expect = EXPECT_STRAND;
                     }
                     else delete new_seg;
@@ -330,7 +330,7 @@ GB_ERROR SEC_loop::read(SEC_helix_strand *rootside_strand, istream & in, int ver
                 else error = GBS_global_string("Expected STRAND (in '%s')", string_buffer);
             }
         }
-        
+
         if (!error && !first_new_segment) error = "Expected at least one SEGMENT in LOOP{}";
         if (!error && !first_new_strand && !rootside_strand) error = "Expected at least one STRAND in root-LOOP{}";
 
@@ -350,7 +350,7 @@ GB_ERROR SEC_loop::read(SEC_helix_strand *rootside_strand, istream & in, int ver
 
                 sec_assert(!rootside_strand); // only occurs in root-loop
                 last_outside_strand->set_next_segment(first_new_segment);
-                
+
             }
         }
         else {
@@ -376,7 +376,7 @@ GB_ERROR SEC_root::read_data(const char *input_string, const char *x_string_in) 
 
     if (!error) {
         const char *string_buffer  = sec_read_line(in);
-        double      firstLoopAngle = 0; 
+        double      firstLoopAngle = 0;
 
         error = sec_expect_keyword_and_ints(string_buffer, "VERSION", 7, &version, 0); // version 3++
         if (error) { // version < 3!
@@ -427,14 +427,14 @@ GB_ERROR SEC_root::read_data(const char *input_string, const char *x_string_in) 
         }
 
         delete_root_loop();
-    
+
         if (!error) {
 #if defined(DEBUG)
             printf("Reading structure format (version %i)\n", version);
 #endif // DEBUG
 
             if (strncmp(string_buffer, "LOOP={", 6) == 0) {
-                SEC_loop *rootLoop = new SEC_loop(this); 
+                SEC_loop *rootLoop = new SEC_loop(this);
 
                 set_root_loop(rootLoop);
                 set_under_construction(true);

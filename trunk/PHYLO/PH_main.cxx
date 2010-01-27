@@ -43,7 +43,7 @@ void create_filter_text()
 {
     filter_text = (char **) calloc(FILTER_MODES, sizeof (char *));
     for (int i=0; i<FILTER_MODES; i++) filter_text[i] = new char[100];
-    
+
     strcpy(filter_text[DONT_COUNT],           "don't count (ignore)                              ");
     strcpy(filter_text[SKIP_COLUMN_IF_MAX],   "if occurs most often => forget whole column       ");
     strcpy(filter_text[SKIP_COLUMN_IF_OCCUR], "if occurs => forget whole column                  ");
@@ -131,7 +131,7 @@ static GB_ERROR PH_create_ml_multiline_SAI(GB_CSTR sai_name, int nr, GBDATA **gb
             const char *key = GB_read_key_pntr(gbd);
             if (!strcmp(key, "name")) continue;
             if (!strncmp(key, "ali_", 4)) continue;
-            
+
             error = GB_delete(gbd);
             if (error) break;
         }
@@ -146,7 +146,7 @@ static GB_ERROR PH_create_ml_multiline_SAI(GB_CSTR sai_name, int nr, GBDATA **gb
                 const char *key = GB_read_key_pntr(gbd);
                 if (!strcmp(key, "data")) continue;
                 if (!strcmp(key, "_TYPE")) continue;
-                
+
                 error = GB_delete(gbd);
                 if (error) break;
             }
@@ -224,7 +224,7 @@ static GB_ERROR PH_create_ml_multiline_SAI(GB_CSTR sai_name, int nr, GBDATA **gb
                                 ph_assert(0);
                                 break;
                         }
-                        
+
                         if (digit<0) c = '-';
                         else         c = '0' + digit%10;
                     }
@@ -305,7 +305,7 @@ void PH_save_ml_cb(AW_window *aww) {
             const char *key = GB_read_key_pntr(gbd);
             if (!strcmp(key, "name")) continue;
             if (!strncmp(key, "ali_", 4)) continue;
-            
+
             error = GB_delete(gbd);
             if (error) break;
         }
@@ -320,7 +320,7 @@ void PH_save_ml_cb(AW_window *aww) {
                 const char *key = GB_read_key_pntr(gbd);
                 if (!strcmp(key, "bits")) continue;
                 if (!strcmp(key, "_TYPE")) continue;
-                
+
                 error = GB_delete(gbd);
                 if (error) break;
             }
@@ -463,7 +463,7 @@ AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AWT_graph
 #if defined(DEBUG)
     AWT_create_debug_menu(awm);
 #endif // DEBUG
-    
+
     // File menu
     awm->create_menu("File", "F");
     awm->insert_menu_topic("export_filter", "Export Filter",      "E", "ph_export_markerline.hlp", AWM_ALL, (AW_CB)AW_POPUP, (AW_CL)PH_save_markerline, 0);

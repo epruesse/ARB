@@ -193,7 +193,7 @@ public:
     bool updateBestChild(const unsigned long  _gain,
                           const unsigned long  _one_false_IDs_matches,
                           const float          _filling_level,
-                          const PS_NodePtr     _node, 
+                          const PS_NodePtr     _node,
                           IDSet               &_path) {
         if (children.size() == 0) {
             // no child yet
@@ -210,7 +210,7 @@ public:
         // return false if new child matches same 'must matches' but has less total gain
         if ((_one_false_IDs_matches == one_false_IDs_matches) &&
             (_gain <= children[0]->gain)) return false;
-                
+
         children.clear();
         PS_CandidateSPtr new_child(new PS_Candidate(0, _gain, _node, _path, this));
         new_child->depth = depth+1;

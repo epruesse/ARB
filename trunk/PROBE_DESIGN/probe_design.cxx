@@ -313,7 +313,7 @@ GB_ERROR pd_get_the_gene_names(bytestring &bs, bytestring &checksum) {
                     GBS_strcat(names, id);
                     GBS_chrcat(checksums, '#');
                     GBS_chrcat(names, '#');
-                    
+
                     free(gene_seq);
                 }
             }
@@ -1120,7 +1120,7 @@ void create_probe_design_variables(AW_root *root, AW_default db1, AW_default glo
 
     root->awar_int   (AWAR_PROBE_ADMIN_PT_SERVER,    0,  db1);
     root->awar_int   (AWAR_PROBE_CREATE_GENE_SERVER, 0,  db1);
-    
+
     root->awar_string(AWAR_SPV_SAI_2_PROBE,    "",     global); // name of SAI selected in list
     root->awar_string(AWAR_SPV_DB_FIELD_NAME,  "name", global); // name of displayed species field
     root->awar_int   (AWAR_SPV_DB_FIELD_WIDTH, 10,     global); // width of displayed species field
@@ -1167,20 +1167,20 @@ AW_window *create_probe_design_expert_window(AW_root *root) {
 }
 
 static AWT_config_mapping_def probe_design_mapping_def[] = {
-    { AWAR_PD_DESIGN_CLIPRESULT,   "clip" }, 
-    { AWAR_PD_DESIGN_MISHIT,       "mishit" }, 
-    { AWAR_PD_DESIGN_MAXBOND,      "maxbond" }, 
+    { AWAR_PD_DESIGN_CLIPRESULT,   "clip" },
+    { AWAR_PD_DESIGN_MISHIT,       "mishit" },
+    { AWAR_PD_DESIGN_MAXBOND,      "maxbond" },
     { AWAR_PD_DESIGN_MINTARGETS,   "mintarget" },
-    { AWAR_PD_DESIGN_PROBELENGTH,  "probelen" }, 
-    { AWAR_PD_DESIGN_MIN_TEMP,     "mintemp" }, 
-    { AWAR_PD_DESIGN_MAX_TEMP,     "maxtemp" }, 
-    { AWAR_PD_DESIGN_MIN_GC,       "mingc" }, 
-    { AWAR_PD_DESIGN_MAX_GC,       "maxgc" }, 
-    { AWAR_PD_DESIGN_MIN_ECOLIPOS, "minecoli" }, 
-    { AWAR_PD_DESIGN_MAX_ECOLIPOS, "maxecoli" }, 
-    { AWAR_PD_DESIGN_GENE,         "gene" }, 
-    { AWAR_PD_DESIGN_EXP_SPLIT,    "split" }, 
-    { AWAR_PD_DESIGN_EXP_DTEDGE,   "dtedge" }, 
+    { AWAR_PD_DESIGN_PROBELENGTH,  "probelen" },
+    { AWAR_PD_DESIGN_MIN_TEMP,     "mintemp" },
+    { AWAR_PD_DESIGN_MAX_TEMP,     "maxtemp" },
+    { AWAR_PD_DESIGN_MIN_GC,       "mingc" },
+    { AWAR_PD_DESIGN_MAX_GC,       "maxgc" },
+    { AWAR_PD_DESIGN_MIN_ECOLIPOS, "minecoli" },
+    { AWAR_PD_DESIGN_MAX_ECOLIPOS, "maxecoli" },
+    { AWAR_PD_DESIGN_GENE,         "gene" },
+    { AWAR_PD_DESIGN_EXP_SPLIT,    "split" },
+    { AWAR_PD_DESIGN_EXP_DTEDGE,   "dtedge" },
     { AWAR_PD_DESIGN_EXP_DT,       "dt" },
     { 0, 0 }
 };
@@ -1634,7 +1634,7 @@ void pd_kill_pt_server(AW_window *aww, AW_CL kill_all)
 
             if (error) aw_message(GBS_global_string("Could not stop '%s' (Reason: %s)", choice, error));
             else aw_message(GBS_global_string("Stopped '%s'", choice));
-            
+
             free(choice);
         }
         aw_closestatus();

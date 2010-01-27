@@ -43,7 +43,7 @@ static GB_ERROR split_stat_filename(const char *fname, char **dirPtr, char **nam
     char *name_prefix  = strdup(lslash+1);
     char *name_postfix = 0;
     char *ldot         = strrchr(name_prefix, '.');
-    
+
     if (ldot) {
         ldot[0]      = 0;
         name_postfix = strdup(ldot+1);
@@ -74,7 +74,7 @@ static char * get_overlay_files(AW_root *awr, const char *fname, GB_ERROR& error
     if (!error) {
         char *found_prefix_files  = 0;
         char *found_postfix_files = 0;
-        
+
         if (overlay_prefix || overlay_postfix) {
             char *mask = GBS_global_string_copy("%s.*_gnu", name_prefix);
             if (overlay_prefix) {
@@ -215,7 +215,7 @@ static const char *makeTitle(const char *fname) {
 //      SortedFreq
 
 class SortedFreq {
-    float *freq[4]; 
+    float *freq[4];
 
 public:
     SortedFreq(const AWT_csp *csp);
@@ -248,7 +248,7 @@ SortedFreq::SortedFreq(const AWT_csp *csp) {
                 if (freq[3][p] < cfreq[p]) {
                     freq[3][p] = cfreq[p];          // found higher freq
 
-                    for (int i = 3; i > 0; --i) { // bubble upwards to sort 
+                    for (int i = 3; i > 0; --i) { // bubble upwards to sort
                         if (freq[i-1][p] >= freq[i][p]) break; // sorted!
 
                         float f      = freq[i][p];
@@ -362,7 +362,7 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
                     case PT_BASE_G:
                     case PT_BASE_TU: {
                         stat_type = STAT_AMOUNT;
-                        
+
                         data.amount.A  = csp->get_frequencies('A');
                         data.amount.C  = csp->get_frequencies('C');
                         data.amount.G  = csp->get_frequencies('G');
@@ -412,7 +412,7 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
                                 float C  = data.amount.C[j];
                                 float G  = data.amount.G[j];
                                 float TU = data.amount.TU[j];
-                            
+
                                 float amount = A+C+G+TU;
 
                                 switch (plot_type) {
@@ -422,7 +422,7 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
                                     case PT_BASE_C:   val = C/amount; break;
                                     case PT_BASE_G:   val = G/amount; break;
                                     case PT_BASE_TU:  val = TU/amount; break;
-                                    
+
                                     default: nt_assert(0); break;
                                 }
                                 break;
@@ -430,7 +430,7 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
                             case STAT_SIMPLE_FLOAT: val = data.floatVals[j]; break;
                             case STAT_SIMPLE_BOOL:  val = data.boolVals[j]; break;
                             case STAT_SORT:         val = data.sorted->get(plot_type, j); break;
-                            
+
                             case STAT_UNKNOWN: nt_assert(0); break;
                         }
 

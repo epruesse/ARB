@@ -279,7 +279,7 @@ AP_FLOAT AP_sequence_parsimony::count_weighted_bases() const { // count all base
     if (!hits) {
         hits = (char*)malloc(256);
         memset(hits, 1, 256);                       // count ambiguous characters half
-        
+
         hits[AP_A] = 2;                             // real characters full
         hits[AP_C] = 2;
         hits[AP_G] = 2;
@@ -293,7 +293,7 @@ AP_FLOAT AP_sequence_parsimony::count_weighted_bases() const { // count all base
 
     long   sum          = 0;
     size_t sequence_len = get_sequence_length();
-    
+
     for (size_t i = 0; i<sequence_len; ++i) {
         sum += hits[safeCharIndex(p[i])] * weights->weight(i);
     }

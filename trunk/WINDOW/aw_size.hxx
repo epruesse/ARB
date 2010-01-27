@@ -34,7 +34,7 @@ public:
     int  text(int gc, const  char *string, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2, long opt_strlen = 0);
 
     void get_size_information(AW_world *ptr);
-    
+
     int box(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
         return generic_box(gc, filled, x0, y0, width, heigth, filteri, cd1, cd2);
     }

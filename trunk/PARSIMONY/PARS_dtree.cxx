@@ -53,7 +53,7 @@ void PARS_tree_init(AWT_graphic_tree *agt) {
     ap_assert(agt == ap_main->get_tree_root());
 
     GB_transaction dummy(GLOBAL_gb_main);
-    
+
     const char *use     = ap_main->get_aliname();
     long        ali_len = GBT_get_alignment_len(GLOBAL_gb_main, use);
     if (ali_len <= 1) {

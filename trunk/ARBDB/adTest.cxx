@@ -184,7 +184,7 @@ const char *GB_get_db_path(GBDATA *gbd) {
         static char *result; // careful! used recursively
         freeset(result, GBS_global_string_copy("%s/%s", father_path, GB_KEY(gbd)));
         free(father_path);
-        
+
         return result;
     }
     return "";
@@ -344,7 +344,7 @@ static void GB_dump_internal(GBDATA *gbd, int *lines_allowed) {
     if (gb_show_later) {
         if (!lines_allowed || (*lines_allowed)>0) {
             printf("%*s Showing %s:\n", indent, "", whatto_show_later);
-            freenull(whatto_show_later); 
+            freenull(whatto_show_later);
             ++indent;
             GB_dump_internal(gb_show_later, lines_allowed);
             --indent;

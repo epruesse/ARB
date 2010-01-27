@@ -241,7 +241,7 @@ void ProbeValuation::init_valuation()
 
     act_generation->init_valuation();
     evolution();
-    
+
     aww = mp_main->get_mp_window()->get_result_window();
     aww->activate();
 }

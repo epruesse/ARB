@@ -151,7 +151,7 @@ int AW_clip::box_clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out,
 
 int AW_clip::clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out) {
     // clip coordinates of a line
-    
+
     int    outcodeout;
     AW_pos x = 0;
     AW_pos y = 0;
@@ -406,7 +406,7 @@ void AW_get_common_extends_cb(AW_window *aww, AW_common *common) {
     Window       root;
     unsigned int width, height;
     unsigned int depth, borderwidth;
-    
+
     XGetGeometry(common->display, common->window_id,
                  &root,
                  &common->screen_x_offset, // xoffset
@@ -436,7 +436,7 @@ AW_common::AW_common(AW_window *aww, AW_area area, Display *display_in,
     data_colors_size = data_colors_size_in;
     ngcs             = 8;
     gcs              = (AW_GC_Xm **)malloc(sizeof(void *)*ngcs);
-    
+
     memset((char *)gcs, 0, sizeof(void *)*ngcs);
     aww->set_resize_callback(area, (AW_CB2)AW_get_common_extends_cb, (AW_CL)this, 0);
     AW_get_common_extends_cb(aww, this);
@@ -467,7 +467,7 @@ class AW_clip_scale_stack {
 static const char *clipstatestr(AW_device *device) {
     static char   buffer[1024];
     AW_rectangle& clip_rect = device->clip_rect;
-    
+
     sprintf(buffer, "clip_rect={t=%i, b=%i, l=%i, r=%i}",
             clip_rect.t, clip_rect.b, clip_rect.l, clip_rect.r);
 
@@ -707,7 +707,7 @@ int AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eithe
     int          l;
     int          c             = 0;
     AW_pos       X0, Y0;        // Transformed pos
-    
+
     bool inside_clipping_left  = true; // clipping at the left edge of the screen is different from clipping right of the left edge.
     bool inside_clipping_right = true;
 

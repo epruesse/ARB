@@ -76,7 +76,7 @@ RB_INFO *rbtree(NT_NODE *tree, GBT_TREE *father)
     nsonp = tree->son_list;
     if (!nsonp) {                                        /* if node is leaf */
         idx = calc_index(tree->part);
-        gbtnode->name = strdup((name_tbl[idx]));     
+        gbtnode->name = strdup((name_tbl[idx]));
         gbtnode->is_leaf = true;
         return info;
     }

@@ -60,7 +60,7 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "ARB_INTRO/CANCEL", 1);
 
     // avoid start of some external programs:
-#if 1    
+#if 1
     GBS_write_hash(dontCallHash, "ARB_NT/EDIT_SEQUENCES",                              2);
     GBS_write_hash(dontCallHash, "CPR_MAIN/HELP",                                      2);
     GBS_write_hash(dontCallHash, "GDE__user__Start_a_slave_ARB_on_a_foreign_host_/GO", 2);
@@ -86,7 +86,7 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "PT_SERVER_ADMIN/CREATE_TEMPLATE", 2);
     GBS_write_hash(dontCallHash, "SELECT_CONFIGURATION/START", 2);
 #endif
-    
+
     // avoid saving
     GBS_write_hash(dontCallHash, "save_changes", 3);
     GBS_write_hash(dontCallHash, "save_props",   3);
@@ -240,7 +240,7 @@ size_t AW_root::callallcallbacks(int mode) {
                         }
                         else {
                             fprintf(stderr, "Calling back %zu/%zu (%s)\n", curr, count, remote_command);
-                        
+
                             GB_clear_error();
 
                             cbs->run_callback();
@@ -256,7 +256,7 @@ size_t AW_root::callallcallbacks(int mode) {
                                 if (awp) {
                                     awp->force_expose();
                                     process_pending_events();
-                                    
+
                                     fprintf(stderr, "Popping down window '%s'\n", awp->get_window_id());
                                     awp->hide();
                                     process_pending_events();

@@ -285,7 +285,7 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
         work_info->is_sequence = 0;
 
         if (terminal->is_pure_text_terminal()) {
-            work_info->mode = awar_edit_mode; 
+            work_info->mode = awar_edit_mode;
         }
         else if (terminal->is_columnStat_terminal()) {
             work_info->mode = AD_NOWRITE;
@@ -1282,7 +1282,7 @@ void ED4_load_new_config(char *string)
     ED4_calc_terminal_extentions();
 
     max_seq_terminal_length = 0;
-    
+
     ED4_init_notFoundMessage();
 
 
@@ -1381,7 +1381,7 @@ void ED4_new_editor_window(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
 
     AW_device  *device;
     ED4_window *new_window = 0;
-    
+
     if (ED4_ROOT->generate_window(&device, &new_window) == ED4_R_BREAK)  // don't open more than five windows
         return;
 
@@ -1819,7 +1819,7 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
     // creation_mode == 0 -> create new species
     //                  1 -> create new species from group konsensus
     //                  2 -> copy current species
-    
+
     enum e_creation_mode { CREATE_NEW_SPECIES, CREATE_FROM_CONSENSUS, COPY_SPECIES } creation_mode = (enum e_creation_mode)(cl_creation_mode);
     GB_CSTR   new_species_full_name = ED4_ROOT->aw_root->awar(ED4_AWAR_SPECIES_TO_CREATE)->read_string(); // this contains the full_name now!
     ARB_ERROR error                 = 0;
@@ -1979,7 +1979,7 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
                                         aw_status(fieldName);
                                         GBDATA *gb_field = GB_search(sl->species, fieldName, GB_FIND);
                                         e4_assert(gb_field); // field has to exist, cause it was found before
-                                        
+
                                         GB_TYPES type = GB_read_type(gb_field);
                                         if (type==GB_STRING) { // we only merge string fields
                                             int i;

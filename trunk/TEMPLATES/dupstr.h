@@ -26,7 +26,7 @@
  * - freeset and freenull work with any pointer-type allocated using malloc et al.
  */
 
- 
+
 #ifndef _CPP_CSTRING
 #include <cstring>
 #endif

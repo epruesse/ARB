@@ -17,7 +17,7 @@ using namespace std;
 
 Feature::Feature(const string& Type, const string& locationString)
     : type(Type)
-    , location(parseLocation(locationString)) 
+    , location(parseLocation(locationString))
 {
 }
 
@@ -141,7 +141,7 @@ void Feature::fixEmptyQualifiers() {
                 // ARB cannot store empty strings!
                 // Since '/replace=""' means 'delete location', we need to store this
                 // this information differently.
-                i->second = "<empty>"; // 
+                i->second = "<empty>"; //
             }
         }
     }

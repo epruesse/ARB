@@ -33,7 +33,7 @@ public:
     bool empty() const { return drawnAt.empty(); }
     const PosMap::const_iterator begin() const { return drawnAt.begin(); }
     const PosMap::const_iterator end() const { return drawnAt.end(); }
-    
+
     const Position *drawn_at(size_t abs) const {
         PosMap::const_iterator found = drawnAt.find(abs);
         return (found == drawnAt.end()) ? 0 : &(found->second);
@@ -54,11 +54,11 @@ public:
     const Position& drawn_after(size_t abspos, size_t *after_abs) const {
         sec_assert(!empty());
         PosMap::const_iterator found = drawnAt.upper_bound(abspos); // first pos which is > abspos
-        
+
         if (found == drawnAt.end()) { // no position drawn behind abs
             found = drawnAt.begin(); // wrap to start
         }
-        
+
         if (after_abs) *after_abs = found->first;
         return *&found->second;
     }

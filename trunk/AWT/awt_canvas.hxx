@@ -67,7 +67,7 @@ public:
 
     AWT_graphic();
     virtual ~AWT_graphic();
-    
+
     // pure virtual interface (methods implemented by AWT_nonDB_graphic)
 
     virtual GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) = 0;
@@ -76,7 +76,7 @@ public:
     virtual void update(GBDATA *gb_main)                                           = 0; // mark the database
 
     // pure virtual interface (rest)
-    
+
     virtual void show(AW_device *device) = 0;
 
     virtual void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct) = 0;     /* double click */
@@ -86,7 +86,7 @@ public:
                 or AWT_resize_cb(aw_window, ntw, cd2);
                 The function may return a pointer to a preset window */
 
-    // implemented interface (most are dummies doing nothing): 
+    // implemented interface (most are dummies doing nothing):
 
     virtual void push_transaction(GBDATA *gb_main);
     virtual void pop_transaction(GBDATA *gb_main);
@@ -98,17 +98,17 @@ public:
     virtual void text(AW_device *device, char *text);
 };
 
-// a partly implementation of AWT_graphic 
+// a partly implementation of AWT_graphic
 class AWT_nonDB_graphic : public AWT_graphic {
 public:
     AWT_nonDB_graphic() {}
     virtual ~AWT_nonDB_graphic();
 
-    // dummy functions, only spittings out warnings: 
+    // dummy functions, only spittings out warnings:
     GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) __ATTR__USERESULT;
     GB_ERROR save(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) __ATTR__USERESULT;
     int  check_update(GBDATA *gb_main);
-    void update(GBDATA *gb_main); 
+    void update(GBDATA *gb_main);
 };
 
 
@@ -170,7 +170,7 @@ public:
 
     AW_gc_manager gc_manager;
     int           drag_gc;
-    
+
     AWT_COMMAND_MODE mode;
 
     // real public

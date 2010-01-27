@@ -68,13 +68,13 @@ GBDATA *GBT_find_or_create_SAI(GBDATA *gb_main, const char *name) {
 
 GBDATA *GBT_find_item_rel_item_data(GBDATA *gb_item_data, const char *id_field, const char *id_value) {
     /*! search for items starting at item container
-     * 
+     *
      * @param 'gb_item_data' is a container containing items
      * @param 'id_field' is a field containing a unique identifier for each item (e.g. 'name' for species)
-     * 
+     *
      * @return a pointer to an item with 'id_field' containing 'id_value'
      * or NULL (in this case an error MAY be exported)
-     * 
+     *
      * Note: If you expect the item to exist, use GBT_expect_item_rel_item_data()
      */
 
@@ -233,7 +233,7 @@ char *GBT_create_unique_item_identifier(GBDATA *gb_item_container, const char *i
         size_t  min_num = 1;
 
 #define GENERATE_ID(num) sprintf(generated_id, "%s%zi", default_id, num);
-        
+
         GENERATE_ID(min_num);
         gb_item = GBT_find_item_rel_item_data(gb_item_container, id_field, generated_id);
 

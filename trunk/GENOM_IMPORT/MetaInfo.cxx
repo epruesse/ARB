@@ -19,7 +19,7 @@ void Reference::add(const string& field, const string& content)
 {
     gi_assert(!field.empty());
     gi_assert(!content.empty());
-    
+
     stringMapIter existing = entries.find(field);
     if (existing != entries.end()) {
         throw GBS_global_string("Duplicated reference entry for '%s'", field.c_str());
@@ -105,8 +105,8 @@ void References::dump() const
 #endif // DEBUG
 
 enum DBID_TYPE {
-    DBID_STANDARD, 
-    DBID_ACCEPT, 
+    DBID_STANDARD,
+    DBID_ACCEPT,
     DBID_ILLEGAL,
 };
 struct DBID {

@@ -184,7 +184,7 @@ void AW_variable_update_callback(Widget wgt, XtPointer variable_update_struct, X
                 case AW_INT:    error = vus->awar->write_int(vus->variable_int_value);       break;
                 case AW_FLOAT:  error = vus->awar->write_float(vus->variable_float_value); break;
 #if defined(DEVEL_RALF)
-#warning missing implementation for AW_POINTER                     
+#warning missing implementation for AW_POINTER
 #endif // DEVEL_RALF
                 default:
                     aw_assert(0);
@@ -538,7 +538,7 @@ void AW_window::create_autosize_button(const char *macro_name, AW_label buttonla
 
 void AW_window::create_button(const char *macro_name, AW_label buttonlabel, const  char *mnemonic, const char *color) {
     // Create a button or text display.
-    // 
+    //
     // If a callback is bound via at->callback(), a button is created.
     // Otherwise a text display is created.
     //
@@ -552,7 +552,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
 
     TuneOrSetBackground(_at->attach_any ? INFO_FORM : INFO_WIDGET, // set background for buttons / text displays
                         color,
-                        _callback ? TUNE_BUTTON : 0); 
+                        _callback ? TUNE_BUTTON : 0);
 
     AWUSE(mnemonic);
 
@@ -577,12 +577,12 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
 
 #define BUTTON_TEXT_X_PADDING 4
 #define BUTTON_TEXT_Y_PADDING 10
-    
+
 #define BUTTON_GRAPHIC_PADDING 12
 #define FLAT_GRAPHIC_PADDING   4 // for buttons w/o callback
 
     bool is_graphical_button = buttonlabel[0] == '#';
-    
+
 #if defined(DEBUG)
     AW_awar *is_awar = is_graphical_button ? NULL : get_root()->label_is_awar(buttonlabel);
 #endif // DEBUG
@@ -734,7 +734,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
     Widget  button       = 0;
     char   *mwidth       = let_motif_choose_size ? 0 : XmNwidth; // 0 means autodetect by motif
     char   *mheight      = let_motif_choose_size ? 0 : XmNheight;
-    
+
     if (_callback) {
         if (_at->attach_any) { // attached button with callback
             button = XtVaCreateManagedWidget("button",
@@ -748,7 +748,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
                                              XmNfontList, p_global->fontlist,
                                              XmNbackground, _at->background_color,
                                              mwidth, (int)width_of_button, // may terminate the list
-                                             mheight, (int)height_of_button, // may terminate the list 
+                                             mheight, (int)height_of_button, // may terminate the list
                                              NULL);
             aw_attach_widget(button, _at);
         }
@@ -786,7 +786,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
                                          XmNfontList, p_global->fontlist,
                                          XmNbackground, _at->background_color,
                                          mwidth, (int)width_of_button, // may terminate the list
-                                         mheight, (int)height_of_button, // may terminate the list 
+                                         mheight, (int)height_of_button, // may terminate the list
                                          NULL);
 
         if (_at->attach_any) aw_attach_widget(button, _at);
@@ -870,7 +870,7 @@ void AW_window::update_toggle(int *wgt, const char *var, AW_CL cd_toggle_data)
 {
     aw_toggle_data *tdata = (aw_toggle_data*)cd_toggle_data;
     const char     *text  = tdata->bitmapOrText[(var[0] == '0' || var[0] == 'n') ? 0 : 1];
-    
+
     if (tdata->isTextToggle) {
         XtVaSetValues((Widget)wgt, RES_CONVERT(XmNlabelString, text), NULL);
     }
@@ -902,7 +902,7 @@ void AW_window::create_toggle(const char *var_name, aw_toggle_data *tdata) {
         else {
             _at->length_of_buttons = tdata->buttonWidth;
         }
-        
+
         create_button(0, tdata->bitmapOrText[0], 0);
 
         _at->length_of_buttons = old_length_of_buttons;
@@ -993,7 +993,7 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
     if (_at->label_for_inputfield) {
         tmp_label = XtVaCreateManagedWidget("label",
                                             xmLabelWidgetClass,
-                                            parentWidget, 
+                                            parentWidget,
                                             XmNwidth, (int)(width_of_input_label + 2),
                                             XmNhighlightThickness, 0,
                                             RES_CONVERT(XmNlabelString, _at->label_for_inputfield),
@@ -1014,12 +1014,12 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
         width_of_input = _at->to_position_x - _at->x_for_next_button - x_correcting_for_label + 2;
         width_of_last_widget = _at->to_position_x - _at->x_for_next_button;
     }
-    
+
     {
         TuneBackground(parentWidget, TUNE_INPUT);
         textField = XtVaCreateManagedWidget("textField",
                                             xmTextFieldWidgetClass,
-                                            parentWidget, 
+                                            parentWidget,
                                             XmNwidth, (int)width_of_input,
                                             XmNrows, 1,
                                             XmNvalue, String,
@@ -1030,7 +1030,7 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
                                             NULL);
         if (_at->attach_any) aw_attach_widget(textField, _at);
     }
-    
+
     free(String);
 
     // user-own callback
@@ -1330,7 +1330,7 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, const 
                                                XmNselectionPolicy, select_type,
                                                XmNlistSizePolicy, XmCONSTANT,
                                                XmNfontList, p_global->fontlist,
-                                               XmNbackground, _at->background_color, 
+                                               XmNbackground, _at->background_color,
                                                NULL);
     }
 
@@ -2150,7 +2150,7 @@ AW_option_menu_struct *AW_window::create_option_menu(const char *var_name, AW_la
                                              XmNoverrideRedirect, true,
                                              XmNfontList, p_global->fontlist,
                                              NULL);
-    
+
     optionMenu = XtVaCreateWidget("optionMenu_p1",
                                   xmRowColumnWidgetClass,
                                   optionMenu_shell,
@@ -2248,7 +2248,7 @@ AW_option_menu_struct *AW_window::create_option_menu(const char *var_name, AW_la
 
     AW_INSERT_BUTTON_IN_AWAR_LIST(vs, (AW_CL)p_global->current_option_menu, optionMenu, AW_WIDGET_CHOICE_MENU, this);
     root->make_sensitive(optionMenu1, _at->widget_mask);
-    
+
     return p_global->current_option_menu;
 }
 
@@ -2293,7 +2293,7 @@ void *AW_window::_create_option_entry(AW_VARIABLE_TYPE type, const char *name, c
                                     oms->menu_widget,
                                     RES_LABEL_CONVERT(((char *)name)),
                                     XmNfontList, p_global->fontlist,
-                                    XmNbackground, _at->background_color, 
+                                    XmNbackground, _at->background_color,
                                     NULL);
     AW_label_in_awar_list(this, entry, name);
     return (void *)entry;
@@ -2400,7 +2400,7 @@ void AW_window::update_option_menu(AW_option_menu_struct *oms) {
 #if defined(DEVEL_RALF)
 #warning missing implementation for AW_POINTER
 #endif // DEVEL_RALF
-            
+
             switch (oms->variable_type) {
                 case AW_STRING: global_var_value       = root->awar(var_name)->read_string(); break;
                 case AW_INT:    global_var_int_value   = root->awar(var_name)->read_int(); break;
@@ -2446,7 +2446,7 @@ void AW_window::update_option_menu(AW_option_menu_struct *oms) {
                 }
             }
             width_of_last_widget -= 4;
-            
+
             this->unset_at_commands();
             this->increment_at_commands(width_of_last_widget, height_of_last_widget);
         }
@@ -2539,7 +2539,7 @@ void AW_window::create_toggle_field(const char *var_name, int orientation) {
     }
 
     AW_awar *vs = root->awar(var_name);
-    
+
     p_w->toggle_field = toggle_field;
     free((p_w->toggle_field_var_name));
     p_w->toggle_field_var_name = strdup(var_name);
@@ -2596,7 +2596,7 @@ static Widget _aw_create_toggle_entry(AW_window *aww, Widget toggle_field,
         }
     }
     root->make_sensitive(toggleButton, aww->_at->widget_mask);
-    
+
     aww->unset_at_commands();
     return  toggleButton;
 }
@@ -2675,7 +2675,7 @@ void AW_window::update_toggle_field(int toggle_field_number) {
 #if defined(DEVEL_RALF)
 #warning missing implementation for AW_POINTER
 #endif // DEVEL_RALF
-            
+
             switch (toggle_field_list->variable_type) {
                 case AW_STRING: global_var_value       = root->awar(toggle_field_list->variable_name)->read_string(); break;
                 case AW_INT:    global_var_int_value   = root->awar(toggle_field_list->variable_name)->read_int();      break;

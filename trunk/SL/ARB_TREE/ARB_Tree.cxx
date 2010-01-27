@@ -144,7 +144,7 @@ static void arb_tree_species_deleted_cb(GBDATA *gb_species, int *cl_ARB_tree, GB
 
 GB_ERROR ARB_tree_root::linkToDB(int *zombies, int *duplicates) {
     at_assert(!ali->has_data() || get_seqTemplate()); // if ali has data, you have to set_seqTemplate() before linking
-    
+
     GB_ERROR error = 0;
     if (!isLinkedToDB) {
         error = GBT_link_tree(rootNode->get_gbt_tree(), get_gb_main(), false, zombies, duplicates);
@@ -179,7 +179,7 @@ void ARB_tree::calcTreeInfo(ARB_tree_info& info) {
         if (gb_node) {
             if (GB_read_flag(gb_node)) info.marked++;
         }
-        else { 
+        else {
             info.unlinked++;
         }
     }
@@ -215,7 +215,7 @@ ARB_tree::ARB_tree(ARB_tree_root *troot)
         tree->is_leaf = false; at_assert(!is_leaf);
         tree->is_leaf = true;  at_assert(is_leaf);
         tree->is_leaf = was_leaf;
-        
+
         vtable_ptr_check_done = true;
     }
 #endif // DEBUG
@@ -252,7 +252,7 @@ void ARB_tree::move_gbt_info(GBT_TREE *tree) {
     if (!is_leaf) {                                 // inner node
         leftson         = dup();                    // creates two clones of 'this'
         leftson->father = this;
-        
+
         rightson         = dup();
         rightson->father = this;
 
@@ -283,7 +283,7 @@ void ARB_tree::assert_valid() const {
             at_assert(troot->get_root_node()->is_anchestor_of(this));
         }
         else {
-            at_assert(father->get_tree_root() == NULL); // if this has no root, father as well shouldn't have root 
+            at_assert(father->get_tree_root() == NULL); // if this has no root, father as well shouldn't have root
         }
     }
     else {                                          // this is root

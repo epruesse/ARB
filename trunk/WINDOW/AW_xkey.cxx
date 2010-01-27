@@ -38,14 +38,14 @@ static awXKeymap_modfree awxkeymap_modfree[] = {
     { XK_Home,   "Home",   AW_KEY_HOME },
     { XK_End,    "End",    AW_KEY_END },
     { XK_Delete, "Delete", AW_KEY_DELETE }, // was same as BackSpace in the past -- 2007/11/15
-    
-    { 0, 0, AW_KEY_NONE }, 
+
+    { 0, 0, AW_KEY_NONE },
 };
 
 // manual key defs
 // keys where all (or most) modifiers don't work should go here
 static awXKeymap awxkeymap[] = {
-    // sun keypad ? 
+    // sun keypad ?
     { XK_Shift_R, XK_R10, "Shift-Left",  AW_KEYMODE_SHIFT, AW_KEY_LEFT,  0 },
     { XK_Shift_R, XK_R12, "Shift-Right", AW_KEYMODE_SHIFT, AW_KEY_RIGHT, 0 },
     { XK_Shift_L, XK_R10, "Shift-Left",  AW_KEYMODE_SHIFT, AW_KEY_LEFT,  0 },
@@ -108,7 +108,7 @@ static void map_awXKey(Display *display, const awXKeymap *awxk) {
 
 void aw_install_xkeys(Display *display) {
     int i;
-    
+
     awxkeymap_string_2_key_hash = GBS_create_hash(KEYMAX, GB_MIND_CASE);
     awxkeymap_xkey_2_key_hash   = GBS_create_numhash(KEYMAX);
 
@@ -123,7 +123,7 @@ void aw_install_xkeys(Display *display) {
         int         xmod;
         const char *xstr_prefix;
         AW_key_mod  awmod;
-    } 
+    }
     moddef[MODS] = {
         { XK_Shift_L,   "Shift",   AW_KEYMODE_SHIFT },
         { XK_Shift_R,   "Shift",   AW_KEYMODE_SHIFT },
@@ -225,7 +225,7 @@ const awXKeymap *aw_xkey_2_awkey(XKeyEvent *xkeyevent) {
         }
         else if ((ptr = GBS_read_numhash(awxkeymap_xkey_2_key_hash, keysym))) {
             result    = (awXKeymap*)ptr;
-            
+
 #if defined(DUMP_KEYEVENTS)
             printf("_awxkeymap_xkey_2_key_hash['%x']='%s'", (unsigned)keysym, result->xstr);
 #endif // DUMP_KEYEVENTS

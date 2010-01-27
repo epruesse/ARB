@@ -75,7 +75,7 @@ public:
     void weight_by_inverseRates() const;
 
     size_t get_length() const { return seq_len; }
-    
+
     const GB_UINT4 *get_weights() const { return weights; }
     const float *get_rates() const { return rates; }
     const float *get_ttratio() const { return ttratio; }

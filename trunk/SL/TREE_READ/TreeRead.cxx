@@ -63,7 +63,7 @@ static char gbt_getc(TreeReader *reader) {
         switch (reader->lfmode) {
             case LF_UNKNOWN: reader->lfmode = LF_R; inc = 1; break;
             case LF_R:       inc = 1; break;
-            case LF_N:       reader->lfmode = LF_NR; c = gbt_getc(reader); break; 
+            case LF_N:       reader->lfmode = LF_NR; c = gbt_getc(reader); break;
             case LF_RN:      c = gbt_getc(reader); break;
             case LF_NR:      inc = 1; break;
         }
@@ -231,7 +231,7 @@ static char *gbt_read_quoted_string(TreeReader *reader) {
 static void setBranchName(TreeReader *reader, GBT_TREE *node, char *name) {
     /* detect bootstrap values */
     /* name has to be stored in node or must be freed */
-    
+
     char   *end       = 0;
     double  bootstrap = strtod(name, &end);
 
@@ -259,7 +259,7 @@ static void setBranchName(TreeReader *reader, GBT_TREE *node, char *name) {
 
 static bool gbt_readNameAndLength(TreeReader *reader, GBT_TREE *node, GBT_LEN *len) {
     /* reads the branch-length and -name
-       '*len' should normally be initialized with TREE_DEFLEN_MARKER 
+       '*len' should normally be initialized with TREE_DEFLEN_MARKER
      * returns the branch-length in 'len' and sets the branch-name of 'node'
      * returns true if successful, otherwise reader->error gets set
      */
@@ -297,7 +297,7 @@ static bool gbt_readNameAndLength(TreeReader *reader, GBT_TREE *node, GBT_LEN *l
 
 static GBT_TREE *gbt_linkedTreeNode(GBT_TREE *left, GBT_LEN leftlen, GBT_TREE *right, GBT_LEN rightlen, int structuresize) {
     GBT_TREE *node = (GBT_TREE*)GB_calloc(1, structuresize);
-                                
+
     node->leftson  = left;
     node->leftlen  = leftlen;
     node->rightson = right;
@@ -336,7 +336,7 @@ static GBT_TREE *gbt_load_tree_rek(TreeReader *reader, int structuresize, GBT_LE
                         while (reader->last_character == ',' && !reader->error) {
                             if (right) { /* multi-branch */
                                 GBT_TREE *pair = gbt_linkedTreeNode(left, leftLen, right, rightLen, structuresize);
-                                
+
                                 left  = pair; leftLen = 0;
                                 right = 0; rightLen = TREE_DEFLEN_MARKER;
                             }
@@ -358,7 +358,7 @@ static GBT_TREE *gbt_load_tree_rek(TreeReader *reader, int structuresize, GBT_LE
                         else {
                             setReaderError(reader, "Expected one of ',)'");
                         }
-                        
+
                         free(right);
 
                         break;

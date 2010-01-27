@@ -19,7 +19,7 @@ using std::string;
 enum AWTI_EXPORT_CMD {
     // real formats
     AWTI_EXPORT_XML,
-    
+
     AWTI_EXPORT_INVALID,
     AWTI_EXPORT_USING_FORM,        // default mode (has to be last entry in enum)
 };
@@ -455,7 +455,7 @@ static GB_ERROR AWTI_XML_recursive(GBDATA *gbd) {
     }
     else {
         tag = new XML_Tag(key_name);
-        
+
         const char *name = GBT_read_char_pntr(gbd, "name");
         if (name) tag->add_attribute("name", name);
     }
@@ -537,7 +537,7 @@ static GB_ERROR AWTI_export_format(AW_root *aw_root, const char *formname, const
             // Afterwards convert to wanted format using 'system'.
 
             awte_assert(efo.system);
-            
+
             char *intermediate_export;
             error = AWTI_export_format(aw_root, efo.new_format, NULL, &intermediate_export);
             if (!error) {
@@ -605,7 +605,7 @@ static GB_ERROR AWTI_export_format(AW_root *aw_root, const char *formname, const
                             error = export_species_using_form(out, gb_species, efo.form);
                             break;
 
-                        case AWTI_EXPORT_XML: 
+                        case AWTI_EXPORT_XML:
                             error = AWTI_XML_recursive(gb_species);
                             break;
 
@@ -638,7 +638,7 @@ static GB_ERROR AWTI_export_format_multiple(AW_root *aw_root, const char *formna
     GB_ERROR error = 0;
 
     aw_status(0.);
-    
+
     if (multiple) {
         char *path, *name, *suffix;
         GB_split_full_path(outname, &path, NULL, &name, &suffix);
@@ -770,15 +770,15 @@ static void export_form_changed_cb(AW_root *aw_root) {
         if (GB_is_regularfile(current_format)) {
             char *current_suffix = get_format_default_suffix(current_format, error);
             if (!error) {
-                // Note: current_suffix may be NULL.. is that ok? 
-            
+                // Note: current_suffix may be NULL.. is that ok?
+
                 // modify export filename and view
 
                 AW_awar *awar_filter = aw_root->awar(AWAR_EXPORT_FILE"/filter");
                 AW_awar *awar_export = aw_root->awar(AWAR_EXPORT_FILE"/file_name");
 
                 awar_filter->write_string("");
-                
+
                 char *exportname = awar_export->read_string();
 
                 {
@@ -802,7 +802,7 @@ static void export_form_changed_cb(AW_root *aw_root) {
                 free(exportname);
 
                 awar_filter->write_string(current_suffix);
-                
+
                 // remember last applied suffix
                 reassign(previous_suffix, current_suffix);
             }

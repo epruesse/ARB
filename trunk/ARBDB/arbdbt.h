@@ -83,4 +83,4 @@ typedef GB_ERROR (*species_callback)(GBDATA *gb_species, int *clientdata);
 
 #else
 #error arbdbt.h included twice
-#endif 
+#endif

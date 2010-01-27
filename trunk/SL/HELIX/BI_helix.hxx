@@ -58,7 +58,7 @@ protected:
 
     char *pairs[HELIX_MAX];
     char *char_bind[HELIX_MAX];
-    
+
     bool is_pairtype(char left, char right, BI_PAIR_TYPE pair_type);
 
 public:
@@ -96,7 +96,7 @@ public:
 
     long first_pair_position() const; // first pair position (or -1)
     long next_pair_position(size_t pos) const; // next pair position behind 'pos' (or -1)
-    
+
     long first_position(const char *helixNr) const; // returns -1 for non-existing helixNr's
     long last_position(const char *helixNr) const; // returns -1 for non-existing helixNr's
 };
@@ -110,7 +110,7 @@ class BI_ecoli_ref {
 
     size_t *abs2rel;
     size_t *rel2abs;
-    
+
     void bi_exit();
 
 public:
@@ -122,15 +122,15 @@ public:
     const char *init(const char *seq, size_t size);
 
     bool gotData() const { return abs2rel != 0; }
-    
+
     size_t abs_2_rel(size_t abs) const {
-        bi_assert(gotData()); 
+        bi_assert(gotData());
         if (abs >= absLen) abs = absLen-1;
         return abs2rel[abs];
     }
 
     size_t rel_2_abs(size_t rel) const {
-        bi_assert(gotData()); 
+        bi_assert(gotData());
         if (rel >= relLen) rel = relLen-1;
         return rel2abs[rel];
     }

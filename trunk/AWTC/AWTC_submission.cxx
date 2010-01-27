@@ -107,7 +107,7 @@ static void ed_submit_info_event(AW_window *aww) {
                     ed_submit_info_event_rm(key);
                     GBS_strcat(strstruct, key);
                     free(key);
-                    
+
                     GBS_strcat(strstruct, ":\n");
                     break;
                 }
@@ -135,7 +135,7 @@ static void ed_submit_info_event(AW_window *aww) {
     else {
         GBS_strcat(strstruct, "Species not found");
     }
-    
+
     char *parser = GBS_strclose(strstruct);
     aw_root->awar(AWAR_PARSER)->write_string(parser);
 
@@ -166,7 +166,7 @@ static void ed_submit_parse_event(AW_window *aww)
 
     for (d = p = parser; *p; p++) {
         if ((c=*p)==':') {
-            if (p[1] == '\n') p++; // skip newline 
+            if (p[1] == '\n') p++; // skip newline
         }
         *(d++) = c;
     }
@@ -186,7 +186,7 @@ static void ed_submit_parse_event(AW_window *aww)
     privat = aw_root->awar("submission/privat")->read_string();
     for (d = p = privat; *p; p++) {
         if ((c=*p)==':') {
-            if (p[1] == '\n') p++; // skip newline 
+            if (p[1] == '\n') p++; // skip newline
         }
         *(d++) = c;
     }

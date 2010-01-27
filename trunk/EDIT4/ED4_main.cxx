@@ -198,7 +198,7 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
                     ED4_group_manager *group_manager = sequence_terminal->get_parent(ED4_L_GROUP)->to_group_manager();
                     int size = group_manager->table().size();
 
-                    seq       = (char*)GB_calloc(size+1, sizeof(char)); 
+                    seq       = (char*)GB_calloc(size+1, sizeof(char));
                     seq[size] = 0;
                     seq       = group_manager->table().build_consensus_string(0, size-1, seq);
                     seq_len   = size;
@@ -353,7 +353,7 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
     // Note: cursor awars are created in window constructor
 
     ed4_create_mainDB_awars(root, config_name);
-    
+
 #if defined(DEBUG)
     AWT_create_db_browser_awars(root, AW_ROOT_DEFAULT);
 #endif // DEBUG
@@ -422,7 +422,7 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
     if (ED4_ROOT->alignment_type == GB_AT_DNA) {
         PV_CreateAwars(root, AW_ROOT_DEFAULT);
     }
-    
+
     // create awars to be used for protein secondary structure match
     if (ED4_ROOT->alignment_type == GB_AT_AA) {
         root->awar_int(PFOLD_AWAR_ENABLE, 1);
@@ -634,7 +634,7 @@ int main(int argc, char **argv)
         printf("Species container contains %i species (at startup)\n", ED4_elements_in_species_container);
 #endif
     }
-    
+
     // Create Additional sequence (aminoacid) terminals to be used in Protein Viewer
     if (ED4_ROOT->alignment_type == GB_AT_DNA) {
         PV_CallBackFunction(ED4_ROOT->aw_root);

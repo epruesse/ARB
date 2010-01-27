@@ -180,7 +180,7 @@ static char *calc_rest_line( /* const */ char *str, int size, int presize)
                 int file_len = strlen(fi);
 
                 aisc_assert(gl->line_path);
-                
+
                 const char *previous_file = gl->line_path ? gl->line_path : "unknown.file";
                 int         previous_line = gl->line_path ? gl->line_cnt : 0;
                 int         buflen        = file_len+strlen(path)+strlen(previous_file)+100;
@@ -338,7 +338,7 @@ static int do_com_data(char *str)
     gl->line_cnt        = 1;
     free(gl->line_path);
     gl->line_path       = strdup(gl->pc->path);
-    
+
     gl->root = parse_aisc_TokenListBlock(in);
 
     if (!gl->root) {
@@ -552,7 +552,7 @@ static int do_com_close(char *str) {
             if (!strcmp(gl->fouts[i], str)) {
                 fclose(gl->outs[i]);
                 gl->outs[i] = NULL;
-                
+
                 free(gl->fouts[i]);
                 free(gl->fouts_name[i]);
                 gl->fouts[i]      = 0;
@@ -703,9 +703,9 @@ static int do_com_if(char *str)
     aisc_assert(equ>str);
     if (equ[-1] == '!') op += 8;
 
-    --la; 
+    --la;
     SKIP_SPACE_LF_BACKWARD(la);
-    *(++la) = 0; 
+    *(++la) = 0;
     equ++;
     while (equ) {
         SKIP_SPACE_LF(equ);
@@ -729,7 +729,7 @@ static int do_com_if(char *str)
     }
 
     // condition wrong -> goto else
-    gl->nextpc = gl->pc->ELSE->next; 
+    gl->nextpc = gl->pc->ELSE->next;
     return 0;
 }
 
@@ -772,14 +772,14 @@ int do_com_push(const char *str)
 
 static void pop_stack() {
     aisc_assert(gl->sp>0);
-    
+
     struct stack_struct *st = gl->st;
     free_hash(st->hs);
     gl->cursor = st->cursor;
     gl->st     = st->next;
     free(st);
     gl->sp--;
-    
+
 }
 
 void free_stack() {
@@ -891,7 +891,7 @@ static int do_com_for(char *str)
     st += 2;
 
     SKIP_SPACE_LF(st);
-    
+
     co      = strchr(st, ')');
     *(co++) = 0;
     eq      = strchr(co, '=');
@@ -1019,7 +1019,7 @@ static int do_com_next(const char *str)
 
 int run_prg() {
     int err;
-    
+
     for (gl->pc = gl->prg; gl->pc; gl->pc = gl->nextpc) {
         gl->nextpc = gl->pc->next;
         if (gl->pc->command) {
@@ -1029,7 +1029,7 @@ int run_prg() {
                         gl->nextpc = gl->pc->ELSE->next;
                         break;
                     }
-                    
+
                     if (do_com_if(gl->linebuf))
                         return 1;
                     break;
@@ -1073,7 +1073,7 @@ int run_prg() {
 
         free(gl->line_path);
         gl->line_path = strdup(gl->prg->path);
-        
+
         err = calc_line(gl->pc->str, gl->linebuf);
         if (err) return err;
 

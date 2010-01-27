@@ -88,7 +88,7 @@ public:
 
     const BaseCounter& getBaseCounter() const { return baseCounter; }
     BaseCounter& getBaseCounter() { return baseCounter; }
-    
+
     const char *getSequence() const;
 };
 

@@ -27,7 +27,7 @@ class SEC_structure_toggler {
 
     int  current();
     GB_ERROR set_current(int idx) __ATTR__USERESULT;
-    
+
     GBDATA *find(int num);
     GBDATA *create(const char *name); // create new structure (storing current)
 
@@ -35,12 +35,12 @@ class SEC_structure_toggler {
     GB_ERROR restore(GBDATA *gb_struct);
 
     GB_ERROR setName(GBDATA *gb_struct, const char *new_name);
-    
+
 public:
     SEC_structure_toggler(GBDATA *gb_main, const char *ali_name, SEC_graphic *Gfx); // might set error
 
     GB_ERROR get_error() const { return st_error; }
-    
+
     GB_ERROR next();
     GB_ERROR copyTo(const char *name);
     GB_ERROR remove();

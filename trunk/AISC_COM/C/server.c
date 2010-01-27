@@ -75,7 +75,7 @@ struct Hs_struct {
 struct aisc_bytes_list {
     char *data;
     int   size;
-    
+
     struct aisc_bytes_list *next;
 } *aisc_server_bytes_first, *aisc_server_bytes_last;
 
@@ -113,7 +113,7 @@ static const char *test_address_valid(void *address, long key)
      */
 
     static char buf[256];
-    
+
     char *result = buf;
     long  i;
 
@@ -409,7 +409,7 @@ struct Hs_struct *open_aisc_server(const char *path, int timeout, int fork) {
     // install signal handlers (asserting none have been installed yet!)
     ASSERT_RESULT(SigHandler, SIG_DFL, signal(SIGSEGV, aisc_server_sigsegv));
     ASSERT_RESULT(SigHandler, SIG_DFL, signal(SIGPIPE, aisc_server_sigpipe));
-    
+
     aisc_server_bytes_first = 0;
     aisc_server_bytes_last  = 0;
     /* simply take first address */
@@ -456,7 +456,7 @@ static void test_test_address_valid() {
     /* test test_address_valid with illegal memory */
     aisc_server_error = test_address_valid((void*)7, 13);
     printf("aisc_server_error='%s'\n", aisc_server_error);
-#endif 
+#endif
 #if 0
     {
         char mem[]        = "some_object";
@@ -475,7 +475,7 @@ static long aisc_talking_get(long *in_buf, int size, long *out_buf, int max_size
     aisc_talking_func_long    function;
     aisc_talking_func_long   *functions;
     aisc_talking_func_double  dfunction;
-    
+
     long          len;
     long          erg = 0;
     static double derg;
@@ -500,7 +500,7 @@ static long aisc_talking_get(long *in_buf, int size, long *out_buf, int max_size
 #if defined(DEVEL_RALF) && 0
     test_test_address_valid();
 #endif /* DEVEL_RALF */
-    
+
     AISC_DUMP_SEP();
     AISC_DUMP(aisc_talking_get, int, object_type);
 
@@ -816,7 +816,7 @@ static long aisc_talking_create(long *in_buf, int size, long *out_buf, int max_s
     father_type       = in_buf[in_pos++];
     father            = in_buf[in_pos++];
     max_size          = 0;
-    
+
     for (i=0; i<1; i++) {
         if ((father_type&0xff00ffff) ||
              (((unsigned int)father_type& 0xff0000) >= (AISC_MAX_OBJECT*0x10000))) {
@@ -882,7 +882,7 @@ static long aisc_talking_copy(long *in_buf, int size, long *out_buf, int max_siz
     object            = in_buf[in_pos++];
     father_type       = (int)in_buf[in_pos++];
     father            = in_buf[in_pos++];
-    
+
     for (i=0; i<1; i++) {
         if ((father_type&0xff00ffff) ||
              (((unsigned int)father_type& 0xff0000) >= (AISC_MAX_OBJECT*0x10000))) {
@@ -950,7 +950,7 @@ static long aisc_talking_find(long *in_buf, int size, long *out_buf, int max_siz
     father            = in_buf[in_pos++];
     size              = size;
     max_size          = max_size;
-    
+
     for (i = 0; i < 1; i++) {
         if ((father_type & 0xff00ffff) ||
             (((unsigned int) father_type & 0xff0000) >= (AISC_MAX_OBJECT*0x10000))) {
@@ -1077,7 +1077,7 @@ static long aisc_talking_debug_info(long *in_buf, int size, long *out_buf, int m
     max_size          = max_size;
     in_pos            = out_pos = 0;
     aisc_server_error = NULL;
-    
+
     for (i=0; i<256; i++) out_buf[i] = 0;
     for (i = 0; i < 1; i++) {
         object = (long *)in_buf[in_pos++];
@@ -1181,7 +1181,7 @@ static int aisc_private_message(int socket, int message_type, char *message) {
 
     if (!message) size = 0;
     else size          = strlen(message);
-    
+
     out_buf = (long *)malloc(size+64);
     if (!message) {
         out_buf[3] = 0;

@@ -37,12 +37,12 @@ extern int  basesArePairing[BASECHARS][BASECHARS], /* Kombination paarend? */
 
 #ifdef __cplusplus
 extern "C" {
-#endif    
+#endif
 
     void initBaseLookups ();
 
 #ifdef __cplusplus
 }
-#endif    
+#endif
 
 #endif

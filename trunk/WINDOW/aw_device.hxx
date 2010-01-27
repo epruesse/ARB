@@ -14,7 +14,7 @@
 
 // #define AW_PIXELS_PER_MM 1.0001 // stupid and wrong
 
-const AW_bitset AW_ALL_DEVICES = (AW_bitset)-1; 
+const AW_bitset AW_ALL_DEVICES = (AW_bitset)-1;
 const AW_bitset AW_SCREEN      = 1;
 const AW_bitset AW_CLICK       = 2;
 const AW_bitset AW_CLICK_DRAG  = 4;
@@ -321,9 +321,9 @@ public:
     int  get_string_size(int gc, const  char *string, long textlen); // get the size of the string
 
     const AW_font_information *get_font_information(int gc, unsigned char c);
-    
+
     int get_available_fontsizes(int gc, AW_font font_nr, int *available_sizes);
-    
+
     AW_gc();
     virtual ~AW_gc() {};
 };
@@ -334,15 +334,15 @@ class AW_device : public AW_matrix, public AW_gc
 {
     AW_device(const AW_device& other);
     AW_device& operator=(const AW_device& other);
-    
+
 protected:
     AW_clip_scale_stack *clip_scale_stack;
     virtual         void  privat_reset();
 
 public:
-    AW_device(AW_common *common); 
+    AW_device(AW_common *common);
     virtual ~AW_device() {}
- 
+
     AW_bitset filter; // read-only (@@@ should go private!)
 
     void reset();
@@ -395,7 +395,7 @@ public:
     // * third level functions (never virtual)
 
     // convenience functions
-    
+
     int line(int gc, const AW::Position& pos1, const AW::Position& pos2, AW_bitset filteri = (AW_bitset)-1, AW_CL cd1 = 0, AW_CL cd2 = 0) {
         return line(gc, pos1.xpos(), pos1.ypos(), pos2.xpos(), pos2.ypos(), filteri, cd1, cd2);
     }
@@ -418,14 +418,14 @@ public:
     int box(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
         return box(gc, filled, rect.upper_left_corner(), rect.diagonal(), filteri, cd1, cd2);
     }
-    
+
     int circle(int gc, bool filled, const AW::Position& pos, AW_pos width, AW_pos heigth, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
         return circle(gc, filled, pos.xpos(), pos.ypos(), width, heigth, filteri, cd1, cd2);
     }
     int circle(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri, AW_CL cd1, AW_CL cd2) { // paint a circle/ellipsoid into a rectangle
         return circle(gc, filled, rect.centroid(), rect.width(), rect.height(), filteri, cd1, cd2);
     }
-    
+
     int arc(int gc, bool filled, const AW::Position& pos, AW_pos width, AW_pos heigth, int start_degrees, int arc_degrees, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
         return arc(gc, filled, pos.xpos(), pos.ypos(), width, heigth, start_degrees, arc_degrees, filteri, cd1, cd2);
     }

@@ -25,13 +25,13 @@ static const char *gbt_insert_delete(const char *source, long srclen, long destl
      *
      * srclen           len of source
      * destlen          if != 0, then cut or append characters to get this len, otherwise keep srclen
-     * newlenPtr        the resulting len 
+     * newlenPtr        the resulting len
      * pos              where to insert/delete
      * nchar            and how many items
      * mod              size of an item
      * insert_what      insert this character (mod times)
      * insert_tail      append this character (if destlen>srclen)
-     * extraByte        0 or 1. append extra zero byte at end? use 1 for strings!  
+     * extraByte        0 or 1. append extra zero byte at end? use 1 for strings!
      *
      * resulting array has destlen+nchar elements
      *
@@ -63,7 +63,7 @@ static const char *gbt_insert_delete(const char *source, long srclen, long destl
         }
         else {
             size_t neededSpace = newlen+extraByte;
-            
+
             if (insDelBuffer && insDelBuffer_size<neededSpace) freenull(insDelBuffer);
             if (!insDelBuffer) {
                 insDelBuffer_size = neededSpace;
@@ -123,9 +123,9 @@ enum insDelTarget {
 };
 
 static GB_CSTR targetType[] = {
-    "Species", 
-    "SAI", 
-    "SeceditStruct", 
+    "Species",
+    "SAI",
+    "SeceditStruct",
 };
 
 static bool insdel_shall_be_applied_to(GBDATA *gb_data, enum insDelTarget target) {
@@ -216,7 +216,7 @@ static GB_ERROR gbt_insert_character_gbd(GBDATA *gb_data, enum insDelTarget targ
 
                             break;
                         }
-                        case GB_BITS:   source = GB_read_bits_pntr(gb_data, '-', '+');  insert_what = '-'; insert_tail = '-'; break; 
+                        case GB_BITS:   source = GB_read_bits_pntr(gb_data, '-', '+');  insert_what = '-'; insert_tail = '-'; break;
                         case GB_BYTES:  source = GB_read_bytes_pntr(gb_data);           break;
                         case GB_INTS:   source = (GB_CSTR)GB_read_ints_pntr(gb_data);   mod = sizeof(GB_UINT4); break;
                         case GB_FLOATS: source = (GB_CSTR)GB_read_floats_pntr(gb_data); mod = sizeof(float); break;
@@ -259,7 +259,7 @@ static GB_ERROR gbt_insert_character_gbd(GBDATA *gb_data, enum insDelTarget targ
 static GB_ERROR gbt_insert_character_item(GBDATA *gb_item, enum insDelTarget item_type, const struct insDel_params *params) {
     GB_ERROR  error  = 0;
     GBDATA   *gb_ali = GB_entry(gb_item, params->ali_name);
-    
+
     if (gb_ali) {
         error = gbt_insert_character_gbd(gb_ali, item_type, params);
         if (error) {
@@ -267,7 +267,7 @@ static GB_ERROR gbt_insert_character_item(GBDATA *gb_item, enum insDelTarget ite
             error = GBS_global_string("%s '%s': %s", targetType[item_type], item_name, error);
         }
     }
-    
+
     return error;
 }
 
@@ -377,7 +377,7 @@ GB_ERROR GBT_insert_character(GBDATA *Main, const char *alignment_name, long pos
      * modifies several data entries found there
      * (see insdel_shall_be_applied_to for details which fields are affected).
      */
-    
+
     GB_ERROR error = 0;
 
     if (pos<0) {
@@ -425,7 +425,7 @@ GB_ERROR GBT_insert_character(GBDATA *Main, const char *alignment_name, long pos
                     if (count < 0 && pos-count > len) count = pos - len;
                     error = GB_write_int(gb_len, len + count);
                 }
-                
+
                 if (!error) {
                     struct insDel_params params = { use, len, pos, count, char_delete_list };
 

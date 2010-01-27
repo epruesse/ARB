@@ -82,7 +82,7 @@ static void advice_close_cb(AW_window *aww, AW_CL cl_id, AW_CL type) {
     int understood = advice_root->awar(AWAR_ADVICE_UNDERSTOOD)->read_int();
 
     // switch to 'not understood'. Has to be checked by user for each advice.
-    advice_root->awar(AWAR_ADVICE_UNDERSTOOD)->write_int(0); 
+    advice_root->awar(AWAR_ADVICE_UNDERSTOOD)->write_int(0);
     aww->hide();
 
     if (understood) {

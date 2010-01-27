@@ -153,7 +153,7 @@ void create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL) {
                     // create SAI container and copy fields from the species to the SAI
                     gb_sai                   = GB_create_container(gb_sai_data, "extended");
                     GBDATA *gb_species_field = GB_child(gb_species);
-                    
+
                     while (gb_species_field && !error) {
                         char   *key          = GB_read_key(gb_species_field);
                         GBDATA *gb_sai_field = GB_search(gb_sai, GB_read_key(gb_species_field), GB_read_type(gb_species_field));
@@ -575,7 +575,7 @@ static void ad_hide_field(AW_window *aws, AW_CL cl_cbs, AW_CL cl_hide) {
 
         if (!gb_source) error = "Please select the field you want to (un)hide";
         else error            = GBT_write_int(gb_source, CHANGEKEY_HIDDEN, int(cl_hide));
-        
+
         free(source);
     }
     GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
@@ -608,7 +608,7 @@ static void ad_field_delete(AW_window *aws, AW_CL cl_cbs) {
                 if (gbd) {
                     error = GB_delete(gbd);
                     if (!error) {
-                        // item has disappeared, this selects the next one: 
+                        // item has disappeared, this selects the next one:
                         aws->select_index(cbs->id, AWAR_FIELD_DELETE, curr_index);
                     }
                 }
@@ -809,7 +809,7 @@ void ad_spec_create_field_items(AW_window *aws) {
     aws->insert_menu_topic("spec_delete_field",   "Delete/Hide fields ...", "D", "spaf_delete.hlp",  AWM_EXP, AW_POPUP, (AW_CL)NT_create_ad_field_delete, (AW_CL)&AWT_species_selector);
     aws->insert_menu_topic("spec_create_field",   "Create fields ...",      "C", "spaf_create.hlp",  AWM_ALL, AW_POPUP, (AW_CL)NT_create_ad_field_create, (AW_CL)&AWT_species_selector);
     aws->insert_menu_topic("spec_convert_field",  "Convert fields ...",     "t", "spaf_convert.hlp", AWM_EXP, AW_POPUP, (AW_CL)NT_create_ad_field_convert, (AW_CL)&AWT_species_selector);
-    aws->insert_separator(); 
+    aws->insert_separator();
     aws->insert_menu_topic("spec_unhide_fields", "Show all hidden fields", "S", "scandb.hlp", AWM_ALL, (AW_CB)awt_selection_list_unhide_all_cb, (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER);
     aws->insert_separator();
     aws->insert_menu_topic("spec_scan_unknown_fields", "Scan unknown fields",   "u", "scandb.hlp", AWM_ALL, (AW_CB)awt_selection_list_scan_unknown_cb,  (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER);
@@ -828,7 +828,7 @@ static void awtc_nn_search_all_listed(AW_window *aww, AW_CL _cbs) {
 
     AW_root *aw_root    = aww->get_root();
     char    *dest_field = aw_root->awar(AWAR_NN_DEST_FIELD)->read_string();
-    
+
     GB_ERROR error     = 0;
     GB_TYPES dest_type = GBT_get_type_of_changekey(GLOBAL_gb_main, dest_field, CHANGE_KEY_PATH);
     if (!dest_type) {
@@ -864,13 +864,13 @@ static void awtc_nn_search_all_listed(AW_window *aww, AW_CL _cbs) {
          gb_species = GBT_next_species(gb_species))
     {
         if (!IS_QUERIED(gb_species, cbs)) continue;
-        
+
         count++;
         if ((count%10) == 0) {
             GBDATA *gb_name = GB_search(gb_species, "name", GB_STRING);
             aw_status(GBS_global_string("Species '%s' (%li:%li)", GB_read_char_pntr(gb_name), count, max));
         }
-        
+
         GBDATA *gb_data = GBT_read_sequence(gb_species, ali_name);
         if (!gb_data) continue;
 
@@ -918,7 +918,7 @@ static void awtc_nn_search_all_listed(AW_window *aww, AW_CL _cbs) {
 
                 if (value) {
                     GBDATA *gb_dest = GB_search(gb_species, dest_field, dest_type);
-                    
+
                     error = GB_write_as_string(gb_dest, GBS_mempntr(value));
                     GBS_strforget(value);
                 }
@@ -984,7 +984,7 @@ static void awtc_nn_search(AW_window *aww, AW_CL id) {
     {
         AW_selection_list* sel = (AW_selection_list *)id;
         aww->clear_selection_list(sel);
-    
+
         int hits = 0;
         if (error) {
             aw_message(error);
@@ -1020,7 +1020,7 @@ static void awtc_nn_search(AW_window *aww, AW_CL id) {
 static void awtc_move_hits(AW_window *aww, AW_CL id, AW_CL cbs) {
     AW_root *aw_root         = aww->get_root();
     char    *current_species = aw_root->awar(AWAR_SPECIES_NAME)->read_string();
-    
+
     if (!current_species) current_species = strdup("<unknown>");
 
     char *hit_description = GBS_global_string_copy("<neighbour of %s: %%s>", current_species);
@@ -1037,7 +1037,7 @@ static void create_next_neighbours_vars(AW_root *aw_root) {
     if (!created) {
         aw_root->awar_int(AWAR_PROBE_ADMIN_PT_SERVER);
         aw_root->awar_int(AWAR_NN_COMPLEMENT,  FF_FORWARD);
-        
+
         aw_root->awar_int(AWAR_NN_MAX_HITS,  50);
         aw_root->awar_int(AWAR_NN_HIT_COUNT, 0);
 
@@ -1094,7 +1094,7 @@ static AW_window *ad_spec_next_neighbours_listed_create(AW_root *aw_root, AW_CL 
 
         aws->at("add_score");
         aws->create_toggle(AWAR_NN_SCORED_ENTRIES);
-        
+
         aws->at("min_score");
         aws->create_input_field(AWAR_NN_MIN_SCORE, 5);
 
@@ -1106,7 +1106,7 @@ static AW_window *ad_spec_next_neighbours_listed_create(AW_root *aw_root, AW_CL 
         aws->at("go");
         aws->callback(awtc_nn_search_all_listed, cbs);
         aws->create_button("WRITE_FIELDS", "Write to field");
-    }    
+    }
     return aws;
 }
 

@@ -12,17 +12,17 @@
 #define ARB_VERSION_H
 
 // exports the following variables:
-// 
+//
 // ARB_BUILD_DATE            contains the date on which arb was build
 // ARB_BUILD_YEAR            contains the year in which arb was build
 // ARB_BUILD_HOST           contains the host on which arb was build
 // ARB_BUILD_USER           contains the user by whom  arb was build
-// 
+//
 // ARB_VERSION          arb version
 //
-// may define the following variable: 
-// 
-// SHOW_WHERE_BUILD     show build location/user (at arb_ntree command line and in mails sent from ARB) 
+// may define the following variable:
+//
+// SHOW_WHERE_BUILD     show build location/user (at arb_ntree command line and in mails sent from ARB)
 //                      has to be set for non-official builds!
 
 #include <arb_build.h>

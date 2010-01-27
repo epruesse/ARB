@@ -17,7 +17,7 @@ char *AP_create_dna_to_ap_bases() {
     int       i;
     AP_BASES  val;
     char     *table = new char[256];
-    
+
     for (i=0; i<256; i++) {
         switch ((char)i) {
             case 'a': case 'A': val = AP_A; break;
@@ -63,7 +63,7 @@ long *AWT_translator::create_pro_to_bits() const {
 
 void AWT_translator::build_table(unsigned char pbase, const char *tri_pro, const char *nuc) {
     struct arb_r2a_pro_2_nuc  *str = s2str[pbase];
-    
+
     // search for existing protein, else generate new
     if (!str) {
         str                               = new arb_r2a_pro_2_nuc;
@@ -75,7 +75,7 @@ void AWT_translator::build_table(unsigned char pbase, const char *tri_pro, const
         str->tri_pro[0] = tri_pro[0];
         str->tri_pro[1] = tri_pro[1];
         str->tri_pro[2] = tri_pro[2];
-        
+
         index_2_spro[str->index] = pbase;
     }
     // fast hash table
@@ -90,7 +90,7 @@ void AWT_translator::build_table(unsigned char pbase, const char *tri_pro, const
         if ((!(nucs->nucbits[0] & ~n0)) &&      // search superset
             (!(nucs->nucbits[1] & ~n1)) &&
             (!(nucs->nucbits[2] & ~n2))) break;
-        
+
         int c = 0;
         if (nucs->nucbits[0] != n0) c++;
         if (nucs->nucbits[1] != n1) c++;
@@ -153,10 +153,10 @@ static int codon_defined_in(const char *codon, const char *codons) {
 // except that this table has an 's' insertion !!!
 
 AWT_translator::AWT_translator(int arb_protein_code_nr) :
-    distance_meter(0), 
-    code_nr(arb_protein_code_nr), 
-    pro_2_bitset(0), 
-    realmax_aa(0), 
+    distance_meter(0),
+    code_nr(arb_protein_code_nr),
+    pro_2_bitset(0),
+    realmax_aa(0),
     max_aa(0)
 {
     memset(s2str, 0, sizeof(s2str));
@@ -249,7 +249,7 @@ const AWT_distance_meter *AWT_translator::getDistanceMeter() const {
 
 static int nuc_dist(const AWT_translator *translator, unsigned char p1, unsigned char p2) {
     // calculate minimum necessary nucleotide-mutations for a given amino-acid-mutation
-    
+
     const struct arb_r2a_pro_2_nuc *s1, *s2;
     s1                                      = translator->S2str(p1);
     s2                                      = translator->S2str(p2);
@@ -362,11 +362,11 @@ AWT_distance_meter::~AWT_distance_meter() {
     for (int i=0; i<64; i++) {
         delete dist_[i];
     }
-    
+
 }
 
 // --------------------------------------------------------------------------------
-// Translator factory: 
+// Translator factory:
 
 static int current_user_code_nr = -1;                // always contain same value as AWAR_PROTEIN_TYPE (after calling AWT_default_protein_type once)
 

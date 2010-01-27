@@ -150,7 +150,7 @@ static void gbcms_sighup(int) {
 
         Main->transaction = 0;
         GB_ERROR error    = GB_save_as((GBDATA *) gbcms_gb_main, db_panic, "a");
-        
+
         if (error) fprintf(stderr, "Error while saving '%s': %s\n", db_panic, error);
         else fprintf(stderr, "- DATABASE saved into '%s' (ASCII)\n", db_panic);
 
@@ -213,7 +213,7 @@ GB_ERROR GBCMS_open(const char *path, long timeout, GBDATA *gb_main) {
 
 void GBCMS_shutdown(GBDATA *gbd) {
     // server close
-    
+
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     if (Main->server_data) {
         struct Hs_struct *hs = (struct Hs_struct *)Main->server_data;
@@ -224,7 +224,7 @@ void GBCMS_shutdown(GBDATA *gbd) {
             close(si->socket);
         }
         shutdown(hs->hso, 2);
-        
+
         if (hs->unix_name) {
             unlink(hs->unix_name);
             freenull(hs->unix_name);
@@ -236,7 +236,7 @@ void GBCMS_shutdown(GBDATA *gbd) {
 
 static GB_ERROR gbcm_write_bin(int socket, GBDATA *gbd, long *buffer, long mode, long deep, int send_headera) {
      /* send a database item to client/server
-      * 
+      *
       * mode    =1 server
       *         =0 client
       * buffer = buffer
@@ -665,7 +665,7 @@ static int gbcms_write_keys(int socket, GBDATA *gbd)
 
 static int gbcms_talking_unfold(int socket, long *hsin, void *sin, GBDATA *gb_in) {
     // command: GBCM_COMMAND_UNFOLD
-    
+
     GBCONTAINER *gbc = (GBCONTAINER *)gb_in;
     GB_ERROR     error;
     GBDATA      *gb2;
@@ -814,7 +814,7 @@ static int gbcms_talking_updated(int socket, long *hsin, void *sin, GBDATA *gbd)
 static int gbcms_talking_init_transaction(int socket, long *hsin, void *sin, GBDATA *gb_dummy) {
      /* begin client transaction
       * sends clock
-      * 
+      *
       * command: GBCM_COMMAND_INIT_TRANSACTION
       */
     GBDATA *gb_main;
@@ -896,7 +896,7 @@ static int gbcms_talking_begin_transaction(int socket, long *hsin, void *sin, lo
      * sends clock
      * deleted
      * created+updated
-     * 
+     *
      * command: GBCM_COMMAND_BEGIN_TRANSACTION
      */
     GBDATA *gb_main;
@@ -1111,7 +1111,7 @@ static int gbcms_talking_find(int socket, long *hsin, void *sin, GBDATA * gbd) {
     switch (type) {
         case GB_NONE:
             break;
-            
+
         case GB_STRING:
             val1      = gbcm_read_string(socket);
             case_sens = GB_CASE(gbcm_read_long(socket));
@@ -1120,7 +1120,7 @@ static int gbcms_talking_find(int socket, long *hsin, void *sin, GBDATA * gbd) {
         case GB_INT:
             val2 = gbcm_read_long(socket);
             break;
-            
+
         default:
             gb_assert(0);
             GB_export_errorf("gbcms_talking_find: illegal data type (%i)", type);
@@ -1173,7 +1173,7 @@ static int gbcms_talking_find(int socket, long *hsin, void *sin, GBDATA * gbd) {
 static int gbcms_talking_key_alloc(int socket, long *hsin, void *sin, GBDATA * gbd) {
     // command: GBCM_COMMAND_KEY_ALLOC
     // (old maybe wrong comment: "do a query in the server")
-    
+
     GB_ERROR          error;
     char             *key;
     long              index;
@@ -1403,7 +1403,7 @@ bool GBCMS_accept_calls(GBDATA *gbd, bool wait_extra_time) {
             }
         }
 
-    } 
+    }
     if (hs->wait_for_new_request>0) {
         return true;
     }
@@ -1433,7 +1433,7 @@ GB_ERROR gbcm_unfold_client(GBCONTAINER *gbd, long deep, long index_pos) {
 
     socket = GBCONTAINER_MAIN(gbd)->c_link->socket;
     gbcm_read_flush(socket);
-    
+
     if      (gbcm_write_two  (socket, GBCM_COMMAND_UNFOLD, gbd->server_id)) error = SEND_ERROR();
     else if (gbcm_write_two  (socket, GBCM_COMMAND_SETDEEP, deep)) error = SEND_ERROR();
     else if (gbcm_write_two  (socket, GBCM_COMMAND_SETINDEX, index_pos)) error = SEND_ERROR();
@@ -1610,7 +1610,7 @@ GB_ERROR gbcmc_begin_transaction(GBDATA *gbd)
         else {
             mode = -2;                              // read nothing
         }
-        
+
         switch (buffer[0]) {
             case GBCM_COMMAND_PUT_UPDATE_UPDATE:
                 if (gbcm_read_bin(socket, 0, buffer, mode, gb2, 0)) {
@@ -1749,7 +1749,7 @@ GB_ERROR gbcms_add_to_delete_list(GBDATA *gbd)
 long GB_read_clients(GBDATA *gbd) {
     // returns number of clients or
     // -1 if not called from server
-    
+
     GB_MAIN_TYPE *Main    = GB_MAIN(gbd);
     long          clients = -1;
 
@@ -1794,12 +1794,12 @@ GBDATA *GBCMC_find(GBDATA *gbd, const char *key, GB_TYPES type, const char *str,
     union {
         GBDATA *gbd;
         long    l;
-    } result;    
+    } result;
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
 
     int socket;
     if (Main->local_mode) {
-        gb_assert(0); // GBCMC_find may only be used in DB clients 
+        gb_assert(0); // GBCMC_find may only be used in DB clients
         return (GBDATA *)-1;
     }
 
@@ -1831,7 +1831,7 @@ GBDATA *GBCMC_find(GBDATA *gbd, const char *key, GB_TYPES type, const char *str,
     }
 
     gbcm_write_long(socket, gbs);
-    
+
     if (gbcm_write_flush(socket)) {
         GB_export_error("ARB_DB CLIENT ERROR send failed");
         GB_print_error();
@@ -2058,7 +2058,7 @@ GB_ERROR GB_install_pid(int mode) {
 
                 pidfile_name = GBS_global_string_copy("arb_pids_%s_%s", user, arb_pid);
             }
-            
+
             char *pid_fullname;
             FILE *pidfile = GB_fopen_tempfile(pidfile_name, "at", &pid_fullname);
 
@@ -2071,9 +2071,9 @@ GB_ERROR GB_install_pid(int mode) {
                 fclose(pidfile);
             }
 
-            // ensure pid file is private, otherwise someone could inject PIDs which will be killed later 
+            // ensure pid file is private, otherwise someone could inject PIDs which will be killed later
             gb_assert(GB_is_privatefile(pid_fullname, false));
-            
+
             free(pid_fullname);
             free(pidfile_name);
         }

@@ -74,13 +74,13 @@ AW_timer_cb_struct::~AW_timer_cb_struct() {
 
 void AW_root::make_sensitive(Widget w, AW_active mask) {
     // Don't call make_sensitive directly!
-    // 
+    //
     // Simply set sens_mask(AWM_EXP) and after creating the expert-mode-only widgets,
     // set it back using sens_mask(AWM_ALL)
 
     aw_assert(w);
     aw_assert(legal_mask(mask));
-    
+
     prvt->set_last_widget(w);
 
     if (mask != AWM_ALL) { // no need to make widget sensitive, if its shown unconditionally
@@ -121,7 +121,7 @@ bool AW_remove_button_from_sens_list(AW_root *root, Widget w) {
 
             bl->next = 0;
             removed  = true;
-            
+
             delete bl;
         }
     }
@@ -133,7 +133,7 @@ AW_config_struct::AW_config_struct(const char *idi, AW_active maski, Widget w,
                                    AW_config_struct *nexti)
 {
     aw_assert(legal_mask(maski));
-    
+
     id             = strdup(idi);
     mask           = maski;
     widget         = w;
@@ -223,7 +223,7 @@ char *AW_select_table_struct::copy_string(const char *str) {
     char *out = strdup(str);
     char *p   = out;
     int   ch;
-    
+
     while ((ch=*(p++)) != 0) {
         if (ch==',')
             p[-1] = ';';
@@ -457,7 +457,7 @@ AW_pos AW_window::get_scrolled_picture_height() {
 
 void AW_window::calculate_scrollbars() {
     AW_rectangle screen;
-    
+
     int  slider_size_horizontal;
     int  slider_size_vertical;
     bool vertical, horizontal;
@@ -756,7 +756,7 @@ void AW_cb_struct::run_callback() {
 
         if (!allow) {
             // don't warn about the following callbacks, just silently ignore them
-            bool silentlyIgnore = 
+            bool silentlyIgnore =
                 aw->is_expose_callback(AW_MIDDLE_AREA, f) ||
                 aw->is_resize_callback(AW_MIDDLE_AREA, f);
 
@@ -806,7 +806,7 @@ void AW_cb_struct::run_callback() {
     else {
         f(aw, cd1, cd2);
     }
-    
+
     if (guard_after) guard_after();
 }
 
@@ -878,7 +878,7 @@ void AW_server_callback(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data)
         cbs->run_callback();
 
         XEvent event; // destroy all old events !!!
-        while (XCheckMaskEvent(XtDisplay(p_global->toplevel_widget), 
+        while (XCheckMaskEvent(XtDisplay(p_global->toplevel_widget),
         ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|
         KeyPressMask|KeyReleaseMask|PointerMotionMask, &event)) {
         }
@@ -1305,7 +1305,7 @@ void AW_root::init_variables(AW_default database) {
 
     // this MIGHT lead to inconsistencies, as the validated data is in /name ---> worst case: reset
     aw_create_selection_box_awars(this, "vectorfont",
-                                  GB_path_in_ARBLIB("pictures", NULL), 
+                                  GB_path_in_ARBLIB("pictures", NULL),
                                   ".vfont", vectorfont_name, application_database, true);
     awar("vectorfont/file_name")->add_callback((AW_RCB0) aw_xfig_font_changefont_cb);
 }
@@ -1409,11 +1409,11 @@ void AW_root::init_root(const char *programname, bool no_exit) {
     GB_install_status2((gb_status_func2_type)aw_status_dummy2);
 
     // @@@ FIXME: the next line hangs if program runs inside debugger
-    p_r->toplevel_widget = XtOpenApplication(&(p_r->context), programname, 
+    p_r->toplevel_widget = XtOpenApplication(&(p_r->context), programname,
             NULL, 0, // XrmOptionDescRec+numOpts
             &a, /* &argc */
             NULL, /* argv */
-            fallback_resources, 
+            fallback_resources,
             applicationShellWidgetClass, // widget class
             NULL, 0);
 
@@ -1680,7 +1680,7 @@ AW_color AW_window::alloc_named_data_color(int colnum, char *colorname) {
         }
     }
     if (colnum == AW_DATA_BG) {
-        XtVaSetValues(p_w->areas[AW_MIDDLE_AREA]->area, 
+        XtVaSetValues(p_w->areas[AW_MIDDLE_AREA]->area,
         XmNbackground, color_table[colnum], NULL);
     }
     return (AW_color)colnum;
@@ -1690,7 +1690,7 @@ void AW_window::create_devices() {
     unsigned long background_color;
     if (p_w->areas[AW_INFO_AREA]) {
         p_w->areas[AW_INFO_AREA]->create_devices(this, AW_INFO_AREA);
-        XtVaGetValues(p_w->areas[AW_INFO_AREA]->area, 
+        XtVaGetValues(p_w->areas[AW_INFO_AREA]->area,
         XmNbackground, &background_color, NULL);
         p_global->color_table[AW_WINDOW_DRAG] =
         background_color ^ p_global->color_table[AW_WINDOW_FG];
@@ -1715,13 +1715,13 @@ void aw_create_help_entry(AW_window *aww) {
 
 const char *aw_str_2_label(const char *str, AW_window *aww) {
     aw_assert(str);
-    
+
     static const char *last_label = 0;
     static const char *last_str   = 0;
     static AW_window  *last_aww   = 0;
 
     const char *label;
-    if (str == last_str && aww == last_aww) { // reuse result ? 
+    if (str == last_str && aww == last_aww) { // reuse result ?
         label = last_label;
     }
     else {
@@ -1977,28 +1977,28 @@ Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int 
         shell = XtVaCreatePopupShell("editor", applicationShellWidgetClass,
                                      father,
                                      XmNwidth, width,
-                                     XmNheight, height, 
-                                     XmNx, posx, 
-                                     XmNy, posy, 
-                                     XmNtitle, aww->window_name, 
-                                     XmNiconName, aww->window_name, 
+                                     XmNheight, height,
+                                     XmNx, posx,
+                                     XmNy, posy,
+                                     XmNtitle, aww->window_name,
+                                     XmNiconName, aww->window_name,
                                      XmNkeyboardFocusPolicy, XmEXPLICIT,
                                      XmNdeleteResponse, XmDO_NOTHING,
-                                     XtNiconPixmap, icon_pixmap, 
+                                     XtNiconPixmap, icon_pixmap,
                                      NULL);
     }
     else {
         shell = XtVaCreatePopupShell("transient", transientShellWidgetClass,
-                                     father, 
-                                     XmNwidth, width, 
-                                     XmNheight, height, 
-                                     XmNx, posx, 
-                                     XmNy, posy, 
-                                     XmNtitle, aww->window_name, 
-                                     XmNiconName, aww->window_name, 
-                                     XmNkeyboardFocusPolicy, XmEXPLICIT, 
-                                     XmNdeleteResponse, XmDO_NOTHING, 
-                                     XtNiconPixmap, icon_pixmap, 
+                                     father,
+                                     XmNwidth, width,
+                                     XmNheight, height,
+                                     XmNx, posx,
+                                     XmNy, posy,
+                                     XmNtitle, aww->window_name,
+                                     XmNiconName, aww->window_name,
+                                     XmNkeyboardFocusPolicy, XmEXPLICIT,
+                                     XmNdeleteResponse, XmDO_NOTHING,
+                                     XtNiconPixmap, icon_pixmap,
                                      NULL);
     }
     XtAddEventHandler(shell, EnterWindowMask, FALSE, AW_root_focusCB, (XtPointer) aww->get_root());
@@ -2085,38 +2085,38 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     p_w->shell = aw_create_shell(this, true, true, width, height, posx, posy);
 
     main_window = XtVaCreateManagedWidget("mainWindow1",
-            xmMainWindowWidgetClass, p_w->shell, 
+            xmMainWindowWidgetClass, p_w->shell,
             NULL);
 
     p_w->menu_bar[0] = XtVaCreateManagedWidget("menu1", xmRowColumnWidgetClass,
-            main_window, 
-            XmNrowColumnType, XmMENU_BAR, 
+            main_window,
+            XmNrowColumnType, XmMENU_BAR,
             NULL);
 
     // create shell for help-cascade
     help_popup = XtVaCreatePopupShell("menu_shell", xmMenuShellWidgetClass,
-            p_w->menu_bar[0], 
-            XmNwidth, 1, 
-            XmNheight, 1, 
-            XmNallowShellResize, true, 
-            XmNoverrideRedirect, true, 
+            p_w->menu_bar[0],
+            XmNwidth, 1,
+            XmNheight, 1,
+            XmNallowShellResize, true,
+            XmNoverrideRedirect, true,
             NULL);
 
     // create row column in Pull-Down shell
     p_w->help_pull_down = XtVaCreateWidget("menu_row_column",
-            xmRowColumnWidgetClass, help_popup, 
-            XmNrowColumnType, XmMENU_PULLDOWN, 
+            xmRowColumnWidgetClass, help_popup,
+            XmNrowColumnType, XmMENU_PULLDOWN,
             NULL);
 
     // create HELP-label in menu bar
     help_label = XtVaCreateManagedWidget("menu1_top_b1",
-            xmCascadeButtonWidgetClass, p_w->menu_bar[0], 
+            xmCascadeButtonWidgetClass, p_w->menu_bar[0],
             RES_CONVERT(XmNlabelString, help_button),
                                           RES_CONVERT(XmNmnemonic, help_mnemonic),
                                           XmNsubMenuId, p_w->help_pull_down, NULL);
     XtVaSetValues(p_w->menu_bar[0], XmNmenuHelpWidget, help_label, NULL);
     root->make_sensitive(help_label, AWM_ALL);
-    
+
     form1 = XtVaCreateManagedWidget("form1",
     xmFormWidgetClass,
     main_window,
@@ -2295,38 +2295,38 @@ void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windown
     p_w->shell = aw_create_shell(this, true, true, width, height, posx, posy);
 
     main_window = XtVaCreateManagedWidget("mainWindow1",
-            xmMainWindowWidgetClass, p_w->shell, 
+            xmMainWindowWidgetClass, p_w->shell,
             NULL);
 
     p_w->menu_bar[0] = XtVaCreateManagedWidget("menu1", xmRowColumnWidgetClass,
-            main_window, 
-            XmNrowColumnType, XmMENU_BAR, 
+            main_window,
+            XmNrowColumnType, XmMENU_BAR,
             NULL);
 
     // create shell for help-cascade
     help_popup = XtVaCreatePopupShell("menu_shell", xmMenuShellWidgetClass,
-            p_w->menu_bar[0], 
-            XmNwidth, 1, 
-            XmNheight, 1, 
-            XmNallowShellResize, true, 
-            XmNoverrideRedirect, true, 
+            p_w->menu_bar[0],
+            XmNwidth, 1,
+            XmNheight, 1,
+            XmNallowShellResize, true,
+            XmNoverrideRedirect, true,
             NULL);
 
     // create row column in Pull-Down shell
     p_w->help_pull_down = XtVaCreateWidget("menu_row_column",
-            xmRowColumnWidgetClass, help_popup, 
-            XmNrowColumnType, XmMENU_PULLDOWN, 
+            xmRowColumnWidgetClass, help_popup,
+            XmNrowColumnType, XmMENU_PULLDOWN,
             NULL);
 
     // create HELP-label in menu bar
     help_label = XtVaCreateManagedWidget("menu1_top_b1",
-            xmCascadeButtonWidgetClass, p_w->menu_bar[0], 
+            xmCascadeButtonWidgetClass, p_w->menu_bar[0],
             RES_CONVERT(XmNlabelString, help_button),
                                           RES_CONVERT(XmNmnemonic, help_mnemonic),
                                           XmNsubMenuId, p_w->help_pull_down, NULL);
     XtVaSetValues(p_w->menu_bar[0], XmNmenuHelpWidget, help_label, NULL);
     root->make_sensitive(help_label, AWM_ALL);
-    
+
     form1 = XtVaCreateManagedWidget("form1",
     xmFormWidgetClass,
     main_window,
@@ -2487,7 +2487,7 @@ void AW_window_simple::init(AW_root *root_in, const char *wid, const char *windo
     // XtVaSetValues(p_w->shell, XmNmwmFunctions, MWM_FUNC_MOVE | MWM_FUNC_CLOSE, NULL);
 
     Widget form1 = XtVaCreateManagedWidget("forms", xmFormWidgetClass,
-            p_w->shell, 
+            p_w->shell,
             NULL);
 
     p_w->areas[AW_INFO_AREA] = new AW_area_management(root, form1, XtVaCreateManagedWidget("info_area",
@@ -2526,38 +2526,38 @@ void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *
     Widget form1;
 
     main_window = XtVaCreateManagedWidget("mainWindow1",
-            xmMainWindowWidgetClass, p_w->shell, 
+            xmMainWindowWidgetClass, p_w->shell,
             NULL);
 
     p_w->menu_bar[0] = XtVaCreateManagedWidget("menu1", xmRowColumnWidgetClass,
-            main_window, 
-            XmNrowColumnType, XmMENU_BAR, 
+            main_window,
+            XmNrowColumnType, XmMENU_BAR,
             NULL);
 
     // create shell for help-cascade
     help_popup = XtVaCreatePopupShell("menu_shell", xmMenuShellWidgetClass,
-            p_w->menu_bar[0], 
-            XmNwidth, 1, 
-            XmNheight, 1, 
-            XmNallowShellResize, true, 
-            XmNoverrideRedirect, true, 
+            p_w->menu_bar[0],
+            XmNwidth, 1,
+            XmNheight, 1,
+            XmNallowShellResize, true,
+            XmNoverrideRedirect, true,
             NULL);
 
     // create row column in Pull-Down shell
     p_w->help_pull_down = XtVaCreateWidget("menu_row_column",
-            xmRowColumnWidgetClass, help_popup, 
-            XmNrowColumnType, XmMENU_PULLDOWN, 
+            xmRowColumnWidgetClass, help_popup,
+            XmNrowColumnType, XmMENU_PULLDOWN,
             NULL);
 
     // create HELP-label in menu bar
     help_label = XtVaCreateManagedWidget("menu1_top_b1",
-            xmCascadeButtonWidgetClass, p_w->menu_bar[0], 
+            xmCascadeButtonWidgetClass, p_w->menu_bar[0],
             RES_CONVERT(XmNlabelString, help_button),
                                           RES_CONVERT(XmNmnemonic, help_mnemonic),
                                           XmNsubMenuId, p_w->help_pull_down, NULL);
     XtVaSetValues(p_w->menu_bar[0], XmNmenuHelpWidget, help_label, NULL);
     root->make_sensitive(help_label, AWM_ALL);
-    
+
     form1 = XtVaCreateManagedWidget("form1",
     xmFormWidgetClass,
     main_window,
@@ -2956,29 +2956,29 @@ void AW_window::insert_sub_menu(AW_label name, const char *mnemonic, AW_active M
 
     // create shell for Pull-Down
     shell = XtVaCreatePopupShell("menu_shell", xmMenuShellWidgetClass,
-            p_w->menu_bar[p_w->menu_deep], 
-            XmNwidth, 1, 
-            XmNheight, 1, 
-            XmNallowShellResize, true, 
-            XmNoverrideRedirect, true, 
+            p_w->menu_bar[p_w->menu_deep],
+            XmNwidth, 1,
+            XmNheight, 1,
+            XmNallowShellResize, true,
+            XmNoverrideRedirect, true,
             NULL);
 
     // create row column in Pull-Down shell
 
     p_w->menu_bar[p_w->menu_deep+1] = XtVaCreateWidget("menu_row_column",
-            xmRowColumnWidgetClass, shell, 
-            XmNrowColumnType, XmMENU_PULLDOWN, 
-            XmNtearOffModel, XmTEAR_OFF_ENABLED, 
+            xmRowColumnWidgetClass, shell,
+            XmNrowColumnType, XmMENU_PULLDOWN,
+            XmNtearOffModel, XmTEAR_OFF_ENABLED,
             NULL);
 
     // create label in menu bar
     if (mnemonic && *mnemonic && strchr(name, mnemonic[0])) {
         // if mnemonic is "" -> Cannot convert string "" to type KeySym
         Label = XtVaCreateManagedWidget("menu1_top_b1",
-                xmCascadeButtonWidgetClass, p_w->menu_bar[p_w->menu_deep], 
+                xmCascadeButtonWidgetClass, p_w->menu_bar[p_w->menu_deep],
                 RES_CONVERT(XmNlabelString, name),
                                          RES_CONVERT(XmNmnemonic, mnemonic),
-                                         XmNsubMenuId, p_w->menu_bar[p_w->menu_deep+1], 
+                                         XmNsubMenuId, p_w->menu_bar[p_w->menu_deep+1],
                                          XmNbackground, _at->background_color, NULL);
     }
     else {
@@ -3013,7 +3013,7 @@ void AW_window::insert_menu_topic(const char *topic_id, AW_label name,
 {
     aw_assert(legal_mask(Mask));
     Widget button;
-    
+
     if (!topic_id) topic_id = name; // hmm, due to this we cannot insert_menu_topic w/o id. Change? @@@
 
     TuneBackground(p_w->menu_bar[p_w->menu_deep], TUNE_MENUTOPIC); // set background color for normal menu topics
@@ -3027,7 +3027,7 @@ void AW_window::insert_menu_topic(const char *topic_id, AW_label name,
     if (mnemonic && *mnemonic && strchr(name, mnemonic[0])) {
         // create one sub-menu-point
         button = XtVaCreateManagedWidget("", xmPushButtonWidgetClass,
-                p_w->menu_bar[p_w->menu_deep], 
+                p_w->menu_bar[p_w->menu_deep],
                 RES_LABEL_CONVERT(name),
                                           RES_CONVERT(XmNmnemonic, mnemonic),
                                           XmNbackground, _at->background_color, NULL);
@@ -3060,7 +3060,7 @@ void AW_window::insert_help_topic(AW_label name, const char *mnemonic, const cha
 
     // create one help-sub-menu-point
     button = XtVaCreateManagedWidget("", xmPushButtonWidgetClass,
-            p_w->help_pull_down, 
+            p_w->help_pull_down,
             RES_CONVERT(XmNlabelString, name),
                                       RES_CONVERT(XmNmnemonic, mnemonic), NULL);
     XtAddCallback(button, XmNactivateCallback,
@@ -3075,7 +3075,7 @@ void AW_window::insert_separator() {
 
     // create one help-sub-menu-point
     separator = XtVaCreateManagedWidget("", xmSeparatorWidgetClass,
-            p_w->menu_bar[p_w->menu_deep], 
+            p_w->menu_bar[p_w->menu_deep],
             NULL);
 }
 
@@ -3084,7 +3084,7 @@ void AW_window::insert_separator_help() {
 
     // create one help-sub-menu-point
     separator = XtVaCreateManagedWidget("", xmSeparatorWidgetClass,
-            p_w->help_pull_down, 
+            p_w->help_pull_down,
             NULL);
 }
 
@@ -3171,7 +3171,7 @@ void AW_window::wm_activate() {
             ce.data.l[4]    = 0;
 
 #if defined(DEBUG)
-            Status ret = 
+            Status ret =
 #endif // DEBUG
                 XSendEvent(xdpy, XDefaultRootWindow(xdpy),
                            False,
@@ -3248,7 +3248,7 @@ void AW_window::show_internal(void *cl_grab) {
             FALLBACK_CENTER :
                 int width, height; get_window_size(width, height);
                 int swidth, sheight; get_screen_size(swidth, sheight);
-                
+
                 setPos = true;
                 posx   = (swidth-width)/2;
                 posy   = (sheight-height)/4;
@@ -3331,7 +3331,7 @@ void AW_root::process_pending_events() {
 
 AW_ProcessEventType AW_root::peek_key_event(AW_window * /* aww */) {
     /*! Returns type if key event follows, else 0 */
-    
+
     XEvent xevent;
     Boolean result = XtAppPeekEvent(p_r->context, &xevent);
 
@@ -3632,7 +3632,7 @@ GB_ERROR AW_root::check_for_remote_command(AW_default gb_maind, const char *rm_b
     char *action   = GBT_readOrCreate_string(gb_main, awar_action, "");
     char *value    = GBT_readOrCreate_string(gb_main, awar_value, "");
     char *tmp_awar = GBT_readOrCreate_string(gb_main, awar_awar, "");
-    
+
     if (tmp_awar[0]) {
         GB_ERROR error = 0;
         if (strcmp(action, "AWAR_REMOTE_READ") == 0) {
@@ -3682,7 +3682,7 @@ GB_ERROR AW_root::check_for_remote_command(AW_default gb_maind, const char *rm_b
         }
         GBT_write_string(gb_main, awar_action, ""); // this works as READY-signal for perl-client (remote_action)
     }
-    
+
     free(tmp_awar);
     free(value);
     free(action);
@@ -3691,7 +3691,7 @@ GB_ERROR AW_root::check_for_remote_command(AW_default gb_maind, const char *rm_b
     free(awar_awar);
     free(awar_value);
     free(awar_action);
-    
+
     return 0;
 }
 
@@ -3721,13 +3721,13 @@ void AW_window::TuneOrSetBackground(Widget w, const char *color, int modStrength
     // Sets the background for the next created widget.
     //
     // If 'color' is specified, it may contain one of the following values:
-    //      "+"    means: slightly increase color of parent widget 'w' 
-    //      "-"    means: slightly decrease color of parent widget 'w' 
+    //      "+"    means: slightly increase color of parent widget 'w'
+    //      "-"    means: slightly decrease color of parent widget 'w'
     //      otherwise it contains a specific color ('name' or '#RGB')
-    // 
+    //
     // If color is not specified, the color of the parent widget 'w' is modified
     // by 'modStrength' (increased if positive,  decreased if negative)
-    // 
+    //
     // If it's not possible to modify the color (e.g. we cannot increase 'white'),
     // the color will be modified in the opposite direction. For details see TuneBackground()
 
@@ -3758,7 +3758,7 @@ void AW_window::TuneBackground(Widget w, int modStrength) {
     //    1 .. 127 = increase if background is bright, decrease if background is dark
     //   -1 ..-127 = opposite behavior than above
     //  256 .. 383 = always increase
-    // -256 ..-383 = always decrease 
+    // -256 ..-383 = always decrease
     //
     // if it's impossible to decrease or increase -> opposite direction is used.
 
@@ -3832,14 +3832,14 @@ void AW_window::TuneBackground(Widget w, int modStrength) {
     }
 
     aw_assert(preferredDir == 1 || preferredDir == -1); // no direction chosen above
-    
+
     if (preferredDir == 1) {
         for (int i=0; i<3; ++i) col[i] += (incPossible[i] ? mod : 0);
     }
     else if (preferredDir == -1) {
         for (int i=0; i<3; ++i) col[i] -= (decPossible[i] ? mod : 0);
     }
-    
+
 
     char hex_color[50];
     sprintf(hex_color, "#%2.2X%2.2X%2.2X", col[0], col[1], col[2]);

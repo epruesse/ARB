@@ -39,7 +39,7 @@ void ad_table_field_reorder_cb(AW_window *aws, awt_table *awtt) {
         for (gb_cnt  = GB_child(gb_fields); gb_cnt; gb_cnt = GB_nextChild(gb_cnt)) {
             nitems++;
         }
-        
+
         GBDATA **new_order = new GBDATA *[nitems];
         nitems             = 0;
         for (gb_cnt  = GB_child(gb_fields); gb_cnt; gb_cnt = GB_nextChild(gb_cnt)) {
@@ -52,7 +52,7 @@ void ad_table_field_reorder_cb(AW_window *aws, awt_table *awtt) {
         warning = GB_resort_data_base(awtt->gb_main, new_order, nitems);
         delete [] new_order;
     }
-    
+
     delete source;
     delete dest;
     GB_commit_transaction(awtt->gb_main);
@@ -109,7 +109,7 @@ void awt_table_field_hide_cb(AW_window *aws, awt_table *awtt) {
 
 void awt_table_field_delete_cb(AW_window *aws, awt_table *awtt) {
     GB_begin_transaction(awtt->gb_main);
-    
+
     GB_ERROR  error    = 0;
     GBDATA   *gb_table = GBT_open_table(awtt->gb_main, awtt->table_name, true);
     if (!gb_table) {
@@ -303,7 +303,7 @@ void create_ad_table_field_admin(AW_window *aww, GBDATA *gb_main, const char *tn
         awt_map_table_field_rem(aw_root, awtt);
         aw_root->awar(awtt->awar_selected_field)->add_callback((AW_RCB1)awt_map_table_field_rem, (AW_CL)awtt);
     }
-    
+
     aws->activate();
     free(table_name);
 }
@@ -339,7 +339,7 @@ void table_rename_cb(AW_window *aww, GBDATA *gb_main) {
     GB_ERROR  error  = 0;
     char     *source = aww->get_root()->awar(AWAR_TABLE_NAME)->read_string();
     char     *dest   = aww->get_root()->awar(AWAR_TABLE_DEST)->read_string();
-    
+
     GB_begin_transaction(gb_main);
     GBDATA *gb_table_dest = GBT_open_table(gb_main, dest, true);
     if (gb_table_dest) {
@@ -349,7 +349,7 @@ void table_rename_cb(AW_window *aww, GBDATA *gb_main) {
         GBDATA *gb_table = GBT_open_table(gb_main, source, true);
         if (gb_table) {
             GBDATA *gb_name = GB_search(gb_table, "name", GB_STRING);
-            
+
             if (!gb_name) error = GB_await_error();
             else error          = GB_write_string(gb_name, dest);
         }
@@ -364,7 +364,7 @@ void table_copy_cb(AW_window *aww, GBDATA *gb_main) {
     GB_ERROR  error  = 0;
     char     *source = aww->get_root()->awar(AWAR_TABLE_NAME)->read_string();
     char     *dest   = aww->get_root()->awar(AWAR_TABLE_DEST)->read_string();
-    
+
     GB_begin_transaction(gb_main);
     GBDATA *gb_table_dest = GBT_open_table(gb_main, dest, true);
     if (gb_table_dest) {
@@ -490,7 +490,7 @@ void create_tables_var(GBDATA *gb_main, AW_root *aw_root) {
     aw_root->awar_string(AWAR_TABLE_NAME);
     aw_root->awar_string(AWAR_TABLE_DEST);
     aw_root->awar_string(AWAR_TABLE_REM, "no rem");
-    
+
     aw_create_selection_box_awars(aw_root, AWAR_TABLE_EXPORT, "", "table", "tablefile");
 
     aw_create_selection_box_awars(aw_root, AWAR_TABLE_IMPORT, "", "table", "tablefile");

@@ -113,14 +113,14 @@ GB_ERROR SEC_bond_def::update(AW_root *aw_root, const char *changed_awar_name)
                     AW_awar *awar = aw_root->awar(pairdef[i].awar_pairs);
 
                     char *oldP = awar->read_string();
-                    
+
                     insert(oldP, '#');
                     insert(content, ' ');
 
                     char *newP = get_pair_string('#');
 
                     if (strcmp(oldP, newP) != 0) awar->write_string(newP);
-                    
+
                     free(newP);
                     free(oldP);
                 }
@@ -154,7 +154,7 @@ static void pair_def_changed_cb(AW_root *aw_root, AW_CL cl_db, AW_CL cl_awar_nam
 
 static void bind_bonddef_awars(SEC_db_interface *db) {
     AW_root *aw_root = db->awroot();
-    
+
     for (int i = 0; i<PAIR_TYPES; ++i) {
         PairDefinition& pd = pairdef[i];
         aw_root->awar(pd.awar_pairs)->add_callback(pair_def_changed_cb, (AW_CL)db, (AW_CL)pd.awar_pairs);
@@ -194,7 +194,7 @@ void SEC_displayParams::reread(AW_root *aw_root) {
 
 void SEC_db_interface::reload_sequence(const SEC_dbcb *cb) {
     GB_transaction ta(gb_main);
-    
+
     char   *species_name = aw_root->awar(AWAR_SPECIES_NAME)->read_string();
     bool    had_sequence = sequence;
     GBDATA *gb_species   = GBT_find_species(gb_main, species_name);
@@ -211,7 +211,7 @@ void SEC_db_interface::reload_sequence(const SEC_dbcb *cb) {
 
     if (bool(sequence) != had_sequence) gfx->request_update(SEC_UPDATE_ZOOM_RESET);
     if (sequence) gfx->request_update(SEC_UPDATE_SHOWN_POSITIONS);
-    
+
     if (perform_refresh) ntw->refresh();
 
     free(species_name);
@@ -222,7 +222,7 @@ void SEC_db_interface::reload_ecoli(const SEC_dbcb *cb) {
 
     delete ecoli_seq;
     delete Ecoli;
-    
+
     GBDATA *gb_ecoli = GBT_find_SAI(gb_main, "ECOLI");
     if (gb_ecoli) {
         ecoli_seq = new SEC_seq_data(gb_ecoli, aliname, cb);
@@ -271,7 +271,7 @@ void SEC_db_interface::reload_helix(const SEC_dbcb *cb) {
         free(helix_nr_name);
     }
     free(helix_pos_name);
-    
+
     gfx->request_update(static_cast<SEC_update_request>(SEC_UPDATE_SHOWN_POSITIONS|SEC_UPDATE_RELOAD));
     if (perform_refresh) ntw->refresh();
 }
@@ -357,9 +357,9 @@ static const char *refresh_awars[] = {
     AWAR_SECEDIT_SKELETON_THICKNESS,
     AWAR_SECEDIT_BOND_THICKNESS,
     AWAR_EDIT_DIRECTION,
-    ED4_AWAR_SEARCH_RESULT_CHANGED, 
+    ED4_AWAR_SEARCH_RESULT_CHANGED,
 #if defined(DEBUG)
-    AWAR_SECEDIT_SHOW_DEBUG, 
+    AWAR_SECEDIT_SHOW_DEBUG,
 #endif // DEBUG
     NULL
 };
@@ -385,7 +385,7 @@ static void create_awars(AW_root *aw_root, AW_default def) {
     aw_root->awar_float(AWAR_SECEDIT_DIST_BETW_STRANDS, 1, def)->set_minmax(0.001, 1000);
     aw_root->awar_int(AWAR_SECEDIT_SKELETON_THICKNESS, 1, def)->set_minmax(1, 100);
     aw_root->awar_int(AWAR_SECEDIT_BOND_THICKNESS, 1, def)->set_minmax(1, 100);
-    
+
 #if defined(DEBUG)
     aw_root->awar_int(AWAR_SECEDIT_SHOW_DEBUG,        0,                def);
 #endif // DEBUG
@@ -523,7 +523,7 @@ void SEC_db_interface::update_shown_positions() {
             }
             else {
                 char oppoBase = baseAt(Helix->opposite_position(pos));
-                
+
                 displayPos[pos] = !(gap(base) && gap(oppoBase)); // display if one side of helix has base
             }
         }

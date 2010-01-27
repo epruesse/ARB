@@ -31,7 +31,7 @@ static GBT_TREE *fixDeletedSon(GBT_TREE *tree) {
     else {
         gb_assert(!delNode->leftson);
         gb_assert(delNode->rightson);
-        
+
         tree              = delNode->rightson;
         delNode->rightson = 0;
     }
@@ -497,7 +497,7 @@ GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, long st
      *
      * @param tree_name is the name of the tree in the db
      *
-     * @param tree_size if != NULL -> gets set to "size of tree" 
+     * @param tree_size if != NULL -> gets set to "size of tree"
      *
      * @return
      * - NULL if any error occurs (which is exported then)
@@ -628,7 +628,7 @@ GB_ERROR GBT_link_tree_using_species_hash(GBT_TREE *tree, bool show_status, GB_H
     if (duplicates || show_status) {
         leafs = GBT_count_nodes(tree);
     }
-    
+
     ltd.species_hash = species_hash;
     ltd.seen_species = leafs ? GBS_create_hash(2*leafs, GB_IGNORE_CASE) : 0;
     ltd.zombies      = 0;
@@ -656,14 +656,14 @@ GB_ERROR GBT_link_tree(GBT_TREE *tree, GBDATA *gb_main, bool show_status, int *z
     /*! Link a given tree to the database. That means that for all tips the member
      * 'gb_node' is set to the database container holding the species data.
      *
-     * @param zombies if != NULL -> set to number of zombies (aka non-existing species) in tree  
-     * @param duplicates if != NULL -> set to number of duplicated species in tree  
+     * @param zombies if != NULL -> set to number of zombies (aka non-existing species) in tree
+     * @param duplicates if != NULL -> set to number of duplicated species in tree
      *
      * @return error on failure
      *
      * @see GBT_unlink_tree()
      */
-    
+
     GB_HASH  *species_hash = GBT_create_species_hash(gb_main);
     GB_ERROR  error        = GBT_link_tree_using_species_hash(tree, show_status, species_hash, zombies, duplicates);
 
@@ -737,7 +737,7 @@ const char *GBT_tree_info_string(GBDATA *gb_main, const char *tree_name, int max
 
     const char *result  = 0;
     GBDATA     *gb_tree = GBT_get_tree(gb_main, tree_name);
-    
+
     if (!gb_tree) {
         GB_export_errorf("tree '%s' not found", tree_name);
     }

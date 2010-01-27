@@ -23,7 +23,7 @@ public:
 
     void          add(const string& field, const string& content);
     const string *get(const string& field) const;
-    
+
     void getKeys(stringSet& keys) const; // get reference keys
 };
 
@@ -38,7 +38,7 @@ public:
 
     void start();               // start a new reference
     void add(const string& field, const string& content) {
-        gi_assert(latest); 
+        gi_assert(latest);
         latest->add(field, content);
     }
 
@@ -46,7 +46,7 @@ public:
 
     void   getKeys(stringSet& keys) const; // get reference keys
     string tagged_content(const string& refkey) const;
-    
+
 #if defined(DEBUG)
     void dump() const;
 #endif // DEBUG

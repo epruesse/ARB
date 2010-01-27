@@ -73,7 +73,7 @@ void gb_index_check_out(GBDATA *gbd) {
         GB_ERROR     error   = 0;
         GBCONTAINER *gfather = GB_GRANDPA(gbd);
         GBQUARK      quark   = GB_KEY_QUARK(gbd);
-        
+
         struct gb_index_files_struct *ifs;
 
         gbd->flags2.is_indexed = 0;
@@ -186,7 +186,7 @@ NOT4PERL void GB_dump_indices(GBDATA *gbd) {
     }
     else {
         struct gb_index_files_struct *ifs;
-        
+
         int           index_count = 0;
         GBCONTAINER  *gbc         = (GBCONTAINER*)gbd;
         GB_MAIN_TYPE *Main        = GBCONTAINER_MAIN(gbc);
@@ -297,7 +297,7 @@ GBDATA *gb_index_find(GBCONTAINER *gbf, struct gb_index_files_struct *ifs, GBQUA
 /* UNDO functions
  *
  * There are three undo stacks:
- * 
+ *
  * GB_UNDO_NONE    no undo
  * GB_UNDO_UNDO    normal undo stack
  * GB_UNDO_REDO    redo stack
@@ -719,10 +719,10 @@ void gb_check_in_undo_delete(GB_MAIN_TYPE *Main, GBDATA *gbd, int deep) {
 
 GB_ERROR GB_request_undo_type(GBDATA *gb_main, GB_UNDO_TYPE type) { // goes to header: __ATTR__USERESULT
     /*! Define how to undo DB changes.
-     * 
+     *
      * This function should be called just before opening a transaction,
      * otherwise its effect will be delayed.
-     * 
+     *
      * Possible types are:
      *      GB_UNDO_UNDO        enable undo
      *      GB_UNDO_NONE        disable undo

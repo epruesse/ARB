@@ -86,7 +86,7 @@ GBDATA *GBT_open_table(GBDATA *gb_table_root, const char *table_name, bool read_
     GBDATA *gb_table_entries;
     GBDATA *gb_table_fields;
     GBDATA *gb_table_name_field;
-    
+
     GB_MAIN_TYPE *Main = GB_MAIN(gb_table_root);
     gb_table           = (GBDATA *)GBS_read_hash(Main->table_hash, table_name);
     if (gb_table) return gb_table;
@@ -105,7 +105,7 @@ GBDATA *GBT_open_table(GBDATA *gb_table_root, const char *table_name, bool read_
     gb_table_name = GB_create(gb_table, "name", GB_STRING);
     GB_write_string(gb_table_name, table_name);
     GB_write_security_levels(gb_table_name, 0, 7, 7); // neither delete nor change the name
-    
+
     gb_table_description = GB_create(gb_table, "description", GB_STRING);
     GB_write_string(gb_table_description, "No description");
 
@@ -224,7 +224,7 @@ GBDATA *GBT_open_table_field(GBDATA *gb_table, const char *fieldname, GB_TYPES t
     GBDATA *gb_table_field_type;
     GBDATA *gb_table_field_description;
     GBDATA *gb_fields;
-    
+
     if (gb_table_field) return gb_table_field;
 
     gb_fields           = GB_entry(gb_table, "fields");
@@ -241,7 +241,7 @@ GBDATA *GBT_open_table_field(GBDATA *gb_table, const char *fieldname, GB_TYPES t
 
     gb_table_field_description = GB_create(gb_table_field, "description", GB_STRING);
     GB_write_string(gb_table_field_description, "No description yet");
-    
+
     return gb_table_field;
 }
 

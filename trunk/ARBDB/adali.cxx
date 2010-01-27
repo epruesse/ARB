@@ -55,7 +55,7 @@ GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name) {
         if (!gb_use) {
             // if we have no default alignment -> look for any alignment
             GBDATA *gb_ali_name = GB_find_string(gb_presets, "alignment_name", alignment_name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
-            
+
             error = gb_ali_name ?
                 GBT_write_string(gb_presets, "use", GB_read_char_pntr(gb_ali_name)) :
                 "No alignment defined";
@@ -118,7 +118,7 @@ GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name) {
 
 char **GBT_get_alignment_names(GBDATA *gbd) {
     /* Get names of existing alignments from database.
-     * 
+     *
      * Returns: array of strings, the last element is NULL
      * (Note: use GBT_free_names() to free result)
      */
@@ -280,7 +280,7 @@ NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment,
      * - it initially has to contain value == 1 for each existing species.
      * - afterwards it will contain value  == 2 for each species where an alignment has been found.
      */
-    
+
     GBDATA *gb_species_data  = GBT_find_or_create(gb_main, "species_data", 7);
     GBDATA *gb_extended_data = GBT_find_or_create(gb_main, "extended_data", 7);
 
@@ -339,7 +339,7 @@ NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment,
                     }
                     free(unique);
                 }
-                
+
                 if (!error) {
                     name = GB_read_char_pntr(gb_name);
                     if (species_name_hash) {
@@ -565,7 +565,7 @@ NOT4PERL GBDATA *GBT_add_data(GBDATA *species, const char *ali_name, const char 
     /* replace this function by GBT_create_sequence_data
      * the same as GB_search(species, 'ali_name/key', GB_CREATE)
      */
-    
+
     GBDATA *gb_gb;
     GBDATA *gb_data;
     if (GB_check_key(ali_name)) {
@@ -707,7 +707,7 @@ GB_ERROR GBT_set_default_alignment(GBDATA *gb_main, const char *alignment_name) 
 GBDATA *GBT_get_alignment(GBDATA *gb_main, const char *aliname) {
     GBDATA *gb_presets        = GB_search(gb_main, "presets", GB_CREATE_CONTAINER);
     GBDATA *gb_alignment_name = GB_find_string(gb_presets, "alignment_name", aliname, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
-    
+
     if (!gb_alignment_name) {
         GB_export_errorf("alignment '%s' not found", aliname);
         return NULL;
@@ -716,7 +716,7 @@ GBDATA *GBT_get_alignment(GBDATA *gb_main, const char *aliname) {
 }
 
 #if defined(DEVEL_RALF)
-#warning recode and change result type to long* ? 
+#warning recode and change result type to long* ?
 #endif // DEVEL_RALF
 long GBT_get_alignment_len(GBDATA *gb_main, const char *aliname) {
     GBDATA *gb_alignment = GBT_get_alignment(gb_main, aliname);
@@ -831,17 +831,17 @@ static void getPartPositions(const struct GEN_position *pos, int part, size_t *s
 
 NOT4PERL char *GBT_read_gene_sequence_and_length(GBDATA *gb_gene, bool use_revComplement, char partSeparator, size_t *gene_length) {
     // return the sequence data of a gene
-    // 
+    //
     // if use_revComplement is true -> use data from complementary strand (if complement is set for gene)
     //                    otherwise -> use data from primary strand (sort+merge parts by position)
-    // 
+    //
     // if partSeparator not is 0 -> insert partSeparator between single (non-merged) parts
-    // 
+    //
     // returns sequence as result (and length of sequence if 'gene_length' points to something)
-    // 
+    //
     // if 'pos_certain' contains '+', start behind position (or end at position)
     //                           '-', start at position (or end before position)
-    // 
+    //
     // For zero-length genes (e.g. "711^712") this function returns an empty string.
 
     GB_ERROR             error       = 0;
@@ -862,7 +862,7 @@ NOT4PERL char *GBT_read_gene_sequence_and_length(GBDATA *gb_gene, bool use_revCo
 
         // test positions and calculate overall result length
         for (p = 0; p<parts && !error; p++) {
-            size_t start; 
+            size_t start;
             size_t stop;
             getPartPositions(pos, p, &start, &stop);
 

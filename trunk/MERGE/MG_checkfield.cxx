@@ -184,7 +184,7 @@ void mg_check_field_cb(AW_window *aww) {
     else {
         aw_openstatus("Checking fields");
         error = GB_begin_transaction(GLOBAL_gb_merge);
-        
+
         if (!error) {
             error = GB_begin_transaction(GLOBAL_gb_dest);
 
@@ -193,10 +193,10 @@ void mg_check_field_cb(AW_window *aww) {
 
             GBDATA *gb_species1;
             GBDATA *gb_species2;
-            
+
             int     sum_species   = 0;
             int     species_count = 0;
-            
+
             // First step: count selected species
             for (gb_species1 = GBT_first_species_rel_species_data(gb_species_data1);
                  gb_species1 && !error;
@@ -244,7 +244,7 @@ void mg_check_field_cb(AW_window *aww) {
                             if (s1 || s2) {
                                 char *positions1 = 0;
                                 char *positions2 = 0;
-                                
+
                                 if (s1 && s2) {
                                     long corrected = 0;
                                     GBS_diff_strings(s1, s2, exclude, ToUpper, correct, &positions1, &positions2, &corrected);
@@ -329,7 +329,7 @@ AW_window *create_mg_check_fields(AW_root *aw_root) {
                                         (1<<GB_STRING)|(1<<GB_INT), "dest", 0, &AWT_species_selector, 20, 10);
 
 #if defined(DEVEL_RALF)
-#warning check code above. Maybe one call has to get GLOBAL_gb_merge ? 
+#warning check code above. Maybe one call has to get GLOBAL_gb_merge ?
 #endif // DEVEL_RALF
 
 

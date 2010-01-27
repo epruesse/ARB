@@ -18,7 +18,7 @@ void AWT_automata::get_fwd(char *str, int pos) {
     AW_CL   last_value = 0;
     unsigned char *p = (unsigned char *)str + pos;
     int b;
-        
+
     for (; b=*p; p++) {
         if (gaps[b]) continue;                          // do not read gaps
         if (state->value) last_value = state->value;

@@ -162,7 +162,7 @@ AP_tree *AP_tree::dup() const {
 }
 
 #if defined(DEVEL_RALF)
-#warning move to ARB_tree ? 
+#warning move to ARB_tree ?
 #endif // DEVEL_RALF
 void AP_tree::replace_self(AP_tree *new_son) {
     ap_assert(father);
@@ -172,7 +172,7 @@ void AP_tree::replace_self(AP_tree *new_son) {
     }
 }
 #if defined(DEVEL_RALF)
-#warning move to ARB_tree ? 
+#warning move to ARB_tree ?
 #endif // DEVEL_RALF
 void AP_tree::set_brother(AP_tree *new_son) {
     ap_assert(father);
@@ -220,7 +220,7 @@ void AP_tree::insert(AP_tree *new_brother) {
     new_brother->father = new_tree;
 
     AP_tree_root *troot = new_brother->get_tree_root();
-    if (troot) { 
+    if (troot) {
         if (!new_tree->father) troot->change_root(new_brother, new_tree);
         else new_tree->set_tree_root(troot);
 
@@ -232,7 +232,7 @@ void AP_tree::insert(AP_tree *new_brother) {
 }
 
 #if defined(DEVEL_RALF)
-#warning move to ARB_tree ? 
+#warning move to ARB_tree ?
 #endif // DEVEL_RALF
 void AP_tree_root::change_root(AP_tree *oldroot, AP_tree *newroot) {
     if (root_changed_cb) root_changed_cb(root_changed_cd, oldroot, newroot);
@@ -323,7 +323,7 @@ void AP_tree::remove() {
 #if defined(CHECK_TREE_STRUCTURE)
         if (troot->get_root_node()) ASSERT_VALID_TREE(troot->get_root_node());
 #endif // CHECK_TREE_STRUCTURE
-        
+
         troot->inform_about_delete(fath);
         troot->inform_about_delete(this);
     }
@@ -400,7 +400,7 @@ void AP_tree::moveTo(AP_tree *new_brother, AP_FLOAT rel_pos) {
         laenge -= brother_father->rightlen = laenge * rel_pos;
         brother_father->rightson = new_tree;
     }
-    
+
     new_tree->rightlen  = laenge;
     new_brother->father = new_tree;
     new_tree->rightson  = new_brother;
@@ -561,7 +561,7 @@ void AP_tree::set_root() {
             pntr->rightson = next;
             pntr->rightlen = len;
         }
-        
+
         pntr->father = prev;
         prev         = pntr;
         pntr         = next;
@@ -706,7 +706,7 @@ GB_ERROR AP_tree_root::saveToDB() {
     }
     if (!error) error = ARB_tree_root::saveToDB();
     if (!error) update_timers();
-    
+
     return GB_end_transaction(get_gb_main(), error);
 }
 
@@ -861,7 +861,7 @@ int AP_tree::calc_color() {
         else {
             ap_assert(l != AWT_GC_SELECTED && r != AWT_GC_SELECTED);
             ap_assert(l != AWT_GC_UNDIFF && r != AWT_GC_UNDIFF);
-            res = AWT_GC_NSELECTED; 
+            res = AWT_GC_NSELECTED;
         }
     }
 
@@ -896,7 +896,7 @@ int AP_tree::calc_color_probes(GB_HASH *hashptr) {
     else {
         l = get_leftson()->calc_color_probes(hashptr);
         r = get_rightson()->calc_color_probes(hashptr);
-        
+
         if      (l == r)                      res = l;
         else if (l == AWT_GC_SOME_MISMATCHES) res = r;
         else if (r == AWT_GC_SOME_MISMATCHES) res = l;
@@ -933,7 +933,7 @@ GB_ERROR AP_tree::relink() {
 AP_UPDATE_FLAGS AP_tree::check_update() {
     AP_tree_root *troot   = get_tree_root();
     GBDATA       *gb_main = troot->get_gb_main();
-    
+
     if (!gb_main) {
         return AP_UPDATE_RELOADED;
     }
@@ -993,7 +993,7 @@ void AP_tree::buildNodeList(AP_tree **&list, long &num) {
 void AP_tree::buildBranchList_rek(AP_tree **list, long& num, bool create_terminal_branches, int deep) {
     // builds a list of all species
     // (returns pairs of leafs/father and nodes/father)
-    
+
     if (deep) {
         if (father && (create_terminal_branches || !is_leaf)) {
             if (father->father) {
@@ -1029,7 +1029,7 @@ void AP_tree::buildBranchList(AP_tree **&list, long &num, bool create_terminal_b
 
     if (num) {
         long count = 0;
-        
+
         buildBranchList_rek(list, count, create_terminal_branches, deep);
         list[count] = 0;
         num         = count/2;
@@ -1039,7 +1039,7 @@ void AP_tree::buildBranchList(AP_tree **&list, long &num, bool create_terminal_b
 
 void AP_tree_root::remove_leafs(int awt_remove_type) {
     // may remove the complete tree (if awt_remove_type does not contain AWT_REMOVE_BUT_DONT_FREE)
-    
+
     ASSERT_VALID_TREE(get_root_node());
 
     AP_tree **list;
@@ -1106,7 +1106,7 @@ public:
         if (state < NLD_DOWNDIST) state = NLD_DOWNDIST;
         downdist = DownDist;
     }
-    
+
     AP_FLOAT get_updist() const { ap_assert(state >= NLD_BOTHDIST); return updist; }
     void set_updist(AP_FLOAT UpDist) {
         if (state < NLD_BOTHDIST) state = NLD_BOTHDIST;
@@ -1117,7 +1117,7 @@ public:
 
 class EdgeFinder {
     map<AP_tree*, NodeLeafDistance> data;
-    
+
     ARB_edge innermost;
     AP_FLOAT min_maxDist;
 
@@ -1276,7 +1276,7 @@ AP_tree ** AP_tree::getRandomNodes(int anzahl) {
     count = sumnodes;
     for  (i=0; i< anzahl; i++) {
         num = GB_random(count);
-        
+
         retlist[i] = list[num]; // export node
         count--;                // exclude node
 
@@ -1412,7 +1412,7 @@ void AP_tree::mark_deep_branches(GBDATA *, int mark_depth) {
     long marked_depthsum = 0;
     long marked          = 0;
     ap_mark_below_depth(this, mark_depth, &marked, &marked_depthsum);
-    
+
     marked_depthsum = -marked_depthsum + marked*mark_depth;
 
     aw_message(GBS_global_string(

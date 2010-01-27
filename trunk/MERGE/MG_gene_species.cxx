@@ -186,7 +186,7 @@ GB_ERROR MG_export_fields(AW_root *aw_root, GBDATA *gb_source, GBDATA *gb_dest, 
 
     if (export_fields) { // should fields be exported ?
         mg_assert(GEN_is_pseudo_gene_species(gb_source));
-        
+
         char *existing_definitions = aw_root->awar(AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS)->read_string();
         char *start                = existing_definitions+1;
 
@@ -210,7 +210,7 @@ GB_ERROR MG_export_fields(AW_root *aw_root, GBDATA *gb_source, GBDATA *gb_dest, 
 
                 char *result = MG_create_field_content(gb_source, method, source, aci, error, source_organism_hash);
                 mg_assert(result || error);
-                
+
                 if (result) {
                     error = GBT_write_string(gb_dest, start, result);
                     free(result);
@@ -538,7 +538,7 @@ static void load_gene_species_xfer_fields(AW_window *aww, const char *stored_str
 
     // Load 'AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS' and 'AWAR_MERGE_GENE_SPECIES_FIELDS_SAVE'
     {
-        AWT_config_definition sub_cdef(aw_root);    
+        AWT_config_definition sub_cdef(aw_root);
         init_gene_species_xfer_fields_config(sub_cdef);
         sub_cdef.write(stored_string);
     }

@@ -35,7 +35,7 @@ float ali_aligner_dellist::update(unsigned long position) {
 }
 
 ALI_TARRAY<ali_pathmap_up_pointer> *ali_aligner_dellist::starts(float costs, unsigned long y_offset) {
-    /* select all gaps with defined costs and put them together 
+    /* select all gaps with defined costs and put them together
      * inside an ALI_TARRAY
      */
     unsigned long counter = 0;
@@ -77,7 +77,7 @@ ALI_TARRAY<ali_pathmap_up_pointer> *ali_aligner_dellist::starts(float costs, uns
 }
 
 void ali_aligner_dellist::optimize(unsigned long position) {
-    /* optimize the list of multi gaps. 
+    /* optimize the list of multi gaps.
      * delete all gaps which costs will ALLWAYS be higher than others
      */
     ali_aligner_dellist_elem *ref, *akt;
@@ -93,7 +93,7 @@ void ali_aligner_dellist::optimize(unsigned long position) {
             else
                 akt = 0;
             while (akt) {
-                if (akt->costs > ref->costs && 
+                if (akt->costs > ref->costs &&
                     profile->gap_percent(akt->start, position) <=
                     profile->gap_percent(ref->start, position)) {
                     del_flag = 1;
@@ -188,7 +188,7 @@ inline void ALI_ALIGNER::calculate_first_column_cell(ali_aligner_cell *up_cell, 
         del_list->insert(positiony, v2, ALI_DIAG);
     }
     else {
-        if (v3 < v2) 
+        if (v3 < v2)
             del_list->insert(positiony, v3, ALI_LEFT);
         else
             del_list->insert(positiony, v2, ALI_DIAG | ALI_LEFT);
@@ -235,7 +235,7 @@ void ALI_ALIGNER::calculate_first_cell(ali_aligner_cell *left_cell, ali_aligner_
 
     del_list->insert(start_y, akt_cell->d1, ALI_LEFT);
 
-    // Substitution part 
+    // Substitution part
     akt_cell->d2 = profile->w_ins_multi_cheap(start_x, positionx - 1) + profile->w_sub(start_y, positionx);
 
     // Insertation part
@@ -272,7 +272,7 @@ void ALI_ALIGNER::calculate_cell(ali_aligner_cell *diag_cell, ali_aligner_cell *
     akt_cell->d1 = minimum3(v1, v2, v3);
 
 
-    if (v1 == akt_cell->d1) 
+    if (v1 == akt_cell->d1)
         path_map[0]->set(pos_x, pos_y, ALI_LUP, del_list->starts(v1, start_y));
     if (v2 == akt_cell->d1)
         path_map[0]->set(pos_x, pos_y, ALI_DIAG);
@@ -287,7 +287,7 @@ void ALI_ALIGNER::calculate_cell(ali_aligner_cell *diag_cell, ali_aligner_cell *
         else
             del_list->insert(positiony, v2, ALI_DIAG | ALI_LEFT);
     }
-                
+
     del_list->optimize(positiony);
 
     // Substitution part
@@ -337,7 +337,7 @@ void ALI_ALIGNER::calculate_column(ali_aligner_column *prev_col, ali_aligner_col
         last_cell->update_left(&(*akt_col->cells)[akt_col->column_length - 1],
                                pos_x + 1, start_x, end_x);
     }
-        
+
     path_map[0]->optimize(pos_x);
 }
 
@@ -350,7 +350,7 @@ void ALI_ALIGNER::calculate_matrix()
     del_list = new ali_aligner_dellist(profile);
     prev_col = new ali_aligner_column(end_y - start_y + 1);
     akt_col = new ali_aligner_column(end_y - start_y + 1);
-   
+
     last_cell->update_border(start_x, end_x, start_y, end_y);
 
     calculate_first_column(prev_col, del_list);
@@ -370,15 +370,15 @@ void ALI_ALIGNER::calculate_matrix()
 }
 
 
-void ALI_ALIGNER::generate_result(ALI_TSTACK<unsigned char> *stack) 
+void ALI_ALIGNER::generate_result(ALI_TSTACK<unsigned char> *stack)
 {
     // generate a result sequence from an stack of operations
     ALI_MAP *map;
     long seq_pos, dest_pos;
     long i;
- 
+
     map = new ALI_MAP(start_x, end_x, start_y, end_y);
- 
+
 
     seq_pos = start_x - 1;
     dest_pos = 0 - 1;
@@ -418,7 +418,7 @@ void ALI_ALIGNER::generate_result(ALI_TSTACK<unsigned char> *stack)
                                 "ALI_ALIGNER::generate_result()");
         }
     }
- 
+
     if ((unsigned long)(seq_pos) != map->last_base())
         ali_error("Stack and map length inconsistent",
                   "ALI_ALIGNER::generate_result()");
@@ -428,7 +428,7 @@ void ALI_ALIGNER::generate_result(ALI_TSTACK<unsigned char> *stack)
 
     result.insert(map);
 }
-                                
+
 
 void ALI_ALIGNER::mapper_pre(ALI_TSTACK<unsigned char> *stack,
                              unsigned long pos_x, unsigned long pos_y,
@@ -449,7 +449,7 @@ void ALI_ALIGNER::mapper_pre(ALI_TSTACK<unsigned char> *stack,
     if (random_mapping_flag == 1) {
         random = GB_random(6);
         switch (random) {
-            case 0: 
+            case 0:
                 if (operation & ALI_UP) plane = 0;
                 else {
                     if (operation & ALI_DIAG) plane = 1;
@@ -550,18 +550,18 @@ void ALI_ALIGNER::mapper_random(ALI_TSTACK<unsigned char> *stack, int plane, uns
 
         // Set the operation
         switch (plane) {
-            case 0: 
+            case 0:
                 stack->push(ALI_ALIGNER_DEL);
-                next_y = next_y - 1; 
-                break;
-            case 1: 
-                stack->push(ALI_ALIGNER_SUB);
-                next_x = next_x - 1; 
                 next_y = next_y - 1;
                 break;
-            case 2: 
+            case 1:
+                stack->push(ALI_ALIGNER_SUB);
+                next_x = next_x - 1;
+                next_y = next_y - 1;
+                break;
+            case 2:
                 stack->push(ALI_ALIGNER_INS);
-                next_x = next_x - 1; 
+                next_x = next_x - 1;
                 break;
             default:
                 ali_fatal_error("Unexpected plane", "ALI_ALIGNER::mapper_random()");
@@ -711,32 +711,32 @@ void ALI_ALIGNER::mapper(ALI_TSTACK<unsigned char> *stack, int plane, unsigned l
     unsigned long next_x, next_y;
 
     // set the operation
-    
+
     switch (plane) {
-        case 0: 
+        case 0:
             stack->push(ALI_ALIGNER_DEL);
-            next_x = pos_x; 
-            next_y = pos_y - 1; 
-            break;
-        case 1: 
-            stack->push(ALI_ALIGNER_SUB);
-            next_x = pos_x - 1; 
+            next_x = pos_x;
             next_y = pos_y - 1;
             break;
-        case 2: 
+        case 1:
+            stack->push(ALI_ALIGNER_SUB);
+            next_x = pos_x - 1;
+            next_y = pos_y - 1;
+            break;
+        case 2:
             stack->push(ALI_ALIGNER_INS);
-            next_x = pos_x - 1; 
-            next_y = pos_y; 
+            next_x = pos_x - 1;
+            next_y = pos_y;
             break;
         default:
             ali_fatal_error("Unexpected plane", "ALI_ALIGNER::mapper()");
     }
 
     // Check if mapping found a end
-    
+
     if (next_x > pos_x || next_y > pos_y) {
         if (next_y <= pos_y) {
-            if (plane == 0) 
+            if (plane == 0)
                 ali_fatal_error("Unexpected plane (1)",
                                 "ALI_ALIGNER::mapper()");
             mapper_post(stack, 0, next_y + 1);
@@ -767,7 +767,7 @@ void ALI_ALIGNER::mapper(ALI_TSTACK<unsigned char> *stack, int plane, unsigned l
         }
 
         // Special handling for long up-pointers
-        
+
         if (value & ALI_LUP) {
             if (plane != 0)
                 printf("LUP should never be in plane %d\n", plane);
@@ -851,7 +851,7 @@ void ALI_ALIGNER::make_map_random(ALI_TSTACK<unsigned char> *stack) {
     // Find on path by random and make a map
     unsigned long random;
     float min;
- 
+
     min = minimum3(last_cell->d1, last_cell->d2, last_cell->d3);
     random = GB_random(6);
 
@@ -995,14 +995,14 @@ void ALI_ALIGNER::make_map() {
     stack = new ALI_TSTACK<unsigned char>(end_x - start_x + end_y - start_y + 5);
 
     /* ACHTUNG ACHTUNG
-     * 
+     *
      * number_of_solutions() noch nicht zuverlaessig!!
      * => es wird IMMER nur EINE Loesung herausgenommen!!
      *
      */
-#if 0    
+#if 0
     unsigned long number_of_sol = number_of_solutions();
-      
+
     if (result_counter <= number_of_sol) {
         ali_message("Starting systematic mapping");
         make_map_systematic(stack);
@@ -1014,7 +1014,7 @@ void ALI_ALIGNER::make_map() {
         }
         while (result_counter > 0);
     }
-#endif    
+#endif
 
     make_map_random(stack);
 
@@ -1122,17 +1122,17 @@ unsigned long ALI_ALIGNER::number_of_solutions() {
                 (elem_left_col - 1)->v3 = 0;
 
             path_map[0]->get(pos_x, pos_y, &value, &up_pointer);
-            if (value & ALI_UP) 
+            if (value & ALI_UP)
                 (elem_akt_col - 1)->v1 += elem_akt_col->v1;
-            if (value & ALI_DIAG) 
+            if (value & ALI_DIAG)
                 (elem_akt_col - 1)->v2 += elem_akt_col->v1;
-            if (value & ALI_LEFT) 
+            if (value & ALI_LEFT)
                 (elem_akt_col - 1)->v3 += elem_akt_col->v1;
             if (value & ALI_LUP) {
                 for (l = 0; l < up_pointer->size(); l++) {
                     up = up_pointer->get(l);
                     if (pos_y - 1 < up.start || up.operation & ALI_UP ||
-                        up.operation & ALI_LUP) 
+                        up.operation & ALI_LUP)
                         ali_fatal_error("Inconsistent LUP reference",
                                         "ALI_ALIGNER::number_of_solutions()");
                     if (up.start == 0) {
@@ -1172,7 +1172,7 @@ unsigned long ALI_ALIGNER::number_of_solutions() {
         }
 
         // Calculate the first cell
-        
+
         number += elem_akt_col->v1;
         number += elem_akt_col->v2;
 
@@ -1239,13 +1239,13 @@ unsigned long ALI_ALIGNER::number_of_solutions() {
         }
     }
 
-    /* Calculate the cells of the first column, 
+    /* Calculate the cells of the first column,
      * from last to first (without first)
      */
     for (pos_y = end_y - start_y; pos_y > 0; pos_y--) {
 
         path_map[0]->get(pos_x, pos_y, &value, &up_pointer);
-        if (value & ALI_UP) 
+        if (value & ALI_UP)
             (elem_akt_col - 1)->v1 += elem_akt_col->v1;
         if (value & ALI_DIAG) {
             number += elem_akt_col->v1;
@@ -1257,7 +1257,7 @@ unsigned long ALI_ALIGNER::number_of_solutions() {
             for (l = 0; l < up_pointer->size(); l++) {
                 up = up_pointer->get(l);
                 if (pos_y - 1 < up.start || up.operation & ALI_UP ||
-                    up.operation & ALI_LUP) 
+                    up.operation & ALI_LUP)
                     ali_fatal_error("Inconsistent LUP reference",
                                     "ALI_ALIGNER::number_of_solutions()");
                 if (up.operation & ALI_DIAG) {

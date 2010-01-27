@@ -17,7 +17,7 @@
 
 #define ph_assert(cond) arb_assert(cond)
 
-typedef double AP_FLOAT; 
+typedef double AP_FLOAT;
 
 class PH_NEIGHBOUR_DIST {
 public:

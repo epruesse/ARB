@@ -110,7 +110,7 @@ static GB_ERROR change_constraints(SEC_base *elem) {
 
             sec_assert(error);
             aw_popup_ok(error);
-            
+
             char *retry = aw_input(question, answer);
             free(answer);
 
@@ -181,7 +181,7 @@ GB_ERROR SEC_graphic::handleKey(AW_event_type event, AW_key_mod key_modifier, AW
 
                         case 's': toggle_awar = AWAR_SECEDIT_DISPLAY_SAI; break;
                         case 'r': toggle_awar = AWAR_SECEDIT_DISPLAY_SEARCH; break;
-                            
+
                         case 'E': toggle_awar = AWAR_SECEDIT_DISPPOS_ECOLI; break;
                         case 'H': toggle_awar = AWAR_SECEDIT_DISPPOS_BINDING; break;
 
@@ -201,7 +201,7 @@ GB_ERROR SEC_graphic::handleKey(AW_event_type event, AW_key_mod key_modifier, AW
 
                         if (val>val_max) val = 0;
                         awar->write_int(val);
-                        
+
                         handled = true;
                     }
 
@@ -216,7 +216,7 @@ GB_ERROR SEC_graphic::handleKey(AW_event_type event, AW_key_mod key_modifier, AW
             aw_root->awar_int(AWAR_SET_CURSOR_POSITION)->write_int(curpos);
             handled = true;
         }
-        
+
         if (!handled) { // pass unhandled key events to EDIT4
             AW_event faked_event;
 
@@ -275,7 +275,7 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
                             exports.save    = 1;
                         }
                         break;
-                            
+
                     case AW_Mouse_Drag:
                         if (button == AWT_M_LEFT) {
                             double dfix1 = Distance(fixpoint, start);
@@ -329,7 +329,7 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
                         startClick = fix2world;
                         old.clear();
                         rotateSubStructure = (button == AWT_M_LEFT);
-                            
+
                         if (loop) {
                             old.push_back(loop->get_abs_angle());
                             if (!rotateSubStructure) {
@@ -439,7 +439,7 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
     // --------------------------------------
     //      action independent of element
     // --------------------------------------
-    
+
     if (!elem) {
         switch (cmd) {
             case AWT_MODE_LINE: // set cursor in ARB_EDIT4
@@ -465,7 +465,7 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
                     }
                 }
                 break;
-                
+
             default:
                 break;
         }
@@ -538,7 +538,7 @@ SEC_graphic::~SEC_graphic() {
     delete load_error;
 }
 
-void SEC_structure_changed_cb(GBDATA *gb_seq, SEC_graphic *gfx, GB_CB_TYPE type) { 
+void SEC_structure_changed_cb(GBDATA *gb_seq, SEC_graphic *gfx, GB_CB_TYPE type) {
     if (type == GB_CB_DELETE) {
         gfx->gb_struct     = NULL;
         gfx->gb_struct_ref = NULL;
@@ -606,7 +606,7 @@ GB_ERROR SEC_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
             }
             free(ali_name);
         }
-        
+
         free(name);
         free(helix_name);
     }
@@ -678,7 +678,7 @@ GB_ERROR SEC_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
         request_update(SEC_UPDATE_ZOOM_RESET);
     }
 
-    // set structure-change-callbacks: 
+    // set structure-change-callbacks:
     GB_add_callback(gb_struct, GB_CB_ALL, (GB_CB)SEC_structure_changed_cb, (int *)this);
     GB_add_callback(gb_struct_ref, GB_CB_ALL, (GB_CB)SEC_structure_changed_cb, (int *)this);
 
@@ -687,10 +687,10 @@ GB_ERROR SEC_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
 
 GB_ERROR SEC_graphic::save(GBDATA *, const char *, AW_CL, AW_CL) {
     /*! Save secondary structure to database */
-    
+
     if (!gb_struct) return 0;   // not loaded, so don't save
     if (!sec_root) return 0;
-    
+
     char           *data  = sec_root->buildStructureString();
     GB_transaction  ta(gb_main);
     GB_ERROR        error = GB_write_string(gb_struct, data);
@@ -728,7 +728,7 @@ GB_ERROR SEC_graphic::read_data_from_db(char **data, char **x_string) const {
 GB_ERROR SEC_graphic::write_data_to_db(const char *data, const char *x_string) const {
     if (!gb_struct) return 0;
     if (!sec_root) return 0;
-    
+
     GB_transaction ta(gb_main);
     GB_ERROR       error = GB_write_string(gb_struct, data);
     if (!error) {
@@ -740,7 +740,7 @@ GB_ERROR SEC_graphic::write_data_to_db(const char *data, const char *x_string) c
 
 int SEC_graphic::check_update(GBDATA *) {
     GB_transaction ta(gb_main);
-    
+
     const SEC_db_interface *db = sec_root->get_db();
 
     if (db && db->canDisplay()) {
@@ -760,7 +760,7 @@ int SEC_graphic::check_update(GBDATA *) {
             update_requested = static_cast<SEC_update_request>((update_requested^SEC_UPDATE_SHOWN_POSITIONS)|SEC_UPDATE_RECOUNT); // clear reload flag
             exports.refresh  = 1;
         }
-    
+
         if (update_requested & SEC_UPDATE_RECOUNT) {
             sec_root->invalidate_base_positions();
             sec_root->relayout();
@@ -768,7 +768,7 @@ int SEC_graphic::check_update(GBDATA *) {
             update_requested = static_cast<SEC_update_request>(update_requested^SEC_UPDATE_RECOUNT); // clear recount flag
             exports.refresh  = 1;
         }
-    
+
         sec_root->perform_autoscroll();
     }
 

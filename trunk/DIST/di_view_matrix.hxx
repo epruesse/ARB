@@ -68,7 +68,7 @@ public:
     void set_slider_max(double d) { max_view_dist = d; };
 
     void handle_move(AW_event& event);
-    
+
     DI_dmatrix();
     void init(DI_MATRIX *matrix=0); // set the output matrix
 

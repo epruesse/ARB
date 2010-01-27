@@ -324,7 +324,7 @@ struct ED4_work_info
 
     int     repeat_count;       // only for keystrokes: contains # of times key should be repeated
 
-    ED4_terminal *working_terminal; // this contains the terminal 
+    ED4_terminal *working_terminal; // this contains the terminal
 };
 
 

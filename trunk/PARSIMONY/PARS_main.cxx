@@ -54,7 +54,7 @@ static void pars_saveNrefresh_changed_tree(AWT_canvas *ntw) {
 
     GB_ERROR error = GLOBAL_PARS->tree->save(ntw->gb_main, 0, 0, 0);
     if (error) aw_message(error);
-    
+
     ntw->zoom_reset();
     ntw->refresh();
 }
@@ -281,7 +281,7 @@ static long insert_species_in_tree_test(const char *key, long val, void *cd_isit
             if (seq_with_leaf[i]!=seq_without_leaf[i]) {
                 baseDiff++;
             }
-            
+
         }
 
         delete [] seq_with_leaf;
@@ -358,7 +358,7 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
                 key,
                 leaf->get_seq()->weighted_base_count(),
                 MIN_SEQUENCE_LENGTH);
-        
+
         aw_message();
         delete leaf;
         return 0;
@@ -408,7 +408,7 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
         ap_assert(tree == rootNode());
         leaf->insert(bestposl);
         tree = NULL;                                // tree may have changed
-        
+
         {
             AP_FLOAT curr_parsimony = rootNode()->costs();
             AP_FLOAT best_parsimony = curr_parsimony;
@@ -435,7 +435,7 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
 
                 leaf->moveTo(bl, 0.5);
                 ASSERT_VALID_TREE(rootNode());
-                
+
                 curr_parsimony = rootNode()->costs();
                 ASSERT_VALID_TREE(rootNode());
 
@@ -451,13 +451,13 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
         if (bestposl->father != bestposr) {
             bestposl = bestposr;
         }
-        
+
         ASSERT_VALID_TREE(rootNode());
 
         leaf->moveTo(bestposl, 0.5);
 
         ASSERT_VALID_TREE(rootNode());
-        
+
         if (!isits->quick_add_flag) {
             int deep = 5;
             if (isits->every_sixteenth()) deep = -1;
@@ -476,7 +476,7 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
                 for (int firstUse = 1; firstUse >= 0; --firstUse) {
                     AP_tree_nlen *to_insert = firstUse ? leaf : brother;
                     const char   *format    = firstUse ? "2:%s" : "shortseq:%s";
-                    
+
                     char *label = GBS_global_string_copy(format, to_insert->name);
                     isits->currentspecies--;        // undo counter increment done by insert_species_in_tree
                     insert_species_in_tree(label, to_insert, isits);
@@ -488,7 +488,7 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
         if (!isits->singlestatus) {
             isits->abort_flag |= aw_status(isits->currentspecies/(double)isits->maxspecies);
         }
-        
+
         ASSERT_VALID_TREE(rootNode());
     }
 
@@ -509,7 +509,7 @@ static long count_hash_elements(const char *, long val, void *cd_isits) {
 }
 
 enum AddWhat {
-    NT_ADD_MARKED, 
+    NT_ADD_MARKED,
     NT_ADD_SELECTED,
 };
 
@@ -556,7 +556,7 @@ static void nt_add(AW_window *, AWT_canvas *ntw, AddWhat what, bool quick, int t
 
     if (!error) {
         ap_assert(hash);
-        
+
         NT_remove_species_in_tree_from_hash(rootNode(), hash);
 
         InsertData isits(quick);
@@ -620,7 +620,7 @@ class PartialSequence {
     AP_tree_nlen *get_self() const {
         if (!self) {
             ap_assert(!released); // request not possible, because leaf has already been released!
-            
+
             self = (AP_tree_nlen*)transform_gbd_to_leaf(GBT_read_name(gb_species), (long)gb_species, NULL);
             ap_assert(self);
         }
@@ -846,7 +846,7 @@ static void nt_add_partial(AW_window * /* aww */, AWT_canvas *ntw) {
 
             list<PartialSequence>::iterator i = partial.begin();
             list<PartialSequence>::iterator e = partial.end();
-            
+
 #if defined(DEBUG)
             // show results :
             for (; i != e; ++i) i->dump();
@@ -855,7 +855,7 @@ static void nt_add_partial(AW_window * /* aww */, AWT_canvas *ntw) {
 
             for (; i != e && !error; ++i) {
                 const char *name = i->get_name();
-                
+
                 if (i->is_multi_match()) {
                     aw_message(GBS_global_string("Insertion of '%s' is ambiguous.\n"
                                                  "(took first of equal scored insertion points: %s)",
@@ -912,7 +912,7 @@ static void nt_add_partial(AW_window * /* aww */, AWT_canvas *ntw) {
                     printf("inserting '%s'\n", name);
 #endif // DEBUG
                     part_leaf->insert(target);
-                    
+
                     // we need to create the sequence of the father node!
                     AP_tree_nlen *father = part_leaf->get_father();
                     father->costs();
@@ -1134,7 +1134,7 @@ static void PA_focus_cb(AW_window *, GBDATA *gb_main_par)
 #if defined(TEST_FUNCTIONS)
 static void refreshTree(AWT_canvas *ntw) {
     GB_transaction gb_dummy(ntw->gb_main);
-    
+
     AWT_TREE(ntw)->check_update(ntw->gb_main);
     GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main, 0, 0, 0);
     if (error) aw_message(error);
@@ -1172,7 +1172,7 @@ static void TEST_treeStats(AW_window *, AWT_canvas *) {
     }
 
     puts("Tree stats:");
-    
+
     printf("nodes      =%6zu\n", tinfo.nodes());
     printf(" inner     =%6zu\n", tinfo.innerNodes);
     printf("  groups   =%6zu\n", tinfo.groups);
@@ -1653,7 +1653,7 @@ static void pars_create_all_awars(AW_root *awr, AW_default aw_def)
     {
         GB_transaction  ta(GLOBAL_gb_main);
         char           *dali = GBT_get_default_alignment(GLOBAL_gb_main);
-        
+
         awr->awar_string(AWAR_ALIGNMENT, dali, GLOBAL_gb_main)->write_string(dali);
         free(dali);
     }
@@ -1673,7 +1673,7 @@ static void pars_create_all_awars(AW_root *awr, AW_default aw_def)
         GB_transaction  ta(GLOBAL_gb_main);
         GBDATA *gb_tree_name = GB_search(GLOBAL_gb_main, AWAR_TREE, GB_STRING);
         char   *tree_name    = GB_read_string(gb_tree_name);
-        
+
         awr->awar_string(AWAR_TREE, 0, aw_def)->write_string(tree_name);
         free(tree_name);
     }
@@ -1735,7 +1735,7 @@ int main(int argc, char **argv)
         else if (!strcmp(argv[0], "-calc_bootstrap"))    cmds.calc_bootstrap = 1;
         else {
             fprintf(stderr, "Unknown option '%s'\n", argv[0]);
-            
+
             printf("    Options:                Meaning:\n"
                    "\n"
                    "    -add_marked             add marked species   (without changing topology)\n"
@@ -1756,7 +1756,7 @@ int main(int argc, char **argv)
 
     GLOBAL_gb_main = GBT_open(db_server, "rw", 0);
     if (!GLOBAL_gb_main) aw_popup_exit(GB_await_error()); // exits
-    
+
 #if defined(DEBUG)
     AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB-database (%s)", db_server));
 #endif // DEBUG

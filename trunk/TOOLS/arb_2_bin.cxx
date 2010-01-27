@@ -14,7 +14,7 @@
 int main(int argc, char **argv)
 {
     GB_ERROR error = 0;
-    
+
     fprintf(stderr, "arb_2_bin - ARB database ascii to binary converter\n");
 
     if (argc <= 1 || strcmp(argv[1], "--help") == 0) {
@@ -29,7 +29,7 @@ int main(int argc, char **argv)
                 "database my be '-' in which case arb_2_bin reads from stdin.\n"
                 "\n"
                 );
-        
+
         if (strcmp(argv[1], "--help") != 0) { error = "Missing arguments"; }
         return (-1);
     }
@@ -44,7 +44,7 @@ int main(int argc, char **argv)
         {
             char *rtypep = rtype;
             char *wtypep = wtype;
-            
+
             memset(rtype, 0, 10);
             memset(wtype, 0, 10);
             *(wtypep++) = 'b';
@@ -91,7 +91,7 @@ int main(int argc, char **argv)
             GB_close(gb_main);
         }
     }
-    
+
     if (error) {
         fprintf(stderr, "arb_2_bin: Error: %s\n", error);
         return EXIT_FAILURE;

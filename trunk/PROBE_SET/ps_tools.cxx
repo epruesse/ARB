@@ -23,7 +23,7 @@ void PS_print_time_diff(const struct tms *_since, const char *_before, const cha
     times(&now);
     if (_before) printf("%s", _before);
     printf("time used : user (");
-    
+
     unsigned int minutes  = (now.tms_utime-_since->tms_utime)/CLOCKS_PER_SEC / 60;
     unsigned int hours    = minutes / 60;
     minutes              -= hours * 60;
@@ -36,7 +36,7 @@ void PS_print_time_diff(const struct tms *_since, const char *_before, const cha
     if (hours > 0) printf("%uh ", hours);
     if (minutes > 0) printf("%um ", minutes);
     printf("%.3fs)",   (float)(now.tms_stime-_since->tms_stime)/CLOCKS_PER_SEC-(hours*3600)-(minutes*60));
-    
+
     if (_after) {
         printf("%s", _after);
     }

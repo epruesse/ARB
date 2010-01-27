@@ -81,7 +81,7 @@ int AW_device_size::text(int gc, const char *str, AW_pos x, AW_pos y, AW_pos ali
 
     if (filteri & filter) {
         XFontStruct *xfs = &(common->gcs[gc]->curfont);
-        
+
         AW_pos X0, Y0;          // Transformed pos
         this->transform(x, y, X0, Y0);
 

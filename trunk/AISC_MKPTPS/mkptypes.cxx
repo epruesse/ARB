@@ -1,15 +1,15 @@
 /* Program to extract function declarations from C/C++ source code
- * 
+ *
  * Written by Eric R. Smith and placed in the public domain
- * 
+ *
  * Thanks to:
- * 
+ *
  * Jwahar R. Bammi, for catching several bugs and providing the Unix makefiles
  * Byron T. Jenings Jr. for cleaning up the space code, providing a Unix
  *   manual page, and some ANSI and C++ improvements.
  * Skip Gilbrech for code to skip parameter names in prototypes.
  * ... and many others for helpful comments and suggestions.
- * 
+ *
  * Many extension were made for use in ARB build process
  * by Ralf Westram <ralf@arb-home.de>
  */
@@ -89,7 +89,7 @@ static void errorAt(long line, const char *msg) {
     printf("\n"
            "#line %li \"%s/%s\"\n"
            "#error in aisc_mkpt: %s\n",
-           line, 
+           line,
            current_dir,
            current_file,
            msg);
@@ -103,7 +103,7 @@ struct SymPart {
     char *part;
     int   len;                                      // len of part
     bool  atStart;                                  // part has to match at start of name
-    
+
     SymPart *next;
 };
 
@@ -192,7 +192,7 @@ static void word_free(Word *w)
 
 static int List_len(Word *w) {
     // return the length of a list
-    // empty words are not counted 
+    // empty words are not counted
     int count = 0;
 
     while (w) {
@@ -278,7 +278,7 @@ static void typefixhack(Word *w) {
 
 static int ngetc(FILE *f) {
     // read a character: if it's a newline, increment the line count
-    
+
     int c;
 
     c = getc(f);
@@ -305,7 +305,7 @@ static void search_comment_for_attribute() {
     if (found__attribute__ || found__ATTR__) return; // only take first __attribute__
 
     last_comment[lc_size] = 0;  // close string
-    
+
     att = strstr(last_comment, "__attribute__");
     if (att != 0) {
         char *a  = att+13;
@@ -335,7 +335,7 @@ static void search_comment_for_attribute() {
         if (*a == '(') {
             int parens = 1;
             a++;
-            
+
             while (parens && *a) {
                 switch (*a++) {
                     case '(': parens++; break;
@@ -546,7 +546,7 @@ static int nextch(FILE *f) {
         do {
             c = fnextch(f);
         } while (c >= 0 && (c == '\t' || c == ' '));
-        
+
         // check for #line
         if (c == 'l') {
             c = fnextch(f);
@@ -626,7 +626,7 @@ static int getsym(char *buf, FILE *f) {
 
     int c;
     int inbrack = 0;
-    
+
 #if defined(DEBUG_PRINTS)
     char *bufStart = buf;
 #endif // DEBUG_PRINTS
@@ -691,13 +691,13 @@ static int getsym(char *buf, FILE *f) {
 
     DEBUG_PRINT(bufStart);
     DEBUG_PRINT("'\n");
-    
+
     return 0;
 }
 
 static int skipit(char *buf, FILE *f) {
     // skip until a ";" or the end of a function declaration is seen
-    
+
     int i;
     do {
         DEBUG_PRINT("in skipit loop\n");
@@ -1100,7 +1100,7 @@ static void emit(Word *wlist, Word *plist, long startline) {
 
     if (found__attribute__) { PRINT(" "); PRINT(found__attribute__); }
     if (found__ATTR__) { PRINT(" "); PRINT(found__ATTR__); }
-    
+
     PRINT(";\n");
 }
 
@@ -1233,7 +1233,7 @@ static void Usage() {
           "\n"
           "\n   -e               put an explicit \"extern\" keyword in declarations"
           "\n"
-          "\n   -n               put line numbers of declarations as comments" 
+          "\n   -n               put line numbers of declarations as comments"
           "\n"
           "\n   -s               promote declarations for static functions"
           "\n   -i               promote declarations for inline functions"
@@ -1244,7 +1244,7 @@ static void Usage() {
           "\n   -W               don't promote types in old style declarations"
           "\n   -x               omit parameter names in prototypes"
           "\n"
-          "\n   -p sym           use \"sym\" as the prototype macro (default \"P_\")" 
+          "\n   -p sym           use \"sym\" as the prototype macro (default \"P_\")"
           "\n   -z               omit prototype macro definition"
           "\n   -A               omit prototype macro; header files are strict ANSI"
           "\n"
@@ -1375,8 +1375,8 @@ int main(int argc, char **argv) {
 
             printf("#ifndef %s\n"
                    "#define %s\n"
-                   "\n", 
-                   include_macro, 
+                   "\n",
+                   include_macro,
                    include_macro);
         }
 
@@ -1422,18 +1422,18 @@ int main(int argc, char **argv) {
                   "#endif\n\n", stdout);
         }
     }
-    
+
     current_dir = strdup(getcwd(0, 255));
     if (argc == 0) {
         getdecl(stdin, "<from stdin>");
     }
     else {
-        
+
         while (argc > 0 && *argv) {
             DEBUG_PRINT("trying new file '");
             DEBUG_PRINT(*argv);
             DEBUG_PRINT("'\n");
-            
+
             if (!(f = fopen(*argv, "r"))) {
                 perror(*argv);
                 exit(EXIT_FAILURE);

@@ -44,9 +44,9 @@ struct PARS_commands {
     PARS_commands()
         : add_marked(false)
         , add_selected(false)
-        , calc_branch_lengths(false) 
-        , calc_bootstrap(false) 
-        , quit(false) 
+        , calc_branch_lengths(false)
+        , calc_bootstrap(false)
+        , quit(false)
     {
     }
 };
